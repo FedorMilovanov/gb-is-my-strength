@@ -7,6 +7,10 @@
 <meta name="description" content="Абнер Чау. The Master’s Seminary Journal (TMSJ), т. 27, № 2 (Fall 2016), с. 113–139.">
 
 <style>
+   
+   html, body {
+  overflow-x: hidden;
+}
 
 /* =========================
    BASE RESET
@@ -302,16 +306,15 @@ blockquote{
   cursor: pointer;
 }
 
+/* Desktop */
 @media (min-width: 900px){
   .theme-toggle{
     top: 28px;
-
-    /* 25% к краю, 75% к тексту */
-    right: calc((100vw - 820px) / 2 * 0.25);
+    right: 8vw;   /* просто процент от экрана — безопасно */
   }
 }
 
-/* --- Mobile --- */
+/* Mobile */
 @media (max-width: 899px){
   .theme-toggle{
     top: 22px;
