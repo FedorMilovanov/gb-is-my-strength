@@ -6,41 +6,86 @@
 
 <style>
 body {
-    font-family: Georgia, "Times New Roman", serif;
-    font-size: 18px;
-    line-height: 1.75;
-    max-width: 850px;
-    margin: 0 auto;
-    padding: 60px 40px;
-    background: #ffffff;
-    color: #111;
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 18px;
+  line-height: 1.75;
+  max-width: 850px;
+  margin: 0 auto;
+  padding: 60px 40px;
+  background: #ffffff;
+  color: #111;
 }
 
 h1 {
-    text-align: center;
-    font-size: 26px;
-    margin-bottom: 15px;
+  text-align: center;
+  font-size: 26px;
+  margin-bottom: 15px;
 }
 
 .meta {
-    text-align: center;
-    font-style: italic;
-    margin-bottom: 40px;
-    color: #444;
+  text-align: center;
+  font-style: italic;
+  margin-bottom: 40px;
+  color: #444;
 }
 
 .notice {
-    font-size: 15px;
-    background: #f5f5f5;
-    padding: 18px;
-    border-left: 4px solid #999;
-    margin-bottom: 50px;
+  font-size: 15px;
+  background: #f5f5f5;
+  padding: 18px;
+  border-left: 4px solid #999;
+  margin-bottom: 50px;
 }
 
 p {
-    text-align: justify;
-    text-indent: 2em;
-    margin-bottom: 18px;
+  text-align: justify;
+  text-indent: 2em;
+  margin-bottom: 18px;
+}
+
+/* Разделитель */
+.divider {
+  text-align: center;
+  margin: 24px 0;
+  color: #333;
+}
+
+/* Всплывающие сноски */
+.fn-marker{
+  position: relative;
+  color:#c0392b;
+  font-weight:700;
+  font-size:.75em;
+  vertical-align: super;
+  cursor: pointer;
+  line-height: 0;
+}
+
+.fn-marker .tooltip{
+  visibility: hidden;
+  width: 420px;
+  max-width: min(420px, 90vw);
+  background:#333;
+  color:#fff;
+  padding:10px 12px;
+  border-radius:6px;
+  position:absolute;
+  z-index:100;
+  left:50%;
+  transform:translateX(-50%);
+  bottom: 24px;
+  opacity:0;
+  transition:opacity .2s;
+  font-size:14px;
+  line-height:1.35;
+  text-indent:0;
+  pointer-events:none;
+  box-shadow:0 8px 18px rgba(0,0,0,.25);
+}
+
+.fn-marker:hover .tooltip{
+  visibility: visible;
+  opacity: 1;
 }
 </style>
 
@@ -56,8 +101,12 @@ p {
 <div class="notice">
 Права: © The Master’s Seminary Journal (TMSJ) / правообладатели. Материал размещён в ознакомительных целях. По запросу правообладателя будет удалён.<br><br>
 Источник: Abner Chou, “A Hermeneutical Evaluation of Christocentric Hermeneutics,” The Master’s Seminary Journal 27, no. 2 (Fall 2016): 113–139.<br>
-Оригинал (PDF): TMSJ-Volume-27-Number-2.pdf<br>
-Мой email: viktorcoy2012@gmail.com
+Оригинал (PDF):
+<a href="https://tms.edu/wp-content/uploads/2021/09/TMSJ-Volume-27-Number-2.pdf"
+   target="_blank" rel="noopener noreferrer">
+  открыть PDF на сайте TMS
+</a><br>
+Мой email: <a href="mailto:viktorcoy2012@gmail.com">viktorcoy2012@gmail.com</a>
 </div>
 
 
