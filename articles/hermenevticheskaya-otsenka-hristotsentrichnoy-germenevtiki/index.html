@@ -542,6 +542,25 @@
     });
   })();
   </script>
+/* === Mobile: tooltip как панель снизу (никогда не уедет за экран) === */
+@media (max-width: 760px){
+  .fn-marker .tooltip{
+    position: fixed !important;
 
+    left: calc(16px + env(safe-area-inset-left)) !important;
+    right: calc(16px + env(safe-area-inset-right)) !important;
+    bottom: calc(16px + env(safe-area-inset-bottom)) !important;
+    top: auto !important;
+
+    transform: none !important;
+
+    width: auto !important;
+    max-width: none !important;
+
+    max-height: 45vh;
+    overflow: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+}
 </body>
 </html>
