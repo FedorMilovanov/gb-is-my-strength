@@ -632,45 +632,50 @@ html.dark .icon-sun{
   }
 }
 
-  // Открытие по клику
+// Открытие по клику
+markers.forEach(marker => {
+
   marker.addEventListener('click', function(e){
-  e.preventDefault();
-  e.stopPropagation();
+    e.preventDefault();
+    e.stopPropagation();
 
-  const tooltip = marker.querySelector('.tooltip');
+    const tooltip = marker.querySelector('.tooltip');
 
-  if (activeMarker === marker) {
+    if (activeMarker === marker) {
+      closeAll();
+      return;
+    }
+
     closeAll();
-    return;
-  }
+    marker.classList.add('is-open');
+    activeMarker = marker;
 
-  closeAll();
-  marker.classList.add('is-open');
-  activeMarker = marker;
+    // --- Полу-умная коррекция позиции ---
+    requestAnimationFrame(() => {
+      const rect = tooltip.getBoundingClientRect();
+      const padding = 12;
 
-  // --- Полу-умная коррекция позиции ---
-  requestAnimationFrame(() => {
-    const rect = tooltip.getBoundingClientRect();
-    const padding = 12;
+      // Если выходит вправо
+      if (rect.right > window.innerWidth - padding) {
+        tooltip.style.left = 'auto';
+        tooltip.style.right = '0';
+      }
 
-    // Если выходит вправо
-    if (rect.right > window.innerWidth - padding) {
-      tooltip.style.left = 'auto';
-      tooltip.style.right = '0';
-    }
+      // Если выходит влево
+      if (rect.left < padding) {
+        tooltip.style.left = '0';
+        tooltip.style.right = 'auto';
+      }
 
-    // Если выходит влево
-    if (rect.left < padding) {
-      tooltip.style.left = '0';
-      tooltip.style.right = 'auto';
-    }
+      // Если слишком близко к верху
+      if (rect.top < padding) {
+        tooltip.style.bottom = 'auto';
+        tooltip.style.top = '130%';
+      }
+    });
 
-    // Если слишком близко к верху
-    if (rect.top < padding) {
-      tooltip.style.bottom = 'auto';
-      tooltip.style.top = '130%';
-    }
   });
+
 });
 
 
