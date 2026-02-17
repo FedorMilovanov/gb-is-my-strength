@@ -269,11 +269,10 @@ blockquote{
 
 .tooltip{
   position: absolute;
-  left: 0;
   bottom: 130%;
 
-  width: 340px;           /* фиксированная нормальная ширина */
-  max-width: 90vw;        /* но не шире экрана */
+  width: 340px;
+  max-width: 90vw;
 
   padding: 14px 18px;
   border-radius: 6px;
@@ -285,7 +284,7 @@ blockquote{
   line-height: 1.55;
   font-weight: 400;
 
-  text-align: left;       /* важно! убираем justify */
+  text-align: left;
   hyphens: none;
 
   opacity: 0;
@@ -297,21 +296,26 @@ blockquote{
   z-index: 1000;
 }
 
-.fn-marker.is-open .tooltip{
-  opacity: 1;
-  pointer-events: auto;
-  transform: translateY(0);
-}
-
-/* Desktop hover */
-@media (hover: hover) and (pointer: fine){
-  .fn-marker:hover .tooltip{
-    opacity: 1;
-    pointer-events: auto;
-    transform: translateY(0);
+/* --- Desktop --- */
+@media (min-width: 768px){
+  .tooltip{
+    left: 0;
   }
 }
 
+/* --- Mobile --- */
+@media (max-width: 767px){
+  .tooltip{
+    left: 50%;
+    transform: translate(-50%, 6px);
+    width: 90vw;
+  }
+
+  .fn-marker.is-open .tooltip{
+    transform: translate(-50%, 0);
+  }
+}
+   
 /* =========================
    THEME TOGGLE (Balanced journal position)
 ========================= */
