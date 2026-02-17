@@ -272,20 +272,21 @@ blockquote{
   left: 0;
   bottom: 130%;
 
-  min-width: 0;
-  max-width: min(85vw, 360px);
+  width: 340px;           /* фиксированная нормальная ширина */
+  max-width: 90vw;        /* но не шире экрана */
 
-  padding: 14px 16px;
+  padding: 14px 18px;
   border-radius: 6px;
 
   background: var(--tooltip-bg);
   color: var(--tooltip-text);
 
-  font-size: 13.5px;
+  font-size: 14px;
   line-height: 1.55;
-  font-weight: 400;   /* тонкий обычный текст */
+  font-weight: 400;
 
-  letter-spacing: 0.1px;
+  text-align: left;       /* важно! убираем justify */
+  hyphens: none;
 
   opacity: 0;
   pointer-events: none;
