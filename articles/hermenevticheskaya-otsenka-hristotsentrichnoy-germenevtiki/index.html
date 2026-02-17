@@ -54,43 +54,34 @@ main{
   padding: clamp(22px, 4vw, 56px) clamp(20px, 4vw, 60px);
 }
 
-/* =========================
-   THEME TOGGLE (FIXED TOP RIGHT)
-   ========================= */
-
 .theme-toggle{
   position: fixed;
-  top: 20px;
-  right: 20px;
+  top: 22px;
+  right: 22px;
   z-index: 10000;
 
-  width: 34px;
-  height: 34px;
+  width: 28px;
+  height: 28px;
 
-  display: flex;
-  align-items: center;
-  justify-content: center;
-
-  background: var(--note-bg);
-  border: 1px solid var(--border);
-  border-radius: 50%;
+  background: none;
+  border: none;
+  padding: 0;
 
   cursor: pointer;
-  transition: background .2s ease, transform .15s ease;
-}
-
-.theme-toggle:hover{
-  transform: scale(1.08);
 }
 
 .theme-toggle svg{
-  width: 18px;
-  height: 18px;
+  width: 22px;
+  height: 22px;
   fill: none;
   stroke: currentColor;
   color: var(--text);
   position: absolute;
-  transition: opacity .25s ease;
+  transition: opacity .25s ease, color .25s ease, transform .15s ease;
+}
+
+.theme-toggle:hover svg{
+  transform: scale(1.08);
 }
 
 .icon-sun{
