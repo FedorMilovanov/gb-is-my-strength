@@ -227,12 +227,21 @@
       }
     }
 
-    .fn-marker:focus-within .tooltip,
-    .fn-marker.is-open .tooltip{
-      visibility: visible;
-      opacity: 1;
-      pointer-events: auto;
-    }
+    /* Открытие по тапу/клику (JS) */
+.fn-marker.is-open .tooltip{
+  visibility: visible;
+  opacity: 1;
+  pointer-events: auto;
+}
+
+/* Открытие по фокусу — только на десктопе (клавиатура) */
+@media (hover: hover) and (pointer: fine){
+  .fn-marker:focus-within .tooltip{
+    visibility: visible;
+    opacity: 1;
+    pointer-events: auto;
+  }
+}
 
     /* СБРОС влияния .container на цифры-сноски (важно!) */
     .fn-marker.container{
@@ -528,9 +537,14 @@
       }
     });
 
-    function closeAll(except = null){
-      markers.forEach(m => { if (m !== except) m.classList.remove('is-open'); });
+   function closeAll(except = null){
+  markers.forEach(m => {
+    if (m !== except) {
+      m.classList.remove('is-open');
+      if (document.activeElement === m) m.blur(); // снимаем фокус
     }
+  });
+}
 
     // закрывать при прокрутке/ресайзе/смене ориентации
     window.addEventListener('scroll', () => closeAll(), { passive: true });
