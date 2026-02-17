@@ -17,17 +17,18 @@ body { margin: 0; }
 :root{
   --bg: #fdfcf9;
   --text: #1a1a1a;
-  --muted: #6a6a6a;
-  --link: #1f4ea3;
-  --border: #e5e2dc;
+  --muted: #6f6f6f;
+  --border: #e6e2db;
 }
 
 body{
-  background: var(--bg);
+  background:
+    radial-gradient(circle at top center, #ffffff 0%, #f5f3ee 100%);
   color: var(--text);
   font-family: Georgia, "Times New Roman", serif;
   font-size: 18px;
   line-height: 1.75;
+  text-rendering: optimizeLegibility;
 }
 
 /* =========================
@@ -37,7 +38,7 @@ body{
 main{
   width: min(820px, 92vw);
   margin: 0 auto;
-  padding: clamp(60px, 8vw, 120px) 24px;
+  padding: clamp(80px, 10vw, 140px) 24px;
 }
 
 /* =========================
@@ -45,19 +46,21 @@ main{
 ========================= */
 
 .site-header{
-  margin-bottom: 70px;
-  padding-bottom: 30px;
+  margin-bottom: 80px;
+  padding-bottom: 36px;
   border-bottom: 1px solid var(--border);
 }
 
 .site-header h1{
-  font-size: 36px;
+  font-size: 40px;
   font-weight: 600;
-  margin: 0 0 12px 0;
+  letter-spacing: 0.5px;
+  margin: 0 0 14px 0;
 }
 
 .site-header p{
   margin: 0;
+  font-size: 16px;
   color: var(--muted);
 }
 
@@ -66,12 +69,24 @@ main{
 ========================= */
 
 .section-title{
-  font-size: 20px;
+  font-size: 14px;
   font-weight: 600;
-  margin-bottom: 30px;
   text-transform: uppercase;
-  letter-spacing: 1px;
+  letter-spacing: 2px;
   color: var(--muted);
+  margin-bottom: 40px;
+  position: relative;
+  padding-bottom: 14px;
+}
+
+.section-title::after{
+  content: "";
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 60px;
+  height: 2px;
+  background: var(--border);
 }
 
 /* =========================
@@ -85,7 +100,7 @@ main{
 }
 
 .article-item{
-  padding: 26px 0;
+  padding: 34px 0;
   border-bottom: 1px solid var(--border);
 }
 
@@ -94,18 +109,21 @@ main{
 }
 
 .article-title{
-  font-size: 22px;
+  display: inline-block;
+  font-size: 24px;
   font-weight: 600;
-  text-decoration: none;
+  line-height: 1.4;
   color: var(--text);
+  text-decoration: none;
+  transition: opacity .2s ease;
 }
 
 .article-title:hover{
-  text-decoration: underline;
+  opacity: 0.75;
 }
 
 .article-meta{
-  margin-top: 8px;
+  margin-top: 10px;
   font-size: 15px;
   color: var(--muted);
 }
@@ -115,8 +133,8 @@ main{
 ========================= */
 
 footer{
-  margin-top: 80px;
-  padding-top: 30px;
+  margin-top: 100px;
+  padding-top: 40px;
   border-top: 1px solid var(--border);
   font-size: 14px;
   color: var(--muted);
@@ -129,32 +147,30 @@ footer{
 
 <main>
 
-  <header class="site-header">
-    <h1>Господь Бог — Сила Моя</h1>
-    <p>Библиотека богословских статей и переводов</p>
-  </header>
+<header class="site-header">
+  <h1>Господь Бог — Сила Моя</h1>
+  <p>Библиотека богословских статей и переводов</p>
+</header>
 
-  <div class="section-title">Публикации</div>
+<div class="section-title">Публикации</div>
 
-  <ul class="article-list">
+<ul class="article-list">
 
-    <li class="article-item">
-      <a class="article-title"
-         href="articles/hermenevticheskaya-otsenka-hristotsentrichnoy-germenevtiki/">
-        Герменевтическая оценка христоцентричной герменевтики
-      </a>
-      <div class="article-meta">
-        Абнер Чау • The Master’s Seminary Journal (TMSJ), т. 27, № 2 (Fall 2016)
-      </div>
-    </li>
+  <li class="article-item">
+    <a class="article-title"
+       href="articles/hermenevticheskaya-otsenka-hristotsentrichnoy-germenevtiki/">
+      Герменевтическая оценка христоцентричной герменевтики
+    </a>
+    <div class="article-meta">
+      Абнер Чау • The Master’s Seminary Journal (TMSJ), т. 27, № 2 (Fall 2016)
+    </div>
+  </li>
 
-    <!-- Добавляй новые статьи вот сюда -->
+</ul>
 
-  </ul>
-
-  <footer>
-    © 2025 Господь Бог — Сила Моя
-  </footer>
+<footer>
+  © 2025 Господь Бог — Сила Моя
+</footer>
 
 </main>
 
