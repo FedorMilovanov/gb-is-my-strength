@@ -158,8 +158,8 @@ a{
 a:hover{
   text-decoration: underline;
 }
-   /* =========================
-   SKIP LINK (Accessibility)
+ /* =========================
+   SKIP LINK (Desktop only)
 ========================= */
 
 .skip-link{
@@ -181,6 +181,12 @@ a:hover{
   top: 20px;
 }
 
+/* Полностью отключаем на телефоне */
+@media (max-width: 768px){
+  .skip-link{
+    display: none;
+  }
+}
 /* =========================
    NOTICE BLOCK
 ========================= */
