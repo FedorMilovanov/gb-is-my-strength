@@ -1,37 +1,162 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Господь Бог — Сила Моя</title>
-  <style>
-    body{ font-family: system-ui, -apple-system, sans-serif; max-width: 800px; margin: 0 auto; padding: 40px 20px; line-height: 1.6; }
-    h1{ border-bottom: 2px solid #eee; padding-bottom: 10px; }
-    ul{ padding-left: 20px; }
-    li{ margin-bottom: 15px; }
-    a{ color: #0056b3; text-decoration: none; font-size: 18px; font-weight: bold; }
-    a:hover{ text-decoration: underline; }
-    .desc{ color: #666; font-size: 14px; margin-top: 4px; }
-  </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Господь Бог — Сила Моя</title>
+
+<style>
+
+/* =========================
+   BASE
+========================= */
+
+*, *::before, *::after { box-sizing: border-box; }
+body { margin: 0; }
+
+:root{
+  --bg: #fdfcf9;
+  --text: #1a1a1a;
+  --muted: #6a6a6a;
+  --link: #1f4ea3;
+  --border: #e5e2dc;
+}
+
+body{
+  background: var(--bg);
+  color: var(--text);
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 18px;
+  line-height: 1.75;
+}
+
+/* =========================
+   LAYOUT
+========================= */
+
+main{
+  width: min(820px, 92vw);
+  margin: 0 auto;
+  padding: clamp(60px, 8vw, 120px) 24px;
+}
+
+/* =========================
+   HEADER
+========================= */
+
+.site-header{
+  margin-bottom: 70px;
+  padding-bottom: 30px;
+  border-bottom: 1px solid var(--border);
+}
+
+.site-header h1{
+  font-size: 36px;
+  font-weight: 600;
+  margin: 0 0 12px 0;
+}
+
+.site-header p{
+  margin: 0;
+  color: var(--muted);
+}
+
+/* =========================
+   SECTION TITLE
+========================= */
+
+.section-title{
+  font-size: 20px;
+  font-weight: 600;
+  margin-bottom: 30px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: var(--muted);
+}
+
+/* =========================
+   ARTICLE LIST
+========================= */
+
+.article-list{
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.article-item{
+  padding: 26px 0;
+  border-bottom: 1px solid var(--border);
+}
+
+.article-item:last-child{
+  border-bottom: none;
+}
+
+.article-title{
+  font-size: 22px;
+  font-weight: 600;
+  text-decoration: none;
+  color: var(--text);
+}
+
+.article-title:hover{
+  text-decoration: underline;
+}
+
+.article-meta{
+  margin-top: 8px;
+  font-size: 15px;
+  color: var(--muted);
+}
+
+/* =========================
+   FOOTER
+========================= */
+
+footer{
+  margin-top: 80px;
+  padding-top: 30px;
+  border-top: 1px solid var(--border);
+  font-size: 14px;
+  color: var(--muted);
+}
+
+</style>
 </head>
+
 <body>
 
-  <h1>Господь Бог — Сила Моя</h1>
-  <p>Библиотека статей и материалов.</p>
+<main>
 
-  <h2>Список статей</h2>
-  <ul>
-    <li>
-      <a href="articles/hermenevticheskaya-otsenka-hristotsentrichnoy-germenevtiki/">
+  <header class="site-header">
+    <h1>Господь Бог — Сила Моя</h1>
+    <p>Библиотека богословских статей и переводов.</p>
+  </header>
+
+  <div class="section-title">Публикации</div>
+
+  <ul class="article-list">
+
+    <li class="article-item">
+      <a class="article-title"
+         href="articles/hermenevticheskaya-otsenka-hristotsentrichnoy-germenevtiki/">
         Герменевтическая оценка христоцентричной герменевтики
       </a>
-      <div class="desc">Абнер Чау • The Master’s Seminary Journal (TMSJ), т. 27, № 2 (Fall 2016)</div>
+      <div class="article-meta">
+        Абнер Чау • The Master’s Seminary Journal (TMSJ), т. 27, № 2 (Fall 2016)
+      </div>
     </li>
+
+    <!-- Добавляй новые статьи вот сюда -->
+
   </ul>
 
-  <footer style="margin-top: 50px; color: #999; font-size: 13px;">
+  <footer>
     © 2025 Господь Бог — Сила Моя
   </footer>
+
+</main>
 
 </body>
 </html>
