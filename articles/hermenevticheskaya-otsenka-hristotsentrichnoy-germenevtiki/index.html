@@ -186,37 +186,38 @@
     }
 
     .fn-marker .tooltip{
-      visibility: hidden;
-      opacity: 0;
-      transition: opacity .15s ease;
+  visibility: hidden;
+  opacity: 0;
+  transition: opacity .15s ease;
 
-      position: absolute;
-      z-index: 1000;
-      left: 50%;
-      transform: translateX(-50%);
-      bottom: 24px;
+  position: absolute;
+  z-index: 1000;
+  left: 0;              /* было 50% */
+  transform: none;      /* убрать translate */
+  bottom: 24px;
 
-      width: 420px;
-      max-width: min(420px, calc(100vw - 32px));
-      padding: 10px 12px;
-      border-radius: 8px;
+  width: max-content;   /* автоширина по тексту */
+  min-width: 280px;
+  max-width: 420px;
 
-      background: var(--tooltip-bg);
-      color: var(--tooltip-text);
-      font-size: 14px;
-      line-height: 1.35;
-      text-indent: 0;
+  padding: 10px 12px;
+  border-radius: 8px;
 
-      overflow-wrap: anywhere;
-      word-break: break-word;
+  background: var(--tooltip-bg);
+  color: var(--tooltip-text);
+  font-size: 14px;
+  line-height: 1.35;
+  text-indent: 0;
 
-      box-shadow: 0 8px 18px rgba(0,0,0,.25);
-      user-select: text;
+  overflow-wrap: anywhere;
+  word-break: break-word;
 
-      /* важно против "растянутых пробелов" из-за justify */
-      text-align: left;
-      text-align-last: left;
-    }
+  box-shadow: 0 8px 18px rgba(0,0,0,.25);
+  user-select: text;
+
+  text-align: left;
+  text-align-last: left;
+}
 
     @media (hover: hover) and (pointer: fine){
       .fn-marker:hover .tooltip{
