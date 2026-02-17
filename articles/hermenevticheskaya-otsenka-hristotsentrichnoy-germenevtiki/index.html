@@ -136,15 +136,12 @@
     }
     .fn-marker .tooltip p:last-child { margin-bottom: 0; }
 
-    /* Показ тултипа */
-    .fn-marker:hover .tooltip,
-    .fn-marker:focus .tooltip,
-    .fn-marker.is-open .tooltip {
-        visibility: visible;
-        opacity: 1;
-        pointer-events: auto;
-    }
-
+    /* Показ тултипа ТОЛЬКО через JS */
+.fn-marker.is-open .tooltip {
+    visibility: visible;
+    opacity: 1;
+    pointer-events: auto;
+}
     /* Стрелочка вниз у тултипа (красота) */
     .fn-marker .tooltip::after {
         content: "";
