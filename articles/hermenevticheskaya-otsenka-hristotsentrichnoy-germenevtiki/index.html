@@ -491,7 +491,57 @@
 
 <div class="divider">* * * * *</div>
 
+ </article>
+  </main>
 
+  <script>
+  (function () {
+    const markers = Array.from(document.querySelectorAll('.fn-marker'));
+
+    // Делаем маркеры фокусируемыми и доступными — без правки всех сносок
+    markers.forEach((m) => {
+      if (!m.hasAttribute('tabindex')) m.setAttribute('tabindex', '0');
+      if (!m.hasAttribute('role')) m.setAttribute('role', 'button');
+
+      const num = (m.childNodes[0] && m.childNodes[0].textContent || '').trim();
+      if (num && !m.hasAttribute('aria-label')) m.setAttribute('aria-label', 'Сноска ' + num);
+
+      const tip = m.querySelector('.tooltip');
+      if (tip && !tip.hasAttribute('role')) tip.setAttribute('role', 'tooltip');
+    });
+
+    function closeAll(except = null){
+      markers.forEach(m => { if (m !== except) m.classList.remove('is-open'); });
+    }
+
+    markers.forEach(m => {
+      m.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const willOpen = !m.classList.contains('is-open');
+        closeAll();
+        if (willOpen) m.classList.add('is-open');
+      });
+
+      m.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          const willOpen = !m.classList.contains('is-open');
+          closeAll();
+          if (willOpen) m.classList.add('is-open');
+        }
+        if (e.key === 'Escape') {
+          m.classList.remove('is-open');
+          m.blur();
+        }
+      });
+    });
+
+    document.addEventListener('click', () => closeAll());
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') closeAll();
+    });
+  })();
+  </script>
 
 </body>
 </html>
