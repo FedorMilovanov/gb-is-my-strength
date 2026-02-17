@@ -256,9 +256,9 @@
     @media (max-width: 760px){
       .fn-marker .tooltip{
         position: fixed !important;
-        left: calc(16px + env(safe-area-inset-left)) !important;
-        right: calc(16px + env(safe-area-inset-right)) !important;
-        bottom: calc(16px + env(safe-area-inset-bottom)) !important;
+        left: calc(16px) !important;
+        right: calc(16px) !important;
+        bottom: calc(16px) !important;
         top: auto !important;
 
         transform: none !important;
@@ -512,9 +512,11 @@
   </article>
   </main>
 
-  <script>
+<script>
 (function () {
   const markers = Array.from(document.querySelectorAll('.fn-marker'));
+
+  let openMarker = null;
 
   markers.forEach((m) => {
     if (!m.hasAttribute('tabindex')) m.setAttribute('tabindex', '0');
@@ -527,7 +529,7 @@
     if (tip && !tip.hasAttribute('role')) tip.setAttribute('role', 'tooltip');
   });
 
-  // убираем пробелы прямо перед маркером (justify может растягивать их в "дырки")
+  // убрать пробелы прямо перед маркером (justify может растягивать их)
   markers.forEach((m) => {
     const prev = m.previousSibling;
     if (prev && prev.nodeType === Node.TEXT_NODE) {
@@ -539,56 +541,97 @@
     markers.forEach(m => {
       if (m !== except) {
         m.classList.remove('is-open');
-        if (document.activeElement === m) m.blur(); // снимаем фокус
+        if (document.activeElement === m) m.blur();
       }
     });
+    if (!except) openMarker = null;
   }
 
-  // Закрывать при реальной прокрутке окна
+  function openOne(m){
+    closeAll();
+    m.classList.add('is-open');
+    openMarker = m;
+  }
+
+  // Закрывать при реальной прокрутке окна (когда она действительно происходит)
   window.addEventListener('scroll', () => closeAll(), { passive: true });
   window.addEventListener('resize', () => closeAll(), { passive: true });
   window.addEventListener('orientationchange', () => closeAll(), { passive: true });
 
-  // Закрывать при "жесте прокрутки" (самое важное для телефона)
-  let gestureStartedOutside = false;
+  // ===== Закрытие при жесте прокрутки (touch) с учётом скролла внутри tooltip =====
+  let startY = 0;
+  let startedInsideTooltip = false;
+  let startedOnMarker = false;
 
-  function startGesture(e){
-    gestureStartedOutside = !e.target.closest('.fn-marker');
+  function getOpenTooltip(){
+    return openMarker ? openMarker.querySelector('.tooltip') : null;
   }
-  function moveGesture(){
-    if (gestureStartedOutside) closeAll();
-  }
 
-  // Pointer Events (Chrome/Android обычно есть)
-  document.addEventListener('pointerdown', (e) => {
-    if (e.pointerType === 'touch') startGesture(e);
+  document.addEventListener('touchstart', (e) => {
+    if (!openMarker) return;
+
+    const tip = getOpenTooltip();
+    const t = e.touches[0];
+
+    startY = t ? t.clientY : 0;
+    startedOnMarker = !!e.target.closest('.fn-marker');
+    startedInsideTooltip = tip ? tip.contains(e.target) : false;
+
+    // если тап начался не на маркере и не внутри tooltip — при первом же движении закрываем
+    if (!startedOnMarker && !startedInsideTooltip) {
+      // ничего, закроем на touchmove
+    }
   }, { passive: true });
-  document.addEventListener('pointermove', (e) => {
-    if (e.pointerType === 'touch') moveGesture();
+
+  document.addEventListener('touchmove', (e) => {
+    if (!openMarker) return;
+
+    const tip = getOpenTooltip();
+    const t = e.touches[0];
+    if (!t) return;
+
+    const dy = t.clientY - startY;
+
+    // 1) Жест начался вне маркера и вне tooltip => это прокрутка страницы => закрыть
+    if (!startedOnMarker && !startedInsideTooltip) {
+      closeAll();
+      return;
+    }
+
+    // 2) Жест начался внутри tooltip:
+    // закрываем ТОЛЬКО если пользователь "проталкивает" его за верх/низ (то есть хочет скроллить страницу)
+    if (startedInsideTooltip && tip) {
+      const atTop = tip.scrollTop <= 0;
+      const atBottom = tip.scrollTop + tip.clientHeight >= tip.scrollHeight - 1;
+
+      // dy > 0: палец идёт вниз (контент должен идти вверх)
+      // dy < 0: палец идёт вверх (контент должен идти вниз)
+      const threshold = 8; // чтобы не закрывать от микродвижений
+
+      if ((atTop && dy > threshold) || (atBottom && dy < -threshold)) {
+        closeAll();
+      }
+    }
   }, { passive: true });
 
-  // Fallback для браузеров без pointer events
-  document.addEventListener('touchstart', startGesture, { passive: true });
-  document.addEventListener('touchmove', moveGesture, { passive: true });
-
+  // ===== Открытие/закрытие по клику/клавишам =====
   markers.forEach(m => {
     m.addEventListener('click', (e) => {
       e.stopPropagation();
       const willOpen = !m.classList.contains('is-open');
-      closeAll();
-      if (willOpen) m.classList.add('is-open');
+      if (willOpen) openOne(m);
+      else closeAll();
     });
 
     m.addEventListener('keydown', (e) => {
       if (e.key === 'Enter' || e.key === ' ') {
         e.preventDefault();
         const willOpen = !m.classList.contains('is-open');
-        closeAll();
-        if (willOpen) m.classList.add('is-open');
+        if (willOpen) openOne(m);
+        else closeAll();
       }
       if (e.key === 'Escape') {
-        m.classList.remove('is-open');
-        m.blur();
+        closeAll();
       }
     });
   });
