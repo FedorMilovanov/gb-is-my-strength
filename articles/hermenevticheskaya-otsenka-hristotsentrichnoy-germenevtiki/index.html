@@ -244,19 +244,28 @@ blockquote{
   position: absolute;
   left: 0;
   bottom: 130%;
+
   min-width: 260px;
   max-width: 420px;
+
   padding: 14px 16px;
   border-radius: 6px;
+
   background: var(--tooltip-bg);
   color: var(--tooltip-text);
-  font-size: 14px;
+
+  font-size: 13.5px;
   line-height: 1.55;
+  font-weight: 400;   /* тонкий обычный текст */
+
+  letter-spacing: 0.1px;
+
   opacity: 0;
   pointer-events: none;
   transform: translateY(6px);
   transition: all .18s ease;
-  box-shadow: 0 12px 28px rgba(0,0,0,.25);
+
+  box-shadow: 0 10px 24px rgba(0,0,0,.22);
   z-index: 1000;
 }
 
