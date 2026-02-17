@@ -514,70 +514,92 @@
   </main>
 
   <script>
-  (function () {
-    const markers = Array.from(document.querySelectorAll('.fn-marker'));
+(function () {
+  const markers = Array.from(document.querySelectorAll('.fn-marker'));
 
-    // делаем маркеры фокусируемыми/доступными без правки HTML
-    markers.forEach((m) => {
-      if (!m.hasAttribute('tabindex')) m.setAttribute('tabindex', '0');
-      if (!m.hasAttribute('role')) m.setAttribute('role', 'button');
+  markers.forEach((m) => {
+    if (!m.hasAttribute('tabindex')) m.setAttribute('tabindex', '0');
+    if (!m.hasAttribute('role')) m.setAttribute('role', 'button');
 
-      const num = (m.childNodes[0] && m.childNodes[0].textContent || '').trim();
-      if (num && !m.hasAttribute('aria-label')) m.setAttribute('aria-label', 'Сноска ' + num);
+    const num = (m.childNodes[0] && m.childNodes[0].textContent || '').trim();
+    if (num && !m.hasAttribute('aria-label')) m.setAttribute('aria-label', 'Сноска ' + num);
 
-      const tip = m.querySelector('.tooltip');
-      if (tip && !tip.hasAttribute('role')) tip.setAttribute('role', 'tooltip');
-    });
+    const tip = m.querySelector('.tooltip');
+    if (tip && !tip.hasAttribute('role')) tip.setAttribute('role', 'tooltip');
+  });
 
-    // убираем пробелы прямо ПЕРЕД маркером (justify может растягивать их в "дырки")
-    markers.forEach((m) => {
-      const prev = m.previousSibling;
-      if (prev && prev.nodeType === Node.TEXT_NODE) {
-        prev.textContent = prev.textContent.replace(/\s+$/, '');
-      }
-    });
-
-   function closeAll(except = null){
-  markers.forEach(m => {
-    if (m !== except) {
-      m.classList.remove('is-open');
-      if (document.activeElement === m) m.blur(); // снимаем фокус
+  // убираем пробелы прямо перед маркером (justify может растягивать их в "дырки")
+  markers.forEach((m) => {
+    const prev = m.previousSibling;
+    if (prev && prev.nodeType === Node.TEXT_NODE) {
+      prev.textContent = prev.textContent.replace(/\s+$/, '');
     }
   });
-}
 
-    // закрывать при прокрутке/ресайзе/смене ориентации
-    window.addEventListener('scroll', () => closeAll(), { passive: true });
-    window.addEventListener('resize', () => closeAll(), { passive: true });
-    window.addEventListener('orientationchange', () => closeAll(), { passive: true });
-
+  function closeAll(except = null){
     markers.forEach(m => {
-      m.addEventListener('click', (e) => {
-        e.stopPropagation();
+      if (m !== except) {
+        m.classList.remove('is-open');
+        if (document.activeElement === m) m.blur(); // снимаем фокус
+      }
+    });
+  }
+
+  // Закрывать при реальной прокрутке окна
+  window.addEventListener('scroll', () => closeAll(), { passive: true });
+  window.addEventListener('resize', () => closeAll(), { passive: true });
+  window.addEventListener('orientationchange', () => closeAll(), { passive: true });
+
+  // Закрывать при "жесте прокрутки" (самое важное для телефона)
+  let gestureStartedOutside = false;
+
+  function startGesture(e){
+    gestureStartedOutside = !e.target.closest('.fn-marker');
+  }
+  function moveGesture(){
+    if (gestureStartedOutside) closeAll();
+  }
+
+  // Pointer Events (Chrome/Android обычно есть)
+  document.addEventListener('pointerdown', (e) => {
+    if (e.pointerType === 'touch') startGesture(e);
+  }, { passive: true });
+  document.addEventListener('pointermove', (e) => {
+    if (e.pointerType === 'touch') moveGesture();
+  }, { passive: true });
+
+  // Fallback для браузеров без pointer events
+  document.addEventListener('touchstart', startGesture, { passive: true });
+  document.addEventListener('touchmove', moveGesture, { passive: true });
+
+  markers.forEach(m => {
+    m.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const willOpen = !m.classList.contains('is-open');
+      closeAll();
+      if (willOpen) m.classList.add('is-open');
+    });
+
+    m.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault();
         const willOpen = !m.classList.contains('is-open');
         closeAll();
         if (willOpen) m.classList.add('is-open');
-      });
-
-      m.addEventListener('keydown', (e) => {
-        if (e.key === 'Enter' || e.key === ' ') {
-          e.preventDefault();
-          const willOpen = !m.classList.contains('is-open');
-          closeAll();
-          if (willOpen) m.classList.add('is-open');
-        }
-        if (e.key === 'Escape') {
-          m.classList.remove('is-open');
-          m.blur();
-        }
-      });
+      }
+      if (e.key === 'Escape') {
+        m.classList.remove('is-open');
+        m.blur();
+      }
     });
+  });
 
-    document.addEventListener('click', () => closeAll());
-    document.addEventListener('keydown', (e) => {
-      if (e.key === 'Escape') closeAll();
-    });
-  })();
-  </script>
+  // Закрытие по тапу вне сноски
+  document.addEventListener('click', () => closeAll());
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') closeAll();
+  });
+})();
+</script>
 </body>
 </html>
