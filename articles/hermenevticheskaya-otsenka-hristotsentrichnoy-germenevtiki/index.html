@@ -287,7 +287,22 @@
   text-indent: 0 !important;
   margin: 8px 0 !important;
 }
-    
+    /* ===== FIX СНОСКИ: убрать красную строку и большие отступы ===== */
+
+.fn-marker .tooltip,
+.fn-marker .tooltip p,
+.fn-marker .tooltip div,
+.fn-marker .tooltip span {
+  text-indent: 0 !important;
+  margin-left: 0 !important;
+  padding-left: 0 !important;
+  text-align: left !important;
+  text-align-last: left !important;
+}
+
+.fn-marker .tooltip p {
+  margin: 0 0 8px 0 !important;
+}
   </style>
 </head>
 
