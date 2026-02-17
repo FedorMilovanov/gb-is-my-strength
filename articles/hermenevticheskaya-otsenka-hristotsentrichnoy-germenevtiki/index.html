@@ -485,91 +485,80 @@ html.dark .switch::after{
 
 <script>
 (function () {
-  const markers = document.querySelectorAll('.fn-marker');
-  let activeTooltip = null; // Храним ссылку на открытую сноску
 
-  // 1. Убираем пробелы в HTML перед сносками (важно для justify)
+  const markers = document.querySelectorAll('.fn-marker');
+  let activeMarker = null;
+
+  /* Удаление пробелов перед сноской */
   markers.forEach((m) => {
     const prev = m.previousSibling;
     if (prev && prev.nodeType === Node.TEXT_NODE) {
-      // Удаляем пробелы в конце текстового узла перед сноской
       prev.textContent = prev.textContent.replace(/\s+$/, '');
     }
   });
 
-  // 2. Функция закрытия всех тултипов
   function closeAll() {
-    if (activeTooltip) {
-      activeTooltip.classList.remove('is-open');
-      activeTooltip = null;
+    if (activeMarker) {
+      activeMarker.classList.remove('is-open');
+      activeMarker = null;
     }
   }
-// Закрывать при прокрутке
-window.addEventListener('scroll', closeAll, { passive: true });
-window.addEventListener('resize', closeAll, { passive: true });
-window.addEventListener('orientationchange', closeAll, { passive: true });
-  
-  // 3. Обработчик клика на документ (делегирование)
-  document.addEventListener('click', function(e) {
-    const marker = e.target.closest('.fn-marker');
-    
-    // Если кликнули по маркеру сноски
-    if (marker) {
-        e.preventDefault(); // Чтобы не скроллило, если это ссылка
-        e.stopPropagation(); // Останавливаем всплытие, чтобы document.click не сработал сразу же
 
-        // Если эта сноска уже открыта — закрываем её
-        if (marker.classList.contains('is-open')) {
-            closeAll();
-        } else {
-            // Иначе закрываем старую и открываем новую
-            closeAll();
-            marker.classList.add('is-open');
-            activeTooltip = marker;
-        }
-        return;
-    } 
+  /* Клик по маркеру */
+  markers.forEach(marker => {
+    marker.addEventListener('click', function(e){
+      e.preventDefault();
+      e.stopPropagation();
 
-    // Если кликнули ВНУТРИ открытого тултипа — ничего не делаем (даем выделить текст)
-    if (activeTooltip && e.target.closest('.tooltip')) {
-        return;
-    }
-
-    // Если кликнули в любое другое место — закрываем тултип
-    closeAll();
+      if (activeMarker === marker) {
+        closeAll();
+      } else {
+        closeAll();
+        marker.classList.add('is-open');
+        activeMarker = marker;
+      }
+    });
   });
 
-  // 4. Закрытие по Esc
-  document.addEventListener('keydown', (e) => {
+  /* Закрытие при клике вне */
+  document.addEventListener('click', function(e){
+    if (!e.target.closest('.fn-marker')) {
+      closeAll();
+    }
+  });
+
+  /* Закрытие при прокрутке */
+  window.addEventListener('scroll', closeAll, { passive: true });
+  window.addEventListener('resize', closeAll, { passive: true });
+  window.addEventListener('orientationchange', closeAll, { passive: true });
+
+  /* Закрытие по Esc */
+  document.addEventListener('keydown', function(e){
     if (e.key === 'Escape') closeAll();
   });
 
-  // 5. Закрытие при скролле (опционально, можно убрать если раздражает)
-  window.addEventListener('scroll', closeAll, { passive: true });
+  /* ===== THEME SWITCH ===== */
 
-  /* ===== JOURNAL THEME SWITCH ===== */
+  const themeToggle = document.getElementById('themeToggle');
+  const htmlEl = document.documentElement;
 
-const themeToggle = document.getElementById('themeToggle');
-const htmlEl = document.documentElement;
+  const savedTheme = localStorage.getItem('theme');
 
-// Загрузка сохранённой темы
-const savedTheme = localStorage.getItem('theme');
-
-if (savedTheme === 'dark') {
-  htmlEl.classList.add('dark');
-  themeToggle.checked = true;
-}
-
-// Клик
-themeToggle.addEventListener('change', () => {
-  if (themeToggle.checked) {
+  if (savedTheme === 'dark') {
     htmlEl.classList.add('dark');
-    localStorage.setItem('theme', 'dark');
-  } else {
-    htmlEl.classList.remove('dark');
-    localStorage.setItem('theme', 'light');
+    themeToggle.checked = true;
   }
-});
+
+  themeToggle.addEventListener('change', function(){
+    if (themeToggle.checked) {
+      htmlEl.classList.add('dark');
+      localStorage.setItem('theme', 'dark');
+    } else {
+      htmlEl.classList.remove('dark');
+      localStorage.setItem('theme', 'light');
+    }
+  });
+
 })();
 </script>
 </body>
