@@ -276,10 +276,10 @@ blockquote{
 .tooltip{
   position: absolute;
   bottom: 130%;
-  left: 0;
+  left: 50%;
+  transform: translateX(-50%) translateY(6px);
 
-  width: 340px;
-  max-width: 90vw;
+  width: min(340px, 90vw);
 
   padding: 14px 18px;
   border-radius: 6px;
@@ -295,11 +295,16 @@ blockquote{
 
   opacity: 0;
   pointer-events: none;
-  transform: translateY(6px);
   transition: opacity .18s ease, transform .18s ease;
 
   box-shadow: 0 10px 24px rgba(0,0,0,.22);
   z-index: 1000;
+}
+
+.fn-marker.is-open .tooltip{
+  opacity: 1;
+  pointer-events: auto;
+  transform: translateX(-50%) translateY(0);
 }
 
 .fn-marker.is-open .tooltip{
@@ -645,8 +650,6 @@ markers.forEach(marker => {
     e.preventDefault();
     e.stopPropagation();
 
-    const tooltip = marker.querySelector('.tooltip');
-
     if (activeMarker === marker) {
       closeAll();
       return;
@@ -655,35 +658,9 @@ markers.forEach(marker => {
     closeAll();
     marker.classList.add('is-open');
     activeMarker = marker;
-
-    // --- Полу-умная коррекция позиции ---
-    requestAnimationFrame(() => {
-      const rect = tooltip.getBoundingClientRect();
-      const padding = 12;
-
-      // Если выходит вправо
-      if (rect.right > window.innerWidth - padding) {
-        tooltip.style.left = 'auto';
-        tooltip.style.right = '0';
-      }
-
-      // Если выходит влево
-      if (rect.left < padding) {
-        tooltip.style.left = '0';
-        tooltip.style.right = 'auto';
-      }
-
-      // Если слишком близко к верху
-      if (rect.top < padding) {
-        tooltip.style.bottom = 'auto';
-        tooltip.style.top = '130%';
-      }
-    });
-
   });
 
 });
-
 
   // Закрытие при клике вне
   document.addEventListener('click', function(e){
