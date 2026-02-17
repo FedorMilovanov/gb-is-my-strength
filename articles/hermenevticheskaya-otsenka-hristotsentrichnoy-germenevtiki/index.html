@@ -276,7 +276,7 @@ blockquote{
 }
 
 /* =========================
-   THEME TOGGLE (Journal aligned)
+   THEME TOGGLE (Balanced journal position)
 ========================= */
 
 .theme-toggle{
@@ -293,15 +293,17 @@ blockquote{
   cursor: pointer;
 }
 
-/* --- Desktop positioning (привязка к колонке) --- */
+/* --- Desktop --- */
 @media (min-width: 900px){
   .theme-toggle{
-    top: 110px;
-    right: calc((100vw - 820px) / 2 - 40px);
+    top: 60px;
+
+    /* расстояние: немного от угла, но не в углу */
+    right: calc((100vw - 820px) / 2 * 0.6);
   }
 }
 
-/* --- Mobile positioning (оставляем аккуратно в углу) --- */
+/* --- Mobile --- */
 @media (max-width: 899px){
   .theme-toggle{
     top: 22px;
