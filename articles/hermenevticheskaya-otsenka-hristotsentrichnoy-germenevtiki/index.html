@@ -222,6 +222,45 @@
       aside.notice{ border-color: #999; }
       .skip-link{ display:none; }
     }
+    /* --- FIX: tooltip не должен раздвигать страницу по ширине --- */
+html, body { overflow-x: hidden; } /* страховка */
+
+/* чтобы позиционирование и размеры были предсказуемыми */
+.fn-marker { display: inline-block; }
+
+/* ограничиваем ширину подсказки относительно экрана */
+.fn-marker .tooltip{
+  max-width: min(420px, calc(100vw - 32px));
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}
+
+/* На тач-устройствах делаем подсказку fixed снизу (как “нижний лист”) */
+@media (hover: none) and (pointer: coarse) {
+  .fn-marker .tooltip{
+    position: fixed;
+    left: 16px;
+    right: 16px;
+    bottom: 16px;
+    transform: none;
+
+    width: auto;
+    max-width: none;
+
+    max-height: 45vh;      /* чтобы не закрывала весь экран */
+    overflow: auto;        /* если сноска длинная */
+    -webkit-overflow-scrolling: touch;
+  }
+}
+
+/* (Опционально, но полезно) — чтобы сноска открывалась не только по hover,
+   а также по фокусу клавиатурой/тапом, если сделаете маркер фокусируемым */
+.fn-marker:focus .tooltip,
+.fn-marker:focus-within .tooltip{
+  visibility: visible;
+  opacity: 1;
+  pointer-events: auto;
+}
   </style>
 </head>
 
