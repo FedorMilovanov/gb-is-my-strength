@@ -24,12 +24,17 @@ h1{
   margin: 0 0 15px;
 }  
   
-h2{
-  margin-top: 32px;
+h2{ 
+  margin-top: 34px;
+  font-size: 22px; /* Добавил размер для аккуратности */
+  text-align: center;
 }
 
-h2{ margin-top: 34px; }
-h3{ margin-top: 28px; }
+h3{ 
+  margin-top: 28px; 
+  font-size: 1.15em;
+  font-style: italic;
+}
 
 blockquote{
   margin: 18px 0 18px 24px;
@@ -38,11 +43,6 @@ blockquote{
   color: #444;
   font-style: italic;
 }
-  
-@media (max-width: 600px){
-body{ padding: 24px 16px; }
-.fn-marker .tooltip{ width: 90vw; }
-} 
   
 .msjline{
   text-align: center;
@@ -66,6 +66,7 @@ body{ padding: 24px 16px; }
   padding: 18px;
   border-left: 4px solid #999;
   margin-bottom: 50px;
+  overflow-wrap: anywhere; /* Чтобы длинные ссылки не ломали мобильный вид */
 }
 
 p {
@@ -73,7 +74,6 @@ p {
   text-indent: 2em;
   margin-bottom: 18px;
 }
-  
 
 /* Разделитель */
 .divider {
@@ -82,50 +82,81 @@ p {
   color: #333;
 }
 
-/* Всплывающие сноски */
-.fn-marker{
-  position: relative;
-  color:#c0392b;
-  font-weight:700;
-  font-size:.75em;
-  vertical-align: super;
-  cursor: pointer;
-  line-height: 0;
+/* Всплывающие сноски (исправленные) */
+.fn-marker {
+    position: relative;
+    color: #c0392b;
+    font-weight: bold;
+    font-size: 0.75em;
+    vertical-align: super;
+    cursor: pointer;
+    line-height: 0;
+    border-bottom: 1px dotted #c0392b;
 }
 
-.fn-marker .tooltip{
-  visibility: hidden;
-  width: 420px;
-  max-width: min(420px, 90vw);
-  background:#333;
-  color:#fff;
-  padding:10px 12px;
-  border-radius:6px;
-  position:absolute;
-  z-index:100;
-  left:50%;
-  transform:translateX(-50%);
-  bottom: 24px;
-  opacity:0;
-  transition:opacity .2s;
-  font-size:14px;
-  line-height:1.35;
-  text-indent:0;
-  pointer-events:none;
-  box-shadow:0 8px 18px rgba(0,0,0,.25);
+.fn-marker .tooltip {
+    visibility: hidden;
+    opacity: 0;
+    position: absolute;
+    bottom: 30px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 1000;
+    width: 300px;
+    max-width: 90vw;
+    background: #333;
+    color: #fff;
+    padding: 12px 15px;
+    border-radius: 6px;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 14px;
+    font-weight: normal;
+    line-height: 1.4;
+    text-align: left;
+    text-indent: 0;
+    transition: opacity 0.3s;
+    pointer-events: none;
 }
 
-.fn-marker:hover .tooltip{
-  visibility: visible;
-  opacity: 1;
+.fn-marker .tooltip::after {
+    content: "";
+    position: absolute;
+    top: 100%;
+    left: 50%;
+    margin-left: -5px;
+    border-width: 5px;
+    border-style: solid;
+    border-color: #333 transparent transparent transparent;
+}
+
+.fn-marker:hover .tooltip {
+    visibility: visible;
+    opacity: 1;
+}
+
+/* На мобильных сдвигаем, чтобы не улетало за экран */
+@media (max-width: 500px) {
+    body{ padding: 24px 16px; }
+    .fn-marker .tooltip {
+        width: 260px;
+        left: auto;
+        right: -20px;
+        transform: none;
+    }
+    .fn-marker .tooltip::after {
+        left: auto;
+        right: 24px;
+    }
 }
 </style>
 
 </head>
 <body>
 
-<div class="meta">
-Абнер Чау • The Master’s Seminary Journal (TMSJ), т. 27, № 2 (Fall 2016) • с. 113–139
+<!-- Кнопка Назад (опционально, но удобно для навигации) -->
+<div style="margin-bottom: 30px; font-family: sans-serif;">
+    <a href="../../index.html" style="text-decoration: none; color: #0056b3;">← На главную</a>
 </div>
 
 <div class="notice">
@@ -138,8 +169,6 @@ p {
 </a><br>
 Мой email: <a href="mailto:viktorcoy2012@gmail.com">viktorcoy2012@gmail.com</a>
 </div>
-
-
 
 <p class="msjline">
   MSJ 27/2 (Fall 2016) 113–139 (Статья взята из The Master’s Seminary Journal (TMSJ), т. 27, № 2)
