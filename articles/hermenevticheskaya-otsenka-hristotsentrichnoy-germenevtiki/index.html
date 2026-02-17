@@ -254,30 +254,47 @@ blockquote{
 }
 
 /* =========================
-   THEME TOGGLE (Minimal)
+   THEME TOGGLE (Journal aligned)
 ========================= */
 
 .theme-toggle{
   position: fixed;
-  top: 24px;
-  right: 24px;
   z-index: 10000;
-  width: 28px;
-  height: 28px;
+
+  width: 26px;
+  height: 26px;
+
   background: none;
   border: none;
   padding: 0;
+
   cursor: pointer;
 }
 
+/* --- Desktop positioning (привязка к колонке) --- */
+@media (min-width: 900px){
+  .theme-toggle{
+    top: 110px;
+    right: calc((100vw - 820px) / 2 - 40px);
+  }
+}
+
+/* --- Mobile positioning (оставляем аккуратно в углу) --- */
+@media (max-width: 899px){
+  .theme-toggle{
+    top: 22px;
+    right: 22px;
+  }
+}
+
 .theme-toggle svg{
-  width: 22px;
-  height: 22px;
+  width: 20px;
+  height: 20px;
   fill: none;
   stroke: currentColor;
   color: var(--text);
   position: absolute;
-  transition: opacity .25s ease, transform .15s ease;
+  transition: opacity .25s ease, transform .15s ease, color .25s ease;
 }
 
 .theme-toggle:hover svg{
@@ -296,7 +313,6 @@ html.dark .icon-sun{
   opacity: 1;
   color: #f5c542;
 }
-
 </style>
 </head>
 
