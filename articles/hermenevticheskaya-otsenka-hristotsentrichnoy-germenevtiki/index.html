@@ -491,7 +491,7 @@ html.dark .switch::after{
   const markers = document.querySelectorAll('.fn-marker');
   let activeMarker = null;
 
-  /* Удаление пробелов перед сноской */
+  // Удаляем пробелы перед сноской (для justify)
   markers.forEach((m) => {
     const prev = m.previousSibling;
     if (prev && prev.nodeType === Node.TEXT_NODE) {
@@ -506,7 +506,7 @@ html.dark .switch::after{
     }
   }
 
-  /* Клик по маркеру */
+  // Открытие по клику
   markers.forEach(marker => {
     marker.addEventListener('click', function(e){
       e.preventDefault();
@@ -522,19 +522,22 @@ html.dark .switch::after{
     });
   });
 
-  /* Закрытие при клике вне */
+  // Закрытие при клике вне
   document.addEventListener('click', function(e){
     if (!e.target.closest('.fn-marker')) {
       closeAll();
     }
   });
 
-  /* Закрытие при прокрутке */
+  // ✅ Закрытие при ЛЮБОМ движении страницы
   window.addEventListener('scroll', closeAll, { passive: true });
+  window.addEventListener('wheel', closeAll, { passive: true });
+  window.addEventListener('touchstart', closeAll, { passive: true });
+  window.addEventListener('touchmove', closeAll, { passive: true });
   window.addEventListener('resize', closeAll, { passive: true });
   window.addEventListener('orientationchange', closeAll, { passive: true });
 
-  /* Закрытие по Esc */
+  // Закрытие по Esc
   document.addEventListener('keydown', function(e){
     if (e.key === 'Escape') closeAll();
   });
