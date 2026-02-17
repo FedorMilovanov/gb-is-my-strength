@@ -166,38 +166,40 @@
     }
     blockquote p{ margin: 0; text-indent: 0; }
 
-    /* ========= Tooltip footnotes ========= */
-    .fn-marker{
-      position: relative;
-      display: inline-block;
-      color: #c0392b;
-      font-weight: 700;
-      font-size: .78em;
-      vertical-align: super;
-      line-height: 0;
-      cursor: pointer;
-      user-select: none;
-    }
+/* ========= Tooltip footnotes (UPDATED CLEAN VERSION) ========= */
 
-    .fn-marker:focus-visible{
-      outline: 2px solid currentColor;
-      outline-offset: 2px;
-      border-radius: 3px;
-    }
+.fn-marker{
+  position: relative;
+  display: inline-block;
+  color: #c0392b;
+  font-weight: 700;
+  font-size: .78em;
+  vertical-align: super;
+  line-height: 0;
+  cursor: pointer;
+  user-select: none;
+}
 
-    .fn-marker .tooltip{
+.fn-marker:focus-visible{
+  outline: 2px solid currentColor;
+  outline-offset: 2px;
+  border-radius: 3px;
+}
+
+/* === Tooltip === */
+.fn-marker .tooltip{
   visibility: hidden;
   opacity: 0;
   transition: opacity .15s ease;
 
   position: absolute;
   z-index: 1000;
-  left: 0;              /* было 50% */
-  transform: none;      /* убрать translate */
+
+  left: 0;
   bottom: 24px;
 
-  width: max-content;   /* автоширина по тексту */
-  min-width: 280px;
+  width: max-content;
+  min-width: 260px;
   max-width: 420px;
 
   padding: 10px 12px;
@@ -207,53 +209,48 @@
   color: var(--tooltip-text);
   font-size: 14px;
   line-height: 1.35;
-  text-indent: 0;
 
   overflow-wrap: anywhere;
   word-break: break-word;
 
   box-shadow: 0 8px 18px rgba(0,0,0,.25);
-  user-select: text;
 
   text-align: left;
   text-align-last: left;
+  user-select: text;
 }
 
-    @media (hover: hover) and (pointer: fine){
-      .fn-marker:hover .tooltip{
-        visibility: visible;
-        opacity: 1;
-        pointer-events: auto;
-      }
-    }
+/* Открытие по hover (десктоп) */
+@media (hover: hover) and (pointer: fine){
+  .fn-marker:hover .tooltip{
+    visibility: visible;
+    opacity: 1;
+  }
+}
 
-    /* Открытие по тапу/клику (JS) */
+/* Открытие по клику (JS) */
 .fn-marker.is-open .tooltip{
   visibility: visible;
   opacity: 1;
-  pointer-events: auto;
 }
 
-/* Открытие по фокусу — только на десктопе (клавиатура) */
+/* Фокус с клавиатуры */
 @media (hover: hover) and (pointer: fine){
   .fn-marker:focus-within .tooltip{
     visibility: visible;
     opacity: 1;
-    pointer-events: auto;
   }
 }
 
-    /* СБРОС влияния .container на цифры-сноски (важно!) */
-    .fn-marker.container{
-      padding: 0 !important;
-      margin: 0 !important;
-      width: auto !important;
-      max-width: none !important;
-      display: inline-block !important;
-      float: none !important;
-    }
-
- /* Телефон: tooltip как панель снизу (не вылезает за края) */
+/* Сброс лишнего влияния container */
+.fn-marker.container{
+  padding: 0 !important;
+  margin: 0 !important;
+  width: auto !important;
+  max-width: none !important;
+  display: inline-block !important;
+  float: none !important;
+}
 @media (max-width: 760px){
   .fn-marker .tooltip{
     position: fixed !important;
