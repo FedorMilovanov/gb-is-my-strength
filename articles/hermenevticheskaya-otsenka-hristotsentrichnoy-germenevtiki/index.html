@@ -520,7 +520,12 @@ html.dark .switch::after{
       activeTooltip = null;
     }
   }
-
+/* Закрытие при прокрутке */
+window.addEventListener('scroll', () => closeAll(), { passive: true });
+window.addEventListener('resize', () => closeAll(), { passive: true });
+window.addEventListener('orientationchange', () => closeAll(), { passive: true });
+document.addEventListener('touchmove', () => closeAll(), { passive: true });
+  
   // 3. Обработчик клика на документ (делегирование)
   document.addEventListener('click', function(e) {
     const marker = e.target.closest('.fn-marker');
