@@ -93,24 +93,18 @@
     }
     aside.notice p{ margin: 8px 0; text-indent: 0; }
 
-    /* ========= СНОСКИ (ИСПРАВЛЕННОЕ) ========= */
-    
-    /* Сама цифра сноски в тексте */
-    .fn-marker {
-        position: relative;
-        display: inline-block; /* Важно для отступов */
-        color: #c0392b;
-        font-weight: 700;
-        font-size: .78em;
-        vertical-align: super;
-        line-height: 0;
-        cursor: pointer;
-        user-select: none;
-        
-        /* Хак против больших пробелов при выравнивании justify */
-        margin-left: -0.1em; 
-        word-spacing: -0.1em;
-    }
+ .fn-marker{
+  position: relative;
+  display: inline;
+  margin-left: 2px;
+  color: #c0392b;
+  font-weight: 700;
+  font-size: .78em;
+  vertical-align: super;
+  line-height: 0;
+  cursor: pointer;
+  user-select: none;
+}
 
     /* Тултип (всплывающее окно) */
     .fn-marker .tooltip {
