@@ -252,25 +252,23 @@
       float: none !important;
     }
 
-    /* Телефон: tooltip как панель снизу (не вылезает за края) */
-    @media (max-width: 760px){
-      .fn-marker .tooltip{
-        position: fixed !important;
-        left: calc(16px) !important;
-        right: calc(16px) !important;
-        bottom: calc(16px) !important;
-        top: auto !important;
+ /* Телефон: tooltip как панель снизу (не вылезает за края) */
+@media (max-width: 760px){
+  .fn-marker .tooltip{
+    position: fixed !important;
+    left: 16px !important;
+    right: 16px !important;
+    bottom: 16px !important;
+    transform: none !important;
 
-        transform: none !important;
+    width: auto !important;
+    max-width: none !important;
 
-        width: auto !important;
-        max-width: none !important;
-
-        max-height: 45vh;
-        overflow: auto;
-        -webkit-overflow-scrolling: touch;
-      }
-    }
+    max-height: 45vh;
+    overflow: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+}
 
     @media print{
       body{ background: #fff; color: #000; }
