@@ -150,6 +150,28 @@ a{
 a:hover{
   text-decoration: underline;
 }
+   /* =========================
+   SKIP LINK (Accessibility)
+========================= */
+
+.skip-link{
+  position: absolute;
+  top: -40px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: var(--text);
+  color: var(--bg);
+  padding: 8px 14px;
+  font-size: 14px;
+  text-decoration: none;
+  border-radius: 4px;
+  transition: top .2s ease;
+  z-index: 10001;
+}
+
+.skip-link:focus{
+  top: 20px;
+}
 
 /* =========================
    NOTICE BLOCK
