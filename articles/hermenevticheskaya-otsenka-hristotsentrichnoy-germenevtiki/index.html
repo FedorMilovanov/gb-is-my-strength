@@ -374,6 +374,22 @@ html.dark .icon-sun{
   opacity: 1;
   color: #f5c542;
 }
+   /* ===== MOBILE FIX FOR TOOLTIP ===== */
+@media (max-width: 768px){
+
+  .tooltip{
+    left: 50%;
+    right: auto;
+    transform: translateX(-50%) translateY(6px);
+    width: 92vw;
+    max-width: 92vw;
+  }
+
+  .fn-marker.is-open .tooltip{
+    transform: translateX(-50%) translateY(0);
+  }
+
+}
 </style>
 </head>
 
