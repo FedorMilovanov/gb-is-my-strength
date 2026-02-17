@@ -307,12 +307,13 @@ blockquote{
   transform: translateX(-50%) translateY(0);
 }
 
-.fn-marker.is-open .tooltip{
-  opacity: 1;
-  pointer-events: auto;
-  transform: translateY(0);
+@media (hover: hover) {
+  .fn-marker:hover .tooltip{
+    opacity: 1;
+    pointer-events: auto;
+    transform: translateX(-50%) translateY(0);
+  }
 }
-
 /* =========================
    THEME TOGGLE (Balanced journal position)
 ========================= */
