@@ -270,6 +270,7 @@ blockquote{
 .tooltip{
   position: absolute;
   bottom: 130%;
+  left: 0;
 
   width: 340px;
   max-width: 90vw;
@@ -285,37 +286,22 @@ blockquote{
   font-weight: 400;
 
   text-align: left;
-  hyphens: none;
 
   opacity: 0;
   pointer-events: none;
   transform: translateY(6px);
-  transition: all .18s ease;
+  transition: opacity .18s ease, transform .18s ease;
 
   box-shadow: 0 10px 24px rgba(0,0,0,.22);
   z-index: 1000;
 }
 
-/* --- Desktop --- */
-@media (min-width: 768px){
-  .tooltip{
-    left: 0;
-  }
+.fn-marker.is-open .tooltip{
+  opacity: 1;
+  pointer-events: auto;
+  transform: translateY(0);
 }
 
-/* --- Mobile --- */
-@media (max-width: 767px){
-  .tooltip{
-    left: 50%;
-    transform: translate(-50%, 6px);
-    width: 90vw;
-  }
-
-  .fn-marker.is-open .tooltip{
-    transform: translate(-50%, 0);
-  }
-}
-   
 /* =========================
    THEME TOGGLE (Balanced journal position)
 ========================= */
@@ -632,28 +618,61 @@ html.dark .icon-sun{
     }
   });
 
-  function closeAll() {
-    if (activeMarker) {
-      activeMarker.classList.remove('is-open');
-      activeMarker = null;
-    }
+ function closeAll() {
+  if (activeMarker) {
+    const tooltip = activeMarker.querySelector('.tooltip');
+
+    tooltip.style.left = '';
+    tooltip.style.right = '';
+    tooltip.style.top = '';
+    tooltip.style.bottom = '';
+
+    activeMarker.classList.remove('is-open');
+    activeMarker = null;
   }
+}
 
   // Открытие по клику
-  markers.forEach(marker => {
-    marker.addEventListener('click', function(e){
-      e.preventDefault();
-      e.stopPropagation();
+  marker.addEventListener('click', function(e){
+  e.preventDefault();
+  e.stopPropagation();
 
-      if (activeMarker === marker) {
-        closeAll();
-      } else {
-        closeAll();
-        marker.classList.add('is-open');
-        activeMarker = marker;
-      }
-    });
+  const tooltip = marker.querySelector('.tooltip');
+
+  if (activeMarker === marker) {
+    closeAll();
+    return;
+  }
+
+  closeAll();
+  marker.classList.add('is-open');
+  activeMarker = marker;
+
+  // --- Полу-умная коррекция позиции ---
+  requestAnimationFrame(() => {
+    const rect = tooltip.getBoundingClientRect();
+    const padding = 12;
+
+    // Если выходит вправо
+    if (rect.right > window.innerWidth - padding) {
+      tooltip.style.left = 'auto';
+      tooltip.style.right = '0';
+    }
+
+    // Если выходит влево
+    if (rect.left < padding) {
+      tooltip.style.left = '0';
+      tooltip.style.right = 'auto';
+    }
+
+    // Если слишком близко к верху
+    if (rect.top < padding) {
+      tooltip.style.bottom = 'auto';
+      tooltip.style.top = '130%';
+    }
   });
+});
+
 
   // Закрытие при клике вне
   document.addEventListener('click', function(e){
