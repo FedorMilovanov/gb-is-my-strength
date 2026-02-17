@@ -136,11 +136,20 @@
     }
     .fn-marker .tooltip p:last-child { margin-bottom: 0; }
 
-    /* Показ тултипа ТОЛЬКО через JS */
-.fn-marker.is-open .tooltip {
+  /* === Десктоп: открытие по hover === */
+@media (hover: hover) and (pointer: fine){
+  .fn-marker:hover .tooltip{
     visibility: visible;
     opacity: 1;
     pointer-events: auto;
+  }
+}
+
+/* === Клик (мобильный и общий fallback) === */
+.fn-marker.is-open .tooltip{
+  visibility: visible;
+  opacity: 1;
+  pointer-events: auto;
 }
     /* Стрелочка вниз у тултипа (красота) */
     .fn-marker .tooltip::after {
