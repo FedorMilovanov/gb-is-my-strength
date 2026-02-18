@@ -424,6 +424,14 @@ html.dark .icon-sun{
 }
  
 }
+ /* ===== MOBILE: allow scrolling inside long tooltips ===== */
+@media (max-width: 768px){
+  .tooltip{
+    max-height: min(60vh, 420px);
+    overflow: auto;
+    -webkit-overflow-scrolling: touch; /* iOS inertia */
+  }
+}
 </style>
 </head>
 
@@ -713,18 +721,27 @@ markers.forEach(marker => {
 
 });
 
-  // Закрытие при клике вне
   document.addEventListener('click', function(e){
-    if (!e.target.closest('.fn-marker')) {
-      closeAll();
-    }
-  });
+  if (!e.target.closest('.fn-marker') && !e.target.closest('.tooltip')) {
+    closeAll();
+  }
+});
 
   // ✅ Закрытие при ЛЮБОМ движении страницы
   window.addEventListener('scroll', closeAll, { passive: true });
   window.addEventListener('wheel', closeAll, { passive: true });
-  window.addEventListener('touchstart', closeAll, { passive: true });
-  window.addEventListener('touchmove', closeAll, { passive: true });
+ function isInsideTooltip(e){
+  return e.target && (e.target.closest('.tooltip') || e.target.closest('.fn-marker'));
+}
+
+// Закрываем при касании/движении страницы, но НЕ если скроллим внутри tooltip
+window.addEventListener('touchstart', function(e){
+  if (!isInsideTooltip(e)) closeAll();
+}, { passive: true });
+
+window.addEventListener('touchmove', function(e){
+  if (!isInsideTooltip(e)) closeAll();
+}, { passive: true });
   window.addEventListener('resize', closeAll, { passive: true });
   window.addEventListener('orientationchange', closeAll, { passive: true });
 
