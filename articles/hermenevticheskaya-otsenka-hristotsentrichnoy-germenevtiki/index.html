@@ -176,22 +176,27 @@
   @media (max-width: 768px){
     .skip-link{ display: none; }
     .back-to-index{
-      top: 14px;
-      left: auto;
-      right: 14px;
-      width: 36px;
-      height: 36px;
+      top: 18px;
+      left: 16px;
+      width: 26px;
+      height: 26px;
       display: flex;
       align-items: center;
       justify-content: center;
-      background: var(--note-bg);
-      border: 1px solid var(--border);
-      border-radius: 50%;
-      font-size: 18px;
-      color: var(--muted);
+      background: none;
+      border: none;
+      padding: 0;
     }
     .back-to-index .back-label{ display: none; }
     .back-to-index .back-icon{ display: inline; }
+    .back-to-index svg {
+      width: 20px;
+      height: 20px;
+      stroke: var(--text);
+      fill: none;
+      transition: stroke .25s ease, transform .15s ease;
+    }
+    .back-to-index:hover svg { transform: scale(1.08); }
   }
 
   /* =========================
@@ -245,8 +250,19 @@
     color: var(--muted);
     text-decoration: none;
     z-index: 10000;
+    display: flex;
+    align-items: center;
+    gap: 6px;
   }
   .back-to-index:hover{ color: var(--text); }
+  .back-to-index svg{
+    width: 16px; height: 16px;
+    stroke: currentColor;
+    fill: none;
+    stroke-width: 1.8px;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
 
   /* =========================
      DIVIDER
@@ -408,7 +424,15 @@
 </head>
 
 <body>
-<a href="../../" class="back-to-index" aria-label="К оглавлению"><span class="back-icon" style="display:none">☰</span><span class="back-label">← К оглавлению</span></a>
+<a href="../../" class="back-to-index" aria-label="К оглавлению">
+  <span class="back-icon" style="display:none">
+    <svg viewBox="0 0 24 24" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+      <line x1="5" y1="12" x2="19" y2="12"/>
+      <polyline points="11 6 5 12 11 18"/>
+    </svg>
+  </span>
+  <span class="back-label">← К оглавлению</span>
+</a>
 
 <button id="themeToggle" class="theme-toggle" aria-label="Переключить тему">
   <svg class="icon-moon" viewBox="0 0 24 24">
@@ -978,19 +1002,38 @@ if (dataEl){
       a.appendChild(tip);
     }
 
-    // Hover: позиционируем через JS так же, как click
+    // Hover (только для устройств с настоящим hover)
     a.addEventListener('mouseenter', function(){
-      positionTip(a);
-      a.classList.add('is-open');
-      openBible = a;
+      if (window.matchMedia('(hover: hover) and (pointer: fine)').matches) {
+        positionTip(a);
+        a.classList.add('is-open');
+        openBible = a;
+      }
     });
 
     a.addEventListener('mouseleave', function(e){
+      if (!window.matchMedia('(hover: hover) and (pointer: fine)').matches) return;
       const tip = a.querySelector('.btip');
       if (tip && tip.matches(':hover')) return;
-      if (tip && tip.style.overflowY === 'auto') return; // скроллируемый — не закрывать
+      if (tip && tip.style.overflowY === 'auto') return;
       closeBible();
     });
+
+    // Touch: первый тап открывает, второй — закрывает (или переходит по ссылке)
+    a.addEventListener('touchstart', function(e){
+      if (openBible === a){
+        // второй тап — закрываем, ничего не делаем
+        closeBible();
+        e.preventDefault();
+        return;
+      }
+      // первый тап — показываем popup, не переходим
+      e.preventDefault();
+      closeBible();
+      positionTip(a);
+      a.classList.add('is-open');
+      openBible = a;
+    }, { passive: false });
 
     a.addEventListener('click', function(e){
       e.preventDefault();
@@ -1136,17 +1179,34 @@ markers.forEach(marker => {
     activeMarker = marker;
   });
 
-  // Hover
-  marker.addEventListener('mouseenter', function(){
+  // Touch: первый тап открывает, второй — закрывает
+  marker.addEventListener('touchstart', function(e){
+    if (activeMarker === marker){
+      closeFootnotes();
+      e.preventDefault();
+      return;
+    }
+    e.preventDefault();
+    closeFootnotes();
     positionTooltip(marker);
     marker.classList.add('is-open');
     activeMarker = marker;
+  }, { passive: false });
+
+  // Hover (только для устройств с настоящим hover)
+  marker.addEventListener('mouseenter', function(){
+    if (window.matchMedia('(hover: hover) and (pointer: fine)').matches) {
+      positionTooltip(marker);
+      marker.classList.add('is-open');
+      activeMarker = marker;
+    }
   });
 
   marker.addEventListener('mouseleave', function(){
+    if (!window.matchMedia('(hover: hover) and (pointer: fine)').matches) return;
     const tt = marker.querySelector('.tooltip');
     if (tt && tt.matches(':hover')) return;
-    if (tt && tt.style.overflowY === 'auto') return; // скроллируемый — не закрывать
+    if (tt && tt.style.overflowY === 'auto') return;
     closeFootnotes();
   });
 
