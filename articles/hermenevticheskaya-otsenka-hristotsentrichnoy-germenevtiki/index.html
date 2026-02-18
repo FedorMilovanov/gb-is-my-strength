@@ -320,7 +320,7 @@ blockquote{
   transform: translateX(-50%) translateY(0);
 }
 
-@media (hover: hover) {
+@media (hover: hover) and (pointer: fine){
   .fn-marker:hover .tooltip{
     opacity: 1;
     pointer-events: auto;
@@ -401,7 +401,28 @@ html.dark .icon-sun{
   .fn-marker.is-open .tooltip{
     transform: translateX(-50%) translateY(0);
   }
+ 
+ /* ===== MOBILE: tooltip as centered overlay (keeps all existing behavior) ===== */
+@media (max-width: 768px){
+  .tooltip{
+    position: fixed;
+    left: 50%;
+    right: auto;
+    top: auto;
+    bottom: 18px;
 
+    width: min(92vw, 560px);
+    max-width: 92vw;
+
+    transform: translateX(-50%) translateY(6px);
+    z-index: 20000;
+  }
+
+  .fn-marker.is-open .tooltip{
+    transform: translateX(-50%) translateY(0);
+  }
+}
+ 
 }
 </style>
 </head>
