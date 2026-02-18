@@ -1,623 +1,449 @@
 <!doctype html>
 <html lang="ru">
 <head>
- <!-- Open Graph: Publisher Card -->
+  <!-- Open Graph: Publisher Card -->
+  <meta property="og:type" content="article">
+  <meta property="og:title" content="Герменевтическая оценка христоцентричной герменевтики">
+  <meta property="og:description" content="Абнер Чау • The Master’s Seminary Journal (TMSJ), т. 27, № 2 (Fall 2016), 113–139. Перевод академической статьи о христоцентричной герменевтике.">
+  <meta property="og:url" content="https://fedormilovanov.github.io/gb-is-my-strength/articles/hermenevticheskaya-otsenka-hristotsentrichnoy-germenevtiki/">
+  <meta property="og:site_name" content="Господь Бог — Сила Моя">
+  <meta property="og:image" content="https://fedormilovanov.github.io/gb-is-my-strength/images/hermenevtika-preview.jpg">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta name="twitter:card" content="summary_large_image">
 
-<meta property="og:type" content="article">
-<meta property="og:title" content="Герменевтическая оценка христоцентричной герменевтики">
-<meta property="og:description" content="Абнер Чау • The Master’s Seminary Journal (TMSJ), т. 27, № 2 (Fall 2016), 113–139. Перевод академической статьи о христоцентричной герменевтике.">
-<meta property="og:url" content="https://fedormilovanov.github.io/gb-is-my-strength/articles/hermenevticheskaya-otsenka-hristotsentrichnoy-germenevtiki/">
-<meta property="og:site_name" content="Господь Бог — Сила Моя">
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
 
-<meta property="og:image" content="https://fedormilovanov.github.io/gb-is-my-strength/images/hermenevtika-preview.jpg">
-<meta property="og:image:width" content="1200">
-<meta property="og:image:height" content="630">
-
-<meta name="twitter:card" content="summary_large_image">  
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Герменевтическая оценка христоцентричной герменевтики — Господь Бог — Сила Моя</title>
-<meta name="description" content="Абнер Чау. The Master’s Seminary Journal (TMSJ), т. 27, № 2 (Fall 2016), с. 113–139.">
+  <title>Герменевтическая оценка христоцентричной герменевтики — Господь Бог — Сила Моя</title>
+  <meta name="description" content="Абнер Чау. The Master’s Seminary Journal (TMSJ), т. 27, № 2 (Fall 2016), с. 113–139.">
 
 <style>
-   
-   h1, h2, h3, h4 {
-  word-wrap: break-word;
-}
-   
-   html, body {
-  overflow-x: hidden;
-}
+  h1, h2, h3, h4 { word-wrap: break-word; }
+  html, body { overflow-x: hidden; }
 
-/* =========================
-   BASE RESET
-========================= */
+  /* =========================
+     BASE RESET
+  ========================= */
+  *, *::before, *::after { box-sizing: border-box; }
+  body { margin: 0; }
+  img { max-width: 100%; height: auto; }
 
-*, *::before, *::after { box-sizing: border-box; }
-body { margin: 0; }
-img { max-width: 100%; height: auto; }
+  /* =========================
+     COLOR SYSTEM
+  ========================= */
+  :root{
+    --bg: #fdfcf9;
+    --text: #1a1a1a;
+    --muted: #6a6a6a;
+    --link: #1f4ea3;
+    --border: #e5e2dc;
+    --note-bg: #f4f2ed;
+    --tooltip-bg: #2a2a2a;
+    --tooltip-text: #ffffff;
+  }
 
-/* =========================
-   COLOR SYSTEM
-========================= */
+  html.dark{
+    --bg: #111213;
+    --text: #e8e8e8;
+    --muted: #a8a8a8;
+    --link: #8ab4f8;
+    --border: #2a2c2f;
+    --note-bg: #1a1c1f;
+    --tooltip-bg: #2b2e33;
+    --tooltip-text: #ffffff;
+  }
 
-:root{
-  --bg: #fdfcf9;
-  --text: #1a1a1a;
-  --muted: #6a6a6a;
-  --link: #1f4ea3;
-  --border: #e5e2dc;
-  --note-bg: #f4f2ed;
-  --tooltip-bg: #2a2a2a;
-  --tooltip-text: #ffffff;
-}
+  /* =========================
+     BODY TYPOGRAPHY
+  ========================= */
+  body{
+    background: var(--bg);
+    color: var(--text);
+    font-family: Georgia, "Times New Roman", serif;
+    font-size: 18px;
+    line-height: 1.78;
+    transition: background .25s ease, color .25s ease;
+    text-rendering: optimizeLegibility;
+  }
 
-html.dark{
-  --bg: #111213;
-  --text: #e8e8e8;
-  --muted: #a8a8a8;
-  --link: #8ab4f8;
-  --border: #2a2c2f;
-  --note-bg: #1a1c1f;
-  --tooltip-bg: #2b2e33;
-  --tooltip-text: #ffffff;
-}
+  /* =========================
+     MAIN COLUMN (Journal width)
+  ========================= */
+  main{
+    width: min(820px, 92vw);
+    margin: 0 auto;
+    padding: clamp(48px, 6vw, 100px) 24px;
+  }
 
-/* =========================
-   BODY TYPOGRAPHY
-========================= */
+  /* =========================
+     HEADER (Journal style)
+  ========================= */
+  .article-header{
+    text-align: center;
+    margin-bottom: 70px;
+    padding-bottom: 36px;
+    border-bottom: 1px solid var(--border);
+  }
 
-body{
-  background: var(--bg);
-  color: var(--text);
-  font-family: Georgia, "Times New Roman", serif;
-  font-size: 18px;
-  line-height: 1.78;
-  transition: background .25s ease, color .25s ease;
-  text-rendering: optimizeLegibility;
-}
+  .article-header h1{
+    font-size: clamp(30px, 4.2vw, 44px);
+    font-weight: 600;
+    letter-spacing: 1.5px;
+    line-height: 1.25;
+    margin-bottom: 22px;
+  }
 
-/* =========================
-   MAIN COLUMN (Journal width)
-========================= */
+  .msjline{
+    font-size: 14px;
+    letter-spacing: 1.2px;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 32px;
+    text-align: center;
+  }
 
-main{
-  width: min(820px, 92vw);
-  margin: 0 auto;
-  padding: clamp(48px, 6vw, 100px) 24px;
-}
+  .meta{
+    font-size: 16px;
+    color: var(--muted);
+    line-height: 1.7;
+    margin-top: 10px;
+    margin-bottom: 38px;
+  }
 
-/* =========================
-   HEADER (Journal style)
-========================= */
+  /* =========================
+     HEADINGS
+  ========================= */
+  h2{
+    font-size: 24px;
+    margin-top: 70px;
+    margin-bottom: 20px;
+    font-weight: 600;
+  }
 
-.article-header{
-  text-align: center;
-  margin-bottom: 70px;
-  padding-bottom: 36px;
-  border-bottom: 1px solid var(--border);
-}
+  h3{
+    font-size: 20px;
+    margin-top: 50px;
+    margin-bottom: 16px;
+    font-weight: 600;
+  }
 
-.article-header h1{
-  font-size: clamp(30px, 4.2vw, 44px);
-  font-weight: 600;
-  letter-spacing: 1.5px;
-  line-height: 1.25;
-  margin-bottom: 22px;
-}
+  h4{
+    font-size: 17px;
+    margin-top: 40px;
+    margin-bottom: 12px;
+    font-weight: 600;
+    color: var(--muted);
+  }
 
-.msjline{
-  font-size: 14px;
-  letter-spacing: 1.2px;
-  text-transform: uppercase;
-  color: var(--muted);
-  margin-bottom: 32px;
-  text-align: center;
-}
+  /* =========================
+     PARAGRAPHS
+  ========================= */
+  p{
+    margin: 0 0 1.5em 0;
+    text-align: justify;
+    hyphens: auto;
+  }
 
-.meta{
-  font-size: 16px;
-  color: var(--muted);
-  line-height: 1.7;
-  margin-top: 10px;
-  margin-bottom: 38px;
-}
+  /* =========================
+     LINKS
+  ========================= */
+  a{
+    color: var(--link);
+    text-decoration: none;
+  }
+  a:hover{ text-decoration: underline; }
 
-/* =========================
-   HEADINGS
-========================= */
-
-h2{
-  font-size: 24px;
-  margin-top: 70px;
-  margin-bottom: 20px;
-  font-weight: 600;
-}
-
-h3{
-  font-size: 20px;
-  margin-top: 50px;
-  margin-bottom: 16px;
-  font-weight: 600;
-}
-
-h4{
-  font-size: 17px;
-  margin-top: 40px;
-  margin-bottom: 12px;
-  font-weight: 600;
-  color: var(--muted);
-}
-
-/* =========================
-   PARAGRAPHS
-========================= */
-
-p{
-  margin: 0 0 1.5em 0;
-  text-align: justify;
-  hyphens: auto;
-}
-
-/* =========================
-   LINKS
-========================= */
-
-a{
-  color: var(--link);
-  text-decoration: none;
-}
-
-a:hover{
-  text-decoration: underline;
-}
- /* =========================
-   SKIP LINK (Desktop only)
-========================= */
-
-.skip-link{
-  position: absolute;
-  top: -40px;
-  left: 50%;
-  transform: translateX(-50%);
-  background: var(--text);
-  color: var(--bg);
-  padding: 8px 14px;
-  font-size: 14px;
-  text-decoration: none;
-  border-radius: 4px;
-  transition: top .2s ease;
-  z-index: 10001;
-}
-
-.skip-link:focus{
-  top: 20px;
-}
-
-/* Полностью отключаем на телефоне */
-@media (max-width: 768px){
+  /* =========================
+     SKIP LINK (Desktop only)
+  ========================= */
   .skip-link{
-    display: none;
+    position: absolute;
+    top: -40px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: var(--text);
+    color: var(--bg);
+    padding: 8px 14px;
+    font-size: 14px;
+    text-decoration: none;
+    border-radius: 4px;
+    transition: top .2s ease;
+    z-index: 10001;
   }
-}
-   /* Скрываем "К оглавлению" на телефоне */
-@media (max-width: 768px){
+  .skip-link:focus{ top: 20px; }
+
+  @media (max-width: 768px){
+    .skip-link{ display: none; }
+    .back-to-index{ display: none; }
+  }
+
+  /* =========================
+     NOTICE BLOCK
+  ========================= */
+  .notice{
+    font-size: 14px;
+    line-height: 1.6;
+    color: var(--muted);
+    margin-bottom: 60px;
+    padding: 24px 0;
+    border-top: 1px solid var(--border);
+    border-bottom: 1px solid var(--border);
+  }
+  .notice p{ margin: 0 0 10px 0; }
+  .notice p:last-child{ margin-bottom: 0; }
+  .notice strong{ font-weight: 600; color: var(--text); }
+
+  /* =========================
+     BLOCKQUOTE
+  ========================= */
+  blockquote{
+    margin: 40px 0;
+    padding: 20px 26px;
+    border-left: 3px solid var(--border);
+    background: var(--note-bg);
+    font-style: italic;
+  }
+
+  /* =========================
+     BACK TO INDEX
+  ========================= */
   .back-to-index{
-    display: none;
-  }
-}
-/* =========================
-   NOTICE BLOCK
-========================= */
-
-.notice{
-  font-size: 14px;
-  line-height: 1.6;
-  color: var(--muted);
-
-  margin-bottom: 60px;
-  padding: 24px 0;
-
-  border-top: 1px solid var(--border);
-  border-bottom: 1px solid var(--border);
-}
-
-.notice p{
-  margin: 0 0 10px 0;
-}
-
-.notice p:last-child{
-  margin-bottom: 0;
-}
-
-.notice strong{
-  font-weight: 600;
-  color: var(--text);
-}
-
-/* =========================
-   BLOCKQUOTE
-========================= */
-
-blockquote{
-  margin: 40px 0;
-  padding: 20px 26px;
-  border-left: 3px solid var(--border);
-  background: var(--note-bg);
-  font-style: italic;
-}
-   
-.back-to-index{
-  position: fixed;
-  top: 28px;
-  left: 24px;
-  font-size: 14px;
-  color: var(--muted);
-  text-decoration: none;
-}
-
-.back-to-index:hover{
-  color: var(--text);
-}
-   
-/* =========================
-   DIVIDER
-========================= */
-
-.divider{
-  text-align: center;
-  letter-spacing: 6px;
-  margin: 60px 0;
-  color: var(--muted);
-}
-
-/* =========================
-   FOOTNOTES (Academic)
-========================= */
-
-.fn-marker{
-  position: relative;
-  display: inline-block;
-  font-size: 0.75em;
-  vertical-align: super;
-  cursor: pointer;
-  color: var(--link);
-  font-weight: 600;
-  margin-left: 2px;
-}
-
-.tooltip{
-  position: absolute;
-  bottom: 130%;
-  left: 50%;
-  transform: translateX(-50%) translateY(6px);
-
-  width: min(340px, 90vw);
-
-  padding: 14px 18px;
-  border-radius: 6px;
-
-  background: var(--tooltip-bg);
-  color: var(--tooltip-text);
-
-  font-size: 14px;
-  line-height: 1.55;
-  font-weight: 400;
-
-  text-align: left;
-
-  opacity: 0;
-  pointer-events: none;
-  transition: opacity .18s ease, transform .18s ease;
-
-  box-shadow: 0 10px 24px rgba(0,0,0,.22);
-  z-index: 1000;
-}
-
-.fn-marker.is-open .tooltip{
-  opacity: 1;
-  pointer-events: auto;
-  transform: translateX(-50%) translateY(0);
-}
-
-@media (hover: hover) and (pointer: fine){
-  .fn-marker:hover .tooltip{
-    opacity: 1;
-    pointer-events: auto;
-    transform: translateX(-50%) translateY(0);
-  }
-}
-/* =========================
-   THEME TOGGLE (Balanced journal position)
-========================= */
-
-.theme-toggle{
-  position: fixed;
-  z-index: 10000;
-
-  width: 26px;
-  height: 26px;
-
-  background: none;
-  border: none;
-  padding: 0;
-
-  cursor: pointer;
-}
-
-/* Desktop */
-@media (min-width: 900px){
-  .theme-toggle{
+    position: fixed;
     top: 28px;
-    right: 8vw;   /* просто процент от экрана — безопасно */
+    left: 24px;
+    font-size: 14px;
+    color: var(--muted);
+    text-decoration: none;
+    z-index: 10000;
   }
-}
+  .back-to-index:hover{ color: var(--text); }
 
-/* Mobile */
-@media (max-width: 899px){
-  .theme-toggle{
-    top: 18px;
-    right: 16px;   /* было 22px — уменьшаем, чтобы ушла правее */
-  }
-}
-
-.theme-toggle svg{
-  width: 20px;
-  height: 20px;
-  fill: none;
-  stroke: currentColor;
-  color: var(--text);
-  position: absolute;
-  transition: opacity .25s ease, transform .15s ease, color .25s ease;
-}
-
-.theme-toggle:hover svg{
-  transform: scale(1.08);
-}
-
-.icon-sun{
-  opacity: 0;
-}
-
-html.dark .icon-moon{
-  opacity: 0;
-}
-
-html.dark .icon-sun{
-  opacity: 1;
-  color: #f5c542;
-}
-
- 
-/* =========================
-   BIBLE REFERENCES (popup)
-========================= */
-
-.bref{
-  position: relative;
-  display: inline-block;
-  white-space: nowrap;
-
-  color: #1b5e20;           /* отличается от ссылок и сносок */
-  font-weight: 600;
-  text-decoration: none;
-  cursor: pointer;
-}
-
-html.dark .bref{
-  color: #9be7a3;
-}
-
-.bref:hover{
-  text-decoration: underline;
-}
-
-/* Само окно */
-.bref .btip{
-  position: absolute;
-  bottom: 130%;
-  left: 50%;
-  transform: translateX(-50%) translateY(6px);
-
-  width: min(440px, 90vw);
-  padding: 12px 14px;
-  border-radius: 10px;
-
-  /* почти непрозрачное, но мягкое */
-  background: rgba(244, 242, 237, 0.98);
-  color: var(--text);
-
-  border: 1px solid var(--border);
-  box-shadow: 0 12px 28px rgba(0,0,0,.14);
-
-  /* отличаем шрифт от основного текста */
-  font-family: system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
-  font-size: 14px;
-  line-height: 1.5;
-  font-weight: 400;
-
-  opacity: 0;
-  pointer-events: none;
-  transition: opacity .18s ease, transform .18s ease;
-
-  z-index: 15000;
-}
-
-html.dark .bref .btip{
-  background: rgba(26, 28, 31, 0.98);
-  color: var(--text);
-  border-color: var(--border);
-  box-shadow: 0 12px 28px rgba(0,0,0,.35);
-}
-
-.bref.is-open .btip{
-  opacity: 1;
-  pointer-events: auto;
-  transform: translateX(-50%) translateY(0);
-}
-
-/* ПК hover */
-@media (hover: hover) and (pointer: fine){
-  .bref:hover .btip{
-    opacity: 1;
-    pointer-events: auto;
-    transform: translateX(-50%) translateY(0);
-  }
-}
-
-/* Мобилка: как overlay снизу + внутренний скролл */
-@media (max-width: 768px){
-  .bref .btip{
-    position: fixed;
-    left: 50%;
-    bottom: 18px;
-    top: auto;
-
-    width: min(92vw, 620px);
-    max-height: 62vh;
-    overflow: auto;
-    -webkit-overflow-scrolling: touch;
-
-    transform: translateX(-50%) translateY(6px);
-    z-index: 25000;
+  /* =========================
+     DIVIDER
+  ========================= */
+  .divider{
+    text-align: center;
+    letter-spacing: 6px;
+    margin: 60px 0;
+    color: var(--muted);
   }
 
-  .bref.is-open .btip{
-    transform: translateX(-50%) translateY(0);
+  /* =========================
+     FOOTNOTES (Academic)
+  ========================= */
+  .fn-marker{
+    position: relative;
+    display: inline-block;
+    font-size: 0.75em;
+    vertical-align: super;
+    cursor: pointer;
+    color: var(--link);
+    font-weight: 600;
+    margin-left: 2px;
   }
-}
 
-/* Заголовок внутри окна */
-.bref .btip strong{
-  display: inline-block;
-  margin-bottom: 6px;
-  font-weight: 650;
-  font-family: inherit;
-}
- @media (max-width: 768px){
   .tooltip{
-    position: fixed;
+    position: absolute;
+    bottom: 130%;
     left: 50%;
-    bottom: 18px;
-    top: auto;
-    right: auto;
-
-    width: min(92vw, 560px);
-    max-width: 92vw;
-
     transform: translateX(-50%) translateY(6px);
-    z-index: 20000;
 
-    max-height: min(60vh, 420px);
-    overflow: auto;
-    -webkit-overflow-scrolling: touch;
+    width: min(340px, 90vw);
+    padding: 14px 18px;
+    border-radius: 6px;
+
+    background: var(--tooltip-bg);
+    color: var(--tooltip-text);
+
+    font-size: 14px;
+    line-height: 1.55;
+    font-weight: 400;
+    text-align: left;
+
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity .18s ease, transform .18s ease;
+
+    box-shadow: 0 10px 24px rgba(0,0,0,.22);
+    z-index: 1000;
   }
 
   .fn-marker.is-open .tooltip{
-    transform: translateX(-50%) translateY(0);
-  }
-}
-/* =========================
-   BIBLE REFERENCES (popup)
-========================= */
-
-.bref{
-  position: relative;
-  display: inline-block;
-  white-space: nowrap;
-  cursor: pointer;
-
-  color: #1b5e20;        /* отличается от сносок */
-  font-weight: 600;
-  text-decoration: none;
-}
-
-html.dark .bref{ color: #9be7a3; }
-
-.bref:hover{ text-decoration: underline; }
-
-.bref .btip{
-  position: absolute;
-  bottom: 130%;
-  left: 50%;
-  transform: translateX(-50%) translateY(6px);
-
-  width: min(460px, 90vw);
-  padding: 12px 14px;
-  border-radius: 10px;
-
-  /* почти непрозрачное */
-  background: rgba(244,242,237,0.98);
-  color: var(--text);
-  border: 1px solid var(--border);
-  box-shadow: 0 12px 28px rgba(0,0,0,.14);
-
-  /* другой шрифт, чтобы отличалось от текста статьи */
-  font-family: system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
-  font-size: 14px;
-  line-height: 1.5;
-  font-weight: 400;
-
-  opacity: 0;
-  pointer-events: none;
-  transition: opacity .18s ease, transform .18s ease;
-
-  z-index: 15000;
-}
-
-html.dark .bref .btip{
-  background: rgba(26,28,31,0.98);
-  color: var(--text);
-  border-color: var(--border);
-  box-shadow: 0 12px 28px rgba(0,0,0,.35);
-}
-
-.bref .btip strong{
-  display: inline-block;
-  margin-bottom: 6px;
-  font-weight: 650;
-}
-
-.bref.is-open .btip{
-  opacity: 1;
-  pointer-events: auto;
-  transform: translateX(-50%) translateY(0);
-}
-
-@media (hover: hover) and (pointer: fine){
-  .bref:hover .btip{
     opacity: 1;
     pointer-events: auto;
     transform: translateX(-50%) translateY(0);
   }
-}
 
-/* Mobile: overlay снизу + скролл внутри */
-@media (max-width: 768px){
-  .bref .btip{
+  @media (hover: hover) and (pointer: fine){
+    .fn-marker:hover .tooltip{
+      opacity: 1;
+      pointer-events: auto;
+      transform: translateX(-50%) translateY(0);
+    }
+  }
+
+  /* Mobile: overlay + internal scroll (для длинных сносок) */
+  @media (max-width: 768px){
+    .tooltip{
+      position: fixed;
+      left: 50%;
+      bottom: 18px;
+      top: auto;
+      right: auto;
+
+      width: min(92vw, 560px);
+      max-width: 92vw;
+
+      transform: translateX(-50%) translateY(6px);
+      z-index: 20000;
+
+      max-height: min(60vh, 420px);
+      overflow: auto;
+      -webkit-overflow-scrolling: touch;
+    }
+
+    .fn-marker.is-open .tooltip{
+      transform: translateX(-50%) translateY(0);
+    }
+  }
+
+  /* =========================
+     THEME TOGGLE (Balanced journal position)
+  ========================= */
+  .theme-toggle{
     position: fixed;
+    z-index: 10000;
+    width: 26px;
+    height: 26px;
+    background: none;
+    border: none;
+    padding: 0;
+    cursor: pointer;
+  }
+
+  @media (min-width: 900px){
+    .theme-toggle{ top: 28px; right: 8vw; }
+  }
+  @media (max-width: 899px){
+    .theme-toggle{ top: 18px; right: 16px; }
+  }
+
+  .theme-toggle svg{
+    width: 20px;
+    height: 20px;
+    fill: none;
+    stroke: currentColor;
+    color: var(--text);
+    position: absolute;
+    transition: opacity .25s ease, transform .15s ease, color .25s ease;
+  }
+  .theme-toggle:hover svg{ transform: scale(1.08); }
+
+  .icon-sun{ opacity: 0; }
+  html.dark .icon-moon{ opacity: 0; }
+  html.dark .icon-sun{ opacity: 1; color: #f5c542; }
+
+  /* =========================
+     BIBLE REFERENCES (popup) — один раз, без дублей
+  ========================= */
+  .bref{
+    position: relative;
+    display: inline-block;
+    white-space: nowrap;
+    cursor: pointer;
+
+    color: #7a2e2e;     /* бордовый вместо зелёного */
+    font-weight: 600;
+    text-decoration: none;
+  }
+
+  .bref:visited{ color: inherit; } /* чтобы не становилось фиолетовым */
+
+  html.dark .bref{ color: #ffb4b4; }
+
+  .bref:hover{ text-decoration: underline; }
+
+  .bref .btip{
+    position: absolute;
+    bottom: 130%;
     left: 50%;
-    bottom: 18px;
-    top: auto;
-
-    width: min(92vw, 620px);
-    max-height: 62vh;
-    overflow: auto;
-    -webkit-overflow-scrolling: touch;
-
     transform: translateX(-50%) translateY(6px);
-    z-index: 26000;
+
+    width: min(460px, 90vw);
+    padding: 12px 14px;
+    border-radius: 10px;
+
+    background: rgba(244,242,237,0.98);
+    color: var(--text);
+    border: 1px solid var(--border);
+    box-shadow: 0 12px 28px rgba(0,0,0,.14);
+
+    font-family: system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+    font-size: 14px;
+    line-height: 1.5;
+    font-weight: 400;
+
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity .18s ease, transform .18s ease;
+
+    z-index: 15000;
+  }
+
+  html.dark .bref .btip{
+    background: rgba(26,28,31,0.98);
+    color: var(--text);
+    border-color: var(--border);
+    box-shadow: 0 12px 28px rgba(0,0,0,.35);
+  }
+
+  .bref .btip strong{
+    display: inline-block;
+    margin-bottom: 6px;
+    font-weight: 650;
   }
 
   .bref.is-open .btip{
+    opacity: 1;
+    pointer-events: auto;
     transform: translateX(-50%) translateY(0);
   }
-}
+
+  @media (hover: hover) and (pointer: fine){
+    .bref:hover .btip{
+      opacity: 1;
+      pointer-events: auto;
+      transform: translateX(-50%) translateY(0);
+    }
+  }
+
+  @media (max-width: 768px){
+    .bref .btip{
+      position: fixed;
+      left: 50%;
+      bottom: 18px;
+      top: auto;
+
+      width: min(92vw, 620px);
+      max-height: 62vh;
+      overflow: auto;
+      -webkit-overflow-scrolling: touch;
+
+      transform: translateX(-50%) translateY(6px);
+      z-index: 26000;
+    }
+
+    .bref.is-open .btip{
+      transform: translateX(-50%) translateY(0);
+    }
+  }
 </style>
 </head>
 
 <body>
 <a href="../../" class="back-to-index">← К оглавлению</a>
+
 <button id="themeToggle" class="theme-toggle" aria-label="Переключить тему">
   <svg class="icon-moon" viewBox="0 0 24 24">
     <path d="M21 12.8A9 9 0 1111.2 3 7 7 0 0021 12.8z"/>
@@ -636,57 +462,64 @@ html.dark .bref .btip{
     </g>
   </svg>
 </button>
-  <a class="skip-link" href="#content">Перейти к содержанию</a>
 
-  <main id="content">
-    <aside class="notice" aria-label="Правовая информация и источник">
-      <p><strong>Права:</strong> © The Master’s Seminary Journal (TMSJ). Переведенный материал размещён в ознакомительных целях для назидания тех, кто не знает английский. По запросу правообладателя будет удалён.</p>
-      <p><strong>Источник:</strong> Abner Chou, “A Hermeneutical Evaluation of Christocentric Hermeneutics,” The Master’s Seminary Journal 27, no. 2 (Fall 2016): 113–139.</p>
-      <p><strong>Оригинал на английском (PDF):</strong>
-        <a href="https://tms.edu/wp-content/uploads/2021/09/TMSJ-Volume-27-Number-2.pdf" target="_blank" rel="noopener noreferrer">открыть PDF на сайте TMS</a>
-      </p>
-      <p><strong>Связь:</strong> <a href="mailto:fedormilovanov@yandex.ru">fedormilovanov@yandex.ru</a></p>
-    </aside>
+<a class="skip-link" href="#content">Перейти к содержанию</a>
 
-    <article>
-      <header class="article-header">
-        <p class="msjline">MSJ 27/2 (Fall 2016) 113–139</p>
+<main id="content">
+  <aside class="notice" aria-label="Правовая информация и источник">
+    <p><strong>Права:</strong> © The Master’s Seminary Journal (TMSJ). Переведенный материал размещён в ознакомительных целях для назидания тех, кто не знает английский. По запросу правообладателя будет удалён.</p>
+    <p><strong>Источник:</strong> Abner Chou, “A Hermeneutical Evaluation of Christocentric Hermeneutics,” The Master’s Seminary Journal 27, no. 2 (Fall 2016): 113–139.</p>
+    <p><strong>Оригинал на английском (PDF):</strong>
+      <a href="https://tms.edu/wp-content/uploads/2021/09/TMSJ-Volume-27-Number-2.pdf" target="_blank" rel="noopener noreferrer">открыть PDF на сайте TMS</a>
+    </p>
+    <p><strong>Связь:</strong> <a href="mailto:fedormilovanov@yandex.ru">fedormilovanov@yandex.ru</a></p>
+  </aside>
 
-    <h1>ГЕРМЕНЕВТИЧЕСКАЯ ОЦЕНКА<br>ХРИСТОЦЕНТРИЧНОЙ ГЕРМЕНЕВТИКИ</h1>
-    <div class="meta">Абнер Чау<br>Профессор Библии<br>The Master’s University</div>
+  <article>
+    <header class="article-header">
+      <p class="msjline">MSJ 27/2 (Fall 2016) 113–139</p>
 
-<p><i>То, как изучать и преподавать Библию, имеет первостепенное значение для пастора. Христоцентричная герменевтика предложила модификацию грамматико-исторического герменевтического подхода. Данная статья утверждает, что такое изменение не обосновано Писанием и что грамматико-исторический метод не только оправдан Писанием, но и более чем достаточен для раскрытия славы Христа, как она совершенно представлена в Божьем Слове. Соответственно, христоцентричное служение чтит Христа не только за кафедрой, провозглашая Его, но и в кабинете, обращаясь с Его Словом так, как Он того требует.</i></p>
+      <h1>ГЕРМЕНЕВТИЧЕСКАЯ ОЦЕНКА<br>ХРИСТОЦЕНТРИЧНОЙ ГЕРМЕНЕВТИКИ</h1>
+      <div class="meta">Абнер Чау<br>Профессор Библии<br>The Master’s University</div>
 
-<div class="divider">* * * * *</div>
-</header>
+      <p><i>То, как изучать и преподавать Библию, имеет первостепенное значение для пастора. Христоцентричная герменевтика предложила модификацию грамматико-исторического герменевтического подхода. Данная статья утверждает, что такое изменение не обосновано Писанием и что грамматико-исторический метод не только оправдан Писанием, но и более чем достаточен для раскрытия славы Христа, как она совершенно представлена в Божьем Слове. Соответственно, христоцентричное служение чтит Христа не только за кафедрой, провозглашая Его, но и в кабинете, обращаясь с Его Словом так, как Он того требует.</i></p>
 
-<p>Проповедь занимает центральное место в служении пастора. Она заповедана Богом (<a href="#" class="bref" data-ref="2 Тимофею 4:1–2">2 Тим. 4:1–2</a>) для любого времени (2 Тим. 4:2б), чтобы питать и снаряжать стадо (2 Тим. 4:2б; ср. Еф. 4:12; Иоанна 21:15). Она жизненно важна для церкви (Еф. 4:12–13), является стержневой в служении (1 Тим. 4:16) и имеет величайшую важность для Бога (2 Тим. 4:1; ср. 2 Тим. 2:14–15). По этой причине Бог требует, чтобы мы верно преподавали [rightly divide] Его Слово (2 Тим. 2:15). Нам нужно заботиться о верном толковании текста так же сильно, как это делает Бог. Однако, что означает «понять верно» [get it right]? Некоторые утверждают, что проповедь, которая не является христоцентричной, является суб-христианской. Она не дотягивает до заявления Павла о том, что он проповедует Христа, и притом распятого (1 Кор. 2:2). Такое обвинение является в высшей степени серьезным, поскольку оно бьет в самую суть одной из важнейших задач пастора.</p>
+      <div class="divider">* * * * *</div>
+    </header>
 
-<p>Эта дилемма иллюстрирует необходимость иметь не только экзегетический процесс или герменевтические знания, но, даже более того, герменевтическое убеждение. Мы должны быть убеждены, что наш герменевтический подход — это тот подход, который верно преподает Слово Истины. Цель этой статьи — оценить претензии христоцентричной герменевтики в этом отношении, чтобы дать нам уверенность и смелость в том, что грамматико-исторический метод не только чтит то, что Бог повелел нам делать, но и приносит величайшую славу Христу.</p>
+    <p>Проповедь занимает центральное место в служении пастора. Она заповедана Богом (<a href="javascript:void(0)" class="bref" data-ref="2 Тимофею 4:1–2">2 Тим. 4:1–2</a>) для любого времени (2 Тим. 4:2б), чтобы питать и снаряжать стадо (2 Тим. 4:2б; ср. Еф. 4:12; Иоанна 21:15). Она жизненно важна для церкви (Еф. 4:12–13), является стержневой в служении (1 Тим. 4:16) и имеет величайшую важность для Бога (2 Тим. 4:1; ср. 2 Тим. 2:14–15). По этой причине Бог требует, чтобы мы верно преподавали [rightly divide] Его Слово (2 Тим. 2:15). Нам нужно заботиться о верном толковании текста так же сильно, как это делает Бог. Однако, что означает «понять верно» [get it right]? Некоторые утверждают, что проповедь, которая не является христоцентричной, является суб-христианской. Она не дотягивает до заявления Павла о том, что он проповедует Христа, и притом распятого (1 Кор. 2:2). Такое обвинение является в высшей степени серьезным, поскольку оно бьет в самую суть одной из важнейших задач пастора.</p>
 
-<h2>Герменевтические определения</h2>
+    <p>Эта дилемма иллюстрирует необходимость иметь не только экзегетический процесс или герменевтические знания, но, даже более того, герменевтическое убеждение. Мы должны быть убеждены, что наш герменевтический подход — это тот подход, который верно преподает Слово Истины. Цель этой статьи — оценить претензии христоцентричной герменевтики в этом отношении, чтобы дать нам уверенность и смелость в том, что грамматико-исторический метод не только чтит то, что Бог повелел нам делать, но и приносит величайшую славу Христу.</p>
 
-<p>Начиная исследование христоцентричного метода, нам необходимо ознакомиться с двумя герменевтическими концепциями: значение (meaning) и значимость (significance). Эти идеи критически важны для формулирования того, как, по мнению любого подхода, работает текст и как мы должны его понимать.</p>
+    <h2>Герменевтические определения</h2>
 
-<p>Значение относится к конкретным идеям внутри текста в данном контексте.<span class="container fn-marker">1<span class="tooltip">E. D. Hirsch, Validity in Interpretation (New Haven, CT: Yale Unviersity Press, 1967), 11–13; Kevin J. Vanhoozer, Is There a Meaning in This Text? (Grand Rapids: Zondervan, 1998), 252–53; Robert L. Thomas, “The Principle of Single Meaning,” in Evangelical Hermeneutics, ed. Robert L. Thomas (Grand Rapids: Kregel, 2002), 155–56.</span></span> В рамках этого мы сталкиваемся с двумя вопросами. Во-первых, мы должны определить, кто или что устанавливает границы того, что текст легитимно сообщает. Варианты включают автора, текст, читателя или сообщество.<span class="container fn-marker">2<span class="tooltip">Roland Barthes, The Pleasure of the Text, trans. Richard Miller (New York: Hill and Wong Publishing, 1975), 27; P. B. Payne, “The Fallacy of Equating Meaning with the Human Author’s Intention,” JETS 20 (1977): 249; H. G. Gadamer, Truth and Method, 2nd ed. (New York: Continuim Publishing Company, 1975), 388; Jacques Derrida, Of Grammatology, trans. Gayatri Chakravorty Spivak (Baltimore: Johns Hopkins University Press, 1997), 204–5.</span></span> Во-вторых, мы также должны определить, как двойное авторство Писания влияет на определение значения. Это связано с вопросом о том, совпадает ли замысел Бога с замыслом человеческого автора, или же Он подразумевает больше, чем было сообщено в первоначальном контексте. Эти вопросы помогают нам понять цели и методологические границы внутри герменевтического подхода.</p>
+    <p>Начиная исследование христоцентричного метода, нам необходимо ознакомиться с двумя герменевтическими концепциями: значение (meaning) и значимость (significance). Эти идеи критически важны для формулирования того, как, по мнению любого подхода, работает текст и как мы должны его понимать.</p>
 
-<p>Значимость — это еще одна важная концепция в герменевтике. Значимость относится к импликациям и применениям, которые может иметь текст. Иными словами, значение, как и любая идея, имеет последствия, и значимость — это сумма всех этих различных последствий. Главный вопрос в рамках значимости — как человек формулирует связь между значением и значимостью. В конце концов, не каждая возможная импликация законно соответствует значению текста.<span class="container fn-marker">3<span class="tooltip">Например, нельзя просто сказать, что обоснованный вывод из «любите друг друга» — это поддерживать людей в их грехе, потому что это любящий поступок. Определение любви у Иоанна не потерпело бы такой экстраполяции (ср. 1 Иоанна 4:8–10). Другим примером может быть то, что раз Библия описывает Бога имеющим «руку» (ср. Втор. 4:34), то у Него должно быть физическое тело (ср. Иоанна 4:24). Цель, которую имеет автор, описывая руку Бога, не подразумевает такого типа выводов.</span></span> Необходимо доказать, что предлагаемый вывод обоснован, потому что он соответствует природе сказанного и тому, почему это сказано. То, как (если вообще) подход делает это, является еще одним ключевым вопросом в оценке герменевтической точки зрения.</p>
+    <p>Значение относится к конкретным идеям внутри текста в данном контексте.<span class="container fn-marker">1<span class="tooltip">E. D. Hirsch, Validity in Interpretation (New Haven, CT: Yale Unviersity Press, 1967), 11–13; Kevin J. Vanhoozer, Is There a Meaning in This Text? (Grand Rapids: Zondervan, 1998), 252–53; Robert L. Thomas, “The Principle of Single Meaning,” in Evangelical Hermeneutics, ed. Robert L. Thomas (Grand Rapids: Kregel, 2002), 155–56.</span></span> В рамках этого мы сталкиваемся с двумя вопросами. Во-первых, мы должны определить, кто или что устанавливает границы того, что текст легитимно сообщает. Варианты включают автора, текст, читателя или сообщество.<span class="container fn-marker">2<span class="tooltip">Roland Barthes, The Pleasure of the Text, trans. Richard Miller (New York: Hill and Wong Publishing, 1975), 27; P. B. Payne, “The Fallacy of Equating Meaning with the Human Author’s Intention,” JETS 20 (1977): 249; H. G. Gadamer, Truth and Method, 2nd ed. (New York: Continuim Publishing Company, 1975), 388; Jacques Derrida, Of Grammatology, trans. Gayatri Chakravorty Spivak (Baltimore: Johns Hopkins University Press, 1997), 204–5.</span></span> Во-вторых, мы также должны определить, как двойное авторство Писания влияет на определение значения. Это связано с вопросом о том, совпадает ли замысел Бога с замыслом человеческого автора, или же Он подразумевает больше, чем было сообщено в первоначальном контексте. Эти вопросы помогают нам понять цели и методологические границы внутри герменевтического подхода.</p>
 
-<p>В сумме, значение и значимость — две важные идеи в оценке герменевтического подхода. Мы хотим знать, помещает ли метод локус значения в авторе, тексте, читателе или сообществе. Мы также хотим знать, как он формулирует работу двойного авторства в этом процессе. Кроме того, мы хотим оценить, как подход извлекает импликации из текста. Отвечая на вопросы значения и значимости, мы можем лучше понять, как работает метод и, следовательно, где могут быть точки разногласий.</p>
+    <p>Значимость — это еще одна важная концепция в герменевтике. Значимость относится к импликациям и применениям, которые может иметь текст. Иными словами, значение, как и любая идея, имеет последствия, и значимость — это сумма всех этих различных последствий. Главный вопрос в рамках значимости — как человек формулирует связь между значением и значимостью. В конце концов, не каждая возможная импликация законно соответствует значению текста.<span class="container fn-marker">3<span class="tooltip">Например, нельзя просто сказать, что обоснованный вывод из «любите друг друга» — это поддерживать людей в их грехе, потому что это любящий поступок. Определение любви у Иоанна не потерпело бы такой экстраполяции (ср. 1 Иоанна 4:8–10). Другим примером может быть то, что раз Библия описывает Бога имеющим «руку» (ср. Втор. 4:34), то у Него должно быть физическое тело (ср. Иоанна 4:24). Цель, которую имеет автор, описывая руку Бога, не подразумевает такого типа выводов.</span></span> Необходимо доказать, что предлагаемый вывод обоснован, потому что он соответствует природе сказанного и тому, почему это сказано. То, как (если вообще) подход делает это, является еще одним ключевым вопросом в оценке герменевтической точки зрения.</p>
 
-<h2>Объяснение христоцентричной герменевтики</h2>
+    <p>В сумме, значение и значимость — две важные идеи в оценке герменевтического подхода. Мы хотим знать, помещает ли метод локус значения в авторе, тексте, читателе или сообществе. Мы также хотим знать, как он формулирует работу двойного авторства в этом процессе. Кроме того, мы хотим оценить, как подход извлекает импликации из текста. Отвечая на вопросы значения и значимости, мы можем лучше понять, как работает метод и, следовательно, где могут быть точки разногласий.</p>
 
-<p>Имея это в виду, мы можем перейти к рассмотрению христоцентричной герменевтики. При этом нам нужно помнить, что герменевтические системы — это не просто набор правил толкования, но часто они движимы богословскими рамками, которые оправдывают цели и метод системы. Соответственно, чтобы адекватно понять их подход, нам нужно проработать три основных вопроса: что такое христоцентричная герменевтика, как она достигает своих целей и почему она стремится к такому толкованию. Разобравшись с этими тремя вопросами, мы сможем получить полную картину того, как работает христоцентричная герменевтика.</p>
+    <h2>Объяснение христоцентричной герменевтики</h2>
 
-<h3>Что такое христоцентричная герменевтика?</h3>
+    <p>Имея это в виду, мы можем перейти к рассмотрению христоцентричной герменевтики. При этом нам нужно помнить, что герменевтические системы — это не просто набор правил толкования, но часто они движимы богословскими рамками, которые оправдывают цели и метод системы. Соответственно, чтобы адекватно понять их подход, нам нужно проработать три основных вопроса: что такое христоцентричная герменевтика, как она достигает своих целей и почему она стремится к такому толкованию. Разобравшись с этими тремя вопросами, мы сможем получить полную картину того, как работает христоцентричная герменевтика.</p>
 
-<p>Христоцентричный подход имеет долгую и разнообразную историю. Фокус данной статьи касается современных разработок этой перспективы. Даже внутри них существуют вариации.<span class="container fn-marker">4<span class="tooltip">See Graeme Goldsworthy, Christ-Centered Biblical Theology: Hermeneutical Foundations and Principles (Downers Grove, IL: InterVarsity Press, 2012), 76–99; Timothy Keller, Preaching: Communicating Faith in an Age of Skepticism (New York: Viking, 2015), 70–92.</span></span> Тем не менее, современные сторонники подчеркивают определенные черты, которые отличают их движение. Понимание этих характеристик помогает нам увидеть определяющие признаки и цели их герменевтики. Я бы предположил, что существует по меньшей мере шесть акцентов, которые составляют <em>sine qua non</em> христоцентричной герменевтики.</p>
+    <h3>Что такое христоцентричная герменевтика?</h3>
 
+    <p>Христоцентричный подход имеет долгую и разнообразную историю. Фокус данной статьи касается современных разработок этой перспективы. Даже внутри них существуют вариации.<span class="container fn-marker">4<span class="tooltip">See Graeme Goldsworthy, Christ-Centered Biblical Theology: Hermeneutical Foundations and Principles (Downers Grove, IL: InterVarsity Press, 2012), 76–99; Timothy Keller, Preaching: Communicating Faith in an Age of Skepticism (New York: Viking, 2015), 70–92.</span></span> Тем не менее, современные сторонники подчеркивают определенные черты, которые отличают их движение. Понимание этих характеристик помогает нам увидеть определяющие признаки и цели их герменевтики. Я бы предположил, что существует по меньшей мере шесть акцентов, которые составляют <em>sine qua non</em> христоцентричной герменевтики.</p>
+
+<!-- === CUT HERE: END OF PART 1 === -->
 <p>1. Христоцентричный подход фундаментально желает представить каждый текст в его связи с личностью и делом Христа.<span class="container fn-marker">5<span class="tooltip">Bryan Chapell, Christ-Centered Preaching: Redeeming the Expository Sermon (Grand Rapids: Baker Books, 1994), 279; Sidney Greidanus, Preaching Christ from the Old Testament: A Contemporary Hermeneutical Model (Grand Rapids: Eerdmans Publishing, 1999), 203–5.</span></span></p>
+
 <p>2. Христоцентричный подход подчеркивает единство Писания. Из-за этого его иногда называют искупительно-исторической герменевтикой (однако некоторые используют этот термин, не ссылаясь на христоцентричную модель).<span class="container fn-marker">6<span class="tooltip">Walter C. Kaiser Jr., “Walt Kaiser on Christ-Centered Hermeneutics,” in Christ-Centered Preaching and Teaching, ed. Ed Stetzer (Nashville, TN: Lifeway, 2013), 14–15; Greidanus, Preaching Christ, 203–5; David Murray, “David Murray on Christ-Centered Hermeneutics,” in Christ-Centered Preaching and Teaching, 9.</span></span></p>
+
 <p>3. Христоцентричный подход делает акцент на богословии Писания. Он противопоставляется «моральным моделям», которые проповедуют нарративы как чисто примеры этического поведения. В отличие от морали, христоцентричный взгляд желает проповедовать доктрину и богословие, богословие Христа и Евангелия.<span class="container fn-marker">7<span class="tooltip">Chapell, Christ-Centered Preaching, 294; Murray, “David Murray on Christ-Centered Hermeneutics,” 9.</span></span></p>
+
 <p>4. Христоцентричный подход подчеркивает необходимость грамматико-исторического толкования как фундамента для своего метода. Он противопоставляет себя аллегорическим системам ранней церкви, а также недавней истории. Для его сторонников рассмотрение красной веревки Раав как символа крови Христа является нелегитимным толкованием и использованием текста.<span class="container fn-marker">8<span class="tooltip">Greidanus, Preaching Christ, 88.</span></span> Как мы обсудим далее, хотя они желают провозглашать богословие Христа в каждом тексте, они желают делать это на какой-то экспозиционной основе.<span class="container fn-marker">9<span class="tooltip">Ibid., 279–85; Chapell, Christ-Centered Preaching, 75–79.</span></span></p>
-<p>5. В то же время, христоцентричный подход признает необходимость выхода за пределы грамматико-исторической герменевтики к богословскому методу. Он противопоставляет себя христотелическому подходу, который остается в рамках грамматико-исторической структуры. Христотелический взгляд отстаивает первоначальное значение текста, признавая при этом, что импликации текста могут в конечном итоге связываться со Христом.<span class="container fn-marker">10<span class="tooltip">Daniel I. Block, “Daniel Block on Christ-Centered Hermeneutics,” in Christ-Centered Preaching and Teaching, 6.</span></span> Христоцентричный метод рассматривает это как недостаточное.<span class="container fn-marker">11<span class="tooltip">Murray, “David Murray on Christ-Centered Hermeneutics,” 10; Goldsworthy, Christ-Centered Biblical Theology, 24–30.</span></span> Для него Христос <em>в</em> каждом тексте. Он каким-то образом является <em>темой</em> каждого отрывка. Тексты Писания прообразуют работу Христа или намеренно показывают, кем Христос является или не является.<span class="container fn-marker">12<span class="tooltip">Goldsworthy, Christ-Centered Biblical Theology, 24–30; Graeme Goldsworthy, Preaching the Whole Bible as Christian Scripture: The Application of Biblical Theology to Expository Preaching (Grand Rapids: Eerdmans Publishing, 2000), 76–79; Edmund P. Clowney, Preaching Christ in All of Scripture (Wheaton, IL: Crossway, 2003), 11. Хотя некоторые могут захотеть уточнить, как именно они видят Христа в каждом тексте, Грейданус хорошо суммирует это настроение: «Поскольку литературным контекстом Ветхого Завета является Новый Завет, это означает, что Ветхий Завет должен быть понят в контексте Нового Завета. А поскольку сердце Нового Завета — Иисус Христос, это означает, что каждое послание из Ветхого Завета должно быть увидено в свете Христа», Preaching Christ, 51.</span></span> Здесь требуется некоторая осторожность, так как не каждый сторонник христоцентричной герменевтики согласен с тем, как именно это работает.<span class="container fn-marker">13<span class="tooltip">See discussion in Goldsworthy, Christ-Centered Biblical Theology, 76–99.</span></span> Тем не менее, они согласны, что христотелический/грамматико-исторический подход недостаточен.</p>
+
+<p>5. В то же время, христоцентричный подход признает необходимость выхода за пределы грамматико-исторической герменевтики к богословскому методу. Он противопоставляет себя христотелическому подходу, который остается в рамках грамматико-исторической структуры. Христотелический взгляд отстаивает первоначальное значение текста, признавая при этом, что импликации текста могут в конечном итоге связываться со Христом.<span class="container fn-marker">10<span class="tooltip">Daniel I. Block, “Daniel Block on Christ-Centered Hermeneutics,” in Christ-Centered Preaching and Teaching, 6.</span></span> Христоцентричный метод рассматривает это как недостаточное.<span class="container fn-marker">11<span class="tooltip">Murray, “David Murray on Christ-Centered Hermeneutics,” 10; Goldsworthy, Christ-Centered Biblical Theology, 24–30.</span></span> Для него Христос <em>в</em> каждом тексте. Он каким-то образом является <em>темой</em> каждого отрывка. Тексты Писания прообразуют работу Христа или намеренно показывают, кем Христос является или не является.<span class="container fn-marker">12<span class="tooltip">Goldsworthy, Christ-Centered Biblical Theology, 24–30; Graeme Goldsworthy, Preaching the Whole Bible as Christian Scripture: The Application of Biblical Theology to Expository Preaching (Grand Rapids: Eerdmans Publishing, 2000), 76–79; Edmund P. Clowney, Preaching Christ in All of Scripture (Wheaton, IL: Crossway, 2003), 11.</span></span> Здесь требуется некоторая осторожность, так как не каждый сторонник христоцентричной герменевтики согласен с тем, как именно это работает.<span class="container fn-marker">13<span class="tooltip">See discussion in Goldsworthy, Christ-Centered Biblical Theology, 76–99.</span></span> Тем не менее, они согласны, что христотелический/грамматико-исторический подход недостаточен.</p>
+
 <p>6. Христоцентричный подход подчеркивает свою <em>христианскую</em> природу. Он христианский, потому что фокусируется на Евангелии, и поэтому иногда называется проповедью, центрированной на Евангелии. Он христианский, потому что происходит от апостолов, и поэтому иногда называется апостольской проповедью.<span class="container fn-marker">14<span class="tooltip">Bryan Chapell, “Bryan Chapell on Christ-Centered Hermeneutics,” in Christ-Centered Preaching and Teaching, 18–19; Dennis E. Johnson, Him We Proclaim: Preaching Christ from All the Scriptures, 1st ed. (Phillipsburg, NJ: P & R Publishing, 2007), 62–238.</span></span> Христоцентричное учение — это то, что делает преподавание Писания <em>отличительно христианским</em>. Соответственно, также принимается язык проповеди и преподавания Библии как <em>христианского</em> Писания.<span class="container fn-marker">15<span class="tooltip">Goldsworthy, Preaching the Whole Bible as Christian Scripture, 15–21; Greidanus, Preaching Christ, 39–43.</span></span></p>
 
 <p>Эти шесть акцентов составляют ключевые элементы движения. Оно стремится провозглашать, как каждый текст относится к Христу и Его делу. Оно подчеркивает необходимость экспозиционного основания для объяснения отличительно христианского богословия (в отличие от морали). Хотя оно признает необходимость избегать аллегории, оно все же верит, что Христос является субъектом каждого текста. Это знаменует истинную христианскую проповедь.</p>
@@ -701,13 +534,56 @@ html.dark .bref .btip{
 
 <p>Один конкретный метод, выделяемый христоцентричной герменевтикой, — это <strong>типология</strong>. Это немного отличается от аналогии, потому что аналогия имеет дело строго с областью значимости, но типология имеет дело как со значением, так и со значимостью. Типология понимает, как личность, событие или предмет отражает определенную богословскую идею или функцию, которая находит кульминацию во Христе. Она обнаруживает паттерны в Писании и показывает, как такое повторение (тип) всегда изображало кульминацию идеи (антитип).<span class="container fn-marker">24<span class="tooltip">Goldsworthy, Preaching the Whole Bible as Christian Scripture, 105–14; Johnson, Him We Proclaim, 200–15.</span></span> Внутри этого есть некоторый аспект намеренного предвосхищения.<span class="container fn-marker">25<span class="tooltip">Goldsworthy, Preaching the Whole Bible as Christian Scripture, 77.</span></span> Соответственно, типология — это не просто импликация, но часть того, что тексты обсуждают и ставят своей целью. Следует читать типологический текст о Христе, потому что, по факту, он таковым является.</p>
 
-<p>В этот момент у кого-то может не возникнуть слишком сильного возражения против того, что предлагает христоцентричная герменевтика. В конце концов, история искупления действительно движется к Христу (Деян. 13:13–41; Рим. 10:4; Гал. 4:4). Тексты порой действительно показывают падшее состояние людей и, как следствие, их нужду во Христе (Быт. 3:1–15). Ветхозаветные сущности, такие как жертвенная система, отражают богословие Божьей святости, которую удовлетворяет Христос (ср. Левит 1–4; Евреям 9:1–13) — типологическая взаимосвязь. Спорный вопрос заключается не в том, «как» можно в общем связать текст с Христом или даже как это работает в определенных примерах. Скорее, спор возникает, когда эти рамки накладываются на <em>каждый</em> текст Писания. Поскольку христоцентричная герменевтика настаивает на том, что <em>все</em> тексты должны говорить о Христе, то, как они интерпретируют и/или применяют определенные отрывки, может заставить некоторых чувствовать дискомфорт.</p>
+<p>В этот момент у кого-то может не возникнуть слишком сильного возражения против того, что предлагает христоцентричная герменевтика. В конце концов, история искупления действительно движется к Христу (
+<a href="javascript:void(0)" class="bref" data-ref="Деяния 13:13–41">Деян. 13:13–41</a>; 
+<a href="javascript:void(0)" class="bref" data-ref="Римлянам 10:4">Рим. 10:4</a>; 
+<a href="javascript:void(0)" class="bref" data-ref="Галатам 4:4">Гал. 4:4</a>
+). Тексты порой действительно показывают падшее состояние людей и, как следствие, их нужду во Христе (
+<a href="javascript:void(0)" class="bref" data-ref="Бытие 3:1–15">Быт. 3:1–15</a>
+). Ветхозаветные сущности, такие как жертвенная система, отражают богословие Божьей святости, которую удовлетворяет Христос (ср. 
+<a href="javascript:void(0)" class="bref" data-ref="Левит 1–4">Левит 1–4</a>; 
+<a href="javascript:void(0)" class="bref" data-ref="Евреям 9:1–13">Евр. 9:1–13</a>
+) — типологическая взаимосвязь.</p> 
+<p>Спорный вопрос заключается не в том, «как» можно в общем связать текст с Христом или даже как это работает в определенных примерах. Скорее, спор возникает, когда эти рамки накладываются на <em>каждый</em> текст Писания. Поскольку христоцентричная герменевтика настаивает на том, что <em>все</em> тексты должны говорить о Христе, то, как они интерпретируют и/или применяют определенные отрывки, может заставить некоторых чувствовать дискомфорт.</p>
 
-<p>Например, <em>фокус на падшем состоянии</em> указывает на то, как прощение Богом Давида в инциденте с Вирсавией показывает нужду и зависимость Давида от Евангелия.<span class="container fn-marker">26<span class="tooltip">Chapell, Christ-Centered Preaching, 307.</span></span> Он павший, как и мы, и нуждается в Божьей благодати во Христе. Литература мудрости указывает на то, как мы грешны и как мы нуждаемся в Том, Кто воплощает мудрость, — Христе (Прит. 8:22; ср. Кол. 1:15).<span class="container fn-marker">27<span class="tooltip">Edmund P. Clowney, The Unfolding Mystery: Discovering Christ in the Old Testament (Colorado Springs, CO: NavPress, 1988), 175–76.</span></span> Аналогия (как позитивная, так и контрастная) и типология порождают некоторые интересные результаты. Тьма, окружающая Аврама при заключении Авраамова завета, параллельна собственной тьме Христа на кресте (Быт. 15:12; ср. Матф. 27:45).<span class="container fn-marker">28<span class="tooltip">Ibid., 50–51.</span></span> Исход Израиля — это «слабая тень» духовного исхода, который верующие переживают во Христе.<span class="container fn-marker">29<span class="tooltip">Johnson, Him We Proclaim, 298–99.</span></span> Беда Ахана и его карательная смерть (Иис. Нав. 7:24–25) коррелирует с собственной смертью Иисуса на кресте.<span class="container fn-marker">30<span class="tooltip">Ibid., 311. Технически, это часть большего обсуждения того, как Притчи 15:27 взаимосвязаны с жизнью Христа. Тем не менее, связи между этим текстом, Аханом и Христом трудно обосновать.</span></span> Отвержение Самсона его коленом зеркально отражает то, как Иисус будет отвергнут.<span class="container fn-marker">31<span class="tooltip">Clowney, The Unfolding Mystery, 17.</span></span> Победоносная смерть Самсона — это картина победоносной смерти Того, Кто не потерпит неудачу так, как Самсон.<span class="container fn-marker">32<span class="tooltip">Ibid.</span></span> Давид и Голиаф становятся картиной того, как величайший Давид победит грех, сатану и смерть, потому что все они являются производными того, как Семя поразит голову змея.<span class="container fn-marker">33<span class="tooltip">Goldsworthy, Christ-Centered Biblical Theology, 30. ВЗ действительно делает связь между Быт. 3:15 и другими мессианскими текстами. Интересно, что он использует последовательный язык для этого (ср. Чис. 24:17; Пс. 67:22; 109:5–6; Авв. 3:13). Другими словами, нельзя просто увидеть поражение головы и сделать ассоциацию. Планка доказательств должна быть выше, так как сам ВЗ имеет формульный язык для указания на мессианскую ссылку.</span></span> Более того, так же как люди Давида принесли ему воду, которая была драгоценна (2 Цар. 23:16), так новый Давид приносит нам драгоценную воду жизни (Иоанна 4:10–11).<span class="container fn-marker">34<span class="tooltip">Clowney, The Unfolding Mystery, 159.</span></span> Отказ Давида проклинать в ответ, когда его проклинали (2 Цар. 16:5–12), зеркально отражает Мессию, который также подвергается проклятию без сопротивления.<span class="container fn-marker">35<span class="tooltip">Ibid., 162.</span></span> Смерть Навуфея от рук лжесвидетелей (3 Цар. 21:13–14) параллельна собственной смерти Иисуса с лжесвидетелями.<span class="container fn-marker">36<span class="tooltip">Johnson, Him We Proclaim, 311. См. выше; Джонсон апеллирует к Навуфею как части цепи текстов, имеющих дело со взяточничеством, и связывает это со смертью Христа, которая искупает верующего от такой коррупции.</span></span> Готовность Есфири положить свою собственную жизнь (Есф. 4:16) предвосхищает готовность Христа сделать то же самое со Своей жизнью.<span class="container fn-marker">37<span class="tooltip">Ibid., 279.</span></span> Предостережение в Притчах не брать взятки (Прит. 15:27) может быть истинно исполнено только во Христе, который может искупить нас от нашего лицеприятия.<span class="container fn-marker">38<span class="tooltip">Ibid., 311. Джонсон технически здесь апеллирует к другим историям в Ветхом Завете, которые включают взяточничество, чтобы доказать свою точку зрения. Вопрос в том, инкорпорированы ли Притчи 15:27 автором этих текстов и действительно ли эти тексты (как история Навуфея) имеют намеренные связи с Новым. Другими словами, Джонсон апеллировал к серии корреляций (значимость), которые сомнительны. Это и есть, по сути, главная проблема христоцентричной герменевтики.</span></span> В конце концов, собственная искупительная смерть Иисуса произошла посредством взятки (Матф. 27:1–20), но преодолела такую коррупцию, чтобы дать нам жизнь.<span class="container fn-marker">39<span class="tooltip">Ibid.</span></span></p>
+<p>Например, <em>фокус на падшем состоянии</em> указывает на то, как прощение Богом Давида в инциденте с Вирсавией показывает нужду и зависимость Давида от Евангелия.<span class="container fn-marker">26<span class="tooltip">Chapell, Christ-Centered Preaching, 307.</span></span> Он павший, как и мы, и нуждается в Божьей благодати во Христе. Литература мудрости указывает на то, как мы грешны и как мы нуждаемся в Том, Кто воплощает мудрость, — Христе (
+<a href="javascript:void(0)" class="bref" data-ref="Притчи 8:22">Прит. 8:22</a>; ср. 
+<a href="javascript:void(0)" class="bref" data-ref="Колоссянам 1:15">Кол. 1:15</a>
+).<span class="container fn-marker">27<span class="tooltip">Edmund P. Clowney, The Unfolding Mystery: Discovering Christ in the Old Testament (Colorado Springs, CO: NavPress, 1988), 175–76.</span></span> Аналогия (как позитивная, так и контрастная) и типология порождают некоторые интересные результаты. Тьма, окружающая Аврама при заключении Авраамова завета, параллельна собственной тьме Христа на кресте (
+<a href="javascript:void(0)" class="bref" data-ref="Бытие 15:12">Быт. 15:12</a>; ср. 
+<a href="javascript:void(0)" class="bref" data-ref="Матфея 27:45">Матф. 27:45</a>
+).<span class="container fn-marker">28<span class="tooltip">Ibid., 50–51.</span></span> Исход Израиля — это «слабая тень» духовного исхода, который верующие переживают во Христе.<span class="container fn-marker">29<span class="tooltip">Johnson, Him We Proclaim, 298–99.</span></span> Беда Ахана и его карательная смерть (
+<a href="javascript:void(0)" class="bref" data-ref="Иисус Навин 7:24–25">Иис. Нав. 7:24–25</a>
+) коррелирует с собственной смертью Иисуса на кресте.<span class="container fn-marker">30<span class="tooltip">Ibid., 311.</span></span> Отвержение Самсона его коленом зеркально отражает то, как Иисус будет отвергнут.<span class="container fn-marker">31<span class="tooltip">Clowney, The Unfolding Mystery, 17.</span></span> Победоносная смерть Самсона — это картина победоносной смерти Того, Кто не потерпит неудачу так, как Самсон.<span class="container fn-marker">32<span class="tooltip">Ibid.</span></span> Давид и Голиаф становятся картиной того, как величайший Давид победит грех, сатану и смерть, потому что все они являются производными того, как Семя поразит голову змея (
+<a href="javascript:void(0)" class="bref" data-ref="Бытие 3:15">Быт. 3:15</a>; ср. 
+<a href="javascript:void(0)" class="bref" data-ref="Числа 24:17">Чис. 24:17</a>; 
+<a href="javascript:void(0)" class="bref" data-ref="Псалом 67:22">Пс. 67:22</a>; 
+<a href="javascript:void(0)" class="bref" data-ref="Псалом 109:5–6">Пс. 109:5–6</a>; 
+<a href="javascript:void(0)" class="bref" data-ref="Аввакум 3:13">Авв. 3:13</a>
+).<span class="container fn-marker">33<span class="tooltip">Goldsworthy, Christ-Centered Biblical Theology, 30.</span></span> Более того, так же как люди Давида принесли ему воду, которая была драгоценна (
+<a href="javascript:void(0)" class="bref" data-ref="2 Царств 23:16">2 Цар. 23:16</a>
+), так новый Давид приносит нам драгоценную воду жизни (
+<a href="javascript:void(0)" class="bref" data-ref="Иоанна 4:10–11">Иоан. 4:10–11</a>
+).<span class="container fn-marker">34<span class="tooltip">Clowney, The Unfolding Mystery, 159.</span></span> Отказ Давида проклинать в ответ, когда его проклинали (
+<a href="javascript:void(0)" class="bref" data-ref="2 Царств 16:5–12">2 Цар. 16:5–12</a>
+), зеркально отражает Мессию, который также подвергается проклятию без сопротивления.<span class="container fn-marker">35<span class="tooltip">Ibid., 162.</span></span> Смерть Навуфея от рук лжесвидетелей (
+<a href="javascript:void(0)" class="bref" data-ref="3 Царств 21:13–14">3 Цар. 21:13–14</a>
+) параллельна собственной смерти Иисуса с лжесвидетелями.<span class="container fn-marker">36<span class="tooltip">Johnson, Him We Proclaim, 311.</span></span> Готовность Есфири положить свою собственную жизнь (
+<a href="javascript:void(0)" class="bref" data-ref="Есфирь 4:16">Есф. 4:16</a>
+) предвосхищает готовность Христа сделать то же самое со Своей жизнью.<span class="container fn-marker">37<span class="tooltip">Ibid., 279.</span></span> Предостережение в Притчах не брать взятки (
+<a href="javascript:void(0)" class="bref" data-ref="Притчи 15:27">Прит. 15:27</a>
+) может быть истинно исполнено только во Христе, который может искупить нас от нашего лицеприятия.<span class="container fn-marker">38<span class="tooltip">Ibid., 311.</span></span> В конце концов, собственная искупительная смерть Иисуса произошла посредством взятки (
+<a href="javascript:void(0)" class="bref" data-ref="Матфея 27:1–20">Матф. 27:1–20</a>
+), но преодолела такую коррупцию, чтобы дать нам жизнь.<span class="container fn-marker">39<span class="tooltip">Ibid.</span></span></p>
+   
+<span class="container fn-marker">39<span class="tooltip">Ibid.</span></span></p>
+<p>Что не так с вышеприведенными предположениями? Некоторые могут возразить, что утверждения выше казались «притянутыми». Мы можем быть более конкретными. Проблема вращается вокруг того, как значимость (импликация) соотносится со значением. Как обсуждалось, валидные импликации должны соответствовать тому, <em>что</em> сказал автор и <em>почему</em> он это сказал.<span class="container fn-marker">40<span class="tooltip">Фокус на авторском замысле обусловлен тем, что сама христоцентричная герменевтика отстаивает такую позицию. См. обсуждение выше.</span></span> В примерах выше импликации, кажется, выходят за границы того, что намеривался автор. Автор 2-й книги Царств не подразумевает, что Божье прощение Давида должно показать что-то о Евангелии. Скорее, фокус, кажется, на падении династии Давида (ср. 
+<a href="javascript:void(0)" class="bref" data-ref="2 Царств 12:11–14">2 Цар. 12:11–14</a>
+).<span class="container fn-marker">41<span class="tooltip">Robert D. Bergen, 1, 2 Samuel, NAC (Nashville: Broadman and Holman, 1996), 371–73.</span></span> Точно так же автор Притчей заявляет, что его притчи предназначены для наставления о праведной жизни (
+<a href="javascript:void(0)" class="bref" data-ref="Притчи 1:1–7">Прит. 1:1–7</a>
+), а не для того, чтобы показать наше беззаконие, как предполагала христоцентричная герменевтика.<span class="container fn-marker">42<span class="tooltip">Bruce K. Waltke, The Book of Proverbs, Chapters 1–15, NICOT (Grand Rapids: Eerdmans Publishing, 2004), 176–80.</span></span></p>
 
-<p>Что не так с вышеприведенными предположениями? Некоторые могут возразить, что утверждения выше казались «притянутыми». Мы можем быть более конкретными. Проблема вращается вокруг того, как значимость (импликация) соотносится со значением. Как обсуждалось, валидные импликации должны соответствовать тому, <em>что</em> сказал автор и <em>почему</em> он это сказал.<span class="container fn-marker">40<span class="tooltip">Фокус на авторском замысле обусловлен тем, что сама христоцентричная герменевтика отстаивает такую позицию. См. обсуждение выше.</span></span> В примерах выше импликации, кажется, выходят за границы того, что намеривался автор. Автор 2-й книги Царств не подразумевает, что Божье прощение Давида должно показать что-то о Евангелии. Скорее, фокус, кажется, на падении династии Давида (ср. 2 Цар. 12:11–14).<span class="container fn-marker">41<span class="tooltip">Robert D. Bergen, 1, 2 Samuel, NAC (Nashville: Broadman and Holman, 1996), 371–73.</span></span> Точно так же автор Притчей заявляет, что его притчи предназначены для наставления о праведной жизни (Прит. 1:1–7), а не для того, чтобы показать наше беззаконие, как предполагала христоцентричная герменевтика.<span class="container fn-marker">42<span class="tooltip">Bruce K. Waltke, The Book of Proverbs, Chapters 1–15, NICOT (Grand Rapids: Eerdmans Publishing, 2004), 176–80.</span></span></p>
-
-<p>Та же логика применима к аналогиям, сделанным выше между Христом и Авраамом, Аханом, Самсоном, Давидом, Есфирью или Навуфеем. Авторы этих текстов, похоже, не обсуждают никакого рода предвосхищение или параллелизм.<span class="container fn-marker">43<span class="tooltip">Как будет обсуждено позже, это не значит, что параллели не могут быть проведены. Например, можно говорить о связи Давида с Давидовым заветом, что имеет отношение к Христу. Это могло бы быть, например, то, как Иуда относится к Псалму 68:26 и 108:8. Эти отрывки контекстуально строятся на Давидовом завете (ср. 2 Цар. 7:9–14; Пс. 68:14 [Евр. ст. 15], 17 [Евр. ст. 18]; 108:21, 26). Более того, язык этих псалмов используется пророками о Мессии (ср. Пс. 68:14 [Евр. 15]; Ис. 49:8). Следовательно, можно продемонстрировать намеренное установление Давидова богословия изначально в этих псалмах, которое не только потенциально имеет легитимные импликации на Мессию, но и то, что пророки это подтвердили. Точки соединяются по направлению к Новому Завету. Если бы можно было доказать, что нарратив экспонировал определенную богословскую идею, которая имеет разветвления в позднейшем откровении, это было бы легитимно. Однако это не то, как христоцентричная герменевтика строит аргументацию в этих вопросах. См. следующую сноску для примера. Кроме того, при аргументации, приведенной в этом примечании, последовал бы другой акцент на Ветхом Завете. Первичный акцент был бы на овладении богословскими концептами, которые установил автор, так чтобы когда их импликации соединяются с Христом, можно было увидеть полный вес, который это имеет для Христологии. Другими словами, не изучая тщательно текст Ветхого Завета экзегетически, человек уменьшает богословский вес, приписываемый Христу, когда делается связь. Это повторяющаяся проблема, которая будет подсвечена на протяжении этой статьи.</span></span> Таким образом, представляется, что христоцентричная герменевтика выводит эти импликации не из замысла автора, а из чего-то другого.<span class="container fn-marker">44<span class="tooltip">Это действительно так. См. Goldsworthy, Christ-Centered Biblical Theology, 30–31. Имея дело с проповедью по 1 Царств 17 (Давид и Голиаф), Голдсуорси утверждает, что и моральный подход (Давид как модель), и типологический подход (победа Давида как картина победы Христа) являются валидными. Причина, которую он приводит: «подавляющее свидетельство Нового Завета заключается в том, что свидетельство Ветхого Завета о Христе имеет приоритет над его свидетельством об аутентичной христианской жизни в сегодняшнем мире... Иисус, таким образом, является главной целью всех обетований и пророчеств Ветхого Завета» (30–31). Заметьте, что аргументация Голдсуорси основана не на чем-то внутри самой 1 Царств 17, что подготавливает параллель каким-то образом, а на большей дедуктивной богословской структуре, которая производит этот результат. Это будет дальше обсуждаться в следующем разделе.</span></span> Вот почему такие толкования или применения кажутся натянутыми, что является полной противоположностью тому, чего желает христоцентричная герменевтика.<span class="container fn-marker">45<span class="tooltip">См. предыдущее обсуждение приоритетов христоцентричной герменевтики.</span></span></p>
+<p>Та же логика применима к аналогиям, сделанным выше между Христом и Авраамом, Аханом, Самсоном, Давидом, Есфирью или Навуфеем. Авторы этих текстов, похоже, не обсуждают никакого рода предвосхищение или параллелизм.<span class="container fn-marker">43<span class="tooltip">Как будет обсуждено позже, это не значит, что параллели не могут быть проведены...</span></span> Таким образом, представляется, что христоцентричная герменевтика выводит эти импликации не из замысла автора, а из чего-то другого.<span class="container fn-marker">44<span class="tooltip">Goldsworthy, Christ-Centered Biblical Theology, 30–31.</span></span> Вот почему такие толкования или применения кажутся натянутыми, что является полной противоположностью тому, чего желает христоцентричная герменевтика.<span class="container fn-marker">45<span class="tooltip">См. предыдущее обсуждение приоритетов христоцентричной герменевтики.</span></span></p>
 
 <p>Следовательно, у христоцентричной герменевтики есть практический метод, позволяющий увидеть, как текст обсуждает Христа. В рамках этого мы начинаем видеть проблему. Проблема изначально не в ее взгляде на значение. Христоцентричная герменевтика утверждает авторский замысел. Проблема в том, как она формулирует значимость отрывка. Их настойчивость на том, чтобы заставить каждый текст говорить о Христе, и их способ достижения этого производят импликации, которые, похоже, не соответствуют главной цели отрывка. Эта неточная связь между значением и значимостью является главной дилеммой в христоцентричной герменевтике. Фактически, разрыв между значением и значимостью порой настолько велик, что предлагаемые импликации, кажется, придают тексту новую направленность. В этих случаях предлагаемая значимость, похоже, переписывает значение текста и тем самым подрывает акцент христоцентричной герменевтики на авторском замысле. Таким образом, претензия христоцентричной герменевтики на приверженность авторскому замыслу кажется противоречащей тем применениям, которые она предлагает.</p>
 
@@ -715,21 +591,67 @@ html.dark .bref .btip{
 
 <p>То, как христоцентричный подход разрешает напряжение между значением и значимостью, происходит через его богословскую структуру. Сторонники этой герменевтики апеллируют к конкретным отрывкам, а также к более широкому библейско-богословскому обоснованию, чтобы показать, что их цели и метод оправданы.</p>
 
-<p>Мы можем начать с рассмотрения конкретных отрывков, цитируемых искупительно-исторической герменевтикой. Они напоминают нам, что Павел провозглашает Христа распятого (1 Кор. 1:23).<span class="container fn-marker">46<span class="tooltip">Chapell, Christ-Centered Preaching, 80; Goldsworthy, Preaching the Whole Bible as Christian Scripture, 1, 32.</span></span> Апостол даже заявляет, что он рассудил не знать ничего среди коринфян, кроме Христа, и притом распятого (1 Кор. 2:2).<span class="container fn-marker">47<span class="tooltip">Goldsworthy, Preaching the Whole Bible as Christian Scripture, 1, 32; Greidanus, Preaching Christ, 5.</span></span> Позже во 2-м Коринфянам Павел повторяет эту мысль, заявляя, что он проповедует Иисуса Господом (2 Кор. 4:5). Эти утверждения предполагают, что Христос является исключительным провозглашением апостола. Это усиливается его заявлением в Колоссянам 1:28: «Его [Христа] мы проповедуем».<span class="container fn-marker">48<span class="tooltip">Johnson, Him We Proclaim, 75.</span></span> Такие заявления, кажется, определяют природу служения Павла. Соответственно, те, кто в христоцентричном лагере, утверждают, что Павел христоцентричен во всей своей работе и проповеди. Это требует, чтобы все относилось к Христу. Каждый текст должен быть прочитан о Христе, потому что для тех, кто придерживается христоцентричного подхода, Павел требует, чтобы каждый текст был о Христе и Его искупительной работе.<span class="container fn-marker">49<span class="tooltip">Chapell, Christ-Centered Preaching, 80. Чапелл нюансирует это, говоря «Каким-то образом, хотя Павел обращался ко многим вопросам повседневной жизни, он верил, что всегда проповедовал о личности и деле Иисуса. Это должно быть целью экспозиционной проповеди. Частности отрывка должны быть связаны с общей целью Писания».</span></span></p>
+<p>Мы можем начать с рассмотрения конкретных отрывков, цитируемых искупительно-исторической герменевтикой. Они напоминают нам, что Павел провозглашает Христа распятого (
+<a href="javascript:void(0)" class="bref" data-ref="1 Коринфянам 1:23">1 Кор. 1:23</a>
+).<span class="container fn-marker">46<span class="tooltip">Chapell, Christ-Centered Preaching, 80.</span></span> Апостол даже заявляет, что он рассудил не знать ничего среди коринфян, кроме Христа, и притом распятого (
+<a href="javascript:void(0)" class="bref" data-ref="1 Коринфянам 2:2">1 Кор. 2:2</a>
+).<span class="container fn-marker">47<span class="tooltip">Goldsworthy, Preaching the Whole Bible as Christian Scripture, 1, 32.</span></span> Позже во 2-м Коринфянам Павел повторяет эту мысль, заявляя, что он проповедует Иисуса Господом (
+<a href="javascript:void(0)" class="bref" data-ref="2 Коринфянам 4:5">2 Кор. 4:5</a>
+). Эти утверждения предполагают, что Христос является исключительным провозглашением апостола. Это усиливается его заявлением в Колоссянам 1:28: «Его [Христа] мы проповедуем» (
+<a href="javascript:void(0)" class="bref" data-ref="Колоссянам 1:28">Кол. 1:28</a>
+).<span class="container fn-marker">48<span class="tooltip">Johnson, Him We Proclaim, 75.</span></span></p>
+   
+<p>Такие заявления, кажется, определяют природу служения Павла. Соответственно, те, кто в христоцентричном лагере, утверждают, что Павел христоцентричен во всей своей работе и проповеди. Это требует, чтобы все относилось к Христу. Каждый текст должен быть прочитан о Христе, потому что для тех, кто придерживается христоцентричного подхода, Павел требует, чтобы каждый текст был о Христе и Его искупительной работе.<span class="container fn-marker">49<span class="tooltip">Chapell, Christ-Centered Preaching, 80.</span></span></p>
 
-<p>Сторонники христоцентричной герменевтики также утверждают, что это согласуется с собственной герменевтикой Иисуса. В Луки 24:27, как они утверждают, Иисус объяснил все Писание в свете Самого Себя. Фразы «Моисей и пророки», а также «все Писания» в этом стихе демонстрируют, что Христос найден всеобъемлюще во всем Ветхом Завете. Насквозь он говорит о Нем.<span class="container fn-marker">50<span class="tooltip">Goldsworthy, Preaching the Whole Bible as Christian Scripture, 46–48, 84–85.</span></span> В этом же ключе христоцентричный взгляд также аргументирует из Ефесянам 1:10. Голдсуорси утверждает, что раз Христос — это сумма [summation] всего (Еф. 1:10), то все в творении и истории всегда категорически о Христе.<span class="container fn-marker">51<span class="tooltip">Goldsworthy, Christ-Centered Biblical Theology, 187–88.</span></span> Все объясняет и указывает на Того, кто наполняет все [fulfills everything].<span class="container fn-marker">52<span class="tooltip">Ibid.</span></span> Следовательно, Писание типологично, и поэтому все в творении и откровении отражает Христа.</p>
+<p>Сторонники христоцентричной герменевтики также утверждают, что это согласуется с собственной герменевтикой Иисуса. В 
+<a href="javascript:void(0)" class="bref" data-ref="Луки 24:27">Луки 24:27</a>
+, как они утверждают, Иисус объяснил все Писание в свете Самого Себя. Фразы «Моисей и пророки», а также «все Писания» в этом стихе демонстрируют, что Христос найден всеобъемлюще во всем Ветхом Завете. Насквозь он говорит о Нем.<span class="container fn-marker">50<span class="tooltip">Goldsworthy, Preaching the Whole Bible as Christian Scripture, 46–48.</span></span></p>
+
+<p>В этом же ключе христоцентричный взгляд также аргументирует из 
+<a href="javascript:void(0)" class="bref" data-ref="Ефесянам 1:10">Ефесянам 1:10</a>
+. Голдсуорси утверждает, что раз Христос — это сумма всего, то все в творении и истории всегда категорически о Христе.<span class="container fn-marker">51<span class="tooltip">Goldsworthy, Christ-Centered Biblical Theology, 187–88.</span></span> Все объясняет и указывает на Того, кто наполняет все.<span class="container fn-marker">52<span class="tooltip">Ibid.</span></span> Следовательно, Писание типологично, и поэтому все в творении и откровении отражает Христа.</p>
 
 <p>Как мы отметили выше, часть проблемы христоцентричной герменевтики проистекает из решимости найти Христа в каждом тексте. Контраргумент заключается просто в том, что утверждения Нового Завета требуют такой цели. Это то, что предписывают Иисус и Павел. Таким образом, это путь, которым должны в целом оперировать толкование и проповедь. Заявления Писания поддерживают цель христоцентричной герменевтики.</p>
 
-<p>В дополнение, искупительно-историческая герменевтика апеллирует к библейско-богословскому обоснованию в Писании, чтобы оправдать свой практический метод. В целом, она указывает на единство Писания. Библия — это одна книга, написанная в конечном счете одним божественным автором, имеющая дело с всеобъемлющей темой Божьего искупления во Христе. По этой причине Бог желает, чтобы каждый текст каким-то образом вносил вклад в эту тему. Это присуще каждому тексту как библейскому откровению.<span class="container fn-marker">53<span class="tooltip">Johnson, Him We Proclaim, 3–5; Goldsworthy, Preaching the Whole Bible as Christian Scripture, 67–86.</span></span> Поскольку Писание работает именно так, видение импликаций о Христе и искуплении в каждом тексте не является чуждым замыслу автора, но полностью совместимо с Божьим замыслом в тексте.</p>
+<p>В дополнение, искупительно-историческая герменевтика апеллирует к библейско-богословскому обоснованию в Писании, чтобы оправдать свой практический метод. В целом, она указывает на единство Писания. Библия — это одна книга, написанная в конечном счете одним божественным автором, имеющая дело с всеобъемлющей темой Божьего искупления во Христе. По этой причине Бог желает, чтобы каждый текст каким-то образом вносил вклад в эту тему. Это присуще каждому тексту как библейскому откровению.<span class="container fn-marker">53<span class="tooltip">Johnson, Him We Proclaim, 3–5.</span></span> Поскольку Писание работает именно так, видение импликаций о Христе и искуплении в каждом тексте не является чуждым замыслу автора, но полностью совместимо с Божьим замыслом в тексте.</p>
 
-<p>Такая логика служит частичным основанием для типологии. Единство Писания и суверенитет Бога над Его планом поддерживают то, что Бог предназначил событиям и личностям Ветхого Завета действовать типологически. Ученые указывают на типологические паттерны, такие как Христос и Адам (Рим. 5:12–21), а также жертвенная система и смерть Христа (Евр. 9:9–12), чтобы изначально утверждать, что Писание работает типологически.<span class="container fn-marker">54<span class="tooltip">Johnson, Him We Proclaim, 224–29.</span></span> Они также наблюдают, как Ветхий Завет сам по себе работает типологически. Первый исход ведет ко второму (Ос. 11:1–11), физическое обрезание указывало на обрезание сердца (Втор. 30:6), творение ведет к новому творению (Ис. 65:17), а Давид ведет к новому Давиду (Ос. 3:5).<span class="container fn-marker">55<span class="tooltip">Ibid., 226.</span></span> Христоцентричный взгляд использует это, чтобы утверждать, что Ветхий Завет имеет внутреннюю типологическую природу, которая подготавливает к Новому Завету. С этим сторонники искупительно-исторической герменевтики утверждают, что Бог намеренно спроектировал все вещи в Своем плане, чтобы обсуждать Христа. Даже если человеческий автор не осознавал этого, они были задуманы Богом.<span class="container fn-marker">56<span class="tooltip">Ibid., 228–29.</span></span> Соответственно, извлечение типологических выводов о Христе пребывает в авторском замысле, потому что Бог предопределил это таким образом.</p>
+<p>Такая логика служит частичным основанием для типологии. Единство Писания и суверенитет Бога над Его планом поддерживают то, что Бог предназначил событиям и личностям Ветхого Завета действовать типологически. Ученые указывают на типологические паттерны, такие как Христос и Адам (
+<a href="javascript:void(0)" class="bref" data-ref="Римлянам 5:12–21">Рим. 5:12–21</a>
+), а также жертвенная система и смерть Христа (
+<a href="javascript:void(0)" class="bref" data-ref="Евреям 9:9–12">Евр. 9:9–12</a>
+), чтобы изначально утверждать, что Писание работает типологически.<span class="container fn-marker">54<span class="tooltip">Johnson, Him We Proclaim, 224–29.</span></span></p> 
 
-<p>Для христоцентричной герменевтики все это сходится в том, как Новый Завет использует Ветхий. Искупительная история, единство откровения и типологическая работа Писания — все это часть интерпретационной структуры апостолов. Они указывают на многочисленные примеры, где авторы Нового Завета, кажется, переосмысливают Ветхий и меняют его значение, чтобы говорить о Христе. Например, Осия 11:1, который обсуждал исход Израиля, теперь говорит об избавлении Христа от Ирода (Матф. 2:15). Иеремия 31:15 говорил об изгнании Израиля, но теперь обсуждает трагические обстоятельства, окружающие рождение Христа (Матф. 2:18). Список можно продолжать.<span class="container fn-marker">57<span class="tooltip">Robert L. Thomas, “The New Testament Use of the Old Testament,” MSJ 13, no. 1 (2002): 79–98. Томас предоставляет список того, когда апостолы потенциально перечитывали ВЗ.</span></span></p>
+<p>Они также наблюдают, как Ветхий Завет сам по себе работает типологически. Первый исход ведет ко второму (
+<a href="javascript:void(0)" class="bref" data-ref="Осия 11:1–11">Ос. 11:1–11</a>
+), физическое обрезание указывало на обрезание сердца (
+<a href="javascript:void(0)" class="bref" data-ref="Второзаконие 30:6">Втор. 30:6</a>
+), творение ведет к новому творению (
+<a href="javascript:void(0)" class="bref" data-ref="Исаия 65:17">Ис. 65:17</a>
+), а Давид ведет к новому Давиду (
+<a href="javascript:void(0)" class="bref" data-ref="Осия 3:5">Ос. 3:5</a>
+).<span class="container fn-marker">55<span class="tooltip">Johnson, Him We Proclaim, 226.</span></span></p>
 
-<p>Христоцентричный подход утверждает, что эти примеры отражают герменевтический сдвиг, который произошел в событии Христа. Пришествие Христа раскрывает полное значение текста и позволяет апостолам видеть его. Его объяснение Писания по дороге в Эммаус (Луки 24:24–26) переориентировало мировоззрение и герменевтику учеников. Оно открыло символическое значение Ветхого Завета. Оно показало окончательные последствия единства Писания, его предельный горизонт [ultimate horizon].<span class="container fn-marker">58<span class="tooltip">Johnson, Him We Proclaim, 138–39.</span></span> Оно установило событие Христа, Евангелие, как герменевтический ключ для всего откровения.<span class="container fn-marker">59<span class="tooltip">Goldsworthy, Preaching the Whole Bible as Christian Scripture, 54, 84.</span></span> Павел выражает это чувство, описывая Ветхий Завет как то, что может умудрить во спасение (2 Тим. 3:15).<span class="container fn-marker">60<span class="tooltip">Ibid.</span></span> Таким образом, Новый Завет должен быть интерпретационной сеткой поверх Ветхого, и «каждое послание из Ветхого Завета должно быть увидено в свете Иисуса Христа».<span class="container fn-marker">61<span class="tooltip">Greidanus, Preaching Christ, 51; Goldsworthy, Preaching the Whole Bible as Christian Scripture, 54, 84; Johnson, Him We Proclaim, 137.</span></span> Соответственно, апостольская (и даже Самого Христа) герменевтика показывает, что типология и единство Писания не просто случайны или ограничены определенными примерами. Скорее, они формируют структуру того, как авторы Нового Завета читали Писание, как Писание работает и что Бог всегда подразумевал под их значением.<span class="container fn-marker">62<span class="tooltip">Johnson, Him We Proclaim, 153.</span></span> Следовательно, христоцентричная герменевтика утверждает, что именно так верующие Нового Завета должны читать священное писание, если они хотят соблюдать Божий замысел.</p>
+<p>Христоцентричный взгляд использует это, чтобы утверждать, что Ветхий Завет имеет внутреннюю типологическую природу, которая подготавливает к Новому Завету. С этим сторонники искупительно-исторической герменевтики утверждают, что Бог намеренно спроектировал все вещи в Своем плане, чтобы обсуждать Христа. Даже если человеческий автор не осознавал этого, они были задуманы Богом.<span class="container fn-marker">56<span class="tooltip">Ibid., 228–29.</span></span> Соответственно, извлечение типологических выводов о Христе пребывает в авторском замысле, потому что Бог предопределил это таким образом.</p>
 
-<p>Как мы видели, проблема христоцентричного подхода касается того, как его предлагаемые импликации (значимость) не плотно соответствуют замыслу автора. Сторонники разрешают это, проясняя, как замысел работает в Писании. Делая это, они имеют дело с одним из главных вопросов о природе значения: как двойное авторство [dual-authorship] оперирует в Писании.<span class="container fn-marker">63<span class="tooltip">См. обсуждение выше. Касательно значения, существуют два критических вопроса: определитель значения в тексте и отношение двойного авторства в библейском тексте.</span></span> Их ответ заключается в том, что, хотя они верят в авторский замысел, они отличают замысел божественного автора от человеческого писателя. Это позволяет им делать выводы, которые могут не согласовываться с целью человеческого автора, но соответствуют большей программе Бога. Для христоцентричной герменевтики эта модель основана на том, что Писание демонстрирует в библейском богословии, а также утверждает в конкретных отрывках. Следовательно, возражения против такого подхода игнорируют богословские реальности, установленные в искупительной истории, и являются больше продуктом просвещения [enlightenment], чем тем, чего требует Бог.<span class="container fn-marker">64<span class="tooltip">Johnson, Him We Proclaim, 138–40.</span></span></p>
+<p>Для христоцентричной герменевтики все это сходится в том, как Новый Завет использует Ветхий. Искупительная история, единство откровения и типологическая работа Писания — все это часть интерпретационной структуры апостолов. Они указывают на многочисленные примеры, где авторы Нового Завета, кажется, переосмысливают Ветхий и меняют его значение, чтобы говорить о Христе. Например, 
+<a href="javascript:void(0)" class="bref" data-ref="Осия 11:1">Ос. 11:1</a>
+, который обсуждал исход Израиля, теперь говорит об избавлении Христа от Ирода (
+<a href="javascript:void(0)" class="bref" data-ref="Матфея 2:15">Матф. 2:15</a>
+). 
+<a href="javascript:void(0)" class="bref" data-ref="Иеремия 31:15">Иер. 31:15</a>
+говорил об изгнании Израиля, но теперь обсуждает трагические обстоятельства, окружающие рождение Христа (
+<a href="javascript:void(0)" class="bref" data-ref="Матфея 2:18">Матф. 2:18</a>
+). Список можно продолжать.<span class="container fn-marker">57<span class="tooltip">Thomas, “The New Testament Use of the Old Testament,” 79–98.</span></span></p>
+
+<p>Христоцентричный подход утверждает, что эти примеры отражают герменевтический сдвиг, который произошел в событии Христа. Пришествие Христа раскрывает полное значение текста и позволяет апостолам видеть его. Его объяснение Писания по дороге в Эммаус (
+<a href="javascript:void(0)" class="bref" data-ref="Луки 24:24–26">Луки 24:24–26</a>
+) переориентировало мировоззрение и герменевтику учеников. Оно открыло символическое значение Ветхого Завета. Оно показало окончательные последствия единства Писания, его предельный горизонт.<span class="container fn-marker">58<span class="tooltip">Johnson, Him We Proclaim, 138–39.</span></span> Оно установило событие Христа, Евангелие, как герменевтический ключ для всего откровения.<span class="container fn-marker">59<span class="tooltip">Goldsworthy, Preaching the Whole Bible as Christian Scripture, 54.</span></span> Павел выражает это чувство, описывая Ветхий Завет как то, что может умудрить во спасение (
+<a href="javascript:void(0)" class="bref" data-ref="2 Тимофею 3:15">2 Тим. 3:15</a>
+).<span class="container fn-marker">60<span class="tooltip">Ibid.</span></span> Таким образом, Новый Завет должен быть интерпретационной сеткой поверх Ветхого, и «каждое послание из Ветхого Завета должно быть увидено в свете Иисуса Христа».<span class="container fn-marker">61<span class="tooltip">Greidanus, Preaching Christ, 51.</span></span></p>
+
+<p>Соответственно, апостольская герменевтика показывает, что типология и единство Писания не просто случайны или ограничены определенными примерами. Скорее, они формируют структуру того, как авторы Нового Завета читали Писание, как Писание работает и что Бог всегда подразумевал под их значением.<span class="container fn-marker">62<span class="tooltip">Johnson, Him We Proclaim, 153.</span></span> Следовательно, христоцентричная герменевтика утверждает, что именно так верующие Нового Завета должны читать священное писание, если они хотят соблюдать Божий замысел.</p>
+
+<p>Как мы видели, проблема христоцентричного подхода касается того, как его предлагаемые импликации (значимость) не плотно соответствуют замыслу автора. Сторонники разрешают это, проясняя, как замысел работает в Писании. Делая это, они имеют дело с одним из главных вопросов о природе значения: как двойное авторство оперирует в Писании.<span class="container fn-marker">63<span class="tooltip">См. обсуждение выше.</span></span> Их ответ заключается в том, что, хотя они верят в авторский замысел, они отличают замысел божественного автора от человеческого писателя. Это позволяет им делать выводы, которые могут не согласовываться с целью человеческого автора, но соответствуют большей программе Бога. Для христоцентричной герменевтики эта модель основана на том, что Писание демонстрирует в библейском богословии, а также утверждает в конкретных отрывках. Следовательно, возражения против такого подхода игнорируют богословские реальности, установленные в искупительной истории, и являются больше продуктом просвещения, чем тем, чего требует Бог.<span class="container fn-marker">64<span class="tooltip">Johnson, Him We Proclaim, 138–40.</span></span></p>
 
 <h3>Оценка христоцентричной герменевтики</h3>
 
@@ -739,24 +661,92 @@ html.dark .bref .btip{
 
 <p>Делая это, как нам следует обдумать христоцентричное предложение? Вопрос «Есть ли исключения из герменевтического правила?» — это хороший способ сформулировать проблему. С одной стороны, из обсуждения выше мы наблюдаем, что христоцентричная герменевтика утверждает традиционную герменевтику как «правило». Она открыто подтверждает экспозицию, экзегезу и авторский замысел. Она отстаивает грамматико-историческое толкование как ядро.</p>
 
-<p>Этот акцент заслуживает похвалы, ибо он библейский. Даже самые базовые наблюдения из священного писания подтверждают буквально-грамматико-исторический подход [literal-grammatical-historical approach]. Писание буквально в том смысле, что его значением является авторский замысел. Писание выражает свои идеи как «так говорит Господь» (Исх. 4:22; Ис. 7:7), «как говорит пророк» (Деян. 7:48), и само общение Бога (2 Тим. 3:16). Библия утверждает свое значение, а не то, что желает читатель, что навязывает сообщество или что текст мог бы означать. Скорее, это то, что сказал автор, авторский замысел. Этот замысел выражен через язык (грамматику) в свете фактов истории. Библейские авторы демонстрируют это в том, как они обращают внимание на слова (Иис. Нав. 23:14; Евр. 4:1–11), фразы (Иер. 26:18; Марка 1:1–3) и даже грамматические особенности (Гал. 3:16). У них лингвистический подход к тексту. Точно так же библейские авторы признают исторический фон Писания, обсуждая историю (Втор. 1:1–3:29), объясняя исторические предпосылки (Марка 7:1–11), а также осознавая свое место в Божьем искупительно-историческом плане (Неем. 9:1–38; Деян. 13:13–41). Писание утверждает принцип грамматико-исторического толкования. Опять же, христоцентричная герменевтика помещает это в свое ядро. В этом отношении нет споров. Сторонники признают и отстаивают грамматико-исторический подход как герменевтическое правило Писания.</p>
+<p>Этот акцент заслуживает похвалы, ибо он библейский. Даже самые базовые наблюдения из священного писания подтверждают буквально-грамматико-исторический подход [literal-grammatical-historical approach]. Писание буквально в том смысле, что его значением является авторский замысел. Писание выражает свои идеи как «так говорит Господь» (
+<a href="javascript:void(0)" class="bref" data-ref="Исход 4:22">Исх. 4:22</a>; 
+<a href="javascript:void(0)" class="bref" data-ref="Исаия 7:7">Ис. 7:7</a>
+), «как говорит пророк» (
+<a href="javascript:void(0)" class="bref" data-ref="Деяния 7:48">Деян. 7:48</a>
+), и само общение Бога (
+<a href="javascript:void(0)" class="bref" data-ref="2 Тимофею 3:16">2 Тим. 3:16</a>
+). Библия утверждает свое значение, а не то, что желает читатель, что навязывает сообщество или что текст мог бы означать. Скорее, это то, что сказал автор, авторский замысел. Этот замысел выражен через язык (грамматику) в свете фактов истории. Библейские авторы демонстрируют это в том, как они обращают внимание на слова (
+<a href="javascript:void(0)" class="bref" data-ref="Иисус Навин 23:14">Иис. Нав. 23:14</a>; 
+<a href="javascript:void(0)" class="bref" data-ref="Евреям 4:1–11">Евр. 4:1–11</a>
+), фразы (
+<a href="javascript:void(0)" class="bref" data-ref="Иеремия 26:18">Иер. 26:18</a>; 
+<a href="javascript:void(0)" class="bref" data-ref="Марка 1:1–3">Марка 1:1–3</a>
+) и даже грамматические особенности (
+<a href="javascript:void(0)" class="bref" data-ref="Галатам 3:16">Гал. 3:16</a>
+). У них лингвистический подход к тексту. Точно так же библейские авторы признают исторический фон Писания, обсуждая историю (
+<a href="javascript:void(0)" class="bref" data-ref="Второзаконие 1:1–3:29">Втор. 1:1–3:29</a>
+), объясняя исторические предпосылки (
+<a href="javascript:void(0)" class="bref" data-ref="Марка 7:1–11">Марка 7:1–11</a>
+), а также осознавая свое место в Божьем искупительно-историческом плане (
+<a href="javascript:void(0)" class="bref" data-ref="Неемия 9:1–38">Неем. 9:1–38</a>; 
+<a href="javascript:void(0)" class="bref" data-ref="Деяния 13:13–41">Деян. 13:13–41</a>
+). Писание утверждает принцип грамматико-исторического толкования. Опять же, христоцентричная герменевтика помещает это в свое ядро. В этом отношении нет споров. Сторонники признают и отстаивают грамматико-исторический подход как герменевтическое правило Писания.</p>
 
 <p>С другой стороны, вопрос, который поднимает христоцентричная герменевтика, заключается в том, могут ли быть исключения или модификации этого правила. Это возвращает нас к центральной дилемме внутри христоцентричного подхода: связи между значением и значимостью. Христоцентричная герменевтика предложила корректировку традиционной методологии. Хотя нам следует искать замысел автора, божественный замысел может затмевать замысел человеческого автора, что облегчает широкую типологию и полноту смысла [fullness of meaning], которую Новый Завет приносит в Ветхий. Следовательно, предлагаемая значимость текста может не полностью соответствовать первоначальному значению человеческого автора; однако она соответствует божественному замыслу.</p>
 
 <p>Так должны ли у нас быть такие исключения из правила? Как обсуждалось, искупительно-историческая герменевтика утверждает, что Писание требует этих исключений. Это основано на конкретных текстах Писания, а также на библейско-богословском обосновании. Чтобы определить, должны ли быть исключения, нам нужно рассмотреть обе линии мысли.</p>
+
 <h4>Есть ли исключения из правила? Взгляд на конкретные отрывки</h4>
 
-<p>В свете этого мы можем сначала разобраться с конкретными текстами, цитируемыми христоцентричной герменевтикой, начиная с текстов, которые обсуждают проповедь «Христа, и притом распятого» (1 Кор. 1:23; 2:2; 2 Кор. 4:5; Кол. 1:28). Интересно то, что само движение признает необходимость квалифицировать [уточнять] свои утверждения об этих отрывках. Если мы должны проповедовать только Христа и Его распятого, должны ли мы никогда не проповедовать Его воскресшим? Позже в 1-м Коринфянам акцент Павла на воскресении делает такое предложение нелепым (ср. 1 Кор. 15:12–14). Сторонники этого взгляда утверждают, что Павел контекстуально говорил о воскресшем Господе во фразе «Христа, и притом распятого».<span class="container fn-marker">65<span class="tooltip">Greidanus, Preaching Christ, 6.</span></span></p>
+<p>В свете этого мы можем сначала разобраться с конкретными текстами, цитируемыми христоцентричной герменевтикой, начиная с текстов, которые обсуждают проповедь «Христа, и притом распятого» (
+<a href="javascript:void(0)" class="bref" data-ref="1 Коринфянам 1:23">1 Кор. 1:23</a>; 
+<a href="javascript:void(0)" class="bref" data-ref="1 Коринфянам 2:2">1 Кор. 2:2</a>; 
+<a href="javascript:void(0)" class="bref" data-ref="2 Коринфянам 4:5">2 Кор. 4:5</a>; 
+<a href="javascript:void(0)" class="bref" data-ref="Колоссянам 1:28">Кол. 1:28</a>
+). Интересно то, что само движение признает необходимость квалифицировать свои утверждения об этих отрывках. Если мы должны проповедовать только Христа и Его распятого, должны ли мы никогда не проповедовать Его воскресшим? Позже в 1-м Коринфянам акцент Павла на воскресении делает такое предложение нелепым (ср. 
+<a href="javascript:void(0)" class="bref" data-ref="1 Коринфянам 15:12–14">1 Кор. 15:12–14</a>
+). Сторонники этого взгляда утверждают, что Павел контекстуально говорил о воскресшем Господе во фразе «Христа, и притом распятого».<span class="container fn-marker">65<span class="tooltip">Greidanus, Preaching Christ, 6.</span></span></p>
 
-<p>Возможно, это и так, но даже это не решает всех вопросов. Должен ли человек никогда не говорить о грехе (1 Кор. 15:3), Христе как Господе (Рим. 10:9) или втором пришествии Христа (2 Фес. 1:7–10)? Павел обсуждает эти вопросы. Противоречит ли он сам себе? Даже сторонники искупительно-исторической герменевтики предлагают людям проповедовать Христа этими способами.<span class="container fn-marker">66<span class="tooltip">Clowney, The Unfolding Mystery, 19–85; Johnson, Him We Proclaim, 178–82, 239–71.</span></span> В свете этого, сторонники накладывают дополнительные квалификации на «Христа, и притом распятого». Они утверждают, что заявление не исключает учения всей воли Божьей [whole counsel of God’s Word].<span class="container fn-marker">67<span class="tooltip">Johnson, Him We Proclaim, 75.</span></span> Все это демонстрирует, что заявление Павла само по себе не является исчерпывающей декларацией. Сторонники христоцентричной герменевтики признают это.</p>
+<p>Возможно, это и так, но даже это не решает всех вопросов. Должен ли человек никогда не говорить о грехе (
+<a href="javascript:void(0)" class="bref" data-ref="1 Коринфянам 15:3">1 Кор. 15:3</a>
+), Христе как Господе (
+<a href="javascript:void(0)" class="bref" data-ref="Римлянам 10:9">Рим. 10:9</a>
+) или втором пришествии Христа (
+<a href="javascript:void(0)" class="bref" data-ref="2 Фессалоникийцам 1:7–10">2 Фес. 1:7–10</a>
+)? Павел обсуждает эти вопросы. Противоречит ли он сам себе? Даже сторонники искупительно-исторической герменевтики предлагают людям проповедовать Христа этими способами.<span class="container fn-marker">66<span class="tooltip">Clowney; Johnson.</span></span> В свете этого, сторонники накладывают дополнительные квалификации на «Христа, и притом распятого». Они утверждают, что заявление не исключает учения всей воли Божьей.<span class="container fn-marker">67<span class="tooltip">Johnson, Him We Proclaim, 75.</span></span> Все это демонстрирует, что заявление Павла само по себе не является исчерпывающей декларацией. Сторонники христоцентричной герменевтики признают это.</p>
 
-<p>Эти квалификации требуют, чтобы мы посмотрели на цель этих заявлений. Каков замысел Павла в их создании? В 1 Коринфянам 1:23 и 2:2 Павел имеет дело с теми, кто разделен из-за своей гордости (1 Кор. 1:12–13).<span class="container fn-marker">68<span class="tooltip">Anthony C. Thiselton, The First Epistle to the Corinthians: A Commentary on the Greek Text, NIGTC (Grand Rapids: Eerdmans Publishing, 2000), 172, 211.</span></span> Следовательно, он указывает на конкретные аспекты своего послания, чтобы показать, как Евангелие требует противоположного этому. Во 2 Коринфянам 4:5 Павел противостоит лжеучителям, которые превозносят себя, и он показывает, как евангельская весть превозносит Христа, а не человека.<span class="container fn-marker">69<span class="tooltip">Murray J. Harris, The Second Epistle to the Corinthians: A Commentary on the Greek Text, NIGTC (Grand Rapids: Eerdmans Publishing, 2005), 331; Ralph P. Martin, 2 Corinthians, WBC (Dallas: Word, 1998), 79.</span></span> В Колоссянам 1:28 Павел имеет дело с теми, кто преуменьшал бы превосходство Христа, и заявляет, что он делает противоположное: он проповедует Христа.<span class="container fn-marker">70<span class="tooltip">F. F. Bruce, The Epistles to the Colossians, to Philemon, and to the Ephesians, NICNT (Grand Rapids: Eerdmans Publishing, 1984), 86. Брюс также отмечает, что даже Кол. 1:28 удерживает центральность Христа в напряжении со всем учением Писания. В конце концов, Христос может быть центром послания Христа, но Павлу все еще нужно давать дальнейшие наставления, как это соотносятся причастия в стихе. См. также Peter T. O’Brien, Colossians, Philemon, WBC (Dallas: Word, 1998), 88. Обсуждение О’Брайеном мудрости, которая должна квалифицировать определенные заявления о проповеди Христа. Идея больше телична [целевая] по природе.</span></span> Христос — это не тот, кого мы стыдимся, но мы провозглашаем Его. В каждом из этих контекстов цель Павла — риторическая и полемическая. Его заявления о «проповеди Христа» сражаются против гордости и низкого взгляда на Христа.</p>
+<p>Эти квалификации требуют, чтобы мы посмотрели на цель этих заявлений. Каков замысел Павла в их создании? В 
+<a href="javascript:void(0)" class="bref" data-ref="1 Коринфянам 1:23">1 Кор. 1:23</a>
+и 
+<a href="javascript:void(0)" class="bref" data-ref="1 Коринфянам 2:2">2:2</a>
+Павел имеет дело с теми, кто разделен из-за своей гордости (
+<a href="javascript:void(0)" class="bref" data-ref="1 Коринфянам 1:12–13">1 Кор. 1:12–13</a>
+).<span class="container fn-marker">68<span class="tooltip">Thiselton.</span></span> Следовательно, он указывает на конкретные аспекты своего послания, чтобы показать, как Евангелие требует противоположного этому. Во 
+<a href="javascript:void(0)" class="bref" data-ref="2 Коринфянам 4:5">2 Кор. 4:5</a>
+Павел противостоит лжеучителям, которые превозносят себя, и он показывает, как евангельская весть превозносит Христа, а не человека.<span class="container fn-marker">69<span class="tooltip">Harris; Martin.</span></span> В 
+<a href="javascript:void(0)" class="bref" data-ref="Колоссянам 1:28">Кол. 1:28</a>
+Павел имеет дело с теми, кто преуменьшал бы превосходство Христа, и заявляет, что он делает противоположное: он проповедует Христа.<span class="container fn-marker">70<span class="tooltip">Bruce; O’Brien.</span></span></p>
 
-<p>Следовательно, использование этих текстов сторонниками христоцентричной герменевтики не совсем точно. Они понимают эти тексты так, чтобы показать, что Павел знал <em>только</em> Христа в своей проповеди, в противовес чему-либо еще в Писании. Однако в контексте апостол противопоставляет проповедь Христа проповеди человеческой мудрости (Кол. 2:8) или самого себя (2 Кор. 4:5а). Он не противопоставляет проповедь Христа остальным идеям священного писания. Павел никогда не намеревался делать эти заявления исчерпывающими для всего, что он делал в служении. Скорее, они были больше для того, чтобы показать, <em>за что</em> центрально было его служение и, следовательно, <em>против чего</em>. Именно поэтому эти заявления не противоречат никаким другим его декларациям о проповеди всей воли Писания (2 Тим. 2:15; 2 Тим. 4:1–2; ср. Деян. 20:27) или тому, как его послания имеют дело с множеством вопросов помимо Христа и Его распятого. Взятые в их оригинальном контексте и цели, эти заявления не исключают других библейских и богословских дискуссий. Они исключают мирской дух, гордость и человеческую мудрость. Соответственно, эти стихи не подразумевают всего того, что выводит христоцентричная герменевтика.</p>
+<p>Следовательно, использование этих текстов сторонниками христоцентричной герменевтики не совсем точно. Они понимают эти тексты так, чтобы показать, что Павел знал <em>только</em> Христа в своей проповеди, в противовес чему-либо еще в Писании. Однако в контексте апостол противопоставляет проповедь Христа проповеди человеческой мудрости (
+<a href="javascript:void(0)" class="bref" data-ref="Колоссянам 2:8">Кол. 2:8</a>
+) или самого себя (
+<a href="javascript:void(0)" class="bref" data-ref="2 Коринфянам 4:5">2 Кор. 4:5</a>
+). Он не противопоставляет проповедь Христа остальным идеям священного писания. Павел никогда не намеревался делать эти заявления исчерпывающими для всего, что он делал в служении. Скорее, они были больше для того, чтобы показать, <em>за что</em> центрально было его служение и, следовательно, <em>против чего</em>. Именно поэтому эти заявления не противоречат никаким другим его декларациям о проповеди всей воли Писания (
+<a href="javascript:void(0)" class="bref" data-ref="2 Тимофею 2:15">2 Тим. 2:15</a>; 
+<a href="javascript:void(0)" class="bref" data-ref="2 Тимофею 4:1–2">2 Тим. 4:1–2</a>; ср. 
+<a href="javascript:void(0)" class="bref" data-ref="Деяния 20:27">Деян. 20:27</a>
+) или тому, как его послания имеют дело с множеством вопросов помимо Христа и Его распятого. Взятые в их оригинальном контексте и цели, эти заявления не исключают других библейских и богословских дискуссий. Они исключают мирской дух, гордость и человеческую мудрость. Соответственно, эти стихи не подразумевают всего того, что выводит христоцентричная герменевтика.</p>
 
-<p>Точно так же, Луки 24:27 не указывает на герменевтический сдвиг. Лука не утверждает, что Иисус говорит о Себе в <em>каждом</em> отрывке Ветхого Завета. Точная формулировка гласит, что Иисус объясняет «во всем Писании <em>сказанное о Нем</em>» (τὰ περὶ ἑαυτοῦ, курсив мой). Идея просто в том, что Иисус всеобъемлюще обсудил тексты Ветхого Завета, которые были о Нем.<span class="container fn-marker">71<span class="tooltip">I. Howard Marshall, Gospel of Luke, NICNT (Grand Rapids: Eerdmans Publishing, 1978), 897; Joel B. Green, The Gospel of Luke, NICNT (Grand Rapids: Eerdmans Publishing, 1997), 848. Грин подчеркивает теличную природу ВЗ по отношению к Христу и Его страданиям и славе.</span></span> Это не то же самое, что реконфигурация каждого текста, чтобы он говорил о Нем. Опять же, сторонники христоцентричной герменевтики зашли с этим текстом слишком далеко. Фактически, в контексте Луки 24:27 провозглашается противоположное тому, что они утверждают. Наш Господь заявляет, что ученики были несмысленны, не узнав того, что предсказывали пророки (Луки 24:25). Этим заявлением Иисус не претендует на герменевтический сдвиг. Он не переинтерпретирует пророков и не дает «истинного значения» того, что они сказали, но, скорее, просто подтверждает то, что они сказали.<span class="container fn-marker">72<span class="tooltip">D. A. Carson, Collected Writings on Scripture (Wheaton, IL: Crossway Books, 2010), 283. «Авторы Нового Завета, при всем понимании того, что принятие того, кем является Иисус, приходит как дар Духа (1 Кор. 2:14), никогда не скупятся на приведение причин для надежды, которая в них, включая причины читать Библию так, как они это делают. Терминология «исполнения», которую они используют, слишком богата и разнообразна, чтобы позволить нам вообразить, что они просто вчитывают то, чего на самом деле нет. Они были бы первыми, кто признал бы, что в их собственной психологической истории признание Иисуса пришло раньше их понимания Ветхого Завета; но они увидели бы это как доказательство моральной слепоты. В результате, они были бы первыми, кто настаивал бы, со своей трансформированной герменевтикой (не в последнюю очередь чтением священных текстов в искупительно-исторической последовательности), что сами Писания могут быть показаны предвосхищающими страдающего Слугу-Царя, Священника-Царя, нового Первосвященника и так далее». Цитата Карсона иллюстрирует, что сдвиг в герменевтике не методологический per se [сам по себе], а скорее онтологический. Это сдвиг от тех, кто читает с моральной слепотой, к тем, кто может видеть, что Писания намеревались сказать. Герменевтический сдвиг подталкивает верующего читать Писание согласно авторскому замыслу, согласно тому, что было истинно изначально задумано.</span></span> Он поддерживает то, что имели в виду человеческие авторы Писания. Делая это, Луки 24:24–26 лучше поддерживает грамматико-историческую герменевтику, в отличие от христоцентричной.</p>
+<p>Точно так же, 
+<a href="javascript:void(0)" class="bref" data-ref="Луки 24:27">Луки 24:27</a>
+не указывает на герменевтический сдвиг. Лука не утверждает, что Иисус говорит о Себе в <em>каждом</em> отрывке Ветхого Завета. Точная формулировка гласит, что Иисус объясняет «во всем Писании <em>сказанное о Нем</em>» (τὰ περὶ ἑαυτοῦ). Идея просто в том, что Иисус всеобъемлюще обсудил тексты Ветхого Завета, которые были о Нем.<span class="container fn-marker">71<span class="tooltip">Marshall; Green.</span></span> Это не то же самое, что реконфигурация каждого текста, чтобы он говорил о Нем. Опять же, сторонники христоцентричной герменевтики зашли с этим текстом слишком далеко. Фактически, в контексте 
+<a href="javascript:void(0)" class="bref" data-ref="Луки 24:27">Луки 24:27</a>
+провозглашается противоположное тому, что они утверждают. Наш Господь заявляет, что ученики были несмысленны, не узнав того, что предсказывали пророки (
+<a href="javascript:void(0)" class="bref" data-ref="Луки 24:25">Луки 24:25</a>
+). Этим заявлением Иисус не претендует на герменевтический сдвиг. Он не переинтерпретирует пророков и не дает «истинного значения» того, что они сказали, но, скорее, просто подтверждает то, что они сказали.<span class="container fn-marker">72<span class="tooltip">Carson.</span></span> Он поддерживает то, что имели в виду человеческие авторы Писания. Делая это, 
+<a href="javascript:void(0)" class="bref" data-ref="Луки 24:24–26">Луки 24:24–26</a>
+лучше поддерживает грамматико-историческую герменевтику, в отличие от христоцентричной.</p>
 
-<p>Наконец, Ефесянам 1:10 использовалось, чтобы доказать, что все вещи на небе и на земле — о Христе, ибо Он соединяет их все. Если все творение — о Христе, тогда типология уместна, ибо все каким-то образом изображает Его.<span class="container fn-marker">73<span class="tooltip">Goldsworthy, Christ-Centered Biblical Theology, 187–88.</span></span> Что обозначает слово «соединить»/«подвести итог» [summed up] (ἀνακεφαλαιώσασθαι)? Идея слова может иметь смысл резюме в риторике.<span class="container fn-marker">74<span class="tooltip">Peter O’Brien, The Letter to the Ephesians, PNTC (Grand Rapids: Eerdmans Publishing, 1999), 111.</span></span> Так же как резюме показывает, как разнообразие идей объединяется вокруг одной центральной точки или главной идеи, так все в творении предназначено указывать на Христа.<span class="container fn-marker">75<span class="tooltip">Ibid.; Bruce, The Epistles to the Colossians, to Philemon, and to the Ephesians, 261; A. T. Lincoln, Ephesians, WBC (Dallas: Word Books, 1990), 33.</span></span> Однако это не та же идея, что предлагает христоцентричный подход. Резюме не утверждает, что все линии аргументации являются тем же самым, что и главный пункт. Оно только показывает, как все отличительные линии аргументации связываются с главной идеей и поддерживают ее. Таким же образом, контекст Ефесянам 1:10 не описывает творение как различные репрезентации Христа. Скорее, он демонстрирует, как Христос является главным пунктом, поскольку Он покоряет все под ноги Свои, и они воздают Ему славу (Еф. 1:21–23). Это понятие подчеркивает главную важность Христа. Соответственно, идея Ефесянам 1:10 не символична, а <em>телична</em> [telic — целевая]. Она не учит христоцентричной идее, что все есть <em>портрет</em> Христа, но скорее христотелической идее, что все в конечном счете <em>указывает</em> на Христа в поклонении. И снова христоцентричная герменевтика зашла слишком далеко с импликацией Ефесянам 1:10.</p>
+<p>Наконец, 
+<a href="javascript:void(0)" class="bref" data-ref="Ефесянам 1:10">Ефесянам 1:10</a>
+использовалось, чтобы доказать, что все вещи на небе и на земле — о Христе, ибо Он соединяет их все. Если все творение — о Христе, тогда типология уместна, ибо все каким-то образом изображает Его.<span class="container fn-marker">73<span class="tooltip">Goldsworthy.</span></span> Что обозначает слово «соединить»/«подвести итог» (ἀνακεφαλαιώσασθαι)? Идея слова может иметь смысл резюме в риторике.<span class="container fn-marker">74<span class="tooltip">O’Brien.</span></span> Так же как резюме показывает, как разнообразие идей объединяется вокруг одной центральной точки или главной идеи, так все в творении предназначено указывать на Христа.<span class="container fn-marker">75<span class="tooltip">O’Brien; Bruce; Lincoln.</span></span> Однако это не та же идея, что предлагает христоцентричный подход. Резюме не утверждает, что все линии аргументации являются тем же самым, что и главный пункт. Оно только показывает, как все отличительные линии аргументации связываются с главной идеей и поддерживают ее. Таким же образом, контекст 
+<a href="javascript:void(0)" class="bref" data-ref="Ефесянам 1:21–23">Ефесянам 1:21–23</a>
+не описывает творение как различные репрезентации Христа. Скорее, он демонстрирует, как Христос является главным пунктом, поскольку Он покоряет все под ноги Свои, и они воздают Ему славу. Это понятие подчеркивает главную важность Христа. Соответственно, идея 
+<a href="javascript:void(0)" class="bref" data-ref="Ефесянам 1:10">Еф. 1:10</a>
+не символична, а <em>телична</em>. Она не учит христоцентричной идее, что все есть портрет Христа, но скорее христотелической идее, что все в конечном счете указывает на Христа в поклонении. И снова христоцентричная герменевтика зашла слишком далеко с импликацией этого текста.</p>
 
 <p>Этот подраздел касался конкретных отрывков, которые сторонники искупительно-исторической герменевтики используют для поддержки своего подхода. Проблема с их текстами-доказательствами в том, что они вывели идеи, выходящие за рамки того, что было сказано и почему это было сказано. Значение текста не оправдывает полного объема выводов, которые они сделали. Это именно та проблема, которая была у подхода все это время. По этой причине конкретные отрывки, цитируемые христоцентричной герменевтикой, не поддерживают их цель заставить каждый текст говорить о Христе. Напротив, их использование Писания только иллюстрирует проблему их подхода.</p>
 
@@ -764,86 +754,173 @@ html.dark .bref .btip{
 
 <p>Христоцентричная герменевтика также аргументирует из библейско-богословского обоснования, основанного на использовании Ветхого Завета Новым. Для них герменевтика апостолов оправдывает сдвиг в нашем собственном герменевтическом подходе. Они утверждают, что интерпретационный подход авторов Нового Завета указывает на финальный способ работы единства Писания в типологических связях. Апостолы раскрывают полный, божественный замысел текста, который мы должны признать, если хотим чтить авторский замысел. Это оправдывает их метод видения Христа в каждом отрывке.</p>
 
-<p>Напротив, вводные формулы апостолов дают иную картину. Вместо того чтобы заявлять о полном или скрытом понимании текста, апостолы говорят, что они рассуждают «по Писанию» (1 Кор. 15:3), «как написано» (Рим. 1:17), «ибо написано» (Матф. 4:6), «как говорит пророк» (Деян. 7:48), «реченное Господом» (Матф. 2:15), или замечают, как Писания «сбылись» (Матф. 2:17).<span class="container fn-marker">76<span class="tooltip">«Исполнилось» не всегда обозначает техническую категорию пророчества-исполнения. В случаях «исполнения закона» (Гал. 6:2) или жертвоприношения Исаака Авраамом, «исполняющего» Быт. 15:6 (Иакова 2:8), исполнение не имеет этих идей. Вместо этого оно обозначает достижение или созревание концепции. Исполнение пророчества — это подмножество внутри этой категории, и наличие этой идеи позволяет верно видеть заявления апостолов. See Robert L. Thomas, “The New Testament Use of the Old Testament,” in Evangelical Hermeneutics, ed. Robert L. Thomas (Grand Rapids: Kregel, 2002), 262–64; Douglas Moo, The Letter of James, PNTC (Grand Rapids: Eerdmans Publishing, 2000), 138; Douglas J. Moo, “The Problem of Sensus Plenior,” in Hermeneutics, Authority, and Canon, ed. D. A. Carson and J. D. Woodbridge (Grand Rapids: Zondervan, 1986), 191.</span></span> Такой язык указывает на то, что апостолы желали быть последовательными со значением Ветхого Завета. Они утверждали, что их аргументы были легитимными выводами, которые гармонировали с тем, что было написано.</p>
+<p>Напротив, вводные формулы апостолов дают иную картину. Вместо того чтобы заявлять о полном или скрытом понимании текста, апостолы говорят, что они рассуждают «по Писанию» (
+<a href="javascript:void(0)" class="bref" data-ref="1 Коринфянам 15:3">1 Кор. 15:3</a>
+), «как написано» (
+<a href="javascript:void(0)" class="bref" data-ref="Римлянам 1:17">Рим. 1:17</a>
+), «ибо написано» (
+<a href="javascript:void(0)" class="bref" data-ref="Матфея 4:6">Матф. 4:6</a>
+), «как говорит пророк» (
+<a href="javascript:void(0)" class="bref" data-ref="Деяния 7:48">Деян. 7:48</a>
+), «реченное Господом» (
+<a href="javascript:void(0)" class="bref" data-ref="Матфея 2:15">Матф. 2:15</a>
+), или замечают, как Писания «сбылись» (
+<a href="javascript:void(0)" class="bref" data-ref="Матфея 2:17">Матф. 2:17</a>
+).<span class="container fn-marker">76<span class="tooltip">Thomas; Moo.</span></span> Такой язык указывает на то, что апостолы желали быть последовательными со значением Ветхого Завета. Они утверждали, что их аргументы были легитимными выводами, которые гармонировали с тем, что было написано.</p>
 
-<p>Кроме того, упомянутые выше формулы предполагают, что апостолы не рассматривают божественный замысел как отдельный от человеческого замысла. Они представляют Писание как послание конкретного пророка (Матф. 8:17), так и божественного автора (Матф. 1:22).<span class="container fn-marker">77<span class="tooltip">В случае Матфея 1:22 и 8:17, Матфей цитирует из Исаии и в одном случае говорит, что Исаия сказал эти слова, но в другом случае говорит, что Бог сказал эти слова. Это подразумевает, что оба говорили послание Исаии, и их замыслы взаимозаменяемы и тем самым идентичны.</span></span> Они апеллируют к человеческому и божественному авторам взаимозаменяемо, потому что они знали, что сказанное пророком есть то, что сказал Бог, и наоборот. Это согласуется с их утверждениями, что пророки говорили от Бога; их послание — Его собственное (2 Пет. 1:21; 2 Тим. 3:16; ср. Исх. 4:15–16; Ис. 7:7; Ам. 3:7).<span class="container fn-marker">78<span class="tooltip">Язык о том, что люди «говорили от Бога» (ἐλάλησαν ἀπὸ θεοῦ), указывает на то, что акт говорения пророков был самим посланием Самого Бога. See Richard J. Bauckham, 2 Peter, Jude, WBC (Dallas: Word Incorporated, 1998), 233.</span></span> Соответственно, не похоже, чтобы апостолы верили, что божественный замысел несет более полное значение, чем то, что сказал человеческий автор. Таким образом, вводные формулы апостолов указывают не на более глубокий смысл в Писании или герменевтический сдвиг, а на обратное: апостолы продолжали логику своих предшественников.</p>
+<p>Кроме того, упомянутые выше формулы предполагают, что апостолы не рассматривают божественный замысел как отдельный от человеческого замысла. Они представляют Писание как послание конкретного пророка (
+<a href="javascript:void(0)" class="bref" data-ref="Матфея 8:17">Матф. 8:17</a>
+), так и божественного автора (
+<a href="javascript:void(0)" class="bref" data-ref="Матфея 1:22">Матф. 1:22</a>
+).<span class="container fn-marker">77<span class="tooltip">О взаимозаменяемости божественного и человеческого автора.</span></span> Они апеллируют к человеческому и божественному авторам взаимозаменяемо, потому что они знали, что сказанное пророком есть то, что сказал Бог, и наоборот. Это согласуется с их утверждениями, что пророки говорили от Бога (
+<a href="javascript:void(0)" class="bref" data-ref="2 Петра 1:21">2 Пет. 1:21</a>;
+<a href="javascript:void(0)" class="bref" data-ref="2 Тимофею 3:16">2 Тим. 3:16</a>;
+ср. <a href="javascript:void(0)" class="bref" data-ref="Исход 4:15–16">Исх. 4:15–16</a>;
+<a href="javascript:void(0)" class="bref" data-ref="Исаия 7:7">Ис. 7:7</a>;
+<a href="javascript:void(0)" class="bref" data-ref="Амос 3:7">Ам. 3:7</a>
+).<span class="container fn-marker">78<span class="tooltip">Bauckham.</span></span> Соответственно, не похоже, чтобы апостолы верили, что божественный замысел несет более полное значение, чем то, что сказал человеческий автор. Таким образом, вводные формулы апостолов указывают не на более глубокий смысл в Писании или герменевтический сдвиг, а на обратное: апостолы продолжали логику своих предшественников.</p>
 
-<p>Апостолы практиковали то, что провозглашали. Чтобы увидеть, как они продолжали логику пророков, нам нужно начать с герменевтической работы пророков в Ветхом Завете. Пророки сохраняли значение предшествующего откровения. Они заявляли, что делают это (Иис. Нав. 1:8; Пс. 1:1–3; 118:15; Ис. 8:20), и их работа требовала этого (Втор. 13:1–18; 18:15–22).<span class="container fn-marker">79<span class="tooltip">Bruce K. Waltke, An Old Testament Theology: An Exegetical, Canonical, and Thematic Approach (Grand Rapids: Zondervan, 2007), 126. «Ни в коем случае, однако, более поздние авторы Ветхого Завета не отменяют учения Моисея (ср. Второзаконие 13, 18)». Весь смысл Второзакония 13 и 18 в том, что Израиль и пророки должны были поддерживать Божий закон.</span></span> Множество примеров иллюстрируют их верность замыслу автора, включая то, как пророки осуждают Израиль за идолопоклонство (4 Цар. 17:5–23; Дан. 9:5–6; Неем. 9:29–33), противостоят ему за извращение Писания (Иез. 18:1–32) и поддерживают Авраамовы обетования земли, семени и благословения (Мих. 4:1–6; Иез. 36–48; Пс. 71:3–17).</p>
+<p>Апостолы практиковали то, что провозглашали. Чтобы увидеть, как они продолжали логику пророков, нам нужно начать с герменевтической работы пророков в Ветхом Завете. Пророки сохраняли значение предшествующего откровения. Они заявляли, что делают это (
+<a href="javascript:void(0)" class="bref" data-ref="Иисус Навин 1:8">Иис. Нав. 1:8</a>;
+<a href="javascript:void(0)" class="bref" data-ref="Псалом 1:1–3">Пс. 1:1–3</a>;
+<a href="javascript:void(0)" class="bref" data-ref="Псалом 118:15">Пс. 118:15</a>;
+<a href="javascript:void(0)" class="bref" data-ref="Исаия 8:20">Ис. 8:20</a>
+), и их работа требовала этого (
+<a href="javascript:void(0)" class="bref" data-ref="Второзаконие 13:1–18">Втор. 13:1–18</a>;
+<a href="javascript:void(0)" class="bref" data-ref="Второзаконие 18:15–22">18:15–22</a>
+).<span class="container fn-marker">79<span class="tooltip">Waltke.</span></span></p>
 
-<p>Сохраняя <em>значение</em> текста, пророки также имеют дело с его <em>значимостью</em> или разветвлениями. Делая это, они не только извлекают импликации, согласующиеся с оригинальным значением, но даже последовательны с тем, как их предшественники использовали текст. Например, пророки развивают тему того, как Завет Давида будет исполнен, используя тот же язык, чтобы строить на том, что развили прошлые пророки (Мих. 5:2 [Евр. 5:1]; 7:14, 15, 20; ср. Ос. 2:15; Ам. 9:11–14). Они также апеллируют к исходу как демонстрации Божьей любви (Исх. 4:22), которая дает надежду страдающим (Пс. 79:9, 16) и движет новым эсхатологическим избавлением (Ос. 11:1). Ветхий Завет наполнен примерами, показывающими, как пророки здраво развивали богословие.<span class="container fn-marker">80<span class="tooltip">Хотя эти примеры далеко не исчерпывающие, природа прогрессивного откровения и богословия Ветхого Завета поддерживают то, как пророки развивают конкретные применения. Прогрессивное откровение движется от общего к частному, так же как пророки развивают конкретные импликации из общих заявлений предыдущего откровения. Богословие Ветхого Завета прослеживает прогрессию различных тем, что возможно только если развитие этих идей пророками последовательно и составно по природе. See Paul R. House, Old Testament Theology (Downers Grove, IL: InterVarsity Press, 1998), 55. Все это предполагает, что пророки не уводили идеи Ветхого Завета в случайных, несвязанных и рассеянных направлениях. Импликации концептов Ветхого Завета не становились шире по мере прогресса откровения, а более узкими и уточненными. Соответственно, к концу канона импликации предыдущего откровения весьма конкретны.</span></span></p>
+<p>Множество примеров иллюстрируют их верность замыслу автора, включая то, как пророки осуждают Израиль за идолопоклонство (
+<a href="javascript:void(0)" class="bref" data-ref="4 Царств 17:5–23">4 Цар. 17:5–23</a>;
+<a href="javascript:void(0)" class="bref" data-ref="Даниил 9:5–6">Дан. 9:5–6</a>;
+<a href="javascript:void(0)" class="bref" data-ref="Неемия 9:29–33">Неем. 9:29–33</a>
+), противостоят ему за извращение Писания (
+<a href="javascript:void(0)" class="bref" data-ref="Иезекииль 18:1–32">Иез. 18:1–32</a>
+) и поддерживают Авраамовы обетования земли, семени и благословения (
+<a href="javascript:void(0)" class="bref" data-ref="Михей 4:1–6">Мих. 4:1–6</a>;
+<a href="javascript:void(0)" class="bref" data-ref="Иезекииль 36–48">Иез. 36–48</a>;
+<a href="javascript:void(0)" class="bref" data-ref="Псалом 71:3–17">Пс. 71:3–17</a>
+).</p>
 
-<p>Таким образом, в Ветхом Завете есть герменевтическая логика. Пророки отстаивают оригинальное значение текста и фокусируются на очень конкретных применениях текста, часто продолжая то, как их предшественники использовали текст. Их применения не становятся шире по мере прогресса откровения, а становятся более узкими и уточненными. Соответственно, к концу канона импликации предыдущего откровения весьма конкретны.</p>
+<p>Апостолы не отходят от логики Ветхого Завета, но подхватывают и продолжают ее. Подавляющее большинство использования Ветхого Завета апостолами бесспорно контекстуально по природе.<span class="container fn-marker">81<span class="tooltip">Beale.</span></span> Авторы Нового Завета контекстуально используют Ветхий Завет, чтобы показать место рождения Иисуса (
+<a href="javascript:void(0)" class="bref" data-ref="Михей 5:2">Мих. 5:2</a>; ср. 
+<a href="javascript:void(0)" class="bref" data-ref="Матфея 2:1">Матф. 2:1</a>
+), Его заместительную смерть (
+<a href="javascript:void(0)" class="bref" data-ref="Исаия 53:5–10">Ис. 53:5–10</a>; ср. 
+<a href="javascript:void(0)" class="bref" data-ref="Марка 10:45">Марка 10:45</a>
+), Его царствование (
+<a href="javascript:void(0)" class="bref" data-ref="Числа 24:17">Чис. 24:17</a>; ср. 
+<a href="javascript:void(0)" class="bref" data-ref="Матфея 2:1">Матф. 2:1</a>
+), природу эсхатологии (
+<a href="javascript:void(0)" class="bref" data-ref="Даниил 11:31">Дан. 11:31</a>; ср. 
+<a href="javascript:void(0)" class="bref" data-ref="Матфея 24:15">Матф. 24:15</a>
+) и святость Бога (
+<a href="javascript:void(0)" class="bref" data-ref="Левит 19:2">Лев. 19:2</a>; ср. 
+<a href="javascript:void(0)" class="bref" data-ref="1 Петра 1:16">1 Пет. 1:16</a>
+).<span class="container fn-marker">82<span class="tooltip">Thomas.</span></span></p>
 
-<p>Апостолы не отходят от логики Ветхого Завета, но подхватывают и продолжают ее. Два основных наблюдения подтверждают это. Во-первых, явно контекстуальное использование Ветхого Завета апостолами отражает их последовательность с пророками. Ученые признают, что подавляющее большинство преобладающего использования Ветхого Завета апостолами бесспорно контекстуально по природе.<span class="container fn-marker">81<span class="tooltip">G.K. Beale, “A Surrejoinder to Peter Enns,” Themelios 32, no. 3 (2007): 18.</span></span> Авторы Нового Завета контекстуально используют Ветхий Завет, чтобы показать место рождения Иисуса (Мих. 5:2; ср. Матф. 2:1), Его заместительную искупительную смерть (Ис. 53:5–10; ср. Марка 10:45), Его царствование (Чис. 24:17; ср. Матф. 2:1), а также природу эсхатологии (Дан. 11:31; ср. Матф. 24:15), святость Бога (Лев. 19:2; ср. 1 Пет. 1:16) и действия Бога со Своим народом (Пс. 94:6–8; ср. Евр. 4:4–9).<span class="container fn-marker">82<span class="tooltip">For more examples see Thomas, “The New Testament Use of the Old Testament,” 2002, 243–47.</span></span> В этих случаях их использование пребывает в оригинальном (человеческом) замысле Ветхого Завета. Фактически, апостолы порой даже группируют тексты Ветхого Завета вместе так, как их ранее связывали пророки (ср. Рим. 3:10–18; Пс. 13:1–3; Ис. 59:7; см. также Гал. 3:6–11; Быт. 15:6; Авв. 2:4). Эти конкретные контекстуальные использования свидетельствуют, что апостолы знали точно, как пророки связывали Ветхий Завет воедино. Они следовали логике пророков тесно.</p>
+<p>Следовательно, даже предполагаемые исключения не поддерживают новый герменевтический сдвиг. Напротив, герменевтика апостолов демонстрирует преемственность. Они следуют логике пророков, сохраняют замысел автора и применяют текст в его установленных границах.</p>
 
-<p>Во-вторых, последовательность апостолов друг с другом также свидетельствует о том, как они продолжали логику пророков.<span class="container fn-marker">83<span class="tooltip">B. Lindars, New Testament Apologetic: The Doctrinal Significance of the Old Testament Quotations (London: SCM Press, 1961); C. H. Dodd, According to the Scriptures: The Substructure of New Testament Theology (UK: Fontana Books, 1965). Линдарс аргументировал за своего рода testimonia [свидетельства], которые каталогизировали и систематизировали использование ВЗ церковью. Однако такого доказательства testimonia не существует.</span></span> Все они интерпретируют и применяют Исаию 53 к Мессии и Его смерти (ср. Марка 10:45; Рим. 5:19; Евр. 9:28). Все они понимают, что Камень, который был отвергнут, — это Христос, и это имеет последствия для народа Божьего (Пс. 117:22; Матф. 21:42; Деян. 4:11; 1 Пет. 2:4–7). Все они понимают, что цель закона — любовь к ближнему (Лев. 19:18; Матф. 19:19; Рим. 13:8; Иак. 2:8). Все они применяли странствования Израиля в пустыне как предупреждение (1 Кор. 10:1–11; Евр. 3:10–19; Иуды 5). Все эти использования не только согласуются друг с другом, но также согласуются с первоначальным замыслом пророков. Фактически, использование апостолами странствий Израиля в пустыне даже совпадает с тем, как пророки используют те же отрывки (Пс. 77:1–72; 94:8–11). Единство выводов апостолов проистекает из того, насколько тесно они следовали Ветхому Завету. Они применяли Писание одинаково, потому что применяли его по тем линиям, которые указали пророки. Следовательно, у апостолов был единый метод, который был строго контекстуальным.</p>
-
-<p>В этот момент мы можем наблюдать, что подавляющее большинство использования Ветхого Завета апостолами не поддерживает герменевтический сдвиг, а скорее герменевтическую преемственность. Таким образом, в лучшем случае христоцентричная герменевтика цитирует исключения из правила, чтобы продемонстрировать герменевтический сдвиг. Тем не менее, даже эти предполагаемые исключения не доказывают их точку зрения.</p>
-
-<p>Например, ученые цитируют использование Матфеем Осии 11:1, чтобы доказать, что Матфей читал Осию типологически и христоцентрично. При рассмотрении этого вопроса возникает важный вопрос. Если Матфей просто хотел сравнить исход Израиля с побегом Христа из Египта, почему он цитирует Осию? Он мог бы выбрать более очевидный текст, такой как Исход 4:22, чтобы провести сравнение. Цитата Матфея из Осии не случайна, а стратегическая и подхватывает то, как Осия использовал исход. В контексте Осия 11:1 использует Исход, чтобы показать, как Божья любовь в первом исходе приведет ко второму (Ос. 11:11), ведомому Мессией, который функционирует как новый Моисей (Ос. 1:11 [Евр. 2:2]; 3:5).<span class="container fn-marker">84<span class="tooltip">G. K. Beale, “The Use of Hosea 11:1 in Matthew 2:15: One More Time,” JETS 55 (2012): 703–5; Duane A. Garrett, Hosea, NAC (Nashville: Broadman and Holman, 1997), 222.</span></span> Матфей подхватывает этот момент идеально. Он изображает Иисуса как Того, Кто возглавит этот новый исход, ибо Он, как Моисей, был избавлен от царя, желавшего убить детей Израиля (Матф. 2:13).<span class="container fn-marker">85<span class="tooltip">Dale C. Allison, The New Moses: A Matthean Typology (Minneapolis, MN: Fortress Press, 1993), 166–69.</span></span> Как Матфей пришел к своим выводам? Не просто потому, что он читал историю Израиля через типологическую линзу или увидел более глубокий смысл в тексте. Скорее, он опирается на определенные импликации исхода, выделенные Осией. Экзегеза Матфея в конечном счете текстуальна, а не типологична.<span class="container fn-marker">86<span class="tooltip">См. ниже. Важно установить правильную герменевтическую схему причинности, стоящую за выводами апостолов. Безусловно, Матфей проводит параллель между Христом, Моисеем и Израилем. Однако вопрос в том, почему. Ответ не потому, что у него была типологическая сетка, а потому, что он понимал Осию и его импликации. Осия сделал эти параллели, и Матфей излагает эти идеи. Идентификация того, что происходит, помогает нам идентифицировать библейско-богословское обоснование Матфея и увидеть, что он не обязательно подтверждает христоцентричный подход. Скорее, его герменевтика намного более текстуальна и грамматико-исторична по природе.</span></span></p>
-
-<p>Аналогично, некоторые утверждают, что Матфей использовал Иеремию 31:15 типологически, ибо там изначально говорится об изгнании Израиля, но теперь Матфей применяет это к обстоятельствам Мессии.<span class="container fn-marker">87<span class="tooltip">Johnson, Him We Proclaim, 209. Джонсон считает, что страдание Израиля рекапитулируется [повторяется] во Христе так, что существует типологическая связь между Христом и Израилем.</span></span> Напротив, в контексте Иеремии множество факторов указывают на то, как слова Иеремии стремятся изобразить боль всего изгнания. Например, в контексте плач Рахили продолжается до времени, когда изгнание заканчивается (Иер. 31:23–40).<span class="container fn-marker">88<span class="tooltip">F. B. Huey, Jeremiah, Lamentations, NAC (Nashville: Broadman & Holman Publishers, 1993), 274. География, упомянутая касательно изгнания, используется по всему Ветхому Завету об изгнании в его начале и конце. Причастие для плача Рахили подразумевает продолжающееся действие. Эти факторы указывают, что описание Иеремии является эндемичным для всей эры изгнания, частью и кульминацией которой является рождение Христа.</span></span> Соответственно, Иеремия не переприменял изгнание Израиля к Мессии. Скорее, убийство младенцев легитимно вписывается в то, что Иеремия описывает о периоде изгнания в целом. Более того, текст у Иеремии фокусируется на завершении изгнания и инаугурации Нового Завета. Это также совпадает с тем, что Матфей обсуждает в Матфея 2. Избавление Христа от Ирода способствует реальностям конца изгнания и Нового Завета (ср. Матф. 26:28). Таким образом, обстоятельства Его рождения совпадают и завершают то, что Иеремия описывает об изгнании. Иеремия 31:15 тем самым исполнен. Использование Матфеем Иеремии основано на логике, которую имел пророк. Матфей не просто вчитывает параллель между Израилем и Христом (даже если она вовлечена). Основание для использования Иеремии Матфеем — не типологическая сетка, а собственная логика Иеремии.<span class="container fn-marker">89<span class="tooltip">Хотя типологическая рекапитуляция и корпоративная солидарность могут быть частью того, что происходит у Матфея, это не полностью то, что имеет место. Матфей не просто цитирует Иеремию как описание страдания изгнания, а Иисуса как повторение этого. Если бы это было так, Матфей мог бы выбрать довольно много других текстов, которые более уместны (ср. Ос. 10:14, 13:16). Вместо этого, Матфей цитирует Иеремию 31:15 не только для обсуждения страдания изгнания, что легитимно относится тогда к Христу, рожденному в изгнании, но также для обсуждения того, как рождение Христа в изгнании завершает такое страдание, как предсказано Иеремией. Это контекстуальный пункт как в Иеремии 31:15, так и у Матфея. Как таковая, вся связь между Матфеем и Иеремией намного более точна, чем просто типология Израиль-Иисус. Использование Матфеем Иеремии — это не просто чтение соответствия один к одному (или даже один к одному усиленному соответствию) между историей Израиля и Христом. Использование Матфеем Иеремии признает роль Иисуса в истории Израиля как Того, кто совершает то, что предсказывает Иеремия. Существует больше причин и факторов, вовлеченных в связь Иисуса с изгнанием Израиля, чем просто «Израиль типизирует Иисуса». Соответственно, использование Матфеем Иеремии не вполне обосновывает типологическую сетку над историей Израиля. Вместо этого, оно обосновывает понимание роли Христа в истории Израиля. Это также показывает, что Матфей не понимал Иеремию типологически, но согласно его замыслу и применил его точно к замыслу пророка. Типологический подход, заявляемый этим текстом, слишком упрощен и упускает полный замысел того, что происходит в Ветхом и Новом Заветах. Та же логика идет для Давида к новому Давиду (Ос. 3:5). В контексте Осия и его предшественники пересказывают коллапс династии Давида (ср. Ам. 9:11). Следовательно, поскольку династия Давида падает, требуется новый Давид, чтобы поднять царскую линию. Другими словами, обоснование за Давидом к новому Давиду не просто в том, что Давид был предназначен быть предвосхищением Христа. Скорее, искупительная история и план Бога запустили события, которые проложили путь для Иисуса, чтобы принять роль Давида. Более того, видя, как развивается прогрессивное откровение, технически Давид не предсказывает Иисуса столько, сколько Иисус рекапитулирует Давида. Иначе говоря, Давид не назван в Писании прото-Иисусом, но скорее Иисус назван вторым Давидом. Давид не создан, чтобы изображать Иисуса, столько, сколько Иисус предназначен изображать и исполнять Давида. Таким образом, типология также имеет своего рода обратную направленность с тем, как Библия формулирует категории и направление прогрессивного откровения. См. также Eugene H. Merrill, “The Sign of Jonah,” JETS 23, no. 1 (March 1980): 23–30. Та же логика идет даже для знамения Ионы (ср. Матф. 12:39). Меррилл справедливо отмечает, что Иисус не говорит, что сам Иона является типом или аналогией Христа, но скорее они предлагают то же знамение. Акцент не на Ионе как предвосхищении, а на природе знамения, которое верифицировало его служение. Так же как избавление Ионы было свидетельством его валидности, так воскресение Иисуса будет свидетельством того, что Он Мессия. В этом случае Иисус не предоставляет типологического прочтения Ионы per se, но такое, которое видит точку аналогии между знамениями, которые они предлагают. Фактически, это язык, который использует наш Господь. Он говорит о предложении знамения Ионы. Он предоставит то же знамение, что и Иона. Это не имеет коннотации типологического предвосхищения так, как аналогии и параллели.</span></span></p>
-
-<p>Пространство не позволяет мне быть исчерпывающим. Тем не менее, ученые прошли через самые обсуждаемые примеры и показали, как Новый Завет продолжает логику Ветхого.<span class="container fn-marker">90<span class="tooltip">See G. K. Beale and D. A. Carson, eds., Commentary on the New Testament Use of the Old Testament (Grand Rapids: Baker Books, 2007). См. также, Abner Chou, The Prophet, Apostolic, and Christian Hermeneutic: Learning Biblical Interpretation from the Writers of Scripture (Grand Rapids, Kregel, forthcoming [готовится к печати]) для расширенной аргументации, найденной в этом разделе.</span></span> Фактически, проблема не в том, что у апостолов был революционный интерпретационный подход, а скорее в нашем недостатке понимания Ветхого Завета.<span class="container fn-marker">91<span class="tooltip">Beale, “Hosea 11:1 in Matthew,” 697–715. Бил демонстрирует, что разрешение вопроса Осии 11:1 имеет дело непосредственно с правильным пониманием контекста Ветхого Завета.</span></span></p>
-
-<p>Следовательно, даже предполагаемые исключения из контекстуальной герменевтики апостолов не поддерживают новое (христоцентричное) герменевтическое правило. Христоцентричная герменевтика предложила библейско-богословское обоснование, где апостолы видели более полную христологическую значимость текстов Ветхого Завета. Однако это исследование показало иное библейско-богословское обоснование. Апостолы отстаивают значение Ветхого Завета и остаются последовательными с богословской значимостью, развитой пророками. Они фокусируются на конкретных импликациях, которые обсуждали пророки. Из-за этого герменевтика апостолов не оправдывает чтение всего в Ветхом Завете типологически. Напротив, она требует очень внимательного текстуального прочтения Ветхого Завета. То, как Ветхий Завет связывается с Новым и Христом, уже было установлено пророками и апостолами. Нам не нужна новая герменевтическая (типологическая) сетка для чтения поверх текста. Нам просто нужно следовать связям, установленным библейскими авторами, и идентифицировать их христологические разветвления, как они текстуально выражены в интертекстуальности Писания. Это будет развито в следующем разделе.</p>
-
-<p>В этот момент некоторые могут пожелать больше примеров в поддержку этого тезиса. Как мы можем быть уверены, что герменевтический сдвиг не произошел? Простейший ответ на эти вопросы — Сам Христос. Если мы посмотрим на Его использование Ветхого Завета, Он говорит о множестве предметов. Он использует прошлое откровение, чтобы обсуждать воскресение (Исх. 3:6; ср. Матф. 22:32), эсхатологию (Дан. 11:31; ср. Матф. 24:15), любовь к Богу (Втор. 6:5; ср. Луки 10:27), любовь к ближнему (Лев. 19:18; ср. Марка 12:31), брак (Быт. 2:24; ср. Матф. 19:5–6), развод (Втор. 24:1–4; Матф. 19:7–8), суд Израиля (Быт. 19:1–24; ср. Матф. 10:15) и почитание отца и матери (Исх. 20:12; ср. Матф. 15:4). Иисус не заставляет ни один из этих отрывков говорить прямо о Нем Самом. Фактически, апостолы следуют примеру, заявляя, как Ветхий Завет полезен (2 Тим. 3:16), служит нам примером (1 Кор. 10:6) и дает нам наставление и надежду (Рим. 15:4). Собственная герменевтика Христа соблюдается апостолами, и все они признают, что тексты могут говорить о вопросах, которые не являются христологическими по природе. Цель христоцентричной герменевтики — заставить каждый текст говорить о Христе — не является целью Иисуса, или апостолов, если уж на то пошло.</p>
-
-<p>Более того, то, как Иисус использует эти тексты, является полностью контекстуальным. Эллис даже отмечает:</p>
-
-<blockquote>
-<p>Вопреки некоторым заблуждающимся современным интерпретаторам, в Евангелиях никогда нет и намека на то, что Иисус противостоит Торе, закону Божьему, ВЗ. Это всегда вопрос истинной экспозиции писания Иисусом против неправильного понимания и/или неправильного применения его доминирующими учеными писания его дней. Это становится очевидным в столкновениях Иисуса с такими раввинами в многочисленных дебатах...<span class="container fn-marker">92<span class="tooltip">E. Earle Ellis, “How Jesus Interpreted His Bible,” Criswell Theological Review 3, no. 2 (1989): 350.</span></span></p>
-</blockquote>
-
-<p>Эти наблюдения совпадают с тем, что мы ранее наблюдали в Луки 24:25. Иисус подтверждает то, что говорили пророки. Он делал легитимные выводы из текстов Ветхого Завета, которые основывались на Его внимательном чтении фраз (Исх. 3:6; ср. Матф. 22:32), слов (Дан. 11:31; ср. Матф. 24:15) и Его понимании истории (Втор. 24:1–4; Матф. 19:7–8) и Божьего плана (Луки 18:31–32).<span class="container fn-marker">93<span class="tooltip">В случае Исхода 3:6, Иисус понимал фразу «Бог Авраама, Исаака и Иакова» в ее заветном контексте. See Darrell L. Bock, Luke Volume 2: 9:51–24:53, BECNT (Grand Rapids: Baker Books, 1996), 1624. Иисус обратил внимание на термин «мерзость», как он использовался в Данииле, имея дело с эсхатологией в Матф. 24:15. Он понимал искупительно-историческую ситуацию Израиля, когда Моисей дал закон о разводе во Второзаконии 24:1–4. Он также заземлил Свою точку зрения на крест в Писании, явно заявляя, что Его прибытие в Иерусалим отметило осуществление того, что было написано пророками (τὰ γεγραμμένα διὰ τῶν προφητῶν).</span></span> У Нашего Господа была грамматико-историческая герменевтика.</p>
-
-<p>В целом, приверженцы искупительно-исторической герменевтики использовали то, как Новый Завет применяет Ветхий, чтобы оправдать свое чтение Писания. Однако использование Писания апостолами делает обратное. Апостолы заявляли, что следуют значению Писания. Они верили, что человеческий и божественный замысел работали слитно. Их использование предшествующего откровения подтверждает это. Они не делают искусственных или нелегитимных выводов из-за более полного понимания значения текста. Вместо этого они фокусируются на очень конкретных разветвлениях текста, на которых фокусировались прошлые авторы писания. Это верно даже в предполагаемых «исключениях». Такие уточненные выводы далее демонстрируют, насколько близко апостолы знали и понимали Ветхий Завет. Кроме того, это обсуждение показывает, что такая герменевтическая ментальность присуща не только апостолам, но и Христу и пророкам. Они тоже практиковали грамматико-исторический подход и не вчитывали Христа в каждый текст, но обсуждали множество тем. Следовательно, то, как Писание использует Писание, не обосновывает христологический метод, но фактически показывает достаточность грамматико-исторической герменевтики. Скажем так: библейские авторы от пророков до апостолов и до Самого Христа интерпретируют именно так. Нет другой герменевтики, подтвержденной Писанием.</p>
-
+<p>Таким образом, то, как Писание использует Писание, не обосновывает христологический метод, но фактически показывает достаточность грамматико-исторической герменевтики. Библейские авторы от пророков до апостолов и до Самого Христа интерпретируют именно так. Нет другой герменевтики, подтвержденной Писанием.</p>
+   
 <h3>Последствия христоцентричной герменевтики</h3>
 
 <p>Можно задаться вопросом, не является ли это обсуждение чисто теоретическим и академическим. Какой вред проистекает из ошибочной герменевтики? Проблема по сути известна как «канон внутри канона» [canon within a canon]. Фраза относится к тому, как, хотя все Писание является каноном, можно привилегировать определенную часть или идею внутри Писания над другими. Фокусируясь на одной секции или теме Писания, мы можем исключить другие части или темы Библии. В результате мы создаем новый канон внутри канона Писания.</p>
 
-<p>Фокусируясь на Христе как контролирующей идее значения и значимости текста, христоцентричная герменевтика создала «канон внутри канона». Чтобы быть ясным: фокусироваться на Христе и Евангелии — это не плохо. Однако что этот фокус может исключить и запутать? Во-первых, он может запутать и исказить Троицу. Концентрация только на Христе может заставить человека пренебречь обсуждением Отца и Духа. Это может даже привести к путанице в ролях внутри Божества. Более того, это может исказить Евангелие, которое христоцентричное движение желает провозглашать. В конце концов, Евангелие тринитарно по природе (ср. Еф. 1:3–14). Если кто-то думает, что это спекулятивные утверждения, те, кто в движении, признают опасность. Грейданус предупреждает против <em>Христомонизма</em> [Christomonism], где фокус «преимущественно на Иисусе в изоляции от Бога Отца».<span class="container fn-marker">94<span class="tooltip">Greidanus, Preaching Christ, 178.</span></span> Христоцентризм может создать канон, который может умалить Троицу.</p>
+<p>Фокусируясь на Христе как контролирующей идее значения и значимости текста, христоцентричная герменевтика создала «канон внутри канона». Чтобы быть ясным: фокусироваться на Христе и Евангелии — это не плохо. Однако что этот фокус может исключить и запутать? Во-первых, он может запутать и исказить Троицу. Концентрация только на Христе может заставить человека пренебречь обсуждением Отца и Духа. Это может даже привести к путанице в ролях внутри Божества. Более того, это может исказить Евангелие, которое христоцентричное движение желает провозглашать. В конце концов, Евангелие тринитарно по природе (ср. 
+<a href="javascript:void(0)" class="bref" data-ref="Ефесянам 1:3–14">Еф. 1:3–14</a>
+). Если кто-то думает, что это спекулятивные утверждения, те, кто в движении, признают опасность. Грейданус предупреждает против <em>Христомонизма</em> [Christomonism], где фокус «преимущественно на Иисусе в изоляции от Бога Отца».<span class="container fn-marker">94<span class="tooltip">Greidanus, Preaching Christ, 178.</span></span> Христоцентризм может создать канон, который может умалить Троицу.</p>
 
-<p>Троица — не единственная доктрина под угрозой. Поскольку христоцентричный подход часто фокусируется на Христе и сотериологии, любая другая доктрина в систематическом богословии находится под риском. Темы, такие как эсхатология, собственное богословие [theology proper], экклезиология, Израиль, страдание, освящение и святая жизнь, могут быть упущены или преуменьшены. Кроме того, определенные доктрины могут стать несбалансированными, как иллюстрируют недавние дебаты об освящении, «основанном на благодати/Евангелии».<span class="container fn-marker">95<span class="tooltip">Tullian Tchividjian, Jesus + Nothing = Everything, Second Printing (Wheaton, IL: Crossway, 2011), 137, 188–92. Если человек имеет герменевтику, сфокусированную на Евангелии, он может исключить команды к послушанию и личному труду, требуемому в освящении. В результате презентация освящения становится несбалансированной. Канон в каноне по существу исключает определенные истины о данной теме, приводя к несбалансированному богословию.</span></span> Опять же, те, кто внутри движения, признают эти опасные перегибы, порождаемые их интерпретационным подходом. Некоторые предупреждают, что христоцентричные сторонники «недостаточно христоцентричны», потому что они не говорят о Христе в Его других ролях за пределами сотериологии.<span class="container fn-marker">96<span class="tooltip">Murray, “David Murray on Christ-Centered Hermeneutics,” 11; Greidanus, Preaching Christ, 179–81.</span></span> Другие напоминают, что даже если «моральные модели» ошибочны, все равно нужно проповедовать моральные императивы в свете Христа и Евангелия.<span class="container fn-marker">97<span class="tooltip">Chapell, Christ-Centered Preaching, 294.</span></span> Такие предупреждения указывают, что канон внутри канона может выхолостить богословие из Писания, что является полной противоположностью тому, чего желает делать христоцентричный метод.</p>
+<p>Троица — не единственная доктрина под угрозой. Поскольку христоцентричный подход часто фокусируется на Христе и сотериологии, любая другая доктрина в систематическом богословии находится под риском. Темы, такие как эсхатология, собственное богословие, экклезиология, Израиль, страдание, освящение и святая жизнь, могут быть упущены или преуменьшены. Кроме того, определенные доктрины могут стать несбалансированными, как иллюстрируют недавние дебаты об освящении, «основанном на благодати/Евангелии».<span class="container fn-marker">95<span class="tooltip">Tullian Tchividjian, Jesus + Nothing = Everything, 137, 188–92.</span></span> Опять же, те, кто внутри движения, признают эти опасные перегибы, порождаемые их интерпретационным подходом. Некоторые предупреждают, что христоцентричные сторонники «недостаточно христоцентричны», потому что они не говорят о Христе в Его других ролях за пределами сотериологии.<span class="container fn-marker">96<span class="tooltip">Murray; Greidanus.</span></span> Другие напоминают, что даже если «моральные модели» ошибочны, все равно нужно проповедовать моральные императивы в свете Христа и Евангелия.<span class="container fn-marker">97<span class="tooltip">Chapell.</span></span> Такие предупреждения указывают, что канон внутри канона может выхолостить богословие из Писания, что является полной противоположностью тому, чего желает делать христоцентричный метод.</p>
 
-<p>Последовательно, канон внутри канона по своей сути унижает Писание. Как справедливо замечает Кайзер, искупительно-исторический подход в своей спешке увидеть Христа отбрасывает детали определенных текстов.<span class="container fn-marker">98<span class="tooltip">Kaiser Jr., “Walt Kaiser on Christ-Centered Hermeneutics,” 15.</span></span> Соответственно, такой канон внутри канона пренебрегает и исключает то, что вдохновил Бог. Это может непреднамеренно отражать низкий взгляд на Писание, как замечает Блок.<span class="container fn-marker">99<span class="tooltip">Block, “Daniel Block on Christ-Centered Hermeneutics,” 6–7.</span></span> В этом же ключе Блок также заявляет, что христоцентричный метод приводит к демонстрации «творческого гения проповедника, а не божественно задуманного послания библейских авторов».<span class="container fn-marker">100<span class="tooltip">Ibid., 7.</span></span> По сути, христоцентричная герменевтика перешла от значения, основанного на авторе, к значению, основанному на читателе, что является полной противоположностью тому, чего она желала. И снова, христоцентричное движение признает эту опасность. Именно поэтому они требуют внимательного отношения к деталям.<span class="container fn-marker">101<span class="tooltip">Greidanus, Preaching Christ, 279–85; Chapell, Christ-Centered Preaching, 70–81; Johnson, Him We Proclaim, 379–403.</span></span> Они хотят убедиться, что пасторы не просто перескакивают сразу к Христу и пренебрегают тем, как текст усиливает или добавляет к богословию о Христе.<span class="container fn-marker">102<span class="tooltip">Johnson, Him We Proclaim, 276–77; Goldsworthy, Preaching the Whole Bible as Christian Scripture, 125–26.</span></span> Эти увещевания отражают опасность канона внутри канона: уплощение и обесценивание всей красоты Писания.</p>
+<p>Последовательно, канон внутри канона по своей сути унижает Писание. Как справедливо замечает Кайзер, искупительно-исторический подход в своей спешке увидеть Христа отбрасывает детали определенных текстов.<span class="container fn-marker">98<span class="tooltip">Kaiser Jr., 15.</span></span> Соответственно, такой канон внутри канона пренебрегает и исключает то, что вдохновил Бог. Это может непреднамеренно отражать низкий взгляд на Писание, как замечает Блок.<span class="container fn-marker">99<span class="tooltip">Block, 6–7.</span></span> В этом же ключе Блок также заявляет, что христоцентричный метод приводит к демонстрации «творческого гения проповедника, а не божественно задуманного послания библейских авторов».<span class="container fn-marker">100<span class="tooltip">Ibid., 7.</span></span> По сути, христоцентричная герменевтика перешла от значения, основанного на авторе, к значению, основанному на читателе, что является полной противоположностью тому, чего она желала. И снова, христоцентричное движение признает эту опасность. Именно поэтому они требуют внимательного отношения к деталям.<span class="container fn-marker">101<span class="tooltip">Greidanus; Chapell; Johnson.</span></span> Они хотят убедиться, что пасторы не просто перескакивают сразу к Христу и пренебрегают тем, как текст усиливает или добавляет к богословию о Христе.<span class="container fn-marker">102<span class="tooltip">Johnson; Goldsworthy.</span></span> Эти увещевания отражают опасность канона внутри канона: уплощение и обесценивание всей красоты Писания.</p>
 
-<p>Возможно, наиболее иронично то, что христоцентричная герменевтика может на самом деле умалить Христа. Это может произойти потому, что ошибочные связи могут исказить истинные связи, которые превозносят Спасителя. Блок отмечает, что связь между Иисусом Навином и Иисусом Христом искусственна. Она на самом деле блокирует то, как Бог является Тем, кто спас Израиль в завоевании, и как Иисус является тем Богом, потому что Он спасет Своих людей от их грехов (Матф. 1:21).<span class="container fn-marker">103<span class="tooltip">Block, “Daniel Block on Christ-Centered Hermeneutics,” 7.</span></span> Точно так же, хотя Моисей и Христос разделяют определенные роли, нельзя позволять этому затемнять то, как Иисус является Тем, кто дает закон с горы (Матф. 5:1–2), как Сам Бог делал на Синае (Исх. 20:1).<span class="container fn-marker">104<span class="tooltip">Ibid.</span></span> Делая поспешные связи, можно не увидеть определенные ассоциации, которые ведут к высокой Христологии, или дискредитировать то, как Христос легитимно присутствует в Писании.</p>
+<p>Возможно, наиболее иронично то, что христоцентричная герменевтика может на самом деле умалить Христа. Это может произойти потому, что ошибочные связи могут исказить истинные связи, которые превозносят Спасителя. Блок отмечает, что связь между Иисусом Навином и Иисусом Христом искусственна. Она на самом деле блокирует то, как Бог является Тем, кто спас Израиль в завоевании, и как Иисус является тем Богом, потому что Он спасет Своих людей от их грехов (
+<a href="javascript:void(0)" class="bref" data-ref="Матфея 1:21">Матф. 1:21</a>
+).<span class="container fn-marker">103<span class="tooltip">Block, “Daniel Block on Christ-Centered Hermeneutics,” 7.</span></span> Точно так же, хотя Моисей и Христос разделяют определенные роли, нельзя позволять этому затемнять то, как Иисус является Тем, кто дает закон с горы (
+<a href="javascript:void(0)" class="bref" data-ref="Матфея 5:1–2">Матф. 5:1–2</a>
+), как Сам Бог делал на Синае (
+<a href="javascript:void(0)" class="bref" data-ref="Исход 20:1">Исх. 20:1</a>
+).<span class="container fn-marker">104<span class="tooltip">Ibid.</span></span> Делая поспешные связи, можно не увидеть определенные ассоциации, которые ведут к высокой Христологии, или дискредитировать то, как Христос легитимно присутствует в Писании.</p>
 
-<p>В этом ключе, деэмфазис [deemphasis — снижение акцента] тринитарных, библиологических и других доктринальных вопросов ведет к опустошению славы Христа. Проще говоря, не экспонируя все Писание, нельзя увидеть полную картину, которую исполняет Христос, и поэтому Он менее славен. Например, если кто-то фокусируется только на Его сотериологической работе в первое пришествие, то он не видит эсхатологической славы Христа. Он не созерцает Его эсхатологическое величие как Царя (Откр. 19:11–13), который превознесен как кульминационный герой небом и землей (Откр. 4–5), а также восстанавливает народы (Ис. 60:3), Израиль (Ис. 2:2–4) и творение к правильному состоянию (Ис. 11:1–10). Не уча эсхатологии или другим доктринам, мы видим меньше Христа. Как отмечено выше, сторонники христоцентричной герменевтики поняли эту опасность, ибо они предупреждают о том, чтобы не быть «христоцентричными» недостаточно. Они пишут об опасности рассмотрения Христа только как Спасителя в противовес пророку, царю, воину, избавителю и сочувствующему первосвященнику.<span class="container fn-marker">105<span class="tooltip">Clowney, The Unfolding Mystery, 91–105; Murray, “David Murray on Christ-Centered Hermeneutics,” 11.</span></span> Их собственные слова указывают, что фокус христоцентричной герменевтики может в конечном итоге произвести истощенную Христологию, полную противоположность тому, чего они желают.</p>
+<p>В этом ключе, деэмфазис тринитарных, библиологических и других доктринальных вопросов ведет к опустошению славы Христа. Проще говоря, не экспонируя все Писание, нельзя увидеть полную картину, которую исполняет Христос, и поэтому Он менее славен. Например, если кто-то фокусируется только на Его сотериологической работе в первое пришествие, то он не видит эсхатологической славы Христа. Он не созерцает Его эсхатологическое величие как Царя (
+<a href="javascript:void(0)" class="bref" data-ref="Откровение 19:11–13">Откр. 19:11–13</a>
+), который превознесен как кульминационный герой небом и землей (
+<a href="javascript:void(0)" class="bref" data-ref="Откровение 4–5">Откр. 4–5</a>
+), а также восстанавливает народы (
+<a href="javascript:void(0)" class="bref" data-ref="Исаия 60:3">Ис. 60:3</a>
+), Израиль (
+<a href="javascript:void(0)" class="bref" data-ref="Исаия 2:2–4">Ис. 2:2–4</a>
+) и творение к правильному состоянию (
+<a href="javascript:void(0)" class="bref" data-ref="Исаия 11:1–10">Ис. 11:1–10</a>
+). Не уча эсхатологии или другим доктринам, мы видим меньше Христа. Как отмечено выше, сторонники христоцентричной герменевтики поняли эту опасность, ибо они предупреждают о том, чтобы не быть «христоцентричными» недостаточно. Они пишут об опасности рассмотрения Христа только как Спасителя в противовес пророку, царю, воину, избавителю и сочувствующему первосвященнику.<span class="container fn-marker">105<span class="tooltip">Clowney; Murray.</span></span> Их собственные слова указывают, что фокус христоцентричной герменевтики может в конечном итоге произвести истощенную Христологию, полную противоположность тому, чего они желают.</p>
 
-<p>В целом, Писание — это Божье Слово. Тем самым оно имеет совершенную артикуляцию того, что оно говорит и как оно это говорит. Герменевтика, которая ограничивает это послание, обречена производить несбалансированные результаты. Именно это демонстрирует канон внутри канона. Хотя христологическая герменевтика желает учить христианскому богословию и превозносить Христа, происходит то, что люди могут не узнать всего богословия Библии и закончить с меньшим взглядом на своего Спасителя. Единственный способ справиться с жизнью во всех ее требованиях к нашей повседневности, мировоззрению и решениям — это знать всю волю [whole counsel] Божьего Слова (Деян. 20:27; ср. 2 Пет. 1:3). Канон внутри канона по своей сути не может этого произвести.</p>
+<p>В целом, Писание — это Божье Слово. Тем самым оно имеет совершенную артикуляцию того, что оно говорит и как оно это говорит. Герменевтика, которая ограничивает это послание, обречена производить несбалансированные результаты. Именно это демонстрирует канон внутри канона. Хотя христологическая герменевтика желает учить христианскому богословию и превозносить Христа, происходит то, что люди могут не узнать всего богословия Библии и закончить с меньшим взглядом на своего Спасителя. Единственный способ справиться с жизнью во всех ее требованиях к нашей повседневности, мировоззрению и решениям — это знать всю волю Божьего Слова (
+<a href="javascript:void(0)" class="bref" data-ref="Деяния 20:27">Деян. 20:27</a>; ср. 
+<a href="javascript:void(0)" class="bref" data-ref="2 Петра 1:3">2 Пет. 1:3</a>
+). Канон внутри канона по своей сути не может этого произвести.</p>
+
 
 <h3>Установление достаточности грамматико-исторической герменевтики</h3>
 
 <p>Итак, если кто-то желает проповедовать Христа в Его полной славе, как ему следует это делать? Ответ — грамматико-историческая герменевтика. Это герменевтика, предписанная Писанием, и это герменевтика, которая ведет к полной экспозиции послания Писания, чтящей Христа.</p>
 
-<p>Как мы кратко наблюдали, авторы Ветхого Завета устанавливали конкретные импликации текста, которые подготавливали к Новому Завету. Внутри этого пророки устанавливают траектории мысли, которые связываются со Христом. Это важно по двум причинам. Во-первых, факт, что пророки говорят о Христе, демонстрирует, что авторы Ветхого Завета знали о Мессии и обсуждали Его рано. Это противостоит понятиям высшей критики, что Мессия был поздним концептом в истории Израиля, и, таким образом, пророки на самом деле не намеревались говорить о Христе.<span class="container fn-marker">106<span class="tooltip">T. Longman, “The Messiah: Explorations in the Law and Writings,” in The Messiah in the Old and New Testaments, ed. S. E. Porter (Grand Rapids: Eerdmans Publishing, 2007), 16–23.</span></span> Вместо этого, Ветхий Завет — это документ, который обсуждает Христа. Так что можно проповедовать Христа, основываясь на замысле пророков. Во-вторых, факт, что пророки говорят о Христе конкретными способами, демонстрирует, что есть установленные пути провозглашения Христа из Ветхого Завета. Вопреки христоцентричной герменевтике, не нужна новая сетка [grid], чтобы видеть связи между прошлым откровением и Спасителем, но нужно видеть то, что установили авторы. Это находится в сердце грамматико-исторической герменевтики, и делая это, мы можем проповедовать Христа.</p>
+<p>Как мы кратко наблюдали, авторы Ветхого Завета устанавливали конкретные импликации текста, которые подготавливали к Новому Завету. Внутри этого пророки устанавливают траектории мысли, которые связываются со Христом. Это важно по двум причинам. Во-первых, факт, что пророки говорят о Христе, демонстрирует, что авторы Ветхого Завета знали о Мессии и обсуждали Его рано. Это противостоит понятиям высшей критики, что Мессия был поздним концептом в истории Израиля, и, таким образом, пророки на самом деле не намеревались говорить о Христе.<span class="container fn-marker">106<span class="tooltip">Longman.</span></span> Вместо этого, Ветхий Завет — это документ, который обсуждает Христа. Так что можно проповедовать Христа, основываясь на замысле пророков. Во-вторых, факт, что пророки говорят о Христе конкретными способами, демонстрирует, что есть установленные пути провозглашения Христа из Ветхого Завета. Вопреки христоцентричной герменевтике, не нужна новая сетка, чтобы видеть связи между прошлым откровением и Спасителем, но нужно видеть то, что установили авторы. Это находится в сердце грамматико-исторической герменевтики, и делая это, мы можем проповедовать Христа.</p>
 
-<p>Другие в этой серии более тщательно комментируют то, как Христос присутствует в Ветхом Завете и как провозглашать Его. Другие работы обсуждали эту тему более тщательно.<span class="container fn-marker">107<span class="tooltip">Walter C. Kaiser, The Messiah in the Old Testament (Grand Rapids: Zondervan Publishing, 1995); Philip S. Satterthwaite, “David in the Books of Samuel,” in The Lord’s Anointed: Interpretation of Old Testament Messianic Texts, ed. Philip E. Satterwaite (Grand Rapids: Baker Books, 1995), 41–65; James M. Hamilton, God’s Glory in Salvation Through Judgment (Wheaton, IL: Crossway, 2010).</span></span> Тем не менее, я могу указать по меньшей мере на три основных способа, которыми грамматико-исторический подход может выявить Христа из Ветхого Завета.</p>
+<p>Во-первых, Ветхий Завет пророчествует прямо о Христе. Начиная с 
+<a href="javascript:void(0)" class="bref" data-ref="Бытие 3:15">Быт. 3:15</a>
+, пророки писали о Христе (
+<a href="javascript:void(0)" class="bref" data-ref="Бытие 49:10">Быт. 49:10</a>; 
+<a href="javascript:void(0)" class="bref" data-ref="Числа 24:17">Чис. 24:17</a>; 
+<a href="javascript:void(0)" class="bref" data-ref="Псалом 71">Пс. 71</a>; 
+<a href="javascript:void(0)" class="bref" data-ref="Псалом 109">Пс. 109</a>
+). Взаимосвязанность Ветхого Завета помогает закрепить эти тексты как мессианские.</p>
 
-<p>Во-первых, Ветхий Завет <em>пророчествует</em> [prophesies] прямо о Христе. Начиная с Бытия 3:15, пророки писали о Христе (Быт. 49:10; Чис. 24:17; Пс. 71; 109). Взаимосвязанность Ветхого Завета может помочь в якорении этих текстов как мессианских. Если более поздний текст Писания связан с явно мессианским текстом, возможно, тот текст говорит о Мессии также. Следовательно, когда более поздние тексты говорят об эсхатологическом царе, поражающем голову своих врагов подобно змею (Чис. 24:17; Пс. 67:22 [Евр. ст. 22]; 71:9; 109:5–6; Ис. 27:1; Авв. 3:13), ученые признают, что это имеет дело с Бытием 3:15 и Мессией.</p>
+<p>Во-вторых, Ветхий Завет подготавливает к Христу. Это видно в его общей искупительно-исторической линии, пересказываемой в 
+<a href="javascript:void(0)" class="bref" data-ref="Второзаконие 1:3–3:26">Втор. 1:3–3:26</a>; 
+<a href="javascript:void(0)" class="bref" data-ref="Иисус Навин 24:1–12">Иис. Нав. 24:1–12</a>; 
+<a href="javascript:void(0)" class="bref" data-ref="Псалом 77:1–72">Пс. 77</a>; 
+<a href="javascript:void(0)" class="bref" data-ref="Неемия 9:1–37">Неем. 9:1–37</a>
+и достигающей кульминации в Новом Завете (
+<a href="javascript:void(0)" class="bref" data-ref="Деяния 7:1–60">Деян. 7</a>; 
+<a href="javascript:void(0)" class="bref" data-ref="Деяния 13:13–41">13:13–41</a>
+). Отдаляясь и видя целостную картину, мы замечаем, как каждая сцена приближает нас ко Христу.</p>
 
-<p>Следовательно, существует множество пророчеств о Христе в Ветхом Завете, и они не просто набор случайных предсказаний. Скорее, они показывают, как определенные богословские концепты будут исполнены во Христе. Например, Исаия 53 инкорпорирует Псалом 21 (Ис. 53:3; ср. Пс. 21:7 [Евр. ст. 7]), а также жертвенную систему (Ис. 53:8–11; ср. Лев. 5:14–19), чтобы обсудить предельное искупительное страдание царя из рода Давида. Даниил 7 опирается на творение (ср. Быт. 1:26–28), чтобы показать, как некто, подобный сыну человеческому, является предельным правителем всего мира. Это подготавливает собственное использование Христом «Сына Человеческого» (ср. Луки 21:27). Захария говорит о том, как Мессия вернется на гору Елеонскую и расколет ее пополам (Зах. 14:4). В свете прошлых поражений на горе Елеонской (ср. 2 Цар. 15:30), пророк напоминает нам, как Мессия будет иметь финальную эсхатологическую победу над всем поражением. Он финальный и дефинитивный завоеватель. Пророчества Ветхого Завета — это не просто предсказание, но глубокое богословие. Таким образом, прямые пророчества вносят вклад в богатую Христологию.</p>
+<p>Кроме того, существуют конкретные текстуальные связи. Можно увидеть, как жертвенная система соединяется со смертью Христа в 
+<a href="javascript:void(0)" class="bref" data-ref="Исаия 53:1–11">Ис. 53</a>
+. Можно увидеть богословие Давидова завета в 
+<a href="javascript:void(0)" class="bref" data-ref="2 Царств 7:9–13">2 Цар. 7:9–13</a>
+и его развитие в псалмах, находящих исполнение во Христе (
+<a href="javascript:void(0)" class="bref" data-ref="Деяния 1:20">Деян. 1:20</a>
+). Можно увидеть распространение адамовых благословений (
+<a href="javascript:void(0)" class="bref" data-ref="Бытие 1:26–28">Быт. 1:26–28</a>
+) через Ноя (
+<a href="javascript:void(0)" class="bref" data-ref="Бытие 9:1">Быт. 9:1</a>
+), Авраама (
+<a href="javascript:void(0)" class="bref" data-ref="Бытие 12:1">Быт. 12:1</a>
+) и Давида, что ведет к Христу (
+<a href="javascript:void(0)" class="bref" data-ref="Римлянам 5:14">Рим. 5:14</a>; 
+<a href="javascript:void(0)" class="bref" data-ref="1 Коринфянам 15:22">1 Кор. 15:22</a>; 
+<a href="javascript:void(0)" class="bref" data-ref="Евреям 2:6–9">Евр. 2:6–9</a>
+).</p>
 
-<p>Во-вторых, грамматико-историческая герменевтика может проследить, как Ветхий Завет <em>подготавливает</em> [prepares] к Христу. В противовес христоцентризму, это христотеличность [Christotelicity]. Как обсуждалось, Ветхий Завет связывает себя воедино, что связывает определенные тексты и идеи с Христом. Это происходит на двух уровнях. На макро-уровне авторы Ветхого Завета взаимосвязывают свои писания, чтобы сформировать всеобъемлющую историю или нарратив. Различные отрывки пересказывают эту сюжетную линию (Втор. 1:3–3:26; Иис. Нав. 24:1–12; Пс. 77:1–72; Неем. 9:1–37), которая подготавливает к Новому (ср. Деян. 7:1–60; 13:13–41).<span class="container fn-marker">108<span class="tooltip">Paul R. House, “Examining the Narratives of Old Testament Narrative: An Exploration in Biblical Theology,” WTJ 67 (2005): 229–45.</span></span> Следовательно, можно увидеть, как тексты соединяются и достигают кульминации во Христе, внося вклад в эту сюжетную линию. Каждое событие двигает историю ближе к Христу и тем самым готовит путь для Него. Делают это не путем приближения и принуждения деталей соответствовать Христу, а путем отдаления и видения того, как текст играет в большей картине.</p>
+<p>Наконец, Христос присутствует в Ветхом Завете как действующее Лицо. Ангел Господень являет признаки божественности (
+<a href="javascript:void(0)" class="bref" data-ref="Исход 3:2–4">Исх. 3:2–4</a>; 
+<a href="javascript:void(0)" class="bref" data-ref="Бытие 22:11–12">Быт. 22:11–12</a>
+), но также отличен от Бога (
+<a href="javascript:void(0)" class="bref" data-ref="Исход 23:20–21">Исх. 23:20–21</a>
+). Эти напряжения разрешаются в свете Троицы и указывают на Сына.</p>
 
-<p>На микро-уровне пророки сплетают конкретные тексты Ветхого Завета вместе, чтобы связать с Христом. Можно увидеть, как жертвенная система и ее богословие пересекаются со смертью Христа в Исаии 53. Можно наблюдать, как части жизни Давида будут рекапитулированы [повторены] в предельном Давиде, который рожден в Вифлееме (Мих. 5:2 [Евр. ст. 1]) и должен странствовать в пустыне, как Давид (Мих. 1:15; ср. 1 Цар. 22:1; Матф. 4:1).<span class="container fn-marker">109<span class="tooltip">Kenneth L. Barker, Micah, Nahum, Habakkuk, Zephaniah, NAC (Nashville: Broadman & Holman Publishers, 1999), 60, 96.</span></span> Можно увидеть богословие Завета Давида, выраженное далее в Псалмах (ср. Пс. 21; 68; 71; 108; 109), которые затем имеют внутреннюю применимость к Христу, финальному царю из рода Давида (Ос. 3:5; Ис. 11:1–10; 53:1–11; Матф. 27:24–66; Деян. 1:20).<span class="container fn-marker">110<span class="tooltip">Walter C. Kaiser Jr, “Psalm 72: An Historical and Messianic Current Example of Antiochene Hermeneutical Theoria,” JETS 52, no. 2 (2009): 257–70; Waltke, Old Testament Theology, 888–89.</span></span> Можно увидеть, как повеления и благословения, дарованные Адаму (Быт. 1:26–28), распространяются на Ноя (Быт. 9:1), Авраама (Быт. 12:1) и Давида (2 Цар. 7:9–13; Пс. 8:5), что снова ведет к Христу (Рим. 5:14; 1 Кор. 15:22; Евр. 2:6–9).<span class="container fn-marker">111<span class="tooltip">Stephen G. Dempster, Dominion and Dynasty: A Theology of the Hebrew Bible, NSBT (Downers Grove, IL: InterVarsity Press, 2003), 71–72, 77–78, 147.</span></span> Кроме того, можно наблюдать, как Новый Завет опирается на Ветхий Завет, чтобы показать богословскую значимость аспектов жизни Христа. Например, искушение Иисуса делает аллюзию назад к Адаму и Израилю в пустыне (ср. Луки 4:1–13). Он преуспевает там, где они потерпели неудачу. Его работа в Наине (Луки 7:11–17) параллельна работе Илии и Елисея, подчеркивая Его превосходное служение и Его охват язычников.<span class="container fn-marker">112<span class="tooltip">Darrell L. Bock, Luke Volume 1: 1:1–9:50, BECNT (Grand Rapids: Baker Books, 1994), 653.</span></span> Соответственно, лучшее понимание Адама, Израиля, Илии и Елисея имеет импликации для лучшего понимания Христа, даже если отрывки об этих людях не пророчествуют прямо о Нем. Все эти случаи интертекстуальности иллюстрируют, что конкретные тексты действительно связываются с Христом, и они делают это способами, которые не оставлены на усмотрение читателя, но раскрыты авторами Писания. Следование этим конкретным связям показывает, как богословие, установленное в определенных текстах, легитимно связывается с Христом.<span class="container fn-marker">113<span class="tooltip">В этих случаях более поздние применения текстов не меняют фундаментального значения предыдущего откровения. Фактически, более поздние использования зависят от этого оригинального значения, чтобы иметь богословие этого текста для применения к Христу. Даже в примере с Ионой утверждение Луки не в том, что Иона является пророчеством о Христе. Скорее, более поздние использования применяют информацию, уже установленную, к Христу. Внутри этого примеры выше показывают, как связи не произвольны, но легитимны. Они происходят не потому, что читатель заметил их, а потому, что они логически объяснены в самом Писании. Как заявлено ранее, логика связей найдена текстуально через интертекстуальность Писания. Поскольку Писание использует один текст неоднократно, оно объясняет, почему и как оно применяет его, предоставляя обоснование для того, чтобы такая импликация была точной. Прослеживание связей таким образом работает хорошо, потому что это работает с тем, как оперируют авторский замысел и прогрессивное откровение.</span></span></p>
-
-<p>Таким образом, в случаях того, как Ветхий Завет подготавливает к Христу, грамматико-историческая герменевтика помогает произвести богатую Христологию двумя путями. Во-первых, как обсуждалось, она чувствительна к тому, как библейские авторы делают связи между Ветхим Заветом и Христом как на макро-, так и на микро-уровнях. Это позволяет нам соединять точки, чтобы показать, что то, что мы говорим, — это то, что говорит Писание, а не наше воображение. Во-вторых, грамматико-исторический подход гарантирует, что мы изучили текст с правильным акцентом, который, в свою очередь, надлежащим образом подготавливает его связь с другими текстами и Христом. Если мы не понимаем Ветхий Завет глубоко, тогда, когда Новый Завет опирается на Ветхий, чтобы говорить о Христе, мы не узнаем полного значения происходящего. Поскольку Христология Нового Завета черпает из Ветхого Завета, поверхностное понимание Ветхого Завета ведет к поверхностной Христологии. Более того, без тщательного и надлежащего осознания Ветхого Завета мы можем упустить более тонкие, но легитимные связи, которые Новый Завет делает с Ветхим. В результате мы упускаем богословский вес, который приводит нас к величию Христа. Грамматико-исторический подход позволяет нам увидеть широту и глубину богословия Ветхого Завета на микро- и макро-уровне. Это, в свою очередь, позволяет нам увидеть славу Христа с разных углов.</p>
-
-<p>Наконец, Христос <em>в</em> Ветхом Завете, потому что Он действует в истории. Ветхий Завет не просто предсказывает или готовит к Нему, но изображает Сына как <em>участника</em> [participant] в этой части Писания. Ангел Господень [Angel of YHWH] — хороший пример этого. Экзегетические детали устанавливают напряжение, касающееся этого существа. С одной стороны, эти детали предполагают, что Ангел Господень — это Сам Бог. Он принимает поклонение (Исх. 3:2–4), и Бог идентифицирует Себя как такового (Быт. 22:11–12; Суд. 6:21–22). С другой стороны, другие детали указывают на то, как Бог отличен от Ангела. Бог, предположительно на небе, смотрит вниз через Ангела в столпе облачном (Исх. 14:24). Бог посылает Ангела и вкладывает Свое имя в Ангела (Исх. 23:20–21). Таким образом, Ангел Господень — это Сам Бог, но отличный от Самого Себя. Однако Ветхий Завет уточняет это дальше. Бог идентифицирует Того, кто вел Израиль через пустыню, как Скалу (Втор. 32:4), титул, данный позже Мессии (Ис. 8:13–14; 26:4; ср. 28:16). Все это вместе предполагает, что Ангел — это Бог, но отличный от Бога, потому что Он — второе лицо Троицы, Сын. Если это так, то слава Сына явлена в Ветхом Завете, когда Он говорит с Авраамом, призывает Моисея и ведет Израиль из Египта в Землю Обетованную.</p>
-
-<p>Другие «Христофании» [Christophanies] случаются в Ветхом Завете (Быт. 32:25–30; Иис. Нав. 5:13–15), выявляемые подобными экзегетическими деталями и напряжениями.<span class="container fn-marker">114<span class="tooltip">James A. Borland, Christ in the Old Testament (Chicago: Moody, 1978), 65–72. See also, K. A. Matthews, Genesis 11:27–50:26, NAC (Nashville, TN: Broadman and Holman, 2005), 558; David M. Howard, Joshua, NAC (Nashville: Broadman and Holman, 1998), 157.</span></span> Соответственно, грамматико-историческая герменевтика может указывать на Христа не только потому, что Ветхий Завет достигает кульминации во Христе, но также потому, что Он является частью того, что движет событиями Ветхого Завета. Он не просто явлен в конце, но присутствует в процессе.</p>
-
-<p>Этот список, конечно, не является исчерпывающим ни в категориях, ни в текстах. Тем не менее, он напоминает нам, что Ветхий Завет говорит о Христе и говорит о Нем конкретными, но разнообразными способами. В конечном итоге, мы те, кто объясняет Писание, а не пишет Писание (2 Тим. 4:1–2). Наша работа — говорить то, что говорят тексты, что говорят библейские авторы. Последовательно, мы хотим говорить о Христе, основываясь на том, что библейские авторы сказали о Нем, в отличие от того, чего нет в тексте. Вот почему грамматико-исторический подход так важен. Он позволяет нам увидеть разнообразие и детали богословия в Ветхом Завете. Он позволяет нам увидеть многочисленные способы, которыми библейские авторы связывают вес этого богословия с Христом. Он тем самым позволяет нам говорить о Христе то, что библейские авторы сказали о Христе, говорить о Нем в Его полной славе, как явлено всем Писанием в его широте и глубине.</p>
+<p>Этот обзор не является исчерпывающим, но он показывает, что Ветхий Завет говорит о Христе разнообразными и конкретными способами. Мы призваны не писать Писание, а объяснять его (
+<a href="javascript:void(0)" class="bref" data-ref="2 Тимофею 4:1–2">2 Тим. 4:1–2</a>
+). Наша задача — говорить то, что говорят библейские авторы. Следовательно, грамматико-исторический подход позволяет нам говорить о Христе именно так, как это делает само Писание.</p>
 
 <h3>Заключение</h3>
 
-<p>Как мы чтим Христа в нашем изучении и провозглашении Писания? Мы наблюдали, что мы должны чтить Его как в средствах, так и в цели. Мы почитаем Христа не только превознося Его за кафедрой, но также через герменевтическое послушание в кабинете.</p>
+<p>Как мы чтим Христа в нашем изучении и провозглашении Писания? Мы чтим Его не только превознося за кафедрой, но и через герменевтическое послушание в кабинете.</p>
 
+
+   
 <p>В конце концов, Писание предписывает, чтобы экзегет искал замысел автора, переданный через точный язык и в свете исторического фона. Оно не оправдывает исключений из этого метода. Это путь, которым пророки и апостолы интерпретировали Писание. Это также видно в Самом Христе, который подтверждал то, что говорили пророки, и использовал Писание, чтобы говорить о множестве вопросов в соответствии с тем, что было написано. Он демонстрирует не христоцентричную герменевтику, а грамматико-историческую герменевтику. Таким образом, Бог показывает последовательность в Своей заботе о том, как мы достигаем наших выводов, так же как и о самих выводах.</p>
 
 <p>Для этого есть веская причина. Мы видели, как ошибочная герменевтика может создать канон внутри канона. Это ведет к несбалансированным формациям богословия и даже истощенной христологии. Мы можем непреднамеренно игнорировать полную славу Христа, заставляя тексты говорить только о Нем или даже о конкретной грани Его служения. Грамматико-исторический подход позволяет Писанию говорить ко всем вопросам, что выявляет не только баланс в служении и богословии, но и полную славу Спасителя, как явлено в связях Писания.</p>
@@ -856,8 +933,6 @@ html.dark .bref .btip{
   </main>
  
 <script type="application/json" id="bibleRefs">
-{
- {
 {
   "2 Тимофею 4:1–2": "Я торжественно свидетельствую пред Богом и Христом Иисусом, имеющим судить живых и мертвых, и явлением Его и Царствием Его: проповедуй слово, настой во время и не во время, обличи, запрети, увещай со всяким долготерпением и учением.",
   "2 Тимофею 4:2б": "настой во время и не во время, обличи, запрети, увещай со всяким долготерпением и учением.",
@@ -1034,246 +1109,196 @@ html.dark .bref .btip{
   "2 Петра 1:3": "Как Божественная сила Его даровала нам всё потребное для жизни и благочестия чрез познание Призвавшего нас Своею славою и силою.",
   "Левит 19:2": "Объяви всему обществу сынов Израилевых и скажи им: святы будьте, ибо свят Я Господь, Бог ваш."
 }
-}
-}
 </script>
 
 <script>
 (function(){
-  const dataEl = document.getElementById('bibleRefs');
-  if (!dataEl) return;
+
+/* ======================================================
+   BIBLE REFERENCES (с мобильным поведением)
+====================================================== */
+
+const dataEl = document.getElementById('bibleRefs');
+if (dataEl){
 
   let refs = {};
-  try { refs = JSON.parse(dataEl.textContent.trim() || "{}"); } catch(e){ refs = {}; }
+  try {
+    refs = JSON.parse(dataEl.textContent.trim() || "{}");
+  } catch(e){
+    console.error("Bible JSON error:", e);
+    refs = {};
+  }
 
   const links = document.querySelectorAll('.bref[data-ref]');
-  let open = null;
+  let openBible = null;
 
   function closeBible(){
-    if (open){
-      open.classList.remove('is-open');
-      open = null;
+    if (openBible){
+      openBible.classList.remove('is-open');
+      openBible = null;
     }
   }
 
   links.forEach(a => {
+
     const key = a.getAttribute('data-ref');
     const text = refs[key];
     if (!text) return;
 
-    const tip = document.createElement('span');
-    tip.className = 'btip';
-    tip.innerHTML = `<strong>${key}</strong><div>${text}</div>`;
-    a.appendChild(tip);
+    // не создавать повторно popup
+    if (!a.querySelector('.btip')){
+      const tip = document.createElement('span');
+      tip.className = 'btip';
+      tip.innerHTML = `<strong>${key}</strong><div>${text}</div>`;
+      a.appendChild(tip);
+    }
 
-    a.addEventListener('click', (e) => {
+    a.addEventListener('click', function(e){
       e.preventDefault();
       e.stopPropagation();
 
-      if (open === a){ closeBible(); return; }
+      if (openBible === a){
+        closeBible();
+        return;
+      }
+
       closeBible();
       a.classList.add('is-open');
-      open = a;
+      openBible = a;
     });
+
   });
 
-  document.addEventListener('click', (e) => {
-    if (!e.target.closest('.bref') && !e.target.closest('.btip')) closeBible();
+  document.addEventListener('click', function(e){
+    if (!e.target.closest('.bref') && !e.target.closest('.btip')){
+      closeBible();
+    }
   });
 
   window.addEventListener('scroll', closeBible, { passive: true });
   window.addEventListener('wheel', closeBible, { passive: true });
 
-  // не закрывать при скролле внутри .btip
-  window.addEventListener('touchmove', (e) => {
-    if (!e.target.closest('.btip')) closeBible();
+  // ✅ НЕ закрывать если скроллим внутри popup
+  window.addEventListener('touchmove', function(e){
+    if (!e.target.closest('.btip')){
+      closeBible();
+    }
   }, { passive: true });
 
-  document.addEventListener('keydown', (e) => {
+  window.addEventListener('resize', closeBible, { passive: true });
+  window.addEventListener('orientationchange', closeBible, { passive: true });
+
+  document.addEventListener('keydown', function(e){
     if (e.key === 'Escape') closeBible();
   });
-})();
-</script>
- 
-<script>
-(function () {
 
-  const markers = document.querySelectorAll('.fn-marker');
-  let activeMarker = null;
+}
 
-  // Удаляем пробелы перед сноской (для justify)
-  markers.forEach((m) => {
-    const prev = m.previousSibling;
-    if (prev && prev.nodeType === Node.TEXT_NODE) {
-      prev.textContent = prev.textContent.replace(/\s+$/, '');
-    }
-  });
 
- function closeAll() {
-  if (activeMarker) {
+/* ======================================================
+   FOOTNOTES (мобильное overlay + авто‑закрытие)
+====================================================== */
+
+const markers = document.querySelectorAll('.fn-marker');
+let activeMarker = null;
+
+// убрать пробел перед сноской
+markers.forEach((m) => {
+  const prev = m.previousSibling;
+  if (prev && prev.nodeType === Node.TEXT_NODE) {
+    prev.textContent = prev.textContent.replace(/\s+$/, '');
+  }
+});
+
+function closeFootnotes(){
+  if (activeMarker){
     const tooltip = activeMarker.querySelector('.tooltip');
-
-    tooltip.style.left = '';
-    tooltip.style.right = '';
-    tooltip.style.top = '';
-    tooltip.style.bottom = '';
-
+    if (tooltip){
+      tooltip.style.left = '';
+      tooltip.style.right = '';
+      tooltip.style.top = '';
+      tooltip.style.bottom = '';
+    }
     activeMarker.classList.remove('is-open');
     activeMarker = null;
   }
 }
 
-// Открытие по клику
 markers.forEach(marker => {
 
   marker.addEventListener('click', function(e){
     e.preventDefault();
     e.stopPropagation();
 
-    if (activeMarker === marker) {
-      closeAll();
+    if (activeMarker === marker){
+      closeFootnotes();
       return;
     }
 
-    closeAll();
+    closeFootnotes();
     marker.classList.add('is-open');
     activeMarker = marker;
   });
 
 });
 
-  document.addEventListener('click', function(e){
-  if (!e.target.closest('.fn-marker') && !e.target.closest('.tooltip')) {
-    closeAll();
+document.addEventListener('click', function(e){
+  if (!e.target.closest('.fn-marker') && !e.target.closest('.tooltip')){
+    closeFootnotes();
   }
 });
 
-  // ✅ Закрытие при ЛЮБОМ движении страницы
-  window.addEventListener('scroll', closeAll, { passive: true });
-  window.addEventListener('wheel', closeAll, { passive: true });
- function isInsideTooltip(e){
+window.addEventListener('scroll', closeFootnotes, { passive: true });
+window.addEventListener('wheel', closeFootnotes, { passive: true });
+
+function isInsideTooltip(e){
   return e.target && (e.target.closest('.tooltip') || e.target.closest('.fn-marker'));
 }
 
-// Закрываем при касании/движении страницы, но НЕ если скроллим внутри tooltip
+// ✅ мобильная защита: не закрывать при скролле внутри tooltip
 window.addEventListener('touchstart', function(e){
-  if (!isInsideTooltip(e)) closeAll();
+  if (!isInsideTooltip(e)) closeFootnotes();
 }, { passive: true });
 
 window.addEventListener('touchmove', function(e){
-  if (!isInsideTooltip(e)) closeAll();
+  if (!isInsideTooltip(e)) closeFootnotes();
 }, { passive: true });
-  window.addEventListener('resize', closeAll, { passive: true });
-  window.addEventListener('orientationchange', closeAll, { passive: true });
 
-  // Закрытие по Esc
-  document.addEventListener('keydown', function(e){
-    if (e.key === 'Escape') closeAll();
-  });
+window.addEventListener('resize', closeFootnotes, { passive: true });
+window.addEventListener('orientationchange', closeFootnotes, { passive: true });
 
-  /* ===== THEME SWITCH ===== */
+document.addEventListener('keydown', function(e){
+  if (e.key === 'Escape') closeFootnotes();
+});
 
-  const themeToggle = document.getElementById('themeToggle');
-  const htmlEl = document.documentElement;
+
+/* ======================================================
+   THEME SWITCH (кнопка‑иконка)
+====================================================== */
+
+const themeToggle = document.getElementById('themeToggle');
+const htmlEl = document.documentElement;
+
+if (themeToggle){
 
   const savedTheme = localStorage.getItem('theme');
-
-  if (savedTheme === 'dark') {
+  if (savedTheme === 'dark'){
     htmlEl.classList.add('dark');
-    themeToggle.checked = true;
   }
 
-  themeToggle.addEventListener('change', function(){
-    if (themeToggle.checked) {
-      htmlEl.classList.add('dark');
+  themeToggle.addEventListener('click', function(){
+    htmlEl.classList.toggle('dark');
+
+    if (htmlEl.classList.contains('dark')){
       localStorage.setItem('theme', 'dark');
     } else {
-      htmlEl.classList.remove('dark');
       localStorage.setItem('theme', 'light');
     }
   });
 
-})();
-</script>
-
- <script>
-(function(){
-  const dataEl = document.getElementById('bibleRefs');
-  if (!dataEl) return;
-
-  let refs = {};
-  try { refs = JSON.parse(dataEl.textContent.trim() || "{}"); } catch(e){ refs = {}; }
-
-  const links = document.querySelectorAll('.bref[data-ref]');
-  let open = null;
-
-  function closeBible(){
-    if (open){
-      open.classList.remove('is-open');
-      open = null;
-    }
-  }
-
-  // Создаём tooltip внутри каждой ссылки
-  links.forEach(a => {
-    const key = a.getAttribute('data-ref');
-    const text = refs[key];
-    if (!text) return;
-
-    const tip = document.createElement('span');
-    tip.className = 'btip';
-    tip.innerHTML = `<strong>${key}</strong><div>${text}</div>`;
-    a.appendChild(tip);
-
-    a.addEventListener('click', (e) => {
-      e.preventDefault();
-      e.stopPropagation();
-
-      if (open === a){ closeBible(); return; }
-      closeBible();
-      a.classList.add('is-open');
-      open = a;
-    });
-  });
-
-  // Закрытие по клику вне
-  document.addEventListener('click', (e) => {
-    if (!e.target.closest('.bref') && !e.target.closest('.btip')) closeBible();
-  });
-
-  // Закрытие при скролле страницы (как ты любишь на мобильном)
-  window.addEventListener('scroll', closeBible, { passive: true });
-  window.addEventListener('wheel', closeBible, { passive: true });
-
-  // Не закрывать при скролле внутри окна, но закрывать при скролле страницы
-  window.addEventListener('touchmove', (e) => {
-    if (!e.target.closest('.btip')) closeBible();
-  }, { passive: true });
-
-  document.addEventListener('keydown', (e) => {
-    if (e.key === 'Escape') closeBible();
-  });
-})();
-</script>
- 
-  <script>
-const themeToggle = document.getElementById('themeToggle');
-const htmlEl = document.documentElement;
-
-const savedTheme = localStorage.getItem('theme');
-if (savedTheme === 'dark') {
-  htmlEl.classList.add('dark');
 }
 
-themeToggle.addEventListener('click', function(){
-  htmlEl.classList.toggle('dark');
-
-  if (htmlEl.classList.contains('dark')) {
-    localStorage.setItem('theme', 'dark');
-  } else {
-    localStorage.setItem('theme', 'light');
-  }
-});
+})();
 </script>
 
 </body>
