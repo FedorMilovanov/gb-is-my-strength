@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://fedormilovanov.github.io/gb-is-my-strength/sitemap.xml
