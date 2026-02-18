@@ -271,7 +271,7 @@
   /* На узких экранах — только иконка, без текста */
   @media (max-width: 1100px){
     .back-to-index{
-      top: 18px;
+      top: 18px !important;
       left: 16px;
       width: 26px;
       height: 26px;
@@ -1421,8 +1421,7 @@ if (themeToggle){
 })();
 </script>
 
-
-
+<script>
 /* ======================================================
    READING PROGRESS BAR
 ====================================================== */
@@ -1456,6 +1455,7 @@ if (themeToggle){
     window.scrollTo({ top: 0, behavior: 'smooth' });
   });
 })();
+</script>
 
 </body>
 </html>
