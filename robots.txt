@@ -1,0 +1,9 @@
+User-agent: *
+Allow: /
+Disallow: /*?*
+
+User-agent: Yandex
+Allow: /
+Clean-param: utm_source&utm_medium&utm_campaign&utm_term&utm_content&yclid&gclid
+
+Sitemap: https://fedormilovanov.github.io/gb-is-my-strength/sitemap.xml

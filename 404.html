@@ -1,0 +1,135 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>404 — Страница не найдена · Господь Бог — Сила Моя</title>
+  <meta name="robots" content="noindex, nofollow">
+  <link rel="icon" type="image/x-icon" href="./favicon.ico">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,500;0,600;1,400&family=Source+Sans+3:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="./css/site.css">
+  <script>
+    window.SITE_CONFIG = {
+      version: 1,
+      site: {
+        id: 'gb-strength',
+        name: 'Господь Бог — Сила Моя',
+        baseUrl: 'https://fedormilovanov.github.io/gb-is-my-strength',
+        locale: 'ru-RU',
+        themeStorageKey: 'theme'
+      },
+      page: {
+        type: 'page',
+        id: 'not-found',
+        title: '404'
+      },
+      features: {
+        themeToggle: { enabled: true },
+        share: { enabled: false },
+        backToTop: { enabled: false },
+        readingProgress: { enabled: false },
+        toc: { enabled: false },
+        footnotes: { enabled: false },
+        timeline: { enabled: false },
+        flipCards: { enabled: false },
+        quiz: { enabled: false },
+        bookmarks: { enabled: false },
+        homepageResume: { enabled: false }
+      }
+    };
+  </script>
+  <style>
+    .not-found-wrap {
+      min-height: 100vh;
+      display: grid;
+      place-items: center;
+      padding: 24px;
+    }
+    .not-found-card {
+      width: min(620px, 100%);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      background: var(--bg);
+      box-shadow: var(--shadow-lg);
+      text-align: center;
+      padding: 36px 26px;
+    }
+    .not-found-code {
+      margin: 0;
+      font-family: 'Lora', Georgia, serif;
+      font-size: clamp(68px, 14vw, 130px);
+      line-height: 1;
+      color: var(--accent);
+    }
+    .not-found-title {
+      margin: 10px 0 12px;
+      font-family: 'Lora', Georgia, serif;
+      font-size: clamp(24px, 4vw, 34px);
+      line-height: 1.2;
+    }
+    .not-found-text {
+      margin: 0 auto 24px;
+      max-width: 520px;
+      color: var(--muted);
+      font-size: 16px;
+      line-height: 1.6;
+    }
+    .not-found-actions {
+      display: flex;
+      justify-content: center;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+    .not-found-actions a {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-width: 170px;
+      border: 1px solid var(--accent);
+      color: var(--accent);
+      text-decoration: none;
+      border-radius: 8px;
+      padding: 10px 14px;
+      font-weight: 600;
+      font-family: 'Source Sans 3', system-ui, sans-serif;
+    }
+    .not-found-actions a:hover {
+      background: var(--accent-soft);
+    }
+  </style>
+</head>
+<body>
+  <button id="themeToggle" class="theme-toggle" aria-label="Переключить тему">
+    <svg class="icon-moon" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M21 12.8A9 9 0 1111.2 3 7 7 0 0021 12.8z"/>
+    </svg>
+    <svg class="icon-sun" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <circle cx="12" cy="12" r="5"/>
+      <line x1="12" y1="1" x2="12" y2="4"/>
+      <line x1="12" y1="20" x2="12" y2="23"/>
+      <line x1="1" y1="12" x2="4" y2="12"/>
+      <line x1="20" y1="12" x2="23" y2="12"/>
+      <line x1="4.2" y1="4.2" x2="6.3" y2="6.3"/>
+      <line x1="17.7" y1="17.7" x2="19.8" y2="19.8"/>
+      <line x1="4.2" y1="19.8" x2="6.3" y2="17.7"/>
+      <line x1="17.7" y1="6.3" x2="19.8" y2="4.2"/>
+    </svg>
+  </button>
+
+  <main class="not-found-wrap" role="main">
+    <section class="not-found-card">
+      <p class="not-found-code">404</p>
+      <h1 class="not-found-title">Страница не найдена</h1>
+      <p class="not-found-text">Возможно, ссылка устарела, материал был перемещён или адрес введён с ошибкой.</p>
+      <div class="not-found-actions">
+        <a href="./">На главную</a>
+        <a href="./index.html">Открыть index.html</a>
+      </div>
+    </section>
+  </main>
+
+  <script src="./js/site.js" defer></script>
+</body>
+</html>
