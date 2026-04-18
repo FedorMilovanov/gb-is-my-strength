@@ -2231,6 +2231,7 @@
 
         var sel  = window.getSelection();
         var rect = sel.getRangeAt(0).getBoundingClientRect();
+        if (!rect || (rect.width === 0 && rect.height === 0)) { hide(); return; }
         var sx = window.scrollX || window.pageXOffset;
         var sy = window.scrollY || window.pageYOffset;
 
