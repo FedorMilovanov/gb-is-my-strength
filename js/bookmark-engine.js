@@ -503,7 +503,13 @@
   }
 
   if (listBlock && listEl && inProgress.length) {
-    inProgress.slice(0, 5).forEach(function (item) {
+    /* Fix: исключаем из списка статью, уже показанную в resumeReadingBlock,
+       чтобы одна и та же статья не появлялась в обоих блоках. */
+    var candidatePath = resumeCandidate ? resumeCandidate.path : null;
+    var listItems = inProgress.filter(function (item) {
+      return item.path !== candidatePath;
+    });
+    listItems.slice(0, 5).forEach(function (item) {
       var a = document.createElement('a');
       a.className = 'resume-list-item';
       a.href = buildLink(item);
@@ -532,6 +538,7 @@
       a.appendChild(progress);
       listEl.appendChild(a);
     });
-    listBlock.hidden = false;
+    /* Показываем блок только если после дедупликации остались статьи */
+    if (listEl.children.length) listBlock.hidden = false;
   }
 })();

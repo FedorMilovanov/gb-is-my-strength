@@ -6,7 +6,7 @@
 
 - **Название:** Господь Бог — Сила Моя
 - **Тип:** статический сайт на GitHub Pages
-- **URL:** https://fedormilovanov.github.io/gb-is-my-strength/
+- **URL:** https://gospod-bog.ru/
 - **Стек:** чистый HTML + CSS + JS, без сборщиков
 - **Деплой:** автоматический — push в `main` → GitHub Pages обновляется через ~1 минуту
 

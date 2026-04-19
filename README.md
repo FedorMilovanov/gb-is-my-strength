@@ -168,7 +168,7 @@ quiz: {
   <!-- SEO -->
   <title>Заголовок — Господь Бог — Сила Моя</title>
   <meta name="description" content="..." />
-  <link rel="canonical" href="https://fedormilovanov.github.io/gb-is-my-strength/articles/slug/" />
+  <link rel="canonical" href="https://gospod-bog.ru/articles/slug/" />
   <link rel="icon" type="image/x-icon" href="/gb-is-my-strength/favicon.ico">
 
   <!-- Open Graph / Twitter -->
@@ -192,19 +192,19 @@ quiz: {
         "@type": "ListItem",
         "position": 1,
         "name": "Главная",
-        "item": "https://fedormilovanov.github.io/gb-is-my-strength/"
+        "item": "https://gospod-bog.ru/"
       },
       {
         "@type": "ListItem",
         "position": 2,
         "name": "Раздел",
-        "item": "https://fedormilovanov.github.io/gb-is-my-strength/#razdel"
+        "item": "https://gospod-bog.ru/#razdel"
       },
       {
         "@type": "ListItem",
         "position": 3,
         "name": "Заголовок статьи",
-        "item": "https://fedormilovanov.github.io/gb-is-my-strength/articles/slug/"
+        "item": "https://gospod-bog.ru/articles/slug/"
       }
     ]
   }
@@ -216,7 +216,7 @@ quiz: {
     site: {
       id: 'gb-strength',
       name: 'Господь Бог — Сила Моя',
-      baseUrl: 'https://fedormilovanov.github.io/gb-is-my-strength',
+      baseUrl: 'https://gospod-bog.ru',
       locale: 'ru-RU',
       themeStorageKey: 'theme',
       debug: false

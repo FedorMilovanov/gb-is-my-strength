@@ -1,7 +1,7 @@
 /* ============================================================
    site.js — Господь Бог — Сила Моя
    Единый общий JS для всего сайта
-   Версия 1.1 (patch: date display, B shortcut, print btn, anchor toast)
+   Версия 1.2 (patch: UTM sharing, navigator.share mobile, OK.ru URL, selection rect guard)
 
    Структура:
    01. SiteUtils — helpers / config access
@@ -23,12 +23,13 @@
    17. Heading Anchor Copy
    18. Homepage Resume Reading Block (delegates to bookmark-engine)
    19. Footnote Markers (fn-marker / tooltip style)
-   20. Typography — неразрывные пробелы вокруг тире (—, –)
-   22. Keyboard Shortcuts   — T (TOC), D (тема), B (наверх)
+   20. Academic Footnotes (fn-marker / tooltip — герменевтика)
+   21. Typography — неразрывные пробелы вокруг тире (—, –)
+   22. Keyboard Shortcuts + Hint Toast — T (TOC), D (тема), B (наверх)
    23. Selection Share      — выделил → поделиться
    24. Homepage Progress    — полоски прогресса на главной
-   25. Keyboard Hint Toast  — тост при нажатии шорткатов
    26. Article Date Display — дата публикации/обновления из meta
+   26a. Auto Drop Cap       — вынесен из Quiz IIFE (bug fix)
    27. Article End Block    — кнопки «Поделиться» + «Распечатать/PDF» + SDG + крест
    28. Anchor Toast         — тост «Ссылка скопирована»
 
@@ -106,10 +107,12 @@
 
     var saved = safeThemeGet();
     if (saved === 'dark') {
-      /* user explicitly chose dark — respect it */
       html.classList.add('dark');
-    } else {
-      /* default: light (no saved pref or saved === 'light') */
+    } else if (!saved) {
+      /* First visit — respect OS preference */
+      if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+        html.classList.add('dark');
+      }
     }
 
     function syncIcons() {
@@ -130,8 +133,10 @@
     }
 
     function syncThemeColor(isDark) {
-      var themeMeta = document.querySelector('meta[name="theme-color"]');
-      if (themeMeta) themeMeta.setAttribute('content', isDark ? '#0e1116' : '#fdfcf9');
+      document.querySelectorAll('meta[name="theme-color"]').forEach(function (m) {
+        m.setAttribute('content', isDark ? '#0e1116' : '#fdfcf9');
+        m.removeAttribute('media');
+      });
     }
 
     toggle.addEventListener('click', function () {
@@ -161,6 +166,9 @@
     });
 
     syncIcons();
+    /* Fix: синхронизируем theme-color браузера при загрузке страницы,
+       а не только после первого клика на кнопку переключения темы. */
+    syncThemeColor(html.classList.contains('dark'));
   })();
 
 
@@ -177,6 +185,18 @@
 
     var shareTitle = cfg.title || document.title;
     var shareUrl   = window.location.href;
+
+    /* ── UTM helper ── */
+    function utmUrl(url, source) {
+      try {
+        var u = new URL(url);
+        u.searchParams.set('utm_source',   source);
+        u.searchParams.set('utm_medium',   'share');
+        u.searchParams.set('utm_campaign', 'article');
+        return u.toString();
+      } catch (e) { return url; }
+    }
+
     var encoded      = encodeURIComponent(shareUrl);
     var encodedTitle = encodeURIComponent(shareTitle);
 
@@ -187,7 +207,7 @@
 
     /*
       Сервисы для российской аудитории:
-      1. Telegram  — tg://msg_url (откроет приложение)  / t.me/share (web fallback)
+      1. Telegram  — t.me/share (web URL, совместим с мобильным и десктопом)
       2. ВКонтакте — vk.com/share.php
       3. Одноклассники — connect.ok.ru/dk?st.cmd=WidgetSharePreview
       4. WhatsApp  — wa.me / api.whatsapp.com
@@ -279,12 +299,33 @@
     }
 
     /* ── Open / Close ── */
-    function openDialog(trigger) {
-      triggerEl = trigger || null;
+    function showOverlay() {
       overlay.setAttribute('aria-hidden', 'false');
       overlay.classList.add('is-open');
       requestAnimationFrame(function () { dialog.focus(); });
       document.addEventListener('keydown', onKey);
+    }
+
+    function openDialog(trigger) {
+      triggerEl = trigger || null;
+
+      /* Mobile-first: нативный share-sheet (iOS/Android) */
+      var isMobileDevice = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+      if (isMobileDevice && navigator.share) {
+        /* Читаем актуальный заголовок из DOM (может быть патчнут квизом) */
+        var sdTitleEl  = document.getElementById('sd-title');
+        var nativeTitle = (sdTitleEl && sdTitleEl.textContent) ? sdTitleEl.textContent : shareTitle;
+        navigator.share({
+          title: nativeTitle,
+          url:   utmUrl(shareUrl, 'native')
+        }).catch(function (err) {
+          /* Пользователь отменил или share не поддерживается — показываем диалог */
+          if (err && err.name !== 'AbortError') { showOverlay(); }
+        });
+        return;
+      }
+
+      showOverlay();
     }
     function closeDialog() {
       overlay.classList.remove('is-open');
@@ -294,39 +335,38 @@
       triggerEl = null;
     }
     function onKey(e) {
-      if (e.key === 'Escape') { e.preventDefault(); closeDialog(); return; }
+      if (e.key === 'Escape') {
+        e.preventDefault();
+        /* stopImmediatePropagation: исключаем одновременное срабатывание
+           других ESC-обработчиков (btoc, footnotes, bible) пока диалог открыт */
+        e.stopImmediatePropagation();
+        closeDialog();
+        return;
+      }
       trapTab(e);
     }
     overlay.addEventListener('click', function (e) { if (e.target === overlay) closeDialog(); });
     closeBtn.addEventListener('click', closeDialog);
 
     /* ── Service links ── */
-    /* Telegram: пытается открыть приложение через tg:// — если не установлено, fallback на web */
+    /* Telegram: открываем web-версию (работает везде; мобильный браузер автоматически
+       предложит открыть приложение, если оно установлено) */
     document.getElementById('sd-tg').addEventListener('click', function () {
-      var tgApp = 'tg://msg_url?url=' + encoded + '&text=' + encodedTitle;
-      var tgWeb = 'https://t.me/share/url?url=' + encoded + '&text=' + encodedTitle;
-      var opened = window.open(tgApp);
-      /* если браузер не смог открыть схему — открываем web через 400ms */
-      if (!opened || opened.closed || typeof opened.closed === 'undefined') {
-        window.open(tgWeb, '_blank', 'noopener');
-      } else {
-        setTimeout(function () {
-          try { if (!opened.closed) window.open(tgWeb, '_blank', 'noopener'); } catch(e) {}
-        }, 1500);
-      }
+      var tgWeb = 'https://t.me/share/url?url=' + encodeURIComponent(utmUrl(shareUrl,'telegram')) + '&text=' + encodedTitle;
+      window.open(tgWeb, '_blank', 'noopener');
     });
     document.getElementById('sd-vk').addEventListener('click', function () {
-      window.open('https://vk.com/share.php?url=' + encoded + '&title=' + encodedTitle, '_blank', 'noopener');
+      window.open('https://vk.com/share.php?url=' + encodeURIComponent(utmUrl(shareUrl,'vk')) + '&title=' + encodedTitle, '_blank', 'noopener');
     });
     document.getElementById('sd-ok').addEventListener('click', function () {
-      window.open('https://connect.ok.ru/dk?st.cmd=WidgetSharePreview&st.shareUrl=' + encoded + '&title=' + encodedTitle, '_blank', 'noopener');
+      window.open('https://connect.ok.ru/offer?url=' + encodeURIComponent(utmUrl(shareUrl,'ok')) + '&title=' + encodedTitle, '_blank', 'noopener');
     });
     document.getElementById('sd-wa').addEventListener('click', function () {
       /* на мобильных открывает приложение, на десктопе — web.whatsapp.com */
       var isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
       var waUrl = isMobile
-        ? 'whatsapp://send?text=' + encodedTitle + '%20' + encoded
-        : 'https://web.whatsapp.com/send?text=' + encodedTitle + '%20' + encoded;
+        ? 'whatsapp://send?text=' + encodedTitle + '%20' + encodeURIComponent(utmUrl(shareUrl,'whatsapp'))
+        : 'https://web.whatsapp.com/send?text=' + encodedTitle + '%20' + encodeURIComponent(utmUrl(shareUrl,'whatsapp'));
       window.open(waUrl, '_blank', 'noopener');
     });
 
@@ -1503,30 +1543,9 @@
         bonusCurrent++;
         if (bonusCurrent < bonusDeck.length) { renderBonus(); } else { showBonusScore(); }
       });
-  /* ============================================================
-     Auto Drop Cap — first <p> in every article gets .drop-cap
-     (universal rule, matches КДВ etalon)
-     ============================================================ */
-  (function () {
-    var pageType = SiteUtils.getConfig('page.type', '');
-    if (pageType !== 'article') return;
+    })();
 
-    var article = document.querySelector('article');
-    if (!article) return;
-
-    /* Already has a drop-cap? Skip. */
-    if (article.querySelector('.drop-cap')) return;
-
-    /* Find first <p> that is a direct child or inside .article-body */
-    var body = article.querySelector('.article-body') || article;
-    var firstP = body.querySelector('p');
-    if (firstP && firstP.textContent.trim().length > 40) {
-      firstP.classList.add('drop-cap');
-    }
-  })();
-
-
-})();
+  /* Auto Drop Cap relocated → standalone module 26a below */
 
     function showBonusScore() {
       if (bonusBody) bonusBody.style.display = 'none';
@@ -2106,6 +2125,9 @@
       if ((document.activeElement || {}).isContentEditable) return;
       if (e.ctrlKey || e.metaKey || e.altKey) return;
 
+      /* Не перехватываем шорткаты пока открыт любой модальный оверлей */
+      if (document.querySelector('#share-dialog-overlay.is-open')) return;
+
       var key = e.key.toLowerCase();
 
       /* T — открыть/закрыть TOC */
@@ -2231,6 +2253,7 @@
 
         var sel  = window.getSelection();
         var rect = sel.getRangeAt(0).getBoundingClientRect();
+        /* Guard: пустой rect возникает при выделении через fn-marker — прячем попап */
         if (!rect || (rect.width === 0 && rect.height === 0)) { hide(); return; }
         var sx = window.scrollX || window.pageXOffset;
         var sy = window.scrollY || window.pageYOffset;
@@ -2444,6 +2467,28 @@
 
 
   /* ============================================================
+     26a. Auto Drop Cap — первый <p> статьи получает .drop-cap
+     Вынесен из Quiz IIFE (bug fix): ранее не срабатывал на
+     страницах без квиза из-за двух ранних return в module 16.
+     ============================================================ */
+  (function () {
+    if (SiteUtils.getConfig('page.type', '') !== 'article') return;
+
+    var article = document.querySelector('article');
+    if (!article) return;
+
+    /* Уже есть — пропускаем */
+    if (article.querySelector('.drop-cap')) return;
+
+    var body = article.querySelector('.article-body') || article;
+    var firstP = body.querySelector('p');
+    if (firstP && firstP.textContent.trim().length > 40) {
+      firstP.classList.add('drop-cap');
+    }
+  })();
+
+
+  /* ============================================================
      27. Article End Block — кнопки + SDG + крест
      Инжектирует единый завершающий блок во все статьи:
        [Поделиться статьёй]  [Распечатать / PDF]
@@ -2488,7 +2533,7 @@
           '<path d="M6 18H4a2 2 0 0 1-2-2V11a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/>' +
           '<rect x="6" y="14" width="12" height="8"/>' +
         '</svg>' +
-        'Распечатать / Скачать PDF' +
+        'Распечатать / PDF' +
       '</button>';
 
     /* ── Собираем блок ── */
@@ -2513,14 +2558,7 @@
     }
 
     block.querySelector('#articleEndPrintBtn')
-      .addEventListener('click', function () {
-        var isMobile = /Mobi|Android/i.test(navigator.userAgent);
-        if (isMobile && !sessionStorage.getItem('print-hint-shown')) {
-          sessionStorage.setItem('print-hint-shown', '1');
-          alert('Чтобы сохранить как PDF: в диалоге печати выберите «Сохранить как PDF» вместо принтера.');
-        }
-        window.print();
-      });
+      .addEventListener('click', function () { window.print(); });
 
     /* ── Место вставки: перед первым из этих элементов ── */
     /* Порядок важен: .article-footer раньше .reading-list,
@@ -2595,7 +2633,11 @@
 
     var lastActive = null;
 
+    var _closeTimer = null;
+
     function open(src, alt, captionText) {
+      /* Отменяем отложенную очистку, если viewer переоткрыли до её срабатывания */
+      if (_closeTimer !== null) { clearTimeout(_closeTimer); _closeTimer = null; }
       lastActive = document.activeElement;
       imgEl.src = src;
       imgEl.alt = alt || '';
@@ -2607,11 +2649,16 @@
 
     function close() {
       viewer.classList.remove('is-open');
-      imgEl.removeAttribute('src');
-      capEl.textContent = '';
       document.documentElement.style.overflow = '';
       if (lastActive && lastActive.focus) lastActive.focus();
       lastActive = null;
+      /* Откладываем очистку src/cap до окончания fade-out (.2s);
+         токен _closeTimer позволяет отменить очистку при быстром повторном открытии. */
+      _closeTimer = setTimeout(function () {
+        _closeTimer = null;
+        imgEl.removeAttribute('src');
+        capEl.textContent = '';
+      }, 220);
     }
 
     imgs.forEach(function (img) {
