@@ -2267,6 +2267,8 @@ footer.quote-attribution cite { font-style: normal; }
 }
 
 .btoc-nav {
+  flex: 1;
+  min-height: 0;
   overflow-y: auto;
   padding: 0 0 calc(20px + env(safe-area-inset-bottom, 0px));
   -webkit-overflow-scrolling: touch;
@@ -3432,86 +3434,167 @@ body.has-bottom-bar .bookmark-toast {
    ============================================================ */
 .btoc-banner {
   position: relative;
-  height: 80px;
+  height: 110px;
   flex-shrink: 0;
-  overflow: hidden;
-  border-radius: 20px 20px 0 0;
+  /* Без собственного overflow/border-radius — панель (.btoc-panel) сама
+     обрезает углы через overflow:hidden + border-radius:20px 20px 0 0 */
   background-size: cover;
-  background-position: center;
+  background-position: center top;
   background-color: var(--accent-soft);
 }
 .btoc-banner-grad {
   position: absolute;
   inset: 0;
-  background: linear-gradient(to top, rgba(0,0,0,0.68) 0%, rgba(0,0,0,0.08) 60%, transparent 100%);
+  background: linear-gradient(to top, rgba(0,0,0,0.72) 0%, rgba(0,0,0,0.12) 55%, transparent 100%);
 }
 .btoc-banner-title {
   position: absolute;
-  bottom: 10px;
-  left: 14px;
-  right: 44px;
+  bottom: 12px;
+  left: 16px;
+  right: 16px;
   font-family: 'Source Sans 3', system-ui, sans-serif;
   font-size: 12px;
   font-weight: 600;
-  color: #fff;
+  color: rgba(255,255,255,0.92);
   line-height: 1.35;
   display: -webkit-box;
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
   overflow: hidden;
+  letter-spacing: 0.01em;
 }
-/* Когда баннер есть — скрываем стандартный border-radius панели (баннер его перекрывает) */
-.btoc-panel:has(.btoc-banner) { border-radius: 0; }
 
-/* ============================================================
-   Feature #14: A+/A− font size controls in btoc footer
-   ============================================================ */
+/* Feature #14: font size controls (v7)
+   Два места: .btoc-footer (мобиль) и #tocSidebar (десктоп)
+   Исправлено: padding, disabled-state, dot-track, симметрия кнопок */
+
+/* ── общая строка контрола ── */
 .btoc-fontsize {
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  padding: 10px 20px 4px;
-  border-bottom: 1px solid var(--border);
-  margin-bottom: 2px;
-}
-.btoc-fontsize-label {
-  font-family: 'Source Sans 3', system-ui, sans-serif;
-  font-size: 12px;
-  color: var(--muted);
-}
-.btoc-fontsize-btns {
-  display: flex;
   gap: 6px;
 }
+
+/* ── в мобильном оверлее — полная ширина с разделителем ── */
+.btoc-fontsize--footer {
+  padding: 10px 20px 8px;
+  border-bottom: 1px solid var(--border);
+}
+
+/* ── в десктопном сайдбаре — компактно снизу ── */
+.btoc-fontsize--sidebar {
+  margin-top: 14px;
+  padding-top: 12px;
+  border-top: 1px solid var(--border);
+  padding-left: 14px;
+}
+
+/* ── иконка «Аа» ── */
+.btoc-fontsize-icon {
+  font-family: 'Lora', Georgia, serif;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--muted);
+  letter-spacing: -0.5px;
+  flex-shrink: 0;
+  user-select: none;
+  opacity: 0.55;
+  margin-right: 2px;
+}
+
+/* ── кнопки a / A (симметричные) ── */
 .btoc-fontsize-btn {
   appearance: none;
-  border: 1px solid var(--border);
-  background: var(--bg);
-  color: var(--text);
+  border: none;
+  background: transparent;
+  color: var(--muted);
   font-family: 'Source Sans 3', system-ui, sans-serif;
   font-weight: 700;
-  font-size: 13px;
-  padding: 4px 12px;
-  border-radius: 6px;
+  font-size: 13px;          /* единый размер для обеих кнопок */
+  padding: 2px 7px;
+  border-radius: 5px;
   cursor: pointer;
-  min-width: 40px;
-  min-height: 36px;
-  transition: background .15s, border-color .15s;
+  min-width: 26px;
+  min-height: 26px;
+  line-height: 1;
+  transition: background .13s, color .13s, opacity .13s;
+  flex-shrink: 0;
 }
-.btoc-fontsize-btn:hover { background: var(--note-bg); border-color: var(--accent); }
-.btoc-fontsize-btn--up { font-size: 15px; }
+.btoc-fontsize-btn:hover:not(:disabled) {
+  background: var(--note-bg);
+  color: var(--text);
+}
+.btoc-fontsize-btn:active:not(:disabled) {
+  background: var(--border);
+}
+/* disabled — кнопка на краю диапазона */
+.btoc-fontsize-btn:disabled {
+  opacity: 0.22;
+  cursor: default;
+}
+
+/* ── dot-track: 5 точек = 5 уровней ── */
+.btoc-fontsize-track {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  flex: 1;
+  justify-content: center;
+}
+.btoc-fontsize-dot {
+  display: block;
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: var(--border);
+  transition: background .15s, transform .15s;
+  flex-shrink: 0;
+}
+.btoc-fontsize-dot--active {
+  background: var(--muted);
+  transform: scale(1.15);
+}
+/* текущий (последний активный) — чуть ярче */
+.btoc-fontsize-dot--active:last-child,
+.btoc-fontsize-track .btoc-fontsize-dot--active + .btoc-fontsize-dot:not(.btoc-fontsize-dot--active) {
+  /* handled via JS idx — last filled dot is naturally the rightmost active */
+}
 
 /* Feature #14: статья читает переменную --article-font-size.
    Применяем ТОЛЬКО к тексту, не к контейнеру — иначе em-значения
    в float-картинках будут пересчитываться и нарушат их позиционирование */
 :root { --article-font-size: 17px; }
 .article-main p,
+.article-body p,
 .article-main li,
+.article-body li,
 .article-main blockquote,
+.article-body blockquote,
 .article-main .note-box,
+.article-body .note-box,
 .article-main .quote-box,
+.article-body .quote-box,
 .article-main .warn-box,
-.article-main .info-box { font-size: var(--article-font-size); }
+.article-body .warn-box,
+.article-main .info-box,
+.article-body .info-box,
+/* FAQ — вопрос и ответ */
+.article-main .faq-item summary,
+.article-body .faq-item summary,
+.article-main .faq-body,
+.article-body .faq-body,
+/* Врезка Эрмана */
+.article-main .ehrman-block .ehrman-quote,
+.article-body .ehrman-block .ehrman-quote,
+/* Тест */
+.article-main .quiz-question-text,
+.article-body .quiz-question-text,
+.article-main .quiz-option,
+.article-body .quiz-option { font-size: var(--article-font-size); }
+
+/* Pullquote: сохраняем пропорцию 1.18× от базового размера */
+.article-main .pullquote p,
+.article-body .pullquote p { font-size: calc(var(--article-font-size) * 1.18); }
 
 
 /* ============================================================

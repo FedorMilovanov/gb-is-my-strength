@@ -725,9 +725,29 @@
       /* Берём первую часть заголовка (до |, — или :) как короткое название */
       var rawTitle = document.title || '';
       var shortTitle = rawTitle.split(/[|—:]/)[0].trim();
+
+      /* Вычисляем URL пригодный и в production и при локальном открытии файлов.
+         og:image абсолютный (https://...), при file:// не работает.
+         Используем og:url (канонический URL страницы) чтобы надёжно вычислить
+         относительный путь от текущей страницы до картинки — без зависимости
+         от реального пути в файловой системе. */
+      var absUrl = ogImg.content;
+      var relUrl = absUrl;
+      try {
+        var uImg  = new URL(absUrl);
+        var ogUrlMeta = document.querySelector('meta[property="og:url"]');
+        var uPage = ogUrlMeta ? new URL(ogUrlMeta.content) : null;
+        if (uPage) {
+          /* Считаем глубину страницы по og:url (надёжнее чем location.pathname) */
+          var segments = uPage.pathname.replace(/\/$/, '').split('/').filter(Boolean);
+          /* segments.length = кол-во директорий от корня; каждая — один уровень ../  */
+          var prefix = Array(segments.length).fill('..').join('/');
+          relUrl = (prefix ? prefix + '/' : '') + uImg.pathname.replace(/^\//, '');
+        }
+      } catch (e) {}
+
       var banner = document.createElement('div');
       banner.className = 'btoc-banner';
-      banner.style.backgroundImage = 'url(' + ogImg.content + ')';
       var grad = document.createElement('div');
       grad.className = 'btoc-banner-grad';
       var titleEl = document.createElement('div');
@@ -735,21 +755,81 @@
       titleEl.textContent = shortTitle;
       banner.appendChild(grad);
       banner.appendChild(titleEl);
-      /* Баннер идёт самым первым — до handle */
-      panel.insertBefore(banner, panel.firstChild);
+
+      /* Пробуем загрузить абсолютный URL; при ошибке — используем relative */
+      function applyBg(src) { banner.style.backgroundImage = 'url(' + src + ')'; }
+      var probe = new Image();
+      probe.onload  = function () { applyBg(absUrl); };
+      probe.onerror = function () { applyBg(relUrl); };
+      probe.src = absUrl;
+
+      /* Баннер идёт ПОСЛЕ .btoc-handle (drag-pill должен быть виден поверх баннера),
+         но ПЕРЕД .btoc-header. Ищем handle и вставляем после него. */
+      var handle = panel.querySelector('.btoc-handle');
+      if (handle && handle.nextSibling) {
+        panel.insertBefore(banner, handle.nextSibling);
+      } else {
+        panel.insertBefore(banner, panel.firstChild);
+      }
     })();
 
     document.body.classList.add('has-bottom-bar');
 
-    var barVisible = false;
+    /* --- Умная видимость bar (scroll-direction aware) --- */
+    var barVisible    = false;
+    var _lastScrollY  = window.scrollY;
+    var _accumulated  = 0;    /* накопленный сдвиг: + вниз, − вверх      */
+    var SHOW_AFTER    = 300;  /* px от верха — ниже bar всегда скрыт     */
+    var HIDE_UP       = -80;  /* накопленный upscroll → скрыть            */
+    var SHOW_DOWN     =  60;  /* накопленный downscroll → показать        */
+    var _resumeTimer  = null;
+
+    function setBarVisible(show) {
+      if (show === barVisible) return;
+      barVisible = show;
+      bar.classList.toggle('visible', show);
+      if (!show) {
+        /* Автовозврат: если пользователь замер на 2.5 с → показать снова */
+        _resumeTimer = setTimeout(function () {
+          if (window.scrollY >= SHOW_AFTER && !overlay.classList.contains('open')) {
+            setBarVisible(true);
+            _accumulated = 0;
+          }
+        }, 2500);
+      } else {
+        /* Бар показан — отменяем любой висящий таймер, чтобы не дублировать */
+        clearTimeout(_resumeTimer);
+        _resumeTimer = null;
+      }
+    }
+
     function updateBar() {
       var scrollY = window.scrollY;
+      var delta   = scrollY - _lastScrollY;
+      _lastScrollY = scrollY;
+
       var docH = document.documentElement.scrollHeight - window.innerHeight;
-      var pct = docH > 0 ? SiteUtils.clamp(Math.round((scrollY / docH) * 100), 0, 100) : 0;
+      var pct  = docH > 0 ? SiteUtils.clamp(Math.round((scrollY / docH) * 100), 0, 100) : 0;
 
-      if (scrollY > 200 && !barVisible) { bar.classList.add('visible'); barVisible = true; }
-      else if (scrollY <= 200 && barVisible) { bar.classList.remove('visible'); barVisible = false; }
+      /* --- Логика видимости --- */
+      if (scrollY < SHOW_AFTER) {
+        /* 1. До порога — всегда скрыт (пользователь ещё в шапке) */
+        _accumulated = 0;
+        setBarVisible(false);
+      } else if (pct >= 90) {
+        /* 2. Финальные 10% — всегда виден (читатель у конца статьи) */
+        setBarVisible(true);
+      } else {
+        /* 3. Умное направление: накапливаем дельту, реагируем на устойчивый тренд */
+        _accumulated += delta;
+        _accumulated  = Math.max(HIDE_UP - 20, Math.min(SHOW_DOWN + 20, _accumulated));
 
+        if      (_accumulated >= SHOW_DOWN) { setBarVisible(true);  _accumulated = 0;       }
+        else if (_accumulated <= HIDE_UP)   { setBarVisible(false); _accumulated = HIDE_UP; }
+        /* иначе — держим текущее состояние до накопления порога */
+      }
+
+      /* --- Прогресс-кольцо и счётчики --- */
       var offset = CIRCUMFERENCE - (pct / 100) * CIRCUMFERENCE;
       if (fillCircle) fillCircle.style.strokeDashoffset = offset;
       if (pctText) pctText.textContent = pct + '%';
@@ -768,9 +848,28 @@
 
     var ticking = false;
     window.addEventListener('scroll', function () {
+      clearTimeout(_resumeTimer); /* любое движение отменяет авто-возврат */
       if (!ticking) { ticking = true; requestAnimationFrame(function () { updateBar(); ticking = false; }); }
     }, { passive: true });
     updateBar();
+
+    /* --- Скрывать bar при фокусе на полях ввода (мобильная клавиатура) --- */
+    document.addEventListener('focusin', function (e) {
+      if (e.target && e.target.matches && e.target.matches('input, textarea, select, [contenteditable]')) {
+        clearTimeout(_resumeTimer);
+        setBarVisible(false);
+      }
+    });
+    document.addEventListener('focusout', function (e) {
+      if (e.target && e.target.matches && e.target.matches('input, textarea, select, [contenteditable]')) {
+        /* Небольшая задержка — клавиатура успевает закрыться, viewport стабилизируется */
+        setTimeout(function () {
+          if (window.scrollY >= SHOW_AFTER && !overlay.classList.contains('open')) {
+            setBarVisible(true); _accumulated = 0;
+          }
+        }, 400);
+      }
+    });
 
     var _bPrevFocus = null;
     var _bTrapHandler = null;
@@ -807,6 +906,11 @@
       document.body.style.overscrollBehavior = ''; /* Fix #10 */
       if (panel && _bTrapHandler) { panel.removeEventListener('keydown', _bTrapHandler); _bTrapHandler = null; }
       if (_bPrevFocus && _bPrevFocus.focus) { _bPrevFocus.focus(); _bPrevFocus = null; }
+      /* После навигации по TOC — показываем бар, если мы ниже порога.
+         Небольшая задержка: дать браузеру завершить scroll к якорю. */
+      setTimeout(function () {
+        if (window.scrollY >= SHOW_AFTER) { setBarVisible(true); _accumulated = 0; }
+      }, 150);
     }
 
     if (sectionBtn) sectionBtn.addEventListener('click', openToc);
@@ -814,12 +918,24 @@
     overlay.addEventListener('click', function (e) { if (!panel || !panel.contains(e.target)) closeToc(); });
     document.addEventListener('keydown', function (e) { if (e.key === 'Escape' && overlay.classList.contains('open')) closeToc(); });
 
+    /* Экспортируем API для внешних модулей (клавиатурные шорткаты, etc.) */
+    window.SiteBTOC = { open: openToc, close: closeToc };
+
     if (upBtn) upBtn.addEventListener('click', function () { window.scrollTo({ top: 0, behavior: 'smooth' }); });
 
     var touchStartY = 0;
+    var touchStartX = 0;
     if (panel) {
-      panel.addEventListener('touchstart', function (e) { touchStartY = e.touches[0].clientY; }, { passive: true });
-      panel.addEventListener('touchmove', function (e) { if (e.touches[0].clientY - touchStartY > 80) closeToc(); }, { passive: true });
+      panel.addEventListener('touchstart', function (e) {
+        touchStartY = e.touches[0].clientY;
+        touchStartX = e.touches[0].clientX;
+      }, { passive: true });
+      panel.addEventListener('touchmove', function (e) {
+        var dy = e.touches[0].clientY - touchStartY;
+        var dx = Math.abs(e.touches[0].clientX - touchStartX);
+        /* Закрываем только если это явный вертикальный свайп вниз, а не горизонтальный скролл */
+        if (dy > 80 && dx < dy * 0.5) closeToc();
+      }, { passive: true });
     }
 
     /* Fix #2: свайп снизу вверх открывает TOC (замена недоступной клавиши / на мобильном).
@@ -840,7 +956,9 @@
 
       document.addEventListener('touchend', function (e) {
         if (overlay.classList.contains('open')) return;
-        if (!bar || !bar.classList.contains('visible')) return;
+        /* Свайп работает при scrollY >= SHOW_AFTER — не зависит от видимости бара.
+           Бар может быть скрыт из-за upscroll, но TOC должен оставаться доступным. */
+        if (window.scrollY < SHOW_AFTER) return;
         var touch = e.changedTouches[0];
         var dy = swipeStartY - touch.clientY; /* положительное = вверх */
         var dt = Date.now() - swipeStartTime;
@@ -2195,12 +2313,16 @@
         var overlay = document.getElementById('btocOverlay');
         if (overlay) {
           if (overlay.classList.contains('open')) {
-            overlay.classList.remove('open');
-            document.body.style.overflow = '';
+            /* Используем SiteBTOC.close — он полностью сбрасывает состояние:
+               overscrollBehavior, focus trap, фокус, видимость бара */
+            if (window.SiteBTOC) { window.SiteBTOC.close(); }
+            else { overlay.classList.remove('open'); document.body.style.overflow = ''; }
           } else {
-            var sBtn = document.getElementById('barSectionBtn');
-            if (sBtn) { sBtn.click(); }
-            else { overlay.classList.add('open'); }
+            if (window.SiteBTOC) { window.SiteBTOC.open(); }
+            else {
+              var sBtn = document.getElementById('barSectionBtn');
+              if (sBtn) { sBtn.click(); } else { overlay.classList.add('open'); }
+            }
           }
           return;
         }
@@ -2794,9 +2916,18 @@
 
 
   /* ============================================================
-     28. Font Size Control — A+/A−
+     28. Font Size Control — a / A
      Сохраняет выбор в localStorage, применяет через CSS-переменную.
-     Кнопки инжектируются в .btoc-footer (если есть).
+     Инжектируется в два места:
+       — .btoc-footer        (мобильный оверлей-панель)
+       — #tocSidebar         (десктопная боковая панель)
+     Исправления v7:
+       [1] desktop: инжект в #tocSidebar
+       [2] disabled-атрибут на крайних значениях
+       [3] dot-track индикатор текущего уровня
+       [4] убрана мёртвая .btoc-fontsize-hint «размер»
+       [5] симметричные кнопки a / A (одинаковый font-size через CSS)
+       [6] padding убран с .btoc-fontsize — наследуется от родителя
      ============================================================ */
   (function () {
     var SIZES = [14, 16, 17, 19, 21];
@@ -2807,10 +2938,23 @@
       if (!isNaN(saved) && saved >= 0 && saved < SIZES.length) idx = saved;
     } catch (e) {}
 
+    /* Все отрендеренные контролы — обновляем синхронно */
+    var allControls = [];
+
+    function syncControls() {
+      allControls.forEach(function (ctrl) {
+        ctrl.btnDown.disabled = (idx === 0);
+        ctrl.btnUp.disabled   = (idx === SIZES.length - 1);
+        ctrl.dots.forEach(function (dot, i) {
+          dot.classList.toggle('btoc-fontsize-dot--active', i <= idx);
+        });
+      });
+    }
+
     function apply() {
       document.documentElement.style.setProperty('--article-font-size', SIZES[idx] + 'px');
-      /* Записываем индекс на body — CSS использует его чтобы убирать float при крупном шрифте */
       document.body.setAttribute('data-font-idx', idx);
+      syncControls();
     }
     function save() {
       try { localStorage.setItem(LS_KEY, String(idx)); } catch (e) {}
@@ -2821,27 +2965,78 @@
 
     apply(); /* применяем сразу при загрузке */
 
-    /* Инжектируем кнопки в .btoc-footer */
-    function injectButtons() {
+    /* Строим DOM контрола и регистрируем его */
+    function buildControl(variant) {
+      /* variant: 'footer' | 'sidebar' */
+      var row = document.createElement('div');
+      row.className = 'btoc-fontsize btoc-fontsize--' + variant;
+
+      var icon = document.createElement('span');
+      icon.className = 'btoc-fontsize-icon';
+      icon.setAttribute('aria-hidden', 'true');
+      icon.textContent = 'Аа';
+
+      var btnDown = document.createElement('button');
+      btnDown.className = 'btoc-fontsize-btn';
+      btnDown.setAttribute('aria-label', 'Уменьшить шрифт');
+      btnDown.textContent = 'a';
+
+      /* dot-track: 5 точек = 5 уровней */
+      var track = document.createElement('div');
+      track.className = 'btoc-fontsize-track';
+      var dots = [];
+      for (var i = 0; i < SIZES.length; i++) {
+        var dot = document.createElement('span');
+        dot.className = 'btoc-fontsize-dot';
+        track.appendChild(dot);
+        dots.push(dot);
+      }
+
+      var btnUp = document.createElement('button');
+      btnUp.className = 'btoc-fontsize-btn';
+      btnUp.setAttribute('aria-label', 'Увеличить шрифт');
+      btnUp.textContent = 'A';
+
+      row.appendChild(icon);
+      row.appendChild(btnDown);
+      row.appendChild(track);
+      row.appendChild(btnUp);
+
+      btnDown.addEventListener('click', down);
+      btnUp.addEventListener('click', up);
+
+      var ctrl = { row: row, btnDown: btnDown, btnUp: btnUp, dots: dots };
+      allControls.push(ctrl);
+      return ctrl;
+    }
+
+    /* Инжектируем в .btoc-footer (мобильный оверлей) */
+    function injectFooter() {
       var footer = document.querySelector('.btoc-footer');
       if (!footer || footer.querySelector('.btoc-fontsize')) return;
-      var row = document.createElement('div');
-      row.className = 'btoc-fontsize';
-      row.innerHTML =
-        '<span class="btoc-fontsize-label">Размер текста</span>' +
-        '<div class="btoc-fontsize-btns">' +
-          '<button class="btoc-fontsize-btn" id="btocFontDown" aria-label="Уменьшить шрифт">A−</button>' +
-          '<button class="btoc-fontsize-btn btoc-fontsize-btn--up" id="btocFontUp" aria-label="Увеличить шрифт">A+</button>' +
-        '</div>';
-      footer.insertBefore(row, footer.firstChild);
-      document.getElementById('btocFontDown').addEventListener('click', down);
-      document.getElementById('btocFontUp').addEventListener('click', up);
+      var ctrl = buildControl('footer');
+      footer.insertBefore(ctrl.row, footer.firstChild);
+      syncControls();
+    }
+
+    /* Инжектируем в #tocSidebar (десктоп) */
+    function injectSidebar() {
+      var sidebar = document.getElementById('tocSidebar');
+      if (!sidebar || sidebar.querySelector('.btoc-fontsize')) return;
+      var ctrl = buildControl('sidebar');
+      sidebar.appendChild(ctrl.row);
+      syncControls();
+    }
+
+    function injectAll() {
+      injectFooter();
+      injectSidebar();
     }
 
     if (document.readyState === 'loading') {
-      document.addEventListener('DOMContentLoaded', injectButtons);
+      document.addEventListener('DOMContentLoaded', injectAll);
     } else {
-      injectButtons();
+      injectAll();
     }
 
     window.SiteFontSize = { up: up, down: down };
