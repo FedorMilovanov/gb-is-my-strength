@@ -213,7 +213,7 @@ window.SITE_CONFIG = {
     type: 'article',
     id: 'kod-da-vinchi',
     title: '«Код да Винчи»: полный разбор мифов',
-    section: 'Апологетика',
+    section: 'Разбор заблуждений',
     readingTime: 17,
     wordCount: 10500
   },
@@ -253,7 +253,12 @@ window.SITE_CONFIG = {
       respectHashNavigation: true,
       minDocumentHeightRatio: 2.0
     },
-    homepageResume: { enabled: false }
+    homepageResume: { enabled: false },
+    headingAnchors: { enabled: true }
+  },
+
+  selectors: {
+    headings: 'article h2[id]'
   },
 
   labels: {
@@ -429,15 +434,16 @@ window.SITE_CONFIG = {
   <!-- /Yandex.Metrika counter -->
 </head>
 
-<body id="top">
+<body>
+<a class="skip-link" href="#content">Перейти к содержанию</a>
 <div id="reading-progress"></div>
 
 <!-- ВНИМАНИЕ: inline style="top:..." на этой кнопке ЗАПРЕЩЁН — позиция задана в site.css (.theme-toggle) и выровнена по хлебным крошкам -->
 <button id="themeToggle" class="theme-toggle" aria-label="Переключить тему">
-  <svg class="icon-moon" viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+  <svg class="icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
     <path d="M21 12.8A9 9 0 1111.2 3 7 7 0 0021 12.8z"/>
   </svg>
-  <svg class="icon-sun" viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+  <svg class="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
     <circle cx="12" cy="12" r="5"/>
     <line x1="12" y1="1" x2="12" y2="4"/>
     <line x1="12" y1="20" x2="12" y2="23"/>
@@ -488,7 +494,7 @@ window.SITE_CONFIG = {
 })();
 </script>
 
-<div class="page-wrap">
+<div class="page-wrap" id="content">
 
   <nav class="breadcrumb" aria-label="Хлебные крошки">
     <ol class="breadcrumb__list">
@@ -1412,6 +1418,46 @@ window.SITE_CONFIG = {
     </aside>
 
   </article>
+
+  <section class="related-articles" aria-label="Читайте также">
+    <h2 class="related-articles__heading">Читайте также</h2>
+    <ul class="related-articles__list">
+
+      <li class="related-articles__item">
+        <div class="related-articles__img-wrap">
+          <img class="related-articles__img"
+               src="../../images/ieremia-cover.jpg"
+               alt="Крайне ли испорчено моё сердце — Иеремия 17"
+               loading="lazy" width="400" height="136">
+        </div>
+        <div class="related-articles__body">
+          <p class="related-articles__tag">Авторская статья · 32 мин</p>
+          <a class="related-articles__link" href="../krajne-li-isporcheno-serdce/">
+            Крайне ли испорчено моё сердце — если я уже верующий?
+          </a>
+          <p class="related-articles__meta">Фёдор Милованов · Апрель 2026</p>
+        </div>
+      </li>
+
+      <li class="related-articles__item">
+        <div class="related-articles__img-wrap">
+          <img class="related-articles__img"
+               src="../../images/hermenevtika-preview.jpg"
+               alt="Герменевтическая оценка христоцентричной герменевтики"
+               loading="lazy" width="400" height="136">
+        </div>
+        <div class="related-articles__body">
+          <p class="related-articles__tag">Перевод · 35 мин</p>
+          <a class="related-articles__link"
+             href="../hermenevticheskaya-otsenka-hristotsentrichnoy-germenevtiki/">
+            Герменевтическая оценка христоцентричной герменевтики
+          </a>
+          <p class="related-articles__meta">Абнер Чау · Fall 2016</p>
+        </div>
+      </li>
+
+    </ul>
+  </section>
 
   <footer>
     <a href="../../">← Господь Бог — Сила Моя</a>

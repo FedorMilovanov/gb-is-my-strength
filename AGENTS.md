@@ -85,7 +85,7 @@
 | **Тема день/ночь** (`.theme-toggle`) | секция theme + `:root`/`html.dark` | **СВЕТЛАЯ ТЕМА ПО УМОЛЧАНИЮ.** Логика: если `localStorage === 'dark'` — тёмная; иначе — светлая. Кнопка `#themeToggle` расположена в `site.css` через `.theme-toggle { top: calc(clamp(48px,6.5vw,100px) - 13px); }` — **НЕ ДОБАВЛЯТЬ inline `style="top:..."` на кнопку в HTML**, это сломает выравнивание по хлебным крошкам. |
 | **TOC sidebar** (`.toc-link`) | секция 15 | Rail без точек. Активный пункт — утолщённый `border-left` цвета `--accent`. H3 — `padding-left: 28px`. |
 | **TOC bottom sheet** (`.btoc-nav`) | секция 17 | Тот же Rail-язык. Генерится в `js/site.js`. |
-| **Drop-cap первый абзац** (`.drop-cap`) | секция 30 | Автоматически навешивается в `js/site.js` на первый `<p>` в каждой статье. Если класс уже есть в HTML — JS пропускает. |
+| **Drop-cap первый абзац** (`.drop-cap`) | секция 30 | Автоматически навешивается в `js/site.js` на первый `<p>` в каждой статье. **Не применяется к Типу C (Переводы)** — JS проверяет `page.section`. Если класс уже есть в HTML — JS пропускает. |
 | **Article End Block** (`.article-end-block`) | секция 38 | Инжектируется JS (модуль 27) автоматически во все статьи. **НЕ добавлять вручную в HTML.** Не добавлять `<div class="share-block">`, `<div class="print-btn-wrap">` или инлайн-блоки SDG/крест в HTML статей — всё это мёртвый код. |
 | **Progress bar** (`#reading-progress`) | секция 18 | 2px, цвет `--accent`. |
 | **Image viewer** (`.img-viewer`) | секция image viewer | `js/site.js` — универсальный, работает через `.article-figure img`. **НЕ создавать отдельный inline lightbox в HTML статей** — это мёртвый код. |
@@ -177,10 +177,12 @@
 
 ---
 
-## Последние значимые коммиты (состояние на 2026-04-17)
+## Последние значимые коммиты (состояние на 2026-04-20)
 
 | Хеш | Что |
 |---|---|
+| `audit-2` | fix(audit): drop-cap исключён для Типа C; KDV section исправлен; headingAnchors/selectors добавлены в KDV config; README модули 21–27 добавлены; AGENTS бэклог синхронизирован |
+| `audit-1` | fix(audit): Б1–Б6 HTML/CSS (barShareBtn, порядок bottom bar, skip-link, id=content, article-header--no-border, body id=top убран, TOC rail непрерывный) |
 | `9a67164` | fix: тема кнопка выровнена по хлебным крошкам, запрещён inline top |
 | `a33733b` | feat: тёмная тема по умолчанию |
 | `9842641` | fix: восстановлен quiz launch overlay (КДВ) |
@@ -198,30 +200,30 @@
 
 ### 🔴 P0 — Критические баги
 
-- [ ] **#1 myth-bg в тёмной теме** — `--myth-bg: #1f1418` на фоне `#0e1116` даёт «розовый синяк». Заменить: `--myth-bg: #1c1714; --myth-border: #3d2e25; --fact-bg: #141a18; --fact-border: #25382e`.
-- [ ] **#2 --muted контраст** — `#8b9099` на `#0e1116` = 5.2:1. Поднять до `#9ca3af` (6.8:1).
-- [ ] **#3 Quiz: подсветка ответов** — `.quiz-option.wrong` использует `--myth-bg`. Добавить `--quiz-correct-bg/border`, `--quiz-wrong-bg/border`.
+- [x] **#1 myth-bg в тёмной теме** — ✅ Закрыт: `--myth-bg: #1c1714; --myth-border: #3d2e25; --fact-bg: #141a18; --fact-border: #25382e` (css/site.css секция 02).
+- [x] **#2 --muted контраст** — ✅ Закрыт: значение поднято до `#9ca3af` (6.8:1), css/site.css html.dark.
+- [x] **#3 Quiz: подсветка ответов** — ✅ Закрыт: добавлены `--quiz-correct-bg/border`, `--quiz-wrong-bg/border` в html.dark (css/site.css секция 02).
 
 ### 🟠 P1 — Важные недоработки
 
-- [ ] **#5 Breadcrumb hover в тёмной теме** — `var(--accent)` сливается с `--text`. Сменить на `var(--accent-strong)`.
-- [ ] **#6 TOC rail непрерывный** — рельс прерывается между пунктами. Добавить `border-left: 1px solid var(--border)` на nav, ссылки `margin-left: -1px`.
+- [x] **#5 Breadcrumb hover в тёмной теме** — ✅ Закрыт: `html.dark .breadcrumb__link:hover { color: var(--accent-strong); }` (css/site.css секция 06).
+- [x] **#6 TOC rail непрерывный** — ✅ Закрыт: `border-left` на `nav`, `.toc-link { margin-left: -1px }` (css/site.css секция 15).
 - [ ] **#7 Sticky header без blur** — при скролле шапка прозрачная. Добавить `.scrolled` + `backdrop-filter: blur(12px)`.
-- [ ] **#8 Герменевтика без bottom-bar** — в двух статьях есть, в переводе Чау нет. Добавить.
-- [ ] **#9 Сноски: два формата** — КДВ/Сердце используют `<sup><a href="#src1">`, Герменевтика — `<span class="fn-marker">`. Унифицировать.
-- [ ] **#10 Share popup доступность** — нет `role="dialog"`, фокус-ловушки, `Esc` не закрывает.
+- [x] **#8 Герменевтика без bottom-bar** — ✅ Закрыт: bottom bar присутствует во всех трёх статьях.
+- [ ] **#9 Сноски: два формата** — КДВ использует `fn-ref` (модуль 12), Сердце/Герменевтика — `fn-marker` (модуль 20). Это **архитектурный выбор по типу статьи** (Тип A vs B/C), а не баг. Унификация возможна только при переписывании HTML всех статей. Оставить как есть до следующего крупного рефакторинга.
+- [x] **#10 Share popup доступность** — ✅ Закрыт: `role="dialog"`, `aria-modal`, фокус-ловушка, `Esc` закрывает (js/site.js модуль 03).
 
 ### 🟡 P2 — Структурные улучшения
 
 - [ ] **#13 Title Case в JS** — модуль применяет title case к русскому тексту. Отключить для `:lang(ru)`.
-- [ ] **#16 Google Fonts без display=swap** — FOIT на медленном интернете. Добавить `&display=swap`.
-- [ ] **#17 Время чтения** — хардкод в одной статье, JS в другой, отсутствует в третьей. Унифицировать.
+- [x] **#16 Google Fonts без display=swap** — ✅ Закрыт: `&display=swap` добавлен во всех HTML-файлах.
+- [x] **#17 Время чтения** — ✅ Закрыт: `page.readingTime` в SITE_CONFIG всех статей, JS читает через `SiteUtils.getConfig('page.readingTime', 10)` и отображает в `#btocTimeLeft`.
 - [ ] **#18 lang на английских терминах** — скринридер читает с русским произношением. Оборачивать `<i lang="en">`.
 
 ### 🟢 P3 — Полировка
 
-- [ ] **#19 scroll-margin-top на якорях** — ✅ закрыт: `--scroll-margin: 96px` в `:root`, `scroll-margin-top: var(--scroll-margin)` (коммит `b52bf88`).
+- [x] **#19 scroll-margin-top на якорях** — ✅ Закрыт: `--scroll-margin: 96px` в `:root`, `scroll-margin-top: var(--scroll-margin)`.
 - [ ] **#20 ::selection в тёмной теме** — стандартный синий диссонирует с янтарём.
 - [ ] **#22 Опечатки в КДВ** — «Мертвого» → «Мёртвого», «Никейский Собор» → «Никейский собор».
-- [ ] **#23 `:hover` без `@media (hover: hover)`** — ~60 hover-правил в `css/site.css` не обёрнуты в `@media (hover: hover) and (pointer: fine)`. На iOS/Android после тапа элемент «застревает» в hover-состоянии (меняется фон, цвет или поднимается transform) до следующего тапа в другое место. **Почему не делаем сейчас:** риск велик — 60 правил, большой рефакторинг, легко случайно сломать стили; залипание заметно только там, где есть сильная смена фона или `transform: translateY`. `touch-action: manipulation` (коммит `d13fa1e`) уже убрал 300ms delay. Делать отдельной задачей: пройти по всем `:hover` с `transform`, `background-color`, `color` и обернуть только их в `@media (hover: hover) and (pointer: fine)`. Остальные (`text-decoration`, `opacity`) — не трогать.
+- [ ] **#23 `:hover` без `@media (hover: hover)`** — ~60 hover-правил в `css/site.css` не обёрнуты в `@media (hover: hover) and (pointer: fine)`. На iOS/Android после тапа элемент «застревает» в hover-состоянии (меняется фон, цвет или поднимается transform) до следующего тапа в другое место. **Почему не делаем сейчас:** риск велик — 60 правил, большой рефакторинг, легко случайно сломать стили; залипание заметно только там, где есть сильная смена фона или `transform: translateY`. `touch-action: manipulation` уже убрал 300ms delay. Делать отдельной задачей: пройти по всем `:hover` с `transform`, `background-color`, `color` и обернуть только их в `@media (hover: hover) and (pointer: fine)`.
 - [ ] **#24 Footer** — минимальный/отсутствует. Добавить единый footer.

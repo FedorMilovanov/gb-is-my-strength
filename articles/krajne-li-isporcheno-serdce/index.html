@@ -580,7 +580,7 @@ window.SITE_CONFIG = {
   </div>
 
   <article>
-    <header class="article-header" style="border-bottom:none; padding-bottom:0;">
+    <header class="article-header article-header--no-border">
       <h1>Крайне ли испорчено моё сердце —<br>если я уже верующий?</h1>
       <p class="article-byline">
         <span class="article-byline__strong">Подготовил: Фёдор Милованов</span>
@@ -1127,6 +1127,46 @@ window.SITE_CONFIG = {
 
   </article>
 
+  <section class="related-articles" aria-label="Читайте также">
+    <h2 class="related-articles__heading">Читайте также</h2>
+    <ul class="related-articles__list">
+
+      <li class="related-articles__item">
+        <div class="related-articles__img-wrap">
+          <img class="related-articles__img"
+               src="../../images/hermenevtika-preview.jpg"
+               alt="Герменевтическая оценка христоцентричной герменевтики"
+               loading="lazy" width="400" height="136">
+        </div>
+        <div class="related-articles__body">
+          <p class="related-articles__tag">Перевод · 35 мин</p>
+          <a class="related-articles__link"
+             href="../hermenevticheskaya-otsenka-hristotsentrichnoy-germenevtiki/">
+            Герменевтическая оценка христоцентричной герменевтики
+          </a>
+          <p class="related-articles__meta">Абнер Чау · Fall 2016</p>
+        </div>
+      </li>
+
+      <li class="related-articles__item">
+        <div class="related-articles__img-wrap">
+          <img class="related-articles__img"
+               src="../../images/hero-kod-da-vinchi.jpg"
+               alt="«Код да Винчи» — апологетический разбор"
+               loading="lazy" width="400" height="136">
+        </div>
+        <div class="related-articles__body">
+          <p class="related-articles__tag">Апологетика · 17 мин</p>
+          <a class="related-articles__link" href="../kod-da-vinchi/">
+            «Код да Винчи»: блестящий триллер или историческая подмена?
+          </a>
+          <p class="related-articles__meta">Фёдор Милованов · Март 2025</p>
+        </div>
+      </li>
+
+    </ul>
+  </section>
+
 </main>
 
 <!-- Bookmark toast -->
@@ -1170,9 +1210,6 @@ window.SITE_CONFIG = {
       <span class="bar-section-name" id="barSectionName">Введение</span>
     </button>
     <span class="bar-divider"></span>
-    <a class="bar-icon-btn" href="../../" aria-label="На главную" title="На главную">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12L12 4l9 8"/><path d="M5 10v9a1 1 0 001 1h4v-5h4v5h4a1 1 0 001-1v-9"/></svg>
-    </a>
     <button class="bar-icon-btn" id="barUpBtn" aria-label="Наверх" title="Наверх">
       <svg viewBox="0 0 24 24"><polyline points="18 15 12 9 6 15"/></svg>
     </button>
@@ -1184,6 +1221,15 @@ window.SITE_CONFIG = {
         <line x1="1" y1="12" x2="4" y2="12"/><line x1="20" y1="12" x2="23" y2="12"/>
         <line x1="4.2" y1="4.2" x2="6.3" y2="6.3"/><line x1="17.7" y1="17.7" x2="19.8" y2="19.8"/>
         <line x1="4.2" y1="19.8" x2="6.3" y2="17.7"/><line x1="17.7" y1="6.3" x2="19.8" y2="4.2"/>
+      </svg>
+    </button>
+    <a class="bar-icon-btn" href="../../" aria-label="На главную" title="На главную">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12L12 4l9 8"/><path d="M5 10v9a1 1 0 001 1h4v-5h4v5h4a1 1 0 001-1v-9"/></svg>
+    </a>
+    <button class="bar-icon-btn" id="barShareBtn" aria-label="Поделиться" title="Поделиться">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="20" height="20">
+        <circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/>
+        <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/>
       </svg>
     </button>
   </div>

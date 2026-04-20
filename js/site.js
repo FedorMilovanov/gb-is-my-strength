@@ -20,18 +20,17 @@
    14. Flip Card Fingers
    15. Flip Card Height Sync
    16. Quiz Engine
-   17. Heading Anchor Copy
-   18. Homepage Resume Reading Block (delegates to bookmark-engine)
-   19. Footnote Markers (fn-marker / tooltip style)
-   20. Academic Footnotes (fn-marker / tooltip — герменевтика)
+   17. Heading Anchor Copy + Anchor Toast
+   18. Hover bridge for fn-marker tooltip (desktop only)
+   19. Bible Reference Tooltips (bref / btip — герменевтика)
+   20. Academic Footnotes (fn-marker / tooltip)
    21. Typography — неразрывные пробелы вокруг тире (—, –)
    22. Keyboard Shortcuts + Hint Toast — T (TOC), D (тема), B (наверх)
-   23. Selection Share      — выделил → поделиться
-   24. Homepage Progress    — полоски прогресса на главной
+   23. Selection Share — выделил → поделиться
+   24. Homepage Article Reading Progress (delegates to bookmark-engine)
    26. Article Date Display — дата публикации/обновления из meta
-   26a. Auto Drop Cap       — вынесен из Quiz IIFE (bug fix)
-   27. Article End Block    — кнопки «Поделиться» + «Распечатать/PDF» + SDG + крест
-   28. Anchor Toast         — тост «Ссылка скопирована»
+   26a. Auto Drop Cap — первый <p> (не применяется к Типу C)
+   27. Article End Block — кнопки «Поделиться» + «Распечатать/PDF» + SDG + крест
 
    Каждый модуль проверяет наличие нужных DOM-элементов
    и просто ничего не делает, если их нет.
@@ -376,8 +375,8 @@
       var iconEl = copyBtn.querySelector('.sd-icon');
       ;(navigator.clipboard ? navigator.clipboard.writeText(shareUrl) : Promise.reject())
         .then(function () {
+          if (navigator.vibrate) navigator.vibrate(30); /* Fix #12: haptic */
           if (label) label.textContent = 'Скопировано!';
-          copyBtn.classList.add('copied');
           if (iconEl) iconEl.innerHTML =
             '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>';
           setTimeout(function () {
@@ -719,6 +718,27 @@
 
     if (btocSubtitle && tocItems.length) btocSubtitle.textContent = tocItems.length + ' разделов';
 
+    /* Feature #15: og:image preview banner — вставляем один раз, если есть мета-картинка */
+    (function () {
+      var ogImg = document.querySelector('meta[property="og:image"]');
+      if (!ogImg || !ogImg.content || !panel) return;
+      /* Берём первую часть заголовка (до |, — или :) как короткое название */
+      var rawTitle = document.title || '';
+      var shortTitle = rawTitle.split(/[|—:]/)[0].trim();
+      var banner = document.createElement('div');
+      banner.className = 'btoc-banner';
+      banner.style.backgroundImage = 'url(' + ogImg.content + ')';
+      var grad = document.createElement('div');
+      grad.className = 'btoc-banner-grad';
+      var titleEl = document.createElement('div');
+      titleEl.className = 'btoc-banner-title';
+      titleEl.textContent = shortTitle;
+      banner.appendChild(grad);
+      banner.appendChild(titleEl);
+      /* Баннер идёт самым первым — до handle */
+      panel.insertBefore(banner, panel.firstChild);
+    })();
+
     document.body.classList.add('has-bottom-bar');
 
     var barVisible = false;
@@ -759,6 +779,7 @@
       _bPrevFocus = document.activeElement;
       overlay.classList.add('open');
       document.body.style.overflow = 'hidden';
+      document.body.style.overscrollBehavior = 'none'; /* Fix #10: страница не скроллится под открытой панелью */
       var activeLink = btocNav && btocNav.querySelector('.btoc-link.active');
       if (activeLink) setTimeout(function () { activeLink.scrollIntoView({ block: 'center', behavior: 'smooth' }); }, 350);
       requestAnimationFrame(function () {
@@ -783,6 +804,7 @@
     function closeToc() {
       overlay.classList.remove('open');
       document.body.style.overflow = '';
+      document.body.style.overscrollBehavior = ''; /* Fix #10 */
       if (panel && _bTrapHandler) { panel.removeEventListener('keydown', _bTrapHandler); _bTrapHandler = null; }
       if (_bPrevFocus && _bPrevFocus.focus) { _bPrevFocus.focus(); _bPrevFocus = null; }
     }
@@ -799,6 +821,35 @@
       panel.addEventListener('touchstart', function (e) { touchStartY = e.touches[0].clientY; }, { passive: true });
       panel.addEventListener('touchmove', function (e) { if (e.touches[0].clientY - touchStartY > 80) closeToc(); }, { passive: true });
     }
+
+    /* Fix #2: свайп снизу вверх открывает TOC (замена недоступной клавиши / на мобильном).
+       Срабатывает только если: старт в нижних 25% экрана, движение вверх ≥ 70px,
+       панель закрыта и bottom bar виден. */
+    (function () {
+      var swipeStartY = 0;
+      var swipeStartTime = 0;
+      var SWIPE_THRESHOLD = 70;   /* минимум пикселей вверх */
+      var SWIPE_ZONE = 0.25;      /* нижние 25% экрана */
+      var MAX_TIME = 400;         /* мс — быстрый свайп */
+
+      document.addEventListener('touchstart', function (e) {
+        var touch = e.touches[0];
+        swipeStartY = touch.clientY;
+        swipeStartTime = Date.now();
+      }, { passive: true });
+
+      document.addEventListener('touchend', function (e) {
+        if (overlay.classList.contains('open')) return;
+        if (!bar || !bar.classList.contains('visible')) return;
+        var touch = e.changedTouches[0];
+        var dy = swipeStartY - touch.clientY; /* положительное = вверх */
+        var dt = Date.now() - swipeStartTime;
+        var inZone = swipeStartY > window.innerHeight * (1 - SWIPE_ZONE);
+        if (inZone && dy >= SWIPE_THRESHOLD && dt <= MAX_TIME) {
+          openToc();
+        }
+      }, { passive: true });
+    })();
   })();
 
 
@@ -1755,6 +1806,7 @@
 
         if (navigator.clipboard && navigator.clipboard.writeText) {
           navigator.clipboard.writeText(url).then(function () {
+            if (navigator.vibrate) navigator.vibrate(30); /* Fix #12: haptic */
             a.innerHTML = '<svg width="14" height="14" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg" style="display:inline;vertical-align:middle"><path d="M3 8l4 4 6-7" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>';
             a.classList.add('copied');
             showAnchorToast();
@@ -2046,6 +2098,11 @@
     document.addEventListener('click', function (e) {
       if (!e.target.closest('.fn-marker') && !e.target.closest('.tooltip')) closeFootnotes();
     });
+    /* Fix #4: на тачскрине click может не срабатывать на нетипируемых элементах —
+       touchstart надёжнее закрывает тултип при тапе вне маркера */
+    document.addEventListener('touchstart', function (e) {
+      if (!e.target.closest('.fn-marker') && !e.target.closest('.tooltip')) closeFootnotes();
+    }, { passive: true });
 
     window.addEventListener('scroll', function () { closeFootnotes(); }, { passive: true });
     window.addEventListener('wheel', function (e) { if (!e.target.closest('.tooltip')) closeFootnotes(); }, { passive: true });
@@ -2473,6 +2530,9 @@
      ============================================================ */
   (function () {
     if (SiteUtils.getConfig('page.type', '') !== 'article') return;
+    /* Тип C (Переводы) — drop-cap не применяется: академический текст,
+       первый абзац содержит inline-сноски и форматирование переводчика */
+    if (SiteUtils.getConfig('page.section', '') === 'Переводы') return;
 
     var article = document.querySelector('article');
     if (!article) return;
@@ -2730,6 +2790,92 @@
         if (link && link.getAttribute('href')) window.location.href = link.getAttribute('href');
       });
     });
+  })();
+
+
+  /* ============================================================
+     28. Font Size Control — A+/A−
+     Сохраняет выбор в localStorage, применяет через CSS-переменную.
+     Кнопки инжектируются в .btoc-footer (если есть).
+     ============================================================ */
+  (function () {
+    var SIZES = [14, 16, 17, 19, 21];
+    var LS_KEY = 'gb-font-size-idx';
+    var idx = 2; /* 17px — дефолт */
+    try {
+      var saved = parseInt(localStorage.getItem(LS_KEY), 10);
+      if (!isNaN(saved) && saved >= 0 && saved < SIZES.length) idx = saved;
+    } catch (e) {}
+
+    function apply() {
+      document.documentElement.style.setProperty('--article-font-size', SIZES[idx] + 'px');
+      /* Записываем индекс на body — CSS использует его чтобы убирать float при крупном шрифте */
+      document.body.setAttribute('data-font-idx', idx);
+    }
+    function save() {
+      try { localStorage.setItem(LS_KEY, String(idx)); } catch (e) {}
+      apply();
+    }
+    function up()   { if (idx < SIZES.length - 1) { idx++; save(); } }
+    function down() { if (idx > 0)                { idx--; save(); } }
+
+    apply(); /* применяем сразу при загрузке */
+
+    /* Инжектируем кнопки в .btoc-footer */
+    function injectButtons() {
+      var footer = document.querySelector('.btoc-footer');
+      if (!footer || footer.querySelector('.btoc-fontsize')) return;
+      var row = document.createElement('div');
+      row.className = 'btoc-fontsize';
+      row.innerHTML =
+        '<span class="btoc-fontsize-label">Размер текста</span>' +
+        '<div class="btoc-fontsize-btns">' +
+          '<button class="btoc-fontsize-btn" id="btocFontDown" aria-label="Уменьшить шрифт">A−</button>' +
+          '<button class="btoc-fontsize-btn btoc-fontsize-btn--up" id="btocFontUp" aria-label="Увеличить шрифт">A+</button>' +
+        '</div>';
+      footer.insertBefore(row, footer.firstChild);
+      document.getElementById('btocFontDown').addEventListener('click', down);
+      document.getElementById('btocFontUp').addEventListener('click', up);
+    }
+
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', injectButtons);
+    } else {
+      injectButtons();
+    }
+
+    window.SiteFontSize = { up: up, down: down };
+  })();
+
+
+  /* ============================================================
+     29. Article Read Completion — Feature #13
+     При progress >= 98% помечает btoc прочитанным:
+     прогресс-бар становится зелёным, добавляется класс .completed
+     на панель. Визуально ненавязчиво — без модалок и попапов.
+     ============================================================ */
+  (function () {
+    var panel = document.getElementById('btocPanel');
+    var fill  = document.getElementById('btocProgressFill');
+    if (!panel || !fill) return;
+
+    var marked = false;
+    window.addEventListener('scroll', function () {
+      if (marked) return;
+      var scrollY = window.scrollY;
+      var docH = document.documentElement.scrollHeight - window.innerHeight;
+      var pct = docH > 0 ? Math.round((scrollY / docH) * 100) : 0;
+      if (pct < 98) return;
+      marked = true;
+      panel.classList.add('btoc-completed');
+      fill.classList.add('btoc-progress-fill-done');
+      /* Сохраняем в BookmarkEngine если он есть */
+      try {
+        if (window.BookmarkEngine && typeof window.BookmarkEngine.markCompleted === 'function') {
+          window.BookmarkEngine.markCompleted();
+        }
+      } catch (e) {}
+    }, { passive: true });
   })();
 
 

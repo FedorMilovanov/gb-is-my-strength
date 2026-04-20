@@ -1,5 +1,5 @@
 # Архитектура сайта — Господь Бог — Сила Моя
-## Версия 1.0 — Апрель 2026
+## Версия 1.2 — Апрель 2026
 
 ---
 
@@ -87,6 +87,13 @@
 | 18 | Hover bridge for fn-marker | Desktop only |
 | 19 | Bible Reference Tooltips | `.bref[data-ref]` + `#bibleRefs` |
 | 20 | Academic Footnotes | `.fn-marker` |
+| 21 | Typography (неразрывные пробелы) | `article, .article-body` |
+| 22 | Keyboard Shortcuts | `T` TOC · `D` тема · `B` наверх |
+| 23 | Selection Share | Выделение текста в `article` |
+| 24 | Homepage Reading Progress | `.article-list` |
+| 26 | Article Date Display | `meta[property="article:*_time"]` |
+| 26a | Auto Drop Cap | Тип A и B; Тип C исключён |
+| 27 | Article End Block Injector | `page.type === 'article'` |
 
 **Принцип:** каждый модуль сначала проверяет наличие нужных DOM-элементов. Если элемента нет — ничего не происходит, ошибок нет.
 
