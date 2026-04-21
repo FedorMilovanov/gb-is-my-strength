@@ -345,6 +345,27 @@ html.dark .h-scripture-bg::before {
   animation: none;
 }
 
+/* ── Hero Sacred Block (top of page, before title) ── */
+.h-sacred-block--hero {
+  text-align: center;
+  opacity: 1;
+  animation: none;
+  margin-bottom: 40px;
+  padding-top: 8px;
+}
+.h-sacred-block--hero .h-sacred-line--1 {
+  font-size: clamp(1.8rem, 4vw, 2.8rem);
+}
+.h-sacred-block--hero .h-sacred-line--2 {
+  font-size: clamp(1.3rem, 2.5vw, 2rem);
+}
+.h-sacred-block--hero .h-tetra .hb-front {
+  font-size: clamp(2.6rem, 6vw, 4.2rem);
+}
+.h-sacred-block--hero .h-tetra-back .h-tetra-name {
+  font-size: clamp(2.6rem, 6vw, 4.2rem);
+}
+
 @media (min-width: 768px) {
   .h-hero {
     padding-top: 144px;

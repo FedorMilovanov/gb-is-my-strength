@@ -185,6 +185,7 @@
 
 | Хеш | Что |
 |---|---|
+| `audit-3` | fix(audit): feed.xml lastBuildDate→Apr 18, krajne pubDate→Apr 1; twitter:image:alt добавлен в about; AGENTS бэклог #7/#20/#22 закрыты |
 | `audit-2` | fix(audit): drop-cap исключён для Типа C; KDV section исправлен; headingAnchors/selectors добавлены в KDV config; README модули 21–27 добавлены; AGENTS бэклог синхронизирован |
 | `audit-1` | fix(audit): Б1–Б6 HTML/CSS (barShareBtn, порядок bottom bar, skip-link, id=content, article-header--no-border, body id=top убран, TOC rail непрерывный) |
 | `9a67164` | fix: тема кнопка выровнена по хлебным крошкам, запрещён inline top |
@@ -215,7 +216,7 @@
 
 - [x] **#5 Breadcrumb hover в тёмной теме** — ✅ Закрыт: `html.dark .breadcrumb__link:hover { color: var(--accent-strong); }` (css/site.css секция 06).
 - [x] **#6 TOC rail непрерывный** — ✅ Закрыт: `border-left` на `nav`, `.toc-link { margin-left: -1px }` (css/site.css секция 15).
-- [ ] **#7 Sticky header без blur** — при скролле шапка прозрачная. Добавить `.scrolled` + `backdrop-filter: blur(12px)`.
+- [x] **#7 Sticky header без blur** — ✅ Закрыт: `.article-topnav` в `site.css` уже имеет `backdrop-filter: blur(12px)` через `@supports`; `.h-navbar.scrolled` в `home.css` — `blur(20px) saturate(160%)`.
 - [x] **#8 Герменевтика без bottom-bar** — ✅ Закрыт: bottom bar присутствует во всех трёх статьях.
 - [ ] **#9 Сноски: два формата** — КДВ использует `fn-ref` (модуль 12), Сердце/Герменевтика — `fn-marker` (модуль 20). Это **архитектурный выбор по типу статьи** (Тип A vs B/C), а не баг. Унификация возможна только при переписывании HTML всех статей. Оставить как есть до следующего крупного рефакторинга.
 - [x] **#10 Share popup доступность** — ✅ Закрыт: `role="dialog"`, `aria-modal`, фокус-ловушка, `Esc` закрывает (js/site.js модуль 03).
@@ -232,7 +233,7 @@
 ### 🟢 P3 — Полировка
 
 - [x] **#19 scroll-margin-top на якорях** — ✅ Закрыт: `--scroll-margin: 96px` в `:root`, `scroll-margin-top: var(--scroll-margin)`.
-- [ ] **#20 ::selection в тёмной теме** — стандартный синий диссонирует с янтарём.
-- [ ] **#22 Опечатки в КДВ** — «Мертвого» → «Мёртвого», «Никейский Собор» → «Никейский собор».
+- [x] **#20 ::selection в тёмной теме** — ✅ Закрыт: `html.dark ::selection { background: #d4a574; color: #0e1116; }` в `css/site.css`.
+- [x] **#22 Опечатки в КДВ** — ✅ Закрыт: «Мёртвого» и «Никейский собор» корректны во всём тексте статьи.
 - [ ] **#23 `:hover` без `@media (hover: hover)`** — ~60 hover-правил в `css/site.css` не обёрнуты в `@media (hover: hover) and (pointer: fine)`. На iOS/Android после тапа элемент «застревает» в hover-состоянии (меняется фон, цвет или поднимается transform) до следующего тапа в другое место. **Почему не делаем сейчас:** риск велик — 60 правил, большой рефакторинг, легко случайно сломать стили; залипание заметно только там, где есть сильная смена фона или `transform: translateY`. `touch-action: manipulation` уже убрал 300ms delay. Делать отдельной задачей: пройти по всем `:hover` с `transform`, `background-color`, `color` и обернуть только их в `@media (hover: hover) and (pointer: fine)`.
 - [ ] **#24 Footer** — минимальный/отсутствует. Добавить единый footer.
