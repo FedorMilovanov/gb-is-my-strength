@@ -104,23 +104,23 @@ html.dark {
 }
 .h-nav-logo-main {
   font-family: var(--f-serif);
-  font-size: 15px;
-  font-weight: 600;
+  font-size: 18px;
+  font-weight: 700;
   color: var(--h-ink);
   letter-spacing: 0.02em;
   transition: letter-spacing 0.5s cubic-bezier(0.22, 1, 0.36, 1);
 }
 .h-nav-logo-dash {
   font-family: var(--f-serif);
-  font-size: 15px;
+  font-size: 18px;
   color: var(--h-muted);
   transition: transform 0.5s cubic-bezier(0.22, 1, 0.36, 1);
   display: inline-block;
 }
 .h-nav-logo-accent {
   font-family: var(--f-serif);
-  font-size: 15px;
-  font-weight: 600;
+  font-size: 18px;
+  font-weight: 700;
   font-style: italic;
   color: var(--h-accent);
   letter-spacing: 0.02em;
@@ -241,6 +241,27 @@ html.dark .icon-sun  { display: block; }
   overflow: hidden;
   z-index: 0;
 }
+
+/* Soft radial ambient glow — как в эталонном дизайне */
+.h-scripture-bg::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(ellipse 50% 30% at 15% 8%,  rgba(124, 45, 45, 0.035), transparent 70%),
+    radial-gradient(ellipse 45% 25% at 85% 32%, rgba(166, 124, 91, 0.04),  transparent 70%),
+    radial-gradient(ellipse 50% 28% at 12% 58%, rgba(124, 45, 45, 0.03),   transparent 70%),
+    radial-gradient(ellipse 48% 30% at 88% 82%, rgba(166, 124, 91, 0.035), transparent 70%);
+  pointer-events: none;
+}
+html.dark .h-scripture-bg::before {
+  background:
+    radial-gradient(ellipse 50% 30% at 15% 8%,  rgba(217, 122, 108, 0.05),  transparent 70%),
+    radial-gradient(ellipse 45% 25% at 85% 32%, rgba(217, 122, 108, 0.04),  transparent 70%),
+    radial-gradient(ellipse 50% 28% at 12% 58%, rgba(217, 122, 108, 0.045), transparent 70%),
+    radial-gradient(ellipse 48% 30% at 88% 82%, rgba(217, 122, 108, 0.035), transparent 70%);
+}
+
 .h-phrase {
   position: absolute;
   font-weight: 400;
@@ -254,6 +275,16 @@ html.dark .icon-sun  { display: block; }
 .h-phrase--hebrew { font-family: var(--f-hebrew); direction: rtl; }
 .h-phrase--greek,
 .h-phrase--latin { font-family: var(--f-body); font-style: italic; direction: ltr; }
+
+/* Дыхание для крупных ambient-фраз */
+@keyframes h-phrase-breathe {
+  0%, 100% { opacity: var(--phrase-opacity, 0.025); }
+  50%       { opacity: calc(var(--phrase-opacity, 0.025) * 1.45); }
+}
+.h-phrase--ambient {
+  animation: h-phrase-breathe 22s ease-in-out infinite;
+  filter: blur(2px);
+}
 
 /* ============================================================
    HOME PAGE LAYOUT
@@ -292,7 +323,7 @@ html.dark .icon-sun  { display: block; }
   letter-spacing: 0.32em;
   text-transform: uppercase;
   color: var(--h-muted);
-  margin: 0 0 48px;
+  margin: 0 0 24px;
   opacity: 0;
   animation: h-fade-up 0.8s cubic-bezier(0.22, 1, 0.36, 1) 0.1s forwards;
 }
@@ -304,6 +335,21 @@ html.dark .icon-sun  { display: block; }
   text-align: right;  /* RTL контент выравниваем вправо */
   opacity: 0;
   animation: h-fade-up 0.9s cubic-bezier(0.22, 1, 0.36, 1) 0.2s forwards;
+}
+
+/* В контексте секции-цитаты — центрирование */
+.h-quote-section .h-sacred-block {
+  text-align: center;
+  margin-bottom: 28px;
+  opacity: 1;
+  animation: none;
+}
+
+@media (min-width: 768px) {
+  .h-hero {
+    padding-top: 144px;
+    padding-bottom: 72px;
+  }
 }
 
 .h-sacred-line {
@@ -609,7 +655,7 @@ html.dark .h-hero-title:hover .h-title-accent {
   color: var(--h-muted);
   line-height: 1.85;
   max-width: 580px;
-  margin: 0 0 40px;   /* убираем mx-auto — выравнивание по левому краю */
+  margin: 0;
   opacity: 0;
   animation: h-fade-up 0.8s cubic-bezier(0.22, 1, 0.36, 1) 0.48s forwards;
 }
@@ -618,7 +664,7 @@ html.dark .h-hero-title:hover .h-title-accent {
   border: none;
   height: 1px;
   background: linear-gradient(to right, transparent, var(--h-border), transparent);
-  margin: 0;
+  margin: 40px 0 0;
   opacity: 0;
   animation: h-fade-in 1s ease 0.6s forwards;
 }
@@ -631,9 +677,9 @@ html.dark .h-hero-title:hover .h-title-accent {
 }
 .h-section-label {
   font-family: var(--f-ui);
-  font-size: 10px;
-  font-weight: 600;
-  letter-spacing: 0.28em;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.2em;
   text-transform: uppercase;
   color: var(--h-muted);
   margin: 0 0 6px;
@@ -1032,13 +1078,15 @@ html.dark .h-article-card:hover {
 .h-drop-cap::first-letter {
   float: left;
   font-family: var(--f-serif);
-  font-size: 3.8em;
+  font-size: 3.5em;
   font-weight: 700;
-  line-height: 0.82;
-  padding-right: 10px;
-  padding-top: 4px;
-  color: var(--h-ink);
-  opacity: 0.9;
+  line-height: 0.8;
+  padding-right: 0.08em;
+  padding-top: 0.07em;
+  color: var(--h-accent);
+}
+html.dark .h-drop-cap::first-letter {
+  color: var(--h-accent);
 }
 .h-about-small {
   font-family: var(--f-ui);
@@ -1060,36 +1108,40 @@ html.dark .h-article-card:hover {
    SCRIPTURE QUOTE
    ============================================================ */
 .h-quote-section {
-  padding: 64px 0 72px;
+  padding: 64px 0;
   text-align: center;
+}
+@media (min-width: 768px) {
+  .h-quote-section { padding: 96px 0; }
 }
 .h-ornament {
   display: flex;
   align-items: center;
   justify-content: center;
   gap: 16px;
-  color: var(--h-border);
-  font-size: 9px;
-  letter-spacing: 14px;
+  color: var(--h-muted);
+  font-size: 11px;
+  letter-spacing: 12px;
   margin: 0 0 28px;
 }
 .h-ornament::before, .h-ornament::after {
   content: "";
   height: 1px;
-  width: 60px;
+  flex: 1;
   background: linear-gradient(to right, transparent, var(--h-border));
 }
 .h-ornament::after { background: linear-gradient(to left, transparent, var(--h-border)); }
+html.dark .h-ornament { color: var(--h-muted); }
 .h-blockquote {
   font-family: var(--f-serif);
   font-style: italic;
   font-size: clamp(1.15rem, 3vw, 1.55rem);
-  color: var(--h-ink);
+  color: var(--h-muted);
   line-height: 1.75;
   margin: 0 0 16px;
   padding: 0 20px;
-  opacity: 0.85;
 }
+html.dark .h-blockquote { color: var(--h-ink); }
 .h-cite {
   font-family: var(--f-ui);
   font-size: 10px;
@@ -1229,6 +1281,7 @@ html.dark .h-article-card:hover {
   }
   .h-hero-tagline, .h-sacred-block, .h-hero-title,
   .h-hero-desc, .h-rule { opacity: 1 !important; }
+  .h-phrase--ambient { animation: none !important; }
 }
 
 /* Print */
