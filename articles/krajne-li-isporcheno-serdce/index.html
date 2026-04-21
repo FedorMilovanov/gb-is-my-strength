@@ -2,7 +2,7 @@
 <html lang="ru">
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
   <!-- Open Graph -->
   <meta property="og:type" content="article">
@@ -118,6 +118,9 @@
   <meta name="description" content="Разбор Иеремии 17:9–10. Что значит «сердце обманчиво более всего» — и относится ли это к верующему? Экзегеза, богословский синтез, пастырское применение.">
   <meta name="theme-color" content="#fdfcf9" media="(prefers-color-scheme: light)">
   <meta name="theme-color" content="#0e1116" media="(prefers-color-scheme: dark)">
+
+  <!-- LCP preload — сообщаем браузеру о первом изображении ДО загрузки стилей -->
+  <link rel="preload" as="image" href="../../images/ieremia-judea-fall.webp" fetchpriority="high">
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -583,12 +586,12 @@ window.SITE_CONFIG = {
     <header class="article-header article-header--no-border">
       <h1>Крайне ли испорчено моё сердце —<br>если я уже верующий?</h1>
       <p class="article-byline">
-        <span class="article-byline__strong">Подготовил: Фёдор Милованов</span>
+        <span class="article-byline__strong">Редактор: Фёдор Милованов</span>
         <span class="article-byline__sep" aria-hidden="true">·</span>
         <time datetime="2026-04-01">1 апреля 2026</time>
         <span class="article-byline__sep" aria-hidden="true">·</span>
         <span>⏱ 32 мин</span>
-        <span class="article-byline__badge">Авторская статья</span>
+        <span class="article-byline__badge">Под редакцией</span>
       </p>
 
       <p><i>Неверный диагноз превращает лечение в суету вокруг симптомов: мы лечим тень болезни, пока сама она продолжает своё гниющее действие. Иеремия 17 — это зеркало, в котором человек видит не то, что хочет, а то, что есть: грех не просто <em>совершается</em> человеком — он <em>вырезается</em> в нём; сердце не просто слабо — оно лукаво и больно́ глубже, чем человек готов признать. Но что это значит для того, кто уже верующий?</i></p>
@@ -600,7 +603,7 @@ window.SITE_CONFIG = {
     <h2 id="istoricheskiy-fon">I. Исторический фон: почему Иеремия говорит так резко</h2>
 
     <figure class="article-img wide reveal">
-      <img decoding="async" src="../../images/ieremia-judea-fall.webp" alt="Иеремия на фоне горящего Иерусалима — пророк на краю катастрофы" loading="lazy" width="900" height="600">
+      <img decoding="async" src="../../images/ieremia-judea-fall.webp" alt="Иеремия на фоне горящего Иерусалима — пророк на краю катастрофы" fetchpriority="high" width="900" height="600">
       <figcaption>Иеремия перед разрушением Иерусалима, 587/586 до н.э. <span class="ai-note">Сгенерировано с помощью ИИ</span></figcaption>
     </figure>
 
@@ -1011,7 +1014,7 @@ window.SITE_CONFIG = {
     <p>Бог разверз бездну не затем, чтобы мы в ней погибли, — а затем, чтобы мы наконец увидели, <strong>как глубоко должен был сойти Христос, чтобы нас достать.</strong></p>
 
     <figure class="article-img rescue-figure">
-      <img decoding="async" src="../../images/ieremia-rescue.webp" alt="Христос протягивает руку человеку над бездной" loading="lazy" width="1536" height="1024" style="width:100%;height:auto;display:block;">
+      <img decoding="async" src="../../images/ieremia-rescue.webp" alt="Христос протягивает руку человеку над бездной" loading="lazy" width="1536" height="1024">
     </figure>
 
     <footer class="article-footer">
@@ -1113,13 +1116,13 @@ window.SITE_CONFIG = {
     <aside class="author-card">
       <div class="author-card-icon" aria-hidden="true">ФМ</div>
       <div class="author-card-body">
-        <div class="author-card-label">Подготовил</div>
+        <div class="author-card-label">Редактор</div>
         <div class="author-card-name">Фёдор Милованов</div>
         <p class="author-card-desc">
-          Автор проекта «Господь Бог — Сила Моя», Санкт-Петербург.
-          Материал исследован, структурирован и богословски выверен.
-          ИИ использовался как инструмент для исследовательской и стилистической работы;
-          ответственность за содержание — авторская.
+          Редактор проекта «Господь Бог — Сила Моя», Санкт-Петербург.
+          Материал генерируется и исследуется с помощью ИИ;
+          Фёдор Милованов задаёт направление, редактирует мысли, исправляет неточности
+          и отвечает за богословскую верность содержания.
           <a href="../../about/">Об авторе →</a>
         </p>
       </div>
@@ -1136,7 +1139,7 @@ window.SITE_CONFIG = {
           <img class="related-articles__img"
                src="../../images/hermenevtika-preview.webp"
                alt="Герменевтическая оценка христоцентричной герменевтики"
-               loading="lazy" width="400" height="136">
+               decoding="async" loading="lazy" width="400" height="136">
         </div>
         <div class="related-articles__body">
           <p class="related-articles__tag">Перевод · 35 мин</p>
@@ -1153,14 +1156,14 @@ window.SITE_CONFIG = {
           <img class="related-articles__img"
                src="../../images/hero-kod-da-vinchi.jpg"
                alt="«Код да Винчи» — апологетический разбор"
-               loading="lazy" width="400" height="136">
+               decoding="async" loading="lazy" width="400" height="136">
         </div>
         <div class="related-articles__body">
-          <p class="related-articles__tag">Апологетика · 17 мин</p>
+          <p class="related-articles__tag">Под редакцией · 17 мин</p>
           <a class="related-articles__link" href="../kod-da-vinchi/">
             «Код да Винчи»: блестящий триллер или историческая подмена?
           </a>
-          <p class="related-articles__meta">Фёдор Милованов · Март 2025</p>
+          <p class="related-articles__meta">Ред.: Фёдор Милованов · Март 2025</p>
         </div>
       </li>
 

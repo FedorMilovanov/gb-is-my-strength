@@ -86,6 +86,9 @@
 
   <!-- Fonts — same as article page -->
   <link rel="icon" type="image/x-icon" href="/favicon.ico">
+  <!-- LCP preload — сообщаем браузеру о главном изображении ДО загрузки стилей -->
+  <link rel="preload" as="image" href="images/hermenevtika-preview.webp" fetchpriority="high">
+
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,500;0,600;1,400&family=Source+Sans+3:wght@400;500;600&display=swap" rel="stylesheet">
@@ -172,16 +175,46 @@ window.SITE_CONFIG = {
 
   <header class="site-header">
     <p class="site-tagline">Богословская библиотека</p>
-    <div class="site-hero-ornament" aria-hidden="true">
-      <span class="site-hero-ornament__line"></span>
-      <svg class="site-hero-ornament__icon" width="20" height="20" viewBox="0 0 20 20" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
-        <path d="M10 1L11.5 7.5H18L12.7 11.5L14.7 18L10 14L5.3 18L7.3 11.5L2 7.5H8.5L10 1Z"/>
-      </svg>
-      <span class="site-hero-ornament__line"></span>
-    </div>
-    <h1>Господь Бог — Сила Моя</h1>
-    <p class="site-desc">Академические статьи и переводы для тех, кто серьёзно изучает Писание</p>
+    <h1 class="site-title-interactive">
+      <span class="sti-static">Господь Бог — </span><span class="sti-highlight">Сила Моя</span>
+    </h1>
+    <p class="site-desc">
+      Библиотека материалов для серьёзного изучения Писания:
+      экзегеза, богословие, апологетика, переводы, непростые вопросы.
+    </p>
   </header>
+
+  <!-- Что здесь есть -->
+  <div class="site-scope">
+    <div class="site-scope__item">
+      <svg class="site-scope__icon" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M3 5h14M3 9h10M3 13h12M3 17h7" stroke-linecap="round"/></svg>
+      <div>
+        <strong>Экзегеза и богословие</strong>
+        <span>Разбор библейских текстов с опорой на оригиналы и академические источники</span>
+      </div>
+    </div>
+    <div class="site-scope__item">
+      <svg class="site-scope__icon" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M10 3a7 7 0 100 14A7 7 0 0010 3z"/><path d="M10 8v2.5l1.5 1.5" stroke-linecap="round"/></svg>
+      <div>
+        <strong>Непростые вопросы</strong>
+        <span>О природе греха, страдании, сомнении и Божьем суверенитете</span>
+      </div>
+    </div>
+    <div class="site-scope__item">
+      <svg class="site-scope__icon" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M10 2l2 5h5l-4 3 1.5 5L10 12l-4.5 3L7 10 3 7h5z" stroke-linejoin="round"/></svg>
+      <div>
+        <strong>Апологетика и разбор заблуждений</strong>
+        <span>Исторически выверенные ответы на вызовы культуры, псевдонауки и ересей</span>
+      </div>
+    </div>
+    <div class="site-scope__item">
+      <svg class="site-scope__icon" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><rect x="3" y="3" width="14" height="14" rx="1.5"/><path d="M7 7h6M7 10h6M7 13h3" stroke-linecap="round"/></svg>
+      <div>
+        <strong>Переводы зарубежных материалов</strong>
+        <span>Академические статьи с английского — то, чего ещё нет на русском</span>
+      </div>
+    </div>
+  </div>
 
   <!-- Продолжить чтение — показывается только если есть незавершённые статьи -->
   <section class="resume-reading-block" id="resumeReadingBlock" hidden>
@@ -217,7 +250,7 @@ window.SITE_CONFIG = {
           <img class="card-cover"
                src="images/hermenevtika-preview.webp"
                alt="Герменевтическая оценка христоцентричной герменевтики"
-               loading="lazy" width="192" height="260">
+               fetchpriority="high" decoding="async" width="192" height="260">
         </a>
       </div>
       <div class="card-body">
@@ -251,7 +284,7 @@ window.SITE_CONFIG = {
           <img class="card-cover"
                src="images/ieremia-cover.jpg"
                alt="Крайне ли испорчено моё сердце — Иеремия 17"
-               loading="lazy" width="192" height="260">
+               decoding="async" loading="lazy" width="192" height="260">
         </a>
       </div>
       <div class="card-body">
@@ -260,7 +293,7 @@ window.SITE_CONFIG = {
           Крайне ли испорчено моё сердце — если я уже верующий?
         </a>
         <div class="article-meta">
-          <span class="meta-author">Фёдор Милованов</span>
+          <span class="meta-author">Ред.: Фёдор Милованов</span>
           <span class="meta-sep">·</span>
           <span class="meta-updated" title="Дата последнего обновления">
             <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
@@ -271,7 +304,7 @@ window.SITE_CONFIG = {
             <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
             32 мин
           </span>
-          <span class="meta-tag">Авторская статья</span>
+          <span class="meta-tag">Под редакцией</span>
         </div>
         <p class="article-abstract">
           Разбор Иеремии 17:9–10: что значит «сердце обманчиво более всего» — и относится ли это к верующему? Экзегеза текста, богословский синтез и пастырское применение в свете реформатской традиции.
@@ -294,7 +327,7 @@ window.SITE_CONFIG = {
           <img class="card-cover"
                src="images/hero-kod-da-vinchi.jpg"
                alt="«Код да Винчи» — разбор исторических мифов романа"
-               loading="lazy" width="192" height="260">
+               decoding="async" loading="lazy" width="192" height="260">
         </a>
       </div>
       <div class="card-body">
@@ -303,7 +336,7 @@ window.SITE_CONFIG = {
           «Код да Винчи»: блестящий триллер или историческая подмена?
         </a>
         <div class="article-meta">
-          <span class="meta-author">Фёдор Милованов</span>
+          <span class="meta-author">Ред.: Фёдор Милованов</span>
           <span class="meta-sep">·</span>
           <span class="meta-updated" title="Дата последнего обновления">
             <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
@@ -314,7 +347,7 @@ window.SITE_CONFIG = {
             <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
             17 мин
           </span>
-          <span class="meta-tag">Апологетика</span>
+          <span class="meta-tag">Под редакцией</span>
         </div>
         <p class="article-abstract">
           Полный разбор мифов романа: Мария Магдалина, Никея, канон Нового Завета, Свитки Мёртвого моря, Наг-Хаммади, гностицизм и Приорат Сиона — с позиций Писания и исторической науки.
@@ -328,10 +361,12 @@ window.SITE_CONFIG = {
   <div class="about-block">
     <p>
       <strong>О библиотеке.</strong>
-      Здесь собраны переводы и материалы академического богословия на русском языке —
-      для пасторов, преподавателей и всех, кто желает глубже понимать Слово Божье.
-      Переведённые материалы размещены в ознакомительных целях и будут удалены
-      по запросу правообладателя.
+      Это не популярный ресурс и не сборник цитат — здесь собраны материалы,
+      требующие от читателя усилия и отдающие его сторицей.
+      Авторские статьи, переводы западных богословов, экзегетические разборы
+      и ответы на непростые богословские вопросы.
+      Ведёт библиотеку <a href="about/" class="about-link">Фёдор Милованов</a>.
+      Переведённые материалы размещены в ознакомительных целях и будут удалены по запросу правообладателя.
     </p>
   </div>
 

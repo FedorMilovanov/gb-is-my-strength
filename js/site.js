@@ -1229,27 +1229,30 @@
 
 
   /* ============================================================
-     16. Quiz Engine  [v2: fixes + keyboard + streak + count-up + scroll + timer]
+  /* ============================================================
+     16. Quiz Engine  [v3: review mode + wrong-answer tracking]
      ============================================================ */
   (function () {
+
+    /* ---- 1. Feature gate ---- */
     var cfg = SiteUtils.getConfig('features.quiz', {});
     if (cfg.enabled === false) return;
 
-    var wrapper = document.getElementById('quizWrapper');
+    var wrapper  = document.getElementById('quizWrapper');
+    var quizMain = document.getElementById('quizMain');
     if (!wrapper) return;
 
     var questions      = SiteUtils.getConfig('quiz.questions', null);
     var bonusQuestions = SiteUtils.getConfig('quiz.bonusQuestions', null);
     var scores         = SiteUtils.getConfig('quiz.scores', null);
     var bonusScores    = SiteUtils.getConfig('quiz.bonusScores', null);
-
     if (!questions || !questions.length) return;
 
-    /* ---- RNG helpers ---- */
+    /* ---- 2. RNG + deck preparation ---- */
     function hashString(str) {
-      var hash = 0x811c9dc5;
-      for (var i = 0; i < str.length; i++) { hash ^= str.charCodeAt(i); hash = (hash * 0x01000193) >>> 0; }
-      return hash >>> 0;
+      var h = 0x811c9dc5;
+      for (var i = 0; i < str.length; i++) { h ^= str.charCodeAt(i); h = (h * 0x01000193) >>> 0; }
+      return h >>> 0;
     }
     function mulberry32(seed) {
       var t = seed >>> 0;
@@ -1262,74 +1265,235 @@
     }
     function shuffleSeeded(arr, seed) {
       var a = arr.slice(), rng = mulberry32(seed);
-      for (var i = a.length - 1; i > 0; i--) { var j = Math.floor(rng() * (i + 1)); var tmp = a[i]; a[i] = a[j]; a[j] = tmp; }
+      for (var i = a.length - 1; i > 0; i--) {
+        var j = Math.floor(rng() * (i + 1));
+        var tmp = a[i]; a[i] = a[j]; a[j] = tmp;
+      }
       return a;
     }
     function getSessionSeed() {
-      try { var buf = new Uint32Array(1); crypto.getRandomValues(buf); return buf[0]; } catch (e) { return Date.now() >>> 0; }
+      try { var buf = new Uint32Array(1); crypto.getRandomValues(buf); return buf[0]; }
+      catch (e) { return Date.now() >>> 0; }
     }
     function prepareDeck(qs, attemptSeed, deckName) {
-      var qOrder = shuffleSeeded(qs, hashString(deckName + ':' + attemptSeed));
-      return qOrder.map(function (q) {
-        var optSeed = hashString(q.q.slice(0, 20) + ':' + deckName + ':' + attemptSeed);
-        var origOptions = q.options.slice();
-        var shuffled = shuffleSeeded(origOptions, optSeed);
-        var correctText = origOptions[q.answer];
-        var newAnswer = shuffled.indexOf(correctText);
-        return { q: q.q, options: shuffled, answer: newAnswer, ok: q.ok, err: q.err, focus: q.focus || null };
+      return shuffleSeeded(qs, hashString(deckName + ':' + attemptSeed)).map(function (q) {
+        var optSeed     = hashString(q.q.slice(0, 20) + ':' + deckName + ':' + attemptSeed);
+        var orig        = q.options.slice();
+        var shuffled    = shuffleSeeded(orig, optSeed);
+        var correctText = orig[q.answer];
+        return { q: q.q, options: shuffled, answer: shuffled.indexOf(correctText), ok: q.ok, err: q.err, focus: q.focus || null };
       });
     }
 
     var sessionSeed = getSessionSeed();
-    var coreDeck  = prepareDeck(questions, sessionSeed, 'core');
-    /* FIX4: bonusDeck always from bonusQuestions source, not stale deck */
-    var bonusDeck = bonusQuestions ? prepareDeck(bonusQuestions, sessionSeed + 41, 'bonus') : null;
+    var coreDeck    = prepareDeck(questions, sessionSeed, 'core');
+    var bonusDeck   = bonusQuestions ? prepareDeck(bonusQuestions, sessionSeed + 41, 'bonus') : null;
 
-    /* ---- DOM refs ---- */
-    var counter  = document.getElementById('quizCounter');
-    var qText    = document.getElementById('quizQuestion');
-    var qFocus   = document.getElementById('quizFocus');
-    var opts     = document.getElementById('quizOptions');
-    var feedback = document.getElementById('quizFeedback');
-    var nextBtn  = document.getElementById('quizNext');
-    var fill     = document.getElementById('quizFill');
-    var body     = document.getElementById('quizBody');
-    var scoreEl  = document.getElementById('quizScore');
-    var restart  = document.getElementById('quizRestart');
-    var share    = document.getElementById('quizShare');
-    var bonusSection = document.getElementById('quizBonusSection');
-    var bonusBtn     = document.getElementById('quizBonusStart');
-    var bonusBody    = document.getElementById('quizBonusBody');
-    var bonusScore   = document.getElementById('quizBonusScore');
+    /* ---- 3. Main DOM refs ---- */
+    var counter      = document.getElementById('quizCounter');
+    var qText        = document.getElementById('quizQuestion');
+    var qFocus       = document.getElementById('quizFocus');   /* legacy — kept for HTML compat */
+    var opts         = document.getElementById('quizOptions');
+    var feedback     = document.getElementById('quizFeedback');
+    var nextBtn      = document.getElementById('quizNext');
+    var fill         = document.getElementById('quizFill');
+    var body         = document.getElementById('quizBody');
+    var resultEl     = document.getElementById('quizResult');
+    var resultScore  = document.getElementById('quizResultScore');
+    var resultTotal  = document.getElementById('quizResultTotal');
+    var resultLabel  = document.getElementById('quizResultLabel');
+    var resultBar    = document.getElementById('quizResultBar');
+    var resultDesc   = document.getElementById('quizScoreDesc');
+    var scoreEl      = document.getElementById('quizScore');
+    var scoreBadge   = document.getElementById('quizScoreBadge');
+    var scoreTitle   = document.getElementById('quizScoreTitle');
+    var restart      = document.getElementById('quizRestart');
+    var share        = document.getElementById('quizShare');
     var quizOverlay  = document.getElementById('quizOverlay');
-    var quizMain     = document.getElementById('quizMain');
     var quizLaunch   = document.getElementById('quizLaunch');
 
     if (!counter || !qText || !opts) return;
 
-    var current = 0, score = 0, answered = false;
-    var inBonus = false, bonusCurrent = 0, bonusScoreVal = 0, bonusAnswered = false;
+    /* ---- 4. Bonus DOM refs (present only in articles with bonus round) ---- */
+    var bonusSection = document.getElementById('quizBonusSection');
+    var bonusBtn     = document.getElementById('quizBonusStart');
+    var bonusBody    = document.getElementById('quizBonusBody');
+    var bonusScore   = document.getElementById('quizBonusScore');
+    var bonusBc      = document.getElementById('quizBonusCounter');
+    var bonusBq      = document.getElementById('quizBonusQuestion');
+    var bonusBf      = document.getElementById('quizBonusFocus');
+    var bonusBo      = document.getElementById('quizBonusOptions');
+    var bonusBfb     = document.getElementById('quizBonusFeedback');
+    var bonusBn      = document.getElementById('quizBonusNext');
+    var bonusBfill   = document.getElementById('quizBonusFill');
+    var bonusLock    = document.getElementById('quizBonusLock');
+    var bonusUnlock  = document.getElementById('quizBonusUnlock');
+    var bonusSTitle  = document.getElementById('quizBonusScoreTitle');
+    var bonusSBadge  = document.getElementById('quizBonusScoreBadge');
+    var bonusSDesc   = document.getElementById('quizBonusScoreDesc');
+
+    /* ---- 5. Review UI injection ---- *
+     * Dynamically injects the review section and done screen into quizMain,
+     * and a "Разобрать ошибки" button into the existing result actions row.
+     * All refs cached immediately after injection.                          */
+    var revStartBtn  = null; /* "Разобрать ошибки (N)" button in result      */
+    var revSection   = null; /* review question UI                            */
+    var revFill      = null;
+    var revCounter   = null;
+    var revQuestion  = null;
+    var revPrev      = null;
+    var revOpts      = null;
+    var revFeedback  = null;
+    var revFocus     = null;
+    var revNextBtn   = null;
+    var revDone      = null; /* review completion screen                      */
+    var revDoneIcon  = null;
+    var revDoneTitle = null;
+    var revDoneDesc  = null;
+    var revRestartBtn = null;
+    var revBonusTeaser = null;
+
+    if (quizMain) {
+      /* "Разобрать ошибки" button — prepended into existing result actions */
+      var resultActions = quizMain.querySelector('.quiz-result__actions');
+      if (resultActions) {
+        revStartBtn = document.createElement('button');
+        revStartBtn.id        = 'quizStartReview';
+        revStartBtn.className = 'quiz-review-start-btn';
+        revStartBtn.style.display = 'none';
+        resultActions.insertBefore(revStartBtn, resultActions.firstChild);
+      }
+
+      /* Review question section */
+      revSection = document.createElement('div');
+      revSection.id        = 'quizReviewSection';
+      revSection.className = 'quiz-review-section';
+      revSection.style.display = 'none';
+      revSection.innerHTML =
+        '<div class="quiz-review-header">' +
+          '<span class="quiz-review-label">Разбор ошибок</span>' +
+          '<span class="quiz-counter" id="_rvc"></span>' +
+        '</div>' +
+        '<div class="quiz-progress-wrap" style="margin-bottom:20px">' +
+          '<div class="quiz-progress-fill" id="_rvf" style="width:0%"></div>' +
+        '</div>' +
+        '<p class="quiz-question-text" id="_rvq"></p>' +
+        '<div class="quiz-review-prev" id="_rvp" style="display:none"></div>' +
+        '<div class="quiz-options" id="_rvo" role="radiogroup"></div>' +
+        '<div class="quiz-feedback" id="_rvfb" aria-live="polite" aria-atomic="true"></div>' +
+        '<div class="quiz-review-focus" id="_rvfc" style="display:none"></div>' +
+        '<button class="quiz-next-btn" id="_rvn" style="display:none">Следующий →</button>';
+      quizMain.appendChild(revSection);
+
+      /* Cache child refs immediately — no further getElementById needed */
+      revCounter  = document.getElementById('_rvc');
+      revFill     = document.getElementById('_rvf');
+      revQuestion = document.getElementById('_rvq');
+      revPrev     = document.getElementById('_rvp');
+      revOpts     = document.getElementById('_rvo');
+      revFeedback = document.getElementById('_rvfb');
+      revFocus    = document.getElementById('_rvfc');
+      revNextBtn  = document.getElementById('_rvn');
+
+      /* Review done screen */
+      revDone = document.createElement('div');
+      revDone.id        = 'quizReviewDone';
+      revDone.className = 'quiz-review-done';
+      revDone.style.display = 'none';
+      revDone.innerHTML =
+        '<div class="quiz-review-done__icon" id="_rdi"></div>' +
+        '<div class="quiz-review-done__title" id="_rdt"></div>' +
+        '<div class="quiz-review-done__desc" id="_rdd"></div>' +
+        '<div class="quiz-result__actions" style="justify-content:center;margin-top:20px">' +
+          '<button class="quiz-restart-btn" id="_rdr">Пройти тест заново</button>' +
+        '</div>' +
+        '<div class="quiz-bonus-teaser" id="_rdb" style="display:none"></div>';
+      quizMain.appendChild(revDone);
+
+      revDoneIcon    = document.getElementById('_rdi');
+      revDoneTitle   = document.getElementById('_rdt');
+      revDoneDesc    = document.getElementById('_rdd');
+      revRestartBtn  = document.getElementById('_rdr');
+      revBonusTeaser = document.getElementById('_rdb');
+    }
+
+    /* ---- 6. State ---- */
+    var current  = 0, score  = 0, answered  = false;
+    var inBonus  = false, bonusCurrent = 0, bonusScoreVal = 0, bonusAnswered = false;
+    var inReview = false, reviewDeck  = [], reviewCurrent = 0, reviewAnswered = false, reviewScore = 0;
+    var wrongAnswers = [];  /* collects { q, options, answer, chosenIdx, ok, err, focus } */
     var activeDeck = coreDeck;
-    /* v2: streak tracking */
     var streak = 0;
 
     var LETTERS = ['А', 'Б', 'В', 'Г'];
-    /* v2: keyboard map: digits 1-4 and Cyrillic А Б В Г */
-    var KEY_MAP = { '1': 0, '2': 1, '3': 2, '4': 3, 'а': 0, 'б': 1, 'в': 2, 'г': 3 };
+    var KEY_MAP  = { '1': 0, '2': 1, '3': 2, '4': 3, 'а': 0, 'б': 1, 'в': 2, 'г': 3 };
 
-    /* v2: optional timer */
-    var timeLimit = SiteUtils.getConfig('features.quiz.timeLimit', 0); /* seconds, 0 = off */
+    /* ---- 7. Utilities ---- */
+    function getScoreBucket(sc, total, arr) {
+      if (!arr) {
+        var p = sc / total;
+        return p >= 0.9 ? 0 : p >= 0.7 ? 1 : p >= 0.5 ? 2 : p >= 0.3 ? 3 : 4;
+      }
+      for (var i = 0; i < arr.length; i++) { if (sc >= (arr[i].min || 0)) return i; }
+      return arr.length - 1;
+    }
+
+    function animateCountNum(el, target, duration) {
+      if (!el) return;
+      var t0 = null;
+      function step(ts) {
+        if (!t0) t0 = ts;
+        var p = Math.min((ts - t0) / duration, 1);
+        el.textContent = Math.floor(p * target);
+        if (p < 1) requestAnimationFrame(step);
+      }
+      requestAnimationFrame(step);
+    }
+
+    function animateCount(el, target, total, duration) {
+      if (!el) return;
+      var t0 = null;
+      function step(ts) {
+        if (!t0) t0 = ts;
+        var p = Math.min((ts - t0) / duration, 1);
+        el.textContent = 'Результат: ' + Math.floor(p * target) + ' из ' + total;
+        if (p < 1) requestAnimationFrame(step);
+      }
+      requestAnimationFrame(step);
+    }
+
+    /* Russian plural for "вопрос" (0=вопросов, 1=вопрос, 2–4=вопроса, 5+=вопросов) */
+    function pluralQ(n) {
+      if (n % 10 === 1 && n % 100 !== 11) return '';          /* 1 вопрос  */
+      if (n % 10 >= 2 && n % 10 <= 4 && (n % 100 < 10 || n % 100 >= 20)) return 'а'; /* 2–4 вопроса */
+      return 'ов';                                              /* 5 вопросов */
+    }
+
+    /* Build an option button (shared by main / review / bonus) */
+    function makeOptionBtn(opt, i, handler) {
+      var btn = document.createElement('button');
+      btn.className = 'quiz-option';
+      btn.setAttribute('data-idx', i);
+      btn.setAttribute('role', 'radio');
+      btn.setAttribute('aria-checked', 'false');
+      btn.innerHTML = '<span class="quiz-option-letter">' + (LETTERS[i] || (i + 1)) + '.</span> ' + opt;
+      btn.addEventListener('click', (function (idx) { return function () { handler(idx); }; })(i));
+      return btn;
+    }
+
+    /* ---- 8. Timer (optional — feature.quiz.timeLimit in seconds, 0 = off) ---- */
+    var timeLimit = SiteUtils.getConfig('features.quiz.timeLimit', 0);
     var timerInterval = null;
-    var timerEl = null; /* injected below if needed */
+    var timerEl = null;
 
-    function clearTimer() { if (timerInterval) { clearInterval(timerInterval); timerInterval = null; } }
-
+    function clearTimer() {
+      if (timerInterval) { clearInterval(timerInterval); timerInterval = null; }
+    }
     function startTimer(onExpire) {
       clearTimer();
       if (!timeLimit || !timerEl) return;
       var left = timeLimit;
-      timerEl.style.width = '100%';
-      timerEl.style.transition = 'none';
+      timerEl.style.cssText = 'width:100%;transition:none';
       timerInterval = setInterval(function () {
         left--;
         var pct = Math.max(0, left / timeLimit * 100);
@@ -1339,17 +1503,16 @@
       }, 1000);
     }
 
-    /* v2: inject timer bar element if timeLimit configured */
-    if (timeLimit > 0) {
+    if (timeLimit > 0 && body) {
       timerEl = document.createElement('div');
       timerEl.className = 'quiz-timer-bar';
       var timerTrack = document.createElement('div');
       timerTrack.className = 'quiz-timer-track';
       timerTrack.appendChild(timerEl);
-      if (body) body.insertBefore(timerTrack, body.firstChild);
+      body.insertBefore(timerTrack, body.firstChild);
     }
 
-    /* v2: streak badge element (injected once) */
+    /* ---- 9. Streak badge ---- */
     var streakBadge = document.createElement('div');
     streakBadge.className = 'quiz-streak-badge';
     streakBadge.style.display = 'none';
@@ -1357,84 +1520,37 @@
 
     function updateStreakBadge() {
       if (streak >= 3) {
-        streakBadge.textContent = '🔥 ' + streak + ' подряд!';
+        streakBadge.textContent  = '🔥 ' + streak + ' подряд!';
         streakBadge.style.display = 'block';
       } else {
         streakBadge.style.display = 'none';
       }
     }
 
-    /* v2: count-up animation for score display (numeric only) */
-    function animateCountNum(el, target, duration) {
-      if (!el) return;
-      var startTime = null;
-      function step(ts) {
-        if (!startTime) startTime = ts;
-        var progress = Math.min((ts - startTime) / duration, 1);
-        el.textContent = Math.floor(progress * target);
-        if (progress < 1) requestAnimationFrame(step);
-      }
-      requestAnimationFrame(step);
-    }
-
-    /* legacy count-up with label text (for quizScoreBadge) */
-    function animateCount(el, target, total, duration) {
-      if (!el) return;
-      var startTime = null;
-      function step(ts) {
-        if (!startTime) startTime = ts;
-        var progress = Math.min((ts - startTime) / duration, 1);
-        el.textContent = 'Результат: ' + Math.floor(progress * target) + ' из ' + total;
-        if (progress < 1) requestAnimationFrame(step);
-      }
-      requestAnimationFrame(step);
-    }
-
+    /* ---- 10. Main quiz ---- */
     function render() {
       answered = false;
       clearTimer();
-      var q = activeDeck[current];
+      var q     = activeDeck[current];
       var total = activeDeck.length;
       counter.textContent = 'Вопрос ' + (current + 1) + ' из ' + total;
-      /* FIX3: progress shows current+1 so bar fills as you answer */
       if (fill) fill.style.width = ((current + 1) / total * 100) + '%';
       qText.innerHTML = q.q;
-
-      if (qFocus) {
-        /* Б4: hide focus hint until wrong answer — don't spoil the clue */
-        qFocus.style.display = 'none';
-      }
-
+      if (qFocus)   qFocus.style.display = 'none';
       if (feedback) { feedback.textContent = ''; feedback.className = 'quiz-feedback'; }
-      if (nextBtn) nextBtn.style.display = 'none';
+      if (nextBtn)  nextBtn.style.display = 'none';
       opts.innerHTML = '';
       opts.setAttribute('role', 'radiogroup');
       opts.setAttribute('aria-labelledby', 'quizQuestion');
-
-      q.options.forEach(function (opt, i) {
-        var btn = document.createElement('button');
-        btn.className = 'quiz-option';
-        btn.setAttribute('data-idx', i);
-        btn.setAttribute('role', 'radio');
-        btn.setAttribute('aria-checked', 'false');
-        btn.innerHTML = '<span class="quiz-option-letter">' + (LETTERS[i] || (i + 1)) + '.</span> ' + opt;
-        btn.addEventListener('click', function () { handleAnswer(i); });
-        opts.appendChild(btn);
-      });
-
-      if (timeLimit > 0) {
-        startTimer(function () {
-          /* time expired — mark wrong, reveal answer */
-          if (!answered) handleAnswer(-1);
-        });
-      }
+      q.options.forEach(function (opt, i) { opts.appendChild(makeOptionBtn(opt, i, handleAnswer)); });
+      if (timeLimit > 0) startTimer(function () { if (!answered) handleAnswer(-1); });
     }
 
     function handleAnswer(idx) {
       if (answered) return;
       answered = true;
       clearTimer();
-      var q = activeDeck[current];
+      var q       = activeDeck[current];
       var allBtns = opts.querySelectorAll('.quiz-option');
       allBtns.forEach(function (b) { b.disabled = true; b.setAttribute('aria-checked', 'false'); });
       if (idx >= 0 && allBtns[idx]) allBtns[idx].setAttribute('aria-checked', 'true');
@@ -1446,167 +1562,266 @@
         streak++;
       } else {
         if (idx >= 0 && allBtns[idx]) {
-          allBtns[idx].classList.add('wrong');
-          allBtns[idx].classList.add('shake');
+          allBtns[idx].classList.add('wrong', 'shake');
           allBtns[idx].addEventListener('animationend', function () { allBtns[idx].classList.remove('shake'); }, { once: true });
         }
         if (allBtns[q.answer]) allBtns[q.answer].classList.add('correct');
         if (feedback) { feedback.innerHTML = '✗ ' + q.err; feedback.className = 'quiz-feedback err'; }
-        /* Б4 / УЛ3: show focus link only on wrong answer */
-        if (qFocus && q.focus) {
-          qFocus.innerHTML = '<a href="#' + q.focus + '" class="quiz-focus-link">↑ Перечитать этот раздел</a>';
-          qFocus.style.display = 'block';
-        }
+        wrongAnswers.push({ q: q.q, options: q.options.slice(), answer: q.answer, chosenIdx: idx, ok: q.ok, err: q.err, focus: q.focus });
         streak = 0;
       }
 
       updateStreakBadge();
-
       if (nextBtn) {
-        nextBtn.textContent = current < activeDeck.length - 1 ? 'Следующий вопрос →' : 'Узнать результат →';
+        nextBtn.textContent    = current < activeDeck.length - 1 ? 'Следующий вопрос →' : 'Узнать результат →';
         nextBtn.style.display = 'inline-block';
       }
-
-      /* v2: auto-scroll to feedback on mobile */
       if (feedback && window.innerWidth < 768) {
         setTimeout(function () { feedback.scrollIntoView({ behavior: 'smooth', block: 'nearest' }); }, 80);
       }
     }
 
-    /* ---- keyboard: Enter/Space advance + 1-4/А-Г select ---- */
+    /* ---- 11. Keyboard: Enter/Space advance + 1–4/А–Г select ---- */
     document.addEventListener('keydown', function (e) {
       if (!wrapper || wrapper.style.display === 'none') return;
-      var isAnswered = inBonus ? bonusAnswered : answered;
 
-      /* advance */
-      if ((e.key === 'Enter' || e.key === ' ') && isAnswered) {
+      var isAnswered = inReview ? reviewAnswered : (inBonus ? bonusAnswered : answered);
+
+      if (e.key === 'Enter' || e.key === ' ') {
+        if (!isAnswered) return;
         e.preventDefault();
-        /* v2: route to correct next button */
-        if (inBonus) {
-          var bn = document.getElementById('quizBonusNext');
-          if (bn && bn.style.display !== 'none') { bn.click(); return; }
-        }
-        if (nextBtn && nextBtn.style.display !== 'none') { nextBtn.click(); }
+        if      (inReview && revNextBtn && revNextBtn.style.display !== 'none') revNextBtn.click();
+        else if (inBonus  && bonusBn   && bonusBn.style.display   !== 'none')  bonusBn.click();
+        else if (nextBtn  && nextBtn.style.display !== 'none')                  nextBtn.click();
         return;
       }
 
-      /* v2: select option by key */
-      if (!isAnswered) {
-        var key = e.key.toLowerCase();
-        if (KEY_MAP.hasOwnProperty(key)) {
-          e.preventDefault();
-          var optBtns = inBonus
-            ? (document.getElementById('quizBonusOptions') || { querySelectorAll: function () { return []; } }).querySelectorAll('.quiz-option')
-            : opts.querySelectorAll('.quiz-option');
-          var targetIdx = KEY_MAP[key];
-          if (optBtns[targetIdx]) {
-            if (inBonus) { handleBonusAnswer(targetIdx); }
-            else { handleAnswer(targetIdx); }
-          }
-        }
-      }
-    });
-
-    if (nextBtn) nextBtn.addEventListener('click', function () {
-      if (inBonus) {
-        bonusCurrent++;
-        if (bonusCurrent < bonusDeck.length) { renderBonus(); } else { showBonusScore(); }
+      if (isAnswered) return;
+      var key = e.key.toLowerCase();
+      if (!KEY_MAP.hasOwnProperty(key)) return;
+      e.preventDefault();
+      var i = KEY_MAP[key];
+      if (inReview) {
+        var rBtns = revOpts ? revOpts.querySelectorAll('.quiz-option') : [];
+        if (rBtns[i]) handleReviewAnswer(i);
+      } else if (inBonus) {
+        var bBtns = bonusBo ? bonusBo.querySelectorAll('.quiz-option') : [];
+        if (bBtns[i]) handleBonusAnswer(i);
       } else {
-        current++;
-        if (current < activeDeck.length) { render(); } else { showScore(); }
+        var mBtns = opts.querySelectorAll('.quiz-option');
+        if (mBtns[i]) handleAnswer(i);
       }
     });
 
-    /* Б11: scores[] MUST be sorted descending by .min (e.g. 9,7,5,3,0) */
-    function getScoreBucket(sc, total, scoresArr) {
-      if (!scoresArr) {
-        var pct = sc / total;
-        return pct >= 0.9 ? 0 : pct >= 0.7 ? 1 : pct >= 0.5 ? 2 : pct >= 0.3 ? 3 : 4;
-      }
-      for (var i = 0; i < scoresArr.length; i++) { if (sc >= (scoresArr[i].min || 0)) return i; }
-      return scoresArr.length - 1;
+    /* ---- 12. Next button (main quiz only) ---- */
+    if (nextBtn) {
+      nextBtn.addEventListener('click', function () {
+        if (inReview || inBonus) return;   /* safety guard — button should be hidden in these modes */
+        current++;
+        if (current < activeDeck.length) render(); else showScore();
+      });
     }
 
     function showScore() {
-      if (fill) fill.style.width = '100%';
-      if (body) body.style.display = 'none';
+      if (fill)  fill.style.width = '100%';
+      if (body)  body.style.display = 'none';
       streakBadge.style.display = 'none';
 
       var idx = getScoreBucket(score, questions.length, scores);
-      var s = scores ? scores[idx] : null;
+      var s   = scores ? scores[idx] : null;
+      var pct = score / questions.length;
 
-      /* ── New result screen ── */
-      var resultEl = document.getElementById('quizResult');
       if (resultEl) {
         resultEl.style.display = 'block';
-        var rscore = document.getElementById('quizResultScore');
-        var rtotal = document.getElementById('quizResultTotal');
-        var rlabel = document.getElementById('quizResultLabel');
-        var rbar   = document.getElementById('quizResultBar');
-        var rdesc  = document.getElementById('quizScoreDesc');
-        if (rtotal) rtotal.textContent = questions.length;
-      /* count-up animation (numeric only — "7" not "Результат: 7 из 10") */
-      animateCountNum(rscore, score, 700);
-        /* label */
-        var pct = score / questions.length;
-        var label = pct >= .9 ? '🏆 Отлично!' : pct >= .7 ? '👍 Хорошо' : pct >= .5 ? '📖 Неплохо' : '🔁 Попробуйте снова';
-        if (rlabel) rlabel.textContent = (s && s.title) ? (s.badge || '') + ' ' + s.title : label;
-        /* animated bar */
-        if (rbar) setTimeout(function () { rbar.style.width = Math.round(pct * 100) + '%'; }, 80);
-        if (rdesc && s) rdesc.innerHTML = s.desc || '';
+        animateCountNum(resultScore, score, 700);
+        if (resultTotal) resultTotal.textContent = questions.length;
+        if (resultLabel) resultLabel.textContent = (s && s.title) ? (s.badge || '') + '\u00a0' + s.title
+                                                  : (pct >= .9 ? '🏆\u00a0Отлично!' : pct >= .7 ? '👍\u00a0Хорошо' : pct >= .5 ? '📖\u00a0Неплохо' : '🔁\u00a0Попробуйте снова');
+        if (resultBar)  setTimeout(function () { resultBar.style.width = Math.round(pct * 100) + '%'; }, 80);
+        if (resultDesc && s) resultDesc.innerHTML = s.desc || '';
         resultEl.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
       }
 
-      /* ── Legacy score el (bonus round uses quizScoreBadge) ── */
-      if (scoreEl) scoreEl.style.display = 'block';
-      var titleEl = document.getElementById('quizScoreTitle');
-      var badgeEl = document.getElementById('quizScoreBadge');
-      if (titleEl) titleEl.textContent = '';
-      animateCount(badgeEl, score, questions.length, 800);
+      /* "Разобрать ошибки" button — visible only when there are wrong answers */
+      if (revStartBtn && wrongAnswers.length > 0) {
+        revStartBtn.innerHTML =
+          '<svg width="14" height="14" viewBox="0 0 16 16" fill="none" aria-hidden="true" style="vertical-align:-1px;margin-right:5px">' +
+          '<path d="M13 8A5 5 0 1 1 3.5 4.5M3 2v3h3" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>' +
+          'Разобрать\u00a0ошибки\u00a0(' + wrongAnswers.length + ')';
+        revStartBtn.style.display = 'inline-flex';
+      }
 
+      /* Legacy score badge (used by bonus round heading) */
+      if (scoreEl)    scoreEl.style.display = 'block';
+      if (scoreTitle) scoreTitle.textContent = '';
+      animateCount(scoreBadge, score, questions.length, 800);
+
+      /* Bonus section */
       var bonusEnabled = SiteUtils.getConfig('features.quiz.bonusEnabled', false);
       if (bonusEnabled && bonusDeck && bonusSection) {
-        var lockEl = document.getElementById('quizBonusLock');
         if (score === questions.length) {
           bonusSection.style.display = 'block';
           bonusSection.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-          if (lockEl) lockEl.style.display = 'none';
+          if (bonusLock) bonusLock.style.display = 'none';
         } else {
-          if (lockEl) {
-            lockEl.textContent = 'Ответьте правильно на все ' + questions.length + ' вопросов, чтобы разблокировать бонусный раунд.';
-            lockEl.style.display = 'block';
+          if (bonusLock) {
+            bonusLock.textContent    = 'Ответьте правильно на все\u00a0' + questions.length + '\u00a0вопросов, чтобы разблокировать бонусный раунд.';
+            bonusLock.style.display = 'block';
           }
         }
       }
 
-      var pctFinal = score / questions.length;
-      if (pctFinal >= 0.9) { launchConfetti('gold'); }
-      else if (pctFinal >= 0.7) { launchConfetti('blue'); }
-      else if (pctFinal >= 0.5) { launchConfetti('light'); }
+      /* Confetti */
+      if (pct >= 0.9) launchConfetti('gold');
+      else if (pct >= 0.7) launchConfetti('blue');
+      else if (pct >= 0.5) launchConfetti('light');
 
-      /* УЛ #2: best score persistence */
+      /* Best score persistence */
       try {
-        var slug = SiteUtils.getConfig('page.id', 'default');
-        var BEST_KEY = 'quiz-best-' + slug;
-        var prevBest = parseInt(localStorage.getItem(BEST_KEY) || '0', 10);
+        var slug     = SiteUtils.getConfig('page.id', 'default');
+        var KEY      = 'quiz-best-' + slug;
+        var prevBest = parseInt(localStorage.getItem(KEY) || '0', 10);
         if (score > prevBest) {
-          localStorage.setItem(BEST_KEY, String(score));
-        } else if (prevBest > 0 && rdesc) {
+          localStorage.setItem(KEY, String(score));
+        } else if (prevBest > 0 && resultDesc) {
           var hint = document.createElement('div');
-          hint.className = 'quiz-best-hint';
+          hint.className   = 'quiz-best-hint';
           hint.style.cssText = 'margin-top:14px;font-size:14px;color:var(--muted);font-style:italic';
-          hint.textContent = 'Ваш лучший результат: ' + prevBest + ' из ' + questions.length;
-          rdesc.appendChild(hint);
+          hint.textContent = 'Ваш лучший результат:\u00a0' + prevBest + '\u00a0из\u00a0' + questions.length;
+          resultDesc.appendChild(hint);
         }
       } catch (e) {}
     }
 
+    /* ---- 14. Review mode ---- */
+    function startReview() {
+      if (resultEl) resultEl.style.display = 'none';
+      if (scoreEl)  scoreEl.style.display  = 'none';
+
+      inReview      = true;
+      reviewDeck    = wrongAnswers.slice();
+      reviewCurrent = 0;
+      reviewScore   = 0;
+      reviewAnswered = false;
+
+      if (revSection) {
+        revSection.style.display = 'block';
+        revSection.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+      }
+      renderReview();
+    }
+
+    function renderReview() {
+      reviewAnswered = false;
+      var q     = reviewDeck[reviewCurrent];
+      var total = reviewDeck.length;
+
+      if (revCounter)  revCounter.textContent = (reviewCurrent + 1) + '\u00a0/\u00a0' + total;
+      if (revFill)     revFill.style.width    = ((reviewCurrent + 1) / total * 100) + '%';
+      if (revQuestion) revQuestion.innerHTML  = q.q;
+
+      if (revPrev) {
+        if (q.chosenIdx >= 0 && q.options[q.chosenIdx]) {
+          revPrev.innerHTML    = '<span class="quiz-review-prev__label">Вы ответили:</span>\u00a0' + q.options[q.chosenIdx];
+          revPrev.style.display = 'block';
+        } else {
+          revPrev.style.display = 'none';
+        }
+      }
+
+      if (revFeedback) { revFeedback.textContent = ''; revFeedback.className = 'quiz-feedback'; }
+      if (revFocus)    revFocus.style.display = 'none';
+      if (revNextBtn)  revNextBtn.style.display = 'none';
+
+      if (revOpts) {
+        revOpts.innerHTML = '';
+        revOpts.setAttribute('aria-labelledby', '_rvq');
+        q.options.forEach(function (opt, i) { revOpts.appendChild(makeOptionBtn(opt, i, handleReviewAnswer)); });
+      }
+    }
+
+    function handleReviewAnswer(idx) {
+      if (reviewAnswered) return;
+      reviewAnswered = true;
+      var q       = reviewDeck[reviewCurrent];
+      var allBtns = revOpts ? revOpts.querySelectorAll('.quiz-option') : [];
+      allBtns.forEach(function (b) { b.disabled = true; b.setAttribute('aria-checked', 'false'); });
+      if (idx >= 0 && allBtns[idx]) allBtns[idx].setAttribute('aria-checked', 'true');
+
+      if (idx === q.answer) {
+        if (allBtns[idx]) allBtns[idx].classList.add('correct');
+        if (revFeedback) { revFeedback.innerHTML = '✓ ' + q.ok; revFeedback.className = 'quiz-feedback ok'; }
+        reviewScore++;
+      } else {
+        if (idx >= 0 && allBtns[idx]) {
+          allBtns[idx].classList.add('wrong', 'shake');
+          allBtns[idx].addEventListener('animationend', function () { allBtns[idx].classList.remove('shake'); }, { once: true });
+        }
+        if (allBtns[q.answer]) allBtns[q.answer].classList.add('correct');
+        if (revFeedback) { revFeedback.innerHTML = '✗ ' + q.err; revFeedback.className = 'quiz-feedback err'; }
+        if (revFocus && q.focus) {
+          revFocus.innerHTML    = '<a href="#' + q.focus + '" class="quiz-focus-link">↑ Перечитать этот раздел</a>';
+          revFocus.style.display = 'block';
+        }
+      }
+
+      if (revNextBtn) {
+        revNextBtn.textContent    = reviewCurrent < reviewDeck.length - 1 ? 'Следующий →' : 'Завершить разбор →';
+        revNextBtn.style.display = 'inline-block';
+      }
+      if (revFeedback && window.innerWidth < 768) {
+        setTimeout(function () { revFeedback.scrollIntoView({ behavior: 'smooth', block: 'nearest' }); }, 80);
+      }
+    }
+
+    function showReviewDone() {
+      if (revSection) revSection.style.display = 'none';
+      inReview = false;
+
+      if (!revDone) return;
+      revDone.style.display = 'block';
+
+      var total    = reviewDeck.length;
+      var allRight = reviewScore === total;
+
+      if (revDoneIcon)  revDoneIcon.textContent  = allRight ? '🎯' : '📖';
+      if (revDoneTitle) revDoneTitle.textContent  = allRight ? 'Отличная работа!' : 'Разбор завершён';
+      if (revDoneDesc) {
+        revDoneDesc.innerHTML = allRight
+          ? 'Вы правильно ответили на все\u00a0' + total + '\u00a0вопрос' + pluralQ(total) + '. Материал усвоен хорошо.'
+          : 'Правильно со второй попытки: <strong>' + reviewScore + '\u00a0из\u00a0' + total + '</strong>. Отметьте разделы, которые стоит перечитать.';
+      }
+
+      /* Bonus teaser — shown when bonus exists but not yet unlocked */
+      var bonusEnabled = SiteUtils.getConfig('features.quiz.bonusEnabled', false);
+      if (revBonusTeaser && bonusEnabled && bonusDeck && score < questions.length) {
+        revBonusTeaser.innerHTML =
+          '<div class="quiz-bonus-teaser__icon">🔒</div>' +
+          '<div class="quiz-bonus-teaser__text"><strong>Бонусный раунд</strong>\u00a0— ответьте правильно на все\u00a0' + questions.length +
+          '\u00a0вопросов основного теста, чтобы разблокировать серию повышенной сложности.</div>';
+        revBonusTeaser.style.display = 'flex';
+      }
+
+      if (allRight) launchConfetti('blue');
+      revDone.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    }
+
+    /* Wire review button listeners (direct, no global delegation) */
+    if (revStartBtn)  revStartBtn.addEventListener('click',  startReview);
+    if (revNextBtn) {
+      revNextBtn.addEventListener('click', function () {
+        reviewCurrent++;
+        if (reviewCurrent < reviewDeck.length) renderReview(); else showReviewDone();
+      });
+    }
+    if (revRestartBtn) revRestartBtn.addEventListener('click', fullRestart);
+
+    /* ---- 15. Bonus round ---- */
     if (bonusBtn && bonusDeck) {
       bonusBtn.addEventListener('click', function () {
         bonusBtn.style.display = 'none';
-        var lockEl = document.getElementById('quizBonusUnlock');
-        if (lockEl) lockEl.style.display = 'none';
-        if (bonusBody) bonusBody.style.display = 'block';
+        if (bonusUnlock) bonusUnlock.style.display = 'none';
+        if (bonusBody)   bonusBody.style.display   = 'block';
         startBonusRound();
       });
     }
@@ -1614,140 +1829,88 @@
     function startBonusRound() {
       bonusCurrent = 0; bonusScoreVal = 0; bonusAnswered = false;
       activeDeck = bonusDeck;
-      inBonus = true;
+      inBonus    = true;
       renderBonus();
     }
 
     function renderBonus() {
       bonusAnswered = false;
-      var q = bonusDeck[bonusCurrent];
+      var q     = bonusDeck[bonusCurrent];
       var total = bonusDeck.length;
 
-      var bc   = document.getElementById('quizBonusCounter');
-      var bq   = document.getElementById('quizBonusQuestion');
-      var bf   = document.getElementById('quizBonusFocus');
-      var bo   = document.getElementById('quizBonusOptions');
-      var bfb  = document.getElementById('quizBonusFeedback');
-      var bn   = document.getElementById('quizBonusNext');
-      var bfill= document.getElementById('quizBonusFill');
-
-      if (bc) bc.textContent = 'Вопрос ' + (bonusCurrent + 1) + ' из ' + total;
-      /* FIX3 bonus: progress bar reflects current+1 */
-      if (bfill) bfill.style.width = ((bonusCurrent + 1) / total * 100) + '%';
-      if (bq) bq.innerHTML = q.q;
-      if (bf) {
-        /* Б9: hide bonus focus hint until wrong answer */
-        bf.style.display = 'none';
-      }
-      if (bfb) { bfb.textContent = ''; bfb.className = 'quiz-feedback'; }
-      /* FIX1: hide ONLY quizBonusNext, never touch main nextBtn */
-      if (bn) bn.style.display = 'none';
-      if (bo) {
-        bo.innerHTML = '';
-        bo.setAttribute('role', 'radiogroup');
-        bo.setAttribute('aria-labelledby', 'quizBonusQuestion');
-        q.options.forEach(function (opt, i) {
-          var btn = document.createElement('button');
-          btn.className = 'quiz-option';
-          btn.setAttribute('data-idx', i);
-          btn.setAttribute('role', 'radio');
-          btn.setAttribute('aria-checked', 'false');
-          btn.innerHTML = '<span class="quiz-option-letter">' + (LETTERS[i] || (i + 1)) + '.</span> ' + opt;
-          btn.addEventListener('click', (function (idx) { return function () { handleBonusAnswer(idx); }; })(i));
-          bo.appendChild(btn);
-        });
+      if (bonusBc)    bonusBc.textContent = 'Вопрос ' + (bonusCurrent + 1) + ' из ' + total;
+      if (bonusBfill) bonusBfill.style.width = ((bonusCurrent + 1) / total * 100) + '%';
+      if (bonusBq)    bonusBq.innerHTML = q.q;
+      if (bonusBf)    bonusBf.style.display = 'none';
+      if (bonusBfb) { bonusBfb.textContent = ''; bonusBfb.className = 'quiz-feedback'; }
+      if (bonusBn)    bonusBn.style.display = 'none';
+      if (bonusBo) {
+        bonusBo.innerHTML = '';
+        bonusBo.setAttribute('role', 'radiogroup');
+        bonusBo.setAttribute('aria-labelledby', 'quizBonusQuestion');
+        q.options.forEach(function (opt, i) { bonusBo.appendChild(makeOptionBtn(opt, i, handleBonusAnswer)); });
       }
     }
 
     function handleBonusAnswer(idx) {
       if (bonusAnswered) return;
       bonusAnswered = true;
-      var q    = bonusDeck[bonusCurrent];
-      var bo   = document.getElementById('quizBonusOptions');
-      var bfb  = document.getElementById('quizBonusFeedback');
-      /* FIX1: use quizBonusNext — never touch main nextBtn */
-      var bn   = document.getElementById('quizBonusNext');
-      if (!bo) return;
-      var allBtns = bo.querySelectorAll('.quiz-option');
+      var q       = bonusDeck[bonusCurrent];
+      if (!bonusBo) return;
+      var allBtns = bonusBo.querySelectorAll('.quiz-option');
       allBtns.forEach(function (b) { b.disabled = true; b.setAttribute('aria-checked', 'false'); });
       if (idx >= 0 && allBtns[idx]) allBtns[idx].setAttribute('aria-checked', 'true');
 
       if (idx === q.answer) {
         if (allBtns[idx]) allBtns[idx].classList.add('correct');
-        if (bfb) { bfb.innerHTML = '✓ ' + q.ok; bfb.className = 'quiz-feedback ok'; }
+        if (bonusBfb) { bonusBfb.innerHTML = '✓ ' + q.ok; bonusBfb.className = 'quiz-feedback ok'; }
         bonusScoreVal++;
       } else {
         if (idx >= 0 && allBtns[idx]) {
-          allBtns[idx].classList.add('wrong');
-          allBtns[idx].classList.add('shake');
+          allBtns[idx].classList.add('wrong', 'shake');
           allBtns[idx].addEventListener('animationend', function () { allBtns[idx].classList.remove('shake'); }, { once: true });
         }
         if (allBtns[q.answer]) allBtns[q.answer].classList.add('correct');
-        if (bfb) { bfb.innerHTML = '✗ ' + q.err; bfb.className = 'quiz-feedback err'; }
-        /* Б9 / УЛ3: show bonus focus link only on wrong answer */
-        var bf2 = document.getElementById('quizBonusFocus');
-        if (bf2 && q.focus) {
-          bf2.innerHTML = '<a href="#' + q.focus + '" class="quiz-focus-link">↑ Перечитать этот раздел</a>';
-          bf2.style.display = 'block';
+        if (bonusBfb) { bonusBfb.innerHTML = '✗ ' + q.err; bonusBfb.className = 'quiz-feedback err'; }
+        if (bonusBf && q.focus) {
+          bonusBf.innerHTML    = '<a href="#' + q.focus + '" class="quiz-focus-link">↑ Перечитать этот раздел</a>';
+          bonusBf.style.display = 'block';
         }
       }
 
-      /* FIX1: show quizBonusNext; main nextBtn untouched */
-      if (bn) {
-        bn.textContent = bonusCurrent < bonusDeck.length - 1 ? 'Следующий вопрос →' : 'Финальный результат →';
-        bn.style.display = 'inline-block';
+      if (bonusBn) {
+        bonusBn.textContent    = bonusCurrent < bonusDeck.length - 1 ? 'Следующий вопрос →' : 'Финальный результат →';
+        bonusBn.style.display = 'inline-block';
       }
-
-      /* v2: auto-scroll on mobile */
-      if (bfb && window.innerWidth < 768) {
-        setTimeout(function () { bfb.scrollIntoView({ behavior: 'smooth', block: 'nearest' }); }, 80);
+      if (bonusBfb && window.innerWidth < 768) {
+        setTimeout(function () { bonusBfb.scrollIntoView({ behavior: 'smooth', block: 'nearest' }); }, 80);
       }
     }
 
-    /* wire up quizBonusNext */
-    (function () {
-      var bn = document.getElementById('quizBonusNext');
-      if (!bn) return;
-      bn.addEventListener('click', function () {
+    if (bonusBn) {
+      bonusBn.addEventListener('click', function () {
         bonusCurrent++;
-        if (bonusCurrent < bonusDeck.length) { renderBonus(); } else { showBonusScore(); }
+        if (bonusCurrent < bonusDeck.length) renderBonus(); else showBonusScore();
       });
-    })();
-
-  /* Auto Drop Cap relocated → standalone module 26a below */
+    }
 
     function showBonusScore() {
-      if (bonusBody) bonusBody.style.display = 'none';
+      if (bonusBody)  bonusBody.style.display  = 'none';
       if (bonusScore) bonusScore.style.display = 'block';
-
-      var bfill = document.getElementById('quizBonusFill');
-      if (bfill) bfill.style.width = '100%';
+      if (bonusBfill) bonusBfill.style.width   = '100%';
 
       var idx = getScoreBucket(bonusScoreVal, bonusDeck.length, bonusScores);
-      var s = bonusScores ? bonusScores[idx] : { title: bonusScoreVal + '/' + bonusDeck.length, badge: '👑', desc: '' };
+      var s   = bonusScores ? bonusScores[idx] : { title: bonusScoreVal + '/' + bonusDeck.length, badge: '👑', desc: '' };
 
-      var tEl = document.getElementById('quizBonusScoreTitle');
-      var bEl = document.getElementById('quizBonusScoreBadge');
-      var dEl = document.getElementById('quizBonusScoreDesc');
-      if (tEl) tEl.textContent = (s.badge || '') + ' ' + (s.title || '');
-      if (dEl) dEl.innerHTML = s.desc || '';
-      /* v2: count-up on bonus score (label text) */
-      if (bEl) {
-        var bTarget = bonusScoreVal;
-        var bTotal  = bonusDeck.length;
-        var bStart  = null;
-        requestAnimationFrame(function step(ts) {
-          if (!bStart) bStart = ts;
-          var p = Math.min((ts - bStart) / 800, 1);
-          bEl.textContent = Math.floor(p * bTarget) + ' из ' + bTotal;
-          if (p < 1) requestAnimationFrame(step);
-        });
-      }
+      if (bonusSTitle) bonusSTitle.textContent = (s.badge || '') + '\u00a0' + (s.title || '');
+      if (bonusSDesc)  bonusSDesc.innerHTML    = s.desc || '';
+      if (bonusSBadge) animateCount(bonusSBadge, bonusScoreVal, bonusDeck.length, 800);
 
-      if (bonusScoreVal === bonusDeck.length) { launchConfetti('gold'); }
-      else if (bonusScoreVal >= bonusDeck.length - 1) { launchConfetti('blue'); }
+      if (bonusScoreVal === bonusDeck.length)         launchConfetti('gold');
+      else if (bonusScoreVal >= bonusDeck.length - 1) launchConfetti('blue');
     }
 
+    /* ---- 16. Confetti ---- */
     function launchConfetti(mode) {
       if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
       var canvas = document.createElement('canvas');
@@ -1760,20 +1923,21 @@
         blue:  ['#4A90E2','#7B61FF','#50C8FF','#B8E0FF','#FFFFFF'],
         light: ['#A8D8A8','#C8E6C9','#81C784','#E8F5E9','#FFFFFF']
       };
-      var colors = palettes[mode] || palettes.light;
+      var colors   = palettes[mode] || palettes.light;
+      var count    = mode === 'gold' ? 180 : mode === 'blue' ? 130 : 80;
+      var duration = mode === 'gold' ? 4000 : mode === 'blue' ? 3500 : 2500;
       var particles = [];
-      var count = mode === 'gold' ? 180 : mode === 'blue' ? 130 : 80;
       for (var i = 0; i < count; i++) {
         particles.push({
-          x: Math.random() * canvas.width, y: -10 - Math.random() * 200,
-          w: 6 + Math.random() * 10, h: 4 + Math.random() * 6,
+          x: Math.random() * canvas.width,  y: -10 - Math.random() * 200,
+          w: 6 + Math.random() * 10,        h: 4 + Math.random() * 6,
           color: colors[Math.floor(Math.random() * colors.length)],
-          vx: (Math.random() - 0.5) * 4, vy: 2 + Math.random() * 5,
-          rot: Math.random() * Math.PI * 2, vr: (Math.random() - 0.5) * 0.2, alpha: 1
+          vx: (Math.random() - 0.5) * 4,   vy: 2 + Math.random() * 5,
+          rot: Math.random() * Math.PI * 2, vr: (Math.random() - 0.5) * 0.2,
+          alpha: 1
         });
       }
       var start = null;
-      var duration = mode === 'gold' ? 4000 : mode === 'blue' ? 3500 : 2500;
       function frame(ts) {
         if (!start) start = ts;
         var elapsed = ts - start;
@@ -1781,58 +1945,67 @@
         particles.forEach(function (p) {
           p.x += p.vx; p.y += p.vy; p.rot += p.vr; p.vy += 0.08;
           if (elapsed > duration * 0.6) p.alpha = Math.max(0, p.alpha - 0.02);
-          ctx.save(); ctx.globalAlpha = p.alpha;
+          ctx.save();
+          ctx.globalAlpha = p.alpha;
           ctx.translate(p.x, p.y); ctx.rotate(p.rot);
           ctx.fillStyle = p.color;
           ctx.fillRect(-p.w / 2, -p.h / 2, p.w, p.h);
           ctx.restore();
         });
-        if (elapsed < duration) { requestAnimationFrame(frame); }
-        else { canvas.parentNode && canvas.parentNode.removeChild(canvas); }
+        if (elapsed < duration) requestAnimationFrame(frame);
+        else if (canvas.parentNode) canvas.parentNode.removeChild(canvas);
       }
       requestAnimationFrame(frame);
     }
 
-    if (restart) restart.addEventListener('click', function () {
+    /* ---- 17. Full restart ---- */
+    function fullRestart() {
       current = 0; score = 0; streak = 0; answered = false;
-      inBonus = false;
+      wrongAnswers   = [];
+      inReview       = false; reviewDeck = []; reviewCurrent = 0; reviewAnswered = false; reviewScore = 0;
+      inBonus        = false;
       clearTimer();
-      sessionSeed = getSessionSeed();
-      coreDeck  = prepareDeck(questions, sessionSeed, 'core');
-      /* FIX4: always re-prepare bonusDeck from bonusQuestions source */
-      bonusDeck = bonusQuestions ? prepareDeck(bonusQuestions, sessionSeed + 41, 'bonus') : null;
-      activeDeck = coreDeck;
-      if (bonusSection) bonusSection.style.display = 'none';
-      if (bonusBody) bonusBody.style.display = 'none';
-      if (bonusScore) bonusScore.style.display = 'none';
-      if (body) body.style.display = 'block';
-      if (scoreEl) scoreEl.style.display = 'none';
-      var resultEl = document.getElementById('quizResult');
-      if (resultEl) resultEl.style.display = 'none';
-      streakBadge.style.display = 'none';
-      render();
-    });
 
+      sessionSeed = getSessionSeed();
+      coreDeck    = prepareDeck(questions, sessionSeed, 'core');
+      bonusDeck   = bonusQuestions ? prepareDeck(bonusQuestions, sessionSeed + 41, 'bonus') : null;
+      activeDeck  = coreDeck;
+
+      /* Hide all result/review/bonus screens */
+      if (resultEl)    resultEl.style.display    = 'none';
+      if (revStartBtn) revStartBtn.style.display = 'none';
+      if (revSection)  revSection.style.display  = 'none';
+      if (revDone)     revDone.style.display      = 'none';
+      if (scoreEl)     scoreEl.style.display      = 'none';
+      if (bonusSection) bonusSection.style.display = 'none';
+      if (bonusBody)    bonusBody.style.display    = 'none';
+      if (bonusScore)   bonusScore.style.display   = 'none';
+      streakBadge.style.display = 'none';
+
+      if (body) body.style.display = 'block';
+      render();
+    }
+
+    if (restart) restart.addEventListener('click', fullRestart);
+
+    /* ---- 18. Share ---- */
     if (share && SiteUtils.getConfig('features.quiz.shareResults', true)) {
       share.addEventListener('click', function () {
-        /* Б7: share quiz score, not just the page */
         var scoreText = score + ' из ' + questions.length;
-        var idx = getScoreBucket(score, questions.length, scores);
-        var s = scores ? scores[idx] : null;
-        var title = (s && s.title) ? s.title : scoreText;
-        var shareMsg = 'Мой результат: ' + scoreText + ' — «' + title + '»';
+        var idx       = getScoreBucket(score, questions.length, scores);
+        var s         = scores ? scores[idx] : null;
+        var shareMsg  = 'Мой результат: ' + scoreText + (s && s.title ? ' — «' + s.title + '»' : '');
         if (window.SiteShare) {
-          /* Temporarily patch share title/URL text */
-          var sdTitle = document.getElementById('sd-title');
+          var sdTitle   = document.getElementById('sd-title');
           var origTitle = sdTitle ? sdTitle.textContent : '';
           if (sdTitle) sdTitle.textContent = shareMsg;
           window.SiteShare.open(share);
-          /* Restore after a tick so dialog shows updated title */
           if (sdTitle) setTimeout(function () { sdTitle.textContent = origTitle; }, 100);
         }
       });
     }
 
+    /* ---- 19. Start ---- */
     function startQuiz() {
       render();
       if (quizMain) quizMain.classList.remove('quiz-main--hidden');
@@ -1842,8 +2015,11 @@
       }
     }
 
-    if (quizLaunch) { quizLaunch.addEventListener('click', startQuiz); } else { startQuiz(); }
+    if (quizLaunch) quizLaunch.addEventListener('click', startQuiz); else startQuiz();
+
   })();
+
+
 
 
   /* ============================================================
@@ -3071,6 +3247,58 @@
         }
       } catch (e) {}
     }, { passive: true });
+  })();
+
+  /* ============================================================
+     INTERACTIVE TITLE — при hover на «Сила Моя» буквы
+     появляются с лёгкой волной (staggered fade-in по слогам).
+     ============================================================ */
+  (function () {
+    var hi = document.querySelector('.sti-highlight');
+    if (!hi) return;
+
+    // Разбиваем текст на символы с span-обёртками
+    var text = hi.textContent;
+    hi.textContent = '';
+    for (var i = 0; i < text.length; i++) {
+      var s = document.createElement('span');
+      s.textContent = text[i];
+      s.style.cssText = 'display:inline-block;transition:transform .3s ease,opacity .3s ease;transition-delay:' + (i * 22) + 'ms';
+      hi.appendChild(s);
+    }
+
+    var chars = hi.querySelectorAll('span');
+    var title = document.querySelector('.site-title-interactive');
+    if (!title) return;
+
+    title.addEventListener('mouseenter', function () {
+      chars.forEach(function (c) {
+        c.style.transform = 'translateY(-2px)';
+        c.style.opacity   = '1';
+      });
+    });
+    title.addEventListener('mouseleave', function () {
+      chars.forEach(function (c) {
+        c.style.transform = '';
+        c.style.opacity   = '';
+      });
+    });
+  })();
+
+  /* ============================================================
+     IMAGE SHIMMER — добавляем .img-loaded после загрузки изображения,
+     снимая CSS shimmer-анимацию и включая плавное появление.
+     ============================================================ */
+  (function () {
+    var sel = '.article-figure img, .related-articles__img, .card-cover, .article-hero img';
+    document.querySelectorAll(sel).forEach(function (img) {
+      if (img.complete && img.naturalWidth > 0) {
+        img.classList.add('img-loaded');
+      } else {
+        img.addEventListener('load',  function () { img.classList.add('img-loaded'); });
+        img.addEventListener('error', function () { img.classList.add('img-loaded'); });
+      }
+    });
   })();
 
 

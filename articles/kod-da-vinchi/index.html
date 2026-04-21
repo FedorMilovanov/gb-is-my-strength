@@ -184,6 +184,8 @@
   <link rel="preconnect" href="https://upload.wikimedia.org" />
   <link rel="preconnect" href="https://commons.wikimedia.org" />
   <meta http-equiv="Content-Language" content="ru" />
+  <!-- LCP preload — сообщаем браузеру о hero-изображении ДО загрузки стилей -->
+  <link rel="preload" as="image" href="../../images/hero-kod-da-vinchi.jpg" fetchpriority="high">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,500;0,600;1,400&family=Source+Sans+3:wght@400;500;600&display=swap" rel="stylesheet">
@@ -514,7 +516,7 @@ window.SITE_CONFIG = {
     <h1 id="articleH1">«Код да Винчи»: блестящий триллер или историческая подмена?</h1>
     <p class="article-desc">Полный разбор мифов романа Дэна Брауна: Мария Магдалина, Никея, Константин, канон Нового Завета, Свитки Мёртвого моря, Наг-Хаммади, гностицизм и Приорат Сиона.</p>
     <p class="article-byline">
-      <span class="article-byline__strong">Подготовил: Фёдор Милованов</span>
+      <span class="article-byline__strong">Редактор: Фёдор Милованов</span>
       <span class="article-byline__sep" aria-hidden="true">·</span>
       <time datetime="2026-04-01">1 апреля 2026</time>
       <span class="article-byline__sep" aria-hidden="true">·</span>
@@ -530,6 +532,7 @@ window.SITE_CONFIG = {
       width="900"
       height="500"
       fetchpriority="high"
+      decoding="async"
     >
   </figure>
 
@@ -1047,6 +1050,7 @@ window.SITE_CONFIG = {
           loading="lazy"
           width="600"
           height="450"
+          referrerpolicy="no-referrer"
         >
         <figcaption>
           <strong>Тринадцать кодексов Наг-Хаммади</strong> (IV в. н.э., Египет). Двенадцать кожаных томов и фрагменты тринадцатого, найденные в 1945 году. Содержат 52 гностических текста на коптском языке.<sup><a href="#src13">[13]</a></sup> Хранятся в Коптском музее, Каир. Фото: Institute for Antiquity and Christianity, Claremont, CA / <a href="https://www.biblicalarchaeology.org/daily/biblical-artifacts/the-nag-hammadi-codices/" target="_blank" rel="noopener">Biblical Archaeology Society</a>.
@@ -1405,13 +1409,13 @@ window.SITE_CONFIG = {
     <aside class="author-card">
       <div class="author-card-icon" aria-hidden="true">ФМ</div>
       <div class="author-card-body">
-        <div class="author-card-label">Подготовил</div>
+        <div class="author-card-label">Редактор</div>
         <div class="author-card-name">Фёдор Милованов</div>
         <p class="author-card-desc">
-          Автор проекта «Господь Бог — Сила Моя», Санкт-Петербург.
-          Материал исследован, структурирован и проверен по первоисточникам.
-          ИИ использовался как ассистент для поиска справок и стилистической работы;
-          ответственность за содержание — авторская.
+          Редактор проекта «Господь Бог — Сила Моя», Санкт-Петербург.
+          Материал генерируется и исследуется с помощью ИИ;
+          Фёдор Милованов задаёт направление, редактирует мысли, исправляет неточности
+          и отвечает за богословскую верность содержания.
           <a href="../../about/">Об авторе →</a>
         </p>
       </div>
@@ -1428,14 +1432,14 @@ window.SITE_CONFIG = {
           <img class="related-articles__img"
                src="../../images/ieremia-cover.jpg"
                alt="Крайне ли испорчено моё сердце — Иеремия 17"
-               loading="lazy" width="400" height="136">
+               decoding="async" loading="lazy" width="400" height="136">
         </div>
         <div class="related-articles__body">
-          <p class="related-articles__tag">Авторская статья · 32 мин</p>
+          <p class="related-articles__tag">Под редакцией · 32 мин</p>
           <a class="related-articles__link" href="../krajne-li-isporcheno-serdce/">
             Крайне ли испорчено моё сердце — если я уже верующий?
           </a>
-          <p class="related-articles__meta">Фёдор Милованов · Апрель 2026</p>
+          <p class="related-articles__meta">Ред.: Фёдор Милованов · Апрель 2026</p>
         </div>
       </li>
 
@@ -1444,7 +1448,7 @@ window.SITE_CONFIG = {
           <img class="related-articles__img"
                src="../../images/hermenevtika-preview.webp"
                alt="Герменевтическая оценка христоцентричной герменевтики"
-               loading="lazy" width="400" height="136">
+               decoding="async" loading="lazy" width="400" height="136">
         </div>
         <div class="related-articles__body">
           <p class="related-articles__tag">Перевод · 35 мин</p>

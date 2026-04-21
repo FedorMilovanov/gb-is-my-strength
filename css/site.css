@@ -52,6 +52,44 @@
 *, *::before, *::after { box-sizing: border-box; }
 body { margin: 0; }
 img { max-width: 100%; height: auto; }
+
+/* ── IMAGE SHIMMER — анимированный плейсхолдер пока загружается изображение ──
+   Применяется к карточкам, related-articles и article-figure.
+   Класс .img-loaded добавляется через JS после onload — shimmer исчезает. */
+@keyframes img-shimmer {
+  0%   { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+.article-figure img:not(.img-loaded),
+.related-articles__img:not(.img-loaded),
+.card-cover:not(.img-loaded),
+.article-hero img:not(.img-loaded) {
+  background: linear-gradient(
+    90deg,
+    var(--note-bg)   0%,
+    var(--border)   40%,
+    var(--note-bg) 100%
+  );
+  background-size: 200% 100%;
+  animation: img-shimmer 1.4s ease-in-out infinite;
+}
+/* После загрузки: плавное появление */
+.article-figure img.img-loaded,
+.related-articles__img.img-loaded,
+.card-cover.img-loaded,
+.article-hero img.img-loaded {
+  animation: none;
+  background: none;
+}
+/* Отключаем shimmer при prefers-reduced-motion */
+@media (prefers-reduced-motion: reduce) {
+  .article-figure img:not(.img-loaded),
+  .related-articles__img:not(.img-loaded),
+  .card-cover:not(.img-loaded),
+  .article-hero img:not(.img-loaded) {
+    animation: none;
+  }
+}
 h1, h2, h3, h4 { word-wrap: break-word; }
 html, body { overflow-x: hidden; }
 
@@ -1052,7 +1090,14 @@ html.dark .heart-flip-back { background: #110e07; }
 
 .article-img.wide { margin-left: -24px; margin-right: -24px; }
 @media (max-width: 680px) {
-  .article-img.wide { margin-left: -16px; margin-right: -16px; }
+  .article-img.wide {
+    margin-left: -16px;
+    margin-right: -16px;
+    border-radius: 0;   /* full-bleed — скруглённые углы у края экрана выглядят некорректно */
+  }
+  .article-img.wide img {
+    border-radius: 0;
+  }
 }
 
 /*
@@ -1141,6 +1186,11 @@ html.dark .heart-flip-back { background: #110e07; }
     width: auto;
     margin: 44px -16px;
     shape-outside: none;
+    border-radius: 0;   /* full-bleed — скруглённые углы у края экрана некорректны */
+  }
+  .article-img.float-right img,
+  .article-img.float-left img {
+    border-radius: 0;
   }
   .article-img.float-right + p,
   .article-img.float-right + ul,
@@ -1277,34 +1327,145 @@ html.dark .fact-box h4 { color: #80c880; }
    09. HOMEPAGE HEADER & ARTICLE LIST
    ============================================================ */
 .site-header {
-  margin-bottom: 72px;
+  margin-bottom: 52px;
   padding-bottom: 36px;
   border-bottom: 1px solid var(--border);
 }
 .site-tagline {
   font-family: 'Source Sans 3', system-ui, sans-serif;
-  font-size: 12px;
+  font-size: 11px;
   font-weight: 600;
-  letter-spacing: 2px;
+  letter-spacing: 2.5px;
   text-transform: uppercase;
   color: var(--muted);
-  margin: 0 0 20px;
+  margin: 0 0 28px;
+  opacity: 0.7;
 }
-.site-header h1 {
+
+/* ── Interactive title ─────────────────────────────────── */
+.site-title-interactive {
   font-family: 'Lora', Georgia, serif;
-  font-size: clamp(28px, 4.5vw, 44px);
+  font-size: clamp(30px, 5vw, 48px);
   font-weight: 600;
-  letter-spacing: 0.5px;
-  line-height: 1.2;
-  margin: 0 0 14px;
+  letter-spacing: 0.3px;
+  line-height: 1.15;
+  margin: 0 0 20px;
+  color: var(--text);
 }
+.sti-static {
+  display: inline;
+}
+.sti-highlight {
+  display: inline;
+  position: relative;
+  color: var(--accent);
+  transition: color .25s;
+  cursor: default;
+  /* Тонкая подчёркивающая линия */
+  background-image: linear-gradient(var(--accent), var(--accent));
+  background-repeat: no-repeat;
+  background-size: 0% 1.5px;
+  background-position: 0 100%;
+  transition: background-size .45s cubic-bezier(.4,0,.2,1), color .25s;
+  padding-bottom: 2px;
+}
+.site-title-interactive:hover .sti-highlight,
+.site-title-interactive:focus-within .sti-highlight {
+  background-size: 100% 1.5px;
+}
+/* Hover на всём заголовке: весь текст чуть темнеет, «Сила Моя» — ярче */
+.site-title-interactive:hover .sti-static {
+  opacity: 0.75;
+  transition: opacity .3s;
+}
+
 .site-header .site-desc {
   font-family: 'Source Sans 3', system-ui, sans-serif;
-  margin: 0;
+  margin: 0 0 0;
   font-size: 16px;
   color: var(--muted);
-  line-height: 1.6;
+  line-height: 1.65;
 }
+.site-desc-scope {
+  font-style: italic;
+  color: var(--text);
+  opacity: 0.65;
+  font-size: 15px;
+}
+
+/* ── Scope grid ────────────────────────────────────────── */
+.site-scope {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 2px;
+  margin-bottom: 60px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  overflow: hidden;
+}
+.site-scope__item {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  padding: 20px 22px;
+  background: var(--bg);
+  transition: background .2s ease;
+}
+.site-scope__item:hover {
+  background: var(--note-bg);
+}
+/* Inner borders via gap + bg on grid */
+.site-scope__item:nth-child(1) { border-bottom: 1px solid var(--border); border-right: 1px solid var(--border); }
+.site-scope__item:nth-child(2) { border-bottom: 1px solid var(--border); }
+.site-scope__item:nth-child(3) { border-right: 1px solid var(--border); }
+.site-scope__icon {
+  width: 18px;
+  height: 18px;
+  flex-shrink: 0;
+  margin-top: 3px;
+  color: var(--accent);
+  opacity: 0.7;
+}
+.site-scope__item strong {
+  display: block;
+  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text);
+  margin-bottom: 3px;
+}
+.site-scope__item span {
+  display: block;
+  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-size: 13px;
+  color: var(--muted);
+  line-height: 1.5;
+}
+@media (max-width: 560px) {
+  .site-scope {
+    grid-template-columns: 1fr;
+  }
+  .site-scope__item:nth-child(1),
+  .site-scope__item:nth-child(2),
+  .site-scope__item:nth-child(3) {
+    border-right: none;
+    border-bottom: 1px solid var(--border);
+  }
+  .site-scope__item:last-child {
+    border-bottom: none;
+  }
+}
+
+/* ── about-link inline ─────────────────────────────────── */
+.about-link {
+  color: var(--accent);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  text-decoration-color: transparent;
+  transition: text-decoration-color .2s;
+}
+.about-link:hover { text-decoration-color: var(--accent); }
+
 
 .section-title {
   font-family: 'Source Sans 3', system-ui, sans-serif;
@@ -1683,7 +1844,9 @@ footer.quote-attribution cite { font-style: normal; }
 .article-figure img {
   width: 100%;
   height: auto;
-  aspect-ratio: 16 / 10; /* prevents CLS while image loads; overridden by intrinsic size once loaded */
+  /* aspect-ratio убран: принудительное 16/10 + object-fit:cover уничтожало
+     портретные изображения (напр. рукопись 900×1170 обрезалась на 55%).
+     CLS предотвращается через атрибуты width/height в HTML. */
   display: block;
   border-radius: 4px;
   border: 1px solid var(--border);
@@ -1691,7 +1854,7 @@ footer.quote-attribution cite { font-style: normal; }
   filter: brightness(0.88) contrast(1.08);
   transition: filter 0.3s ease;
   cursor: zoom-in;
-  object-fit: cover;
+  /* object-fit убран — изображение отображается в своём естественном соотношении сторон */
 }
 .article-figure img:hover { filter: brightness(1) contrast(1); }
 .article-figure::after{
@@ -1766,11 +1929,14 @@ footer.quote-attribution cite { font-style: normal; }
   border-radius: 14px;
   box-shadow: var(--shadow-xl);
   overflow: hidden;
+  display: flex;
+  flex-direction: column;
 }
 .img-viewer__top{
   display: flex;
   justify-content: flex-end;
   padding: 10px 10px 0;
+  flex-shrink: 0;
 }
 .img-viewer__close{
   border: 1px solid var(--border);
@@ -1789,6 +1955,8 @@ footer.quote-attribution cite { font-style: normal; }
   padding: 10px 12px 14px;
   display: grid;
   gap: 10px;
+  overflow-y: auto;        /* прокрутка при высоком портретном изображении + длинной подписи */
+  overscroll-behavior: contain;
 }
 .img-viewer__img{
   width: 100%;
@@ -4930,34 +5098,128 @@ html.dark .article-end-sdg svg {
 }
 .quiz-focus-link:hover { opacity: 0.8; }
 
+/* ---- Quiz Review Mode ---- */
+
+/* "Разобрать ошибки" button in result actions */
+.quiz-review-start-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 9px 20px;
+  border-radius: 8px;
+  border: 1.5px solid var(--accent);
+  background: transparent;
+  color: var(--accent);
+  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background .15s, color .15s;
+}
+.quiz-review-start-btn:hover { background: var(--accent); color: #fff; }
+
+/* Review question section */
+.quiz-review-section {
+  animation: quiz-fadein .3s ease;
+}
+.quiz-review-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 6px;
+}
+.quiz-review-label {
+  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: .12em;
+  color: var(--accent);
+  opacity: .85;
+}
+
+/* "Вы ответили: X" hint */
+.quiz-review-prev {
+  margin-bottom: 14px;
+  padding: 8px 14px;
+  border-radius: 7px;
+  background: var(--quiz-wrong-bg, #2a1418);
+  border: 1px solid var(--quiz-wrong-border, #6b2a30);
+  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-size: 13.5px;
+  color: var(--muted);
+  line-height: 1.45;
+}
+html:not(.dark) .quiz-review-prev {
+  background: #fdf2f2;
+  border-color: #f0c4c4;
+  color: #8a3333;
+}
+.quiz-review-prev__label {
+  font-weight: 600;
+  margin-right: 4px;
+}
+
+/* Focus link inside review */
+.quiz-review-focus {
+  margin-top: 10px;
+}
+
+/* Review done screen */
+.quiz-review-done {
+  text-align: center;
+  padding: 28px 16px 20px;
+  animation: quiz-fadein .35s ease;
+}
+.quiz-review-done__icon {
+  font-size: 40px;
+  line-height: 1;
+  margin-bottom: 10px;
+}
+.quiz-review-done__title {
+  font-family: 'Lora', Georgia, serif;
+  font-size: clamp(20px, 5vw, 26px);
+  font-weight: 700;
+  color: var(--accent);
+  margin-bottom: 12px;
+}
+.quiz-review-done__desc {
+  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-size: 15px;
+  color: var(--text);
+  line-height: 1.6;
+  margin-bottom: 4px;
+  max-width: 380px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+/* Bonus teaser in review done */
+.quiz-bonus-teaser {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  margin-top: 22px;
+  padding: 14px 16px;
+  border-radius: 10px;
+  background: var(--note-bg);
+  border: 1px solid var(--border);
+  text-align: left;
+}
+.quiz-bonus-teaser__icon { font-size: 22px; flex-shrink: 0; margin-top: 1px; }
+.quiz-bonus-teaser__text {
+  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-size: 13.5px;
+  color: var(--muted);
+  line-height: 1.55;
+}
+.quiz-bonus-teaser__text strong { color: var(--text); }
+
 
 /* ============================================================
    HERO ORNAMENT — декоративный акцент шапки главной
    ============================================================ */
-.site-header {
-  position: relative;
-}
-.site-hero-ornament {
-  display: flex;
-  align-items: center;
-  gap: 16px;
-  margin: 0 0 28px;
-}
-.site-hero-ornament__line {
-  flex: 1;
-  height: 1px;
-  background: var(--border-strong);
-  opacity: 0.5;
-}
-.site-hero-ornament__icon {
-  color: var(--accent);
-  opacity: 0.55;
-  flex-shrink: 0;
-  transition: color .25s;
-}
-html.dark .site-hero-ornament__icon {
-  opacity: 0.45;
-}
+/* ── site-hero-ornament removed (replaced by interactive title) ── */
 
 /* ============================================================
    CARD WITH COVER IMAGE — карточки с обложками
@@ -5063,31 +5325,49 @@ html.dark .site-hero-ornament__icon {
 @media (max-width: 600px) {
   .related-articles__list {
     grid-template-columns: 1fr;
-    gap: 10px;
+    gap: 12px;
   }
   .related-articles__item {
     display: flex;
     flex-direction: row;
     align-items: stretch;
+    min-height: 110px;
   }
   .related-articles__img-wrap {
-    width: 90px;
-    height: auto;
+    width: 110px;
+    height: unset;        /* снимаем фиксированные 136px из базового стиля */
+    align-self: stretch;  /* растягиваем на всю высоту карточки */
     flex-shrink: 0;
     border-radius: 0;
   }
+  .related-articles__img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+  }
   .related-articles__body {
-    padding: 12px 14px;
+    padding: 14px 16px;
     display: flex;
     flex-direction: column;
     justify-content: center;
+    gap: 4px;
   }
   .related-articles__link {
-    font-size: 14px;
-    -webkit-line-clamp: 2;
+    font-size: 15px;
+    line-height: 1.35;
+    -webkit-line-clamp: 3;
     display: -webkit-box;
     -webkit-box-orient: vertical;
     overflow: hidden;
+  }
+  .related-articles__tag {
+    font-size: 10px;
+    letter-spacing: 1px;
+  }
+  .related-articles__meta {
+    font-size: 12px;
+    margin-top: 4px;
   }
 }
 .related-articles__item {
