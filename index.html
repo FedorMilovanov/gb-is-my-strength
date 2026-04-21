@@ -761,6 +761,12 @@ window.SITE_CONFIG = {
     { lang:'hebrew', text:'אֶת הַשָּׁמַיִם וְאֵת הָאָרֶץ', top:'79%', side:'right', offset:'3%', size:1.9, opacity:0.065 },
     { lang:'hebrew', text:'קָרוֹב לְכָל קֹרְאָיו', top:'88%', side:'left',  offset:'2.5%', size:2.1, opacity:0.07 },
     { lang:'hebrew', text:'חֲסִידֵי כׇּל עַם', top:'96%', side:'right', offset:'4%', size:2.0, opacity:0.065 },
+
+    /* Ambient — огромные фоновые имена по центру (как в эталонном дизайне) */
+    { lang:'hebrew', text:'יהוה',    top:'5%',  side:'center', size:11,  opacity:0.025 },
+    { lang:'hebrew', text:'אֲדֹנָי', top:'37%', side:'center', size:9.5, opacity:0.022 },
+    { lang:'hebrew', text:'אֱלֹהִים',top:'67%', side:'center', size:10,  opacity:0.022 },
+    { lang:'hebrew', text:'יהוה',    top:'92%', side:'center', size:10.5,opacity:0.022 },
   ];
 
   var bg = document.getElementById('hScriptureBg');
@@ -770,9 +776,14 @@ window.SITE_CONFIG = {
       el.className = 'h-phrase h-phrase--' + p.lang;
       el.textContent = p.text;
       var style = 'top:' + p.top + ';font-size:' + p.size + 'rem;opacity:' + p.opacity + ';';
-      if (p.side === 'left') style += 'left:' + p.offset + ';';
-      else style += 'right:' + p.offset + ';';
-      if (p.rotate) style += 'transform:rotate(' + p.rotate + 'deg);';
+      if (p.side === 'center') {
+        style += 'left:50%;transform:translateX(-50%);';
+      } else if (p.side === 'left') {
+        style += 'left:' + p.offset + ';';
+      } else {
+        style += 'right:' + p.offset + ';';
+      }
+      if (p.rotate && p.side !== 'center') style += 'transform:rotate(' + p.rotate + 'deg);';
       el.setAttribute('style', style);
       el.setAttribute('aria-hidden', 'true');
       bg.appendChild(el);
