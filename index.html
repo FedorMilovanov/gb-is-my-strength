@@ -3,9 +3,10 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="theme-color" content="#fdfcf9" media="(prefers-color-scheme: light)">
-  <meta name="theme-color" content="#0e1116" media="(prefers-color-scheme: dark)">
+  <meta name="theme-color" content="#f8f5f0" media="(prefers-color-scheme: light)">
+  <meta name="theme-color" content="#171411" media="(prefers-color-scheme: dark)">
   <meta name="yandex-verification" content="42bc0d54a1ca4952" />
+
   <!-- SEO -->
   <title>Господь Бог — Сила Моя — Библиотека богословских статей</title>
   <meta name="description" content="Библиотека богословских статей и переводов на русском языке. Реформатское богословие, экзегеза Писания, разбор апологетических вопросов — материалы для серьёзного изучения Слова Божьего.">
@@ -24,7 +25,7 @@
   <meta property="og:image" content="https://gospod-bog.ru/images/og-preview.jpg">
   <meta property="og:image:width" content="1200">
   <meta property="og:image:height" content="630">
-  <meta property="og:image:alt" content="Древние свитки и рукописи на столе учёного — библиотека богословских статей">
+  <meta property="og:image:alt" content="Богословская библиотека «Господь Бог — Сила Моя»">
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="Господь Бог — Сила Моя">
   <meta name="twitter:description" content="Библиотека богословских статей и переводов на русском языке.">
@@ -51,48 +52,23 @@
       "@type": "CollectionPage",
       "name": "Господь Бог — Сила Моя",
       "url": "https://gospod-bog.ru/",
-      "description": "Сайт ведётся Фёдором Миловановым: авторские материалы, переводы богословских статей с английского, редакторская подготовка текстов.",
       "inLanguage": "ru",
       "publisher": {
         "@type": "Person",
         "name": "Фёдор Милованов",
         "url": "https://gospod-bog.ru/about/"
-      },
-      "editor": {
-        "@type": "Person",
-        "name": "Фёдор Милованов",
-        "url": "https://gospod-bog.ru/about/"
       }
-    },
-    {
-      "@type": "Organization",
-      "name": "Господь Бог — Сила Моя",
-      "alternateName": "GB Strength",
-      "url": "https://gospod-bog.ru/",
-      "description": "Библиотека академического богословия на русском языке: переводы, апологетика, разбор заблуждений.",
-      "founder": {
-        "@type": "Person",
-        "name": "Фёдор Милованов",
-        "url": "https://gospod-bog.ru/about/"
-      },
-      "sameAs": [
-        "https://t.me/fedormilovanov",
-        "https://vk.com/curtmf"
-      ]
     }
-      ]
+    ]
   }
   </script>
 
-  <!-- Fonts — same as article page -->
+  <!-- Preconnect & fonts -->
   <link rel="icon" type="image/x-icon" href="/favicon.ico">
-  <!-- LCP preload — сообщаем браузеру о главном изображении ДО загрузки стилей -->
   <link rel="preload" as="image" href="images/hermenevtika-preview.webp" fetchpriority="high">
-
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,500;0,600;1,400&family=Source+Sans+3:wght@400;500;600&display=swap" rel="stylesheet">
-
+  <link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,500;0,600;1,400&family=Source+Sans+3:wght@400;500;600&family=Playfair+Display:ital,wght@0,400;0,600;0,700;0,800;1,400;1,600;1,700&family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&family=Inter:wght@300;400;500;600&family=Noto+Serif+Hebrew:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
 
   <!-- Yandex.Metrika counter -->
   <script type="text/javascript">
@@ -105,21 +81,19 @@
     ym(108353327, 'init', {ssr:true, webvisor:true, clickmap:true, ecommerce:"dataLayer", referrer: document.referrer, url: location.href, accurateTrackBounce:true, trackLinks:true});
   </script>
   <noscript><div><img decoding="async" src="https://mc.yandex.ru/watch/108353327" style="position:absolute; left:-9999px;" alt="" /></div></noscript>
-  <!-- /Yandex.Metrika counter -->
 
-
-  <!-- Anti-FOUC: применяем тему до рендера CSS -->
+  <!-- Anti-FOUC -->
   <script>
     (function(){try{var t=localStorage.getItem('theme');if(t==='dark'||(!t&&window.matchMedia('(prefers-color-scheme: dark)').matches)){document.documentElement.classList.add('dark');}}catch(e){}})();
   </script>
 
-  <!-- Shared styles -->
+  <!-- Styles -->
   <link rel="stylesheet" href="css/site.css" />
+  <link rel="stylesheet" href="css/home.css" />
 
   <script>
 window.SITE_CONFIG = {
   version: 1,
-
   site: {
     id: 'gb-strength',
     name: 'Господь Бог — Сила Моя',
@@ -128,13 +102,11 @@ window.SITE_CONFIG = {
     themeStorageKey: 'theme',
     debug: false
   },
-
   page: {
     type: 'home',
     id: 'home',
     title: 'Господь Бог — Сила Моя'
   },
-
   features: {
     themeToggle: { enabled: true },
     share: { enabled: false },
@@ -154,237 +126,666 @@ window.SITE_CONFIG = {
 
 <body>
 
-<button id="themeToggle" class="theme-toggle" aria-label="Переключить тему">
-  <svg class="icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-    <path d="M21 12.8A9 9 0 1111.2 3 7 7 0 0021 12.8z"/>
+<!-- ══════════════════════════════════════════════════════
+     READING PROGRESS BAR
+══════════════════════════════════════════════════════ -->
+<div class="h-reading-progress" id="hReadingProgress" aria-hidden="true"></div>
+
+<!-- ══════════════════════════════════════════════════════
+     SMART NAVBAR
+══════════════════════════════════════════════════════ -->
+<nav class="h-navbar" id="hNavbar" role="navigation" aria-label="Основная навигация">
+  <div class="h-navbar__inner">
+
+    <!-- Logo -->
+    <a href="/" class="h-nav-logo" aria-label="Господь Бог — Сила Моя — на главную">
+      <span class="h-nav-logo-main">Господь Бог</span>
+      <span class="h-nav-logo-dash" aria-hidden="true">&nbsp;—&nbsp;</span>
+      <span class="h-nav-logo-accent">Сила Моя</span>
+    </a>
+
+    <!-- Desktop nav links -->
+    <ul class="h-nav-links" role="list">
+      <li><a href="#publikacii" class="h-scroll-target">Публикации</a></li>
+      <li><a href="#razbor" class="h-scroll-target">Разбор заблуждений</a></li>
+      <li><a href="#about" class="h-scroll-target">О библиотеке</a></li>
+      <li>
+        <button class="h-theme-btn" id="hThemeBtn" aria-label="Переключить тему">
+          <!-- Moon (light mode) -->
+          <svg class="icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M21 12.8A9 9 0 1111.2 3 7 7 0 0021 12.8z"/>
+          </svg>
+          <!-- Sun (dark mode) -->
+          <svg class="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <circle cx="12" cy="12" r="5"/>
+            <line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/>
+            <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/>
+            <line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/>
+            <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>
+          </svg>
+        </button>
+      </li>
+    </ul>
+
+    <!-- Mobile controls -->
+    <div style="display:flex;align-items:center;gap:4px;" class="mobile-controls">
+      <button class="h-theme-btn" id="hThemeBtnMobile" aria-label="Переключить тему" style="display:none;">
+        <svg class="icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.8A9 9 0 1111.2 3 7 7 0 0021 12.8z"/></svg>
+        <svg class="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
+      </button>
+      <button class="h-mobile-menu-btn" id="hMobileMenuBtn" aria-label="Открыть меню" aria-expanded="false">
+        <svg id="hBurgerIcon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+        <svg id="hCloseIcon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="display:none;"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+
+  </div>
+</nav>
+
+<!-- Mobile menu -->
+<div class="h-mobile-nav" id="hMobileNav" aria-hidden="true">
+  <a href="#publikacii" onclick="closeMobileNav()">Публикации</a>
+  <a href="#razbor" onclick="closeMobileNav()">Разбор заблуждений</a>
+  <a href="#about" onclick="closeMobileNav()">О библиотеке</a>
+</div>
+
+<!-- ══════════════════════════════════════════════════════
+     HOME PAGE WRAPPER
+══════════════════════════════════════════════════════ -->
+<div class="home-v20">
+
+  <!-- ── Ambient Scripture Background ── -->
+  <div class="h-scripture-bg" aria-hidden="true" id="hScriptureBg">
+    <!-- Phrases injected by JS -->
+  </div>
+
+  <div class="home-content">
+
+    <!-- ══════════════════════════════════════════════════
+         HERO
+    ══════════════════════════════════════════════════ -->
+    <section class="h-hero" aria-label="Главный заголовок">
+
+      <p class="h-hero-tagline">Богословская библиотека</p>
+
+      <!-- Sacred Hebrew Block: Аввакум 3:19 -->
+      <div class="h-sacred-block" aria-label="Аввакум 3:19 на иврите" role="text">
+
+        <!-- Строка 1: יְהוִה אֲדֹנָי חֵילִי -->
+        <span class="h-sacred-line h-sacred-line--1">
+
+          <!-- Тетраграмматон — особая обработка -->
+          <span class="h-tetra" tabindex="0" aria-label="Яхве — Священное Имя Бога">
+            <span class="h-tetra-label" aria-hidden="true">Священное Имя Бога</span>
+            <span class="hb-front">יְהוִה</span>
+            <span class="h-tetra-back" aria-hidden="true">
+              <span class="h-tetra-name">Яхве</span>
+            </span>
+          </span>
+
+          <span class="hb-w" tabindex="0" aria-label="Адонай — Господь">
+            <span class="hb-front">אֲדֹנָי</span>
+            <span class="hb-back" aria-hidden="true">Господь</span>
+          </span>
+
+          <span class="hb-w" tabindex="0" aria-label="сила моя">
+            <span class="hb-front">חֵילִי</span>
+            <span class="hb-back" aria-hidden="true">сила моя</span>
+          </span>
+
+        </span>
+
+        <!-- Строка 2: וְעַל בָּמוֹתַי יַדְרִכֵנִי וַיָּשֶׂם רַגְלַי כָּאַיָּלוֹת -->
+        <span class="h-sacred-line h-sacred-line--2">
+
+          <span class="hb-w" tabindex="0" aria-label="и на">
+            <span class="hb-front">וְעַל</span>
+            <span class="hb-back" aria-hidden="true">и на</span>
+          </span>
+
+          <span class="hb-w" tabindex="0" aria-label="высоты мои">
+            <span class="hb-front">בָּמוֹתַי</span>
+            <span class="hb-back" aria-hidden="true">высоты мои</span>
+          </span>
+
+          <span class="hb-w" tabindex="0" aria-label="возведёт меня">
+            <span class="hb-front">יַדְרִכֵנִי</span>
+            <span class="hb-back" aria-hidden="true">возведёт меня</span>
+          </span>
+
+          <span class="hb-w" tabindex="0" aria-label="и поставит">
+            <span class="hb-front">וַיָּשֶׂם</span>
+            <span class="hb-back" aria-hidden="true">и поставит</span>
+          </span>
+
+          <span class="hb-w" tabindex="0" aria-label="ноги мои">
+            <span class="hb-front">רַגְלַי</span>
+            <span class="hb-back" aria-hidden="true">ноги мои</span>
+          </span>
+
+          <span class="hb-w" tabindex="0" aria-label="как у оленя">
+            <span class="hb-front">כָּאַיָּלוֹת</span>
+            <span class="hb-back" aria-hidden="true">как у оленя</span>
+          </span>
+
+        </span>
+
+        <span class="h-sacred-ref">
+          <span>חבקוק ג:יט</span>
+          <span class="h-sacred-ref-dot" aria-hidden="true"></span>
+          <span>Аввакум 3:19</span>
+        </span>
+      </div>
+
+      <!-- Russian title -->
+      <h1 class="h-hero-title" tabindex="-1">
+        <span class="h-title-static">Господь Бог</span><span class="h-title-dash" aria-hidden="true">—</span><span class="h-title-accent">Сила Моя</span>
+      </h1>
+
+      <p class="h-hero-desc">
+        Библиотека материалов для серьёзного изучения Писания: экзегеза, богословие, апологетика, переводы, непростые вопросы.
+      </p>
+
+      <hr class="h-rule" aria-hidden="true">
+    </section>
+
+    <!-- ══════════════════════════════════════════════════
+         RESUME READING (сохраняется из site.js)
+    ══════════════════════════════════════════════════ -->
+    <section class="resume-reading-block" id="resumeReadingBlock" hidden>
+      <div class="resume-reading-card">
+        <div class="resume-reading-label">Продолжить чтение</div>
+        <h2 class="resume-reading-title" id="resumeReadingTitle">Статья</h2>
+        <p class="resume-reading-meta" id="resumeReadingMeta">Раздел и прогресс</p>
+        <div class="resume-reading-progress">
+          <div class="resume-reading-progress-fill" id="resumeReadingProgress"></div>
+        </div>
+        <div class="resume-reading-actions">
+          <a href="#" class="resume-reading-btn" id="resumeReadingLink">Продолжить</a>
+          <button type="button" class="resume-reading-dismiss" id="resumeReadingDismiss">Скрыть</button>
+        </div>
+      </div>
+    </section>
+
+    <section class="resume-list-block" id="resumeListBlock" hidden>
+      <div class="resume-list-head"><h3>Недочитанные статьи</h3></div>
+      <div class="resume-list" id="resumeList"></div>
+    </section>
+
+    <!-- ══════════════════════════════════════════════════
+         DIRECTIONS GRID
+    ══════════════════════════════════════════════════ -->
+    <section class="h-section h-reveal" aria-labelledby="hDirectionsLabel">
+      <p class="h-section-label" id="hDirectionsLabel">Что здесь есть</p>
+      <div class="h-section-accent" aria-hidden="true"></div>
+
+      <div class="h-grid-4" role="list">
+
+        <!-- Экзегеза и богословие -->
+        <div class="h-card-glass h-reveal h-reveal-d1" role="listitem">
+          <svg class="h-card-icon" viewBox="0 0 22 22" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" aria-hidden="true">
+            <path d="M4 5.5h14M4 9.5h10M4 13.5h12M4 17.5h7"/>
+          </svg>
+          <div>
+            <h3 class="h-card-title">Экзегеза и богословие</h3>
+            <p class="h-card-desc">Разбор библейских текстов с опорой на оригиналы и академические источники</p>
+          </div>
+        </div>
+
+        <!-- Непростые вопросы -->
+        <div class="h-card-glass h-reveal h-reveal-d2" role="listitem">
+          <svg class="h-card-icon" viewBox="0 0 22 22" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <circle cx="11" cy="11" r="9"/>
+            <path d="M11 7.5c1.1 0 2 .9 2 2 0 1.5-2 2-2 3.5m0 2.5v.5"/>
+          </svg>
+          <div>
+            <h3 class="h-card-title">Непростые вопросы</h3>
+            <p class="h-card-desc">О природе греха, страдании, сомнении и Божьем суверенитете</p>
+          </div>
+        </div>
+
+        <!-- Апологетика -->
+        <div class="h-card-glass h-reveal h-reveal-d3" role="listitem">
+          <svg class="h-card-icon" viewBox="0 0 22 22" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M11 2L4 5.5v6.5c0 3.87 3.02 7.5 7 8.5 3.98-1 7-4.63 7-8.5V5.5L11 2z"/>
+            <path d="M8 11l2 2 4-4"/>
+          </svg>
+          <div>
+            <h3 class="h-card-title">Апологетика и разбор заблуждений</h3>
+            <p class="h-card-desc">Исторически выверенные ответы на вызовы культуры, псевдонауки и ересей</p>
+          </div>
+        </div>
+
+        <!-- Переводы -->
+        <div class="h-card-glass h-reveal h-reveal-d4" role="listitem">
+          <svg class="h-card-icon" viewBox="0 0 22 22" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <rect x="3" y="3" width="16" height="16" rx="2"/>
+            <path d="M7 7h8M7 10.5h8M7 14h5"/>
+          </svg>
+          <div>
+            <h3 class="h-card-title">Переводы зарубежных материалов</h3>
+            <p class="h-card-desc">Академические статьи с английского — то, чего ещё нет на русском</p>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- ══════════════════════════════════════════════════
+         В ПЛАНАХ
+    ══════════════════════════════════════════════════ -->
+    <section class="h-section h-reveal" style="padding-top:0;" aria-labelledby="hPlannedLabel">
+      <div class="h-planned-header">
+        <span class="h-planned-dot" aria-hidden="true"></span>
+        <p class="h-planned-label" id="hPlannedLabel">В планах</p>
+        <div class="h-planned-line" aria-hidden="true"></div>
+      </div>
+
+      <div class="h-grid-3" role="list">
+
+        <!-- Гимны -->
+        <div class="h-card-planned h-reveal h-reveal-d1" role="listitem">
+          <svg class="h-card-icon" viewBox="0 0 22 22" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" aria-hidden="true">
+            <path d="M9 18V5l12-2v13"/>
+            <circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/>
+          </svg>
+          <div>
+            <h3 class="h-card-title">Гимны и их история</h3>
+            <p class="h-card-desc">Богословское содержание классических гимнов и их исторический контекст</p>
+          </div>
+        </div>
+
+        <!-- Тематические исследования -->
+        <div class="h-card-planned h-reveal h-reveal-d2" role="listitem">
+          <svg class="h-card-icon" viewBox="0 0 22 22" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <circle cx="11" cy="11" r="3"/>
+            <path d="M11 3v2m0 12v2M3 11h2m12 0h2M5.64 5.64l1.41 1.41m7.9 7.9 1.41 1.41M5.64 16.36l1.41-1.41m7.9-7.9 1.41-1.41"/>
+          </svg>
+          <div>
+            <h3 class="h-card-title">Тематические исследования</h3>
+            <p class="h-card-desc">Глубокие разборы отдельных тем, понятий и богословских вопросов</p>
+          </div>
+        </div>
+
+        <!-- Биографии -->
+        <div class="h-card-planned h-reveal h-reveal-d3" role="listitem">
+          <svg class="h-card-icon" viewBox="0 0 22 22" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" aria-hidden="true">
+            <circle cx="11" cy="7" r="4"/>
+            <path d="M3 19c0-4 3.58-7 8-7s8 3 8 7"/>
+          </svg>
+          <div>
+            <h3 class="h-card-title">Биографии служителей</h3>
+            <p class="h-card-desc">Жизнь и труд пасторов, богословов и реформаторов в историческом контексте</p>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- ══════════════════════════════════════════════════
+         PUBLICATIONS
+    ══════════════════════════════════════════════════ -->
+    <section class="h-section h-reveal h-scroll-target" id="publikacii" aria-labelledby="hPublicationsLabel">
+      <p class="h-section-label" id="hPublicationsLabel">Публикации</p>
+      <div class="h-section-accent" aria-hidden="true"></div>
+
+      <div class="h-articles-group">
+        <ul class="h-article-list">
+
+          <!-- Герменевтика -->
+          <li>
+            <a href="articles/hermenevticheskaya-otsenka-hristotsentrichnoy-germenevtiki/" class="h-article-card">
+              <div class="h-article-thumb">
+                <img src="images/hermenevtika-preview.webp"
+                     alt="Герменевтическая оценка христоцентричной герменевтики"
+                     fetchpriority="high" decoding="async" width="160" height="108">
+              </div>
+              <div class="h-article-body">
+                <h3 class="h-article-title">Герменевтическая оценка христоцентричной герменевтики</h3>
+                <div class="h-article-meta">
+                  <span class="h-meta-author">Абнер Чау</span>
+                  <span class="h-meta-sep" aria-hidden="true">·</span>
+                  <span class="h-meta-time">
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                    35 мин
+                  </span>
+                  <span class="h-meta-tag">Перевод</span>
+                </div>
+                <p class="h-article-abstract">Статья оценивает претензии христоцентричной герменевтики и утверждает, что грамматико-исторический метод оправдан Писанием и более чем достаточен для раскрытия славы Христа.</p>
+              </div>
+            </a>
+          </li>
+
+          <!-- Иеремия -->
+          <li>
+            <a href="articles/krajne-li-isporcheno-serdce/" class="h-article-card">
+              <div class="h-article-thumb">
+                <img src="images/ieremia-cover.jpg"
+                     alt="Крайне ли испорчено моё сердце — Иеремия 17"
+                     decoding="async" loading="lazy" width="160" height="108">
+              </div>
+              <div class="h-article-body">
+                <h3 class="h-article-title">Крайне ли испорчено моё сердце — если я уже верующий?</h3>
+                <div class="h-article-meta">
+                  <span class="h-meta-author">Редактор: Фёдор Милованов</span>
+                  <span class="h-meta-sep" aria-hidden="true">·</span>
+                  <span class="h-meta-time">
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                    32 мин
+                  </span>
+                  <span class="h-meta-tag h-meta-tag--neutral">Авторская статья</span>
+                </div>
+                <p class="h-article-abstract">Разбор Иеремии 17:9–10: что значит «сердце обманчиво более всего» — и относится ли это к верующему? Экзегеза текста, богословский синтез и пастырское применение в свете реформатской традиции.</p>
+              </div>
+            </a>
+          </li>
+
+        </ul>
+      </div>
+    </section>
+
+    <!-- ══════════════════════════════════════════════════
+         РАЗБОР ЗАБЛУЖДЕНИЙ
+    ══════════════════════════════════════════════════ -->
+    <section class="h-section h-reveal h-scroll-target" id="razbor" style="padding-top:0;" aria-labelledby="hRefutationsLabel">
+      <p class="h-section-label" id="hRefutationsLabel">Разбор заблуждений</p>
+      <div class="h-section-accent" aria-hidden="true"></div>
+
+      <div class="h-articles-group">
+        <ul class="h-article-list">
+
+          <!-- Код да Винчи -->
+          <li>
+            <a href="articles/kod-da-vinchi/" class="h-article-card">
+              <div class="h-article-thumb">
+                <img src="images/hero-kod-da-vinchi.jpg"
+                     alt="«Код да Винчи» — разбор исторических мифов романа"
+                     decoding="async" loading="lazy" width="160" height="108">
+              </div>
+              <div class="h-article-body">
+                <h3 class="h-article-title">«Код да Винчи»: блестящий триллер или историческая подмена?</h3>
+                <div class="h-article-meta">
+                  <span class="h-meta-author">Редактор: Фёдор Милованов</span>
+                  <span class="h-meta-sep" aria-hidden="true">·</span>
+                  <span class="h-meta-time">
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                    17 мин
+                  </span>
+                  <span class="h-meta-tag h-meta-tag--neutral">Авторская статья</span>
+                </div>
+                <p class="h-article-abstract">Полный разбор мифов романа: Мария Магдалина, Никея, канон Нового Завета, Свитки Мёртвого моря, Наг-Хаммади, гностицизм и Приорат Сиона — с позиций Писания и исторической науки.</p>
+              </div>
+            </a>
+          </li>
+
+        </ul>
+      </div>
+    </section>
+
+    <!-- ══════════════════════════════════════════════════
+         О БИБЛИОТЕКЕ (with drop cap)
+    ══════════════════════════════════════════════════ -->
+    <section class="h-about h-reveal h-scroll-target" id="about" aria-labelledby="hAboutLabel">
+      <p class="h-about-label" id="hAboutLabel">О библиотеке</p>
+      <p class="h-about-text h-drop-cap">
+        Это не популярный ресурс и не сборник цитат — здесь собраны материалы,
+        требующие от читателя усилия и отдающие его сторицей.
+        Авторские статьи, переводы западных богословов, экзегетические разборы
+        и ответы на непростые богословские вопросы.
+      </p>
+      <p class="h-about-small">
+        Ведёт библиотеку <a href="about/">Фёдор Милованов</a>.
+        Переведённые материалы размещены в ознакомительных целях и будут удалены по запросу правообладателя.
+      </p>
+    </section>
+
+    <!-- ══════════════════════════════════════════════════
+         SCRIPTURE QUOTE
+    ══════════════════════════════════════════════════ -->
+    <section class="h-quote-section h-reveal" aria-label="Эпиграф">
+      <div class="h-ornament" aria-hidden="true">✦</div>
+      <blockquote class="h-blockquote">
+        Господь Бог — сила моя: Он сделает ноги мои как у оленя и на высоты мои возведёт меня.
+      </blockquote>
+      <cite class="h-cite">Аввакум 3:19</cite>
+      <div class="h-ornament" aria-hidden="true" style="margin-top:28px;">✦</div>
+    </section>
+
+    <!-- ══════════════════════════════════════════════════
+         FOOTER
+    ══════════════════════════════════════════════════ -->
+    <footer class="h-footer" role="contentinfo">
+      <span class="h-footer-copy">© 2026 Господь Бог — <span>Сила Моя</span></span>
+      <a href="about/">Об авторе</a>
+    </footer>
+
+  </div><!-- /.home-content -->
+</div><!-- /.home-v20 -->
+
+<!-- ══════════════════════════════════════════════════════
+     SCROLL TO TOP
+══════════════════════════════════════════════════════ -->
+<button class="h-scroll-top" id="hScrollTop" aria-label="Наверх">
+  <svg class="h-progress-ring" width="50" height="50" viewBox="0 0 50 50" aria-hidden="true">
+    <circle class="h-progress-ring-circle" id="hProgressCircle"
+            cx="25" cy="25" r="22"
+            style="stroke-dasharray: 138.23; stroke-dashoffset: 138.23;"/>
   </svg>
-  <svg class="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-    <circle cx="12" cy="12" r="5"/>
-    <line x1="12" y1="1" x2="12" y2="4"/>
-    <line x1="12" y1="20" x2="12" y2="23"/>
-    <line x1="1" y1="12" x2="4" y2="12"/>
-    <line x1="20" y1="12" x2="23" y2="12"/>
-    <line x1="4.2" y1="4.2" x2="6.3" y2="6.3"/>
-    <line x1="17.7" y1="17.7" x2="19.8" y2="19.8"/>
-    <line x1="4.2" y1="19.8" x2="6.3" y2="17.7"/>
-    <line x1="17.7" y1="6.3" x2="19.8" y2="4.2"/>
-  </svg>
+  <span class="h-scroll-top-arrow" aria-hidden="true">
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="18 15 12 9 6 15"/></svg>
+  </span>
 </button>
 
-<main class="home-main">
-
-  <header class="site-header">
-    <p class="site-tagline">Богословская библиотека</p>
-    <h1 class="site-title-interactive">
-      <span class="sti-static">Господь Бог — </span><span class="sti-highlight">Сила Моя</span>
-    </h1>
-    <p class="site-desc">
-      Библиотека материалов для серьёзного изучения Писания:
-      экзегеза, богословие, апологетика, переводы, непростые вопросы.
-    </p>
-  </header>
-
-  <!-- Что здесь есть -->
-  <div class="site-scope">
-    <div class="site-scope__item">
-      <svg class="site-scope__icon" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M3 5h14M3 9h10M3 13h12M3 17h7" stroke-linecap="round"/></svg>
-      <div>
-        <strong>Экзегеза и богословие</strong>
-        <span>Разбор библейских текстов с опорой на оригиналы и академические источники</span>
-      </div>
-    </div>
-    <div class="site-scope__item">
-      <svg class="site-scope__icon" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M10 3a7 7 0 100 14A7 7 0 0010 3z"/><path d="M10 8v2.5l1.5 1.5" stroke-linecap="round"/></svg>
-      <div>
-        <strong>Непростые вопросы</strong>
-        <span>О природе греха, страдании, сомнении и Божьем суверенитете</span>
-      </div>
-    </div>
-    <div class="site-scope__item">
-      <svg class="site-scope__icon" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M10 2l2 5h5l-4 3 1.5 5L10 12l-4.5 3L7 10 3 7h5z" stroke-linejoin="round"/></svg>
-      <div>
-        <strong>Апологетика и разбор заблуждений</strong>
-        <span>Исторически выверенные ответы на вызовы культуры, псевдонауки и ересей</span>
-      </div>
-    </div>
-    <div class="site-scope__item">
-      <svg class="site-scope__icon" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><rect x="3" y="3" width="14" height="14" rx="1.5"/><path d="M7 7h6M7 10h6M7 13h3" stroke-linecap="round"/></svg>
-      <div>
-        <strong>Переводы зарубежных материалов</strong>
-        <span>Академические статьи с английского — то, чего ещё нет на русском</span>
-      </div>
-    </div>
-  </div>
-
-  <!-- Продолжить чтение — показывается только если есть незавершённые статьи -->
-  <section class="resume-reading-block" id="resumeReadingBlock" hidden>
-    <div class="resume-reading-card">
-      <div class="resume-reading-label">Продолжить чтение</div>
-      <h2 class="resume-reading-title" id="resumeReadingTitle">Статья</h2>
-      <p class="resume-reading-meta" id="resumeReadingMeta">Раздел и прогресс</p>
-      <div class="resume-reading-progress">
-        <div class="resume-reading-progress-fill" id="resumeReadingProgress"></div>
-      </div>
-      <div class="resume-reading-actions">
-        <a href="#" class="resume-reading-btn" id="resumeReadingLink">Продолжить</a>
-        <button type="button" class="resume-reading-dismiss" id="resumeReadingDismiss">Скрыть</button>
-      </div>
-    </div>
-  </section>
-
-  <section class="resume-list-block" id="resumeListBlock" hidden>
-    <div class="resume-list-head">
-      <h3>Недочитанные статьи</h3>
-    </div>
-    <div class="resume-list" id="resumeList"></div>
-  </section>
-
-  <!-- Публикации -->
-  <h2 class="section-title" id="publikacii">Публикации</h2>
-
-  <ul class="article-list">
-
-    <li class="article-item card fx-lift has-cover">
-      <div class="card-cover-wrap">
-        <a href="articles/hermenevticheskaya-otsenka-hristotsentrichnoy-germenevtiki/" tabindex="-1" aria-hidden="true">
-          <img class="card-cover"
-               src="images/hermenevtika-preview.webp"
-               alt="Герменевтическая оценка христоцентричной герменевтики"
-               fetchpriority="high" decoding="async" width="192" height="260">
-        </a>
-      </div>
-      <div class="card-body">
-        <a class="article-title"
-           href="articles/hermenevticheskaya-otsenka-hristotsentrichnoy-germenevtiki/">
-          Герменевтическая оценка христоцентричной герменевтики
-        </a>
-        <div class="article-meta">
-          <span class="meta-author">Абнер Чау</span>
-          <span class="meta-sep">·</span>
-          <span class="meta-updated" title="Дата последнего обновления">
-            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
-            Обновлено 18 апр. 2026
-          </span>
-          <span class="meta-sep">·</span>
-          <span class="meta-read-time">
-            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-            35 мин
-          </span>
-          <span class="meta-tag">Перевод</span>
-        </div>
-        <p class="article-abstract">
-          Статья оценивает претензии христоцентричной герменевтики и утверждает, что грамматико-исторический метод оправдан Писанием и более чем достаточен для раскрытия славы Христа.
-        </p>
-      </div>
-    </li>
-
-    <li class="article-item card fx-lift has-cover">
-      <div class="card-cover-wrap">
-        <a href="articles/krajne-li-isporcheno-serdce/" tabindex="-1" aria-hidden="true">
-          <img class="card-cover"
-               src="images/ieremia-cover.jpg"
-               alt="Крайне ли испорчено моё сердце — Иеремия 17"
-               decoding="async" loading="lazy" width="192" height="260">
-        </a>
-      </div>
-      <div class="card-body">
-        <a class="article-title"
-           href="articles/krajne-li-isporcheno-serdce/">
-          Крайне ли испорчено моё сердце — если я уже верующий?
-        </a>
-        <div class="article-meta">
-          <span class="meta-author">Ред.: Фёдор Милованов</span>
-          <span class="meta-sep">·</span>
-          <span class="meta-updated" title="Дата последнего обновления">
-            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
-            Обновлено 18 апр. 2026
-          </span>
-          <span class="meta-sep">·</span>
-          <span class="meta-read-time">
-            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-            32 мин
-          </span>
-          <span class="meta-tag">Под редакцией</span>
-        </div>
-        <p class="article-abstract">
-          Разбор Иеремии 17:9–10: что значит «сердце обманчиво более всего» — и относится ли это к верующему? Экзегеза текста, богословский синтез и пастырское применение в свете реформатской традиции.
-        </p>
-      </div>
-    </li>
-
-    <!-- Будущие статьи — добавляйте сюда -->
-
-  </ul>
-
-  <!-- Разбор заблуждений -->
-  <h2 class="section-title section-title--spaced" id="razbor">Разбор заблуждений</h2>
-
-  <ul class="article-list">
-
-    <li class="article-item card fx-lift has-cover">
-      <div class="card-cover-wrap">
-        <a href="articles/kod-da-vinchi/" tabindex="-1" aria-hidden="true">
-          <img class="card-cover"
-               src="images/hero-kod-da-vinchi.jpg"
-               alt="«Код да Винчи» — разбор исторических мифов романа"
-               decoding="async" loading="lazy" width="192" height="260">
-        </a>
-      </div>
-      <div class="card-body">
-        <a class="article-title"
-           href="articles/kod-da-vinchi/">
-          «Код да Винчи»: блестящий триллер или историческая подмена?
-        </a>
-        <div class="article-meta">
-          <span class="meta-author">Ред.: Фёдор Милованов</span>
-          <span class="meta-sep">·</span>
-          <span class="meta-updated" title="Дата последнего обновления">
-            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
-            Обновлено 18 апр. 2026
-          </span>
-          <span class="meta-sep">·</span>
-          <span class="meta-read-time">
-            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-            17 мин
-          </span>
-          <span class="meta-tag">Под редакцией</span>
-        </div>
-        <p class="article-abstract">
-          Полный разбор мифов романа: Мария Магдалина, Никея, канон Нового Завета, Свитки Мёртвого моря, Наг-Хаммади, гностицизм и Приорат Сиона — с позиций Писания и исторической науки.
-        </p>
-      </div>
-    </li>
-
-  </ul>
-
-  <!-- О сайте -->
-  <div class="about-block">
-    <p>
-      <strong>О библиотеке.</strong>
-      Это не популярный ресурс и не сборник цитат — здесь собраны материалы,
-      требующие от читателя усилия и отдающие его сторицей.
-      Авторские статьи, переводы западных богословов, экзегетические разборы
-      и ответы на непростые богословские вопросы.
-      Ведёт библиотеку <a href="about/" class="about-link">Фёдор Милованов</a>.
-      Переведённые материалы размещены в ознакомительных целях и будут удалены по запросу правообладателя.
-    </p>
-  </div>
-
-  <!-- Эпиграф -->
-  <div class="epigraph">
-    <blockquote>Господь Бог — сила моя: Он сделает ноги мои как у оленя и на высоты мои возведёт меня.</blockquote>
-    <cite>Аввакум 3:19</cite>
-  </div>
-
-  <footer>
-    <span style="margin-right: 24px;">© 2026 Господь Бог — Сила Моя</span>
-    <a href="about/">Об авторе</a>
-  </footer>
-
-</main>
-
-
+<!-- Scripts -->
 <script src="js/bookmark-engine.js" defer></script>
 <script src="js/site.js" defer></script>
+
+<script>
+/* ════════════════════════════════════════════════════════
+   HOME PAGE INTERACTIVE JS
+   ════════════════════════════════════════════════════════ */
+(function () {
+  'use strict';
+
+  /* ── Reading Progress ── */
+  var progressBar = document.getElementById('hReadingProgress');
+  var progressCircle = document.getElementById('hProgressCircle');
+  var circumference = 138.23;
+
+  function updateProgress() {
+    var scrollTop = window.scrollY || window.pageYOffset;
+    var docH = document.documentElement.scrollHeight - window.innerHeight;
+    var pct = docH > 0 ? scrollTop / docH : 0;
+    if (progressBar) progressBar.style.width = (pct * 100) + '%';
+    if (progressCircle) {
+      progressCircle.style.strokeDashoffset = (circumference - pct * circumference) + '';
+    }
+    return { scrollTop: scrollTop, pct: pct };
+  }
+
+  /* ── Smart Navbar ── */
+  var navbar = document.getElementById('hNavbar');
+  var lastScroll = 0;
+
+  function updateNavbar() {
+    var s = window.scrollY || window.pageYOffset;
+    if (s > 40) navbar.classList.add('scrolled');
+    else navbar.classList.remove('scrolled');
+    if (s > 300 && s > lastScroll + 6) navbar.classList.add('nav-hidden');
+    else if (s < lastScroll - 6) navbar.classList.remove('nav-hidden');
+    lastScroll = s;
+  }
+
+  /* ── Scroll to Top ── */
+  var scrollTopBtn = document.getElementById('hScrollTop');
+
+  function updateScrollTop() {
+    var s = window.scrollY || window.pageYOffset;
+    if (s > 500) scrollTopBtn.classList.add('visible');
+    else scrollTopBtn.classList.remove('visible');
+  }
+  if (scrollTopBtn) {
+    scrollTopBtn.addEventListener('click', function () {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    });
+  }
+
+  /* ── Combined scroll handler ── */
+  window.addEventListener('scroll', function () {
+    updateProgress();
+    updateNavbar();
+    updateScrollTop();
+    revealOnScroll();
+  }, { passive: true });
+
+  /* ── Theme toggle ── */
+  function applyTheme(dark) {
+    document.documentElement.classList.toggle('dark', dark);
+    try { localStorage.setItem('theme', dark ? 'dark' : 'light'); } catch(e) {}
+  }
+
+  function isDark() {
+    return document.documentElement.classList.contains('dark');
+  }
+
+  document.getElementById('hThemeBtn').addEventListener('click', function () {
+    applyTheme(!isDark());
+  });
+  var mobileThemeBtn = document.getElementById('hThemeBtnMobile');
+  if (mobileThemeBtn) {
+    mobileThemeBtn.addEventListener('click', function () { applyTheme(!isDark()); });
+  }
+
+  /* ── Mobile menu ── */
+  var mobileMenuBtn = document.getElementById('hMobileMenuBtn');
+  var mobileNav = document.getElementById('hMobileNav');
+  var burgerIcon = document.getElementById('hBurgerIcon');
+  var closeIcon = document.getElementById('hCloseIcon');
+  var mobileOpen = false;
+
+  function openMobileNav() {
+    mobileOpen = true;
+    mobileNav.classList.add('open');
+    mobileNav.removeAttribute('aria-hidden');
+    mobileMenuBtn.setAttribute('aria-expanded', 'true');
+    burgerIcon.style.display = 'none';
+    closeIcon.style.display = 'block';
+  }
+  function closeMobileNavInternal() {
+    mobileOpen = false;
+    mobileNav.classList.remove('open');
+    mobileNav.setAttribute('aria-hidden', 'true');
+    mobileMenuBtn.setAttribute('aria-expanded', 'false');
+    burgerIcon.style.display = 'block';
+    closeIcon.style.display = 'none';
+  }
+  window.closeMobileNav = closeMobileNavInternal;
+
+  if (mobileMenuBtn) {
+    mobileMenuBtn.addEventListener('click', function () {
+      if (mobileOpen) closeMobileNavInternal();
+      else openMobileNav();
+    });
+  }
+
+  /* Show mobile theme button on small screens */
+  function checkMobileMode() {
+    var isMobile = window.innerWidth <= 660;
+    if (mobileThemeBtn) mobileThemeBtn.style.display = isMobile ? 'flex' : 'none';
+  }
+  window.addEventListener('resize', checkMobileMode);
+  checkMobileMode();
+
+  /* ── Intersection Observer: reveal sections ── */
+  var reveals = document.querySelectorAll('.h-reveal');
+
+  function revealOnScroll() {
+    reveals.forEach(function (el) {
+      if (el.classList.contains('h-in')) return;
+      var rect = el.getBoundingClientRect();
+      if (rect.top < window.innerHeight - 60) {
+        el.classList.add('h-in');
+      }
+    });
+  }
+  revealOnScroll(); // run on load
+
+  /* Use IntersectionObserver if available */
+  if ('IntersectionObserver' in window) {
+    var observer = new IntersectionObserver(function (entries) {
+      entries.forEach(function (entry) {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('h-in');
+          observer.unobserve(entry.target);
+        }
+      });
+    }, { threshold: 0.08 });
+    reveals.forEach(function (el) { observer.observe(el); });
+  }
+
+  /* ── Ambient Scripture Background ── */
+  var phrases = [
+    /* Greek */
+    { lang:'greek', text:'ἐν ἀρχῇ ἦν ὁ λόγος', top:'6%',  side:'left',  offset:'2%', size:1.7, opacity:0.07 },
+    { lang:'greek', text:'καὶ ὁ λόγος ἦν πρὸς τὸν θεόν', top:'14%', side:'right', offset:'3%', size:1.5, opacity:0.065 },
+    { lang:'greek', text:'ἅγιος ἅγιος ἅγιος', top:'22%', side:'left', offset:'2%', size:2.0, opacity:0.08 },
+    { lang:'greek', text:'τὸ ἄλφα καὶ τὸ ὦ', top:'31%', side:'right', offset:'4%', size:1.8, opacity:0.07 },
+    { lang:'greek', text:'ὁ ὢν καὶ ὁ ἦν καὶ ὁ ἐρχόμενος', top:'40%', side:'left', offset:'1.5%', size:1.5, opacity:0.065 },
+    { lang:'greek', text:'κύριος παντοκράτωρ', top:'50%', side:'right', offset:'3%', size:2.0, opacity:0.075 },
+    { lang:'greek', text:'δόξα ἐν ὑψίστοις θεῷ', top:'60%', side:'left', offset:'2.5%', size:1.7, opacity:0.07 },
+    { lang:'greek', text:'μόνῳ σοφῷ θεῷ', top:'70%', side:'right', offset:'5%', size:1.6, opacity:0.065 },
+    { lang:'greek', text:'ἐν ἀρχῇ ἐποίησεν ὁ θεός', top:'81%', side:'left', offset:'2%', size:1.5, opacity:0.07 },
+    { lang:'greek', text:'τὸ πνεῦμα κυρίου', top:'90%', side:'right', offset:'4%', size:1.8, opacity:0.065 },
+
+    /* Latin */
+    { lang:'latin', text:'In principio erat Verbum', top:'10%', side:'right', offset:'2%', size:1.5, opacity:0.065 },
+    { lang:'latin', text:'Soli Deo Gloria', top:'19%', side:'left', offset:'3%', size:1.6, opacity:0.075 },
+    { lang:'latin', text:'Verbum Domini manet', top:'27%', side:'right', offset:'5%', size:1.4, opacity:0.065 },
+    { lang:'latin', text:'Coram Deo', top:'36%', side:'left', offset:'4%', size:1.5, opacity:0.075 },
+    { lang:'latin', text:'Sanctus Sanctus Sanctus', top:'45%', side:'right', offset:'2.5%', size:1.6, opacity:0.07 },
+    { lang:'latin', text:'Gloria in excelsis Deo', top:'55%', side:'left', offset:'2%', size:1.5, opacity:0.07 },
+    { lang:'latin', text:'Magnificat anima mea Dominum', top:'65%', side:'right', offset:'3%', size:1.4, opacity:0.06 },
+    { lang:'latin', text:'Ego sum via veritas et vita', top:'74%', side:'left', offset:'3%', size:1.5, opacity:0.065 },
+    { lang:'latin', text:'Dominus illuminatio mea', top:'85%', side:'right', offset:'2%', size:1.6, opacity:0.07 },
+    { lang:'latin', text:'Solus Christus', top:'94%', side:'left', offset:'4%', size:1.7, opacity:0.07 },
+
+    /* Hebrew (Scripture phrases, NO names of God) */
+    { lang:'hebrew', text:'בְּרֵאשִׁית בָּרָא', top:'4%',  side:'right', offset:'2%', size:2.4, opacity:0.075, rotate:-1 },
+    { lang:'hebrew', text:'שְׁמַע יִשְׂרָאֵל', top:'17%', side:'left',  offset:'2%', size:2.8, opacity:0.075 },
+    { lang:'hebrew', text:'תּוֹרַת אֱמֶת', top:'25%', side:'right', offset:'4%', size:2.2, opacity:0.07, rotate:1 },
+    { lang:'hebrew', text:'מִזְמוֹר לְדָוִד', top:'33%', side:'left',  offset:'2%', size:2.5, opacity:0.07 },
+    { lang:'hebrew', text:'הַשָּׁמַיִם מְסַפְּרִים כְּבוֹד', top:'43%', side:'right', offset:'1.5%', size:2.0, opacity:0.065 },
+    { lang:'hebrew', text:'חַסְדּוֹ לְעוֹלָם', top:'52%', side:'left',  offset:'3%', size:2.3, opacity:0.07, rotate:-1 },
+    { lang:'hebrew', text:'כִּי לְעוֹלָם חַסְדּוֹ', top:'62%', side:'right', offset:'2%', size:2.2, opacity:0.07 },
+    { lang:'hebrew', text:'אוֹר לְרַגְלִי דְבָרֶךָ', top:'72%', side:'left',  offset:'2%', size:2.0, opacity:0.065 },
+    { lang:'hebrew', text:'אֶת הַשָּׁמַיִם וְאֵת הָאָרֶץ', top:'79%', side:'right', offset:'3%', size:1.9, opacity:0.065 },
+    { lang:'hebrew', text:'קָרוֹב לְכָל קֹרְאָיו', top:'88%', side:'left',  offset:'2.5%', size:2.1, opacity:0.07 },
+    { lang:'hebrew', text:'חֲסִידֵי כׇּל עַם', top:'96%', side:'right', offset:'4%', size:2.0, opacity:0.065 },
+  ];
+
+  var bg = document.getElementById('hScriptureBg');
+  if (bg) {
+    phrases.forEach(function (p) {
+      var el = document.createElement('div');
+      el.className = 'h-phrase h-phrase--' + p.lang;
+      el.textContent = p.text;
+      var style = 'top:' + p.top + ';font-size:' + p.size + 'rem;opacity:' + p.opacity + ';';
+      if (p.side === 'left') style += 'left:' + p.offset + ';';
+      else style += 'right:' + p.offset + ';';
+      if (p.rotate) style += 'transform:rotate(' + p.rotate + 'deg);';
+      el.setAttribute('style', style);
+      el.setAttribute('aria-hidden', 'true');
+      bg.appendChild(el);
+    });
+  }
+
+  /* ── Initial state ── */
+  updateProgress();
+  updateNavbar();
+  updateScrollTop();
+
+})();
+</script>
+
 </body>
 </html>
