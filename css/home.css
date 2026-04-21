@@ -337,13 +337,125 @@ html.dark .h-scripture-bg::before {
   animation: h-fade-up 0.9s cubic-bezier(0.22, 1, 0.36, 1) 0.2s forwards;
 }
 
-/* В контексте секции-цитаты — центрирование */
+/* В контексте секции-цитаты — центрирование (legacy, не используется в mirror) */
 .h-quote-section .h-sacred-block {
-  text-align: center;
-  margin-bottom: 28px;
+  text-align: right;
+  margin-bottom: 0;
   opacity: 1;
   animation: none;
 }
+
+/* ── Зеркальный layout: русский слева, иврит справа ── */
+.h-quote-mirror {
+  display: flex;
+  align-items: center;
+  gap: 0;
+  max-width: 860px;
+  margin: 0 auto 0;
+  padding: 0 20px;
+}
+
+.h-quote-left {
+  flex: 1;
+  text-align: left;
+  padding-right: 40px;
+}
+
+.h-quote-divider {
+  width: 1px;
+  align-self: stretch;
+  background: linear-gradient(to bottom,
+    transparent 0%,
+    var(--h-border) 20%,
+    var(--h-border) 80%,
+    transparent 100%);
+  flex-shrink: 0;
+  opacity: 0.6;
+}
+
+.h-quote-right {
+  flex: 1;
+  display: flex;
+  justify-content: flex-end;
+  padding-left: 40px;
+}
+
+/* Blockquote в зеркале — левое выравнивание, без центра */
+.h-blockquote--mirror {
+  text-align: left;
+  padding: 0;
+  font-size: clamp(1rem, 2.2vw, 1.3rem);
+  line-height: 1.8;
+  margin-bottom: 12px;
+}
+
+.h-cite--mirror {
+  display: block;
+  text-align: left;
+  font-family: var(--f-ui);
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.28em;
+  text-transform: uppercase;
+  color: var(--h-muted);
+}
+
+/* Зеркальный sacred block — чуть меньше героя, правое выравнивание */
+.h-sacred-block--mirror {
+  text-align: right;
+  margin-bottom: 0;
+  opacity: 1;
+  animation: none;
+}
+
+.h-sacred-block--mirror .h-sacred-line--1 {
+  font-size: clamp(1.25rem, 2.4vw, 1.8rem);
+  margin-bottom: 4px;
+}
+.h-sacred-block--mirror .h-sacred-line--2 {
+  font-size: clamp(1rem, 1.8vw, 1.4rem);
+  margin-bottom: 12px;
+}
+.h-sacred-block--mirror .h-tetra .hb-front {
+  font-size: clamp(1.75rem, 3.5vw, 2.6rem);
+}
+.h-sacred-block--mirror .h-tetra-back .h-tetra-name {
+  font-size: clamp(1.75rem, 3.5vw, 2.6rem);
+}
+
+/* Reference line в mirror — правое выравнивание */
+.h-sacred-ref--mirror {
+  direction: ltr;
+  display: flex;
+  justify-content: flex-end;
+}
+
+/* Мобильный: колонки складываются вертикально */
+@media (max-width: 640px) {
+  .h-quote-mirror {
+    flex-direction: column-reverse;
+    gap: 32px;
+    align-items: stretch;
+  }
+  .h-quote-left {
+    padding-right: 0;
+    border-top: 1px solid var(--h-border);
+    padding-top: 28px;
+  }
+  .h-quote-right {
+    padding-left: 0;
+    justify-content: center;
+  }
+  .h-sacred-block--mirror {
+    text-align: center;
+  }
+  .h-sacred-ref--mirror {
+    justify-content: center;
+  }
+  .h-quote-divider { display: none; }
+}
+
+
 
 /* ── Hero Sacred Block (top of page, before title) ── */
 .h-sacred-block--hero {
@@ -548,15 +660,16 @@ html.dark .h-tetra-back .h-tetra-name {
   direction: ltr;
   unicode-bidi: isolate;
   white-space: nowrap;
-  font-family: var(--f-body);
-  font-style: italic;
+  font-family: var(--f-ui);
+  font-style: normal;
   font-weight: 600;
-  font-size: clamp(13px, 1.8vw, 17px);
-  letter-spacing: 0.12em;
+  font-size: clamp(8px, 0.9vw, 10px);
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
   color: var(--h-ink);
-  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.12);
   opacity: 0;
-  filter: blur(6px);
+  filter: blur(5px);
   pointer-events: none;
   transition:
     opacity 1.6s cubic-bezier(0.16, 1, 0.3, 1) 0.5s,
@@ -571,8 +684,8 @@ html.dark .h-tetra-label {
 .h-tetra:focus-visible .h-tetra-label {
   opacity: 1;
   filter: blur(0);
-  transform: translate(-50%, -100%) translateY(-24px);
-  letter-spacing: 0.22em;
+  transform: translate(-50%, -100%) translateY(-10px);
+  letter-spacing: 0.34em;
 }
 
 /* Reference */
@@ -609,8 +722,8 @@ html.dark .h-tetra-label {
   }
   .h-tetra:active .h-tetra-label {
     opacity: 1; filter: blur(0);
-    transform: translate(-50%, -100%) translateY(-24px);
-    letter-spacing: 0.22em;
+    transform: translate(-50%, -100%) translateY(-10px);
+    letter-spacing: 0.34em;
   }
 }
 
@@ -623,7 +736,7 @@ html.dark .h-tetra-label {
   .h-tetra-label {
     transition: opacity 0.15s linear !important;
     filter: none !important;
-    transform: translate(-50%, -100%) translateY(-24px) !important;
+    transform: translate(-50%, -100%) translateY(-10px) !important;
   }
 }
 
