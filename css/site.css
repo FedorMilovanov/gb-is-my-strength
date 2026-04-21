@@ -1,7 +1,7 @@
 /* ============================================================
    site.css — Господь Бог — Сила Моя
    Единый общий CSS для всего сайта
-   Версия 1.0
+   Версия 1.3
    ============================================================
 
    01. reset
@@ -9,6 +9,7 @@
    03. body / typography base
    04. layout
    05. theme toggle
+   05b. sticky article top nav (900-1019px)
    06. breadcrumb
    07. article header
    08. article body
@@ -42,6 +43,7 @@
    36. reduced motion
    37. article date display
    38. article end block (кнопки + SDG + крест)
+   39. quiz review mode (разбор ошибок, бонусный тизер)
 
    ============================================================ */
 
@@ -93,6 +95,32 @@ img { max-width: 100%; height: auto; }
 h1, h2, h3, h4 { word-wrap: break-word; }
 html, body { overflow-x: hidden; }
 
+
+/* ============================================================
+   Z-INDEX REFERENCE MAP
+   (меняй только здесь и в соответствующем правиле одновременно)
+
+   1        — .article-img::before (overlay)
+   10       — .toc-link hover bar / .quiz-overlay blur
+   500      — .toc-sidebar (desktop)
+   1000     — .theme-toggle
+   2000     — .bottom-bar
+   2500     — .btoc-overlay backdrop
+   9000     — .fn-tooltip / .bref-tooltip
+   9800     — .kbd-hint-toast
+   9999     — .bookmark-toast / .selection-share-popup-backdrop
+   10000    — .theme-toggle overlay / .back-to-top / .reading-progress
+   10001    — .back-to-top (above bottom-bar)
+   15000    — .fn-tooltip-fixed
+   19000    — .toc-overlay (slide panel backdrop)
+   19001    — .toc-panel (slide panel)
+   19100    — .share-dialog
+   19200    — .img-viewer
+   19999    — #selection-share-popup
+   20000    — .article-date-display (above all panels)
+   99998    — .anchor-copy-toast
+   99999    — .reading-progress bar
+   ============================================================ */
 
 /* ============================================================
    02. VARIABLES / COLORS / DARK THEME
@@ -3842,11 +3870,6 @@ html.dark .resume-list-item:hover {
 
 
 /* ============================================================
-   24. SECTION LABEL  (covered in 18, alias for reading-progress)
-   ============================================================ */
-
-
-/* ============================================================
    25. FOOTNOTE TOOLTIPS (fn-ref style — код да винчи)
    ============================================================ */
 .fn-ref { position: relative; display: inline-block; cursor: pointer; }
@@ -3981,6 +4004,38 @@ h2:hover .heading-anchor, h3:hover .heading-anchor, h4:hover .heading-anchor { o
 .heading-anchor.copied { color: #7a2e2e !important; opacity: 1; }
 html.dark .heading-anchor.copied { color: var(--accent) !important; }
 
+
+
+/* Narrow float variant — 250px wide, used for portrait images alongside text */
+.article-img.float-right--sm {
+  width: 250px;
+}
+@media (max-width: 680px) {
+  .article-img.float-right--sm {
+    width: 100%;
+    float: none;
+  }
+}
+
+
+/* Portrait crop: forces consistent height on variable-aspect images */
+.img-crop-portrait {
+  height: 280px;
+  object-fit: cover;
+  object-position: center;
+}
+
+
+/* Section label above reading list or source bibliography */
+.source-list-title {
+  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin: 32px 0 14px;
+}
 
 /* ============================================================
    29. SOURCES BLOCK
@@ -4459,13 +4514,7 @@ footer.footer-home {
 }
 
 /* ============================================================
-   CSS PATCH — добавить в самый конец css/site.css
-   Версия 1.1
-
-   Стили для новых модулей:
-   • Selection Share Popup (#selection-share-popup)
-   • Article Reading Progress (.article-reading-progress)
-   • Keyboard Hint Toast (.kbd-hint-toast)
+   23. ACADEMIC ARTICLE STYLES
    ============================================================ */
 
 
@@ -4755,15 +4804,7 @@ html.dark .article-date-display {
 
 
 /* ============================================================
-   SELECTION SHARE POPUP — дополнения к предыдущему патчу
-   ============================================================ */
-
-/* Уже определено в предыдущем патче, дополнений нет */
-
-
-/* ============================================================
-   PRINT STYLES — улучшенные (@media print)
-   Дополняем существующий блок 35 из site.css
+   37. ARTICLE DATE DISPLAY (print extension)
    ============================================================ */
 @media print {
   /* Показываем дату при печати */
@@ -5098,7 +5139,11 @@ html.dark .article-end-sdg svg {
 }
 .quiz-focus-link:hover { opacity: 0.8; }
 
-/* ---- Quiz Review Mode ---- */
+/* ============================================================
+   39. QUIZ REVIEW MODE
+   Разбор ошибок после результата: кнопка, секция вопросов,
+   экран завершения, тизер бонусного раунда
+   ============================================================ */
 
 /* "Разобрать ошибки" button in result actions */
 .quiz-review-start-btn {

@@ -1,33 +1,34 @@
 /* ============================================================
    site.js — Господь Бог — Сила Моя
    Единый общий JS для всего сайта
-   Версия 1.2 (patch: UTM sharing, navigator.share mobile, OK.ru URL, selection rect guard)
+   Версия 1.3
 
    Структура:
    01. SiteUtils — helpers / config access
    02. Theme Toggle
-   03. Share
-   04. Reading Progress Bar (герменевтика style)
+   03. Share Dialog
+   04. Reading Progress Bar
    05. Back To Top Button
    06. Section Label
-   07. TOC Mobile (герменевтика slide panel style)
+   07. TOC Mobile (slide panel)
    08. TOC Desktop (scrollspy sidebar)
-   09. Bottom App Bar + TOC Overlay (код да винчи style)
+   09. Bottom App Bar + TOC Overlay
    10. Timeline Animation (Intersection Observer)
    11. Animate Boxes on Scroll
-   12. Footnote Tooltips (fn-ref style — код да винчи)
+   12. Footnote Tooltips (fn-ref / inline sup)
    13. Flip Cards — toggle + keyboard
    14. Flip Card Fingers
    15. Flip Card Height Sync
-   16. Quiz Engine
+   16. Quiz Engine v3 (основной тест + разбор ошибок + бонусный раунд)
    17. Heading Anchor Copy + Anchor Toast
    18. Hover bridge for fn-marker tooltip (desktop only)
-   19. Bible Reference Tooltips (bref / btip — герменевтика)
+   19. Bible Reference Tooltips (bref / btip)
    20. Academic Footnotes (fn-marker / tooltip)
    21. Typography — неразрывные пробелы вокруг тире (—, –)
    22. Keyboard Shortcuts + Hint Toast — T (TOC), D (тема), B (наверх)
    23. Selection Share — выделил → поделиться
    24. Homepage Article Reading Progress (delegates to bookmark-engine)
+   25. (зарезервировано)
    26. Article Date Display — дата публикации/обновления из meta
    26a. Auto Drop Cap — первый <p> (не применяется к Типу C)
    27. Article End Block — кнопки «Поделиться» + «Распечатать/PDF» + SDG + крест
@@ -415,7 +416,7 @@
 
 
   /* ============================================================
-     04. Reading Progress Bar (герменевтика style)
+     04. Reading Progress Bar
      #reading-progress  — тонкая полоса сверху
      ============================================================ */
   (function () {
@@ -488,7 +489,7 @@
 
 
   /* ============================================================
-     07. TOC Mobile — slide panel (герменевтика style)
+     07. TOC Mobile — slide panel
      ============================================================ */
   (function () {
     var panel   = document.getElementById('toc-panel');
@@ -650,7 +651,7 @@
 
 
   /* ============================================================
-     09. Bottom App Bar + TOC Overlay (код да винчи style)
+     09. Bottom App Bar + TOC Overlay
      ============================================================ */
   (function () {
     var bar     = document.getElementById('bottomBar');
@@ -1030,7 +1031,7 @@
 
 
   /* ============================================================
-     12. Footnote Tooltips (fn-ref style — код да винчи)
+     12. Footnote Tooltips (fn-ref / inline sup)
      ============================================================ */
   (function () {
     var cfg = SiteUtils.getConfig('features.footnotes', {});
@@ -2131,7 +2132,7 @@
 
 
   /* ============================================================
-     19. Bible Reference Tooltips (bref / btip — герменевтика)
+     19. Bible Reference Tooltips (bref / btip)
      ============================================================ */
   (function () {
     var dataEl = document.getElementById('bibleRefs');
@@ -2275,7 +2276,7 @@
 
 
   /* ============================================================
-     20. Academic Footnotes (fn-marker / tooltip — герменевтика)
+     20. Academic Footnotes (fn-marker / tooltip)
      ============================================================ */
   (function () {
     var markers = document.querySelectorAll('.fn-marker');

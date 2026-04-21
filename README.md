@@ -1,5 +1,5 @@
 # Архитектура сайта — Господь Бог — Сила Моя
-## Версия 1.2 — Апрель 2026
+## Версия 1.3 — Апрель 2026
 
 ---
 
@@ -9,15 +9,17 @@
 /
 ├── index.html                          ← Главная страница
 ├── css/
-│   └── site.css                        ← ВСЕ общие стили (2301 строк)
+│   └── site.css                        ← ВСЕ общие стили (~5500 строк)
 ├── js/
-│   ├── site.js                         ← ВСЕ общие скрипты (1234 строк)
-│   └── bookmark-engine.js              ← Движок закладок (497 строк, не менять)
+│   ├── site.js                         ← ВСЕ общие скрипты (~3300 строк)
+│   └── bookmark-engine.js              ← Движок закладок (~545 строк, не менять)
 ├── articles/
 │   ├── kod-da-vinchi/
-│   │   └── index.html                  ← Статья: только HTML + SEO + SITE_CONFIG
-│   └── hermenevticheskaya-otsenka.../
-│       └── index.html                  ← Статья: только HTML + SEO + SITE_CONFIG
+│   │   └── index.html                  ← Статья: Код да Винчи
+│   ├── krajne-li-isporcheno-serdce/
+│   │   └── index.html                  ← Статья: Крайне ли испорчено сердце
+│   └── hermenevticheskaya-otsenka-hristotsentrichnoy-germenevtiki/
+│       └── index.html                  ← Статья: Герменевтика
 └── images/
     └── ...
 ```
@@ -82,7 +84,7 @@
 | 13 | Flip Cards toggle + keyboard | `.flip-card`, `.error-flip-card` |
 | 14 | Flip Card Fingers | `.flip-card-front` |
 | 15 | Flip Card Height Sync | Авто |
-| 16 | Quiz Engine | `#quizWrapper` + `SITE_CONFIG.quiz` |
+| 16 | Quiz Engine v3 (основной тест + разбор ошибок + бонусный раунд) | `#quizWrapper` + `SITE_CONFIG.quiz` |
 | 17 | Heading Anchor Copy | `.heading-anchor` |
 | 18 | Hover bridge for fn-marker | Desktop only |
 | 19 | Bible Reference Tooltips | `.bref[data-ref]` + `#bibleRefs` |
@@ -152,7 +154,7 @@ toc: {
 }
 
 quiz: {
-  questions: [ { id, q, options, correct, ok, err }, ... ],
+  questions: [ { id, q, options, answer, ok, err, focus }, ... ],
   scores:    [ { id, min, max, title, desc }, ... ]
 }
 ```
@@ -390,7 +392,13 @@ quiz: {
 - `<li data-num="N" id="srcN">` — сами сноски
 
 ### Quiz
-`#quizWrapper`, `#quizBody`, `#quizCounter`, `#quizQuestion`, `#quizOptions`, `#quizFeedback`, `#quizNext`, `#quizScore`, `#quizRestart`, `#quizShare`, `#scoreTitle`, `#scoreBadge`, `#scoreDesc`, `#quizFill`
+`#quizWrapper`, `#quizMain`, `#quizBody`, `#quizCounter`, `#quizQuestion`, `#quizFocus`, `#quizOptions`, `#quizFeedback`, `#quizNext`, `#quizFill`, `#quizResult`, `#quizResultScore`, `#quizResultTotal`, `#quizResultLabel`, `#quizResultBar`, `#quizScoreDesc`, `#quizScore`, `#quizScoreTitle`, `#quizScoreBadge`, `#quizRestart`, `#quizShare`, `#quizOverlay`, `#quizLaunch`
+
+**Бонусный раунд** (только если `bonusEnabled: true`):
+`#quizBonusSection`, `#quizBonusStart`, `#quizBonusBody`, `#quizBonusCounter`, `#quizBonusQuestion`, `#quizBonusFocus`, `#quizBonusOptions`, `#quizBonusFeedback`, `#quizBonusNext`, `#quizBonusFill`, `#quizBonusScore`, `#quizBonusScoreTitle`, `#quizBonusScoreBadge`, `#quizBonusScoreDesc`, `#quizBonusLock`, `#quizBonusUnlock`
+
+**Разбор ошибок** (инжектируется JS автоматически — не добавлять в HTML):
+`#quizStartReview`, `#quizReviewSection`, `#quizReviewDone`
 
 ### Flip Cards
 `.flip-card > .flip-card-inner > .flip-card-front / .flip-card-back`
