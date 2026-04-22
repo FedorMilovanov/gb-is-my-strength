@@ -846,139 +846,144 @@ window.SITE_CONFIG = {
     </div>
 
     <!-- #12 Хронологическая шкала: Канон НЗ vs Гностики vs Никея -->
-    <div class="canon-timeline-wrap" id="canonTimeline" aria-label="Хронология формирования канона">
-      <div class="canon-tl-header">
-        <h3 class="canon-tl-title">Хронология формирования канона</h3>
-        <p class="canon-tl-subtitle">Канон сложился <em>до</em> Никеи — независимо и постепенно</p>
+    <style>
+    .ctw{background:var(--bg-alt,#f6f5f2);border:1px solid var(--border,#e2e0db);border-radius:14px;padding:1.5rem 1.75rem 1.5rem;margin:2rem 0}
+    .ctw-head{margin-bottom:1rem}
+    .ctw-title{font-size:1rem;font-weight:700;margin:0 0 .2rem;color:var(--text-primary,#1a1a18)}
+    .ctw-sub{font-size:.8rem;color:var(--text-muted,#888);margin:0;font-style:italic}
+    .ctw-legend{display:flex;flex-wrap:wrap;gap:.4rem .85rem;margin-bottom:1.1rem;padding-bottom:.85rem;border-bottom:1px solid var(--border,#e2e0db)}
+    .ctw-leg{display:flex;align-items:center;gap:.35rem;font-size:.72rem;color:var(--text-secondary,#555)}
+    .ctw-dot{display:inline-block;width:10px;height:10px;border-radius:2px;flex-shrink:0}
+    .ctw-body{overflow-x:auto;-webkit-overflow-scrolling:touch}
+    .ctw-track{min-width:580px}
+    .ctw-axis-row{display:flex;align-items:center;margin-bottom:.5rem;padding-bottom:.4rem;border-bottom:1px solid var(--border,#e2e0db)}
+    .ctw-spacer{flex:0 0 172px;margin-right:.75rem}
+    .ctw-axis{flex:1;display:flex;justify-content:space-between;font-size:.68rem;color:var(--text-muted,#888)}
+    .ctw-row{display:flex;align-items:center;gap:.75rem;margin-bottom:3px}
+    .ctw-row.ctw-pin-row{min-height:52px;align-items:flex-start;padding-top:4px}
+    .ctw-rlabel{flex:0 0 172px;font-size:.73rem;color:var(--text-secondary,#555);text-align:right;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding-right:2px}
+    .ctw-pin-row .ctw-rlabel{padding-top:6px}
+    .ctw-bwrap{flex:1;position:relative;height:24px}
+    .ctw-pin-row .ctw-bwrap{height:auto;min-height:52px}
+    .ctw-bar{position:absolute;height:22px;top:1px;border-radius:3px;display:flex;align-items:center;box-sizing:border-box;transition:opacity .15s}
+    .ctw-bar:hover{opacity:.8}
+    .ctw-bin{padding:0 6px;font-size:.68rem;color:#fff;white-space:nowrap;font-weight:600}
+    .ctw-bout{position:absolute;top:4px;font-size:.68rem;color:var(--text-secondary,#555);white-space:nowrap;font-weight:600}
+    .ctw-pin{position:absolute;left:0;top:0;display:flex;flex-direction:column;align-items:center;transform:translateX(-50%)}
+    .ctw-pin-line{width:1.5px;height:22px;background:#bf6e2a}
+    .ctw-pin-yr{font-size:.7rem;font-weight:700;color:#bf6e2a;white-space:nowrap;margin-top:2px}
+    .ctw-pin-lbl{font-size:.63rem;color:#bf6e2a;white-space:nowrap;text-align:center;line-height:1.3;margin-top:1px}
+    .ctw-note{display:flex;gap:.6rem;align-items:flex-start;font-size:.8rem;color:var(--text-secondary,#555);margin-top:1.25rem;padding:.8rem 1rem;background:rgba(191,110,42,.07);border-left:2.5px solid #bf6e2a;border-radius:0 6px 6px 0}
+    .ctw-note strong{color:var(--text-primary,#1a1a18);font-weight:700}
+    .ctw-note em{font-style:italic}
+    .ctw-warn-icon{flex-shrink:0;width:15px;height:15px;margin-top:1px;color:#bf6e2a}
+    @media(max-width:600px){.ctw-spacer{flex:0 0 120px}.ctw-rlabel{flex:0 0 120px;font-size:.7rem}}
+    </style>
+
+    <div class="ctw" id="canonTimeline" aria-label="Хронология формирования канона">
+      <div class="ctw-head">
+        <h3 class="ctw-title">Хронология формирования канона</h3>
+        <p class="ctw-sub">Канон сложился <em>до</em> Никеи — независимо и постепенно</p>
       </div>
-      <div class="canon-tl-legend">
-        <span class="canon-tl-leg-item"><span class="canon-tl-badge canon-col-apostle"></span>Апостольские книги</span>
-        <span class="canon-tl-leg-item"><span class="canon-tl-badge canon-col-canon"></span>Консенсус канона</span>
-        <span class="canon-tl-leg-item"><span class="canon-tl-badge canon-col-gnostic"></span>Гностические тексты</span>
-        <span class="canon-tl-leg-item"><span class="canon-tl-badge canon-col-nicea"></span>Никея</span>
+      <div class="ctw-legend">
+        <span class="ctw-leg"><span class="ctw-dot" style="background:#2e7d32"></span>Апостольские книги</span>
+        <span class="ctw-leg"><span class="ctw-dot" style="background:#1565c0"></span>Консенсус канона</span>
+        <span class="ctw-leg"><span class="ctw-dot" style="background:#c62828"></span>Гностические тексты</span>
+        <span class="ctw-leg"><span class="ctw-dot" style="background:#bf6e2a"></span>Никея</span>
       </div>
-      <div class="canon-tl-body">
-        <div class="canon-tl-track-wrap">
-          <div class="canon-tl-axis-row">
-            <div class="canon-tl-axis-spacer"></div>
-            <div class="canon-tl-axis">
-              <div class="canon-tl-axis-label">30 г.</div>
-              <div class="canon-tl-axis-label">100</div>
-              <div class="canon-tl-axis-label">200</div>
-              <div class="canon-tl-axis-label">300</div>
-              <div class="canon-tl-axis-label">400 г.</div>
+      <div class="ctw-body">
+        <div class="ctw-track">
+          <div class="ctw-axis-row">
+            <div class="ctw-spacer"></div>
+            <div class="ctw-axis">
+              <span>30 г.</span><span>100</span><span>200</span><span>300</span><span>400 г.</span>
             </div>
           </div>
-          <!-- Каждый item: left/width в % от шкалы 30–430 (400 лет) -->
-          <div class="canon-tl-row">
-            <div class="canon-tl-row-label">Канонические Евангелия</div>
-            <div class="canon-tl-bar-wrap">
-              <div class="canon-tl-bar canon-col-apostle" style="left:3.5%;width:18%" title="Написаны ок. 44–96 г. н.э.">
-                <span class="canon-tl-bar-text">44–96 г.</span>
+          <!-- Канонические Евангелия: 44–96 → left=3.5%, width=13% -->
+          <div class="ctw-row">
+            <div class="ctw-rlabel">Канонические Евангелия</div>
+            <div class="ctw-bwrap">
+              <div class="ctw-bar" style="left:3.5%;width:13%;background:#2e7d32" title="Написаны ок. 44–96 г. н.э.">
+                <span class="ctw-bin">44–96 г.</span>
               </div>
             </div>
           </div>
-          <div class="canon-tl-row">
-            <div class="canon-tl-row-label">Послания Павла</div>
-            <div class="canon-tl-bar-wrap">
-              <div class="canon-tl-bar canon-col-apostle" style="left:5%;width:10%" title="Написаны ок. 50–65 г. н.э.">
-                <span class="canon-tl-bar-text">50–65 г.</span>
+          <!-- Послания Павла: 50–65 → left=5%, width=3.75% — узкий, метка снаружи -->
+          <div class="ctw-row">
+            <div class="ctw-rlabel">Послания Павла</div>
+            <div class="ctw-bwrap">
+              <div class="ctw-bar" style="left:5%;width:3.75%;background:#2e7d32" title="Написаны ок. 50–65 г. н.э."></div>
+              <span class="ctw-bout" style="left:calc(5% + 3.75% + 6px)">50–65 г.</span>
+            </div>
+          </div>
+          <!-- Евангелие от Фомы: II–IV вв (100–400) → left=17.5%, width=75% -->
+          <div class="ctw-row">
+            <div class="ctw-rlabel">Евангелие от Фомы</div>
+            <div class="ctw-bwrap">
+              <div class="ctw-bar" style="left:17.5%;width:75%;background:#c62828" title="II–IV вв. — гностический текст">
+                <span class="ctw-bin">II–IV вв.</span>
               </div>
             </div>
           </div>
-          <div class="canon-tl-row">
-            <div class="canon-tl-row-label">Мураториев фрагмент</div>
-            <div class="canon-tl-bar-wrap">
-              <div class="canon-tl-bar canon-col-canon" style="left:35%;width:7%" title="Ок. 170–200 г. — 22 из 27 книг НЗ">
-                <span class="canon-tl-bar-text">ок. 170 г.</span>
+          <!-- Евангелие от Филиппа: III–IV вв (200–400) → left=42.5%, width=50% -->
+          <div class="ctw-row">
+            <div class="ctw-rlabel">Евангелие от Филиппа</div>
+            <div class="ctw-bwrap">
+              <div class="ctw-bar" style="left:42.5%;width:50%;background:#c62828" title="III–IV вв. — гностический текст">
+                <span class="ctw-bin">III–IV вв.</span>
               </div>
             </div>
           </div>
-          <div class="canon-tl-row">
-            <div class="canon-tl-row-label">Ириней Лионский</div>
-            <div class="canon-tl-bar-wrap">
-              <div class="canon-tl-bar canon-col-canon" style="left:37.5%;width:5%" title="Ок. 180 г. — четыре Евангелия закреплены">
-                <span class="canon-tl-bar-text">180 г.</span>
+          <!-- Мураториев фрагмент: ок. 170 → left=35%, width=5% — узкий, метка снаружи -->
+          <div class="ctw-row">
+            <div class="ctw-rlabel">Мураториев фрагмент</div>
+            <div class="ctw-bwrap">
+              <div class="ctw-bar" style="left:35%;width:5%;background:#1565c0" title="Ок. 170 г. — 22 из 27 книг НЗ"></div>
+              <span class="ctw-bout" style="left:calc(35% + 5% + 6px)">ок. 170 г.</span>
+            </div>
+          </div>
+          <!-- Ириней Лионский: ок. 180 → left=37.5%, width=3.5% — узкий, метка снаружи -->
+          <div class="ctw-row">
+            <div class="ctw-rlabel">Ириней Лионский</div>
+            <div class="ctw-bwrap">
+              <div class="ctw-bar" style="left:37.5%;width:3.5%;background:#1565c0" title="Ок. 180 г. — четыре Евангелия закреплены"></div>
+              <span class="ctw-bout" style="left:calc(37.5% + 3.5% + 6px)">180 г.</span>
+            </div>
+          </div>
+          <!-- Первый Никейский собор: 325 → пин, отдельная строка с нужной высотой -->
+          <div class="ctw-row ctw-pin-row">
+            <div class="ctw-rlabel">Первый Никейский собор</div>
+            <div class="ctw-bwrap">
+              <div class="ctw-pin" style="left:73.75%" title="325 г. — арианский спор, не канон">
+                <div class="ctw-pin-line"></div>
+                <div class="ctw-pin-yr">325</div>
+                <div class="ctw-pin-lbl">Никея — НЕ обсуждала канон</div>
               </div>
             </div>
           </div>
-          <div class="canon-tl-row">
-            <div class="canon-tl-row-label">Евангелие от Фомы</div>
-            <div class="canon-tl-bar-wrap">
-              <div class="canon-tl-bar canon-col-gnostic" style="left:30%;width:25%" title="II–IV вв. — гностический текст">
-                <span class="canon-tl-bar-text">II–IV вв.</span>
-              </div>
+          <!-- 39-е послание Афанасия: 367 → left=84.25%, width=1.5% — узкий, метка снаружи -->
+          <div class="ctw-row">
+            <div class="ctw-rlabel">39-е послание Афанасия</div>
+            <div class="ctw-bwrap">
+              <div class="ctw-bar" style="left:84.25%;width:1.5%;background:#1565c0" title="367 г. — первый полный список 27 книг"></div>
+              <span class="ctw-bout" style="left:calc(84.25% + 1.5% + 6px)">367 г.</span>
             </div>
           </div>
-          <div class="canon-tl-row">
-            <div class="canon-tl-row-label">Евангелие от Филиппа</div>
-            <div class="canon-tl-bar-wrap">
-              <div class="canon-tl-bar canon-col-gnostic" style="left:40%;width:22%" title="III–IV вв. — гностический текст">
-                <span class="canon-tl-bar-text">III–IV вв.</span>
-              </div>
-            </div>
-          </div>
-          <div class="canon-tl-row">
-            <div class="canon-tl-row-label">Первый Никейский собор</div>
-            <div class="canon-tl-bar-wrap">
-              <div class="canon-tl-pin" style="left:73.75%" title="325 г. — арианский спор, не канон">
-                <span class="canon-tl-pin-year">325</span>
-                <span class="canon-tl-pin-label">Никея — НЕ обсуждала канон</span>
-              </div>
-            </div>
-          </div>
-          <div class="canon-tl-row">
-            <div class="canon-tl-row-label">39-е послание Афанасия</div>
-            <div class="canon-tl-bar-wrap">
-              <div class="canon-tl-bar canon-col-canon" style="left:84.25%;width:4%" title="367 г. — первый полный список 27 книг">
-                <span class="canon-tl-bar-text">367 г.</span>
-              </div>
-            </div>
-          </div>
-          <div class="canon-tl-row">
-            <div class="canon-tl-row-label">Соборы в Гиппоне и Карфагене</div>
-            <div class="canon-tl-bar-wrap">
-              <div class="canon-tl-bar canon-col-canon" style="left:90.75%;width:6%" title="393–397 г. — подтверждение консенсуса">
-                <span class="canon-tl-bar-text">393–397 г.</span>
-              </div>
+          <!-- Соборы в Гиппоне и Карфагене: 393–397 → left=90.75%, width=1% — узкий, метка снаружи -->
+          <div class="ctw-row">
+            <div class="ctw-rlabel">Соборы в Гиппоне и Карфагене</div>
+            <div class="ctw-bwrap">
+              <div class="ctw-bar" style="left:90.75%;width:1%;background:#1565c0" title="393–397 г. — подтверждение консенсуса"></div>
+              <span class="ctw-bout" style="left:calc(90.75% + 1% + 6px)">393–397 г.</span>
             </div>
           </div>
         </div>
       </div>
-      <p class="canon-tl-note">
-        ⚠️ <strong>Вывод:</strong> Гностические тексты писались <em>позже</em> канонических Евангелий. Никея появилась через 150 лет после первых списков канона и <strong>не обсуждала</strong> его состав.
-      </p>
+      <div class="ctw-note">
+        <svg class="ctw-warn-icon" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M8 1.5L1 14h14L8 1.5z" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/><path d="M8 6v4M8 11.5v.5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>
+        <span><strong>Вывод:</strong> Гностические тексты писались <em>позже</em> канонических Евангелий. Никея появилась через 150 лет после первых списков канона и <strong>не обсуждала</strong> его состав.</span>
+      </div>
     </div>
-    <style>
-    .canon-timeline-wrap{background:var(--bg-alt,#f5f5f3);border:1px solid var(--border,#e5e5e3);border-radius:12px;padding:1.5rem 1.75rem 1.25rem;margin:2rem 0;overflow:hidden}
-    .canon-tl-header{margin-bottom:.75rem}
-    .canon-tl-title{font-size:1.05rem;font-weight:700;margin:0 0 .2rem;color:var(--text-primary,#1a1a18)}
-    .canon-tl-subtitle{font-size:.875rem;color:var(--text-muted,#888);margin:0}
-    .canon-tl-legend{display:flex;flex-wrap:wrap;gap:.5rem .9rem;margin-bottom:1rem}
-    .canon-tl-leg-item{display:flex;align-items:center;gap:.35rem;font-size:.8rem;color:var(--text-secondary,#555)}
-    .canon-tl-badge{display:inline-block;width:14px;height:10px;border-radius:3px;flex-shrink:0}
-    .canon-col-apostle{background:#2e7d32}
-    .canon-col-canon{background:#1565c0}
-    .canon-col-gnostic{background:#c62828}
-    .canon-col-nicea{background:#e65100}
-    .canon-tl-body{overflow-x:auto;-webkit-overflow-scrolling:touch}
-    .canon-tl-track-wrap{min-width:620px}
-    .canon-tl-axis-row{display:flex;align-items:flex-end;margin-bottom:.6rem;border-bottom:1px solid var(--border,#e5e5e3);padding-bottom:.4rem}
-    .canon-tl-axis-spacer{flex:0 0 180px;margin-right:.75rem}
-    .canon-tl-axis{flex:1;display:flex;justify-content:space-between;font-size:.72rem;color:var(--text-muted,#888)}
-    .canon-tl-row{display:flex;align-items:center;gap:.75rem;margin-bottom:.5rem;min-height:28px}
-    .canon-tl-row-label{flex:0 0 180px;font-size:.78rem;color:var(--text-secondary,#555);text-align:right;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-    .canon-tl-bar-wrap{flex:1;position:relative;height:26px;overflow:visible}
-    .canon-tl-bar{position:absolute;height:22px;border-radius:4px;display:flex;align-items:center;padding:0 6px;box-sizing:border-box;opacity:.88;transition:opacity .15s;min-width:6px}
-    .canon-tl-bar:hover{opacity:1}
-    .canon-tl-bar-text{font-size:.72rem;color:#fff;white-space:nowrap;font-weight:600;text-shadow:0 1px 2px rgba(0,0,0,.3)}
-    .canon-tl-pin{position:absolute;top:-2px;display:flex;flex-direction:column;align-items:center;transform:translateX(-50%);background:transparent}
-    .canon-tl-pin::before{content:'';display:block;width:2px;height:26px;background:#e65100}
-    .canon-tl-pin-year{font-size:.72rem;font-weight:700;color:#e65100;white-space:nowrap}
-    .canon-tl-pin-label{font-size:.65rem;color:#e65100;white-space:nowrap;text-align:center;max-width:90px;line-height:1.2}
-    .canon-tl-note{font-size:.82rem;color:var(--text-secondary,#555);margin:1rem 0 0;padding:.75rem 1rem;background:rgba(230,81,0,.07);border-left:3px solid #e65100;border-radius:0 6px 6px 0}
-    @media(max-width:600px){.canon-tl-axis-spacer{flex:0 0 120px}.canon-tl-row-label{flex:0 0 120px;font-size:.72rem}}
-    </style>
 
     <figure class="article-figure">
       <img decoding="async"
