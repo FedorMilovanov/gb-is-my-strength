@@ -362,15 +362,7 @@ html.dark .h-scripture-bg::before {
 }
 
 .h-quote-divider {
-  width: 1px;
-  align-self: stretch;
-  background: linear-gradient(to bottom,
-    transparent 0%,
-    var(--h-border) 20%,
-    var(--h-border) 80%,
-    transparent 100%);
-  flex-shrink: 0;
-  opacity: 0.6;
+  display: none;
 }
 
 .h-quote-right {
@@ -430,7 +422,10 @@ html.dark .h-scripture-bg::before {
   justify-content: flex-end;
 }
 
-/* Мобильный: колонки складываются вертикально */
+.h-quote-section .h-ornament {
+  padding: 0 20px;
+}
+
 @media (max-width: 640px) {
   .h-quote-mirror {
     flex-direction: column-reverse;
@@ -1209,17 +1204,20 @@ html.dark .h-article-card:hover {
   margin: 0 0 16px;
 }
 /* Drop cap */
-.h-drop-cap::first-letter {
+.h-drop-cap__letter {
   float: left;
-  font-family: var(--f-serif);
-  font-size: 3.5em;
+  font-family: 'Source Sans 3', 'Georgia', serif;
+  font-size: 3.6em;
   font-weight: 700;
-  line-height: 0.8;
-  padding-right: 0.08em;
-  padding-top: 0.07em;
+  font-style: normal;
+  line-height: 0.78;
+  padding-right: 0.06em;
+  padding-top: 0.09em;
   color: var(--h-accent);
+  font-feature-settings: "kern" 1, "liga" 0;
+  -webkit-font-smoothing: antialiased;
 }
-html.dark .h-drop-cap::first-letter {
+html.dark .h-drop-cap__letter {
   color: var(--h-accent);
 }
 .h-about-small {
