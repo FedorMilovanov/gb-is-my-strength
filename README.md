@@ -9,7 +9,7 @@
 /
 ├── index.html                          ← Главная страница
 ├── css/
-│   └── site.css                        ← ВСЕ общие стили (~5500 строк)
+│   └── site.css                        ← ВСЕ общие стили (~5800 строк)
 ├── js/
 │   ├── site.js                         ← ВСЕ общие скрипты (~3300 строк)
 │   └── bookmark-engine.js              ← Движок закладок (~545 строк, не менять)
@@ -26,7 +26,7 @@
 
 ---
 
-## Что вынесено в site.css (36 секций)
+## Что вынесено в site.css (40 секций)
 
 | # | Секция |
 |---|--------|
@@ -62,6 +62,10 @@
 | 34 | SDG / Cross |
 | 35 | Print |
 | 36 | Reduced motion |
+| 37 | Article date display |
+| 38 | Article end block (кнопки + SDG + крест) |
+| 39 | Quiz review mode (разбор ошибок, бонусный тизер) |
+| 40 | Article UI components (stat-grid, compare-cards, pq-scripture, faq-accordion, summary-card) |
 
 ---
 
@@ -274,7 +278,7 @@ quiz: {
   </script>
 </head>
 
-<body id="top">
+<body>
 
 <button id="themeToggle" class="theme-toggle" aria-label="Переключить тему">
   <svg class="icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -327,16 +331,7 @@ quiz: {
 
     <!-- ... -->
 
-    <div class="share-block">
-      <button id="shareBtn" type="button">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/>
-          <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/>
-          <line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/>
-        </svg>
-        Поделиться статьёй
-      </button>
-    </div>
+    <!-- ← JS автоматически вставит .article-end-block перед .sources-block -->
 
   </article>
 

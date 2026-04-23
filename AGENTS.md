@@ -20,14 +20,14 @@
 │   ├── kod-da-vinchi/index.html
 │   ├── krajne-li-isporcheno-serdce/index.html
 │   └── hermenevticheskaya-otsenka-hristotsentrichnoy-germenevtiki/index.html
-├── css/site.css        # единый CSS всего сайта (~5500 строк, 39 секций)
+├── css/site.css        # единый CSS всего сайта (~5800 строк, 40 секций)
 ├── js/site.js          # единый JS всего сайта
 ├── js/bookmark-engine.js
 ├── images/, assets/    # медиа
 ├── feed.xml, sitemap.xml, robots.txt
 ```
 
-Оглавление секций CSS находится в шапке `css/site.css` (строки 1–44).
+Оглавление секций CSS находится в шапке `css/site.css` (строки 1–49).
 
 ---
 
@@ -181,10 +181,14 @@
 
 ---
 
-## Последние значимые коммиты (состояние на 2026-04-21)
+## Последние значимые коммиты (состояние на 2026-04-23)
 
 | Хеш | Что |
 |---|---|
+| `fix-audit` | fix(kdv): FAQPage JSON-LD синхронизирован с HTML-аккордеоном (4 из 8 ответов расходились); sitemap lastmod КДВ и главной → 2026-04-23; feed.xml lastBuildDate + КДВ pubDate → 2026-04-23; fix(js): overscrollBehavior:none добавлен в mod.07 openToc/closeToc; fix(css): color-mix fallback в breadcrumb separator |
+| `fix-audit-2` | fix(js): стрый дублированный `/*` удалён в mod.16 site.js; BookmarkEngine.markCompleted() реализован в bookmark-engine.js (saved.completed+completedAt); fix(kdv): FAQPage JSON-LD синхронизирован с HTML-аккордеоном (8/8 ответов) |
+| `fix-audit-3` | fix(html): id="section-label" aria-hidden добавлен во все 3 статьи (mod.06 section-label активирован); fix(sitemap): lastmod главной и КДВ → 2026-04-23 |
+| `feat-ui` | feat(css): секция 40 — 5 универсальных UI-компонентов (stat-grid, compare-cards, pq-scripture, faq-accordion, summary-card); КДВ: stat-карточки в феномене, compare-cards Кумран/Наг-Хаммади, pull-quote цитаты Писания, анимированный FAQ, summary-card итога |
 | `audit-3` | fix(audit): feed.xml lastBuildDate→Apr 18, krajne pubDate→Apr 1; twitter:image:alt добавлен в about; AGENTS бэклог #7/#20/#22 закрыты |
 | `audit-2` | fix(audit): drop-cap исключён для Типа C; KDV section исправлен; headingAnchors/selectors добавлены в KDV config; README модули 21–27 добавлены; AGENTS бэклог синхронизирован |
 | `audit-1` | fix(audit): Б1–Б6 HTML/CSS (barShareBtn, порядок bottom bar, skip-link, id=content, article-header--no-border, body id=top убран, TOC rail непрерывный) |

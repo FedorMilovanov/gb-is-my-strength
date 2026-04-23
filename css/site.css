@@ -44,6 +44,7 @@
    37. article date display
    38. article end block (кнопки + SDG + крест)
    39. quiz review mode (разбор ошибок, бонусный тизер)
+   40. article ui components (stat-grid, compare-cards, pq-scripture, faq-accordion, summary-card)
 
    ============================================================ */
 
@@ -473,7 +474,8 @@ html.dark .icon-sun { opacity: 1; color: #f5c542; }
 .breadcrumb__item + .breadcrumb__item::before{
   content: "›";
   margin-right: 6px;
-  color: color-mix(in srgb, var(--muted) 55%, transparent);
+  color: var(--muted); opacity: .55; /* Fallback: Safari < 16.2 */
+  color: color-mix(in srgb, var(--muted) 55%, transparent); opacity: 1;
 }
 
 /* Animated underline grows left→right on hover, colour shift */
@@ -4281,6 +4283,10 @@ footer.footer-home {
   }
   .quiz-option.shake { animation: none !important; }
   .quiz-progress-fill { transition: none !important; }
+  /* New components */
+  .faq-accordion__body { transition: none !important; }
+  .faq-accordion__icon { transition: none !important; }
+  .faq-accordion__item.open .faq-accordion__body { max-height: 500px; }
 }
 
 
@@ -5532,4 +5538,272 @@ html.dark .btoc-progress-fill-done {
 }
 .btoc-completed .btoc-reading-time {
   color: var(--accent);
+}
+
+
+/* ============================================================
+   40. ARTICLE UI COMPONENTS
+   stat-grid · compare-cards · pq-scripture · faq-accordion · summary-card
+   ============================================================ */
+
+/* ============================================================
+   STAT GRID — 3-column stat cards (феномен романа и т.п.)
+   ============================================================ */
+.stat-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+  margin: 20px 0 14px;
+}
+.stat-card {
+  border-radius: 10px;
+  padding: 18px 14px;
+  background: var(--note-bg);
+  border: 1px solid var(--border);
+  text-align: center;
+}
+.stat-card__num {
+  font-size: 28px;
+  font-weight: 800;
+  color: var(--accent);
+  line-height: 1;
+  margin-bottom: 5px;
+  letter-spacing: -.02em;
+  font-family: 'Source Sans 3', system-ui, sans-serif;
+}
+.stat-card__label {
+  font-size: 12px;
+  color: var(--muted);
+  line-height: 1.4;
+  font-family: 'Source Sans 3', system-ui, sans-serif;
+}
+@media (max-width: 600px) {
+  .stat-grid { grid-template-columns: 1fr; }
+}
+
+/* ============================================================
+   COMPARE CARDS — парные карточки для сравнения двух объектов
+   ============================================================ */
+.compare-cards {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+  margin: 20px 0;
+}
+.compare-card {
+  border-radius: 10px;
+  overflow: hidden;
+  border: 1px solid var(--border);
+}
+.compare-card__head {
+  padding: 11px 16px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: .06em;
+  text-transform: uppercase;
+  font-family: 'Source Sans 3', system-ui, sans-serif;
+}
+.compare-card--blue .compare-card__head  { background: #eef5fb; color: #1c5070; border-bottom: 1px solid #c8dde8; }
+.compare-card--amber .compare-card__head { background: #fbf4e2; color: #7a5a10; border-bottom: 1px solid #e6d498; }
+html.dark .compare-card--blue .compare-card__head  { background: color-mix(in srgb,#1c5070 18%,transparent); border-bottom-color: color-mix(in srgb,#1c5070 35%,transparent); color: #7cb8d8; }
+html.dark .compare-card--amber .compare-card__head { background: color-mix(in srgb,#7a5a10 18%,transparent); border-bottom-color: color-mix(in srgb,#7a5a10 35%,transparent); color: #c8a050; }
+.compare-card__title {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--text);
+  padding: 11px 16px 4px;
+}
+.compare-card__body { padding: 0 16px 14px; }
+.compare-card__row {
+  display: flex;
+  gap: 8px;
+  align-items: flex-start;
+  padding: 7px 0;
+  border-bottom: 1px solid var(--border);
+  font-size: 12.5px;
+  font-family: 'Source Sans 3', system-ui, sans-serif;
+}
+.compare-card__row:last-child { border-bottom: none; }
+.compare-card__key {
+  font-weight: 600;
+  color: var(--muted);
+  min-width: 84px;
+  flex-shrink: 0;
+  font-size: 11px;
+  padding-top: 2px;
+}
+.compare-card__val { color: var(--text); line-height: 1.45; }
+.badge-no  { display: inline-block; background: #fdecea; color: #a03030; font-size: 10px; font-weight: 700; padding: 2px 8px; border-radius: 10px; }
+.badge-yes { display: inline-block; background: #fbf4e2; color: #7a5a10; font-size: 10px; font-weight: 700; padding: 2px 8px; border-radius: 10px; }
+html.dark .badge-no  { background: color-mix(in srgb,#a03030 22%,transparent); color: #e07070; }
+html.dark .badge-yes { background: color-mix(in srgb,#7a5a10 22%,transparent); color: #c8a050; }
+@media (max-width: 600px) {
+  .compare-cards { grid-template-columns: 1fr; }
+}
+
+/* ============================================================
+   SCRIPTURE PULL-QUOTE — отдельные блоки для цитат Писания
+   ============================================================ */
+.pq-scripture {
+  position: relative;
+  padding: 18px 20px 16px 50px;
+  border-radius: 8px;
+  background: var(--quote-bg);
+  border: 1px solid var(--border);
+  margin-bottom: 10px;
+}
+.pq-scripture:last-child { margin-bottom: 0; }
+.pq-scripture::before {
+  content: '\201C';
+  position: absolute;
+  left: 14px; top: 8px;
+  font-family: Georgia, serif;
+  font-size: 46px;
+  line-height: 1;
+  color: var(--accent);
+  opacity: .3;
+}
+.pq-scripture__text {
+  font-size: 14.5px;
+  line-height: 1.75;
+  font-style: italic;
+  color: var(--text);
+  margin: 0 0 7px;
+}
+.pq-scripture__text strong { font-style: normal; font-weight: 700; }
+.pq-scripture__ref {
+  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-size: 11px;
+  color: var(--muted);
+  font-style: normal;
+  font-weight: 700;
+  letter-spacing: .07em;
+  text-transform: uppercase;
+}
+html.dark .pq-scripture {
+  background: color-mix(in srgb, var(--accent) 7%, var(--bg-elevated));
+  border-color: var(--border);
+}
+html.dark .pq-scripture::before { opacity: .45; }
+
+/* ============================================================
+   FAQ ACCORDION — анимированный аккордеон (toggle class .open)
+   ============================================================ */
+.faq-accordion {
+  border-radius: 10px;
+  overflow: hidden;
+  border: 1px solid var(--border);
+}
+.faq-accordion__item {
+  border-bottom: 1px solid var(--border);
+  overflow: hidden;
+}
+.faq-accordion__item:last-child { border-bottom: none; }
+.faq-accordion__q {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 15px 18px;
+  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text);
+  cursor: pointer;
+  background: var(--bg);
+  transition: background .15s;
+  user-select: none;
+}
+.faq-accordion__q:hover { background: var(--note-bg); }
+.faq-accordion__icon {
+  width: 22px; height: 22px;
+  border-radius: 50%;
+  background: var(--note-bg);
+  border: 1.5px solid var(--border);
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+  font-size: 14px; color: var(--muted); line-height: 1;
+  transition: transform .25s, background .2s, border-color .2s, color .2s;
+}
+.faq-accordion__item.open .faq-accordion__icon {
+  transform: rotate(45deg);
+  background: var(--accent);
+  color: #fff;
+  border-color: var(--accent);
+}
+.faq-accordion__body {
+  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-size: 13.5px;
+  line-height: 1.7;
+  color: var(--muted);
+  padding: 0 18px;
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height .32s ease, padding .3s ease;
+}
+.faq-accordion__item.open .faq-accordion__body {
+  max-height: 500px;
+  padding: 0 18px 16px;
+}
+html.dark .faq-accordion__q { background: var(--bg-elevated); }
+html.dark .faq-accordion__q:hover { background: color-mix(in srgb, var(--accent) 9%, var(--bg-elevated)); }
+/* font-size scaling (Feature #13 font slider) */
+.article-main .faq-accordion__q,
+.article-body .faq-accordion__q { font-size: calc(var(--article-font-size) * 0.875); }
+.article-main .faq-accordion__body,
+.article-body .faq-accordion__body { font-size: calc(var(--article-font-size) * 0.84); }
+
+/* ============================================================
+   SUMMARY CARD — чек-лист итоговой карточки
+   ============================================================ */
+.summary-card {
+  border-radius: 12px;
+  overflow: hidden;
+  border: 1px solid var(--border);
+  margin: 24px 0;
+}
+.summary-card__head {
+  background: var(--accent);
+  color: #fff;
+  padding: 13px 20px;
+  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-size: 11.5px;
+  font-weight: 700;
+  letter-spacing: .09em;
+  text-transform: uppercase;
+}
+.summary-card__body {
+  padding: 4px 0;
+  background: var(--bg);
+}
+.summary-card__item {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 11px 20px;
+  border-bottom: 1px solid var(--border);
+}
+.summary-card__item:last-child { border-bottom: none; }
+.summary-card__check {
+  width: 18px; height: 18px;
+  border-radius: 50%;
+  background: #eef5ea;
+  border: 1.5px solid #b0d0a0;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+  margin-top: 2px;
+  font-size: 10px; color: #4a8a4a; font-weight: 700;
+}
+.summary-card__text {
+  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-size: 13.5px;
+  line-height: 1.55;
+  color: var(--text);
+}
+.summary-card__text strong { color: var(--accent); font-weight: 700; }
+html.dark .summary-card__body { background: var(--bg-elevated); }
+html.dark .summary-card__check {
+  background: color-mix(in srgb,#4a8a4a 15%,transparent);
+  border-color: color-mix(in srgb,#4a8a4a 40%,transparent);
+  color: #7ac87a;
 }

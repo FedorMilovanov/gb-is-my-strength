@@ -394,6 +394,18 @@
     return list.length ? list[0] : null;
   };
 
+  /* Mark current article as completed in localStorage.
+     Called by site.js module 29 when read-progress reaches 98%. */
+  window.BookmarkEngine.markCompleted = function () {
+    try {
+      var saved = getSavedBookmark();
+      if (!saved) return;
+      saved.completed = true;
+      saved.completedAt = Date.now();
+      localStorage.setItem(pageKey, JSON.stringify(saved));
+    } catch (e) {}
+  };
+
   window.BookmarkEngine.clearAllForSite = function () {
     var prefix = 'bookmark:' + config.siteId + ':';
     try {

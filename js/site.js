@@ -530,6 +530,7 @@
       panel.setAttribute('aria-hidden', 'false');
       if (overlay) { overlay.classList.add('open'); overlay.setAttribute('aria-hidden', 'false'); }
       document.body.style.overflow = 'hidden';
+      document.body.style.overscrollBehavior = 'none'; /* iOS Safari: prevent background scroll under panel */
       requestAnimationFrame(function () {
         var focusable = panel.querySelectorAll('a, button, [tabindex="0"]');
         var first = focusable[0];
@@ -552,6 +553,7 @@
       panel.setAttribute('aria-hidden', 'true');
       if (overlay) { overlay.classList.remove('open'); overlay.setAttribute('aria-hidden', 'true'); }
       document.body.style.overflow = '';
+      document.body.style.overscrollBehavior = ''; /* iOS Safari: restore */
       if (_trapHandler) { panel.removeEventListener('keydown', _trapHandler); _trapHandler = null; }
       if (_prevFocus && _prevFocus.focus) { _prevFocus.focus(); _prevFocus = null; }
     }
@@ -1229,7 +1231,6 @@
   })();
 
 
-  /* ============================================================
   /* ============================================================
      16. Quiz Engine  [v3: review mode + wrong-answer tracking]
      ============================================================ */
