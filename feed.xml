@@ -11,7 +11,7 @@
     <language>ru</language>
     <managingEditor>noreply@gospod-bog.ru (Фёдор Милованов)</managingEditor>
     <webMaster>noreply@gospod-bog.ru (Фёдор Милованов)</webMaster>
-    <lastBuildDate>Sat, 18 Apr 2026 00:00:00 +0000</lastBuildDate>
+    <lastBuildDate>Fri, 24 Apr 2026 00:00:00 +0000</lastBuildDate>
     <ttl>1440</ttl>
     <image>
       <url>https://gospod-bog.ru/images/og-preview.jpg</url>
@@ -21,7 +21,21 @@
     <atom:link href="https://gospod-bog.ru/feed.xml" rel="self" type="application/rss+xml"/>
 
     <item>
-      <title>Крайне ли испорчено моё сердце — если я уже верующий?</title>
+      <title>Матфея 5 и Луки 6: одна речь или две? — Нагорная проповедь, часть I</title>
+      <link>https://gospod-bog.ru/articles/nagornaya-propoved-mat-5-luka-6/</link>
+      <guid isPermaLink="true">https://gospod-bog.ru/articles/nagornaya-propoved-mat-5-luka-6/</guid>
+      <pubDate>Sun, 22 Mar 2026 00:00:00 +0000</pubDate>
+      <dc:creator>Фёдор Милованов</dc:creator>
+      <category>Богословие</category>
+      <category>Экзегетика</category>
+      <description><![CDATA[
+        <p>Разбор Нагорной проповеди: соотношение Мф 5 и Лк 6, контекст Луки 6, блаженства и «горе вам», любовь к врагам, два строителя — и непростой вопрос об адресате и применимости к Церкви.</p>
+        <p>Кальвин, Ллойд-Джонс, Скоуфилд, Чейфер, Бок, Карсон, Хендриксен. Ключевые понятия: <em>анавим</em>, <em>passivum divinum</em>, инаугурированная эсхатология, диспенсационализм, ковенантное богословие.</p>
+        <p><a href="https://gospod-bog.ru/articles/nagornaya-propoved-mat-5-luka-6/">Читать статью →</a></p>
+      ]]></description>
+    </item>
+
+    <item>
       <link>https://gospod-bog.ru/articles/krajne-li-isporcheno-serdce/</link>
       <guid isPermaLink="true">https://gospod-bog.ru/articles/krajne-li-isporcheno-serdce/</guid>
       <pubDate>Wed, 01 Apr 2026 00:00:00 +0000</pubDate>
