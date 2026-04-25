@@ -539,7 +539,7 @@ html.dark .breadcrumb__link:focus-visible {
 }
 
 /* Mobile */
-@media (max-width: 560px){
+@media (max-width: 600px){
   .breadcrumb{
     font-size: 12.5px;
   }
@@ -1471,7 +1471,7 @@ html.dark .fact-box h4 { color: #80c880; }
   color: var(--muted);
   line-height: 1.5;
 }
-@media (max-width: 560px) {
+@media (max-width: 600px) {
   .site-scope {
     grid-template-columns: 1fr;
   }

@@ -1101,7 +1101,7 @@ html.dark .h-article-card:hover {
   overflow: hidden;
   background: var(--h-surface);
 }
-@media (max-width: 560px) {
+@media (max-width: 600px) {
   .h-article-thumb { width: 100px; height: 72px; }
 }
 .h-article-thumb img {
@@ -1206,16 +1206,17 @@ html.dark .h-article-card:hover {
 /* Drop cap */
 .h-drop-cap__letter {
   float: left;
-  font-family: 'Source Sans 3', 'Georgia', serif;
-  font-size: 3.6em;
-  font-weight: 700;
+  font-family: 'Cormorant Garamond', 'Georgia', serif;
+  font-size: 4.2em;
+  font-weight: 500;
   font-style: normal;
-  line-height: 0.78;
-  padding-right: 0.06em;
-  padding-top: 0.09em;
+  line-height: 0.72;
+  padding-right: 0.08em;
+  padding-top: 0.06em;
   color: var(--h-accent);
   font-feature-settings: "kern" 1, "liga" 0;
   -webkit-font-smoothing: antialiased;
+  letter-spacing: -0.01em;
 }
 html.dark .h-drop-cap__letter {
   color: var(--h-accent);
