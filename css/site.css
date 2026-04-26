@@ -273,7 +273,27 @@ body {
   -webkit-font-smoothing: antialiased;
   transition: background .25s, color .25s;
   overflow-wrap: break-word;
+  /* Русские переносы — работает благодаря lang="ru" на <html> */
+  hyphens: auto;
+  -webkit-hyphens: auto;
+  hyphenate-limit-chars: 8 4 4;
+  -webkit-hyphenate-limit-before: 4;
+  -webkit-hyphenate-limit-after: 4;
+  hyphenate-limit-lines: 2;
 }
+
+/* Переносы отключены там, где они выглядят плохо */
+h1, h2, h3, h4, h5, h6,
+code, pre, kbd,
+a, abbr,
+button, label, input, select, textarea,
+.fn-marker, .tooltip, .gtip,
+.toc-link, .nav-link,
+[data-no-hyphens] {
+  hyphens: none;
+  -webkit-hyphens: none;
+}
+
 
 /* Плавная смена темы для общих блоков */
 .bottom-bar,
@@ -775,11 +795,24 @@ article p {
   margin: 0 0 1.5em 0;
   text-align: justify;
   hyphens: auto;
+  -webkit-hyphens: auto;
+  hyphenate-limit-chars: 8 4 4;
+  -webkit-hyphenate-limit-before: 4;
+  -webkit-hyphenate-limit-after: 4;
+  hyphenate-limit-lines: 2;
+  overflow-wrap: break-word;
 }
-/* Fix #5: justify + hyphens:none = рваные пробелы на мобильных.
-   Расширяем breakpoint до 899px — на узком viewport justify только мешает */
+/* Fix #5 updated: на мобильных используем left + hyphens:auto (не none!).
+   hyphens:none без переносов давал "хвосты" длинных русских слов на отдельных строках.
+   hyphens:auto + text-align:left — оптимально: без дыр в строках и без кривых обрывов */
 @media (max-width: 899px) {
-  article p { text-align: left; hyphens: none; }
+  article p {
+    text-align: left;
+    hyphens: auto;
+    -webkit-hyphens: auto;
+    hyphenate-limit-chars: 8 4 4;
+    hyphenate-limit-lines: 2;
+  }
 }
 article a { color: var(--link); text-decoration: none; }
 article a:hover { color: var(--accent); text-decoration: none; }
@@ -1888,20 +1921,20 @@ footer.quote-attribution cite { font-style: normal; }
 }
 .article-figure img:hover { filter: brightness(1) contrast(1); }
 .article-figure::after{
-  content: "🔍";
+  content: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='32' height='32' viewBox='0 0 32 32' fill='none'%3E%3Ccircle cx='14' cy='14' r='7' stroke='%23ffffff' stroke-width='1.5' stroke-opacity='0.85'/%3E%3Cline x1='19.2' y1='19.2' x2='24' y2='24' stroke='%23ffffff' stroke-width='1.5' stroke-linecap='round' stroke-opacity='0.85'/%3E%3C/svg%3E");
   position: absolute;
   right: 10px;
-  bottom: 10px;
+  top: 10px;
   width: 32px;
   height: 32px;
   display: grid;
   place-items: center;
   border-radius: 999px;
-  border: 1px solid var(--border);
-  background: color-mix(in srgb, var(--bg) 86%, transparent);
-  box-shadow: var(--shadow-sm);
-  font-size: 14px;
-  line-height: 1;
+  border: 1px solid rgba(255,255,255,0.18);
+  background: rgba(0,0,0,0.32);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  box-shadow: 0 1px 6px rgba(0,0,0,0.22);
   pointer-events: none;
   transform-origin: 50% 50%;
   animation: fx-breathe 2.4s ease-in-out infinite;
@@ -2078,8 +2111,8 @@ footer.quote-attribution cite { font-style: normal; }
 .timeline-anim::before { display: none; }
 .timeline-anim li {
   display: flex;
-  align-items: baseline;
-  gap: 20px;
+  align-items: center;
+  gap: 12px;
   padding: 10px 0;
   position: relative;
   opacity: 0;
@@ -2089,16 +2122,13 @@ footer.quote-attribution cite { font-style: normal; }
 .timeline-anim li.tl-visible { opacity: 1; transform: translateY(0); }
 .timeline-anim .tl-dot {
   display: block;
-  position: absolute;
-  left: 69px;
-  top: 50%;
-  transform: translateY(-50%);
+  position: relative;
+  flex-shrink: 0;
   width: 10px;
   height: 10px;
   border-radius: 50%;
   background: var(--accent);
   border: 2px solid var(--bg);
-  flex-shrink: 0;
   opacity: 0;
   transition: opacity 0.4s ease 0.3s;
 }
@@ -2117,7 +2147,6 @@ footer.quote-attribution cite { font-style: normal; }
   font-size: 14px;
   color: var(--text);
   line-height: 1.5;
-  padding-left: 22px;
 }
 
 
@@ -2397,7 +2426,7 @@ footer.quote-attribution cite { font-style: normal; }
   bottom: 0; left: 0; right: 0;
   background: var(--bg);
   border-radius: 20px 20px 0 0;
-  max-height: 70vh;
+  max-height: 85vh;
   overflow: hidden;
   display: flex;
   flex-direction: column;
@@ -2407,14 +2436,14 @@ footer.quote-attribution cite { font-style: normal; }
 }
 .btoc-overlay.open .btoc-panel { transform: translateY(0); }
 
-.btoc-handle { display: flex; justify-content: center; padding: 12px 0 4px; flex-shrink: 0; }
+.btoc-handle { display: flex; justify-content: center; padding: 8px 0 2px; flex-shrink: 0; }
 .btoc-handle::after { content: ''; width: 36px; height: 4px; border-radius: 2px; background: var(--border); }
 
 .btoc-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 8px 20px 14px;
+  padding: 6px 20px 10px;
   flex-shrink: 0;
 }
 .btoc-header-left { display: flex; flex-direction: column; gap: 2px; }
@@ -2439,7 +2468,7 @@ footer.quote-attribution cite { font-style: normal; }
   display: flex;
   align-items: center;
   gap: 12px;
-  padding: 0 20px 16px;
+  padding: 0 20px 10px;
   flex-shrink: 0;
 }
 .btoc-progress-bar-wrap {
@@ -2492,15 +2521,7 @@ footer.quote-attribution cite { font-style: normal; }
 }
 .btoc-link.active .btoc-link-text { color: var(--accent); font-weight: 600; }
 .btoc-reading-time {
-  padding: 0 20px 12px;
-  font-family: 'Source Sans 3', system-ui, sans-serif;
-  font-size: 11px;
-  color: var(--muted);
-  display: flex;
-  gap: 16px;
-  flex-shrink: 0;
-  border-bottom: 1px solid var(--border);
-  margin-bottom: 4px;
+  display: none;
 }
 
 /* #1 Share button inside bottom TOC */
@@ -4334,10 +4355,10 @@ footer.footer-home {
   }
   .quiz-option.shake { animation: none !important; }
   .quiz-progress-fill { transition: none !important; }
-  /* New components */
-  .faq-accordion__body { transition: none !important; }
-  .faq-accordion__icon { transition: none !important; }
-  .faq-accordion__item.open .faq-accordion__body { max-height: 500px; }
+  /* FAQ accordion */
+  .faq-accordion__body      { transition: none !important; }
+  .faq-accordion__body-inner{ transition: none !important; }
+  .faq-accordion__icon      { transition: none !important; }
 }
 
 
@@ -5739,6 +5760,9 @@ html.dark .pq-scripture::before { opacity: .45; }
 
 /* ============================================================
    FAQ ACCORDION — анимированный аккордеон (toggle class .open)
+   Стандарт 2025: grid-template-rows вместо max-height,
+   кнопочная разметка, SVG-иконка через CSS pseudo-elements.
+   Эталонная разметка — см. AGENTS.md § FAQ-компонент.
    ============================================================ */
 .faq-accordion {
   border-radius: 10px;
@@ -5747,25 +5771,40 @@ html.dark .pq-scripture::before { opacity: .45; }
 }
 .faq-accordion__item {
   border-bottom: 1px solid var(--border);
-  overflow: hidden;
 }
 .faq-accordion__item:last-child { border-bottom: none; }
+
+/* ── Кнопка-заголовок: полный сброс + стили ── */
 .faq-accordion__q {
+  /* button reset */
+  appearance: none;
+  border: none;
+  background: var(--bg);
+  width: 100%;
+  text-align: left;
+  /* layout */
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 12px;
   padding: 15px 18px;
+  /* typography */
   font-family: 'Source Sans 3', system-ui, sans-serif;
   font-size: 14px;
   font-weight: 600;
   color: var(--text);
   cursor: pointer;
-  background: var(--bg);
-  transition: background .15s;
   user-select: none;
+  transition: background .15s;
 }
 .faq-accordion__q:hover { background: var(--note-bg); }
+.faq-accordion__q:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: -2px;
+  border-radius: 4px;
+}
+
+/* ── Иконка: CSS-only SVG-крест (без текстового «+») ── */
 .faq-accordion__icon {
   width: 22px; height: 22px;
   border-radius: 50%;
@@ -5773,36 +5812,64 @@ html.dark .pq-scripture::before { opacity: .45; }
   border: 1.5px solid var(--border);
   display: flex; align-items: center; justify-content: center;
   flex-shrink: 0;
-  font-size: 14px; color: var(--muted); line-height: 1;
-  transition: transform .25s, background .2s, border-color .2s, color .2s;
+  position: relative;
+  transition: transform .28s cubic-bezier(0.4, 0, 0.2, 1),
+              background .2s, border-color .2s;
 }
+.faq-accordion__icon::before,
+.faq-accordion__icon::after {
+  content: '';
+  position: absolute;
+  background: var(--muted);
+  border-radius: 1px;
+  transition: background .2s;
+}
+.faq-accordion__icon::before { width: 10px; height: 1.5px; }
+.faq-accordion__icon::after  { width: 1.5px; height: 10px; }
 .faq-accordion__item.open .faq-accordion__icon {
   transform: rotate(45deg);
   background: var(--accent);
-  color: #fff;
   border-color: var(--accent);
 }
+.faq-accordion__item.open .faq-accordion__icon::before,
+.faq-accordion__item.open .faq-accordion__icon::after {
+  background: #fff;
+}
+
+/* ── Тело: grid-template-rows 0fr→1fr (без жёсткого max-height) ── */
 .faq-accordion__body {
+  display: grid;
+  grid-template-rows: 0fr;
+  transition: grid-template-rows .35s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.faq-accordion__item.open .faq-accordion__body {
+  grid-template-rows: 1fr;
+}
+
+/* ── Внутренний контейнер: overflow + типографика ── */
+.faq-accordion__body-inner {
+  overflow: hidden;
   font-family: 'Source Sans 3', system-ui, sans-serif;
   font-size: 13.5px;
   line-height: 1.7;
   color: var(--muted);
   padding: 0 18px;
-  max-height: 0;
-  overflow: hidden;
-  transition: max-height .32s ease, padding .3s ease;
+  padding-bottom: 0;
+  transition: padding-bottom .35s cubic-bezier(0.4, 0, 0.2, 1);
 }
-.faq-accordion__item.open .faq-accordion__body {
-  max-height: 500px;
-  padding: 0 18px 16px;
+.faq-accordion__item.open .faq-accordion__body-inner {
+  padding-bottom: 16px;
 }
+
+/* ── Тёмная тема ── */
 html.dark .faq-accordion__q { background: var(--bg-elevated); }
 html.dark .faq-accordion__q:hover { background: color-mix(in srgb, var(--accent) 9%, var(--bg-elevated)); }
-/* font-size scaling (Feature #13 font slider) */
+
+/* ── Font-size scaling (Feature #13 font slider) ── */
 .article-main .faq-accordion__q,
 .article-body .faq-accordion__q { font-size: calc(var(--article-font-size) * 0.875); }
-.article-main .faq-accordion__body,
-.article-body .faq-accordion__body { font-size: calc(var(--article-font-size) * 0.84); }
+.article-main .faq-accordion__body-inner,
+.article-body .faq-accordion__body-inner { font-size: calc(var(--article-font-size) * 0.84); }
 
 /* ============================================================
    SUMMARY CARD — чек-лист итоговой карточки

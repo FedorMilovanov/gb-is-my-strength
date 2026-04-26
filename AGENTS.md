@@ -143,6 +143,61 @@
 
 ---
 
+## FAQ-компонент (эталон 2025)
+
+Стандартная разметка для ВСЕХ новых статей. Не использовать `onclick` на `<div>` — только `<button>` с `aria-expanded`.
+
+### Разметка одного вопроса (copy-paste):
+```html
+<h2 id="sec-faq">Часто задаваемые вопросы</h2>
+
+<div class="faq-accordion">
+
+  <div class="faq-accordion__item">
+    <button class="faq-accordion__q" aria-expanded="false">
+      Текст вопроса?
+      <span class="faq-accordion__icon" aria-hidden="true"></span>
+    </button>
+    <div class="faq-accordion__body">
+      <div class="faq-accordion__body-inner">
+        Текст ответа.
+      </div>
+    </div>
+  </div>
+
+  <!-- Добавляй faq-accordion__item-блоки по тому же шаблону -->
+
+</div>
+```
+
+### Правила:
+- `<button>` обязателен — `<div onclick>` запрещён (нет доступности с клавиатуры).
+- `aria-expanded="false"` ставится в HTML; JS переключает его при клике автоматически (mod. FAQ ACCORDION в `site.js`).
+- `<span class="faq-accordion__icon" aria-hidden="true">` — **пустой**, иконка-крест отрисована через `::before`/`::after` в CSS.
+- `<div class="faq-accordion__body-inner">` — **обязателен** внутри `.faq-accordion__body`; без него grid-анимация не работает.
+- Текст вопроса — прямо в `<button>`, без лишних `<span>`.
+- В `id="sec-faq"` заголовка используй `sec-faq` если раздел в навигации TOC; `spravka` — если отдельная справочная секция после основного текста.
+- JSON-LD `FAQPage` в `<head>` нужно синхронизировать с HTML-вопросами вручную.
+
+### Как работает анимация (CSS):
+- `.faq-accordion__body` — `display:grid; grid-template-rows: 0fr` → `1fr` (переход без ограничения по высоте).
+- `.faq-accordion__body-inner` — `overflow:hidden` + анимация `padding-bottom`.
+- Анимация отключается при `prefers-reduced-motion`.
+
+### Что НЕ делать:
+```html
+<!-- ❌ Старая разметка — ЗАПРЕЩЕНА -->
+<div class="faq-accordion__item" onclick="this.classList.toggle('open')">
+  <div class="faq-accordion__q">
+    <span>Вопрос?</span>
+    <div class="faq-accordion__icon">+</div>   <!-- текстовый + -->
+  </div>
+  <div class="faq-accordion__body">Ответ.</div>  <!-- без inner-wrapper -->
+</div>
+```
+
+---
+
 ## Архитектура квиза (эталон — КДВ)
 
 Статья `kod-da-vinchi` является эталоном разметки квиза. Структура обязательна. Статья `krajne-li-isporcheno-serdce` — эталон с бонусным раундом.

@@ -778,32 +778,21 @@
 
     document.body.classList.add('has-bottom-bar');
 
-    /* --- Умная видимость bar (scroll-direction aware) --- */
+    /* --- Умная видимость bar (scroll-direction aware) ---
+       Паттерн: скрываем при скролле ВНИЗ (читатель читает, не мешаем),
+       показываем при скролле ВВЕРХ (навигационное намерение).
+       Такой же паттерн у Medium, Substack, Guardian, NYT. */
     var barVisible    = false;
     var _lastScrollY  = window.scrollY;
     var _accumulated  = 0;    /* накопленный сдвиг: + вниз, − вверх      */
-    var SHOW_AFTER    = 300;  /* px от верха — ниже bar всегда скрыт     */
-    var HIDE_UP       = -80;  /* накопленный upscroll → скрыть            */
-    var SHOW_DOWN     =  60;  /* накопленный downscroll → показать        */
-    var _resumeTimer  = null;
+    var SHOW_AFTER    = 300;  /* px от верха — bar скрыт в шапке          */
+    var HIDE_DOWN     =  10;  /* накопленный downscroll → скрыть (быстро) */
+    var SHOW_UP       = -80;  /* накопленный upscroll → показать          */
 
     function setBarVisible(show) {
       if (show === barVisible) return;
       barVisible = show;
       bar.classList.toggle('visible', show);
-      if (!show) {
-        /* Автовозврат: если пользователь замер на 2.5 с → показать снова */
-        _resumeTimer = setTimeout(function () {
-          if (window.scrollY >= SHOW_AFTER && !overlay.classList.contains('open')) {
-            setBarVisible(true);
-            _accumulated = 0;
-          }
-        }, 2500);
-      } else {
-        /* Бар показан — отменяем любой висящий таймер, чтобы не дублировать */
-        clearTimeout(_resumeTimer);
-        _resumeTimer = null;
-      }
     }
 
     function updateBar() {
@@ -823,12 +812,12 @@
         /* 2. Финальные 10% — всегда виден (читатель у конца статьи) */
         setBarVisible(true);
       } else {
-        /* 3. Умное направление: накапливаем дельту, реагируем на устойчивый тренд */
+        /* 3. Стандарт: вниз — прячем, вверх — показываем */
         _accumulated += delta;
-        _accumulated  = Math.max(HIDE_UP - 20, Math.min(SHOW_DOWN + 20, _accumulated));
+        _accumulated  = Math.max(SHOW_UP - 20, Math.min(HIDE_DOWN + 20, _accumulated));
 
-        if      (_accumulated >= SHOW_DOWN) { setBarVisible(true);  _accumulated = 0;       }
-        else if (_accumulated <= HIDE_UP)   { setBarVisible(false); _accumulated = HIDE_UP; }
+        if      (_accumulated >= HIDE_DOWN) { setBarVisible(false); _accumulated = HIDE_DOWN; }
+        else if (_accumulated <= SHOW_UP)   { setBarVisible(true);  _accumulated = 0;         }
         /* иначе — держим текущее состояние до накопления порога */
       }
 
@@ -851,7 +840,6 @@
 
     var ticking = false;
     window.addEventListener('scroll', function () {
-      clearTimeout(_resumeTimer); /* любое движение отменяет авто-возврат */
       if (!ticking) { ticking = true; requestAnimationFrame(function () { updateBar(); ticking = false; }); }
     }, { passive: true });
     updateBar();
@@ -859,7 +847,6 @@
     /* --- Скрывать bar при фокусе на полях ввода (мобильная клавиатура) --- */
     document.addEventListener('focusin', function (e) {
       if (e.target && e.target.matches && e.target.matches('input, textarea, select, [contenteditable]')) {
-        clearTimeout(_resumeTimer);
         setBarVisible(false);
       }
     });
@@ -3392,6 +3379,31 @@
       chars.forEach(function (c) {
         c.style.transform = '';
         c.style.opacity   = '';
+      });
+    });
+  })();
+
+  /* ============================================================
+     FAQ ACCORDION — стандарт 2025: button + aria-expanded + grid-animation.
+     Разметка (эталон, см. AGENTS.md § FAQ-компонент):
+       <div class="faq-accordion__item">
+         <button class="faq-accordion__q" aria-expanded="false">
+           Текст вопроса
+           <span class="faq-accordion__icon" aria-hidden="true"></span>
+         </button>
+         <div class="faq-accordion__body">
+           <div class="faq-accordion__body-inner">Текст ответа</div>
+         </div>
+       </div>
+     ============================================================ */
+  (function () {
+    document.querySelectorAll('.faq-accordion__q').forEach(function (btn) {
+      btn.addEventListener('click', function () {
+        var item = btn.closest('.faq-accordion__item');
+        if (!item) return;
+        var isOpen = item.classList.contains('open');
+        item.classList.toggle('open', !isOpen);
+        btn.setAttribute('aria-expanded', String(!isOpen));
       });
     });
   })();
