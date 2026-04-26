@@ -2411,6 +2411,115 @@
   })();
 
 
+  
+  /* ============================================================
+     20b. Glossary Terms (gterm / gtip)
+     ============================================================ */
+  (function () {
+    var gterms = document.querySelectorAll('.gterm');
+    if (!gterms.length) return;
+
+    var activeGterm = null;
+    var justOpened = false;
+
+    function closeGlossary() {
+      if (justOpened) return;
+      if (activeGterm) {
+        var tip = activeGterm.querySelector('.gtip');
+        activeGterm.classList.remove('is-open');
+        activeGterm = null;
+        if (tip) {
+          setTimeout(function () {
+            tip.style.maxHeight = '';
+            tip.style.overflowY = '';
+            tip.style.visibility = '';
+            tip.style.top = '-9999px';
+            tip.style.left = '-9999px';
+          }, 200);
+        }
+      }
+    }
+
+    function positionGtip(gt) {
+      var tip = gt.querySelector('.gtip');
+      if (!tip) return;
+      tip.style.visibility = 'hidden';
+      tip.style.left = '0px';
+      tip.style.top = '0px';
+      var r = gt.getBoundingClientRect();
+      var tw = tip.offsetWidth, th = tip.offsetHeight;
+      var mg = 16, vw = window.innerWidth, vh = window.innerHeight;
+      var left = r.left + r.width / 2 - tw / 2;
+      if (left + tw > vw - mg) left = vw - mg - tw;
+      if (left < mg) left = mg;
+      var top = r.top - th - 8;
+      if (top >= mg) { tip.style.left = left+'px'; tip.style.top = top+'px'; tip.style.visibility=''; return; }
+      top = r.bottom + 8;
+      if (top + th <= vh - mg) { tip.style.left = left+'px'; tip.style.top = top+'px'; tip.style.visibility=''; return; }
+      var avT = r.top - mg - 8, avB = vh - mg - r.bottom - 8;
+      if (avT >= avB) {
+        tip.style.maxHeight = avT+'px'; tip.style.overflowY='auto';
+        tip.style.left = left+'px'; tip.style.top = mg+'px';
+      } else {
+        tip.style.maxHeight = avB+'px'; tip.style.overflowY='auto';
+        tip.style.left = left+'px'; tip.style.top = (r.bottom+8)+'px';
+      }
+      tip.style.visibility = '';
+    }
+
+    function openGtip(gt) {
+      closeGlossary();
+      gt.classList.add('is-open');
+      activeGterm = gt;
+      positionGtip(gt);
+      justOpened = true;
+      setTimeout(function () { justOpened = false; }, 350);
+    }
+
+    gterms.forEach(function (gt) {
+      var moved = false;
+      gt.addEventListener('touchstart', function () { moved = false; }, { passive: true });
+      gt.addEventListener('touchmove', function () { moved = true; }, { passive: true });
+      gt.addEventListener('touchend', function (e) {
+        if (moved) return;
+        e.preventDefault();
+        if (activeGterm === gt) { justOpened = false; closeGlossary(); }
+        else { openGtip(gt); }
+      }, { passive: false });
+      gt.addEventListener('click', function (e) {
+        if (!window.matchMedia('(hover: hover) and (pointer: fine)').matches) { e.preventDefault(); return; }
+        e.preventDefault(); e.stopPropagation();
+        if (activeGterm === gt) { closeGlossary(); return; }
+        openGtip(gt);
+      });
+      gt.addEventListener('mouseenter', function () {
+        if (window.matchMedia('(hover: hover) and (pointer: fine)').matches) {
+          positionGtip(gt); gt.classList.add('is-open'); activeGterm = gt;
+        }
+      });
+      gt.addEventListener('mouseleave', function () {
+        if (!window.matchMedia('(hover: hover) and (pointer: fine)').matches) return;
+        var tip = gt.querySelector('.gtip');
+        if (tip && tip.matches(':hover')) return;
+        closeGlossary();
+      });
+      gt.addEventListener('focus', function () { openGtip(gt); });
+      gt.addEventListener('blur', function () { closeGlossary(); });
+    });
+
+    document.addEventListener('click', function (e) {
+      if (!e.target.closest('.gterm') && !e.target.closest('.gtip')) closeGlossary();
+    });
+    document.addEventListener('touchstart', function (e) {
+      if (!e.target.closest('.gterm') && !e.target.closest('.gtip')) closeGlossary();
+    }, { passive: true });
+    window.addEventListener('resize', closeGlossary, { passive: true });
+    window.addEventListener('orientationchange', closeGlossary, { passive: true });
+    document.addEventListener('keydown', function (e) { if (e.key === 'Escape') closeGlossary(); });
+  })();
+
+
+
   /* ============================================================
      21. Typography — неразрывные пробелы вокруг тире
      ============================================================ */
