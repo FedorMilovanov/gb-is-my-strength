@@ -16,6 +16,13 @@
   </url>
 
   <url>
+    <loc>https://gospod-bog.ru/articles/</loc>
+    <lastmod>2026-04-27T00:00:00+03:00</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  <url>
     <loc>https://gospod-bog.ru/articles/kod-da-vinchi/</loc>
     <lastmod>2026-04-23T00:00:00+03:00</lastmod>
     <changefreq>monthly</changefreq>
@@ -25,6 +32,13 @@
   <url>
     <loc>https://gospod-bog.ru/articles/krajne-li-isporcheno-serdce/</loc>
     <lastmod>2026-04-18T00:00:00+03:00</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.9</priority>
+  </url>
+
+  <url>
+    <loc>https://gospod-bog.ru/articles/nagornaya-propoved-mat-5-luka-6/</loc>
+    <lastmod>2026-04-26T00:00:00+03:00</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.9</priority>
   </url>

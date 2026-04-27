@@ -1,28 +1,239 @@
 # Архитектура сайта — Господь Бог — Сила Моя
-## Версия 1.3 — Апрель 2026
+## Версия 2.0 — Апрель 2026
 
 ---
 
-## Структура файлов
+---
+
+## SEO-инфраструктура — Версия 2.0 (Апрель 2026)
+
+### Что настроено
+
+| Файл / место | Что делает |
+|---|---|
+| `.github/workflows/indexnow.yml` | При каждом push в `main` автоматически уведомляет Яндекс и Bing об изменённых страницах через IndexNow |
+| `sitemap.xml` | Содержит все страницы включая `/articles/` |
+| `feed.xml` | RSS-лента для агрегаторов и поиска |
+| `turbo-feed.xml` | Яндекс Турбо-страницы — ускоренные версии статей для мобильного поиска |
+| `articles/index.html` | Страница-каталог всех статей; промежуточный уровень в BreadcrumbList |
+| JSON-LD `@graph` главной | `WebSite` + `CollectionPage` + `Person` (с `sameAs` на соцсети) |
+| JSON-LD статей | `Article` / `ScholarlyArticle` + `BreadcrumbList` (3 уровня: Главная → Статьи → Статья) |
+
+### IndexNow — что нужно сделать один раз
+
+1. Сгенерировать ключ на [indexnow.org](https://www.indexnow.org/en)
+2. Положить файл `{ключ}.txt` в корень репозитория (содержимое файла = сам ключ)
+3. В GitHub → Settings → Secrets → Actions добавить секрет `INDEXNOW_KEY` = значение ключа
+4. Зарегистрировать ключ в [Яндекс.Вебмастер → IndexNow](https://webmaster.yandex.ru/indexnow/) и [Bing Webmaster](https://www.bing.com/indexnow)
+
+После этого каждый `git push main` будет автоматически уведомлять поисковики.
+
+### Яндекс Турбо — что нужно сделать один раз
+
+Зарегистрировать `turbo-feed.xml` в Яндекс.Вебмастер:
+Сайты → gospod-bog.ru → Турбо-страницы → Добавить ленту → `https://gospod-bog.ru/turbo-feed.xml`
+
+---
+
+## Добавление новой статьи — полный чеклист
+
+### 1. Создать файл статьи
+
+```
+articles/{slug}/index.html
+```
+
+Взять за основу шаблон ниже. Slug — строчные латинские буквы и дефисы, без слэша в начале.
+
+### 2. Обязательные мета-теги в `<head>`
+
+```html
+<!-- SEO -->
+<title>Заголовок статьи — Господь Бог — Сила Моя</title>
+<meta name="description" content="150–160 символов, описывает суть статьи.">
+<meta name="keywords" content="ключевое слово 1, слово 2, слово 3">
+<meta name="robots" content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1">
+<meta name="author" content="Фёдор Милованов">
+<!-- Если статья — перевод, добавить обе строки: -->
+<!-- <meta name="author" content="Имя Автора Оригинала"> -->
+<!-- <meta name="translator" content="Фёдор Милованов"> -->
+<meta name="geo.region" content="RU-SPE">
+<meta name="geo.placename" content="Санкт-Петербург">
+<link rel="canonical" href="https://gospod-bog.ru/articles/{slug}/">
+<link rel="alternate" type="application/rss+xml" title="Господь Бог — Сила Моя — RSS" href="https://gospod-bog.ru/feed.xml">
+
+<!-- Open Graph -->
+<meta property="og:type" content="article">
+<meta property="og:title" content="Краткий заголовок без сайта">
+<meta property="og:description" content="Описание для соцсетей, 1–2 предложения.">
+<meta property="og:url" content="https://gospod-bog.ru/articles/{slug}/">
+<meta property="og:image" content="https://gospod-bog.ru/images/{slug}-preview.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:type" content="image/jpeg">
+<!-- Если изображение .webp — менять на image/webp -->
+<meta property="og:image:alt" content="Описание изображения">
+<meta property="og:site_name" content="Господь Бог — Сила Моя">
+<meta property="og:locale" content="ru_RU">
+<meta property="article:published_time" content="2026-MM-DDT00:00:00+03:00">
+<meta property="article:modified_time" content="2026-MM-DDT00:00:00+03:00">
+<meta property="article:author" content="Фёдор Милованов">
+<meta property="article:section" content="Богословие">
+<!-- Повторить для каждого тега: -->
+<meta property="article:tag" content="тег 1">
+<meta property="article:tag" content="тег 2">
+
+<!-- Preload LCP-изображения (если есть hero-картинка в начале статьи) -->
+<link rel="preload" as="image" fetchpriority="high" href="../../images/{slug}-hero.jpg">
+```
+
+### 3. JSON-LD в `<head>`
+
+```json
+{
+  "@context": "https://schema.org",
+  "@graph": [
+  {
+    "@type": "Article",
+    "@id": "https://gospod-bog.ru/articles/{slug}/#article",
+    "headline": "Полный заголовок статьи",
+    "description": "Краткое описание.",
+    "url": "https://gospod-bog.ru/articles/{slug}/",
+    "datePublished": "2026-MM-DDT00:00:00+03:00",
+    "dateModified": "2026-MM-DDT00:00:00+03:00",
+    "inLanguage": "ru",
+    "author": { "@id": "https://gospod-bog.ru/about/#person" },
+    "publisher": { "@id": "https://gospod-bog.ru/about/#person" },
+    "image": {
+      "@type": "ImageObject",
+      "url": "https://gospod-bog.ru/images/{slug}-preview.jpg",
+      "width": 1200,
+      "height": 630
+    },
+    "mainEntityOfPage": {
+      "@type": "WebPage",
+      "@id": "https://gospod-bog.ru/articles/{slug}/"
+    },
+    "articleSection": "Богословие",
+    "keywords": "ключевые слова через запятую"
+  },
+  {
+    "@type": "BreadcrumbList",
+    "itemListElement": [
+      {"@type": "ListItem", "position": 1, "name": "Главная", "item": "https://gospod-bog.ru/"},
+      {"@type": "ListItem", "position": 2, "name": "Статьи", "item": "https://gospod-bog.ru/articles/"},
+      {"@type": "ListItem", "position": 3, "name": "Название статьи", "item": "https://gospod-bog.ru/articles/{slug}/"}
+    ]
+  }
+  ]
+}
+```
+
+Если статья — перевод, заменить тип `Article` на `ScholarlyArticle` и добавить поле `translator`:
+```json
+"@type": "ScholarlyArticle",
+"author": { "@type": "Person", "name": "Имя Автора Оригинала" },
+"translator": { "@id": "https://gospod-bog.ru/about/#person" }
+```
+
+### 4. Обновить `sitemap.xml`
+
+Добавить блок перед `</urlset>`:
+```xml
+<url>
+  <loc>https://gospod-bog.ru/articles/{slug}/</loc>
+  <lastmod>2026-MM-DDT00:00:00+03:00</lastmod>
+  <changefreq>monthly</changefreq>
+  <priority>0.9</priority>
+</url>
+```
+
+### 5. Обновить `feed.xml`
+
+Добавить `<item>` в начало `<channel>` (новые статьи идут первыми):
+```xml
+<item>
+  <title>Заголовок статьи</title>
+  <link>https://gospod-bog.ru/articles/{slug}/</link>
+  <guid isPermaLink="true">https://gospod-bog.ru/articles/{slug}/</guid>
+  <pubDate>Mon, 01 Jan 2026 00:00:00 +0000</pubDate>
+  <dc:creator>Фёдор Милованов</dc:creator>
+  <category>Богословие</category>
+  <description><![CDATA[
+    <p>Краткое описание статьи для RSS-читалок.</p>
+    <p><a href="https://gospod-bog.ru/articles/{slug}/">Читать статью →</a></p>
+  ]]></description>
+</item>
+```
+
+### 6. Обновить `turbo-feed.xml`
+
+Добавить `<item>` аналогично `feed.xml`, добавив Турбо-поля:
+```xml
+<item>
+  <title>Заголовок статьи</title>
+  <link>https://gospod-bog.ru/articles/{slug}/</link>
+  <guid isPermaLink="true">https://gospod-bog.ru/articles/{slug}/</guid>
+  <pubDate>Mon, 01 Jan 2026 00:00:00 +0000</pubDate>
+  <turbo:content>enabled</turbo:content>
+  <yandex:author>Фёдор Милованов</yandex:author>
+  <yandex:topic>Богословие</yandex:topic>
+  <enclosure url="https://gospod-bog.ru/images/{slug}-preview.jpg" type="image/jpeg" length="0"/>
+  <yandex:full-text><![CDATA[
+    <!-- Полный HTML тела статьи из <article>...</article> -->
+  ]]></yandex:full-text>
+</item>
+```
+
+### 7. Добавить карточку на `/articles/index.html` и на `index.html`
+
+В обоих файлах — в нужный раздел (`<section id="publikacii">` или `<section id="razbor">`) добавить `<li>` с карточкой статьи по образцу существующих карточек.
+
+### 8. Обновить `lastBuildDate` в `feed.xml`
+
+```xml
+<lastBuildDate>Mon, 01 Jan 2026 00:00:00 +0000</lastBuildDate>
+```
+
+### 9. Подготовить OG-изображение
+
+Размер: **1200 × 630 px** (соотношение 40:21).
+Форматы: `.jpg` или `.webp`. Если `.jpg` — в мета-теге `og:image:type` указать `image/jpeg`.
+Разместить в `/images/`.
+
+### 10. IndexNow — автоматически
+
+После `git push main` GitHub Actions сам отправит URL новой статьи в Яндекс и Bing. Ничего делать не нужно — только убедиться, что секрет `INDEXNOW_KEY` настроен (один раз).
+
+---
+
+## Структура файлов (актуальная)
 
 ```
 /
-├── index.html                          ← Главная страница
-├── css/
-│   └── site.css                        ← ВСЕ общие стили (~5800 строк)
-├── js/
-│   ├── site.js                         ← ВСЕ общие скрипты (~3300 строк)
-│   └── bookmark-engine.js              ← Движок закладок (~545 строк, не менять)
+├── index.html                              ← Главная страница
+├── about/index.html                        ← Страница об авторе
 ├── articles/
-│   ├── kod-da-vinchi/
-│   │   └── index.html                  ← Статья: Код да Винчи
-│   ├── krajne-li-isporcheno-serdce/
-│   │   └── index.html                  ← Статья: Крайне ли испорчено сердце
-│   └── hermenevticheskaya-otsenka-hristotsentrichnoy-germenevtiki/
-│       └── index.html                  ← Статья: Герменевтика
-└── images/
-    └── ...
+│   ├── index.html                          ← Каталог всех статей (/articles/)
+│   ├── {slug}/index.html                   ← Каждая статья в своей папке
+│   └── ...
+├── css/
+│   ├── site.css                            ← Все общие стили
+│   └── home.css                            ← Стили главной страницы
+├── js/
+│   ├── site.js                             ← Все общие скрипты
+│   └── bookmark-engine.js                  ← Движок закладок (не трогать)
+├── images/                                 ← Все изображения
+├── sitemap.xml                             ← Карта сайта для поисковиков
+├── feed.xml                                ← RSS-лента
+├── turbo-feed.xml                          ← Яндекс Турбо-страницы
+├── robots.txt                              ← Управление ботами (вкл. AI-боты)
+├── {indexnow-key}.txt                      ← Ключ IndexNow (добавить вручную)
+└── .github/
+    └── workflows/
+        └── indexnow.yml                    ← GitHub Actions: push-индексация
 ```
+
 
 ---
 
