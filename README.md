@@ -14,7 +14,6 @@
 | `.github/workflows/indexnow.yml` | При каждом push в `main` автоматически уведомляет Яндекс и Bing об изменённых страницах через IndexNow |
 | `sitemap.xml` | Содержит все страницы включая `/articles/` |
 | `feed.xml` | RSS-лента для агрегаторов и поиска |
-| `turbo-feed.xml` | Яндекс Турбо-страницы — ускоренные версии статей для мобильного поиска |
 | `articles/index.html` | Страница-каталог всех статей; промежуточный уровень в BreadcrumbList |
 | JSON-LD `@graph` главной | `WebSite` + `CollectionPage` + `Person` (с `sameAs` на соцсети) |
 | JSON-LD статей | `Article` / `ScholarlyArticle` + `BreadcrumbList` (3 уровня: Главная → Статьи → Статья) |
@@ -28,12 +27,7 @@
 
 После этого каждый `git push main` будет автоматически уведомлять поисковики.
 
-### Яндекс Турбо — что нужно сделать один раз
 
-Зарегистрировать `turbo-feed.xml` в Яндекс.Вебмастер:
-Сайты → gospod-bog.ru → Турбо-страницы → Добавить ленту → `https://gospod-bog.ru/turbo-feed.xml`
-
----
 
 ## Добавление новой статьи — полный чеклист
 
@@ -166,24 +160,6 @@ articles/{slug}/index.html
 </item>
 ```
 
-### 6. Обновить `turbo-feed.xml`
-
-Добавить `<item>` аналогично `feed.xml`, добавив Турбо-поля:
-```xml
-<item>
-  <title>Заголовок статьи</title>
-  <link>https://gospod-bog.ru/articles/{slug}/</link>
-  <guid isPermaLink="true">https://gospod-bog.ru/articles/{slug}/</guid>
-  <pubDate>Mon, 01 Jan 2026 00:00:00 +0000</pubDate>
-  <turbo:content>enabled</turbo:content>
-  <yandex:author>Фёдор Милованов</yandex:author>
-  <yandex:topic>Богословие</yandex:topic>
-  <enclosure url="https://gospod-bog.ru/images/{slug}-preview.jpg" type="image/jpeg" length="0"/>
-  <yandex:full-text><![CDATA[
-    <!-- Полный HTML тела статьи из <article>...</article> -->
-  ]]></yandex:full-text>
-</item>
-```
 
 ### 7. Добавить карточку на `/articles/index.html` и на `index.html`
 
@@ -226,7 +202,6 @@ articles/{slug}/index.html
 ├── images/                                 ← Все изображения
 ├── sitemap.xml                             ← Карта сайта для поисковиков
 ├── feed.xml                                ← RSS-лента
-├── turbo-feed.xml                          ← Яндекс Турбо-страницы
 ├── robots.txt                              ← Управление ботами (вкл. AI-боты)
 ├── {indexnow-key}.txt                      ← Ключ IndexNow (добавить вручную)
 └── .github/
