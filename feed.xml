@@ -20,7 +20,19 @@
     </image>
     <atom:link href="https://gospod-bog.ru/feed.xml" rel="self" type="application/rss+xml"/>
 
-    <item>
+    
+  <!-- Нагорная проповедь — полная серия (добавлено 2026-04-30) -->
+  <item>
+    <title>Нагорная проповедь — полная серия (5 частей)</title>
+    <link>https://gospod-bog.ru/nagornaya/</link>
+    <description>Сравнительное исследование Матфея 5–7 и Луки 6:17–49. 5 частей · 120+ источников · 21 верифицированная находка. TMS · MacArthur · Chicago Statement · v4.0 · 2026.</description>
+    <pubDate>Thu, 30 Apr 2026 02:04:44 +0000</pubDate>
+    <guid isPermaLink="true">https://gospod-bog.ru/nagornaya/</guid>
+    <category>Богословие</category>
+    <category>Нагорная проповедь</category>
+    <category>Экзегеза</category>
+  </item>
+  <item>
       <title>Матфея 5 и Луки 6: одна речь или две? — Нагорная проповедь, часть I</title>
       <link>https://gospod-bog.ru/articles/nagornaya-propoved-mat-5-luka-6/</link>
       <guid isPermaLink="true">https://gospod-bog.ru/articles/nagornaya-propoved-mat-5-luka-6/</guid>
