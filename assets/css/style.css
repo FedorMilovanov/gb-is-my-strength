@@ -1,0 +1,37 @@
+:root { --max: 860px; }
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  font: 16px/1.65 system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+  color: #111;
+  background: #fff;
+}
+a { color: #0b57d0; text-decoration: none; }
+a:hover { text-decoration: underline; }
+
+header, footer {
+  padding: 18px 16px;
+  background: #f6f7f8;
+}
+main { padding: 28px 16px; }
+.wrap { max-width: var(--max); margin: 0 auto; }
+
+.site-title { font-weight: 800; letter-spacing: .2px; }
+.meta { color: #555; font-size: 14px; margin: 8px 0 18px; }
+
+article h1 { line-height: 1.2; margin: 0 0 10px; font-size: 32px; }
+article h2 { margin-top: 1.6em; }
+article p { margin: 0 0 1em; }
+
+.notice{
+  margin: 18px 0 22px;
+  padding: 12px 14px;
+  border: 1px solid #ffe1a6;
+  background: #fff7e6;
+  border-radius: 10px;
+  font-size: 14px;
+  color: #333;
+}
+.notice p{ margin: 8px 0; }
+
+.list { padding-left: 18px; }
