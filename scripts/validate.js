@@ -52,9 +52,9 @@ const VALID_SECTIONS = new Set(['Переводы', 'Публикации', 'Р�
 // Брейкпоинты дизайн-системы проекта. Чек #8 и CSS-чек предупреждают
 // только о значениях ВНЕ этого набора. При расширении — добавляйте сюда.
 const PROJECT_BREAKPOINTS = new Set([
-  '360px', '430px', '440px', '480px',
-  '540px', '600px', '640px', '660px', '680px',
-  '700px', '768px', '820px', '899px',
+  '360px', '380px', '430px', '440px', '480px',
+  '540px', '560px', '600px', '640px', '660px', '680px',
+  '700px', '760px', '768px', '820px', '860px', '899px',
   '900px', '1024px', '1100px', '1200px',
 ]);
 
@@ -87,7 +87,8 @@ function validateArticle(slug) {
   const html = fs.readFileSync(file, 'utf8');
 
   // #1 canonical совпадает со slugом
-  const canonical = html.match(/<link\s+rel="canonical"\s+href="([^"]+)"/)?.[1];
+  const canonical = html.match(/<link\s+[^>]*rel="canonical"[^>]*href="([^"]+)"/)?.[1]
+    ?? html.match(/<link\s+[^>]*href="([^"]+)"[^>]*rel="canonical"/)?.[1];
   if (!canonical) {
     err(slug, 'нет <link rel="canonical">');
   } else if (!canonical.endsWith(`/articles/${slug}/`)) {
@@ -103,12 +104,13 @@ function validateArticle(slug) {
   }
 
   // #3 article:modified_time присутствует
-  if (!/<meta\s+property="article:modified_time"/.test(html)) {
+  if (!/<meta\s+[^>]*property="article:modified_time"/.test(html)) {
     warn(slug, 'article:modified_time отсутствует — update-meta.js должен был добавить');
   }
 
   // #4 OG-изображение: файл существует
-  const ogImg = html.match(/<meta\s+property="og:image"\s+content="([^"]+)"/)?.[1];
+  const ogImg = html.match(/<meta\s+[^>]*property="og:image"[^>]*content="([^"]+)"/)?.[1]
+    ?? html.match(/<meta\s+[^>]*content="([^"]+)"[^>]*property="og:image"/)?.[1];
   if (!ogImg) {
     err(slug, 'нет og:image');
   } else {
@@ -143,7 +145,8 @@ function validateArticle(slug) {
   }
 
   // #9 JSON-LD BreadcrumbList: последний элемент совпадает с og:title
-  const ogTitle      = html.match(/<meta\s+property="og:title"\s+content="([^"]+)"/)?.[1];
+  const ogTitle      = html.match(/<meta\s+[^>]*property="og:title"[^>]*content="([^"]+)"/)?.[1]
+    ?? html.match(/<meta\s+[^>]*content="([^"]+)"[^>]*property="og:title"/)?.[1];
   const breadcrumbLD = html.match(/"BreadcrumbList"[\s\S]{0,800}"name":\s*"([^"]+)"\s*\}\s*\]/)?.[1];
   if (breadcrumbLD && ogTitle && breadcrumbLD !== ogTitle) {
     warn(slug, `BreadcrumbList последний элемент "${breadcrumbLD}" ≠ og:title "${ogTitle}"`);
@@ -171,16 +174,21 @@ function validateArticle(slug) {
   }
 
   // #13 <title> совпадает с og:title ─────────────────────────────────────────
-  // <title> может иметь суффикс " — SITE_NAME" — сравниваем без него
+  // <title> может иметь суффикс " — SITE_NAME", " | SITE_NAME" или " | gb"
   const SITE_SUFFIX = ` — ${SITE_NAME}`;
   const titleRaw    = html.match(/<title>([^<]+)<\/title>/)?.[1]?.trim() ?? '';
-  const titleNorm   = titleRaw.endsWith(SITE_SUFFIX)
-    ? titleRaw.slice(0, -SITE_SUFFIX.length).trim()
-    : titleRaw;
+  let titleNorm     = titleRaw;
+  // Strip any known site suffix variants
+  for (const sfx of [SITE_SUFFIX, ` | ${SITE_NAME}`, ' | gb', ' | Господь Бог']) {
+    if (titleNorm.endsWith(sfx)) {
+      titleNorm = titleNorm.slice(0, -sfx.length).trim();
+      break;
+    }
+  }
   if (titleNorm && ogTitle && titleNorm !== ogTitle) {
     warn(slug,
-      `<title> ≠ og:title\n` +
-      `           <title>: "${titleNorm}"\n` +
+      `<title> ≠ og:title\\n` +
+      `           <title>: "${titleNorm}"\\n` +
       `         og:title: "${ogTitle}"`
     );
   }
@@ -208,7 +216,11 @@ function validateArticle(slug) {
   for (const [, raw] of ldBlocks) {
     try {
       const parsed  = JSON.parse(raw.trim());
-      const schemas = Array.isArray(parsed) ? parsed : [parsed];
+      // Flatten: top-level array OR @graph array OR single object
+      let schemas = Array.isArray(parsed) ? parsed : [parsed];
+      schemas = schemas.flatMap(s =>
+        (s && Array.isArray(s['@graph'])) ? s['@graph'] : [s]
+      );
       for (const s of schemas) {
         if (s['@type'] === 'FAQPage' && Array.isArray(s.mainEntity)) {
           ldQuestions = s.mainEntity
