@@ -1089,6 +1089,9 @@ html.dark .h-card-planned:hover .h-card-icon {
   color: var(--h-muted);
   line-height: 1.6;
   margin: 0;
+  word-break: break-word;
+  overflow-wrap: break-word;
+  hyphens: auto;
 }
 
 /* ============================================================
