@@ -192,13 +192,6 @@
             <div class="text-xs leading-tight text-stone-500">Закон и Евангелие</div>
           </div>
         </a>
-        <a href="/nagornaya/nakhodki/" class="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-left transition-all text-stone-300 hover:bg-stone-800 hover:text-white">
-          <span class="text-stone-400 shrink-0 flex items-center justify-center w-8 h-8 rounded-lg bg-stone-800/40"><svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg></span>
-          <div>
-            <div class="font-semibold text-sm leading-tight">Находки</div>
-            <div class="text-xs leading-tight text-stone-500">21 находка</div>
-          </div>
-        </a>
         <a href="/nagornaya/istochniki/" class="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-left transition-all text-stone-300 hover:bg-stone-800 hover:text-white">
           <span class="text-stone-400 shrink-0 flex items-center justify-center w-8 h-8 rounded-lg bg-stone-800/40"><svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><rect width="20" height="5" x="2" y="3" rx="1"/><path d="M4 8v11a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8"/><path d="M10 12h4"/></svg></span>
           <div>
@@ -276,14 +269,7 @@
               <div class="text-xs opacity-70">Закон и Евангелие</div>
             </div>
           </a>
-          <a href="/nagornaya/nakhodki/" class="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-left transition-all text-stone-300 hover:bg-stone-800 hover:text-white">
-            <span class="shrink-0 flex items-center justify-center w-9 h-9 rounded-lg bg-stone-800/40 text-stone-300"><svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg></span>
-            <div>
-              <div class="font-semibold">Находки</div>
-              <div class="text-xs opacity-70">21 находка</div>
-            </div>
-          </a>
-          <a href="/nagornaya/istochniki/" class="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-left transition-all text-stone-300 hover:bg-stone-800 hover:text-white">
+            <a href="/nagornaya/istochniki/" class="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-left transition-all text-stone-300 hover:bg-stone-800 hover:text-white">
             <span class="shrink-0 flex items-center justify-center w-9 h-9 rounded-lg bg-stone-800/40 text-stone-300"><svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><rect width="20" height="5" x="2" y="3" rx="1"/><path d="M4 8v11a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8"/><path d="M10 12h4"/></svg></span>
             <div>
               <div class="font-semibold">Источники</div>
@@ -299,7 +285,7 @@
 
       <nav class="text-xs flex items-center flex-wrap gap-0.5 mb-2"><a href="/articles/" class="text-stone-500 hover:text-amber-600 transition-colors">Статьи</a><span class="text-stone-400 mx-1.5">/</span><a href="/nagornaya/" class="text-stone-500 hover:text-amber-600 transition-colors">Нагорная проповедь</a><span class="text-stone-400 mx-1.5">/</span><span class="text-stone-700 font-medium">Часть III</span></nav>
 
-      <div class="bg-gradient-to-br from-purple-800 to-purple-950 text-white rounded-3xl p-8 md:p-12 shadow-2xl">
+      <div class="relative text-white rounded-3xl overflow-hidden p-8 md:p-12 shadow-2xl" style="background: linear-gradient(135deg, rgba(88,28,135,0.88) 0%, rgba(46,16,101,0.93) 100%), url('/images/og-nagornaya-propoved-chast-3.webp') center/cover no-repeat;">
 <div class="text-xs text-purple-300 mb-2 font-bold uppercase tracking-widest">Статья III</div>
 <h1 class="text-3xl md:text-5xl font-extrabold mb-4 tracking-tight">Кому это сказано?</h1>
 <p class="text-purple-100 text-lg md:text-xl font-medium leading-relaxed">Адресат Нагорной проповеди: между историческим иудейским контекстом и современной Церковью</p>
@@ -668,6 +654,19 @@
 
 <script>
 (function(){
+  document.querySelectorAll('.tooltip-trigger').forEach(function(el){
+    var box = document.createElement('div');
+    box.className = 'tt-box absolute z-50 bottom-full left-1/2 -translate-x-1/2 mb-3 w-72 p-4 text-sm text-stone-100 bg-stone-900 rounded-xl shadow-2xl border border-stone-700 leading-relaxed hidden';
+    box.innerHTML = el.getAttribute('data-tooltip') + '<div class="absolute w-3 h-3 bg-stone-900 border-b border-r border-stone-700 rotate-45 -bottom-1.5 left-1/2 -translate-x-1/2"></div>';
+    el.style.position = 'relative';
+    el.style.cursor = 'help';
+    el.style.borderBottom = '1px dotted currentColor';
+    el.appendChild(box);
+    el.addEventListener('mouseenter', function(){ box.classList.remove('hidden'); });
+    el.addEventListener('mouseleave', function(){ setTimeout(function(){ box.classList.add('hidden'); }, 150); });
+    el.addEventListener('click', function(e){ e.stopPropagation(); box.classList.toggle('hidden'); });
+    el.addEventListener('touchend', function(e){ e.preventDefault(); box.classList.toggle('hidden'); });
+  });
   document.querySelectorAll('.tt').forEach(function(el){
     var box = document.createElement('div');
     box.className = 'tt-box absolute z-50 bottom-full left-1/2 -translate-x-1/2 mb-3 w-72 p-4 text-sm text-stone-100 bg-stone-900 rounded-xl shadow-2xl border border-stone-700 leading-relaxed hidden';
