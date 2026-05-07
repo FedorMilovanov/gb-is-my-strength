@@ -118,7 +118,7 @@
 
     var shown = false;
     setTimeout(function() {
-      if (shown || !document.hidden) {
+      if (!shown && !document.hidden) {
         /* Article is being read — it's being cached by SW stale-while-revalidate */
         /* Show subtle toast only if user hasn't seen it this session */
         var key = 'gb-offline-hint';

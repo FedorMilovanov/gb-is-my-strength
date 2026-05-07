@@ -8,6 +8,7 @@
   <link rel="icon" type="image/x-icon" href="/favicon.ico">
   <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
   <link rel="icon" type="image/png" sizes="48x48" href="/favicon-48.png">
+  <link rel="icon" type="image/png" sizes="120x120" href="/favicon-120.png">
   <link rel="icon" type="image/png" sizes="192x192" href="/icons/icon-192.png">
   <link rel="manifest" href="/manifest.json">
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -107,8 +108,14 @@
       background: var(--accent-soft);
     }
   </style>
+<style>
+.skip-link{position:absolute;top:-40px;left:0;background:#14100b;color:#f5f0e8;padding:8px 16px;text-decoration:none;font-size:14px;z-index:10000;border-radius:0 0 4px 0;transition:top .2s}
+.skip-link:focus{top:0}
+</style>
 </head>
 <body>
+<a href="#main-content" class="skip-link">Перейти к содержимому</a>
+
   <button id="themeToggle" class="theme-toggle" aria-label="Переключить тему">
     <svg class="icon-moon" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
       <path d="M21 12.8A9 9 0 1111.2 3 7 7 0 0021 12.8z"/>
