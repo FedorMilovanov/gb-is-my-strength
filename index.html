@@ -747,7 +747,9 @@ window.SITE_CONFIG = {
 
   function updateScrollTop() {
     let s = window.scrollY;
-    if (s > 500) scrollTopBtn.classList.add('visible');
+    const docH = document.documentElement.scrollHeight - window.innerHeight;
+    const nearBottom = docH > 0 && (docH - s) < 120;
+    if (s > 500 && !nearBottom) scrollTopBtn.classList.add('visible');
     else scrollTopBtn.classList.remove('visible');
   }
   if (scrollTopBtn) {
@@ -932,7 +934,7 @@ window.SITE_CONFIG = {
       const isAmbient = p.side === 'center';
       el.className = 'h-phrase h-phrase--' + p.lang + (isAmbient ? ' h-phrase--ambient' : '');
       el.textContent = p.text;
-      const style = 'top:' + p.top + ';font-size:' + p.size + 'rem;opacity:' + p.opacity + ';--phrase-opacity:' + p.opacity + ';';
+      let style = 'top:' + p.top + ';font-size:' + p.size + 'rem;opacity:' + p.opacity + ';--phrase-opacity:' + p.opacity + ';';
       if (p.side === 'center') {
         style += 'left:50%;transform:translateX(-50%);';
       } else if (p.side === 'left') {
