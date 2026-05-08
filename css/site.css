@@ -1490,6 +1490,23 @@ html.dark .fact-box h4 { color: #80c880; }
   transition: opacity .3s;
 }
 
+/* ── Резиновая анимация букв «Сила Моя» ──────────────────────────── */
+@keyframes sti-rubber {
+  0%   { transform: translateY(0)    scaleY(1)    scaleX(1); }
+  18%  { transform: translateY(-11px) scaleY(1.18) scaleX(0.88); }
+  42%  { transform: translateY(4px)  scaleY(0.9)  scaleX(1.06); }
+  62%  { transform: translateY(-5px) scaleY(1.08) scaleX(0.95); }
+  78%  { transform: translateY(2px)  scaleY(0.96) scaleX(1.02); }
+  100% { transform: translateY(0)    scaleY(1)    scaleX(1); }
+}
+.sti-highlight span {
+  display: inline-block;
+  will-change: transform;
+}
+.sti-highlight span.is-bouncing {
+  animation: sti-rubber 0.55s cubic-bezier(.36,.07,.19,.97) both;
+}
+
 .site-header .site-desc {
   font-family: 'Source Sans 3', system-ui, sans-serif;
   margin: 0 0 0;
@@ -2017,15 +2034,24 @@ footer.quote-attribution cite { font-style: normal; }
   /* z-index выше toc-panel (19001) и share-dialog (19100) — просмотр изображений
      всегда поверх любых панелей и диалогов. */
   z-index: 19200;
-  background: rgba(0,0,0,.72);
+  background: rgba(0,0,0,.82);
+  backdrop-filter: blur(18px) saturate(0.7);
+  -webkit-backdrop-filter: blur(18px) saturate(0.7);
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 18px;
+  /* Bug 3: padding ≥ 28px гарантирует, что кнопка закрытия (.img-viewer__top,
+     right: -14px от края панели) никогда не выходит за viewport на узких экранах.
+     safe-area-inset обрабатывает Dynamic Island / notch. */
+  padding:
+    max(28px, calc(env(safe-area-inset-top,    0px) + 28px))
+    max(28px, calc(env(safe-area-inset-right,  0px) + 28px))
+    max(28px, calc(env(safe-area-inset-bottom, 0px) + 28px))
+    max(28px, calc(env(safe-area-inset-left,   0px) + 28px));
   opacity: 0;
   visibility: hidden;
   pointer-events: none;
-  transition: opacity .2s ease, visibility .2s;
+  transition: opacity .28s ease, visibility .28s;
 }
 .img-viewer.is-open{
   opacity: 1;
@@ -2033,27 +2059,37 @@ footer.quote-attribution cite { font-style: normal; }
   pointer-events: auto;
 }
 .img-viewer__panel{
-  width: min(1060px, 96vw);
-  max-height: 92vh;
-  background: var(--bg);
-  border: 1px solid var(--border);
-  border-radius: 14px;
-  box-shadow: var(--shadow-xl);
-  overflow: hidden;
+  position: relative;
+  max-width: min(1200px, 96vw);
+  max-height: 96vh;
   display: flex;
   flex-direction: column;
+  align-items: center;
+  background: transparent;
+  border: none;
+  box-shadow: none;
+  transform: scale(0.88);
+  opacity: 0;
+  transition: transform .32s cubic-bezier(0.34, 1.42, 0.64, 1), opacity .28s ease;
+}
+.img-viewer.is-open .img-viewer__panel{
+  transform: scale(1);
+  opacity: 1;
 }
 .img-viewer__top{
-  display: flex;
-  justify-content: flex-end;
-  padding: 10px 10px 0;
+  position: absolute;
+  top: -14px;
+  right: -14px;
+  z-index: 2;
   flex-shrink: 0;
 }
 .img-viewer__close{
-  border: 1px solid var(--border);
-  background: var(--bg);
-  color: var(--text);
-  border-radius: 10px;
+  border: 1px solid rgba(255,255,255,0.22);
+  background: rgba(20,20,20,0.72);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  color: #fff;
+  border-radius: 50%;
   width: 40px;
   height: 40px;
   cursor: pointer;
@@ -2061,27 +2097,38 @@ footer.quote-attribution cite { font-style: normal; }
   display: flex;
   align-items: center;
   justify-content: center;
+  transition: background .18s, transform .18s;
+}
+.img-viewer__close:hover{
+  background: rgba(60,60,60,0.88);
+  transform: scale(1.1);
 }
 .img-viewer__body{
-  padding: 10px 12px 14px;
-  display: grid;
-  gap: 10px;
-  overflow-y: auto;        /* прокрутка при высоком портретном изображении + длинной подписи */
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  overflow-y: auto;
   overscroll-behavior: contain;
+  max-height: 96vh;
 }
 .img-viewer__img{
-  width: 100%;
+  max-width: 100%;
+  max-height: 88vh;
+  width: auto;
   height: auto;
-  max-height: 72vh;
   object-fit: contain;
   display: block;
-  background: var(--note-bg);
+  border-radius: 8px;
+  box-shadow: 0 8px 60px rgba(0,0,0,0.7), 0 2px 12px rgba(0,0,0,0.5);
 }
 .img-viewer__cap{
   font-family: 'Source Sans 3', system-ui, sans-serif;
   font-size: 13px;
-  color: var(--muted);
+  color: rgba(255,255,255,0.65);
   line-height: 1.45;
+  text-align: center;
+  max-width: 640px;
 }
 
 .figure-pair {
