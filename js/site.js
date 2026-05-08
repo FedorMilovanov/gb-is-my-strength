@@ -1607,6 +1607,11 @@
     document.addEventListener('keydown', function (e) {
       if (!wrapper || wrapper.style.display === 'none') return;
 
+      /* Не перехватываем, если фокус в текстовом поле */
+      var _tag = (document.activeElement || {}).tagName || '';
+      if (_tag === 'INPUT' || _tag === 'TEXTAREA' || _tag === 'SELECT') return;
+      if ((document.activeElement || {}).isContentEditable) return;
+
       var isAnswered = inReview ? reviewAnswered : (inBonus ? bonusAnswered : answered);
 
       if (e.key === 'Enter' || e.key === ' ') {
@@ -2984,7 +2989,7 @@
     var pageType = SiteUtils.getConfig('page.type', '');
     if (pageType !== 'article') return;
 
-    var imgs = document.querySelectorAll('.article-figure img');
+    var imgs = document.querySelectorAll('.article-figure img, .article-img img, .nagornaya-hero-img');
     if (!imgs.length) return;
 
     var viewer = document.createElement('div');
@@ -3040,8 +3045,9 @@
 
     imgs.forEach(function (img) {
       img.setAttribute('tabindex', '0');
+      img.style.cursor = 'zoom-in';
       img.addEventListener('click', function () {
-        var fig = img.closest('.article-figure');
+        var fig = img.closest('.article-figure, .article-img');
         var cap = fig && fig.querySelector('figcaption');
         open(img.currentSrc || img.src, img.alt, cap ? cap.textContent.trim() : '');
       });

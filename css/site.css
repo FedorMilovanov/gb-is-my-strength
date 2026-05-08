@@ -931,6 +931,10 @@ html.dark .pullquote .pq-attribution { color: var(--accent); }
   height: auto;
   display: block;
   border-radius: 4px;
+  cursor: zoom-in;
+}
+.nagornaya-hero-img {
+  cursor: zoom-in;
 }
 .article-img figcaption:not(.epilogue-caption) {
   font-family: 'Source Sans 3', system-ui, sans-serif;
