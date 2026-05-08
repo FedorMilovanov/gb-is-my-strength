@@ -3003,7 +3003,7 @@
           '<button type="button" class="img-viewer__close" aria-label="Закрыть">\u2715</button>' +
         '</div>' +
         '<div class="img-viewer__body">' +
-          '<img class="img-viewer__img" alt="">' +
+          '<img class="img-viewer__img" alt="" loading="eager">' +
           '<div class="img-viewer__cap"></div>' +
         '</div>' +
       '</div>';
@@ -3275,42 +3275,54 @@
   })();
 
   /* ============================================================
-     INTERACTIVE TITLE — при hover на «Сила Моя» буквы
-     появляются с лёгкой волной (staggered fade-in по слогам).
+     INTERACTIVE TITLE — резиновая волна по буквам «Сила Моя»
+     при mouseenter на заголовке. Каждая буква получает CSS-класс
+     .is-bouncing с keyframe sti-rubber и stagger-задержкой.
      ============================================================ */
   (function () {
     var hi = document.querySelector('.sti-highlight');
     if (!hi) return;
 
-    // Разбиваем текст на символы с span-обёртками
+    var reduceMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+    /* Разбиваем текст на буквы */
     var text = hi.textContent;
     hi.textContent = '';
     for (var i = 0; i < text.length; i++) {
       var s = document.createElement('span');
       s.textContent = text[i];
-      var reduceMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-      s.style.cssText = reduceMotion
-        ? 'display:inline-block;'
-        : 'display:inline-block;transition:transform .3s ease,opacity .3s ease;transition-delay:' + (i * 22) + 'ms';
       hi.appendChild(s);
     }
 
-    var chars = hi.querySelectorAll('span');
+    var chars = Array.prototype.slice.call(hi.querySelectorAll('span'));
     var title = document.querySelector('.site-title-interactive');
     if (!title) return;
 
-    title.addEventListener('mouseenter', function () {
-      chars.forEach(function (c) {
-        c.style.transform = 'translateY(-2px)';
-        c.style.opacity   = '1';
+    var running = false;
+
+    function bounce() {
+      if (reduceMotion || running) return;
+      running = true;
+      var STAGGER = 55; /* мс между буквами */
+      var DUR = 550;    /* мс длительность одной анимации */
+      chars.forEach(function (c, i) {
+        setTimeout(function () {
+          c.classList.remove('is-bouncing');
+          /* reflow чтобы анимация стартовала заново */
+          void c.offsetWidth;
+          c.style.animationDelay = '0ms';
+          c.classList.add('is-bouncing');
+        }, i * STAGGER);
       });
-    });
-    title.addEventListener('mouseleave', function () {
-      chars.forEach(function (c) {
-        c.style.transform = '';
-        c.style.opacity   = '';
-      });
-    });
+      /* Сбрасываем флаг после завершения всей волны */
+      var totalDur = (chars.length - 1) * STAGGER + DUR;
+      setTimeout(function () {
+        running = false;
+        chars.forEach(function (c) { c.classList.remove('is-bouncing'); });
+      }, totalDur);
+    }
+
+    title.addEventListener('mouseenter', bounce);
   })();
 
   /* ============================================================

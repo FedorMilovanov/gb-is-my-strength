@@ -665,11 +665,26 @@
     box.innerHTML = el.getAttribute('data-tip') + '<div class="absolute w-3 h-3 bg-stone-900 border-b border-r border-stone-700 rotate-45 -bottom-1.5 left-1/2 -translate-x-1/2"></div>';
     el.style.position = 'relative';
     el.appendChild(box);
-    el.addEventListener('mouseenter', function(){ box.classList.remove('hidden'); });
+    el.addEventListener('mouseenter', function(){ box.classList.remove('hidden'); _clampTtBox(box); });
     el.addEventListener('mouseleave', function(){ box.classList.add('hidden'); });
     el.addEventListener('click', function(e){ e.stopPropagation(); box.classList.toggle('hidden'); });
   });
-  document.addEventListener('click', function(){ document.querySelectorAll('.tt-box').forEach(function(b){ b.classList.add('hidden'); }); });
+    // Bug-fix: clamp tooltip within viewport and close on scroll/touchmove
+  function _clampTtBox(b){
+    var MG=8, r=b.getBoundingClientRect(), vw=window.innerWidth, sh=0;
+    if(r.left<MG) sh=MG-r.left;
+    else if(r.right>vw-MG) sh=-(r.right-(vw-MG));
+    b.style.transform='translateX(calc(-50% + '+sh+'px))';
+  }
+  function _closeAllTtBoxes(){
+    document.querySelectorAll('.tt-box').forEach(function(b){
+      b.classList.add('hidden');
+      b.style.transform='';
+    });
+  }
+  document.addEventListener('click', _closeAllTtBoxes);
+  window.addEventListener('scroll', _closeAllTtBoxes, {passive:true});
+  window.addEventListener('touchmove', _closeAllTtBoxes, {passive:true});
 })();
 </script>
 
@@ -729,8 +744,8 @@
     'display:none',
     'position:fixed',
     'z-index:9999',
-    'max-width:340px',
-    'min-width:200px',
+    'max-width:min(340px,calc(100vw - 20px))',
+    'min-width:min(200px,calc(100vw - 20px))',
     'padding:10px 14px',
     'background:#1c1917',
     'color:#e7e5e4',
@@ -779,6 +794,16 @@
     sup.setAttribute('aria-label', 'Сноска ' + key);
     sup.style.textDecoration = 'underline dotted';
     sup.style.textUnderlineOffset = '2px';
+
+    sup.addEventListener('mouseenter', function(){
+      tooltip.textContent = key + ' ' + fnMap[key];
+      currentSup = sup;
+      positionTooltip(sup.getBoundingClientRect());
+    });
+    sup.addEventListener('mouseleave', function(){
+      tooltip.style.display = 'none';
+      currentSup = null;
+    });
 
     sup.addEventListener('click', function(e){
       e.stopPropagation();
