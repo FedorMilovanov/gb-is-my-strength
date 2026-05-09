@@ -101,7 +101,7 @@
 ├── js/bookmark-engine.js
 ├── images/, assets/    # медиа
 
-> ⚠️ **Контентные изображения отсутствуют в репозитории** — файлы `ieremia-*.webp`, `hero-kod-da-vinchi.jpg`, `ieremia-cover.jpg`, `hermenevtika-preview.webp` нужно загружать отдельно в `/images/`. OG-изображения Нагорной проповеди (`og-nagornaya-propoved*.webp`) и `og-preview.jpg` присутствуют. До загрузки статейных OG-картинок в `og:image`/`twitter:image` статей `kod-da-vinchi`, `krajne-li-isporcheno-serdce` и `hermenevticheskaya` временно стоит `og-preview.jpg` — вернуть оригинальные URL после загрузки.
+> ✅ **Все изображения присутствуют в репозитории.** Контентные изображения (`ieremia-*.webp`, `hero-kod-da-vinchi.jpg`, `ieremia-cover.jpg`, `hermenevtika-preview.webp`), OG-изображения статей (`og-kod-da-vinchi.jpg`, `og-krajne-isporcheno.jpg`, `hermenevtika-preview.jpg`) и OG-изображения Нагорной проповеди (`og-nagornaya-propoved*.webp`, `og-preview.jpg`) — все загружены и корректно подключены в `og:image` соответствующих страниц.
 ├── feed.xml, sitemap.xml, robots.txt
 ```
 

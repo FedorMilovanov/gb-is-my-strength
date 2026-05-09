@@ -330,10 +330,16 @@
     }
 
     function syncThemeColor(isDark) {
-      document.querySelectorAll('meta[name="theme-color"]').forEach(function (m) {
-        m.setAttribute('content', isDark ? '#0e1116' : '#fdfcf9');
-        m.removeAttribute('media');
-      });
+      var color = isDark ? '#0e1116' : '#fdfcf9';
+      var metas = document.querySelectorAll('meta[name="theme-color"]');
+      if (metas.length > 1) {
+        /* Первый вызов: удаляем дублирующие media-query теги и оставляем один,
+           которым управляет JS. Это предотвращает конфликт между OS-prefers и
+           JS-состоянием после того, как пользователь явно переключил тему. */
+        metas.forEach(function (m, i) { if (i > 0) m.parentNode.removeChild(m); });
+      }
+      metas[0].removeAttribute('media');
+      metas[0].setAttribute('content', color);
     }
 
     toggle.addEventListener('click', function () {
@@ -1048,8 +1054,16 @@
       if (btocFill) btocFill.style.width = pct + '%';
       if (btocPct) btocPct.textContent = pct + '%';
 
-      var minLeft = Math.max(1, Math.round(totalReadingMin * (1 - pct / 100)));
-      if (btocTimeLeft) btocTimeLeft.textContent = pct >= 98 ? '✅ Прочитано!' : '📖 Осталось: ~' + minLeft + ' мин';
+      var minLeftRaw = Math.round(totalReadingMin * (1 - pct / 100));
+      var timeText;
+      if (pct >= 98) {
+        timeText = '✅ Прочитано!';
+      } else if (minLeftRaw < 1) {
+        timeText = '📖 Осталось: ~1 мин';
+      } else {
+        timeText = '📖 Осталось: ~' + minLeftRaw + ' мин';
+      }
+      if (btocTimeLeft) btocTimeLeft.textContent = timeText;
 
       var scrollMid = scrollY + window.innerHeight * 0.35;
       var active = tocItems[0];
