@@ -4274,6 +4274,9 @@ ul.reading-list li:last-child { border-bottom: none; }
    30. DROP CAPS
    ============================================================ */
 /* Fix #6: буква 3.8em при 92vw на 375px занимает ~65px и «съедает» первую строку */
+/* SUS-E: ::first-letter работает только если первый дочерний узел <p> — текстовый.
+   Не применяйте .drop-cap к абзацам, начинающимся с <span>, <em>, <a> и т.п.:
+   в таких случаях используйте явный паттерн h-drop-cap__letter (см. index.html). */
 .drop-cap::first-letter {
   float: left;
   font-size: 3.8em;

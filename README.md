@@ -219,9 +219,9 @@ articles/{slug}/index.html
 |------|----------------|
 | `images/og-preview.jpg` ✅ | Главная, fallback OG для статей |
 | `images/og-nagornaya-propoved*.webp` ✅ | Нагорная проповедь (chast 1–5) |
-| `images/hero-kod-da-vinchi.jpg` | Карточки на главной и в каталоге |
-| `images/ieremia-cover.jpg` | Карточки «Крайне ли испорчено сердце» |
-| `images/hermenevtika-preview.webp` | Карточки «Герменевтика» |
+| `images/hero-kod-da-vinchi.jpg` ✅ | Карточки на главной и в каталоге |
+| `images/ieremia-cover.jpg` ✅ | Карточки «Крайне ли испорчено сердце» |
+| `images/hermenevtika-preview.webp` ✅ | Карточки «Герменевтика» |
 | `images/ieremia-*.webp` (16 штук) | Иллюстрации внутри статьи «Иеремия 17» |
 
 **Пока изображения отсутствуют** — OG-теги в статьях `kod-da-vinchi`, `krajne-li-isporcheno-serdce` и `hermenevticheskaya` временно используют `/images/og-preview.jpg`. После загрузки статейных OG-изображений вернуть оригинальные URL в `og:image` и `twitter:image`.
@@ -298,7 +298,7 @@ articles/{slug}/index.html
 
 ---
 
-## Что вынесено в site.js (20 модулей)
+## Что вынесено в site.js (27 модулей)
 
 | # | Модуль | Триггер |
 |---|--------|---------|

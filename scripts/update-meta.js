@@ -28,6 +28,7 @@ const SITE_NAME  = 'Господь Бог — Сила Моя';
 const SITEMAP    = path.resolve(__dirname, '../sitemap.xml');
 const FEED       = path.resolve(__dirname, '../feed.xml');
 const ARTICLES   = path.resolve(__dirname, '../articles');
+const NAGORNAYA  = path.resolve(__dirname, '../nagornaya');
 const TZ_OFFSET  = '+03:00';
 const WPM        = 200;
 
@@ -85,6 +86,28 @@ function getChangedSlugs() {
     }
     return [...slugs];
   } catch { return getAllSlugs(); }
+}
+
+function getAllNagornayaSlugs() {
+  return fs.readdirSync(NAGORNAYA, { withFileTypes: true })
+    .filter(d => d.isDirectory())
+    .map(d => d.name);
+}
+
+function getChangedNagornayaSlugs() {
+  try {
+    const before = process.env.BEFORE_SHA;
+    const after  = process.env.AFTER_SHA || 'HEAD';
+    const range  = (before && before !== '0'.repeat(40)) ? `${before} ${after}` : 'HEAD~1 HEAD';
+    const files  = execSync(`git diff --name-only ${range}`, { encoding: 'utf8' })
+      .trim().split('\n').filter(Boolean);
+    const slugs  = new Set();
+    for (const f of files) {
+      const m = f.match(/^nagornaya\/([^/]+)\//);
+      if (m) slugs.add(m[1]);
+    }
+    return [...slugs];
+  } catch { return getAllNagornayaSlugs(); }
 }
 
 // ── Парсинг HTML ──────────────────────────────────────────────────────────────
@@ -272,6 +295,27 @@ function main() {
 
     changes[slug] = { pubISO, modISO };
     updateHTML(slug, { pubISO, modISO, words, readTime });
+  }
+
+  // ── Нагорная проповедь ──────────────────────────────────────────
+  const nSlugs = FORCE_ALL ? getAllNagornayaSlugs() : getChangedNagornayaSlugs();
+  if (nSlugs.length) {
+    console.log(`\n  Нагорная: ${nSlugs.join(', ')}\n`);
+    for (const slug of nSlugs) {
+      const file = path.join(NAGORNAYA, slug, 'index.html');
+      if (!fs.existsSync(file)) { console.warn(`  ⚠  nagornaya/${slug}: нет index.html`); continue; }
+
+      const modISO = gitDate(file, 'last');
+      if (!modISO) { console.warn(`  ⚠  nagornaya/${slug}: нет даты из git`); continue; }
+
+      const html     = fs.readFileSync(file, 'utf8');
+      const words    = countWords(html);
+      const readTime = Math.max(1, Math.round(words / WPM));
+
+      console.log(`\n  📄  nagornaya/${slug}`);
+      console.log(`      mod: ${modISO.slice(0,10)}  ${words} сл. → ${readTime} мин`);
+      updateNagornayaHTML(slug, { modISO, words, readTime });
+    }
   }
 
   if (Object.keys(changes).length) {

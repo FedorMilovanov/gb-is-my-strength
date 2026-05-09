@@ -27,8 +27,13 @@ const DRY_RUN = process.argv.includes('--dry-run');
 const ASSETS = [
   'css/site.css',
   'css/home.css',
+  'nagornaya/tw.min.css',
   'js/site.js',
   'js/bookmark-engine.js',
+  'js/enhancements.js',
+  'js/highlights.js',
+  'js/search.js',
+  'js/sw-register.js',
 ];
 
 // ── Хеш файла ────────────────────────────────────────────────────────────────

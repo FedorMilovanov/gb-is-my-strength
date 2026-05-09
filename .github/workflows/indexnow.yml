@@ -1,0 +1,97 @@
+name: IndexNow — Notify Search Engines
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'articles/**'
+      - 'nagornaya/**'
+      - 'index.html'
+      - 'sitemap.xml'
+      - 'feed.xml'
+
+jobs:
+  notify:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0          # нужна полная история для gitDate()
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Update metadata
+        run: node scripts/update-meta.js
+        env:
+          BEFORE_SHA: ${{ github.event.before }}
+          AFTER_SHA:  ${{ github.event.after }}
+
+      - name: Cache bust assets
+        run: node scripts/cache-bust.js
+
+      - name: Validate
+        run: node scripts/validate.js --strict
+
+      - name: Commit updated metadata
+        run: |
+          git config user.name  "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git diff --quiet && git diff --staged --quiet || \
+            (git add -A && git commit -m "chore: auto-update meta, cache-bust [skip ci]")
+          git push
+
+      - name: Build IndexNow payload
+        id: payload
+        run: |
+          BASE="https://gospod-bog.ru"
+          KEY=$(cat 5762d467d2b1470989204ae7f8ed16f6.txt 2>/dev/null || echo "${{ secrets.INDEXNOW_KEY }}")
+
+          # Collect changed URLs from pushed commits
+          URLS=$(git diff --name-only ${{ github.event.before }} ${{ github.event.after }} 2>/dev/null \
+            | grep -E '^(articles|nagornaya)/[^/]+/index\.html$' \
+            | sed 's|/index\.html$|/|' \
+            | sed "s|^|${BASE}/|" \
+            | jq -R . | jq -sc .)
+
+          # Always include homepage and sitemap root
+          HOMEPAGE="\"${BASE}/\""
+          URLS=$(echo "$URLS" | jq --argjson home "[$HOMEPAGE]" '. + $home | unique')
+
+          echo "urls=$URLS"             >> $GITHUB_OUTPUT
+          echo "key=$KEY"               >> $GITHUB_OUTPUT
+          echo "host=gospod-bog.ru"     >> $GITHUB_OUTPUT
+
+      - name: Submit to IndexNow (Bing / Yandex)
+        if: steps.payload.outputs.urls != '[]' && steps.payload.outputs.urls != ''
+        run: |
+          KEY="${{ steps.payload.outputs.key }}"
+          HOST="${{ steps.payload.outputs.host }}"
+          URLS='${{ steps.payload.outputs.urls }}'
+
+          BODY=$(jq -n \
+            --arg host "$HOST" \
+            --arg key  "$KEY"  \
+            --argjson urls "$URLS" \
+            '{host: $host, key: $key, keyLocation: ("https://"+$host+"/"+$key+".txt"), urlList: $urls}')
+
+          echo "Payload: $BODY"
+
+          curl -s -o /dev/null -w "%{http_code}" \
+            -X POST "https://api.indexnow.org/indexnow" \
+            -H "Content-Type: application/json; charset=utf-8" \
+            -d "$BODY"
+
+          curl -s -o /dev/null -w "%{http_code}" \
+            -X POST "https://yandex.com/indexnow" \
+            -H "Content-Type: application/json; charset=utf-8" \
+            -d "$BODY"

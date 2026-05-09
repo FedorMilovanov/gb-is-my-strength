@@ -301,11 +301,22 @@ function validateCSS() {
 
 // ── Проверки sitemap / feed ───────────────────────────────────────────────────
 
+// Nagornaya pages that must be present in sitemap (root + all sub-pages).
+// Derived from nagornaya/ directory structure: index.html + sub-folders.
+const NAGORNAYA_SITEMAP_PATHS = (function() {
+  const paths = ['/nagornaya/'];
+  if (!fs.existsSync(NAGORNAYA)) return paths;
+  const subdirs = fs.readdirSync(NAGORNAYA, { withFileTypes: true })
+    .filter(d => d.isDirectory())
+    .map(d => `/nagornaya/${d.name}/`);
+  return paths.concat(subdirs);
+})();
+
 function validateSitemapFeed() {
   const slugs = fs.readdirSync(ARTICLES, { withFileTypes: true })
     .filter(d => d.isDirectory()).map(d => d.name);
 
-  // sitemap — каждый slug должен быть в нём
+  // sitemap — каждый articles/slug должен быть в нём
   const sitemap = fs.readFileSync(SITEMAP, 'utf8');
   for (const slug of slugs) {
     if (!sitemap.includes(`/articles/${slug}/`)) {
@@ -313,12 +324,24 @@ function validateSitemapFeed() {
     }
   }
 
-  // feed — каждый slug должен быть как guid
+  // sitemap — все nagornaya-страницы должны присутствовать
+  for (const nagPath of NAGORNAYA_SITEMAP_PATHS) {
+    if (!sitemap.includes(nagPath)) {
+      err('sitemap.xml', `отсутствует nagornaya-страница: ${nagPath}`);
+    }
+  }
+
+  // feed — каждый articles/slug должен быть как guid
   const feed = fs.readFileSync(FEED, 'utf8');
   for (const slug of slugs) {
     if (!feed.includes(`/articles/${slug}/`)) {
       err('feed.xml', `отсутствует статья: ${slug}`);
     }
+  }
+
+  // feed — nagornaya/ должна присутствовать (серия как единица публикации)
+  if (!feed.includes('/nagornaya/')) {
+    warn('feed.xml', 'серия /nagornaya/ отсутствует в feed.xml');
   }
 
   // feed — у каждого <item> должен быть <title>

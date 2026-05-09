@@ -33,16 +33,23 @@ var PRECACHE_ASSETS = [
   '/favicon.ico',
   '/favicon-48.png',
   '/apple-touch-icon.png',
-  '/404.html'
+  '/404.html',
+  /* SUS-D: pagefind.js в precache → поиск доступен офлайн с первого визита */
+  '/pagefind/pagefind.js',
+  '/pagefind/pagefind-highlight.js'
 ];
 
 /* ── Install: precache static assets ── */
 self.addEventListener('install', function(e) {
   e.waitUntil(
     caches.open(CACHE_STATIC).then(function(cache) {
-      return cache.addAll(PRECACHE_ASSETS).catch(function(err) {
-        console.warn('[SW] Precache partial failure:', err);
-      });
+      return Promise.allSettled(
+        PRECACHE_ASSETS.map(function(url) {
+          return cache.add(url).catch(function(err) {
+            console.warn('[SW] Failed to precache:', url, err);
+          });
+        })
+      );
     }).then(function() {
       return self.skipWaiting();
     })
