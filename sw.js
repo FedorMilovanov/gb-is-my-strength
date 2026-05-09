@@ -9,7 +9,7 @@
    — Все остальные запросы → Network First
    ============================================================ */
 
-var CACHE_VERSION = 'gb-v3';
+var CACHE_VERSION = 'gb-v4';
 var CACHE_STATIC   = CACHE_VERSION + '-static';
 var CACHE_CONTENT  = CACHE_VERSION + '-content';
 var CACHE_IMAGES   = CACHE_VERSION + '-images';
@@ -22,6 +22,7 @@ var CACHE_PAGEFIND = CACHE_VERSION + '-pagefind';
 var PRECACHE_ASSETS = [
   '/css/site.css',
   '/css/home.css',
+  '/css/command-palette.css',
   '/nagornaya/tw.min.css',
   '/js/site.js',
   '/js/search.js',
