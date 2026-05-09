@@ -212,7 +212,7 @@
         <input id="gb-search-input" type="search" placeholder="Поиск по всем материалам…" autocomplete="off" spellcheck="false" aria-label="Поиск"/>
         <span id="gb-search-kbd">Esc</span>
       </div>
-      <div id="gb-search-results" role="listbox" aria-live="polite">
+      <div id="gb-search-results" role="list" aria-live="polite" aria-atomic="false">
         <div class="gb-search-hint">Начните вводить запрос — ipsissima vox, Иеремия 17, Chicago Statement…</div>
       </div>
       <div id="gb-search-footer">
@@ -263,11 +263,34 @@
     }, 100);
   }
 
+  /* ── Focus trap ── */
+  var SEARCH_FOCUSABLE = 'a[href],button:not([disabled]),input,[tabindex]:not([tabindex="-1"])';
+  var _prevSearchFocus = null;
+
+  function getSearchFocusable() {
+    return Array.prototype.slice.call(backdrop.querySelectorAll(SEARCH_FOCUSABLE));
+  }
+  function trapSearchTab(e) {
+    if (e.key !== 'Tab') return;
+    var els = getSearchFocusable();
+    if (!els.length) return;
+    var first = els[0], last = els[els.length - 1];
+    if (e.shiftKey) {
+      if (document.activeElement === first) { e.preventDefault(); last.focus(); }
+    } else {
+      if (document.activeElement === last) { e.preventDefault(); first.focus(); }
+    }
+  }
+
   /* ── Open / Close ── */
   function openModal() {
+    _prevSearchFocus = document.activeElement;
     backdrop.classList.add('is-open');
-    input.focus();
     if (window.SiteUtils) { window.SiteUtils.lockScroll(); } else { document.body.style.overflow = 'hidden'; }
+    requestAnimationFrame(function () { input.focus(); });
+    /* Снимаем перед добавлением — защита от двойного вызова openModal */
+    backdrop.removeEventListener('keydown', trapSearchTab);
+    backdrop.addEventListener('keydown', trapSearchTab);
     loadPagefind(function() {
       /* Re-run search if user already typed */
       if (input.value.trim()) runSearch(input.value.trim());
@@ -275,14 +298,27 @@
   }
 
   function closeModal() {
+    /* Инвалидируем все запущенные поиски — иначе медленный Promise,
+       запущенный до закрытия, может зарезолвиться после повторного открытия
+       и затереть hint-текст устаревшими результатами. */
+    ++_searchGen;
     backdrop.classList.remove('is-open');
+    backdrop.removeEventListener('keydown', trapSearchTab);
     if (window.SiteUtils) { window.SiteUtils.unlockScroll(); } else { document.body.style.overflow = ''; }
     input.value = '';
     results.innerHTML = '<div class="gb-search-hint">Начните вводить запрос — ipsissima vox, Иеремия 17, Chicago Statement…</div>';
+    if (_prevSearchFocus && _prevSearchFocus.focus) _prevSearchFocus.focus();
+    _prevSearchFocus = null;
   }
 
   /* ── Search ── */
   var searchTimer;
+  /* Счётчик поколений: каждый вызов runSearch инкрементирует его.
+     Колбэки Promise проверяют совпадение — устаревшие ответы отбрасываются.
+     Без этого быстрый набор текста может показать результаты старого запроса
+     поверх свежего (более быстрый старый Promise резолвится позже нового). */
+  var _searchGen = 0;
+
   function runSearch(query) {
     if (!query || query.length < 2) {
       results.innerHTML = '<div class="gb-search-hint">Начните вводить запрос…</div>';
@@ -294,7 +330,11 @@
     }
     results.innerHTML = '<div class="gb-search-loading">Ищу…</div>';
 
+    var gen = ++_searchGen;
+
     window.__pagefind__.search(query).then(function(res) {
+      if (gen !== _searchGen) return; /* устаревший ответ — игнорируем */
+
       if (!res || !res.results || res.results.length === 0) {
         results.innerHTML = '<div class="gb-search-empty"><strong>Ничего не найдено</strong>Попробуйте другой запрос</div>';
         return;
@@ -303,11 +343,13 @@
       /* Load first 8 results */
       var limited = res.results.slice(0, 8);
       Promise.all(limited.map(function(r){ return r.data(); })).then(function(items) {
+        if (gen !== _searchGen) return; /* повторная проверка после второго await */
+
         var html = '';
         items.forEach(function(item) {
           var excerpt = item.excerpt || '';
           var title = item.meta && item.meta.title ? item.meta.title : 'Без названия';
-          html += `<a class="gb-result-item" href="${item.url}" role="option" tabindex="0">
+          html += `<a class="gb-result-item" href="${item.url}" role="listitem" tabindex="0">
             <div class="gb-result-title">${title}</div>
             <div class="gb-result-excerpt">${excerpt}</div>
           </a>`;
@@ -324,6 +366,7 @@
         });
       });
     }).catch(function() {
+      if (gen !== _searchGen) return;
       results.innerHTML = '<div class="gb-search-empty"><strong>Ошибка поиска</strong>Попробуйте ещё раз</div>';
     });
   }
@@ -357,38 +400,50 @@
     if (e.key === 'Escape' && backdrop.classList.contains('is-open')) closeModal();
   });
 
-  /* ── Inject search button into nav ── */
+  /* ── Inject search button into nav ──
+     O-04: ранний выход после успешного инжекта — следующие ветки уже не нужны.
+     Все ветки используют одну общую проверку !document.getElementById('gbSearchBtn')
+     через локальную функцию ensureNotInjected().                                  */
   function injectSearchButton() {
+    var SEARCH_ICON_SVG = '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>';
     var SEARCH_BTN_HTML = `<button class="gb-search-btn" id="gbSearchBtn" aria-label="Поиск (⌘K)" title="Поиск ⌘K">
-      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+      ${SEARCH_ICON_SVG}
       <span>Поиск</span>
       <span class="kb">⌘K</span>
     </button>`;
 
+    function alreadyInjected() {
+      return !!document.getElementById('gbSearchBtn');
+    }
+
     /* Home page nav */
     var hNavLinks = document.querySelector('.h-nav-links');
-    if (hNavLinks && !document.getElementById('gbSearchBtn')) {
+    if (hNavLinks && !alreadyInjected()) {
       var li = document.createElement('li');
       li.innerHTML = SEARCH_BTN_HTML;
       hNavLinks.insertBefore(li, hNavLinks.firstChild);
+      wireSearchBtn();
+      return;
     }
 
     /* Article topnav */
     var topnav = document.querySelector('.article-topnav');
-    if (topnav && !document.getElementById('gbSearchBtn')) {
+    if (topnav && !alreadyInjected()) {
       var btn = document.createElement('button');
       btn.className = 'gb-search-btn';
       btn.id = 'gbSearchBtn';
       btn.setAttribute('aria-label', 'Поиск (⌘K)');
       btn.setAttribute('title', 'Поиск ⌘K');
-      btn.innerHTML = `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>`;
+      btn.innerHTML = SEARCH_ICON_SVG;
       btn.style.cssText = 'margin-left:auto; margin-right:8px; padding:5px 8px;';
       topnav.appendChild(btn);
+      wireSearchBtn();
+      return;
     }
 
     /* Nagornaya pages — inject before #menuBtn in mobile header */
     var menuBtn = document.getElementById('menuBtn');
-    if (menuBtn && !document.getElementById('gbSearchBtn')) {
+    if (menuBtn && !alreadyInjected()) {
       var nagBtn = document.createElement('button');
       nagBtn.className = 'gb-search-btn';
       nagBtn.id = 'gbSearchBtn';
@@ -397,18 +452,21 @@
       nagBtn.style.cssText = 'background:rgba(255,255,255,0.08);border-color:rgba(255,255,255,0.15);color:#e7e5e4;margin-right:8px;';
       nagBtn.innerHTML = '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>';
       menuBtn.parentNode.insertBefore(nagBtn, menuBtn);
+      wireSearchBtn();
+      return;
     }
 
     /* Fallback: generic nav ul */
-    if (!hNavLinks && !topnav && !menuBtn) {
-      var nav = document.querySelector('nav[role="navigation"] ul, .nav-links, .h-nav-links');
-      if (nav && !document.getElementById('gbSearchBtn')) {
-        var li2 = document.createElement('li');
-        li2.innerHTML = SEARCH_BTN_HTML;
-        nav.insertBefore(li2, nav.firstChild);
-      }
+    var nav = document.querySelector('nav[role="navigation"] ul, .nav-links, .h-nav-links');
+    if (nav && !alreadyInjected()) {
+      var li2 = document.createElement('li');
+      li2.innerHTML = SEARCH_BTN_HTML;
+      nav.insertBefore(li2, nav.firstChild);
+      wireSearchBtn();
     }
+  }
 
+  function wireSearchBtn() {
     document.querySelectorAll('#gbSearchBtn').forEach(function(btn) {
       btn.addEventListener('click', openModal);
     });

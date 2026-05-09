@@ -125,7 +125,8 @@ html, body { overflow-x: hidden; }
    19200    — .img-viewer
    19999    — #selection-share-popup
    20000    — .article-date-display (above all panels)
-   99998    — .anchor-copy-toast
+   99997    — #anchor-copy-toast   (bottom toast — не пересекается с section-label пространственно)
+   99998    — .section-label       (top sticky label)
    99999    — .reading-progress bar
    ============================================================ */
 
@@ -4982,6 +4983,10 @@ html.dark .article-date-display {
    здесь добавляем адаптацию для bottom-bar
    ============================================================ */
 #anchor-copy-toast {
+  /* B-13: явный z-index вместо только JS inline-стиля.
+     99997 — ниже section-label (99998), но тосты не пересекаются пространственно:
+     anchor-copy-toast всегда снизу, section-label всегда сверху.           */
+  z-index: 99997;
   /* На мобильных с bottom-bar поднимаем выше */
   bottom: 80px;
 }
@@ -5328,7 +5333,8 @@ html.dark .article-end-sdg svg {
    19200     — img-viewer            ← выше share-dialog
    19999     — selection-share-popup ← выше всех панелей
    20000     — fn-marker tooltip
-   99998     — section-label
+   99997     — #anchor-copy-toast   ← bottom toast (не пересекается с section-label)
+   99998     — section-label        ← top sticky (было: anchor-copy-toast — неверно)
    99999     — reading-progress
 */
 

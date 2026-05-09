@@ -130,6 +130,148 @@
       tip.style.visibility = '';
     },
 
+    /* ── Tooltip Controller Factory ────────────────────────────────────
+       O-02: единая реализация hover/touch/click логики для всех трёх
+       систем подсказок (Bible refs, Footnotes, Glossary).
+
+       Параметры:
+         anchorSel  — CSS-селектор якорных элементов (.bref, .fn-marker, .gterm)
+         tipSel     — CSS-селектор самого тултипа внутри якоря (.btip, .tooltip, .gtip)
+         opts       — опциональные настройки:
+           useFocusBlur {bool}   — вешать focus/blur (для glossary, умолчание false)
+           extraCloseSelectors {string[]} — дополнительные контейнеры, scroll → close
+           touchStartExtra {function(el)} — extra logic before document touchstart check
+                                                                                      */
+    makeTooltipController: function (anchorSel, tipSel, opts) {
+      var utils = this;
+      opts = opts || {};
+      var GUARD_DELAY = 350;
+
+      var activeEl   = null;
+      var justOpened = false;
+
+      var IS_DESKTOP = function () {
+        return window.matchMedia('(hover: hover) and (pointer: fine)').matches;
+      };
+
+      function resetTipStyles(tip) {
+        if (!tip) return;
+        setTimeout(function () {
+          tip.style.maxHeight  = '';
+          tip.style.overflowY  = '';
+          tip.style.visibility = '';
+          tip.style.top        = '-9999px';
+          tip.style.left       = '-9999px';
+        }, 200);
+      }
+
+      function close() {
+        if (justOpened) return;
+        if (activeEl) {
+          resetTipStyles(activeEl.querySelector(tipSel));
+          activeEl.classList.remove('is-open');
+          activeEl = null;
+        }
+      }
+
+      function open(el) {
+        close();
+        el.classList.add('is-open');
+        activeEl = el;
+        utils.positionTip(el.querySelector(tipSel), el);
+        justOpened = true;
+        setTimeout(function () { justOpened = false; }, GUARD_DELAY);
+      }
+
+      /* Wire each anchor element.
+         Пропускаем элементы без соответствующего tip — иначе навешиваем
+         бесполезные обработчики и is-open класс не показывает ничего.   */
+      document.querySelectorAll(anchorSel).forEach(function (el) {
+        if (!el.querySelector(tipSel)) return;
+        /* Touch */
+        var touchMoved = false;
+        el.addEventListener('touchstart', function () { touchMoved = false; }, { passive: true });
+        el.addEventListener('touchmove',  function () { touchMoved = true; },  { passive: true });
+        el.addEventListener('touchend', function (e) {
+          if (touchMoved) return;
+          e.preventDefault();
+          if (activeEl === el) { justOpened = false; close(); }
+          else { open(el); }
+        }, { passive: false });
+
+        /* Click (desktop) */
+        el.addEventListener('click', function (e) {
+          if (!IS_DESKTOP()) { e.preventDefault(); return; }
+          e.preventDefault(); e.stopPropagation();
+          if (activeEl === el) { close(); return; }
+          open(el);
+        });
+
+        /* Hover (desktop) */
+        el.addEventListener('mouseenter', function () {
+          if (!IS_DESKTOP()) return;
+          /* Явно закрываем предыдущий тултип, не проходя через justOpened-гард:
+             justOpened защищает от случайного закрытия при click→scroll, но при
+             физическом перемещении мыши с одного якоря на другой предыдущий тип
+             обязан закрыться немедленно. Без этого при наведении на B в течение
+             350ms после клика на A оба элемента получают is-open одновременно. */
+          if (activeEl && activeEl !== el) {
+            resetTipStyles(activeEl.querySelector(tipSel));
+            activeEl.classList.remove('is-open');
+          }
+          utils.positionTip(el.querySelector(tipSel), el);
+          el.classList.add('is-open');
+          activeEl = el;
+        });
+        el.addEventListener('mouseleave', function () {
+          if (!IS_DESKTOP()) return;
+          var tip = el.querySelector(tipSel);
+          if (tip && tip.matches(':hover')) return;
+          if (tip && tip.style.overflowY === 'auto') return;
+          close();
+        });
+
+        /* Keyboard (focus/blur — опционально) */
+        if (opts.useFocusBlur) {
+          el.addEventListener('focus', function () { open(el); });
+          el.addEventListener('blur',  function () { close(); });
+        }
+      });
+
+      /* Close on outside click */
+      document.addEventListener('click', function (e) {
+        if (!e.target.closest(anchorSel) && !e.target.closest(tipSel)) close();
+      });
+      document.addEventListener('touchstart', function (e) {
+        if (!e.target.closest(anchorSel) && !e.target.closest(tipSel)) close();
+      }, { passive: true });
+
+      /* Close on scroll/resize/etc. */
+      window.addEventListener('scroll',            close, { passive: true });
+      window.addEventListener('resize',            close, { passive: true });
+      window.addEventListener('orientationchange', close, { passive: true });
+      window.addEventListener('wheel', function (e) {
+        if (!e.target.closest(tipSel)) close();
+      }, { passive: true });
+      window.addEventListener('touchmove', function (e) {
+        if (!e.target.closest(tipSel)) close();
+      }, { passive: true });
+      document.addEventListener('keydown', function (e) {
+        if (e.key === 'Escape') close();
+      });
+
+      /* Extra scroll containers (e.g. TOC panel) */
+      if (opts.extraCloseSelectors) {
+        opts.extraCloseSelectors.forEach(function (sel) {
+          document.querySelectorAll(sel).forEach(function (el) {
+            el.addEventListener('scroll', close, { passive: true });
+          });
+        });
+      }
+
+      return { open: open, close: close };
+    },
+
     /* ── Scroll-lock counter ─────────────────────────────────────────────
        Prevents race condition when multiple panels use overflow:hidden.
        Each lockScroll() increments; unlockScroll() decrements and only
@@ -229,8 +371,10 @@
 
   /* ============================================================
      03. Share Dialog
-     Единый диалог для всех кнопок: #articleEndShareBtn, #barShareBtn,
-     .btoc-share-btn, #btocShareBtn.
+     Единый диалог для кнопок: #barShareBtn, #btocShareBtn,
+     .btoc-share-btn.
+     Примечание: #articleEndShareBtn подключается в модуле 27
+     (Article End Block) — не здесь.
      Платформы: Telegram, VK, WhatsApp, Copy URL.
      Доступность: role=dialog, aria-modal, focus-trap, Esc.
      ============================================================ */
@@ -354,38 +498,54 @@
     }
 
     /* ── Open / Close ── */
-    function showOverlay() {
+    function showOverlay(overrideTitle) {
+      /* B-10: если передан overrideTitle — показываем его в заголовке диалога,
+         без изменения DOM снаружи и без setTimeout-патча.                    */
+      var sdTitleEl = document.getElementById('sd-title');
+      var origTitle = sdTitleEl ? sdTitleEl.textContent : '';
+      if (sdTitleEl && overrideTitle) sdTitleEl.textContent = overrideTitle;
+
       overlay.setAttribute('aria-hidden', 'false');
       overlay.classList.add('is-open');
       requestAnimationFrame(function () { dialog.focus(); });
       document.addEventListener('keydown', onKey);
+
+      /* Восстанавливаем заголовок при закрытии диалога */
+      if (sdTitleEl && overrideTitle) {
+        overlay.addEventListener('gb:closed', function () {
+          sdTitleEl.textContent = origTitle;
+        }, { once: true });
+      }
     }
 
-    function openDialog(trigger) {
+    function openDialog(trigger, overrideTitle) {
       triggerEl = trigger || null;
 
       /* Mobile-first: нативный share-sheet (iOS/Android) */
       var isMobileDevice = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
       if (isMobileDevice && navigator.share) {
-        /* Читаем актуальный заголовок из DOM (может быть патчнут квизом) */
-        var sdTitleEl  = document.getElementById('sd-title');
-        var nativeTitle = (sdTitleEl && sdTitleEl.textContent) ? sdTitleEl.textContent : shareTitle;
+        /* B-10: используем overrideTitle напрямую — не трогаем DOM */
+        var nativeTitle = overrideTitle ||
+          (document.getElementById('sd-title') && document.getElementById('sd-title').textContent) ||
+          shareTitle;
         navigator.share({
           title: nativeTitle,
           url:   utmUrl(shareUrl, 'native')
         }).catch(function (err) {
           /* Пользователь отменил или share не поддерживается — показываем диалог */
-          if (err && err.name !== 'AbortError') { showOverlay(); }
+          if (err && err.name !== 'AbortError') { showOverlay(overrideTitle); }
         });
         return;
       }
 
-      showOverlay();
+      showOverlay(overrideTitle);
     }
     function closeDialog() {
       overlay.classList.remove('is-open');
       overlay.setAttribute('aria-hidden', 'true');
       document.removeEventListener('keydown', onKey);
+      /* B-10: сигнализируем о закрытии, чтобы восстановить overrideTitle */
+      overlay.dispatchEvent(new CustomEvent('gb:closed'));
       if (triggerEl && triggerEl.focus) triggerEl.focus();
       triggerEl = null;
     }
@@ -417,11 +577,10 @@
       window.open('https://connect.ok.ru/offer?url=' + encodeURIComponent(utmUrl(shareUrl,'ok')) + '&title=' + encodedTitle, '_blank', 'noopener');
     });
     document.getElementById('sd-wa').addEventListener('click', function () {
-      /* на мобильных открывает приложение, на десктопе — web.whatsapp.com */
-      var isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
-      var waUrl = isMobile
-        ? 'whatsapp://send?text=' + encodedTitle + '%20' + encodeURIComponent(utmUrl(shareUrl,'whatsapp'))
-        : 'https://web.whatsapp.com/send?text=' + encodedTitle + '%20' + encodeURIComponent(utmUrl(shareUrl,'whatsapp'));
+      /* B-12: wa.me работает на мобильном (открывает приложение) и на десктопе
+         (новая Web-версия WhatsApp без требования авторизованного приложения).
+         web.whatsapp.com/send требует запущенного и авторизованного приложения. */
+      var waUrl = 'https://wa.me/?text=' + encodedTitle + '%20' + encodeURIComponent(utmUrl(shareUrl,'whatsapp'));
       window.open(waUrl, '_blank', 'noopener');
     });
 
@@ -525,6 +684,9 @@
     var h2s = document.querySelectorAll('article h2');
     if (!h2s.length) return;
 
+    /* B-09: ticking-паттерн как в модулях 08/09 — один rAF на серию scroll-событий */
+    var ticking = false;
+
     function update() {
       var current = null;
       h2s.forEach(function (h) {
@@ -536,9 +698,14 @@
       } else {
         label.classList.remove('visible');
       }
+      ticking = false;
     }
 
-    window.addEventListener('scroll', update, { passive: true });
+    window.addEventListener('scroll', function () {
+      if (ticking) return;
+      ticking = true;
+      requestAnimationFrame(update);
+    }, { passive: true });
     update();
   })();
 
@@ -1945,6 +2112,14 @@
       document.body.appendChild(canvas);
       var ctx = canvas.getContext('2d');
       canvas.width = window.innerWidth; canvas.height = window.innerHeight;
+
+      /* B-07: пересчитываем размеры при ресайзе (особенно заметно на планшетах при повороте) */
+      function onCanvasResize() {
+        canvas.width  = window.innerWidth;
+        canvas.height = window.innerHeight;
+      }
+      window.addEventListener('resize', onCanvasResize);
+
       var palettes = {
         gold:  ['#FFD700','#FFA500','#FF6B35','#FFE44D','#FFFFFF'],
         blue:  ['#4A90E2','#7B61FF','#50C8FF','#B8E0FF','#FFFFFF'],
@@ -1980,7 +2155,10 @@
           ctx.restore();
         });
         if (elapsed < duration) requestAnimationFrame(frame);
-        else if (canvas.parentNode) canvas.parentNode.removeChild(canvas);
+        else {
+          window.removeEventListener('resize', onCanvasResize);
+          if (canvas.parentNode) canvas.parentNode.removeChild(canvas);
+        }
       }
       requestAnimationFrame(frame);
     }
@@ -2022,12 +2200,10 @@
         var idx       = getScoreBucket(score, questions.length, scores);
         var s         = scores ? scores[idx] : null;
         var shareMsg  = 'Мой результат: ' + scoreText + (s && s.title ? ' — «' + s.title + '»' : '');
+        /* B-10: передаём title напрямую в openDialog — без DOM-патча и без setTimeout.
+           На мобильном это же значение идёт в navigator.share({title: ...}).           */
         if (window.SiteShare) {
-          var sdTitle   = document.getElementById('sd-title');
-          var origTitle = sdTitle ? sdTitle.textContent : '';
-          if (sdTitle) sdTitle.textContent = shareMsg;
-          window.SiteShare.open(share);
-          if (sdTitle) setTimeout(function () { sdTitle.textContent = origTitle; }, 100);
+          window.SiteShare.open(share, shareMsg);
         }
       });
     }
@@ -2152,6 +2328,7 @@
 
   /* ============================================================
      19. Bible Reference Tooltips (bref / btip)
+     O-02: логика hover/touch/click вынесена в SiteUtils.makeTooltipController
      ============================================================ */
   (function () {
     var dataEl = document.getElementById('bibleRefs');
@@ -2165,106 +2342,31 @@
       refs = {};
     }
 
-    var links = document.querySelectorAll('.bref[data-ref]');
-    var openBible = null;
-    var justOpenedBible = false;
-
-    function closeBible() {
-      if (justOpenedBible) return;
-      if (openBible) {
-        var tip = openBible.querySelector('.btip');
-        openBible.classList.remove('is-open');
-        openBible = null;
-        if (tip) {
-          setTimeout(function () {
-            tip.style.maxHeight = '';
-            tip.style.overflowY = '';
-            tip.style.visibility = '';
-            tip.style.top = '-9999px';
-            tip.style.left = '-9999px';
-          }, 200);
-        }
-      }
-    }
-
-    function openBibleTip(a) {
-      closeBible();
-      a.classList.add('is-open');
-      openBible = a;
-      SiteUtils.positionTip(a.querySelector('.btip'), a);
-      justOpenedBible = true;
-      setTimeout(function () { justOpenedBible = false; }, 350);
-    }
-
-    links.forEach(function (a) {
-      var key = a.getAttribute('data-ref');
-      var text = refs[key];
-      if (!text) return;
-
-      if (!a.querySelector('.btip')) {
-        var tip = document.createElement('span');
-        tip.className = 'btip';
-        tip.innerHTML = '<div>' + text + '</div>';
-        a.appendChild(tip);
-      }
-
-      a.addEventListener('mouseenter', function () {
-        if (window.matchMedia('(hover: hover) and (pointer: fine)').matches) {
-          SiteUtils.positionTip(a.querySelector('.btip'), a); a.classList.add('is-open'); openBible = a;
-        }
-      });
-      a.addEventListener('mouseleave', function () {
-        if (!window.matchMedia('(hover: hover) and (pointer: fine)').matches) return;
-        var tip = a.querySelector('.btip');
-        if (tip && tip.matches(':hover')) return;
-        if (tip && tip.style.overflowY === 'auto') return;
-        closeBible();
-      });
-
-      var touchMoved = false;
-      a.addEventListener('touchstart', function () { touchMoved = false; }, { passive: true });
-      a.addEventListener('touchmove', function () { touchMoved = true; }, { passive: true });
-      a.addEventListener('touchend', function (e) {
-        if (touchMoved) return;
-        e.preventDefault();
-        if (openBible === a) { justOpenedBible = false; closeBible(); }
-        else { openBibleTip(a); }
-      }, { passive: false });
-
-      a.addEventListener('click', function (e) {
-        if (!window.matchMedia('(hover: hover) and (pointer: fine)').matches) { e.preventDefault(); return; }
-        e.preventDefault(); e.stopPropagation();
-        if (openBible === a) { closeBible(); return; }
-        openBibleTip(a);
-      });
+    /* Инжектируем .btip в DOM до регистрации контроллера */
+    document.querySelectorAll('.bref[data-ref]').forEach(function (a) {
+      var text = refs[a.getAttribute('data-ref')];
+      if (!text || a.querySelector('.btip')) return;
+      var tip = document.createElement('span');
+      tip.className = 'btip';
+      tip.innerHTML = '<div>' + text + '</div>';
+      a.appendChild(tip);
     });
 
-    document.addEventListener('click', function (e) {
-      if (!e.target.closest('.bref') && !e.target.closest('.btip')) closeBible();
-    });
-
-    window.addEventListener('scroll', function () { closeBible(); }, { passive: true });
-    window.addEventListener('wheel', function (e) { if (!e.target.closest('.btip')) closeBible(); }, { passive: true });
-    window.addEventListener('resize', closeBible, { passive: true });
-    window.addEventListener('orientationchange', closeBible, { passive: true });
-    document.addEventListener('keydown', function (e) { if (e.key === 'Escape') closeBible(); });
-    /* Закрывать tooltip при скролле внутри scrollable-контейнеров (TOC overlay) */
-    document.querySelectorAll('.btoc-nav, .btoc-panel, #toc-panel').forEach(function (el) {
-      el.addEventListener('scroll', closeBible, { passive: true });
+    SiteUtils.makeTooltipController('.bref[data-ref]', '.btip', {
+      extraCloseSelectors: ['.btoc-nav', '.btoc-panel', '#toc-panel']
     });
   })();
 
 
   /* ============================================================
      20. Academic Footnotes (fn-marker / tooltip)
+     O-02: логика hover/touch/click вынесена в SiteUtils.makeTooltipController
      ============================================================ */
   (function () {
     var markers = document.querySelectorAll('.fn-marker');
     if (!markers.length) return;
 
-    var activeMarker = null;
-    var justOpenedFn = false;
-
+    /* Убираем лишний пробел перед маркером */
     markers.forEach(function (m) {
       var prev = m.previousSibling;
       if (prev && prev.nodeType === Node.TEXT_NODE) {
@@ -2272,163 +2374,22 @@
       }
     });
 
-    function closeFootnotes() {
-      if (justOpenedFn) return;
-      if (activeMarker) {
-        var tooltip = activeMarker.querySelector('.tooltip');
-        activeMarker.classList.remove('is-open');
-        activeMarker = null;
-        if (tooltip) {
-          setTimeout(function () {
-            tooltip.style.maxHeight = '';
-            tooltip.style.overflowY = '';
-            tooltip.style.visibility = '';
-            tooltip.style.top = '-9999px';
-            tooltip.style.left = '-9999px';
-          }, 200);
-        }
-      }
-    }
-
-    function openFootnoteTip(marker) {
-      closeFootnotes();
-      marker.classList.add('is-open');
-      activeMarker = marker;
-      SiteUtils.positionTip(marker.querySelector('.tooltip'), marker);
-      justOpenedFn = true;
-      setTimeout(function () { justOpenedFn = false; }, 350);
-    }
-
-    markers.forEach(function (marker) {
-      var fnTouchMoved = false;
-      marker.addEventListener('touchstart', function () { fnTouchMoved = false; }, { passive: true });
-      marker.addEventListener('touchmove', function () { fnTouchMoved = true; }, { passive: true });
-      marker.addEventListener('touchend', function (e) {
-        if (fnTouchMoved) return;
-        e.preventDefault();
-        if (activeMarker === marker) { justOpenedFn = false; closeFootnotes(); }
-        else { openFootnoteTip(marker); }
-      }, { passive: false });
-
-      marker.addEventListener('click', function (e) {
-        if (!window.matchMedia('(hover: hover) and (pointer: fine)').matches) { e.preventDefault(); return; }
-        e.preventDefault(); e.stopPropagation();
-        if (activeMarker === marker) { closeFootnotes(); return; }
-        openFootnoteTip(marker);
-      });
-
-      marker.addEventListener('mouseenter', function () {
-        if (window.matchMedia('(hover: hover) and (pointer: fine)').matches) {
-          SiteUtils.positionTip(marker.querySelector('.tooltip'), marker); marker.classList.add('is-open'); activeMarker = marker;
-        }
-      });
-      marker.addEventListener('mouseleave', function () {
-        if (!window.matchMedia('(hover: hover) and (pointer: fine)').matches) return;
-        var tt = marker.querySelector('.tooltip');
-        if (tt && tt.matches(':hover')) return;
-        if (tt && tt.style.overflowY === 'auto') return;
-        closeFootnotes();
-      });
-    });
-
-    document.addEventListener('click', function (e) {
-      if (!e.target.closest('.fn-marker') && !e.target.closest('.tooltip')) closeFootnotes();
-    });
-    /* Fix #4: на тачскрине click может не срабатывать на нетипируемых элементах —
-       touchstart надёжнее закрывает тултип при тапе вне маркера */
-    document.addEventListener('touchstart', function (e) {
-      if (!e.target.closest('.fn-marker') && !e.target.closest('.tooltip')) closeFootnotes();
-    }, { passive: true });
-
-    window.addEventListener('scroll', function () { closeFootnotes(); }, { passive: true });
-    window.addEventListener('wheel', function (e) { if (!e.target.closest('.tooltip')) closeFootnotes(); }, { passive: true });
-    window.addEventListener('touchmove', function (e) {
-      if (!e.target.closest('.tooltip')) closeFootnotes();
-    }, { passive: true });
-    window.addEventListener('resize', closeFootnotes, { passive: true });
-    window.addEventListener('orientationchange', closeFootnotes, { passive: true });
-    document.addEventListener('keydown', function (e) { if (e.key === 'Escape') closeFootnotes(); });
+    SiteUtils.makeTooltipController('.fn-marker', '.tooltip');
   })();
 
 
   
   /* ============================================================
      20b. Glossary Terms (gterm / gtip)
+     O-02: логика hover/touch/click вынесена в SiteUtils.makeTooltipController
      ============================================================ */
   (function () {
     var gterms = document.querySelectorAll('.gterm');
     if (!gterms.length) return;
 
-    var activeGterm = null;
-    var justOpened = false;
-
-    function closeGlossary() {
-      if (justOpened) return;
-      if (activeGterm) {
-        var tip = activeGterm.querySelector('.gtip');
-        activeGterm.classList.remove('is-open');
-        activeGterm = null;
-        if (tip) {
-          setTimeout(function () {
-            tip.style.maxHeight = '';
-            tip.style.overflowY = '';
-            tip.style.visibility = '';
-            tip.style.top = '-9999px';
-            tip.style.left = '-9999px';
-          }, 200);
-        }
-      }
-    }
-
-    function openGtip(gt) {
-      closeGlossary();
-      gt.classList.add('is-open');
-      activeGterm = gt;
-      SiteUtils.positionTip(gt.querySelector('.gtip'), gt);
-      justOpened = true;
-      setTimeout(function () { justOpened = false; }, 350);
-    }
-
-    gterms.forEach(function (gt) {
-      var moved = false;
-      gt.addEventListener('touchstart', function () { moved = false; }, { passive: true });
-      gt.addEventListener('touchmove', function () { moved = true; }, { passive: true });
-      gt.addEventListener('touchend', function (e) {
-        if (moved) return;
-        e.preventDefault();
-        if (activeGterm === gt) { justOpened = false; closeGlossary(); }
-        else { openGtip(gt); }
-      }, { passive: false });
-      gt.addEventListener('click', function (e) {
-        if (!window.matchMedia('(hover: hover) and (pointer: fine)').matches) { e.preventDefault(); return; }
-        e.preventDefault(); e.stopPropagation();
-        if (activeGterm === gt) { closeGlossary(); return; }
-        openGtip(gt);
-      });
-      gt.addEventListener('mouseenter', function () {
-        if (window.matchMedia('(hover: hover) and (pointer: fine)').matches) {
-          SiteUtils.positionTip(gt.querySelector('.gtip'), gt); gt.classList.add('is-open'); activeGterm = gt;
-        }
-      });
-      gt.addEventListener('mouseleave', function () {
-        if (!window.matchMedia('(hover: hover) and (pointer: fine)').matches) return;
-        var tip = gt.querySelector('.gtip');
-        if (tip && tip.matches(':hover')) return;
-        closeGlossary();
-      });
-      gt.addEventListener('focus', function () { openGtip(gt); });
-      gt.addEventListener('blur', function () { closeGlossary(); });
+    SiteUtils.makeTooltipController('.gterm', '.gtip', {
+      useFocusBlur: true
     });
-
-    document.addEventListener('click', function (e) {
-      if (!e.target.closest('.gterm') && !e.target.closest('.gtip')) closeGlossary();
-    });
-    document.addEventListener('touchstart', function (e) {
-      if (!e.target.closest('.gterm') && !e.target.closest('.gtip')) closeGlossary();
-    }, { passive: true });
-    window.addEventListener('resize', closeGlossary, { passive: true });
-    window.addEventListener('orientationchange', closeGlossary, { passive: true });
-    document.addEventListener('keydown', function (e) { if (e.key === 'Escape') closeGlossary(); });
   })();
 
 
@@ -3014,8 +2975,24 @@
     var capEl = viewer.querySelector('.img-viewer__cap');
 
     var lastActive = null;
-
     var _closeTimer = null;
+
+    /* ── Focus trap ── */
+    var VIEWER_FOCUSABLE = 'button:not([disabled]),[tabindex]:not([tabindex="-1"])';
+    function getViewerFocusable() {
+      return Array.prototype.slice.call(viewer.querySelectorAll(VIEWER_FOCUSABLE));
+    }
+    function trapViewerTab(e) {
+      if (e.key !== 'Tab') return;
+      var els = getViewerFocusable();
+      if (!els.length) return;
+      var first = els[0], last = els[els.length - 1];
+      if (e.shiftKey) {
+        if (document.activeElement === first) { e.preventDefault(); last.focus(); }
+      } else {
+        if (document.activeElement === last) { e.preventDefault(); first.focus(); }
+      }
+    }
 
     function open(src, alt, captionText) {
       /* Отменяем отложенную очистку, если viewer переоткрыли до её срабатывания */
@@ -3025,13 +3002,20 @@
       imgEl.alt = alt || '';
       capEl.textContent = captionText || '';
       viewer.classList.add('is-open');
-      closeBtn && closeBtn.focus();
-      document.documentElement.style.overflow = 'hidden';
+      /* B-01: используем счётчик блокировки скролла вместо ручного overflow на <html> */
+      SiteUtils.lockScroll();
+      /* B-02: фокус на кнопку закрытия + trap.
+         Снимаем перед добавлением — защита от двойного open() без close().  */
+      viewer.removeEventListener('keydown', trapViewerTab);
+      viewer.addEventListener('keydown', trapViewerTab);
+      if (closeBtn) closeBtn.focus();
     }
 
     function close() {
       viewer.classList.remove('is-open');
-      document.documentElement.style.removeProperty('overflow');
+      viewer.removeEventListener('keydown', trapViewerTab);
+      /* B-01: корректно разблокируем скролл через счётчик */
+      SiteUtils.unlockScroll();
       if (lastActive && lastActive.focus) lastActive.focus();
       lastActive = null;
       /* Откладываем очистку src/cap до окончания fade-out (.2s);
@@ -3065,7 +3049,7 @@
     if (closeBtn) closeBtn.addEventListener('click', close);
     document.addEventListener('keydown', function (e) {
       if (!viewer.classList.contains('is-open')) return;
-      if (e.key === 'Escape') close();
+      if (e.key === 'Escape') { e.stopImmediatePropagation(); close(); }
     });
   })();
 

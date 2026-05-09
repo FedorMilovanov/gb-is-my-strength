@@ -439,11 +439,18 @@
   function getAllForSite() {
     var out = [];
     try {
-      for (var i = 0; i < localStorage.length; i++) {
-        var key = localStorage.key(i);
-        if (!key || key.indexOf(prefix) !== 0) continue;
+      /* B-11: снимаем снимок ключей заранее — итерация по живому localStorage небезопасна
+         при одновременном изменении из другой вкладки (storage event сдвигает индексы). */
+      var keys = [];
+      for (var k = 0; k < localStorage.length; k++) {
+        var rk = localStorage.key(k);
+        if (rk && rk.indexOf(prefix) === 0) keys.push(rk);
+      }
+      for (var i = 0; i < keys.length; i++) {
         try {
-          var data = JSON.parse(localStorage.getItem(key));
+          var raw  = localStorage.getItem(keys[i]);
+          if (!raw) continue;
+          var data = JSON.parse(raw);
           if (data && data.path && data.savedAt && typeof data.progress === 'number') out.push(data);
         } catch (e) {}
       }
