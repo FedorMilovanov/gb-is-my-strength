@@ -38,8 +38,18 @@
         var qEl = item.querySelector('.faq-accordion__q');
         var aEl = item.querySelector('.faq-accordion__body-inner');
         if (!qEl || !aEl) return;
-        var q = (qEl.textContent || '').trim().replace(/\s+/g, ' ');
-        var a = (aEl.textContent || '').trim().replace(/\s+/g, ' ');
+
+        /* O-05: клонируем qEl и удаляем .faq-accordion__icon из клона —
+           иначе textContent включает текст иконки (стрелки, символа ±).     */
+        var qClone = qEl.cloneNode(true);
+        var icon = qClone.querySelector('.faq-accordion__icon');
+        if (icon) icon.parentNode.removeChild(icon);
+        var q = (qClone.textContent || '').trim().replace(/\s+/g, ' ');
+
+        /* O-05: Schema.org принимает HTML в поле text — используем innerHTML
+           чтобы сохранить ссылки и форматирование внутри ответа.            */
+        var a = (aEl.innerHTML || '').replace(/\s+/g, ' ').trim();
+
         if (q && a) {
           entities.push({
             '@type': 'Question',
@@ -170,6 +180,12 @@
     function refreshOffsets() { offsets = getOffsets(); }
     refreshOffsets();
     window.addEventListener('resize', refreshOffsets, { passive: true });
+    /* O-03: lazy-images и шрифты могут сдвигать заголовки после DOMContentLoaded.
+       Пересчитываем offsets при полной загрузке страницы и готовности шрифтов.  */
+    window.addEventListener('load', refreshOffsets, { passive: true });
+    if (document.fonts && document.fonts.ready) {
+      document.fonts.ready.then(refreshOffsets);
+    }
 
     /* ── In btoc overlay: replace single bar with segmented ── */
     if (btocProgressWrap) {
@@ -188,10 +204,16 @@
       btocProgressWrap.appendChild(segBar);
     }
 
-    /* ── In bottom bar: add mini segment dots next to progress circle ── */
-    if (bottomBar && window.innerWidth <= 600) {
-      var barInner = bottomBar.querySelector('.bottom-bar-inner');
-      if (barInner) {
+    /* ── In bottom bar: add mini segment dots next to progress circle ──
+       B-06: используем ResizeObserver вместо одноразовой проверки window.innerWidth.
+       Dots инжектируются/убираются динамически при изменении ширины окна.          */
+    if (bottomBar) {
+      var _miniWrapInjected = false;
+
+      function injectMiniDots() {
+        if (_miniWrapInjected) return;
+        var barInner = bottomBar.querySelector('.bottom-bar-inner');
+        if (!barInner) return;
         var miniWrap = document.createElement('div');
         miniWrap.className = 'bottom-bar-seg';
         var pctSpan = document.createElement('span');
@@ -207,7 +229,33 @@
         miniWrap.appendChild(pctSpan);
         miniWrap.appendChild(miniDots);
         barInner.insertBefore(miniWrap, barInner.firstChild);
+        _miniWrapInjected = true;
       }
+
+      function removeMiniDots() {
+        if (!_miniWrapInjected) return;
+        var existing = bottomBar.querySelector('.bottom-bar-seg');
+        if (existing) existing.parentNode.removeChild(existing);
+        _miniWrapInjected = false;
+      }
+
+      function handleResize() {
+        /* CSS breakpoint @media (max-width: 600px) */
+        if (bottomBar.offsetWidth <= 600) {
+          injectMiniDots();
+        } else {
+          removeMiniDots();
+        }
+      }
+
+      if (window.ResizeObserver) {
+        new ResizeObserver(function () { handleResize(); }).observe(bottomBar);
+      } else {
+        /* Fallback для старых браузеров */
+        window.addEventListener('resize', function () { handleResize(); }, { passive: true });
+      }
+      /* Инициализация при загрузке */
+      handleResize();
     }
 
     /* ── Scroll update ── */

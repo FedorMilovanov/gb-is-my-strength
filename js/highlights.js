@@ -291,15 +291,45 @@
       .replace(/"/g, '&quot;');
   }
 
+  /* ── Focus trap ── */
+  var HL_FOCUSABLE = 'a[href],button:not([disabled]),input,[tabindex]:not([tabindex="-1"])';
+  var _prevHlFocus = null;
+
+  function getHlFocusable() {
+    return Array.prototype.slice.call(panelEl.querySelectorAll(HL_FOCUSABLE));
+  }
+  function trapHlTab(e) {
+    if (e.key !== 'Tab') return;
+    var els = getHlFocusable();
+    if (!els.length) return;
+    var first = els[0], last = els[els.length - 1];
+    if (e.shiftKey) {
+      if (document.activeElement === first) { e.preventDefault(); last.focus(); }
+    } else {
+      if (document.activeElement === last) { e.preventDefault(); first.focus(); }
+    }
+  }
+
   function openPanel() {
+    _prevHlFocus = document.activeElement;
     renderPanel();
     panelEl.classList.add('is-open');
     if (window.SiteUtils) { window.SiteUtils.lockScroll(); } else { document.body.style.overflow = 'hidden'; }
+    requestAnimationFrame(function () {
+      var first = getHlFocusable()[0];
+      if (first) first.focus();
+    });
+    /* Снимаем перед добавлением — защита от двойного вызова openPanel */
+    panelEl.removeEventListener('keydown', trapHlTab);
+    panelEl.addEventListener('keydown', trapHlTab);
   }
 
   function closePanel() {
     panelEl.classList.remove('is-open');
+    panelEl.removeEventListener('keydown', trapHlTab);
     if (window.SiteUtils) { window.SiteUtils.unlockScroll(); } else { document.body.style.overflow = ''; }
+    if (_prevHlFocus && _prevHlFocus.focus) _prevHlFocus.focus();
+    _prevHlFocus = null;
   }
 
   panelEl.addEventListener('click', function(e) {
@@ -364,13 +394,13 @@
       if (sel && !sel.isCollapsed) {
         text = sel.toString().trim();
       }
-      /* Fallback: read from copy button title or stored value */
+      /* Fallback: попытка взять текст из хранилища модуля selection-share.
+         B-08: принимаем только если URL совпадает с текущей страницей —
+         иначе возможно сохранение чужого текста с URL страницы A на странице B. */
       if (!text) {
-        /* Try to grab from clipboard API - use stored value instead */
-        var copySpan = document.querySelector('#ss-copy span');
-        if (copySpan && window.__ssLastText__) text = window.__ssLastText__;
+        var ssValid = window.__ssLastText__ && window.__ssLastTextUrl__ === window.location.href;
+        if (ssValid) text = window.__ssLastText__;
       }
-      if (!text && window.__ssLastText__) text = window.__ssLastText__;
       if (!text || text.length < 8) {
         var span = saveBtn.querySelector('span');
         var orig = span.textContent;
@@ -393,13 +423,21 @@
     });
   }
 
-  /* Intercept Selection Share's lastText */
+  /* Intercept Selection Share's lastText — B-08: сохраняем вместе с текущим URL,
+     чтобы не подхватить выделение со страницы A при сохранении на странице B.    */
   document.addEventListener('mouseup', function() {
     setTimeout(function() {
       var sel = window.getSelection ? window.getSelection() : null;
       if (sel && !sel.isCollapsed) {
         var t = sel.toString().trim();
-        if (t.length >= 12) window.__ssLastText__ = t;
+        if (t.length >= 12) {
+          window.__ssLastText__    = t;
+          window.__ssLastTextUrl__ = window.location.href;
+        }
+      } else {
+        /* Сбрасываем при снятии выделения */
+        window.__ssLastText__    = '';
+        window.__ssLastTextUrl__ = '';
       }
     }, 25);
   });

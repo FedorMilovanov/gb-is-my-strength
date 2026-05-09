@@ -10,9 +10,13 @@
    ============================================================ */
 
 var CACHE_VERSION = 'gb-v3';
-var CACHE_STATIC  = CACHE_VERSION + '-static';
-var CACHE_CONTENT = CACHE_VERSION + '-content';
-var CACHE_IMAGES  = CACHE_VERSION + '-images';
+var CACHE_STATIC   = CACHE_VERSION + '-static';
+var CACHE_CONTENT  = CACHE_VERSION + '-content';
+var CACHE_IMAGES   = CACHE_VERSION + '-images';
+/* B-04: отдельный кэш для данных Pagefind — сбрасывается независимо от статики.
+   pagefind.js и *.pagefind (wasm, fragment-idx) кэшируются агрессивно только если
+   они не являются данными индекса (fragment/ и index/).                           */
+var CACHE_PAGEFIND = CACHE_VERSION + '-pagefind';
 
 /* Ресурсы для прекэша при установке */
 var PRECACHE_ASSETS = [
@@ -47,7 +51,7 @@ self.addEventListener('install', function(e) {
 
 /* ── Activate: cleanup old caches ── */
 self.addEventListener('activate', function(e) {
-  var KNOWN = [CACHE_STATIC, CACHE_CONTENT, CACHE_IMAGES];
+  var KNOWN = [CACHE_STATIC, CACHE_CONTENT, CACHE_IMAGES, CACHE_PAGEFIND];
   e.waitUntil(
     caches.keys().then(function(keys) {
       return Promise.all(
@@ -61,9 +65,20 @@ self.addEventListener('activate', function(e) {
 });
 
 /* ── Helpers ── */
+
+/* B-04: файлы данных Pagefind (fragment/, index/) обновляются при каждом деплое —
+   нельзя кэшировать агрессивно. JS/WASM/css Pagefind — стабильны, можно Cache-First. */
+function isPagefindData(url) {
+  return url.pathname.startsWith('/pagefind/fragment/') ||
+         url.pathname.startsWith('/pagefind/index/');
+}
+
+function isPagefindStatic(url) {
+  return url.pathname.startsWith('/pagefind/') && !isPagefindData(url);
+}
+
 function isStaticAsset(url) {
   return /\.(css|js|woff2?|ttf|otf|ico|png|svg|webmanifest)(\?|$)/.test(url.pathname) ||
-         url.pathname.startsWith('/pagefind/') ||
          url.pathname.startsWith('/icons/');
 }
 
@@ -128,6 +143,27 @@ function networkFirst(req) {
   });
 }
 
+/* B-04: Network First WITH cache write — для pagefind-данных.
+   Пробуем сеть (всегда свежий индекс), кэшируем успех в CACHE_PAGEFIND,
+   при ошибке отдаём закэшированное (поиск работает офлайн).
+   НЕ используем /404.html как fallback: pagefind получит HTML-страницу
+   вместо бинарных данных и упадёт при попытке wasm-декомпрессии. Вместо
+   этого возвращаем 503 — pagefind обрабатывает его штатно (нет результатов). */
+function networkFirstWithCache(req, cacheName) {
+  return caches.open(cacheName).then(function(cache) {
+    return fetch(req).then(function(res) {
+      if (res && res.status === 200 && res.type !== 'opaque') {
+        cache.put(req, res.clone());
+      }
+      return res;
+    }).catch(function() {
+      return cache.match(req).then(function(cached) {
+        return cached || new Response('', { status: 503, statusText: 'Service Unavailable' });
+      });
+    });
+  });
+}
+
 /* ── Fetch strategy router ── */
 self.addEventListener('fetch', function(e) {
   var req = e.request;
@@ -141,6 +177,19 @@ self.addEventListener('fetch', function(e) {
 
   if (isFont(url)) {
     e.respondWith(cacheFirst(req, CACHE_STATIC));
+    return;
+  }
+
+  /* B-04: Pagefind данные (fragment/, index/) — Network-First c кэшированием:
+     свежий индекс в онлайне, кэшированный — в офлайне (поиск продолжает работать).
+     Pagefind JS/WASM — Cache-First: бинарные ресурсы не меняются между деплоями.  */
+  if (isPagefindData(url)) {
+    e.respondWith(networkFirstWithCache(req, CACHE_PAGEFIND));
+    return;
+  }
+
+  if (isPagefindStatic(url)) {
+    e.respondWith(cacheFirst(req, CACHE_PAGEFIND));
     return;
   }
 

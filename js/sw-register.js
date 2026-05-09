@@ -73,6 +73,11 @@
     document.addEventListener('DOMContentLoaded', function(){ document.body.appendChild(toastEl); });
 
   var hideTimer;
+  /* B-05: храним ссылку на текущий reload-handler, чтобы:
+     а) removeEventListener работал при повторном обновлении SW
+     б) timer мог снять его сам, если пользователь не кликнул        */
+  var _reloadHandler = null;
+
   function showToast(msg, isReload, type) {
     clearTimeout(hideTimer);
     toastEl.className = '';
@@ -82,12 +87,34 @@
     toastEl.classList.add('visible');
 
     if (isReload) {
-      toastEl.addEventListener('click', function handler() {
+      /* Снимаем предыдущий обработчик перед добавлением нового.
+         Важно: НЕ используем { once: true }, так как при автоскрытии
+         нужно снять его вручную — иначе обработчик остаётся на элементе
+         даже после обнуления _reloadHandler.                            */
+      if (_reloadHandler) {
+        toastEl.removeEventListener('click', _reloadHandler);
+      }
+      _reloadHandler = function () {
+        toastEl.removeEventListener('click', _reloadHandler);
+        _reloadHandler = null;
         window.location.reload();
-        toastEl.removeEventListener('click', handler);
-      }, { once: true });
-      hideTimer = setTimeout(hideToast, 8000);
+      };
+      toastEl.addEventListener('click', _reloadHandler);
+      hideTimer = setTimeout(function () {
+        /* Автоскрытие: снимаем обработчик явно через захваченную переменную */
+        if (_reloadHandler) {
+          toastEl.removeEventListener('click', _reloadHandler);
+          _reloadHandler = null;
+        }
+        hideToast();
+      }, 8000);
     } else {
+      /* Сбрасываем обработчик перезагрузки — он мог остаться от предыдущего
+         reload-тоста. Без этого клик на оффлайн/онлайн тост вызовет reload. */
+      if (_reloadHandler) {
+        toastEl.removeEventListener('click', _reloadHandler);
+        _reloadHandler = null;
+      }
       hideTimer = setTimeout(hideToast, 3500);
     }
   }
@@ -119,12 +146,14 @@
     var shown = false;
     setTimeout(function() {
       if (!shown && !document.hidden) {
-        /* Article is being read — it's being cached by SW stale-while-revalidate */
-        /* Show subtle toast only if user hasn't seen it this session */
-        var key = 'gb-offline-hint';
+        /* B-14: используем localStorage с счётчиком показов (max 2) вместо
+           sessionStorage — иначе тост раздражает постоянных читателей,
+           показываясь при каждом новом открытии браузера.                  */
+        var key = 'gb-offline-hint-count';
         try {
-          if (!sessionStorage.getItem(key)) {
-            sessionStorage.setItem(key, '1');
+          var count = parseInt(localStorage.getItem(key) || '0', 10);
+          if (count < 2) {
+            localStorage.setItem(key, String(count + 1));
             showToast('Статья доступна офлайн', false, 'toast-cached');
             shown = true;
           }
