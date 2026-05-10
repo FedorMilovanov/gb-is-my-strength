@@ -1,10 +1,10 @@
 # Верифицированный список патчей — gb-is-my-strength
-> Версия: **v6**  
-> Дата верификации: 2026-05-09 (v4) → 2026-05-09 (v5) → 2026-05-09 (v6)  
-> Дата применения патчей: 2026-05-09  
-> Статус: **ВСЕ 32 ПАТЧА ПРИМЕНЕНЫ ✅ | 49/49 проверок пройдено**  
-> Источник: анализ резервной копии `gb-is-my-strength_backup_2026-05-09_13-50.zip`  
-> Исходные отчёты: `БАГИ_1` (BUGS_ORIGINAL_REPO.md) · `БАГИ_2` (BUGS.md + AUDIT-REPORT.md)
+> Версия: **v7**  
+> Дата верификации: 2026-05-09 (v4) → 2026-05-09 (v5) → 2026-05-09 (v6) → 2026-05-10 (v7)  
+> Дата применения патчей: 2026-05-10  
+> Статус: **ВСЕ 42 ПАТЧА ПРИМЕНЕНЫ ✅ | 59/59 проверок пройдено**  
+> Источник: анализ `gb-is-my-strength_patched_2026-05-10.zip` + FINAL_MASTER_AUDIT_2026-05-10.md  
+> Исходные отчёты: `БАГИ_1` (BUGS_ORIGINAL_REPO.md) · `БАГИ_2` (BUGS.md + AUDIT-REPORT.md) · `АУДИТ_3` (FINAL_MASTER_AUDIT_2026-05-10.md)
 
 ---
 
@@ -716,3 +716,126 @@ if (btocTimeLeft) btocTimeLeft.textContent = timeText;
 | **Итого** | **32** | **✅ 32** |
 
 **Автоаудит: 49/49 проверок ✅**
+
+---
+
+## БЛОК K — Аудит 2026-05-10 (FINAL_MASTER_AUDIT)
+
+### PATCH-K1 ✅ — `index.html` — BUG-01: ssr:true → ssr:false
+**Файл:** `index.html`, строка 93 | **Приоритет:** 🔴 Критический
+
+`ssr:true` — флаг серверного рендеринга (Next.js/Nuxt). GitHub Pages — чистая статика. Флаг искажает сессии и данные вебвизора.
+
+**Было:** `ym(108353327, 'init', {ssr:true, ...})`  
+**Стало:** `ym(108353327, 'init', {ssr:false, ...})`
+
+---
+
+### PATCH-K2 ✅ — `index.html` — BUG-02: Морфология иврита
+**Файл:** `index.html`, строки 269–271, 651–653 | **Приоритет:** 🔴 Критический
+
+`כָּאַיָּלוֹת` — мн.ч. жен.род от אַיָּלָה (лань/олениха). «как у оленя» (ед.ч., муж.род) — морфологически неверно. Исправлено в обоих иврит-виджетах (`aria-label` + `hb-back`): **«как у оленя» → «как у ланей»**.
+
+*Строка 615 (прозаическая цитата синодального перевода) не тронута — это цитата внешнего источника.*
+
+---
+
+### PATCH-K3 ✅ — `about/index.html` — BUG-07: jobTitle
+**Файл:** `about/index.html`, строка 43 | **Приоритет:** 🟠 Высокий
+
+**Было:** `"jobTitle": "Автор и редактор богословских материалов"`  
+**Стало:** `"jobTitle": "Редактор-составитель и куратор богословской библиотеки"`
+
+---
+
+### PATCH-K4 ✅ — `manifest.json` — SEO-04: theme_color
+**Файл:** `manifest.json` | **Приоритет:** 🟡 Средний
+
+**Было:** `"theme_color": "#14100b"` (тёмный)  
+**Стало:** `"theme_color": "#f8f5f0"` (светлая тема по умолчанию)
+
+---
+
+### PATCH-K5 ✅ — `js/site.js` — BUG-03: Theme toggle ID
+**Файл:** `js/site.js`, строка 302 | **Приоритет:** 🟠 Высокий
+
+`getElementById('themeToggle')` — несуществующий ID. Фактический ID — `hThemeBtn`.
+
+**Было:** `var toggle = document.getElementById('themeToggle');`  
+**Стало:** `var toggle = document.getElementById('themeToggle') || document.getElementById('hThemeBtn');`
+
+---
+
+### PATCH-K6 ✅ — `js/site.js` — PATCH-SITE-4: Неверный CSS-селектор шортката
+**Файл:** `js/site.js`, строка 2479 | **Приоритет:** 🟠 Высокий
+
+`#gb-search-backdrop` — старый ID, которого нет в search.js v2.1. Палитра использует `.cp-backdrop`.
+
+**Было:** `...#gb-search-backdrop.is-open,...`  
+**Стало:** `....cp-backdrop.is-open,...`
+
+---
+
+### PATCH-K7 ✅ — `js/search.js` — PATCH-SEARCH-1: Escape stopPropagation
+**Файл:** `js/search.js`, case 'Escape' | **Приоритет:** 🟠 Высокий
+
+`e.stopPropagation()` стоял внутри `if (query)`. При пустом запросе событие всплывало к document-уровню и могло вызвать двойной `closeModal()`. Вынесен до `if (query)`.
+
+---
+
+### PATCH-K8 ✅ — `js/search.js` — HYGIENE-7: pagefindFailed error state
+**Файл:** `js/search.js`, `runSearch()` | **Приоритет:** 🟠 Высокий
+
+При `pagefindFailed=true` `loadPagefind(cb)` возвращалась без вызова `cb` → пользователь навсегда видел «Загружаю индекс…». Добавлена явная проверка с читаемым сообщением об ошибке.
+
+---
+
+### PATCH-K9 ✅ — `js/search.js` — HYGIENE-8: Escape debounce cancel
+**Файл:** `js/search.js`, case 'Escape' | **Приоритет:** 🟡 Средний
+
+В ветке очистки запроса (Escape при query≠'') `_searchTimer` не отменялся → через 180 мс `showDefault()` вызывался повторно. Добавлен `clearTimeout(_searchTimer)`.
+
+---
+
+### PATCH-K10 ✅ — `js/search.js` — loadPagefind: if → else if
+**Файл:** `js/search.js`, poll callback в `loadPagefind()` | **Приоритет:** 🟠 Высокий
+
+Два независимых `if` вместо `if/else if`. На тике 51 оба блока выполнялись одновременно: `pagefindLoaded=true` И `pagefindFailed=true`. Совместно с HYGIENE-7 это вызывало «Поиск недоступен» на работающем сайте. Исправлено: `else if (polls > 50)`.
+
+---
+
+## Обновлённая сводная таблица (42 патча — v7)
+
+| Блок | Патчей | Применено |
+|------|--------|-----------|
+| A — Скрипты/CI | 3 | ✅ 3 |
+| B — Навигация | 1 | ✅ 1 |
+| C — Контент HTML | 11 | ✅ 11 |
+| D — README | 2 | ✅ 2 |
+| E — JS логика | 1 | ✅ 1 |
+| F — Доп. патчи | 2 | ✅ 2 |
+| G — Line endings/Infra | 2 | ✅ 2 |
+| H — Раунд 3 | 3 | ✅ 3 |
+| I — Верификация v5 | 1 | ✅ 1 |
+| J — Раунд 4 | 6 | ✅ 6 |
+| K — Аудит 2026-05-10 | 10 | ✅ 10 |
+| **Итого** | **42** | **✅ 42** |
+
+**Автоаудит: 59/59 проверок ✅**
+
+---
+
+### Оставшиеся задачи (не применены — требуют замены файлов или новых ресурсов)
+
+| ID | Описание | Приоритет |
+|----|----------|-----------|
+| BUG-04 | sw-register.js v1.1 drop-in | 🟠 |
+| BUG-05 | highlights.js v1.1 drop-in | 🟠 |
+| BUG-06 | enhancements.js v1.1 drop-in | 🟠 |
+| SEO-01 | Кнопка поиска в articles navbar | 🟡 |
+| SEO-02 | OG image для about page | 🟡 |
+| SEO-03 | syncThemeColor из CSS-переменных | 🟡 |
+| RISK-01 | forceUnlockEmergency + SiteUtils refactor | 🟡 |
+| RISK-03 | Безопасный cleanupOldSDG | 🟡 |
+| RISK-04 | Pagefind runtime caching в SW | 🟢 |
+| PREM-01 | Search Manifest + Premium Default State | 🟡 |

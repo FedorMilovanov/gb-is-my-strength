@@ -1,11 +1,18 @@
 /* ============================================================
    highlights.js — Persistent Highlights & Цитаты
-   Господь Бог — Сила Моя · v1.0
+   Господь Бог — Сила Моя · v1.1
 
    Расширяет Selection Share:
    — кнопка «Сохранить цитату» → localStorage
    — плавающая кнопка «Мои цитаты» (если есть сохранённые)
    — модальная панель со всеми цитатами + экспорт в Markdown
+
+   Изменения v1.1:
+   · lockScroll/unlockScroll вызываются с source='highlights'
+   · Swipe-down для закрытия панели на мобильных
+   · Defensive check: панель не открывается повторно если уже open
+   · escHtml вынесена в общий scope (используется в renderPanel)
+   · DOMContentLoaded guard для всех точек монтирования
    ============================================================ */
 (function () {
   'use strict';
@@ -36,6 +43,15 @@
     var items = loadAll().filter(function(h){ return h.id !== id; });
     saveAll(items);
     return items;
+  }
+
+  /* ── escHtml — общий хелпер ── */
+  function escHtml(s) {
+    return String(s)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;');
   }
 
   /* ── CSS ── */
@@ -70,6 +86,7 @@
       display: flex; flex-direction: column;
       box-shadow: 0 -8px 40px rgba(20,16,11,.18);
       animation: hlPanelIn .2s ease;
+      touch-action: pan-y;
     }
     @keyframes hlPanelIn {
       from { transform: translateY(40px); opacity: 0; }
@@ -85,6 +102,7 @@
       border-radius: 2px;
       margin: 12px auto 0;
       flex-shrink: 0;
+      cursor: grab;
     }
 
     #gb-hl-header {
@@ -126,6 +144,7 @@
 
     #gb-hl-list {
       overflow-y: auto; flex: 1; padding: 8px 0;
+      overscroll-behavior: contain;
     }
 
     .gb-hl-item {
@@ -247,7 +266,6 @@
     if (countEl) countEl.textContent = items.length;
     if (fabCountEl) fabCountEl.textContent = items.length;
 
-    /* Show/hide FAB */
     if (items.length > 0) fabEl.classList.add('visible');
     else fabEl.classList.remove('visible');
 
@@ -283,14 +301,6 @@
     });
   }
 
-  function escHtml(s) {
-    return String(s)
-      .replace(/&/g, '&amp;')
-      .replace(/</g, '&lt;')
-      .replace(/>/g, '&gt;')
-      .replace(/"/g, '&quot;');
-  }
-
   /* ── Focus trap ── */
   var HL_FOCUSABLE = 'a[href],button:not([disabled]),input,[tabindex]:not([tabindex="-1"])';
   var _prevHlFocus = null;
@@ -310,16 +320,58 @@
     }
   }
 
+  /* ── Swipe-down to close (mobile) ── */
+  var _swipeStartY = 0;
+  var _swipeActive = false;
+  var panelInner = null; /* resolved after DOM insert */
+
+  function initSwipe() {
+    panelInner = document.getElementById('gb-hl-panel');
+    if (!panelInner) return;
+
+    panelInner.addEventListener('touchstart', function(e) {
+      _swipeStartY = e.touches[0].clientY;
+      _swipeActive = true;
+    }, { passive: true });
+
+    panelInner.addEventListener('touchmove', function(e) {
+      if (!_swipeActive) return;
+      var dy = e.touches[0].clientY - _swipeStartY;
+      if (dy > 0) {
+        /* Translate panel down as user swipes */
+        panelInner.style.transform = 'translateY(' + dy + 'px)';
+        panelInner.style.transition = 'none';
+      }
+    }, { passive: true });
+
+    panelInner.addEventListener('touchend', function(e) {
+      if (!_swipeActive) return;
+      _swipeActive = false;
+      var dy = e.changedTouches[0].clientY - _swipeStartY;
+      panelInner.style.transform = '';
+      panelInner.style.transition = '';
+      if (dy > 80) {
+        closePanel();
+      }
+    }, { passive: true });
+  }
+
   function openPanel() {
+    /* Защита от двойного открытия */
+    if (panelEl.classList.contains('is-open')) return;
     _prevHlFocus = document.activeElement;
     renderPanel();
     panelEl.classList.add('is-open');
-    if (window.SiteUtils) { window.SiteUtils.lockScroll(); } else { document.body.style.overflow = 'hidden'; }
+    /* v1.1: передаём source для отладки */
+    if (window.SiteUtils && typeof window.SiteUtils.lockScroll === 'function') {
+      window.SiteUtils.lockScroll('highlights');
+    } else {
+      document.body.style.overflow = 'hidden';
+    }
     requestAnimationFrame(function () {
       var first = getHlFocusable()[0];
       if (first) first.focus();
     });
-    /* Снимаем перед добавлением — защита от двойного вызова openPanel */
     panelEl.removeEventListener('keydown', trapHlTab);
     panelEl.addEventListener('keydown', trapHlTab);
   }
@@ -327,7 +379,12 @@
   function closePanel() {
     panelEl.classList.remove('is-open');
     panelEl.removeEventListener('keydown', trapHlTab);
-    if (window.SiteUtils) { window.SiteUtils.unlockScroll(); } else { document.body.style.overflow = ''; }
+    /* v1.1: передаём source для отладки */
+    if (window.SiteUtils && typeof window.SiteUtils.unlockScroll === 'function') {
+      window.SiteUtils.unlockScroll('highlights');
+    } else {
+      document.body.style.removeProperty('overflow');
+    }
     if (_prevHlFocus && _prevHlFocus.focus) _prevHlFocus.focus();
     _prevHlFocus = null;
   }
@@ -371,7 +428,6 @@
     var popup = document.getElementById('selection-share-popup');
     if (!popup || document.getElementById('ss-save')) return;
 
-    /* Build save button */
     var sep = document.createElement('div');
     sep.className = 'ss-sep';
 
@@ -388,15 +444,11 @@
     popup.appendChild(saveBtn);
 
     saveBtn.addEventListener('click', function() {
-      /* Get text from Selection Share's lastText — access via closure trick */
       var sel = window.getSelection ? window.getSelection() : null;
       var text = '';
       if (sel && !sel.isCollapsed) {
         text = sel.toString().trim();
       }
-      /* Fallback: попытка взять текст из хранилища модуля selection-share.
-         B-08: принимаем только если URL совпадает с текущей страницей —
-         иначе возможно сохранение чужого текста с URL страницы A на странице B. */
       if (!text) {
         var ssValid = window.__ssLastText__ && window.__ssLastTextUrl__ === window.location.href;
         if (ssValid) text = window.__ssLastText__;
@@ -423,8 +475,7 @@
     });
   }
 
-  /* Intercept Selection Share's lastText — B-08: сохраняем вместе с текущим URL,
-     чтобы не подхватить выделение со страницы A при сохранении на странице B.    */
+  /* Intercept Selection Share lastText — сохраняем вместе с URL */
   document.addEventListener('mouseup', function() {
     setTimeout(function() {
       var sel = window.getSelection ? window.getSelection() : null;
@@ -435,20 +486,21 @@
           window.__ssLastTextUrl__ = window.location.href;
         }
       } else {
-        /* Сбрасываем при снятии выделения */
         window.__ssLastText__    = '';
         window.__ssLastTextUrl__ = '';
       }
     }, 25);
   });
 
-  /* Inject after DOM ready (Selection Share creates popup on DOMContentLoaded) */
+  /* Inject after DOM ready */
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', function() {
       setTimeout(injectSaveButton, 500);
+      initSwipe();
     });
   } else {
     setTimeout(injectSaveButton, 500);
+    initSwipe();
   }
 
   /* Render FAB on load */

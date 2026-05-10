@@ -1,6 +1,17 @@
 /* ============================================================
    enhancements.js — Segmented Progress Bar + FAQPage JSON-LD
-   Господь Бог — Сила Моя · v1.0
+   Господь Бог — Сила Моя · v1.1
+
+   Изменения v1.1:
+   · FAQPage JSON-LD: поддержка @graph — если на странице уже
+     есть Article/NewsArticle JSON-LD, FAQPage добавляется
+     в существующий @graph (вместо отдельного тега), что
+     соответствует рекомендациям Google для Rich Results
+   · FAQPage: sanitize ответа — удаляем <script> и <style>
+     из innerHTML перед записью в JSON-LD
+   · Segmented bar: throttle обновления scroll (rAF) для
+     предотвращения layout-thrashing при быстром скролле
+   · ResizeObserver для пересчёта offsets (вместо только resize)
    ============================================================ */
 (function () {
   'use strict';
@@ -9,27 +20,47 @@
      A. FAQPage JSON-LD Auto-Generation
      Сканирует .faq-accordion на странице и инжектирует
      FAQPage JSON-LD если его ещё нет
+     v1.1: @graph merging + innerHTML sanitization
      ============================================================ */
   (function () {
     /* Проверяем — уже есть FAQPage в разметке? */
     var scripts = document.querySelectorAll('script[type="application/ld+json"]');
     var hasFaq = false;
+    var graphScriptEl = null; /* тег, содержащий @graph */
+    var graphData = null;
+
     scripts.forEach(function(s) {
       try {
         var data = JSON.parse(s.textContent);
-        if (data['@type'] === 'FAQPage' || (Array.isArray(data) && data.some(function(d){ return d['@type'] === 'FAQPage'; }))) {
-          hasFaq = true;
-        }
-        if (data['@graph'] && data['@graph'].some(function(d){ return d['@type'] === 'FAQPage'; })) {
-          hasFaq = true;
+        /* Прямой FAQPage */
+        if (data['@type'] === 'FAQPage') { hasFaq = true; }
+        if (Array.isArray(data) && data.some(function(d){ return d['@type'] === 'FAQPage'; })) { hasFaq = true; }
+        /* @graph */
+        if (data['@graph']) {
+          if (data['@graph'].some(function(d){ return d['@type'] === 'FAQPage'; })) {
+            hasFaq = true;
+          } else if (!graphScriptEl) {
+            /* Запоминаем первый @graph без FAQPage для возможного мержа */
+            graphScriptEl = s;
+            graphData = data;
+          }
         }
       } catch(e) {}
     });
 
-    if (hasFaq) return; /* Already present */
+    if (hasFaq) return;
 
     var accordions = document.querySelectorAll('.faq-accordion');
     if (!accordions.length) return;
+
+    /* ── sanitizeHtml: убираем script/style из ответа ── */
+    function sanitizeHtml(html) {
+      var tmp = document.createElement('div');
+      tmp.innerHTML = html;
+      var dangerous = tmp.querySelectorAll('script, style, iframe, object');
+      dangerous.forEach(function(el){ el.parentNode.removeChild(el); });
+      return tmp.innerHTML;
+    }
 
     var entities = [];
     accordions.forEach(function(acc) {
@@ -39,16 +70,14 @@
         var aEl = item.querySelector('.faq-accordion__body-inner');
         if (!qEl || !aEl) return;
 
-        /* O-05: клонируем qEl и удаляем .faq-accordion__icon из клона —
-           иначе textContent включает текст иконки (стрелки, символа ±).     */
+        /* Клонируем qEl и удаляем .faq-accordion__icon */
         var qClone = qEl.cloneNode(true);
         var icon = qClone.querySelector('.faq-accordion__icon');
         if (icon) icon.parentNode.removeChild(icon);
         var q = (qClone.textContent || '').trim().replace(/\s+/g, ' ');
 
-        /* O-05: Schema.org принимает HTML в поле text — используем innerHTML
-           чтобы сохранить ссылки и форматирование внутри ответа.            */
-        var a = (aEl.innerHTML || '').replace(/\s+/g, ' ').trim();
+        /* v1.1: sanitize innerHTML ответа */
+        var a = sanitizeHtml((aEl.innerHTML || '').replace(/\s+/g, ' ').trim());
 
         if (q && a) {
           entities.push({
@@ -62,6 +91,21 @@
 
     if (!entities.length) return;
 
+    /* v1.1: если на странице есть @graph — добавляем FAQPage туда */
+    if (graphScriptEl && graphData) {
+      try {
+        graphData['@graph'].push({
+          '@type': 'FAQPage',
+          'mainEntity': entities
+        });
+        graphScriptEl.textContent = JSON.stringify(graphData);
+        return;
+      } catch(e) {
+        /* Если мерж не удался — создаём отдельный тег */
+      }
+    }
+
+    /* Иначе — создаём отдельный тег */
     var ld = {
       '@context': 'https://schema.org',
       '@type': 'FAQPage',
@@ -78,6 +122,7 @@
   /* ============================================================
      B. Segmented Progress Bar (Mobile Bottom Bar)
      Заменяет единую полоску в btoc-overlay на сегменты по h2
+     v1.1: rAF throttle для scroll, ResizeObserver для offsets
      ============================================================ */
   (function () {
     var STYLES = `
@@ -115,7 +160,7 @@
         .bottom-bar-seg .seg-dot { transition: none; }
       }
 
-      /* Progress bar in bottom bar (circle replacement with line on mobile) */
+      /* Progress bar in bottom bar */
       @media (max-width: 600px) {
         .bar-progress { display: none !important; }
         .bottom-bar-seg {
@@ -153,16 +198,14 @@
     styleEl.textContent = STYLES;
     document.head.appendChild(styleEl);
 
-    /* Only on article pages with bottom bar */
     var btocProgressWrap = document.querySelector('.btoc-progress-bar-wrap');
     var bottomBar = document.getElementById('bottomBar');
     if (!btocProgressWrap && !bottomBar) return;
 
-    /* Collect h2 headings */
     var headings = Array.prototype.slice.call(
       document.querySelectorAll('article h2[id], .article-body h2[id], [data-pagefind-body] h2[id]')
     );
-    if (headings.length < 2) return; /* Not enough sections */
+    if (headings.length < 2) return;
 
     /* Build offset map */
     function getOffsets() {
@@ -179,9 +222,19 @@
     var offsets = [];
     function refreshOffsets() { offsets = getOffsets(); }
     refreshOffsets();
-    window.addEventListener('resize', refreshOffsets, { passive: true });
-    /* O-03: lazy-images и шрифты могут сдвигать заголовки после DOMContentLoaded.
-       Пересчитываем offsets при полной загрузке страницы и готовности шрифтов.  */
+
+    /* v1.1: ResizeObserver для пересчёта offsets при изменении размера */
+    if (window.ResizeObserver) {
+      new ResizeObserver(function() {
+        /* debounce: пересчитываем через 100ms после последнего события */
+        clearTimeout(_offsetTimer);
+        _offsetTimer = setTimeout(refreshOffsets, 100);
+      }).observe(document.body);
+    } else {
+      window.addEventListener('resize', refreshOffsets, { passive: true });
+    }
+    var _offsetTimer;
+
     window.addEventListener('load', refreshOffsets, { passive: true });
     if (document.fonts && document.fonts.ready) {
       document.fonts.ready.then(refreshOffsets);
@@ -189,7 +242,6 @@
 
     /* ── In btoc overlay: replace single bar with segmented ── */
     if (btocProgressWrap) {
-      /* Replace inner content */
       var segBar = document.createElement('div');
       segBar.className = 'btoc-seg-bar';
       headings.forEach(function() {
@@ -204,9 +256,7 @@
       btocProgressWrap.appendChild(segBar);
     }
 
-    /* ── In bottom bar: add mini segment dots next to progress circle ──
-       B-06: используем ResizeObserver вместо одноразовой проверки window.innerWidth.
-       Dots инжектируются/убираются динамически при изменении ширины окна.          */
+    /* ── In bottom bar: mini segment dots ── */
     if (bottomBar) {
       var _miniWrapInjected = false;
 
@@ -240,7 +290,6 @@
       }
 
       function handleResize() {
-        /* CSS breakpoint @media (max-width: 600px) */
         if (bottomBar.offsetWidth <= 600) {
           injectMiniDots();
         } else {
@@ -251,14 +300,14 @@
       if (window.ResizeObserver) {
         new ResizeObserver(function () { handleResize(); }).observe(bottomBar);
       } else {
-        /* Fallback для старых браузеров */
         window.addEventListener('resize', function () { handleResize(); }, { passive: true });
       }
-      /* Инициализация при загрузке */
       handleResize();
     }
 
-    /* ── Scroll update ── */
+    /* ── Scroll update — v1.1: rAF throttle ── */
+    var _rafPending = false;
+
     function updateSegments() {
       var scrollY = window.scrollY;
       var winH = window.innerHeight;
@@ -271,7 +320,6 @@
       var pctEl = document.querySelector('.seg-pct');
       if (pctEl) pctEl.textContent = pct + '%';
 
-      /* Also sync old btoc progress fill if exists */
       var oldFill = document.getElementById('btocProgressFill');
       if (oldFill) oldFill.style.width = pct + '%';
       var oldPct = document.getElementById('btocProgressPct');
@@ -284,7 +332,7 @@
 
         var progress = 0;
         if (scrollY >= sec.end) {
-          progress = 1; /* done */
+          progress = 1;
         } else if (scrollY >= sec.start) {
           progress = (scrollY - sec.start) / (sec.end - sec.start);
         }
@@ -317,9 +365,16 @@
           }
         }
       });
+
+      _rafPending = false;
     }
 
-    window.addEventListener('scroll', updateSegments, { passive: true });
+    window.addEventListener('scroll', function() {
+      if (_rafPending) return;
+      _rafPending = true;
+      requestAnimationFrame(updateSegments);
+    }, { passive: true });
+
     updateSegments();
   })();
 

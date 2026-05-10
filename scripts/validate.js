@@ -113,8 +113,8 @@ function validateArticle(slug) {
     ?? html.match(/<meta\s+[^>]*content="([^"]+)"[^>]*property="og:image"/)?.[1];
   if (!ogImg) {
     err(slug, 'нет og:image');
-  } else {
-    const imgFile = ogImg.replace(BASE_URL, path.resolve(__dirname, '..'));
+  } else if (!/^https?:\/\//.test(ogImg)) {
+    const imgFile = path.resolve(path.join(ARTICLES, '..'), ogImg.replace(/^\//, ''));
     if (!fs.existsSync(imgFile)) {
       err(slug, `og:image файл не найден: ${ogImg}`);
     }
@@ -147,9 +147,33 @@ function validateArticle(slug) {
   // #9 JSON-LD BreadcrumbList: последний элемент совпадает с og:title
   const ogTitle      = html.match(/<meta\s+[^>]*property="og:title"[^>]*content="([^"]+)"/)?.[1]
     ?? html.match(/<meta\s+[^>]*content="([^"]+)"[^>]*property="og:title"/)?.[1];
-  const breadcrumbLD = html.match(/"BreadcrumbList"[\s\S]{0,800}"name":\s*"([^"]+)"\s*\}\s*\]/)?.[1];
-  if (breadcrumbLD && ogTitle && breadcrumbLD !== ogTitle) {
-    warn(slug, `BreadcrumbList последний элемент "${breadcrumbLD}" ≠ og:title "${ogTitle}"`);
+  let breadcrumbLD = null;
+  const allLdBlocks = [...html.matchAll(/<script\s+type="application\/ld\+json">([\s\S]*?)<\/script>/g)];
+  for (const [, raw] of allLdBlocks) {
+    try {
+      const data = JSON.parse(raw.trim());
+      const items = Array.isArray(data) ? data : (data['@graph'] || [data]);
+      for (const item of items) {
+        if (item['@type'] === 'BreadcrumbList' && Array.isArray(item.itemListElement)) {
+          const lastItem = item.itemListElement[item.itemListElement.length - 1];
+          if (lastItem) breadcrumbLD = lastItem.name || null;
+        }
+        /* Also check nested breadcrumb (e.g. ProfilePage.breadcrumb) */
+        if (item.breadcrumb && item.breadcrumb['@type'] === 'BreadcrumbList' &&
+            Array.isArray(item.breadcrumb.itemListElement)) {
+          const lastItem = item.breadcrumb.itemListElement[item.breadcrumb.itemListElement.length - 1];
+          if (lastItem) breadcrumbLD = lastItem.name || null;
+        }
+      }
+    } catch {}
+  }
+  if (breadcrumbLD && ogTitle && breadcrumbLD.trim() !== ogTitle.trim()) {
+    warn(slug, `BreadcrumbList "${breadcrumbLD}" ≠ og:title "${ogTitle}"`);
+  }
+
+  /* Чек SSR: ssr:true в Яндекс.Метрике — ошибка конфигурации */
+  if (html.includes('ssr:true') || html.includes('ssr: true')) {
+    err(slug, 'Yandex Metrika: ssr:true — для статического сайта нужен ssr:false');
   }
 
   // #10 Дублирующиеся id в HTML
@@ -197,7 +221,8 @@ function validateArticle(slug) {
   for (const [, src] of html.matchAll(/<img[^>]+\bsrc="([^"]+)"/g)) {
     if (/^https?:\/\//.test(src) || src.startsWith('data:')) continue;
     const abs = path.resolve(path.join(ARTICLES, slug), src);
-    if (!fs.existsSync(abs)) {
+    const absFromRoot = path.resolve(path.join(ARTICLES, '..'), src);
+    if (!fs.existsSync(abs) && !fs.existsSync(absFromRoot)) {
       err(slug, `<img src> не найден на диске: ${src}`);
     }
   }

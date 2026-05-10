@@ -1,14 +1,26 @@
 /* ============================================================
    sw-register.js — Service Worker Registration + Offline Toast
-   Господь Бог — Сила Моя · v1.0
+   Господь Бог — Сила Моя · v1.1
+   ============================================================
+   Изменения v1.1:
+   · Версионированный URL SW (/sw.js?v=…) из SITE_CONFIG для
+     надёжного cache-bust при обновлении
+   · Toast строится через DOM-API (без innerHTML) — XSS-безопасность
+   · pagehide: cleanup _reloadHandler при уходе со страницы
+   · Lazy body injection: toastEl вставляется после DOMContentLoaded
+     без дублирования (защита от двойного монтирования)
    ============================================================ */
 (function () {
   'use strict';
 
   if (!('serviceWorker' in navigator)) return;
 
+  /* ── Версионированный URL SW для надёжного cache-bust ── */
+  var swVersion = (window.SITE_CONFIG && window.SITE_CONFIG.version) || '';
+  var swUrl = '/sw.js' + (swVersion ? '?v=' + encodeURIComponent(swVersion) : '');
+
   /* ── Register ── */
-  navigator.serviceWorker.register('/sw.js', { scope: '/' }).then(function(reg) {
+  navigator.serviceWorker.register(swUrl, { scope: '/' }).then(function(reg) {
     /* Check for update on each visit */
     reg.addEventListener('updatefound', function() {
       var newWorker = reg.installing;
@@ -67,30 +79,54 @@
   styleEl.textContent = TOAST_STYLES;
   document.head.appendChild(styleEl);
 
+  /* ── Toast element ── */
   var toastEl = document.createElement('div');
   toastEl.id = 'gb-sw-toast';
-  document.body ? document.body.appendChild(toastEl) :
-    document.addEventListener('DOMContentLoaded', function(){ document.body.appendChild(toastEl); });
+
+  function _mountToast() {
+    if (!document.body || document.getElementById('gb-sw-toast')) return;
+    document.body.appendChild(toastEl);
+  }
+
+  if (document.body) {
+    _mountToast();
+  } else {
+    document.addEventListener('DOMContentLoaded', _mountToast);
+  }
 
   var hideTimer;
-  /* B-05: храним ссылку на текущий reload-handler, чтобы:
-     а) removeEventListener работал при повторном обновлении SW
-     б) timer мог снять его сам, если пользователь не кликнул        */
   var _reloadHandler = null;
+
+  /* ── pagehide: cleanup при уходе со страницы ── */
+  window.addEventListener('pagehide', function() {
+    clearTimeout(hideTimer);
+    if (_reloadHandler) {
+      toastEl.removeEventListener('click', _reloadHandler);
+      _reloadHandler = null;
+    }
+  });
+
+  /* ── Toast builder через DOM-API (без innerHTML) ── */
+  function buildToastContent(msg) {
+    while (toastEl.firstChild) toastEl.removeChild(toastEl.firstChild);
+    var dot = document.createElement('span');
+    dot.className = 'toast-dot';
+    var text = document.createElement('span');
+    text.textContent = msg;
+    toastEl.appendChild(dot);
+    toastEl.appendChild(text);
+  }
 
   function showToast(msg, isReload, type) {
     clearTimeout(hideTimer);
     toastEl.className = '';
     if (type) toastEl.classList.add(type);
     if (isReload) toastEl.classList.add('toast-reload');
-    toastEl.innerHTML = '<span class="toast-dot"></span><span>' + msg + '</span>';
+
+    buildToastContent(msg);
     toastEl.classList.add('visible');
 
     if (isReload) {
-      /* Снимаем предыдущий обработчик перед добавлением нового.
-         Важно: НЕ используем { once: true }, так как при автоскрытии
-         нужно снять его вручную — иначе обработчик остаётся на элементе
-         даже после обнуления _reloadHandler.                            */
       if (_reloadHandler) {
         toastEl.removeEventListener('click', _reloadHandler);
       }
@@ -101,7 +137,6 @@
       };
       toastEl.addEventListener('click', _reloadHandler);
       hideTimer = setTimeout(function () {
-        /* Автоскрытие: снимаем обработчик явно через захваченную переменную */
         if (_reloadHandler) {
           toastEl.removeEventListener('click', _reloadHandler);
           _reloadHandler = null;
@@ -109,8 +144,6 @@
         hideToast();
       }, 8000);
     } else {
-      /* Сбрасываем обработчик перезагрузки — он мог остаться от предыдущего
-         reload-тоста. Без этого клик на оффлайн/онлайн тост вызовет reload. */
       if (_reloadHandler) {
         toastEl.removeEventListener('click', _reloadHandler);
         _reloadHandler = null;
@@ -135,20 +168,17 @@
   /* Cache article notification from SW */
   navigator.serviceWorker.addEventListener('message', function(e) {
     if (e.data && e.data.type === 'SW_UPDATE') {
-      /* Silently update — don't bother user unless they're active */
+      /* Silently update */
     }
   });
 
-  /* On article pages: show "available offline" after 2 sec of reading */
+  /* On article pages: show "available offline" after 2.5 sec */
   document.addEventListener('DOMContentLoaded', function() {
     if (!document.querySelector('article[data-pagefind-body], article')) return;
 
     var shown = false;
     setTimeout(function() {
       if (!shown && !document.hidden) {
-        /* B-14: используем localStorage с счётчиком показов (max 2) вместо
-           sessionStorage — иначе тост раздражает постоянных читателей,
-           показываясь при каждом новом открытии браузера.                  */
         var key = 'gb-offline-hint-count';
         try {
           var count = parseInt(localStorage.getItem(key) || '0', 10);

@@ -37,7 +37,8 @@ var PRECACHE_ASSETS = [
   '/404.html',
   /* SUS-D: pagefind.js в precache → поиск доступен офлайн с первого визита */
   '/pagefind/pagefind.js',
-  '/pagefind/pagefind-highlight.js'
+  '/pagefind/pagefind-highlight.js',
+  '/data/search-manifest.json'
 ];
 
 /* ── Install: precache static assets ── */
