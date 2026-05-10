@@ -1354,3 +1354,16 @@ html.dark .gb-search-btn .kb {
     box-shadow: none;
   }
 }
+
+/* ── Overscroll hardening ─────────────────────────────── */
+.cp-backdrop,
+.cp-list,
+.cp-preview-inner,
+.cp-preview-col {
+  overscroll-behavior: contain;
+}
+
+html.cp-scroll-lock,
+html.cp-scroll-lock body {
+  overscroll-behavior: none;
+}

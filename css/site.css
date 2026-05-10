@@ -6069,3 +6069,100 @@ body.no-scroll {
 }
 
 } /* end @layer components */
+
+/* ── Search button in articles navbar ──────────────────── */
+.h-cp-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--ink-2, #4a3f35);
+  border-radius: 6px;
+  transition: color 0.15s, background 0.15s;
+}
+.h-cp-btn:hover,
+.h-cp-btn:focus-visible {
+  color: var(--ink, #14100b);
+  background: var(--paper-2, #f3efe8);
+}
+html.dark .h-cp-btn { color: var(--ink-2-dark, #a89880); }
+html.dark .h-cp-btn:hover { color: #f5f0e8; background: rgba(255,255,255,0.08); }
+
+/* ── About: Premium Contact Card ─────────────────────────── */
+.about-contact-card {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 12px;
+  margin-top: 20px;
+}
+
+.about-contact-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 16px;
+  border-radius: 10px;
+  border: 1px solid var(--rule, #e8e2d8);
+  background: var(--paper-1, #faf7f2);
+  color: inherit;
+  text-decoration: none;
+  transition: border-color 0.15s, background 0.15s, box-shadow 0.15s;
+}
+
+.about-contact-item:hover,
+.about-contact-item:focus-visible {
+  border-color: var(--accent, #7b5e3a);
+  background: var(--paper-2, #f3efe8);
+  box-shadow: 0 2px 8px rgba(0,0,0,.07);
+  text-decoration: none;
+}
+
+.about-contact-icon {
+  flex-shrink: 0;
+  width: 22px;
+  height: 22px;
+  color: var(--accent, #7b5e3a);
+  opacity: .85;
+}
+
+.about-contact-label {
+  font-weight: 600;
+  font-size: .85rem;
+  min-width: 68px;
+  color: var(--ink, #14100b);
+}
+
+.about-contact-handle {
+  font-size: .8rem;
+  color: var(--ink-2, #4a3f35);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+html.dark .about-contact-item {
+  border-color: rgba(255,255,255,.1);
+  background: rgba(255,255,255,.04);
+}
+html.dark .about-contact-item:hover {
+  border-color: rgba(255,255,255,.25);
+  background: rgba(255,255,255,.08);
+}
+html.dark .about-contact-icon { color: #c8a87a; }
+html.dark .about-contact-label { color: #f0ebe2; }
+html.dark .about-contact-handle { color: #9c8c7a; }
+
+/* ── Article byline: updated date ────────────────────────── */
+.article-byline__updated {
+  font-size: .8em;
+  color: var(--ink-2, #4a3f35);
+  opacity: .75;
+  white-space: nowrap;
+}
+.article-byline__updated time {
+  font-variant-numeric: tabular-nums;
+}

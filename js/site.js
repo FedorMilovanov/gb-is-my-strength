@@ -277,17 +277,64 @@
        Each lockScroll() increments; unlockScroll() decrements and only
        removes overflow once the counter reaches zero.                   */
     _scrollLockCount: 0,
-    lockScroll: function () {
+
+    lockScroll: function (source) {
       this._scrollLockCount++;
-      document.body.style.overflow          = 'hidden';
-      document.body.style.overscrollBehavior = 'none';
+      if (this._scrollLockCount === 1) {
+        document.body.style.overflow = 'hidden';
+        document.body.style.overscrollBehavior = 'none';
+        document.body.classList.add('no-scroll');
+        document.documentElement.classList.remove('cp-scroll-lock');
+      }
+      if (window.SITE_CONFIG && window.SITE_CONFIG.site && window.SITE_CONFIG.site.debug) {
+        console.log('[SiteUtils.lockScroll]', source || 'unknown', 'count:', this._scrollLockCount);
+      }
     },
-    unlockScroll: function () {
+
+    unlockScroll: function (source) {
       this._scrollLockCount = Math.max(0, this._scrollLockCount - 1);
       if (this._scrollLockCount === 0) {
         document.body.style.removeProperty('overflow');
         document.body.style.removeProperty('overscroll-behavior');
+        document.body.classList.remove('no-scroll');
+        document.documentElement.classList.remove('cp-scroll-lock');
       }
+      if (window.SITE_CONFIG && window.SITE_CONFIG.site && window.SITE_CONFIG.site.debug) {
+        console.log('[SiteUtils.unlockScroll]', source || 'unknown', 'count:', this._scrollLockCount);
+      }
+    },
+
+    forceUnlockEmergency: function () {
+      this._scrollLockCount = 0;
+      document.body.style.removeProperty('overflow');
+      document.body.style.removeProperty('overscroll-behavior');
+      document.body.classList.remove('no-scroll');
+      document.documentElement.classList.remove('cp-scroll-lock');
+    },
+
+    copyText: function (text, onSuccess, onError) {
+      function fallback() {
+        var ta = document.createElement('textarea');
+        ta.value = text;
+        ta.setAttribute('readonly', '');
+        ta.style.cssText = 'position:fixed;top:0;left:0;opacity:0;pointer-events:none';
+        document.body.appendChild(ta);
+        ta.select();
+        var ok = false;
+        try { ok = document.execCommand('copy'); } catch (e) {}
+        document.body.removeChild(ta);
+        if (ok && onSuccess) onSuccess();
+        else if (!ok && onError) onError();
+        return ok ? Promise.resolve() : Promise.reject();
+      }
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        return navigator.clipboard.writeText(text).then(function () {
+          if (onSuccess) onSuccess();
+        }).catch(function () {
+          return fallback();
+        });
+      }
+      return fallback();
     }
   };
 
@@ -299,7 +346,7 @@
      Работает с #themeToggle и #barThemeBtn (если есть)
      ============================================================ */
   (function () {
-    var toggle = document.getElementById('themeToggle');
+    var toggle = document.getElementById('themeToggle') || document.getElementById('hThemeBtn');
     var html = document.documentElement;
     if (!toggle) return;
 
@@ -330,13 +377,26 @@
     }
 
     function syncThemeColor(isDark) {
-      var color = isDark ? '#0e1116' : '#fdfcf9';
+      var color;
+      try {
+        var cs = getComputedStyle(document.documentElement);
+        color = (cs.getPropertyValue('--h-bg') || cs.getPropertyValue('--bg') || '').trim();
+      } catch (e) {}
+      if (!color) color = isDark ? '#171411' : '#f8f5f0';
+
       var metas = document.querySelectorAll('meta[name="theme-color"]');
       if (metas.length > 1) {
         /* Первый вызов: удаляем дублирующие media-query теги и оставляем один,
            которым управляет JS. Это предотвращает конфликт между OS-prefers и
            JS-состоянием после того, как пользователь явно переключил тему. */
         metas.forEach(function (m, i) { if (i > 0) m.parentNode.removeChild(m); });
+      }
+      if (!metas.length) {
+        var m = document.createElement('meta');
+        m.name = 'theme-color';
+        m.content = color;
+        document.head.appendChild(m);
+        return;
       }
       metas[0].removeAttribute('media');
       metas[0].setAttribute('content', color);
@@ -2476,7 +2536,7 @@
       if (e.ctrlKey || e.metaKey || e.altKey) return;
 
       /* Не перехватываем шорткаты пока открыт любой модальный оверлей */
-      if (document.querySelector('#share-dialog-overlay.is-open,#gb-search-backdrop.is-open,#gb-hl-backdrop.is-open')) return;
+      if (document.querySelector('#share-dialog-overlay.is-open,.cp-backdrop.is-open,#gb-hl-backdrop.is-open')) return;
 
       var key = e.key.toLowerCase();
 
@@ -2518,7 +2578,7 @@
       if (key === 'd') {
         e.preventDefault();
         showKbdHint('D', 'Тема');
-        var toggle  = document.getElementById('themeToggle');
+        var toggle  = document.getElementById('themeToggle') || document.getElementById('hThemeBtn');
         var barTheme = document.getElementById('barThemeBtn');
         if (toggle) { toggle.click(); }
         else if (barTheme) { barTheme.click(); }
@@ -2952,7 +3012,15 @@
       /* Ищем обёртку — div с инлайн-стилями flex */
       var wrapper = parent.closest('div:not(.article-end-block):not(.article-end-sdg)');
       if (wrapper && wrapper !== article && wrapper.contains(sdgEl)) {
-        wrapper.remove();
+        /* Безопасное удаление: только если wrapper содержит ТОЛЬКО sdgEl */
+        if (wrapper.children.length === 1) {
+          wrapper.remove();
+        } else {
+          /* Заменить wrapper на его содержимое */
+          var frag = document.createDocumentFragment();
+          while (wrapper.firstChild) frag.appendChild(wrapper.firstChild);
+          if (wrapper.parentNode) wrapper.parentNode.replaceChild(frag, wrapper);
+        }
       }
     });
   })();

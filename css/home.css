@@ -442,6 +442,23 @@ html.dark .h-scripture-bg::before {
   display: none;
 }
 
+@media (min-width: 761px) {
+  .h-quote-divider {
+    display: block;
+    align-self: center;
+    width: 1px;
+    height: 80px;
+    background: linear-gradient(
+      to bottom,
+      transparent,
+      var(--h-border, #e4ddd5) 50%,
+      transparent
+    );
+    flex-shrink: 0;
+    margin: 0 8px;
+  }
+}
+
 .h-quote-right {
   flex: 1;
   min-width: 0;

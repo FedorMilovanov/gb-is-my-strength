@@ -34,8 +34,7 @@
     extLink:   '<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>',
     copy:      '<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>',
     check:     '<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg>',
-    user12:    '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>',
-    user14:    '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>'
+    user12:    '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>'
   };
  
   /* ─────────────────────────────────────────────────────────
@@ -173,14 +172,26 @@
  
   function escRe(s) { return s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); }
  
-  /* highlight — wraps matched words in <mark class="cp-hl"> */
+  /* highlight — wraps matched words in <mark class="cp-hl">.
+     Regex runs on the RAW text; each segment is escHtml()-encoded
+     separately so HTML entities are never corrupted by the match. */
   function highlight(text, q) {
     if (!q || q.length < 2) return escHtml(text);
     var words = normalizeQ(q).split(' ').filter(function (w) { return w.length > 1; });
     if (!words.length) return escHtml(text);
     try {
-      var re = new RegExp('(' + words.map(escRe).join('|') + ')', 'gi');
-      return escHtml(text).replace(re, '<mark class="cp-hl">$1</mark>');
+      var raw = String(text || '');
+      var re  = new RegExp('(' + words.map(escRe).join('|') + ')', 'gi');
+      var out  = '';
+      var last = 0;
+      var m;
+      while ((m = re.exec(raw)) !== null) {
+        out += escHtml(raw.slice(last, m.index));
+        out += '<mark class="cp-hl">' + escHtml(m[0]) + '</mark>';
+        last = m.index + m[0].length;
+      }
+      out += escHtml(raw.slice(last));
+      return out;
     } catch (e) { return escHtml(text); }
   }
  
@@ -189,9 +200,9 @@
     return (html || '').replace(/<mark>/gi, '<mark class="cp-hl">');
   }
  
-  /* Detect scripture reference patterns: "Мф 5", "Иер 17:9", "1 Кор 13" */
+  /* Detect scripture reference patterns: "Мф 5", "Иер 17:9", "1 Кор 13", "1Кор 13" */
   function isScriptureRef(q) {
-    return /^[а-яёa-z1-3]{1,6}\s?\d/i.test((q || '').trim());
+    return /^(\d\s*)?[а-яёa-z]{1,6}\s?\d/i.test((q || '').trim());
   }
  
   /* Category → icon */
@@ -202,33 +213,36 @@
     return SVG.sparkle;
   }
  
-  /* Author initial for avatar */
-  function authorInitial(author) {
-    return String(author || '').replace(/^Редактор:\s*/i, '').charAt(0).toUpperCase() || '?';
-  }
- 
   /* ─────────────────────────────────────────────────────────
      Pagefind lazy-load — same approach as v1, works from
      any depth (/nagornaya/chast-1/ → ../../pagefind/…)
   ───────────────────────────────────────────────────────── */
   var pagefindLoaded  = false;
   var pagefindLoading = false;
- 
+  var pagefindFailed  = false;
+
   function loadPagefind(cb) {
     if (pagefindLoaded)  { cb && cb(); return; }
+    if (pagefindFailed)  { return; }
     if (pagefindLoading) { setTimeout(function () { loadPagefind(cb); }, 80); return; }
     pagefindLoading = true;
- 
+
     var depth  = (window.location.pathname.match(/\//g) || []).length - 1;
     var prefix = depth > 0 ? Array(depth).fill('..').join('/') + '/' : '/';
- 
+
     var script = document.createElement('script');
     script.type = 'module';
     script.textContent =
-      "import * as p from '" + prefix + "pagefind/pagefind.js';" +
-      "window.__pagefind__ = p; window.__pagefindReady__ = true;";
+      "import('" + prefix + "pagefind/pagefind.js')" +
+      ".then(function(p) {" +
+      "  window.__pagefind__ = p;" +
+      "  window.__pagefindReady__ = true;" +
+      "}).catch(function(err) {" +
+      "  console.error('[Pagefind] failed to load:', err);" +
+      "  window.__pagefindFailed__ = true;" +
+      "});";
     document.head.appendChild(script);
- 
+
     var polls = 0;
     var poll  = setInterval(function () {
       polls++;
@@ -237,8 +251,19 @@
         pagefindLoaded  = true;
         pagefindLoading = false;
         cb && cb();
+      } else if (polls > 50) {
+        /* else-if: success and timeout are mutually exclusive.
+           Without this, a load on tick 51 would set both
+           pagefindLoaded=true and pagefindFailed=true in the
+           same callback, causing the HYGIENE-7 error screen to
+           fire even though the index loaded successfully. */
+        clearInterval(poll);
+        pagefindLoading = false;
+        pagefindFailed  = true;
+        window.__pagefindFailed__ = true;
+        console.warn('[Pagefind] load timeout after 5s');
+        if (cb) cb();
       }
-      if (polls > 50) { clearInterval(poll); pagefindLoading = false; }
     }, 100);
   }
  
@@ -246,17 +271,19 @@
      Scroll lock / unlock
   ───────────────────────────────────────────────────────── */
   function lockScroll() {
-    if (window.SiteUtils && window.SiteUtils.lockScroll) {
-      window.SiteUtils.lockScroll();
+    if (window.SiteUtils && typeof window.SiteUtils.lockScroll === 'function') {
+      window.SiteUtils.lockScroll('command-palette');
     } else {
       document.documentElement.classList.add('cp-scroll-lock');
+      document.body.style.overflow = 'hidden';
     }
   }
   function unlockScroll() {
-    if (window.SiteUtils && window.SiteUtils.unlockScroll) {
-      window.SiteUtils.unlockScroll();
+    document.documentElement.classList.remove('cp-scroll-lock');
+    if (window.SiteUtils && typeof window.SiteUtils.unlockScroll === 'function') {
+      window.SiteUtils.unlockScroll('command-palette');
     } else {
-      document.documentElement.classList.remove('cp-scroll-lock');
+      document.body.style.removeProperty('overflow');
     }
   }
  
@@ -268,15 +295,19 @@
     backdrop.classList.add('is-open');
     lockScroll();
     requestAnimationFrame(function () { input.focus(); });
+    /* Show history / hint immediately — no pagefind needed */
+    showDefault();
     loadPagefind(function () {
+      /* Once pagefind is ready: re-run search only if the user
+         already typed something (handles slow-load first-open) */
       if (input.value.trim()) runSearch(input.value.trim());
-      else showDefault();
     });
-    if (!window.__pagefindReady__) showDefault();
   }
  
   function closeModal() {
     ++_searchGen;
+    clearTimeout(_searchTimer);
+    clearTimeout(_copiedTimer);
     backdrop.classList.remove('is-open');
     unlockScroll();
     input.value = '';
@@ -284,7 +315,14 @@
     clearBtn.style.display = 'none';
     currentItems = [];
     activeIdx    = 0;
-    showDefault();
+    scope        = 'all';
+    scopeChips.forEach(function (chip) {
+      var isAll = chip.dataset.scope === 'all';
+      chip.classList.toggle('active', isAll);
+      chip.setAttribute('aria-selected', isAll ? 'true' : 'false');
+    });
+    listEl.innerHTML = '';
+    statusEl.textContent = '';
     showPreviewPlaceholder();
     if (_prevFocus && _prevFocus.focus) _prevFocus.focus();
     _prevFocus = null;
@@ -583,148 +621,219 @@
   }
  
   /* ─────────────────────────────────────────────────────────
-     Authors default state — shown when scope=authors, no query
-     Loads all pages via Pagefind, groups by author, shows list
+     Authors default state — shown when scope=authors, no query.
+     NOTE: pagefind.search('') always returns zero results (by
+     design), so we cannot enumerate all pages from the client.
+     Show a static prompt with known-author suggestion chips
+     instead — zero async work, no _searchGen races.
   ───────────────────────────────────────────────────────── */
+  var AUTHOR_SUGGESTIONS = ['Фёдор', 'Абнер'];
+
   function showDefaultAuthors() {
-    if (!window.__pagefind__) {
-      listEl.innerHTML = '<div class="cp-default-hint">Введите имя автора для поиска…</div>';
-      statusEl.textContent = '';
-      currentItems = [];
-      showPreviewPlaceholder();
-      return;
-    }
+    var chips = AUTHOR_SUGGESTIONS.map(function (s) {
+      return '<button class="cp-sug-btn" data-sug="' + escHtml(s) + '">' +
+               SVG.user12 + escHtml(s) +
+             '</button>';
+    }).join('');
 
-    listEl.innerHTML = '<div class="cp-loading">Загружаю авторов\u2026</div>';
-    var gen = ++_searchGen;
+    listEl.innerHTML =
+      '<div class="cp-empty">' +
+        '<div class="cp-empty-visual"><span class="cp-empty-icon">' + SVG.user12 + '</span></div>' +
+        '<p class="cp-empty-title">Поиск по авторам</p>' +
+        '<p class="cp-empty-sub">Введите имя — или выберите:</p>' +
+        '<div class="cp-suggestions">' + chips + '</div>' +
+      '</div>';
 
-    /* Search with a very broad term to get all indexed pages */
-    window.__pagefind__.search('').then(function (res) {
-      if (gen !== _searchGen) return;
-      /* Pagefind returns empty for blank query — fall back to hint */
-      if (!res || !res.results || !res.results.length) {
-        listEl.innerHTML =
-          '<div class="cp-default-hint">Введите имя автора для поиска — например, «Фёдор» или «Абнер»</div>';
-        statusEl.textContent = '';
-        currentItems = [];
-        showPreviewPlaceholder();
-        return;
-      }
+    statusEl.textContent = '';
+    currentItems = [];
+    showPreviewPlaceholder();
 
-      var limited = res.results.slice(0, 30);
-      Promise.all(limited.map(function (r) { return r.data(); })).then(function (raw) {
-        if (gen !== _searchGen) return;
-
-        /* Build per-author buckets */
-        var byAuthor = {};
-        var authorOrder = [];
-        var seen = {};
-
-        raw.forEach(function (item) {
-          var url    = item.url || '';
-          if (seen[url]) return;
-          seen[url]  = true;
-
-          var rawAuthor = (item.meta && item.meta.author) || '';
-          if (!rawAuthor) return;
-          var authorKey = rawAuthor.replace(/^Редактор:\s*/i, '');
-
-          var title    = (item.meta && item.meta.title)    || 'Без названия';
-          var readTime = parseInt((item.meta && item.meta.readTime) || '0', 10) || 0;
-          var category = (item.meta && item.meta.category) || '';
-          var scripture= (item.meta && item.meta.scripture)|| '';
-          var image    = (item.meta && item.meta.image)    || '';
-
-          var article = {
-            url: url, title: title, author: rawAuthor,
-            readTime: readTime || null, category: category || null,
-            scripture: scripture || null, image: image || null,
-            excerpt: item.excerpt || ''
-          };
-
-          var tags = [];
-          if (category)  tags.push(category);
-          if (scripture) tags.push(scripture);
-
-          var listItem = {
-            id:      'aut-' + url,
-            title:   title,
-            titleHtml: escHtml(title),
-            sub:     item.excerpt || null,
-            subHtml: fixPagefindMarks(item.excerpt || ''),
-            icon:    catIcon(category),
-            meta:    readTime ? readTime + ' мин' : null,
-            tags:    tags,
-            article: article,
-            isScripture: false
-          };
-
-          if (!byAuthor[authorKey]) {
-            byAuthor[authorKey] = [];
-            authorOrder.push(authorKey);
-          }
-          byAuthor[authorKey].push(listItem);
-        });
-
-        if (!authorOrder.length) {
-          listEl.innerHTML =
-            '<div class="cp-default-hint">Введите имя автора для поиска</div>';
-          statusEl.textContent = '';
-          currentItems = [];
-          showPreviewPlaceholder();
-          return;
-        }
-
-        var groups = authorOrder.map(function (a) {
-          return { name: a, items: byAuthor[a] };
-        });
-
-        renderGroups(groups);
-        setActive(0, false);
-      }).catch(function () {
-        if (gen !== _searchGen) return;
-        listEl.innerHTML = '<div class="cp-default-hint">Введите имя автора для поиска</div>';
-        currentItems = [];
+    listEl.querySelectorAll('.cp-sug-btn').forEach(function (btn) {
+      btn.addEventListener('click', function () {
+        var s = btn.dataset.sug;
+        input.value = s;
+        query       = s;
+        clearBtn.style.display = '';
+        activeIdx   = 0;
+        runSearch(s);
+        input.focus();
       });
-    }).catch(function () {
-      if (gen !== _searchGen) return;
-      listEl.innerHTML = '<div class="cp-default-hint">Введите имя автора для поиска</div>';
-      currentItems = [];
     });
   }
 
   /* ─────────────────────────────────────────────────────────
      Default state — history items or prompt text
   ───────────────────────────────────────────────────────── */
+  /* ─────────────────────────────────────────────────────────
+     Curated picks — показываются в default state как fallback
+     Обновлять при добавлении новых материалов
+  ───────────────────────────────────────────────────────── */
+  var CURATED_PICKS = [
+    {
+      url: '/nagornaya/seriya/',
+      title: 'Нагорная проповедь — серия в 5 частях',
+      excerpt: 'Сравнительное исследование Мф 5–7 и Лк 6:17–49 · 120+ источников',
+      category: 'Богословие',
+      readTime: 100,
+      isFlagship: true
+    },
+    {
+      url: '/articles/krajne-li-isporcheno-serdce/',
+      title: 'Крайне ли испорчено моё сердце — если я уже верующий?',
+      excerpt: 'Разбор Иеремии 17:9–10: экзегеза, синтез и пастырское применение',
+      category: 'Экзегеза',
+      readTime: 32
+    },
+    {
+      url: '/articles/kod-da-vinchi/',
+      title: '«Код да Винчи»: блестящий триллер или историческая подмена?',
+      excerpt: 'Никея, канон Нового Завета, Свитки Мёртвого моря, Наг-Хаммади',
+      category: 'Апологетика',
+      readTime: 17
+    },
+    {
+      url: '/articles/hermenevticheskaya-otsenka-hristotsentrichnoy-germenevtiki/',
+      title: 'Герменевтическая оценка христоцентричной герменевтики',
+      excerpt: 'Грамматико-исторический метод · Перевод Абнера Чау',
+      category: 'Переводы',
+      readTime: 35
+    }
+  ];
+
+  function catIcon(cat) {
+    if (cat === 'Апологетика') return SVG.shield || SVG.book14;
+    return SVG.book14;
+  }
+
+  function curatedItem(p) {
+    return {
+      id: 'rec-' + p.url,
+      title: p.title,
+      titleHtml: escHtml(p.title),
+      sub: p.excerpt,
+      subHtml: escHtml(p.excerpt),
+      icon: catIcon(p.category),
+      meta: 'Редактор: Фёдор Милованов' + (p.readTime ? ' · ~' + p.readTime + ' мин' : ''),
+      tags: p.isFlagship ? ['Серия', p.category] : [p.category],
+      article: {
+        url: p.url,
+        title: p.title,
+        author: 'Редактор: Фёдор Милованов',
+        readTime: p.readTime || null,
+        category: p.category,
+        scripture: '',
+        excerpt: p.excerpt
+      }
+    };
+  }
+
+  /* ── Search Manifest (lazy load) ───────────────────────── */
+  var _manifestLoaded = false;
+  var _manifestItems  = [];
+
+  function loadSearchManifest(cb) {
+    if (_manifestLoaded) { if (cb) cb(); return; }
+    fetch('/data/search-manifest.json', { cache: 'no-cache' })
+      .then(function (r) { return r.ok ? r.json() : null; })
+      .then(function (data) {
+        _manifestItems = (data && Array.isArray(data.items)) ? data.items : [];
+        _manifestLoaded = true;
+        if (cb) cb();
+      })
+      .catch(function () {
+        _manifestItems = [];
+        _manifestLoaded = true;
+        if (cb) cb();
+      });
+  }
+
+  function manifestToItem(x) {
+    return {
+      id: 'mf-' + (x.id || x.url),
+      title: x.title,
+      titleHtml: escHtml(x.title),
+      sub: x.description || '',
+      subHtml: escHtml(x.description || ''),
+      icon: SVG.book14,
+      meta: (x.editor ? 'Ред.: ' + x.editor : '') + (x.readTime ? ' · ~' + x.readTime + ' мин' : ''),
+      tags: x.type === 'series' ? ['Серия'] : (x.tags ? x.tags.slice(0, 2) : []),
+      article: { url: x.url, title: x.title, author: x.author || x.editor || '', category: x.section || '' }
+    };
+  }
+
+  function resumeToItem(resume) {
+    return {
+      id: 'res-' + resume.path,
+      title: resume.title || resume.path,
+      titleHtml: escHtml(resume.title || resume.path),
+      sub: resume.sectionTitle ? 'Раздел: ' + resume.sectionTitle : '',
+      subHtml: resume.sectionTitle ? 'Раздел: ' + escHtml(resume.sectionTitle) : '',
+      meta: (resume.progress || 0) + '%',
+      icon: SVG.book14,
+      article: { url: resume.path, title: resume.title || resume.path },
+      tags: ['закладка']
+    };
+  }
+
   function showDefault() {
     /* Authors scope with no query → show author browser */
     if (scope === 'authors') { showDefaultAuthors(); return; }
 
-    var hist = getHistory();
- 
-    if (!hist.length) {
-      listEl.innerHTML =
-        '<div class="cp-default-hint">' +
-          'Начните вводить запрос — Нагорная проповедь, Иер 17, благодать…' +
-        '</div>';
-      statusEl.textContent = '';
-      currentItems = [];
-      showPreviewPlaceholder();
-      return;
-    }
- 
-    renderGroups([{
-      name: 'Недавние',
-      items: hist.map(function (h, i) {
-        return {
-          id:        'h' + i,
-          title:     h,
-          titleHtml: highlight(h, query),
-          icon:      SVG.history,
-          isHistory: true
-        };
-      })
-    }]);
+    loadSearchManifest(function () {
+      var groups = [];
+
+      /* 1. Продолжить чтение (из BookmarkEngine) */
+      if (window.BookmarkEngine && typeof window.BookmarkEngine.getResumeCandidate === 'function') {
+        var resume = window.BookmarkEngine.getResumeCandidate();
+        if (resume && resume.path) {
+          groups.push({ name: 'Продолжить', items: [resumeToItem(resume)] });
+        }
+      }
+
+      /* 2. Недавние запросы */
+      var hist = getHistory();
+      if (hist.length) {
+        groups.push({
+          name: 'Недавние запросы',
+          items: hist.slice(0, 4).map(function (h, i) {
+            return { id: 'h'+i, title: h, titleHtml: highlight(h, ''), icon: SVG.history, isHistory: true };
+          })
+        });
+      }
+
+      /* 3. Рекомендуемое из манифеста (featured: true), иначе curated */
+      var featured = _manifestItems
+        .filter(function (x) { return x.featured; })
+        .sort(function (a, b) { return (b.priority || 0) - (a.priority || 0); })
+        .slice(0, 5)
+        .map(manifestToItem);
+      if (featured.length) {
+        groups.push({ name: 'Рекомендуемое', items: featured });
+      } else {
+        groups.push({ name: 'Популярные исследования', items: CURATED_PICKS.map(curatedItem) });
+      }
+
+      /* 4. Новое (по modifiedTime, только non-featured) */
+      var recent = _manifestItems
+        .filter(function (x) { return !x.featured; })
+        .sort(function (a, b) { return Date.parse(b.modifiedTime || 0) - Date.parse(a.modifiedTime || 0); })
+        .slice(0, 3)
+        .map(manifestToItem);
+      if (recent.length) groups.push({ name: 'Новое', items: recent });
+
+      if (groups.length) renderGroups(groups);
+      else showDefaultHint();
+    });
+  }
+
+  function showDefaultHint() {
+    listEl.innerHTML =
+      '<div class="cp-default-hint">' +
+        'Начните вводить запрос — Нагорная проповедь, Иер 17, благодать\u2026' +
+      '</div>';
+    statusEl.textContent = '';
+    currentItems = [];
+    showPreviewPlaceholder();
   }
  
   /* ─────────────────────────────────────────────────────────
@@ -736,11 +845,8 @@
     if (scope === 'scripture') return items.filter(function (it) {
       return it.isScripture || (it.article && it.article.scripture);
     });
-    if (scope === 'authors')   return items.filter(function (it) {
-      if (!it.article || !it.article.author) return false;
-      var authorNorm = normalizeQ(it.article.author.replace(/^Редактор:\s*/i, ''));
-      return authorNorm.indexOf(normalizeQ(query)) !== -1;
-    });
+    /* authors: return everything — runSearch groups results by author name */
+    if (scope === 'authors')   return items;
     return items;
   }
  
@@ -749,10 +855,30 @@
   ───────────────────────────────────────────────────────── */
   function runSearch(q) {
     if (!q || q.length < 2) { showDefault(); return; }
- 
+
+    /* HYGIENE-7: pagefind failed to load — show actionable error, not
+       infinite "Загружаю индекс…".  loadPagefind() returns immediately
+       when pagefindFailed=true, so the callback never fires. */
+    if (pagefindFailed) {
+      listEl.innerHTML =
+        '<div class="cp-empty">' +
+          '<p class="cp-empty-title">Поиск недоступен</p>' +
+          '<p class="cp-empty-sub">Не удалось загрузить индекс. ' +
+          'Обновите страницу и попробуйте снова.</p>' +
+        '</div>';
+      statusEl.textContent = '';
+      currentItems = [];
+      showPreviewPlaceholder();
+      return;
+    }
+
     if (!window.__pagefind__) {
       listEl.innerHTML =
         '<div class="cp-loading">Загружаю индекс\u2026</div>';
+      /* Pagefind is still loading — retry once it is ready.
+         Guard with current query so a cleared input does not
+         resurrect results for a query the user already discarded. */
+      loadPagefind(function () { if (query === q) runSearch(q); });
       return;
     }
  
@@ -876,8 +1002,6 @@
         }
  
         renderGroups(groups);
-        activeIdx = 0;
-        setActive(0, false);
  
       }).catch(function () { if (gen !== _searchGen) return; showEmpty(); });
  
@@ -902,6 +1026,7 @@
     input.value = '';
     query = '';
     clearBtn.style.display = 'none';
+    clearTimeout(_searchTimer);
     activeIdx = 0;
     showDefault();
     input.focus();
@@ -965,10 +1090,18 @@
         break;
       case 'Escape':
         e.preventDefault();
+        /* Always stop bubbling: document-level handler must not see this
+           event — whether we clear the query or close the modal, only one
+           action should happen per keypress. */
+        e.stopPropagation();
         if (query) {
+          /* Clear query only — do not close modal */
           input.value = '';
           query = '';
           clearBtn.style.display = 'none';
+          /* HYGIENE-8: cancel any pending debounced search so it
+             does not call showDefault() again ~180 ms later */
+          clearTimeout(_searchTimer);
           activeIdx = 0;
           showDefault();
         } else {
@@ -998,6 +1131,13 @@
       closeModal();
     }
   });
+
+  /* Кнопка поиска в articles navbar */
+  var navSearchBtn = document.getElementById('hCpBtnNav');
+  if (navSearchBtn) {
+    navSearchBtn.addEventListener('click', function () { openModal(); });
+  }
+  window.addEventListener('gb:openSearch', function () { openModal(); });
  
   /* ─────────────────────────────────────────────────────────
      Close on backdrop / blur-overlay click

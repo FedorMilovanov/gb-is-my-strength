@@ -17,60 +17,70 @@
   <!-- Open Graph -->
   <meta property="og:type" content="profile">
   <meta property="og:title" content="Об авторе — Фёдор Милованов">
-  <meta property="og:description" content="Автор и редактор проекта «Господь Бог — Сила Моя». О методологии подготовки богословских материалов.">
+  <meta property="og:description" content="Фёдор Милованов — редактор-составитель и куратор библиотеки «Господь Бог — Сила Моя». О подходе, методологии и богословской позиции проекта.">
   <meta property="og:url" content="https://gospod-bog.ru/about/">
   <meta property="og:site_name" content="Господь Бог — Сила Моя">
   <meta property="og:locale" content="ru_RU">
-  <meta property="og:image" content="https://gospod-bog.ru/images/og-preview.jpg">
-  <meta property="og:image:width" content="1200">
-  <meta property="og:image:height" content="630">
-  <meta property="og:image:alt" content="Богословская библиотека — страница об авторе Фёдоре Милованове">
+  <meta property="og:image" content="https://gospod-bog.ru/images/og-about.webp">
+  <meta property="og:image:width" content="800">
+  <meta property="og:image:height" content="420">
+  <meta property="og:image:alt" content="Фёдор Милованов — редактор-составитель богословской библиотеки gospod-bog.ru">
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="Об авторе — Фёдор Милованов">
-  <meta name="twitter:description" content="Автор и редактор проекта «Господь Бог — Сила Моя». О методологии подготовки богословских материалов.">
-  <meta name="twitter:image" content="https://gospod-bog.ru/images/og-preview.jpg">
-  <meta name="twitter:image:alt" content="Богословская библиотека — страница об авторе Фёдоре Милованове">
+  <meta name="twitter:description" content="Фёдор Милованов — редактор-составитель и куратор библиотеки «Господь Бог — Сила Моя». О подходе, методологии и богословской позиции проекта.">
+  <meta name="twitter:image" content="https://gospod-bog.ru/images/og-about.webp">
+  <meta name="twitter:image:alt" content="Фёдор Милованов — редактор-составитель богословской библиотеки gospod-bog.ru">
 
-  <!-- JSON-LD: ProfilePage + Person + Organization -->
+  <!-- JSON-LD: ProfilePage + Person + BreadcrumbList -->
   <script type="application/ld+json">
   {
     "@context": "https://schema.org",
     "@type": "ProfilePage",
     "mainEntity": {
       "@type": "Person",
+      "@id": "https://gospod-bog.ru/about/#person",
       "name": "Фёдор Милованов",
       "url": "https://gospod-bog.ru/about/",
-      "jobTitle": "Автор и редактор богословских материалов",
-      "knowsAbout": ["Реформатское богословие", "Апологетика", "Библейская герменевтика", "Экзегеза"],
-      "address": {
-        "@type": "PostalAddress",
-        "addressLocality": "Санкт-Петербург",
-        "addressCountry": "RU"
-      },
-      "worksFor": {
-        "@type": "Organization",
-        "name": "Господь Бог — Сила Моя",
-        "url": "https://gospod-bog.ru/"
-      },
+      "jobTitle": "Редактор-составитель и куратор богословской библиотеки",
+      "description": "Куратор и редактор-составитель библиотеки «Господь Бог — Сила Моя». Его роль — отбор источников, структура, богословская выверка, редактура, составление и смысловая связка материалов для русскоязычного читателя.",
+      "knowsLanguage": ["ru", "en"],
+      "knowsAbout": [
+        "Реформатское богословие",
+        "Экзегеза Писания",
+        "Герменевтика",
+        "Апологетика",
+        "Пуританская традиция",
+        "Редактура богословских переводов"
+      ],
       "email": "viktorcoy2012@gmail.com",
       "sameAs": [
         "https://t.me/fedormilovanov",
         "https://vk.com/curtmf",
         "https://max.ru/u/f9LHodD0cOLbWadIz7D3ekYEeXl3i5UtoLwO8hWJLo8W_BIs6s4ytXxqD5Q"
+      ],
+      "worksFor": {
+        "@type": "Organization",
+        "name": "Господь Бог — Сила Моя",
+        "url": "https://gospod-bog.ru/"
+      }
+    },
+    "breadcrumb": {
+      "@type": "BreadcrumbList",
+      "itemListElement": [
+        {
+          "@type": "ListItem",
+          "position": 1,
+          "name": "Главная",
+          "item": "https://gospod-bog.ru/"
+        },
+        {
+          "@type": "ListItem",
+          "position": 2,
+          "name": "О редакторе",
+          "item": "https://gospod-bog.ru/about/"
+        }
       ]
     }
-  }
-  </script>
-
-  <!-- Breadcrumb JSON-LD -->
-  <script type="application/ld+json">
-  {
-    "@context": "https://schema.org",
-    "@type": "BreadcrumbList",
-    "itemListElement": [
-      {"@type": "ListItem", "position": 1, "name": "Главная", "item": "https://gospod-bog.ru/"},
-      {"@type": "ListItem", "position": 2, "name": "Об авторе", "item": "https://gospod-bog.ru/about/"}
-    ]
   }
   </script>
 
@@ -121,7 +131,7 @@
         for (var j = 0; j < document.scripts.length; j++) {if (document.scripts[j].src === r) { return; }}
         k=e.createElement(t),a=e.getElementsByTagName(t)[0],k.async=1,k.src=r,a.parentNode.insertBefore(k,a)
     })(window, document,'script','https://mc.yandex.ru/metrika/tag.js?id=108353327', 'ym');
-    ym(108353327, 'init', {ssr:true, webvisor:true, clickmap:true, ecommerce:"dataLayer", referrer: document.referrer, url: location.href, accurateTrackBounce:true, trackLinks:true});
+    ym(108353327, 'init', {ssr:false, webvisor:true, clickmap:true, ecommerce:"dataLayer", referrer: document.referrer, url: location.href, accurateTrackBounce:true, trackLinks:true});
   </script>
   <noscript><div><img decoding="async" src="https://mc.yandex.ru/watch/108353327" style="position:absolute; left:-9999px;" alt=""></div></noscript>
   <!-- /Yandex.Metrika counter -->
@@ -182,8 +192,8 @@
 
   <main id="main-content">
   <header class="article-header">
-      <h1>Об авторе</h1>
-      <p class="article-desc">Кто я, как готовятся материалы и какова редакционная политика проекта.</p>
+      <h1>Фёдор Милованов</h1>
+      <p class="article-desc">Редактор-составитель и куратор библиотеки богословских материалов «Господь Бог — Сила Моя».</p>
     </header>
 
     <!-- Кто я -->
@@ -276,13 +286,38 @@
 
       <p>Если вы нашли фактическую или богословскую ошибку, хотите предложить тему или просто написать — я рад любому отклику.</p>
 
-      <ul class="about-contacts">
-        <li><strong>Telegram:</strong> <a href="https://t.me/fedormilovanov" target="_blank" rel="noopener noreferrer me">@fedormilovanov</a></li>
-        <li><strong>ВКонтакте:</strong> <a href="https://vk.com/curtmf" target="_blank" rel="noopener noreferrer me">vk.com/curtmf</a></li>
-        <li><strong>Facebook:</strong> <a href="https://www.facebook.com/fedor.milovanov/" target="_blank" rel="noopener noreferrer me">facebook.com/fedor.milovanov</a></li>
-        <li><strong>Max:</strong> <a href="https://max.ru/u/f9LHodD0cOLbWadIz7D3ekYEeXl3i5UtoLwO8hWJLo8W_BIs6s4ytXxqD5Q" target="_blank" rel="noopener noreferrer me">профиль в Max</a></li>
-        <li><strong>Email:</strong> <a href="mailto:viktorcoy2012@gmail.com">viktorcoy2012@gmail.com</a></li>
-      </ul>
+      <div class="about-contact-card">
+        <a class="about-contact-item" href="https://t.me/fedormilovanov" target="_blank" rel="noopener noreferrer me" aria-label="Telegram личный">
+          <svg class="about-contact-icon" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+            <path d="M11.944 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0a12 12 0 0 0-.056 0zm4.962 7.224c.1-.002.321.023.465.14a.506.506 0 0 1 .171.325c.016.093.036.306.02.472-.18 1.898-.96 6.504-1.36 8.627-.168.9-.499 1.201-.82 1.23-.696.065-1.225-.46-1.9-.902-1.056-.693-1.653-1.124-2.678-1.8-1.185-.78-.417-1.21.258-1.91.177-.184 3.247-2.977 3.307-3.23.007-.032.014-.15-.056-.212s-.174-.041-.249-.024c-.106.024-1.793 1.14-5.061 3.345-.48.33-.913.49-1.302.48-.428-.008-1.252-.241-1.865-.44-.752-.245-1.349-.374-1.297-.789.027-.216.325-.437.893-.663 3.498-1.524 5.83-2.529 6.998-3.014 3.332-1.386 4.025-1.627 4.476-1.635z"/>
+          </svg>
+          <span class="about-contact-label">Telegram</span>
+          <span class="about-contact-handle">@fedormilovanov</span>
+        </a>
+        <a class="about-contact-item" href="https://vk.com/curtmf" target="_blank" rel="noopener noreferrer me" aria-label="ВКонтакте личный">
+          <svg class="about-contact-icon" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+            <path d="M15.684 0H8.316C1.592 0 0 1.592 0 8.316v7.368C0 22.408 1.592 24 8.316 24h7.368C22.408 24 24 22.408 24 15.684V8.316C24 1.592 22.408 0 15.684 0zm3.692 17.123h-1.744c-.66 0-.864-.525-2.05-1.727-1.033-1.01-1.49-.48-1.49.486v1.268c0 .344-.111.486-1.01.486-1.5 0-3.162-.906-4.33-2.599-1.76-2.47-2.24-4.33-2.24-4.71 0-.214.106-.414.534-.414h1.744c.396 0 .547.182.7.61.77 2.224 2.06 4.17 2.59 4.17.2 0 .29-.09.29-.59V11.39c-.06-1.062-.622-1.152-.622-1.53 0-.182.15-.365.394-.365h2.744c.334 0 .456.182.456.577v3.098c0 .334.152.456.243.456.2 0 .365-.122.73-.487 1.13-1.268 1.935-3.22 1.935-3.22.107-.214.29-.413.683-.413h1.744c.527 0 .64.27.527.638-.213.986-2.297 3.92-2.297 3.92-.182.29-.244.422 0 .745.183.243.773.745 1.166 1.197.727.834 1.287 1.532 1.44 2.018.154.487-.091.73-.558.73z"/>
+          </svg>
+          <span class="about-contact-label">ВКонтакте</span>
+          <span class="about-contact-handle">vk.com/curtmf</span>
+        </a>
+        <a class="about-contact-item" href="mailto:viktorcoy2012@gmail.com" aria-label="Email">
+          <svg class="about-contact-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <rect width="20" height="16" x="2" y="4" rx="2"/>
+            <path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/>
+          </svg>
+          <span class="about-contact-label">Email</span>
+          <span class="about-contact-handle">viktorcoy2012@gmail.com</span>
+        </a>
+        <a class="about-contact-item" href="https://max.ru/u/f9LHodD0cOLbWadIz7D3ekYEeXl3i5UtoLwO8hWJLo8W_BIs6s4ytXxqD5Q" target="_blank" rel="noopener noreferrer me" aria-label="Max">
+          <svg class="about-contact-icon" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+            <circle cx="12" cy="12" r="10"/>
+            <text x="12" y="16" text-anchor="middle" font-size="10" fill="white" font-weight="bold">M</text>
+          </svg>
+          <span class="about-contact-label">Max</span>
+          <span class="about-contact-handle">профиль</span>
+        </a>
+      </div>
     </section>
 
     <div class="epigraph" style="margin-top: 64px;">

@@ -48,7 +48,7 @@
         for (var j = 0; j < document.scripts.length; j++) {if (document.scripts[j].src === r) { return; }}
         k=e.createElement(t),a=e.getElementsByTagName(t)[0],k.async=1,k.src=r,a.parentNode.insertBefore(k,a)
     })(window, document,'script','https://mc.yandex.ru/metrika/tag.js?id=108353327', 'ym');
-    ym(108353327, 'init', {ssr:true, webvisor:true, clickmap:true, accurateTrackBounce:true, trackLinks:true});
+    ym(108353327, 'init', {ssr:false, webvisor:true, clickmap:true, accurateTrackBounce:true, trackLinks:true});
   </script>
   <noscript><div><img decoding="async" src="https://mc.yandex.ru/watch/108353327" style="position:absolute; left:-9999px;" alt=""></div></noscript>
 
@@ -87,9 +87,15 @@ window.SITE_CONFIG = {
     "url": "https://gospod-bog.ru/about/"
   },
   "publisher": {
-    "@type": "Person",
-    "name": "Фёдор Милованов",
-    "url": "https://gospod-bog.ru/about/"
+    "@type": "Organization",
+    "name": "Господь Бог — Сила Моя",
+    "url": "https://gospod-bog.ru",
+    "logo": {
+      "@type": "ImageObject",
+      "url": "https://gospod-bog.ru/icons/icon-512.png",
+      "width": 512,
+      "height": 512
+    }
   },
   "image": "https://gospod-bog.ru/images/og-nagornaya-propoved.webp",
   "hasPart": [
