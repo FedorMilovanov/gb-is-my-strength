@@ -128,10 +128,20 @@ function parseMeta(html) {
 }
 
 function countWords(html) {
-  const art = html.match(/<article[^>]*>([\s\S]*?)<\/article>/)?.[1] ?? '';
-  return art
+  // Статьи используют <article>, а независимые страницы nagornaya —
+  // <main data-pagefind-body>. Считаем основной контент с fallback,
+  // иначе update-meta занижает nagornaya до 0 слов / 1 мин.
+  const body =
+    html.match(/<article[^>]*>([\s\S]*?)<\/article>/i)?.[1] ??
+    html.match(/<(?:main|section)[^>]*data-pagefind-body[^>]*>([\s\S]*?)<\/(?:main|section)>/i)?.[1] ??
+    html.match(/<main[^>]*>([\s\S]*?)<\/main>/i)?.[1] ??
+    '';
+
+  return body
     .replace(/<script[\s\S]*?<\/script>/gi, '')
     .replace(/<style[\s\S]*?<\/style>/gi, '')
+    .replace(/<nav[\s\S]*?<\/nav>/gi, ' ')
+    .replace(/<aside[\s\S]*?<\/aside>/gi, ' ')
     .replace(/<[^>]+>/g, ' ')
     .replace(/&(?:amp|lt|gt|nbsp|quot|#\d+);/g, ' ')
     .split(/\s+/).filter(w => w.length > 1).length;

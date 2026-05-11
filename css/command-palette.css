@@ -19,6 +19,10 @@
   --cp-ink-muted:    var(--muted,        #6a6a6a);
   --cp-ink-faint:    #a8a098;
   --cp-accent:       var(--accent,       #7a2e2e);
+  --cp-accent-alpha-05: rgba(122, 46, 46, 0.05);
+  --cp-accent-alpha-08: rgba(122, 46, 46, 0.08);
+  --cp-accent-alpha-40: rgba(122, 46, 46, 0.40);
+  --cp-accent-alpha-50: rgba(122, 46, 46, 0.50);
   --cp-accent-soft:  var(--accent-soft,  #f6ece8);
   --cp-border:       var(--border,       #e5e2dc);
   --cp-border-soft:  rgba(229, 226, 220, 0.6);
@@ -37,6 +41,10 @@ html.dark {
   --cp-ink-muted:    var(--muted,       #9ca3af);
   --cp-ink-faint:    #6b6460;
   --cp-accent:       var(--accent,      #d4a574);
+  --cp-accent-alpha-05: rgba(212, 165, 116, 0.05);
+  --cp-accent-alpha-08: rgba(212, 165, 116, 0.08);
+  --cp-accent-alpha-40: rgba(212, 165, 116, 0.40);
+  --cp-accent-alpha-50: rgba(212, 165, 116, 0.50);
   --cp-accent-soft:  var(--accent-soft, #1f1a13);
   --cp-border:       var(--border,      #232830);
   --cp-border-soft:  rgba(35, 40, 48, 0.8);
@@ -398,7 +406,7 @@ html.dark .cp-group-hd { opacity: 0.6; }
   top: 10px;
   bottom: 10px;
   width: 1.8px;
-  background: linear-gradient(to bottom, var(--cp-accent), color-mix(in srgb, var(--cp-accent) 40%, transparent));
+  background: linear-gradient(to bottom, var(--cp-accent), var(--cp-accent-alpha-40));
   border-radius: 0 999px 999px 0;
   opacity: 0;
   transform: scaleY(0.3);
@@ -610,7 +618,7 @@ html.dark .cp-item-icon.is-active { border-color: transparent; }
   width: 56px;
   height: 56px;
   border-radius: 16px;
-  background: linear-gradient(135deg, var(--cp-bg-surface), color-mix(in srgb, var(--cp-bg-surface) 70%, var(--cp-bg-card)));
+  background: linear-gradient(135deg, var(--cp-bg-surface), var(--cp-bg-card));
   border: 1px solid var(--cp-border-soft);
   display: flex;
   align-items: center;
@@ -762,13 +770,13 @@ html.dark .cp-preview-col { border-left-color: var(--cp-border); }
   padding: 20px 24px 18px;
   border-bottom: 1px solid var(--cp-border-soft);
   background: linear-gradient(135deg,
-    color-mix(in srgb, var(--cp-accent) 5%, transparent) 0%,
+    var(--cp-accent-alpha-05) 0%,
     transparent 60%);
 }
 
 html.dark .cp-preview-author-hero {
   background: linear-gradient(135deg,
-    color-mix(in srgb, var(--cp-accent) 8%, transparent) 0%,
+    var(--cp-accent-alpha-08) 0%,
     transparent 60%);
   border-bottom-color: var(--cp-border);
 }
@@ -953,7 +961,7 @@ html.dark .cp-preview-author {
 
 .cp-reading-fill {
   height: 100%;
-  background: linear-gradient(to right, var(--cp-accent), color-mix(in srgb, var(--cp-accent) 50%, transparent));
+  background: linear-gradient(to right, var(--cp-accent), var(--cp-accent-alpha-50));
   border-radius: 999px;
   transition: width 0.5s cubic-bezier(0.23, 1, 0.32, 1);
 }
