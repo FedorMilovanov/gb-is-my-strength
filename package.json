@@ -1,0 +1,14 @@
+{
+  "name": "gb-is-my-strength",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Build scripts for gospod-bog.ru",
+  "scripts": {
+    "update-meta": "node scripts/update-meta.js",
+    "cache-bust": "node scripts/cache-bust.js",
+    "validate": "node scripts/validate.js"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}
