@@ -28,6 +28,7 @@ const ASSETS = [
   'css/site.css',
   'css/home.css',
   'css/command-palette.css',   /* BUG-01 fix: добавлен в cache-bust */
+  'css/nagornaya-mobile-toc.css',
   'nagornaya/tw.min.css',
   'js/site.js',
   'js/bookmark-engine.js',
@@ -35,6 +36,7 @@ const ASSETS = [
   'js/highlights.js',
   'js/search.js',
   'js/sw-register.js',
+  'js/nagornaya-mobile-toc.js',
 ];
 
 // ── Хеш файла ────────────────────────────────────────────────────────────────

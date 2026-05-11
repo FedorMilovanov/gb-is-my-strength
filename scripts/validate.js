@@ -40,6 +40,7 @@ const path = require('path');
 
 const ARTICLES  = path.resolve(__dirname, '../articles');
 const CSS_DIR   = path.resolve(__dirname, '../css');
+const NAGORNAYA = path.resolve(__dirname, '../nagornaya');
 const SITEMAP   = path.resolve(__dirname, '../sitemap.xml');
 const FEED      = path.resolve(__dirname, '../feed.xml');
 const BASE_URL  = 'https://gospod-bog.ru';

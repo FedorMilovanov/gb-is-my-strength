@@ -1,0 +1,255 @@
+/* ============================================================
+   nagornaya-mobile-toc.js
+   Mobile bottom TOC for independent /nagornaya/ Tailwind pages.
+   Builds TOC from h2[id] inside [data-pagefind-body].
+   ============================================================ */
+(function () {
+  'use strict';
+
+  function ready(fn) {
+    if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', fn);
+    else fn();
+  }
+
+  function qs(sel, root) { return (root || document).querySelector(sel); }
+  function qsa(sel, root) { return Array.prototype.slice.call((root || document).querySelectorAll(sel)); }
+
+  function escText(s) { return String(s || '').replace(/\s+/g, ' ').trim(); }
+
+  function slugify(s, i) {
+    var base = String(s || '')
+      .toLowerCase()
+      .replace(/ё/g, 'е')
+      .replace(/[^a-zа-я0-9]+/gi, '-')
+      .replace(/^-+|-+$/g, '')
+      .slice(0, 72);
+    return base || ('section-' + (i + 1));
+  }
+
+  function ensureId(el, i) {
+    if (el.id) return el.id;
+    var id = slugify(el.textContent, i);
+    var base = id;
+    var n = 2;
+    while (document.getElementById(id)) {
+      id = base + '-' + n;
+      n++;
+    }
+    el.id = id;
+    return id;
+  }
+
+  ready(function () {
+    if (document.getElementById('bottomBar') || document.getElementById('btocOverlay')) return;
+
+    var content = qs('[data-pagefind-body]') || qs('main');
+    if (!content) return;
+
+    var headings = qsa('h2', content).filter(function (h) {
+      return escText(h.textContent).length > 0;
+    });
+
+    headings.forEach(function (h, i) { ensureId(h, i); });
+
+    if (!headings.length) return;
+
+    var cfg = window.SITE_CONFIG || {};
+    var pageCfg = cfg.page || {};
+    var readingTime = Number(pageCfg.readingTime || 0) || Math.max(1, Math.round(escText(content.textContent).split(/\s+/).length / 200));
+
+    injectMarkup(headings.length, readingTime);
+
+    var bottomBar = qs('#bottomBar');
+    var overlay = qs('#btocOverlay');
+    var panel = qs('#btocPanel');
+    var sectionBtn = qs('#barSectionBtn');
+    var sectionName = qs('#barSectionName');
+    var closeBtn = qs('#btocClose');
+    var nav = qs('#btocNav');
+    var upBtn = qs('#barUpBtn');
+    var themeBtn = qs('#barThemeBtn');
+    var shareBtn = qs('#barShareBtn');
+    var btocShareBtn = qs('#btocShareBtn');
+    var progressFill = qs('#barProgressFill');
+    var progressText = qs('#barProgressText');
+    var btocFill = qs('#btocProgressFill');
+    var btocPct = qs('#btocProgressPct');
+    var btocTimeLeft = qs('#btocTimeLeft');
+
+    var circumference = 97.4;
+    var items = headings.map(function (h, i) {
+      var a = document.createElement('a');
+      a.className = 'btoc-link';
+      a.href = '#' + encodeURIComponent(h.id);
+      a.innerHTML = '<span class="btoc-link-num">' + String(i + 1).padStart(2, '0') + '</span>' +
+                    '<span class="btoc-link-text"></span>';
+      a.querySelector('.btoc-link-text').textContent = escText(h.textContent);
+      a.addEventListener('click', function (e) {
+        e.preventDefault();
+        closeOverlay();
+        h.scrollIntoView({ behavior: prefersReducedMotion() ? 'auto' : 'smooth', block: 'start' });
+        try { history.replaceState(null, '', '#' + h.id); } catch (_) {}
+      });
+      nav.appendChild(a);
+      return { el: h, link: a, label: escText(h.textContent) };
+    });
+
+    document.body.classList.add('has-bottom-bar');
+    requestAnimationFrame(function () { bottomBar.classList.add('visible'); });
+
+    function prefersReducedMotion() {
+      return window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    }
+
+    function getScrollMetrics() {
+      var doc = document.documentElement;
+      var body = document.body;
+      var scrollTop = window.scrollY || window.pageYOffset || doc.scrollTop || 0;
+      var total = Math.max(body.scrollHeight, doc.scrollHeight) - window.innerHeight;
+      var pct = total > 0 ? Math.max(0, Math.min(100, Math.round(scrollTop / total * 100))) : 0;
+      return { scrollTop: scrollTop, total: total, pct: pct };
+    }
+
+    function getActiveItem() {
+      var marker = (window.scrollY || window.pageYOffset || 0) + Math.min(window.innerHeight * 0.38, 280);
+      var active = items[0];
+      items.forEach(function (item) {
+        if (item.el.getBoundingClientRect().top + window.scrollY <= marker) active = item;
+      });
+      return active;
+    }
+
+    function update() {
+      var m = getScrollMetrics();
+      var active = getActiveItem();
+      var pct = m.pct;
+      if (progressFill) progressFill.style.strokeDashoffset = String(circumference - (pct / 100 * circumference));
+      if (progressText) progressText.textContent = pct + '%';
+      if (btocFill) btocFill.style.width = pct + '%';
+      if (btocPct) btocPct.textContent = pct + '%';
+      if (sectionName && active) sectionName.textContent = active.label;
+      items.forEach(function (item) { item.link.classList.toggle('active', item === active); });
+
+      if (btocTimeLeft) {
+        var left = Math.max(1, Math.ceil(readingTime * (100 - pct) / 100));
+        btocTimeLeft.textContent = '📖 Осталось: ~' + left + ' мин';
+      }
+    }
+
+    function openOverlay() {
+      overlay.classList.add('open');
+      overlay.removeAttribute('aria-hidden');
+      document.body.classList.add('ng-toc-lock');
+      update();
+      var active = nav.querySelector('.btoc-link.active');
+      if (active) active.scrollIntoView({ block: 'nearest' });
+      if (panel) panel.focus && panel.focus();
+    }
+
+    function closeOverlay() {
+      overlay.classList.remove('open');
+      overlay.setAttribute('aria-hidden', 'true');
+      document.body.classList.remove('ng-toc-lock');
+    }
+
+    function toggleTheme() {
+      var html = document.documentElement;
+      var isDark = html.classList.toggle('dark');
+      try { localStorage.setItem('theme', isDark ? 'dark' : 'light'); } catch (_) {}
+    }
+
+    function sharePage(btnLabelEl) {
+      var title = document.title || pageCfg.title || 'Господь Бог — Сила Моя';
+      var url = location.href;
+      if (navigator.share) {
+        navigator.share({ title: title, url: url }).catch(function () {});
+        return;
+      }
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(url).then(function () {
+          if (btnLabelEl) {
+            var old = btnLabelEl.textContent;
+            btnLabelEl.textContent = 'Ссылка скопирована';
+            setTimeout(function () { btnLabelEl.textContent = old; }, 1400);
+          }
+        }).catch(function () {});
+      }
+    }
+
+    sectionBtn && sectionBtn.addEventListener('click', openOverlay);
+    closeBtn && closeBtn.addEventListener('click', closeOverlay);
+    overlay && overlay.addEventListener('click', function (e) { if (e.target === overlay) closeOverlay(); });
+    upBtn && upBtn.addEventListener('click', function () { window.scrollTo({ top: 0, behavior: prefersReducedMotion() ? 'auto' : 'smooth' }); });
+    themeBtn && themeBtn.addEventListener('click', toggleTheme);
+    shareBtn && shareBtn.addEventListener('click', function () { sharePage(null); });
+    btocShareBtn && btocShareBtn.addEventListener('click', function () { sharePage(qs('#btocShareLabel')); });
+
+    document.addEventListener('keydown', function (e) {
+      if ((e.key === 'Escape' || e.key === 'Esc') && overlay.classList.contains('open')) closeOverlay();
+    });
+
+    window.addEventListener('scroll', update, { passive: true });
+    window.addEventListener('resize', update, { passive: true });
+    update();
+  });
+
+  function injectMarkup(sectionCount, readingTime) {
+    var homeHref = location.pathname.split('/').filter(Boolean).length > 1 ? '../../' : '../';
+    var html = '' +
+      '<div class="bottom-bar" id="bottomBar">' +
+        '<div class="bottom-bar-inner">' +
+          '<div class="bar-progress" id="barProgress" aria-hidden="true">' +
+            '<svg viewBox="0 0 36 36">' +
+              '<circle class="bar-progress-track" cx="18" cy="18" r="15.5"></circle>' +
+              '<circle class="bar-progress-fill" cx="18" cy="18" id="barProgressFill" r="15.5" stroke-dasharray="97.4" stroke-dashoffset="97.4"></circle>' +
+            '</svg>' +
+            '<span class="bar-progress-text" id="barProgressText">0%</span>' +
+          '</div>' +
+          '<button aria-label="Открыть оглавление" class="bar-section-btn" id="barSectionBtn" type="button">' +
+            '<span class="bar-section-label">Сейчас читаете</span>' +
+            '<span class="bar-section-name" id="barSectionName">Оглавление</span>' +
+          '</button>' +
+          '<span class="bar-divider" aria-hidden="true"></span>' +
+          '<button aria-label="Наверх" class="bar-icon-btn" id="barUpBtn" title="Наверх" type="button">' +
+            '<svg viewBox="0 0 24 24"><polyline points="18 15 12 9 6 15"></polyline></svg>' +
+          '</button>' +
+          '<button aria-label="Тема" class="bar-icon-btn" id="barThemeBtn" title="Переключить тему" type="button">' +
+            '<svg class="bar-icon-moon" viewBox="0 0 24 24"><path d="M21 12.8A9 9 0 1111.2 3 7 7 0 0021 12.8z"></path></svg>' +
+            '<svg class="bar-icon-sun" viewBox="0 0 24 24"><circle cx="12" cy="12" r="5"></circle><line x1="12" x2="12" y1="1" y2="4"></line><line x1="12" x2="12" y1="20" y2="23"></line><line x1="1" x2="4" y1="12" y2="12"></line><line x1="20" x2="23" y1="12" y2="12"></line><line x1="4.2" x2="6.3" y1="4.2" y2="6.3"></line><line x1="17.7" x2="19.8" y1="17.7" y2="19.8"></line><line x1="4.2" x2="6.3" y1="19.8" y2="17.7"></line><line x1="17.7" x2="19.8" y1="6.3" y2="4.2"></line></svg>' +
+          '</button>' +
+          '<a aria-label="На главную" class="bar-icon-btn" href="' + homeHref + '" title="На главную">' +
+            '<svg viewBox="0 0 24 24"><path d="M3 12L12 4l9 8"></path><path d="M5 10v9a1 1 0 001 1h4v-5h4v5h4a1 1 0 001-1v-9"></path></svg>' +
+          '</a>' +
+          '<button aria-label="Поделиться" class="bar-icon-btn" id="barShareBtn" title="Поделиться" type="button">' +
+            '<svg viewBox="0 0 24 24"><circle cx="18" cy="5" r="3"></circle><circle cx="6" cy="12" r="3"></circle><circle cx="18" cy="19" r="3"></circle><line x1="8.59" x2="15.42" y1="13.51" y2="17.49"></line><line x1="15.41" x2="8.59" y1="6.51" y2="10.49"></line></svg>' +
+          '</button>' +
+        '</div>' +
+      '</div>' +
+      '<div class="btoc-overlay" id="btocOverlay" aria-hidden="true">' +
+        '<div class="btoc-panel" id="btocPanel" role="dialog" aria-modal="true" aria-labelledby="btocTitle" tabindex="-1">' +
+          '<div class="btoc-handle"></div>' +
+          '<div class="btoc-header">' +
+            '<div class="btoc-header-left">' +
+              '<div class="btoc-title" id="btocTitle">Содержание</div>' +
+              '<div class="btoc-subtitle" id="btocSubtitle">' + sectionCount + ' разделов</div>' +
+            '</div>' +
+            '<button aria-label="Закрыть" class="btoc-close" id="btocClose" type="button">✕</button>' +
+          '</div>' +
+          '<div class="btoc-progress-row">' +
+            '<div class="btoc-progress-bar-wrap"><div class="btoc-progress-bar-fill" id="btocProgressFill" style="width:0%"></div></div>' +
+            '<span class="btoc-progress-pct" id="btocProgressPct">0%</span>' +
+          '</div>' +
+          '<div class="btoc-reading-time"><span>⏱️ ~' + readingTime + ' мин чтения</span><span id="btocTimeLeft">📖 Осталось: ~' + readingTime + ' мин</span></div>' +
+          '<nav class="btoc-nav" id="btocNav" aria-label="Оглавление"></nav>' +
+          '<div class="btoc-footer">' +
+            '<button aria-label="Поделиться страницей" class="btoc-share-btn" id="btocShareBtn" type="button">' +
+              '<svg aria-hidden="true" viewBox="0 0 24 24"><circle cx="18" cy="5" r="3"></circle><circle cx="6" cy="12" r="3"></circle><circle cx="18" cy="19" r="3"></circle><line x1="8.59" x2="15.42" y1="13.51" y2="17.49"></line><line x1="15.41" x2="8.59" y1="6.51" y2="10.49"></line></svg>' +
+              '<span id="btocShareLabel">Поделиться</span>' +
+            '</button>' +
+          '</div>' +
+        '</div>' +
+      '</div>';
+
+    document.body.insertAdjacentHTML('beforeend', html);
+  }
+})();

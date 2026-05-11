@@ -1,0 +1,458 @@
+/* ============================================================
+   nagornaya-mobile-toc.css
+   Mobile bottom TOC for independent Tailwind pages in /nagornaya/.
+
+   Purpose: bring the same mobile reading UX used by article pages
+   (bottom-bar + btoc sheet) without loading the whole site.css.
+   ============================================================ */
+
+:root {
+  --ng-toc-bg: #f8f5f0;
+  --ng-toc-surface: #ffffff;
+  --ng-toc-surface-2: #f4f2ed;
+  --ng-toc-text: #1c1917;
+  --ng-toc-muted: #78716c;
+  --ng-toc-border: #e7e5e4;
+  --ng-toc-accent: #b45309;
+  --ng-toc-accent-2: #d97706;
+  --ng-toc-shadow: 0 -10px 30px rgba(28, 25, 23, .12);
+  --ng-toc-font-ui: Inter, "Source Sans 3", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+}
+
+html.dark {
+  --ng-toc-bg: #171411;
+  --ng-toc-surface: #1f1a15;
+  --ng-toc-surface-2: #29231d;
+  --ng-toc-text: #f5ede0;
+  --ng-toc-muted: #a8a29e;
+  --ng-toc-border: #3a3028;
+  --ng-toc-accent: #d97706;
+  --ng-toc-accent-2: #f59e0b;
+  --ng-toc-shadow: 0 -14px 34px rgba(0, 0, 0, .42);
+}
+
+body.has-bottom-bar {
+  padding-bottom: calc(62px + env(safe-area-inset-bottom, 0px));
+}
+
+body.ng-toc-lock {
+  overflow: hidden;
+}
+
+/* Existing nagornaya read-progress bar sits at the bottom of the source.
+   On mobile the bottom app bar is the progress UI, so hide duplicate line. */
+@media (max-width: 899px) {
+  body.has-bottom-bar #read-progress {
+    display: none;
+  }
+}
+
+.bottom-bar {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 2000;
+  display: block;
+  padding: 8px max(10px, env(safe-area-inset-right, 10px)) calc(8px + env(safe-area-inset-bottom, 0px)) max(10px, env(safe-area-inset-left, 10px));
+  background: color-mix(in srgb, var(--ng-toc-surface) 94%, transparent);
+  border-top: 1px solid var(--ng-toc-border);
+  box-shadow: var(--ng-toc-shadow);
+  backdrop-filter: blur(18px) saturate(150%);
+  -webkit-backdrop-filter: blur(18px) saturate(150%);
+  transform: translateY(120%);
+  transition: transform .28s cubic-bezier(.22, 1, .36, 1);
+}
+
+.bottom-bar.visible {
+  transform: translateY(0);
+}
+
+@media (min-width: 900px) {
+  .bottom-bar,
+  .btoc-overlay {
+    display: none !important;
+  }
+
+  body.has-bottom-bar {
+    padding-bottom: 0;
+  }
+}
+
+.bottom-bar-inner {
+  min-height: 46px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  max-width: 640px;
+  margin: 0 auto;
+}
+
+.bar-progress {
+  position: relative;
+  width: 42px;
+  height: 42px;
+  flex: 0 0 auto;
+  display: grid;
+  place-items: center;
+  color: var(--ng-toc-accent);
+}
+
+.bar-progress svg {
+  width: 42px;
+  height: 42px;
+  transform: rotate(-90deg);
+}
+
+.bar-progress-track,
+.bar-progress-fill {
+  fill: none;
+  stroke-width: 3;
+}
+
+.bar-progress-track {
+  stroke: var(--ng-toc-border);
+}
+
+.bar-progress-fill {
+  stroke: var(--ng-toc-accent);
+  stroke-linecap: round;
+  transition: stroke-dashoffset .12s linear;
+}
+
+.bar-progress-text {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  font-family: var(--ng-toc-font-ui);
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--ng-toc-text);
+}
+
+.bar-section-btn {
+  min-width: 0;
+  flex: 1 1 auto;
+  height: 44px;
+  padding: 5px 10px;
+  border: 1px solid var(--ng-toc-border);
+  border-radius: 14px;
+  background: var(--ng-toc-surface-2);
+  color: var(--ng-toc-text);
+  text-align: left;
+  cursor: pointer;
+  font-family: var(--ng-toc-font-ui);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  transition: border-color .2s ease, background .2s ease, transform .2s ease;
+}
+
+.bar-section-btn:hover,
+.bar-section-btn:focus-visible {
+  border-color: var(--ng-toc-accent);
+  outline: none;
+}
+
+.bar-section-label {
+  display: block;
+  margin-bottom: 2px;
+  font-size: 10px;
+  line-height: 1;
+  letter-spacing: .04em;
+  text-transform: uppercase;
+  color: var(--ng-toc-muted);
+}
+
+.bar-section-name {
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 13px;
+  line-height: 1.15;
+  font-weight: 700;
+}
+
+.bar-divider {
+  width: 1px;
+  height: 28px;
+  background: var(--ng-toc-border);
+  flex: 0 0 auto;
+}
+
+.bar-icon-btn {
+  width: 38px;
+  height: 38px;
+  flex: 0 0 auto;
+  display: grid;
+  place-items: center;
+  border: 0;
+  border-radius: 12px;
+  background: transparent;
+  color: var(--ng-toc-muted);
+  cursor: pointer;
+  text-decoration: none;
+  transition: background .2s ease, color .2s ease, transform .2s ease;
+}
+
+.bar-icon-btn:hover,
+.bar-icon-btn:focus-visible {
+  background: var(--ng-toc-surface-2);
+  color: var(--ng-toc-text);
+  outline: none;
+}
+
+.bar-icon-btn svg {
+  width: 20px;
+  height: 20px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+}
+
+.bar-icon-sun { display: none; }
+html.dark .bar-icon-moon { display: none; }
+html.dark .bar-icon-sun { display: block !important; color: #f5c542; }
+
+/* Bottom TOC sheet */
+.btoc-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 2500;
+  display: block;
+  background: rgba(28, 25, 23, .38);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity .22s ease;
+}
+
+.btoc-overlay.open {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.btoc-panel {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  max-height: min(78vh, 680px);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  border-radius: 24px 24px 0 0;
+  border: 1px solid var(--ng-toc-border);
+  border-bottom: 0;
+  background: var(--ng-toc-surface);
+  color: var(--ng-toc-text);
+  box-shadow: 0 -22px 60px rgba(0,0,0,.28);
+  transform: translateY(105%);
+  transition: transform .28s cubic-bezier(.22, 1, .36, 1);
+}
+
+.btoc-overlay.open .btoc-panel {
+  transform: translateY(0);
+}
+
+.btoc-handle {
+  display: flex;
+  justify-content: center;
+  padding: 9px 0 3px;
+  flex: 0 0 auto;
+}
+
+.btoc-handle::after {
+  content: '';
+  width: 38px;
+  height: 4px;
+  border-radius: 999px;
+  background: var(--ng-toc-border);
+}
+
+.btoc-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  padding: 12px 18px 10px;
+  border-bottom: 1px solid var(--ng-toc-border);
+}
+
+.btoc-header-left {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.btoc-title {
+  font-family: var(--ng-toc-font-ui);
+  font-size: 16px;
+  font-weight: 800;
+  line-height: 1.1;
+}
+
+.btoc-subtitle {
+  font-family: var(--ng-toc-font-ui);
+  font-size: 11px;
+  color: var(--ng-toc-muted);
+}
+
+.btoc-close {
+  width: 34px;
+  height: 34px;
+  border: 0;
+  border-radius: 999px;
+  background: var(--ng-toc-surface-2);
+  color: var(--ng-toc-muted);
+  cursor: pointer;
+  font-size: 17px;
+  line-height: 1;
+}
+
+.btoc-close:hover,
+.btoc-close:focus-visible {
+  color: var(--ng-toc-text);
+  outline: none;
+}
+
+.btoc-progress-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 18px 8px;
+}
+
+.btoc-progress-bar-wrap {
+  position: relative;
+  height: 6px;
+  flex: 1 1 auto;
+  overflow: hidden;
+  border-radius: 999px;
+  background: var(--ng-toc-border);
+}
+
+.btoc-progress-bar-fill {
+  height: 100%;
+  width: 0%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, var(--ng-toc-accent), var(--ng-toc-accent-2));
+  transition: width .12s linear;
+}
+
+.btoc-progress-pct {
+  min-width: 34px;
+  text-align: right;
+  font-family: var(--ng-toc-font-ui);
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--ng-toc-muted);
+}
+
+.btoc-reading-time {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 0 18px 10px;
+  font-family: var(--ng-toc-font-ui);
+  font-size: 11px;
+  color: var(--ng-toc-muted);
+}
+
+.btoc-nav {
+  position: relative;
+  flex: 1 1 auto;
+  overflow-y: auto;
+  padding: 8px 12px 12px;
+  overscroll-behavior: contain;
+}
+
+.btoc-link {
+  display: grid;
+  grid-template-columns: 34px 1fr;
+  gap: 10px;
+  align-items: start;
+  min-height: 42px;
+  padding: 9px 10px;
+  border-radius: 14px;
+  color: var(--ng-toc-muted);
+  text-decoration: none;
+  font-family: var(--ng-toc-font-ui);
+  transition: background .2s ease, color .2s ease;
+}
+
+.btoc-link:hover,
+.btoc-link:focus-visible {
+  background: var(--ng-toc-surface-2);
+  color: var(--ng-toc-text);
+  outline: none;
+}
+
+.btoc-link.active {
+  background: color-mix(in srgb, var(--ng-toc-accent) 11%, transparent);
+  color: var(--ng-toc-accent);
+}
+
+.btoc-link-num {
+  font-size: 11px;
+  font-weight: 800;
+  line-height: 1.4;
+  opacity: .72;
+}
+
+.btoc-link-text {
+  min-width: 0;
+  font-size: 14px;
+  line-height: 1.28;
+  font-weight: 600;
+}
+
+.btoc-footer {
+  display: flex;
+  gap: 10px;
+  padding: 12px 18px calc(14px + env(safe-area-inset-bottom, 0px));
+  border-top: 1px solid var(--ng-toc-border);
+}
+
+.btoc-share-btn {
+  flex: 1 1 auto;
+  min-height: 42px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  border: 1px solid var(--ng-toc-border);
+  border-radius: 14px;
+  background: var(--ng-toc-surface-2);
+  color: var(--ng-toc-text);
+  font-family: var(--ng-toc-font-ui);
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.btoc-share-btn:hover,
+.btoc-share-btn:focus-visible {
+  border-color: var(--ng-toc-accent);
+  outline: none;
+}
+
+.btoc-share-btn svg {
+  width: 16px;
+  height: 16px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .bottom-bar,
+  .btoc-overlay,
+  .btoc-panel,
+  .bar-progress-fill,
+  .btoc-progress-bar-fill {
+    transition: none !important;
+  }
+}
