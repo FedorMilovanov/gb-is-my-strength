@@ -479,32 +479,49 @@
     var initial   = shortName.charAt(0).toUpperCase() || '?';
     var readTime  = a.readTime || 0;
     var readPct   = readTime ? Math.min((readTime / 40) * 100, 100).toFixed(1) : '0';
- 
+
     var authorHTML = isEditor
       ? '<span class="cp-author-label">Редактор:</span> ' + escHtml(shortName)
       : escHtml(rawAuthor);
- 
+
+    /* Страница об авторе — особый макет: горизонтальная шапка с фото */
+    var isAboutPage = !!(a.url && a.url.indexOf('/about') === 0);
+
+    var imageBlock = '';
+    if (isAboutPage && a.image) {
+      imageBlock =
+        '<div class="cp-preview-author-hero">' +
+          '<img class="cp-preview-author-photo" src="' + escHtml(a.image) + '" alt="Фёдор Милованов" loading="lazy">' +
+          '<div class="cp-preview-author-hero-info">' +
+            '<p class="cp-preview-author-name-big">Фёдор Милованов</p>' +
+            '<p class="cp-preview-author-role">Редактор-составитель · gospod-bog.ru</p>' +
+          '</div>' +
+        '</div>';
+    } else if (a.image) {
+      imageBlock =
+        '<div class="cp-preview-img-wrap">' +
+          '<img class="cp-preview-img" src="' + escHtml(a.image) + '" alt="" loading="lazy">' +
+          (a.category ? '<span class="cp-preview-badge">' + escHtml(a.category) + '</span>' : '') +
+        '</div>';
+    }
+
     var html =
       '<div class="cp-preview-inner">' +
-        (a.image
-          ? '<div class="cp-preview-img-wrap">' +
-              '<img class="cp-preview-img" src="' + escHtml(a.image) + '" alt="" loading="lazy">' +
-              (a.category ? '<span class="cp-preview-badge">' + escHtml(a.category) + '</span>' : '') +
-            '</div>'
-          : '') +
+        imageBlock +
         '<div class="cp-preview-body">' +
-          '<div class="cp-preview-author">' +
-            '<span class="cp-preview-avatar">' + escHtml(initial) + '</span>' +
-            '<span class="cp-preview-author-name">' + authorHTML + '</span>' +
-            (readTime
-              ? '<span class="cp-preview-time">' + SVG.clock9 + '<span>' + readTime + ' мин</span></span>'
-              : '') +
-          '</div>' +
+          (isAboutPage ? '' :
+            '<div class="cp-preview-author">' +
+              '<span class="cp-preview-avatar">' + escHtml(initial) + '</span>' +
+              '<span class="cp-preview-author-name">' + authorHTML + '</span>' +
+              (readTime
+                ? '<span class="cp-preview-time">' + SVG.clock9 + '<span>' + readTime + ' мин</span></span>'
+                : '') +
+            '</div>') +
           '<p class="cp-preview-title">' + escHtml(a.title || '') + '</p>' +
           (a.excerpt
             ? '<p class="cp-preview-excerpt">' + fixPagefindMarks(a.excerpt) + '</p>'
             : '') +
-          (readTime
+          (readTime && !isAboutPage
             ? '<div class="cp-preview-reading">' +
                 SVG.clock9 +
                 '<span>' + readTime + ' мин чтения</span>' +
@@ -521,7 +538,7 @@
           '<div class="cp-preview-actions">' +
             '<a href="' + escHtml(a.url || '#') + '" ' +
                'class="cp-preview-btn primary" id="cp-read-btn">' +
-              'Читать ' + SVG.extLink +
+              (isAboutPage ? 'Об авторе ' : 'Читать ') + SVG.extLink +
             '</a>' +
             '<button class="cp-preview-btn secondary" id="cp-copy-btn">' +
               SVG.copy + ' Скопировать ссылку' +
@@ -529,9 +546,9 @@
           '</div>' +
         '</div>' +
       '</div>';
- 
+
     previewCol.innerHTML = html;
- 
+
     var readBtn = document.getElementById('cp-read-btn');
     if (readBtn) {
       readBtn.addEventListener('click', function () {
@@ -539,12 +556,12 @@
         closeModal();
       });
     }
- 
+
     var copyBtn = document.getElementById('cp-copy-btn');
     if (copyBtn) {
       copyBtn.addEventListener('click', function () {
         var copyText = 'https://gospod-bog.ru' + (a.url || '');
- 
+
         function showCopied() {
           if (!copyBtn || !copyBtn.isConnected) return;
           copyBtn.innerHTML = SVG.check + ' Скопировано';
@@ -555,13 +572,13 @@
             }
           }, 1600);
         }
- 
+
         if (navigator.clipboard && navigator.clipboard.writeText) {
           navigator.clipboard.writeText(copyText).then(showCopied).catch(fallbackCopy);
         } else {
           fallbackCopy();
         }
- 
+
         function fallbackCopy() {
           var ta = document.createElement('textarea');
           ta.value = copyText;
@@ -1165,7 +1182,7 @@
       b0.className = 'gb-search-btn'; b0.id = 'gbSearchBtn';
       b0.setAttribute('aria-label', 'Поиск (⌘K)');
       b0.setAttribute('title', 'Поиск ⌘K');
-      b0.innerHTML = SVG.search13 + '<span>Поиск</span><span class="kb">⌘K</span>';
+      b0.innerHTML = SVG.search15 + '<span>Поиск</span><span class="kb">⌘K</span>';
       li.appendChild(b0);
       hNavLinks.insertBefore(li, hNavLinks.firstChild);
       wireBtn(); return;

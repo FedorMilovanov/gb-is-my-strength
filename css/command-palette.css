@@ -754,6 +754,58 @@ html.dark .cp-preview-col { border-left-color: var(--cp-border); }
 
 .cp-preview-inner:hover .cp-preview-img { transform: scale(1.07); }
 
+/* ── Блок «Об авторе» в превью поиска ────────────────── */
+.cp-preview-author-hero {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 20px 24px 18px;
+  border-bottom: 1px solid var(--cp-border-soft);
+  background: linear-gradient(135deg,
+    color-mix(in srgb, var(--cp-accent) 5%, transparent) 0%,
+    transparent 60%);
+}
+
+html.dark .cp-preview-author-hero {
+  background: linear-gradient(135deg,
+    color-mix(in srgb, var(--cp-accent) 8%, transparent) 0%,
+    transparent 60%);
+  border-bottom-color: var(--cp-border);
+}
+
+.cp-preview-author-photo {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  object-fit: cover;
+  object-position: center top;
+  flex-shrink: 0;
+  border: 2px solid color-mix(in srgb, var(--cp-accent) 20%, transparent);
+  box-shadow: 0 2px 12px rgba(0,0,0,0.12);
+}
+
+.cp-preview-author-hero-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.cp-preview-author-name-big {
+  font-family: var(--cp-font-serif);
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--cp-ink);
+  margin: 0 0 3px;
+  letter-spacing: -0.2px;
+}
+
+.cp-preview-author-role {
+  font-size: 11px;
+  color: var(--cp-ink-faint);
+  margin: 0;
+  letter-spacing: 0.01em;
+}
+/* ─────────────────────────────────────────────────────── */
+
 .cp-preview-badge {
   position: absolute;
   top: 11px;
@@ -1281,9 +1333,9 @@ html.dark mark.cp-hl {
 .gb-search-btn {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
-  padding: 6px 11px;
-  border-radius: 8px;
+  gap: 7px;
+  padding: 6px 12px;
+  border-radius: 9px;
   border: 1px solid var(--cp-border);
   background: var(--cp-bg-surface);
   color: var(--cp-ink-muted);
@@ -1292,6 +1344,7 @@ html.dark mark.cp-hl {
   font-weight: 500;
   white-space: nowrap;
   cursor: pointer;
+  line-height: 1;                /* убирает лишний вертикальный сдвиг */
   transition: background 0.18s var(--cp-ease),
               border-color 0.18s var(--cp-ease),
               color 0.18s var(--cp-ease),
@@ -1302,11 +1355,18 @@ html.dark mark.cp-hl {
   flex-shrink: 0;
 }
 
+/* Иконка — строго block + flex-shrink:0, чтобы не обрезалась контейнером */
+.gb-search-btn > svg {
+  display: block;
+  flex-shrink: 0;
+  overflow: visible;   /* SVG stroke не клипается по bounds элемента */
+}
+
 .gb-search-btn:hover {
   background: var(--cp-accent-soft);
   border-color: color-mix(in srgb, var(--cp-accent) 25%, transparent);
   color: var(--cp-accent);
-  box-shadow: 0 2px 8px -1px rgba(0,0,0,0.06);
+  box-shadow: 0 2px 10px -2px rgba(0,0,0,0.08);
 }
 
 .gb-search-btn:active {
@@ -1323,7 +1383,7 @@ html.dark mark.cp-hl {
 .gb-search-btn .kb {
   display: inline-flex;
   align-items: center;
-  padding: 1px 5px;
+  padding: 2px 5px;
   border-radius: 5px;
   background: var(--cp-bg-card);
   border: 1px solid var(--cp-border);
@@ -1342,7 +1402,8 @@ html.dark .gb-search-btn .kb {
 @media (max-width: 600px) {
   .gb-search-btn span:not(.kb) { display: none; }
   .gb-search-btn .kb { display: none; }
-  .gb-search-btn { padding: 6px 8px; }
+  /* icon-only: симметричный padding чтобы кнопка была квадратной */
+  .gb-search-btn { padding: 7px 9px; }
 }
 
 /* On touch devices: no hover lift */

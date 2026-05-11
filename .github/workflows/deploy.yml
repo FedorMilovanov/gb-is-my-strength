@@ -1,0 +1,59 @@
+name: Deploy to GitHub Pages
+
+# Запускается ПОСЛЕ того, как indexnow.yml завершил работу —
+# то есть уже после cache-bust-коммита — чтобы деплоить
+# актуальную версию, а не ту, что была до автообновления мета.
+on:
+  workflow_run:
+    workflows: ["IndexNow — Notify Search Engines"]
+    types: [completed]
+    branches: [main]
+
+  # Ручной запуск (например, после изменений, не затрагивающих контент)
+  workflow_dispatch:
+
+permissions:
+  contents: read   # читаем репозиторий
+  pages:    write  # заливаем артефакт на Pages
+  id-token: write  # OIDC-токен для actions/deploy-pages
+
+# Если в очереди несколько деплоев — оставляем только последний
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    # Не запускаем деплой, если indexnow.yml упал
+    if: >
+      github.event_name == 'workflow_dispatch' ||
+      github.event.workflow_run.conclusion == 'success'
+
+    environment:
+      name: github-pages
+      url: ${{ steps.deploy.outputs.page_url }}
+
+    steps:
+      - name: Checkout (последний коммит в main, включая cache-bust)
+        uses: actions/checkout@v4
+        with:
+          # Берём самый свежий коммит (в т.ч. авто-коммит indexnow.yml)
+          ref: main
+
+      - name: Build Pagefind index
+        # npx скачает pagefind только если его нет в кеше.
+        # --site . — корень репозитория = корень сайта.
+        # --output-path pagefind — стандартная папка, ожидаемая search.js.
+        run: npx -y pagefind@1.5.2 --site . --output-path pagefind
+
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          # Загружаем весь корень; папка pagefind/ уже есть внутри
+          path: .
+
+      - name: Deploy to GitHub Pages
+        id: deploy
+        uses: actions/deploy-pages@v4
