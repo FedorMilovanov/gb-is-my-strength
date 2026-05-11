@@ -279,11 +279,12 @@
     }
   }
   function unlockScroll() {
+    /* BUG-05 fix: всегда снимаем и класс, и inline-стиль — независимо от SiteUtils.
+       Иначе если lock был через fallback, а unlock через SiteUtils — overflow залипает. */
     document.documentElement.classList.remove('cp-scroll-lock');
+    document.body.style.removeProperty('overflow');
     if (window.SiteUtils && typeof window.SiteUtils.unlockScroll === 'function') {
       window.SiteUtils.unlockScroll('command-palette');
-    } else {
-      document.body.style.removeProperty('overflow');
     }
   }
  
@@ -461,7 +462,7 @@
  
     if (doScroll !== false) {
       var actEl = listEl.querySelector('.cp-item.is-active');
-      if (actEl) actEl.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+      if (actEl) actEl.scrollIntoView({ block: 'nearest' }); /* A11Y-02: без smooth — экранный диктор правильно следит за фокусом */
     }
  
     var item = currentItems[i];
@@ -988,8 +989,14 @@
           /* Scripture group — only when query looks like a scripture ref */
           if (isScripRef && scripture) {
             var scripNorm = normalizeQ(scripture);
-            var firstWord = qNorm.split(' ')[0];
-            if (firstWord && scripNorm.indexOf(firstWord) !== -1) {
+            /* BUG-03 fix: берём первый буквенный токен (≥2 букв), а не firstWord.
+               Без этого «1 Кор» → firstWord=«1» → совпадение в любом тексте. */
+            var _qWords = qNorm.split(' ').filter(function(w) { return w.length > 0; });
+            var bookToken = null;
+            for (var _bi = 0; _bi < _qWords.length; _bi++) {
+              if (/[а-яёa-z]{2,}/i.test(_qWords[_bi])) { bookToken = _qWords[_bi]; break; }
+            }
+            if (bookToken && scripNorm.indexOf(bookToken) !== -1) {
               scriptureItems.push({
                 id:        'scr-' + url,
                 title:     scripture,

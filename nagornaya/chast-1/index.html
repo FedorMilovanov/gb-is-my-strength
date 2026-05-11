@@ -121,8 +121,8 @@
   "inLanguage": "ru",
   "author": {
     "@type": "Person",
-    "name": "Фёдор Милованов",
-    "url": "https://gospod-bog.ru/about/"
+    "name": "Abner Chou",
+    "url": "https://www.tms.edu/masters-seminary-journal/"
   },
   "publisher": {
     "@type": "Organization",
@@ -141,7 +141,19 @@
   },
   "articleSection": "Содержание Нагорной проповеди",
   "keywords": "нагорная проповедь, блаженства, антитезы, Матфей 5-7, Лука 6, Иисус, Царство Небесное, соль земли, МакАртур",
-  "wordCount": 3177
+  "wordCount": 3177,
+  "editor": {
+    "@type": "Person",
+    "name": "Фёдор Милованов",
+    "jobTitle": "Редактор перевода",
+    "url": "https://gospod-bog.ru/about/"
+  },
+  "translator": {
+    "@type": "Person",
+    "name": "Фёдор Милованов",
+    "jobTitle": "Редактор перевода",
+    "url": "https://gospod-bog.ru/about/"
+  }
 }
 </script>
 <script type="application/ld+json">
@@ -177,8 +189,50 @@
 }
 </script>
   <link rel="stylesheet" href="../../css/command-palette.css">
+  <link rel="stylesheet" href="../../css/nagornaya-navbar.css">
 </head>
-<body class="bg-stone-100 text-stone-900 antialiased">
+<body class="nagornaya-has-site-nav bg-stone-100 text-stone-900 antialiased">
+<!-- Фирменная навигация сайта: h-navbar из основного дизайна -->
+<nav class="h-navbar" id="hNavbar" role="navigation" aria-label="Основная навигация">
+  <div class="h-navbar__inner">
+    <a href="/" class="h-nav-logo" aria-label="Господь Бог — Сила Моя — на главную">
+      <span class="h-nav-logo-main">Господь Бог</span>
+      <span class="h-nav-logo-dash" aria-hidden="true">&nbsp;—&nbsp;</span>
+      <span class="h-nav-logo-accent">Сила Моя</span>
+    </a>
+
+    <ul class="h-nav-links" role="list">
+      <li><a href="/#publikacii">Публикации</a></li>
+      <li><a href="/#razbor">Разбор заблуждений</a></li>
+      <li><a href="/nagornaya/">Нагорная проповедь</a></li>
+      <li><a href="/about/">О проекте</a></li>
+    </ul>
+
+    <div class="mobile-controls">
+      <button class="theme-toggle" id="themeToggle" aria-label="Переключить тему" aria-pressed="false">
+        <svg class="icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12.8A9 9 0 1111.2 3 7 7 0 0021 12.8z"/></svg>
+        <svg class="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
+      </button>
+      <button class="h-mobile-menu-btn" id="hMobileMenuBtn" aria-label="Открыть меню" aria-expanded="false">
+        <svg class="h-burger-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
+          <line class="burger-top" x1="3" y1="6" x2="21" y2="6"/>
+          <line class="burger-mid" x1="3" y1="12" x2="21" y2="12"/>
+          <line class="burger-bottom" x1="3" y1="18" x2="21" y2="18"/>
+        </svg>
+      </button>
+    </div>
+  </div>
+</nav>
+
+<div class="h-mobile-nav" id="hMobileNav" aria-hidden="true">
+  <a href="/#publikacii" data-close-nav>Публикации</a>
+  <a href="/#razbor" data-close-nav>Разбор заблуждений</a>
+  <a href="/nagornaya/" data-close-nav>Нагорная проповедь</a>
+  <a href="/about/" data-close-nav>О проекте</a>
+</div>
+<div id="hMobileBackdrop" class="h-mobile-backdrop" aria-hidden="true"></div>
+
+
 <a href="#main-content" class="skip-link">Перейти к содержимому</a>
 
 
@@ -186,7 +240,7 @@
   <aside class="hidden lg:flex flex-col w-64 min-h-screen bg-stone-900 text-stone-100 fixed left-0 top-0 z-40 overflow-y-auto">
     <div class="px-5 py-5 border-b border-stone-700">
       <div class="flex items-center gap-3 mb-1.5">
-        <span class="flex items-center justify-center w-10 h-10 rounded-xl bg-amber-600/10 border border-amber-500/20 text-amber-400"><svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M11 2h2v20h-2z"/><path d="M5 9h14v2H5z"/></svg></span>
+        <span class="flex items-center justify-center w-10 h-10 rounded-xl bg-amber-600/10 border border-amber-500/20 text-amber-400"><svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M11 2h2v20h-2z"/><path d="M5 9h14v2H5z"/></svg></span>
         <div>
           <div class="font-bold text-xs text-amber-400 leading-tight tracking-wide uppercase">Нагорная проповедь</div>
           <div class="text-xs text-stone-400 leading-tight">Исследование · 5 частей</div>
@@ -196,49 +250,49 @@
     </div>
     <nav class="flex-1 px-2.5 py-3 space-y-0.5">
         <a href="/nagornaya/" class="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-left transition-all text-stone-300 hover:bg-stone-800 hover:text-white">
-          <span class="text-stone-400 shrink-0 flex items-center justify-center w-8 h-8 rounded-lg bg-stone-800/40"><svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><rect width="20" height="5" x="2" y="3" rx="1"/><path d="M4 8v11a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8"/><path d="M10 12h4"/></svg></span>
+          <span class="text-stone-400 shrink-0 flex items-center justify-center w-8 h-8 rounded-lg bg-stone-800/40"><svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><rect width="20" height="5" x="2" y="3" rx="1"/><path d="M4 8v11a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8"/><path d="M10 12h4"/></svg></span>
           <div>
             <div class="font-semibold text-sm leading-tight">Архив</div>
             <div class="text-xs leading-tight text-stone-500">Обзор серии</div>
           </div>
         </a>
         <a href="/nagornaya/chast-1/" class="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-left transition-all bg-amber-600 text-white shadow-md">
-          <span class="text-stone-400 shrink-0 flex items-center justify-center w-8 h-8 rounded-lg bg-stone-800/40"><svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg></span>
+          <span class="text-stone-400 shrink-0 flex items-center justify-center w-8 h-8 rounded-lg bg-stone-800/40"><svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg></span>
           <div>
             <div class="font-semibold text-sm leading-tight">Часть I</div>
             <div class="text-xs leading-tight text-amber-200">Содержание</div>
           </div>
         </a>
         <a href="/nagornaya/chast-2/" class="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-left transition-all text-stone-300 hover:bg-stone-800 hover:text-white">
-          <span class="text-stone-400 shrink-0 flex items-center justify-center w-8 h-8 rounded-lg bg-stone-800/40"><svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/><polyline points="14 2 14 8 20 8"/></svg></span>
+          <span class="text-stone-400 shrink-0 flex items-center justify-center w-8 h-8 rounded-lg bg-stone-800/40"><svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/><polyline points="14 2 14 8 20 8"/></svg></span>
           <div>
             <div class="font-semibold text-sm leading-tight">Часть II</div>
             <div class="text-xs leading-tight text-stone-500">Методология</div>
           </div>
         </a>
         <a href="/nagornaya/chast-3/" class="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-left transition-all text-stone-300 hover:bg-stone-800 hover:text-white">
-          <span class="text-stone-400 shrink-0 flex items-center justify-center w-8 h-8 rounded-lg bg-stone-800/40"><svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg></span>
+          <span class="text-stone-400 shrink-0 flex items-center justify-center w-8 h-8 rounded-lg bg-stone-800/40"><svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg></span>
           <div>
             <div class="font-semibold text-sm leading-tight">Часть III</div>
             <div class="text-xs leading-tight text-stone-500">Адресат</div>
           </div>
         </a>
         <a href="/nagornaya/chast-4/" class="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-left transition-all text-stone-300 hover:bg-stone-800 hover:text-white">
-          <span class="text-stone-400 shrink-0 flex items-center justify-center w-8 h-8 rounded-lg bg-stone-800/40"><svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M11 2h2v20h-2z"/><path d="M5 9h14v2H5z"/></svg></span>
+          <span class="text-stone-400 shrink-0 flex items-center justify-center w-8 h-8 rounded-lg bg-stone-800/40"><svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M11 2h2v20h-2z"/><path d="M5 9h14v2H5z"/></svg></span>
           <div>
             <div class="font-semibold text-sm leading-tight">Часть IV</div>
             <div class="text-xs leading-tight text-stone-500">Богодухновенность</div>
           </div>
         </a>
         <a href="/nagornaya/chast-5/" class="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-left transition-all text-stone-300 hover:bg-stone-800 hover:text-white">
-          <span class="text-stone-400 shrink-0 flex items-center justify-center w-8 h-8 rounded-lg bg-stone-800/40"><svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="m12 3 1.912 5.813a2 2 0 0 0 1.275 1.275L21 12l-5.812 1.912a2 2 0 0 0-1.275 1.275L12 21l-1.912-5.812a2 2 0 0 0-1.275-1.275L3 12l5.812-1.912a2 2 0 0 0 1.275-1.275z"/></svg></span>
+          <span class="text-stone-400 shrink-0 flex items-center justify-center w-8 h-8 rounded-lg bg-stone-800/40"><svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="m12 3 1.912 5.813a2 2 0 0 0 1.275 1.275L21 12l-5.812 1.912a2 2 0 0 0-1.275 1.275L12 21l-1.912-5.812a2 2 0 0 0-1.275-1.275L3 12l5.812-1.912a2 2 0 0 0 1.275-1.275z"/></svg></span>
           <div>
             <div class="font-semibold text-sm leading-tight">Часть V</div>
             <div class="text-xs leading-tight text-stone-500">Закон и Евангелие</div>
           </div>
         </a>
         <a href="/nagornaya/istochniki/" class="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-left transition-all text-stone-300 hover:bg-stone-800 hover:text-white">
-          <span class="text-stone-400 shrink-0 flex items-center justify-center w-8 h-8 rounded-lg bg-stone-800/40"><svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><rect width="20" height="5" x="2" y="3" rx="1"/><path d="M4 8v11a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8"/><path d="M10 12h4"/></svg></span>
+          <span class="text-stone-400 shrink-0 flex items-center justify-center w-8 h-8 rounded-lg bg-stone-800/40"><svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><rect width="20" height="5" x="2" y="3" rx="1"/><path d="M4 8v11a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8"/><path d="M10 12h4"/></svg></span>
           <div>
             <div class="font-semibold text-sm leading-tight">Источники</div>
             <div class="text-xs leading-tight text-stone-500">120+ источников</div>
@@ -254,7 +308,7 @@
   <!-- Mobile header -->
   <header class="lg:hidden fixed top-0 left-0 right-0 z-50 bg-stone-900 text-white px-4 py-3 flex items-center justify-between shadow-xl">
     <div class="flex items-center gap-3">
-      <span class="flex items-center justify-center w-9 h-9 rounded-xl bg-amber-600/10 border border-amber-500/20 text-amber-400"><svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M11 2h2v20h-2z"/><path d="M5 9h14v2H5z"/></svg></span>
+      <span class="flex items-center justify-center w-9 h-9 rounded-xl bg-amber-600/10 border border-amber-500/20 text-amber-400"><svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M11 2h2v20h-2z"/><path d="M5 9h14v2H5z"/></svg></span>
       <div>
         <div class="font-bold text-xs text-amber-400 uppercase tracking-wide">Нагорная проповедь</div>
         <div class="text-xs text-stone-400">5 частей исследования</div>
@@ -273,49 +327,49 @@
   <div id="mobileMenu" class="lg:hidden hidden fixed inset-0 z-40 bg-stone-900 pt-16 overflow-y-auto">
     <nav class="px-4 py-4 space-y-1">
           <a href="/nagornaya/" class="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-left transition-all text-stone-300 hover:bg-stone-800 hover:text-white">
-            <span class="shrink-0 flex items-center justify-center w-9 h-9 rounded-lg bg-stone-800/40 text-stone-300"><svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><rect width="20" height="5" x="2" y="3" rx="1"/><path d="M4 8v11a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8"/><path d="M10 12h4"/></svg></span>
+            <span class="shrink-0 flex items-center justify-center w-9 h-9 rounded-lg bg-stone-800/40 text-stone-300"><svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><rect width="20" height="5" x="2" y="3" rx="1"/><path d="M4 8v11a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8"/><path d="M10 12h4"/></svg></span>
             <div>
               <div class="font-semibold">Архив</div>
               <div class="text-xs opacity-70">Обзор серии</div>
             </div>
           </a>
           <a href="/nagornaya/chast-1/" class="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-left transition-all bg-amber-600 text-white">
-            <span class="shrink-0 flex items-center justify-center w-9 h-9 rounded-lg bg-stone-800/40 text-stone-300"><svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg></span>
+            <span class="shrink-0 flex items-center justify-center w-9 h-9 rounded-lg bg-stone-800/40 text-stone-300"><svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg></span>
             <div>
               <div class="font-semibold">Часть I</div>
               <div class="text-xs opacity-70">Содержание</div>
             </div>
           </a>
           <a href="/nagornaya/chast-2/" class="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-left transition-all text-stone-300 hover:bg-stone-800 hover:text-white">
-            <span class="shrink-0 flex items-center justify-center w-9 h-9 rounded-lg bg-stone-800/40 text-stone-300"><svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/><polyline points="14 2 14 8 20 8"/></svg></span>
+            <span class="shrink-0 flex items-center justify-center w-9 h-9 rounded-lg bg-stone-800/40 text-stone-300"><svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/><polyline points="14 2 14 8 20 8"/></svg></span>
             <div>
               <div class="font-semibold">Часть II</div>
               <div class="text-xs opacity-70">Методология</div>
             </div>
           </a>
           <a href="/nagornaya/chast-3/" class="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-left transition-all text-stone-300 hover:bg-stone-800 hover:text-white">
-            <span class="shrink-0 flex items-center justify-center w-9 h-9 rounded-lg bg-stone-800/40 text-stone-300"><svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg></span>
+            <span class="shrink-0 flex items-center justify-center w-9 h-9 rounded-lg bg-stone-800/40 text-stone-300"><svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg></span>
             <div>
               <div class="font-semibold">Часть III</div>
               <div class="text-xs opacity-70">Адресат</div>
             </div>
           </a>
           <a href="/nagornaya/chast-4/" class="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-left transition-all text-stone-300 hover:bg-stone-800 hover:text-white">
-            <span class="shrink-0 flex items-center justify-center w-9 h-9 rounded-lg bg-stone-800/40 text-stone-300"><svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M11 2h2v20h-2z"/><path d="M5 9h14v2H5z"/></svg></span>
+            <span class="shrink-0 flex items-center justify-center w-9 h-9 rounded-lg bg-stone-800/40 text-stone-300"><svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M11 2h2v20h-2z"/><path d="M5 9h14v2H5z"/></svg></span>
             <div>
               <div class="font-semibold">Часть IV</div>
               <div class="text-xs opacity-70">Богодухновенность</div>
             </div>
           </a>
           <a href="/nagornaya/chast-5/" class="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-left transition-all text-stone-300 hover:bg-stone-800 hover:text-white">
-            <span class="shrink-0 flex items-center justify-center w-9 h-9 rounded-lg bg-stone-800/40 text-stone-300"><svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="m12 3 1.912 5.813a2 2 0 0 0 1.275 1.275L21 12l-5.812 1.912a2 2 0 0 0-1.275 1.275L12 21l-1.912-5.812a2 2 0 0 0-1.275-1.275L3 12l5.812-1.912a2 2 0 0 0 1.275-1.275z"/></svg></span>
+            <span class="shrink-0 flex items-center justify-center w-9 h-9 rounded-lg bg-stone-800/40 text-stone-300"><svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="m12 3 1.912 5.813a2 2 0 0 0 1.275 1.275L21 12l-5.812 1.912a2 2 0 0 0-1.275 1.275L12 21l-1.912-5.812a2 2 0 0 0-1.275-1.275L3 12l5.812-1.912a2 2 0 0 0 1.275-1.275z"/></svg></span>
             <div>
               <div class="font-semibold">Часть V</div>
               <div class="text-xs opacity-70">Закон и Евангелие</div>
             </div>
           </a>
             <a href="/nagornaya/istochniki/" class="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-left transition-all text-stone-300 hover:bg-stone-800 hover:text-white">
-            <span class="shrink-0 flex items-center justify-center w-9 h-9 rounded-lg bg-stone-800/40 text-stone-300"><svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><rect width="20" height="5" x="2" y="3" rx="1"/><path d="M4 8v11a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8"/><path d="M10 12h4"/></svg></span>
+            <span class="shrink-0 flex items-center justify-center w-9 h-9 rounded-lg bg-stone-800/40 text-stone-300"><svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><rect width="20" height="5" x="2" y="3" rx="1"/><path d="M4 8v11a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8"/><path d="M10 12h4"/></svg></span>
             <div>
               <div class="font-semibold">Источники</div>
               <div class="text-xs opacity-70">120+ источников</div>
@@ -340,6 +394,7 @@
 <h1 class="text-3xl md:text-4xl font-bold mb-3 tracking-tight">Два текста, один Иисус</h1>
 <p class="text-blue-100 text-lg md:text-xl font-medium leading-relaxed">Содержание Матфея 5–7 и Луки 6:17–49 — структура, сходства, различия, богословский стержень</p>
 <p class="text-blue-200/60 text-xs mt-4 font-mono">Серия «Нагорная проповедь» · Часть I из V</p>
+<p class="article-updated text-blue-200/60 text-xs mt-1 font-mono">Опубликовано: <time datetime="2026-05-01">1 мая 2026</time></p>
 </div>
 
       <div class="rounded-2xl overflow-hidden shadow-md mt-4">
@@ -363,7 +418,7 @@
 </div>
 
 <!-- I. Архитектура Матфея 5–7 -->
-<div class="group mb-6 mt-12"><div class="flex items-center gap-4 mb-2"><div class="flex items-center justify-center w-10 h-10 rounded-xl bg-white shadow-sm border border-stone-100 text-blue-600"><svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="2" width="16" height="20" rx="2" ry="2"/><path d="M9 22v-4h6v4"/><path d="M8 6h.01"/><path d="M16 6h.01"/><path d="M8 10h.01"/><path d="M16 10h.01"/><path d="M8 14h.01"/><path d="M16 14h.01"/></svg></div><h2 id="i-архитектура-матфея-57" class="text-xl font-bold text-stone-800 tracking-tight">I. Архитектура Матфея 5–7</h2></div><p class="text-stone-500 text-sm font-medium ml-14">Хиастическая структура с несколькими уровнями обрамления</p></div>
+<div class="group mb-6 mt-12"><div class="flex items-center gap-4 mb-2"><div class="flex items-center justify-center w-10 h-10 rounded-xl bg-white shadow-sm border border-stone-100 text-blue-600"><svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><rect x="4" y="2" width="16" height="20" rx="2" ry="2"/><path d="M9 22v-4h6v4"/><path d="M8 6h.01"/><path d="M16 6h.01"/><path d="M8 10h.01"/><path d="M16 10h.01"/><path d="M8 14h.01"/><path d="M16 14h.01"/></svg></div><h2 id="i-архитектура-матфея-57" class="text-xl font-bold text-stone-800 tracking-tight">I. Архитектура Матфея 5–7</h2></div><p class="text-stone-500 text-sm font-medium ml-14">Хиастическая структура с несколькими уровнями обрамления</p></div>
 
 <div class="bg-white border border-stone-200 rounded-xl p-5 shadow-sm mb-4 text-sm text-stone-700">
 <p class="text-stone-700 text-[16px] leading-relaxed mb-5 text-justify">Евангелие от Матфея построено не как случайная подборка эпизодов, а как тщательно организованное произведение. При чтении Нагорной проповеди это особенно заметно. Мы имеем дело не просто с длинной речью, а с текстом, внутренняя архитектура которого поддерживает и усиливает его богословский смысл.</p>
@@ -375,9 +430,9 @@
 </div>
 
 <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-4">
-<div class="bg-white border border-stone-200 rounded-xl p-4 shadow-sm flex gap-3 items-start"><div class="flex items-center justify-center w-9 h-9 rounded-lg bg-stone-50 border border-stone-100 text-blue-600 flex-shrink-0"><svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="2" width="16" height="20" rx="2" ry="2"/><path d="M9 22v-4h6v4"/><path d="M8 6h.01"/><path d="M16 6h.01"/><path d="M8 10h.01"/><path d="M16 10h.01"/><path d="M8 14h.01"/><path d="M16 14h.01"/></svg></div><div><div class="font-semibold text-stone-800 text-sm mb-1">Нарративная рамка</div><div class="text-xs text-stone-500 leading-relaxed">Мф 4:23–5:2 ↔ Мф 7:28–8:1</div></div></div>
-<div class="bg-white border border-stone-200 rounded-xl p-4 shadow-sm flex gap-3 items-start"><div class="flex items-center justify-center w-9 h-9 rounded-lg bg-stone-50 border border-stone-100 text-blue-600 flex-shrink-0"><svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="m16 3 4 4-4 4"/><path d="M20 7H4a2 2 0 0 0-2 2v10"/><path d="m8 21-4-4 4-4"/><path d="M4 17h16a2 2 0 0 0 2-2V5"/></svg></div><div><div class="font-semibold text-stone-800 text-sm mb-1">Inclusio блаженств</div><div class="text-xs text-stone-500 leading-relaxed">Мф 5:3 ↔ Мф 5:10</div></div></div>
-<div class="bg-white border border-stone-200 rounded-xl p-4 shadow-sm flex gap-3 items-start"><div class="flex items-center justify-center w-9 h-9 rounded-lg bg-stone-50 border border-stone-100 text-blue-600 flex-shrink-0"><svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M16 16c0 1.1-.9 2-2 2H6c-1.1 0-2-.9-2-2V8c0-1.1.9-2 2-2h8c1.1 0 2 .9 2 2v8Z"/><path d="M20 8v8"/><path d="M2 12h2"/><path d="M16 12h2"/><path d="M22 12h-2"/></svg></div><div><div class="font-semibold text-stone-800 text-sm mb-1">Inclusio Закона</div><div class="text-xs text-stone-500 leading-relaxed">Мф 5:17 ↔ Мф 7:12</div></div></div>
+<div class="bg-white border border-stone-200 rounded-xl p-4 shadow-sm flex gap-3 items-start"><div class="flex items-center justify-center w-9 h-9 rounded-lg bg-stone-50 border border-stone-100 text-blue-600 flex-shrink-0"><svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><rect x="4" y="2" width="16" height="20" rx="2" ry="2"/><path d="M9 22v-4h6v4"/><path d="M8 6h.01"/><path d="M16 6h.01"/><path d="M8 10h.01"/><path d="M16 10h.01"/><path d="M8 14h.01"/><path d="M16 14h.01"/></svg></div><div><div class="font-semibold text-stone-800 text-sm mb-1">Нарративная рамка</div><div class="text-xs text-stone-500 leading-relaxed">Мф 4:23–5:2 ↔ Мф 7:28–8:1</div></div></div>
+<div class="bg-white border border-stone-200 rounded-xl p-4 shadow-sm flex gap-3 items-start"><div class="flex items-center justify-center w-9 h-9 rounded-lg bg-stone-50 border border-stone-100 text-blue-600 flex-shrink-0"><svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="m16 3 4 4-4 4"/><path d="M20 7H4a2 2 0 0 0-2 2v10"/><path d="m8 21-4-4 4-4"/><path d="M4 17h16a2 2 0 0 0 2-2V5"/></svg></div><div><div class="font-semibold text-stone-800 text-sm mb-1">Inclusio блаженств</div><div class="text-xs text-stone-500 leading-relaxed">Мф 5:3 ↔ Мф 5:10</div></div></div>
+<div class="bg-white border border-stone-200 rounded-xl p-4 shadow-sm flex gap-3 items-start"><div class="flex items-center justify-center w-9 h-9 rounded-lg bg-stone-50 border border-stone-100 text-blue-600 flex-shrink-0"><svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M16 16c0 1.1-.9 2-2 2H6c-1.1 0-2-.9-2-2V8c0-1.1.9-2 2-2h8c1.1 0 2 .9 2 2v8Z"/><path d="M20 8v8"/><path d="M2 12h2"/><path d="M16 12h2"/><path d="M22 12h-2"/></svg></div><div><div class="font-semibold text-stone-800 text-sm mb-1">Inclusio Закона</div><div class="text-xs text-stone-500 leading-relaxed">Мф 5:17 ↔ Мф 7:12</div></div></div>
 </div>
 
 <div class="bg-white border border-stone-200 rounded-xl overflow-hidden shadow-sm">
@@ -417,7 +472,7 @@
 <div class="bg-stone-50 border border-stone-200 rounded-lg p-3 text-xs text-stone-700 mt-3"><strong class="text-stone-800">Почему это важно:</strong> структура показывает, что Нагорная проповедь — не россыпь нравственных наблюдений, а единое богословское целое. Это важно для всей серии: в Части II мы увидим, что такой уровень организации плохо сочетается с представлением о «свободной антологии»; в Части III — что Мф 5:17 и 5:20 действительно задают ось адресата; в Части V — что вся проповедь движется от сокрушения к жизни Царства.</div>
 
 <!-- II. Параметры сравнения -->
-<div class="group mb-6 mt-12"><div class="flex items-center gap-4 mb-2"><div class="flex items-center justify-center w-10 h-10 rounded-xl bg-white shadow-sm border border-stone-100 text-blue-600"><svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="m16 3 4 4-4 4"/><path d="M20 7H4a2 2 0 0 0-2 2v10"/><path d="m8 21-4-4 4-4"/><path d="M4 17h16a2 2 0 0 0 2-2V5"/></svg></div><h2 id="ii-параметры-сравнения-матфей-и-лука" class="text-xl font-bold text-stone-800 tracking-tight">II. Параметры сравнения: Матфей и Лука</h2></div><p class="text-stone-500 text-sm font-medium ml-14">Два ракурса одной смысловой реальности</p></div>
+<div class="group mb-6 mt-12"><div class="flex items-center gap-4 mb-2"><div class="flex items-center justify-center w-10 h-10 rounded-xl bg-white shadow-sm border border-stone-100 text-blue-600"><svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="m16 3 4 4-4 4"/><path d="M20 7H4a2 2 0 0 0-2 2v10"/><path d="m8 21-4-4 4-4"/><path d="M4 17h16a2 2 0 0 0 2-2V5"/></svg></div><h2 id="ii-параметры-сравнения-матфей-и-лука" class="text-xl font-bold text-stone-800 tracking-tight">II. Параметры сравнения: Матфей и Лука</h2></div><p class="text-stone-500 text-sm font-medium ml-14">Два ракурса одной смысловой реальности</p></div>
 
 <div class="bg-white border border-stone-200 rounded-xl p-6 md:p-8 shadow-sm mb-6 text-sm text-stone-700">
 <p class="text-stone-700 text-[16px] leading-relaxed mb-5 text-justify">Сравнение Матфея и Луки — это не упражнение по поиску «ошибок», а способ увидеть многогранную славу Христа. Матфей (еврейский автор) представляет Иисуса как <span class="tooltip-trigger" data-tooltip="Мессия как истинный Царь Израиля, обладающий всей полнотой власти">Царя-Законодателя</span>, тогда как Лука (пишущий для язычников) делает акцент на Христе как Спасителе всех сословий.</p>
@@ -448,7 +503,7 @@
 </div>
 
 <!-- III. Мф 5:17–20 -->
-<div class="group mb-6 mt-12"><div class="flex items-center gap-4 mb-2"><div class="flex items-center justify-center w-10 h-10 rounded-xl bg-white shadow-sm border border-stone-100 text-blue-600"><svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.68 8.26 12 2"/></svg></div><h2 id="iii-мф-51720-богословский-стержень" class="text-xl font-bold text-stone-800 tracking-tight">III. Мф 5:17–20 — Богословский стержень</h2></div><p class="text-stone-500 text-sm font-medium ml-14">Здесь проповедь получает свой центр тяжести</p></div>
+<div class="group mb-6 mt-12"><div class="flex items-center gap-4 mb-2"><div class="flex items-center justify-center w-10 h-10 rounded-xl bg-white shadow-sm border border-stone-100 text-blue-600"><svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.68 8.26 12 2"/></svg></div><h2 id="iii-мф-51720-богословский-стержень" class="text-xl font-bold text-stone-800 tracking-tight">III. Мф 5:17–20 — Богословский стержень</h2></div><p class="text-stone-500 text-sm font-medium ml-14">Здесь проповедь получает свой центр тяжести</p></div>
 
 <div class="bg-white rounded-2xl p-6 md:p-8 shadow-sm border border-stone-200 mb-6 text-sm text-stone-700">
 <p class="text-stone-700 text-[16px] leading-relaxed mb-5 text-justify">Стихи 17–20 пятой главы Матфея являются «пропускным пунктом» для всей остальной проповеди. Иисус осознает, что Его учение звучит радикально, и заранее отвечает на возможное обвинение в <span class="tooltip-trigger" data-tooltip="Отмена или нарушение Божьего закона">разрушении Закона</span>.</p>
@@ -466,7 +521,7 @@
 </div>
 
 <!-- IV. Шесть антитез -->
-<div class="group mb-6 mt-12"><div class="flex items-center gap-4 mb-2"><div class="flex items-center justify-center w-10 h-10 rounded-xl bg-white shadow-sm border border-stone-100 text-blue-600"><svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M16 16c0 1.1-.9 2-2 2H6c-1.1 0-2-.9-2-2V8c0-1.1.9-2 2-2h8c1.1 0 2 .9 2 2v8Z"/><path d="M20 8v8"/><path d="M2 12h2"/><path d="M16 12h2"/><path d="M22 12h-2"/></svg></div><h2 id="iv-шесть-антитез-кульминаций-мф-52148" class="text-xl font-bold text-stone-800 tracking-tight">IV. Шесть антитез / кульминаций (Мф 5:21–48)</h2></div><p class="text-stone-500 text-sm font-medium ml-14">Не опровержение Моисея, а вскрытие подлинного замысла Закона</p></div>
+<div class="group mb-6 mt-12"><div class="flex items-center gap-4 mb-2"><div class="flex items-center justify-center w-10 h-10 rounded-xl bg-white shadow-sm border border-stone-100 text-blue-600"><svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M16 16c0 1.1-.9 2-2 2H6c-1.1 0-2-.9-2-2V8c0-1.1.9-2 2-2h8c1.1 0 2 .9 2 2v8Z"/><path d="M20 8v8"/><path d="M2 12h2"/><path d="M16 12h2"/><path d="M22 12h-2"/></svg></div><h2 id="iv-шесть-антитез-кульминаций-мф-52148" class="text-xl font-bold text-stone-800 tracking-tight">IV. Шесть антитез / кульминаций (Мф 5:21–48)</h2></div><p class="text-stone-500 text-sm font-medium ml-14">Не опровержение Моисея, а вскрытие подлинного замысла Закона</p></div>
 
 <div class="bg-white border border-stone-200 rounded-xl p-6 md:p-8 shadow-sm mb-6 text-sm text-stone-700">
 <p class="text-stone-700 text-[16px] leading-relaxed mb-5 text-justify">Раздел, известный как «антитезы», является смысловым ядром пятой главы. Формула <em>«Вы слышали... а Я говорю вам»</em> часто понимается как критика Иисусом Ветхого Завета. Однако <span class="tooltip-trigger" data-tooltip="Robert Gundry предлагает термин 'кульминации', так как Иисус не противоречит Закону, а доводит его до полноты">Роберт Гандри</span> доказывает, что это «кульминации»: Иисус восстанавливает Божий стандарт, очищая его от наслоений фарисейского легализма.</p>
@@ -494,7 +549,7 @@
 </div>
 
 <!-- V. Соль и свет -->
-<div class="group mb-6 mt-12"><div class="flex items-center gap-4 mb-2"><div class="flex items-center justify-center w-10 h-10 rounded-xl bg-white shadow-sm border border-stone-100 text-blue-600"><svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2"/><path d="M12 20v2"/><path d="m4.93 4.93 1.41 1.41"/><path d="m17.66 17.66 1.41 1.41"/><path d="M2 12h2"/><path d="M20 12h2"/><path d="m6.34 17.66-1.41 1.41"/><path d="m19.07 4.93-1.41 1.41"/></svg></div><h2 id="v-мф-51316-соль-и-свет-идентичность-в-нынешнем-веке" class="text-xl font-bold text-stone-800 tracking-tight">V. Мф 5:13–16: соль и свет — идентичность в нынешнем веке</h2></div></div>
+<div class="group mb-6 mt-12"><div class="flex items-center gap-4 mb-2"><div class="flex items-center justify-center w-10 h-10 rounded-xl bg-white shadow-sm border border-stone-100 text-blue-600"><svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><circle cx="12" cy="12" r="4"/><path d="M12 2v2"/><path d="M12 20v2"/><path d="m4.93 4.93 1.41 1.41"/><path d="m17.66 17.66 1.41 1.41"/><path d="M2 12h2"/><path d="M20 12h2"/><path d="m6.34 17.66-1.41 1.41"/><path d="m19.07 4.93-1.41 1.41"/></svg></div><h2 id="v-мф-51316-соль-и-свет-идентичность-в-нынешнем-веке" class="text-xl font-bold text-stone-800 tracking-tight">V. Мф 5:13–16: соль и свет — идентичность в нынешнем веке</h2></div></div>
 
 <div class="bg-white border border-stone-200 rounded-xl p-5 shadow-sm text-sm text-stone-700">
 <p class="text-stone-700 text-[16px] leading-relaxed mb-5 text-justify">Этот раздел часто пропускают, но именно он делает невозможным чтение Нагорной проповеди как текста исключительно для будущего тысячелетнего Царства. Если Иисус говорит ученикам: «Вы — соль земли» и «Вы — свет мира», Он предполагает мир, который уже существует и в котором эти ученики уже живут. Соль и свет нужны там, где есть порча и тьма — то есть здесь и сейчас.</p>
@@ -507,7 +562,7 @@
 </div>
 
 <!-- VI. Матфей 6 -->
-<div class="group mb-6 mt-12"><div class="flex items-center gap-4 mb-2"><div class="flex items-center justify-center w-10 h-10 rounded-xl bg-white shadow-sm border border-stone-100 text-blue-600"><svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg></div><h2 id="vi-матфей-6-тайное-благочестие-и-доктрина-провидения" class="text-xl font-bold text-stone-800 tracking-tight">VI. Матфей 6: Тайное благочестие и доктрина провидения</h2></div><p class="text-stone-500 text-sm font-medium ml-14">Ключевой материал, отсутствующий в Лк 6</p></div>
+<div class="group mb-6 mt-12"><div class="flex items-center gap-4 mb-2"><div class="flex items-center justify-center w-10 h-10 rounded-xl bg-white shadow-sm border border-stone-100 text-blue-600"><svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg></div><h2 id="vi-матфей-6-тайное-благочестие-и-доктрина-провидения" class="text-xl font-bold text-stone-800 tracking-tight">VI. Матфей 6: Тайное благочестие и доктрина провидения</h2></div><p class="text-stone-500 text-sm font-medium ml-14">Ключевой материал, отсутствующий в Лк 6</p></div>
 
 <div class="bg-white border border-stone-200 rounded-xl p-6 md:p-8 shadow-sm mb-6 text-sm text-stone-700">
 <p class="text-stone-700 text-[16px] leading-relaxed mb-5 text-justify">Шестая глава Матфея полностью отсутствует в синоптической параллели Луки. Это делает её критически важной для понимания полноты учения Иисуса. Если пятая глава фокусировалась на чистоте <em>характера</em> и <em>закона</em>, то шестая переносит взор на <em>религиозную практику</em>.</p>
@@ -538,7 +593,7 @@
 </div>
 
 <!-- VII. Блаженства -->
-<div class="group mb-6 mt-12"><div class="flex items-center gap-4 mb-2"><div class="flex items-center justify-center w-10 h-10 rounded-xl bg-white shadow-sm border border-stone-100 text-blue-600"><svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M20 10c0-4.4-3.6-8-8-8s-8 3.6-8 8c0 2.1.8 4 2.2 5.4L4 22l7.6-2.2c.1 0 .2 0 .4 0 4.4 0 8-3.6 8-8Z"/><path d="m11.8 15.8.1.1"/></svg></div><h2 id="vii-блаженства-матфей-против-луки" class="text-xl font-bold text-stone-800 tracking-tight">VII. Блаженства: Матфей против Луки?</h2></div><p class="text-stone-500 text-sm font-medium ml-14">Различие акцента, а не двух разных богословий</p></div>
+<div class="group mb-6 mt-12"><div class="flex items-center gap-4 mb-2"><div class="flex items-center justify-center w-10 h-10 rounded-xl bg-white shadow-sm border border-stone-100 text-blue-600"><svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M20 10c0-4.4-3.6-8-8-8s-8 3.6-8 8c0 2.1.8 4 2.2 5.4L4 22l7.6-2.2c.1 0 .2 0 .4 0 4.4 0 8-3.6 8-8Z"/><path d="m11.8 15.8.1.1"/></svg></div><h2 id="vii-блаженства-матфей-против-луки" class="text-xl font-bold text-stone-800 tracking-tight">VII. Блаженства: Матфей против Луки?</h2></div><p class="text-stone-500 text-sm font-medium ml-14">Различие акцента, а не двух разных богословий</p></div>
 
 <div class="bg-white rounded-2xl p-6 md:p-8 shadow-sm border border-stone-200 mb-6 text-sm text-stone-700">
 <p class="text-stone-700 text-[16px] leading-relaxed mb-5 text-justify">Блаженства — это не условия входа в Царство, а признаки тех, кто <em>уже</em> в нем. Сравнение версий Матфея и Луки часто вызывает вопросы: почему у Матфея нищета «духа», а у Луки просто «нищие»? Означает ли это два разных учения?</p>
@@ -582,7 +637,7 @@
 </div>
 
 <!-- VIII. «Горе вам» -->
-<div class="group mb-6 mt-12"><div class="flex items-center gap-4 mb-2"><div class="flex items-center justify-center w-10 h-10 rounded-xl bg-white shadow-sm border border-stone-100 text-blue-600"><svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M16 16s-1.5-2-4-2-4 2-4 2"/><line x1="9" y1="9" x2="9.01" y2="9"/><line x1="15" y1="9" x2="15.01" y2="9"/></svg></div><h2 id="viii-горе-вам-у-луки-лк-62426" class="text-xl font-bold text-stone-800 tracking-tight">VIII. «Горе вам» у Луки (Лк 6:24–26)</h2></div><p class="text-stone-500 text-sm font-medium ml-14">Пророческий жанр — зеркало блаженств</p></div>
+<div class="group mb-6 mt-12"><div class="flex items-center gap-4 mb-2"><div class="flex items-center justify-center w-10 h-10 rounded-xl bg-white shadow-sm border border-stone-100 text-blue-600"><svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><circle cx="12" cy="12" r="10"/><path d="M16 16s-1.5-2-4-2-4 2-4 2"/><line x1="9" y1="9" x2="9.01" y2="9"/><line x1="15" y1="9" x2="15.01" y2="9"/></svg></div><h2 id="viii-горе-вам-у-луки-лк-62426" class="text-xl font-bold text-stone-800 tracking-tight">VIII. «Горе вам» у Луки (Лк 6:24–26)</h2></div><p class="text-stone-500 text-sm font-medium ml-14">Пророческий жанр — зеркало блаженств</p></div>
 
 <div class="bg-white border border-stone-200 rounded-xl p-5 shadow-sm mb-4 text-sm text-stone-700">
 <p class="text-stone-700 text-[16px] leading-relaxed mb-5 text-justify">У Луки блаженства дополняются четырьмя «горе вам» — не враждебной риторикой, а пророческим предупреждением. Эти слова работают как зеркальное отражение блаженств: если Царство принадлежит нищим, то какова участь тех, кто нашёл своё утешение в земном богатстве?</p>
@@ -607,7 +662,7 @@
 </div>
 
 <!-- IX. Любовь к врагам -->
-<div class="group mb-6 mt-12"><div class="flex items-center gap-4 mb-2"><div class="flex items-center justify-center w-10 h-10 rounded-xl bg-white shadow-sm border border-stone-100 text-blue-600"><svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.29 1.5 4.04 3 5.5l7 7Z"/></svg></div><h2 id="ix-любовь-к-врагам-этическое-сердце-проповеди" class="text-xl font-bold text-stone-800 tracking-tight">IX. Любовь к врагам — этическое сердце проповеди</h2></div><p class="text-stone-500 text-sm font-medium ml-14">Точка максимального пересечения Матфея и Луки</p></div>
+<div class="group mb-6 mt-12"><div class="flex items-center gap-4 mb-2"><div class="flex items-center justify-center w-10 h-10 rounded-xl bg-white shadow-sm border border-stone-100 text-blue-600"><svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.29 1.5 4.04 3 5.5l7 7Z"/></svg></div><h2 id="ix-любовь-к-врагам-этическое-сердце-проповеди" class="text-xl font-bold text-stone-800 tracking-tight">IX. Любовь к врагам — этическое сердце проповеди</h2></div><p class="text-stone-500 text-sm font-medium ml-14">Точка максимального пересечения Матфея и Луки</p></div>
 
 <div class="bg-white rounded-2xl p-6 md:p-8 shadow-sm border border-stone-200 mb-6 text-sm text-stone-700">
 <p class="text-stone-700 text-[16px] leading-relaxed mb-5 text-justify">Центральный блок проповеди, где Матфей и Лука практически дословно совпадают, касается любви к врагам. Это не просто «высокая мораль»; это <strong>христологическое требование</strong>. Иисус призывает учеников не просто к человеческой доброте, а к <span class="tooltip-trigger" data-tooltip="Подражание Богу в Его характере и действиях">imitatio Dei</span> — подражанию Богу.</p>
@@ -621,7 +676,7 @@
 <div class="bg-amber-50 border-amber-200 rounded-lg p-3 text-xs text-stone-700 mt-3"><strong class="text-amber-700">Imitatio Dei:</strong> в обоих текстах ученик должен подражать самому характером Бога. У Матфея акцент на совершенстве Отца, у Луки — на Его милосердии. Это не два разных требования, а две стороны одной царской этики.</div>
 
 <!-- X. Два строителя -->
-<div class="group mb-6 mt-12"><div class="flex items-center gap-4 mb-2"><div class="flex items-center justify-center w-10 h-10 rounded-xl bg-white shadow-sm border border-stone-100 text-blue-600"><svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg></div><h2 id="x-финал-два-строителя" class="text-xl font-bold text-stone-800 tracking-tight">X. Финал: два строителя</h2></div><p class="text-stone-500 text-sm font-medium ml-14">Слышание и исполнение — не одно и то же</p></div>
+<div class="group mb-6 mt-12"><div class="flex items-center gap-4 mb-2"><div class="flex items-center justify-center w-10 h-10 rounded-xl bg-white shadow-sm border border-stone-100 text-blue-600"><svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg></div><h2 id="x-финал-два-строителя" class="text-xl font-bold text-stone-800 tracking-tight">X. Финал: два строителя</h2></div><p class="text-stone-500 text-sm font-medium ml-14">Слышание и исполнение — не одно и то же</p></div>
 
 <div class="bg-white rounded-2xl p-6 md:p-8 shadow-sm border border-stone-200 mb-6 text-sm text-stone-700">
 <p class="text-stone-700 text-[16px] leading-relaxed mb-5 text-justify">Финал проповеди — это не просто заключительное слово, а <strong>эсхатологическое предупреждение</strong>. Иисус разделяет слушателей на две категории не по признаку того, что они слышали, а по признаку того, как они поступили.</p>
@@ -713,7 +768,7 @@
            onmouseout="this.style.borderColor='rgba(184,136,42,.2)';this.style.background='#faf8f5';this.style.transform='translateY(0)'">
           <div style="display:flex;align-items:center;justify-content:space-between;">
             <span style="font-family:monospace;font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:#b8882a;background:rgba(184,136,42,.1);padding:3px 8px;border-radius:4px;">Перевод · 35 мин</span>
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#b8882a" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#b8882a" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
           </div>
           <div>
             <p style="font-size:.93rem;font-weight:600;color:#1c1410;line-height:1.45;margin:0 0 4px;">Герменевтическая оценка христоцентричной герменевтики</p>
@@ -726,7 +781,7 @@
            onmouseout="this.style.borderColor='rgba(184,136,42,.2)';this.style.background='#faf8f5';this.style.transform='translateY(0)'">
           <div style="display:flex;align-items:center;justify-content:space-between;">
             <span style="font-family:monospace;font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:#b8882a;background:rgba(184,136,42,.1);padding:3px 8px;border-radius:4px;">Под редакцией · 32 мин</span>
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#b8882a" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#b8882a" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
           </div>
           <div>
             <p style="font-size:.93rem;font-weight:600;color:#1c1410;line-height:1.45;margin:0 0 4px;">Крайне ли испорчено моё сердце — если я уже верующий?</p>
@@ -952,5 +1007,6 @@
   upd();
 })();
 </script>
+<script src="../../js/nagornaya-navbar.js" defer></script>
 </body>
 </html>

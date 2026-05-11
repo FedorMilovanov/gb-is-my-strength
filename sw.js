@@ -23,6 +23,7 @@ var PRECACHE_ASSETS = [
   '/css/site.css',
   '/css/home.css',
   '/css/command-palette.css',
+  '/css/nagornaya-navbar.css',
   '/nagornaya/tw.min.css',
   '/js/site.js',
   '/js/search.js',
@@ -30,6 +31,7 @@ var PRECACHE_ASSETS = [
   '/js/bookmark-engine.js',
   '/js/enhancements.js',
   '/js/sw-register.js',
+  '/js/nagornaya-navbar.js',
   '/manifest.json',
   '/favicon.ico',
   '/favicon-48.png',
@@ -105,13 +107,23 @@ function isFont(url) {
 }
 
 /* Cache First — good for static assets and fonts */
+var IMG_CACHE_LIMIT = 60; /* BUG-06: ограничение кэша изображений */
+
 function cacheFirst(req, cacheName) {
+  var isImages = cacheName === CACHE_IMAGES;
   return caches.open(cacheName).then(function(cache) {
     return cache.match(req).then(function(cached) {
       if (cached) return cached;
       return fetch(req).then(function(res) {
         if (res && res.status === 200 && res.type !== 'opaque') {
           cache.put(req, res.clone());
+          if (isImages) {
+            cache.keys().then(function(keys) {
+              if (keys.length > IMG_CACHE_LIMIT) {
+                cache.delete(keys[0]);
+              }
+            });
+          }
         }
         return res;
       });

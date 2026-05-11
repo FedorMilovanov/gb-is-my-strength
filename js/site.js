@@ -286,9 +286,6 @@
         document.body.classList.add('no-scroll');
         document.documentElement.classList.remove('cp-scroll-lock');
       }
-      if (window.SITE_CONFIG && window.SITE_CONFIG.site && window.SITE_CONFIG.site.debug) {
-        console.log('[SiteUtils.lockScroll]', source || 'unknown', 'count:', this._scrollLockCount);
-      }
     },
 
     unlockScroll: function (source) {
@@ -298,9 +295,6 @@
         document.body.style.removeProperty('overscroll-behavior');
         document.body.classList.remove('no-scroll');
         document.documentElement.classList.remove('cp-scroll-lock');
-      }
-      if (window.SITE_CONFIG && window.SITE_CONFIG.site && window.SITE_CONFIG.site.debug) {
-        console.log('[SiteUtils.unlockScroll]', source || 'unknown', 'count:', this._scrollLockCount);
       }
     },
 
