@@ -960,7 +960,7 @@
           }
  
           /* Article group */
-          var shortAuthor = author.replace(/^Редактор:\s*/i, '');
+          var shortAuthor = author;
           var meta = shortAuthor
             ? (shortAuthor + (readTime ? ' · ' + readTime + ' мин' : ''))
             : (readTime ? readTime + ' мин' : null);
