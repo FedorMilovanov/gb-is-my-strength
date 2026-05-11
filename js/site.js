@@ -1066,8 +1066,8 @@
     var _lastScrollY  = window.scrollY;
     var _accumulated  = 0;    /* накопленный сдвиг: + вниз, − вверх      */
     var SHOW_AFTER    = 300;  /* px от верха — bar скрыт в шапке          */
-    var HIDE_DOWN     =  10;  /* накопленный downscroll → скрыть (быстро) */
-    var SHOW_UP       = -80;  /* накопленный upscroll → показать          */
+    var HIDE_DOWN     =  60;  /* накопленный downscroll → скрыть           */
+    var SHOW_UP       = -60;  /* накопленный upscroll → показать           */
 
     function setBarVisible(show) {
       if (show === barVisible) return;
@@ -1202,27 +1202,29 @@
     var touchStartY = 0;
     var touchStartX = 0;
     if (panel) {
-      panel.addEventListener('touchstart', function (e) {
+      var handle = panel.querySelector('.btoc-handle');
+      var swipeTarget = handle || panel;
+      swipeTarget.addEventListener('touchstart', function (e) {
         touchStartY = e.touches[0].clientY;
         touchStartX = e.touches[0].clientX;
       }, { passive: true });
-      panel.addEventListener('touchmove', function (e) {
+      swipeTarget.addEventListener('touchmove', function (e) {
         var dy = e.touches[0].clientY - touchStartY;
         var dx = Math.abs(e.touches[0].clientX - touchStartX);
-        /* Закрываем только если это явный вертикальный свайп вниз, а не горизонтальный скролл */
-        if (dy > 80 && dx < dy * 0.5) closeToc();
+        /* Закрываем только явный вертикальный свайп вниз по handle-пилюле */
+        if (dy > 60 && dx < dy * 0.4) closeToc();
       }, { passive: true });
     }
 
     /* Fix #2: свайп снизу вверх открывает TOC (замена недоступной клавиши / на мобильном).
-       Срабатывает только если: старт в нижних 25% экрана, движение вверх ≥ 70px,
+       Срабатывает только если: старт в нижних 12% экрана, движение вверх ≥ 110px,
        панель закрыта и bottom bar виден. */
     (function () {
       var swipeStartY = 0;
       var swipeStartTime = 0;
-      var SWIPE_THRESHOLD = 70;   /* минимум пикселей вверх */
-      var SWIPE_ZONE = 0.25;      /* нижние 25% экрана */
-      var MAX_TIME = 400;         /* мс — быстрый свайп */
+      var SWIPE_THRESHOLD = 110;  /* минимум пикселей вверх — исключает случайные движения */
+      var SWIPE_ZONE = 0.12;      /* нижние 12% экрана — только у самого края */
+      var MAX_TIME = 300;         /* мс — только чёткий быстрый свайп */
 
       document.addEventListener('touchstart', function (e) {
         var touch = e.touches[0];
@@ -3232,15 +3234,10 @@
       var row = document.createElement('div');
       row.className = 'btoc-fontsize btoc-fontsize--' + variant;
 
-      var icon = document.createElement('span');
-      icon.className = 'btoc-fontsize-icon';
-      icon.setAttribute('aria-hidden', 'true');
-      icon.textContent = 'Аа';
-
       var btnDown = document.createElement('button');
-      btnDown.className = 'btoc-fontsize-btn';
+      btnDown.className = 'btoc-fontsize-btn btoc-fontsize-btn--down';
       btnDown.setAttribute('aria-label', 'Уменьшить шрифт');
-      btnDown.textContent = 'a';
+      btnDown.textContent = 'A';
 
       /* dot-track: 5 точек = 5 уровней */
       var track = document.createElement('div');
@@ -3254,11 +3251,10 @@
       }
 
       var btnUp = document.createElement('button');
-      btnUp.className = 'btoc-fontsize-btn';
+      btnUp.className = 'btoc-fontsize-btn btoc-fontsize-btn--up';
       btnUp.setAttribute('aria-label', 'Увеличить шрифт');
       btnUp.textContent = 'A';
 
-      row.appendChild(icon);
       row.appendChild(btnDown);
       row.appendChild(track);
       row.appendChild(btnUp);
