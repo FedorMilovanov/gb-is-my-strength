@@ -1179,10 +1179,10 @@
     if (hNavLinks && !alreadyInjected()) {
       var li = document.createElement('li');
       var b0 = document.createElement('button');
-      b0.className = 'gb-search-btn'; b0.id = 'gbSearchBtn';
+      b0.className = 'gb-nav-search-icon'; b0.id = 'gbSearchBtn';
       b0.setAttribute('aria-label', 'Поиск (⌘K)');
       b0.setAttribute('title', 'Поиск ⌘K');
-      b0.innerHTML = SVG.search15 + '<span>Поиск</span><span class="kb">⌘K</span>';
+      b0.innerHTML = SVG.search15;
       li.appendChild(b0);
       hNavLinks.appendChild(li);  /* в конце nav — рядом с переключателем темы */
       wireBtn(); return;

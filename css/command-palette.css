@@ -1330,6 +1330,32 @@ html.dark mark.cp-hl {
    home (.h-nav-links), articles (.article-topnav), nagornaya (#menuBtn).
    Button contains: SVG icon + optional <span> label + optional .kb shortcut.
    ─────────────────────────────────────────────────────────────────────── */
+/* ── Nav search icon-only button (главная страница) ── */
+.gb-nav-search-icon {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 6px;
+  border-radius: 50%;
+  color: var(--h-muted, #78716c);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+  transition: color 0.2s ease;
+}
+.gb-nav-search-icon:hover {
+  color: var(--h-ink, #1a1714);
+}
+.gb-nav-search-icon svg {
+  width: 17px;
+  height: 17px;
+  display: block;
+  flex-shrink: 0;
+  stroke-width: 2;
+}
+
 .gb-search-btn {
   display: inline-flex;
   align-items: center;

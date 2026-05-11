@@ -224,7 +224,7 @@ html.dark {
   transition: background 0.2s ease, color 0.2s ease;
 }
 .mobile-controls .theme-toggle:hover {
-  background: var(--h-surface);
+  /* без фонового кружка — только легкий сдвиг цвета */
   color: var(--h-ink);
 }
 /* SVG-иконки: size-override; position/opacity управляет site.css */
@@ -398,9 +398,9 @@ html.dark .h-scripture-bg::before {
    HERO SECTION
    ============================================================ */
 .h-hero {
-  padding-top: 112px;
+  padding-top: 72px;   /* было 112px — уменьшено, иврит ближе к шапке */
   padding-bottom: 56px;
-  text-align: left;   /* как в референсе — левое выравнивание */
+  text-align: left;
 }
 
 /* Tagline */
