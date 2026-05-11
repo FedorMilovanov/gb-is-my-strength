@@ -1336,30 +1336,33 @@ html.dark mark.cp-hl {
   gap: 7px;
   padding: 6px 12px;
   border-radius: 9px;
-  border: 1px solid var(--cp-border);
-  background: var(--cp-bg-surface);
-  color: var(--cp-ink-muted);
+  /* Light mode: акцентный тинт вместо белого */
+  border: 1px solid rgba(124, 45, 45, 0.22);
+  background: rgba(124, 45, 45, 0.06);
+  color: var(--cp-accent, #7a2e2e);
   font-family: var(--cp-font-ui);
   font-size: 12.5px;
   font-weight: 500;
   white-space: nowrap;
   cursor: pointer;
-  line-height: 1;                /* убирает лишний вертикальный сдвиг */
+  line-height: 1;
   transition: background 0.18s var(--cp-ease),
               border-color 0.18s var(--cp-ease),
               color 0.18s var(--cp-ease),
               box-shadow 0.18s var(--cp-ease);
   touch-action: manipulation;
   -webkit-tap-highlight-color: transparent;
-  /* Prevents the button from stretching in flex nav containers */
   flex-shrink: 0;
 }
 
-/* Иконка — строго block + flex-shrink:0, чтобы не обрезалась контейнером */
+/* Иконка — строго block + flex-shrink:0; top:0.5px компенсирует
+   визуальный сдвиг иконки лупы вверх из-за асимметрии SVG-пути */
 .gb-search-btn > svg {
   display: block;
   flex-shrink: 0;
-  overflow: visible;   /* SVG stroke не клипается по bounds элемента */
+  overflow: visible;
+  position: relative;
+  top: 0.5px;
 }
 
 .gb-search-btn:hover {
@@ -1394,6 +1397,18 @@ html.dark mark.cp-hl {
   line-height: 1.4;
 }
 
+html.dark .gb-search-btn {
+  /* Dark mode: нейтральный стиль — акцентный тинт здесь лишний */
+  border-color: var(--cp-border);
+  background: var(--cp-bg-surface);
+  color: var(--cp-ink-muted);
+}
+html.dark .gb-search-btn:hover {
+  background: var(--cp-accent-soft);
+  border-color: color-mix(in srgb, var(--cp-accent) 25%, transparent);
+  color: var(--cp-accent);
+  box-shadow: 0 2px 10px -2px rgba(0,0,0,0.2);
+}
 html.dark .gb-search-btn .kb {
   box-shadow: 0 1px 0 rgba(0,0,0,0.3);
 }

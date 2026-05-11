@@ -15,8 +15,8 @@
   ───────────────────────────────────────────────────────── */
   var SVG = {
     search17:  '<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>',
-    search13:  '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>',
-    search15:  '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>',
+    search13:  '<svg width="13" height="13" viewBox="-1 -1 26 26" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>',
+    search15:  '<svg width="15" height="15" viewBox="-1 -1 26 26" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>',
     search28:  '<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>',
     x:         '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>',
     arrow:     '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>',
@@ -413,7 +413,7 @@
                   '<span>' + escHtml(g.name) + '</span>' +
                   '<span class="cp-group-count">' + g.items.length + '</span>' +
                 '</div>';
-      if (g.name === 'Недавние') {
+      if (g.name === 'Недавние запросы') {
         html += '<button class="cp-history-clear" data-action="clear-history">Очистить историю</button>';
       }
       g.items.forEach(function (item) {
@@ -773,7 +773,7 @@
       sub: x.description || '',
       subHtml: escHtml(x.description || ''),
       icon: SVG.book14,
-      meta: (x.editor ? 'Ред.: ' + x.editor : '') + (x.readTime ? ' · ~' + x.readTime + ' мин' : ''),
+      meta: (x.editor ? 'Редактор: ' + x.editor : '') + (x.readTime ? ' · ~' + x.readTime + ' мин' : ''),
       tags: x.type === 'series' ? ['Серия'] : (x.tags ? x.tags.slice(0, 2) : []),
       article: { url: x.url, title: x.title, author: x.author || x.editor || '', category: x.section || '', image: x.image || null, readTime: x.readTime || null, scripture: x.scripture || null, excerpt: x.description || '' }
     };
