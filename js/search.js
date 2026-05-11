@@ -1184,7 +1184,7 @@
       b0.setAttribute('title', 'Поиск ⌘K');
       b0.innerHTML = SVG.search15 + '<span>Поиск</span><span class="kb">⌘K</span>';
       li.appendChild(b0);
-      hNavLinks.insertBefore(li, hNavLinks.firstChild);
+      hNavLinks.appendChild(li);  /* в конце nav — рядом с переключателем темы */
       wireBtn(); return;
     }
  

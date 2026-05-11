@@ -203,29 +203,41 @@ html.dark {
 .h-nav-links a:hover { color: var(--h-ink); }
 .h-nav-links a:hover::after { width: 100%; }
 
-/* Theme toggle */
-.h-theme-btn {
+/* Theme toggle — одинаковый с другими страницами (site.css .theme-toggle).
+   Здесь только снимаем position:fixed для контекста nav. */
+.mobile-controls .theme-toggle {
+  position: relative;
+  top: auto;
+  right: auto;
+  width: 30px;
+  height: 30px;
+  padding: 0;
+  border-radius: 50%;
+  color: var(--h-muted);
   background: none;
   border: none;
   cursor: pointer;
-  padding: 7px;
-  border-radius: 50%;
-  color: var(--h-muted);
   display: flex;
   align-items: center;
+  justify-content: center;
   touch-action: manipulation;
-  transition: background 0.2s ease, color 0.2s ease, transform 0.2s ease;
+  transition: background 0.2s ease, color 0.2s ease;
 }
-.h-theme-btn:hover {
+.mobile-controls .theme-toggle:hover {
   background: var(--h-surface);
   color: var(--h-ink);
-  transform: rotate(12deg);
 }
-.h-theme-btn svg { width: 16px; height: 16px; display: block; }
-.icon-moon { display: block; }
-.icon-sun  { display: none; }
-html.dark .icon-moon { display: none; }
-html.dark .icon-sun  { display: block; }
+/* SVG-иконки: size-override; position/opacity управляет site.css */
+.mobile-controls .theme-toggle svg {
+  width: 16px;
+  height: 16px;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+.mobile-controls .theme-toggle:hover svg {
+  transform: translate(-50%, -50%) scale(1.08);
+}
 
 .mobile-controls {
   display: flex;
@@ -854,8 +866,13 @@ html.dark .h-tetra-label {
   cursor: default;
   opacity: 0;
   animation: h-fade-up 0.8s cubic-bezier(0.22, 1, 0.36, 1) 0.35s forwards;
-  text-wrap: balance;        /* нет orphan-строк при переносе */
+  /* text-wrap:balance убран — он пересчитывал переносы при hover letter-spacing,
+     из-за чего «Сила Моя» переносилась на новую строку */
   overflow-wrap: break-word; /* защита от очень длинных слов */
+}
+/* На экранах ≥640px заголовок всегда в одну строку; на мобильных перенос допустим */
+@media (min-width: 640px) {
+  .h-hero-title { white-space: nowrap; }
 }
 .h-title-static {
   display: inline-block;
@@ -903,6 +920,129 @@ html.dark .h-hero-title:hover .h-title-accent {
   margin: 0;
   opacity: 0;
   animation: h-fade-up 0.8s cubic-bezier(0.22, 1, 0.36, 1) 0.48s forwards;
+}
+
+
+/* ── Hero Search Bar ────────────────────────────────────────────────── */
+.h-hero-search-wrap {
+  margin: 28px 0 0;
+  opacity: 0;
+  animation: h-fade-up 0.7s cubic-bezier(0.22, 1, 0.36, 1) 0.52s forwards;
+}
+
+.h-hero-search {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  width: 100%;
+  padding: 13px 18px;
+  border-radius: 14px;
+  border: 1px solid var(--h-border);
+  background: var(--h-bg, #f8f5f0);
+  cursor: text;
+  text-align: left;
+  /* Премиальные тени: тонкий контур + мягкое свечение */
+  box-shadow:
+    0 0 0 0 transparent,
+    0 1px 3px rgba(30, 20, 10, 0.06),
+    0 4px 14px rgba(30, 20, 10, 0.05);
+  transition:
+    border-color 0.22s ease,
+    box-shadow   0.22s ease,
+    background   0.22s ease;
+  outline: none;
+}
+
+.h-hero-search:hover {
+  border-color: rgba(124, 45, 45, 0.35);
+  background: var(--h-bg, #f8f5f0);
+  box-shadow:
+    0 0 0 3px rgba(124, 45, 45, 0.06),
+    0 2px 8px  rgba(30, 20, 10, 0.07),
+    0 8px 28px rgba(30, 20, 10, 0.07);
+}
+
+.h-hero-search:focus-visible {
+  border-color: var(--h-accent);
+  box-shadow:
+    0 0 0 3px rgba(124, 45, 45, 0.12),
+    0 2px 8px  rgba(30, 20, 10, 0.07),
+    0 8px 28px rgba(30, 20, 10, 0.07);
+}
+
+.h-hero-search__icon {
+  flex-shrink: 0;
+  color: var(--h-muted);
+  transition: color 0.2s ease;
+}
+.h-hero-search:hover .h-hero-search__icon {
+  color: var(--h-accent);
+}
+
+.h-hero-search__placeholder {
+  flex: 1;
+  font-family: var(--f-ui);
+  font-size: 14px;
+  font-weight: 400;
+  color: var(--h-muted);
+  letter-spacing: 0.01em;
+  pointer-events: none;
+  user-select: none;
+}
+
+.h-hero-search__kbd {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  flex-shrink: 0;
+  opacity: 0.55;
+  transition: opacity 0.2s ease;
+}
+.h-hero-search:hover .h-hero-search__kbd { opacity: 0.9; }
+
+.h-hero-search__kbd kbd {
+  font-family: var(--f-ui);
+  font-size: 11px;
+  font-weight: 500;
+  line-height: 1;
+  padding: 2px 5px;
+  border-radius: 5px;
+  border: 1px solid var(--h-border);
+  background: var(--h-surface);
+  color: var(--h-muted);
+  box-shadow: 0 1px 0 var(--h-border);
+  letter-spacing: 0;
+}
+
+/* Dark mode */
+html.dark .h-hero-search {
+  background: var(--h-surface, #1e1a16);
+  border-color: var(--h-border);
+  box-shadow:
+    0 0 0 0 transparent,
+    0 1px 3px rgba(0, 0, 0, 0.18),
+    0 4px 18px rgba(0, 0, 0, 0.16);
+}
+html.dark .h-hero-search:hover {
+  border-color: rgba(217, 122, 108, 0.45);
+  box-shadow:
+    0 0 0 3px rgba(217, 122, 108, 0.08),
+    0 2px 8px  rgba(0, 0, 0, 0.22),
+    0 8px 32px rgba(0, 0, 0, 0.20);
+}
+html.dark .h-hero-search:focus-visible {
+  border-color: var(--h-accent);
+  box-shadow:
+    0 0 0 3px rgba(217, 122, 108, 0.15),
+    0 2px 8px  rgba(0, 0, 0, 0.22),
+    0 8px 32px rgba(0, 0, 0, 0.20);
+}
+
+/* Mobile: убрать kbd-шорткат, чуть меньше padding */
+@media (max-width: 480px) {
+  .h-hero-search { padding: 12px 14px; }
+  .h-hero-search__kbd { display: none; }
+  .h-hero-search__placeholder { font-size: 13.5px; }
 }
 
 .h-rule {
@@ -1791,7 +1931,130 @@ html.dark .h-blockquote { color: var(--h-ink); }
   }
   /* Элементы с animation-fill-mode: forwards — без анимации появляются видимыми */
   .h-hero-tagline, .h-sacred-block, .h-hero-title,
-  .h-hero-desc, .h-rule { animation: none !important; opacity: 1 !important; }
+  .h-hero-desc, 
+/* ── Hero Search Bar ────────────────────────────────────────────────── */
+.h-hero-search-wrap {
+  margin: 28px 0 0;
+  opacity: 0;
+  animation: h-fade-up 0.7s cubic-bezier(0.22, 1, 0.36, 1) 0.52s forwards;
+}
+
+.h-hero-search {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  width: 100%;
+  padding: 13px 18px;
+  border-radius: 14px;
+  border: 1px solid var(--h-border);
+  background: var(--h-bg, #f8f5f0);
+  cursor: text;
+  text-align: left;
+  /* Премиальные тени: тонкий контур + мягкое свечение */
+  box-shadow:
+    0 0 0 0 transparent,
+    0 1px 3px rgba(30, 20, 10, 0.06),
+    0 4px 14px rgba(30, 20, 10, 0.05);
+  transition:
+    border-color 0.22s ease,
+    box-shadow   0.22s ease,
+    background   0.22s ease;
+  outline: none;
+}
+
+.h-hero-search:hover {
+  border-color: rgba(124, 45, 45, 0.35);
+  background: var(--h-bg, #f8f5f0);
+  box-shadow:
+    0 0 0 3px rgba(124, 45, 45, 0.06),
+    0 2px 8px  rgba(30, 20, 10, 0.07),
+    0 8px 28px rgba(30, 20, 10, 0.07);
+}
+
+.h-hero-search:focus-visible {
+  border-color: var(--h-accent);
+  box-shadow:
+    0 0 0 3px rgba(124, 45, 45, 0.12),
+    0 2px 8px  rgba(30, 20, 10, 0.07),
+    0 8px 28px rgba(30, 20, 10, 0.07);
+}
+
+.h-hero-search__icon {
+  flex-shrink: 0;
+  color: var(--h-muted);
+  transition: color 0.2s ease;
+}
+.h-hero-search:hover .h-hero-search__icon {
+  color: var(--h-accent);
+}
+
+.h-hero-search__placeholder {
+  flex: 1;
+  font-family: var(--f-ui);
+  font-size: 14px;
+  font-weight: 400;
+  color: var(--h-muted);
+  letter-spacing: 0.01em;
+  pointer-events: none;
+  user-select: none;
+}
+
+.h-hero-search__kbd {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  flex-shrink: 0;
+  opacity: 0.55;
+  transition: opacity 0.2s ease;
+}
+.h-hero-search:hover .h-hero-search__kbd { opacity: 0.9; }
+
+.h-hero-search__kbd kbd {
+  font-family: var(--f-ui);
+  font-size: 11px;
+  font-weight: 500;
+  line-height: 1;
+  padding: 2px 5px;
+  border-radius: 5px;
+  border: 1px solid var(--h-border);
+  background: var(--h-surface);
+  color: var(--h-muted);
+  box-shadow: 0 1px 0 var(--h-border);
+  letter-spacing: 0;
+}
+
+/* Dark mode */
+html.dark .h-hero-search {
+  background: var(--h-surface, #1e1a16);
+  border-color: var(--h-border);
+  box-shadow:
+    0 0 0 0 transparent,
+    0 1px 3px rgba(0, 0, 0, 0.18),
+    0 4px 18px rgba(0, 0, 0, 0.16);
+}
+html.dark .h-hero-search:hover {
+  border-color: rgba(217, 122, 108, 0.45);
+  box-shadow:
+    0 0 0 3px rgba(217, 122, 108, 0.08),
+    0 2px 8px  rgba(0, 0, 0, 0.22),
+    0 8px 32px rgba(0, 0, 0, 0.20);
+}
+html.dark .h-hero-search:focus-visible {
+  border-color: var(--h-accent);
+  box-shadow:
+    0 0 0 3px rgba(217, 122, 108, 0.15),
+    0 2px 8px  rgba(0, 0, 0, 0.22),
+    0 8px 32px rgba(0, 0, 0, 0.20);
+}
+
+/* Mobile: убрать kbd-шорткат, чуть меньше padding */
+@media (max-width: 480px) {
+  .h-hero-search { padding: 12px 14px; }
+  .h-hero-search__kbd { display: none; }
+  .h-hero-search__placeholder { font-size: 13.5px; }
+}
+
+.h-rule { animation: none !important; opacity: 1 !important; }
   .h-phrase--ambient { animation: none !important; }
   /* Пульсирующий индикатор «скоро» */
   .h-planned-dot { animation: none !important; }
