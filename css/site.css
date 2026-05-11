@@ -4485,6 +4485,9 @@ footer.footer-home {
   .faq-accordion__body      { transition: none !important; }
   .faq-accordion__body-inner{ transition: none !important; }
   .faq-accordion__icon      { transition: none !important; }
+  /* PERF-01: will-change сбрасываем при reduced-motion */
+  .card.fx-lift, .article-figure, .h-scroll-top,
+  .quote-box, .warn-box, .info-box { will-change: auto !important; }
 }
 
 

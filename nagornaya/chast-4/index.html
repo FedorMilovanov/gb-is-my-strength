@@ -122,8 +122,8 @@
   "inLanguage": "ru",
   "author": {
     "@type": "Person",
-    "name": "Фёдор Милованов",
-    "url": "https://gospod-bog.ru/about/"
+    "name": "Abner Chou",
+    "url": "https://www.tms.edu/masters-seminary-journal/"
   },
   "publisher": {
     "@type": "Organization",
@@ -142,7 +142,19 @@
   },
   "articleSection": "Богодухновенность и достоверность Евангелий",
   "keywords": "богодухновенность Библии, непогрешимость Писания, можно ли доверять Евангелиям, Уорфилд, Чикагское заявление, МакАртур, нагорная проповедь",
-  "wordCount": 8094
+  "wordCount": 8094,
+  "editor": {
+    "@type": "Person",
+    "name": "Фёдор Милованов",
+    "jobTitle": "Редактор перевода",
+    "url": "https://gospod-bog.ru/about/"
+  },
+  "translator": {
+    "@type": "Person",
+    "name": "Фёдор Милованов",
+    "jobTitle": "Редактор перевода",
+    "url": "https://gospod-bog.ru/about/"
+  }
 }
 </script>
 <script type="application/ld+json">
@@ -178,8 +190,50 @@
 }
 </script>
   <link rel="stylesheet" href="../../css/command-palette.css">
+  <link rel="stylesheet" href="../../css/nagornaya-navbar.css">
 </head>
-<body class="bg-stone-100 text-stone-900 antialiased">
+<body class="nagornaya-has-site-nav bg-stone-100 text-stone-900 antialiased">
+<!-- Фирменная навигация сайта: h-navbar из основного дизайна -->
+<nav class="h-navbar" id="hNavbar" role="navigation" aria-label="Основная навигация">
+  <div class="h-navbar__inner">
+    <a href="/" class="h-nav-logo" aria-label="Господь Бог — Сила Моя — на главную">
+      <span class="h-nav-logo-main">Господь Бог</span>
+      <span class="h-nav-logo-dash" aria-hidden="true">&nbsp;—&nbsp;</span>
+      <span class="h-nav-logo-accent">Сила Моя</span>
+    </a>
+
+    <ul class="h-nav-links" role="list">
+      <li><a href="/#publikacii">Публикации</a></li>
+      <li><a href="/#razbor">Разбор заблуждений</a></li>
+      <li><a href="/nagornaya/">Нагорная проповедь</a></li>
+      <li><a href="/about/">О проекте</a></li>
+    </ul>
+
+    <div class="mobile-controls">
+      <button class="theme-toggle" id="themeToggle" aria-label="Переключить тему" aria-pressed="false">
+        <svg class="icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12.8A9 9 0 1111.2 3 7 7 0 0021 12.8z"/></svg>
+        <svg class="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
+      </button>
+      <button class="h-mobile-menu-btn" id="hMobileMenuBtn" aria-label="Открыть меню" aria-expanded="false">
+        <svg class="h-burger-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
+          <line class="burger-top" x1="3" y1="6" x2="21" y2="6"/>
+          <line class="burger-mid" x1="3" y1="12" x2="21" y2="12"/>
+          <line class="burger-bottom" x1="3" y1="18" x2="21" y2="18"/>
+        </svg>
+      </button>
+    </div>
+  </div>
+</nav>
+
+<div class="h-mobile-nav" id="hMobileNav" aria-hidden="true">
+  <a href="/#publikacii" data-close-nav>Публикации</a>
+  <a href="/#razbor" data-close-nav>Разбор заблуждений</a>
+  <a href="/nagornaya/" data-close-nav>Нагорная проповедь</a>
+  <a href="/about/" data-close-nav>О проекте</a>
+</div>
+<div id="hMobileBackdrop" class="h-mobile-backdrop" aria-hidden="true"></div>
+
+
 <a href="#main-content" class="skip-link">Перейти к содержимому</a>
 
 
@@ -187,7 +241,7 @@
   <aside class="hidden lg:flex flex-col w-64 min-h-screen bg-stone-900 text-stone-100 fixed left-0 top-0 z-40 overflow-y-auto">
     <div class="px-5 py-5 border-b border-stone-700">
       <div class="flex items-center gap-3 mb-1.5">
-        <span class="flex items-center justify-center w-10 h-10 rounded-xl bg-amber-600/10 border border-amber-500/20 text-amber-400"><svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M11 2h2v20h-2z"/><path d="M5 9h14v2H5z"/></svg></span>
+        <span class="flex items-center justify-center w-10 h-10 rounded-xl bg-amber-600/10 border border-amber-500/20 text-amber-400"><svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M11 2h2v20h-2z"/><path d="M5 9h14v2H5z"/></svg></span>
         <div>
           <div class="font-bold text-xs text-amber-400 leading-tight tracking-wide uppercase">Нагорная проповедь</div>
           <div class="text-xs text-stone-400 leading-tight">Исследование · 5 частей</div>
@@ -197,49 +251,49 @@
     </div>
     <nav class="flex-1 px-2.5 py-3 space-y-0.5">
         <a href="/nagornaya/" class="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-left transition-all text-stone-300 hover:bg-stone-800 hover:text-white">
-          <span class="text-stone-400 shrink-0 flex items-center justify-center w-8 h-8 rounded-lg bg-stone-800/40"><svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><rect width="20" height="5" x="2" y="3" rx="1"/><path d="M4 8v11a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8"/><path d="M10 12h4"/></svg></span>
+          <span class="text-stone-400 shrink-0 flex items-center justify-center w-8 h-8 rounded-lg bg-stone-800/40"><svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><rect width="20" height="5" x="2" y="3" rx="1"/><path d="M4 8v11a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8"/><path d="M10 12h4"/></svg></span>
           <div>
             <div class="font-semibold text-sm leading-tight">Архив</div>
             <div class="text-xs leading-tight text-stone-500">Обзор серии</div>
           </div>
         </a>
         <a href="/nagornaya/chast-1/" class="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-left transition-all text-stone-300 hover:bg-stone-800 hover:text-white">
-          <span class="text-stone-400 shrink-0 flex items-center justify-center w-8 h-8 rounded-lg bg-stone-800/40"><svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg></span>
+          <span class="text-stone-400 shrink-0 flex items-center justify-center w-8 h-8 rounded-lg bg-stone-800/40"><svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg></span>
           <div>
             <div class="font-semibold text-sm leading-tight">Часть I</div>
             <div class="text-xs leading-tight text-stone-500">Содержание</div>
           </div>
         </a>
         <a href="/nagornaya/chast-2/" class="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-left transition-all text-stone-300 hover:bg-stone-800 hover:text-white">
-          <span class="text-stone-400 shrink-0 flex items-center justify-center w-8 h-8 rounded-lg bg-stone-800/40"><svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/><polyline points="14 2 14 8 20 8"/></svg></span>
+          <span class="text-stone-400 shrink-0 flex items-center justify-center w-8 h-8 rounded-lg bg-stone-800/40"><svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/><polyline points="14 2 14 8 20 8"/></svg></span>
           <div>
             <div class="font-semibold text-sm leading-tight">Часть II</div>
             <div class="text-xs leading-tight text-stone-500">Методология</div>
           </div>
         </a>
         <a href="/nagornaya/chast-3/" class="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-left transition-all text-stone-300 hover:bg-stone-800 hover:text-white">
-          <span class="text-stone-400 shrink-0 flex items-center justify-center w-8 h-8 rounded-lg bg-stone-800/40"><svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg></span>
+          <span class="text-stone-400 shrink-0 flex items-center justify-center w-8 h-8 rounded-lg bg-stone-800/40"><svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg></span>
           <div>
             <div class="font-semibold text-sm leading-tight">Часть III</div>
             <div class="text-xs leading-tight text-stone-500">Адресат</div>
           </div>
         </a>
         <a href="/nagornaya/chast-4/" class="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-left transition-all bg-amber-600 text-white shadow-md">
-          <span class="text-stone-400 shrink-0 flex items-center justify-center w-8 h-8 rounded-lg bg-stone-800/40"><svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M11 2h2v20h-2z"/><path d="M5 9h14v2H5z"/></svg></span>
+          <span class="text-stone-400 shrink-0 flex items-center justify-center w-8 h-8 rounded-lg bg-stone-800/40"><svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M11 2h2v20h-2z"/><path d="M5 9h14v2H5z"/></svg></span>
           <div>
             <div class="font-semibold text-sm leading-tight">Часть IV</div>
             <div class="text-xs leading-tight text-amber-200">Богодухновенность</div>
           </div>
         </a>
         <a href="/nagornaya/chast-5/" class="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-left transition-all text-stone-300 hover:bg-stone-800 hover:text-white">
-          <span class="text-stone-400 shrink-0 flex items-center justify-center w-8 h-8 rounded-lg bg-stone-800/40"><svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="m12 3 1.912 5.813a2 2 0 0 0 1.275 1.275L21 12l-5.812 1.912a2 2 0 0 0-1.275 1.275L12 21l-1.912-5.812a2 2 0 0 0-1.275-1.275L3 12l5.812-1.912a2 2 0 0 0 1.275-1.275z"/></svg></span>
+          <span class="text-stone-400 shrink-0 flex items-center justify-center w-8 h-8 rounded-lg bg-stone-800/40"><svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="m12 3 1.912 5.813a2 2 0 0 0 1.275 1.275L21 12l-5.812 1.912a2 2 0 0 0-1.275 1.275L12 21l-1.912-5.812a2 2 0 0 0-1.275-1.275L3 12l5.812-1.912a2 2 0 0 0 1.275-1.275z"/></svg></span>
           <div>
             <div class="font-semibold text-sm leading-tight">Часть V</div>
             <div class="text-xs leading-tight text-stone-500">Закон и Евангелие</div>
           </div>
         </a>
         <a href="/nagornaya/istochniki/" class="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-left transition-all text-stone-300 hover:bg-stone-800 hover:text-white">
-          <span class="text-stone-400 shrink-0 flex items-center justify-center w-8 h-8 rounded-lg bg-stone-800/40"><svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><rect width="20" height="5" x="2" y="3" rx="1"/><path d="M4 8v11a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8"/><path d="M10 12h4"/></svg></span>
+          <span class="text-stone-400 shrink-0 flex items-center justify-center w-8 h-8 rounded-lg bg-stone-800/40"><svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><rect width="20" height="5" x="2" y="3" rx="1"/><path d="M4 8v11a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8"/><path d="M10 12h4"/></svg></span>
           <div>
             <div class="font-semibold text-sm leading-tight">Источники</div>
             <div class="text-xs leading-tight text-stone-500">120+ источников</div>
@@ -255,7 +309,7 @@
   <!-- Mobile header -->
   <header class="lg:hidden fixed top-0 left-0 right-0 z-50 bg-stone-900 text-white px-4 py-3 flex items-center justify-between shadow-xl">
     <div class="flex items-center gap-3">
-      <span class="flex items-center justify-center w-9 h-9 rounded-xl bg-amber-600/10 border border-amber-500/20 text-amber-400"><svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M11 2h2v20h-2z"/><path d="M5 9h14v2H5z"/></svg></span>
+      <span class="flex items-center justify-center w-9 h-9 rounded-xl bg-amber-600/10 border border-amber-500/20 text-amber-400"><svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M11 2h2v20h-2z"/><path d="M5 9h14v2H5z"/></svg></span>
       <div>
         <div class="font-bold text-xs text-amber-400 uppercase tracking-wide">Нагорная проповедь</div>
         <div class="text-xs text-stone-400">5 частей исследования</div>
@@ -274,49 +328,49 @@
   <div id="mobileMenu" class="lg:hidden hidden fixed inset-0 z-40 bg-stone-900 pt-16 overflow-y-auto">
     <nav class="px-4 py-4 space-y-1">
           <a href="/nagornaya/" class="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-left transition-all text-stone-300 hover:bg-stone-800 hover:text-white">
-            <span class="shrink-0 flex items-center justify-center w-9 h-9 rounded-lg bg-stone-800/40 text-stone-300"><svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><rect width="20" height="5" x="2" y="3" rx="1"/><path d="M4 8v11a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8"/><path d="M10 12h4"/></svg></span>
+            <span class="shrink-0 flex items-center justify-center w-9 h-9 rounded-lg bg-stone-800/40 text-stone-300"><svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><rect width="20" height="5" x="2" y="3" rx="1"/><path d="M4 8v11a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8"/><path d="M10 12h4"/></svg></span>
             <div>
               <div class="font-semibold">Архив</div>
               <div class="text-xs opacity-70">Обзор серии</div>
             </div>
           </a>
           <a href="/nagornaya/chast-1/" class="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-left transition-all text-stone-300 hover:bg-stone-800 hover:text-white">
-            <span class="shrink-0 flex items-center justify-center w-9 h-9 rounded-lg bg-stone-800/40 text-stone-300"><svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg></span>
+            <span class="shrink-0 flex items-center justify-center w-9 h-9 rounded-lg bg-stone-800/40 text-stone-300"><svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg></span>
             <div>
               <div class="font-semibold">Часть I</div>
               <div class="text-xs opacity-70">Содержание</div>
             </div>
           </a>
           <a href="/nagornaya/chast-2/" class="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-left transition-all text-stone-300 hover:bg-stone-800 hover:text-white">
-            <span class="shrink-0 flex items-center justify-center w-9 h-9 rounded-lg bg-stone-800/40 text-stone-300"><svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/><polyline points="14 2 14 8 20 8"/></svg></span>
+            <span class="shrink-0 flex items-center justify-center w-9 h-9 rounded-lg bg-stone-800/40 text-stone-300"><svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/><polyline points="14 2 14 8 20 8"/></svg></span>
             <div>
               <div class="font-semibold">Часть II</div>
               <div class="text-xs opacity-70">Методология</div>
             </div>
           </a>
           <a href="/nagornaya/chast-3/" class="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-left transition-all text-stone-300 hover:bg-stone-800 hover:text-white">
-            <span class="shrink-0 flex items-center justify-center w-9 h-9 rounded-lg bg-stone-800/40 text-stone-300"><svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg></span>
+            <span class="shrink-0 flex items-center justify-center w-9 h-9 rounded-lg bg-stone-800/40 text-stone-300"><svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg></span>
             <div>
               <div class="font-semibold">Часть III</div>
               <div class="text-xs opacity-70">Адресат</div>
             </div>
           </a>
           <a href="/nagornaya/chast-4/" class="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-left transition-all bg-amber-600 text-white">
-            <span class="shrink-0 flex items-center justify-center w-9 h-9 rounded-lg bg-stone-800/40 text-stone-300"><svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M11 2h2v20h-2z"/><path d="M5 9h14v2H5z"/></svg></span>
+            <span class="shrink-0 flex items-center justify-center w-9 h-9 rounded-lg bg-stone-800/40 text-stone-300"><svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M11 2h2v20h-2z"/><path d="M5 9h14v2H5z"/></svg></span>
             <div>
               <div class="font-semibold">Часть IV</div>
               <div class="text-xs opacity-70">Богодухновенность</div>
             </div>
           </a>
           <a href="/nagornaya/chast-5/" class="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-left transition-all text-stone-300 hover:bg-stone-800 hover:text-white">
-            <span class="shrink-0 flex items-center justify-center w-9 h-9 rounded-lg bg-stone-800/40 text-stone-300"><svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="m12 3 1.912 5.813a2 2 0 0 0 1.275 1.275L21 12l-5.812 1.912a2 2 0 0 0-1.275 1.275L12 21l-1.912-5.812a2 2 0 0 0-1.275-1.275L3 12l5.812-1.912a2 2 0 0 0 1.275-1.275z"/></svg></span>
+            <span class="shrink-0 flex items-center justify-center w-9 h-9 rounded-lg bg-stone-800/40 text-stone-300"><svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="m12 3 1.912 5.813a2 2 0 0 0 1.275 1.275L21 12l-5.812 1.912a2 2 0 0 0-1.275 1.275L12 21l-1.912-5.812a2 2 0 0 0-1.275-1.275L3 12l5.812-1.912a2 2 0 0 0 1.275-1.275z"/></svg></span>
             <div>
               <div class="font-semibold">Часть V</div>
               <div class="text-xs opacity-70">Закон и Евангелие</div>
             </div>
           </a>
             <a href="/nagornaya/istochniki/" class="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-left transition-all text-stone-300 hover:bg-stone-800 hover:text-white">
-            <span class="shrink-0 flex items-center justify-center w-9 h-9 rounded-lg bg-stone-800/40 text-stone-300"><svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><rect width="20" height="5" x="2" y="3" rx="1"/><path d="M4 8v11a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8"/><path d="M10 12h4"/></svg></span>
+            <span class="shrink-0 flex items-center justify-center w-9 h-9 rounded-lg bg-stone-800/40 text-stone-300"><svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><rect width="20" height="5" x="2" y="3" rx="1"/><path d="M4 8v11a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8"/><path d="M10 12h4"/></svg></span>
             <div>
               <div class="font-semibold">Источники</div>
               <div class="text-xs opacity-70">120+ источников</div>
@@ -340,6 +394,7 @@
 <h1 class="text-3xl md:text-4xl font-bold mb-3 tracking-tight">Можно ли доверять Евангелиям?</h1>
 <p class="text-amber-100 text-lg md:text-xl font-medium leading-relaxed">Богодухновенность, текстовые различия и подлинный голос Христа: апология исторической достоверности</p>
 <p class="text-amber-200/60 text-xs mt-4 font-mono">Серия «Нагорная проповедь» · Часть IV из V · Редакция: Апрель 2026</p>
+<p class="article-updated text-amber-200/60 text-xs mt-4 font-mono mt-1">Опубликовано: <time datetime="2026-05-01">1 мая 2026</time></p>
 </div>
 
       <div class="rounded-2xl overflow-hidden shadow-md mt-4">
@@ -358,7 +413,7 @@
 </div>
 
 <!-- I. Высокая библиология Самого Христа -->
-<div class="group mb-6 mt-12"><div class="flex items-center gap-4 mb-2"><div class="flex items-center justify-center w-10 h-10 rounded-xl bg-white shadow-sm border border-stone-100 text-amber-600"><svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M11 2h2v20h-2z"/><path d="M5 9h14v2H5z"/></svg></div><h2 id="i-высокая-библиология-христа-в-нагорной-проповеди" class="text-xl font-bold text-stone-800 tracking-tight">I. Высокая библиология Христа в Нагорной проповеди</h2></div><p class="text-stone-500 text-sm font-medium ml-14">Экзегеза Мф 5:18–19 как фундамент вербальной непогрешимости</p></div>
+<div class="group mb-6 mt-12"><div class="flex items-center gap-4 mb-2"><div class="flex items-center justify-center w-10 h-10 rounded-xl bg-white shadow-sm border border-stone-100 text-amber-600"><svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M11 2h2v20h-2z"/><path d="M5 9h14v2H5z"/></svg></div><h2 id="i-высокая-библиология-христа-в-нагорной-проповеди" class="text-xl font-bold text-stone-800 tracking-tight">I. Высокая библиология Христа в Нагорной проповеди</h2></div><p class="text-stone-500 text-sm font-medium ml-14">Экзегеза Мф 5:18–19 как фундамент вербальной непогрешимости</p></div>
 <div class="bg-white rounded-2xl p-6 md:p-8 shadow-sm border border-stone-200">
 <p class="text-stone-700 text-[16px] leading-relaxed mb-5 text-justify">Прежде чем обращаться к историческим свидетельствам или догматическим формулировкам, мы должны исследовать отношение к Писанию Того, Кто произносит саму проповедь. В Мф 5:18 Иисус даёт одно из самых бескомпромиссных и сильных утверждений о природе Божьего Слова во всём Новом Завете. Это утверждение становится герменевтическим ключом ко всей Его последующей экзегезе.</p>
 <div class="bg-amber-50 border-l-4 border-amber-400 rounded-r-2xl px-6 py-5 my-6 shadow-sm border-y border-r border-amber-100">
@@ -386,7 +441,7 @@
 </div>
 
 <!-- II. Доктрина Θεόπνευστος -->
-<div class="group mb-6 mt-12"><div class="flex items-center gap-4 mb-2"><div class="flex items-center justify-center w-10 h-10 rounded-xl bg-white shadow-sm border border-stone-100 text-amber-600"><svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M17.7 7.7a2.5 2.5 0 1 1 1.8 4.3H2"/><path d="M9.6 4.6A2 2 0 1 1 11 8H2"/><path d="M12.6 19.4A2 2 0 1 0 14 16H2"/></svg></div><h2 id="ii-доктрина-θεόπνευστος-писание-как-творческий-выдох-бога" class="text-xl font-bold text-stone-800 tracking-tight">II. Доктрина Θεόπνευστος: Писание как Творческий Выдох Бога</h2></div><p class="text-stone-500 text-sm font-medium ml-14">Warfield, The Inspiration and Authority of the Bible (1948)</p></div>
+<div class="group mb-6 mt-12"><div class="flex items-center gap-4 mb-2"><div class="flex items-center justify-center w-10 h-10 rounded-xl bg-white shadow-sm border border-stone-100 text-amber-600"><svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M17.7 7.7a2.5 2.5 0 1 1 1.8 4.3H2"/><path d="M9.6 4.6A2 2 0 1 1 11 8H2"/><path d="M12.6 19.4A2 2 0 1 0 14 16H2"/></svg></div><h2 id="ii-доктрина-θεόπνευστος-писание-как-творческий-выдох-бога" class="text-xl font-bold text-stone-800 tracking-tight">II. Доктрина Θεόπνευστος: Писание как Творческий Выдох Бога</h2></div><p class="text-stone-500 text-sm font-medium ml-14">Warfield, The Inspiration and Authority of the Bible (1948)</p></div>
 <div class="bg-white rounded-2xl p-6 md:p-8 shadow-sm border border-stone-200">
 <p class="text-stone-700 text-[16px] leading-relaxed mb-5 text-justify">Для понимания природы канонического текста Нагорной проповеди мы должны обратиться к ключевому новозаветному термину. Апостол Павел во 2 Тим 3:16 пишет: «Всё Писание богодухновенно...» (греч. πᾶσα γραφή θεόπνευστος). Выдающийся <span class="tooltip-trigger" data-tooltip="Принстонская теологическая семинария (1812–1929) — консервативная пресвитерианская семинария в США. Известна своими богословами: Ч. Ходж, А. Ходж, Б. Уорфилд.">принстонский</span> теолог <span class="tooltip-trigger" data-tooltip="Бенджамин Брекинридж Уорфилд (1851–1921) — американский реформатский богослов, профессор Принстонской семинарии. Главный защитник учения о богодухновенности и непогрешимости Писания в начале XX века.">Б. Б. Уорфилд</span> в своей фундаментальной работе <em>The Biblical Idea of Inspiration</em> (1915/1948) произвёл филологический переворот в понимании этого стиха.<sup class="text-amber-600 font-bold">[3]</sup> Он доказал, что латинский перевод <em>inspiratus</em> и русский «богодухновенно» создают ложную коннотацию, заимствованную из светской поэтики. Человеку кажется, что Бог взял уже существующий человеческий текст (или мысли) и «вдохнул в него» особую духовную силу — подобно тому, как муза вдохновляет поэта.</p>
 <p class="text-stone-700 text-[16px] leading-relaxed mb-5 text-justify">Греческое слово <span class="tooltip-trigger" data-tooltip="θεόπνευστος (theopneustos) — от θεός (Бог) + πνέω (дышать). Буквально: «богодухновенный», «выдохнутый Богом». Встречается только в 2 Тим 3:16.">θεόπνευστος</span> (<span class="tooltip-trigger" data-tooltip="Транслитерация греческого θεόπνευστος. Латинизированная форма: theopneustos."><em>theopneustos</em></span>) имеет иную семантику. Оно имеет пассивную форму и буквально означает <strong>«выдохнуто Богом»</strong> (<span class="tooltip-trigger" data-tooltip="Английский термин, используемый для перевода theopneustos. Буквально: «выдохнутый Богом»."><em>God-breathed</em></span>). Текст Писания не «наполнен» Божьим дыханием — он <strong>является прямым продуктом Божьего дыхания</strong>. Писание — это речь Бога, зафиксированная на человеческом языке. <span class="tooltip-trigger" data-tooltip="Роберт Чарльз Спраул (1939–2017) — американский реформатский богослов, основатель Ligonier Ministries. Известный проповедник и автор более 100 книг.">Р. Ч. Спраул</span> (<span class="tooltip-trigger" data-tooltip="Ligonier Ministries — христианская служение, основанное Р. Ч. Спраулом в 1971 году. Занимается обучением реформатскому богословию.">Ligonier Ministries</span>), развивая наследие Уорфилда, неустанно повторял: «Павел говорит не о <em>способе</em>, которым Бог передавал информацию (не о психологическом процессе в разуме авторов), он говорит об <em>источнике</em>. Конечным источником и автором текста является Сам Бог. Писание исходит из Его уст».<sup class="text-amber-600 font-bold">[4]</sup></p>
@@ -394,7 +449,7 @@
 </div>
 
 <!-- III. Принцип Concursus -->
-<div class="group mb-6 mt-12"><div class="flex items-center gap-4 mb-2"><div class="flex items-center justify-center w-10 h-10 rounded-xl bg-white shadow-sm border border-stone-100 text-amber-600"><svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="m16 3 4 4-4 4"/><path d="M20 7H4a2 2 0 0 0-2 2v10"/><path d="m8 21-4-4 4-4"/><path d="M4 17h16a2 2 0 0 0 2-2V5"/></svg></div><h2 id="iii-принцип-concursus-органическое-богочеловеческое-соавторс" class="text-xl font-bold text-stone-800 tracking-tight">III. Принцип Concursus: Органическое Богочеловеческое соавторство</h2></div><p class="text-stone-500 text-sm font-medium ml-14">Warfield, Shorter Writings, 2:629; CSBI Article VIII</p></div>
+<div class="group mb-6 mt-12"><div class="flex items-center gap-4 mb-2"><div class="flex items-center justify-center w-10 h-10 rounded-xl bg-white shadow-sm border border-stone-100 text-amber-600"><svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="m16 3 4 4-4 4"/><path d="M20 7H4a2 2 0 0 0-2 2v10"/><path d="m8 21-4-4 4-4"/><path d="M4 17h16a2 2 0 0 0 2-2V5"/></svg></div><h2 id="iii-принцип-concursus-органическое-богочеловеческое-соавторс" class="text-xl font-bold text-stone-800 tracking-tight">III. Принцип Concursus: Органическое Богочеловеческое соавторство</h2></div><p class="text-stone-500 text-sm font-medium ml-14">Warfield, Shorter Writings, 2:629; CSBI Article VIII</p></div>
 <div class="bg-white rounded-2xl p-6 md:p-8 shadow-sm border border-stone-200">
 <p class="text-stone-700 text-[16px] leading-relaxed mb-5 text-justify">Но здесь возникает естественное возражение: если оба текста — прямой выдох Бога, почему Матфей пишет в одном стиле, а Лука в другом? Почему Матфей приводит 107 стихов, а Лука — 30? Ответ на это противоречие даёт классическая доктрина <span class="tooltip-trigger" data-tooltip="Concursus (лат. concursus — «совместное действие», «слияние») — богословский термин, описывающий одновременное действие Бога и человека в написании Писания. Бог не подавлял человеческую личность автора, но обеспечивал безошибочность результата."><strong>concursus</strong></span> (лат. <span class="tooltip-trigger" data-tooltip="Concurro — латинский глагол: «совместно действовать», «сливаться», «стекаться вместе». От con- (вместе) + curro (бежать)."><em>concurro</em></span> — «совместное действие» или «слияние»). Б. Б. Уорфилд блестяще сформулировал этот принцип, исключающий как механическую диктовку, так и любую человеческую ошибку в каноническом тексте:</p>
 <div class="bg-amber-50 border-l-4 border-amber-400 rounded-r-2xl px-6 py-5 my-6 shadow-sm border-y border-r border-amber-100">
@@ -420,7 +475,7 @@
 </div>
 
 <!-- IV. Чего непогрешимость НЕ требует -->
-<div class="group mb-6 mt-12"><div class="flex items-center gap-4 mb-2"><div class="flex items-center justify-center w-10 h-10 rounded-xl bg-white shadow-sm border border-stone-100 text-amber-600"><svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg></div><h2 id="iv-чего-богодухновенность-не-требует-чикагские-границы" class="text-xl font-bold text-stone-800 tracking-tight">IV. Чего богодухновенность не требует: Чикагские границы</h2></div><p class="text-stone-500 text-sm font-medium ml-14">Непогрешимость не равна механической стенографии. Статьи XIII и XVIII CSBI</p></div>
+<div class="group mb-6 mt-12"><div class="flex items-center gap-4 mb-2"><div class="flex items-center justify-center w-10 h-10 rounded-xl bg-white shadow-sm border border-stone-100 text-amber-600"><svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg></div><h2 id="iv-чего-богодухновенность-не-требует-чикагские-границы" class="text-xl font-bold text-stone-800 tracking-tight">IV. Чего богодухновенность не требует: Чикагские границы</h2></div><p class="text-stone-500 text-sm font-medium ml-14">Непогрешимость не равна механической стенографии. Статьи XIII и XVIII CSBI</p></div>
 <div class="bg-white rounded-2xl p-6 md:p-8 shadow-sm border border-stone-200">
 <p class="text-stone-700 text-[16px] leading-relaxed mb-5 text-justify">Серьёзной герменевтической опасностью в консервативной среде является неосознанное требование к Евангелиям соответствовать стандартам современной стенографии или видеозаписи. Когда читатель обнаруживает, что Матфей приводит шесть антитез, а Лука их опускает, или что у Матфея речь звучит в третьем лице («блаженны нищие духом»), а у Луки во втором («блаженны вы, нищие»), его вера может пошатнуться, если он не понимает природы древнего богодухновенного текста.</p>
 <p class="text-stone-700 text-[16px] leading-relaxed mb-5 text-justify">Чикагское заявление — документ, составленный и подписанный величайшими консервативными теологами (Дж. МакАртур, Дж. Пакер, Р. Спраул, Н. Гайслер) — <strong>прямо и авторитетно снимает эту проблему</strong>. Статья XIII гласит:</p>
@@ -434,7 +489,7 @@
 </div>
 
 <!-- V. Ipsissima verba/vox -->
-<div class="group mb-6 mt-12"><div class="flex items-center gap-4 mb-2"><div class="flex items-center justify-center w-10 h-10 rounded-xl bg-white shadow-sm border border-stone-100 text-amber-600"><svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg></div><h2 id="v-ipsissima-verba-и-ipsissima-vox-жёсткая-граница-семинарии-" class="text-xl font-bold text-stone-800 tracking-tight">V. Ipsissima Verba и Ipsissima Vox: Жёсткая граница Семинарии Мастерс</h2></div><p class="text-stone-500 text-sm font-medium ml-14">Donald E. Green, TMSJ 12/1 (Spring 2001) против «широкой вольности»</p></div>
+<div class="group mb-6 mt-12"><div class="flex items-center gap-4 mb-2"><div class="flex items-center justify-center w-10 h-10 rounded-xl bg-white shadow-sm border border-stone-100 text-amber-600"><svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg></div><h2 id="v-ipsissima-verba-и-ipsissima-vox-жёсткая-граница-семинарии-" class="text-xl font-bold text-stone-800 tracking-tight">V. Ipsissima Verba и Ipsissima Vox: Жёсткая граница Семинарии Мастерс</h2></div><p class="text-stone-500 text-sm font-medium ml-14">Donald E. Green, TMSJ 12/1 (Spring 2001) против «широкой вольности»</p></div>
 <div class="bg-white rounded-2xl p-6 md:p-8 shadow-sm border border-stone-200">
 <p class="text-stone-700 text-[16px] leading-relaxed mb-5 text-justify">В евангелическом богословии XX века для объяснения различий в параллельных речах Иисуса закрепились два термина: <span class="tooltip-trigger" data-tooltip="Ipsissima verba (лат. — «самые слова») — точные, дословные слова, которые произнёс Иисус."><em>ipsissima verba</em></span> (точные, дословные слова Христа) и <span class="tooltip-trigger" data-tooltip="Ipsissima vox (лат. — «сам голос») — точная передача смысла и намерения Иисуса, даже если конкретные формулировки адаптированы евангелистом."><em>ipsissima vox</em></span> (точный голос Христа — передача аутентичного смысла без дословного совпадения). В 1980 году Пол Файнберг в программной работе «The Meaning of Inerrancy» дал ставшее классическим определение: «Непогрешимость не требует, чтобы изречения Иисуса (<em>Logia Jesu</em>) содержали <em>ipsissima verba</em>; достаточно, чтобы они передавали <em>ipsissima vox</em>».<sup class="text-amber-600 font-bold">[9]</sup> Важное текстологическое исправление: эту формулировку часто ошибочно приписывают Джону МакАртуру (из его книги «Drawing Near»), однако МакАртур никогда не формулировал этот тезис как богословское определение, первоисточником является именно Файнберг.</p>
 <p class="text-stone-700 text-[16px] leading-relaxed mb-5 text-justify">Однако на рубеже веков концепция <em>ipsissima vox</em> стала опасно расширяться в трудах некоторых евангельских авторов (Бок, Осборн), которые начали утверждать, что евангелисты обладали огромной литературной свободой «редактировать» Христа, вкладывать в Его уста собственные богословские резюме и фактически переписывать Его речи.</p>
@@ -449,7 +504,7 @@
 </div>
 
 <!-- VI. Герменевтика библейских авторов -->
-<div class="group mb-6 mt-12"><div class="flex items-center gap-4 mb-2"><div class="flex items-center justify-center w-10 h-10 rounded-xl bg-white shadow-sm border border-stone-100 text-amber-600"><svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="m8 20 8-16"/><path d="m12 12 8-8"/><path d="m4 20 8-8"/><path d="m19 11-4-7"/><path d="m9 20-4-7"/></svg></div><h2 id="vi-пророческая-апостольская-христианская-герменевтика" class="text-xl font-bold text-stone-800 tracking-tight">VI. Пророческая → Апостольская → Христианская герменевтика</h2></div><p class="text-stone-500 text-sm font-medium ml-14">Abner Chou (TMU, TMSJ): Цельная цепь грамматико-исторического истолкования</p></div>
+<div class="group mb-6 mt-12"><div class="flex items-center gap-4 mb-2"><div class="flex items-center justify-center w-10 h-10 rounded-xl bg-white shadow-sm border border-stone-100 text-amber-600"><svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="m8 20 8-16"/><path d="m12 12 8-8"/><path d="m4 20 8-8"/><path d="m19 11-4-7"/><path d="m9 20-4-7"/></svg></div><h2 id="vi-пророческая-апостольская-христианская-герменевтика" class="text-xl font-bold text-stone-800 tracking-tight">VI. Пророческая → Апостольская → Христианская герменевтика</h2></div><p class="text-stone-500 text-sm font-medium ml-14">Abner Chou (TMU, TMSJ): Цельная цепь грамматико-исторического истолкования</p></div>
 <div class="bg-white rounded-2xl p-6 md:p-8 shadow-sm border border-stone-200/80">
 <p class="text-stone-700 text-[16px] leading-relaxed mb-5 text-justify">В контексте дискуссии о точности передачи слов Христа фундаментальное значение имеет концепция Абнера Чау (Abner Chou) — выдающегося президента Семинарии Мастерс и автора монументального труда <em>The Hermeneutics of the Biblical Writers</em> (Kregel Academic, 2018). Чау формулирует принцип, который, по сути, является богословским мостом, соединяющим всё богодухновенное Писание в единое герменевтическое целое:</p>
 <div class="bg-amber-50 border-l-4 border-amber-400 rounded-r-2xl px-6 py-5 my-6 shadow-sm border-y border-r border-amber-100">
@@ -461,7 +516,7 @@
 </div>
 
 <!-- VII. Фактор перевода -->
-<div class="group mb-6 mt-12"><div class="flex items-center gap-4 mb-2"><div class="flex items-center justify-center w-10 h-10 rounded-xl bg-white shadow-sm border border-stone-100 text-amber-600"><svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="m3 11 18-5v12L3 13v-2z"/><path d="M11.6 16.8a3 3 0 1 1-5.8-1.6"/></svg></div><h2 id="vii-фактор-перевода-арамейский-греческий" class="text-xl font-bold text-stone-800 tracking-tight">VII. Фактор перевода: Арамейский → Греческий</h2></div></div>
+<div class="group mb-6 mt-12"><div class="flex items-center gap-4 mb-2"><div class="flex items-center justify-center w-10 h-10 rounded-xl bg-white shadow-sm border border-stone-100 text-amber-600"><svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="m3 11 18-5v12L3 13v-2z"/><path d="M11.6 16.8a3 3 0 1 1-5.8-1.6"/></svg></div><h2 id="vii-фактор-перевода-арамейский-греческий" class="text-xl font-bold text-stone-800 tracking-tight">VII. Фактор перевода: Арамейский → Греческий</h2></div></div>
 <div class="bg-white rounded-2xl p-6 md:p-8 shadow-sm border border-stone-200/80">
 <p class="text-stone-700 text-[16px] leading-relaxed mb-5 text-justify">Лингвистическая реальность I века вносит ещё одну важную деталь в наше понимание <em>concursus</em>. Иисус проповедовал на арамейском языке (о чём свидетельствуют сохранённые в текстах <em>«Талифа куми», «Эффата», «Авва», «Элои, Элои»</em>). Канонический же, выдохнутый Богом текст Евангелий дан нам на греческом (<em>койне</em>). Это означает, что в самом процессе богодухновенного написания Евангелий Святой Дух осуществлял <strong>сверхъестественный перевод</strong> устного арамейского слова Христа в письменное греческое слово.</p>
 <p class="text-stone-700 text-[16px] leading-relaxed mb-5 text-justify">Любой переводчик знает, что перевод — это не механическая замена слов по словарю, а передача смысловых полей. Выдающийся библеист Леон Моррис в своём фундаментальном комментарии <em>The Gospel According to Matthew</em> (Pillar NT Commentary, 1992) отмечает, что многие различия между формулировками Матфея 5 и Луки 6 находят исчерпывающее объяснение именно в факторе перевода.<sup class="text-amber-600 font-bold">[11]</sup> Два независимых автора, переводя одну и ту же арамейскую фразу на греческий язык, неизбежно будут использовать разные синтаксические конструкции и идиомы — и оба будут абсолютно точны.</p>
@@ -469,7 +524,7 @@
 </div>
 
 <!-- VIII. Исторические ориентиры -->
-<div class="group mb-6 mt-12"><div class="flex items-center gap-4 mb-2"><div class="flex items-center justify-center w-10 h-10 rounded-xl bg-white shadow-sm border border-stone-100 text-amber-600"><svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><rect width="20" height="5" x="2" y="3" rx="1"/><path d="M4 8v11a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8"/><path d="M10 12h4"/></svg></div><h2 id="viii-исторические-ориентиры-свидетельство-апостольских-отцов" class="text-xl font-bold text-stone-800 tracking-tight">VIII. Исторические ориентиры: Свидетельство Апостольских отцов</h2></div><p class="text-stone-500 text-sm font-medium ml-14">Как ранняя Церковь совмещала различия текстов и абсолютную веру в непогрешимость</p></div>
+<div class="group mb-6 mt-12"><div class="flex items-center gap-4 mb-2"><div class="flex items-center justify-center w-10 h-10 rounded-xl bg-white shadow-sm border border-stone-100 text-amber-600"><svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><rect width="20" height="5" x="2" y="3" rx="1"/><path d="M4 8v11a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8"/><path d="M10 12h4"/></svg></div><h2 id="viii-исторические-ориентиры-свидетельство-апостольских-отцов" class="text-xl font-bold text-stone-800 tracking-tight">VIII. Исторические ориентиры: Свидетельство Апостольских отцов</h2></div><p class="text-stone-500 text-sm font-medium ml-14">Как ранняя Церковь совмещала различия текстов и абсолютную веру в непогрешимость</p></div>
 <div class="bg-white rounded-2xl p-6 md:p-8 shadow-sm border border-stone-200/80">
 <p class="text-stone-700 text-[16px] leading-relaxed mb-5 text-justify">Ранние исторические свидетельства Церкви имеют непреходящую ценность для понимания того, как первые христиане воспринимали богодухновенность Евангелий. Факты древней церковной истории показывают единодушное высокое отношение к каноническим текстам как к безошибочному Слову Божьему.</p>
 <p class="text-stone-700 text-[16px] leading-relaxed mb-5 text-justify"><span class="tooltip-trigger" data-tooltip="Папий Иерапольский (греч. Παπίας, ок. 60–130 гг.) — раннехристианский епископ и апологет. Его труд «Истолкование слов Господних» сохранился только в цитатах у Евсевия."><strong>Папий Иерапольский</strong></span> (ок. 120 г. по Р.Х., цитируется <span class="tooltip-trigger" data-tooltip="Евсевий Кесарийский (ок. 263–339 гг.) — «отец церковной истории», епископ Кесарии Палестинской. Его «Церковная история» — главный источник по ранней истории Церкви.">Евсевием Кесарийским</span> в <em>Historia Ecclesiastica</em> 3.39.15) приводит древнейшее свидетельство, восходящее к пресвитеру Иоанну: «Марк, став переводчиком Петра, записал тщательно, <strong>хотя не по порядку</strong>, то, что он помнил из сказанного или сделанного Христом... Ибо он заботился только об одном: не пропустить ничего из услышанного и не исказить ничего. Марк не допустил никакой ошибки».<sup class="text-amber-600 font-bold">[12]</sup> Это бесценное свидетельство показывает, что уже на рубеже I и II веков Церковь чётко понимала: текстовые различия в хронологическом порядке (<em>not in order</em>) не имеют никакого отношения к «ошибкам» и полностью совместимы с абсолютной точностью содержания речей Иисуса.</p>
@@ -481,7 +536,7 @@
 </div>
 
 <!-- IX. Реформатские исповедания -->
-<div class="reveal group mb-6 mt-12"><div class="flex items-center gap-4 mb-2"><div class="flex items-center justify-center w-10 h-10 rounded-xl bg-white shadow-sm border border-stone-100 text-amber-600"><svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg></div><h2 id="ix-реформатские-исповедания-и-провиденциальное-сохранение" class="text-xl font-bold text-stone-800 tracking-tight">IX. Реформатские исповедания и провиденциальное сохранение</h2></div><p class="text-stone-500 text-sm font-medium ml-14">Конфессиональные якоря вербального вдохновения</p></div>
+<div class="reveal group mb-6 mt-12"><div class="flex items-center gap-4 mb-2"><div class="flex items-center justify-center w-10 h-10 rounded-xl bg-white shadow-sm border border-stone-100 text-amber-600"><svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg></div><h2 id="ix-реформатские-исповедания-и-провиденциальное-сохранение" class="text-xl font-bold text-stone-800 tracking-tight">IX. Реформатские исповедания и провиденциальное сохранение</h2></div><p class="text-stone-500 text-sm font-medium ml-14">Конфессиональные якоря вербального вдохновения</p></div>
 <div class="bg-white rounded-2xl p-6 md:p-8 shadow-sm border border-stone-200/80">
 <p class="text-stone-700 text-[16px] leading-relaxed mb-5 text-justify">Логическим продолжением высокой патристики стало богословие Реформации, зафиксированное в великих конфессиях XVI–XVII веков. Протестантизм отверг авторитет человеческого церковного предания в пользу <em>Sola Scriptura</em>, что потребовало ещё более строгой и бескомпромиссной формулировки доктрины Божественного авторства и безошибочности канонического текста.</p>
 <p class="text-stone-700 text-[16px] leading-relaxed mb-5 text-justify"><strong>Вестминстерское исповедание веры</strong> (1646 г.), открывающееся монументальной Главой I («О Священном Писании»), в §VIII закрепляет фундаментальное разграничение, без которого невозможно вести серьёзный текстологический диалог: «Ветхий Завет на еврейском языке... и Новый Завет на греческом языке... будучи <strong>непосредственно вдохновлены Богом</strong> (<em>immediately inspired by God</em>) и по Его особенной заботе и промыслу сохранены чистыми во все века, являются поэтому аутентичными».[16] Исповедание чётко отделяет <em>непосредственное вдохновение</em>, относившееся исключительно к оригинальным рукописям (автографам), от <em>провиденциального сохранения</em> (singular care and providence), относящегося к тысячам сохранившихся копий и манускриптов. Различия в рукописях (текстуальные вариантные чтения) — результат человеческого копирования; канонический же текст, выдохнутый Богом, аутентичен и неизменен в своей первоначальной форме.</p>
@@ -490,7 +545,7 @@
 </div>
 
 <!-- IX. Современные угрозы -->
-<div class="group mb-6 mt-12"><div class="flex items-center gap-4 mb-2"><div class="flex items-center justify-center w-10 h-10 rounded-xl bg-white shadow-sm border border-stone-100 text-amber-600"><svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg></div><h2 id="x-современные-угрозы-редакционная-критика-иисус-семинар-и-ск" class="text-xl font-bold text-stone-800 tracking-tight">X. Современные угрозы: Редакционная критика, Иисус Семинар и Скептицизм</h2></div><p class="text-stone-500 text-sm font-medium ml-14">Апология Семинарии Мастерс против деисторизации Писания. Warfield, The Real Problem of Inspiration</p></div>
+<div class="group mb-6 mt-12"><div class="flex items-center gap-4 mb-2"><div class="flex items-center justify-center w-10 h-10 rounded-xl bg-white shadow-sm border border-stone-100 text-amber-600"><svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg></div><h2 id="x-современные-угрозы-редакционная-критика-иисус-семинар-и-ск" class="text-xl font-bold text-stone-800 tracking-tight">X. Современные угрозы: Редакционная критика, Иисус Семинар и Скептицизм</h2></div><p class="text-stone-500 text-sm font-medium ml-14">Апология Семинарии Мастерс против деисторизации Писания. Warfield, The Real Problem of Inspiration</p></div>
 <div class="bg-white rounded-2xl p-6 md:p-8 shadow-sm border border-stone-200/80">
 <p class="text-stone-700 text-[16px] leading-relaxed mb-5 text-justify">Доктрина непогрешимости Писания — это не отвлечённая догматика. Это линия фронта в войне за души людей. Семинария Мастерс и её журнал (TMSJ) были основаны Джоном МакАртуром именно в разгар этой битвы в конце 1980-х годов, когда либеральный скептицизм начал проникать в евангельские институты. Чтобы понять серьёзность вопроса, мы должны взглянуть в лицо трём главным угрозам, разрушающим доверие к словам Христа.</p>
 <p class="text-stone-700 text-[16px] leading-relaxed mb-5 text-justify"><strong>1. Редакционная критика</strong> (<em>Redaktionsgeschichte</em>, нем. «история редакции»). Этот академический метод рассматривает авторов Евангелий прежде всего как самостоятельных богословов-редакторов, которые якобы свободно перекраивали, адаптировали и дописывали устную традицию ради нужд своих общин. Смертельная опасность этого метода заключается в неизбежной <em>деисторизации речей Иисуса</em>. Ф. Дэвид Фарнелл в своей программной статье в TMSJ 13/1 (весна 2002 г.) предупреждает: «Принятие теорий литературной зависимости и редакционной критики неизбежно ставит исследователя перед неразрешимым вопросом: где заканчивается исторический Иисус и начинается творчество евангелиста?»[19] Если Матфей мог вложить в уста Христа целые абзацы, которых Тот никогда не произносил, — канонический текст теряет статус Слова Божьего и становится словом Матфея.</p>
@@ -506,7 +561,7 @@
 </div>
 
 <!-- X. Замысел четырех Евангелий -->
-<div class="group mb-6 mt-12"><div class="flex items-center gap-4 mb-2"><div class="flex items-center justify-center w-10 h-10 rounded-xl bg-white shadow-sm border border-stone-100 text-amber-600"><svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 2 7 12 12 22 7 12 2"/><polyline points="2 17 12 22 22 17"/><polyline points="2 12 12 17 22 12"/></svg></div><h2 id="xi-замысел-четырёх-евангелий-богатство-многосвидетельства" class="text-xl font-bold text-stone-800 tracking-tight">XI. Замысел четырёх Евангелий: Богатство многосвидетельства</h2></div><p class="text-stone-500 text-sm font-medium ml-14">Why Бог не дал нам одно «идеальное» Евангелие?</p></div>
+<div class="group mb-6 mt-12"><div class="flex items-center gap-4 mb-2"><div class="flex items-center justify-center w-10 h-10 rounded-xl bg-white shadow-sm border border-stone-100 text-amber-600"><svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><polygon points="12 2 2 7 12 12 22 7 12 2"/><polyline points="2 17 12 22 22 17"/><polyline points="2 12 12 17 22 12"/></svg></div><h2 id="xi-замысел-четырёх-евангелий-богатство-многосвидетельства" class="text-xl font-bold text-stone-800 tracking-tight">XI. Замысел четырёх Евангелий: Богатство многосвидетельства</h2></div><p class="text-stone-500 text-sm font-medium ml-14">Why Бог не дал нам одно «идеальное» Евангелие?</p></div>
 <div class="bg-white rounded-2xl p-6 md:p-8 shadow-sm border border-stone-200/80 text-sm">
 <p class="text-stone-700 text-[16px] leading-relaxed mb-5 text-justify">Вместо того чтобы извиняться за различия между Матфеем и Лукой и судорожно пытаться «втиснуть» их в одну деревянную форму, мы должны увидеть в них величайшую красоту Божьего замысла. Бог в Своём суверенитете мог дать Церкви одно Евангелие, одну прямую речь, записанную слово в слово. Но Он этого не сделал. Он избрал дать нам <strong>четыре Евангелия — четыре грани одной Божественной истины</strong>.</p>
 <p class="text-stone-700 text-[16px] leading-relaxed mb-5 text-justify">Четыре одинаковых отчёта — это всего лишь одно свидетельство, повторенное четырежды. Четыре разных, но абсолютно согласующихся свидетельства — это стереофоническое раскрытие личности Христа. Матфей пишет для иудейского читателя и показывает Христа как <strong>Царя</strong> — Сына Давидова, исполняющего Закон и Пророков. Поэтому его Нагорная проповедь столь масштабна, она дышит храмом, жертвенником, антитезами и Моисеевым наследием. Лука пишет для эллинистического мира (Феофила) и показывает Христа как <strong>Совершенного Человека, Спасителя всех людей</strong>. Поэтому он опускает иудейские тонкости антитез, непонятную язычникам полемику о клятвах, но обостряет прямое пастырское обращение к нищим, голодным и плачущим («Блаженны вы!»).</p>
@@ -514,7 +569,7 @@
 </div>
 
 <!-- XII. Практическое применение -->
-<div class="group mb-6 mt-12"><div class="flex items-center gap-4 mb-2"><div class="flex items-center justify-center w-10 h-10 rounded-xl bg-white shadow-sm border border-stone-100 text-amber-600"><svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg></div><h2 id="xii-практическое-применение-доктрина-писания-порождает-экспо" class="text-xl font-bold text-stone-800 tracking-tight">XII. Практическое применение: Доктрина Писания порождает Экспозицию</h2></div></div>
+<div class="group mb-6 mt-12"><div class="flex items-center gap-4 mb-2"><div class="flex items-center justify-center w-10 h-10 rounded-xl bg-white shadow-sm border border-stone-100 text-amber-600"><svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg></div><h2 id="xii-практическое-применение-доктрина-писания-порождает-экспо" class="text-xl font-bold text-stone-800 tracking-tight">XII. Практическое применение: Доктрина Писания порождает Экспозицию</h2></div></div>
 <div class="bg-white rounded-2xl p-6 md:p-8 shadow-sm border border-stone-200/80">
 <p class="text-stone-700 text-[16px] leading-relaxed mb-5 text-justify">Богодухновенность и непогрешимость канонического текста Нагорной проповеди — это не сухие догмы для богословских симпозиумов. Они имеют прямое и неотвратимое следствие для каждого проповедника и каждого верующего.</p>
 <p class="text-stone-700 text-[16px] leading-relaxed mb-5 text-justify">В эпохальной статье «Мандат библейской непогрешимости: экспозиционная проповедь» (TMSJ 34/2, 2023) Джон МакАртур формулирует этот закон со всей пастырской прямотой: <strong>«Единственный логически и богословски верный ответ на вербально вдохновлённое и безошибочное Писание — это последовательная экспозиционная проповедь».[23]</strong> Если Бог — Творец этого Слова, если каждое слово оригинала выдохнуто Им (θεόπνευστος), то проповедник не имеет права использовать текст как «трамплин» для собственных моральных рассуждений. Его священная обязанность — «раскрыть смысл текста в точности так, как его замыслил Божественный Автор, подчиняя свой разум грамматике и истории».</p>
@@ -526,7 +581,7 @@
 </div>
 
 <!-- XIII. Живое Писание -->
-<div class="group mb-6 mt-12"><div class="flex items-center gap-4 mb-2"><div class="flex items-center justify-center w-10 h-10 rounded-xl bg-white shadow-sm border border-stone-100 text-amber-600"><svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="m12 3 1.912 5.813a2 2 0 0 0 1.275 1.275L21 12l-5.812 1.912a2 2 0 0 0-1.275 1.275L12 21l-1.912-5.812a2 2 0 0 0-1.275-1.275L3 12l5.812-1.912a2 2 0 0 0 1.275-1.275z"/></svg></div><h2 id="xiii-живое-писание-сперджен-о-современном-дыхании-бога" class="text-xl font-bold text-stone-800 tracking-tight">XIII. Живое Писание: Сперджен о современном дыхании Бога</h2></div><p class="text-stone-500 text-sm font-medium ml-14">Богодухновенность как длящееся событие, а не музейный артефакт</p></div>
+<div class="group mb-6 mt-12"><div class="flex items-center gap-4 mb-2"><div class="flex items-center justify-center w-10 h-10 rounded-xl bg-white shadow-sm border border-stone-100 text-amber-600"><svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="m12 3 1.912 5.813a2 2 0 0 0 1.275 1.275L21 12l-5.812 1.912a2 2 0 0 0-1.275 1.275L12 21l-1.912-5.812a2 2 0 0 0-1.275-1.275L3 12l5.812-1.912a2 2 0 0 0 1.275-1.275z"/></svg></div><h2 id="xiii-живое-писание-сперджен-о-современном-дыхании-бога" class="text-xl font-bold text-stone-800 tracking-tight">XIII. Живое Писание: Сперджен о современном дыхании Бога</h2></div><p class="text-stone-500 text-sm font-medium ml-14">Богодухновенность как длящееся событие, а не музейный артефакт</p></div>
 <div class="bg-white rounded-2xl p-6 md:p-8 shadow-sm border border-stone-200/80">
 <p class="text-stone-700 text-[16px] leading-relaxed mb-5 text-justify">Существует тонкое, но смертельно опасное искажение доктрины богодухновенности, которое маскируется под ортодоксию. Это представление о Писании как о священном <em>артефакте</em> — драгоценном, безошибочном, но... мёртвом. Бог якобы «выдохнул» его две тысячи лет назад, и теперь оно лежит перед нами, словно бесценный экспонат в музее под стеклом, в который время от времени заглядывают исследователи. Такая «бумажная» доктрина приводит к академическому, холодному христианству, где Библия знается, но не звучит как живой голос Бога.</p>
 <div class="bg-amber-50 border-l-4 border-amber-400 rounded-r-2xl px-6 py-5 my-6 shadow-sm border-y border-r border-amber-100">
@@ -539,7 +594,7 @@
 </div>
 
 <!-- XIV. Интерактивный Тест -->
-<div class="group mb-6 mt-12"><div class="flex items-center gap-4 mb-2"><div class="flex items-center justify-center w-10 h-10 rounded-xl bg-white shadow-sm border border-stone-100 text-amber-600"><svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19l7-7 3 3-7 7-3-3z"/><path d="m18 13-1.5-7.5L2 2l5.5 14.5L13 18l5-5z"/><path d="m2 2 5 2.25L10 6"/><path d="m2 2 2.25 5L6 10"/></svg></div><h2 id="xiv-вопросы-для-проверки-уровень-12" class="text-xl font-bold text-stone-800 tracking-tight">XIV. Вопросы для проверки (Уровень 1–2)</h2></div><p class="text-stone-500 text-sm font-medium ml-14">Тест на усвоение доктрины богодухновенности и ее защитных механизмов</p></div>
+<div class="group mb-6 mt-12"><div class="flex items-center gap-4 mb-2"><div class="flex items-center justify-center w-10 h-10 rounded-xl bg-white shadow-sm border border-stone-100 text-amber-600"><svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M12 19l7-7 3 3-7 7-3-3z"/><path d="m18 13-1.5-7.5L2 2l5.5 14.5L13 18l5-5z"/><path d="m2 2 5 2.25L10 6"/><path d="m2 2 2.25 5L6 10"/></svg></div><h2 id="xiv-вопросы-для-проверки-уровень-12" class="text-xl font-bold text-stone-800 tracking-tight">XIV. Вопросы для проверки (Уровень 1–2)</h2></div><p class="text-stone-500 text-sm font-medium ml-14">Тест на усвоение доктрины богодухновенности и ее защитных механизмов</p></div>
 <div class="bg-white border border-stone-200 rounded-xl p-5 shadow-sm mb-6 text-sm text-stone-700">
 <p class="leading-relaxed">Чтобы закрепить прочитанный материал о богодухновенности и непогрешимости Библии, предлагаем пройти этот небольшой тест. Он поможет проверить, насколько глубоко вы усвоили ключевые понятия и отличия консервативного подхода от либерального критицизма.</p>
 </div>
@@ -673,7 +728,7 @@
 <!-- Рефлексия -->
 <div class="bg-stone-50 border border-stone-200 rounded-3xl p-8 mt-10">
 <h3 class="font-bold text-stone-900 text-xl mb-4 flex items-center gap-3">
-<div class="w-10 h-10 rounded-xl bg-stone-200 text-stone-700 flex items-center justify-center"><svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg></div>
+<div class="w-10 h-10 rounded-xl bg-stone-200 text-stone-700 flex items-center justify-center"><svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg></div>
 Вопросы для личной рефлексии
 </h3>
 <div class="space-y-4 text-sm text-stone-700">
@@ -756,7 +811,7 @@
            onmouseout="this.style.borderColor='rgba(184,136,42,.2)';this.style.background='#faf8f5';this.style.transform='translateY(0)'">
           <div style="display:flex;align-items:center;justify-content:space-between;">
             <span style="font-family:monospace;font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:#b8882a;background:rgba(184,136,42,.1);padding:3px 8px;border-radius:4px;">Перевод · 35 мин</span>
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#b8882a" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#b8882a" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
           </div>
           <div>
             <p style="font-size:.93rem;font-weight:600;color:#1c1410;line-height:1.45;margin:0 0 4px;">Герменевтическая оценка христоцентричной герменевтики</p>
@@ -769,7 +824,7 @@
            onmouseout="this.style.borderColor='rgba(184,136,42,.2)';this.style.background='#faf8f5';this.style.transform='translateY(0)'">
           <div style="display:flex;align-items:center;justify-content:space-between;">
             <span style="font-family:monospace;font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:#b8882a;background:rgba(184,136,42,.1);padding:3px 8px;border-radius:4px;">Под редакцией · 32 мин</span>
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#b8882a" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#b8882a" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
           </div>
           <div>
             <p style="font-size:.93rem;font-weight:600;color:#1c1410;line-height:1.45;margin:0 0 4px;">Крайне ли испорчено моё сердце — если я уже верующий?</p>
@@ -988,5 +1043,6 @@
   upd();
 })();
 </script>
+<script src="../../js/nagornaya-navbar.js" defer></script>
 </body>
 </html>

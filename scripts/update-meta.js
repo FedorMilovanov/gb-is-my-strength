@@ -186,6 +186,33 @@ function updateHTML(slug, { pubISO, modISO, words, readTime }) {
   writeIfChanged(file, html, `articles/${slug}/index.html`);
 }
 
+// ── 1b. nagornaya/*/index.html ───────────────────────────────────────────────
+
+function updateNagornayaHTML(slug, { modISO, words, readTime }) {
+  const file = path.join(NAGORNAYA, slug, 'index.html');
+  if (!fs.existsSync(file)) return;
+  let html = fs.readFileSync(file, 'utf8');
+
+  // modified_time
+  const newMod = toMoscowISO(modISO);
+  if (html.includes('article:modified_time')) {
+    html = html.replace(
+      /(<meta\s+property="article:modified_time"\s+content=")[^"]*(")/,
+      `$1${newMod}$2`
+    );
+  }
+
+  // SITE_CONFIG word/readTime
+  html = html.replace(/(\bwordCount:\s*)\d+/, `$1${words}`);
+  html = html.replace(/(\breadingTime:\s*)\d+/, `$1${readTime}`);
+
+  // Spans с временем чтения
+  html = html.replace(/(⏱\s*)\d+(\s*мин<\/span>)/g, `$1${readTime}$2`);
+  html = html.replace(/(⏱️\s*~?)\d+(\s*мин чтения<\/span>)/g, `$1${readTime}$2`);
+
+  writeIfChanged(file, html, `nagornaya/${slug}/index.html`);
+}
+
 // ── 2. sitemap.xml ────────────────────────────────────────────────────────────
 
 function updateSitemap(changes) {

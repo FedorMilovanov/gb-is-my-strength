@@ -1937,6 +1937,8 @@ html.dark .h-blockquote { color: var(--h-ink); }
   margin: 28px 0 0;
   opacity: 0;
   animation: h-fade-up 0.7s cubic-bezier(0.22, 1, 0.36, 1) 0.52s forwards;
+  /* PERF-01: will-change дорог на слабых устройствах — сбрасываем при reduced-motion */
+  .hb-back, .h-card-glass, .h-hero-title, .h-scroll-top { will-change: auto !important; }
 }
 
 .h-hero-search {
