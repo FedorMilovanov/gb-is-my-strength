@@ -794,13 +794,58 @@
   }
 
   function showDefault() {
-    /* Authors scope with no query → show author browser */
+    /* Авторы */
     if (scope === 'authors') { showDefaultAuthors(); return; }
+
+    /* Писание — нет индекса без запроса, показываем подсказку */
+    if (scope === 'scripture') {
+      listEl.innerHTML =
+        '<div class="cp-empty">' +
+          '<div class="cp-empty-visual"><span class="cp-empty-icon">' + SVG.sparkle12 + '</span></div>' +
+          '<p class="cp-empty-title">Поиск по Писанию</p>' +
+          '<p class="cp-empty-sub">Введите ссылку или слово из текста:</p>' +
+          '<div class="cp-suggestions">' +
+            ['Ин 3:16', 'Мф 5:3', 'Рим 8:28', 'Иер 17:9'].map(function (s) {
+              return '<button class="cp-sug-btn" data-sug="' + escHtml(s) + '">' +
+                SVG.sparkle12 + escHtml(s) + '</button>';
+            }).join('') +
+          '</div>' +
+        '</div>';
+      statusEl.textContent = '';
+      currentItems = [];
+      showPreviewPlaceholder();
+      listEl.querySelectorAll('.cp-sug-btn').forEach(function (btn) {
+        btn.addEventListener('click', function () {
+          var s = btn.dataset.sug;
+          input.value = s; query = s;
+          clearBtn.style.display = '';
+          activeIdx = 0; runSearch(s); input.focus();
+        });
+      });
+      return;
+    }
 
     loadSearchManifest(function () {
       var groups = [];
 
-      /* 1. Продолжить чтение (из BookmarkEngine) */
+      /* Статьи — показать все материалы из манифеста */
+      if (scope === 'articles') {
+        var allArticles = _manifestItems
+          .filter(function (x) { return x.type === 'article' || x.type === 'series'; })
+          .sort(function (a, b) { return (b.priority || 0) - (a.priority || 0); })
+          .map(manifestToItem);
+        if (allArticles.length) {
+          groups.push({ name: 'Все материалы', items: allArticles });
+        } else {
+          groups.push({ name: 'Популярные исследования', items: CURATED_PICKS.map(curatedItem) });
+        }
+        if (groups.length) renderGroups(groups);
+        else showDefaultHint();
+        return;
+      }
+
+      /* Все — стандартный вид */
+      /* 1. Продолжить чтение */
       if (window.BookmarkEngine && typeof window.BookmarkEngine.getResumeCandidate === 'function') {
         var resume = window.BookmarkEngine.getResumeCandidate();
         if (resume && resume.path) {
@@ -819,7 +864,7 @@
         });
       }
 
-      /* 3. Рекомендуемое из манифеста (featured: true), иначе curated */
+      /* 3. Рекомендуемое */
       var featured = _manifestItems
         .filter(function (x) { return x.featured; })
         .sort(function (a, b) { return (b.priority || 0) - (a.priority || 0); })
@@ -831,7 +876,7 @@
         groups.push({ name: 'Популярные исследования', items: CURATED_PICKS.map(curatedItem) });
       }
 
-      /* 4. Новое (по modifiedTime, только non-featured) */
+      /* 4. Новое */
       var recent = _manifestItems
         .filter(function (x) { return !x.featured; })
         .sort(function (a, b) { return Date.parse(b.modifiedTime || 0) - Date.parse(a.modifiedTime || 0); })

@@ -398,7 +398,7 @@ html.dark .h-scripture-bg::before {
    HERO SECTION
    ============================================================ */
 .h-hero {
-  padding-top: 72px;   /* было 112px — уменьшено, иврит ближе к шапке */
+  padding-top: 62px;   /* было 72px — ещё уменьшено, ~navbar(58px)+4px */
   padding-bottom: 56px;
   text-align: left;
 }
