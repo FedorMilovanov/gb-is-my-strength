@@ -1336,9 +1336,9 @@ html.dark mark.cp-hl {
   gap: 7px;
   padding: 6px 12px;
   border-radius: 9px;
-  /* Light mode: акцентный тинт вместо белого */
-  border: 1px solid rgba(124, 45, 45, 0.22);
-  background: rgba(124, 45, 45, 0.06);
+  /* Light mode: тёплый бежевый фон под палитру сайта */
+  border: 1px solid rgba(120, 80, 40, 0.20);
+  background: var(--h-surface, #f3ede5);
   color: var(--cp-accent, #7a2e2e);
   font-family: var(--cp-font-ui);
   font-size: 12.5px;
@@ -1361,8 +1361,7 @@ html.dark mark.cp-hl {
   display: block;
   flex-shrink: 0;
   overflow: visible;
-  position: relative;
-  top: 0.5px;
+  /* position:relative + top:0.5px убраны — они смещали иконку при 100% зуме */
 }
 
 .gb-search-btn:hover {
