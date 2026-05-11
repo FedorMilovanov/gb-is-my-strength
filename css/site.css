@@ -3810,20 +3810,7 @@ body.has-bottom-bar .bookmark-toast {
   padding-left: 14px;
 }
 
-/* ── иконка «Аа» ── */
-.btoc-fontsize-icon {
-  font-family: 'Lora', Georgia, serif;
-  font-size: 12px;
-  font-weight: 600;
-  color: var(--muted);
-  letter-spacing: -0.5px;
-  flex-shrink: 0;
-  user-select: none;
-  opacity: 0.55;
-  margin-right: 2px;
-}
-
-/* ── кнопки a / A (симметричные) ── */
+/* ── кнопки A (меньше) / A (больше) — разный font-size для наглядности ── */
 .btoc-fontsize-btn {
   appearance: none;
   border: none;
@@ -3831,7 +3818,6 @@ body.has-bottom-bar .bookmark-toast {
   color: var(--muted);
   font-family: 'Source Sans 3', system-ui, sans-serif;
   font-weight: 700;
-  font-size: 13px;          /* единый размер для обеих кнопок */
   padding: 2px 7px;
   border-radius: 5px;
   cursor: pointer;
@@ -3841,6 +3827,8 @@ body.has-bottom-bar .bookmark-toast {
   transition: background .13s, color .13s, opacity .13s;
   flex-shrink: 0;
 }
+.btoc-fontsize-btn--down { font-size: 11px; }
+.btoc-fontsize-btn--up   { font-size: 16px; }
 .btoc-fontsize-btn:hover:not(:disabled) {
   background: var(--note-bg);
   color: var(--text);
