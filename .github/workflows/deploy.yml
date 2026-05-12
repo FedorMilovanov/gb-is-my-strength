@@ -4,6 +4,9 @@ name: Deploy to GitHub Pages
 # то есть уже после cache-bust-коммита — чтобы деплоить
 # актуальную версию, а не ту, что была до автообновления мета.
 on:
+  push:
+    branches: [main]
+
   workflow_run:
     workflows: ["IndexNow — Notify Search Engines"]
     types: [completed]

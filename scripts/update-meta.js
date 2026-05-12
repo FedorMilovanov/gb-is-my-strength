@@ -355,7 +355,7 @@ function main() {
     }
   }
 
-  if (Object.keys(changes).length) {
+  if (Object.keys(changes).length || nSlugs.length) {
     console.log('\n  🗺  sitemap.xml');
     updateSitemap(changes);
     console.log('\n  📡  feed.xml');

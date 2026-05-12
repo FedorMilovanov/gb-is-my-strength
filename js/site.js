@@ -76,11 +76,22 @@
 
     throttle: function (fn, limit) {
       var last = 0;
+      var timer = null;
       return function () {
+        var ctx = this;
+        var args = arguments;
         var now = Date.now();
-        if (now - last >= limit) {
+        var remaining = limit - (now - last);
+        if (remaining <= 0) {
+          if (timer) { clearTimeout(timer); timer = null; }
           last = now;
-          fn.apply(this, arguments);
+          fn.apply(ctx, args);
+        } else if (!timer) {
+          timer = setTimeout(function () {
+            last = Date.now();
+            timer = null;
+            fn.apply(ctx, args);
+          }, remaining);
         }
       };
     },
@@ -283,7 +294,6 @@
       if (this._scrollLockCount === 1) {
         document.body.style.overflow = 'hidden';
         document.body.style.overscrollBehavior = 'none';
-        document.body.classList.add('no-scroll');
         document.documentElement.classList.remove('cp-scroll-lock');
       }
     },
@@ -293,7 +303,6 @@
       if (this._scrollLockCount === 0) {
         document.body.style.removeProperty('overflow');
         document.body.style.removeProperty('overscroll-behavior');
-        document.body.classList.remove('no-scroll');
         document.documentElement.classList.remove('cp-scroll-lock');
       }
     },
@@ -302,7 +311,6 @@
       this._scrollLockCount = 0;
       document.body.style.removeProperty('overflow');
       document.body.style.removeProperty('overscroll-behavior');
-      document.body.classList.remove('no-scroll');
       document.documentElement.classList.remove('cp-scroll-lock');
     },
 
