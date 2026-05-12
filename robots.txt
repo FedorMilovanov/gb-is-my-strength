@@ -1,4 +1,8 @@
 User-agent: *
+Allow: /css/*.css?*
+Allow: /js/*.js?*
+Allow: /nagornaya/*.css?*
+Allow: /data/*.json?*
 Allow: /
 Disallow: /*?*
 

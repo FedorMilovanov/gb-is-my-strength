@@ -6,7 +6,15 @@ on:
     paths:
       - 'articles/**'
       - 'nagornaya/**'
+      - 'about/**'
       - 'index.html'
+      - '404.html'
+      - 'css/**'
+      - 'js/**'
+      - 'data/**'
+      - 'sw.js'
+      - 'manifest.json'
+      - 'robots.txt'
       - 'sitemap.xml'
       - 'feed.xml'
 
@@ -54,11 +62,21 @@ jobs:
         id: payload
         run: |
           BASE="https://gospod-bog.ru"
-          KEY=$(cat 5762d467d2b1470989204ae7f8ed16f6.txt 2>/dev/null || echo "${{ secrets.INDEXNOW_KEY }}")
+          KEY="${{ secrets.INDEXNOW_KEY }}"
 
-          # Collect changed URLs from pushed commits
+          if [ -z "$KEY" ]; then
+            echo "⚠ INDEXNOW_KEY is empty — falling back to file"
+            KEY=$(cat 34dbdd34-965b-4934-a5d4-d18a0a783600.txt 2>/dev/null || echo "")
+          fi
+
+          if [ -z "$KEY" ]; then
+            echo "::error::INDEXNOW_KEY is not set and key file not found"
+            exit 1
+          fi
+
+          # Collect changed URLs from pushed commits — includes catalog pages
           URLS=$(git diff --name-only ${{ github.event.before }} ${{ github.event.after }} 2>/dev/null \
-            | grep -E '^(articles|nagornaya)/[^/]+/index\.html$' \
+            | grep -E '^(articles/index\.html|nagornaya/index\.html|(articles|nagornaya)/[^/]+/index\.html)$' \
             | sed 's|/index\.html$|/|' \
             | sed "s|^|${BASE}/|" \
             | jq -R . | jq -sc .)
@@ -86,12 +104,22 @@ jobs:
 
           echo "Payload: $BODY"
 
-          curl -s -o /dev/null -w "%{http_code}" \
+          BING_STATUS=$(curl -s -o /tmp/indexnow-bing.out -w "%{http_code}" \
             -X POST "https://api.indexnow.org/indexnow" \
             -H "Content-Type: application/json; charset=utf-8" \
-            -d "$BODY"
+            -d "$BODY")
 
-          curl -s -o /dev/null -w "%{http_code}" \
+          case "$BING_STATUS" in
+            2*) echo "✅ Bing IndexNow OK: $BING_STATUS" ;;
+            *) echo "❌ Bing IndexNow failed: $BING_STATUS"; cat /tmp/indexnow-bing.out; exit 1 ;;
+          esac
+
+          YANDEX_STATUS=$(curl -s -o /tmp/indexnow-yandex.out -w "%{http_code}" \
             -X POST "https://yandex.com/indexnow" \
             -H "Content-Type: application/json; charset=utf-8" \
-            -d "$BODY"
+            -d "$BODY")
+
+          case "$YANDEX_STATUS" in
+            2*) echo "✅ Yandex IndexNow OK: $YANDEX_STATUS" ;;
+            *) echo "❌ Yandex IndexNow failed: $YANDEX_STATUS"; cat /tmp/indexnow-yandex.out; exit 1 ;;
+          esac

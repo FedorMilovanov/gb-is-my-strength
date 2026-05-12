@@ -112,7 +112,10 @@ var IMG_CACHE_LIMIT = 60; /* BUG-06: ограничение кэша изобр�
 function cacheFirst(req, cacheName) {
   var isImages = cacheName === CACHE_IMAGES;
   return caches.open(cacheName).then(function(cache) {
-    return cache.match(req).then(function(cached) {
+    /* P-02: versioned assets (?v=hash) — игнорируем query при поиске в кэше,
+       чтобы precache /css/site.css отдавал /css/site.css?v=abc123 */
+    var opts = /[?&]v=/.test(req.url) ? { ignoreSearch: true } : undefined;
+    return cache.match(req, opts).then(function(cached) {
       if (cached) return cached;
       return fetch(req).then(function(res) {
         if (res && res.status === 200 && res.type !== 'opaque') {

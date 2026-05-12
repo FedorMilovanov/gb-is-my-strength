@@ -6061,14 +6061,15 @@ html.dark .summary-card__check {
   color: #7ac87a;
 }
 
-/* ── Блокировка скролла при открытом мобильном меню (Fix 3) ──
-   CSS-класс вместо body.style.overflow = 'hidden':
-   сохраняет scrollbar-gutter: stable, нет layout shift */
-body.no-scroll {
-  overflow: hidden;
-}
-
 } /* end @layer components */
+
+/* ── Блокировка скролла при открытом мобильном меню ──
+   Вне @layer — гарантирует приоритет над всеми слоями.
+   body.style.overflow inline тоже применяется через JS lockScroll(). */
+body.no-scroll {
+  overflow: hidden !important;
+  overscroll-behavior: none;
+}
 
 /* ── Search button in articles navbar ──────────────────── */
 .h-cp-btn {
