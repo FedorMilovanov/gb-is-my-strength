@@ -722,7 +722,7 @@ html.dark .cp-footer { border-top-color: var(--cp-border); color: var(--cp-ink-m
 
 html.dark .cp-preview-col { border-left-color: var(--cp-border); }
 
-@media (max-width: 720px) {
+@media (max-width: 768px) {
   .cp-preview-col { display: none; }
   .cp-box {
     max-width: none;
@@ -1238,8 +1238,8 @@ html.dark .cp-preview-author {
   }
 }
 
-/* ── Medium screens (481px–720px) ── */
-@media (min-width: 481px) and (max-width: 720px) {
+/* ── Medium screens (481px–768px) ── */
+@media (min-width: 481px) and (max-width: 768px) {
   .cp-box {
     max-width: calc(100vw - 32px);
     max-height: 75vh;

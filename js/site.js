@@ -1224,36 +1224,7 @@
       }, { passive: true });
     }
 
-    /* Fix #2: свайп снизу вверх открывает TOC (замена недоступной клавиши / на мобильном).
-       Срабатывает только если: старт в нижних 12% экрана, движение вверх ≥ 110px,
-       панель закрыта и bottom bar виден. */
-    (function () {
-      var swipeStartY = 0;
-      var swipeStartTime = 0;
-      var SWIPE_THRESHOLD = 110;  /* минимум пикселей вверх — исключает случайные движения */
-      var SWIPE_ZONE = 0.12;      /* нижние 12% экрана — только у самого края */
-      var MAX_TIME = 300;         /* мс — только чёткий быстрый свайп */
 
-      document.addEventListener('touchstart', function (e) {
-        var touch = e.touches[0];
-        swipeStartY = touch.clientY;
-        swipeStartTime = Date.now();
-      }, { passive: true });
-
-      document.addEventListener('touchend', function (e) {
-        if (overlay.classList.contains('open')) return;
-        /* Свайп работает при scrollY >= SHOW_AFTER — не зависит от видимости бара.
-           Бар может быть скрыт из-за upscroll, но TOC должен оставаться доступным. */
-        if (window.scrollY < SHOW_AFTER) return;
-        var touch = e.changedTouches[0];
-        var dy = swipeStartY - touch.clientY; /* положительное = вверх */
-        var dt = Date.now() - swipeStartTime;
-        var inZone = swipeStartY > window.innerHeight * (1 - SWIPE_ZONE);
-        if (inZone && dy >= SWIPE_THRESHOLD && dt <= MAX_TIME) {
-          openToc();
-        }
-      }, { passive: true });
-    })();
   })();
 
 
