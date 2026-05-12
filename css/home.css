@@ -1113,6 +1113,10 @@ html.dark .h-hero-search:focus-visible {
 /* Direction card — warm gradient, light stripe, radial hover glow */
 .h-card-glass {
   position: relative;
+  height: 100%;
+  box-sizing: border-box;
+  height: 100%;
+  box-sizing: border-box;
   background: linear-gradient(145deg,
     rgba(255, 252, 247, 0.88) 0%,
     rgba(248, 243, 234, 0.72) 100%);
