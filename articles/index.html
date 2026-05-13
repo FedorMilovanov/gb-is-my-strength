@@ -393,26 +393,45 @@ window.SITE_CONFIG = {
 </main>
     <!-- FOOTER -->
     
-<section class="gb-global-feedback" aria-labelledby="feedback-title">
-  <div class="gb-feedback-inner">
-    <div class="gb-feedback-badge">
-      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
-      Бета-тест
-    </div>
-    <h2 class="gb-feedback-title" id="feedback-title">Нашли баг или неточность?</h2>
-    <p class="gb-feedback-text">Мы стремимся к максимальной точности в передаче смыслов. Если вы заметили техническую ошибку или богословскую неточность — пожалуйста, дайте нам знать.</p>
-    <div class="gb-feedback-links">
-      <a href="mailto:viktorco2012@gmail.com" class="gb-feedback-btn">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline></svg>
-        Написать на Email
+<aside class="gb-accuracy-block" aria-label="Обратная связь">
+  <div class="gb-accuracy-inner">
+    <h2 class="gb-accuracy-title">Нашли неточность?</h2>
+    <p class="gb-accuracy-desc">
+      Богословскую или техническую — напишите, исправим.
+    </p>
+    <div class="gb-accuracy-actions" role="list">
+      <a href="mailto:viktorco2012@gmail.com" 
+         class="gb-accuracy-btn gb-accuracy-btn--email"
+         role="listitem"
+         aria-label="Написать на Email">
+        <svg class="gb-accuracy-btn__icon" 
+             width="18" height="18" viewBox="0 0 24 24" 
+             fill="none" stroke="currentColor" 
+             stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"
+             aria-hidden="true" focusable="false">
+          <rect x="2" y="4" width="20" height="16" rx="3"/>
+          <path d="m2 7 10 7 10-7"/>
+        </svg>
+        <span class="gb-accuracy-btn__label">Email</span>
       </a>
-      <a href="https://t.me/fedormilovanov" target="_blank" rel="noopener" class="gb-feedback-btn">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>
-        Telegram
+      <a href="https://t.me/fedormilovanov" 
+         class="gb-accuracy-btn gb-accuracy-btn--tg"
+         role="listitem"
+         target="_blank" rel="noopener noreferrer"
+         aria-label="Написать в Telegram (откроется в новой вкладке)">
+        <svg class="gb-accuracy-btn__icon"
+             width="18" height="18" viewBox="0 0 24 24" 
+             fill="none" stroke="currentColor"
+             stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"
+             aria-hidden="true" focusable="false">
+          <path d="M21.5 2.5 2.5 10l7.5 2 2 7.5 9.5-17Z"/>
+          <path d="m10 12 10-9.5"/>
+        </svg>
+        <span class="gb-accuracy-btn__label">Telegram</span>
       </a>
     </div>
   </div>
-</section>
+</aside>
 <footer class="h-footer" role="contentinfo">
       <span class="h-footer-copy">© 2026 Господь Бог — <span>Сила Моя</span></span>
       <a href="/about/">Об авторе</a>
