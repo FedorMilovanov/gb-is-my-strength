@@ -93,9 +93,15 @@
 ├── index.html          # главная (список публикаций)
 ├── 404.html
 ├── articles/           # статьи (по папке на каждую)
+├── pastor-series/         # серия «Тёмная сторона кафедры»
+├── pastor-series/         # страница серии «Тёмная сторона кафедры»
 │   ├── kod-da-vinchi/index.html
 │   ├── krajne-li-isporcheno-serdce/index.html
 │   └── hermenevticheskaya-otsenka-hristotsentrichnoy-germenevtiki/index.html
+- `articles/20-antisovetov-pastoru/index.html`
+- `pastor-series/index.html`
+- `articles/20-antisovetov-pastoru/index.html`
+- `pastor-series/index.html`
 ├── css/site.css        # единый CSS всего сайта (~5800 строк, 40 секций)
 ├── js/site.js          # единый JS всего сайта
 ├── js/bookmark-engine.js
@@ -155,6 +161,12 @@
 - `articles/kod-da-vinchi/index.html`
 - `articles/krajne-li-isporcheno-serdce/index.html`
 - `articles/hermenevticheskaya-otsenka-hristotsentrichnoy-germenevtiki/index.html`
+- `articles/20-antisovetov-pastoru/index.html`
+- `pastor-series/index.html`
+│   └── 20-antisovetov-pastoru/index.html
+- `articles/20-antisovetov-pastoru/index.html`
+- `pastor-series/index.html`
+│   └── 20-antisovetov-pastoru/index.html
 - плюс `index.html` (главная)
 
 | Элемент | Где в CSS | Правила |
