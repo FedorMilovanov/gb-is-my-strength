@@ -1,3 +1,8 @@
+# robots.txt — gospod-bog.ru
+# Policy: production URLs are canonical on https://gospod-bog.ru/.
+# Search/retrieval crawlers are allowed for discoverability and AI answer citation.
+# Bulk training/scraping agents are blocked where they expose separate user-agents.
+
 User-agent: *
 Allow: /css/*.css?*
 Allow: /js/*.js?*
@@ -10,33 +15,54 @@ User-agent: Yandex
 Allow: /
 Clean-param: utm_source&utm_medium&utm_campaign&utm_term&utm_content&yclid&gclid&fbclid
 
-# --- AI Search Bots (allow for visibility in AI Overviews / ChatGPT / Perplexity) ---
+# --- AI Search / Retrieval bots: allow for AEO/GEO visibility ---
 User-agent: OAI-SearchBot
+Allow: /
+
+User-agent: ChatGPT-User
+Allow: /
+
+User-agent: Claude-SearchBot
+Allow: /
+
+User-agent: Claude-User
 Allow: /
 
 User-agent: PerplexityBot
 Allow: /
 
-User-agent: Applebot-Extended
-Allow: /
-
-User-agent: Google-Extended
-Allow: /
-
 User-agent: YouBot
 Allow: /
 
-# --- AI Training Scrapers (block — content not licensed for training) ---
+User-agent: Applebot
+Allow: /
+
+# --- AI Training / bulk scrapers: blocked, content not licensed for model training ---
 User-agent: GPTBot
 Disallow: /
 
-User-agent: CCBot
+User-agent: Google-Extended
+Disallow: /
+
+User-agent: Applebot-Extended
 Disallow: /
 
 User-agent: anthropic-ai
 Disallow: /
 
 User-agent: ClaudeBot
+Disallow: /
+
+User-agent: CCBot
+Disallow: /
+
+User-agent: Bytespider
+Disallow: /
+
+User-agent: Meta-ExternalAgent
+Disallow: /
+
+User-agent: Meta-ExternalFetcher
 Disallow: /
 
 User-agent: cohere-ai

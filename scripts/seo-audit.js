@@ -1,0 +1,176 @@
+#!/usr/bin/env node
+/**
+ * SEO/AEO/GEO audit for gospod-bog.ru
+ *
+ * Checks production canonical consistency, social cards, JSON-LD publisher graph,
+ * FAQPage parity, sitemap image extensions, and AI bot robots policy.
+ *
+ * Run:
+ *   node scripts/seo-audit.js
+ */
+'use strict';
+
+const fs = require('fs');
+const path = require('path');
+
+const ROOT = path.resolve(__dirname, '..');
+const BASE = 'https://gospod-bog.ru';
+const ORG_ID = `${BASE}/#organization`;
+const WEBSITE_ID = `${BASE}/#website`;
+
+let errors = 0;
+let warnings = 0;
+
+function read(file) { return fs.readFileSync(path.join(ROOT, file), 'utf8'); }
+function rel(p) { return path.relative(ROOT, p).replace(/\\/g, '/'); }
+function err(file, msg) { console.log(`❌ ${file}: ${msg}`); errors++; }
+function warn(file, msg) { console.log(`⚠️  ${file}: ${msg}`); warnings++; }
+function ok(msg) { console.log(`✅ ${msg}`); }
+
+function walk(dir, out = []) {
+  for (const ent of fs.readdirSync(dir, { withFileTypes: true })) {
+    if (['.git', 'node_modules', '.next', '.npm'].includes(ent.name)) continue;
+    const p = path.join(dir, ent.name);
+    if (ent.isDirectory()) walk(p, out);
+    else out.push(p);
+  }
+  return out;
+}
+
+function getMeta(html, attr, name) {
+  const re1 = new RegExp(`<meta[^>]+${attr}=["']${name}["'][^>]+content=["']([^"']+)["'][^>]*>`, 'i');
+  const re2 = new RegExp(`<meta[^>]+content=["']([^"']+)["'][^>]+${attr}=["']${name}["'][^>]*>`, 'i');
+  return html.match(re1)?.[1] || html.match(re2)?.[1] || '';
+}
+function getLink(html, relName) {
+  return html.match(new RegExp(`<link[^>]+rel=["']${relName}["'][^>]+href=["']([^"']+)["']`, 'i'))?.[1]
+      || html.match(new RegExp(`<link[^>]+href=["']([^"']+)["'][^>]+rel=["']${relName}["']`, 'i'))?.[1]
+      || '';
+}
+function stripTags(s) {
+  return s.replace(/<span class="gtip">[\s\S]*?<\/span>/g, ' ')
+          .replace(/<[^>]+>/g, ' ')
+          .replace(/&nbsp;/g, ' ')
+          .replace(/\s+/g, ' ')
+          .trim();
+}
+function extractFaq(html) {
+  const pat = /<div class="faq-accordion__item[^>]*">\s*<button[^>]*class="faq-accordion__q"[^>]*>([\s\S]*?)<\/button>\s*<div class="faq-accordion__body"[^>]*>\s*<div class="faq-accordion__body-inner"[^>]*>([\s\S]*?)<\/div>\s*<\/div>\s*<\/div>/gi;
+  const out = [];
+  let m;
+  while ((m = pat.exec(html))) {
+    const q = stripTags(m[1]).replace(/^Q\d+\s+/, '');
+    const a = stripTags(m[2]);
+    if (q && a) out.push({ q, a, words: a.split(/\s+/).filter(Boolean).length });
+  }
+  return out;
+}
+
+const htmlFiles = walk(ROOT).filter(p => p.endsWith('.html') && !/google|yandex/.test(rel(p)));
+const allTextFiles = walk(ROOT).filter(p => /\.(html|js|css|json|xml|md|txt)$/.test(p));
+
+// SEO-01: no repository base path leakage.
+for (const p of allTextFiles) {
+  const file = rel(p);
+  const text = fs.readFileSync(p, 'utf8');
+  if (text.includes('/gb-' + 'is-my-strength/')) err(file, 'contains repository base path');
+}
+
+for (const p of htmlFiles) {
+  const file = rel(p);
+  const html = fs.readFileSync(p, 'utf8');
+  if (!html.includes('<head')) continue;
+  const canonical = getLink(html, 'canonical');
+  if (canonical && !canonical.startsWith(`${BASE}/`)) err(file, `canonical is not production origin: ${canonical}`);
+  if ((html.match(/rel="canonical"/g) || []).length > 1) err(file, 'more than one canonical link');
+
+  // Asset base path consistency: icons/manifest are production absolute, not GitHub subpath.
+  for (const href of [...html.matchAll(/<link[^>]+href="([^"]+)"[^>]*>/g)].map(m => m[1])) {
+    if (href.includes('/gb-' + 'is-my-strength/')) err(file, `asset href uses repository path: ${href}`);
+  }
+
+  const ogType = getMeta(html, 'property', 'og:type');
+  const ogImage = getMeta(html, 'property', 'og:image');
+  if (ogType && ogType !== 'profile') {
+    for (const tag of ['twitter:card', 'twitter:title', 'twitter:description', 'twitter:image']) {
+      if (!getMeta(html, 'name', tag)) err(file, `missing ${tag}`);
+    }
+  }
+  if (ogImage) {
+    const w = getMeta(html, 'property', 'og:image:width');
+    const h = getMeta(html, 'property', 'og:image:height');
+    const type = getMeta(html, 'property', 'og:image:type');
+    if (!w || !h) err(file, 'og:image width/height missing');
+    if (!type) warn(file, 'og:image:type missing');
+    if ((w && w !== '1200') || (h && h !== '630')) warn(file, `og:image dimensions are ${w}x${h}, recommended 1200x630`);
+    if (ogImage.startsWith(`${BASE}/`)) {
+      const imgPath = path.join(ROOT, ogImage.slice(BASE.length + 1));
+      if (!fs.existsSync(imgPath)) err(file, `og:image file missing: ${ogImage}`);
+    }
+  }
+
+  // JSON-LD checks.
+  const ldBlocks = [...html.matchAll(/<script\s+type="application\/ld\+json">([\s\S]*?)<\/script>/g)];
+  for (const [idx, block] of ldBlocks.entries()) {
+    let data;
+    try { data = JSON.parse(block[1]); } catch (e) { err(file, `JSON-LD block ${idx + 1} invalid JSON: ${e.message}`); continue; }
+    const roots = data['@graph'] || [data];
+    if (data['@type'] === 'BreadcrumbList') err(file, 'standalone BreadcrumbList JSON-LD; put it into @graph');
+    const ids = new Map();
+    for (const obj of roots) {
+      if (!obj || typeof obj !== 'object') continue;
+      if (obj['@id']) {
+        if (ids.has(obj['@id'])) err(file, `duplicate JSON-LD @id ${obj['@id']}`);
+        ids.set(obj['@id'], true);
+      }
+      const pub = obj.publisher;
+      if (pub && pub['@type'] === 'Person') err(file, 'publisher uses Person; use Organization node');
+      if (pub && pub['@id'] && ![ORG_ID, WEBSITE_ID].includes(pub['@id'])) warn(file, `publisher @id is not site graph id: ${pub['@id']}`);
+    }
+    if (ldBlocks.length && data['@graph']) {
+      const hasOrg = data['@graph'].some(o => o && o['@id'] === ORG_ID);
+      const hasWeb = data['@graph'].some(o => o && o['@id'] === WEBSITE_ID);
+      if (!hasOrg) err(file, 'JSON-LD @graph lacks #organization node');
+      if (!hasWeb) err(file, 'JSON-LD @graph lacks #website node');
+    }
+  }
+
+  const faq = extractFaq(html);
+  if (faq.length) {
+    if (!html.includes('"@type": "FAQPage"')) err(file, 'visible FAQ without FAQPage JSON-LD');
+    for (const item of faq) {
+      if (item.words < 60) warn(file, `FAQ answer too short (${item.words} words): ${item.q}`);
+      if (item.words > 220) warn(file, `FAQ answer too long (${item.words} words): ${item.q}`);
+    }
+    if (!/aria-controls=/.test(html)) err(file, 'FAQ buttons lack aria-controls');
+  }
+}
+
+// robots policy.
+const robots = read('robots.txt');
+for (const ua of ['OAI-SearchBot', 'Claude-SearchBot', 'Claude-User', 'PerplexityBot']) {
+  const block = robots.match(new RegExp(`User-agent:\\s*${ua}[\\s\\S]*?(?=\\nUser-agent:|\\nSitemap:|$)`, 'i'))?.[0] || '';
+  if (!/Allow:\s*\//i.test(block)) err('robots.txt', `${ua} is not explicitly allowed for retrieval`);
+}
+for (const ua of ['GPTBot', 'Bytespider', 'Applebot-Extended', 'ClaudeBot', 'Meta-ExternalAgent']) {
+  const block = robots.match(new RegExp(`User-agent:\\s*${ua}[\\s\\S]*?(?=\\nUser-agent:|\\nSitemap:|$)`, 'i'))?.[0] || '';
+  if (!/Disallow:\s*\//i.test(block)) err('robots.txt', `${ua} is not blocked as training/bulk crawler`);
+}
+
+// sitemap image namespace and unique loc.
+const sitemap = read('sitemap.xml');
+if (!/xmlns:image="http:\/\/www\.google\.com\/schemas\/sitemap-image\/1\.1"/.test(sitemap)) err('sitemap.xml', 'missing image namespace');
+const locs = [...sitemap.matchAll(/<loc>([^<]+)<\/loc>/g)].map(m => m[1]);
+const dupLocs = [...new Set(locs.filter((x, i) => locs.indexOf(x) !== i))];
+if (dupLocs.length) err('sitemap.xml', `duplicate loc entries: ${dupLocs.join(', ')}`);
+for (const block of sitemap.matchAll(/<url>([\s\S]*?)<\/url>/g)) {
+  const loc = block[1].match(/<loc>([^<]+)<\/loc>/)?.[1];
+  if (!loc) continue;
+  if (!/<image:image>/.test(block[1])) warn('sitemap.xml', `URL without image:image: ${loc}`);
+}
+
+if (errors) {
+  console.log(`\nSEO audit failed: ${errors} errors, ${warnings} warnings.`);
+  process.exit(1);
+}
+console.log(`\nSEO audit passed: 0 errors, ${warnings} warnings.`);

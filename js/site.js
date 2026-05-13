@@ -450,8 +450,19 @@
     var cfg = SiteUtils.getConfig('features.share', {});
     if (cfg.enabled === false) return;
 
-    var shareTitle = cfg.title || document.title;
-    var shareUrl   = window.location.href;
+    function metaContent(selector) {
+      var el = document.querySelector(selector);
+      return el ? (el.getAttribute('content') || '').trim() : '';
+    }
+
+    /* SEO-02/Share: социальный диалог должен делиться тем же каноническим URL,
+       который видят OG/VK/Twitter парсеры, а не текущим техническим origin
+       (например, github.io mirror или URL с query-параметрами). */
+    var shareTitle = cfg.title || metaContent('meta[property="og:title"]') || document.title;
+    var shareUrl   = metaContent('meta[property="og:url"]') ||
+                     (document.querySelector('link[rel="canonical"]') || {}).href ||
+                     window.location.href;
+    var shareImage = metaContent('meta[property="og:image"]') || metaContent('meta[name="twitter:image"]');
 
     /* ── UTM helper ── */
     function utmUrl(url, source) {
@@ -638,7 +649,9 @@
       window.open(tgWeb, '_blank', 'noopener');
     });
     document.getElementById('sd-vk').addEventListener('click', function () {
-      window.open('https://vk.com/share.php?url=' + encodeURIComponent(utmUrl(shareUrl,'vk')) + '&title=' + encodedTitle, '_blank', 'noopener');
+      var vkUrl = 'https://vk.com/share.php?url=' + encodeURIComponent(utmUrl(shareUrl,'vk')) + '&title=' + encodedTitle;
+      if (shareImage) vkUrl += '&image=' + encodeURIComponent(shareImage);
+      window.open(vkUrl, '_blank', 'noopener');
     });
     document.getElementById('sd-max').addEventListener('click', function () {
       window.open('https://share.max.ru/share?url=' + encodeURIComponent(shareUrl) + '&title=' + encodedTitle, '_blank', 'noopener');
