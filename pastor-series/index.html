@@ -3,97 +3,416 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Тёмная сторона кафедры — Серия материалов | Господь Бог</title>
-  <link rel="stylesheet" href="../css/site.css">
-  <link rel="stylesheet" href="../css/home.css">
-  <style>
-    .series-page-header { padding: 100px 0 60px; text-align: center; background: var(--bg-elevated); border-bottom: 1px solid var(--border); }
-    .series-page-title { font-family: 'Playfair Display', serif; font-size: clamp(2.5rem, 8vw, 4rem); font-weight: 800; color: var(--accent); margin-bottom: 20px; }
-    .series-page-desc { max-width: 700px; margin: 0 auto; font-size: 1.2rem; color: var(--muted); line-height: 1.6; }
-    .series-grid { display: grid; gap: 30px; margin: 60px 0; }
-  </style>
+  <meta name="theme-color" content="#f8f5f0" media="(prefers-color-scheme: light)">
+  <meta name="theme-color" content="#171411" media="(prefers-color-scheme: dark)">
+
+  <title>Тёмная сторона кафедры — Серия материалов | Господь Бог — Сила Моя</title>
+  <meta name="description" content="Авторская серия о системных патологиях церковного руководства, механике манипуляций и путях восстановления библейского пасторства.">
+  <meta name="robots" content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1">
+  <link rel="canonical" href="https://gospod-bog.ru/pastor-series/">
+
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="Тёмная сторона кафедры — серия материалов">
+  <meta property="og:description" content="Системный анализ пасторских патологий, механики манипуляций и путей к здоровой церковной культуре.">
+  <meta property="og:url" content="https://gospod-bog.ru/pastor-series/">
+  <meta property="og:site_name" content="Господь Бог — Сила Моя">
+  <meta property="og:locale" content="ru_RU">
+  <meta property="og:image" content="https://gospod-bog.ru/images/pastor-series/hero.png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:image:type" content="image/png">
+  <meta property="og:image:alt" content="Тёмная сторона кафедры — серия о пасторских патологиях">
+  <meta name="author" content="Фёдор Милованов">
+  <meta name="keywords" content="пасторство, пасторские патологии, авторитаризм в церкви, диотрефство, здоровая церковь, тёмная сторона кафедры">
+  <meta name="geo.region" content="RU-SPE">
+  <meta name="geo.placename" content="Санкт-Петербург">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Тёмная сторона кафедры — серия материалов">
+  <meta name="twitter:description" content="Системный анализ пасторских патологий, механики манипуляций и путей к здоровой церковной культуре.">
+  <meta name="twitter:image:alt" content="Тёмная сторона кафедры — серия материалов">
+  <meta name="twitter:image" content="https://gospod-bog.ru/images/pastor-series/hero.png">
+
+  <link href="https://gospod-bog.ru/feed.xml" rel="alternate" title="Господь Бог — Сила Моя — RSS" type="application/rss+xml">
+  <link rel="icon" type="image/x-icon" href="/favicon.ico">
+  <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+  <link rel="icon" type="image/png" sizes="48x48" href="/favicon-48.png">
+  <link rel="icon" type="image/png" sizes="120x120" href="/favicon-120.png">
+  <link rel="icon" type="image/png" sizes="192x192" href="/icons/icon-192.png">
+  <link rel="manifest" href="/manifest.json">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,500;0,600;1,400&family=Source+Sans+3:wght@400;500;600&family=Playfair+Display:ital,wght@0,400;0,600;0,700;0,800;1,400;1,600;1,700&family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+
+  <!-- Yandex.Metrika -->
+  <script type="text/javascript">
+    (function(m,e,t,r,i,k,a){m[i]=m[i]||function(){(m[i].a=m[i].a||[]).push(arguments)};m[i].l=1*new Date();for(var j=0;j<document.scripts.length;j++){if(document.scripts[j].src===r){return;}}k=e.createElement(t),a=e.getElementsByTagName(t)[0],k.async=1,k.src=r,a.parentNode.insertBefore(k,a)})(window,document,'script','https://mc.yandex.ru/metrika/tag.js?id=108353327','ym');
+    ym(108353327,'init',{ssr:false,webvisor:true,clickmap:true,accurateTrackBounce:true,trackLinks:true});
+  </script>
+  <noscript><div><img decoding="async" src="https://mc.yandex.ru/watch/108353327" style="position:absolute;left:-9999px;" alt=""></div></noscript>
+
+  <!-- Anti-FOUC -->
+  <script>(function(){try{var t=localStorage.getItem('theme');if(t==='dark'||(!t&&window.matchMedia('(prefers-color-scheme: dark)').matches)){document.documentElement.classList.add('dark');}}catch(e){}})();</script>
+
+  <link rel="stylesheet" href="../css/site.css?v=740eecd3">
+  <link rel="stylesheet" href="../css/home.css?v=cf58f06f">
+
+  <script>
+window.SITE_CONFIG = {
+  version: 1,
+  site: { id: 'gb-strength', name: 'Господь Бог — Сила Моя', baseUrl: 'https://gospod-bog.ru', locale: 'ru-RU', themeStorageKey: 'theme', debug: false },
+  page: { type: 'series', id: 'pastor-series', title: 'Тёмная сторона кафедры — серия' },
+  features: { themeToggle: { enabled: true }, bookmarks: { enabled: false }, homepageResume: { enabled: false } }
+};
+  </script>
+
+
+  <!-- Structured Data -->
+  <script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "CollectionPage",
+      "@id": "https://gospod-bog.ru/pastor-series/#collectionpage",
+      "name": "Тёмная сторона кафедры — серия материалов",
+      "description": "Системный анализ пасторских патологий: власть без подотчётности, манипуляция Писанием, портреты авторитарности и пути к библейской церковной культуре.",
+      "url": "https://gospod-bog.ru/pastor-series/",
+      "inLanguage": "ru",
+      "author": {
+        "@type": "Person",
+        "name": "Фёдор Милованов",
+        "url": "https://gospod-bog.ru/about/"
+      },
+      "publisher": {
+        "@type": "Organization",
+        "name": "Господь Бог — Сила Моя",
+        "url": "https://gospod-bog.ru",
+        "logo": { "@type": "ImageObject", "url": "https://gospod-bog.ru/icons/icon-512.png", "width": 512, "height": 512 }
+      },
+      "image": "https://gospod-bog.ru/images/pastor-series/hero.png",
+      "hasPart": [
+        { "@type": "Article", "url": "https://gospod-bog.ru/articles/20-antisovetov-pastoru/", "name": "Часть I: 20 антисоветов, как пастору разрушить своё служение" },
+        { "@type": "Article", "url": "https://gospod-bog.ru/pastor-series/", "name": "Часть II: Механика манипуляций: как Писание становится рычагом" },
+        { "@type": "Article", "url": "https://gospod-bog.ru/pastor-series/", "name": "Часть III: Диотрефы нашего времени: портреты авторитарности" },
+        { "@type": "Article", "url": "https://gospod-bog.ru/pastor-series/", "name": "Часть IV: Путь к исцелению: признаки здоровой церковной культуры" }
+      ]
+    },
+    {
+      "@type": "BreadcrumbList",
+      "itemListElement": [
+        { "@type": "ListItem", "position": 1, "name": "Господь Бог — Сила Моя", "item": "https://gospod-bog.ru/" },
+        { "@type": "ListItem", "position": 2, "name": "Тёмная сторона кафедры — серия материалов", "item": "https://gospod-bog.ru/pastor-series/" }
+      ]
+    }
+  ]
+}
+  </script>
+  <link rel="stylesheet" href="../css/command-palette.css?v=38493a92">
+  <link rel="preload" as="image" href="/images/pastor-series/hero.png" fetchpriority="high">
+<style>
+.skip-link { position: absolute; top: -40px; left: 0; background: #14100b; color: #f5f0e8; padding: 8px 16px; text-decoration: none; font-size: 14px; z-index: 10000; border-radius: 0 0 4px 0; transition: top 0.2s; }
+.skip-link:focus { top: 0; }
+</style>
 </head>
-<body class="antialiased">
-  <div class="page-wrap">
-    <header class="site-header">
-      <div class="container">
-        <a class="site-logo" href="../">
-          <span class="logo-icon">ГБ</span>
-          <span class="logo-text">Господь Бог — Сила Моя</span>
-        </a>
-      </div>
-    </header>
 
-    <div class="series-page-header">
-      <div class="container">
-        <h1 class="series-page-title">Тёмная сторона кафедры</h1>
-        <p class="series-page-desc">Исследование системных патологий в церковном руководстве, механики манипуляций и путей восстановления библейского пасторства.</p>
-      </div>
+<body>
+<a href="#main-content" class="skip-link">Перейти к содержимому</a>
+
+<div class="h-reading-progress" id="hReadingProgress" aria-hidden="true"></div>
+
+<nav class="h-navbar" id="hNavbar" role="navigation" aria-label="Основная навигация">
+  <div class="h-navbar__inner">
+    <a href="/" class="h-nav-logo" aria-label="Господь Бог — Сила Моя — на главную">
+      <span class="h-nav-logo-main">Господь Бог</span>
+      <span class="h-nav-logo-dash" aria-hidden="true">&nbsp;—&nbsp;</span>
+      <span class="h-nav-logo-accent">Сила Моя</span>
+    </a>
+    <ul class="h-nav-links" role="list">
+      <li><a href="/">Публикации</a></li>
+      <li><a href="/">Разбор заблуждений</a></li>
+      <li><a href="/">О библиотеке</a></li>
+      <li>
+        <button class="h-theme-btn" id="hThemeBtn" aria-label="Переключить тему">
+          <svg class="icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12.8A9 9 0 1111.2 3 7 7 0 0021 12.8z"/></svg>
+          <svg class="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
+        </button>
+      </li>
+    </ul>
+    <div style="display:flex;align-items:center;gap:4px;" class="mobile-controls">
+      <button class="h-theme-btn" id="hThemeBtnMobile" aria-label="Переключить тему">
+        <svg class="icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M21 12.8A9 9 0 1111.2 3 7 7 0 0021 12.8z"/></svg>
+        <svg class="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
+      </button>
+      <button class="h-mobile-menu-btn" id="hMobileMenuBtn" aria-label="Открыть меню" aria-expanded="false">
+        <svg id="hBurgerIcon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true" focusable="false"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+        <svg id="hCloseIcon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="display:none;" aria-hidden="true" focusable="false"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
     </div>
+  </div>
+</nav>
 
-    <main class="container">
-      <div class="series-grid">
-        <a href="../articles/20-antisovetov-pastoru/" class="h-article-card">
-          <div class="h-article-thumb">
-            <img src="../images/pastor-series/hero.png" alt="20 антисоветов пастору">
-          </div>
-          <div class="h-article-body">
-            <h2 class="h-article-title">20 антисоветов, как пастору разрушить своё служение</h2>
-            <div class="h-article-meta">
-              <span class="h-meta-tag">Часть 1</span>
-              <span class="h-meta-time">25 мин</span>
+<div class="h-mobile-nav" id="hMobileNav" aria-hidden="true">
+  <a href="/" onclick="closeMobileNav()">Публикации</a>
+  <a href="/" onclick="closeMobileNav()">Разбор заблуждений</a>
+  <a href="/" onclick="closeMobileNav()">О библиотеке</a>
+</div>
+
+<div class="home-v20">
+  <div class="home-content">
+
+    <section class="h-hero" data-pagefind-body aria-label="Серия статей">
+      <nav aria-label="Хлебные крошки" style="margin-bottom:16px;">
+        <ol style="list-style:none;padding:0;margin:0;display:flex;align-items:center;gap:6px;font-size:13px;flex-wrap:wrap;">
+          <li><a href="/" style="color:var(--h-muted);text-decoration:none;transition:color .2s;" onmouseover="this.style.color='var(--h-accent)'" onmouseout="this.style.color='var(--h-muted)'">Главная</a></li>
+          <li aria-hidden="true" style="color:var(--h-muted);opacity:.5;">›</li>
+          <li aria-current="page" style="color:var(--h-text,var(--text));font-weight:500;">Тёмная сторона кафедры</li>
+        </ol>
+      </nav>
+
+      <p class="h-hero-tagline">Авторская серия</p>
+      <h1 class="h-hero-title" tabindex="-1">
+        <span class="h-title-static">Тёмная сторона</span><span class="h-title-dash" aria-hidden="true">&nbsp;</span><span class="h-title-accent">кафедры</span>
+      </h1>
+      <p class="h-hero-desc">
+        Системный анализ пасторских патологий: власть без подотчётности, манипуляция Писанием, портреты авторитарности и пути к библейской церковной культуре. Серия материалов, выходящих последовательно.
+      </p>
+      <hr class="h-rule" aria-hidden="true">
+    </section>
+
+    <main id="main-content">
+
+    <!-- ARTICLE CARDS -->
+    <section class="h-section h-reveal" aria-labelledby="seriesLabel">
+      <p class="h-section-label" id="seriesLabel">Материалы серии</p>
+      <div class="h-section-accent" aria-hidden="true"></div>
+
+      <div class="h-articles-group">
+        <ul class="h-article-list">
+
+          <!-- Часть I — опубликована -->
+          <li>
+            <a href="/articles/20-antisovetov-pastoru/" class="h-article-card">
+              <div class="h-article-thumb">
+                <img src="../images/pastor-series/hero.png"
+                     alt="20 антисоветов пастору"
+                     decoding="async" loading="eager" width="160" height="108">
+              </div>
+              <div class="h-article-body">
+                <div class="h-article-kicker">Часть I</div>
+                <h3 class="h-article-title">20 антисоветов: как пастору разрушить своё служение</h3>
+                <div class="h-article-meta">
+                  <span class="h-meta-author">Редактор: Фёдор Милованов</span>
+                  <span class="h-meta-sep" aria-hidden="true">·</span>
+                  <span class="h-meta-tag">Патологии власти</span>
+                </div>
+                <p class="h-article-abstract">Двадцать системных ошибок в пасторском служении — от культа личности до информационного контроля. Разбор через призму Писания и реальных кейсов.</p>
+              </div>
+            </a>
+          </li>
+
+          <!-- Часть II — скоро -->
+          <li>
+            <div class="h-article-card" style="opacity:0.72;cursor:default;pointer-events:none;" aria-disabled="true" data-pagefind-ignore>
+              <div class="h-article-thumb">
+                <img src="../images/pastor-series/manipulation.png"
+                     alt="Механика манипуляций"
+                     decoding="async" loading="lazy" width="160" height="108">
+              </div>
+              <div class="h-article-body">
+                <div class="h-article-kicker">Часть II</div>
+                <h3 class="h-article-title">Механика манипуляций: как Писание становится рычагом</h3>
+                <div class="h-article-meta">
+                  <span class="h-meta-author">Редактор: Фёдор Милованов</span>
+                  <span class="h-meta-sep" aria-hidden="true">·</span>
+                  <span class="h-meta-tag" style="background:var(--accent-soft);color:var(--accent);">Скоро</span>
+                </div>
+                <p class="h-article-abstract">Разбор конкретных приёмов искажения экзегезы для удержания власти и подавления вопросов — с примерами из проповедей и пасторской практики.</p>
+              </div>
             </div>
-            <p class="h-article-abstract">Системный анализ пасторских патологий: власть, страх и путь к здоровой церковной культуре. Первая статья цикла.</p>
-          </div>
-        </a>
+          </li>
 
-        <div class="h-article-card" style="opacity: 0.7; cursor: default;">
-          <div class="h-article-body">
-            <h2 class="h-article-title">Механика манипуляций: как Писание становится рычагом</h2>
-            <div class="h-article-meta"><span class="h-meta-tag">Часть 2</span> <span class="h-meta-tag">Скоро</span></div>
-            <p class="h-article-abstract">Разбор конкретных приемов искажения экзегезы для удержания власти и подавления вопросов.</p>
-          </div>
+          <!-- Часть III — в разработке -->
+          <li>
+            <div class="h-article-card" style="opacity:0.55;cursor:default;pointer-events:none;" aria-disabled="true" data-pagefind-ignore>
+              <div class="h-article-thumb">
+                <img src="../images/pastor-series/mirror.png"
+                     alt="Диотрефы нашего времени"
+                     decoding="async" loading="lazy" width="160" height="108">
+              </div>
+              <div class="h-article-body">
+                <div class="h-article-kicker">Часть III</div>
+                <h3 class="h-article-title">Диотрефы нашего времени: портреты авторитарности</h3>
+                <div class="h-article-meta">
+                  <span class="h-meta-author">Редактор: Фёдор Милованов</span>
+                  <span class="h-meta-sep" aria-hidden="true">·</span>
+                  <span class="h-meta-tag" style="background:var(--accent-soft);color:var(--accent);opacity:.8;">В разработке</span>
+                </div>
+                <p class="h-article-abstract">Библейские и современные примеры того, как любовь к первенству разрушает общины. 3 Ин. 9–10 как диагностическая рамка.</p>
+              </div>
+            </div>
+          </li>
+
+          <!-- Часть IV — анонс -->
+          <li>
+            <div class="h-article-card" style="opacity:0.4;cursor:default;pointer-events:none;" aria-disabled="true" data-pagefind-ignore>
+              <div class="h-article-thumb" style="background:var(--bg-elevated);display:flex;align-items:center;justify-content:center;min-height:108px;">
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="var(--border-strong)" stroke-width="1.5"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+              </div>
+              <div class="h-article-body">
+                <div class="h-article-kicker">Часть IV</div>
+                <h3 class="h-article-title">Путь к исцелению: признаки здоровой церковной культуры</h3>
+                <div class="h-article-meta">
+                  <span class="h-meta-tag" style="background:var(--accent-soft);color:var(--accent);opacity:.7;">Планируется</span>
+                </div>
+                <p class="h-article-abstract">Практические критерии здорового пасторства: подотчётность, прозрачность, питание паствы Словом. Заключительная часть серии.</p>
+              </div>
+            </div>
+          </li>
+
+        </ul>
+      </div>
+    </section>
+
+    <!-- SERIES STATS -->
+    <section class="h-section h-reveal" style="padding-top:0;" aria-label="О серии">
+      <div class="h-grid-4" role="list" style="grid-template-columns:repeat(auto-fit,minmax(140px,1fr));">
+        <div class="h-card-glass h-reveal h-reveal-d1" role="listitem" style="text-align:center;display:block;padding:18px 16px;">
+          <div style="font-size:2rem;font-weight:700;color:var(--h-accent);font-family:var(--h-font-display);">4</div>
+          <p class="h-card-desc" style="margin-top:4px;">части серии</p>
         </div>
-
-        <div class="h-article-card" style="opacity: 0.7; cursor: default;">
-          <div class="h-article-body">
-            <h2 class="h-article-title">Диотрефы нашего времени: портреты авторитарности</h2>
-            <div class="h-article-meta"><span class="h-meta-tag">Часть 3</span> <span class="h-meta-tag">В разработке</span></div>
-            <p class="h-article-abstract">Библейские и современные примеры того, как любовь к первенству разрушает общины.</p>
-          </div>
+        <div class="h-card-glass h-reveal h-reveal-d2" role="listitem" style="text-align:center;display:block;padding:18px 16px;">
+          <div style="font-size:2rem;font-weight:700;color:var(--h-accent);font-family:var(--h-font-display);">20</div>
+          <p class="h-card-desc" style="margin-top:4px;">пасторских патологий</p>
+        </div>
+        <div class="h-card-glass h-reveal h-reveal-d3" role="listitem" style="text-align:center;display:block;padding:18px 16px;">
+          <div style="font-size:2rem;font-weight:700;color:var(--h-accent);font-family:var(--h-font-display);">25+</div>
+          <p class="h-card-desc" style="margin-top:4px;">разобранных случаев</p>
+        </div>
+        <div class="h-card-glass h-reveal h-reveal-d4" role="listitem" style="text-align:center;display:block;padding:18px 16px;">
+          <div style="font-size:2rem;font-weight:700;color:var(--h-accent);font-family:var(--h-font-display);">3 Ин</div>
+          <p class="h-card-desc" style="margin-top:4px;">диагностическая рамка</p>
         </div>
       </div>
+    </section>
 
-      <div class="note-box" style="margin-bottom: 100px;">
-        <strong>Внимание:</strong> Серия находится в процессе написания. Новые материалы будут добавляться по мере готовности. Следите за обновлениями в наших соцсетях и RSS.
-      </div>
     </main>
 
-    
-<section class="gb-global-feedback" aria-labelledby="feedback-title">
-  <div class="gb-feedback-inner">
-    <div class="gb-feedback-badge">
-      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
-      Бета-тест
+    <!-- PREMIUM SUBSCRIBE -->
+    <section class="gb-report" aria-label="Сообщить об ошибке">
+  <div class="gb-report-inner">
+    <svg class="gb-report-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+    <div class="gb-report-body">
+      <p class="gb-report-title">Заметили неточность?</p>
+      <p class="gb-report-text">Богословскую или техническую — напишите, исправим.</p>
     </div>
-    <h2 class="gb-feedback-title" id="feedback-title">Нашли баг или неточность?</h2>
-    <p class="gb-feedback-text">Мы стремимся к максимальной точности в передаче смыслов. Если вы заметили техническую ошибку или богословскую неточность — пожалуйста, дайте нам знать.</p>
-    <div class="gb-feedback-links">
-      <a href="mailto:viktorco2012@gmail.com" class="gb-feedback-btn">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline></svg>
-        Написать на Email
+    <div class="gb-report-links">
+      <a href="mailto:viktorco2012@gmail.com" class="gb-report-btn">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+        Email
       </a>
-      <a href="https://t.me/fedormilovanov" target="_blank" rel="noopener" class="gb-feedback-btn">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>
+      <a href="https://t.me/fedormilovanov" target="_blank" rel="noopener" class="gb-report-btn">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
         Telegram
       </a>
     </div>
   </div>
 </section>
-<footer class="h-footer">
+
+    <footer class="h-footer" role="contentinfo">
       <span class="h-footer-copy">© 2026 Господь Бог — <span>Сила Моя</span></span>
+      <a href="/about/">Об авторе</a>
     </footer>
+
   </div>
-  <script src="../js/site.js"></script>
+</div>
+
+<button class="h-scroll-top" id="hScrollTop" aria-label="Наверх">
+  <svg class="h-progress-ring" width="50" height="50" viewBox="0 0 50 50" aria-hidden="true">
+    <circle class="h-progress-ring-circle" id="hProgressCircle" cx="25" cy="25" r="22" style="stroke-dasharray: 138.23; stroke-dashoffset: 138.23;"/>
+  </svg>
+  <span class="h-scroll-top-arrow" aria-hidden="true">
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><polyline points="18 15 12 9 6 15"/></svg>
+  </span>
+</button>
+
+<script src="../js/site.js?v=656036fd" defer></script>
+<script>
+(function () {
+  'use strict';
+  var progressBar = document.getElementById('hReadingProgress');
+  var progressCircle = document.getElementById('hProgressCircle');
+  var circumference = 138.23;
+  var navbar = document.getElementById('hNavbar');
+  var lastScroll = 0;
+  var scrollTopBtn = document.getElementById('hScrollTop');
+  var reveals = document.querySelectorAll('.h-reveal');
+
+  function updateProgress() {
+    var scrollTop = window.scrollY || window.pageYOffset;
+    var docH = document.documentElement.scrollHeight - window.innerHeight;
+    var pct = docH > 0 ? scrollTop / docH : 0;
+    if (progressBar) progressBar.style.width = (pct * 100) + '%';
+    if (progressCircle) progressCircle.style.strokeDashoffset = (circumference - pct * circumference) + '';
+  }
+  function updateNavbar() {
+    var s = window.scrollY || window.pageYOffset;
+    if (s > 40) navbar.classList.add('scrolled'); else navbar.classList.remove('scrolled');
+    if (s > 300 && s > lastScroll + 6) navbar.classList.add('nav-hidden');
+    else if (s < lastScroll - 6) navbar.classList.remove('nav-hidden');
+    lastScroll = s;
+  }
+  function updateScrollTop() {
+    var s = window.scrollY || window.pageYOffset;
+    if (s > 500) scrollTopBtn.classList.add('visible'); else scrollTopBtn.classList.remove('visible');
+  }
+  if (scrollTopBtn) scrollTopBtn.addEventListener('click', function () { window.scrollTo({ top: 0, behavior: 'smooth' }); });
+  window.addEventListener('scroll', function () { updateProgress(); updateNavbar(); updateScrollTop(); revealOnScroll(); }, { passive: true });
+
+  var mobileThemeBtn = document.getElementById('hThemeBtnMobile');
+  if (mobileThemeBtn) mobileThemeBtn.addEventListener('click', function () {
+    var isDarkNow = document.documentElement.classList.toggle('dark');
+    try { localStorage.setItem('theme', isDarkNow ? 'dark' : 'light'); } catch(e) {}
+  });
+
+  var mobileMenuBtn = document.getElementById('hMobileMenuBtn');
+  var mobileNav = document.getElementById('hMobileNav');
+  var burgerIcon = document.getElementById('hBurgerIcon');
+  var closeIcon = document.getElementById('hCloseIcon');
+  var mobileOpen = false;
+  var mobileBackdrop = document.createElement('div');
+  mobileBackdrop.style.cssText = 'display:none;position:fixed;inset:0;z-index:8998;background:transparent;';
+  document.body.appendChild(mobileBackdrop);
+  function openMobileNav() {
+    mobileOpen = true; mobileNav.classList.add('open'); mobileNav.removeAttribute('aria-hidden');
+    mobileMenuBtn.setAttribute('aria-expanded','true'); burgerIcon.style.display='none'; closeIcon.style.display='block';
+    document.body.style.overflow='hidden'; mobileBackdrop.style.display='block';
+  }
+  function closeMobileNavInternal() {
+    mobileOpen = false; mobileNav.classList.remove('open'); mobileNav.setAttribute('aria-hidden','true');
+    mobileMenuBtn.setAttribute('aria-expanded','false'); burgerIcon.style.display='block'; closeIcon.style.display='none';
+    document.body.style.overflow=''; mobileBackdrop.style.display='none';
+  }
+  window.closeMobileNav = closeMobileNavInternal;
+  if (mobileMenuBtn) mobileMenuBtn.addEventListener('click', function () { if (mobileOpen) closeMobileNavInternal(); else openMobileNav(); });
+  mobileBackdrop.addEventListener('click', closeMobileNavInternal);
+
+  function revealOnScroll() {
+    reveals.forEach(function (el) {
+      if (el.classList.contains('h-in')) return;
+      if (el.getBoundingClientRect().top < window.innerHeight - 60) el.classList.add('h-in');
+    });
+  }
+  if ('IntersectionObserver' in window) {
+    var observer = new IntersectionObserver(function (entries) {
+      entries.forEach(function (e) { if (e.isIntersecting) { e.target.classList.add('h-in'); observer.unobserve(e.target); } });
+    }, { threshold: 0.08 });
+    reveals.forEach(function (el) { observer.observe(el); });
+  }
+  revealOnScroll(); updateProgress(); updateNavbar(); updateScrollTop();
+})();
+</script>
+
+<script src="../js/sw-register.js?v=e66ef547" defer></script>
+<script src="../js/search.js?v=8d27a9af" defer></script>
 </body>
 </html>
