@@ -163,12 +163,47 @@ window.SITE_CONFIG = {
 .popover-close-btn { float: right; cursor: pointer; font-size: 20px; line-height: 1; color: var(--muted); margin-top: -10px; margin-right: -10px; padding: 10px; }
 .popover-section { margin-bottom: 16px; }
 .popover-text { font-size: 14px; line-height: 1.6; font-family: var(--font-body, 'Lora', serif); }
-.faq-accordion__item { border-bottom: 1px solid var(--border); }
-.faq-accordion__q { width: 100%; display: flex; justify-content: space-between; align-items: center; padding: 1.25rem 0; font-family: var(--font-display, 'Playfair Display', serif); font-size: 1.2rem; font-weight: 700; background: none; border: none; cursor: pointer; text-align: left; color: var(--text); }
-.faq-accordion__icon { transition: transform 0.3s ease; border-right: 2px solid var(--muted); border-bottom: 2px solid var(--muted); width: 8px; height: 8px; transform: rotate(45deg); display: inline-block; }
-.is-open .faq-accordion__icon { transform: rotate(-135deg); }
-.faq-accordion__body { max-height: 0; overflow: hidden; transition: max-height 0.3s ease-out; }
-.faq-accordion__body-inner { padding-bottom: 1.5rem; }
+/* FAQ v2 — премиальные богословские карточки, в стиле статьи */
+.faq-accordion { display: flex; flex-direction: column; gap: 14px; margin-bottom: 4rem; }
+.faq-accordion__item { position: relative; overflow: hidden; background: var(--bg-elevated, #fff); border: 1px solid var(--border); border-left: 3px solid var(--border); border-radius: 16px; transition: border-color .25s ease, box-shadow .25s ease, transform .25s ease; }
+.faq-accordion__item:hover { border-color: color-mix(in srgb, var(--accent) 34%, var(--border)); border-left-color: var(--accent); box-shadow: 0 10px 28px -18px rgba(0,0,0,.18); }
+.faq-accordion__item.is-open { border-color: var(--accent); border-left-color: var(--accent); box-shadow: 0 18px 42px -28px color-mix(in srgb, var(--accent) 65%, transparent); }
+.dark .faq-accordion__item, html.dark .faq-accordion__item { background: color-mix(in srgb, var(--bg-elevated, #161a21) 92%, transparent); }
+.faq-accordion__q { width: 100%; display: flex; align-items: center; gap: 16px; padding: 1.15rem 1.35rem; font-family: var(--font-display, 'Playfair Display', serif); font-size: 1.13rem; font-weight: 700; line-height: 1.42; background: none; border: 0; cursor: pointer; text-align: left; color: var(--text); transition: color .2s ease; }
+.faq-accordion__q:hover { color: var(--accent); }
+.faq-accordion__q:focus-visible { outline: 2px solid var(--accent); outline-offset: -3px; border-radius: 16px; }
+.faq-accordion__num { flex: 0 0 auto; display: inline-flex; align-items: center; justify-content: center; width: 34px; height: 34px; border-radius: 999px; background: color-mix(in srgb, var(--accent) 12%, transparent); color: var(--accent); font-family: var(--font-body, 'Source Sans 3', sans-serif); font-size: .78rem; font-weight: 800; letter-spacing: .04em; transition: background .25s ease, color .25s ease; }
+.faq-accordion__item.is-open .faq-accordion__num { background: var(--accent); color: #fff; }
+.faq-accordion__q-text { flex: 1 1 auto; min-width: 0; }
+.faq-accordion__icon { flex: 0 0 auto; width: 28px; height: 28px; border-radius: 999px; border: 1.5px solid var(--border); position: relative; transition: background .25s ease, border-color .25s ease, transform .35s cubic-bezier(.22,1,.36,1); }
+.faq-accordion__icon::before, .faq-accordion__icon::after { content: ""; position: absolute; top: 50%; left: 50%; background: var(--muted); border-radius: 2px; transition: background .25s ease, transform .35s cubic-bezier(.22,1,.36,1); }
+.faq-accordion__icon::before { width: 12px; height: 1.6px; transform: translate(-50%,-50%); }
+.faq-accordion__icon::after { width: 1.6px; height: 12px; transform: translate(-50%,-50%); }
+.faq-accordion__item:hover .faq-accordion__icon { border-color: var(--accent); }
+.faq-accordion__item:hover .faq-accordion__icon::before, .faq-accordion__item:hover .faq-accordion__icon::after { background: var(--accent); }
+.faq-accordion__item.is-open .faq-accordion__icon { background: var(--accent); border-color: var(--accent); transform: rotate(180deg); }
+.faq-accordion__item.is-open .faq-accordion__icon::before { background: #fff; transform: translate(-50%,-50%) rotate(45deg); }
+.faq-accordion__item.is-open .faq-accordion__icon::after { background: #fff; transform: translate(-50%,-50%) rotate(-45deg); }
+.faq-accordion__body { max-height: 0; overflow: hidden; transition: max-height .42s cubic-bezier(.22,1,.36,1); }
+.faq-accordion__body-inner { position: relative; padding: 0 1.35rem 1.35rem calc(1.35rem + 34px + 16px); font-family: var(--font-body, 'Lora', serif); font-size: 1rem; line-height: 1.78; color: var(--text); }
+.faq-accordion__body-inner::before { content: ""; position: absolute; left: 1.35rem; top: .15rem; bottom: 1.35rem; width: 2px; border-radius: 2px; background: linear-gradient(to bottom, var(--accent), transparent); opacity: .36; }
+.faq-accordion__body-inner p { margin: 0 0 1rem; }
+.faq-accordion__body-inner p:last-child { margin-bottom: 0; }
+.faq-accordion__body-inner ul { margin: .55rem 0 1rem; padding-left: 1.1rem; }
+.faq-accordion__body-inner li { margin: .35rem 0; }
+.faq-accordion__body-inner strong { color: var(--accent); font-weight: 700; }
+.faq-kicker { color: var(--muted); font-size: .98rem; line-height: 1.65; margin-top: -1rem; margin-bottom: 1.5rem; }
+@media (max-width: 640px) {
+  .faq-accordion { gap: 12px; }
+  .faq-accordion__q { padding: 1rem 1.05rem; gap: 12px; font-size: 1.02rem; }
+  .faq-accordion__num { width: 30px; height: 30px; font-size: .72rem; }
+  .faq-accordion__icon { width: 24px; height: 24px; }
+  .faq-accordion__icon::before { width: 10px; }
+  .faq-accordion__icon::after { height: 10px; }
+  .faq-accordion__body-inner { padding: 0 1.05rem 1.1rem calc(1.05rem + 30px + 12px); font-size: .96rem; }
+  .faq-accordion__body-inner::before { left: 1.05rem; bottom: 1.1rem; }
+}
+
 .series-nav { margin: 60px 0; padding: 40px; background: var(--accent-soft); border-radius: 20px; border: 1px solid var(--border); }
 .series-nav-title { font-family: var(--font-display, 'Playfair Display', serif); font-size: 1.5rem; font-weight: 700; margin-bottom: 20px; color: var(--accent); }
 .series-list { list-style: none; padding: 0; margin: 0; display: grid; gap: 12px; }
@@ -251,54 +286,26 @@ a.series-card:hover{border-color:var(--accent);transform:translateY(-2px);box-sh
 <body>
 <a href="#content" class="skip-link">Перейти к содержанию</a>
 
-<div class="h-reading-progress" id="hReadingProgress" aria-hidden="true"></div>
-
-<nav class="h-navbar" id="hNavbar" role="navigation" aria-label="Основная навигация">
-  <div class="h-navbar__inner">
-    <a href="../../" class="h-nav-logo" aria-label="Господь Бог — Сила Моя — на главную">
-      <span class="h-nav-logo-main">Господь Бог</span>
-      <span class="h-nav-logo-dash" aria-hidden="true">&nbsp;—&nbsp;</span>
-      <span class="h-nav-logo-accent">Сила Моя</span>
-    </a>
-    <!-- Desktop nav links -->
-    <ul class="h-nav-links" role="list">
-      <li><a href="../../">Публикации</a></li>
-      <li><a href="../../">Разбор заблуждений</a></li>
-      <li><a href="../../about/">О библиотеке</a></li>
-    </ul>
-
-    <!-- Controls: тема + бургер. Единая кнопка темы (унифицировано с index.html). -->
-    <div class="mobile-controls">
-      <button class="theme-toggle" id="themeToggle" aria-label="Переключить тему">
-        <svg class="icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12.8A9 9 0 1111.2 3 7 7 0 0021 12.8z"/></svg>
-        <svg class="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
-      </button>
-      <button class="h-mobile-menu-btn" id="hMobileMenuBtn" aria-label="Открыть меню" aria-expanded="false">
-        <svg class="h-burger-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
-          <line class="burger-top"    x1="3" y1="6"  x2="21" y2="6"/>
-          <line class="burger-mid"    x1="3" y1="12" x2="21" y2="12"/>
-          <line class="burger-bottom" x1="3" y1="18" x2="21" y2="18"/>
-        </svg>
-      </button>
-    </div>
-  </div>
-</nav>
-
-<!-- Mobile nav backdrop -->
-<div id="hMobileBackdrop" class="h-mobile-backdrop" aria-hidden="true"></div>
-
-<div class="h-mobile-nav" id="hMobileNav" aria-hidden="true">
-  <a href="../../" onclick="closeMobileNav()">Публикации</a>
-  <a href="../../" onclick="closeMobileNav()">Разбор заблуждений</a>
-  <a href="../../about/" onclick="closeMobileNav()">О библиотеке</a>
-</div>
-
+<div id="reading-progress"></div>
+<div aria-hidden="true" id="section-label"></div>
+<!-- ВНИМАНИЕ: inline style="top:..." на этой кнопке ЗАПРЕЩЁН — позиция задана в site.css (.theme-toggle) и выровнена по хлебным крошкам -->
+<button aria-label="Переключить тему" class="theme-toggle" id="themeToggle">
+  <svg class="icon-moon" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+    <path d="M21 12.8A9 9 0 1111.2 3 7 7 0 0021 12.8z"></path>
+  </svg>
+  <svg class="icon-sun" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+    <circle cx="12" cy="12" r="5"></circle>
+    <line x1="12" x2="12" y1="1" y2="4"></line><line x1="12" x2="12" y1="20" y2="23"></line>
+    <line x1="1" x2="4" y1="12" y2="12"></line><line x1="20" x2="23" y1="12" y2="12"></line>
+    <line x1="4.2" x2="6.3" y1="4.2" y2="6.3"></line><line x1="17.7" x2="19.8" y1="17.7" y2="19.8"></line>
+    <line x1="4.2" x2="6.3" y1="19.8" y2="17.7"></line><line x1="17.7" x2="19.8" y1="6.3" y2="4.2"></line>
+  </svg>
+</button>
 <div class="toc-sidebar" id="tocSidebar">
   <nav aria-label="Содержание">
     <div class="toc-label">Содержание</div>
   </nav>
 </div>
-
 <nav aria-label="Навигация по сайту" class="article-topnav" id="articleTopnav">
   <a class="article-topnav-home" href="../../">
     <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><polyline points="15 18 9 12 15 6"></polyline></svg>
@@ -1113,84 +1120,116 @@ a.series-card:hover{border-color:var(--accent);transform:translateY(-2px);box-sh
 <div class="pullquote">
         Церковь, которая научилась говорить правду о себе, — гораздо ближе ко Христу, чем та, которая умеет лишь красиво выглядеть снаружи. Любовь «не превозносится, не ищет своего, не радуется неправде, но сорадуется истине» (1 Кор. 13:4–6). Всё остальное — лишь имитация. А имитация не выдержит встречи с Тем, перед Кем нам всем предстоит дать отчёт.
       </div>
-<!-- FULL FAQ ACCORDION -->
+<!-- FULL FAQ ACCORDION — v2: углублённые ответы + премиальные карточки -->
 <h2 class="heading-serif text-4xl font-bold mt-16 mb-8 border-b border-[#e6e1d5] dark:border-[#2e2c27] pb-4" id="faq">FAQ: как читать эту статью трезво</h2>
+<p class="faq-kicker">Этот блок не повторяет статью короткими лозунгами, а помогает различить границы: где библейская власть, где дисциплина, где личная обида, а где уже системное злоупотребление духовной властью.</p>
 <div class="faq-accordion mb-16">
 <div class="faq-accordion__item">
 <button aria-expanded="false" class="faq-accordion__q" type="button">
-<span>Значит ли это, что всякая строгая пастырская власть — зло?</span>
-<span aria-hidden="true" class="faq-accordion__icon"></span>
+<span class="faq-accordion__num" aria-hidden="true">Q1</span>
+<span class="faq-accordion__q-text">Значит ли это, что всякая строгая пастырская власть — зло?</span>
+<span class="faq-accordion__icon" aria-hidden="true"></span>
 </button>
 <div class="faq-accordion__body">
 <div class="faq-accordion__body-inner">
-              Нет. Пастырская власть реальна, библейски обоснована и необходима для порядка. Пастор должен учить, наставлять, защищать стадо от лжеучений и применять церковную дисциплину (1 Тим. 5:17; Тит. 1:9; Евр. 13:17). Зло начинается не там, где пастор говорит твёрдо по Писанию, а там, где его власть перестаёт служить Слову Божию и начинает защищать личные амбиции, ошибки или неприкосновенность самого пастора. Различение простое по сути: чему служит власть в данный момент — Христу и стаду или человеку и его месту?
-            </div>
+<p>Нет. В Новом Завете пастырская власть не отменена и не растворена в демократической симпатии общины. Пресвитеры поставлены пасти Божье стадо, бодрствовать о душах, учить здравому учению и, когда нужно, обличать заблуждение (Деян. 20:28; Тит. 1:9; Евр. 13:17). Проблема начинается не со строгости как таковой, а с <strong>измены природе этой власти</strong>.</p>
+<p>Библейская власть пастыря — служебная, производная и подотчётная: она стоит <em>под</em> Христом и <em>под</em> Писанием. Поэтому Пётр прямо запрещает стиль «господства над наследием Божиим» (1&nbsp;Пет. 5:3), а Христос противопоставляет царям народов власть-служение: «кто хочет быть большим между вами, да будет вам слугою» (Мф. 20:25–28). Власть становится опасной, когда перестаёт быть прозрачным служением Слову и превращается в защиту статуса, бренда, непогрешимости лидера или внутренней политической машины.</p>
+<p>Практический тест простой: после применения власти человек становится ближе ко Христу, яснее видит Писание и ответственнее ходит перед Богом — или становится зависимее от пасторского одобрения, тише из страха и менее свободен в совести?</p>
+</div>
 </div>
 </div>
 <div class="faq-accordion__item">
 <button aria-expanded="false" class="faq-accordion__q" type="button">
-<span>Как отличить строгое библейское пастырское обличение от злоупотребления властью?</span>
-<span aria-hidden="true" class="faq-accordion__icon"></span>
+<span class="faq-accordion__num" aria-hidden="true">Q2</span>
+<span class="faq-accordion__q-text">Как отличить строгое библейское пастырское обличение от злоупотребления властью?</span>
+<span class="faq-accordion__icon" aria-hidden="true"></span>
 </button>
 <div class="faq-accordion__body">
 <div class="faq-accordion__body-inner">
-              Строгое обличение ведёт человека к Иисусу Христу, к свету, к свободе совести, к покаянию и реальному восстановлению отношений. Злоупотребление ведёт в обратную сторону: к зависимости от лидера, спутанности мыслей, устойчивому страху, стыду и потере доверия к собственной совести. Различение по плодам, как учил Сам Христос: «по плодам их узнаете их» (Мф. 7:16). Верный пастырь готов обсуждать проверяемые факты, объяснять текст Писания и сам смиренно стоять под Словом. Злоупотребляющий — переводит вопрос с фактов дела на духовное состояние сердца спрашивающего: «в тебе говорит дух бунта», «у тебя нет смирения». В первом случае разговор идёт по существу. Во втором — собеседнику тихо предлагается виновным остаться в любом случае.
-            </div>
+<p>Строгое библейское обличение обычно неприятно, но оно <strong>проверяемо</strong>: называет конкретный грех, показывает его из Писания, различает факт и интерпретацию, оставляет путь покаяния и восстановления (Гал. 6:1; 2&nbsp;Тим. 2:24–25). Злоупотребление чаще работает иначе: вместо предметного разговора оно переводит вопрос на «дух бунта», «гордое сердце», «непокорность» — так, что человек оказывается виновным уже за саму попытку уточнить факты.</p>
+<ul>
+<li><strong>Здоровое обличение</strong> допускает проверку, свидетелей, апелляцию и разговор по существу.</li>
+<li><strong>Манипулятивное обличение</strong> требует немедленного эмоционального подчинения и боится света процедуры.</li>
+<li><strong>Здоровая дисциплина</strong> направлена к восстановлению брата и очищению церкви.</li>
+<li><strong>Злоупотребление дисциплиной</strong> часто направлено к сохранению управляемости и репутации лидера.</li>
+</ul>
+<p>Иными словами, вопрос не только в суровости тона. Вопрос в цели, методе и плоде. Библейская строгость не нуждается в тумане: она выдерживает текст Писания, факты, свидетелей и время.</p>
+</div>
 </div>
 </div>
 <div class="faq-accordion__item">
 <button aria-expanded="false" class="faq-accordion__q" type="button">
-<span>Если пастор образованнее большинства общины, разве он не имеет больше права учить и определять доктрину?</span>
-<span aria-hidden="true" class="faq-accordion__icon"></span>
+<span class="faq-accordion__num" aria-hidden="true">Q3</span>
+<span class="faq-accordion__q-text">Если пастор образованнее большинства общины, разве он не имеет больше права учить и определять доктрину?</span>
+<span class="faq-accordion__icon" aria-hidden="true"></span>
 </button>
 <div class="faq-accordion__body">
 <div class="faq-accordion__body-inner">
-              Пастор имеет полное библейское право учить, если его глубокое знание служит любви, ясности, назиданию совести и духовному взрослению святых. Семинария, знание оригинальных языков, чтение богословских трудов — прекрасные Божьи инструменты для созидания церкви. Но знание без кротости характера превращается в надменную стену: «знание надмевает, а любовь назидает» (1 Кор. 8:1). Пастор-богослов опасен не образованием, а тем, что внутренне перестаёт быть учеником Христа и начинает использовать интеллект как инструмент доминирования, закрывая чужие искренние вопросы ссылками на свою квалификацию. Главный экзамен — не объём знаний, а способность сказать «я не знаю», «надо подумать», «ты помог мне увидеть это яснее». Богословская гордость почти не умеет этих фраз.
-            </div>
+<p>Да, образованный пастор обязан учить церковь глубже, яснее и ответственнее. Знание языков, истории толкования, систематического богословия и пастырской практики — благословение, если оно служит назиданию святых. Но образование даёт пастору <strong>большую обязанность быть понятным и смиренным</strong>, а не большее право быть непроверяемым.</p>
+<p>Верийцы названы благородными не потому, что подозревали апостола Павла, а потому что «ежедневно разбирали Писания, точно ли это так» (Деян. 17:11). Значит, даже сильное учительство не уничтожает ответственности общины сверять проповедь со Словом. Пастор — не частный магистериум, не единоличный хранитель смысла Библии и не человек, перед которым совесть должна капитулировать.</p>
+<p>Опасность не в учёности, а в превращении учёности в щит от вопросов. Здоровый богослов умеет сказать: «Покажу, почему я так читаю текст», «здесь есть разные позиции», «я могу ошибаться», «давайте проверим». Богословская гордость заменяет эти фразы ссылкой на свой статус. Павел предупреждает именно об этом: «знание надмевает, а любовь назидает» (1&nbsp;Кор. 8:1).</p>
+</div>
 </div>
 </div>
 <div class="faq-accordion__item">
 <button aria-expanded="false" class="faq-accordion__q" type="button">
-<span>Может ли член церкви тоже манипулировать Писанием против пастора?</span>
-<span aria-hidden="true" class="faq-accordion__icon"></span>
+<span class="faq-accordion__num" aria-hidden="true">Q4</span>
+<span class="faq-accordion__q-text">Может ли член церкви тоже манипулировать Писанием против пастора?</span>
+<span class="faq-accordion__icon" aria-hidden="true"></span>
 </button>
 <div class="faq-accordion__body">
 <div class="faq-accordion__body-inner">
-              Да. Именно поэтому в статье встроены «двусторонние зеркала». Человек может лукаво прикрываться словами «не судите» (Мф. 7:1), чтобы уклониться от законной церковной дисциплины; собирать тайные коалиции под видом «поиска истины»; пересказывать историю так, чтобы выглядеть единственной пострадавшей стороной; превращать законное обличение пастора в «травлю», а требование покаяния — в «тиранический контроль». Поэтому здоровой общине нужна не подозрительность и не слепая партийность, а трезвая проверка фактов при двух-трёх свидетелях (1 Тим. 5:19) и участие внешних зрелых голосов. И всё же у пастора объективно больше административной власти, а значит, и потенциальный ущерб от его ошибок и злоупотреблений шире — поэтому статья сосредоточена прежде всего на пасторских патологиях, а не уравнивает обе стороны механически.
-            </div>
+<p>Да. Член церкви тоже может пользоваться Писанием выборочно: прикрываться «не судите» (Мф. 7:1), чтобы не принимать законное обличение; называть любую дисциплину «насилием»; собирать тайные коалиции под видом заботы об истине; пересказывать историю так, чтобы все факты подтверждали только его версию. Поэтому статья не должна становиться оружием для мстительности.</p>
+<p>Но здесь важно не впасть в ложную симметрию. Обычный член церкви и пастор не имеют одинаковой административной власти, доступа к кафедре, влияния на повестку и способности формировать репутацию человека внутри общины. Поэтому вред от пасторского злоупотребления обычно системнее и шире. Именно поэтому 1&nbsp;Тим. 5:19–20 одновременно требует не принимать обвинение против пресвитера без свидетелей и всё же публично обличать согрешающих, чтобы прочие имели страх.</p>
+<p>Здоровый путь — не партийность «за пастора» или «против пастора», а трезвая проверка: факты, свидетели, повторяемость, соответствие Матфея 18, участие зрелых внешних братьев там, где внутренняя система уже не вызывает доверия.</p>
+</div>
 </div>
 </div>
 <div class="faq-accordion__item">
 <button aria-expanded="false" class="faq-accordion__q" type="button">
-<span>Почему так трудно объяснить людям внутри общины, что именно в системе не так?</span>
-<span aria-hidden="true" class="faq-accordion__icon"></span>
+<span class="faq-accordion__num" aria-hidden="true">Q5</span>
+<span class="faq-accordion__q-text">Почему так трудно объяснить людям внутри общины, что именно в системе не так?</span>
+<span class="faq-accordion__icon" aria-hidden="true"></span>
 </button>
 <div class="faq-accordion__body">
 <div class="faq-accordion__body-inner">
-              Потому что деструктивные системы держатся не на одном грубом открытом запрете, а на неписаных правилах, намёках, чередовании тепла и холода, полуправде и подспудном страхе потерять своё место в общине. Человек чувствует это давление сокрушением духа намного раньше, чем может логически назвать конкретный инструмент. Именно поэтому важно учиться различать не отдельные лозунги, а реальные плоды культуры отношений: можно ли здесь задать вопрос без страха? можно ли не согласиться, не попав в категорию «проблемных»? можно ли открыться без риска, что твои слова однажды обернутся против тебя?
-            </div>
+<p>Потому что нездоровая духовная культура редко держится на одном грубом запрете. Чаще она состоит из множества мелких сигналов: кого хвалят, кого «охлаждают», кому дают служение, кого перестают замечать, какие вопросы считаются «нелояльными», где звучит полуправда, а где включается благочестивая тишина. Отдельный эпизод может выглядеть невинно; разрушительным оказывается <strong>паттерн</strong>.</p>
+<p>Человек внутри такой системы часто чувствует давление раньше, чем способен его доказать. Ему трудно объяснить не только событие, но и атмосферу: почему после вопроса он стал «проблемным», почему искреннее несогласие читается как бунт, почему «единство» означает молчание слабых, а «мудрость» — не трогать сильных.</p>
+<p>Поэтому полезно смотреть не на лозунги, а на культуру плодов: можно ли здесь задать уточняющий вопрос без страха? можно ли признать ошибку лидера без угрозы изгнания из доверенного круга? можно ли обратиться за внешним советом и не быть обвинённым в предательстве? Христос учит распознавать дерево по плодам (Мф. 7:16), а не по табличке на стволе.</p>
+</div>
 </div>
 </div>
 <div class="faq-accordion__item">
 <button aria-expanded="false" class="faq-accordion__q" type="button">
-<span>Когда нужно говорить о проблемах публично, а когда покрывать частную немощь брата любовью?</span>
-<span aria-hidden="true" class="faq-accordion__icon"></span>
+<span class="faq-accordion__num" aria-hidden="true">Q6</span>
+<span class="faq-accordion__q-text">Когда нужно говорить о проблемах публично, а когда покрывать частную немощь брата любовью?</span>
+<span class="faq-accordion__icon" aria-hidden="true"></span>
 </button>
 <div class="faq-accordion__body">
 <div class="faq-accordion__body-inner">
-              Частные немощи и личные грехи брата покрываются христианской любовью ради его восстановления — это и есть смысл «любовь покрывает множество грехов» (1 Пет. 4:8). Но системный ущерб общине, злоупотребление духовной властью, повторяющийся вред множеству душ и выстраивание пасторской неприкасаемости — категорически не должны прикрываться лозунгом «не выносить сор из избы». «Не участвуйте в бесплодных делах тьмы, но и обличайте» (Еф. 5:11) — это о другой ситуации: не о немощи отдельного человека, а о системном грехе. Когда молчание используется для защиты сильной структуры от света правды, оно перестаёт служить истине и становится соучастием в сокрытии греха.
-            </div>
+<p>«Любовь покрывает множество грехов» (1&nbsp;Пет. 4:8) не означает, что любовь прячет системный вред. Частная немощь, признанная и оставленная, действительно не должна превращаться в публичное зрелище. Но повторяющийся ущерб, злоупотребление властью, ложное учение, давление на свидетелей, опасность для людей и репутационная защита греха — это уже не «частная слабость брата».</p>
+<p>Библейская логика различает масштаб и последствия. Если грех публично искажает Евангелие, Павел обличает Петра публично (Гал. 2:11–14). Если пресвитер упорствует во грехе, Павел говорит об обличении «перед всеми» (1&nbsp;Тим. 5:20). Если же речь о личной обиде, путь начинается с личного разговора, а не с немедленной публикации (Мф. 18:15).</p>
+<ul>
+<li>Покрывать любовью — значит помогать покаянию, а не охранять неприкасаемость.</li>
+<li>Не выносить публично — не значит запрещать свидетелей и подотчётность.</li>
+<li>Сохранять мир — не значит сохранять фасад ценой правды.</li>
+</ul>
+<p>Молчание становится грехом тогда, когда оно защищает сильную структуру от света, а не слабого брата от позора.</p>
+</div>
 </div>
 </div>
 <div class="faq-accordion__item">
 <button aria-expanded="false" class="faq-accordion__q" type="button">
-<span>Что делать пастору или члену церкви, если они узнали свою ситуацию в этой статье?</span>
-<span aria-hidden="true" class="faq-accordion__icon"></span>
+<span class="faq-accordion__num" aria-hidden="true">Q7</span>
+<span class="faq-accordion__q-text">Что делать пастору или члену церкви, если они узнали свою ситуацию в этой статье?</span>
+<span class="faq-accordion__icon" aria-hidden="true"></span>
 </button>
 <div class="faq-accordion__body">
 <div class="faq-accordion__body-inner">
-              Пастору — перестать защищать лицо и трон. Сесть в уединении перед Богом и назвать грехи своими именами: не «сложности коммуникации», а гордость, лукавство, жестокость, лицеприятие. Открыть себя реальной внешней подотчётности и дать братьям право говорить правду без страха опалы. Настоящее покаяние меняет не тон голоса, а структуру власти вокруг лидера и приносит видимые плоды (2 Кор. 7:10–11).<br/><br/>Члену церкви — не принимать резких решений в панике, обиде или раздражении. Молиться, проверять собственные мотивы, отделять факты от интерпретаций, искать совета зрелых людей вне ближайшего круга. Не строить тайных коалиций, но и не молчать там, где молчание уже становится соучастием. Если есть прямая угроза безопасности или насилие, ищите помощь немедленно и не позволяйте манипулятивным словам о «единстве» и «лжемире» удерживать вас и ваших близких в опасности. Эта статья — не инструкция к действию и не разрешение уйти, а помощь увидеть и назвать.
-            </div>
+<p><strong>Пастору</strong> не стоит начинать с защиты образа: «меня не поняли», «это атака», «так сейчас модно говорить об абьюзе». Лучше начать перед Богом с конкретных вопросов: кому стало страшно говорить мне правду? кого я перестал слышать? где я называю «единством» собственное удобство? где совет старейшин фактически стал декоративным? Настоящее покаяние меняет не только интонацию, но и архитектуру власти: появляется внешняя подотчётность, право несогласия, прозрачность решений, защита свидетелей и видимые плоды (2&nbsp;Кор. 7:10–11).</p>
+<p><strong>Члену церкви</strong> не нужно принимать решения в панике. Отделите факты от интерпретаций, запишите конкретные эпизоды, проверьте собственные мотивы, поговорите с зрелыми людьми вне ближайшего эмоционального круга. Не превращайте боль в тайную фракцию, но и не позволяйте словам о «лжемире» и «единстве» удерживать вас там, где уже есть реальный вред. Если есть угроза безопасности, насилие, шантаж или давление на детей и уязвимых людей — ищите помощь немедленно.</p>
+<p>Эта статья не выдаёт автоматического приговора и не заменяет церковного процесса. Её цель скромнее и глубже: помочь назвать вещи своими именами, чтобы страх перестал маскироваться под благочестие, а покаяние снова стало возможным.</p>
+</div>
 </div>
 </div>
 </div>
@@ -1575,74 +1614,39 @@ a.series-card:hover{border-color:var(--accent);transform:translateY(-2px);box-sh
             if (!popover.contains(e.target)) hidePopover();
         });
 
-        // FAQ logic
-        document.querySelectorAll('.faq-accordion__q').forEach(q => {
-            q.addEventListener('click', () => {
-                const body = q.nextElementSibling;
-                const parent = q.parentElement;
-                const isOpen = parent.classList.contains('is-open');
-                
+        // FAQ v2 logic: aria-синхронизация, плавная высота, корректный пересчёт после ресайза
+        document.querySelectorAll('.faq-accordion__q').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const body = btn.nextElementSibling;
+                const item = btn.parentElement;
+                const isOpen = item.classList.contains('is-open');
+
                 if (isOpen) {
-                    body.style.maxHeight = '0';
-                    parent.classList.remove('is-open');
+                    body.style.maxHeight = '0px';
+                    item.classList.remove('is-open');
+                    btn.setAttribute('aria-expanded', 'false');
                 } else {
                     body.style.maxHeight = body.scrollHeight + 'px';
-                    parent.classList.add('is-open');
+                    item.classList.add('is-open');
+                    btn.setAttribute('aria-expanded', 'true');
+                    setTimeout(() => {
+                        if (item.classList.contains('is-open')) {
+                            body.style.maxHeight = body.scrollHeight + 'px';
+                        }
+                    }, 460);
                 }
             });
         });
+        window.addEventListener('resize', () => {
+            document.querySelectorAll('.faq-accordion__item.is-open .faq-accordion__body').forEach(body => {
+                body.style.maxHeight = body.scrollHeight + 'px';
+            });
+        }, { passive: true });
     });
 </script>
-<button class="h-scroll-top" id="hScrollTop" aria-label="Наверх">
-  <svg class="h-progress-ring" width="50" height="50" viewBox="0 0 50 50" aria-hidden="true">
-    <circle class="h-progress-ring-circle" id="hProgressCircle" cx="25" cy="25" r="22" style="stroke-dasharray: 138.23; stroke-dashoffset: 138.23;"/>
-  </svg>
-  <span class="h-scroll-top-arrow" aria-hidden="true">
-    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><polyline points="18 15 12 9 6 15"/></svg>
-  </span>
-</button>
 <script src="../../js/site.js?v=656036fd" defer></script>
 <script src="../../js/bookmark-engine.js?v=4de52cf1" defer></script>
 <script src="../../js/sw-register.js?v=e66ef547" defer></script>
 <script src="../../js/search.js?v=8d27a9af" defer></script>
-<script>
-(function () {
-  'use strict';
-  var mobileMenuBtn = document.getElementById('hMobileMenuBtn');
-  var mobileNav = document.getElementById('hMobileNav');
-  var mobileBackdrop = document.getElementById('hMobileBackdrop');
-  var mobileOpen = false;
-
-  function openMobileNav() {
-    if (!mobileNav || !mobileMenuBtn) return;
-    mobileOpen = true;
-    mobileNav.classList.add('open');
-    mobileNav.removeAttribute('aria-hidden');
-    mobileMenuBtn.classList.add('is-open');
-    mobileMenuBtn.setAttribute('aria-expanded', 'true');
-    mobileMenuBtn.setAttribute('aria-label', 'Закрыть меню');
-    if (mobileBackdrop) mobileBackdrop.classList.add('open');
-    document.body.style.overflow = 'hidden';
-  }
-  function closeMobileNavInternal() {
-    if (!mobileNav || !mobileMenuBtn) return;
-    mobileOpen = false;
-    mobileNav.classList.remove('open');
-    mobileNav.setAttribute('aria-hidden', 'true');
-    mobileMenuBtn.classList.remove('is-open');
-    mobileMenuBtn.setAttribute('aria-expanded', 'false');
-    mobileMenuBtn.setAttribute('aria-label', 'Открыть меню');
-    if (mobileBackdrop) mobileBackdrop.classList.remove('open');
-    document.body.style.overflow = '';
-  }
-  window.closeMobileNav = closeMobileNavInternal;
-  if (mobileMenuBtn) {
-    mobileMenuBtn.addEventListener('click', function () {
-      if (mobileOpen) closeMobileNavInternal(); else openMobileNav();
-    });
-  }
-  if (mobileBackdrop) mobileBackdrop.addEventListener('click', closeMobileNavInternal);
-})();
-</script>
 </body>
 </html>
