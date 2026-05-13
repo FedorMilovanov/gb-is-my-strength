@@ -6167,3 +6167,81 @@ html.dark .about-contact-handle { color: #9c8c7a; }
 .article-byline__updated time {
   font-variant-numeric: tabular-nums;
 }
+
+/* ============================================================
+   30. GLOBAL FEEDBACK & BRANDING (Premium 2026)
+   ============================================================ */
+.gb-global-feedback {
+  background: var(--bg-elevated, #fff);
+  border-top: 1px solid var(--border, #e6e1d5);
+  padding: 80px 0;
+  margin-top: 100px;
+}
+.gb-feedback-inner {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 0 24px;
+  text-align: center;
+}
+.gb-feedback-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--accent-soft, #fdf4f2);
+  color: var(--accent, #8c2d19);
+  padding: 6px 16px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  margin-bottom: 24px;
+}
+.gb-feedback-title {
+  font-family: 'Playfair Display', serif;
+  font-size: clamp(1.75rem, 5vw, 2.5rem);
+  font-weight: 700;
+  margin-bottom: 16px;
+  color: var(--text);
+}
+.gb-feedback-text {
+  font-family: 'Lora', serif;
+  font-size: 1.1rem;
+  color: var(--muted);
+  line-height: 1.6;
+  margin-bottom: 40px;
+}
+.gb-feedback-links {
+  display: flex;
+  justify-content: center;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+.gb-feedback-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 28px;
+  background: var(--bg-body);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  color: var(--text);
+  font-weight: 600;
+  text-decoration: none;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.gb-feedback-btn:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+  transform: translateY(-2px);
+  box-shadow: 0 10px 20px rgba(140, 45, 25, 0.08);
+}
+.gb-feedback-btn svg { width: 20px; height: 20px; opacity: 0.8; }
+.gb-feedback-btn:hover svg { opacity: 1; color: var(--accent); }
+
+html.dark .gb-global-feedback { background: #0e1116; border-top-color: #1c1f26; }
+html.dark .gb-feedback-btn { background: #1a1c20; border-color: #2e323b; }
+html.dark .gb-feedback-badge { background: rgba(140, 45, 25, 0.15); }
+
+/* MAX Icon Color */
+.sd-btn--max { color: #facc15; }
