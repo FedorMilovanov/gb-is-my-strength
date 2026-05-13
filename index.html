@@ -95,6 +95,31 @@
   ]
 }
 </script>
+
+  <!-- Favicons & manifest -->
+  <link rel="icon" type="image/x-icon" href="https://gospod-bog.ru/favicon.ico">
+  <link rel="apple-touch-icon" sizes="180x180" href="https://gospod-bog.ru/apple-touch-icon.png">
+  <link rel="icon" type="image/png" sizes="48x48" href="https://gospod-bog.ru/favicon-48.png">
+  <link rel="icon" type="image/png" sizes="120x120" href="https://gospod-bog.ru/favicon-120.png">
+  <link rel="icon" type="image/png" sizes="192x192" href="https://gospod-bog.ru/icons/icon-192.png">
+  <link rel="manifest" href="https://gospod-bog.ru/manifest.json">
+
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,500;0,600;1,400;1,500&family=Source+Sans+3:wght@400;500;600&family=Playfair+Display:ital,wght@0,400;0,600;0,700;0,800;1,400;1,600;1,700&family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+
+  <!-- Anti-FOUC: применяем тему до рендера CSS -->
+  <script>(function(){try{var t=localStorage.getItem('theme');if(t==='dark'||(!t&&window.matchMedia('(prefers-color-scheme: dark)').matches)){document.documentElement.classList.add('dark');}}catch(e){}})();</script>
+
+  <!-- Geo -->
+  <meta name="geo.region" content="RU-SPE">
+  <meta name="geo.placename" content="Санкт-Петербург">
+
+  <!-- Stylesheets -->
+  <link rel="stylesheet" href="css/site.css?v=ed943d96">
+  <link rel="stylesheet" href="css/home.css?v=cf58f06f">
+  <link rel="stylesheet" href="css/command-palette.css?v=90b14c94">
 </head>
 
 <body>
@@ -743,6 +768,37 @@
 </button>
 
 <!-- Scripts -->
+<script>
+window.SITE_CONFIG = {
+  version: 1,
+  site: {
+    id: 'gb-strength',
+    name: 'Господь Бог — Сила Моя',
+    baseUrl: 'https://gospod-bog.ru',
+    locale: 'ru-RU',
+    themeStorageKey: 'theme',
+    debug: false
+  },
+  page: {
+    type: 'home',
+    id: 'home',
+    title: 'Господь Бог — Сила Моя'
+  },
+  features: {
+    themeToggle: { enabled: true },
+    share: { enabled: false },
+    backToTop: { enabled: false },
+    readingProgress: { enabled: false },
+    toc: { enabled: false },
+    footnotes: { enabled: false },
+    timeline: { enabled: false },
+    flipCards: { enabled: false },
+    quiz: { enabled: false },
+    bookmarks: { enabled: false },
+    homepageResume: { enabled: true, maxItems: 5 }
+  }
+};
+</script>
 <script src="js/site.js?v=3a49604b" defer></script>
 
 <script>
@@ -984,6 +1040,18 @@
 })();
 </script>
 
+<!-- Yandex.Metrika counter -->
+<script type="text/javascript">
+  (function(m,e,t,r,i,k,a){
+    m[i]=m[i]||function(){(m[i].a=m[i].a||[]).push(arguments)};
+    m[i].l=1*new Date();
+    for(var j=0;j<document.scripts.length;j++){if(document.scripts[j].src===r){return;}}
+    k=e.createElement(t),a=e.getElementsByTagName(t)[0],k.async=1,k.src=r,a.parentNode.insertBefore(k,a)
+  })(window,document,'script','https://mc.yandex.ru/metrika/tag.js?id=108353327','ym');
+  ym(108353327,'init',{ssr:false,webvisor:true,clickmap:true,ecommerce:"dataLayer",referrer:document.referrer,url:location.href,accurateTrackBounce:true,trackLinks:true});
+</script>
+<noscript><div><img decoding="async" src="https://mc.yandex.ru/watch/108353327" style="position:absolute;left:-9999px;" alt=""></div></noscript>
+<!-- /Yandex.Metrika counter -->
 <script src="./js/sw-register.js?v=e66ef547" defer></script>
 <script src="./js/search.js?v=8d27a9af" defer></script>
 </body>
