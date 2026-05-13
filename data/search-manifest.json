@@ -1,6 +1,6 @@
 {
     "version": 1,
-    "generatedAt": "2026-05-10T12:00:00+03:00",
+    "generatedAt": "2026-05-13T20:00:00+03:00",
     "project": {
         "name": "Господь Бог — Сила Моя",
         "url": "https://gospod-bog.ru/",
@@ -203,6 +203,93 @@
             "priority": 50,
             "modifiedTime": "2026-05-10T00:00:00+03:00",
             "image": "/images/og-about.webp"
+        },
+        {
+            "id": "pastor-series",
+            "type": "series",
+            "url": "/pastor-series/",
+            "title": "Тёмная сторона кафедры — серия материалов",
+            "description": "Системный анализ пасторских патологий: власть без подотчётности, манипуляция Писанием, портреты авторитарности и пути к здоровой церковной культуре.",
+            "section": "Служение",
+            "editor": "Фёдор Милованов",
+            "readTime": 40,
+            "image": "/images/pastor-series/hero.png",
+            "tags": [
+                "серия",
+                "пасторство",
+                "диотрефство",
+                "авторитаризм",
+                "здоровая церковь"
+            ],
+            "featured": true,
+            "priority": 95,
+            "publishedTime": "2026-05-13T00:00:00+03:00"
+        },
+        {
+            "id": "20-antisovetov-pastoru",
+            "type": "article",
+            "url": "/articles/20-antisovetov-pastoru/",
+            "title": "20 антисоветов, как пастору разрушить своё служение",
+            "description": "Системный библейский анализ пасторских патологий: власть, подотчётность, страх, манипуляция Писанием и путь к здоровой церковной культуре.",
+            "section": "Служение",
+            "editor": "Фёдор Милованов",
+            "readTime": 40,
+            "image": "/images/pastor-series/hero.png",
+            "tags": [
+                "пасторство",
+                "антисоветы",
+                "диотрефство",
+                "авторитаризм",
+                "подотчётность"
+            ],
+            "featured": false,
+            "priority": 90,
+            "publishedTime": "2026-05-13T00:00:00+03:00",
+            "wordCount": 12000,
+            "seriesId": "pastor-series",
+            "seriesPosition": 1
+        },
+        {
+            "id": "pastor-series",
+            "type": "series",
+            "url": "/pastor-series/",
+            "title": "Тёмная сторона кафедры — серия материалов",
+            "description": "Системный анализ пасторских патологий: власть без подотчётности, манипуляция Писанием, портреты авторитарности.",
+            "section": "Служение",
+            "editor": "Фёдор Милованов",
+            "readTime": 40,
+            "image": "/images/pastor-series/hero.png",
+            "tags": [
+                "серия",
+                "пасторство",
+                "диотрефство",
+                "авторитаризм"
+            ],
+            "featured": true,
+            "priority": 95,
+            "publishedTime": "2026-05-13T00:00:00+03:00"
+        },
+        {
+            "id": "20-antisovetov-pastoru",
+            "type": "article",
+            "url": "/articles/20-antisovetov-pastoru/",
+            "title": "20 антисоветов, как пастору разрушить своё служение",
+            "description": "Системный библейский анализ пасторских патологий.",
+            "section": "Служение",
+            "editor": "Фёдор Милованов",
+            "readTime": 40,
+            "image": "/images/pastor-series/hero.png",
+            "tags": [
+                "пасторство",
+                "антисоветы",
+                "диотрефство"
+            ],
+            "featured": false,
+            "priority": 90,
+            "publishedTime": "2026-05-13T00:00:00+03:00",
+            "wordCount": 12000,
+            "seriesId": "pastor-series",
+            "seriesPosition": 1
         }
     ]
 }
