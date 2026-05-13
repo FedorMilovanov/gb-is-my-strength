@@ -476,7 +476,7 @@
       Сервисы для российской аудитории:
       1. Telegram  — t.me/share (web URL, совместим с мобильным и десктопом)
       2. ВКонтакте — vk.com/share.php
-      3. Одноклассники — connect.ok.ru/dk?st.cmd=WidgetSharePreview
+      3. МАКС (MAX) — share.max.ru
       4. WhatsApp  — wa.me / api.whatsapp.com
       5. Скопировать ссылку
     */
@@ -507,13 +507,12 @@
             '<span class="sd-label">ВКонтакте</span>' +
           '</button>' +
 
-          /* Одноклассники */
-          '<button class="sd-btn sd-btn--ok" id="sd-ok" aria-label="Поделиться в Одноклассниках">' +
+          /* МАКС (MAX) */
+          '<button class="sd-btn sd-btn--max" id="sd-max" aria-label="Поделиться в МАКС">' +
             '<span class="sd-icon">' +
-              /* ОК логотип — силуэт человечка */
-              '<svg width="22" height="26" viewBox="0 0 22 26" fill="currentColor"><circle cx="11" cy="5.5" r="5.5"/><path d="M11 13c-5.523 0-10 2.686-10 6v1h3v-1c0-1.657 3.134-3 7-3s7 1.343 7 3v1h3v-1c0-3.314-4.477-6-10-6z"/></svg>' +
+              '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>' +
             '</span>' +
-            '<span class="sd-label">ОК</span>' +
+            '<span class="sd-label">МАКС</span>' +
           '</button>' +
 
           /* WhatsApp */
@@ -641,8 +640,8 @@
     document.getElementById('sd-vk').addEventListener('click', function () {
       window.open('https://vk.com/share.php?url=' + encodeURIComponent(utmUrl(shareUrl,'vk')) + '&title=' + encodedTitle, '_blank', 'noopener');
     });
-    document.getElementById('sd-ok').addEventListener('click', function () {
-      window.open('https://connect.ok.ru/offer?url=' + encodeURIComponent(utmUrl(shareUrl,'ok')) + '&title=' + encodedTitle, '_blank', 'noopener');
+    document.getElementById('sd-max').addEventListener('click', function () {
+      window.open('https://share.max.ru/share?url=' + encodeURIComponent(shareUrl) + '&title=' + encodedTitle, '_blank', 'noopener');
     });
     document.getElementById('sd-wa').addEventListener('click', function () {
       /* B-12: wa.me работает на мобильном (открывает приложение) и на десктопе
