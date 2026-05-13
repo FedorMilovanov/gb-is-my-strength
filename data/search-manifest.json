@@ -290,6 +290,45 @@
             "wordCount": 12000,
             "seriesId": "pastor-series",
             "seriesPosition": 1
+        },
+        {
+            "id": "pastor-series",
+            "type": "series",
+            "url": "/pastor-series/",
+            "title": "Тёмная сторона кафедры",
+            "description": "Системный анализ пасторских патологий.",
+            "section": "Служение",
+            "editor": "Фёдор Милованов",
+            "readTime": 40,
+            "image": "/images/pastor-series/hero.png",
+            "tags": [
+                "серия",
+                "пасторство"
+            ],
+            "featured": true,
+            "priority": 95,
+            "publishedTime": "2026-05-13T00:00:00+03:00"
+        },
+        {
+            "id": "20-antisovetov-pastoru",
+            "type": "article",
+            "url": "/articles/20-antisovetov-pastoru/",
+            "title": "20 антисоветов, как пастору разрушить своё служение",
+            "description": "Системный библейский анализ.",
+            "section": "Служение",
+            "editor": "Фёдор Милованов",
+            "readTime": 40,
+            "image": "/images/pastor-series/hero.png",
+            "tags": [
+                "пасторство",
+                "антисоветы"
+            ],
+            "featured": false,
+            "priority": 90,
+            "publishedTime": "2026-05-13T00:00:00+03:00",
+            "wordCount": 12000,
+            "seriesId": "pastor-series",
+            "seriesPosition": 1
         }
     ]
 }

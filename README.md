@@ -241,6 +241,8 @@ articles/{slug}/index.html
 ├── pastor-series/index.html  # серия «Тёмная сторона кафедры»
 │   ├── 20-antisovetov-pastoru/index.html
 ├── pastor-series/index.html  # серия «Тёмная сторона кафедры»
+│   ├── 20-antisovetov-pastoru/index.html
+├── pastor-series/index.html  # серия «Тёмная сторона кафедры»
 │   ├── index.html                          ← Каталог всех статей (/articles/)
 │   ├── {slug}/index.html                   ← Каждая статья в своей папке
 │   └── ...
