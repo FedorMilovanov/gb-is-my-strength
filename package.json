@@ -6,7 +6,9 @@
   "scripts": {
     "update-meta": "node scripts/update-meta.js",
     "cache-bust": "node scripts/cache-bust.js",
-    "validate": "node scripts/validate.js"
+    "validate": "node scripts/validate.js",
+    "seo-audit": "node scripts/seo-audit.js",
+    "validate:seo": "npm run seo-audit && npm run validate"
   },
   "engines": {
     "node": ">=20"

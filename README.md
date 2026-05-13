@@ -421,7 +421,7 @@ quiz: {
   <title>Заголовок — Господь Бог — Сила Моя</title>
   <meta name="description" content="..." />
   <link rel="canonical" href="https://gospod-bog.ru/articles/slug/" />
-  <link rel="icon" type="image/x-icon" href="/gb-is-my-strength/favicon.ico">
+  <link rel="icon" type="image/x-icon" href="/favicon.ico">
 
   <!-- Open Graph / Twitter -->
   <!-- JSON-LD -->
