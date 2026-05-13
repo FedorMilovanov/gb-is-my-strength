@@ -6196,15 +6196,25 @@ html.dark .about-contact-handle { color: #9c8c7a; }
    ============================================================ */
 
 .gb-accuracy-block {
-  margin-top: 56px;
-  padding-top: 48px;
-  border-top: 1px solid var(--border);
+  margin-top: 64px;
+  margin-bottom: 32px;
+  padding: 0 16px;
 }
 
 .gb-accuracy-inner {
   text-align: center;
-  max-width: 480px;
+  max-width: 520px;
   margin: 0 auto;
+  padding: 40px 32px;
+  background: var(--bg-elevated, #fafafa);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  box-shadow: 0 4px 20px -4px rgba(0,0,0,0.03);
+}
+
+html.dark .gb-accuracy-inner {
+  background: rgba(255,255,255,0.02);
+  box-shadow: 0 4px 20px -4px rgba(0,0,0,0.2);
 }
 
 /* ── Title ── */
