@@ -37,7 +37,7 @@
   <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
   <link rel="icon" type="image/png" sizes="48x48" href="/favicon-48.png">
   <link rel="icon" type="image/png" sizes="120x120" href="/favicon-120.png">
-  <link rel="icon" type="image/png" sizes="192x192" href="/icons/icon-192.png">
+  <link rel="icon" type="image/png" sizes="192x192" href="../icons/icon-192.png">
   <link rel="manifest" href="/manifest.json">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -53,8 +53,8 @@
   <!-- Anti-FOUC -->
   <script>(function(){try{var t=localStorage.getItem('theme');if(t==='dark'||(!t&&window.matchMedia('(prefers-color-scheme: dark)').matches)){document.documentElement.classList.add('dark');}}catch(e){}})();</script>
 
-  <link rel="stylesheet" href="/css/site.css?v=740eecd3">
-  <link rel="stylesheet" href="/css/home.css?v=cf58f06f">
+  <link rel="stylesheet" href="../css/site.css?v=740eecd3">
+  <link rel="stylesheet" href="../css/home.css?v=cf58f06f">
 
   <script>
 window.SITE_CONFIG = {
@@ -107,8 +107,8 @@ window.SITE_CONFIG = {
   ]
 }
   </script>
-  <link rel="stylesheet" href="/css/command-palette.css?v=38493a92">
-  <link rel="preload" as="image" href="/images/pastor-series/hero.png" fetchpriority="high">
+  <link rel="stylesheet" href="../css/command-palette.css?v=38493a92">
+  <link rel="preload" as="image" href="../images/pastor-series/hero.png" fetchpriority="high">
 <style>
 .skip-link { position: absolute; top: -40px; left: 0; background: #14100b; color: #f5f0e8; padding: 8px 16px; text-decoration: none; font-size: 14px; z-index: 10000; border-radius: 0 0 4px 0; transition: top 0.2s; }
 .skip-link:focus { top: 0; }
@@ -122,15 +122,15 @@ window.SITE_CONFIG = {
 
 <nav class="h-navbar" id="hNavbar" role="navigation" aria-label="Основная навигация">
   <div class="h-navbar__inner">
-    <a href="/" class="h-nav-logo" aria-label="Господь Бог — Сила Моя — на главную">
+    <a href="../" class="h-nav-logo" aria-label="Господь Бог — Сила Моя — на главную">
       <span class="h-nav-logo-main">Господь Бог</span>
       <span class="h-nav-logo-dash" aria-hidden="true">&nbsp;—&nbsp;</span>
       <span class="h-nav-logo-accent">Сила Моя</span>
     </a>
     <ul class="h-nav-links" role="list">
-      <li><a href="/">Публикации</a></li>
-      <li><a href="/">Разбор заблуждений</a></li>
-      <li><a href="/about/">О библиотеке</a></li>
+      <li><a href="../">Публикации</a></li>
+      <li><a href="../">Разбор заблуждений</a></li>
+      <li><a href="../about/">О библиотеке</a></li>
       <li>
         <button class="h-theme-btn" id="hThemeBtn" aria-label="Переключить тему">
           <svg class="icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12.8A9 9 0 1111.2 3 7 7 0 0021 12.8z"/></svg>
@@ -152,9 +152,9 @@ window.SITE_CONFIG = {
 </nav>
 
 <div class="h-mobile-nav" id="hMobileNav" aria-hidden="true">
-  <a href="/" onclick="closeMobileNav()">Публикации</a>
-  <a href="/" onclick="closeMobileNav()">Разбор заблуждений</a>
-  <a href="/about/" onclick="closeMobileNav()">О библиотеке</a>
+  <a href="../" onclick="closeMobileNav()">Публикации</a>
+  <a href="../" onclick="closeMobileNav()">Разбор заблуждений</a>
+  <a href="../about/" onclick="closeMobileNav()">О библиотеке</a>
 </div>
 
 <div class="home-v20">
@@ -163,7 +163,7 @@ window.SITE_CONFIG = {
     <section class="h-hero" data-pagefind-body aria-label="Серия статей">
       <nav aria-label="Хлебные крошки" style="margin-bottom:16px;">
         <ol style="list-style:none;padding:0;margin:0;display:flex;align-items:center;gap:6px;font-size:13px;flex-wrap:wrap;">
-          <li><a href="/" style="color:var(--h-muted);text-decoration:none;transition:color .2s;" onmouseover="this.style.color='var(--h-accent)'" onmouseout="this.style.color='var(--h-muted)'">Главная</a></li>
+          <li><a href="../" style="color:var(--h-muted);text-decoration:none;transition:color .2s;" onmouseover="this.style.color='var(--h-accent)'" onmouseout="this.style.color='var(--h-muted)'">Главная</a></li>
           <li aria-hidden="true" style="color:var(--h-muted);opacity:.5;">›</li>
           <li aria-current="page" style="color:var(--h-text,var(--text));font-weight:500;">Тёмная сторона кафедры</li>
         </ol>
@@ -191,9 +191,9 @@ window.SITE_CONFIG = {
 
           <!-- Часть I — опубликована -->
           <li>
-            <a href="/articles/20-antisovetov-pastoru/" class="h-article-card">
+            <a href="../articles/20-antisovetov-pastoru/" class="h-article-card">
               <div class="h-article-thumb">
-                <img src="/images/pastor-series/hero.png"
+                <img src="../images/pastor-series/hero.png"
                      alt="20 антисоветов пастору"
                      decoding="async" loading="eager" width="160" height="108">
               </div>
@@ -214,7 +214,7 @@ window.SITE_CONFIG = {
           <li>
             <div class="h-article-card" style="opacity:0.72;cursor:default;pointer-events:none;" aria-disabled="true" data-pagefind-ignore>
               <div class="h-article-thumb">
-                <img src="/images/pastor-series/manipulation.png"
+                <img src="../images/pastor-series/manipulation.png"
                      alt="Механика манипуляций"
                      decoding="async" loading="lazy" width="160" height="108">
               </div>
@@ -235,7 +235,7 @@ window.SITE_CONFIG = {
           <li>
             <div class="h-article-card" style="opacity:0.55;cursor:default;pointer-events:none;" aria-disabled="true" data-pagefind-ignore>
               <div class="h-article-thumb">
-                <img src="/images/pastor-series/mirror.png"
+                <img src="../images/pastor-series/mirror.png"
                      alt="Диотрефы нашего времени"
                      decoding="async" loading="lazy" width="160" height="108">
               </div>
@@ -340,7 +340,7 @@ window.SITE_CONFIG = {
 
     <footer class="h-footer" role="contentinfo">
       <span class="h-footer-copy">© 2026 Господь Бог — <span>Сила Моя</span></span>
-      <a href="/about/">Об авторе</a>
+      <a href="../about/">Об авторе</a>
     </footer>
 
   </div>
@@ -355,7 +355,7 @@ window.SITE_CONFIG = {
   </span>
 </button>
 
-<script src="/js/site.js?v=656036fd" defer></script>
+<script src="../js/site.js?v=656036fd" defer></script>
 <script>
 (function () {
   'use strict';
@@ -432,7 +432,7 @@ window.SITE_CONFIG = {
 })();
 </script>
 
-<script src="/js/sw-register.js?v=e66ef547" defer></script>
-<script src="/js/search.js?v=8d27a9af" defer></script>
+<script src="../js/sw-register.js?v=e66ef547" defer></script>
+<script src="../js/search.js?v=8d27a9af" defer></script>
 </body>
 </html>
