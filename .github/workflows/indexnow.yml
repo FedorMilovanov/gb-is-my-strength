@@ -47,8 +47,11 @@ jobs:
       - name: Cache bust assets
         run: node scripts/cache-bust.js
 
-      - name: Validate
+      - name: Validate (HTML/CSS/JS)
         run: node scripts/validate.js --strict
+
+      - name: SEO / AEO / GEO audit
+        run: node scripts/seo-audit.js
 
       - name: Commit updated metadata
         run: |

@@ -97,7 +97,8 @@
           "name": "Статьи",
           "item": "https://gospod-bog.ru/articles/"
         }
-      ]
+      ],
+      "@id": "https://gospod-bog.ru/articles/#breadcrumbs"
     }
   ]
 }
@@ -110,9 +111,8 @@
   <link rel="icon" type="image/png" sizes="120x120" href="https://gospod-bog.ru/favicon-120.png">
   <link rel="icon" type="image/png" sizes="192x192" href="https://gospod-bog.ru/icons/icon-192.png">
   <link rel="manifest" href="https://gospod-bog.ru/manifest.json">
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,500;0,600;1,400&family=Source+Sans+3:wght@400;500;600&family=Playfair+Display:ital,wght@0,400;0,600;0,700;0,800;1,400;1,600;1,700&family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&family=Inter:wght@300;400;500;600&family=Noto+Serif+Hebrew:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <link rel="preload" as="style" href="../fonts/fonts.css?v=fc6cff8a">
+<link rel="stylesheet" href="../fonts/fonts.css?v=fc6cff8a">
 
   <!-- Yandex.Metrika counter -->
   <script type="text/javascript">
@@ -132,8 +132,8 @@
   </script>
 
   <!-- Styles -->
-  <link rel="stylesheet" href="../css/site.css?v=ed943d96">
-  <link rel="stylesheet" href="../css/home.css?v=0ff49fbe">
+  <link rel="stylesheet" href="../css/site.css?v=1ec9d73f">
+  <link rel="stylesheet" href="../css/home.css?v=1f50b997">
 
   <script>
 window.SITE_CONFIG = {
@@ -176,7 +176,7 @@ window.SITE_CONFIG = {
   padding: 8px 16px;
   text-decoration: none;
   font-size: 14px;
-  z-index: 10000;
+  z-index: var(--z-modal);
   border-radius: 0 0 4px 0;
   transition: top 0.2s;
 }
@@ -184,7 +184,7 @@ window.SITE_CONFIG = {
   top: 0;
 }
 </style>
-  <link rel="stylesheet" href="../css/command-palette.css?v=90b14c94">
+  <link rel="stylesheet" href="../css/command-palette.css?v=081e6436">
   <link rel="preload" as="image" href="../images/hermenevtika-preview-og.webp" type="image/webp" fetchpriority="high">
 </head>
 
@@ -209,7 +209,7 @@ window.SITE_CONFIG = {
       <li><a href="../about/">Об авторе</a></li>
       <li>
         <button class="h-cp-btn" id="hCpBtnNav" aria-label="Поиск (Ctrl+K)"
-                onclick="window.dispatchEvent(new CustomEvent('gb:openSearch'))">
+                data-action="open-search">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none"
                stroke="currentColor" stroke-width="2"
                stroke-linecap="round" stroke-linejoin="round"
@@ -252,7 +252,7 @@ window.SITE_CONFIG = {
 <div id="hMobileBackdrop" class="h-mobile-backdrop" aria-hidden="true"></div>
 <div class="h-mobile-nav" id="hMobileNav" aria-hidden="true">
   <a href="../">Главная</a>
-  <a href="../about/" onclick="closeMobileNav()">Об авторе</a>
+  <a href="../about/" data-close-nav>Об авторе</a>
 </div>
 
 <!-- PAGE WRAPPER -->
@@ -448,7 +448,7 @@ window.SITE_CONFIG = {
       Богословскую или техническую — напишите, исправим.
     </p>
     <div class="gb-accuracy-actions" role="list">
-      <a href="mailto:viktorco2012@gmail.com" 
+      <a href="mailto:viktorco2012@gmail.com?subject=Неточность%20в%20статье&body=Здравствуйте%2C%0A%0AЯ%20нашёл%20неточность%20в%20материале.%0A%0AОписание%3A%20"
          class="gb-accuracy-btn gb-accuracy-btn--email"
          role="listitem"
          aria-label="Написать на Email">
@@ -499,7 +499,7 @@ window.SITE_CONFIG = {
   </span>
 </button>
 
-<script src="../js/site.js?v=3a49604b" defer></script>
+<script src="../js/site.js?v=4fc1a392" defer></script>
 
 <script>
 (function () {
@@ -610,7 +610,7 @@ window.SITE_CONFIG = {
 })();
 </script>
 
-<script src="../js/sw-register.js?v=e66ef547" defer></script>
+<script src="../js/sw-register.js?v=c60839ff" defer></script>
 <script src="../js/search.js?v=8d27a9af" defer></script>
 
 <script type="application/ld+json">

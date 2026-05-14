@@ -1,14 +1,20 @@
 {
   "name": "gb-is-my-strength",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "private": true,
-  "description": "Build scripts for gospod-bog.ru",
+  "description": "Build scripts for gospod-bog.ru — AUDIT V2 + AUDIT_10_OF_10 patches applied.",
   "scripts": {
     "update-meta": "node scripts/update-meta.js",
     "cache-bust": "node scripts/cache-bust.js",
     "validate": "node scripts/validate.js",
+    "validate:strict": "node scripts/validate.js --strict",
     "seo-audit": "node scripts/seo-audit.js",
-    "validate:seo": "npm run seo-audit && npm run validate"
+    "validate:seo": "npm run seo-audit && npm run validate",
+    "validate:all": "npm run validate:strict && npm run seo-audit",
+    "patch:v2": "node scripts/patch-v2-apply.js",
+    "fonts:download": "node scripts/download-fonts.js",
+    "avif:build": "bash scripts/build-avif.sh",
+    "ci:check": "npm run cache-bust && npm run validate:all"
   },
   "engines": {
     "node": ">=20"

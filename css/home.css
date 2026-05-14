@@ -81,7 +81,7 @@ html.dark {
   top: 0; left: 0;
   height: 2px;
   background: linear-gradient(90deg, var(--h-accent), var(--h-accent-dim));
-  z-index: 99999;
+  z-index: var(--z-absolute);
   /* scaleX вместо width: не вызывает reflow, анимируется на GPU.
      width: 100% + transform-origin: left = занимает всю ширину, масштаб от 0 до 1. */
   width: 100%;
@@ -97,7 +97,7 @@ html.dark {
 .h-navbar {
   position: fixed;
   top: 0; left: 0; right: 0;
-  z-index: 9000;
+  z-index: var(--z-tooltip);
   height: 58px;
   display: flex;
   align-items: center;
@@ -291,7 +291,7 @@ html.dark {
   -webkit-backdrop-filter: blur(24px);
   border-bottom: 1px solid var(--h-border);
   padding: 12px max(20px, env(safe-area-inset-right, 20px)) max(20px, env(safe-area-inset-bottom, 20px)) max(20px, env(safe-area-inset-left, 20px));
-  z-index: 8999;
+  z-index: var(--z-tooltip-low);
   transform: translateY(-12px);
   opacity: 0;
   transition: transform 0.3s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.3s ease, visibility 0s 0.3s;
@@ -1842,7 +1842,7 @@ html.dark .h-blockquote { color: var(--h-ink); }
   display: flex;
   align-items: center;
   justify-content: center;
-  z-index: 9998;
+  z-index: var(--z-toast-high);
   opacity: 0;
   transform: translateY(16px) scale(0.85);
   transition: opacity 0.4s ease, transform 0.4s cubic-bezier(0.22,1,0.36,1), box-shadow 0.3s ease;
@@ -2096,7 +2096,7 @@ html.dark .h-hero-search:focus-visible {
   display: none;
   position: fixed;
   inset: 0;
-  z-index: 8998;
+  z-index: var(--z-dropdown-high);
   background: transparent;
   -webkit-tap-highlight-color: transparent;
 }

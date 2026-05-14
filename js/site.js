@@ -154,17 +154,18 @@
            touchStartExtra {function(el)} — extra logic before document touchstart check
                                                                                       */
     makeTooltipController: function (anchorSel, tipSel, opts) {
+      /* AUDIT V2 / ARCH-1: полностью delegated реализация.
+         Один комплект listeners на document вместо отдельных на каждый якорь.
+         Это критично при ~30+ .bref на странице — было 180+ listeners,
+         стало 9. Поведение полностью совместимо. */
       var utils = this;
       opts = opts || {};
       var GUARD_DELAY = 350;
-
       var activeEl   = null;
       var justOpened = false;
-
       var IS_DESKTOP = function () {
         return window.matchMedia('(hover: hover) and (pointer: fine)').matches;
       };
-
       function resetTipStyles(tip) {
         if (!tip) return;
         setTimeout(function () {
@@ -175,7 +176,6 @@
           tip.style.left       = '-9999px';
         }, 200);
       }
-
       function close() {
         if (justOpened) return;
         if (activeEl) {
@@ -184,8 +184,8 @@
           activeEl = null;
         }
       }
-
       function open(el) {
+        if (!el || !el.querySelector(tipSel)) return;
         close();
         el.classList.add('is-open');
         activeEl = el;
@@ -194,70 +194,73 @@
         setTimeout(function () { justOpened = false; }, GUARD_DELAY);
       }
 
-      /* Wire each anchor element.
-         Пропускаем элементы без соответствующего tip — иначе навешиваем
-         бесполезные обработчики и is-open класс не показывает ничего.   */
-      document.querySelectorAll(anchorSel).forEach(function (el) {
-        if (!el.querySelector(tipSel)) return;
-        /* Touch */
-        var touchMoved = false;
-        el.addEventListener('touchstart', function () { touchMoved = false; }, { passive: true });
-        el.addEventListener('touchmove',  function () { touchMoved = true; },  { passive: true });
-        el.addEventListener('touchend', function (e) {
+      /* ── Delegated TOUCH ─────────────────────────────────────── */
+      var touchMoved = false;
+      document.addEventListener('touchstart', function () { touchMoved = false; }, { passive: true });
+      document.addEventListener('touchmove',  function () { touchMoved = true; },  { passive: true });
+      document.addEventListener('touchend', function (e) {
+        var anchor = e.target.closest(anchorSel);
+        if (anchor && anchor.querySelector(tipSel)) {
           if (touchMoved) return;
           e.preventDefault();
-          if (activeEl === el) { justOpened = false; close(); }
-          else { open(el); }
-        }, { passive: false });
+          if (activeEl === anchor) { justOpened = false; close(); }
+          else { open(anchor); }
+          return;
+        }
+        if (!e.target.closest(tipSel)) close();
+      }, { passive: false });
 
-        /* Click (desktop) */
-        el.addEventListener('click', function (e) {
+      /* ── Delegated CLICK (desktop) ───────────────────────────── */
+      document.addEventListener('click', function (e) {
+        var anchor = e.target.closest(anchorSel);
+        if (anchor && anchor.querySelector(tipSel)) {
           if (!IS_DESKTOP()) { e.preventDefault(); return; }
           e.preventDefault(); e.stopPropagation();
-          if (activeEl === el) { close(); return; }
-          open(el);
-        });
-
-        /* Hover (desktop) */
-        el.addEventListener('mouseenter', function () {
-          if (!IS_DESKTOP()) return;
-          /* Явно закрываем предыдущий тултип, не проходя через justOpened-гард:
-             justOpened защищает от случайного закрытия при click→scroll, но при
-             физическом перемещении мыши с одного якоря на другой предыдущий тип
-             обязан закрыться немедленно. Без этого при наведении на B в течение
-             350ms после клика на A оба элемента получают is-open одновременно. */
-          if (activeEl && activeEl !== el) {
-            resetTipStyles(activeEl.querySelector(tipSel));
-            activeEl.classList.remove('is-open');
-          }
-          utils.positionTip(el.querySelector(tipSel), el);
-          el.classList.add('is-open');
-          activeEl = el;
-        });
-        el.addEventListener('mouseleave', function () {
-          if (!IS_DESKTOP()) return;
-          var tip = el.querySelector(tipSel);
-          if (tip && tip.matches(':hover')) return;
-          if (tip && tip.style.overflowY === 'auto') return;
-          close();
-        });
-
-        /* Keyboard (focus/blur — опционально) */
-        if (opts.useFocusBlur) {
-          el.addEventListener('focus', function () { open(el); });
-          el.addEventListener('blur',  function () { close(); });
+          if (activeEl === anchor) { close(); return; }
+          open(anchor);
+          return;
         }
+        if (!e.target.closest(tipSel)) close();
       });
 
-      /* Close on outside click */
-      document.addEventListener('click', function (e) {
-        if (!e.target.closest(anchorSel) && !e.target.closest(tipSel)) close();
+      /* ── Delegated HOVER через pointerover/pointerout ──────── */
+      document.addEventListener('pointerover', function (e) {
+        if (!IS_DESKTOP()) return;
+        var anchor = e.target.closest(anchorSel);
+        if (!anchor || !anchor.querySelector(tipSel)) return;
+        if (activeEl && activeEl !== anchor) {
+          resetTipStyles(activeEl.querySelector(tipSel));
+          activeEl.classList.remove('is-open');
+        }
+        utils.positionTip(anchor.querySelector(tipSel), anchor);
+        anchor.classList.add('is-open');
+        activeEl = anchor;
       });
-      document.addEventListener('touchstart', function (e) {
-        if (!e.target.closest(anchorSel) && !e.target.closest(tipSel)) close();
-      }, { passive: true });
+      document.addEventListener('pointerout', function (e) {
+        if (!IS_DESKTOP()) return;
+        var anchor = e.target.closest(anchorSel);
+        if (!anchor) return;
+        var related = e.relatedTarget;
+        if (related && related.closest && (related.closest(anchorSel) === anchor || related.closest(tipSel))) return;
+        var tip = anchor.querySelector(tipSel);
+        if (tip && tip.matches && tip.matches(':hover')) return;
+        if (tip && tip.style.overflowY === 'auto') return;
+        if (activeEl === anchor) close();
+      });
 
-      /* Close on scroll/resize/etc. */
+      /* ── Keyboard focus/blur — delegated через focusin/focusout ── */
+      if (opts.useFocusBlur) {
+        document.addEventListener('focusin', function (e) {
+          var anchor = e.target.closest(anchorSel);
+          if (anchor && anchor.querySelector(tipSel)) open(anchor);
+        });
+        document.addEventListener('focusout', function (e) {
+          var anchor = e.target.closest(anchorSel);
+          if (anchor) close();
+        });
+      }
+
+      /* ── Close on global events ──────────────────────────────── */
       window.addEventListener('scroll',            close, { passive: true });
       window.addEventListener('resize',            close, { passive: true });
       window.addEventListener('orientationchange', close, { passive: true });
@@ -270,8 +273,6 @@
       document.addEventListener('keydown', function (e) {
         if (e.key === 'Escape') close();
       });
-
-      /* Extra scroll containers (e.g. TOC panel) */
       if (opts.extraCloseSelectors) {
         opts.extraCloseSelectors.forEach(function (sel) {
           document.querySelectorAll(sel).forEach(function (el) {
@@ -279,7 +280,6 @@
           });
         });
       }
-
       return { open: open, close: close };
     },
 
@@ -341,6 +341,67 @@
   };
 
   window.SiteUtils = SiteUtils;
+
+  /* ──────────────────────────────────────────────────────────────────
+     AUDIT V2 / UI-3.1: единый набор SVG-иконок (stroke-width 1.5).
+     ────────────────────────────────────────────────────────────────── */
+  window.SiteIcons = {
+    close:  '<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6l-12 12"/></svg>',
+    share:  '<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><path d="M8.59 13.51l6.83 3.98M15.41 6.51L8.59 10.49"/></svg>',
+    copy:   '<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>',
+    book:   '<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2zM22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>',
+    check:  '<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg>'
+  };
+
+  /* ──────────────────────────────────────────────────────────────────
+     AUDIT V2 / ARCH-2: scroll-lock reset on history navigation.
+     ────────────────────────────────────────────────────────────────── */
+  window.addEventListener('popstate', function () {
+    if (window.SiteUtils && window.SiteUtils.forceUnlockEmergency) {
+      window.SiteUtils.forceUnlockEmergency();
+    }
+  });
+  window.addEventListener('pageshow', function (e) {
+    if (e.persisted && window.SiteUtils && window.SiteUtils.forceUnlockEmergency) {
+      window.SiteUtils.forceUnlockEmergency();
+    }
+  });
+
+  /* ──────────────────────────────────────────────────────────────────
+     AUDIT V2 / UX-3: делегированный handler для data-action="open-search".
+     Заменяет inline onclick на index.html / articles/index.html.
+     ────────────────────────────────────────────────────────────────── */
+  document.addEventListener('click', function (e) {
+    var t = e.target.closest('[data-action="open-search"]');
+    if (t) {
+      e.preventDefault();
+      if (window.GBSearch && window.GBSearch.open) window.GBSearch.open();
+      else window.dispatchEvent(new CustomEvent('gb:openSearch'));
+    }
+  });
+
+  /* ──────────────────────────────────────────────────────────────────
+     AUDIT_10_OF_10 / ARC-5.1: SITE_CONFIG validation (non-blocking).
+     ────────────────────────────────────────────────────────────────── */
+  (function () {
+    var cfg = window.SITE_CONFIG;
+    if (!cfg) return;
+    var errors = [];
+    var allowedTypes = ['home', 'article', 'catalog', 'about', 'series'];
+    var pageType = (cfg.page && cfg.page.type) || '';
+    if (pageType && allowedTypes.indexOf(pageType) === -1) {
+      errors.push('page.type: недопустимое значение "' + pageType + '"');
+    }
+    if (cfg.quiz && cfg.quiz.questions && !Array.isArray(cfg.quiz.questions)) {
+      errors.push('quiz.questions должен быть массивом');
+    }
+    if (errors.length) {
+      console.group('[SITE_CONFIG validation]');
+      errors.forEach(function (e) { console.warn(e); });
+      console.groupEnd();
+    }
+  })();
+
 
 
   /* ============================================================
@@ -497,23 +558,35 @@
         '<div class="sd-header">' +
           '<span class="sd-title" id="sd-title">Поделиться</span>' +
           '<button class="sd-close" id="sd-close" aria-label="Закрыть">' +
-            '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>' +
+            '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg>' +
           '</button>' +
         '</div>' +
         '<div class="sd-grid">' +
 
+          /* AUDIT V2 / SHR-9.2: порядок по Mediascope dec-2025 (MAU):
+             Telegram → WhatsApp → ВКонтакте → МАКС → Одноклассники → Скопировать.
+             Все иконки — монохром, stroke-width 1.5, currentColor. */
+
           /* Telegram */
           '<button class="sd-btn sd-btn--tg" id="sd-tg" aria-label="Поделиться в Telegram">' +
             '<span class="sd-icon">' +
-              '<svg width="26" height="26" viewBox="0 0 24 24" fill="currentColor"><path d="M20.665 3.717L2.931 10.702c-1.208.486-1.202 1.161-.222 1.462l4.541 1.418 10.524-6.641c.497-.3.951-.137.578.192L9.129 15.007l-.39 4.613c.567 0 .817-.26 1.132-.562l2.719-2.641 5.65 4.168c1.041.576 1.793.28 2.05-.966l3.717-17.501c.378-1.517-.58-2.203-1.342-1.401z"/></svg>' +
+              '<svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 5L2.5 11.5l5 2 1.5 6 4-4 5 4z"/></svg>' +
             '</span>' +
             '<span class="sd-label">Telegram</span>' +
+          '</button>' +
+
+          /* WhatsApp */
+          '<button class="sd-btn sd-btn--wa" id="sd-wa" aria-label="Поделиться в WhatsApp">' +
+            '<span class="sd-icon">' +
+              '<svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12a9 9 0 11-3.4-7l3.4-1-1 3.4A9 9 0 0121 12z"/><path d="M8.5 9.5c.7 2.5 2.5 4.3 5 5l1.3-1.3 2.5 1-1 2.2c-3.5.5-7-2.5-7.5-6l2.2-1z"/></svg>' +
+            '</span>' +
+            '<span class="sd-label">WhatsApp</span>' +
           '</button>' +
 
           /* ВКонтакте */
           '<button class="sd-btn sd-btn--vk" id="sd-vk" aria-label="Поделиться ВКонтакте">' +
             '<span class="sd-icon">' +
-              '<svg width="26" height="26" viewBox="0 0 24 24" fill="currentColor"><path d="M21.547 7h-3.29a.743.743 0 00-.655.392s-1.312 2.416-1.734 3.23C14.734 12.813 14 12.126 14 11.11V7.603A1.104 1.104 0 0012.896 6.5h-2.474a1.982 1.982 0 00-1.75.813s1.255-.204 1.255 1.49c0 .42.022 1.626.04 2.64L8.93 10.9a24.783 24.783 0 01-2.535-3.865A1.054 1.054 0 005.432 6.5H2.866a.62.62 0 00-.657.74s2.222 5.198 4.738 7.817c2.31 2.405 4.938 2.243 4.938 2.243h1.19a1.005 1.005 0 001.063-1.065v-.79s.04-3.138 1.446-3.6c1.386-.455 3.167 3.035 5.051 4.372a1.469 1.469 0 001.02.39l3.222-.045s1.688-.104.888-1.432c-.066-.108-.463-.977-2.382-2.767-2.005-1.87-1.736-1.568.679-4.81.147-.198 1.25-1.766.962-2.048A1.21 1.21 0 0021.547 7z"/></svg>' +
+              '<svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 7c1 5 4 9 8 10v-4c2 0 3 1 4 4 1 0 3 0 5-1-2-2-3-4-3-5l3-4h-3l-3 4c-1 0-2-1-2-3V7H6"/></svg>' +
             '</span>' +
             '<span class="sd-label">ВКонтакте</span>' +
           '</button>' +
@@ -521,23 +594,23 @@
           /* МАКС (MAX) */
           '<button class="sd-btn sd-btn--max" id="sd-max" aria-label="Поделиться в МАКС">' +
             '<span class="sd-icon">' +
-              '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>' +
+              '<svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 18V6l8 8 8-8v12"/></svg>' +
             '</span>' +
             '<span class="sd-label">МАКС</span>' +
           '</button>' +
 
-          /* WhatsApp */
-          '<button class="sd-btn sd-btn--wa" id="sd-wa" aria-label="Поделиться в WhatsApp">' +
+          /* Одноклассники */
+          '<button class="sd-btn sd-btn--ok" id="sd-ok" aria-label="Поделиться в Одноклассниках">' +
             '<span class="sd-icon">' +
-              '<svg width="26" height="26" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>' +
+              '<svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M6 16c2 1 4 1.5 6 1.5s4-.5 6-1.5M9 14l-3 6M15 14l3 6"/></svg>' +
             '</span>' +
-            '<span class="sd-label">WhatsApp</span>' +
+            '<span class="sd-label">Одноклассники</span>' +
           '</button>' +
 
           /* Скопировать */
           '<button class="sd-btn sd-btn--copy" id="sd-copy" aria-label="Скопировать ссылку">' +
             '<span class="sd-icon">' +
-              '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>' +
+              '<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>' +
             '</span>' +
             '<span class="sd-label sd-copy-label">Скопировать</span>' +
           '</button>' +
@@ -655,6 +728,11 @@
     });
     document.getElementById('sd-max').addEventListener('click', function () {
       window.open('https://share.max.ru/share?url=' + encodeURIComponent(shareUrl) + '&title=' + encodedTitle, '_blank', 'noopener');
+    });
+    document.getElementById('sd-ok').addEventListener('click', function () {
+      var okUrl = 'https://connect.ok.ru/offer?url=' + encodeURIComponent(utmUrl(shareUrl, 'ok')) +
+                  '&title=' + encodedTitle;
+      window.open(okUrl, '_blank', 'noopener');
     });
     document.getElementById('sd-wa').addEventListener('click', function () {
       /* B-12: wa.me работает на мобильном (открывает приложение) и на десктопе
@@ -1371,13 +1449,38 @@
     if (cfg.enabled === false) return;
 
     document.querySelectorAll('.flip-card, .error-flip-card, .heart-flip-card').forEach(function (card) {
-      card.addEventListener('click', function () { this.classList.toggle('flipped'); });
-
+      /* AUDIT V2 / UX-2: единая ARIA-разметка для всех flip-карточек. */
+      if (!card.hasAttribute('role'))     card.setAttribute('role', 'button');
+      if (!card.hasAttribute('tabindex')) card.setAttribute('tabindex', '0');
+      if (!card.hasAttribute('aria-pressed'))  card.setAttribute('aria-pressed', 'false');
+      if (!card.hasAttribute('aria-expanded')) card.setAttribute('aria-expanded', 'false');
+      if (!card.hasAttribute('aria-label')) {
+        var label = card.querySelector('.flip-card-front h3, .heart-flip-front h3, .error-flip-front h3, .flip-card-front, .heart-flip-front');
+        if (label) {
+          var txt = (label.textContent || '').trim().slice(0, 80);
+          if (txt) card.setAttribute('aria-label', 'Перевернуть карточку: ' + txt);
+        }
+      }
+      function syncARIA() {
+        var flipped = card.classList.contains('flipped');
+        card.setAttribute('aria-pressed',  flipped ? 'true' : 'false');
+        card.setAttribute('aria-expanded', flipped ? 'true' : 'false');
+        var back  = card.querySelector('.flip-card-back, .heart-flip-back, .error-flip-back');
+        var front = card.querySelector('.flip-card-front, .heart-flip-front, .error-flip-front');
+        if (back)  back.setAttribute('aria-hidden',  flipped ? 'false' : 'true');
+        if (front) front.setAttribute('aria-hidden', flipped ? 'true' : 'false');
+      }
+      syncARIA();
+      card.addEventListener('click', function () {
+        this.classList.toggle('flipped');
+        syncARIA();
+      });
       if (cfg.keyboard !== false) {
         card.addEventListener('keydown', function (e) {
           if (e.key === 'Enter' || e.key === ' ') {
             e.preventDefault();
             this.classList.toggle('flipped');
+            syncARIA();
           }
         });
       }
@@ -2169,7 +2272,7 @@
     function launchConfetti(mode) {
       if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
       var canvas = document.createElement('canvas');
-      canvas.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:9999';
+      canvas.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index: var(--z-modal-low)';
       document.body.appendChild(canvas);
       var ctx = canvas.getContext('2d');
       canvas.width = window.innerWidth; canvas.height = window.innerHeight;
@@ -2337,7 +2440,7 @@
       'opacity:0',
       'pointer-events:none',
       'transition:opacity .2s ease,transform .2s ease',
-      'z-index:19999',
+      'z-index: var(--z-popover)',
       'display:flex',
       'align-items:center',
       'gap:6px'
@@ -2680,15 +2783,52 @@
     window.addEventListener('scroll', hide, { passive: true });
     document.addEventListener('keydown', function (e) { if (e.key === 'Escape') hide(); });
 
+    /* AUDIT_10_OF_10 / SHR-9.1: правильная атрибуция, scroll-to-text, NBSP. */
+    function findNearestH2() {
+      var sel = window.getSelection();
+      if (!sel || !sel.rangeCount) return null;
+      var node = sel.getRangeAt(0).commonAncestorContainer;
+      var el = node.nodeType === 1 ? node : node.parentElement;
+      while (el && el.tagName !== 'H2') {
+        el = el.previousElementSibling || (el.parentElement);
+        if (!el || el === document.body) return null;
+      }
+      return (el && el.id) ? el : null;
+    }
+    function buildScrollToText(quote) {
+      if (!quote) return '';
+      var words = quote.replace(/[\u00ab\u00bb"\s]+/g, ' ').trim().split(/\s+/).slice(0, 6).join(' ');
+      return '#:~:text=' + encodeURIComponent(words);
+    }
+    function buildQuoteShareText(quote) {
+      var clean = (quote || '').replace(/[\u201C\u201D\u201E"]/g, '').replace(/\s*\u2014\s*/g, '\u00a0\u2014 ').trim();
+      var title = (document.querySelector('h1') ? document.querySelector('h1').textContent : document.title).trim();
+      var h2 = findNearestH2();
+      var url = location.origin + location.pathname;
+      if (h2) url += '#' + h2.id;
+      url += buildScrollToText(quote);
+      return '\u00ab' + clean + '\u00bb\u00a0\u2014 ' + title + ' \u00b7 ' + url;
+    }
+
     copyBtn.addEventListener('click', function () {
       if (!lastText) return;
-      var text = '\u00ab' + lastText + '\u00bb \u2014 ' + window.location.href;
+      var text = buildQuoteShareText(lastText);
+      function done() {
+        if (navigator.vibrate) try { navigator.vibrate(20); } catch (e) {}
+        var span = copyBtn.querySelector('span');
+        var orig = span.textContent;
+        span.textContent = '\u2713\u00a0Скопировано';
+        setTimeout(function () { span.textContent = orig; }, 2200);
+      }
       if (navigator.clipboard && navigator.clipboard.writeText) {
-        navigator.clipboard.writeText(text).then(function () {
-          var span = copyBtn.querySelector('span');
-          var orig = span.textContent;
-          span.textContent = '\u2713\u00a0Скопировано';
-          setTimeout(function () { span.textContent = orig; }, 2200);
+        navigator.clipboard.writeText(text).then(done).catch(function () {
+          var ta = document.createElement('textarea');
+          ta.value = text;
+          ta.style.cssText = 'position:fixed;opacity:0;pointer-events:none';
+          document.body.appendChild(ta); ta.select();
+          try { document.execCommand('copy'); } catch (e) {}
+          document.body.removeChild(ta);
+          done();
         });
       }
       hide();
@@ -2697,11 +2837,22 @@
 
     shareBtn.addEventListener('click', function () {
       if (!lastText) return;
-      var data = { title: document.title, text: '\u00ab' + lastText + '\u00bb', url: window.location.href };
-      if (navigator.share) {
+      var quote = lastText.replace(/\s*\u2014\s*/g, '\u00a0\u2014 ').trim();
+      var title = (document.querySelector('h1') ? document.querySelector('h1').textContent : document.title).trim();
+      var h2 = findNearestH2();
+      var url = location.origin + location.pathname + (h2 ? '#' + h2.id : '') + buildScrollToText(quote);
+      var data = {
+        title: title,
+        text:  '\u00ab' + quote + '\u00bb\u00a0\u2014 ' + title,
+        url:   url
+      };
+      var isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+      if (isMobile && navigator.share) {
         navigator.share(data).catch(function () {});
+      } else if (window.SiteShare && window.SiteShare.open) {
+        window.SiteShare.open(shareBtn, '\u00ab' + quote.slice(0, 80) + '\u2026\u00bb');
       } else {
-        var toCopy = data.text + ' \u2014 ' + data.url;
+        var toCopy = data.text + ' \u00b7 ' + data.url;
         if (navigator.clipboard && navigator.clipboard.writeText) {
           navigator.clipboard.writeText(toCopy).then(function () {
             var span = shareBtn.querySelector('span');
@@ -3414,4 +3565,41 @@
   })();
 
 
+
+
+  /* ──────────────────────────────────────────────────────────────────
+     AUDIT_10_OF_10 / NAV-11.2: автоподстановка subject/body для mailto
+     в .gb-accuracy-block.
+     ────────────────────────────────────────────────────────────────── */
+  document.querySelectorAll('.gb-accuracy-btn--email[href^="mailto:"]').forEach(function (a) {
+    var href = a.getAttribute('href');
+    if (href.indexOf('?subject=') !== -1) return; /* уже расширен */
+    var to = href.replace('mailto:', '');
+    var subj = encodeURIComponent('Неточность в статье: ' + document.title);
+    var body = encodeURIComponent(
+      'Здравствуйте,\n\nЯ обнаружил неточность в материале:\n' +
+      document.title + '\n' + location.href + '\n\n' +
+      'Описание неточности:\n[ваш текст]\n\n' +
+      '— Спасибо!'
+    );
+    a.setAttribute('href', 'mailto:' + to + '?subject=' + subj + '&body=' + body);
+  });
+
+  /* ──────────────────────────────────────────────────────────────────
+     AUDIT_10_OF_10 / NAV-11.1: автоинъекция /js/series-cards.js,
+     /js/glossary.js (lazy, только если нужно).
+     ────────────────────────────────────────────────────────────────── */
+  (function lazyExtras() {
+    function add(src) {
+      if (document.querySelector('script[data-extra="' + src + '"]')) return;
+      var sc = document.createElement('script');
+      sc.src = src;
+      sc.defer = true;
+      sc.dataset.extra = src;
+      document.head.appendChild(sc);
+    }
+    if (document.querySelector('[data-series-cards]')) add('/js/series-cards.js');
+    var pageType = window.SiteUtils && window.SiteUtils.getConfig('page.type', '');
+    if (pageType === 'article') add('/js/glossary.js');
+  })();
 })();

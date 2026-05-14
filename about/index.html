@@ -111,7 +111,8 @@
             "name": "О редакторе",
             "item": "https://gospod-bog.ru/about/"
           }
-        ]
+        ],
+        "@id": "https://gospod-bog.ru/about/#breadcrumbs"
       }
     }
   ]
@@ -124,14 +125,13 @@
   <link rel="icon" type="image/png" sizes="120x120" href="https://gospod-bog.ru/favicon-120.png">
   <link rel="icon" type="image/png" sizes="192x192" href="https://gospod-bog.ru/icons/icon-192.png">
   <link rel="manifest" href="https://gospod-bog.ru/manifest.json">
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,500;0,600;1,400&family=Source+Sans+3:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="preload" as="style" href="../fonts/fonts.css?v=fc6cff8a">
+<link rel="stylesheet" href="../fonts/fonts.css?v=fc6cff8a">
   <!-- Anti-FOUC: применяем тему до рендера CSS -->
   <script>
     (function(){try{var t=localStorage.getItem('theme');if(t==='dark'||(!t&&window.matchMedia('(prefers-color-scheme: dark)').matches)){document.documentElement.classList.add('dark');}}catch(e){}})();
   </script>
-  <link rel="stylesheet" href="../css/site.css?v=ed943d96">
+  <link rel="stylesheet" href="../css/site.css?v=1ec9d73f">
 
   <script>
   window.SITE_CONFIG = {
@@ -181,7 +181,7 @@
   padding: 8px 16px;
   text-decoration: none;
   font-size: 14px;
-  z-index: 10000;
+  z-index: var(--z-modal);
   border-radius: 0 0 4px 0;
   transition: top 0.2s;
 }
@@ -189,7 +189,7 @@
   top: 0;
 }
 </style>
-  <link rel="stylesheet" href="../css/command-palette.css?v=90b14c94">
+  <link rel="stylesheet" href="../css/command-palette.css?v=081e6436">
 </head>
 
 <body>
@@ -371,7 +371,7 @@
       Богословскую или техническую — напишите, исправим.
     </p>
     <div class="gb-accuracy-actions" role="list">
-      <a href="mailto:viktorco2012@gmail.com"
+      <a href="mailto:viktorco2012@gmail.com?subject=Неточность%20в%20статье&body=Здравствуйте%2C%0A%0AЯ%20нашёл%20неточность%20в%20материале.%0A%0AОписание%3A%20"
          class="gb-accuracy-btn gb-accuracy-btn--email"
          role="listitem"
          aria-label="Написать на Email">
@@ -413,8 +413,8 @@
 
 </div><!-- /page-wrap -->
 
-<script src="../js/site.js?v=3a49604b" defer></script>
-<script src="../js/sw-register.js?v=e66ef547" defer></script>
+<script src="../js/site.js?v=4fc1a392" defer></script>
+<script src="../js/sw-register.js?v=c60839ff" defer></script>
 <script src="../js/search.js?v=8d27a9af" defer></script>
 </body>
 </html>

@@ -29,6 +29,7 @@ const ASSETS = [
   'css/home.css',
   'css/command-palette.css',   /* BUG-01 fix: добавлен в cache-bust */
   'css/nagornaya-mobile-toc.css',
+  'fonts/fonts.css',           /* AUDIT V2 / PERF-1: self-host fonts */
   'nagornaya/tw.min.css',
   'js/site.js',
   'js/bookmark-engine.js',
@@ -37,6 +38,8 @@ const ASSETS = [
   'js/search.js',
   'js/sw-register.js',
   'js/nagornaya-mobile-toc.js',
+  'js/glossary.js',            /* AUDIT_10_OF_10 / TIP-7.1 */
+  'js/series-cards.js',        /* AUDIT_10_OF_10 / NAV-11.1 */
 ];
 
 // ── Хеш файла ────────────────────────────────────────────────────────────────
