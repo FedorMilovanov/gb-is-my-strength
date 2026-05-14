@@ -110,7 +110,7 @@
 ├── js/bookmark-engine.js
 ├── images/, assets/    # медиа
 
-> ✅ **Все изображения присутствуют в репозитории.** Контентные изображения (`ieremia-*.webp`, `hero-kod-da-vinchi.jpg`, `ieremia-cover.jpg`, `hermenevtika-preview.webp`), OG-изображения статей (`og-kod-da-vinchi.jpg`, `og-krajne-isporcheno.jpg`, `hermenevtika-preview.jpg`) и OG-изображения Нагорной проповеди (`og-nagornaya-propoved*.webp`, `og-preview.jpg`) — все загружены и корректно подключены в `og:image` соответствующих страниц.
+> ✅ **Все изображения присутствуют в репозитории.** Контентные изображения (`ieremia-*.webp` — 15 файлов, `hero-kod-da-vinchi.jpg`, `ieremia-cover.jpg`, `hermenevtika-preview.webp`), OG-изображения статей (`og-kod-da-vinchi.jpg`, `og-krajne-isporcheno.jpg`) и OG-изображения Нагорной проповеди (`og-nagornaya-propoved*.webp`, `og-preview.jpg`) — все загружены и корректно подключены. Серия «Тёмная сторона кафедры»: `pastor-series/hero.png`, `hero-main.webp`, `hero.webp`, `mirror.png`, `mirror.webp`, `manipulation.png`, `manipulation.webp`, `og-hero.png` и прочие — все задействованы через `<picture>` или `<img>` в соответствующих страницах.
 ├── feed.xml, sitemap.xml, robots.txt
 ```
 

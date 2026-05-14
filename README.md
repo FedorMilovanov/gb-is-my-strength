@@ -222,11 +222,12 @@ articles/{slug}/index.html
 | `images/hero-kod-da-vinchi.jpg` ✅ | Карточки на главной и в каталоге |
 | `images/ieremia-cover.jpg` ✅ | Карточки «Крайне ли испорчено сердце» |
 | `images/hermenevtika-preview.webp` ✅ | Карточки «Герменевтика» |
-| `images/pastor-series/hero.png` ✅ | Серия «Тёмная сторона кафедры» |
-| `images/pastor-series/mirror.png` ✅ | Иллюстрация внутри статьи |
-| `images/pastor-series/choice.png` ✅ | Иллюстрация внутри статьи |
-| `images/pastor-series/manipulation.png` ✅ | Карточка части II |
-| `images/ieremia-*.webp` (16 штук) | Иллюстрации внутри статьи «Иеремия 17» |
+| `images/pastor-series/hero.png` ✅ | PNG-fallback в `<picture>` (статья + серия) |
+| `images/pastor-series/hero-main.webp` ✅ | Основной webp-герой статьи и миниатюр |
+| `images/pastor-series/hero.webp` ✅ | Иллюстрация «Откуда берётся» внутри статьи |
+| `images/pastor-series/mirror.png` ✅ | PNG-fallback в `<picture>` (статья + серия) |
+| `images/pastor-series/manipulation.png` ✅ | PNG-fallback в `<picture>` (карточка части II) |
+| `images/ieremia-*.webp` (15 штук) | Иллюстрации внутри статьи «Иеремия 17» |
 
 **Пока изображения отсутствуют** — OG-теги в статьях `kod-da-vinchi`, `krajne-li-isporcheno-serdce` и `hermenevticheskaya` временно используют `/images/og-preview.jpg`. После загрузки статейных OG-изображений вернуть оригинальные URL в `og:image` и `twitter:image`.
 

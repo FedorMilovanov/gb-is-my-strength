@@ -54,7 +54,7 @@
   <script>(function(){try{var t=localStorage.getItem('theme');if(t==='dark'||(!t&&window.matchMedia('(prefers-color-scheme: dark)').matches)){document.documentElement.classList.add('dark');}}catch(e){}})();</script>
 
   <link rel="stylesheet" href="../css/site.css?v=ed943d96">
-  <link rel="stylesheet" href="../css/home.css?v=cf58f06f">
+  <link rel="stylesheet" href="../css/home.css?v=0ff49fbe">
 
   <script>
 window.SITE_CONFIG = {
@@ -162,7 +162,7 @@ window.SITE_CONFIG = {
 }
 </script>
   <link rel="stylesheet" href="../css/command-palette.css?v=90b14c94">
-  <link rel="preload" as="image" href="../images/pastor-series/hero.png" fetchpriority="high">
+  <link rel="preload" as="image" href="../images/pastor-series/hero-main.webp" fetchpriority="high" type="image/webp">
 <style>
 .skip-link { position: absolute; top: -40px; left: 0; background: #14100b; color: #f5f0e8; padding: 8px 16px; text-decoration: none; font-size: 14px; z-index: 10000; border-radius: 0 0 4px 0; transition: top 0.2s; }
 .skip-link:focus { top: 0; }
@@ -250,9 +250,12 @@ window.SITE_CONFIG = {
           <li>
             <a href="../articles/20-antisovetov-pastoru/" class="h-article-card">
               <div class="h-article-thumb">
-                <img src="../images/pastor-series/hero.png"
+                <picture>
+                  <source srcset="../images/pastor-series/hero-main.webp" type="image/webp">
+                  <img src="../images/pastor-series/hero.png"
                      alt="20 антисоветов пастору"
-                     decoding="async" loading="eager" width="160" height="108">
+                     decoding="async" loading="eager" width="160" height="108" title="20 антисоветов пастору">
+                </picture>
               </div>
               <div class="h-article-body">
                 <div class="h-article-kicker">Часть I</div>
@@ -271,9 +274,12 @@ window.SITE_CONFIG = {
           <li>
             <div class="h-article-card" style="opacity:0.72;cursor:default;pointer-events:none;" aria-disabled="true" data-pagefind-ignore>
               <div class="h-article-thumb">
-                <img src="../images/pastor-series/manipulation.png"
+                <picture>
+                  <source srcset="../images/pastor-series/manipulation.webp" type="image/webp">
+                  <img src="../images/pastor-series/manipulation.png"
                      alt="Механика манипуляций"
-                     decoding="async" loading="lazy" width="160" height="108">
+                     decoding="async" loading="lazy" width="160" height="108" title="Механика манипуляций">
+                </picture>
               </div>
               <div class="h-article-body">
                 <div class="h-article-kicker">Часть II</div>
@@ -292,9 +298,12 @@ window.SITE_CONFIG = {
           <li>
             <div class="h-article-card" style="opacity:0.55;cursor:default;pointer-events:none;" aria-disabled="true" data-pagefind-ignore>
               <div class="h-article-thumb">
-                <img src="../images/pastor-series/mirror.png"
+                <picture>
+                  <source srcset="../images/pastor-series/mirror.webp" type="image/webp">
+                  <img src="../images/pastor-series/mirror.png"
                      alt="Диотрефы нашего времени"
-                     decoding="async" loading="lazy" width="160" height="108">
+                     decoding="async" loading="lazy" width="160" height="108" title="Диотрефы нашего времени">
+                </picture>
               </div>
               <div class="h-article-body">
                 <div class="h-article-kicker">Часть III</div>
@@ -499,5 +508,25 @@ window.SITE_CONFIG = {
 
 <script src="../js/sw-register.js?v=e66ef547" defer></script>
 <script src="../js/search.js?v=8d27a9af" defer></script>
+
+<script type="application/ld+json">
+[
+  {
+    "@context": "https://schema.org/",
+    "@type": "ImageObject",
+    "contentUrl": "https://gospod-bog.ru/images/pastor-series/og-hero.webp",
+    "name": "Тёмная сторона кафедры",
+    "description": "Системный анализ пасторских патологий",
+    "creditText": "gospod-bog.ru",
+    "creator": {
+      "@type": "Organization",
+      "name": "Господь Бог — Сила Моя",
+      "url": "https://gospod-bog.ru"
+    },
+    "copyrightNotice": "© gospod-bog.ru",
+    "acquireLicensePage": "https://gospod-bog.ru/about/"
+  }
+]
+</script>
 </body>
 </html>
