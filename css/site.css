@@ -137,15 +137,32 @@ html, body { overflow-x: hidden; }
    ============================================================ */
 @layer base {
 :root {
-  /* Z-index system */
-  --z-base: 1;
-  --z-elevated: 10;
-  --z-dropdown: 500;
-  --z-sticky: 1000;
-  --z-overlay: 2000;
-  --z-modal: 9999;
-  --z-toast: 10000;
-  --z-max: 20000;
+  /* Z-index system — полная карта (AUDIT V2 → UX-1) */
+  --z-base:           1;
+  --z-elevated:      10;
+  --z-raised:        50;
+  --z-raised-high:  100;
+  --z-toc:          500;
+  --z-dropdown:     800;
+  --z-dropdown-high: 900;
+  --z-sticky:      1000;
+  --z-bottom-bar:  2000;
+  --z-overlay:     2500;
+  --z-overlay-high: 3000;
+  --z-tooltip-low: 8999;
+  --z-tooltip:     9000;
+  --z-tooltip-high:9100;
+  --z-toast:       9800;
+  --z-toast-high:  9998;
+  --z-modal-low:   9999;
+  --z-modal:      10000;
+  --z-modal-1:    10001;
+  --z-overlay-modal: 15000;
+  --z-panel:      19000;
+  --z-popover:    19999;
+  --z-critical:   20000;
+  --z-absolute:   99999;
+  --z-max:        99999;
 
   --bg-body: var(--bg); /* legacy alias */
   /* Base */
@@ -2719,7 +2736,7 @@ html.dark .bar-icon-sun  { display: block; color: #f5c542; }
   position: fixed;
   inset: 0;
   background: rgba(0,0,0,.35);
-  z-index: 19000;
+  z-index: var(--z-panel);
   opacity: 0;
   pointer-events: none;
   transition: opacity .22s ease;
@@ -3151,7 +3168,7 @@ html.dark .sd-btn--copy.copied .sd-icon { background: var(--quiz-correct-bg); co
   text-decoration: none;
   border-radius: 4px;
   transition: top .2s ease;
-  z-index: 10001;
+  z-index: var(--z-modal-1);
 }
 .skip-link:focus { top: 20px; }
 /* skip-link должен быть доступен на любом устройстве (WCAG 2.4.1) */
@@ -3897,15 +3914,32 @@ body.has-bottom-bar .bookmark-toast {
    Применяем ТОЛЬКО к тексту, не к контейнеру — иначе em-значения
    в float-картинках будут пересчитываться и нарушат их позиционирование */
 :root {
-  /* Z-index system */
-  --z-base: 1;
-  --z-elevated: 10;
-  --z-dropdown: 500;
-  --z-sticky: 1000;
-  --z-overlay: 2000;
-  --z-modal: 9999;
-  --z-toast: 10000;
-  --z-max: 20000;
+  /* Z-index system — полная карта (AUDIT V2 → UX-1) */
+  --z-base:           1;
+  --z-elevated:      10;
+  --z-raised:        50;
+  --z-raised-high:  100;
+  --z-toc:          500;
+  --z-dropdown:     800;
+  --z-dropdown-high: 900;
+  --z-sticky:      1000;
+  --z-bottom-bar:  2000;
+  --z-overlay:     2500;
+  --z-overlay-high: 3000;
+  --z-tooltip-low: 8999;
+  --z-tooltip:     9000;
+  --z-tooltip-high:9100;
+  --z-toast:       9800;
+  --z-toast-high:  9998;
+  --z-modal-low:   9999;
+  --z-modal:      10000;
+  --z-modal-1:    10001;
+  --z-overlay-modal: 15000;
+  --z-panel:      19000;
+  --z-popover:    19999;
+  --z-critical:   20000;
+  --z-absolute:   99999;
+  --z-max:        99999;
 
   --article-font-size: 17px;
 }
@@ -4037,7 +4071,7 @@ html.dark .resume-list-item:hover {
   white-space: normal;
   max-width: min(280px, calc(100vw - 24px));
   box-shadow: 0 4px 16px rgba(0,0,0,.15);
-  z-index: 9000;
+  z-index: var(--z-tooltip);
   pointer-events: none;
 }
 
@@ -4077,7 +4111,7 @@ html.dark .resume-list-item:hover {
   pointer-events: none;
   transition: opacity .18s ease;
   box-shadow: 0 10px 24px rgba(0,0,0,.22);
-  z-index: 20000;
+  z-index: var(--z-critical);
   top: -9999px;
   left: -9999px;
 }
@@ -4123,7 +4157,7 @@ html.dark .bref { color: var(--accent); font-weight: 500; }
   opacity: 0;
   pointer-events: none;
   transition: opacity .18s ease;
-  z-index: 15000;
+  z-index: var(--z-overlay-modal);
   top: -9999px;
   left: -9999px;
 }
@@ -4173,7 +4207,7 @@ html.dark .gterm {
   pointer-events: none;
   transition: opacity .18s ease;
   box-shadow: 0 10px 28px rgba(0,0,0,.28);
-  z-index: 19000;
+  z-index: var(--z-panel);
   top: -9999px;
   left: -9999px;
 }
@@ -4776,7 +4810,7 @@ footer.footer-home {
    ============================================================ */
 #selection-share-popup {
   position: absolute;
-  z-index: 19999;
+  z-index: var(--z-popover);
   display: flex;
   align-items: stretch;
   background: var(--bg);
@@ -4935,7 +4969,7 @@ html.dark .article-reading-progress-label.completed-label {
   bottom: 88px;
   left: 50%;
   transform: translateX(-50%) translateY(10px);
-  z-index: 9800;
+  z-index: var(--z-toast);
   background: var(--tooltip-bg);
   color: var(--tooltip-text);
   font-family: 'Source Sans 3', system-ui, sans-serif;
@@ -6069,6 +6103,239 @@ html.dark .summary-card__check {
   color: #7ac87a;
 }
 
+
+/* ============================================================
+   AUDIT V2 + AUDIT_10_OF_10 — accessibility, contrast, share, glossary
+   ============================================================ */
+
+/* WCAG 2.2 — touch target 44×44 для inline-маркеров (тач-устройства) */
+@media (pointer: coarse) {
+  .fn-marker, .bref, a.bref, .footnote-ref {
+    position: relative;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .fn-marker::before, .bref::before, a.bref::before, .footnote-ref::before {
+    content: "";
+    position: absolute;
+    top: 50%; left: 50%;
+    width: 44px; height: 44px;
+    transform: translate(-50%, -50%);
+  }
+}
+
+/* Reduce-motion для flip-карточек — текст оборота должен быть видим */
+@media (prefers-reduced-motion: reduce) {
+  .flip-card-inner, .error-flip-inner, .heart-flip-inner {
+    transition: none !important;
+    transform: none !important;
+  }
+  .flip-card.flipped .flip-card-inner,
+  .error-flip-card.flipped .error-flip-inner,
+  .heart-flip-card.flipped .heart-flip-inner {
+    transform: none !important;
+  }
+  .flip-card-back, .heart-flip-back, .error-flip-back {
+    position: static !important;
+    transform: none !important;
+    visibility: visible !important;
+    backface-visibility: visible !important;
+  }
+  .gb-accuracy-btn, .gb-accuracy-btn:hover { transform: none; transition: none; }
+  [data-series-cards] .series-card,
+  [data-series-cards] .series-card:hover { transform: none; transition: none; }
+}
+
+/* Dark mode contrast hardening для warn-box / ehrman-box (WCAG 2.2 AA) */
+html.dark .warn-box, html.dark .ehrman-box {
+  background: color-mix(in srgb, #2a1810 88%, transparent);
+  color: #f1e6d8;
+  border-color: color-mix(in srgb, #c8a050 65%, transparent);
+}
+html.dark .warn-box strong, html.dark .ehrman-box strong { color: #ffd28a; }
+html.dark .warn-box a, html.dark .ehrman-box a {
+  color: #ffd28a;
+  text-decoration-color: color-mix(in srgb, #ffd28a 60%, transparent);
+}
+
+/* Древние языки: иврит и греческий */
+[lang="he"] {
+  font-family: 'Noto Sans Hebrew', 'SBL Hebrew', 'Times New Roman', serif;
+  font-feature-settings: "ccmp" 1, "mark" 1, "mkmk" 1;
+  line-height: 2.0;
+  direction: rtl;
+  unicode-bidi: embed;
+}
+[lang="grc"], [lang="el"] {
+  font-family: 'Noto Sans Greek', 'GFS Neohellenic', 'Times New Roman', serif;
+  font-feature-settings: "kern" 1, "mark" 1;
+  line-height: 1.7;
+}
+[lang="he"][data-translit]::after,
+[lang="grc"][data-translit]::after {
+  content: " (" attr(data-translit) ")";
+  color: var(--muted);
+  font-style: italic;
+  font-size: .85em;
+}
+
+/* Глобальный glossary <abbr> */
+abbr.gterm {
+  text-decoration: underline dotted color-mix(in srgb, var(--accent) 60%, transparent);
+  text-underline-offset: 3px;
+  cursor: help;
+  border: 0;
+  background: none;
+}
+abbr.gterm:hover { text-decoration-color: var(--accent); }
+
+/* Quiz CLS-резервация */
+.quiz-wrapper {
+  min-height: 480px;
+  contain: layout style paint;
+  content-visibility: auto;
+  contain-intrinsic-size: 480px 600px;
+}
+.quiz-card { min-height: 420px; }
+.quiz-question { min-height: 80px; }
+.quiz-options { min-height: 200px; }
+
+/* Footnote bottom-sheet (мобильные сноски) */
+.fn-sheet {
+  position: fixed;
+  inset: auto 0 -100% 0;
+  background: var(--bg-elevated);
+  border-radius: 18px 18px 0 0;
+  box-shadow: 0 -10px 40px rgba(0, 0, 0, .25);
+  padding: 20px 22px max(20px, env(safe-area-inset-bottom)) 22px;
+  transition: bottom .3s cubic-bezier(.2, 0, 0, 1);
+  z-index: var(--z-modal);
+  max-height: 60vh;
+  overflow-y: auto;
+}
+.fn-sheet.is-open { bottom: 0; }
+.fn-sheet-handle {
+  width: 40px; height: 4px; border-radius: 2px;
+  background: var(--muted); margin: 0 auto 12px; opacity: .4;
+}
+.fn-sheet-close {
+  position: absolute; top: 12px; right: 12px;
+  width: 36px; height: 36px;
+  border: 0; background: transparent;
+  cursor: pointer; color: var(--text);
+}
+
+/* Bible-tooltip multi-translation tabs */
+.btip-tabs {
+  display: flex; gap: 4px;
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 8px;
+}
+.btip-tab {
+  background: transparent; border: 0;
+  padding: 6px 10px; cursor: pointer;
+  font-size: 12px; color: var(--muted);
+  border-bottom: 2px solid transparent;
+  margin-bottom: -1px;
+}
+.btip-tab.is-active {
+  color: var(--accent);
+  border-bottom-color: var(--accent);
+  font-weight: 600;
+}
+.btip-pane { display: none; }
+.btip-pane.is-active { display: block; }
+
+/* Selection share popup — над bottom-bar */
+#selection-share-popup { z-index: var(--z-modal-1); }
+
+/* Series navigation cards (NAV-11.1) */
+[data-series-cards] {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 12px;
+  margin: 24px 0;
+}
+[data-series-cards] .series-card {
+  display: block;
+  text-decoration: none;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 14px 16px;
+  background: var(--bg-elevated);
+  color: var(--text);
+  transition: transform .15s ease, border-color .15s ease;
+  position: relative;
+}
+[data-series-cards] .series-card:hover {
+  transform: translateY(-2px);
+  border-color: var(--accent);
+}
+[data-series-cards] .series-card.is-current {
+  border-color: var(--accent);
+  background: color-mix(in srgb, var(--accent) 6%, var(--bg-elevated));
+}
+[data-series-cards] .series-card__num {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: .08em;
+  color: var(--muted);
+}
+[data-series-cards] .series-card__title {
+  font-family: 'Lora', Georgia, serif;
+  font-size: 16px;
+  margin: 4px 0;
+  line-height: 1.3;
+}
+[data-series-cards] .series-card__time {
+  font-size: 12px;
+  color: var(--muted);
+}
+[data-series-cards] .series-card__badge {
+  position: absolute;
+  top: 10px; right: 10px;
+  font-size: 10px;
+  padding: 2px 8px;
+  border-radius: 10px;
+  background: var(--accent);
+  color: #fff;
+  text-transform: uppercase;
+  letter-spacing: .05em;
+}
+
+/* Серийные ссылки в Нагорной (gb-series-link) */
+.gb-series-link {
+  border: 1px solid rgba(184,136,42,.2);
+  background: #faf8f5;
+  transition: border-color .2s ease, background .2s ease, transform .2s ease;
+}
+.gb-series-link:hover {
+  border-color: rgba(184,136,42,.5);
+  background: #fff8ed;
+  transform: translateY(-2px);
+}
+html.dark .gb-series-link {
+  background: color-mix(in srgb, #b8882a 8%, var(--bg-elevated));
+  border-color: color-mix(in srgb, #b8882a 30%, transparent);
+}
+html.dark .gb-series-link:hover {
+  background: color-mix(in srgb, #b8882a 14%, var(--bg-elevated));
+  border-color: color-mix(in srgb, #b8882a 55%, transparent);
+}
+
+/* Article-end SDG block (semantic — Schema.org CreativeWork) */
+.article-end-sdg {
+  display: flex; align-items: center; justify-content: center;
+  gap: 8px; margin: 32px 0;
+  font-family: 'Cormorant Garamond', 'Lora', serif;
+  font-style: italic;
+  color: color-mix(in srgb, var(--accent) 80%, var(--text));
+}
+.article-end-sdg .sdg-cross { color: var(--accent); }
+.article-end-sdg .sdg-translation {
+  color: var(--muted);
+  font-size: .9em;
+}
+
 } /* end @layer components */
 
 /* ── Блокировка скролла при открытом мобильном меню ──
@@ -6377,4 +6644,28 @@ html.dark .gb-accuracy-btn:hover {
   min-width: 100%;
   min-height: 100%;
   z-index: 1;
+}
+
+
+/* AUDIT V2 / UX-3 (clean-up): универсальный hover для inline-стилей nakhodki/seriya */
+.gb-link-soft {
+  display: block;
+  padding: 1rem;
+  background: rgba(184,136,42,.06);
+  border: 1px solid rgba(184,136,42,.18);
+  border-radius: 6px;
+  text-decoration: none;
+  color: inherit;
+  transition: background .15s;
+}
+.gb-link-soft:hover { background: rgba(184,136,42,.12); }
+.gb-text-link {
+  color: var(--h-muted, var(--muted));
+  text-decoration: none;
+  transition: color .2s;
+}
+.gb-text-link:hover { color: var(--h-accent, var(--accent)); }
+@media (prefers-reduced-motion: reduce) {
+  .gb-link-soft, .gb-link-soft:hover,
+  .gb-text-link, .gb-text-link:hover { transition: none; }
 }

@@ -37,9 +37,8 @@
   <link rel="icon" type="image/png" sizes="120x120" href="https://gospod-bog.ru/favicon-120.png">
   <link rel="icon" type="image/png" sizes="192x192" href="https://gospod-bog.ru/icons/icon-192.png">
   <link rel="manifest" href="https://gospod-bog.ru/manifest.json">
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,500;0,600;1,400&family=Source+Sans+3:wght@400;500;600&family=Playfair+Display:ital,wght@0,400;0,600;0,700;0,800;1,400;1,600;1,700&family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <link rel="preload" as="style" href="../../fonts/fonts.css?v=fc6cff8a">
+<link rel="stylesheet" href="../../fonts/fonts.css?v=fc6cff8a">
 
   <!-- Yandex.Metrika counter -->
   <script type="text/javascript">
@@ -58,8 +57,8 @@
     (function(){try{var t=localStorage.getItem('theme');if(t==='dark'||(!t&&window.matchMedia('(prefers-color-scheme: dark)').matches)){document.documentElement.classList.add('dark');}}catch(e){}})();
   </script>
 
-  <link rel="stylesheet" href="../../css/site.css?v=ed943d96">
-  <link rel="stylesheet" href="../../css/home.css?v=0ff49fbe">
+  <link rel="stylesheet" href="../../css/site.css?v=1ec9d73f">
+  <link rel="stylesheet" href="../../css/home.css?v=1f50b997">
 
   <script>
 window.SITE_CONFIG = {
@@ -111,17 +110,7 @@ window.SITE_CONFIG = {
       "url": "https://gospod-bog.ru/nagornaya/seriya/",
       "inLanguage": "ru",
       "author": {
-        "@type": "Person",
-        "name": "Фёдор Милованов",
-        "url": "https://gospod-bog.ru/about/",
-        "jobTitle": "Редактор-составитель",
-        "knowsAbout": [
-          "Богословие",
-          "Библеистика",
-          "Герменевтика",
-          "Апологетика",
-          "Реформатское богословие"
-        ]
+        "@id": "https://gospod-bog.ru/about/#person"
       },
       "publisher": {
         "@id": "https://gospod-bog.ru/#organization"
@@ -131,27 +120,72 @@ window.SITE_CONFIG = {
         {
           "@type": "Article",
           "url": "https://gospod-bog.ru/nagornaya/chast-1/",
-          "name": "Часть I: Два текста, один Иисус"
+          "name": "Часть I: Два текста, один Иисус",
+          "speakable": {
+            "@type": "SpeakableSpecification",
+            "cssSelector": [
+              "h1",
+              ".article-lead",
+              ".summary-card",
+              "[data-speakable]"
+            ]
+          }
         },
         {
           "@type": "Article",
           "url": "https://gospod-bog.ru/nagornaya/chast-2/",
-          "name": "Часть II: Как это записывалось"
+          "name": "Часть II: Как это записывалось",
+          "speakable": {
+            "@type": "SpeakableSpecification",
+            "cssSelector": [
+              "h1",
+              ".article-lead",
+              ".summary-card",
+              "[data-speakable]"
+            ]
+          }
         },
         {
           "@type": "Article",
           "url": "https://gospod-bog.ru/nagornaya/chast-3/",
-          "name": "Часть III: Кому это сказано?"
+          "name": "Часть III: Кому это сказано?",
+          "speakable": {
+            "@type": "SpeakableSpecification",
+            "cssSelector": [
+              "h1",
+              ".article-lead",
+              ".summary-card",
+              "[data-speakable]"
+            ]
+          }
         },
         {
           "@type": "Article",
           "url": "https://gospod-bog.ru/nagornaya/chast-4/",
-          "name": "Часть IV: Богодухновенность"
+          "name": "Часть IV: Богодухновенность",
+          "speakable": {
+            "@type": "SpeakableSpecification",
+            "cssSelector": [
+              "h1",
+              ".article-lead",
+              ".summary-card",
+              "[data-speakable]"
+            ]
+          }
         },
         {
           "@type": "Article",
           "url": "https://gospod-bog.ru/nagornaya/chast-5/",
-          "name": "Часть V: Закон и Евангелие"
+          "name": "Часть V: Закон и Евангелие",
+          "speakable": {
+            "@type": "SpeakableSpecification",
+            "cssSelector": [
+              "h1",
+              ".article-lead",
+              ".summary-card",
+              "[data-speakable]"
+            ]
+          }
         }
       ]
     },
@@ -177,7 +211,8 @@ window.SITE_CONFIG = {
           "name": "Нагорная проповедь — серия в 5 частях",
           "item": "https://gospod-bog.ru/nagornaya/seriya/"
         }
-      ]
+      ],
+      "@id": "https://gospod-bog.ru/nagornaya/seriya/#breadcrumbs"
     }
   ]
 }
@@ -192,7 +227,7 @@ window.SITE_CONFIG = {
   padding: 8px 16px;
   text-decoration: none;
   font-size: 14px;
-  z-index: 10000;
+  z-index: var(--z-modal);
   border-radius: 0 0 4px 0;
   transition: top 0.2s;
 }
@@ -201,7 +236,7 @@ window.SITE_CONFIG = {
 }
 </style>
   <link rel="preload" as="image" href="../../images/og-nagornaya-propoved.webp" type="image/webp" fetchpriority="high">
-  <link rel="stylesheet" href="../../css/command-palette.css?v=90b14c94">
+  <link rel="stylesheet" href="../../css/command-palette.css?v=081e6436">
 </head>
 
 <body>
@@ -245,9 +280,9 @@ window.SITE_CONFIG = {
 <div id="hMobileBackdrop" class="h-mobile-backdrop" aria-hidden="true"></div>
 
 <div class="h-mobile-nav" id="hMobileNav" aria-hidden="true">
-  <a href="../../" onclick="closeMobileNav()">Публикации</a>
-  <a href="../../" onclick="closeMobileNav()">Разбор заблуждений</a>
-  <a href="../../" onclick="closeMobileNav()">О библиотеке</a>
+  <a href="../../" data-close-nav>Публикации</a>
+  <a href="../../" data-close-nav>Разбор заблуждений</a>
+  <a href="../../" data-close-nav>О библиотеке</a>
 </div>
 
 <div class="home-v20">
@@ -256,7 +291,7 @@ window.SITE_CONFIG = {
     <!-- BREADCRUMB + HERO -->
     <section class="h-hero" data-pagefind-body aria-label="Серия статей">
       <nav aria-label="Хлебные крошки" style="margin-bottom:12px;">
-        <a href="../../" style="font-size:13px;color:var(--h-muted);text-decoration:none;transition:color .2s;" onmouseover="this.style.color='var(--h-accent)'" onmouseout="this.style.color='var(--h-muted)'">← Главная</a>
+        <a href="../../" class="gb-text-link">← Главная</a>
       </nav>
 
 <main id="main-content">
@@ -265,6 +300,43 @@ window.SITE_CONFIG = {
       <h1 class="h-hero-title" tabindex="-1">
         <span class="h-title-static">Нагорная</span><span class="h-title-dash" aria-hidden="true">&nbsp;</span><span class="h-title-accent">проповедь</span>
       </h1>
+
+<section class="summary-card" aria-labelledby="summary-title-auto" data-speakable>
+  <h2 id="summary-title-auto" class="summary-card__head">Коротко</h2>
+  <ul class="summary-card__body" role="list">
+      <li class="summary-card__item">
+        <span class="summary-card__check" aria-hidden="true">
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+        </span>
+        <p class="summary-card__text">Полная навигация по серии «Нагорная проповедь»: 5 частей, источники, находки.</p>
+      </li>
+      <li class="summary-card__item">
+        <span class="summary-card__check" aria-hidden="true">
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+        </span>
+        <p class="summary-card__text">Каждая часть — самостоятельное исследование, объединённое общей методологией.</p>
+      </li>
+      <li class="summary-card__item">
+        <span class="summary-card__check" aria-hidden="true">
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+        </span>
+        <p class="summary-card__text">Серия рассчитана на ~110 минут чтения и подходит для последовательного изучения.</p>
+      </li>
+      <li class="summary-card__item">
+        <span class="summary-card__check" aria-hidden="true">
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+        </span>
+        <p class="summary-card__text">Богословская база — реформатская, методологическая — TMS / Chicago Statement.</p>
+      </li>
+      <li class="summary-card__item">
+        <span class="summary-card__check" aria-hidden="true">
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+        </span>
+        <p class="summary-card__text">Все материалы открыты, без подписки и регистрации.</p>
+      </li>
+  </ul>
+</section>
+
       <p class="h-hero-desc">
         Сравнительное исследование Матфея 5–7 и Луки 6:17–49 — содержание, методология записи, адресат, богодухновенность, Закон и Евангелие. Пять статей, объединённых в одну серию.
       </p>
@@ -417,7 +489,7 @@ window.SITE_CONFIG = {
       Богословскую или техническую — напишите, исправим.
     </p>
     <div class="gb-accuracy-actions" role="list">
-      <a href="mailto:viktorco2012@gmail.com"
+      <a href="mailto:viktorco2012@gmail.com?subject=Неточность%20в%20статье&body=Здравствуйте%2C%0A%0AЯ%20нашёл%20неточность%20в%20материале.%0A%0AОписание%3A%20"
          class="gb-accuracy-btn gb-accuracy-btn--email"
          role="listitem"
          aria-label="Написать на Email">
@@ -469,7 +541,7 @@ window.SITE_CONFIG = {
   </span>
 </button>
 
-<script src="../../js/site.js?v=3a49604b" defer></script>
+<script src="../../js/site.js?v=4fc1a392" defer></script>
 <script>
 (function () {
   'use strict';
@@ -555,9 +627,9 @@ window.SITE_CONFIG = {
 })();
 </script>
 
-<script src="../../js/sw-register.js?v=e66ef547" defer></script>
+<script src="../../js/sw-register.js?v=c60839ff" defer></script>
 <script src="../../js/search.js?v=8d27a9af" defer></script>
-<script src="../../js/highlights.js?v=c3b81aa5" defer></script>
+<script src="../../js/highlights.js?v=f6e88a50" defer></script>
 <script src="../../js/enhancements.js?v=abebf9eb" defer></script>
 <script src="../../js/bookmark-engine.js?v=481d7b91" defer></script>
 

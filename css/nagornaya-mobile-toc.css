@@ -52,7 +52,7 @@ body.ng-toc-lock {
   left: 0;
   right: 0;
   bottom: 0;
-  z-index: 2000;
+  z-index: var(--z-bottom-bar);
   display: block;
   padding: 8px max(10px, env(safe-area-inset-right, 10px)) calc(8px + env(safe-area-inset-bottom, 0px)) max(10px, env(safe-area-inset-left, 10px));
   background: color-mix(in srgb, var(--ng-toc-surface) 94%, transparent);
@@ -220,7 +220,7 @@ html.dark .bar-icon-sun { display: block !important; color: #f5c542; }
 .btoc-overlay {
   position: fixed;
   inset: 0;
-  z-index: 2500;
+  z-index: var(--z-overlay);
   display: block;
   background: rgba(28, 25, 23, .38);
   opacity: 0;

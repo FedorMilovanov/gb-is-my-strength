@@ -72,7 +72,7 @@
       background: rgba(20,16,11,.5);
       backdrop-filter: blur(4px);
       -webkit-backdrop-filter: blur(4px);
-      z-index: 9100;
+      z-index: var(--z-tooltip-high);
       align-items: flex-end;
       justify-content: center;
     }
@@ -203,7 +203,7 @@
       border: none; border-radius: 24px;
       padding: 8px 14px 8px 10px;
       display: none; align-items: center; gap: 7px;
-      cursor: pointer; z-index: 800;
+      cursor: pointer; z-index: var(--z-raised-high);
       font-family: var(--mono, monospace);
       font-size: 10px; letter-spacing: .08em;
       box-shadow: 0 4px 20px rgba(20,16,11,.25);

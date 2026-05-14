@@ -103,6 +103,9 @@ function isImage(url) {
 }
 
 function isFont(url) {
+  /* AUDIT V2 / PERF-1: после миграции на self-host шрифтов проверяем
+     local /fonts/*.woff2. fonts.gstatic.com оставлен как fallback. */
+  if (url.origin === self.location.origin && url.pathname.startsWith('/fonts/')) return true;
   return url.hostname === 'fonts.gstatic.com';
 }
 

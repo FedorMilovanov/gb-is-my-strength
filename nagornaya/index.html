@@ -53,7 +53,7 @@
   padding: 8px 16px;
   text-decoration: none;
   font-size: 14px;
-  z-index: 10000;
+  z-index: var(--z-modal);
   border-radius: 0 0 4px 0;
   transition: top 0.2s;
 }
@@ -66,8 +66,8 @@
   <link rel="preload" as="image" href="../images/og-nagornaya-propoved-chast-3.webp" type="image/webp" fetchpriority="low">
   <link rel="preload" as="image" href="../images/og-nagornaya-propoved-chast-4.webp" type="image/webp" fetchpriority="low">
   <link rel="preload" as="image" href="../images/og-nagornaya-propoved-chast-5.webp" type="image/webp" fetchpriority="low">
-  <link rel="stylesheet" href="../css/nagornaya-mobile-toc.css?v=76dd0a0a">
-  <link rel="stylesheet" href="../css/command-palette.css?v=90b14c94">
+  <link rel="stylesheet" href="../css/nagornaya-mobile-toc.css?v=8fc67cf9">
+  <link rel="stylesheet" href="../css/command-palette.css?v=081e6436">
 </head>
 <script type="application/ld+json">
 {
@@ -135,7 +135,8 @@
           "name": "Нагорная проповедь",
           "item": "https://gospod-bog.ru/nagornaya/"
         }
-      ]
+      ],
+      "@id": "https://gospod-bog.ru/nagornaya/#breadcrumbs"
     }
   ]
 }
@@ -434,7 +435,7 @@
       Богословскую или техническую — напишите, исправим.
     </p>
     <div class="gb-accuracy-actions" role="list">
-      <a href="mailto:viktorco2012@gmail.com"
+      <a href="mailto:viktorco2012@gmail.com?subject=Неточность%20в%20статье&body=Здравствуйте%2C%0A%0AЯ%20нашёл%20неточность%20в%20материале.%0A%0AОписание%3A%20"
          class="gb-accuracy-btn gb-accuracy-btn--email"
          role="listitem"
          aria-label="Написать на Email">
@@ -503,7 +504,7 @@
 </script>
 
 <script src="../js/nagornaya-mobile-toc.js?v=8cd98fd8" defer></script>
-<script src="../js/sw-register.js?v=e66ef547" defer></script>
+<script src="../js/sw-register.js?v=c60839ff" defer></script>
 <script src="../js/search.js?v=8d27a9af" defer></script>
 <script src="../js/bookmark-engine.js?v=481d7b91" defer></script>
 </body>

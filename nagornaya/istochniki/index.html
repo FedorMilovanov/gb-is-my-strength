@@ -96,7 +96,7 @@
   padding: 8px 16px;
   text-decoration: none;
   font-size: 14px;
-  z-index: 10000;
+  z-index: var(--z-modal);
   border-radius: 0 0 4px 0;
   transition: top 0.2s;
 }
@@ -104,35 +104,9 @@
   top: 0;
 }
 </style>
-  <link rel="stylesheet" href="../../css/nagornaya-mobile-toc.css?v=76dd0a0a">
-  <link rel="stylesheet" href="../../css/command-palette.css?v=90b14c94">
+  <link rel="stylesheet" href="../../css/nagornaya-mobile-toc.css?v=8fc67cf9">
+  <link rel="stylesheet" href="../../css/command-palette.css?v=081e6436">
 
-<script type="application/ld+json">
-{
-  "@context": "https://schema.org",
-  "@type": "BreadcrumbList",
-  "itemListElement": [
-    {
-      "@type": "ListItem",
-      "position": 1,
-      "name": "Главная",
-      "item": "https://gospod-bog.ru/"
-    },
-    {
-      "@type": "ListItem",
-      "position": 2,
-      "name": "Нагорная проповедь",
-      "item": "https://gospod-bog.ru/nagornaya/"
-    },
-    {
-      "@type": "ListItem",
-      "position": 3,
-      "name": "Источники",
-      "item": "https://gospod-bog.ru/nagornaya/istochniki/"
-    }
-  ]
-}
-</script>
 </head>
 <script type="application/ld+json">
 {
@@ -168,13 +142,36 @@
       "@type": "WebPage",
       "headline": "Источники серии «Нагорная проповедь»",
       "url": "https://gospod-bog.ru/nagornaya/istochniki/"
+    },
+    {
+      "@type": "BreadcrumbList",
+      "itemListElement": [
+        {
+          "@type": "ListItem",
+          "position": 1,
+          "name": "Главная",
+          "item": "https://gospod-bog.ru/"
+        },
+        {
+          "@type": "ListItem",
+          "position": 2,
+          "name": "Нагорная проповедь",
+          "item": "https://gospod-bog.ru/nagornaya/"
+        },
+        {
+          "@type": "ListItem",
+          "position": 3,
+          "name": "Источники",
+          "item": "https://gospod-bog.ru/nagornaya/istochniki/"
+        }
+      ],
+      "@id": "https://gospod-bog.ru/nagornaya/istochniki/#breadcrumbs"
     }
   ]
 }
 </script>
 <body class="bg-stone-100 text-stone-900 antialiased">
 <a href="#main-content" class="skip-link">Перейти к содержимому</a>
-
 
   <!-- Desktop sidebar -->
   <aside class="hidden lg:flex flex-col w-64 min-h-screen bg-stone-900 text-stone-100 fixed left-0 top-0 z-40 overflow-y-auto">
@@ -327,6 +324,43 @@
       <div class="bg-gradient-to-br from-indigo-700 to-indigo-900 text-white rounded-2xl p-6 md:p-10">
         <div class="text-sm text-indigo-300 mb-1 font-semibold uppercase tracking-widest">Нагорная проповедь</div>
         <h1 class="text-2xl md:text-3xl font-bold mb-2">Источники серии</h1>
+
+<section class="summary-card" aria-labelledby="summary-title-auto" data-speakable>
+  <h2 id="summary-title-auto" class="summary-card__head">Коротко</h2>
+  <ul class="summary-card__body" role="list">
+      <li class="summary-card__item">
+        <span class="summary-card__check" aria-hidden="true">
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+        </span>
+        <p class="summary-card__text">Аннотированный список источников по серии «Нагорная проповедь».</p>
+      </li>
+      <li class="summary-card__item">
+        <span class="summary-card__check" aria-hidden="true">
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+        </span>
+        <p class="summary-card__text">Включает академические комментарии (Carson, France, Bock, Stein).</p>
+      </li>
+      <li class="summary-card__item">
+        <span class="summary-card__check" aria-hidden="true">
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+        </span>
+        <p class="summary-card__text">Документы: Чикагское заявление о безошибочности (1978), TMS-материалы.</p>
+      </li>
+      <li class="summary-card__item">
+        <span class="summary-card__check" aria-hidden="true">
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+        </span>
+        <p class="summary-card__text">Каждый источник снабжён кратким описанием, ролью в исследовании и рекомендацией читателю.</p>
+      </li>
+      <li class="summary-card__item">
+        <span class="summary-card__check" aria-hidden="true">
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+        </span>
+        <p class="summary-card__text">Цель раздела — обеспечить полную верифицируемость серии (E-E-A-T).</p>
+      </li>
+  </ul>
+</section>
+
         <p class="text-indigo-200">Полная библиография: TMSJ · книги · GTY-проповеди · исповедания · Чикагское заявление · отцы Церкви · академические ресурсы</p>
       </div>
 
@@ -1069,7 +1103,7 @@
       Богословскую или техническую — напишите, исправим.
     </p>
     <div class="gb-accuracy-actions" role="list">
-      <a href="mailto:viktorco2012@gmail.com"
+      <a href="mailto:viktorco2012@gmail.com?subject=Неточность%20в%20статье&body=Здравствуйте%2C%0A%0AЯ%20нашёл%20неточность%20в%20материале.%0A%0AОписание%3A%20"
          class="gb-accuracy-btn gb-accuracy-btn--email"
          role="listitem"
          aria-label="Написать на Email">
@@ -1135,7 +1169,6 @@
 })();
 </script>
 
-
 <script>
 (function(){
   var btn = document.getElementById('menuBtn');
@@ -1152,9 +1185,9 @@
 })();
 </script>
 
-<script src="../../js/sw-register.js?v=e66ef547" defer></script>
+<script src="../../js/sw-register.js?v=c60839ff" defer></script>
 <script src="../../js/search.js?v=8d27a9af" defer></script>
-<script src="../../js/highlights.js?v=c3b81aa5" defer></script>
+<script src="../../js/highlights.js?v=f6e88a50" defer></script>
 <script src="../../js/nagornaya-mobile-toc.js?v=8cd98fd8" defer></script>
 <script src="../../js/enhancements.js?v=abebf9eb" defer></script>
 <script src="../../js/bookmark-engine.js?v=481d7b91" defer></script>

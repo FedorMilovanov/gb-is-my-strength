@@ -71,4 +71,33 @@ Disallow: /
 User-agent: Omgilibot
 Disallow: /
 
+
+# --- AUDIT V2 (2026-05): SEO-краулеры и доп. AI-training agents ---
+User-agent: AhrefsBot
+Disallow: /
+
+User-agent: SemrushBot
+Disallow: /
+
+User-agent: MJ12bot
+Disallow: /
+
+User-agent: DotBot
+Disallow: /
+
+User-agent: PetalBot
+Disallow: /
+
+User-agent: Diffbot
+Disallow: /
+
+User-agent: Amazonbot
+Disallow: /
+
+User-agent: FacebookBot
+Disallow: /
+
+User-agent: ImagesiftBot
+Disallow: /
+
 Sitemap: https://gospod-bog.ru/sitemap.xml

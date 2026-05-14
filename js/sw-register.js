@@ -51,7 +51,7 @@
       font-size: 11px;
       letter-spacing: .06em;
       white-space: nowrap;
-      z-index: 9999;
+      z-index: var(--z-modal-low);
       box-shadow: 0 4px 20px rgba(20,16,11,.35);
       transition: transform .3s ease, opacity .3s ease;
       opacity: 0;
