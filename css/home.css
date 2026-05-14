@@ -1526,6 +1526,7 @@ html.dark .h-meta-tag {
 .h-featured-img-wrap img {
   width: 100%; height: 100%;
   object-fit: cover;
+  object-position: center 18%;   /* сдвиг вверх — корона-тень попадает в кадр */
   display: block;
   transition: transform 0.7s ease;
   filter: brightness(0.72) saturate(0.9);
@@ -1533,6 +1534,13 @@ html.dark .h-meta-tag {
      визуальный зазор при анимации translateY исчезает */
   transform: translateZ(0) scale(1.06);
   will-change: transform;
+}
+/* picture-элемент — прозрачный контейнер, должен заполнять родителя */
+.h-featured-img-wrap picture,
+.h-article-thumb picture {
+  display: block;
+  width: 100%;
+  height: 100%;
 }
 .h-featured-series:hover .h-featured-img-wrap img { transform: translateZ(0) scale(1.09); }
 .h-featured-overlay {

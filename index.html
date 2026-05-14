@@ -118,8 +118,9 @@
 
   <!-- Stylesheets -->
   <link rel="stylesheet" href="css/site.css?v=ed943d96">
-  <link rel="stylesheet" href="css/home.css?v=cf58f06f">
+  <link rel="stylesheet" href="css/home.css?v=0ff49fbe">
   <link rel="stylesheet" href="css/command-palette.css?v=90b14c94">
+  <link rel="preload" as="image" href="images/og-nagornaya-propoved.webp" type="image/webp" fetchpriority="high">
 </head>
 
 <body>
@@ -438,7 +439,7 @@
         <div class="h-featured-img-wrap">
           <img src="images/og-nagornaya-propoved.webp"
                alt="Нагорная проповедь — исследование в 5 частях"
-               fetchpriority="high" decoding="async" width="800" height="420">
+               fetchpriority="high" loading="eager" decoding="async" width="800" height="420" title="Нагорная проповедь — исследование в 5 частях" srcset="images/og-nagornaya-propoved-600w.webp 600w, images/og-nagornaya-propoved-900w.webp 900w, images/og-nagornaya-propoved.webp 800w" sizes="(max-width: 640px) 600px, (max-width: 1024px) 900px, 800px">
           <div class="h-featured-overlay" aria-hidden="true"></div>
         </div>
         <div class="h-featured-body">
@@ -481,7 +482,7 @@
               <div class="h-article-thumb">
                 <img src="images/hermenevtika-preview.webp"
                      alt="Герменевтическая оценка христоцентричной герменевтики"
-                     decoding="async" loading="lazy" width="160" height="108">
+                     decoding="async" loading="lazy" width="160" height="108" title="Герменевтическая оценка христоцентричной герменевтики">
               </div>
               <div class="h-article-body">
                 <div class="h-article-kicker">Перевод с английского</div>
@@ -506,9 +507,12 @@
           <li>
             <a href="articles/krajne-li-isporcheno-serdce/" class="h-article-card">
               <div class="h-article-thumb">
-                <img src="images/ieremia-cover.jpg"
+                <picture>
+  <source srcset="images/ieremia-cover.webp" type="image/webp">
+  <img src="images/ieremia-cover.jpg"
                      alt="Крайне ли испорчено моё сердце — Иеремия 17"
-                     decoding="async" loading="lazy" width="160" height="108">
+                     decoding="async" loading="lazy" width="160" height="108" title="Крайне ли испорчено моё сердце — Иеремия 17">
+</picture>
               </div>
               <div class="h-article-body">
                 <h3 class="h-article-title">Крайне ли испорчено моё сердце — если я уже верующий?</h3>
@@ -532,7 +536,10 @@
       <!-- Серия: Тёмная сторона кафедры -->
       <a href="pastor-series/" class="h-featured-series" aria-label="Тёмная сторона кафедры — серия материалов" style="margin-bottom: 30px;">
         <div class="h-featured-img-wrap">
-          <img src="images/pastor-series/hero.png" alt="Тёмная сторона кафедры" decoding="async" loading="lazy" width="800" height="420">
+          <picture>
+            <source srcset="images/pastor-series/hero-main.webp" type="image/webp">
+            <img src="images/pastor-series/hero.png" alt="Тёмная сторона кафедры" decoding="async" loading="lazy" width="800" height="420" title="Тёмная сторона кафедры" srcset="images/pastor-series/hero-600w.webp 600w, images/pastor-series/hero-900w.webp 900w, images/pastor-series/hero.png 800w" sizes="(max-width: 640px) 600px, (max-width: 1024px) 900px, 800px">
+          </picture>
           <div class="h-featured-overlay" aria-hidden="true"></div>
         </div>
         <div class="h-featured-body">
@@ -582,9 +589,12 @@
           <li>
             <a href="articles/kod-da-vinchi/" class="h-article-card h-article-card--debunk">
               <div class="h-article-thumb">
-                <img src="images/hero-kod-da-vinchi.jpg"
+                <picture>
+  <source srcset="images/hero-kod-da-vinchi.webp" type="image/webp">
+  <img src="images/hero-kod-da-vinchi.jpg"
                      alt="«Код да Винчи» — разбор исторических мифов романа"
-                     decoding="async" loading="lazy" width="160" height="108">
+                     decoding="async" loading="lazy" width="160" height="108" title="«Код да Винчи» — разбор исторических мифов романа">
+</picture>
               </div>
               <div class="h-article-body">
                 <div class="h-article-kicker h-article-kicker--warn">Исторические мифы</div>
@@ -1054,5 +1064,25 @@ window.SITE_CONFIG = {
 <!-- /Yandex.Metrika counter -->
 <script src="./js/sw-register.js?v=e66ef547" defer></script>
 <script src="./js/search.js?v=8d27a9af" defer></script>
+
+<script type="application/ld+json">
+[
+  {
+    "@context": "https://schema.org/",
+    "@type": "ImageObject",
+    "contentUrl": "https://gospod-bog.ru/images/og-preview-1200x630.webp",
+    "name": "Господь Бог — Сила Моя",
+    "description": "Богословская библиотека: разборы, переводы, апологетика",
+    "creditText": "gospod-bog.ru",
+    "creator": {
+      "@type": "Organization",
+      "name": "Господь Бог — Сила Моя",
+      "url": "https://gospod-bog.ru"
+    },
+    "copyrightNotice": "© gospod-bog.ru",
+    "acquireLicensePage": "https://gospod-bog.ru/about/"
+  }
+]
+</script>
 </body>
 </html>

@@ -133,7 +133,7 @@
 
   <!-- Styles -->
   <link rel="stylesheet" href="../css/site.css?v=ed943d96">
-  <link rel="stylesheet" href="../css/home.css?v=cf58f06f">
+  <link rel="stylesheet" href="../css/home.css?v=0ff49fbe">
 
   <script>
 window.SITE_CONFIG = {
@@ -185,6 +185,7 @@ window.SITE_CONFIG = {
 }
 </style>
   <link rel="stylesheet" href="../css/command-palette.css?v=90b14c94">
+  <link rel="preload" as="image" href="../images/hermenevtika-preview-og.webp" type="image/webp" fetchpriority="high">
 </head>
 
 <body>
@@ -286,9 +287,12 @@ window.SITE_CONFIG = {
           <li>
             <a href="20-antisovetov-pastoru/" class="h-article-card">
               <div class="h-article-thumb">
-                <img src="../images/pastor-series/og-hero.png"
+                <picture>
+  <source srcset="../images/pastor-series/og-hero.webp" type="image/webp">
+  <img src="../images/pastor-series/og-hero.png"
                      alt="20 антисоветов пастору — как разрушить своё служение"
-                     decoding="async" loading="lazy" width="160" height="108">
+                     decoding="async" loading="lazy" width="160" height="108" title="20 антисоветов пастору — как разрушить своё служение">
+</picture>
               </div>
               <div class="h-article-body">
                 <h2 class="h-article-title">20 антисоветов, как пастору разрушить своё служение</h2>
@@ -313,7 +317,7 @@ window.SITE_CONFIG = {
               <div class="h-article-thumb" style="position:relative;">
                 <img src="../images/og-nagornaya-propoved.webp"
                      alt="Нагорная проповедь — полная серия"
-                     decoding="async" loading="lazy" width="160" height="108">
+                     decoding="async" loading="lazy" width="160" height="108" title="Нагорная проповедь — полная серия">
                 <span style="position:absolute;top:6px;right:6px;background:#d97706;color:#fff;font-size:9px;font-weight:700;padding:2px 7px;border-radius:99px;text-transform:uppercase;letter-spacing:.05em;">Серия</span>
               </div>
               <div class="h-article-body">
@@ -346,7 +350,7 @@ window.SITE_CONFIG = {
               <div class="h-article-thumb">
                 <img src="../images/hermenevtika-preview.webp"
                      alt="Герменевтическая оценка христоцентричной герменевтики"
-                     decoding="async" loading="lazy" width="160" height="108">
+                     decoding="async" loading="lazy" width="160" height="108" title="Герменевтическая оценка христоцентричной герменевтики">
               </div>
               <div class="h-article-body">
                 <h2 class="h-article-title">Герменевтическая оценка христоцентричной герменевтики</h2>
@@ -368,9 +372,12 @@ window.SITE_CONFIG = {
           <li>
             <a href="krajne-li-isporcheno-serdce/" class="h-article-card">
               <div class="h-article-thumb">
-                <img src="../images/ieremia-cover.jpg"
+                <picture>
+  <source srcset="../images/ieremia-cover.webp" type="image/webp">
+  <img src="../images/ieremia-cover.jpg"
                      alt="Крайне ли испорчено моё сердце — Иеремия 17"
-                     decoding="async" loading="lazy" width="160" height="108">
+                     decoding="async" loading="lazy" width="160" height="108" title="Крайне ли испорчено моё сердце — Иеремия 17">
+</picture>
               </div>
               <div class="h-article-body">
                 <h2 class="h-article-title">Крайне ли испорчено моё сердце — если я уже верующий?</h2>
@@ -404,9 +411,12 @@ window.SITE_CONFIG = {
           <li>
             <a href="kod-da-vinchi/" class="h-article-card">
               <div class="h-article-thumb">
-                <img src="../images/hero-kod-da-vinchi.jpg"
+                <picture>
+  <source srcset="../images/hero-kod-da-vinchi.webp" type="image/webp">
+  <img src="../images/hero-kod-da-vinchi.jpg"
                      alt="«Код да Винчи» — разбор исторических мифов романа"
-                     decoding="async" loading="lazy" width="160" height="108">
+                     decoding="async" loading="lazy" width="160" height="108" title="«Код да Винчи» — разбор исторических мифов романа">
+</picture>
               </div>
               <div class="h-article-body">
                 <h2 class="h-article-title">«Код да Винчи»: блестящий триллер или историческая подмена?</h2>
@@ -602,5 +612,55 @@ window.SITE_CONFIG = {
 
 <script src="../js/sw-register.js?v=e66ef547" defer></script>
 <script src="../js/search.js?v=8d27a9af" defer></script>
+
+<script type="application/ld+json">
+[
+  {
+    "@context": "https://schema.org/",
+    "@type": "ImageObject",
+    "contentUrl": "https://gospod-bog.ru/images/og-preview-1200x630.webp",
+    "name": "Статьи — богословская библиотека",
+    "description": "Каталог статей: разборы, переводы, апологетика",
+    "creditText": "gospod-bog.ru",
+    "creator": {
+      "@type": "Organization",
+      "name": "Господь Бог — Сила Моя",
+      "url": "https://gospod-bog.ru"
+    },
+    "copyrightNotice": "© gospod-bog.ru",
+    "acquireLicensePage": "https://gospod-bog.ru/about/"
+  },
+  {
+    "@context": "https://schema.org/",
+    "@type": "ImageObject",
+    "contentUrl": "https://gospod-bog.ru/images/hermenevtika-preview.webp",
+    "name": "Герменевтическая оценка",
+    "description": "Христоцентричная герменевтика — Абнер Чау",
+    "creditText": "gospod-bog.ru",
+    "creator": {
+      "@type": "Organization",
+      "name": "Господь Бог — Сила Моя",
+      "url": "https://gospod-bog.ru"
+    },
+    "copyrightNotice": "© gospod-bog.ru",
+    "acquireLicensePage": "https://gospod-bog.ru/about/"
+  },
+  {
+    "@context": "https://schema.org/",
+    "@type": "ImageObject",
+    "contentUrl": "https://gospod-bog.ru/images/og-krajne-isporcheno.webp",
+    "name": "Крайне ли испорчено сердце",
+    "description": "Разбор Иеремии 17:9",
+    "creditText": "gospod-bog.ru",
+    "creator": {
+      "@type": "Organization",
+      "name": "Господь Бог — Сила Моя",
+      "url": "https://gospod-bog.ru"
+    },
+    "copyrightNotice": "© gospod-bog.ru",
+    "acquireLicensePage": "https://gospod-bog.ru/about/"
+  }
+]
+</script>
 </body>
 </html>
