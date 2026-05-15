@@ -373,6 +373,36 @@
   };
 
   window.SiteUtils = SiteUtils;
+  /* AUDIT V6 / H2: :has() fallback для quiz-overlay (iOS < 16.4).
+     CSS правило .quiz-overlay:has(.quiz-launch-hero:hover) недоступно — 
+     дублируем через JS-class. */
+  (function () {
+    var overlays = document.querySelectorAll('.quiz-overlay');
+    if (!overlays.length || CSS.supports('selector(:has(*))')) return;
+    overlays.forEach(function (overlay) {
+      var hero = overlay.querySelector('.quiz-launch-hero');
+      if (!hero) return;
+      hero.addEventListener('mouseenter', function () { overlay.classList.add('is-hovered'); });
+      hero.addEventListener('mouseleave', function () { overlay.classList.remove('is-hovered'); });
+      hero.addEventListener('focus', function () { overlay.classList.add('is-hovered'); });
+      hero.addEventListener('blur', function () { overlay.classList.remove('is-hovered'); });
+    });
+  })();
+
+
+  /* AUDIT V6 / H5: visualViewport tracking для bottom-sheet adjustments. */
+  if (window.visualViewport) {
+    var vvAdjust = function () {
+      var vh = window.visualViewport.height;
+      document.documentElement.style.setProperty('--visual-viewport-h', vh + 'px');
+      document.documentElement.style.setProperty('--keyboard-height',
+        Math.max(0, window.innerHeight - vh) + 'px');
+    };
+    vvAdjust();
+    window.visualViewport.addEventListener('resize', vvAdjust);
+    window.visualViewport.addEventListener('scroll', vvAdjust);
+  }
+
 
   /* ──────────────────────────────────────────────────────────────────
      AUDIT V2 / UI-3.1: единый набор SVG-иконок (stroke-width 1.5).
@@ -1241,11 +1271,11 @@
       var minLeftRaw = Math.round(totalReadingMin * (1 - pct / 100));
       var timeText;
       if (pct >= 98) {
-        timeText = '✅ Прочитано!';
+        timeText = 'Прочитано!';
       } else if (minLeftRaw < 1) {
-        timeText = '📖 Осталось: ~1 мин';
+        timeText = 'Осталось: ~1 мин';
       } else {
-        timeText = '📖 Осталось: ~' + minLeftRaw + ' мин';
+        timeText = 'Осталось: ~' + minLeftRaw + ' мин';
       }
       if (btocTimeLeft) btocTimeLeft.textContent = timeText;
 
@@ -1532,7 +1562,7 @@
       if (oldHint) oldHint.remove();
       var finger = document.createElement('div');
       finger.className = 'flip-finger';
-      finger.innerHTML = '<span class="flip-finger-text">переверни</span><span class="flip-finger-icon">👆</span>';
+      finger.innerHTML = '<span class="flip-finger-text">переверни</span><span class="flip-finger-icon" aria-hidden="true"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11V6a3 3 0 0 1 6 0v5h-1V6a2 2 0 0 0-4 0v8l-2-2-2 2 2 2v3a3 3 0 0 0 3 3h6a3 3 0 0 0 3-3v-5a3 3 0 0 0-3-3h-6"/></svg></span>';
       front.appendChild(finger);
     });
 
@@ -1541,7 +1571,7 @@
       if (oldHint) oldHint.remove();
       var finger = document.createElement('div');
       finger.className = 'flip-finger';
-      finger.innerHTML = '<span class="flip-finger-text">нажми</span><span class="flip-finger-icon">👆</span>';
+      finger.innerHTML = '<span class="flip-finger-text">нажми</span><span class="flip-finger-icon" aria-hidden="true"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11V6a3 3 0 0 1 6 0v5h-1V6a2 2 0 0 0-4 0v8l-2-2-2 2 2 2v3a3 3 0 0 0 3 3h6a3 3 0 0 0 3-3v-5a3 3 0 0 0-3-3h-6"/></svg></span>';
       front.appendChild(finger);
     });
 
@@ -1551,7 +1581,7 @@
       if (oldHint) oldHint.remove();
       var finger = document.createElement('div');
       finger.className = 'flip-finger';
-      finger.innerHTML = '<span class="flip-finger-text">переверни</span><span class="flip-finger-icon">👆</span>';
+      finger.innerHTML = '<span class="flip-finger-text">переверни</span><span class="flip-finger-icon" aria-hidden="true"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11V6a3 3 0 0 1 6 0v5h-1V6a2 2 0 0 0-4 0v8l-2-2-2 2 2 2v3a3 3 0 0 0 3 3h6a3 3 0 0 0 3-3v-5a3 3 0 0 0-3-3h-6"/></svg></span>';
       front.appendChild(finger);
     });
 
@@ -1942,7 +1972,7 @@
 
       if (idx === q.answer) {
         if (allBtns[idx]) allBtns[idx].classList.add('correct');
-        if (feedback) { feedback.innerHTML = '✓ ' + q.ok; feedback.className = 'quiz-feedback ok'; }
+        if (feedback) { feedback.innerHTML = q.ok; feedback.className = 'quiz-feedback ok'; }
         score++;
         streak++;
       } else {
@@ -1951,7 +1981,7 @@
           allBtns[idx].addEventListener('animationend', function () { allBtns[idx].classList.remove('shake'); }, { once: true });
         }
         if (allBtns[q.answer]) allBtns[q.answer].classList.add('correct');
-        if (feedback) { feedback.innerHTML = '✗ ' + q.err; feedback.className = 'quiz-feedback err'; }
+        if (feedback) { feedback.innerHTML = q.err; feedback.className = 'quiz-feedback err'; }
         wrongAnswers.push({ q: q.q, options: q.options.slice(), answer: q.answer, chosenIdx: idx, ok: q.ok, err: q.err, focus: q.focus });
         streak = 0;
       }
@@ -2140,7 +2170,7 @@
 
       if (idx === q.answer) {
         if (allBtns[idx]) allBtns[idx].classList.add('correct');
-        if (revFeedback) { revFeedback.innerHTML = '✓ ' + q.ok; revFeedback.className = 'quiz-feedback ok'; }
+        if (revFeedback) { revFeedback.innerHTML = q.ok; revFeedback.className = 'quiz-feedback ok'; }
         reviewScore++;
       } else {
         if (idx >= 0 && allBtns[idx]) {
@@ -2148,7 +2178,7 @@
           allBtns[idx].addEventListener('animationend', function () { allBtns[idx].classList.remove('shake'); }, { once: true });
         }
         if (allBtns[q.answer]) allBtns[q.answer].classList.add('correct');
-        if (revFeedback) { revFeedback.innerHTML = '✗ ' + q.err; revFeedback.className = 'quiz-feedback err'; }
+        if (revFeedback) { revFeedback.innerHTML = q.err; revFeedback.className = 'quiz-feedback err'; }
         if (revFocus && q.focus) {
           revFocus.innerHTML    = '<a href="#' + q.focus + '" class="quiz-focus-link">↑ Перечитать этот раздел</a>';
           revFocus.style.display = 'block';
@@ -2253,7 +2283,7 @@
 
       if (idx === q.answer) {
         if (allBtns[idx]) allBtns[idx].classList.add('correct');
-        if (bonusBfb) { bonusBfb.innerHTML = '✓ ' + q.ok; bonusBfb.className = 'quiz-feedback ok'; }
+        if (bonusBfb) { bonusBfb.innerHTML = q.ok; bonusBfb.className = 'quiz-feedback ok'; }
         bonusScoreVal++;
       } else {
         if (idx >= 0 && allBtns[idx]) {
@@ -2261,7 +2291,7 @@
           allBtns[idx].addEventListener('animationend', function () { allBtns[idx].classList.remove('shake'); }, { once: true });
         }
         if (allBtns[q.answer]) allBtns[q.answer].classList.add('correct');
-        if (bonusBfb) { bonusBfb.innerHTML = '✗ ' + q.err; bonusBfb.className = 'quiz-feedback err'; }
+        if (bonusBfb) { bonusBfb.innerHTML = q.err; bonusBfb.className = 'quiz-feedback err'; }
         if (bonusBf && q.focus) {
           bonusBf.innerHTML    = '<a href="#' + q.focus + '" class="quiz-focus-link">↑ Перечитать этот раздел</a>';
           bonusBf.style.display = 'block';
@@ -2780,12 +2810,62 @@
       return !!(el && el.closest('article, .article-body'));
     }
 
-    document.addEventListener('mouseup', function (e) {
-      if (popup.contains(e.target)) return;
-      setTimeout(function () {
+    /* AUDIT V6 / C1: iOS touch selection support.
+       На iOS Safari mouseup НЕ срабатывает при выделении текста на тач-устройстве.
+       Используем 'selectionchange' (универсально) + 'touchend' для гарантии. */
+    var selectionTimer = null;
+    function handleSelection() {
+      if (selectionTimer) clearTimeout(selectionTimer);
+      selectionTimer = setTimeout(function () {
         var text = getSelectedText();
         if (!text || text.length < 12 || !isInsideArticle()) { hide(); return; }
         lastText = text;
+
+        var sel  = window.getSelection();
+        if (!sel || !sel.rangeCount) return;
+        var rect = sel.getRangeAt(0).getBoundingClientRect();
+        if (!rect || (rect.width === 0 && rect.height === 0)) { hide(); return; }
+        var sx = window.scrollX || window.pageXOffset;
+        var sy = window.scrollY || window.pageYOffset;
+
+        popup.style.opacity = '0';
+        popup.style.left = '-9999px';
+        popup.classList.add('ss-visible');
+        var popW = popup.offsetWidth;
+        var popH = popup.offsetHeight;
+        popup.classList.remove('ss-visible');
+        popup.style.opacity = '';
+
+        var x = rect.left + sx + rect.width / 2 - popW / 2;
+        x = Math.max(8, Math.min(x, window.innerWidth - popW - 8));
+        var y = rect.top + sy - popH - 12;
+        if (y - sy < 8) y = rect.bottom + sy + 8;
+
+        show(x, y);
+      }, 60);
+    }
+
+    document.addEventListener('mouseup', function (e) {
+      if (popup.contains(e.target)) return;
+      handleSelection();
+    });
+    /* iOS-specific: touch end после long-press / двойного тапа выделения */
+    document.addEventListener('touchend', function (e) {
+      if (popup.contains(e.target)) return;
+      /* Делаем чуть бо́льшую задержку — iOS не сразу формирует selection */
+      setTimeout(handleSelection, 100);
+    }, { passive: true });
+
+    /* Universal — works on iOS, Android, desktop */
+    document.addEventListener('selectionchange', function () {
+      /* Не реагируем если popup открыт и пользователь взаимодействует с ним */
+      if (popup.classList.contains('ss-visible')) return;
+      handleSelection();
+    });
+
+    /* Удаляем оригинальный mouseup-handler ниже */
+    function _AUDIT_V6_REMOVED_OLD_MOUSEUP() {
+      // see above — handler unified into handleSelection()
 
         var sel  = window.getSelection();
         var rect = sel.getRangeAt(0).getBoundingClientRect();
@@ -2807,9 +2887,9 @@
         var y = rect.top + sy - popH - 12;
         if (y - sy < 8) y = rect.bottom + sy + 8;
 
-        show(x, y);
-      }, 20);
-    });
+      // ↑ original block обработан через handleSelection()
+    }
+    /* end _AUDIT_V6_REMOVED_OLD_MOUSEUP */
 
     document.addEventListener('mousedown', function (e) { if (!popup.contains(e.target)) hide(); });
     window.addEventListener('scroll', hide, { passive: true });
@@ -2891,6 +2971,14 @@
             var orig = span.textContent;
             span.textContent = '\u2713\u00a0Скопировано';
             setTimeout(function () { span.textContent = orig; }, 2200);
+          }).catch(function () {
+            /* AUDIT V6 / M3: graceful fallback при ошибке clipboard */
+            var ta = document.createElement('textarea');
+            ta.value = toCopy;
+            ta.style.cssText = 'position:fixed;opacity:0;pointer-events:none';
+            document.body.appendChild(ta); ta.select();
+            try { document.execCommand('copy'); } catch (e) {}
+            document.body.removeChild(ta);
           });
         }
       }
