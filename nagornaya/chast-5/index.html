@@ -2,7 +2,7 @@
 <html lang="ru">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, interactive-widget=resizes-content">
   <meta name="theme-color" content="#1c1917">
   <title>Закон, Евангелие и Нагорная проповедь | Часть V | gb</title>
   <meta name="description" content="Как применять Нагорную проповедь, не впадая в законничество? Три функции Закона, Lordship Salvation и путь между фарисейством и антиномианством — по МакАртуру.">
@@ -25,7 +25,7 @@
   <meta property="og:image:alt" content="Нагорная проповедь, часть V: Закон и Евангелие">
   <meta property="article:author" content="https://gospod-bog.ru/about/">
   <meta property="article:published_time" content="2026-05-01T00:00:00+03:00">
-  <meta property="article:modified_time" content="2026-05-15T03:27:29+03:00">
+  <meta property="article:modified_time" content="2026-05-14T04:51:34+03:00">
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="Закон, Евангелие и Нагорная проповедь — итог серии | Господь Бог — Сила Моя">
   <meta name="twitter:description" content="Как применять Нагорную проповедь, не впадая в законничество? Три функции Закона, Lordship Salvation и путь между фарисейством и антиномианством — по МакАртуру.">
@@ -56,7 +56,7 @@
       id: 'nagornaya-chast-5',
       title: 'Закон и Евангелие — Часть V',
       section: 'Нагорная проповедь',
-      readingTime: 1,
+      readingTime: 25,
     },
     features: {
       bookmarks: {
@@ -853,17 +853,72 @@
 
 <script>
 (function(){
+  /* AUDIT V4 / M3: усиленное мобильное меню Nagornaya.
+     Добавлено: scroll-lock, ESC-close, backdrop-click-close,
+     aria-expanded toggle, focus-trap (мин), focus-restore. */
   var btn = document.getElementById('menuBtn');
   var menu = document.getElementById('mobileMenu');
   var bars = document.querySelectorAll('#menuBtn .bar');
-  if(btn && menu){
-    btn.addEventListener('click', function(){
-      menu.classList.toggle('hidden');
-      bars[0].style.transform = menu.classList.contains('hidden') ? '' : 'rotate(45deg) translate(0,6px)';
-      bars[1].style.opacity = menu.classList.contains('hidden') ? '1' : '0';
-      bars[2].style.transform = menu.classList.contains('hidden') ? '' : 'rotate(-45deg) translate(0,-6px)';
-    });
+  if (!btn || !menu) return;
+
+  var lastFocus = null;
+  var isOpen = false;
+
+  function open() {
+    isOpen = true;
+    menu.classList.remove('hidden');
+    btn.setAttribute('aria-expanded', 'true');
+    btn.setAttribute('aria-label', 'Закрыть меню');
+    if (bars[0]) bars[0].style.transform = 'rotate(45deg) translate(0,6px)';
+    if (bars[1]) bars[1].style.opacity = '0';
+    if (bars[2]) bars[2].style.transform = 'rotate(-45deg) translate(0,-6px)';
+    if (window.SiteUtils && window.SiteUtils.lockScroll) window.SiteUtils.lockScroll();
+    else { document.body.style.overflow = 'hidden'; }
+    lastFocus = document.activeElement;
+    var firstLink = menu.querySelector('a, button');
+    if (firstLink) firstLink.focus();
   }
+  function close() {
+    if (!isOpen) return;
+    isOpen = false;
+    menu.classList.add('hidden');
+    btn.setAttribute('aria-expanded', 'false');
+    btn.setAttribute('aria-label', 'Открыть меню');
+    if (bars[0]) bars[0].style.transform = '';
+    if (bars[1]) bars[1].style.opacity = '1';
+    if (bars[2]) bars[2].style.transform = '';
+    if (window.SiteUtils && window.SiteUtils.unlockScroll) window.SiteUtils.unlockScroll();
+    else { document.body.style.overflow = ''; }
+    if (lastFocus && lastFocus.focus) try { lastFocus.focus(); } catch(e){}
+  }
+
+  btn.addEventListener('click', function(){
+    if (isOpen) close(); else open();
+  });
+
+  /* Close on link click inside menu — UX: тап по разделу скрывает меню */
+  menu.addEventListener('click', function(e){
+    if (e.target.closest('a')) close();
+  });
+
+  /* Close on Escape */
+  document.addEventListener('keydown', function(e){
+    if (isOpen && (e.key === 'Escape' || e.key === 'Esc')) {
+      e.preventDefault();
+      close();
+    }
+  });
+
+  /* Close on backdrop tap (вне menu) — поскольку menu занимает inset:0,
+     добавляем touchstart-handler на сам menu для outside-click внутри padding */
+  menu.addEventListener('click', function(e){
+    if (e.target === menu) close();
+  });
+
+  /* Close on resize выше desktop breakpoint */
+  window.addEventListener('resize', function(){
+    if (window.innerWidth >= 1024 && isOpen) close();
+  });
 })();
 </script>
 

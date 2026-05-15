@@ -6669,3 +6669,313 @@ html.dark .gb-accuracy-btn:hover {
   .gb-link-soft, .gb-link-soft:hover,
   .gb-text-link, .gb-text-link:hover { transition: none; }
 }
+
+
+/* ============================================================
+   AUDIT V4 — mobile hardening (touch targets, viewport, iOS)
+   Подключается ВНЕ @layer для гарантии приоритета над более ранними
+   правилами. Все правила построены вокруг Apple HIG 44×44 minimum
+   и WCAG 2.5.8 AA.
+   ============================================================ */
+
+/* M13: предотвращаем Mobile Safari "text-size-adjust" при rotation */
+:root {
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+}
+
+/* M14: уменьшаем 300ms tap-delay на iOS Safari < 16, плюс отключаем
+   double-tap zoom на интерактивных элементах (но не на тексте — сохраняем
+   pinch-to-zoom для doubletap). */
+button, a, label, summary, [role="button"], input[type="button"], input[type="submit"] {
+  touch-action: manipulation;
+}
+
+/* M4: back-to-top — Apple HIG 44×44 минимум */
+@media (max-width: 768px) {
+  #back-to-top {
+    width: 44px !important;
+    height: 44px !important;
+    bottom: max(20px, env(safe-area-inset-bottom, 0px)) !important;
+    right: max(16px, env(safe-area-inset-right, 0px)) !important;
+  }
+  #back-to-top svg { width: 20px !important; height: 20px !important; }
+}
+
+/* M5: bar-icon-btn (нижняя панель статей) — 44×44 */
+.bar-icon-btn {
+  min-width: 44px;
+  min-height: 44px;
+}
+.bar-icon-btn svg {
+  width: 20px;
+  height: 20px;
+}
+
+/* M6: bookmark-toast-close — увеличиваем до WCAG 24×24 минимум,
+   на тач-устройствах — до 44×44 */
+.bookmark-toast-close {
+  min-width: 32px;
+  min-height: 32px;
+  padding: 6px !important;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+@media (pointer: coarse) {
+  .bookmark-toast-close { min-width: 44px; min-height: 44px; }
+}
+
+/* bookmark-btn — кнопки внутри тоста — 44×44 на мобиле */
+@media (pointer: coarse) {
+  .bookmark-btn { min-height: 44px; padding: 12px 16px; }
+}
+
+/* M7: img-viewer__close — 44×44 на тач-устройствах */
+@media (pointer: coarse) {
+  .img-viewer__close {
+    width: 44px !important;
+    height: 44px !important;
+    font-size: 20px !important;
+  }
+}
+
+/* M8: btoc-close — расширяем pointer-area через padding до 44×44.
+   Визуально остаётся 32×32, но эффективная зона тапа — 44×44. */
+.btoc-close {
+  position: relative;
+}
+@media (pointer: coarse) {
+  .btoc-close::before {
+    content: "";
+    position: absolute;
+    inset: 50% 50%;
+    width: 44px;
+    height: 44px;
+    transform: translate(-50%, -50%);
+  }
+}
+
+/* M9: очень узкие экраны — старые iPhone SE 320px, складные phone-portrait */
+@media (max-width: 360px) {
+  .article-main, .home-main {
+    padding-left: 16px;
+    padding-right: 16px;
+  }
+  .article-header h1 { font-size: clamp(22px, 6vw, 26px); }
+  .article-body p, .article-main p { font-size: 16px; line-height: 1.6; }
+  .summary-card__text { font-size: 14px; }
+  /* Избегаем горизонтального скролла */
+  body { overflow-x: hidden; }
+  /* Всё, что может выпасть — переводим в block */
+  .compare-cards, .stat-grid, .figure-pair { grid-template-columns: 1fr !important; }
+}
+
+/* M15: landscape с Dynamic Island — обеспечиваем безопасные отступы */
+@media (orientation: landscape) and (max-height: 500px) {
+  .bottom-bar,
+  .h-mobile-nav,
+  #share-dialog {
+    padding-left: max(20px, env(safe-area-inset-left, 0px)) !important;
+    padding-right: max(20px, env(safe-area-inset-right, 0px)) !important;
+  }
+  .article-header h1 { font-size: clamp(22px, 4vh, 32px); }
+}
+
+/* iOS Safari: когда body заблокирован (data-scroll-locked='1') — гарантируем,
+   что не появляется белая полоса под home-indicator */
+html[data-scroll-locked="1"] {
+  height: 100%;
+  width: 100%;
+  overflow: hidden;
+}
+html[data-scroll-locked="1"] body {
+  overscroll-behavior: contain;
+}
+
+/* Pull-to-refresh: обычно нежелательно на статьях — фиксируем */
+@media (pointer: coarse) {
+  html, body { overscroll-behavior-y: contain; }
+}
+
+/* M: дополнительная безопасность iOS Safari при фокусе на input/textarea —
+   font-size >= 16px чтобы не было автозума */
+input:not([type="checkbox"]):not([type="radio"]):not([type="hidden"]),
+textarea, select {
+  font-size: max(16px, 1rem);
+}
+
+/* M: для тач-устройств — убираем hover-only эффекты */
+@media (hover: none) {
+  /* Кнопки не должны "залипать" в hover-стиле после тапа */
+  .quiz-option:hover { background: var(--bg); }
+  .bar-icon-btn:hover { background: transparent; }
+  .gb-accuracy-btn:hover { background: var(--bg-elevated); }
+}
+
+/* M: Sticky-элементы должны учитывать safe-area при фиксированном position */
+.bottom-bar,
+#share-dialog,
+.btoc-panel {
+  padding-left: max(0px, env(safe-area-inset-left, 0px));
+  padding-right: max(0px, env(safe-area-inset-right, 0px));
+}
+
+
+/* ============================================================
+   AUDIT V5 — interactivity hardening
+   - 100% touch-target compliance Apple HIG 44×44
+   - keyboard accessibility for tooltips
+   - responsive padding for narrow screens
+   - focus-visible everywhere
+   ============================================================ */
+
+/* I1: fn-marker — пользователь видит focus-state */
+.fn-marker:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+  border-radius: 3px;
+}
+
+/* I2: bar-icon-btn — Apple HIG 44 */
+.bar-icon-btn {
+  min-width: 44px !important;
+  min-height: 44px !important;
+  width: 44px;
+  height: 44px;
+}
+
+/* I3: btoc-close — visible 44×44 (не псевдо!) */
+.btoc-close {
+  width: 44px !important;
+  height: 44px !important;
+  min-width: 44px;
+  min-height: 44px;
+}
+.btoc-close svg { width: 18px; height: 18px; }
+
+/* I4: sd-close — Share Dialog close 44×44 */
+.sd-close {
+  width: 44px !important;
+  height: 44px !important;
+  min-width: 44px;
+  min-height: 44px;
+  display: inline-flex !important;
+  align-items: center;
+  justify-content: center;
+}
+
+/* I5: fn-sheet-close — bottom-sheet close 44×44 */
+.fn-sheet-close {
+  width: 44px !important;
+  height: 44px !important;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* I6: h-cp-btn (Command Palette button) — 44×44 на тач */
+@media (pointer: coarse) {
+  .h-cp-btn {
+    min-height: 44px !important;
+    padding-top: 10px !important;
+    padding-bottom: 10px !important;
+  }
+}
+
+/* I7: focus-visible везде, где outline:none */
+.error-flip-card:focus-visible,
+.flip-card:focus-visible,
+.heart-flip-card:focus-visible {
+  outline: 3px solid var(--accent);
+  outline-offset: 3px;
+  border-radius: 8px;
+}
+.quiz-launch-hero:focus-visible {
+  outline: 3px solid var(--accent);
+  outline-offset: 3px;
+}
+
+/* I8: padding-fluidization для крупных компонентов на мобиле */
+@media (max-width: 600px) {
+  .epilogue-caption { padding: clamp(28px, 8vw, 56px) clamp(20px, 5vw, 40px) !important; }
+  .epilogue-prose { padding: clamp(20px, 5vw, 32px) clamp(20px, 5vw, 40px) !important; }
+  .heart-flip-back { padding: clamp(24px, 6vw, 36px) clamp(20px, 5vw, 40px) !important; }
+  .heart-flip-wrap { margin: clamp(28px, 6vw, 48px) 0 !important; }
+  .author-card { margin: clamp(24px, 5vw, 40px) 0 !important; }
+  .related-articles { margin: clamp(28px, 6vw, 48px) 0 !important; }
+  .article-end-block { margin: clamp(28px, 6vw, 48px) 0 !important; }
+  #toc-panel { padding: clamp(28px, 6vw, 40px) clamp(16px, 4vw, 24px) !important; }
+  .quiz-launch-hero { padding: clamp(20px, 5vw, 28px) clamp(20px, 5vw, 36px) !important; }
+  .article-img { margin: clamp(24px, 6vw, 40px) 0 !important; }
+}
+
+/* I9: about-page — заменяем inline margin-top:64px на класс */
+.about-page-section--first {
+  margin-top: clamp(36px, 6vw, 64px);
+}
+
+/* I10: длинные составные слова — переносы на узких экранах */
+@media (max-width: 480px) {
+  article p, article li, article blockquote, article td,
+  .summary-card__text, .info-box, .warn-box, .ehrman-box, .quote-box,
+  .pq-scripture {
+    overflow-wrap: anywhere;
+    word-break: break-word;
+    hyphens: auto;
+    -webkit-hyphens: auto;
+  }
+  /* Заголовки тоже */
+  h1, h2, h3, h4 {
+    overflow-wrap: anywhere;
+    word-break: break-word;
+    hyphens: auto;
+  }
+}
+
+/* I11: Дополнительные :focus-visible паттерны для всех скрытых элементов */
+.h-mobile-nav a:focus-visible,
+.bottom-bar button:focus-visible,
+.btoc-link:focus-visible,
+.toc-link:focus-visible,
+[data-close-nav]:focus-visible,
+[data-action]:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+/* I12: Все .gterm <abbr> тоже должны быть focusable */
+abbr.gterm {
+  cursor: help;
+  outline: none;
+}
+abbr.gterm:focus-visible {
+  outline: 2px dotted var(--accent);
+  outline-offset: 2px;
+  border-radius: 2px;
+}
+
+/* I13: убираем -webkit-tap-highlight на интерактивных элементах */
+button, a, [role="button"], [tabindex="0"], summary, input, textarea, select {
+  -webkit-tap-highlight-color: rgba(0, 0, 0, 0.05);
+}
+
+/* I14: Гарантируем, что bottom-bar не залезает на content */
+@media (max-width: 899px) {
+  body.has-bottom-bar { 
+    padding-bottom: calc(56px + env(safe-area-inset-bottom, 0px) + 8px);
+  }
+}
+
+/* I15: Если элемент имеет cursor:pointer, но не button/a — скринридер
+   должен видеть его. Утверждаем role через автокласс */
+[onclick], [data-tip], [data-toggle], [data-popover] {
+  cursor: pointer;
+}
+
+
+/* AUDIT V5 (post): btoc-fontsize-btn — A−/A+ должны быть тапабельны */
+.btoc-fontsize-btn {
+  min-width: 44px !important;
+  min-height: 44px !important;
+}

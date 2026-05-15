@@ -2,7 +2,7 @@
 <html lang="ru">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, interactive-widget=resizes-content">
   <meta name="theme-color" content="#f8f5f0" media="(prefers-color-scheme: light)">
   <meta name="theme-color" content="#171411" media="(prefers-color-scheme: dark)">
   <meta name="yandex-verification" content="42bc0d54a1ca4952">
@@ -116,7 +116,7 @@
   <meta name="geo.placename" content="Санкт-Петербург">
 
   <!-- Stylesheets -->
-  <link rel="stylesheet" href="css/site.css?v=1ec9d73f">
+  <link rel="stylesheet" href="css/site.css?v=413b6e27">
   <link rel="stylesheet" href="css/home.css?v=1f50b997">
   <link rel="stylesheet" href="css/command-palette.css?v=081e6436">
   <link rel="preload" as="image" href="images/og-nagornaya-propoved.webp" type="image/webp" fetchpriority="high">
@@ -808,7 +808,7 @@ window.SITE_CONFIG = {
   }
 };
 </script>
-<script src="js/site.js?v=4fc1a392" defer></script>
+<script src="js/site.js?v=fa05ba9e" defer></script>
 
 <script>
 /* ════════════════════════════════════════════════════════
@@ -887,7 +887,9 @@ window.SITE_CONFIG = {
     mobileNav.removeAttribute('aria-hidden');
     mobileMenuBtn.setAttribute('aria-expanded', 'true');
     mobileMenuBtn.classList.add('is-open');
-    document.body.classList.add('no-scroll');
+    /* AUDIT V4 / M2: используем iOS-safe lockScroll вместо overflow:hidden */
+    if (window.SiteUtils && window.SiteUtils.lockScroll) window.SiteUtils.lockScroll();
+    else document.body.classList.add('no-scroll');
     mobileBackdrop.classList.add('open');
   }
   function closeMobileNavInternal() {
@@ -896,7 +898,8 @@ window.SITE_CONFIG = {
     mobileNav.setAttribute('aria-hidden', 'true');
     mobileMenuBtn.setAttribute('aria-expanded', 'false');
     mobileMenuBtn.classList.remove('is-open');
-    document.body.classList.remove('no-scroll');
+    if (window.SiteUtils && window.SiteUtils.unlockScroll) window.SiteUtils.unlockScroll();
+    else document.body.classList.remove('no-scroll');
     mobileBackdrop.classList.remove('open');
   }
   /* Event delegation — data-close-nav заменяет inline onclick на всех ссылках меню.

@@ -288,30 +288,62 @@
        Each lockScroll() increments; unlockScroll() decrements and only
        removes overflow once the counter reaches zero.                   */
     _scrollLockCount: 0,
+    _savedScrollY: 0,
 
+    /* AUDIT V4 / M2: iOS-safe scroll-lock.
+       На iOS Safari overflow:hidden не блокирует rubber-band и теряет
+       позицию. Решение: position:fixed; top: -scrollY на body. */
     lockScroll: function (source) {
       this._scrollLockCount++;
       if (this._scrollLockCount === 1) {
-        document.body.style.overflow = 'hidden';
-        document.body.style.overscrollBehavior = 'none';
+        var y = window.scrollY || window.pageYOffset || 0;
+        this._savedScrollY = y;
+        var body = document.body;
+        body.style.overflow = 'hidden';
+        body.style.overscrollBehavior = 'none';
+        body.style.position = 'fixed';
+        body.style.top = -y + 'px';
+        body.style.left = '0';
+        body.style.right = '0';
+        body.style.width = '100%';
         document.documentElement.classList.remove('cp-scroll-lock');
+        document.documentElement.dataset.scrollLocked = '1';
       }
     },
 
     unlockScroll: function (source) {
       this._scrollLockCount = Math.max(0, this._scrollLockCount - 1);
       if (this._scrollLockCount === 0) {
-        document.body.style.removeProperty('overflow');
-        document.body.style.removeProperty('overscroll-behavior');
+        var body = document.body;
+        var savedY = this._savedScrollY;
+        body.style.removeProperty('overflow');
+        body.style.removeProperty('overscroll-behavior');
+        body.style.removeProperty('position');
+        body.style.removeProperty('top');
+        body.style.removeProperty('left');
+        body.style.removeProperty('right');
+        body.style.removeProperty('width');
         document.documentElement.classList.remove('cp-scroll-lock');
+        delete document.documentElement.dataset.scrollLocked;
+        /* Восстанавливаем scrollY синхронно — иначе rAF может моргнуть */
+        window.scrollTo(0, savedY);
       }
     },
 
     forceUnlockEmergency: function () {
       this._scrollLockCount = 0;
-      document.body.style.removeProperty('overflow');
-      document.body.style.removeProperty('overscroll-behavior');
+      var body = document.body;
+      var savedY = this._savedScrollY;
+      body.style.removeProperty('overflow');
+      body.style.removeProperty('overscroll-behavior');
+      body.style.removeProperty('position');
+      body.style.removeProperty('top');
+      body.style.removeProperty('left');
+      body.style.removeProperty('right');
+      body.style.removeProperty('width');
       document.documentElement.classList.remove('cp-scroll-lock');
+      delete document.documentElement.dataset.scrollLocked;
+      if (savedY) window.scrollTo(0, savedY);
     },
 
     copyText: function (text, onSuccess, onError) {
