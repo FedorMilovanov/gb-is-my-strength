@@ -427,10 +427,9 @@ quiz: {
   <!-- Open Graph / Twitter -->
   <!-- JSON-LD -->
 
-  <!-- Fonts -->
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,500;0,600;1,400&family=Source+Sans+3:wght@400;500;600&display=swap" rel="stylesheet">
+  <!-- Fonts (AUDIT V2 / PERF-1: self-host вместо Google Fonts CDN) -->
+  <link rel="preload" as="style" href="../../fonts/fonts.css">
+  <link rel="stylesheet" href="../../fonts/fonts.css">
 
   <!-- Shared styles -->
   <link rel="stylesheet" href="../../css/site.css" />

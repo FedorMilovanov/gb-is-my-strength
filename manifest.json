@@ -4,8 +4,8 @@
   "description": "Богословие, экзегеза, апологетика",
   "start_url": "https://gospod-bog.ru/",
   "display": "standalone",
-  "background_color": "#faf8f4",
-  "theme_color": "#f8f5f0",
+  "background_color": "#fdfcf9",
+  "theme_color": "#fdfcf9",
   "lang": "ru",
   "icons": [
     {
