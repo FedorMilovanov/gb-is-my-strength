@@ -1,6 +1,6 @@
 {
   "name": "gb-is-my-strength",
-  "version": "1.5.0",
+  "version": "1.6.0",
   "private": true,
   "description": "Build scripts for gospod-bog.ru — AUDIT V2 + AUDIT_10_OF_10 patches applied.",
   "scripts": {
@@ -16,7 +16,8 @@
     "avif:build": "bash scripts/build-avif.sh",
     "ci:check": "npm run cache-bust && npm run validate:all",
     "patch:v4": "node scripts/patch-v4-mobile.js",
-    "patch:v5": "node scripts/patch-v5-interactivity.js"
+    "patch:v5": "node scripts/patch-v5-interactivity.js",
+    "patch:v6": "node scripts/patch-v6-functions.js"
   },
   "engines": {
     "node": ">=20"
