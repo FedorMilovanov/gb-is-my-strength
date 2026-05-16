@@ -21,9 +21,11 @@
 ### IndexNow — что нужно сделать один раз
 
 1. Сгенерировать ключ на [indexnow.org](https://www.indexnow.org/en)
-2. Положить файл `{ключ}.txt` в корень репозитория (содержимое файла = сам ключ)
-3. В GitHub → Settings → Secrets → Actions добавить секрет `INDEXNOW_KEY` = значение ключа
-4. Зарегистрировать ключ в [Яндекс.Вебмастер → IndexNow](https://webmaster.yandex.ru/indexnow/) и [Bing Webmaster](https://www.bing.com/indexnow)
+2. В GitHub → Settings → Secrets and variables → Actions добавить repository secret `INDEXNOW_KEY` = значение ключа
+3. **Не коммитить** `{ключ}.txt` в репозиторий: `deploy.yml` сам создаёт файл проверки `${INDEXNOW_KEY}.txt` в корне Pages-артефакта перед деплоем
+4. После добавления или ротации ключа один раз вручную запустить workflow **Deploy to GitHub Pages**, чтобы новый `{ключ}.txt` появился на живом сайте
+5. Проверить, что файл доступен по адресу `https://gospod-bog.ru/{ключ}.txt`
+6. Зарегистрировать ключ в [Яндекс.Вебмастер → IndexNow](https://webmaster.yandex.ru/indexnow/) и [Bing Webmaster](https://www.bing.com/indexnow)
 
 После этого каждый `git push main` будет автоматически уведомлять поисковики.
 
@@ -257,7 +259,7 @@ articles/{slug}/index.html
 ├── sitemap.xml                             ← Карта сайта для поисковиков
 ├── feed.xml                                ← RSS-лента
 ├── robots.txt                              ← Управление ботами (вкл. AI-боты)
-├── {indexnow-key}.txt                      ← Ключ IndexNow (добавить вручную)
+├── {indexnow-key}.txt                      ← Генерируется только в Pages-артефакте, не хранится в git
 └── .github/
     └── workflows/
         └── indexnow.yml                    ← GitHub Actions: push-индексация
