@@ -5743,7 +5743,7 @@ html.dark .pq-scripture::before { opacity: .45; }
 
 
 html.dark .faq-accordion__q { background: var(--bg-elevated); }
-html.dark .faq-accordion__q:hover { background: color-mix(in srgb, var(--accent) 9%, var(--bg-elevated)); }
+html.dark .faq-accordion__q:hover { background: var(--bg-elevated); background: color-mix(in srgb, var(--accent) 9%, var(--bg-elevated)); }
 
 
 .article-main .faq-accordion__q,
@@ -5799,6 +5799,7 @@ html.dark .faq-accordion__q:hover { background: color-mix(in srgb, var(--accent)
 .summary-card__text strong { color: var(--accent); font-weight: 700; }
 html.dark .summary-card__body { background: var(--bg-elevated); }
 html.dark .summary-card__check {
+  background: rgba(74, 138, 74, 0.15);
   background: color-mix(in srgb,#4a8a4a 15%,transparent);
   border-color: rgba(128, 128, 128, 0.2); 
   border-color: color-mix(in srgb,#4a8a4a 40%,transparent);

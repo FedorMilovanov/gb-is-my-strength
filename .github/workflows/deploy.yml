@@ -59,6 +59,15 @@ jobs:
       - name: Cache bust assets
         run: node scripts/cache-bust.js || echo "Cache bust skipped"
 
+      - name: Publish IndexNow key file from secret
+        run: |
+          KEY="${{ secrets.INDEXNOW_KEY }}"
+          if [ -n "$KEY" ]; then
+            printf '%s' "$KEY" > "${KEY}.txt"
+          else
+            echo "INDEXNOW_KEY secret is empty — key file was not generated"
+          fi
+
       - name: Build Pagefind index
         # npx скачает pagefind только если его нет в кеше.
         # --site . — корень репозитория = корень сайта.

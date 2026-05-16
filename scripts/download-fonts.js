@@ -36,7 +36,7 @@ const SPECS = [
   ['Inter', 500, 'normal', 'cyrillic', 'Inter/inter-cyrillic-500'],
   ['Inter', 600, 'normal', 'cyrillic', 'Inter/inter-cyrillic-600'],
   ['Noto Sans Hebrew', 400, 'normal', 'hebrew', 'NotoSansHebrew/notosanshebrew-400'],
-  ['Noto Sans Greek',  400, 'normal', 'greek',  'NotoSansGreek/notosansgreek-400']
+  ['Noto Sans',        400, 'normal', 'greek',  'NotoSansGreek/notosansgreek-400']
 ];
 
 function get(url, headers = {}) {
