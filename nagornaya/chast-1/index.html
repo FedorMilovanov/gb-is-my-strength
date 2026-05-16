@@ -1,11 +1,14 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
+  <script>try{if(localStorage.getItem("theme")==="dark")document.documentElement.classList.add("dark")}catch(e){}</script>
   <meta charset="UTF-8">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://mc.yandex.ru; img-src 'self' https://mc.yandex.ru https://commons.wikimedia.org data:; style-src 'self' 'unsafe-inline'; font-src 'self'; connect-src 'self' https://mc.yandex.ru; frame-ancestors 'none';">
+  <meta http-equiv="X-Content-Type-Options" content="nosniff">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, interactive-widget=resizes-content">
   <meta name="theme-color" content="#fdfcf9" media="(prefers-color-scheme: light)">
-  <meta name="theme-color" content="#1c1917" media="(prefers-color-scheme: dark)">
-  <title>Два текста, один Иисус — Нагорная проповедь I | gb</title>
+  <meta name="theme-color" content="#171411" media="(prefers-color-scheme: dark)">
+  <title>Два текста, один Иисус — Нагорная проповедь I | Господь Бог — Сила Моя</title>
   <meta name="description" content="Чем отличается Нагорная проповедь у Матфея и Луки? Сравниваем структуру Мф 5–7 и Лк 6: блаженства, антитезы, молитва Господня и богословский стержень.">
   <meta name="robots" content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1">
   <meta name="author" content="Фёдор Милованов">
@@ -14,6 +17,10 @@
   <link rel="next" href="https://gospod-bog.ru/nagornaya/chast-2/">
   <!-- OG -->
   <meta property="og:type" content="article">
+  <meta property="article:section" content="Экзегетика">
+  <meta property="article:tag" content="Нагорная проповедь">
+  <meta property="article:tag" content="Матфея 5–7">
+  <meta property="article:tag" content="Луки 6">
   <meta property="og:title" content="Два текста, один Иисус — Нагорная проповедь, часть I">
   <meta property="og:description" content="Чем отличается Нагорная проповедь у Матфея и Луки? Сравниваем структуру Мф 5–7 и Лк 6: блаженства, антитезы, молитва Господня и богословский стержень.">
   <meta property="og:url" content="https://gospod-bog.ru/nagornaya/chast-1/">
@@ -40,10 +47,14 @@
   <link rel="icon" type="image/png" sizes="192x192" href="https://gospod-bog.ru/icons/icon-192.png">
   <link rel="manifest" href="https://gospod-bog.ru/manifest.json">
   <!-- Tailwind CSS CDN -->
+    <link rel="preload" as="style" href="/fonts/fonts.css?v=fc6cff8a">
+  <link rel="preload" as="font" type="font/woff2" href="/fonts/Lora/lora-cyrillic-400.woff2" crossorigin>
+  <link rel="stylesheet" href="/fonts/fonts.css?v=fc6cff8a">
   <link rel="stylesheet" href="/nagornaya/tw.min.css?v=4c2284f0">
+  <link rel="stylesheet" href="/css/site.css?v=f7d5c4de">
   <script>
   window.SITE_CONFIG = {
-    version: 1,
+    version: 1778943682,
     site: {
       id: 'gb-strength',
       name: 'Господь Бог — Сила Моя',
@@ -87,7 +98,7 @@
   <!-- Yandex Metrika -->
   <script type="text/javascript">
     (function(m,e,t,r,i,k,a){m[i]=m[i]||function(){(m[i].a=m[i].a||[]).push(arguments)};m[i].l=1*new Date();for(var j=0;j<document.scripts.length;j++){if(document.scripts[j].src===r){return}}k=e.createElement(t),a=e.getElementsByTagName(t)[0],k.async=1,k.src=r,a.parentNode.insertBefore(k,a)})(window,document,'script','https://mc.yandex.ru/metrika/tag.js?id=108353327','ym');
-    ym(108353327,'init',{ssr:false,webvisor:true,clickmap:true,accurateTrackBounce:true,trackLinks:true});
+    ym(108353327,'init',{ssr:false,webvisor:true,clickmap:true,accurateTrackBounce:true,trackLinks:true,referrer:document.referrer,url:location.href});
   </script>
   <noscript><div><img decoding="async" src="https://mc.yandex.ru/watch/108353327" style="position:absolute;left:-9999px;" alt=""></div></noscript>
   <meta name="geo.region" content="RU-SPE">
@@ -111,163 +122,169 @@
 }
 </style>
   <link rel="preload" as="image" href="../../images/og-nagornaya-propoved-chast-1.webp" type="image/webp" fetchpriority="high">
-<script type="application/ld+json">
-{
-  "@context": "https://schema.org",
-  "@graph": [
-    {
-      "@type": "Organization",
-      "@id": "https://gospod-bog.ru/#organization",
-      "name": "Господь Бог — Сила Моя",
-      "url": "https://gospod-bog.ru/",
-      "logo": {
-        "@type": "ImageObject",
-        "url": "https://gospod-bog.ru/icons/icon-512.png",
-        "width": 512,
-        "height": 512
-      },
-      "sameAs": [
-        "https://t.me/fedormilovanov",
-        "https://vk.com/curtmf"
-      ]
-    },
-    {
-      "@type": "WebSite",
-      "@id": "https://gospod-bog.ru/#website",
-      "name": "Господь Бог — Сила Моя",
-      "url": "https://gospod-bog.ru/",
-      "inLanguage": "ru",
-      "publisher": {
-        "@id": "https://gospod-bog.ru/#organization"
-      }
-    },
-    {
-      "@type": "Article",
-      "@id": "https://gospod-bog.ru/nagornaya/chast-1/#article",
-      "headline": "Два текста, один Иисус — Нагорная проповедь, часть I",
-      "description": "Содержание Матфея 5–7 и Луки 6:17–49: архитектура, inclusio, антитезы, блаженства.",
-      "url": "https://gospod-bog.ru/nagornaya/chast-1/",
-      "datePublished": "2026-05-01T00:00:00+03:00",
-      "dateModified": "2026-05-09T00:00:00+03:00",
-      "inLanguage": "ru",
-      "author": {
-        "@type": "Person",
-        "name": "Abner Chou",
-        "url": "https://www.tms.edu/masters-seminary-journal/"
-      },
-      "publisher": {
-        "@id": "https://gospod-bog.ru/#organization"
-      },
-      "image": {
-        "@type": "ImageObject",
-        "url": "https://gospod-bog.ru/images/og-nagornaya-propoved-chast-1.webp",
-        "contentUrl": "https://gospod-bog.ru/images/og-nagornaya-propoved-chast-1.webp",
-        "width": 1200,
-        "height": 630,
-        "creditText": "gospod-bog.ru — Фёдор Милованов",
-        "creator": {
-          "@type": "Organization",
-          "name": "Господь Бог — Сила Моя",
-          "url": "https://gospod-bog.ru"
-        },
-        "copyrightNotice": "© gospod-bog.ru"
-      },
-      "isPartOf": {
-        "@id": "https://gospod-bog.ru/nagornaya/#collectionpage"
-      },
-      "articleSection": "Содержание Нагорной проповеди",
-      "keywords": "нагорная проповедь, блаженства, антитезы, Матфей 5-7, Лука 6, Иисус, Царство Небесное, соль земли, МакАртур",
-      "wordCount": 3177,
-      "editor": {
-        "@id": "https://gospod-bog.ru/about/#person"
-      },
-      "translator": {
-        "@id": "https://gospod-bog.ru/about/#person"
-      },
-      "about": [
-        {
-          "@type": "Thing",
-          "name": "нагорная проповедь"
-        },
-        {
-          "@type": "Thing",
-          "name": "блаженства"
-        },
-        {
-          "@type": "Thing",
-          "name": "антитезы"
-        },
-        {
-          "@type": "Thing",
-          "name": "Матфей 5-7"
-        },
-        {
-          "@type": "Thing",
-          "name": "Лука 6"
-        },
-        {
-          "@type": "Thing",
-          "name": "Иисус"
-        },
-        {
-          "@type": "Thing",
-          "name": "Царство Небесное"
-        },
-        {
-          "@type": "Thing",
-          "name": "соль земли"
-        }
-      ],
-      "speakable": {
-        "@type": "SpeakableSpecification",
-        "cssSelector": [
-          "h1",
-          ".article-lead",
-          ".summary-card",
-          "[data-speakable]"
-        ]
-      }
-    },
-    {
+<script type="application/ld+json">{
       "@context": "https://schema.org",
-      "@type": "BreadcrumbList",
-      "itemListElement": [
-        {
-          "@type": "ListItem",
-          "position": 1,
-          "name": "Главная",
-          "item": "https://gospod-bog.ru/"
-        },
-        {
-          "@type": "ListItem",
-          "position": 2,
-          "name": "Статьи",
-          "item": "https://gospod-bog.ru/articles/"
-        },
-        {
-          "@type": "ListItem",
-          "position": 3,
-          "name": "Нагорная проповедь",
-          "item": "https://gospod-bog.ru/nagornaya/"
-        },
-        {
-          "@type": "ListItem",
-          "position": 4,
-          "name": "Часть I",
-          "item": "https://gospod-bog.ru/nagornaya/chast-1/"
-        }
-      ],
-      "@id": "https://gospod-bog.ru/nagornaya/chast-1/#breadcrumbs"
-    }
-  ]
-}
-</script>
+      "@graph": [
+            {
+                  "@type": "Organization",
+                  "@id": "https://gospod-bog.ru/#organization",
+                  "name": "Господь Бог — Сила Моя",
+                  "url": "https://gospod-bog.ru/",
+                  "logo": {
+                        "@type": "ImageObject",
+                        "url": "https://gospod-bog.ru/icons/icon-512.png",
+                        "width": 512,
+                        "height": 512
+                  },
+                  "sameAs": [
+                        "https://t.me/fedormilovanov",
+                        "https://vk.com/curtmf"
+                  ]
+            },
+            {
+                  "@type": "WebSite",
+                  "@id": "https://gospod-bog.ru/#website",
+                  "name": "Господь Бог — Сила Моя",
+                  "url": "https://gospod-bog.ru/",
+                  "inLanguage": "ru",
+                  "publisher": {
+                        "@id": "https://gospod-bog.ru/#organization"
+                  }
+            },
+            {
+                  "@type": "Article",
+                  "@id": "https://gospod-bog.ru/nagornaya/chast-1/#article",
+                  "headline": "Два текста, один Иисус — Нагорная проповедь, часть I",
+                  "description": "Содержание Матфея 5–7 и Луки 6:17–49: архитектура, inclusio, антитезы, блаженства.",
+                  "url": "https://gospod-bog.ru/nagornaya/chast-1/",
+                  "datePublished": "2026-05-01T00:00:00+03:00",
+                  "dateModified": "2026-05-09T00:00:00+03:00",
+                  "inLanguage": "ru",
+                  "author": {
+                        "@type": "Person",
+                        "name": "Abner Chou",
+                        "url": "https://www.tms.edu/masters-seminary-journal/"
+                  },
+                  "publisher": {
+                        "@id": "https://gospod-bog.ru/#organization"
+                  },
+                  "image": {
+                        "@type": "ImageObject",
+                        "url": "https://gospod-bog.ru/images/og-nagornaya-propoved-chast-1.webp",
+                        "contentUrl": "https://gospod-bog.ru/images/og-nagornaya-propoved-chast-1.webp",
+                        "width": 1200,
+                        "height": 630,
+                        "creditText": "gospod-bog.ru — Фёдор Милованов",
+                        "creator": {
+                              "@type": "Organization",
+                              "name": "Господь Бог — Сила Моя",
+                              "url": "https://gospod-bog.ru"
+                        },
+                        "copyrightNotice": "© gospod-bog.ru"
+                  },
+                  "isPartOf": {
+                        "@id": "https://gospod-bog.ru/nagornaya/#collectionpage"
+                  },
+                  "articleSection": "Содержание Нагорной проповеди",
+                  "keywords": "нагорная проповедь, блаженства, антитезы, Матфей 5-7, Лука 6, Иисус, Царство Небесное, соль земли, МакАртур",
+                  "wordCount": 3177,
+                  "editor": {
+                        "@id": "https://gospod-bog.ru/about/#person"
+                  },
+                  "translator": {
+                        "@id": "https://gospod-bog.ru/about/#person"
+                  },
+                  "about": [
+                        {
+                              "@type": "Thing",
+                              "name": "нагорная проповедь"
+                        },
+                        {
+                              "@type": "Thing",
+                              "name": "блаженства"
+                        },
+                        {
+                              "@type": "Thing",
+                              "name": "антитезы"
+                        },
+                        {
+                              "@type": "Thing",
+                              "name": "Матфей 5-7"
+                        },
+                        {
+                              "@type": "Thing",
+                              "name": "Лука 6"
+                        },
+                        {
+                              "@type": "Thing",
+                              "name": "Иисус"
+                        },
+                        {
+                              "@type": "Thing",
+                              "name": "Царство Небесное"
+                        },
+                        {
+                              "@type": "Thing",
+                              "name": "соль земли"
+                        }
+                  ],
+                  "speakable": {
+                        "@type": "SpeakableSpecification",
+                        "cssSelector": [
+                              "h1",
+                              ".article-lead",
+                              ".summary-card",
+                              "[data-speakable]"
+                        ]
+                  }
+            },
+            {
+                  "@context": "https://schema.org",
+                  "@type": "BreadcrumbList",
+                  "itemListElement": [
+                        {
+                              "@type": "ListItem",
+                              "position": 1,
+                              "name": "Главная",
+                              "item": "https://gospod-bog.ru/"
+                        },
+                        {
+                              "@type": "ListItem",
+                              "position": 2,
+                              "name": "Нагорная проповедь",
+                              "item": "https://gospod-bog.ru/nagornaya/"
+                        },
+                        {
+                              "@type": "ListItem",
+                              "position": 3,
+                              "name": "Часть I",
+                              "item": "https://gospod-bog.ru/nagornaya/chast-1/"
+                        }
+                  ],
+                  "@id": "https://gospod-bog.ru/nagornaya/chast-1/#breadcrumbs"
+            },
+            {
+                  "@context": "https://schema.org/",
+                  "@type": "ImageObject",
+                  "contentUrl": "https://gospod-bog.ru/images/og-nagornaya-propoved-chast-1.webp",
+                  "name": "Нагорная проповедь — часть I",
+                  "description": "Два текста, один Иисус: контекст Нагорной проповеди",
+                  "creditText": "gospod-bog.ru",
+                  "creator": {
+                        "@type": "Organization",
+                        "name": "Господь Бог — Сила Моя",
+                        "url": "https://gospod-bog.ru"
+                  },
+                  "copyrightNotice": "© gospod-bog.ru",
+                  "acquireLicensePage": "https://gospod-bog.ru/about/"
+            }
+      ]
+}</script>
   <link rel="stylesheet" href="../../css/nagornaya-mobile-toc.css?v=8fc67cf9">
   <link rel="stylesheet" href="../../css/command-palette.css?v=081e6436">
 </head>
 <body class="bg-stone-100 text-stone-900 antialiased">
 <a href="#main-content" class="skip-link">Перейти к содержимому</a>
-
 
   <!-- Desktop sidebar -->
   <aside class="hidden lg:flex flex-col w-64 min-h-screen bg-stone-900 text-stone-100 fixed left-0 top-0 z-40 overflow-y-auto">
@@ -412,7 +429,7 @@
   </div>
 
   <!-- Main content -->
-  <main class="lg:pl-64" data-pagefind-body>
+  <main id="main-content" class="lg:pl-64" data-pagefind-body>
     <span data-pagefind-meta="image" hidden>/images/og-nagornaya-propoved-chast-1.webp</span>
     <span data-pagefind-meta="author" hidden>Редактор: Фёдор Милованов</span>
     <span data-pagefind-meta="readTime" hidden>16</span>
@@ -578,7 +595,7 @@
 
 <div class="bg-white rounded-2xl p-6 md:p-8 shadow-sm border border-stone-200 mb-6 text-sm text-stone-700">
 <p class="text-stone-700 text-[16px] leading-relaxed mb-5 text-justify">Стихи 17–20 пятой главы Матфея являются «пропускным пунктом» для всей остальной проповеди. Иисус осознает, что Его учение звучит радикально, и заранее отвечает на возможное обвинение в <span class="tooltip-trigger" data-tooltip="Отмена или нарушение Божьего закона">разрушении Закона</span>.</p>
-<p class="text-stone-700 text-[16px] leading-relaxed mb-5 text-justify">Христос использует греческий глагол <span class="tooltip-trigger" data-tooltip="Греч. pleroo — 'наполнить до краев', 'завершить', 'исполнить обещанное'">πληρόω</span> (исполнить). Это не просто послушание правилам. Это <strong>эсхатологическое завершение</strong>. По мнению <span class="tooltip-trigger" data-tooltip="Джон Чарльз Райл (1816–1900) — епископ Ливерпуля, известный своими пастырскими комментариями на Евангелия">Дж. К. Райла</span>, Христос исполняет Закон в трех измерениях: как обещанный Спаситель (пророчества), как совершенная Жертва (церемонии) и как образец праведности (мораль).</p>
+<p class="text-stone-700 text-[16px] leading-relaxed mb-5 text-justify">Христос использует греческий глагол <span class="tooltip-trigger" data-tooltip="Греч. pleroo — 'наполнить до краев', 'завершить', 'исполнить обещанное'" lang="el">πληρόω</span> (исполнить). Это не просто послушание правилам. Это <strong>эсхатологическое завершение</strong>. По мнению <span class="tooltip-trigger" data-tooltip="Джон Чарльз Райл (1816–1900) — епископ Ливерпуля, известный своими пастырскими комментариями на Евангелия">Дж. К. Райла</span>, Христос исполняет Закон в трех измерениях: как обещанный Спаситель (пророчества), как совершенная Жертва (церемонии) и как образец праведности (мораль).</p>
 </div>
 
 <div class="bg-amber-50 border-l-4 border-amber-400 rounded-r-2xl px-6 py-5 my-6 shadow-sm border-y border-r border-amber-100">
@@ -611,7 +628,7 @@
 <div class="bg-white border border-stone-200 rounded-xl p-5 shadow-sm mt-4">
 <div class="font-semibold text-stone-800 mb-2 text-sm">МакАртур: почему антитезы потрясли толпу</div>
 <p class="text-stone-700 text-xs leading-relaxed mb-3">В своём комментарии на Матфея МакАртур замечает, что Иисус говорит в Нагорной проповеди так, как не говорил ни один из иудейских раввинов: Он <strong>не цитирует никаких источников, никаких древних учителей и никакого почитаемого предания</strong>. Он говорит Своей собственной властью. Это не просто риторический эффект — это христологическое заявление. Только Бог может так говорить о Своём Законе.</p>
-<p class="text-stone-700 text-xs leading-relaxed">Конкретный пример даёт Мф 5:27–28. Глагол <em>βλέπων</em> («смотрит») стоит в настоящем времени и часто несёт смысл длящегося, продолжительного действия. Христос говорит не о случайном замечании красоты другого человека, а о «впитывании» этой красоты, внутреннем желании обладать. Это не новый закон — это раскрытие того, что Бог всегда подразумевал, когда дал седьмую заповедь.</p>
+<p class="text-stone-700 text-xs leading-relaxed">Конкретный пример даёт Мф 5:27–28. Глагол <em lang="el">βλέπων</em> («смотрит») стоит в настоящем времени и часто несёт смысл длящегося, продолжительного действия. Христос говорит не о случайном замечании красоты другого человека, а о «впитывании» этой красоты, внутреннем желании обладать. Это не новый закон — это раскрытие того, что Бог всегда подразумевал, когда дал седьмую заповедь.</p>
 </div>
 
 <div class="bg-amber-50 border-l-4 border-amber-400 rounded-r-2xl px-6 py-5 my-6 shadow-sm border-y border-r border-amber-100">
@@ -669,7 +686,7 @@
 <div class="bg-white rounded-2xl p-6 md:p-8 shadow-sm border border-stone-200 mb-6 text-sm text-stone-700">
 <p class="text-stone-700 text-[16px] leading-relaxed mb-5 text-justify">Блаженства — это не условия входа в Царство, а признаки тех, кто <em>уже</em> в нем. Сравнение версий Матфея и Луки часто вызывает вопросы: почему у Матфея нищета «духа», а у Луки просто «нищие»? Означает ли это два разных учения?</p>
 <p class="text-stone-700 text-[16px] leading-relaxed mb-5 text-justify">Консервативная экзегеза видит здесь <span class="tooltip-trigger" data-tooltip="Единая истина, представленная разными авторами под разными углами для разных аудиторий">многогранное свидетельство</span>. Оба евангелиста работают с ветхозаветной категорией <strong>anavim</strong> — людей, чья физическая нужда стала катализатором духовного смирения перед Богом.</p>
-<p class="text-stone-700 text-[16px] leading-relaxed mb-5 text-justify">Д. А. Карсон в проповеди «Kingdom of Heaven: Its Norms and Witness» даёт этому понятию консервативное определение: <span class="tooltip-trigger" data-tooltip="Д. А. Карсон: «Слово 'блажен' имеет больше смысловой нагрузки, чем 'счастлив'. В нём есть коннотация Божьего одобрения. Тот, кого Бог одобряет, будет счастлив, но из этого не следует, что тот, кто счастлив, одобрен Богом»">«Блажен (μακάριος) означает Божье одобрение»</span>. Это намного точнее отражает суверенную благодать, чем светские социологические термины.</p>
+<p class="text-stone-700 text-[16px] leading-relaxed mb-5 text-justify">Д. А. Карсон в проповеди «Kingdom of Heaven: Its Norms and Witness» даёт этому понятию консервативное определение: <span class="tooltip-trigger" data-tooltip="Д. А. Карсон: «Слово 'блажен' имеет больше смысловой нагрузки, чем 'счастлив'. В нём есть коннотация Божьего одобрения. Тот, кого Бог одобряет, будет счастлив, но из этого не следует, что тот, кто счастлив, одобрен Богом»" lang="el">«Блажен (μακάριος) означает Божье одобрение»</span>. Это намного точнее отражает суверенную благодать, чем светские социологические термины.</p>
 </div>
 
 <div class="bg-amber-50 border-l-4 border-amber-400 rounded-r-2xl px-6 py-5 my-6 shadow-sm border-y border-r border-amber-100">
@@ -698,7 +715,7 @@
 
 <div class="bg-white border border-stone-200 rounded-xl p-5 shadow-sm mt-3">
 <div class="font-semibold text-blue-800 mb-2">Греческая экзегеза первого блаженства (Мф 5:3)</div>
-<p class="text-stone-700 text-xs leading-relaxed mb-2">В греческом языке есть два слова для бедности: <em>πένης</em> — бедный труженик, который всё же имеет что-то; и <em>πτωχός</em> — абсолютно нищий, согнувшийся в позе попрошайки, полностью зависящий от милости других. Иисус использует именно второе слово. Он говорит не о «скромном» духовном состоянии, а о полном духовном банкротстве.</p>
+<p class="text-stone-700 text-xs leading-relaxed mb-2">В греческом языке есть два слова для бедности: <em lang="el">πένης</em> — бедный труженик, который всё же имеет что-то; и <em lang="el">πτωχός</em> — абсолютно нищий, согнувшийся в позе попрошайки, полностью зависящий от милости других. Иисус использует именно второе слово. Он говорит не о «скромном» духовном состоянии, а о полном духовном банкротстве.</p>
 <p class="text-stone-700 text-xs leading-relaxed">Обетование дано в настоящем времени: «ибо их <strong>есть</strong> Царство Небесное». То есть речь не о награде за добродетель в отдалённом будущем, а о настоящем принадлежании Царству. Это первое и важнейшее свидетельство, что блаженства описывают уже спасённого человека, а не путь к спасению.</p>
 </div>
 
@@ -729,7 +746,7 @@
 
 <div class="bg-red-50 border border-red-200 rounded-lg p-4 text-xs text-stone-700 mt-3">
 <div class="font-semibold text-red-700 mb-2">ἀπέχετε (Лк 6:24): «получили сполна»</div>
-<p class="leading-relaxed">Глагол <em>ἀπέχω</em> был коммерческим термином в папирусах: его писали на расписках в значении «получено полностью», «долг закрыт», «всё оплачено». Иисус говорит богатым не просто «вам будет плохо», а «вы уже расписались в получении своего утешения; ваш счёт закрыт». Это не осуждение богатства как такового, а предупреждение против тех, кто нашёл свою безопасность, идентичность и утешение в богатстве вместо Бога.</p>
+<p class="leading-relaxed">Глагол <em lang="el">ἀπέχω</em> был коммерческим термином в папирусах: его писали на расписках в значении «получено полностью», «долг закрыт», «всё оплачено». Иисус говорит богатым не просто «вам будет плохо», а «вы уже расписались в получении своего утешения; ваш счёт закрыт». Это не осуждение богатства как такового, а предупреждение против тех, кто нашёл свою безопасность, идентичность и утешение в богатстве вместо Бога.</p>
 </div>
 
 <!-- IX. Любовь к врагам -->
@@ -760,7 +777,7 @@
 </div>
 
 <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
-<div class="bg-white border border-stone-200 rounded-xl p-4 shadow-sm text-sm text-stone-700"><p><strong>У Луки:</strong> человек «копал, углубился и положил основание на камне». Послушание — это не поверхностная реакция, а трудная, глубокая работа. Лука использует редкие слова вроде <em>πλημμύρα</em> («наводнение») и <em>ῥῆγμα</em> («разлом, крушение»), делая образ особенно сильным.</p></div>
+<div class="bg-white border border-stone-200 rounded-xl p-4 shadow-sm text-sm text-stone-700"><p><strong>У Луки:</strong> человек «копал, углубился и положил основание на камне». Послушание — это не поверхностная реакция, а трудная, глубокая работа. Лука использует редкие слова вроде <em lang="el">πλημμύρα</em> («наводнение») и <em lang="el">ῥῆγμα</em> («разлом, крушение»), делая образ особенно сильным.</p></div>
 <div class="bg-white border border-stone-200 rounded-xl p-4 shadow-sm text-sm text-stone-700"><p><strong>У Матфея:</strong> перед притчей о двух строителях стоит ещё более страшное предупреждение: «Не всякий, говорящий Мне: Господи! Господи!» войдёт в Царство. Даже религиозные достижения не спасают там, где нет послушания словам Христа.</p></div>
 </div>
 
@@ -906,7 +923,6 @@
 </aside>
 
 </main>
-
 
 <script>
 /* Footnote tooltip system */
@@ -1070,7 +1086,6 @@
 })();
 </script>
 
-
 <script>
 (function(){
   /* AUDIT V4 / M3: усиленное мобильное меню Nagornaya.
@@ -1142,6 +1157,7 @@
 })();
 </script>
 
+<script src="../../js/site.js?v=a83786e5" defer></script>
 <script src="../../js/sw-register.js?v=c60839ff" defer></script>
 <script src="../../js/search.js?v=8d27a9af" defer></script>
 <script src="../../js/highlights.js?v=f6e88a50" defer></script>
@@ -1171,24 +1187,5 @@
 })();
 </script>
 
-<script type="application/ld+json">
-[
-  {
-    "@context": "https://schema.org/",
-    "@type": "ImageObject",
-    "contentUrl": "https://gospod-bog.ru/images/og-nagornaya-propoved-chast-1.webp",
-    "name": "Нагорная проповедь — часть I",
-    "description": "Два текста, один Иисус: контекст Нагорной проповеди",
-    "creditText": "gospod-bog.ru",
-    "creator": {
-      "@type": "Organization",
-      "name": "Господь Бог — Сила Моя",
-      "url": "https://gospod-bog.ru"
-    },
-    "copyrightNotice": "© gospod-bog.ru",
-    "acquireLicensePage": "https://gospod-bog.ru/about/"
-  }
-]
-</script>
 </body>
 </html>

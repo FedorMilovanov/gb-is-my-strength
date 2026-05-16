@@ -2,3 +2,6 @@
 # Не хранить в git: файлы меняются при каждой правке контента
 # и засоряют diff, но на GitHub Pages они должны присутствовать.
 pagefind/
+
+# V2-FIX: IndexNow key should be in GitHub Secrets only
+34dbdd34-965b-4934-a5d4-d18a0a783600.txt

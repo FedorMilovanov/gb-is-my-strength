@@ -38,8 +38,8 @@ const ASSETS = [
   'js/search.js',
   'js/sw-register.js',
   'js/nagornaya-mobile-toc.js',
-  'js/glossary.js',            /* AUDIT_10_OF_10 / TIP-7.1 */
-  'js/series-cards.js',        /* AUDIT_10_OF_10 / NAV-11.1 */
+  /* 'js/glossary.js', — V3: removed, not connected to any page */
+  /* 'js/series-cards.js', — V3: removed, not connected to any page */
 ];
 
 // ── Хеш файла ────────────────────────────────────────────────────────────────

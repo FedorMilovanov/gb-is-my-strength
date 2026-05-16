@@ -22,3 +22,6 @@ html{scroll-behavior:smooth;}
 /* 6. Read progress bar — already in each page <style>, added here as canonical */
 #read-progress{position:fixed;top:0;left:0;width:0%;height:3px;background:linear-gradient(90deg,#d97706,#f59e0b);z-index:99999;transition:width .1s linear;pointer-events:none;}
 @media(min-width:1024px){#read-progress{left:256px;width:calc(var(--rp,0)*(100% - 256px));}}
+
+/* V2-FIX: Respect prefers-reduced-motion (WCAG 2.3.3) */
+@media(prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important;scroll-behavior:auto!important}}

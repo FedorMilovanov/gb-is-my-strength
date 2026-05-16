@@ -2,8 +2,10 @@
 <html lang="ru">
 <head>
   <meta charset="UTF-8">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://mc.yandex.ru; img-src 'self' https://mc.yandex.ru https://commons.wikimedia.org data:; style-src 'self' 'unsafe-inline'; font-src 'self'; connect-src 'self' https://mc.yandex.ru; frame-ancestors 'none';">
+  <meta http-equiv="X-Content-Type-Options" content="nosniff">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, interactive-widget=resizes-content">
-  <meta name="theme-color" content="#f8f5f0" media="(prefers-color-scheme: light)">
+  <meta name="theme-color" content="#fdfcf9" media="(prefers-color-scheme: light)">
   <meta name="theme-color" content="#171411" media="(prefers-color-scheme: dark)">
   <meta name="yandex-verification" content="42bc0d54a1ca4952">
 
@@ -37,72 +39,115 @@
   <meta name="twitter:image:alt" content="Богословская библиотека «Господь Бог — Сила Моя» — каталог статей">
 
   <!-- JSON-LD -->
-  <script type="application/ld+json">
-{
-  "@context": "https://schema.org",
-  "@graph": [
-    {
-      "@type": "Organization",
-      "@id": "https://gospod-bog.ru/#organization",
-      "name": "Господь Бог — Сила Моя",
-      "url": "https://gospod-bog.ru/",
-      "logo": {
-        "@type": "ImageObject",
-        "url": "https://gospod-bog.ru/icons/icon-512.png",
-        "width": 512,
-        "height": 512
-      },
-      "sameAs": [
-        "https://t.me/fedormilovanov",
-        "https://vk.com/curtmf"
+  <script type="application/ld+json">{
+      "@context": "https://schema.org",
+      "@graph": [
+            {
+                  "@type": "Organization",
+                  "@id": "https://gospod-bog.ru/#organization",
+                  "name": "Господь Бог — Сила Моя",
+                  "url": "https://gospod-bog.ru/",
+                  "logo": {
+                        "@type": "ImageObject",
+                        "url": "https://gospod-bog.ru/icons/icon-512.png",
+                        "width": 512,
+                        "height": 512
+                  },
+                  "sameAs": [
+                        "https://t.me/fedormilovanov",
+                        "https://vk.com/curtmf"
+                  ]
+            },
+            {
+                  "@type": "WebSite",
+                  "@id": "https://gospod-bog.ru/#website",
+                  "name": "Господь Бог — Сила Моя",
+                  "url": "https://gospod-bog.ru/",
+                  "inLanguage": "ru",
+                  "publisher": {
+                        "@id": "https://gospod-bog.ru/#organization"
+                  }
+            },
+            {
+                  "@type": "CollectionPage",
+                  "@id": "https://gospod-bog.ru/articles/#collectionpage",
+                  "name": "Статьи — Господь Бог — Сила Моя",
+                  "url": "https://gospod-bog.ru/articles/",
+                  "description": "Все богословские статьи и переводы библиотеки «Господь Бог — Сила Моя».",
+                  "inLanguage": "ru",
+                  "publisher": {
+                        "@id": "https://gospod-bog.ru/#organization"
+                  },
+                  "isPartOf": {
+                        "@type": "WebSite",
+                        "url": "https://gospod-bog.ru/"
+                  }
+            },
+            {
+                  "@type": "BreadcrumbList",
+                  "itemListElement": [
+                        {
+                              "@type": "ListItem",
+                              "position": 1,
+                              "name": "Главная",
+                              "item": "https://gospod-bog.ru/"
+                        },
+                        {
+                              "@type": "ListItem",
+                              "position": 2,
+                              "name": "Статьи",
+                              "item": "https://gospod-bog.ru/articles/"
+                        }
+                  ],
+                  "@id": "https://gospod-bog.ru/articles/#breadcrumbs"
+            },
+            {
+                  "@context": "https://schema.org/",
+                  "@type": "ImageObject",
+                  "contentUrl": "https://gospod-bog.ru/images/og-preview-1200x630.webp",
+                  "name": "Статьи — богословская библиотека",
+                  "description": "Каталог статей: разборы, переводы, апологетика",
+                  "creditText": "gospod-bog.ru",
+                  "creator": {
+                        "@type": "Organization",
+                        "name": "Господь Бог — Сила Моя",
+                        "url": "https://gospod-bog.ru"
+                  },
+                  "copyrightNotice": "© gospod-bog.ru",
+                  "acquireLicensePage": "https://gospod-bog.ru/about/"
+            },
+            {
+                  "@context": "https://schema.org/",
+                  "@type": "ImageObject",
+                  "contentUrl": "https://gospod-bog.ru/images/hermenevtika-preview.webp",
+                  "name": "Герменевтическая оценка",
+                  "description": "Христоцентричная герменевтика — Абнер Чау",
+                  "creditText": "gospod-bog.ru",
+                  "creator": {
+                        "@type": "Organization",
+                        "name": "Господь Бог — Сила Моя",
+                        "url": "https://gospod-bog.ru"
+                  },
+                  "copyrightNotice": "© gospod-bog.ru",
+                  "acquireLicensePage": "https://gospod-bog.ru/about/"
+            },
+            {
+                  "@context": "https://schema.org/",
+                  "@type": "ImageObject",
+                  "contentUrl": "https://gospod-bog.ru/images/og-krajne-isporcheno.webp",
+                  "name": "Крайне ли испорчено сердце",
+                  "description": "Разбор Иеремии 17:9",
+                  "creditText": "gospod-bog.ru",
+                  "creator": {
+                        "@type": "Organization",
+                        "name": "Господь Бог — Сила Моя",
+                        "url": "https://gospod-bog.ru"
+                  },
+                  "copyrightNotice": "© gospod-bog.ru",
+                  "acquireLicensePage": "https://gospod-bog.ru/about/"
+            }
       ]
-    },
-    {
-      "@type": "WebSite",
-      "@id": "https://gospod-bog.ru/#website",
-      "name": "Господь Бог — Сила Моя",
-      "url": "https://gospod-bog.ru/",
-      "inLanguage": "ru",
-      "publisher": {
-        "@id": "https://gospod-bog.ru/#organization"
-      }
-    },
-    {
-      "@type": "CollectionPage",
-      "@id": "https://gospod-bog.ru/articles/#collectionpage",
-      "name": "Статьи — Господь Бог — Сила Моя",
-      "url": "https://gospod-bog.ru/articles/",
-      "description": "Все богословские статьи и переводы библиотеки «Господь Бог — Сила Моя».",
-      "inLanguage": "ru",
-      "publisher": {
-        "@id": "https://gospod-bog.ru/#organization"
-      },
-      "isPartOf": {
-        "@type": "WebSite",
-        "url": "https://gospod-bog.ru/"
-      }
-    },
-    {
-      "@type": "BreadcrumbList",
-      "itemListElement": [
-        {
-          "@type": "ListItem",
-          "position": 1,
-          "name": "Главная",
-          "item": "https://gospod-bog.ru/"
-        },
-        {
-          "@type": "ListItem",
-          "position": 2,
-          "name": "Статьи",
-          "item": "https://gospod-bog.ru/articles/"
-        }
-      ],
-      "@id": "https://gospod-bog.ru/articles/#breadcrumbs"
-    }
-  ]
-}
-</script>
+}</script>
 
   <!-- Preconnect & fonts -->
   <link rel="icon" type="image/x-icon" href="https://gospod-bog.ru/favicon.ico">
@@ -112,6 +157,7 @@
   <link rel="icon" type="image/png" sizes="192x192" href="https://gospod-bog.ru/icons/icon-192.png">
   <link rel="manifest" href="https://gospod-bog.ru/manifest.json">
   <link rel="preload" as="style" href="../fonts/fonts.css?v=fc6cff8a">
+  <link rel="preload" as="font" type="font/woff2" href="/fonts/Lora/lora-cyrillic-400.woff2" crossorigin>
 <link rel="stylesheet" href="../fonts/fonts.css?v=fc6cff8a">
 
   <!-- Yandex.Metrika counter -->
@@ -137,7 +183,7 @@
 
   <script>
 window.SITE_CONFIG = {
-  version: 1,
+  version: 1778943682,
   site: {
     id: 'gb-strength',
     name: 'Господь Бог — Сила Моя',
@@ -190,7 +236,6 @@ window.SITE_CONFIG = {
 
 <body>
 <a href="#main-content" class="skip-link">Перейти к содержимому</a>
-
 
 <div class="h-reading-progress" id="hReadingProgress" aria-hidden="true"></div>
 
@@ -309,7 +354,6 @@ window.SITE_CONFIG = {
               </div>
             </a>
           </li>
-
 
           <!-- Нагорная проповедь — ПОЛНАЯ СЕРИЯ (5 частей) -->
           <li>
@@ -613,54 +657,5 @@ window.SITE_CONFIG = {
 <script src="../js/sw-register.js?v=c60839ff" defer></script>
 <script src="../js/search.js?v=8d27a9af" defer></script>
 
-<script type="application/ld+json">
-[
-  {
-    "@context": "https://schema.org/",
-    "@type": "ImageObject",
-    "contentUrl": "https://gospod-bog.ru/images/og-preview-1200x630.webp",
-    "name": "Статьи — богословская библиотека",
-    "description": "Каталог статей: разборы, переводы, апологетика",
-    "creditText": "gospod-bog.ru",
-    "creator": {
-      "@type": "Organization",
-      "name": "Господь Бог — Сила Моя",
-      "url": "https://gospod-bog.ru"
-    },
-    "copyrightNotice": "© gospod-bog.ru",
-    "acquireLicensePage": "https://gospod-bog.ru/about/"
-  },
-  {
-    "@context": "https://schema.org/",
-    "@type": "ImageObject",
-    "contentUrl": "https://gospod-bog.ru/images/hermenevtika-preview.webp",
-    "name": "Герменевтическая оценка",
-    "description": "Христоцентричная герменевтика — Абнер Чау",
-    "creditText": "gospod-bog.ru",
-    "creator": {
-      "@type": "Organization",
-      "name": "Господь Бог — Сила Моя",
-      "url": "https://gospod-bog.ru"
-    },
-    "copyrightNotice": "© gospod-bog.ru",
-    "acquireLicensePage": "https://gospod-bog.ru/about/"
-  },
-  {
-    "@context": "https://schema.org/",
-    "@type": "ImageObject",
-    "contentUrl": "https://gospod-bog.ru/images/og-krajne-isporcheno.webp",
-    "name": "Крайне ли испорчено сердце",
-    "description": "Разбор Иеремии 17:9",
-    "creditText": "gospod-bog.ru",
-    "creator": {
-      "@type": "Organization",
-      "name": "Господь Бог — Сила Моя",
-      "url": "https://gospod-bog.ru"
-    },
-    "copyrightNotice": "© gospod-bog.ru",
-    "acquireLicensePage": "https://gospod-bog.ru/about/"
-  }
-]
-</script>
 </body>
 </html>

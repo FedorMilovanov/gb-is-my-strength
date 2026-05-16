@@ -1,10 +1,13 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
+  <script>try{if(localStorage.getItem("theme")==="dark")document.documentElement.classList.add("dark")}catch(e){}</script>
   <meta charset="UTF-8">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://mc.yandex.ru; img-src 'self' https://mc.yandex.ru https://commons.wikimedia.org data:; style-src 'self' 'unsafe-inline'; font-src 'self'; connect-src 'self' https://mc.yandex.ru; frame-ancestors 'none';">
+  <meta http-equiv="X-Content-Type-Options" content="nosniff">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, interactive-widget=resizes-content">
   <meta name="theme-color" content="#fdfcf9" media="(prefers-color-scheme: light)">
-  <meta name="theme-color" content="#1c1917" media="(prefers-color-scheme: dark)">
+  <meta name="theme-color" content="#171411" media="(prefers-color-scheme: dark)">
   <title>Нагорная проповедь — серия из 5 статей | Господь Бог</title>
   <meta name="description" content="Исследование Матфея 5–7 и Луки 6: архитектура, синоптическая проблема, адресат, богодухновенность, Закон и Евангелие. 5 частей, 120+ источников.">
   <meta name="robots" content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1">
@@ -35,11 +38,15 @@
   <link rel="icon" type="image/png" sizes="192x192" href="https://gospod-bog.ru/icons/icon-192.png">
   <link rel="manifest" href="https://gospod-bog.ru/manifest.json">
   <!-- Tailwind CSS CDN -->
+    <link rel="preload" as="style" href="/fonts/fonts.css?v=fc6cff8a">
+  <link rel="preload" as="font" type="font/woff2" href="/fonts/Lora/lora-cyrillic-400.woff2" crossorigin>
+  <link rel="stylesheet" href="/fonts/fonts.css?v=fc6cff8a">
   <link rel="stylesheet" href="/nagornaya/tw.min.css?v=4c2284f0">
+  <link rel="stylesheet" href="/css/site.css?v=f7d5c4de">
   <!-- Yandex Metrika -->
   <script type="text/javascript">
     (function(m,e,t,r,i,k,a){m[i]=m[i]||function(){(m[i].a=m[i].a||[]).push(arguments)};m[i].l=1*new Date();for(var j=0;j<document.scripts.length;j++){if(document.scripts[j].src===r){return}}k=e.createElement(t),a=e.getElementsByTagName(t)[0],k.async=1,k.src=r,a.parentNode.insertBefore(k,a)})(window,document,'script','https://mc.yandex.ru/metrika/tag.js?id=108353327','ym');
-    ym(108353327,'init',{ssr:false,webvisor:true,clickmap:true,accurateTrackBounce:true,trackLinks:true});
+    ym(108353327,'init',{ssr:false,webvisor:true,clickmap:true,accurateTrackBounce:true,trackLinks:true,referrer:document.referrer,url:location.href});
   </script>
   <noscript><div><img decoding="async" src="https://mc.yandex.ru/watch/108353327" style="position:absolute;left:-9999px;" alt=""></div></noscript>
   <meta name="geo.region" content="RU-SPE">
@@ -70,78 +77,70 @@
   <link rel="stylesheet" href="../css/nagornaya-mobile-toc.css?v=8fc67cf9">
   <link rel="stylesheet" href="../css/command-palette.css?v=081e6436">
 </head>
-<script type="application/ld+json">
-{
-  "@context": "https://schema.org",
-  "@graph": [
-    {
-      "@type": "Organization",
-      "@id": "https://gospod-bog.ru/#organization",
-      "name": "Господь Бог — Сила Моя",
-      "url": "https://gospod-bog.ru/",
-      "logo": {
-        "@type": "ImageObject",
-        "url": "https://gospod-bog.ru/icons/icon-512.png",
-        "width": 512,
-        "height": 512
-      },
-      "sameAs": [
-        "https://t.me/fedormilovanov",
-        "https://vk.com/curtmf"
+<script type="application/ld+json">{
+      "@context": "https://schema.org",
+      "@graph": [
+            {
+                  "@type": "Organization",
+                  "@id": "https://gospod-bog.ru/#organization",
+                  "name": "Господь Бог — Сила Моя",
+                  "url": "https://gospod-bog.ru/",
+                  "logo": {
+                        "@type": "ImageObject",
+                        "url": "https://gospod-bog.ru/icons/icon-512.png",
+                        "width": 512,
+                        "height": 512
+                  },
+                  "sameAs": [
+                        "https://t.me/fedormilovanov",
+                        "https://vk.com/curtmf"
+                  ]
+            },
+            {
+                  "@type": "WebSite",
+                  "@id": "https://gospod-bog.ru/#website",
+                  "name": "Господь Бог — Сила Моя",
+                  "url": "https://gospod-bog.ru/",
+                  "inLanguage": "ru",
+                  "publisher": {
+                        "@id": "https://gospod-bog.ru/#organization"
+                  }
+            },
+            {
+                  "@type": "CollectionPage",
+                  "@id": "https://gospod-bog.ru/nagornaya/#collectionpage",
+                  "name": "Нагорная проповедь — полная серия",
+                  "url": "https://gospod-bog.ru/nagornaya/",
+                  "description": "Сравнительное исследование Матфея 5–7 и Луки 6:17–49. 5 частей, 120+ источников.",
+                  "inLanguage": "ru",
+                  "publisher": {
+                        "@id": "https://gospod-bog.ru/#organization"
+                  },
+                  "isPartOf": {
+                        "@type": "WebSite",
+                        "url": "https://gospod-bog.ru/"
+                  }
+            },
+            {
+                  "@type": "BreadcrumbList",
+                  "itemListElement": [
+                        {
+                              "@type": "ListItem",
+                              "position": 1,
+                              "name": "Главная",
+                              "item": "https://gospod-bog.ru/"
+                        },
+                        {
+                              "@type": "ListItem",
+                              "position": 2,
+                              "name": "Нагорная проповедь",
+                              "item": "https://gospod-bog.ru/nagornaya/"
+                        }
+                  ],
+                  "@id": "https://gospod-bog.ru/nagornaya/#breadcrumbs"
+            }
       ]
-    },
-    {
-      "@type": "WebSite",
-      "@id": "https://gospod-bog.ru/#website",
-      "name": "Господь Бог — Сила Моя",
-      "url": "https://gospod-bog.ru/",
-      "inLanguage": "ru",
-      "publisher": {
-        "@id": "https://gospod-bog.ru/#organization"
-      }
-    },
-    {
-      "@type": "CollectionPage",
-      "@id": "https://gospod-bog.ru/nagornaya/#collectionpage",
-      "name": "Нагорная проповедь — полная серия",
-      "url": "https://gospod-bog.ru/nagornaya/",
-      "description": "Сравнительное исследование Матфея 5–7 и Луки 6:17–49. 5 частей, 120+ источников.",
-      "inLanguage": "ru",
-      "publisher": {
-        "@id": "https://gospod-bog.ru/#organization"
-      },
-      "isPartOf": {
-        "@type": "WebSite",
-        "url": "https://gospod-bog.ru/"
-      }
-    },
-    {
-      "@type": "BreadcrumbList",
-      "itemListElement": [
-        {
-          "@type": "ListItem",
-          "position": 1,
-          "name": "Главная",
-          "item": "https://gospod-bog.ru/"
-        },
-        {
-          "@type": "ListItem",
-          "position": 2,
-          "name": "Статьи",
-          "item": "https://gospod-bog.ru/articles/"
-        },
-        {
-          "@type": "ListItem",
-          "position": 3,
-          "name": "Нагорная проповедь",
-          "item": "https://gospod-bog.ru/nagornaya/"
-        }
-      ],
-      "@id": "https://gospod-bog.ru/nagornaya/#breadcrumbs"
-    }
-  ]
-}
-</script>
+}</script>
 <body class="bg-stone-100 text-stone-900 antialiased">
 <a href="#main-content" class="skip-link">Перейти к содержимому</a>
 
@@ -290,7 +289,7 @@
   </div>
 
   <!-- Main content -->
-  <main class="lg:pl-64" data-pagefind-body>
+  <main id="main-content" class="lg:pl-64" data-pagefind-body>
     <div class="max-w-4xl mx-auto px-4 py-8 pt-20 lg:pt-8 space-y-6">
 
       <!-- Breadcrumbs -->
@@ -560,6 +559,7 @@
 </script>
 
 <script src="../js/nagornaya-mobile-toc.js?v=8cd98fd8" defer></script>
+<script src="../js/site.js?v=a83786e5" defer></script>
 <script src="../js/sw-register.js?v=c60839ff" defer></script>
 <script src="../js/search.js?v=8d27a9af" defer></script>
 <script src="../js/bookmark-engine.js?v=481d7b91" defer></script>

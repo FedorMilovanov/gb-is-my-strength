@@ -9,7 +9,7 @@
    — Все остальные запросы → Network First
    ============================================================ */
 
-var CACHE_VERSION = 'gb-v4';
+var CACHE_VERSION = 'gb-v4-a9e29d';
 var CACHE_STATIC   = CACHE_VERSION + '-static';
 var CACHE_CONTENT  = CACHE_VERSION + '-content';
 var CACHE_IMAGES   = CACHE_VERSION + '-images';
@@ -24,6 +24,7 @@ var PRECACHE_ASSETS = [
   '/css/home.css',
   '/css/command-palette.css',
   '/css/nagornaya-mobile-toc.css',
+  '/fonts/fonts.css',
   '/nagornaya/tw.min.css',
   '/js/site.js',
   '/js/search.js',
@@ -111,6 +112,7 @@ function isFont(url) {
 
 /* Cache First — good for static assets and fonts */
 var IMG_CACHE_LIMIT = 60; /* BUG-06: ограничение кэша изображений */
+var CONTENT_CACHE_LIMIT = 30; /* V2-FIX: LRU для контентного кэша */
 
 function cacheFirst(req, cacheName) {
   var isImages = cacheName === CACHE_IMAGES;
@@ -144,6 +146,10 @@ function staleWhileRevalidate(req) {
       var fetchPromise = fetch(req).then(function(res) {
         if (res && res.status === 200) {
           cache.put(req, res.clone());
+          /* V2-FIX: LRU — удаляем старые записи контентного кэша */
+          cache.keys().then(function(keys) {
+            if (keys.length > CONTENT_CACHE_LIMIT) { cache.delete(keys[0]); }
+          });
           /* Notify clients about update */
           self.clients.matchAll().then(function(clients) {
             clients.forEach(function(client) {

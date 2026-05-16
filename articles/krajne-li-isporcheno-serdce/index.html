@@ -3,6 +3,8 @@
 <html lang="ru">
 <head>
 <meta charset="utf-8">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://mc.yandex.ru; img-src 'self' https://mc.yandex.ru https://commons.wikimedia.org data:; style-src 'self' 'unsafe-inline'; font-src 'self'; connect-src 'self' https://mc.yandex.ru; frame-ancestors 'none';">
+  <meta http-equiv="X-Content-Type-Options" content="nosniff">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, interactive-widget=resizes-content">
 <!-- Open Graph -->
 <meta property="og:type" content="article">
@@ -41,181 +43,225 @@
   <link rel="icon" type="image/png" sizes="192x192" href="https://gospod-bog.ru/icons/icon-192.png">
   <link rel="manifest" href="https://gospod-bog.ru/manifest.json">
 <!-- JSON-LD -->
-<script type="application/ld+json">
-{
-  "@context": "https://schema.org",
-  "@graph": [
-    {
-      "@type": "Organization",
-      "@id": "https://gospod-bog.ru/#organization",
-      "name": "Господь Бог — Сила Моя",
-      "url": "https://gospod-bog.ru/",
-      "logo": {
-        "@type": "ImageObject",
-        "url": "https://gospod-bog.ru/icons/icon-512.png",
-        "width": 512,
-        "height": 512
-      },
-      "sameAs": [
-        "https://t.me/fedormilovanov",
-        "https://vk.com/curtmf"
+<script type="application/ld+json">{
+      "@context": "https://schema.org",
+      "@graph": [
+            {
+                  "@type": "Organization",
+                  "@id": "https://gospod-bog.ru/#organization",
+                  "name": "Господь Бог — Сила Моя",
+                  "url": "https://gospod-bog.ru/",
+                  "logo": {
+                        "@type": "ImageObject",
+                        "url": "https://gospod-bog.ru/icons/icon-512.png",
+                        "width": 512,
+                        "height": 512
+                  },
+                  "sameAs": [
+                        "https://t.me/fedormilovanov",
+                        "https://vk.com/curtmf"
+                  ]
+            },
+            {
+                  "@type": "WebSite",
+                  "@id": "https://gospod-bog.ru/#website",
+                  "name": "Господь Бог — Сила Моя",
+                  "url": "https://gospod-bog.ru/",
+                  "inLanguage": "ru",
+                  "publisher": {
+                        "@id": "https://gospod-bog.ru/#organization"
+                  }
+            },
+            {
+                  "@type": "Article",
+                  "@id": "https://gospod-bog.ru/articles/krajne-li-isporcheno-serdce/#article",
+                  "headline": "Крайне ли испорчено сердце верующего?",
+                  "description": "Разбор Иеремии 17:9–10: что пророк говорит о грехе, самообмане сердца и надежде Нового завета — и как это применить к верующему.",
+                  "url": "https://gospod-bog.ru/articles/krajne-li-isporcheno-serdce/",
+                  "datePublished": "2026-04-01T00:00:00+03:00",
+                  "dateModified": "2026-05-09T00:00:00+03:00",
+                  "inLanguage": "ru",
+                  "publisher": {
+                        "@id": "https://gospod-bog.ru/#organization"
+                  },
+                  "image": {
+                        "@type": "ImageObject",
+                        "url": "https://gospod-bog.ru/images/og-krajne-isporcheno.webp",
+                        "width": 900,
+                        "height": 600,
+                        "contentUrl": "https://gospod-bog.ru/images/og-krajne-isporcheno.webp",
+                        "creditText": "gospod-bog.ru — Фёдор Милованов",
+                        "creator": {
+                              "@type": "Organization",
+                              "name": "Господь Бог — Сила Моя",
+                              "url": "https://gospod-bog.ru"
+                        },
+                        "copyrightNotice": "© gospod-bog.ru"
+                  },
+                  "mainEntityOfPage": {
+                        "@type": "WebPage",
+                        "@id": "https://gospod-bog.ru/articles/krajne-li-isporcheno-serdce/"
+                  },
+                  "articleSection": "Богословие",
+                  "keywords": "Иеремия 17, сердце обманчиво, грех, освящение, верующий, Новый завет",
+                  "editor": {
+                        "@id": "https://gospod-bog.ru/about/#person"
+                  },
+                  "isPartOf": {
+                        "@id": "https://gospod-bog.ru/#website"
+                  },
+                  "about": [
+                        {
+                              "@type": "Thing",
+                              "name": "Иеремия 17"
+                        },
+                        {
+                              "@type": "Thing",
+                              "name": "сердце обманчиво"
+                        },
+                        {
+                              "@type": "Thing",
+                              "name": "грех"
+                        },
+                        {
+                              "@type": "Thing",
+                              "name": "освящение"
+                        },
+                        {
+                              "@type": "Thing",
+                              "name": "верующий"
+                        },
+                        {
+                              "@type": "Thing",
+                              "name": "Новый завет"
+                        }
+                  ],
+                  "author": {
+                        "@id": "https://gospod-bog.ru/about/#person"
+                  },
+                  "speakable": {
+                        "@type": "SpeakableSpecification",
+                        "cssSelector": [
+                              "h1",
+                              ".article-lead",
+                              ".summary-card",
+                              "[data-speakable]"
+                        ]
+                  }
+            },
+            {
+                  "@type": "BreadcrumbList",
+                  "itemListElement": [
+                        {
+                              "@type": "ListItem",
+                              "position": 1,
+                              "name": "Главная",
+                              "item": "https://gospod-bog.ru/"
+                        },
+                        {
+                              "@type": "ListItem",
+                              "position": 2,
+                              "name": "Статьи",
+                              "item": "https://gospod-bog.ru/articles/"
+                        },
+                        {
+                              "@type": "ListItem",
+                              "position": 3,
+                              "name": "Крайне ли испорчено сердце верующего?",
+                              "item": "https://gospod-bog.ru/articles/krajne-li-isporcheno-serdce/"
+                        }
+                  ],
+                  "@id": "https://gospod-bog.ru/articles/krajne-li-isporcheno-serdce/#breadcrumbs"
+            },
+            {
+                  "@type": "FAQPage",
+                  "@id": "https://gospod-bog.ru/articles/krajne-li-isporcheno-serdce/#faq",
+                  "inLanguage": "ru",
+                  "isPartOf": {
+                        "@id": "https://gospod-bog.ru/#website"
+                  },
+                  "mainEntity": [
+                        {
+                              "@type": "Question",
+                              "name": "Относится ли Иеремия 17:9 («сердце обманчиво более всего») к верующему человеку?",
+                              "acceptedAnswer": {
+                                    "@type": "Answer",
+                                    "text": "Да — но с важным уточнением: Иер. 17:9 прежде всего описывает падшее человеческое сердце и духовное состояние Иуды перед судом Божьим. Верующий уже получил новое сердце по обетованию Нового Завета ( Иез. 36:26 ), поэтому этот стих не является окончательным приговором его новой природе. Но остаточный грех всё ещё действует: человек может оправдывать себя, путать ревность с гордостью, а «духовное чувство» — с самозащитой. Поэтому текст остаётся предупреждением: христианин не должен строить уверенность только на внутреннем ощущении правоты. Практический вывод прост: проверяй сердце Писанием, молитвой, плодами и честным братским словом."
+                              }
+                        },
+                        {
+                              "@type": "Question",
+                              "name": "Что значит «сердце обманчиво более всего» (Иеремия 17:9)?",
+                              "acceptedAnswer": {
+                                    "@type": "Answer",
+                                    "text": "Фраза «сердце обманчиво» означает, что внутренний центр человека способен не только грешить, но и убедительно оправдывать собственный грех. Еврейское ʿāqōb указывает на кривизну, извилистость и коварную способность обходить прямой путь. В контексте Иер. 17:5–10 речь идёт о человеке, который внешне может звучать религиозно, но фактически уповает на плоть, статус, силу или собственное суждение. Бог противопоставляет этому Своё всеведение: «Я, Господь, проникаю сердце» (ст. 10). Поэтому стих не учит презирать чувства как таковые; он учит не делать сердце последним судом над истиной."
+                              }
+                        },
+                        {
+                              "@type": "Question",
+                              "name": "Может ли верующий до конца доверять своим духовным ощущениям и совести?",
+                              "acceptedAnswer": {
+                                    "@type": "Answer",
+                                    "text": "Нет, не до конца. Совесть верующего освящается и становится важным инструментом духовного различения, но она не превращается в безошибочный внутренний оракул. Павел мог говорить о чистой совести, но всё равно признавал, что окончательный суд принадлежит Господу ( 1 Кор. 4:4 ). Остаточный грех, страх людей, травма, гордость или желание быть правым могут искажать даже искренние духовные ощущения. Поэтому зрелая христианская практика соединяет совесть с Писанием, молитвой, проверкой плодов и советом мудрых людей. Если «мир в сердце» противоречит ясному тексту Библии или ведёт к самооправданию, доверять надо не ощущению, а Божьему Слову."
+                              }
+                        }
+                  ]
+            },
+            {
+                  "@context": "https://schema.org/",
+                  "@type": "ImageObject",
+                  "contentUrl": "https://gospod-bog.ru/images/og-krajne-isporcheno.webp",
+                  "name": "Крайне ли испорчено сердце человека",
+                  "description": "Разбор Иеремии 17:9: природа сердца по Писанию",
+                  "creditText": "gospod-bog.ru",
+                  "creator": {
+                        "@type": "Organization",
+                        "name": "Господь Бог — Сила Моя",
+                        "url": "https://gospod-bog.ru"
+                  },
+                  "copyrightNotice": "© gospod-bog.ru",
+                  "acquireLicensePage": "https://gospod-bog.ru/about/"
+            },
+            {
+                  "@context": "https://schema.org/",
+                  "@type": "ImageObject",
+                  "contentUrl": "https://gospod-bog.ru/images/ieremia-judea-fall.webp",
+                  "name": "Иеремия на фоне горящего Иерусалима",
+                  "description": "Иеремия перед разрушением Иерусалима — исторический контекст",
+                  "creditText": "gospod-bog.ru",
+                  "creator": {
+                        "@type": "Organization",
+                        "name": "Господь Бог — Сила Моя",
+                        "url": "https://gospod-bog.ru"
+                  },
+                  "copyrightNotice": "© gospod-bog.ru",
+                  "acquireLicensePage": "https://gospod-bog.ru/about/"
+            },
+            {
+                  "@context": "https://schema.org/",
+                  "@type": "ImageObject",
+                  "contentUrl": "https://gospod-bog.ru/images/ieremia-corrupt-heart.webp",
+                  "name": "Каменное сердце — образ крайней испорченности",
+                  "description": "Сердце из тёмного гранита: визуальный образ Иеремии 17:9",
+                  "creditText": "gospod-bog.ru",
+                  "creator": {
+                        "@type": "Organization",
+                        "name": "Господь Бог — Сила Моя",
+                        "url": "https://gospod-bog.ru"
+                  },
+                  "copyrightNotice": "© gospod-bog.ru",
+                  "acquireLicensePage": "https://gospod-bog.ru/about/"
+            }
       ]
-    },
-    {
-      "@type": "WebSite",
-      "@id": "https://gospod-bog.ru/#website",
-      "name": "Господь Бог — Сила Моя",
-      "url": "https://gospod-bog.ru/",
-      "inLanguage": "ru",
-      "publisher": {
-        "@id": "https://gospod-bog.ru/#organization"
-      }
-    },
-    {
-      "@type": "Article",
-      "@id": "https://gospod-bog.ru/articles/krajne-li-isporcheno-serdce/#article",
-      "headline": "Крайне ли испорчено сердце верующего?",
-      "description": "Разбор Иеремии 17:9–10: что пророк говорит о грехе, самообмане сердца и надежде Нового завета — и как это применить к верующему.",
-      "url": "https://gospod-bog.ru/articles/krajne-li-isporcheno-serdce/",
-      "datePublished": "2026-04-01T00:00:00+03:00",
-      "dateModified": "2026-05-09T00:00:00+03:00",
-      "inLanguage": "ru",
-      "publisher": {
-        "@id": "https://gospod-bog.ru/#organization"
-      },
-      "image": {
-        "@type": "ImageObject",
-        "url": "https://gospod-bog.ru/images/og-krajne-isporcheno.webp",
-        "width": 900,
-        "height": 600,
-        "contentUrl": "https://gospod-bog.ru/images/og-krajne-isporcheno.webp",
-        "creditText": "gospod-bog.ru — Фёдор Милованов",
-        "creator": {
-          "@type": "Organization",
-          "name": "Господь Бог — Сила Моя",
-          "url": "https://gospod-bog.ru"
-        },
-        "copyrightNotice": "© gospod-bog.ru"
-      },
-      "mainEntityOfPage": {
-        "@type": "WebPage",
-        "@id": "https://gospod-bog.ru/articles/krajne-li-isporcheno-serdce/"
-      },
-      "articleSection": "Богословие",
-      "keywords": "Иеремия 17, сердце обманчиво, грех, освящение, верующий, Новый завет",
-      "editor": {
-        "@id": "https://gospod-bog.ru/about/#person"
-      },
-      "isPartOf": {
-        "@id": "https://gospod-bog.ru/#website"
-      },
-      "about": [
-        {
-          "@type": "Thing",
-          "name": "Иеремия 17"
-        },
-        {
-          "@type": "Thing",
-          "name": "сердце обманчиво"
-        },
-        {
-          "@type": "Thing",
-          "name": "грех"
-        },
-        {
-          "@type": "Thing",
-          "name": "освящение"
-        },
-        {
-          "@type": "Thing",
-          "name": "верующий"
-        },
-        {
-          "@type": "Thing",
-          "name": "Новый завет"
-        }
-      ],
-      "author": {
-        "@id": "https://gospod-bog.ru/about/#person"
-      },
-      "speakable": {
-        "@type": "SpeakableSpecification",
-        "cssSelector": [
-          "h1",
-          ".article-lead",
-          ".summary-card",
-          "[data-speakable]"
-        ]
-      }
-    },
-    {
-      "@type": "BreadcrumbList",
-      "itemListElement": [
-        {
-          "@type": "ListItem",
-          "position": 1,
-          "name": "Главная",
-          "item": "https://gospod-bog.ru/"
-        },
-        {
-          "@type": "ListItem",
-          "position": 2,
-          "name": "Статьи",
-          "item": "https://gospod-bog.ru/articles/"
-        },
-        {
-          "@type": "ListItem",
-          "position": 3,
-          "name": "Крайне ли испорчено сердце верующего?",
-          "item": "https://gospod-bog.ru/articles/krajne-li-isporcheno-serdce/"
-        }
-      ],
-      "@id": "https://gospod-bog.ru/articles/krajne-li-isporcheno-serdce/#breadcrumbs"
-    },
-    {
-      "@type": "FAQPage",
-      "@id": "https://gospod-bog.ru/articles/krajne-li-isporcheno-serdce/#faq",
-      "inLanguage": "ru",
-      "isPartOf": {
-        "@id": "https://gospod-bog.ru/#website"
-      },
-      "mainEntity": [
-        {
-          "@type": "Question",
-          "name": "Относится ли Иеремия 17:9 («сердце обманчиво более всего») к верующему человеку?",
-          "acceptedAnswer": {
-            "@type": "Answer",
-            "text": "Да — но с важным уточнением: Иер. 17:9 прежде всего описывает падшее человеческое сердце и духовное состояние Иуды перед судом Божьим. Верующий уже получил новое сердце по обетованию Нового Завета ( Иез. 36:26 ), поэтому этот стих не является окончательным приговором его новой природе. Но остаточный грех всё ещё действует: человек может оправдывать себя, путать ревность с гордостью, а «духовное чувство» — с самозащитой. Поэтому текст остаётся предупреждением: христианин не должен строить уверенность только на внутреннем ощущении правоты. Практический вывод прост: проверяй сердце Писанием, молитвой, плодами и честным братским словом."
-          }
-        },
-        {
-          "@type": "Question",
-          "name": "Что значит «сердце обманчиво более всего» (Иеремия 17:9)?",
-          "acceptedAnswer": {
-            "@type": "Answer",
-            "text": "Фраза «сердце обманчиво» означает, что внутренний центр человека способен не только грешить, но и убедительно оправдывать собственный грех. Еврейское ʿāqōb указывает на кривизну, извилистость и коварную способность обходить прямой путь. В контексте Иер. 17:5–10 речь идёт о человеке, который внешне может звучать религиозно, но фактически уповает на плоть, статус, силу или собственное суждение. Бог противопоставляет этому Своё всеведение: «Я, Господь, проникаю сердце» (ст. 10). Поэтому стих не учит презирать чувства как таковые; он учит не делать сердце последним судом над истиной."
-          }
-        },
-        {
-          "@type": "Question",
-          "name": "Может ли верующий до конца доверять своим духовным ощущениям и совести?",
-          "acceptedAnswer": {
-            "@type": "Answer",
-            "text": "Нет, не до конца. Совесть верующего освящается и становится важным инструментом духовного различения, но она не превращается в безошибочный внутренний оракул. Павел мог говорить о чистой совести, но всё равно признавал, что окончательный суд принадлежит Господу ( 1 Кор. 4:4 ). Остаточный грех, страх людей, травма, гордость или желание быть правым могут искажать даже искренние духовные ощущения. Поэтому зрелая христианская практика соединяет совесть с Писанием, молитвой, проверкой плодов и советом мудрых людей. Если «мир в сердце» противоречит ясному тексту Библии или ведёт к самооправданию, доверять надо не ощущению, а Божьему Слову."
-          }
-        }
-      ]
-    }
-  ]
-}
-</script>
+}</script>
 <title>Крайне ли испорчено сердце верующего? | gb</title>
 <meta name="description" content="Разбор Иеремии 17:9–10. Что значит «сердце обманчиво более всего» — и относится ли это к верующему? Экзегеза, богословский синтез, пастырское применение.">
 <meta name="theme-color" content="#fdfcf9" media="(prefers-color-scheme: light)">
-<meta name="theme-color" content="#0e1116" media="(prefers-color-scheme: dark)">
+<meta name="theme-color" content="#171411" media="(prefers-color-scheme: dark)">
 <!-- LCP preload — сообщаем браузеру о первом изображении ДО загрузки стилей -->
 <link as="image" fetchpriority="high" href="../../images/ieremia-judea-fall.webp" rel="preload">
 <link rel="preload" as="style" href="../../fonts/fonts.css?v=fc6cff8a">
+  <link rel="preload" as="font" type="font/woff2" href="/fonts/Lora/lora-cyrillic-400.woff2" crossorigin>
 <link rel="stylesheet" href="../../fonts/fonts.css?v=fc6cff8a">
 <!-- Anti-FOUC: применяем тему до рендера CSS -->
 <script>
@@ -255,7 +301,7 @@
   </style>
 <script>
 window.SITE_CONFIG = {
-  version: 1,
+  version: 1778943682,
 
   site: {
     id: 'gb-strength',
@@ -722,24 +768,24 @@ window.SITE_CONFIG = {
 <p>Иер. 17 — прежде всего слово к Иуде накануне катастрофы. Только увидев, что именно говорит этот текст в своём историческом контексте, мы можем надёжно проследить, как он звучит в свете Нового Завета — и применить его к верующему с новым сердцем без того, чтобы ослабить диагноз или разрушить обетование.</p>
 <h2 id="istoricheskiy-fon">I. Исторический фон: почему Иеремия говорит так резко</h2>
 <figure class="article-img wide reveal">
-<img alt="Иеремия на фоне горящего Иерусалима — пророк на краю катастрофы" decoding="async" fetchpriority="high" loading="eager" height="600" src="../../images/ieremia-judea-fall.webp" width="900"/ title="Иеремия на фоне горящего Иерусалима — пророк на краю катастрофы" srcset="../../images/ieremia-judea-fall-600w.webp 600w, ../../images/ieremia-judea-fall.webp 900w" sizes="(max-width: 640px) 600px, (max-width: 1024px) 900px, 900px">
+<img alt="Иеремия на фоне горящего Иерусалима — пророк на краю катастрофы" decoding="async" fetchpriority="high" loading="eager" height="600" src="../../images/ieremia-judea-fall.webp" width="900"/ srcset="../../images/ieremia-judea-fall-600w.webp 600w, ../../images/ieremia-judea-fall.webp 900w" sizes="(max-width: 640px) 600px, (max-width: 1024px) 900px, 900px">
 <figcaption>Иеремия перед разрушением Иерусалима, 587/586 до н.э. <span class="ai-note">Сгенерировано с помощью ИИ</span></figcaption>
 </figure>
 <p>Иеремия служил в последние десятилетия Иудейского царства. После битвы при <span class="gterm" tabindex="0">Кархемише<span class="gtip">Битва при Кархемише (605 г. до н.э.): вавилонский царь Навуходоносор II разгромил египтян и их ассирийских союзников на берегах Евфрата. После этой победы Вавилон стал господствующей силой на Ближнем Востоке. Иудея оказалась в его подчинении, что привело к депортациям 597 г. и разрушению Иерусалима в 587/586 г. до н.э.</span></span> (605 до н.э.) Вавилон стал доминирующей силой; Иудея превратилась в вассала, а затем пережила кризисы 597 и 587/586 годов, завершившиеся разрушением Иерусалима. Пророчество Иеремии — не отвлечённое рассуждение о человеке, а пророческое слово к народу на краю катастрофы — к народу, который <em>сохранил религиозные формы</em>, но внутренне давно ушёл от Бога.</p>
 <p>Кальвин, объясняя контекст Иер. 17:5–9, подчёркивает: пророку пришлось снова и снова разбивать ложную уверенность Иуды. Народ искал опоры в людях, союзах и собственных расчётах, а Божьи обетования принимал холодно — как нечто второстепенное. Проблема текста — не просто «плохое поведение», а <strong>сердце, уже повернувшееся в сторону плоти и самоспасения</strong>. Именно это делает слова Иеремии столь острыми: он обличает не язычников снаружи, а народ завета изнутри.</p>
 <h2 id="greh-vyrezannyy">II. Иеремия 17:1–4 — грех, вырезанный в человеке</h2>
 <figure class="article-img float-right reveal">
-<img alt="Древний жертвенник с рогами в полутьме, луч света освещает гравировку на камне" decoding="async" height="600" loading="lazy" src="../../images/ieremia-altar.webp" width="900"/ title="Древний жертвенник с рогами в полутьме, луч света освещает гравировку на камне" srcset="../../images/ieremia-altar-600w.webp 600w, ../../images/ieremia-altar.webp 900w" sizes="(max-width: 640px) 600px, (max-width: 1024px) 900px, 900px">
+<img alt="Древний жертвенник с рогами в полутьме, луч света освещает гравировку на камне" decoding="async" height="600" loading="lazy" src="../../images/ieremia-altar.webp" width="900"/ srcset="../../images/ieremia-altar-600w.webp 600w, ../../images/ieremia-altar.webp 900w" sizes="(max-width: 640px) 600px, (max-width: 1024px) 900px, 900px">
 <figcaption>Иер. 17:1 — «грех… написан… на рогах жертвенников ваших»</figcaption>
 </figure>
 <p>Образ в 17:1 предельно силён. Железный резец и остриё <em><span class="gterm" tabindex="0">шамир<span class="gtip">В еврейской Библии — вещество или инструмент предельной твёрдости: алмаз, кремень или особо острый абразивный камень. В Иер. 17:1 образ шамира передаёт необратимость: грех врезан в сердце так же прочно и глубоко, как резец шамира вырезает борозду в камне.</span></span></em> (שָׁמִיר — камень предельной твёрдости, алмаз или кремень) указывают на глубокую, прочную, трудноудаляемую гравировку. Речь идёт не о чернилах, которые можно стереть, — а о <strong>борозде, прорезанной в камне</strong>.</p>
-<p>«Скрижаль сердца» (<em>לוּחַ לִבָּם</em>, «луах либам») означает внутренний центр личности. В еврейском мышлении <em>сердце</em> (<em>лев</em>, לֵב) — это не просто чувства, а весь внутренний человек: мысли, цели, желания, решения. Метафора говорит не о том, что у людей есть дурные поступки, — а о том, что <strong>грех уже не на поверхности — он проник в устройство сердца</strong>.</p>
+<p>«Скрижаль сердца» (<em lang="he">לוּחַ לִבָּם</em>, «луах либам») означает внутренний центр личности. В еврейском мышлении <em>сердце</em> (<em>лев</em>, לֵב) — это не просто чувства, а весь внутренний человек: мысли, цели, желания, решения. Метафора говорит не о том, что у людей есть дурные поступки, — а о том, что <strong>грех уже не на поверхности — он проник в устройство сердца</strong>.</p>
 <figure class="article-img float-left reveal">
-<img alt="Анатомическое сердце из тёмного гранита на чёрном камне — образ крайне испорченного, каменного сердца" decoding="async" height="900" loading="lazy" src="../../images/ieremia-corrupt-heart.webp" width="900"/ title="Анатомическое сердце из тёмного гранита на чёрном камне — образ крайне испорченного, каменного сердца" srcset="../../images/ieremia-corrupt-heart-600w.webp 600w, ../../images/ieremia-corrupt-heart.webp 900w" sizes="(max-width: 640px) 600px, (max-width: 1024px) 900px, 900px">
+<img alt="Анатомическое сердце из тёмного гранита на чёрном камне — образ крайне испорченного, каменного сердца" decoding="async" height="900" loading="lazy" src="../../images/ieremia-corrupt-heart.webp" width="900"/ srcset="../../images/ieremia-corrupt-heart-600w.webp 600w, ../../images/ieremia-corrupt-heart.webp 900w" sizes="(max-width: 640px) 600px, (max-width: 1024px) 900px, 900px">
 <figcaption>«Грех… написан железным резцом» — след в самом строе сердца (Иер. 17:1)</figcaption>
 </figure>
 <p>Кальвин, комментируя Иер. 17:9, раскрывает подлинную остроту пророческого удара: народ думал, что сможет перехитрить Бога религиозными видимостями и собственной хитростью. Вот почему пророк тут же переходит к стиху 10 — только Господь, испытующий сердце, производит истинный суд над ним.<span class="fn-marker" role="button" tabindex="0" aria-label="Показать сноску">1<span class="tooltip">Calvin J. Commentary on Jeremiah («Комментарий на книгу Иеремии»). Vol. 2. Edinburgh: Calvin Translation Society, 1851. On Jer. 17:9</span></span> Самопознание без Божьего света здесь принципиально невозможно.</p>
-<p>Особенно важна фраза «на рогах жертвенников» (<em>קַרְנוֹת מִזְבְּחוֹתֵיכֶם</em>). Одни комментаторы видят здесь прежде всего идольские алтари — публичная, культовая выставленность греха. Другие настаивают на более острой иронии: речь может идти и об алтарях Господа, уже <em>осквернённых</em> идолопоклонством народа. Тогда смысл удваивается: люди несут свой грех именно туда, где должно происходить очищение. Контекст стиха — упоминание сыновей, помнящих жертвенники у зелёных дерев (17:2), — склоняет к тому, что речь идёт прежде всего об идольских местах; однако ирония осквернения законного поклонения присутствует в тексте как второй слой смысла и не исключается.</p>
+<p>Особенно важна фраза «на рогах жертвенников» (<em lang="he">קַרְנוֹת מִזְבְּחוֹתֵיכֶם</em>). Одни комментаторы видят здесь прежде всего идольские алтари — публичная, культовая выставленность греха. Другие настаивают на более острой иронии: речь может идти и об алтарях Господа, уже <em>осквернённых</em> идолопоклонством народа. Тогда смысл удваивается: люди несут свой грех именно туда, где должно происходить очищение. Контекст стиха — упоминание сыновей, помнящих жертвенники у зелёных дерев (17:2), — склоняет к тому, что речь идёт прежде всего об идольских местах; однако ирония осквернения законного поклонения присутствует в тексте как второй слой смысла и не исключается.</p>
 <p>Здесь один из самых глубоких моментов всей главы: <strong>внешняя религия не нейтральна</strong>. Она может стать не лекарством, а продолжением болезни. Чарльз Ходж формулирует этот контраст с хирургической точностью: <em>«Эти две вещи различаются по природе настолько, насколько чистое сердце отличается от чистой одежды»</em>.<span class="fn-marker" role="button" tabindex="0" aria-label="Показать сноску">27<span class="tooltip">Hodge C. Systematic Theology («Систематическое богословие»). Vol. III. Sanctification. §1</span></span> Внешняя реформация жизни — пусть и похвальная — не достигает того, что поражено грехом; она меняет одежду, не меняя человека.</p>
 <p>Давид Кларксон, ближайший соратник Джона Оуэна, в проповеди «Soul Idolatry Excludes Men Out of Heaven» (Еф. 5:5) даёт диагноз того, что именно происходит с сердцем, когда осквернение жертвенника становится внутренним. Применительно к возрождённым он различает три уровня: во-первых, <em>«в освящённых существует склонность и предрасположенность к этому идолопоклонству, как и к другим грехам»</em> — растленная природа остаётся «питомником» каждого греха. Во-вторых, <em>«они могут быть виновны в идолопоклоннических поступках и побуждениях»</em> — эта склонность может проявляться в действии. Но, в-третьих, — и это ключевое богословское различение, — <em>«это не господствующее, привычное идолопоклонство… именно господствующее привычное идолопоклонство (не то, которое состоит в некоторых беспорядочных поступках и побуждениях, которым сопротивляются, которые оплакиваются и прощаются) несовместимо с искренностью благодати»</em>.<span class="fn-marker" role="button" tabindex="0" aria-label="Показать сноску">36<span class="tooltip">Clarkson D. Soul Idolatry Excludes Men Out of Heaven («Идолопоклонство души лишает людей неба»). In: The Practical Works of David Clarkson. Vol. 2. Edinburgh: James Nichol, 1865. Pp. 299–333</span></span> Поэтому осквернённый жертвенник — это не только исторический Израиль; это диагноз того, что может происходить внутри сердца верующего, не замечающего своих идолов.</p>
 <p>Томас Бостон, разбирая природу падшего сердца в своей классической схеме «четырёх состояний» человека — невинность, падение, благодать, слава, — говорит прямо: <em>«Испорченное сердце было источником всего»</em>.<span class="fn-marker" role="button" tabindex="0" aria-label="Показать сноску">2<span class="tooltip">Boston T. Human Nature in its Fourfold State («Человеческая природа в четырёх состояниях»). Banner of Truth, 2020. P. 144</span></span> Эта лаконичность точно передаёт логику текста: все внешние проявления — идолы, притеснение, ложные союзы — лишь симптомы; источник — внутри.</p>
@@ -752,19 +798,19 @@ window.SITE_CONFIG = {
 <footer class="quote-attribution">— <cite>Иер. 17:5,7</cite></footer>
 </div>
 <figure class="article-img wide reveal">
-<img alt="Две картины: слева — иссохший куст на растрескавшейся земле под палящим солнцем, справа — могучее дерево у реки в золотом свете" decoding="async" height="900" loading="lazy" src="../../images/ieremia-two-trees.webp" width="900"/ title="Две картины: слева — иссохший куст на растрескавшейся земле под палящим солнцем, справа — могучее дерево у реки в золотом свете" srcset="../../images/ieremia-two-trees-600w.webp 600w, ../../images/ieremia-two-trees.webp 900w" sizes="(max-width: 640px) 600px, (max-width: 1024px) 900px, 900px">
+<img alt="Две картины: слева — иссохший куст на растрескавшейся земле под палящим солнцем, справа — могучее дерево у реки в золотом свете" decoding="async" height="900" loading="lazy" src="../../images/ieremia-two-trees.webp" width="900"/ srcset="../../images/ieremia-two-trees-600w.webp 600w, ../../images/ieremia-two-trees.webp 900w" sizes="(max-width: 640px) 600px, (max-width: 1024px) 900px, 900px">
 <figcaption>«Проклят надеющийся на человека… Благословен надеющийся на Господа» (Иер. 17:5–7)</figcaption>
 </figure>
 <p>Два образа жизни — куст в пустыне и дерево у воды — это не просто поэзия. Это онтология: речь идёт о том, <strong>откуда человек черпает жизнь</strong>. Вопрос не только «что я сделал?», но «кому я доверяю?», «что является источником моего существования?»</p>
 <p>На этом фоне стихи 9–10 звучат как диагностическое объяснение: <em>почему</em> человек снова и снова выбирает путь, ведущий в пустыню? Барнс формулирует этот структурный вопрос прямо: если путь благословения так ясно обозначен в стихах 7–8, почему человек так упорно делает плоть своей опорой? И отвечает: потому что сердце <strong>неспособно видеть прямо</strong> — оно полно изощрённой хитрости (<em>shrewd guile</em>) и постоянно норовит перехитрить самого себя.<span class="fn-marker" role="button" tabindex="0" aria-label="Показать сноску">3<span class="tooltip">Barnes A. Notes on the Bible («Заметки на Библию»). On Jer. 17:9</span></span> Ответ — в самом сердце.</p>
 <h2 id="serdce-istochnik-samoobmana">IV. Иеремия 17:9–10 — сердце как источник самообмана</h2>
 <figure class="article-img float-right reveal">
-<img alt="Лабиринт в форме сердца с огоньком в центре — символ обманчивости сердца" decoding="async" height="900" loading="lazy" src="../../images/ieremia-labyrinth.webp" width="900"/ title="Лабиринт в форме сердца с огоньком в центре — символ обманчивости сердца" srcset="../../images/ieremia-labyrinth-600w.webp 600w, ../../images/ieremia-labyrinth.webp 900w" sizes="(max-width: 640px) 600px, (max-width: 1024px) 900px, 900px">
+<img alt="Лабиринт в форме сердца с огоньком в центре — символ обманчивости сердца" decoding="async" height="900" loading="lazy" src="../../images/ieremia-labyrinth.webp" width="900"/ srcset="../../images/ieremia-labyrinth-600w.webp 600w, ../../images/ieremia-labyrinth.webp 900w" sizes="(max-width: 640px) 600px, (max-width: 1024px) 900px, 900px">
 <figcaption>Сердце как лабиринт самообмана — «кто познает его?» (Иер. 17:9)</figcaption>
 </figure>
 <p>Это центральный богословский момент всей главы. Еврейское слово <em>ʿāqōb</em> (עָקֹב) в 17:9 несёт значение «кривой», «обманчивый», «коварный» — от того же корня, что и имя Иаков (<em>Яаков</em>, יַעֲקֹב): тот, кто хватает за пятку, обходит сзади, ускользает. Джеймисон, Фоссет и Браун замечают здесь важную иронию: обличая <em>обманчивость</em> сердца иудеев, Иеремия использует именно это слово намеренно — народ унаследовал от праотца не его веру, а его хитрость. Но с обратным знаком: Иаков хитрил <em>ради</em> благословения Господа, они же хитростью <em>заменяют</em> Господа доверием к плоти, думая при этом, что Бог этого не заметит.<span class="fn-marker" role="button" tabindex="0" aria-label="Показать сноску">4<span class="tooltip">Jamieson R., Fausset A.R., Brown D. Commentary Critical and Explanatory on the Whole Bible («Критический и толковательный комментарий на всю Библию»). On Jer. 17:9</span></span> Второе ключевое слово стиха — <em>ʾānûš</em> (אָנֻשׁ), которое Синодальный перевод передаёт как «крайне испорчено». Академический лексикон <strong>HALOT</strong> (Hebrew and Aramaic Lexicon of the Old Testament) определяет его как «incurable, desperate, severe» (неисцелимый, безнадёжный, тяжёлый). Пророк смещает фокус с морального коварства (<em>ʿāqōb</em>) на терминальную духовную патологию. Параллельное использование этого слова у самого Иеремии не оставляет сомнений: «рана твоя неисцелима (<em>ʾānûš</em>)» (Иер. 15:18, 30:12); у Михея 1:9 — «неисцелимы (<em>ʾānûš</em>) раны её». Это экзегетический уровень, на котором настаивает классическая реформатская школа (в духе The Master’s Seminary): пророк ставит диагноз, разрушающий любые формы пелагианства или полупелагианства. Сердце не просто «ошибается», оно <strong>смертельно больно и не способно исцелить само себя</strong>. Человеческая медицина бессильна. Кейль и Делич фиксируют это прямо: «опасно больное, неисцелимое... поэтому человек не должен доверять внушениям и иллюзиям своего сердца».<span class="fn-marker" role="button" tabindex="0" aria-label="Показать сноску">5<span class="tooltip">Keil C.F., Delitzsch F. Biblical Commentary on the Old Testament: Jeremiah. T&amp;T Clark, 1866. См. также: Koehler L., Baumgartner W. HALOT. Brill, 2001. P. 71</span></span> Этот двойной диагноз (обманчивое и неизлечимое) создаёт абсолютную богословскую необходимость для Нового завета — Богу придётся не «ремонтировать» ветхое сердце, а дать <em>новое</em> (Иез. 36:26).</p>
 <p>Кальвин тонко замечает: пророк здесь не просто сообщает абстрактную истину о природе человека. Он обличает народ, <em>который думает, будто сумеет перехитрить Бога религиозными видимостями</em>. Смысл удара: вы можете обманывать себя — но не Бога.</p>
-<p>Именно поэтому стих 10 так же важен, как и стих 9. Бог <strong>«испытывает сердце и испытывает внутренности»</strong> (<em>בֹּחֵן לֵב וּבֹחֵן כְּלָיֹות</em>). Человек может быть обманут собой — Господь нет. Истинное самопознание потому не начинается с автономного самоанализа; оно начинается с того, что человек встаёт под Божий свет. Именно об этом Псалом 138 (139) в своей финальной молитве: «Испытай меня, Боже, и узнай сердце моё… и направь меня на путь вечный» (Пс. 138:23–24) — это прямой ответ Писания на диагноз Иер. 17:9–10.</p>
+<p>Именно поэтому стих 10 так же важен, как и стих 9. Бог <strong>«испытывает сердце и испытывает внутренности»</strong> (<em lang="he">בֹּחֵן לֵב וּבֹחֵן כְּלָיֹות</em>). Человек может быть обманут собой — Господь нет. Истинное самопознание потому не начинается с автономного самоанализа; оно начинается с того, что человек встаёт под Божий свет. Именно об этом Псалом 138 (139) в своей финальной молитве: «Испытай меня, Боже, и узнай сердце моё… и направь меня на путь вечный» (Пс. 138:23–24) — это прямой ответ Писания на диагноз Иер. 17:9–10.</p>
 <p>Сперджен описывает механизм этого самообмана без прикрас: <em>«Наше обманчивое сердце обнаруживает почти сатанинскую хитрость в самообмане — оно охотно заставляет худшее казаться лучшим доводом и излагает ложь так, что она принимает облик истины»</em>.<span class="fn-marker" role="button" tabindex="0" aria-label="Показать сноску">6<span class="tooltip">Spurgeon C.H. Sermon 1241: Honest Dealing with God («Честные отношения с Богом»). Metropolitan Tabernacle Pulpit, Vol. 21. London: Passmore &amp; Alabaster, 1875</span></span> Это не риторическое преувеличение — это верная характеристика сердца, о котором говорит Иеремия: оно не просто грешит, оно <strong>готовит себе обоснование для падения. Самый опасный момент — не когда сердце согрешило, а когда оно уже нашло для этого богословие</strong>.</p>
 <div class="quote-box">
       Наше обманчивое сердце обнаруживает почти сатанинскую хитрость в самообмане — оно охотно заставляет худшее казаться лучшим доводом.
@@ -776,14 +822,14 @@ window.SITE_CONFIG = {
       <footer class="quote-attribution">— <cite>Жан Кальвин · Institutes, I.11.8</cite></footer>
 </div>
 <figure class="article-img float-right reveal">
-<img alt="Тёмная кузница — светящееся сердце куётся на наковальне при свете свечи" decoding="async" height="900" loading="lazy" src="../../images/ieremia-forge.webp" width="900"/ title="Тёмная кузница — светящееся сердце куётся на наковальне при свете свечи" srcset="../../images/ieremia-forge-600w.webp 600w, ../../images/ieremia-forge.webp 900w" sizes="(max-width: 640px) 600px, (max-width: 1024px) 900px, 900px">
+<img alt="Тёмная кузница — светящееся сердце куётся на наковальне при свете свечи" decoding="async" height="900" loading="lazy" src="../../images/ieremia-forge.webp" width="900"/ srcset="../../images/ieremia-forge-600w.webp 600w, ../../images/ieremia-forge.webp 900w" sizes="(max-width: 640px) 600px, (max-width: 1024px) 900px, 900px">
 <figcaption>«Человеческий ум есть непрестанная кузница идолов» — Кальвин, Inst. I.11.8</figcaption>
 </figure>
 <p>Таким образом, Иер. 17:1–4 и Иер. 17:9–10 описывают одну реальность в двух регистрах. В первом случае грех — это <strong>надпись</strong>, уже выгравированная в человеке и его поклонении. Во втором — <strong>сердце</strong> как источник самообмана, из которого и растёт эта жизнь. Грех у Иеремии — это одновременно и <em>вина</em>, и <em>внутренняя сила</em>; и <em>поступок</em>, и <em>привязанность</em>; и <em>нравственное зло</em>, и <em>ложная религия</em>. Эти два измерения нельзя разрывать. Внешняя реформа без сердечного обновления не решает проблему — она лишь переносит гравюру на другую поверхность.</p>
 <p>Джон Флавел, размышляя над Притч. 4:23 («Больше всего хранимого храни сердце твоё, потому что из него источники жизни»), формулирует: <em>«Сердце человека — его худшая часть до возрождения и лучшая после: оно есть средоточие принципов и источник действий»</em>.<span class="fn-marker" role="button" tabindex="0" aria-label="Показать сноску">11<span class="tooltip">Flavel J. Keeping the Heart («Хранение сердца»). Ch. 1. Monergism Books, 2021. P. 3</span></span> Эта полярность важна: Флавел не упрощает ни одну из сторон. До возрождения сердце — источник всего зла; после — источник всего подлинно доброго. Но в обоих случаях именно <em>сердце</em> определяет траекторию.</p>
 <h2 id="otnositsya-li-k-veruyushchemu">V. Относится ли Иеремия 17:9 к верующему?</h2>
 <figure class="article-img float-left reveal">
-<img alt="Человек с пылающим живым сердцем, вырывающимся из каменной оболочки — образ обновлённого сердца, данного Богом" decoding="async" height="1024" loading="lazy" src="../../images/ieremia-new-heart.webp" width="1024"/ title="Человек с пылающим живым сердцем, вырывающимся из каменной оболочки — образ обновлённого сердца, данного Богом" srcset="../../images/ieremia-new-heart-600w.webp 600w, ../../images/ieremia-new-heart-900w.webp 900w, ../../images/ieremia-new-heart.webp 1024w" sizes="(max-width: 640px) 600px, (max-width: 1024px) 900px, 1024px">
+<img alt="Человек с пылающим живым сердцем, вырывающимся из каменной оболочки — образ обновлённого сердца, данного Богом" decoding="async" height="1024" loading="lazy" src="../../images/ieremia-new-heart.webp" width="1024"/ srcset="../../images/ieremia-new-heart-600w.webp 600w, ../../images/ieremia-new-heart-900w.webp 900w, ../../images/ieremia-new-heart.webp 1024w" sizes="(max-width: 640px) 600px, (max-width: 1024px) 900px, 1024px">
 <figcaption>«Дам вам сердце новое» — Иез. 36:26; Иер. 31:33</figcaption>
 </figure>
 <p>Здесь требуется максимальная аккуратность — и богословская, и пастырская. <strong>Первичный смысл</strong> Иер. 17:9 — описание падшего, отвратившегося от Господа сердца; в контексте главы это сердце, которое предпочитает доверие плоти доверию Богу. В этом смысле стих прямо описывает человека вне обновляющей благодати. <span class="gterm" tabindex="0">Гейдельбергский катехизис<span class="gtip">Реформатский катехизис 1563 г. (Гейдельберг, Германия), составленный Захарием Урсином и Каспаром Олевианом. 129 вопросов-ответов в трёхчастной схеме: «вина» — «освобождение» — «благодарность». Один из трёх символических книг реформатских церквей наряду с Бельгийским исповеданием и Дордрехтскими канонами.</span></span> формулирует тот же диагноз: падшая природа «совершенно неспособна к какому-либо добру и склонна ко всякому злу».<span class="fn-marker" role="button" tabindex="0" aria-label="Показать сноску">12<span class="tooltip">Гейдельбергский катехизис. Вопрос 8</span></span> Это не приговор для верующего — это точка отсчёта, от которой начинается исцеление благодатью.</p>
@@ -794,7 +840,7 @@ window.SITE_CONFIG = {
 <li><em>«Дам вам сердце новое и дух новый вложу в вас; возьму из плоти вашей сердце каменное и дам вам сердце плотяное»</em> (Иез. 36:26)</li>
 </ul>
 <figure class="article-img float-right reveal float-right--sm">
-<img alt="Каменное сердце в трещинах с пробивающейся зеленью и огненной молнией — образ сердца на пороге обновления" class="img-crop-portrait" decoding="async" height="600" loading="lazy" src="../../images/ieremia-awakening-heart.webp" width="900"/ title="Каменное сердце в трещинах с пробивающейся зеленью и огненной молнией — образ сердца на пороге обновления" srcset="../../images/ieremia-awakening-heart-600w.webp 600w, ../../images/ieremia-awakening-heart.webp 900w" sizes="(max-width: 640px) 600px, (max-width: 1024px) 900px, 900px">
+<img alt="Каменное сердце в трещинах с пробивающейся зеленью и огненной молнией — образ сердца на пороге обновления" class="img-crop-portrait" decoding="async" height="600" loading="lazy" src="../../images/ieremia-awakening-heart.webp" width="900"/ srcset="../../images/ieremia-awakening-heart-600w.webp 600w, ../../images/ieremia-awakening-heart.webp 900w" sizes="(max-width: 640px) 600px, (max-width: 1024px) 900px, 900px">
 <figcaption>Сердце на переломе: ещё каменное, но жизнь уже пробивается — «Дам вам сердце новое» (Иез. 36:26)</figcaption>
 </figure>
 <p>Важно отметить: в своём первоначальном контексте Иез. 36 говорит о национальном восстановлении Израиля. Новый завет применяет это обетование к индивидуальному и духовному уровню — именно так Евр. 8 и Ин. 3 читают заветные пророчества Иеремии и Иезекииля как исполнившиеся во Христе.</p>
@@ -802,7 +848,7 @@ window.SITE_CONFIG = {
 <p>Поэтому о христианине нельзя говорить: «его сердце совершенно такое же, как у невозрождённого». В новом рождении человек получает <em>реальную</em> новизну: прощение, Духа Святого и новое внутреннее начало.
 
     <figure class="article-img float-left reveal">
-<img alt="Слева — человек перед грозными каменными скрижалями под молнией; справа — Христос с сияющим сердцем в груди" decoding="async" height="1024" loading="lazy" src="../../images/ieremia-tablets.webp" width="1024"/ title="Слева — человек перед грозными каменными скрижалями под молнией; справа — Христос с сияющим сердцем в груди" srcset="../../images/ieremia-tablets-600w.webp 600w, ../../images/ieremia-tablets-900w.webp 900w, ../../images/ieremia-tablets.webp 1024w" sizes="(max-width: 640px) 600px, (max-width: 1024px) 900px, 1024px">
+<img alt="Слева — человек перед грозными каменными скрижалями под молнией; справа — Христос с сияющим сердцем в груди" decoding="async" height="1024" loading="lazy" src="../../images/ieremia-tablets.webp" width="1024"/ srcset="../../images/ieremia-tablets-600w.webp 600w, ../../images/ieremia-tablets-900w.webp 900w, ../../images/ieremia-tablets.webp 1024w" sizes="(max-width: 640px) 600px, (max-width: 1024px) 900px, 1024px">
 <figcaption>Ветхий завет — закон снаружи; Новый завет — закон написан внутри (Евр. 8:10)</figcaption>
 </figure>
 
@@ -815,7 +861,7 @@ window.SITE_CONFIG = {
 <p>Разговор о верующем и <span class="gterm" tabindex="0">остаточном грех<span class="gtip">В реформатском богословии: греховная склонность, остающаяся в возрождённом верующем после обращения. Грех не господствует над ним (Рим. 6:14), но продолжает присутствовать и требует постоянного умерщвления (Рим. 8:13; Гал. 5:17). Кальвин: «Возрождённые не свободны от этой порчи, однако грех не господствует в них, но ежедневно умерщвляется» (Наставление, 2.3.11).</span></span>е неизбежно выводит к Рим. 7 — одному из самых дискутируемых мест во всём корпусе Павловых посланий. Кто произносит там слова <em>«не то делаю, что хочу, а что ненавижу — то делаю»</em> (Рим. 7:15)? Реформатская традиция — Лютер, Кальвин, Оуэн, Ходж, Беркхоф, Мюррей, МакАртур, Пайпер — читает эти слова как описание опыта верующего, ведущего реальную войну с <span class="gterm" tabindex="0">остаточным грех<span class="gtip">В реформатском богословии: греховная склонность, остающаяся в возрождённом верующем после обращения. Грех не господствует над ним (Рим. 6:14), но продолжает присутствовать и требует постоянного умерщвления (Рим. 8:13; Гал. 5:17). Кальвин: «Возрождённые не свободны от этой порчи, однако грех не господствует в них, но ежедневно умерщвляется» (Наставление, 2.3.11).</span></span>ом. Ходж аргументирует эту позицию прямо: <em>«Нет ни одного верующего, даже самого святого, который не был бы вынужден говорить о себе так, как Павел здесь говорит»</em>.<span class="fn-marker" role="button" tabindex="0" aria-label="Показать сноску">28<span class="tooltip">Hodge C. Systematic Theology («Систематическое богословие»). Vol. III. Sanctification. §2: «Paul details his own Experience in Romans vii. 7-25»</span></span> МакАртур в той же точке заключает: <em>«Эта борьба здесь — явно борьба возрождённого человека… Это не может быть неискупленный человек»</em>.<span class="fn-marker" role="button" tabindex="0" aria-label="Показать сноску">29<span class="tooltip">MacArthur J. The Believer and Indwelling Sin («Верующий и живущий внутри грех»), Part 2. GTY.org, sermon 45-53, 1983</span></span> Ряд других богословов — Шрайнер, Н. Т. Райт, Мо, а из русскоязычных — Прокопенко — видит здесь невозрождённого; причём Прокопенко уточняет: не просто любого неверующего, а религиозного, просвещённого законом человека — искренне борющегося, но ещё без Христа и без силы победы. Ллойд-Джонс предложил третью позицию: человек на пороге, ещё не вошедший в реальность Рим. 8. При любом прочтении выход один: «нет ныне никакого осуждения тем, которые во Христе Иисусе» (Рим. 8:1). Подробный разбор этой дискуссии — предмет следующей статьи о Рим. 7–8.</p>
 <h2 id="chto-izmenilos">VI. Что изменилось у верующего — и что ещё не исчезло</h2>
 <figure class="article-img wide reveal">
-<img alt="Живое пылающее сердце вырывается из каменной оболочки — образ нового сердца, данного Богом взамен каменного" decoding="async" height="600" loading="lazy" src="../../images/ieremia-breakthrough-heart.webp" width="900"/ title="Живое пылающее сердце вырывается из каменной оболочки — образ нового сердца, данного Богом взамен каменного" srcset="../../images/ieremia-breakthrough-heart-600w.webp 600w, ../../images/ieremia-breakthrough-heart.webp 900w" sizes="(max-width: 640px) 600px, (max-width: 1024px) 900px, 900px">
+<img alt="Живое пылающее сердце вырывается из каменной оболочки — образ нового сердца, данного Богом взамен каменного" decoding="async" height="600" loading="lazy" src="../../images/ieremia-breakthrough-heart.webp" width="900"/ srcset="../../images/ieremia-breakthrough-heart-600w.webp 600w, ../../images/ieremia-breakthrough-heart.webp 900w" sizes="(max-width: 640px) 600px, (max-width: 1024px) 900px, 900px">
 <figcaption>«Возьму из плоти вашей сердце каменное и дам вам сердце плотяное» (Иез. 36:26)</figcaption>
 </figure>
 <p>У верующего изменилось главное: <strong>направление сердца</strong>. Дух Святой обращает его к Богу, делает возможными веру, покаяние, любовь к святости и ненависть ко греху. Новое сердце — это не метафора. Это заветная реальность.</p>
@@ -830,10 +876,10 @@ window.SITE_CONFIG = {
 <p><strong>Третий голос — раненая совесть</strong> (Евр. 10:22; Рим. 2:15). Оуэн делает тонкое различение, которое здесь особенно важно: прощение во Христе убирает не болезненность совести, а только её право выносить приговор <em>личности</em>. Совесть верующего продолжает осуждать конкретный грех как зло — и должна это делать. Но она уже не вправе, в свете Евангелия, заключать: «ты отвергнут Богом». Поэтому острая совесть — не свидетельство потери спасения; это свидетельство того, что новое сердце живо.</p>
 <p><strong>Четвёртый голос — богословское недоверие Богу</strong> (1 Ин. 5:10; Евр. 3:12). Это не просто раненая совесть и не сатанинская атака — это грех неверия, когда человек <em>отказывается</em> принять свидетельство Христа о принятии, убеждая себя, что Рим. 8:1 применимо к другим, но не к нему. Ответ здесь — не самоанализ, а взгляд веры на обещания Евангелия.</p>
 <p>Различение этих четырёх голосов — не теоретический вопрос; это практический центр духовного бодрствования. Смешивая их, человек рискует либо притупить совесть там, где нужно покаяние, либо впасть в отчаяние там, где нужно указание на кровь Христа.</p>
-<p>Здесь необходимо чуть подробнее остановиться на самих понятиях — потому что именно их смешение порождает путаницу. <strong>Что такое плоть (σάρξ)?</strong> В Новом завете «плоть» — это не просто тело и не чувственность как таковая. Луис Беркхоф определяет: «Плоть в этическом смысле обозначает всего человека в той мере, в какой он управляется греховным началом, обитающим в нём и проявляющимся во всех его способностях».<span class="fn-marker" role="button" tabindex="0" aria-label="Показать сноску">15<span class="tooltip">Berkhof L. Systematic Theology («Систематическое богословие»). Eerdmans, 1939. P. 427</span></span> Джон Мюррей в комментарии на Рим. 7:18 уточняет применительно к верующему: «"Плоть" у Павла, когда применяется к верующим, обозначает не физическое тело, но <span class="gterm" tabindex="0">остаточную порчу<span class="gtip">В реформатском богословии: греховная склонность, остающаяся в возрождённом верующем после обращения. Грех не господствует над ним (Рим. 6:14), но продолжает присутствовать и требует постоянного умерщвления (Рим. 8:13; Гал. 5:17). Кальвин: «Возрождённые не свободны от этой порчи, однако грех не господствует в них, но ежедневно умерщвляется» (Наставление, 2.3.11).</span></span> ветхой природы. Это греховное начало, которое продолжает обитать в верующем и должно умерщвляться Духом».<span class="fn-marker" role="button" tabindex="0" aria-label="Показать сноску">16<span class="tooltip">Murray J. The Epistle to the Romans («Послание к Римлянам»). NICNT, Vol. 1. Eerdmans, 1959. P. 268 (on Rom. 7:18)</span></span> То есть плоть — это не «низшая» часть человека против «высшей», а весь человек, ориентированный на себя и противостоящий Богу. Не случайно Иеремия говорит: «проклят человек, который… плоть делает своею опорою» (17:5) — речь идёт не о теле, а о направлении воли и доверия.</p>
+<p>Здесь необходимо чуть подробнее остановиться на самих понятиях — потому что именно их смешение порождает путаницу. <strong lang="el">Что такое плоть (σάρξ)?</strong> В Новом завете «плоть» — это не просто тело и не чувственность как таковая. Луис Беркхоф определяет: «Плоть в этическом смысле обозначает всего человека в той мере, в какой он управляется греховным началом, обитающим в нём и проявляющимся во всех его способностях».<span class="fn-marker" role="button" tabindex="0" aria-label="Показать сноску">15<span class="tooltip">Berkhof L. Systematic Theology («Систематическое богословие»). Eerdmans, 1939. P. 427</span></span> Джон Мюррей в комментарии на Рим. 7:18 уточняет применительно к верующему: «"Плоть" у Павла, когда применяется к верующим, обозначает не физическое тело, но <span class="gterm" tabindex="0">остаточную порчу<span class="gtip">В реформатском богословии: греховная склонность, остающаяся в возрождённом верующем после обращения. Грех не господствует над ним (Рим. 6:14), но продолжает присутствовать и требует постоянного умерщвления (Рим. 8:13; Гал. 5:17). Кальвин: «Возрождённые не свободны от этой порчи, однако грех не господствует в них, но ежедневно умерщвляется» (Наставление, 2.3.11).</span></span> ветхой природы. Это греховное начало, которое продолжает обитать в верующем и должно умерщвляться Духом».<span class="fn-marker" role="button" tabindex="0" aria-label="Показать сноску">16<span class="tooltip">Murray J. The Epistle to the Romans («Послание к Римлянам»). NICNT, Vol. 1. Eerdmans, 1959. P. 268 (on Rom. 7:18)</span></span> То есть плоть — это не «низшая» часть человека против «высшей», а весь человек, ориентированный на себя и противостоящий Богу. Не случайно Иеремия говорит: «проклят человек, который… плоть делает своею опорою» (17:5) — речь идёт не о теле, а о направлении воли и доверия.</p>
 <p><strong>Есть ли плоть у неверующего?</strong> Да — и только она. До возрождения человек есть целиком плоть в этом смысле: его воля, разум, чувства и поклонение ориентированы от Бога. <span class="gterm" tabindex="0">Гейдельбергский катехизис<span class="gtip">Реформатский катехизис 1563 г. (Гейдельберг, Германия), составленный Захарием Урсином и Каспаром Олевианом. 129 вопросов-ответов в трёхчастной схеме: «вина» — «освобождение» — «благодарность». Один из трёх символических книг реформатских церквей наряду с Бельгийским исповеданием и Дордрехтскими канонами.</span></span> говорит прямо: падший человек «совершенно неспособен к какому-либо добру и склонён ко всякому злу» (В. 8). Это не означает, что неверующий не способен ни на что достойное в человеческих отношениях — но в отношении Бога, в движении к Нему, его сердце мертво (Еф. 2:1). Иер. 17:9 («сердце обманчиво более всего») описывает именно это состояние как исходное.</p>
 <figure class="article-img float-right reveal">
-<img alt="Каменное анатомическое сердце с первой светящейся трещиной — начало оживания" decoding="async" height="1024" loading="lazy" src="../../images/ieremia-stone-heart.webp" width="1536"/ title="Каменное анатомическое сердце с первой светящейся трещиной — начало оживания" srcset="../../images/ieremia-stone-heart-600w.webp 600w, ../../images/ieremia-stone-heart-900w.webp 900w, ../../images/ieremia-stone-heart.webp 1536w" sizes="(max-width: 640px) 600px, (max-width: 1024px) 900px, 1536px">
+<img alt="Каменное анатомическое сердце с первой светящейся трещиной — начало оживания" decoding="async" height="1024" loading="lazy" src="../../images/ieremia-stone-heart.webp" width="1536"/ srcset="../../images/ieremia-stone-heart-600w.webp 600w, ../../images/ieremia-stone-heart-900w.webp 900w, ../../images/ieremia-stone-heart.webp 1536w" sizes="(max-width: 640px) 600px, (max-width: 1024px) 900px, 1536px">
 <figcaption>Свет зажигается в каменном сердце — «возьму из плоти вашей сердце каменное» (Иез. 36:26)</figcaption>
 </figure>
 <p><strong>Что такое новая природа — и когда она появляется?</strong> Новая природа — это не «улучшенная версия» старой и не отдельный «отсек» внутри человека. Это новое начало, вложенное Духом Святым при возрождении: новое сердце (Иез. 36:26), написанный внутри закон (Иер. 31:33), новая склонность к Богу, которой прежде не было. <span class="gterm" tabindex="0">Гейдельбергский катехизис<span class="gtip">Реформатский катехизис 1563 г. (Гейдельберг, Германия), составленный Захарием Урсином и Каспаром Олевианом. 129 вопросов-ответов в трёхчастной схеме: «вина» — «освобождение» — «благодарность». Один из трёх символических книг реформатских церквей наряду с Бельгийским исповеданием и Дордрехтскими канонами.</span></span> описывает это как «оживание нового человека» — «сердечная радость о Боге во Христе и желание жить по воле Его» (В. 90). Это не постепенный процесс воспитания, а мгновенное действие Бога: регенерация, которая затем раскрывается в прогрессивном освящении.</p>
@@ -844,10 +890,10 @@ window.SITE_CONFIG = {
 <p>Ходж даёт структурную формулу того, в чём состоит сама эта борьба — и чем она должна завершиться: <em>«Освящение состоит в двух вещах: во-первых, во всё большем устранении принципов зла, всё ещё заражающих нашу природу, и уничтожении их силы; и, во-вторых, в росте духовного начала жизни до тех пор, пока оно не возьмёт под контроль мысли, чувства и поступки и не приведёт душу в соответствие образу Христа»</em>.<span class="fn-marker" role="button" tabindex="0" aria-label="Показать сноску">31<span class="tooltip">Hodge C. Systematic Theology («Систематическое богословие»). Vol. III. Sanctification. §2: «Putting off the Old, and putting on the New Man»</span></span> При этом Ходж подчёркивает: в каждом христианине «есть смесь добра и зла; что первоначальное растление природы не полностью удаляется возрождением… его самолюбие, гордость, недовольство, мирские привязанности всё ещё цепляются за него и мучают его».<span class="fn-marker" role="button" tabindex="0" aria-label="Показать сноску">32<span class="tooltip">Hodge C. Systematic Theology («Систематическое богословие»). Vol. III. Sanctification. §2: «What Romans vii. 7-25 teaches»</span></span> Это не риторическое преувеличение — это богословская карта того, что конкретно остаётся в сердце возрождённого.</p>
 <h2 id="kak-greh-stanovitsya-strukturoy">VII. Как грех становится структурой</h2>
 <figure class="article-img float-right reveal">
-<img alt="Тихое озеро на закате — спокойная поверхность скрывает тёмные течения в глубине" decoding="async" height="900" loading="lazy" src="../../images/ieremia-still-waters.webp" width="900"/ title="Тихое озеро на закате — спокойная поверхность скрывает тёмные течения в глубине" srcset="../../images/ieremia-still-waters-600w.webp 600w, ../../images/ieremia-still-waters.webp 900w" sizes="(max-width: 640px) 600px, (max-width: 1024px) 900px, 900px">
+<img alt="Тихое озеро на закате — спокойная поверхность скрывает тёмные течения в глубине" decoding="async" height="900" loading="lazy" src="../../images/ieremia-still-waters.webp" width="900"/ srcset="../../images/ieremia-still-waters-600w.webp 600w, ../../images/ieremia-still-waters.webp 900w" sizes="(max-width: 640px) 600px, (max-width: 1024px) 900px, 900px">
 <figcaption>«Его воды большей частью глубоки там, где они неподвижны» — Джон Оуэн</figcaption>
 </figure>
-<p>У греха есть способность превращаться из <strong>акта</strong> в <strong>структуру</strong>. Всякий поступок оставляет след в самом делающем; зло облегчает собственное повторение, ослабляет сопротивление и тянет за собой новые формы зла. Это близко к библейской логике <em>ожесточения</em> (<em>קָשָׁה לֵב</em>, «каша лев» — «ожесточить сердце»): человек сначала делает грех — а потом грех начинает «делать» человека.</p>
+<p>У греха есть способность превращаться из <strong>акта</strong> в <strong>структуру</strong>. Всякий поступок оставляет след в самом делающем; зло облегчает собственное повторение, ослабляет сопротивление и тянет за собой новые формы зла. Это близко к библейской логике <em>ожесточения</em> (<em lang="he">קָשָׁה לֵב</em>, «каша лев» — «ожесточить сердце»): человек сначала делает грех — а потом грех начинает «делать» человека.</p>
 <p>Оуэн разбирает этот процесс беспощадно: <em>«Грех всегда действует, всегда замышляет, всегда соблазняет и искушает. Кто может сказать, что когда-либо имел дело с Богом или для Бога, и при этом живущий в нём грех не приложил руку к порче того, что он делал?»</em> (<em>Of the Mortification of Sin in Believers</em> («Об умерщвлении греха в верующих»), ch. 2).</p>
 <p>Особенно важен образ о «тихих водах»: <em>«Когда грех оставляет нас в покое, мы, может быть, готовы оставить грех в покое; но грех никогда не бывает менее тих, чем когда кажется наиболее тихим, и его воды большей частью глубоки там, где они неподвижны»</em> (там же). Видимое затишье духовной жизни — один из самых опасных периодов. Именно тогда кальвинская «кузница идолов» работает наиболее незаметно.</p>
 <div class="quote-box">
@@ -865,7 +911,7 @@ window.SITE_CONFIG = {
 <p>Герман Бавинк даёт формулу, которая помогает удержать этот баланс на уровне идентичности: в возрождённом человеке «Я» обновлено и теперь стоит на стороне Бога — грех стал чужеродной силой, которой новое «Я» противостоит, а не частью того, кем верующий является во Христе (<em>Reformed Dogmatics</em>, vol. 4). Отсюда и богословская разрушительность первой ошибки: она заставляет человека отождествлять себя с грехом, тогда как Писание отождествляет его с новым творением.</p>
 <h2 id="praktika">IX. Практика: как жить с этим диагнозом</h2>
 <figure class="article-img wide reveal">
-<img alt="Силуэт человека на коленях перед крестом на холме в лучах золотого света" decoding="async" height="900" loading="lazy" src="../../images/ieremia-cross.webp" width="900"/ title="Силуэт человека на коленях перед крестом на холме в лучах золотого света" srcset="../../images/ieremia-cross-600w.webp 600w, ../../images/ieremia-cross.webp 900w" sizes="(max-width: 640px) 600px, (max-width: 1024px) 900px, 900px">
+<img alt="Силуэт человека на коленях перед крестом на холме в лучах золотого света" decoding="async" height="900" loading="lazy" src="../../images/ieremia-cross.webp" width="900"/ srcset="../../images/ieremia-cross-600w.webp 600w, ../../images/ieremia-cross.webp 900w" sizes="(max-width: 640px) 600px, (max-width: 1024px) 900px, 900px">
 <figcaption>«Пусть вера непрестанно смотрит и взирает на Христа в Его смерти» — Джон Оуэн</figcaption>
 </figure>
 <h3>1. Учиться исповедовать не только поступки, но и корни</h3>
@@ -886,7 +932,7 @@ window.SITE_CONFIG = {
 <p>Потому-то Псалом 138 (139) и становится образцом правильного самоиспытания: «Испытай меня, Боже» — это не невротическое самокопание, а молитва, направленная <em>вовне</em>, к Тому, Кто испытывает сердце и видит его насквозь. Диагноз Иер. 17:9 ведёт не к отчаянию, а к молитве. И молитва эта смотрит не в бездну, а на Того, Кто стоит над ней.</p>
 <h2 id="velikaya-nadezhda">X. Великая надежда: Бог пишет поверх того, что не смогли стереть мы</h2>
 <figure class="article-img float-right reveal">
-<img alt="Иссохшая растрескавшаяся земля и источник воды посреди неё под лучом света сквозь тучи" decoding="async" height="900" loading="lazy" src="../../images/ieremia-desert-spring.webp" width="900"/ title="Иссохшая растрескавшаяся земля и источник воды посреди неё под лучом света сквозь тучи" srcset="../../images/ieremia-desert-spring-600w.webp 600w, ../../images/ieremia-desert-spring.webp 900w" sizes="(max-width: 640px) 600px, (max-width: 1024px) 900px, 900px">
+<img alt="Иссохшая растрескавшаяся земля и источник воды посреди неё под лучом света сквозь тучи" decoding="async" height="900" loading="lazy" src="../../images/ieremia-desert-spring.webp" width="900"/ srcset="../../images/ieremia-desert-spring-600w.webp 600w, ../../images/ieremia-desert-spring.webp 900w" sizes="(max-width: 640px) 600px, (max-width: 1024px) 900px, 900px">
 <figcaption>«Он может обратить иссохшую почву моей души в водоём» — Джон Оуэн</figcaption>
 </figure>
 <p>Если бы книга Иеремии заканчивалась 17-й главой — оставалось бы только отчаяние. Но она идёт дальше. Господь обещает <strong>написать Свой закон на сердце</strong>, дать одно сердце и один путь, заменить каменное сердце живым. Отличие Нового завета именно в этом: Божья воля уже не предъявляется человеку только извне — она <strong>внутренно вкладывается в него как жизненный принцип</strong>. И Евреям 8 свидетельствует: это уже наступило.</p>
@@ -904,7 +950,7 @@ window.SITE_CONFIG = {
 <div aria-label="Нажмите, чтобы перевернуть карточку" class="heart-flip-card" role="button" tabindex="0">
 <div class="heart-flip-inner">
 <div class="heart-flip-front">
-<img alt="Тёмное анатомическое сердце с огненными трещинами и разорванными цепями — образ сердца, освобождённого благодатью" decoding="async" height="1024" loading="lazy" src="../../images/ieremia-chained-heart.webp" width="1536"/ title="Тёмное анатомическое сердце с огненными трещинами и разорванными цепями — образ сердца, освобождённого благодатью" srcset="../../images/ieremia-chained-heart-600w.webp 600w, ../../images/ieremia-chained-heart-900w.webp 900w, ../../images/ieremia-chained-heart.webp 1536w" sizes="(max-width: 640px) 600px, (max-width: 1024px) 900px, 1536px">
+<img alt="Тёмное анатомическое сердце с огненными трещинами и разорванными цепями — образ сердца, освобождённого благодатью" decoding="async" height="1024" loading="lazy" src="../../images/ieremia-chained-heart.webp" width="1536"/ srcset="../../images/ieremia-chained-heart-600w.webp 600w, ../../images/ieremia-chained-heart-900w.webp 900w, ../../images/ieremia-chained-heart.webp 1536w" sizes="(max-width: 640px) 600px, (max-width: 1024px) 900px, 1536px">
 <div class="heart-flip-hint">
 <span class="heart-flip-hint-icon">👆</span>
 <span class="heart-flip-hint-text">Переверни</span>
@@ -1010,7 +1056,7 @@ window.SITE_CONFIG = {
 <p><em>«Я не понимаю, как человек может быть истинно верующим, если грех не является для него величайшим бременем, скорбью и мукой»</em> — пишет Оуэн.<span class="fn-marker" role="button" tabindex="0" aria-label="Показать сноску">26<span class="tooltip">Owen J. Of Indwelling Sin in Believers («О грехе, живущем в верующих»). Works Vol. 6. Banner of Truth, 1965</span></span> И тут же — обратная сторона той же монеты: сам факт, что грех стал мукой, уже говорит о благодати: камень не страдает от собственной каменности.</p>
 <p>Бог разверз бездну не затем, чтобы мы в ней погибли, — а затем, чтобы мы наконец увидели, <strong>как глубоко должен был сойти Христос, чтобы нас достать.</strong></p>
 <figure class="article-img rescue-figure">
-<img alt="Христос протягивает руку человеку над бездной" decoding="async" height="1024" loading="lazy" src="../../images/ieremia-rescue.webp" width="1536"/ title="Христос протягивает руку человеку над бездной" srcset="../../images/ieremia-rescue-600w.webp 600w, ../../images/ieremia-rescue-900w.webp 900w, ../../images/ieremia-rescue.webp 1536w" sizes="(max-width: 640px) 600px, (max-width: 1024px) 900px, 1536px">
+<img alt="Христос протягивает руку человеку над бездной" decoding="async" height="1024" loading="lazy" src="../../images/ieremia-rescue.webp" width="1536"/ srcset="../../images/ieremia-rescue-600w.webp 600w, ../../images/ieremia-rescue-900w.webp 900w, ../../images/ieremia-rescue.webp 1536w" sizes="(max-width: 640px) 600px, (max-width: 1024px) 900px, 1536px">
 <figcaption>Христос протягивает руку тонущему: образ спасения по благодати — ответ на испорченность сердца</figcaption>
 </figure>
 <footer class="article-footer">
@@ -1110,7 +1156,7 @@ window.SITE_CONFIG = {
           <span aria-hidden="true" class="faq-accordion__icon"></span>
 </button>
 <div class="faq-accordion__body" id="articles-krajne-li-isporcheno-serdce-faq-a1" role="region" aria-labelledby="articles-krajne-li-isporcheno-serdce-faq-q1">
-          <div class="faq-accordion__body-inner">Да — но с важным уточнением: Иер. 17:9 прежде всего описывает падшее человеческое сердце и духовное состояние Иуды перед судом Божьим. Верующий уже получил новое сердце по обетованию Нового Завета (<a class="bref" data-ref="Иезекииль 36:26" href="javascript:void(0)">Иез. 36:26</a>), поэтому этот стих не является окончательным приговором его новой природе. Но остаточный грех всё ещё действует: человек может оправдывать себя, путать ревность с гордостью, а «духовное чувство» — с самозащитой. Поэтому текст остаётся предупреждением: христианин не должен строить уверенность только на внутреннем ощущении правоты. Практический вывод прост: проверяй сердце Писанием, молитвой, плодами и честным братским словом.</div>
+          <div class="faq-accordion__body-inner">Да — но с важным уточнением: Иер. 17:9 прежде всего описывает падшее человеческое сердце и духовное состояние Иуды перед судом Божьим. Верующий уже получил новое сердце по обетованию Нового Завета (<button type="button" class="bref" data-ref="Иезекииль 36:26">Иез. 36:26</button>), поэтому этот стих не является окончательным приговором его новой природе. Но остаточный грех всё ещё действует: человек может оправдывать себя, путать ревность с гордостью, а «духовное чувство» — с самозащитой. Поэтому текст остаётся предупреждением: христианин не должен строить уверенность только на внутреннем ощущении правоты. Практический вывод прост: проверяй сердце Писанием, молитвой, плодами и честным братским словом.</div>
         </div>
 </div>
 <div class="faq-accordion__item">
@@ -1119,7 +1165,7 @@ window.SITE_CONFIG = {
           <span aria-hidden="true" class="faq-accordion__icon"></span>
 </button>
 <div class="faq-accordion__body" id="articles-krajne-li-isporcheno-serdce-faq-a2" role="region" aria-labelledby="articles-krajne-li-isporcheno-serdce-faq-q2">
-          <div class="faq-accordion__body-inner">Фраза «сердце обманчиво» означает, что внутренний центр человека способен не только грешить, но и убедительно оправдывать собственный грех. Еврейское <em>ʿāqōb</em> указывает на кривизну, извилистость и коварную способность обходить прямой путь. В контексте <a class="bref" data-ref="Иеремия 17:5–10" href="javascript:void(0)">Иер. 17:5–10</a> речь идёт о человеке, который внешне может звучать религиозно, но фактически уповает на плоть, статус, силу или собственное суждение. Бог противопоставляет этому Своё всеведение: «Я, Господь, проникаю сердце» (ст. 10). Поэтому стих не учит презирать чувства как таковые; он учит не делать сердце последним судом над истиной.</div>
+          <div class="faq-accordion__body-inner">Фраза «сердце обманчиво» означает, что внутренний центр человека способен не только грешить, но и убедительно оправдывать собственный грех. Еврейское <em>ʿāqōb</em> указывает на кривизну, извилистость и коварную способность обходить прямой путь. В контексте <button type="button" class="bref" data-ref="Иеремия 17:5–10">Иер. 17:5–10</button> речь идёт о человеке, который внешне может звучать религиозно, но фактически уповает на плоть, статус, силу или собственное суждение. Бог противопоставляет этому Своё всеведение: «Я, Господь, проникаю сердце» (ст. 10). Поэтому стих не учит презирать чувства как таковые; он учит не делать сердце последним судом над истиной.</div>
         </div>
 </div>
 <div class="faq-accordion__item">
@@ -1128,7 +1174,7 @@ window.SITE_CONFIG = {
           <span aria-hidden="true" class="faq-accordion__icon"></span>
 </button>
 <div class="faq-accordion__body" id="articles-krajne-li-isporcheno-serdce-faq-a3" role="region" aria-labelledby="articles-krajne-li-isporcheno-serdce-faq-q3">
-          <div class="faq-accordion__body-inner">Нет, не до конца. Совесть верующего освящается и становится важным инструментом духовного различения, но она не превращается в безошибочный внутренний оракул. Павел мог говорить о чистой совести, но всё равно признавал, что окончательный суд принадлежит Господу (<a class="bref" data-ref="1 Коринфянам 4:4" href="javascript:void(0)">1 Кор. 4:4</a>). Остаточный грех, страх людей, травма, гордость или желание быть правым могут искажать даже искренние духовные ощущения. Поэтому зрелая христианская практика соединяет совесть с Писанием, молитвой, проверкой плодов и советом мудрых людей. Если «мир в сердце» противоречит ясному тексту Библии или ведёт к самооправданию, доверять надо не ощущению, а Божьему Слову.</div>
+          <div class="faq-accordion__body-inner">Нет, не до конца. Совесть верующего освящается и становится важным инструментом духовного различения, но она не превращается в безошибочный внутренний оракул. Павел мог говорить о чистой совести, но всё равно признавал, что окончательный суд принадлежит Господу (<button type="button" class="bref" data-ref="1 Коринфянам 4:4">1 Кор. 4:4</button>). Остаточный грех, страх людей, травма, гордость или желание быть правым могут искажать даже искренние духовные ощущения. Поэтому зрелая христианская практика соединяет совесть с Писанием, молитвой, проверкой плодов и советом мудрых людей. Если «мир в сердце» противоречит ясному тексту Библии или ведёт к самооправданию, доверять надо не ощущению, а Божьему Слову.</div>
         </div>
 </div>
 </div>
@@ -1192,7 +1238,7 @@ window.SITE_CONFIG = {
 <ul class="related-articles__list">
 <li class="related-articles__item">
 <div class="related-articles__img-wrap">
-<img alt="Герменевтическая оценка христоцентричной герменевтики" class="related-articles__img" decoding="async" height="136" loading="lazy" src="../../images/hermenevtika-preview.webp" width="400"/ title="Герменевтическая оценка христоцентричной герменевтики">
+<img alt="Герменевтическая оценка христоцентричной герменевтики" class="related-articles__img" decoding="async" height="136" loading="lazy" src="../../images/hermenevtika-preview.webp" width="400"/>
 </div>
 <div class="related-articles__body">
 <p class="related-articles__tag">Перевод · 35 мин</p>
@@ -1206,7 +1252,7 @@ window.SITE_CONFIG = {
 <div class="related-articles__img-wrap">
 <picture>
   <source srcset="../../images/hero-kod-da-vinchi.webp" type="image/webp">
-  <img alt="«Код да Винчи» — апологетический разбор" class="related-articles__img" decoding="async" height="136" loading="lazy" src="../../images/hero-kod-da-vinchi.jpg" width="400"/ title="«Код да Винчи» — апологетический разбор">
+  <img alt="«Код да Винчи» — апологетический разбор" class="related-articles__img" decoding="async" height="136" loading="lazy" src="../../images/hero-kod-da-vinchi.jpg" width="400"/>
 </picture>
 </div>
 <div class="related-articles__body">
@@ -1423,56 +1469,6 @@ window.SITE_CONFIG = {
 <script src="../../js/search.js?v=8d27a9af" defer></script>
 <script src="../../js/highlights.js?v=f6e88a50" defer></script>
 <script src="../../js/enhancements.js?v=abebf9eb" defer></script>
-
-<script type="application/ld+json">
-[
-  {
-    "@context": "https://schema.org/",
-    "@type": "ImageObject",
-    "contentUrl": "https://gospod-bog.ru/images/og-krajne-isporcheno.webp",
-    "name": "Крайне ли испорчено сердце человека",
-    "description": "Разбор Иеремии 17:9: природа сердца по Писанию",
-    "creditText": "gospod-bog.ru",
-    "creator": {
-      "@type": "Organization",
-      "name": "Господь Бог — Сила Моя",
-      "url": "https://gospod-bog.ru"
-    },
-    "copyrightNotice": "© gospod-bog.ru",
-    "acquireLicensePage": "https://gospod-bog.ru/about/"
-  },
-  {
-    "@context": "https://schema.org/",
-    "@type": "ImageObject",
-    "contentUrl": "https://gospod-bog.ru/images/ieremia-judea-fall.webp",
-    "name": "Иеремия на фоне горящего Иерусалима",
-    "description": "Иеремия перед разрушением Иерусалима — исторический контекст",
-    "creditText": "gospod-bog.ru",
-    "creator": {
-      "@type": "Organization",
-      "name": "Господь Бог — Сила Моя",
-      "url": "https://gospod-bog.ru"
-    },
-    "copyrightNotice": "© gospod-bog.ru",
-    "acquireLicensePage": "https://gospod-bog.ru/about/"
-  },
-  {
-    "@context": "https://schema.org/",
-    "@type": "ImageObject",
-    "contentUrl": "https://gospod-bog.ru/images/ieremia-corrupt-heart.webp",
-    "name": "Каменное сердце — образ крайней испорченности",
-    "description": "Сердце из тёмного гранита: визуальный образ Иеремии 17:9",
-    "creditText": "gospod-bog.ru",
-    "creator": {
-      "@type": "Organization",
-      "name": "Господь Бог — Сила Моя",
-      "url": "https://gospod-bog.ru"
-    },
-    "copyrightNotice": "© gospod-bog.ru",
-    "acquireLicensePage": "https://gospod-bog.ru/about/"
-  }
-]
-</script>
 
 <button id="back-to-top" aria-label="Наверх" type="button">
   <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">

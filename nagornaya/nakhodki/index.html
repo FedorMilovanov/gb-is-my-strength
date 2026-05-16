@@ -1,13 +1,16 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
+  <script>try{if(localStorage.getItem("theme")==="dark")document.documentElement.classList.add("dark")}catch(e){}</script>
   <meta charset="UTF-8">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://mc.yandex.ru; img-src 'self' https://mc.yandex.ru https://commons.wikimedia.org data:; style-src 'self' 'unsafe-inline'; font-src 'self'; connect-src 'self' https://mc.yandex.ru; frame-ancestors 'none';">
+  <meta http-equiv="X-Content-Type-Options" content="nosniff">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, interactive-widget=resizes-content">
   <meta name="theme-color" content="#fdfcf9" media="(prefers-color-scheme: light)">
-  <meta name="theme-color" content="#1c1917" media="(prefers-color-scheme: dark)">
+  <meta name="theme-color" content="#171411" media="(prefers-color-scheme: dark)">
   <title>Находки Нагорной проповеди | gb</title>
   <meta name="description" content="21 верифицированная позиция: подтверждённые факты, исправления источников и открытые вопросы исследования.">
-  <meta name="robots" content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1">
+  <meta name="robots" content="noindex, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1">
   <meta name="author" content="Фёдор Милованов">
   <link rel="canonical" href="https://gospod-bog.ru/nagornaya/nakhodki/">
   <!-- OG -->
@@ -35,10 +38,14 @@
   <link rel="icon" type="image/png" sizes="192x192" href="https://gospod-bog.ru/icons/icon-192.png">
   <link rel="manifest" href="https://gospod-bog.ru/manifest.json">
   <!-- Tailwind CSS CDN -->
+    <link rel="preload" as="style" href="/fonts/fonts.css?v=fc6cff8a">
+  <link rel="preload" as="font" type="font/woff2" href="/fonts/Lora/lora-cyrillic-400.woff2" crossorigin>
+  <link rel="stylesheet" href="/fonts/fonts.css?v=fc6cff8a">
   <link rel="stylesheet" href="/nagornaya/tw.min.css?v=4c2284f0">
+  <link rel="stylesheet" href="/css/site.css?v=f7d5c4de">
   <script>
   window.SITE_CONFIG = {
-    version: 1,
+    version: 1778943682,
     site: {
       id: 'gb-strength',
       name: 'Господь Бог — Сила Моя',
@@ -82,7 +89,7 @@
   <!-- Yandex Metrika -->
   <script type="text/javascript">
     (function(m,e,t,r,i,k,a){m[i]=m[i]||function(){(m[i].a=m[i].a||[]).push(arguments)};m[i].l=1*new Date();for(var j=0;j<document.scripts.length;j++){if(document.scripts[j].src===r){return}}k=e.createElement(t),a=e.getElementsByTagName(t)[0],k.async=1,k.src=r,a.parentNode.insertBefore(k,a)})(window,document,'script','https://mc.yandex.ru/metrika/tag.js?id=108353327','ym');
-    ym(108353327,'init',{ssr:false,webvisor:true,clickmap:true,accurateTrackBounce:true,trackLinks:true});
+    ym(108353327,'init',{ssr:false,webvisor:true,clickmap:true,accurateTrackBounce:true,trackLinks:true,referrer:document.referrer,url:location.href});
   </script>
   <noscript><div><img decoding="async" src="https://mc.yandex.ru/watch/108353327" style="position:absolute;left:-9999px;" alt=""></div></noscript>
   <meta name="geo.region" content="RU-SPE">
@@ -331,7 +338,7 @@
   </div>
 
   <!-- Main content -->
-  <main class="lg:pl-64" data-pagefind-body>
+  <main id="main-content" class="lg:pl-64" data-pagefind-body>
     <div class="max-w-4xl mx-auto px-4 py-8 pt-20 lg:pt-8 space-y-6">
 
       <nav class="text-xs flex items-center flex-wrap gap-0.5 mb-2"><a href="/nagornaya/" class="text-stone-500 hover:text-amber-600 transition-colors">Нагорная проповедь</a><span class="text-stone-400 mx-1.5">/</span><span class="text-stone-700 font-medium">Верифицированные находки</span></nav>
@@ -840,6 +847,7 @@
 })();
 </script>
 
+<script src="../../js/site.js?v=a83786e5" defer></script>
 <script src="../../js/sw-register.js?v=c60839ff" defer></script>
 <script src="../../js/search.js?v=8d27a9af" defer></script>
 <script src="../../js/highlights.js?v=f6e88a50" defer></script>

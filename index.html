@@ -2,8 +2,10 @@
 <html lang="ru">
 <head>
   <meta charset="UTF-8">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://mc.yandex.ru; img-src 'self' https://mc.yandex.ru https://commons.wikimedia.org data:; style-src 'self' 'unsafe-inline'; font-src 'self'; connect-src 'self' https://mc.yandex.ru; frame-ancestors 'none';">
+  <meta http-equiv="X-Content-Type-Options" content="nosniff">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, interactive-widget=resizes-content">
-  <meta name="theme-color" content="#f8f5f0" media="(prefers-color-scheme: light)">
+  <meta name="theme-color" content="#fdfcf9" media="(prefers-color-scheme: light)">
   <meta name="theme-color" content="#171411" media="(prefers-color-scheme: dark)">
   <meta name="yandex-verification" content="42bc0d54a1ca4952">
 
@@ -34,67 +36,80 @@
   <meta name="twitter:image:alt" content="Богословская библиотека «Господь Бог — Сила Моя»">
 
   <!-- JSON-LD -->
-  <script type="application/ld+json">
-{
-  "@context": "https://schema.org",
-  "@graph": [
-    {
-      "@type": "Organization",
-      "@id": "https://gospod-bog.ru/#organization",
-      "name": "Господь Бог — Сила Моя",
-      "url": "https://gospod-bog.ru/",
-      "logo": {
-        "@type": "ImageObject",
-        "url": "https://gospod-bog.ru/icons/icon-512.png",
-        "width": 512,
-        "height": 512
-      },
-      "sameAs": [
-        "https://t.me/fedormilovanov",
-        "https://vk.com/curtmf"
+  <script type="application/ld+json">{
+      "@context": "https://schema.org",
+      "@graph": [
+            {
+                  "@type": "Organization",
+                  "@id": "https://gospod-bog.ru/#organization",
+                  "name": "Господь Бог — Сила Моя",
+                  "url": "https://gospod-bog.ru/",
+                  "logo": {
+                        "@type": "ImageObject",
+                        "url": "https://gospod-bog.ru/icons/icon-512.png",
+                        "width": 512,
+                        "height": 512
+                  },
+                  "sameAs": [
+                        "https://t.me/fedormilovanov",
+                        "https://vk.com/curtmf"
+                  ]
+            },
+            {
+                  "@type": "WebSite",
+                  "@id": "https://gospod-bog.ru/#website",
+                  "name": "Господь Бог — Сила Моя",
+                  "url": "https://gospod-bog.ru/",
+                  "inLanguage": "ru",
+                  "publisher": {
+                        "@id": "https://gospod-bog.ru/#organization"
+                  },
+                  "description": "Библиотека богословских материалов на русском языке: авторские статьи, переводы зарубежных богословов, подборки источников."
+            },
+            {
+                  "@type": "CollectionPage",
+                  "name": "Господь Бог — Сила Моя",
+                  "url": "https://gospod-bog.ru/",
+                  "inLanguage": "ru",
+                  "publisher": {
+                        "@id": "https://gospod-bog.ru/#organization"
+                  }
+            },
+            {
+                  "@type": "Person",
+                  "@id": "https://gospod-bog.ru/about/#person",
+                  "name": "Фёдор Милованов",
+                  "url": "https://gospod-bog.ru/about/",
+                  "sameAs": [
+                        "https://t.me/fedormilovanov",
+                        "https://vk.com/curtmf"
+                  ],
+                  "jobTitle": "Редактор-составитель",
+                  "knowsAbout": [
+                        "Богословие",
+                        "Библеистика",
+                        "Герменевтика",
+                        "Апологетика",
+                        "Реформатское богословие"
+                  ]
+            },
+            {
+                  "@context": "https://schema.org/",
+                  "@type": "ImageObject",
+                  "contentUrl": "https://gospod-bog.ru/images/og-preview-1200x630.webp",
+                  "name": "Господь Бог — Сила Моя",
+                  "description": "Богословская библиотека: разборы, переводы, апологетика",
+                  "creditText": "gospod-bog.ru",
+                  "creator": {
+                        "@type": "Organization",
+                        "name": "Господь Бог — Сила Моя",
+                        "url": "https://gospod-bog.ru"
+                  },
+                  "copyrightNotice": "© gospod-bog.ru",
+                  "acquireLicensePage": "https://gospod-bog.ru/about/"
+            }
       ]
-    },
-    {
-      "@type": "WebSite",
-      "@id": "https://gospod-bog.ru/#website",
-      "name": "Господь Бог — Сила Моя",
-      "url": "https://gospod-bog.ru/",
-      "inLanguage": "ru",
-      "publisher": {
-        "@id": "https://gospod-bog.ru/#organization"
-      },
-      "description": "Библиотека богословских материалов на русском языке: авторские статьи, переводы зарубежных богословов, подборки источников."
-    },
-    {
-      "@type": "CollectionPage",
-      "name": "Господь Бог — Сила Моя",
-      "url": "https://gospod-bog.ru/",
-      "inLanguage": "ru",
-      "publisher": {
-        "@id": "https://gospod-bog.ru/#organization"
-      }
-    },
-    {
-      "@type": "Person",
-      "@id": "https://gospod-bog.ru/about/#person",
-      "name": "Фёдор Милованов",
-      "url": "https://gospod-bog.ru/about/",
-      "sameAs": [
-        "https://t.me/fedormilovanov",
-        "https://vk.com/curtmf"
-      ],
-      "jobTitle": "Редактор-составитель",
-      "knowsAbout": [
-        "Богословие",
-        "Библеистика",
-        "Герменевтика",
-        "Апологетика",
-        "Реформатское богословие"
-      ]
-    }
-  ]
-}
-</script>
+}</script>
 
   <!-- Favicons & manifest -->
   <link rel="icon" type="image/x-icon" href="https://gospod-bog.ru/favicon.ico">
@@ -106,6 +121,7 @@
 
   <!-- Fonts -->
   <link rel="preload" as="style" href="fonts/fonts.css?v=fc6cff8a">
+  <link rel="preload" as="font" type="font/woff2" href="/fonts/Lora/lora-cyrillic-400.woff2" crossorigin>
 <link rel="stylesheet" href="fonts/fonts.css?v=fc6cff8a">
 
   <!-- Anti-FOUC: применяем тему до рендера CSS -->
@@ -119,12 +135,11 @@
   <link rel="stylesheet" href="css/site.css?v=f7d5c4de">
   <link rel="stylesheet" href="css/home.css?v=1f50b997">
   <link rel="stylesheet" href="css/command-palette.css?v=081e6436">
-  <link rel="preload" as="image" href="images/og-nagornaya-propoved.webp" type="image/webp" fetchpriority="high">
+  <link rel="preload" as="image" type="image/webp" fetchpriority="high" imagesrcset="images/og-nagornaya-propoved-600w.webp 600w, images/og-nagornaya-propoved-900w.webp 900w, images/og-nagornaya-propoved.webp 800w" imagesizes="(max-width: 640px) 600px, (max-width: 1024px) 900px, 800px">
 </head>
 
 <body>
 <a href="#main-content" class="skip-link">Перейти к содержимому</a>
-
 
 <!-- ══════════════════════════════════════════════════════
      READING PROGRESS BAR
@@ -148,6 +163,7 @@
     <ul class="h-nav-links" role="list">
       <li><a href="#publikacii" class="h-scroll-target">Публикации</a></li>
       <li><a href="#razbor" class="h-scroll-target">Разбор заблуждений</a></li>
+      <li><a href="/articles/">Все статьи</a></li>
       <li><a href="#about" class="h-scroll-target">О библиотеке</a></li>
     </ul>
 
@@ -206,17 +222,17 @@
         <span class="h-sacred-line h-sacred-line--1">
           <span class="h-tetra" tabindex="0" aria-label="Яхве — Священное Имя Бога">
             <span class="h-tetra-label" aria-hidden="true">Священное Имя Бога</span>
-            <span class="hb-front">יְהוִה</span>
+            <span class="hb-front" lang="he">יְהוִה</span>
             <span class="h-tetra-back" aria-hidden="true">
               <span class="h-tetra-name">Яхве</span>
             </span>
           </span>
           <span class="hb-w" tabindex="0" aria-label="Адонай — Господь">
-            <span class="hb-front">אֲדֹנָי</span>
+            <span class="hb-front" lang="he">אֲדֹנָי</span>
             <span class="hb-back" aria-hidden="true">Господь</span>
           </span>
           <span class="hb-w" tabindex="0" aria-label="сила моя">
-            <span class="hb-front">חֵילִי</span>
+            <span class="hb-front" lang="he">חֵילִי</span>
             <span class="hb-back" aria-hidden="true">сила моя</span>
           </span>
         </span>
@@ -224,27 +240,27 @@
         <!-- Строка 2: וַיָּשֶׂם רַגְלַי כָּאַיָּלוֹת וְעַל בָּמוֹתַי יַדְרִכֵנִי -->
         <span class="h-sacred-line h-sacred-line--2">
           <span class="hb-w" tabindex="0" aria-label="и сделает">
-            <span class="hb-front">וַיָּשֶׂם</span>
+            <span class="hb-front" lang="he">וַיָּשֶׂם</span>
             <span class="hb-back" aria-hidden="true">и сделает</span>
           </span>
           <span class="hb-w" tabindex="0" aria-label="ноги мои">
-            <span class="hb-front">רַגְלַי</span>
+            <span class="hb-front" lang="he">רַגְלַי</span>
             <span class="hb-back" aria-hidden="true">ноги мои</span>
           </span>
           <span class="hb-w" tabindex="0" aria-label="как у ланей">
-            <span class="hb-front">כָּאַיָּלוֹת</span>
+            <span class="hb-front" lang="he">כָּאַיָּלוֹת</span>
             <span class="hb-back" aria-hidden="true">как у ланей</span>
           </span>
           <span class="hb-w" tabindex="0" aria-label="и на">
-            <span class="hb-front">וְעַל</span>
+            <span class="hb-front" lang="he">וְעַל</span>
             <span class="hb-back" aria-hidden="true">и на</span>
           </span>
           <span class="hb-w" tabindex="0" aria-label="высоты мои">
-            <span class="hb-front">בָּמוֹתַי</span>
+            <span class="hb-front" lang="he">בָּמוֹתַי</span>
             <span class="hb-back" aria-hidden="true">высоты мои</span>
           </span>
           <span class="hb-w" tabindex="0" aria-label="даст мне ступать">
-            <span class="hb-front">יַדְרִכֵנִי</span>
+            <span class="hb-front" lang="he">יַדְרִכֵנִי</span>
             <span class="hb-back" aria-hidden="true">даст мне ступать</span>
           </span>
         </span>
@@ -438,7 +454,7 @@
         <div class="h-featured-img-wrap">
           <img src="images/og-nagornaya-propoved.webp"
                alt="Нагорная проповедь — исследование в 5 частях"
-               fetchpriority="high" loading="eager" decoding="async" width="800" height="420" title="Нагорная проповедь — исследование в 5 частях" srcset="images/og-nagornaya-propoved-600w.webp 600w, images/og-nagornaya-propoved-900w.webp 900w, images/og-nagornaya-propoved.webp 800w" sizes="(max-width: 640px) 600px, (max-width: 1024px) 900px, 800px">
+               fetchpriority="high" loading="eager" decoding="async" width="800" height="420" srcset="images/og-nagornaya-propoved-600w.webp 600w, images/og-nagornaya-propoved-900w.webp 900w, images/og-nagornaya-propoved.webp 800w" sizes="(max-width: 640px) 600px, (max-width: 1024px) 900px, 800px">
           <div class="h-featured-overlay" aria-hidden="true"></div>
         </div>
         <div class="h-featured-body">
@@ -468,12 +484,9 @@
       </a>
 
       <!-- ── Обычные статьи ── -->
-      
-      
+
 <div class="h-articles-group" style="margin-top: 40px;">
         <ul class="h-article-list">
-          
-
 
           <!-- Герменевтика (перевод) -->
           <li>
@@ -481,7 +494,7 @@
               <div class="h-article-thumb">
                 <img src="images/hermenevtika-preview.webp"
                      alt="Герменевтическая оценка христоцентричной герменевтики"
-                     decoding="async" loading="lazy" width="160" height="108" title="Герменевтическая оценка христоцентричной герменевтики">
+                     decoding="async" loading="lazy" width="160" height="108">
               </div>
               <div class="h-article-body">
                 <div class="h-article-kicker">Перевод с английского</div>
@@ -510,7 +523,7 @@
   <source srcset="images/ieremia-cover.webp" type="image/webp">
   <img src="images/ieremia-cover.jpg"
                      alt="Крайне ли испорчено моё сердце — Иеремия 17"
-                     decoding="async" loading="lazy" width="160" height="108" title="Крайне ли испорчено моё сердце — Иеремия 17">
+                     decoding="async" loading="lazy" width="160" height="108">
 </picture>
               </div>
               <div class="h-article-body">
@@ -536,8 +549,8 @@
       <a href="pastor-series/" class="h-featured-series" aria-label="Тёмная сторона кафедры — серия материалов" style="margin-bottom: 30px;">
         <div class="h-featured-img-wrap">
           <picture>
-            <source srcset="images/pastor-series/hero-main.webp" type="image/webp">
-            <img src="images/pastor-series/hero.png" alt="Тёмная сторона кафедры" decoding="async" loading="lazy" width="800" height="420" title="Тёмная сторона кафедры" srcset="images/pastor-series/hero-600w.webp 600w, images/pastor-series/hero-900w.webp 900w, images/pastor-series/hero.png 800w" sizes="(max-width: 640px) 600px, (max-width: 1024px) 900px, 800px">
+            <source srcset="images/pastor-series/hero-600w.webp 600w, images/pastor-series/hero-900w.webp 900w, images/pastor-series/hero-main.webp 800w" sizes="(max-width: 640px) 600px, (max-width: 1024px) 900px, 800px" type="image/webp">
+            <img src="images/pastor-series/hero.png" alt="Тёмная сторона кафедры" decoding="async" loading="lazy" width="800" height="420">
           </picture>
           <div class="h-featured-overlay" aria-hidden="true"></div>
         </div>
@@ -567,11 +580,7 @@
       </a>
 
       <div class="h-articles-group" style="margin-top: 30px;">
-        <ul class="h-article-list">
-
-
-        </ul>
-      </div>
+</div>
     </section>
 
     <!-- ══════════════════════════════════════════════════
@@ -592,7 +601,7 @@
   <source srcset="images/hero-kod-da-vinchi.webp" type="image/webp">
   <img src="images/hero-kod-da-vinchi.jpg"
                      alt="«Код да Винчи» — разбор исторических мифов романа"
-                     decoding="async" loading="lazy" width="160" height="108" title="«Код да Винчи» — разбор исторических мифов романа">
+                     decoding="async" loading="lazy" width="160" height="108">
 </picture>
               </div>
               <div class="h-article-body">
@@ -610,6 +619,16 @@
                 <p class="h-article-abstract">Мария Магдалина, Никея, канон Нового Завета, Свитки Мёртвого моря, Наг-Хаммади, Приорат Сиона — полный разбор с позиций Писания и исторической науки.</p>
               </div>
             </a>
+          </li>
+          <li>
+            <article class="h-card">
+              <a href="articles/20-antisovetov-pastoru/" class="h-card-link">
+                <div class="h-card-body">
+                  <h3 class="h-card-title">20 антисоветов, как пастору разрушить своё служение</h3>
+                  <p class="h-card-desc">Практический разбор типичных ошибок пасторского служения — от духовного выгорания до авторитаризма.</p>
+                </div>
+              </a>
+            </article>
           </li>
 
         </ul>
@@ -658,42 +677,42 @@
 
             <span class="h-sacred-line h-sacred-line--1">
               <span class="hb-w" tabindex="0" aria-label="Яхве — Священное Имя Бога">
-                <span class="hb-front">יְהוִה</span>
+                <span class="hb-front" lang="he">יְהוִה</span>
                 <span class="hb-back" aria-hidden="true">Яхве</span>
               </span>
               <span class="hb-w" tabindex="0" aria-label="Адонай — Господь">
-                <span class="hb-front">אֲדֹנָי</span>
+                <span class="hb-front" lang="he">אֲדֹנָי</span>
                 <span class="hb-back" aria-hidden="true">Господь</span>
               </span>
               <span class="hb-w" tabindex="0" aria-label="сила моя">
-                <span class="hb-front">חֵילִי</span>
+                <span class="hb-front" lang="he">חֵילִי</span>
                 <span class="hb-back" aria-hidden="true">сила моя</span>
               </span>
             </span>
 
             <span class="h-sacred-line h-sacred-line--2">
               <span class="hb-w" tabindex="0" aria-label="и сделает">
-                <span class="hb-front">וַיָּשֶׂם</span>
+                <span class="hb-front" lang="he">וַיָּשֶׂם</span>
                 <span class="hb-back" aria-hidden="true">и сделает</span>
               </span>
               <span class="hb-w" tabindex="0" aria-label="ноги мои">
-                <span class="hb-front">רַגְלַי</span>
+                <span class="hb-front" lang="he">רַגְלַי</span>
                 <span class="hb-back" aria-hidden="true">ноги мои</span>
               </span>
               <span class="hb-w" tabindex="0" aria-label="как у ланей">
-                <span class="hb-front">כָּאַיָּלוֹת</span>
+                <span class="hb-front" lang="he">כָּאַיָּלוֹת</span>
                 <span class="hb-back" aria-hidden="true">как у ланей</span>
               </span>
               <span class="hb-w" tabindex="0" aria-label="и на">
-                <span class="hb-front">וְעַל</span>
+                <span class="hb-front" lang="he">וְעַל</span>
                 <span class="hb-back" aria-hidden="true">и на</span>
               </span>
               <span class="hb-w" tabindex="0" aria-label="высоты мои">
-                <span class="hb-front">בָּמוֹתַי</span>
+                <span class="hb-front" lang="he">בָּמוֹתַי</span>
                 <span class="hb-back" aria-hidden="true">высоты мои</span>
               </span>
               <span class="hb-w" tabindex="0" aria-label="даст мне ступать">
-                <span class="hb-front">יַדְרִכֵנִי</span>
+                <span class="hb-front" lang="he">יַדְרִכֵנִי</span>
                 <span class="hb-back" aria-hidden="true">даст мне ступать</span>
               </span>
             </span>
@@ -779,7 +798,7 @@
 <!-- Scripts -->
 <script>
 window.SITE_CONFIG = {
-  version: 1,
+  version: 1778943682,
   site: {
     id: 'gb-strength',
     name: 'Господь Бог — Сила Моя',
@@ -1060,6 +1079,7 @@ window.SITE_CONFIG = {
     for(var j=0;j<document.scripts.length;j++){if(document.scripts[j].src===r){return;}}
     k=e.createElement(t),a=e.getElementsByTagName(t)[0],k.async=1,k.src=r,a.parentNode.insertBefore(k,a)
   })(window,document,'script','https://mc.yandex.ru/metrika/tag.js?id=108353327','ym');
+  window.dataLayer = window.dataLayer || [];
   ym(108353327,'init',{ssr:false,webvisor:true,clickmap:true,ecommerce:"dataLayer",referrer:document.referrer,url:location.href,accurateTrackBounce:true,trackLinks:true});
 </script>
 <noscript><div><img decoding="async" src="https://mc.yandex.ru/watch/108353327" style="position:absolute;left:-9999px;" alt=""></div></noscript>
@@ -1067,24 +1087,5 @@ window.SITE_CONFIG = {
 <script src="./js/sw-register.js?v=c60839ff" defer></script>
 <script src="./js/search.js?v=8d27a9af" defer></script>
 
-<script type="application/ld+json">
-[
-  {
-    "@context": "https://schema.org/",
-    "@type": "ImageObject",
-    "contentUrl": "https://gospod-bog.ru/images/og-preview-1200x630.webp",
-    "name": "Господь Бог — Сила Моя",
-    "description": "Богословская библиотека: разборы, переводы, апологетика",
-    "creditText": "gospod-bog.ru",
-    "creator": {
-      "@type": "Organization",
-      "name": "Господь Бог — Сила Моя",
-      "url": "https://gospod-bog.ru"
-    },
-    "copyrightNotice": "© gospod-bog.ru",
-    "acquireLicensePage": "https://gospod-bog.ru/about/"
-  }
-]
-</script>
 </body>
 </html>

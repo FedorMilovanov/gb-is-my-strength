@@ -2,6 +2,8 @@
 <html lang="ru">
 <head>
   <meta charset="utf-8">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://mc.yandex.ru; img-src 'self' https://mc.yandex.ru https://commons.wikimedia.org data:; style-src 'self' 'unsafe-inline'; font-src 'self'; connect-src 'self' https://mc.yandex.ru; frame-ancestors 'none';">
+  <meta http-equiv="X-Content-Type-Options" content="nosniff">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, interactive-widget=resizes-content">
   <title>404 — Страница не найдена · Господь Бог — Сила Моя</title>
   <meta name="robots" content="noindex, nofollow">
@@ -11,16 +13,17 @@
   <link rel="icon" type="image/png" sizes="120x120" href="https://gospod-bog.ru/favicon-120.png">
   <link rel="icon" type="image/png" sizes="192x192" href="https://gospod-bog.ru/icons/icon-192.png">
   <link rel="manifest" href="https://gospod-bog.ru/manifest.json">
-  <link rel="preload" as="style" href="fonts/fonts.css?v=fc6cff8a">
-<link rel="stylesheet" href="fonts/fonts.css?v=fc6cff8a">
+  <link rel="preload" as="style" href="/fonts/fonts.css?v=fc6cff8a">
+  <link rel="preload" as="font" type="font/woff2" href="/fonts/Lora/lora-cyrillic-400.woff2" crossorigin>
+<link rel="stylesheet" href="/fonts/fonts.css?v=fc6cff8a">
   <!-- Anti-FOUC: применяем тему до рендера CSS -->
   <script>
     (function(){try{var t=localStorage.getItem('theme');if(t==='dark'||(!t&&window.matchMedia('(prefers-color-scheme: dark)').matches)){document.documentElement.classList.add('dark');}}catch(e){}})();
   </script>
-  <link rel="stylesheet" href="css/site.css?v=f7d5c4de">
+  <link rel="stylesheet" href="/css/site.css?v=f7d5c4de">
   <script>
     window.SITE_CONFIG = {
-      version: 1,
+      version: 1778943682,
       site: {
         id: 'gb-strength',
         name: 'Господь Бог — Сила Моя',
@@ -111,7 +114,7 @@
 .skip-link{position:absolute;top:-40px;left:0;background:#14100b;color:#f5f0e8;padding:8px 16px;text-decoration:none;font-size:14px;z-index: var(--z-modal);border-radius:0 0 4px 0;transition:top .2s}
 .skip-link:focus{top:0}
 </style>
-  <link rel="stylesheet" href="css/command-palette.css?v=081e6436">
+  <link rel="stylesheet" href="/css/command-palette.css?v=081e6436">
 </head>
 <body>
 <a href="#main-content" class="skip-link">Перейти к содержимому</a>
@@ -144,8 +147,8 @@
     </section>
   </main>
 
-  <script src="js/site.js?v=a83786e5" defer></script>
-<script src="js/sw-register.js?v=c60839ff" defer></script>
-<script src="js/search.js?v=8d27a9af" defer></script>
+  <script src="/js/site.js?v=a83786e5" defer></script>
+<script src="/js/sw-register.js?v=c60839ff" defer></script>
+<script src="/js/search.js?v=8d27a9af" defer></script>
 </body>
 </html>

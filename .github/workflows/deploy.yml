@@ -45,6 +45,20 @@ jobs:
           # Берём самый свежий коммит (в т.ч. авто-коммит indexnow.yml)
           ref: main
 
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Download fonts (if not in repo)
+        run: node scripts/download-fonts.js || echo "Fonts download skipped"
+
+      - name: Cache bust assets
+        run: node scripts/cache-bust.js || echo "Cache bust skipped"
+
       - name: Build Pagefind index
         # npx скачает pagefind только если его нет в кеше.
         # --site . — корень репозитория = корень сайта.

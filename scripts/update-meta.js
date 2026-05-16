@@ -128,14 +128,42 @@ function parseMeta(html) {
 }
 
 function countWords(html) {
-  // Статьи используют <article>, а независимые страницы nagornaya —
-  // <main data-pagefind-body>. Считаем основной контент с fallback,
-  // иначе update-meta занижает nagornaya до 0 слов / 1 мин.
-  const body =
-    html.match(/<article[^>]*>([\s\S]*?)<\/article>/i)?.[1] ??
-    html.match(/<(?:main|section)[^>]*data-pagefind-body[^>]*>([\s\S]*?)<\/(?:main|section)>/i)?.[1] ??
-    html.match(/<main[^>]*>([\s\S]*?)<\/main>/i)?.[1] ??
-    '';
+  // BUG-FIX (2026-05-16): Предыдущий regex с ленивым квантором [\s\S]*?
+  // останавливался на первом </section> внутри <main>, захватывая ~90 слов
+  // вместо полных ~3600. Исправлено: используем indexOf/lastIndexOf для
+  // точного определения границ основного контента.
+  let body = '';
+
+  // 1. Пробуем <article>...</article>
+  const artOpen = html.search(/<article[^>]*>/i);
+  if (artOpen >= 0) {
+    const artClose = html.lastIndexOf('</article>');
+    if (artClose > artOpen) {
+      body = html.slice(html.indexOf('>', artOpen) + 1, artClose);
+    }
+  }
+
+  // 2. Фолбэк: <main data-pagefind-body>...</main>
+  if (!body) {
+    const mainPfb = html.search(/<main[^>]*data-pagefind-body[^>]*>/i);
+    if (mainPfb >= 0) {
+      const mainClose = html.lastIndexOf('</main>');
+      if (mainClose > mainPfb) {
+        body = html.slice(html.indexOf('>', mainPfb) + 1, mainClose);
+      }
+    }
+  }
+
+  // 3. Фолбэк: любой <main>...</main>
+  if (!body) {
+    const mainOpen = html.search(/<main[^>]*>/i);
+    if (mainOpen >= 0) {
+      const mainClose = html.lastIndexOf('</main>');
+      if (mainClose > mainOpen) {
+        body = html.slice(html.indexOf('>', mainOpen) + 1, mainClose);
+      }
+    }
+  }
 
   return body
     .replace(/<script[\s\S]*?<\/script>/gi, '')
