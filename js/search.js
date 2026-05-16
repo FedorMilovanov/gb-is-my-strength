@@ -207,10 +207,12 @@
  
   /* Category → icon */
   function catIcon(cat) {
-    if (cat === 'Богословие')   return SVG.book14;
-    if (cat === 'Герменевтика') return SVG.globe;
-    if (cat === 'Апологетика')  return SVG.zap;
-    return SVG.sparkle;
+    if (cat === 'Апологетика') return SVG.zap;
+    if (cat === 'Герменевтика' || cat === 'Переводы') return SVG.globe;
+    if (cat === 'Нагорная проповедь') return SVG.sparkle;
+    if (cat === 'О проекте') return SVG.user12;
+    if (cat === 'Богословие' || cat === 'Экзегетика' || cat === 'Экзегеза' || cat === 'Служение') return SVG.book14;
+    return SVG.book14;
   }
  
   /* ─────────────────────────────────────────────────────────
@@ -717,11 +719,6 @@
       readTime: 35
     }
   ];
-
-  function catIcon(cat) {
-    if (cat === 'Апологетика') return SVG.shield || SVG.book14;
-    return SVG.book14;
-  }
 
   function curatedItem(p) {
     return {
