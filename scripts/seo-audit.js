@@ -91,10 +91,20 @@ for (const p of htmlFiles) {
 
   const ogType = getMeta(html, 'property', 'og:type');
   const ogImage = getMeta(html, 'property', 'og:image');
+  const twitterCard = getMeta(html, 'name', 'twitter:card');
   if (ogType && ogType !== 'profile') {
     for (const tag of ['twitter:card', 'twitter:title', 'twitter:description', 'twitter:image']) {
       if (!getMeta(html, 'name', tag)) err(file, `missing ${tag}`);
     }
+  }
+  if (twitterCard) {
+    for (const tag of ['twitter:site', 'twitter:creator']) {
+      if (!getMeta(html, 'name', tag)) err(file, `missing ${tag}`);
+    }
+  }
+
+  if (html.includes('ecommerce:"dataLayer"') && !html.includes('window.dataLayer')) {
+    err(file, 'Yandex Metrika ecommerce uses dataLayer, but window.dataLayer is not initialized');
   }
   if (ogImage) {
     const w = getMeta(html, 'property', 'og:image:width');

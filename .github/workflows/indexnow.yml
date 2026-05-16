@@ -69,18 +69,14 @@ jobs:
           KEY="${{ secrets.INDEXNOW_KEY }}"
 
           if [ -z "$KEY" ]; then
-            echo "⚠ INDEXNOW_KEY is empty — falling back to file"
-            KEY=$(cat 34dbdd34-965b-4934-a5d4-d18a0a783600.txt 2>/dev/null || echo "")
-          fi
-
-          if [ -z "$KEY" ]; then
-            echo "::error::INDEXNOW_KEY is not set and key file not found"
+            echo "::error::INDEXNOW_KEY secret is not set. Generate a new IndexNow key, add it to repository secrets, and let deploy.yml publish KEY.txt."
             exit 1
           fi
 
           # Collect changed URLs from pushed commits — includes catalog pages
           URLS=$(git diff --name-only ${{ github.event.before }} ${{ github.event.after }} 2>/dev/null \
-            | grep -E '^(articles/index\.html|nagornaya/index\.html|(articles|nagornaya)/[^/]+/index\.html)$' \
+            | grep -E '^(index\.html|about/index\.html|articles/index\.html|pastor-series/index\.html|nagornaya/index\.html|(articles|nagornaya)/[^/]+/index\.html)$' \
+            | sed 's|^index\.html$||' \
             | sed 's|/index\.html$|/|' \
             | sed "s|^|${BASE}/|" \
             | jq -R . | jq -sc .)
