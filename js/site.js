@@ -400,7 +400,7 @@
     };
     vvAdjust();
     window.visualViewport.addEventListener('resize', vvAdjust);
-    window.visualViewport.addEventListener('scroll', vvAdjust);
+    window.visualViewport.addEventListener('scroll', vvAdjust, { passive: true });
   }
 
 
@@ -458,9 +458,12 @@
       errors.push('quiz.questions должен быть массивом');
     }
     if (errors.length) {
-      console.group('[SITE_CONFIG validation]');
-      errors.forEach(function (e) { console.warn(e); });
-      console.groupEnd();
+      /* V2-FIX: only log validation errors in debug mode */
+      if (window.SITE_CONFIG && window.SITE_CONFIG.debug) {
+        console.group('[SITE_CONFIG validation]');
+        errors.forEach(function (e) { console.warn(e); });
+        console.groupEnd();
+      }
     }
   })();
 
@@ -789,7 +792,7 @@
       window.open(vkUrl, '_blank', 'noopener');
     });
     document.getElementById('sd-max').addEventListener('click', function () {
-      window.open('https://share.max.ru/share?url=' + encodeURIComponent(shareUrl) + '&title=' + encodedTitle, '_blank', 'noopener');
+      window.open('https://share.max.ru/share?url=' + encodeURIComponent(utmUrl(shareUrl, 'max')) + '&title=' + encodedTitle, '_blank', 'noopener');
     });
     document.getElementById('sd-ok').addEventListener('click', function () {
       var okUrl = 'https://connect.ok.ru/offer?url=' + encodeURIComponent(utmUrl(shareUrl, 'ok')) +
@@ -2865,7 +2868,6 @@
 
     /* Удаляем оригинальный mouseup-handler ниже */
     function _AUDIT_V6_REMOVED_OLD_MOUSEUP() {
-      // see above — handler unified into handleSelection()
 
         var sel  = window.getSelection();
         var rect = sel.getRangeAt(0).getBoundingClientRect();
@@ -2887,7 +2889,6 @@
         var y = rect.top + sy - popH - 12;
         if (y - sy < 8) y = rect.bottom + sy + 8;
 
-      // ↑ original block обработан через handleSelection()
     }
     /* end _AUDIT_V6_REMOVED_OLD_MOUSEUP */
 

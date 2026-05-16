@@ -205,7 +205,7 @@ function validateArticle(slug) {
   const titleRaw    = html.match(/<title>([^<]+)<\/title>/)?.[1]?.trim() ?? '';
   let titleNorm     = titleRaw;
   // Strip any known site suffix variants
-  for (const sfx of [SITE_SUFFIX, ` | ${SITE_NAME}`, ' | gb', ' | Господь Бог']) {
+  for (const sfx of [SITE_SUFFIX, ` | ${SITE_NAME}`, ' | Господь Бог']) {
     if (titleNorm.endsWith(sfx)) {
       titleNorm = titleNorm.slice(0, -sfx.length).trim();
       break;
@@ -418,6 +418,32 @@ function main() {
 
   console.log('  → Предупреждения не прерывают workflow. Исправьте при возможности.\n');
   process.exit(0);
+
+  // ── V3-FIX: Validate non-article pages (pastor-series, about, index) ──
+  const EXTRA_PAGES = [
+    { file: path.resolve(__dirname, '../pastor-series/index.html'), slug: 'pastor-series' },
+    { file: path.resolve(__dirname, '../about/index.html'), slug: 'about' },
+    { file: path.resolve(__dirname, '../index.html'), slug: 'index' },
+  ];
+
+  for (const { file, slug } of EXTRA_PAGES) {
+    if (!fs.existsSync(file)) { warn(slug, 'файл не найден'); continue; }
+    const html = fs.readFileSync(file, 'utf8');
+
+    // Basic checks
+    if (!html.includes('<title>'))           err(slug, 'отсутствует <title>');
+    if (!html.includes('og:image'))          err(slug, 'отсутствует og:image');
+    if (!html.includes('canonical'))         err(slug, 'отсутствует canonical');
+    if (!html.includes('ym('))              warn(slug, 'отсутствует Яндекс.Метрика');
+    if (html.includes('javascript:void(0)')) warn(slug, 'содержит javascript:void(0)');
+
+    // Check for consistent theme-color
+    const themeMatch = html.match(/theme-color.*?content="([^"]+)"/);
+    if (themeMatch && themeMatch[1] !== '#fdfcf9' && themeMatch[1] !== '#171411') {
+      warn(slug, `нестандартный theme-color: ${themeMatch[1]}`);
+    }
+  }
+
 }
 
 main();

@@ -7,14 +7,12 @@
   <channel>
     <title>Господь Бог — Сила Моя</title>
     <link>https://gospod-bog.ru/</link>
-    <description>Богословские разборы и экзегетические статьи на русском языке: Нагорная проповедь (5 частей), Иеремия, Код да Винчи, герменевтика.</description>
+    <description><![CDATA[Богословские разборы и экзегетические статьи на русском языке: Нагорная проповедь (5 частей), Иеремия, Код да Винчи, герменевтика.]]></description>
     <language>ru</language>
-    <managingEditor>noreply@gospod-bog.ru (Фёдор Милованов)</managingEditor>
-    <webMaster>noreply@gospod-bog.ru (Фёдор Милованов)</webMaster>
     <lastBuildDate>Fri, 15 May 2026 01:23:25 +0000</lastBuildDate>
     <ttl>1440</ttl>
     <image>
-      <url>https://gospod-bog.ru/images/og-preview-1200x630.webp</url>
+      <url>https://gospod-bog.ru/images/og-preview.jpg</url>
       <title>Господь Бог — Сила Моя</title>
       <link>https://gospod-bog.ru/</link>
     </image>
@@ -34,7 +32,6 @@
       ]]></description>
     </item>
 
-
     
   <!-- Нагорная проповедь — полная серия (добавлено 2026-04-30) -->
 
@@ -44,10 +41,10 @@
     <guid isPermaLink="true">https://gospod-bog.ru/nagornaya/</guid>
     <dc:creator>Фёдор Милованов</dc:creator>
     <pubDate>Fri, 01 May 2026 00:00:00 +0000</pubDate>
-    <description>
+    <description><![CDATA[
       <p>Сравнительное исследование Матфея 5–7 и Луки 6:17–49 в пяти частях. Содержание, методология записи, адресат, богодухновенность, Закон и Евангелие. TMS · MacArthur · Chicago Statement · 21 исследовательская находка.</p>
       <p><a href="https://gospod-bog.ru/nagornaya/">Открыть серию →</a></p>
-    </description>
+    ]]></description>
   </item>
   <item>
       <title>Крайне ли испорчено моё сердце — если я уже верующий?</title>
@@ -93,7 +90,6 @@
         <p><a href="https://gospod-bog.ru/articles/hermenevticheskaya-otsenka-hristotsentrichnoy-germenevtiki/">Читать статью →</a></p>
       ]]></description>
     </item>
-
 
   <item>
     <title>Нагорная проповедь I: Два текста, один Иисус</title>
@@ -160,31 +156,9 @@
     ]]></description>
   </item>
 
-  <item>
-    <title>Источники серии «Нагорная проповедь»</title>
-    <link>https://gospod-bog.ru/nagornaya/istochniki/</link>
-    <guid isPermaLink="true">https://gospod-bog.ru/nagornaya/istochniki/</guid>
-    <dc:creator>Фёдор Милованов</dc:creator>
-    <pubDate>Thu, 01 May 2026 00:00:00 +0000</pubDate>
-    <category>Нагорная проповедь</category>
-    <description><![CDATA[
-      <p>Библиография и источники серии: MacArthur, TMS, Chicago Statement, академические комментарии.</p>
-      <p><a href="https://gospod-bog.ru/nagornaya/istochniki/">Открыть →</a></p>
-    ]]></description>
-  </item>
+  
 
-  <item>
-    <title>Верифицированные находки Нагорной проповеди</title>
-    <link>https://gospod-bog.ru/nagornaya/nakhodki/</link>
-    <guid isPermaLink="true">https://gospod-bog.ru/nagornaya/nakhodki/</guid>
-    <dc:creator>Фёдор Милованов</dc:creator>
-    <pubDate>Thu, 01 May 2026 00:00:00 +0000</pubDate>
-    <category>Нагорная проповедь</category>
-    <description><![CDATA[
-      <p>21 исследовательская находка серии — ключевые выводы и открытия из пяти частей.</p>
-      <p><a href="https://gospod-bog.ru/nagornaya/nakhodki/">Открыть →</a></p>
-    ]]></description>
-  </item>
+  
 
   <item>
     <title>Нагорная проповедь: серия в 5 частях — обзор</title>

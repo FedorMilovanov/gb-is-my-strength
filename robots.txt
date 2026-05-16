@@ -41,6 +41,8 @@ Allow: /
 User-agent: GPTBot
 Disallow: /
 
+# Google-Extended: блокирует использование контента для тренировки Gemini/Vertex AI.
+# НЕ влияет на AI Overviews, AI Mode или обычную поисковую выдачу Google.
 User-agent: Google-Extended
 Disallow: /
 

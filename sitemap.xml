@@ -9,53 +9,65 @@
     <priority>1.0</priority>
     <image:image>
       <image:loc>https://gospod-bog.ru/images/og-preview-1200x630.webp</image:loc>
+      <image:title>Preview 1200x630</image:title>
     </image:image>
     <image:image>
       <image:loc>https://gospod-bog.ru/images/ieremia-cover.webp</image:loc>
+      <image:title>Ieremia cover</image:title>
     </image:image>
     <image:image>
       <image:loc>https://gospod-bog.ru/images/hero-kod-da-vinchi.webp</image:loc>
+      <image:title>Hero kod da vinchi</image:title>
     </image:image>
     <image:image>
       <image:loc>https://gospod-bog.ru/images/og-nagornaya-propoved.webp</image:loc>
+      <image:title>Nagornaya propoved</image:title>
     </image:image>
     <image:image>
       <image:loc>https://gospod-bog.ru/images/pastor-series/hero-main.webp</image:loc>
+      <image:title>Hero main</image:title>
     </image:image>
   </url>
 
   <url>
     <loc>https://gospod-bog.ru/about/</loc>
-    <lastmod>2026-04-18T00:00:00+03:00</lastmod>
+    <lastmod>2026-04-18</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
     <image:image>
       <image:loc>https://gospod-bog.ru/images/og-about-1200x630.webp</image:loc>
+      <image:title>About 1200x630</image:title>
     </image:image>
     <image:image>
       <image:loc>https://gospod-bog.ru/images/about-author-desk.webp</image:loc>
+      <image:title>About author desk</image:title>
     </image:image>
   </url>
 
   <url>
     <loc>https://gospod-bog.ru/articles/</loc>
-    <lastmod>2026-04-27T00:00:00+03:00</lastmod>
+    <lastmod>2026-04-27</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
     <image:image>
       <image:loc>https://gospod-bog.ru/images/og-preview-1200x630.webp</image:loc>
+      <image:title>Preview 1200x630</image:title>
     </image:image>
     <image:image>
       <image:loc>https://gospod-bog.ru/images/hermenevtika-preview.webp</image:loc>
+      <image:title>Hermenevtika preview</image:title>
     </image:image>
     <image:image>
       <image:loc>https://gospod-bog.ru/images/og-krajne-isporcheno.webp</image:loc>
+      <image:title>Krajne isporcheno</image:title>
     </image:image>
     <image:image>
       <image:loc>https://gospod-bog.ru/images/og-kod-da-vinchi.webp</image:loc>
+      <image:title>Kod da vinchi</image:title>
     </image:image>
     <image:image>
       <image:loc>https://gospod-bog.ru/images/pastor-series/og-hero.webp</image:loc>
+      <image:title>Hero</image:title>
     </image:image>
   </url>
 
@@ -66,15 +78,19 @@
     <priority>0.8</priority>
     <image:image>
       <image:loc>https://gospod-bog.ru/images/pastor-series/og-hero.webp</image:loc>
+      <image:title>Hero</image:title>
     </image:image>
     <image:image>
       <image:loc>https://gospod-bog.ru/images/pastor-series/hero-main.webp</image:loc>
+      <image:title>Hero main</image:title>
     </image:image>
     <image:image>
       <image:loc>https://gospod-bog.ru/images/pastor-series/manipulation.webp</image:loc>
+      <image:title>Manipulation</image:title>
     </image:image>
     <image:image>
       <image:loc>https://gospod-bog.ru/images/pastor-series/mirror.webp</image:loc>
+      <image:title>Mirror</image:title>
     </image:image>
   </url>
 
@@ -85,36 +101,47 @@
     <priority>0.9</priority>
     <image:image>
       <image:loc>https://gospod-bog.ru/images/pastor-series/og-hero.webp</image:loc>
+      <image:title>Hero</image:title>
     </image:image>
     <image:image>
       <image:loc>https://gospod-bog.ru/images/pastor-series/hero-main.webp</image:loc>
+      <image:title>Hero main</image:title>
     </image:image>
     <image:image>
       <image:loc>https://gospod-bog.ru/images/pastor-series/humility.webp</image:loc>
+      <image:title>Humility</image:title>
     </image:image>
     <image:image>
       <image:loc>https://gospod-bog.ru/images/pastor-series/dominion.webp</image:loc>
+      <image:title>Dominion</image:title>
     </image:image>
     <image:image>
       <image:loc>https://gospod-bog.ru/images/pastor-series/sovetniki.webp</image:loc>
+      <image:title>Sovetniki</image:title>
     </image:image>
     <image:image>
       <image:loc>https://gospod-bog.ru/images/pastor-series/mirror.webp</image:loc>
+      <image:title>Mirror</image:title>
     </image:image>
     <image:image>
       <image:loc>https://gospod-bog.ru/images/pastor-series/crisis.webp</image:loc>
+      <image:title>Crisis</image:title>
     </image:image>
     <image:image>
       <image:loc>https://gospod-bog.ru/images/pastor-series/choice.webp</image:loc>
+      <image:title>Choice</image:title>
     </image:image>
     <image:image>
       <image:loc>https://gospod-bog.ru/images/pastor-series/choice2.webp</image:loc>
+      <image:title>Choice2</image:title>
     </image:image>
     <image:image>
       <image:loc>https://gospod-bog.ru/images/pastor-series/hero.webp</image:loc>
+      <image:title>Hero</image:title>
     </image:image>
     <image:image>
       <image:loc>https://gospod-bog.ru/images/pastor-series/reformation.webp</image:loc>
+      <image:title>Reformation</image:title>
     </image:image>
   </url>
 
@@ -125,30 +152,39 @@
     <priority>0.9</priority>
     <image:image>
       <image:loc>https://gospod-bog.ru/images/og-krajne-isporcheno.webp</image:loc>
+      <image:title>Krajne isporcheno</image:title>
     </image:image>
     <image:image>
       <image:loc>https://gospod-bog.ru/images/ieremia-judea-fall.webp</image:loc>
+      <image:title>Ieremia judea fall</image:title>
     </image:image>
     <image:image>
       <image:loc>https://gospod-bog.ru/images/ieremia-corrupt-heart.webp</image:loc>
+      <image:title>Ieremia corrupt heart</image:title>
     </image:image>
     <image:image>
       <image:loc>https://gospod-bog.ru/images/ieremia-two-trees.webp</image:loc>
+      <image:title>Ieremia two trees</image:title>
     </image:image>
     <image:image>
       <image:loc>https://gospod-bog.ru/images/ieremia-labyrinth.webp</image:loc>
+      <image:title>Ieremia labyrinth</image:title>
     </image:image>
     <image:image>
       <image:loc>https://gospod-bog.ru/images/ieremia-new-heart.webp</image:loc>
+      <image:title>Ieremia new heart</image:title>
     </image:image>
     <image:image>
       <image:loc>https://gospod-bog.ru/images/ieremia-cross.webp</image:loc>
+      <image:title>Ieremia cross</image:title>
     </image:image>
     <image:image>
       <image:loc>https://gospod-bog.ru/images/ieremia-rescue.webp</image:loc>
+      <image:title>Ieremia rescue</image:title>
     </image:image>
     <image:image>
       <image:loc>https://gospod-bog.ru/images/ieremia-forge.webp</image:loc>
+      <image:title>Ieremia forge</image:title>
     </image:image>
   </url>
 
@@ -159,9 +195,11 @@
     <priority>0.9</priority>
     <image:image>
       <image:loc>https://gospod-bog.ru/images/og-kod-da-vinchi.webp</image:loc>
+      <image:title>Kod da vinchi</image:title>
     </image:image>
     <image:image>
       <image:loc>https://gospod-bog.ru/images/hero-kod-da-vinchi.webp</image:loc>
+      <image:title>Hero kod da vinchi</image:title>
     </image:image>
   </url>
 
@@ -172,99 +210,110 @@
     <priority>0.9</priority>
     <image:image>
       <image:loc>https://gospod-bog.ru/images/hermenevtika-preview-og.webp</image:loc>
+      <image:title>Hermenevtika preview og</image:title>
     </image:image>
     <image:image>
       <image:loc>https://gospod-bog.ru/images/hermenevtika-preview.webp</image:loc>
+      <image:title>Hermenevtika preview</image:title>
     </image:image>
   </url>
 
   <url>
     <loc>https://gospod-bog.ru/nagornaya/</loc>
-    <lastmod>2026-05-01T00:00:00+03:00</lastmod>
+    <lastmod>2026-05-01</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.9</priority>
     <image:image>
       <image:loc>https://gospod-bog.ru/images/og-nagornaya-propoved.webp</image:loc>
+      <image:title>Nagornaya propoved</image:title>
     </image:image>
   </url>
 
   <url>
     <loc>https://gospod-bog.ru/nagornaya/seriya/</loc>
-    <lastmod>2026-05-01T00:00:00+03:00</lastmod>
+    <lastmod>2026-05-01</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
     <image:image>
       <image:loc>https://gospod-bog.ru/images/og-nagornaya-propoved.webp</image:loc>
+      <image:title>Nagornaya propoved</image:title>
     </image:image>
   </url>
 
   <url>
     <loc>https://gospod-bog.ru/nagornaya/chast-1/</loc>
-    <lastmod>2026-05-09T00:00:00+03:00</lastmod>
+    <lastmod>2026-05-09</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.9</priority>
     <image:image>
       <image:loc>https://gospod-bog.ru/images/og-nagornaya-propoved-chast-1.webp</image:loc>
+      <image:title>Nagornaya propoved chast 1</image:title>
     </image:image>
   </url>
 
   <url>
     <loc>https://gospod-bog.ru/nagornaya/chast-2/</loc>
-    <lastmod>2026-05-01T00:00:00+03:00</lastmod>
+    <lastmod>2026-05-01</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.9</priority>
     <image:image>
       <image:loc>https://gospod-bog.ru/images/og-nagornaya-propoved-chast-2.webp</image:loc>
+      <image:title>Nagornaya propoved chast 2</image:title>
     </image:image>
   </url>
 
   <url>
     <loc>https://gospod-bog.ru/nagornaya/chast-3/</loc>
-    <lastmod>2026-05-01T00:00:00+03:00</lastmod>
+    <lastmod>2026-05-01</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.9</priority>
     <image:image>
       <image:loc>https://gospod-bog.ru/images/og-nagornaya-propoved-chast-3.webp</image:loc>
+      <image:title>Nagornaya propoved chast 3</image:title>
     </image:image>
   </url>
 
   <url>
     <loc>https://gospod-bog.ru/nagornaya/chast-4/</loc>
-    <lastmod>2026-05-09T00:00:00+03:00</lastmod>
+    <lastmod>2026-05-09</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.9</priority>
     <image:image>
       <image:loc>https://gospod-bog.ru/images/og-nagornaya-propoved-chast-4.webp</image:loc>
+      <image:title>Nagornaya propoved chast 4</image:title>
     </image:image>
   </url>
 
   <url>
     <loc>https://gospod-bog.ru/nagornaya/chast-5/</loc>
-    <lastmod>2026-05-01T00:00:00+03:00</lastmod>
+    <lastmod>2026-05-01</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.9</priority>
     <image:image>
       <image:loc>https://gospod-bog.ru/images/og-nagornaya-propoved-chast-5.webp</image:loc>
+      <image:title>Nagornaya propoved chast 5</image:title>
     </image:image>
   </url>
 
   <url>
     <loc>https://gospod-bog.ru/nagornaya/istochniki/</loc>
-    <lastmod>2026-04-30T00:00:00+03:00</lastmod>
+    <lastmod>2026-04-30</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
     <image:image>
       <image:loc>https://gospod-bog.ru/images/og-nagornaya-propoved.webp</image:loc>
+      <image:title>Nagornaya propoved</image:title>
     </image:image>
   </url>
 
   <url>
     <loc>https://gospod-bog.ru/nagornaya/nakhodki/</loc>
-    <lastmod>2026-04-30T00:00:00+03:00</lastmod>
+    <lastmod>2026-04-30</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
     <image:image>
       <image:loc>https://gospod-bog.ru/images/og-nagornaya-propoved.webp</image:loc>
+      <image:title>Nagornaya propoved</image:title>
     </image:image>
   </url>
 

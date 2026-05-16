@@ -82,7 +82,7 @@
               '<span class="cp-scope-icon">' + SVG.user12 + '</span><span>\u0410\u0432\u0442\u043e\u0440\u044b</span>' +
             '</button>' +
           '</div>' +
-          '<span class="cp-status" id="cp-status"></span>' +
+          '<span class="cp-status" id="cp-status" aria-live="polite" role="status"></span>' +
         '</div>' +
  
         '<div class="cp-list" id="cp-listbox" role="listbox" ' +
@@ -1179,12 +1179,24 @@
         }
         break;
       case 'Tab':
-        /* Tab / Shift+Tab cycles through scope chips */
+        /* V2-FIX: WCAG 2.4.3 — full focus trap within modal dialog.
+           Tab / Shift+Tab cycles through ALL focusable elements:
+           input, scope chips, results, close button. */
         e.preventDefault();
-        var scopes = ['all', 'articles', 'scripture', 'authors'];
-        var dir = e.shiftKey ? -1 : 1;
-        var cur = scopes.indexOf(scope);
-        setScope(scopes[(cur + dir + scopes.length) % scopes.length]);
+        var cpModal = document.getElementById('command-palette') || backdrop;
+        var focusable = cpModal.querySelectorAll(
+          'input, button, [tabindex]:not([tabindex="-1"]), a[href], [role="option"]'
+        );
+        if (!focusable.length) break;
+        var focusArr = Array.prototype.slice.call(focusable);
+        var curIdx = focusArr.indexOf(document.activeElement);
+        var nextIdx;
+        if (e.shiftKey) {
+          nextIdx = curIdx <= 0 ? focusArr.length - 1 : curIdx - 1;
+        } else {
+          nextIdx = curIdx >= focusArr.length - 1 ? 0 : curIdx + 1;
+        }
+        focusArr[nextIdx].focus();
         break;
     }
   });
