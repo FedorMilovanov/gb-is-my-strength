@@ -832,8 +832,11 @@ html.dark blockquote { border-left-color: var(--accent); }
   content: '— ';
   letter-spacing: 0;
 }
-html.dark .pullquote { background: rgba(128, 128, 128, 0.15); 
-html.dark .pullquote { background: color-mix(in srgb, var(--accent) 8%, transparent); border-left-color: var(--accent); }
+html.dark .pullquote {
+  background: rgba(128, 128, 128, 0.15);
+  background: color-mix(in srgb, var(--accent) 8%, transparent);
+  border-left-color: var(--accent);
+}
 html.dark .pullquote::before { color: var(--accent); }
 html.dark .pullquote .pq-attribution { color: var(--accent); }
 
@@ -5559,10 +5562,18 @@ html.dark .btoc-progress-fill-done {
 }
 .compare-card--blue .compare-card__head  { background: #eef5fb; color: #1c5070; border-bottom: 1px solid #c8dde8; }
 .compare-card--amber .compare-card__head { background: #fbf4e2; color: #7a5a10; border-bottom: 1px solid #e6d498; }
-html.dark .compare-card--blue .compare-card__head  { background: rgba(128, 128, 128, 0.15); 
-html.dark .compare-card--blue .compare-card__head  { background: color-mix(in srgb,#1c5070 18%,transparent); border-bottom-color: color-mix(in srgb,#1c5070 35%,transparent); color: #7cb8d8; }
-html.dark .compare-card--amber .compare-card__head { background: rgba(128, 128, 128, 0.15); 
-html.dark .compare-card--amber .compare-card__head { background: color-mix(in srgb,#7a5a10 18%,transparent); border-bottom-color: color-mix(in srgb,#7a5a10 35%,transparent); color: #c8a050; }
+html.dark .compare-card--blue .compare-card__head  {
+  background: rgba(128, 128, 128, 0.15);
+  background: color-mix(in srgb,#1c5070 18%,transparent);
+  border-bottom-color: color-mix(in srgb,#1c5070 35%,transparent);
+  color: #7cb8d8;
+}
+html.dark .compare-card--amber .compare-card__head {
+  background: rgba(128, 128, 128, 0.15);
+  background: color-mix(in srgb,#7a5a10 18%,transparent);
+  border-bottom-color: color-mix(in srgb,#7a5a10 35%,transparent);
+  color: #c8a050;
+}
 .compare-card__title {
   font-size: 14px;
   font-weight: 700;
@@ -5591,10 +5602,16 @@ html.dark .compare-card--amber .compare-card__head { background: color-mix(in sr
 .compare-card__val { color: var(--text); line-height: 1.45; }
 .badge-no  { display: inline-block; background: #fdecea; color: #a03030; font-size: 10px; font-weight: 700; padding: 2px 8px; border-radius: 10px; }
 .badge-yes { display: inline-block; background: #fbf4e2; color: #7a5a10; font-size: 10px; font-weight: 700; padding: 2px 8px; border-radius: 10px; }
-html.dark .badge-no  { background: rgba(128, 128, 128, 0.15); 
-html.dark .badge-no  { background: color-mix(in srgb,#a03030 22%,transparent); color: #e07070; }
-html.dark .badge-yes { background: rgba(128, 128, 128, 0.15); 
-html.dark .badge-yes { background: color-mix(in srgb,#7a5a10 22%,transparent); color: #c8a050; }
+html.dark .badge-no  {
+  background: rgba(128, 128, 128, 0.15);
+  background: color-mix(in srgb,#a03030 22%,transparent);
+  color: #e07070;
+}
+html.dark .badge-yes {
+  background: rgba(128, 128, 128, 0.15);
+  background: color-mix(in srgb,#7a5a10 22%,transparent);
+  color: #c8a050;
+}
 @media (max-width: 600px) {
   .compare-cards { grid-template-columns: 1fr; }
 }

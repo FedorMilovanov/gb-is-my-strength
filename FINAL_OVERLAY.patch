@@ -1,0 +1,248 @@
+diff --git a/.github/workflows/deploy.yml b/.github/workflows/deploy.yml
+index 1aecad6..deb8288 100644
+--- a/.github/workflows/deploy.yml
++++ b/.github/workflows/deploy.yml
+@@ -59,15 +59,35 @@ jobs:
+       - name: Cache bust assets
+         run: node scripts/cache-bust.js || echo "Cache bust skipped"
+ 
+-      - name: Publish IndexNow key file from secret
++      - name: Create IndexNow verification file from secret
++        shell: bash
++        env:
++          INDEXNOW_KEY: ${{ secrets.INDEXNOW_KEY }}
+         run: |
+-          KEY="${{ secrets.INDEXNOW_KEY }}"
+-          if [ -n "$KEY" ]; then
+-            printf '%s' "$KEY" > "${KEY}.txt"
+-          else
+-            echo "INDEXNOW_KEY secret is empty — key file was not generated"
++          set -euo pipefail
++
++          KEY="${INDEXNOW_KEY:-}"
++
++          if [ -z "$KEY" ]; then
++            echo "INDEXNOW_KEY secret is empty — verification file was not generated"
++            exit 0
++          fi
++
++          if ! printf '%s' "$KEY" | grep -Eq '^[A-Za-z0-9-]{8,128}$'; then
++            echo "::error::INDEXNOW_KEY has invalid format. Expected 8-128 chars: A-Z, a-z, 0-9 or dash (-)."
++            exit 1
+           fi
+ 
++          FILE="./${KEY}.txt"
++          printf '%s' "$KEY" > "$FILE"
++
++          if ! cmp -s "$FILE" <(printf '%s' "$KEY"); then
++            echo "::error::Failed to create IndexNow verification file correctly"
++            exit 1
++          fi
++
++          echo "Created IndexNow verification file at ${FILE#./}"
++
+       - name: Build Pagefind index
+         # npx скачает pagefind только если его нет в кеше.
+         # --site . — корень репозитория = корень сайта.
+diff --git a/.github/workflows/indexnow.yml b/.github/workflows/indexnow.yml
+index f2d6148..569c88c 100644
+--- a/.github/workflows/indexnow.yml
++++ b/.github/workflows/indexnow.yml
+@@ -64,45 +64,78 @@ jobs:
+ 
+       - name: Build IndexNow payload
+         id: payload
++        shell: bash
++        env:
++          INDEXNOW_KEY: ${{ secrets.INDEXNOW_KEY }}
+         run: |
++          set -euo pipefail
++
+           BASE="https://gospod-bog.ru"
+-          KEY="${{ secrets.INDEXNOW_KEY }}"
++          HOST="gospod-bog.ru"
++          KEY="${INDEXNOW_KEY:-}"
+ 
+           if [ -z "$KEY" ]; then
+-            echo "::error::INDEXNOW_KEY secret is not set. Generate a new IndexNow key, add it to repository secrets, and let deploy.yml publish KEY.txt."
++            echo "::error::INDEXNOW_KEY secret is not set. Generate a new IndexNow key and let deploy.yml publish KEY.txt to the Pages artifact."
++            exit 1
++          fi
++
++          if ! printf '%s' "$KEY" | grep -Eq '^[A-Za-z0-9-]{8,128}$'; then
++            echo "::error::INDEXNOW_KEY has invalid format. Expected 8-128 chars: A-Z, a-z, 0-9 or dash (-)."
+             exit 1
+           fi
+ 
+-          # Collect changed URLs from pushed commits — includes catalog pages
+-          URLS=$(git diff --name-only ${{ github.event.before }} ${{ github.event.after }} 2>/dev/null \
++          KEY_LOCATION="${BASE}/${KEY}.txt"
++
++          # Collect changed URLs from pushed commits — includes catalog pages.
++          # grep may legitimately find no matching HTML paths, so handle that case explicitly.
++          MATCHED_PATHS=$(git diff --name-only ${{ github.event.before }} ${{ github.event.after }} 2>/dev/null \
+             | grep -E '^(index\.html|about/index\.html|articles/index\.html|pastor-series/index\.html|nagornaya/index\.html|(articles|nagornaya)/[^/]+/index\.html)$' \
+-            | sed 's|^index\.html$||' \
+-            | sed 's|/index\.html$|/|' \
+-            | sed "s|^|${BASE}/|" \
+-            | jq -R . | jq -sc .)
++            || true)
++
++          if [ -n "$MATCHED_PATHS" ]; then
++            URLS=$(printf '%s\n' "$MATCHED_PATHS" \
++              | sed 's|^index\.html$||' \
++              | sed 's|/index\.html$|/|' \
++              | sed "s|^|${BASE}/|" \
++              | jq -R . | jq -sc .)
++          else
++            URLS='[]'
++          fi
+ 
+-          # Always include homepage and sitemap root
++          # Always include homepage
+           HOMEPAGE="\"${BASE}/\""
+           URLS=$(echo "$URLS" | jq --argjson home "[$HOMEPAGE]" '. + $home | unique')
++          URL_COUNT=$(echo "$URLS" | jq 'length')
+ 
+-          echo "urls=$URLS"             >> $GITHUB_OUTPUT
+-          echo "key=$KEY"               >> $GITHUB_OUTPUT
+-          echo "host=gospod-bog.ru"     >> $GITHUB_OUTPUT
++          echo "urls=$URLS"                 >> "$GITHUB_OUTPUT"
++          echo "key=$KEY"                   >> "$GITHUB_OUTPUT"
++          echo "host=$HOST"                 >> "$GITHUB_OUTPUT"
++          echo "key_location=$KEY_LOCATION" >> "$GITHUB_OUTPUT"
++          echo "url_count=$URL_COUNT"       >> "$GITHUB_OUTPUT"
++
++          echo "Prepared IndexNow payload for ${URL_COUNT} URL(s); verification file: ${KEY_LOCATION}"
+ 
+       - name: Submit to IndexNow (Bing / Yandex)
+         if: steps.payload.outputs.urls != '[]' && steps.payload.outputs.urls != ''
++        shell: bash
+         run: |
++          set -euo pipefail
++
+           KEY="${{ steps.payload.outputs.key }}"
+           HOST="${{ steps.payload.outputs.host }}"
++          KEY_LOCATION="${{ steps.payload.outputs.key_location }}"
+           URLS='${{ steps.payload.outputs.urls }}'
++          URL_COUNT='${{ steps.payload.outputs.url_count }}'
+ 
+           BODY=$(jq -n \
+             --arg host "$HOST" \
+-            --arg key  "$KEY"  \
++            --arg key "$KEY" \
++            --arg keyLocation "$KEY_LOCATION" \
+             --argjson urls "$URLS" \
+-            '{host: $host, key: $key, keyLocation: ("https://"+$host+"/"+$key+".txt"), urlList: $urls}')
++            '{host: $host, key: $key, keyLocation: $keyLocation, urlList: $urls}')
+ 
+-          echo "Payload: $BODY"
++          echo "Submitting ${URL_COUNT} URL(s) to IndexNow for host ${HOST}"
++          echo "Key file location: ${KEY_LOCATION}"
+ 
+           BING_STATUS=$(curl -s -o /tmp/indexnow-bing.out -w "%{http_code}" \
+             -X POST "https://api.indexnow.org/indexnow" \
+diff --git a/.gitignore b/.gitignore
+index 2c23b07..1c1b840 100644
+--- a/.gitignore
++++ b/.gitignore
+@@ -7,3 +7,4 @@ pagefind/
+ # а deploy.yml генерирует <INDEXNOW_KEY>.txt только в Pages-артефакте.
+ 34dbdd34-965b-4934-a5d4-d18a0a783600.txt
+ ????????-????-????-????-????????????.txt
++????????????????????????????????.txt
+diff --git a/css/site.css b/css/site.css
+index b8e8e55..e735409 100644
+--- a/css/site.css
++++ b/css/site.css
+@@ -832,8 +832,11 @@ html.dark blockquote { border-left-color: var(--accent); }
+   content: '— ';
+   letter-spacing: 0;
+ }
+-html.dark .pullquote { background: rgba(128, 128, 128, 0.15); 
+-html.dark .pullquote { background: color-mix(in srgb, var(--accent) 8%, transparent); border-left-color: var(--accent); }
++html.dark .pullquote {
++  background: rgba(128, 128, 128, 0.15);
++  background: color-mix(in srgb, var(--accent) 8%, transparent);
++  border-left-color: var(--accent);
++}
+ html.dark .pullquote::before { color: var(--accent); }
+ html.dark .pullquote .pq-attribution { color: var(--accent); }
+ 
+@@ -5559,10 +5562,18 @@ html.dark .btoc-progress-fill-done {
+ }
+ .compare-card--blue .compare-card__head  { background: #eef5fb; color: #1c5070; border-bottom: 1px solid #c8dde8; }
+ .compare-card--amber .compare-card__head { background: #fbf4e2; color: #7a5a10; border-bottom: 1px solid #e6d498; }
+-html.dark .compare-card--blue .compare-card__head  { background: rgba(128, 128, 128, 0.15); 
+-html.dark .compare-card--blue .compare-card__head  { background: color-mix(in srgb,#1c5070 18%,transparent); border-bottom-color: color-mix(in srgb,#1c5070 35%,transparent); color: #7cb8d8; }
+-html.dark .compare-card--amber .compare-card__head { background: rgba(128, 128, 128, 0.15); 
+-html.dark .compare-card--amber .compare-card__head { background: color-mix(in srgb,#7a5a10 18%,transparent); border-bottom-color: color-mix(in srgb,#7a5a10 35%,transparent); color: #c8a050; }
++html.dark .compare-card--blue .compare-card__head  {
++  background: rgba(128, 128, 128, 0.15);
++  background: color-mix(in srgb,#1c5070 18%,transparent);
++  border-bottom-color: color-mix(in srgb,#1c5070 35%,transparent);
++  color: #7cb8d8;
++}
++html.dark .compare-card--amber .compare-card__head {
++  background: rgba(128, 128, 128, 0.15);
++  background: color-mix(in srgb,#7a5a10 18%,transparent);
++  border-bottom-color: color-mix(in srgb,#7a5a10 35%,transparent);
++  color: #c8a050;
++}
+ .compare-card__title {
+   font-size: 14px;
+   font-weight: 700;
+@@ -5591,10 +5602,16 @@ html.dark .compare-card--amber .compare-card__head { background: color-mix(in sr
+ .compare-card__val { color: var(--text); line-height: 1.45; }
+ .badge-no  { display: inline-block; background: #fdecea; color: #a03030; font-size: 10px; font-weight: 700; padding: 2px 8px; border-radius: 10px; }
+ .badge-yes { display: inline-block; background: #fbf4e2; color: #7a5a10; font-size: 10px; font-weight: 700; padding: 2px 8px; border-radius: 10px; }
+-html.dark .badge-no  { background: rgba(128, 128, 128, 0.15); 
+-html.dark .badge-no  { background: color-mix(in srgb,#a03030 22%,transparent); color: #e07070; }
+-html.dark .badge-yes { background: rgba(128, 128, 128, 0.15); 
+-html.dark .badge-yes { background: color-mix(in srgb,#7a5a10 22%,transparent); color: #c8a050; }
++html.dark .badge-no  {
++  background: rgba(128, 128, 128, 0.15);
++  background: color-mix(in srgb,#a03030 22%,transparent);
++  color: #e07070;
++}
++html.dark .badge-yes {
++  background: rgba(128, 128, 128, 0.15);
++  background: color-mix(in srgb,#7a5a10 22%,transparent);
++  color: #c8a050;
++}
+ @media (max-width: 600px) {
+   .compare-cards { grid-template-columns: 1fr; }
+ }
+diff --git a/js/search.js b/js/search.js
+index d6d38c3..3d2b369 100644
+--- a/js/search.js
++++ b/js/search.js
+@@ -207,10 +207,12 @@
+  
+   /* Category → icon */
+   function catIcon(cat) {
+-    if (cat === 'Богословие')   return SVG.book14;
+-    if (cat === 'Герменевтика') return SVG.globe;
+-    if (cat === 'Апологетика')  return SVG.zap;
+-    return SVG.sparkle;
++    if (cat === 'Апологетика') return SVG.zap;
++    if (cat === 'Герменевтика' || cat === 'Переводы') return SVG.globe;
++    if (cat === 'Нагорная проповедь') return SVG.sparkle;
++    if (cat === 'О проекте') return SVG.user12;
++    if (cat === 'Богословие' || cat === 'Экзегетика' || cat === 'Экзегеза' || cat === 'Служение') return SVG.book14;
++    return SVG.book14;
+   }
+  
+   /* ─────────────────────────────────────────────────────────
+@@ -718,11 +720,6 @@
+     }
+   ];
+ 
+-  function catIcon(cat) {
+-    if (cat === 'Апологетика') return SVG.shield || SVG.book14;
+-    return SVG.book14;
+-  }
+-
+   function curatedItem(p) {
+     return {
+       id: 'rec-' + p.url,
