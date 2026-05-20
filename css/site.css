@@ -6067,6 +6067,9 @@ html.dark .gb-series-link:hover {
 } 
 
 
+/* @layer components: поздние legacy/mobile/a11y-блоки (CSS-FIX-01) */
+@layer components {
+
 body.no-scroll {
   overflow: hidden !important;
   overscroll-behavior: none;
@@ -6675,6 +6678,9 @@ button, a, [role="button"], [tabindex="0"], summary, input, textarea, select {
 [onclick], [data-tip], [data-toggle], [data-popover] {
   cursor: pointer;
 }
+
+} /* @layer components: поздние legacy/mobile/a11y-блоки */
+
 /* @layer utilities: глобальные утилиты (ранее вне @layer, AUDIT-V2 / CSS-01) */
 @layer utilities {
 
@@ -6820,7 +6826,6 @@ button, a, [role="button"], [tabindex="0"], summary, input, textarea, select {
 
 
 :root {
-} /* @layer utilities */
   --color-amber: #d97706;
   --color-blue: #2b6cb0;
   --color-rose: #e11d48;
@@ -6844,3 +6849,5 @@ button, a, [role="button"], [tabindex="0"], summary, input, textarea, select {
   --color-sky: #38bdf8;
   --color-yellow: #facc15;
 }
+
+} /* @layer utilities */
