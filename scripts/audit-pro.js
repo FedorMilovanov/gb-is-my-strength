@@ -485,7 +485,8 @@ function rootsFromLd(data) {
     let text;
     try { text = fs.readFileSync(p, 'utf8'); } catch { continue; }
     if (file !== 'scripts/audit-pro.js' && text.includes('/gb-' + 'is-my-strength/')) { problems++; R.err(`Repository base path leak in ${file}`); }
-    if (/(?:href|src|content)=[\"']http:\/\/(?!localhost|127\.0\.0\.1|www\.w3\.org|www\.google\.com\/schemas)([^\"']+)[\"']/i.test(text)) R.warn(`Possible http:// mixed content in ${file}`);
+    // Match real href/src/content attributes only; do not flag XML namespaces like xmlns:content="http://..." in RSS.
+    if (/(?:^|[\s<])(?:href|src|content)=[\"']http:\/\/(?!localhost|127\.0\.0\.1|www\.w3\.org|www\.google\.com\/schemas)([^\"']+)[\"']/i.test(text)) R.warn(`Possible http:// mixed content in ${file}`);
     if (file.startsWith('js/') && /\beval\s*\(|new\s+Function\s*\(/.test(text)) { problems++; R.err(`Dangerous JS dynamic execution in ${file}`); }
   }
   if (!problems) R.ok('Security hygiene passed (no repo path leaks / eval)');

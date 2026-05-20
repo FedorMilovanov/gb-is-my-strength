@@ -27,8 +27,8 @@ node scripts/audit-pro.js
 3. В README можно добавить бейджи:
 
 ```md
-[![Deploy](https://github.com/FedorMilovanov/gb-is-my-strength/actions/workflows/deploy.yml/badge.svg)](https://github.com/FedorMilovanov/gb-is-my-strength/actions/workflows/deploy.yml)
-[![Audit](https://github.com/FedorMilovanov/gb-is-my-strength/actions/workflows/audit.yml/badge.svg)](https://github.com/FedorMilovanov/gb-is-my-strength/actions/workflows/audit.yml)
+[![Deploy](https://github.com/<OWNER>/<REPO>/actions/workflows/deploy.yml/badge.svg)](https://github.com/<OWNER>/<REPO>/actions/workflows/deploy.yml)
+[![Audit](https://github.com/<OWNER>/<REPO>/actions/workflows/audit.yml/badge.svg)](https://github.com/<OWNER>/<REPO>/actions/workflows/audit.yml)
 ```
 
 ## Что проверяет audit-pro.js
@@ -46,10 +46,10 @@ node scripts/audit-pro.js
 - PWA manifest + Service Worker strategy
 - `search-manifest.json`, `series.json`, Нагорная серия
 - `CNAME`, `robots.txt`, `sitemap.xml`, `feed.xml`
-- Security hygiene: нет `/gb-is-my-strength/` leak, нет `eval()`
+- Security hygiene: нет утечек repo-base path, нет `eval()`
 
 ## Важно
 
 `warnings` не блокируют деплой. `errors` блокируют.
 
-Сейчас на свежем репозитории audit-pro проходит: **0 errors**, есть только мягкие предупреждения.
+Сейчас на свежем репозитории audit-pro проходит: **0 errors, 0 warnings**.
