@@ -132,7 +132,7 @@
 
       if (btocTimeLeft) {
         var left = Math.max(1, Math.ceil(readingTime * (100 - pct) / 100));
-        btocTimeLeft.textContent = '📖 Осталось: ~' + left + ' мин';
+        btocTimeLeft.textContent = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="vertical-align:middle;margin-top:-2px"><path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1 0-5H20"/></svg> Осталось: ~' + left + ' мин';
       }
     }
 
@@ -233,13 +233,13 @@
               '<div class="btoc-title" id="btocTitle">Содержание</div>' +
               '<div class="btoc-subtitle" id="btocSubtitle">' + sectionCount + ' разделов</div>' +
             '</div>' +
-            '<button aria-label="Закрыть" class="btoc-close" id="btocClose" type="button">✕</button>' +
+            '<button aria-label="Закрыть" class="btoc-close" id="btocClose" type="button"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>' +
           '</div>' +
           '<div class="btoc-progress-row">' +
             '<div class="btoc-progress-bar-wrap"><div class="btoc-progress-bar-fill" id="btocProgressFill" style="width:0%"></div></div>' +
             '<span class="btoc-progress-pct" id="btocProgressPct">0%</span>' +
           '</div>' +
-          '<div class="btoc-reading-time"><span>⏱️ ~' + readingTime + ' мин чтения</span><span id="btocTimeLeft">📖 Осталось: ~' + readingTime + ' мин</span></div>' +
+          '<div class="btoc-reading-time"><span><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="vertical-align:middle;margin-top:-1px"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg> ~' + readingTime + ' мин чтения</span><span id="btocTimeLeft"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="vertical-align:middle;margin-top:-2px"><path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1 0-5H20"/></svg> Осталось: ~' + readingTime + ' мин</span></div>' +
           '<nav class="btoc-nav" id="btocNav" aria-label="Оглавление"></nav>' +
           '<div class="btoc-footer">' +
             '<button aria-label="Поделиться страницей" class="btoc-share-btn" id="btocShareBtn" type="button">' +
