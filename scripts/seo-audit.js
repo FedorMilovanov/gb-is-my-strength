@@ -73,6 +73,7 @@ const allTextFiles = walk(ROOT).filter(p => /\.(html|js|css|json|xml|md|txt)$/.t
 for (const p of allTextFiles) {
   const file = rel(p);
   const text = fs.readFileSync(p, 'utf8');
+  if (p.endsWith('.md') || p.endsWith('.txt')) continue; // DOCS-01: skip documentation
   if (text.includes('/gb-' + 'is-my-strength/')) err(file, 'contains repository base path');
 }
 

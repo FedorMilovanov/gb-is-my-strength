@@ -237,7 +237,7 @@
         <span id="gb-hl-title">Мои цитаты</span>
         <span id="gb-hl-count">0</span>
         <button id="gb-hl-export" title="Экспорт в Markdown">↓ Markdown</button>
-        <button id="gb-hl-close" aria-label="Закрыть">✕</button>
+        <button id="gb-hl-close" aria-label="Закрыть"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="vertical-align:middle;margin-top:-1px"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
       </div>
       <div id="gb-hl-list"></div>
     </div>
@@ -287,7 +287,7 @@
           <a href="${escHtml(h.url)}" target="_blank" rel="noopener">${escHtml(h.articleTitle || 'Статья')}</a>
           <span>·</span>
           <span>${date}</span>
-          <button class="gb-hl-del" data-id="${h.id}" aria-label="Удалить цитату">✕</button>
+          <button class="gb-hl-del" data-id="${h.id}" aria-label="Удалить цитату"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="vertical-align:middle;margin-top:-1px"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
         </div>
       </div>`;
     }).join('');
@@ -467,7 +467,7 @@
 
       var span = saveBtn.querySelector('span');
       var orig = span.textContent;
-      span.textContent = '✓ Сохранено';
+      span.textContent = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="vertical-align:middle;margin-top:-1px"><polyline points="20 6 9 17 4 12"/></svg> Сохранено';
       setTimeout(function(){ span.textContent = orig; }, 2000);
 
       popup.classList.remove('ss-visible');
