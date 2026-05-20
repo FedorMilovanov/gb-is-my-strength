@@ -6675,6 +6675,8 @@ button, a, [role="button"], [tabindex="0"], summary, input, textarea, select {
 [onclick], [data-tip], [data-toggle], [data-popover] {
   cursor: pointer;
 }
+/* @layer utilities: глобальные утилиты (ранее вне @layer, AUDIT-V2 / CSS-01) */
+@layer utilities {
 
 
 
@@ -6818,6 +6820,7 @@ button, a, [role="button"], [tabindex="0"], summary, input, textarea, select {
 
 
 :root {
+} /* @layer utilities */
   --color-amber: #d97706;
   --color-blue: #2b6cb0;
   --color-rose: #e11d48;
