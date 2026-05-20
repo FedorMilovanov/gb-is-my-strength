@@ -1656,6 +1656,87 @@
     var cfg = SiteUtils.getConfig('features.quiz', {});
     if (cfg.enabled === false) return;
 
+    /* ---- 0. Auto-inject DOM scaffold if placeholder exists ---- */
+    var quizAnchor = document.getElementById('quizPlaceholder');
+    if (!document.getElementById('quizWrapper') && quizAnchor) {
+      quizAnchor.innerHTML = '<div class="quiz-wrapper" id="quizWrapper">' +
+        '<div class="quiz-overlay" id="quizOverlay">' +
+          '<button aria-label="Пройти тест" class="quiz-launch-hero" id="quizLaunch">' +
+            '<span class="quiz-launch-icon">' +
+              '<svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg>' +
+            '</span>' +
+            '<span class="quiz-launch-label">Пройти тест</span>' +
+            '<span class="quiz-launch-hint" id="quizHintLabel">проверь себя</span>' +
+          '</button>' +
+        '</div>' +
+        '<div class="quiz-main quiz-main--hidden" id="quizMain">' +
+          '<div id="quizBody">' +
+            '<div class="quiz-counter-row">' +
+              '<div class="quiz-counter" id="quizCounter"></div>' +
+              '<div class="quiz-progress-wrap"><div class="quiz-progress-fill" id="quizFill" style="width:0%"></div></div>' +
+            '</div>' +
+            '<p class="quiz-question-text" id="quizQuestion"></p>' +
+            '<p class="quiz-focus" id="quizFocus" style="display:none"></p>' +
+            '<div class="quiz-options" id="quizOptions" role="radiogroup" aria-labelledby="quizQuestion"></div>' +
+            '<div class="quiz-feedback" id="quizFeedback" aria-live="polite" aria-atomic="true"></div>' +
+            '<button class="quiz-next-btn" id="quizNext" style="display:none">Следующий вопрос →</button>' +
+          '</div>' +
+          '<div class="quiz-result" id="quizResult" style="display:none">' +
+            '<div class="quiz-result__fraction"><span id="quizResultScore">0</span><span>/<span id="quizResultTotal">10</span></span></div>' +
+            '<div class="quiz-result__label" id="quizResultLabel"></div>' +
+            '<div class="quiz-result__bar-wrap"><div class="quiz-result__bar" id="quizResultBar" style="width:0%"></div></div>' +
+            '<div class="quiz-result__desc" id="quizScoreDesc"></div>' +
+            '<div class="quiz-result__actions">' +
+              '<span id="quizScore"></span>' +
+              '<span id="quizScoreBadge"></span>' +
+              '<span id="quizScoreTitle"></span>' +
+              '<button class="quiz-restart-btn" id="quizRestart">Пройти заново</button>' +
+              '<button class="quiz-share-btn" id="quizShare">Поделиться</button>' +
+            '</div>' +
+          '</div>' +
+        '</div>' +
+        '<div id="quizBonusSection" style="display:none">' +
+          '<div class="quiz-bonus-header">' +
+            '<div class="quiz-bonus-lock" id="quizBonusLock">Ответьте правильно на все вопросы, чтобы разблокировать бонусный раунд.</div>' +
+            '<div class="quiz-bonus-unlock" id="quizBonusUnlock" style="display:none">' +
+              '<div class="quiz-bonus-badge">Бонусный раунд</div>' +
+              '<p>Вы прошли основной тест без единой ошибки! Проверьте глубину понимания.</p>' +
+              '<button class="quiz-bonus-start-btn" id="quizBonusStart">Начать бонусный раунд →</button>' +
+            '</div>' +
+          '</div>' +
+          '<div id="quizBonusBody" style="display:none">' +
+            '<div class="quiz-counter-row">' +
+              '<div class="quiz-counter" id="quizBonusCounter"></div>' +
+              '<div class="quiz-progress-wrap"><div class="quiz-progress-fill" id="quizBonusFill" style="width:0%"></div></div>' +
+            '</div>' +
+            '<p class="quiz-question-text" id="quizBonusQuestion"></p>' +
+            '<p class="quiz-focus" id="quizBonusFocus" style="display:none"></p>' +
+            '<div class="quiz-options" id="quizBonusOptions" role="radiogroup"></div>' +
+            '<div class="quiz-feedback" id="quizBonusFeedback" aria-live="polite"></div>' +
+            '<button class="quiz-next-btn" id="quizBonusNext" style="display:none">Следующий →</button>' +
+          '</div>' +
+          '<div class="quiz-bonus-result" id="quizBonusResult" style="display:none">' +
+            '<div id="quizBonusScore"></div>' +
+            '<div id="quizBonusScoreTitle"></div>' +
+            '<div id="quizBonusScoreBadge"></div>' +
+            '<div id="quizBonusScoreDesc"></div>' +
+          '</div>' +
+        '</div>' +
+      '</div>';
+      // Update hint label with correct count
+      var qHint = document.getElementById('quizHintLabel');
+      if (qHint) {
+        var qs = SiteUtils.getConfig('quiz.questions', []);
+        if (qs.length) qHint.textContent = 'проверь себя — ' + qs.length + ' вопросов';
+      }
+      // Update result total
+      var qTotal = document.getElementById('quizResultTotal');
+      if (qTotal) {
+        var qs = SiteUtils.getConfig('quiz.questions', []);
+        if (qs.length) qTotal.textContent = qs.length;
+      }
+    }
+    
     var wrapper  = document.getElementById('quizWrapper');
     var quizMain = document.getElementById('quizMain');
     if (!wrapper) return;
