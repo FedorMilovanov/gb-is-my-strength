@@ -1,6 +1,6 @@
 /* ============================================================
    sw.js — Service Worker
-   Господь Бог — Сила Моя · v1.0
+   Господь Бог — Сила Моя · v1.6.0
 
    Стратегии:
    — CSS / JS / шрифты / иконки → Cache First
@@ -9,7 +9,7 @@
    — Все остальные запросы → Network First
    ============================================================ */
 
-var CACHE_VERSION = 'gb-v4-a9e29d';
+var CACHE_VERSION = 'gb-v160-a9e29d';
 var CACHE_STATIC   = CACHE_VERSION + '-static';
 var CACHE_CONTENT  = CACHE_VERSION + '-content';
 var CACHE_IMAGES   = CACHE_VERSION + '-images';
