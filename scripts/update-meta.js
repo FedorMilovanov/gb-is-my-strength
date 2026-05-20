@@ -49,8 +49,9 @@ function toMoscowISO(d) {
   return `${m.getUTCFullYear()}-${p(m.getUTCMonth()+1)}-${p(m.getUTCDate())}T${p(m.getUTCHours())}:${p(m.getUTCMinutes())}:${p(m.getUTCSeconds())}${TZ_OFFSET}`;
 }
 
-function toDate(d)   { return toMoscowISO(d).slice(0, 10); }
-function toRFC(d)    { return new Date(d).toUTCString().replace('GMT', '+0000'); }
+function toDate(d)           { return toMoscowISO(d).slice(0, 10); }
+function toSitemapLastmod(d) { return toMoscowISO(d); }  // SITEMAP-01: full ISO8601 with +03:00
+function toRFC(d)    { return new Date(new Date(d).getTime() + 3*3600000).toUTCString().replace('GMT', '+0300'); }  // UPDATE-01: Moscow +03:00
 
 // ── Git ───────────────────────────────────────────────────────────────────────
 
@@ -269,7 +270,7 @@ function updateSitemap(changes) {
   for (const slug of getAllSlugs().filter(s => !have.has(s))) {
     const mod = changes[slug]?.modISO ?? gitDate(path.join(ARTICLES, slug), 'last') ?? new Date().toISOString();
     xml = xml.replace('</urlset>',
-      `\n  <url>\n    <loc>${BASE_URL}/articles/${slug}/</loc>\n    <lastmod>${toDate(mod)}</lastmod>\n    <changefreq>monthly</changefreq>\n    <priority>0.9</priority>\n  </url>\n</urlset>`);
+      `\n  <url>\n    <loc>${BASE_URL}/articles/${slug}/</loc>\n    <lastmod>${toSitemapLastmod(mod)}</lastmod>\n    <changefreq>monthly</changefreq>\n    <priority>0.9</priority>\n  </url>\n</urlset>`);
     console.log(`    + sitemap: ${slug}`);
   }
 
