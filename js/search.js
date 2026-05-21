@@ -692,33 +692,35 @@
   var AUTHOR_SUGGESTIONS = ['Фёдор', 'Абнер'];
 
   function showDefaultAuthors() {
-    var chips = AUTHOR_SUGGESTIONS.map(function (s) {
-      return '<button class="cp-sug-btn" data-sug="' + escHtml(s) + '">' +
-               SVG.user12 + escHtml(s) +
-             '</button>';
-    }).join('');
-
-    listEl.innerHTML =
-      '<div class="cp-empty">' +
-        '<div class="cp-empty-visual"><span class="cp-empty-icon">' + SVG.user12 + '</span></div>' +
-        '<p class="cp-empty-title">Поиск по авторам</p>' +
-        '<p class="cp-empty-sub">Введите имя — или выберите:</p>' +
-        '<div class="cp-suggestions">' + chips + '</div>' +
-      '</div>';
-
-    statusEl.textContent = '';
-    currentItems = [];
-    showPreviewPlaceholder();
-
-    listEl.querySelectorAll('.cp-sug-btn').forEach(function (btn) {
-      btn.addEventListener('click', function () {
-        var s = btn.dataset.sug;
-        input.value = s;
-        query       = s;
-        clearBtn.style.display = '';
-        activeIdx   = 0;
-        runSearch(s);
-        input.focus();
+    loadSearchManifest(function () {
+      var byAuthor = {};
+      var order = [];
+      _manifestItems
+        .filter(function (x) { return x.type === 'article' || x.type === 'series'; })
+        .forEach(function (x) {
+          var a = x.author || x.editor || 'Без автора';
+          a = String(a).replace(/^Редактор:\s*/i, '');
+          if (!byAuthor[a]) { byAuthor[a] = []; order.push(a); }
+          byAuthor[a].push(manifestToItem(x));
+        });
+      if (order.length) {
+        renderGroups(order.map(function (a) { return { name: a, items: byAuthor[a] }; }));
+        return;
+      }
+      var chips = AUTHOR_SUGGESTIONS.map(function (s) {
+        return '<button class="cp-sug-btn" data-sug="' + escHtml(s) + '">' +
+                 SVG.user12 + escHtml(s) +
+               '</button>';
+      }).join('');
+      listEl.innerHTML = '<div class="cp-empty"><p class="cp-empty-title">Поиск по авторам</p><div class="cp-suggestions">' + chips + '</div></div>';
+      statusEl.textContent = '';
+      currentItems = [];
+      showPreviewPlaceholder();
+      listEl.querySelectorAll('.cp-sug-btn').forEach(function (btn) {
+        btn.addEventListener('click', function () {
+          var s = btn.dataset.sug;
+          input.value = s; query = s; clearBtn.style.display = ''; activeIdx = 0; runSearch(s); input.focus();
+        });
       });
     });
   }
