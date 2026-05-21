@@ -7826,3 +7826,213 @@ html:not(.dark) body.nagornaya-page .gb-accuracy-inner {
   background: transparent !important;
   border-color: rgba(28,25,23,0.08) !important;
 }
+
+/* ═══════════════════════════════════════════════════════════════
+   AUDIT v10: visual polish — Nagornaya quiz / palette / summary
+   ═══════════════════════════════════════════════════════════════ */
+body.nagornaya-page #quizPlaceholder {
+  min-height: 0;
+}
+body.nagornaya-page .quiz-wrapper {
+  max-width: 700px !important;
+  min-height: 0 !important;
+  contain: none !important;
+  content-visibility: visible !important;
+  contain-intrinsic-size: auto !important;
+  margin: 20px auto 36px !important;
+  padding: clamp(18px, 2.4vw, 26px) !important;
+  border-radius: 18px !important;
+  background: linear-gradient(180deg, #fffdf8 0%, #f7f2e9 100%) !important;
+  border: 1px solid rgba(120, 83, 46, .18) !important;
+  box-shadow: 0 18px 44px rgba(68, 45, 22, .09), 0 2px 8px rgba(68, 45, 22, .05) !important;
+}
+html.dark body.nagornaya-page .quiz-wrapper {
+  background: linear-gradient(180deg, #211b16 0%, #181410 100%) !important;
+  border-color: rgba(245, 213, 166, .13) !important;
+  box-shadow: 0 18px 44px rgba(0, 0, 0, .24) !important;
+}
+body.nagornaya-page .quiz-main,
+body.nagornaya-page .quiz-main--hidden,
+body.nagornaya-page #quizBody,
+body.nagornaya-page .quiz-card,
+body.nagornaya-page .quiz-question,
+body.nagornaya-page .quiz-options {
+  min-height: 0 !important;
+}
+body.nagornaya-page .quiz-main--hidden {
+  filter: none !important;
+  opacity: 1 !important;
+}
+body.nagornaya-page .quiz-counter-row {
+  margin-bottom: 16px !important;
+}
+body.nagornaya-page .quiz-counter {
+  color: #7c5b3a !important;
+}
+html.dark body.nagornaya-page .quiz-counter {
+  color: rgba(245, 226, 198, .68) !important;
+}
+body.nagornaya-page .quiz-progress-wrap {
+  background: rgba(120, 83, 46, .14) !important;
+}
+body.nagornaya-page .quiz-progress-fill {
+  background: linear-gradient(90deg, #7a2e2e, #b8752b) !important;
+}
+body.nagornaya-page .quiz-question-text {
+  margin-bottom: 14px !important;
+  color: #21170f !important;
+}
+html.dark body.nagornaya-page .quiz-question-text {
+  color: #f4eadb !important;
+}
+body.nagornaya-page .quiz-options {
+  gap: 10px !important;
+}
+body.nagornaya-page .quiz-option {
+  display: flex !important;
+  align-items: flex-start !important;
+  gap: 8px !important;
+  width: 100% !important;
+  padding: 12px 14px !important;
+  border-radius: 12px !important;
+  border: 1px solid rgba(120, 83, 46, .18) !important;
+  background: rgba(255,255,255,.64) !important;
+  box-shadow: 0 1px 0 rgba(255,255,255,.55) inset !important;
+  transition: transform .16s ease, border-color .16s ease, background .16s ease, box-shadow .16s ease !important;
+}
+body.nagornaya-page .quiz-option:hover:not(:disabled) {
+  transform: translateY(-1px);
+  background: #fffaf1 !important;
+  border-color: rgba(122, 46, 46, .34) !important;
+  box-shadow: 0 8px 20px rgba(68, 45, 22, .08) !important;
+}
+html.dark body.nagornaya-page .quiz-option {
+  background: rgba(255,255,255,.045) !important;
+  border-color: rgba(255,255,255,.10) !important;
+  color: #efe4d4 !important;
+}
+html.dark body.nagornaya-page .quiz-option:hover:not(:disabled) {
+  background: rgba(245, 213, 166, .08) !important;
+  border-color: rgba(245, 213, 166, .24) !important;
+}
+body.nagornaya-page .quiz-option.correct {
+  background: #edf8ef !important;
+  border-color: #5fa36d !important;
+  color: #235730 !important;
+}
+body.nagornaya-page .quiz-option.wrong {
+  background: #fff0ef !important;
+  border-color: #b8645f !important;
+  color: #7a2e2e !important;
+}
+html.dark body.nagornaya-page .quiz-option.correct {
+  background: rgba(58, 133, 81, .18) !important;
+  border-color: rgba(108, 198, 130, .45) !important;
+  color: #99e2aa !important;
+}
+html.dark body.nagornaya-page .quiz-option.wrong {
+  background: rgba(152, 64, 59, .20) !important;
+  border-color: rgba(231, 126, 118, .42) !important;
+  color: #ffb1aa !important;
+}
+body.nagornaya-page .quiz-feedback {
+  min-height: 0 !important;
+  margin-top: 12px !important;
+  padding: 0 !important;
+}
+body.nagornaya-page .quiz-feedback.ok,
+body.nagornaya-page .quiz-feedback.err {
+  padding: 10px 12px !important;
+  border-radius: 12px !important;
+  background: rgba(120, 83, 46, .07) !important;
+  border: 1px solid rgba(120, 83, 46, .12) !important;
+}
+body.nagornaya-page .quiz-next-btn {
+  width: 100% !important;
+  margin-top: 12px !important;
+  padding: 12px 18px !important;
+  border-radius: 12px !important;
+  background: #7a2e2e !important;
+  border-color: #7a2e2e !important;
+  color: #fff !important;
+}
+body.nagornaya-page .quiz-next-btn:hover {
+  background: #662626 !important;
+}
+
+/* Softer day palette for the Nagornaya sidebar/cards. */
+html:not(.dark) body.nagornaya-page aside a.bg-amber-600,
+html:not(.dark) body.nagornaya-page #mobileMenu a.bg-amber-600 {
+  background: linear-gradient(135deg, #8a3a1f 0%, #b2672b 100%) !important;
+  color: #fffaf2 !important;
+  box-shadow: 0 10px 22px rgba(138, 58, 31, .18) !important;
+}
+html:not(.dark) body.nagornaya-page aside a.bg-amber-600 .text-amber-200,
+html:not(.dark) body.nagornaya-page #mobileMenu a.bg-amber-600 .text-amber-200 {
+  color: rgba(255, 239, 215, .82) !important;
+}
+html:not(.dark) body.nagornaya-page .text-amber-400,
+html:not(.dark) body.nagornaya-page .text-amber-500,
+html:not(.dark) body.nagornaya-page .text-amber-600 {
+  color: #9a4f13 !important;
+}
+html:not(.dark) body.nagornaya-page #read-progress {
+  background: linear-gradient(90deg, #7a2e2e, #b2672b) !important;
+}
+body.nagornaya-page a.group > .p-5.text-white[style*="linear-gradient"],
+body.nagornaya-page a.group > .bg-gradient-to-br.p-5.text-white {
+  background: linear-gradient(135deg, #6f3325 0%, #9a4f23 100%) !important;
+}
+body.nagornaya-page a.group:nth-child(2) > .p-5.text-white[style*="linear-gradient"] {
+  background: linear-gradient(135deg, #315b46 0%, #1f4233 100%) !important;
+}
+body.nagornaya-page a.group:nth-child(3) > .p-5.text-white[style*="linear-gradient"] {
+  background: linear-gradient(135deg, #4b3f72 0%, #332a55 100%) !important;
+}
+body.nagornaya-page a.group:nth-child(5) > .p-5.text-white[style*="linear-gradient"] {
+  background: linear-gradient(135deg, #783548 0%, #542536 100%) !important;
+}
+
+/* Dark summary should read as a card, not as a black banner. */
+html.dark body.nagornaya-page .nag-summary {
+  background: rgba(245, 235, 218, .07) !important;
+  border-color: rgba(245, 213, 166, .16) !important;
+  box-shadow: 0 14px 32px rgba(0,0,0,.16) !important;
+}
+html.dark body.nagornaya-page .nag-summary__head {
+  color: rgba(245, 226, 198, .72) !important;
+}
+html.dark body.nagornaya-page .nag-summary__item {
+  color: rgba(250, 243, 232, .88) !important;
+}
+
+/* Articles catalog: wider, less “narrow block in the middle” on desktop. */
+body.articles-index-page .home-content {
+  max-width: min(1120px, calc(100vw - 80px));
+}
+body.articles-index-page .h-hero {
+  max-width: 860px;
+}
+body.articles-index-page .h-article-card {
+  border: 1px solid rgba(120, 83, 46, .11);
+  border-radius: 18px;
+  padding: 18px;
+  margin-bottom: 14px;
+  background: rgba(255,255,255,.44);
+}
+body.articles-index-page .h-article-card:hover {
+  background: rgba(255,255,255,.72);
+  box-shadow: 0 16px 42px rgba(68,45,22,.08);
+}
+html.dark body.articles-index-page .h-article-card {
+  background: rgba(255,255,255,.035);
+  border-color: rgba(255,255,255,.08);
+}
+@media (max-width: 760px) {
+  body.articles-index-page .home-content {
+    max-width: none;
+  }
+  body.articles-index-page .h-article-card {
+    padding: 14px;
+  }
+}
