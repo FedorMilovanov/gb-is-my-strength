@@ -7681,3 +7681,143 @@ html:not(.dark) body.nagornaya-page .gb-accuracy-btn:hover {
   border-color: rgba(28,25,23,0.18);
   color: var(--text, #1c1917);
 }
+
+/* ═══════════════════════════════════════════════════════════════
+   AUDIT v9: SUMMARY КАК НА СКРИНЕ (бордовый header, галочки)
+   ═══════════════════════════════════════════════════════════════ */
+
+/* Убираем nag-summary, возвращаем summary-card стиль */
+body.nagornaya-page .nag-summary {
+  margin: 0 0 20px !important;
+  padding: 0 !important;
+  background: transparent !important;
+  border: none !important;
+  border-radius: 12px !important;
+  overflow: hidden !important;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.08) !important;
+}
+
+body.nagornaya-page .nag-summary__head {
+  background: #7a1f1f !important;
+  color: #fff !important;
+  padding: 12px 18px !important;
+  font-family: 'Source Sans 3', system-ui, sans-serif !important;
+  font-size: 11px !important;
+  font-weight: 700 !important;
+  letter-spacing: 0.12em !important;
+  text-transform: uppercase !important;
+  margin: 0 !important;
+  line-height: 1 !important;
+  border: none !important;
+}
+html.dark body.nagornaya-page .nag-summary__head {
+  background: #5a1818 !important;
+}
+
+body.nagornaya-page .nag-summary__list {
+  list-style: none !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  background: #fff !important;
+  display: block !important;
+  gap: 0 !important;
+}
+html.dark body.nagornaya-page .nag-summary__list {
+  background: #1f1a15 !important;
+}
+
+body.nagornaya-page .nag-summary__item {
+  display: flex !important;
+  align-items: flex-start !important;
+  gap: 12px !important;
+  padding: 12px 18px !important;
+  font-size: 14px !important;
+  line-height: 1.5 !important;
+  color: #1c1917 !important;
+  border-bottom: 1px solid #f0ede8 !important;
+  position: relative !important;
+}
+body.nagornaya-page .nag-summary__item:last-child {
+  border-bottom: none !important;
+}
+html.dark body.nagornaya-page .nag-summary__item {
+  color: #e7e5e4 !important;
+  border-bottom-color: #2a241f !important;
+}
+
+/* Зеленая галочка в кружочке */
+body.nagornaya-page .nag-summary__item::before {
+  content: '' !important;
+  flex-shrink: 0 !important;
+  width: 18px !important;
+  height: 18px !important;
+  border-radius: 50% !important;
+  border: 1.5px solid #86a788 !important;
+  background: #f0f7f1 !important;
+  margin-top: 2px !important;
+  position: relative !important;
+  display: block !important;
+}
+body.nagornaya-page .nag-summary__item::after {
+  content: '' !important;
+  position: absolute !important;
+  left: 23px !important;
+  top: 18px !important;
+  width: 8px !important;
+  height: 4.5px !important;
+  border-left: 2px solid #4a7c4e !important;
+  border-bottom: 2px solid #4a7c4e !important;
+  transform: rotate(-45deg) !important;
+  transform-origin: center !important;
+}
+html.dark body.nagornaya-page .nag-summary__item::before {
+  background: rgba(134, 167, 136, 0.15) !important;
+  border-color: #6b8e6e !important;
+}
+html.dark body.nagornaya-page .nag-summary__item::after {
+  border-color: #86a788 !important;
+}
+
+body.nagornaya-page .nag-summary__num {
+  display: none !important;
+}
+body.nagornaya-page .nag-summary__text {
+  margin: 0 !important;
+  flex: 1 !important;
+}
+
+/* QUIZ — как в Иеремии */
+body.nagornaya-page .quiz-wrapper {
+  max-width: 720px !important;
+  margin: 24px auto !important;
+}
+
+/* AUTHOR — ограничение */
+body.nagornaya-page .author-card {
+  max-width: 720px !important;
+  margin-left: auto !important;
+  margin-right: auto !important;
+}
+
+/* THEME вверху */
+.nag-sidebar-controls {
+  padding: 10px 20px !important;
+  margin: 0 !important;
+  border-bottom: 1px solid rgba(255,255,255,0.08) !important;
+  background: rgba(0,0,0,0.12) !important;
+}
+
+/* Убрать свечение полностью */
+html.dark .h-scripture-bg::before {
+  background: none !important;
+}
+
+/* Accuracy прозрачный */
+body.nagornaya-page .gb-accuracy-inner {
+  background: transparent !important;
+  border-color: rgba(255,255,255,0.08) !important;
+}
+html:not(.dark) body.nagornaya-page .gb-accuracy-inner {
+  background: transparent !important;
+  border-color: rgba(28,25,23,0.08) !important;
+}
