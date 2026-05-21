@@ -6852,15 +6852,10 @@ button, a, [role="button"], [tabindex="0"], summary, input, textarea, select {
 
 } /* @layer utilities */
 
-/* === AUDIT-FIXES INLINE START === (auto-merged audit-fixes.css v5) */
-/* ============================================================
-   AUDIT FIXES — v5 (DEEP POLISH PASS)
-   Generated: 2026-05-21
-   Подключается в КОНЕЦ site.css (через inline-merge).
-   ============================================================ */
+/* === AUDIT-FIXES INLINE START === (v6 deep polish, 2026-05-21) */
 
 /* ════════════════════════════════════════════════════════════
-   1. SUMMARY-CARD — премиум-редизайн (по эталону DALL·E v4)
+   1. SUMMARY-CARD — финал (по DALL·E эталону, фикс контраста)
    ════════════════════════════════════════════════════════════ */
 .summary-card {
   position: relative;
@@ -6870,19 +6865,18 @@ button, a, [role="button"], [tabindex="0"], summary, input, textarea, select {
   border: 1px solid color-mix(in srgb, var(--border, #e7e2d8) 80%, transparent);
   border-radius: 20px;
   box-shadow:
-    0 1px 0 rgba(255, 255, 255, .8) inset,
-    0 1px 2px rgba(28, 25, 23, .03),
-    0 18px 48px -28px rgba(28, 25, 23, .14),
-    0 6px 18px -10px rgba(28, 25, 23, .06);
+    0 1px 0 rgba(255,255,255,.8) inset,
+    0 1px 2px rgba(28,25,23,.03),
+    0 18px 48px -28px rgba(28,25,23,.14),
+    0 6px 18px -10px rgba(28,25,23,.06);
 }
 html.dark .summary-card {
   background: var(--bg-elevated, #1f1a15);
   border-color: color-mix(in srgb, var(--border, #3a3028) 90%, transparent);
   box-shadow:
-    0 1px 0 rgba(255, 255, 255, .04) inset,
-    0 1px 2px rgba(0, 0, 0, .35),
-    0 22px 56px -28px rgba(0, 0, 0, .65),
-    0 6px 18px -10px rgba(0, 0, 0, .25);
+    0 1px 0 rgba(255,255,255,.04) inset,
+    0 1px 2px rgba(0,0,0,.35),
+    0 22px 56px -28px rgba(0,0,0,.65);
 }
 .summary-card__head {
   background: transparent !important;
@@ -6916,6 +6910,7 @@ html.dark .summary-card {
   display: flex;
   flex-direction: column;
   gap: clamp(10px, 1.4vw, 14px);
+  counter-reset: summaryitem;
 }
 .summary-card__item {
   display: grid !important;
@@ -6927,32 +6922,40 @@ html.dark .summary-card {
   border: 1px solid color-mix(in srgb, var(--border, #e7e2d8) 60%, transparent) !important;
   border-radius: 14px !important;
   box-shadow:
-    0 1px 0 rgba(255, 255, 255, .6) inset,
-    0 1px 2px rgba(28, 25, 23, .03),
-    0 6px 14px -10px rgba(28, 25, 23, .10);
-  transition: transform .22s cubic-bezier(.22, 1, .36, 1), box-shadow .22s ease, border-color .22s ease;
+    0 1px 0 rgba(255,255,255,.6) inset,
+    0 1px 2px rgba(28,25,23,.03),
+    0 6px 14px -10px rgba(28,25,23,.10);
+  transition: transform .22s cubic-bezier(.22,1,.36,1), box-shadow .22s ease, border-color .22s ease;
+  counter-increment: summaryitem;
 }
-.summary-card__item:last-child { border-bottom: 1px solid color-mix(in srgb, var(--border, #e7e2d8) 60%, transparent) !important; }
 .summary-card__item:hover {
   transform: translateY(-1px);
   box-shadow:
-    0 1px 0 rgba(255, 255, 255, .8) inset,
-    0 2px 4px rgba(28, 25, 23, .04),
-    0 12px 26px -12px rgba(28, 25, 23, .18);
+    0 1px 0 rgba(255,255,255,.8) inset,
+    0 2px 4px rgba(28,25,23,.04),
+    0 12px 26px -12px rgba(28,25,23,.18);
   border-color: color-mix(in srgb, var(--accent, #7a2e2e) 28%, var(--border, #e7e2d8)) !important;
 }
 html.dark .summary-card__item {
   background: color-mix(in srgb, var(--bg-elevated, #1f1a15) 96%, transparent) !important;
   border-color: color-mix(in srgb, var(--border, #3a3028) 85%, transparent) !important;
-  box-shadow: 0 1px 0 rgba(255, 255, 255, .03) inset, 0 1px 2px rgba(0, 0, 0, .35), 0 8px 18px -10px rgba(0, 0, 0, .55);
+  box-shadow:
+    0 1px 0 rgba(255,255,255,.03) inset,
+    0 1px 2px rgba(0,0,0,.35),
+    0 8px 18px -10px rgba(0,0,0,.55);
 }
+
+/* Кружок-чекмарк (зелёный) */
 .summary-card__check {
   width: clamp(34px, 4.4vw, 44px) !important;
   height: clamp(34px, 4.4vw, 44px) !important;
   border-radius: 50% !important;
   background: #fff !important;
   border: 1px solid color-mix(in srgb, #6ba368 35%, var(--border, #e7e2d8)) !important;
-  box-shadow: 0 1px 0 rgba(255, 255, 255, .9) inset, 0 2px 6px -2px rgba(28, 25, 23, .08), 0 1px 2px rgba(28, 25, 23, .04);
+  box-shadow:
+    0 1px 0 rgba(255,255,255,.9) inset,
+    0 2px 6px -2px rgba(28,25,23,.08),
+    0 1px 2px rgba(28,25,23,.04);
   display: grid !important; place-items: center !important;
   flex-shrink: 0; margin: 0 !important; padding: 0 !important;
   color: #4a8a4a !important;
@@ -6982,42 +6985,48 @@ html.dark .summary-card__check {
   border-bottom: 2.5px solid currentColor;
   transform: rotate(-45deg) translateY(-2px);
 }
-.summary-card__item { counter-increment: summaryitem; }
-.summary-card__body { counter-reset: summaryitem; }
+
+/* Цифры 01-NN — критично: НЕ опираемся на --accent (часто розовый в dark),
+   используем тёплый amber/gold с достаточным контрастом на любом hero-фоне */
 .summary-card__num {
   font-family: 'Playfair Display', 'Cormorant Garamond', Georgia, serif;
-  font-weight: 500;
-  font-size: clamp(20px, 2.8vw, 28px);
+  font-weight: 600;
+  font-size: clamp(22px, 3vw, 30px);
   line-height: 1;
-  color: var(--accent, #7a2e2e);
+  color: #b8860b;  /* dark goldenrod — viewable on tan, dark, bordeaux */
   letter-spacing: .02em;
   padding: 0 clamp(14px, 2vw, 22px) 0 clamp(10px, 1.6vw, 16px);
   border-right: 1px solid color-mix(in srgb, var(--border, #e7e2d8) 90%, transparent);
   align-self: stretch;
   display: flex; align-items: center; justify-content: flex-start;
   user-select: none;
+  text-shadow: 0 1px 0 rgba(255,255,255,.4);
 }
 html.dark .summary-card__num {
-  color: var(--accent-soft, #d4a4a4);
+  color: #e0b157;  /* warm gold для dark */
   border-right-color: color-mix(in srgb, var(--border, #3a3028) 95%, transparent);
+  text-shadow: 0 1px 2px rgba(0,0,0,.4);
 }
 .summary-card__item:not(:has(.summary-card__num))::before {
   content: counter(summaryitem, decimal-leading-zero);
   font-family: 'Playfair Display', 'Cormorant Garamond', Georgia, serif;
-  font-weight: 500;
-  font-size: clamp(20px, 2.8vw, 28px);
+  font-weight: 600;
+  font-size: clamp(22px, 3vw, 30px);
   line-height: 1;
-  color: var(--accent, #7a2e2e);
+  color: #b8860b;
   letter-spacing: .02em;
   padding: 0 clamp(14px, 2vw, 22px) 0 clamp(10px, 1.6vw, 16px);
   border-right: 1px solid color-mix(in srgb, var(--border, #e7e2d8) 90%, transparent);
   align-self: stretch;
   display: flex; align-items: center;
+  text-shadow: 0 1px 0 rgba(255,255,255,.4);
 }
 html.dark .summary-card__item:not(:has(.summary-card__num))::before {
-  color: var(--accent-soft, #d4a4a4);
+  color: #e0b157;
   border-right-color: color-mix(in srgb, var(--border, #3a3028) 95%, transparent);
+  text-shadow: 0 1px 2px rgba(0,0,0,.4);
 }
+
 .summary-card__text {
   font-family: 'Source Sans 3', system-ui, sans-serif !important;
   font-size: clamp(14px, 1.6vw, 15.5px) !important;
@@ -7028,31 +7037,49 @@ html.dark .summary-card__item:not(:has(.summary-card__num))::before {
 }
 .summary-card__text strong { color: var(--accent, #7a2e2e) !important; font-weight: 700 !important; }
 html.dark .summary-card__text strong { color: var(--accent-soft, #d4a4a4) !important; }
+
+/* КРИТИЧНО: drop-cap НЕ должен трогать summary-card */
+.summary-card__text::first-letter,
+.summary-card .drop-cap::first-letter {
+  font-size: inherit !important;
+  float: none !important;
+  margin: 0 !important;
+  color: inherit !important;
+  font-family: inherit !important;
+  font-weight: inherit !important;
+  line-height: inherit !important;
+}
+.summary-card__text.drop-cap {
+  /* класс drop-cap, ошибочно добавленный JS-ом — нейтрализуем */
+}
+
 @media (max-width: 560px) {
   .summary-card { padding: 22px 16px; border-radius: 16px; }
   .summary-card__item { grid-template-columns: 38px 44px 1fr; padding: 12px 14px !important; border-radius: 12px !important; }
   .summary-card__check { width: 32px !important; height: 32px !important; }
-  .summary-card__num, .summary-card__item:not(:has(.summary-card__num))::before { font-size: 20px; padding: 0 12px 0 8px; }
+  .summary-card__num,
+  .summary-card__item:not(:has(.summary-card__num))::before { font-size: 22px; padding: 0 12px 0 8px; }
   .summary-card__text { font-size: 14px !important; padding-left: 12px !important; }
 }
 @media (max-width: 380px) {
   .summary-card__item { grid-template-columns: 32px 1fr; grid-template-rows: auto auto; column-gap: 12px; row-gap: 6px; }
   .summary-card__check { grid-row: 1 / span 2; }
-  .summary-card__num, .summary-card__item:not(:has(.summary-card__num))::before { grid-column: 2; grid-row: 1; border-right: 0; padding: 0; font-size: 18px; opacity: .85; }
+  .summary-card__num,
+  .summary-card__item:not(:has(.summary-card__num))::before {
+    grid-column: 2; grid-row: 1;
+    border-right: 0; padding: 0; font-size: 20px; opacity: .9;
+  }
   .summary-card__text { grid-column: 2; grid-row: 2; padding-left: 0 !important; }
 }
 
 
 /* ════════════════════════════════════════════════════════════
-   2. FOOTNOTE MARKERS — без «лишнего пробела» перед цифрой
+   2. FOOTNOTE MARKERS — без лишнего пробела
    ════════════════════════════════════════════════════════════ */
 .fn-marker {
-  /* убираем визуальный gap между точкой и superscript */
   margin-left: -0.05em !important;
   padding: 0 0.12em !important;
   letter-spacing: 0 !important;
-  font-feature-settings: "sups" 0;  /* отключаем автоматическую трансформацию */
-  /* делаем superscript-цифру более «брендовой» */
   font-family: 'Source Sans 3', system-ui, sans-serif;
   font-weight: 700;
   font-size: 0.7em !important;
@@ -7064,15 +7091,13 @@ html.dark .summary-card__text strong { color: var(--accent-soft, #d4a4a4) !impor
   text-decoration: none;
   transition: color .15s ease, transform .15s ease;
 }
-.fn-marker:hover,
-.fn-marker:focus-visible {
+.fn-marker:hover, .fn-marker:focus-visible {
   color: var(--accent-soft, #d4a4a4);
   transform: translateY(-1px);
   outline: none;
 }
 html.dark .fn-marker { color: var(--accent-soft, #d4a4a4); }
 html.dark .fn-marker:hover { color: #f0c0c0; }
-/* Перевод-сноска (†) — тонко курсивом */
 .fn-marker.fn-trans {
   font-style: italic;
   font-size: 0.85em !important;
@@ -7082,267 +7107,74 @@ html.dark .fn-marker:hover { color: #f0c0c0; }
 
 
 /* ════════════════════════════════════════════════════════════
-   3. INTERACTIVE QUIZ (Tailwind .interactive-quiz / .quiz-btn) —
-   премиум стиль + правильная подсветка ответов + dark-mode aware
+   3. NAGORNAYA THEME TOGGLE — встроенная кнопка в navbar/breadcrumbs
    ════════════════════════════════════════════════════════════ */
-.interactive-quiz {
-  background: var(--bg-elevated, #fff) !important;
-  border: 1px solid var(--border, #e7e2d8) !important;
-  border-radius: 16px !important;
-  padding: clamp(18px, 2.5vw, 28px) !important;
-  margin: clamp(14px, 2vw, 22px) 0;
-  box-shadow:
-    0 1px 0 rgba(255,255,255,.7) inset,
-    0 1px 2px rgba(28,25,23,.03),
-    0 12px 28px -16px rgba(28,25,23,.14);
-  color: var(--text, #1c1917) !important;
-  transition: box-shadow .25s ease;
-}
-html.dark .interactive-quiz {
-  background: var(--bg-elevated, #1f1a15) !important;
-  border-color: var(--border, #3a3028) !important;
-  color: var(--text, #f5ede0) !important;
-  box-shadow: 0 1px 0 rgba(255,255,255,.03) inset, 0 12px 28px -14px rgba(0,0,0,.55);
-}
-.interactive-quiz > div:first-child,
-.interactive-quiz .font-bold,
-.interactive-quiz [class*="text-stone-800"] {
-  color: var(--text, #1c1917) !important;
-}
-html.dark .interactive-quiz > div:first-child,
-html.dark .interactive-quiz .font-bold,
-html.dark .interactive-quiz [class*="text-stone-800"] {
-  color: var(--text, #f5ede0) !important;
-}
-
-.quiz-btn {
-  background: color-mix(in srgb, var(--bg, #faf8f4) 60%, transparent) !important;
-  border: 1.5px solid color-mix(in srgb, var(--border, #e7e2d8) 80%, transparent) !important;
-  color: var(--text, #1c1917) !important;
-  border-radius: 12px !important;
-  padding: clamp(12px, 1.6vw, 16px) clamp(14px, 2vw, 18px) !important;
-  cursor: pointer;
-  transition: background .18s ease, border-color .18s ease, transform .18s ease, box-shadow .18s ease;
-  display: flex; align-items: flex-start; gap: 12px;
-  width: 100%;
-  text-align: left;
-  margin-bottom: 10px;
-  font-size: 14.5px;
-  line-height: 1.5;
-}
-.quiz-btn:hover {
-  background: color-mix(in srgb, var(--accent, #7a2e2e) 4%, var(--bg-elevated, #fff)) !important;
-  border-color: color-mix(in srgb, var(--accent, #7a2e2e) 30%, var(--border, #e7e2d8)) !important;
-  transform: translateY(-1px);
-  box-shadow: 0 6px 18px -10px rgba(28,25,23,.18);
-}
-html.dark .quiz-btn {
-  background: color-mix(in srgb, var(--bg, #171411) 50%, transparent) !important;
-  border-color: color-mix(in srgb, var(--border, #3a3028) 90%, transparent) !important;
-  color: var(--text, #f5ede0) !important;
-}
-html.dark .quiz-btn:hover {
-  background: color-mix(in srgb, var(--accent, #7a2e2e) 14%, var(--bg-elevated, #1f1a15)) !important;
-  border-color: color-mix(in srgb, var(--accent-soft, #d4a4a4) 40%, var(--border, #3a3028)) !important;
-}
-.quiz-btn .quiz-letter {
-  background: var(--bg-elevated, #fff);
-  border: 1.5px solid color-mix(in srgb, var(--accent, #7a2e2e) 25%, var(--border, #e7e2d8)) !important;
-  color: var(--accent, #7a2e2e) !important;
-  font-family: 'Source Sans 3', system-ui, sans-serif;
-  font-weight: 700;
-  width: 28px !important;
-  height: 28px !important;
-  border-radius: 50% !important;
-  display: inline-flex !important;
+.nag-theme-btn {
+  margin-left: auto;
+  display: inline-flex;
   align-items: center;
   justify-content: center;
-  flex-shrink: 0;
-  font-size: 13px;
-}
-html.dark .quiz-btn .quiz-letter {
-  background: color-mix(in srgb, var(--accent, #7a2e2e) 18%, var(--bg-elevated, #1f1a15));
-  border-color: color-mix(in srgb, var(--accent-soft, #d4a4a4) 50%, transparent) !important;
-  color: var(--accent-soft, #d4a4a4) !important;
-}
-.quiz-btn .quiz-text {
-  color: var(--text, #1c1917) !important;
-  font-weight: 500;
-}
-html.dark .quiz-btn .quiz-text { color: var(--text, #f5ede0) !important; }
-
-/* ── состояния после ответа */
-.quiz-btn--answered { cursor: default !important; transform: none !important; }
-.quiz-btn--correct {
-  background: color-mix(in srgb, #4a8a4a 12%, var(--bg-elevated, #fff)) !important;
-  border-color: #4a8a4a !important;
-}
-.quiz-btn--correct .quiz-letter {
-  background: #4a8a4a !important;
-  border-color: #4a8a4a !important;
-  color: #fff !important;
-}
-.quiz-btn--correct .quiz-letter::after {
-  content: "✓";
-  font-size: 14px;
-  position: absolute;
-}
-.quiz-btn--correct .quiz-letter > * { display: none; }
-.quiz-btn--wrong {
-  background: color-mix(in srgb, #b94747 10%, var(--bg-elevated, #fff)) !important;
-  border-color: #b94747 !important;
-}
-.quiz-btn--wrong .quiz-letter {
-  background: #b94747 !important;
-  border-color: #b94747 !important;
-  color: #fff !important;
-}
-.quiz-btn--wrong .quiz-letter::after {
-  content: "✕";
-  font-size: 14px;
-  position: absolute;
-}
-.quiz-btn--wrong .quiz-letter > * { display: none; }
-.quiz-btn--dim {
-  opacity: 0.55;
-  filter: grayscale(0.3);
-}
-html.dark .quiz-btn--correct {
-  background: color-mix(in srgb, #4a8a4a 22%, var(--bg-elevated, #1f1a15)) !important;
-}
-html.dark .quiz-btn--wrong {
-  background: color-mix(in srgb, #b94747 22%, var(--bg-elevated, #1f1a15)) !important;
-}
-
-/* Объяснение */
-.quiz-explanation {
-  background: color-mix(in srgb, var(--accent, #7a2e2e) 5%, var(--bg, #faf8f4)) !important;
-  border: 1px solid color-mix(in srgb, var(--accent, #7a2e2e) 18%, var(--border, #e7e2d8)) !important;
-  border-left: 3px solid var(--accent, #7a2e2e) !important;
-  border-radius: 10px !important;
-  padding: 14px 18px !important;
-  margin-top: 16px !important;
-  color: var(--text, #1c1917) !important;
-  font-size: 14px;
-  line-height: 1.6;
-}
-html.dark .quiz-explanation {
-  background: color-mix(in srgb, var(--accent, #7a2e2e) 15%, var(--bg, #171411)) !important;
-  border-color: color-mix(in srgb, var(--accent-soft, #d4a4a4) 30%, var(--border, #3a3028)) !important;
-  border-left-color: var(--accent-soft, #d4a4a4) !important;
-  color: var(--text, #f5ede0) !important;
-}
-.quiz-explanation .font-bold,
-.quiz-explanation strong,
-.quiz-explanation [class*="text-amber"],
-.quiz-explanation [class*="text-stone"] {
-  color: inherit !important;
-}
-
-
-/* ════════════════════════════════════════════════════════════
-   4. NAGORNAYA/CHAST-* — DARK-MODE для Tailwind-only страниц
-   (страницы заточены под dark по умолчанию, но при html.light/no-dark
-   нужно дать им рабочую светлую тему)
-   ════════════════════════════════════════════════════════════ */
-html:not(.dark) body.nagornaya-page .bg-stone-900,
-html:not(.dark) body.nagornaya-page .bg-stone-950 {
-  background: var(--bg-elevated, #fff) !important;
-  color: var(--text, #1c1917) !important;
-}
-html:not(.dark) body.nagornaya-page .text-stone-300,
-html:not(.dark) body.nagornaya-page .text-stone-400 {
-  color: var(--muted, #78716c) !important;
-}
-html:not(.dark) body.nagornaya-page .text-white {
-  color: var(--text, #1c1917) !important;
-}
-html:not(.dark) body.nagornaya-page .border-stone-700,
-html:not(.dark) body.nagornaya-page .border-stone-800 {
-  border-color: var(--border, #e7e2d8) !important;
-}
-
-
-/* ════════════════════════════════════════════════════════════
-   5. FLOATING THEME TOGGLE (для страниц без своего)
-   ════════════════════════════════════════════════════════════ */
-.theme-float-btn {
-  position: fixed;
-  right: clamp(14px, 2vw, 22px);
-  bottom: clamp(84px, 10vw, 100px); /* над bottom-bar на мобиле */
-  width: 46px; height: 46px;
+  width: 36px; height: 36px;
   border-radius: 50%;
-  border: 1px solid var(--border, #e7e2d8);
-  background: var(--bg-elevated, #fff);
-  color: var(--text, #1c1917);
-  display: grid; place-items: center;
+  background: rgba(255,255,255,0.06);
+  border: 1px solid rgba(255,255,255,0.12);
+  color: #e0d8c8;
   cursor: pointer;
-  z-index: 90;
-  box-shadow:
-    0 1px 0 rgba(255,255,255,.7) inset,
-    0 6px 18px -8px rgba(28,25,23,.22),
-    0 2px 4px rgba(28,25,23,.06);
-  transition: transform .2s ease, box-shadow .2s ease, background .2s ease;
+  transition: background .2s ease, border-color .2s ease, transform .15s ease;
+  flex-shrink: 0;
 }
-.theme-float-btn:hover {
-  transform: translateY(-2px) scale(1.04);
-  box-shadow:
-    0 1px 0 rgba(255,255,255,.7) inset,
-    0 14px 28px -10px rgba(28,25,23,.30),
-    0 4px 8px rgba(28,25,23,.10);
+.nag-theme-btn:hover {
+  background: rgba(255,255,255,0.12);
+  border-color: rgba(255,255,255,0.20);
+  transform: scale(1.06);
 }
-.theme-float-btn:focus-visible { outline: 2px solid var(--accent, #7a2e2e); outline-offset: 2px; }
-html.dark .theme-float-btn {
-  background: var(--bg-elevated, #1f1a15);
-  border-color: var(--border, #3a3028);
-  color: #f5c542;
-  box-shadow: 0 1px 0 rgba(255,255,255,.04) inset, 0 8px 20px -10px rgba(0,0,0,.6);
+.nag-theme-btn:focus-visible {
+  outline: 2px solid #f5c542;
+  outline-offset: 2px;
 }
-/* На десктопе — выше и правее (нет bottom-bar) */
-@media (min-width: 900px) {
-  .theme-float-btn {
-    bottom: clamp(24px, 3vw, 36px);
-    width: 50px; height: 50px;
-  }
+/* В светлой теме на breadcrumbs (фон светлый) — тёмная кнопка */
+html:not(.dark) body.nagornaya-page .nag-theme-btn {
+  background: rgba(28,25,23,0.04);
+  border-color: rgba(28,25,23,0.10);
+  color: #5a4838;
+}
+html:not(.dark) body.nagornaya-page .nag-theme-btn:hover {
+  background: rgba(28,25,23,0.10);
+  border-color: rgba(28,25,23,0.18);
+}
+/* Иконки sun/moon */
+.nag-theme-icon-sun { display: none; }
+html.dark .nag-theme-icon-moon { display: none; }
+html.dark .nag-theme-icon-sun { display: block; color: #f5c542; }
+
+/* На nagornaya-page скрываем floating-кнопку — есть встроенная */
+body.nagornaya-page #themeFloat,
+body.nagornaya-page .theme-float-btn {
+  display: none !important;
 }
 
 
 /* ════════════════════════════════════════════════════════════
-   6. GB-ACCURACY-BLOCK («Нашли неточность?») — контраст
+   4. NAGORNAYA QUIZ — h2 + placeholder hint
    ════════════════════════════════════════════════════════════ */
-.gb-accuracy-block,
-.gb-accuracy-card {
-  background: var(--bg-elevated, #fff) !important;
-  border: 1px solid var(--border, #e7e2d8) !important;
-  border-radius: 14px;
-  padding: clamp(22px, 3vw, 32px);
-  text-align: center;
-}
-.gb-accuracy-title {
+.nag-quiz-h2 {
   font-family: 'Lora', Georgia, serif;
-  font-weight: 600;
-  font-size: clamp(20px, 2.4vw, 26px);
-  color: var(--text, #1c1917) !important;
-  margin: 0 0 10px;
+  font-weight: 700;
+  font-size: clamp(1.5rem, 3.5vw, 1.9rem);
+  border-bottom: 1px solid var(--border, #e7e2d8);
+  padding-bottom: 0.75rem;
+  margin-top: clamp(40px, 5vw, 64px) !important;
+  margin-bottom: 1.25rem;
+  color: var(--text, #1c1917);
+  clear: both;
+  position: relative;
+  z-index: 1;
 }
-.gb-accuracy-desc {
-  font-size: 14.5px;
-  color: var(--muted, #78716c) !important;
-  margin: 0 0 18px;
-  line-height: 1.55;
+html:not(.dark) body.nagornaya-page .nag-quiz-h2 { color: #2a1f15; }
+html.dark body.nagornaya-page .nag-quiz-h2 {
+  color: #f5ede0;
+  border-bottom-color: rgba(255,255,255,0.12);
 }
-html.dark .gb-accuracy-block,
-html.dark .gb-accuracy-card {
-  background: color-mix(in srgb, var(--bg-elevated, #1f1a15) 90%, transparent) !important;
-  border-color: var(--border, #3a3028) !important;
-}
-html.dark .gb-accuracy-title { color: var(--text, #f5ede0) !important; }
-html.dark .gb-accuracy-desc { color: var(--muted, #a8a29e) !important; }
-
-
-/* ════════════════════════════════════════════════════════════
-   7. QUIZ-PLACEHOLDER / "Проверь себя" overlap fix
-   ════════════════════════════════════════════════════════════ */
 #sec-quiz {
   clear: both;
   position: relative;
@@ -7351,7 +7183,7 @@ html.dark .gb-accuracy-desc { color: var(--muted, #a8a29e) !important; }
 }
 #quizPlaceholder { min-height: 60px; }
 #quizPlaceholder:empty::before {
-  content: "Загружается тест…";
+  content: "Тест загружается…";
   display: block;
   text-align: center;
   padding: 32px 16px;
@@ -7362,7 +7194,92 @@ html.dark .gb-accuracy-desc { color: var(--muted, #a8a29e) !important; }
 
 
 /* ════════════════════════════════════════════════════════════
-   8. SPACING — устраняем «наезжание» блоков на nagornaya/chast-*
+   5. GB-ACCURACY-BLOCK — тематично, full-width внутри main
+   ════════════════════════════════════════════════════════════ */
+.gb-accuracy-block {
+  margin-top: clamp(40px, 5vw, 64px) !important;
+  margin-bottom: clamp(24px, 3vw, 40px);
+  padding: 0 16px;
+}
+.gb-accuracy-inner {
+  text-align: center;
+  max-width: 560px;
+  margin: 0 auto;
+  padding: clamp(28px, 4vw, 44px) clamp(24px, 3vw, 36px);
+  background: var(--bg-elevated, #fafafa);
+  border: 1px solid var(--border, #e7e2d8);
+  border-radius: 16px;
+  box-shadow:
+    0 1px 0 rgba(255,255,255,.7) inset,
+    0 4px 20px -8px rgba(28,25,23,.06);
+}
+html.dark .gb-accuracy-inner {
+  background: color-mix(in srgb, var(--bg-elevated, #1f1a15) 96%, transparent);
+  border-color: var(--border, #3a3028);
+  box-shadow: 0 1px 0 rgba(255,255,255,.03) inset, 0 8px 22px -10px rgba(0,0,0,.55);
+}
+.gb-accuracy-title {
+  font-family: 'Lora', Georgia, serif;
+  font-weight: 600;
+  font-size: clamp(20px, 2.4vw, 26px);
+  color: var(--text, #1c1917) !important;
+  margin: 0 0 10px;
+  line-height: 1.25;
+}
+.gb-accuracy-desc {
+  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-size: 14.5px;
+  color: var(--muted, #78716c) !important;
+  margin: 0 0 22px;
+  line-height: 1.55;
+}
+html.dark .gb-accuracy-title { color: var(--text, #f5ede0) !important; }
+html.dark .gb-accuracy-desc { color: var(--muted, #a8a29e) !important; }
+
+/* На nagornaya/* main имеет dark Tailwind фон. Принудительный контраст для блока. */
+body.nagornaya-page .gb-accuracy-block { color: var(--text, #1c1917); }
+html:not(.dark) body.nagornaya-page .gb-accuracy-inner {
+  background: #ffffff;
+  border-color: #e7e2d8;
+}
+html.dark body.nagornaya-page .gb-accuracy-inner {
+  background: #221b14;
+  border-color: #3a3028;
+}
+
+
+/* ════════════════════════════════════════════════════════════
+   6. NAGORNAYA LIGHT THEME — overrides Tailwind dark-only styles
+   ════════════════════════════════════════════════════════════ */
+html:not(.dark) body.nagornaya-page,
+html:not(.dark) body.nagornaya-page main,
+html:not(.dark) body.nagornaya-page .bg-stone-900,
+html:not(.dark) body.nagornaya-page .bg-stone-950 {
+  background: #faf8f4 !important;
+  color: #1c1917 !important;
+}
+html:not(.dark) body.nagornaya-page .text-stone-300,
+html:not(.dark) body.nagornaya-page .text-stone-400 {
+  color: #5a4838 !important;
+}
+html:not(.dark) body.nagornaya-page .text-white { color: #1c1917 !important; }
+html:not(.dark) body.nagornaya-page .border-stone-700,
+html:not(.dark) body.nagornaya-page .border-stone-800 {
+  border-color: #e7e2d8 !important;
+}
+html:not(.dark) body.nagornaya-page aside.bg-stone-900,
+html:not(.dark) body.nagornaya-page aside[class*="bg-stone-9"] {
+  background: #f0ebe1 !important;
+  color: #1c1917 !important;
+}
+/* Sidebar links contrast в светлой */
+html:not(.dark) body.nagornaya-page .hover\:bg-stone-800:hover {
+  background: rgba(28,25,23,0.05) !important;
+}
+
+
+/* ════════════════════════════════════════════════════════════
+   7. SPACING fixes для nagornaya/chast-*
    ════════════════════════════════════════════════════════════ */
 main .bg-emerald-800.text-white.rounded-2xl,
 main .bg-stone-900.rounded-2xl,
@@ -7372,14 +7289,10 @@ main .bg-amber-50.border-amber-200 {
   margin-top: clamp(28px, 4vw, 44px) !important;
   margin-bottom: clamp(28px, 4vw, 44px) !important;
 }
-main .bg-emerald-800 + div,
-main .bg-emerald-50 + div,
-main section[aria-labelledby] + section,
 main .h-articles-group,
 main .gb-accuracy-block {
   margin-top: clamp(32px, 5vw, 56px) !important;
 }
-main section[style*="margin-top:3rem"] { margin-top: clamp(40px, 6vw, 64px) !important; }
 @media (max-width: 899px) {
   body.has-bottom-bar main,
   body.has-bottom-bar .home-content,
@@ -7390,7 +7303,7 @@ main section[style*="margin-top:3rem"] { margin-top: clamp(40px, 6vw, 64px) !imp
 
 
 /* ════════════════════════════════════════════════════════════
-   9. HOME-PAGE AMBIENT PHRASES — правильные шрифты
+   8. HOME-PAGE ambient phrases
    ════════════════════════════════════════════════════════════ */
 .h-phrase--greek, .h-phrase[lang="grc"], .h-phrase[lang="el"] {
   font-family: 'Noto Sans Greek', 'GFS Neohellenic', 'Times New Roman', serif !important;
@@ -7411,7 +7324,7 @@ main section[style*="margin-top:3rem"] { margin-top: clamp(40px, 6vw, 64px) !imp
 
 
 /* ════════════════════════════════════════════════════════════
-   10. UNIFIED SCROLL-LOCK + iOS MOMENTUM SCROLL
+   9. SCROLL-LOCK + iOS momentum
    ════════════════════════════════════════════════════════════ */
 html[data-scroll-locked="1"], html[data-scroll-locked="1"] body, body.ng-toc-lock {
   overflow: hidden !important;
@@ -7428,7 +7341,7 @@ body.ng-toc-lock .btoc-nav {
 
 
 /* ════════════════════════════════════════════════════════════
-   11. TOC BANNER — fallback стилей
+   10. TOC banner fallback
    ════════════════════════════════════════════════════════════ */
 .btoc-banner {
   position: relative; height: 128px; flex-shrink: 0;
@@ -7453,16 +7366,19 @@ body.ng-toc-lock .btoc-nav {
 
 
 /* ════════════════════════════════════════════════════════════
-   12. TOUCH TARGETS
+   11. TOUCH TARGETS
    ════════════════════════════════════════════════════════════ */
 .bar-icon-btn, .btoc-close, .btoc-fontsize-btn, .btoc-share-btn,
-.quiz-btn, .theme-float-btn {
-  min-width: 44px; min-height: 44px;
+.theme-float-btn, .nag-theme-btn {
+  min-width: 36px; min-height: 36px;
+}
+@media (pointer: coarse) {
+  .bar-icon-btn, .btoc-close, .nag-theme-btn { min-width: 44px; min-height: 44px; }
 }
 
 
 /* ════════════════════════════════════════════════════════════
-   13. CSP HARDENING — пиксель Метрики
+   12. CSP HARDENING — пиксель Метрики
    ════════════════════════════════════════════════════════════ */
 img[src*="mc.yandex.ru"] {
   position: absolute !important; left: -9999px !important;
@@ -7471,9 +7387,9 @@ img[src*="mc.yandex.ru"] {
 
 
 /* ════════════════════════════════════════════════════════════
-   14. h-article-card polish
+   13. h-article-card polish
    ════════════════════════════════════════════════════════════ */
-.h-article-card, .h-articles-group .h-article-card {
+.h-article-card {
   transition: transform .25s ease, box-shadow .25s ease, border-color .25s ease;
 }
 .h-article-card:hover {
@@ -7484,7 +7400,7 @@ img[src*="mc.yandex.ru"] {
 
 
 /* ════════════════════════════════════════════════════════════
-   15. BOTTOM-BAR backdrop
+   14. Bottom-bar backdrop
    ════════════════════════════════════════════════════════════ */
 .bottom-bar {
   -webkit-backdrop-filter: blur(20px) saturate(160%);
@@ -7493,18 +7409,59 @@ img[src*="mc.yandex.ru"] {
 
 
 /* ════════════════════════════════════════════════════════════
-   16. PREFERS-REDUCED-MOTION
+   15. THEME-FLOAT — позиция уведена выше bottom-bar, скрыта на nagornaya
+   ════════════════════════════════════════════════════════════ */
+.theme-float-btn {
+  position: fixed;
+  right: clamp(14px, 2vw, 22px);
+  bottom: clamp(84px, 10vw, 100px);
+  width: 46px; height: 46px;
+  border-radius: 50%;
+  border: 1px solid var(--border, #e7e2d8);
+  background: var(--bg-elevated, #fff);
+  color: var(--text, #1c1917);
+  display: grid; place-items: center;
+  cursor: pointer;
+  z-index: 90;
+  box-shadow:
+    0 1px 0 rgba(255,255,255,.7) inset,
+    0 6px 18px -8px rgba(28,25,23,.22),
+    0 2px 4px rgba(28,25,23,.06);
+  transition: transform .2s ease, box-shadow .2s ease, background .2s ease;
+}
+.theme-float-btn:hover {
+  transform: translateY(-2px) scale(1.04);
+  box-shadow:
+    0 1px 0 rgba(255,255,255,.7) inset,
+    0 14px 28px -10px rgba(28,25,23,.30);
+}
+.theme-float-btn:focus-visible { outline: 2px solid var(--accent, #7a2e2e); outline-offset: 2px; }
+html.dark .theme-float-btn {
+  background: var(--bg-elevated, #1f1a15);
+  border-color: var(--border, #3a3028);
+  color: #f5c542;
+}
+@media (min-width: 900px) {
+  .theme-float-btn {
+    bottom: clamp(24px, 3vw, 36px);
+    width: 50px; height: 50px;
+  }
+}
+
+
+/* ════════════════════════════════════════════════════════════
+   16. Reduced motion
    ════════════════════════════════════════════════════════════ */
 @media (prefers-reduced-motion: reduce) {
   .summary-card__item, .h-article-card, .bottom-bar,
-  .quiz-btn, .theme-float-btn, .fn-marker {
+  .theme-float-btn, .nag-theme-btn, .fn-marker {
     transition: none !important;
   }
 }
 
 
 /* ════════════════════════════════════════════════════════════
-   17. TAILWIND SCOPE GUARD — revert reset для article-body
+   17. Tailwind scope guard
    ════════════════════════════════════════════════════════════ */
 main [data-pagefind-body] ul:not([class]),
 main [data-pagefind-body] ol:not([class]) {
@@ -7524,7 +7481,7 @@ main [data-pagefind-body] hr:not([class]) {
 
 
 /* ════════════════════════════════════════════════════════════
-   18. TOOLTIP-TRIGGER (inline glossary) — премиум hover
+   18. Tooltip-trigger (inline glossary)
    ════════════════════════════════════════════════════════════ */
 .tooltip-trigger {
   position: relative;

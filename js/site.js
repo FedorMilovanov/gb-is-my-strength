@@ -3238,7 +3238,15 @@
     if (article.querySelector('.drop-cap')) return;
 
     var body = article.querySelector('.article-body') || article;
-    var firstP = body.querySelector('p');
+    /* AUDIT v6 fix: skip summary-card / quiz / sidebar paragraphs */
+    var allP = body.querySelectorAll('p');
+    var firstP = null;
+    for (var i = 0; i < allP.length; i++) {
+      var p = allP[i];
+      if (p.closest('.summary-card, .quiz-wrapper, .quiz-overlay, .info-box, .warn-box, .ehrman-box, .note-box, .quote-box, aside, .author-card, .toc, blockquote')) continue;
+      firstP = p;
+      break;
+    }
     if (firstP && firstP.textContent.trim().length > 40) {
       firstP.classList.add('drop-cap');
     }

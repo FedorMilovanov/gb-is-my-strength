@@ -54,7 +54,7 @@
   <link rel="preload" as="font" type="font/woff2" href="/fonts/Lora/lora-cyrillic-400.woff2" crossorigin>
   <link rel="stylesheet" href="/fonts/fonts.css?v=fc6cff8a">
   <link rel="stylesheet" href="/nagornaya/tw.min.css?v=2670414e">
-  <link rel="stylesheet" href="/css/site.css?v=4ccfb475">
+  <link rel="stylesheet" href="/css/site.css?v=6dae12b9">
   <script>
   window.SITE_CONFIG = {
     version: 1778943682,
@@ -432,7 +432,10 @@
     <span data-pagefind-meta="scripture" hidden>Мф 28:20</span>
     <div class="max-w-4xl mx-auto px-4 py-8 pt-20 lg:pt-8 space-y-6">
 
-      <nav class="text-xs flex items-center flex-wrap gap-0.5 mb-2"><a href="../../articles/" class="text-stone-500 hover:text-amber-600 transition-colors">Статьи</a><span class="text-stone-400 mx-1.5">/</span><a href="/nagornaya/" class="text-stone-500 hover:text-amber-600 transition-colors">Нагорная проповедь</a><span class="text-stone-400 mx-1.5">/</span><span class="text-stone-700 font-medium">Часть III</span></nav>
+      <nav class="text-xs flex items-center flex-wrap gap-0.5 mb-2"><a href="../../articles/" class="text-stone-500 hover:text-amber-600 transition-colors">Статьи</a><span class="text-stone-400 mx-1.5">/</span><a href="/nagornaya/" class="text-stone-500 hover:text-amber-600 transition-colors">Нагорная проповедь</a><span class="text-stone-400 mx-1.5">/</span><span class="text-stone-700 font-medium">Часть III</span><button type="button" class="nag-theme-btn" id="themeToggle" aria-label="Переключить тему" title="Светлая / тёмная тема">
+  <svg class="nag-theme-icon-moon" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>
+  <svg class="nag-theme-icon-sun" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="4.5"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/></svg>
+</button></nav>
 
 <div class="relative text-white rounded-3xl overflow-hidden p-8 md:p-12 shadow-2xl" style="background: linear-gradient(135deg, rgba(88,28,135,0.92) 0%, rgba(46,16,101,0.97) 100%);">
 <div class="text-xs text-purple-300 mb-2 font-bold uppercase tracking-widest">Статья III</div>
@@ -857,6 +860,10 @@
       </div>
     </section>
 
+
+<h2 id="sec-quiz" class="nag-quiz-h2">Проверь себя</h2>
+<div id="quizPlaceholder"></div>
+
 <aside class="gb-accuracy-block" aria-label="Обратная связь">
   <div class="gb-accuracy-inner">
     <h2 class="gb-accuracy-title">Нашли неточность?</h2>
@@ -1145,7 +1152,7 @@
 })();
 </script>
 
-<script src="../../js/site.js?v=daa8d801" defer></script>
+<script src="../../js/site.js?v=0fcefbc0" defer></script>
 <script src="../../js/sw-register.js?v=c60839ff" defer></script>
 <script src="../../js/search.js?v=832b8869" defer></script>
 <script src="../../js/highlights.js?v=fd3ffa64" defer></script>
@@ -1172,6 +1179,56 @@
   }
   window.addEventListener('scroll',upd,{passive:true});
   upd();
+})();
+</script>
+
+
+<script>
+/* AUDIT v6: quiz config via SITE_CONFIG, использует Quiz Engine v3 из site.js */
+(function(){
+  window.SITE_CONFIG = window.SITE_CONFIG || {};
+  window.SITE_CONFIG.features = window.SITE_CONFIG.features || {};
+  window.SITE_CONFIG.features.quiz = { enabled: true, bonusEnabled: false, shareResults: false };
+  window.SITE_CONFIG.quiz = {
+    questions: [
+      {
+        q: "Кто, согласно тексту Мф 5:1–2, является первичным адресатом Нагорной проповеди?",
+        focus: "Текст разделяет «учеников» и «толпу», но обе группы слышат проповедь.",
+        options: [
+          'Только апостолы — первый узкий круг учеников',
+          'Ученики Христа как первичный адресат, в окружении толпы',
+          'Все языческие народы Галилеи без различия'
+        ],
+        answer: 1,
+        ok: "Верно. «Он… сел; и приступили к Нему ученики Его» (Мф 5:1) — ученики первичны, но толпа также слышит (Мф 7:28: «народ дивился учению Его»).",
+        err: "Первая опция слишком узка — учеников у Иисуса было намного больше двенадцати на этом этапе. Третья игнорирует прямое указание текста на учеников."
+      },
+      {
+        q: "Какова реформатская позиция о применимости Нагорной проповеди в современной Церкви?",
+        focus: "Это полемика с диспенсационной системой Скоуфилда.",
+        options: [
+          'Проповедь — это «этика Тысячелетнего Царства», отложенная для современной Церкви',
+          'Проповедь действует в Церкви здесь и сейчас как нормативное учение Царя для учеников',
+          'Проповедь касается только иудеев и не имеет применения для языкохристиан'
+        ],
+        answer: 1,
+        ok: "Верно. Реформатская традиция (Кальвин, Карсон, MacArthur GTY #2222, TMS) единогласно: Нагорная проповедь — норматив для Церкви, не «отложенная этика».",
+        err: "Первая позиция — классический диспенсационализм Скоуфилда; даже модифицированный диспенсационализм (Turner, JETS 53/4) отступил от этой жёсткой позиции."
+      },
+      {
+        q: "Что разрушают антитезы «Вы слышали — а Я говорю вам» (Мф 5:21–48)?",
+        focus: "Антитезы направлены не против Закона, а против чего-то другого.",
+        options: [
+          'Сам Закон Моисеев — Христос отменяет его',
+          'Раввинистическое сужение Закона, открывая его подлинную глубину',
+          'Этику Ветхого Завета в целом, заменяя её новой моралью'
+        ],
+        answer: 1,
+        ok: "Верно. Мф 5:17: «Не думайте, что Я пришёл нарушить Закон». Антитезы углубляют Закон до уровня сердца, разрушая фарисейский минимализм, но не сам Закон.",
+        err: "Первая и третья опции противоречат прямому утверждению Мф 5:17 и реформатской традиции continuity между Заветами."
+      }
+    ]
+  };
 })();
 </script>
 
