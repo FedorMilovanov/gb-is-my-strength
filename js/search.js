@@ -204,6 +204,48 @@
   function isScriptureRef(q) {
     return /^(\d\s*)?[а-яёa-z]{1,6}\s?\d/i.test((q || '').trim());
   }
+
+  function normalizeScriptureQuery(q) {
+    var s = normalizeQ(q)
+      .replace(/\bмф\b/g, 'матфей')
+      .replace(/\bмат\b/g, 'матфей')
+      .replace(/\bлк\b/g, 'лука')
+      .replace(/\bлук\b/g, 'лука')
+      .replace(/\bин\b/g, 'иоанн')
+      .replace(/\bиоан\b/g, 'иоанн')
+      .replace(/\bрим\b/g, 'римлянам')
+      .replace(/\bиер\b/g, 'иеремия')
+      .replace(/\bкор\b/g, 'коринфянам')
+      .replace(/[:–—-]/g, ' ');
+    return s.replace(/\s+/g, ' ').trim();
+  }
+
+  function manifestHaystack(x) {
+    return normalizeScriptureQuery([
+      x.title, x.description, x.section, x.author, x.editor,
+      x.scripture, (x.tags || []).join(' ')
+    ].filter(Boolean).join(' '));
+  }
+
+  function manifestMatchesAuthor(x, q) {
+    var hay = normalizeQ([x.author, x.editor].filter(Boolean).join(' '));
+    var nq = normalizeQ(q);
+    return nq && hay.indexOf(nq) !== -1;
+  }
+
+  function manifestMatchesScripture(x, q) {
+    var nq = normalizeScriptureQuery(q);
+    if (!nq) return false;
+    var hay = manifestHaystack(x);
+    var words = nq.split(' ').filter(Boolean);
+    var bookTokens = words.filter(function (w) { return /[а-яёa-z]/i.test(w) && w.length > 1; });
+    var nums = words.filter(function (w) { return /^\d+$/.test(w); });
+    if (bookTokens.length && !bookTokens.every(function (w) { return hay.indexOf(w) !== -1; })) return false;
+    /* Chapter is significant; verse is optional because manifest tags usually store ranges like "Матфей 5". */
+    if (nums.length && hay.indexOf(nums[0]) === -1) return false;
+    if (!bookTokens.length && !nums.length) return hay.indexOf(nq) !== -1;
+    return true;
+  }
  
   /* Category → icon */
   function catIcon(cat) {
@@ -933,6 +975,29 @@
       return;
     }
 
+    if (scope === 'authors' || scope === 'scripture') {
+      loadSearchManifest(function () {
+        var matched = _manifestItems
+          .filter(function (x) { return x.type === 'article' || x.type === 'series'; })
+          .filter(function (x) {
+            return scope === 'authors' ? manifestMatchesAuthor(x, q) : manifestMatchesScripture(x, q);
+          })
+          .sort(function (a, b) { return (b.priority || 0) - (a.priority || 0); })
+          .map(manifestToItem);
+        if (matched.length) {
+          renderGroups([{ name: scope === 'authors' ? 'Авторы' : 'Писание', items: matched }]);
+          return;
+        }
+        if (scope === 'authors') { showEmpty(); return; }
+        runPagefindSearch(q);
+      });
+      return;
+    }
+
+    runPagefindSearch(q);
+  }
+
+  function runPagefindSearch(q) {
     if (!window.__pagefind__) {
       listEl.innerHTML =
         '<div class="cp-loading">Загружаю индекс\u2026</div>';
