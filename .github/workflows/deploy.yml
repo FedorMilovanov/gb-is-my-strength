@@ -4,8 +4,20 @@ name: Deploy to GitHub Pages
 # то есть уже после cache-bust-коммита — чтобы деплоить
 # актуальную версию, а не ту, что была до автообновления мета.
 on:
+  # Asset-only / infrastructure pushes that do not trigger indexnow.yml.
+  # Content/CSS/JS pushes deploy via workflow_run after metadata/cache-bust.
   push:
     branches: [main]
+    paths:
+      - 'images/**'
+      - 'fonts/**'
+      - 'icons/**'
+      - 'favicon*'
+      - 'apple-touch-icon.png'
+      - 'CNAME'
+      - 'package.json'
+      - 'package-lock.json'
+      - '.github/workflows/deploy.yml'
 
   workflow_run:
     workflows: ["IndexNow — Notify Search Engines"]
@@ -29,9 +41,10 @@ jobs:
   deploy:
     runs-on: ubuntu-latest
 
-    # Не запускаем деплой, если indexnow.yml упал
+    # Deploy after manual run, asset-only push, or successful IndexNow metadata workflow.
     if: >
       github.event_name == 'workflow_dispatch' ||
+      github.event_name == 'push' ||
       github.event.workflow_run.conclusion == 'success'
 
     environment:

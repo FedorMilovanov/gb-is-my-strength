@@ -33,6 +33,8 @@ var PRECACHE_ASSETS = [
   '/js/enhancements.js',
   '/js/sw-register.js',
   '/js/nagornaya-mobile-toc.js',
+  '/js/glossary.js',
+  '/js/series-cards.js',
   '/manifest.json',
   '/favicon.ico',
   '/favicon-48.png',
@@ -90,7 +92,7 @@ function isPagefindStatic(url) {
 }
 
 function isStaticAsset(url) {
-  return /\.(css|js|woff2?|ttf|otf|ico|png|svg|webmanifest)(\?|$)/.test(url.pathname) ||
+  return /\.(css|js|json|woff2?|ttf|otf|ico|svg|webmanifest)(\?|$)/.test(url.pathname) ||
          url.pathname.startsWith('/icons/');
 }
 
@@ -114,6 +116,16 @@ function isFont(url) {
 var IMG_CACHE_LIMIT = 60; /* BUG-06: ограничение кэша изображений */
 var CONTENT_CACHE_LIMIT = 30; /* V2-FIX: LRU для контентного кэша */
 
+function trimCache(cache, limit) {
+  return cache.keys().then(function(keys) {
+    var deletions = [];
+    while (keys.length > limit) {
+      deletions.push(cache.delete(keys.shift()));
+    }
+    return Promise.all(deletions);
+  });
+}
+
 function cacheFirst(req, cacheName) {
   var isImages = cacheName === CACHE_IMAGES;
   return caches.open(cacheName).then(function(cache) {
@@ -124,14 +136,11 @@ function cacheFirst(req, cacheName) {
       if (cached) return cached;
       return fetch(req).then(function(res) {
         if (res && res.status === 200 && res.type !== 'opaque') {
-          cache.put(req, res.clone());
-          if (isImages) {
-            cache.keys().then(function(keys) {
-              if (keys.length > IMG_CACHE_LIMIT) {
-                cache.delete(keys[0]);
-              }
-            });
-          }
+          return cache.put(req, res.clone()).then(function() {
+            if (isImages) return trimCache(cache, IMG_CACHE_LIMIT);
+          }).catch(function() {
+            /* Кэш — enhancement; сетевой ответ всё равно отдаём пользователю. */
+          }).then(function() { return res; });
         }
         return res;
       });
@@ -140,28 +149,32 @@ function cacheFirst(req, cacheName) {
 }
 
 /* Stale While Revalidate — good for HTML pages */
-function staleWhileRevalidate(req) {
+function staleWhileRevalidate(req, evt) {
   return caches.open(CACHE_CONTENT).then(function(cache) {
     return cache.match(req).then(function(cached) {
       var fetchPromise = fetch(req).then(function(res) {
         if (res && res.status === 200) {
-          cache.put(req, res.clone());
-          /* V2-FIX: LRU — удаляем старые записи контентного кэша */
-          cache.keys().then(function(keys) {
-            if (keys.length > CONTENT_CACHE_LIMIT) { cache.delete(keys[0]); }
-          });
-          /* Notify clients about update */
-          self.clients.matchAll().then(function(clients) {
-            clients.forEach(function(client) {
-              client.postMessage({ type: 'SW_UPDATE', url: req.url });
+          return cache.put(req, res.clone()).then(function() {
+            return trimCache(cache, CONTENT_CACHE_LIMIT);
+          }).then(function() {
+            /* Notify clients about update */
+            return self.clients.matchAll().then(function(clients) {
+              clients.forEach(function(client) {
+                client.postMessage({ type: 'SW_UPDATE', url: req.url });
+              });
             });
-          });
+          }).catch(function() {
+            /* Кэширование не должно ломать сетевой ответ. */
+          }).then(function() { return res; });
         }
         return res;
       }).catch(function() {
         return cached || caches.match('/404.html');
       });
 
+      if (cached && evt && evt.waitUntil) {
+        evt.waitUntil(fetchPromise.then(function(){ return undefined; }).catch(function(){ return undefined; }));
+      }
       return cached || fetchPromise;
     });
   });
@@ -237,7 +250,7 @@ self.addEventListener('fetch', function(e) {
   }
 
   if (isHtmlPage(req)) {
-    e.respondWith(staleWhileRevalidate(req));
+    e.respondWith(staleWhileRevalidate(req, e));
     return;
   }
 

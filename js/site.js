@@ -3192,9 +3192,20 @@
       'января','февраля','марта','апреля','мая','июня',
       'июля','августа','сентября','октября','ноября','декабря'
     ];
-    var day   = date.getDate();
-    var month = months[date.getMonth()];
-    var year  = date.getFullYear();
+    var day, month, year;
+    try {
+      var parts = new Intl.DateTimeFormat('ru-RU', {
+        timeZone: 'Europe/Moscow', day: 'numeric', month: 'long', year: 'numeric'
+      }).formatToParts(date);
+      day = (parts.find(function (p) { return p.type === 'day'; }) || {}).value;
+      month = (parts.find(function (p) { return p.type === 'month'; }) || {}).value;
+      year = (parts.find(function (p) { return p.type === 'year'; }) || {}).value;
+    } catch (e) {
+      var isoDay = (dateStr.match(/^(\d{4})-(\d{2})-(\d{2})/) || []);
+      year = isoDay[1] || date.getUTCFullYear();
+      month = months[(Number(isoDay[2]) || (date.getUTCMonth() + 1)) - 1];
+      day = String(Number(isoDay[3]) || date.getUTCDate());
+    }
 
     var label = modified && published && modified !== published
       ? 'Обновлено ' + day + '\u00a0' + month + '\u00a0' + year
@@ -3243,7 +3254,7 @@
     var firstP = null;
     for (var i = 0; i < allP.length; i++) {
       var p = allP[i];
-      if (p.closest('.summary-card, .quiz-wrapper, .quiz-overlay, .info-box, .warn-box, .ehrman-box, .note-box, .quote-box, aside, .author-card, .toc, blockquote')) continue;
+      if (p.closest('.summary-card, .quiz-wrapper, .quiz-overlay, .info-box, .warn-box, .ehrman-block, .note-box, .quote-box, aside, .author-card, .toc, blockquote')) continue;
       firstP = p;
       break;
     }
@@ -3589,7 +3600,7 @@
       var btnDown = document.createElement('button');
       btnDown.className = 'btoc-fontsize-btn btoc-fontsize-btn--down';
       btnDown.setAttribute('aria-label', 'Уменьшить шрифт');
-      btnDown.textContent = 'A';
+      btnDown.textContent = 'a';
 
       /* dot-track: 5 точек = 5 уровней */
       var track = document.createElement('div');
@@ -3803,7 +3814,8 @@
     function add(src) {
       if (document.querySelector('script[data-extra="' + src + '"]')) return;
       var sc = document.createElement('script');
-      sc.src = src;
+      var version = window.SiteUtils && window.SiteUtils.getConfig('version', '');
+      sc.src = src + (version ? '?v=' + encodeURIComponent(version) : '');
       sc.defer = true;
       sc.dataset.extra = src;
       document.head.appendChild(sc);

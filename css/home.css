@@ -1777,7 +1777,7 @@ html.dark .h-blockquote { color: var(--h-ink); }
 .h-scroll-top.visible {
   opacity: 1;
   transform: translateY(0) scale(1);
-  pointer-events: all;
+  pointer-events: auto;
 }
 .h-scroll-top:hover {
   box-shadow: 0 6px 20px rgba(28,25,23,0.14);
@@ -1847,30 +1847,23 @@ html.dark .h-blockquote { color: var(--h-ink); }
 
 
 @media (prefers-reduced-motion: reduce) {
-  
-  .hb-front, .hb-back, .h-tetra-back {
-    transition: opacity 0.15s linear !important;
-    transform: none !important;
-  }
-  .h-tetra-label {
-    transition: opacity 0.15s linear !important;
-    filter: none !important;
-    transform: translate(-50%, -100%) translateY(-10px) !important;
-  }
-  
+  .hb-front, .hb-back, .h-tetra-back,
+  .h-tetra-label,
   .h-reveal, .h-card-glass, .h-article-card,
-  .h-scroll-top, .hb-w, .h-tetra {
+  .h-scroll-top, .hb-w, .h-tetra,
+  .h-hero-tagline, .h-sacred-block, .h-hero-title,
+  .h-hero-desc, .h-hero-search-wrap {
     transition: none !important;
     animation: none !important;
+    transform: none !important;
+    filter: none !important;
   }
-  
-  .h-hero-tagline, .h-sacred-block, .h-hero-title,
-  .h-hero-desc, 
 
-.h-hero-search-wrap {
-  margin: 28px 0 0;
-  opacity: 0;
-  animation: h-fade-up 0.7s cubic-bezier(0.22, 1, 0.36, 1) 0.52s forwards;
+  .h-hero-tagline, .h-sacred-block, .h-hero-title,
+  .h-hero-desc, .h-hero-search-wrap,
+  .h-reveal, .h-card-glass, .h-article-card {
+    opacity: 1 !important;
+  }
 }
 
 
@@ -2019,6 +2012,10 @@ html.dark .h-hero-search:focus-visible {
   z-index: var(--z-dropdown-high);
   background: transparent;
   -webkit-tap-highlight-color: transparent;
+}
+
+@media (max-width: 760px) {
+  .h-mobile-backdrop.open { display: block; }
 }
 
 

@@ -4441,6 +4441,11 @@ footer.footer-home {
   .quiz-overlay {
     display: none !important;
   }
+  .quote-box, .warn-box, .info-box, .ehrman-block, .opusdei-note {
+    opacity: 1 !important;
+    transform: none !important;
+    transition: none !important;
+  }
 }
 
 .quiz-overlay {
@@ -5864,15 +5869,15 @@ html.dark .summary-card__check {
 }
 
 
-html.dark .warn-box, html.dark .ehrman-box {
+html.dark .warn-box, html.dark .ehrman-block {
   background: rgba(128, 128, 128, 0.15); 
   background: color-mix(in srgb, #2a1810 88%, transparent);
   color: #f1e6d8;
   border-color: rgba(128, 128, 128, 0.2); 
   border-color: color-mix(in srgb, #c8a050 65%, transparent);
 }
-html.dark .warn-box strong, html.dark .ehrman-box strong { color: #ffd28a; }
-html.dark .warn-box a, html.dark .ehrman-box a {
+html.dark .warn-box strong, html.dark .ehrman-block strong { color: #ffd28a; }
+html.dark .warn-box a, html.dark .ehrman-block a {
   color: #ffd28a;
   text-decoration-color: inherit; 
   text-decoration-color: color-mix(in srgb, #ffd28a 60%, transparent);
@@ -6625,7 +6630,7 @@ textarea, select {
 
 @media (max-width: 480px) {
   article p, article li, article blockquote, article td,
-  .summary-card__text, .info-box, .warn-box, .ehrman-box, .quote-box,
+  .summary-card__text, .info-box, .warn-box, .ehrman-block, .quote-box,
   .pq-scripture {
     overflow-wrap: anywhere;
     word-break: break-word;

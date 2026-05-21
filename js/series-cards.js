@@ -7,6 +7,17 @@
  */
 (function () {
   'use strict';
+  function escHtml(s) {
+    return String(s == null ? '' : s)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#39;');
+  }
+
+  function escAttr(s) { return escHtml(s).replace(/`/g, '&#96;'); }
+
   var hosts = document.querySelectorAll('[data-series-cards]');
   if (!hosts.length) return;
   fetch('/data/series.json').then(function (r) { return r.ok ? r.json() : null; }).then(function (data) {
@@ -17,20 +28,20 @@
       if (!series) return;
       var currentPath = location.pathname.replace(/\/+$/, '/');
       host.innerHTML = series.parts.map(function (p) {
-        var url = '/' + seriesId + '/' + p.slug + '/';
+        var url = '/' + encodeURIComponent(seriesId) + '/' + encodeURIComponent(p.slug) + '/';
         var current = currentPath === url;
         var badge = current ? 'Вы здесь'
                   : p.status === 'draft'   ? 'В разработке'
                   : p.status === 'planned' ? 'Скоро'
                   : '';
         var inner = '' +
-          '<span class="series-card__num">Часть ' + p.n + '</span>' +
-          '<h3 class="series-card__title">' + p.title + '</h3>' +
-          '<span class="series-card__time">' + p.readingTime + ' мин</span>' +
+          '<span class="series-card__num">Часть ' + escHtml(p.n) + '</span>' +
+          '<h3 class="series-card__title">' + escHtml(p.title) + '</h3>' +
+          '<span class="series-card__time">' + escHtml(p.readingTime) + ' мин</span>' +
           (badge ? '<span class="series-card__badge">' + badge + '</span>' : '');
         return current
           ? '<div class="series-card is-current" aria-current="page">' + inner + '</div>'
-          : '<a class="series-card" href="' + url + '">' + inner + '</a>';
+          : '<a class="series-card" href="' + escAttr(url) + '">' + inner + '</a>';
       }).join('');
     });
   }).catch(function () {});

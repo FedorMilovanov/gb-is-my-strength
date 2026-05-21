@@ -19,9 +19,13 @@
     if (!dict) return;
     var article = document.querySelector('article');
     var keys = Object.keys(dict).sort(function (a, b) { return b.length - a.length; });
-    var rx = new RegExp('\\b(' + keys.map(function (k) {
+    var keyByLower = {};
+    keys.forEach(function (k) { keyByLower[k.toLowerCase()] = k; });
+    var escapedTerms = keys.map(function (k) {
       return k.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-    }).join('|') + ')\\b', 'gi');
+    }).join('|');
+    /* JS \b is ASCII-centric and does not work for Cyrillic. */
+    var rx = new RegExp('(^|[^\\p{L}\\p{N}_])(' + escapedTerms + ')(?=$|[^\\p{L}\\p{N}_])', 'giu');
 
     var seen = {};
     var walker = document.createTreeWalker(article, NodeFilter.SHOW_TEXT, {
@@ -41,21 +45,25 @@
       if (!rx.test(n.nodeValue)) return;
       rx.lastIndex = 0;
       var frag = document.createDocumentFragment();
-      var last = 0, m;
+      var last = 0, m, replaced = false;
       while ((m = rx.exec(n.nodeValue)) !== null) {
-        var key = Object.keys(dict).find(function (k) { return k.toLowerCase() === m[1].toLowerCase(); });
+        var sep = m[1] || '';
+        var term = m[2] || '';
+        var key = keyByLower[term.toLowerCase()];
         if (!key || seen[key]) continue;
         seen[key] = 1;
-        frag.appendChild(document.createTextNode(n.nodeValue.slice(last, m.index)));
+        replaced = true;
+        var termIndex = m.index + sep.length;
+        frag.appendChild(document.createTextNode(n.nodeValue.slice(last, termIndex)));
         var abbr = document.createElement('abbr');
         abbr.className = 'gterm';
         abbr.setAttribute('title', dict[key].replace(/<[^>]+>/g, ''));
         abbr.dataset.term = key;
-        abbr.textContent = m[0];
+        abbr.textContent = term;
         frag.appendChild(abbr);
-        last = m.index + m[0].length;
+        last = termIndex + term.length;
       }
-      if (last > 0) {
+      if (replaced) {
         frag.appendChild(document.createTextNode(n.nodeValue.slice(last)));
         n.parentNode.replaceChild(frag, n);
       }

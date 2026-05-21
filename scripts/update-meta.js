@@ -214,6 +214,10 @@ function updateHTML(slug, { pubISO, modISO, words, readTime }) {
       `$1\n  <meta property="article:modified_time" content="${newMod}" />`);
   }
 
+  // JSON-LD dates — keep structured data in sync with meta tags
+  html = html.replace(/("datePublished"\s*:\s*")[^"]*(")/g, `$1${newPub}$2`);
+  html = html.replace(/("dateModified"\s*:\s*")[^"]*(")/g, `$1${newMod}$2`);
+
   // SITE_CONFIG
   html = html.replace(/(\bwordCount:\s*)\d+/, `$1${words}`);
   html = html.replace(/(\breadingTime:\s*)\d+/, `$1${readTime}`);
@@ -241,6 +245,9 @@ function updateNagornayaHTML(slug, { modISO, words, readTime }) {
     );
   }
 
+  // JSON-LD date — keep structured data in sync with meta tags
+  html = html.replace(/("dateModified"\s*:\s*")[^"]*(")/g, `$1${newMod}$2`);
+
   // SITE_CONFIG word/readTime
   html = html.replace(/(\bwordCount:\s*)\d+/, `$1${words}`);
   html = html.replace(/(\breadingTime:\s*)\d+/, `$1${readTime}`);
@@ -254,12 +261,20 @@ function updateNagornayaHTML(slug, { modISO, words, readTime }) {
 
 // ── 2. sitemap.xml ────────────────────────────────────────────────────────────
 
-function updateSitemap(changes) {
+function updateSitemap(changes, nagornayaChanges = {}) {
   let xml = fs.readFileSync(SITEMAP, 'utf8');
 
   // Обновить lastmod существующих
   for (const [slug, { modISO }] of Object.entries(changes)) {
     const url = `${BASE_URL}/articles/${slug}/`;
+    xml = xml.replace(
+      new RegExp(`(<loc>${reEsc(url)}<\\/loc>\\s*<lastmod>)[^<]*(<\\/lastmod>)`, 'g'),
+      `$1${toDate(modISO)}$2`);
+  }
+
+  // Обновить lastmod существующих страниц nagornaya/*
+  for (const [slug, { modISO }] of Object.entries(nagornayaChanges)) {
+    const url = `${BASE_URL}/nagornaya/${slug}/`;
     xml = xml.replace(
       new RegExp(`(<loc>${reEsc(url)}<\\/loc>\\s*<lastmod>)[^<]*(<\\/lastmod>)`, 'g'),
       `$1${toDate(modISO)}$2`);
@@ -343,6 +358,7 @@ function main() {
   console.log(`  Статьи: ${slugs.join(', ')}\n`);
 
   const changes = {};
+  const nagornayaChanges = {};
 
   for (const slug of slugs) {
     const file = path.join(ARTICLES, slug, 'index.html');
@@ -380,13 +396,14 @@ function main() {
 
       console.log(`\n  📄  nagornaya/${slug}`);
       console.log(`      mod: ${modISO.slice(0,10)}  ${words} сл. → ${readTime} мин`);
+      nagornayaChanges[slug] = { modISO };
       updateNagornayaHTML(slug, { modISO, words, readTime });
     }
   }
 
   if (Object.keys(changes).length || nSlugs.length) {
     console.log('\n  🗺  sitemap.xml');
-    updateSitemap(changes);
+    updateSitemap(changes, nagornayaChanges);
     console.log('\n  📡  feed.xml');
     updateFeed(changes);
   }

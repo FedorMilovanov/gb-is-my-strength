@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "generatedAt": "2026-05-16T00:00:00+03:00",
+  "generatedAt": "2026-05-22T00:00:00+03:00",
   "project": {
     "name": "Господь Бог — Сила Моя",
     "url": "https://gospod-bog.ru/",
@@ -28,7 +28,7 @@
       "featured": true,
       "priority": 100,
       "publishedTime": "2026-01-01T00:00:00+03:00",
-      "modifiedTime": "2026-05-09T00:00:00+03:00"
+      "modifiedTime": "2026-05-01T00:00:00+03:00"
     },
     {
       "id": "nagornaya-ch1",
@@ -47,7 +47,8 @@
       ],
       "featured": false,
       "priority": 80,
-      "modifiedTime": "2026-05-09T00:00:00+03:00"
+      "modifiedTime": "2026-05-22T00:46:34+03:00",
+      "publishedTime": "2026-05-01T00:00:00+03:00"
     },
     {
       "id": "nagornaya-ch2",
@@ -65,7 +66,8 @@
       ],
       "featured": false,
       "priority": 78,
-      "modifiedTime": "2026-05-09T00:00:00+03:00"
+      "modifiedTime": "2026-05-22T00:46:34+03:00",
+      "publishedTime": "2026-05-01T00:00:00+03:00"
     },
     {
       "id": "nagornaya-ch3",
@@ -84,7 +86,8 @@
       ],
       "featured": false,
       "priority": 76,
-      "modifiedTime": "2026-05-09T00:00:00+03:00"
+      "modifiedTime": "2026-05-22T00:46:34+03:00",
+      "publishedTime": "2026-05-01T00:00:00+03:00"
     },
     {
       "id": "nagornaya-ch4",
@@ -103,7 +106,8 @@
       ],
       "featured": false,
       "priority": 74,
-      "modifiedTime": "2026-05-09T00:00:00+03:00"
+      "modifiedTime": "2026-05-22T00:46:34+03:00",
+      "publishedTime": "2026-05-01T00:00:00+03:00"
     },
     {
       "id": "nagornaya-ch5",
@@ -121,7 +125,8 @@
       ],
       "featured": false,
       "priority": 72,
-      "modifiedTime": "2026-05-09T00:00:00+03:00"
+      "modifiedTime": "2026-05-22T00:46:34+03:00",
+      "publishedTime": "2026-05-01T00:00:00+03:00"
     },
     {
       "id": "krajne-isporcheno",
@@ -142,7 +147,8 @@
       ],
       "featured": true,
       "priority": 90,
-      "modifiedTime": "2026-05-09T00:00:00+03:00"
+      "modifiedTime": "2026-05-21T23:09:05+03:00",
+      "publishedTime": "2026-04-01T00:00:00+03:00"
     },
     {
       "id": "kod-da-vinchi",
@@ -163,7 +169,8 @@
       ],
       "featured": true,
       "priority": 85,
-      "modifiedTime": "2026-05-09T00:00:00+03:00"
+      "modifiedTime": "2026-05-21T23:09:05+03:00",
+      "publishedTime": "2026-04-01T00:00:00+03:00"
     },
     {
       "id": "hermenevtika",
@@ -184,7 +191,8 @@
       ],
       "featured": true,
       "priority": 88,
-      "modifiedTime": "2026-05-09T00:00:00+03:00"
+      "modifiedTime": "2026-05-21T23:09:05+03:00",
+      "publishedTime": "2016-09-01"
     },
     {
       "id": "about",
@@ -201,7 +209,7 @@
       ],
       "featured": false,
       "priority": 50,
-      "modifiedTime": "2026-05-10T00:00:00+03:00",
+      "modifiedTime": "2026-04-18T00:00:00+03:00",
       "image": "/images/og-about.webp"
     },
     {
@@ -223,7 +231,8 @@
       ],
       "featured": true,
       "priority": 95,
-      "publishedTime": "2026-05-13T00:00:00+03:00"
+      "publishedTime": "2026-05-13T00:00:00+03:00",
+      "modifiedTime": "2026-05-13T00:00:00+03:00"
     },
     {
       "id": "20-antisovetov-pastoru",
@@ -247,7 +256,8 @@
       "publishedTime": "2026-05-13T00:00:00+03:00",
       "wordCount": 12000,
       "seriesId": "pastor-series",
-      "seriesPosition": 1
+      "seriesPosition": 1,
+      "modifiedTime": "2026-05-21T23:09:05+03:00"
     }
   ]
 }
