@@ -9,23 +9,28 @@
     <priority>1.0</priority>
     <image:image>
       <image:loc>https://gospod-bog.ru/images/og-preview-1200x630.webp</image:loc>
-      <image:title>Preview 1200x630</image:title>
+      <image:title>Богословская библиотека и каталог материалов</image:title>
+          <image:caption>Богословская библиотека и каталог материалов</image:caption>
     </image:image>
     <image:image>
       <image:loc>https://gospod-bog.ru/images/ieremia-cover.webp</image:loc>
-      <image:title>Ieremia cover</image:title>
+      <image:title>Иеремия и тема человеческого сердца</image:title>
+          <image:caption>Иеремия и тема человеческого сердца</image:caption>
     </image:image>
     <image:image>
       <image:loc>https://gospod-bog.ru/images/hero-kod-da-vinchi.webp</image:loc>
-      <image:title>Hero kod da vinchi</image:title>
+      <image:title>Исторический разбор романа «Код да Винчи»</image:title>
+          <image:caption>Исторический разбор романа «Код да Винчи»</image:caption>
     </image:image>
     <image:image>
       <image:loc>https://gospod-bog.ru/images/og-nagornaya-propoved.webp</image:loc>
-      <image:title>Nagornaya propoved</image:title>
+      <image:title>Нагорная проповедь Иисуса Христа</image:title>
+          <image:caption>Нагорная проповедь Иисуса Христа</image:caption>
     </image:image>
     <image:image>
       <image:loc>https://gospod-bog.ru/images/pastor-series/hero-main.webp</image:loc>
-      <image:title>Hero main</image:title>
+      <image:title>Главная иллюстрация серии о пасторском служении</image:title>
+          <image:caption>Главная иллюстрация серии о пасторском служении</image:caption>
     </image:image>
   </url>
 
@@ -36,11 +41,13 @@
     <priority>0.7</priority>
     <image:image>
       <image:loc>https://gospod-bog.ru/images/og-about-1200x630.webp</image:loc>
-      <image:title>About 1200x630</image:title>
+      <image:title>Фёдор Милованов и богословский проект</image:title>
+          <image:caption>Фёдор Милованов и богословский проект</image:caption>
     </image:image>
     <image:image>
       <image:loc>https://gospod-bog.ru/images/about-author-desk.webp</image:loc>
-      <image:title>About author desk</image:title>
+      <image:title>Рабочее место редактора богословского проекта</image:title>
+          <image:caption>Рабочее место редактора богословского проекта</image:caption>
     </image:image>
   </url>
 
@@ -51,23 +58,28 @@
     <priority>0.8</priority>
     <image:image>
       <image:loc>https://gospod-bog.ru/images/og-preview-1200x630.webp</image:loc>
-      <image:title>Preview 1200x630</image:title>
+      <image:title>Богословская библиотека и каталог материалов</image:title>
+          <image:caption>Богословская библиотека и каталог материалов</image:caption>
     </image:image>
     <image:image>
       <image:loc>https://gospod-bog.ru/images/hermenevtika-preview.webp</image:loc>
-      <image:title>Hermenevtika preview</image:title>
+      <image:title>Открытая книга и рукописи: герменевтика</image:title>
+          <image:caption>Открытая книга и рукописи: герменевтика</image:caption>
     </image:image>
     <image:image>
       <image:loc>https://gospod-bog.ru/images/og-krajne-isporcheno.webp</image:loc>
-      <image:title>Krajne isporcheno</image:title>
+      <image:title>Иллюстрация к статье о человеческом сердце</image:title>
+          <image:caption>Иллюстрация к статье о человеческом сердце</image:caption>
     </image:image>
     <image:image>
       <image:loc>https://gospod-bog.ru/images/og-kod-da-vinchi.webp</image:loc>
-      <image:title>Kod da vinchi</image:title>
+      <image:title>Исторический разбор романа «Код да Винчи»</image:title>
+          <image:caption>Исторический разбор романа «Код да Винчи»</image:caption>
     </image:image>
     <image:image>
       <image:loc>https://gospod-bog.ru/images/pastor-series/og-hero.webp</image:loc>
-      <image:title>Hero</image:title>
+      <image:title>Серия о пасторских патологиях и служении</image:title>
+          <image:caption>Серия о пасторских патологиях и служении</image:caption>
     </image:image>
   </url>
 
@@ -78,19 +90,23 @@
     <priority>0.8</priority>
     <image:image>
       <image:loc>https://gospod-bog.ru/images/pastor-series/og-hero.webp</image:loc>
-      <image:title>Hero</image:title>
+      <image:title>Серия о пасторских патологиях и служении</image:title>
+          <image:caption>Серия о пасторских патологиях и служении</image:caption>
     </image:image>
     <image:image>
       <image:loc>https://gospod-bog.ru/images/pastor-series/hero-main.webp</image:loc>
-      <image:title>Hero main</image:title>
+      <image:title>Главная иллюстрация серии о пасторском служении</image:title>
+          <image:caption>Главная иллюстрация серии о пасторском служении</image:caption>
     </image:image>
     <image:image>
       <image:loc>https://gospod-bog.ru/images/pastor-series/manipulation.webp</image:loc>
-      <image:title>Manipulation</image:title>
+      <image:title>Манипуляция в пасторском служении</image:title>
+          <image:caption>Манипуляция в пасторском служении</image:caption>
     </image:image>
     <image:image>
       <image:loc>https://gospod-bog.ru/images/pastor-series/mirror.webp</image:loc>
-      <image:title>Mirror</image:title>
+      <image:title>Самоиспытание пастора перед Богом</image:title>
+          <image:caption>Самоиспытание пастора перед Богом</image:caption>
     </image:image>
   </url>
 
@@ -101,47 +117,58 @@
     <priority>0.9</priority>
     <image:image>
       <image:loc>https://gospod-bog.ru/images/pastor-series/og-hero.webp</image:loc>
-      <image:title>Hero</image:title>
+      <image:title>Серия о пасторских патологиях и служении</image:title>
+          <image:caption>Серия о пасторских патологиях и служении</image:caption>
     </image:image>
     <image:image>
       <image:loc>https://gospod-bog.ru/images/pastor-series/hero-main.webp</image:loc>
-      <image:title>Hero main</image:title>
+      <image:title>Главная иллюстрация серии о пасторском служении</image:title>
+          <image:caption>Главная иллюстрация серии о пасторском служении</image:caption>
     </image:image>
     <image:image>
       <image:loc>https://gospod-bog.ru/images/pastor-series/humility.webp</image:loc>
-      <image:title>Humility</image:title>
+      <image:title>Смирение в пасторском служении</image:title>
+          <image:caption>Смирение в пасторском служении</image:caption>
     </image:image>
     <image:image>
       <image:loc>https://gospod-bog.ru/images/pastor-series/dominion.webp</image:loc>
-      <image:title>Dominion</image:title>
+      <image:title>Опасность властолюбия в служении</image:title>
+          <image:caption>Опасность властолюбия в служении</image:caption>
     </image:image>
     <image:image>
       <image:loc>https://gospod-bog.ru/images/pastor-series/sovetniki.webp</image:loc>
-      <image:title>Sovetniki</image:title>
+      <image:title>Мудрые советники в церковном служении</image:title>
+          <image:caption>Мудрые советники в церковном служении</image:caption>
     </image:image>
     <image:image>
       <image:loc>https://gospod-bog.ru/images/pastor-series/mirror.webp</image:loc>
-      <image:title>Mirror</image:title>
+      <image:title>Самоиспытание пастора перед Богом</image:title>
+          <image:caption>Самоиспытание пастора перед Богом</image:caption>
     </image:image>
     <image:image>
       <image:loc>https://gospod-bog.ru/images/pastor-series/crisis.webp</image:loc>
-      <image:title>Crisis</image:title>
+      <image:title>Кризис в пасторском служении</image:title>
+          <image:caption>Кризис в пасторском служении</image:caption>
     </image:image>
     <image:image>
       <image:loc>https://gospod-bog.ru/images/pastor-series/choice.webp</image:loc>
-      <image:title>Choice</image:title>
+      <image:title>Выбор пути в служении</image:title>
+          <image:caption>Выбор пути в служении</image:caption>
     </image:image>
     <image:image>
       <image:loc>https://gospod-bog.ru/images/pastor-series/choice2.webp</image:loc>
-      <image:title>Choice2</image:title>
+      <image:title>Развилка решений в служении</image:title>
+          <image:caption>Развилка решений в служении</image:caption>
     </image:image>
     <image:image>
       <image:loc>https://gospod-bog.ru/images/pastor-series/hero.webp</image:loc>
-      <image:title>Hero</image:title>
+      <image:title>Иллюстрация к серии о пасторском служении</image:title>
+          <image:caption>Иллюстрация к серии о пасторском служении</image:caption>
     </image:image>
     <image:image>
       <image:loc>https://gospod-bog.ru/images/pastor-series/reformation.webp</image:loc>
-      <image:title>Reformation</image:title>
+      <image:title>Реформа служения через покаяние</image:title>
+          <image:caption>Реформа служения через покаяние</image:caption>
     </image:image>
   </url>
 
@@ -152,39 +179,48 @@
     <priority>0.9</priority>
     <image:image>
       <image:loc>https://gospod-bog.ru/images/og-krajne-isporcheno.webp</image:loc>
-      <image:title>Krajne isporcheno</image:title>
+      <image:title>Иллюстрация к статье о человеческом сердце</image:title>
+          <image:caption>Иллюстрация к статье о человеческом сердце</image:caption>
     </image:image>
     <image:image>
       <image:loc>https://gospod-bog.ru/images/ieremia-judea-fall.webp</image:loc>
-      <image:title>Ieremia judea fall</image:title>
+      <image:title>Иеремия на фоне падения Иерусалима</image:title>
+          <image:caption>Иеремия на фоне падения Иерусалима</image:caption>
     </image:image>
     <image:image>
       <image:loc>https://gospod-bog.ru/images/ieremia-corrupt-heart.webp</image:loc>
-      <image:title>Ieremia corrupt heart</image:title>
+      <image:title>Образ испорченного сердца у пророка Иеремии</image:title>
+          <image:caption>Образ испорченного сердца у пророка Иеремии</image:caption>
     </image:image>
     <image:image>
       <image:loc>https://gospod-bog.ru/images/ieremia-two-trees.webp</image:loc>
-      <image:title>Ieremia two trees</image:title>
+      <image:title>Два дерева как образ выбора пути</image:title>
+          <image:caption>Два дерева как образ выбора пути</image:caption>
     </image:image>
     <image:image>
       <image:loc>https://gospod-bog.ru/images/ieremia-labyrinth.webp</image:loc>
-      <image:title>Ieremia labyrinth</image:title>
+      <image:title>Лабиринт человеческого сердца</image:title>
+          <image:caption>Лабиринт человеческого сердца</image:caption>
     </image:image>
     <image:image>
       <image:loc>https://gospod-bog.ru/images/ieremia-new-heart.webp</image:loc>
-      <image:title>Ieremia new heart</image:title>
+      <image:title>Обетование нового сердца</image:title>
+          <image:caption>Обетование нового сердца</image:caption>
     </image:image>
     <image:image>
       <image:loc>https://gospod-bog.ru/images/ieremia-cross.webp</image:loc>
-      <image:title>Ieremia cross</image:title>
+      <image:title>Крест как ответ на проблему сердца</image:title>
+          <image:caption>Крест как ответ на проблему сердца</image:caption>
     </image:image>
     <image:image>
       <image:loc>https://gospod-bog.ru/images/ieremia-rescue.webp</image:loc>
-      <image:title>Ieremia rescue</image:title>
+      <image:title>Божье спасение и избавление</image:title>
+          <image:caption>Божье спасение и избавление</image:caption>
     </image:image>
     <image:image>
       <image:loc>https://gospod-bog.ru/images/ieremia-forge.webp</image:loc>
-      <image:title>Ieremia forge</image:title>
+      <image:title>Очищение сердца в Божьей кузнице</image:title>
+          <image:caption>Очищение сердца в Божьей кузнице</image:caption>
     </image:image>
   </url>
 
@@ -195,11 +231,13 @@
     <priority>0.9</priority>
     <image:image>
       <image:loc>https://gospod-bog.ru/images/og-kod-da-vinchi.webp</image:loc>
-      <image:title>Kod da vinchi</image:title>
+      <image:title>Исторический разбор романа «Код да Винчи»</image:title>
+          <image:caption>Исторический разбор романа «Код да Винчи»</image:caption>
     </image:image>
     <image:image>
       <image:loc>https://gospod-bog.ru/images/hero-kod-da-vinchi.webp</image:loc>
-      <image:title>Hero kod da vinchi</image:title>
+      <image:title>Исторический разбор романа «Код да Винчи»</image:title>
+          <image:caption>Исторический разбор романа «Код да Винчи»</image:caption>
     </image:image>
   </url>
 
@@ -210,11 +248,13 @@
     <priority>0.9</priority>
     <image:image>
       <image:loc>https://gospod-bog.ru/images/hermenevtika-preview-og.webp</image:loc>
-      <image:title>Hermenevtika preview og</image:title>
+      <image:title>Открытая книга и рукописи: герменевтика</image:title>
+          <image:caption>Открытая книга и рукописи: герменевтика</image:caption>
     </image:image>
     <image:image>
       <image:loc>https://gospod-bog.ru/images/hermenevtika-preview.webp</image:loc>
-      <image:title>Hermenevtika preview</image:title>
+      <image:title>Открытая книга и рукописи: герменевтика</image:title>
+          <image:caption>Открытая книга и рукописи: герменевтика</image:caption>
     </image:image>
   </url>
 
@@ -225,7 +265,8 @@
     <priority>0.9</priority>
     <image:image>
       <image:loc>https://gospod-bog.ru/images/og-nagornaya-propoved.webp</image:loc>
-      <image:title>Nagornaya propoved</image:title>
+      <image:title>Нагорная проповедь Иисуса Христа</image:title>
+          <image:caption>Нагорная проповедь Иисуса Христа</image:caption>
     </image:image>
   </url>
 
@@ -236,84 +277,68 @@
     <priority>0.8</priority>
     <image:image>
       <image:loc>https://gospod-bog.ru/images/og-nagornaya-propoved.webp</image:loc>
-      <image:title>Nagornaya propoved</image:title>
+      <image:title>Нагорная проповедь Иисуса Христа</image:title>
+          <image:caption>Нагорная проповедь Иисуса Христа</image:caption>
     </image:image>
   </url>
 
   <url>
     <loc>https://gospod-bog.ru/nagornaya/chast-1/</loc>
-    <lastmod>2026-05-09</lastmod>
+    <lastmod>2026-05-22</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.9</priority>
     <image:image>
       <image:loc>https://gospod-bog.ru/images/og-nagornaya-propoved-chast-1.webp</image:loc>
-      <image:title>Nagornaya propoved chast 1</image:title>
+      <image:title>Нагорная проповедь, часть I: два текста, один Иисус</image:title>
+          <image:caption>Нагорная проповедь, часть I: два текста, один Иисус</image:caption>
     </image:image>
   </url>
 
   <url>
     <loc>https://gospod-bog.ru/nagornaya/chast-2/</loc>
-    <lastmod>2026-05-01</lastmod>
+    <lastmod>2026-05-22</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.9</priority>
     <image:image>
       <image:loc>https://gospod-bog.ru/images/og-nagornaya-propoved-chast-2.webp</image:loc>
-      <image:title>Nagornaya propoved chast 2</image:title>
+      <image:title>Нагорная проповедь, часть II: синоптическая проблема</image:title>
+          <image:caption>Нагорная проповедь, часть II: синоптическая проблема</image:caption>
     </image:image>
   </url>
 
   <url>
     <loc>https://gospod-bog.ru/nagornaya/chast-3/</loc>
-    <lastmod>2026-05-01</lastmod>
+    <lastmod>2026-05-22</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.9</priority>
     <image:image>
       <image:loc>https://gospod-bog.ru/images/og-nagornaya-propoved-chast-3.webp</image:loc>
-      <image:title>Nagornaya propoved chast 3</image:title>
+      <image:title>Нагорная проповедь, часть III: адресаты проповеди</image:title>
+          <image:caption>Нагорная проповедь, часть III: адресаты проповеди</image:caption>
     </image:image>
   </url>
 
   <url>
     <loc>https://gospod-bog.ru/nagornaya/chast-4/</loc>
-    <lastmod>2026-05-09</lastmod>
+    <lastmod>2026-05-22</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.9</priority>
     <image:image>
       <image:loc>https://gospod-bog.ru/images/og-nagornaya-propoved-chast-4.webp</image:loc>
-      <image:title>Nagornaya propoved chast 4</image:title>
+      <image:title>Нагорная проповедь, часть IV: богодухновенность</image:title>
+          <image:caption>Нагорная проповедь, часть IV: богодухновенность</image:caption>
     </image:image>
   </url>
 
   <url>
     <loc>https://gospod-bog.ru/nagornaya/chast-5/</loc>
-    <lastmod>2026-05-01</lastmod>
+    <lastmod>2026-05-22</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.9</priority>
     <image:image>
       <image:loc>https://gospod-bog.ru/images/og-nagornaya-propoved-chast-5.webp</image:loc>
-      <image:title>Nagornaya propoved chast 5</image:title>
-    </image:image>
-  </url>
-
-  <url>
-    <loc>https://gospod-bog.ru/nagornaya/istochniki/</loc>
-    <lastmod>2026-04-30</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.7</priority>
-    <image:image>
-      <image:loc>https://gospod-bog.ru/images/og-nagornaya-propoved.webp</image:loc>
-      <image:title>Nagornaya propoved</image:title>
-    </image:image>
-  </url>
-
-  <url>
-    <loc>https://gospod-bog.ru/nagornaya/nakhodki/</loc>
-    <lastmod>2026-04-30</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.7</priority>
-    <image:image>
-      <image:loc>https://gospod-bog.ru/images/og-nagornaya-propoved.webp</image:loc>
-      <image:title>Nagornaya propoved</image:title>
+      <image:title>Нагорная проповедь, часть V: Закон и Евангелие</image:title>
+          <image:caption>Нагорная проповедь, часть V: Закон и Евангелие</image:caption>
     </image:image>
   </url>
 

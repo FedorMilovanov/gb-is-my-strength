@@ -2,7 +2,7 @@
 <html lang="ru">
 <head>
   <meta charset="UTF-8">
-  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://mc.yandex.ru https://*.yandex.ru; img-src 'self' https://mc.yandex.ru https://*.yandex.ru https://commons.wikimedia.org https://upload.wikimedia.org data: blob:; style-src 'self' 'unsafe-inline'; font-src 'self' data:; connect-src 'self' https://mc.yandex.ru https://*.yandex.ru; frame-src 'self' https://mc.yandex.ru https://*.yandex.ru; frame-ancestors 'none';">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://mc.yandex.ru https://*.yandex.ru; img-src 'self' https://mc.yandex.ru https://*.yandex.ru https://commons.wikimedia.org https://upload.wikimedia.org data: blob:; style-src 'self' 'unsafe-inline'; font-src 'self' data:; connect-src 'self' https://mc.yandex.ru https://*.yandex.ru; frame-src 'self' https://mc.yandex.ru https://*.yandex.ru; frame-ancestors 'none'; object-src 'none'; base-uri 'self';">
   <meta http-equiv="X-Content-Type-Options" content="nosniff">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, interactive-widget=resizes-content">
 
@@ -41,104 +41,91 @@
 
   <!-- JSON-LD: ProfilePage + Person + BreadcrumbList -->
   <script type="application/ld+json">{
-      "@context": "https://schema.org",
-      "@graph": [
-            {
-                  "@type": "Organization",
-                  "@id": "https://gospod-bog.ru/#organization",
-                  "name": "Господь Бог — Сила Моя",
-                  "url": "https://gospod-bog.ru/",
-                  "logo": {
-                        "@type": "ImageObject",
-                        "url": "https://gospod-bog.ru/icons/icon-512.png",
-                        "width": 512,
-                        "height": 512
-                  },
-                  "sameAs": [
-                        "https://t.me/fedormilovanov",
-                        "https://vk.com/curtmf"
+                  "@context": "https://schema.org",
+                  "@graph": [
+                                    {
+                                                      "@type": "Organization",
+                                                      "@id": "https://gospod-bog.ru/#organization",
+                                                      "name": "Господь Бог — Сила Моя",
+                                                      "url": "https://gospod-bog.ru/",
+                                                      "logo": {
+                                                                        "@type": "ImageObject",
+                                                                        "url": "https://gospod-bog.ru/icons/icon-512.png",
+                                                                        "width": 512,
+                                                                        "height": 512
+                                                      },
+                                                      "sameAs": [
+                                                                        "https://t.me/fedormilovanov",
+                                                                        "https://vk.com/curtmf"
+                                                      ]
+                                    },
+                                    {
+                                                      "@type": "WebSite",
+                                                      "@id": "https://gospod-bog.ru/#website",
+                                                      "name": "Господь Бог — Сила Моя",
+                                                      "url": "https://gospod-bog.ru/",
+                                                      "inLanguage": "ru",
+                                                      "publisher": {
+                                                                        "@id": "https://gospod-bog.ru/#organization"
+                                                      }
+                                    },
+                                    {
+                                                      "@id": "https://gospod-bog.ru/about/#person",
+                                                      "@type": "Person",
+                                                      "name": "Фёдор Милованов",
+                                                      "url": "https://gospod-bog.ru/about/",
+                                                      "sameAs": [
+                                                                        "https://t.me/fedormilovanov",
+                                                                        "https://vk.com/curtmf"
+                                                      ],
+                                                      "worksFor": {
+                                                                        "@id": "https://gospod-bog.ru/#organization"
+                                                      }
+                                    },
+                                    {
+                                                      "@type": "ProfilePage",
+                                                      "mainEntity": {
+                                                                        "@id": "https://gospod-bog.ru/about/#person"
+                                                      },
+                                                      "breadcrumb": {
+                                                                        "@type": "BreadcrumbList",
+                                                                        "itemListElement": [
+                                                                                          {
+                                                                                                            "@type": "ListItem",
+                                                                                                            "position": 1,
+                                                                                                            "name": "Главная",
+                                                                                                            "item": "https://gospod-bog.ru/"
+                                                                                          },
+                                                                                          {
+                                                                                                            "@type": "ListItem",
+                                                                                                            "position": 2,
+                                                                                                            "name": "О редакторе",
+                                                                                                            "item": "https://gospod-bog.ru/about/"
+                                                                                          }
+                                                                        ],
+                                                                        "@id": "https://gospod-bog.ru/about/#breadcrumbs"
+                                                      },
+                                                      "@id": "https://gospod-bog.ru/about/#profile"
+                                    },
+                                    {
+                                                      "@type": "BreadcrumbList",
+                                                      "itemListElement": [
+                                                                        {
+                                                                                          "@type": "ListItem",
+                                                                                          "position": 1,
+                                                                                          "name": "Главная",
+                                                                                          "item": "https://gospod-bog.ru/"
+                                                                        },
+                                                                        {
+                                                                                          "@type": "ListItem",
+                                                                                          "position": 2,
+                                                                                          "name": "О библиотеке",
+                                                                                          "item": "https://gospod-bog.ru/about/"
+                                                                        }
+                                                      ],
+                                                      "@id": "https://gospod-bog.ru/about/#breadcrumbs"
+                                    }
                   ]
-            },
-            {
-                  "@type": "WebSite",
-                  "@id": "https://gospod-bog.ru/#website",
-                  "name": "Господь Бог — Сила Моя",
-                  "url": "https://gospod-bog.ru/",
-                  "inLanguage": "ru",
-                  "publisher": {
-                        "@id": "https://gospod-bog.ru/#organization"
-                  }
-            },
-            {
-                  "@type": "ProfilePage",
-                  "mainEntity": {
-                        "@type": "Person",
-                        "@id": "https://gospod-bog.ru/about/#person",
-                        "name": "Фёдор Милованов",
-                        "url": "https://gospod-bog.ru/about/",
-                        "jobTitle": "Редактор-составитель и куратор богословской библиотеки",
-                        "description": "Куратор и редактор-составитель библиотеки «Господь Бог — Сила Моя». Его роль — отбор источников, структура, богословская выверка, редактура, составление и смысловая связка материалов для русскоязычного читателя.",
-                        "knowsLanguage": [
-                              "ru",
-                              "en"
-                        ],
-                        "knowsAbout": [
-                              "Реформатское богословие",
-                              "Экзегеза Писания",
-                              "Герменевтика",
-                              "Апологетика",
-                              "Пуританская традиция",
-                              "Редактура богословских переводов"
-                        ],
-                        "email": "viktorcoy2012@gmail.com",
-                        "sameAs": [
-                              "https://t.me/fedormilovanov",
-                              "https://vk.com/curtmf",
-                              "https://max.ru/u/f9LHodD0cOLbWadIz7D3ekYEeXl3i5UtoLwO8hWJLo8W_BIs6s4ytXxqD5Q"
-                        ],
-                        "worksFor": {
-                              "@type": "Organization",
-                              "name": "Господь Бог — Сила Моя",
-                              "url": "https://gospod-bog.ru/"
-                        }
-                  },
-                  "breadcrumb": {
-                        "@type": "BreadcrumbList",
-                        "itemListElement": [
-                              {
-                                    "@type": "ListItem",
-                                    "position": 1,
-                                    "name": "Главная",
-                                    "item": "https://gospod-bog.ru/"
-                              },
-                              {
-                                    "@type": "ListItem",
-                                    "position": 2,
-                                    "name": "О редакторе",
-                                    "item": "https://gospod-bog.ru/about/"
-                              }
-                        ],
-                        "@id": "https://gospod-bog.ru/about/#breadcrumbs"
-                  }
-            },
-            {
-                  "@type": "BreadcrumbList",
-                  "itemListElement": [
-                        {
-                              "@type": "ListItem",
-                              "position": 1,
-                              "name": "Главная",
-                              "item": "https://gospod-bog.ru/"
-                        },
-                        {
-                              "@type": "ListItem",
-                              "position": 2,
-                              "name": "О библиотеке",
-                              "item": "https://gospod-bog.ru/about/"
-                        }
-                  ]
-            }
-      ]
 }</script>
 
   <link rel="icon" type="image/x-icon" href="https://gospod-bog.ru/favicon.ico">
@@ -154,7 +141,7 @@
   <script>
     (function(){try{var t=localStorage.getItem('theme');if(t==='dark'||(!t&&window.matchMedia('(prefers-color-scheme: dark)').matches)){document.documentElement.classList.add('dark');}}catch(e){}})();
   </script>
-  <link rel="stylesheet" href="../css/site.css?v=04ad135a">
+  <link rel="stylesheet" href="../css/site.css?v=3fa72163">
 
   <script>
   window.SITE_CONFIG = {
@@ -213,7 +200,7 @@
   top: 0;
 }
 </style>
-  <link rel="stylesheet" href="../css/command-palette.css?v=081e6436">
+  <link rel="stylesheet" href="../css/command-palette.css?v=d7687b7e">
 </head>
 
 <body>
@@ -437,8 +424,8 @@
 
 </div><!-- /page-wrap -->
 
-<script src="../js/site.js?v=0fcefbc0" defer></script>
-<script src="../js/sw-register.js?v=c60839ff" defer></script>
+<script src="../js/site.js?v=9f50d25d" defer></script>
+<script src="../js/sw-register.js?v=9b5d2bf3" defer></script>
 <script src="../js/search.js?v=832b8869" defer></script>
 </body>
 </html>

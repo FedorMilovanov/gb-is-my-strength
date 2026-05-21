@@ -87,7 +87,8 @@
     var items = headings.map(function (h, i) {
       var a = document.createElement('a');
       a.className = 'btoc-link';
-      a.href = '#' + encodeURIComponent(h.id);
+      var hash = '#' + encodeURIComponent(h.id);
+      a.setAttribute('href', hash);
       a.innerHTML = '<span class="btoc-link-num">' + String(i + 1).padStart(2, '0') + '</span>' +
                     '<span class="btoc-link-text"></span>';
       a.querySelector('.btoc-link-text').textContent = escText(h.textContent);
@@ -95,7 +96,7 @@
         e.preventDefault();
         closeOverlay();
         h.scrollIntoView({ behavior: prefersReducedMotion() ? 'auto' : 'smooth', block: 'start' });
-        try { history.replaceState(null, '', '#' + h.id); } catch (_) {}
+        try { history.replaceState(null, '', hash); } catch (_) {}
       });
       nav.appendChild(a);
       return { el: h, link: a, label: escText(h.textContent) };

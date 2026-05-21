@@ -335,6 +335,13 @@ const NAGORNAYA_SITEMAP_PATHS = (function() {
   if (!fs.existsSync(NAGORNAYA)) return paths;
   const subdirs = fs.readdirSync(NAGORNAYA, { withFileTypes: true })
     .filter(d => d.isDirectory())
+    .filter(d => {
+      const htmlPath = path.join(NAGORNAYA, d.name, 'index.html');
+      if (!fs.existsSync(htmlPath)) return false;
+      const html = fs.readFileSync(htmlPath, 'utf8');
+      /* noindex pages must not be required in sitemap. */
+      return !/<meta[^>]+name=["']robots["'][^>]+content=["'][^"']*noindex/i.test(html);
+    })
     .map(d => `/nagornaya/${d.name}/`);
   return paths.concat(subdirs);
 })();

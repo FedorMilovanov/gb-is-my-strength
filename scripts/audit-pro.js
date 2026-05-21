@@ -465,7 +465,10 @@ function rootsFromLd(data) {
     const urls = [...sitemap.matchAll(/<loc>([^<]+)<\/loc>/g)].map(m => m[1]);
     const dup = urls.filter((u, i) => urls.indexOf(u) !== i);
     if (dup.length) R.err(`sitemap duplicate loc: ${[...new Set(dup)].join(', ')}`);
-    const contentPages = htmlPages.map(rel).filter(f => !['404.html'].includes(f)).filter(f => !verificationFileRe.test(f));
+    const contentPages = htmlPages.map(rel)
+      .filter(f => !['404.html'].includes(f))
+      .filter(f => !verificationFileRe.test(f))
+      .filter(f => !/<meta[^>]+name=["']robots["'][^>]+content=["'][^"']*noindex/i.test(read(f)));
     let missing = 0;
     for (const f of contentPages) {
       const url = SITE_URL + '/' + (f === 'index.html' ? '' : f.replace(/index\.html$/, ''));

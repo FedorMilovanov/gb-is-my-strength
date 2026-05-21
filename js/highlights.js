@@ -339,10 +339,11 @@
       var dy = e.touches[0].clientY - _swipeStartY;
       if (dy > 0) {
         /* Translate panel down as user swipes */
+        e.preventDefault();
         panelInner.style.transform = 'translateY(' + dy + 'px)';
         panelInner.style.transition = 'none';
       }
-    }, { passive: true });
+    }, { passive: false });
 
     panelInner.addEventListener('touchend', function(e) {
       if (!_swipeActive) return;
@@ -419,7 +420,9 @@
     var a = document.createElement('a');
     a.href = url;
     a.download = 'gb-citaty-' + new Date().toISOString().slice(0,10) + '.md';
+    document.body.appendChild(a);
     a.click();
+    a.remove();
     setTimeout(function(){ URL.revokeObjectURL(url); }, 3000);
   });
 
@@ -467,7 +470,7 @@
 
       var span = saveBtn.querySelector('span');
       var orig = span.textContent;
-      span.textContent = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="vertical-align:middle;margin-top:-1px"><polyline points="20 6 9 17 4 12"/></svg> Сохранено';
+      span.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="vertical-align:middle;margin-top:-1px"><polyline points="20 6 9 17 4 12"/></svg> Сохранено';
       setTimeout(function(){ span.textContent = orig; }, 2000);
 
       popup.classList.remove('ss-visible');

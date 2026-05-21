@@ -1,6 +1,8 @@
 name: IndexNow — Notify Search Engines
 
 on:
+  workflow_dispatch:
+
   push:
     branches: [main]
     paths:
@@ -91,6 +93,7 @@ jobs:
 
       - name: Submit to IndexNow (Bing / Yandex)
         if: steps.payload.outputs.urls != '[]' && steps.payload.outputs.urls != ''
+        continue-on-error: true
         run: |
           KEY="${{ steps.payload.outputs.key }}"
           HOST="${{ steps.payload.outputs.host }}"

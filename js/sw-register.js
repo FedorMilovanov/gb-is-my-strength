@@ -182,10 +182,13 @@
         var key = 'gb-offline-hint-count';
         try {
           var count = parseInt(localStorage.getItem(key) || '0', 10);
-          if (count < 2) {
-            localStorage.setItem(key, String(count + 1));
-            showToast('Статья доступна офлайн', false, 'toast-cached');
-            shown = true;
+          if (count < 2 && navigator.serviceWorker.controller && window.caches) {
+            caches.match(location.href).then(function(cached) {
+              if (!cached || shown || document.hidden) return;
+              localStorage.setItem(key, String(count + 1));
+              showToast('Статья доступна офлайн', false, 'toast-cached');
+              shown = true;
+            }).catch(function() {});
           }
         } catch(e) {}
       }
