@@ -3,7 +3,7 @@
 <html lang="ru">
 <head>
 <meta charset="utf-8">
-  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://mc.yandex.ru; img-src 'self' https://mc.yandex.ru https://commons.wikimedia.org data:; style-src 'self' 'unsafe-inline'; font-src 'self'; connect-src 'self' https://mc.yandex.ru; frame-ancestors 'none';">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://mc.yandex.ru https://*.yandex.ru; img-src 'self' https://mc.yandex.ru https://*.yandex.ru https://commons.wikimedia.org https://upload.wikimedia.org data: blob:; style-src 'self' 'unsafe-inline'; font-src 'self' data:; connect-src 'self' https://mc.yandex.ru https://*.yandex.ru; frame-src 'self' https://mc.yandex.ru https://*.yandex.ru; frame-ancestors 'none';">
   <meta http-equiv="X-Content-Type-Options" content="nosniff">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, interactive-widget=resizes-content">
 <!-- Open Graph -->
@@ -274,7 +274,7 @@
 <script>
     (function(){try{var t=localStorage.getItem('theme');if(t==='dark'||(!t&&window.matchMedia('(prefers-color-scheme: dark)').matches)){document.documentElement.classList.add('dark');}}catch(e){}})();
   </script>
-<link href="../../css/site.css?v=be29dab7" rel="stylesheet">
+<link href="../../css/site.css?v=7d63e0ec" rel="stylesheet">
 <style>
     /* Make article images clickable */
     .article-img img { cursor: zoom-in; }
@@ -730,36 +730,31 @@ window.SITE_CONFIG = {
 <section class="summary-card" aria-labelledby="summary-title-auto" data-speakable>
   <h2 id="summary-title-auto" class="summary-card__head">Коротко</h2>
   <ul class="summary-card__body" role="list">
-      <li class="summary-card__item">
-        <span class="summary-card__check" aria-hidden="true">
-          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg>
-        </span>
-        <p class="summary-card__text">Иеремия 17:9 описывает падшее сердце как «кривое» (ʿāqōb) и «неисцелимо больное» (ʾānûš).</p>
-      </li>
-      <li class="summary-card__item">
-        <span class="summary-card__check" aria-hidden="true">
-          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg>
-        </span>
-        <p class="summary-card__text">К верующему стих применим как предупреждение: остаточный грех способен оправдывать сам себя.</p>
-      </li>
-      <li class="summary-card__item">
-        <span class="summary-card__check" aria-hidden="true">
-          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg>
-        </span>
-        <p class="summary-card__text">Новое сердце по Иез. 36:26 — не отмена диагноза, а Божий ответ на него во Христе.</p>
-      </li>
-      <li class="summary-card__item">
-        <span class="summary-card__check" aria-hidden="true">
-          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg>
-        </span>
-        <p class="summary-card__text">Простой совет: не делать сердце последним судом; проверять его Писанием, молитвой, плодами и братским словом.</p>
-      </li>
-      <li class="summary-card__item">
-        <span class="summary-card__check" aria-hidden="true">
-          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg>
-        </span>
-        <p class="summary-card__text">simul iustus et peccator — христианин одновременно полностью оправдан и продолжает борьбу с грехом.</p>
-      </li>
+    <li class="summary-card__item">
+      <span class="summary-card__check" aria-hidden="true"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg></span>
+      <span class="summary-card__num" aria-hidden="true">01</span>
+      <p class="summary-card__text">Иеремия 17:9 описывает падшее сердце как «кривое» (ʿāqōb) и «неисцелимо больное» (ʾānûš).</p>
+    </li>
+    <li class="summary-card__item">
+      <span class="summary-card__check" aria-hidden="true"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg></span>
+      <span class="summary-card__num" aria-hidden="true">02</span>
+      <p class="summary-card__text">К верующему стих применим как предупреждение: остаточный грех способен оправдывать сам себя.</p>
+    </li>
+    <li class="summary-card__item">
+      <span class="summary-card__check" aria-hidden="true"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg></span>
+      <span class="summary-card__num" aria-hidden="true">03</span>
+      <p class="summary-card__text">Новое сердце по Иез. 36:26 — не отмена диагноза, а Божий ответ на него во Христе.</p>
+    </li>
+    <li class="summary-card__item">
+      <span class="summary-card__check" aria-hidden="true"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg></span>
+      <span class="summary-card__num" aria-hidden="true">04</span>
+      <p class="summary-card__text">Простой совет: не делать сердце последним судом; проверять его Писанием, молитвой, плодами и братским словом.</p>
+    </li>
+    <li class="summary-card__item">
+      <span class="summary-card__check" aria-hidden="true"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg></span>
+      <span class="summary-card__num" aria-hidden="true">05</span>
+      <p class="summary-card__text">simul iustus et peccator — христианин одновременно полностью оправдан и продолжает борьбу с грехом.</p>
+    </li>
   </ul>
 </section>
 

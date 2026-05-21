@@ -22,7 +22,8 @@
   --f-serif:   "Playfair Display", Georgia, serif;
   --f-body:    "Cormorant Garamond", Georgia, serif;
   --f-ui:      "Inter", system-ui, sans-serif;
-  --f-hebrew:  "Noto Serif Hebrew", "David Libre", serif;
+  --f-hebrew:  "Noto Sans Hebrew", "SBL Hebrew", "David Libre", serif;
+  --f-greek:   "Noto Sans Greek", "GFS Neohellenic", "Times New Roman", serif;
 
   --gold:      #b8860b;
   --gold-glow: rgba(184, 134, 11, 0.35);
@@ -323,7 +324,7 @@ html.dark .h-scripture-bg::before {
   white-space: nowrap;
 }
 .h-phrase--hebrew { font-family: var(--f-hebrew); direction: rtl; }
-.h-phrase--greek,
+.h-phrase--greek { font-family: var(--f-greek); font-style: normal; direction: ltr; letter-spacing: .005em; }
 .h-phrase--latin { font-family: var(--f-body); font-style: italic; direction: ltr; }
 
 
