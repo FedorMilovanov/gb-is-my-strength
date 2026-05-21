@@ -2,7 +2,7 @@
 <html lang="ru">
 <head>
   <meta charset="UTF-8">
-  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://mc.yandex.ru; img-src 'self' https://mc.yandex.ru https://commons.wikimedia.org data:; style-src 'self' 'unsafe-inline'; font-src 'self'; connect-src 'self' https://mc.yandex.ru; frame-ancestors 'none';">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://mc.yandex.ru https://*.yandex.ru; img-src 'self' https://mc.yandex.ru https://*.yandex.ru https://commons.wikimedia.org https://upload.wikimedia.org data: blob:; style-src 'self' 'unsafe-inline'; font-src 'self' data:; connect-src 'self' https://mc.yandex.ru https://*.yandex.ru; frame-src 'self' https://mc.yandex.ru https://*.yandex.ru; frame-ancestors 'none';">
   <meta http-equiv="X-Content-Type-Options" content="nosniff">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, interactive-widget=resizes-content">
   <meta name="theme-color" content="#fdfcf9" media="(prefers-color-scheme: light)">
@@ -57,8 +57,8 @@
   <!-- Anti-FOUC -->
   <script>(function(){try{var t=localStorage.getItem('theme');if(t==='dark'||(!t&&window.matchMedia('(prefers-color-scheme: dark)').matches)){document.documentElement.classList.add('dark');}}catch(e){}})();</script>
 
-  <link rel="stylesheet" href="../css/site.css?v=be29dab7">
-  <link rel="stylesheet" href="../css/home.css?v=a7ea0251">
+  <link rel="stylesheet" href="../css/site.css?v=7d63e0ec">
+  <link rel="stylesheet" href="../css/home.css?v=f722a06a">
 
   <script>
 window.SITE_CONFIG = {
@@ -277,36 +277,31 @@ window.SITE_CONFIG = {
 <section class="summary-card" aria-labelledby="summary-title-auto" data-speakable>
   <h2 id="summary-title-auto" class="summary-card__head">Коротко</h2>
   <ul class="summary-card__body" role="list">
-      <li class="summary-card__item">
-        <span class="summary-card__check" aria-hidden="true">
-          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg>
-        </span>
-        <p class="summary-card__text">Серия «20 антисоветов пастору» — системный анализ пасторских патологий.</p>
-      </li>
-      <li class="summary-card__item">
-        <span class="summary-card__check" aria-hidden="true">
-          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg>
-        </span>
-        <p class="summary-card__text">Темы: власть, подотчётность, манипуляция Писанием, газлайтинг, законничество.</p>
-      </li>
-      <li class="summary-card__item">
-        <span class="summary-card__check" aria-hidden="true">
-          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg>
-        </span>
-        <p class="summary-card__text">Каждая статья опирается на Писание и ставит зеркало внутреннему диагнозу служения.</p>
-      </li>
-      <li class="summary-card__item">
-        <span class="summary-card__check" aria-hidden="true">
-          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg>
-        </span>
-        <p class="summary-card__text">Применение терминов «газлайтинг», «нарциссизм» — в пастырском, а не клиническом смысле.</p>
-      </li>
-      <li class="summary-card__item">
-        <span class="summary-card__check" aria-hidden="true">
-          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg>
-        </span>
-        <p class="summary-card__text">Цель серии — содействовать здоровой церковной культуре, а не обвинению конкретных людей.</p>
-      </li>
+    <li class="summary-card__item">
+      <span class="summary-card__check" aria-hidden="true"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg></span>
+      <span class="summary-card__num" aria-hidden="true">01</span>
+      <p class="summary-card__text">Серия «20 антисоветов пастору» — системный анализ пасторских патологий.</p>
+    </li>
+    <li class="summary-card__item">
+      <span class="summary-card__check" aria-hidden="true"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg></span>
+      <span class="summary-card__num" aria-hidden="true">02</span>
+      <p class="summary-card__text">Темы: власть, подотчётность, манипуляция Писанием, газлайтинг, законничество.</p>
+    </li>
+    <li class="summary-card__item">
+      <span class="summary-card__check" aria-hidden="true"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg></span>
+      <span class="summary-card__num" aria-hidden="true">03</span>
+      <p class="summary-card__text">Каждая статья опирается на Писание и ставит зеркало внутреннему диагнозу служения.</p>
+    </li>
+    <li class="summary-card__item">
+      <span class="summary-card__check" aria-hidden="true"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg></span>
+      <span class="summary-card__num" aria-hidden="true">04</span>
+      <p class="summary-card__text">Применение терминов «газлайтинг», «нарциссизм» — в пастырском, а не клиническом смысле.</p>
+    </li>
+    <li class="summary-card__item">
+      <span class="summary-card__check" aria-hidden="true"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg></span>
+      <span class="summary-card__num" aria-hidden="true">05</span>
+      <p class="summary-card__text">Цель серии — содействовать здоровой церковной культуре, а не обвинению конкретных людей.</p>
+    </li>
   </ul>
 </section>
 

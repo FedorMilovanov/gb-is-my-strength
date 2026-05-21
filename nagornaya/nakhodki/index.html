@@ -3,7 +3,7 @@
 <head>
   <script>try{if(localStorage.getItem("theme")==="dark")document.documentElement.classList.add("dark")}catch(e){}</script>
   <meta charset="UTF-8">
-  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://mc.yandex.ru; img-src 'self' https://mc.yandex.ru https://commons.wikimedia.org data:; style-src 'self' 'unsafe-inline'; font-src 'self'; connect-src 'self' https://mc.yandex.ru; frame-ancestors 'none';">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://mc.yandex.ru https://*.yandex.ru; img-src 'self' https://mc.yandex.ru https://*.yandex.ru https://commons.wikimedia.org https://upload.wikimedia.org data: blob:; style-src 'self' 'unsafe-inline'; font-src 'self' data:; connect-src 'self' https://mc.yandex.ru https://*.yandex.ru; frame-src 'self' https://mc.yandex.ru https://*.yandex.ru; frame-ancestors 'none';">
   <meta http-equiv="X-Content-Type-Options" content="nosniff">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, interactive-widget=resizes-content">
   <meta name="theme-color" content="#fdfcf9" media="(prefers-color-scheme: light)">
@@ -44,7 +44,7 @@
   <link rel="preload" as="font" type="font/woff2" href="/fonts/Lora/lora-cyrillic-400.woff2" crossorigin>
   <link rel="stylesheet" href="/fonts/fonts.css?v=fc6cff8a">
   <link rel="stylesheet" href="/nagornaya/tw.min.css?v=2670414e">
-  <link rel="stylesheet" href="/css/site.css?v=be29dab7">
+  <link rel="stylesheet" href="/css/site.css?v=7d63e0ec">
   <script>
   window.SITE_CONFIG = {
     version: 1778943682,
@@ -114,7 +114,7 @@
   top: 0;
 }
 </style>
-  <link rel="stylesheet" href="../../css/nagornaya-mobile-toc.css?v=d7bdceb2">
+  <link rel="stylesheet" href="../../css/nagornaya-mobile-toc.css?v=32d974a2">
   <link rel="stylesheet" href="../../css/command-palette.css?v=081e6436">
 
 </head>
@@ -352,36 +352,31 @@
 <section class="summary-card" aria-labelledby="summary-title-auto" data-speakable>
   <h2 id="summary-title-auto" class="summary-card__head">Коротко</h2>
   <ul class="summary-card__body" role="list">
-      <li class="summary-card__item">
-        <span class="summary-card__check" aria-hidden="true">
-          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg>
-        </span>
-        <p class="summary-card__text">21 ключевая исследовательская находка по Нагорной проповеди.</p>
-      </li>
-      <li class="summary-card__item">
-        <span class="summary-card__check" aria-hidden="true">
-          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg>
-        </span>
-        <p class="summary-card__text">Каждая находка имеет богословское значение и пастырское применение.</p>
-      </li>
-      <li class="summary-card__item">
-        <span class="summary-card__check" aria-hidden="true">
-          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg>
-        </span>
-        <p class="summary-card__text">Раздел построен как навигация по корпусу серии для быстрого поиска идей.</p>
-      </li>
-      <li class="summary-card__item">
-        <span class="summary-card__check" aria-hidden="true">
-          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg>
-        </span>
-        <p class="summary-card__text">Связан с источниками и пятью основными частями цикла.</p>
-      </li>
-      <li class="summary-card__item">
-        <span class="summary-card__check" aria-hidden="true">
-          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg>
-        </span>
-        <p class="summary-card__text">Подходит для проповедников, преподавателей и студентов как справочный аппарат.</p>
-      </li>
+    <li class="summary-card__item">
+      <span class="summary-card__check" aria-hidden="true"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg></span>
+      <span class="summary-card__num" aria-hidden="true">01</span>
+      <p class="summary-card__text">21 ключевая исследовательская находка по Нагорной проповеди.</p>
+    </li>
+    <li class="summary-card__item">
+      <span class="summary-card__check" aria-hidden="true"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg></span>
+      <span class="summary-card__num" aria-hidden="true">02</span>
+      <p class="summary-card__text">Каждая находка имеет богословское значение и пастырское применение.</p>
+    </li>
+    <li class="summary-card__item">
+      <span class="summary-card__check" aria-hidden="true"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg></span>
+      <span class="summary-card__num" aria-hidden="true">03</span>
+      <p class="summary-card__text">Раздел построен как навигация по корпусу серии для быстрого поиска идей.</p>
+    </li>
+    <li class="summary-card__item">
+      <span class="summary-card__check" aria-hidden="true"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg></span>
+      <span class="summary-card__num" aria-hidden="true">04</span>
+      <p class="summary-card__text">Связан с источниками и пятью основными частями цикла.</p>
+    </li>
+    <li class="summary-card__item">
+      <span class="summary-card__check" aria-hidden="true"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg></span>
+      <span class="summary-card__num" aria-hidden="true">05</span>
+      <p class="summary-card__text">Подходит для проповедников, преподавателей и студентов как справочный аппарат.</p>
+    </li>
   </ul>
 </section>
 
@@ -862,7 +857,7 @@
 <script src="../../js/sw-register.js?v=c60839ff" defer></script>
 <script src="../../js/search.js?v=832b8869" defer></script>
 <script src="../../js/highlights.js?v=fd3ffa64" defer></script>
-<script src="../../js/nagornaya-mobile-toc.js?v=eefd34b6" defer></script>
+<script src="../../js/nagornaya-mobile-toc.js?v=9e7d6b76" defer></script>
 <script src="../../js/enhancements.js?v=abebf9eb" defer></script>
 <script src="../../js/bookmark-engine.js?v=481d7b91" defer></script>
 </body>

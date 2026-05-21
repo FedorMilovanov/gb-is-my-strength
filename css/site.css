@@ -6851,3 +6851,455 @@ button, a, [role="button"], [tabindex="0"], summary, input, textarea, select {
 }
 
 } /* @layer utilities */
+
+/* === AUDIT-FIXES INLINE START === (auto-merged from css/audit-fixes.css v4) */
+/* ============================================================
+   AUDIT FIXES — v4 (PREMIUM PASS, DALL·E summary-card redesign)
+   Generated: 2026-05-21
+   Подключается в КОНЕЦ site.css.
+   ============================================================ */
+
+/* ─── 1. SUMMARY-CARD — премиум-редизайн «Коротко» (по эталону DALL·E) ─
+   Эталон: внешний rounded-контейнер с лёгкой тенью + светлым фоном;
+   eyebrow-заголовок «КОРОТКО» с короткой accent-чертой снизу;
+   внутри — отдельные карточки на каждый пункт с pill-shape, тенью,
+   светло-серым outline; слева — кружок с зелёной галочкой; затем
+   крупный accent-номер (01, 02…) серифом; вертикальная hairline-
+   разделитель; основной текст.
+   ─────────────────────────────────────────────────────────────── */
+
+/* Внешний контейнер */
+.summary-card {
+  position: relative;
+  margin: clamp(32px, 5vw, 56px) 0;
+  padding: clamp(22px, 3.5vw, 36px) clamp(20px, 3vw, 36px) clamp(24px, 3.5vw, 36px);
+  background:
+    linear-gradient(180deg,
+      color-mix(in srgb, var(--bg-elevated, #fff) 100%, transparent) 0%,
+      color-mix(in srgb, var(--bg, #faf8f4) 100%, transparent) 100%);
+  border: 1px solid color-mix(in srgb, var(--border, #e7e2d8) 80%, transparent);
+  border-radius: 20px;
+  box-shadow:
+    0 1px 0 rgba(255, 255, 255, .8) inset,
+    0 1px 2px rgba(28, 25, 23, .03),
+    0 18px 48px -28px rgba(28, 25, 23, .14),
+    0 6px 18px -10px rgba(28, 25, 23, .06);
+}
+html.dark .summary-card {
+  background:
+    linear-gradient(180deg,
+      var(--bg-elevated, #1f1a15) 0%,
+      color-mix(in srgb, var(--bg, #171411) 96%, transparent) 100%);
+  border-color: color-mix(in srgb, var(--border, #3a3028) 90%, transparent);
+  box-shadow:
+    0 1px 0 rgba(255, 255, 255, .04) inset,
+    0 1px 2px rgba(0, 0, 0, .35),
+    0 22px 56px -28px rgba(0, 0, 0, .65),
+    0 6px 18px -10px rgba(0, 0, 0, .25);
+}
+
+/* Eyebrow «КОРОТКО» */
+.summary-card__head {
+  background: transparent !important;
+  color: var(--muted, #78716c) !important;
+  padding: 0 0 14px clamp(4px, 1vw, 12px) !important;
+  margin: 0 0 clamp(18px, 2.5vw, 28px) !important;
+  font-family: 'Source Sans 3', system-ui, sans-serif !important;
+  font-size: 11px !important;
+  font-weight: 700 !important;
+  letter-spacing: .26em !important;
+  text-transform: uppercase !important;
+  border: 0 !important;
+  position: relative;
+  line-height: 1.2 !important;
+}
+.summary-card__head::after {
+  content: "";
+  position: absolute;
+  left: clamp(4px, 1vw, 12px);
+  bottom: -2px;
+  width: 32px;
+  height: 2px;
+  background: var(--accent, #7a2e2e);
+  border-radius: 2px;
+  opacity: .85;
+}
+
+/* Список */
+.summary-card__body {
+  background: transparent !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  list-style: none !important;
+  display: flex;
+  flex-direction: column;
+  gap: clamp(10px, 1.4vw, 14px);
+}
+
+/* Карточка пункта — внутренняя pill */
+.summary-card__item {
+  display: grid !important;
+  grid-template-columns: clamp(40px, 5.5vw, 56px) clamp(38px, 5.5vw, 60px) 1fr;
+  align-items: center;
+  gap: 0 !important;
+  padding: clamp(14px, 2vw, 20px) clamp(18px, 2.5vw, 28px) !important;
+  background: var(--bg-elevated, #fff) !important;
+  border: 1px solid color-mix(in srgb, var(--border, #e7e2d8) 60%, transparent) !important;
+  border-radius: 14px !important;
+  box-shadow:
+    0 1px 0 rgba(255, 255, 255, .6) inset,
+    0 1px 2px rgba(28, 25, 23, .03),
+    0 6px 14px -10px rgba(28, 25, 23, .10);
+  transition:
+    transform .22s cubic-bezier(.22, 1, .36, 1),
+    box-shadow .22s ease,
+    border-color .22s ease;
+}
+.summary-card__item:last-child { border-bottom: 1px solid color-mix(in srgb, var(--border, #e7e2d8) 60%, transparent) !important; }
+.summary-card__item:hover {
+  transform: translateY(-1px);
+  box-shadow:
+    0 1px 0 rgba(255, 255, 255, .8) inset,
+    0 2px 4px rgba(28, 25, 23, .04),
+    0 12px 26px -12px rgba(28, 25, 23, .18);
+  border-color: color-mix(in srgb, var(--accent, #7a2e2e) 28%, var(--border, #e7e2d8)) !important;
+}
+html.dark .summary-card__item {
+  background: color-mix(in srgb, var(--bg-elevated, #1f1a15) 96%, transparent) !important;
+  border-color: color-mix(in srgb, var(--border, #3a3028) 85%, transparent) !important;
+  box-shadow:
+    0 1px 0 rgba(255, 255, 255, .03) inset,
+    0 1px 2px rgba(0, 0, 0, .35),
+    0 8px 18px -10px rgba(0, 0, 0, .55);
+}
+
+/* ──── Колонка 1: зелёный кружок с галочкой ──── */
+.summary-card__check {
+  width: clamp(34px, 4.4vw, 44px) !important;
+  height: clamp(34px, 4.4vw, 44px) !important;
+  border-radius: 50% !important;
+  background: #fff !important;
+  border: 1px solid color-mix(in srgb, #6ba368 35%, var(--border, #e7e2d8)) !important;
+  box-shadow:
+    0 1px 0 rgba(255, 255, 255, .9) inset,
+    0 2px 6px -2px rgba(28, 25, 23, .08),
+    0 1px 2px rgba(28, 25, 23, .04);
+  display: grid !important;
+  place-items: center !important;
+  flex-shrink: 0;
+  margin: 0 !important;
+  padding: 0 !important;
+  color: #4a8a4a !important;
+  font-size: 0 !important;
+  position: relative;
+  align-self: center;
+}
+html.dark .summary-card__check {
+  background: color-mix(in srgb, #4a8a4a 14%, var(--bg-elevated, #1f1a15)) !important;
+  border-color: color-mix(in srgb, #6ba368 40%, transparent) !important;
+  color: #7ac87a !important;
+}
+/* SVG-чекмарк (если уже есть в HTML) */
+.summary-card__check svg {
+  display: block !important;
+  width: clamp(15px, 1.8vw, 18px) !important;
+  height: clamp(15px, 1.8vw, 18px) !important;
+  stroke: currentColor !important;
+  stroke-width: 2.5 !important;
+  fill: none !important;
+}
+/* Fallback: если SVG нет — нарисуем галочку через ::after */
+.summary-card__check:empty::after,
+.summary-card__check:not(:has(svg))::after {
+  content: "";
+  width: clamp(15px, 1.8vw, 18px);
+  height: clamp(8px, 1vw, 11px);
+  border-left: 2.5px solid currentColor;
+  border-bottom: 2.5px solid currentColor;
+  transform: rotate(-45deg) translateY(-2px);
+}
+
+/* ──── Колонка 2: номер серифом ──── */
+.summary-card__item {
+  counter-increment: summaryitem;
+}
+.summary-card__body { counter-reset: summaryitem; }
+.summary-card__num {
+  font-family: 'Playfair Display', 'Cormorant Garamond', Georgia, serif;
+  font-weight: 500;
+  font-size: clamp(20px, 2.8vw, 28px);
+  line-height: 1;
+  color: var(--accent, #7a2e2e);
+  letter-spacing: .02em;
+  padding: 0 clamp(14px, 2vw, 22px) 0 clamp(10px, 1.6vw, 16px);
+  border-right: 1px solid color-mix(in srgb, var(--border, #e7e2d8) 90%, transparent);
+  align-self: stretch;
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  user-select: none;
+}
+html.dark .summary-card__num {
+  color: var(--accent-soft, #d4a4a4);
+  border-right-color: color-mix(in srgb, var(--border, #3a3028) 95%, transparent);
+}
+/* Если __num не задан в HTML — генерируем автоматически через CSS counter */
+.summary-card__item:not(:has(.summary-card__num))::before {
+  content: counter(summaryitem, decimal-leading-zero);
+  font-family: 'Playfair Display', 'Cormorant Garamond', Georgia, serif;
+  font-weight: 500;
+  font-size: clamp(20px, 2.8vw, 28px);
+  line-height: 1;
+  color: var(--accent, #7a2e2e);
+  letter-spacing: .02em;
+  padding: 0 clamp(14px, 2vw, 22px) 0 clamp(10px, 1.6vw, 16px);
+  border-right: 1px solid color-mix(in srgb, var(--border, #e7e2d8) 90%, transparent);
+  align-self: stretch;
+  display: flex;
+  align-items: center;
+}
+html.dark .summary-card__item:not(:has(.summary-card__num))::before {
+  color: var(--accent-soft, #d4a4a4);
+  border-right-color: color-mix(in srgb, var(--border, #3a3028) 95%, transparent);
+}
+
+/* ──── Колонка 3: основной текст ──── */
+.summary-card__text {
+  font-family: 'Source Sans 3', system-ui, sans-serif !important;
+  font-size: clamp(14px, 1.6vw, 15.5px) !important;
+  line-height: 1.55 !important;
+  color: var(--text, #1c1917) !important;
+  margin: 0 !important;
+  padding: 0 0 0 clamp(14px, 2vw, 22px) !important;
+}
+.summary-card__text strong {
+  color: var(--accent, #7a2e2e) !important;
+  font-weight: 700 !important;
+}
+html.dark .summary-card__text strong { color: var(--accent-soft, #d4a4a4) !important; }
+
+/* ──── Мобильный layout: компактнее ──── */
+@media (max-width: 560px) {
+  .summary-card { padding: 22px 16px; border-radius: 16px; }
+  .summary-card__item {
+    grid-template-columns: 38px 44px 1fr;
+    padding: 12px 14px !important;
+    border-radius: 12px !important;
+  }
+  .summary-card__check { width: 32px !important; height: 32px !important; }
+  .summary-card__num,
+  .summary-card__item:not(:has(.summary-card__num))::before {
+    font-size: 20px;
+    padding: 0 12px 0 8px;
+  }
+  .summary-card__text {
+    font-size: 14px !important;
+    padding-left: 12px !important;
+  }
+}
+
+/* Очень узкие экраны: переносим номер вниз */
+@media (max-width: 380px) {
+  .summary-card__item {
+    grid-template-columns: 32px 1fr;
+    grid-template-rows: auto auto;
+    column-gap: 12px;
+    row-gap: 6px;
+  }
+  .summary-card__check { grid-row: 1 / span 2; }
+  .summary-card__num,
+  .summary-card__item:not(:has(.summary-card__num))::before {
+    grid-column: 2;
+    grid-row: 1;
+    border-right: 0;
+    padding: 0;
+    font-size: 18px;
+    opacity: .85;
+  }
+  .summary-card__text {
+    grid-column: 2;
+    grid-row: 2;
+    padding-left: 0 !important;
+  }
+}
+
+
+/* ─── 2. SPACING — устраняем «наезжание» блоков на nagornaya/chast-* ─ */
+main .bg-emerald-800.text-white.rounded-2xl,
+main .bg-stone-900.rounded-2xl,
+main .bg-stone-800.text-white.rounded-2xl,
+main .bg-emerald-50.border-emerald-200,
+main .bg-amber-50.border-amber-200 {
+  margin-top: clamp(28px, 4vw, 44px) !important;
+  margin-bottom: clamp(28px, 4vw, 44px) !important;
+}
+main .bg-emerald-800 + div,
+main .bg-emerald-50 + div,
+main section[aria-labelledby] + section,
+main .h-articles-group,
+main .gb-accuracy-block {
+  margin-top: clamp(32px, 5vw, 56px) !important;
+}
+main section[style*="margin-top:3rem"] {
+  margin-top: clamp(40px, 6vw, 64px) !important;
+}
+@media (max-width: 899px) {
+  body.has-bottom-bar main,
+  body.has-bottom-bar .home-content,
+  body.has-bottom-bar #content {
+    padding-bottom: calc(86px + env(safe-area-inset-bottom, 0px));
+  }
+}
+
+
+/* ─── 3. HOME-PAGE AMBIENT PHRASES — правильные шрифты ─── */
+.h-phrase--greek,
+.h-phrase[lang="grc"],
+.h-phrase[lang="el"] {
+  font-family: 'Noto Sans Greek', 'GFS Neohellenic', 'Times New Roman', serif !important;
+  font-style: normal !important;
+  font-weight: 400 !important;
+  direction: ltr;
+  letter-spacing: 0.005em;
+}
+.h-phrase--hebrew,
+.h-phrase[lang="he"],
+.h-phrase[lang="iw"] {
+  font-family: 'Noto Sans Hebrew', 'SBL Hebrew', 'David Libre', serif !important;
+  font-weight: 400 !important;
+  font-style: normal !important;
+  direction: rtl;
+  letter-spacing: 0;
+}
+.hb-front, .hb-back, [lang="he"], [lang="iw"] {
+  font-family: 'Noto Sans Hebrew', 'SBL Hebrew', 'David Libre', serif;
+}
+[lang="grc"], [lang="el"] {
+  font-family: 'Noto Sans Greek', 'GFS Neohellenic', 'Times New Roman', serif;
+}
+
+
+/* ─── 4. UNIFIED SCROLL-LOCK + iOS MOMENTUM SCROLL ─── */
+html[data-scroll-locked="1"],
+html[data-scroll-locked="1"] body,
+body.ng-toc-lock {
+  overflow: hidden !important;
+  touch-action: none;
+}
+html[data-scroll-locked="1"] .btoc-panel,
+html[data-scroll-locked="1"] .btoc-nav,
+body.ng-toc-lock .btoc-panel,
+body.ng-toc-lock .btoc-nav {
+  -webkit-overflow-scrolling: touch;
+  touch-action: pan-y;
+  overscroll-behavior: contain;
+}
+
+
+/* ─── 5. TOC BANNER — fallback стилей ─── */
+.btoc-banner {
+  position: relative;
+  height: 128px;
+  flex-shrink: 0;
+  background-size: cover;
+  background-position: center top;
+  background-color: var(--accent-soft, #f4e4d4);
+  filter: saturate(105%);
+}
+.btoc-banner-grad {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to top,
+    rgba(20, 16, 12, 0.78) 0%,
+    rgba(20, 16, 12, 0.20) 55%,
+    transparent 100%);
+  pointer-events: none;
+}
+.btoc-banner-title {
+  position: absolute;
+  bottom: 14px;
+  left: 18px;
+  right: 18px;
+  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-size: 13px;
+  font-weight: 700;
+  color: rgba(255, 255, 255, 0.96);
+  line-height: 1.35;
+  letter-spacing: 0.015em;
+  text-shadow: 0 1px 12px rgba(0, 0, 0, .35);
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+
+/* ─── 6. TOUCH TARGETS ─── */
+.bar-icon-btn,
+.btoc-close,
+.btoc-fontsize-btn,
+.btoc-share-btn {
+  min-width: 44px;
+  min-height: 44px;
+}
+
+
+/* ─── 7. CSP HARDENING — пиксель Метрики не ломает layout ─── */
+img[src*="mc.yandex.ru"] {
+  position: absolute !important;
+  left: -9999px !important;
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+  pointer-events: none;
+}
+
+
+/* ─── 8. ПОЛИРОВКА H-ARTICLE-CARD ─── */
+.h-article-card,
+.h-articles-group .h-article-card {
+  transition: transform .25s ease, box-shadow .25s ease, border-color .25s ease;
+}
+.h-article-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 14px 32px -16px rgba(28, 25, 23, .22);
+  border-color: color-mix(in srgb, var(--accent, #7a2e2e) 35%, var(--border, #e7e2d8));
+}
+
+
+/* ─── 9. BOTTOM-BAR ─── */
+.bottom-bar {
+  -webkit-backdrop-filter: blur(20px) saturate(160%);
+  backdrop-filter: blur(20px) saturate(160%);
+}
+
+
+/* ─── 10. PREFERS-REDUCED-MOTION ─── */
+@media (prefers-reduced-motion: reduce) {
+  .summary-card__item,
+  .h-article-card,
+  .bottom-bar { transition: none !important; }
+}
+
+
+/* ─── 11. TAILWIND SCOPE GUARD ───────────────────────────────────
+   tw.min.css в /nagornaya/ имеет preflight reset, который ломает
+   margin таблиц и list-style в article-теле. Ограничим reset.
+   ─────────────────────────────────────────────────────────────── */
+main [data-pagefind-body] ul:not([class]),
+main [data-pagefind-body] ol:not([class]) {
+  list-style: revert;
+  padding-left: 1.5em;
+  margin: 1em 0;
+}
+main [data-pagefind-body] table:not([class]) {
+  border-collapse: collapse;
+  margin: 1em 0;
+}
+main [data-pagefind-body] hr:not([class]) {
+  border: 0;
+  border-top: 1px solid var(--border, #e7e2d8);
+  margin: 2em 0;
+}
+
+/* === AUDIT-FIXES INLINE END === */
