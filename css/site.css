@@ -7494,3 +7494,190 @@ html.dark .tooltip-trigger { border-bottom-color: color-mix(in srgb, var(--accen
 html.dark .tooltip-trigger:hover { color: var(--accent-soft, #d4a4a4); }
 
 /* === AUDIT-FIXES INLINE END === */
+
+
+/* ═══════════════════════════════════════════════════════════════
+   AUDIT v7: nag-summary — компактный стиль для nagornaya
+   ═══════════════════════════════════════════════════════════════ */
+.nag-summary {
+  margin: 0 0 20px;
+  padding: 14px 18px;
+  background: rgba(255,255,255,0.05);
+  border: 1px solid rgba(255,255,255,0.10);
+  border-radius: 12px;
+}
+html:not(.dark) body.nagornaya-page .nag-summary {
+  background: rgba(28,25,23,0.02);
+  border-color: rgba(28,25,23,0.08);
+}
+.nag-summary__head {
+  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.18em;
+  color: rgba(255,255,255,0.50);
+  margin: 0 0 10px;
+  line-height: 1;
+}
+html:not(.dark) body.nagornaya-page .nag-summary__head {
+  color: var(--muted, #78716c);
+}
+.nag-summary__list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  counter-reset: nagsum;
+}
+.nag-summary__item {
+  display: flex;
+  gap: 10px;
+  align-items: baseline;
+  font-size: 13px;
+  line-height: 1.5;
+  color: rgba(255,255,255,0.82);
+}
+html:not(.dark) body.nagornaya-page .nag-summary__item {
+  color: var(--text, #1c1917);
+}
+.nag-summary__num {
+  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-weight: 800;
+  font-size: 10px;
+  color: var(--gold, #b8860b);
+  flex-shrink: 0;
+  min-width: 18px;
+  line-height: 1.5;
+}
+html.dark body.nagornaya-page .nag-summary__num {
+  color: #d4a762;
+}
+.nag-summary__text {
+  margin: 0;
+}
+
+/* Sidebar controls — theme + font-size */
+.nag-sidebar-controls {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 5px 0;
+  border-top: 1px solid rgba(255,255,255,0.08);
+  margin-top: 8px;
+}
+.nag-sidebar-theme-btn {
+  width: 34px;
+  height: 34px;
+  border-radius: 10px;
+  border: 1px solid rgba(255,255,255,0.12);
+  background: rgba(255,255,255,0.04);
+  color: rgba(255,255,255,0.60);
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+  transition: background .2s, border-color .2s, color .2s;
+  flex-shrink: 0;
+}
+.nag-sidebar-theme-btn:hover {
+  background: rgba(255,255,255,0.10);
+  border-color: rgba(255,255,255,0.20);
+  color: rgba(255,255,255,0.90);
+}
+html:not(.dark) body.nagornaya-page .nag-sidebar-theme-btn {
+  background: rgba(28,25,23,0.04);
+  border-color: rgba(28,25,23,0.10);
+  color: var(--muted, #78716c);
+}
+html:not(.dark) body.nagornaya-page .nag-sidebar-theme-btn:hover {
+  background: rgba(28,25,23,0.10);
+  border-color: rgba(28,25,23,0.20);
+  color: var(--text, #1c1917);
+}
+.nag-sidebar-theme-btn svg { width: 18px; height: 18px; }
+.nag-icon-sun { display: none; }
+html.dark .nag-icon-moon { display: none; }
+html.dark .nag-icon-sun { display: block; color: #f5c542; }
+
+.nag-fontsize-btns {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin-left: auto;
+}
+.nag-fontsize-btn {
+  width: 30px;
+  height: 30px;
+  border-radius: 8px;
+  border: 1px solid rgba(255,255,255,0.10);
+  background: rgba(255,255,255,0.03);
+  color: rgba(255,255,255,0.50);
+  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-size: 13px;
+  font-weight: 700;
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+  transition: background .2s, border-color .2s, color .2s;
+  line-height: 1;
+}
+.nag-fontsize-btn:hover {
+  background: rgba(255,255,255,0.10);
+  border-color: rgba(255,255,255,0.18);
+  color: rgba(255,255,255,0.80);
+}
+html:not(.dark) body.nagornaya-page .nag-fontsize-btn {
+  background: rgba(28,25,23,0.03);
+  border-color: rgba(28,25,23,0.08);
+  color: var(--muted, #78716c);
+}
+html:not(.dark) body.nagornaya-page .nag-fontsize-btn:hover {
+  background: rgba(28,25,23,0.08);
+  border-color: rgba(28,25,23,0.16);
+  color: var(--text, #1c1917);
+}
+
+/* AUDIT v7: gb-accuracy on nagornaya — полупрозрачный, не коричневый */
+body.nagornaya-page .gb-accuracy-inner {
+  background: rgba(255,255,255,0.04) !important;
+  border-color: rgba(255,255,255,0.08) !important;
+  box-shadow: none !important;
+}
+html:not(.dark) body.nagornaya-page .gb-accuracy-inner {
+  background: rgba(28,25,23,0.02) !important;
+  border-color: rgba(28,25,23,0.06) !important;
+}
+body.nagornaya-page .gb-accuracy-title {
+  color: rgba(255,255,255,0.80) !important;
+}
+html:not(.dark) body.nagornaya-page .gb-accuracy-title {
+  color: var(--text, #1c1917) !important;
+}
+body.nagornaya-page .gb-accuracy-desc {
+  color: rgba(255,255,255,0.50) !important;
+}
+html:not(.dark) body.nagornaya-page .gb-accuracy-desc {
+  color: var(--muted, #78716c) !important;
+}
+body.nagornaya-page .gb-accuracy-btn {
+  background: rgba(255,255,255,0.04);
+  border-color: rgba(255,255,255,0.10);
+  color: rgba(255,255,255,0.60);
+}
+html:not(.dark) body.nagornaya-page .gb-accuracy-btn {
+  background: rgba(28,25,23,0.03);
+  border-color: rgba(28,25,23,0.10);
+  color: var(--muted, #78716c);
+}
+body.nagornaya-page .gb-accuracy-btn:hover {
+  background: rgba(255,255,255,0.10);
+  border-color: rgba(255,255,255,0.20);
+  color: rgba(255,255,255,0.90);
+}
+html:not(.dark) body.nagornaya-page .gb-accuracy-btn:hover {
+  background: rgba(28,25,23,0.08);
+  border-color: rgba(28,25,23,0.18);
+  color: var(--text, #1c1917);
+}
