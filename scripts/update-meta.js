@@ -214,8 +214,11 @@ function updateHTML(slug, { pubISO, modISO, words, readTime }) {
       `$1\n  <meta property="article:modified_time" content="${newMod}" />`);
   }
 
-  // JSON-LD dates — keep structured data in sync with meta tags
-  html = html.replace(/("datePublished"\s*:\s*")[^"]*(")/g, `$1${newPub}$2`);
+  // JSON-LD dates — keep structured data in sync with meta tags.
+  // If published_time already exists in HTML, preserve that editorial/original date;
+  // git first-commit date is only a fallback for pages that do not have published_time.
+  const publishedForJsonLd = meta.publishedTime || newPub;
+  html = html.replace(/("datePublished"\s*:\s*")[^"]*(")/g, `$1${publishedForJsonLd}$2`);
   html = html.replace(/("dateModified"\s*:\s*")[^"]*(")/g, `$1${newMod}$2`);
 
   // SITE_CONFIG
