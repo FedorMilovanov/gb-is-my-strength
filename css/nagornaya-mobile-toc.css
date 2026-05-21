@@ -250,6 +250,8 @@ html.dark .bar-icon-sun { display: block !important; color: #f5c542; }
   box-shadow: 0 -22px 60px rgba(0,0,0,.28);
   transform: translateY(105%);
   transition: transform .28s cubic-bezier(.22, 1, .36, 1);
+  /* FIX: enable iOS momentum scrolling inside fixed modal */
+  -webkit-overflow-scrolling: touch;
 }
 
 .btoc-overlay.open .btoc-panel {
@@ -367,6 +369,8 @@ html.dark .bar-icon-sun { display: block !important; color: #f5c542; }
   overflow-y: auto;
   padding: 8px 12px 12px;
   overscroll-behavior: contain;
+  /* FIX: iOS momentum scroll */
+  -webkit-overflow-scrolling: touch;
 }
 
 .btoc-link {

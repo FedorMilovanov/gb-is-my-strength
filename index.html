@@ -1066,7 +1066,7 @@ window.SITE_CONFIG = {
       }
       if (p.rotate && p.side !== 'center') style += 'transform:rotate(' + p.rotate + 'deg);';
       el.setAttribute('style', style);
-      el.setAttribute('aria-hidden', 'true');
+      el.setAttribute('aria-hidden', 'true'); if (p.lang === 'greek') el.setAttribute('lang', 'grc'); if (p.lang === 'hebrew') el.setAttribute('lang', 'he');
       bg.appendChild(el);
     });
   }

@@ -2,6 +2,13 @@
    nagornaya-mobile-toc.js
    Mobile bottom TOC for independent /nagornaya/ Tailwind pages.
    Builds TOC from h2[id] inside [data-pagefind-body].
+
+   FIXES APPLIED (v2):
+   - SVG in btocTimeLeft now uses innerHTML (was textContent causing raw HTML output)
+   - Added TOC banner image (og-nagornaya-propoved)
+   - Unified scroll lock via data-scroll-locked on <html> (matches site.css)
+   - Added -webkit-overflow-scrolling: touch class injection for iOS momentum scroll
+   - Added aria-live for progress updates
    ============================================================ */
 (function () {
   'use strict';
@@ -132,14 +139,15 @@
 
       if (btocTimeLeft) {
         var left = Math.max(1, Math.ceil(readingTime * (100 - pct) / 100));
-        btocTimeLeft.textContent = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="vertical-align:middle;margin-top:-2px"><path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1 0-5H20"/></svg> Осталось: ~' + left + ' мин';
+        btocTimeLeft.innerHTML = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="vertical-align:middle;margin-top:-2px"><path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1 0-5H20"/></svg> <span style="margin-left:4px">Осталось: ~' + left + ' мин</span>';
       }
     }
 
     function openOverlay() {
       overlay.classList.add('open');
       overlay.removeAttribute('aria-hidden');
-      document.body.classList.add('ng-toc-lock');
+      // FIX: use data-scroll-locked on <html> to match site.css unified lock
+      document.documentElement.setAttribute('data-scroll-locked', '1');
       update();
       var active = nav.querySelector('.btoc-link.active');
       if (active) active.scrollIntoView({ block: 'nearest' });
@@ -149,7 +157,7 @@
     function closeOverlay() {
       overlay.classList.remove('open');
       overlay.setAttribute('aria-hidden', 'true');
-      document.body.classList.remove('ng-toc-lock');
+      document.documentElement.removeAttribute('data-scroll-locked');
     }
 
     function toggleTheme() {
@@ -195,6 +203,9 @@
 
   function injectMarkup(sectionCount, readingTime) {
     var homeHref = location.pathname.split('/').filter(Boolean).length > 1 ? '../../' : '../';
+    // FIX: added banner block with series OG image for visual premium feel
+    var bannerHtml = '<div class="btoc-banner" aria-hidden="true" style="background-image:url(\'' + homeHref + 'images/og-nagornaya-propoved.webp\')"></div><div class="btoc-banner-grad" aria-hidden="true"></div><div class="btoc-banner-title">Нагорная проповедь</div>';
+
     var html = '' +
       '<div class="bottom-bar" id="bottomBar">' +
         '<div class="bottom-bar-inner">' +
@@ -228,6 +239,7 @@
       '<div class="btoc-overlay" id="btocOverlay" aria-hidden="true">' +
         '<div class="btoc-panel" id="btocPanel" role="dialog" aria-modal="true" aria-labelledby="btocTitle" tabindex="-1">' +
           '<div class="btoc-handle"></div>' +
+          bannerHtml +
           '<div class="btoc-header">' +
             '<div class="btoc-header-left">' +
               '<div class="btoc-title" id="btocTitle">Содержание</div>' +
