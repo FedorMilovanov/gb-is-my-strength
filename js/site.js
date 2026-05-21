@@ -3805,3 +3805,60 @@
     if (pageType === 'article') add('/js/glossary.js');
   })();
 })();
+
+/* === MERGED: theme-toggle-floating (AUDIT v5) === */
+/* ============================================================
+   theme-toggle-floating.js — floating round theme toggle для страниц
+   которые не имеют встроенного theme-toggle (например, nagornaya/chast-*).
+   ============================================================ */
+(function () {
+  'use strict';
+
+  // Не добавлять, если уже есть встроенный theme-toggle
+  if (document.getElementById('themeToggle') || document.getElementById('themeFloat')) return;
+
+  function ready(fn) {
+    if (document.readyState === 'loading')
+      document.addEventListener('DOMContentLoaded', fn);
+    else fn();
+  }
+
+  var SUN_SVG =
+    '<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' +
+    '<circle cx="12" cy="12" r="4.5"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/></svg>';
+
+  var MOON_SVG =
+    '<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' +
+    '<path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>';
+
+  ready(function () {
+    var btn = document.createElement('button');
+    btn.id = 'themeFloat';
+    btn.type = 'button';
+    btn.className = 'theme-float-btn';
+    btn.setAttribute('aria-label', 'Переключить тему');
+    btn.setAttribute('title', 'Светлая / тёмная тема');
+    btn.innerHTML = document.documentElement.classList.contains('dark') ? SUN_SVG : MOON_SVG;
+    document.body.appendChild(btn);
+
+    function setTheme(toDark) {
+      document.documentElement.classList.toggle('dark', toDark);
+      btn.innerHTML = toDark ? SUN_SVG : MOON_SVG;
+      try { localStorage.setItem('theme', toDark ? 'dark' : 'light'); } catch (_) {}
+      // Триггер для синхронизации с bottom-bar moon/sun (если есть)
+      document.dispatchEvent(new CustomEvent('theme:changed', { detail: { dark: toDark } }));
+    }
+
+    btn.addEventListener('click', function () {
+      setTheme(!document.documentElement.classList.contains('dark'));
+    });
+
+    // Sync с системными изменениями темы (если пользователь меняет через bottom-bar)
+    var obs = new MutationObserver(function () {
+      var isDark = document.documentElement.classList.contains('dark');
+      var want = isDark ? SUN_SVG : MOON_SVG;
+      if (btn.innerHTML !== want) btn.innerHTML = want;
+    });
+    obs.observe(document.documentElement, { attributes: true, attributeFilter: ['class'] });
+  });
+})();
