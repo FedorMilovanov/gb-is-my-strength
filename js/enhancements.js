@@ -379,3 +379,98 @@
   })();
 
 })();
+
+/* === MERGED: quiz-interactive (AUDIT v5) === */
+/* ============================================================
+   quiz-interactive.js — обработчик для .interactive-quiz/.quiz-btn
+   Используется на страницах с Tailwind-разметкой (nagornaya/chast-*).
+   Поддерживает множественные quiz-блоки на одной странице.
+   ============================================================ */
+(function () {
+  'use strict';
+
+  function ready(fn) {
+    if (document.readyState === 'loading')
+      document.addEventListener('DOMContentLoaded', fn);
+    else fn();
+  }
+
+  function initQuiz(quizEl) {
+    if (quizEl.dataset.quizInit === '1') return;
+    quizEl.dataset.quizInit = '1';
+
+    var correct = parseInt(quizEl.dataset.correct || '0', 10);
+    var btns = Array.prototype.slice.call(quizEl.querySelectorAll('.quiz-btn'));
+    var expl = quizEl.querySelector('.quiz-explanation');
+    if (!btns.length) return;
+
+    btns.forEach(function (btn, idx) {
+      btn.setAttribute('role', 'button');
+      btn.setAttribute('tabindex', '0');
+      btn.setAttribute('aria-pressed', 'false');
+      var letter = btn.querySelector('.quiz-letter');
+      // Клик
+      btn.addEventListener('click', function (e) {
+        e.preventDefault();
+        handleAnswer(idx);
+      });
+      // Enter / Space
+      btn.addEventListener('keydown', function (e) {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          handleAnswer(idx);
+        }
+      });
+    });
+
+    function handleAnswer(picked) {
+      // Заблокировать все кнопки
+      btns.forEach(function (b, i) {
+        b.classList.add('quiz-btn--answered');
+        b.setAttribute('aria-pressed', i === picked ? 'true' : 'false');
+        b.style.pointerEvents = 'none';
+        if (i === correct) {
+          b.classList.add('quiz-btn--correct');
+        } else if (i === picked) {
+          b.classList.add('quiz-btn--wrong');
+        } else {
+          b.classList.add('quiz-btn--dim');
+        }
+      });
+      // Показать объяснение
+      if (expl) {
+        expl.classList.remove('hidden');
+        expl.style.display = 'block';
+        // Плавный показ
+        expl.style.opacity = '0';
+        expl.style.transform = 'translateY(6px)';
+        requestAnimationFrame(function () {
+          expl.style.transition = 'opacity .3s ease, transform .3s ease';
+          expl.style.opacity = '1';
+          expl.style.transform = 'translateY(0)';
+        });
+        // Скролл к объяснению (мягко)
+        setTimeout(function () {
+          var rect = expl.getBoundingClientRect();
+          if (rect.top < 50 || rect.bottom > window.innerHeight - 50) {
+            expl.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+          }
+        }, 150);
+      }
+      // Эмитим событие для аналитики
+      try {
+        if (window.ym) {
+          window.ym(108353327, 'reachGoal', 'quiz_answer', {
+            quiz_id: quizEl.id || quizEl.dataset.quizId || 'inline',
+            correct: picked === correct,
+            picked: picked
+          });
+        }
+      } catch (_) {}
+    }
+  }
+
+  ready(function () {
+    document.querySelectorAll('.interactive-quiz').forEach(initQuiz);
+  });
+})();
