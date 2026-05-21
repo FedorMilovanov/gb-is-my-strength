@@ -307,10 +307,10 @@ html.dark {
 }
 html.dark .h-scripture-bg::before {
   background:
-    radial-gradient(ellipse 50% 30% at 15% 8%,  rgba(217, 122, 108, 0.05),  transparent 70%),
-    radial-gradient(ellipse 45% 25% at 85% 32%, rgba(217, 122, 108, 0.04),  transparent 70%),
-    radial-gradient(ellipse 50% 28% at 12% 58%, rgba(217, 122, 108, 0.045), transparent 70%),
-    radial-gradient(ellipse 48% 30% at 88% 82%, rgba(217, 122, 108, 0.035), transparent 70%);
+    radial-gradient(ellipse 50% 30% at 15% 8%,  rgba(217, 122, 108, 0.02),  transparent 70%),
+    radial-gradient(ellipse 45% 25% at 85% 32%, rgba(217, 122, 108, 0.015), transparent 70%),
+    radial-gradient(ellipse 50% 28% at 12% 58%, rgba(217, 122, 108, 0.018), transparent 70%),
+    radial-gradient(ellipse 48% 30% at 88% 82%, rgba(217, 122, 108, 0.012), transparent 70%);
 }
 
 .h-phrase {
