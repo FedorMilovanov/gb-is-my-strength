@@ -296,6 +296,7 @@
     lockScroll: function (source) {
       this._scrollLockCount++;
       if (this._scrollLockCount === 1) {
+        var scrollbarWidth = window.innerWidth - document.documentElement.clientWidth;
         var y = window.scrollY || window.pageYOffset || 0;
         this._savedScrollY = y;
         var body = document.body;
@@ -306,6 +307,7 @@
         body.style.left = '0';
         body.style.right = '0';
         body.style.width = '100%';
+        body.style.paddingRight = scrollbarWidth + 'px';
         document.documentElement.classList.remove('cp-scroll-lock');
         document.documentElement.dataset.scrollLocked = '1';
       }
@@ -323,6 +325,7 @@
         body.style.removeProperty('left');
         body.style.removeProperty('right');
         body.style.removeProperty('width');
+        body.style.removeProperty('padding-right');
         document.documentElement.classList.remove('cp-scroll-lock');
         delete document.documentElement.dataset.scrollLocked;
         /* Восстанавливаем scrollY синхронно — иначе rAF может моргнуть */
@@ -341,6 +344,7 @@
       body.style.removeProperty('left');
       body.style.removeProperty('right');
       body.style.removeProperty('width');
+        body.style.removeProperty('padding-right');
       document.documentElement.classList.remove('cp-scroll-lock');
       delete document.documentElement.dataset.scrollLocked;
       if (savedY) window.scrollTo(0, savedY);
@@ -2139,7 +2143,7 @@
         resultEl.style.display = 'block';
         animateCountNum(resultScore, score, 700);
         if (resultTotal) resultTotal.textContent = questions.length;
-        if (resultLabel) resultLabel.textContent = (s && s.title) ? (s.badge || '') + '\u00a0' + s.title
+        if (resultLabel) resultLabel.innerHTML = (s && s.title) ? (s.badge || '') + '\u00a0' + s.title
                                                   : (pct >= .9 ? '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="vertical-align:middle;margin-top:-2px"><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"/><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"/><path d="M4 22h16"/><path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"/><path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"/><path d="M18 2H6v7a6 6 0 0 0 12 0V2Z"/></svg>\u00a0Отлично!' : pct >= .7 ? '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="vertical-align:middle;margin-top:-2px"><path d="M7 10v12"/><path d="M15 5.88 14 10h5.83a2 2 0 0 1 1.92 2.56l-2.33 8A2 2 0 0 1 17.5 22H4a2 2 0 0 1-2-2v-8a2 2 0 0 1 2-2h2.77a2 2 0 0 1 1.66-.9l1.06-1.71A2 2 0 0 0 9 8V6a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2.88"/></svg>\u00a0Хорошо' : pct >= .5 ? '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="vertical-align:middle;margin-top:-2px"><path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1 0-5H20"/></svg>\u00a0Неплохо' : '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="vertical-align:middle;margin-top:-2px"><path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/><path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"/><path d="M8 16H3v5"/></svg>\u00a0Попробуйте снова');
         if (resultBar)  setTimeout(function () { resultBar.style.width = Math.round(pct * 100) + '%'; }, 80);
         if (resultDesc && s) resultDesc.innerHTML = s.desc || '';
@@ -2288,7 +2292,7 @@
       var total    = reviewDeck.length;
       var allRight = reviewScore === total;
 
-      if (revDoneIcon)  revDoneIcon.textContent  = allRight ? '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="vertical-align:middle;margin-top:-2px"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg>' : '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="vertical-align:middle;margin-top:-2px"><path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1 0-5H20"/></svg>';
+      if (revDoneIcon)  revDoneIcon.innerHTML  = allRight ? '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="vertical-align:middle;margin-top:-2px"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg>' : '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="vertical-align:middle;margin-top:-2px"><path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1 0-5H20"/></svg>';
       if (revDoneTitle) revDoneTitle.textContent  = allRight ? 'Отличная работа!' : 'Разбор завершён';
       if (revDoneDesc) {
         revDoneDesc.innerHTML = allRight
