@@ -106,3 +106,6 @@ The site likely scores very high on Core Web Vitals, has excellent offline capab
 **Next Steps Suggestion**: Run full Lighthouse audit on deployed site, fix the 4 P0 items, then re-run audit-pro + this deepened checklist. Consider open-sourcing the audit-pro/seo-audit tools as they are quite advanced.
 
 *This audit was performed by independently cloning the repo, running all validators, manually inspecting CSS/JS/SW/HTML with grep/sed, cross-referencing the verified report, and analyzing architecture holistically. No assumptions — all claims verifiable via workspace files.*
+
+---
+> See also: [AUDIT_HISTORY.md](AUDIT_HISTORY.md) for consolidated changelog.
