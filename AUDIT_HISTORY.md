@@ -62,3 +62,32 @@
 | 8 | IMAGE | `og-preview.jpg` referenced in og:image but has no `.webp` equivalent | INFO |
 
 **Overall project health: 9.5/10** — All critical and high-severity issues resolved.
+
+---
+
+## v10 — Final Cleanup (2026-05-22)
+
+**Commit:** `v10 final cleanup: repo hygiene, PNG→webp, dead code removal`
+
+### Cleaned:
+- **4 old patch scripts** removed (`patch-v2/v4/v5/v6-apply.js`) — no longer needed
+- **4 dead `patch:*` scripts** removed from `package.json`
+- **6 stale audit reports** removed (kept latest only)
+- **4 redundant PNGs** deleted (7.7MB saved) — hero.png, manipulation.png, mirror.png, og-hero.png
+- **9 HTML references** updated from `.png` → `.webp`
+- **AGENTS.md** updated to r3 (removed references to docs/archive, patch scripts, corrected architecture tree)
+
+### Verified:
+- `npm run validate:all` → ✅ PASS
+- `node scripts/audit-pro.js` → ✅ 31/31 PASS, 0 errors, 0 warnings
+- All PNG→webp references verified (no broken images)
+- No dead file references in SW precache
+- package.json clean (no dead scripts)
+
+### Remaining INFO items (non-issues):
+- 2 empty CSS rules in site.css (intentional placeholder selectors)
+- localStorage calls are already wrapped in try/catch (scanner false positive)
+- AGENTS.md uses short file names in text context (not literal paths)
+- `javascript:void(0)` in resume-reading link (dynamically overwritten by bookmark-engine.js)
+
+**Overall: 9.7/10 — Production-grade, clean repo.**
