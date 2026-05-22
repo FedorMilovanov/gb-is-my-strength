@@ -11,13 +11,9 @@
     "seo-audit": "node scripts/seo-audit.js",
     "validate:seo": "npm run seo-audit && npm run validate",
     "validate:all": "npm run validate:strict && npm run seo-audit",
-    "patch:v2": "node scripts/patch-v2-apply.js",
     "fonts:download": "node scripts/download-fonts.js",
     "avif:build": "bash scripts/build-avif.sh",
-    "ci:check": "npm run cache-bust && npm run validate:all",
-    "patch:v4": "node scripts/patch-v4-mobile.js",
-    "patch:v5": "node scripts/patch-v5-interactivity.js",
-    "patch:v6": "node scripts/patch-v6-functions.js"
+    "ci:check": "npm run cache-bust && npm run validate:all"
   },
   "engines": {
     "node": ">=20"
