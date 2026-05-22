@@ -262,12 +262,14 @@ self.addEventListener('message', function(e) {
   if (e.data && e.data.type === 'CACHE_ARTICLE') {
     var url = e.data.url;
     if (!url) return;
-    caches.open(CACHE_CONTENT).then(function(cache) {
-      return fetch(url).then(function(res) {
-        if (res && res.status === 200) {
-          cache.put(url, res.clone());
-        }
-      });
-    });
+    e.waitUntil(
+      caches.open(CACHE_CONTENT).then(function(cache) {
+        return fetch(url).then(function(res) {
+          if (res && res.status === 200) {
+            cache.put(url, res.clone());
+          }
+        });
+      }).catch(function() { /* ignore cache failures */ })
+    );
   }
 });

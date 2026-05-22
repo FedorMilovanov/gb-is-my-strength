@@ -801,9 +801,24 @@
         if (cb) cb();
       })
       .catch(function () {
-        _manifestItems = [];
-        _manifestLoaded = true;
-        if (cb) cb();
+        console.warn('[BugHunter] Search manifest load failed, retrying…');
+        setTimeout(function () {
+          fetch('/data/search-manifest.json', { cache: 'no-cache' })
+            .then(function (r) { return r.ok ? r.json() : null; })
+            .then(function (data) {
+              _manifestItems = (data && Array.isArray(data.items)) ? data.items : [];
+              _manifestLoaded = true;
+              if (cb) cb();
+            })
+            .catch(function () {
+              _manifestItems = [];
+              _manifestLoaded = false;
+              if (typeof showToast === 'function') {
+                showToast('Поиск временно недоступен. Обновите страницу.', false, 'toast-error');
+              }
+              if (cb) cb();
+            });
+        }, 700);
       });
   }
 
