@@ -237,7 +237,7 @@
 
     window.addEventListener('load', refreshOffsets, { passive: true });
     if (document.fonts && document.fonts.ready) {
-      document.fonts.ready.then(refreshOffsets);
+      document.fonts.ready.then(refreshOffsets).catch(function(){});
     }
 
     /* ── In btoc overlay: replace single bar with segmented ── */
