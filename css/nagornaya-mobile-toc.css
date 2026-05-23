@@ -4,6 +4,11 @@
 
    Purpose: bring the same mobile reading UX used by article pages
    (bottom-bar + btoc sheet) without loading the whole site.css.
+   
+   AUDIT v10: All selectors that overlap with site.css are now scoped
+   under body.nagornaya-page to prevent cascade conflicts. Nagornaya
+   pages carry body.nagornaya-page class; this file is only loaded
+   on nagornaya pages, so the scope is always active.
    ============================================================ */
 
 :root {
@@ -31,23 +36,26 @@ html.dark {
   --ng-toc-shadow: 0 -14px 34px rgba(0, 0, 0, .42);
 }
 
-body.has-bottom-bar {
+/* AUDIT v10: scoped to body.nagornaya-page (#41, #49, #58, #129) */
+body.nagornaya-page.has-bottom-bar {
   padding-bottom: calc(62px + env(safe-area-inset-bottom, 0px));
 }
 
-body.ng-toc-lock {
+/* AUDIT v10: scoped */
+body.nagornaya-page.ng-toc-lock {
   overflow: hidden;
 }
 
 /* Existing nagornaya read-progress bar sits at the bottom of the source.
    On mobile the bottom app bar is the progress UI, so hide duplicate line. */
 @media (max-width: 899px) {
-  body.has-bottom-bar #read-progress {
+  body.nagornaya-page.has-bottom-bar #read-progress {
     display: none;
   }
 }
 
-.bottom-bar {
+/* AUDIT v10: scoped — .bottom-bar shared with site.css */
+body.nagornaya-page .bottom-bar {
   position: fixed;
   left: 0;
   right: 0;
@@ -64,22 +72,22 @@ body.ng-toc-lock {
   transition: transform .28s cubic-bezier(.22, 1, .36, 1);
 }
 
-.bottom-bar.visible {
+body.nagornaya-page .bottom-bar.visible {
   transform: translateY(0);
 }
 
 @media (min-width: 900px) {
-  .bottom-bar,
-  .btoc-overlay {
+  body.nagornaya-page .bottom-bar,
+  body.nagornaya-page .btoc-overlay {
     display: none !important;
   }
 
-  body.has-bottom-bar {
+  body.nagornaya-page.has-bottom-bar {
     padding-bottom: 0;
   }
 }
 
-.bottom-bar-inner {
+body.nagornaya-page .bottom-bar-inner {
   min-height: 46px;
   display: flex;
   align-items: center;
@@ -88,7 +96,7 @@ body.ng-toc-lock {
   margin: 0 auto;
 }
 
-.bar-progress {
+body.nagornaya-page .bar-progress {
   position: relative;
   width: 42px;
   height: 42px;
@@ -98,29 +106,29 @@ body.ng-toc-lock {
   color: var(--ng-toc-accent);
 }
 
-.bar-progress svg {
+body.nagornaya-page .bar-progress svg {
   width: 42px;
   height: 42px;
   transform: rotate(-90deg);
 }
 
-.bar-progress-track,
-.bar-progress-fill {
+body.nagornaya-page .bar-progress-track,
+body.nagornaya-page .bar-progress-fill {
   fill: none;
   stroke-width: 3;
 }
 
-.bar-progress-track {
+body.nagornaya-page .bar-progress-track {
   stroke: var(--ng-toc-border);
 }
 
-.bar-progress-fill {
+body.nagornaya-page .bar-progress-fill {
   stroke: var(--ng-toc-accent);
   stroke-linecap: round;
   transition: stroke-dashoffset .12s linear;
 }
 
-.bar-progress-text {
+body.nagornaya-page .bar-progress-text {
   position: absolute;
   inset: 0;
   display: grid;
@@ -131,7 +139,7 @@ body.ng-toc-lock {
   color: var(--ng-toc-text);
 }
 
-.bar-section-btn {
+body.nagornaya-page .bar-section-btn {
   min-width: 0;
   flex: 1 1 auto;
   height: 44px;
@@ -149,13 +157,13 @@ body.ng-toc-lock {
   transition: border-color .2s ease, background .2s ease, transform .2s ease;
 }
 
-.bar-section-btn:hover,
-.bar-section-btn:focus-visible {
+body.nagornaya-page .bar-section-btn:hover,
+body.nagornaya-page .bar-section-btn:focus-visible {
   border-color: var(--ng-toc-accent);
   outline: none;
 }
 
-.bar-section-label {
+body.nagornaya-page .bar-section-label {
   display: block;
   margin-bottom: 2px;
   font-size: 10px;
@@ -165,7 +173,7 @@ body.ng-toc-lock {
   color: var(--ng-toc-muted);
 }
 
-.bar-section-name {
+body.nagornaya-page .bar-section-name {
   display: block;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -175,14 +183,14 @@ body.ng-toc-lock {
   font-weight: 700;
 }
 
-.bar-divider {
+body.nagornaya-page .bar-divider {
   width: 1px;
   height: 28px;
   background: var(--ng-toc-border);
   flex: 0 0 auto;
 }
 
-.bar-icon-btn {
+body.nagornaya-page .bar-icon-btn {
   width: 38px;
   height: 38px;
   flex: 0 0 auto;
@@ -197,14 +205,14 @@ body.ng-toc-lock {
   transition: background .2s ease, color .2s ease, transform .2s ease;
 }
 
-.bar-icon-btn:hover,
-.bar-icon-btn:focus-visible {
+body.nagornaya-page .bar-icon-btn:hover,
+body.nagornaya-page .bar-icon-btn:focus-visible {
   background: var(--ng-toc-surface-2);
   color: var(--ng-toc-text);
   outline: none;
 }
 
-.bar-icon-btn svg {
+body.nagornaya-page .bar-icon-btn svg {
   width: 20px;
   height: 20px;
   fill: none;
@@ -216,8 +224,8 @@ body.ng-toc-lock {
 html.dark .bar-icon-moon { display: none; }
 html.dark .bar-icon-sun { display: block !important; color: #f5c542; }
 
-/* Bottom TOC sheet */
-.btoc-overlay {
+/* Bottom TOC sheet — AUDIT v10: scoped */
+body.nagornaya-page .btoc-overlay {
   position: fixed;
   inset: 0;
   z-index: var(--z-overlay, 2500);
@@ -228,12 +236,12 @@ html.dark .bar-icon-sun { display: block !important; color: #f5c542; }
   transition: opacity .22s ease;
 }
 
-.btoc-overlay.open {
+body.nagornaya-page .btoc-overlay.open {
   opacity: 1;
   pointer-events: auto;
 }
 
-.btoc-panel {
+body.nagornaya-page .btoc-panel {
   position: absolute;
   left: 0;
   right: 0;
@@ -253,18 +261,18 @@ html.dark .bar-icon-sun { display: block !important; color: #f5c542; }
   /* FIX: enable iOS momentum scrolling inside fixed modal */
 }
 
-.btoc-overlay.open .btoc-panel {
+body.nagornaya-page .btoc-overlay.open .btoc-panel {
   transform: translateY(0);
 }
 
-.btoc-handle {
+body.nagornaya-page .btoc-handle {
   display: flex;
   justify-content: center;
   padding: 9px 0 3px;
   flex: 0 0 auto;
 }
 
-.btoc-handle::after {
+body.nagornaya-page .btoc-handle::after {
   content: '';
   width: 38px;
   height: 4px;
@@ -272,7 +280,7 @@ html.dark .bar-icon-sun { display: block !important; color: #f5c542; }
   background: var(--ng-toc-border);
 }
 
-.btoc-header {
+body.nagornaya-page .btoc-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -281,27 +289,27 @@ html.dark .bar-icon-sun { display: block !important; color: #f5c542; }
   border-bottom: 1px solid var(--ng-toc-border);
 }
 
-.btoc-header-left {
+body.nagornaya-page .btoc-header-left {
   display: flex;
   min-width: 0;
   flex-direction: column;
   gap: 2px;
 }
 
-.btoc-title {
+body.nagornaya-page .btoc-title {
   font-family: var(--ng-toc-font-ui);
   font-size: 16px;
   font-weight: 800;
   line-height: 1.1;
 }
 
-.btoc-subtitle {
+body.nagornaya-page .btoc-subtitle {
   font-family: var(--ng-toc-font-ui);
   font-size: 11px;
   color: var(--ng-toc-muted);
 }
 
-.btoc-close {
+body.nagornaya-page .btoc-close {
   width: 34px;
   height: 34px;
   border: 0;
@@ -313,20 +321,20 @@ html.dark .bar-icon-sun { display: block !important; color: #f5c542; }
   line-height: 1;
 }
 
-.btoc-close:hover,
-.btoc-close:focus-visible {
+body.nagornaya-page .btoc-close:hover,
+body.nagornaya-page .btoc-close:focus-visible {
   color: var(--ng-toc-text);
   outline: none;
 }
 
-.btoc-progress-row {
+body.nagornaya-page .btoc-progress-row {
   display: flex;
   align-items: center;
   gap: 10px;
   padding: 12px 18px 8px;
 }
 
-.btoc-progress-bar-wrap {
+body.nagornaya-page .btoc-progress-bar-wrap {
   position: relative;
   height: 6px;
   flex: 1 1 auto;
@@ -335,7 +343,7 @@ html.dark .bar-icon-sun { display: block !important; color: #f5c542; }
   background: var(--ng-toc-border);
 }
 
-.btoc-progress-bar-fill {
+body.nagornaya-page .btoc-progress-bar-fill {
   height: 100%;
   width: 0%;
   border-radius: inherit;
@@ -343,7 +351,7 @@ html.dark .bar-icon-sun { display: block !important; color: #f5c542; }
   transition: width .12s linear;
 }
 
-.btoc-progress-pct {
+body.nagornaya-page .btoc-progress-pct {
   min-width: 34px;
   text-align: right;
   font-family: var(--ng-toc-font-ui);
@@ -352,7 +360,7 @@ html.dark .bar-icon-sun { display: block !important; color: #f5c542; }
   color: var(--ng-toc-muted);
 }
 
-.btoc-reading-time {
+body.nagornaya-page .btoc-reading-time {
   display: flex;
   justify-content: space-between;
   gap: 12px;
@@ -362,7 +370,7 @@ html.dark .bar-icon-sun { display: block !important; color: #f5c542; }
   color: var(--ng-toc-muted);
 }
 
-.btoc-nav {
+body.nagornaya-page .btoc-nav {
   position: relative;
   flex: 1 1 auto;
   overflow-y: auto;
@@ -371,7 +379,8 @@ html.dark .bar-icon-sun { display: block !important; color: #f5c542; }
   /* FIX: iOS momentum scroll */
 }
 
-.btoc-link {
+/* AUDIT v10: .btoc-link shared with site.css — scoped */
+body.nagornaya-page .btoc-link {
   display: grid;
   grid-template-columns: 34px 1fr;
   gap: 10px;
@@ -385,40 +394,40 @@ html.dark .bar-icon-sun { display: block !important; color: #f5c542; }
   transition: background .2s ease, color .2s ease;
 }
 
-.btoc-link:hover,
-.btoc-link:focus-visible {
+body.nagornaya-page .btoc-link:hover,
+body.nagornaya-page .btoc-link:focus-visible {
   background: var(--ng-toc-surface-2);
   color: var(--ng-toc-text);
   outline: none;
 }
 
-.btoc-link.active {
+body.nagornaya-page .btoc-link.active {
   background: color-mix(in srgb, var(--ng-toc-accent) 11%, transparent);
   color: var(--ng-toc-accent);
 }
 
-.btoc-link-num {
+body.nagornaya-page .btoc-link-num {
   font-size: 11px;
   font-weight: 800;
   line-height: 1.4;
   opacity: .72;
 }
 
-.btoc-link-text {
+body.nagornaya-page .btoc-link-text {
   min-width: 0;
   font-size: 14px;
   line-height: 1.28;
   font-weight: 600;
 }
 
-.btoc-footer {
+body.nagornaya-page .btoc-footer {
   display: flex;
   gap: 10px;
   padding: 12px 18px calc(14px + env(safe-area-inset-bottom, 0px));
   border-top: 1px solid var(--ng-toc-border);
 }
 
-.btoc-share-btn {
+body.nagornaya-page .btoc-share-btn {
   flex: 1 1 auto;
   min-height: 42px;
   display: inline-flex;
@@ -435,13 +444,13 @@ html.dark .bar-icon-sun { display: block !important; color: #f5c542; }
   cursor: pointer;
 }
 
-.btoc-share-btn:hover,
-.btoc-share-btn:focus-visible {
+body.nagornaya-page .btoc-share-btn:hover,
+body.nagornaya-page .btoc-share-btn:focus-visible {
   border-color: var(--ng-toc-accent);
   outline: none;
 }
 
-.btoc-share-btn svg {
+body.nagornaya-page .btoc-share-btn svg {
   width: 16px;
   height: 16px;
   fill: none;
@@ -450,11 +459,11 @@ html.dark .bar-icon-sun { display: block !important; color: #f5c542; }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .bottom-bar,
-  .btoc-overlay,
-  .btoc-panel,
-  .bar-progress-fill,
-  .btoc-progress-bar-fill {
+  body.nagornaya-page .bottom-bar,
+  body.nagornaya-page .btoc-overlay,
+  body.nagornaya-page .btoc-panel,
+  body.nagornaya-page .bar-progress-fill,
+  body.nagornaya-page .btoc-progress-bar-fill {
     transition: none !important;
   }
 }
@@ -462,7 +471,7 @@ html.dark .bar-icon-sun { display: block !important; color: #f5c542; }
 /* PERF HOTFIX 2026-05-23 — убираем тяжёлый blur у fixed bottom-bar
    на мобильных, чтобы скролл не дёргался на длинных страницах. */
 @media (pointer: coarse), (max-width: 899px) {
-  .bottom-bar {
+  body.nagornaya-page .bottom-bar {
     -webkit-backdrop-filter: none;
     backdrop-filter: none;
     background: color-mix(in srgb, var(--ng-toc-surface) 98%, transparent);
