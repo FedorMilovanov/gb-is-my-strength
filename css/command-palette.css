@@ -64,7 +64,7 @@ html.cp-scroll-lock { overflow: hidden; position: fixed; width: 100%; height: 10
   display: none; /* opened via .is-open */
   position: fixed;
   inset: 0;
-  z-index: var(--z-modal);
+  z-index: var(--z-modal, 10000);
   align-items: flex-start;
   justify-content: center;
   padding: clamp(12px, 12vh, 96px) 16px 16px;
@@ -116,7 +116,6 @@ html.dark .cp-dim { background: rgba(0, 0, 0, 0.30); }
   backdrop-filter: blur(24px) saturate(160%);
   -webkit-backdrop-filter: blur(24px) saturate(160%);
   /* iOS Safari */
-  -webkit-overflow-scrolling: touch;
   animation: cpBoxIn 0.2s var(--cp-ease);
 }
 /* will-change only during entry animation, then release GPU layer */
@@ -195,11 +194,12 @@ html.dark .cp-input-wrap { border-bottom-color: var(--cp-border); }
 
 .cp-input {
   flex: 1;
+  min-width: 0;
   background: transparent;
   border: none;
   outline: none;
   font-family: var(--cp-font-ui);
-  font-size: 15px;
+  font-size: 16px;
   color: var(--cp-ink);
   /* iOS Safari - prevent zoom on focus */
   -webkit-appearance: none;
@@ -208,7 +208,6 @@ html.dark .cp-input-wrap { border-bottom-color: var(--cp-border); }
 
 .cp-input::placeholder { color: var(--cp-ink-faint); }
 
-@media (max-width: 640px) { .cp-input { font-size: 16px; } }
 
 .cp-clear {
   display: flex;
@@ -223,7 +222,7 @@ html.dark .cp-input-wrap { border-bottom-color: var(--cp-border); }
   background: var(--cp-bg-surface);
   color: var(--cp-ink-muted);
   cursor: pointer;
-  transition: all 0.18s var(--cp-ease);
+  transition: background .18s var(--cp-ease), color .18s var(--cp-ease), border-color .18s var(--cp-ease);
   flex-shrink: 0;
   /* Touch-friendly */
   touch-action: manipulation;
@@ -247,12 +246,9 @@ html.dark .cp-input-wrap { border-bottom-color: var(--cp-border); }
   padding: 8px 14px;
   border-bottom: 1px solid var(--cp-border-soft);
   background: color-mix(in srgb, var(--cp-bg-surface) 55%, var(--cp-bg-card));
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
   overflow-x: auto;
   scrollbar-width: none;
-  /* iOS safe area */
-  padding-bottom: calc(8px + env(safe-area-inset-bottom, 0px));
+  padding-bottom: 8px;
 }
 
 .cp-scope-row::-webkit-scrollbar { display: none; }
@@ -293,7 +289,7 @@ html.dark .cp-scope-row { border-bottom-color: var(--cp-border); }
   white-space: nowrap;
   color: var(--cp-ink-muted);
   cursor: pointer;
-  transition: all 0.2s var(--cp-ease);
+  transition: background .2s var(--cp-ease), color .2s var(--cp-ease), border-color .2s var(--cp-ease), box-shadow .2s var(--cp-ease);
   touch-action: manipulation;
   -webkit-tap-highlight-color: transparent;
 }
@@ -394,7 +390,7 @@ html.dark .cp-group-hd { opacity: 0.6; }
   cursor: pointer;
   font-family: var(--cp-font-ui);
   color: inherit;
-  transition: all 0.18s var(--cp-ease);
+  transition: background .18s var(--cp-ease), box-shadow .18s var(--cp-ease);
   position: relative;
   /* Touch-friendly */
   touch-action: manipulation;
@@ -474,7 +470,7 @@ html.dark .cp-group-hd { opacity: 0.6; }
   justify-content: center;
   background: var(--cp-bg-surface);
   color: var(--cp-ink-muted);
-  transition: all 0.2s cubic-bezier(0.23, 1, 0.32, 1);
+  transition: background .2s cubic-bezier(0.23, 1, 0.32, 1), color .2s cubic-bezier(0.23, 1, 0.32, 1), border-color .2s cubic-bezier(0.23, 1, 0.32, 1);
   border: 1px solid transparent;
 }
 
@@ -526,7 +522,6 @@ html.dark .cp-item-icon.is-active { border-color: transparent; }
 }
 
 .cp-item-sub {
-  display: block;
   font-size: 11.5px;
   color: var(--cp-ink-muted);
   line-height: 1.48;
@@ -560,7 +555,7 @@ html.dark .cp-item-icon.is-active { border-color: transparent; }
   background: var(--cp-bg-surface);
   border: 1px solid var(--cp-border);
   white-space: nowrap;
-  transition: all 0.18s ease;
+  transition: background .18s ease, color .18s ease, border-color .18s ease;
 }
 
 .cp-item:hover .cp-item-tag,
@@ -671,7 +666,7 @@ html.dark .cp-empty-visual {
   border: 1px solid var(--cp-border);
   color: var(--cp-ink-muted);
   cursor: pointer;
-  transition: all 0.18s var(--cp-ease);
+  transition: background .18s var(--cp-ease), color .18s var(--cp-ease), border-color .18s var(--cp-ease);
 }
 
 .cp-sug-btn:hover {
@@ -742,7 +737,6 @@ html.dark .cp-preview-col { border-left-color: var(--cp-border); }
   overflow-y: auto;
   overscroll-behavior: contain;
   /* iOS Safari smooth scroll */
-  -webkit-overflow-scrolling: touch;
 }
 
 .cp-preview-inner::-webkit-scrollbar { width: 3px; }
@@ -981,7 +975,7 @@ html.dark .cp-preview-author {
   color: var(--cp-ink-muted);
   font-size: 10px;
   font-weight: 600;
-  transition: all 0.2s var(--cp-ease);
+  transition: background .2s var(--cp-ease), color .2s var(--cp-ease), border-color .2s var(--cp-ease);
   cursor: default;
 }
 
@@ -1010,7 +1004,7 @@ html.dark .cp-preview-author {
   font-weight: 600;
   cursor: pointer;
   border: 1px solid;
-  transition: all 0.2s cubic-bezier(0.23, 1, 0.32, 1);
+  transition: background .2s cubic-bezier(0.23, 1, 0.32, 1), color .2s cubic-bezier(0.23, 1, 0.32, 1), border-color .2s cubic-bezier(0.23, 1, 0.32, 1);
   text-decoration: none;
   letter-spacing: 0.01em;
   touch-action: manipulation;
