@@ -305,7 +305,16 @@
        позицию. Решение: position:fixed; top: -scrollY на body.
 
        BUGFIX 2026-05-23:
-       lock/unlock теперь source-aware. Повторный open() одного и того же
+       lock/unlock теперь source-aware.
+     * ════════════════════════════════════════════════════════
+     * SCROLL-LOCK API — универсальный механизм.
+     * Sources: toc-mobile, btoc, image-viewer, cp-menu.
+     * lockScroll(src)  → increment, freeze body at scrollY.
+     * unlockScroll(src) → decrement, restore when all freed.
+     * Source-aware: повторный lock того же src — no-op.
+     * pagehide cleanup → bfcache hygiene (iOS Safari).
+     * ════════════════════════════════════════════════════════
+ Повторный open() одного и того же
        оверлея больше не увеличивает счётчик и не оставляет страницу
        навсегда scroll-locked после одного close(). */
     lockScroll: function (source) {
