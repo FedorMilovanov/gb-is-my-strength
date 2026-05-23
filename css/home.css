@@ -605,7 +605,7 @@ html.dark .h-scripture-bg::before {
     transform 0.55s cubic-bezier(0.22, 1, 0.36, 1),
     opacity 0.4s ease;
 }
-.hb-w:hover .hb-back {
+.hb-w:hover .hb-back, .hb-w:focus-within .hb-back {
   will-change: transform, opacity;
 }
 
@@ -643,12 +643,14 @@ html.dark .hb-back {
 
 
 .hb-w:hover .hb-front,
-.hb-w:focus-visible .hb-front {
+.hb-w:focus-visible .hb-front,
+.hb-w:focus-within .hb-front {
   opacity: 0;
   transform: rotate(-8deg) scale(0.85);
 }
 .hb-w:hover .hb-back,
-.hb-w:focus-visible .hb-back {
+.hb-w:focus-visible .hb-back,
+.hb-w:focus-within .hb-back {
   opacity: 1;
   transform: rotate(0) scale(1);
 }
