@@ -77,11 +77,16 @@ html.dark {
   border-bottom: 1px solid transparent;
 }
 .h-navbar.scrolled {
-  background: var(--h-glass);
-  backdrop-filter: blur(20px) saturate(160%);
-  -webkit-backdrop-filter: blur(20px) saturate(160%);
-  box-shadow: 0 1px 0 var(--h-border);
+  background: var(--h-bg, #f8f5f0);
   border-color: var(--h-border);
+}
+@supports (backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px)) {
+  .h-navbar.scrolled {
+    background: var(--h-glass);
+    backdrop-filter: blur(20px) saturate(160%);
+    -webkit-backdrop-filter: blur(20px) saturate(160%);
+    box-shadow: 0 1px 0 var(--h-border);
+  }
 }
 .h-navbar.nav-hidden {
   transform: translateY(-100%);
