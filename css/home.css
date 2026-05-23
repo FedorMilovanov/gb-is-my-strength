@@ -1464,7 +1464,6 @@ html.dark .h-meta-tag {
   transform: translateZ(0);
   backface-visibility: hidden;
   isolation: isolate;
-  will-change: transform;
 }
 @media (min-width: 600px) { .h-featured-img-wrap { height: 260px; } }
 .h-featured-img-wrap img {
@@ -1884,6 +1883,7 @@ html.dark .h-blockquote { color: var(--h-ink); }
   .h-tetra-back { opacity: 1 !important; transform: none !important; }
   .h-rule { animation: none !important; opacity: 1 !important; }
   .h-phrase--ambient { animation: none !important; }
+  .h-phrase { transition: none !important; }
   .h-planned-dot { animation: none !important; }
   .h-title-static, .h-title-accent, .h-title-dash { transition: none !important; transform: none !important; }
   .h-burger-icon line { transition: none; }

@@ -38,7 +38,8 @@ img { max-width: 100%; height: auto; display: block; }
 }
 
 h1, h2, h3, h4 { overflow-wrap: break-word; word-break: break-word; }
-html, body { overflow-x: hidden; }
+html { overflow-x: clip; }
+body { overflow-x: hidden; }
 
 
 
@@ -75,7 +76,6 @@ html, body { overflow-x: hidden; }
   --z-absolute:   99999;
   --z-max:        99999;
 
-  --bg-body: var(--bg); 
   
   --bg:            #fdfcf9;
   --bg-elevated:   #ffffff;
@@ -232,9 +232,7 @@ body {
   line-height: 1.75;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
-  transition: background .25s, color .25s;
   overflow-wrap: break-word;
-  scrollbar-gutter: stable;   
   
   hyphens: auto;
   -webkit-hyphens: auto;
@@ -243,6 +241,10 @@ body {
   -webkit-hyphenate-limit-after: 4;
   hyphenate-limit-lines: 2;
 }
+@media (hover: hover) and (pointer: fine) {
+  body { scrollbar-gutter: stable; }
+}
+
 
 
 h1, h2, h3, h4, h5, h6,
@@ -807,7 +809,7 @@ html.dark blockquote { border-left-color: var(--accent); }
   max-width: 100%;
 }
 .pullquote::before {
-  content: '\201C';
+  content: '\201C' / '';  /* empty alt text — decorative for screen readers (CSS Generated Content Module Level 3) */
   font-family: 'Lora', Georgia, serif;
   font-size: 96px;
   line-height: 0.8;
@@ -1344,8 +1346,8 @@ sup a {
   text-transform: uppercase;
   margin: 0 0 10px;
 }
-.myth-box h4 { color: #8a2020; }
-.fact-box h4 { color: #1a5a1a; }
+.myth-box h4 { color: var(--accent, #8a2020); }
+.fact-box h4 { color: var(--success-border, #1a5a1a); }
 html.dark .myth-box h4 { color: #f09090; }
 html.dark .fact-box h4 { color: #80c880; }
 .myth-box p, .fact-box p { font-size: 15px; line-height: 1.55; margin: 0; }
@@ -1968,6 +1970,7 @@ footer.quote-attribution cite { font-style: normal; }
   opacity: 1;
   visibility: visible;
   pointer-events: auto;
+  cursor: zoom-out;
 }
 .img-viewer__panel{
   position: relative;
@@ -6419,6 +6422,11 @@ html.dark .gb-accuracy-btn:hover {
   .gb-accuracy-block { display: none !important; }
 }
 
+@media print {
+  .article-figure img { filter: none !important; }
+  article p { text-align: left; }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .gb-accuracy-btn,
   .gb-accuracy-btn__icon {
@@ -6617,6 +6625,14 @@ textarea, select {
 
 
 
+.fn-marker:focus {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+  border-radius: 3px;
+}
+.fn-marker:focus:not(:focus-visible) {
+  outline: none;
+}
 .fn-marker:focus-visible {
   outline: 2px solid var(--accent);
   outline-offset: 2px;
@@ -7436,7 +7452,6 @@ html[data-scroll-locked="1"] .btoc-panel,
 html[data-scroll-locked="1"] .btoc-nav,
 body.ng-toc-lock .btoc-panel,
 body.ng-toc-lock .btoc-nav {
-  -webkit-overflow-scrolling: touch;
   touch-action: pan-y;
   overscroll-behavior: contain;
 }
