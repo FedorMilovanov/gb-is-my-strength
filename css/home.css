@@ -506,6 +506,11 @@ html.dark .h-scripture-bg::before {
   padding: 0 20px;
 }
 
+.h-grid-3 {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 14px;
+}
 @media (max-width: 760px) {
   .h-quote-mirror {
     flex-direction: column-reverse;
@@ -1254,11 +1259,6 @@ html.dark .h-card-planned:hover .h-card-icon {
   background: linear-gradient(to right, var(--h-border), transparent);
 }
 
-.h-grid-3 {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 14px;
-}
 
 
 .h-card-planned {
