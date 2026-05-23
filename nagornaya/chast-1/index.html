@@ -1100,6 +1100,7 @@
   var isOpen = false;
 
   function open() {
+    if (isOpen) return;
     isOpen = true;
     menu.classList.remove('hidden');
     btn.setAttribute('aria-expanded', 'true');
@@ -1107,7 +1108,7 @@
     if (bars[0]) bars[0].style.transform = 'rotate(45deg) translate(0,6px)';
     if (bars[1]) bars[1].style.opacity = '0';
     if (bars[2]) bars[2].style.transform = 'rotate(-45deg) translate(0,-6px)';
-    if (window.SiteUtils && window.SiteUtils.lockScroll) window.SiteUtils.lockScroll();
+    if (window.SiteUtils && window.SiteUtils.lockScroll) window.SiteUtils.lockScroll('nagornaya-menu');
     else { document.body.style.overflow = 'hidden'; }
     lastFocus = document.activeElement;
     var firstLink = menu.querySelector('a, button');
@@ -1122,7 +1123,7 @@
     if (bars[0]) bars[0].style.transform = '';
     if (bars[1]) bars[1].style.opacity = '1';
     if (bars[2]) bars[2].style.transform = '';
-    if (window.SiteUtils && window.SiteUtils.unlockScroll) window.SiteUtils.unlockScroll();
+    if (window.SiteUtils && window.SiteUtils.unlockScroll) window.SiteUtils.unlockScroll('nagornaya-menu');
     else { document.body.style.overflow = ''; }
     if (lastFocus && lastFocus.focus) try { lastFocus.focus(); } catch(e){}
   }

@@ -460,3 +460,13 @@ html.dark .bar-icon-sun { display: block !important; color: #f5c542; }
     transition: none !important;
   }
 }
+
+/* PERF HOTFIX 2026-05-23 — убираем тяжёлый blur у fixed bottom-bar
+   на мобильных, чтобы скролл не дёргался на длинных страницах. */
+@media (pointer: coarse), (max-width: 899px) {
+  .bottom-bar {
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+    background: color-mix(in srgb, var(--ng-toc-surface) 98%, transparent);
+  }
+}

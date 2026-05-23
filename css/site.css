@@ -7938,3 +7938,17 @@ body.nagornaya-page .nag-summary__head{background:transparent!important;color:#7
 html.dark body.nagornaya-page .nag-summary__head{background:transparent!important;color:rgba(245,226,198,.72)!important}
 body.nagornaya-page .nag-summary__item::before,body.nagornaya-page .nag-summary__item::after{content:none!important;display:none!important}
 body.nagornaya-page .nag-summary__text{white-space:normal!important;word-break:normal!important;overflow-wrap:anywhere!important;min-width:0!important;max-width:none!important}
+
+/* ════════════════════════════════════════════════════════════
+   PERF HOTFIX 2026-05-23 — lighter mobile bottom bar
+   Большой backdrop-filter на fixed bottom-bar заметно тормозил
+   scroll на мобильных Safari/Chrome, особенно на длинных статьях.
+   На touch-устройствах делаем фон чуть плотнее, но убираем blur.
+   ════════════════════════════════════════════════════════════ */
+@media (pointer: coarse), (max-width: 899px) {
+  .bottom-bar {
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+    background: color-mix(in srgb, var(--bg) 97%, transparent);
+  }
+}
