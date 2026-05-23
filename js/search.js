@@ -264,30 +264,61 @@
   var pagefindLoaded  = false;
   var pagefindLoading = false;
   var pagefindFailed  = false;
+  var pagefindAvailable = null;
+  var pagefindCheckedPrefix = '';
+
+  function getPagefindPrefix() {
+    var depth  = (window.location.pathname.match(/\//g) || []).length - 1;
+    return depth > 0 ? Array(depth).fill('..').join('/') + '/' : '/';
+  }
+
+  function checkPagefindAvailability(cb) {
+    var prefix = getPagefindPrefix();
+    if (pagefindAvailable !== null && pagefindCheckedPrefix === prefix) {
+      cb && cb(pagefindAvailable);
+      return;
+    }
+    pagefindCheckedPrefix = prefix;
+    fetch(prefix + 'pagefind/pagefind.js', { method: 'HEAD', cache: 'no-store' })
+      .then(function (res) {
+        pagefindAvailable = !!(res && res.ok);
+        cb && cb(pagefindAvailable);
+      })
+      .catch(function () {
+        pagefindAvailable = false;
+        cb && cb(false);
+      });
+  }
 
   function loadPagefind(cb) {
     if (pagefindLoaded)  { cb && cb(); return; }
-    if (pagefindFailed)  { return; }
+    if (pagefindFailed)  { cb && cb(); return; }
     if (pagefindLoading) { setTimeout(function () { loadPagefind(cb); }, 80); return; }
-    pagefindLoading = true;
 
-    var depth  = (window.location.pathname.match(/\//g) || []).length - 1;
-    var prefix = depth > 0 ? Array(depth).fill('..').join('/') + '/' : '/';
+    checkPagefindAvailability(function (available) {
+      if (!available) {
+        pagefindFailed = true;
+        window.__pagefindFailed__ = true;
+        cb && cb();
+        return;
+      }
 
-    var script = document.createElement('script');
-    script.type = 'module';
-    script.textContent =
-      "import('" + prefix + "pagefind/pagefind.js')" +
-      ".then(function(p) {" +
-      "  window.__pagefind__ = p;" +
-      "  window.__pagefindReady__ = true;" +
-      "}).catch(function(err) {" +
-      "  console.error('[Pagefind] failed to load:', err);" +
-      "  window.__pagefindFailed__ = true;" +
-      "});";
-    document.head.appendChild(script);
+      pagefindLoading = true;
+      var prefix = getPagefindPrefix();
 
-    var polls = 0;
+      var script = document.createElement('script');
+      script.type = 'module';
+      script.textContent =
+        "import('" + prefix + "pagefind/pagefind.js')" +
+        ".then(function(p) {" +
+        "  window.__pagefind__ = p;" +
+        "  window.__pagefindReady__ = true;" +
+        "}).catch(function() {" +
+        "  window.__pagefindFailed__ = true;" +
+        "});";
+      document.head.appendChild(script);
+
+      var polls = 0;
     var poll  = setInterval(function () {
       polls++;
       if (window.__pagefindReady__) {
@@ -308,7 +339,8 @@
         console.warn('[Pagefind] load timeout after 5s');
         if (cb) cb();
       }
-    }, 100);
+      }, 100);
+    });
   }
  
   /* ─────────────────────────────────────────────────────────
@@ -841,6 +873,72 @@
     };
   }
 
+  function scoreManifestItem(x, q) {
+    var nq = normalizeQ(q);
+    if (!nq) return 0;
+    var title = normalizeQ(x.title || '');
+    var desc = normalizeQ(x.description || '');
+    var hay = normalizeQ([x.title, x.description, x.section, x.author, x.editor, x.scripture, (x.tags || []).join(' ')].filter(Boolean).join(' '));
+    var words = nq.split(' ').filter(Boolean);
+    if (!words.length) return 0;
+
+    var missing = words.some(function (word) { return hay.indexOf(word) === -1; });
+    if (missing) return 0;
+
+    var score = 0;
+    if (title === nq) score += 120;
+    if (title.indexOf(nq) !== -1) score += 70;
+    if (desc.indexOf(nq) !== -1) score += 28;
+    words.forEach(function (word) {
+      if (title.indexOf(word) !== -1) score += 20;
+      if (desc.indexOf(word) !== -1) score += 8;
+      if (normalizeQ(x.scripture || '').indexOf(word) !== -1) score += 10;
+    });
+    score += (x.priority || 0) * 2;
+    return score;
+  }
+
+  function runManifestSearch(q) {
+    loadSearchManifest(function () {
+      var items = _manifestItems
+        .filter(function (x) { return x.type === 'article' || x.type === 'series'; })
+        .map(function (x) { return { item: x, score: scoreManifestItem(x, q) }; })
+        .filter(function (entry) {
+          if (scope === 'authors') return manifestMatchesAuthor(entry.item, q);
+          if (scope === 'scripture') return manifestMatchesScripture(entry.item, q);
+          return entry.score > 0;
+        })
+        .sort(function (a, b) {
+          if (b.score !== a.score) return b.score - a.score;
+          if ((b.item.priority || 0) !== (a.item.priority || 0)) return (b.item.priority || 0) - (a.item.priority || 0);
+          return Date.parse(b.item.modifiedTime || 0) - Date.parse(a.item.modifiedTime || 0);
+        })
+        .slice(0, 12)
+        .map(function (entry) {
+          var out = manifestToItem(entry.item);
+          out.titleHtml = highlight(entry.item.title || '', q);
+          out.subHtml = highlight(entry.item.description || '', q);
+          return out;
+        });
+
+      if (!items.length) { showEmpty(); return; }
+
+      if (scope === 'authors') {
+        var byAuthor = {};
+        var order = [];
+        items.forEach(function (it) {
+          var a = (it.article && it.article.author) ? it.article.author.replace(/^Редактор:\s*/i, '') : 'Без автора';
+          if (!byAuthor[a]) { byAuthor[a] = []; order.push(a); }
+          byAuthor[a].push(it);
+        });
+        renderGroups(order.map(function (a) { return { name: a, items: byAuthor[a] }; }));
+        return;
+      }
+
+      renderGroups([{ name: scope === 'scripture' ? 'Писание' : 'Материалы', items: items }]);
+    });
+  }
+
   function resumeToItem(resume) {
     return {
       id: 'res-' + resume.path,
@@ -985,15 +1083,7 @@
        infinite "Загружаю индекс…".  loadPagefind() returns immediately
        when pagefindFailed=true, so the callback never fires. */
     if (pagefindFailed) {
-      listEl.innerHTML =
-        '<div class="cp-empty">' +
-          '<p class="cp-empty-title">Поиск недоступен</p>' +
-          '<p class="cp-empty-sub">Не удалось загрузить индекс. ' +
-          'Обновите страницу и попробуйте снова.</p>' +
-        '</div>';
-      statusEl.textContent = '';
-      currentItems = [];
-      showPreviewPlaceholder();
+      runManifestSearch(q);
       return;
     }
 
@@ -1021,12 +1111,10 @@
 
   function runPagefindSearch(q) {
     if (!window.__pagefind__) {
-      listEl.innerHTML =
-        '<div class="cp-loading">Загружаю индекс\u2026</div>';
-      /* Pagefind is still loading — retry once it is ready.
-         Guard with current query so a cleared input does not
-         resurrect results for a query the user already discarded. */
-      loadPagefind(function () { if (query === q) runSearch(q); });
+      runManifestSearch(q);
+      /* В фоне пытаемся загрузить Pagefind. Если индекс появится,
+         следующий runSearch() автоматически переключится на full-text. */
+      loadPagefind(function () { if (query === q && window.__pagefind__) runSearch(q); });
       return;
     }
  

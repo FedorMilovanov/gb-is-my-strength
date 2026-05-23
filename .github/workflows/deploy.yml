@@ -87,6 +87,11 @@ jobs:
         # --output-path pagefind — стандартная папка, ожидаемая search.js.
         run: npx -y pagefind@1.5.2 --site . --output-path pagefind
 
+      - name: Verify Pagefind index and disable Jekyll filtering
+        run: |
+          test -f pagefind/pagefind.js
+          touch .nojekyll
+
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v3
         with:
