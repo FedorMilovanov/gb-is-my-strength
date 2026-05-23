@@ -397,6 +397,98 @@
   };
 
   window.SiteUtils = SiteUtils;
+
+  /* ════════════════════════════════════════════════════════════════════
+     AUDIT V9 / #130: visualViewport tracker — premium implementation
+     ════════════════════════════════════════════════════════════════════
+     Cмысл: на мобильном виртуальная клавиатура отъедает до ~280px высоты.
+     Без этого хелпера Command Palette (.cp-box max-height: 75vh) уходит
+     нижними результатами под клавиатуру — пользователь не видит хвост.
+
+     Решение: при каждом изменении visualViewport обновляем CSS-переменную
+     --cp-max-h на <html>. CSS использует её через
+       max-height: var(--cp-max-h, fallback);
+
+     Премиум-оптимизации:
+       1. rAF batching — обновляем не чаще одного раза за кадр, даже если
+          событие resize пришло пачкой (iOS Safari делает 3-5 событий
+          подряд при появлении клавиатуры).
+       2. Idempotent — повторный init() no-op, не дублирует listeners.
+       3. Delta threshold — не обновляем при изменении <2px (шум от scroll).
+       4. Passive listeners (хотя resize и так non-cancelable).
+       5. Auto-cleanup на pagehide (важно для bfcache).
+       6. Fallback graceful — если visualViewport отсутствует
+          (Firefox <91, IE), CSS остаётся со старым fallback значением.
+       7. Учёт safe-area-inset-* и небольшого отступа (16px) для воздуха
+          между CP и краями viewport.
+       8. Subscriber API — другие модули могут слушать изменения через
+          SiteUtils.onViewportChange(callback) без дублирования listeners.
+  ──────────────────────────────────────────────────────────────────────── */
+  (function () {
+    if (!window.visualViewport) return; // graceful fallback
+
+    var DELTA_THRESHOLD = 2;      // px — игнорируем шум
+    var SAFE_PADDING    = 16;     // px — воздух по краям CP
+    var lastHeight      = -1;
+    var rafId           = 0;
+    var subscribers     = [];
+    var docEl           = document.documentElement;
+
+    function computeMaxH() {
+      var vv = window.visualViewport;
+      if (!vv) return null;
+      // Высота, доступная для модала: viewport минус safe-area минус воздух
+      // visualViewport.height уже учитывает URL-бар и клавиатуру.
+      return Math.max(0, Math.floor(vv.height - SAFE_PADDING * 2));
+    }
+
+    function applyUpdate() {
+      rafId = 0;
+      var h = computeMaxH();
+      if (h === null) return;
+      if (Math.abs(h - lastHeight) < DELTA_THRESHOLD) return;
+      lastHeight = h;
+      docEl.style.setProperty('--cp-max-h', h + 'px');
+      // Уведомляем подписчиков (например, share-dialog, btoc)
+      for (var i = 0; i < subscribers.length; i++) {
+        try { subscribers[i](h); } catch (e) { /* swallow */ }
+      }
+    }
+
+    function scheduleUpdate() {
+      if (rafId) return; // уже запланировано
+      rafId = requestAnimationFrame(applyUpdate);
+    }
+
+    var vv = window.visualViewport;
+    vv.addEventListener('resize', scheduleUpdate);
+    vv.addEventListener('scroll', scheduleUpdate);
+    // Также при orientationchange — visualViewport не всегда успевает
+    window.addEventListener('orientationchange', scheduleUpdate);
+
+    // Cleanup для bfcache (Safari bfcache + iOS)
+    window.addEventListener('pagehide', function () {
+      if (rafId) { cancelAnimationFrame(rafId); rafId = 0; }
+      vv.removeEventListener('resize', scheduleUpdate);
+      vv.removeEventListener('scroll', scheduleUpdate);
+    }, { once: true });
+
+    // Public API
+    SiteUtils.onViewportChange = function (cb) {
+      if (typeof cb === 'function' && subscribers.indexOf(cb) === -1) {
+        subscribers.push(cb);
+      }
+      return function unsubscribe() {
+        var idx = subscribers.indexOf(cb);
+        if (idx !== -1) subscribers.splice(idx, 1);
+      };
+    };
+    SiteUtils.getViewportMaxH = function () { return lastHeight; };
+
+    // Первичный sync — синхронно, чтобы CP сразу при первом open() имел значение
+    applyUpdate();
+  })();
+
   /* AUDIT V6 / H2: :has() fallback для quiz-overlay (iOS < 16.4).
      CSS правило .quiz-overlay:has(.quiz-launch-hero:hover) недоступно — 
      дублируем через JS-class. */

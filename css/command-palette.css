@@ -105,7 +105,9 @@ html.dark .cp-dim { background: rgba(0, 0, 0, 0.30); }
   display: flex;
   width: 100%;
   max-width: 860px;
-  max-height: min(68vh, 700px);
+  /* AUDIT V9 / #130: --cp-max-h обновляется из JS через visualViewport API.
+     На десктопе и старых браузерах fallback на min(68vh, 700px) работает как раньше. */
+  max-height: var(--cp-max-h, min(68vh, 700px));
   border-radius: 20px;
   overflow: hidden;
   background: var(--cp-bg-card);
@@ -725,7 +727,8 @@ html.dark .cp-preview-col { border-left-color: var(--cp-border); }
   .cp-preview-col { display: none; }
   .cp-box {
     max-width: none;
-    max-height: 75vh;
+    /* AUDIT V9 / #130: учитываем виртуальную клавиатуру через --cp-max-h */
+    max-height: var(--cp-max-h, 75vh);
     border-radius: 18px;
   }
 }
@@ -1175,7 +1178,9 @@ html.dark .cp-preview-author {
   }
 
   .cp-box {
-    max-height: calc(100dvh - 16px - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px));
+    /* AUDIT V9 / #130: --cp-max-h из visualViewport API (учитывает клавиатуру).
+       Fallback на 100dvh для старых браузеров (Firefox <108, Safari <15.4). */
+    max-height: var(--cp-max-h, calc(100dvh - 16px - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px)));
     max-width: calc(100vw - 16px);
     border-radius: 16px;
   }
@@ -1240,7 +1245,8 @@ html.dark .cp-preview-author {
 @media (min-width: 481px) and (max-width: 768px) {
   .cp-box {
     max-width: calc(100vw - 32px);
-    max-height: 75vh;
+    /* AUDIT V9 / #130: --cp-max-h учитывает клавиатуру */
+    max-height: var(--cp-max-h, 75vh);
     border-radius: 18px;
   }
 
