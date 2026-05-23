@@ -782,8 +782,57 @@ article p {
     hyphenate-limit-lines: 2;
   }
 }
-article a { color: var(--link); text-decoration: none; }
-article a:hover { color: var(--accent); text-decoration: none; }
+/* AUDIT V9 / #127: премиальное подчёркивание ссылок в статьях.
+   WCAG 1.4.1 (Use of Color) — ссылки больше не отличаются ТОЛЬКО цветом.
+
+   Дизайн (на основе обзора editorial-сайтов май 2026: NYT, New Yorker, Stratechery,
+   Substack):
+   * 1px подчёркивание с offset 3px и opacity ~40% — едва заметно в потоке чтения,
+     но даёт явный visual cue + проходит автоматические a11y-сканеры.
+   * Hover/focus → подчёркивание уплотняется до accent color, добавляется toned
+     background-tint (как в NYT Magazine длинных текстов).
+   * Skip-ink: декорация прерывается под descender'ами букв (g, j, p) —
+     text-decoration-skip-ink: auto; включён по умолчанию во всех современных
+     браузерах, но мы фиксируем явно.
+   * decoration-color через color-mix с fallback на сплошной серо-синий. */
+article a {
+  color: var(--link);
+  text-decoration: underline;
+  text-decoration-color: rgba(31, 78, 163, 0.45); /* fallback: --link 45% */
+  text-decoration-color: color-mix(in srgb, var(--link, #1f4ea3) 42%, transparent);
+  text-decoration-thickness: 1px;
+  text-underline-offset: 3px;
+  text-decoration-skip-ink: auto;
+  transition:
+    color .15s ease,
+    text-decoration-color .15s ease,
+    background-color .15s ease;
+  border-radius: 2px;
+}
+article a:hover,
+article a:focus-visible {
+  color: var(--accent);
+  text-decoration-color: var(--accent);
+  text-decoration-thickness: 1.5px;
+  /* Тёплый тонкий фон-tint, как в книжных editorial-макетах */
+  background-color: rgba(122, 46, 46, 0.06);
+  background-color: color-mix(in srgb, var(--accent, #7a2e2e) 6%, transparent);
+}
+/* Dark mode: подчёркивание читаемо на тёмном фоне (link = #d4a574) */
+html.dark article a {
+  text-decoration-color: rgba(212, 165, 116, 0.5);
+  text-decoration-color: color-mix(in srgb, var(--link, #d4a574) 50%, transparent);
+}
+html.dark article a:hover,
+html.dark article a:focus-visible {
+  text-decoration-color: var(--accent-strong, #e8b878);
+  background-color: rgba(232, 184, 120, 0.10);
+  background-color: color-mix(in srgb, var(--accent-strong, #e8b878) 10%, transparent);
+}
+/* prefers-reduced-motion: убираем transition */
+@media (prefers-reduced-motion: reduce) {
+  article a { transition: none; }
+}
 
 
 blockquote {
@@ -1876,8 +1925,117 @@ footer.quote-attribution cite { font-style: normal; }
 .compare-table tbody tr:last-child td { border-bottom: none; }
 .compare-table tbody td:first-child { color: var(--muted); font-size: 13px; white-space: nowrap; }
 .compare-table tbody td:first-child strong { color: var(--muted); }
+/* AUDIT V9 / #163: на мобильном по умолчанию — stacked cards (Variant C).
+   Каждая строка превращается в карточку, заголовки колонок выводятся через
+   data-label="..." на каждой <td>. Никакого горизонтального скролла.
+
+   Семантика <table> технически ломается (display:block), НО при этом
+   контент остаётся читаемым линейно — каждая ячейка с её label-ом.
+
+   Опт-out: если нужна классическая таблица со скроллом — обернуть в
+   <div class="table-scroll" role="region" tabindex="0" aria-label="..."> —
+   стиль ниже сохраняет table semantics + клавиатурный доступ.
+
+   Использование: <table class="compare-table"><tbody>
+     <tr>
+       <td data-label="Источник"><strong>Мф 5:21</strong></td>
+       <td data-label="Реченье">Не убивай</td>
+     </tr>
+   </tbody></table>                                                          */
 @media (max-width: 600px) {
-  .compare-table { display: block; overflow-x: auto; }
+  /* Stacked-cards (default) */
+  .compare-table:not(.compare-table--scroll) {
+    border: none;
+    margin: 20px 0;
+  }
+  .compare-table:not(.compare-table--scroll) thead { display: none; }
+  .compare-table:not(.compare-table--scroll) tbody,
+  .compare-table:not(.compare-table--scroll) tr,
+  .compare-table:not(.compare-table--scroll) td {
+    display: block;
+    width: 100%;
+  }
+  .compare-table:not(.compare-table--scroll) tr {
+    margin-bottom: 14px;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 4px 0;
+    background: var(--bg-elevated, #fff);
+  }
+  .compare-table:not(.compare-table--scroll) td {
+    border-bottom: 1px solid var(--note-bg);
+    padding: 10px 14px;
+    position: relative;
+    padding-left: 105px;
+    text-align: left;
+  }
+  .compare-table:not(.compare-table--scroll) td:last-child {
+    border-bottom: none;
+  }
+  .compare-table:not(.compare-table--scroll) td::before {
+    content: attr(data-label);
+    position: absolute;
+    left: 14px;
+    top: 10px;
+    width: 85px;
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--muted);
+    font-weight: 700;
+    line-height: 1.5;
+  }
+  .compare-table:not(.compare-table--scroll) td:first-child {
+    padding-top: 14px;
+    color: var(--text);
+    font-weight: 600;
+    padding-left: 14px;
+    white-space: normal;
+  }
+  .compare-table:not(.compare-table--scroll) td:first-child::before {
+    display: none;
+  }
+  .compare-table:not(.compare-table--scroll) td:first-child strong {
+    color: var(--accent);
+  }
+  /* Если в td нет data-label — стилизуем как простую ячейку без label-канавки */
+  .compare-table:not(.compare-table--scroll) td:not([data-label])::before {
+    display: none;
+  }
+  .compare-table:not(.compare-table--scroll) td:not([data-label]) {
+    padding-left: 14px;
+  }
+}
+html.dark .compare-table:not(.compare-table--scroll) tr {
+  background: var(--bg-elevated);
+}
+
+/* Variant B (opt-in): классическая таблица со скроллом, для случаев где
+   stacked cards неуместны (например, очень широкие денежные/числовые таблицы).
+   Использование: <div class="table-scroll" role="region" tabindex="0"
+                       aria-label="Таблица: ...">
+                    <table class="compare-table compare-table--scroll">...
+                  </div>                                                    */
+.table-scroll {
+  overflow-x: auto;
+  margin: 24px 0;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: thin;
+}
+.table-scroll:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+@media (max-width: 600px) {
+  .table-scroll {
+    /* Bleed edges за пределы padding'а article-body для полной ширины скролла */
+    margin: 24px -16px;
+    padding: 0 16px;
+  }
+  .compare-table.compare-table--scroll {
+    min-width: 460px;
+  }
 }
 
 
@@ -5843,59 +6001,11 @@ html.dark .faq-accordion__q:hover { background: var(--bg-elevated); background: 
 .article-body .faq-accordion__body-inner { font-size: calc(var(--article-font-size) * 0.84); }
 
 
-.summary-card {
-  border-radius: 12px;
-  overflow: hidden;
-  border: 1px solid var(--border);
-  margin: 24px 0;
-}
-.summary-card__head {
-  background: var(--accent);
-  color: #fff;
-  padding: 13px 20px;
-  font-family: 'Source Sans 3', system-ui, sans-serif;
-  font-size: 11.5px;
-  font-weight: 700;
-  letter-spacing: .09em;
-  text-transform: uppercase;
-}
-.summary-card__body {
-  padding: 4px 0;
-  background: var(--bg);
-}
-.summary-card__item {
-  display: flex;
-  align-items: flex-start;
-  gap: 12px;
-  padding: 11px 20px;
-  border-bottom: 1px solid var(--border);
-}
-.summary-card__item:last-child { border-bottom: none; }
-.summary-card__check {
-  width: 18px; height: 18px;
-  border-radius: 50%;
-  background: #eef5ea;
-  border: 1.5px solid #b0d0a0;
-  display: flex; align-items: center; justify-content: center;
-  flex-shrink: 0;
-  margin-top: 2px;
-  font-size: 10px; color: #4a8a4a; font-weight: 700;
-}
-.summary-card__text {
-  font-family: 'Source Sans 3', system-ui, sans-serif;
-  font-size: 13.5px;
-  line-height: 1.55;
-  color: var(--text);
-}
-.summary-card__text strong { color: var(--accent); font-weight: 700; }
-html.dark .summary-card__body { background: var(--bg-elevated); }
-html.dark .summary-card__check {
-  background: rgba(74, 138, 74, 0.15);
-  background: color-mix(in srgb,#4a8a4a 15%,transparent);
-  border-color: rgba(128, 128, 128, 0.2); 
-  border-color: color-mix(in srgb,#4a8a4a 40%,transparent);
-  color: #7ac87a;
-}
+/* AUDIT V9 / #3: first (heavy bordeaux header) .summary-card version removed.
+   It was fully overridden by the refined version below via !important.
+   After removal the refined version no longer needs !important overrides;
+   the nagornaya-override (compact) variant still applies under body.nagornaya-page. */
+
 
 
 
