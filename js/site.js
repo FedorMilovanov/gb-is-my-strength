@@ -1675,6 +1675,31 @@
   })();
 
 
+  
+  /* ============================================================
+     15b. Flip Card Animation Pause (off-viewport)
+     Pauses infinite CSS animations on flip-cards that are not
+     visible, saving CPU/GPU. Uses IntersectionObserver.
+     ============================================================ */
+  (function () {
+    var cards = document.querySelectorAll('.flip-card, .error-flip-card, .heart-flip-card');
+    if (!cards.length || !window.IntersectionObserver) return;
+
+    var observer = new IntersectionObserver(function (entries) {
+      entries.forEach(function (entry) {
+        var el = entry.target;
+        if (entry.isIntersecting) {
+          el.style.animationPlayState = '';
+        } else {
+          el.style.animationPlayState = 'paused';
+        }
+      });
+    }, { rootMargin: '200px' });
+
+    cards.forEach(function (card) { observer.observe(card); });
+  })();
+
+
   /* ============================================================
      16. Quiz Engine  [v3: review mode + wrong-answer tracking]
      ============================================================ */

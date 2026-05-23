@@ -376,6 +376,12 @@
     backdrop.classList.add('is-open');
     lockScroll();
     requestAnimationFrame(function () { input.focus(); });
+    /* Release GPU layer after entry animation (audit v5 — .cp-settled) */
+    if (box && !box.classList.contains('cp-settled')) {
+      box.addEventListener('animationend', function () {
+        box.classList.add('cp-settled');
+      }, { once: true });
+    }
     /* Show history / hint immediately — no pagefind needed */
     showDefault();
     loadPagefind(function () {
@@ -392,6 +398,7 @@
     clearTimeout(_copiedTimer);
     backdrop.classList.remove('is-open');
     unlockScroll();
+    if (box) box.classList.remove('cp-settled');
     input.value = '';
     query = '';
     clearBtn.style.display = 'none';
