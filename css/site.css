@@ -1902,7 +1902,9 @@ footer.quote-attribution cite { font-style: normal; }
 }
 .article-figure img:hover { filter: brightness(1) contrast(1); }
 .article-figure::after{
-  content: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='32' height='32' viewBox='0 0 32 32' fill='none'%3E%3Ccircle cx='14' cy='14' r='7' stroke='%23ffffff' stroke-width='1.5' stroke-opacity='0.85'/%3E%3Cline x1='19.2' y1='19.2' x2='24' y2='24' stroke='%23ffffff' stroke-width='1.5' stroke-linecap='round' stroke-opacity='0.85'/%3E%3C/svg%3E");
+  /* AUDIT V8 / #159: empty alt text — decorative zoom hint, not announced by AT.
+     CSS Generated Content Module Level 3: content: <url> / <alt-text>; */
+  content: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='32' height='32' viewBox='0 0 32 32' fill='none'%3E%3Ccircle cx='14' cy='14' r='7' stroke='%23ffffff' stroke-width='1.5' stroke-opacity='0.85'/%3E%3Cline x1='19.2' y1='19.2' x2='24' y2='24' stroke='%23ffffff' stroke-width='1.5' stroke-linecap='round' stroke-opacity='0.85'/%3E%3C/svg%3E") / "";
   position: absolute;
   right: 10px;
   top: 10px;
@@ -2295,10 +2297,22 @@ footer.quote-attribution cite { font-style: normal; }
   border-top: 1px solid var(--border);
   padding: 0 0 env(safe-area-inset-bottom, 0px);
   transform: translateY(100%);
-  transition: transform .3s cubic-bezier(.4,0,.2,1), background .25s;
+  /* AUDIT V8 / #114: hidden bottom-bar was still focusable via Tab even though
+     translated off-screen. visibility:hidden removes it from the tab order;
+     pointer-events:none prevents click-through during slide-out animation.
+     Delay visibility transition so the slide-out animation is still visible. */
+  visibility: hidden;
+  pointer-events: none;
+  transition: transform .3s cubic-bezier(.4,0,.2,1), background .25s, visibility 0s linear .3s;
   will-change: transform;
 }
-.bottom-bar.visible { transform: translateY(0); }
+.bottom-bar.visible {
+  transform: translateY(0);
+  visibility: visible;
+  pointer-events: auto;
+  /* Instant visibility on show (matches transform start) */
+  transition: transform .3s cubic-bezier(.4,0,.2,1), background .25s, visibility 0s linear 0s;
+}
 @media (min-width: 900px) { .bottom-bar { display: none; } }
 @media (max-width: 899px) {
   body.has-bottom-bar { padding-bottom: calc(56px + env(safe-area-inset-bottom, 0px)); }
@@ -2410,15 +2424,15 @@ html.dark .bar-icon-sun  { display: block; color: #f5c542; }
   position: fixed;
   inset: 0;
   z-index: var(--z-overlay-high);
-  display: none;                    
+  /* AUDIT V8 / #23: previously toggled display:none/block, which prevents the
+     opacity/visibility transition from firing. Now driven entirely by
+     visibility + opacity + pointer-events. Hidden on desktop via media query. */
+  display: block;
   background: rgba(0,0,0,0.45);
   opacity: 0;
   visibility: hidden;
   pointer-events: none;
   transition: opacity .3s ease, visibility .3s;
-}
-@media (max-width: 899px) {
-  .btoc-overlay { display: block; } 
 }
 @media (min-width: 900px) { .btoc-overlay { display: none; } }
 .btoc-overlay.open {
@@ -3777,33 +3791,8 @@ body.has-bottom-bar .bookmark-toast {
 
 
 :root {
-  
-  --z-base:           1;
-  --z-elevated:      10;
-  --z-raised:        50;
-  --z-raised-high:  100;
-  --z-toc:          500;
-  --z-dropdown:     800;
-  --z-dropdown-high: 900;
-  --z-sticky:      1000;
-  --z-bottom-bar:  2000;
-  --z-overlay:     2500;
-  --z-overlay-high: 3000;
-  --z-tooltip-low: 8999;
-  --z-tooltip:     9000;
-  --z-tooltip-high:9100;
-  --z-toast:       9800;
-  --z-toast-high:  9998;
-  --z-modal-low:   9999;
-  --z-modal:      10000;
-  --z-modal-1:    10001;
-  --z-overlay-modal: 15000;
-  --z-panel:      19000;
-  --z-popover:    19999;
-  --z-critical:   20000;
-  --z-absolute:   99999;
-  --z-max:        99999;
-
+  /* AUDIT V8: z-index variables were duplicated here (identical to definitions
+     at the top of file). Removed redundant vars; only article-font-size remains. */
   --article-font-size: 17px;
 }
 .article-main p,

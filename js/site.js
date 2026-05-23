@@ -3498,7 +3498,6 @@
       imgEl.alt = alt || '';
       capEl.textContent = captionText || '';
       viewer.classList.add('is-open');
-        if (window.SiteUtils && SiteUtils.lockScroll) SiteUtils.lockScroll('img-viewer');
       /* B-01: используем счётчик блокировки скролла вместо ручного overflow на <html> */
       SiteUtils.lockScroll('image-viewer');
       /* B-02: фокус на кнопку закрытия + trap.
@@ -3511,7 +3510,6 @@
     function close() {
       if (!viewer.classList.contains('is-open')) return;
       viewer.classList.remove('is-open');
-        if (window.SiteUtils && SiteUtils.unlockScroll) SiteUtils.unlockScroll('img-viewer');
       viewer.removeEventListener('keydown', trapViewerTab);
       /* B-01: корректно разблокируем скролл через счётчик */
       SiteUtils.unlockScroll('image-viewer');
