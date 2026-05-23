@@ -363,7 +363,7 @@ html.dark .icon-sun { opacity: 1; color: #f5c542; }
   opacity: 0;
   pointer-events: none;
 }
-@supports (backdrop-filter: blur(12px)) {
+@supports (backdrop-filter: blur(12px)) or (-webkit-backdrop-filter: blur(12px)) {
   .article-topnav {
     background: rgba(128, 128, 128, 0.15); 
     background: color-mix(in srgb, var(--bg) 82%, transparent);
@@ -760,7 +760,15 @@ article p {
   -webkit-hyphenate-limit-before: 4;
   -webkit-hyphenate-limit-after: 4;
   hyphenate-limit-lines: 2;
+  /* On narrow screens, disable justify to avoid large word gaps */
   overflow-wrap: break-word;
+}
+@media (max-width: 400px) {
+  article p {
+    text-align: left;
+    hyphens: manual;
+    -webkit-hyphens: manual;
+  }
 }
 
 @media (max-width: 899px) {
@@ -2796,7 +2804,7 @@ html.dark #reading-progress { background: var(--accent); }
   transition: opacity .22s ease, visibility .22s;
 }
 
-@supports (backdrop-filter: blur(12px)) {
+@supports (backdrop-filter: blur(12px)) or (-webkit-backdrop-filter: blur(12px)) {
   #share-dialog-overlay {
     background: rgba(0, 0, 0, .22);
     backdrop-filter: blur(12px);
@@ -6215,6 +6223,15 @@ html.dark .about-contact-handle { color: #9c8c7a; }
 }
 .article-byline__updated time {
   font-variant-numeric: tabular-nums;
+}
+
+/* Use lining (proportional) figures for dates and metadata */
+.article-date-display,
+.article-byline__updated,
+.article-reading-time,
+.article-reading-progress-label,
+.related-articles__meta {
+  font-feature-settings: "liga" 1, "kern" 1, "lnum" 1;
 }
 
 
