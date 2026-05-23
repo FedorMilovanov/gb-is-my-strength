@@ -90,6 +90,16 @@ html.dark {
 }
 .h-navbar.nav-hidden {
   transform: translateY(-100%);
+  /* AUDIT V8 / #119: when navbar is slid off-screen, remove it from
+     the tab/focus order and prevent click-through. The original .h-navbar
+     transition above is augmented with `visibility 0s 0.4s` so visibility
+     change is delayed until the slide-out finishes, but is instant on slide-in
+     (matched by .nav-hidden's transition timing). */
+  pointer-events: none;
+  visibility: hidden;
+  transition:
+    transform 0.4s cubic-bezier(0.4, 0, 0.2, 1),
+    visibility 0s linear 0.4s;
 }
 
 .h-navbar__inner {
