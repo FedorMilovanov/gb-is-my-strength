@@ -6958,6 +6958,7 @@ button, a, [role="button"], [tabindex="0"], summary, input, textarea, select {
 }
 html.dark .summary-card {
   background: var(--bg-elevated, #1f1a15);
+  border-color: var(--border, #3a3028);
   border-color: color-mix(in srgb, var(--border, #3a3028) 90%, transparent);
   box-shadow:
     0 1px 0 rgba(255,255,255,.04) inset,
@@ -7020,10 +7021,13 @@ html.dark .summary-card {
     0 1px 0 rgba(255,255,255,.8) inset,
     0 2px 4px rgba(28,25,23,.04),
     0 12px 26px -12px rgba(28,25,23,.18);
+  border-color: var(--accent, #7a2e2e);
   border-color: color-mix(in srgb, var(--accent, #7a2e2e) 28%, var(--border, #e7e2d8)) !important;
 }
 html.dark .summary-card__item {
+  background: var(--bg-elevated, #1f1a15);
   background: color-mix(in srgb, var(--bg-elevated, #1f1a15) 96%, transparent) !important;
+  border-color: var(--border, #3a3028);
   border-color: color-mix(in srgb, var(--border, #3a3028) 85%, transparent) !important;
   box-shadow:
     0 1px 0 rgba(255,255,255,.03) inset,
@@ -7050,6 +7054,7 @@ html.dark .summary-card__item {
   align-self: center;
 }
 html.dark .summary-card__check {
+  background: var(--bg-elevated, #1f1a15);
   background: color-mix(in srgb, #4a8a4a 14%, var(--bg-elevated, #1f1a15)) !important;
   border-color: color-mix(in srgb, #6ba368 40%, transparent) !important;
   color: #7ac87a !important;
@@ -7310,6 +7315,7 @@ html.dark body.nagornaya-page .nag-quiz-h2 {
     0 4px 20px -8px rgba(28,25,23,.06);
 }
 html.dark .gb-accuracy-inner {
+  background: var(--bg-elevated, #1f1a15);
   background: color-mix(in srgb, var(--bg-elevated, #1f1a15) 96%, transparent);
   border-color: var(--border, #3a3028);
   box-shadow: 0 1px 0 rgba(255,255,255,.03) inset, 0 8px 22px -10px rgba(0,0,0,.55);
@@ -7491,6 +7497,7 @@ img[src*="mc.yandex.ru"] {
 .h-article-card:hover {
   transform: translateY(-2px);
   box-shadow: 0 14px 32px -16px rgba(28,25,23,.22);
+  border-color: var(--accent, #7a2e2e);
   border-color: color-mix(in srgb, var(--accent, #7a2e2e) 35%, var(--border, #e7e2d8));
 }
 
@@ -8084,6 +8091,7 @@ body.nagornaya-page .nag-summary__text{white-space:normal!important;word-break:n
   .bottom-bar {
     -webkit-backdrop-filter: none;
     backdrop-filter: none;
+    background: var(--bg);
     background: color-mix(in srgb, var(--bg) 97%, transparent);
   }
 }
