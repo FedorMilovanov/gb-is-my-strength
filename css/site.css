@@ -3231,6 +3231,10 @@ html.dark .error-flip-label-fact { color: #80c890; }
   86% { transform: translateY(2px) rotate(-6deg) scale(0.95); }
   91%, 100% { transform: translateY(0) rotate(-8deg) scale(1); }
 }
+.flip-card, .error-flip-card, .heart-flip-card {
+  content-visibility: auto;
+  contain-intrinsic-size: auto 280px;
+}
 .flip-card:not(.flipped), .error-flip-card:not(.flipped), .heart-flip-card:not(.flipped) { animation: card-react 3.5s ease-in-out infinite; }
 @keyframes card-react {
   0%, 70%, 73% { transform: rotate(0deg) scale(1); }
@@ -5787,9 +5791,22 @@ html.dark .pq-scripture::before { opacity: .45; }
   display: grid;
   grid-template-rows: 0fr;
   transition: grid-template-rows .35s cubic-bezier(0.4, 0, 0.2, 1);
+  overflow: hidden;
 }
 .faq-accordion__item.open .faq-accordion__body {
   grid-template-rows: 1fr;
+}
+/* Safari <16.1 fallback: no grid-template-rows animation support */
+@supports not (grid-template-rows: 0fr) {
+  .faq-accordion__body {
+    display: block;
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height .35s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  .faq-accordion__item.open .faq-accordion__body {
+    max-height: 600px;
+  }
 }
 
 
@@ -6605,6 +6622,9 @@ textarea, select {
   outline-offset: 2px;
   border-radius: 3px;
 }
+html.dark .fn-marker:focus-visible {
+  outline-color: var(--accent-strong, #e8b878);
+}
 
 
 .bar-icon-btn {
@@ -7111,7 +7131,7 @@ html.dark .summary-card__item:not(:has(.summary-card__num))::before {
   padding: 0 0 0 clamp(14px, 2vw, 22px) !important;
 }
 .summary-card__text strong { color: var(--accent, #7a2e2e) !important; font-weight: 700 !important; }
-html.dark .summary-card__text strong { color: var(--accent-soft, #d4a4a4) !important; }
+html.dark .summary-card__text strong { color: var(--accent-strong, #e8b878) !important; }
 
 /* КРИТИЧНО: drop-cap НЕ должен трогать summary-card */
 .summary-card__text::first-letter,
@@ -7168,12 +7188,12 @@ html.dark .summary-card__text strong { color: var(--accent-soft, #d4a4a4) !impor
   transition: color .15s ease, transform .15s ease;
 }
 .fn-marker:hover, .fn-marker:focus-visible {
-  color: var(--accent-soft, #d4a4a4);
+  color: var(--accent-strong, #5f2323);
   transform: translateY(-1px);
   outline: none;
 }
-html.dark .fn-marker { color: var(--accent-soft, #d4a4a4); }
-html.dark .fn-marker:hover { color: #f0c0c0; }
+html.dark .fn-marker { color: var(--accent-strong, #e8b878); }
+html.dark .fn-marker:hover { color: #f5d8a8; }
 .fn-marker.fn-trans {
   font-style: italic;
   font-size: 0.85em !important;
@@ -7535,6 +7555,50 @@ html.dark .theme-float-btn {
   }
 }
 
+/* High-contrast mode support */
+@media (prefers-contrast: more) {
+  :root {
+    --border: #999;
+    --border-strong: #666;
+    --muted: #444;
+  }
+  html.dark {
+    --border: #888;
+    --border-strong: #aaa;
+    --muted: #bbb;
+  }
+  .fn-marker {
+    text-decoration: underline;
+  }
+  .summary-card, .warn-box, .info-box, .quote-box, .ehrman-block {
+    border-width: 2px;
+  }
+}
+
+/* Windows High Contrast Mode */
+@media (forced-colors: active) {
+  .fn-marker {
+    color: LinkText;
+    text-decoration: underline;
+  }
+  .theme-toggle svg {
+    color: ButtonText;
+  }
+  .quiz-option.correct {
+    border-color: Highlight;
+    color: HighlightText;
+  }
+  .quiz-option.wrong {
+    border-color: Mark;
+  }
+  .btoc-link.active {
+    border-color: Highlight;
+  }
+  .article-reading-progress-fill {
+    background: Highlight;
+  }
+}
+
 
 /* ════════════════════════════════════════════════════════════
    17. Tailwind scope guard
@@ -7566,8 +7630,8 @@ main [data-pagefind-body] hr:not([class]) {
   transition: color .15s ease;
 }
 .tooltip-trigger:hover { color: var(--accent, #7a2e2e); }
-html.dark .tooltip-trigger { border-bottom-color: color-mix(in srgb, var(--accent-soft, #d4a4a4) 60%, transparent); }
-html.dark .tooltip-trigger:hover { color: var(--accent-soft, #d4a4a4); }
+html.dark .tooltip-trigger { border-bottom-color: color-mix(in srgb, var(--accent-strong, #e8b878) 60%, transparent); }
+html.dark .tooltip-trigger:hover { color: var(--accent-strong, #e8b878); }
 
 /* === AUDIT-FIXES INLINE END === */
 
