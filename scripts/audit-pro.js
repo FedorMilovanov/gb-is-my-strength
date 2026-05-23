@@ -72,7 +72,7 @@ const CACHE_BUST_ASSETS = [
   'js/nagornaya-mobile-toc.js'
 ];
 
-const MAX_CSS_TOTAL = 350_000; // v12 visual polish: raw CSS +8KB, gzip still within budget
+const MAX_CSS_TOTAL = 360_000; // v12 + a11y touch-anchor fix; gzip CSS ~65KB
 const MAX_JS_TOTAL = 360_000; // includes sw.js; site.js is intentionally large right now
 const MAX_HTML = 450_000;
 const MIN_DESC = 50;

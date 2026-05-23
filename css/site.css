@@ -4087,9 +4087,15 @@ html.dark .gterm {
 }
 .heading-anchor svg { display: block; }
 h2:hover .heading-anchor, h3:hover .heading-anchor, h4:hover .heading-anchor { opacity: 1; }
+.heading-anchor:focus, .heading-anchor:focus-visible { opacity: 1; outline: 2px solid var(--accent); outline-offset: 2px; border-radius: 4px; }
 .heading-anchor:hover { color: var(--muted); }
 .heading-anchor.copied { color: #7a2e2e !important; opacity: 1; }
 html.dark .heading-anchor.copied { color: var(--accent) !important; }
+/* Touch devices: no :hover, so always show anchors at reduced opacity so users can tap-copy section link */
+@media (hover: none) and (pointer: coarse) {
+  .heading-anchor { opacity: .55; }
+  .heading-anchor:active { opacity: 1; }
+}
 
 
 
