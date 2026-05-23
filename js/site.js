@@ -289,13 +289,30 @@
        removes overflow once the counter reaches zero.                   */
     _scrollLockCount: 0,
     _savedScrollY: 0,
+    _scrollLockSources: {},
+
+    _normalizeScrollLockSource: function (source) {
+      return (typeof source === 'string' && source.trim()) ? source.trim() : '__anonymous__';
+    },
+
+    _refreshScrollLockCount: function () {
+      this._scrollLockCount = Object.keys(this._scrollLockSources).length;
+      return this._scrollLockCount;
+    },
 
     /* AUDIT V4 / M2: iOS-safe scroll-lock.
        На iOS Safari overflow:hidden не блокирует rubber-band и теряет
-       позицию. Решение: position:fixed; top: -scrollY на body. */
+       позицию. Решение: position:fixed; top: -scrollY на body.
+
+       BUGFIX 2026-05-23:
+       lock/unlock теперь source-aware. Повторный open() одного и того же
+       оверлея больше не увеличивает счётчик и не оставляет страницу
+       навсегда scroll-locked после одного close(). */
     lockScroll: function (source) {
-      this._scrollLockCount++;
-      if (this._scrollLockCount === 1) {
+      var key = this._normalizeScrollLockSource(source);
+      if (this._scrollLockSources[key]) return;
+      this._scrollLockSources[key] = true;
+      if (this._refreshScrollLockCount() === 1) {
         var scrollbarWidth = window.innerWidth - document.documentElement.clientWidth;
         var y = window.scrollY || window.pageYOffset || 0;
         this._savedScrollY = y;
@@ -314,8 +331,10 @@
     },
 
     unlockScroll: function (source) {
-      this._scrollLockCount = Math.max(0, this._scrollLockCount - 1);
-      if (this._scrollLockCount === 0) {
+      var key = this._normalizeScrollLockSource(source);
+      if (!this._scrollLockSources[key]) return;
+      delete this._scrollLockSources[key];
+      if (this._refreshScrollLockCount() === 0) {
         var body = document.body;
         var savedY = this._savedScrollY;
         body.style.removeProperty('overflow');
@@ -334,6 +353,7 @@
     },
 
     forceUnlockEmergency: function () {
+      this._scrollLockSources = {};
       this._scrollLockCount = 0;
       var body = document.body;
       var savedY = this._savedScrollY;
@@ -344,7 +364,7 @@
       body.style.removeProperty('left');
       body.style.removeProperty('right');
       body.style.removeProperty('width');
-        body.style.removeProperty('padding-right');
+      body.style.removeProperty('padding-right');
       document.documentElement.classList.remove('cp-scroll-lock');
       delete document.documentElement.dataset.scrollLocked;
       if (savedY) window.scrollTo(0, savedY);
@@ -974,11 +994,12 @@
     var _trapHandler = null;
 
     function openToc() {
+      if (panel.classList.contains('open')) return;
       _prevFocus = document.activeElement;
       panel.classList.add('open');
       panel.setAttribute('aria-hidden', 'false');
       if (overlay) { overlay.classList.add('open'); overlay.setAttribute('aria-hidden', 'false'); }
-      SiteUtils.lockScroll();
+      SiteUtils.lockScroll('toc-mobile');
       requestAnimationFrame(function () {
         var focusable = panel.querySelectorAll('a, button, [tabindex="0"]');
         var first = focusable[0];
@@ -997,10 +1018,11 @@
       });
     }
     function closeToc() {
+      if (!panel.classList.contains('open')) return;
       panel.classList.remove('open');
       panel.setAttribute('aria-hidden', 'true');
       if (overlay) { overlay.classList.remove('open'); overlay.setAttribute('aria-hidden', 'true'); }
-      SiteUtils.unlockScroll();
+      SiteUtils.unlockScroll('toc-mobile');
       if (_trapHandler) { panel.removeEventListener('keydown', _trapHandler); _trapHandler = null; }
       if (_prevFocus && _prevFocus.focus) { _prevFocus.focus(); _prevFocus = null; }
     }
@@ -1320,9 +1342,10 @@
     var _bTrapHandler = null;
 
     function openToc() {
+      if (overlay.classList.contains('open')) return;
       _bPrevFocus = document.activeElement;
       overlay.classList.add('open');
-      SiteUtils.lockScroll();
+      SiteUtils.lockScroll('btoc');
       var activeLink = btocNav && btocNav.querySelector('.btoc-link.active');
       if (activeLink) setTimeout(function () { activeLink.scrollIntoView({ block: 'center', behavior: 'smooth' }); }, 350);
       requestAnimationFrame(function () {
@@ -1345,8 +1368,9 @@
       });
     }
     function closeToc() {
+      if (!overlay.classList.contains('open')) return;
       overlay.classList.remove('open');
-      SiteUtils.unlockScroll();
+      SiteUtils.unlockScroll('btoc');
       if (panel && _bTrapHandler) { panel.removeEventListener('keydown', _bTrapHandler); _bTrapHandler = null; }
       if (_bPrevFocus && _bPrevFocus.focus) { _bPrevFocus.focus(); _bPrevFocus = null; }
       /* После навигации по TOC — показываем бар, если мы ниже порога.
@@ -2791,12 +2815,13 @@
             /* Используем SiteBTOC.close — он полностью сбрасывает состояние:
                overscrollBehavior, focus trap, фокус, видимость бара */
             if (window.SiteBTOC) { window.SiteBTOC.close(); }
-            else { overlay.classList.remove('open'); SiteUtils.unlockScroll(); }
+            else { overlay.classList.remove('open'); SiteUtils.unlockScroll('btoc'); }
           } else {
             if (window.SiteBTOC) { window.SiteBTOC.open(); }
             else {
               var sBtn = document.getElementById('barSectionBtn');
-              if (sBtn) { sBtn.click(); } else { overlay.classList.add('open'); }
+              if (sBtn) { sBtn.click(); }
+              else { overlay.classList.add('open'); SiteUtils.lockScroll('btoc'); }
             }
           }
           return;
@@ -3440,6 +3465,7 @@
     }
 
     function open(src, alt, captionText) {
+      if (viewer.classList.contains('is-open')) return;
       /* Отменяем отложенную очистку, если viewer переоткрыли до её срабатывания */
       if (_closeTimer !== null) { clearTimeout(_closeTimer); _closeTimer = null; }
       lastActive = document.activeElement;
@@ -3448,7 +3474,7 @@
       capEl.textContent = captionText || '';
       viewer.classList.add('is-open');
       /* B-01: используем счётчик блокировки скролла вместо ручного overflow на <html> */
-      SiteUtils.lockScroll();
+      SiteUtils.lockScroll('image-viewer');
       /* B-02: фокус на кнопку закрытия + trap.
          Снимаем перед добавлением — защита от двойного open() без close().  */
       viewer.removeEventListener('keydown', trapViewerTab);
@@ -3457,10 +3483,11 @@
     }
 
     function close() {
+      if (!viewer.classList.contains('is-open')) return;
       viewer.classList.remove('is-open');
       viewer.removeEventListener('keydown', trapViewerTab);
       /* B-01: корректно разблокируем скролл через счётчик */
-      SiteUtils.unlockScroll();
+      SiteUtils.unlockScroll('image-viewer');
       if (lastActive && lastActive.focus) lastActive.focus();
       lastActive = null;
       /* Откладываем очистку src/cap до окончания fade-out (.2s);

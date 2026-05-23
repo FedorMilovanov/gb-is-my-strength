@@ -336,6 +336,10 @@
      Open / Close
   ───────────────────────────────────────────────────────── */
   function openModal() {
+    if (backdrop.classList.contains('is-open')) {
+      requestAnimationFrame(function () { input.focus(); });
+      return;
+    }
     _prevFocus = document.activeElement;
     backdrop.classList.add('is-open');
     lockScroll();
@@ -350,6 +354,7 @@
   }
  
   function closeModal() {
+    if (!backdrop.classList.contains('is-open')) return;
     ++_searchGen;
     clearTimeout(_searchTimer);
     clearTimeout(_copiedTimer);

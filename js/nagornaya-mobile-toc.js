@@ -145,10 +145,12 @@
     }
 
     function openOverlay() {
+      if (overlay.classList.contains('open')) return;
       overlay.classList.add('open');
       overlay.removeAttribute('aria-hidden');
-      // FIX: use data-scroll-locked on <html> to match site.css unified lock
-      document.documentElement.setAttribute('data-scroll-locked', '1');
+      // FIX: use shared scroll-lock helper when available to avoid stuck locks
+      if (window.SiteUtils && window.SiteUtils.lockScroll) window.SiteUtils.lockScroll('nagornaya-btoc');
+      else document.documentElement.setAttribute('data-scroll-locked', '1');
       update();
       var active = nav.querySelector('.btoc-link.active');
       if (active) active.scrollIntoView({ block: 'nearest' });
@@ -156,9 +158,11 @@
     }
 
     function closeOverlay() {
+      if (!overlay.classList.contains('open')) return;
       overlay.classList.remove('open');
       overlay.setAttribute('aria-hidden', 'true');
-      document.documentElement.removeAttribute('data-scroll-locked');
+      if (window.SiteUtils && window.SiteUtils.unlockScroll) window.SiteUtils.unlockScroll('nagornaya-btoc');
+      else document.documentElement.removeAttribute('data-scroll-locked');
     }
 
     function toggleTheme() {
@@ -197,8 +201,18 @@
       if ((e.key === 'Escape' || e.key === 'Esc') && overlay.classList.contains('open')) closeOverlay();
     });
 
-    window.addEventListener('scroll', update, { passive: true });
-    window.addEventListener('resize', update, { passive: true });
+    var updateQueued = false;
+    function queueUpdate() {
+      if (updateQueued) return;
+      updateQueued = true;
+      requestAnimationFrame(function () {
+        updateQueued = false;
+        update();
+      });
+    }
+
+    window.addEventListener('scroll', queueUpdate, { passive: true });
+    window.addEventListener('resize', queueUpdate, { passive: true });
     update();
   });
 

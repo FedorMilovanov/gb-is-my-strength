@@ -207,6 +207,12 @@
     );
     if (headings.length < 2) return;
 
+    var segEls = [];
+    var dotEls = [];
+    var pctEl = null;
+    var oldFill = document.getElementById('btocProgressFill');
+    var oldPct = document.getElementById('btocProgressPct');
+
     /* Build offset map */
     function getOffsets() {
       return headings.map(function(h, i) {
@@ -251,6 +257,7 @@
         fill.className = 'btoc-seg-fill';
         seg.appendChild(fill);
         segBar.appendChild(seg);
+        segEls.push(seg);
       });
       btocProgressWrap.innerHTML = '';
       btocProgressWrap.appendChild(segBar);
@@ -271,14 +278,17 @@
         pctSpan.textContent = '0%';
         var miniDots = document.createElement('div');
         miniDots.className = 'seg-mini';
+        dotEls = [];
         headings.forEach(function() {
           var dot = document.createElement('div');
           dot.className = 'seg-dot';
           miniDots.appendChild(dot);
+          dotEls.push(dot);
         });
         miniWrap.appendChild(pctSpan);
         miniWrap.appendChild(miniDots);
         barInner.insertBefore(miniWrap, barInner.firstChild);
+        pctEl = pctSpan;
         _miniWrapInjected = true;
       }
 
@@ -286,6 +296,8 @@
         if (!_miniWrapInjected) return;
         var existing = bottomBar.querySelector('.bottom-bar-seg');
         if (existing) existing.parentNode.removeChild(existing);
+        dotEls = [];
+        pctEl = null;
         _miniWrapInjected = false;
       }
 
@@ -315,19 +327,14 @@
       var maxScroll = docH - winH;
       var pct = maxScroll > 0 ? Math.round(Math.min(scrollY / maxScroll * 100, 100)) : 0;
 
-      var segs = document.querySelectorAll('.btoc-seg');
-      var dots = document.querySelectorAll('.seg-dot');
-      var pctEl = document.querySelector('.seg-pct');
       if (pctEl) pctEl.textContent = pct + '%';
 
-      var oldFill = document.getElementById('btocProgressFill');
       if (oldFill) oldFill.style.width = pct + '%';
-      var oldPct = document.getElementById('btocProgressPct');
       if (oldPct) oldPct.textContent = pct + '%';
 
       offsets.forEach(function(sec, i) {
-        var seg = segs[i];
-        var dot = dots[i];
+        var seg = segEls[i];
+        var dot = dotEls[i];
         if (!seg && !dot) return;
 
         var progress = 0;
