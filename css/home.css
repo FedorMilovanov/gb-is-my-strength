@@ -52,7 +52,7 @@ html.dark {
   top: 0; left: 0;
   height: 2px;
   background: linear-gradient(90deg, var(--h-accent), var(--h-accent-dim));
-  z-index: var(--z-absolute);
+  z-index: var(--z-sticky);
   
   width: 100%;
   transform: scaleX(0);
@@ -65,7 +65,7 @@ html.dark {
 .h-navbar {
   position: fixed;
   top: 0; left: 0; right: 0;
-  z-index: var(--z-tooltip);
+  z-index: var(--z-sticky);
   height: 58px;
   display: flex;
   align-items: center;
@@ -164,12 +164,14 @@ html.dark {
   content: "";
   position: absolute;
   bottom: -3px; left: 0;
-  width: 0%; height: 1px;
+  width: 100%; height: 1px;
   background: var(--h-accent);
-  transition: width 0.3s ease;
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform 0.3s ease;
 }
 .h-nav-links a:hover { color: var(--h-ink); }
-.h-nav-links a:hover::after { width: 100%; }
+.h-nav-links a:hover::after { transform: scaleX(1); }
 
 
 .mobile-controls .theme-toggle {
@@ -582,6 +584,8 @@ html.dark .h-scripture-bg::before {
   transition:
     transform 0.55s cubic-bezier(0.22, 1, 0.36, 1),
     opacity 0.4s ease;
+}
+.hb-w:hover .hb-back {
   will-change: transform, opacity;
 }
 
@@ -1060,8 +1064,6 @@ html.dark .h-hero-search:focus-visible {
 
 .h-card-glass {
   position: relative;
-  height: 100%;
-  box-sizing: border-box;
   height: 100%;
   box-sizing: border-box;
   background: linear-gradient(145deg,
@@ -1826,6 +1828,14 @@ html.dark .h-blockquote { color: var(--h-ink); }
 }
 .h-reveal.h-in { opacity: 1; transform: translateY(0); }
 
+/* Fallback: if JS doesn't add .h-in within 3s, show content */
+@keyframes h-reveal-fallback {
+  to { opacity: 1; transform: none; }
+}
+.h-reveal:not(.h-in) {
+  animation: h-reveal-fallback 0s 3s forwards;
+}
+
 .h-reveal-d1 { transition-delay: 0.08s; }
 .h-reveal-d2 { transition-delay: 0.16s; }
 .h-reveal-d3 { transition-delay: 0.24s; }
@@ -1864,18 +1874,23 @@ html.dark .h-blockquote { color: var(--h-ink); }
   .h-reveal, .h-card-glass, .h-article-card {
     opacity: 1 !important;
   }
+  .hb-front { opacity: 0.5 !important; }
+  .hb-back  { opacity: 1 !important; transform: none !important; }
+  .h-tetra-back { opacity: 1 !important; transform: none !important; }
   .h-rule { animation: none !important; opacity: 1 !important; }
   .h-phrase--ambient { animation: none !important; }
   .h-planned-dot { animation: none !important; }
   .h-title-static, .h-title-accent, .h-title-dash { transition: none !important; transform: none !important; }
   .h-burger-icon line { transition: none; }
+
+  .hb-back,
+  .h-card-glass,
+  .h-hero-title,
+  .h-scroll-top { will-change: auto !important; }
 }
 
 
-.hb-back,
-.h-card-glass,
-.h-hero-title,
-.h-scroll-top { will-change: auto !important; }
+/* will-change reset moved into prefers-reduced-motion */
 
 
 
