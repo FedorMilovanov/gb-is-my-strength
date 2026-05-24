@@ -959,6 +959,26 @@ window.SITE_CONFIG = {
      :active reverts the moment the finger lifts, so we use data-toggled
      to keep the translation visible until the user taps again or elsewhere. */
   const hebrewWords = document.querySelectorAll('.hb-w, .h-tetra');
+  const hebrewInlineWords = document.querySelectorAll('.hb-w');
+
+  function measureHebrewInlineWords() {
+    hebrewInlineWords.forEach(function (el) {
+      const front = el.querySelector('.hb-front');
+      const back = el.querySelector('.hb-back');
+      if (!front || !back) return;
+      const frontW = Math.ceil(front.getBoundingClientRect().width) + 2;
+      const backW = Math.ceil(back.getBoundingClientRect().width) + 6;
+      el.style.setProperty('--hb-front-w', frontW + 'px');
+      el.style.setProperty('--hb-open-w', Math.max(frontW, backW) + 'px');
+    });
+  }
+
+  measureHebrewInlineWords();
+  window.addEventListener('resize', measureHebrewInlineWords, { passive: true });
+  if (document.fonts && document.fonts.ready) {
+    document.fonts.ready.then(measureHebrewInlineWords).catch(function () {});
+  }
+
   hebrewWords.forEach(function (el) {
     el.addEventListener('click', function (e) {
       let wasToggled = el.hasAttribute('data-toggled');

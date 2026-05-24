@@ -590,48 +590,34 @@ html.dark .h-scripture-bg::before {
 
 
 .hb-w {
-  display: inline-flex;
-  align-items: baseline;
-  justify-content: center;
+  display: inline-grid;
+  grid-template-areas: "s";
   vertical-align: baseline;
   cursor: pointer;
   margin: 0 0.15em;
   outline: none;
-  white-space: nowrap;
-  direction: ltr;
-  unicode-bidi: isolate;
-  transform-origin: center;
-  transition:
-    margin 0.55s cubic-bezier(0.22, 1, 0.36, 1),
-    transform 0.55s cubic-bezier(0.22, 1, 0.36, 1),
-    filter 0.45s ease;
-}
-
-.hb-front,
-.hb-back {
-  display: inline-block;
-  vertical-align: baseline;
+  width: var(--hb-front-w, auto);
   overflow: hidden;
-  white-space: nowrap;
-  transition:
-    max-width 0.58s cubic-bezier(0.22, 1, 0.36, 1),
-    margin 0.58s cubic-bezier(0.22, 1, 0.36, 1),
-    transform 0.55s cubic-bezier(0.22, 1, 0.36, 1),
-    opacity 0.38s ease,
-    color 0.32s ease;
+  transition: width 0.55s cubic-bezier(0.22, 1, 0.36, 1);
 }
-
 .hb-w:hover,
 .hb-w:focus-visible,
 .hb-w:focus-within,
 .hb-w[data-toggled] {
-  transform: translateY(-0.02em);
-  filter: drop-shadow(0 5px 14px rgba(139, 38, 38, 0.10));
+  width: var(--hb-open-w, var(--hb-front-w, auto));
+}
+
+.hb-front,
+.hb-back {
+  grid-area: s;
+  transition:
+    transform 0.55s cubic-bezier(0.22, 1, 0.36, 1),
+    opacity 0.4s ease;
 }
 .hb-w:hover .hb-back,
 .hb-w:focus-within .hb-back,
 .hb-w[data-toggled] .hb-back {
-  will-change: max-width, transform, opacity;
+  will-change: transform, opacity;
 }
 
 
@@ -640,8 +626,8 @@ html.dark .h-scripture-bg::before {
   font-weight: 500;
   color: var(--h-ink);
   opacity: 0.82;
-  max-width: 10em;
-  transform: rotate(0) scale(1);
+  align-self: center;
+  justify-self: center;
 }
 html.dark .hb-front { opacity: 0.72; }
 
@@ -649,20 +635,20 @@ html.dark .hb-front { opacity: 0.72; }
 .hb-back {
   font-family: var(--f-body);
   font-style: italic;
-  font-weight: 650;
+  font-weight: 600;
   font-size: 0.55em;
   line-height: 1;
-  max-width: 0;
-  margin-inline: 0;
+  white-space: nowrap;
   direction: ltr;
   unicode-bidi: isolate;
-  color: var(--h-accent, #8b2626);
+  color: var(--h-ink);
   text-shadow: 0 1px 8px rgba(28, 25, 23, 0.10);
+  align-self: center;
+  justify-self: center;
   opacity: 0;
-  transform: rotate(7deg) scale(0.86);
+  transform: rotate(8deg) scale(0.85);
 }
 html.dark .hb-back {
-  color: var(--h-accent, #d97a6c);
   text-shadow: 0 1px 10px rgba(245, 237, 224, 0.12);
 }
 
@@ -671,17 +657,13 @@ html.dark .hb-back {
 .hb-w:focus-visible .hb-front,
 .hb-w:focus-within .hb-front,
 .hb-w[data-toggled] .hb-front {
-  max-width: 0;
-  margin-inline: 0;
   opacity: 0;
-  transform: rotate(-7deg) scale(0.86);
+  transform: rotate(-8deg) scale(0.85);
 }
 .hb-w:hover .hb-back,
 .hb-w:focus-visible .hb-back,
 .hb-w:focus-within .hb-back,
 .hb-w[data-toggled] .hb-back {
-  max-width: 14em;
-  margin-inline: 0.02em;
   opacity: 1;
   transform: rotate(0) scale(1);
 }
@@ -824,9 +806,14 @@ html.dark .h-tetra-label {
 }
 
 
+.hb-w[data-toggled] .hb-front,
 .h-tetra[data-toggled] .hb-front {
   opacity: 0;
   transform: rotate(-8deg) scale(0.85);
+}
+.hb-w[data-toggled] .hb-back {
+  opacity: 1;
+  transform: rotate(0) scale(1);
 }
 .h-tetra[data-toggled] .h-tetra-back {
   opacity: 1;
@@ -841,20 +828,11 @@ html.dark .h-tetra-label {
 
 
 @media (hover: none) {
-  .hb-w:active .hb-front {
-    max-width: 0;
-    opacity: 0;
-    transform: rotate(-7deg) scale(0.86);
-  }
-  .hb-w:active .hb-back {
-    max-width: 14em;
-    margin-inline: 0.02em;
-    opacity: 1;
-    transform: rotate(0) scale(1);
-  }
+  .hb-w:active .hb-front,
   .h-tetra:active .hb-front {
     opacity: 0; transform: rotate(-8deg) scale(0.85);
   }
+  .hb-w:active .hb-back,
   .h-tetra:active .h-tetra-back {
     opacity: 1; transform: rotate(0) scale(1);
   }
@@ -1966,8 +1944,8 @@ html.dark .h-blockquote { color: var(--h-ink); }
     opacity: 1 !important;
   }
   .hb-front { opacity: 0.5 !important; }
-  .hb-front { max-width: none !important; opacity: 0.5 !important; }
-  .hb-back  { max-width: none !important; margin-inline: 0.12em !important; opacity: 1 !important; transform: none !important; }
+  .hb-front { opacity: 0.5 !important; }
+  .hb-back  { opacity: 1 !important; transform: none !important; }
   .h-tetra-back { opacity: 1 !important; transform: none !important; }
   .h-rule { animation: none !important; opacity: 1 !important; }
   .h-phrase--ambient { animation: none !important; }
