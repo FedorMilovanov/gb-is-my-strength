@@ -76,56 +76,94 @@ body { overflow-x: hidden; }
   --z-absolute:   99999;
   --z-max:        99999;
 
-  
-  --bg:            #fdfcf9;
-  --bg-elevated:   #ffffff;
-  --text:          #1a1a1a;
-  --muted:         #6a6a6a;
-  --border:        #e5e2dc;
-  --border-strong: #cfc9bd;
 
-  
-  --accent:        #7a2e2e;
-  --accent-soft:   #f6ece8;   
-  --accent-strong: #5f2323;   
-  --link:          #1f4ea3;
+  /* ═══════════════════════════════════════════════════════════════
+     DESIGN TOKENS v20 — canonical semantic color layer
 
-  
-  --note-bg:       #f4f2ed;
-  --quote-bg:      #f7f4ee;
-  --success-bg:    #eef5ec;
-  --success-border:#b8d0b0;
-  --warn-bg:       #fbf4e2;
-  --warn-border:   #e6c878;
-  --myth-bg:       #f7e9e9;   
-  --myth-border:   #d9a7a7;
-  --fact-bg:       #eef5ec;
-  --fact-border:   #b8d0b0;
+     New CSS should use --color-* tokens. Legacy names are kept below
+     as compatibility aliases for older components and inline articles.
+     Architecture: reference/value → semantic role → legacy alias.
+     ═══════════════════════════════════════════════════════════════ */
 
-  
-  --tooltip-bg:    #2a2a2a;
-  --tooltip-text:  #ffffff;
+  /* Canonical surfaces */
+  --color-canvas:           #fdfcf9;
+  --color-surface:          #ffffff;
+  --color-surface-muted:    #f4f2ed;
+  --color-surface-quote:    #f7f4ee;
+  --color-surface-alt:      #f5f5f3;
+  --color-surface-2:        #f7f4f0;
 
-  
-  --shadow-sm:     0 1px 2px rgba(16, 18, 22, .06);
-  --shadow-md:     0 4px 12px rgba(16, 18, 22, .08);
-  --shadow-lg:     0 8px 24px rgba(16, 18, 22, .11);
-  --shadow-xl:     0 16px 44px rgba(16, 18, 22, .14);
+  /* Canonical text roles */
+  --color-text:             #1a1a1a;
+  --color-text-primary:     #1a1a18;
+  --color-text-secondary:   #555555;
+  --color-text-muted:       #6a6a6a;
+  --color-text-faint:       #888888;
+  --color-text-warm:        #2b2317;
+  --color-text-warm-muted:  #4a3e2a;
 
-  
+  /* Canonical borders / brand / links */
+  --color-border:           #e5e2dc;
+  --color-border-strong:    #cfc9bd;
+  --color-accent:           #7a2e2e;
+  --color-accent-soft:      #f6ece8;
+  --color-accent-strong:    #5f2323;
+  --color-accent-selection: #b8936a;
+  --color-link:             #1f4ea3;
+
+  /* Canonical feedback roles */
+  --color-success-bg:       #eef5ec;
+  --color-success-border:   #b8d0b0;
+  --color-warning-bg:       #fbf4e2;
+  --color-warning-border:   #e6c878;
+  --color-danger-bg:        #f7e9e9;
+  --color-danger-border:    #d9a7a7;
+  --color-fact-bg:          #eef5ec;
+  --color-fact-border:      #b8d0b0;
+
+  /* Canonical overlay / shadow roles */
+  --color-tooltip-bg:       #2a2a2a;
+  --color-tooltip-text:     #ffffff;
+  --shadow-sm:              0 1px 2px rgba(16, 18, 22, .06);
+  --shadow-md:              0 4px 12px rgba(16, 18, 22, .08);
+  --shadow-lg:              0 8px 24px rgba(16, 18, 22, .11);
+  --shadow-xl:              0 16px 44px rgba(16, 18, 22, .14);
+
+  /* Legacy compatibility aliases — do not use in new CSS */
+  --bg:                 var(--color-canvas);
+  --bg-elevated:        var(--color-surface);
+  --text:               var(--color-text);
+  --muted:              var(--color-text-muted);
+  --border:             var(--color-border);
+  --border-strong:      var(--color-border-strong);
+  --accent:             var(--color-accent);
+  --accent-soft:        var(--color-accent-soft);
+  --accent-strong:      var(--color-accent-strong);
+  --link:               var(--color-link);
+  --note-bg:            var(--color-surface-muted);
+  --quote-bg:           var(--color-surface-quote);
+  --success-bg:         var(--color-success-bg);
+  --success-border:     var(--color-success-border);
+  --warn-bg:            var(--color-warning-bg);
+  --warn-border:        var(--color-warning-border);
+  --myth-bg:            var(--color-danger-bg);
+  --myth-border:        var(--color-danger-border);
+  --fact-bg:            var(--color-fact-bg);
+  --fact-border:        var(--color-fact-border);
+  --tooltip-bg:         var(--color-tooltip-bg);
+  --tooltip-text:       var(--color-tooltip-text);
+  --bg-alt:             var(--color-surface-alt);
+  --surface-2:          var(--color-surface-2);
+  --fg:                 var(--color-text-warm);
+  --fg-secondary:       var(--color-text-warm-muted);
+  --text-primary:       var(--color-text-primary);
+  --text-secondary:     var(--color-text-secondary);
+  --text-muted:         var(--color-text-faint);
+  --accent-selection:   var(--color-accent-selection);
+  --back-height:        auto;
+  --nicea-color:        #e65100;
+
   --scroll-margin: 96px;
-
-  
-  --bg-alt:           #f5f5f3;  
-  --surface-2:        #f7f4f0;  
-  --fg:               #2b2317;  
-  --fg-secondary:     #4a3e2a;  
-  --text-primary:     #1a1a18;  
-  --text-secondary:   #555555;  
-  --text-muted:       #888888;  
-  --accent-selection: #b8936a;  
-  --back-height:      auto;     
-  --nicea-color:      #e65100;  
 
   
   --s-1: clamp(3px,  0.4vw,  4px);
@@ -139,61 +177,85 @@ body { overflow-x: hidden; }
 }
 
 html.dark {
-  
-  --bg:            #0e1116;
-  --bg-elevated:   #161a21;
-  --text:          #e6e1d7;   
-  --muted:         #9ca3af;
-  --border:        #232830;
-  --border-strong: #2f3540;
 
-  
-  --accent:        #d4a574;
-  --accent-soft:   #1f1a13;
-  --accent-strong: #e8b878;
-  --link:          #d4a574;
+  /* Theme-mode remap: semantic tokens change, components do not. */
+  --color-canvas:           #0e1116;
+  --color-surface:          #161a21;
+  --color-surface-muted:    #161a21;
+  --color-surface-quote:    #15191f;
+  --color-surface-alt:      #13171e;
+  --color-surface-2:        #1a1f28;
 
-  
-  --note-bg:       #161a21;
-  --quote-bg:      #15191f;
-  --success-bg:    #142019;
-  --success-border:#2a4a3a;
-  --warn-bg:       #1f1a10;
-  --warn-border:   #4a3a1a;
-  --myth-bg:       #1c1714;   
-  --myth-border:   #3d2e25;
-  --fact-bg:       #141a18;
-  --fact-border:   #25382e;
+  --color-text:             #e6e1d7;
+  --color-text-primary:     #e6e1d7;
+  --color-text-secondary:   #9ca3af;
+  --color-text-muted:       #9ca3af;
+  --color-text-faint:       #6b7280;
+  --color-text-warm:        #e8e3d5;
+  --color-text-warm-muted:  #b8a98a;
 
-  
-  --quiz-correct-bg:     #0d2218;
-  --quiz-correct-border: #2a6b4a;
-  --quiz-wrong-bg:       #2a1418;
-  --quiz-wrong-border:   #6b2a30;
+  --color-border:           #232830;
+  --color-border-strong:    #2f3540;
+  --color-accent:           #d4a574;
+  --color-accent-soft:      #1f1a13;
+  --color-accent-strong:    #e8b878;
+  --color-accent-selection: #b8936a;
+  --color-link:             #d4a574;
 
-  
-  --tooltip-bg:    #f5f0e6;
-  --tooltip-text:  #1a1a1a;
+  --color-success-bg:       #142019;
+  --color-success-border:   #2a4a3a;
+  --color-warning-bg:       #1f1a10;
+  --color-warning-border:   #4a3a1a;
+  --color-danger-bg:        #1c1714;
+  --color-danger-border:    #3d2e25;
+  --color-fact-bg:          #141a18;
+  --color-fact-border:      #25382e;
 
-  
-  --shadow-sm:     0 1px 2px rgba(0, 0, 0, .4);
-  --shadow-md:     0 4px 12px rgba(0, 0, 0, .5);
-  --shadow-lg:     0 8px 24px rgba(0, 0, 0, .55);
-  --shadow-xl:     0 24px 60px rgba(0, 0, 0, .6);
+  --quiz-correct-bg:        #0d2218;
+  --quiz-correct-border:    #2a6b4a;
+  --quiz-wrong-bg:          #2a1418;
+  --quiz-wrong-border:      #6b2a30;
 
-  
-  --scroll-margin: 96px;
+  --color-tooltip-bg:       #f5f0e6;
+  --color-tooltip-text:     #1a1a1a;
 
-  
-  --bg-alt:           #13171e;  
-  --surface-2:        #1a1f28;  
-  --fg:               #e8e3d5;  
-  --fg-secondary:     #b8a98a;  
-  --text-primary:     #e6e1d7;  
-  --text-secondary:   #9ca3af;  
-  --text-muted:       #6b7280;  
-  --accent-selection: #b8936a;  
-  --nicea-color:      #e65100;  
+  --shadow-sm:              0 1px 2px rgba(0, 0, 0, .4);
+  --shadow-md:              0 4px 12px rgba(0, 0, 0, .5);
+  --shadow-lg:              0 8px 24px rgba(0, 0, 0, .55);
+  --shadow-xl:              0 24px 60px rgba(0, 0, 0, .6);
+
+  --bg:                 var(--color-canvas);
+  --bg-elevated:        var(--color-surface);
+  --text:               var(--color-text);
+  --muted:              var(--color-text-muted);
+  --border:             var(--color-border);
+  --border-strong:      var(--color-border-strong);
+  --accent:             var(--color-accent);
+  --accent-soft:        var(--color-accent-soft);
+  --accent-strong:      var(--color-accent-strong);
+  --link:               var(--color-link);
+  --note-bg:            var(--color-surface-muted);
+  --quote-bg:           var(--color-surface-quote);
+  --success-bg:         var(--color-success-bg);
+  --success-border:     var(--color-success-border);
+  --warn-bg:            var(--color-warning-bg);
+  --warn-border:        var(--color-warning-border);
+  --myth-bg:            var(--color-danger-bg);
+  --myth-border:        var(--color-danger-border);
+  --fact-bg:            var(--color-fact-bg);
+  --fact-border:        var(--color-fact-border);
+  --tooltip-bg:         var(--color-tooltip-bg);
+  --tooltip-text:       var(--color-tooltip-text);
+  --bg-alt:             var(--color-surface-alt);
+  --surface-2:          var(--color-surface-2);
+  --fg:                 var(--color-text-warm);
+  --fg-secondary:       var(--color-text-warm-muted);
+  --text-primary:       var(--color-text-primary);
+  --text-secondary:     var(--color-text-secondary);
+  --text-muted:         var(--color-text-faint);
+  --accent-selection:   var(--color-accent-selection);
+  --nicea-color:        #e65100;
+  --scroll-margin:      96px;
 }
 
 
