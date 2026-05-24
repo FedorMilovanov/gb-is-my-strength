@@ -300,6 +300,14 @@
       return this._scrollLockCount;
     },
 
+    prefersReducedMotion: function () {
+      return !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
+    },
+
+    scrollToTop: function () {
+      window.scrollTo({ top: 0, behavior: this.prefersReducedMotion() ? 'auto' : 'smooth' });
+    },
+
     /* AUDIT V4 / M2: iOS-safe scroll-lock.
        На iOS Safari overflow:hidden не блокирует rubber-band и теряет
        позицию. Решение: position:fixed; top: -scrollY на body.
@@ -1017,7 +1025,7 @@
     }, { passive: true });
 
     btn.addEventListener('click', function () {
-      window.scrollTo({ top: 0, behavior: 'smooth' });
+      SiteUtils.scrollToTop();
     });
   })();
 
@@ -1489,7 +1497,7 @@
     /* Экспортируем API для внешних модулей (клавиатурные шорткаты, etc.) */
     window.SiteBTOC = { open: openToc, close: closeToc };
 
-    if (upBtn) upBtn.addEventListener('click', function () { window.scrollTo({ top: 0, behavior: 'smooth' }); });
+    if (upBtn) upBtn.addEventListener('click', function () { SiteUtils.scrollToTop(); });
 
     var touchStartY = 0;
     var touchStartX = 0;
@@ -2980,7 +2988,7 @@
       if (key === 'b') {
         e.preventDefault();
         showKbdHint('B', 'Наверх');
-        window.scrollTo({ top: 0, behavior: 'smooth' });
+        SiteUtils.scrollToTop();
         return;
       }
     });

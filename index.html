@@ -792,7 +792,7 @@
 <!-- ══════════════════════════════════════════════════════
      SCROLL TO TOP
 ══════════════════════════════════════════════════════ -->
-<button class="h-scroll-top" id="hScrollTop" aria-label="Наверх">
+<button class="h-scroll-top" id="hScrollTop" type="button" aria-label="Наверх">
   <svg class="h-progress-ring" width="50" height="50" viewBox="0 0 50 50" aria-hidden="true">
     <circle class="h-progress-ring-circle" id="hProgressCircle"
             cx="25" cy="25" r="22"
@@ -876,6 +876,11 @@ window.SITE_CONFIG = {
   /* ── Scroll to Top ── */
   const scrollTopBtn = document.getElementById('hScrollTop');
 
+  function scrollToPageTop() {
+    const reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    window.scrollTo({ top: 0, behavior: reduce ? 'auto' : 'smooth' });
+  }
+
   function updateScrollTop() {
     let s = window.scrollY;
     const docH = document.documentElement.scrollHeight - window.innerHeight;
@@ -884,9 +889,7 @@ window.SITE_CONFIG = {
     else scrollTopBtn.classList.remove('visible');
   }
   if (scrollTopBtn) {
-    scrollTopBtn.addEventListener('click', function () {
-      window.scrollTo({ top: 0, behavior: 'smooth' });
-    });
+    scrollTopBtn.addEventListener('click', scrollToPageTop);
   }
 
   /* ── Combined scroll handler ── */
