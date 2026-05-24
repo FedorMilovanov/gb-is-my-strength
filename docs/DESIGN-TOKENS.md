@@ -63,3 +63,5 @@ The check fails if canonical tokens are missing or legacy aliases stop pointing 
 - Next phases should migrate component clusters gradually, only with visual checks.
 
 - v22: governance ratchet added; safe global controls migrated; `ci:check` runs `tokens:check`.
+
+- v23: base/article reading layer migrated to canonical `--color-*`; ratchet lowered to 552.
