@@ -6264,8 +6264,9 @@ html.dark .gb-series-link:hover {
    Nagornaya (nagornaya-mobile-toc.js):
    3. body.ng-toc-lock — nagornaya mobile TOC overlay.
 
-   Inline menu fallback (pages whose inline script can run before site.js):
-   4. body.no-scroll — fallback only. Primary path is SiteUtils.lockScroll().
+   Fallback path (only if SiteUtils is unavailable):
+   4. body.no-scroll — inline menus / highlights panel fallback.
+      Primary path everywhere is SiteUtils.lockScroll(source).
 
    Все 4 механизма совместимы. lockScroll() source-aware.
    ═══════════════════════════════════════════════════════════════════════════ */
@@ -8293,6 +8294,196 @@ html.dark .summary-card__text strong {
     font-size: 13.5px !important;
   }
 }
+
+/* ════════════════════════════════════════════════════════════
+   KOD DA VINCI — canon timeline widget (#16 inline CSS cleanup)
+   Перенесено из inline <style> статьи в общий CSS. Селекторы
+   scoped к #canonTimeline, чтобы не влиять на другие страницы.
+   ════════════════════════════════════════════════════════════ */
+#canonTimeline.ctw {
+  background: var(--bg-alt, #f6f5f2);
+  border: 1px solid var(--border, #e2e0db);
+  border-radius: 14px;
+  padding: 1.5rem 1.75rem;
+  margin: 2rem 0;
+}
+#canonTimeline .ctw-head { margin-bottom: 1rem; }
+#canonTimeline .ctw-title {
+  font-size: 1rem;
+  font-weight: 700;
+  margin: 0 0 .2rem;
+  color: var(--text-primary, #1a1a18);
+}
+#canonTimeline .ctw-sub {
+  font-size: .8rem;
+  color: var(--text-muted, #888);
+  margin: 0;
+  font-style: italic;
+}
+#canonTimeline .ctw-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: .4rem .85rem;
+  margin-bottom: 1.1rem;
+  padding-bottom: .85rem;
+  border-bottom: 1px solid var(--border, #e2e0db);
+}
+#canonTimeline .ctw-leg {
+  display: flex;
+  align-items: center;
+  gap: .35rem;
+  font-size: .72rem;
+  color: var(--text-secondary, #555);
+}
+#canonTimeline .ctw-dot {
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  border-radius: 2px;
+  flex-shrink: 0;
+}
+#canonTimeline .ctw-body {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+#canonTimeline .ctw-track { min-width: 580px; }
+#canonTimeline .ctw-axis-row {
+  display: flex;
+  align-items: center;
+  margin-bottom: .5rem;
+  padding-bottom: .4rem;
+  border-bottom: 1px solid var(--border, #e2e0db);
+}
+#canonTimeline .ctw-spacer {
+  flex: 0 0 172px;
+  margin-right: .75rem;
+}
+#canonTimeline .ctw-axis {
+  flex: 1;
+  display: flex;
+  justify-content: space-between;
+  font-size: .68rem;
+  color: var(--text-muted, #888);
+}
+#canonTimeline .ctw-row {
+  display: flex;
+  align-items: center;
+  gap: .75rem;
+  margin-bottom: 3px;
+}
+#canonTimeline .ctw-row.ctw-pin-row {
+  min-height: 52px;
+  align-items: flex-start;
+  padding-top: 4px;
+}
+#canonTimeline .ctw-rlabel {
+  flex: 0 0 172px;
+  font-size: .73rem;
+  color: var(--text-secondary, #555);
+  text-align: right;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  padding-right: 2px;
+}
+#canonTimeline .ctw-pin-row .ctw-rlabel { padding-top: 6px; }
+#canonTimeline .ctw-bwrap {
+  flex: 1;
+  position: relative;
+  height: 24px;
+}
+#canonTimeline .ctw-pin-row .ctw-bwrap {
+  height: auto;
+  min-height: 52px;
+}
+#canonTimeline .ctw-bar {
+  position: absolute;
+  height: 22px;
+  top: 1px;
+  border-radius: 3px;
+  display: flex;
+  align-items: center;
+  box-sizing: border-box;
+  transition: opacity .15s ease;
+}
+#canonTimeline .ctw-bar:hover { opacity: .8; }
+#canonTimeline .ctw-bin {
+  padding: 0 6px;
+  font-size: .68rem;
+  color: #fff;
+  white-space: nowrap;
+  font-weight: 600;
+}
+#canonTimeline .ctw-bout {
+  position: absolute;
+  top: 4px;
+  font-size: .68rem;
+  color: var(--text-secondary, #555);
+  white-space: nowrap;
+  font-weight: 600;
+}
+#canonTimeline .ctw-pin {
+  position: absolute;
+  left: 0;
+  top: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  transform: translateX(-50%);
+}
+#canonTimeline .ctw-pin-line {
+  width: 1.5px;
+  height: 22px;
+  background: #bf6e2a;
+}
+#canonTimeline .ctw-pin-yr {
+  font-size: .7rem;
+  font-weight: 700;
+  color: #bf6e2a;
+  white-space: nowrap;
+  margin-top: 2px;
+}
+#canonTimeline .ctw-pin-lbl {
+  font-size: .63rem;
+  color: #bf6e2a;
+  white-space: nowrap;
+  text-align: center;
+  line-height: 1.3;
+  margin-top: 1px;
+}
+#canonTimeline .ctw-note {
+  display: flex;
+  gap: .6rem;
+  align-items: flex-start;
+  font-size: .8rem;
+  color: var(--text-secondary, #555);
+  margin-top: 1.25rem;
+  padding: .8rem 1rem;
+  background: rgba(191,110,42,.07);
+  border-left: 2.5px solid #bf6e2a;
+  border-inline-start: 2.5px solid #bf6e2a;
+  border-radius: 0 6px 6px 0;
+}
+#canonTimeline .ctw-note strong {
+  color: var(--text-primary, #1a1a18);
+  font-weight: 700;
+}
+#canonTimeline .ctw-note em { font-style: italic; }
+#canonTimeline .ctw-warn-icon {
+  flex-shrink: 0;
+  width: 15px;
+  height: 15px;
+  margin-top: 1px;
+  color: #bf6e2a;
+}
+@media (max-width: 600px) {
+  #canonTimeline .ctw-spacer { flex: 0 0 120px; }
+  #canonTimeline .ctw-rlabel {
+    flex: 0 0 120px;
+    font-size: .7rem;
+  }
+}
+
 
 /* ════════════════════════════════════════════════════════════
    NAGORNAYA mobile badge wrapping

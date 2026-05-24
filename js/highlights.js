@@ -367,7 +367,7 @@
     if (window.SiteUtils && typeof window.SiteUtils.lockScroll === 'function') {
       window.SiteUtils.lockScroll('highlights');
     } else {
-      document.body.style.overflow = 'hidden';
+      document.body.classList.add('no-scroll');
     }
     requestAnimationFrame(function () {
       var first = getHlFocusable()[0];
@@ -384,7 +384,7 @@
     if (window.SiteUtils && typeof window.SiteUtils.unlockScroll === 'function') {
       window.SiteUtils.unlockScroll('highlights');
     } else {
-      document.body.style.removeProperty('overflow');
+      document.body.classList.remove('no-scroll');
     }
     if (_prevHlFocus && _prevHlFocus.focus) _prevHlFocus.focus();
     _prevHlFocus = null;
