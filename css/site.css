@@ -6264,8 +6264,8 @@ html.dark .gb-series-link:hover {
    Nagornaya (nagornaya-mobile-toc.js):
    3. body.ng-toc-lock — nagornaya mobile TOC overlay.
 
-   Homepage inline (index.html, без JS-хелпера):
-   4. body.no-scroll — mobile menu (classList.add/remove).
+   Inline menu fallback (pages whose inline script can run before site.js):
+   4. body.no-scroll — fallback only. Primary path is SiteUtils.lockScroll().
 
    Все 4 механизма совместимы. lockScroll() source-aware.
    ═══════════════════════════════════════════════════════════════════════════ */

@@ -590,7 +590,8 @@ window.SITE_CONFIG = {
     mobileMenuBtn.setAttribute('aria-expanded', 'true');
     mobileMenuBtn.setAttribute('aria-label', 'Закрыть меню');
     if (mobileBackdrop) mobileBackdrop.classList.add('open');
-    document.body.style.overflow = 'hidden';
+    if (window.SiteUtils && window.SiteUtils.lockScroll) window.SiteUtils.lockScroll('nagornaya-series-menu');
+    else document.body.classList.add('no-scroll');
   }
   function closeMobileNavInternal() {
     if (!mobileNav || !mobileMenuBtn) return;
@@ -601,15 +602,27 @@ window.SITE_CONFIG = {
     mobileMenuBtn.setAttribute('aria-expanded', 'false');
     mobileMenuBtn.setAttribute('aria-label', 'Открыть меню');
     if (mobileBackdrop) mobileBackdrop.classList.remove('open');
-    document.body.style.overflow = '';
+    if (window.SiteUtils && window.SiteUtils.unlockScroll) window.SiteUtils.unlockScroll('nagornaya-series-menu');
+    else document.body.classList.remove('no-scroll');
   }
   window.closeMobileNav = closeMobileNavInternal;
+  if (mobileNav) {
+    mobileNav.addEventListener('click', function (e) {
+      if (e.target.closest('[data-close-nav]')) closeMobileNavInternal();
+    });
+  }
   if (mobileMenuBtn) {
     mobileMenuBtn.addEventListener('click', function () {
       if (mobileOpen) closeMobileNavInternal(); else openMobileNav();
     });
   }
   if (mobileBackdrop) mobileBackdrop.addEventListener('click', closeMobileNavInternal);
+  document.addEventListener('keydown', function (e) {
+    if (mobileOpen && (e.key === 'Escape' || e.key === 'Esc')) {
+      closeMobileNavInternal();
+      if (mobileMenuBtn) mobileMenuBtn.focus();
+    }
+  });
 
   function revealOnScroll() {
     reveals.forEach(function (el) {
