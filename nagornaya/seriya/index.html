@@ -62,7 +62,7 @@
     (function(){try{var t=localStorage.getItem('theme');if(t==='dark'||(!t&&window.matchMedia('(prefers-color-scheme: dark)').matches)){document.documentElement.classList.add('dark');}}catch(e){}})();
   </script>
 
-  <link rel="stylesheet" href="../../css/site.css?v=8e67b2bf">
+  <link rel="stylesheet" href="../../css/site.css?v=426a0b0e">
   <link rel="stylesheet" href="../../css/home.css?v=8a48a834">
 
   <script>
@@ -495,6 +495,14 @@ window.SITE_CONFIG = {
   </div>
 </aside>
 
+<aside aria-label="Об авторе" class="author-card" style="margin: 48px auto 0; max-width: 720px;">
+  <div aria-hidden="true" class="author-card-icon" style="background:var(--color-accent, var(--accent, #8b6914));">ФМ</div>
+  <div class="author-card-body">
+    <div class="author-card-name" style="margin-top: 0;">Редактор: Фёдор Милованов</div>
+    <p class="author-card-desc">Основатель и редактор проекта «Господь Бог — Сила Моя». Библейская экзегеза, церковная история, апологетика. <a href="../../about/">Об авторе →</a></p>
+  </div>
+</aside>
+
 </main>
     <!-- FOOTER -->
     <footer class="h-footer" role="contentinfo">
@@ -515,14 +523,7 @@ window.SITE_CONFIG = {
 </button>
 
 
-<aside aria-label="Об авторе" class="author-card" style="margin:48px 0 0;padding:24px 28px;border-radius:16px;border:1px solid var(--border,#e6e1d5);background:var(--bg-elevated,#fff);display:flex;gap:18px;align-items:flex-start;">
-  <div aria-hidden="true" class="author-card-icon" style="width:48px;height:48px;border-radius:50%;background:var(--accent,#8b6914);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:1rem;flex-shrink:0;">ФМ</div>
-  <div class="author-card-body">
-    <div class="author-card-label" style="font-size:0.7rem;text-transform:uppercase;letter-spacing:0.12em;color:var(--muted,#8a7968);font-weight:700;margin-bottom:4px;">Ред.:</div>
-    <div class="author-card-name" style="font-weight:700;font-size:1.1rem;color:var(--text,#1a1a1a);margin-bottom:6px;">Фёдор Милованов</div>
-    <p class="author-card-desc" style="font-size:0.9rem;color:var(--muted,#8a7968);line-height:1.6;margin:0;">Основатель и редактор проекта «Господь Бог — Сила Моя». Библейская экзегеза, церковная история, апологетика. <a href="../../about/" style="color:var(--accent,#8b6914);">Об авторе →</a></p>
-  </div>
-</aside>
+
 <script src="../../js/site.js?v=ae2281aa" defer></script>
 <script>
 (function () {

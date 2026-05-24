@@ -6094,10 +6094,10 @@ abbr.gterm:hover { text-decoration-color: var(--accent); }
 
 
 .quiz-wrapper {
-  min-height: 480px;
+  min-height: 320px;
   contain: layout style;
   content-visibility: auto;
-  contain-intrinsic-size: 480px 600px;
+  contain-intrinsic-size: auto 320px;
 }
 .quiz-card { min-height: 420px; }
 .quiz-question { min-height: 80px; }
@@ -7460,6 +7460,99 @@ html:not(.dark) body.nagornaya-page aside[class*="bg-stone-9"] {
 html:not(.dark) body.nagornaya-page .hover\:bg-stone-800:hover {
   background: rgba(28,25,23,0.05) !important;
 }
+
+
+/* ════════════════════════════════════════════════════════════
+   6.5. NAGORNAYA DARK THEME — overrides static Tailwind styles in dark mode
+   ════════════════════════════════════════════════════════════ */
+html.dark body.nagornaya-page,
+html.dark body.nagornaya-page main {
+  background: var(--color-canvas) !important;
+  color: var(--color-text) !important;
+}
+
+/* Overriding white/light container backgrounds with dark surfaces */
+html.dark body.nagornaya-page .bg-white,
+html.dark body.nagornaya-page table,
+html.dark body.nagornaya-page tr {
+  background-color: var(--color-surface) !important;
+}
+
+html.dark body.nagornaya-page .bg-stone-50,
+html.dark body.nagornaya-page .bg-stone-100 {
+  background-color: var(--color-surface-muted) !important;
+}
+
+/* Specific warning/note panels in dark mode */
+html.dark body.nagornaya-page .bg-amber-50,
+html.dark body.nagornaya-page .bg-orange-50 {
+  background-color: var(--color-surface-quote) !important;
+  border-color: rgba(245, 213, 166, 0.15) !important;
+}
+
+html.dark body.nagornaya-page .bg-emerald-50 {
+  background-color: var(--color-success-bg, rgba(16, 185, 129, 0.1)) !important;
+  border-color: var(--color-success-border, rgba(16, 185, 129, 0.15)) !important;
+}
+
+html.dark body.nagornaya-page .bg-red-50,
+html.dark body.nagornaya-page .bg-rose-50 {
+  background-color: var(--color-danger-bg, rgba(239, 68, 68, 0.1)) !important;
+  border-color: var(--color-danger-border, rgba(239, 68, 68, 0.15)) !important;
+}
+
+/* Overriding light borders to dark borders */
+html.dark body.nagornaya-page .border-stone-100,
+html.dark body.nagornaya-page .border-stone-200,
+html.dark body.nagornaya-page .border-stone-300,
+html.dark body.nagornaya-page .border-stone-700,
+html.dark body.nagornaya-page .border-stone-800,
+html.dark body.nagornaya-page .border-b,
+html.dark body.nagornaya-page .border-t,
+html.dark body.nagornaya-page .border {
+  border-color: var(--color-border) !important;
+}
+
+/* Ensure strong contrast for dark mode text */
+html.dark body.nagornaya-page .text-stone-700,
+html.dark body.nagornaya-page .text-stone-800,
+html.dark body.nagornaya-page .text-stone-900,
+html.dark body.nagornaya-page .text-stone-600 {
+  color: var(--color-text-secondary) !important;
+}
+
+html.dark body.nagornaya-page .text-stone-300,
+html.dark body.nagornaya-page .text-stone-400,
+html.dark body.nagornaya-page .text-stone-500 {
+  color: var(--color-text-muted) !important;
+}
+
+html.dark body.nagornaya-page .text-white {
+  color: var(--color-text-primary) !important;
+}
+
+/* Colored text styling adjustments for dark mode */
+html.dark body.nagornaya-page .text-blue-700,
+html.dark body.nagornaya-page .text-blue-800 {
+  color: #93c5fd !important;
+}
+
+html.dark body.nagornaya-page .text-amber-600,
+html.dark body.nagornaya-page .text-amber-700,
+html.dark body.nagornaya-page .text-amber-800 {
+  color: #fcd34d !important;
+}
+
+html.dark body.nagornaya-page .text-emerald-700,
+html.dark body.nagornaya-page .text-emerald-800 {
+  color: #34d399 !important;
+}
+
+html.dark body.nagornaya-page .text-red-700,
+html.dark body.nagornaya-page .text-red-800 {
+  color: #fca5a5 !important;
+}
+
 
 
 /* ════════════════════════════════════════════════════════════
