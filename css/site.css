@@ -7150,11 +7150,9 @@ html.dark body.nagornaya-page .text-red-800 {
 }
 
 /* ═══════════════
-   6.6. NAGORNAYA FONT-SIZE FIX — ensures text elements inherit size from main
+   6.6. NAGORNAYA FONT-SIZE FIX — ensures body text elements inherit size from main
    ═══════════════ */
-body.nagornaya-page main p,
-body.nagornaya-page main li,
-body.nagornaya-page main td {
+body.nagornaya-page main p.text-\[16px\] {
   font-size: inherit !important;
 }
 

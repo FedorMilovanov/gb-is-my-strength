@@ -409,24 +409,7 @@ function main() {
   console.log('\n  🗺  sitemap.xml + feed.xml');
   validateSitemapFeed();
 
-  // Итог
-  console.log('\n' + '─'.repeat(50));
-  if (errors === 0 && warnings === 0) {
-    console.log('✅  Всё чисто.\n');
-    process.exit(0);
-  }
-
-  console.log(`${errors > 0 ? '❌' : '⚠️'}  Ошибок: ${errors}  Предупреждений: ${warnings}`);
-
-  if (STRICT && errors > 0) {
-    console.log('  → --strict: прерываем workflow из-за ошибок.\n');
-    process.exit(1);
-  }
-
-  console.log('  → Предупреждения не прерывают workflow. Исправьте при возможности.\n');
-  process.exit(0);
-
-  // ── V3-FIX: Validate non-article pages (pastor-series, about, index) ──
+// ── V3-FIX: Validate non-article pages (pastor-series, about, index) ──
   const EXTRA_PAGES = [
     { file: path.resolve(__dirname, '../pastor-series/index.html'), slug: 'pastor-series' },
     { file: path.resolve(__dirname, '../about/index.html'), slug: 'about' },
@@ -451,6 +434,25 @@ function main() {
     }
   }
 
-}
+
+
+  // Итог
+  console.log('\n' + '─'.repeat(50));
+  if (errors === 0 && warnings === 0) {
+    console.log('✅  Всё чисто.\n');
+    process.exit(0);
+  }
+
+  console.log(`${errors > 0 ? '❌' : '⚠️'}  Ошибок: ${errors}  Предупреждений: ${warnings}`);
+
+  if (STRICT && errors > 0) {
+    console.log('  → --strict: прерываем workflow из-за ошибок.\n');
+    process.exit(1);
+  }
+
+  console.log('  → Предупреждения не прерывают workflow. Исправьте при возможности.\n');
+  process.exit(0);
+
+  }
 
 main();
