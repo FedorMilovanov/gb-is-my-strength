@@ -7585,20 +7585,6 @@ img[src*="mc.yandex.ru"] {
 
 
 /* ════════════════════════════════════════════════════════════
-   13. h-article-card polish
-   ════════════════════════════════════════════════════════════ */
-.h-article-card {
-  transition: transform .25s ease, box-shadow .25s ease, border-color .25s ease;
-}
-.h-article-card:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 14px 32px -16px rgba(28,25,23,.22);
-  border-color: var(--accent, #7a2e2e);
-  border-color: color-mix(in srgb, var(--accent, #7a2e2e) 35%, var(--border, #e7e2d8));
-}
-
-
-/* ════════════════════════════════════════════════════════════
    14. Bottom-bar backdrop
    ════════════════════════════════════════════════════════════ */
 .bottom-bar {
@@ -7926,25 +7912,6 @@ html.dark .h-scripture-bg::before {
 html.dark .h-hero-title:hover .h-title-accent {
   text-shadow: 0 10px 34px rgba(217, 122, 108, 0.13) !important;
 }
-body.articles-index-page .home-content {
-  max-width: min(1120px, calc(100vw - 80px));
-}
-body.articles-index-page .h-hero { max-width: 860px; }
-body.articles-index-page .h-article-card {
-  border: 1px solid rgba(120, 83, 46, 0.11);
-  border-radius: 18px;
-  padding: 18px;
-  margin-bottom: 14px;
-  background: rgba(255, 255, 255, 0.44);
-}
-body.articles-index-page .h-article-card:hover {
-  background: rgba(255, 255, 255, 0.72);
-  box-shadow: 0 16px 42px rgba(68, 45, 22, 0.08);
-}
-html.dark body.articles-index-page .h-article-card {
-  background: rgba(255, 255, 255, 0.035);
-  border-color: rgba(255, 255, 255, 0.08);
-}
 @media (max-width: 760px) {
   body.nagornaya-page main > .max-w-4xl > .mb-6 {
     padding: 16px;
@@ -7956,8 +7923,6 @@ html.dark body.articles-index-page .h-article-card {
     display: flex;
     margin-right: 0;
   }
-  body.articles-index-page .home-content { max-width: none; }
-  body.articles-index-page .h-article-card { padding: 14px; }
 }
 
 /* AUDIT v14: Hebrew word expansion lives in css/home.css.

@@ -1361,7 +1361,8 @@ html.dark .h-card-planned:hover {
   transition:
     transform 0.4s cubic-bezier(0.22, 1, 0.36, 1),
     box-shadow 0.4s ease,
-    background-color 0.3s ease;
+    background-color 0.3s ease,
+    border-color 0.25s ease;
   align-items: flex-start;
 }
 .h-article-card:first-child { padding-top: 0; }
@@ -1370,10 +1371,12 @@ html.dark .h-card-planned:hover {
   transform: translateY(-2px);
   box-shadow: 0 8px 30px -8px rgba(26, 23, 20, 0.08);
   background-color: rgba(245, 240, 232, 0.52);
+  border-color: color-mix(in srgb, var(--h-accent, #8b2626) 28%, var(--h-border));
 }
 html.dark .h-article-card:hover {
   box-shadow: 0 8px 30px -8px rgba(0, 0, 0, 0.3);
   background-color: rgba(38, 34, 25, 0.52);
+  border-color: color-mix(in srgb, var(--h-accent, #d97a6c) 32%, var(--h-border));
 }
 
 .h-article-thumb {
@@ -1651,6 +1654,42 @@ html.dark .h-article-card--translation:hover {
 }
 .h-article-card--debunk:hover {
   border-inline-start-color: rgba(180,80,20,0.5);
+}
+
+
+/* AUDIT v15 / #69: h-article-card ownership consolidated in home.css.
+   These cards are used by the home/index surfaces that load home.css
+   (/, /articles/, /nagornaya/seriya/). site.css no longer owns
+   h-article-card visual rules; it only keeps global interaction guards. */
+body.articles-index-page .home-content {
+  max-width: min(1120px, calc(100vw - 80px));
+}
+body.articles-index-page .h-hero {
+  max-width: 860px;
+}
+body.articles-index-page .h-article-card {
+  border: 1px solid rgba(120, 83, 46, 0.11);
+  border-radius: 18px;
+  padding: 18px;
+  margin-bottom: 14px;
+  background: rgba(255, 255, 255, 0.44);
+}
+body.articles-index-page .h-article-card:hover {
+  background: rgba(255, 255, 255, 0.72);
+  box-shadow: 0 16px 42px rgba(68, 45, 22, 0.08);
+  border-color: rgba(120, 83, 46, 0.18);
+}
+html.dark body.articles-index-page .h-article-card {
+  background: rgba(255, 255, 255, 0.035);
+  border-color: rgba(255, 255, 255, 0.08);
+}
+@media (max-width: 760px) {
+  body.articles-index-page .home-content {
+    max-width: none;
+  }
+  body.articles-index-page .h-article-card {
+    padding: 14px;
+  }
 }
 
 
