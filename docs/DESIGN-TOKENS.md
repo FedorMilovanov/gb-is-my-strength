@@ -81,3 +81,6 @@ The check fails if canonical tokens are missing or legacy aliases stop pointing 
 - v30: fixed A−/A+ font size scalability bug on Nagornaya pages; complete final token migration (entirely eliminated `--bg-elevated`, `--border`, and `--accent`); token ratchet lowered to 0. All CSS files are now 100% migrated to canonical semantic `--color-*` tokens!
 
 - v31: restricted Nagornaya font-size inheritance override to `p.text-[16px]` to restore the design hierarchy (subtitles, footnotes, comparison tables); unblocked dead code in `validate.js` checking extra pages; resolved `javascript:void(0)` validation warning in `index.html`.
+
+
+- v32: performed total repository audit; cleaned up over 140 lines of completely dead legacy CSS in `site.css` (the `.epilogue-` styles and the floating `.back-to-index` navigation button blocks, which were no longer used in any HTML or JS files); simplified related redundant selector `:not(.epilogue-caption)`; reduced CSS total size by over 3 KB without any risk of breaking dynamic selectors.
