@@ -76,6 +76,14 @@ The check fails if canonical tokens are missing or legacy aliases stop pointing 
 
 - v28: duplicate author-card CSS block cleaned up; token ratchet lowered to 282.
 
+- v29: design token wave 2 consolidation (entirely eliminated \--note-bg\, \--text-secondary\, and \--accent-strong\); token ratchet lowered to 182.
+
+- v30: fixed A−/A+ font size scalability bug on Nagornaya pages; complete final token migration (entirely eliminated \--bg-elevated\, \--border\, and \--accent\); token ratchet lowered to 0. All CSS files are now 100% migrated to canonical semantic \--color-*\ tokens!
+
+- v27: compact quiz sizing, author-card placement fixes, global dark-mode contrast overrides for Nagornaya pages.
+
+- v28: duplicate author-card CSS block cleaned up; token ratchet lowered to 282.
+
 - v29: design token wave 2 consolidation (entirely eliminated `--note-bg`, `--text-secondary`, and `--accent-strong`); token ratchet lowered to 182.
 
 - v30: fixed A−/A+ font size scalability bug on Nagornaya pages; complete final token migration (entirely eliminated `--bg-elevated`, `--border`, and `--accent`); token ratchet lowered to 0. All CSS files are now 100% migrated to canonical semantic `--color-*` tokens!
