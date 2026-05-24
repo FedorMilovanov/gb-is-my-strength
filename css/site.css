@@ -1424,7 +1424,7 @@ sup a {
   font-size: 14px;
   line-height: 1.55;
   padding: 12px 14px;
-  background: var(--bg);
+  background: var(--color-canvas);
   border: 1px solid var(--border);
   border-radius: 4px;
 }
@@ -1552,69 +1552,6 @@ html.dark .fact-box h4 { color: #80c880; }
 }
 
 
-.site-scope {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 2px;
-  margin-bottom: 60px;
-  border: 1px solid var(--border);
-  border-radius: 12px;
-  overflow: hidden;
-}
-.site-scope__item {
-  display: flex;
-  align-items: flex-start;
-  gap: 14px;
-  padding: 20px 22px;
-  background: var(--bg);
-  transition: background .2s ease;
-}
-.site-scope__item:hover {
-  background: var(--note-bg);
-}
-
-.site-scope__item:nth-child(1) { border-bottom: 1px solid var(--border); border-right: 1px solid var(--border); }
-.site-scope__item:nth-child(2) { border-bottom: 1px solid var(--border); }
-.site-scope__item:nth-child(3) { border-right: 1px solid var(--border); }
-.site-scope__icon {
-  width: 18px;
-  height: 18px;
-  flex-shrink: 0;
-  margin-top: 3px;
-  color: var(--accent);
-  opacity: 0.7;
-}
-.site-scope__item strong {
-  display: block;
-  font-family: 'Source Sans 3', system-ui, sans-serif;
-  font-size: 13px;
-  font-weight: 600;
-  color: var(--text);
-  margin-bottom: 3px;
-}
-.site-scope__item span {
-  display: block;
-  font-family: 'Source Sans 3', system-ui, sans-serif;
-  font-size: 13px;
-  color: var(--muted);
-  line-height: 1.5;
-}
-@media (max-width: 600px) {
-  .site-scope {
-    grid-template-columns: 1fr;
-  }
-  .site-scope__item:nth-child(1),
-  .site-scope__item:nth-child(2),
-  .site-scope__item:nth-child(3) {
-    border-right: none;
-    border-bottom: 1px solid var(--border);
-  }
-  .site-scope__item:last-child {
-    border-bottom: none;
-  }
-}
-
-
 .about-link {
   color: var(--accent);
   text-decoration: underline;
@@ -1647,7 +1584,7 @@ html.dark .fact-box h4 { color: #80c880; }
 }
 
 .card{
-  background: var(--bg);
+  background: var(--color-canvas);
   border: 1px solid var(--border);
   border-radius: 16px;
 }
@@ -2359,7 +2296,7 @@ html.dark .compare-table:not(.compare-table--scroll) tr {
   height: 10px;
   border-radius: 50%;
   background: var(--accent);
-  border: 2px solid var(--bg);
+  border: 2px solid var(--color-canvas);
   opacity: 0;
   transition: opacity 0.4s ease 0.3s;
 }
@@ -2515,7 +2452,7 @@ html.dark .compare-table:not(.compare-table--scroll) tr {
   left: 0;
   right: 0;
   z-index: var(--z-bottom-bar);
-  background: var(--bg);
+  background: var(--color-canvas);
   border-top: 1px solid var(--border);
   padding: 0 0 env(safe-area-inset-bottom, 0px);
   transform: translateY(100%);
@@ -2666,7 +2603,7 @@ html.dark .bar-icon-sun  { display: block; color: #f5c542; }
 .btoc-panel {
   position: absolute;
   bottom: 0; left: 0; right: 0;
-  background: var(--bg);
+  background: var(--color-canvas);
   border-radius: 20px 20px 0 0;
   max-height: 85vh;
   overflow: hidden;
@@ -2856,7 +2793,7 @@ html.dark .bar-icon-sun  { display: block; color: #f5c542; }
   top: 0; left: 0;
   width: min(320px, 88vw);
   height: 100%;
-  background: var(--bg);
+  background: var(--color-canvas);
   border-right: 1px solid var(--border);
   overflow-y: auto;
   z-index: var(--z-max);
@@ -3062,7 +2999,7 @@ html.dark #reading-progress { background: var(--accent); }
 }
 
 #share-dialog {
-  background: var(--bg);
+  background: var(--color-canvas);
   border: 1px solid var(--border);
   border-radius: 20px 20px 0 0;
   width: 100%;
@@ -3643,7 +3580,7 @@ html.dark .error-flip-label-fact { color: #80c890; }
   padding: 9px 20px;
   border-radius: 8px;
   border: 1px solid var(--color-border);
-  background: var(--bg);
+  background: var(--color-canvas);
   color: var(--color-text-muted);
   font-family: 'Source Sans 3', system-ui, sans-serif;
   font-size: 13px;
@@ -3677,7 +3614,7 @@ html.dark .error-flip-label-fact { color: #80c890; }
   line-height: 1.6;
   margin-bottom: 18px;
   padding: 14px 18px;
-  background: var(--bg);
+  background: var(--color-canvas);
   border: 1px solid var(--color-border);
   border-radius: 5px;
 }
@@ -3694,7 +3631,7 @@ html.dark .error-flip-label-fact { color: #80c890; }
   min-height: 44px;
   border-radius: 5px;
   border: 1px solid var(--color-border);
-  background: var(--bg);
+  background: var(--color-canvas);
   color: var(--color-text);
   font-family: 'Source Sans 3', system-ui, sans-serif;
   font-size: 14px;
@@ -3876,7 +3813,7 @@ html.dark .quiz-feedback.err { color: #f09090; }
 }
 .bookmark-btn-primary { background: var(--color-accent); color: #fff; }
 .bookmark-btn-primary:hover { opacity: .88; }
-.bookmark-btn-secondary { background: var(--bg); color: var(--color-text-muted); border: 1px solid var(--color-border); }
+.bookmark-btn-secondary { background: var(--color-canvas); color: var(--color-text-muted); border: 1px solid var(--color-border); }
 .bookmark-btn-secondary:hover { background: var(--color-border); color: var(--color-text); }
 .bookmark-toast-progress { height: 4px; background: var(--color-border); border-radius: 999px; overflow: hidden; }
 .bookmark-toast-progress-fill { height: 100%; width: 0%; background: var(--color-accent); border-radius: 999px; transition: width .4s ease; }
@@ -4081,7 +4018,7 @@ body.has-bottom-bar .bookmark-toast {
   transform: translateY(-3px);
   box-shadow: 0 6px 18px -6px rgba(0,0,0,.35);
 }
-.resume-reading-dismiss { background: var(--bg); color: var(--color-text-muted); border: 1px solid var(--color-border); }
+.resume-reading-dismiss { background: var(--color-canvas); color: var(--color-text-muted); border: 1px solid var(--color-border); }
 .resume-reading-dismiss:hover {
   background: var(--color-border); color: var(--color-text);
   transform: translateY(-3px);
@@ -4093,7 +4030,7 @@ body.has-bottom-bar .bookmark-toast {
 .resume-list { display: grid; gap: 10px; }
 .resume-list-item {
   display: block; text-decoration: none;
-  background: var(--bg); border: 1px solid var(--color-border); border-radius: 14px;
+  background: var(--color-canvas); border: 1px solid var(--color-border); border-radius: 14px;
   padding: 14px 16px;
   transition:
     transform .35s cubic-bezier(.2,.7,.2,1),
@@ -4875,7 +4812,7 @@ footer.footer-home {
   z-index: var(--z-popover);
   display: flex;
   align-items: stretch;
-  background: var(--bg);
+  background: var(--color-canvas);
   border: 1px solid var(--border);
   border-radius: 10px;
   box-shadow:
@@ -4909,7 +4846,7 @@ footer.footer-home {
   transform: translateX(-50%);
   border-left: 5px solid transparent;
   border-right: 5px solid transparent;
-  border-top: 5px solid var(--bg);
+  border-top: 5px solid var(--color-canvas);
   z-index: 1;
   pointer-events: none;
 }
@@ -5161,7 +5098,7 @@ html.dark .article-date-display {
   font-size: 14px;
   font-weight: 600;
   color: var(--muted);
-  background: var(--bg);
+  background: var(--color-canvas);
   border: 1px solid var(--border);
   border-radius: 8px;
   padding: 10px 20px;
@@ -5620,7 +5557,7 @@ html:not(.dark) .quiz-review-prev {
 
 
 .related-articles__item {
-  background: var(--bg);
+  background: var(--color-canvas);
   border: 1px solid var(--border);
   border-radius: 14px;
   overflow: hidden;
@@ -5952,7 +5889,7 @@ html.dark .pq-scripture::before { opacity: .45; }
 
   -webkit-appearance: none; appearance: none;
   border: none;
-  background: var(--bg);
+  background: var(--color-canvas);
   width: 100%;
   text-align: left;
 
@@ -6314,24 +6251,9 @@ html.dark .gb-series-link:hover {
 
 /* @layer components: поздние legacy/mobile/a11y-блоки (CSS-FIX-01) */
 @layer components {
-/* ═══════════════════════════════════════════════════════════════════════════
-   SCROLL-LOCK ARCHITECTURE (#25, #53, #156) — 4 механизма
-
-   JS-universal (SiteUtils.lockScroll / unlockScroll, js/site.js):
-   1. html[data-scroll-locked="1"] — toc-mobile, btoc, image-viewer.
-      CSS: overflow:hidden + body overscroll:contain.
-   2. html.cp-scroll-lock — Command Palette (Ctrl+K).
-      CSS: overflow:hidden + position:fixed в command-palette.css.
-
-   Nagornaya (nagornaya-mobile-toc.js):
-   3. body.ng-toc-lock — nagornaya mobile TOC overlay.
-
-   Fallback path (only if SiteUtils is unavailable):
-   4. body.no-scroll — inline menus / highlights panel fallback.
-      Primary path everywhere is SiteUtils.lockScroll(source).
-
-   Все 4 механизма совместимы. lockScroll() source-aware.
-   ═══════════════════════════════════════════════════════════════════════════ */
+/* SCROLL-LOCK (#25,#53,#156): 4 механизма — html[data-scroll-locked] (JS),
+   html.cp-scroll-lock (CP), body.ng-toc-lock (nagornaya), body.no-scroll (fallback).
+   Все совместимы, SiteUtils.lockScroll() source-aware. Подробнее: AGENTS.md §4. */
 
 body.no-scroll {
   overflow: hidden !important;
@@ -6464,7 +6386,7 @@ html.dark .about-contact-handle { color: #9c8c7a; }
   padding: 10px 20px;
   border: 1px solid var(--border);
   border-radius: 10px;
-  background: var(--bg);
+  background: var(--color-canvas);
   font-family: var(--font-sans, 'Source Sans 3', system-ui, sans-serif);
   font-size: 14px;
   font-weight: 600;
@@ -6752,7 +6674,7 @@ textarea, select {
 
 @media (hover: none) {
 
-  .quiz-option:hover { background: var(--bg); }
+  .quiz-option:hover { background: var(--color-canvas); }
   .bar-icon-btn:hover { background: transparent; }
   .gb-accuracy-btn:hover { background: var(--bg-elevated); }
 }
