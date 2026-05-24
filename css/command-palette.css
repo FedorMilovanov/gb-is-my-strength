@@ -1,30 +1,30 @@
 /* ═══════════════════════════════════════════════════════════════
    COMMAND PALETTE — gospod-bog.ru
    Перенесено из redesign-premium-search-interface.
-   CSS-переменные --cp-* → привязаны к site.css через :root bridge.
+   CSS-переменные --cp-* → привязаны к canonical --color-* tokens через :root bridge.
    Оригинал: src/command-palette.css (1192 строки) + адаптации:
      • .dark → html.dark
      • .cp-backdrop: display:none по умолчанию + .is-open { display:flex }
      • @keyframes cpBoxIn (анимация появления)
    ═══════════════════════════════════════════════════════════════ */
 
-/* ── CSS Variable bridge: --cp-* → переменные сайта ──
+/* ── CSS Variable bridge: --cp-* → canonical design tokens ──
    Все var() имеют hardcoded-фоллбэки — палитра работает даже на страницах
    nagornaya/, которые подключают tw.min.css, но НЕ site.css.            */
 :root {
-  --cp-bg:           var(--bg,           #fdfcf9);
-  --cp-bg-card:      var(--bg-elevated,  #ffffff);
-  --cp-bg-surface:   var(--note-bg,      #f4f2ed);
-  --cp-ink:          var(--text,         #1a1a1a);
-  --cp-ink-muted:    var(--muted,        #6a6a6a);
+  --cp-bg:           var(--color-canvas,    #fdfcf9);
+  --cp-bg-card:      var(--color-surface,   #ffffff);
+  --cp-bg-surface:   var(--color-surface-muted, #f4f2ed);
+  --cp-ink:          var(--color-text,      #1a1a1a);
+  --cp-ink-muted:    var(--color-text-muted,#6a6a6a);
   --cp-ink-faint:    #a8a098;
-  --cp-accent:       var(--accent,       #7a2e2e);
+  --cp-accent:       var(--color-accent,    #7a2e2e);
   --cp-accent-alpha-05: rgba(122, 46, 46, 0.05);
   --cp-accent-alpha-08: rgba(122, 46, 46, 0.08);
   --cp-accent-alpha-40: rgba(122, 46, 46, 0.40);
   --cp-accent-alpha-50: rgba(122, 46, 46, 0.50);
-  --cp-accent-soft:  var(--accent-soft,  #f6ece8);
-  --cp-border:       var(--border,       #e5e2dc);
+  --cp-accent-soft:  var(--color-accent-soft,#f6ece8);
+  --cp-border:       var(--color-border,    #e5e2dc);
   --cp-border-soft:  rgba(229, 226, 220, 0.6);
   --cp-shadow-box:   var(--shadow-xl, 0 16px 44px rgba(16,18,22,.14)), 0 6px 16px rgba(0,0,0,0.06);
   --cp-ease:         cubic-bezier(0.22, 1, 0.32, 1);
@@ -34,19 +34,19 @@
 }
 
 html.dark {
-  --cp-bg:           var(--bg,          #0e1116);
-  --cp-bg-card:      var(--bg-elevated, #161a21);
+  --cp-bg:           var(--color-canvas,   #0e1116);
+  --cp-bg-card:      var(--color-surface,  #161a21);
   --cp-bg-surface:   #252320;
-  --cp-ink:          var(--text,        #e6e1d7);
-  --cp-ink-muted:    var(--muted,       #9ca3af);
+  --cp-ink:          var(--color-text,     #e6e1d7);
+  --cp-ink-muted:    var(--color-text-muted,#9ca3af);
   --cp-ink-faint:    #6b6460;
-  --cp-accent:       var(--accent,      #d4a574);
+  --cp-accent:       var(--color-accent,   #d4a574);
   --cp-accent-alpha-05: rgba(212, 165, 116, 0.05);
   --cp-accent-alpha-08: rgba(212, 165, 116, 0.08);
   --cp-accent-alpha-40: rgba(212, 165, 116, 0.40);
   --cp-accent-alpha-50: rgba(212, 165, 116, 0.50);
-  --cp-accent-soft:  var(--accent-soft, #1f1a13);
-  --cp-border:       var(--border,      #232830);
+  --cp-accent-soft:  var(--color-accent-soft,#1f1a13);
+  --cp-border:       var(--color-border,   #232830);
   --cp-border-soft:  rgba(35, 40, 48, 0.8);
   --cp-shadow-box:   0 36px 90px rgba(0,0,0,0.55), 0 6px 16px rgba(0,0,0,0.25);
 }
