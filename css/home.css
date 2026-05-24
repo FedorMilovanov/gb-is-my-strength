@@ -593,17 +593,22 @@ html.dark .h-scripture-bg::before {
   display: inline-grid;
   grid-template-areas: "s";
   vertical-align: baseline;
-  cursor: pointer; 
+  cursor: pointer;
   margin: 0 0.15em;
   outline: none;
+  /* AUDIT v14: relative позволяет .hb-back плавать абсолютно над строкой */
+  position: relative;
 }
 
 .hb-front,
 .hb-back {
-  grid-area: s;
+  /* AUDIT v14: transition общий для обоих; grid-area только у .hb-front (ниже) */
   transition:
     transform 0.55s cubic-bezier(0.22, 1, 0.36, 1),
-    opacity 0.4s ease;
+    opacity   0.4s ease;
+}
+.hb-front {
+  grid-area: s;
 }
 .hb-w:hover .hb-back, .hb-w:focus-within .hb-back {
   will-change: transform, opacity;
@@ -622,23 +627,47 @@ html.dark .hb-front { opacity: 0.72; }
 
 
 .hb-back {
+  /* AUDIT v14: абсолютное позиционирование — текст парит НАД строкой,
+     не толкает соседей. Pill-стиль: белый/бежевый фон, тень, z-index.    */
+  position: absolute;
+  bottom: calc(100% + 4px);
+  left: 50%;
+  z-index: var(--z-tooltip-low, 120);
+  /* сброс grid-area — больше не нужен */
+  grid-area: unset;
   font-family: var(--f-body);
   font-style: italic;
   font-weight: 600;
-  font-size: 0.55em;
+  font-size: 0.52em;
   line-height: 1;
   white-space: nowrap;
   direction: ltr;
   unicode-bidi: isolate;
-  color: var(--h-ink);
-  text-shadow: 0 1px 8px rgba(28, 25, 23, 0.10);
-  align-self: center;
-  justify-self: center;
+  color: var(--h-accent, #7c2d2d);
+  /* Pill бейдж */
+  background: rgba(248, 245, 240, 0.96);
+  border: 1px solid rgba(120, 83, 46, 0.14);
+  border-radius: 999px;
+  padding: 0.2em 0.6em 0.22em;
+  box-shadow:
+    0 2px 8px rgba(28, 25, 23, 0.12),
+    0 0 0 1px rgba(120, 83, 46, 0.05);
+  /* Центровка относительно ивритского слова */
+  transform: translateX(-50%) rotate(8deg) scale(0.85);
+  transform-origin: center bottom;
   opacity: 0;
-  transform: rotate(8deg) scale(0.85);
+  pointer-events: none;
+  /* Без align-self/justify-self — больше не в grid */
 }
 html.dark .hb-back {
-  text-shadow: 0 1px 10px rgba(245, 237, 224, 0.12);
+  /* AUDIT v14: dark-mode pill — тёмный фон с тёплым свечением */
+  background: rgba(30, 24, 18, 0.96);
+  border-color: rgba(212, 167, 98, 0.25);
+  color: var(--h-accent, #d97a6c);
+  box-shadow:
+    0 2px 10px rgba(0, 0, 0, 0.45),
+    0 0 0 1px rgba(212, 167, 98, 0.10);
+  text-shadow: none;
 }
 
 
@@ -652,7 +681,9 @@ html.dark .hb-back {
 .hb-w:focus-visible .hb-back,
 .hb-w:focus-within .hb-back {
   opacity: 1;
-  transform: rotate(0) scale(1);
+  /* AUDIT v14: translateX(-50%) — центровка над словом; rotate/scale — анимация  */
+  transform: translateX(-50%) rotate(0deg) scale(1);
+  pointer-events: auto;
 }
 
 
@@ -799,7 +830,7 @@ html.dark .h-tetra-label {
 }
 .hb-w[data-toggled] .hb-back {
   opacity: 1;
-  transform: rotate(0) scale(1);
+  transform: translateX(-50%) rotate(0deg) scale(1);
 }
 .h-tetra[data-toggled] .h-tetra-back {
   opacity: 1;
@@ -820,7 +851,7 @@ html.dark .h-tetra-label {
   }
   .hb-w:active .hb-back,
   .h-tetra:active .h-tetra-back {
-    opacity: 1; transform: rotate(0) scale(1);
+    opacity: 1; transform: translateX(-50%) rotate(0deg) scale(1);
   }
   .h-tetra:active .h-tetra-label {
     opacity: 1; filter: blur(0);
@@ -1873,7 +1904,7 @@ html.dark .h-blockquote { color: var(--h-ink); }
 
 
 @media (prefers-reduced-motion: reduce) {
-  .hb-front, .hb-back, .h-tetra-back,
+  .hb-front, .h-tetra-back,
   .h-tetra-label,
   .h-reveal, .h-card-glass, .h-article-card,
   .h-scroll-top, .hb-w, .h-tetra,
@@ -1884,6 +1915,12 @@ html.dark .h-blockquote { color: var(--h-ink); }
     transform: none !important;
     filter: none !important;
   }
+  /* AUDIT v14: .hb-back исключён — ему нужен translateX(-50%) даже без motion */
+  .hb-back {
+    transition: none !important;
+    animation: none !important;
+    filter: none !important;
+  }
 
   .h-hero-tagline, .h-sacred-block, .h-hero-title,
   .h-hero-desc, .h-hero-search-wrap,
@@ -1891,7 +1928,7 @@ html.dark .h-blockquote { color: var(--h-ink); }
     opacity: 1 !important;
   }
   .hb-front { opacity: 0.5 !important; }
-  .hb-back  { opacity: 1 !important; transform: none !important; }
+  .hb-back  { opacity: 1 !important; transform: translateX(-50%) !important; }
   .h-tetra-back { opacity: 1 !important; transform: none !important; }
   .h-rule { animation: none !important; opacity: 1 !important; }
   .h-phrase--ambient { animation: none !important; }
