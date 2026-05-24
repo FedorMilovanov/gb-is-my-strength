@@ -69,3 +69,5 @@ The check fails if canonical tokens are missing or legacy aliases stop pointing 
 - v24: quiz/bookmark/bottom-TOC utility cluster migrated; ratchet lowered to 483.
 
 - v25: resume/tooltips/sources/author/footer utility cluster migrated; ratchet lowered to 418.
+
+- v26: dead .site-scope CSS removed (63 lines); --bg cluster migrated to --color-canvas; ratchet lowered to 387.
