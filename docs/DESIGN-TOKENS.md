@@ -65,3 +65,5 @@ The check fails if canonical tokens are missing or legacy aliases stop pointing 
 - v22: governance ratchet added; safe global controls migrated; `ci:check` runs `tokens:check`.
 
 - v23: base/article reading layer migrated to canonical `--color-*`; ratchet lowered to 552.
+
+- v24: quiz/bookmark/bottom-TOC utility cluster migrated; ratchet lowered to 483.
