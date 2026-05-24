@@ -41,6 +41,10 @@ for (const [legacy, canonical] of Object.entries(aliases)) {
 }
 if (errors) process.exit(1);
 
+/* Ratchet: legacy usages may go down, but must not increase.
+   Update this baseline only when a migration patch reduces the count. */
+const MAX_LEGACY_USES = 611;
+
 const cssFiles = fs.readdirSync(path.join(root, 'css')).filter(f => f.endsWith('.css'));
 const legacyNames = Object.keys(aliases).sort((a, b) => b.length - a.length);
 let legacyUses = 0;
@@ -51,5 +55,9 @@ for (const file of cssFiles) {
     if (matches) legacyUses += matches.length;
   }
 }
+if (legacyUses > MAX_LEGACY_USES) {
+  console.error(`❌ Legacy var() references increased: ${legacyUses} > ${MAX_LEGACY_USES}`);
+  process.exit(1);
+}
 console.log('✅ Design token foundation OK');
-console.log(`ℹ️ Legacy var() references remaining during staged migration: ${legacyUses}`);
+console.log(`ℹ️ Legacy var() references remaining during staged migration: ${legacyUses} / ${MAX_LEGACY_USES}`);
