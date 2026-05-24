@@ -351,14 +351,12 @@
       window.SiteUtils.lockScroll('command-palette');
     } else {
       document.documentElement.classList.add('cp-scroll-lock');
-      document.body.style.overflow = 'hidden';
     }
   }
   function unlockScroll() {
     /* BUG-05 fix: всегда снимаем и класс, и inline-стиль — независимо от SiteUtils.
        Иначе если lock был через fallback, а unlock через SiteUtils — overflow залипает. */
     document.documentElement.classList.remove('cp-scroll-lock');
-    document.body.style.removeProperty('overflow');
     if (window.SiteUtils && typeof window.SiteUtils.unlockScroll === 'function') {
       window.SiteUtils.unlockScroll('command-palette');
     }

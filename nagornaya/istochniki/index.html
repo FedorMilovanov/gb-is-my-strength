@@ -1197,7 +1197,7 @@
     if (bars[1]) bars[1].style.opacity = '0';
     if (bars[2]) bars[2].style.transform = 'rotate(-45deg) translate(0,-6px)';
     if (window.SiteUtils && window.SiteUtils.lockScroll) window.SiteUtils.lockScroll('nagornaya-menu');
-    else { document.body.style.overflow = 'hidden'; }
+    else { document.body.classList.add('no-scroll'); }
     lastFocus = document.activeElement;
     var firstLink = menu.querySelector('a, button');
     if (firstLink) firstLink.focus();
@@ -1212,7 +1212,7 @@
     if (bars[1]) bars[1].style.opacity = '1';
     if (bars[2]) bars[2].style.transform = '';
     if (window.SiteUtils && window.SiteUtils.unlockScroll) window.SiteUtils.unlockScroll('nagornaya-menu');
-    else { document.body.style.overflow = ''; }
+    else { document.body.classList.remove('no-scroll'); }
     if (lastFocus && lastFocus.focus) try { lastFocus.focus(); } catch(e){}
   }
 
