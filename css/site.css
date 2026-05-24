@@ -7404,13 +7404,12 @@ html.dark body.nagornaya-page .nag-quiz-h2 {
   max-width: 560px;
   margin: 0 auto;
   padding: clamp(28px, 4vw, 44px) clamp(24px, 3vw, 36px);
-  /* AUDIT v14: тёплый пергаментный бежевый вместо холодного #fafafa */
-  background: #f7f2ea;
-  border: 1px solid rgba(120, 83, 46, 0.18);
+  background: var(--bg-elevated, #fafafa);
+  border: 1px solid var(--border, #e7e2d8);
   border-radius: 16px;
   box-shadow:
-    0 1px 0 rgba(255, 255, 255, 0.8) inset,
-    0 4px 20px -8px rgba(28, 25, 23, 0.08);
+    0 1px 0 rgba(255,255,255,.7) inset,
+    0 4px 20px -8px rgba(28,25,23,.06);
 }
 html.dark .gb-accuracy-inner {
   background: var(--bg-elevated, #1f1a15);
@@ -8205,16 +8204,15 @@ body.nagornaya-page .nag-summary__text{white-space:normal!important;word-break:n
 .summary-card {
   margin: 14px 0 18px !important;
   padding: 12px 14px 10px !important;
-  /* AUDIT v14: насыщенный тёплый пергамент — виден и в светлой теме */
-  background: #f5ede0 !important;
-  border: 1px solid rgba(120, 83, 46, 0.20) !important;
+  background: rgba(245, 240, 232, 0.55) !important;
+  border: 1px solid rgba(120, 83, 46, 0.10) !important;
   border-radius: 10px !important;
-  box-shadow: 0 1px 3px rgba(120, 83, 46, 0.06), 0 1px 0 rgba(255,255,255,.7) inset !important;
+  box-shadow: none !important;
 }
 html.dark .summary-card {
-  background: rgba(42, 34, 24, 0.72) !important;
-  border-color: rgba(245, 213, 166, 0.14) !important;
-  box-shadow: 0 1px 0 rgba(255,255,255,.03) inset !important;
+  background: rgba(255,255,255,0.03) !important;
+  border-color: rgba(245, 213, 166, 0.12) !important;
+  box-shadow: none !important;
 }
 .summary-card__head {
   margin: 0 0 8px !important;
