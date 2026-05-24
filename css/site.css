@@ -7404,12 +7404,12 @@ html.dark body.nagornaya-page .nag-quiz-h2 {
   max-width: 560px;
   margin: 0 auto;
   padding: clamp(28px, 4vw, 44px) clamp(24px, 3vw, 36px);
-  background: var(--bg-elevated, #fafafa);
-  border: 1px solid var(--border, #e7e2d8);
+  background: #f7f1e8;
+  border: 1px solid rgba(120, 83, 46, 0.16);
   border-radius: 16px;
   box-shadow:
-    0 1px 0 rgba(255,255,255,.7) inset,
-    0 4px 20px -8px rgba(28,25,23,.06);
+    0 1px 0 rgba(255,255,255,.78) inset,
+    0 4px 20px -8px rgba(28,25,23,.08);
 }
 html.dark .gb-accuracy-inner {
   background: var(--bg-elevated, #1f1a15);
@@ -7960,43 +7960,10 @@ html.dark body.articles-index-page .h-article-card {
   body.articles-index-page .h-article-card { padding: 14px; }
 }
 
-/* AUDIT v12: fix screenshot regressions — summary, Hebrew layout, hero hover */
-.hb-w {
-  display: inline-block !important;
-  position: relative !important;
-  width: auto !important;
-  margin-inline: .15em !important;
-  vertical-align: baseline !important;
-}
-.hb-w > .hb-front {
-  display: inline-block !important;
-  position: relative !important;
-  transform-origin: center !important;
-}
-.hb-w > .hb-back {
-  position: absolute !important;
-  left: 50% !important;
-  top: 50% !important;
-  width: max-content !important;
-  max-width: 10em !important;
-  transform: translate(-50%, -50%) rotate(6deg) scale(.88) !important;
-  transform-origin: center !important;
-  text-align: center !important;
-  pointer-events: none !important;
-  opacity: 0 !important;
-  z-index: 2 !important;
-}
-.hb-w:hover > .hb-front,
-.hb-w:focus-visible > .hb-front {
-  opacity: 0 !important;
-  transform: rotate(-5deg) scale(.92) !important;
-}
-.hb-w:hover > .hb-back,
-.hb-w:focus-visible > .hb-back {
-  opacity: 1 !important;
-  transform: translate(-50%, -50%) rotate(0) scale(1) !important;
-}
-
+/* AUDIT v14: Hebrew word expansion lives in css/home.css.
+   Keep this site.css section for the home hero hover polish only;
+   do not position .hb-back here, otherwise it can override the
+   inline expansion that pushes neighboring words apart. */
 @media (hover: hover) and (pointer: fine) {
   .h-hero-title:hover .h-title-static {
     opacity: .96 !important;
@@ -8197,76 +8164,112 @@ body.nagornaya-page .nag-summary__text{white-space:normal!important;word-break:n
 }
 
 /* ════════════════════════════════════════════════════════════
-   SUMMARY CARD — compact unified style
-   Делает обычные .summary-card визуально ближе к мини-summary
-   из серии «Нагорная проповедь»: без громоздких карточек внутри.
+   SUMMARY CARD — premium compact cards, not plain text
+   Сохраняем структуру: check icon + number + text-card.
+   Фикс v14: светлая тема получает видимый тёплый пергаментный
+   фон, но без превращения summary в «обычный текст».
    ════════════════════════════════════════════════════════════ */
 .summary-card {
-  margin: 14px 0 18px !important;
-  padding: 12px 14px 10px !important;
-  background: rgba(245, 240, 232, 0.55) !important;
-  border: 1px solid rgba(120, 83, 46, 0.10) !important;
-  border-radius: 10px !important;
-  box-shadow: none !important;
+  margin: clamp(30px, 5vw, 52px) 0 !important;
+  padding: clamp(18px, 3vw, 28px) !important;
+  background:
+    linear-gradient(180deg, rgba(255,255,255,0.46), rgba(255,255,255,0.18)),
+    #f3eadc !important;
+  border: 1px solid rgba(120, 83, 46, 0.18) !important;
+  border-radius: 18px !important;
+  box-shadow:
+    0 1px 0 rgba(255,255,255,0.78) inset,
+    0 16px 44px -30px rgba(82, 55, 32, 0.28),
+    0 6px 18px -14px rgba(82, 55, 32, 0.16) !important;
 }
 html.dark .summary-card {
-  background: rgba(255,255,255,0.03) !important;
-  border-color: rgba(245, 213, 166, 0.12) !important;
-  box-shadow: none !important;
+  background:
+    linear-gradient(180deg, rgba(255,255,255,0.04), rgba(255,255,255,0.018)),
+    #201911 !important;
+  border-color: rgba(245, 213, 166, 0.14) !important;
+  box-shadow:
+    0 1px 0 rgba(255,255,255,0.04) inset,
+    0 20px 48px -28px rgba(0,0,0,0.68) !important;
 }
 .summary-card__head {
-  margin: 0 0 8px !important;
-  padding: 0 !important;
+  margin: 0 0 16px !important;
+  padding: 0 0 12px !important;
   background: transparent !important;
   color: #7a2e2e !important;
   border: 0 !important;
   font-size: 11px !important;
-  font-weight: 700 !important;
-  letter-spacing: .16em !important;
+  font-weight: 800 !important;
+  letter-spacing: .20em !important;
 }
 html.dark .summary-card__head {
-  color: rgba(245,226,198,.72) !important;
+  color: rgba(245,226,198,.76) !important;
 }
 .summary-card__head::after {
   left: 0 !important;
-  width: 28px !important;
+  width: 42px !important;
   bottom: -1px !important;
 }
 .summary-card__body {
-  gap: 4px !important;
+  gap: 8px !important;
 }
 .summary-card__item {
   display: grid !important;
-  grid-template-columns: 22px 1fr !important;
+  grid-template-columns: 34px 42px 1fr !important;
   align-items: start !important;
-  gap: 8px !important;
-  padding: 0 !important;
-  background: transparent !important;
-  border: 0 !important;
-  border-radius: 0 !important;
-  box-shadow: none !important;
+  gap: 10px !important;
+  padding: 12px 14px !important;
+  background: rgba(255,255,255,0.44) !important;
+  border: 1px solid rgba(120, 83, 46, 0.12) !important;
+  border-radius: 14px !important;
+  box-shadow: 0 1px 0 rgba(255,255,255,0.62) inset !important;
   transform: none !important;
 }
 .summary-card__item:hover {
-  transform: none !important;
-  box-shadow: none !important;
-  border-color: transparent !important;
+  transform: translateY(-1px) !important;
+  background: rgba(255,255,255,0.62) !important;
+  border-color: rgba(120, 83, 46, 0.18) !important;
+  box-shadow:
+    0 1px 0 rgba(255,255,255,0.72) inset,
+    0 10px 24px -20px rgba(82,55,32,0.35) !important;
+}
+html.dark .summary-card__item {
+  background: rgba(255,255,255,0.035) !important;
+  border-color: rgba(245,213,166,0.10) !important;
+  box-shadow: 0 1px 0 rgba(255,255,255,0.035) inset !important;
+}
+html.dark .summary-card__item:hover {
+  background: rgba(255,255,255,0.055) !important;
+  border-color: rgba(245,213,166,0.16) !important;
 }
 .summary-card__check {
-  display: none !important;
+  display: grid !important;
+  width: 30px !important;
+  height: 30px !important;
+  place-items: center !important;
+  align-self: start !important;
+  border-radius: 999px !important;
+  color: #7a2e2e !important;
+  background: rgba(122, 46, 46, 0.08) !important;
+  border: 1px solid rgba(122, 46, 46, 0.12) !important;
+  box-shadow: none !important;
+}
+html.dark .summary-card__check {
+  color: #e8b878 !important;
+  background: rgba(232,184,120,0.08) !important;
+  border-color: rgba(232,184,120,0.14) !important;
 }
 .summary-card__num,
 .summary-card__item:not(:has(.summary-card__num))::before {
   min-width: 0 !important;
-  width: auto !important;
+  width: 42px !important;
   display: inline-block !important;
   align-self: start !important;
-  padding: 0 !important;
-  border-right: 0 !important;
+  padding: 0 10px 0 0 !important;
+  border-right: 1px solid rgba(120, 83, 46, 0.16) !important;
   font-family: 'Source Sans 3', system-ui, sans-serif !important;
-  font-size: 11px !important;
+  font-size: 20px !important;
   font-weight: 800 !important;
-  line-height: 1.55 !important;
+  line-height: 1.28 !important;
   letter-spacing: .02em !important;
   color: #b8860b !important;
   text-shadow: none !important;
@@ -8274,30 +8277,55 @@ html.dark .summary-card__head {
 html.dark .summary-card__num,
 html.dark .summary-card__item:not(:has(.summary-card__num))::before {
   color: #d4a762 !important;
+  border-right-color: rgba(245,213,166,0.16) !important;
 }
 .summary-card__text {
   margin: 0 !important;
   padding: 0 !important;
-  font-size: 13.5px !important;
-  line-height: 1.48 !important;
-  color: #3d342b !important;
+  font-size: 14.5px !important;
+  line-height: 1.5 !important;
+  color: #352c24 !important;
 }
 html.dark .summary-card__text {
-  color: rgba(250,243,232,.78) !important;
+  color: rgba(250,243,232,.80) !important;
 }
 .summary-card__text strong {
-  color: inherit !important;
+  color: var(--accent, #7a2e2e) !important;
+  font-weight: 750 !important;
+}
+html.dark .summary-card__text strong {
+  color: var(--accent-strong, #e8b878) !important;
 }
 @media (max-width: 560px) {
   .summary-card {
-    padding: 12px 13px 10px !important;
+    padding: 14px 12px !important;
+    border-radius: 16px !important;
   }
   .summary-card__item {
-    grid-template-columns: 20px 1fr !important;
-    gap: 8px !important;
+    grid-template-columns: 30px 1fr !important;
+    grid-template-rows: auto auto !important;
+    gap: 6px 10px !important;
+    padding: 11px 12px !important;
+  }
+  .summary-card__check {
+    grid-row: 1 / span 2 !important;
+    width: 28px !important;
+    height: 28px !important;
+  }
+  .summary-card__num,
+  .summary-card__item:not(:has(.summary-card__num))::before {
+    grid-column: 2 !important;
+    grid-row: 1 !important;
+    width: auto !important;
+    padding: 0 !important;
+    border-right: 0 !important;
+    font-size: 13px !important;
+    line-height: 1.1 !important;
   }
   .summary-card__text {
-    font-size: 13px !important;
+    grid-column: 2 !important;
+    grid-row: 2 !important;
+    font-size: 13.5px !important;
   }
 }
 
