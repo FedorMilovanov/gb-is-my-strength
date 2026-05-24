@@ -43,7 +43,7 @@ if (errors) process.exit(1);
 
 /* Ratchet: legacy usages may go down, but must not increase.
    Update this baseline only when a migration patch reduces the count. */
-const MAX_LEGACY_USES = 182;
+const MAX_LEGACY_USES = 0;
 
 const cssFiles = fs.readdirSync(path.join(root, 'css')).filter(f => f.endsWith('.css'));
 const legacyNames = Object.keys(aliases).sort((a, b) => b.length - a.length);
