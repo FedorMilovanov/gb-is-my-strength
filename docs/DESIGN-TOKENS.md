@@ -45,3 +45,19 @@ This keeps old pages stable while allowing new articles/components to use the cl
 ## Migration rule
 
 When editing an old component, migrate only touched declarations to `--color-*` if it is visually safe. Avoid global search/replace: contrast and dark-mode must be checked component by component.
+
+## Governance check
+
+Run:
+
+```bash
+npm run tokens:check
+```
+
+The check fails if canonical tokens are missing or legacy aliases stop pointing to canonical tokens. Legacy `var(--text)`-style usages are reported as migration telemetry, not as an error, until the migration is complete.
+
+## Current migration status
+
+- v20: canonical semantic layer and legacy aliases.
+- v21: command palette bridge moved to canonical `--color-*`; token governance check added.
+- Next phases should migrate component clusters gradually, only with visual checks.
