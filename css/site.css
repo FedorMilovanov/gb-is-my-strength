@@ -6165,7 +6165,7 @@ html[data-scroll-locked="1"] body {
 }
 
 @media (pointer: coarse) {
-  html, body { overscroll-behavior-y: contain; }
+  html, body { overscroll-behavior-y: auto; }
 }
 
 input:not([type="checkbox"]):not([type="radio"]):not([type="hidden"]),
@@ -7067,7 +7067,7 @@ main .gb-accuracy-block {
    ═══════════════ */
 html[data-scroll-locked="1"], html[data-scroll-locked="1"] body, body.ng-toc-lock {
   overflow: hidden !important;
-  touch-action: none;
+  touch-action: auto !important;
 }
 html[data-scroll-locked="1"] .btoc-panel,
 html[data-scroll-locked="1"] .btoc-nav,
