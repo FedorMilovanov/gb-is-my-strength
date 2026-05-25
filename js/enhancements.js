@@ -53,13 +53,26 @@
     var accordions = document.querySelectorAll('.faq-accordion');
     if (!accordions.length) return;
 
-    /* ── sanitizeHtml: убираем script/style из ответа ── */
+    /* ── sanitizeHtml: безопасный HTML для JSON-LD FAQ answer ── */
     function sanitizeHtml(html) {
       var tmp = document.createElement('div');
       tmp.innerHTML = html;
-      var dangerous = tmp.querySelectorAll('script, style, iframe, object');
+
+      var dangerous = tmp.querySelectorAll('script, style, iframe, object, embed, link, meta, base, form, input, button, svg, math');
       dangerous.forEach(function(el){ el.parentNode.removeChild(el); });
-      return tmp.innerHTML;
+
+      tmp.querySelectorAll('*').forEach(function(el) {
+        Array.prototype.slice.call(el.attributes).forEach(function(attr) {
+          var name = attr.name.toLowerCase();
+          var value = (attr.value || '').trim().toLowerCase();
+          if (name.indexOf('on') === 0 ||
+              ((name === 'href' || name === 'src' || name === 'xlink:href') && /^javascript:/i.test(value))) {
+            el.removeAttribute(attr.name);
+          }
+        });
+      });
+
+      return tmp.innerHTML.replace(/<\/script/gi, '<\\/script');
     }
 
     var entities = [];
@@ -226,6 +239,7 @@
     }
 
     var offsets = [];
+    var _offsetTimer = null;
     function refreshOffsets() { offsets = getOffsets(); }
     refreshOffsets();
 
@@ -239,7 +253,6 @@
     } else {
       window.addEventListener('resize', refreshOffsets, { passive: true });
     }
-    var _offsetTimer;
 
     window.addEventListener('load', refreshOffsets, { passive: true });
     if (document.fonts && document.fonts.ready) {

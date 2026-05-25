@@ -101,13 +101,20 @@
     return Math.max(0, Math.min(100, Math.round((window.scrollY / maxScroll) * 100)));
   }
 
+  function getScrollPaddingTop() {
+    var raw = '';
+    try { raw = getComputedStyle(document.documentElement).scrollPaddingTop; } catch (e) {}
+    var value = parseFloat(raw);
+    return Number.isFinite(value) ? value : 0;
+  }
+
   function normalizeText(str) {
     return (str || '').replace(/\s+/g, ' ').replace(/[«»"']/g, '')
       .replace(/[—–-]/g, '-').trim().toLowerCase();
   }
 
   function detectCurrentSection() {
-    var probeY = window.scrollY + window.innerHeight * 0.35;
+    var probeY = window.scrollY + getScrollPaddingTop() + window.innerHeight * 0.25;
     var found = headings[0];
     for (var i = 0; i < headings.length; i++) {
       if (headings[i].offsetTop <= probeY) { found = headings[i]; } else { break; }

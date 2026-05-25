@@ -11,6 +11,8 @@
   var pageType = SiteUtils.getConfig('page.type', '');
   if (pageType !== 'article') return;
   if (!document.querySelector('article')) return;
+  if (window.__gbGlossaryInitialized) return;
+  window.__gbGlossaryInitialized = true;
 
   var DATA_URL = (document.querySelector('script[data-glossary-url]') || {}).dataset?.glossaryUrl
               || '/data/glossary.json';
@@ -83,7 +85,10 @@
       tip.id = 'gterm-inline-tip';
       tip.className = 'gtip is-open';
       tip.style.cssText = 'position:absolute;z-index:var(--z-tooltip);max-width:280px;padding:8px 12px;background:var(--bg-elevated);border:1px solid var(--border);border-radius:8px;box-shadow:0 6px 18px rgba(0,0,0,.12);font-size:13px;line-height:1.5;color:var(--text);';
-      tip.innerHTML = '<strong>' + key + '.</strong> ' + dict[key];
+      var strong = document.createElement('strong');
+      strong.textContent = key + '.';
+      tip.appendChild(strong);
+      tip.appendChild(document.createTextNode(' ' + dict[key]));
       document.body.appendChild(tip);
       var rect = t.getBoundingClientRect();
       tip.style.left = (window.scrollX + rect.left) + 'px';

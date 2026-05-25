@@ -18,6 +18,7 @@
   'use strict';
 
   var STORAGE_KEY = 'gb-highlights-v1';
+  var storageWarned = false;
 
   /* ── Storage helpers ── */
   function loadAll() {
@@ -26,8 +27,22 @@
   }
 
   function saveAll(items) {
-    try { localStorage.setItem(STORAGE_KEY, JSON.stringify(items)); }
-    catch (e) {}
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(items));
+      return true;
+    } catch (e) {
+      if (!storageWarned) {
+        storageWarned = true;
+        try { console.warn('[highlights] localStorage write failed:', e && (e.name || e.message)); } catch (_) {}
+      }
+      if (e && (e.name === 'QuotaExceededError' || e.name === 'NS_ERROR_DOM_QUOTA_REACHED' || e.code === 22 || e.code === 1014)) {
+        try {
+          localStorage.setItem(STORAGE_KEY, JSON.stringify(items.slice(0, 50)));
+          return true;
+        } catch (_) {}
+      }
+      return false;
+    }
   }
 
   function addHighlight(text, articleTitle, url) {

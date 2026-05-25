@@ -70,12 +70,19 @@
     }
   };
 
-  window.SiteUtils.forceUnlockScroll = function () {
-    locks.clear();
-    releaseLock();
+  function cleanupEmergencyTimer() {
     if (emergencyTimer) {
       clearInterval(emergencyTimer);
       emergencyTimer = null;
     }
+  }
+
+  window.addEventListener('pagehide', cleanupEmergencyTimer);
+  window.addEventListener('beforeunload', cleanupEmergencyTimer);
+
+  window.SiteUtils.forceUnlockScroll = function () {
+    locks.clear();
+    releaseLock();
+    cleanupEmergencyTimer();
   };
 })();
