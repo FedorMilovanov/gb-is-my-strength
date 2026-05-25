@@ -1,0 +1,164 @@
+/* ============================================================
+   MOBILE HOTFIX v2.0 — gb-is-my-strength
+   Дата: 2026-05-25
+   Порядок: подключить ПОСЛЕ site.css, command-palette.css
+   ============================================================ */
+
+/* P0-1: touch-action: none → auto */
+html[data-scroll-locked="1"],
+html[data-scroll-locked="1"] body,
+body.ng-toc-lock {
+  overflow: hidden !important;
+  touch-action: auto !important;
+}
+
+html[data-scroll-locked="1"] .btoc-panel,
+html[data-scroll-locked="1"] .btoc-nav,
+html[data-scroll-locked="1"] .mobile-nav,
+html[data-scroll-locked="1"] .cp-list,
+html[data-scroll-locked="1"] .cp-preview-inner,
+body.ng-toc-lock .btoc-panel,
+body.ng-toc-lock .btoc-nav {
+  touch-action: pan-y !important;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: contain;
+}
+
+/* P0-2: position: fixed → static на html */
+html.cp-scroll-lock {
+  overflow: hidden !important;
+  position: static !important;
+  width: auto !important;
+  height: auto !important;
+}
+
+html.cp-scroll-lock body {
+  position: fixed;
+  inset-inline: 0;
+  top: var(--scroll-lock-top, 0px);
+  width: 100%;
+  overflow: hidden;
+}
+
+/* P0-4: pull-to-refresh */
+@media (pointer: coarse) {
+  html, body { overscroll-behavior-y: auto !important; }
+  .btoc-panel, .btoc-nav, .cp-list, .cp-preview-inner, .fn-sheet, .mobile-nav {
+    overscroll-behavior: contain;
+  }
+}
+
+/* P1-1: touch targets ≥44px */
+@media (pointer: coarse) {
+  .mobile-controls .theme-toggle, .h-mobile-menu-btn, .h-cp-btn,
+  .gb-nav-search-icon, .btoc-close, .sd-close, .bar-icon-btn,
+  .cp-close-btn, .mobile-nav-close {
+    min-width: 44px !important; min-height: 44px !important;
+    width: 44px !important; height: 44px !important;
+    padding: 0 !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+  }
+}
+
+/* P1-2: navbar overflow 320-360px */
+@media (max-width: 400px) {
+  .h-nav-logo { min-width: 0; max-width: calc(100vw - 112px); overflow: hidden; }
+  .h-nav-logo-main, .h-nav-logo-dash, .h-nav-logo-accent { font-size: clamp(14px, 4.1vw, 18px); }
+}
+@media (max-width: 340px) {
+  .h-nav-logo-dash { transform: scaleX(0.75); }
+  .h-nav-logo { gap: 2px; }
+}
+
+/* P1-3: Hebrew width fix on touch */
+@media (pointer: coarse) {
+  .hb-word[data-toggled] { width: auto !important; min-width: auto !important; }
+}
+
+/* P1-4: hero vertical budget */
+@media (max-width: 480px) {
+  .h-hero { padding-top: 74px; padding-bottom: 36px; }
+  .h-sacred-block--hero { margin-bottom: 24px; }
+}
+
+/* P1-7: 100dvh */
+.home-v20 { min-height: 100vh; min-height: 100dvh; }
+@media (max-width: 480px) {
+  .btoc-panel, body.nagornaya-page .btoc-panel { max-height: min(85dvh, 680px) !important; }
+  .mobile-nav { max-height: 100dvh; height: 100dvh; }
+  .btoc-panel, .mobile-nav, .cp-panel { max-height: var(--visual-viewport-h, 100dvh); }
+}
+
+/* P1-8: negative margins */
+@media (max-width: 480px) {
+  .h-featured-series { margin-inline: 0; }
+  .h-featured-img-wrap { margin-left: 0; margin-right: 0; }
+  .h-wide-image { margin-inline: 0; }
+}
+
+/* P1-9: content-visibility */
+.article-content, .article-body, .series-content {
+  content-visibility: auto; contain-intrinsic-size: auto 500px;
+}
+
+/* P2-1: scroll-padding */
+html { scroll-padding-top: 72px; scroll-padding-bottom: calc(72px + env(safe-area-inset-bottom, 0px)); }
+:target, [id] { scroll-margin-top: 72px; }
+
+/* P2-2: min 12px text */
+@media (max-width: 480px) {
+  .h-sacred-ref, .h-meta-tag, .h-featured-series-badge,
+  .h-featured-author, .h-featured-time, .article-img figcaption .ai-note {
+    font-size: max(12px, 0.75rem); line-height: 1.35;
+  }
+}
+
+/* P2-3: no backdrop-blur on mobile */
+@media (max-width: 480px), (prefers-reduced-transparency: reduce) {
+  .h-navbar.scrolled, .h-mobile-nav, body.nagornaya-page .bottom-bar, .h-scroll-top {
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+    background: color-mix(in srgb, var(--h-bg, #f8f5f0) 96%, transparent);
+  }
+}
+
+/* P2-4: will-change only during animation */
+.h-featured-img-wrap img, .bottom-bar, .h-reading-progress { will-change: auto; }
+.h-featured-series:hover .h-featured-img-wrap img,
+.bottom-bar.visible, .is-animating .h-reading-progress { will-change: transform; }
+
+/* P2-5: hover reset on touch */
+@media (hover: none) and (pointer: coarse) {
+  .h-hero-title:hover .h-title-static, .h-hero-title:hover .h-title-accent,
+  .h-nav-logo:hover .h-nav-logo-main, .h-nav-logo:hover .h-nav-logo-accent {
+    letter-spacing: inherit; text-shadow: none;
+  }
+  .h-hero-title:hover .h-title-dash, .h-nav-logo:hover .h-nav-logo-dash,
+  .h-featured-series:hover .h-featured-img-wrap img { transform: none; }
+}
+
+/* safe-area */
+@supports (padding-bottom: env(safe-area-inset-bottom)) {
+  .bottom-bar, .btoc-panel, .mobile-nav, .cp-panel {
+    padding-bottom: calc(16px + env(safe-area-inset-bottom, 0px));
+  }
+}
+
+/* P2-6: reduced-motion */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+  .h-hero-title, .h-nav-logo, .h-featured-img-wrap img,
+  .h-reading-progress, .h-featured-series {
+    transition: none !important; animation: none !important;
+  }
+}
+
+/* P2-7: focus-visible */
+:focus-visible { outline: 2px solid var(--h-accent, #8b5e3c); outline-offset: 2px; }
+:focus:not(:focus-visible) { outline: none; }
