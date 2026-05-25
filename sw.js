@@ -45,7 +45,6 @@ var PRECACHE_ASSETS = [
   '/404.html',
   /* SUS-D: pagefind.js в precache → поиск доступен офлайн с первого визита */
   '/pagefind/pagefind.js',
-  '/pagefind/pagefind-highlight.js',
   '/data/search-manifest.json'
 ];
 
@@ -121,21 +120,30 @@ var CONTENT_CACHE_LIMIT = 30; /* V2-FIX: LRU для контентного кэ�
 
 function trimCache(cache, limit) {
   return cache.keys().then(function(keys) {
-    var deletions = [];
-    while (keys.length > limit) {
-      deletions.push(cache.delete(keys.shift()));
-    }
-    return Promise.all(deletions);
+    var overflow = keys.length - limit;
+    if (overflow <= 0) return Promise.resolve();
+    return Promise.all(keys.slice(0, overflow).map(function(key) {
+      return cache.delete(key);
+    }));
   });
 }
 
 function cacheFirst(req, cacheName) {
   var isImages = cacheName === CACHE_IMAGES;
+  var isVersioned = /[?&]v=/.test(req.url);
+
+  function fallbackToPrecache(cache) {
+    if (!isVersioned) return Promise.resolve(undefined);
+    var bare = new URL(req.url);
+    bare.search = '';
+    return cache.match(bare.pathname);
+  }
+
   return caches.open(cacheName).then(function(cache) {
-    /* P-02: versioned assets (?v=hash) — игнорируем query при поиске в кэше,
-       чтобы precache /css/site.css отдавал /css/site.css?v=abc123 */
-    var opts = /[?&]v=/.test(req.url) ? { ignoreSearch: true } : undefined;
-    return cache.match(req, opts).then(function(cached) {
+    /* P0: versioned assets (?v=hash) must be matched by the full request URL.
+       Query-agnostic matching served stale /css/site.css for /css/site.css?v=newhash.
+       We still fallback to the bare precache key only when offline/network fails. */
+    return cache.match(req).then(function(cached) {
       if (cached) return cached;
       return fetch(req).then(function(res) {
         if (res && res.status === 200 && res.type !== 'opaque') {
@@ -146,6 +154,11 @@ function cacheFirst(req, cacheName) {
           }).then(function() { return res; });
         }
         return res;
+      }).catch(function() {
+        return fallbackToPrecache(cache).then(function(fallback) {
+          if (fallback) return fallback;
+          throw new Error('[SW] cacheFirst miss and network failed: ' + req.url);
+        });
       });
     });
   });

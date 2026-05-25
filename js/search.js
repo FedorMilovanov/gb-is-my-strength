@@ -326,6 +326,11 @@
         pagefindLoaded  = true;
         pagefindLoading = false;
         cb && cb();
+      } else if (window.__pagefindFailed__) {
+        clearInterval(poll);
+        pagefindLoading = false;
+        pagefindFailed  = true;
+        cb && cb();
       } else if (polls > 50) {
         /* else-if: success and timeout are mutually exclusive.
            Without this, a load on tick 51 would set both
@@ -1297,6 +1302,7 @@
     if (item.article) {
       addToHistory(item.article.title || item.title);
       window.location.href = item.article.url;
+      return;
     }
     closeModal();
   }

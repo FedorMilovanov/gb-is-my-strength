@@ -8,8 +8,13 @@
 
   var subs = [];
   var ticking = false;
+  var pageHidden = document.hidden;
 
   function run() {
+    if (pageHidden) {
+      ticking = false;
+      return;
+    }
     ticking = false;
     var state = {
       y: window.scrollY,
@@ -25,10 +30,16 @@
   }
 
   window.addEventListener('scroll', function () {
+    if (pageHidden) return;
     if (!ticking) {
       ticking = true;
       requestAnimationFrame(run);
     }
+  }, { passive: true });
+
+  document.addEventListener('visibilitychange', function () {
+    pageHidden = document.hidden;
+    if (pageHidden) ticking = false;
   }, { passive: true });
 
   window.ScrollBus = {

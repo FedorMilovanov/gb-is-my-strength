@@ -35,6 +35,7 @@ const ALLOWED_CSS = new Set([
   'css/site.css',
   'css/home.css',
   'css/command-palette.css',
+  'css/mobile-hotfix.css',
   'css/nagornaya-mobile-toc.css'
 ]);
 
@@ -45,6 +46,8 @@ const REQUIRED_EXTRA_CSS = new Set([
 
 const ALLOWED_JS = new Set([
   'js/site.js',
+  'js/site-utils.js',
+  'js/scroll-perf.js',
   'js/search.js',
   'js/enhancements.js',
   'js/highlights.js',
@@ -60,10 +63,13 @@ const CACHE_BUST_ASSETS = [
   'css/site.css',
   'css/home.css',
   'css/command-palette.css',
+  'css/mobile-hotfix.css',
   'css/nagornaya-mobile-toc.css',
   'fonts/fonts.css',
   'nagornaya/tw.min.css',
   'js/site.js',
+  'js/site-utils.js',
+  'js/scroll-perf.js',
   'js/bookmark-engine.js',
   'js/enhancements.js',
   'js/highlights.js',
@@ -73,7 +79,7 @@ const CACHE_BUST_ASSETS = [
 ];
 
 const MAX_CSS_TOTAL = 370_000; // v12 + a11y + v9 premium underline/stacked-table/vp; gzip ~67KB
-const MAX_JS_TOTAL = 360_000; // includes sw.js; site.js is intentionally large right now
+const MAX_JS_TOTAL = 365_000; // includes sw.js + mobile utils; site.js is intentionally large right now
 const MAX_HTML = 450_000;
 const MIN_DESC = 50;
 const MAX_DESC = 180;
@@ -172,8 +178,8 @@ function rootsFromLd(data) {
   if (missingJs.length) R.err(`Missing JS files: ${missingJs.join(', ')}`);
   for (const f of REQUIRED_EXTRA_CSS) if (!exists(f)) R.err(`Missing required stylesheet: ${f}`);
 
-  if (!extraCss.length && !missingCss.length) R.ok('Structure: exactly 4 CSS files in /css');
-  if (!extraJs.length && !missingJs.length) R.ok('Structure: exactly 9 JS files in /js');
+  if (!extraCss.length && !missingCss.length) R.ok('Structure: exactly 5 CSS files in /css');
+  if (!extraJs.length && !missingJs.length) R.ok('Structure: exactly 11 JS files in /js');
   if ([...REQUIRED_EXTRA_CSS].every(exists)) R.ok('Structure: fonts/fonts.css and nagornaya/tw.min.css exist');
 })();
 
