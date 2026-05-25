@@ -71,8 +71,11 @@ jobs:
           KEY="${{ secrets.INDEXNOW_KEY }}"
 
           if [ -z "$KEY" ]; then
-            echo "::error::INDEXNOW_KEY secret is not set. Generate a new IndexNow key, add it to repository secrets, and let deploy.yml publish KEY.txt."
-            exit 1
+            echo "::warning::INDEXNOW_KEY secret is not set; skipping IndexNow submit, but keeping deploy pipeline green."
+            echo "urls=[]"              >> $GITHUB_OUTPUT
+            echo "key="                 >> $GITHUB_OUTPUT
+            echo "host=gospod-bog.ru"   >> $GITHUB_OUTPUT
+            exit 0
           fi
 
           # Collect changed URLs from pushed commits — includes catalog pages
@@ -114,7 +117,7 @@ jobs:
 
           case "$BING_STATUS" in
             2*) echo "✅ Bing IndexNow OK: $BING_STATUS" ;;
-            *) echo "❌ Bing IndexNow failed: $BING_STATUS"; cat /tmp/indexnow-bing.out; exit 1 ;;
+            *) echo "::warning::Bing IndexNow failed: $BING_STATUS"; cat /tmp/indexnow-bing.out ;;
           esac
 
           YANDEX_STATUS=$(curl -s -o /tmp/indexnow-yandex.out -w "%{http_code}" \
@@ -124,5 +127,5 @@ jobs:
 
           case "$YANDEX_STATUS" in
             2*) echo "✅ Yandex IndexNow OK: $YANDEX_STATUS" ;;
-            *) echo "❌ Yandex IndexNow failed: $YANDEX_STATUS"; cat /tmp/indexnow-yandex.out; exit 1 ;;
+            *) echo "::warning::Yandex IndexNow failed: $YANDEX_STATUS"; cat /tmp/indexnow-yandex.out ;;
           esac
