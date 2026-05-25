@@ -1827,14 +1827,30 @@ a.series-card:hover{border-color:var(--accent);transform:translateY(-2px);box-sh
                 const data = STRATEGIC_MAP_DATA[id];
                 if (!data) return;
 
-                let content = '<div class="popover-close-btn"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true" style="display:inline-block;vertical-align:-1px"><path d="M6 6l12 12M18 6l-12 12"/></svg></div>';
+                popover.textContent = '';
+
+                const closeBtn = document.createElement('div');
+                closeBtn.className = 'popover-close-btn';
+                closeBtn.setAttribute('aria-hidden', 'true');
+                closeBtn.innerHTML = '<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true" style="display:inline-block;vertical-align:-1px"><path d="M6 6l12 12M18 6l-12 12"/></svg>';
+                popover.appendChild(closeBtn);
+
                 data.blocks.forEach(b => {
-                    content += `<div class="popover-section">
-                        <span class="popover-badge color-${b.type}">${b.title}</span>
-                        <p class="popover-text">${b.text}</p>
-                    </div>`;
+                    const section = document.createElement('div');
+                    section.className = 'popover-section';
+
+                    const badge = document.createElement('span');
+                    badge.className = 'popover-badge color-' + String(b.type || '').replace(/[^a-z0-9_-]/gi, '');
+                    badge.textContent = b.title || '';
+
+                    const text = document.createElement('p');
+                    text.className = 'popover-text';
+                    text.textContent = b.text || '';
+
+                    section.appendChild(badge);
+                    section.appendChild(text);
+                    popover.appendChild(section);
                 });
-                popover.innerHTML = content;
                 popover.style.display = 'block';
                 
                 const rect = trigger.getBoundingClientRect();

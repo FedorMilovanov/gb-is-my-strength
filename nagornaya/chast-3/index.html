@@ -1007,7 +1007,10 @@
   document.querySelectorAll('.tooltip-trigger').forEach(function(el){
     var box = document.createElement('div');
     box.className = 'tt-box absolute z-50 bottom-full left-1/2 -translate-x-1/2 mb-3 w-72 p-4 text-sm text-stone-100 bg-stone-900 rounded-xl shadow-2xl border border-stone-700 leading-relaxed hidden';
-    box.innerHTML = el.getAttribute('data-tooltip') + '<div class="absolute w-3 h-3 bg-stone-900 border-b border-r border-stone-700 rotate-45 -bottom-1.5 left-1/2 -translate-x-1/2"></div>';
+    var arrow = document.createElement('div');
+    arrow.className = 'absolute w-3 h-3 bg-stone-900 border-b border-r border-stone-700 rotate-45 -bottom-1.5 left-1/2 -translate-x-1/2';
+    box.textContent = el.getAttribute('data-tooltip') || '';
+    box.appendChild(arrow);
     el.style.position = 'relative';
     el.style.cursor = 'help';
     el.style.borderBottom = '1px dotted currentColor';
@@ -1020,7 +1023,10 @@
   document.querySelectorAll('.tt').forEach(function(el){
     var box = document.createElement('div');
     box.className = 'tt-box absolute z-50 bottom-full left-1/2 -translate-x-1/2 mb-3 w-72 p-4 text-sm text-stone-100 bg-stone-900 rounded-xl shadow-2xl border border-stone-700 leading-relaxed hidden';
-    box.innerHTML = el.getAttribute('data-tip') + '<div class="absolute w-3 h-3 bg-stone-900 border-b border-r border-stone-700 rotate-45 -bottom-1.5 left-1/2 -translate-x-1/2"></div>';
+    var arrow = document.createElement('div');
+    arrow.className = 'absolute w-3 h-3 bg-stone-900 border-b border-r border-stone-700 rotate-45 -bottom-1.5 left-1/2 -translate-x-1/2';
+    box.textContent = el.getAttribute('data-tip') || '';
+    box.appendChild(arrow);
     el.style.position = 'relative';
     el.appendChild(box);
     el.addEventListener('mouseenter', function(){ box.classList.remove('hidden'); _clampTtBox(box); });
