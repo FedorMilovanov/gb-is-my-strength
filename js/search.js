@@ -1397,11 +1397,6 @@
     }
   });
 
-  /* Кнопка поиска в articles navbar */
-  var navSearchBtn = document.getElementById('hCpBtnNav');
-  if (navSearchBtn) {
-    navSearchBtn.addEventListener('click', function () { openModal(); });
-  }
   window.addEventListener('gb:openSearch', function () { openModal(); });
  
   /* ─────────────────────────────────────────────────────────
@@ -1416,9 +1411,21 @@
  
   /* ─────────────────────────────────────────────────────────
      Inject search button into nav
-     Preserves all v1 selectors — works on every page type
+     Preserves all v1 selectors — works on every page type.
+     Any pre-existing button with id="gbSearchBtn" (canonical)
+     or the legacy id="hCpBtnNav" is treated as already present:
+     we wire it up and skip injection to prevent duplicates.
   ───────────────────────────────────────────────────────── */
   function injectSearchButton() {
+    /* Treat legacy hCpBtnNav as the canonical search button:
+       assign the unified id so alreadyInjected() fires correctly
+       on subsequent calls, then wire and return early.          */
+    var legacyBtn = document.getElementById('hCpBtnNav');
+    if (legacyBtn && !document.getElementById('gbSearchBtn')) {
+      legacyBtn.id = 'gbSearchBtn';
+      wireBtn();
+      return;
+    }
     function alreadyInjected() { return !!document.getElementById('gbSearchBtn'); }
  
     /* Home page nav list */
