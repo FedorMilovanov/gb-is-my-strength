@@ -265,3 +265,14 @@ html.dark body.nagornaya-page .text-emerald-800,
 html.dark body.nagornaya-page .text-red-800 {
   color: rgba(238, 231, 220, 0.78) !important;
 }
+
+/* Inline background:#faf8f5 на .gb-series-link не перекрывается Tailwind-классами
+   (inline style имеет наивысший specificity). Перекрываем явно через !important. */
+html.dark body.nagornaya-page .gb-series-link {
+  background: color-mix(in srgb, #b8882a 8%, var(--color-surface)) !important;
+  border-color: color-mix(in srgb, #b8882a 30%, transparent) !important;
+}
+html.dark body.nagornaya-page .gb-series-link:hover {
+  background: color-mix(in srgb, #b8882a 14%, var(--color-surface)) !important;
+  border-color: color-mix(in srgb, #b8882a 55%, transparent) !important;
+}
