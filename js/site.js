@@ -3568,7 +3568,7 @@
           '<button type="button" class="img-viewer__close" aria-label="Закрыть">\u2715</button>' +
         '</div>' +
         '<div class="img-viewer__body">' +
-          '<img class="img-viewer__img" alt="" loading="eager">' +
+          '<img class="img-viewer__img" src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///ywAAAAAAQABAAACAUwAOw==" alt="" loading="eager">' +
           '<div class="img-viewer__cap"></div>' +
         '</div>' +
       '</div>';

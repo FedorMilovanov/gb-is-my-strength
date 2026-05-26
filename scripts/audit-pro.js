@@ -78,7 +78,7 @@ const CACHE_BUST_ASSETS = [
   'js/nagornaya-mobile-toc.js'
 ];
 
-const MAX_CSS_TOTAL = 370_000; // v12 + a11y + v9 premium underline/stacked-table/vp; gzip ~67KB
+const MAX_CSS_TOTAL = 375_000; // includes visual dark premium overrides; gzip ~70KB
 const MAX_JS_TOTAL = 365_000; // includes sw.js + mobile utils; site.js is intentionally large right now
 const MAX_HTML = 450_000;
 const MIN_DESC = 50;
