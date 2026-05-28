@@ -154,133 +154,200 @@
            touchStartExtra {function(el)} — extra logic before document touchstart check
                                                                                       */
     makeTooltipController: function (anchorSel, tipSel, opts) {
-      /* AUDIT V2 / ARCH-1: полностью delegated реализация.
-         Один комплект listeners на document вместо отдельных на каждый якорь.
-         Это критично при ~30+ .bref на странице — было 180+ listeners,
-         стало 9. Поведение полностью совместимо. */
+      /* AUDIT V2 / ARCH-1 + BUGFIX 2026-05-28:
+         Контроллер по-прежнему delegated, но глобальные listeners теперь
+         ставятся один раз на все типы подсказок. Раньше три вызова
+         makeTooltipController(.bref/.fn-marker/.gterm) дублировали один и тот
+         же набор document/window handlers; теперь вызов только регистрирует
+         конфиг в общем диспетчере. */
       var utils = this;
       opts = opts || {};
-      var GUARD_DELAY = 350;
-      var activeEl   = null;
-      var justOpened = false;
-      var IS_DESKTOP = function () {
-        return window.matchMedia('(hover: hover) and (pointer: fine)').matches;
-      };
-      function resetTipStyles(tip) {
-        if (!tip) return;
-        setTimeout(function () {
-          tip.style.maxHeight  = '';
-          tip.style.overflowY  = '';
-          tip.style.visibility = '';
-          tip.style.top        = '-9999px';
-          tip.style.left       = '-9999px';
-        }, 200);
-      }
-      function close() {
-        if (justOpened) return;
-        if (activeEl) {
-          resetTipStyles(activeEl.querySelector(tipSel));
-          activeEl.classList.remove('is-open');
-          activeEl = null;
-        }
-      }
-      function open(el) {
-        if (!el || !el.querySelector(tipSel)) return;
-        close();
-        el.classList.add('is-open');
-        activeEl = el;
-        utils.positionTip(el.querySelector(tipSel), el);
-        justOpened = true;
-        setTimeout(function () { justOpened = false; }, GUARD_DELAY);
+
+      if (!utils._tooltipControllers) utils._tooltipControllers = [];
+
+      function closestFrom(target, selector) {
+        if (!target) return null;
+        if (target.closest) return target.closest(selector);
+        if (target.parentElement && target.parentElement.closest) return target.parentElement.closest(selector);
+        return null;
       }
 
-      /* ── Delegated TOUCH ─────────────────────────────────────── */
-      var touchMoved = false;
-      document.addEventListener('touchstart', function () { touchMoved = false; }, { passive: true });
-      document.addEventListener('touchmove',  function () { touchMoved = true; },  { passive: true });
-      document.addEventListener('touchend', function (e) {
-        var anchor = e.target.closest(anchorSel);
-        if (anchor && anchor.querySelector(tipSel)) {
-          if (touchMoved) return;
-          e.preventDefault();
-          if (activeEl === anchor) { justOpened = false; close(); }
-          else { open(anchor); }
-          return;
-        }
-        if (!e.target.closest(tipSel)) close();
-      }, { passive: false });
+      function makeController() {
+        var GUARD_DELAY = 350;
+        var controller = {
+          anchorSel: anchorSel,
+          tipSel: tipSel,
+          opts: opts,
+          activeEl: null,
+          justOpened: false,
+          isDesktop: function () {
+            return window.matchMedia('(hover: hover) and (pointer: fine)').matches;
+          },
+          resetTipStyles: function (tip) {
+            if (!tip) return;
+            setTimeout(function () {
+              tip.style.maxHeight  = '';
+              tip.style.overflowY  = '';
+              tip.style.visibility = '';
+              tip.style.top        = '-9999px';
+              tip.style.left       = '-9999px';
+            }, 200);
+          },
+          close: function (force) {
+            if (!force && controller.justOpened) return;
+            if (controller.activeEl) {
+              controller.resetTipStyles(controller.activeEl.querySelector(controller.tipSel));
+              controller.activeEl.classList.remove('is-open');
+              controller.activeEl = null;
+            }
+          },
+          open: function (el) {
+            if (!el || !el.querySelector(controller.tipSel)) return;
+            utils._tooltipControllers.forEach(function (c) {
+              if (c !== controller) c.close(true);
+            });
+            controller.close(true);
+            el.classList.add('is-open');
+            controller.activeEl = el;
+            utils.positionTip(el.querySelector(controller.tipSel), el);
+            controller.justOpened = true;
+            setTimeout(function () { controller.justOpened = false; }, GUARD_DELAY);
+          }
+        };
+        return controller;
+      }
 
-      /* ── Delegated CLICK (desktop) ───────────────────────────── */
-      document.addEventListener('click', function (e) {
-        var anchor = e.target.closest(anchorSel);
-        if (anchor && anchor.querySelector(tipSel)) {
-          if (!IS_DESKTOP()) { e.preventDefault(); return; }
-          e.preventDefault(); e.stopPropagation();
-          if (activeEl === anchor) { close(); return; }
-          open(anchor);
-          return;
-        }
-        if (!e.target.closest(tipSel)) close();
-      });
+      var controller = makeController();
+      utils._tooltipControllers.push(controller);
 
-      /* ── Delegated HOVER через pointerover/pointerout ──────── */
-      document.addEventListener('pointerover', function (e) {
-        if (!IS_DESKTOP()) return;
-        var anchor = e.target.closest(anchorSel);
-        if (!anchor || !anchor.querySelector(tipSel)) return;
-        if (activeEl && activeEl !== anchor) {
-          resetTipStyles(activeEl.querySelector(tipSel));
-          activeEl.classList.remove('is-open');
+      function findHit(e, predicate) {
+        var list = utils._tooltipControllers || [];
+        for (var i = 0; i < list.length; i++) {
+          var c = list[i];
+          if (predicate && !predicate(c)) continue;
+          var anchor = closestFrom(e.target, c.anchorSel);
+          if (anchor && anchor.querySelector(c.tipSel)) return { controller: c, anchor: anchor };
         }
-        utils.positionTip(anchor.querySelector(tipSel), anchor);
-        anchor.classList.add('is-open');
-        activeEl = anchor;
-      });
-      document.addEventListener('pointerout', function (e) {
-        if (!IS_DESKTOP()) return;
-        var anchor = e.target.closest(anchorSel);
-        if (!anchor) return;
-        var related = e.relatedTarget;
-        if (related && related.closest && (related.closest(anchorSel) === anchor || related.closest(tipSel))) return;
-        var tip = anchor.querySelector(tipSel);
-        if (tip && tip.matches && tip.matches(':hover')) return;
-        if (tip && tip.style.overflowY === 'auto') return;
-        if (activeEl === anchor) close();
-      });
+        return null;
+      }
 
-      /* ── Keyboard focus/blur — delegated через focusin/focusout ── */
-      if (opts.useFocusBlur) {
+      function isInsideAnyTip(e) {
+        return (utils._tooltipControllers || []).some(function (c) {
+          return !!closestFrom(e.target, c.tipSel);
+        });
+      }
+
+      function closeAll(force) {
+        (utils._tooltipControllers || []).forEach(function (c) { c.close(!!force); });
+      }
+
+      function closeAllExceptTipTarget(e) {
+        (utils._tooltipControllers || []).forEach(function (c) {
+          if (!closestFrom(e.target, c.tipSel)) c.close();
+        });
+      }
+
+      if (!utils._tooltipDispatcherInstalled) {
+        utils._tooltipDispatcherInstalled = true;
+        utils._tooltipTouchMoved = false;
+
+        document.addEventListener('touchstart', function () {
+          utils._tooltipTouchMoved = false;
+        }, { passive: true });
+
+        document.addEventListener('touchmove', function (e) {
+          utils._tooltipTouchMoved = true;
+          closeAllExceptTipTarget(e);
+        }, { passive: true });
+
+        document.addEventListener('touchend', function (e) {
+          var hit = findHit(e);
+          if (hit) {
+            if (utils._tooltipTouchMoved) return;
+            e.preventDefault();
+            if (hit.controller.activeEl === hit.anchor) {
+              hit.controller.justOpened = false;
+              hit.controller.close(true);
+            } else {
+              hit.controller.open(hit.anchor);
+            }
+            return;
+          }
+          if (!isInsideAnyTip(e)) closeAll();
+        }, { passive: false });
+
+        document.addEventListener('click', function (e) {
+          var hit = findHit(e);
+          if (hit) {
+            if (!hit.controller.isDesktop()) { e.preventDefault(); return; }
+            e.preventDefault();
+            e.stopPropagation();
+            if (hit.controller.activeEl === hit.anchor) { hit.controller.close(); return; }
+            hit.controller.open(hit.anchor);
+            return;
+          }
+          if (!isInsideAnyTip(e)) closeAll();
+        });
+
+        document.addEventListener('pointerover', function (e) {
+          var hit = findHit(e, function (c) { return c.isDesktop(); });
+          if (!hit) return;
+          var c = hit.controller;
+          var anchor = hit.anchor;
+          if (c.activeEl && c.activeEl !== anchor) {
+            c.resetTipStyles(c.activeEl.querySelector(c.tipSel));
+            c.activeEl.classList.remove('is-open');
+          }
+          utils._tooltipControllers.forEach(function (other) {
+            if (other !== c) other.close(true);
+          });
+          utils.positionTip(anchor.querySelector(c.tipSel), anchor);
+          anchor.classList.add('is-open');
+          c.activeEl = anchor;
+        });
+
+        document.addEventListener('pointerout', function (e) {
+          var hit = findHit(e, function (c) { return c.isDesktop(); });
+          if (!hit) return;
+          var c = hit.controller;
+          var anchor = hit.anchor;
+          var related = e.relatedTarget;
+          if (related && related.closest && (related.closest(c.anchorSel) === anchor || related.closest(c.tipSel))) return;
+          var tip = anchor.querySelector(c.tipSel);
+          if (tip && tip.matches && tip.matches(':hover')) return;
+          if (tip && tip.style.overflowY === 'auto') return;
+          if (c.activeEl === anchor) c.close();
+        });
+
         document.addEventListener('focusin', function (e) {
-          var anchor = e.target.closest(anchorSel);
-          if (anchor && anchor.querySelector(tipSel)) open(anchor);
+          var hit = findHit(e, function (c) { return !!c.opts.useFocusBlur; });
+          if (hit) hit.controller.open(hit.anchor);
         });
+
         document.addEventListener('focusout', function (e) {
-          var anchor = e.target.closest(anchorSel);
-          if (anchor) close();
+          var hit = findHit(e, function (c) { return !!c.opts.useFocusBlur; });
+          if (hit) hit.controller.close();
         });
+
+        document.addEventListener('keydown', function (e) {
+          if (e.key === 'Escape') closeAll(true);
+        });
+
+        window.addEventListener('scroll', closeAll, { passive: true });
+        window.addEventListener('resize', closeAll, { passive: true });
+        window.addEventListener('orientationchange', closeAll, { passive: true });
+        window.addEventListener('wheel', closeAllExceptTipTarget, { passive: true });
       }
 
-      /* ── Close on global events ──────────────────────────────── */
-      window.addEventListener('scroll',            close, { passive: true });
-      window.addEventListener('resize',            close, { passive: true });
-      window.addEventListener('orientationchange', close, { passive: true });
-      window.addEventListener('wheel', function (e) {
-        if (!e.target.closest(tipSel)) close();
-      }, { passive: true });
-      window.addEventListener('touchmove', function (e) {
-        if (!e.target.closest(tipSel)) close();
-      }, { passive: true });
-      document.addEventListener('keydown', function (e) {
-        if (e.key === 'Escape') close();
-      });
       if (opts.extraCloseSelectors) {
         opts.extraCloseSelectors.forEach(function (sel) {
           document.querySelectorAll(sel).forEach(function (el) {
-            el.addEventListener('scroll', close, { passive: true });
+            el.addEventListener('scroll', function () { controller.close(); }, { passive: true });
           });
         });
       }
-      return { open: open, close: close };
+
+      return { open: controller.open, close: controller.close };
     },
 
     /* ── Scroll-lock counter ─────────────────────────────────────────────
@@ -3110,31 +3177,6 @@
       handleSelection();
     });
 
-    /* Удаляем оригинальный mouseup-handler ниже */
-    function _AUDIT_V6_REMOVED_OLD_MOUSEUP() {
-
-        var sel  = window.getSelection();
-        var rect = sel.getRangeAt(0).getBoundingClientRect();
-        /* Guard: пустой rect возникает при выделении через fn-marker — прячем попап */
-        if (!rect || (rect.width === 0 && rect.height === 0)) { hide(); return; }
-        var sx = window.scrollX || window.pageXOffset;
-        var sy = window.scrollY || window.pageYOffset;
-
-        popup.style.opacity = '0';
-        popup.style.left = '-9999px';
-        popup.classList.add('ss-visible');
-        var popW = popup.offsetWidth;
-        var popH = popup.offsetHeight;
-        popup.classList.remove('ss-visible');
-        popup.style.opacity = '';
-
-        var x = rect.left + sx + rect.width / 2 - popW / 2;
-        x = Math.max(8, Math.min(x, window.innerWidth - popW - 8));
-        var y = rect.top + sy - popH - 12;
-        if (y - sy < 8) y = rect.bottom + sy + 8;
-
-    }
-    /* end _AUDIT_V6_REMOVED_OLD_MOUSEUP */
 
     document.addEventListener('mousedown', function (e) { if (!popup.contains(e.target)) hide(); });
     window.addEventListener('scroll', hide, { passive: true });

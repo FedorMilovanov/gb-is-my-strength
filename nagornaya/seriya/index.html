@@ -554,8 +554,9 @@ window.SITE_CONFIG = {
     lastScroll = s;
   }
   function updateScrollTop() {
+    if (!scrollTopBtn) return;
     var s = window.scrollY || window.pageYOffset;
-    if (s > 500) scrollTopBtn.classList.add('visible'); else scrollTopBtn.classList.remove('visible');
+    scrollTopBtn.classList.toggle('visible', s > 500);
   }
   function scrollToPageTop() {
     var reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;

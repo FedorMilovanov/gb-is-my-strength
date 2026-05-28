@@ -236,8 +236,10 @@ window.SITE_CONFIG = {
     </a>
 
     <ul class="h-nav-links" role="list">
-      <li><a href="../">Главная</a></li>
-      <li><a href="../about/">Об авторе</a></li>
+      <li><a href="../#publikacii">Публикации</a></li>
+      <li><a href="../#razbor">Разбор заблуждений</a></li>
+      <li><a href="./" aria-current="page">Все статьи</a></li>
+      <li><a href="../#about">О библиотеке</a></li>
       <li>
         <button class="h-cp-btn" id="hCpBtnNav" aria-label="Поиск (Ctrl+K)"
                 data-action="open-search">
@@ -282,8 +284,10 @@ window.SITE_CONFIG = {
 <!-- Mobile menu -->
 <div id="hMobileBackdrop" class="h-mobile-backdrop" aria-hidden="true"></div>
 <div class="h-mobile-nav" id="hMobileNav" aria-hidden="true">
-  <a href="../">Главная</a>
-  <a href="../about/" data-close-nav>Об авторе</a>
+  <a href="../#publikacii" data-close-nav>Публикации</a>
+  <a href="../#razbor" data-close-nav>Разбор заблуждений</a>
+  <a href="./" data-close-nav aria-current="page">Все статьи</a>
+  <a href="../#about" data-close-nav>О библиотеке</a>
 </div>
 
 <!-- PAGE WRAPPER -->
@@ -571,9 +575,9 @@ window.SITE_CONFIG = {
   }
 
   function updateScrollTop() {
+    if (!scrollTopBtn) return;
     var s = window.scrollY || window.pageYOffset;
-    if (s > 500) scrollTopBtn.classList.add('visible');
-    else scrollTopBtn.classList.remove('visible');
+    scrollTopBtn.classList.toggle('visible', s > 500);
   }
   if (scrollTopBtn) {
     scrollTopBtn.addEventListener('click', scrollToPageTop);
