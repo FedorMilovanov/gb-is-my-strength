@@ -545,17 +545,34 @@ html.dark .breadcrumb__link:focus-visible {
 
 @media (max-width: 600px){
   .breadcrumb{
+    display: block;
+    width: 100%;
+    max-width: 100%;
     font-size: 13px;
+    overflow-x: auto;
+    overflow-y: hidden;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
   }
+  .breadcrumb::-webkit-scrollbar{ display: none; }
   .breadcrumb__list{
+    flex-wrap: nowrap;
     gap: 5px;
-    row-gap: 3px;
+    row-gap: 0;
+    min-width: max-content;
+    white-space: nowrap;
+  }
+  .breadcrumb__item{
+    flex: 0 0 auto;
   }
   .breadcrumb__item + .breadcrumb__item::before{
     margin-right: 5px;
   }
   .breadcrumb__current{
-    max-width: 100%;
+    max-width: 58vw;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
   }
 }
 

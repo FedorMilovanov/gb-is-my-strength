@@ -1944,7 +1944,6 @@ html.dark .h-blockquote { color: var(--h-ink); }
     opacity: 1 !important;
   }
   .hb-front { opacity: 0.5 !important; }
-  .hb-front { opacity: 0.5 !important; }
   .hb-back  { opacity: 1 !important; transform: none !important; }
   .h-tetra-back { opacity: 1 !important; transform: none !important; }
   .h-rule { animation: none !important; opacity: 1 !important; }

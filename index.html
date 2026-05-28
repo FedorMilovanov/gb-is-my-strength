@@ -885,11 +885,11 @@ window.SITE_CONFIG = {
   }
 
   function updateScrollTop() {
+    if (!scrollTopBtn) return;
     let s = window.scrollY;
     const docH = document.documentElement.scrollHeight - window.innerHeight;
     const nearBottom = docH > 0 && (docH - s) < 120;
-    if (s > 500 && !nearBottom) scrollTopBtn.classList.add('visible');
-    else scrollTopBtn.classList.remove('visible');
+    scrollTopBtn.classList.toggle('visible', s > 500 && !nearBottom);
   }
   if (scrollTopBtn) {
     scrollTopBtn.addEventListener('click', scrollToPageTop);
