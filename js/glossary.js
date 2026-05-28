@@ -59,9 +59,14 @@
         frag.appendChild(document.createTextNode(n.nodeValue.slice(last, termIndex)));
         var abbr = document.createElement('abbr');
         abbr.className = 'gterm';
-        abbr.setAttribute('title', dict[key].replace(/<[^>]+>/g, ''));
         abbr.dataset.term = key;
+        abbr.setAttribute('tabindex', '0');
+        abbr.setAttribute('data-term-title', term);
         abbr.textContent = term;
+        var tip = document.createElement('span');
+        tip.className = 'gtip';
+        tip.innerHTML = dict[key];
+        abbr.appendChild(tip);
         frag.appendChild(abbr);
         last = termIndex + term.length;
       }

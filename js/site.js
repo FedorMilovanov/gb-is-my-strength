@@ -121,11 +121,13 @@
       var top = r.top - th - 8;
       if (top >= mg) {
         tip.style.left = left + 'px'; tip.style.top = top + 'px';
+        tip.dataset.placement = 'top';
         tip.style.visibility = ''; return;
       }
       top = r.bottom + 8;
       if (top + th <= vh - mg) {
         tip.style.left = left + 'px'; tip.style.top = top + 'px';
+        tip.dataset.placement = 'bottom';
         tip.style.visibility = ''; return;
       }
       /* Neither fits cleanly — use whichever side has more room */
@@ -134,9 +136,11 @@
       if (avT >= avB) {
         tip.style.maxHeight = avT + 'px'; tip.style.overflowY = 'auto';
         tip.style.left = left + 'px'; tip.style.top = mg + 'px';
+        tip.dataset.placement = 'top';
       } else {
         tip.style.maxHeight = avB + 'px'; tip.style.overflowY = 'auto';
         tip.style.left = left + 'px'; tip.style.top = (r.bottom + 8) + 'px';
+        tip.dataset.placement = 'bottom';
       }
       tip.style.visibility = '';
     },
@@ -183,6 +187,12 @@
           isDesktop: function () {
             return window.matchMedia('(hover: hover) and (pointer: fine)').matches;
           },
+          isMobileSheet: function () {
+            var bp = Number(controller.opts.mobileSheetBreakpoint || 768);
+            return !!controller.opts.mobileSheet && window.matchMedia('(max-width: ' + bp + 'px)').matches;
+          },
+          scrollLockSource: 'tooltip-mobile-sheet',
+          scrollLocked: false,
           resetTipStyles: function (tip) {
             if (!tip) return;
             setTimeout(function () {
@@ -200,6 +210,10 @@
               controller.activeEl.classList.remove('is-open');
               controller.activeEl = null;
             }
+            if (controller.scrollLocked) {
+              utils.unlockScroll(controller.scrollLockSource);
+              controller.scrollLocked = false;
+            }
           },
           open: function (el) {
             if (!el || !el.querySelector(controller.tipSel)) return;
@@ -210,6 +224,10 @@
             el.classList.add('is-open');
             controller.activeEl = el;
             utils.positionTip(el.querySelector(controller.tipSel), el);
+            if (controller.isMobileSheet() && !controller.scrollLocked) {
+              utils.lockScroll(controller.scrollLockSource);
+              controller.scrollLocked = true;
+            }
             controller.justOpened = true;
             setTimeout(function () { controller.justOpened = false; }, GUARD_DELAY);
           }
@@ -261,6 +279,7 @@
         }, { passive: true });
 
         document.addEventListener('touchend', function (e) {
+          if (isInsideAnyTip(e)) return;
           var hit = findHit(e);
           if (hit) {
             if (utils._tooltipTouchMoved) return;
@@ -277,6 +296,13 @@
         }, { passive: false });
 
         document.addEventListener('click', function (e) {
+          if (closestFrom(e.target, '[data-tooltip-close]')) {
+            e.preventDefault();
+            e.stopPropagation();
+            closeAll(true);
+            return;
+          }
+          if (isInsideAnyTip(e)) return;
           var hit = findHit(e);
           if (hit) {
             if (!hit.controller.isDesktop()) { e.preventDefault(); return; }
@@ -326,7 +352,10 @@
 
         document.addEventListener('focusout', function (e) {
           var hit = findHit(e, function (c) { return !!c.opts.useFocusBlur; });
-          if (hit) hit.controller.close();
+          if (!hit) return;
+          var next = e.relatedTarget;
+          if (next && (hit.anchor.contains(next) || closestFrom(next, hit.controller.tipSel))) return;
+          hit.controller.close();
         });
 
         document.addEventListener('keydown', function (e) {
@@ -2926,8 +2955,81 @@
     var gterms = document.querySelectorAll('.gterm');
     if (!gterms.length) return;
 
+    function ownTextWithoutTip(el, tip) {
+      var out = '';
+      Array.prototype.forEach.call(el.childNodes, function (node) {
+        if (node === tip) return;
+        out += node.textContent || '';
+      });
+      return out.replace(/\s+/g, ' ').trim();
+    }
+
+    function enhanceGlossaryTip(el, idx) {
+      var tip = el.querySelector('.gtip');
+      if (!tip || tip.dataset.luxury === 'true') return;
+
+      var termTitle = el.getAttribute('data-term-title') || ownTextWithoutTip(el, tip) || el.getAttribute('data-term') || 'Термин';
+      var category  = el.getAttribute('data-category') || tip.getAttribute('data-category') || 'Глоссарий';
+      var tipId     = tip.id || ('gtip-luxury-' + idx);
+
+      tip.id = tipId;
+      tip.dataset.luxury = 'true';
+      tip.setAttribute('role', 'tooltip');
+      el.setAttribute('aria-describedby', tipId);
+
+      var raw = document.createElement('div');
+      while (tip.firstChild) raw.appendChild(tip.firstChild);
+      raw.className = 'gtip-luxury__definition';
+
+      var shell = document.createElement('span');
+      shell.className = 'gtip-luxury';
+
+      var handle = document.createElement('span');
+      handle.className = 'gtip-luxury__handle';
+      handle.setAttribute('aria-hidden', 'true');
+      shell.appendChild(handle);
+
+      var header = document.createElement('span');
+      header.className = 'gtip-luxury__header';
+
+      var cat = document.createElement('span');
+      cat.className = 'gtip-luxury__category';
+      cat.textContent = category;
+      header.appendChild(cat);
+
+      var closeBtn = document.createElement('button');
+      closeBtn.type = 'button';
+      closeBtn.className = 'gtip-luxury__close';
+      closeBtn.setAttribute('aria-label', 'Закрыть подсказку');
+      closeBtn.setAttribute('data-tooltip-close', '');
+      closeBtn.innerHTML = '<svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true" focusable="false"><path d="M1 1L13 13M13 1L1 13" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>';
+      header.appendChild(closeBtn);
+      shell.appendChild(header);
+
+      var title = document.createElement('strong');
+      title.className = 'gtip-luxury__title';
+      title.textContent = termTitle;
+      shell.appendChild(title);
+
+      var body = document.createElement('span');
+      body.className = 'gtip-luxury__body';
+      body.appendChild(raw);
+
+      var divider = document.createElement('span');
+      divider.className = 'gtip-luxury__divider';
+      divider.setAttribute('aria-hidden', 'true');
+      body.appendChild(divider);
+      shell.appendChild(body);
+
+      tip.appendChild(shell);
+    }
+
+    gterms.forEach(enhanceGlossaryTip);
+
     SiteUtils.makeTooltipController('.gterm', '.gtip', {
-      useFocusBlur: true
+      useFocusBlur: true,
+      mobileSheet: true,
+      mobileSheetBreakpoint: 768
     });
   })();
 
