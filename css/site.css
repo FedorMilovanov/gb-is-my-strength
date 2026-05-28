@@ -4044,14 +4044,21 @@ html.dark .gterm .gtip::before {
   max-width: 100%;
   padding: 4px 10px;
   border-radius: 999px;
-  background: color-mix(in srgb, var(--color-accent) 9%, transparent);
-  color: var(--color-accent, #7a2e2e);
+  background: color-mix(in srgb, var(--gtip-cat-color, var(--color-accent)) 9%, transparent);
+  color: var(--gtip-cat-color, var(--color-accent, #7a2e2e));
   font-size: 10px;
   font-weight: 800;
   line-height: 1.2;
   letter-spacing: .08em;
   text-transform: uppercase;
 }
+.gtip-luxury__category[data-category="heresy"] { --gtip-cat-color: #b45309; }
+.gtip-luxury__category[data-category="doctrine"] { --gtip-cat-color: #7a2e2e; }
+.gtip-luxury__category[data-category="confession"] { --gtip-cat-color: #6d5a2e; }
+.gtip-luxury__category[data-category="canon"] { --gtip-cat-color: #7c3aed; }
+.gtip-luxury__category[data-category="history"] { --gtip-cat-color: #2563eb; }
+.gtip-luxury__category[data-category="hermeneutics"] { --gtip-cat-color: #0f766e; }
+.gtip-luxury__category[data-category="language"] { --gtip-cat-color: #8b5cf6; }
 .gtip-luxury__close {
   flex: 0 0 auto;
   width: 28px;
@@ -4109,8 +4116,8 @@ html.dark .gtip-luxury::before {
     linear-gradient(145deg, rgba(255,255,255,.06), rgba(255,255,255,0));
 }
 html.dark .gtip-luxury__category {
-  background: color-mix(in srgb, var(--color-accent-strong, #e8b878) 13%, transparent);
-  color: var(--color-accent-strong, #e8b878);
+  background: color-mix(in srgb, var(--gtip-cat-color, var(--color-accent-strong, #e8b878)) 16%, transparent);
+  color: color-mix(in srgb, var(--gtip-cat-color, var(--color-accent-strong, #e8b878)) 78%, #fff);
 }
 html.dark .gtip-luxury__close { color: rgba(255,255,255,.44); }
 html.dark .gtip-luxury__close:hover,
