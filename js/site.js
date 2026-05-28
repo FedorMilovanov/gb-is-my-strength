@@ -209,6 +209,7 @@
             if (controller.activeEl) {
               controller.resetTipStyles(controller.activeEl.querySelector(controller.tipSel));
               controller.activeEl.classList.remove('is-open');
+              controller.activeEl.setAttribute('aria-expanded', 'false');
               controller.activeEl = null;
             }
             if (!(utils._tooltipControllers || []).some(function (c) { return c.activeEl; })) {
@@ -228,6 +229,7 @@
             utils._tooltipSuppressScrollUntil = Date.now() + 160;
             document.documentElement.classList.add('gb-tooltip-open');
             el.classList.add('is-open');
+            el.setAttribute('aria-expanded', 'true');
             controller.activeEl = el;
             utils.positionTip(el.querySelector(controller.tipSel), el);
             if (controller.isMobileSheet() && !controller.scrollLocked) {
@@ -2976,18 +2978,51 @@
       return out.replace(/\s+/g, ' ').trim();
     }
 
+    function normalizeGlossaryKey(value) {
+      return String(value || '')
+        .toLowerCase()
+        .replace(/ё/g, 'е')
+        .replace(/\s+/g, ' ')
+        .trim();
+    }
+
+    function glossaryCategoryFor(el, title) {
+      var key = normalizeGlossaryKey(el.getAttribute('data-term') || title);
+      var text = normalizeGlossaryKey(title);
+      var hay = key + ' ' + text;
+
+      var rules = [
+        { slug: 'heresy', label: 'Ереси и споры', rx: /(ариан|гност|валентиниан|докет|демиург|монтан)/ },
+        { slug: 'doctrine', label: 'Богословие', rx: /(хамартиолог|пелагиан|полупелагиан|арминиан|тотальн.*испорт|остаточн.*грех|остаточн.*порч|mortificatur|simul iustus)/ },
+        { slug: 'confession', label: 'Исповедания', rx: /(вестминстер|гейдельберг|regula fidei|правило веры)/ },
+        { slug: 'canon', label: 'Канон и тексты', rx: /(канон|canon muratori|муратор|апокриф|псевдоэпиграф|apostolicity|апостолич)/ },
+        { slug: 'history', label: 'История', rx: /(меровинг|приорат|sol invictus|corpus hermeticum|провенанс|кархемиш|никей|коптск|коптский|коптском|коптские)/ },
+        { slug: 'hermeneutics', label: 'Герменевтика', rx: /(герменевтик|экзегез|эйзегез|типолог|грамматико-истор|перикоп|criterion of embarrassment|критерий затруднения)/ },
+        { slug: 'language', label: 'Языки оригинала', rx: /(птохой|шамир|heilsgeschichte|sola scriptura)/ }
+      ];
+
+      for (var i = 0; i < rules.length; i++) {
+        if (rules[i].rx.test(hay)) return rules[i];
+      }
+      return { slug: 'glossary', label: 'Глоссарий' };
+    }
+
     function enhanceGlossaryTip(el, idx) {
       var tip = el.querySelector('.gtip');
       if (!tip || tip.dataset.luxury === 'true') return;
 
       var termTitle = el.getAttribute('data-term-title') || ownTextWithoutTip(el, tip) || el.getAttribute('data-term') || 'Термин';
-      var category  = el.getAttribute('data-category') || tip.getAttribute('data-category') || 'Глоссарий';
+      var inferredCategory = glossaryCategoryFor(el, termTitle);
+      var category  = el.getAttribute('data-category') || tip.getAttribute('data-category') || inferredCategory.label;
+      var categorySlug = normalizeGlossaryKey(el.getAttribute('data-category-slug') || tip.getAttribute('data-category-slug') || inferredCategory.slug);
       var tipId     = tip.id || ('gtip-luxury-' + idx);
 
       tip.id = tipId;
       tip.dataset.luxury = 'true';
+      tip.dataset.category = categorySlug;
       tip.setAttribute('role', 'tooltip');
       el.setAttribute('aria-describedby', tipId);
+      el.setAttribute('aria-expanded', 'false');
 
       var raw = document.createElement('span');
       while (tip.firstChild) raw.appendChild(tip.firstChild);
@@ -3006,6 +3041,7 @@
 
       var cat = document.createElement('span');
       cat.className = 'gtip-luxury__category';
+      cat.dataset.category = categorySlug;
       cat.textContent = category;
       header.appendChild(cat);
 
