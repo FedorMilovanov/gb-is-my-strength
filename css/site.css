@@ -4087,6 +4087,7 @@ html.dark .gterm .gtip::before {
   font-size: 15px;
   line-height: 1.62;
 }
+.gtip-luxury__definition { display: block; }
 .gtip-luxury__definition > :first-child { margin-top: 0; }
 .gtip-luxury__definition > :last-child { margin-bottom: 0; }
 .gtip-luxury__definition a {

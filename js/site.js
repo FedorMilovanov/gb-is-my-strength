@@ -2965,8 +2965,7 @@
      O-02: логика hover/touch/click вынесена в SiteUtils.makeTooltipController
      ============================================================ */
   (function () {
-    var gterms = document.querySelectorAll('.gterm');
-    if (!gterms.length) return;
+    var glossaryControllerReady = false;
 
     function ownTextWithoutTip(el, tip) {
       var out = '';
@@ -2990,7 +2989,7 @@
       tip.setAttribute('role', 'tooltip');
       el.setAttribute('aria-describedby', tipId);
 
-      var raw = document.createElement('div');
+      var raw = document.createElement('span');
       while (tip.firstChild) raw.appendChild(tip.firstChild);
       raw.className = 'gtip-luxury__definition';
 
@@ -3037,13 +3036,22 @@
       tip.appendChild(shell);
     }
 
-    gterms.forEach(enhanceGlossaryTip);
+    function initGlossaryTooltips(root) {
+      var scope = root && root.querySelectorAll ? root : document;
+      scope.querySelectorAll('.gterm').forEach(enhanceGlossaryTip);
 
-    SiteUtils.makeTooltipController('.gterm', '.gtip', {
-      useFocusBlur: true,
-      mobileSheet: true,
-      mobileSheetBreakpoint: 768
-    });
+      if (!glossaryControllerReady) {
+        glossaryControllerReady = true;
+        SiteUtils.makeTooltipController('.gterm', '.gtip', {
+          useFocusBlur: true,
+          mobileSheet: true,
+          mobileSheetBreakpoint: 768
+        });
+      }
+    }
+
+    SiteUtils.initGlossaryTooltips = initGlossaryTooltips;
+    initGlossaryTooltips(document);
   })();
 
 

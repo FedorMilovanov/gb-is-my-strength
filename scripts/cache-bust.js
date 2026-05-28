@@ -56,8 +56,9 @@ function md5short(relPath) {
 // ── Все HTML-файлы в проекте (рекурсивно, без скрытых папок) ─────────────────
 
 function collectHTML(dir, acc = []) {
+  const SKIP_DIRS = new Set(['node_modules']);
   for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
-    if (entry.name.startsWith('.')) continue;
+    if (entry.name.startsWith('.') || SKIP_DIRS.has(entry.name)) continue;
     const full = path.join(dir, entry.name);
     if (entry.isDirectory())               collectHTML(full, acc);
     else if (entry.name.endsWith('.html')) acc.push(full);
