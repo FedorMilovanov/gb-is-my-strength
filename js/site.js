@@ -196,6 +196,7 @@
           resetTipStyles: function (tip) {
             if (!tip) return;
             setTimeout(function () {
+              if (controller.activeEl && controller.activeEl.querySelector(controller.tipSel) === tip) return;
               tip.style.maxHeight  = '';
               tip.style.overflowY  = '';
               tip.style.visibility = '';
@@ -210,6 +211,9 @@
               controller.activeEl.classList.remove('is-open');
               controller.activeEl = null;
             }
+            if (!(utils._tooltipControllers || []).some(function (c) { return c.activeEl; })) {
+              document.documentElement.classList.remove('gb-tooltip-open');
+            }
             if (controller.scrollLocked) {
               utils.unlockScroll(controller.scrollLockSource);
               controller.scrollLocked = false;
@@ -221,6 +225,8 @@
               if (c !== controller) c.close(true);
             });
             controller.close(true);
+            utils._tooltipSuppressScrollUntil = Date.now() + 160;
+            document.documentElement.classList.add('gb-tooltip-open');
             el.classList.add('is-open');
             controller.activeEl = el;
             utils.positionTip(el.querySelector(controller.tipSel), el);
@@ -308,7 +314,7 @@
             if (!hit.controller.isDesktop()) { e.preventDefault(); return; }
             e.preventDefault();
             e.stopPropagation();
-            if (hit.controller.activeEl === hit.anchor) { hit.controller.close(); return; }
+            if (hit.controller.activeEl === hit.anchor) return;
             hit.controller.open(hit.anchor);
             return;
           }
@@ -327,9 +333,13 @@
           utils._tooltipControllers.forEach(function (other) {
             if (other !== c) other.close(true);
           });
+          utils._tooltipSuppressScrollUntil = Date.now() + 160;
+          document.documentElement.classList.add('gb-tooltip-open');
           utils.positionTip(anchor.querySelector(c.tipSel), anchor);
           anchor.classList.add('is-open');
           c.activeEl = anchor;
+          c.justOpened = true;
+          setTimeout(function () { c.justOpened = false; }, 350);
         });
 
         document.addEventListener('pointerout', function (e) {
@@ -362,7 +372,10 @@
           if (e.key === 'Escape') closeAll(true);
         });
 
-        window.addEventListener('scroll', closeAll, { passive: true });
+        window.addEventListener('scroll', function () {
+          if (Date.now() < (utils._tooltipSuppressScrollUntil || 0)) return;
+          closeAll();
+        }, { passive: true });
         window.addEventListener('resize', closeAll, { passive: true });
         window.addEventListener('orientationchange', closeAll, { passive: true });
         window.addEventListener('wheel', closeAllExceptTipTarget, { passive: true });

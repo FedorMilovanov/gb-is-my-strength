@@ -3968,6 +3968,9 @@ html.dark .gterm.is-open {
   visibility: hidden;
 }
 .gterm .gtip[data-luxury="true"] { padding: 0; }
+html.gb-tooltip-open .article-body {
+  content-visibility: visible !important;
+}
 .gterm .gtip::before {
   content: '';
   position: absolute;
