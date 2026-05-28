@@ -6,13 +6,13 @@
 
 **Владелец:** Фёдор Милованов (редактор, не «автор»)
 **Производственный сайт:** https://gospod-bog.ru
-**Дата документа:** 2026-05-23 | **Версия:** AGENTS-r7
+**Дата документа:** 2026-05-28 | **Версия:** AGENTS-r9
 
 ---
 
 ## 0. TLDR — что СРАЗУ нельзя делать
 
-1. ❌ Создавать новые CSS/JS файлы (есть **4 CSS** + **9 JS** — этого достаточно).
+1. ❌ Создавать новые CSS/JS файлы (есть **5 CSS** + **11 JS** — этого достаточно).
 2. ❌ Менять byline на «Автор: Фёдор Милованов». Только «Редактор» / «Редакция перевода».
 3. ❌ Изменять структуру `articles/<slug>/index.html` или `nagornaya/chast-N/index.html`.
 4. ❌ Запускать `prettier --write .` или `eslint --fix` по всему проекту.
@@ -75,17 +75,20 @@
 ├── package.json                    ← build-скрипты, без рантайм-зависимостей
 ├── .github/workflows/              ← deploy.yml + indexnow.yml
 │
-├── css/                            ← РОВНО 4 ФАЙЛА. БОЛЬШЕ НЕ СОЗДАВАТЬ.
+├── css/                            ← РОВНО 5 ФАЙЛОВ. БОЛЬШЕ НЕ СОЗДАВАТЬ.
 │   ├── site.css                    ← основной слой (статьи, шапка, тёмная тема)
 │   ├── home.css                    ← только главная страница (hero, dashboard)
 │   ├── command-palette.css         ← поиск (Ctrl+K)
+│   ├── mobile-hotfix.css           ← мобильные производительные hotfix-правки
 │   └── nagornaya-mobile-toc.css    ← мобильное оглавление в Нагорной проповеди
 │
 ├── fonts/
 │   └── fonts.css                   ← @font-face деклараты, не трогать
 │
-├── js/                             ← РОВНО 9 ФАЙЛОВ. БОЛЬШЕ НЕ СОЗДАВАТЬ.
-│   ├── site.js                     ← главное (theme, nav, mobile menu)
+├── js/                             ← РОВНО 11 ФАЙЛОВ. БОЛЬШЕ НЕ СОЗДАВАТЬ.
+│   ├── site.js                     ← главное (theme, nav, mobile menu, quiz, tooltips)
+│   ├── site-utils.js               ← утилиты, используемые отдельными страницами
+│   ├── scroll-perf.js              ← производительность scroll/observers
 │   ├── search.js                   ← Ctrl+K поиск (CommandPalette)
 │   ├── enhancements.js             ← scroll-эффекты, lazy load
 │   ├── highlights.js               ← подсветка текста, заметки
@@ -131,7 +134,7 @@
 
 ### ⛔ ЗАПРЕЩЕНО создавать новые CSS-файлы
 
-У сайта **ровно 4 CSS + 1 шрифтовой** — этого достаточно для всего.
+У сайта **ровно 5 CSS + 1 шрифтовой** — этого достаточно для всего.
 
 > **Почему:** Статический хостинг без bundler'а — каждый файл = отдельный HTTP-запрос.
 > 4 файла = оптимальный баланс модульности и сетевой производительности.
@@ -148,7 +151,7 @@
 
 ### ⛔ ЗАПРЕЩЕНО создавать новые JS-файлы в `js/`
 
-Все 9 JS-файлов — фиксированный набор. Новая логика идёт **внутрь существующего** файла по теме (если новое — в `enhancements.js`).
+Все 11 JS-файлов — фиксированный набор. Новая логика идёт **внутрь существующего** файла по теме (если новое — в `enhancements.js`).
 
 ---
 
@@ -271,15 +274,8 @@
 ### 5.3 Перед коммитом — обязательно:
 
 ```bash
-node --check js/site.js
-node --check js/search.js
-node --check js/enhancements.js
-node --check js/highlights.js
-node --check js/glossary.js
-node --check js/bookmark-engine.js
-node --check js/series-cards.js
-node --check js/nagornaya-mobile-toc.js
-node --check js/sw-register.js
+node --check js/*.js
+node --check scripts/*.js
 node --check sw.js
 ```
 
@@ -305,6 +301,31 @@ articles/<slug>/
 
 **Шаблон** для новой статьи — взять последнюю созданную и копировать структуру.
 
+### 6.1 Обязательные runtime-компоненты новой статьи (2026-05-28)
+
+1. **AI disclosure** не вставлять вручную: `site.js` автоматически добавляет `.ai-disclosure` для `page.type === 'article'`. Отключать только явно:
+   ```js
+   features: { aiDisclosure: { enabled: false } }
+   ```
+2. **Глоссарий**: сложные термины размечать как `.gterm` с вложенным `.gtip`. Категория определяется автоматически; при необходимости можно задать:
+   ```html
+   <span class="gterm" data-category="Богословие" data-category-slug="doctrine">термин<span class="gtip">...</span></span>
+   ```
+3. **Сноски** `.fn-marker` и глоссарий на мобильных открываются как bottom sheet. Не добавлять отдельные touch-хендлеры в HTML.
+4. **Квиз**: для новых вопросов использовать `sourceRef` — строку, объект `{ label, href }` или массив. Это источник, который выводится в feedback при ошибке/ответе.
+   ```js
+   { q: '...', options: [...], answer: 1, ok: '...', err: '...', sourceRef: { label: 'Иер. 17:9', href: '#istoricheskiy-fon' } }
+   ```
+5. **Accuracy block email**: не хардкодить subject/body. `site.js` сам формирует тему и тело письма из `h1` и `location.href`. Email должен быть только `viktorcoy2012@gmail.com`.
+6. **Sitemap**: `lastmod` только ISO8601 с московским `+03:00`, например `2026-05-26T00:00:00+03:00`.
+
+7. **Share API**: для цитат/квизов использовать объектный payload, а не временную подмену DOM:
+   ```js
+   window.SiteShare.open(button, { dialogTitle: 'Поделиться цитатой', title, text, url });
+   ```
+8. **AI disclosure placement**: если `article` содержит собственный `header.article-header` или hero-figure, runtime вставляет `.ai-disclosure` после них — перед основным текстом. Не вставлять второй блок вручную.
+
+
 После добавления статьи:
 1. Обновить `sitemap.xml` (добавить URL)
 2. Обновить `data/series.json` (если статья входит в серию)
@@ -316,7 +337,7 @@ articles/<slug>/
 ## 7. ОБЯЗАТЕЛЬНЫЕ ПРОВЕРКИ
 
 ```bash
-# 1. Синтаксис JS — все 9 файлов + sw.js + scripts
+# 1. Синтаксис JS — все 11 файлов + sw.js + scripts
 node --check js/*.js
 node --check scripts/*.js
 node --check sw.js
@@ -361,6 +382,8 @@ npm run validate:all      # ← рекомендуется перед кажды
 |---|---|---|
 | AGENTS-r1 | 2026-05-?? | Создан, только правила byline |
 | AGENTS-r2 | 2026-05-17 | Расширен: вся архитектура, 9 JS, 4 CSS, защищённые блоки, чек-лист |
+| AGENTS-r8 | 2026-05-28 | Актуализированы 5 CSS / 11 JS, AI disclosure, glossary categories, mobile footnotes, quiz sourceRef, accuracy mailto |
+| AGENTS-r9 | 2026-05-28 | Уточнены SiteShare object payload, AI disclosure placement, quiz sourceRef fallback по focus |
 | AGENTS-r3 | 2026-05-22 | Удалены ссылки на docs/archive и patch-скрипты, обновлена архитектура |
 | AGENTS-r4 | 2026-05-23 | Матрица браузеров §1.1, metrics §1.2, tw.min.css §3.5, html.dark §4.3, хеши §3.4 |
 | AGENTS-r5 | 2026-05-24 | Добавлены v27-v30: полное сжатие и исправление кнопок шрифтов A−/A+, удаление дублей CSS, финальная победа над легаси-токенами (0 / 0) |

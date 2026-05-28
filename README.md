@@ -411,6 +411,60 @@ quiz: {
 
 ---
 
+
+## Актуальные требования к новым статьям (обновлено 2026-05-28)
+
+### Runtime-компоненты
+
+- **AI disclosure**: `site.js` автоматически добавляет `.ai-disclosure` для всех страниц с `SITE_CONFIG.page.type === 'article'`. Вручную дублировать блок не нужно.
+- `js/glossary.js` подключается на article-страницах и после автозамены вызывает `SiteUtils.initGlossaryTooltips(article)`, поэтому новые термины получают luxury tooltip-оболочку.
+- Ручные термины оформляются как:
+  ```html
+  <span class="gterm" tabindex="0">термин<span class="gtip">Определение...</span></span>
+  ```
+  Для ручной категории допускаются `data-category` и `data-category-slug`.
+- Академические сноски `.fn-marker` и глоссарные `.gterm` на мобильных открываются как bottom sheet. Не писать отдельные touch-обработчики в статье.
+- `.gb-accuracy-btn--email` должен вести на `mailto:viktorcoy2012@gmail.com`; subject/body формируются автоматически из `h1` и URL.
+
+### Quiz Engine v3+
+
+Вопросы могут содержать поле `sourceRef` для академического feedback:
+
+```js
+{
+  q: 'Вопрос...',
+  options: ['...', '...', '...'],
+  answer: 1,
+  ok: 'Почему верно...',
+  err: 'Почему дистрактор ошибочен...',
+  sourceRef: { label: 'Иер. 17:9', href: '#istoricheskiy-fon' }
+}
+```
+
+`sourceRef` может быть строкой, объектом `{ label, href }` или массивом таких значений. Результаты квиза сохраняются в `localStorage` как `quiz-result-v2:{page.id}` с `lastScore`, `bestScore`, `total`, `gradeTitle`, `completedAt`.
+
+
+### Share payload для цитат и квизов
+
+`SiteShare.open()` принимает объектный payload. Для цитат, результатов квиза и других нестандартных сценариев не подменяйте заголовок диалога через DOM:
+
+```js
+window.SiteShare.open(button, {
+  dialogTitle: 'Поделиться цитатой',
+  title: document.title,
+  text: '«цитата» — Название статьи',
+  url: 'https://gospod-bog.ru/article/#:~:text=...'
+});
+```
+
+Платформы Telegram / WhatsApp / VK / MAX / OK и кнопка копирования используют `activeShareUrl`, `activeShareTitle`, `activeShareText` из payload.
+
+### SEO / cache-bust
+
+- `sitemap.xml` использует только ISO8601 `lastmod` с `+03:00`.
+- После изменения CSS/JS запускать `npm run cache-bust`.
+- Перед коммитом: `npm run validate:all`, `npm run tokens:check`, `npm run cache-bust -- --dry-run`.
+
 ## Шаблон новой статьи
 
 ```html
