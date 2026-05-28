@@ -76,6 +76,10 @@
       }
     });
 
+    if (window.SiteUtils && typeof SiteUtils.initGlossaryTooltips === 'function') {
+      SiteUtils.initGlossaryTooltips(article);
+    }
+
     /* Cross-link: клик по <a class="gterm" data-term="..."> внутри подсказки */
     document.addEventListener('click', function (e) {
       var t = e.target.closest('a.gterm[data-term]');
