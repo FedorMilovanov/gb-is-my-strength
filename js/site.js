@@ -526,6 +526,49 @@
 
   window.SiteUtils = SiteUtils;
 
+  /* ============================================================
+     01b. SITE_CONFIG Contract Guard
+     ============================================================ */
+  (function validateSiteConfigContract() {
+    var cfg = window.SITE_CONFIG;
+    var errors = [];
+    function has(path, type) {
+      var cur = cfg;
+      var parts = path.split('.');
+      for (var i = 0; i < parts.length; i++) {
+        if (cur == null || typeof cur !== 'object' || !(parts[i] in cur)) {
+          errors.push(path + ' отсутствует');
+          return;
+        }
+        cur = cur[parts[i]];
+      }
+      if (type && typeof cur !== type) errors.push(path + ' должен быть ' + type);
+    }
+
+    if (!cfg || typeof cfg !== 'object') {
+      errors.push('window.SITE_CONFIG отсутствует или не объект');
+    } else {
+      has('site.name', 'string');
+      has('site.baseUrl', 'string');
+      has('site.locale', 'string');
+      has('page.type', 'string');
+      has('page.id', 'string');
+      has('page.title', 'string');
+      if (cfg.features && typeof cfg.features !== 'object') errors.push('features должен быть объектом');
+      if (cfg.page && cfg.page.type === 'article') {
+        if (!cfg.page.id || !/^[a-z0-9-]+$/.test(cfg.page.id)) errors.push('page.id статьи должен быть slug-like');
+        if (cfg.features && cfg.features.quiz && cfg.features.quiz.enabled && (!cfg.quiz || !Array.isArray(cfg.quiz.questions))) {
+          errors.push('features.quiz.enabled=true требует quiz.questions[]');
+        }
+      }
+    }
+
+    if (errors.length) {
+      document.documentElement.dataset.siteConfigInvalid = '1';
+      if (window.console && console.error) console.error('[SITE_CONFIG contract]', errors);
+    }
+  })();
+
   /* ════════════════════════════════════════════════════════════════════
      AUDIT V9 / #130: visualViewport tracker — premium implementation
      ════════════════════════════════════════════════════════════════════
@@ -833,6 +876,9 @@
                      (document.querySelector('link[rel="canonical"]') || {}).href ||
                      window.location.href;
     var shareImage = metaContent('meta[property="og:image"]') || metaContent('meta[name="twitter:image"]');
+    var activeShareTitle = shareTitle;
+    var activeShareUrl   = shareUrl;
+    var activeShareText  = '';
 
     /* ── UTM helper ── */
     function utmUrl(url, source) {
@@ -845,8 +891,25 @@
       } catch (e) { return url; }
     }
 
-    var encoded      = encodeURIComponent(shareUrl);
-    var encodedTitle = encodeURIComponent(shareTitle);
+    function setActiveSharePayload(payload) {
+      activeShareTitle = shareTitle;
+      activeShareUrl   = shareUrl;
+      activeShareText  = '';
+
+      if (payload && typeof payload === 'object') {
+        activeShareTitle = payload.title || shareTitle;
+        activeShareUrl   = payload.url   || shareUrl;
+        activeShareText  = payload.text  || '';
+      } else if (typeof payload === 'string' && payload) {
+        activeShareTitle = payload;
+      }
+
+      var textEl = document.getElementById('sd-url-text');
+      if (textEl) textEl.textContent = activeShareUrl;
+    }
+
+    function activeEncodedTitle() { return encodeURIComponent(activeShareTitle); }
+    function activeTextOrTitle()  { return activeShareText || activeShareTitle; }
 
     /* ── Dialog HTML ── */
     var overlay = document.createElement('div');
@@ -935,7 +998,7 @@
 
     /* populate url text as text node (no underline artifacts) */
     var urlText = document.getElementById('sd-url-text');
-    if (urlText) urlText.appendChild(document.createTextNode(shareUrl));
+    if (urlText) urlText.appendChild(document.createTextNode(activeShareUrl));
 
     var dialog   = document.getElementById('share-dialog');
     var closeBtn = document.getElementById('sd-close');
@@ -958,47 +1021,39 @@
     }
 
     /* ── Open / Close ── */
-    function showOverlay(overrideTitle) {
-      /* B-10: если передан overrideTitle — показываем его в заголовке диалога,
-         без изменения DOM снаружи и без setTimeout-патча.                    */
+    function showOverlay(payload) {
+      setActiveSharePayload(payload);
       var sdTitleEl = document.getElementById('sd-title');
-      var origTitle = sdTitleEl ? sdTitleEl.textContent : '';
-      if (sdTitleEl && overrideTitle) sdTitleEl.textContent = overrideTitle;
+      var dialogTitle = payload && typeof payload === 'object'
+        ? (payload.dialogTitle || payload.title || 'Поделиться')
+        : (typeof payload === 'string' && payload ? payload : 'Поделиться');
+      if (sdTitleEl) sdTitleEl.textContent = dialogTitle;
 
       overlay.setAttribute('aria-hidden', 'false');
       overlay.classList.add('is-open');
       requestAnimationFrame(function () { dialog.focus(); });
       document.addEventListener('keydown', onKey);
-
-      /* Восстанавливаем заголовок при закрытии диалога */
-      if (sdTitleEl && overrideTitle) {
-        overlay.addEventListener('gb:closed', function () {
-          sdTitleEl.textContent = origTitle;
-        }, { once: true });
-      }
     }
 
-    function openDialog(trigger, overrideTitle) {
+    function openDialog(trigger, payload) {
       triggerEl = trigger || null;
+      setActiveSharePayload(payload);
 
       /* Mobile-first: нативный share-sheet (iOS/Android) */
       var isMobileDevice = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
       if (isMobileDevice && navigator.share) {
-        /* B-10: используем overrideTitle напрямую — не трогаем DOM */
-        var nativeTitle = overrideTitle ||
-          (document.getElementById('sd-title') && document.getElementById('sd-title').textContent) ||
-          shareTitle;
         navigator.share({
-          title: nativeTitle,
-          url:   utmUrl(shareUrl, 'native')
+          title: activeShareTitle,
+          text:  activeShareText || undefined,
+          url:   utmUrl(activeShareUrl, 'native')
         }).catch(function (err) {
           /* Пользователь отменил или share не поддерживается — показываем диалог */
-          if (err && err.name !== 'AbortError') { showOverlay(overrideTitle); }
+          if (err && err.name !== 'AbortError') { showOverlay(payload); }
         });
         return;
       }
 
-      showOverlay(overrideTitle);
+      showOverlay(payload);
     }
     function closeDialog() {
       overlay.classList.remove('is-open');
@@ -1027,27 +1082,27 @@
     /* Telegram: открываем web-версию (работает везде; мобильный браузер автоматически
        предложит открыть приложение, если оно установлено) */
     document.getElementById('sd-tg').addEventListener('click', function () {
-      var tgWeb = 'https://t.me/share/url?url=' + encodeURIComponent(utmUrl(shareUrl,'telegram')) + '&text=' + encodedTitle;
+      var tgWeb = 'https://t.me/share/url?url=' + encodeURIComponent(utmUrl(activeShareUrl,'telegram')) + '&text=' + encodeURIComponent(activeTextOrTitle());
       window.open(tgWeb, '_blank', 'noopener');
     });
     document.getElementById('sd-vk').addEventListener('click', function () {
-      var vkUrl = 'https://vk.com/share.php?url=' + encodeURIComponent(utmUrl(shareUrl,'vk')) + '&title=' + encodedTitle;
+      var vkUrl = 'https://vk.com/share.php?url=' + encodeURIComponent(utmUrl(activeShareUrl,'vk')) + '&title=' + activeEncodedTitle();
       if (shareImage) vkUrl += '&image=' + encodeURIComponent(shareImage);
       window.open(vkUrl, '_blank', 'noopener');
     });
     document.getElementById('sd-max').addEventListener('click', function () {
-      window.open('https://share.max.ru/share?url=' + encodeURIComponent(utmUrl(shareUrl, 'max')) + '&title=' + encodedTitle, '_blank', 'noopener');
+      window.open('https://share.max.ru/share?url=' + encodeURIComponent(utmUrl(activeShareUrl, 'max')) + '&title=' + activeEncodedTitle(), '_blank', 'noopener');
     });
     document.getElementById('sd-ok').addEventListener('click', function () {
-      var okUrl = 'https://connect.ok.ru/offer?url=' + encodeURIComponent(utmUrl(shareUrl, 'ok')) +
-                  '&title=' + encodedTitle;
+      var okUrl = 'https://connect.ok.ru/offer?url=' + encodeURIComponent(utmUrl(activeShareUrl, 'ok')) +
+                  '&title=' + activeEncodedTitle();
       window.open(okUrl, '_blank', 'noopener');
     });
     document.getElementById('sd-wa').addEventListener('click', function () {
       /* B-12: wa.me работает на мобильном (открывает приложение) и на десктопе
          (новая Web-версия WhatsApp без требования авторизованного приложения).
          web.whatsapp.com/send требует запущенного и авторизованного приложения. */
-      var waUrl = 'https://wa.me/?text=' + encodedTitle + '%20' + encodeURIComponent(utmUrl(shareUrl,'whatsapp'));
+      var waUrl = 'https://wa.me/?text=' + encodeURIComponent(activeTextOrTitle() + ' ' + utmUrl(activeShareUrl,'whatsapp'));
       window.open(waUrl, '_blank', 'noopener');
     });
 
@@ -1055,7 +1110,7 @@
     function doCopy() {
       var label = copyBtn.querySelector('.sd-copy-label');
       var iconEl = copyBtn.querySelector('.sd-icon');
-      (navigator.clipboard ? navigator.clipboard.writeText(shareUrl) : Promise.reject())
+      (navigator.clipboard ? navigator.clipboard.writeText(activeShareText ? (activeShareText + ' · ' + activeShareUrl) : activeShareUrl) : Promise.reject())
         .then(function () {
           if (navigator.vibrate) navigator.vibrate(30); /* Fix #12: haptic */
           if (label) label.textContent = 'Скопировано!';
@@ -2193,9 +2248,10 @@
     var current  = 0, score  = 0, answered  = false;
     var inBonus  = false, bonusCurrent = 0, bonusScoreVal = 0, bonusAnswered = false;
     var inReview = false, reviewDeck  = [], reviewCurrent = 0, reviewAnswered = false, reviewScore = 0;
-    var wrongAnswers = [];  /* collects { q, options, answer, chosenIdx, ok, err, focus } */
+    var wrongAnswers = [];  /* collects { q, options, answer, chosenIdx, ok, err, focus, sourceRef } */
     var activeDeck = coreDeck;
     var streak = 0;
+    var quizStorageKey = 'quiz-result-v2:' + SiteUtils.getConfig('page.id', location.pathname || 'default');
 
     var LETTERS = ['А', 'Б', 'В', 'Г'];
     var KEY_MAP  = { '1': 0, '2': 1, '3': 2, '4': 3, 'а': 0, 'б': 1, 'в': 2, 'г': 3 };
@@ -2241,6 +2297,30 @@
       return 'ов';                                              /* 5 вопросов */
     }
 
+    function readQuizMemory() {
+      try { return JSON.parse(localStorage.getItem(quizStorageKey) || 'null'); }
+      catch (e) { return null; }
+    }
+
+    function writeQuizMemory(data) {
+      try { localStorage.setItem(quizStorageKey, JSON.stringify(data)); }
+      catch (e) { /* storage quota/private mode — enhancement only */ }
+    }
+
+    function renderPreviousQuizResult() {
+      if (!quizOverlay || quizOverlay.querySelector('.quiz-memory-note')) return;
+      var data = readQuizMemory();
+      if (!data || !data.total) return;
+      var note = document.createElement('div');
+      note.className = 'quiz-memory-note';
+      note.setAttribute('role', 'status');
+      note.innerHTML = '<strong>Ваш прошлый результат:</strong> ' +
+        escapeHTML(data.lastScore) + ' из ' + escapeHTML(data.total) +
+        (data.bestScore != null ? ' · лучший: ' + escapeHTML(data.bestScore) + ' из ' + escapeHTML(data.total) : '') +
+        (data.gradeTitle ? '<br><span>' + escapeHTML(data.gradeTitle) + '</span>' : '');
+      quizOverlay.appendChild(note);
+    }
+
     /* Build an option button (shared by main / review / bonus) */
     function makeOptionBtn(opt, i, handler) {
       var btn = document.createElement('button');
@@ -2252,6 +2332,36 @@
       btn.addEventListener('click', (function (idx) { return function () { handler(idx); }; })(i));
       return btn;
     }
+
+    function escapeHTML(str) {
+      return String(str == null ? '' : str).replace(/[&<>"]/g, function (ch) {
+        return ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[ch];
+      });
+    }
+
+    function renderSourceRefs(q) {
+      var refs = q && q.sourceRef;
+      if (!refs && q && q.focus) refs = { label: 'Перечитать раздел', href: '#' + q.focus };
+      if (!refs) return '';
+      if (!Array.isArray(refs)) refs = [refs];
+      var links = refs.map(function (ref) {
+        if (typeof ref === 'string') return '<span class="quiz-source-ref__item">' + escapeHTML(ref) + '</span>';
+        var label = escapeHTML(ref.label || ref.text || ref.href || 'Источник');
+        var href = ref.href || ref.url || '';
+        if (!href) return '<span class="quiz-source-ref__item">' + label + '</span>';
+        return '<a class="quiz-source-ref__item" href="' + escapeHTML(href) + '" target="_blank" rel="noopener noreferrer">' + label + '</a>';
+      }).join('');
+      return '<div class="quiz-source-ref" aria-label="Источник для проверки ответа">' +
+        '<span class="quiz-source-ref__label">Источник:</span>' + links + '</div>';
+    }
+
+    function setFeedback(el, html, cls, q) {
+      if (!el) return;
+      el.innerHTML = (html || '') + renderSourceRefs(q);
+      el.className = cls || 'quiz-feedback';
+    }
+
+    renderPreviousQuizResult();
 
     /* ---- 8. Timer (optional — feature.quiz.timeLimit in seconds, 0 = off) ---- */
     var timeLimit = SiteUtils.getConfig('features.quiz.timeLimit', 0);
@@ -2292,7 +2402,7 @@
 
     function updateStreakBadge() {
       if (streak >= 3) {
-        streakBadge.textContent  = '🔥 ' + streak + ' подряд!';
+        streakBadge.innerHTML  = '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 22c4 0 7-3 7-7 0-3-1.5-5.2-4.2-7.6-.5 2.3-1.8 3.6-3.8 4.6.6-3.2-.8-6-3.4-8C7.2 7.8 5 10.4 5 15c0 4 3 7 7 7Z"/></svg><span>' + streak + ' подряд!</span>';
         streakBadge.style.display = 'block';
       } else {
         streakBadge.style.display = 'none';
@@ -2329,7 +2439,7 @@
 
       if (idx === q.answer) {
         if (allBtns[idx]) allBtns[idx].classList.add('correct');
-        if (feedback) { feedback.innerHTML = q.ok; feedback.className = 'quiz-feedback ok'; }
+        setFeedback(feedback, q.ok, 'quiz-feedback ok', q);
         score++;
         streak++;
       } else {
@@ -2338,8 +2448,8 @@
           allBtns[idx].addEventListener('animationend', function () { allBtns[idx].classList.remove('shake'); }, { once: true });
         }
         if (allBtns[q.answer]) allBtns[q.answer].classList.add('correct');
-        if (feedback) { feedback.innerHTML = q.err; feedback.className = 'quiz-feedback err'; }
-        wrongAnswers.push({ q: q.q, options: q.options.slice(), answer: q.answer, chosenIdx: idx, ok: q.ok, err: q.err, focus: q.focus });
+        setFeedback(feedback, q.err, 'quiz-feedback err', q);
+        wrongAnswers.push({ q: q.q, options: q.options.slice(), answer: q.answer, chosenIdx: idx, ok: q.ok, err: q.err, focus: q.focus, sourceRef: q.sourceRef });
         streak = 0;
       }
 
@@ -2453,18 +2563,27 @@
       else if (pct >= 0.7) launchConfetti('blue');
       else if (pct >= 0.5) launchConfetti('light');
 
-      /* Best score persistence */
+      /* Result persistence — best + last attempt */
       try {
         var slug     = SiteUtils.getConfig('page.id', 'default');
-        var KEY      = 'quiz-best-' + slug;
-        var prevBest = parseInt(localStorage.getItem(KEY) || '0', 10);
-        if (score > prevBest) {
-          localStorage.setItem(KEY, String(score));
-        } else if (prevBest > 0 && resultDesc) {
+        var KEY      = 'quiz-best-' + slug; /* legacy key: keep for backwards compatibility */
+        var prevData = readQuizMemory() || {};
+        var prevBest = Math.max(parseInt(localStorage.getItem(KEY) || '0', 10), parseInt(prevData.bestScore || '0', 10));
+        var nextBest = Math.max(prevBest, score);
+        localStorage.setItem(KEY, String(nextBest));
+        writeQuizMemory({
+          lastScore: score,
+          bestScore: nextBest,
+          total: questions.length,
+          gradeTitle: s && s.title ? s.title : '',
+          completedAt: new Date().toISOString()
+        });
+        if (prevBest > 0 && resultDesc) {
           var hint = document.createElement('div');
-          hint.className   = 'quiz-best-hint';
-          hint.style.cssText = 'margin-top:14px;font-size:14px;color:var(--muted);font-style:italic';
-          hint.textContent = 'Ваш лучший результат:\u00a0' + prevBest + '\u00a0из\u00a0' + questions.length;
+          hint.className = 'quiz-best-hint';
+          hint.textContent = score > prevBest
+            ? 'Новый лучший результат: ' + score + ' из ' + questions.length
+            : 'Ваш лучший результат: ' + prevBest + ' из ' + questions.length;
           resultDesc.appendChild(hint);
         }
       } catch (e) {}
@@ -2527,7 +2646,7 @@
 
       if (idx === q.answer) {
         if (allBtns[idx]) allBtns[idx].classList.add('correct');
-        if (revFeedback) { revFeedback.innerHTML = q.ok; revFeedback.className = 'quiz-feedback ok'; }
+        setFeedback(revFeedback, q.ok, 'quiz-feedback ok', q);
         reviewScore++;
       } else {
         if (idx >= 0 && allBtns[idx]) {
@@ -2535,7 +2654,7 @@
           allBtns[idx].addEventListener('animationend', function () { allBtns[idx].classList.remove('shake'); }, { once: true });
         }
         if (allBtns[q.answer]) allBtns[q.answer].classList.add('correct');
-        if (revFeedback) { revFeedback.innerHTML = q.err; revFeedback.className = 'quiz-feedback err'; }
+        setFeedback(revFeedback, q.err, 'quiz-feedback err', q);
         if (revFocus && q.focus) {
           revFocus.innerHTML    = '<a href="#' + q.focus + '" class="quiz-focus-link">↑ Перечитать этот раздел</a>';
           revFocus.style.display = 'block';
@@ -2573,7 +2692,7 @@
       var bonusEnabled = SiteUtils.getConfig('features.quiz.bonusEnabled', false);
       if (revBonusTeaser && bonusEnabled && bonusDeck && score < questions.length) {
         revBonusTeaser.innerHTML =
-          '<div class="quiz-bonus-teaser__icon">🔒</div>' +
+          '<div class="quiz-bonus-teaser__icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg></div>' +
           '<div class="quiz-bonus-teaser__text"><strong>Бонусный раунд</strong>\u00a0— ответьте правильно на все\u00a0' + questions.length +
           '\u00a0вопросов основного теста, чтобы разблокировать серию повышенной сложности.</div>';
         revBonusTeaser.style.display = 'flex';
@@ -2640,7 +2759,7 @@
 
       if (idx === q.answer) {
         if (allBtns[idx]) allBtns[idx].classList.add('correct');
-        if (bonusBfb) { bonusBfb.innerHTML = q.ok; bonusBfb.className = 'quiz-feedback ok'; }
+        setFeedback(bonusBfb, q.ok, 'quiz-feedback ok', q);
         bonusScoreVal++;
       } else {
         if (idx >= 0 && allBtns[idx]) {
@@ -2648,7 +2767,7 @@
           allBtns[idx].addEventListener('animationend', function () { allBtns[idx].classList.remove('shake'); }, { once: true });
         }
         if (allBtns[q.answer]) allBtns[q.answer].classList.add('correct');
-        if (bonusBfb) { bonusBfb.innerHTML = q.err; bonusBfb.className = 'quiz-feedback err'; }
+        setFeedback(bonusBfb, q.err, 'quiz-feedback err', q);
         if (bonusBf && q.focus) {
           bonusBf.innerHTML    = '<a href="#' + q.focus + '" class="quiz-focus-link">↑ Перечитать этот раздел</a>';
           bonusBf.style.display = 'block';
@@ -2677,9 +2796,9 @@
       if (bonusBfill) bonusBfill.style.width   = '100%';
 
       var idx = getScoreBucket(bonusScoreVal, bonusDeck.length, bonusScores);
-      var s   = bonusScores ? bonusScores[idx] : { title: bonusScoreVal + '/' + bonusDeck.length, badge: '👑', desc: '' };
+      var s   = bonusScores ? bonusScores[idx] : { title: bonusScoreVal + '/' + bonusDeck.length, badge: '', desc: '' };
 
-      if (bonusSTitle) bonusSTitle.textContent = (s.badge || '') + '\u00a0' + (s.title || '');
+      if (bonusSTitle) bonusSTitle.innerHTML = (s.badge || '') + (s.badge ? '\u00a0' : '') + escapeHTML(s.title || '');
       if (bonusSDesc)  bonusSDesc.innerHTML    = s.desc || '';
       if (bonusSBadge) animateCount(bonusSBadge, bonusScoreVal, bonusDeck.length, 800);
 
@@ -2782,7 +2901,8 @@
         var scoreText = score + ' из ' + questions.length;
         var idx       = getScoreBucket(score, questions.length, scores);
         var s         = scores ? scores[idx] : null;
-        var shareMsg  = 'Мой результат: ' + scoreText + (s && s.title ? ' — «' + s.title + '»' : '');
+        var gradeLead = score === questions.length ? 'Прошёл тест без ошибок' : (score >= Math.ceil(questions.length * 0.7) ? 'Хороший результат в тесте' : 'Прошёл тест и вижу, что стоит перечитать материал');
+        var shareMsg  = gradeLead + ': ' + scoreText + (s && s.title ? ' — «' + s.title + '»' : '');
         /* B-10: передаём title напрямую в openDialog — без DOM-патча и без setTimeout.
            На мобильном это же значение идёт в navigator.share({title: ...}).           */
         if (window.SiteShare) {
@@ -2864,7 +2984,7 @@
       'align-items:center',
       'gap:6px'
     ].join(';');
-    toast.innerHTML = '<span>🔗</span><span>Ссылка на раздел скопирована</span>';
+    toast.innerHTML = '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10 13a5 5 0 0 0 7.07 0l2.12-2.12a5 5 0 0 0-7.07-7.07L11 4.93"/><path d="M14 11a5 5 0 0 0-7.07 0L4.81 13.12a5 5 0 0 0 7.07 7.07L13 19.07"/></svg><span>Ссылка на раздел скопирована</span>';
     document.body.appendChild(toast);
 
     var toastTimer = null;
@@ -2957,7 +3077,10 @@
       }
     });
 
-    SiteUtils.makeTooltipController('.fn-marker', '.tooltip');
+    SiteUtils.makeTooltipController('.fn-marker', '.tooltip', {
+      mobileSheet: true,
+      mobileSheetBreakpoint: 768
+    });
   })();
 
 
@@ -3088,6 +3211,42 @@
 
     SiteUtils.initGlossaryTooltips = initGlossaryTooltips;
     initGlossaryTooltips(document);
+  })();
+
+
+  /* ============================================================
+     20c. AI Disclosure — прозрачность подготовки материалов
+     ============================================================ */
+  (function () {
+    var cfg = SiteUtils.getConfig('features.aiDisclosure', {});
+    if (cfg.enabled === false) return;
+    if (SiteUtils.getConfig('page.type', '') !== 'article') return;
+
+    var article = document.querySelector('article[data-pagefind-body], article.article-body, article');
+    if (!article || article.querySelector('.ai-disclosure')) return;
+
+    var box = document.createElement('aside');
+    box.className = 'ai-disclosure';
+    box.setAttribute('role', 'note');
+    box.setAttribute('aria-label', 'Прозрачность подготовки материала');
+    box.innerHTML =
+      '<svg class="ai-disclosure__icon" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">' +
+        '<circle cx="12" cy="12" r="9"/>' +
+        '<path d="M12 8v5"/>' +
+        '<path d="M12 16h.01"/>' +
+      '</svg>' +
+      '<p>Материал подготовлен редактором с использованием ИИ-ассистента как инструмента чернового анализа, структурирования и проверки формулировок. Финальная богословская ответственность, выводы и редакция принадлежат редактору.</p>';
+
+    function isAiDisclosurePrelude(el) {
+      if (!el) return false;
+      if (el.hidden || (el.matches && el.matches('[data-pagefind-meta]'))) return true;
+      if (el.matches && el.matches('header.article-header, .article-header, figure.article-hero, figure.article-img, .article-hero, .article-img')) return true;
+      return false;
+    }
+    var firstContent = Array.prototype.find.call(article.children, function (el) {
+      return !isAiDisclosurePrelude(el);
+    });
+    article.insertBefore(box, firstContent || article.firstChild);
   })();
 
 
@@ -3356,16 +3515,37 @@
     function buildScrollToText(quote) {
       if (!quote) return '';
       var words = quote.replace(/[\u00ab\u00bb"\s]+/g, ' ').trim().split(/\s+/).slice(0, 6).join(' ');
-      return '#:~:text=' + encodeURIComponent(words);
+      return words ? '#:~:text=' + encodeURIComponent(words) : '';
+    }
+    function buildQuoteUrl(quote) {
+      var textFragment = buildScrollToText(quote);
+      if (textFragment) return location.origin + location.pathname + textFragment;
+      var h2 = findNearestH2();
+      return location.origin + location.pathname + (h2 ? '#' + h2.id : '');
     }
     function buildQuoteShareText(quote) {
       var clean = (quote || '').replace(/[\u201C\u201D\u201E"]/g, '').replace(/\s*\u2014\s*/g, '\u00a0\u2014 ').trim();
       var title = (document.querySelector('h1') ? document.querySelector('h1').textContent : document.title).trim();
       var h2 = findNearestH2();
-      var url = location.origin + location.pathname;
-      if (h2) url += '#' + h2.id;
-      url += buildScrollToText(quote);
-      return '\u00ab' + clean + '\u00bb\u00a0\u2014 ' + title + ' \u00b7 ' + url;
+      var section = h2 ? ' · ' + h2.textContent.trim() : '';
+      var url = buildQuoteUrl(quote);
+      return '\u00ab' + clean + '\u00bb\u00a0\u2014 ' + title + section + ' \u00b7 ' + url;
+    }
+
+    function setSelectionCopiedState(btn) {
+      var label = btn && btn.querySelector('span');
+      var icon  = btn && btn.querySelector('svg');
+      if (!label) return;
+      var oldLabel = label.textContent;
+      var oldIcon  = icon ? icon.innerHTML : '';
+      btn.classList.add('is-copied');
+      label.textContent = 'Скопировано';
+      if (icon) icon.innerHTML = '<path d="M20 6 9 17l-5-5"/>';
+      setTimeout(function () {
+        btn.classList.remove('is-copied');
+        label.textContent = oldLabel;
+        if (icon) icon.innerHTML = oldIcon;
+      }, 2200);
     }
 
     copyBtn.addEventListener('click', function () {
@@ -3373,10 +3553,7 @@
       var text = buildQuoteShareText(lastText);
       function done() {
         if (navigator.vibrate) try { navigator.vibrate(20); } catch (e) {}
-        var span = copyBtn.querySelector('span');
-        var orig = span.textContent;
-        span.textContent = '\u2713\u00a0Скопировано';
-        setTimeout(function () { span.textContent = orig; }, 2200);
+        setSelectionCopiedState(copyBtn);
       }
       if (navigator.clipboard && navigator.clipboard.writeText) {
         navigator.clipboard.writeText(text).then(done).catch(function () {
@@ -3398,25 +3575,23 @@
       var quote = lastText.replace(/\s*\u2014\s*/g, '\u00a0\u2014 ').trim();
       var title = (document.querySelector('h1') ? document.querySelector('h1').textContent : document.title).trim();
       var h2 = findNearestH2();
-      var url = location.origin + location.pathname + (h2 ? '#' + h2.id : '') + buildScrollToText(quote);
+      var section = h2 ? ' · ' + h2.textContent.trim() : '';
+      var url = buildQuoteUrl(quote);
       var data = {
         title: title,
-        text:  '\u00ab' + quote + '\u00bb\u00a0\u2014 ' + title,
+        text:  '\u00ab' + quote + '\u00bb\u00a0\u2014 ' + title + section,
         url:   url
       };
       var isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
       if (isMobile && navigator.share) {
         navigator.share(data).catch(function () {});
       } else if (window.SiteShare && window.SiteShare.open) {
-        window.SiteShare.open(shareBtn, '\u00ab' + quote.slice(0, 80) + '\u2026\u00bb');
+        window.SiteShare.open(shareBtn, { dialogTitle: 'Поделиться цитатой', title: title, text: data.text, url: data.url });
       } else {
         var toCopy = data.text + ' \u00b7 ' + data.url;
         if (navigator.clipboard && navigator.clipboard.writeText) {
           navigator.clipboard.writeText(toCopy).then(function () {
-            var span = shareBtn.querySelector('span');
-            var orig = span.textContent;
-            span.textContent = '\u2713\u00a0Скопировано';
-            setTimeout(function () { span.textContent = orig; }, 2200);
+            setSelectionCopiedState(shareBtn);
           }).catch(function () {
             /* AUDIT V6 / M3: graceful fallback при ошибке clipboard */
             var ta = document.createElement('textarea');
@@ -3497,7 +3672,7 @@
 
         var label = document.createElement('span');
         label.className = 'article-reading-progress-label' + (data.completed ? ' completed-label' : '');
-        label.textContent = data.completed ? '\u2713\u00a0Прочитано' : pct + '%';
+        label.textContent = data.completed ? 'Прочитано' : pct + '%';
 
         track.appendChild(fill);
         wrap.appendChild(track);
@@ -3681,8 +3856,9 @@
     block.className = 'article-end-block';
     block.innerHTML =
       '<div class="article-end-actions">' + actionsHTML + '</div>' +
-      '<div class="article-end-sdg">' +
-        '<span class="sdg">Soli Deo Gloria</span>' +
+      '<div class="article-end-sdg" itemscope itemtype="https://schema.org/CreativeWork">' +
+        '<meta itemprop="about" content="Soli Deo Gloria">' +
+        '<span class="sdg" itemprop="name">Soli Deo Gloria</span>' +
         '<svg width="52" height="70" viewBox="0 0 52 70" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">' +
           '<line x1="26" y1="3" x2="26" y2="67" stroke="currentColor" stroke-width="5" stroke-linecap="round"/>' +
           '<line x1="6" y1="19" x2="46" y2="19" stroke="currentColor" stroke-width="5" stroke-linecap="round"/>' +
@@ -3766,7 +3942,9 @@
     viewer.innerHTML =
       '<div class="img-viewer__panel" role="document">' +
         '<div class="img-viewer__top">' +
-          '<button type="button" class="img-viewer__close" aria-label="Закрыть">\u2715</button>' +
+          '<button type="button" class="img-viewer__close" aria-label="Закрыть просмотр изображения">' +
+          '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" aria-hidden="true" focusable="false"><path d="M6 6l12 12M18 6L6 18"/></svg>' +
+          '</button>' +
         '</div>' +
         '<div class="img-viewer__body">' +
           '<img class="img-viewer__img" src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///ywAAAAAAQABAAACAUwAOw==" alt="" loading="eager">' +
@@ -4159,14 +4337,16 @@
      в .gb-accuracy-block.
      ────────────────────────────────────────────────────────────────── */
   document.querySelectorAll('.gb-accuracy-btn--email[href^="mailto:"]').forEach(function (a) {
-    var href = a.getAttribute('href');
-    if (href.indexOf('?subject=') !== -1) return; /* уже расширен */
-    var to = href.replace('mailto:', '');
-    var subj = encodeURIComponent('Неточность в статье: ' + document.title);
+    var href = a.getAttribute('href') || '';
+    var to = href.replace(/^mailto:/, '').split('?')[0] || 'viktorcoy2012@gmail.com';
+    var pageTitle = (document.querySelector('h1') ? document.querySelector('h1').textContent : document.title).trim();
+    var pageUrl = location.href.split('#')[0];
+    var subj = encodeURIComponent('Неточность в материале: ' + pageTitle);
     var body = encodeURIComponent(
       'Здравствуйте,\n\nЯ обнаружил неточность в материале:\n' +
-      document.title + '\n' + location.href + '\n\n' +
-      'Описание неточности:\n[ваш текст]\n\n' +
+      pageTitle + '\n' + pageUrl + '\n\n' +
+      'Что именно требует проверки:\n[опишите неточность]\n\n' +
+      'Если возможно, приложите источник или скриншот.\n\n' +
       '— Спасибо!'
     );
     a.setAttribute('href', 'mailto:' + to + '?subject=' + subj + '&body=' + body);
@@ -4177,8 +4357,15 @@
      /js/glossary.js (lazy, только если нужно).
      ────────────────────────────────────────────────────────────────── */
   (function lazyExtras() {
+    function scriptAlreadyPresent(src) {
+      return Array.prototype.some.call(document.scripts, function (sc) {
+        if (sc.dataset && sc.dataset.extra === src) return true;
+        try { return new URL(sc.getAttribute('src') || sc.src || '', location.href).pathname === src; }
+        catch (e) { return false; }
+      });
+    }
     function add(src) {
-      if (document.querySelector('script[data-extra="' + src + '"]')) return;
+      if (scriptAlreadyPresent(src)) return;
       var sc = document.createElement('script');
       var version = window.SiteUtils && window.SiteUtils.getConfig('version', '');
       sc.src = src + (version ? '?v=' + encodeURIComponent(version) : '');

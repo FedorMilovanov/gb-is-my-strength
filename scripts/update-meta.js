@@ -51,6 +51,13 @@ function toMoscowISO(d) {
 
 function toDate(d)           { return toMoscowISO(d).slice(0, 10); }
 function toSitemapLastmod(d) { return toMoscowISO(d); }  // SITEMAP-01: full ISO8601 with +03:00
+
+function normalizeSitemapLastmods(xml) {
+  return xml.replace(
+    /<lastmod>(\d{4}-\d{2}-\d{2})<\/lastmod>/g,
+    '<lastmod>$1T00:00:00+03:00</lastmod>'
+  );
+}
 function toRFC(d)    { return new Date(new Date(d).getTime() + 3*3600000).toUTCString().replace('GMT', '+0300'); }  // UPDATE-01: Moscow +03:00
 
 // ── Git ───────────────────────────────────────────────────────────────────────
@@ -265,7 +272,7 @@ function updateNagornayaHTML(slug, { modISO, words, readTime }) {
 // ── 2. sitemap.xml ────────────────────────────────────────────────────────────
 
 function updateSitemap(changes, nagornayaChanges = {}) {
-  let xml = fs.readFileSync(SITEMAP, 'utf8');
+  let xml = normalizeSitemapLastmods(fs.readFileSync(SITEMAP, 'utf8'));
 
   // Обновить lastmod существующих
   for (const [slug, { modISO }] of Object.entries(changes)) {
