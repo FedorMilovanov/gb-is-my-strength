@@ -48,7 +48,7 @@ const SITE_NAME = 'Господь Бог — Сила Моя';
 
 const STRICT    = process.argv.includes('--strict');
 
-const VALID_SECTIONS = new Set(['Переводы', 'Публикации', 'Разбор заблуждений', 'Апологетика', 'Богословие', 'Герменевтика', 'Экзегетика', 'Библеистика', 'Служение', 'Тёмная сторона кафедры']);
+const VALID_SECTIONS = new Set(['Переводы', 'Публикации', 'Разбор заблуждений', 'Апологетика', 'Богословие', 'Герменевтика', 'Экзегетика', 'Библеистика', 'Служение', 'Тёмная сторона кафедры', 'Биографии служителей']);
 
 // Брейкпоинты дизайн-системы проекта. Чек #8 и CSS-чек предупреждают
 // только о значениях ВНЕ этого набора. При расширении — добавляйте сюда.
@@ -412,6 +412,7 @@ function main() {
 // ── V3-FIX: Validate non-article pages (pastor-series, about, index) ──
   const EXTRA_PAGES = [
     { file: path.resolve(__dirname, '../pastor-series/index.html'), slug: 'pastor-series' },
+    { file: path.resolve(__dirname, '../biografii/index.html'), slug: 'biografii' },
     { file: path.resolve(__dirname, '../about/index.html'), slug: 'about' },
     { file: path.resolve(__dirname, '../index.html'), slug: 'index' },
   ];

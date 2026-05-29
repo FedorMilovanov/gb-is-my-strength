@@ -342,4 +342,28 @@
     </image:image>
   </url>
 
+  <url>
+    <loc>https://gospod-bog.ru/biografii/</loc>
+    <lastmod>2026-05-28T00:00:00+03:00</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+    <image:image>
+      <image:loc>https://gospod-bog.ru/images/og-dzhon-gill-1697-1771.webp</image:loc>
+      <image:title>Биографии служителей — христианское наследие</image:title>
+          <image:caption>Биографии служителей — христианское наследие</image:caption>
+    </image:image>
+  </url>
+
+  <url>
+    <loc>https://gospod-bog.ru/articles/dzhon-gill-1697-1771/</loc>
+    <lastmod>2026-05-28T00:00:00+03:00</lastmod>
+    <changefreq>yearly</changefreq>
+    <priority>0.9</priority>
+    <image:image>
+      <image:loc>https://gospod-bog.ru/images/og-dzhon-gill-1697-1771.webp</image:loc>
+      <image:title>Джон Гилл (1697–1771): защитник Троицы, гигант экзегезы</image:title>
+          <image:caption>Джон Гилл (1697–1771) — биография в разделе «Биографии служителей»</image:caption>
+    </image:image>
+  </url>
+
 </urlset>
