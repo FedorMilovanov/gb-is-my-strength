@@ -1361,6 +1361,8 @@
       document.querySelectorAll(selectors).forEach(function (el) {
         var a = document.createElement('a');
         a.className = 'toc-link';
+        if (el.tagName === 'H3') a.classList.add('toc-h3');
+        a.style.display = 'block'; // Ensure block rendering for nested sub-items
         a.href = '#' + el.id;
         a.textContent = el.textContent.replace(/\s*#\s*$/, '').trim();
         a.addEventListener('click', function (e) {

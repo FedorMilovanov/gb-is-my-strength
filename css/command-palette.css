@@ -1374,8 +1374,8 @@ html.dark mark.cp-hl {
   padding: 6px 12px;
   border-radius: 9px;
   /* Light mode: тёплый бежевый фон под палитру сайта */
-  border: 1px solid rgba(120, 80, 40, 0.20);
-  background: var(--h-surface, #f3ede5);
+  border: 1px solid var(--color-border);
+  background: transparent;
   color: var(--cp-accent, #7a2e2e);
   font-family: var(--cp-font-ui);
   font-size: 12.5px;

@@ -7,8 +7,9 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, interactive-widget=resizes-content">
   <meta name="theme-color" content="#fdfcf9" media="(prefers-color-scheme: light)">
   <meta name="theme-color" content="#171411" media="(prefers-color-scheme: dark)">
+  <meta name="color-scheme" content="light dark">
 
-  <title>Биографии служителей — от Ранней Церкви до наших дней | Господь Бог — Сила Моя</title>
+  <title>Биографии служителей — христианское наследие | Господь Бог — Сила Моя</title>
   <meta name="description" content="Новый отдел библиотеки: биографии пасторов, богословов, реформаторов и миссионеров — от Ранней Церкви до XXI века. Жизнь и труд тех, кто отстаивал истину, проповедовал Евангелие и переводил Писание.">
   <meta name="robots" content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1">
   <link rel="canonical" href="https://gospod-bog.ru/biografii/">
@@ -44,8 +45,8 @@
   <link href="https://gospod-bog.ru/feed.xml" rel="alternate" title="Господь Бог — Сила Моя — RSS" type="application/rss+xml">
   <link rel="icon" type="image/x-icon" href="https://gospod-bog.ru/favicon.ico">
   <link rel="apple-touch-icon" sizes="180x180" href="https://gospod-bog.ru/apple-touch-icon.png">
-  <link rel="icon" type="image/webp" sizes="48x48" href="https://gospod-bog.ru/favicon-48.png">
-  <link rel="icon" type="image/webp" sizes="120x120" href="https://gospod-bog.ru/favicon-120.png">
+  <link rel="icon" type="image/png" sizes="48x48" href="https://gospod-bog.ru/favicon-48.png">
+  <link rel="icon" type="image/png" sizes="120x120" href="https://gospod-bog.ru/favicon-120.png">
   <link rel="icon" type="image/webp" sizes="192x192" href="https://gospod-bog.ru/icons/icon-192.png">
   <link rel="manifest" href="https://gospod-bog.ru/manifest.json">
   <link rel="preload" as="style" href="../fonts/fonts.css?v=fc6cff8a">
@@ -64,6 +65,7 @@
 
   <link rel="stylesheet" href="../css/site.css?v=18ff031c">
   <link rel="stylesheet" href="../css/home.css?v=fe2e7082">
+  <link rel="stylesheet" href="../css/command-palette.css?v=78d3b3d9">
 
   <script>
 window.SITE_CONFIG = {
@@ -116,7 +118,7 @@ window.SITE_CONFIG = {
                         {
                               "@type": "Article",
                               "url": "https://gospod-bog.ru/articles/dzhon-gill-1697-1771/",
-                              "name": "Джон Гилл (1697–1771): доктор Витиеватый — защитник Троицы и гигант библейского богословия"
+                              "name": "Джон Гилл (1697–1771): доктор Многотомный — защитник Троицы и гигант библейского богословия"
                         }
                   ]
             },
@@ -259,7 +261,7 @@ window.SITE_CONFIG = {
         letter-spacing: 2px;
         text-transform: uppercase;
         background: var(--color-accent-soft);
-        color: var(--color-accent-strong);
+        color: var(--h-accent, var(--color-accent-strong));
       }
       .bio-stub__facets {
         display: grid;
@@ -396,11 +398,11 @@ window.SITE_CONFIG = {
       <li><a href="../about/">О библиотеке</a></li>
     </ul>
     <div class="mobile-controls">
-      <button class="theme-toggle" id="themeToggle" aria-label="Переключить тему">
+      <button class="theme-toggle" id="themeToggle" type="button" aria-label="Переключить тему">
         <svg class="icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12.8A9 9 0 1111.2 3 7 7 0 0021 12.8z"/></svg>
         <svg class="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
       </button>
-      <button class="h-mobile-menu-btn" id="hMobileMenuBtn" aria-label="Открыть меню" aria-expanded="false">
+      <button class="h-mobile-menu-btn" id="hMobileMenuBtn" type="button" aria-label="Открыть меню" aria-expanded="false">
         <svg class="h-burger-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
           <line class="burger-top"    x1="3" y1="6"  x2="21" y2="6"/>
           <line class="burger-mid"    x1="3" y1="12" x2="21" y2="12"/>
@@ -456,12 +458,48 @@ window.SITE_CONFIG = {
         <figcaption class="bio-cover__caption">
           <span>Библиотека раздела</span>
           <span class="dot" aria-hidden="true"></span>
-          <span>«Поминайте наставников ваших…» — Евр 13:7</span>
+          <span>«Поминайте наставников ваших…» — Евр. 13:7</span>
         </figcaption>
       </figure>
     </section>
 
     <main id="main-content">
+
+    <!-- Последние добавленные материалы -->
+    <section class="h-section h-reveal biography-recent" style="padding-top:0; padding-bottom: 24px;" aria-label="Последние добавленные материалы">
+      <div style="font-size: 11px; font-weight: 700; text-transform: uppercase; color: var(--h-accent, var(--color-accent-strong)); margin-bottom: 20px; letter-spacing: 0.12em; display: flex; align-items: center; gap: 8px;">
+        <span style="width: 6px; height: 6px; background: var(--color-accent-strong); border-radius: 50%;"></span>
+        Последние добавленные материалы
+      </div>
+      
+      <div class="h-articles-group" style="margin-left:22px; margin-bottom: 32px;">
+        <ul class="h-article-list">
+          <li>
+            <a href="../articles/dzhon-gill-1697-1771/" class="h-article-card" style="border: 1px solid var(--color-border); border-radius: 16px; padding: 16px; background: var(--color-surface-quote);">
+              <div class="h-article-thumb">
+                <picture>
+                  <source srcset="../images/og-dzhon-gill-1697-1771-600w.webp" type="image/webp">
+                  <img src="../images/og-dzhon-gill-1697-1771.jpg"
+                       alt="Джон Гилл (1697–1771) за рабочим столом"
+                       decoding="async" loading="eager" width="160" height="108">
+                </picture>
+              </div>
+              <div class="h-article-body">
+                <div class="h-article-kicker">Реформатское богословие · XVIII в. · Новинка</div>
+                <h3 class="h-article-title">Джон Гилл (1697–1771): доктор Многотомный</h3>
+                <div class="h-article-meta">
+                  <span class="h-meta-author">Редактор: Фёдор Милованов</span>
+                  <span class="h-meta-sep" aria-hidden="true">·</span>
+                  <span class="h-meta-tag">Биография</span>
+                </div>
+                <p class="h-article-abstract">Защитник Троицы против унитарианства, самостоятельно освоивший иврит, создатель первого девятитомного комментария на всю Библию в баптистской традиции. Биография по первичным источникам.</p>
+              </div>
+            </a>
+          </li>
+        </ul>
+      </div>
+      <hr class="h-rule" aria-hidden="true" style="margin-bottom: 32px; opacity: 0.3;">
+    </section>
 
     <!-- Редакционный фокус раздела -->
     <section class="h-section h-reveal" style="padding-top:0;" aria-label="Редакционный фокус">
@@ -596,13 +634,13 @@ window.SITE_CONFIG = {
               </div>
               <div class="h-article-body">
                 <div class="h-article-kicker">Реформатское богословие · XVIII в.</div>
-                <h3 class="h-article-title">Джон Гилл (1697–1771): доктор Витиеватый</h3>
+                <h3 class="h-article-title">Джон Гилл (1697–1771): доктор Многотомный</h3>
                 <div class="h-article-meta">
                   <span class="h-meta-author">Редактор: Фёдор Милованов</span>
                   <span class="h-meta-sep" aria-hidden="true">·</span>
                   <span class="h-meta-tag">Биография</span>
                 </div>
-                <p class="h-article-abstract">Защитник Троицы против унитарианства, самоучитель еврейского языка, создатель первого девятитомного комментария на всю Библию в баптистской традиции. Биография по первичным источникам.</p>
+                <p class="h-article-abstract">Защитник Троицы против унитарианства, самостоятельно освоивший иврит, создатель первого девятитомного комментария на всю Библию в баптистской традиции. Биография по первичным источникам.</p>
               </div>
             </a>
           </li>
@@ -741,7 +779,7 @@ window.SITE_CONFIG = {
   var progressCircle = document.getElementById('hProgressCircle');
   var circumference = 138.23;
   var navbar = document.getElementById('hNavbar');
-  var lastScroll = 0;
+  var lastScroll = window.scrollY || window.pageYOffset || 0;
   var scrollTopBtn = document.getElementById('hScrollTop');
   var reveals = document.querySelectorAll('.h-reveal');
 
@@ -824,5 +862,22 @@ window.SITE_CONFIG = {
 <script src="../js/sw-register.js?v=9b5d2bf3" defer></script>
 <script src="../js/search.js?v=572b87d7" defer></script>
 
+
+<script>
+(function(){
+  if (!window.IntersectionObserver) return;
+  var obs = new IntersectionObserver(function(entries) {
+    entries.forEach(function(e) {
+      if (e.isIntersecting) {
+        e.target.classList.add('revealed');
+        obs.unobserve(e.target);
+      }
+    });
+  }, { threshold: 0.1, rootMargin: '0px 0px -40px 0px' });
+  document.querySelectorAll('article h2, article > p, article blockquote, article ul, article .quote-box, article figure, .biography-item, .biography-recent').forEach(function(el) {
+    obs.observe(el);
+  });
+})();
+</script>
 </body>
 </html>

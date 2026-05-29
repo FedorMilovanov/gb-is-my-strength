@@ -7,6 +7,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, interactive-widget=resizes-content">
   <meta name="theme-color" content="#fdfcf9" media="(prefers-color-scheme: light)">
   <meta name="theme-color" content="#171411" media="(prefers-color-scheme: dark)">
+  <meta name="color-scheme" content="light dark">
   <meta name="yandex-verification" content="42bc0d54a1ca4952">
 
   <!-- SEO -->
@@ -179,13 +180,13 @@
 
     <!-- Controls: тема + бургер. Единая кнопка темы — всегда здесь, без дублирования. -->
     <div class="mobile-controls">
-      <button class="theme-toggle" id="themeToggle" aria-label="Переключить тему">
+      <button class="theme-toggle" id="themeToggle" type="button" aria-label="Переключить тему">
         <svg class="icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12.8A9 9 0 1111.2 3 7 7 0 0021 12.8z"/></svg>
         <svg class="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
       </button>
       <!-- Единый SVG-бургер. Три линии анимируются в крест через CSS transform.
            Нет двух отдельных иконок с display:none — переход управляется .is-open на кнопке. -->
-      <button class="h-mobile-menu-btn" id="hMobileMenuBtn" aria-label="Открыть меню" aria-expanded="false">
+      <button class="h-mobile-menu-btn" id="hMobileMenuBtn" type="button" aria-label="Открыть меню" aria-expanded="false">
         <svg class="h-burger-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
           <line class="burger-top"    x1="3" y1="6"  x2="21" y2="6"/>
           <line class="burger-mid"    x1="3" y1="12" x2="21" y2="12"/>
@@ -457,7 +458,43 @@
          PUBLICATIONS
     ══════════════════════════════════════════════════ -->
     <section class="h-section h-reveal h-scroll-target" id="publikacii" aria-labelledby="hPublicationsLabel">
-      <p class="h-section-label" id="hPublicationsLabel">Публикации</p>
+            <!-- ── FEATURED: Биографии служителей (серия) ── -->
+      <a href="/biografii/" class="h-featured-series" aria-label="Биографии служителей — серия">
+        <div class="h-featured-img-wrap">
+          <img src="images/og-biografii.webp"
+               alt="Биографии служителей — серия"
+               fetchpriority="high" loading="eager" decoding="async" width="800" height="420" srcset="images/og-biografii-600w.webp 600w, images/og-biografii-900w.webp 900w, images/og-biografii.webp 800w" sizes="(max-width: 640px) 600px, (max-width: 1024px) 900px, 800px">
+          <div class="h-featured-overlay" aria-hidden="true"></div>
+        </div>
+        <div class="h-featured-body">
+          <div class="h-featured-eyebrow">
+            <span class="h-featured-series-badge">Исторический проект</span>
+            <span class="h-featured-dot" aria-hidden="true">·</span>
+            <span class="h-featured-parts">Биографии</span>
+          </div>
+          <h3 class="h-featured-title">Биографии служителей:<br>хроника верных</h3>
+          <p class="h-featured-abstract">Жизнь и труд пасторов, богословов, реформаторов и миссионеров в их историческом контексте — от Ранней Церкви до наших дней.</p>
+          <div class="h-featured-footer">
+            <div class="h-featured-pills">
+              <span class="h-fpill">Личность</span>
+              <span class="h-fpill">Контекст</span>
+              <span class="h-fpill">Дебаты</span>
+              <span class="h-fpill">Наследие</span>
+            </div>
+            <div class="h-featured-meta">
+              <span class="h-featured-author">Редактор: Фёдор Милованов</span>
+              <span class="h-featured-time">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                Серия
+              </span>
+            </div>
+          </div>
+        </div>
+      </a>
+
+    <p class="h-section-label" id="hPublicationsLabel">Публикации</p>
+
+
       <div class="h-section-accent" aria-hidden="true"></div>
 
       <!-- ── FEATURED: Нагорная проповедь (серия) ── -->
@@ -498,6 +535,31 @@
 
 <div class="h-articles-group" style="margin-top: 40px;">
         <ul class="h-article-list">
+          <!-- Джон Гилл (Новинка в Биографиях) -->
+          <li>
+            <a href="articles/dzhon-gill-1697-1771/" class="h-article-card h-article-card--biography">
+              <div class="h-article-thumb">
+                <picture>
+                  <source srcset="images/og-dzhon-gill-1697-1771-600w.webp" type="image/webp">
+                  <img src="images/og-dzhon-gill-1697-1771.jpg"
+                       alt="Джон Гилл (1697–1771): доктор Многотомный"
+                       decoding="async" loading="lazy" width="160" height="108">
+                </picture>
+              </div>
+              <div class="h-article-body">
+                <div class="h-article-kicker" style="color:var(--h-accent, var(--color-accent-strong)); font-weight:700;">Новинка · Биография</div>
+                <h3 class="h-article-title">Джон Гилл (1697–1771): защитник Троицы и создатель полного комментария на всю Библию</h3>
+                <div class="h-article-meta">
+                  <span class="h-meta-author">Редактор: Фёдор Милованов</span>
+                  <span class="h-meta-sep" aria-hidden="true">·</span>
+                  <span class="h-meta-time">
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                    20 мин
+                  </span>
+                </div>
+              </div>
+            </a>
+          </li>
 
           <!-- Герменевтика (перевод) -->
           <li>
@@ -867,7 +929,7 @@ window.SITE_CONFIG = {
 
   /* ── Smart Navbar ── */
   const navbar = document.getElementById('hNavbar');
-  let lastScroll = 0;
+  let lastScroll = window.scrollY || window.pageYOffset || 0;
 
   function updateNavbar() {
     let s = window.scrollY;
