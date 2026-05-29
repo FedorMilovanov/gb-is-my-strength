@@ -7,6 +7,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, interactive-widget=resizes-content">
   <meta name="theme-color" content="#fdfcf9" media="(prefers-color-scheme: light)">
   <meta name="theme-color" content="#171411" media="(prefers-color-scheme: dark)">
+  <meta name="color-scheme" content="light dark">
 
   <title>Тёмная сторона кафедры — Серия материалов | Господь Бог — Сила Моя</title>
   <meta name="description" content="Авторская серия о системных патологиях церковного руководства, механике манипуляций и путях восстановления библейского пасторства.">
@@ -39,8 +40,8 @@
   <link href="https://gospod-bog.ru/feed.xml" rel="alternate" title="Господь Бог — Сила Моя — RSS" type="application/rss+xml">
   <link rel="icon" type="image/x-icon" href="https://gospod-bog.ru/favicon.ico">
   <link rel="apple-touch-icon" sizes="180x180" href="https://gospod-bog.ru/apple-touch-icon.png">
-  <link rel="icon" type="image/webp" sizes="48x48" href="https://gospod-bog.ru/favicon-48.png">
-  <link rel="icon" type="image/webp" sizes="120x120" href="https://gospod-bog.ru/favicon-120.png">
+  <link rel="icon" type="image/png" sizes="48x48" href="https://gospod-bog.ru/favicon-48.png">
+  <link rel="icon" type="image/png" sizes="120x120" href="https://gospod-bog.ru/favicon-120.png">
   <link rel="icon" type="image/webp" sizes="192x192" href="https://gospod-bog.ru/icons/icon-192.png">
   <link rel="manifest" href="https://gospod-bog.ru/manifest.json">
   <link rel="preload" as="style" href="../fonts/fonts.css?v=fc6cff8a">
@@ -507,7 +508,7 @@ window.SITE_CONFIG = {
   var progressCircle = document.getElementById('hProgressCircle');
   var circumference = 138.23;
   var navbar = document.getElementById('hNavbar');
-  var lastScroll = 0;
+  var lastScroll = window.scrollY || window.pageYOffset || 0;
   var scrollTopBtn = document.getElementById('hScrollTop');
   var reveals = document.querySelectorAll('.h-reveal');
 

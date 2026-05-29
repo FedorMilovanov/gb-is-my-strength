@@ -2268,6 +2268,16 @@ html.dark .compare-table:not(.compare-table--scroll) tr {
   margin-left: 8px;
 
   border-left: 1px solid var(--color-border);
+  max-height: 75vh;
+  overflow-y: auto;
+  scrollbar-width: thin;
+}
+.toc-sidebar nav::-webkit-scrollbar {
+  width: 4px;
+}
+.toc-sidebar nav::-webkit-scrollbar-thumb {
+  background: var(--color-border-strong);
+  border-radius: 4px;
 }
 .toc-sidebar .toc-label {
   font-family: 'Source Sans 3', system-ui, sans-serif;

@@ -1344,7 +1344,7 @@ html.dark .h-card-planned:hover {
   align-items: flex-start;
 }
 .h-article-card:first-child { padding-top: 0; }
-.h-article-card:last-child { border-bottom: none; }
+.h-article-list li:last-child .h-article-card { border-bottom: none; }
 .h-article-card:hover {
   transform: translateY(-2px);
   box-shadow: 0 8px 30px -8px rgba(26, 23, 20, 0.08);
@@ -2017,7 +2017,7 @@ html.dark .h-blockquote { color: var(--h-ink); }
 
 /* v10: Reduce excessive whitespace on series/archive pages using home-v20 layout */
 body:not(.home-page) .h-hero {
-  padding-top: 28px;
+  padding-top: 86px; /* 58px navbar height + 28px original padding to clear fixed header */
   padding-bottom: 24px;
 }
 body:not(.home-page) .h-section {
