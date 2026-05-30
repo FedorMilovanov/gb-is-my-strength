@@ -355,17 +355,41 @@
   </url>
 
   <url>
-    <loc>https://gospod-bog.ru/articles/dzhon-gill-1697-1771/</loc>
-    <lastmod>2026-05-30</lastmod>
+  <url>
+    <loc>https://gospod-bog.ru/articles/dzhon-gill-chast-1-chelovek/</loc>
+    <lastmod>2026-05-31T00:00:00+03:00</lastmod>
     <changefreq>yearly</changefreq>
     <priority>0.9</priority>
     <image:image>
       <image:loc>https://gospod-bog.ru/images/og-dzhon-gill-1697-1771.webp</image:loc>
-      <image:title>Джон Гилл (1697–1771): защитник Троицы, гигант экзегезы</image:title>
-          <image:caption>Джон Гилл (1697–1771) — биография в разделе «Биографии служителей»</image:caption>
+      <image:title>Джон Гилл (1697–1771): Часть I — Человек</image:title>
+      <image:caption>Часть I: детство, призвание, семья, Декларация 1729</image:caption>
     </image:image>
   </url>
 
+  <url>
+    <loc>https://gospod-bog.ru/articles/dzhon-gill-chast-2-uchenyi/</loc>
+    <lastmod>2026-05-31T00:00:00+03:00</lastmod>
+    <changefreq>yearly</changefreq>
+    <priority>0.9</priority>
+    <image:image>
+      <image:loc>https://gospod-bog.ru/images/og-dzhon-gill-1697-1771.webp</image:loc>
+      <image:title>Джон Гилл (1697–1771): Часть II — Учёный</image:title>
+      <image:caption>Часть II: экзегеза, раввинистика, 9-томный комментарий, Свод богословия</image:caption>
+    </image:image>
+  </url>
+
+  <url>
+    <loc>https://gospod-bog.ru/articles/dzhon-gill-chast-3-nasledie/</loc>
+    <lastmod>2026-05-31T00:00:00+03:00</lastmod>
+    <changefreq>yearly</changefreq>
+    <priority>0.9</priority>
+    <image:image>
+      <image:loc>https://gospod-bog.ru/images/og-dzhon-gill-1697-1771.webp</image:loc>
+      <image:title>Джон Гилл (1697–1771): Часть III — Наследие</image:title>
+      <image:caption>Часть III: полемика, гиперкальвинизм, Сперджен, реабилитация</image:caption>
+    </image:image>
+  </url>
   <url>
     <loc>https://gospod-bog.ru/nagornaya/istochniki/</loc>
     <lastmod>2026-05-30</lastmod>
