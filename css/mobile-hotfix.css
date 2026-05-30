@@ -41,10 +41,7 @@ html.cp-scroll-lock body {
 }
 
 /* P0-4b: перекрываем overscroll-behavior: none из command-palette.css:1480 */
-html.cp-scroll-lock,
-html.cp-scroll-lock body {
-  overscroll-behavior: auto !important;
-}
+/* html.cp-scroll-lock overscroll removed to prevent pull-to-refresh conflict */
 
 /* P0-4: pull-to-refresh */
 @media (pointer: coarse) {

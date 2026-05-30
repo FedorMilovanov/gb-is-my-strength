@@ -1191,17 +1191,7 @@ html.dark .heart-flip-back { background: #110e07; }
     shape-outside: none;
   }
 
-  @media (max-width: 600px) {
-    .article-img.float-right,
-    .article-img.float-left {
-      margin: 40px -16px;
-      border-radius: 0;
-    }
-    .article-img.float-right img,
-    .article-img.float-left img {
-      border-radius: 0;
-    }
-  }
+
   .article-img.float-right + p,
   .article-img.float-right + ul,
   .article-img.float-right + blockquote,
@@ -1212,6 +1202,18 @@ html.dark .heart-flip-back { background: #110e07; }
     padding-top: 0;
   }
 }
+@media (max-width: 600px) {
+  .article-img.float-right,
+  .article-img.float-left {
+    margin: 40px -16px;
+    border-radius: 0;
+  }
+  .article-img.float-right img,
+  .article-img.float-left img {
+    border-radius: 0;
+  }
+}
+
 
 .reveal {
   opacity: 0;
@@ -3241,8 +3243,9 @@ html.dark .error-flip-label-fact { color: #80c890; }
   91%, 100% { transform: translateY(0) rotate(-8deg) scale(1); }
 }
 .flip-card, .error-flip-card, .heart-flip-card {
-  content-visibility: auto;
+  /* content-visibility: auto;
   contain-intrinsic-size: auto 280px;
+} removed to fix animation sync */
 }
 .flip-card:not(.flipped), .error-flip-card:not(.flipped), .heart-flip-card:not(.flipped) { animation: card-react 3.5s ease-in-out infinite; }
 @keyframes card-react {
@@ -4622,28 +4625,28 @@ footer.footer-home {
   .faq-accordion__icon      { transition: none !important; }
 }
 
-.reading-list {
+.reading-list-section {
   margin-top: 56px;
   padding-top: 40px;
   border-top: 2px solid var(--color-border, rgba(0,0,0,0.10));
 }
-.reading-list__title {
+.reading-list-section__title {
   font-family: 'Lora', Georgia, serif;
   font-size: clamp(18px, 2.5vw, 22px);
   font-weight: 700;
   margin: 0 0 10px;
   color: var(--color-text);
 }
-.reading-list__intro {
+.reading-list-section__intro {
   font-size: 15px;
   color: var(--color-text-muted);
   margin: 0 0 36px;
   font-style: italic;
 }
-.reading-list__group {
+.reading-list-section__group {
   margin-bottom: 32px;
 }
-.reading-list__group-title {
+.reading-list-section__group-title {
   font-family: 'Source Sans 3', system-ui, sans-serif;
   font-size: 11px;
   font-weight: 700;
@@ -4654,7 +4657,7 @@ footer.footer-home {
   padding-bottom: 6px;
   border-bottom: 1px solid var(--color-border, rgba(0,0,0,0.08));
 }
-.reading-list__items {
+.reading-list-section__items {
   list-style: none;
   padding: 0;
   margin: 0;
@@ -4662,14 +4665,14 @@ footer.footer-home {
   flex-direction: column;
   gap: 8px;
 }
-.reading-list__items li {
+.reading-list-section__items li {
   font-size: 14px;
   line-height: 1.6;
   color: var(--color-text);
   padding-left: 14px;
   border-left: 2px solid var(--color-border, rgba(0,0,0,0.08));
 }
-.reading-list__items li:hover {
+.reading-list-section__items li:hover {
   border-left-color: var(--color-accent);
 }
 .rl-author {
@@ -5090,6 +5093,7 @@ html.dark .article-date-display {
 
   z-index: var(--z-toast);
 
+  position: fixed;
   bottom: 80px;
 }
 
@@ -7071,6 +7075,7 @@ html.dark .summary-card__num {
   border-right-color: color-mix(in srgb, var(--color-border, #3a3028) 95%, transparent);
   text-shadow: 0 1px 2px rgba(0,0,0,.4);
 }
+@supports selector(:has(*)) {
 .summary-card__item:not(:has(.summary-card__num))::before {
   content: counter(summaryitem, decimal-leading-zero);
   font-family: 'Playfair Display', 'Cormorant Garamond', Georgia, serif;
@@ -7085,10 +7090,13 @@ html.dark .summary-card__num {
   display: flex; align-items: center;
   text-shadow: 0 1px 0 rgba(255,255,255,.4);
 }
-html.dark .summary-card__item:not(:has(.summary-card__num))::before {
+}
+html.dark @supports selector(:has(*)) {
+.summary-card__item:not(:has(.summary-card__num))::before {
   color: #e0b157;
   border-right-color: color-mix(in srgb, var(--color-border, #3a3028) 95%, transparent);
   text-shadow: 0 1px 2px rgba(0,0,0,.4);
+}
 }
 
 .summary-card__text {
@@ -7122,17 +7130,21 @@ html.dark .summary-card__text strong { color: var(--color-accent-strong, #e8b878
   .summary-card__item { grid-template-columns: 38px 44px 1fr; padding: 12px 14px !important; border-radius: 12px !important; }
   .summary-card__check { width: 32px !important; height: 32px !important; }
   .summary-card__num,
-  .summary-card__item:not(:has(.summary-card__num))::before { font-size: 22px; padding: 0 12px 0 8px; }
+  @supports selector(:has(*)) {
+.summary-card__item:not(:has(.summary-card__num))::before { font-size: 22px; padding: 0 12px 0 8px; }
+}
   .summary-card__text { font-size: 14px !important; padding-left: 12px !important; }
 }
 @media (max-width: 380px) {
   .summary-card__item { grid-template-columns: 32px 1fr; grid-template-rows: auto auto; column-gap: 12px; row-gap: 6px; }
   .summary-card__check { grid-row: 1 / span 2; }
   .summary-card__num,
-  .summary-card__item:not(:has(.summary-card__num))::before {
+  @supports selector(:has(*)) {
+.summary-card__item:not(:has(.summary-card__num))::before {
     grid-column: 2; grid-row: 1;
     border-right: 0; padding: 0; font-size: 20px; opacity: .9;
   }
+}
   .summary-card__text { grid-column: 2; grid-row: 2; padding-left: 0 !important; }
 }
 
@@ -8170,6 +8182,7 @@ html.dark .summary-card__check {
   border-color: rgba(232,184,120,0.14) !important;
 }
 .summary-card__num,
+@supports selector(:has(*)) {
 .summary-card__item:not(:has(.summary-card__num))::before {
   min-width: 0 !important;
   width: 42px !important;
@@ -8185,10 +8198,13 @@ html.dark .summary-card__check {
   color: #b8860b !important;
   text-shadow: none !important;
 }
+}
 html.dark .summary-card__num,
-html.dark .summary-card__item:not(:has(.summary-card__num))::before {
+html.dark @supports selector(:has(*)) {
+.summary-card__item:not(:has(.summary-card__num))::before {
   color: #d4a762 !important;
   border-right-color: rgba(245,213,166,0.16) !important;
+}
 }
 .summary-card__text {
   margin: 0 !important;
@@ -8224,7 +8240,8 @@ html.dark .summary-card__text strong {
     height: 28px !important;
   }
   .summary-card__num,
-  .summary-card__item:not(:has(.summary-card__num))::before {
+  @supports selector(:has(*)) {
+.summary-card__item:not(:has(.summary-card__num))::before {
     grid-column: 2 !important;
     grid-row: 1 !important;
     width: auto !important;
@@ -8233,6 +8250,7 @@ html.dark .summary-card__text strong {
     font-size: 13px !important;
     line-height: 1.1 !important;
   }
+}
   .summary-card__text {
     grid-column: 2 !important;
     grid-row: 2 !important;

@@ -381,7 +381,7 @@ html.dark .cp-group-hd { opacity: 0.6; }
   display: flex;
   align-items: flex-start;
   gap: 12px;
-  width: 100%;
+  width: calc(100% - 16px);
   padding: 12px 18px;
   background: none;
   border: 1px solid transparent;
