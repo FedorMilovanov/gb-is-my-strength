@@ -389,7 +389,7 @@
           if (Date.now() < (utils._tooltipSuppressScrollUntil || 0)) return;
           closeAll();
         }, { passive: true });
-        window.addEventListener('resize', closeAll, { passive: true });
+        window.addEventListener('resize', function() { SiteUtils._cachedDocH = 0; closeAll(); }, { passive: true });
         window.addEventListener('orientationchange', closeAll, { passive: true });
         window.addEventListener('wheel', closeAllExceptTipTarget, { passive: true });
       }
@@ -2199,6 +2199,7 @@
       var resultActions = quizMain.querySelector('.quiz-result__actions');
       if (resultActions) {
         revStartBtn = document.createElement('button');
+        revStartBtn.type = 'button';
         revStartBtn.id        = 'quizStartReview';
         revStartBtn.className = 'quiz-review-start-btn';
         revStartBtn.style.display = 'none';
@@ -2338,6 +2339,7 @@
     /* Build an option button (shared by main / review / bonus) */
     function makeOptionBtn(opt, i, handler) {
       var btn = document.createElement('button');
+      btn.type = 'button';
       btn.className = 'quiz-option';
       btn.setAttribute('data-idx', i);
       btn.setAttribute('role', 'radio');
@@ -3669,7 +3671,7 @@
         if (!data) {
           Object.keys(idx).forEach(function (k) {
             if (!data) {
-              if (k.indexOf(path) !== -1 || path.indexOf(k) !== -1) data = idx[k];
+              if (k === path || k === path + "/" || path === k + "/") data = idx[k];
             }
           });
         }
@@ -4163,6 +4165,7 @@
       row.className = 'btoc-fontsize btoc-fontsize--' + variant;
 
       var btnDown = document.createElement('button');
+      btnDown.type = 'button';
       btnDown.className = 'btoc-fontsize-btn btoc-fontsize-btn--down';
       btnDown.setAttribute('aria-label', 'Уменьшить шрифт');
       btnDown.textContent = 'a';
@@ -4179,6 +4182,7 @@
       }
 
       var btnUp = document.createElement('button');
+      btnUp.type = 'button';
       btnUp.className = 'btoc-fontsize-btn btoc-fontsize-btn--up';
       btnUp.setAttribute('aria-label', 'Увеличить шрифт');
       btnUp.textContent = 'A';
@@ -4272,7 +4276,6 @@
     var hi = document.querySelector('.sti-highlight');
     if (!hi) return;
 
-    var reduceMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
     /* Разбиваем текст на буквы */
     var text = hi.textContent;

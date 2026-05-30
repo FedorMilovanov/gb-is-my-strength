@@ -49,7 +49,7 @@
 
   function normalizePath(path) {
     if (!path) return '/';
-    var out = path.replace(/index\.html$/, '');
+    var out = path.split('?')[0].split('#')[0].replace(/index\.html$/, '');
     if (out !== '/' && /\/$/.test(out)) out = out.slice(0, -1);
     return out || '/';
   }
@@ -85,8 +85,14 @@
     try { console.log.apply(console, ['[bookmark]'].concat([].slice.call(arguments))); } catch (e) {}
   }
 
-  function safeLocalStorageGet(key) { try { return localStorage.getItem(key); } catch (e) { return null; } }
-  function safeLocalStorageSet(key, value) { try { localStorage.setItem(key, value); return true; } catch (e) { return false; } }
+  function safeLocalStorageSet(key, value) {
+    try { localStorage.setItem(key, value); return true; } catch (e) {
+      try { sessionStorage.setItem(key, value); return true; } catch(err) { return false; }
+    }
+  }
+  function safeLocalStorageGet(key) {
+    try { return localStorage.getItem(key) || sessionStorage.getItem(key); } catch (e) { return null; }
+  }
   function safeLocalStorageRemove(key) { try { localStorage.removeItem(key); } catch (e) {} }
   function safeSessionStorageGet(key) { try { return sessionStorage.getItem(key); } catch (e) { return null; } }
   function safeSessionStorageSet(key, value) { try { sessionStorage.setItem(key, value); } catch (e) {} }
@@ -189,7 +195,7 @@
       for (var i = 0; i < headings.length; i++) {
         var currentTitle = normalizeText(headings[i].textContent);
         if (currentTitle === savedTitle) return headings[i];
-        if (currentTitle.indexOf(savedTitle) !== -1 || savedTitle.indexOf(currentTitle) !== -1) {
+        if (currentTitle === savedTitle) {
           partialMatch = partialMatch || headings[i];
         }
       }
@@ -343,6 +349,17 @@
     markCleanupRan();
   }
 
+  window.addEventListener('storage', function(e) {
+    if (e.key === pageKey && e.newValue) {
+      try {
+        var data = JSON.parse(e.newValue);
+        if (data && data.progress > getDocProgress()) {
+          lastSavedSnapshot = JSON.stringify([data.sectionId, data.sectionTitle, data.progress, data.scrollY, data.completed]);
+        }
+      } catch (err) {}
+    }
+  });
+
   // Init
   cleanupOldBookmarks();
   detectCurrentSection();
@@ -405,6 +422,7 @@
      Called by site.js module 29 when read-progress reaches 98%. */
   window.BookmarkEngine.markCompleted = function () {
     try {
+      if ((Date.now() - startedAt) < config.minTimeOnPage) return;
       var saved = getSavedBookmark();
       if (!saved) return;
       saved.completed = true;
