@@ -116,6 +116,7 @@ function isFont(url) {
 
 /* Cache First — good for static assets and fonts */
 var IMG_CACHE_LIMIT = 60;
+var PAGEFIND_CACHE_LIMIT = 50;
 var PAGEFIND_CACHE_LIMIT = 50; /* BUG-06: ограничение кэша изображений */
 var CONTENT_CACHE_LIMIT = 30; /* V2-FIX: LRU для контентного кэша */
 
@@ -190,7 +191,7 @@ function staleWhileRevalidate(req, evt) {
         }
         return res;
       }).catch(function() {
-        if (cached) updateMetadata(req.url); return cached || caches.match('/404.html');
+        if (cached) updateMetadata(req.url); if (cached) updateMetadata(req.url); return cached || caches.match('/404.html');
       });
 
       if (cached && evt && evt.waitUntil) {
@@ -205,7 +206,7 @@ function staleWhileRevalidate(req, evt) {
 function networkFirst(req) {
   return fetch(req).catch(function() {
     return caches.match(req).then(function(cached) {
-      if (cached) updateMetadata(req.url); return cached || caches.match('/404.html');
+      if (cached) updateMetadata(req.url); if (cached) updateMetadata(req.url); return cached || caches.match('/404.html');
     });
   });
 }
@@ -225,7 +226,7 @@ function networkFirstWithCache(req, cacheName) {
       return res;
     }).catch(function() {
       return cache.match(req).then(function(cached) {
-        if (cached) updateMetadata(req.url); return cached || new Response('', { status: 503, statusText: 'Service Unavailable' });
+        if (cached) updateMetadata(req.url); if (cached) updateMetadata(req.url); return cached || new Response('', { status: 503, statusText: 'Service Unavailable' });
       });
     });
   });

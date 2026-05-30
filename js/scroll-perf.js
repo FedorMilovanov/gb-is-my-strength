@@ -78,5 +78,8 @@
     window.visualViewport.addEventListener('resize', updateVVP, { passive: true });
     window.visualViewport.addEventListener('scroll', updateVVP, { passive: true });
     updateVVP();
+  } else {
+    document.documentElement.style.setProperty('--visual-viewport-h', window.innerHeight + 'px');
+    document.documentElement.style.setProperty('--keyboard-height', '0px');
   }
 })();

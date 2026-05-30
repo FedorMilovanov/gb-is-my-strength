@@ -8498,3 +8498,5 @@ html.dark .summary-card__text strong {
     height: 18px !important;
   }
 }
+
+body.has-bottom-bar #back-to-top { bottom: max(80px, calc(env(safe-area-inset-bottom, 0px) + 80px)) !important; }
