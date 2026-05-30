@@ -366,4 +366,22 @@
     </image:image>
   </url>
 
+  <url>
+    <loc>https://gospod-bog.ru/nagornaya/istochniki/</loc>
+    <lastmod>2026-05-24</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+    <image:image>
+      <image:loc>https://gospod-bog.ru/images/og-nagornaya-propoved.webp</image:loc>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://gospod-bog.ru/nagornaya/nakhodki/</loc>
+    <lastmod>2026-05-24</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+    <image:image>
+      <image:loc>https://gospod-bog.ru/images/og-nagornaya-propoved.webp</image:loc>
+    </image:image>
+  </url>
 </urlset>
