@@ -258,7 +258,17 @@
           '<div class="btoc-header">' +
             '<div class="btoc-header-left">' +
               '<div class="btoc-title" id="btocTitle">Содержание</div>' +
-              '<div class="btoc-subtitle" id="btocSubtitle">' + sectionCount + ' разделов</div>' +
+              '<div class="btoc-subtitle" id="btocSubtitle">' + sectionCount + ' ' + (function (n) {
+                /* BUGFIX 2026-05-30: правильное склонение для 1–4. */
+                if (window.SiteUtils && typeof window.SiteUtils.pluralRu === 'function') {
+                  return window.SiteUtils.pluralRu(n, 'раздел', 'раздела', 'разделов');
+                }
+                var abs = Math.abs(n) % 100, tens = abs % 10;
+                if (abs > 10 && abs < 20) return 'разделов';
+                if (tens > 1 && tens < 5) return 'раздела';
+                if (tens === 1) return 'раздел';
+                return 'разделов';
+              })(sectionCount) + '</div>' +
             '</div>' +
             '<button aria-label="Закрыть" class="btoc-close" id="btocClose" type="button"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>' +
           '</div>' +

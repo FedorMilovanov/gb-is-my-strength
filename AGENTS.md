@@ -6,7 +6,7 @@
 
 **Владелец:** Фёдор Милованов (редактор, не «автор»)
 **Производственный сайт:** https://gospod-bog.ru
-**Дата документа:** 2026-05-28 | **Версия:** AGENTS-r9
+**Дата документа:** 2026-05-30 | **Версия:** AGENTS-r10
 
 ---
 
@@ -17,7 +17,7 @@
 3. ❌ Изменять структуру `articles/<slug>/index.html` или `nagornaya/chast-N/index.html`.
 4. ❌ Запускать `prettier --write .` или `eslint --fix` по всему проекту.
 5. ❌ Обновлять зависимости в `package.json` без явного запроса.
-6. ❌ Удалять или переименовывать `?v=fc6cff8a` хеши (они генерятся `cache-bust.js`).
+6. ❌ Удалять или переименовывать `?v=...` хеши (у каждого файла свой, генерятся `scripts/cache-bust.js`).
 7. ❌ Удалять заголовки `<header class="article-header">` или `<aside class="author-card">`.
 8. ✅ После любой правки CSS/JS — запустить `npm run cache-bust` для обновления хешей.
 9. ✅ Перед коммитом — запустить `npm run validate:all`.
@@ -53,7 +53,7 @@
 | Lighthouse Accessibility | ≥ 95 |
 | Core Web Vitals LCP | < 2.5s |
 | Core Web Vitals CLS | < 0.1 |
-| CSS `!important` count | снижать, не добавлять новые |
+| CSS `!important` count | снижать, не добавлять новые (см. §4.2 актуальные цифры) |
 
 ---
 
@@ -145,6 +145,7 @@
 | Шапка / навигация / общие компоненты / статьи | `site.css` |
 | Главная страница (только то, чего нет на других страницах) | `home.css` |
 | Поиск (Ctrl+K, всплывашка) | `command-palette.css` |
+| Мобильные производительные hotfix-правки (без bundler) | `mobile-hotfix.css` |
 | Мобильное оглавление Нагорной проповеди | `nagornaya-mobile-toc.css` |
 | @font-face декларации | `fonts/fonts.css` |
 | Tailwind для проповеди | `nagornaya/tw.min.css` (НЕ ТРОГАТЬ, генерируется отдельно) |
@@ -244,10 +245,11 @@
 
 ### 4.2 `!important`
 
-Сейчас:
-- `site.css`: 110 (много, но контролируемо)
-- `home.css`: 12
-- `command-palette.css`: 3
+Сейчас (2026-05-30):
+- `site.css`: 526 (исторический долг, накопился за audit V1–V32; новых не добавлять)
+- `home.css`: 15
+- `command-palette.css`: 4
+- `mobile-hotfix.css`: 46 (по дизайну: переопределяет поведение для touch / pointer: coarse)
 - `nagornaya-mobile-toc.css`: 3
 
 Не добавлять новые `!important`, пока возможно через специфичность. Если уже есть `!important` на том же селекторе — **исправь существующий**, не добавляй второй.
@@ -382,13 +384,14 @@ npm run validate:all      # ← рекомендуется перед кажды
 |---|---|---|
 | AGENTS-r1 | 2026-05-?? | Создан, только правила byline |
 | AGENTS-r2 | 2026-05-17 | Расширен: вся архитектура, 9 JS, 4 CSS, защищённые блоки, чек-лист |
-| AGENTS-r8 | 2026-05-28 | Актуализированы 5 CSS / 11 JS, AI disclosure, glossary categories, mobile footnotes, quiz sourceRef, accuracy mailto |
-| AGENTS-r9 | 2026-05-28 | Уточнены SiteShare object payload, AI disclosure placement, quiz sourceRef fallback по focus |
 | AGENTS-r3 | 2026-05-22 | Удалены ссылки на docs/archive и patch-скрипты, обновлена архитектура |
 | AGENTS-r4 | 2026-05-23 | Матрица браузеров §1.1, metrics §1.2, tw.min.css §3.5, html.dark §4.3, хеши §3.4 |
 | AGENTS-r5 | 2026-05-24 | Добавлены v27-v30: полное сжатие и исправление кнопок шрифтов A−/A+, удаление дублей CSS, финальная победа над легаси-токенами (0 / 0) |
 | AGENTS-r6 | 2026-05-24 | v31: Исправлено агрессивное наследование шрифта в Нагорной серии, исправлен обход валидатора EXTRA_PAGES и предупреждение javascript:void(0) |
 | AGENTS-r7 | 2026-05-24 | v32: Полный аудит кода, глубокий селекторный анализ, удаление 140+ строк мёртвого CSS (.epilogue-, .back-to-index), оптимизация веса стилей на 3 КБ |
+| AGENTS-r8 | 2026-05-28 | Актуализированы 5 CSS / 11 JS, AI disclosure, glossary categories, mobile footnotes, quiz sourceRef, accuracy mailto |
+| AGENTS-r9 | 2026-05-28 | Уточнены SiteShare object payload, AI disclosure placement, quiz sourceRef fallback по focus |
+| AGENTS-r10 | 2026-05-30 | Биографии: восстановлена малая карточка `h-intro-card--biographies` на главной + добавлен раздел `biografii/` со страницей серии. Закрыт пакет JS-багов (SiteUtils merge, quizBonusResult показ, tooltip aria-expanded, visualViewport dedup, _searchGen guard, плюрализация). Актуализированы счётчики !important (§4.2), таблица CSS-файлов (§2), пояснение к ?v= хешам (§0/§3.4). |
 
 ---
 

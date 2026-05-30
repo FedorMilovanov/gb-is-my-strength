@@ -42,7 +42,12 @@
       document.querySelector('.sd-panel.open');
     if (!hasOpenModal && locks.size > 0) {
       console.warn('[SiteUtils] Emergency unlock — модалок нет, замки висят:', locks);
-      window.SiteUtils.forceUnlockScroll();
+      /* BUGFIX 2026-05-30: site.js до правки B1 заменял window.SiteUtils целиком и
+         стирал forceUnlockScroll. Сейчас merge сохраняет метод, но добавляем
+         fallback на forceUnlockEmergency из site.js — на случай других загрузчиков. */
+      var u = window.SiteUtils || {};
+      if (typeof u.forceUnlockScroll === 'function') u.forceUnlockScroll();
+      else if (typeof u.forceUnlockEmergency === 'function') u.forceUnlockEmergency();
     }
   }
 

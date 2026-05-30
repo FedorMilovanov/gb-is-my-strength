@@ -126,7 +126,7 @@
   <link rel="icon" type="image/png" sizes="48x48" href="https://gospod-bog.ru/favicon-48.png">
   <link rel="icon" type="image/png" sizes="120x120" href="https://gospod-bog.ru/favicon-120.png">
   <link rel="icon" type="image/png" sizes="192x192" href="https://gospod-bog.ru/icons/icon-192.png">
-  <link rel="manifest" href="https://gospod-bog.ru/manifest.json">
+  <link rel="manifest" href="/manifest.json">
 
   <!-- Fonts -->
   <link rel="preload" as="style" href="fonts/fonts.css?v=fc6cff8a">
@@ -141,9 +141,9 @@
   <meta name="geo.placename" content="Санкт-Петербург">
 
   <!-- Stylesheets -->
-  <link rel="stylesheet" href="css/site.css?v=18ff031c">
-  <link rel="stylesheet" href="css/home.css?v=fe2e7082">
-  <link rel="stylesheet" href="css/command-palette.css?v=78d3b3d9">
+  <link rel="stylesheet" href="css/site.css?v=e6caab99">
+  <link rel="stylesheet" href="css/home.css?v=e5a0eb8d">
+  <link rel="stylesheet" href="css/command-palette.css?v=85755a40">
     <link rel="stylesheet" href="css/mobile-hotfix.css?v=f381525d">
   <link rel="preload" as="image" type="image/webp" fetchpriority="high" imagesrcset="images/og-nagornaya-propoved-600w.webp 600w, images/og-nagornaya-propoved-900w.webp 900w, images/og-nagornaya-propoved.webp 800w" imagesizes="(max-width: 640px) 600px, (max-width: 1024px) 900px, 800px">
 </head>
@@ -458,6 +458,17 @@
          PUBLICATIONS
     ══════════════════════════════════════════════════ -->
     <section class="h-section h-reveal h-scroll-target" id="publikacii" aria-labelledby="hPublicationsLabel">
+      <!-- Малая карточка биографий (индикатор раздела в разработке) -->
+      <div class="h-intro-grid" style="margin-bottom: 32px;">
+        <a href="/biografii/" class="h-intro-card h-intro-card--biographies" aria-label="Биографии служителей">
+          <div class="h-intro-card-body">
+            <div class="h-intro-card-tag">Серия</div>
+            <h3 class="h-intro-card-title">Биографии служителей</h3>
+            <p class="h-intro-card-desc">Жизнь и труд пасторов, богословов и реформаторов в историческом контексте. Первый материал — Джон Гилл (1697–1771). <span style="color:var(--h-accent, var(--color-accent-strong));font-weight:600;">Перейти →</span></p>
+          </div>
+        </a>
+      </div>
+
             <!-- ── FEATURED: Биографии служителей (серия) ── -->
       <a href="/biografii/" class="h-featured-series" aria-label="Биографии служителей — серия">
         <div class="h-featured-img-wrap">
@@ -900,9 +911,9 @@ window.SITE_CONFIG = {
   }
 };
 </script>
-<script src="js/site-utils.js?v=212e4a1e" defer></script>
+<script src="js/site-utils.js?v=ecf48b6e" defer></script>
     <script src="js/scroll-perf.js?v=ca689e64" defer></script>
-    <script src="js/site.js?v=80760368" defer></script>
+    <script src="js/site.js?v=c94d1d28" defer></script>
 
 <script>
 /* ════════════════════════════════════════════════════════
@@ -1183,7 +1194,7 @@ window.SITE_CONFIG = {
 <noscript><div><img decoding="async" src="https://mc.yandex.ru/watch/108353327" style="position:absolute;left:-9999px;" alt=""></div></noscript>
 <!-- /Yandex.Metrika counter -->
 <script src="./js/sw-register.js?v=9b5d2bf3" defer></script>
-<script src="./js/search.js?v=572b87d7" defer></script>
+<script src="./js/search.js?v=03904afb" defer></script>
 
 </body>
 </html>

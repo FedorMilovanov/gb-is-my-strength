@@ -1,7 +1,48 @@
 # Audit History — gospod-bog.ru
 
 > All audit changelogs consolidated into one file.
-> Last updated: 2026-05-22
+> Last updated: 2026-05-30
+
+---
+
+## v11 — Final patch: 7 HTML/SEO + 10 JS bugs (2026-05-30)
+
+**Commit:** `fix: audit v11 — close all remaining HTML/JS bugs (biografii + Gill article + quiz + tooltip + viewport)`
+
+### Fixed (HTML/SEO/доступность)
+- **«Доктор Витиеватый» → «Доктор Многотомный»** в теле статьи Гилла (стр. 1144, 1555). Прежняя замена в коммите `d575525` затронула только мета-теги и заголовки; в живом тексте оставалось внутреннее противоречие («Витиеватый (Dr. Voluminous) — за объём»).
+- **Дублированные `class="reveal" class="..."`** (3 тега) в статье Гилла. Браузер берёт только первый `class`, поэтому стили `.author-card-desc`, `.gb-accuracy-title`, `.gb-accuracy-desc` де-факто не применялись.
+- **`<link rel="icon" type="image/webp">` на `icon-192.png`** в `biografii/index.html` и `pastor-series/index.html` — третий размер фавикона забыли при предыдущей правке MIME. Заменено на `type="image/png"`.
+- **Малая карточка `h-intro-card--biographies`** возвращена на главную перед широким featured-блоком (по явной просьбе владельца — индикатор «раздел в разработке»).
+- **`aria-current="page"`** перенесён с `<li>` на `<span aria-current="page">` внутри последней крошки `biografii/index.html` (по спецификации ARIA атрибут должен стоять на интерактивном/контентном узле, а не на контейнере списка).
+- **`<button class="h-scroll-top">`** получил `type="button"` в `biografii/index.html` (на главной уже стоял). Исключает потенциальный submit при наличии `<form>`.
+- **`<link rel="manifest">`** переведён с абсолютного `https://gospod-bog.ru/manifest.json` на корневой `/manifest.json` на всех 4 страницах. PWA-манифест теперь корректно резолвится в staging/локальной разработке.
+
+### Fixed (JS — поведенческие баги)
+- **B1.** `js/site.js`: `window.SiteUtils = SiteUtils` стирал методы, добавленные `site-utils.js` (`lockScroll/unlockScroll/forceUnlockScroll`) и `scroll-perf.js` (`scheduleHebrewMeasure`), которые загружаются раньше. Заменено на merge с проверкой `hasOwnProperty`.
+- **B2.** `js/site.js`: бонусный экран квиза создавался с `style="display:none"` и нигде не показывался — `showBonusScore()` показывал только внутренний `#quizBonusScore`. Добавлен показ родителя `#quizBonusResult`.
+- **B3.** `js/enhancements.js`: `oldFill` кэшировался до `btocProgressWrap.innerHTML=''` — последующие записи в `style.width` уходили в detached node. Получаем актуальную ссылку через `getElementById` при каждом обновлении.
+- **B4.** `js/site.js` модуль 29: тот же `#btocProgressFill` после enhancements.js — detached. Берём `fillNow` непосредственно в обработчике scroll, fallback на `.btoc-progress-bar-wrap .btoc-seg-fill`.
+- **B5.** `js/site.js` `makeTooltipController` `pointerover`: при переходе мышью с одного якоря на другой у старого активного элемента снимался только класс `is-open`, но `aria-expanded` оставался `'true'`. Заменено на полный `close(true)`.
+- **B6.** `js/site.js` блок «AUDIT V6 / H5» дублировал `visualViewport` resize-tracker (`--visual-viewport-h`, `--keyboard-height`) — без throttle, поверх `scroll-perf.js`. Дубль удалён.
+- **B7.** `js/site-utils.js` `emergencyCheck` вызывал `window.SiteUtils.forceUnlockScroll()` — метод стирался багом B1. После B1 метод сохраняется, но добавлен fallback на `forceUnlockEmergency`.
+- **B8.** `js/search.js` `runManifestSearch`: callback манифеста не проверял актуальность `_searchGen` — при быстрой смене запроса медленный async мог перетереть свежие результаты устаревшими. Добавлен guard.
+- **B9.** Хардкод `' разделов'` в `js/site.js` модуль 09 и `js/nagornaya-mobile-toc.js` нарушал склонение для 1–4 разделов. Добавлена утилита `SiteUtils.pluralRu(n, one, few, many)`; обе точки применения переведены на неё. Заодно «вопросов» в квизе — тоже плюрализуется.
+- **B10.** `js/site.js`: два `var qs = SiteUtils.getConfig('quiz.questions', [])` в одном function-scope (var-redeclare, copy-paste-индикатор). Объявлено один раз, переиспользовано.
+
+### Verified
+- `node --check js/*.js` → все 11 файлов PASS
+- `npm run validate:strict` → 0 ошибок (3 предупреждения о нестандартных breakpoints — INFO, не блокирующие)
+- `npm run seo-audit` → 0 ошибок, 0 предупреждений
+- `npm run tokens:check` → PASS
+- `npm run cache-bust` → 20 HTML-файлов обновлены, хеши синхронизированы с новыми CSS/JS
+- Парсер дубликатов `class=` → 0 совпадений в `index.html`, `biografii/`, `articles/dzhon-gill-1697-1771/`, `pastor-series/`
+- JSON-LD валидность → 3/3 страниц OK
+
+### Updated docs
+- **AGENTS.md** → r10: счётчики `!important` (§4.2) приведены к актуальным цифрам (site.css 526 вместо устаревших 110, home.css 15 вместо 12, command-palette.css 4 вместо 3), добавлена строка про `mobile-hotfix.css` в таблице §2, исправлена хронология версий в §9, пояснение к `?v=` хешам (§0/§3.4).
+- **README.md** → версия документа 2.2.
+- **AUDIT_HISTORY.md** → эта запись (v11).
 
 ---
 

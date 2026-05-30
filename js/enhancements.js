@@ -223,7 +223,8 @@
     var segEls = [];
     var dotEls = [];
     var pctEl = null;
-    var oldFill = document.getElementById('btocProgressFill');
+    /* BUGFIX 2026-05-30: кэшировать узел нельзя — ниже btocProgressWrap.innerHTML=''
+       делает его detached. Получаем актуальную ссылку каждый раз внутри обновлений. */
     var oldPct = document.getElementById('btocProgressPct');
 
     /* Build offset map */
@@ -342,6 +343,7 @@
 
       if (pctEl) pctEl.textContent = pct + '%';
 
+      var oldFill = document.getElementById('btocProgressFill');
       if (oldFill) oldFill.style.width = pct + '%';
       if (oldPct) oldPct.textContent = pct + '%';
 
