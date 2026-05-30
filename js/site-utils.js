@@ -40,7 +40,8 @@
       document.querySelector('.cp-panel.open, .cp-panel[aria-hidden="false"]') ||
       document.querySelector('.btoc-panel.open, .btoc-panel[aria-hidden="false"]') ||
       document.querySelector('.sd-panel.open');
-    if (!hasOpenModal && locks.size > 0) {
+    var hasLocks = locks.size > 0 || Object.keys((window.SiteUtils && window.SiteUtils._scrollLockSources) || {}).length > 0;
+    if (!hasOpenModal && hasLocks) {
       console.warn('[SiteUtils] Emergency unlock — модалок нет, замки висят:', locks);
       /* BUGFIX 2026-05-30: site.js до правки B1 заменял window.SiteUtils целиком и
          стирал forceUnlockScroll. Сейчас merge сохраняет метод, но добавляем

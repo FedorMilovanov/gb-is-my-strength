@@ -1098,6 +1098,7 @@
        infinite "Загружаю индекс…".  loadPagefind() returns immediately
        when pagefindFailed=true, so the callback never fires. */
     if (pagefindFailed) {
+      ++_searchGen;
       runManifestSearch(q);
       return;
     }

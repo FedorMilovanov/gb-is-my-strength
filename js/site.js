@@ -1583,7 +1583,8 @@
       var offset = CIRCUMFERENCE - (pct / 100) * CIRCUMFERENCE;
       if (fillCircle) fillCircle.style.strokeDashoffset = offset;
       if (pctText) pctText.textContent = pct + '%';
-      if (btocFill) btocFill.style.width = pct + '%';
+      var _btocFill = document.getElementById('btocProgressFill');
+      if (_btocFill) _btocFill.style.width = pct + '%';
       if (btocPct) btocPct.textContent = pct + '%';
 
       var minLeftRaw = Math.round(totalReadingMin * (1 - pct / 100));
@@ -3228,6 +3229,9 @@
     }
 
     SiteUtils.initGlossaryTooltips = initGlossaryTooltips;
+    if (window.SiteUtils && window.SiteUtils !== SiteUtils) {
+      window.SiteUtils.initGlossaryTooltips = initGlossaryTooltips;
+    }
     initGlossaryTooltips(document);
   })();
 
