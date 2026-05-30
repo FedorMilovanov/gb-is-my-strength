@@ -194,4 +194,5 @@
       }
     }, 2500);
   });
+  window.showToast = showToast;
 })();

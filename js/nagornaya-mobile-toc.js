@@ -133,7 +133,8 @@
       var pct = m.pct;
       if (progressFill) progressFill.style.strokeDashoffset = String(circumference - (pct / 100 * circumference));
       if (progressText) progressText.textContent = pct + '%';
-      if (btocFill) btocFill.style.width = pct + '%';
+      var _btocFill = qs('#btocProgressFill');
+      if (_btocFill) _btocFill.style.width = pct + '%';
       if (btocPct) btocPct.textContent = pct + '%';
       if (sectionName && active) sectionName.textContent = active.label;
       items.forEach(function (item) { item.link.classList.toggle('active', item === active); });
