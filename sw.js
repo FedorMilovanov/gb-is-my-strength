@@ -115,7 +115,8 @@ function isFont(url) {
 }
 
 /* Cache First — good for static assets and fonts */
-var IMG_CACHE_LIMIT = 60; /* BUG-06: ограничение кэша изображений */
+var IMG_CACHE_LIMIT = 60;
+var PAGEFIND_CACHE_LIMIT = 50; /* BUG-06: ограничение кэша изображений */
 var CONTENT_CACHE_LIMIT = 30; /* V2-FIX: LRU для контентного кэша */
 
 function trimCache(cache, limit) {
@@ -173,10 +174,7 @@ function staleWhileRevalidate(req, evt) {
           return cache.put(req, res.clone()).then(function() {
             return trimCache(cache, CONTENT_CACHE_LIMIT);
           }).then(function() {
-            /* Notify clients about update */
-            return self.clients.matchAll().then(function(clients) {
-              clients.forEach(function(client) {
-                client.postMessage({ type: 'SW_UPDATE', url: req.url });
+            /* Notify clients removed (dead code) */
               });
             });
           }).catch(function() {
@@ -215,7 +213,7 @@ function networkFirstWithCache(req, cacheName) {
   return caches.open(cacheName).then(function(cache) {
     return fetch(req).then(function(res) {
       if (res && res.status === 200 && res.type !== 'opaque') {
-        cache.put(req, res.clone());
+        cache.put(req, res.clone()).then(function() { return trimCache(cache, PAGEFIND_CACHE_LIMIT); }).catch(function(){});
       }
       return res;
     }).catch(function() {
