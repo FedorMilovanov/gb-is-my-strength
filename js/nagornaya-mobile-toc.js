@@ -79,7 +79,6 @@
     var btocShareBtn = qs('#btocShareBtn');
     var progressFill = qs('#barProgressFill');
     var progressText = qs('#barProgressText');
-    var btocFill = qs('#btocProgressFill');
     var btocPct = qs('#btocProgressPct');
     var btocTimeLeft = qs('#btocTimeLeft');
 

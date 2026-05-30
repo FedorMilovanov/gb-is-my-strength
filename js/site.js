@@ -1429,7 +1429,6 @@
     var upBtn        = document.getElementById('barUpBtn');
     var closeBtn     = document.getElementById('btocClose');
     var btocNav      = document.getElementById('btocNav');
-    var btocFill     = document.getElementById('btocProgressFill');
     var btocPct      = document.getElementById('btocProgressPct');
     var btocSubtitle = document.getElementById('btocSubtitle');
     var btocTimeLeft = document.getElementById('btocTimeLeft');
