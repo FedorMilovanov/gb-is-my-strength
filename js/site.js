@@ -157,7 +157,15 @@
            extraCloseSelectors {string[]} — дополнительные контейнеры, scroll → close
            touchStartExtra {function(el)} — extra logic before document touchstart check
                                                                                       */
-    makeTooltipController: function (anchorSel, tipSel, opts) {
+    pluralRu: function (n, one, few, many) {
+      var abs = Math.abs(n) % 100;
+      var tens = abs % 10;
+      if (abs > 10 && abs < 20) return many;
+      if (tens > 1 && tens < 5) return few;
+      if (tens === 1) return one;
+      return many;
+    },
+        makeTooltipController: function (anchorSel, tipSel, opts) {
       /* AUDIT V2 / ARCH-1 + BUGFIX 2026-05-28:
          Контроллер по-прежнему delegated, но глобальные listeners теперь
          ставятся один раз на все типы подсказок. Раньше три вызова
@@ -329,8 +337,10 @@
           var c = hit.controller;
           var anchor = hit.anchor;
           if (c.activeEl && c.activeEl !== anchor) {
-            c.resetTipStyles(c.activeEl.querySelector(c.tipSel));
-            c.activeEl.classList.remove('is-open');
+            /* BUGFIX 2026-05-30: ранее снимался только класс .is-open, но не
+               сбрасывался aria-expanded — атрибут оставался "true" на старом
+               элементе, что ломает доступность. Вызываем close(true). */
+            c.close(true);
           }
           utils._tooltipControllers.forEach(function (other) {
             if (other !== c) other.close(true);
@@ -339,6 +349,7 @@
           document.documentElement.classList.add('gb-tooltip-open');
           utils.positionTip(anchor.querySelector(c.tipSel), anchor);
           anchor.classList.add('is-open');
+          anchor.setAttribute('aria-expanded', 'true');
           c.activeEl = anchor;
           c.justOpened = true;
           setTimeout(function () { c.justOpened = false; }, 350);
@@ -524,7 +535,16 @@
     }
   };
 
-  window.SiteUtils = SiteUtils;
+  /* BUGFIX 2026-05-30: merge вместо полной замены, чтобы не уничтожить методы,
+     добавленные site-utils.js (lockScroll/unlockScroll/forceUnlockScroll)
+     и scroll-perf.js (scheduleHebrewMeasure), которые загружаются раньше site.js. */
+  if (window.SiteUtils) {
+    for (var __k in SiteUtils) {
+      if (Object.prototype.hasOwnProperty.call(SiteUtils, __k)) window.SiteUtils[__k] = SiteUtils[__k];
+    }
+  } else {
+    window.SiteUtils = SiteUtils;
+  }
 
   /* ============================================================
      01b. SITE_CONFIG Contract Guard
@@ -677,18 +697,10 @@
   })();
 
 
-  /* AUDIT V6 / H5: visualViewport tracking для bottom-sheet adjustments. */
-  if (window.visualViewport) {
-    var vvAdjust = function () {
-      var vh = window.visualViewport.height;
-      document.documentElement.style.setProperty('--visual-viewport-h', vh + 'px');
-      document.documentElement.style.setProperty('--keyboard-height',
-        Math.max(0, window.innerHeight - vh) + 'px');
-    };
-    vvAdjust();
-    window.visualViewport.addEventListener('resize', vvAdjust);
-    window.visualViewport.addEventListener('scroll', vvAdjust, { passive: true });
-  }
+  /* AUDIT V6 / H5: удалён 2026-05-30.
+     scroll-perf.js (window.SiteUtils-сайд) уже пишет --visual-viewport-h
+     и --keyboard-height с throttle 100ms. Дублирующий listener без throttle
+     создавал двойную нагрузку и race-conditions при resize клавиатуры. */
 
 
   /* ──────────────────────────────────────────────────────────────────
@@ -1465,7 +1477,7 @@
       });
     }
 
-    if (btocSubtitle && tocItems.length) btocSubtitle.textContent = tocItems.length + ' разделов';
+    if (btocSubtitle && tocItems.length) btocSubtitle.textContent = tocItems.length + ' ' + SiteUtils.pluralRu(tocItems.length, 'раздел', 'раздела', 'разделов');
 
     /* Feature #15: og:image preview banner — вставляем один раз, если есть мета-картинка */
     (function () {
@@ -2054,17 +2066,17 @@
         '</div>' +
       '</div>';
       // Update hint label with correct count
+      /* BUGFIX 2026-05-30: ранее было два независимых `var qs = ...` в одном
+         function-scope (var-redeclare сбивает статические анализаторы и
+         выглядит как copy-paste-ошибка). Объявляем один раз и переиспользуем. */
+      var qs = SiteUtils.getConfig('quiz.questions', []);
       var qHint = document.getElementById('quizHintLabel');
-      if (qHint) {
-        var qs = SiteUtils.getConfig('quiz.questions', []);
-        if (qs.length) qHint.textContent = 'проверь себя — ' + qs.length + ' вопросов';
+      if (qHint && qs.length) {
+        qHint.textContent = 'проверь себя — ' + qs.length + ' ' + SiteUtils.pluralRu(qs.length, 'вопрос', 'вопроса', 'вопросов');
       }
       // Update result total
       var qTotal = document.getElementById('quizResultTotal');
-      if (qTotal) {
-        var qs = SiteUtils.getConfig('quiz.questions', []);
-        if (qs.length) qTotal.textContent = qs.length;
-      }
+      if (qTotal && qs.length) qTotal.textContent = qs.length;
     }
     
     var wrapper  = document.getElementById('quizWrapper');
@@ -2794,6 +2806,10 @@
 
     function showBonusScore() {
       if (bonusBody)  bonusBody.style.display  = 'none';
+      /* BUGFIX 2026-05-30: родительский контейнер #quizBonusResult создан с
+         style="display:none" и нигде не показывался — бонусный экран был невидим. */
+      var __bonusResult = document.getElementById('quizBonusResult');
+      if (__bonusResult) __bonusResult.style.display = 'block';
       if (bonusScore) bonusScore.style.display = 'block';
       if (bonusBfill) bonusBfill.style.width   = '100%';
 
@@ -4217,8 +4233,7 @@
      ============================================================ */
   (function () {
     var panel = document.getElementById('btocPanel');
-    var fill  = document.getElementById('btocProgressFill');
-    if (!panel || !fill) return;
+    if (!panel) return;
 
     var marked = false;
     window.addEventListener('scroll', function () {
@@ -4229,7 +4244,13 @@
       if (pct < 98) return;
       marked = true;
       panel.classList.add('btoc-completed');
-      fill.classList.add('btoc-progress-fill-done');
+      /* BUGFIX 2026-05-30: enhancements.js перестраивает .btoc-progress-bar-wrap
+         через innerHTML='', поэтому исходный #btocProgressFill становится detached.
+         Берём элемент непосредственно перед использованием — это либо новый сегментный
+         .btoc-seg-fill (если enhancements отработал), либо исходный fill. */
+      var fillNow = document.getElementById('btocProgressFill')
+        || document.querySelector('.btoc-progress-bar-wrap .btoc-seg-fill');
+      if (fillNow) fillNow.classList.add('btoc-progress-fill-done');
       /* Сохраняем в BookmarkEngine если он есть */
       try {
         if (window.BookmarkEngine && typeof window.BookmarkEngine.markCompleted === 'function') {
