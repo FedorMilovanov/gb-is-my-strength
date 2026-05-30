@@ -594,6 +594,7 @@ html.dark .cp-item-icon.is-active { border-color: transparent; }
     padding: 11px 14px;
     margin: 2px 6px;
     border-radius: 10px;
+    width: calc(100% - 12px);
   }
   
   .cp-item-icon {
@@ -1206,6 +1207,7 @@ html.dark .cp-preview-author {
     margin: 2px 6px;
     border-radius: 10px;
     gap: 10px;
+    width: calc(100% - 12px);
   }
 
   .cp-item-icon {
