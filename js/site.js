@@ -4243,28 +4243,30 @@
     if (!panel) return;
 
     var marked = false;
-    window.addEventListener('scroll', function () {
-      if (marked) return;
-      var scrollY = window.scrollY;
-      var docH = document.documentElement.scrollHeight - window.innerHeight;
-      var pct = docH > 0 ? Math.round((scrollY / docH) * 100) : 0;
-      if (pct < 98) return;
-      marked = true;
-      panel.classList.add('btoc-completed');
-      /* BUGFIX 2026-05-30: enhancements.js перестраивает .btoc-progress-bar-wrap
-         через innerHTML='', поэтому исходный #btocProgressFill становится detached.
-         Берём элемент непосредственно перед использованием — это либо новый сегментный
-         .btoc-seg-fill (если enhancements отработал), либо исходный fill. */
-      var fillNow = document.getElementById('btocProgressFill')
-        || document.querySelector('.btoc-progress-bar-wrap .btoc-seg-fill');
-      if (fillNow) fillNow.classList.add('btoc-progress-fill-done');
-      /* Сохраняем в BookmarkEngine если он есть */
-      try {
-        if (window.BookmarkEngine && typeof window.BookmarkEngine.markCompleted === 'function') {
-          window.BookmarkEngine.markCompleted();
-        }
-      } catch (e) {}
-    }, { passive: true });
+    var startedAt = Date.now();
+    if (window.ScrollBus) {
+      window.ScrollBus.subscribe(function(state) {
+        if (marked) return;
+        var timeOnPage = Date.now() - startedAt;
+        var minTimeOnPage = SiteUtils.getConfig('features.bookmarks.minTimeOnPage', 10000);
+        if (timeOnPage < minTimeOnPage) return;
+
+        var pct = Math.round(state.pct * 100);
+        if (pct < 98) return;
+
+        marked = true;
+        panel.classList.add('btoc-completed');
+        
+        var fillNow = document.getElementById('btocProgressFill') || document.querySelector('.btoc-progress-bar-wrap .btoc-seg-fill');
+        if (fillNow) fillNow.classList.add('btoc-progress-fill-done');
+        
+        try {
+          if (window.BookmarkEngine && typeof window.BookmarkEngine.markCompleted === 'function') {
+            window.BookmarkEngine.markCompleted();
+          }
+        } catch (e) {}
+      });
+    }
   })();
 
   /* ============================================================

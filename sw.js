@@ -158,8 +158,10 @@ function cacheFirst(req, cacheName) {
         if (res && res.status === 200 && res.type !== 'opaque') {
           return cache.put(req, res.clone()).then(function() {
             if (isImages) return trimCache(cache, IMG_CACHE_LIMIT);
-          }).catch(function() {
-            /* Кэш — enhancement; сетевой ответ всё равно отдаём пользователю. */
+          }).catch(function(err) {
+            if (err.name === 'QuotaExceededError' || err.code === 22) {
+              return trimCache(cache, Math.floor(IMG_CACHE_LIMIT / 2));
+            }
           }).then(function() { return res; });
         }
         return res;
@@ -292,6 +294,22 @@ self.addEventListener('message', function(e) {
           }
         });
       }).catch(function() { /* ignore cache failures */ })
+    );
+  }
+});
+
+/* ── Background Sync for Offline Caching ── */
+self.addEventListener('sync', function(e) {
+  if (e.tag && e.tag.indexOf('cache-article:') === 0) {
+    var url = e.tag.replace('cache-article:', '');
+    e.waitUntil(
+      caches.open(CACHE_CONTENT).then(function(cache) {
+        return fetch(url).then(function(res) {
+          if (res && res.status === 200) {
+            return cache.put(url, res.clone());
+          }
+        });
+      })
     );
   }
 });
