@@ -119,14 +119,22 @@
       .replace(/[—–-]/g, '-').trim().toLowerCase();
   }
 
+  var headingOffsets = [];
+  function cacheHeadingOffsets() {
+    headingOffsets = headings.map(function(h) { return { el: h, top: h.offsetTop }; });
+  }
+  window.addEventListener('load', cacheHeadingOffsets, { passive: true });
+  window.addEventListener('resize', function() { setTimeout(cacheHeadingOffsets, 150); }, { passive: true });
+
   function detectCurrentSection() {
+    if (!headingOffsets.length) cacheHeadingOffsets();
     var probeY = window.scrollY + getScrollPaddingTop() + window.innerHeight * 0.25;
-    var found = headings[0];
-    for (var i = 0; i < headings.length; i++) {
-      if (headings[i].offsetTop <= probeY) { found = headings[i]; } else { break; }
+    var found = headingOffsets[0];
+    for (var i = 0; i < headingOffsets.length; i++) {
+      if (headingOffsets[i].top <= probeY) { found = headingOffsets[i]; } else { break; }
     }
-    currentSection = found;
-    return found;
+    currentSection = found ? found.el : headings[0];
+    return currentSection;
   }
 
   function buildPayload() {
