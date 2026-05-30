@@ -119,11 +119,18 @@ var IMG_CACHE_LIMIT = 60;
 var PAGEFIND_CACHE_LIMIT = 50; /* BUG-06: ограничение кэша изображений */
 var CONTENT_CACHE_LIMIT = 30; /* V2-FIX: LRU для контентного кэша */
 
+var CACHE_METADATA = new Map();
+function updateMetadata(url) { CACHE_METADATA.set(url, Date.now()); }
+
 function trimCache(cache, limit) {
   return cache.keys().then(function(keys) {
+    if (keys.length <= limit) return Promise.resolve();
+    var sorted = keys.sort(function(a, b) {
+      return (CACHE_METADATA.get(a.url) || 0) - (CACHE_METADATA.get(b.url) || 0);
+    });
     var overflow = keys.length - limit;
-    if (overflow <= 0) return Promise.resolve();
-    return Promise.all(keys.slice(0, overflow).map(function(key) {
+    return Promise.all(sorted.slice(0, overflow).map(function(key) {
+      CACHE_METADATA.delete(key.url);
       return cache.delete(key);
     }));
   });
@@ -145,7 +152,7 @@ function cacheFirst(req, cacheName) {
        Query-agnostic matching served stale /css/site.css for /css/site.css?v=newhash.
        We still fallback to the bare precache key only when offline/network fails. */
     return cache.match(req).then(function(cached) {
-      if (cached) return cached;
+      if (cached) { updateMetadata(req.url); return cached; }
       return fetch(req).then(function(res) {
         if (res && res.status === 200 && res.type !== 'opaque') {
           return cache.put(req, res.clone()).then(function() {
@@ -183,7 +190,7 @@ function staleWhileRevalidate(req, evt) {
         }
         return res;
       }).catch(function() {
-        return cached || caches.match('/404.html');
+        if (cached) updateMetadata(req.url); return cached || caches.match('/404.html');
       });
 
       if (cached && evt && evt.waitUntil) {
@@ -198,7 +205,7 @@ function staleWhileRevalidate(req, evt) {
 function networkFirst(req) {
   return fetch(req).catch(function() {
     return caches.match(req).then(function(cached) {
-      return cached || caches.match('/404.html');
+      if (cached) updateMetadata(req.url); return cached || caches.match('/404.html');
     });
   });
 }
@@ -218,7 +225,7 @@ function networkFirstWithCache(req, cacheName) {
       return res;
     }).catch(function() {
       return cache.match(req).then(function(cached) {
-        return cached || new Response('', { status: 503, statusText: 'Service Unavailable' });
+        if (cached) updateMetadata(req.url); return cached || new Response('', { status: 503, statusText: 'Service Unavailable' });
       });
     });
   });

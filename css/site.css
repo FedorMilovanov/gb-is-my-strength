@@ -366,9 +366,7 @@ main:not([class]) {
     right: max(4.5vw, env(safe-area-inset-right, 0px));
   }
 }
-.theme-toggle {
-  position: relative;
-}
+/* .theme-toggle relative position removed to keep it fixed */
 .theme-toggle svg {
   width: 20px; height: 20px;
   fill: none; stroke: currentColor;
@@ -6857,7 +6855,7 @@ button, a, [role="button"], [tabindex="0"], summary, input, textarea, select {
 }
 
 :root {
-  --visual-viewport-h: 100vh;
+  --visual-viewport-h: 100dvh;
   --keyboard-height: 0px;
 }
 .fn-sheet,
