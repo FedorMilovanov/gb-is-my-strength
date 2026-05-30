@@ -117,7 +117,6 @@ function isFont(url) {
 /* Cache First — good for static assets and fonts */
 var IMG_CACHE_LIMIT = 60;
 var PAGEFIND_CACHE_LIMIT = 50;
-var PAGEFIND_CACHE_LIMIT = 50; /* BUG-06: ограничение кэша изображений */
 var CONTENT_CACHE_LIMIT = 30; /* V2-FIX: LRU для контентного кэша */
 
 var CACHE_METADATA = new Map();
@@ -179,21 +178,20 @@ function cacheFirst(req, cacheName) {
 function staleWhileRevalidate(req, evt) {
   return caches.open(CACHE_CONTENT).then(function(cache) {
     return cache.match(req).then(function(cached) {
+      var networkRes = null;
       var fetchPromise = fetch(req).then(function(res) {
+        networkRes = res;
         if (res && res.status === 200) {
-          return cache.put(req, res.clone()).then(function() {
+          cache.put(req, res.clone()).then(function() {
             return trimCache(cache, CONTENT_CACHE_LIMIT);
-          }).then(function() {
-            /* Notify clients removed (dead code) */
-              });
-            });
           }).catch(function() {
             /* Кэширование не должно ломать сетевой ответ. */
-          }).then(function() { return res; });
+          });
         }
         return res;
       }).catch(function() {
-        if (cached) updateMetadata(req.url); if (cached) updateMetadata(req.url); return cached || caches.match('/404.html');
+        if (cached) updateMetadata(req.url);
+        return cached || caches.match('/404.html');
       });
 
       if (cached && evt && evt.waitUntil) {
@@ -208,7 +206,8 @@ function staleWhileRevalidate(req, evt) {
 function networkFirst(req) {
   return fetch(req).catch(function() {
     return caches.match(req).then(function(cached) {
-      if (cached) updateMetadata(req.url); if (cached) updateMetadata(req.url); return cached || caches.match('/404.html');
+      if (cached) updateMetadata(req.url);
+      return cached || caches.match('/404.html');
     });
   });
 }
@@ -228,7 +227,8 @@ function networkFirstWithCache(req, cacheName) {
       return res;
     }).catch(function() {
       return cache.match(req).then(function(cached) {
-        if (cached) updateMetadata(req.url); if (cached) updateMetadata(req.url); return cached || new Response('', { status: 503, statusText: 'Service Unavailable' });
+        if (cached) updateMetadata(req.url);
+      return cached || new Response('', { status: 503, statusText: 'Service Unavailable' });
       });
     });
   });
@@ -290,7 +290,7 @@ self.addEventListener('message', function(e) {
       caches.open(CACHE_CONTENT).then(function(cache) {
         return fetch(url).then(function(res) {
           if (res && res.status === 200) {
-            cache.put(url, res.clone());
+            cache.put(url, res.clone()).catch(function(){ /* ignore */ });
           }
         });
       }).catch(function() { /* ignore cache failures */ })
