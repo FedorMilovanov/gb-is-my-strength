@@ -2965,7 +2965,7 @@ html.dark #reading-progress { background: var(--color-accent); }
 
 .sd-grid {
   display: grid;
-  grid-template-columns: repeat(5, 1fr);
+  grid-template-columns: repeat(6, 1fr);
   gap: 4px;
   padding: 20px 12px 16px;
 }
@@ -3012,11 +3012,13 @@ html.dark #reading-progress { background: var(--color-accent); }
 
 .sd-btn--tg   .sd-icon { background: #e8f4ff; color: #229ed9; }
 .sd-btn--vk   .sd-icon { background: #e8eeff; color: #0077ff; }
+.sd-btn--fb   .sd-icon { background: #e8eef4; color: #1877f2; }
 .sd-btn--ok   .sd-icon { background: #fff3e0; color: #ed7309; }
 .sd-btn--wa   .sd-icon { background: #e8faf0; color: #25d366; }
 .sd-btn--copy .sd-icon { background: var(--color-surface-muted); color: var(--color-text-muted); border: 1px solid var(--color-border); }
 html.dark .sd-btn--tg   .sd-icon { background: #0d2233; color: #5bb8f5; }
 html.dark .sd-btn--vk   .sd-icon { background: #0d1533; color: #5b8cf5; }
+html.dark .sd-btn--fb   .sd-icon { background: #0d1522; color: #5b8cf5; }
 html.dark .sd-btn--ok   .sd-icon { background: #231a0d; color: #f0a060; }
 html.dark .sd-btn--wa   .sd-icon { background: #0d2218; color: #5bf58c; }
 html.dark .sd-btn--copy .sd-icon { background: var(--color-surface); color: var(--color-text-muted); border-color: var(--color-border-strong); }
@@ -6188,19 +6190,6 @@ html.dark .gb-series-link:hover {
   border-color: color-mix(in srgb, #b8882a 55%, transparent);
 }
 
-.article-end-sdg {
-  display: flex; flex-direction: row; align-items: center; justify-content: center;
-  gap: 8px; margin: 32px 0;
-  font-family: 'Cormorant Garamond', 'Lora', serif;
-  font-style: italic;
-  color: inherit;
-  color: color-mix(in srgb, var(--color-accent) 80%, var(--color-text));
-}
-.article-end-sdg .sdg-cross { color: var(--color-accent); }
-.article-end-sdg .sdg-translation {
-  color: var(--color-text-muted);
-  font-size: .9em;
-}
 
 }
 
