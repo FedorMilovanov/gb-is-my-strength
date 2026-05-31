@@ -106,6 +106,8 @@
       tip.style.visibility = 'hidden';
       tip.style.left       = '0px';
       tip.style.top        = '0px';
+      tip.style.maxHeight  = '';
+      tip.style.overflowY  = '';
 
       var r   = anchor.getBoundingClientRect();
       var tw  = tip.offsetWidth;
@@ -117,6 +119,10 @@
       var left = r.left + r.width / 2 - tw / 2;
       if (left + tw > vw - mg) left = vw - mg - tw;
       if (left < mg)           left = mg;
+      if (tw > 0) {
+        var arrowX = this.clamp(r.left + r.width / 2 - left, 18, Math.max(18, tw - 18));
+        tip.style.setProperty('--gb-tip-arrow-x', arrowX + 'px');
+      }
 
       var top = r.top - th - 8;
       if (top >= mg) {
@@ -201,23 +207,49 @@
           },
           scrollLockSource: 'tooltip-mobile-sheet',
           scrollLocked: false,
+          activeTip: null,
+          tipPlaceholder: null,
+          mountTip: function (tip) {
+            if (!tip) return;
+            if (tip.parentNode !== document.body) {
+              controller.tipPlaceholder = document.createComment('gb-tooltip-placeholder');
+              tip.parentNode.insertBefore(controller.tipPlaceholder, tip);
+              document.body.appendChild(tip);
+            }
+            tip.classList.add('gb-floating-tip', 'is-open');
+            controller.activeTip = tip;
+          },
+          restoreTip: function (tip) {
+            if (!tip) return;
+            tip.classList.remove('is-open');
+            if (controller.tipPlaceholder && controller.tipPlaceholder.parentNode) {
+              controller.tipPlaceholder.parentNode.insertBefore(tip, controller.tipPlaceholder);
+              controller.tipPlaceholder.parentNode.removeChild(controller.tipPlaceholder);
+            }
+            tip.classList.remove('gb-floating-tip');
+            controller.tipPlaceholder = null;
+            if (controller.activeTip === tip) controller.activeTip = null;
+          },
           resetTipStyles: function (tip) {
             if (!tip) return;
             setTimeout(function () {
-              if (controller.activeEl && controller.activeEl.querySelector(controller.tipSel) === tip) return;
+              if (controller.activeTip === tip) return;
               tip.style.maxHeight  = '';
               tip.style.overflowY  = '';
               tip.style.visibility = '';
               tip.style.top        = '-9999px';
               tip.style.left       = '-9999px';
+              tip.style.removeProperty('--gb-tip-arrow-x');
             }, 200);
           },
           close: function (force) {
             if (!force && controller.justOpened) return;
             if (controller.activeEl) {
-              controller.resetTipStyles(controller.activeEl.querySelector(controller.tipSel));
+              var tip = controller.activeTip || controller.activeEl.querySelector(controller.tipSel);
               controller.activeEl.classList.remove('is-open');
               controller.activeEl.setAttribute('aria-expanded', 'false');
+              controller.restoreTip(tip);
+              controller.resetTipStyles(tip);
               controller.activeEl = null;
             }
             if (!(utils._tooltipControllers || []).some(function (c) { return c.activeEl; })) {
@@ -229,7 +261,9 @@
             }
           },
           open: function (el) {
-            if (!el || !el.querySelector(controller.tipSel)) return;
+            if (!el) return;
+            var tip = el.querySelector(controller.tipSel);
+            if (!tip) return;
             utils._tooltipControllers.forEach(function (c) {
               if (c !== controller) c.close(true);
             });
@@ -239,7 +273,8 @@
             el.classList.add('is-open');
             el.setAttribute('aria-expanded', 'true');
             controller.activeEl = el;
-            utils.positionTip(el.querySelector(controller.tipSel), el);
+            controller.mountTip(tip);
+            utils.positionTip(tip, el);
             if (controller.isMobileSheet() && !controller.scrollLocked) {
               utils.lockScroll(controller.scrollLockSource);
               controller.scrollLocked = true;
@@ -260,7 +295,9 @@
           var c = list[i];
           if (predicate && !predicate(c)) continue;
           var anchor = closestFrom(e.target, c.anchorSel);
-          if (anchor && anchor.querySelector(c.tipSel)) return { controller: c, anchor: anchor };
+          if (anchor && (anchor.querySelector(c.tipSel) || c.activeEl === anchor)) {
+            return { controller: c, anchor: anchor };
+          }
         }
         return null;
       }
@@ -336,23 +373,11 @@
           if (!hit) return;
           var c = hit.controller;
           var anchor = hit.anchor;
-          if (c.activeEl && c.activeEl !== anchor) {
-            /* BUGFIX 2026-05-30: ранее снимался только класс .is-open, но не
-               сбрасывался aria-expanded — атрибут оставался "true" на старом
-               элементе, что ломает доступность. Вызываем close(true). */
-            c.close(true);
+          if (c.activeEl === anchor) {
+            utils.positionTip(c.activeTip || anchor.querySelector(c.tipSel), anchor);
+            return;
           }
-          utils._tooltipControllers.forEach(function (other) {
-            if (other !== c) other.close(true);
-          });
-          utils._tooltipSuppressScrollUntil = Date.now() + 160;
-          document.documentElement.classList.add('gb-tooltip-open');
-          utils.positionTip(anchor.querySelector(c.tipSel), anchor);
-          anchor.classList.add('is-open');
-          anchor.setAttribute('aria-expanded', 'true');
-          c.activeEl = anchor;
-          c.justOpened = true;
-          setTimeout(function () { c.justOpened = false; }, 350);
+          c.open(anchor);
         });
 
         document.addEventListener('pointerout', function (e) {
@@ -4525,47 +4550,4 @@
     });
     obs.observe(document.documentElement, { attributes: true, attributeFilter: ['class'] });
   });
-})();
-
-/* ============================================================
-   v3.0 LUX UPGRADE - LOGIC 2026
-   ============================================================ */
-(function() {
-    // 1. Fix the Close Icons globally
-    function applyLuxIcons() {
-        document.querySelectorAll('[data-tooltip-close]').forEach(btn => {
-            btn.innerHTML = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M15 9l-6 6M9 9l6 6"/></svg>';
-        });
-    }
-
-    // 2. Reading Progress Bar
-    function initProgress() {
-        const bar = document.createElement('div');
-        bar.className = 'reading-progress-bar';
-        document.body.appendChild(bar);
-        window.addEventListener('scroll', () => {
-            const winScroll = document.body.scrollTop || document.documentElement.scrollTop;
-            const height = document.documentElement.scrollHeight - document.documentElement.clientHeight;
-            bar.style.width = (winScroll / height * 100) + '%';
-        }, {passive: true});
-    }
-
-    // 3. Monkey-patch the Tooltip Controller for Drag-to-Dismiss
-    const originalOpen = SiteUtils.makeTooltipController; 
-    // Note: makeTooltipController is a factory, it returns a controller.
-    // We need to wrap the logic inside the returned controller.
-    
-    // Since we are appending to the file, we'll use a MutationObserver 
-    // or simply rely on the fact that SiteUtils is global.
-    
-    document.addEventListener('DOMContentLoaded', () => {
-        applyLuxIcons();
-        initProgress();
-    });
-    
-    // Immediate call if DOM already ready
-    if (document.readyState !== 'loading') {
-        applyLuxIcons();
-        initProgress();
-    }
 })();

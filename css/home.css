@@ -2194,6 +2194,7 @@ body:not(.home-page) .h-rule {
 }
 
 
+@media (min-width: 761px) and (max-width: 1100px) {
+  .h-nav-links { gap: 12px; }
   .h-nav-links a { font-size: 12px; }
 }
-\n@media (min-width: 761px) and (max-width: 1100px) {\n  .h-nav-links { gap: 12px; }\n  .h-nav-links a { font-size: 12px; }\n}
