@@ -3887,9 +3887,11 @@
      ============================================================ */
   (function () {
     var pageType = SiteUtils.getConfig('page.type', '');
-    if (pageType !== 'article') return;
+    var isArticlePage = pageType === 'article';
+    var allowEndBlock = isArticlePage || pageType === 'about' || pageType === 'series';
+    if (!allowEndBlock) return;
 
-    var article = document.querySelector('article');
+    var article = document.querySelector('article') || document.querySelector('main');
     if (!article) return;
 
     /* Не дублируем */
@@ -3897,7 +3899,8 @@
 
     /* Проверяем, разрешён ли шаринг */
     var shareCfg = SiteUtils.getConfig('features.share', {});
-    var showShare = shareCfg.enabled !== false;
+    var showActions = isArticlePage;
+    var showShare = showActions && shareCfg.enabled !== false;
 
     /* ── Строим HTML кнопок ── */
     var actionsHTML = '';
@@ -3913,21 +3916,23 @@
         '</button>';
     }
 
-    actionsHTML +=
-      '<button type="button" class="article-end-btn" id="articleEndPrintBtn" aria-label="Распечатать статью или сохранить как PDF">' +
-        '<svg viewBox="0 0 24 24" width="16" height="16" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">' +
-          '<polyline points="6 9 6 2 18 2 18 9"/>' +
-          '<path d="M6 18H4a2 2 0 0 1-2-2V11a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/>' +
-          '<rect x="6" y="14" width="12" height="8"/>' +
-        '</svg>' +
-        'Распечатать / PDF' +
-      '</button>';
+    if (showActions) {
+      actionsHTML +=
+        '<button type="button" class="article-end-btn" id="articleEndPrintBtn" aria-label="Распечатать статью или сохранить как PDF">' +
+          '<svg viewBox="0 0 24 24" width="16" height="16" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">' +
+            '<polyline points="6 9 6 2 18 2 18 9"/>' +
+            '<path d="M6 18H4a2 2 0 0 1-2-2V11a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/>' +
+            '<rect x="6" y="14" width="12" height="8"/>' +
+          '</svg>' +
+          'Распечатать / PDF' +
+        '</button>';
+    }
 
     /* ── Собираем блок ── */
     var block = document.createElement('div');
     block.className = 'article-end-block';
     block.innerHTML =
-      '<div class="article-end-actions">' + actionsHTML + '</div>' +
+      (actionsHTML ? '<div class="article-end-actions">' + actionsHTML + '</div>' : '') +
       '<div class="article-end-sdg" itemscope itemtype="https://schema.org/CreativeWork">' +
         '<meta itemprop="about" content="Soli Deo Gloria">' +
         '<span class="sdg" itemprop="name">Soli Deo Gloria</span>' +
@@ -3945,8 +3950,8 @@
       });
     }
 
-    block.querySelector('#articleEndPrintBtn')
-      .addEventListener('click', function () { window.print(); });
+    var printBtn = block.querySelector('#articleEndPrintBtn');
+    if (printBtn) printBtn.addEventListener('click', function () { window.print(); });
 
     /* ── Место вставки: перед первым из этих элементов ── */
     /* Порядок важен: .article-footer раньше .reading-list,
