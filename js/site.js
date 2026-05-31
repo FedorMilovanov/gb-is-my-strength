@@ -1085,7 +1085,11 @@
 
       overlay.setAttribute('aria-hidden', 'false');
       overlay.classList.add('is-open');
-      requestAnimationFrame(function () { dialog.focus(); });
+      SiteUtils.lockScroll('share-dialog');
+      requestAnimationFrame(function () {
+        try { dialog.focus({ preventScroll: true }); }
+        catch (e) { dialog.focus(); }
+      });
       document.addEventListener('keydown', onKey);
     }
 
@@ -1110,12 +1114,17 @@
       showOverlay(payload);
     }
     function closeDialog() {
+      if (!overlay.classList.contains('is-open')) return;
       overlay.classList.remove('is-open');
       overlay.setAttribute('aria-hidden', 'true');
+      SiteUtils.unlockScroll('share-dialog');
       document.removeEventListener('keydown', onKey);
       /* B-10: сигнализируем о закрытии, чтобы восстановить overrideTitle */
       overlay.dispatchEvent(new CustomEvent('gb:closed'));
-      if (triggerEl && triggerEl.focus) triggerEl.focus();
+      if (triggerEl && triggerEl.focus) {
+        try { triggerEl.focus({ preventScroll: true }); }
+        catch (e) { triggerEl.focus(); }
+      }
       triggerEl = null;
     }
     function onKey(e) {
@@ -3135,25 +3144,30 @@
      ============================================================ */
   (function () {
     var dataEl = document.getElementById('bibleRefs');
-    if (!dataEl) return;
-
     var refs = {};
-    try {
-      refs = JSON.parse(dataEl.textContent.trim() || '{}');
-    } catch (e) {
-      console.error('Bible JSON error:', e);
-      refs = {};
+    if (dataEl) {
+      try {
+        refs = JSON.parse(dataEl.textContent.trim() || '{}');
+      } catch (e) {
+        console.error('Bible JSON error:', e);
+        refs = {};
+      }
     }
 
-    /* Инжектируем .btip в DOM до регистрации контроллера */
+    /* Инжектируем .btip в DOM до регистрации контроллера.
+       Если на странице забыли #bibleRefs, кнопка не должна быть мёртвой:
+       показываем аккуратный fallback с самой ссылкой. */
     document.querySelectorAll('.bref[data-ref]').forEach(function (a) {
-      var text = refs[a.getAttribute('data-ref')];
-      if (!text || a.querySelector('.btip')) return;
+      var ref = a.getAttribute('data-ref') || a.textContent.trim();
+      var text = refs[ref] || a.getAttribute('data-tip') || a.getAttribute('title') || ('Библейская ссылка: <strong>' + ref + '</strong>');
+      if (a.querySelector('.btip')) return;
       var tip = document.createElement('span');
       tip.className = 'btip';
       tip.innerHTML = '<div>' + text + '</div>';
       a.appendChild(tip);
     });
+
+    if (!document.querySelector('.bref[data-ref] .btip')) return;
 
     SiteUtils.makeTooltipController('.bref[data-ref]', '.btip', {
       extraCloseSelectors: ['.btoc-nav', '.btoc-panel', '#toc-panel']

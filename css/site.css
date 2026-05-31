@@ -938,6 +938,8 @@ html.dark .pullquote::before { color: var(--color-accent); }
 html.dark .pullquote .pq-attribution { color: var(--color-accent); }
 
 .article-img {
+  position: relative;
+  z-index: var(--z-base);
   margin: 44px 0;
   border-radius: 4px;
   overflow: hidden;
