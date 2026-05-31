@@ -4093,11 +4093,14 @@
       }
     }
 
-    function open(src, alt, captionText) {
+    var openedByKeyboard = false;
+
+    function open(src, alt, captionText, byKeyboard) {
       if (viewer.classList.contains('is-open')) return;
       /* Отменяем отложенную очистку, если viewer переоткрыли до её срабатывания */
       if (_closeTimer !== null) { clearTimeout(_closeTimer); _closeTimer = null; }
       lastActive = document.activeElement;
+      openedByKeyboard = !!byKeyboard;
       imgEl.src = src;
       imgEl.alt = alt || '';
       capEl.textContent = captionText || '';
@@ -4120,11 +4123,12 @@
       viewer.removeEventListener('keydown', trapViewerTab);
       /* B-01: корректно разблокируем скролл через счётчик */
       SiteUtils.unlockScroll('image-viewer');
-      if (lastActive && lastActive.focus) {
+      if (openedByKeyboard && lastActive && lastActive.focus) {
         try { lastActive.focus({ preventScroll: true }); }
         catch (e) { lastActive.focus(); }
       }
       lastActive = null;
+      openedByKeyboard = false;
       /* Откладываем очистку src/cap до окончания fade-out (.2s);
          токен _closeTimer позволяет отменить очистку при быстром повторном открытии. */
       _closeTimer = setTimeout(function () {
@@ -4140,12 +4144,14 @@
       img.addEventListener('click', function () {
         var fig = img.closest('.article-figure, .article-img');
         var cap = fig && fig.querySelector('figcaption');
-        open(img.currentSrc || img.src, img.alt, cap ? cap.textContent.trim() : '');
+        open(img.currentSrc || img.src, img.alt, cap ? cap.textContent.trim() : '', false);
       });
       img.addEventListener('keydown', function (e) {
         if (e.key === 'Enter' || e.key === ' ') {
           e.preventDefault();
-          img.click();
+          var fig = img.closest('.article-figure, .article-img');
+          var cap = fig && fig.querySelector('figcaption');
+          open(img.currentSrc || img.src, img.alt, cap ? cap.textContent.trim() : '', true);
         }
       });
     });

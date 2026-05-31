@@ -329,7 +329,7 @@ a:focus-visible, button:focus-visible {
 main.article-main {
   width: min(820px, 92vw);
   margin: 0 auto;
-  padding: clamp(48px, 6vw, 100px) 24px;
+  padding: clamp(24px, 3.5vw, 44px) 24px clamp(48px, 6vw, 80px);
 }
 
 main.home-main {
@@ -345,7 +345,7 @@ main:not([class]) {
 }
 
 .theme-toggle {
-  position: fixed;
+  position: absolute; /* absolute so it scrolls with the page and aligns with breadcrumbs */
   z-index: var(--z-toast);
   width: 44px;
   height: 44px;
@@ -357,12 +357,12 @@ main:not([class]) {
   align-items: center;
   justify-content: center;
 
-  top: calc(clamp(48px, 6.5vw, 100px) - 13px);
+  top: calc(clamp(24px, 3.5vw, 44px) - 10px); /* Align perfectly with breadcrumbs top level */
   right: max(8.5vw, env(safe-area-inset-right, 0px));
 }
 @media (max-width: 899px) {
   .theme-toggle {
-    top: calc(clamp(48px, 6vw, 80px) - 13px);
+    top: calc(clamp(24px, 3.5vw, 44px) - 10px);
     right: max(4.5vw, env(safe-area-inset-right, 0px));
   }
 }
@@ -389,7 +389,7 @@ html.dark .icon-sun { opacity: 1; color: #f5c542; }
   background: var(--color-surface);
   border-bottom: 1px solid var(--color-border);
   height: 48px;
-  padding: 0 24px;
+  padding: 0 max(24px, calc((100% - min(820px, 92vw)) / 2 + 24px));
   align-items: center;
   justify-content: space-between;
   transition: background .25s, opacity .2s;
@@ -411,7 +411,7 @@ html.dark .icon-sun { opacity: 1; color: #f5c542; }
 
 @media (min-width: 900px) {
   .article-topnav { display: flex; }
-  body.topnav-active { padding-top: 48px; }
+  body.topnav-active { padding-top: 0 !important; }
 }
 .article-topnav-home {
   display: flex;
@@ -3999,9 +3999,11 @@ html.dark .resume-list-item:hover {
   position: fixed;
   width: min(340px, 90vw);
   padding: 14px 18px;
-  border-radius: 6px;
-  background: var(--color-tooltip-bg);
-  color: var(--color-tooltip-text);
+  border-radius: 12px;
+  background: var(--color-surface, #fff); /* clean, soft light background */
+  color: var(--color-text); /* standard respectful text */
+  border: 1px solid var(--color-border);
+  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.12); /* beautiful shadow */
   font-size: 14px;
   line-height: 1.55;
   font-weight: 400;
@@ -8273,172 +8275,6 @@ body.nagornaya-page .nag-summary__text{white-space:normal!important;word-break:n
 }
 
 /* ═══════════════
-   SUMMARY CARD — premium compact cards, not plain text
-   Сохраняем структуру: check icon + number + text-card.
-   Фикс v14: светлая тема получает видимый тёплый пергаментный
-   фон, но без превращения summary в «обычный текст».
-   ═══════════════ */
-.summary-card {
-  margin: clamp(30px, 5vw, 52px) 0 !important;
-  padding: clamp(18px, 3vw, 28px) !important;
-  background:
-    linear-gradient(180deg, rgba(255,255,255,0.46), rgba(255,255,255,0.18)),
-    #f3eadc !important;
-  border: 1px solid rgba(120, 83, 46, 0.18) !important;
-  border-radius: 18px !important;
-  box-shadow:
-    0 1px 0 rgba(255,255,255,0.78) inset,
-    0 16px 44px -30px rgba(82, 55, 32, 0.28),
-    0 6px 18px -14px rgba(82, 55, 32, 0.16) !important;
-}
-html.dark .summary-card {
-  background:
-    linear-gradient(180deg, rgba(255,255,255,0.04), rgba(255,255,255,0.018)),
-    #201911 !important;
-  border-color: rgba(245, 213, 166, 0.14) !important;
-  box-shadow:
-    0 1px 0 rgba(255,255,255,0.04) inset,
-    0 20px 48px -28px rgba(0,0,0,0.68) !important;
-}
-.summary-card__head {
-  margin: 0 0 16px !important;
-  padding: 0 0 12px !important;
-  background: transparent !important;
-  color: #7a2e2e !important;
-  border: 0 !important;
-  font-size: 11px !important;
-  font-weight: 800 !important;
-  letter-spacing: .20em !important;
-}
-html.dark .summary-card__head {
-  color: rgba(245,226,198,.76) !important;
-}
-.summary-card__head::after {
-  left: 0 !important;
-  width: 42px !important;
-  bottom: -1px !important;
-}
-.summary-card__body {
-  gap: 8px !important;
-}
-.summary-card__item {
-  display: grid !important;
-  grid-template-columns: 34px 42px 1fr !important;
-  align-items: start !important;
-  gap: 10px !important;
-  padding: 12px 14px !important;
-  background: rgba(255,255,255,0.44) !important;
-  border: 1px solid rgba(120, 83, 46, 0.12) !important;
-  border-radius: 14px !important;
-  box-shadow: 0 1px 0 rgba(255,255,255,0.62) inset !important;
-  transform: none !important;
-}
-.summary-card__item:hover {
-  transform: translateY(-1px) !important;
-  background: rgba(255,255,255,0.62) !important;
-  border-color: rgba(120, 83, 46, 0.18) !important;
-  box-shadow:
-    0 1px 0 rgba(255,255,255,0.72) inset,
-    0 10px 24px -20px rgba(82,55,32,0.35) !important;
-}
-html.dark .summary-card__item {
-  background: rgba(255,255,255,0.035) !important;
-  border-color: rgba(245,213,166,0.10) !important;
-  box-shadow: 0 1px 0 rgba(255,255,255,0.035) inset !important;
-}
-html.dark .summary-card__item:hover {
-  background: rgba(255,255,255,0.055) !important;
-  border-color: rgba(245,213,166,0.16) !important;
-}
-.summary-card__check {
-  display: grid !important;
-  width: 30px !important;
-  height: 30px !important;
-  place-items: center !important;
-  align-self: start !important;
-  border-radius: 999px !important;
-  color: #7a2e2e !important;
-  background: rgba(122, 46, 46, 0.08) !important;
-  border: 1px solid rgba(122, 46, 46, 0.12) !important;
-  box-shadow: none !important;
-}
-html.dark .summary-card__check {
-  color: #e8b878 !important;
-  background: rgba(232,184,120,0.08) !important;
-  border-color: rgba(232,184,120,0.14) !important;
-}
-.summary-card__num,
-.summary-card__item:not(:has(.summary-card__num))::before {
-  min-width: 0 !important;
-  width: 42px !important;
-  display: inline-block !important;
-  align-self: start !important;
-  padding: 0 10px 0 0 !important;
-  border-right: 1px solid rgba(120, 83, 46, 0.16) !important;
-  font-family: 'Source Sans 3', system-ui, sans-serif !important;
-  font-size: 20px !important;
-  font-weight: 800 !important;
-  line-height: 1.28 !important;
-  letter-spacing: .02em !important;
-  color: #b8860b !important;
-  text-shadow: none !important;
-}
-html.dark .summary-card__num,
-html.dark .summary-card__item:not(:has(.summary-card__num))::before {
-  color: #d4a762 !important;
-  border-right-color: rgba(245,213,166,0.16) !important;
-}
-.summary-card__text {
-  margin: 0 !important;
-  padding: 0 !important;
-  font-size: 14.5px !important;
-  line-height: 1.5 !important;
-  color: #352c24 !important;
-}
-html.dark .summary-card__text {
-  color: rgba(250,243,232,.80) !important;
-}
-.summary-card__text strong {
-  color: var(--color-accent, #7a2e2e) !important;
-  font-weight: 750 !important;
-}
-html.dark .summary-card__text strong {
-  color: var(--color-accent-strong, #e8b878) !important;
-}
-@media (max-width: 560px) {
-  .summary-card {
-    padding: 14px 12px !important;
-    border-radius: 16px !important;
-  }
-  .summary-card__item {
-    grid-template-columns: 30px 1fr !important;
-    grid-template-rows: auto auto !important;
-    gap: 6px 10px !important;
-    padding: 11px 12px !important;
-  }
-  .summary-card__check {
-    grid-row: 1 / span 2 !important;
-    width: 28px !important;
-    height: 28px !important;
-  }
-  .summary-card__num,
-  .summary-card__item:not(:has(.summary-card__num))::before {
-    grid-column: 2 !important;
-    grid-row: 1 !important;
-    width: auto !important;
-    padding: 0 !important;
-    border-right: 0 !important;
-    font-size: 13px !important;
-    line-height: 1.1 !important;
-  }
-  .summary-card__text {
-    grid-column: 2 !important;
-    grid-row: 2 !important;
-    font-size: 13.5px !important;
-  }
-}
-
-/* ═══════════════
    KOD DA VINCI — canon timeline widget (#16 inline CSS cleanup)
    Перенесено из inline <style> статьи в общий CSS. Селекторы
    scoped к #canonTimeline, чтобы не влиять на другие страницы.
@@ -8698,3 +8534,50 @@ html.dark .summary-card__text strong {
 }
 
 body.has-bottom-bar #back-to-top { bottom: max(80px, calc(env(safe-area-inset-bottom, 0px) + 80px)) !important; }
+
+/* Fix .theme-toggle inside smart navbar on non-article pages */
+.h-navbar .theme-toggle,
+.h-navbar__inner .theme-toggle,
+.mobile-controls .theme-toggle {
+  position: relative !important;
+  top: auto !important;
+  right: auto !important;
+  z-index: 1 !important;
+  padding: 8px !important;
+  width: 44px !important;
+  height: 44px !important;
+  margin: 0 !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+}
+html.dark .mobile-controls .theme-toggle svg {
+  color: #f5c542 !important;
+}
+
+/* Reset browser button styling for .bref (Bible references) to make them look like elegant inline text links */
+button.bref {
+  appearance: none !important;
+  -webkit-appearance: none !important;
+  background: none !important;
+  border: none !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  font-family: inherit !important;
+  font-size: inherit !important;
+  line-height: inherit !important;
+  display: inline !important;
+  cursor: pointer !important;
+  color: #7a2e2e !important;
+  font-weight: 600 !important;
+  text-decoration: none !important;
+  box-shadow: none !important;
+  border-radius: 0 !important;
+}
+html.dark button.bref {
+  color: var(--color-accent-strong, #e8b878) !important;
+}
+button.bref:hover {
+  color: var(--color-accent-strong, #5f2323) !important;
+  text-decoration: underline !important;
+}
