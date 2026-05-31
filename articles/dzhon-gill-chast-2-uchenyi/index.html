@@ -73,7 +73,7 @@
   (function(){try{var t=localStorage.getItem('theme');if(t==='dark'||(!t&&window.matchMedia('(prefers-color-scheme: dark)').matches)){document.documentElement.classList.add('dark');}}catch(e){}})();
 </script>
 <!-- Shared styles -->
-<link href="../../css/site.css?v=3f193497" rel="stylesheet"/>
+<link href="../../css/site.css?v=3e5fcfd1" rel="stylesheet"/>
 <link href="../../css/command-palette.css?v=35aa9c5a" rel="stylesheet"/>
 <!-- Биографический стиль раздела «Биографии служителей» — уникальный для отдела, на токенах сайта -->
 <style>
@@ -89,20 +89,20 @@
         margin-bottom: var(--s-7);
         overflow: hidden;
       }
-      
+
       /* Текстура пергамента поверх фона */
       .biography-hero::before {
         content: '';
         position: absolute;
         inset: 0;
-        background-image: 
+        background-image:
           radial-gradient(ellipse at top left, transparent 30%, rgba(184, 147, 106, 0.03) 100%),
           radial-gradient(ellipse at bottom right, transparent 30%, rgba(122, 46, 46, 0.02) 100%),
           repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(122, 46, 46, 0.015) 2px, rgba(122, 46, 46, 0.015) 3px);
         pointer-events: none;
         mix-blend-mode: multiply;
       }
-      
+
       /* Декоративная рамка-орнамент */
       .biography-hero::after {
         content: '';
@@ -113,7 +113,7 @@
         pointer-events: none;
         opacity: 0.6;
       }
-      
+
       .biography-meta {
         position: relative;
         z-index: 1;
@@ -122,7 +122,7 @@
         gap: var(--s-6);
         align-items: start;
       }
-      
+
       /* Портрет в стиле гравюры */
       .biography-portrait {
         width: clamp(140px, 20vw, 180px);
@@ -130,7 +130,7 @@
         margin: 0;
         background: var(--color-surface);
         border: 8px solid var(--color-surface);
-        box-shadow: 
+        box-shadow:
           inset 0 0 0 1px var(--color-border-strong),
           0 4px 12px rgba(16, 18, 22, 0.08),
           0 0 0 1px var(--color-border);
@@ -146,7 +146,7 @@
         object-fit: cover;
         object-position: 50% 18%;
       }
-      
+
       /* Имитация гравюры штриховкой */
       /* Декоративные плейсхолдеры заменены реальным портретом */
       .biography-portrait::before,
@@ -156,7 +156,7 @@
         position: relative;
         z-index: 1;
       }
-      
+
       .biography-dates {
         font-variant-numeric: tabular-nums;
         font-feature-settings: 'tnum';
@@ -166,7 +166,7 @@
         font-size: clamp(14px, 2vw, 16px);
         margin-bottom: var(--s-2);
       }
-      
+
       .biography-title {
         font-family: ui-serif, Georgia, Cambria, 'Times New Roman', serif;
         font-weight: 700;
@@ -175,7 +175,7 @@
         margin: 0 0 var(--s-3);
         color: var(--color-text-primary);
       }
-      
+
       .biography-subtitle {
         font-size: clamp(18px, 3vw, 22px);
         line-height: 1.25;
@@ -184,7 +184,7 @@
         font-style: italic;
         font-family: ui-serif, Georgia, serif;
       }
-      
+
       .biography-epigraph {
         border-left: 3px solid var(--color-accent-selection);
         padding-left: var(--s-4);
@@ -193,7 +193,7 @@
         color: var(--color-text-warm-muted);
         position: relative;
       }
-      
+
       .biography-epigraph::before {
         content: '“';
         position: absolute;
@@ -205,7 +205,7 @@
         font-family: ui-serif, Georgia, serif;
         line-height: 1;
       }
-      
+
       /* Статистика в стиле старой книги */
       .biography-stats {
         display: grid;
@@ -215,12 +215,12 @@
         padding-top: var(--s-5);
         border-top: 1px solid var(--color-border);
       }
-      
+
       .stat-item {
         text-align: center;
         position: relative;
       }
-      
+
       .stat-value {
         font-variant-numeric: tabular-nums;
         font-weight: 700;
@@ -230,7 +230,7 @@
         font-family: ui-serif, Georgia, serif;
         letter-spacing: -0.02em;
       }
-      
+
       .stat-label {
         font-size: 11px;
         text-transform: uppercase;
@@ -239,14 +239,14 @@
         margin-top: 4px;
         font-weight: 500;
       }
-      
+
       /* Древовидная хронология */
       .biography-timeline {
         position: relative;
         margin: var(--s-7) 0;
         padding-left: var(--s-6);
       }
-      
+
       .biography-timeline::before {
         content: '';
         position: absolute;
@@ -262,13 +262,13 @@
         );
         opacity: 0.5;
       }
-      
+
       .timeline-entry {
         position: relative;
         margin-bottom: var(--s-6);
         padding-left: var(--s-5);
       }
-      
+
       .timeline-entry::before {
         content: '';
         position: absolute;
@@ -281,7 +281,7 @@
         border: 2px solid var(--color-accent-strong);
         box-shadow: 0 0 0 3px var(--color-accent-soft);
       }
-      
+
       .timeline-year {
         font-variant-numeric: tabular-nums;
         font-weight: 700;
@@ -290,19 +290,19 @@
         margin-bottom: 2px;
         font-family: ui-serif, Georgia, serif;
       }
-      
+
       .timeline-title {
         font-weight: 600;
         color: var(--color-text-primary);
         margin-bottom: 4px;
       }
-      
+
       .timeline-desc {
         color: var(--color-text-secondary);
         font-size: 15px;
         line-height: 1.6;
       }
-      
+
       /* Цитата из источника — как маргиналия */
       .manuscript-quote {
         background: var(--color-surface-quote);
@@ -314,7 +314,7 @@
         font-family: ui-serif, Georgia, serif;
         border-radius: 0 8px 8px 0;
       }
-      
+
       .manuscript-quote::before {
         content: '❧';
         position: absolute;
@@ -332,13 +332,13 @@
         color: var(--color-accent-selection);
         font-family: ui-serif, Georgia, serif;
       }
-      
+
       .manuscript-quote-text {
         font-style: italic;
         line-height: 1.7;
         color: var(--color-text-warm);
       }
-      
+
       .manuscript-quote-source {
         margin-top: var(--s-3);
         font-size: 13px;
@@ -348,7 +348,7 @@
         font-variant: small-caps;
         letter-spacing: 0.03em;
       }
-      
+
       /* Ивритская цитата как на титульном листе */
       .hebrew-inscription {
         text-align: center;
@@ -356,11 +356,11 @@
         margin: var(--s-7) 0;
         border-top: 1px solid var(--color-border);
         border-bottom: 1px solid var(--color-border);
-        background: 
+        background:
           radial-gradient(ellipse at center, var(--color-surface-quote) 0%, transparent 70%);
         position: relative;
       }
-      
+
       .hebrew-line {
         font-size: clamp(20px, 4vw, 28px);
         line-height: 1.4;
@@ -370,7 +370,7 @@
         margin-bottom: var(--s-2);
         font-family: 'SBL Hebrew', 'Ezra SIL', 'Cardo', serif;
       }
-      
+
       .hebrew-transcription {
         font-size: 13px;
         color: var(--color-text-muted);
@@ -378,13 +378,13 @@
         font-variant: small-caps;
         margin-bottom: var(--s-2);
       }
-      
+
       .hebrew-reference {
         font-size: 12px;
         color: var(--color-text-faint);
         font-style: italic;
       }
-      
+
       /* Таблица как в старой книге */
       .manuscript-table {
         width: 100%;
@@ -395,7 +395,7 @@
         border: 1px solid var(--color-border-strong);
         box-shadow: var(--shadow-sm);
       }
-      
+
       .manuscript-table th {
         background: var(--color-accent-soft);
         color: var(--color-accent-strong);
@@ -407,25 +407,25 @@
         border-bottom: 2px solid var(--color-border-strong);
         text-align: left;
       }
-      
+
       .manuscript-table td {
         padding: var(--s-3) var(--s-4);
         border-bottom: 1px solid var(--color-border);
         vertical-align: top;
       }
-      
+
       .manuscript-table tr:last-child td {
         border-bottom: 0;
       }
-      
+
       .manuscript-table tr:nth-child(even) {
         background: rgba(244, 242, 237, 0.4);
       }
-      
+
       html.dark .manuscript-table tr:nth-child(even) {
         background: rgba(22, 26, 33, 0.5);
       }
-      
+
       /* Эпиграфы с drop cap */
       .ancient-epigraph {
         font-family: ui-serif, Georgia, serif;
@@ -440,7 +440,7 @@
         margin-left: auto;
         margin-right: auto;
       }
-      
+
       .ancient-epigraph::before,
       .ancient-epigraph::after {
         content: '';
@@ -452,15 +452,15 @@
         background: linear-gradient(90deg, transparent, var(--color-accent-selection), transparent);
         opacity: 0.6;
       }
-      
+
       .ancient-epigraph::before {
         top: 0;
       }
-      
+
       .ancient-epigraph::after {
         bottom: 0;
       }
-      
+
       /* Метка времени в стиле фолианта */
       .foliant-mark {
         float: right;
@@ -475,7 +475,7 @@
         font-style: italic;
         position: relative;
       }
-      
+
       .foliant-mark::before {
         content: '';
         position: absolute;
@@ -484,18 +484,18 @@
         pointer-events: none;
         opacity: 0.5;
       }
-      
+
       /* Респонсив */
       @media (max-width: 768px) {
         .biography-meta {
           grid-template-columns: 1fr;
           text-align: center;
         }
-        
+
         .biography-portrait {
           margin: 0 auto var(--s-4);
         }
-        
+
         .biography-timeline {
           padding-left: var(--s-5);
         }
@@ -626,70 +626,70 @@
     selectors: {
       headings: 'article h2[id], article h3[id]'
     },
-    quiz: {  
-      questions: [  
-        {  
-          id: 'q1',  
-          q: 'Почему, по собственному признанию Уильяма Уистонa, тот отказался идти слушать проповедь Гилла в 1748 году?',  
-          options: [  
-            'Гилл был известен как гиперкальвинист и Уистон избегал таких споров.',  
-            'Уистон узнал, что Гилл написал толкование на Песнь Песней, и решил не слушать «пастора, который занимается поэзией».',  
-            'Они расходились в понимании крещения погружением и Уистон не хотел конфликта.',  
-            'Уистон считал Гилла богословским дилетантом, не достойным его внимания.'  
-          ],  
-          answer: 1,  
-          ok: 'Верно! Уистон записал: узнав о книге Гилла на Песнь Песней, он отказался идти. Риппон иронично заметил: «Очень мудрая причина!»',  
-          err: 'Неверно. Причина была именно в книге Гилла на Песнь Песней, а не в доктринальных разногласиях или пренебрежении.',  
-          focus: 'Раввинистика и Песнь Песней'  
-        },  
-        {  
-          id: 'q2',  
-          q: 'Что было необычного в присвоении докторской степени Гиллу Маришальским колледжем в Абердине в 1748 году?',  
-          options: [  
-            'Гилл заплатил за неё из собственных средств.',  
-            'Степень была присуждена без его ведома, а профессор Поллок покрыл все сборы за свой счёт.',  
-            'Гилл предоставил диссертацию на латыни о Троице.',  
-            'Степень была присуждена за полемику с Уэсли, которая случилась позже.'  
-          ],  
-          answer: 1,  
-          ok: 'Верно! Гилл ответил на предложение: «Я об этом не думал, не покупал и не искал». Профессор Поллок сам оплатил все процедуры.',  
-          err: 'Неверно. Гилл не платил, не представлял диссертацию и не был на тот момент вовлечён в полемику с Уэсли. Степень была полной неожиданностью для него.',  
-          focus: 'Докторская степень и признание'  
-        },  
-        {  
-          id: 'q3',  
-          q: 'Какой оригинальный богословский вклад внес Джон Гилл в доктрину вечного совета спасения (pactum salutis), по мнению Ричарда Мюллера?',  
-          options: [  
-            'Он отрицал участие Святого Духа в вечном совете как антитринитарное.',  
-            'Он настаивал, что Святой Дух — не наблюдатель, а «заинтересованная сторона» вечного завета.',  
-            'Он доказал, что вечный совет заключён только между Отцом и избранными людьми.',  
-            'Он свёл роль Духа к свидетельству о решении Отца и Сына, лишив Его активного участия.'  
-          ],  
-          answer: 1,  
-          ok: 'Верно! Мюллер отметил, что Гилл включил Святого Духа в pactum salutis не как пассивного наблюдателя, а как активного участника завета.',  
-          err: 'Неверно. Гилл настаивал на полноценном участии Святого Духа, а не на его исключении или сведении к пассивному свидетельству.',  
+    quiz: {
+      questions: [
+        {
+          id: 'q1',
+          q: 'Почему, по собственному признанию Уильяма Уистонa, тот отказался идти слушать проповедь Гилла в 1748 году?',
+          options: [
+            'Гилл был известен как гиперкальвинист и Уистон избегал таких споров.',
+            'Уистон узнал, что Гилл написал толкование на Песнь Песней, и решил не слушать «пастора, который занимается поэзией».',
+            'Они расходились в понимании крещения погружением и Уистон не хотел конфликта.',
+            'Уистон считал Гилла богословским дилетантом, не достойным его внимания.'
+          ],
+          answer: 1,
+          ok: 'Верно! Уистон записал: узнав о книге Гилла на Песнь Песней, он отказался идти. Риппон иронично заметил: «Очень мудрая причина!»',
+          err: 'Неверно. Причина была именно в книге Гилла на Песнь Песней, а не в доктринальных разногласиях или пренебрежении.',
+          focus: 'Раввинистика и Песнь Песней'
+        },
+        {
+          id: 'q2',
+          q: 'Что было необычного в присвоении докторской степени Гиллу Маришальским колледжем в Абердине в 1748 году?',
+          options: [
+            'Гилл заплатил за неё из собственных средств.',
+            'Степень была присуждена без его ведома, а профессор Поллок покрыл все сборы за свой счёт.',
+            'Гилл предоставил диссертацию на латыни о Троице.',
+            'Степень была присуждена за полемику с Уэсли, которая случилась позже.'
+          ],
+          answer: 1,
+          ok: 'Верно! Гилл ответил на предложение: «Я об этом не думал, не покупал и не искал». Профессор Поллок сам оплатил все процедуры.',
+          err: 'Неверно. Гилл не платил, не представлял диссертацию и не был на тот момент вовлечён в полемику с Уэсли. Степень была полной неожиданностью для него.',
+          focus: 'Докторская степень и признание'
+        },
+        {
+          id: 'q3',
+          q: 'Какой оригинальный богословский вклад внес Джон Гилл в доктрину вечного совета спасения (pactum salutis), по мнению Ричарда Мюллера?',
+          options: [
+            'Он отрицал участие Святого Духа в вечном совете как антитринитарное.',
+            'Он настаивал, что Святой Дух — не наблюдатель, а «заинтересованная сторона» вечного завета.',
+            'Он доказал, что вечный совет заключён только между Отцом и избранными людьми.',
+            'Он свёл роль Духа к свидетельству о решении Отца и Сына, лишив Его активного участия.'
+          ],
+          answer: 1,
+          ok: 'Верно! Мюллер отметил, что Гилл включил Святого Духа в pactum salutis не как пассивного наблюдателя, а как активного участника завета.',
+          err: 'Неверно. Гилл настаивал на полноценном участии Святого Духа, а не на его исключении или сведении к пассивному свидетельству.',
           focus: 'Свод догматического и практического богословия'
-        },  
-        {  
-          id: 'q4',  
-          q: 'Какой раввинистический источник Гилл использовал в толковании Бытие 1:2, чтобы показать, как древние евреи понимали «движение Духа Божьего над водами»?',  
-          options: [  
-            'Талмуд Вавилонский, трактат Бава Батра.',  
-            'Мишна, раздел «Пара» (о красной юнице).',  
-            'Таргум Онкелоса и Иерусалимский Таргум.',  
-            'Комментарий Раши на Тору, глава «Берешит».'  
-          ],  
-          answer: 2,  
-          ok: 'Верно! Гилл привлекал Таргум Онкелоса и Иерусалимский Таргум, чтобы показать семитский контекст библейской фразы.',  
-          err: 'Неверно. Именно Таргумы, а не Талмуд или Мишна, были ключевыми источниками Гилла в этом толковании.',  
-          focus: 'Раввинистическая экзегеза'  
-        }  
-      ],  
-      scores: [  
-        { id: 'perfect', min: 4, max: 4, title: 'Учёный-экзегет', desc: 'Вы продемонстрировали глубочайшее понимание раввинистического метода и системы Гилла. Блестяще!' },  
-        { id: 'good', min: 2, max: 3, title: 'Внимательный читатель', desc: 'Хороший результат! Вы уловили суть докторской степени, полемики с Уистоном и экзегетического метода.' },  
-        { id: 'bad', min: 0, max: 1, title: 'Продолжайте изучение', desc: 'Материал требует более вдумчивого возвращения. Обратите внимание на разделы о pactum salutis и раввинистических источниках.' }  
-      ]  
+        },
+        {
+          id: 'q4',
+          q: 'Какой раввинистический источник Гилл использовал в толковании Бытие 1:2, чтобы показать, как древние евреи понимали «движение Духа Божьего над водами»?',
+          options: [
+            'Талмуд Вавилонский, трактат Бава Батра.',
+            'Мишна, раздел «Пара» (о красной юнице).',
+            'Таргум Онкелоса и Иерусалимский Таргум.',
+            'Комментарий Раши на Тору, глава «Берешит».'
+          ],
+          answer: 2,
+          ok: 'Верно! Гилл привлекал Таргум Онкелоса и Иерусалимский Таргум, чтобы показать семитский контекст библейской фразы.',
+          err: 'Неверно. Именно Таргумы, а не Талмуд или Мишна, были ключевыми источниками Гилла в этом толковании.',
+          focus: 'Раввинистическая экзегеза'
+        }
+      ],
+      scores: [
+        { id: 'perfect', min: 4, max: 4, title: 'Учёный-экзегет', desc: 'Вы продемонстрировали глубочайшее понимание раввинистического метода и системы Гилла. Блестяще!' },
+        { id: 'good', min: 2, max: 3, title: 'Внимательный читатель', desc: 'Хороший результат! Вы уловили суть докторской степени, полемики с Уистоном и экзегетического метода.' },
+        { id: 'bad', min: 0, max: 1, title: 'Продолжайте изучение', desc: 'Материал требует более вдумчивого возвращения. Обратите внимание на разделы о pactum salutis и раввинистических источниках.' }
+      ]
     }
   };
   </script>
@@ -792,7 +792,7 @@
 <div style="background:var(--color-surface); border:1px solid var(--color-border); border-radius:8px; padding:16px; display:flex; flex-direction:column; opacity:0.75">
 <div style="font-weight:700;font-size:0.6rem;color:var(--color-accent);text-transform:uppercase;letter-spacing:0.1em;margin-bottom:6px;">Часть I </div>
 <h4 style="font-weight:700;font-size:1rem;margin-bottom:4px;color:var(--color-text-primary);">Человек</h4>
-<p style="font-size:0.8rem;color:var(--color-text-secondary);margin:0;flex-grow:1;">От юности в Кетеринге до формирования характера. Детство, призвание, семья, Декларация 1729.</p>
+<p style="font-size:0.8rem;color:var(--color-text-secondary);margin:0;flex-grow:1;">От юности в Кеттеринге до формирования характера. Детство, призвание, семья, Декларация 1729.</p>
 <div style="margin-top:10px; padding-top:10px; border-top:1px dashed var(--color-border); font-size:0.7rem; color:var(--color-text-muted);">≈ 18 минут чтения</div>
 <a href="/articles/dzhon-gill-chast-1-chelovek/" style="display:block;margin-top:8px;font-size:0.75rem;color:var(--color-accent);text-decoration:none;font-weight:600;">Читать Часть I →</a>
 </div>
@@ -812,7 +812,7 @@
 </div>
 </div>
 </div>
-<h2 class="reveal section-heading" id="part-theology" style="margin-top: var(--s-8); color: var(--color-accent-strong); font-size: 26px; border-bottom: 2px solid var(--color-border); padding-bottom: 8px;">III. Богословские труды и сумма всей жизни</h2>
+<h2 class="reveal section-heading" id="part-theology" style="margin-top: var(--s-8); color: var(--color-accent-strong); font-size: 26px; border-bottom: 2px solid var(--color-border); padding-bottom: 8px;">III. Богословские труды и итог всей жизни</h2>
 <h3 class="reveal" id="sec-trinity">«Учение о Троице» — манифест против унитарианства</h3>
 
 <figure class="article-img float-left reveal">
@@ -923,7 +923,7 @@
         «Около августа этого года [1748] меня известили об одном докторе Гилле, баптисте-кальвинисте, о чьей учёности в восточных языках я много слышал. Мне захотелось послушать его проповедь: но, узнав, что он написал книгу в folio о Песни Песней, я отказался идти.»
       </div>
 <div class="manuscript-quote-source">
-        — Уильям Уистон, «Мемуары о моей жизни и трудах», ч. II, с. 575 (цит. по Риппону, 1771)
+        — Уильям Уистон, «Мемуары о моей жизни и трудах», ч. II, с. 575 (цит. по Риппону, London, 1838)
       </div>
 </div>
 <p class="reveal">
@@ -964,7 +964,7 @@
 </div>
 <h3 class="reveal" id="sec-lectures">Лекции в Истчипе: двадцать шесть лет вечерних проповедей</h3>
 <p class="reveal">
-      В <strong>1729 году</strong> Гилл начал еженедельную <strong>среду вечернюю лекцию в Грейт Истчип</strong> (Great Eastcheap), Лондонское Сити. Эта серия продолжалась <strong>более двадцати шести лет</strong> — и была прекращена лишь в 1756 году. Прощальная проповедь — с <strong>Деян. 26:22</strong>: «Хранимый Богом, я стою по сей день, свидетельствуя малому и великому».
+      В <strong>1729 году</strong> Гилл начал еженедельную <strong>среду вечернюю лекцию в Грейт Истчип</strong> (Great Eastcheap), Лондонское Сити. Эта серия продолжалась <strong>двадцать семь лет</strong> — и была прекращена лишь в 1756 году. Прощальная проповедь — с <strong>Деян. 26:22</strong>: «Хранимый Богом, я стою по сей день, свидетельствуя малому и великому».
     </p>
 <p class="reveal">
       В этой прощальной проповеди Гилл объяснил причины ухода с характерной для него прямотой:
@@ -1116,7 +1116,7 @@
     </p>
 <h3 class="reveal" id="sec-hebrew-diss">«Диссертация о древности еврейского языка»: защита Масоры</h3>
 <p class="reveal">
-      В 1767 году, в том же году, когда вышел «Полный свод догматического богословия», Гилл опубликовал <strong>«Диссертацию о древности еврейского языка, букв, гласных и акцентов»</strong>. Это был не просто филологический труд — это была защита божественного происхождения еврейского текста Ветхого Завета против рационалистической критики.
+      В 1767 году Гилл опубликовал <strong>«Диссертацию о древности еврейского языка, букв, гласных и акцентов»</strong>. Это был не просто филологический труд — это была защита божественного происхождения еврейского текста Ветхого Завета против рационалистической критики.
     </p>
 <p class="reveal">
       В то время некоторые учёные (включая христианских гебраистов) утверждали, что еврейские гласные и акценты были добавлены масоретами лишь в VI–VII веках н.э., а значит, текст был подвержен искажениям. Гилл возражал:
@@ -1337,7 +1337,7 @@
 </div>
 <p class="reveal">Этот пассаж Эндрю Фуллер приводил как позицию, которую он оспаривал. Однако исследователи указывают: Гилл умер в 1771 году — на <em>14 лет раньше</em> «Евангелия, достойного всякого принятия» (1785). Сам Фуллер признавал, что Гилл не вступал в дискуссию о «Современном вопросе» напрямую; и Джон Райленд-младший, цитируя «Дело Бога и истины», освобождал Гилла от обычной гиперкальвинистской позиции.</p>
 <p class="reveal">
-      В 1767 году, в семьдесят лет, когда комментарий был почти завершён, Гилл опубликовал <em>A Body of Doctrinal Divinity</em> (три тома) — <strong>первое систематическое богословие, созданное баптистом</strong>. В 1770 году, за год до смерти, вышла <em>A Body of Practical Divinity</em>.
+      В 1769 году, когда комментарий был почти завершён, Гилл опубликовал <em>A Body of Doctrinal Divinity</em> в двух томах quarto — <strong>первое систематическое богословие, созданное баптистом</strong>. В 1770 году, за год до смерти, вышел третий том всего свода — <em>A Body of Practical Divinity</em>.
     </p>
 <p class="reveal">
       До Гилла баптистское учение существовало в исповеданиях веры, отдельных трактатах, пасторских письмах. Не было баптистского эквивалента систематическим теологиям реформатов (Турретин, Ушер) или англикан (Гукер). Гилл восполнил пробел: показал, что баптистское богословие — не провинциальное и не антиинтеллектуальное, а всеобъемлющая, когерентная, интеллектуально строгая система, укоренённая в Писании и непрерывная с Реформацией и древней Церковью.
@@ -1505,7 +1505,7 @@
       <li><span class="rl-author">John Gill.</span> <em>The Cause of God and Truth.</em> Four parts, 1735–1738.</li>
       <li><span class="rl-author">John Gill.</span> <em>Exposition of the New Testament</em> (1746–1748) and <em>Exposition of the Old Testament</em> (completed 1766).</li>
       <li><span class="rl-author">John Gill.</span> <em>A Dissertation Concerning the Antiquity of the Hebrew-Language, Letters, Vowel-Points, and Accents.</em> London, 1767.</li>
-      <li><span class="rl-author">John Gill.</span> <em>A Body of Doctrinal Divinity</em> and <em>A Body of Practical Divinity.</em> London, 1767–1770.</li>
+      <li><span class="rl-author">John Gill.</span> <em>A Body of Doctrinal Divinity</em> (2 vols., London, 1769) and <em>A Body of Practical Divinity</em> (London, 1770).</li>
     </ul>
   </div>
   <div class="reading-list-section__group">
@@ -1535,7 +1535,7 @@
 <div class="author-card-name">Фёдор Милованов</div>
 <p class="reveal author-card-desc">
           Основатель и редактор проекта «Господь Бог — Сила Моя», Санкт-Петербург.
-          Биография составлена по первичным источникам: мемуарам Джона Риппона (1771),
+          Биография составлена по первичным источникам: мемуарам Джона Риппона (<em>A Brief Memoir</em>, написан вскоре после смерти Гилла, опубликован в Лондоне в 1838 году),
           трудам самого Гилла и современным исследованиям Майкла Хайкина.
           <a href="../../about/">Об авторе →</a>
 </p>

@@ -952,6 +952,14 @@ html.dark .pullquote .pq-attribution { color: var(--color-accent); }
   border-radius: 4px;
   cursor: zoom-in;
 }
+.article-img--wide {
+  max-width: min(860px, 100%);
+  margin: 36px auto;
+  line-height: 1.45;
+}
+.article-img--wide img {
+  border-radius: 10px;
+}
 .nagornaya-hero-img {
   cursor: zoom-in;
 }
