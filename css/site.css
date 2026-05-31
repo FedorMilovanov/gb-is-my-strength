@@ -740,10 +740,12 @@ html.dark .breadcrumb__link:focus-visible {
 
 .article-body h3 {
   font-family: 'Source Sans 3', system-ui, sans-serif;
-  font-size: clamp(16px, 2vw, 18px);
-  font-weight: 600;
+  font-size: clamp(19px, 2.4vw, 22px);
+  font-weight: 700;
+  letter-spacing: -0.01em;
   color: var(--color-text);
-  margin: clamp(24px, 3.5vw, 36px) 0 12px;
+  margin: clamp(32px, 4vw, 44px) 0 14px;
+  clear: both;
   text-wrap: balance;
 }
 
@@ -1154,8 +1156,7 @@ html.dark .heart-flip-back { background: #110e07; }
 .article-img.float-right + p,
 .article-img.float-right + ul,
 .article-img.float-right + ol,
-.article-img.float-right + blockquote,
-.article-img.float-right + h3 {
+.article-img.float-right + blockquote {
   margin-top: 0;
   padding-top: 0;
 }
@@ -1163,8 +1164,7 @@ html.dark .heart-flip-back { background: #110e07; }
 .article-img.float-left + p,
 .article-img.float-left + ul,
 .article-img.float-left + ol,
-.article-img.float-left + blockquote,
-.article-img.float-left + h3 {
+.article-img.float-left + blockquote {
   margin-top: 0;
   padding-top: 0;
 }
@@ -1564,12 +1564,12 @@ html.dark .card.fx-lift:focus-within{
   display: flex;
   gap: 12px;
   align-items: flex-start;
-  margin: 2.5rem 0;
-  padding: 16px 18px;
+  margin: 40px 0 8px;
+  padding: 14px 16px;
   border-radius: 16px;
-  border: 1px solid color-mix(in srgb, var(--color-accent) 22%, transparent);
-  background: color-mix(in srgb, var(--color-accent) 7%, transparent);
-  color: var(--color-text);
+  border: 1px solid color-mix(in srgb, var(--color-accent) 18%, transparent);
+  background: color-mix(in srgb, var(--color-accent) 6%, transparent);
+  color: var(--color-text-muted);
 }
 .pastoral-discernment-note__icon {
   flex: 0 0 auto;
@@ -1590,6 +1590,52 @@ html.dark .card.fx-lift:focus-within{
   line-height: 1.7;
 }
 .pastoral-discernment-note p:last-child { margin-bottom: 0; }
+
+/* Серия: переход к следующей части внизу статьи */
+.series-next-cta {
+  display: block;
+  margin: clamp(40px, 6vw, 64px) 0 8px;
+  padding: 22px 24px;
+  border: 1px solid var(--color-border-strong);
+  border-radius: 14px;
+  background: var(--color-surface-quote);
+  text-decoration: none;
+  transition: border-color .2s ease, transform .2s ease, box-shadow .2s ease;
+}
+.series-next-cta:hover {
+  border-color: var(--color-accent);
+  transform: translateY(-2px);
+  box-shadow: 0 10px 30px -16px rgba(62, 42, 22, 0.35);
+}
+.series-next-cta__eyebrow {
+  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--color-accent-strong);
+  margin-bottom: 6px;
+}
+.series-next-cta__title {
+  font-family: 'Lora', Georgia, serif;
+  font-size: clamp(18px, 2.4vw, 22px);
+  font-weight: 600;
+  color: var(--color-text);
+  margin: 0 0 4px;
+}
+.series-next-cta__desc {
+  font-size: 14px;
+  line-height: 1.55;
+  color: var(--color-text-secondary);
+  margin: 0 0 12px;
+}
+.series-next-cta__action {
+  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--color-accent);
+}
+.series-next-cta:hover .series-next-cta__action { color: var(--color-accent-strong); }
 
 .ai-disclosure {
   display: flex;
@@ -2270,6 +2316,7 @@ html.dark .compare-table:not(.compare-table--scroll) tr {
   border-left: 1px solid var(--color-border);
   max-height: 75vh;
   overflow-y: auto;
+  overflow-x: hidden;
   scrollbar-width: thin;
 }
 .toc-sidebar nav::-webkit-scrollbar {
@@ -4085,7 +4132,7 @@ html.dark .gterm.is-open {
   width: min(380px, calc(100vw - 40px));
   padding: 16px 18px;
   border-radius: 24px;
-  background: rgba(255, 253, 250, 0.92);
+  background: rgba(255, 253, 250, 0.985);
   color: #1a150f;
   border: 1px solid rgba(0, 0, 0, 0.06);
   box-shadow:
@@ -4123,7 +4170,7 @@ html.gb-tooltip-open .article-body {
   height: 12px;
   left: 50%;
   margin-left: -6px;
-  background: rgba(255, 253, 250, 0.92);
+  background: rgba(255, 253, 250, 0.985);
   border-left: 1px solid rgba(0, 0, 0, 0.06);
   border-top: 1px solid rgba(0, 0, 0, 0.06);
   transform: rotate(45deg);
@@ -4146,7 +4193,7 @@ html.gb-tooltip-open .article-body {
   transition-duration: .15s;
 }
 html.dark .gterm .gtip {
-  background: rgba(28, 29, 33, 0.94);
+  background: rgba(28, 29, 33, 0.985);
   color: var(--color-text, #ece7dd);
   border-color: rgba(255, 255, 255, 0.10);
   box-shadow:
@@ -4155,7 +4202,7 @@ html.dark .gterm .gtip {
     inset 0 1px 0 rgba(255, 255, 255, 0.08);
 }
 html.dark .gterm .gtip::before {
-  background: rgba(28, 29, 33, 0.94);
+  background: rgba(28, 29, 33, 0.985);
   border-color: rgba(255, 255, 255, 0.10);
 }
 

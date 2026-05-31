@@ -3313,18 +3313,11 @@
         '<path d="M12 8v5"/>' +
         '<path d="M12 16h.01"/>' +
       '</svg>' +
-      '<p>Материал подготовлен редактором с использованием ИИ-ассистента как инструмента чернового анализа, структурирования и проверки формулировок. Финальная богословская ответственность, выводы и редакция принадлежат редактору.</p>';
+      '<p>Материал подготовлен редактором при помощи ИИ.</p>';
 
-    function isAiDisclosurePrelude(el) {
-      if (!el) return false;
-      if (el.hidden || (el.matches && el.matches('[data-pagefind-meta]'))) return true;
-      if (el.matches && el.matches('header.article-header, .article-header, figure.article-hero, figure.article-img, .article-hero, .article-img')) return true;
-      return false;
-    }
-    var firstContent = Array.prototype.find.call(article.children, function (el) {
-      return !isAiDisclosurePrelude(el);
-    });
-    article.insertBefore(box, firstContent || article.firstChild);
+    /* Дисклеймер ставим в конец статьи: после основного текста и списка литературы,
+       если он присутствует, а не перед заголовком/вводной частью. */
+    article.appendChild(box);
   })();
 
 
@@ -4071,7 +4064,10 @@
          Снимаем перед добавлением — защита от двойного open() без close().  */
       viewer.removeEventListener('keydown', trapViewerTab);
       viewer.addEventListener('keydown', trapViewerTab);
-      if (closeBtn) closeBtn.focus();
+      if (closeBtn) {
+        try { closeBtn.focus({ preventScroll: true }); }
+        catch (e) { closeBtn.focus(); }
+      }
     }
 
     function close() {
@@ -4080,7 +4076,10 @@
       viewer.removeEventListener('keydown', trapViewerTab);
       /* B-01: корректно разблокируем скролл через счётчик */
       SiteUtils.unlockScroll('image-viewer');
-      if (lastActive && lastActive.focus) lastActive.focus();
+      if (lastActive && lastActive.focus) {
+        try { lastActive.focus({ preventScroll: true }); }
+        catch (e) { lastActive.focus(); }
+      }
       lastActive = null;
       /* Откладываем очистку src/cap до окончания fade-out (.2s);
          токен _closeTimer позволяет отменить очистку при быстром повторном открытии. */
