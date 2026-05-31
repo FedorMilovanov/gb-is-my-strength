@@ -640,11 +640,14 @@ html.dark .h-scripture-bg::before {
 @media (hover: hover) {
 .hb-w:hover,
 .hb-w:focus-visible,
-.hb-w:focus-within,
-.hb-w[data-toggled] {
+.hb-w:focus-within {
   width: var(--hb-open-w, var(--hb-front-w, auto));
 }
 }
+}
+
+.hb-w[data-toggled] {
+  width: var(--hb-open-w, var(--hb-front-w, auto));
 }
 
 .hb-front,

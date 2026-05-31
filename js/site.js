@@ -451,6 +451,9 @@
       var key = this._normalizeScrollLockSource(source);
       if (this._scrollLockSources[key]) return;
       this._scrollLockSources[key] = true;
+      if (window.SiteUtils && typeof window.SiteUtils._startEmergencyTimer === 'function') {
+        window.SiteUtils._startEmergencyTimer();
+      }
       if (this._refreshScrollLockCount() === 1) {
         var scrollbarWidth = window.innerWidth - document.documentElement.clientWidth;
         var y = window.scrollY || window.pageYOffset || 0;
@@ -474,6 +477,9 @@
       if (!this._scrollLockSources[key]) return;
       delete this._scrollLockSources[key];
       if (this._refreshScrollLockCount() === 0) {
+        if (window.SiteUtils && typeof window.SiteUtils._stopEmergencyTimer === 'function') {
+          window.SiteUtils._stopEmergencyTimer();
+        }
         var body = document.body;
         var savedY = this._savedScrollY;
         body.style.removeProperty('overflow');
@@ -2905,6 +2911,8 @@
       inReview       = false; reviewDeck = []; reviewCurrent = 0; reviewAnswered = false; reviewScore = 0;
       inBonus        = false;
       clearTimer();
+      if (bonusLock) bonusLock.style.display = 'block';
+      if (bonusUnlock) bonusUnlock.style.display = 'none';
 
       sessionSeed = getSessionSeed();
       coreDeck    = prepareDeck(questions, sessionSeed, 'core');
@@ -4290,7 +4298,7 @@
   (function () {
     var hi = document.querySelector('.sti-highlight');
     if (!hi) return;
-
+    var reduceMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
     /* Разбиваем текст на буквы */
     var text = hi.textContent;

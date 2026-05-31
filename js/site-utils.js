@@ -54,14 +54,25 @@
 
   window.SiteUtils = window.SiteUtils || {};
 
+  window.SiteUtils._startEmergencyTimer = function () {
+    if (!emergencyTimer) {
+      emergencyTimer = setInterval(emergencyCheck, 3000);
+    }
+  };
+
+  window.SiteUtils._stopEmergencyTimer = function () {
+    if (emergencyTimer) {
+      clearInterval(emergencyTimer);
+      emergencyTimer = null;
+    }
+  };
+
   window.SiteUtils.lockScroll = function (source) {
     source = source || 'default';
     if (locks.has(source)) return;
     locks.add(source);
     if (locks.size === 1) applyLock();
-    if (!emergencyTimer) {
-      emergencyTimer = setInterval(emergencyCheck, 3000);
-    }
+    window.SiteUtils._startEmergencyTimer();
   };
 
   window.SiteUtils.unlockScroll = function (source) {
