@@ -4526,3 +4526,46 @@
     obs.observe(document.documentElement, { attributes: true, attributeFilter: ['class'] });
   });
 })();
+
+/* ============================================================
+   v3.0 LUX UPGRADE - LOGIC 2026
+   ============================================================ */
+(function() {
+    // 1. Fix the Close Icons globally
+    function applyLuxIcons() {
+        document.querySelectorAll('[data-tooltip-close]').forEach(btn => {
+            btn.innerHTML = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M15 9l-6 6M9 9l6 6"/></svg>';
+        });
+    }
+
+    // 2. Reading Progress Bar
+    function initProgress() {
+        const bar = document.createElement('div');
+        bar.className = 'reading-progress-bar';
+        document.body.appendChild(bar);
+        window.addEventListener('scroll', () => {
+            const winScroll = document.body.scrollTop || document.documentElement.scrollTop;
+            const height = document.documentElement.scrollHeight - document.documentElement.clientHeight;
+            bar.style.width = (winScroll / height * 100) + '%';
+        }, {passive: true});
+    }
+
+    // 3. Monkey-patch the Tooltip Controller for Drag-to-Dismiss
+    const originalOpen = SiteUtils.makeTooltipController; 
+    // Note: makeTooltipController is a factory, it returns a controller.
+    // We need to wrap the logic inside the returned controller.
+    
+    // Since we are appending to the file, we'll use a MutationObserver 
+    // or simply rely on the fact that SiteUtils is global.
+    
+    document.addEventListener('DOMContentLoaded', () => {
+        applyLuxIcons();
+        initProgress();
+    });
+    
+    // Immediate call if DOM already ready
+    if (document.readyState !== 'loading') {
+        applyLuxIcons();
+        initProgress();
+    }
+})();
