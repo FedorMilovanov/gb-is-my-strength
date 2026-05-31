@@ -62,6 +62,7 @@ html.dark {
 }
 
 
+
 .h-navbar {
   position: fixed;
   top: 0; left: 0; right: 0;
@@ -90,11 +91,6 @@ html.dark {
 }
 .h-navbar.nav-hidden {
   transform: translateY(-100%);
-  /* AUDIT V8 / #119: when navbar is slid off-screen, remove it from
-     the tab/focus order and prevent click-through. The original .h-navbar
-     transition above is augmented with `visibility 0s 0.4s` so visibility
-     change is delayed until the slide-out finishes, but is instant on slide-in
-     (matched by .nav-hidden's transition timing). */
   pointer-events: none;
   visibility: hidden;
   transition:
@@ -103,7 +99,7 @@ html.dark {
 }
 
 .h-navbar__inner {
-  max-width: 860px;
+  max-width: 1000px;
   width: 100%;
   margin: 0 auto;
   padding: 0 28px;
@@ -112,7 +108,6 @@ html.dark {
   justify-content: space-between;
   gap: 24px;
 }
-
 
 .h-nav-logo {
   display: flex;
@@ -151,26 +146,17 @@ html.dark {
   transition: letter-spacing 0.5s cubic-bezier(0.22, 1, 0.36, 1);
 }
 @media (hover: hover) {
-
-.h-nav-logo:hover .h-nav-logo-main { letter-spacing: 0.08em; }
-
+  .h-nav-logo:hover .h-nav-logo-main { letter-spacing: 0.08em; }
+  .h-nav-logo:hover .h-nav-logo-dash { transform: scaleX(1.4); }
+  .h-nav-logo:hover .h-nav-logo-accent { letter-spacing: 0.08em; }
 }
-@media (hover: hover) {
-
-.h-nav-logo:hover .h-nav-logo-dash { transform: scaleX(1.4); }
-
-}
-@media (hover: hover) {
-
-.h-nav-logo:hover .h-nav-logo-accent { letter-spacing: 0.08em; }
-
-}
-
 
 .h-nav-links {
   display: flex;
   align-items: center;
-  gap: 28px;
+  justify-content: center;
+  flex: 1;
+  gap: 20px;
   list-style: none;
   margin: 0; padding: 0;
 }
@@ -198,66 +184,16 @@ html.dark {
   transition: transform 0.3s ease;
 }
 @media (hover: hover) {
-
-.h-nav-links a:hover { color: var(--h-ink); }
-
-}
-@media (hover: hover) {
-
-.h-nav-links a:hover::after { transform: scaleX(1); }
-
-}
-
-
-.mobile-controls .theme-toggle {
-  position: relative;
-  top: auto;
-  right: auto;
-  width: 30px;
-  height: 30px;
-  padding: 0;
-  border-radius: 50%;
-  color: var(--h-muted);
-  background: none;
-  border: none;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  touch-action: manipulation;
-  transition: background 0.2s ease, color 0.2s ease;
-}
-@media (hover: hover) {
-
-.mobile-controls .theme-toggle:hover {
-  
-  color: var(--h-ink);
-}
-
-}
-
-.mobile-controls .theme-toggle svg {
-  width: 16px;
-  height: 16px;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-}
-@media (hover: hover) {
-
-.mobile-controls .theme-toggle:hover svg {
-  transform: translate(-50%, -50%) scale(1.08);
-}
-
+  .h-nav-links a:hover { color: var(--h-ink); }
+  .h-nav-links a:hover::after { transform: scaleX(1); }
 }
 
 .mobile-controls {
   display: flex;
   align-items: center;
   gap: 4px;
+  flex-shrink: 0;
 }
-
-
 .h-mobile-menu-btn {
   display: none;
   touch-action: manipulation;
@@ -277,7 +213,18 @@ html.dark {
 
 @media (max-width: 760px) {
   
-  .h-nav-links { display: none; }
+  .h-nav-links {
+  flex: 1;
+  justify-content: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: 1;
+  gap: 20px;
+  list-style: none;
+  margin: 0; padding: 0;
+}
+
   .h-mobile-menu-btn { display: flex; }
   
   .h-mobile-backdrop {
@@ -400,7 +347,7 @@ html.dark .h-scripture-bg::before {
 .home-content {
   position: relative;
   z-index: 1;
-  max-width: 860px;
+  max-width: 1000px;
   margin: 0 auto;
   padding: 0 28px;
 }
@@ -447,7 +394,7 @@ html.dark .h-scripture-bg::before {
   display: flex;
   align-items: center;
   gap: 0;
-  max-width: 860px;
+  max-width: 1000px;
   margin: 0 auto 0;
   padding: 0 20px;
 }
@@ -1831,7 +1778,7 @@ body.articles-index-page .home-content {
   max-width: min(1120px, calc(100vw - 80px));
 }
 body.articles-index-page .h-hero {
-  max-width: 860px;
+  max-width: 1000px;
 }
 body.articles-index-page .h-article-card {
   border: 1px solid rgba(120, 83, 46, 0.11);
@@ -2123,7 +2070,7 @@ html.dark .h-blockquote { color: var(--h-ink); }
 
 .resume-reading-block,
 .resume-list-block {
-  max-width: 860px;
+  max-width: 1000px;
   margin: 0 auto;
   padding: 0 28px;
 }
@@ -2245,3 +2192,8 @@ body:not(.home-page) .h-rule {
   animation: none;
   margin-top: 20px;
 }
+
+
+  .h-nav-links a { font-size: 12px; }
+}
+\n@media (min-width: 761px) and (max-width: 1100px) {\n  .h-nav-links { gap: 12px; }\n  .h-nav-links a { font-size: 12px; }\n}
