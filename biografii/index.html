@@ -366,9 +366,11 @@ window.SITE_CONFIG = {
         color: var(--color-text-muted);
       }
       .bio-coda__ref {
+        display: block;
         font-family: var(--f-ui, "Inter", system-ui, sans-serif);
         font-size: 10px;
         font-weight: 700;
+        font-style: normal;
         letter-spacing: 3px;
         text-transform: uppercase;
         color: var(--color-accent);
@@ -577,7 +579,7 @@ window.SITE_CONFIG = {
                   <source srcset="../images/og-dzhon-gill-chast-1-chelovek-600w.webp" type="image/webp">
                   <img src="../images/og-dzhon-gill-chast-1-chelovek.jpg"
                        alt="Джон Гилл. Часть I: Человек"
-                       decoding="async" loading="eager" width="160" height="108">
+                       decoding="async" loading="lazy" width="160" height="108">
                 </picture>
               </div>
               <div class="h-article-body">
@@ -708,10 +710,10 @@ window.SITE_CONFIG = {
 
     <!-- Финальная нота -->
     <section class="h-section h-reveal" style="padding-top:0;" aria-label="Эпиграф раздела">
-      <div class="bio-coda">
+      <blockquote class="bio-coda">
         <p class="bio-coda__verse">«Поминайте наставников ваших, которые проповедовали вам слово Божие, и, взирая на кончину их жизни, подражайте вере их».</p>
-        <p class="bio-coda__ref">— Евреям 13:7</p>
-      </div>
+        <cite class="bio-coda__ref">Евреям 13:7</cite>
+      </blockquote>
     </section>
 
     </main>
