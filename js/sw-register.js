@@ -83,8 +83,13 @@
   var toastEl = document.createElement('div');
   toastEl.id = 'gb-sw-toast';
 
+  /* Bug #16: check that the existing element IS our toastEl, not a
+     stray element from another script with the same id. */
   function _mountToast() {
-    if (!document.body || document.getElementById('gb-sw-toast')) return;
+    if (!document.body) return;
+    var existing = document.getElementById('gb-sw-toast');
+    if (existing && existing !== toastEl) return; /* foreign element — skip */
+    if (existing === toastEl) return; /* already mounted */
     document.body.appendChild(toastEl);
   }
 

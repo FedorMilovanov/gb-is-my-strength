@@ -471,8 +471,18 @@
   var siteId = (window.SITE_CONFIG && window.SITE_CONFIG.site && window.SITE_CONFIG.site.id) || 'gb-strength';
   var prefix = 'bookmark:' + siteId + ':';
 
+  /* Bug #18: normalize paths when reading from localStorage to match
+     how they were stored — strip query params and trailing slash. */
+  function _normPath(p) {
+    if (!p) return '/';
+    var out = p.split('?')[0].split('#')[0].replace(/index\.html$/, '');
+    if (out !== '/' && /\/$/.test(out)) out = out.slice(0, -1);
+    return out || '/';
+  }
+
   function getAllForSite() {
     var out = [];
+    var seen = {};
     try {
       /* B-11: снимаем снимок ключей заранее — итерация по живому localStorage небезопасна
          при одновременном изменении из другой вкладки (storage event сдвигает индексы). */
@@ -486,7 +496,14 @@
           var raw  = localStorage.getItem(keys[i]);
           if (!raw) continue;
           var data = JSON.parse(raw);
-          if (data && data.path && data.savedAt && typeof data.progress === 'number') out.push(data);
+          if (data && data.path && data.savedAt && typeof data.progress === 'number') {
+            /* Deduplicate by normalized path */
+            var np = _normPath(data.path);
+            if (!seen[np]) {
+              seen[np] = true;
+              out.push(data);
+            }
+          }
         } catch (e) {}
       }
     } catch (e) {}
