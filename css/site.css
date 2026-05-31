@@ -6190,6 +6190,7 @@ html.dark .gb-series-link:hover {
   border-color: color-mix(in srgb, #b8882a 55%, transparent);
 }
 
+/* Duplicate .article-end-sdg removed to fix layout */
 
 }
 
