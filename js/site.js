@@ -975,6 +975,14 @@
             '<span class="sd-label">ВКонтакте</span>' +
           '</button>' +
 
+          /* Facebook */
+          '<button class="sd-btn sd-btn--fb" id="sd-fb" aria-label="Поделиться в Facebook">' +
+            '<span class="sd-icon">' +
+              '<svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"/></svg>' +
+            '</span>' +
+            '<span class="sd-label">Facebook</span>' +
+          '</button>' +
+
           /* МАКС (MAX) */
           '<button class="sd-btn sd-btn--max" id="sd-max" aria-label="Поделиться в МАКС">' +
             '<span class="sd-icon">' +
@@ -1101,6 +1109,11 @@
       var vkUrl = 'https://vk.com/share.php?url=' + encodeURIComponent(utmUrl(activeShareUrl,'vk')) + '&title=' + activeEncodedTitle();
       if (shareImage) vkUrl += '&image=' + encodeURIComponent(shareImage);
       window.open(vkUrl, '_blank', 'noopener');
+    });
+    document.getElementById('sd-fb').addEventListener('click', function () {
+      var fbUrl = 'https://www.facebook.com/sharer/sharer.php?u=' + encodeURIComponent(utmUrl(activeShareUrl, 'facebook'));
+      if (activeShareTitle) fbUrl += '&quote=' + activeEncodedTitle();
+      window.open(fbUrl, '_blank', 'noopener');
     });
     document.getElementById('sd-max').addEventListener('click', function () {
       window.open('https://share.max.ru/share?url=' + encodeURIComponent(utmUrl(activeShareUrl, 'max')) + '&title=' + activeEncodedTitle(), '_blank', 'noopener');
