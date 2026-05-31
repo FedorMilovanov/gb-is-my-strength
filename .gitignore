@@ -13,3 +13,6 @@ shots-after/
 visual-audit-report.json
 deep-check.json
 node_modules/
+
+# Локальные архивы репозитория не коммитим
+/gb-is-my-strength.zip
