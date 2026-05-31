@@ -73,7 +73,7 @@
   (function(){try{var t=localStorage.getItem('theme');if(t==='dark'||(!t&&window.matchMedia('(prefers-color-scheme: dark)').matches)){document.documentElement.classList.add('dark');}}catch(e){}})();
 </script>
 <!-- Shared styles -->
-<link href="../../css/site.css?v=e9ff2006" rel="stylesheet"/>
+<link href="../../css/site.css?v=44a89a38" rel="stylesheet"/>
 <link href="../../css/command-palette.css?v=35aa9c5a" rel="stylesheet"/>
 <!-- Биографический стиль раздела «Биографии служителей» — уникальный для отдела, на токенах сайта -->
 <style>
@@ -145,6 +145,24 @@
         height: 100%;
         object-fit: cover;
         object-position: 50% 18%;
+      }
+
+      .biography-portrait figcaption {
+        position: absolute;
+        left: 8px;
+        right: 8px;
+        bottom: 8px;
+        padding: 5px 8px;
+        border-radius: 999px;
+        background: rgba(20, 16, 12, 0.62);
+        color: rgba(255, 255, 255, 0.78);
+        font-family: 'Source Sans 3', system-ui, sans-serif;
+        font-size: 9px;
+        font-weight: 700;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        text-align: center;
+        line-height: 1.2;
       }
       
       /* Имитация гравюры штриховкой */
@@ -244,16 +262,16 @@
       .biography-timeline {
         position: relative;
         margin: var(--s-7) 0;
-        padding-left: var(--s-6);
+        padding-left: 28px;
       }
       
       .biography-timeline::before {
         content: '';
         position: absolute;
-        left: 19px;
+        left: 7px;
         top: 0;
         bottom: 0;
-        width: 1px;
+        width: 2px;
         background: linear-gradient(
           to bottom,
           var(--color-accent-selection) 0%,
@@ -266,13 +284,13 @@
       .timeline-entry {
         position: relative;
         margin-bottom: var(--s-6);
-        padding-left: var(--s-5);
+        padding-left: 0;
       }
       
       .timeline-entry::before {
         content: '';
         position: absolute;
-        left: -25px;
+        left: -24px;
         top: 6px;
         width: 8px;
         height: 8px;
@@ -461,28 +479,35 @@
         bottom: 0;
       }
       
-      /* Метка времени в стиле фолианта */
+      /* Метка места и времени раздела */
       .foliant-mark {
         float: right;
+        max-width: 260px;
         font-variant-numeric: oldstyle-nums;
-        font-size: 15px;
-        color: var(--color-accent-selection);
-        margin: var(--s-4) 0 var(--s-4) var(--s-5);
-        padding: var(--s-2) var(--s-4);
-        border: 1px solid var(--color-border-strong);
-        background: var(--color-surface-quote);
-        font-family: ui-serif, Georgia, serif;
-        font-style: italic;
+        font-size: 13px;
+        line-height: 1.35;
+        color: var(--color-text-secondary);
+        margin: var(--s-3) 0 var(--s-4) var(--s-5);
+        padding: 10px 14px 11px;
+        border: 1px solid var(--color-border);
+        border-left: 3px solid var(--color-accent-selection);
+        background: color-mix(in srgb, var(--color-surface-quote) 82%, transparent);
+        border-radius: 10px;
+        box-shadow: 0 10px 28px -24px rgba(62, 42, 22, 0.35);
+        font-family: 'Source Sans 3', system-ui, sans-serif;
+        font-style: normal;
         position: relative;
       }
       
       .foliant-mark::before {
-        content: '';
-        position: absolute;
-        inset: -4px;
-        border: 1px solid var(--color-border);
-        pointer-events: none;
-        opacity: 0.5;
+        content: 'место и время';
+        display: block;
+        margin-bottom: 3px;
+        font-size: 9px;
+        font-weight: 800;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        color: var(--color-accent-strong);
       }
       
       /* Респонсив */
@@ -497,7 +522,7 @@
         }
         
         .biography-timeline {
-          padding-left: var(--s-5);
+          padding-left: 28px;
         }
       }
     }
@@ -776,7 +801,6 @@
 <p class="reveal article-byline"><span class="article-byline__strong">Редактор: Фёдор Милованов</span></p>
 </header>
 <article class="article-body">
- Биографический герб-шапка 
 
 <div class="note-box" style="margin: 32px 0 48px; border-left: 4px solid var(--color-accent); padding: 24px 28px;">
 <div style="display:flex; gap: 12px; align-items:flex-start; margin-bottom: 20px;">
@@ -821,6 +845,7 @@
 <source sizes="(max-width: 700px) 200px, 180px" srcset="../../images/dzhon-gill-portret-360w.webp 360w, ../../images/dzhon-gill-portret.webp 720w" type="image/webp"/>
 <img alt="Джон Гилл (1697–1771) — портрет за рабочим столом в кабинете" decoding="async" fetchpriority="high" height="960" src="../../images/dzhon-gill-portret.jpg" width="720"/>
 </picture>
+<figcaption>Сгенерировано с помощью ИИ</figcaption>
 </figure>
 <div class="biography-info">
 <div class="biography-dates">23 ноября 1697 — 14 октября 1771</div>
@@ -860,43 +885,6 @@
 <div class="hebrew-transcription">emet we-shalom yihyu</div>
 <div class="hebrew-reference">«Истина и мир да будут» — вдохновение учёности Гилла</div>
 </div>
-<div class="note-box" style="margin-top: 48px; margin-bottom: 48px; border-left: 4px solid var(--color-accent); padding-bottom: 32px;">
-<div style="display:flex; gap: 16px; align-items: flex-start; margin-bottom: 32px;">
-<svg aria-hidden="true" fill="none" height="24" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" style="flex-shrink:0; margin-top:4px; color:var(--color-accent);" viewbox="0 0 24 24" width="24">
-<polygon points="12 2 2 7 12 12 22 7 12 2"></polygon>
-<polyline points="2 12 12 17 22 12"></polyline>
-<polyline points="2 17 12 22 22 17"></polyline>
-</svg>
-<div>
-<div style="font-weight:700;font-size:0.75rem;color:var(--color-accent);text-transform:uppercase;letter-spacing:0.12em;margin-bottom:8px;">Навигация по материалу</div>
-<h2 class="heading-serif font-bold text-2xl mb-3" style="border:none; margin-top:0; padding-bottom:0; color:var(--color-text);">Трилогия о Джоне Гилле</h2>
-<p class="text-[15px] leading-7 m-0" style="color:var(--color-text);">Биография Джона Гилла — это не просто история лондонского пастора XVIII века. Это рассказ о беспрецедентной интеллектуальной дисциплине, о богословской системе, определившей поколения, и о ярлыках, которые история поспешила повесить на него после смерти. Рассказать об этом вскользь — значит лишить историю её подлинной силы. Чтобы не жертвовать ни деталями, ни комфортом чтения, мы разделили исследование на три самостоятельных текста.</p>
-</div>
-</div>
-<div class="grid md:grid-cols-3 gap-6">
-<!-- Часть 1 (Активная) -->
-<div style="background:var(--color-surface); border:1px solid var(--color-accent); border-radius:8px; padding:20px; box-shadow:0 4px 12px rgba(0,0,0,0.05); display:flex; flex-direction:column;">
-<div style="font-weight:700;font-size:0.65rem;color:var(--color-accent);text-transform:uppercase;letter-spacing:0.1em;margin-bottom:8px;">Часть I <span style="display:inline-block;width:4px;height:4px;background:var(--color-accent);border-radius:50%;margin-left:4px;vertical-align:middle;"></span> Вы здесь</div>
-<h3 class="font-bold text-lg mb-2" style="font-family:var(--font-body); color:var(--color-text);">Человек</h3>
-<p class="text-[14px] leading-relaxed mb-0" style="color:var(--color-text-muted); flex-grow:1;">От юности в Кетеринге до формирования характера. Детство, призыв, семья и Декларация 1729 года.</p>
-<div style="margin-top:16px; padding-top:16px; border-top:1px dashed var(--color-border); font-size:0.75rem; color:var(--color-text-muted); font-weight:600;">≈ 18 минут чтения</div>
-</div>
-<!-- Часть 2 -->
-<div style="background:var(--color-surface); border:1px solid var(--color-border); border-radius:8px; padding:20px; display:flex; flex-direction:column; opacity: 0.8;">
-<div style="font-weight:700;font-size:0.65rem;color:var(--color-text-muted);text-transform:uppercase;letter-spacing:0.1em;margin-bottom:8px;">Часть II</div>
-<h3 class="font-bold text-lg mb-2" style="font-family:var(--font-body); color:var(--color-text);">Учёный</h3>
-<p class="text-[14px] leading-relaxed mb-0" style="color:var(--color-text-muted); flex-grow:1;">Экзегеза, раввинистика, создание 9-томного комментария на всю Библию и Свод богословия.</p>
-<div style="margin-top:16px; padding-top:16px; border-top:1px dashed var(--color-border); font-size:0.75rem; color:var(--color-text-muted);">≈ 21 минута чтения</div>
-</div>
-<!-- Часть 3 -->
-<div style="background:var(--color-surface); border:1px solid var(--color-border); border-radius:8px; padding:20px; display:flex; flex-direction:column; opacity: 0.8;">
-<div style="font-weight:700;font-size:0.65rem;color:var(--color-text-muted);text-transform:uppercase;letter-spacing:0.1em;margin-bottom:8px;">Часть III</div>
-<h3 class="font-bold text-lg mb-2" style="font-family:var(--font-body); color:var(--color-text);">Наследие</h3>
-<p class="text-[14px] leading-relaxed mb-0" style="color:var(--color-text-muted); flex-grow:1;">Полемика с Дж. Уэсли, обвинения в гиперкальвинизме, Сперджен-наследник и историческая реабилитация.</p>
-<div style="margin-top:16px; padding-top:16px; border-top:1px dashed var(--color-border); font-size:0.75rem; color:var(--color-text-muted);">≈ 17 минут чтения</div>
-</div>
-</div>
-</div>
 <h2 class="reveal section-heading" id="part-calling" style="margin-top: var(--s-8); color: var(--color-accent-strong); font-size: 26px; border-bottom: 2px solid var(--color-border); padding-bottom: 8px;">I. Становление и призвание</h2>
 <h3 class="reveal" id="sec-intro">Откуда рождаются гении без университетов</h3>
 <p class="reveal">
@@ -923,7 +911,8 @@
     <source srcset="../../images/gill-kettering-1697-600w.webp 600w, ../../images/gill-kettering-1697-900w.webp 900w, ../../images/gill-kettering-1697.webp 1408w" sizes="(max-width: 640px) 600px, (max-width: 1024px) 900px, 900px" type="image/webp">
     <img src="../../images/gill-kettering-1697.jpg" alt="Английская деревня Кетеринг, 1697 год — рождение будущего доктора" decoding="async" loading="lazy" width="900" height="490">
   </picture>
-  <figcaption>Английская деревня Кетеринг, 1697 год — рождение будущего доктора</figcaption>
+  <figcaption>Английская деревня Кетеринг, 1697 год — рождение будущего доктора
+    <span class="ai-note">Сгенерировано с помощью ИИ</span></figcaption>
 </figure>
 
 <p class="reveal">Ранним утром 23 ноября 1697 года, когда первенец явился на свет, к дому пришёл дровосек <strong>Чемберс</strong> с вязанкой хвороста. Отец Эдвард вышел к нему с нескрываемой радостью, объявив о рождении сына. В тот же миг, по словам дровосека, мимо прошёл незнакомец — которого тот никогда прежде не видел и больше не встречал — и добавил: <strong>«Да, и учёным будет, и всему миру этого не остановить»</strong>. Этот дровосек, которого соседи знали как человека трезвомыслящего, честного и правдивого, неизменно и без каких-либо вариаций повторял этот рассказ — годами спустя, когда его спрашивали. Биография 1772 года, вышедшая всего через год после смерти Гилла, приводит её как достоверный рассказ от живых свидетелей.</p>
@@ -1090,7 +1079,8 @@
     <source srcset="../../images/gill-london-horsleydown-600w.webp 600w, ../../images/gill-london-horsleydown-900w.webp 900w, ../../images/gill-london-horsleydown.webp" sizes="(max-width: 640px) 600px, (max-width: 1024px) 900px, 900px" type="image/webp">
     <img src="../../images/gill-london-horsleydown.jpg" alt="Часовня Хорслидаун на берегу Темзы, где Гилл служил 51 год; вдали — купол Святого Павла" decoding="async" loading="lazy" width="900" height="506">
   </picture>
-  <figcaption>Часовня Хорслидаун на берегу Темзы, где Гилл служил 51 год; вдали — купол Святого Павла</figcaption>
+  <figcaption>Часовня Хорслидаун на берегу Темзы, где Гилл служил 51 год; вдали — купол Святого Павла
+    <span class="ai-note">Сгенерировано с помощью ИИ</span></figcaption>
 </figure>
 
 <div class="foliant-mark">Хайем-Феррерс и Лондон, 1718–1720</div>
@@ -1221,7 +1211,8 @@
     <source srcset="../../images/gill-southwark-sermon-600w.webp 600w, ../../images/gill-southwark-sermon-900w.webp 900w, ../../images/gill-southwark-sermon.webp" sizes="(max-width: 640px) 600px, (max-width: 1024px) 900px, 900px" type="image/webp">
     <img src="../../images/gill-southwark-sermon.jpg" alt="Проповедь в баптистском молитвенном доме Саутворка (гравюра 1723 г.)" decoding="async" loading="lazy" width="600" height="900">
   </picture>
-  <figcaption>Проповедь в баптистском молитвенном доме Саутворка (гравюра 1723 г.)</figcaption>
+  <figcaption>Проповедь в баптистском молитвенном доме Саутворка (гравюра 1723 г.)
+    <span class="ai-note">Сгенерировано с помощью ИИ</span></figcaption>
 </figure>
 
 <div class="foliant-mark">Хорслидаун, 1729</div>
@@ -1254,7 +1245,8 @@
     <source srcset="../../images/gill-printing-press-600w.webp 600w, ../../images/gill-printing-press-900w.webp 900w, ../../images/gill-printing-press.webp" sizes="(max-width: 640px) 600px, (max-width: 1024px) 900px, 900px" type="image/webp">
     <img src="../../images/gill-printing-press.jpg" alt="Типография XVIII века — здесь печатались труды Гилла" decoding="async" loading="lazy" width="900" height="502">
   </picture>
-  <figcaption>Типография XVIII века — здесь печатались труды Гилла</figcaption>
+  <figcaption>Типография XVIII века — здесь печатались труды Гилла
+    <span class="ai-note">Сгенерировано с помощью ИИ</span></figcaption>
 </figure>
 
 <p class="reveal"><strong>30 мая 1738 года</strong> умерла Элизабет — тринадцатилетняя дочь Гилла, которую Риппон называет «прелестным и желанным дитём и по наружности, и по уму, и по благодати». Гилл произнёс погребальную проповедь сам — через пять дней после её смерти. Открыл её словами: «Позвольте мне сегодня проповедовать скорее самому себе и семье, нежели вам». Текст — <strong>1 Фессалоникийцам 4:13–14</strong>. Проповедь напечатали с приложением «некоторых избранных переживаний» дочери — свидетельства того, что вера её была подлинной и сознательной уже в двенадцать-тринадцать лет.</p>
@@ -1306,7 +1298,7 @@
 <h3 class="reveal" id="sec-personal-credo">Три личных высказывания: человек за богословом</h3>
 <p class="reveal">Колтон Строзер собрал три высказывания Гилла, каждое из которых обнажает разный пласт его личности — за систематиком и полемистом.</p>
 <div class="manuscript-quote">
-<div class="manuscript-quote-text">«Молитва есть дыхание возрождённого человека.»<br/><em>(Prayer is the breath of a regenerate man.)</em></div>
+<div class="manuscript-quote-text">«Молитва есть дыхание возрождённого человека.»</div>
 <div class="manuscript-quote-source">— Джон Гилл, «Свод практического богословия»</div>
 </div>
 <div class="manuscript-quote">
@@ -1332,6 +1324,12 @@
 <p class="reveal">На рукоположении 1720 года был и <strong>Томас Кросби</strong> — дьякон, отвечавший на официальные вопросы от лица церкви, и впоследствии автор первой «Истории английских баптистов» в Англии. Иными словами, на рукоположении Гилла присутствовал будущий историк, который это событие сам и описал.</p>
 <h2 id="sec-quiz">Проверь себя</h2>
 <div id="quizPlaceholder"></div>
+<a class="series-next-cta" href="/articles/dzhon-gill-chast-2-uchenyi/" aria-label="Продолжить чтение: Джон Гилл, часть II — Учёный">
+  <div class="series-next-cta__eyebrow">Продолжить трилогию</div>
+  <div class="series-next-cta__title">Часть II: Учёный</div>
+  <p class="series-next-cta__desc">Экзегеза, раввинистика, девятитомный комментарий, учение о Троице и свод богословия.</p>
+  <span class="series-next-cta__action">Читать Часть II →</span>
+</a>
 <aside class="author-card">
 <div aria-hidden="true" class="author-card-icon">ФМ</div>
 <div class="author-card-body">
@@ -1474,7 +1472,7 @@
 <script defer="" src="../../js/bookmark-engine.js?v=34f54546"></script>
 <script src="../../js/site-utils.js?v=138aff7d"></script>
 <script src="../../js/scroll-perf.js?v=84977eec"></script>
-<script defer="" src="../../js/site.js?v=9bc54ab2"></script>
+<script defer="" src="../../js/site.js?v=03432829"></script>
 <script defer="" src="../../js/glossary.js?v=f4972502"></script>
 <script defer="" src="../../js/sw-register.js?v=72d974d9"></script>
 <script defer="" src="../../js/search.js?v=039865d0"></script>
