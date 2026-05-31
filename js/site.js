@@ -1048,6 +1048,7 @@
 
     /* ── Open / Close ── */
     function showOverlay(payload) {
+      if (overlay.classList.contains('is-open')) return;
       setActiveSharePayload(payload);
       var sdTitleEl = document.getElementById('sd-title');
       var dialogTitle = payload && typeof payload === 'object'
@@ -1538,8 +1539,8 @@
       /* Пробуем загрузить абсолютный URL; при ошибке — используем relative */
       function applyBg(src) { banner.style.backgroundImage = 'url(' + src + ')'; }
       var probe = new Image();
-      probe.onload  = function () { applyBg(absUrl); };
-      probe.onerror = function () { applyBg(relUrl); };
+      probe.onload  = function () { applyBg(absUrl); probe.onload = probe.onerror = null; };
+      probe.onerror = function () { applyBg(relUrl); probe.onload = probe.onerror = null; };
       probe.src = absUrl;
 
       /* Баннер идёт ПОСЛЕ .btoc-handle (drag-pill должен быть виден поверх баннера),
@@ -2300,28 +2301,35 @@
       return arr.length - 1;
     }
 
+    var scoreAnimFrame = null;
+    var resultAnimFrame = null;
+
     function animateCountNum(el, target, duration) {
       if (!el) return;
       var t0 = null;
+      if (resultAnimFrame) cancelAnimationFrame(resultAnimFrame);
       function step(ts) {
         if (!t0) t0 = ts;
         var p = Math.min((ts - t0) / duration, 1);
         el.textContent = Math.floor(p * target);
-        if (p < 1) requestAnimationFrame(step);
+        if (p < 1) resultAnimFrame = requestAnimationFrame(step);
+        else resultAnimFrame = null;
       }
-      requestAnimationFrame(step);
+      resultAnimFrame = requestAnimationFrame(step);
     }
 
     function animateCount(el, target, total, duration) {
       if (!el) return;
       var t0 = null;
+      if (scoreAnimFrame) cancelAnimationFrame(scoreAnimFrame);
       function step(ts) {
         if (!t0) t0 = ts;
         var p = Math.min((ts - t0) / duration, 1);
         el.textContent = 'Результат: ' + Math.floor(p * target) + ' из ' + total;
-        if (p < 1) requestAnimationFrame(step);
+        if (p < 1) scoreAnimFrame = requestAnimationFrame(step);
+        else scoreAnimFrame = null;
       }
-      requestAnimationFrame(step);
+      scoreAnimFrame = requestAnimationFrame(step);
     }
 
     /* Russian plural for "вопрос" (0=вопросов, 1=вопрос, 2–4=вопроса, 5+=вопросов) */
@@ -2911,6 +2919,8 @@
       inReview       = false; reviewDeck = []; reviewCurrent = 0; reviewAnswered = false; reviewScore = 0;
       inBonus        = false;
       clearTimer();
+      if (scoreAnimFrame) { cancelAnimationFrame(scoreAnimFrame); scoreAnimFrame = null; }
+      if (resultAnimFrame) { cancelAnimationFrame(resultAnimFrame); resultAnimFrame = null; }
       if (bonusLock) bonusLock.style.display = 'block';
       if (bonusUnlock) bonusUnlock.style.display = 'none';
 
@@ -3317,7 +3327,7 @@
     }
 
     function walkTree(root) {
-      var w = document.createTreeWalker(root, NodeFilter.SHOW_TEXT, null, false);
+      var w = document.createTreeWalker(root, NodeFilter.SHOW_TEXT, null);
       var n;
       while ((n = w.nextNode())) fixNode(n);
     }
@@ -3536,6 +3546,7 @@
     document.addEventListener('selectionchange', function () {
       /* Не реагируем если popup открыт и пользователь взаимодействует с ним */
       if (popup.classList.contains('ss-visible')) return;
+      if (document.querySelector('.cp-backdrop.is-open')) return;
       handleSelection();
     });
 
