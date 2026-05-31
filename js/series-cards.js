@@ -26,9 +26,12 @@
       var seriesId = host.dataset.seriesCards;
       var series = data[seriesId];
       if (!series) return;
-      var currentPath = location.pathname.replace(/\/+$/, '/');
+      var currentPath = decodeURIComponent(location.pathname).replace(/\/+$/, '/');
       host.innerHTML = series.parts.map(function (p) {
-        var url = '/' + encodeURIComponent(seriesId) + '/' + encodeURIComponent(p.slug) + '/';
+        /* Bug #37: slugs are already valid path segments (ASCII or Cyrillic);
+           encodeURIComponent would encode Cyrillic breaking comparison with
+           location.pathname which browsers return decoded. */
+        var url = '/' + seriesId + '/' + p.slug + '/';
         var current = currentPath === url;
         var badge = current ? 'Вы здесь'
                   : p.status === 'draft'   ? 'В разработке'

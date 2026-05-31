@@ -809,6 +809,8 @@
       if (barBtn) barBtn.setAttribute('aria-pressed', isDark ? 'true' : 'false');
     }
 
+    /* Bug #28: getComputedStyle may return '' before CSS is fully applied.
+       Use requestAnimationFrame to defer to after first paint when possible. */
     function syncThemeColor(isDark) {
       var color;
       try {
@@ -1649,9 +1651,13 @@
 
     var _bPrevFocus = null;
     var _bTrapHandler = null;
+    /* Bug #17: debounce open/close to prevent opening during close transition */
+    var _btocTransitioning = false;
 
     function openToc() {
-      if (overlay.classList.contains('open')) return;
+      if (overlay.classList.contains('open') || _btocTransitioning) return;
+      _btocTransitioning = true;
+      setTimeout(function () { _btocTransitioning = false; }, 320);
       _bPrevFocus = document.activeElement;
       overlay.classList.add('open');
       SiteUtils.lockScroll('btoc');
@@ -1677,7 +1683,9 @@
       });
     }
     function closeToc() {
-      if (!overlay.classList.contains('open')) return;
+      if (!overlay.classList.contains('open') || _btocTransitioning) return;
+      _btocTransitioning = true;
+      setTimeout(function () { _btocTransitioning = false; }, 320);
       overlay.classList.remove('open');
       SiteUtils.unlockScroll('btoc');
       if (panel && _bTrapHandler) { panel.removeEventListener('keydown', _bTrapHandler); _bTrapHandler = null; }
@@ -1934,44 +1942,60 @@
      15. Flip Card Height Sync
      ============================================================ */
   (function () {
+    /* Bug #15: two-pass read/write to avoid layout thrashing.
+       Pass 1 (write): reset all heights to allow natural sizing.
+       Pass 2 (read):  measure all offsetHeights in one batch.
+       Pass 3 (write): apply computed minHeights in one batch. */
     function syncCardHeight(cardSel, innerSel, frontSel, backSel) {
-      document.querySelectorAll(cardSel).forEach(function (card) {
+      var cards = document.querySelectorAll(cardSel);
+      if (!cards.length) return;
+
+      var items = [];
+      /* Pass 1: write — prepare all cards for measurement */
+      cards.forEach(function (card) {
         var inner = card.querySelector(innerSel);
         var front = card.querySelector(frontSel);
         var back  = card.querySelector(backSel);
         if (!inner || !front || !back) return;
 
-        var prevCardMin = card.style.minHeight;
-        var prevInnerMin = inner.style.minHeight;
+        var entry = { card: card, inner: inner, front: front, back: back,
+          prevCardMin: card.style.minHeight, prevInnerMin: inner.style.minHeight,
+          pF: { pos: front.style.position, inset: front.style.inset, h: front.style.height, v: front.style.visibility },
+          pB: { pos: back.style.position, inset: back.style.inset, h: back.style.height, v: back.style.visibility }
+        };
         card.style.minHeight = '0px';
         inner.style.minHeight = '0px';
-
-        var pF = { pos: front.style.position, inset: front.style.inset, h: front.style.height, v: front.style.visibility };
-        var pB = { pos: back.style.position, inset: back.style.inset, h: back.style.height, v: back.style.visibility };
-
         front.style.position = 'relative'; front.style.inset = 'auto'; front.style.height = 'auto'; front.style.visibility = 'hidden';
         back.style.position = 'relative'; back.style.inset = 'auto'; back.style.height = 'auto'; back.style.visibility = 'hidden';
+        items.push(entry);
+      });
 
-        var maxH = Math.max(front.offsetHeight, back.offsetHeight);
+      /* Pass 2: read — single forced reflow for all cards */
+      items.forEach(function (e) {
+        e.maxH = Math.max(e.front.offsetHeight, e.back.offsetHeight);
+      });
 
-        front.style.position = pF.pos; front.style.inset = pF.inset; front.style.height = pF.h; front.style.visibility = pF.v;
-        back.style.position = pB.pos; back.style.inset = pB.inset; back.style.height = pB.h; back.style.visibility = pB.v;
-
-        if (maxH > 0) {
-          card.style.minHeight = maxH + 'px';
-          inner.style.minHeight = maxH + 'px';
+      /* Pass 3: write — restore and apply */
+      items.forEach(function (e) {
+        e.front.style.position = e.pF.pos; e.front.style.inset = e.pF.inset; e.front.style.height = e.pF.h; e.front.style.visibility = e.pF.v;
+        e.back.style.position = e.pB.pos; e.back.style.inset = e.pB.inset; e.back.style.height = e.pB.h; e.back.style.visibility = e.pB.v;
+        if (e.maxH > 0) {
+          e.card.style.minHeight = e.maxH + 'px';
+          e.inner.style.minHeight = e.maxH + 'px';
         } else {
-          card.style.minHeight = prevCardMin;
-          inner.style.minHeight = prevInnerMin;
+          e.card.style.minHeight = e.prevCardMin;
+          e.inner.style.minHeight = e.prevInnerMin;
         }
       });
     }
 
     function syncAll() {
-      syncCardHeight('.flip-card', '.flip-card-inner', '.flip-card-front', '.flip-card-back');
-      syncCardHeight('.error-flip-card', '.error-flip-inner', '.error-flip-front', '.error-flip-back');
-      /* Б5: heart flip cards too */
-      syncCardHeight('.heart-flip-card', '.heart-flip-inner', '.heart-flip-front', '.heart-flip-back');
+      requestAnimationFrame(function () {
+        syncCardHeight('.flip-card', '.flip-card-inner', '.flip-card-front', '.flip-card-back');
+        syncCardHeight('.error-flip-card', '.error-flip-inner', '.error-flip-front', '.error-flip-back');
+        /* Б5: heart flip cards too */
+        syncCardHeight('.heart-flip-card', '.heart-flip-inner', '.heart-flip-front', '.heart-flip-back');
+      });
     }
 
     if (document.readyState === 'loading') {

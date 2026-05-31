@@ -26,8 +26,21 @@
     var escapedTerms = keys.map(function (k) {
       return k.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
     }).join('|');
-    /* JS \b is ASCII-centric and does not work for Cyrillic. */
-    var rx = new RegExp('(^|[^\\p{L}\\p{N}_])(' + escapedTerms + ')(?=$|[^\\p{L}\\p{N}_])', 'giu');
+    /* JS \b is ASCII-centric and does not work for Cyrillic.
+       Bug #12: wrap in try/catch — \\p{} Unicode escapes require ES2018+
+       and throw SyntaxError in Safari < 15.4 / older WebViews. */
+    var rx;
+    try {
+      rx = new RegExp('(^|[^\\p{L}\\p{N}_])(' + escapedTerms + ')(?=$|[^\\p{L}\\p{N}_])', 'giu');
+    } catch (e) {
+      /* Fallback without Unicode property escapes — less precise word-boundary
+         but functional on older engines. Uses [^а-яёА-ЯЁa-zA-Z0-9_] as boundary. */
+      try {
+        rx = new RegExp('(^|[^а-яёА-ЯЁa-zA-Z0-9_])(' + escapedTerms + ')(?=$|[^а-яёА-ЯЁa-zA-Z0-9_])', 'gi');
+      } catch (e2) {
+        return; /* give up gracefully */
+      }
+    }
 
     var seen = {};
     var walker = document.createTreeWalker(article, NodeFilter.SHOW_TEXT, {

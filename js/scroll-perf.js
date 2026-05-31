@@ -66,6 +66,7 @@
 
   if (window.visualViewport) {
     var vvpTimer;
+    var _vvpResizeHandler, _vvpScrollHandler;
     function updateVVP() {
       clearTimeout(vvpTimer);
       vvpTimer = setTimeout(function () {
@@ -75,11 +76,26 @@
         document.documentElement.style.setProperty('--keyboard-height', Math.max(0, kh) + 'px');
       }, 100);
     }
-    window.visualViewport.addEventListener('resize', updateVVP, { passive: true });
-    window.visualViewport.addEventListener('scroll', updateVVP, { passive: true });
+    _vvpResizeHandler = updateVVP;
+    _vvpScrollHandler = updateVVP;
+    window.visualViewport.addEventListener('resize', _vvpResizeHandler, { passive: true });
+    window.visualViewport.addEventListener('scroll', _vvpScrollHandler, { passive: true });
     updateVVP();
+
+    /* Bug #11: cleanup visualViewport listeners on pagehide to prevent
+       accumulation during bfcache restore cycles. */
+    window.addEventListener('pagehide', function () {
+      clearTimeout(vvpTimer);
+      window.visualViewport.removeEventListener('resize', _vvpResizeHandler);
+      window.visualViewport.removeEventListener('scroll', _vvpScrollHandler);
+    });
   } else {
     document.documentElement.style.setProperty('--visual-viewport-h', window.innerHeight + 'px');
     document.documentElement.style.setProperty('--keyboard-height', '0px');
   }
+
+  /* Bug #11: cleanup hebrewTimer on pagehide */
+  window.addEventListener('pagehide', function () {
+    clearTimeout(hebrewTimer);
+  });
 })();
