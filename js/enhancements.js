@@ -225,7 +225,7 @@
     var pctEl = null;
     /* BUGFIX 2026-05-30: кэшировать узел нельзя — ниже btocProgressWrap.innerHTML=''
        делает его detached. Получаем актуальную ссылку каждый раз внутри обновлений. */
-    var oldPct = document.getElementById('btocProgressPct');
+    // var oldPct = document.getElementById('btocProgressPct'); // Moved inside updateSegments to prevent null cache (Bug #09)
 
     /* Build offset map */
     function getOffsets() {
@@ -345,6 +345,7 @@
 
       var oldFill = document.getElementById('btocProgressFill');
       if (oldFill) oldFill.style.width = pct + '%';
+      var oldPct = document.getElementById('btocProgressPct');
       if (oldPct) oldPct.textContent = pct + '%';
 
       offsets.forEach(function(sec, i) {

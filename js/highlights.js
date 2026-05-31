@@ -352,7 +352,9 @@
     panelInner.addEventListener('touchmove', function(e) {
       if (!_swipeActive) return;
       var dy = e.touches[0].clientY - _swipeStartY;
-      if (dy > 0) {
+      var list = panelInner.querySelector('#gb-hl-list');
+      var isAtTop = !list || list.scrollTop === 0;
+      if (dy > 0 && isAtTop) {
         /* Translate panel down as user swipes */
         e.preventDefault();
         panelInner.style.transform = 'translateY(' + dy + 'px)';

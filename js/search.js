@@ -319,18 +319,24 @@
       document.head.appendChild(script);
 
       var polls = 0;
+    var _cbCalled = false;
+    function safeCb() {
+      if (_cbCalled) return;
+      _cbCalled = true;
+      if (cb) cb();
+    }
     var poll  = setInterval(function () {
       polls++;
       if (window.__pagefindReady__) {
         clearInterval(poll);
         pagefindLoaded  = true;
         pagefindLoading = false;
-        cb && cb();
+        safeCb();
       } else if (window.__pagefindFailed__) {
         clearInterval(poll);
         pagefindLoading = false;
         pagefindFailed  = true;
-        cb && cb();
+        safeCb();
       } else if (polls > 50) {
         /* else-if: success and timeout are mutually exclusive.
            Without this, a load on tick 51 would set both
@@ -342,7 +348,7 @@
         pagefindFailed  = true;
         window.__pagefindFailed__ = true;
         console.warn('[Pagefind] load timeout after 5s');
-        if (cb) cb();
+        safeCb();
       }
       }, 100);
     });
