@@ -912,7 +912,7 @@
     /* BUGFIX 2026-05-30: при быстрой смене запроса медленный manifest-callback
        мог перетереть свежие результаты устаревшими. Захватываем поколение и
        выходим, если оно изменилось. */
-    var __gen = _searchGen;
+    var __gen = ++_searchGen;
     loadSearchManifest(function () {
       if (__gen !== _searchGen) return;
       var items = _manifestItems

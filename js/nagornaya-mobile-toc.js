@@ -144,13 +144,19 @@
       }
     }
 
+    var _usedFallbackLock = false;
     function openOverlay() {
       if (overlay.classList.contains('open')) return;
       overlay.classList.add('open');
       overlay.removeAttribute('aria-hidden');
       // FIX: use shared scroll-lock helper when available to avoid stuck locks
-      if (window.SiteUtils && window.SiteUtils.lockScroll) window.SiteUtils.lockScroll('nagornaya-btoc');
-      else document.documentElement.setAttribute('data-scroll-locked', '1');
+      if (window.SiteUtils && window.SiteUtils.lockScroll) {
+        window.SiteUtils.lockScroll('nagornaya-btoc');
+        _usedFallbackLock = false;
+      } else {
+        document.documentElement.setAttribute('data-scroll-locked', '1');
+        _usedFallbackLock = true;
+      }
       update();
       var active = nav.querySelector('.btoc-link.active');
       if (active) active.scrollIntoView({ block: 'nearest' });
@@ -161,8 +167,15 @@
       if (!overlay.classList.contains('open')) return;
       overlay.classList.remove('open');
       overlay.setAttribute('aria-hidden', 'true');
-      if (window.SiteUtils && window.SiteUtils.unlockScroll) window.SiteUtils.unlockScroll('nagornaya-btoc');
-      else document.documentElement.removeAttribute('data-scroll-locked');
+      if (_usedFallbackLock) {
+        document.documentElement.removeAttribute('data-scroll-locked');
+      } else {
+        if (window.SiteUtils && window.SiteUtils.unlockScroll) {
+          window.SiteUtils.unlockScroll('nagornaya-btoc');
+        } else {
+          document.documentElement.removeAttribute('data-scroll-locked');
+        }
+      }
     }
 
     function toggleTheme() {

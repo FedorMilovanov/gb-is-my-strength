@@ -4,6 +4,7 @@
    ========================================================== */
 
 (function () {
+  if (window.BookmarkEngine && window.BookmarkEngine._initialized) return;
   var globalConfig = window.SITE_CONFIG || {};
   var featureConfig = (globalConfig.features && globalConfig.features.bookmarks) || {};
 
@@ -392,6 +393,7 @@
 
   // Public API
   window.BookmarkEngine = window.BookmarkEngine || {};
+  window.BookmarkEngine._initialized = true;
 
   window.BookmarkEngine.saveNow = function () { saveBookmark(true); };
   window.BookmarkEngine.clearCurrent = function () { safeLocalStorageRemove(pageKey); };
@@ -493,6 +495,7 @@
 
   // Only set these if BookmarkEngine wasn't already initialised by the main engine
   window.BookmarkEngine = window.BookmarkEngine || {};
+  window.BookmarkEngine._initialized = true;
   if (!window.BookmarkEngine.getAllForSite) {
     window.BookmarkEngine.getAllForSite = getAllForSite;
     window.BookmarkEngine.getInProgressArticles = function () {
