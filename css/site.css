@@ -4394,6 +4394,157 @@ html.dark .gtip-luxury__definition a { color: var(--color-accent-strong, #e8b878
   .gterm { border-bottom: none; }
 }
 
+/* Tooltip portal runtime: keeps popovers out of transformed/scrolling parents.
+   The trigger still owns aria-expanded; the floating node is restored on close. */
+.gb-floating-tip {
+  position: fixed;
+  contain: layout style;
+}
+.gtip.gb-floating-tip {
+  width: min(380px, calc(100vw - 40px));
+  padding: 16px 18px;
+  border-radius: 24px;
+  background: rgba(255, 253, 250, 0.985);
+  color: #1a150f;
+  border: 1px solid rgba(0, 0, 0, 0.06);
+  box-shadow:
+    0 4px 20px rgba(62, 42, 22, 0.08),
+    0 20px 60px -15px rgba(62, 42, 22, 0.15),
+    inset 0 1px 0 rgba(255, 255, 255, 0.62);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  backdrop-filter: blur(20px) saturate(180%);
+  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-size: 14px;
+  line-height: 1.58;
+  font-weight: 400;
+  text-align: left;
+  opacity: 0;
+  pointer-events: none;
+  transform: translateY(8px) scale(.965);
+  transform-origin: 50% 100%;
+  transition:
+    opacity .25s cubic-bezier(.19,1,.22,1),
+    transform .35s cubic-bezier(.19,1,.22,1),
+    visibility .25s ease;
+  z-index: var(--z-panel);
+  visibility: hidden;
+}
+.gtip.gb-floating-tip[data-luxury="true"] { padding: 0; }
+html.dark .gtip.gb-floating-tip {
+  background: rgba(28, 29, 33, 0.985);
+  color: var(--color-text, #ece7dd);
+  border-color: rgba(255, 255, 255, 0.10);
+  box-shadow:
+    0 4px 20px rgba(0, 0, 0, 0.28),
+    0 24px 70px -18px rgba(0, 0, 0, 0.62),
+    inset 0 1px 0 rgba(255, 255, 255, 0.08);
+}
+.btip.gb-floating-tip {
+  width: min(460px, 90vw);
+  padding: 12px 14px;
+  border-radius: 10px;
+  background: rgba(244,242,237,0.98);
+  color: var(--color-text);
+  border: 1px solid var(--color-border);
+  box-shadow: 0 12px 28px rgba(0,0,0,.14);
+  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-size: 14px;
+  line-height: 1.5;
+  font-weight: 400;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity .18s ease;
+  z-index: var(--z-overlay-modal);
+}
+html.dark .btip.gb-floating-tip {
+  background: rgba(26,28,31,0.98);
+  color: var(--color-text);
+  border-color: var(--color-border);
+  box-shadow: 0 12px 28px rgba(0,0,0,.35);
+}
+.gtip.gb-floating-tip,
+.tooltip.gb-floating-tip,
+.btip.gb-floating-tip {
+  will-change: opacity, transform;
+}
+.gtip.gb-floating-tip.is-open {
+  opacity: 1;
+  pointer-events: auto;
+  transform: translateY(0) scale(1);
+  visibility: visible;
+}
+.tooltip.gb-floating-tip.is-open,
+.btip.gb-floating-tip.is-open {
+  opacity: 1;
+  pointer-events: auto;
+}
+.gtip.gb-floating-tip::before {
+  content: '';
+  position: absolute;
+  width: 12px;
+  height: 12px;
+  left: var(--gb-tip-arrow-x, 50%);
+  margin-left: -6px;
+  background: rgba(255, 253, 250, 0.985);
+  border-left: 1px solid rgba(0, 0, 0, 0.06);
+  border-top: 1px solid rgba(0, 0, 0, 0.06);
+  transform: rotate(45deg);
+  pointer-events: none;
+}
+.gtip.gb-floating-tip[data-placement="top"]::before { bottom: -6px; }
+.gtip.gb-floating-tip[data-placement="bottom"]::before {
+  top: -6px;
+  transform: rotate(225deg);
+}
+html.dark .gtip.gb-floating-tip::before {
+  background: rgba(28, 29, 33, 0.985);
+  border-color: rgba(255, 255, 255, 0.10);
+}
+
+@media (max-width: 768px) {
+  .gtip.gb-floating-tip,
+  .gtip.gb-floating-tip[data-placement],
+  .tooltip.gb-floating-tip,
+  .tooltip.gb-floating-tip[data-placement] {
+    top: auto !important;
+    left: 0 !important;
+    right: 0 !important;
+    bottom: 0 !important;
+    width: auto !important;
+    max-width: none !important;
+    max-height: min(85vh, calc(100dvh - 16px)) !important;
+    overflow-y: auto !important;
+    overscroll-behavior: contain;
+    -webkit-overflow-scrolling: touch;
+    transform: translateY(100%);
+    transform-origin: 50% 100%;
+    opacity: 1;
+    visibility: visible;
+  }
+  .gtip.gb-floating-tip {
+    border-radius: 28px 28px 0 0;
+    border-right: 0;
+    border-bottom: 0;
+    border-left: 0;
+    box-shadow:
+      0 -10px 40px rgba(0, 0, 0, .12),
+      0 -2px 0 rgba(255,255,255,.52) inset;
+  }
+  .tooltip.gb-floating-tip {
+    border-radius: 24px 24px 0 0;
+    padding: 22px 22px max(22px, env(safe-area-inset-bottom, 0px)) 22px;
+    box-shadow:
+      0 -10px 40px rgba(0, 0, 0, .14),
+      0 -2px 0 rgba(255,255,255,.35) inset;
+  }
+  .gtip.gb-floating-tip::before { display: none; }
+  .gtip.gb-floating-tip.is-open,
+  .tooltip.gb-floating-tip.is-open {
+    transform: translateY(0);
+    pointer-events: auto;
+  }
+}
+
 .heading-anchor {
   opacity: 0;
   margin-left: 8px;
@@ -7185,7 +7336,7 @@ html.dark .summary-card__text strong { color: var(--color-accent-strong, #e8b878
   font-weight: 700;
   font-size: 0.7em !important;
   vertical-align: super;
-  line-height: 0;
+  line-height: 1 !important;
   color: var(--color-accent, #7a2e2e);
   cursor: pointer;
   border-bottom: 0 !important;
@@ -8537,55 +8688,3 @@ html.dark .summary-card__text strong {
 }
 
 body.has-bottom-bar #back-to-top { bottom: max(80px, calc(env(safe-area-inset-bottom, 0px) + 80px)) !important; }
-
-/* ============================================================
-   v3.0 LUX UPGRADE - UI/UX 2026
-   ============================================================ */
-.gtip-luxury, .tooltip, .btip {
-    will-change: transform, opacity;
-    backdrop-filter: blur(12px) saturate(160%) !important;
-    -webkit-backdrop-filter: blur(12px) saturate(160%) !important;
-    border: 1px solid rgba(255, 255, 255, 0.12) !important;
-    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 0 0 1px rgba(0, 0, 0, 0.05) !important;
-}
-
-.gtip-luxury__close {
-    will-change: transform, color;
-    transition: color .15s ease, transform .15s cubic-bezier(0.34, 1.56, 0.64, 1) !important;
-}
-
-.[gtip.is]-open .gtip-luxury, .[tooltip.is]-open, .[btip.is]-open {
-    animation: tooltipEnterLux 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) backwards !important;
-}
-
-@keyframes tooltipEnterLux {
-    from { opacity: 0; transform: scale(0.9) translateY(12px); }
-    to { opacity: 1; transform: scale(1) translateY(0); }
-}
-
-.[gtip.is]-open[style*="max-height"], .[tooltip.is]-open[style*="max-height"], .[btip.is]-open[style*="max-height"] {
-    border-radius: 24px 24px 0 0 !important;
-    box-shadow: 0 -20px 60px rgba(0,0,0,.15) !important;
-    touch-action: pan-y !important;
-}
-
-.reading-progress-bar {
-    position: fixed;
-    top: 0;
-    left: 0;
-    height: 3px;
-    background: var(--color-accent);
-    width: 0%;
-    z-index: 9999;
-    transition: width 0.1s linear;
-    pointer-events: none;
-    box-shadow: 0 0 10px var(--color-accent);
-}
-
-.article-end-sdg {
-    animation: sdgFadeIn 1s ease-out forwards;
-}
-@keyframes sdgFadeIn {
-    from { opacity: 0; transform: translateY(10px); }
-    to { opacity: 1; transform: translateY(0); }
-}
