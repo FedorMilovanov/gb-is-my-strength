@@ -355,6 +355,30 @@
   </url>
 
   <url>
+    <loc>https://gospod-bog.ru/articles/dzhon-gill-spravochnik/</loc>
+    <lastmod>2026-06-01T00:00:00+03:00</lastmod>
+    <changefreq>yearly</changefreq>
+    <priority>0.9</priority>
+    <image:image>
+      <image:loc>https://gospod-bog.ru/images/og-dzhon-gill-1697-1771.webp</image:loc>
+      <image:title>Джон Гилл: справочник</image:title>
+      <image:caption>Хронология, труды, Body of Divinity, источники и спорные темы</image:caption>
+    </image:image>
+  </url>
+
+  <url>
+    <loc>https://gospod-bog.ru/articles/dzhon-gill-istoricheskiy-kontekst/</loc>
+    <lastmod>2026-06-01T00:00:00+03:00</lastmod>
+    <changefreq>yearly</changefreq>
+    <priority>0.9</priority>
+    <image:image>
+      <image:loc>https://gospod-bog.ru/images/og-dzhon-gill-istoricheskiy-kontekst.webp</image:loc>
+      <image:title>Джон Гилл: исторический контекст</image:title>
+      <image:caption>Диссентеры, Саутварк, Goat's Yard, Картер-Лейн и книжная культура XVIII века</image:caption>
+    </image:image>
+  </url>
+
+  <url>
     <loc>https://gospod-bog.ru/articles/dzhon-gill-chast-1-chelovek/</loc>
     <lastmod>2026-05-31T00:00:00+03:00</lastmod>
     <changefreq>yearly</changefreq>
