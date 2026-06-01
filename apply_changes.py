@@ -1,4 +1,4 @@
-# apply_changes.py
+# deepen_gill_mega.py
 import re
 
 def update_file(path, new_body):
@@ -29,6 +29,12 @@ def update_file(path, new_body):
     new_content = new_content.replace(
         "background: var(--color-surface, #fdfcf9);",
         "background: var(--color-surface, #fdfcf9) !important; z-index: 2 !important;"
+    )
+    
+    # Remove biography-epigraph::before overlapping quote icon
+    new_content = new_content.replace(
+        ".biography-epigraph::before {",
+        ".biography-epigraph::before { content: none !important; "
     )
     
     with open(path, "w", encoding="utf-8") as f:
@@ -90,7 +96,7 @@ body_part1 = f"""
 <div style="flex-grow: 1;">
 <div class="biography-dates">23 ноября 1697 (ст. ст.) — 14 октября 1771</div>
 <p class="reveal biography-title" style="font-size: clamp(28px, 5vw, 40px); margin: 0 0 12px;">
-            JOHN GILL, <span class="gterm" tabindex="0">D.D.<span class="gtip"><strong>D.D.</strong> — <em>Doctor of Divinity</em>, «доктор богословия»: почётная степень, присуждённая Гиллу Абердинским университетом в 1748 году за выдающиеся успехи в исследовании восточных языков и Священного Писания.</span></span>
+            Джон Гилл, <span class="gterm" tabindex="0">D.D.<span class="gtip"><strong>D.D.</strong> — <em>Doctor of Divinity</em>, «доктор богословия»: почётная степень, присуждённая Гиллу Абердинским университетом в 1748 году за выдающиеся успехи в исследовании восточных языков и Священного Писания.</span></span>
           </p>
 <div class="biography-subtitle">
             Доктор Многотомный • Гебраист-баптист • Защитник Троицы
@@ -156,7 +162,7 @@ body_part1 = f"""
       </div>
 </div>
 <p class="reveal">
-      Богословская атмосфера Кеттеринга в конце XVII — начале XVIII века была пропитана идеями Джозефа Хасси (1659–1726) и Ричарда Дэвиса — богословов, которые формулировали доктрины суверенной благодати с особой строгостью, избегая стандартных «предложений благодати» невозрождённым. Гилл защищал Хасси и Тобиаса Криспа в одной фразе: «оба были людьми великого благочестия и учёности». Питер Тун в своей монографии «The Emergence of Hyper-Calvinism» (1967) считал Хасси «главным архитектором гиперкальвинизма» среди нонконформистов, а Гилла — его продолжателем в Лондоне. Это важный контекст: богословие, которое Гилл защищал всю жизнь, он получил не из книг — он вырос в нём.
+      Богословская атмосфера Кеттеринга в конце XVII — начале XVIII века была пропитана идеями Джозефа Хасси (1659–1726) и Ричарда Дэвиса — богословов, которые формулировали доктрины суверенной благодати с особой строгостью, избегая стандартных «предложений благодати» невозрождённым. Гилл защищал Хасси и Тобиаса Криспа в одной фразе: «оба были людьми великого благочестия и учёности». Питер Тун в своей монографии «Возникновение и появление гиперкальвинизма» (<em>The Emergence of Hyper-Calvinism</em>, 1967) считал Хасси «главным архитектором гиперкальвинизма» среди нонконформистов, а Гилла — его продолжателем в Лондоне. Это важный контекст: богословие, которое Гилл защищал всю жизнь, он получил не из книг — он вырос в нём.
     </p>
 
 <h3 class="reveal" id="sec-education">Книжная лавка вместо грамматической школы</h3>
@@ -262,7 +268,7 @@ body_part1 = f"""
       В 1719 году лондонская баптистская община в <strong>Хорслидауне</strong> (Goat's Yard Chapel, Саутварк) потеряла своего пастора Бенджамина Стинтона. Община обратилась к молодому Гиллу с просьбой проповедовать у них. Его глубокий, библейский стиль сразу пленил паству. <strong>22 марта 1720 года, в возрасте двадцати двух лет</strong>, Джон Гилл был официально рукоположён на это служение.
     </p>
 <p class="reveal">
-      <strong>Гилл остался пастором Хорслидауна пятьдесят один год</strong> — до самой смерти в 1771 году. При его жизни, в <strong>1757 году</strong>, община, переросшая старое здание, переехала в новую просторную часовню на <strong>Картер-Лейн, Тули-стрит (Tooley Street), Саутварк</strong>. Та же церковь впоследствии переезжала на Нью-Парк-Стрит, а затем превратилась в знаменитый <strong>Митрополитен-Табернакль (Metropolitan Tabernacle)</strong> под руководством Чарльза Сперджена. Влияние Гилла на эту общину было фундаментальным, заложив основу её строгого доктринального богословия на два века вперёд. Сегодня в Митрополитен-Табернакле продолжает служение пастор <strong>Питер Мастерс</strong> — с 1970 года (по состоянию на 2026 год — 56 лет).
+      <strong>Гилл остался пастором Хорслидауна пятьдесят один год</strong> — до самой смерти в 1771 году. При его жизни, в <strong>1757 году</strong>, община, переросшая старое здание, переехала в новую просторную часовню на <strong>Картер-Лейн, Тули-стрит (Tooley Street), Саутварк</strong>. Та же церковь впоследствии переезжала на Нью-Парк-Стрит, а затем превратилась в знаменитый <strong>Митрополитен-Табернакль (Metropolitan Tabernacle)</strong> под руководством Чарльза Сперджена. Влияние Гилла на эту общину было фундаментальным, заложив основу её строгого доктринального богословия на два века вперёд. Сегодня в Митрополитен-Табернакле продолжает служение пастор <strong>Питер Мастерс</strong> — с 1970 года (по состоянию на 2026 год — 56 лет, это третье место по длительности пасторства в истории этой церкви после Джона Риппона, 63 года, и Питера Мастерса).
     </p>
 
 <figure class="article-img article-img--wide reveal">
@@ -344,8 +350,8 @@ body_part1 = f"""
         и чистым словом обратил её в бегство;<br/>
         затем могучий Гейл своим порывом<br/>
         поверг церковного дракона — стену исполина.<br/>
-        Да будет и тебе такая же победа,<br/>
-        и пусть твой грубый спорщик насытится тем,<br/>
+        Да будет и тебе такая же победа,    <br/>
+        и пусть твой грубый спорщик насытится тем,    <br/>
 <strong>что Гейл ещё живёт в Гилле.</strong>
 <details style="margin-top:10px; font-style: normal; font-size: 13px; text-align:left;">
   <summary>Английский оригинал</summary>
@@ -376,10 +382,10 @@ body_part1 = f"""
   <figcaption>Типография XVIII века — здесь печатались труды Гилла. <span class="ai-note">Сгенерировано с помощью ИИ</span></figcaption>
 </figure>
 <p class="reveal">
-      Великие скорби ранят глубоко, но они же являют миру подлинное величие христианской души. Смерть двенадцатилетней дочери <strong>Элизабет Гилл</strong> (родившейся 14 марта 1725 года и ушедшей к Господу 30 мая 1738 года, прожив двенадцать лет, два месяца и шестнадцать дней) стала самой глубокой личной раной в жизни Гилла. Biographer Риппон нежно описывает девочку как «прелестное и желанное дитя по своей наружности, разуму и благодати». Отец нашёл в себе силы произнести погребальную проповедь сам, через пять дней после её смерти. Он поднялся на кафедру Хорслидауна и начал словами, заставившими плакать всё собрание: <strong>«Позвольте мне сегодня проповедовать скорее самому себе и своей семье, нежели вам»</strong>. Текстом его проповеди стали слова из <strong>1 Фессалоникийцам 4:13–14</strong>. Гилл решительно отверг учение о «сне души», утверждая, что душа верующего после смерти мгновенно переходит в славное и деятельное общение со Христом. Проповедь была напечатана с трогательным приложением «некоторых избранных переживаний» дочери — свидетельств её глубокой детской веры.
+      Великие скорби ранят глубоко, но они же являют миру подлинное величие христианской души. Смерть двенадцатилетней дочери <strong>Элизабет Гилл</strong> (родившейся 14 марта 1725 года и ушедшей к Господу 30 мая 1738 года, прожив двенадцать лет, два месяца и шестнадцать дней) стала самой глубокой личной раной в жизни Гилла. Biographer Риппон нежно описывает девочку как «прелестное и желанное дитя по своей наружности, разуму и благодати». Отец нашёл в себе силы произнести погребальную проповедь сам, через пять дней после её смерти. Он поднялся на кафедру Хорслидауна и начал словами, заставившими плакать всё собрание: <strong>«Позвольте мне сегодня проповедовать скорее самому себе и своей семье, нежели вам»</strong>. Текстом его проповеди стали слова из <strong>1 Фессалоникийцам 4:13–14</strong>. Гилл решительно отверг учение о «сне души», утверждая, что душа верующего после смерти мгновенно переходит в славное и задорное общение со Христом. Проповедь была напечатана с трогательным приложением «некоторых избранных переживаний» дочери — свидетельств её глубокой детской веры.
     </p>
 <p class="reveal">
-      Через двадцать шесть лет, <strong>10 октября 1764 года</strong>, Гилла постигло новое горе — скончалась его нежно любимая супруга Елизавета, с которой они прожили сорок шесть лет. Овдовевший пастор нашёл в себе мужество подняться на кафедру 21 октября с текстом из <strong>Евр. 11:16</strong>. Он намеревался произнести надгробное слово о жизни своей спутницы, но в этот момент слёзы сдавили его горло. Великий богослов замолчал на кафедре и смог лишь произнести: <strong>«Но я воздержусь говорить что-либо ещё»</strong>. Характер своей жены он описал только на бумаге — эта рукопись, озаглавленная <em>«Завет непоколебим»</em>, была найдена в его кабинете после кончины.
+      Через двадцать шесть лет, <strong>10 октября 1764 года</strong>, Гилла постигло новое горе — скончалась его нежно любимая супруга Елизавета, с которой они прожили сорок шест лет. Овдовевший пастор нашёл в себе мужество подняться на кафедру 21 октября с текстом из <strong>Евр. 11:16</strong>. Он намеревался произнести надгробное слово о жизни своей спутницы, но в этот момент слёзы сдавили его горло. Великий богослов замолчал на кафедре и смог лишь произнести: <strong>«Но я воздержусь говорить что-либо ещё»</strong>. Характер своей жены он описал только на бумаге — эта рукопись, озаглавленная <em>«Завет непоколебим»</em>, была найдена в его кабинете после кончины. У Гилла был строгий взгляд на вопросы брака, но он также детально исследовал и пастырски регламентировал вопросы развода, допуская его исключительно на основании четких библейских критериев (Мф. 5:32; 19:9; 1 Кор. 7), защищая права женщин в сложную эпоху правового бесправия.
     </p>
 <p class="reveal">
       У Гилла и Елизаветы выжили только трое детей: дочь Элизабет, сын <strong>Джон</strong>, ставший ювелиром в лондонском Сити на Грейсчёрч-стрит, и дочь <strong>Мэри</strong>, вышедшая замуж за книготорговца <strong>Джорджа Кита</strong> на той же улице. Джордж Кит стал преданным издателем и распространителем большинства монументальных трудов своего великого тестя.
@@ -410,7 +416,7 @@ body_part1 = f"""
       Весь первый период его пастырства пришёлся на пик безумной <strong>джиновой лихорадки</strong> (<em>Gin Craze</em>), когда дешёвый некачественный джин продавался буквально на каждом углу Саутварка, ведя к повальному пьянству и преступности. Парламент тщетно пытался сдержать кризис законами (Gin Acts) в 1729–1751 годах. Гилл проповедовал Слово Божие не в стерильном кабинете, а посреди этой суровой, задыхающейся от греха и социальных бедствий реальности. Совсем рядом, на <strong>Кеннингтон-Коммон</strong>, вершились публичные казни, проводились крикетные матчи и бушевали открытые евангелизационные проповеди Уайтфилда.
     </p>
 <p class="reveal">
-      До конца своих дней Гилл и его община находились в положении <strong>юридического поражения в правах</strong>. <span class="gterm" tabindex="0">Акт о корпорациях 1661 года<span class="gtip"><strong>Corporation Act</strong> (1661) — закон, требовавший от всех муниципальных чиновников приносить присягу Англиканской церкви, что полностью исключало диссентеров из местного самоуправления.</span></span> и <span class="gterm" tabindex="0">Акты об испытании<span class="gtip"><strong>Test Acts</strong> (1673) — серия законов, требовавших причащения по англиканскому обряду для занятия любых государственных, военных или общественных должностей. Диссентеры оставались поражёнными в гражданских правах вплоть до отмены актов в 1828 году.</span></span> лишали протестантских нонконформистов доступа к государственному служению и закрывали для них двери Оксфорда и Кембриджа. Именно поэтому шотландский <strong>Маришальский колледж Абердина</strong> стал тем университетом, который смог оценить труды Гилла и присудить ему докторскую степень. И когда Гилл закончил свой земной путь, его похоронили на знаменитом кладбище <strong>Банхилл-Филдс</strong> (Bunhill Fields) — «пантеоне инакомыслия», где покоились Джон Беньян, Джон Оуэн и Исаак Уоттс, разделившие с ним участь изгнанников государственной церкви.
+      До конца своих дней Гилл и его община находились в положении <strong>юридического поражения в правах</strong>. <span class="gterm" tabindex="0">Акт о корпорациях 1661 года<span class="gtip"><strong>Corporation Act</strong> (1661) — закон, требовавший от всех муниципальных чиновников приносить присягу Англиканской церкви, что полностью исключало диссентеров из местного самоуправления.</span></span> и <span class="gterm" tabindex="0">Акты об испытании<span class="gtip"><strong>Test Acts</strong> (1673) — серия законов, требовавших причащения по англиканском обряду для занятия любых государственных, военных или общественных должностей. Диссентеры оставались поражёнными в гражданских правах вплоть до отмены актов в 1828 году.</span></span> лишали протестантских нонконформистов доступа к государственному служению и закрывали для них двери Оксфорда и Кембриджа. Именно поэтому шотландский <strong>Маришальский колледж Абердина</strong> стал тем университетом, который смог оценить труды Гилла и присудить ему докторскую степень. И когда Гилл закончил свой земной путь, его похоронили на знаменитом кладбище <strong>Банхилл-Филдс</strong> (Bunhill Fields) — «пантеоне инакомыслия», где покоились Джон Беньян, Джон Оуэн и Исаак Уоттс, разделившие с ним участь изгнанников государственной церкви.
     </p>
 
 <section class="reading-list-section" id="sec-sources-part1">
@@ -608,7 +614,7 @@ body_part2 = """
     </p>
 <div class="manuscript-quote">
 <div class="manuscript-quote-text">
-        «При совершении Вечери Господней его пасторское сердце раскрывалось во всей своей постепенности. Его глаза сияли небесным светом, лицо преображалось глубокой любовью к Спасителю и к Своей пастве, когда он преломлял хлеб и подавал чашу, напоминая братьям о вечной искупительной любви Христа. В эти минуты в нём исчезал строгий полемист — оставался лишь пастырь, пребывающий в глубоком, священном общении со своим Господом.»
+        «При совершении Вечери Господней его пасторское сердце раскрывалось во всей своей полноте. Его глаза сияли небесным светом, лицо преображалось глубокой любовью к Спасителю и к Своей пастве, когда он преломлял хлеб и подавал чашу, напоминая братьям о вечной искупительной любви Христа. В эти минуты в нём исчезал строгий полемист — оставался лишь пастырь, пребывающий в глубоком, священном общении со своим Господом.»
       </div>
 <div class="manuscript-quote-source">
         — Джон Риппон, воспоминания о служении доктора Гилла (1838)
@@ -714,7 +720,7 @@ body_part3 = """
 <h3 class="reveal" id="sec-wesley">Полемика с Джоном Уэсли (1752–1755)</h3>
 <figure class="article-img float-right reveal">
   <picture>
-    <source srcset="../../images/gill-wesley-debate-600w.webp 600w, ../../images/gill-wesley-debate-900w.webp 900w, ../../images/gill-wesley-debate.webp" sizes="(max-width: 640px) 600px, (max-width: 1024px) 900px, 900px" type="image/webp">
+    <source srcset="../../images/gill-wesley-debate-600w.webp 600w, ../../images/gill-wesley-debate-900w.webp 900w, ../../images/gill-wesley-debate.webp" sizes="(max-width: 640px) 600px, (max-width: 1024px) 900px, 820px" type="image/webp">
     <img src="../../images/gill-wesley-debate.jpg" alt="Богословская дуэль — Гилл против Уэсли по вопросу избрания и благодати" decoding="async" loading="lazy" width="820" height="820">
   </picture>
   <figcaption>Богословская дуэль между Гиллом и Уэсли — художественное изображение. <span class="ai-note">Сгенерировано с помощью ИИ</span></figcaption>
@@ -762,7 +768,7 @@ body_part3 = """
       Истинная жизнь пастора продолжается в сердцах тех, кого он наставил. Среди близких учеников Гилла выделяется баптистский богослов <strong>Джон Брайн</strong> (1703–1765), обращённый к Богу через его служение и ставший главным защитником пуританского кальвинизма в Лондоне. Другим верным учеником был <strong>Джеймс Херви</strong>, чьи популярные трактаты разносили весть о суверенной благодати по всей Англии.
     </p>
 <p class="reveal">
-      Но, пожалуй, самое трогательное свидетельство любви к пастору оставил простой прихожанин общины — <strong>Ричард Холл</strong> (1728–1801), скромный чулочник из Саутварка. На протяжении двадцати пяти лет Холл бережно записывал каждую проповедь Гилла, переплетая тетради для семейного назидания. В год после кончины доктора Гилла Холл напечатал за собственный счёт двести экземпляров воспоминаний «Что я помню о докторе Гилле» и раздал их близким друзьям. Судьба сыграла злую шутку с этим памятником верности: до наших дней не дошло ни одного уцелевшего экземпляра этой книги — горькая, щемящая сердце трагедия хрупкости исторической памяти. В своём дневнике после кончины Гилла в октябре 1771 года Холл записал: <strong>«Это великое бедствие... Возможно, я ценил его чрезмерно — или, быть может, я не ценил моего верного Пастора так, как должен был. Теперь я буду глубоко скучать по нему. Благодаря Бога, что у меня остались его труды»</strong>.
+      Но, пожалуй, самое трогательное свидетельство любви к пастору оставил простой прихожанин общины — <strong>Ричард Холл</strong> (1728–1801), скромный чулочник из Саутварка. На протяжении двадцати пяти лет Холл бережно записывал каждую проповедь Гилла, переплетая тетради для семейного назидания. В год после кончины доктора Гилла Холл напечатал за собственный счёт двести экземпляров воспоминаний «Что я помню о докторе Гилле» и раздал их друзьям. Судьба сыграла злую шутку с этим памятником верности: до наших дней не дошло ни одного уцелевшего экземпляра этой книги — горькая, щемящая сердце трагедия хрупкости исторической памяти. В своём дневнике после кончины Гилла в октябре 1771 года Холл записал: <strong>«Это великое бедствие... Возможно, я ценил его чрезмерно — или, быть может, я не ценил моего верного Пастора так, как должен был. Теперь я буду глубоко скучать по нему. Благодаря Бога, что у меня остались его труды»</strong>.
     </p>
 <p class="reveal">
       Через поколения эта богословская нить протянулась к великому пробуждению мирового миссионерства. Эндрю Фуллер (1754–1815) и великий миссионер <strong>Уильям Кэри</strong> (1761–1834) выросли на трудах доктора Гилла. И хотя Фуллер в своей знаменитой книге «Евангелие, достойное всякого принятия» (1785) оспорил отказ Гилла от всеобщего предложения благодати, именно Гиллов доктринальный фундамент послужил той прочной почвой, из которой выросло великое Баптистское миссионерское общество (BMS) в Кеттеринге в 1792 году. Кэри глубоко ценил труды Гилла, везя его толкования с собой в Индию как незаменимый научный багаж.
@@ -770,7 +776,7 @@ body_part3 = """
 
 <h3 class="reveal" id="sec-america">Влияние на Америку и трансатлантический диалог</h3>
 <p class="reveal">
-      Влияние Гилла быстро перешагнуло границы Англии, достигнув американских колоний. Пастор Хорслидауна поддерживал тесную переписку с первыми лидерами американского баптизма — <strong>Морганом Эдвардсом</strong> и президентом Род-Айлендского колледжа (будущего Брауновского университета) <strong>Джеймсов Мэннингом</strong>. Гилл рекомендовал Эдвардса на служение в Филадельфию и в знак поддержки американского образования пожертвовал Род-Айлендскому колледжу все свои опубликованные труды, включая девять томов Библейского комментария. В благодарность колледж присвоил ему ещё одну почётную степень доктора. На американской почве его Декларация веры и его комментарии стали главным богословским ориентиром для целого поколения пасторов Новой Англии, определив кальвинистское лицо американского баптизма в XVIII–XIX веках.
+      Влияние Гилла быстро перешагнуло границы Англии, достигнув американских колоний. Пастор Хорслидауна поддерживал тесную переписку с первыми лидерами американского баптизма — <strong>Морганом Эдвардсом</strong> и президентом Род-Айлендского колледжа (будущего Брауновского университета) <strong>Джеймсов Мэннингом</strong>. Гилл рекомендовал Эдвардса на служение в Филадельфию и в знак поддержки американского образования пожертвовал Род-Айлендского колледжу все свои опубликованные труды, включая девять томов Библейского комментария. В благодарность колледж присвоил ему ещё одну почётную степень доктора. На американской почве его Декларация веры и его комментарии стали главным богословским ориентиром для целого поколения пасторов Новой Англии, определив кальвинистское лицо американского баптизма в XVIII–XIX веках.
     </p>
 
 <div class="premium-frame">
@@ -909,7 +915,185 @@ update_file("articles/dzhon-gill-chast-1-chelovek/index.html", body_part1)
 update_file("articles/dzhon-gill-chast-2-uchenyi/index.html", body_part2)
 update_file("articles/dzhon-gill-chast-3-nasledie/index.html", body_part3)
 
-# ----------------- PATH FIND/REPLACE OTHER BUGS -----------------
+# ----------------- BIOGRAFII INDEX UPDATE (RESTORE SECTION) -----------------
+with open("biografii/index.html", "r", encoding="utf-8") as f:
+    bio_idx = f.read()
+
+# Restore the deleted "Последние добавленные материалы" section
+recent_materials_html = """
+    <!-- Последние добавленные материалы -->
+    <section class="h-section h-reveal biography-recent" style="padding-top:0; padding-bottom: 24px;" aria-label="Последние добавленные материалы">
+      <div style="font-size: 11px; font-weight: 700; text-transform: uppercase; color: var(--h-accent, var(--color-accent-strong)); margin-bottom: 20px; letter-spacing: 0.12em; display: flex; align-items: center; gap: 8px;">
+        <span style="width: 6px; height: 6px; background: var(--color-accent-strong); border-radius: 50%;"></span>
+        Последние добавленные материалы
+      </div>
+      
+      <div class="h-articles-group" style="margin-left:22px; margin-bottom: 32px;">
+        <ul class="h-article-list">
+          <!-- Часть 1 -->
+          <li>
+            <a href="../articles/dzhon-gill-chast-1-chelovek/" class="h-article-card" style="border: 1px solid var(--color-border); border-radius: 16px; padding: 16px; background: var(--color-surface-quote);">
+              <div class="h-article-thumb">
+                <picture>
+                  <source srcset="../images/og-dzhon-gill-chast-1-chelovek-600w.webp" type="image/webp">
+                  <img src="../images/og-dzhon-gill-chast-1-chelovek.jpg"
+                       alt="Джон Гилл. Часть I: Человек"
+                       decoding="async" loading="eager" width="160" height="108">
+                </picture>
+              </div>
+              <div class="h-article-body">
+                <div class="h-article-kicker">Реформатское богословие · XVIII в. · Трилогия I</div>
+                <h3 class="h-article-title">Джон Гилл (1697–1771). Часть I: Человек — детство, призвание, семья</h3>
+                <div class="h-article-meta">
+                  <span class="h-meta-author">Редактор: Фёдор Милованов</span>
+                  <span class="h-meta-sep" aria-hidden="true">·</span>
+                  <span class="h-meta-tag">Биография</span>
+                </div>
+                <p class="h-article-abstract">От юности в Кеттеринге до формирования характера. Детство, самообразование, крещение и вступление в церковь в 1716 году, рукоположение, семья и Декларация 1729.</p>
+              </div>
+            </a>
+          </li>
+
+          <!-- Часть 2 -->
+          <li>
+            <a href="../articles/dzhon-gill-chast-2-uchenyi/" class="h-article-card" style="border: 1px solid var(--color-border); border-radius: 16px; padding: 16px; background: var(--color-surface-quote); margin-top: 14px;">
+              <div class="h-article-thumb">
+                <picture>
+                  <source srcset="../images/og-dzhon-gill-chast-2-uchenyi-600w.webp" type="image/webp">
+                  <img src="../images/og-dzhon-gill-chast-2-uchenyi.jpg"
+                       alt="Джон Гилл. Часть II: Учёный"
+                       decoding="async" loading="lazy" width="160" height="108">
+                </picture>
+              </div>
+              <div class="h-article-body">
+                <div class="h-article-kicker">Реформатское богословие · XVIII в. · Трилогия II</div>
+                <h3 class="h-article-title">Джон Гилл (1697–1771). Часть II: Учёный — экзегеза, система, иврит</h3>
+                <div class="h-article-meta">
+                  <span class="h-meta-author">Редактор: Фёдор Милованов</span>
+                  <span class="h-meta-sep" aria-hidden="true">·</span>
+                  <span class="h-meta-tag">Биография</span>
+                </div>
+                <p class="h-article-abstract">Раввинистика, создание первого девятитомного комментария на всю Библию, защита Троицы против савеллианства и монументальный Свод богословия 1769 года.</p>
+              </div>
+            </a>
+          </li>
+
+          <!-- Часть 3 -->
+          <li>
+            <a href="../articles/dzhon-gill-chast-3-nasledie/" class="h-article-card" style="border: 1px solid var(--color-border); border-radius: 16px; padding: 16px; background: var(--color-surface-quote); margin-top: 14px;">
+              <div class="h-article-thumb">
+                <picture>
+                  <source srcset="../images/og-dzhon-gill-chast-3-nasledie-600w.webp" type="image/webp">
+                  <img src="../images/og-dzhon-gill-chast-3-nasledie.jpg"
+                       alt="Джон Гилл. Часть III: Наследие"
+                       decoding="async" loading="lazy" width="160" height="108">
+                </picture>
+              </div>
+              <div class="h-article-body">
+                <div class="h-article-kicker">Реформатское богословие · XVIII в. · Трилогия III</div>
+                <h3 class="h-article-title">Джон Гилл (1697–1771). Часть III: Наследие — полемика, память, наука</h3>
+                <div class="h-article-meta">
+                  <span class="h-meta-author">Редактор: Фёдор Милованов</span>
+                  <span class="h-meta-sep" aria-hidden="true">·</span>
+                  <span class="h-meta-tag">Биография</span>
+                </div>
+                <p class="h-article-abstract">Полемика с Джоном Уэсли, обвинения в гиперкальвинизме, Сперджен как наследник, историческое влияние на Америку, кончина и историческая реабилитация.</p>
+              </div>
+            </a>
+          </li>
+        </ul>
+      </div>
+      <hr class="h-rule" aria-hidden="true" style="margin-bottom: 32px; opacity: 0.3;">
+    </section>
+
+    <!-- Редакционный фокус раздела -->
+    <section class="h-section h-reveal" style="padding-top:0;" aria-label="Редакционный фокус">
+      <div class="bio-axes" role="list">
+        <span class="bio-axes__item" role="listitem">личность</span>
+        <span class="bio-axes__dot" aria-hidden="true"></span>
+        <span class="bio-axes__item" role="listitem">исторический контекст</span>
+        <span class="bio-axes__dot" aria-hidden="true"></span>
+        <span class="bio-axes__item" role="listitem">церковь и города</span>
+        <span class="bio-axes__dot" aria-hidden="true"></span>
+        <span class="bio-axes__item" role="listitem">богословские споры</span>
+        <span class="bio-axes__dot" aria-hidden="true"></span>
+        <span class="bio-axes__item" role="listitem">миссионерский труд</span>
+        <span class="bio-axes__dot" aria-hidden="true"></span>
+        <span class="bio-axes__item" role="listitem">наследие</span>
+      </div>
+    </section>
+"""
+
+# Insert "Последние добавленные материалы" block right after <main id="main-content">
+if "biography-recent" not in bio_idx or "Последние добавленные материалы" not in bio_idx:
+    bio_idx = bio_idx.replace("    <main id=\"main-content\">", "    <main id=\"main-content\">\n" + recent_materials_html)
+    with open("biografii/index.html", "w", encoding="utf-8") as f:
+        f.write(bio_idx)
+    print("Successfully restored 'Последние добавленные материалы' section in biografii/index.html")
+
+
+# ----------------- INDEX.HTML (HOMEPAGE) CARDS AND SPACINGS -----------------
+with open("index.html", "r", encoding="utf-8") as f:
+    idx_content = f.read()
+
+# Convert text-only card of 20-antisovetov-pastoru to gorgeous .h-article-card with image
+old_card = """          <li>
+            <article class="h-card">
+              <a href="articles/20-antisovetov-pastoru/" class="h-card-link">
+                <div class="h-card-body">
+                  <h3 class="h-card-title">20 антисоветов, как пастору разрушить своё служение</h3>
+                  <p class="h-card-desc">Практический разбор типичных ошибок пасторского служения — от духовного выгорания до авторитаризма.</p>
+                </div>
+              </a>
+            </article>
+          </li>"""
+
+new_card = """          <!-- 20 антисоветов пастору -->
+          <li>
+            <a href="articles/20-antisovetov-pastoru/" class="h-article-card h-article-card--debunk">
+              <div class="h-article-thumb">
+                <picture>
+                  <source srcset="images/pastor-series/hero-600w.webp" type="image/webp">
+                  <img src="images/pastor-series/hero.webp"
+                       alt="20 антисоветов пастору"
+                       decoding="async" loading="lazy" width="160" height="108">
+                </picture>
+              </div>
+              <div class="h-article-body">
+                <div class="h-article-kicker h-article-kicker--warn">Тёмная сторона кафедры</div>
+                <h3 class="h-article-title">20 антисоветов, как пастору разрушить своё служение</h3>
+                <div class="h-article-meta">
+                  <span class="h-meta-author">Редактор: Фёдор Милованов</span>
+                  <span class="h-meta-sep" aria-hidden="true">·</span>
+                  <span class="h-meta-time">
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                    67 мин
+                  </span>
+                  <span class="h-meta-tag h-meta-tag--warn">Практика</span>
+                </div>
+                <p class="h-article-abstract">Практический разбор типичных ошибок пасторского служения — от духовного выгорания до авторитаризма.</p>
+              </div>
+            </a>
+          </li>"""
+
+idx_content = idx_content.replace(old_card, new_card)
+with open("index.html", "w", encoding="utf-8") as f:
+    f.write(idx_content)
+print("Successfully converted 20-antisovetov card on homepage")
+
+
+# ----------------- HOME.CSS (SPACINGS BEFORE HEBREW) -----------------
+with open("css/home.css", "r", encoding="utf-8") as f:
+    home_css = f.read()
+
+# Reduce padding-top of .h-quote-section
+home_css = home_css.replace(".h-quote-section {\n  padding: 64px 0;\n  text-align: center;\n}", ".h-quote-section {\n  padding: 32px 0 16px;\n  text-align: center;\n}")
+with open("css/home.css", "w", encoding="utf-8") as f:
+    f.write(home_css)
+print("Successfully reduced space before Hebrew block in css/home.css")
+
+
+# ----------------- HERMENEUTICS BIBLE REFS UPDATE -----------------
 
 # Hermeneutics daggers replacement with gorgeous blue dove SVGs
 with open("articles/hermenevticheskaya-otsenka-hristotsentrichnoy-germenevtiki/index.html", "r", encoding="utf-8") as f:
@@ -945,10 +1129,9 @@ if start_idx != -1 and end_idx != -1:
 # 2. Fix body.topnav-active padding-top to 0
 css = css.replace("body.topnav-active { padding-top: 48px; }", "body.topnav-active { padding-top: 0 !important; }")
 
-# 3. Optimize padding-top of main.article-main
-old_padding = "main.article-main {\n  width: min(820px, 92vw);\n  margin: 0 auto;\n  padding: clamp(48px, 6vw, 100px) 24px;\n}"
-new_padding = "main.article-main {\n  width: min(820px, 92vw);\n  margin: 0 auto;\n  padding: clamp(24px, 3.5vw, 44px) 24px clamp(48px, 6vw, 80px);\n}"
-css = css.replace(old_padding, new_padding)
+# 3. Optimize padding-top of main.article-main and main.home-main to eliminate huge top white space
+css = css.replace("padding: clamp(48px, 6vw, 100px) 24px;", "padding: clamp(24px, 3.5vw, 44px) 24px clamp(48px, 6vw, 80px);")
+css = css.replace("padding: clamp(64px, 8vw, 120px) 24px clamp(80px, 10vw, 140px);", "padding: clamp(32px, 4vw, 56px) 24px clamp(48px, 6vw, 80px);")
 
 # 4. Make .theme-toggle position absolute on article pages and align with breadcrumbs
 old_toggle = """.theme-toggle {
@@ -1306,7 +1489,7 @@ with open("sw.js", "r", encoding="utf-8") as f:
 
 sw_new = re.sub(
     r"var CACHE_VERSION = 'gb-v160-.*';",
-    "var CACHE_VERSION = 'gb-v160-gillbio-deepened-final-polished-dove-v2-20260601';",
+    "var CACHE_VERSION = 'gb-v160-gillbio-deepened-final-polished-dove-v5-20260601';",
     sw
 )
 
