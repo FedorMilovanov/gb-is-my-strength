@@ -8953,3 +8953,142 @@ html.dark .premium-frame-text {
   background: var(--color-surface, #fdfcf9) !important;
   z-index: 2 !important;
 }
+
+/* Fix .theme-toggle inside smart navbar on non-article pages */
+.h-navbar .theme-toggle,
+.h-navbar__inner .theme-toggle,
+.mobile-controls .theme-toggle {
+  position: relative !important;
+  top: auto !important;
+  right: auto !important;
+  z-index: 1 !important;
+  padding: 8px !important;
+  width: 44px !important;
+  height: 44px !important;
+  margin: 0 !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+}
+html.dark .mobile-controls .theme-toggle svg {
+  color: #f5c542 !important;
+}
+
+/* Reset browser button styling for .bref (Bible references) to make them look like elegant inline text links */
+button.bref {
+  appearance: none !important;
+  -webkit-appearance: none !important;
+  background: none !important;
+  border: none !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  font-family: inherit !important;
+  font-size: inherit !important;
+  line-height: inherit !important;
+  display: inline !important;
+  cursor: pointer !important;
+  color: #7a2e2e !important;
+  font-weight: 600 !important;
+  text-decoration: none !important;
+  box-shadow: none !important;
+  border-radius: 0 !important;
+}
+html.dark button.bref {
+  color: var(--color-accent-strong, #e8b878) !important;
+}
+button.bref:hover {
+  color: var(--color-accent-strong, #5f2323) !important;
+  text-decoration: underline !important;
+}
+
+/* Style for .fn-dove-icon - premium flying dove with white eye and smooth animations */
+.fn-dove-icon {
+  color: #1e4ea3 !important; /* Premium royal blue in light theme */
+}
+html.dark .fn-dove-icon {
+  color: #38bdf8 !important; /* Premium sky blue in dark theme */
+}
+.fn-marker:hover .fn-dove-icon,
+.fn-marker:focus-visible .fn-dove-icon {
+  transform: scale(1.15) translateY(-1.5px) !important;
+  filter: drop-shadow(0 2px 5px rgba(30, 78, 163, 0.45)) !important;
+}
+
+/* Premium Frame Style — highly elegant, classic, and professional manuscript borders */
+.premium-frame {
+  position: relative;
+  margin: clamp(32px, 5vw, 56px) 0;
+  padding: clamp(24px, 4vw, 40px);
+  background: var(--color-surface-quote, #fbfaf7);
+  border: 1px solid rgba(184, 147, 106, 0.25);
+  border-radius: 12px;
+  box-shadow:
+    0 1px 0 rgba(255, 255, 255, 0.9) inset,
+    0 4px 20px rgba(120, 83, 46, 0.04),
+    0 12px 36px -16px rgba(120, 83, 46, 0.08);
+}
+html.dark .premium-frame {
+  background: color-mix(in srgb, var(--color-accent) 4%, var(--color-surface));
+  border-color: rgba(232, 184, 120, 0.15);
+  box-shadow:
+    0 1px 0 rgba(255, 255, 255, 0.02) inset,
+    0 12px 36px -16px rgba(0, 0, 0, 0.5);
+}
+/* Delicate dashed inner border for old-world feel */
+.premium-frame::before {
+  content: '';
+  position: absolute;
+  top: 8px; left: 8px; right: 8px; bottom: 8px;
+  border: 1px dashed rgba(184, 147, 106, 0.18);
+  border-radius: 8px;
+  pointer-events: none;
+}
+.premium-frame-title {
+  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--color-accent);
+  margin-bottom: 16px;
+  text-align: center;
+  position: relative;
+  z-index: 2;
+}
+.premium-frame-text {
+  font-family: var(--f-body, "Cormorant Garamond", Georgia, serif);
+  font-size: 17px;
+  line-height: 1.75;
+  font-style: italic;
+  color: var(--color-text-warm, #2b2317);
+  text-align: center;
+  margin-bottom: 16px;
+  position: relative;
+  z-index: 2;
+}
+html.dark .premium-frame-text {
+  color: var(--color-text, #e6e1d7);
+}
+.premium-frame-source {
+  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--color-text-muted, #888);
+  text-align: center;
+  position: relative;
+  z-index: 2;
+}
+
+/* UNIFY ALL TOOLTIPS: Hide glossary pointing arrows/handles to avoid overlaps and create 100% uniform, minimal, flat floating cards */
+.gterm .gtip::before,
+.gtip.gb-floating-tip::before {
+  display: none !important;
+}
+
+/* Fix timeline vertical line overlap bug by keeping timeline circles perfectly solid and opaque */
+.timeline-entry::before {
+  background: var(--color-surface, #fdfcf9) !important;
+  z-index: 2 !important;
+}
