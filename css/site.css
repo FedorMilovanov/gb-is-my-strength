@@ -8628,3 +8628,50 @@ button.bref:hover {
   color: var(--color-accent-strong, #5f2323) !important;
   text-decoration: underline !important;
 }
+
+/* Fix .theme-toggle inside smart navbar on non-article pages */
+.h-navbar .theme-toggle,
+.h-navbar__inner .theme-toggle,
+.mobile-controls .theme-toggle {
+  position: relative !important;
+  top: auto !important;
+  right: auto !important;
+  z-index: 1 !important;
+  padding: 8px !important;
+  width: 44px !important;
+  height: 44px !important;
+  margin: 0 !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+}
+html.dark .mobile-controls .theme-toggle svg {
+  color: #f5c542 !important;
+}
+
+/* Reset browser button styling for .bref (Bible references) to make them look like elegant inline text links */
+button.bref {
+  appearance: none !important;
+  -webkit-appearance: none !important;
+  background: none !important;
+  border: none !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  font-family: inherit !important;
+  font-size: inherit !important;
+  line-height: inherit !important;
+  display: inline !important;
+  cursor: pointer !important;
+  color: #7a2e2e !important;
+  font-weight: 600 !important;
+  text-decoration: none !important;
+  box-shadow: none !important;
+  border-radius: 0 !important;
+}
+html.dark button.bref {
+  color: var(--color-accent-strong, #e8b878) !important;
+}
+button.bref:hover {
+  color: var(--color-accent-strong, #5f2323) !important;
+  text-decoration: underline !important;
+}
