@@ -9,7 +9,7 @@
    — Все остальные запросы → Network First
    ============================================================ */
 
-var CACHE_VERSION = 'gb-v160-gillbio-deepened-final-polished-dove-v2-20260601';
+var CACHE_VERSION = 'gb-v160-gillbio-deepened-final-polished-dove-v5-20260601';
 var CACHE_STATIC   = CACHE_VERSION + '-static';
 var CACHE_CONTENT  = CACHE_VERSION + '-content';
 var CACHE_IMAGES   = CACHE_VERSION + '-images';
