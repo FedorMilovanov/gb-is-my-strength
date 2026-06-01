@@ -9373,3 +9373,22 @@ html.dark .premium-frame-text {
 /* Lux Upgrade v3.0: hide tooltip category to fix overlap */ .gtip-luxury__category{display:none!important} .gtip-luxury__header{margin-bottom:0!important}
 /* Lux Upgrade v3.0: remove intrusive top scroll bar */ .article-topnav{display:none!important;opacity:0!important;pointer-events:none!important} body.topnav-active{padding-top:0!important}
 /* Lux Upgrade v3.0: biography card polish - single border */ .biography-hero::after{display:none!important} .biography-hero{border-width:1px!important;box-shadow:0 8px 32px rgba(0,0,0,.06)!important} .biography-portrait{border-width:4px!important;box-shadow:0 4px 16px rgba(0,0,0,.08)!important}
+
+/* 2026-06-01: mobile tooltip hardening.
+   Long URLs, names and theological terms must not create horizontal scroll
+   inside glossary/footnote sheets on old iOS/Android browsers. */
+.gtip,
+.tooltip,
+.gtip-luxury,
+.gtip-luxury__body,
+.gtip-luxury__definition {
+  overflow-wrap: anywhere;
+  word-break: normal;
+}
+@media (max-width: 768px) {
+  .gtip.gb-floating-tip,
+  .tooltip.gb-floating-tip {
+    max-width: 100vw !important;
+    box-sizing: border-box;
+  }
+}
