@@ -4105,8 +4105,10 @@
       imgEl.alt = alt || '';
       capEl.textContent = captionText || '';
       viewer.classList.add('is-open');
-      /* B-01: используем счётчик блокировки скролла вместо ручного overflow на <html> */
-      SiteUtils.lockScroll('image-viewer');
+      
+      /* Fix scroll jump bug: block scroll of documentElement instead of fixed body position */
+      document.documentElement.style.overflow = 'hidden';
+      
       /* B-02: фокус на кнопку закрытия + trap.
          Снимаем перед добавлением — защита от двойного open() без close().  */
       viewer.removeEventListener('keydown', trapViewerTab);
@@ -4121,21 +4123,20 @@
       if (!viewer.classList.contains('is-open')) return;
       viewer.classList.remove('is-open');
       viewer.removeEventListener('keydown', trapViewerTab);
-      /* B-01: корректно разблокируем скролл через счётчик */
-      SiteUtils.unlockScroll('image-viewer');
-      if (openedByKeyboard && lastActive && lastActive.focus) {
-        try { lastActive.focus({ preventScroll: true }); }
-        catch (e) { lastActive.focus(); }
-      }
-      lastActive = null;
-      openedByKeyboard = false;
-      /* Откладываем очистку src/cap до окончания fade-out (.2s);
-         токен _closeTimer позволяет отменить очистку при быстром повторном открытии. */
+      
+      /* Delay scroll release and focus restoration until the fade-out (280ms) is complete! */
       _closeTimer = setTimeout(function () {
         _closeTimer = null;
+        document.documentElement.style.overflow = '';
+        if (openedByKeyboard && lastActive && lastActive.focus) {
+          try { lastActive.focus({ preventScroll: true }); }
+          catch (e) { lastActive.focus(); }
+        }
+        lastActive = null;
+        openedByKeyboard = false;
         imgEl.removeAttribute('src');
         capEl.textContent = '';
-      }, 220);
+      }, 290);
     }
 
     imgs.forEach(function (img) {
