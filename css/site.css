@@ -9392,3 +9392,60 @@ html.dark .premium-frame-text {
     box-sizing: border-box;
   }
 }
+
+/* Gill context callout shared by biography trilogy and companion context article. */
+.context-bridge {
+  border-left: 4px solid var(--color-accent);
+  padding: 18px 20px;
+  background: var(--color-surface-quote);
+  border-radius: 12px;
+}
+.context-bridge a { font-weight: 700; }
+
+
+/* Gill premium insert cards */
+.gill-fact-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+  margin: 24px 0 34px;
+}
+.gill-fact-card {
+  border: 1px solid var(--color-border);
+  border-radius: 18px;
+  padding: 18px;
+  background: var(--color-surface-quote);
+  box-shadow: 0 8px 26px rgba(0,0,0,.04);
+}
+.gill-fact-card__icon {
+  display: inline-grid;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  border-radius: 999px;
+  background: rgba(122,46,46,.08);
+  margin-bottom: 10px;
+}
+.gill-fact-card strong {
+  display: block;
+  color: var(--color-accent-strong);
+  margin-bottom: 6px;
+}
+.gill-fact-card p { margin: 0; color: var(--color-text-secondary); }
+@media (max-width: 760px) {
+  .gill-fact-grid { grid-template-columns: 1fr; }
+  .gill-fact-card { padding: 16px; }
+}
+
+
+/* Gill series: tasteful archaic styling for original titles without leaving English unexplained. */
+.work-title-original,
+.work-title em,
+.manuscript-table em[lang="en"] {
+  font-family: 'Cormorant Garamond', 'Lora', Georgia, serif;
+  font-variant-ligatures: common-ligatures;
+  letter-spacing: .01em;
+  color: color-mix(in srgb, var(--color-text-secondary) 82%, var(--color-accent));
+}
+.work-title-original::before { content: '('; }
+.work-title-original::after { content: ')'; }
