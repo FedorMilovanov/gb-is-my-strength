@@ -186,4 +186,16 @@
     <image:image><image:loc>https://gospod-bog.ru/images/hermenevtika-preview-og.webp</image:loc></image:image>
   </url>
 
+
+  <url>
+    <loc>https://gospod-bog.ru/articles/rimlyanam-7-veruyushchiy-ili-neveruyushchiy/</loc>
+    <lastmod>2026-06-04T00:00:00+03:00</lastmod>
+    <changefreq>yearly</changefreq>
+    <priority>0.9</priority>
+    <image:image>
+      <image:loc>https://gospod-bog.ru/images/og-rimlyanam-7.webp</image:loc>
+      <image:title>Римлянам 7: верующий, неверующий или человек под законом?</image:title>
+      <image:caption>Карта консервативных позиций по Рим. 7:14–25 и пастырский вывод к Рим. 8:1</image:caption>
+    </image:image>
+  </url>
 </urlset>
