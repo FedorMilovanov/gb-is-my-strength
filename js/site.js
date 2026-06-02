@@ -3539,7 +3539,7 @@
     popup.setAttribute('aria-hidden', 'true');
     popup.innerHTML =
       '<button id="ss-copy" aria-label="Скопировать цитату">' +
-        '<svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">' +
+        SVG_ICON_148 +
           '<rect x="9" y="9" width="13" height="13" rx="2"/>' +
           '<path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>' +
         '</svg>' +
@@ -3547,7 +3547,7 @@
       '</button>' +
       '<div class="ss-sep"></div>' +
       '<button id="ss-share" aria-label="Поделиться цитатой">' +
-        '<svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">' +
+        SVG_ICON_148 +
           '<circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/>' +
           '<line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/>' +
           '<line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/>' +
@@ -3963,7 +3963,7 @@
     if (showShare) {
       actionsHTML +=
         '<button type="button" class="article-end-btn" id="articleEndShareBtn" aria-label="Поделиться статьёй">' +
-          '<svg viewBox="0 0 24 24" width="16" height="16" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">' +
+          SVG_ICON_114 +
             '<circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/>' +
             '<line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/>' +
             '<line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/>' +
@@ -3975,7 +3975,7 @@
     if (showActions) {
       actionsHTML +=
         '<button type="button" class="article-end-btn" id="articleEndPrintBtn" aria-label="Распечатать статью или сохранить как PDF">' +
-          '<svg viewBox="0 0 24 24" width="16" height="16" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">' +
+          SVG_ICON_114 +
             '<polyline points="6 9 6 2 18 2 18 9"/>' +
             '<path d="M6 18H4a2 2 0 0 1-2-2V11a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/>' +
             '<rect x="6" y="14" width="12" height="8"/>' +
@@ -4569,12 +4569,12 @@
 
   /* Канонические SVG, единые для всего сайта. */
   var SUN_SVG =
-    '<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">' +
+    SVG_SEARCH_LARGE +
     '<circle cx="12" cy="12" r="4.5"/>' +
     '<path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/>' +
     '</svg>';
   var MOON_SVG =
-    '<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">' +
+    SVG_SEARCH_LARGE +
     '<path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/>' +
     '</svg>';
   var SEARCH_SVG =
@@ -4591,10 +4591,13 @@
   }
 
   ready(function () {
-    if (!shouldActivate()) return;
-    if (document.getElementById('gbFloatingControls')) return;
+    if (!
+  var SVG_ICON_114 = '<svg viewBox="0 0 24 24" width="16" height="16" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">';shouldActivate()) return;
+    if (document.getElementById('gbFloatin
+  var SVG_ICON_148 = '<svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">';gControls')) return;
 
-    /* Маркер на body — позволяет CSS скрыть legacy-кнопки только тут. */
+    /* Маркер на body — позволяет CSS скрыть legac
+  var SVG_SEARCH_LARGE = '<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">';y-кнопки только тут. */
     document.body.classList.add('gb-fc-active');
 
     /* ── Контейнер ──────────────────────────────────────────────── */
