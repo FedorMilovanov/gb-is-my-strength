@@ -390,7 +390,7 @@ html.dark .icon-sun { opacity: 1; color: #f5c542; }
 
 @media (min-width: 900px) {
   .article-topnav { display: flex; }
-  body.topnav-active { padding-top: 0 !important; }
+  body.topnav-active { padding-top: 0; }
 }
 .article-topnav-home {
   display: flex;
@@ -4881,7 +4881,7 @@ html.dark #selection-share-popup {
 }
 
 @media (max-width: 440px) {
-  #selection-share-popup { display: none !important; }
+  #selection-share-popup { display: none; }
 }
 
 .article-reading-progress {
@@ -4977,7 +4977,7 @@ html.dark .article-reading-progress-label.completed-label {
 }
 
 @media (max-width: 768px) {
-  .kbd-hint-toast { display: none !important; }
+  .kbd-hint-toast { display: none; }
 }
 
 @media (min-width: 900px) {
@@ -5881,8 +5881,7 @@ html.dark .faq-accordion__q:hover { background: var(--color-surface); background
 .article-body .faq-accordion__body-inner { font-size: calc(var(--article-font-size) * 0.84); }
 
 /* AUDIT V9 / #3: first (heavy bordeaux header) .summary-card version removed.
-   It was fully overridden by the refined version below via !important.
-   After removal the refined version no longer needs !important overrides;
+
    the nagornaya-override (compact) variant still applies under body.nagornaya-page. */
 
 @media (pointer: coarse) {
@@ -6333,7 +6332,7 @@ button, a, label, summary, [role="button"], input[type="button"], input[type="su
     bottom: max(20px, env(safe-area-inset-bottom, 0px)) !important;
     right: max(16px, env(safe-area-inset-right, 0px)) !important;
   }
-  #back-to-top svg { width: 20px !important; height: 20px !important; }
+  #back-to-top svg { width: 20px; height: 20px; }
 }
 
 .bar-icon-btn {
@@ -6348,7 +6347,7 @@ button, a, label, summary, [role="button"], input[type="button"], input[type="su
 .bookmark-toast-close {
   min-width: 32px;
   min-height: 32px;
-  padding: 6px !important;
+  padding: 6px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -6497,17 +6496,17 @@ html.dark .fn-marker:focus-visible {
 }
 
 @media (max-width: 600px) {
-  .heart-flip-back { padding: clamp(24px, 6vw, 36px) clamp(20px, 5vw, 40px) !important; }
-  .heart-flip-wrap { margin: clamp(28px, 6vw, 48px) 0 !important; }
-  .author-card { margin: clamp(24px, 5vw, 40px) 0 !important; }
-  .related-articles { margin: clamp(28px, 6vw, 48px) 0 !important; }
-  .article-end-block { margin: clamp(28px, 6vw, 48px) 0 !important; }
+  .heart-flip-back { padding: clamp(24px, 6vw, 36px) clamp(20px, 5vw, 40px); }
+  .heart-flip-wrap { margin: clamp(28px, 6vw, 48px) 0; }
+  .author-card { margin: clamp(24px, 5vw, 40px) 0; }
+  .related-articles { margin: clamp(28px, 6vw, 48px) 0; }
+  .article-end-block { margin: clamp(28px, 6vw, 48px) 0; }
   #toc-panel { padding: clamp(28px, 6vw, 40px) clamp(16px, 4vw, 24px) !important; }
-  .quiz-launch-hero { padding: clamp(20px, 5vw, 28px) clamp(20px, 5vw, 36px) !important; }
-  .article-img { margin: clamp(24px, 6vw, 40px) 0 !important; }
+  .quiz-launch-hero { padding: clamp(20px, 5vw, 28px) clamp(20px, 5vw, 36px); }
+  .article-img { margin: clamp(24px, 6vw, 40px) 0; }
   .article-img.wide {
-    margin-left: -16px !important;
-    margin-right: -16px !important;
+    margin-left: -16px;
+    margin-right: -16px;
   }
 }
 
@@ -6580,7 +6579,7 @@ button, a, [role="button"], [tabindex="0"], summary, input, textarea, select {
 .btoc-fontsize-btn,
 .resume-reading-btn,
 .resume-reading-dismiss {
-  -webkit-appearance: none !important;
+  -webkit-appearance: none;
 }
 
 @media (hover: none), (pointer: coarse) {
@@ -6663,7 +6662,7 @@ button, a, [role="button"], [tabindex="0"], summary, input, textarea, select {
 }
 .article-img--portrait-wide img {
   max-height: 600px;
-  width: auto !important;
+  width: auto;
   margin-left: auto;
   margin-right: auto;
 }
@@ -7667,8 +7666,8 @@ html.dark button.bref {
   color: var(--color-accent-strong, #e8b878) !important;
 }
 button.bref:hover {
-  color: var(--color-accent-strong, #5f2323) !important;
-  text-decoration: underline !important;
+  color: var(--color-accent-strong, #5f2323);
+  text-decoration: underline;
 }
 
 /* Reset browser button styling for .bref (Bible references) to make them look like elegant inline text links */
@@ -7749,11 +7748,11 @@ html.dark .premium-frame-text {
 
 /* Fix timeline vertical line overlap bug by keeping timeline circles perfectly solid and opaque */
 /* R28: keep category label visible; flex layout prevents overlap with close button. */
-.gtip-luxury__header { align-items: flex-start !important; margin-bottom: 8px !important; }
+.gtip-luxury__header { align-items: flex-start; margin-bottom: 8px; }
 .gtip-luxury__category { display: inline-flex !important; flex: 1 1 auto; width: fit-content; max-width: calc(100% - 44px); }
 .gtip-luxury__close { margin-left: auto; }
 /* Lux Upgrade v3.0: remove intrusive top scroll bar */
-/* Lux Upgrade v3.0: biography card polish - single border */ .biography-hero::after{display:none!important} .biography-hero{border-width:1px!important;box-shadow:0 8px 32px rgba(0,0,0,.06)!important} .biography-portrait{border-width:4px!important;box-shadow:0 4px 16px rgba(0,0,0,.08)!important}
+/* Lux Upgrade v3.0: biography card polish - single border */ .biography-hero::after{display:none} .biography-hero{border-width:1px;box-shadow:0 8px 32px rgba(0,0,0,.06)} .biography-portrait{border-width:4px;box-shadow:0 4px 16px rgba(0,0,0,.08)}
 
 /* 2026-06-01: mobile tooltip hardening.
    Long URLs, names and theological terms must not create horizontal scroll
