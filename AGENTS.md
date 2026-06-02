@@ -6,7 +6,7 @@
 
 **Владелец:** Фёдор Милованов (редактор, не «автор»)
 **Производственный сайт:** https://gospod-bog.ru
-**Дата документа:** 2026-06-02 | **Версия:** AGENTS-r43
+**Дата документа:** 2026-06-03 | **Версия:** AGENTS-r44
 
 ---
 
@@ -238,7 +238,7 @@
 
 | Приоритет | Файл | Тип | Размер | Описание |
 |-----------|------|-----|--------|----------|
-| 🔴 P0 | `articles/hermenevticheskaya-otsenka-*/index.html` | inline JS | 76 KB | JSON-объект с библейскими цитатами — вынести в `data/hermenevtika-quotes.json` |
+| ~~🔴 P0~~ | `articles/hermenevticheskaya-otsenka-*` | inline JS 76KB | **Переоценено**: `<script type="application/json" id="bibleRefs">` — это правильный JSON data island (браузер не выполняет, используется `getElementById`). Оставить. |
 | 🟠 P1 | `articles/20-antisovetov-pastoru/index.html` | inline JS | 17 KB | `STRATEGIC_MAP_DATA` — вынести в `data/strategic-map.json` |
 | 🟡 P2 | `articles/20-antisovetov-pastoru/index.html` | inline CSS | 12.5 KB | 16 дублей site.css удалены r43 (−2.5KB); оставшееся специфично для страницы |
 | 🟠 P1 | `articles/20-antisovetov-pastoru/index.html` | inline JS | 5.5 KB | Popover widget — вынести в `js/enhancements.js` |
@@ -289,7 +289,7 @@
 ### 4.2 `!important`
 
 Сейчас (2026-06-02, после дедупа в commits A–H):
-- `site.css`: ~301 (AGENTS-r42/r43: −41 лишних, новых не добавлять)
+- `site.css`: ~299 (AGENTS-r44: −2 ещё; итого r42-r44: −43; новых не добавлять)
 - `home.css`: 15
 - `command-palette.css`: 4
 - `mobile-hotfix.css`: 46 (по дизайну: переопределяет поведение для touch / pointer: coarse)
@@ -652,6 +652,7 @@ npm run validate:all      # ← рекомендуется перед кажды
 | AGENTS-r32 | 2026-06-02 | **Byline «Автор-редактор» + SEO.** Обновлено правило §3.1: для авторских статей (Тип A/B) byline теперь «Автор-редактор: Фёдор Милованов» (он создаёт материалы + редактирует). Переводы (Тип C) без изменений — «Редакция перевода». `about/index.html`: обновлён `article-desc`, `og:description`, JSON-LD Person добавлены `jobTitle`, `description`, `knowsAbout`, YouTube в `sameAs`. Создан `llms.txt` для AI Search (Perplexity, ChatGPT, Claude, Grok). |
 | AGENTS-r33 | 2026-06-02 | **CSS bug fixes + dark mode + чистка.** `biography-epigraph::before`: удалён двойной `content: none !important` (был ×2 перед реальным `content: '"'`). z-index токенизированы: `.gb-floating-controls` 9998→`var(--z-toast-high)`, `.theme-float-btn` 90→`var(--z-raised-high)`. Dark mode fix в `20-antisovetov`: 16 inline hex colors (`#d97706/2b6cb0/e11d48`) → `var(--color-amber/blue/rose, fallback)`. Удалён `important_audit.txt` из корня (нарушал §10). |
 | AGENTS-r34 | 2026-06-02 | **CSS-переменные аудит + dead var removal.** Глубокий анализ всех 121 объявленных CSS-переменных. Выявлены и удалены 21 мёртвая переменная (39 строк, из `:root` и `html.dark`): legacy aliases `--fg/fg-secondary/text-primary/text-secondary/text-muted/link/note-bg/quote-bg/success-bg/surface-2`, устаревшие z-index `--z-raised/z-toc`, `--shadow-md`, `--nicea-color`, `--keyboard-height`, неиспользуемые Tailwind-токены `--color-violet/emerald/green/purple/sky/yellow`. Объяснение: переменные "про запас" в `:root` = мёртвый код → в §4.4 добавлено правило 9. |
+| AGENTS-r44 | 2026-06-03 | **Big Deep Upgrade.** A: Dead CSS −6.4KB (26 мёртвых классов: `.ai-disclosure`, `.fn-sheet`, `.faq-item` ×6, `.ancient-epigraph`, `.card-cover-wrap` и др.); дубль `@keyframes fx-breathe` удалён; CSS структура валидирована (0 orphan braces). B: `:root` blocks 9→2 (consolidated into `@layer base`); `--color-amber/blue/rose/red`, `--f-hebrew-display`, `color-scheme`, `--visual-viewport-h`, `--article-font-size` теперь в canonical `:root`. C: `nagornaya-mobile-toc.css` !important 73→59 (R21 guardrail block + nag-quiz-h2). D: `site.js` mod29: `aria-live` announcer при смене темы; `enhancements.js`: `prefers-reduced-motion` guard для Ambient Scripture. E: `feed.xml` lastBuildDate обновлён. F: SW cache version bumped. Итого: site.css −12.6KB (−4.9%), 258KB→245KB. |
 | AGENTS-r43b | 2026-06-02 | **Home page inline dedup + skip-link.** `index.html`: убраны Reading Progress/Navbar/ScrollTop/Reveal (−9882b дублей site.js mod35); Hebrew tap-toggle (2630b) + Ambient Scripture (5177b) → `js/enhancements.js`; добавлен `<script src=js/enhancements.js>`. `404.html`, `pastor-series/`, `about/`: удалён inline `<style>.skip-link</style>` (−848b) — уже в site.css. Итого r43b: −10730b inline. |
 | AGENTS-r43c | 2026-06-02 | **Micro inline dedup.** `articles/krajne-li-isporcheno-serdce`: убраны `.article-img img { cursor:zoom-in }` и `.fn-marker { position:relative }` (−148b) — оба в site.css; оставлены `.rescue-figure/.rescue-caption--above` (737b, page-specific). |
 | AGENTS-r43 | 2026-06-02 | **Inline JS/CSS dedup — модули 15a + 20 aria.** `js/site.js`: модуль 15a (heart-flip mobile `--back-height` handler, idempotent, все страницы); модуль 20: добавлены `aria-label/role/tabindex` на `.fn-marker`. `articles/krajne-li-isporcheno-serdce`: удалены 2 inline `<script>` (heart-flip 1680b + fn-marker 384b = 2064b). `articles/20-antisovetov-pastoru`: удалены 16 дублей CSS из site.css (−2558b), исправлены `.dark` → `html.dark` (×2). Итого r43: −4622b inline кода. |
