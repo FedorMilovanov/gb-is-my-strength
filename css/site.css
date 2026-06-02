@@ -1053,9 +1053,6 @@ html.dark .heart-flip-back { background: #110e07; }
 }
 
 .article-img.float-right,
-.article-img.float-left {
-  width: 270px;
-}
 
 .article-img.float-right {
   float: right;
@@ -1065,6 +1062,7 @@ html.dark .heart-flip-back { background: #110e07; }
 }
 
 .article-img.float-left {
+  width: 270px;
   float: left;
   margin: 6px 32px 20px 0;
   clear: left;
@@ -1363,10 +1361,10 @@ html.dark .card.fx-lift:hover,
   padding: 22px 24px;
   margin: 0 0 14px;
   border-bottom: none;
+  cursor: pointer;
 }
 
 .article-item.card:last-child{ margin-bottom: 0; }
-.article-item.card{ cursor: pointer; }
 .article-item.card .article-title:hover{ text-decoration: none; }
 
 .article-title {
@@ -2246,7 +2244,8 @@ html.dark .compare-table:not(.compare-table--scroll) tr {
 }
 
 .bar-icon-btn {
-  width: 40px; height: 40px;
+  width: 44px; height: 44px;
+  min-width: 44px; min-height: 44px;
   border: none;
   background: none;
   cursor: pointer;
@@ -2330,7 +2329,8 @@ html.dark .bar-icon-sun  { display: block; color: #f5c542; }
 .btoc-subtitle { font-family: 'Source Sans 3', system-ui, sans-serif; font-size: 11px; color: var(--color-text-muted); }
 .btoc-close {
   position: relative;
-  width: 32px; height: 32px;
+  width: 44px; height: 44px;
+  min-width: 44px; min-height: 44px;
   border: none;
   background: var(--color-surface-muted);
   border-radius: 50%;
@@ -3901,7 +3901,7 @@ html.dark .gterm .gtip::before {
 .gtip-luxury__handle { display: none; }
 .gtip-luxury__header {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   justify-content: space-between;
   gap: 12px;
   margin-bottom: 12px;
@@ -3919,6 +3919,9 @@ html.dark .gterm .gtip::before {
   line-height: 1.2;
   letter-spacing: .08em;
   text-transform: uppercase;
+  flex: 1 1 auto;
+  width: fit-content;
+  max-width: calc(100% - 44px);
 }
 .gtip-luxury__category[data-category="heresy"] { --gtip-cat-color: #b45309; }
 .gtip-luxury__category[data-category="doctrine"] { --gtip-cat-color: #7a2e2e; }
@@ -3943,6 +3946,7 @@ html.dark .gterm .gtip::before {
   color: rgba(0, 0, 0, .36);
   cursor: pointer;
   transition: background-color .18s ease, color .18s ease, transform .18s ease;
+  margin-left: auto;
 }
 .gtip-luxury__close:hover,
 .gtip-luxury__close:focus-visible {
@@ -3965,7 +3969,11 @@ html.dark .gterm .gtip::before {
   font-size: 15px;
   line-height: 1.62;
 }
-.gtip-luxury__definition { display: block; }
+.gtip-luxury__definition {
+  display: block;
+  overflow-wrap: anywhere;
+  word-break: normal;
+}
 .gtip-luxury__definition > :first-child { margin-top: 0; }
 .gtip-luxury__definition > :last-child { margin-bottom: 0; }
 .gtip-luxury__definition a {
@@ -6321,19 +6329,7 @@ html.dark .fn-marker:focus-visible {
   outline-color: var(--color-accent-strong, #e8b878);
 }
 
-.bar-icon-btn {
-  min-width: 44px;
-  min-height: 44px;
-  width: 44px;
-  height: 44px;
-}
 
-.btoc-close {
-  width: 44px;
-  height: 44px;
-  min-width: 44px;
-  min-height: 44px;
-}
 .btoc-close svg { width: 18px; height: 18px; }
 
 
@@ -7561,13 +7557,9 @@ html.dark .premium-frame-text {
 /* Delicate dashed inner border for old-world feel */
 
 /* UNIFY ALL TOOLTIPS: Hide glossary pointing arrows/handles to avoid overlaps and create 100% uniform, minimal, flat floating cards */
-.gterm .gtip::before { display: none !important; }
 
 /* Fix timeline vertical line overlap bug by keeping timeline circles perfectly solid and opaque */
 /* R28: keep category label visible; flex layout prevents overlap with close button. */
-.gtip-luxury__header { align-items: flex-start; margin-bottom: 8px; }
-.gtip-luxury__category { display: inline-flex; flex: 1 1 auto; width: fit-content; max-width: calc(100% - 44px); }
-.gtip-luxury__close { margin-left: auto; }
 /* Lux Upgrade v3.0: remove intrusive top scroll bar */
 /* Lux Upgrade v3.0: biography card polish - single border */ .biography-hero::after{display:none} .biography-hero{border-width:1px;box-shadow:0 8px 32px rgba(0,0,0,.06)} .biography-portrait{border-width:4px;box-shadow:0 4px 16px rgba(0,0,0,.08)}
 
@@ -7578,10 +7570,6 @@ html.dark .premium-frame-text {
 .tooltip,
 .gtip-luxury,
 .gtip-luxury__body,
-.gtip-luxury__definition {
-  overflow-wrap: anywhere;
-  word-break: normal;
-}
 @media (max-width: 768px) {
   .gtip.gb-floating-tip,
   .tooltip.gb-floating-tip {

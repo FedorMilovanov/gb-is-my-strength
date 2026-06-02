@@ -532,6 +532,23 @@
       return SiteUtils._h1El;
     },
 
+    scrollRaf: function (callback, opts) {
+      /* rAF-throttled scroll listener. Returns remove function. */
+      var ticking = false;
+      opts = opts || {};
+      var el = opts.el || window;
+      function onScroll() {
+        if (ticking) return;
+        ticking = true;
+        requestAnimationFrame(function () {
+          callback();
+          ticking = false;
+        });
+      }
+      el.addEventListener('scroll', onScroll, { passive: true });
+      return function () { el.removeEventListener('scroll', onScroll); };
+    },
+
     pageType: function () {
       /* Cached: page type from SITE_CONFIG (article, home, catalog, etc.) */
       if (!SiteUtils._pageType) {
@@ -1276,9 +1293,6 @@
     var h2s = document.querySelectorAll('article h2');
     if (!h2s.length) return;
 
-    /* B-09: ticking-паттерн как в модулях 08/09 — один rAF на серию scroll-событий */
-    var ticking = false;
-
     function update() {
       var current = null;
       h2s.forEach(function (h) {
@@ -1290,14 +1304,9 @@
       } else {
         label.classList.remove('visible');
       }
-      ticking = false;
     }
 
-    window.addEventListener('scroll', function () {
-      if (ticking) return;
-      ticking = true;
-      requestAnimationFrame(update);
-    }, { passive: true });
+    SiteUtils.scrollRaf(update);
     update();
   })();
 
@@ -1446,25 +1455,19 @@
 
     if (!links.length) return;
 
-    var ticking = false;
-    window.addEventListener('scroll', function () {
-      if (ticking) return;
-      ticking = true;
-      requestAnimationFrame(function () {
-        var scrollMid = window.scrollY + window.innerHeight * 0.3;
-        var active = links[0];
-        links.forEach(function (item) {
-          if (item.el.offsetTop <= scrollMid) active = item;
-        });
-        links.forEach(function (item) {
-          var isActive = item === active;
-          item.a.classList.toggle('active', isActive);
-          if (isActive) { item.a.setAttribute('aria-current', 'location'); }
-          else { item.a.removeAttribute('aria-current'); }
-        });
-        ticking = false;
+    SiteUtils.scrollRaf(function () {
+      var scrollMid = window.scrollY + window.innerHeight * 0.3;
+      var active = links[0];
+      links.forEach(function (item) {
+        if (item.el.offsetTop <= scrollMid) active = item;
       });
-    }, { passive: true });
+      links.forEach(function (item) {
+        var isActive = item === active;
+        item.a.classList.toggle('active', isActive);
+        if (isActive) { item.a.setAttribute('aria-current', 'location'); }
+        else { item.a.removeAttribute('aria-current'); }
+      });
+    });
   })();
 
 
@@ -1662,10 +1665,7 @@
       tocItems.forEach(function (item) { item.a.classList.toggle('active', item === active); });
     }
 
-    var ticking = false;
-    window.addEventListener('scroll', function () {
-      if (!ticking) { ticking = true; requestAnimationFrame(function () { updateBar(); ticking = false; }); }
-    }, { passive: true });
+    SiteUtils.scrollRaf(updateBar);
     updateBar();
 
     /* --- Скрывать bar при фокусе на полях ввода (мобильная клавиатура) --- */
@@ -4887,15 +4887,9 @@
     });
 
     /* ── Единый scroll-handler (rAF throttled) ── */
-    var ticking = false;
-    window.addEventListener('scroll', function () {
-      if (ticking) return;
-      ticking = true;
-      requestAnimationFrame(function () {
-        updateProgress(); updateNavbar(); updateScrollTop();
-        ticking = false;
-      });
-    }, { passive: true });
+    SiteUtils.scrollRaf(function () {
+      updateProgress(); updateNavbar(); updateScrollTop();
+    });
 
     /* Инициализация */
     updateProgress(); updateNavbar(); updateScrollTop();
