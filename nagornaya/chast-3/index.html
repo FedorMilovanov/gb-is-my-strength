@@ -54,7 +54,7 @@
   <link rel="preload" as="font" type="font/woff2" href="/fonts/Lora/lora-cyrillic-400.woff2" crossorigin>
   <link rel="stylesheet" href="/fonts/fonts.css?v=fc6cff8a">
   <link rel="stylesheet" href="/nagornaya/tw.min.css?v=2670414e">
-  <link rel="stylesheet" href="/css/site.css?v=5db71713">
+  <link rel="stylesheet" href="/css/site.css?v=2b2bce48">
   <script>
   window.SITE_CONFIG = {
     version: 1778943682,
@@ -255,7 +255,7 @@
                                     }
                   ]
 }</script>
-  <link rel="stylesheet" href="../../css/nagornaya-mobile-toc.css?v=8f73e5ef">
+  <link rel="stylesheet" href="../../css/nagornaya-mobile-toc.css?v=7a684099">
   <link rel="stylesheet" href="../../css/command-palette.css?v=5de00c2c">
     <link rel="stylesheet" href="/css/mobile-hotfix.css?v=2670621d">
 </head>
@@ -884,206 +884,19 @@
 
 </main>
 
-<script>
-/* Footnote tooltip system */
-(function(){
-  // 1. Build map: "[N]" -> full footnote text from bibliography section
-  var fnMap = {};
-  var sourcesBlock = null;
-  document.querySelectorAll('.bg-stone-100.rounded-2xl, .bg-stone-100.border-stone-300').forEach(function(el){
-    if(el.textContent.includes('Источники') || el.textContent.includes('библиограф')){
-      sourcesBlock = el;
-    }
-  });
-  if(sourcesBlock){
-    sourcesBlock.querySelectorAll('.flex.items-start').forEach(function(row){
-      var supEl = row.querySelector('sup');
-      var textEl = row.querySelector('span.flex-1, span:last-child');
-      if(supEl && textEl){
-        var key = supEl.textContent.trim();
-        if(/^\[\d+\]$/.test(key)){
-          fnMap[key] = textEl.textContent.trim();
-        }
-      }
-    });
-  }
+<!-- footnote tooltips handled by js/nagornaya-mobile-toc.js?v=d733f119 module E -->
+<!-- tooltip-trigger handled by js/site.js?v=323306c0 module 33 -->
 
-  if(!Object.keys(fnMap).length) return;
-
-  // 2. Create shared tooltip element
-  var tooltip = document.createElement('div');
-  tooltip.id = 'fn-popup';
-  tooltip.style.cssText = [
-    'display:none',
-    'position:fixed',
-    'z-index: var(--z-modal-low)',
-    'max-width:min(340px,calc(100vw - 20px))',
-    'min-width:min(200px,calc(100vw - 20px))',
-    'padding:10px 14px',
-    'background:#1c1917',
-    'color:#e7e5e4',
-    'font-size:11.5px',
-    'line-height:1.65',
-    'border-radius:10px',
-    'box-shadow:0 6px 28px rgba(0,0,0,0.45)',
-    'border:1px solid #44403c',
-    'font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,monospace',
-    'pointer-events:none',
-    'word-break:break-word',
-  ].join(';');
-  document.body.appendChild(tooltip);
-
-  function positionTooltip(anchorRect){
-    tooltip.style.visibility = 'hidden';
-    tooltip.style.display = 'block';
-    var tw = tooltip.offsetWidth;
-    var th = tooltip.offsetHeight;
-    tooltip.style.visibility = 'visible';
-
-    var vw = window.innerWidth;
-    var vh = window.innerHeight;
-    var left = anchorRect.left + anchorRect.width / 2 - tw / 2;
-    left = Math.max(10, Math.min(left, vw - tw - 10));
-
-    var top = anchorRect.top - th - 10;
-    if(top < 10) top = anchorRect.bottom + 10;
-    if(top + th > vh - 10) top = Math.max(10, vh - th - 10);
-
-    tooltip.style.left = left + 'px';
-    tooltip.style.top = top + 'px';
-  }
-
-  var currentSup = null;
-
-  // 3. Wire up all matching <sup>[N]</sup> in main content (skip sources block)
-  document.querySelectorAll('main sup, .space-y-6 sup').forEach(function(sup){
-    if(sourcesBlock && sourcesBlock.contains(sup)) return;
-    var key = sup.textContent.trim();
-    if(!fnMap[key]) return;
-
-    sup.style.cursor = 'pointer';
-    sup.title = '';
-    sup.setAttribute('role', 'button');
-    sup.setAttribute('aria-label', 'Сноска ' + key);
-    sup.style.textDecoration = 'underline dotted';
-    sup.style.textUnderlineOffset = '2px';
-
-    sup.addEventListener('mouseenter', function(){
-      tooltip.textContent = key + ' ' + fnMap[key];
-      currentSup = sup;
-      positionTooltip(sup.getBoundingClientRect());
-    });
-    sup.addEventListener('mouseleave', function(){
-      tooltip.style.display = 'none';
-      currentSup = null;
-    });
-
-    sup.addEventListener('click', function(e){
-      e.stopPropagation();
-      if(currentSup === sup && tooltip.style.display !== 'none'){
-        tooltip.style.display = 'none';
-        currentSup = null;
-        return;
-      }
-      tooltip.textContent = key + ' ' + fnMap[key];
-      currentSup = sup;
-      positionTooltip(sup.getBoundingClientRect());
-    });
-
-    sup.addEventListener('touchend', function(e){
-      e.preventDefault();
-      sup.click();
-    }, {passive: false});
-  });
-
-  // 4. Close on outside click or scroll
-  document.addEventListener('click', function(){ tooltip.style.display='none'; currentSup=null; });
-  window.addEventListener('scroll', function(){ tooltip.style.display='none'; currentSup=null; }, {passive:true});
-  window.addEventListener('resize', function(){ tooltip.style.display='none'; currentSup=null; }, {passive:true});
-})();
-</script>
-<!-- tooltip-trigger handled by js/site.js module 33 -->
-
-<script>
-(function(){
-  /* AUDIT V4 / M3: усиленное мобильное меню Nagornaya.
-     Добавлено: scroll-lock, ESC-close, backdrop-click-close,
-     aria-expanded toggle, focus-trap (мин), focus-restore. */
-  var btn = document.getElementById('menuBtn');
-  var menu = document.getElementById('mobileMenu');
-  var bars = document.querySelectorAll('#menuBtn .bar');
-  if (!btn || !menu) return;
-
-  var lastFocus = null;
-  var isOpen = false;
-
-  function open() {
-    if (isOpen) return;
-    isOpen = true;
-    menu.classList.remove('hidden');
-    btn.setAttribute('aria-expanded', 'true');
-    btn.setAttribute('aria-label', 'Закрыть меню');
-    if (bars[0]) bars[0].style.transform = 'rotate(45deg) translate(0,6px)';
-    if (bars[1]) bars[1].style.opacity = '0';
-    if (bars[2]) bars[2].style.transform = 'rotate(-45deg) translate(0,-6px)';
-    if (window.SiteUtils && window.SiteUtils.lockScroll) window.SiteUtils.lockScroll('nagornaya-menu');
-    else { document.body.classList.add('no-scroll'); }
-    lastFocus = document.activeElement;
-    var firstLink = menu.querySelector('a, button');
-    if (firstLink) firstLink.focus();
-  }
-  function close() {
-    if (!isOpen) return;
-    isOpen = false;
-    menu.classList.add('hidden');
-    btn.setAttribute('aria-expanded', 'false');
-    btn.setAttribute('aria-label', 'Открыть меню');
-    if (bars[0]) bars[0].style.transform = '';
-    if (bars[1]) bars[1].style.opacity = '1';
-    if (bars[2]) bars[2].style.transform = '';
-    if (window.SiteUtils && window.SiteUtils.unlockScroll) window.SiteUtils.unlockScroll('nagornaya-menu');
-    else { document.body.classList.remove('no-scroll'); }
-    if (lastFocus && lastFocus.focus) try { lastFocus.focus(); } catch(e){}
-  }
-
-  btn.addEventListener('click', function(){
-    if (isOpen) close(); else open();
-  });
-
-  /* Close on link click inside menu — UX: тап по разделу скрывает меню */
-  menu.addEventListener('click', function(e){
-    if (e.target.closest('a')) close();
-  });
-
-  /* Close on Escape */
-  document.addEventListener('keydown', function(e){
-    if (isOpen && (e.key === 'Escape' || e.key === 'Esc')) {
-      e.preventDefault();
-      close();
-    }
-  });
-
-  /* Close on backdrop tap (вне menu) — поскольку menu занимает inset:0,
-     добавляем touchstart-handler на сам menu для outside-click внутри padding */
-  menu.addEventListener('click', function(e){
-    if (e.target === menu) close();
-  });
-
-  /* Close on resize выше desktop breakpoint */
-  window.addEventListener('resize', function(){
-    if (window.innerWidth >= 1024 && isOpen) close();
-  });
-})();
-</script>
+<!-- mobile menu handled by js/nagornaya-mobile-toc.js?v=d733f119 module B -->
 
 <script src="/js/site-utils.js?v=d4ac3689"></script>
     <script src="/js/scroll-perf.js?v=84977eec"></script>
-    <script src="../../js/site.js?v=6cfa7dcb" defer></script>
+    <script src="../../js/site.js?v=323306c0" defer></script>
     <script src="../../js/glossary.js?v=4f1b7174" defer></script>
 <script src="../../js/sw-register.js?v=72d974d9" defer></script>
 <script src="../../js/search.js?v=386baf27" defer></script>
 <script src="../../js/highlights.js?v=5395797c" defer></script>
-<script src="../../js/nagornaya-mobile-toc.js?v=798c2264" defer></script>
+<script src="../../js/nagornaya-mobile-toc.js?v=d733f119" defer></script>
 <script src="../../js/enhancements.js?v=9359ad68" defer></script>
 <script src="../../js/bookmark-engine.js?v=88f51b8b" defer></script>
 <style>
@@ -1091,23 +904,7 @@
 @media(min-width:1024px){#read-progress{left:256px;width:calc(var(--rp,0) * (100% - 256px));}}
 </style>
 <div id="read-progress" role="progressbar" aria-label="Прогресс чтения" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"></div>
-<script>
-(function(){
-  var bar=document.getElementById('read-progress');
-  if(!bar)return;
-  function upd(){
-    var body=document.body,html=document.documentElement;
-    var total=Math.max(body.scrollHeight,html.scrollHeight)-html.clientHeight;
-    if(total<=0)return;
-    var pct=Math.min(100,Math.round(window.scrollY/total*100));
-    bar.style.width=pct+'%';
-    bar.setAttribute('aria-valuenow',pct);
-    document.documentElement.style.setProperty('--rp',pct/100);
-  }
-  window.addEventListener('scroll',upd,{passive:true});
-  upd();
-})();
-</script>
+<!-- read-progress handled by js/nagornaya-mobile-toc.js?v=d733f119 module C -->
 
 
 <script>
@@ -1159,26 +956,7 @@
 })();
 </script>
 
-<script>
-/* AUDIT v7: Font size control for nagornaya sidebar */
-(function(){
-  var sizes = [14,15,16,17,18,19,20];
-  var key = 'nag-fontsize';
-  var current = sizes.indexOf(parseInt(localStorage.getItem(key)) || 16);
-  if (current < 0) current = 2;
-  function apply(){ 
-    var el = document.querySelector('[data-pagefind-body]') || document.querySelector('main');
-    if(el) el.style.fontSize = sizes[current] + 'px';
-    try{ localStorage.setItem(key, sizes[current]); } catch(e){}
-  }
-  apply();
-  var dec = document.getElementById('nagFontDec');
-  var inc = document.getElementById('nagFontInc');
-  if(dec) dec.addEventListener('click', function(){ if(current > 0){ current--; apply(); } });
-  if(inc) inc.addEventListener('click', function(){ if(current < sizes.length-1){ current++; apply(); } });
-  // theme toggle handled by site.js via #themeToggle
-})();
-</script>
+<!-- font-size handled by js/nagornaya-mobile-toc.js?v=d733f119 module D -->
 
 </body>
 </html>
