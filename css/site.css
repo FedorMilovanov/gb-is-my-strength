@@ -129,8 +129,17 @@ body { overflow-x: hidden; }
   --tooltip-text:       var(--color-tooltip-text);
   --bg-alt:             var(--color-surface-alt);
   --accent-selection:   var(--color-accent-selection);
+  --article-font-size: 17px;
+
   --back-height:        auto;
 
+  --visual-viewport-h: 100dvh;
+  --color-amber: #d97706;
+  --color-blue:  #2b6cb0;
+  --color-rose:  #e11d48;
+  --color-red:   #dc2626;
+  --f-hebrew-display: "SBL Hebrew", "Ezra SIL", "Times New Roman", "Noto Sans Hebrew", serif;
+  color-scheme: light;
   --scroll-margin: 96px;
 
   --s-1: clamp(3px,  0.4vw,  4px);
@@ -211,7 +220,16 @@ html.dark {
   --accent-selection:   var(--color-accent-selection);
   --scroll-margin:      96px;
 }
+  --color-amber: #fbbf24;
+  --color-blue:  #60a5fa;
+  --color-rose:  #fb7185;
+  --color-red:   #f87171;
 
+}
+
+:root {
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
 }
 
 html { scroll-behavior: smooth; }
@@ -548,10 +566,6 @@ html.dark .breadcrumb__link:focus-visible {
   border-bottom: 1px solid var(--color-border);
 }
 
-.article-header--centered {
-  text-align: center;
-  margin-bottom: clamp(40px, 6vw, 70px);
-}
 
 .article-header--no-border {
   border-bottom: none;
@@ -637,20 +651,7 @@ html.dark .breadcrumb__link:focus-visible {
   text-align: center;
   font-family: 'Source Sans 3', system-ui, sans-serif;
 }
-.msjline--right {
-  text-align: right;
 
-  padding-right: clamp(44px, 6vw, 52px);
-}
-
-.article-meta-author {
-  font-size: 16px;
-  color: var(--color-text-muted);
-  line-height: 1.7;
-  margin-top: 10px;
-  margin-bottom: 38px;
-  font-family: 'Source Sans 3', system-ui, sans-serif;
-}
 
 .reading-meta {
   display: flex;
@@ -1491,13 +1492,6 @@ html.dark .card.fx-lift:focus-within{
   -webkit-box-orient: vertical;
   overflow: hidden;
 }
-.coming-soon {
-  font-family: 'Source Sans 3', system-ui, sans-serif;
-  font-size: 14px;
-  color: var(--color-text-muted);
-  font-style: italic;
-  padding: 24px 0 0;
-}
 
 .warn-box {
   background: var(--warn-bg);
@@ -1591,29 +1585,6 @@ html.dark .card.fx-lift:focus-within{
 }
 .series-next-cta:hover .series-next-cta__action { color: var(--color-accent-strong); }
 
-.ai-disclosure {
-  display: flex;
-  gap: 12px;
-  align-items: flex-start;
-  margin: 24px 0;
-  padding: 14px 16px;
-  border-radius: 16px;
-  border: 1px solid color-mix(in srgb, var(--color-accent) 18%, transparent);
-  background: color-mix(in srgb, var(--color-accent) 6%, transparent);
-  color: var(--color-text-muted);
-  font-size: 14px;
-  line-height: 1.55;
-}
-.ai-disclosure__icon {
-  flex: 0 0 auto;
-  color: var(--color-accent);
-  margin-top: 2px;
-}
-.ai-disclosure p { margin: 0; }
-html.dark .ai-disclosure {
-  border-color: color-mix(in srgb, var(--color-accent-strong, #e8b878) 22%, transparent);
-  background: color-mix(in srgb, var(--color-accent-strong, #e8b878) 8%, transparent);
-}
 
 .quote-box {
   border-left: 3px solid var(--color-accent);
@@ -1681,21 +1652,8 @@ html.dark .quote-box--closing {
   background: #100d06;
   border-color: rgba(200, 169, 126, 0.22);
 }
-.qbc-text {
-  font-family: 'Lora', Georgia, serif;
-  font-size: clamp(16px, 2.1vw, 19px);
-  font-style: italic;
-  font-weight: 600;
-  line-height: 1.75;
-  color: var(--color-text);
-  margin: 0;
-}
-html.dark .qbc-text {
-  color: rgba(255, 245, 220, 0.88);
-}
 @media (max-width: 680px) {
   .quote-box--closing { padding: 24px 20px 24px 20px; flex-direction: column; gap: 14px; }
-  .qbc-text { font-size: 15px; }
 }
 .quote-attribution,
 footer.quote-attribution {
@@ -1779,26 +1737,8 @@ footer.quote-attribution cite { font-style: normal; }
 .opusdei-note.visible { opacity: 1; transform: translateY(0); }
 .opusdei-note strong { color: var(--color-accent); }
 
-.data-table {
-  width: 100%;
-  border-collapse: collapse;
-  margin: 24px 0;
-  font-size: 15px;
-  font-family: 'Source Sans 3', system-ui, sans-serif;
-}
-.data-table th, .data-table td {
-  border: 1px solid var(--color-border);
-  padding: 12px 14px;
-  vertical-align: top;
-  text-align: left;
-}
-.data-table th {
-  background: var(--color-surface-muted);
-  font-weight: 600;
-  font-size: 13px;
-}
+.data-table th,
 @media (max-width: 600px) {
-  .data-table { display: block; overflow-x: auto; }
 }
 
 .compare-table {
@@ -1988,10 +1928,6 @@ html.dark .compare-table:not(.compare-table--scroll) tr {
   transform: scale(1.02);
 }
 
-@keyframes fx-breathe{
-  0%, 100% { transform: scale(1); }
-  50%      { transform: scale(1.06); }
-}
 .article-figure figcaption {
   font-family: 'Source Sans 3', system-ui, sans-serif;
   font-size: 12px;
@@ -2141,15 +2077,6 @@ html.dark .compare-table:not(.compare-table--scroll) tr {
   filter: none;
 }
 
-.timeline-list { margin-top: 20px; padding: 0; list-style: none; }
-.timeline-list li {
-  display: flex;
-  align-items: baseline;
-  gap: 20px;
-  padding: 7px 0;
-  border-bottom: 1px solid var(--color-border);
-}
-.timeline-list li:last-child { border-bottom: none; }
 .tl-dot { display: none; }
 .tl-year {
   font-family: "Source Sans 3", system-ui, sans-serif;
@@ -2215,38 +2142,6 @@ html.dark .compare-table:not(.compare-table--scroll) tr {
   line-height: 1.5;
 }
 
-.faq-item { border-bottom: 1px solid var(--color-border); }
-.faq-item:last-child { border-bottom: none; }
-.faq-item summary {
-  font-family: 'Source Sans 3', system-ui, sans-serif;
-  font-size: 15px;
-  font-weight: 600;
-  color: var(--color-text);
-  padding: 16px 0;
-  cursor: pointer;
-  list-style: none;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 12px;
-}
-.faq-item summary::-webkit-details-marker { display: none; }
-.faq-item summary::after {
-  content: "+";
-  font-size: 20px;
-  font-weight: 400;
-  color: var(--color-text-muted);
-  flex-shrink: 0;
-  transition: transform .2s;
-}
-.faq-item[open] summary::after { transform: rotate(45deg); }
-.faq-body {
-  padding: 0 0 16px;
-  font-family: 'Source Sans 3', system-ui, sans-serif;
-  font-size: 15px;
-  color: var(--color-text-muted);
-  line-height: 1.65;
-}
 
 .toc-sidebar {
   position: fixed;
@@ -2808,7 +2703,7 @@ html.dark .bar-icon-sun  { display: block; color: #f5c542; }
   top: 0; left: 0;
   width: 0%;
   height: 2px;
-  background: #7a2e2e;
+  background: var(--color-accent);
   z-index: var(--z-max);
   transition: width .1s linear;
 }
@@ -3678,29 +3573,8 @@ body.has-bottom-bar .bookmark-toast {
   gap: 6px;
 }
 
-.btoc-fontsize--footer {
-  padding: 10px 20px 8px;
-  border-bottom: 1px solid var(--color-border);
-}
 
-.btoc-fontsize--sidebar {
-  margin-top: 14px;
-  padding-top: 12px;
-  border-top: 1px solid var(--color-border);
-  padding-left: 14px;
-}
 
-.btoc-fontsize-icon {
-  font-family: 'Lora', Georgia, serif;
-  font-size: 12px;
-  font-weight: 600;
-  color: var(--color-text-muted);
-  letter-spacing: -0.5px;
-  flex-shrink: 0;
-  user-select: none;
-  opacity: 0.55;
-  margin-right: 2px;
-}
 
 .btoc-fontsize-btn {
   -webkit-appearance: none; appearance: none;
@@ -3754,12 +3628,6 @@ body.has-bottom-bar .bookmark-toast {
 }
 
 /* empty .btoc-fontsize-dot rule removed (was no-op) */
-
-:root {
-  /* AUDIT V8: z-index variables were duplicated here (identical to definitions
-     at the top of file). Removed redundant vars; only article-font-size remains. */
-  --article-font-size: 17px;
-}
 
 .article-main .quiz-question-text,
 .article-body .quiz-question-text,
@@ -4560,28 +4428,8 @@ footer {
 footer a { color: var(--color-text-muted); text-decoration: none; }
 footer a:hover { color: var(--color-text); }
 
-footer.footer-home {
-  margin-top: 20px;
-  padding-bottom: 32px;
-  border-bottom: none;
-  border-top: none;
-  justify-content: flex-end;
-}
+footer
 
-.about-block {
-  margin-top: 72px;
-  padding: 28px 0;
-  border-top: 1px solid var(--color-border);
-  border-bottom: 1px solid var(--color-border);
-}
-.about-block p {
-  font-family: 'Source Sans 3', system-ui, sans-serif;
-  font-size: 14px;
-  color: var(--color-text-muted);
-  line-height: 1.65;
-  margin: 0;
-}
-.about-block strong { font-weight: 600; color: var(--color-text); }
 
 .epigraph {
   margin: clamp(48px, 8vw, 80px) 0 0;
@@ -5539,15 +5387,6 @@ html:not(.dark) .quiz-review-prev {
   display: flex;
   align-items: stretch;
 }
-.card-cover-wrap {
-  flex-shrink: 0;
-  width: 192px;
-}
-.card-cover-wrap a {
-  display: block;
-  height: 100%;
-  overflow: hidden;
-}
 .card-cover {
   width: 100%;
   height: 100%;
@@ -5568,13 +5407,6 @@ html:not(.dark) .quiz-review-prev {
 @media (max-width: 600px) {
   .article-item.card.has-cover {
     flex-direction: column;
-  }
-  .card-cover-wrap {
-    width: 100%;
-    height: 170px;
-  }
-  .card-cover-wrap a {
-    height: 170px;
   }
 }
 
@@ -6049,17 +5881,8 @@ html.dark .faq-accordion__q:hover { background: var(--color-surface); background
    the nagornaya-override (compact) variant still applies under body.nagornaya-page. */
 
 @media (pointer: coarse) {
-  .fn-marker, .bref, a.bref, .footnote-ref {
-    position: relative;
-    -webkit-tap-highlight-color: transparent;
-  }
-  .fn-marker::before, .bref::before, a.bref::before, .footnote-ref::before {
-    content: "";
-    position: absolute;
-    top: 50%; left: 50%;
-    width: 44px; height: 44px;
-    transform: translate(-50%, -50%);
-  }
+  .fn-marker, .bref, a.bref,
+  .fn-marker::before, .bref::before, a.bref::before,
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -6138,29 +5961,6 @@ abbr.gterm:hover { text-decoration: none; }
 .quiz-question { min-height: 80px; }
 .quiz-options { min-height: 200px; }
 
-.fn-sheet {
-  position: fixed;
-  inset: auto 0 -100% 0;
-  background: var(--color-surface);
-  border-radius: 18px 18px 0 0;
-  box-shadow: 0 -10px 40px rgba(0, 0, 0, .25);
-  padding: 20px 22px max(20px, env(safe-area-inset-bottom)) 22px;
-  transition: bottom .3s cubic-bezier(.2, 0, 0, 1);
-  z-index: var(--z-modal);
-  max-height: 60vh;
-  overflow-y: auto;
-}
-.fn-sheet.is-open { bottom: 0; }
-.fn-sheet-handle {
-  width: 40px; height: 4px; border-radius: 2px;
-  background: var(--color-text-muted); margin: 0 auto 12px; opacity: .4;
-}
-.fn-sheet-close {
-  position: absolute; top: 12px; right: 12px;
-  width: 36px; height: 36px;
-  border: 0; background: transparent;
-  cursor: pointer; color: var(--color-text);
-}
 
 #selection-share-popup { z-index: var(--z-modal-1); }
 
@@ -6517,11 +6317,6 @@ html.dark .gb-accuracy-btn:hover {
   .gb-text-link, .gb-text-link:hover { transition: none; }
 }
 
-:root {
-  -webkit-text-size-adjust: 100%;
-  text-size-adjust: 100%;
-}
-
 button, a, label, summary, [role="button"], input[type="button"], input[type="submit"] {
   touch-action: manipulation;
 }
@@ -6681,13 +6476,6 @@ html.dark .fn-marker:focus-visible {
   justify-content: center;
 }
 
-.fn-sheet-close {
-  width: 44px;
-  height: 44px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
 
 @media (pointer: coarse) {
   .h-cp-btn {
@@ -6711,8 +6499,6 @@ html.dark .fn-marker:focus-visible {
 }
 
 @media (max-width: 600px) {
-  .epilogue-caption { padding: clamp(28px, 8vw, 56px) clamp(20px, 5vw, 40px) !important; }
-  .epilogue-prose { padding: clamp(20px, 5vw, 32px) clamp(20px, 5vw, 40px) !important; }
   .heart-flip-back { padding: clamp(24px, 6vw, 36px) clamp(20px, 5vw, 40px) !important; }
   .heart-flip-wrap { margin: clamp(28px, 6vw, 48px) 0 !important; }
   .author-card { margin: clamp(24px, 5vw, 40px) 0 !important; }
@@ -6855,10 +6641,6 @@ button, a, [role="button"], [tabindex="0"], summary, input, textarea, select {
   align-items: flex-start;
   flex-wrap: wrap;
 }
-
-:root {
-  --visual-viewport-h: 100dvh;
-}
 .fn-sheet,
 #share-dialog,
 .btoc-panel {
@@ -6875,18 +6657,6 @@ button, a, [role="button"], [tabindex="0"], summary, input, textarea, select {
 .mb-8 { margin-bottom: 30px; }
 .pt-0 { padding-top: 0; }
 
-:root {
-  --color-amber: #d97706;
-  --color-blue: #2b6cb0;
-  --color-rose: #e11d48;
-  --color-red: #dc2626;
-}
-html.dark {
-  --color-amber: #fbbf24;
-  --color-blue: #60a5fa;
-  --color-rose: #fb7185;
-  --color-red: #f87171;
-}
 
 /* Fix for oversized portrait images to prevent full-screen height */
 .article-img img {
@@ -7549,9 +7319,6 @@ html.dark .h-scripture-bg::before {
 }
 
 /* AUDIT v10/v11: visual polish — Nagornaya quiz/palette/summary + home Hebrew/title + catalog */
-:root {
-  --f-hebrew-display: "SBL Hebrew", "Ezra SIL", "Times New Roman", "Noto Sans Hebrew", serif;
-}
 
 .h-phrase--hebrew, .h-phrase[lang="he"], .h-phrase[lang="iw"],
 .h-sacred-line, .hb-front, [lang="he"], [lang="iw"] {
@@ -8525,39 +8292,10 @@ html.dark .context-links a:hover {
       }
 
       /* Эпиграфы с drop cap */
-      .ancient-epigraph {
-        font-family: ui-serif, Georgia, serif;
-        font-size: 18px;
-        line-height: 1.75;
-        color: var(--color-text-warm);
-        margin: var(--s-7) 0;
-        padding: var(--s-5) 0;
-        position: relative;
-        text-align: center;
-        max-width: 65ch;
-        margin-left: auto;
-        margin-right: auto;
-      }
 
       .ancient-epigraph::before,
-      .ancient-epigraph::after {
-        content: '';
-        position: absolute;
-        left: 50%;
-        transform: translateX(-50%);
-        width: 120px;
-        height: 1px;
-        background: linear-gradient(90deg, transparent, var(--color-accent-selection), transparent);
-        opacity: 0.6;
-      }
 
-      .ancient-epigraph::before {
-        top: 0;
-      }
 
-      .ancient-epigraph::after {
-        bottom: 0;
-      }
 
       /* Метка времени в стиле фолианта */
       .foliant-mark {
@@ -8598,7 +8336,6 @@ html.dark .context-links a:hover {
           padding-left: var(--s-5);
         }
       }
-    }
 /* Fix for paragraph spacing - 2026-06-02 */
 .article-body p, .article-main p, article p { margin-bottom: 24px !important; }
 .article-body p:last-child { margin-bottom: 0 !important; }
@@ -8687,9 +8424,6 @@ body.gb-fc-active .mobile-controls .theme-toggle {
    font-optical-sizing: auto → браузер автоматически выбирает
    оптические параметры под размер. Baseline: Chrome 108+,
    Firefox 110+, Safari 16.4+. Fallback: нет (просто игнорируется) */
-:root {
-  font-optical-sizing: auto;
-}
 h1, h2, h3, h4, .article-title, .resume-reading-title,
 .pullquote p, .gtip-luxury__title, .quiz-launch-label,
 .btoc-title, .summary-card__num {
@@ -9065,13 +8799,6 @@ body {
 /* ── 19. Color-scheme для браузерных UI элементов ─────────────
    Правильный цвет для scrollbars, form inputs в dark mode */
 
-:root {
-  color-scheme: light;
-}
-
-html.dark {
-  color-scheme: dark;
-}
 
 /* ── 20. Article body — улучшенный word-spacing для кириллицы ──
    Кириллица на justified text выглядит лучше с чуть большим

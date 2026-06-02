@@ -584,6 +584,8 @@
 ============================================================ */
 (function () {
   if (!document.querySelector('.h-phrase--ambient')) return;
+  /* Skip ambient animation on reduced-motion preference */
+  if (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
   /* ── Ambient Scripture Background ── */
   var phrases = [
     /* Greek */

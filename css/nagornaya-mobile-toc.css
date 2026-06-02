@@ -488,7 +488,7 @@ body.nagornaya-page .btoc-share-btn svg {
   font-size: clamp(1.5rem, 3.5vw, 1.9rem);
   border-bottom: 1px solid var(--color-border, #e7e2d8);
   padding-bottom: 0.75rem;
-  margin-top: clamp(40px, 5vw, 64px) !important;
+  margin-top: clamp(40px, 5vw, 64px);
   margin-bottom: 1.25rem;
   color: var(--color-text, #1a1a1a);
   clear: both;
@@ -624,38 +624,38 @@ html.dark .nag-fontsize-btn:hover {
 body.nagornaya-page .nag-summary,
 body.nagornaya-page .nag-summary__list,
 body.nagornaya-page .nag-summary__item {
-  background: transparent !important;
+  background: transparent;
 }
 body.nagornaya-page .nag-summary__head {
-  color: #7a2e2e !important;
+  color: #7a2e2e;
 }
 body.nagornaya-page .nag-summary__item,
 body.nagornaya-page .nag-summary__text {
-  color: #4b4036 !important;
+  color: #4b4036;
 }
 body.nagornaya-page .nag-summary__num {
-  background: rgba(116,151,117,.10) !important;
-  border-color: rgba(116,151,117,.18) !important;
+  background: rgba(116,151,117,.10);
+  border-color: rgba(116,151,117,.18);
 }
 body.nagornaya-page .nag-summary__num::before {
-  color: #5f8f61 !important;
+  color: #5f8f61;
 }
 html.dark body.nagornaya-page .nag-summary {
-  border-top-color: rgba(245,213,166,.16) !important;
+  border-top-color: rgba(245,213,166,.16);
 }
 html.dark body.nagornaya-page .nag-summary__head {
-  color: rgba(245,226,198,.76) !important;
+  color: rgba(245,226,198,.76);
 }
 html.dark body.nagornaya-page .nag-summary__item,
 html.dark body.nagornaya-page .nag-summary__text {
-  color: rgba(250,243,232,.84) !important;
+  color: rgba(250,243,232,.84);
 }
 html.dark body.nagornaya-page .nag-summary__num {
-  background: rgba(122,200,122,.11) !important;
-  border-color: rgba(122,200,122,.24) !important;
+  background: rgba(122,200,122,.11);
+  border-color: rgba(122,200,122,.24);
 }
 html.dark body.nagornaya-page .nag-summary__num::before {
-  color: #8ed08a !important;
+  color: #8ed08a;
 }
 
 
@@ -664,7 +664,7 @@ html.dark body.nagornaya-page #sec-quiz {
   clear: both;
   position: relative;
   z-index: 1;
-  margin-top: clamp(40px, 5vw, 64px) !important;
+  margin-top: clamp(40px, 5vw, 64px);
 }
 html.dark body.nagornaya-page .gb-accuracy-inner {
   background: #221b14;
