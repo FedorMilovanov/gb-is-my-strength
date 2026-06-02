@@ -4494,114 +4494,216 @@
   })();
 })();
 
-/* === MERGED: theme-toggle-floating (AUDIT v5) === */
+
 /* ============================================================
-   theme-toggle-floating.js — floating round theme toggle для страниц
-   которые не имеют встроенного theme-toggle (например, nagornaya/chast-*).
+   29. Floating Controls (UNIFIED) — единый sticky-блок «тема + поиск»
+   ────────────────────────────────────────────────────────────
+   AGENTS-r17: заменяет три разрозненных артефакта:
+     • встроенные <button class="theme-toggle"> в шапках статей (absolute, уезжали при скролле)
+     • #themeFloat (theme-toggle-floating.js — bottom-right FAB)
+     • #gbSearchFloat (Floating Search Button — top-right, inline-styled)
+
+   Правила (из AGENTS.md §6.1):
+     • Активируется ТОЛЬКО на страницах с хлебными крошками (.breadcrumb).
+       На главной / каталогах (index, articles/, biografii/, pastor-series/,
+       nagornaya/seriya/, about/) переключатель темы уже встроен в верхнюю
+       навигацию (.mobile-controls или равноценную) — там этот модуль не работает.
+     • Две идентичные круглые кнопки в одном fixed-блоке справа сверху:
+       (1) тема — на уровне breadcrumb, (2) поиск — ниже на 52 px.
+     • Sticky (position:fixed) — не уезжают при скролле.
+     • Канонические SVG-иконки sun/moon инжектятся JS-ом, независимо
+       от того что было в HTML (фикс «вместо солнышка кружочек»).
+     • Логика темы — общая (html.dark + localStorage 'theme' + событие
+       'theme:changed'); поиск — через GBSearch.open() или 'gb:openSearch'.
    ============================================================ */
 (function () {
   'use strict';
 
-  // Не добавлять, если уже есть встроенный theme-toggle
-  if (document.getElementById('themeToggle') || document.getElementById('themeFloat')) return;
-
-  function ready(fn) {
-    if (document.readyState === 'loading')
-      document.addEventListener('DOMContentLoaded', fn);
-    else fn();
+  /* Запуск на reading-страницах: article/series-pages с навигационной
+     цепочкой (.breadcrumb) и на страницах серии «Нагорная проповедь»
+     (body.nagornaya-page) — у них собственный sidebar вместо breadcrumb.
+     На главной/каталогах (index, articles/, biografii/, pastor-series/,
+     nagornaya/seriya/) переключатель темы живёт в шапке .mobile-controls —
+     там этот модуль не нужен. */
+  function shouldActivate() {
+    if (document.querySelector('.breadcrumb')) return true;
+    if (document.body && document.body.classList.contains('nagornaya-page')) return true;
+    return false;
   }
 
+  /* Канонические SVG, единые для всего сайта. */
   var SUN_SVG =
-    '<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' +
-    '<circle cx="12" cy="12" r="4.5"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/></svg>';
-
+    '<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">' +
+    '<circle cx="12" cy="12" r="4.5"/>' +
+    '<path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/>' +
+    '</svg>';
   var MOON_SVG =
-    '<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' +
-    '<path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>';
+    '<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">' +
+    '<path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/>' +
+    '</svg>';
+  var SEARCH_SVG =
+    '<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.85" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">' +
+    '<circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/>' +
+    '</svg>';
+
+  function iconForTheme() {
+    return document.documentElement.classList.contains('dark') ? SUN_SVG : MOON_SVG;
+  }
+
+  function ready(fn) {
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', fn);
+    } else {
+      fn();
+    }
+  }
 
   ready(function () {
-    var btn = document.createElement('button');
-    btn.id = 'themeFloat';
-    btn.type = 'button';
-    btn.className = 'theme-float-btn';
-    btn.setAttribute('aria-label', 'Переключить тему');
-    btn.setAttribute('title', 'Светлая / тёмная тема');
-    btn.innerHTML = document.documentElement.classList.contains('dark') ? SUN_SVG : MOON_SVG;
-    document.body.appendChild(btn);
+    if (!shouldActivate()) return;
+    if (document.getElementById('gbFloatingControls')) return;
 
+    /* Маркер на body — позволяет CSS скрыть legacy-кнопки только тут. */
+    document.body.classList.add('gb-fc-active');
+
+    /* ── Контейнер ──────────────────────────────────────────────── */
+    var wrap = document.createElement('div');
+    wrap.id = 'gbFloatingControls';
+    wrap.className = 'gb-floating-controls';
+    wrap.setAttribute('role', 'group');
+    wrap.setAttribute('aria-label', 'Тема и поиск');
+
+    /* ── Кнопка темы ───────────────────────────────────────────── */
+    var themeBtn = document.createElement('button');
+    themeBtn.type = 'button';
+    themeBtn.className = 'gb-fc-btn gb-fc-theme';
+    themeBtn.setAttribute('aria-label', 'Переключить тему');
+    themeBtn.setAttribute('title', 'Светлая / тёмная тема (D)');
+    themeBtn.innerHTML = iconForTheme();
+
+    /* ── Кнопка поиска ─────────────────────────────────────────── */
+    var searchBtn = document.createElement('button');
+    searchBtn.type = 'button';
+    searchBtn.className = 'gb-fc-btn gb-fc-search';
+    searchBtn.setAttribute('aria-label', 'Открыть поиск');
+    searchBtn.setAttribute('title', 'Поиск по сайту (/)');
+    searchBtn.innerHTML = SEARCH_SVG;
+
+    wrap.appendChild(themeBtn);
+    wrap.appendChild(searchBtn);
+    document.body.appendChild(wrap);
+
+    /* ── Логика темы ──────────────────────────────────────────── */
     function setTheme(toDark) {
       document.documentElement.classList.toggle('dark', toDark);
-      btn.innerHTML = toDark ? SUN_SVG : MOON_SVG;
+      themeBtn.innerHTML = iconForTheme();
       try { localStorage.setItem('theme', toDark ? 'dark' : 'light'); } catch (_) {}
-      // Триггер для синхронизации с bottom-bar moon/sun (если есть)
       document.dispatchEvent(new CustomEvent('theme:changed', { detail: { dark: toDark } }));
     }
-
-    btn.addEventListener('click', function () {
+    themeBtn.addEventListener('click', function () {
       setTheme(!document.documentElement.classList.contains('dark'));
     });
 
-    // Sync с системными изменениями темы (если пользователь меняет через bottom-bar)
-    var obs = new MutationObserver(function () {
-      var isDark = document.documentElement.classList.contains('dark');
-      var want = isDark ? SUN_SVG : MOON_SVG;
-      if (btn.innerHTML !== want) btn.innerHTML = want;
+    /* Если кто-то ещё (bottom-bar, legacy кнопки) переключил html.dark — синхронизируем иконку. */
+    var classObs = new MutationObserver(function () {
+      var want = iconForTheme();
+      if (themeBtn.innerHTML !== want) themeBtn.innerHTML = want;
     });
-    obs.observe(document.documentElement, { attributes: true, attributeFilter: ['class'] });
+    classObs.observe(document.documentElement, { attributes: true, attributeFilter: ['class'] });
+
+    /* ── Логика поиска ────────────────────────────────────────── */
+    searchBtn.addEventListener('click', function () {
+      if (window.GBSearch && typeof window.GBSearch.open === 'function') {
+        window.GBSearch.open();
+      } else {
+        window.dispatchEvent(new CustomEvent('gb:openSearch'));
+      }
+    });
+
+    /* ── Канонизация SVG в видимых legacy-кнопках (bottom-bar) ──────
+       На некоторых страницах в HTML лежит ущербный SVG (только круг без
+       лучей — «кружочек»). Скрытые кнопки (через body.gb-fc-active)
+       не трогаем, а вот видимые в bottom-bar / .mobile-controls
+       приводим к каноническому виду. */
+    function canonizeLegacyIcons() {
+      var visible = document.querySelectorAll(
+        '.bottom-bar .theme-toggle, .mobile-controls .theme-toggle'
+      );
+      Array.prototype.forEach.call(visible, function (btn) {
+        if (btn.dataset.gbCanonical === '1') return;
+        btn.dataset.gbCanonical = '1';
+        /* Сохраняем два слоя (sun + moon) — старый CSS использует .icon-sun/.icon-moon
+           для cross-fade, поэтому стилизуем оба слоя одинаково. */
+        var sunWrap = btn.querySelector('.icon-sun');
+        var moonWrap = btn.querySelector('.icon-moon');
+        var canon =
+          '<span class="icon-sun" aria-hidden="true">' + SUN_SVG + '</span>' +
+          '<span class="icon-moon" aria-hidden="true">' + MOON_SVG + '</span>';
+        if (sunWrap || moonWrap) {
+          btn.innerHTML = canon;
+        } else {
+          /* Простой одиночный SVG, как в nag-sidebar-theme-btn */
+          btn.innerHTML = iconForTheme();
+        }
+      });
+    }
+    canonizeLegacyIcons();
   });
 })();
 
-/* Lux Upgrade v3.0 — fixed search button under theme toggle */
+/* ============================================================
+   30. Glossary cross-ref clicks внутри тултипов
+   ────────────────────────────────────────────────────────────
+   AGENTS-r17: в /data/glossary.json определения могут содержать
+   ссылки вида <a class="gterm" href="#" data-term="экзегеза">…</a>.
+   Эти ссылки попадают внутрь .gtip / .gtip-luxury__body, но клик
+   по ним до сих пор не переключал тултип на другой термин (т.к.
+   makeTooltipController обрабатывает только клик по .gterm на странице).
 
-/* === 30. Floating Search Button ===
-   Floating round search button for pages without a built-in search.
-   Includes theme synchronization and responsive visibility. */
+   Делаем делегирование: клик по .gtip a.gterm[data-term] → найти на
+   странице первый .gterm[data-term="<...>"] и кликнуть по нему
+   (или, если нет — открыть отдельный тултип-overlay со значением).
+   ============================================================ */
 (function () {
   'use strict';
 
-  if (document.getElementById('gbSearchFloat')) return;
+  document.addEventListener('click', function (e) {
+    var t = e.target;
+    if (!t || !t.closest) return;
+    var a = t.closest('.gtip a.gterm[data-term], .gtip-luxury__body a.gterm[data-term], .gtip-luxury a.gterm[data-term]');
+    if (!a) return;
+    e.preventDefault();
+    e.stopPropagation();
 
-  var btn = document.createElement('button');
-  btn.id = 'gbSearchFloat';
-  btn.type = 'button';
-  btn.setAttribute('aria-label', 'Поиск');
-  btn.innerHTML = '<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>';
-  
-  // Style as a floating action button
-  btn.style.cssText = 'position:fixed; top:68px; right:max(8.5vw,12px); width:44px; height:44px; border:none; background:transparent; color:var(--color-text); display:flex; align-items:center; justify-content:center; z-index:var(--z-toast-high, 9998); cursor:pointer; transition:color .2s,transform .15s';
+    var term = (a.getAttribute('data-term') || '').toLowerCase();
+    if (!term) return;
 
-  document.body.appendChild(btn);
+    /* Закрываем текущий тултип */
+    var openTip = document.querySelector('.gtip.is-open, .gtip-luxury.is-open');
+    if (openTip && openTip.classList) openTip.classList.remove('is-open');
+    /* Универсально снимаем aria-expanded со всех .gterm */
+    var opened = document.querySelectorAll('.gterm[aria-expanded="true"]');
+    Array.prototype.forEach.call(opened, function (el) { el.setAttribute('aria-expanded', 'false'); });
 
-  function syncColor() {
-    var isDark = document.documentElement.classList.contains('dark');
-    btn.style.color = isDark ? '#d4a574' : 'var(--color-text)';
-  }
-
-  syncColor();
-  new MutationObserver(syncColor).observe(document.documentElement, { attributes: true, attributeFilter: ['class'] });
-
-  btn.onmouseenter = function () { btn.style.transform = 'scale(1.08)'; };
-  btn.onmouseleave = function () { btn.style.transform = 'scale(1)'; };
-  
-  btn.onclick = function () {
-    if (window.GBSearch && GBSearch.open) {
-      GBSearch.open();
-    } else {
-      window.dispatchEvent(new CustomEvent('gb:openSearch'));
+    /* Ищем целевой .gterm на странице (вне любого .gtip) */
+    var candidates = document.querySelectorAll('.gterm[data-term]');
+    var target = null;
+    for (var i = 0; i < candidates.length; i++) {
+      var c = candidates[i];
+      if (c.closest('.gtip, .gtip-luxury')) continue;
+      if ((c.getAttribute('data-term') || '').toLowerCase() === term) { target = c; break; }
     }
-  };
 
-  function checkVisibility() {
-    btn.style.display = window.innerWidth < 900 ? 'none' : 'flex';
-  }
-
-  // Use SiteUtils.debounce for resize to improve performance
-  if (window.SiteUtils && typeof window.SiteUtils.debounce === 'function') {
-    window.addEventListener('resize', SiteUtils.debounce(checkVisibility, 150));
-  } else {
-    window.addEventListener('resize', checkVisibility);
-  }
-  
-  checkVisibility();
+    if (target) {
+      /* Скроллим к найденному термину и эмулируем клик через короткую задержку */
+      try {
+        target.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      } catch (_) {}
+      setTimeout(function () {
+        target.click();
+        if (typeof target.focus === 'function') {
+          try { target.focus({ preventScroll: true }); } catch (__) { target.focus(); }
+        }
+      }, 240);
+    }
+  }, true);
 })();
-
