@@ -525,7 +525,7 @@
     });
 
     document.addEventListener('click', function () { popup.style.display = 'none'; cur = null; });
-    window.addEventListener('scroll', function (, { passive: true }) { popup.style.display = 'none'; cur = null; }, { passive: true });
+    window.addEventListener('scroll', function () { popup.style.display = 'none'; cur = null; }, { passive: true });
     window.addEventListener('resize', function () { popup.style.display = 'none'; cur = null; }, { passive: true });
   });
 
