@@ -2935,10 +2935,10 @@ html.dark .sd-btn--copy.copied .sd-icon { background: var(--quiz-correct-bg); co
   -webkit-user-select: all;
 }
 
-.sd-url-strip { display: none !important; }
-.sd-divider   { display: none !important; }
-.sd-url-copy  { display: none !important; }
-.sd-label-default { display: none !important; }
+.sd-url-strip { display: none; }
+.sd-divider   { display: none; }
+.sd-url-copy  { display: none; }
+.sd-label-default { display: none; }
 
 @media print { #share-dialog-overlay { display: none !important; } }
 
@@ -3120,7 +3120,7 @@ html.dark .error-flip-label-fact { color: #80c890; }
   white-space: nowrap;
 }
 .error-flip-front .flip-finger { bottom: 8px; right: 10px; }
-.flip-hint, .error-flip-hint { display: none !important; }
+.flip-hint, .error-flip-hint { display: none; }
 
 @keyframes finger-tap {
   0%, 70% { transform: translateY(0) rotate(-8deg) scale(1); }
@@ -5113,8 +5113,8 @@ html.dark .article-end-sdg svg {
   opacity: 0.65;
 }
 
-.share-block  { display: none !important; }
-.print-btn-wrap { display: none !important; }
+.share-block  { display: none; }
+.print-btn-wrap { display: none; }
 
 @media print {
   .article-end-sdg { break-inside: avoid; }
@@ -6926,7 +6926,7 @@ body.nagornaya-page .theme-float-btn {
 
 /* === 5. GB-ACCURACY-BLOCK — тематично, full-width внутри main === */
 .gb-accuracy-block {
-  margin-top: clamp(40px, 5vw, 64px) !important;
+  margin-top: clamp(40px, 5vw, 64px);
   margin-bottom: clamp(24px, 3vw, 40px);
   padding: 0 16px;
 }
@@ -7029,13 +7029,13 @@ main .gb-accuracy-block {
 
 /* === 8. HOME-PAGE ambient phrases === */
 .h-phrase--greek, .h-phrase[lang="grc"], .h-phrase[lang="el"] {
-  font-family: 'Noto Sans Greek', 'GFS Neohellenic', 'Times New Roman', serif !important;
-  font-style: normal !important; font-weight: 400 !important;
+  font-family: 'Noto Sans Greek', 'GFS Neohellenic', 'Times New Roman', serif;
+  font-style: normal; font-weight: 400;
   direction: ltr; letter-spacing: 0.005em;
 }
 .h-phrase--hebrew, .h-phrase[lang="he"], .h-phrase[lang="iw"] {
-  font-family: 'Noto Sans Hebrew', 'SBL Hebrew', 'David Libre', serif !important;
-  font-weight: 400 !important; font-style: normal !important;
+  font-family: 'Noto Sans Hebrew', 'SBL Hebrew', 'David Livre', serif;
+  font-weight: 400; font-style: normal;
   direction: rtl; letter-spacing: 0;
 }
 .hb-front, .hb-back, [lang="he"], [lang="iw"] {
@@ -7045,18 +7045,6 @@ main .gb-accuracy-block {
   font-family: 'Noto Sans Greek', 'GFS Neohellenic', 'Times New Roman', serif;
 }
 
-/* === 9. SCROLL-LOCK + iOS momentum === */
-html[data-scroll-locked="1"], html[data-scroll-locked="1"] body, body.ng-toc-lock {
-  overflow: hidden !important;
-  touch-action: auto !important;
-}
-html[data-scroll-locked="1"] .btoc-panel,
-html[data-scroll-locked="1"] .btoc-nav,
-body.ng-toc-lock .btoc-panel,
-body.ng-toc-lock .btoc-nav {
-  touch-action: pan-y;
-  overscroll-behavior: contain;
-}
 
 /* === 10. TOC banner fallback === */
 .btoc-banner {
@@ -7337,31 +7325,31 @@ html.dark .h-scripture-bg::before {
    inline expansion that pushes neighboring words apart. */
 @media (hover: hover) and (pointer: fine) {
   .h-hero-title:hover .h-title-static {
-    opacity: .96 !important;
-    letter-spacing: 0 !important;
-    transform: translateX(-.012em) !important;
+    opacity: .96;
+    letter-spacing: 0;
+    transform: translateX(-.012em);
   }
   .h-hero-title:hover .h-title-dash {
-    transform: scaleX(1.18) !important;
-    margin-inline: .26em !important;
-    opacity: .9 !important;
+    transform: scaleX(1.18);
+    margin-inline: .26em;
+    opacity: .9;
   }
   .h-hero-title:hover .h-title-accent {
-    letter-spacing: 0 !important;
-    transform: translateX(.012em) !important;
-    text-shadow: 0 10px 30px rgba(122,46,46,.10) !important;
+    letter-spacing: 0;
+    transform: translateX(.012em);
+    text-shadow: 0 10px 30px rgba(122,46,46,.10);
   }
 }
 @media (hover: none), (max-width: 640px) {
   .h-hero-title:hover .h-title-static,
   .h-hero-title:hover .h-title-accent {
-    letter-spacing: 0 !important;
-    transform: none !important;
-    text-shadow: none !important;
+    letter-spacing: 0;
+    transform: none;
+    text-shadow: none;
   }
   .h-hero-title:hover .h-title-dash {
-    transform: none !important;
-    margin-inline: .22em !important;
+    transform: none;
+    margin-inline: .22em;
   }
 }
 
