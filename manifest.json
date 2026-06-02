@@ -38,5 +38,18 @@
   "categories": [
     "education",
     "books"
-  ]
+  ],
+  "shortcuts": [
+    {
+      "name": "Нагорная проповедь",
+      "url": "/nagornaya/seriya/",
+      "description": "Серия исследований Нагорной проповеди (5 частей)"
+    },
+    {
+      "name": "Статьи",
+      "url": "/articles/",
+      "description": "Богословские статьи и разборы"
+    }
+  ],
+  "prefer_related_applications": false
 }
