@@ -336,7 +336,7 @@ html.dark .h-scripture-bg::before {
 
 .home-v20 {
   position: relative;
-  min-height: 100vh; min-height: 100dvh; min-height: 100dvh;
+  min-height: 100vh; min-height: 100dvh;
   min-height: 100dvh;
   background: var(--h-bg);
   color: var(--h-ink);
