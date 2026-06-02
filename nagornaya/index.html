@@ -465,24 +465,7 @@
 
 </main>
 
-<script>
-(function(){
-  document.querySelectorAll('.tt').forEach(function(el){
-    var box = document.createElement('div');
-    box.className = 'tt-box absolute z-50 bottom-full left-1/2 -translate-x-1/2 mb-3 w-72 p-4 text-sm text-stone-100 bg-stone-900 rounded-xl shadow-2xl border border-stone-700 leading-relaxed hidden';
-    var arrow = document.createElement('div');
-    arrow.className = 'absolute w-3 h-3 bg-stone-900 border-b border-r border-stone-700 rotate-45 -bottom-1.5 left-1/2 -translate-x-1/2';
-    box.textContent = el.getAttribute('data-tip') || '';
-    box.appendChild(arrow);
-    el.style.position = 'relative';
-    el.appendChild(box);
-    el.addEventListener('mouseenter', function(){ box.classList.remove('hidden'); });
-    el.addEventListener('mouseleave', function(){ box.classList.add('hidden'); });
-    el.addEventListener('click', function(e){ e.stopPropagation(); box.classList.toggle('hidden'); });
-  });
-  document.addEventListener('click', function(){ document.querySelectorAll('.tt-box').forEach(function(b){ b.classList.add('hidden'); }); });
-})();
-</script>
+<!-- .tt tooltips handled by js/nagornaya-mobile-toc.js?v=d733f119 -->
 
 
 <script>
@@ -573,26 +556,7 @@ window.SITE_CONFIG = {
 <script src="../js/search.js?v=386baf27" defer></script>
 <script src="../js/bookmark-engine.js?v=88f51b8b" defer></script>
 
-<script>
-/* AUDIT v7: Font size control for nagornaya sidebar */
-(function(){
-  var sizes = [14,15,16,17,18,19,20];
-  var key = 'nag-fontsize';
-  var current = sizes.indexOf(parseInt(localStorage.getItem(key)) || 16);
-  if (current < 0) current = 2;
-  function apply(){ 
-    var el = document.querySelector('[data-pagefind-body]') || document.querySelector('main');
-    if(el) el.style.fontSize = sizes[current] + 'px';
-    try{ localStorage.setItem(key, sizes[current]); } catch(e){}
-  }
-  apply();
-  var dec = document.getElementById('nagFontDec');
-  var inc = document.getElementById('nagFontInc');
-  if(dec) dec.addEventListener('click', function(){ if(current > 0){ current--; apply(); } });
-  if(inc) inc.addEventListener('click', function(){ if(current < sizes.length-1){ current++; apply(); } });
-  // theme toggle handled by site.js via #themeToggle
-})();
-</script>
+<!-- font-size handled by nagornaya-mobile-toc.js module D -->
 
 </body>
 </html>
