@@ -273,3 +273,46 @@ html.dark body.nagornaya-page .gb-series-link:hover {
   background: color-mix(in srgb, #b8882a 14%, var(--color-surface)) !important;
   border-color: color-mix(in srgb, #b8882a 55%, transparent) !important;
 }
+
+/* ── Minimalist, interactive hover state without any background circle for theme toggle and nav search icon ── */
+.theme-toggle,
+.gb-nav-search-icon {
+  background: transparent !important;
+  background-color: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  border-radius: 0 !important;
+  outline: none !important;
+}
+
+.theme-toggle:hover,
+.gb-nav-search-icon:hover,
+.theme-toggle:focus,
+.gb-nav-search-icon:focus,
+.theme-toggle:active,
+.gb-nav-search-icon:active {
+  background: transparent !important;
+  background-color: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  outline: none !important;
+}
+
+/* Subtle, elegant, minimalist reaction on hover */
+.gb-nav-search-icon {
+  transition: opacity 0.2s ease, transform 0.2s ease, color 0.2s ease !important;
+}
+.gb-nav-search-icon:hover {
+  opacity: 0.85 !important;
+}
+.gb-nav-search-icon:hover svg {
+  transform: scale(1.06) !important;
+}
+
+.theme-toggle svg {
+  transition: opacity 0.25s, transform 0.15s, color 0.25s !important;
+}
+.theme-toggle:hover svg {
+  transform: translate(-50%, -50%) scale(1.06) !important;
+  opacity: 0.85 !important;
+}

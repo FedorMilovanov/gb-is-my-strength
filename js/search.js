@@ -1440,6 +1440,19 @@
     }
     function alreadyInjected() { return !!document.getElementById('gbSearchBtn'); }
  
+    /* Controls with theme toggle (home, biographies, series, etc.) */
+    var mc = document.querySelector('.mobile-controls');
+    var themeToggle = document.getElementById('themeToggle');
+    if (mc && themeToggle && !alreadyInjected()) {
+      var b0 = document.createElement('button');
+      b0.className = 'gb-nav-search-icon'; b0.id = 'gbSearchBtn';
+      b0.setAttribute('aria-label', 'Поиск (⌘K)');
+      b0.setAttribute('title', 'Поиск ⌘K');
+      b0.innerHTML = SVG.search15;
+      mc.insertBefore(b0, themeToggle); /* right next to day/night theme toggle */
+      wireBtn(); return;
+    }
+ 
     /* Home page nav list */
     var hNavLinks = document.querySelector('.h-nav-links');
     if (hNavLinks && !alreadyInjected()) {
