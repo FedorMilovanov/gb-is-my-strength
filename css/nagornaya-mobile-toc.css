@@ -479,42 +479,9 @@ body.nagornaya-page .btoc-share-btn svg {
 }
 
 
-/* Nagornaya specific styles moved from site.css */
-.nag-theme-btn {
-  margin-left: auto;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 36px; height: 36px;
-  border-radius: 50%;
-  background: rgba(255,255,255,0.06);
-  border: 1px solid rgba(255,255,255,0.12);
-  color: #e0d8c8;
-  cursor: pointer;
-  transition: background .2s ease, border-color .2s ease, transform .15s ease;
-  flex-shrink: 0;
-}
-.nag-theme-btn:hover {
-  background: rgba(255,255,255,0.12);
-  border-color: rgba(255,255,255,0.20);
-  transform: scale(1.06);
-}
-.nag-theme-btn:focus-visible {
-  outline: 2px solid #f5c542;
-  outline-offset: 2px;
-}
-.nag-theme-btn {
-  background: rgba(28,25,23,0.04);
-  border-color: rgba(28,25,23,0.10);
-  color: #5a4838;
-}
-.nag-theme-btn:hover {
-  background: rgba(28,25,23,0.10);
-  border-color: rgba(28,25,23,0.18);
-}
-.nag-theme-icon-sun { display: none; }
-.nag-theme-icon-moon { display: none; }
-.nag-theme-icon-sun { display: block; color: #f5c542; }
+
+
+
 .nag-quiz-h2 {
   font-family: 'Lora', Georgia, serif;
   font-weight: 700;
@@ -528,18 +495,14 @@ body.nagornaya-page .btoc-share-btn svg {
   position: relative;
   z-index: 1;
 }
-.nag-quiz-h2 { color: #2a1f15; }
-.nag-quiz-h2 {
+/* .nag-quiz-h2 light override merged into main block */
+html.dark .nag-quiz-h2 {
   color: #f5ede0;
   border-bottom-color: rgba(255,255,255,0.12);
 }
-.nag-theme-btn {
-  min-width: 36px; min-height: 36px;
-}
-.nag-theme-btn { min-width: 44px; min-height: 44px; }
-.nag-theme-btn, .fn-marker {
-    transition: none !important;
-  }
+
+
+
 .nag-sidebar-controls {
   display: flex;
   align-items: center;
@@ -577,9 +540,7 @@ body.nagornaya-page .btoc-share-btn svg {
   color: var(--color-text, var(--color-text, #1a1a1a));
 }
 .nag-sidebar-theme-btn svg { width: 18px; height: 18px; }
-.nag-icon-sun { display: none; }
-.nag-icon-moon { display: none; }
-.nag-icon-sun { display: block; color: #f5c542; }
+
 .nag-fontsize-btns {
   display: flex;
   align-items: center;

@@ -6,7 +6,7 @@
 
 **Владелец:** Фёдор Милованов (редактор, не «автор»)
 **Производственный сайт:** https://gospod-bog.ru
-**Дата документа:** 2026-06-02 | **Версия:** AGENTS-r28
+**Дата документа:** 2026-06-02 | **Версия:** AGENTS-r31
 
 ---
 
@@ -278,7 +278,7 @@
 ### 4.2 `!important`
 
 Сейчас (2026-06-02, после дедупа в commits A–H):
-- `site.css`: ~510 (исторический долг, новых не добавлять)
+- `site.css`: ~314 (AGENTS-r31 аудит: убрано 42 лишних; новых не добавлять)
 - `home.css`: 15
 - `command-palette.css`: 4
 - `mobile-hotfix.css`: 46 (по дизайну: переопределяет поведение для touch / pointer: coarse)
@@ -291,6 +291,40 @@
 ### 4.3 Тёмная тема
 
 Используется класс `html.dark` на `<html>` (переключается JS-ом в site.js). Все цвета — через CSS-переменные. **Не хардкодить** `#fff`, `#000` — использовать `var(--text)`, `var(--bg)`, `var(--accent)` и т.д.
+
+
+### 4.4 CSS Integrity Rules — анти-регрессия для ИИ-агентов
+
+Эти правила введены в AGENTS-r31 после глубокого аудита. Нарушение = мгновенный регресс.
+
+1. **`html.dark` — всегда, никогда просто `.dark`**  
+   JS выставляет `html.dark`. Класс `.dark` на body не используется → переменные не применятся.
+
+2. **Дублирование блоков — запрещено**  
+   Перед добавлением правила для `.foo` — сделай `grep ".foo"` по файлу. Найдено → расширяй, не добавляй новый блок.
+
+3. **Пустые правила `{}` — мусор, удалять**  
+   Допустимо только намеренное `:empty` с пояснительным комментарием.
+
+4. **Двойное свойство в одном блоке — первое мёртво**  
+   Два `box-shadow`, два `color` в одном `{}` — первый всегда перебивается. Удаляй его.
+
+5. **`:hover` с важным эффектом — только внутри `@media (hover: hover) and (pointer: fine)`**  
+   Без guard — эффект срабатывает на тапе (iOS, Android). Исключение: декоративные opacity/color которые не меняют layout.
+
+6. **Переключатель темы — singleton, не трогать**  
+   Архитектура: `gbFloatingControls` (JS-инжект, модуль 29) + `bar-icon-btn[data-action=theme]` (bottom-bar).  
+   ❌ Не создавать `<button class="theme-toggle">` в HTML статей  
+   ❌ Не создавать `.theme-float-btn` в новых CSS/JS-модулях  
+   ❌ Не добавлять `nag-theme-btn` или аналоги — legacy скрыт через `body.gb-fc-active`
+
+7. **Tooltip — три канонических вида**  
+   `.gterm > .gtip` (глоссарий), `.fn-marker > .tooltip` (сноски), `.bref > .btip` (Библия).  
+   ❌ Не добавлять четвёртый тип с другими классами/позиционированием.
+
+8. **`!important` — только при реальном конкуренте**  
+   Tailwind в `nagornaya/*` — законная причина. Просто "на всякий случай" — нет.  
+   Проверь: какой селектор перебивает? Если ответа нет — уберизм `!important`.
 
 ---
 
@@ -570,4 +604,5 @@ npm run validate:all      # ← рекомендуется перед кажды
 | AGENTS-r17 | 2026-06-02 | **UNIFIED FLOATING CONTROLS** (модуль 29 в site.js): единый sticky-блок «тема + поиск» на уровне breadcrumb, заменяет три разрозненных артефакта (.theme-toggle / #themeFloat / #gbSearchFloat / .nag-sidebar-theme-btn). Канонические SVG sun/moon/search — фикс «вместо солнышка кружочек» на dzhon-gill-istoricheskiy-kontekst и dzhon-gill-spravochnik. **Glossary cross-ref clicks** (модуль 30): клик по `<a class="gterm">` внутри тултипа переключает на тултип целевого термина. **Превью** в `/biografii/`: справочник → gill-nine-volumes (был битый og-dzhon-gill-1697-1771), Часть I → dzhon-gill-portret.jpg (был пейзаж Саутварка). |
 | AGENTS-r17.1 | 2026-06-02 | **7 новых ассетов от редактора** в `images/` (полный набор `.jpg/.png + .webp + -600w + -900w + -1200w` для каждого): `gill-five-volumes-shelf` (5 томов Гилла на полке), `gill-clarendon-code-acts` (свитки Corporation/Uniformity/Conventicle/Five Mile Acts), `gill-engraving-talmud-study` (ч/б гравюра Гилла за Талмудом), `gill-portret-full-study` (расширенный 16:9 портрет Гилла за столом — дополняет, не заменяет, существующий `dzhon-gill-portret`), `gill-bunhill-defoe-plaque` (фото мемор. таблички в Bunhill — дополняет существующую гравюру `gill-bunhill-fields` с похоронной процессией), `gill-hebrew-scroll-yad` (свиток с серебряной указкой). Для `gill-baptism-scene` добавлены недостающие base `.jpg` / `.webp` / `-1200w.webp` (раньше серия была неполной — только 600w + 900w). Существующие ассеты не перезаписаны (проверено визуально). |
 | AGENTS-r18 | 2026-06-02 | **Чистка мусора + превью Части I + SEO-фикс.** Удалены неиспользуемые ассеты: `gill-bunhill-defoe-plaque*` (это мемор. табличка Defoe, не Gill — не относится к теме), `gill-inkwell-macro*` (визуальный дубликат `gill-five-volumes-shelf` под путаным slug'ом, нигде не используется), `acts-of-suppression.png` (заменён `gill-clarendon-code-acts` в r17, остаток). Превью Части I в `/biografii/` (обе карточки) переведено `dzhon-gill-portret.jpg` (portrait-кроп) → `gill-portret-full-study` (16:9 landscape, корректно ложится в thumb 160×108). SEO-фикс: в JSON-LD `@graph` страницы `dzhon-gill-istoricheskiy-kontekst` добавлен отсутствовавший узел `WebSite #website` (устранена единственная hard-ошибка seo-audit). `whitefield-field` НЕ удалён (оставлен как master-резерв; визуально близок к используемому `whitefield-preaching`). |
+| AGENTS-r31 | 2026-06-02 | **CSS/JS глубокий аудит.** `css/site.css`: исправлено 4 P0-бага (`.dark`→`html.dark`, дубль `html.dark .heart-flip-back`, двойной `box-shadow` в `.tooltip`, незащищённый `.h-hero-title:hover` на touch); удалено 12 дублирующихся блоков (`.btoc-banner` x2, `.bar-icon-btn` x3, `.fn-marker` x2, и др.); удалено 3 пустых правила; убраны 42 лишних `!important` (summary-card, touch targets); удалён мёртвый CSS: `.gill-fact-card`, `.btip-tabs`, `.antisovet-label`, `.btip-pane`/`.btip-tab`. `css/nagornaya-mobile-toc.css`: удалены мёртвые `.nag-theme-btn` x4, `.nag-icon-*`, унифицирован `.nag-quiz-h2` dark (был `.dark` вместо `html.dark`); итого −39 строк. Добавлен §4.4 "CSS Integrity Rules" — 8 конкретных правил для предотвращения регрессий. |
 | AGENTS-r19–r28 | 2026-06-02 | **Аудит и стабилизация:** Фиксы суммари Нагорной проповеди, доработка минималистичного поиска, закрытие битых span-тегов в байлайнах и каталогах. Унификация тултипов, очистка dangling CSS-селекторов, устранение протечки глоссария в заголовки. Добавлены и разведены баптистские термины в глоссарии, устранены наложения категорий. Полное приведение репозитория в соответствие правилам AGENTS.md (исправлены дубликаты `og:image`, ASCII-кавычки в статьях). |
