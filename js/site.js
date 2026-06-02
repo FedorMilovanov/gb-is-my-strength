@@ -947,7 +947,7 @@
      Доступность: role=dialog, aria-modal, focus-trap, Esc.
      ============================================================ */
   (function () {
-    var cfg = SiteUtils.getConfig('features.share', {});
+    var cfg = SiteUtils.featureShare({});
     if (cfg.enabled === false) return;
 
     function metaContent(selector) {
@@ -1337,7 +1337,7 @@
     var list    = document.getElementById('toc-list');
     if (!panel || !list || !toggle) return;
 
-    var cfg = SiteUtils.getConfig('features.toc', {});
+    var cfg = SiteUtils.featureToc({});
     if (cfg.enabled === false) return;
 
     var headings = document.querySelectorAll('article h2, article h3');
@@ -1426,7 +1426,7 @@
     var sidebar = document.getElementById('tocSidebar');
     if (!sidebar) return;
 
-    var cfg = SiteUtils.getConfig('features.toc', {});
+    var cfg = SiteUtils.featureToc({});
     if (cfg.enabled === false || cfg.desktop === false) return;
 
     var nav = sidebar.querySelector('nav');
@@ -1495,7 +1495,7 @@
     var panel   = document.getElementById('btocPanel');
     if (!bar || !overlay) return;
 
-    var cfg = SiteUtils.getConfig('features.toc', {});
+    var cfg = SiteUtils.featureToc({});
     if (cfg.enabled === false || cfg.mobile === false) return;
 
     var fillCircle   = document.getElementById('barProgressFill');
@@ -3971,7 +3971,7 @@
     if (document.querySelector('.article-end-block')) return;
 
     /* Проверяем, разрешён ли шаринг */
-    var shareCfg = SiteUtils.getConfig('features.share', {});
+    var shareCfg = SiteUtils.featureShare({});
     var showActions = isArticlePage;
     var showShare = showActions && shareCfg.enabled !== false;
 
