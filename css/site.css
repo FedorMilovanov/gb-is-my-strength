@@ -479,7 +479,6 @@ html.dark .icon-sun { opacity: 1; color: #f5c542; }
 .breadcrumb__link *::selection {
   background-color: color-mix(in srgb, var(--color-accent) 28%, transparent);
   color: var(--color-text);
-  -webkit-text-decoration: none;
   text-decoration: none;
 }
 .breadcrumb__link:hover,
@@ -1693,8 +1692,7 @@ footer.quote-attribution cite { font-style: normal; }
 .opusdei-note strong { color: var(--color-accent); }
 
 .data-table th,
-@media (max-width: 600px) {
-}
+
 
 .compare-table {
   border-collapse: collapse;
@@ -1819,7 +1817,6 @@ html.dark .compare-table:not(.compare-table--scroll) tr {
 .table-scroll {
   overflow-x: auto;
   margin: 24px 0;
-  -webkit-overflow-scrolling: touch;
   scrollbar-width: thin;
 }
 .table-scroll:focus-visible {
@@ -7357,7 +7354,6 @@ body.nagornaya-page main > .max-w-4xl > .mb-6 > p.article-updated {
 }
 #canonTimeline .ctw-body {
   overflow-x: auto;
-  -webkit-overflow-scrolling: touch;
 }
 #canonTimeline .ctw-track { min-width: 580px; }
 #canonTimeline .ctw-axis-row {

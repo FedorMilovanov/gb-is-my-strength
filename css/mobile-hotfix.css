@@ -20,7 +20,6 @@ html[data-scroll-locked="1"] .cp-preview-inner,
 body.ng-toc-lock .btoc-panel,
 body.ng-toc-lock .btoc-nav {
   touch-action: pan-y !important;
-  -webkit-overflow-scrolling: touch;
   overscroll-behavior: contain;
 }
 
