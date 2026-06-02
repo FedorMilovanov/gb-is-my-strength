@@ -4551,4 +4551,56 @@
 })();
 
 /* Lux Upgrade v3.0 — fixed search button under theme toggle */
-(function(){if(document.getElementById('gbSearchFloat'))return;var b=document.createElement('button');b.id='gbSearchFloat';b.type='button';b.setAttribute('aria-label','Поиск');b.innerHTML='<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>';b.style.cssText='position:fixed;top:68px;right:max(8.5vw,12px);width:44px;height:44px;border:none;background:transparent;color:var(--color-text);display:flex;align-items:center;justify-content:center;z-index:9998;cursor:pointer;transition:color .2s,transform .15s';document.body.appendChild(b);function s(){var d=document.documentElement.classList.contains('dark');b.style.color=d?'#d4a574':'var(--color-text)'}s();new MutationObserver(s).observe(document.documentElement,{attributes:true,attributeFilter:['class']});b.onmouseenter=function(){b.style.transform='scale(1.08)'};b.onmouseleave=function(){b.style.transform='scale(1)'};b.onclick=function(){if(window.GBSearch&&GBSearch.open)GBSearch.open();else window.dispatchEvent(new CustomEvent('gb:openSearch'))};function c(){b.style.display=window.innerWidth<900?'none':'flex'}window.addEventListener('resize',c);c()})();
+
+/* === 30. Floating Search Button ===
+   Floating round search button for pages without a built-in search.
+   Includes theme synchronization and responsive visibility. */
+(function () {
+  'use strict';
+
+  if (document.getElementById('gbSearchFloat')) return;
+
+  var btn = document.createElement('button');
+  btn.id = 'gbSearchFloat';
+  btn.type = 'button';
+  btn.setAttribute('aria-label', 'Поиск');
+  btn.innerHTML = '<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>';
+  
+  // Style as a floating action button
+  btn.style.cssText = 'position:fixed; top:68px; right:max(8.5vw,12px); width:44px; height:44px; border:none; background:transparent; color:var(--color-text); display:flex; align-items:center; justify-content:center; z-index:var(--z-toast-high, 9998); cursor:pointer; transition:color .2s,transform .15s';
+
+  document.body.appendChild(btn);
+
+  function syncColor() {
+    var isDark = document.documentElement.classList.contains('dark');
+    btn.style.color = isDark ? '#d4a574' : 'var(--color-text)';
+  }
+
+  syncColor();
+  new MutationObserver(syncColor).observe(document.documentElement, { attributes: true, attributeFilter: ['class'] });
+
+  btn.onmouseenter = function () { btn.style.transform = 'scale(1.08)'; };
+  btn.onmouseleave = function () { btn.style.transform = 'scale(1)'; };
+  
+  btn.onclick = function () {
+    if (window.GBSearch && GBSearch.open) {
+      GBSearch.open();
+    } else {
+      window.dispatchEvent(new CustomEvent('gb:openSearch'));
+    }
+  };
+
+  function checkVisibility() {
+    btn.style.display = window.innerWidth < 900 ? 'none' : 'flex';
+  }
+
+  // Use SiteUtils.debounce for resize to improve performance
+  if (window.SiteUtils && typeof window.SiteUtils.debounce === 'function') {
+    window.addEventListener('resize', SiteUtils.debounce(checkVisibility, 150));
+  } else {
+    window.addEventListener('resize', checkVisibility);
+  }
+  
+  checkVisibility();
+})();
+
