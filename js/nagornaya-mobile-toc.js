@@ -359,7 +359,7 @@
         e.preventDefault(); closeMenu();
       }
     });
-    window.addEventListener('resize', function (, { passive: true }) {
+    window.addEventListener('resize', function () {
       if (window.innerWidth >= 1024 && isOpen) closeMenu();
     });
   });
@@ -526,7 +526,7 @@
 
     document.addEventListener('click', function () { popup.style.display = 'none'; cur = null; });
     window.addEventListener('scroll', function () { popup.style.display = 'none'; cur = null; }, { passive: true });
-    window.addEventListener('resize', function (, { passive: true }) { popup.style.display = 'none'; cur = null; }, { passive: true });
+    window.addEventListener('resize', function () { popup.style.display = 'none'; cur = null; }, { passive: true });
   });
 
 })(); /* end nagornaya-mobile-toc.js IIFE */

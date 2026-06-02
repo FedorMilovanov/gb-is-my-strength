@@ -125,7 +125,7 @@
     headingOffsets = headings.map(function(h) { return { el: h, top: h.offsetTop }; });
   }
   window.addEventListener('load', cacheHeadingOffsets, { passive: true });
-  window.addEventListener('resize', function(, { passive: true }) { setTimeout(cacheHeadingOffsets, 150); }, { passive: true });
+  window.addEventListener('resize', function () { setTimeout(cacheHeadingOffsets, 150); }, { passive: true });
 
   function detectCurrentSection() {
     if (!headingOffsets.length) cacheHeadingOffsets();
