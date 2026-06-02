@@ -6,7 +6,7 @@
 
 **Владелец:** Фёдор Милованов (редактор, не «автор»)
 **Производственный сайт:** https://gospod-bog.ru
-**Дата документа:** 2026-06-03 | **Версия:** AGENTS-r49
+**Дата документа:** 2026-06-03 | **Версия:** AGENTS-r50c
 
 ---
 
@@ -289,7 +289,7 @@
 ### 4.2 `!important`
 
 Сейчас (2026-06-02, после дедупа в commits A–H):
-- `site.css`: ~191 (AGENTS-r46b/r47: стабильно; лимит ≤200 — архитектурный минимум)
+- `site.css`: ~189 (AGENTS-r50c: −153 от r41 start; лимит ≤200 архитектурный минимум)
 - `home.css`: 15
 - `command-palette.css`: 4
 - `mobile-hotfix.css`: 59 (по дизайну: переопределяет поведение для touch / pointer: coarse)
@@ -366,7 +366,7 @@
 
 12. **`!important` — лимит и лоцман** (r42+)
 
-   Лимит: `site.css` ≤ 200 `!important` (архитектурный минимум ~191). Если после правки число выросло — это регрессия.
+   Лимит: `site.css` ≤ 200 `!important` (архитектурный минимум ~189). Если после правки число выросло — это регрессия.
    Проверка: `grep -o '!important' css/site.css | wc -l`
    Легитимные категории: print-override, prefers-reduced-motion, forced-colors, Tailwind-override в nagornaya/*.
    Нелегитимные: перебивание своего же правила в том же файле без реального конкурента.
@@ -656,6 +656,9 @@ npm run validate:all      # ← рекомендуется перед кажды
 | AGENTS-r44c | 2026-06-03 | **JS passive listeners.** site.js: scroll 4→13 passive (+8); touch all correct. Fixed double passive artefact. |
 | AGENTS-r44d | 2026-06-03 | **CSS !important deep cleanup (301→257, −44).** Removed §9 SCROLL-LOCK duplicate (in mobile-hotfix.css); §8 phrases −6; §5 gb-accuracy −1; h-hero-title hover transforms −14 (guarded @media); display:none on unused classes −7. site.css: 258KB → 244KB (−5.3%). |
 | AGENTS-r44e | 2026-06-03 | **JS passive listeners all files + SEO.** scroll-perf/enhancements/bookmark-engine/nagornaya-toc: +passive. sitemap.xml: lastmod →2026-06-03 (28 URLs). manifest.json: +shortcuts, +categories. sw.js: CACHE_VERSION bumped. |
+| AGENTS-r50 | 2026-06-03 | **CSS gtip-luxury merges + JS SiteUtils.scrollRaf.** gtip-luxury 7 blocks merged (header align, close margin, category flex, definition overflow-wrap). .gterm .gtip::before duplicate removed. .article-img.float-left, .article-item.card, .btoc-fontsize-btn, .resume-reading-dismiss deduplicated. .bar-icon-btn 40→44px in base, @layer dup removed. .btoc-close 32→44px in base. JS: SiteUtils.scrollRaf() added, 5× ticking+rAF patterns → SiteUtils.scrollRaf(). |
+| AGENTS-r50b | 2026-06-03 | **Dead CSS removal + h1El refactor.** .pq-attribution (435b) + .h-section-link (287b) removed. articleTopnav ticking → scrollRaf. querySelector h1 variants ×3 → SiteUtils.h1El(). Fixed orphan } from grouped selector removal. site.css: 258,110→233,808b (−9%), !important 342→189. |
+| AGENTS-r50c | 2026-06-03 | **.btip/selection-share/pq-scripture/meta merges.** .btip.gb-floating-tip will-change into base. .quiz-launch-hero 2px removed (3px overrides). #selection-share-popup z-index consolidated. .related-articles__meta font-feature-settings into base. .pq-scripture Deep Polish 8→10px radius + transition into base. |
 | AGENTS-r49 | 2026-06-03 | **Deep CSS/JS continued optimization.** CSS: .quiz-feedback::before extracted 9 common props (−622b); .bar-icon-btn svg 18px→20px + dedup; #reading-progress #7a2e2e→var(--color-accent); #toc-list merged. mobile-hotfix.css: 15 dead classes removed (−2109b), !important 72→59. JS: SiteUtils.themeKey='theme' (DRY), nagornaya-mobile-toc.js local ready()→SiteUtils.ready() (−75b), quiz-feedback base class extracted. sw.js CACHE_VERSION bumped. |
 | AGENTS-r48 | 2026-06-03 | **CSS comment compression (−3.9KB) + JS SiteUtils.articleEl/h1El.** 15 large comments shortened (audit explanations → 1-line summaries). Dead legacy aliases removed (--color-surface-2, --accent-strong, --accent-selection). CSS block merges: .quiz-options, .btoc-nav, .sd-close, #reading-progress gradient order fixed. site.css: 240,728→235,793b (−4,935b). |
 | AGENTS-r48b | 2026-06-03 | **Vendor prefixes + SVG dedup + CSS block merges.** -webkit-backface-visibility removed (Safari 15+ target). Extracted 3 duplicate SVG strings → constants (−297b). Merged .bottom-bar backdrop-filter + .btoc-panel safe-area/viewport-h into base blocks. Removed empty .bottom-bar comment block. site.css: −22,317b total from r41 (−8.6%). |
