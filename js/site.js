@@ -4674,6 +4674,18 @@
       themeBtn.innerHTML = iconForTheme();
       try { localStorage.setItem('theme', toDark ? 'dark' : 'light'); } catch (_) {}
       document.dispatchEvent(new CustomEvent('theme:changed', { detail: { dark: toDark } }));
+      /* a11y: announce theme change to screen readers */
+      var announcer = document.getElementById('gb-theme-announcer');
+      if (!announcer) {
+        announcer = document.createElement('div');
+        announcer.id = 'gb-theme-announcer';
+        announcer.setAttribute('role', 'status');
+        announcer.setAttribute('aria-live', 'polite');
+        announcer.setAttribute('aria-atomic', 'true');
+        announcer.style.cssText = 'position:absolute;left:-9999px;width:1px;height:1px;overflow:hidden';
+        document.body.appendChild(announcer);
+      }
+      announcer.textContent = toDark ? 'Включена тёмная тема' : 'Включена светлая тема';
     }
     themeBtn.addEventListener('click', function () {
       setTheme(!document.documentElement.classList.contains('dark'));
