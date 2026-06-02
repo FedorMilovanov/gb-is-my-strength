@@ -633,10 +633,8 @@ body.nagornaya-page .btoc-share-btn svg {
   overflow: visible !important;
   box-shadow: none !important;
 }
-.nag-summary {
-  background: transparent !important;
+html.dark body.nagornaya-page .nag-summary {
   border-top-color: rgba(245,213,166,.16) !important;
-  box-shadow: none !important;
 }
 .nag-summary__head {
   display: block !important;
@@ -652,8 +650,7 @@ body.nagornaya-page .btoc-share-btn svg {
   letter-spacing: .20em !important;
   text-transform: uppercase !important;
 }
-.nag-summary__head {
-  background: transparent !important;
+html.dark body.nagornaya-page .nag-summary__head {
   color: rgba(245,226,198,.72) !important;
 }
 .nag-summary__list {
@@ -663,9 +660,6 @@ body.nagornaya-page .btoc-share-btn svg {
   list-style: none !important;
   padding: 0 !important;
   margin: 0 !important;
-  background: transparent !important;
-}
-.nag-summary__list {
   background: transparent !important;
 }
 .nag-summary__item {
@@ -688,9 +682,8 @@ body.nagornaya-page .nag-summary__item::after {
   content: none !important;
   display: none !important;
 }
-.nag-summary__item {
+html.dark body.nagornaya-page .nag-summary__item {
   color: rgba(250,243,232,.78) !important;
-  border: 0 !important;
 }
 .nag-summary__num {
   display: inline-flex !important;
@@ -726,122 +719,10 @@ body.nagornaya-page .nag-summary__item::after {
   word-break: normal !important;
   overflow-wrap: anywhere !important;
 }
-.nag-summary__head{background:transparent!important;color:#7a2e2e!important;padding:0!important;border:0!important}
-.nag-summary__head{background:transparent!important;color:rgba(245,226,198,.72)!important}
-.nag-summary__item::before,body.nagornaya-page .nag-summary__item::after{content:none!important;display:none!important}
-.nag-summary__text{white-space:normal!important;word-break:normal!important;overflow-wrap:anywhere!important;min-width:0!important;max-width:none!important}
-.nag-summary {
-  margin: 16px 0 16px !important;
-  padding: 12px 0 0 !important;
-  background: transparent !important;
-  border: 0 !important;
-  border-top: 1px solid rgba(120,83,46,.14) !important;
-  border-radius: 0 !important;
-  overflow: visible !important;
-  box-shadow: none !important;
-}
-.nag-summary {
-  background: transparent !important;
-  border-top-color: rgba(245,213,166,.16) !important;
-  box-shadow: none !important;
-}
-.nag-summary__head {
-  display: block !important;
-  width: auto !important;
-  background: transparent !important;
-  color: #7a2e2e !important;
-  padding: 0 !important;
-  margin: 0 0 9px !important;
-  border: 0 !important;
-  font-family: 'Source Sans 3', system-ui, sans-serif !important;
-  font-size: 9px !important;
-  line-height: 1.1 !important;
-  letter-spacing: .20em !important;
-  text-transform: uppercase !important;
-}
-.nag-summary__head {
-  background: transparent !important;
-  color: rgba(245,226,198,.72) !important;
-}
-.nag-summary__list {
-  display: flex !important;
-  flex-direction: column !important;
-  gap: 6px !important;
-  list-style: none !important;
-  padding: 0 !important;
-  margin: 0 !important;
-  background: transparent !important;
-}
-.nag-summary__list {
-  background: transparent !important;
-}
-.nag-summary__item {
-  display: flex !important;
-  align-items: flex-start !important;
-  gap: 9px !important;
-  width: 100% !important;
-  padding: 0 !important;
-  margin: 0 !important;
-  background: transparent !important;
-  border: 0 !important;
-  box-shadow: none !important;
-  color: #4b4036 !important;
-  font-size: 13px !important;
-  line-height: 1.48 !important;
-  position: relative !important;
-}
-.nag-summary__item::before,
-body.nagornaya-page .nag-summary__item::after {
-  content: none !important;
-  display: none !important;
-}
-.nag-summary__item {
-  color: rgba(250,243,232,.78) !important;
-  border: 0 !important;
-}
-.nag-summary__num {
-  display: inline-flex !important;
-  flex: 0 0 18px !important;
-  width: 18px !important;
-  height: 18px !important;
-  min-width: 18px !important;
-  align-items: center !important;
-  justify-content: center !important;
-  border-radius: 50% !important;
-  font-size: 0 !important;
-  line-height: 1 !important;
-  margin-top: 1px !important;
-  background: rgba(116,151,117,.10) !important;
-  border: 1px solid rgba(116,151,117,.18) !important;
-}
-.nag-summary__num::before {
-  content: "✓" !important;
-  display: block !important;
-  font-size: 12px !important;
-  color: #6f9d70 !important;
-}
-.nag-summary__text {
-  display: block !important;
-  flex: 1 1 auto !important;
-  min-width: 0 !important;
-  width: auto !important;
-  max-width: none !important;
-  margin: 0 !important;
-  padding: 0 !important;
-  line-height: 1.48 !important;
-  white-space: normal !important;
-  word-break: normal !important;
-  overflow-wrap: anywhere !important;
-}
-.nag-summary__head{background:transparent!important;color:#7a2e2e!important;padding:0!important;border:0!important}
-.nag-summary__head{background:transparent!important;color:rgba(245,226,198,.72)!important}
-.nag-summary__item::before,body.nagornaya-page .nag-summary__item::after{content:none!important;display:none!important}
-.nag-summary__text{white-space:normal!important;word-break:normal!important;overflow-wrap:anywhere!important;min-width:0!important;max-width:none!important}
 
 
 /* Nagornaya Dark Theme Overrides */
-html.dark body.nagornaya-page 
-#sec-quiz {
+html.dark body.nagornaya-page #sec-quiz {
   clear: both;
   position: relative;
   z-index: 1;
