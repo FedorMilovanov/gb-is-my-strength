@@ -369,18 +369,12 @@ window.SITE_CONFIG = {
 .popover-section { margin-bottom: 16px; }
 .popover-text { font-size: 14px; line-height: 1.6; font-family: var(--font-body, 'Lora', serif); }
 /* FAQ v2 — премиальные богословские карточки, в стиле статьи */
-.faq-accordion { display: flex; flex-direction: column; gap: 14px; margin-bottom: 4rem; }
-.faq-accordion__item { position: relative; overflow: hidden; background: var(--bg-elevated, #fff); border: 1px solid var(--border); border-left: 3px solid var(--border); border-inline-start: 3px solid var(--border); border-radius: 16px; transition: border-color .25s ease, box-shadow .25s ease, transform .25s ease; }
 .faq-accordion__item:hover { border-color: color-mix(in srgb, var(--accent) 34%, var(--border)); border-left-color: var(--accent); border-inline-start-color: var(--accent); box-shadow: 0 10px 28px -18px rgba(0,0,0,.18); }
 .faq-accordion__item.is-open { border-color: var(--accent); border-left-color: var(--accent); border-inline-start-color: var(--accent); box-shadow: 0 18px 42px -28px color-mix(in srgb, var(--accent) 65%, transparent); }
-.dark .faq-accordion__item, html.dark .faq-accordion__item { background: color-mix(in srgb, var(--bg-elevated, #161a21) 92%, transparent); }
-.faq-accordion__q { width: 100%; display: flex; align-items: center; gap: 16px; padding: 1.15rem 1.35rem; font-family: var(--font-display, 'Playfair Display', serif); font-size: 1.13rem; font-weight: 700; line-height: 1.42; background: none; border: 0; cursor: pointer; text-align: left; color: var(--text); transition: color .2s ease; }
-.faq-accordion__q:hover { color: var(--accent); }
-.faq-accordion__q:focus-visible { outline: 2px solid var(--accent); outline-offset: -3px; border-radius: 16px; }
+html.dark .faq-accordion__item, html.dark .faq-accordion__item { background: color-mix(in srgb, var(--bg-elevated, #161a21) 92%, transparent); }
 .faq-accordion__num { flex: 0 0 auto; display: inline-flex; align-items: center; justify-content: center; width: 34px; height: 34px; border-radius: 999px; background: color-mix(in srgb, var(--accent) 12%, transparent); color: var(--accent); font-family: var(--font-body, 'Source Sans 3', sans-serif); font-size: .78rem; font-weight: 800; letter-spacing: .04em; transition: background .25s ease, color .25s ease; }
 .faq-accordion__item.is-open .faq-accordion__num { background: var(--accent); color: #fff; }
 .faq-accordion__q-text { flex: 1 1 auto; min-width: 0; }
-.faq-accordion__icon { flex: 0 0 auto; width: 28px; height: 28px; border-radius: 999px; border: 1.5px solid var(--border); position: relative; transition: background .25s ease, border-color .25s ease, transform .35s cubic-bezier(.22,1,.36,1); }
 .faq-accordion__icon::before, .faq-accordion__icon::after { content: ""; position: absolute; top: 50%; left: 50%; background: var(--muted); border-radius: 2px; transition: background .25s ease, transform .35s cubic-bezier(.22,1,.36,1); }
 .faq-accordion__icon::before { width: 12px; height: 1.6px; transform: translate(-50%,-50%); }
 .faq-accordion__icon::after { width: 1.6px; height: 12px; transform: translate(-50%,-50%); }
@@ -389,8 +383,6 @@ window.SITE_CONFIG = {
 .faq-accordion__item.is-open .faq-accordion__icon { background: var(--accent); border-color: var(--accent); transform: rotate(180deg); }
 .faq-accordion__item.is-open .faq-accordion__icon::before { background: #fff; transform: translate(-50%,-50%) rotate(45deg); }
 .faq-accordion__item.is-open .faq-accordion__icon::after { background: #fff; transform: translate(-50%,-50%) rotate(-45deg); }
-.faq-accordion__body { max-height: 0; overflow: hidden; transition: max-height .42s cubic-bezier(.22,1,.36,1); }
-.faq-accordion__body-inner { position: relative; padding: 0 1.35rem 1.35rem calc(1.35rem + 34px + 16px); font-family: var(--font-body, 'Lora', serif); font-size: 1rem; line-height: 1.78; color: var(--text); }
 .faq-accordion__body-inner::before { content: ""; position: absolute; left: 1.35rem; top: .15rem; bottom: 1.35rem; width: 2px; border-radius: 2px; background: linear-gradient(to bottom, var(--accent), transparent); opacity: .36; }
 .faq-accordion__body-inner p { margin: 0 0 1rem; }
 .faq-accordion__body-inner p:last-child { margin-bottom: 0; }
@@ -418,16 +410,16 @@ window.SITE_CONFIG = {
 .series-num { font-weight: 800; font-size: 0.9rem; opacity: 0.5; }
 .series-item-title { font-weight: 600; font-family: var(--font-body, 'Lora', serif); }
 .series-soon { opacity: 0.6; font-style: italic; font-size: 0.85rem; }
-.note-box { background: var(--bg-elevated); border-radius: 16px; padding: 1.5rem; margin: 2rem 0; }
-.info-box { background: color-mix(in srgb, var(--accent-soft) 60%, transparent); border-radius: 16px; padding: 1.5rem; margin: 2rem 0; }
+
+
 .warn-box { background: color-mix(in srgb, #fef3c7 80%, transparent); border-radius: 16px; padding: 1.5rem; margin: 2rem 0; }
-.dark .warn-box { background: color-mix(in srgb, #451a03 60%, transparent); }
-.divider { font-size: 1.2rem; letter-spacing: .45em; color: var(--muted); }
-.article-figure { margin: 2.5rem 0; }
-.article-figure img { width: 100%; height: auto; border-radius: 12px; }
-.article-figure figcaption { text-align: center; font-size: 0.875rem; color: var(--muted); margin-top: 0.75rem; font-style: italic; }
-.pullquote { font-family: var(--font-display, 'Playfair Display', serif); font-size: 1.15rem; font-style: italic; line-height: 1.7; color: var(--accent); border-left: 3px solid var(--accent); border-inline-start: 3px solid var(--accent); padding: 1rem 1.5rem; margin: 2rem 0; background: var(--accent-soft); border-radius: 0 12px 12px 0; }
-.drop-cap::first-letter { font-family: var(--font-display, 'Playfair Display', serif); font-size: 3.5em; font-weight: 700; float: left; line-height: 0.75; margin-right: 0.08em; color: var(--accent); }
+html.dark .warn-box { background: color-mix(in srgb, #451a03 60%, transparent); }
+
+
+
+
+
+
 .heading-serif { font-family: var(--font-display, 'Playfair Display', serif); }
 .bug-box { margin-top: 60px; padding: 30px; border: 2px dashed var(--border); border-radius: 20px; text-align: center; background: var(--bg-elevated); }
 .bug-title { font-family: var(--font-display, 'Playfair Display', serif); font-size: 1.25rem; font-weight: 700; margin-bottom: 10px; }
@@ -518,7 +510,7 @@ a.series-card:hover{border-color:var(--accent);transform:translateY(-2px);box-sh
   </a>
   <span class="article-topnav-title">20 антисоветов пастору
 </nav>
-<!-- article-topnav scroll handled by js/site.js?v=f4d8a339 module 34 -->
+<!-- article-topnav scroll handled by js/site.js?v=9c40c710 module 34 -->
 
 <main class="article-main" id="content">
 <div class="article-topline">
@@ -2185,7 +2177,7 @@ window.SITE_CONFIG.quiz = {
 </script>
 <script src="../../js/site-utils.js?v=d4ac3689"></script>
     <script src="../../js/scroll-perf.js?v=84977eec"></script>
-    <script src="../../js/site.js?v=f4d8a339" defer></script>
+    <script src="../../js/site.js?v=9c40c710" defer></script>
     <script src="../../js/glossary.js?v=4f1b7174" defer></script>
 <script src="../../js/bookmark-engine.js?v=88f51b8b" defer></script>
 <script src="../../js/highlights.js?v=5395797c" defer></script>

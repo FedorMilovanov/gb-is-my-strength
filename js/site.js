@@ -2049,6 +2049,65 @@
   })();
 
 
+  /* ============================================================
+     15a. Heart-Flip Mobile Back-Height — устанавливает --back-height
+     CSS var перед переворотом карточки, чтобы CSS мог плавно
+     расширить высоту до реального размера оборотной стороны.
+     Работает только на мобильных (≤680px), где карточка имеет
+     фиксированную высоту. На десктопе aspect-ratio:3/2 достаточен.
+     Перенесено из inline <script> в articles/krajne-li-isporcheno-serdce/.
+  ============================================================ */
+  (function () {
+    function initHeartFlipMobile() {
+      document.querySelectorAll('.heart-flip-card').forEach(function (card) {
+        if (card.dataset.backHeightInit) return; /* idempotent */
+        card.dataset.backHeightInit = '1';
+
+        var back = card.querySelector('.heart-flip-back');
+        if (!back) return;
+
+        function isMobile() { return window.innerWidth <= 680; }
+
+        function measureBackHeight() {
+          var prev = back.style.cssText;
+          back.style.cssText += ';position:fixed;visibility:hidden;height:auto;transform:none;backface-visibility:visible;display:flex;';
+          var h = back.scrollHeight;
+          back.style.cssText = prev;
+          return h;
+        }
+
+        function setBackHeight() {
+          if (!isMobile()) return;
+          var h = measureBackHeight();
+          card.style.setProperty('--back-height', h + 'px');
+        }
+
+        card.addEventListener('click', function () {
+          if (!isMobile()) return;
+          var willFlip = !card.classList.contains('flipped');
+          if (willFlip) {
+            setBackHeight();
+          } else {
+            card.style.setProperty('--back-height', '220px');
+          }
+        });
+
+        window.addEventListener('resize', function () {
+          if (isMobile() && card.classList.contains('flipped')) {
+            setBackHeight();
+          }
+        }, { passive: true });
+      });
+    }
+
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', initHeartFlipMobile);
+    } else {
+      initHeartFlipMobile();
+    }
+  })();
+
+
   
   /* ============================================================
      15b. Flip Card Animation Pause (off-viewport)
@@ -3190,11 +3249,18 @@
     var markers = document.querySelectorAll('.fn-marker');
     if (!markers.length) return;
 
-    /* Убираем лишний пробел перед маркером */
+    /* Убираем лишний пробел перед маркером + aria-атрибуты для a11y */
     markers.forEach(function (m) {
       var prev = m.previousSibling;
       if (prev && prev.nodeType === Node.TEXT_NODE) {
         prev.textContent = prev.textContent.replace(/\s+$/, '');
+      }
+      /* Aria: role=button + label "Источник N — нажмите, чтобы открыть" */
+      if (!m.getAttribute('aria-label')) {
+        var num = (m.childNodes[0] ? m.childNodes[0].textContent : '').trim();
+        m.setAttribute('aria-label', 'Источник' + (num ? ' ' + num : '') + ' — нажмите, чтобы открыть');
+        m.setAttribute('role', 'button');
+        if (!m.getAttribute('tabindex')) m.setAttribute('tabindex', '0');
       }
     });
 
