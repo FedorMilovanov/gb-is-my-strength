@@ -829,29 +829,12 @@ html.dark blockquote { border-left-color: var(--color-accent); border-inline-sta
   hyphens: none;
 }
 .pullquote p:last-of-type { margin-bottom: 0; }
-.pullquote .pq-attribution {
-  display: block;
-  font-style: normal;
-  font-family: 'Source Sans 3', system-ui, sans-serif;
-  font-size: 0.78em;
-  font-weight: 600;
-  color: var(--color-accent);
-  opacity: 0.85;
-  margin-top: 16px;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-}
-.pullquote .pq-attribution::before {
-  content: '— ';
-  letter-spacing: 0;
-}
 html.dark .pullquote {
   background: rgba(128, 128, 128, 0.15);
   background: color-mix(in srgb, var(--color-accent) 8%, transparent);
   border-left-color: var(--color-accent);
 }
 html.dark .pullquote::before { color: var(--color-accent); }
-html.dark .pullquote .pq-attribution { color: var(--color-accent); }
 
 .article-img {
   position: relative;
@@ -6439,18 +6422,6 @@ button, a, [role="button"], [tabindex="0"], summary, input, textarea, select {
   -webkit-appearance: none;
 }
 
-@media (hover: none), (pointer: coarse) {
-
-  .series-card:hover,
-  .related-articles__item:hover,
-  .h-article-card:hover,
-  .h-section-link:hover,
-  .article-topnav-home:hover {
-    background: inherit;
-    color: inherit;
-    border-color: inherit;
-    transform: none !important;
-  }
 
 }
 
@@ -6505,8 +6476,6 @@ button, a, [role="button"], [tabindex="0"], summary, input, textarea, select {
   width: auto;
   margin-left: auto;
   margin-right: auto;
-}
-
 } /* @layer utilities */
 
 /* === AUDIT-FIXES INLINE START === (v6 deep polish, 2026-05-21) */
