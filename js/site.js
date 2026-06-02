@@ -4488,8 +4488,9 @@
       document.head.appendChild(sc);
     }
     if (document.querySelector('[data-series-cards]')) add('/js/series-cards.js');
-    var pageType = window.SiteUtils && window.SiteUtils.getConfig('page.type', '');
-    if (pageType === 'article') add('/js/glossary.js');
+    /* Глоссарий загружается на ВСЕХ страницах с <article>,
+       не только на article-type — это даёт единый сайт-уровневый глоссарий. */
+    if (document.querySelector('article')) add('/js/glossary.js');
   })();
 })();
 
