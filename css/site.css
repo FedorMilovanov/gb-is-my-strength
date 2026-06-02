@@ -126,6 +126,12 @@ body { overflow-x: hidden; }
   --color-danger-text:   var(--color-danger-text, #f09090);
   --color-success-text:  var(--color-success-text, #4a8a4a);
   --color-amber-strong:  var(--color-amber-strong, #bf6e2a);
+  /* Transition tokens */
+  --t-reveal:    opacity 0.6s ease, transform 0.6s ease;
+  --t-fade:      opacity .18s ease;
+  --t-bg:        background .15s;
+  --t-bg-color:  background .15s, color .15s;
+  --t-border:    border-color .2s ease;
   --back-height:        auto;
 
   --visual-viewport-h: 100dvh;
@@ -1421,7 +1427,7 @@ html.dark .card.fx-lift:hover,
   line-height: 1.6;
   opacity: 0;
   transform: translateY(20px);
-  transition: opacity 0.6s ease, transform 0.6s ease;
+  transition: var(--t-reveal, opacity 0.6s ease, transform 0.6s ease);
 }
 .warn-box.visible { opacity: 1; transform: translateY(0); }
 .warn-box strong { color: var(--color-accent); }
@@ -1514,7 +1520,7 @@ html.dark .card.fx-lift:hover,
   line-height: 1.7;
   opacity: 0;
   transform: translateY(20px);
-  transition: opacity 0.6s ease, transform 0.6s ease;
+  transition: var(--t-reveal, opacity 0.6s ease, transform 0.6s ease);
 }
 .quote-box.visible { opacity: 1; transform: translateY(0); }
 .quote-box strong { color: var(--color-text); font-style: normal; }
@@ -1600,7 +1606,7 @@ footer.quote-attribution cite { font-style: normal; }
   line-height: 1.6;
   opacity: 0;
   transform: translateY(20px);
-  transition: opacity 0.6s ease, transform 0.6s ease;
+  transition: var(--t-reveal, opacity 0.6s ease, transform 0.6s ease);
 }
 .info-box.visible { opacity: 1; transform: translateY(0); }
 
@@ -1612,7 +1618,7 @@ footer.quote-attribution cite { font-style: normal; }
   border-radius: 0 6px 6px 0;
   opacity: 0;
   transform: translateY(20px);
-  transition: opacity 0.6s ease, transform 0.6s ease;
+  transition: var(--t-reveal, opacity 0.6s ease, transform 0.6s ease);
 }
 .ehrman-block.visible { opacity: 1; transform: translateY(0); }
 .ehrman-block .ehrman-label {
@@ -1650,7 +1656,7 @@ footer.quote-attribution cite { font-style: normal; }
   color: var(--color-text);
   opacity: 0;
   transform: translateY(20px);
-  transition: opacity 0.6s ease, transform 0.6s ease;
+  transition: var(--t-reveal, opacity 0.6s ease, transform 0.6s ease);
 }
 .opusdei-note.visible { opacity: 1; transform: translateY(0); }
 .opusdei-note strong { color: var(--color-accent); }
@@ -2742,7 +2748,7 @@ html.dark #reading-progress { background: var(--color-accent); }
   background: transparent;
   cursor: pointer;
   color: var(--color-text-muted);
-  transition: background .15s, color .15s;
+  transition: var(--t-bg-color, background .15s, color .15s);
   flex-shrink: 0;
   width: 44px; height: 44px;
   min-width: 44px; min-height: 44px;
@@ -3205,7 +3211,7 @@ html.dark .error-flip-label-fact { color: #80c890; }
   font-size: 13px;
   font-weight: 700;
   cursor: pointer;
-  transition: background .15s, color .15s;
+  transition: var(--t-bg-color, background .15s, color .15s);
 }
 .quiz-share-btn:hover { background: var(--color-accent); color: #fff; }
 
@@ -3325,7 +3331,7 @@ html.dark .quiz-feedback.err { color: var(--color-danger-text, #f09090); }
   letter-spacing: 0.05em;
   cursor: pointer;
   display: none;
-  transition: background .15s, color .15s;
+  transition: var(--t-bg-color, background .15s, color .15s);
 }
 .quiz-next-btn:hover { background: var(--color-accent); color: #fff; }
 
@@ -3671,7 +3677,7 @@ html.dark .resume-list-item:hover {
   text-align: left;
   opacity: 0;
   pointer-events: none;
-  transition: opacity .18s ease;
+  transition: var(--t-fade, opacity .18s ease);
   box-shadow: 0 10px 24px rgba(0,0,0,.22);
   z-index: var(--z-critical);
   top: -9999px;
@@ -3749,7 +3755,7 @@ html.dark .bref { color: var(--color-accent); font-weight: 500; }
   font-weight: 400;
   opacity: 0;
   pointer-events: none;
-  transition: opacity .18s ease;
+  transition: var(--t-fade, opacity .18s ease);
   z-index: var(--z-overlay-modal);
   top: -9999px;
   left: -9999px;
@@ -4123,7 +4129,7 @@ html.dark .gtip.gb-floating-tip {
   font-weight: 400;
   opacity: 0;
   pointer-events: none;
-  transition: opacity .18s ease;
+  transition: var(--t-fade, opacity .18s ease);
   z-index: var(--z-overlay-modal);
   will-change: opacity, transform;
 }
@@ -5199,7 +5205,7 @@ html.dark .article-end-sdg svg {
   font-size: 13px;
   font-weight: 700;
   cursor: pointer;
-  transition: background .15s, color .15s;
+  transition: var(--t-bg-color, background .15s, color .15s);
 }
 .quiz-review-start-btn:hover { background: var(--color-accent); color: #fff; }
 
