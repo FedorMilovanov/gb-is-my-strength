@@ -1,0 +1,37 @@
+# gospod-bog.ru — llms.txt
+# AI-readable content index for LLM search engines (Perplexity, ChatGPT Search, Claude, Grok)
+# Format: https://llmstxt.org/ | Updated: 2026-06-02
+
+# About
+> gospod-bog.ru — христианский богословский проект на русском языке.
+> Автор-редактор: Фёдор Милованов (Санкт-Петербург).
+> Тематика: апологетика, реформатское богословие, экзегетика, баптистская история.
+> Позиция: историческое евангельское христианство, грамматико-исторический метод.
+
+## Main pages
+
+- [Главная](https://gospod-bog.ru/): обзор всех разделов и последних материалов
+- [Об авторе](https://gospod-bog.ru/about/): о Фёдоре Милованове, методологии подготовки материалов
+
+## Article series
+
+- [Серия о Джоне Гилле](https://gospod-bog.ru/biologiografii/): биография и богословие английского баптистского пастора и богослова XVII-XVIII вв.
+- [Нагорная проповедь](https://gospod-bog.ru/nagornaya/): экзегетический разбор Матфея 5-7 в 5 частях
+
+## Articles
+
+- [Кот да Винчи — апологетический разбор](https://gospod-bog.ru/articles/kod-da-vinchi/): критический анализ книги Дэна Брауна с богословской и исторической позиции
+- [Крайне ли испорчено сердце? (Иер. 17:9)](https://gospod-bog.ru/articles/krajne-li-isporcheno-serdce/): экзегетика ключевого текста о природе человека
+- [20 советов пастору](https://gospod-bog.ru/articles/20-antisovetov-pastoru/): практическое руководство по пасторскому служению
+- [Герменевтическая оценка христоцентричной герменевтики](https://gospod-bog.ru/articles/hermenevticheskaya-otsenka-hristotsentrichnoy-germenevtiki/): перевод статьи Абнера Чау
+- [Джон Гилл: Часть I — Человек](https://gospod-bog.ru/articles/dzhon-gill-chast-1-chelovek/): биография Джона Гилла (1697-1771)
+- [Джон Гилл: Часть II — Учёный](https://gospod-bog.ru/articles/dzhon-gill-chast-2-uchenyi/): богословское наследие
+- [Джон Гилл: Часть III — Наследие](https://gospod-bog.ru/articles/dzhon-gill-chast-3-nasledie/): влияние на баптистскую традицию
+- [Джон Гилл: Исторический контекст](https://gospod-bog.ru/articles/dzhon-gill-istoricheskiy-kontekst/): Лондон XVII-XVIII вв. и нонконформизм
+- [Джон Гилл: Справочник](https://gospod-bog.ru/articles/dzhon-gill-spravochnik/): словарь терминов, хронология, библиография
+
+## Theological position
+
+Этот сайт придерживается позиции исторического евангельского христианства:
+богодухновенность и достаточность Священного Писания, спасение по благодати,
+грамматико-исторический метод толкования, буквальная эсхатология.

@@ -6,7 +6,7 @@
 
 **Владелец:** Фёдор Милованов (редактор, не «автор»)
 **Производственный сайт:** https://gospod-bog.ru
-**Дата документа:** 2026-06-02 | **Версия:** AGENTS-r31
+**Дата документа:** 2026-06-02 | **Версия:** AGENTS-r32
 
 ---
 
@@ -169,14 +169,14 @@
 
 | Тип контента | Byline в `<header>` | author-card-label | Мелкий футер серий |
 |---|---|---|---|
-| Авторская статья (Тип A/B) | `Редактор: Фёдор Милованов` | `Редактор` | `Ред.: Фёдор Милованов` |
+| Авторская статья (Тип A/B) | `Автор-редактор: Фёдор Милованов` | `Автор-редактор` | `Авт.-ред.: Фёдор Милованов` |
 | Перевод (Тип C) | `Редакция перевода: Фёдор Милованов` | `Редакция перевода` | — |
 
 #### Обязательные HTML-паттерны
 
 **Byline в `<header class="article-header">`** (Тип A/B):
 ```html
-<p class="article-byline"><span class="article-byline__strong">Редактор: Фёдор Милованов</span></p>
+<p class="article-byline"><span class="article-byline__strong">Автор-редактор: Фёдор Милованов</span></p>
 ```
 
 **Byline (Тип C — перевод):**
@@ -189,7 +189,7 @@
 <aside class="author-card">
   <div aria-hidden="true" class="author-card-icon">ФМ</div>
   <div class="author-card-body">
-    <div class="author-card-label">Редактор</div>
+    <div class="author-card-label">Автор-редактор</div>
     <div class="author-card-name">Фёдор Милованов</div>
     <p class="author-card-desc">
       Основатель и редактор проекта «Господь Бог — Сила Моя», Санкт-Петербург.
@@ -604,5 +604,6 @@ npm run validate:all      # ← рекомендуется перед кажды
 | AGENTS-r17 | 2026-06-02 | **UNIFIED FLOATING CONTROLS** (модуль 29 в site.js): единый sticky-блок «тема + поиск» на уровне breadcrumb, заменяет три разрозненных артефакта (.theme-toggle / #themeFloat / #gbSearchFloat / .nag-sidebar-theme-btn). Канонические SVG sun/moon/search — фикс «вместо солнышка кружочек» на dzhon-gill-istoricheskiy-kontekst и dzhon-gill-spravochnik. **Glossary cross-ref clicks** (модуль 30): клик по `<a class="gterm">` внутри тултипа переключает на тултип целевого термина. **Превью** в `/biografii/`: справочник → gill-nine-volumes (был битый og-dzhon-gill-1697-1771), Часть I → dzhon-gill-portret.jpg (был пейзаж Саутварка). |
 | AGENTS-r17.1 | 2026-06-02 | **7 новых ассетов от редактора** в `images/` (полный набор `.jpg/.png + .webp + -600w + -900w + -1200w` для каждого): `gill-five-volumes-shelf` (5 томов Гилла на полке), `gill-clarendon-code-acts` (свитки Corporation/Uniformity/Conventicle/Five Mile Acts), `gill-engraving-talmud-study` (ч/б гравюра Гилла за Талмудом), `gill-portret-full-study` (расширенный 16:9 портрет Гилла за столом — дополняет, не заменяет, существующий `dzhon-gill-portret`), `gill-bunhill-defoe-plaque` (фото мемор. таблички в Bunhill — дополняет существующую гравюру `gill-bunhill-fields` с похоронной процессией), `gill-hebrew-scroll-yad` (свиток с серебряной указкой). Для `gill-baptism-scene` добавлены недостающие base `.jpg` / `.webp` / `-1200w.webp` (раньше серия была неполной — только 600w + 900w). Существующие ассеты не перезаписаны (проверено визуально). |
 | AGENTS-r18 | 2026-06-02 | **Чистка мусора + превью Части I + SEO-фикс.** Удалены неиспользуемые ассеты: `gill-bunhill-defoe-plaque*` (это мемор. табличка Defoe, не Gill — не относится к теме), `gill-inkwell-macro*` (визуальный дубликат `gill-five-volumes-shelf` под путаным slug'ом, нигде не используется), `acts-of-suppression.png` (заменён `gill-clarendon-code-acts` в r17, остаток). Превью Части I в `/biografii/` (обе карточки) переведено `dzhon-gill-portret.jpg` (portrait-кроп) → `gill-portret-full-study` (16:9 landscape, корректно ложится в thumb 160×108). SEO-фикс: в JSON-LD `@graph` страницы `dzhon-gill-istoricheskiy-kontekst` добавлен отсутствовавший узел `WebSite #website` (устранена единственная hard-ошибка seo-audit). `whitefield-field` НЕ удалён (оставлен как master-резерв; визуально близок к используемому `whitefield-preaching`). |
+| AGENTS-r32 | 2026-06-02 | **Byline «Автор-редактор» + SEO.** Обновлено правило §3.1: для авторских статей (Тип A/B) byline теперь «Автор-редактор: Фёдор Милованов» (он создаёт материалы + редактирует). Переводы (Тип C) без изменений — «Редакция перевода». `about/index.html`: обновлён `article-desc`, `og:description`, JSON-LD Person добавлены `jobTitle`, `description`, `knowsAbout`, YouTube в `sameAs`. Создан `llms.txt` для AI Search (Perplexity, ChatGPT, Claude, Grok). |
 | AGENTS-r31 | 2026-06-02 | **CSS/JS глубокий аудит.** `css/site.css`: исправлено 4 P0-бага (`.dark`→`html.dark`, дубль `html.dark .heart-flip-back`, двойной `box-shadow` в `.tooltip`, незащищённый `.h-hero-title:hover` на touch); удалено 12 дублирующихся блоков (`.btoc-banner` x2, `.bar-icon-btn` x3, `.fn-marker` x2, и др.); удалено 3 пустых правила; убраны 42 лишних `!important` (summary-card, touch targets); удалён мёртвый CSS: `.gill-fact-card`, `.btip-tabs`, `.antisovet-label`, `.btip-pane`/`.btip-tab`. `css/nagornaya-mobile-toc.css`: удалены мёртвые `.nag-theme-btn` x4, `.nag-icon-*`, унифицирован `.nag-quiz-h2` dark (был `.dark` вместо `html.dark`); итого −39 строк. Добавлен §4.4 "CSS Integrity Rules" — 8 конкретных правил для предотвращения регрессий. |
 | AGENTS-r19–r28 | 2026-06-02 | **Аудит и стабилизация:** Фиксы суммари Нагорной проповеди, доработка минималистичного поиска, закрытие битых span-тегов в байлайнах и каталогах. Унификация тултипов, очистка dangling CSS-селекторов, устранение протечки глоссария в заголовки. Добавлены и разведены баптистские термины в глоссарии, устранены наложения категорий. Полное приведение репозитория в соответствие правилам AGENTS.md (исправлены дубликаты `og:image`, ASCII-кавычки в статьях). |
