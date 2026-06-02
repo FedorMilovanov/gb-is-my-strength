@@ -19,8 +19,11 @@
 5. ❌ Обновлять зависимости в `package.json` без явного запроса.
 6. ❌ Удалять или переименовывать `?v=...` хеши (у каждого файла свой, генерятся `scripts/cache-bust.js`).
 7. ❌ Удалять заголовки `<header class="article-header">` или `<aside class="author-card">`.
-8. ✅ После любой правки CSS/JS — запустить `npm run cache-bust` для обновления хешей.
-9. ✅ Перед коммитом — запустить `npm run validate:all`.
+8. ❌ Создавать в корне репо `.patch`, `*.py`, `*.tsx` файлы — статический сайт без сборщика (см. §10).
+9. ❌ Возвращать AI-disclosure: ни JS-модуль (удалён 2026-06-02), ни ручные `<aside class="ai-disclosure">`, ни «при помощи ИИ» в figcaption. Об ИИ — только на странице `/about/`.
+10. ❌ Дублировать `<meta og:*>` теги в `<head>`. Один `og:image` per page. JPG-fallback — только если `.jpg` файл реально существует.
+11. ✅ После любой правки CSS/JS — запустить `npm run cache-bust` для обновления хешей.
+12. ✅ Перед коммитом — запустить `npm run validate:all`.
 
 ---
 
@@ -225,16 +228,40 @@
 1. Класс уже может быть в `tw.min.css` (Tailwind включает стандартные утилиты).
 2. Если нет — обратиться к владельцу для регенерации `tw.min.css`.
 
+### 3.6 Известный технический долг (не трогать без согласования)
+
+К 2026-06-02 в репо есть один намеренно не закрытый пункт долга:
+
+- **~12 КБ inline `<style>` блоков** в `articles/dzhon-gill-chast-1-chelovek/index.html`, `…chast-2-uchenyi`, `…chast-3-nasledie`. Определяют классы `.biography-hero`, `.biography-portrait`, `.biography-meta`, `.biography-dates`, `.biography-title`, `.biography-subtitle`, `.biography-epigraph`, `.biography-stats`, `.stat-item/value/label`, `.biography-timeline`, `.timeline-year/title/desc`, `.foliant-mark`.
+  - Часть 2 и Часть 3 имеют идентичный блок; Часть 1 отличается на ~20 строк (дополнительные правила для `.biography-portrait figcaption`).
+  - **Куда переносить:** в `css/site.css`, в существующий `@layer components`, с пометкой `/* Biography template, originally inline in Gill trilogy */`.
+  - **Что осторожно:** перед удалением inline-блока убедиться, что вынесенный CSS включает ВСЕ уникальные правила из Часть 1.
+  - **Зачем долг есть:** автоматический рефактор сломал бы визуальные нюансы; ручной требует тестирования всех трёх страниц в светлой и тёмной теме.
+
 ### 3.7 Работа с изображениями (КРИТИЧНО)
 
 Все новые изображения должны быть приведены к стандартам производительности сайта:
-1. **Формат:** Только WebP (основной) + PNG (fallback/backup).
-2. **Размеры:** Обязательная генерация 3 вариантов ширины для атрибута `srcset`:
+
+1. **Формат:** WebP — основной формат фронтенда. PNG/JPG — backup в `images/<base-name>.png`, не для использования в `<img>` или `<picture>`.
+2. **Размеры:** Обязательная генерация 3 вариантов ширины для `srcset`:
    - `600w` (мобильные)
    - `900w` (планшеты)
    - `1200w` (десктоп, ретина)
 3. **Именование:** `images/<base-name>.webp`, `images/<base-name>-600w.webp`, и т.д.
-4. **Конвертация:** Использовать Python (PIL/Pillow) или `cwebp` если доступно. Качество WebP: 82-85%.
+4. **Конвертация:** Python (PIL/Pillow) или `cwebp`. Качество WebP: 82–85%.
+5. **`<picture>` шаблон**:
+   ```html
+   <figure class="article-img wide reveal">
+     <picture>
+       <source srcset="../../images/<name>-600w.webp 600w, ../../images/<name>-900w.webp 900w, ../../images/<name>-1200w.webp 1200w"
+               sizes="(max-width: 640px) 92vw, 1200px" type="image/webp">
+       <img src="../../images/<name>.webp" alt="…" width="1200" height="630" loading="lazy" decoding="async">
+     </picture>
+     <figcaption>Подпись без упоминания ИИ.</figcaption>
+   </figure>
+   ```
+6. **OG / Twitter картинки**: один `og:image` per page. JPG-fallback можно ставить ТОЛЬКО если файл `images/<name>.jpg` реально существует. Не плодить теги «на всякий случай».
+7. **figcaption**: не вставлять `<span class="ai-note">` или «Изображение сгенерировано ИИ». Прозрачность — на странице `/about/`.
 
 ---
 
@@ -252,12 +279,14 @@
 
 ### 4.2 `!important`
 
-Сейчас (2026-05-30):
-- `site.css`: 526 (исторический долг, накопился за audit V1–V32; новых не добавлять)
+Сейчас (2026-06-02, после дедупа в commits A–H):
+- `site.css`: ~510 (исторический долг, новых не добавлять)
 - `home.css`: 15
 - `command-palette.css`: 4
 - `mobile-hotfix.css`: 46 (по дизайну: переопределяет поведение для touch / pointer: coarse)
 - `nagornaya-mobile-toc.css`: 3
+
+В commits A–H удалено 55+ дублирующих rule-блоков (~10 КБ); удалены 5-кратные дубли `.premium-frame`, 8-кратные `button.bref`, 8-кратные `.mobile-controls .theme-toggle`. Если попадаются новые дубли — это регрессия.
 
 Не добавлять новые `!important`, пока возможно через специфичность. Если уже есть `!important` на том же селекторе — **исправь существующий**, не добавляй второй.
 
@@ -385,7 +414,24 @@ npm run validate:all      # ← рекомендуется перед кажды
 
 ---
 
-## 9. История этого документа
+## 10. ЧТО ИЗ КОРНЯ РЕПО НИКОГДА НЕ КОММИТИТЬ
+
+К 2026-06-02 из репо удалены и больше не должны появляться в корне:
+
+| Файл / маска | Почему нельзя |
+|---|---|
+| `*.patch` | `.patch`-файлы — рабочие артефакты git, не контент. Не нужны на проде. |
+| `*.py` в корне | Статический сайт без серверного Python. Все Python-скрипты — только в `scripts/` (build-tools). |
+| `*.tsx`, `*.ts`, `src/components/` | Сайт собран как vanilla HTML+CSS+JS. TypeScript/React-компоненты — мёртвый код, не компилируется. |
+| `README-<что-то>.txt`, `README.txt` | Дубли `README.md`. |
+| `PATCH-V*-SUMMARY.md`, `AUDIT_REPORT_*.md`, `*_PLAN_*.md` | Истёкшие планы и отчёты. История сохраняется в git log и `AUDIT_HISTORY.md`. |
+| `apply_*.py`, `fix_*.py`, `final_*.py`, `split_*.py` | Одноразовые костыли — следы прошлых неудачных правок. Если нужен скрипт — клади в `scripts/` и документируй в `package.json`. |
+
+Если AI-агент создал такой файл в процессе работы — он обязан удалить его перед коммитом.
+
+---
+
+## 11. История этого документа
 
 | Версия | Дата | Что |
 |---|---|---|
@@ -399,6 +445,7 @@ npm run validate:all      # ← рекомендуется перед кажды
 | AGENTS-r8 | 2026-05-28 | Актуализированы 5 CSS / 11 JS, AI disclosure, glossary categories, mobile footnotes, quiz sourceRef, accuracy mailto |
 | AGENTS-r9 | 2026-05-28 | Уточнены SiteShare object payload, AI disclosure placement, quiz sourceRef fallback по focus |
 | AGENTS-r10 | 2026-05-30 | Биографии: восстановлена малая карточка `h-intro-card--biographies` на главной + добавлен раздел `biografii/` со страницей серии. Закрыт пакет JS-багов (SiteUtils merge, quizBonusResult показ, tooltip aria-expanded, visualViewport dedup, _searchGen guard, плюрализация). Актуализированы счётчики !important (§4.2), таблица CSS-файлов (§2), пояснение к ?v= хешам (§0/§3.4). |
+| AGENTS-r11 | 2026-06-02 | Закрытие техдолга после crash-recovery предыдущего агента. Commits A–H: вырезан AI-disclosure JS-модуль; восстановлены 4 URL в sitemap (+ISO8601); добавлена серия `dzhon-gill` в `series.json`; превью справочника = bookshelf, не Гилл; статья «Исторический контекст» расширена с 790 до 2812 слов (6 → 10 разделов); удалены 55 дубликатов CSS (~10 КБ — `.premium-frame` 5x, `button.bref` 8x, `.mobile-controls .theme-toggle` 8x и др.); определены `.note-box`, `.context-links`, `.manuscript-quote`; добавлен JSON-LD в kontekst; Top-10 must-read с live-ссылками в справочник; унифицирована шапка статей Гилла (удалён чужеродный `<header class="site-header">`); заменена картинка Уайтфилда на исторически достоверную (фигура в чёрной рясе на сколоченной деревянной кафедре); задействованы все 5 остававшихся неиспользуемых изображений Гилла. Удалён мусор из корня (1.1 МБ: `gill-trilogy-split.patch` 941 КБ, `src/components/*.tsx` 135 КБ, ad-hoc Python скрипты, истёкшие `*_PLAN_*.md`). Новые правила: §0 пункты 8–10, §3.6 (известный техдолг), §3.7 расширен (`<picture>` шаблон, OG-правила, без AI-notes), §10 (что не коммитить в корень). |
 
 ---
 
