@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "generatedAt": "2026-05-22T00:00:00+03:00",
+  "generatedAt": "2026-06-02T00:30:00+03:00",
   "project": {
     "name": "Господь Бог — Сила Моя",
     "url": "https://gospod-bog.ru/",
@@ -31,26 +31,26 @@
       "modifiedTime": "2026-05-01T00:00:00+03:00"
     },
     {
-      "id": "dzhon-gill-1697-1771",
-      "type": "article",
-      "url": "/articles/dzhon-gill-chast-1-chelovek/",
-      "title": "Джон Гилл (1697–1771): доктор Многотомный",
-      "description": "Защитник Троицы против унитарианства, самостоятельно освоивший иврит, девятитомный комментарий на всю Библию. Биография по первичным источникам.",
+      "id": "dzhon-gill-seriya",
+      "type": "series",
+      "url": "/articles/dzhon-gill-istoricheskiy-kontekst/",
+      "title": "Джон Гилл (1697–1771) — биографическая серия",
+      "description": "Серия из 5 материалов о Джоне Гилле: исторический контекст, биография в трёх частях и справочник. По первичным источникам.",
       "section": "Биографии служителей",
       "editor": "Фёдор Милованов",
-      "readTime": 55,
-      "image": "/images/og-dzhon-gill-1697-1771.webp",
+      "readTime": 110,
+      "image": "/images/dzhon-gill-portret.webp",
       "tags": [
+        "серия",
         "биографии",
+        "Джон Гилл",
         "баптисты",
-        "богословие",
-        "экзегеза",
-        "Джон Гилл"
+        "XVIII век"
       ],
       "featured": true,
-      "priority": 90,
-      "modifiedTime": "2026-05-28T12:00:00+03:00",
-      "publishedTime": "2026-05-26T00:00:00+03:00"
+      "priority": 96,
+      "publishedTime": "2026-05-26T00:00:00+03:00",
+      "modifiedTime": "2026-06-02T00:30:00+03:00"
     },
     {
       "id": "dzhon-gill-istoricheskiy-kontekst",
@@ -61,7 +61,7 @@
       "section": "Биографии служителей",
       "editor": "Фёдор Милованов",
       "readTime": 16,
-      "image": "/images/og-dzhon-gill-istoricheskiy-kontekst.webp",
+      "image": "/images/gill-context-scroll.webp",
       "tags": [
         "биографии",
         "Джон Гилл",
@@ -70,9 +70,147 @@
         "история церкви"
       ],
       "featured": true,
-      "priority": 91,
+      "priority": 95,
       "publishedTime": "2026-06-01T00:00:00+03:00",
-      "modifiedTime": "2026-06-01T15:40:00+03:00"
+      "modifiedTime": "2026-06-02T00:30:00+03:00"
+    },
+    {
+      "id": "pastor-series",
+      "type": "series",
+      "url": "/pastor-series/",
+      "title": "Тёмная сторона кафедры — серия материалов",
+      "description": "Системный анализ пасторских патологий: власть без подотчётности, манипуляция Писанием, портреты авторитарности и пути к здоровой церковной культуре.",
+      "section": "Служение",
+      "editor": "Фёдор Милованов",
+      "readTime": 40,
+      "image": "/images/pastor-series/hero-main.webp",
+      "tags": [
+        "серия",
+        "пасторство",
+        "диотрефство",
+        "авторитаризм",
+        "здоровая церковь"
+      ],
+      "featured": true,
+      "priority": 95,
+      "publishedTime": "2026-05-13T00:00:00+03:00",
+      "modifiedTime": "2026-05-13T00:00:00+03:00"
+    },
+    {
+      "id": "dzhon-gill-chast-1-chelovek",
+      "type": "article",
+      "url": "/articles/dzhon-gill-chast-1-chelovek/",
+      "title": "Джон Гилл (1697–1771). Часть I. Человек",
+      "description": "Защитник Троицы против унитарианства, самостоятельно освоивший иврит, девятитомный комментарий на всю Библию. Биография по первичным источникам.",
+      "section": "Биографии служителей",
+      "editor": "Фёдор Милованов",
+      "readTime": 28,
+      "image": "/images/og-dzhon-gill-chast-1-chelovek.webp",
+      "tags": [
+        "биографии",
+        "баптисты",
+        "богословие",
+        "экзегеза",
+        "Джон Гилл"
+      ],
+      "featured": true,
+      "priority": 92,
+      "modifiedTime": "2026-06-02T00:30:00+03:00",
+      "publishedTime": "2026-05-26T00:00:00+03:00"
+    },
+    {
+      "id": "dzhon-gill-chast-2-uchenyi",
+      "type": "article",
+      "url": "/articles/dzhon-gill-chast-2-uchenyi/",
+      "title": "Джон Гилл (1697–1771). Часть II. Учёный",
+      "description": "Экзегеза, систематика, иврит и раввинистика. Девятитомный комментарий на всю Библию и «Свод богословия» — первая баптистская систематика на английском.",
+      "section": "Биографии служителей",
+      "editor": "Фёдор Милованов",
+      "readTime": 22,
+      "image": "/images/og-dzhon-gill-chast-2-uchenyi.webp",
+      "tags": [
+        "биографии",
+        "Джон Гилл",
+        "экзегеза",
+        "систематика",
+        "иврит",
+        "раввинистика",
+        "Body of Divinity"
+      ],
+      "featured": true,
+      "priority": 91,
+      "publishedTime": "2026-05-26T00:00:00+03:00",
+      "modifiedTime": "2026-06-02T00:30:00+03:00"
+    },
+    {
+      "id": "krajne-isporcheno",
+      "type": "article",
+      "url": "/articles/krajne-li-isporcheno-serdce/",
+      "title": "Крайне ли испорчено моё сердце — если я уже верующий?",
+      "description": "Разбор Иеремии 17:9–10: экзегеза, синтез реформатского и арминианского взгляда, пастырское применение",
+      "section": "Экзегетика",
+      "author": "Фёдор Милованов",
+      "editor": "Фёдор Милованов",
+      "readTime": 32,
+      "image": "/images/og-krajne-isporcheno.jpg",
+      "tags": [
+        "Иеремия",
+        "сердце",
+        "экзегеза",
+        "реформатское богословие"
+      ],
+      "featured": true,
+      "priority": 90,
+      "modifiedTime": "2026-05-21T23:09:05+03:00",
+      "publishedTime": "2026-04-01T00:00:00+03:00"
+    },
+    {
+      "id": "20-antisovetov-pastoru",
+      "type": "article",
+      "url": "/articles/20-antisovetov-pastoru/",
+      "title": "20 антисоветов, как пастору разрушить своё служение",
+      "description": "Системный библейский анализ пасторских патологий: власть, подотчётность, страх, манипуляция Писанием и путь к здоровой церковной культуре.",
+      "section": "Служение",
+      "editor": "Фёдор Милованов",
+      "readTime": 40,
+      "image": "/images/pastor-series/hero-main.webp",
+      "tags": [
+        "пасторство",
+        "антисоветы",
+        "диотрефство",
+        "авторитаризм",
+        "подотчётность"
+      ],
+      "featured": false,
+      "priority": 90,
+      "publishedTime": "2026-05-13T00:00:00+03:00",
+      "wordCount": 12000,
+      "seriesId": "pastor-series",
+      "seriesPosition": 1,
+      "modifiedTime": "2026-05-21T23:09:05+03:00"
+    },
+    {
+      "id": "dzhon-gill-chast-3-nasledie",
+      "type": "article",
+      "url": "/articles/dzhon-gill-chast-3-nasledie/",
+      "title": "Джон Гилл (1697–1771). Часть III. Наследие",
+      "description": "Полемика с арминианством и Римом, влияние на Сперджена, спор о гиперкальвинизме, англо-американская преемственность и память о Гилле в XX–XXI веках.",
+      "section": "Биографии служителей",
+      "editor": "Фёдор Милованов",
+      "readTime": 24,
+      "image": "/images/og-dzhon-gill-chast-3-nasledie.webp",
+      "tags": [
+        "биографии",
+        "Джон Гилл",
+        "Сперджен",
+        "полемика",
+        "наследие",
+        "гиперкальвинизм"
+      ],
+      "featured": true,
+      "priority": 90,
+      "publishedTime": "2026-05-26T00:00:00+03:00",
+      "modifiedTime": "2026-06-02T00:30:00+03:00"
     },
     {
       "id": "dzhon-gill-spravochnik",
@@ -83,7 +221,7 @@
       "section": "Биографии служителей",
       "editor": "Фёдор Милованов",
       "readTime": 22,
-      "image": "/images/og-dzhon-gill-1697-1771.webp",
+      "image": "/images/gill-library-shelf.webp",
       "tags": [
         "биографии",
         "Джон Гилл",
@@ -92,9 +230,31 @@
         "Body of Divinity"
       ],
       "featured": true,
-      "priority": 89,
+      "priority": 88,
       "publishedTime": "2026-06-01T00:00:00+03:00",
-      "modifiedTime": "2026-06-01T17:05:00+03:00"
+      "modifiedTime": "2026-06-02T00:30:00+03:00"
+    },
+    {
+      "id": "hermenevtika",
+      "type": "article",
+      "url": "/articles/hermenevticheskaya-otsenka-hristotsentrichnoy-germenevtiki/",
+      "title": "Герменевтическая оценка христоцентричной герменевтики",
+      "description": "Грамматико-исторический метод оправдан Писанием и более чем достаточен — перевод Абнера Чау",
+      "section": "Переводы",
+      "author": "Абнер Чау",
+      "editor": "Фёдор Милованов",
+      "readTime": 35,
+      "image": "/images/hermenevtika-preview.webp",
+      "tags": [
+        "герменевтика",
+        "перевод",
+        "Чау",
+        "реформатское"
+      ],
+      "featured": true,
+      "priority": 88,
+      "modifiedTime": "2026-05-21T23:09:05+03:00",
+      "publishedTime": "2016-09-01"
     },
     {
       "id": "biografii",
@@ -115,6 +275,28 @@
       "priority": 85,
       "modifiedTime": "2026-05-28T00:00:00+03:00",
       "publishedTime": "2026-05-28T00:00:00+03:00"
+    },
+    {
+      "id": "kod-da-vinchi",
+      "type": "article",
+      "url": "/articles/kod-da-vinchi/",
+      "title": "«Код да Винчи»: блестящий триллер или историческая подмена?",
+      "description": "Никейский собор, канон Нового Завета, Свитки Мёртвого моря, Наг-Хаммади — что правда, а что вымысел",
+      "section": "Апологетика",
+      "author": "Фёдор Милованов",
+      "editor": "Фёдор Милованов",
+      "readTime": 17,
+      "image": "/images/og-kod-da-vinchi.jpg",
+      "tags": [
+        "апологетика",
+        "Никея",
+        "канон",
+        "гностицизм"
+      ],
+      "featured": true,
+      "priority": 85,
+      "modifiedTime": "2026-05-21T23:09:05+03:00",
+      "publishedTime": "2026-04-01T00:00:00+03:00"
     },
     {
       "id": "nagornaya-ch1",
@@ -215,72 +397,6 @@
       "publishedTime": "2026-05-01T00:00:00+03:00"
     },
     {
-      "id": "krajne-isporcheno",
-      "type": "article",
-      "url": "/articles/krajne-li-isporcheno-serdce/",
-      "title": "Крайне ли испорчено моё сердце — если я уже верующий?",
-      "description": "Разбор Иеремии 17:9–10: экзегеза, синтез реформатского и арминианского взгляда, пастырское применение",
-      "section": "Экзегетика",
-      "author": "Фёдор Милованов",
-      "editor": "Фёдор Милованов",
-      "readTime": 32,
-      "image": "/images/og-krajne-isporcheno.jpg",
-      "tags": [
-        "Иеремия",
-        "сердце",
-        "экзегеза",
-        "реформатское богословие"
-      ],
-      "featured": true,
-      "priority": 90,
-      "modifiedTime": "2026-05-21T23:09:05+03:00",
-      "publishedTime": "2026-04-01T00:00:00+03:00"
-    },
-    {
-      "id": "kod-da-vinchi",
-      "type": "article",
-      "url": "/articles/kod-da-vinchi/",
-      "title": "«Код да Винчи»: блестящий триллер или историческая подмена?",
-      "description": "Никейский собор, канон Нового Завета, Свитки Мёртвого моря, Наг-Хаммади — что правда, а что вымысел",
-      "section": "Апологетика",
-      "author": "Фёдор Милованов",
-      "editor": "Фёдор Милованов",
-      "readTime": 17,
-      "image": "/images/og-kod-da-vinchi.jpg",
-      "tags": [
-        "апологетика",
-        "Никея",
-        "канон",
-        "гностицизм"
-      ],
-      "featured": true,
-      "priority": 85,
-      "modifiedTime": "2026-05-21T23:09:05+03:00",
-      "publishedTime": "2026-04-01T00:00:00+03:00"
-    },
-    {
-      "id": "hermenevtika",
-      "type": "article",
-      "url": "/articles/hermenevticheskaya-otsenka-hristotsentrichnoy-germenevtiki/",
-      "title": "Герменевтическая оценка христоцентричной герменевтики",
-      "description": "Грамматико-исторический метод оправдан Писанием и более чем достаточен — перевод Абнера Чау",
-      "section": "Переводы",
-      "author": "Абнер Чау",
-      "editor": "Фёдор Милованов",
-      "readTime": 35,
-      "image": "/images/hermenevtika-preview.webp",
-      "tags": [
-        "герменевтика",
-        "перевод",
-        "Чау",
-        "реформатское"
-      ],
-      "featured": true,
-      "priority": 88,
-      "modifiedTime": "2026-05-21T23:09:05+03:00",
-      "publishedTime": "2016-09-01"
-    },
-    {
       "id": "about",
       "type": "page",
       "url": "/about/",
@@ -297,53 +413,6 @@
       "priority": 50,
       "modifiedTime": "2026-04-18T00:00:00+03:00",
       "image": "/images/og-about.webp"
-    },
-    {
-      "id": "pastor-series",
-      "type": "series",
-      "url": "/pastor-series/",
-      "title": "Тёмная сторона кафедры — серия материалов",
-      "description": "Системный анализ пасторских патологий: власть без подотчётности, манипуляция Писанием, портреты авторитарности и пути к здоровой церковной культуре.",
-      "section": "Служение",
-      "editor": "Фёдор Милованов",
-      "readTime": 40,
-      "image": "/images/pastor-series/hero-main.webp",
-      "tags": [
-        "серия",
-        "пасторство",
-        "диотрефство",
-        "авторитаризм",
-        "здоровая церковь"
-      ],
-      "featured": true,
-      "priority": 95,
-      "publishedTime": "2026-05-13T00:00:00+03:00",
-      "modifiedTime": "2026-05-13T00:00:00+03:00"
-    },
-    {
-      "id": "20-antisovetov-pastoru",
-      "type": "article",
-      "url": "/articles/20-antisovetov-pastoru/",
-      "title": "20 антисоветов, как пастору разрушить своё служение",
-      "description": "Системный библейский анализ пасторских патологий: власть, подотчётность, страх, манипуляция Писанием и путь к здоровой церковной культуре.",
-      "section": "Служение",
-      "editor": "Фёдор Милованов",
-      "readTime": 40,
-      "image": "/images/pastor-series/hero-main.webp",
-      "tags": [
-        "пасторство",
-        "антисоветы",
-        "диотрефство",
-        "авторитаризм",
-        "подотчётность"
-      ],
-      "featured": false,
-      "priority": 90,
-      "publishedTime": "2026-05-13T00:00:00+03:00",
-      "wordCount": 12000,
-      "seriesId": "pastor-series",
-      "seriesPosition": 1,
-      "modifiedTime": "2026-05-21T23:09:05+03:00"
     }
   ]
 }
