@@ -1,5 +1,4 @@
 
-
 @layer reset, base, components, utilities;
 
 @layer reset {
@@ -72,7 +71,6 @@ body { overflow-x: hidden; }
   --color-surface-muted:    #f4f2ed;
   --color-surface-quote:    #f7f4ee;
   --color-surface-alt:      #f5f5f3;
-  --color-surface-2:        #f7f4f0;
 
   --color-text:             #1a1a1a;
   --color-text-primary:     #1a1a18;
@@ -111,7 +109,6 @@ body { overflow-x: hidden; }
   --border-strong:      var(--color-border-strong);
   --accent:             var(--color-accent);
   --accent-soft:        var(--color-accent-soft);
-  --accent-strong:      var(--color-accent-strong);
   --success-border:     var(--color-success-border);
   --warn-bg:            var(--color-warning-bg);
   --warn-border:        var(--color-warning-border);
@@ -122,7 +119,6 @@ body { overflow-x: hidden; }
   --tooltip-bg:         var(--color-tooltip-bg);
   --tooltip-text:       var(--color-tooltip-text);
   --bg-alt:             var(--color-surface-alt);
-  --accent-selection:   var(--color-accent-selection);
   --article-font-size: 17px;
 
   --back-height:        auto;
@@ -151,7 +147,6 @@ html.dark {
   --color-surface-muted:    #161a21;
   --color-surface-quote:    #15191f;
   --color-surface-alt:      #13171e;
-  --color-surface-2:        #1a1f28;
 
   --color-text:             #e6e1d7;
   --color-text-primary:     #e6e1d7;
@@ -196,7 +191,6 @@ html.dark {
   --border-strong:      var(--color-border-strong);
   --accent:             var(--color-accent);
   --accent-soft:        var(--color-accent-soft);
-  --accent-strong:      var(--color-accent-strong);
   --success-border:     var(--color-success-border);
   --warn-bg:            var(--color-warning-bg);
   --warn-border:        var(--color-warning-border);
@@ -207,7 +201,6 @@ html.dark {
   --tooltip-bg:         var(--color-tooltip-bg);
   --tooltip-text:       var(--color-tooltip-text);
   --bg-alt:             var(--color-surface-alt);
-  --accent-selection:   var(--color-accent-selection);
   --scroll-margin:      96px;
 }
   --color-amber: #fbbf24;
@@ -756,17 +749,7 @@ article p {
     hyphenate-limit-lines: 2;
   }
 }
-/* AUDIT V9 / #127: премиальное подчёркивание ссылок в статьях.
-   WCAG 1.4.1 (Use of Color) — ссылки больше не отличаются ТОЛЬКО цветом.
-
-   Substack):
-     но даёт явный visual cue + проходит автоматические a11y-сканеры.
-   * Hover/focus → подчёркивание уплотняется до accent color, добавляется toned
-     background-tint (как в NYT Magazine длинных текстов).
-   * Skip-ink: декорация прерывается под descender'ами букв (g, j, p) —
-     text-decoration-skip-ink: auto; включён по умолчанию во всех современных
-     браузерах, но мы фиксируем явно.
-   * decoration-color через color-mix с fallback на сплошной серо-синий. */
+/* AUDIT V9 / #127: article links — premium underline (WCAG 1.4.1), skip-ink, hover tint. color-mix fallback for Chrome 90-110. */
 article a {
   color: var(--color-link);
   text-decoration: underline;
@@ -1717,23 +1700,7 @@ footer.quote-attribution cite { font-style: normal; }
 .compare-table tbody tr:last-child td { border-bottom: none; }
 .compare-table tbody td:first-child { color: var(--color-text-muted); font-size: 13px; white-space: nowrap; }
 .compare-table tbody td:first-child strong { color: var(--color-text-muted); }
-/* AUDIT V9 / #163: на мобильном по умолчанию — stacked cards (Variant C).
-   Каждая строка превращается в карточку, заголовки колонок выводятся через
-   data-label="..." на каждой <td>. Никакого горизонтального скролла.
-
-   Семантика <table> технически ломается (display:block), НО при этом
-   контент остаётся читаемым линейно — каждая ячейка с её label-ом.
-
-   Опт-out: если нужна классическая таблица со скроллом — обернуть в
-   <div class="table-scroll" role="region" tabindex="0" aria-label="..."> —
-   стиль ниже сохраняет table semantics + клавиатурный доступ.
-
-   Использование: <table class="compare-table"><tbody>
-     <tr>
-       <td data-label="Источник"><strong>Мф 5:21</strong></td>
-       <td data-label="Реченье">Не убивай</td>
-     </tr>
-   </tbody></table>                                                          */
+/* AUDIT V9 / #163: compare-table mobile stacked cards. Использование: class="compare-table", data-label="..." на ячейках. Opt-out: class="compare-table compare-table--scroll". */
 @media (max-width: 600px) {
   /* Stacked-cards (default) */
   .compare-table:not(.compare-table--scroll) {
@@ -1802,12 +1769,7 @@ html.dark .compare-table:not(.compare-table--scroll) tr {
   background: var(--color-surface);
 }
 
-/* Variant B (opt-in): классическая таблица со скроллом, для случаев где
-   stacked cards неуместны (например, очень широкие денежные/числовые таблицы).
-   Использование: <div class="table-scroll" role="region" tabindex="0"
-                       aria-label="Таблица: ...">
-                    <table class="compare-table compare-table--scroll">...
-                  </div>                                                    */
+/* Variant B: классическая таблица со скроллом. Использование: обернуть в <div class="table-scroll">. */
 .table-scroll {
   overflow-x: auto;
   margin: 24px 0;
@@ -2196,10 +2158,7 @@ html.dark .compare-table:not(.compare-table--scroll) tr {
   border-top: 1px solid var(--color-border);
   padding: 0 0 env(safe-area-inset-bottom, 0px);
   transform: translateY(100%);
-  /* AUDIT V8 / #114: hidden bottom-bar was still focusable via Tab even though
-     translated off-screen. visibility:hidden removes it from the tab order;
-     pointer-events:none prevents click-through during slide-out animation.
-     Delay visibility transition so the slide-out animation is still visible. */
+  /* AUDIT V8 / #114: visibility:hidden removes from tab order; pointer-events:none prevents click-through. Delay visibility so slide-out animation is visible. */
   visibility: hidden;
   pointer-events: none;
   transition: transform .3s cubic-bezier(.4,0,.2,1), background .25s, visibility 0s linear .3s;
@@ -2416,6 +2375,8 @@ html.dark .bar-icon-sun  { display: block; color: #f5c542; }
   min-height: 0;
   overflow-y: auto;
   padding: 0 0 calc(20px + env(safe-area-inset-bottom, 0px));
+  position: relative;
+  padding-left: 4px;
 }
 
 .btoc-link-num {
@@ -2614,10 +2575,6 @@ html.dark .bar-icon-sun  { display: block; color: #f5c542; }
   padding-left: 30px;
 }
 
-.btoc-nav{
-  position: relative;
-  padding-left: 4px;
-}
 .btoc-nav::before{ content: none; }
 .btoc-link{
   display: flex;
@@ -2793,6 +2750,8 @@ html.dark #reading-progress { background: var(--color-accent); }
   color: var(--color-text-muted);
   transition: background .15s, color .15s;
   flex-shrink: 0;
+  width: 44px; height: 44px;
+  min-width: 44px; min-height: 44px;
 }
 .sd-close:hover { background: var(--color-surface-muted); color: var(--color-text); }
 .sd-close:focus-visible { outline: 2px solid var(--color-accent); outline-offset: 2px; }
@@ -3279,7 +3238,7 @@ html.dark .error-flip-label-fact { color: #80c890; }
   margin: 0 0 24px;
   line-height: 1.5;
 }
-.quiz-options { display: flex; flex-direction: column; gap: 8px; }
+.quiz-options { display: flex; flex-direction: column; gap: 8px; min-height: 200px; }
 .quiz-option {
   padding: 11px 16px;
   min-height: 44px;
@@ -3522,8 +3481,6 @@ body.has-bottom-bar .bookmark-toast {
   align-items: center;
   gap: 6px;
 }
-
-
 
 
 .btoc-fontsize-btn {
@@ -5905,7 +5862,6 @@ abbr.gterm:hover { text-decoration: none; }
 
 .quiz-card { min-height: 420px; }
 .quiz-question { min-height: 80px; }
-.quiz-options { min-height: 200px; }
 
 
 #selection-share-popup { z-index: var(--z-modal-1); }
@@ -5991,9 +5947,7 @@ html.dark .gb-series-link:hover {
 
 /* @layer components: поздние legacy/mobile/a11y-блоки (CSS-FIX-01) */
 @layer components {
-/* SCROLL-LOCK (#25,#53,#156): 4 механизма — html[data-scroll-locked] (JS),
-   html.cp-scroll-lock (CP), body.ng-toc-lock (nagornaya), body.no-scroll (fallback).
-   Все совместимы, SiteUtils.lockScroll() source-aware. Подробнее: AGENTS.md §4. */
+/* SCROLL-LOCK: 4 механизма — html[data-scroll-locked] (JS), html.cp-scroll-lock (CP), body.ng-toc-lock (nagornaya), body.no-scroll (fallback). SiteUtils.lockScroll() source-aware. */
 
 body.no-scroll {
   overflow: hidden !important;
@@ -6387,15 +6341,6 @@ html.dark .fn-marker:focus-visible {
 }
 .btoc-close svg { width: 18px; height: 18px; }
 
-.sd-close {
-  width: 44px;
-  height: 44px;
-  min-width: 44px;
-  min-height: 44px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-}
 
 
 @media (pointer: coarse) {
@@ -7219,10 +7164,7 @@ html.dark .h-scripture-bg::before {
   }
 }
 
-/* AUDIT v14: Hebrew word expansion lives in css/home.css.
-   Keep this site.css section for the home hero hover polish only;
-   do not position .hb-back here, otherwise it can override the
-   inline expansion that pushes neighboring words apart. */
+/* AUDIT v14: Hebrew expansion in home.css; here only hero hover polish. */
 @media (hover: hover) and (pointer: fine) {
   .h-hero-title:hover .h-title-static {
     opacity: .96;
@@ -7272,11 +7214,7 @@ body.nagornaya-page main > .max-w-4xl > .mb-6 > p.article-updated {
 
 /* AUDIT v13: final summary guard — no filled header, no v9 pseudo-check conflicts */
 
-/* ═══════════════
-   UX HOTFIX 2026-05-23 — nested main inside .page-wrap
-   page-wrap already controls width/padding; repeated width on child
-   main caused mobile overflow on /about/ and similar pages.
-   ═══════════════ */
+/* UX HOTFIX: .page-wrap > main:not([class]) — убирает двойную ширину/паддинг. */
 .page-wrap > main:not([class]) {
   width: auto !important;
   max-width: 100% !important;
@@ -7284,11 +7222,7 @@ body.nagornaya-page main > .max-w-4xl > .mb-6 > p.article-updated {
   padding: 0 !important;
 }
 
-/* ═══════════════
-   KOD DA VINCI — canon timeline widget (#16 inline CSS cleanup)
-   Перенесено из inline <style> статьи в общий CSS. Селекторы
-   scoped к #canonTimeline, чтобы не влиять на другие страницы.
-   ═══════════════ */
+/* KOD DA VINCI — canon timeline widget CSS. Перенесено из inline. */
 #canonTimeline.ctw {
   background: var(--bg-alt, #f6f5f2);
   border: 1px solid var(--color-border, #e2e0db);
@@ -7699,10 +7633,7 @@ html.dark .premium-frame-text {
 .work-title-original::before { content: '('; }
 .work-title-original::after { content: ')'; }
 
-/* Manuscript quote — used in Gill biography (Часть 1, 2, 3).
-   Editorial pull-quote with subtle parchment background, no large
-   decorative quote marks (those would compete with .pullquote).
-   Added 2026-06-02 to make existing markup actually render. */
+/* Manuscript quote — Gill biography editorial pull-quote component. */
 .manuscript-quote {
   position: relative;
   margin: clamp(28px, 4vw, 44px) 0;
@@ -7814,19 +7745,7 @@ html.dark .context-links a:hover {
   margin: clamp(36px, 5vw, 56px) 0 clamp(24px, 4vw, 36px);
 }
 
-/* ============================================================
-   BIOGRAPHY TEMPLATE — shared by John Gill biography trilogy
-   (Часть I, II, III; previously inline in each HTML file)
-   Closes AGENTS.md §3.6 tech debt — 2026-06-02 (commit I)
-
-   Selectors covered:
-     .biography-hero / .biography-hero::before / .biography-meta
-     .biography-portrait / .biography-dates / .biography-title /
-     .biography-subtitle / .biography-epigraph / .biography-stats /
-     .stat-item / .stat-value / .stat-label / .biography-timeline /
-     .timeline-entry / .timeline-year / .timeline-title /
-     .timeline-desc / .foliant-mark
-   ============================================================ */
+/* BIOGRAPHY TEMPLATE — shared by John Gill biography trilogy (chast-1..3). */
 /* Биографический стиль — древний манускрипт в системе токенов */
 
       /* Обложка-биография с текстурой пергамента */
@@ -8169,7 +8088,6 @@ html.dark .context-links a:hover {
       .ancient-epigraph::before,
 
 
-
       /* Метка времени в стиле фолианта */
       .foliant-mark {
         float: right;
@@ -8212,12 +8130,7 @@ html.dark .context-links a:hover {
 /* Fix for paragraph spacing - 2026-06-02 */
 .article-body p, .article-main p, article p { margin-bottom: 24px; }
 .article-body p:last-child { margin-bottom: 0; }
-/* ============================================================
-   Floating Controls (UNIFIED) — AGENTS-r17
-   ────────────────────────────────────────────────────────────
-   См. js/site.js модуль 29.
-   Активен только если body.gb-fc-active (страницы с .breadcrumb).
-   ============================================================ */
+/* Floating Controls — unified theme+search FAB. See js/site.js module 29. Active only on body.gb-fc-active. */
 .gb-floating-controls {
   position: fixed;
   top: calc(clamp(24px, 3.5vw, 44px) - 10px); /* совпадает с .theme-toggle top — уровень хлебных крошек */
@@ -8267,11 +8180,7 @@ html.dark .gb-floating-controls .gb-fc-search { color: #d4a574; }
   body.has-bottom-bar .gb-floating-controls .gb-fc-theme { display: none; }
 }
 
-/* ── Скрытие legacy-кнопок на активных страницах ─────────────────
-   Старые встроенные .theme-toggle (в шапках статей), #themeFloat (FAB),
-   #gbSearchFloat (старый плавающий поиск), .nag-sidebar-theme-btn
-   (sidebar nagornaya) — все скрываются, потому что их заменил
-   единый блок .gb-floating-controls. */
+/* Скрытие legacy theme/search кнопок при активном gbFloatingControls (body.gb-fc-active). */
 body.gb-fc-active .theme-toggle,
 body.gb-fc-active #themeToggle,
 body.gb-fc-active #themeFloat,
@@ -8288,31 +8197,19 @@ body.gb-fc-active .mobile-controls .theme-toggle {
 }
 
 /* ═══════════════════════════════════════════════════════════════
-   DEEP POLISH r35 — 2026-06-02
-   Scroll-driven animations, premium typography, 3D card lifts,
-   font-optical-sizing, view-timeline reveals, glass shadows.
+   DEEP POLISH r35 — Scroll-driven animations, premium typography,
+   3D card lifts, font-optical-sizing, view-timeline reveals.
    ═══════════════════════════════════════════════════════════════ */
 
-/* ── 1. Font optical sizing — для всех serif заголовков ────────
-   font-optical-sizing: auto → браузер автоматически выбирает
-   оптические параметры под размер. Baseline: Chrome 108+,
-   Firefox 110+, Safari 16.4+. Fallback: нет (просто игнорируется) */
+/* ── 1. Font optical sizing — auto для всех serif (Chrome 108+/FF110+/Safari 16.4+). */
 h1, h2, h3, h4, .article-title, .resume-reading-title,
 .pullquote p, .gtip-luxury__title, .quiz-launch-label,
 .btoc-title, .summary-card__num {
   font-optical-sizing: auto;
 }
 
-/* ── 2. CSS Scroll-Driven Animations — reveal без JS ───────────
-   Заменяет IntersectionObserver + classList.add('revealed')
-   для базового fade-in. JS-система остаётся как прогрессивная
-   логика (стаггер, .visible класс для quote-box и т.д.).
-   
-   @supports: только где поддерживается, иначе элементы видны
-   сразу (opacity:1 по умолчанию без .reveal класса).
-   
-   NB: .reveal уже имеет opacity:0 + translateY — CSS SDA
-   сбрасывает это плавно когда элемент входит в viewport. */
+/* ── 2. CSS Scroll-Driven Animations — reveal без JS (Chrome 115+/Safari 16+).
+   @supports guard, prefers-reduced-motion safe, JS .revealed не конфликтует. */
 
 @supports (animation-timeline: scroll()) {
   .reveal {
@@ -8371,10 +8268,7 @@ h1, h2, h3, h4, .article-title, .resume-reading-title,
   }
 }
 
-/* ── 3. Premium card lift — subtle 3D perspective ──────────────
-   Заменяем flat translateY(-4px) на настоящий 3D-tilt
-   через CSS perspective + rotate3d при hover.
-   Только на devices с точным указателем (мышь). */
+/* ── 3. Premium card lift — @media(hover:hover) guard, 3D perspective. */
 
 @media (hover: hover) and (pointer: fine) {
 
@@ -8394,11 +8288,7 @@ h1, h2, h3, h4, .article-title, .resume-reading-title,
   }
 }
 
-/* ── 4. Article links — улучшенное подчёркивание 2026 ──────────
-   text-decoration-thickness теперь поддерживает calc() и em.
-   Плавное underline с gradient-эффектом через
-   background-image на a:hover уже есть, добавляем
-   text-underline-offset анимацию. */
+/* ── 4. Article links — улучшенное подчёркивание (2026 Deep Polish). */
 
 /* Article links: animated underline offset on hover (adds to existing transition) */
 article a {
@@ -8537,22 +8427,22 @@ blockquote {
   background: linear-gradient(
     90deg,
     var(--color-accent) 0%,
+    var(--color-accent-strong) 100%
+  );
+}
+#reading-progress {
+  background: linear-gradient(
+    90deg,
+    var(--color-accent) 0%,
     color-mix(in srgb, var(--color-accent) 75%, var(--color-accent-strong)) 100%
   );
   box-shadow: 0 1px 4px color-mix(in srgb, var(--color-accent) 40%, transparent);
 }
 
-html.dark #reading-progress {
-  background: linear-gradient(
-    90deg,
-    var(--color-accent) 0%,
-    var(--color-accent-strong) 100%
-  );
-}
+html.dark 
 
 /* ── 12. Article header h1 — улучшенный letter-spacing ─────────
    На больших размерах tight letterspacing = premium */
-
 
 
 /* ── 13. Glossary tooltip — glass morphism ─────────────────────
@@ -8722,10 +8612,7 @@ body {
   }
 }
 
-/* ── Container Queries — related articles responsive ────────────
-   Baseline 2023 — Chrome 105+, Safari 16+, Firefox 110+.
-   Related articles список реагирует на ширину контейнера,
-   а не viewport. Safe: @supports wrapper. */
+/* ── Container Queries — related articles responsive (Chrome 105+/Safari 16+). @supports guard. */
 
 @supports (container-type: inline-size) {
   .related-articles__list {

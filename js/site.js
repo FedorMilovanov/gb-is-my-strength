@@ -518,6 +518,20 @@
       if (savedY) window.scrollTo(0, savedY);
     },
 
+    articleEl: function () {
+      if (!SiteUtils._articleEl) {
+        SiteUtils._articleEl = SiteUtils.articleEl();
+      }
+      return SiteUtils._articleEl;
+    },
+
+    h1El: function () {
+      if (!SiteUtils._h1El) {
+        SiteUtils._h1El = document.querySelector('article h1, .article-header h1, h1');
+      }
+      return SiteUtils._h1El;
+    },
+
     pageType: function () {
       /* Cached: page type from SITE_CONFIG (article, home, catalog, etc.) */
       if (!SiteUtils._pageType) {
@@ -3518,7 +3532,7 @@
      Выделил → попап «Копировать / Поделиться»
      ============================================================ */
   (function () {
-    if (!document.querySelector('article')) return;
+    if (!SiteUtils.articleEl()) return;
 
     var popup = document.createElement('div');
     popup.id = 'selection-share-popup';
@@ -3659,7 +3673,7 @@
     }
     function buildQuoteShareText(quote) {
       var clean = (quote || '').replace(/[\u201C\u201D\u201E"]/g, '').replace(/\s*\u2014\s*/g, '\u00a0\u2014 ').trim();
-      var title = (document.querySelector('h1') ? document.querySelector('h1').textContent : document.title).trim();
+      var title = (SiteUtils.h1El() ? SiteUtils.h1El().textContent : document.title).trim();
       var h2 = findNearestH2();
       var section = h2 ? ' · ' + h2.textContent.trim() : '';
       var url = buildQuoteUrl(quote);
@@ -3697,7 +3711,7 @@
     shareBtn.addEventListener('click', function () {
       if (!lastText) return;
       var quote = lastText.replace(/\s*\u2014\s*/g, '\u00a0\u2014 ').trim();
-      var title = (document.querySelector('h1') ? document.querySelector('h1').textContent : document.title).trim();
+      var title = (SiteUtils.h1El() ? SiteUtils.h1El().textContent : document.title).trim();
       var h2 = findNearestH2();
       var section = h2 ? ' · ' + h2.textContent.trim() : '';
       var url = buildQuoteUrl(quote);
@@ -3895,7 +3909,7 @@
        первый абзац содержит inline-сноски и форматирование переводчика */
     if (SiteUtils.getConfig('page.section', '') === 'Переводы') return;
 
-    var article = document.querySelector('article');
+    var article = SiteUtils.articleEl();
     if (!article) return;
 
     /* Уже есть — пропускаем */
@@ -3933,7 +3947,7 @@
     var allowEndBlock = isArticlePage || pageType === 'about' || pageType === 'series';
     if (!allowEndBlock) return;
 
-    var article = document.querySelector('article') || document.querySelector('main');
+    var article = SiteUtils.articleEl() || document.querySelector('main');
     if (!article) return;
 
     /* Не дублируем */
@@ -4179,7 +4193,7 @@
     var pageType = SiteUtils.pageType();
     if (pageType !== 'article') return;
 
-    var scope = document.querySelector('article') || document;
+    var scope = SiteUtils.articleEl() || document;
     var imgs = scope.querySelectorAll('img');
     if (!imgs.length) return;
 
@@ -4475,7 +4489,7 @@
   document.querySelectorAll('.gb-accuracy-btn--email[href^="mailto:"]').forEach(function (a) {
     var href = a.getAttribute('href') || '';
     var to = href.replace(/^mailto:/, '').split('?')[0] || 'viktorcoy2012@gmail.com';
-    var pageTitle = (document.querySelector('h1') ? document.querySelector('h1').textContent : document.title).trim();
+    var pageTitle = (SiteUtils.h1El() ? SiteUtils.h1El().textContent : document.title).trim();
     var pageUrl = location.href.split('#')[0];
     var subj = encodeURIComponent('Неточность в материале: ' + pageTitle);
     var body = encodeURIComponent(
@@ -4512,7 +4526,7 @@
     if (document.querySelector('[data-series-cards]')) add('/js/series-cards.js');
     /* Глоссарий загружается на ВСЕХ страницах с <article>,
        не только на article-type — это даёт единый сайт-уровневый глоссарий. */
-    if (document.querySelector('article')) add('/js/glossary.js');
+    if (SiteUtils.articleEl()) add('/js/glossary.js');
   })();
 })();
 
