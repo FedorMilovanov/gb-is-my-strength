@@ -463,3 +463,109 @@ npm run validate:all      # ← рекомендуется перед кажды
   - Fixed "Баптист — диссентер" spacing.
   - Wrapped plural and adjective forms of key theological terms in `.gterm` for consistent tooltip support.
 - **Stability**: Verified only one George Whitefield image remains (the correct one with spires).
+
+---
+
+## AGENTS-r17 (2026-06-02) — UNIFIED FLOATING CONTROLS + GLOSSARY CROSS-REFS + IMAGE FIXES
+
+> **Контекст:** r16 закрыл glossary-дубликаты и legacy `#gterm-inline-tip`. Оставались три
+> разрозненных артефакта плавающих кнопок (тема/поиск), битый «кружочек» вместо солнца на
+> части страниц, и два неработающих превью в каталоге `/biografii/`. Прошлые два агента
+> (r15/r16) упали на pool-таймауте до того как закрыть. Закрыто здесь.
+
+### 1. Единый блок «тема + поиск» (Floating Controls)
+
+**Новый модуль 29 в `js/site.js`** — `gb-floating-controls`. Один на всё. Заменяет:
+
+| Что было | Где жило | Проблема |
+|---|---|---|
+| `<button class="theme-toggle">` в шапке статьи | `articles/*/index.html` (inline) | `position: absolute` — уезжал при скролле |
+| `#themeFloat` / `.theme-float-btn` | js/site.js (бывший `theme-toggle-floating`) | FAB внизу справа, не на уровне крошек |
+| `#gbSearchFloat` | js/site.js (бывший Floating Search Button) | Inline-styled, отдельно от темы |
+| `.nag-sidebar-theme-btn` | `nagornaya/chast-*/index.html` (sidebar) | Свой стиль, свой SVG |
+
+#### Правила Floating Controls (НЕ нарушать):
+1. **Активация:** `body.gb-fc-active` ставится JS-ом, **если** на странице есть `.breadcrumb`
+   **или** `body.nagornaya-page`. На главной/каталогах (index, articles/, biografii/,
+   pastor-series/, nagornaya/seriya/, about/-если без хлебных крошек) — не активен:
+   там переключатель темы уже встроен в `.mobile-controls` верхнего nav-bar.
+2. **Структура:** `<div id="gbFloatingControls"> <button.gb-fc-theme> <button.gb-fc-search>`.
+3. **Позиция:** `position: fixed`; `top: calc(clamp(24px, 3.5vw, 44px) - 10px)` (тот же
+   уровень что у `.breadcrumb`); `right: max(8.5vw, env(safe-area-inset-right, 12px))`.
+   Поиск ниже темы на `gap: 12px` (≈ 56 px центр-к-центру).
+4. **Иконки:** канонические `SUN_SVG` / `MOON_SVG` / `SEARCH_SVG` инжектятся JS-ом
+   из единых констант в модуле 29. **Никакой другой SVG для темы/поиска
+   в HTML/CSS не должен использоваться** — это лечит баг «вместо солнышка кружочек»,
+   когда в `articles/dzhon-gill-istoricheskiy-kontekst/` лежал `<circle r="5">`
+   без лучей, и `articles/dzhon-gill-spravochnik/` вообще не имел иконки темы.
+5. **Логика темы:** переключает `html.dark`, пишет `localStorage.theme`,
+   диспатчит `theme:changed`. `MutationObserver` синхронизирует иконку с внешними
+   переключениями (bottom-bar и т.п.).
+6. **Логика поиска:** `GBSearch.open()` или `window.dispatchEvent(new CustomEvent('gb:openSearch'))`.
+7. **Канонизация легаси-иконок:** видимые `.bottom-bar .theme-toggle` /
+   `.mobile-controls .theme-toggle` автоматически получают канонический SVG через
+   `canonizeLegacyIcons()` (фикс «кружочка» для bottom-bar).
+8. **CSS-подавление legacy:** `body.gb-fc-active .theme-toggle, …` → `display: none`.
+   Исключение: `.bottom-bar .theme-toggle, .mobile-controls .theme-toggle` остаются видимыми.
+9. **⛔ Запрет:** новый агент **НЕ создаёт** отдельные плавающие кнопки темы/поиска
+   в HTML или в новых JS-модулях. Только этот единый модуль.
+
+### 2. Glossary cross-ref clicks (новый модуль 30 в `js/site.js`)
+
+В `/data/glossary.json` определения могут содержать ссылки вида
+`<a class="gterm" href="#" data-term="экзегеза">…</a>` (cross-ref на другой термин).
+До r17 эти ссылки попадали в DOM-у тултипа, но клик по ним не делал ничего полезного.
+
+Теперь делегированный handler:
+- Перехватывает клик по `.gtip a.gterm[data-term]` / `.gtip-luxury__body a.gterm[data-term]`.
+- Находит на странице первый «настоящий» `.gterm[data-term="<term>"]` (вне любого `.gtip`).
+- Скроллит к нему и эмулирует клик → открывается тултип целевого термина.
+- Если такого термина на странице нет — клик глушится (preventDefault), без `[object Object]`.
+
+### 3. Glossary унификация (актуальное состояние, r16+r17)
+
+- `js/glossary.js` работает на **любой** странице, где есть `<article>` или
+  `<main[data-pagefind-body]>` — НЕ только на `pageType === 'article'`.
+- `getDefinitionText()` корректно достаёт строку из `dict[k].definition.definition`
+  (двухуровневый legacy-формат glossary.json).
+- alias→canonical map: жадный матч по длинным алиасам первыми, Unicode-граница `\p{L}`.
+- Никаких больше отдельных `#gterm-inline-tip`. Только `makeTooltipController('.gterm','.gtip', …)`
+  через `SiteUtils.initGlossaryTooltips(root)` в module 20b.
+- TreeWalker отвергает содержимое `.gtip` / `.gtip-luxury` (не плодим рекурсивные тултипы).
+
+### 4. Превью в каталоге `/biografii/`
+
+| Карточка | Было | Стало |
+|---|---|---|
+| «Джон Гилл: справочник» | `og-dzhon-gill-1697-1771-600w.webp` (файла нет → битая ссылка) | `gill-nine-volumes-600w.webp` + `gill-nine-volumes-900w.webp` (стопка 9 томов *Body of Divinity*) |
+| «Часть I: Человек» (×2 — featured + full list) | `og-dzhon-gill-chast-1-chelovek.jpg` (пейзаж Саутварка — не Гилл) | `dzhon-gill-portret.jpg` + `dzhon-gill-portret.webp` + `dzhon-gill-portret-360w.webp` (аутентичный портрет Гилла за рабочим столом с пером и книгой) |
+
+### 5. Правила, обязательные для будущих агентов
+
+1. **Единая функция вместо per-page стилей.** Если требуется одинаковое поведение
+   на >1 странице — это `js/site.js` модуль + правило в `css/site.css`, **не** копипаста
+   inline-стилей и не отдельный файл `js/<feature>.js`.
+2. **Глоссарий — для всего сайта.** Условие «`pageType === 'article'`» больше
+   нигде не должно фильтровать инициализацию глоссария.
+3. **Тултипы.** Единственная точка входа — `SiteUtils.makeTooltipController(anchor, tip, opts)`.
+   `.bref/.btip` (Bible refs), `.fn-marker/.tooltip` (footnotes), `.gterm/.gtip` (glossary) —
+   три типа, один контроллер. Нельзя создавать индивидуальные обработчики
+   для конкретной серии или конкретной статьи.
+4. **Иконки темы и поиска** — только канонические SVG из модуля 29 `js/site.js`.
+   Не редактировать встроенный `<svg>` в HTML — он скрыт CSS-ом и не используется.
+5. **Превью изображения** в каталогах: `<picture>` с двумя `srcset` (600w+900w)
+   или `360w + base`. `loading="lazy"` (или `eager` для первой карточки above-the-fold),
+   `decoding="async"`, явные `width`/`height` — см. §3.7.
+
+---
+
+## 11. История этого документа (продолжение)
+
+| Версия | Дата | Что |
+|---|---|---|
+| AGENTS-r13 | 2026-06-02 | (резерв, не использовался) |
+| AGENTS-r14 | 2026-06-02 | CSS audit (8500-8800), image infrastructure fixes, semantic polish |
+| AGENTS-r15.x | 2026-06-02 | Glossary professional logic (canonical keys + aliases), tooltip cleanup, Part I image fix, Whitefield reset, head rendering & recursive tooltips fix |
+| AGENTS-r16 | 2026-06-02 | Унификация тултипов и глоссария для всего сайта: убран `#gterm-inline-tip`, glossary.js работает на любой странице с `<article>`, исправлено извлечение definition.definition |
+| AGENTS-r17 | 2026-06-02 | **UNIFIED FLOATING CONTROLS** (модуль 29 в site.js): единый sticky-блок «тема + поиск» на уровне breadcrumb, заменяет три разрозненных артефакта (.theme-toggle / #themeFloat / #gbSearchFloat / .nag-sidebar-theme-btn). Канонические SVG sun/moon/search — фикс «вместо солнышка кружочек» на dzhon-gill-istoricheskiy-kontekst и dzhon-gill-spravochnik. **Glossary cross-ref clicks** (модуль 30): клик по `<a class="gterm">` внутри тултипа переключает на тултип целевого термина. **Превью** в `/biografii/`: справочник → gill-nine-volumes (был битый og-dzhon-gill-1697-1771), Часть I → dzhon-gill-portret.jpg (был пейзаж Саутварка). |
+| AGENTS-r17.1 | 2026-06-02 | **7 новых ассетов от редактора** в `images/` (полный набор `.jpg/.png + .webp + -600w + -900w + -1200w` для каждого): `gill-five-volumes-shelf` (5 томов Гилла на полке), `gill-clarendon-code-acts` (свитки Corporation/Uniformity/Conventicle/Five Mile Acts), `gill-engraving-talmud-study` (ч/б гравюра Гилла за Талмудом), `gill-portret-full-study` (расширенный 16:9 портрет Гилла за столом — дополняет, не заменяет, существующий `dzhon-gill-portret`), `gill-bunhill-defoe-plaque` (фото мемор. таблички в Bunhill — дополняет существующую гравюру `gill-bunhill-fields` с похоронной процессией), `gill-hebrew-scroll-yad` (свиток с серебряной указкой). Для `gill-baptism-scene` добавлены недостающие base `.jpg` / `.webp` / `-1200w.webp` (раньше серия была неполной — только 600w + 900w). Существующие ассеты не перезаписаны (проверено визуально). |
