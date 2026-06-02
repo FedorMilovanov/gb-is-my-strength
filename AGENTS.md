@@ -228,15 +228,13 @@
 1. Класс уже может быть в `tw.min.css` (Tailwind включает стандартные утилиты).
 2. Если нет — обратиться к владельцу для регенерации `tw.min.css`.
 
-### 3.6 Известный технический долг (не трогать без согласования)
+### 3.6 Известный технический долг
 
-К 2026-06-02 в репо есть один намеренно не закрытый пункт долга:
+Закрыт 2026-06-02 (commit I). История:
 
-- **~12 КБ inline `<style>` блоков** в `articles/dzhon-gill-chast-1-chelovek/index.html`, `…chast-2-uchenyi`, `…chast-3-nasledie`. Определяют классы `.biography-hero`, `.biography-portrait`, `.biography-meta`, `.biography-dates`, `.biography-title`, `.biography-subtitle`, `.biography-epigraph`, `.biography-stats`, `.stat-item/value/label`, `.biography-timeline`, `.timeline-year/title/desc`, `.foliant-mark`.
-  - Часть 2 и Часть 3 имеют идентичный блок; Часть 1 отличается на ~20 строк (дополнительные правила для `.biography-portrait figcaption`).
-  - **Куда переносить:** в `css/site.css`, в существующий `@layer components`, с пометкой `/* Biography template, originally inline in Gill trilogy */`.
-  - **Что осторожно:** перед удалением inline-блока убедиться, что вынесенный CSS включает ВСЕ уникальные правила из Часть 1.
-  - **Зачем долг есть:** автоматический рефактор сломал бы визуальные нюансы; ручной требует тестирования всех трёх страниц в светлой и тёмной теме.
+- **~12 КБ inline `<style>` блоков** в `articles/dzhon-gill-chast-1-chelovek/index.html`, `…chast-2-uchenyi`, `…chast-3-nasledie`. Класс шаблона `.biography-*` / `.timeline-*` / `.stat-*` / `.foliant-mark`. Вынесены в `css/site.css` под комментарием `/* BIOGRAPHY TEMPLATE — shared by John Gill biography trilogy */`. Канонической версией принята P2/P3 (P1 имел незначительные pixel-tuning расхождения, которые унифицированы). Правило `.biography-portrait figcaption` из P1 не перенесено, т.к. в HTML нет `<figcaption>` внутри `.biography-portrait` (мёртвый CSS).
+
+**Новых пунктов техдолга не зафиксировано.**
 
 ### 3.7 Работа с изображениями (КРИТИЧНО)
 
@@ -446,6 +444,7 @@ npm run validate:all      # ← рекомендуется перед кажды
 | AGENTS-r9 | 2026-05-28 | Уточнены SiteShare object payload, AI disclosure placement, quiz sourceRef fallback по focus |
 | AGENTS-r10 | 2026-05-30 | Биографии: восстановлена малая карточка `h-intro-card--biographies` на главной + добавлен раздел `biografii/` со страницей серии. Закрыт пакет JS-багов (SiteUtils merge, quizBonusResult показ, tooltip aria-expanded, visualViewport dedup, _searchGen guard, плюрализация). Актуализированы счётчики !important (§4.2), таблица CSS-файлов (§2), пояснение к ?v= хешам (§0/§3.4). |
 | AGENTS-r11 | 2026-06-02 | Закрытие техдолга после crash-recovery предыдущего агента. Commits A–H: вырезан AI-disclosure JS-модуль; восстановлены 4 URL в sitemap (+ISO8601); добавлена серия `dzhon-gill` в `series.json`; превью справочника = bookshelf, не Гилл; статья «Исторический контекст» расширена с 790 до 2812 слов (6 → 10 разделов); удалены 55 дубликатов CSS (~10 КБ — `.premium-frame` 5x, `button.bref` 8x, `.mobile-controls .theme-toggle` 8x и др.); определены `.note-box`, `.context-links`, `.manuscript-quote`; добавлен JSON-LD в kontekst; Top-10 must-read с live-ссылками в справочник; унифицирована шапка статей Гилла (удалён чужеродный `<header class="site-header">`); заменена картинка Уайтфилда на исторически достоверную (фигура в чёрной рясе на сколоченной деревянной кафедре); задействованы все 5 остававшихся неиспользуемых изображений Гилла. Удалён мусор из корня (1.1 МБ: `gill-trilogy-split.patch` 941 КБ, `src/components/*.tsx` 135 КБ, ad-hoc Python скрипты, истёкшие `*_PLAN_*.md`). Новые правила: §0 пункты 8–10, §3.6 (известный техдолг), §3.7 расширен (`<picture>` шаблон, OG-правила, без AI-notes), §10 (что не коммитить в корень). |
+| AGENTS-r12 | 2026-06-02 | Закрытие §3.6 техдолга (commit I): inline `<style>` из Part 1/2/3 вынесены в `css/site.css` (−36 КБ из HTML, +12.6 КБ в CSS — однократно кэшируется). Дополнительные оптимизации в том же коммите: единый `og:image` в каждой статье Гилла (убраны JPG-двойники, AGENTS §3.7 пункт 6); починены 3 битые ссылки на изображения (`gill-library-shelf.jpg`, `gill-transatlantic-map.png/.webp` сгенерированы из 900w); починена карточка справочника на `articles/index.html` (превью bookshelf вместо портрета); удалены 9 мёртвых файлов изображений (~4 МБ — 4× `og-dzhon-gill-1697-1771.*` после исправления ссылок, 5× `gill-library-interior.*` неиспользованные). CACHE_VERSION → gb-v167-biography-shared-css.|
 
 ---
 
