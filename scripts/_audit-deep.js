@@ -144,7 +144,7 @@ for (const f of html) {
     const ids = [];
     function visit(n) {
       if (!n || typeof n !== 'object') return;
-      if (n['@id']) ids.push(n['@id']);
+      if (n['@id'] && Object.keys(n).length > 2) ids.push(n['@id']);
       for (const k of Object.keys(n)) visit(n[k]);
     }
     visit(data);
@@ -163,7 +163,7 @@ let noRobots = [];
 for (const f of html) {
   if (/google7e02|yandex_/.test(f)) continue;
   const s = fs.readFileSync(f, 'utf8');
-  if (!/<meta\s+name=["']robots["']/i.test(s)) noRobots.push(f);
+  if (!/<meta[^>]+name=["']robots["']/i.test(s)) noRobots.push(f);
 }
 console.log(`  Файлов без meta robots: ${noRobots.length}`);
 noRobots.forEach(f => console.log('  ' + f));
