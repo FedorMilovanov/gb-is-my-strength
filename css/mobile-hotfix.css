@@ -102,7 +102,7 @@ html.cp-scroll-lock body {
 }
 
 /* P1-9: content-visibility */
-.article-content, .article-body, .series-content {
+.series-content {
   content-visibility: auto; contain-intrinsic-size: auto 500px;
 }
 

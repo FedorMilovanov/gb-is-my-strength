@@ -204,7 +204,7 @@
       for (var i = 0; i < headings.length; i++) {
         var currentTitle = normalizeText(headings[i].textContent);
         if (currentTitle === savedTitle) return headings[i];
-        if (currentTitle === savedTitle) {
+  if (currentTitle.includes(savedTitle) || savedTitle.includes(currentTitle)) {
           partialMatch = partialMatch || headings[i];
         }
       }

@@ -4181,7 +4181,7 @@ html.dark .gterm .gtip::before {
   gap: 12px;
   margin-bottom: 12px;
 }
-.gtip-luxury__category {
+.gtip-luxury__category { display: none; 
   display: inline-flex;
   align-items: center;
   max-width: 100%;
@@ -4258,7 +4258,7 @@ html.dark .gtip-luxury::before {
     radial-gradient(circle at 12% 0%, color-mix(in srgb, var(--color-accent-strong, #e8b878) 13%, transparent), transparent 36%),
     linear-gradient(145deg, rgba(255,255,255,.06), rgba(255,255,255,0));
 }
-html.dark .gtip-luxury__category {
+html.dark .gtip-luxury__category { display: none; 
   background: color-mix(in srgb, var(--gtip-cat-color, var(--color-accent-strong, #e8b878)) 16%, transparent);
   color: color-mix(in srgb, var(--gtip-cat-color, var(--color-accent-strong, #e8b878)) 78%, #fff);
 }
@@ -7254,43 +7254,16 @@ html.dark .fn-marker:hover { color: #f5d8a8; }
 /* ═══════════════
    3. NAGORNAYA THEME TOGGLE — встроенная кнопка в navbar/breadcrumbs
    ═══════════════ */
-.nag-theme-btn {
-  margin-left: auto;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 36px; height: 36px;
-  border-radius: 50%;
-  background: rgba(255,255,255,0.06);
-  border: 1px solid rgba(255,255,255,0.12);
-  color: #e0d8c8;
-  cursor: pointer;
-  transition: background .2s ease, border-color .2s ease, transform .15s ease;
-  flex-shrink: 0;
-}
-.nag-theme-btn:hover {
-  background: rgba(255,255,255,0.12);
-  border-color: rgba(255,255,255,0.20);
-  transform: scale(1.06);
-}
-.nag-theme-btn:focus-visible {
-  outline: 2px solid #f5c542;
-  outline-offset: 2px;
-}
+
+
+
 /* В светлой теме на breadcrumbs (фон светлый) — тёмная кнопка */
-html:not(.dark) body.nagornaya-page .nag-theme-btn {
-  background: rgba(28,25,23,0.04);
-  border-color: rgba(28,25,23,0.10);
-  color: #5a4838;
-}
-html:not(.dark) body.nagornaya-page .nag-theme-btn:hover {
-  background: rgba(28,25,23,0.10);
-  border-color: rgba(28,25,23,0.18);
-}
+html:not(.dark) body.nagornaya-page 
+html:not(.dark) body.nagornaya-page 
 /* Иконки sun/moon */
-.nag-theme-icon-sun { display: none; }
-html.dark .nag-theme-icon-moon { display: none; }
-html.dark .nag-theme-icon-sun { display: block; color: #f5c542; }
+
+html.dark 
+html.dark 
 
 /* На nagornaya-page скрываем floating-кнопку — есть встроенная */
 body.nagornaya-page #themeFloat,
@@ -7301,30 +7274,9 @@ body.nagornaya-page .theme-float-btn {
 /* ═══════════════
    4. NAGORNAYA QUIZ — h2 + placeholder hint
    ═══════════════ */
-.nag-quiz-h2 {
-  font-family: 'Lora', Georgia, serif;
-  font-weight: 700;
-  font-size: clamp(1.5rem, 3.5vw, 1.9rem);
-  border-bottom: 1px solid var(--color-border, #e7e2d8);
-  padding-bottom: 0.75rem;
-  margin-top: clamp(40px, 5vw, 64px) !important;
-  margin-bottom: 1.25rem;
-  color: var(--color-text, #1c1917);
-  clear: both;
-  position: relative;
-  z-index: 1;
-}
-html:not(.dark) body.nagornaya-page .nag-quiz-h2 { color: #2a1f15; }
-html.dark body.nagornaya-page .nag-quiz-h2 {
-  color: #f5ede0;
-  border-bottom-color: rgba(255,255,255,0.12);
-}
-#sec-quiz {
-  clear: both;
-  position: relative;
-  z-index: 1;
-  margin-top: clamp(40px, 5vw, 64px) !important;
-}
+
+html:not(.dark) body.nagornaya-page 
+
 #quizPlaceholder { min-height: 60px; }
 #quizPlaceholder:empty::before {
   content: "Тест загружается…";
@@ -7386,10 +7338,7 @@ html:not(.dark) body.nagornaya-page .gb-accuracy-inner {
   background: #ffffff;
   border-color: #e7e2d8;
 }
-html.dark body.nagornaya-page .gb-accuracy-inner {
-  background: #221b14;
-  border-color: #3a3028;
-}
+
 
 /* ═══════════════
    6. NAGORNAYA LIGHT THEME — overrides Tailwind dark-only styles
@@ -7424,89 +7373,38 @@ html:not(.dark) body.nagornaya-page .hover\:bg-stone-800:hover {
    6.5. NAGORNAYA DARK THEME — overrides static Tailwind styles in dark mode
    ═══════════════ */
 html.dark body.nagornaya-page,
-html.dark body.nagornaya-page main {
-  background: var(--color-canvas) !important;
-  color: var(--color-text) !important;
-}
+
 
 /* Overriding white/light container backgrounds with dark surfaces */
-html.dark body.nagornaya-page .bg-white,
-html.dark body.nagornaya-page table,
-html.dark body.nagornaya-page tr {
-  background-color: var(--color-surface) !important;
-}
 
-html.dark body.nagornaya-page .bg-stone-50,
-html.dark body.nagornaya-page .bg-stone-100 {
-  background-color: var(--color-surface-muted) !important;
-}
+
+
 
 /* Specific warning/note panels in dark mode */
-html.dark body.nagornaya-page .bg-amber-50,
-html.dark body.nagornaya-page .bg-orange-50 {
-  background-color: var(--color-surface-quote) !important;
-  border-color: rgba(245, 213, 166, 0.15) !important;
-}
 
-html.dark body.nagornaya-page .bg-emerald-50 {
-  background-color: var(--color-success-bg, rgba(16, 185, 129, 0.1)) !important;
-  border-color: var(--color-success-border, rgba(16, 185, 129, 0.15)) !important;
-}
 
-html.dark body.nagornaya-page .bg-red-50,
-html.dark body.nagornaya-page .bg-rose-50 {
-  background-color: var(--color-danger-bg, rgba(239, 68, 68, 0.1)) !important;
-  border-color: var(--color-danger-border, rgba(239, 68, 68, 0.15)) !important;
-}
+
+
+
 
 /* Overriding light borders to dark borders */
-html.dark body.nagornaya-page .border-stone-700,
-html.dark body.nagornaya-page .border-stone-800,
-html.dark body.nagornaya-page .border-b,
-html.dark body.nagornaya-page .border-t,
-html.dark body.nagornaya-page .border {
-  border-color: var(--color-border) !important;
-}
+
 
 /* Ensure strong contrast for dark mode text */
-html.dark body.nagornaya-page .text-stone-700,
-html.dark body.nagornaya-page .text-stone-800,
-html.dark body.nagornaya-page .text-stone-900,
-html.dark body.nagornaya-page .text-stone-600 {
-  color: var(--color-text-secondary) !important;
-}
 
-html.dark body.nagornaya-page .text-stone-300,
-html.dark body.nagornaya-page .text-stone-400,
-html.dark body.nagornaya-page .text-stone-500 {
-  color: var(--color-text-muted) !important;
-}
 
-html.dark body.nagornaya-page .text-white {
-  color: var(--color-text-primary) !important;
-}
+
+
+
 
 /* Colored text styling adjustments for dark mode */
-html.dark body.nagornaya-page .text-blue-700,
-html.dark body.nagornaya-page .text-blue-800 {
-  color: #93c5fd !important;
-}
 
-html.dark body.nagornaya-page .text-amber-600,
-html.dark body.nagornaya-page .text-amber-700,
-html.dark body.nagornaya-page .text-amber-800 {
-  color: #fcd34d !important;
-}
 
-html.dark body.nagornaya-page .text-emerald-700,
-html.dark body.nagornaya-page .text-emerald-800 {
-  color: #34d399 !important;
-}
 
-html.dark body.nagornaya-page .text-red-700,
-html.dark body.nagornaya-page .text-red-800 {
-  color: #fca5a5 !important;
-}
+
+
+
+
 
 /* ═══════════════
    6.6. NAGORNAYA FONT-SIZE FIX — ensures body text elements inherit size from main
@@ -7601,11 +7499,9 @@ body.ng-toc-lock .btoc-nav {
    11. TOUCH TARGETS
    ═══════════════ */
 .bar-icon-btn, .btoc-close, .btoc-fontsize-btn, .btoc-share-btn,
-.theme-float-btn, .nag-theme-btn {
-  min-width: 36px; min-height: 36px;
-}
+.theme-float-btn, 
 @media (pointer: coarse) {
-  .bar-icon-btn, .btoc-close, .nag-theme-btn { min-width: 44px; min-height: 44px; }
+  .bar-icon-btn, .btoc-close, 
 }
 
 /* ═══════════════
@@ -7668,9 +7564,7 @@ html.dark .theme-float-btn {
    ═══════════════ */
 @media (prefers-reduced-motion: reduce) {
   .summary-card__item, .h-article-card, .bottom-bar,
-  .theme-float-btn, .nag-theme-btn, .fn-marker {
-    transition: none !important;
-  }
+  .theme-float-btn, 
 }
 
 /* High-contrast mode support */
@@ -7752,84 +7646,21 @@ html.dark .tooltip-trigger:hover { color: var(--color-accent-strong, #e8b878); }
 /* === AUDIT-FIXES INLINE END === */
 
 /* Sidebar controls — theme + font-size */
-.nag-sidebar-controls {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 12px 5px 0;
-  border-top: 1px solid rgba(255,255,255,0.08);
-  margin-top: 8px;
-}
-.nag-sidebar-theme-btn {
-  width: 34px;
-  height: 34px;
-  border-radius: 10px;
-  border: 1px solid rgba(255,255,255,0.12);
-  background: rgba(255,255,255,0.04);
-  color: rgba(255,255,255,0.60);
-  display: grid;
-  place-items: center;
-  cursor: pointer;
-  transition: background .2s, border-color .2s, color .2s;
-  flex-shrink: 0;
-}
-.nag-sidebar-theme-btn:hover {
-  background: rgba(255,255,255,0.10);
-  border-color: rgba(255,255,255,0.20);
-  color: rgba(255,255,255,0.90);
-}
-html:not(.dark) body.nagornaya-page .nag-sidebar-theme-btn {
-  background: rgba(28,25,23,0.04);
-  border-color: rgba(28,25,23,0.10);
-  color: var(--color-text-muted, #78716c);
-}
-html:not(.dark) body.nagornaya-page .nag-sidebar-theme-btn:hover {
-  background: rgba(28,25,23,0.10);
-  border-color: rgba(28,25,23,0.20);
-  color: var(--color-text, #1c1917);
-}
-.nag-sidebar-theme-btn svg { width: 18px; height: 18px; }
-.nag-icon-sun { display: none; }
-html.dark .nag-icon-moon { display: none; }
-html.dark .nag-icon-sun { display: block; color: #f5c542; }
 
-.nag-fontsize-btns {
-  display: flex;
-  align-items: center;
-  gap: 4px;
-  margin-left: auto;
-}
-.nag-fontsize-btn {
-  width: 30px;
-  height: 30px;
-  border-radius: 8px;
-  border: 1px solid rgba(255,255,255,0.10);
-  background: rgba(255,255,255,0.03);
-  color: rgba(255,255,255,0.50);
-  font-family: 'Source Sans 3', system-ui, sans-serif;
-  font-size: 13px;
-  font-weight: 700;
-  display: grid;
-  place-items: center;
-  cursor: pointer;
-  transition: background .2s, border-color .2s, color .2s;
-  line-height: 1;
-}
-.nag-fontsize-btn:hover {
-  background: rgba(255,255,255,0.10);
-  border-color: rgba(255,255,255,0.18);
-  color: rgba(255,255,255,0.80);
-}
-html:not(.dark) body.nagornaya-page .nag-fontsize-btn {
-  background: rgba(28,25,23,0.03);
-  border-color: rgba(28,25,23,0.08);
-  color: var(--color-text-muted, #78716c);
-}
-html:not(.dark) body.nagornaya-page .nag-fontsize-btn:hover {
-  background: rgba(28,25,23,0.08);
-  border-color: rgba(28,25,23,0.16);
-  color: var(--color-text, #1c1917);
-}
+
+
+html:not(.dark) body.nagornaya-page 
+html:not(.dark) body.nagornaya-page 
+
+
+html.dark 
+html.dark 
+
+
+
+
+html:not(.dark) body.nagornaya-page 
+html:not(.dark) body.nagornaya-page 
 
 /* AUDIT v7+v13: gb-accuracy on nagornaya — прозрачный фон (merged) */
 body.nagornaya-page .gb-accuracy-inner {
@@ -7888,12 +7719,7 @@ body.nagornaya-page .author-card {
 }
 
 /* THEME вверху */
-.nag-sidebar-controls {
-  padding: 10px 20px !important;
-  margin: 0 !important;
-  border-bottom: 1px solid rgba(255,255,255,0.08) !important;
-  background: rgba(0,0,0,0.12) !important;
-}
+
 
 /* Убрать свечение полностью */
 html.dark .h-scripture-bg::before {
@@ -7984,123 +7810,9 @@ html.dark .h-hero-title:hover .h-title-accent {
   }
 }
 
-body.nagornaya-page .nag-summary {
-  margin: 16px 0 16px !important;
-  padding: 12px 0 0 !important;
-  background: transparent !important;
-  border: 0 !important;
-  border-top: 1px solid rgba(120,83,46,.14) !important;
-  border-radius: 0 !important;
-  overflow: visible !important;
-  box-shadow: none !important;
-}
-html.dark body.nagornaya-page .nag-summary {
-  background: transparent !important;
-  border-top-color: rgba(245,213,166,.16) !important;
-  box-shadow: none !important;
-}
-body.nagornaya-page .nag-summary__head {
-  display: block !important;
-  width: auto !important;
-  background: transparent !important;
-  color: #7a2e2e !important;
-  padding: 0 !important;
-  margin: 0 0 9px !important;
-  border: 0 !important;
-  font-family: 'Source Sans 3', system-ui, sans-serif !important;
-  font-size: 9px !important;
-  line-height: 1.1 !important;
-  letter-spacing: .20em !important;
-  text-transform: uppercase !important;
-}
-html.dark body.nagornaya-page .nag-summary__head {
-  background: transparent !important;
-  color: rgba(245,226,198,.72) !important;
-}
-body.nagornaya-page .nag-summary__list {
-  display: flex !important;
-  flex-direction: column !important;
-  gap: 6px !important;
-  list-style: none !important;
-  padding: 0 !important;
-  margin: 0 !important;
-  background: transparent !important;
-}
-html.dark body.nagornaya-page .nag-summary__list {
-  background: transparent !important;
-}
-body.nagornaya-page .nag-summary__item {
-  display: flex !important;
-  align-items: flex-start !important;
-  gap: 9px !important;
-  width: 100% !important;
-  padding: 0 !important;
-  margin: 0 !important;
-  background: transparent !important;
-  border: 0 !important;
-  box-shadow: none !important;
-  color: #4b4036 !important;
-  font-size: 13px !important;
-  line-height: 1.48 !important;
-  position: relative !important;
-}
-body.nagornaya-page .nag-summary__item::before,
-body.nagornaya-page .nag-summary__item::after {
-  content: none !important;
-  display: none !important;
-}
-html.dark body.nagornaya-page .nag-summary__item {
-  color: rgba(250,243,232,.78) !important;
-  border: 0 !important;
-}
-body.nagornaya-page .nag-summary__num {
-  display: inline-flex !important;
-  flex: 0 0 18px !important;
-  width: 18px !important;
-  height: 18px !important;
-  min-width: 18px !important;
-  align-items: center !important;
-  justify-content: center !important;
-  border-radius: 50% !important;
-  font-size: 0 !important;
-  line-height: 1 !important;
-  margin-top: 1px !important;
-  background: rgba(116,151,117,.10) !important;
-  border: 1px solid rgba(116,151,117,.18) !important;
-}
-body.nagornaya-page .nag-summary__num::before {
-  content: "✓" !important;
-  display: block !important;
-  font-size: 12px !important;
-  color: #6f9d70 !important;
-}
-body.nagornaya-page .nag-summary__text {
-  display: block !important;
-  flex: 1 1 auto !important;
-  min-width: 0 !important;
-  width: auto !important;
-  max-width: none !important;
-  margin: 0 !important;
-  padding: 0 !important;
-  line-height: 1.48 !important;
-  white-space: normal !important;
-  word-break: normal !important;
-  overflow-wrap: anywhere !important;
-}
-body.nagornaya-page main > .max-w-4xl > .mb-6 {
-  max-width: 760px !important;
-  margin-left: auto !important;
-  margin-right: auto !important;
-  padding: clamp(18px,2.6vw,28px) !important;
-  border: 1px solid rgba(120,83,46,.12) !important;
-  border-radius: 22px !important;
-  background: rgba(255,255,255,.46) !important;
-  box-shadow: 0 18px 46px rgba(68,45,22,.055) !important;
-}
-html.dark body.nagornaya-page main > .max-w-4xl > .mb-6 {
-  background: rgba(245,235,218,.045) !important;
-  border-color: rgba(245,213,166,.12) !important;
-}
+body.nagornaya-page 
+
+
 body.nagornaya-page main > .max-w-4xl > .mb-6 > p.text-stone-500,
 body.nagornaya-page main > .max-w-4xl > .mb-6 > p.text-stone-400,
 body.nagornaya-page main > .max-w-4xl > .mb-6 > p.article-updated {
@@ -8119,24 +7831,8 @@ body.nagornaya-page main > .max-w-4xl > .mb-6 > p.article-updated {
 }
 
 /* AUDIT v13: final summary guard — no filled header, no v9 pseudo-check conflicts */
-body.nagornaya-page .nag-summary__head{background:transparent!important;color:#7a2e2e!important;padding:0!important;border:0!important}
-html.dark body.nagornaya-page .nag-summary__head{background:transparent!important;color:rgba(245,226,198,.72)!important}
-body.nagornaya-page .nag-summary__item::before,body.nagornaya-page .nag-summary__item::after{content:none!important;display:none!important}
-body.nagornaya-page .nag-summary__text{white-space:normal!important;word-break:normal!important;overflow-wrap:anywhere!important;min-width:0!important;max-width:none!important}
+body.nagornaya-page 
 
-/* ═══════════════
-   PERF HOTFIX 2026-05-23 — lighter mobile bottom bar
-   Большой backdrop-filter на fixed bottom-bar заметно тормозил
-   scroll на мобильных Safari/Chrome, особенно на длинных статьях.
-   На touch-устройствах делаем фон чуть плотнее, но убираем blur.
-   ═══════════════ */
-@media (pointer: coarse), (max-width: 899px) {
-  .bottom-bar {
-    -webkit-backdrop-filter: none;
-    backdrop-filter: none;
-    background: var(--color-canvas);
-    background: color-mix(in srgb, var(--color-canvas) 97%, transparent);
-  }
 }
 
 /* ═══════════════
@@ -8431,24 +8127,6 @@ html.dark .mobile-controls .theme-toggle svg {
 }
 
 /* Reset browser button styling for .bref (Bible references) to make them look like elegant inline text links */
-button.bref {
-  appearance: none !important;
-  -webkit-appearance: none !important;
-  background: none !important;
-  border: none !important;
-  padding: 0 !important;
-  margin: 0 !important;
-  font-family: inherit !important;
-  font-size: inherit !important;
-  line-height: inherit !important;
-  display: inline !important;
-  cursor: pointer !important;
-  color: #7a2e2e !important;
-  font-weight: 600 !important;
-  text-decoration: none !important;
-  box-shadow: none !important;
-  border-radius: 0 !important;
-}
 html.dark button.bref {
   color: var(--color-accent-strong, #e8b878) !important;
 }
@@ -8467,12 +8145,6 @@ button.bref:hover {
 /* Reset browser button styling for .bref (Bible references) to make them look like elegant inline text links */
 
 /* Style for .fn-dove-icon - premium flying dove with white eye and smooth animations */
-.fn-dove-icon {
-  color: #1e4ea3 !important; /* Premium royal blue in light theme */
-}
-html.dark .fn-dove-icon {
-  color: #38bdf8 !important; /* Premium sky blue in dark theme */
-}
 .fn-marker:hover .fn-dove-icon,
 .fn-marker:focus-visible .fn-dove-icon {
   transform: scale(1.15) translateY(-1.5px) !important;
@@ -8480,18 +8152,6 @@ html.dark .fn-dove-icon {
 }
 
 /* Premium Frame Style — highly elegant, classic, and professional manuscript borders */
-.premium-frame {
-  position: relative;
-  margin: clamp(32px, 5vw, 56px) 0;
-  padding: clamp(24px, 4vw, 40px);
-  background: var(--color-surface-quote, #fbfaf7);
-  border: 1px solid rgba(184, 147, 106, 0.25);
-  border-radius: 12px;
-  box-shadow:
-    0 1px 0 rgba(255, 255, 255, 0.9) inset,
-    0 4px 20px rgba(120, 83, 46, 0.04),
-    0 12px 36px -16px rgba(120, 83, 46, 0.08);
-}
 html.dark .premium-frame {
   background: color-mix(in srgb, var(--color-accent) 4%, var(--color-surface));
   border-color: rgba(232, 184, 120, 0.15);
@@ -8547,16 +8207,8 @@ html.dark .premium-frame-text {
 }
 
 /* UNIFY ALL TOOLTIPS: Hide glossary pointing arrows/handles to avoid overlaps and create 100% uniform, minimal, flat floating cards */
-.gterm .gtip::before,
-.gtip.gb-floating-tip::before {
-  display: none !important;
-}
 
 /* Fix timeline vertical line overlap bug by keeping timeline circles perfectly solid and opaque */
-.timeline-entry::before {
-  background: var(--color-surface, #fdfcf9) !important;
-  z-index: 2 !important;
-}
 
 
 
@@ -8586,8 +8238,8 @@ html.dark .premium-frame-text {
 .gterm .gtip::before,
 
 /* Fix timeline vertical line overlap bug by keeping timeline circles perfectly solid and opaque */
-/* Lux Upgrade v3.0: hide tooltip category to fix overlap */ .gtip-luxury__category{display:none!important} .gtip-luxury__header{margin-bottom:0!important}
-/* Lux Upgrade v3.0: remove intrusive top scroll bar */ .article-topnav{display:none!important;opacity:0!important;pointer-events:none!important} body.topnav-active{padding-top:0!important}
+/* Lux Upgrade v3.0: hide tooltip category to fix overlap */  .gtip-luxury__header{margin-bottom:0!important}
+/* Lux Upgrade v3.0: remove intrusive top scroll bar */  
 /* Lux Upgrade v3.0: biography card polish - single border */ .biography-hero::after{display:none!important} .biography-hero{border-width:1px!important;box-shadow:0 8px 32px rgba(0,0,0,.06)!important} .biography-portrait{border-width:4px!important;box-shadow:0 4px 16px rgba(0,0,0,.08)!important}
 
 /* 2026-06-01: mobile tooltip hardening.

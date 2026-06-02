@@ -37,8 +37,8 @@
   function emergencyCheck() {
     var hasOpenModal =
       document.querySelector('.mobile-nav.active, .mobile-nav[aria-hidden="false"]') ||
-      document.querySelector('.cp-panel.open, .cp-panel[aria-hidden="false"]') ||
-      document.querySelector('.btoc-panel.open, .btoc-panel[aria-hidden="false"]') ||
+      document.querySelector('.cp-backdrop.is-open, .cp-panel[aria-hidden="false"]') ||
+      document.querySelector('#btocOverlay.open, .btoc-panel[aria-hidden="false"]') ||
       document.querySelector('.sd-panel.open');
     var hasLocks = locks.size > 0 || Object.keys((window.SiteUtils && window.SiteUtils._scrollLockSources) || {}).length > 0;
     if (!hasOpenModal && hasLocks) {
