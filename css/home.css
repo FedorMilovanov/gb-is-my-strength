@@ -872,6 +872,7 @@ html.dark .h-tetra-label {
   animation: h-fade-up 0.8s cubic-bezier(0.22, 1, 0.36, 1) 0.35s forwards;
   
   overflow-wrap: break-word; 
+  font-optical-sizing: auto;
 }
 
 @media (min-width: 640px) {

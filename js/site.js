@@ -1797,11 +1797,18 @@
 
   /* ============================================================
      11. Animate Boxes on Scroll
+     Progressive: CSS scroll-driven animations (Chrome 115+, FF 110+, Safari 16.4+)
+     handle .reveal elements natively. JS IntersectionObserver is kept as
+     fallback for .quote-box/.warn-box/.info-box which use JS-added .visible class
+     for opacity/transform (CSS fallback reveal-fallback @keyframes at 3s also exists).
      ============================================================ */
   (function () {
     var els = document.querySelectorAll('.quote-box, .warn-box, .info-box, .ehrman-block, .opusdei-note');
     if (!els.length) return;
 
+    /* If CSS scroll-driven animations are supported, the @keyframes reveal-fallback
+       at 3s delay already handles these as a CSS-only fallback, but we still use
+       IntersectionObserver for immediate, zero-delay triggering. */
     if (!window.IntersectionObserver) {
       els.forEach(function (el) { el.classList.add('visible'); });
       return;
@@ -1814,7 +1821,7 @@
           observer.unobserve(entry.target);
         }
       });
-    }, { threshold: 0.1 });
+    }, { threshold: 0.08, rootMargin: '0px 0px -40px 0px' });
 
     els.forEach(function (el) { observer.observe(el); });
   })();
