@@ -326,7 +326,7 @@
       if (window.ResizeObserver) {
         new ResizeObserver(function () { handleResize(); }).observe(bottomBar);
       } else {
-        window.addEventListener('resize', function () { handleResize(); }, { passive: true });
+        window.addEventListener('resize', function (, { passive: true }) { handleResize(); }, { passive: true });
       }
       handleResize();
     }
