@@ -3456,10 +3456,13 @@
       if (key === 'd') {
         e.preventDefault();
         showKbdHint('D', 'Тема');
-        var toggle  = document.getElementById('themeToggle') || document.getElementById('hThemeBtn');
+        var toggle = document.getElementById('themeToggle') || document.getElementById('hThemeBtn');
         var barTheme = document.getElementById('barThemeBtn');
+        /* Module 29 (gb-fc-active pages): no #themeToggle, use .gb-fc-theme instead */
+        var fcTheme = document.querySelector('.gb-fc-theme');
         if (toggle) { toggle.click(); }
         else if (barTheme) { barTheme.click(); }
+        else if (fcTheme) { fcTheme.click(); }
         return;
       }
 

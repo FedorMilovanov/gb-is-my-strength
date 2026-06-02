@@ -6,7 +6,7 @@
 
 **Владелец:** Фёдор Милованов (редактор, не «автор»)
 **Производственный сайт:** https://gospod-bog.ru
-**Дата документа:** 2026-06-02 | **Версия:** AGENTS-r41
+**Дата документа:** 2026-06-02 | **Версия:** AGENTS-r42
 
 ---
 
@@ -234,7 +234,18 @@
 
 - **~12 КБ inline `<style>` блоков** в `articles/dzhon-gill-chast-1-chelovek/index.html`, `…chast-2-uchenyi`, `…chast-3-nasledie`. Класс шаблона `.biography-*` / `.timeline-*` / `.stat-*` / `.foliant-mark`. Вынесены в `css/site.css` под комментарием `/* BIOGRAPHY TEMPLATE — shared by John Gill biography trilogy */`. Канонической версией принята P2/P3 (P1 имел незначительные pixel-tuning расхождения, которые унифицированы). Правило `.biography-portrait figcaption` из P1 не перенесено, т.к. в HTML нет `<figcaption>` внутри `.biography-portrait` (мёртвый CSS).
 
-**Новых пунктов техдолга не зафиксировано.**
+**Актуальный техдолг (зафиксирован AGENTS-r42, для r43+):**
+
+| Приоритет | Файл | Тип | Размер | Описание |
+|-----------|------|-----|--------|----------|
+| 🔴 P0 | `articles/hermenevticheskaya-otsenka-*/index.html` | inline JS | 76 KB | JSON-объект с библейскими цитатами — вынести в `data/hermenevtika-quotes.json` |
+| 🟠 P1 | `articles/20-antisovetov-pastoru/index.html` | inline JS | 17 KB | `STRATEGIC_MAP_DATA` — вынести в `data/strategic-map.json` |
+| 🟠 P1 | `articles/20-antisovetov-pastoru/index.html` | inline CSS | 15 KB | Стили виджета (104 селектора, 25 дублируют site.css) — вынести в site.css |
+| 🟠 P1 | `articles/20-antisovetov-pastoru/index.html` | inline JS | 5.5 KB | Popover widget — вынести в `js/enhancements.js` |
+| 🟠 P1 | `articles/krajne-li-isporcheno-serdce/index.html` | inline JS | 1.7 KB | `heart-flip` mobile height sync — дублирует `site.js` модуль 15 (удалить inline) |
+| 🟡 P2 | `articles/krajne-li-isporcheno-serdce/index.html` | inline CSS | 885 b | `.rescue-figure` — вынести в site.css; убрать дубль `.article-img img { cursor:zoom-in }` |
+
+Закрыто в r42: `nagornaya/chast-1..5` inline `<style>#read-progress</style>` → `nagornaya-mobile-toc.css`.
 
 ### 3.7 Работа с изображениями (КРИТИЧНО)
 
@@ -278,7 +289,7 @@
 ### 4.2 `!important`
 
 Сейчас (2026-06-02, после дедупа в commits A–H):
-- `site.css`: ~313 (AGENTS-r34: +удалены 21 мёртвая CSS-переменная; новых !important не добавлять)
+- `site.css`: ~301 (AGENTS-r42: −41 лишних !important из summary-card, btoc-progress, blockquote; новых не добавлять)
 - `home.css`: 15
 - `command-palette.css`: 4
 - `mobile-hotfix.css`: 46 (по дизайну: переопределяет поведение для touch / pointer: coarse)
@@ -332,6 +343,33 @@
    Убитые в r34: `--fg`, `--link`, `--note-bg`, `--z-toc`, `--z-raised`, `--shadow-md`,  
    `--nicea-color`, `--keyboard-height`, `--color-violet/emerald/green/purple/sky/yellow`.  
    Живые aliases которые используются: `--accent`, `--bg`, `--border`, `--accent-soft`, `--accent-strong`.
+
+10. **Дубль-кнопка темы — запрещено создавать третью точку переключения**
+
+   Три канонических места переключения темы — и только три:
+   - `.theme-toggle` (position: absolute) — выровнена по крошкам, в статьях
+   - `.theme-float-btn` (position: fixed, FAB) — инжектируется `gbFloatingControls` (site.js модуль 29)
+   - `.bar-icon-btn[data-action=theme]` — иконка в bottom-bar (mobile only)
+
+   ❌ Не создавать `<button class="nag-theme-btn">`, `<button id="themeFloat">`, ни любую другую кнопку.
+   ❌ Не создавать новую страницу или компонент со своим `onclick` для смены темы.
+   JS: единственный handler `data-action=theme` в SiteUtils.initTheme() (site.js модуль 02).
+
+11. **Tooltip-система — ровно три вида, ровно один контроллер**
+
+   Три вида: `.gterm > .gtip` (глоссарий), `.fn-marker > .tooltip` (сноски), `.bref > .btip` (Библия).
+   Контроллер: `SiteUtils.makeTooltipController()` — единственная реализация.
+   `.tooltip-trigger` — конвертируется в `.gterm` через `initTooltipTriggers()` (site.js модуль 33).
+
+   ❌ Не создавать новый тип tooltip с другими CSS-классами или другим позиционированием.
+   ❌ Не добавлять inline `<script>` с логикой показа/скрытия подсказок.
+
+12. **`!important` — лимит и лоцман** (r42+)
+
+   Лимит: `site.css` ≤ 320 `!important`. Если после правки число выросло — это регрессия.
+   Проверка: `grep -o '!important' css/site.css | wc -l`
+   Легитимные категории: print-override, prefers-reduced-motion, forced-colors, Tailwind-override в nagornaya/*.
+   Нелегитимные: перебивание своего же правила в том же файле без реального конкурента.
 
 ---
 
@@ -614,5 +652,6 @@ npm run validate:all      # ← рекомендуется перед кажды
 | AGENTS-r32 | 2026-06-02 | **Byline «Автор-редактор» + SEO.** Обновлено правило §3.1: для авторских статей (Тип A/B) byline теперь «Автор-редактор: Фёдор Милованов» (он создаёт материалы + редактирует). Переводы (Тип C) без изменений — «Редакция перевода». `about/index.html`: обновлён `article-desc`, `og:description`, JSON-LD Person добавлены `jobTitle`, `description`, `knowsAbout`, YouTube в `sameAs`. Создан `llms.txt` для AI Search (Perplexity, ChatGPT, Claude, Grok). |
 | AGENTS-r33 | 2026-06-02 | **CSS bug fixes + dark mode + чистка.** `biography-epigraph::before`: удалён двойной `content: none !important` (был ×2 перед реальным `content: '"'`). z-index токенизированы: `.gb-floating-controls` 9998→`var(--z-toast-high)`, `.theme-float-btn` 90→`var(--z-raised-high)`. Dark mode fix в `20-antisovetov`: 16 inline hex colors (`#d97706/2b6cb0/e11d48`) → `var(--color-amber/blue/rose, fallback)`. Удалён `important_audit.txt` из корня (нарушал §10). |
 | AGENTS-r34 | 2026-06-02 | **CSS-переменные аудит + dead var removal.** Глубокий анализ всех 121 объявленных CSS-переменных. Выявлены и удалены 21 мёртвая переменная (39 строк, из `:root` и `html.dark`): legacy aliases `--fg/fg-secondary/text-primary/text-secondary/text-muted/link/note-bg/quote-bg/success-bg/surface-2`, устаревшие z-index `--z-raised/z-toc`, `--shadow-md`, `--nicea-color`, `--keyboard-height`, неиспользуемые Tailwind-токены `--color-violet/emerald/green/purple/sky/yellow`. Объяснение: переменные "про запас" в `:root` = мёртвый код → в §4.4 добавлено правило 9. |
+| AGENTS-r42 | 2026-06-02 | **CSS anti-regression hardening + !important cleanup.** `css/site.css`: исправлен баг `.dark .quiz-launch-label` → `html.dark .quiz-launch-label` (правило никогда не срабатывало); удалён дублирующий `border-left` в `blockquote` (оставлен только `border-inline-start` — логическое свойство, поддержка Chrome 89+/FF61+/Safari 12.1+); слиты два идентичных псевдоэлемента `.summary-card__check:empty::after` и `:not(:has(svg))::after` в один `:not(:has(svg))`; удалён первый дублирующий блок `.btoc-banner-grad/.btoc-banner-title` (был placeholder с комментарием «canonical below»); убраны 34 лишних `!important` из `.summary-card__item` (×5), `.summary-card__check` (×10), `.summary-card__check svg` (×6), `.summary-card__text strong` (×4), `.btoc-progress-fill-done` (×2), dark variants. Итого: 342 → 301 `!important`. AGENTS.md: обновлён §4.2 (счётчик 313→308); добавлены правила 10–12 в §4.4 (дубль-кнопка темы, дубль-tooltip-система, лимит !important ≤320). `nagornaya/chast-1..5`: удалён inline `<style>#read-progress</style>` (302b × 5) → `nagornaya-mobile-toc.css` (body.nagornaya-page scoped). Tech debt r43: зафиксирован §3.6 (P0: 76KB JSON в hermenevtika; P1: 20-antisovetov widgets). |
 | AGENTS-r31 | 2026-06-02 | **CSS/JS глубокий аудит.** `css/site.css`: исправлено 4 P0-бага (`.dark`→`html.dark`, дубль `html.dark .heart-flip-back`, двойной `box-shadow` в `.tooltip`, незащищённый `.h-hero-title:hover` на touch); удалено 12 дублирующихся блоков (`.btoc-banner` x2, `.bar-icon-btn` x3, `.fn-marker` x2, и др.); удалено 3 пустых правила; убраны 42 лишних `!important` (summary-card, touch targets); удалён мёртвый CSS: `.gill-fact-card`, `.btip-tabs`, `.antisovet-label`, `.btip-pane`/`.btip-tab`. `css/nagornaya-mobile-toc.css`: удалены мёртвые `.nag-theme-btn` x4, `.nag-icon-*`, унифицирован `.nag-quiz-h2` dark (был `.dark` вместо `html.dark`); итого −39 строк. Добавлен §4.4 "CSS Integrity Rules" — 8 конкретных правил для предотвращения регрессий. |
 | AGENTS-r19–r28 | 2026-06-02 | **Аудит и стабилизация:** Фиксы суммари Нагорной проповеди, доработка минималистичного поиска, закрытие битых span-тегов в байлайнах и каталогах. Унификация тултипов, очистка dangling CSS-селекторов, устранение протечки глоссария в заголовки. Добавлены и разведены баптистские термины в глоссарии, устранены наложения категорий. Полное приведение репозитория в соответствие правилам AGENTS.md (исправлены дубликаты `og:image`, ASCII-кавычки в статьях). |
