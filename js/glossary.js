@@ -1,147 +1,185 @@
-/* glossary.js — автоматический <abbr> с тултипом для богословских терминов
- * (AUDIT_10_OF_10 → CONT-2.5 / TIP-7.1 / TIP-7.4)
+/* glossary.js — единый сайт-уровневый глоссарий с тултипами
  *
- * Подгружает /data/glossary.json и помечает первое вхождение каждого термина
- * в article-теле как <abbr class="gterm" title="...">. Срабатывает только для
- * страниц с pageType="article".
+ * Подгружает /data/glossary.json и оборачивает термины в <abbr class="gterm">
+ * с вложенным <span class="gtip">. Позиционирование и поведение делегируются
+ * единому SiteUtils.makeTooltipController (из site.js).
+ *
+ * Работает на ЛЮБОЙ странице, где есть <article> (не только type=article).
+ *
+ * Ключевые отличия от предыдущей версии:
+ *  — Убран дублирующий inline-tooltip (#gterm-inline-tip), конфликтовавший
+ *    с makeTooltipController.
+ *  — Исправлено извлечение определения: dict[key].definition.definition.
+ *  — Снято ограничение pageType === 'article': глоссарий для всего сайта.
+ *  — Дубликаты в glossary.json обрабатываются через alias-to-canonical map.
  */
 (function () {
   'use strict';
-  if (!window.SiteUtils) return;
-  var pageType = SiteUtils.getConfig('page.type', '');
-  if (pageType !== 'article') return;
-  if (!document.querySelector('article')) return;
+
+  /* Ждём SiteUtils — он загружается раньше (site-utils.js + site.js). */
+  if (!window.SiteUtils || typeof window.SiteUtils.getConfig !== 'function') return;
+
+  /* Работаем на любой странице, где есть <article> или <main> с текстом.
+     Это охватывает article-страницы, nagornaya/chast-*, about и т.д. */
+  var root = document.querySelector('article') || document.querySelector('main[data-pagefind-body]');
+  if (!root) return;
   if (window.__gbGlossaryInitialized) return;
   window.__gbGlossaryInitialized = true;
 
-  var DATA_URL = (document.querySelector('script[data-glossary-url]') || {}).dataset?.glossaryUrl
-              || '/data/glossary.json';
+  var DATA_URL = '/data/glossary.json';
 
-  fetch(DATA_URL).then(function (r) { return r.ok ? r.json() : null; }).then(function (dict) {
-    if (!dict) return;
+  fetch(DATA_URL)
+    .then(function (r) { return r.ok ? r.json() : null; })
+    .then(function (dict) {
+      if (!dict || typeof dict !== 'object') return;
 
-    if (!dict) return;
-    var article = document.querySelector('article');
-    
-    var aliasToCanonical = {};
-    var allSearchTerms = [];
-    
-    for (var canonical in dict) {
-      var entry = dict[canonical];
-      var def = typeof entry === 'string' ? entry : entry.definition;
-      var aliases = typeof entry === 'object' ? entry.aliases : [canonical];
-      
-      aliases.forEach(function(alias) {
-        aliasToCanonical[alias.toLowerCase()] = canonical;
-        allSearchTerms.push(alias);
-      });
-    }
-    
-    allSearchTerms.sort(function(a, b) { return b.length - a.length; });
-    var escapedTerms = allSearchTerms.map(function (k) {
-      return k.replace(/[.*+?^${}()|[\]\]/g, '\$&');
-    }).join('|');
+      /* ── Построение alias→canonical map ──────────────────────────── */
+      var aliasToCanonical = {};
+      var allSearchTerms = [];
 
-    var rx;
-    try {
-      rx = new RegExp('(^|[^\p{L}\p{N}_])(' + escapedTerms + ')(?=$|[^\p{L}\p{N}_])', 'giu');
-    } catch (e) {
-      try {
-        rx = new RegExp('(^|[^а-яёА-ЯЁa-zA-Z0-9_])(' + escapedTerms + ')(?=$|[^а-яёА-ЯЁa-zA-Z0-9_])', 'gi');
-      } catch (e2) { return; }
-    }
+      for (var canonical in dict) {
+        if (!Object.prototype.hasOwnProperty.call(dict, canonical)) continue;
+        var entry = dict[canonical];
 
-    var seen = {};
-    var walker = document.createTreeWalker(article, NodeFilter.SHOW_TEXT, {
-      acceptNode: function (n) {
-        var p = n.parentElement;
-        if (!p) return NodeFilter.FILTER_REJECT;
-        if (p.closest('a, abbr, code, pre, kbd, samp, .fn-marker, .tooltip, .gtip, .btip, h1, h2, h3, .quiz-wrapper, script, style')) {
-          return NodeFilter.FILTER_REJECT;
+        /* Извлекаем массив aliases. Поддерживаем два формата:
+           1) entry.aliases (внешний массив)
+           2) entry.definition.aliases (внутренний массив, legacy) */
+        var aliases = [];
+        if (Array.isArray(entry.aliases)) {
+          aliases = entry.aliases;
+        } else if (entry.definition && Array.isArray(entry.definition.aliases)) {
+          aliases = entry.definition.aliases;
         }
-        return NodeFilter.FILTER_ACCEPT;
+        if (!aliases.length) aliases = [canonical];
+
+        aliases.forEach(function (alias) {
+          var lower = alias.toLowerCase();
+          if (!aliasToCanonical[lower]) {
+            aliasToCanonical[lower] = canonical;
+          }
+          if (allSearchTerms.indexOf(alias) === -1) {
+            allSearchTerms.push(alias);
+          }
+        });
       }
-    });
 
-    var nodes = [];
-    while (walker.nextNode()) nodes.push(walker.currentNode);
+      /* ── Сортировка: длинные термины первыми (жадный матч) ────────── */
+      allSearchTerms.sort(function (a, b) { return b.length - a.length; });
 
-    document.querySelectorAll('p, div.reveal').forEach(function(el, i) {
-        el.dataset.pIdx = i;
-    });
+      var escapedTerms = allSearchTerms.map(function (k) {
+        return k.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+      }).join('|');
 
-    nodes.forEach(function (n) {
-      if (!rx.test(n.nodeValue)) return;
-      rx.lastIndex = 0;
-      var frag = document.createDocumentFragment();
-      var last = 0, m, replaced = false;
-      while ((m = rx.exec(n.nodeValue)) !== null) {
-        var sep = m[1] || '';
-        var term = m[2] || '';
-        var canonical = aliasToCanonical[term.toLowerCase()];
-        if (!canonical) continue;
-        
-        var p = n.parentElement;
-        while (p && p.tagName !== 'P' && p.tagName !== 'DIV') p = p.parentElement;
-        var pIdx = p ? parseInt(p.dataset.pIdx || 0) : 0;
-        
-        if (!seen[canonical] || (pIdx - seen[canonical] > 10)) {
-          seen[canonical] = pIdx;
+      /* ── Регулярка с Unicode word boundary ─────────────────────────── */
+      var rx;
+      try {
+        rx = new RegExp('(^|[^\\p{L}\\p{N}_])(' + escapedTerms + ')(?=$|[^\\p{L}\\p{N}_])', 'giu');
+      } catch (e) {
+        try {
+          rx = new RegExp('(^|[^а-яёА-ЯЁa-zA-Z0-9_])(' + escapedTerms + ')(?=$|[^а-яёА-ЯЁa-zA-Z0-9_])', 'gi');
+        } catch (e2) { return; }
+      }
+
+      /* ── Извлечение текста определения ─────────────────────────────── */
+      function getDefinitionText(canonicalKey) {
+        var e = dict[canonicalKey];
+        if (!e) return canonicalKey;
+        if (typeof e === 'string') return e;
+        /* Структура glossary.json: { definition: { definition: "текст", aliases: [...] }, aliases: [...] } */
+        if (e.definition) {
+          if (typeof e.definition === 'string') return e.definition;
+          if (typeof e.definition.definition === 'string') return e.definition.definition;
+        }
+        return canonicalKey;
+      }
+
+      /* ── TreeWalker: обходим текстовые ноды в root (article или main) ── */
+      /* Переменная root определена выше (article или main) */
+      var seen = {};
+
+      /* Присваиваем абзацам индексы для «повторного» подсветки
+         (термин повторно подсвечивается, если после него прошло >10 параграфов) */
+      var pIdx = 0;
+      root.querySelectorAll('p, div.reveal').forEach(function (el) {
+        el.dataset.pIdx = String(pIdx++);
+      });
+
+      var walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT, {
+        acceptNode: function (n) {
+          var p = n.parentElement;
+          if (!p) return NodeFilter.FILTER_REJECT;
+          /* Не трогаем заголовки, ссылки, код, уже-обработанные элементы и
+             содержимое других тултипов */
+          if (p.closest('a, abbr, code, pre, kbd, samp, .fn-marker, .tooltip, .btip, .gtip, h1, h2, h3, h4, .quiz-wrapper, script, style')) {
+            return NodeFilter.FILTER_REJECT;
+          }
+          return NodeFilter.FILTER_ACCEPT;
+        }
+      });
+
+      var nodes = [];
+      while (walker.nextNode()) nodes.push(walker.currentNode);
+
+      /* ── Замена текстовых нод на фрагменты с <abbr class="gterm"> ─── */
+      nodes.forEach(function (n) {
+        if (!rx.test(n.nodeValue)) return;
+        rx.lastIndex = 0;
+
+        var frag = document.createDocumentFragment();
+        var last = 0;
+        var m;
+        var replaced = false;
+
+        while ((m = rx.exec(n.nodeValue)) !== null) {
+          var sep = m[1] || '';
+          var term = m[2] || '';
+          var canonicalKey = aliasToCanonical[term.toLowerCase()];
+          if (!canonicalKey) continue;
+
+          /* Определяем индекс параграфа для логики повторной подсветки */
+          var parentEl = n.parentElement;
+          while (parentEl && parentEl.tagName !== 'P' && parentEl.tagName !== 'DIV') {
+            parentEl = parentEl.parentElement;
+          }
+          var currentPIdx = parentEl ? parseInt(parentEl.dataset.pIdx || '0', 10) : 0;
+
+          /* Подсвечиваем если: первый раз ИЛИ прошло >10 параграфов */
+          if (seen[canonicalKey] !== undefined && (currentPIdx - seen[canonicalKey]) <= 10) continue;
+          seen[canonicalKey] = currentPIdx;
+
           replaced = true;
           var termIndex = m.index + sep.length;
+
+          /* Текст до термина */
           frag.appendChild(document.createTextNode(n.nodeValue.slice(last, termIndex)));
+
+          /* <abbr class="gterm"> с вложенным <span class="gtip"> */
           var abbr = document.createElement('abbr');
           abbr.className = 'gterm';
-          abbr.dataset.term = canonical;
+          abbr.dataset.term = canonicalKey;
           abbr.setAttribute('tabindex', '0');
           abbr.setAttribute('data-term-title', term);
           abbr.textContent = term;
+
           var tip = document.createElement('span');
           tip.className = 'gtip';
-          tip.innerHTML = typeof dict[canonical] === 'string' ? dict[canonical] : dict[canonical].definition;
+          tip.innerHTML = getDefinitionText(canonicalKey);
           abbr.appendChild(tip);
+
           frag.appendChild(abbr);
           last = termIndex + term.length;
         }
+
+        if (replaced) {
+          frag.appendChild(document.createTextNode(n.nodeValue.slice(last)));
+          n.parentNode.replaceChild(frag, n);
+        }
+      });
+
+      /* ── Делегируем тултипы единому контроллеру ─────────────────────── */
+      if (window.SiteUtils && typeof window.SiteUtils.initGlossaryTooltips === 'function') {
+        window.SiteUtils.initGlossaryTooltips(root);
       }
-      if (replaced) {
-        frag.appendChild(document.createTextNode(n.nodeValue.slice(last)));
-        n.parentNode.replaceChild(frag, n);
-      }
-    });
-
-    if (window.SiteUtils && typeof SiteUtils.initGlossaryTooltips === 'function') {
-      SiteUtils.initGlossaryTooltips(article);
-    }
-
-
-document.addEventListener('click', function (e) {
-      var t = e.target.closest('a.gterm[data-term]');
-      if (!t) return;
-      e.preventDefault();
-      var key = t.dataset.term;
-      if (!dict[key]) return;
-      /* Простейший inline tip: рядом со ссылкой */
-      var existing = document.getElementById('gterm-inline-tip');
-      if (existing) existing.remove();
-      var tip = document.createElement('span');
-      tip.id = 'gterm-inline-tip';
-      tip.className = 'gtip is-open';
-      tip.style.cssText = 'position:absolute;z-index:var(--z-tooltip);max-width:280px;padding:8px 12px;background:var(--bg-elevated);border:1px solid var(--border);border-radius:8px;box-shadow:0 6px 18px rgba(0,0,0,.12);font-size:13px;line-height:1.5;color:var(--text);';
-      var strong = document.createElement('strong');
-      strong.textContent = key + '.';
-      tip.appendChild(strong);
-      tip.appendChild(document.createTextNode(' ' + dict[key]));
-      document.body.appendChild(tip);
-      var rect = t.getBoundingClientRect();
-      tip.style.left = (window.scrollX + rect.left) + 'px';
-      tip.style.top = (window.scrollY + rect.bottom + 6) + 'px';
-      var off = function (ev) {
-        if (ev && tip.contains(ev.target)) return;
-        tip.remove();
-        document.removeEventListener('click', off, true);
-      };
-      setTimeout(function () { document.addEventListener('click', off, true); }, 50);
-    });
-  }).catch(function () { /* офлайн / нет /data/ — просто пропускаем */ });
+    })
+    .catch(function () { /* офлайн / нет /data/ — просто пропускаем */ });
 })();
