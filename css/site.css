@@ -6324,8 +6324,6 @@ html.dark .gb-series-link:hover {
 
 /* Duplicate .article-end-sdg removed to fix layout */
 
-}
-
 /* @layer components: поздние legacy/mobile/a11y-блоки (CSS-FIX-01) */
 @layer components {
 /* SCROLL-LOCK (#25,#53,#156): 4 механизма — html[data-scroll-locked] (JS),
@@ -7458,10 +7456,23 @@ body.ng-toc-lock .btoc-nav {
 }
 
 /* === 11. TOUCH TARGETS === */
-.bar-icon-btn, .btoc-close, .btoc-fontsize-btn, .btoc-share-btn,
-.theme-float-btn,
+.bar-icon-btn,
+.btoc-close,
+.btoc-fontsize-btn,
+.btoc-share-btn,
+.theme-float-btn {
+  min-width: 44px;
+  min-height: 44px;
+}
 @media (pointer: coarse) {
-  .bar-icon-btn, .btoc-close,
+  .bar-icon-btn,
+  .btoc-close,
+  .btoc-fontsize-btn,
+  .btoc-share-btn,
+  .theme-float-btn {
+    width: 44px;
+    height: 44px;
+  }
 }
 
 /* === 12. CSP HARDENING — пиксель Метрики === */
@@ -7515,8 +7526,17 @@ html.dark .theme-float-btn {
 
 /* === 16. Reduced motion === */
 @media (prefers-reduced-motion: reduce) {
-  .summary-card__item, .h-article-card, .bottom-bar,
+  .summary-card__item,
+  .h-article-card,
+  .bottom-bar,
   .theme-float-btn,
+  .toc-link,
+  .btoc-link,
+  .quiz-option,
+  .flip-card-inner {
+    transition: none !important;
+    animation: none !important;
+  }
 }
 
 /* High-contrast mode support */
@@ -7751,8 +7771,6 @@ html.dark .h-hero-title:hover .h-title-accent {
   }
 }
 
-body.nagornaya-page
-
 body.nagornaya-page main > .max-w-4xl > .mb-6 > p.text-stone-500,
 body.nagornaya-page main > .max-w-4xl > .mb-6 > p.text-stone-400,
 body.nagornaya-page main > .max-w-4xl > .mb-6 > p.article-updated {
@@ -7771,9 +7789,6 @@ body.nagornaya-page main > .max-w-4xl > .mb-6 > p.article-updated {
 }
 
 /* AUDIT v13: final summary guard — no filled header, no v9 pseudo-check conflicts */
-body.nagornaya-page
-
-}
 
 /* ═══════════════
    UX HOTFIX 2026-05-23 — nested main inside .page-wrap
@@ -8309,6 +8324,7 @@ html.dark .note-box {
   font-family: 'Source Sans 3', system-ui, sans-serif;
   font-size: 13.5px;
   line-height: 1.45;
+  transition: transform 0.22s cubic-bezier(.2,.7,.2,1),
               border-color 0.22s ease,
               box-shadow 0.22s ease;
 }
