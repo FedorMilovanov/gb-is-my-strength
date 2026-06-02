@@ -6815,19 +6815,7 @@ html.dark .summary-card__item:not(:has(.summary-card__num))::before {
 html.dark .summary-card__text strong { color: var(--color-accent-strong, #e8b878); }
 
 /* КРИТИЧНО: drop-cap НЕ должен трогать summary-card */
-.summary-card__text::first-letter,
-.summary-card .drop-cap::first-letter {
-  font-size: inherit !important;
-  float: none !important;
-  margin: 0 !important;
-  color: inherit !important;
-  font-family: inherit !important;
-  font-weight: inherit !important;
-  line-height: inherit !important;
-}
-.summary-card__text.drop-cap {
-  /* класс drop-cap, ошибочно добавленный JS-ом — нейтрализуем */
-}
+
 
 @media (max-width: 560px) {
   .summary-card { padding: 22px 16px; border-radius: 16px; }
@@ -7259,11 +7247,11 @@ html.dark .h-scripture-bg::before {
 
 .h-phrase--hebrew, .h-phrase[lang="he"], .h-phrase[lang="iw"],
 .h-sacred-line, .hb-front, [lang="he"], [lang="iw"] {
-  font-family: var(--f-hebrew-display) !important;
-  font-weight: 400 !important;
+  font-family: var(--f-hebrew-display);
+  font-weight: 400;
   letter-spacing: 0.012em;
 }
-.h-sacred-line, .hb-front { font-weight: 450 !important; }
+.h-sacred-line, .hb-front { font-weight: 450; }
 
 /* h-hero-title hover transitions — guarded in @media (hover:hover) below */
 .h-title-static, .h-title-accent, .h-title-dash {
@@ -7327,11 +7315,11 @@ body.nagornaya-page main > .max-w-4xl > .mb-6 > p.article-updated {
   padding: 6px 10px !important;
   border-radius: 999px !important;
   border: 1px solid rgba(120,83,46,.10) !important;
-  background: rgba(255,255,255,.42) !important;
-  color: #6f6255 !important;
-  font-family: 'Source Sans 3', system-ui, sans-serif !important;
-  font-size: 12px !important;
-  line-height: 1.35 !important;
+  background: rgba(255,255,255,.42);
+  color: #6f6255;
+  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-size: 12px;
+  line-height: 1.35;
 }
 
 /* AUDIT v13: final summary guard — no filled header, no v9 pseudo-check conflicts */
@@ -7586,28 +7574,28 @@ body.nagornaya-page main > .max-w-4xl > .mb-6 > p.article-updated {
     font-size: .58rem !important;
   }
   #canonTimeline .ctw-row {
-    align-items: flex-start !important;
+    align-items: flex-start;
   }
   #canonTimeline .ctw-bar {
-    height: 18px !important;
+    height: 18px;
   }
   #canonTimeline .ctw-bin {
-    display: none !important;
+    display: none;
   }
   #canonTimeline .ctw-bout,
   #canonTimeline .ctw-pin-yr,
   #canonTimeline .ctw-pin-lbl {
-    font-size: .58rem !important;
+    font-size: .58rem;
   }
   #canonTimeline .ctw-pin-row {
-    min-height: 44px !important;
+    min-height: 44px;
   }
   #canonTimeline .ctw-pin-line {
-    height: 18px !important;
+    height: 18px;
   }
 }
 
-body.has-bottom-bar #back-to-top { bottom: max(80px, calc(env(safe-area-inset-bottom, 0px) + 80px)) !important; }
+body.has-bottom-bar #back-to-top { bottom: max(80px, calc(env(safe-area-inset-bottom, 0px) + 80px)); }
 
 .mobile-controls .theme-toggle {
   position: relative !important;
@@ -7640,10 +7628,15 @@ button.bref:hover {
 /* Reset browser button styling for .bref (Bible references) to make them look like elegant inline text links */
 
 /* Style for .fn-dove-icon - premium flying dove with white eye and smooth animations */
-.fn-marker:hover .fn-dove-icon,
+@media (hover: hover) and (pointer: fine) {
+  .fn-marker:hover .fn-dove-icon {
+    transform: scale(1.15) translateY(-1.5px);
+    filter: drop-shadow(0 2px 5px rgba(30, 78, 163, 0.45));
+  }
+}
 .fn-marker:focus-visible .fn-dove-icon {
-  transform: scale(1.15) translateY(-1.5px) !important;
-  filter: drop-shadow(0 2px 5px rgba(30, 78, 163, 0.45)) !important;
+  transform: scale(1.15) translateY(-1.5px);
+  filter: drop-shadow(0 2px 5px rgba(30, 78, 163, 0.45));
 }
 
 /* Premium Frame Style — highly elegant, classic, and professional manuscript borders */
@@ -7714,7 +7707,7 @@ html.dark .premium-frame-text {
 /* Fix timeline vertical line overlap bug by keeping timeline circles perfectly solid and opaque */
 /* R28: keep category label visible; flex layout prevents overlap with close button. */
 .gtip-luxury__header { align-items: flex-start; margin-bottom: 8px; }
-.gtip-luxury__category { display: inline-flex !important; flex: 1 1 auto; width: fit-content; max-width: calc(100% - 44px); }
+.gtip-luxury__category { display: inline-flex; flex: 1 1 auto; width: fit-content; max-width: calc(100% - 44px); }
 .gtip-luxury__close { margin-left: auto; }
 /* Lux Upgrade v3.0: remove intrusive top scroll bar */
 /* Lux Upgrade v3.0: biography card polish - single border */ .biography-hero::after{display:none} .biography-hero{border-width:1px;box-shadow:0 8px 32px rgba(0,0,0,.06)} .biography-portrait{border-width:4px;box-shadow:0 4px 16px rgba(0,0,0,.08)}
@@ -7936,7 +7929,7 @@ html.dark .context-links a:hover {
         width: clamp(140px, 20vw, 180px);
         aspect-ratio: 3/4;
         margin: 0;
-        background: var(--color-surface, #fdfcf9) !important; z-index: 2 !important;
+        background: var(--color-surface, #fdfcf9); z-index: 2;
         border: 8px solid var(--color-surface);
         box-shadow:
           0 0 0 1px var(--color-border);
@@ -8079,7 +8072,7 @@ html.dark .context-links a:hover {
         width: 8px;
         height: 8px;
         border-radius: 50%;
-        background: var(--color-surface, #fdfcf9) !important; z-index: 2 !important;
+        background: var(--color-surface, #fdfcf9); z-index: 2;
         border: 2px solid var(--color-accent-strong);
         box-shadow: 0 0 0 3px var(--color-accent-soft);
       }
@@ -8193,7 +8186,7 @@ html.dark .context-links a:hover {
         border-collapse: collapse;
         margin: var(--s-6) 0;
         font-variant-numeric: tabular-nums;
-        background: var(--color-surface, #fdfcf9) !important; z-index: 2 !important;
+        background: var(--color-surface, #fdfcf9); z-index: 2;
         border: 1px solid var(--color-border-strong);
         box-shadow: var(--shadow-sm);
       }
