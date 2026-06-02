@@ -6,7 +6,7 @@
 
 **Владелец:** Фёдор Милованов (редактор, не «автор»)
 **Производственный сайт:** https://gospod-bog.ru
-**Дата документа:** 2026-06-03 | **Версия:** AGENTS-r50c
+**Дата документа:** 2026-06-03 | **Версия:** AGENTS-r51
 
 ---
 
@@ -656,6 +656,7 @@ npm run validate:all      # ← рекомендуется перед кажды
 | AGENTS-r44c | 2026-06-03 | **JS passive listeners.** site.js: scroll 4→13 passive (+8); touch all correct. Fixed double passive artefact. |
 | AGENTS-r44d | 2026-06-03 | **CSS !important deep cleanup (301→257, −44).** Removed §9 SCROLL-LOCK duplicate (in mobile-hotfix.css); §8 phrases −6; §5 gb-accuracy −1; h-hero-title hover transforms −14 (guarded @media); display:none on unused classes −7. site.css: 258KB → 244KB (−5.3%). |
 | AGENTS-r44e | 2026-06-03 | **JS passive listeners all files + SEO.** scroll-perf/enhancements/bookmark-engine/nagornaya-toc: +passive. sitemap.xml: lastmod →2026-06-03 (28 URLs). manifest.json: +shortcuts, +categories. sw.js: CACHE_VERSION bumped. |
+| AGENTS-r51 | 2026-06-03 | **CSS/JS deep dedup + color tokens.** CSS: 8 duplicate blocks merged (faq-icon, gb-accuracy-btn, fn-marker, btoc-fontsize-btn, theme-float-btn, pullquote::before, heart-flip-back). New tokens: --color-sun-yellow/danger-text/success-text/amber-strong (24 hardcodes tokenized). §11 dead dangling selectors fixed; §14 removed (backdrop-filter already in base). JS: SiteUtils.barThemeBtn() + featureToc() + featureShare() added, 11 calls replaced. |
 | AGENTS-r50 | 2026-06-03 | **CSS gtip-luxury merges + JS SiteUtils.scrollRaf.** gtip-luxury 7 blocks merged (header align, close margin, category flex, definition overflow-wrap). .gterm .gtip::before duplicate removed. .article-img.float-left, .article-item.card, .btoc-fontsize-btn, .resume-reading-dismiss deduplicated. .bar-icon-btn 40→44px in base, @layer dup removed. .btoc-close 32→44px in base. JS: SiteUtils.scrollRaf() added, 5× ticking+rAF patterns → SiteUtils.scrollRaf(). |
 | AGENTS-r50b | 2026-06-03 | **Dead CSS removal + h1El refactor.** .pq-attribution (435b) + .h-section-link (287b) removed. articleTopnav ticking → scrollRaf. querySelector h1 variants ×3 → SiteUtils.h1El(). Fixed orphan } from grouped selector removal. site.css: 258,110→233,808b (−9%), !important 342→189. |
 | AGENTS-r50c | 2026-06-03 | **.btip/selection-share/pq-scripture/meta merges.** .btip.gb-floating-tip will-change into base. .quiz-launch-hero 2px removed (3px overrides). #selection-share-popup z-index consolidated. .related-articles__meta font-feature-settings into base. .pq-scripture Deep Polish 8→10px radius + transition into base. |
