@@ -41,9 +41,7 @@ body { overflow-x: hidden; }
 
   --z-base:           1;
   --z-elevated:      10;
-  --z-raised:        50;
   --z-raised-high:  100;
-  --z-toc:          500;
   --z-dropdown:     800;
   --z-dropdown-high: 900;
   --z-sticky:      1000;
@@ -108,7 +106,6 @@ body { overflow-x: hidden; }
   --color-tooltip-bg:       #2a2a2a;
   --color-tooltip-text:     #ffffff;
   --shadow-sm:              0 1px 2px rgba(16, 18, 22, .06);
-  --shadow-md:              0 4px 12px rgba(16, 18, 22, .08);
   --shadow-lg:              0 8px 24px rgba(16, 18, 22, .11);
   --shadow-xl:              0 16px 44px rgba(16, 18, 22, .14);
 
@@ -121,10 +118,6 @@ body { overflow-x: hidden; }
   --accent:             var(--color-accent);
   --accent-soft:        var(--color-accent-soft);
   --accent-strong:      var(--color-accent-strong);
-  --link:               var(--color-link);
-  --note-bg:            var(--color-surface-muted);
-  --quote-bg:           var(--color-surface-quote);
-  --success-bg:         var(--color-success-bg);
   --success-border:     var(--color-success-border);
   --warn-bg:            var(--color-warning-bg);
   --warn-border:        var(--color-warning-border);
@@ -135,15 +128,8 @@ body { overflow-x: hidden; }
   --tooltip-bg:         var(--color-tooltip-bg);
   --tooltip-text:       var(--color-tooltip-text);
   --bg-alt:             var(--color-surface-alt);
-  --surface-2:          var(--color-surface-2);
-  --fg:                 var(--color-text-warm);
-  --fg-secondary:       var(--color-text-warm-muted);
-  --text-primary:       var(--color-text-primary);
-  --text-secondary:     var(--color-text-secondary);
-  --text-muted:         var(--color-text-faint);
   --accent-selection:   var(--color-accent-selection);
   --back-height:        auto;
-  --nicea-color:        #e65100;
 
   --scroll-margin: 96px;
 
@@ -200,7 +186,6 @@ html.dark {
   --color-tooltip-text:     #1a1a1a;
 
   --shadow-sm:              0 1px 2px rgba(0, 0, 0, .4);
-  --shadow-md:              0 4px 12px rgba(0, 0, 0, .5);
   --shadow-lg:              0 8px 24px rgba(0, 0, 0, .55);
   --shadow-xl:              0 24px 60px rgba(0, 0, 0, .6);
 
@@ -213,10 +198,6 @@ html.dark {
   --accent:             var(--color-accent);
   --accent-soft:        var(--color-accent-soft);
   --accent-strong:      var(--color-accent-strong);
-  --link:               var(--color-link);
-  --note-bg:            var(--color-surface-muted);
-  --quote-bg:           var(--color-surface-quote);
-  --success-bg:         var(--color-success-bg);
   --success-border:     var(--color-success-border);
   --warn-bg:            var(--color-warning-bg);
   --warn-border:        var(--color-warning-border);
@@ -227,14 +208,7 @@ html.dark {
   --tooltip-bg:         var(--color-tooltip-bg);
   --tooltip-text:       var(--color-tooltip-text);
   --bg-alt:             var(--color-surface-alt);
-  --surface-2:          var(--color-surface-2);
-  --fg:                 var(--color-text-warm);
-  --fg-secondary:       var(--color-text-warm-muted);
-  --text-primary:       var(--color-text-primary);
-  --text-secondary:     var(--color-text-secondary);
-  --text-muted:         var(--color-text-faint);
   --accent-selection:   var(--color-accent-selection);
-  --nicea-color:        #e65100;
   --scroll-margin:      96px;
 }
 
@@ -6210,7 +6184,6 @@ abbr.gterm:hover { text-decoration: none; }
   cursor: pointer; color: var(--color-text);
 }
 
-
 #selection-share-popup { z-index: var(--z-modal-1); }
 
 [data-series-cards] {
@@ -6875,8 +6848,6 @@ button, a, [role="button"], [tabindex="0"], summary, input, textarea, select {
   }
 }
 
-
-
 .quiz-feedback.ok::before {
   content: '';
   display: inline-block;
@@ -6909,7 +6880,6 @@ button, a, [role="button"], [tabindex="0"], summary, input, textarea, select {
 
 :root {
   --visual-viewport-h: 100dvh;
-  --keyboard-height: 0px;
 }
 .fn-sheet,
 #share-dialog,
@@ -6931,27 +6901,14 @@ button, a, [role="button"], [tabindex="0"], summary, input, textarea, select {
   --color-amber: #d97706;
   --color-blue: #2b6cb0;
   --color-rose: #e11d48;
-  --color-emerald: #059669;
-  --color-violet: #7c3aed;
   --color-red: #dc2626;
-  --color-green: #16a34a;
-  --color-purple: #9333ea;
-  --color-sky: #0369a1;
-  --color-yellow: #ca8a04;
 }
 html.dark {
   --color-amber: #fbbf24;
   --color-blue: #60a5fa;
   --color-rose: #fb7185;
-  --color-emerald: #34d399;
-  --color-violet: #a78bfa;
   --color-red: #f87171;
-  --color-green: #4ade80;
-  --color-purple: #c084fc;
-  --color-sky: #38bdf8;
-  --color-yellow: #facc15;
 }
-
 
 /* Fix for oversized portrait images to prevent full-screen height */
 .article-img img {
@@ -8116,7 +8073,6 @@ html.dark .premium-frame-text {
   border-radius: 12px;
 }
 .context-bridge a { font-weight: 700; }
-
 
 /* Gill series: tasteful archaic styling for original titles without leaving English unexplained. */
 .work-title-original,

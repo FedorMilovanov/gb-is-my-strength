@@ -6,7 +6,7 @@
 
 **Владелец:** Фёдор Милованов (редактор, не «автор»)
 **Производственный сайт:** https://gospod-bog.ru
-**Дата документа:** 2026-06-02 | **Версия:** AGENTS-r32
+**Дата документа:** 2026-06-02 | **Версия:** AGENTS-r34
 
 ---
 
@@ -278,7 +278,7 @@
 ### 4.2 `!important`
 
 Сейчас (2026-06-02, после дедупа в commits A–H):
-- `site.css`: ~314 (AGENTS-r31 аудит: убрано 42 лишних; новых не добавлять)
+- `site.css`: ~313 (AGENTS-r34: +удалены 21 мёртвая CSS-переменная; новых !important не добавлять)
 - `home.css`: 15
 - `command-palette.css`: 4
 - `mobile-hotfix.css`: 46 (по дизайну: переопределяет поведение для touch / pointer: coarse)
@@ -325,6 +325,13 @@
 8. **`!important` — только при реальном конкуренте**  
    Tailwind в `nagornaya/*` — законная причина. Просто "на всякий случай" — нет.  
    Проверь: какой селектор перебивает? Если ответа нет — уберизм `!important`.
+
+9. **CSS-переменные — не объявлять "про запас"**  
+   Объявленная в `:root` переменная без `var(--...)` нигде = мёртвый код.  
+   Канонические токены: `--color-*`, `--z-*`, `--s-*`, `--shadow-*`, `--scroll-margin`.  
+   Убитые в r34: `--fg`, `--link`, `--note-bg`, `--z-toc`, `--z-raised`, `--shadow-md`,  
+   `--nicea-color`, `--keyboard-height`, `--color-violet/emerald/green/purple/sky/yellow`.  
+   Живые aliases которые используются: `--accent`, `--bg`, `--border`, `--accent-soft`, `--accent-strong`.
 
 ---
 
@@ -605,5 +612,7 @@ npm run validate:all      # ← рекомендуется перед кажды
 | AGENTS-r17.1 | 2026-06-02 | **7 новых ассетов от редактора** в `images/` (полный набор `.jpg/.png + .webp + -600w + -900w + -1200w` для каждого): `gill-five-volumes-shelf` (5 томов Гилла на полке), `gill-clarendon-code-acts` (свитки Corporation/Uniformity/Conventicle/Five Mile Acts), `gill-engraving-talmud-study` (ч/б гравюра Гилла за Талмудом), `gill-portret-full-study` (расширенный 16:9 портрет Гилла за столом — дополняет, не заменяет, существующий `dzhon-gill-portret`), `gill-bunhill-defoe-plaque` (фото мемор. таблички в Bunhill — дополняет существующую гравюру `gill-bunhill-fields` с похоронной процессией), `gill-hebrew-scroll-yad` (свиток с серебряной указкой). Для `gill-baptism-scene` добавлены недостающие base `.jpg` / `.webp` / `-1200w.webp` (раньше серия была неполной — только 600w + 900w). Существующие ассеты не перезаписаны (проверено визуально). |
 | AGENTS-r18 | 2026-06-02 | **Чистка мусора + превью Части I + SEO-фикс.** Удалены неиспользуемые ассеты: `gill-bunhill-defoe-plaque*` (это мемор. табличка Defoe, не Gill — не относится к теме), `gill-inkwell-macro*` (визуальный дубликат `gill-five-volumes-shelf` под путаным slug'ом, нигде не используется), `acts-of-suppression.png` (заменён `gill-clarendon-code-acts` в r17, остаток). Превью Части I в `/biografii/` (обе карточки) переведено `dzhon-gill-portret.jpg` (portrait-кроп) → `gill-portret-full-study` (16:9 landscape, корректно ложится в thumb 160×108). SEO-фикс: в JSON-LD `@graph` страницы `dzhon-gill-istoricheskiy-kontekst` добавлен отсутствовавший узел `WebSite #website` (устранена единственная hard-ошибка seo-audit). `whitefield-field` НЕ удалён (оставлен как master-резерв; визуально близок к используемому `whitefield-preaching`). |
 | AGENTS-r32 | 2026-06-02 | **Byline «Автор-редактор» + SEO.** Обновлено правило §3.1: для авторских статей (Тип A/B) byline теперь «Автор-редактор: Фёдор Милованов» (он создаёт материалы + редактирует). Переводы (Тип C) без изменений — «Редакция перевода». `about/index.html`: обновлён `article-desc`, `og:description`, JSON-LD Person добавлены `jobTitle`, `description`, `knowsAbout`, YouTube в `sameAs`. Создан `llms.txt` для AI Search (Perplexity, ChatGPT, Claude, Grok). |
+| AGENTS-r33 | 2026-06-02 | **CSS bug fixes + dark mode + чистка.** `biography-epigraph::before`: удалён двойной `content: none !important` (был ×2 перед реальным `content: '"'`). z-index токенизированы: `.gb-floating-controls` 9998→`var(--z-toast-high)`, `.theme-float-btn` 90→`var(--z-raised-high)`. Dark mode fix в `20-antisovetov`: 16 inline hex colors (`#d97706/2b6cb0/e11d48`) → `var(--color-amber/blue/rose, fallback)`. Удалён `important_audit.txt` из корня (нарушал §10). |
+| AGENTS-r34 | 2026-06-02 | **CSS-переменные аудит + dead var removal.** Глубокий анализ всех 121 объявленных CSS-переменных. Выявлены и удалены 21 мёртвая переменная (39 строк, из `:root` и `html.dark`): legacy aliases `--fg/fg-secondary/text-primary/text-secondary/text-muted/link/note-bg/quote-bg/success-bg/surface-2`, устаревшие z-index `--z-raised/z-toc`, `--shadow-md`, `--nicea-color`, `--keyboard-height`, неиспользуемые Tailwind-токены `--color-violet/emerald/green/purple/sky/yellow`. Объяснение: переменные "про запас" в `:root` = мёртвый код → в §4.4 добавлено правило 9. |
 | AGENTS-r31 | 2026-06-02 | **CSS/JS глубокий аудит.** `css/site.css`: исправлено 4 P0-бага (`.dark`→`html.dark`, дубль `html.dark .heart-flip-back`, двойной `box-shadow` в `.tooltip`, незащищённый `.h-hero-title:hover` на touch); удалено 12 дублирующихся блоков (`.btoc-banner` x2, `.bar-icon-btn` x3, `.fn-marker` x2, и др.); удалено 3 пустых правила; убраны 42 лишних `!important` (summary-card, touch targets); удалён мёртвый CSS: `.gill-fact-card`, `.btip-tabs`, `.antisovet-label`, `.btip-pane`/`.btip-tab`. `css/nagornaya-mobile-toc.css`: удалены мёртвые `.nag-theme-btn` x4, `.nag-icon-*`, унифицирован `.nag-quiz-h2` dark (был `.dark` вместо `html.dark`); итого −39 строк. Добавлен §4.4 "CSS Integrity Rules" — 8 конкретных правил для предотвращения регрессий. |
 | AGENTS-r19–r28 | 2026-06-02 | **Аудит и стабилизация:** Фиксы суммари Нагорной проповеди, доработка минималистичного поиска, закрытие битых span-тегов в байлайнах и каталогах. Унификация тултипов, очистка dangling CSS-селекторов, устранение протечки глоссария в заголовки. Добавлены и разведены баптистские термины в глоссарии, устранены наложения категорий. Полное приведение репозитория в соответствие правилам AGENTS.md (исправлены дубликаты `og:image`, ASCII-кавычки в статьях). |
