@@ -4721,6 +4721,144 @@
 
 
 
+
+  /* ============================================================
+     35. Home/Catalog Page Infrastructure
+     hReadingProgress, hNavbar scroll/hide, hScrollTop,
+     hMobileMenu, .h-reveal → .h-in reveal.
+     Заменяет inline <script> в 4 catalog-страницах — AGENTS-r41.
+     Активируется только если есть #hReadingProgress на странице.
+     ============================================================ */
+  (function () {
+    var progressBar   = document.getElementById('hReadingProgress');
+    if (!progressBar) return; /* Только на home/catalog страницах */
+
+    var progressCircle = document.getElementById('hProgressCircle');
+    var circumference  = 138.23; /* 2πr для circle r=22 */
+    var navbar         = document.getElementById('hNavbar');
+    var scrollTopBtn   = document.getElementById('hScrollTop');
+    var reveals        = document.querySelectorAll('.h-reveal');
+    var lastScroll     = window.scrollY || window.pageYOffset || 0;
+
+    /* ── Reading progress ── */
+    function updateProgress() {
+      var scrollTop = window.scrollY || window.pageYOffset;
+      var docH = document.documentElement.scrollHeight - window.innerHeight;
+      var pct  = docH > 0 ? scrollTop / docH : 0;
+      progressBar.style.width = (pct * 100) + '%';
+      if (progressCircle) {
+        progressCircle.style.strokeDashoffset =
+          (circumference - pct * circumference).toFixed(2);
+      }
+    }
+
+    /* ── Navbar scroll-hide ── */
+    function updateNavbar() {
+      if (!navbar) return;
+      var s = window.scrollY || window.pageYOffset;
+      navbar.classList.toggle('scrolled', s > 40);
+      if (s > 300 && s > lastScroll + 6)      navbar.classList.add('nav-hidden');
+      else if (s < lastScroll - 6)            navbar.classList.remove('nav-hidden');
+      lastScroll = s;
+    }
+
+    /* ── Scroll-to-top button ── */
+    function updateScrollTop() {
+      if (!scrollTopBtn) return;
+      scrollTopBtn.classList.toggle('visible',
+        (window.scrollY || window.pageYOffset) > 500);
+    }
+    if (scrollTopBtn) {
+      scrollTopBtn.addEventListener('click', function () {
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      });
+    }
+
+    /* ── .h-reveal → .h-in ── */
+    function revealOnScroll() {
+      reveals.forEach(function (el) {
+        if (!el.classList.contains('h-in') &&
+            el.getBoundingClientRect().top < window.innerHeight - 60) {
+          el.classList.add('h-in');
+        }
+      });
+    }
+    if (reveals.length) {
+      if (window.IntersectionObserver) {
+        var revObs = new IntersectionObserver(function (entries) {
+          entries.forEach(function (e) {
+            if (e.isIntersecting) {
+              e.target.classList.add('h-in');
+              revObs.unobserve(e.target);
+            }
+          });
+        }, { threshold: 0.08, rootMargin: '0px 0px -40px 0px' });
+        reveals.forEach(function (el) { revObs.observe(el); });
+      } else {
+        revealOnScroll();
+      }
+    }
+
+    /* ── Mobile menu (hMobileMenuBtn / hMobileNav) ── */
+    var mobileMenuBtn  = document.getElementById('hMobileMenuBtn');
+    var mobileNav      = document.getElementById('hMobileNav');
+    var mobileBackdrop = document.getElementById('hMobileBackdrop');
+    var mobileOpen     = false;
+
+    function openMobileNav() {
+      if (!mobileNav || !mobileMenuBtn) return;
+      mobileOpen = true;
+      mobileNav.classList.add('open');
+      mobileNav.removeAttribute('aria-hidden');
+      mobileMenuBtn.classList.add('is-open');
+      mobileMenuBtn.setAttribute('aria-expanded', 'true');
+      mobileMenuBtn.setAttribute('aria-label', 'Закрыть меню');
+      if (mobileBackdrop) mobileBackdrop.classList.add('open');
+      if (window.SiteUtils && window.SiteUtils.lockScroll)
+        window.SiteUtils.lockScroll('home-mobile-menu');
+      else document.body.style.overflow = 'hidden';
+    }
+    function closeMobileNavFn() {
+      if (!mobileNav || !mobileMenuBtn) return;
+      mobileOpen = false;
+      mobileNav.classList.remove('open');
+      mobileNav.setAttribute('aria-hidden', 'true');
+      mobileMenuBtn.classList.remove('is-open');
+      mobileMenuBtn.setAttribute('aria-expanded', 'false');
+      mobileMenuBtn.setAttribute('aria-label', 'Открыть меню');
+      if (mobileBackdrop) mobileBackdrop.classList.remove('open');
+      if (window.SiteUtils && window.SiteUtils.unlockScroll)
+        window.SiteUtils.unlockScroll('home-mobile-menu');
+      else document.body.style.overflow = '';
+    }
+    /* Экспортируем для onclick в HTML */
+    window.closeMobileNav = closeMobileNavFn;
+
+    if (mobileMenuBtn) {
+      mobileMenuBtn.addEventListener('click', function () {
+        if (mobileOpen) closeMobileNavFn(); else openMobileNav();
+      });
+    }
+    if (mobileBackdrop) mobileBackdrop.addEventListener('click', closeMobileNavFn);
+    document.addEventListener('keydown', function (e) {
+      if (mobileOpen && (e.key === 'Escape' || e.key === 'Esc')) closeMobileNavFn();
+    });
+
+    /* ── Единый scroll-handler (rAF throttled) ── */
+    var ticking = false;
+    window.addEventListener('scroll', function () {
+      if (ticking) return;
+      ticking = true;
+      requestAnimationFrame(function () {
+        updateProgress(); updateNavbar(); updateScrollTop();
+        ticking = false;
+      });
+    }, { passive: true });
+
+    /* Инициализация */
+    updateProgress(); updateNavbar(); updateScrollTop();
+  })();
+
   /* ============================================================
      34. Article Top Nav — scroll-aware sticky header
      Перенесено из inline <script> в 7 статьях — AGENTS-r38.

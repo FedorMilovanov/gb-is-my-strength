@@ -1114,117 +1114,15 @@
 
 </main>
 
-<script>
-(function(){
-  document.querySelectorAll('.tt').forEach(function(el){
-    var box = document.createElement('div');
-    box.className = 'tt-box absolute z-50 bottom-full left-1/2 -translate-x-1/2 mb-3 w-72 p-4 text-sm text-stone-100 bg-stone-900 rounded-xl shadow-2xl border border-stone-700 leading-relaxed hidden';
-    var arrow = document.createElement('div');
-    arrow.className = 'absolute w-3 h-3 bg-stone-900 border-b border-r border-stone-700 rotate-45 -bottom-1.5 left-1/2 -translate-x-1/2';
-    box.textContent = el.getAttribute('data-tip') || '';
-    box.appendChild(arrow);
-    el.style.position = 'relative';
-    el.appendChild(box);
-    el.addEventListener('mouseenter', function(){ box.classList.remove('hidden'); _clampTtBox(box); });
-    el.addEventListener('mouseleave', function(){ box.classList.add('hidden'); });
-    el.addEventListener('click', function(e){ e.stopPropagation(); box.classList.toggle('hidden'); });
-  });
-    // Bug-fix: clamp tooltip within viewport and close on scroll/touchmove
-  function _clampTtBox(b){
-    var MG=8, r=b.getBoundingClientRect(), vw=window.innerWidth, sh=0;
-    if(r.left<MG) sh=MG-r.left;
-    else if(r.right>vw-MG) sh=-(r.right-(vw-MG));
-    b.style.transform='translateX(calc(-50% + '+sh+'px))';
-  }
-  function _closeAllTtBoxes(){
-    document.querySelectorAll('.tt-box').forEach(function(b){
-      b.classList.add('hidden');
-      b.style.transform='';
-    });
-  }
-  document.addEventListener('click', _closeAllTtBoxes);
-  window.addEventListener('scroll', _closeAllTtBoxes, {passive:true});
-  window.addEventListener('touchmove', _closeAllTtBoxes, {passive:true});
-})();
-</script>
+<!-- .tt tooltip system now handled by nagornaya-mobile-toc.js -->
 
-<script>
-(function(){
-  /* AUDIT V4 / M3: усиленное мобильное меню Nagornaya.
-     Добавлено: scroll-lock, ESC-close, backdrop-click-close,
-     aria-expanded toggle, focus-trap (мин), focus-restore. */
-  var btn = document.getElementById('menuBtn');
-  var menu = document.getElementById('mobileMenu');
-  var bars = document.querySelectorAll('#menuBtn .bar');
-  if (!btn || !menu) return;
-
-  var lastFocus = null;
-  var isOpen = false;
-
-  function open() {
-    if (isOpen) return;
-    isOpen = true;
-    menu.classList.remove('hidden');
-    btn.setAttribute('aria-expanded', 'true');
-    btn.setAttribute('aria-label', 'Закрыть меню');
-    if (bars[0]) bars[0].style.transform = 'rotate(45deg) translate(0,6px)';
-    if (bars[1]) bars[1].style.opacity = '0';
-    if (bars[2]) bars[2].style.transform = 'rotate(-45deg) translate(0,-6px)';
-    if (window.SiteUtils && window.SiteUtils.lockScroll) window.SiteUtils.lockScroll('nagornaya-menu');
-    else { document.body.classList.add('no-scroll'); }
-    lastFocus = document.activeElement;
-    var firstLink = menu.querySelector('a, button');
-    if (firstLink) firstLink.focus();
-  }
-  function close() {
-    if (!isOpen) return;
-    isOpen = false;
-    menu.classList.add('hidden');
-    btn.setAttribute('aria-expanded', 'false');
-    btn.setAttribute('aria-label', 'Открыть меню');
-    if (bars[0]) bars[0].style.transform = '';
-    if (bars[1]) bars[1].style.opacity = '1';
-    if (bars[2]) bars[2].style.transform = '';
-    if (window.SiteUtils && window.SiteUtils.unlockScroll) window.SiteUtils.unlockScroll('nagornaya-menu');
-    else { document.body.classList.remove('no-scroll'); }
-    if (lastFocus && lastFocus.focus) try { lastFocus.focus(); } catch(e){}
-  }
-
-  btn.addEventListener('click', function(){
-    if (isOpen) close(); else open();
-  });
-
-  /* Close on link click inside menu — UX: тап по разделу скрывает меню */
-  menu.addEventListener('click', function(e){
-    if (e.target.closest('a')) close();
-  });
-
-  /* Close on Escape */
-  document.addEventListener('keydown', function(e){
-    if (isOpen && (e.key === 'Escape' || e.key === 'Esc')) {
-      e.preventDefault();
-      close();
-    }
-  });
-
-  /* Close on backdrop tap (вне menu) — поскольку menu занимает inset:0,
-     добавляем touchstart-handler на сам menu для outside-click внутри padding */
-  menu.addEventListener('click', function(e){
-    if (e.target === menu) close();
-  });
-
-  /* Close on resize выше desktop breakpoint */
-  window.addEventListener('resize', function(){
-    if (window.innerWidth >= 1024 && isOpen) close();
-  });
-})();
-</script>
+<!-- mobile menu handled by js/nagornaya-mobile-toc.js?v=d733f119 module B -->
 
 
 
 <script src="/js/site-utils.js?v=d4ac3689"></script>
     <script src="/js/scroll-perf.js?v=84977eec"></script>
-    <script src="../../js/site.js?v=9ec309ca" defer></script>
+    <script src="../../js/site.js?v=bd52c499" defer></script>
     <script src="../../js/glossary.js?v=4f1b7174" defer></script>
 <script src="../../js/sw-register.js?v=72d974d9" defer></script>
 <script src="../../js/search.js?v=386baf27" defer></script>

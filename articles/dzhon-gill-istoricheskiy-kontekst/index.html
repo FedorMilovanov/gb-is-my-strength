@@ -325,14 +325,12 @@ window.SITE_CONFIG = {
 </div>
 <script src="../../js/site-utils.js?v=d4ac3689"></script>
 <script src="../../js/scroll-perf.js?v=84977eec"></script>
-<script defer src="../../js/site.js?v=9ec309ca"></script>
+<script defer src="../../js/site.js?v=bd52c499"></script>
 <script defer src="../../js/glossary.js?v=4f1b7174"></script>
 <script defer src="../../js/sw-register.js?v=72d974d9"></script>
 <script defer src="../../js/search.js?v=386baf27"></script>
 <script defer src="../../js/highlights.js?v=5395797c"></script>
 <script defer src="../../js/enhancements.js?v=9359ad68"></script>
-<script>
-(function(){if(!window.IntersectionObserver)return;var obs=new IntersectionObserver(function(entries){entries.forEach(function(e){if(e.isIntersecting){e.target.classList.add('revealed');obs.unobserve(e.target);}});},{threshold:0.1,rootMargin:'0px 0px -40px 0px'});document.querySelectorAll('.reveal').forEach(function(el){obs.observe(el);});})();
-</script>
+<!-- .reveal IO handled by CSS SDA + site.js -->
 </body>
 </html>
