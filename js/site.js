@@ -4719,6 +4719,96 @@
     }
   }, true);
 
+
+  /* ============================================================
+     33. Tooltip-trigger унификация — nagornaya + общий сайт
+     Заменяет inline <script> в nagornaya/chast-1..4.
+     Ищет .tooltip-trigger[data-tooltip] и превращает их в
+     .gterm + .gtip — подхватываются initGlossaryTooltips.
+     ============================================================ */
+  (function () {
+    'use strict';
+
+    /* Запускаем только если есть .tooltip-trigger на странице */
+    function initTooltipTriggers() {
+      var triggers = document.querySelectorAll('.tooltip-trigger[data-tooltip]');
+      if (!triggers.length) return;
+
+      /* Для каждого .tooltip-trigger:
+         1. Добавляем class="gterm" (CSS совместимость)
+         2. Создаём дочерний .gtip[data-luxury] с определением
+         3. Убираем inline position:relative / borderBottom / cursor
+            (CSS .gterm уже стилизует корректно) */
+      Array.prototype.forEach.call(triggers, function (el) {
+        var text = el.getAttribute('data-tooltip');
+        if (!text) return;
+
+        /* Уже обработан? */
+        if (el.classList.contains('gterm')) return;
+
+        /* Создаём luxury gtip */
+        var tip = document.createElement('span');
+        tip.className = 'gtip';
+        tip.setAttribute('data-luxury', 'true');
+
+        var inner = document.createElement('span');
+        inner.className = 'gtip-luxury';
+
+        /* Handle — только мобильно */
+        var handle = document.createElement('span');
+        handle.className = 'gtip-luxury__handle';
+        inner.appendChild(handle);
+
+        /* Header */
+        var header = document.createElement('div');
+        header.className = 'gtip-luxury__header';
+        var closeBtn = document.createElement('button');
+        closeBtn.type = 'button';
+        closeBtn.className = 'gtip-luxury__close';
+        closeBtn.setAttribute('aria-label', 'Закрыть');
+        closeBtn.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg>';
+        header.appendChild(closeBtn);
+        inner.appendChild(header);
+
+        /* Body */
+        var body = document.createElement('div');
+        body.className = 'gtip-luxury__body';
+        var definition = document.createElement('p');
+        definition.className = 'gtip-luxury__definition';
+        definition.textContent = text;
+        body.appendChild(definition);
+        inner.appendChild(body);
+
+        tip.appendChild(inner);
+        el.appendChild(tip);
+
+        /* Добавляем .gterm — CSS и tooltip controller подхватит */
+        el.classList.add('gterm');
+        el.setAttribute('tabindex', '0');
+        el.setAttribute('role', 'button');
+        el.setAttribute('aria-expanded', 'false');
+        el.setAttribute('aria-label', el.textContent.replace(text, '').trim() || 'пояснение');
+
+        /* Убираем старые inline стили (перекрываются CSS .gterm) */
+        if (el.style.position === 'relative') el.style.removeProperty('position');
+        if (el.style.cursor) el.style.removeProperty('cursor');
+        if (el.style.borderBottom) el.style.removeProperty('border-bottom');
+      });
+
+      /* Инициализируем через унифицированную систему */
+      if (window.SiteUtils && typeof window.SiteUtils.initGlossaryTooltips === 'function') {
+        window.SiteUtils.initGlossaryTooltips(document.body);
+      }
+    }
+
+    /* Запускаем после загрузки glossary.js (defer) */
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', initTooltipTriggers);
+    } else {
+      setTimeout(initTooltipTriggers, 0);
+    }
+  })();
+
   /* ============================================================
      32. View Transitions API — page transitions (Progressive Enhancement)
      Chrome 111+, Safari 18+. Базово недоступно — без fallback безопасно.
