@@ -3332,33 +3332,10 @@
 
 
   /* ============================================================
-     20c. AI Disclosure — прозрачность подготовки материалов
+     20c. AI Disclosure — REMOVED 2026-06-02
+     Module deleted at editor's request. The /about/ page already
+     describes editorial process; per-article disclosure was redundant.
      ============================================================ */
-  (function () {
-    var cfg = SiteUtils.getConfig('features.aiDisclosure', {});
-    if (cfg.enabled === false) return;
-    if (SiteUtils.getConfig('page.type', '') !== 'article') return;
-
-    var article = document.querySelector('article[data-pagefind-body], article.article-body, article');
-    if (!article || article.querySelector('.ai-disclosure')) return;
-
-    var box = document.createElement('aside');
-    box.className = 'ai-disclosure';
-    box.setAttribute('role', 'note');
-    box.setAttribute('aria-label', 'Прозрачность подготовки материала');
-    box.innerHTML =
-      '<svg class="ai-disclosure__icon" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">' +
-        '<circle cx="12" cy="12" r="9"/>' +
-        '<path d="M12 8v5"/>' +
-        '<path d="M12 16h.01"/>' +
-      '</svg>' +
-      '<p>Материал подготовлен редактором при помощи ИИ.</p>';
-
-    /* Дисклеймер ставим в конец статьи: после основного текста и списка литературы,
-       если он присутствует, а не перед заголовком/вводной частью. */
-    article.appendChild(box);
-  })();
-
 
 
   /* ============================================================
