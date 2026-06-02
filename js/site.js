@@ -4718,4 +4718,39 @@
       }, 240);
     }
   }, true);
+
+  /* ============================================================
+     32. View Transitions API — page transitions (Progressive Enhancement)
+     Chrome 111+, Safari 18+. Базово недоступно — без fallback безопасно.
+     При клике на внутренние ссылки: fade transition.
+     ============================================================ */
+  (function () {
+    if (!document.startViewTransition) return;
+
+    /* Только внутренние ссылки на те же origin */
+    function isSameOrigin(href) {
+      try {
+        return new URL(href, location.href).origin === location.origin;
+      } catch (e) { return false; }
+    }
+
+    document.addEventListener('click', function (e) {
+      var link = e.target.closest('a[href]');
+      if (!link) return;
+
+      var href = link.getAttribute('href');
+      /* Пропускаем: якоря, внешние, target=_blank, модификаторы */
+      if (!href || href.startsWith('#') || href.startsWith('mailto:') ||
+          href.startsWith('tel:') || href.startsWith('javascript:')) return;
+      if (e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
+      if (link.target === '_blank' || link.target === '_new') return;
+      if (!isSameOrigin(href)) return;
+
+      e.preventDefault();
+      document.startViewTransition(function () {
+        window.location.href = href;
+      });
+    }, { passive: false });
+  })();
+
 })();
