@@ -885,7 +885,7 @@
       icon: SVG.book14,
       meta: (x.editor ? 'Редактор: ' + x.editor : '') + (x.readTime ? ' · ~' + x.readTime + ' мин' : ''),
       tags: x.type === 'series' ? ['Серия'] : (x.tags ? x.tags.slice(0, 2) : []),
-      article: { url: x.url, title: x.title, author: x.author || x.editor || '', category: x.section || '', image: x.image || null, readTime: x.readTime || null, scripture: x.scripture || null, excerpt: x.description || '' }
+      article: { url: x.url, title: x.title, author: x.author || (x.editor ? 'Редактор: ' + x.editor : ''), category: x.section || '', image: x.image || null, readTime: x.readTime || null, scripture: x.scripture || null, excerpt: x.description || '' }
     };
   }
 

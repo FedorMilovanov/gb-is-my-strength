@@ -835,17 +835,6 @@ html.dark body.nagornaya-page .text-red-700,
 html.dark body.nagornaya-page .text-red-800 {
   color: #fca5a5 !important;
 }
-html.dark body.nagornaya-page 
-body.nagornaya-page 
-html.dark body.nagornaya-page 
-body.nagornaya-page 
-html.dark body.nagornaya-page 
-body.nagornaya-page 
-body.nagornaya-page 
-html.dark body.nagornaya-page 
-body.nagornaya-page 
-body.nagornaya-page 
-body.nagornaya-page 
 body.nagornaya-page main > .max-w-4xl > .mb-6 {
   max-width: 760px !important;
   margin-left: auto !important;
@@ -860,9 +849,6 @@ html.dark body.nagornaya-page main > .max-w-4xl > .mb-6 {
   background: rgba(245,235,218,.045) !important;
   border-color: rgba(245,213,166,.12) !important;
 }
-html.dark body.nagornaya-page 
-body.nagornaya-page 
-body.nagornaya-page 
 
 /* ═══════════════
    PERF HOTFIX 2026-05-23 — lighter mobile bottom bar

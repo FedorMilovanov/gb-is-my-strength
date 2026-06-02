@@ -302,23 +302,20 @@ html.dark body.nagornaya-page .gb-series-link:hover {
   outline: none !important;
 }
 
-/* Search is visually tight to the day/night SVG; no visible circular hit area. */
+/* Search is visually tight to the day/night SVG; visible icon is closer, hit target stays 44px. */
 .mobile-controls {
   gap: 0 !important;
 }
-.mobile-controls .gb-nav-search-icon {
-  width: 32px !important;
-  min-width: 32px !important;
+.mobile-controls .gb-nav-search-icon,
+.mobile-controls .theme-toggle {
+  width: 44px !important;
+  min-width: 44px !important;
   height: 44px !important;
   min-height: 44px !important;
   padding: 0 !important;
-  margin-right: -7px !important;
 }
-.mobile-controls .theme-toggle {
-  width: 38px !important;
-  min-width: 38px !important;
-  padding-left: 6px !important;
-  padding-right: 6px !important;
+.mobile-controls .gb-nav-search-icon {
+  margin-right: -12px !important;
 }
 
 /* Subtle, elegant, minimalist reaction on hover */
