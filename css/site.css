@@ -8876,71 +8876,7 @@ html.dark .fn-dove-icon {
 }
 
 /* Premium Frame Style — highly elegant, classic, and professional manuscript borders */
-.premium-frame {
-  position: relative;
-  margin: clamp(32px, 5vw, 56px) 0;
-  padding: clamp(24px, 4vw, 40px);
-  background: var(--color-surface-quote, #fbfaf7);
-  border: 1px solid rgba(184, 147, 106, 0.25);
-  border-radius: 12px;
-  box-shadow:
-    0 1px 0 rgba(255, 255, 255, 0.9) inset,
-    0 4px 20px rgba(120, 83, 46, 0.04),
-    0 12px 36px -16px rgba(120, 83, 46, 0.08);
-}
-html.dark .premium-frame {
-  background: color-mix(in srgb, var(--color-accent) 4%, var(--color-surface));
-  border-color: rgba(232, 184, 120, 0.15);
-  box-shadow:
-    0 1px 0 rgba(255, 255, 255, 0.02) inset,
-    0 12px 36px -16px rgba(0, 0, 0, 0.5);
-}
 /* Delicate dashed inner border for old-world feel */
-.premium-frame::before {
-  content: '';
-  position: absolute;
-  top: 8px; left: 8px; right: 8px; bottom: 8px;
-  border: 1px dashed rgba(184, 147, 106, 0.18);
-  border-radius: 8px;
-  pointer-events: none;
-}
-.premium-frame-title {
-  font-family: 'Source Sans 3', system-ui, sans-serif;
-  font-size: 11px;
-  font-weight: 700;
-  letter-spacing: 0.18em;
-  text-transform: uppercase;
-  color: var(--color-accent);
-  margin-bottom: 16px;
-  text-align: center;
-  position: relative;
-  z-index: 2;
-}
-.premium-frame-text {
-  font-family: var(--f-body, "Cormorant Garamond", Georgia, serif);
-  font-size: 17px;
-  line-height: 1.75;
-  font-style: italic;
-  color: var(--color-text-warm, #2b2317);
-  text-align: center;
-  margin-bottom: 16px;
-  position: relative;
-  z-index: 2;
-}
-html.dark .premium-frame-text {
-  color: var(--color-text, #e6e1d7);
-}
-.premium-frame-source {
-  font-family: 'Source Sans 3', system-ui, sans-serif;
-  font-size: 12px;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
-  color: var(--color-text-muted, #888);
-  text-align: center;
-  position: relative;
-  z-index: 2;
-}
 
 /* UNIFY ALL TOOLTIPS: Hide glossary pointing arrows/handles to avoid overlaps and create 100% uniform, minimal, flat floating cards */
 .gterm .gtip::before,
@@ -9015,71 +8951,7 @@ html.dark .fn-dove-icon {
 }
 
 /* Premium Frame Style — highly elegant, classic, and professional manuscript borders */
-.premium-frame {
-  position: relative;
-  margin: clamp(32px, 5vw, 56px) 0;
-  padding: clamp(24px, 4vw, 40px);
-  background: var(--color-surface-quote, #fbfaf7);
-  border: 1px solid rgba(184, 147, 106, 0.25);
-  border-radius: 12px;
-  box-shadow:
-    0 1px 0 rgba(255, 255, 255, 0.9) inset,
-    0 4px 20px rgba(120, 83, 46, 0.04),
-    0 12px 36px -16px rgba(120, 83, 46, 0.08);
-}
-html.dark .premium-frame {
-  background: color-mix(in srgb, var(--color-accent) 4%, var(--color-surface));
-  border-color: rgba(232, 184, 120, 0.15);
-  box-shadow:
-    0 1px 0 rgba(255, 255, 255, 0.02) inset,
-    0 12px 36px -16px rgba(0, 0, 0, 0.5);
-}
 /* Delicate dashed inner border for old-world feel */
-.premium-frame::before {
-  content: '';
-  position: absolute;
-  top: 8px; left: 8px; right: 8px; bottom: 8px;
-  border: 1px dashed rgba(184, 147, 106, 0.18);
-  border-radius: 8px;
-  pointer-events: none;
-}
-.premium-frame-title {
-  font-family: 'Source Sans 3', system-ui, sans-serif;
-  font-size: 11px;
-  font-weight: 700;
-  letter-spacing: 0.18em;
-  text-transform: uppercase;
-  color: var(--color-accent);
-  margin-bottom: 16px;
-  text-align: center;
-  position: relative;
-  z-index: 2;
-}
-.premium-frame-text {
-  font-family: var(--f-body, "Cormorant Garamond", Georgia, serif);
-  font-size: 17px;
-  line-height: 1.75;
-  font-style: italic;
-  color: var(--color-text-warm, #2b2317);
-  text-align: center;
-  margin-bottom: 16px;
-  position: relative;
-  z-index: 2;
-}
-html.dark .premium-frame-text {
-  color: var(--color-text, #e6e1d7);
-}
-.premium-frame-source {
-  font-family: 'Source Sans 3', system-ui, sans-serif;
-  font-size: 12px;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
-  color: var(--color-text-muted, #888);
-  text-align: center;
-  position: relative;
-  z-index: 2;
-}
 
 /* UNIFY ALL TOOLTIPS: Hide glossary pointing arrows/handles to avoid overlaps and create 100% uniform, minimal, flat floating cards */
 .gterm .gtip::before,
@@ -9154,71 +9026,7 @@ html.dark .fn-dove-icon {
 }
 
 /* Premium Frame Style — highly elegant, classic, and professional manuscript borders */
-.premium-frame {
-  position: relative;
-  margin: clamp(32px, 5vw, 56px) 0;
-  padding: clamp(24px, 4vw, 40px);
-  background: var(--color-surface-quote, #fbfaf7);
-  border: 1px solid rgba(184, 147, 106, 0.25);
-  border-radius: 12px;
-  box-shadow:
-    0 1px 0 rgba(255, 255, 255, 0.9) inset,
-    0 4px 20px rgba(120, 83, 46, 0.04),
-    0 12px 36px -16px rgba(120, 83, 46, 0.08);
-}
-html.dark .premium-frame {
-  background: color-mix(in srgb, var(--color-accent) 4%, var(--color-surface));
-  border-color: rgba(232, 184, 120, 0.15);
-  box-shadow:
-    0 1px 0 rgba(255, 255, 255, 0.02) inset,
-    0 12px 36px -16px rgba(0, 0, 0, 0.5);
-}
 /* Delicate dashed inner border for old-world feel */
-.premium-frame::before {
-  content: '';
-  position: absolute;
-  top: 8px; left: 8px; right: 8px; bottom: 8px;
-  border: 1px dashed rgba(184, 147, 106, 0.18);
-  border-radius: 8px;
-  pointer-events: none;
-}
-.premium-frame-title {
-  font-family: 'Source Sans 3', system-ui, sans-serif;
-  font-size: 11px;
-  font-weight: 700;
-  letter-spacing: 0.18em;
-  text-transform: uppercase;
-  color: var(--color-accent);
-  margin-bottom: 16px;
-  text-align: center;
-  position: relative;
-  z-index: 2;
-}
-.premium-frame-text {
-  font-family: var(--f-body, "Cormorant Garamond", Georgia, serif);
-  font-size: 17px;
-  line-height: 1.75;
-  font-style: italic;
-  color: var(--color-text-warm, #2b2317);
-  text-align: center;
-  margin-bottom: 16px;
-  position: relative;
-  z-index: 2;
-}
-html.dark .premium-frame-text {
-  color: var(--color-text, #e6e1d7);
-}
-.premium-frame-source {
-  font-family: 'Source Sans 3', system-ui, sans-serif;
-  font-size: 12px;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
-  color: var(--color-text-muted, #888);
-  text-align: center;
-  position: relative;
-  z-index: 2;
-}
 
 /* UNIFY ALL TOOLTIPS: Hide glossary pointing arrows/handles to avoid overlaps and create 100% uniform, minimal, flat floating cards */
 .gterm .gtip::before,
@@ -9293,71 +9101,7 @@ html.dark .fn-dove-icon {
 }
 
 /* Premium Frame Style — highly elegant, classic, and professional manuscript borders */
-.premium-frame {
-  position: relative;
-  margin: clamp(32px, 5vw, 56px) 0;
-  padding: clamp(24px, 4vw, 40px);
-  background: var(--color-surface-quote, #fbfaf7);
-  border: 1px solid rgba(184, 147, 106, 0.25);
-  border-radius: 12px;
-  box-shadow:
-    0 1px 0 rgba(255, 255, 255, 0.9) inset,
-    0 4px 20px rgba(120, 83, 46, 0.04),
-    0 12px 36px -16px rgba(120, 83, 46, 0.08);
-}
-html.dark .premium-frame {
-  background: color-mix(in srgb, var(--color-accent) 4%, var(--color-surface));
-  border-color: rgba(232, 184, 120, 0.15);
-  box-shadow:
-    0 1px 0 rgba(255, 255, 255, 0.02) inset,
-    0 12px 36px -16px rgba(0, 0, 0, 0.5);
-}
 /* Delicate dashed inner border for old-world feel */
-.premium-frame::before {
-  content: '';
-  position: absolute;
-  top: 8px; left: 8px; right: 8px; bottom: 8px;
-  border: 1px dashed rgba(184, 147, 106, 0.18);
-  border-radius: 8px;
-  pointer-events: none;
-}
-.premium-frame-title {
-  font-family: 'Source Sans 3', system-ui, sans-serif;
-  font-size: 11px;
-  font-weight: 700;
-  letter-spacing: 0.18em;
-  text-transform: uppercase;
-  color: var(--color-accent);
-  margin-bottom: 16px;
-  text-align: center;
-  position: relative;
-  z-index: 2;
-}
-.premium-frame-text {
-  font-family: var(--f-body, "Cormorant Garamond", Georgia, serif);
-  font-size: 17px;
-  line-height: 1.75;
-  font-style: italic;
-  color: var(--color-text-warm, #2b2317);
-  text-align: center;
-  margin-bottom: 16px;
-  position: relative;
-  z-index: 2;
-}
-html.dark .premium-frame-text {
-  color: var(--color-text, #e6e1d7);
-}
-.premium-frame-source {
-  font-family: 'Source Sans 3', system-ui, sans-serif;
-  font-size: 12px;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
-  color: var(--color-text-muted, #888);
-  text-align: center;
-  position: relative;
-  z-index: 2;
-}
 
 /* UNIFY ALL TOOLTIPS: Hide glossary pointing arrows/handles to avoid overlaps and create 100% uniform, minimal, flat floating cards */
 .gterm .gtip::before,
@@ -9449,3 +9193,43 @@ html.dark .premium-frame-text {
 }
 .work-title-original::before { content: '('; }
 .work-title-original::after { content: ')'; }
+
+/* Manuscript quote — used in Gill biography (Часть 1, 2, 3).
+   Editorial pull-quote with subtle parchment background, no large
+   decorative quote marks (those would compete with .pullquote).
+   Added 2026-06-02 to make existing markup actually render. */
+.manuscript-quote {
+  position: relative;
+  margin: clamp(28px, 4vw, 44px) 0;
+  padding: clamp(18px, 2.5vw, 26px) clamp(20px, 3vw, 32px);
+  background: var(--color-surface-quote, #fbf7ee);
+  border-left: 3px solid var(--color-accent, #7a2e2e);
+  border-radius: 0 10px 10px 0;
+  font-family: 'Lora', Georgia, serif;
+}
+.manuscript-quote-text {
+  font-size: clamp(15px, 1.9vw, 17px);
+  font-style: italic;
+  line-height: 1.7;
+  color: var(--color-text-warm, var(--color-text, #2b2317));
+  margin: 0;
+}
+.manuscript-quote-source {
+  display: block;
+  margin-top: 12px;
+  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-style: normal;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--color-accent, #7a2e2e);
+  opacity: 0.9;
+}
+html.dark .manuscript-quote {
+  background: color-mix(in srgb, var(--color-accent) 6%, var(--color-surface));
+  border-left-color: var(--color-accent-strong, #e8b878);
+}
+html.dark .manuscript-quote-source {
+  color: var(--color-accent-strong, #e8b878);
+}
