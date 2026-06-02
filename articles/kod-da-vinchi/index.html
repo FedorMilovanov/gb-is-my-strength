@@ -589,30 +589,7 @@ window.SITE_CONFIG = {
   </a>
 <span class="article-topnav-title">Код да Винчи
 </nav>
-<script>
-(function(){
-  var nav = document.getElementById('articleTopnav');
-  if (!nav) return;
-  document.body.classList.add('topnav-active');
-  var h1 = document.querySelector('h1');
-  var ticking = false;
-  function onScroll() {
-    if (ticking) return;
-    ticking = true;
-    requestAnimationFrame(function() {
-      var scrollY = window.scrollY || window.pageYOffset;
-      nav.classList.toggle('visible', scrollY > 60);
-      if (h1) {
-        var h1Bottom = h1.getBoundingClientRect().bottom;
-        nav.classList.toggle('title-visible', h1Bottom < 0);
-      }
-      ticking = false;
-    });
-  }
-  window.addEventListener('scroll', onScroll, { passive: true });
-  onScroll();
-})();
-</script>
+<!-- article-topnav scroll handled by js/site.js?v=9ec309ca module 34 -->
 <div class="page-wrap" id="content">
 <nav aria-label="Хлебные крошки" class="breadcrumb">
 <ol class="breadcrumb__list">
@@ -1637,7 +1614,7 @@ window.SITE_CONFIG = {
 <script defer="" src="../../js/bookmark-engine.js?v=88f51b8b"></script>
 <script src="../../js/site-utils.js?v=d4ac3689"></script>
     <script src="../../js/scroll-perf.js?v=84977eec"></script>
-    <script defer="" src="../../js/site.js?v=323306c0"></script>
+    <script defer="" src="../../js/site.js?v=9ec309ca"></script>
     <script src="../../js/glossary.js?v=4f1b7174" defer></script>
 <script src="../../js/sw-register.js?v=72d974d9" defer></script>
 <script src="../../js/search.js?v=386baf27" defer></script>

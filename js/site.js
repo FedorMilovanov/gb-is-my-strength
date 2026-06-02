@@ -4720,6 +4720,38 @@
   }, true);
 
 
+
+  /* ============================================================
+     34. Article Top Nav — scroll-aware sticky header
+     Перенесено из inline <script> в 7 статьях — AGENTS-r38.
+     Управляет #articleTopnav: visible после 60px скролла,
+     title-visible когда h1 уходит выше viewport.
+     ============================================================ */
+  (function () {
+    var nav = document.getElementById('articleTopnav');
+    if (!nav) return;
+
+    document.body.classList.add('topnav-active');
+    var h1 = document.querySelector('article h1, .article-header h1, h1');
+    var ticking = false;
+
+    function onScroll() {
+      if (ticking) return;
+      ticking = true;
+      requestAnimationFrame(function () {
+        var s = window.scrollY || window.pageYOffset;
+        nav.classList.toggle('visible', s > 60);
+        if (h1) {
+          nav.classList.toggle('title-visible', h1.getBoundingClientRect().bottom < 0);
+        }
+        ticking = false;
+      });
+    }
+
+    window.addEventListener('scroll', onScroll, { passive: true });
+    onScroll();
+  })();
+
   /* ============================================================
      33. Tooltip-trigger унификация — nagornaya + общий сайт
      Заменяет inline <script> в nagornaya/chast-1..4.
