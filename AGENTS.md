@@ -6,7 +6,7 @@
 
 **Владелец:** Фёдор Милованов (редактор, не «автор»)
 **Производственный сайт:** https://gospod-bog.ru
-**Дата документа:** 2026-06-03 | **Версия:** AGENTS-r45b
+**Дата документа:** 2026-06-03 | **Версия:** AGENTS-r46b
 
 ---
 
@@ -289,7 +289,7 @@
 ### 4.2 `!important`
 
 Сейчас (2026-06-02, после дедупа в commits A–H):
-- `site.css`: ~229 (AGENTS-r45a: −28 more; лимит ≤230 site.css)
+- `site.css`: ~191 (AGENTS-r46b: −38 more; лимит ≤200)
 - `home.css`: 15
 - `command-palette.css`: 4
 - `mobile-hotfix.css`: 46 (по дизайну: переопределяет поведение для touch / pointer: coarse)
@@ -656,6 +656,8 @@ npm run validate:all      # ← рекомендуется перед кажды
 | AGENTS-r44c | 2026-06-03 | **JS passive listeners.** site.js: scroll 4→13 passive (+8); touch all correct. Fixed double passive artefact. |
 | AGENTS-r44d | 2026-06-03 | **CSS !important deep cleanup (301→257, −44).** Removed §9 SCROLL-LOCK duplicate (in mobile-hotfix.css); §8 phrases −6; §5 gb-accuracy −1; h-hero-title hover transforms −14 (guarded @media); display:none on unused classes −7. site.css: 258KB → 244KB (−5.3%). |
 | AGENTS-r44e | 2026-06-03 | **JS passive listeners all files + SEO.** scroll-perf/enhancements/bookmark-engine/nagornaya-toc: +passive. sitemap.xml: lastmod →2026-06-03 (28 URLs). manifest.json: +shortcuts, +categories. sw.js: CACHE_VERSION bumped. |
+| AGENTS-r46 | 2026-06-03 | **MAP_DATA data island + CSS dead code.** 20-antisovetov: STRATEGIC_MAP_DATA (17KB) → `data/strategic-map-antisovetov.json` as `<script type="application/json">` data island; popover reads via JSON.parse. CSS: §1 drop-cap guard removed (−392b), hebrew font rules, nagornaya pill, canonTimeline @media, biography-portrait, fn-dove-icon hover guard, gtip-luxury__category, .biography-info. !important 229→198 (−31). |
+| AGENTS-r46b | 2026-06-03 | **SiteUtils.ready() + final !important cleanup.** js/site.js: added SiteUtils.ready(fn) helper; replaced 6 readyState patterns (−709b). CSS site.css: §5 gb-accuracy colors −4, §7 spacing margins −3, §16 reduced-motion preserved. !important 198→191. TOTAL site.css reduction from r41: 258,110→242,620b (−15,490b, −6%), !important ~480→319 total CSS (−161). |
 | AGENTS-r45a | 2026-06-03 | **CSS !important 257→229 (−28).** Removed unnecessary !important: body.topnav-active, #selection-share-popup in @media 440px, .bookmark-toast-close padding, -webkit-appearance in @layer utilities, .article-img--portrait-wide, 7× @media 600px mobile margins, .kbd-hint-toast, #back-to-top svg, .bref:hover. |
 | AGENTS-r45b | 2026-06-03 | **JS critical bug fixes + CSS refactor.** CRITICAL: Fixed 11 broken scroll listeners `function (, {passive})` introduced by r44c automation (across site.js, scroll-perf.js, bookmark-engine.js, nagornaya-mobile-toc.js). Refactored 4 direct clipboard.writeText() → SiteUtils.copyText() (−1.6KB). Removed dead CSS: 5 classes, 5 @media print blocks → 1, 3 @media pointer:coarse blocks → 1, duplicate property declarations (color-mix fallback pattern). nagornaya-mobile-toc.css: 59→31 !important (−28, removed unscoped .nag-summary__* blocks). |
 | AGENTS-r44 | 2026-06-03 | **Big Deep Upgrade.** A: Dead CSS −6.4KB (26 мёртвых классов: `.ai-disclosure`, `.fn-sheet`, `.faq-item` ×6, `.ancient-epigraph`, `.card-cover-wrap` и др.); дубль `@keyframes fx-breathe` удалён; CSS структура валидирована (0 orphan braces). B: `:root` blocks 9→2 (consolidated into `@layer base`); `--color-amber/blue/rose/red`, `--f-hebrew-display`, `color-scheme`, `--visual-viewport-h`, `--article-font-size` теперь в canonical `:root`. C: `nagornaya-mobile-toc.css` !important 73→59 (R21 guardrail block + nag-quiz-h2). D: `site.js` mod29: `aria-live` announcer при смене темы; `enhancements.js`: `prefers-reduced-motion` guard для Ambient Scripture. E: `feed.xml` lastBuildDate обновлён. F: SW cache version bumped. Итого: site.css −12.6KB (−4.9%), 258KB→245KB. |
