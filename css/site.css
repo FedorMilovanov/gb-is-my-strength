@@ -4118,6 +4118,7 @@ html.dark .gtip.gb-floating-tip {
   pointer-events: none;
   transition: opacity .18s ease;
   z-index: var(--z-overlay-modal);
+  will-change: opacity, transform;
 }
 html.dark .btip.gb-floating-tip {
   background: rgba(26,28,31,0.98);
@@ -4127,9 +4128,6 @@ html.dark .btip.gb-floating-tip {
 }
 .gtip.gb-floating-tip,
 .tooltip.gb-floating-tip,
-.btip.gb-floating-tip {
-  will-change: opacity, transform;
-}
 .gtip.gb-floating-tip.is-open {
   opacity: 1;
   pointer-events: auto;
@@ -4604,10 +4602,6 @@ footer
   transform: scale(1.07);
 }
 
-.quiz-launch-hero:focus-visible {
-  outline: 2px solid var(--color-accent);
-  outline-offset: 4px;
-}
 
 .quiz-launch-icon {
   display: flex;
@@ -4711,7 +4705,7 @@ htmlhtml.dark .quiz-launch-label {
 
 #selection-share-popup {
   position: absolute;
-  z-index: var(--z-popover);
+  z-index: var(--z-modal-1);
   display: flex;
   align-items: stretch;
   background: var(--color-canvas);
@@ -5438,6 +5432,7 @@ html.dark .related-articles__item:focus-within {
   font-size: 13px;
   color: var(--color-text-muted);
   line-height: 1.45;
+  font-feature-settings: "liga" 1, "kern" 1, "lnum" 1;
 }
 
 @media (max-width: 600px) {
@@ -5634,10 +5629,11 @@ html.dark .badge-yes {
 .pq-scripture {
   position: relative;
   padding: 18px 20px 16px 50px;
-  border-radius: 8px;
+  border-radius: 10px;
   background: var(--color-surface-quote);
   border: 1px solid var(--color-border);
   margin-bottom: 10px;
+  transition: box-shadow .3s ease, transform .3s ease;
 }
 .pq-scripture:last-child { margin-bottom: 0; }
 .pq-scripture::before {
@@ -5866,7 +5862,6 @@ abbr.gterm:hover { text-decoration: none; }
 .quiz-question { min-height: 80px; }
 
 
-#selection-share-popup { z-index: var(--z-modal-1); }
 
 [data-series-cards] {
   display: grid;
@@ -6055,9 +6050,6 @@ html.dark .about-contact-handle { color: #9c8c7a; }
 .article-byline__updated,
 .article-reading-time,
 .article-reading-progress-label,
-.related-articles__meta {
-  font-feature-settings: "liga" 1, "kern" 1, "lnum" 1;
-}
 
 .gb-accuracy-actions {
   display: flex;
@@ -8422,10 +8414,6 @@ html.dark .gtip.gb-floating-tip {
 /* ── 16. pq-scripture — premium quote block ────────────────────
    Более изящный контейнер для библейских цитат */
 
-.pq-scripture {
-  border-radius: 10px;
-  transition: box-shadow .3s ease, transform .3s ease;
-}
 
 @media (hover: hover) and (pointer: fine) {
   .pq-scripture:hover {
