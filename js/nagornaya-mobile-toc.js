@@ -191,14 +191,14 @@
         navigator.share({ title: title, url: url }).catch(function () {});
         return;
       }
-      if (navigator.clipboard && navigator.clipboard.writeText) {
-        navigator.clipboard.writeText(url).then(function () {
+      if (window.SiteUtils && SiteUtils.copyText) {
+        SiteUtils.copyText(url, function () {
           if (btnLabelEl) {
             var old = btnLabelEl.textContent;
             btnLabelEl.textContent = 'Ссылка скопирована';
             setTimeout(function () { btnLabelEl.textContent = old; }, 1400);
           }
-        }).catch(function () {});
+        });
       }
     }
 

@@ -392,7 +392,7 @@
       _rafPending = false;
     }
 
-    window.addEventListener('scroll', function(, { passive: true }) {
+    window.addEventListener('scroll', function () {
       if (_rafPending) return;
       _rafPending = true;
       requestAnimationFrame(updateSegments);

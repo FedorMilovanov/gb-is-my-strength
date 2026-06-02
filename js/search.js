@@ -671,8 +671,8 @@
           }, 1600);
         }
 
-        if (navigator.clipboard && navigator.clipboard.writeText) {
-          navigator.clipboard.writeText(copyText).then(showCopied).catch(fallbackCopy);
+        if (window.SiteUtils && SiteUtils.copyText) {
+          SiteUtils.copyText(copyText, showCopied, fallbackCopy);
         } else {
           fallbackCopy();
         }
