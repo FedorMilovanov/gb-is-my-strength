@@ -89,8 +89,6 @@ body { overflow-x: hidden; }
   --color-accent-strong:    #5f2323;
   --color-accent-selection: #b8936a;
   --color-link:             #1f4ea3;
-
-  --color-success-bg:       #eef5ec;
   --color-success-border:   #b8d0b0;
   --color-warning-bg:       #fbf4e2;
   --color-warning-border:   #e6c878;
@@ -170,8 +168,6 @@ html.dark {
   --color-accent-strong:    #e8b878;
   --color-accent-selection: #b8936a;
   --color-link:             #d4a574;
-
-  --color-success-bg:       #142019;
   --color-success-border:   #2a4a3a;
   --color-warning-bg:       #1f1a10;
   --color-warning-border:   #4a3a1a;
