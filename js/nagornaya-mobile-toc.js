@@ -13,10 +13,6 @@
 (function () {
   'use strict';
 
-  function ready(fn) {
-    if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', fn);
-    else fn();
-  }
 
   function qs(sel, root) { return (root || document).querySelector(sel); }
   function qsa(sel, root) { return Array.prototype.slice.call((root || document).querySelectorAll(sel)); }
@@ -46,7 +42,7 @@
     return id;
   }
 
-  ready(function () {
+  SiteUtils.ready(function () {
     if (document.getElementById('bottomBar') || document.getElementById('btocOverlay')) return;
 
     var content = qs('[data-pagefind-body]') || qs('main');
@@ -181,7 +177,7 @@
     function toggleTheme() {
       var html = document.documentElement;
       var isDark = html.classList.toggle('dark');
-      try { localStorage.setItem('theme', isDark ? 'dark' : 'light'); } catch (_) {}
+      try { localStorage.setItem(SiteUtils.themeKey, isDark ? 'dark' : 'light'); } catch (_) {}
     }
 
     function sharePage(btnLabelEl) {
@@ -309,7 +305,7 @@
      Перенесено из inline <script> в chast-1..5 — AGENTS-r38.
      Активируется только если есть #menuBtn на странице.
      ============================================================ */
-  ready(function () {
+  SiteUtils.ready(function () {
     var btn  = document.getElementById('menuBtn');
     var menu = document.getElementById('mobileMenu');
     if (!btn || !menu) return;
@@ -368,7 +364,7 @@
      C. Nagornaya Read Progress Bar (#read-progress)
      Перенесено из inline <script> — AGENTS-r38.
      ============================================================ */
-  ready(function () {
+  SiteUtils.ready(function () {
     var bar = document.getElementById('read-progress');
     if (!bar) return;
     function updateProgress() {
@@ -388,7 +384,7 @@
      Перенесено из inline <script> — AGENTS-r38.
      Синхронизировано с btoc-fontsize из site.js (единый key).
      ============================================================ */
-  ready(function () {
+  SiteUtils.ready(function () {
     var SIZES = [14, 15, 16, 17, 18, 19, 20];
     var KEY   = 'nag-fontsize';
     var saved = parseInt(localStorage.getItem(KEY), 10);
@@ -427,7 +423,7 @@
      Строит карту [N] → текст из блока «Источники» и показывает
      нативный tooltip-popup при hover/click на <sup>[N]</sup>.
      ============================================================ */
-  ready(function () {
+  SiteUtils.ready(function () {
     /* 1. Строим карту сносок из блока Источники */
     var fnMap = {};
     var sourcesBlock = null;

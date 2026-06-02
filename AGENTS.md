@@ -6,7 +6,7 @@
 
 **Владелец:** Фёдор Милованов (редактор, не «автор»)
 **Производственный сайт:** https://gospod-bog.ru
-**Дата документа:** 2026-06-03 | **Версия:** AGENTS-r48b
+**Дата документа:** 2026-06-03 | **Версия:** AGENTS-r49
 
 ---
 
@@ -292,7 +292,7 @@
 - `site.css`: ~191 (AGENTS-r46b/r47: стабильно; лимит ≤200 — архитектурный минимум)
 - `home.css`: 15
 - `command-palette.css`: 4
-- `mobile-hotfix.css`: 46 (по дизайну: переопределяет поведение для touch / pointer: coarse)
+- `mobile-hotfix.css`: 59 (по дизайну: переопределяет поведение для touch / pointer: coarse)
 - `nagornaya-mobile-toc.css`: 3
 
 В commits A–H удалено 55+ дублирующих rule-блоков (~10 КБ); удалены 5-кратные дубли `.premium-frame`, 8-кратные `button.bref`, 8-кратные `.mobile-controls .theme-toggle`. Если попадаются новые дубли — это регрессия.
@@ -656,6 +656,7 @@ npm run validate:all      # ← рекомендуется перед кажды
 | AGENTS-r44c | 2026-06-03 | **JS passive listeners.** site.js: scroll 4→13 passive (+8); touch all correct. Fixed double passive artefact. |
 | AGENTS-r44d | 2026-06-03 | **CSS !important deep cleanup (301→257, −44).** Removed §9 SCROLL-LOCK duplicate (in mobile-hotfix.css); §8 phrases −6; §5 gb-accuracy −1; h-hero-title hover transforms −14 (guarded @media); display:none on unused classes −7. site.css: 258KB → 244KB (−5.3%). |
 | AGENTS-r44e | 2026-06-03 | **JS passive listeners all files + SEO.** scroll-perf/enhancements/bookmark-engine/nagornaya-toc: +passive. sitemap.xml: lastmod →2026-06-03 (28 URLs). manifest.json: +shortcuts, +categories. sw.js: CACHE_VERSION bumped. |
+| AGENTS-r49 | 2026-06-03 | **Deep CSS/JS continued optimization.** CSS: .quiz-feedback::before extracted 9 common props (−622b); .bar-icon-btn svg 18px→20px + dedup; #reading-progress #7a2e2e→var(--color-accent); #toc-list merged. mobile-hotfix.css: 15 dead classes removed (−2109b), !important 72→59. JS: SiteUtils.themeKey='theme' (DRY), nagornaya-mobile-toc.js local ready()→SiteUtils.ready() (−75b), quiz-feedback base class extracted. sw.js CACHE_VERSION bumped. |
 | AGENTS-r48 | 2026-06-03 | **CSS comment compression (−3.9KB) + JS SiteUtils.articleEl/h1El.** 15 large comments shortened (audit explanations → 1-line summaries). Dead legacy aliases removed (--color-surface-2, --accent-strong, --accent-selection). CSS block merges: .quiz-options, .btoc-nav, .sd-close, #reading-progress gradient order fixed. site.css: 240,728→235,793b (−4,935b). |
 | AGENTS-r48b | 2026-06-03 | **Vendor prefixes + SVG dedup + CSS block merges.** -webkit-backface-visibility removed (Safari 15+ target). Extracted 3 duplicate SVG strings → constants (−297b). Merged .bottom-bar backdrop-filter + .btoc-panel safe-area/viewport-h into base blocks. Removed empty .bottom-bar comment block. site.css: −22,317b total from r41 (−8.6%). |
 | AGENTS-r47 | 2026-06-03 | **CSS dedup + JS DRY + passive resize.** CSS: merged split blocks (.bar-icon-btn, .btoc-close, .quiz-wrapper, article p, .tldr-list, .article-img img); removed dead vars (--z-dropdown-high/overlay/tooltip-low/absolute, --s-1, --color-success-bg); fixed .tldr-list grid to min(280px,100%). JS: added SiteUtils.pageType() cached getter, replaced 6 getConfig('page.type','') calls; all resize listeners → passive (site.js/enhancements/nagornaya-toc/bookmark-engine). |
