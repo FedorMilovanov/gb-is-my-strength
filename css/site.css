@@ -7259,13 +7259,6 @@ html.dark .fn-marker:hover { color: #f5d8a8; }
 /* === 3. NAGORNAYA THEME TOGGLE — встроенная кнопка в navbar/breadcrumbs === */
 
 /* В светлой теме на breadcrumbs (фон светлый) — тёмная кнопка */
-html:not(.dark) body.nagornaya-page
-html:not(.dark) body.nagornaya-page
-/* Иконки sun/moon */
-
-html.dark
-html.dark
-
 /* На nagornaya-page скрываем floating-кнопку — есть встроенная */
 body.nagornaya-page #themeFloat,
 body.nagornaya-page .theme-float-btn {
@@ -7273,8 +7266,6 @@ body.nagornaya-page .theme-float-btn {
 }
 
 /* === 4. NAGORNAYA QUIZ — h2 + placeholder hint === */
-
-html:not(.dark) body.nagornaya-page
 
 #quizPlaceholder { min-height: 60px; }
 #quizPlaceholder:empty::before {
@@ -7364,18 +7355,6 @@ html:not(.dark) body.nagornaya-page .hover\:bg-stone-800:hover {
 }
 
 /* === 6.5. NAGORNAYA DARK THEME — overrides static Tailwind styles in dark mode === */
-html.dark body.nagornaya-page,
-
-/* Overriding white/light container backgrounds with dark surfaces */
-
-/* Specific warning/note panels in dark mode */
-
-/* Overriding light borders to dark borders */
-
-/* Ensure strong contrast for dark mode text */
-
-/* Colored text styling adjustments for dark mode */
-
 /* === 6.6. NAGORNAYA FONT-SIZE FIX — ensures body text elements inherit size from main === */
 body.nagornaya-page main p.text-\[16px\] {
   font-size: inherit !important;
@@ -7614,15 +7593,6 @@ html.dark .tooltip-trigger:hover { color: var(--color-accent-strong, #e8b878); }
 /* === AUDIT-FIXES INLINE END === */
 
 /* Sidebar controls — theme + font-size */
-
-html:not(.dark) body.nagornaya-page
-html:not(.dark) body.nagornaya-page
-
-html.dark
-html.dark
-
-html:not(.dark) body.nagornaya-page
-html:not(.dark) body.nagornaya-page
 
 /* AUDIT v7+v13: gb-accuracy on nagornaya — прозрачный фон (merged) */
 body.nagornaya-page .gb-accuracy-inner {
@@ -8163,10 +8133,11 @@ html.dark .premium-frame-text {
 /* Delicate dashed inner border for old-world feel */
 
 /* UNIFY ALL TOOLTIPS: Hide glossary pointing arrows/handles to avoid overlaps and create 100% uniform, minimal, flat floating cards */
-.gterm .gtip::before,
+.gterm .gtip::before { display: none !important; }
 
 /* Fix timeline vertical line overlap bug by keeping timeline circles perfectly solid and opaque */
-/* Lux Upgrade v3.0: hide tooltip category to fix overlap */  .gtip-luxury__header{margin-bottom:0!important}
+/* Lux Upgrade v3.0: hide tooltip category to fix overlap */
+.gtip-luxury__header { margin-bottom: 0 !important; }
 /* Lux Upgrade v3.0: remove intrusive top scroll bar */
 /* Lux Upgrade v3.0: biography card polish - single border */ .biography-hero::after{display:none!important} .biography-hero{border-width:1px!important;box-shadow:0 8px 32px rgba(0,0,0,.06)!important} .biography-portrait{border-width:4px!important;box-shadow:0 4px 16px rgba(0,0,0,.08)!important}
 
