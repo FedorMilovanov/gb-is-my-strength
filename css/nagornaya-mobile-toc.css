@@ -585,40 +585,7 @@ html.dark .nag-fontsize-btn:hover {
   color: rgba(255,255,255,0.80);
 }
 /* .nag-summary base styles: scoped and canonical block is below (body.nagornaya-page) */
-.nag-summary__num {
-  display: inline-flex !important;
-  flex: 0 0 18px !important;
-  width: 18px !important;
-  height: 18px !important;
-  min-width: 18px !important;
-  align-items: center !important;
-  justify-content: center !important;
-  border-radius: 50% !important;
-  font-size: 0 !important;
-  line-height: 1 !important;
-  margin-top: 1px !important;
-  background: rgba(116,151,117,.10) !important;
-  border: 1px solid rgba(116,151,117,.18) !important;
-}
-.nag-summary__num::before {
-  content: "✓" !important;
-  display: block !important;
-  font-size: 12px !important;
-  color: #6f9d70 !important;
-}
-.nag-summary__text {
-  display: block !important;
-  flex: 1 1 auto !important;
-  min-width: 0 !important;
-  width: auto !important;
-  max-width: none !important;
-  margin: 0 !important;
-  padding: 0 !important;
-  line-height: 1.48 !important;
-  white-space: normal !important;
-  word-break: normal !important;
-  overflow-wrap: anywhere !important;
-}
+/* .nag-summary__num, ::before, __text — defined canonically below under body.nagornaya-page scope */
 
 /* R21 guardrail: summary must keep readable text colors even after Tailwind/dark overrides. */
 body.nagornaya-page .nag-summary,
