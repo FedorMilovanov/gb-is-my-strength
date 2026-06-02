@@ -540,6 +540,8 @@
       return SiteUtils._pageType;
     },
 
+    themeKey: 'theme', /* localStorage key — единое место */
+
     ready: function (fn) {
       if (document.readyState === 'loading') {
         document.addEventListener('DOMContentLoaded', fn);
@@ -817,10 +819,10 @@
     if (!toggle) return;
 
     function safeThemeGet() {
-      try { return localStorage.getItem('theme'); } catch (e) { return null; }
+      try { return localStorage.getItem(SiteUtils.themeKey); } catch (e) { return null; }
     }
     function safeThemeSet(val) {
-      try { localStorage.setItem('theme', val); } catch (e) {}
+      try { localStorage.setItem(SiteUtils.themeKey, val); } catch (e) {}
     }
 
     var saved = safeThemeGet();
@@ -889,7 +891,7 @@
 
     /* Синхронизация темы между вкладками */
     window.addEventListener('storage', function (e) {
-      if (e.key !== 'theme') return;
+      if (e.key !== SiteUtils.themeKey) return;
       var isDark = e.newValue !== 'light';
       html.classList.toggle('dark', isDark);
       syncIcons();
@@ -4631,7 +4633,7 @@
     function setTheme(toDark) {
       document.documentElement.classList.toggle('dark', toDark);
       themeBtn.innerHTML = iconForTheme();
-      try { localStorage.setItem('theme', toDark ? 'dark' : 'light'); } catch (_) {}
+      try { localStorage.setItem(SiteUtils.themeKey, toDark ? 'dark' : 'light'); } catch (_) {}
       document.dispatchEvent(new CustomEvent('theme:changed', { detail: { dark: toDark } }));
       /* a11y: announce theme change to screen readers */
       var announcer = document.getElementById('gb-theme-announcer');

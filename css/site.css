@@ -2262,7 +2262,7 @@ html.dark .compare-table:not(.compare-table--scroll) tr {
 .bar-icon-btn:hover { background: var(--color-surface-muted); }
 .bar-icon-btn:active { background: var(--color-border); }
 .bar-icon-btn svg {
-  width: 18px; height: 18px;
+  width: 20px; height: 20px;
   stroke: currentColor;
   fill: none;
   stroke-width: 2;
@@ -2527,9 +2527,10 @@ html.dark .bar-icon-sun  { display: block; color: #f5c542; }
   padding: 0;
   border: none;
 }
-#toc-list { list-style: none; margin: 0; padding: 0; }
+
 #toc-list li { margin: 0; }
 #toc-list {
+  list-style: none; margin: 0; padding: 0;
   position: relative;
 
   border-left: 1px solid var(--color-border);
@@ -3270,7 +3271,10 @@ html.dark .quiz-option.wrong { background: var(--quiz-wrong-bg); border-color: v
 }
 .quiz-option.shake { animation: shake 0.4s ease; }
 
-.quiz-feedback { margin-top: 12px; font-family: 'Source Sans 3', system-ui, sans-serif; font-size: 13px; line-height: 1.55; min-height: 20px; }
+.quiz-feedback { margin-top: 12px; font-family: 'Source Sans 3', system-ui, sans-serif; font-size: 13px; line-height: 1.55; min-height: 20px; 
+  display: flex;
+  align-items: flex-start;
+  flex-wrap: wrap;}
 
 .quiz-source-ref {
   display: flex;
@@ -3453,7 +3457,13 @@ html.dark .quiz-feedback.err { color: #f09090; }
   color: var(--color-text-muted); font-size: 14px; cursor: pointer;
   padding: 2px 4px; line-height: 1; border-radius: 6px; flex-shrink: 0;
   transition: color .15s, background .15s;
-}
+
+  min-width: 32px;
+  min-height: 32px;
+  padding: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;}
 .bookmark-toast-close:hover { color: var(--color-text); background: var(--color-border); }
 .bookmark-toast-actions { display: flex; gap: 8px; margin-bottom: 12px; }
 .bookmark-btn {
@@ -6227,19 +6237,7 @@ button, a, label, summary, [role="button"], input[type="button"], input[type="su
   #back-to-top svg { width: 20px; height: 20px; }
 }
 
-.bar-icon-btn svg {
-  width: 20px;
-  height: 20px;
-}
 
-.bookmark-toast-close {
-  min-width: 32px;
-  min-height: 32px;
-  padding: 6px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
 @media (pointer: coarse) {
   .bookmark-toast-close { min-width: 44px; min-height: 44px; }
   .bookmark-btn { min-height: 44px; padding: 12px 16px; }
@@ -6472,34 +6470,24 @@ button, a, [role="button"], [tabindex="0"], summary, input, textarea, select {
   }
 }
 
-.quiz-feedback.ok::before {
+.quiz-feedback::before {
   content: '';
   display: inline-block;
   width: 18px;
   height: 18px;
   margin-right: 8px;
   vertical-align: middle;
-  background-color: #4a8a4a;
-  -webkit-mask: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'><polyline points='20 6 9 17 4 12'/></svg>") center/contain no-repeat;
-  mask: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'><polyline points='20 6 9 17 4 12'/></svg>") center/contain no-repeat;
+  -webkit-mask: url("data:image/svg+xml;
+  mask: url("data:image/svg+xml;
   flex-shrink: 0;
+}
+.quiz-feedback.ok::before {
+  background-color: #4a8a4a;
+  utf8,<svg xmlns='http: //www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'><polyline points='20 6 9 17 4 12'/></svg>") center/contain no-repeat;
 }
 .quiz-feedback.err::before {
-  content: '';
-  display: inline-block;
-  width: 18px;
-  height: 18px;
-  margin-right: 8px;
-  vertical-align: middle;
   background-color: #a04040;
-  -webkit-mask: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'><path d='M6 6l12 12M18 6L6 18'/></svg>") center/contain no-repeat;
-  mask: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'><path d='M6 6l12 12M18 6L6 18'/></svg>") center/contain no-repeat;
-  flex-shrink: 0;
-}
-.quiz-feedback {
-  display: flex;
-  align-items: flex-start;
-  flex-wrap: wrap;
+  utf8,<svg xmlns='http: //www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'><path d='M6 6l12 12M18 6L6 18'/></svg>") center/contain no-repeat;
 }
 .fn-sheet,
 #share-dialog,
