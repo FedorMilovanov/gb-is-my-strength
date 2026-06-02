@@ -601,7 +601,7 @@ html.dark .breadcrumb__link:focus-visible {
   font-size: clamp(26px, 4vw, 40px);
   font-weight: 600;
   line-height: 1.22;
-  margin: 0 0 18px;
+  margin: 0 0 24px;
   letter-spacing: 0.3px;
   text-wrap: balance;
 }
@@ -741,10 +741,10 @@ html.dark .breadcrumb__link:focus-visible {
   margin: 24px 0 8px;
 }
 
-.article-body p { margin: 0 0 18px; }
+.article-body p { margin: 0 0 24px; }
 .article-body ul, .article-body ol {
   padding-inline-start: 22px;
-  margin: 0 0 18px;
+  margin: 0 0 24px;
 }
 .article-body li { margin-bottom: 8px; }
 
@@ -1257,7 +1257,7 @@ sup a {
   letter-spacing: 2px;
   text-transform: uppercase;
   color: var(--color-text-muted);
-  margin: 0 0 18px;
+  margin: 0 0 24px;
   border: none;
   padding: 0;
 }
@@ -3466,7 +3466,7 @@ html.dark .error-flip-label-fact { color: #80c890; }
   font-family: 'Lora', Georgia, serif;
   font-size: 17px;
   font-weight: 500;
-  margin: 0 0 18px;
+  margin: 0 0 24px;
   line-height: 1.5;
 }
 .quiz-options { display: flex; flex-direction: column; gap: 8px; }
@@ -9209,3 +9209,6 @@ html.dark .context-links a:hover {
         }
       }
     }
+/* Fix for paragraph spacing - 2026-06-02 */
+.article-body p, .article-main p, article p { margin-bottom: 24px !important; }
+.article-body p:last-child { margin-bottom: 0 !important; }
