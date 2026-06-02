@@ -142,6 +142,8 @@ body { overflow-x: hidden; }
   --color-blue:  #2b6cb0;
   --color-rose:  #e11d48;
   --color-red:   #dc2626;
+  --f-ui:    'Source Sans 3', system-ui, sans-serif;
+  --f-serif: 'Lora', Georgia, serif;
   --f-hebrew-display: "SBL Hebrew", "Ezra SIL", "Times New Roman", "Noto Sans Hebrew", serif;
   color-scheme: light;
   --scroll-margin: 96px;
@@ -312,11 +314,7 @@ main.article-main {
   padding: clamp(24px, 3.5vw, 44px) 24px clamp(48px, 6vw, 80px);
 }
 
-main.home-main {
-  width: min(820px, 92vw);
-  margin: 0 auto;
-  padding: clamp(32px, 4vw, 56px) 24px clamp(48px, 6vw, 80px);
-}
+main
 
 main:not([class]) {
   width: min(820px, 92vw);
@@ -399,7 +397,7 @@ html.dark .icon-sun { opacity: 1; color: var(--color-sun-yellow, #f5c542); }
   gap: 8px;
   text-decoration: none;
   color: var(--color-text-muted);
-  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-family: var(--f-ui);
   font-size: 13px;
   font-weight: 500;
   transition: color .15s;
@@ -416,7 +414,7 @@ html.dark .icon-sun { opacity: 1; color: var(--color-sun-yellow, #f5c542); }
   flex-shrink: 0;
 }
 .article-topnav-title {
-  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-family: var(--f-ui);
   font-size: 13px;
   font-weight: 600;
   color: var(--color-text);
@@ -430,7 +428,7 @@ html.dark .icon-sun { opacity: 1; color: var(--color-sun-yellow, #f5c542); }
 .article-topnav.title-visible .article-topnav-title { opacity: 1; }
 
 .breadcrumb {
-  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-family: var(--f-ui);
   font-size: 13px;
   color: var(--color-text-muted);
   margin-bottom: 40px;
@@ -572,7 +570,7 @@ html.dark .breadcrumb__link:focus-visible {
 }
 
 .section-label {
-  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-family: var(--f-ui);
   font-size: 11px;
   font-weight: 600;
   letter-spacing: 2px;
@@ -582,7 +580,7 @@ html.dark .breadcrumb__link:focus-visible {
 }
 
 .article-header h1 {
-  font-family: 'Lora', Georgia, serif;
+  font-family: var(--f-serif);
   font-size: clamp(26px, 4vw, 40px);
   font-weight: 600;
   line-height: 1.22;
@@ -593,7 +591,7 @@ html.dark .breadcrumb__link:focus-visible {
 
 
 .article-desc {
-  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-family: var(--f-ui);
   font-size: 16px;
   color: var(--color-text-muted);
   line-height: 1.65;
@@ -605,7 +603,7 @@ html.dark .breadcrumb__link:focus-visible {
   align-items: center;
   gap: 10px;
   flex-wrap: wrap;
-  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-family: var(--f-ui);
   font-size: 13px;
   color: var(--color-text-muted);
   margin: 14px 0 0;
@@ -641,7 +639,7 @@ html.dark .breadcrumb__link:focus-visible {
   color: var(--color-text-muted);
   margin-bottom: 32px;
   text-align: center;
-  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-family: var(--f-ui);
 }
 
 
@@ -650,7 +648,7 @@ html.dark .breadcrumb__link:focus-visible {
   align-items: center;
   gap: 18px;
   flex-wrap: wrap;
-  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-family: var(--f-ui);
   font-size: 13px;
   color: var(--color-text-muted);
   margin-top: 14px;
@@ -662,7 +660,7 @@ html.dark .breadcrumb__link:focus-visible {
   color: var(--color-text-muted);
   margin-top: 8px;
   letter-spacing: 0.3px;
-  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-family: var(--f-ui);
 }
 
 .divider {
@@ -676,7 +674,7 @@ html.dark .breadcrumb__link:focus-visible {
 }
 
 .article-body h2 {
-  font-family: 'Lora', Georgia, serif;
+  font-family: var(--f-serif);
   font-size: clamp(20px, 2.8vw, 26px);
   font-weight: 600;
   line-height: 1.3;
@@ -689,7 +687,7 @@ html.dark .breadcrumb__link:focus-visible {
 .article-body h2:first-child { margin-top: 0; }
 
 .article-body h3 {
-  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-family: var(--f-ui);
   font-size: clamp(19px, 2.4vw, 22px);
   font-weight: 700;
   letter-spacing: -0.01em;
@@ -700,7 +698,7 @@ html.dark .breadcrumb__link:focus-visible {
 }
 
 .article-body h4 {
-  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-family: var(--f-ui);
   font-size: 15px;
   font-weight: 600;
   margin: 24px 0 8px;
@@ -826,7 +824,7 @@ html.dark blockquote { border-left-color: var(--color-accent); border-inline-sta
 }
 .pullquote::before {
   content: '\201C' / '';  /* empty alt text — decorative for screen readers (CSS Generated Content Module Level 3) */
-  font-family: 'Lora', Georgia, serif;
+  font-family: var(--f-serif);
   font-size: 96px;
   line-height: 0.8;
   color: var(--color-accent);
@@ -838,7 +836,7 @@ html.dark blockquote { border-left-color: var(--color-accent); border-inline-sta
   user-select: none;
 }
 .pullquote p {
-  font-family: 'Lora', Georgia, serif;
+  font-family: var(--f-serif);
   font-size: 1.18em;
   line-height: 1.7;
   color: var(--color-text);
@@ -883,7 +881,7 @@ html.dark .pullquote::before { color: var(--color-accent); }
   cursor: zoom-in;
 }
 .article-img figcaption {
-  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-family: var(--f-ui);
   font-size: 12px;
   color: var(--color-text-muted);
   line-height: 1.5;
@@ -954,7 +952,7 @@ html.dark .heart-flip-front {
 
 html.dark .heart-flip-back { background: #110e07; }
 .heart-flip-back-body {
-  font-family: 'Lora', Georgia, serif;
+  font-family: var(--f-serif);
   font-size: clamp(14px, 1.7vw, 16px);
   font-style: italic;
   line-height: 1.9;
@@ -962,7 +960,7 @@ html.dark .heart-flip-back { background: #110e07; }
   margin: 0 0 28px 0;
 }
 .heart-flip-back-closing {
-  font-family: 'Lora', Georgia, serif;
+  font-family: var(--f-serif);
   font-size: clamp(15px, 1.9vw, 17px);
   font-style: italic;
   font-weight: 600;
@@ -994,7 +992,7 @@ html.dark .heart-flip-back { background: #110e07; }
   animation: finger-tap 3.5s ease-in-out infinite;
 }
 .heart-flip-hint-text {
-  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-family: var(--f-ui);
   font-size: 11px;
   font-weight: 700;
   letter-spacing: 0.1em;
@@ -1090,15 +1088,9 @@ html.dark .heart-flip-back { background: #110e07; }
   padding-top: 0;
 }
 
-.article-img.float-fallback {
-  float: none !important;
-  clear: both;
-  width: auto !important;
-  margin: 44px -24px !important;
-  shape-outside: none !important;
-}
+.article-img
 @media (max-width: 680px) {
-  .article-img.float-fallback { margin: 44px -16px !important; }
+  .article-img
 }
 
 @media (max-width: 768px) {
@@ -1142,7 +1134,7 @@ html.dark .heart-flip-back { background: #110e07; }
 }
 
 sup a {
-  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-family: var(--f-ui);
   font-size: 11px;
   font-weight: 600;
   color: var(--color-accent);
@@ -1167,7 +1159,7 @@ sup a {
   padding: 24px 0;
   border-top: 1px solid var(--color-border);
   border-bottom: 1px solid var(--color-border);
-  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-family: var(--f-ui);
 }
 .notice p { margin: 0 0 10px 0; }
 .notice p:last-child { margin-bottom: 0; }
@@ -1181,7 +1173,7 @@ sup a {
   margin-bottom: 48px;
 }
 .tldr-block h2 {
-  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-family: var(--f-ui);
   font-size: 11px;
   font-weight: 600;
   letter-spacing: 2px;
@@ -1200,7 +1192,7 @@ sup a {
   gap: 12px;
 }
 .tldr-list li {
-  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-family: var(--f-ui);
   font-size: 14px;
   line-height: 1.55;
   padding: 12px 14px;
@@ -1231,7 +1223,7 @@ sup a {
 .myth-box { background: var(--myth-bg); border-color: var(--myth-border); }
 .fact-box { background: var(--fact-bg); border-color: var(--fact-border); }
 .myth-box h4, .fact-box h4 {
-  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-family: var(--f-ui);
   font-size: 11px;
   font-weight: 600;
   letter-spacing: 1.5px;
@@ -1251,7 +1243,7 @@ html.dark .fact-box h4 { color: #80c880; }
 }
 
 .site-title-interactive {
-  font-family: 'Lora', Georgia, serif;
+  font-family: var(--f-serif);
   font-size: clamp(30px, 5vw, 48px);
   font-weight: 600;
   letter-spacing: 0.3px;
@@ -1296,7 +1288,7 @@ html.dark .fact-box h4 { color: #80c880; }
 }
 
 .site-header .site-desc {
-  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-family: var(--f-ui);
   margin: 0 0 0;
   font-size: 16px;
   color: var(--color-text-muted);
@@ -1309,17 +1301,9 @@ html.dark .fact-box h4 { color: #80c880; }
   font-size: 15px;
 }
 
-.about-link {
-  color: var(--color-accent);
-  text-decoration: underline;
-  text-underline-offset: 2px;
-  text-decoration-color: transparent;
-  transition: text-decoration-color .2s;
-}
-.about-link:hover { text-decoration-color: var(--color-accent); }
 
 .section-title {
-  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-family: var(--f-ui);
   font-size: 11px;
   font-weight: 600;
   text-transform: uppercase;
@@ -1345,10 +1329,6 @@ html.dark .fact-box h4 { color: #80c880; }
   border-radius: 16px;
 }
 /* touch-safe hover: только border/shadow — transform в @media (hover:hover) Deep Polish ниже */
-.card.fx-lift:hover,
-html.dark .card.fx-lift:hover,
-
-.article-list { list-style: none; padding: 0; margin: 0; }
 .article-item {
   padding: 32px 0;
   border-bottom: 1px solid var(--color-border);
@@ -1368,7 +1348,7 @@ html.dark .card.fx-lift:hover,
 
 .article-title {
   display: block;
-  font-family: 'Lora', Georgia, serif;
+  font-family: var(--f-serif);
   font-size: clamp(19px, 2.8vw, 24px);
   font-weight: 600;
   line-height: 1.35;
@@ -1380,7 +1360,7 @@ html.dark .card.fx-lift:hover,
 .article-title:hover { color: var(--color-accent); }
 
 .article-meta {
-  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-family: var(--f-ui);
   font-size: 14px;
   color: var(--color-text-muted);
   line-height: 1.5;
@@ -1393,7 +1373,7 @@ html.dark .card.fx-lift:hover,
 .meta-sep { margin: 0 8px; opacity: 0.4; }
 .meta-tag {
   display: inline-block;
-  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-family: var(--f-ui);
   font-size: 11px;
   font-weight: 600;
   letter-spacing: 0.8px;
@@ -1483,7 +1463,7 @@ html.dark .card.fx-lift:hover,
   box-shadow: 0 10px 30px -16px rgba(62, 42, 22, 0.35);
 }
 .series-next-cta__eyebrow {
-  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-family: var(--f-ui);
   font-size: 11px;
   font-weight: 700;
   letter-spacing: 0.14em;
@@ -1492,7 +1472,7 @@ html.dark .card.fx-lift:hover,
   margin-bottom: 6px;
 }
 .series-next-cta__title {
-  font-family: 'Lora', Georgia, serif;
+  font-family: var(--f-serif);
   font-size: clamp(18px, 2.4vw, 22px);
   font-weight: 600;
   color: var(--color-text);
@@ -1505,7 +1485,7 @@ html.dark .card.fx-lift:hover,
   margin: 0 0 12px;
 }
 .series-next-cta__action {
-  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-family: var(--f-ui);
   font-size: 14px;
   font-weight: 700;
   color: var(--color-accent);
@@ -1548,7 +1528,7 @@ html.dark .card.fx-lift:hover,
   background: transparent;
   border: 2px solid #a63020;
   color: #c0392b;
-  font-family: 'Lora', Georgia, serif;
+  font-family: var(--f-serif);
   font-size: 20px;
   font-weight: 700;
   font-style: normal;
@@ -1586,7 +1566,7 @@ html.dark .quote-box--closing {
 footer.quote-attribution {
   display: block;
   font-style: normal;
-  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-family: var(--f-ui);
   font-size: 0.78em;
   font-weight: 600;
   color: var(--color-accent);
@@ -1625,7 +1605,7 @@ footer.quote-attribution cite { font-style: normal; }
 }
 .ehrman-block.visible { opacity: 1; transform: translateY(0); }
 .ehrman-block .ehrman-label {
-  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-family: var(--f-ui);
   font-size: 10px;
   font-weight: 700;
   letter-spacing: 0.1em;
@@ -1642,7 +1622,7 @@ footer.quote-attribution cite { font-style: normal; }
   margin: 0 0 8px;
 }
 .ehrman-block .ehrman-attribution {
-  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-family: var(--f-ui);
   font-size: 13px;
   color: var(--color-text-muted);
 }
@@ -1653,7 +1633,7 @@ footer.quote-attribution cite { font-style: normal; }
   border: 1px solid var(--warn-border);
   background: var(--warn-bg);
   border-radius: 6px;
-  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-family: var(--f-ui);
   font-size: 14px;
   line-height: 1.6;
   color: var(--color-text);
@@ -1671,7 +1651,7 @@ footer.quote-attribution cite { font-style: normal; }
   border-collapse: collapse;
   width: 100%;
   margin: 24px 0;
-  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-family: var(--f-ui);
   font-size: 14px;
 }
 .compare-table th, .compare-table td {
@@ -1782,9 +1762,7 @@ html.dark .compare-table:not(.compare-table--scroll) tr {
     margin: 24px -16px;
     padding: 0 16px;
   }
-  .compare-table.compare-table--scroll {
-    min-width: 460px;
-  }
+  .compare-table
 }
 
 .article-figure {
@@ -1833,7 +1811,7 @@ html.dark .compare-table:not(.compare-table--scroll) tr {
 }
 
 .article-figure figcaption {
-  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-family: var(--f-ui);
   font-size: 12px;
   color: var(--color-text-muted);
   line-height: 1.55;
@@ -1939,7 +1917,7 @@ html.dark .compare-table:not(.compare-table--scroll) tr {
   box-shadow: 0 8px 60px rgba(0,0,0,0.7), 0 2px 12px rgba(0,0,0,0.5);
 }
 .img-viewer__cap{
-  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-family: var(--f-ui);
   font-size: 13px;
   color: rgba(255,255,255,0.65);
   line-height: 1.45;
@@ -2031,7 +2009,7 @@ html.dark .compare-table:not(.compare-table--scroll) tr {
 }
 .timeline-anim li.tl-visible .tl-dot { opacity: 1; }
 .timeline-anim .tl-year {
-  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-family: var(--f-ui);
   font-size: 12px;
   font-weight: 700;
   color: var(--color-accent);
@@ -2040,7 +2018,7 @@ html.dark .compare-table:not(.compare-table--scroll) tr {
   flex-shrink: 0;
 }
 .timeline-anim .tl-text {
-  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-family: var(--f-ui);
   font-size: 14px;
   color: var(--color-text);
   line-height: 1.5;
@@ -2080,7 +2058,7 @@ html.dark .compare-table:not(.compare-table--scroll) tr {
   border-radius: 4px;
 }
 .toc-sidebar .toc-label {
-  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-family: var(--f-ui);
   font-size: 10px;
   font-weight: 700;
   letter-spacing: 0.12em;
@@ -2094,7 +2072,7 @@ html.dark .compare-table:not(.compare-table--scroll) tr {
 }
 
 .toc-link {
-  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-family: var(--f-ui);
   font-size: 13px;
   line-height: 1.4;
   color: var(--color-text-muted);
@@ -2200,7 +2178,7 @@ html.dark .compare-table:not(.compare-table--scroll) tr {
   display: flex;
   align-items: center;
   justify-content: center;
-  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-family: var(--f-ui);
   font-size: 9px;
   font-weight: 700;
   color: var(--color-accent);
@@ -2221,7 +2199,7 @@ html.dark .compare-table:not(.compare-table--scroll) tr {
   overflow: hidden;
 }
 .bar-section-label {
-  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-family: var(--f-ui);
   font-size: 9px;
   font-weight: 700;
   letter-spacing: 0.08em;
@@ -2231,7 +2209,7 @@ html.dark .compare-table:not(.compare-table--scroll) tr {
   line-height: 1;
 }
 .bar-section-name {
-  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-family: var(--f-ui);
   font-size: 13px;
   font-weight: 600;
   color: var(--color-text);
@@ -2322,8 +2300,8 @@ html.dark .bar-icon-sun  { display: block; color: var(--color-sun-yellow, #f5c54
   flex-shrink: 0;
 }
 .btoc-header-left { display: flex; flex-direction: column; gap: 2px; }
-.btoc-title { font-family: 'Source Sans 3', system-ui, sans-serif; font-size: 16px; font-weight: 700; color: var(--color-text); }
-.btoc-subtitle { font-family: 'Source Sans 3', system-ui, sans-serif; font-size: 11px; color: var(--color-text-muted); }
+.btoc-title { font-family: var(--f-ui); font-size: 16px; font-weight: 700; color: var(--color-text); }
+.btoc-subtitle { font-family: var(--f-ui); font-size: 11px; color: var(--color-text-muted); }
 .btoc-close {
   position: relative;
   width: 44px; height: 44px;
@@ -2362,7 +2340,7 @@ html.dark .bar-icon-sun  { display: block; color: var(--color-sun-yellow, #f5c54
   transition: width .2s;
 }
 .btoc-progress-pct {
-  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-family: var(--f-ui);
   font-size: 12px;
   font-weight: 700;
   color: var(--color-accent);
@@ -2380,7 +2358,7 @@ html.dark .bar-icon-sun  { display: block; color: var(--color-sun-yellow, #f5c54
 }
 
 .btoc-link-num {
-  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-family: var(--f-ui);
   font-size: 10px;
   font-weight: 700;
   color: var(--color-text-muted);
@@ -2390,7 +2368,7 @@ html.dark .bar-icon-sun  { display: block; color: var(--color-sun-yellow, #f5c54
 }
 .btoc-link.active .btoc-link-num { color: var(--color-accent); opacity: 1; }
 .btoc-link-text {
-  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-family: var(--f-ui);
   font-size: 14px;
   color: var(--color-text);
   line-height: 1.4;
@@ -2417,7 +2395,7 @@ html.dark .bar-icon-sun  { display: block; color: var(--color-sun-yellow, #f5c54
   background: var(--bg-alt, #f5f5f3);
   border: 1px solid var(--color-border);
   border-radius: 8px;
-  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-family: var(--f-ui);
   font-size: 13px;
   font-weight: 600;
   color: var(--color-text-primary, #1a1a18);
@@ -2429,10 +2407,7 @@ html.dark .bar-icon-sun  { display: block; color: var(--color-sun-yellow, #f5c54
   background: var(--color-border);
   border-color: var(--color-text-muted);
 }
-.btoc-share-btn.btoc-share-copied {
-  color: var(--color-accent, #2e7d32);
-  border-color: var(--color-accent, #2e7d32);
-}
+.btoc-share-btn
 .btoc-share-btn svg {
   flex-shrink: 0;
   opacity: 0.7;
@@ -2446,7 +2421,7 @@ html.dark .bar-icon-sun  { display: block; color: var(--color-sun-yellow, #f5c54
   background: var(--color-surface-muted);
   border: 1px solid var(--color-border);
   color: var(--color-text-muted);
-  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-family: var(--f-ui);
   font-size: 13px;
   padding: 7px 16px;
   border-radius: 20px;
@@ -2514,7 +2489,7 @@ html.dark .bar-icon-sun  { display: block; color: var(--color-sun-yellow, #f5c54
 }
 #toc-close:hover { color: var(--color-text); }
 #toc-panel h2 {
-  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-family: var(--f-ui);
   font-size: 11px;
   font-weight: 600;
   letter-spacing: 1.8px;
@@ -2536,7 +2511,7 @@ html.dark .bar-icon-sun  { display: block; color: var(--color-sun-yellow, #f5c54
 }
 #toc-list a {
   display: block;
-  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-family: var(--f-ui);
   font-size: 14.5px;
   line-height: 1.4;
   color: var(--color-text-muted);
@@ -2733,7 +2708,7 @@ html.dark #reading-progress { background: var(--color-accent); }
   border-bottom: 1px solid var(--color-border);
 }
 .sd-title {
-  font-family: 'Lora', Georgia, serif;
+  font-family: var(--f-serif);
   font-size: 16px;
   font-weight: 600;
   color: var(--color-text);
@@ -2778,7 +2753,7 @@ html.dark #reading-progress { background: var(--color-accent); }
   background: transparent;
   cursor: pointer;
   color: var(--color-text-muted);
-  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-family: var(--f-ui);
   font-size: 11px;
   line-height: 1.2;
   font-weight: 500;
@@ -2831,7 +2806,7 @@ html.dark .sd-btn--copy.copied .sd-icon { background: var(--quiz-correct-bg); co
 }
 .sd-url-text {
   display: block;
-  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-family: var(--f-ui);
   font-size: 12px;
   color: var(--color-text-muted);
   overflow: hidden;
@@ -2852,7 +2827,7 @@ html.dark .sd-btn--copy.copied .sd-icon { background: var(--quiz-correct-bg); co
   top: 6px;
   left: 50%;
   transform: translateX(-50%);
-  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-family: var(--f-ui);
   font-size: 11px;
   letter-spacing: 0.4px;
   color: var(--color-text-muted);
@@ -2932,7 +2907,7 @@ html.dark .sd-btn--copy.copied .sd-icon { background: var(--quiz-correct-bg); co
 .flip-card-front { background: var(--myth-bg); border-color: var(--myth-border); padding-bottom: 40px; }
 .flip-card-back { background: var(--fact-bg); border-color: var(--fact-border); transform: rotateY(180deg); }
 .flip-card-front h4, .flip-card-back h4 {
-  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-family: var(--f-ui);
   font-size: 10px;
   font-weight: 700;
   letter-spacing: 1.5px;
@@ -2975,7 +2950,7 @@ html.dark .flip-card-back h4 { color: #80c880; }
   display: flex;
   flex-direction: column;
   justify-content: space-between;
-  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-family: var(--f-ui);
   font-size: 15px;
   line-height: 1.55;
 }
@@ -3012,7 +2987,7 @@ html.dark .error-flip-label-fact { color: #80c890; }
   animation: finger-tap 3.5s ease-in-out infinite;
 }
 .flip-finger-text {
-  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-family: var(--f-ui);
   font-size: 10px;
   font-weight: 600;
   color: var(--color-text-muted);
@@ -3098,7 +3073,7 @@ html.dark .error-flip-label-fact { color: #80c890; }
   margin-bottom: 14px;
 }
 .quiz-counter {
-  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-family: var(--f-ui);
   font-size: 11px;
   font-weight: 700;
   letter-spacing: 0.1em;
@@ -3133,7 +3108,7 @@ html.dark .error-flip-label-fact { color: #80c890; }
 @keyframes quiz-fadein { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
 
 .quiz-result__fraction {
-  font-family: 'Lora', Georgia, serif;
+  font-family: var(--f-serif);
   font-size: clamp(36px, 8vw, 52px);
   font-weight: 700;
   color: var(--color-accent);
@@ -3143,7 +3118,7 @@ html.dark .error-flip-label-fact { color: #80c890; }
 .quiz-result__fraction span { font-size: .55em; color: var(--color-text-muted); }
 
 .quiz-result__label {
-  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-family: var(--f-ui);
   font-size: 13px;
   font-weight: 700;
   text-transform: uppercase;
@@ -3169,7 +3144,7 @@ html.dark .error-flip-label-fact { color: #80c890; }
 }
 
 .quiz-result__desc {
-  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-family: var(--f-ui);
   font-size: 14.5px;
   color: var(--color-text);
   line-height: 1.65;
@@ -3193,7 +3168,7 @@ html.dark .error-flip-label-fact { color: #80c890; }
   border: 1px solid var(--color-border);
   background: var(--color-canvas);
   color: var(--color-text-muted);
-  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-family: var(--f-ui);
   font-size: 13px;
   font-weight: 600;
   cursor: pointer;
@@ -3206,7 +3181,7 @@ html.dark .error-flip-label-fact { color: #80c890; }
   border: 1px solid var(--color-accent);
   background: transparent;
   color: var(--color-accent);
-  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-family: var(--f-ui);
   font-size: 13px;
   font-weight: 700;
   cursor: pointer;
@@ -3215,10 +3190,10 @@ html.dark .error-flip-label-fact { color: #80c890; }
 .quiz-share-btn:hover { background: var(--color-accent); color: #fff; }
 
 .quiz-score { display: none; text-align: center; padding: 12px 0 4px; }
-.quiz-score-title { font-family: 'Lora', Georgia, serif; font-size: 22px; font-weight: 600; color: var(--color-accent); margin-bottom: 6px; }
-.quiz-score-badge { font-family: 'Source Sans 3', system-ui, sans-serif; font-size: 13px; color: var(--color-text-muted); margin-bottom: 14px; }
+.quiz-score-title { font-family: var(--f-serif); font-size: 22px; font-weight: 600; color: var(--color-accent); margin-bottom: 6px; }
+.quiz-score-badge { font-family: var(--f-ui); font-size: 13px; color: var(--color-text-muted); margin-bottom: 14px; }
 .quiz-score-desc {
-  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-family: var(--f-ui);
   font-size: 14px;
   color: var(--color-text);
   line-height: 1.6;
@@ -3229,7 +3204,7 @@ html.dark .error-flip-label-fact { color: #80c890; }
   border-radius: 5px;
 }
 .quiz-question-text {
-  font-family: 'Lora', Georgia, serif;
+  font-family: var(--f-serif);
   font-size: 17px;
   font-weight: 500;
   margin: 0 0 24px;
@@ -3243,7 +3218,7 @@ html.dark .error-flip-label-fact { color: #80c890; }
   border: 1px solid var(--color-border);
   background: var(--color-canvas);
   color: var(--color-text);
-  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-family: var(--f-ui);
   font-size: 14px;
   font-weight: 500;
   cursor: pointer;
@@ -3266,7 +3241,7 @@ html.dark .quiz-option.wrong { background: var(--quiz-wrong-bg); border-color: v
 }
 .quiz-option.shake { animation: shake 0.4s ease; }
 
-.quiz-feedback { margin-top: 12px; font-family: 'Source Sans 3', system-ui, sans-serif; font-size: 13px; line-height: 1.55; min-height: 20px; 
+.quiz-feedback { margin-top: 12px; font-family: var(--f-ui); font-size: 13px; line-height: 1.55; min-height: 20px; 
   display: flex;
   align-items: flex-start;
   flex-wrap: wrap;}
@@ -3324,7 +3299,7 @@ html.dark .quiz-feedback.err { color: var(--color-danger-text, #f09090); }
   border: 1px solid var(--color-accent);
   background: transparent;
   color: var(--color-accent);
-  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-family: var(--f-ui);
   font-size: 13px;
   font-weight: 700;
   letter-spacing: 0.05em;
@@ -3335,7 +3310,7 @@ html.dark .quiz-feedback.err { color: var(--color-danger-text, #f09090); }
 .quiz-next-btn:hover { background: var(--color-accent); color: #fff; }
 
 .quiz-focus {
-  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-family: var(--f-ui);
   font-size: 12px;
   line-height: 1.5;
   color: var(--color-text-muted);
@@ -3359,7 +3334,7 @@ html.dark .quiz-feedback.err { color: var(--color-danger-text, #f09090); }
   padding-top: 24px;
 }
 .quiz-bonus-header {
-  font-family: 'Lora', Georgia, serif;
+  font-family: var(--f-serif);
   font-size: 13px;
   font-weight: 600;
   letter-spacing: 0.08em;
@@ -3376,14 +3351,14 @@ html.dark .quiz-feedback.err { color: var(--color-danger-text, #f09090); }
 }
 .quiz-bonus-lock-icon { font-size: 28px; margin-bottom: 8px; }
 .quiz-bonus-unlock-title {
-  font-family: 'Lora', Georgia, serif;
+  font-family: var(--f-serif);
   font-size: 17px;
   font-weight: 600;
   color: var(--color-accent);
   margin-bottom: 6px;
 }
 .quiz-bonus-unlock-desc {
-  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-family: var(--f-ui);
   font-size: 13px;
   color: var(--color-text-muted);
   line-height: 1.55;
@@ -3398,7 +3373,7 @@ html.dark .quiz-feedback.err { color: var(--color-danger-text, #f09090); }
   border: 1px solid var(--color-accent);
   background: var(--color-accent);
   color: #fff;
-  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-family: var(--f-ui);
   font-size: 13px;
   font-weight: 700;
   cursor: pointer;
@@ -3411,7 +3386,7 @@ html.dark .quiz-feedback.err { color: var(--color-danger-text, #f09090); }
   color: var(--color-text-muted);
 }
 .quiz-bonus-lock-desc {
-  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-family: var(--f-ui);
   font-size: 12px;
   margin-top: 6px;
 }
@@ -3494,7 +3469,7 @@ body.has-bottom-bar .bookmark-toast {
   border: none;
   background: transparent;
   color: var(--color-text-muted);
-  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-family: var(--f-ui);
   font-weight: 700;
   font-size: 13px;
   padding: 2px 7px;
@@ -3629,7 +3604,7 @@ html.dark .resume-list-item:hover {
   border: 1px solid var(--color-border);
   border-radius: 6px;
   padding: 8px 12px;
-  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-family: var(--f-ui);
   font-size: 12.5px;
   line-height: 1.5;
   color: var(--color-text-muted);
@@ -3649,7 +3624,7 @@ html.dark .resume-list-item:hover {
   cursor: pointer;
   color: var(--color-accent, #7a2e2e);
   font-weight: 700;
-  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-family: var(--f-ui);
   margin-left: -0.05em;
   min-width: 0;
   min-height: unset;
@@ -3672,7 +3647,7 @@ html.dark .resume-list-item:hover {
   font-size: 14px;
   line-height: 1.55;
   font-weight: 400;
-  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-family: var(--f-ui);
   text-align: left;
   opacity: 0;
   pointer-events: none;
@@ -3748,7 +3723,7 @@ html.dark .bref { color: var(--color-accent); font-weight: 500; }
   color: var(--color-text);
   border: 1px solid var(--color-border);
   box-shadow: 0 12px 28px rgba(0,0,0,.14);
-  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-family: var(--f-ui);
   font-size: 14px;
   line-height: 1.5;
   font-weight: 400;
@@ -3814,7 +3789,7 @@ html.dark .gterm.is-open {
     inset 0 1px 0 rgba(255, 255, 255, 0.62);
   -webkit-backdrop-filter: blur(20px) saturate(180%);
   backdrop-filter: blur(20px) saturate(180%);
-  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-family: var(--f-ui);
   font-size: 14px;
   line-height: 1.58;
   font-weight: 400;
@@ -4090,7 +4065,7 @@ html.dark .gtip-luxury__definition a { color: var(--color-accent-strong, #e8b878
     inset 0 1px 0 rgba(255, 255, 255, 0.62);
   -webkit-backdrop-filter: blur(20px) saturate(180%);
   backdrop-filter: blur(20px) saturate(180%);
-  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-family: var(--f-ui);
   font-size: 14px;
   line-height: 1.58;
   font-weight: 400;
@@ -4122,7 +4097,7 @@ html.dark .gtip.gb-floating-tip {
   color: var(--color-text);
   border: 1px solid var(--color-border);
   box-shadow: 0 12px 28px rgba(0,0,0,.14);
-  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-family: var(--f-ui);
   font-size: 14px;
   line-height: 1.5;
   font-weight: 400;
@@ -4263,7 +4238,7 @@ html.dark .heading-anchor.copied { color: var(--color-accent); }
 }
 
 .source-list-title {
-  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-family: var(--f-ui);
   font-size: 13px;
   font-weight: 600;
   letter-spacing: 0.1em;
@@ -4278,7 +4253,7 @@ html.dark .heading-anchor.copied { color: var(--color-accent); }
   border-top: 1px solid var(--color-border);
 }
 .sources-block h2 {
-  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-family: var(--f-ui);
   font-size: 13px;
   font-weight: 600;
   letter-spacing: 1.5px;
@@ -4290,7 +4265,7 @@ html.dark .heading-anchor.copied { color: var(--color-accent); }
 }
 .sources-list { list-style: none; padding: 0; margin: 0; }
 .sources-list li {
-  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-family: var(--f-ui);
   font-size: 13px;
   color: var(--color-text-muted);
   line-height: 1.6;
@@ -4310,7 +4285,7 @@ ul.reading-list,
 ul.sources-reading-list { list-style: none; padding: 0; margin: 16px 0 0; }
 ul.reading-list li,
 ul.sources-reading-list li {
-  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-family: var(--f-ui);
   font-size: 14px;
   color: var(--color-text-muted);
   padding: 10px 0;
@@ -4325,7 +4300,7 @@ ul.sources-reading-list li:last-child { border-bottom: none; }
   font-size: 3.8em;
   line-height: 0.82;
   margin: 0.06em 0.08em 0 0;
-  font-family: 'Lora', Georgia, serif;
+  font-family: var(--f-serif);
   color: var(--color-accent);
   font-weight: 700;
 }
@@ -4337,7 +4312,7 @@ footer {
   margin-top: 64px;
   padding-top: 28px;
   border-top: 1px solid var(--color-border);
-  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-family: var(--f-ui);
   font-size: 13px;
   color: var(--color-text-muted);
   display: flex;
@@ -4361,7 +4336,7 @@ footer
 .epigraph blockquote {
   margin: 0 0 10px;
   padding: 0;
-  font-family: 'Lora', Georgia, serif;
+  font-family: var(--f-serif);
   font-size: clamp(14px, 1.9vw, 16px);
   font-style: italic;
   line-height: 1.65;
@@ -4371,7 +4346,7 @@ footer
 }
 .epigraph cite {
   display: block;
-  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-family: var(--f-ui);
   font-size: 11px;
   font-style: normal;
   letter-spacing: 1px;
@@ -4386,7 +4361,7 @@ footer
 
 .sdg {
   text-align: center;
-  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-family: var(--f-ui);
   font-size: 14px;
   color: var(--color-text-muted);
   margin-top: 0;
@@ -4447,7 +4422,6 @@ footer
     transform: none !important;
     transition: none !important;
   }
-  .card.fx-lift,
   .resume-list-item{
     transform: none !important;
     transition: none !important;
@@ -4485,7 +4459,7 @@ footer
   border-top: 2px solid var(--color-border, rgba(0,0,0,0.10));
 }
 .reading-list-section__title {
-  font-family: 'Lora', Georgia, serif;
+  font-family: var(--f-serif);
   font-size: clamp(18px, 2.5vw, 22px);
   font-weight: 700;
   margin: 0 0 10px;
@@ -4501,7 +4475,7 @@ footer
   margin-bottom: 32px;
 }
 .reading-list-section__group-title {
-  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-family: var(--f-ui);
   font-size: 11px;
   font-weight: 700;
   letter-spacing: 0.09em;
@@ -4641,7 +4615,7 @@ footer
 }
 
 .quiz-launch-label {
-  font-family: 'Lora', Georgia, serif;
+  font-family: var(--f-serif);
   font-size: 32px;
   font-weight: 700;
   letter-spacing: -0.01em;
@@ -4657,7 +4631,7 @@ footer
 }
 
 .quiz-launch-hint {
-  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-family: var(--f-ui);
   font-size: 12px;
   font-weight: 600;
   letter-spacing: 0.13em;
@@ -4753,7 +4727,7 @@ htmlhtml.dark .quiz-launch-label {
   border-left: 5px solid transparent;
   border-right: 5px solid transparent;
   border-top: 5px solid var(--color-canvas);
-  z-index: 1;
+  z-index: var(--z-base);
   pointer-events: none;
 }
 
@@ -4771,7 +4745,7 @@ htmlhtml.dark .quiz-launch-label {
   border: none;
   padding: 8px 14px;
   cursor: pointer;
-  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-family: var(--f-ui);
   font-size: 12px;
   font-weight: 600;
   color: var(--color-text);
@@ -4838,7 +4812,7 @@ html.dark .article-reading-progress-fill.completed {
 }
 
 .article-reading-progress-label {
-  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-family: var(--f-ui);
   font-size: 11px;
   font-weight: 700;
   color: var(--color-accent);
@@ -4864,7 +4838,7 @@ html.dark .article-reading-progress-label.completed-label {
   z-index: var(--z-toast);
   background: var(--tooltip-bg);
   color: var(--tooltip-text);
-  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-family: var(--f-ui);
   font-size: 12px;
   font-weight: 500;
   padding: 6px 14px;
@@ -4911,7 +4885,7 @@ html.dark .article-reading-progress-label.completed-label {
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-family: var(--f-ui);
   font-size: 12px;
   font-weight: 500;
   color: var(--color-text-muted);
@@ -4973,7 +4947,7 @@ html.dark .article-date-display {
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-family: var(--f-ui);
   font-size: 14px;
   font-weight: 600;
   color: var(--color-text-muted);
@@ -5085,14 +5059,14 @@ html.dark .article-end-sdg svg {
   display: flex;
   align-items: center;
   justify-content: center;
-  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-family: var(--f-ui);
   font-weight: 600;
   font-size: 18px;
   letter-spacing: 0.5px;
 }
 .author-card-body { flex: 1 1 auto; min-width: 0; }
 .author-card-label {
-  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-family: var(--f-ui);
   font-size: 11px;
   font-weight: 700;
   letter-spacing: 1.4px;
@@ -5101,14 +5075,14 @@ html.dark .article-end-sdg svg {
   margin-bottom: 4px;
 }
 .author-card-name {
-  font-family: 'Lora', Georgia, serif;
+  font-family: var(--f-serif);
   font-size: 19px;
   font-weight: 600;
   margin-bottom: 8px;
   color: var(--color-text);
 }
 .author-card-desc {
-  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-family: var(--f-ui);
   font-size: 15px;
   line-height: 1.55;
   color: var(--color-text-muted);
@@ -5126,7 +5100,7 @@ html.dark .article-end-sdg svg {
 
 .about-page h2 {
   color: var(--color-accent);
-  font-family: 'Lora', Georgia, serif;
+  font-family: var(--f-serif);
   font-size: 26px;
   margin-top: 40px;
   margin-bottom: 14px;
@@ -5159,7 +5133,7 @@ html.dark .article-end-sdg svg {
   display: flex;
   align-items: center;
   justify-content: center;
-  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-family: var(--f-ui);
   font-weight: 700;
   font-size: 14px;
 }
@@ -5200,7 +5174,7 @@ html.dark .article-end-sdg svg {
   border: 1.5px solid var(--color-accent);
   background: transparent;
   color: var(--color-accent);
-  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-family: var(--f-ui);
   font-size: 13px;
   font-weight: 700;
   cursor: pointer;
@@ -5218,7 +5192,7 @@ html.dark .article-end-sdg svg {
   margin-bottom: 6px;
 }
 .quiz-review-label {
-  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-family: var(--f-ui);
   font-size: 11px;
   font-weight: 700;
   text-transform: uppercase;
@@ -5233,7 +5207,7 @@ html.dark .article-end-sdg svg {
   border-radius: 7px;
   background: var(--quiz-wrong-bg, #2a1418);
   border: 1px solid var(--quiz-wrong-border, #6b2a30);
-  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-family: var(--f-ui);
   font-size: 13.5px;
   color: var(--color-text-muted);
   line-height: 1.45;
@@ -5263,14 +5237,14 @@ html:not(.dark) .quiz-review-prev {
   margin-bottom: 10px;
 }
 .quiz-review-done__title {
-  font-family: 'Lora', Georgia, serif;
+  font-family: var(--f-serif);
   font-size: clamp(20px, 5vw, 26px);
   font-weight: 700;
   color: var(--color-accent);
   margin-bottom: 12px;
 }
 .quiz-review-done__desc {
-  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-family: var(--f-ui);
   font-size: 15px;
   color: var(--color-text);
   line-height: 1.6;
@@ -5293,7 +5267,7 @@ html:not(.dark) .quiz-review-prev {
 }
 .quiz-bonus-teaser__icon { font-size: 22px; flex-shrink: 0; margin-top: 1px; }
 .quiz-bonus-teaser__text {
-  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-family: var(--f-ui);
   font-size: 13.5px;
   color: var(--color-text-muted);
   line-height: 1.55;
@@ -5329,18 +5303,6 @@ html:not(.dark) .quiz-review-prev {
   }
 }
 
-.meta-read-time {
-  font-family: 'Source Sans 3', system-ui, sans-serif;
-  font-size: 13px;
-  color: var(--color-text-muted);
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-}
-.meta-read-time svg {
-  opacity: 0.65;
-  flex-shrink: 0;
-}
 
 .related-articles {
   margin: 56px 0 0;
@@ -5348,7 +5310,7 @@ html:not(.dark) .quiz-review-prev {
   border-top: 1px solid var(--color-border);
 }
 .related-articles__heading {
-  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-family: var(--f-ui);
   font-size: 11px;
   font-weight: 600;
   text-transform: uppercase;
@@ -5418,7 +5380,7 @@ html.dark .related-articles__item:focus-within {
   padding: 14px 16px 16px;
 }
 .related-articles__tag {
-  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-family: var(--f-ui);
   font-size: 11px;
   font-weight: 600;
   letter-spacing: 0.8px;
@@ -5429,7 +5391,7 @@ html.dark .related-articles__item:focus-within {
 }
 .related-articles__link {
   display: block;
-  font-family: 'Lora', Georgia, serif;
+  font-family: var(--f-serif);
   font-size: clamp(15px, 2.2vw, 17px);
   font-weight: 600;
   line-height: 1.3;
@@ -5440,7 +5402,7 @@ html.dark .related-articles__item:focus-within {
 .related-articles__link:hover { color: var(--color-accent); }
 .related-articles__meta {
   margin-top: 7px;
-  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-family: var(--f-ui);
   font-size: 13px;
   color: var(--color-text-muted);
   line-height: 1.45;
@@ -5496,18 +5458,6 @@ html.dark .related-articles__item:focus-within {
   }
 }
 
-.meta-updated {
-  font-family: 'Source Sans 3', system-ui, sans-serif;
-  font-size: 13px;
-  color: var(--color-text-muted);
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-}
-.meta-updated svg {
-  opacity: 0.55;
-  flex-shrink: 0;
-}
 
 body[data-font-idx="3"] .article-img.float-right,
 body[data-font-idx="3"] .article-img.float-left,
@@ -5551,13 +5501,13 @@ html.dark .btoc-progress-fill-done {
   line-height: 1;
   margin-bottom: 5px;
   letter-spacing: -.02em;
-  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-family: var(--f-ui);
 }
 .stat-card__label {
   font-size: 12px;
   color: var(--color-text-muted);
   line-height: 1.4;
-  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-family: var(--f-ui);
 }
 @media (max-width: 600px) {
   .stat-grid { grid-template-columns: 1fr; }
@@ -5580,7 +5530,7 @@ html.dark .btoc-progress-fill-done {
   font-weight: 700;
   letter-spacing: .06em;
   text-transform: uppercase;
-  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-family: var(--f-ui);
 }
 .compare-card--blue .compare-card__head  { background: #eef5fb; color: #1c5070; border-bottom: 1px solid #c8dde8; }
 .compare-card--amber .compare-card__head { background: #fbf4e2; color: #7a5a10; border-bottom: 1px solid #e6d498; }
@@ -5610,7 +5560,7 @@ html.dark .compare-card--amber .compare-card__head {
   padding: 7px 0;
   border-bottom: 1px solid var(--color-border);
   font-size: 12.5px;
-  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-family: var(--f-ui);
 }
 .compare-card__row:last-child { border-bottom: none; }
 .compare-card__key {
@@ -5667,7 +5617,7 @@ html.dark .badge-yes {
 }
 .pq-scripture__text strong { font-style: normal; font-weight: 700; }
 .pq-scripture__ref {
-  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-family: var(--f-ui);
   font-size: 11px;
   color: var(--color-text-muted);
   font-style: normal;
@@ -5706,7 +5656,7 @@ html.dark .pq-scripture::before { opacity: .45; }
   gap: 12px;
   padding: 15px 18px;
 
-  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-family: var(--f-ui);
   font-size: 14px;
   font-weight: 600;
   color: var(--color-text);
@@ -5776,7 +5726,7 @@ html.dark .pq-scripture::before { opacity: .45; }
 
 .faq-accordion__body-inner {
   overflow: hidden;
-  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-family: var(--f-ui);
   font-size: 13.5px;
   line-height: 1.7;
   color: var(--color-text-muted);
@@ -5908,7 +5858,7 @@ abbr.gterm:hover { text-decoration: none; }
   color: var(--color-text-muted);
 }
 [data-series-cards] .series-card__title {
-  font-family: 'Lora', Georgia, serif;
+  font-family: var(--f-serif);
   font-size: 16px;
   margin: 4px 0;
   line-height: 1.3;
@@ -6060,16 +6010,6 @@ html.dark .about-contact-handle { color: #9c8c7a; }
 /* Use lining (proportional) figures for dates and metadata */
 .article-date-display,
 .article-byline__updated,
-.article-reading-time,
-.article-reading-progress-label,
-
-.gb-accuracy-actions {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 10px;
-  flex-wrap: wrap;
-}
 
 .gb-accuracy-btn {
   display: inline-flex;
@@ -6191,7 +6131,7 @@ html.dark .gb-accuracy-btn:hover {
   height: 44px;
   min-width: 100%;
   min-height: 100%;
-  z-index: 1;
+  z-index: var(--z-base);
 }
 
 .gb-link-soft {
@@ -6253,10 +6193,7 @@ button, a, label, summary, [role="button"], input[type="button"], input[type="su
 }
 
 @media (max-width: 360px) {
-  .article-main, .home-main {
-    padding-left: 16px;
-    padding-right: 16px;
-  }
+  .article-main,
   .article-header h1 { font-size: clamp(22px, 6vw, 26px); }
   .article-body p, .article-main p { font-size: 16px; line-height: 1.6; }
   .summary-card__text { font-size: 14px; }
@@ -6452,14 +6389,6 @@ button, a, [role="button"], [tabindex="0"], summary, input, textarea, select {
   background-color: #a04040;
   utf8,<svg xmlns='http: //www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'><path d='M6 6l12 12M18 6L6 18'/></svg>") center/contain no-repeat;
 }
-.fn-sheet,
-#share-dialog,
-
-.flip-finger-icon svg {
-  width: 14px;
-  height: 14px;
-  vertical-align: middle;
-}
 
 .mt-10 { margin-top: 40px; }
 .mb-8 { margin-bottom: 30px; }
@@ -6503,7 +6432,7 @@ html.dark .summary-card {
   color: var(--color-text-muted, #78716c);
   padding: 0 0 14px clamp(4px, 1vw, 12px);
   margin: 0 0 clamp(18px, 2.5vw, 28px);
-  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-family: var(--f-ui);
   font-size: 11px;
   font-weight: 700;
   letter-spacing: .26em;
@@ -6644,7 +6573,7 @@ html.dark .summary-card__item:not(:has(.summary-card__num))::before {
 }
 
 .summary-card__text {
-  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-family: var(--f-ui);
   font-size: clamp(14px, 1.6vw, 15.5px);
   line-height: 1.55;
   color: var(--color-text, #1c1917);
@@ -6738,7 +6667,7 @@ html.dark .gb-accuracy-inner {
   box-shadow: 0 1px 0 rgba(255,255,255,.03) inset, 0 8px 22px -10px rgba(0,0,0,.55);
 }
 .gb-accuracy-title {
-  font-family: 'Lora', Georgia, serif;
+  font-family: var(--f-serif);
   font-weight: 600;
   font-size: clamp(20px, 2.4vw, 26px);
   color: var(--color-text, #1c1917);
@@ -6746,7 +6675,7 @@ html.dark .gb-accuracy-inner {
   line-height: 1.25;
 }
 .gb-accuracy-desc {
-  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-family: var(--f-ui);
   font-size: 14.5px;
   color: var(--color-text-muted, #78716c);
   margin: 0 0 22px;
@@ -6813,16 +6742,6 @@ main .gb-accuracy-block {
 }
 
 /* === 8. HOME-PAGE ambient phrases === */
-.h-phrase--greek, .h-phrase[lang="grc"], .h-phrase[lang="el"] {
-  font-family: 'Noto Sans Greek', 'GFS Neohellenic', 'Times New Roman', serif;
-  font-style: normal; font-weight: 400;
-  direction: ltr; letter-spacing: 0.005em;
-}
-.h-phrase--hebrew, .h-phrase[lang="he"], .h-phrase[lang="iw"] {
-  font-family: 'Noto Sans Hebrew', 'SBL Hebrew', 'David Livre', serif;
-  font-weight: 400; font-style: normal;
-  direction: rtl; letter-spacing: 0;
-}
 .hb-front, .hb-back, [lang="he"], [lang="iw"] {
   font-family: 'Noto Sans Hebrew', 'SBL Hebrew', 'David Libre', serif;
 }
@@ -6845,7 +6764,7 @@ main .gb-accuracy-block {
 }
 .btoc-banner-title {
   position: absolute; bottom: 14px; left: 18px; right: 18px;
-  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-family: var(--f-ui);
   font-size: 13px; font-weight: 700;
   color: rgba(255,255,255,0.96);
   line-height: 1.35; letter-spacing: 0.015em;
@@ -7137,7 +7056,7 @@ body.nagornaya-page main > .max-w-4xl > .mb-6 > p.article-updated {
   border: 1px solid rgba(120,83,46,.10) !important;
   background: rgba(255,255,255,.42);
   color: #6f6255;
-  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-family: var(--f-ui);
   font-size: 12px;
   line-height: 1.35;
 }
@@ -7468,7 +7387,7 @@ html.dark .premium-frame {
   pointer-events: none;
 }
 .premium-frame-title {
-  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-family: var(--f-ui);
   font-size: 11px;
   font-weight: 700;
   letter-spacing: 0.18em;
@@ -7494,7 +7413,7 @@ html.dark .premium-frame-text {
   color: var(--color-text, #e6e1d7);
 }
 .premium-frame-source {
-  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-family: var(--f-ui);
   font-size: 12px;
   font-weight: 600;
   text-transform: uppercase;
@@ -7561,7 +7480,7 @@ html.dark .premium-frame-text {
   background: var(--color-surface-quote, #fbf7ee);
   border-left: 3px solid var(--color-accent, #7a2e2e);
   border-radius: 0 10px 10px 0;
-  font-family: 'Lora', Georgia, serif;
+  font-family: var(--f-serif);
 }
 .manuscript-quote-text {
   font-size: clamp(15px, 1.9vw, 17px);
@@ -7573,7 +7492,7 @@ html.dark .premium-frame-text {
 .manuscript-quote-source {
   display: block;
   margin-top: 12px;
-  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-family: var(--f-ui);
   font-style: normal;
   font-size: 12px;
   font-weight: 700;
@@ -7599,7 +7518,7 @@ html.dark .manuscript-quote-source {
   border: 1px solid var(--color-border, #e7e2d8);
   border-left: 3px solid var(--color-accent, #7a2e2e);
   border-radius: 0 10px 10px 0;
-  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-family: var(--f-ui);
   font-size: 15px;
   line-height: 1.65;
   color: var(--color-text, #2b2317);
@@ -7627,7 +7546,7 @@ html.dark .note-box {
   border-radius: 12px;
   text-decoration: none;
   color: var(--color-text, #1a1a18);
-  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-family: var(--f-ui);
   font-size: 13.5px;
   line-height: 1.45;
   transition: transform 0.22s cubic-bezier(.2,.7,.2,1),
@@ -7701,7 +7620,7 @@ html.dark .context-links a:hover {
 
       .biography-meta {
         position: relative;
-        z-index: 1;
+        z-index: var(--z-base);
         display: grid;
         grid-template-columns: auto 1fr;
         gap: var(--s-6);
@@ -7925,40 +7844,9 @@ html.dark .context-links a:hover {
       }
 
       /* Ивритская цитата как на титульном листе */
-      .hebrew-inscription {
-        text-align: center;
-        padding: var(--s-5) var(--s-4);
-        margin: var(--s-7) 0;
-        border-top: 1px solid var(--color-border);
-        border-bottom: 1px solid var(--color-border);
-        background:
-          radial-gradient(ellipse at center, var(--color-surface-quote) 0%, transparent 70%);
-        position: relative;
-      }
 
-      .hebrew-line {
-        font-size: clamp(20px, 4vw, 28px);
-        line-height: 1.4;
-        letter-spacing: 0.08em;
-        color: var(--color-text-warm);
-        font-weight: 500;
-        margin-bottom: var(--s-2);
-        font-family: 'SBL Hebrew', 'Ezra SIL', 'Cardo', serif;
-      }
 
-      .hebrew-transcription {
-        font-size: 13px;
-        color: var(--color-text-muted);
-        letter-spacing: 0.12em;
-        font-variant: small-caps;
-        margin-bottom: var(--s-2);
-      }
 
-      .hebrew-reference {
-        font-size: 12px;
-        color: var(--color-text-faint);
-        font-style: italic;
-      }
 
       /* Таблица как в старой книге */
       .manuscript-table {
@@ -8003,23 +7891,6 @@ html.dark .context-links a:hover {
 
       /* Эпиграфы с drop cap */
 
-      .ancient-epigraph::before,
-
-
-      /* Метка времени в стиле фолианта */
-      .foliant-mark {
-        float: right;
-        font-variant-numeric: oldstyle-nums;
-        font-size: 15px;
-        color: var(--color-accent-selection);
-        margin: var(--s-4) 0 var(--s-4) var(--s-5);
-        padding: var(--s-2) var(--s-4);
-        border: 1px solid var(--color-border-strong);
-        background: var(--color-surface-quote);
-        font-family: ui-serif, Georgia, serif;
-        font-style: italic;
-        position: relative;
-      }
 
       .foliant-mark::before {
         content: '';
@@ -8191,8 +8062,6 @@ h1, h2, h3, h4, .article-title, .resume-reading-title,
 @media (hover: hover) and (pointer: fine) {
 
   .card.fx-lift:hover,
-
-  html.dark .card.fx-lift:hover,
 
   /* Related articles — тот же эффект */
   .related-articles__item:hover,
