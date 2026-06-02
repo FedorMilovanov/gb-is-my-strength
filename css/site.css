@@ -43,12 +43,9 @@ body { overflow-x: hidden; }
   --z-elevated:      10;
   --z-raised-high:  100;
   --z-dropdown:     800;
-  --z-dropdown-high: 900;
   --z-sticky:      1000;
   --z-bottom-bar:  2000;
-  --z-overlay:     2500;
   --z-overlay-high: 3000;
-  --z-tooltip-low: 8999;
   --z-tooltip:     9000;
   --z-tooltip-high:9100;
   --z-toast:       9800;
@@ -60,7 +57,6 @@ body { overflow-x: hidden; }
   --z-panel:      19000;
   --z-popover:    19999;
   --z-critical:   20000;
-  --z-absolute:   99999;
   --z-max:        99999;
 
   /* ═══════════════
@@ -141,8 +137,6 @@ body { overflow-x: hidden; }
   --f-hebrew-display: "SBL Hebrew", "Ezra SIL", "Times New Roman", "Noto Sans Hebrew", serif;
   color-scheme: light;
   --scroll-margin: 96px;
-
-  --s-1: clamp(3px,  0.4vw,  4px);
   --s-2: clamp(6px,  0.8vw,  8px);
   --s-3: clamp(10px, 1.2vw, 12px);
   --s-4: clamp(14px, 1.8vw, 16px);
@@ -746,6 +740,8 @@ article p {
   hyphenate-limit-lines: 2;
   /* On narrow screens, disable justify to avoid large word gaps */
   overflow-wrap: break-word;
+  /* Deep Polish: word-spacing для кириллицы */
+  word-spacing: 0.02em;
 }
 @media (max-width: 400px) {
   article p {
@@ -892,6 +888,8 @@ html.dark .pullquote .pq-attribution { color: var(--color-accent); }
   display: block;
   border-radius: 4px;
   cursor: zoom-in;
+  max-height: 80vh;
+  object-fit: contain;
 }
 .article-img--wide {
   max-width: min(860px, 100%);
@@ -1223,7 +1221,7 @@ sup a {
   padding: 0;
   margin: 0;
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(min(280px, 100%), 1fr));
   gap: 12px;
 }
 .tldr-list li {
@@ -2373,6 +2371,7 @@ html.dark .bar-icon-sun  { display: block; color: #f5c542; }
 .btoc-title { font-family: 'Source Sans 3', system-ui, sans-serif; font-size: 16px; font-weight: 700; color: var(--color-text); }
 .btoc-subtitle { font-family: 'Source Sans 3', system-ui, sans-serif; font-size: 11px; color: var(--color-text-muted); }
 .btoc-close {
+  position: relative;
   width: 32px; height: 32px;
   border: none;
   background: var(--color-surface-muted);
@@ -3133,6 +3132,11 @@ html.dark .error-flip-label-fact { color: #80c890; }
   border-radius: 8px;
   padding: 28px;
   margin: 24px 0;
+  position: relative;
+  min-height: 320px;
+  contain: layout style;
+  content-visibility: auto;
+  contain-intrinsic-size: auto 320px;
 }
 
 .quiz-counter-row {
@@ -4565,7 +4569,6 @@ footer
   color: var(--color-text);
 }
 
-.quiz-wrapper { position: relative; }
 
 .quiz-main--hidden { filter: blur(5px); opacity: 0.5; pointer-events: none; user-select: none; min-height: 260px; }
 
@@ -5078,9 +5081,6 @@ html.dark .article-end-sdg svg {
   .article-end-actions { gap: 8px; }
 }
 
-.tldr-list {
-  grid-template-columns: repeat(auto-fill, minmax(min(280px, 100%), 1fr));
-}
 
 @media (max-width: 899px) {
   h2[id], h3[id], h4[id],
@@ -5907,12 +5907,6 @@ abbr.gterm {
 }
 abbr.gterm:hover { text-decoration: none; }
 
-.quiz-wrapper {
-  min-height: 320px;
-  contain: layout style;
-  content-visibility: auto;
-  contain-intrinsic-size: auto 320px;
-}
 .quiz-card { min-height: 420px; }
 .quiz-question { min-height: 80px; }
 .quiz-options { min-height: 200px; }
@@ -6282,10 +6276,6 @@ button, a, label, summary, [role="button"], input[type="button"], input[type="su
   #back-to-top svg { width: 20px; height: 20px; }
 }
 
-.bar-icon-btn {
-  min-width: 44px;
-  min-height: 44px;
-}
 .bar-icon-btn svg {
   width: 20px;
   height: 20px;
@@ -6309,9 +6299,6 @@ button, a, label, summary, [role="button"], input[type="button"], input[type="su
   }
 }
 
-.btoc-close {
-  position: relative;
-}
 @media (pointer: coarse) {
   .btoc-close::before {
     content: "";
@@ -6594,10 +6581,6 @@ button, a, [role="button"], [tabindex="0"], summary, input, textarea, select {
 
 
 /* Fix for oversized portrait images to prevent full-screen height */
-.article-img img {
-  max-height: 80vh;
-  object-fit: contain;
-}
 .article-img--portrait-wide img {
   max-height: 600px;
   width: auto;
@@ -8574,9 +8557,6 @@ html.dark #reading-progress {
 /* ── 12. Article header h1 — улучшенный letter-spacing ─────────
    На больших размерах tight letterspacing = premium */
 
-.article-header h1 {
-  letter-spacing: -0.01em;
-}
 
 
 /* ── 13. Glossary tooltip — glass morphism ─────────────────────
@@ -8675,9 +8655,6 @@ body {
    Кириллица на justified text выглядит лучше с чуть большим
    межсловным интервалом */
 
-article p {
-  word-spacing: 0.02em;
-}
 
 @media (max-width: 600px) {
   article p {

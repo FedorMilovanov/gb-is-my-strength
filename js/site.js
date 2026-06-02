@@ -392,7 +392,7 @@
           if (Date.now() < (utils._tooltipSuppressScrollUntil || 0)) return;
           closeAll();
         }, { passive: true });
-        window.addEventListener('resize', function() { SiteUtils._cachedDocH = 0; closeAll(); }, { passive: true });
+        window.addEventListener('resize', function(, { passive: true }) { SiteUtils._cachedDocH = 0; closeAll(); }, { passive: true });
         window.addEventListener('orientationchange', closeAll, { passive: true });
         window.addEventListener('wheel', closeAllExceptTipTarget, { passive: true });
       }
@@ -516,6 +516,14 @@
       document.documentElement.classList.remove('cp-scroll-lock');
       delete document.documentElement.dataset.scrollLocked;
       if (savedY) window.scrollTo(0, savedY);
+    },
+
+    pageType: function () {
+      /* Cached: page type from SITE_CONFIG (article, home, catalog, etc.) */
+      if (!SiteUtils._pageType) {
+        SiteUtils._pageType = SiteUtils.getConfig('page.type', '');
+      }
+      return SiteUtils._pageType;
     },
 
     ready: function (fn) {
@@ -669,7 +677,7 @@
     }
 
     var vv = window.visualViewport;
-    vv.addEventListener('resize', scheduleUpdate);
+    vv.addEventListener('resize', scheduleUpdate, { passive: true });
     vv.addEventListener('scroll', scheduleUpdate, { passive: true });
     // Также при orientationchange — visualViewport не всегда успевает
     window.addEventListener('orientationchange', scheduleUpdate);
@@ -2020,7 +2028,7 @@
 
     SiteUtils.ready(syncAll);
     window.addEventListener('load', syncAll);
-    window.addEventListener('resize', SiteUtils.debounce(syncAll, 150));
+    window.addEventListener('resize', SiteUtils.debounce(syncAll, 150), { passive: true });
   })();
 
 
@@ -2067,7 +2075,7 @@
           }
         });
 
-        window.addEventListener('resize', function () {
+        window.addEventListener('resize', function (, { passive: true }) {
           if (isMobile() && card.classList.contains('flipped')) {
             setBackHeight();
           }
@@ -2962,7 +2970,7 @@
         canvas.width  = window.innerWidth;
         canvas.height = window.innerHeight;
       }
-      window.addEventListener('resize', onCanvasResize);
+      window.addEventListener('resize', onCanvasResize, { passive: true });
 
       var palettes = {
         gold:  ['#FFD700','#FFA500','#FF6B35','#FFE44D','#FFFFFF'],
@@ -3809,7 +3817,7 @@
      Только на страницах статей (page.type === 'article').
      ============================================================ */
   (function () {
-    var pageType = SiteUtils.getConfig('page.type', '');
+    var pageType = SiteUtils.pageType();
     if (pageType !== 'article') return;
 
     /* Не показываем на главной и там, где дата уже есть */
@@ -3882,7 +3890,7 @@
      страницах без квиза из-за двух ранних return в module 16.
      ============================================================ */
   (function () {
-    if (SiteUtils.getConfig('page.type', '') !== 'article') return;
+    if (SiteUtils.pageType() !== 'article') return;
     /* Тип C (Переводы) — drop-cap не применяется: академический текст,
        первый абзац содержит inline-сноски и форматирование переводчика */
     if (SiteUtils.getConfig('page.section', '') === 'Переводы') return;
@@ -3920,7 +3928,7 @@
      Удаляет старые отдельные .share-block и SDG-блоки.
      ============================================================ */
   (function () {
-    var pageType = SiteUtils.getConfig('page.type', '');
+    var pageType = SiteUtils.pageType();
     var isArticlePage = pageType === 'article';
     var allowEndBlock = isArticlePage || pageType === 'about' || pageType === 'series';
     if (!allowEndBlock) return;
@@ -4039,7 +4047,7 @@
      Article — image viewer (breathe badge + click to zoom)
      ============================================================ */
   (function () {
-    var pageType = SiteUtils.getConfig('page.type', '');
+    var pageType = SiteUtils.pageType();
     if (pageType !== 'article') return;
 
     var imgs = document.querySelectorAll('.article-figure img, .article-img img, .nagornaya-hero-img');
@@ -4168,7 +4176,7 @@
      - skips hero / fetchpriority="high"
      ============================================================ */
   (function () {
-    var pageType = SiteUtils.getConfig('page.type', '');
+    var pageType = SiteUtils.pageType();
     if (pageType !== 'article') return;
 
     var scope = document.querySelector('article') || document;
@@ -4192,7 +4200,7 @@
      Делает всю карточку кликабельной, сохраняя ссылки внутри.
      ============================================================ */
   (function () {
-    var pageType = SiteUtils.getConfig('page.type', '');
+    var pageType = SiteUtils.pageType();
     if (pageType !== 'home') return;
 
     var cards = document.querySelectorAll('.article-item.card');
