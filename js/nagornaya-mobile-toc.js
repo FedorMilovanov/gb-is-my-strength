@@ -302,4 +302,231 @@
 
     document.body.insertAdjacentHTML('beforeend', html);
   }
-})();
+
+
+  /* ============================================================
+     B. Nagornaya Mobile Menu (menuBtn / mobileMenu)
+     Перенесено из inline <script> в chast-1..5 — AGENTS-r38.
+     Активируется только если есть #menuBtn на странице.
+     ============================================================ */
+  ready(function () {
+    var btn  = document.getElementById('menuBtn');
+    var menu = document.getElementById('mobileMenu');
+    if (!btn || !menu) return;
+
+    var bars     = btn.querySelectorAll('.bar');
+    var lastFocus = null;
+    var isOpen   = false;
+
+    function openMenu() {
+      if (isOpen) return;
+      isOpen = true;
+      menu.classList.remove('hidden');
+      btn.setAttribute('aria-expanded', 'true');
+      btn.setAttribute('aria-label', 'Закрыть меню');
+      if (bars[0]) bars[0].style.transform = 'rotate(45deg) translate(0,6px)';
+      if (bars[1]) bars[1].style.opacity   = '0';
+      if (bars[2]) bars[2].style.transform = 'rotate(-45deg) translate(0,-6px)';
+      if (window.SiteUtils && window.SiteUtils.lockScroll)
+        window.SiteUtils.lockScroll('nagornaya-menu');
+      else document.body.classList.add('no-scroll');
+      lastFocus = document.activeElement;
+      var first = menu.querySelector('a, button');
+      if (first) first.focus();
+    }
+
+    function closeMenu() {
+      if (!isOpen) return;
+      isOpen = false;
+      menu.classList.add('hidden');
+      btn.setAttribute('aria-expanded', 'false');
+      btn.setAttribute('aria-label', 'Открыть меню');
+      if (bars[0]) bars[0].style.transform = '';
+      if (bars[1]) bars[1].style.opacity   = '1';
+      if (bars[2]) bars[2].style.transform = '';
+      if (window.SiteUtils && window.SiteUtils.unlockScroll)
+        window.SiteUtils.unlockScroll('nagornaya-menu');
+      else document.body.classList.remove('no-scroll');
+      if (lastFocus && lastFocus.focus) try { lastFocus.focus(); } catch(e) {}
+    }
+
+    btn.addEventListener('click', function () { isOpen ? closeMenu() : openMenu(); });
+    menu.addEventListener('click', function (e) {
+      if (e.target.closest('a') || e.target === menu) closeMenu();
+    });
+    document.addEventListener('keydown', function (e) {
+      if (isOpen && (e.key === 'Escape' || e.key === 'Esc')) {
+        e.preventDefault(); closeMenu();
+      }
+    });
+    window.addEventListener('resize', function () {
+      if (window.innerWidth >= 1024 && isOpen) closeMenu();
+    });
+  });
+
+  /* ============================================================
+     C. Nagornaya Read Progress Bar (#read-progress)
+     Перенесено из inline <script> — AGENTS-r38.
+     ============================================================ */
+  ready(function () {
+    var bar = document.getElementById('read-progress');
+    if (!bar) return;
+    function updateProgress() {
+      var body = document.body;
+      var html = document.documentElement;
+      var total = Math.max(body.scrollHeight, html.scrollHeight) - html.clientHeight;
+      if (total <= 0) return;
+      var pct = Math.min(100, Math.round((window.scrollY || html.scrollTop) / total * 100));
+      bar.style.width = pct + '%';
+    }
+    window.addEventListener('scroll', updateProgress, { passive: true });
+    updateProgress();
+  });
+
+  /* ============================================================
+     D. Nagornaya Font Size Control
+     Перенесено из inline <script> — AGENTS-r38.
+     Синхронизировано с btoc-fontsize из site.js (единый key).
+     ============================================================ */
+  ready(function () {
+    var SIZES = [14, 15, 16, 17, 18, 19, 20];
+    var KEY   = 'nag-fontsize';
+    var saved = parseInt(localStorage.getItem(KEY), 10);
+    var cur   = SIZES.indexOf(saved);
+    if (cur < 0) cur = 2; /* default 16px */
+
+    var content = document.querySelector('[data-pagefind-body]') || document.querySelector('main');
+    if (!content) return;
+
+    function applySize() {
+      content.style.fontSize = SIZES[cur] + 'px';
+      localStorage.setItem(KEY, SIZES[cur]);
+      /* Синхронизируем btoc-fontsize-dot если он есть */
+      var dots = document.querySelectorAll('.btoc-fontsize-dot');
+      dots.forEach(function (d, i) {
+        d.classList.toggle('btoc-fontsize-dot--active', i <= cur);
+      });
+    }
+
+    var btnDown = document.querySelector('[data-fontsize="down"], .nag-fontsize-down');
+    var btnUp   = document.querySelector('[data-fontsize="up"],   .nag-fontsize-up');
+
+    if (btnDown) btnDown.addEventListener('click', function () {
+      if (cur > 0) { cur--; applySize(); }
+    });
+    if (btnUp) btnUp.addEventListener('click', function () {
+      if (cur < SIZES.length - 1) { cur++; applySize(); }
+    });
+
+    applySize();
+  });
+
+  /* ============================================================
+     E. Nagornaya Footnote Tooltip System
+     Перенесено из inline <script> × 5 — AGENTS-r38.
+     Строит карту [N] → текст из блока «Источники» и показывает
+     нативный tooltip-popup при hover/click на <sup>[N]</sup>.
+     ============================================================ */
+  ready(function () {
+    /* 1. Строим карту сносок из блока Источники */
+    var fnMap = {};
+    var sourcesBlock = null;
+    document.querySelectorAll('.bg-stone-100.rounded-2xl, .bg-stone-100.border-stone-300').forEach(function (el) {
+      if (el.textContent.includes('Источники') || el.textContent.includes('библиограф')) {
+        sourcesBlock = el;
+      }
+    });
+    if (sourcesBlock) {
+      sourcesBlock.querySelectorAll('.flex.items-start').forEach(function (row) {
+        var supEl  = row.querySelector('sup');
+        var textEl = row.querySelector('span.flex-1, span:last-child');
+        if (supEl && textEl) {
+          var key = supEl.textContent.trim();
+          if (/^\[\d+\]$/.test(key)) fnMap[key] = textEl.textContent.trim();
+        }
+      });
+    }
+    if (!Object.keys(fnMap).length) return;
+
+    /* 2. Создаём shared tooltip — стилизован через CSS переменные сайта */
+    var popup = document.createElement('div');
+    popup.id = 'nag-fn-popup';
+    /* Используем CSS переменные (dark mode safe) */
+    popup.style.cssText = [
+      'display:none',
+      'position:fixed',
+      'z-index:var(--z-modal-low,9999)',
+      'max-width:min(340px,calc(100vw - 20px))',
+      'min-width:min(200px,calc(100vw - 20px))',
+      'padding:10px 14px',
+      'background:var(--color-surface,#fff)',
+      'color:var(--color-text,#1a1a1a)',
+      'font-size:12px',
+      'line-height:1.65',
+      'border-radius:10px',
+      'box-shadow:0 6px 28px rgba(0,0,0,0.22)',
+      'border:1px solid var(--color-border,#e5e2dc)',
+      'font-family:var(--font-sans,"Source Sans 3",system-ui,sans-serif)',
+      'pointer-events:none',
+      'word-break:break-word',
+      'transition:opacity .15s ease',
+    ].join(';');
+    document.body.appendChild(popup);
+
+    function posPopup(rect) {
+      popup.style.visibility = 'hidden';
+      popup.style.display = 'block';
+      var pw = popup.offsetWidth, ph = popup.offsetHeight;
+      popup.style.visibility = '';
+      var vw = window.innerWidth, vh = window.innerHeight;
+      var left = rect.left + rect.width / 2 - pw / 2;
+      left = Math.max(10, Math.min(left, vw - pw - 10));
+      var top = rect.top - ph - 10;
+      if (top < 10) top = rect.bottom + 10;
+      if (top + ph > vh - 10) top = Math.max(10, vh - ph - 10);
+      popup.style.left = left + 'px';
+      popup.style.top  = top + 'px';
+    }
+
+    var cur = null;
+
+    /* 3. Вешаем обработчики на <sup>[N]</sup> в тексте */
+    document.querySelectorAll('main sup, .space-y-6 sup').forEach(function (sup) {
+      if (sourcesBlock && sourcesBlock.contains(sup)) return;
+      var key = sup.textContent.trim();
+      if (!fnMap[key]) return;
+
+      sup.style.cursor = 'pointer';
+      sup.setAttribute('role', 'button');
+      sup.setAttribute('aria-label', 'Сноска ' + key);
+      sup.style.textDecoration = 'underline dotted';
+      sup.style.textUnderlineOffset = '2px';
+
+      sup.addEventListener('mouseenter', function () {
+        popup.textContent = key + ' ' + fnMap[key];
+        cur = sup;
+        posPopup(sup.getBoundingClientRect());
+      });
+      sup.addEventListener('mouseleave', function () {
+        popup.style.display = 'none'; cur = null;
+      });
+      sup.addEventListener('click', function (e) {
+        e.stopPropagation();
+        if (cur === sup && popup.style.display !== 'none') {
+          popup.style.display = 'none'; cur = null; return;
+        }
+        popup.textContent = key + ' ' + fnMap[key];
+        cur = sup;
+        posPopup(sup.getBoundingClientRect());
+      });
+      sup.addEventListener('touchend', function (e) {
+        e.preventDefault(); sup.click();
+      }, { passive: false });
+    });
+
+    document.addEventListener('click', function () { popup.style.display = 'none'; cur = null; });
+    window.addEventListener('scroll', function () { popup.style.display = 'none'; cur = null; }, { passive: true });
+    window.addEventListener('resize', function () { popup.style.display = 'none'; cur = null; }, { passive: true });
+  });
+
+})(); /* end nagornaya-mobile-toc.js IIFE */
