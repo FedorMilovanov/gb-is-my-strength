@@ -388,7 +388,7 @@
           if (e.key === 'Escape') closeAll(true);
         });
 
-        window.addEventListener('scroll', function (, { passive: true }) {
+        window.addEventListener('scroll', function () {
           if (Date.now() < (utils._tooltipSuppressScrollUntil || 0)) return;
           closeAll();
         }, { passive: true });
@@ -400,7 +400,7 @@
       if (opts.extraCloseSelectors) {
         opts.extraCloseSelectors.forEach(function (sel) {
           document.querySelectorAll(sel).forEach(function (el) {
-            el.addEventListener('scroll', function (, { passive: true }) { controller.close(); }, { passive: true });
+            el.addEventListener('scroll', function () { controller.close(); }, { passive: true });
           });
         });
       }
@@ -1156,8 +1156,8 @@
     function doCopy() {
       var label = copyBtn.querySelector('.sd-copy-label');
       var iconEl = copyBtn.querySelector('.sd-icon');
-      (navigator.clipboard ? navigator.clipboard.writeText(activeShareText ? (activeShareText + ' · ' + activeShareUrl) : activeShareUrl) : Promise.reject())
-        .then(function () {
+      var toCopy = activeShareText ? (activeShareText + ' · ' + activeShareUrl) : activeShareUrl;
+      SiteUtils.copyText(toCopy, function () {
           if (navigator.vibrate) navigator.vibrate(30); /* Fix #12: haptic */
           if (label) label.textContent = 'Скопировано!';
           if (iconEl) iconEl.innerHTML =
@@ -1168,15 +1168,7 @@
             if (iconEl) iconEl.innerHTML =
               '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>';
           }, 2500);
-        })
-        .catch(function () {
-          var ta = document.createElement('textarea');
-          ta.value = shareUrl;
-          ta.style.cssText = 'position:fixed;opacity:0;pointer-events:none';
-          document.body.appendChild(ta);
-          ta.select();
-          try { document.execCommand('copy'); } catch(e) {}
-          document.body.removeChild(ta);
+        }, function () {
           if (label) { label.textContent = 'Скопировано!'; setTimeout(function () { label.textContent = 'Скопировать'; }, 2500); }
         });
     }
@@ -1232,7 +1224,7 @@
     if (cfg.enabled === false) return;
     var showAfter = cfg.showAfter || 400;
 
-    window.addEventListener('scroll', function (, { passive: true }) {
+    window.addEventListener('scroll', function () {
       btn.classList.toggle('visible', window.scrollY > showAfter);
     }, { passive: true });
 
@@ -1269,7 +1261,7 @@
       ticking = false;
     }
 
-    window.addEventListener('scroll', function (, { passive: true }) {
+    window.addEventListener('scroll', function () {
       if (ticking) return;
       ticking = true;
       requestAnimationFrame(update);
@@ -1307,7 +1299,7 @@
       list.appendChild(li);
     });
 
-    window.addEventListener('scroll', function (, { passive: true }) {
+    window.addEventListener('scroll', function () {
       toggle.classList.toggle('visible', window.scrollY > 200);
     }, { passive: true });
 
@@ -1423,7 +1415,7 @@
     if (!links.length) return;
 
     var ticking = false;
-    window.addEventListener('scroll', function (, { passive: true }) {
+    window.addEventListener('scroll', function () {
       if (ticking) return;
       ticking = true;
       requestAnimationFrame(function () {
@@ -1639,7 +1631,7 @@
     }
 
     var ticking = false;
-    window.addEventListener('scroll', function (, { passive: true }) {
+    window.addEventListener('scroll', function () {
       if (!ticking) { ticking = true; requestAnimationFrame(function () { updateBar(); ticking = false; }); }
     }, { passive: true });
     updateBar();
@@ -3158,20 +3150,15 @@
         var id = a.getAttribute('href').slice(1);
         var url = location.origin + location.pathname + '#' + id;
 
-        if (navigator.clipboard && navigator.clipboard.writeText) {
-          navigator.clipboard.writeText(url).then(function () {
+        SiteUtils.copyText(url, function () {
             if (navigator.vibrate) navigator.vibrate(30); /* Fix #12: haptic */
             a.innerHTML = '<svg width="14" height="14" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg" style="display:inline;vertical-align:middle"><path d="M3 8l4 4 6-7" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>';
             a.classList.add('copied');
             showAnchorToast();
             setTimeout(function () { a.innerHTML = anchorSVG; a.classList.remove('copied'); }, 1800);
-          }).catch(function () {
-            /* fallback без скролла: просто обновляем хэш без прыжка */
+          }, function () {
             history.replaceState(null, '', '#' + id);
           });
-        } else {
-          history.replaceState(null, '', '#' + id);
-        }
       });
     });
   })();
@@ -3698,17 +3685,7 @@
         if (navigator.vibrate) try { navigator.vibrate(20); } catch (e) {}
         setSelectionCopiedState(copyBtn);
       }
-      if (navigator.clipboard && navigator.clipboard.writeText) {
-        navigator.clipboard.writeText(text).then(done).catch(function () {
-          var ta = document.createElement('textarea');
-          ta.value = text;
-          ta.style.cssText = 'position:fixed;opacity:0;pointer-events:none';
-          document.body.appendChild(ta); ta.select();
-          try { document.execCommand('copy'); } catch (e) {}
-          document.body.removeChild(ta);
-          done();
-        });
-      }
+      SiteUtils.copyText(text, done);
       hide();
       window.getSelection && window.getSelection().removeAllRanges();
     });
@@ -3732,19 +3709,9 @@
         window.SiteShare.open(shareBtn, { dialogTitle: 'Поделиться цитатой', title: title, text: data.text, url: data.url });
       } else {
         var toCopy = data.text + ' \u00b7 ' + data.url;
-        if (navigator.clipboard && navigator.clipboard.writeText) {
-          navigator.clipboard.writeText(toCopy).then(function () {
+        SiteUtils.copyText(toCopy, function () {
             setSelectionCopiedState(shareBtn);
-          }).catch(function () {
-            /* AUDIT V6 / M3: graceful fallback при ошибке clipboard */
-            var ta = document.createElement('textarea');
-            ta.value = toCopy;
-            ta.style.cssText = 'position:fixed;opacity:0;pointer-events:none';
-            document.body.appendChild(ta); ta.select();
-            try { document.execCommand('copy'); } catch (e) {}
-            document.body.removeChild(ta);
           });
-        }
       }
       hide();
     });
@@ -4906,7 +4873,7 @@
 
     /* ── Единый scroll-handler (rAF throttled) ── */
     var ticking = false;
-    window.addEventListener('scroll', function (, { passive: true }) {
+    window.addEventListener('scroll', function () {
       if (ticking) return;
       ticking = true;
       requestAnimationFrame(function () {

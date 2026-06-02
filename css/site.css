@@ -477,7 +477,6 @@ html.dark .icon-sun { opacity: 1; color: #f5c542; }
 
 .breadcrumb__link::selection,
 .breadcrumb__link *::selection {
-  background-color: rgba(128, 128, 128, 0.15);
   background-color: color-mix(in srgb, var(--color-accent) 28%, transparent);
   color: var(--color-text);
   -webkit-text-decoration: none;
@@ -787,7 +786,6 @@ article p {
 article a {
   color: var(--color-link);
   text-decoration: underline;
-  text-decoration-color: rgba(31, 78, 163, 0.45); /* fallback: --link 45% */
   text-decoration-color: color-mix(in srgb, var(--color-link, #1f4ea3) 42%, transparent);
   text-decoration-thickness: 1px;
   text-underline-offset: 3px;
@@ -807,13 +805,11 @@ article a:focus-visible {
 }
 /* Dark mode: подчёркивание читаемо на тёмном фоне (link = #d4a574) */
 html.dark article a {
-  text-decoration-color: rgba(212, 165, 116, 0.5);
   text-decoration-color: color-mix(in srgb, var(--color-link, #d4a574) 50%, transparent);
 }
 html.dark article a:hover,
 html.dark article a:focus-visible {
   text-decoration-color: var(--color-accent-strong, #e8b878);
-  background-color: rgba(232, 184, 120, 0.10);
   background-color: color-mix(in srgb, var(--color-accent-strong, #e8b878) 10%, transparent);
 }
 /* prefers-reduced-motion: убираем transition */
@@ -1288,16 +1284,6 @@ html.dark .fact-box h4 { color: #80c880; }
   padding-bottom: 36px;
   border-bottom: 1px solid var(--color-border);
 }
-.site-tagline {
-  font-family: 'Source Sans 3', system-ui, sans-serif;
-  font-size: 11px;
-  font-weight: 600;
-  letter-spacing: 2.5px;
-  text-transform: uppercase;
-  color: var(--color-text-muted);
-  margin: 0 0 28px;
-  opacity: 0.7;
-}
 
 .site-title-interactive {
   font-family: 'Lora', Georgia, serif;
@@ -1308,14 +1294,10 @@ html.dark .fact-box h4 { color: #80c880; }
   margin: 0 0 20px;
   color: var(--color-text);
 }
-.sti-static {
-  display: inline;
-}
 .sti-highlight {
   display: inline;
   position: relative;
   color: var(--color-accent);
-  transition: color .25s;
   cursor: default;
 
   background-image: linear-gradient(var(--color-accent), var(--color-accent));
@@ -1330,10 +1312,7 @@ html.dark .fact-box h4 { color: #80c880; }
   background-size: 100% 1.5px;
 }
 
-.site-title-interactive:hover .sti-static {
-  opacity: 0.75;
-  transition: opacity .3s;
-}
+.site-title-interactive:hover
 
 @keyframes sti-rubber {
   0%   { transform: translateY(0)    scaleY(1)    scaleX(1); }
@@ -2940,8 +2919,6 @@ html.dark .sd-btn--copy.copied .sd-icon { background: var(--quiz-correct-bg); co
 .sd-url-copy  { display: none; }
 .sd-label-default { display: none; }
 
-@media print { #share-dialog-overlay { display: none !important; } }
-
 #section-label {
   position: fixed;
   top: 6px;
@@ -4150,10 +4127,7 @@ html.dark .gtip-luxury__definition a { color: var(--color-accent-strong, #e8b878
     transform: none !important;
   }
 }
-@media print {
-  .gtip { display: none !important; }
-  .gterm { border-bottom: none; }
-}
+
 
 /* Tooltip portal runtime: keeps popovers out of transformed/scrolling parents.
    The trigger still owns aria-expanded; the floating node is restored on close. */
@@ -4507,6 +4481,16 @@ footer
   blockquote { border-left: 2px solid #999 !important; border-inline-start: 2px solid #999 !important; background: none !important; }
   h2, h3, h4 { page-break-after: avoid; }
   p { orphans: 3; widows: 3; }
+
+  .article-figure img { filter: none !important; }
+    article p { text-align: left; }
+
+  .gtip { display: none !important; }
+    .gterm { border-bottom: none; }
+
+  #share-dialog-overlay { display: none !important; }
+
+  .article-end-sdg { break-inside: avoid; }
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -5115,10 +5099,6 @@ html.dark .article-end-sdg svg {
 
 .share-block  { display: none; }
 .print-btn-wrap { display: none; }
-
-@media print {
-  .article-end-sdg { break-inside: avoid; }
-}
 
 @media (max-width: 480px) {
   .article-end-btn { font-size: 13px; padding: 9px 16px; }
@@ -5924,7 +5904,6 @@ html.dark .warn-box, html.dark .ehrman-block {
 html.dark .warn-box strong, html.dark .ehrman-block strong { color: #ffd28a; }
 html.dark .warn-box a, html.dark .ehrman-block a {
   color: #ffd28a;
-  text-decoration-color: inherit;
   text-decoration-color: color-mix(in srgb, #ffd28a 60%, transparent);
 }
 
@@ -6267,11 +6246,6 @@ html.dark .gb-accuracy-btn:hover {
   }
 }
 
-@media print {
-  .article-figure img { filter: none !important; }
-  article p { text-align: left; }
-}
-
 @media (prefers-reduced-motion: reduce) {
   .gb-accuracy-btn,
   .gb-accuracy-btn__icon {
@@ -6354,13 +6328,7 @@ button, a, label, summary, [role="button"], input[type="button"], input[type="su
 }
 @media (pointer: coarse) {
   .bookmark-toast-close { min-width: 44px; min-height: 44px; }
-}
-
-@media (pointer: coarse) {
   .bookmark-btn { min-height: 44px; padding: 12px 16px; }
-}
-
-@media (pointer: coarse) {
   .img-viewer__close {
     width: 44px !important;
     height: 44px !important;
@@ -6510,9 +6478,6 @@ html.dark .fn-marker:focus-visible {
   }
 }
 
-.about-page-section--first {
-  margin-top: clamp(36px, 6vw, 64px);
-}
 
 @media (max-width: 480px) {
   article p, article li, article blockquote, article td,

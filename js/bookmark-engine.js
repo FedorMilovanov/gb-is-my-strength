@@ -378,7 +378,7 @@
     scheduleResumePrompt();
   }
 
-  window.addEventListener('scroll', function (, { passive: true }) {
+  window.addEventListener('scroll', function () {
     detectCurrentSection();
     scheduleScrollSave();
   }, { passive: true });
