@@ -527,7 +527,7 @@
 
     h1El: function () {
       if (!SiteUtils._h1El) {
-        SiteUtils._h1El = document.querySelector('article h1, .article-header h1, h1');
+        SiteUtils._h1El = SiteUtils.h1El();
       }
       return SiteUtils._h1El;
     },
@@ -3888,7 +3888,7 @@
     /* Вставляем: после .meta в header, или после h1, или в начало article */
     var header = document.querySelector('.article-header');
     var metaEl = header && header.querySelector('.meta, .article-desc, .reading-meta, .reading-time');
-    var h1     = document.querySelector('article h1, .article-header h1');
+    var h1     = SiteUtils.h1El();
 
     if (metaEl) {
       metaEl.parentNode.insertBefore(el, metaEl.nextSibling);
@@ -4906,23 +4906,16 @@
     if (!nav) return;
 
     document.body.classList.add('topnav-active');
-    var h1 = document.querySelector('article h1, .article-header h1, h1');
-    var ticking = false;
-
+    var h1 = SiteUtils.h1El();
     function onScroll() {
-      if (ticking) return;
-      ticking = true;
-      requestAnimationFrame(function () {
-        var s = window.scrollY || window.pageYOffset;
-        nav.classList.toggle('visible', s > 60);
-        if (h1) {
-          nav.classList.toggle('title-visible', h1.getBoundingClientRect().bottom < 0);
-        }
-        ticking = false;
-      });
+      var s = window.scrollY || window.pageYOffset;
+      nav.classList.toggle('visible', s > 60);
+      if (h1) {
+        nav.classList.toggle('title-visible', h1.getBoundingClientRect().bottom < 0);
+      }
     }
 
-    window.addEventListener('scroll', onScroll, { passive: true });
+    SiteUtils.scrollRaf(onScroll);
     onScroll();
   })();
 
