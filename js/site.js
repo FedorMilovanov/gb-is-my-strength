@@ -518,6 +518,14 @@
       if (savedY) window.scrollTo(0, savedY);
     },
 
+    ready: function (fn) {
+      if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', fn);
+      } else {
+        fn();
+      }
+    },
+
     copyText: function (text, onSuccess, onError) {
       function fallback() {
         var ta = document.createElement('textarea');
@@ -2010,11 +2018,7 @@
       });
     }
 
-    if (document.readyState === 'loading') {
-      document.addEventListener('DOMContentLoaded', syncAll);
-    } else {
-      syncAll();
-    }
+    SiteUtils.ready(syncAll);
     window.addEventListener('load', syncAll);
     window.addEventListener('resize', SiteUtils.debounce(syncAll, 150));
   })();
@@ -2071,11 +2075,7 @@
       });
     }
 
-    if (document.readyState === 'loading') {
-      document.addEventListener('DOMContentLoaded', initHeartFlipMobile);
-    } else {
-      initHeartFlipMobile();
-    }
+    SiteUtils.ready(initHeartFlipMobile);
   })();
 
 
@@ -3408,11 +3408,7 @@
       document.querySelectorAll(SELECTORS).forEach(walkTree);
     }
 
-    if (document.readyState === 'loading') {
-      document.addEventListener('DOMContentLoaded', init);
-    } else {
-      init();
-    }
+    SiteUtils.ready(init);
   })();
 
 
@@ -4327,11 +4323,7 @@
       injectSidebar();
     }
 
-    if (document.readyState === 'loading') {
-      document.addEventListener('DOMContentLoaded', injectAll);
-    } else {
-      injectAll();
-    }
+    SiteUtils.ready(injectAll);
 
     window.SiteFontSize = { up: up, down: down };
   })();
@@ -4573,11 +4565,7 @@
   }
 
   function ready(fn) {
-    if (document.readyState === 'loading') {
-      document.addEventListener('DOMContentLoaded', fn);
-    } else {
-      fn();
-    }
+    SiteUtils.ready(fn);
   }
 
   ready(function () {
@@ -4999,11 +4987,7 @@
     }
 
     /* Запускаем после загрузки glossary.js (defer) */
-    if (document.readyState === 'loading') {
-      document.addEventListener('DOMContentLoaded', initTooltipTriggers);
-    } else {
-      setTimeout(initTooltipTriggers, 0);
-    }
+    SiteUtils.ready(initTooltipTriggers);
   })();
 
   /* ============================================================

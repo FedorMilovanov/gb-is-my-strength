@@ -7951,10 +7951,6 @@ html.dark .context-links a:hover {
       .biography-portrait::before,
       .biography-portrait::after { content: none; display: none; }
 
-      .biography-info {
-        position: relative;
-        z-index: 1;
-      }
 
       .biography-dates {
         font-variant-numeric: tabular-nums;
