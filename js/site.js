@@ -392,7 +392,7 @@
           if (Date.now() < (utils._tooltipSuppressScrollUntil || 0)) return;
           closeAll();
         }, { passive: true });
-        window.addEventListener('resize', function(, { passive: true }) { SiteUtils._cachedDocH = 0; closeAll(); }, { passive: true });
+        window.addEventListener('resize', function () { SiteUtils._cachedDocH = 0; closeAll(); }, { passive: true });
         window.addEventListener('orientationchange', closeAll, { passive: true });
         window.addEventListener('wheel', closeAllExceptTipTarget, { passive: true });
       }
@@ -2075,7 +2075,7 @@
           }
         });
 
-        window.addEventListener('resize', function (, { passive: true }) {
+        window.addEventListener('resize', function () {
           if (isMobile() && card.classList.contains('flipped')) {
             setBackHeight();
           }
