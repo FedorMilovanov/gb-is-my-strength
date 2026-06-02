@@ -410,7 +410,7 @@
           if (e.key === 'Escape') closeAll(true);
         });
 
-        window.addEventListener('scroll', function () {
+        window.addEventListener('scroll', function (, { passive: true }) {
           if (Date.now() < (utils._tooltipSuppressScrollUntil || 0)) return;
           closeAll();
         }, { passive: true });
@@ -422,7 +422,7 @@
       if (opts.extraCloseSelectors) {
         opts.extraCloseSelectors.forEach(function (sel) {
           document.querySelectorAll(sel).forEach(function (el) {
-            el.addEventListener('scroll', function () { controller.close(); }, { passive: true });
+            el.addEventListener('scroll', function (, { passive: true }) { controller.close(); }, { passive: true });
           });
         });
       }
@@ -684,7 +684,7 @@
 
     var vv = window.visualViewport;
     vv.addEventListener('resize', scheduleUpdate);
-    vv.addEventListener('scroll', scheduleUpdate);
+    vv.addEventListener('scroll', scheduleUpdate, { passive: true });
     // Также при orientationchange — visualViewport не всегда успевает
     window.addEventListener('orientationchange', scheduleUpdate);
 
@@ -1254,7 +1254,7 @@
     if (cfg.enabled === false) return;
     var showAfter = cfg.showAfter || 400;
 
-    window.addEventListener('scroll', function () {
+    window.addEventListener('scroll', function (, { passive: true }) {
       btn.classList.toggle('visible', window.scrollY > showAfter);
     }, { passive: true });
 
@@ -1291,7 +1291,7 @@
       ticking = false;
     }
 
-    window.addEventListener('scroll', function () {
+    window.addEventListener('scroll', function (, { passive: true }) {
       if (ticking) return;
       ticking = true;
       requestAnimationFrame(update);
@@ -1329,7 +1329,7 @@
       list.appendChild(li);
     });
 
-    window.addEventListener('scroll', function () {
+    window.addEventListener('scroll', function (, { passive: true }) {
       toggle.classList.toggle('visible', window.scrollY > 200);
     }, { passive: true });
 
@@ -1445,7 +1445,7 @@
     if (!links.length) return;
 
     var ticking = false;
-    window.addEventListener('scroll', function () {
+    window.addEventListener('scroll', function (, { passive: true }) {
       if (ticking) return;
       ticking = true;
       requestAnimationFrame(function () {
@@ -1661,7 +1661,7 @@
     }
 
     var ticking = false;
-    window.addEventListener('scroll', function () {
+    window.addEventListener('scroll', function (, { passive: true }) {
       if (!ticking) { ticking = true; requestAnimationFrame(function () { updateBar(); ticking = false; }); }
     }, { passive: true });
     updateBar();
@@ -1755,6 +1755,7 @@
         var dx = Math.abs(e.touches[0].clientX - touchStartX);
         /* Закрываем только явный вертикальный свайп вниз по handle-пилюле */
         if (dy > 60 && dx < dy * 0.4) closeToc();
+ 
       }, { passive: true });
     }
 
@@ -4927,7 +4928,7 @@
 
     /* ── Единый scroll-handler (rAF throttled) ── */
     var ticking = false;
-    window.addEventListener('scroll', function () {
+    window.addEventListener('scroll', function (, { passive: true }) {
       if (ticking) return;
       ticking = true;
       requestAnimationFrame(function () {
