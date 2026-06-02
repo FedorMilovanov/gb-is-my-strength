@@ -4080,6 +4080,7 @@ html.dark .gterm.is-open {
 }
 
 .gterm .gtip {
+  display: none;
   position: fixed;
   width: min(380px, calc(100vw - 40px));
   padding: 16px 18px;
