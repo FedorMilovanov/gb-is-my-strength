@@ -1,0 +1,349 @@
+401:  body.topnav-active { padding-top: 0 !important; }
+1163:  float: none !important;
+1165:  width: auto !important;
+1166:  margin: 44px -24px !important;
+1167:  shape-outside: none !important;
+1170:  .article-img.float-fallback { margin: 44px -16px !important; }
+2375:#reading-progress-bar { display: none !important; }
+2376:#mobileTocBtn { display: none !important; }
+2377:#mobileTocOverlay { display: none !important; }
+3074:.sd-url-strip { display: none !important; }
+3075:.sd-divider   { display: none !important; }
+3076:.sd-url-copy  { display: none !important; }
+3077:.sd-label-default { display: none !important; }
+3079:@media print { #share-dialog-overlay { display: none !important; } }
+3259:.flip-hint, .error-flip-hint { display: none !important; }
+3970:  .fn-marker .tooltip:hover { opacity: 1 !important; pointer-events: auto !important; }
+3985:    top: auto !important;
+3986:    left: 0 !important;
+3987:    right: 0 !important;
+3988:    bottom: 0 !important;
+3989:    width: auto !important;
+3990:    max-width: none !important;
+3991:    max-height: 82vh !important;
+3992:    overflow-y: auto !important;
+4114:  content-visibility: visible !important;
+4287:    top: auto !important;
+4288:    left: 0 !important;
+4289:    right: 0 !important;
+4290:    bottom: 0 !important;
+4291:    width: auto !important;
+4292:    max-width: none !important;
+4293:    max-height: 85vh !important;
+4294:    overflow-y: auto !important;
+4335:    transition: none !important;
+4339:    transform: none !important;
+4343:  .gtip { display: none !important; }
+4455:    top: auto !important;
+4456:    left: 0 !important;
+4457:    right: 0 !important;
+4458:    bottom: 0 !important;
+4459:    width: auto !important;
+4460:    max-width: none !important;
+4461:    max-height: min(85vh, calc(100dvh - 16px)) !important;
+4462:    overflow-y: auto !important;
+4511:.heading-anchor.copied { color: #7a2e2e !important; opacity: 1; }
+4512:html.dark .heading-anchor.copied { color: var(--color-accent) !important; }
+4697:  .btip, .tooltip, .fn-tooltip, .meta-tag { display: none !important; }
+4700:    position: relative !important;
+4701:    backface-visibility: visible !important;
+4705:    display: inline-flex !important;
+4706:    color: #555 !important;
+4707:    font-size: 11px !important;
+4708:    margin-bottom: 8px !important;
+4712:  body { background: #fff !important; color: #000 !important; padding-bottom: 0 !important; }
+4713:  main, .page-wrap { width: 100% !important; padding: 0 !important; }
+4714:  a { color: #000 !important; text-decoration: none !important; }
+4715:  .bref { color: #000 !important; font-weight: normal !important; }
+4716:  blockquote { border-left: 2px solid #999 !important; border-inline-start: 2px solid #999 !important; background: none !important; }
+4729:    opacity: 1 !important;
+4730:    transform: none !important;
+4731:    transition: none !important;
+4735:    transform: none !important;
+4736:    transition: none !important;
+4739:    animation: none !important;
+4740:    transform: none !important;
+4746:  .flip-finger::before { animation: none !important; }
+4747:  .heart-flip-card.flipped .heart-flip-hint { transition: none !important; }
+4750:  .heart-flip-inner { transition: none !important; }
+4751:  .heart-flip-card { transition: none !important; }
+4753:    opacity: 1 !important;
+4754:    transform: none !important;
+4755:    transition: none !important;
+4757:  .quiz-option.shake { animation: none !important; }
+4758:  .quiz-progress-fill { transition: none !important; }
+4760:  .faq-accordion__body      { transition: none !important; }
+4761:  .faq-accordion__body-inner{ transition: none !important; }
+4762:  .faq-accordion__icon      { transition: none !important; }
+4842:    display: none !important;
+4845:    opacity: 1 !important;
+4846:    transform: none !important;
+4847:    transition: none !important;
+5093:  #selection-share-popup { display: none !important; }
+5189:  .kbd-hint-toast { display: none !important; }
+5325:.share-block  { display: none !important; }
+5326:.print-btn-wrap { display: none !important; }
+5833:  background: #c8960c !important;
+5837:  background: #d4a574 !important;
+6109:   It was fully overridden by the refined version below via !important.
+6110:   After removal the refined version no longer needs !important overrides;
+6129:    transition: none !important;
+6130:    transform: none !important;
+6135:    transform: none !important;
+6139:    position: static !important;
+6140:    transform: none !important;
+6141:    visibility: visible !important;
+6142:    backface-visibility: visible !important;
+6143:    width: auto !important;
+6144:    height: auto !important;
+6145:    inset: auto !important;
+6337:  overflow: hidden !important;
+6551:  .article-figure img { filter: none !important; }
+6558:    transition: none !important;
+6560:  .gb-accuracy-btn:hover { transform: none !important; }
+6561:  .gb-accuracy-btn:hover .gb-accuracy-btn__icon { transform: none !important; }
+6615:    width: 44px !important;
+6616:    height: 44px !important;
+6617:    bottom: max(20px, env(safe-area-inset-bottom, 0px)) !important;
+6618:    right: max(16px, env(safe-area-inset-right, 0px)) !important;
+6620:  #back-to-top svg { width: 20px !important; height: 20px !important; }
+6635:  padding: 6px !important;
+6650:    width: 44px !important;
+6651:    height: 44px !important;
+6652:    font-size: 20px !important;
+6681:  .compare-cards, .stat-grid, .figure-pair { grid-template-columns: 1fr !important; }
+6688:    padding-left: max(20px, env(safe-area-inset-left, 0px)) !important;
+6689:    padding-right: max(20px, env(safe-area-inset-right, 0px)) !important;
+6744:  min-width: 44px !important;
+6745:  min-height: 44px !important;
+6751:  width: 44px !important;
+6752:  height: 44px !important;
+6759:  width: 44px !important;
+6760:  height: 44px !important;
+6763:  display: inline-flex !important;
+6769:  width: 44px !important;
+6770:  height: 44px !important;
+6778:    min-width: 44px !important;
+6779:    min-height: 44px !important;
+6780:    padding-top: 10px !important;
+6781:    padding-bottom: 10px !important;
+6798:  .epilogue-caption { padding: clamp(28px, 8vw, 56px) clamp(20px, 5vw, 40px) !important; }
+6799:  .epilogue-prose { padding: clamp(20px, 5vw, 32px) clamp(20px, 5vw, 40px) !important; }
+6800:  .heart-flip-back { padding: clamp(24px, 6vw, 36px) clamp(20px, 5vw, 40px) !important; }
+6801:  .heart-flip-wrap { margin: clamp(28px, 6vw, 48px) 0 !important; }
+6802:  .author-card { margin: clamp(24px, 5vw, 40px) 0 !important; }
+6803:  .related-articles { margin: clamp(28px, 6vw, 48px) 0 !important; }
+6804:  .article-end-block { margin: clamp(28px, 6vw, 48px) 0 !important; }
+6805:  #toc-panel { padding: clamp(28px, 6vw, 40px) clamp(16px, 4vw, 24px) !important; }
+6806:  .quiz-launch-hero { padding: clamp(20px, 5vw, 28px) clamp(20px, 5vw, 36px) !important; }
+6807:  .article-img { margin: clamp(24px, 6vw, 40px) 0 !important; }
+6809:    margin-left: -16px !important;
+6810:    margin-right: -16px !important;
+6874:  min-width: 44px !important;
+6875:  min-height: 44px !important;
+6883:  -webkit-appearance: none !important;
+6896:    transform: none !important;
+7022:  background: transparent !important;
+7023:  color: var(--color-text-muted, #78716c) !important;
+7024:  padding: 0 0 14px clamp(4px, 1vw, 12px) !important;
+7025:  margin: 0 0 clamp(18px, 2.5vw, 28px) !important;
+7026:  font-family: 'Source Sans 3', system-ui, sans-serif !important;
+7027:  font-size: 11px !important;
+7028:  font-weight: 700 !important;
+7029:  letter-spacing: .26em !important;
+7030:  text-transform: uppercase !important;
+7031:  border: 0 !important;
+7033:  line-height: 1.2 !important;
+7046:  background: transparent !important;
+7047:  padding: 0 !important;
+7048:  margin: 0 !important;
+7049:  list-style: none !important;
+7056:  display: grid !important;
+7059:  gap: 0 !important;
+7060:  padding: clamp(14px, 2vw, 20px) clamp(18px, 2.5vw, 28px) !important;
+7061:  background: var(--color-surface, #fff) !important;
+7062:  border: 1px solid color-mix(in srgb, var(--color-border, #e7e2d8) 60%, transparent) !important;
+7063:  border-radius: 14px !important;
+7074:  border-color: color-mix(in srgb, var(--color-accent, #7a2e2e) 28%, var(--color-border, #e7e2d8)) !important;
+7078:  background: color-mix(in srgb, var(--color-surface, #1f1a15) 96%, transparent) !important;
+7080:  border-color: color-mix(in srgb, var(--color-border, #3a3028) 85%, transparent) !important;
+7087:  width: clamp(34px, 4.4vw, 44px) !important;
+7088:  height: clamp(34px, 4.4vw, 44px) !important;
+7089:  border-radius: 50% !important;
+7090:  background: #fff !important;
+7091:  border: 1px solid color-mix(in srgb, #6ba368 35%, var(--color-border, #e7e2d8)) !important;
+7094:  display: grid !important; place-items: center !important;
+7095:  flex-shrink: 0; margin: 0 !important; padding: 0 !important;
+7096:  color: #4a8a4a !important;
+7097:  font-size: 0 !important;
+7103:  background: color-mix(in srgb, #4a8a4a 14%, var(--color-surface, #1f1a15)) !important;
+7104:  border-color: color-mix(in srgb, #6ba368 40%, transparent) !important;
+7105:  color: #7ac87a !important;
+7108:  display: block !important;
+7109:  width: clamp(15px, 1.8vw, 18px) !important;
+7110:  height: clamp(15px, 1.8vw, 18px) !important;
+7111:  stroke: currentColor !important;
+7112:  stroke-width: 2.5 !important;
+7113:  fill: none !important;
+7176:  font-family: 'Source Sans 3', system-ui, sans-serif !important;
+7177:  font-size: clamp(14px, 1.6vw, 15.5px) !important;
+7178:  line-height: 1.55 !important;
+7179:  color: var(--color-text, #1c1917) !important;
+7180:  margin: 0 !important;
+7181:  padding: 0 0 0 clamp(14px, 2vw, 22px) !important;
+7183:.summary-card__text strong { color: var(--color-accent, #7a2e2e) !important; font-weight: 700 !important; }
+7184:html.dark .summary-card__text strong { color: var(--color-accent-strong, #e8b878) !important; }
+7189:  font-size: inherit !important;
+7190:  float: none !important;
+7191:  margin: 0 !important;
+7192:  color: inherit !important;
+7193:  font-family: inherit !important;
+7194:  font-weight: inherit !important;
+7195:  line-height: inherit !important;
+7203:  .summary-card__item { grid-template-columns: 38px 44px 1fr; padding: 12px 14px !important; border-radius: 12px !important; }
+7204:  .summary-card__check { width: 32px !important; height: 32px !important; }
+7207:  .summary-card__text { font-size: 14px !important; padding-left: 12px !important; }
+7217:  .summary-card__text { grid-column: 2; grid-row: 2; padding-left: 0 !important; }
+7224:  min-width: 0 !important;
+7225:  margin-left: -0.05em !important;
+7226:  padding: 0 0.12em !important;
+7227:  letter-spacing: 0 !important;
+7230:  font-size: 0.7em !important;
+7232:  line-height: 1 !important;
+7235:  border-bottom: 0 !important;
+7248:  font-size: 0.85em !important;
+7250:  margin: 0 0.08em !important;
+7270:  display: none !important;
+7294:  margin-top: clamp(40px, 5vw, 64px) !important;
+7320:  color: var(--color-text, #1c1917) !important;
+7327:  color: var(--color-text-muted, #78716c) !important;
+7331:html.dark .gb-accuracy-title { color: var(--color-text, #f5ede0) !important; }
+7332:html.dark .gb-accuracy-desc { color: var(--color-text-muted, #a8a29e) !important; }
+7349:  background: #faf8f4 !important;
+7350:  color: #1c1917 !important;
+7354:  color: #5a4838 !important;
+7356:html:not(.dark) body.nagornaya-page .text-white { color: #1c1917 !important; }
+7359:  border-color: #e7e2d8 !important;
+7363:  background: #f0ebe1 !important;
+7364:  color: #1c1917 !important;
+7368:  background: rgba(28,25,23,0.05) !important;
+7412:  font-size: inherit !important;
+7423:  margin-top: clamp(28px, 4vw, 44px) !important;
+7424:  margin-bottom: clamp(28px, 4vw, 44px) !important;
+7428:  margin-top: clamp(32px, 5vw, 56px) !important;
+7442:  font-family: 'Noto Sans Greek', 'GFS Neohellenic', 'Times New Roman', serif !important;
+7443:  font-style: normal !important; font-weight: 400 !important;
+7447:  font-family: 'Noto Sans Hebrew', 'SBL Hebrew', 'David Libre', serif !important;
+7448:  font-weight: 400 !important; font-style: normal !important;
+7462:  overflow: hidden !important;
+7463:  touch-action: auto !important;
+7510:  position: absolute !important; left: -9999px !important;
+7666:  background: transparent !important;
+7667:  border-color: rgba(255,255,255,0.08) !important;
+7668:  box-shadow: none !important;
+7671:  background: transparent !important;
+7672:  border-color: rgba(28,25,23,0.08) !important;
+7675:  color: rgba(255,255,255,0.80) !important;
+7678:  color: var(--color-text, #1c1917) !important;
+7681:  color: rgba(255,255,255,0.50) !important;
+7684:  color: var(--color-text-muted, #78716c) !important;
+7709:  max-width: 720px !important;
+7710:  margin: 24px auto !important;
+7715:  max-width: 720px !important;
+7716:  margin-left: auto !important;
+7717:  margin-right: auto !important;
+7725:  background: none !important;
+7735:  font-family: var(--f-hebrew-display) !important;
+7736:  font-weight: 400 !important;
+7739:.h-sacred-line, .hb-front { font-weight: 450 !important; }
+7742:  transition-duration: 0.78s !important;
+7743:  transition-timing-function: cubic-bezier(0.16, 1, 0.3, 1) !important;
+7747:  transition-property: transform, margin, opacity !important;
+7750:  opacity: 0.96 !important;
+7751:  letter-spacing: 0.018em !important;
+7754:  transform: scaleX(1.12) !important;
+7755:  margin-inline: 0.28em !important;
+7759:  letter-spacing: 0.016em !important;
+7760:  text-shadow: 0 10px 34px rgba(122, 46, 46, 0.10) !important;
+7763:  text-shadow: 0 10px 34px rgba(217, 122, 108, 0.13) !important;
+7784:    opacity: .96 !important;
+7785:    letter-spacing: 0 !important;
+7786:    transform: translateX(-.012em) !important;
+7789:    transform: scaleX(1.18) !important;
+7790:    margin-inline: .26em !important;
+7791:    opacity: .9 !important;
+7794:    letter-spacing: 0 !important;
+7795:    transform: translateX(.012em) !important;
+7796:    text-shadow: 0 10px 30px rgba(122,46,46,.10) !important;
+7802:    letter-spacing: 0 !important;
+7803:    transform: none !important;
+7804:    text-shadow: none !important;
+7807:    transform: none !important;
+7808:    margin-inline: .22em !important;
+7818:  display: inline-flex !important;
+7819:  width: auto !important;
+7820:  margin-top: 10px !important;
+7821:  margin-right: 8px !important;
+7822:  padding: 6px 10px !important;
+7823:  border-radius: 999px !important;
+7824:  border: 1px solid rgba(120,83,46,.10) !important;
+7825:  background: rgba(255,255,255,.42) !important;
+7826:  color: #6f6255 !important;
+7827:  font-family: 'Source Sans 3', system-ui, sans-serif !important;
+7828:  font-size: 12px !important;
+7829:  line-height: 1.35 !important;
+7843:  width: auto !important;
+7844:  max-width: 100% !important;
+7845:  margin: 0 !important;
+7846:  padding: 0 !important;
+8047:    flex-direction: column !important;
+8048:    align-items: flex-start !important;
+8053:    flex-shrink: 1 !important;
+8054:    max-width: 100% !important;
+8055:    white-space: normal !important;
+8056:    overflow-wrap: anywhere !important;
+8057:    align-self: flex-start !important;
+8067:    overflow-x: hidden !important;
+8070:    min-width: 0 !important;
+8071:    width: 100% !important;
+8075:    flex: 0 0 96px !important;
+8076:    max-width: 96px !important;
+8077:    font-size: .62rem !important;
+8078:    line-height: 1.25 !important;
+8079:    white-space: normal !important;
+8080:    overflow: visible !important;
+8081:    text-overflow: clip !important;
+8084:    font-size: .58rem !important;
+8087:    align-items: flex-start !important;
+8090:    height: 18px !important;
+8093:    display: none !important;
+8098:    font-size: .58rem !important;
+8101:    min-height: 44px !important;
+8104:    height: 18px !important;
+8108:body.has-bottom-bar #back-to-top { bottom: max(80px, calc(env(safe-area-inset-bottom, 0px) + 80px)) !important; }
+8112:  position: relative !important;
+8113:  top: auto !important;
+8114:  right: auto !important;
+8115:  z-index: 1 !important;
+8116:  padding: 8px !important;
+8117:  width: 44px !important;
+8118:  height: 44px !important;
+8119:  margin: 0 !important;
+8120:  display: flex !important;
+8121:  align-items: center !important;
+8122:  justify-content: center !important;
+8125:  color: #f5c542 !important;
+8130:  color: var(--color-accent-strong, #e8b878) !important;
+8133:  color: var(--color-accent-strong, #5f2323) !important;
+8134:  text-decoration: underline !important;
+8149:  transform: scale(1.15) translateY(-1.5px) !important;
+8150:  filter: drop-shadow(0 2px 5px rgba(30, 78, 163, 0.45)) !important;
+8240:/* Lux Upgrade v3.0: hide tooltip category to fix overlap */  .gtip-luxury__header{margin-bottom:0!important}
+8242:/* Lux Upgrade v3.0: biography card polish - single border */ .biography-hero::after{display:none!important} .biography-hero{border-width:1px!important;box-shadow:0 8px 32px rgba(0,0,0,.06)!important} .biography-portrait{border-width:4px!important;box-shadow:0 4px 16px rgba(0,0,0,.08)!important}
+8258:    max-width: 100vw !important;
+8495:        background: var(--color-surface, #fdfcf9) !important; z-index: 2 !important;
+8559:      .biography-epigraph::before { content: none !important;  content: none !important; 
+8639:        background: var(--color-surface, #fdfcf9) !important; z-index: 2 !important;
+8753:        background: var(--color-surface, #fdfcf9) !important; z-index: 2 !important;
+8864:.article-body p, .article-main p, article p { margin-bottom: 24px !important; }
+8865:.article-body p:last-child { margin-bottom: 0 !important; }

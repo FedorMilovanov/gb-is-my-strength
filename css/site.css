@@ -240,7 +240,6 @@ html.dark {
 
 }
 
-@layer components {
 html { scroll-behavior: smooth; }
 
 h2[id], h3[id], h4[id],
@@ -3825,8 +3824,6 @@ body.has-bottom-bar .bookmark-toast {
   --article-font-size: 17px;
 }
 
-
-
 .article-main .quiz-question-text,
 .article-body .quiz-question-text,
 .article-main .quiz-option,
@@ -4181,7 +4178,7 @@ html.dark .gterm .gtip::before {
   gap: 12px;
   margin-bottom: 12px;
 }
-.gtip-luxury__category { display: none; 
+.gtip-luxury__category { display: none;
   display: inline-flex;
   align-items: center;
   max-width: 100%;
@@ -4258,7 +4255,7 @@ html.dark .gtip-luxury::before {
     radial-gradient(circle at 12% 0%, color-mix(in srgb, var(--color-accent-strong, #e8b878) 13%, transparent), transparent 36%),
     linear-gradient(145deg, rgba(255,255,255,.06), rgba(255,255,255,0));
 }
-html.dark .gtip-luxury__category { display: none; 
+html.dark .gtip-luxury__category { display: none;
   background: color-mix(in srgb, var(--gtip-cat-color, var(--color-accent-strong, #e8b878)) 16%, transparent);
   color: color-mix(in srgb, var(--gtip-cat-color, var(--color-accent-strong, #e8b878)) 78%, #fff);
 }
@@ -6995,9 +6992,7 @@ button, a, [role="button"], [tabindex="0"], summary, input, textarea, select {
 
 /* === AUDIT-FIXES INLINE START === (v6 deep polish, 2026-05-21) */
 
-/* ═══════════════
-   1. SUMMARY-CARD — финал (по DALL·E эталону, фикс контраста)
-   ═══════════════ */
+/* === 1. SUMMARY-CARD — финал (по DALL·E эталону, фикс контраста) === */
 .summary-card {
   position: relative;
   margin: clamp(32px, 5vw, 56px) 0;
@@ -7218,9 +7213,7 @@ html.dark .summary-card__text strong { color: var(--color-accent-strong, #e8b878
   .summary-card__text { grid-column: 2; grid-row: 2; padding-left: 0 !important; }
 }
 
-/* ═══════════════
-   2. FOOTNOTE MARKERS — без лишнего пробела
-   ═══════════════ */
+/* === 2. FOOTNOTE MARKERS — без лишнего пробела === */
 .fn-marker {
   min-width: 0 !important;
   margin-left: -0.05em !important;
@@ -7251,19 +7244,15 @@ html.dark .fn-marker:hover { color: #f5d8a8; }
   margin: 0 0.08em !important;
 }
 
-/* ═══════════════
-   3. NAGORNAYA THEME TOGGLE — встроенная кнопка в navbar/breadcrumbs
-   ═══════════════ */
-
-
+/* === 3. NAGORNAYA THEME TOGGLE — встроенная кнопка в navbar/breadcrumbs === */
 
 /* В светлой теме на breadcrumbs (фон светлый) — тёмная кнопка */
-html:not(.dark) body.nagornaya-page 
-html:not(.dark) body.nagornaya-page 
+html:not(.dark) body.nagornaya-page
+html:not(.dark) body.nagornaya-page
 /* Иконки sun/moon */
 
-html.dark 
-html.dark 
+html.dark
+html.dark
 
 /* На nagornaya-page скрываем floating-кнопку — есть встроенная */
 body.nagornaya-page #themeFloat,
@@ -7271,11 +7260,9 @@ body.nagornaya-page .theme-float-btn {
   display: none !important;
 }
 
-/* ═══════════════
-   4. NAGORNAYA QUIZ — h2 + placeholder hint
-   ═══════════════ */
+/* === 4. NAGORNAYA QUIZ — h2 + placeholder hint === */
 
-html:not(.dark) body.nagornaya-page 
+html:not(.dark) body.nagornaya-page
 
 #quizPlaceholder { min-height: 60px; }
 #quizPlaceholder:empty::before {
@@ -7288,9 +7275,7 @@ html:not(.dark) body.nagornaya-page
   font-size: 14px;
 }
 
-/* ═══════════════
-   5. GB-ACCURACY-BLOCK — тематично, full-width внутри main
-   ═══════════════ */
+/* === 5. GB-ACCURACY-BLOCK — тематично, full-width внутри main === */
 .gb-accuracy-block {
   margin-top: clamp(40px, 5vw, 64px) !important;
   margin-bottom: clamp(24px, 3vw, 40px);
@@ -7339,10 +7324,7 @@ html:not(.dark) body.nagornaya-page .gb-accuracy-inner {
   border-color: #e7e2d8;
 }
 
-
-/* ═══════════════
-   6. NAGORNAYA LIGHT THEME — overrides Tailwind dark-only styles
-   ═══════════════ */
+/* === 6. NAGORNAYA LIGHT THEME — overrides Tailwind dark-only styles === */
 html:not(.dark) body.nagornaya-page,
 html:not(.dark) body.nagornaya-page main,
 html:not(.dark) body.nagornaya-page .bg-stone-900,
@@ -7369,53 +7351,25 @@ html:not(.dark) body.nagornaya-page .hover\:bg-stone-800:hover {
   background: rgba(28,25,23,0.05) !important;
 }
 
-/* ═══════════════
-   6.5. NAGORNAYA DARK THEME — overrides static Tailwind styles in dark mode
-   ═══════════════ */
+/* === 6.5. NAGORNAYA DARK THEME — overrides static Tailwind styles in dark mode === */
 html.dark body.nagornaya-page,
-
 
 /* Overriding white/light container backgrounds with dark surfaces */
 
-
-
-
 /* Specific warning/note panels in dark mode */
-
-
-
-
-
 
 /* Overriding light borders to dark borders */
 
-
 /* Ensure strong contrast for dark mode text */
-
-
-
-
-
 
 /* Colored text styling adjustments for dark mode */
 
-
-
-
-
-
-
-
-/* ═══════════════
-   6.6. NAGORNAYA FONT-SIZE FIX — ensures body text elements inherit size from main
-   ═══════════════ */
+/* === 6.6. NAGORNAYA FONT-SIZE FIX — ensures body text elements inherit size from main === */
 body.nagornaya-page main p.text-\[16px\] {
   font-size: inherit !important;
 }
 
-/* ═══════════════
-   7. SPACING fixes для nagornaya/chast-*
-   ═══════════════ */
+/* === 7. SPACING fixes для nagornaya/chast-* === */
 main .bg-emerald-800.text-white.rounded-2xl,
 main .bg-stone-900.rounded-2xl,
 main .bg-stone-800.text-white.rounded-2xl,
@@ -7436,9 +7390,7 @@ main .gb-accuracy-block {
   }
 }
 
-/* ═══════════════
-   8. HOME-PAGE ambient phrases
-   ═══════════════ */
+/* === 8. HOME-PAGE ambient phrases === */
 .h-phrase--greek, .h-phrase[lang="grc"], .h-phrase[lang="el"] {
   font-family: 'Noto Sans Greek', 'GFS Neohellenic', 'Times New Roman', serif !important;
   font-style: normal !important; font-weight: 400 !important;
@@ -7456,9 +7408,7 @@ main .gb-accuracy-block {
   font-family: 'Noto Sans Greek', 'GFS Neohellenic', 'Times New Roman', serif;
 }
 
-/* ═══════════════
-   9. SCROLL-LOCK + iOS momentum
-   ═══════════════ */
+/* === 9. SCROLL-LOCK + iOS momentum === */
 html[data-scroll-locked="1"], html[data-scroll-locked="1"] body, body.ng-toc-lock {
   overflow: hidden !important;
   touch-action: auto !important;
@@ -7471,9 +7421,7 @@ body.ng-toc-lock .btoc-nav {
   overscroll-behavior: contain;
 }
 
-/* ═══════════════
-   10. TOC banner fallback
-   ═══════════════ */
+/* === 10. TOC banner fallback === */
 .btoc-banner {
   position: relative; height: 128px; flex-shrink: 0;
   background-size: cover; background-position: center top;
@@ -7495,34 +7443,26 @@ body.ng-toc-lock .btoc-nav {
   display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
 }
 
-/* ═══════════════
-   11. TOUCH TARGETS
-   ═══════════════ */
+/* === 11. TOUCH TARGETS === */
 .bar-icon-btn, .btoc-close, .btoc-fontsize-btn, .btoc-share-btn,
-.theme-float-btn, 
+.theme-float-btn,
 @media (pointer: coarse) {
-  .bar-icon-btn, .btoc-close, 
+  .bar-icon-btn, .btoc-close,
 }
 
-/* ═══════════════
-   12. CSP HARDENING — пиксель Метрики
-   ═══════════════ */
+/* === 12. CSP HARDENING — пиксель Метрики === */
 img[src*="mc.yandex.ru"] {
   position: absolute !important; left: -9999px !important;
   width: 1px; height: 1px; opacity: 0; pointer-events: none;
 }
 
-/* ═══════════════
-   14. Bottom-bar backdrop
-   ═══════════════ */
+/* === 14. Bottom-bar backdrop === */
 .bottom-bar {
   -webkit-backdrop-filter: blur(20px) saturate(160%);
   backdrop-filter: blur(20px) saturate(160%);
 }
 
-/* ═══════════════
-   15. THEME-FLOAT — позиция уведена выше bottom-bar, скрыта на nagornaya
-   ═══════════════ */
+/* === 15. THEME-FLOAT — позиция уведена выше bottom-bar, скрыта на nagornaya === */
 .theme-float-btn {
   position: fixed;
   right: clamp(14px, 2vw, 22px);
@@ -7559,12 +7499,10 @@ html.dark .theme-float-btn {
   }
 }
 
-/* ═══════════════
-   16. Reduced motion
-   ═══════════════ */
+/* === 16. Reduced motion === */
 @media (prefers-reduced-motion: reduce) {
   .summary-card__item, .h-article-card, .bottom-bar,
-  .theme-float-btn, 
+  .theme-float-btn,
 }
 
 /* High-contrast mode support */
@@ -7611,9 +7549,7 @@ html.dark .theme-float-btn {
   }
 }
 
-/* ═══════════════
-   17. Tailwind scope guard
-   ═══════════════ */
+/* === 17. Tailwind scope guard === */
 main [data-pagefind-body] ul:not([class]),
 main [data-pagefind-body] ol:not([class]) {
   list-style: revert;
@@ -7630,9 +7566,7 @@ main [data-pagefind-body] hr:not([class]) {
   margin: 2em 0;
 }
 
-/* ═══════════════
-   18. Tooltip-trigger (inline glossary)
-   ═══════════════ */
+/* === 18. Tooltip-trigger (inline glossary) === */
 .tooltip-trigger {
   position: relative;
   border-bottom: 1px dotted color-mix(in srgb, var(--color-accent, #7a2e2e) 50%, transparent);
@@ -7647,20 +7581,14 @@ html.dark .tooltip-trigger:hover { color: var(--color-accent-strong, #e8b878); }
 
 /* Sidebar controls — theme + font-size */
 
+html:not(.dark) body.nagornaya-page
+html:not(.dark) body.nagornaya-page
 
+html.dark
+html.dark
 
-html:not(.dark) body.nagornaya-page 
-html:not(.dark) body.nagornaya-page 
-
-
-html.dark 
-html.dark 
-
-
-
-
-html:not(.dark) body.nagornaya-page 
-html:not(.dark) body.nagornaya-page 
+html:not(.dark) body.nagornaya-page
+html:not(.dark) body.nagornaya-page
 
 /* AUDIT v7+v13: gb-accuracy on nagornaya — прозрачный фон (merged) */
 body.nagornaya-page .gb-accuracy-inner {
@@ -7719,7 +7647,6 @@ body.nagornaya-page .author-card {
 }
 
 /* THEME вверху */
-
 
 /* Убрать свечение полностью */
 html.dark .h-scripture-bg::before {
@@ -7810,8 +7737,7 @@ html.dark .h-hero-title:hover .h-title-accent {
   }
 }
 
-body.nagornaya-page 
-
+body.nagornaya-page
 
 body.nagornaya-page main > .max-w-4xl > .mb-6 > p.text-stone-500,
 body.nagornaya-page main > .max-w-4xl > .mb-6 > p.text-stone-400,
@@ -7831,7 +7757,7 @@ body.nagornaya-page main > .max-w-4xl > .mb-6 > p.article-updated {
 }
 
 /* AUDIT v13: final summary guard — no filled header, no v9 pseudo-check conflicts */
-body.nagornaya-page 
+body.nagornaya-page
 
 }
 
@@ -8108,7 +8034,6 @@ body.nagornaya-page
 
 body.has-bottom-bar #back-to-top { bottom: max(80px, calc(env(safe-area-inset-bottom, 0px) + 80px)) !important; }
 
-
 .mobile-controls .theme-toggle {
   position: relative !important;
   top: auto !important;
@@ -8135,12 +8060,7 @@ button.bref:hover {
   text-decoration: underline !important;
 }
 
-
-
-
 /* Reset browser button styling for .bref (Bible references) to make them look like elegant inline text links */
-
-
 
 /* Reset browser button styling for .bref (Bible references) to make them look like elegant inline text links */
 
@@ -8210,27 +8130,6 @@ html.dark .premium-frame-text {
 
 /* Fix timeline vertical line overlap bug by keeping timeline circles perfectly solid and opaque */
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 /* Premium Frame Style — highly elegant, classic, and professional manuscript borders */
 /* Delicate dashed inner border for old-world feel */
 
@@ -8239,7 +8138,7 @@ html.dark .premium-frame-text {
 
 /* Fix timeline vertical line overlap bug by keeping timeline circles perfectly solid and opaque */
 /* Lux Upgrade v3.0: hide tooltip category to fix overlap */  .gtip-luxury__header{margin-bottom:0!important}
-/* Lux Upgrade v3.0: remove intrusive top scroll bar */  
+/* Lux Upgrade v3.0: remove intrusive top scroll bar */
 /* Lux Upgrade v3.0: biography card polish - single border */ .biography-hero::after{display:none!important} .biography-hero{border-width:1px!important;box-shadow:0 8px 32px rgba(0,0,0,.06)!important} .biography-portrait{border-width:4px!important;box-shadow:0 4px 16px rgba(0,0,0,.08)!important}
 
 /* 2026-06-01: mobile tooltip hardening.
@@ -8430,7 +8329,6 @@ html.dark .context-links a:hover {
   margin: clamp(36px, 5vw, 56px) 0 clamp(24px, 4vw, 36px);
 }
 
-
 /* ============================================================
    BIOGRAPHY TEMPLATE — shared by John Gill biography trilogy
    (Часть I, II, III; previously inline in each HTML file)
@@ -8445,7 +8343,7 @@ html.dark .context-links a:hover {
      .timeline-desc / .foliant-mark
    ============================================================ */
 /* Биографический стиль — древний манускрипт в системе токенов */
-    @layer components {
+
       /* Обложка-биография с текстурой пергамента */
       .biography-hero {
         position: relative;
@@ -8557,7 +8455,7 @@ html.dark .context-links a:hover {
         position: relative;
       }
 
-      .biography-epigraph::before { content: none !important;  content: none !important; 
+      .biography-epigraph::before { content: none !important;  content: none !important;
         content: '“';
         position: absolute;
         left: -8px;
