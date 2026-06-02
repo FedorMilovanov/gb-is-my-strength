@@ -385,7 +385,7 @@
         });
 
         document.addEventListener('keydown', function (e) {
-          if (e.key === 'Escape') closeAll(true);
+          if (SiteUtils.isEscape(e)) closeAll(true);
         });
 
         window.addEventListener('scroll', function () {
@@ -559,14 +559,25 @@
 
     themeKey: 'theme', /* localStorage key — единое место */
 
-    featureToc: function () {
-      return SiteUtils.featureToc();
+
+
+    isEscape: function (e) {
+      return SiteUtils.isEscape(e);
     },
-    featureShare: function () {
-      return SiteUtils.featureShare();
+    isArticle: function () {
+      return SiteUtils.pageType() === 'article';
+    },
+    isHome: function () {
+      return SiteUtils.pageType() === 'home';
+    },
+    docH: function () {
+      return Math.max(
+        document.documentElement.scrollHeight,
+        document.body.scrollHeight || 0
+      ) - window.innerHeight;
     },
 
-    barThemeBtn: function () {
+        barThemeBtn: function () {
       /* Кнопка темы в bottom-bar (мобильная). Кэшируется после первого вызова. */
       if (SiteUtils._barThemeBtn === undefined) {
         SiteUtils._barThemeBtn = SiteUtils.barThemeBtn() || null;
@@ -1170,7 +1181,7 @@
       triggerEl = null;
     }
     function onKey(e) {
-      if (e.key === 'Escape') {
+      if (SiteUtils.isEscape(e)) {
         e.preventDefault();
         /* stopImmediatePropagation: исключаем одновременное срабатывание
            других ESC-обработчиков (btoc, footnotes, bible) пока диалог открыт */
@@ -1266,7 +1277,7 @@
 
     function update() {
       var scrollTop = window.scrollY || document.documentElement.scrollTop;
-      var docH = document.documentElement.scrollHeight - window.innerHeight;
+      var docH = SiteUtils.docH();
       var pct = docH > 0 ? SiteUtils.clamp((scrollTop / docH) * 100, 0, 100) : 0;
       bar.style.width = pct + '%';
     }
@@ -1399,7 +1410,7 @@
     toggle.addEventListener('click', openToc);
     if (closeBtn) closeBtn.addEventListener('click', closeToc);
     if (overlay) overlay.addEventListener('click', closeToc);
-    document.addEventListener('keydown', function (e) { if (e.key === 'Escape' && panel.classList.contains('open')) closeToc(); });
+    document.addEventListener('keydown', function (e) { if (SiteUtils.isEscape(e) && panel.classList.contains('open')) closeToc(); });
 
     var tocLinks = list.querySelectorAll('a');
     function updateActive() {
@@ -1633,7 +1644,7 @@
       var delta   = scrollY - _lastScrollY;
       _lastScrollY = scrollY;
 
-      var docH = document.documentElement.scrollHeight - window.innerHeight;
+      var docH = SiteUtils.docH();
       var pct  = docH > 0 ? SiteUtils.clamp(Math.round((scrollY / docH) * 100), 0, 100) : 0;
 
       /* --- Логика видимости --- */
@@ -1751,7 +1762,7 @@
     if (sectionBtn) sectionBtn.addEventListener('click', openToc);
     if (closeBtn) closeBtn.addEventListener('click', closeToc);
     overlay.addEventListener('click', function (e) { if (!panel || !panel.contains(e.target)) closeToc(); });
-    document.addEventListener('keydown', function (e) { if (e.key === 'Escape' && overlay.classList.contains('open')) closeToc(); });
+    document.addEventListener('keydown', function (e) { if (SiteUtils.isEscape(e) && overlay.classList.contains('open')) closeToc(); });
 
     /* Экспортируем API для внешних модулей (клавиатурные шорткаты, etc.) */
     window.SiteBTOC = { open: openToc, close: closeToc };
@@ -3663,7 +3674,7 @@
 
     document.addEventListener('mousedown', function (e) { if (!popup.contains(e.target)) hide(); });
     window.addEventListener('scroll', hide, { passive: true });
-    document.addEventListener('keydown', function (e) { if (e.key === 'Escape') hide(); });
+    document.addEventListener('keydown', function (e) { if (SiteUtils.isEscape(e)) hide(); });
 
     /* AUDIT_10_OF_10 / SHR-9.1: правильная атрибуция, scroll-to-text, NBSP. */
     function findNearestH2() {
@@ -3848,8 +3859,7 @@
      Только на страницах статей (page.type === 'article').
      ============================================================ */
   (function () {
-    var pageType = SiteUtils.pageType();
-    if (pageType !== 'article') return;
+    if (!SiteUtils.isArticle()) return;
 
     /* Не показываем на главной и там, где дата уже есть */
     if (document.querySelector('.article-date-display')) return;
@@ -4078,8 +4088,7 @@
      Article — image viewer (breathe badge + click to zoom)
      ============================================================ */
   (function () {
-    var pageType = SiteUtils.pageType();
-    if (pageType !== 'article') return;
+    if (!SiteUtils.isArticle()) return;
 
     var imgs = document.querySelectorAll('.article-figure img, .article-img img, .nagornaya-hero-img');
     if (!imgs.length) return;
@@ -4197,7 +4206,7 @@
     if (closeBtn) closeBtn.addEventListener('click', close);
     document.addEventListener('keydown', function (e) {
       if (!viewer.classList.contains('is-open')) return;
-      if (e.key === 'Escape') { e.stopImmediatePropagation(); close(); }
+      if (SiteUtils.isEscape(e)) { e.stopImmediatePropagation(); close(); }
     });
   })();
 
@@ -4207,8 +4216,7 @@
      - skips hero / fetchpriority="high"
      ============================================================ */
   (function () {
-    var pageType = SiteUtils.pageType();
-    if (pageType !== 'article') return;
+    if (!SiteUtils.isArticle()) return;
 
     var scope = SiteUtils.articleEl() || document;
     var imgs = scope.querySelectorAll('img');
@@ -4231,8 +4239,7 @@
      Делает всю карточку кликабельной, сохраняя ссылки внутри.
      ============================================================ */
   (function () {
-    var pageType = SiteUtils.pageType();
-    if (pageType !== 'home') return;
+    if (!SiteUtils.isHome()) return;
 
     var cards = document.querySelectorAll('.article-item.card');
     if (!cards.length) return;
@@ -4800,7 +4807,7 @@
     /* ── Reading progress ── */
     function updateProgress() {
       var scrollTop = window.scrollY || window.pageYOffset;
-      var docH = document.documentElement.scrollHeight - window.innerHeight;
+      var docH = SiteUtils.docH();
       var pct  = docH > 0 ? scrollTop / docH : 0;
       progressBar.style.width = (pct * 100) + '%';
       if (progressCircle) {
@@ -4898,7 +4905,7 @@
     }
     if (mobileBackdrop) mobileBackdrop.addEventListener('click', closeMobileNavFn);
     document.addEventListener('keydown', function (e) {
-      if (mobileOpen && (e.key === 'Escape' || e.key === 'Esc')) closeMobileNavFn();
+      if (mobileOpen && (SiteUtils.isEscape(e))) closeMobileNavFn();
     });
 
     /* ── Единый scroll-handler (rAF throttled) ── */
