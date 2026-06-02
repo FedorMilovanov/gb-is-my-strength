@@ -969,73 +969,16 @@ window.SITE_CONFIG = {
 <script src="js/site-utils.js?v=d4ac3689" defer></script>
     <script src="js/scroll-perf.js?v=84977eec" defer></script>
     <script src="js/site.js?v=9c40c710" defer></script>
+    <script src="js/enhancements.js?v=b7ff957f" defer></script>
 
 <script>
 /* ════════════════════════════════════════════════════════
-   HOME PAGE INTERACTIVE JS
+   HOME PAGE INTERACTIVE JS (r43: deduped; reading/navbar/reveal → site.js mod35; hebrew/ambient → enhancements.js)
    ════════════════════════════════════════════════════════ */
 (function () {
   'use strict';
 
-  /* ── Reading Progress ── */
-  const progressBar = document.getElementById('hReadingProgress');
-  const progressCircle = document.getElementById('hProgressCircle');
-  const circumference = 138.23;
-
-  function updateProgress() {
-    let scrollTop = window.scrollY;
-    let docH = document.documentElement.scrollHeight - window.innerHeight;
-    let pct = docH > 0 ? scrollTop / docH : 0;
-    if (progressBar) progressBar.style.transform = 'scaleX(' + pct + ')';
-    if (progressCircle) {
-      progressCircle.style.strokeDashoffset = (circumference - pct * circumference) + '';
-    }
-    return { scrollTop: scrollTop, pct: pct };
-  }
-
-  /* ── Smart Navbar ── */
-  const navbar = document.getElementById('hNavbar');
-  let lastScroll = window.scrollY || window.pageYOffset || 0;
-
-  function updateNavbar() {
-    let s = window.scrollY;
-    if (s > 40) navbar.classList.add('scrolled');
-    else navbar.classList.remove('scrolled');
-    if (s > 300 && s > lastScroll + 6) navbar.classList.add('nav-hidden');
-    else if (s < lastScroll - 6) navbar.classList.remove('nav-hidden');
-    lastScroll = s;
-  }
-
-  /* ── Scroll to Top ── */
-  const scrollTopBtn = document.getElementById('hScrollTop');
-
-  function scrollToPageTop() {
-    const reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-    window.scrollTo({ top: 0, behavior: reduce ? 'auto' : 'smooth' });
-  }
-
-  function updateScrollTop() {
-    if (!scrollTopBtn) return;
-    let s = window.scrollY;
-    const docH = document.documentElement.scrollHeight - window.innerHeight;
-    const nearBottom = docH > 0 && (docH - s) < 120;
-    scrollTopBtn.classList.toggle('visible', s > 500 && !nearBottom);
-  }
-  if (scrollTopBtn) {
-    scrollTopBtn.addEventListener('click', scrollToPageTop);
-  }
-
-  /* ── Combined scroll handler ── */
-  window.addEventListener('scroll', function () {
-    updateProgress();
-    updateNavbar();
-    updateScrollTop();
-    revealOnScroll();
-  }, { passive: true });
-
-  /* ── Theme toggle ── обрабатывается site.js (единственный handler) ── */
-
-  /* ── Mobile menu ── */
+/* ── Mobile menu ── */
   const mobileMenuBtn = document.getElementById('hMobileMenuBtn');
   const mobileNav = document.getElementById('hMobileNav');
   /* burgerIcon / closeIcon удалены — иконка анимируется CSS через .is-open на кнопке */
@@ -1090,148 +1033,6 @@ window.SITE_CONFIG = {
       if (mobileMenuBtn) mobileMenuBtn.focus();
     }
   });
-
-  /* ── Hebrew word tap-toggle: persistent reveal on touch devices ──
-     :active reverts the moment the finger lifts, so we use data-toggled
-     to keep the translation visible until the user taps again or elsewhere. */
-  const hebrewWords = document.querySelectorAll('.hb-w, .h-tetra');
-  const hebrewInlineWords = document.querySelectorAll('.hb-w');
-
-  function measureHebrewInlineWords() {
-    hebrewInlineWords.forEach(function (el) {
-      const front = el.querySelector('.hb-front');
-      const back = el.querySelector('.hb-back');
-      if (!front || !back) return;
-      const frontW = Math.ceil(front.getBoundingClientRect().width) + 2;
-      const backW = Math.ceil(back.getBoundingClientRect().width) + 6;
-      el.style.setProperty('--hb-front-w', frontW + 'px');
-      el.style.setProperty('--hb-open-w', Math.max(frontW, backW) + 'px');
-    });
-  }
-
-  measureHebrewInlineWords();
-  window.addEventListener('resize', measureHebrewInlineWords, { passive: true });
-  if (document.fonts && document.fonts.ready) {
-    document.fonts.ready.then(measureHebrewInlineWords).catch(function () {});
-  }
-
-  hebrewWords.forEach(function (el) {
-    el.addEventListener('click', function (e) {
-      let wasToggled = el.hasAttribute('data-toggled');
-      /* Close all others */
-      hebrewWords.forEach(function (w) { w.removeAttribute('data-toggled'); });
-      /* Toggle this one open (or leave closed if it was already open) */
-      if (!wasToggled) el.setAttribute('data-toggled', '');
-      e.stopPropagation();
-    });
-  });
-  /* Tap anywhere else collapses all */
-  document.addEventListener('click', function () {
-    hebrewWords.forEach(function (w) { w.removeAttribute('data-toggled'); });
-  });
-
-  /* Mobile theme button visibility is handled by CSS media queries */
-
-  /* ── Intersection Observer: reveal sections ── */
-  const reveals = document.querySelectorAll('.h-reveal');
-
-  function revealOnScroll() {
-    reveals.forEach(function (el) {
-      if (el.classList.contains('h-in')) return;
-      let rect = el.getBoundingClientRect();
-      if (rect.top < window.innerHeight - 60) {
-        el.classList.add('h-in');
-      }
-    });
-  }
-  revealOnScroll(); // run on load
-
-  /* Use IntersectionObserver if available */
-  if ('IntersectionObserver' in window) {
-    const observer = new IntersectionObserver(function (entries) {
-      entries.forEach(function (entry) {
-        if (entry.isIntersecting) {
-          entry.target.classList.add('h-in');
-          observer.unobserve(entry.target);
-        }
-      });
-    }, { threshold: 0.08 });
-    reveals.forEach(function (el) { observer.observe(el); });
-  }
-
-  /* ── Ambient Scripture Background ── */
-  const phrases = [
-    /* Greek */
-    { lang:'greek', text:'ἐν ἀρχῇ ἦν ὁ λόγος', top:'6%',  side:'left',  offset:'2%', size:1.7, opacity:0.07 },
-    { lang:'greek', text:'καὶ ὁ λόγος ἦν πρὸς τὸν θεόν', top:'14%', side:'right', offset:'3%', size:1.5, opacity:0.065 },
-    { lang:'greek', text:'ἅγιος ἅγιος ἅγιος', top:'22%', side:'left', offset:'2%', size:2.0, opacity:0.08 },
-    { lang:'greek', text:'τὸ ἄλφα καὶ τὸ ὦ', top:'31%', side:'right', offset:'4%', size:1.8, opacity:0.07 },
-    { lang:'greek', text:'ὁ ὢν καὶ ὁ ἦν καὶ ὁ ἐρχόμενος', top:'40%', side:'left', offset:'1.5%', size:1.5, opacity:0.065 },
-    { lang:'greek', text:'κύριος παντοκράτωρ', top:'50%', side:'right', offset:'3%', size:2.0, opacity:0.075 },
-    { lang:'greek', text:'δόξα ἐν ὑψίστοις θεῷ', top:'60%', side:'left', offset:'2.5%', size:1.7, opacity:0.07 },
-    { lang:'greek', text:'μόνῳ σοφῷ θεῷ', top:'70%', side:'right', offset:'5%', size:1.6, opacity:0.065 },
-    { lang:'greek', text:'ἐν ἀρχῇ ἐποίησεν ὁ θεός', top:'81%', side:'left', offset:'2%', size:1.5, opacity:0.07 },
-    { lang:'greek', text:'τὸ πνεῦμα κυρίου', top:'90%', side:'right', offset:'4%', size:1.8, opacity:0.065 },
-
-    /* Latin */
-    { lang:'latin', text:'In principio erat Verbum', top:'10%', side:'right', offset:'2%', size:1.5, opacity:0.065 },
-    { lang:'latin', text:'Soli Deo Gloria', top:'19%', side:'left', offset:'3%', size:1.6, opacity:0.075 },
-    { lang:'latin', text:'Verbum Domini manet', top:'27%', side:'right', offset:'5%', size:1.4, opacity:0.065 },
-    { lang:'latin', text:'Coram Deo', top:'36%', side:'left', offset:'4%', size:1.5, opacity:0.075 },
-    { lang:'latin', text:'Sanctus Sanctus Sanctus', top:'45%', side:'right', offset:'2.5%', size:1.6, opacity:0.07 },
-    { lang:'latin', text:'Gloria in excelsis Deo', top:'55%', side:'left', offset:'2%', size:1.5, opacity:0.07 },
-    { lang:'latin', text:'Magnificat anima mea Dominum', top:'65%', side:'right', offset:'3%', size:1.4, opacity:0.06 },
-    { lang:'latin', text:'Ego sum via veritas et vita', top:'74%', side:'left', offset:'3%', size:1.5, opacity:0.065 },
-    { lang:'latin', text:'Dominus illuminatio mea', top:'85%', side:'right', offset:'2%', size:1.6, opacity:0.07 },
-    { lang:'latin', text:'Solus Christus', top:'94%', side:'left', offset:'4%', size:1.7, opacity:0.07 },
-
-    /* Hebrew (Scripture phrases, NO names of God) */
-    { lang:'hebrew', text:'בְּרֵאשִׁית בָּרָא', top:'4%',  side:'right', offset:'2%', size:2.4, opacity:0.075, rotate:-1 },
-    { lang:'hebrew', text:'שְׁמַע יִשְׂרָאֵל', top:'17%', side:'left',  offset:'2%', size:2.8, opacity:0.075 },
-    { lang:'hebrew', text:'תּוֹרַת אֱמֶת', top:'25%', side:'right', offset:'4%', size:2.2, opacity:0.07, rotate:1 },
-    { lang:'hebrew', text:'מִזְמוֹר לְדָוִד', top:'33%', side:'left',  offset:'2%', size:2.5, opacity:0.07 },
-    { lang:'hebrew', text:'הַשָּׁמַיִם מְסַפְּרִים כְּבוֹד', top:'43%', side:'right', offset:'1.5%', size:2.0, opacity:0.065 },
-    { lang:'hebrew', text:'חַסְדּוֹ לְעוֹלָם', top:'52%', side:'left',  offset:'3%', size:2.3, opacity:0.07, rotate:-1 },
-    { lang:'hebrew', text:'כִּי לְעוֹלָם חַסְדּוֹ', top:'62%', side:'right', offset:'2%', size:2.2, opacity:0.07 },
-    { lang:'hebrew', text:'אוֹר לְרַגְלִי דְבָרֶךָ', top:'72%', side:'left',  offset:'2%', size:2.0, opacity:0.065 },
-    { lang:'hebrew', text:'אֶת הַשָּׁמַיִם וְאֵת הָאָרֶץ', top:'79%', side:'right', offset:'3%', size:1.9, opacity:0.065 },
-    { lang:'hebrew', text:'קָרוֹב לְכָל קֹרְאָיו', top:'88%', side:'left',  offset:'2.5%', size:2.1, opacity:0.07 },
-    { lang:'hebrew', text:'חֲסִידֵי כׇּל עַם', top:'96%', side:'right', offset:'4%', size:2.0, opacity:0.065 },
-
-    /* Ambient — огромные фоновые имена по центру (как в эталонном дизайне) */
-    { lang:'hebrew', text:'יהוה',    top:'5%',  side:'center', size:11,  opacity:0.025 },
-    { lang:'hebrew', text:'אֲדֹנָי', top:'37%', side:'center', size:9.5, opacity:0.022 },
-    { lang:'hebrew', text:'אֱלֹהִים',top:'67%', side:'center', size:10,  opacity:0.022 },
-    { lang:'hebrew', text:'יהוה',    top:'92%', side:'center', size:10.5,opacity:0.022 },
-  ];
-
-  const bg = document.getElementById('hScriptureBg');
-  if (bg) {
-    phrases.forEach(function (p) {
-      let el = document.createElement('div');
-      const isAmbient = p.side === 'center';
-      el.className = 'h-phrase h-phrase--' + p.lang + (isAmbient ? ' h-phrase--ambient' : '');
-      el.textContent = p.text;
-      let style = 'top:' + p.top + ';font-size:' + p.size + 'rem;opacity:' + p.opacity + ';--phrase-opacity:' + p.opacity + ';';
-      if (p.side === 'center') {
-        style += 'left:50%;transform:translateX(-50%);';
-      } else if (p.side === 'left') {
-        style += 'left:' + p.offset + ';';
-      } else {
-        style += 'right:' + p.offset + ';';
-      }
-      if (p.rotate && p.side !== 'center') style += 'transform:rotate(' + p.rotate + 'deg);';
-      el.setAttribute('style', style);
-      el.setAttribute('aria-hidden', 'true'); if (p.lang === 'greek') el.setAttribute('lang', 'grc'); if (p.lang === 'hebrew') el.setAttribute('lang', 'he');
-      bg.appendChild(el);
-    });
-  }
-
-  /* ── Initial state ── */
-  updateProgress();
-  updateNavbar();
-  updateScrollTop();
-
 })();
 </script>
 
