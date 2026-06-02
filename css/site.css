@@ -16,9 +16,6 @@ img { max-width: 100%; height: auto; display: block; }
 .card-cover:not(.img-loaded),
 .article-hero img:not(.img-loaded) {
   background: linear-gradient(
-    90deg,
-    var(--color-surface-muted)   0%,
-    var(--color-border)   40%,
     var(--color-surface-muted) 100%
   );
   background-size: 200% 100%;
@@ -76,7 +73,6 @@ body { overflow-x: hidden; }
      Architecture: reference/value → semantic role → legacy alias.
      ═══════════════ */
 
-  /* Canonical surfaces */
   --color-canvas:           #fdfcf9;
   --color-surface:          #ffffff;
   --color-surface-muted:    #f4f2ed;
@@ -84,7 +80,6 @@ body { overflow-x: hidden; }
   --color-surface-alt:      #f5f5f3;
   --color-surface-2:        #f7f4f0;
 
-  /* Canonical text roles */
   --color-text:             #1a1a1a;
   --color-text-primary:     #1a1a18;
   --color-text-secondary:   #555555;
@@ -93,7 +88,6 @@ body { overflow-x: hidden; }
   --color-text-warm:        #2b2317;
   --color-text-warm-muted:  #4a3e2a;
 
-  /* Canonical borders / brand / links */
   --color-border:           #e5e2dc;
   --color-border-strong:    #cfc9bd;
   --color-accent:           #7a2e2e;
@@ -102,7 +96,6 @@ body { overflow-x: hidden; }
   --color-accent-selection: #b8936a;
   --color-link:             #1f4ea3;
 
-  /* Canonical feedback roles */
   --color-success-bg:       #eef5ec;
   --color-success-border:   #b8d0b0;
   --color-warning-bg:       #fbf4e2;
@@ -112,7 +105,6 @@ body { overflow-x: hidden; }
   --color-fact-bg:          #eef5ec;
   --color-fact-border:      #b8d0b0;
 
-  /* Canonical overlay / shadow roles */
   --color-tooltip-bg:       #2a2a2a;
   --color-tooltip-text:     #ffffff;
   --shadow-sm:              0 1px 2px rgba(16, 18, 22, .06);
@@ -120,7 +112,6 @@ body { overflow-x: hidden; }
   --shadow-lg:              0 8px 24px rgba(16, 18, 22, .11);
   --shadow-xl:              0 16px 44px rgba(16, 18, 22, .14);
 
-  /* Legacy compatibility aliases — do not use in new CSS */
   --bg:                 var(--color-canvas);
   --bg-elevated:        var(--color-surface);
   --text:               var(--color-text);
@@ -168,7 +159,6 @@ body { overflow-x: hidden; }
 
 html.dark {
 
-  /* Theme-mode remap: semantic tokens change, components do not. */
   --color-canvas:           #0e1116;
   --color-surface:          #161a21;
   --color-surface-muted:    #161a21;
@@ -293,8 +283,6 @@ body {
   body { scrollbar-gutter: stable; }
 }
 
-h1, h2, h3, h4, h5, h6,
-code, pre, kbd,
 a, abbr,
 button, label, input, select, textarea,
 .fn-marker, .tooltip, .gtip,
@@ -492,9 +480,6 @@ html.dark .icon-sun { opacity: 1; color: #f5c542; }
   background-position: 0 100%;
   background-size: 0% 1px;
   transition:
-    color .18s ease,
-    background-size .2s cubic-bezier(.4,0,.2,1),
-    transform .18s cubic-bezier(.2,.7,.2,1),
     opacity .18s ease;
   display: inline-block;
   min-width: 0;
@@ -818,9 +803,7 @@ article p {
 /* AUDIT V9 / #127: премиальное подчёркивание ссылок в статьях.
    WCAG 1.4.1 (Use of Color) — ссылки больше не отличаются ТОЛЬКО цветом.
 
-   Дизайн (на основе обзора editorial-сайтов май 2026: NYT, New Yorker, Stratechery,
    Substack):
-   * 1px подчёркивание с offset 3px и opacity ~40% — едва заметно в потоке чтения,
      но даёт явный visual cue + проходит автоматические a11y-сканеры.
    * Hover/focus → подчёркивание уплотняется до accent color, добавляется toned
      background-tint (как в NYT Magazine длинных текстов).
@@ -837,8 +820,6 @@ article a {
   text-underline-offset: 3px;
   text-decoration-skip-ink: auto;
   transition:
-    color .15s ease,
-    text-decoration-color .15s ease,
     background-color .15s ease;
   border-radius: 2px;
 }
@@ -1199,7 +1180,6 @@ html.dark .heart-flip-back { background: #110e07; }
     shape-outside: none;
   }
 
-  .article-img.float-right + p,
   .article-img.float-right + ul,
   .article-img.float-right + blockquote,
   .article-img.float-left + p,
@@ -1453,8 +1433,6 @@ html.dark .fact-box h4 { color: #80c880; }
 }
 .card.fx-lift{
   transition:
-    transform .35s cubic-bezier(.2,.7,.2,1),
-    box-shadow .35s ease,
     border-color .35s ease;
   will-change: transform;
 }
@@ -2364,9 +2342,6 @@ html.dark .compare-table:not(.compare-table--scroll) tr {
   text-wrap: pretty;
   overflow-wrap: break-word;
   transition:
-    color .18s ease,
-    background .18s ease,
-    border-color .18s ease,
     opacity .18s ease,
     transform .22s cubic-bezier(.2,.7,.2,1);
 }
@@ -2799,10 +2774,6 @@ html.dark .bar-icon-sun  { display: block; color: #f5c542; }
   border-left: 2px solid transparent;
   border-radius: 0 10px 10px 0;
   transition:
-    color .18s ease,
-    background .18s ease,
-    border-color .18s ease,
-    opacity .18s ease,
     transform .22s cubic-bezier(.2,.7,.2,1);
   opacity: 0.78;
   position: relative;
@@ -2849,7 +2820,6 @@ html.dark .bar-icon-sun  { display: block; color: #f5c542; }
   border-left: 2px solid var(--color-border);
   border-radius: 0 12px 12px 0;
   transition:
-    color .18s ease,
     background .18s ease,
     border-color .18s ease,
     transform .22s cubic-bezier(.2,.7,.2,1);
@@ -3854,28 +3824,8 @@ body.has-bottom-bar .bookmark-toast {
      at the top of file). Removed redundant vars; only article-font-size remains. */
   --article-font-size: 17px;
 }
-.article-main p,
-.article-body p,
-.article-main li,
-.article-body li,
-.article-main blockquote,
-.article-body blockquote,
-.article-main .note-box,
-.article-body .note-box,
-.article-main .quote-box,
-.article-body .quote-box,
-.article-main .warn-box,
-.article-body .warn-box,
-.article-main .info-box,
-.article-body .info-box,
 
-.article-main .faq-item summary,
-.article-body .faq-item summary,
-.article-main .faq-body,
-.article-body .faq-body,
 
-.article-main .ehrman-block .ehrman-quote,
-.article-body .ehrman-block .ehrman-quote,
 
 .article-main .quiz-question-text,
 .article-body .quiz-question-text,
@@ -3904,7 +3854,6 @@ body.has-bottom-bar .bookmark-toast {
   font-size: 14px; font-weight: 700; cursor: pointer; text-decoration: none;
   display: inline-block;
   transition:
-    transform .35s cubic-bezier(.2,.7,.2,1),
     box-shadow .35s ease,
     opacity .15s, background .15s, color .15s, border-color .15s;
   will-change: transform;
@@ -3930,7 +3879,6 @@ body.has-bottom-bar .bookmark-toast {
   background: var(--color-canvas); border: 1px solid var(--color-border); border-radius: 14px;
   padding: 14px 16px;
   transition:
-    transform .35s cubic-bezier(.2,.7,.2,1),
     box-shadow .35s ease,
     border-color .35s ease;
   will-change: transform;
@@ -4110,9 +4058,6 @@ html.dark .bref .btip {
   border-radius: 3px;
   padding: 0 1px 1px;
   transition:
-    background-color .25s cubic-bezier(.19,1,.22,1),
-    border-bottom-color .25s cubic-bezier(.19,1,.22,1),
-    color .25s cubic-bezier(.19,1,.22,1),
     box-shadow .25s cubic-bezier(.19,1,.22,1);
 }
 .gterm:hover,
@@ -4146,8 +4091,6 @@ html.dark .gterm.is-open {
   color: #1a150f;
   border: 1px solid rgba(0, 0, 0, 0.06);
   box-shadow:
-    0 4px 20px rgba(62, 42, 22, 0.08),
-    0 20px 60px -15px rgba(62, 42, 22, 0.15),
     inset 0 1px 0 rgba(255, 255, 255, 0.62);
   -webkit-backdrop-filter: blur(20px) saturate(180%);
   backdrop-filter: blur(20px) saturate(180%);
@@ -4161,8 +4104,6 @@ html.dark .gterm.is-open {
   transform: translateY(8px) scale(.965);
   transform-origin: 50% 100%;
   transition:
-    opacity .25s cubic-bezier(.19,1,.22,1),
-    transform .35s cubic-bezier(.19,1,.22,1),
     visibility .25s ease;
   z-index: var(--z-panel);
   top: -9999px;
@@ -4418,8 +4359,6 @@ html.dark .gtip-luxury__definition a { color: var(--color-accent-strong, #e8b878
   color: #1a150f;
   border: 1px solid rgba(0, 0, 0, 0.06);
   box-shadow:
-    0 4px 20px rgba(62, 42, 22, 0.08),
-    0 20px 60px -15px rgba(62, 42, 22, 0.15),
     inset 0 1px 0 rgba(255, 255, 255, 0.62);
   -webkit-backdrop-filter: blur(20px) saturate(180%);
   backdrop-filter: blur(20px) saturate(180%);
@@ -4433,8 +4372,6 @@ html.dark .gtip-luxury__definition a { color: var(--color-accent-strong, #e8b878
   transform: translateY(8px) scale(.965);
   transform-origin: 50% 100%;
   transition:
-    opacity .25s cubic-bezier(.19,1,.22,1),
-    transform .35s cubic-bezier(.19,1,.22,1),
     visibility .25s ease;
   z-index: var(--z-panel);
   visibility: hidden;
@@ -4754,10 +4691,6 @@ footer.footer-home {
 
 @media print {
 
-  .theme-toggle, .share-block, .bottom-bar, .btoc-overlay,
-  #back-to-top, .back-to-index, .skip-link,
-  #toc-toggle, #toc-overlay, #toc-panel,
-  #section-label, #reading-progress,
   .flip-card-back, .error-flip-back, .quiz-wrapper,
   .bookmark-toast, #selection-share-popup,
   #anchor-copy-toast, .kbd-hint-toast, .heart-flip-wrap,
@@ -4807,7 +4740,6 @@ footer.footer-home {
     animation: none !important;
     transform: none !important;
   }
-  .flip-finger-icon,
   .flip-card:not(.flipped),
   .error-flip-card:not(.flipped),
   .heart-flip-card:not(.flipped),
@@ -5081,7 +5013,6 @@ footer.footer-home {
   border: 1px solid var(--color-border);
   border-radius: 10px;
   box-shadow:
-    0 4px 24px rgba(0, 0, 0, .14),
     0 1px 4px  rgba(0, 0, 0, .06);
   opacity: 0;
   pointer-events: none;
@@ -5342,10 +5273,6 @@ html.dark .article-date-display {
   cursor: pointer;
   letter-spacing: 0.02em;
   transition:
-    color .18s ease,
-    border-color .18s ease,
-    background .18s ease,
-    transform .22s cubic-bezier(.2,.7,.2,1),
     box-shadow .22s ease;
   white-space: nowrap;
   line-height: 1;
@@ -5766,7 +5693,6 @@ html:not(.dark) .quiz-review-prev {
   border-radius: 14px;
   overflow: hidden;
   transition:
-    transform .35s cubic-bezier(.2,.7,.2,1),
     box-shadow .35s ease,
     border-color .35s ease;
 }
@@ -6540,10 +6466,6 @@ html.dark .about-contact-handle { color: #9c8c7a; }
   white-space: nowrap;
   line-height: 1;
   transition:
-    color        0.18s cubic-bezier(.4,0,.2,1),
-    border-color 0.18s cubic-bezier(.4,0,.2,1),
-    background   0.18s cubic-bezier(.4,0,.2,1),
-    transform    0.22s cubic-bezier(.2,.7,.2,1),
     box-shadow   0.22s cubic-bezier(.2,.7,.2,1);
   -webkit-tap-highlight-color: transparent;
   cursor: pointer;
@@ -6582,7 +6504,6 @@ html.dark .about-contact-handle { color: #9c8c7a; }
   color: inherit;
   opacity: 0.7;
   transition:
-    opacity   0.18s cubic-bezier(.4,0,.2,1),
     transform 0.22s cubic-bezier(.2,.7,.2,1);
 }
 
@@ -6912,7 +6833,6 @@ html.dark .fn-marker:focus-visible {
   }
 }
 
-.h-mobile-nav a:focus-visible,
 .bottom-bar button:focus-visible,
 .btoc-link:focus-visible,
 .toc-link:focus-visible,
@@ -6966,24 +6886,6 @@ button, a, [role="button"], [tabindex="0"], summary, input, textarea, select {
 
 @media (hover: none), (pointer: coarse) {
 
-  .quiz-option:hover:not(.correct):not(.wrong):not(:disabled),
-  .bar-icon-btn:hover,
-  .gb-accuracy-btn:hover,
-  .bookmark-btn:hover,
-  .bookmark-toast-close:hover,
-  .btoc-close:hover,
-  .btoc-link:hover:not(.active),
-  .toc-link:hover:not(.active),
-  .article-end-btn:hover,
-  .nav-link:hover,
-  .h-nav-link:hover,
-  .h-nav-logo:hover,
-  .h-mobile-nav a:hover,
-  .h-cp-btn:hover,
-  .breadcrumb__link:hover,
-  .gb-link-soft:hover,
-  .gb-text-link:hover,
-  .gb-series-link:hover,
   .series-card:hover,
   .related-articles__item:hover,
   .h-article-card:hover,
@@ -6998,15 +6900,6 @@ button, a, [role="button"], [tabindex="0"], summary, input, textarea, select {
 }
 
 @media (pointer: coarse) {
-  .quiz-option:active,
-  .bar-icon-btn:active,
-  .gb-accuracy-btn:active,
-  .bookmark-btn:active,
-  .btoc-link:active,
-  .toc-link:active,
-  .article-end-btn:active,
-  .nav-link:active,
-  .breadcrumb__link:active,
   .gb-link-soft:active,
   .gb-text-link:active,
   .gb-series-link:active,
@@ -7113,7 +7006,6 @@ button, a, [role="button"], [tabindex="0"], summary, input, textarea, select {
   border: 1px solid color-mix(in srgb, var(--color-border, #e7e2d8) 80%, transparent);
   border-radius: 20px;
   box-shadow:
-    0 1px 0 rgba(255,255,255,.8) inset,
     0 1px 2px rgba(28,25,23,.03),
     0 18px 48px -28px rgba(28,25,23,.14),
     0 6px 18px -10px rgba(28,25,23,.06);
@@ -7171,8 +7063,6 @@ html.dark .summary-card {
   border: 1px solid color-mix(in srgb, var(--color-border, #e7e2d8) 60%, transparent) !important;
   border-radius: 14px !important;
   box-shadow:
-    0 1px 0 rgba(255,255,255,.6) inset,
-    0 1px 2px rgba(28,25,23,.03),
     0 6px 14px -10px rgba(28,25,23,.10);
   transition: transform .22s cubic-bezier(.22,1,.36,1), box-shadow .22s ease, border-color .22s ease;
   counter-increment: summaryitem;
@@ -7180,8 +7070,6 @@ html.dark .summary-card {
 .summary-card__item:hover {
   transform: translateY(-1px);
   box-shadow:
-    0 1px 0 rgba(255,255,255,.8) inset,
-    0 2px 4px rgba(28,25,23,.04),
     0 12px 26px -12px rgba(28,25,23,.18);
   border-color: var(--color-accent, #7a2e2e);
   border-color: color-mix(in srgb, var(--color-accent, #7a2e2e) 28%, var(--color-border, #e7e2d8)) !important;
@@ -7192,8 +7080,6 @@ html.dark .summary-card__item {
   border-color: var(--color-border, #3a3028);
   border-color: color-mix(in srgb, var(--color-border, #3a3028) 85%, transparent) !important;
   box-shadow:
-    0 1px 0 rgba(255,255,255,.03) inset,
-    0 1px 2px rgba(0,0,0,.35),
     0 8px 18px -10px rgba(0,0,0,.55);
 }
 
@@ -7205,8 +7091,6 @@ html.dark .summary-card__item {
   background: #fff !important;
   border: 1px solid color-mix(in srgb, #6ba368 35%, var(--color-border, #e7e2d8)) !important;
   box-shadow:
-    0 1px 0 rgba(255,255,255,.9) inset,
-    0 2px 6px -2px rgba(28,25,23,.08),
     0 1px 2px rgba(28,25,23,.04);
   display: grid !important; place-items: center !important;
   flex-shrink: 0; margin: 0 !important; padding: 0 !important;
@@ -7576,9 +7460,6 @@ html.dark body.nagornaya-page .bg-rose-50 {
 }
 
 /* Overriding light borders to dark borders */
-html.dark body.nagornaya-page .border-stone-100,
-html.dark body.nagornaya-page .border-stone-200,
-html.dark body.nagornaya-page .border-stone-300,
 html.dark body.nagornaya-page .border-stone-700,
 html.dark body.nagornaya-page .border-stone-800,
 html.dark body.nagornaya-page .border-b,
@@ -7759,7 +7640,6 @@ img[src*="mc.yandex.ru"] {
   cursor: pointer;
   z-index: 90;
   box-shadow:
-    0 1px 0 rgba(255,255,255,.7) inset,
     0 6px 18px -8px rgba(28,25,23,.22),
     0 2px 4px rgba(28,25,23,.06);
   transition: transform .2s ease, box-shadow .2s ease, background .2s ease;
@@ -8532,9 +8412,7 @@ body.nagornaya-page .nag-summary__text{white-space:normal!important;word-break:n
 
 body.has-bottom-bar #back-to-top { bottom: max(80px, calc(env(safe-area-inset-bottom, 0px) + 80px)) !important; }
 
-/* Fix .theme-toggle inside smart navbar on non-article pages */
-.h-navbar .theme-toggle,
-.h-navbar__inner .theme-toggle,
+
 .mobile-controls .theme-toggle {
   position: relative !important;
   top: auto !important;
@@ -8579,21 +8457,12 @@ button.bref:hover {
   text-decoration: underline !important;
 }
 
-/* Fix .theme-toggle inside smart navbar on non-article pages */
-.h-navbar .theme-toggle,
-.h-navbar__inner .theme-toggle,
+
+
 
 /* Reset browser button styling for .bref (Bible references) to make them look like elegant inline text links */
 
-/* Fix .theme-toggle inside smart navbar on non-article pages */
-.h-navbar .theme-toggle,
-.h-navbar__inner .theme-toggle,
 
-/* Reset browser button styling for .bref (Bible references) to make them look like elegant inline text links */
-
-/* Fix .theme-toggle inside smart navbar on non-article pages */
-.h-navbar .theme-toggle,
-.h-navbar__inner .theme-toggle,
 
 /* Reset browser button styling for .bref (Bible references) to make them look like elegant inline text links */
 
@@ -8689,65 +8558,26 @@ html.dark .premium-frame-text {
   z-index: 2 !important;
 }
 
-/* Fix .theme-toggle inside smart navbar on non-article pages */
-.h-navbar .theme-toggle,
-.h-navbar__inner .theme-toggle,
 
-/* Reset browser button styling for .bref (Bible references) to make them look like elegant inline text links */
 
-/* Style for .fn-dove-icon - premium flying dove with white eye and smooth animations */
-.fn-marker:hover .fn-dove-icon,
 
-/* Premium Frame Style — highly elegant, classic, and professional manuscript borders */
-/* Delicate dashed inner border for old-world feel */
 
-/* UNIFY ALL TOOLTIPS: Hide glossary pointing arrows/handles to avoid overlaps and create 100% uniform, minimal, flat floating cards */
-.gterm .gtip::before,
 
-/* Fix timeline vertical line overlap bug by keeping timeline circles perfectly solid and opaque */
 
-/* Fix .theme-toggle inside smart navbar on non-article pages */
-.h-navbar .theme-toggle,
-.h-navbar__inner .theme-toggle,
 
-/* Reset browser button styling for .bref (Bible references) to make them look like elegant inline text links */
 
-/* Style for .fn-dove-icon - premium flying dove with white eye and smooth animations */
-.fn-marker:hover .fn-dove-icon,
 
-/* Premium Frame Style — highly elegant, classic, and professional manuscript borders */
-/* Delicate dashed inner border for old-world feel */
 
-/* UNIFY ALL TOOLTIPS: Hide glossary pointing arrows/handles to avoid overlaps and create 100% uniform, minimal, flat floating cards */
-.gterm .gtip::before,
 
-/* Fix timeline vertical line overlap bug by keeping timeline circles perfectly solid and opaque */
 
-/* Fix .theme-toggle inside smart navbar on non-article pages */
-.h-navbar .theme-toggle,
-.h-navbar__inner .theme-toggle,
 
-/* Reset browser button styling for .bref (Bible references) to make them look like elegant inline text links */
 
-/* Style for .fn-dove-icon - premium flying dove with white eye and smooth animations */
-.fn-marker:hover .fn-dove-icon,
 
-/* Premium Frame Style — highly elegant, classic, and professional manuscript borders */
-/* Delicate dashed inner border for old-world feel */
 
-/* UNIFY ALL TOOLTIPS: Hide glossary pointing arrows/handles to avoid overlaps and create 100% uniform, minimal, flat floating cards */
-.gterm .gtip::before,
 
-/* Fix timeline vertical line overlap bug by keeping timeline circles perfectly solid and opaque */
 
-/* Fix .theme-toggle inside smart navbar on non-article pages */
-.h-navbar .theme-toggle,
-.h-navbar__inner .theme-toggle,
 
-/* Reset browser button styling for .bref (Bible references) to make them look like elegant inline text links */
 
-/* Style for .fn-dove-icon - premium flying dove with white eye and smooth animations */
-.fn-marker:hover .fn-dove-icon,
 
 /* Premium Frame Style — highly elegant, classic, and professional manuscript borders */
 /* Delicate dashed inner border for old-world feel */
@@ -8914,7 +8744,6 @@ html.dark .note-box {
   font-family: 'Source Sans 3', system-ui, sans-serif;
   font-size: 13.5px;
   line-height: 1.45;
-  transition: transform 0.22s cubic-bezier(.2,.7,.2,1),
               border-color 0.22s ease,
               box-shadow 0.22s ease;
 }
@@ -8982,8 +8811,6 @@ html.dark .context-links a:hover {
         position: absolute;
         inset: 0;
         background-image:
-          radial-gradient(ellipse at top left, transparent 30%, rgba(184, 147, 106, 0.03) 100%),
-          radial-gradient(ellipse at bottom right, transparent 30%, rgba(122, 46, 46, 0.02) 100%),
           repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(122, 46, 46, 0.015) 2px, rgba(122, 46, 46, 0.015) 3px);
         pointer-events: none;
         mix-blend-mode: multiply;
@@ -9017,8 +8844,6 @@ html.dark .context-links a:hover {
         background: var(--color-surface, #fdfcf9) !important; z-index: 2 !important;
         border: 8px solid var(--color-surface);
         box-shadow:
-          inset 0 0 0 1px var(--color-border-strong),
-          0 4px 12px rgba(16, 18, 22, 0.08),
           0 0 0 1px var(--color-border);
         position: relative;
         font-family: ui-serif, Georgia, serif;
@@ -9141,9 +8966,6 @@ html.dark .context-links a:hover {
         bottom: 0;
         width: 1px;
         background: linear-gradient(
-          to bottom,
-          var(--color-accent-selection) 0%,
-          var(--color-accent-selection) 70%,
           transparent 100%
         );
         opacity: 0.5;

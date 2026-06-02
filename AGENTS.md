@@ -451,3 +451,15 @@ npm run validate:all      # ← рекомендуется перед кажды
 > Этот файл — **«договор»** между владельцем и любым ИИ.
 >
 > Нарушение = регресс, который видят сотни читателей сайта. Если правило кажется глупым — спроси, **почему** оно появилось.
+
+## AGENTS-r14 (2026-06-02)
+- **CSS Audit**: Removed massive blocks of duplicated/broken selectors in `css/site.css` (lines 8500-8800) that were breaking `.theme-toggle` and tooltips.
+- **Image Infrastructure**: 
+  - Fixed circular reference: `gill-context-scroll` (Boy in Shop) $\to$ `gill-young-boy-shop` link; `gill-young-boy-shop` (Inkwell) $\to$ `gill-inkwell-macro` link.
+  - Replaced hero image in Historical Context article with `gill-library-shelf`.
+  - Corrected `width` and `height` attributes for 14+ images across the biography trilogy and context articles to match real aspect ratios.
+- **Semantic Polish**:
+  - Expanded explanation of *Nonconformist* vs *Dissenter* vs *Baptist* in the context article with English terminology.
+  - Fixed "Баптист — диссентер" spacing.
+  - Wrapped plural and adjective forms of key theological terms in `.gterm` for consistent tooltip support.
+- **Stability**: Verified only one George Whitefield image remains (the correct one with spires).
