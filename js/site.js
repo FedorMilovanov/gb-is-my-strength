@@ -72,29 +72,7 @@
         var ctx = this;
         timer = setTimeout(function () { fn.apply(ctx, args); }, delay);
       };
-    },
-
-    throttle: function (fn, limit) {
-      var last = 0;
-      var timer = null;
-      return function () {
-        var ctx = this;
-        var args = arguments;
-        var now = Date.now();
-        var remaining = limit - (now - last);
-        if (remaining <= 0) {
-          if (timer) { clearTimeout(timer); timer = null; }
-          last = now;
-          fn.apply(ctx, args);
-        } else if (!timer) {
-          timer = setTimeout(function () {
-            last = Date.now();
-            timer = null;
-            fn.apply(ctx, args);
-          }, remaining);
-        }
-      };
-    },
+    }},
 
     /* ── Shared tooltip positioning ──────────────────────────────────────
        Positions `tip` (fixed/absolute element) relative to `anchor`.
