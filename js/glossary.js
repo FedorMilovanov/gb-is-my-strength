@@ -19,27 +19,36 @@
 
   fetch(DATA_URL).then(function (r) { return r.ok ? r.json() : null; }).then(function (dict) {
     if (!dict) return;
+
+    if (!dict) return;
     var article = document.querySelector('article');
-    var keys = Object.keys(dict).sort(function (a, b) { return b.length - a.length; });
-    var keyByLower = {};
-    keys.forEach(function (k) { keyByLower[k.toLowerCase()] = k; });
-    var escapedTerms = keys.map(function (k) {
-      return k.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    
+    var aliasToCanonical = {};
+    var allSearchTerms = [];
+    
+    for (var canonical in dict) {
+      var entry = dict[canonical];
+      var def = typeof entry === 'string' ? entry : entry.definition;
+      var aliases = typeof entry === 'object' ? entry.aliases : [canonical];
+      
+      aliases.forEach(function(alias) {
+        aliasToCanonical[alias.toLowerCase()] = canonical;
+        allSearchTerms.push(alias);
+      });
+    }
+    
+    allSearchTerms.sort(function(a, b) { return b.length - a.length; });
+    var escapedTerms = allSearchTerms.map(function (k) {
+      return k.replace(/[.*+?^${}()|[\]\]/g, '\$&');
     }).join('|');
-    /* JS \b is ASCII-centric and does not work for Cyrillic.
-       Bug #12: wrap in try/catch — \\p{} Unicode escapes require ES2018+
-       and throw SyntaxError in Safari < 15.4 / older WebViews. */
+
     var rx;
     try {
-      rx = new RegExp('(^|[^\\p{L}\\p{N}_])(' + escapedTerms + ')(?=$|[^\\p{L}\\p{N}_])', 'giu');
+      rx = new RegExp('(^|[^\p{L}\p{N}_])(' + escapedTerms + ')(?=$|[^\p{L}\p{N}_])', 'giu');
     } catch (e) {
-      /* Fallback without Unicode property escapes — less precise word-boundary
-         but functional on older engines. Uses [^а-яёА-ЯЁa-zA-Z0-9_] as boundary. */
       try {
         rx = new RegExp('(^|[^а-яёА-ЯЁa-zA-Z0-9_])(' + escapedTerms + ')(?=$|[^а-яёА-ЯЁa-zA-Z0-9_])', 'gi');
-      } catch (e2) {
-        return; /* give up gracefully */
-      }
+      } catch (e2) { return; }
     }
 
     var seen = {};
@@ -53,8 +62,13 @@
         return NodeFilter.FILTER_ACCEPT;
       }
     });
+
     var nodes = [];
     while (walker.nextNode()) nodes.push(walker.currentNode);
+
+    document.querySelectorAll('p, div.reveal').forEach(function(el, i) {
+        el.dataset.pIdx = i;
+    });
 
     nodes.forEach(function (n) {
       if (!rx.test(n.nodeValue)) return;
@@ -64,24 +78,31 @@
       while ((m = rx.exec(n.nodeValue)) !== null) {
         var sep = m[1] || '';
         var term = m[2] || '';
-        var key = keyByLower[term.toLowerCase()];
-        if (!key || seen[key]) continue;
-        seen[key] = 1;
-        replaced = true;
-        var termIndex = m.index + sep.length;
-        frag.appendChild(document.createTextNode(n.nodeValue.slice(last, termIndex)));
-        var abbr = document.createElement('abbr');
-        abbr.className = 'gterm';
-        abbr.dataset.term = key;
-        abbr.setAttribute('tabindex', '0');
-        abbr.setAttribute('data-term-title', term);
-        abbr.textContent = term;
-        var tip = document.createElement('span');
-        tip.className = 'gtip';
-        tip.innerHTML = dict[key];
-        abbr.appendChild(tip);
-        frag.appendChild(abbr);
-        last = termIndex + term.length;
+        var canonical = aliasToCanonical[term.toLowerCase()];
+        if (!canonical) continue;
+        
+        var p = n.parentElement;
+        while (p && p.tagName !== 'P' && p.tagName !== 'DIV') p = p.parentElement;
+        var pIdx = p ? parseInt(p.dataset.pIdx || 0) : 0;
+        
+        if (!seen[canonical] || (pIdx - seen[canonical] > 10)) {
+          seen[canonical] = pIdx;
+          replaced = true;
+          var termIndex = m.index + sep.length;
+          frag.appendChild(document.createTextNode(n.nodeValue.slice(last, termIndex)));
+          var abbr = document.createElement('abbr');
+          abbr.className = 'gterm';
+          abbr.dataset.term = canonical;
+          abbr.setAttribute('tabindex', '0');
+          abbr.setAttribute('data-term-title', term);
+          abbr.textContent = term;
+          var tip = document.createElement('span');
+          tip.className = 'gtip';
+          tip.innerHTML = typeof dict[canonical] === 'string' ? dict[canonical] : dict[canonical].definition;
+          abbr.appendChild(tip);
+          frag.appendChild(abbr);
+          last = termIndex + term.length;
+        }
       }
       if (replaced) {
         frag.appendChild(document.createTextNode(n.nodeValue.slice(last)));
@@ -93,8 +114,8 @@
       SiteUtils.initGlossaryTooltips(article);
     }
 
-    /* Cross-link: клик по <a class="gterm" data-term="..."> внутри подсказки */
-    document.addEventListener('click', function (e) {
+
+document.addEventListener('click', function (e) {
       var t = e.target.closest('a.gterm[data-term]');
       if (!t) return;
       e.preventDefault();
