@@ -279,7 +279,6 @@ html.dark body.nagornaya-page .gb-series-link:hover {
 .gb-nav-search-icon,
 .h-cp-btn {
   background: transparent !important;
-  background-color: transparent !important;
   border: none !important;
   box-shadow: none !important;
   border-radius: 0 !important;
@@ -296,7 +295,6 @@ html.dark body.nagornaya-page .gb-series-link:hover {
 .gb-nav-search-icon:active,
 .h-cp-btn:active {
   background: transparent !important;
-  background-color: transparent !important;
   border: none !important;
   box-shadow: none !important;
   outline: none !important;
