@@ -559,6 +559,21 @@
 
     themeKey: 'theme', /* localStorage key — единое место */
 
+    featureToc: function () {
+      return SiteUtils.featureToc();
+    },
+    featureShare: function () {
+      return SiteUtils.featureShare();
+    },
+
+    barThemeBtn: function () {
+      /* Кнопка темы в bottom-bar (мобильная). Кэшируется после первого вызова. */
+      if (SiteUtils._barThemeBtn === undefined) {
+        SiteUtils._barThemeBtn = SiteUtils.barThemeBtn() || null;
+      }
+      return SiteUtils._barThemeBtn;
+    },
+
     ready: function (fn) {
       if (document.readyState === 'loading') {
         document.addEventListener('DOMContentLoaded', fn);
@@ -857,7 +872,7 @@
          Here we only sync aria-pressed for accessibility. */
       var isDark = html.classList.contains('dark');
       toggle.setAttribute('aria-pressed', isDark ? 'true' : 'false');
-      var barBtn = document.getElementById('barThemeBtn');
+      var barBtn = SiteUtils.barThemeBtn();
       if (barBtn) barBtn.setAttribute('aria-pressed', isDark ? 'true' : 'false');
     }
 
@@ -896,7 +911,7 @@
       syncThemeColor(isDark);
     });
 
-    var barBtn = document.getElementById('barThemeBtn');
+    var barBtn = SiteUtils.barThemeBtn();
     if (barBtn) {
       barBtn.addEventListener('click', function () {
         var isDark = html.classList.toggle('dark');
@@ -3509,7 +3524,7 @@
         e.preventDefault();
         showKbdHint('D', 'Тема');
         var toggle = document.getElementById('themeToggle') || document.getElementById('hThemeBtn');
-        var barTheme = document.getElementById('barThemeBtn');
+        var barTheme = SiteUtils.barThemeBtn();
         /* Module 29 (gb-fc-active pages): no #themeToggle, use .gb-fc-theme instead */
         var fcTheme = document.querySelector('.gb-fc-theme');
         if (toggle) { toggle.click(); }
