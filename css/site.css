@@ -127,6 +127,9 @@ body { overflow-x: hidden; }
   --color-success-text:  var(--color-success-text, #4a8a4a);
   --color-amber-strong:  var(--color-amber-strong, #bf6e2a);
   /* Transition tokens */
+  --t-card:      transform 0.55s cubic-bezier(.4,0,.2,1);
+  --t-quick:     opacity .18s ease, transform .18s ease;
+  --t-slide:     transform .45s cubic-bezier(.2,.7,.2,1);
   --t-reveal:    opacity 0.6s ease, transform 0.6s ease;
   --t-fade:      opacity .18s ease;
   --t-bg:        background .15s;
@@ -2276,9 +2279,7 @@ html.dark .bar-icon-sun  { display: block; color: var(--color-sun-yellow, #f5c54
   position: fixed;
   inset: 0;
   z-index: var(--z-overlay-high);
-  /* AUDIT V8 / #23: previously toggled display:none/block, which prevents the
-     opacity/visibility transition from firing. Now driven entirely by
-     visibility + opacity + pointer-events. Hidden on desktop via media query. */
+  /* AUDIT V8/#23: visibility+opacity not display (enables transitions). */
   display: block;
   background: rgba(0,0,0,0.45);
   opacity: 0;
@@ -2871,9 +2872,7 @@ html.dark .sd-btn--copy.copied .sd-icon { background: var(--quiz-correct-bg); co
   position: absolute;
   top: 0;
   left: 50%;
-  /* Translate fully off-screen via own height, NOT a fixed negative top
-     (a fixed negative top leaks when the label wraps to 2 lines on narrow
-     viewports — Russian "Перейти к содержимому" wraps below 320px). */
+  /* Off-screen via translateY (not negative top — wraps on 320px viewports). */
   transform: translate(-50%, -110%);
   background: var(--color-text);
   color: var(--color-canvas);
@@ -2913,7 +2912,7 @@ html.dark .sd-btn--copy.copied .sd-icon { background: var(--quiz-correct-bg); co
   width: 100%; height: 100%;
   min-height: inherit;
   transform-style: preserve-3d;
-  transition: transform 0.55s cubic-bezier(.4,0,.2,1);
+  transition: var(--t-card);
 }
 .flip-card.flipped .flip-card-inner { transform: rotateY(180deg); }
 .flip-card-front, .flip-card-back {
@@ -2960,7 +2959,7 @@ html.dark .flip-card-back h4 { color: #80c880; }
   width: 100%; height: 100%;
   min-height: inherit;
   transform-style: preserve-3d;
-  transition: transform 0.55s cubic-bezier(.4,0,.2,1);
+  transition: var(--t-card);
 }
 .error-flip-card.flipped .error-flip-inner { transform: rotateY(180deg); }
 .error-flip-front, .error-flip-back {
@@ -4729,7 +4728,7 @@ htmlhtml.dark .quiz-launch-label {
   opacity: 0;
   pointer-events: none;
   transform: translateY(6px);
-  transition: opacity .18s ease, transform .18s ease;
+  transition: var(--t-quick);
   overflow: visible;
 
 }
@@ -4873,7 +4872,7 @@ html.dark .article-reading-progress-label.completed-label {
   white-space: nowrap;
   opacity: 0;
   pointer-events: none;
-  transition: opacity .18s ease, transform .18s ease;
+  transition: var(--t-quick);
   display: flex;
   align-items: center;
   gap: 6px;
@@ -5312,7 +5311,7 @@ html:not(.dark) .quiz-review-prev {
   height: 100%;
   object-fit: cover;
   display: block;
-  transition: transform .45s cubic-bezier(.2,.7,.2,1);
+  transition: var(--t-slide);
 }
 .article-item.card.has-cover:hover .card-cover,
 .article-item.card.has-cover:focus-within .card-cover {
@@ -5409,7 +5408,7 @@ html.dark .related-articles__item:focus-within {
   height: 100%;
   object-fit: cover;
   display: block;
-  transition: transform .45s cubic-bezier(.2,.7,.2,1);
+  transition: var(--t-slide);
 }
 .related-articles__item:hover .related-articles__img,
 .related-articles__item:focus-within .related-articles__img {
@@ -5957,7 +5956,7 @@ html.dark .gb-series-link:hover {
 
 /* @layer components: поздние legacy/mobile/a11y-блоки (CSS-FIX-01) */
 @layer components {
-/* SCROLL-LOCK: 4 механизма — html[data-scroll-locked] (JS), html.cp-scroll-lock (CP), body.ng-toc-lock (nagornaya), body.no-scroll (fallback). SiteUtils.lockScroll() source-aware. */
+/* SCROLL-LOCK: html[data-scroll-locked] / html.cp-scroll-lock / body.ng-toc-lock / body.no-scroll → SiteUtils.lockScroll(). */
 
 body.no-scroll {
   overflow: hidden !important;
@@ -7520,9 +7519,7 @@ html.dark .premium-frame-text {
 /* Lux Upgrade v3.0: remove intrusive top scroll bar */
 /* Lux Upgrade v3.0: biography card polish - single border */ .biography-hero::after{display:none} .biography-hero{border-width:1px;box-shadow:0 8px 32px rgba(0,0,0,.06)} .biography-portrait{border-width:4px;box-shadow:0 4px 16px rgba(0,0,0,.08)}
 
-/* 2026-06-01: mobile tooltip hardening.
-   Long URLs, names and theological terms must not create horizontal scroll
-   inside glossary/footnote sheets on old iOS/Android browsers. */
+/* Mobile tooltip: constrain long content to viewport width. */
 .gtip,
 .tooltip,
 .gtip-luxury,
@@ -7661,9 +7658,7 @@ html.dark .context-links a:hover {
   box-shadow: 0 6px 18px -8px rgba(0,0,0,.5);
 }
 
-/* series-next-cta-wrap — outer wrapper around the bottom "next part" CTA.
-   The .series-next-cta itself is already styled; this just gives it breathing room
-   so it doesn't collide with the author-card below. */
+/* series-next-cta-wrap: full-width wrapper for .series-next-cta. */
 .series-next-cta-wrap {
   margin: clamp(36px, 5vw, 56px) 0 clamp(24px, 4vw, 36px);
 }
@@ -8481,9 +8476,7 @@ body {
 /* ── КОНЕЦ DEEP POLISH r35 ─────────────────────────────────────
    ═══════════════════════════════════════════════════════════ */
 
-/* ── View Transitions API — page fade (Chrome 111+, Safari 18+) ─
-   Fallback: если не поддерживается, ничего не происходит.
-   ::view-transition-old/new только на браузерах с поддержкой. */
+/* View Transitions API fade (Chrome 111+). Fallback: normal navigation. */
 
 @supports (view-transition-name: none) {
   /* Корневой переход: fade 200ms */
