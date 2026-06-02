@@ -591,13 +591,6 @@ html.dark .breadcrumb__link:focus-visible {
   text-wrap: balance;
 }
 
-.article-header h1.h1-large {
-  font-size: clamp(30px, 4.2vw, 44px);
-  letter-spacing: 0.8px;
-  line-height: 1.22;
-  margin-bottom: 22px;
-  text-wrap: balance;
-}
 
 .article-desc {
   font-family: 'Source Sans 3', system-ui, sans-serif;
@@ -1379,26 +1372,9 @@ html.dark .fact-box h4 { color: #80c880; }
   border: 1px solid var(--color-border);
   border-radius: 16px;
 }
-.card.fx-lift{
-  transition:
-    border-color .35s ease;
-  will-change: transform;
-}
 /* touch-safe hover: только border/shadow — transform в @media (hover:hover) Deep Polish ниже */
 .card.fx-lift:hover,
-.card.fx-lift:focus-within{
-  border-color: rgba(0,0,0,.12);
-  box-shadow:
-    0 1px 2px rgba(0,0,0,.04),
-    0 12px 28px -12px rgba(0,0,0,.18);
-}
 html.dark .card.fx-lift:hover,
-html.dark .card.fx-lift:focus-within{
-  border-color: rgba(255,255,255,.14);
-  box-shadow:
-    0 1px 2px rgba(0,0,0,.28),
-    0 12px 28px -12px rgba(0,0,0,.55);
-}
 
 .article-list { list-style: none; padding: 0; margin: 0; }
 .article-item {
@@ -6920,10 +6896,6 @@ html.dark .gb-accuracy-desc { color: var(--color-text-muted, #a8a29e); }
 
 /* На nagornaya/* main имеет dark Tailwind фон. Принудительный контраст для блока. */
 body.nagornaya-page .gb-accuracy-block { color: var(--color-text, #1c1917); }
-html:not(.dark) body.nagornaya-page .gb-accuracy-inner {
-  background: #ffffff;
-  border-color: #e7e2d8;
-}
 
 /* === 6. NAGORNAYA LIGHT THEME — overrides Tailwind dark-only styles === */
 html:not(.dark) body.nagornaya-page,
@@ -8430,30 +8402,10 @@ h1, h2, h3, h4, .article-title, .resume-reading-title,
    Только на devices с точным указателем (мышь). */
 
 @media (hover: hover) and (pointer: fine) {
-  .card.fx-lift {
-    transition:
-      transform .35s cubic-bezier(.2,.7,.2,1),
-      box-shadow .35s ease,
-      border-color .35s ease;
-    transform-style: flat;
-  }
 
   .card.fx-lift:hover,
-  .card.fx-lift:focus-within {
-    transform: translateY(-5px) perspective(600px) rotateX(1.5deg);
-    box-shadow:
-      0 2px 4px rgba(0,0,0,.04),
-      0 14px 32px -12px rgba(0,0,0,.2),
-      0 0 0 1px rgba(0,0,0,.04);
-  }
 
   html.dark .card.fx-lift:hover,
-  html.dark .card.fx-lift:focus-within {
-    transform: translateY(-5px) perspective(600px) rotateX(1.5deg);
-    box-shadow:
-      0 2px 4px rgba(0,0,0,.35),
-      0 14px 32px -12px rgba(0,0,0,.6);
-  }
 
   /* Related articles — тот же эффект */
   .related-articles__item:hover,
@@ -8630,9 +8582,6 @@ html.dark #reading-progress {
   letter-spacing: -0.01em;
 }
 
-.article-header h1.h1-large {
-  letter-spacing: -0.02em;
-}
 
 /* ── 13. Glossary tooltip — glass morphism ─────────────────────
    Уже есть backdrop-filter, добавляем subtle inner shadow */
