@@ -198,7 +198,9 @@
       "диссентерских",
       "диссентерству",
       "диссентером"
-    ]
+    ],
+    "category": "История церкви",
+    "categorySlug": "church-history"
   },
   "нонконформист": {
     "definition": {
@@ -210,7 +212,9 @@
       "нонконформисты",
       "нонконформистский",
       "нонконформистских"
-    ]
+    ],
+    "category": "История церкви",
+    "categorySlug": "church-history"
   },
   "баптист": {
     "definition": {
@@ -234,7 +238,9 @@
       "баптистскую",
       "баптистских",
       "баптистскими"
-    ]
+    ],
+    "category": "Баптистская традиция",
+    "categorySlug": "baptist-tradition"
   },
   "общие баптисты": {
     "definition": {
@@ -249,7 +255,9 @@
       "генеральный баптист",
       "general baptists",
       "general baptist"
-    ]
+    ],
+    "category": "Баптистская традиция",
+    "categorySlug": "baptist-tradition"
   },
   "особые баптисты": {
     "definition": {
@@ -262,8 +270,16 @@
       "особых баптистов",
       "особым баптистом",
       "particular baptists",
-      "particular baptist"
-    ]
+      "particular baptist",
+      "особая баптистская церковь",
+      "особую баптистскую церковь",
+      "особой баптистской церкви",
+      "особые баптистские церкви",
+      "particular baptist church",
+      "particular baptist churches"
+    ],
+    "category": "Баптистская традиция",
+    "categorySlug": "baptist-tradition"
   },
   "партикулярные баптисты": {
     "definition": {
@@ -274,8 +290,13 @@
       "партикулярные баптисты",
       "партикулярный баптист",
       "партикулярных баптистов",
-      "партикулярным баптистом"
-    ]
+      "партикулярным баптистом",
+      "партикулярная баптистская церковь",
+      "партикулярную баптистскую церковь",
+      "партикулярной баптистской церкви"
+    ],
+    "category": "Баптистская традиция",
+    "categorySlug": "baptist-tradition"
   },
   "строгие баптисты": {
     "definition": {
@@ -289,7 +310,9 @@
       "строгим баптистом",
       "strict baptists",
       "strict baptist"
-    ]
+    ],
+    "category": "Баптистская традиция",
+    "categorySlug": "baptist-tradition"
   },
   "строгие и партикулярные баптисты": {
     "definition": {
@@ -300,8 +323,14 @@
       "строгие и партикулярные баптисты",
       "строгий и партикулярный баптист",
       "strict and particular baptists",
-      "strict and particular baptist"
-    ]
+      "strict and particular baptist",
+      "строгие особые баптисты",
+      "строгие партикулярные баптисты",
+      "strict particular baptists",
+      "strict particular baptist"
+    ],
+    "category": "Баптистская традиция",
+    "categorySlug": "baptist-tradition"
   },
   "pactum salutis": {
     "definition": {
@@ -429,7 +458,9 @@
     },
     "aliases": [
       "банхилл-филдс"
-    ]
+    ],
+    "category": "История церкви",
+    "categorySlug": "church-history"
   },
   "кеннингтон-коммон": {
     "definition": {
@@ -519,7 +550,9 @@
     },
     "aliases": [
       "солтерс-холл"
-    ]
+    ],
+    "category": "История церкви",
+    "categorySlug": "church-history"
   },
   "солтерс-холльский синод": {
     "definition": {
@@ -573,7 +606,9 @@
     },
     "aliases": [
       "всеобщее предложение благодати"
-    ]
+    ],
+    "category": "Сотериология",
+    "categorySlug": "soteriology"
   },
   "высокий кальвинизм": {
     "definition": {
@@ -591,7 +626,9 @@
     },
     "aliases": [
       "грейсчёрч-стрит"
-    ]
+    ],
+    "category": "История церкви",
+    "categorySlug": "church-history"
   },
   "сити": {
     "definition": {
@@ -600,7 +637,9 @@
     },
     "aliases": [
       "сити"
-    ]
+    ],
+    "category": "История церкви",
+    "categorySlug": "church-history"
   },
   "тули-стрит": {
     "definition": {
@@ -609,7 +648,9 @@
     },
     "aliases": [
       "тули-стрит"
-    ]
+    ],
+    "category": "История церкви",
+    "categorySlug": "church-history"
   },
   "goat's yard declaration": {
     "definition": {
@@ -618,7 +659,9 @@
     },
     "aliases": [
       "goat's yard declaration"
-    ]
+    ],
+    "category": "История церкви",
+    "categorySlug": "church-history"
   },
   "козьего двора": {
     "definition": {
@@ -627,7 +670,9 @@
     },
     "aliases": [
       "козьего двора"
-    ]
+    ],
+    "category": "История церкви",
+    "categorySlug": "church-history"
   },
   "quarto": {
     "definition": {
@@ -696,7 +741,9 @@
       "paedobaptist",
       "pedobaptists",
       "pedobaptist"
-    ]
+    ],
+    "category": "Баптистская традиция",
+    "categorySlug": "baptist-tradition"
   },
   "кредобаптисты": {
     "definition": {
@@ -709,7 +756,9 @@
       "кредобаптистов",
       "credobaptists",
       "credobaptist"
-    ]
+    ],
+    "category": "Баптистская традиция",
+    "categorySlug": "baptist-tradition"
   },
   "духовный израиль": {
     "definition": {
@@ -758,12 +807,14 @@
   },
   "поместная церковь": {
     "definition": {
-      "definition": "Конкретная община верующих, собранная вокруг проповеди Слова, крещения, Вечери Господней, дисциплины и служителей; в баптистской экклезиологии Гилла обладает реальной ответственностью за собственное устройство.",
+      "definition": "Конкретная община верующих, собранная вокруг проповеди Слова, крещения, Вечери Господней, дисциплины и служителей. В баптистской и конгрегационалистской экклезиологии такая община несёт реальную земную ответственность за собственное устройство, членство и дисциплину.",
       "aliases": []
     },
     "aliases": [
       "поместная церковь"
-    ]
+    ],
+    "category": "Баптистская традиция",
+    "categorySlug": "baptist-tradition"
   },
   "coffee house association": {
     "definition": {
@@ -781,7 +832,9 @@
     },
     "aliases": [
       "конгрегационализм"
-    ]
+    ],
+    "category": "Баптистская традиция",
+    "categorySlug": "baptist-tradition"
   },
   "well-meant offer": {
     "definition": {
@@ -790,7 +843,9 @@
     },
     "aliases": [
       "well-meant offer"
-    ]
+    ],
+    "category": "Сотериология",
+    "categorySlug": "soteriology"
   },
   "free offer": {
     "definition": {
@@ -799,7 +854,9 @@
     },
     "aliases": [
       "free offer"
-    ]
+    ],
+    "category": "Сотериология",
+    "categorySlug": "soteriology"
   },
   "искреннее предложение": {
     "definition": {
@@ -808,7 +865,9 @@
     },
     "aliases": [
       "искреннее предложение"
-    ]
+    ],
+    "category": "Сотериология",
+    "categorySlug": "soteriology"
   },
   "свободное предложение": {
     "definition": {
@@ -817,7 +876,9 @@
     },
     "aliases": [
       "свободное предложение"
-    ]
+    ],
+    "category": "Сотериология",
+    "categorySlug": "soteriology"
   },
   "дело бога и истины": {
     "definition": {
@@ -844,6 +905,8 @@
     },
     "aliases": [
       "картер-лейн"
-    ]
+    ],
+    "category": "История церкви",
+    "categorySlug": "church-history"
   }
 }

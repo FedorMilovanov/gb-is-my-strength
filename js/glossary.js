@@ -80,7 +80,7 @@
         } catch (e2) { return; }
       }
 
-      /* ── Извлечение текста определения ─────────────────────────────── */
+      /* ── Извлечение текста и метаданных определения ────────────────── */
       function getDefinitionText(canonicalKey) {
         var e = dict[canonicalKey];
         if (!e) return canonicalKey;
@@ -91,6 +91,15 @@
           if (typeof e.definition.definition === 'string') return e.definition.definition;
         }
         return canonicalKey;
+      }
+
+      function getEntryMeta(canonicalKey) {
+        var e = dict[canonicalKey] || {};
+        var d = e.definition && typeof e.definition === 'object' ? e.definition : {};
+        return {
+          category: e.category || d.category || '',
+          categorySlug: e.categorySlug || e.category_slug || d.categorySlug || d.category_slug || ''
+        };
       }
 
       /* ── TreeWalker: обходим текстовые ноды в root (article или main) ── */
@@ -159,10 +168,15 @@
           abbr.dataset.term = canonicalKey;
           abbr.setAttribute('tabindex', '0');
           abbr.setAttribute('data-term-title', term);
+          var meta = getEntryMeta(canonicalKey);
+          if (meta.category) abbr.setAttribute('data-category', meta.category);
+          if (meta.categorySlug) abbr.setAttribute('data-category-slug', meta.categorySlug);
           abbr.textContent = term;
 
           var tip = document.createElement('span');
           tip.className = 'gtip';
+          if (meta.category) tip.setAttribute('data-category', meta.category);
+          if (meta.categorySlug) tip.setAttribute('data-category-slug', meta.categorySlug);
           tip.innerHTML = getDefinitionText(canonicalKey);
           abbr.appendChild(tip);
 
