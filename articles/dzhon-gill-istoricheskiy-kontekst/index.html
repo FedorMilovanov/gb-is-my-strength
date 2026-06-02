@@ -79,6 +79,16 @@ window.SITE_CONFIG = {
 </script>
 </head>
 <body>
+<!-- ВНИМАНИЕ: inline style="top:..." на этой кнопке ЗАПРЕЩЁН — позиция задана в site.css (.theme-toggle) и выровнена по хлебным крошкам -->
+<button aria-label="Переключить тему" class="theme-toggle" id="themeToggle">
+<svg aria-hidden="true" class="icon-moon" fill="none" focusable="false" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24">
+<path d="M21 12.8A9 9 0 1111.2 3 7 7 0 0021 12.8z"></path>
+</svg>
+<svg aria-hidden="true" class="icon-sun" fill="none" focusable="false" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24">
+<circle cx="12" cy="12" r="5"></circle>
+</svg>
+</button>
+
 <a class="skip-link" href="#main-content">Перейти к содержимому</a>
 <div class="page-wrap" id="content">
 <nav aria-label="Хлебные крошки" class="breadcrumb"><ol class="breadcrumb__list"><li class="breadcrumb__item"><a class="breadcrumb__link" href="../../">Главная</a></li><li class="breadcrumb__item"><a class="breadcrumb__link" href="../../biografii/">Биографии служителей</a></li><li aria-current="page" class="breadcrumb__item"><span class="breadcrumb__current">Исторический контекст</li></ol></nav>
