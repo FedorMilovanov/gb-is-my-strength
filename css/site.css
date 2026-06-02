@@ -8707,3 +8707,432 @@ body.gb-fc-active .bottom-bar .theme-toggle,
 body.gb-fc-active .mobile-controls .theme-toggle {
   display: inline-flex !important;
 }
+
+/* ═══════════════════════════════════════════════════════════════
+   DEEP POLISH r35 — 2026-06-02
+   Scroll-driven animations, premium typography, 3D card lifts,
+   font-optical-sizing, view-timeline reveals, glass shadows.
+   ═══════════════════════════════════════════════════════════════ */
+
+/* ── 1. Font optical sizing — для всех serif заголовков ────────
+   font-optical-sizing: auto → браузер автоматически выбирает
+   оптические параметры под размер. Baseline: Chrome 108+,
+   Firefox 110+, Safari 16.4+. Fallback: нет (просто игнорируется) */
+:root {
+  font-optical-sizing: auto;
+}
+h1, h2, h3, h4, .article-title, .resume-reading-title,
+.pullquote p, .gtip-luxury__title, .quiz-launch-label,
+.btoc-title, .summary-card__num {
+  font-optical-sizing: auto;
+}
+
+/* ── 2. CSS Scroll-Driven Animations — reveal без JS ───────────
+   Заменяет IntersectionObserver + classList.add('revealed')
+   для базового fade-in. JS-система остаётся как прогрессивная
+   логика (стаггер, .visible класс для quote-box и т.д.).
+   
+   @supports: только где поддерживается, иначе элементы видны
+   сразу (opacity:1 по умолчанию без .reveal класса).
+   
+   NB: .reveal уже имеет opacity:0 + translateY — CSS SDA
+   сбрасывает это плавно когда элемент входит в viewport. */
+
+@supports (animation-timeline: scroll()) {
+  .reveal {
+    animation: reveal-sda linear both;
+    animation-duration: auto;
+    animation-timeline: view();
+    animation-range: entry 0% entry 35%;
+    /* Переопределяем JS-класс: revealed не нужен если SDA работает */
+  }
+
+  @keyframes reveal-sda {
+    from {
+      opacity: 0;
+      transform: translateY(18px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  /* Карточки — мягче и с задержкой по nth-child */
+  .article-item.card {
+    animation: reveal-sda linear both;
+    animation-duration: auto;
+    animation-timeline: view();
+    animation-range: entry 0% entry 40%;
+  }
+
+  /* timeline-list items */
+  .timeline-anim li {
+    animation: reveal-sda linear both;
+    animation-duration: auto;
+    animation-timeline: view();
+    animation-range: entry 5% entry 45%;
+    /* Сбрасываем JS-заданные начальные значения — SDA управляет анимацией */
+    opacity: revert;
+    transform: revert;
+    transition: none;
+  }
+}
+
+/* Prefers-reduced-motion: SDA тоже отключаем */
+@media (prefers-reduced-motion: reduce) {
+  .reveal {
+    animation: none !important;
+    opacity: 1 !important;
+    transform: none !important;
+  }
+}
+
+/* ── 3. Premium card lift — subtle 3D perspective ──────────────
+   Заменяем flat translateY(-4px) на настоящий 3D-tilt
+   через CSS perspective + rotate3d при hover.
+   Только на devices с точным указателем (мышь). */
+
+@media (hover: hover) and (pointer: fine) {
+  .card.fx-lift {
+    transition:
+      transform .35s cubic-bezier(.2,.7,.2,1),
+      box-shadow .35s ease,
+      border-color .35s ease;
+    transform-style: flat;
+  }
+
+  .card.fx-lift:hover,
+  .card.fx-lift:focus-within {
+    transform: translateY(-5px) perspective(600px) rotateX(1.5deg);
+    box-shadow:
+      0 2px 4px rgba(0,0,0,.04),
+      0 14px 32px -12px rgba(0,0,0,.2),
+      0 0 0 1px rgba(0,0,0,.04);
+  }
+
+  html.dark .card.fx-lift:hover,
+  html.dark .card.fx-lift:focus-within {
+    transform: translateY(-5px) perspective(600px) rotateX(1.5deg);
+    box-shadow:
+      0 2px 4px rgba(0,0,0,.35),
+      0 14px 32px -12px rgba(0,0,0,.6);
+  }
+
+  /* Related articles — тот же эффект */
+  .related-articles__item:hover,
+  .related-articles__item:focus-within {
+    transform: translateY(-5px) perspective(600px) rotateX(1.2deg);
+  }
+
+  /* Resume reading item */
+  .resume-list-item:hover {
+    transform: translateY(-5px) perspective(600px) rotateX(1.2deg);
+  }
+}
+
+/* ── 4. Article links — улучшенное подчёркивание 2026 ──────────
+   text-decoration-thickness теперь поддерживает calc() и em.
+   Плавное underline с gradient-эффектом через
+   background-image на a:hover уже есть, добавляем
+   text-underline-offset анимацию. */
+
+article a {
+  text-underline-offset: 2px;
+  transition:
+    text-underline-offset .2s ease,
+    background-color .15s ease;
+}
+
+article a:hover,
+article a:focus-visible {
+  text-underline-offset: 4px;
+}
+
+/* ── 5. Heading anchor links — улучшенный fade ─────────────────
+   На тач — показываем сразу (уже есть), на десктопе плавнее */
+
+@media (hover: hover) and (pointer: fine) {
+  .heading-anchor {
+    transition: opacity .2s ease, color .2s ease, transform .2s ease;
+  }
+  h2:hover .heading-anchor,
+  h3:hover .heading-anchor,
+  h4:hover .heading-anchor {
+    transform: translateX(2px);
+  }
+}
+
+/* ── 6. Pullquote — декоративная кавычка premium ────────────────
+   Улучшаем: используем Playfair Display для декоративной кавычки
+   и добавляем subtle gradient border-left */
+
+.pullquote {
+  border-left: none;
+  border-inline-start: none;
+  padding-left: clamp(28px, 5vw, 56px);
+  position: relative;
+}
+
+.pullquote::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 3px;
+  background: linear-gradient(
+    to bottom,
+    transparent 0%,
+    var(--color-accent) 20%,
+    var(--color-accent) 80%,
+    transparent 100%
+  );
+  border-radius: 2px;
+}
+
+.pullquote::before {
+  font-family: 'Playfair Display', Georgia, serif;
+  font-size: 100px;
+  line-height: 0.75;
+  top: 16px;
+  left: 8px;
+  opacity: 0.15;
+}
+
+/* ── 7. Blockquote premium ──────────────────────────────────────
+   Более изящный borderless с Lora курсивом */
+
+blockquote {
+  /* Fallback для Safari < 15.4 */
+  border-left: 2px solid var(--color-accent);
+  border-inline-start: 2px solid var(--color-accent);
+  padding-left: clamp(18px, 2.5vw, 28px);
+}
+/* Progressive enhancement: gradient border где поддерживается */
+@supports (border-image: linear-gradient(red,blue) 1) {
+  blockquote {
+    border-image: linear-gradient(to bottom, transparent, var(--color-accent) 25%, var(--color-accent) 75%, transparent) 1;
+  }
+  html.dark blockquote {
+    border-image: linear-gradient(to bottom, transparent, var(--color-accent) 25%, var(--color-accent) 75%, transparent) 1;
+  }
+}
+
+/* ── 8. Summary card — subtle glow при hover ───────────────────
+   Уже есть transform, добавляем shadow glow */
+
+@media (hover: hover) and (pointer: fine) {
+  .summary-card__item:hover {
+    box-shadow:
+      0 14px 30px -12px rgba(28,25,23,.2),
+      0 0 0 1px color-mix(in srgb, var(--color-accent) 15%, transparent);
+  }
+
+  html.dark .summary-card__item:hover {
+    box-shadow:
+      0 14px 30px -12px rgba(0,0,0,.55),
+      0 0 0 1px color-mix(in srgb, var(--color-accent) 20%, transparent);
+  }
+}
+
+/* ── 9. Flip cards — улучшенная тень при hover ─────────────────
+   Добавляем depth effect */
+
+@media (hover: hover) and (pointer: fine) {
+  .flip-card:not(.flipped):hover .flip-card-inner,
+  .error-flip-card:not(.flipped):hover .error-flip-inner {
+    box-shadow:
+      0 20px 40px -12px rgba(0,0,0,.25),
+      0 8px 16px -8px rgba(0,0,0,.15);
+  }
+
+  html.dark .flip-card:not(.flipped):hover .flip-card-inner,
+  html.dark .error-flip-card:not(.flipped):hover .error-flip-inner {
+    box-shadow:
+      0 20px 40px -12px rgba(0,0,0,.6),
+      0 8px 16px -8px rgba(0,0,0,.35);
+  }
+}
+
+/* ── 10. Section titles — animated underline ───────────────────
+   .section-title уже имеет ::after декор-линию.
+   Добавляем hover-расширение */
+
+@media (hover: hover) and (pointer: fine) {
+  .section-title::after {
+    transition: width .35s cubic-bezier(.2,.7,.2,1);
+  }
+  .section-title:hover::after {
+    width: 64px;
+  }
+}
+
+/* ── 11. Reading progress — gradient bar ───────────────────────
+   Делаем полосу не монотонной а gradient */
+
+#reading-progress {
+  background: linear-gradient(
+    90deg,
+    var(--color-accent) 0%,
+    color-mix(in srgb, var(--color-accent) 75%, var(--color-accent-strong)) 100%
+  );
+  box-shadow: 0 1px 4px color-mix(in srgb, var(--color-accent) 40%, transparent);
+}
+
+html.dark #reading-progress {
+  background: linear-gradient(
+    90deg,
+    var(--color-accent) 0%,
+    var(--color-accent-strong) 100%
+  );
+}
+
+/* ── 12. Article header h1 — улучшенный letter-spacing ─────────
+   На больших размерах tight letterspacing = premium */
+
+.article-header h1 {
+  letter-spacing: -0.01em;
+}
+
+.article-header h1.h1-large {
+  letter-spacing: -0.02em;
+}
+
+/* ── 13. Glossary tooltip — glass morphism ─────────────────────
+   Уже есть backdrop-filter, добавляем subtle inner shadow */
+
+.gterm .gtip,
+.gtip.gb-floating-tip {
+  box-shadow:
+    0 4px 24px rgba(0,0,0,.12),
+    0 1px 0 rgba(255,255,255,.7) inset,
+    0 -1px 0 rgba(0,0,0,.04) inset;
+}
+
+html.dark .gterm .gtip,
+html.dark .gtip.gb-floating-tip {
+  box-shadow:
+    0 4px 24px rgba(0,0,0,.4),
+    0 24px 70px -18px rgba(0,0,0,.6),
+    0 1px 0 rgba(255,255,255,.08) inset;
+}
+
+/* ── 14. Back-to-top — premium circle button ───────────────────
+   Добавляем arrow animation при hover */
+
+@media (hover: hover) and (pointer: fine) {
+  #back-to-top svg {
+    transition: transform .25s cubic-bezier(.2,.7,.2,1);
+  }
+  #back-to-top:hover svg {
+    transform: translateY(-2px);
+  }
+}
+
+/* ── 15. Article figure zoom hint — breathe animation улучшена ─
+   Более плавное и subtle */
+
+@keyframes fx-breathe {
+  0%, 100% { transform: scale(1); opacity: 0.82; }
+  50% { transform: scale(1.06); opacity: 1; }
+}
+
+/* ── 16. pq-scripture — premium quote block ────────────────────
+   Более изящный контейнер для библейских цитат */
+
+.pq-scripture {
+  border-radius: 10px;
+  transition: box-shadow .3s ease, transform .3s ease;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .pq-scripture:hover {
+    box-shadow:
+      0 8px 24px -8px color-mix(in srgb, var(--color-accent) 15%, transparent);
+    transform: translateX(2px);
+  }
+}
+
+/* ── 17. Bottom bar — glass effect улучшен ─────────────────────
+   Добавляем subtle border-top glow */
+
+.bottom-bar {
+  /* border-top fallback — уже задан выше как border: 1px solid var(--color-border) */
+}
+@supports (border-image: linear-gradient(red,blue) 1) {
+  .bottom-bar {
+    border-top: 1px solid transparent;
+    border-image: linear-gradient(
+      90deg,
+      transparent 0%,
+      var(--color-border) 20%,
+      var(--color-border) 80%,
+      transparent 100%
+    ) 1;
+  }
+}
+
+/* ── 18. Font feature settings — body-level ────────────────────
+   Добавляем calt (contextual alternates) для Lora и Source Sans */
+
+body {
+  font-feature-settings: "liga" 1, "kern" 1, "calt" 1, "onum" 1;
+}
+
+/* Для UI элементов — без oldstyle nums */
+.article-meta, .breadcrumb, .btoc-link-text, .toc-link,
+.bar-section-name, .bar-section-label, .article-byline,
+.reading-meta, .meta-tag, .meta-sep, .meta-author {
+  font-feature-settings: "liga" 1, "kern" 1, "calt" 1, "lnum" 1;
+}
+
+/* ── 19. Color-scheme для браузерных UI элементов ─────────────
+   Правильный цвет для scrollbars, form inputs в dark mode */
+
+:root {
+  color-scheme: light;
+}
+
+html.dark {
+  color-scheme: dark;
+}
+
+/* ── 20. Article body — улучшенный word-spacing для кириллицы ──
+   Кириллица на justified text выглядит лучше с чуть большим
+   межсловным интервалом */
+
+article p {
+  word-spacing: 0.02em;
+}
+
+@media (max-width: 600px) {
+  article p {
+    word-spacing: normal;
+  }
+}
+
+/* ── 21. Серия карточек — entry animation ───────────────────────
+   [data-series-cards] .series-card — cascade появление */
+
+@supports (animation-timeline: scroll()) {
+  [data-series-cards] .series-card {
+    animation: reveal-sda linear both;
+    animation-duration: auto;
+    animation-timeline: view();
+    animation-range: entry 0% entry 40%;
+  }
+}
+
+/* ── 22. gb-accuracy-block — улучшенный hover на кнопках ────────
+   Иконка анимируется при hover (уже есть rotate/translate,
+   добавляем filter glow) */
+
+@media (hover: hover) and (pointer: fine) {
+  .gb-accuracy-btn:hover .gb-accuracy-btn__icon {
+    filter: drop-shadow(0 2px 4px color-mix(in srgb, currentColor 30%, transparent));
+  }
+}
+
+/* ── КОНЕЦ DEEP POLISH r35 ─────────────────────────────────────
+   ═══════════════════════════════════════════════════════════ */
