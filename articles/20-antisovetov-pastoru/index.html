@@ -518,26 +518,7 @@ a.series-card:hover{border-color:var(--accent);transform:translateY(-2px);box-sh
   </a>
   <span class="article-topnav-title">20 антисоветов пастору
 </nav>
-<script>
-(function(){
-  var nav = document.getElementById('articleTopnav');
-  if (!nav) return;
-  document.body.classList.add('topnav-active');
-  var h1 = document.querySelector('h1');
-  var ticking = false;
-  function onScroll() {
-    if (ticking) return; ticking = true;
-    requestAnimationFrame(function() {
-      var s = window.scrollY || window.pageYOffset;
-      nav.classList.toggle('visible', s > 60);
-      if (h1) { nav.classList.toggle('title-visible', h1.getBoundingClientRect().bottom < 0); }
-      ticking = false;
-    });
-  }
-  window.addEventListener('scroll', onScroll, { passive: true });
-  onScroll();
-})();
-</script>
+<!-- article-topnav scroll handled by js/site.js?v=9ec309ca module 34 -->
 
 <main class="article-main" id="content">
 <div class="article-topline">
@@ -2204,7 +2185,7 @@ window.SITE_CONFIG.quiz = {
 </script>
 <script src="../../js/site-utils.js?v=d4ac3689"></script>
     <script src="../../js/scroll-perf.js?v=84977eec"></script>
-    <script src="../../js/site.js?v=323306c0" defer></script>
+    <script src="../../js/site.js?v=9ec309ca" defer></script>
     <script src="../../js/glossary.js?v=4f1b7174" defer></script>
 <script src="../../js/bookmark-engine.js?v=88f51b8b" defer></script>
 <script src="../../js/highlights.js?v=5395797c" defer></script>
