@@ -206,7 +206,7 @@ function updateHTML(slug, { pubISO, modISO, words, readTime }) {
 
   // published_time — только если отсутствует
   if (!meta.hasPubTime) {
-    html = html.replace(/(<meta\s+property="og:type"[^>]*>)/,
+    html = html.replace(/(<meta\s+[^>]*property="og:type"[^>]*>)/i,
       `$1\n  <meta property="article:published_time" content="${newPub}" />`);
     console.log(`    + published_time = ${newPub}`);
   }
@@ -214,10 +214,10 @@ function updateHTML(slug, { pubISO, modISO, words, readTime }) {
   // modified_time — всегда актуальна
   if (meta.hasModTime) {
     html = html.replace(
-      /(<meta\s+property="article:modified_time"\s+content=")[^"]*(")/,
+      /(<meta\s+[^>]*property="article:modified_time"\s+content=")[^"]*(")/i,
       `$1${newMod}$2`);
   } else {
-    html = html.replace(/(<meta\s+property="article:published_time"[^>]*>)/,
+    html = html.replace(/(<meta\s+[^>]*property="article:published_time"[^>]*>)/i,
       `$1\n  <meta property="article:modified_time" content="${newMod}" />`);
   }
 

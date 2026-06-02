@@ -4677,12 +4677,17 @@
     var term = (a.getAttribute('data-term') || '').toLowerCase();
     if (!term) return;
 
-    /* Закрываем текущий тултип */
-    var openTip = document.querySelector('.gtip.is-open, .gtip-luxury.is-open');
-    if (openTip && openTip.classList) openTip.classList.remove('is-open');
-    /* Универсально снимаем aria-expanded со всех .gterm */
-    var opened = document.querySelectorAll('.gterm[aria-expanded="true"]');
-    Array.prototype.forEach.call(opened, function (el) { el.setAttribute('aria-expanded', 'false'); });
+    /* Закрываем текущий тултип через зарегистрированные контроллеры, чтобы синхронизировать внутренний стейт */
+    if (window.SiteUtils && Array.isArray(window.SiteUtils._tooltipControllers)) {
+      window.SiteUtils._tooltipControllers.forEach(function (c) {
+        c.close(true);
+      });
+    } else {
+      var openTip = document.querySelector('.gtip.is-open, .gtip-luxury.is-open');
+      if (openTip && openTip.classList) openTip.classList.remove('is-open');
+      var opened = document.querySelectorAll('.gterm[aria-expanded="true"]');
+      Array.prototype.forEach.call(opened, function (el) { el.setAttribute('aria-expanded', 'false'); });
+    }
 
     /* Ищем целевой .gterm на странице (вне любого .gtip) */
     var candidates = document.querySelectorAll('.gterm[data-term]');
