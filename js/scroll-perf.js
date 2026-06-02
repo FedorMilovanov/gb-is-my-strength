@@ -29,7 +29,7 @@
     });
   }
 
-  window.addEventListener('scroll', function () {
+  window.addEventListener('scroll', function (, { passive: true }) {
     if (pageHidden) return;
     if (!ticking) {
       ticking = true;
