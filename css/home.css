@@ -306,7 +306,7 @@ html.dark {
   pointer-events: none;
 }
 html.dark .h-scripture-bg::before {
-  background: none !important;
+  background: none;
 }
 
 .h-phrase {
