@@ -102,4 +102,6 @@ Disallow: /
 User-agent: ImagesiftBot
 Disallow: /
 
+Allow: /llms.txt
+
 Sitemap: https://gospod-bog.ru/sitemap.xml
