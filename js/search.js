@@ -1440,16 +1440,20 @@
     }
     function alreadyInjected() { return !!document.getElementById('gbSearchBtn'); }
  
-    /* Controls with theme toggle (home, biographies, series, etc.) */
+    /* Controls with theme toggle (home, biographies, series, etc.)
+       Важно: вставляем только когда themeToggle действительно является ребёнком
+       .mobile-controls. Иначе insertBefore() бросает NotFoundError на страницах,
+       где desktop-кнопка темы живёт в .h-nav-links, а .mobile-controls содержит
+       только бургер. */
     var mc = document.querySelector('.mobile-controls');
     var themeToggle = document.getElementById('themeToggle');
-    if (mc && themeToggle && !alreadyInjected()) {
+    if (mc && themeToggle && mc.contains(themeToggle) && !alreadyInjected()) {
       var b0 = document.createElement('button');
       b0.className = 'gb-nav-search-icon'; b0.id = 'gbSearchBtn';
       b0.setAttribute('aria-label', 'Поиск (⌘K)');
       b0.setAttribute('title', 'Поиск ⌘K');
       b0.innerHTML = SVG.search15;
-      mc.insertBefore(b0, themeToggle); /* right next to day/night theme toggle */
+      mc.insertBefore(b0, themeToggle); /* visually tight to the day/night SVG */
       wireBtn(); return;
     }
  
