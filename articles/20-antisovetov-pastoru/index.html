@@ -518,7 +518,7 @@ a.series-card:hover{border-color:var(--accent);transform:translateY(-2px);box-sh
   </a>
   <span class="article-topnav-title">20 антисоветов пастору
 </nav>
-<!-- article-topnav scroll handled by js/site.js?v=9ec309ca module 34 -->
+<!-- article-topnav scroll handled by js/site.js?v=bd52c499 module 34 -->
 
 <main class="article-main" id="content">
 <div class="article-topline">
@@ -2185,27 +2185,14 @@ window.SITE_CONFIG.quiz = {
 </script>
 <script src="../../js/site-utils.js?v=d4ac3689"></script>
     <script src="../../js/scroll-perf.js?v=84977eec"></script>
-    <script src="../../js/site.js?v=9ec309ca" defer></script>
+    <script src="../../js/site.js?v=bd52c499" defer></script>
     <script src="../../js/glossary.js?v=4f1b7174" defer></script>
 <script src="../../js/bookmark-engine.js?v=88f51b8b" defer></script>
 <script src="../../js/highlights.js?v=5395797c" defer></script>
 <script src="../../js/enhancements.js?v=9359ad68" defer></script>
 <script src="../../js/sw-register.js?v=72d974d9" defer></script>
 <script src="../../js/search.js?v=386baf27" defer></script>
-<script>
-(function(){
-  if (!window.IntersectionObserver) {
-    document.querySelectorAll('.reveal').forEach(function(el){ el.classList.add('revealed'); });
-    return;
-  }
-  var obs = new IntersectionObserver(function(entries) {
-    entries.forEach(function(e) {
-      if (e.isIntersecting) { e.target.classList.add('revealed'); obs.unobserve(e.target); }
-    });
-  }, { threshold: 0.08, rootMargin: '0px 0px -30px 0px' });
-  document.querySelectorAll('article .reveal').forEach(function(el){ obs.observe(el); });
-})();
-</script>
+<!-- .reveal IO handled by CSS SDA + site.js -->
 
 <button id="back-to-top" aria-label="Наверх" type="button">
   <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
