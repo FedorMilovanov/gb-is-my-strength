@@ -1345,29 +1345,38 @@ html.dark mark.cp-hl {
    ─────────────────────────────────────────────────────────────────────── */
 /* ── Nav search icon-only button (главная страница) ── */
 .gb-nav-search-icon {
-  background: none;
+  background: transparent;
   border: none;
+  box-shadow: none;
   cursor: pointer;
-  padding: 6px;
-  border-radius: 50%;
+  padding: 2px;
+  border-radius: 0;
   color: var(--h-muted, #78716c);
-  display: flex;
+  display: inline-flex;
   align-items: center;
   justify-content: center;
   touch-action: manipulation;
   -webkit-tap-highlight-color: transparent;
-  transition: color 0.2s ease;
+  transition: color 0.18s ease, opacity 0.18s ease, transform 0.18s ease;
 }
-.gb-nav-search-icon:hover {
+.gb-nav-search-icon:hover,
+.gb-nav-search-icon:focus,
+.gb-nav-search-icon:active {
+  background: transparent;
+  box-shadow: none;
   color: var(--h-ink, #1a1714);
+  opacity: .86;
 }
+.gb-nav-search-icon:hover { transform: translateY(-1px); }
 .gb-nav-search-icon svg {
   width: 17px;
   height: 17px;
   display: block;
   flex-shrink: 0;
   stroke-width: 2;
+  transition: transform 0.18s ease;
 }
+.gb-nav-search-icon:hover svg { transform: scale(1.05); }
 
 .gb-search-btn {
   display: inline-flex;

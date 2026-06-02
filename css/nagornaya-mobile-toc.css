@@ -720,6 +720,44 @@ html.dark body.nagornaya-page .nag-summary__item {
   overflow-wrap: anywhere !important;
 }
 
+/* R21 guardrail: summary must keep readable text colors even after Tailwind/dark overrides. */
+body.nagornaya-page .nag-summary,
+body.nagornaya-page .nag-summary__list,
+body.nagornaya-page .nag-summary__item {
+  background: transparent !important;
+}
+body.nagornaya-page .nag-summary__head {
+  color: #7a2e2e !important;
+}
+body.nagornaya-page .nag-summary__item,
+body.nagornaya-page .nag-summary__text {
+  color: #4b4036 !important;
+}
+body.nagornaya-page .nag-summary__num {
+  background: rgba(116,151,117,.10) !important;
+  border-color: rgba(116,151,117,.18) !important;
+}
+body.nagornaya-page .nag-summary__num::before {
+  color: #5f8f61 !important;
+}
+html.dark body.nagornaya-page .nag-summary {
+  border-top-color: rgba(245,213,166,.16) !important;
+}
+html.dark body.nagornaya-page .nag-summary__head {
+  color: rgba(245,226,198,.76) !important;
+}
+html.dark body.nagornaya-page .nag-summary__item,
+html.dark body.nagornaya-page .nag-summary__text {
+  color: rgba(250,243,232,.84) !important;
+}
+html.dark body.nagornaya-page .nag-summary__num {
+  background: rgba(122,200,122,.11) !important;
+  border-color: rgba(122,200,122,.24) !important;
+}
+html.dark body.nagornaya-page .nag-summary__num::before {
+  color: #8ed08a !important;
+}
+
 
 /* Nagornaya Dark Theme Overrides */
 html.dark body.nagornaya-page #sec-quiz {
@@ -839,3 +877,5 @@ body.nagornaya-page
     background: var(--color-canvas);
     background: color-mix(in srgb, var(--color-canvas) 97%, transparent);
   }
+
+} /* @media (pointer: coarse), (max-width: 899px) */
