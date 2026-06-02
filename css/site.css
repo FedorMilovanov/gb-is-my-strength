@@ -1199,7 +1199,6 @@ html.dark .heart-flip-back { background: #110e07; }
     shape-outside: none;
   }
 
-
   .article-img.float-right + p,
   .article-img.float-right + ul,
   .article-img.float-right + blockquote,
@@ -1221,7 +1220,6 @@ html.dark .heart-flip-back { background: #110e07; }
     border-radius: 0;
   }
 }
-
 
 .reveal {
   opacity: 0;
@@ -7636,7 +7634,6 @@ body.nagornaya-page main p.text-\[16px\] {
   font-size: inherit !important;
 }
 
-
 /* ═══════════════
    7. SPACING fixes для nagornaya/chast-*
    ═══════════════ */
@@ -8585,143 +8582,20 @@ button.bref:hover {
 /* Fix .theme-toggle inside smart navbar on non-article pages */
 .h-navbar .theme-toggle,
 .h-navbar__inner .theme-toggle,
-.mobile-controls .theme-toggle {
-  position: relative !important;
-  top: auto !important;
-  right: auto !important;
-  z-index: 1 !important;
-  padding: 8px !important;
-  width: 44px !important;
-  height: 44px !important;
-  margin: 0 !important;
-  display: flex !important;
-  align-items: center !important;
-  justify-content: center !important;
-}
-html.dark .mobile-controls .theme-toggle svg {
-  color: #f5c542 !important;
-}
 
 /* Reset browser button styling for .bref (Bible references) to make them look like elegant inline text links */
-button.bref {
-  appearance: none !important;
-  -webkit-appearance: none !important;
-  background: none !important;
-  border: none !important;
-  padding: 0 !important;
-  margin: 0 !important;
-  font-family: inherit !important;
-  font-size: inherit !important;
-  line-height: inherit !important;
-  display: inline !important;
-  cursor: pointer !important;
-  color: #7a2e2e !important;
-  font-weight: 600 !important;
-  text-decoration: none !important;
-  box-shadow: none !important;
-  border-radius: 0 !important;
-}
-html.dark button.bref {
-  color: var(--color-accent-strong, #e8b878) !important;
-}
-button.bref:hover {
-  color: var(--color-accent-strong, #5f2323) !important;
-  text-decoration: underline !important;
-}
 
 /* Fix .theme-toggle inside smart navbar on non-article pages */
 .h-navbar .theme-toggle,
 .h-navbar__inner .theme-toggle,
-.mobile-controls .theme-toggle {
-  position: relative !important;
-  top: auto !important;
-  right: auto !important;
-  z-index: 1 !important;
-  padding: 8px !important;
-  width: 44px !important;
-  height: 44px !important;
-  margin: 0 !important;
-  display: flex !important;
-  align-items: center !important;
-  justify-content: center !important;
-}
-html.dark .mobile-controls .theme-toggle svg {
-  color: #f5c542 !important;
-}
 
 /* Reset browser button styling for .bref (Bible references) to make them look like elegant inline text links */
-button.bref {
-  appearance: none !important;
-  -webkit-appearance: none !important;
-  background: none !important;
-  border: none !important;
-  padding: 0 !important;
-  margin: 0 !important;
-  font-family: inherit !important;
-  font-size: inherit !important;
-  line-height: inherit !important;
-  display: inline !important;
-  cursor: pointer !important;
-  color: #7a2e2e !important;
-  font-weight: 600 !important;
-  text-decoration: none !important;
-  box-shadow: none !important;
-  border-radius: 0 !important;
-}
-html.dark button.bref {
-  color: var(--color-accent-strong, #e8b878) !important;
-}
-button.bref:hover {
-  color: var(--color-accent-strong, #5f2323) !important;
-  text-decoration: underline !important;
-}
 
 /* Fix .theme-toggle inside smart navbar on non-article pages */
 .h-navbar .theme-toggle,
 .h-navbar__inner .theme-toggle,
-.mobile-controls .theme-toggle {
-  position: relative !important;
-  top: auto !important;
-  right: auto !important;
-  z-index: 1 !important;
-  padding: 8px !important;
-  width: 44px !important;
-  height: 44px !important;
-  margin: 0 !important;
-  display: flex !important;
-  align-items: center !important;
-  justify-content: center !important;
-}
-html.dark .mobile-controls .theme-toggle svg {
-  color: #f5c542 !important;
-}
 
 /* Reset browser button styling for .bref (Bible references) to make them look like elegant inline text links */
-button.bref {
-  appearance: none !important;
-  -webkit-appearance: none !important;
-  background: none !important;
-  border: none !important;
-  padding: 0 !important;
-  margin: 0 !important;
-  font-family: inherit !important;
-  font-size: inherit !important;
-  line-height: inherit !important;
-  display: inline !important;
-  cursor: pointer !important;
-  color: #7a2e2e !important;
-  font-weight: 600 !important;
-  text-decoration: none !important;
-  box-shadow: none !important;
-  border-radius: 0 !important;
-}
-html.dark button.bref {
-  color: var(--color-accent-strong, #e8b878) !important;
-}
-button.bref:hover {
-  color: var(--color-accent-strong, #5f2323) !important;
-  text-decoration: underline !important;
-}
 
 /* Style for .fn-dove-icon - premium flying dove with white eye and smooth animations */
 .fn-dove-icon {
@@ -8818,302 +8692,70 @@ html.dark .premium-frame-text {
 /* Fix .theme-toggle inside smart navbar on non-article pages */
 .h-navbar .theme-toggle,
 .h-navbar__inner .theme-toggle,
-.mobile-controls .theme-toggle {
-  position: relative !important;
-  top: auto !important;
-  right: auto !important;
-  z-index: 1 !important;
-  padding: 8px !important;
-  width: 44px !important;
-  height: 44px !important;
-  margin: 0 !important;
-  display: flex !important;
-  align-items: center !important;
-  justify-content: center !important;
-}
-html.dark .mobile-controls .theme-toggle svg {
-  color: #f5c542 !important;
-}
 
 /* Reset browser button styling for .bref (Bible references) to make them look like elegant inline text links */
-button.bref {
-  appearance: none !important;
-  -webkit-appearance: none !important;
-  background: none !important;
-  border: none !important;
-  padding: 0 !important;
-  margin: 0 !important;
-  font-family: inherit !important;
-  font-size: inherit !important;
-  line-height: inherit !important;
-  display: inline !important;
-  cursor: pointer !important;
-  color: #7a2e2e !important;
-  font-weight: 600 !important;
-  text-decoration: none !important;
-  box-shadow: none !important;
-  border-radius: 0 !important;
-}
-html.dark button.bref {
-  color: var(--color-accent-strong, #e8b878) !important;
-}
-button.bref:hover {
-  color: var(--color-accent-strong, #5f2323) !important;
-  text-decoration: underline !important;
-}
 
 /* Style for .fn-dove-icon - premium flying dove with white eye and smooth animations */
-.fn-dove-icon {
-  color: #1e4ea3 !important; /* Premium royal blue in light theme */
-}
-html.dark .fn-dove-icon {
-  color: #38bdf8 !important; /* Premium sky blue in dark theme */
-}
 .fn-marker:hover .fn-dove-icon,
-.fn-marker:focus-visible .fn-dove-icon {
-  transform: scale(1.15) translateY(-1.5px) !important;
-  filter: drop-shadow(0 2px 5px rgba(30, 78, 163, 0.45)) !important;
-}
 
 /* Premium Frame Style — highly elegant, classic, and professional manuscript borders */
 /* Delicate dashed inner border for old-world feel */
 
 /* UNIFY ALL TOOLTIPS: Hide glossary pointing arrows/handles to avoid overlaps and create 100% uniform, minimal, flat floating cards */
 .gterm .gtip::before,
-.gtip.gb-floating-tip::before {
-  display: none !important;
-}
 
 /* Fix timeline vertical line overlap bug by keeping timeline circles perfectly solid and opaque */
-.timeline-entry::before {
-  background: var(--color-surface, #fdfcf9) !important;
-  z-index: 2 !important;
-}
 
 /* Fix .theme-toggle inside smart navbar on non-article pages */
 .h-navbar .theme-toggle,
 .h-navbar__inner .theme-toggle,
-.mobile-controls .theme-toggle {
-  position: relative !important;
-  top: auto !important;
-  right: auto !important;
-  z-index: 1 !important;
-  padding: 8px !important;
-  width: 44px !important;
-  height: 44px !important;
-  margin: 0 !important;
-  display: flex !important;
-  align-items: center !important;
-  justify-content: center !important;
-}
-html.dark .mobile-controls .theme-toggle svg {
-  color: #f5c542 !important;
-}
 
 /* Reset browser button styling for .bref (Bible references) to make them look like elegant inline text links */
-button.bref {
-  appearance: none !important;
-  -webkit-appearance: none !important;
-  background: none !important;
-  border: none !important;
-  padding: 0 !important;
-  margin: 0 !important;
-  font-family: inherit !important;
-  font-size: inherit !important;
-  line-height: inherit !important;
-  display: inline !important;
-  cursor: pointer !important;
-  color: #7a2e2e !important;
-  font-weight: 600 !important;
-  text-decoration: none !important;
-  box-shadow: none !important;
-  border-radius: 0 !important;
-}
-html.dark button.bref {
-  color: var(--color-accent-strong, #e8b878) !important;
-}
-button.bref:hover {
-  color: var(--color-accent-strong, #5f2323) !important;
-  text-decoration: underline !important;
-}
 
 /* Style for .fn-dove-icon - premium flying dove with white eye and smooth animations */
-.fn-dove-icon {
-  color: #1e4ea3 !important; /* Premium royal blue in light theme */
-}
-html.dark .fn-dove-icon {
-  color: #38bdf8 !important; /* Premium sky blue in dark theme */
-}
 .fn-marker:hover .fn-dove-icon,
-.fn-marker:focus-visible .fn-dove-icon {
-  transform: scale(1.15) translateY(-1.5px) !important;
-  filter: drop-shadow(0 2px 5px rgba(30, 78, 163, 0.45)) !important;
-}
 
 /* Premium Frame Style — highly elegant, classic, and professional manuscript borders */
 /* Delicate dashed inner border for old-world feel */
 
 /* UNIFY ALL TOOLTIPS: Hide glossary pointing arrows/handles to avoid overlaps and create 100% uniform, minimal, flat floating cards */
 .gterm .gtip::before,
-.gtip.gb-floating-tip::before {
-  display: none !important;
-}
 
 /* Fix timeline vertical line overlap bug by keeping timeline circles perfectly solid and opaque */
-.timeline-entry::before {
-  background: var(--color-surface, #fdfcf9) !important;
-  z-index: 2 !important;
-}
 
 /* Fix .theme-toggle inside smart navbar on non-article pages */
 .h-navbar .theme-toggle,
 .h-navbar__inner .theme-toggle,
-.mobile-controls .theme-toggle {
-  position: relative !important;
-  top: auto !important;
-  right: auto !important;
-  z-index: 1 !important;
-  padding: 8px !important;
-  width: 44px !important;
-  height: 44px !important;
-  margin: 0 !important;
-  display: flex !important;
-  align-items: center !important;
-  justify-content: center !important;
-}
-html.dark .mobile-controls .theme-toggle svg {
-  color: #f5c542 !important;
-}
 
 /* Reset browser button styling for .bref (Bible references) to make them look like elegant inline text links */
-button.bref {
-  appearance: none !important;
-  -webkit-appearance: none !important;
-  background: none !important;
-  border: none !important;
-  padding: 0 !important;
-  margin: 0 !important;
-  font-family: inherit !important;
-  font-size: inherit !important;
-  line-height: inherit !important;
-  display: inline !important;
-  cursor: pointer !important;
-  color: #7a2e2e !important;
-  font-weight: 600 !important;
-  text-decoration: none !important;
-  box-shadow: none !important;
-  border-radius: 0 !important;
-}
-html.dark button.bref {
-  color: var(--color-accent-strong, #e8b878) !important;
-}
-button.bref:hover {
-  color: var(--color-accent-strong, #5f2323) !important;
-  text-decoration: underline !important;
-}
 
 /* Style for .fn-dove-icon - premium flying dove with white eye and smooth animations */
-.fn-dove-icon {
-  color: #1e4ea3 !important; /* Premium royal blue in light theme */
-}
-html.dark .fn-dove-icon {
-  color: #38bdf8 !important; /* Premium sky blue in dark theme */
-}
 .fn-marker:hover .fn-dove-icon,
-.fn-marker:focus-visible .fn-dove-icon {
-  transform: scale(1.15) translateY(-1.5px) !important;
-  filter: drop-shadow(0 2px 5px rgba(30, 78, 163, 0.45)) !important;
-}
 
 /* Premium Frame Style — highly elegant, classic, and professional manuscript borders */
 /* Delicate dashed inner border for old-world feel */
 
 /* UNIFY ALL TOOLTIPS: Hide glossary pointing arrows/handles to avoid overlaps and create 100% uniform, minimal, flat floating cards */
 .gterm .gtip::before,
-.gtip.gb-floating-tip::before {
-  display: none !important;
-}
 
 /* Fix timeline vertical line overlap bug by keeping timeline circles perfectly solid and opaque */
-.timeline-entry::before {
-  background: var(--color-surface, #fdfcf9) !important;
-  z-index: 2 !important;
-}
 
 /* Fix .theme-toggle inside smart navbar on non-article pages */
 .h-navbar .theme-toggle,
 .h-navbar__inner .theme-toggle,
-.mobile-controls .theme-toggle {
-  position: relative !important;
-  top: auto !important;
-  right: auto !important;
-  z-index: 1 !important;
-  padding: 8px !important;
-  width: 44px !important;
-  height: 44px !important;
-  margin: 0 !important;
-  display: flex !important;
-  align-items: center !important;
-  justify-content: center !important;
-}
-html.dark .mobile-controls .theme-toggle svg {
-  color: #f5c542 !important;
-}
 
 /* Reset browser button styling for .bref (Bible references) to make them look like elegant inline text links */
-button.bref {
-  appearance: none !important;
-  -webkit-appearance: none !important;
-  background: none !important;
-  border: none !important;
-  padding: 0 !important;
-  margin: 0 !important;
-  font-family: inherit !important;
-  font-size: inherit !important;
-  line-height: inherit !important;
-  display: inline !important;
-  cursor: pointer !important;
-  color: #7a2e2e !important;
-  font-weight: 600 !important;
-  text-decoration: none !important;
-  box-shadow: none !important;
-  border-radius: 0 !important;
-}
-html.dark button.bref {
-  color: var(--color-accent-strong, #e8b878) !important;
-}
-button.bref:hover {
-  color: var(--color-accent-strong, #5f2323) !important;
-  text-decoration: underline !important;
-}
 
 /* Style for .fn-dove-icon - premium flying dove with white eye and smooth animations */
-.fn-dove-icon {
-  color: #1e4ea3 !important; /* Premium royal blue in light theme */
-}
-html.dark .fn-dove-icon {
-  color: #38bdf8 !important; /* Premium sky blue in dark theme */
-}
 .fn-marker:hover .fn-dove-icon,
-.fn-marker:focus-visible .fn-dove-icon {
-  transform: scale(1.15) translateY(-1.5px) !important;
-  filter: drop-shadow(0 2px 5px rgba(30, 78, 163, 0.45)) !important;
-}
 
 /* Premium Frame Style — highly elegant, classic, and professional manuscript borders */
 /* Delicate dashed inner border for old-world feel */
 
 /* UNIFY ALL TOOLTIPS: Hide glossary pointing arrows/handles to avoid overlaps and create 100% uniform, minimal, flat floating cards */
 .gterm .gtip::before,
-.gtip.gb-floating-tip::before {
-  display: none !important;
-}
 
 /* Fix timeline vertical line overlap bug by keeping timeline circles perfectly solid and opaque */
-.timeline-entry::before {
-  background: var(--color-surface, #fdfcf9) !important;
-  z-index: 2 !important;
-}
 /* Lux Upgrade v3.0: hide tooltip category to fix overlap */ .gtip-luxury__category{display:none!important} .gtip-luxury__header{margin-bottom:0!important}
 /* Lux Upgrade v3.0: remove intrusive top scroll bar */ .article-topnav{display:none!important;opacity:0!important;pointer-events:none!important} body.topnav-active{padding-top:0!important}
 /* Lux Upgrade v3.0: biography card polish - single border */ .biography-hero::after{display:none!important} .biography-hero{border-width:1px!important;box-shadow:0 8px 32px rgba(0,0,0,.06)!important} .biography-portrait{border-width:4px!important;box-shadow:0 4px 16px rgba(0,0,0,.08)!important}
@@ -9145,7 +8787,6 @@ html.dark .fn-dove-icon {
   border-radius: 12px;
 }
 .context-bridge a { font-weight: 700; }
-
 
 /* Gill premium insert cards */
 .gill-fact-grid {
@@ -9180,7 +8821,6 @@ html.dark .fn-dove-icon {
   .gill-fact-grid { grid-template-columns: 1fr; }
   .gill-fact-card { padding: 16px; }
 }
-
 
 /* Gill series: tasteful archaic styling for original titles without leaving English unexplained. */
 .work-title-original,
@@ -9232,4 +8872,79 @@ html.dark .manuscript-quote {
 }
 html.dark .manuscript-quote-source {
   color: var(--color-accent-strong, #e8b878);
+}
+
+/* note-box — soft callout used in editorial conclusions (e.g. Gill kontekst article).
+   Different from .info-box (more emphasis) and .warn-box (alert). Added 2026-06-02. */
+.note-box {
+  margin: clamp(28px, 4vw, 44px) 0;
+  padding: clamp(18px, 2.5vw, 26px) clamp(20px, 3vw, 32px);
+  background: var(--color-surface-quote, #fbf7ee);
+  border: 1px solid var(--color-border, #e7e2d8);
+  border-left: 3px solid var(--color-accent, #7a2e2e);
+  border-radius: 0 10px 10px 0;
+  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-size: 15px;
+  line-height: 1.65;
+  color: var(--color-text, #2b2317);
+}
+.note-box strong { color: var(--color-accent-strong, var(--color-accent, #7a2e2e)); }
+html.dark .note-box {
+  background: color-mix(in srgb, var(--color-accent) 6%, var(--color-surface));
+  border-color: var(--color-border, #232830);
+  border-left-color: var(--color-accent-strong, #e8b878);
+}
+
+/* context-links — grid of inter-article navigation cards
+   (used in spravochnik "Читать дальше" block, replaces what was a flat list). */
+.context-links {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 12px;
+  margin: 24px 0 32px;
+}
+.context-links a {
+  display: block;
+  padding: 14px 16px;
+  background: var(--color-surface, #fff);
+  border: 1px solid var(--color-border, #e7e2d8);
+  border-radius: 12px;
+  text-decoration: none;
+  color: var(--color-text, #1a1a18);
+  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-size: 13.5px;
+  line-height: 1.45;
+  transition: transform 0.22s cubic-bezier(.2,.7,.2,1),
+              border-color 0.22s ease,
+              box-shadow 0.22s ease;
+}
+.context-links a:hover,
+.context-links a:focus-visible {
+  transform: translateY(-2px);
+  border-color: var(--color-accent, #7a2e2e);
+  box-shadow: 0 6px 18px -8px rgba(0,0,0,.18);
+  text-decoration: none;
+}
+.context-links a strong {
+  display: block;
+  margin-bottom: 4px;
+  color: var(--color-accent, #7a2e2e);
+  font-size: 14px;
+}
+html.dark .context-links a {
+  background: var(--color-surface, #161a21);
+  border-color: var(--color-border, #232830);
+  color: var(--color-text, #e6e1d7);
+}
+html.dark .context-links a strong { color: var(--color-accent-strong, #e8b878); }
+html.dark .context-links a:hover {
+  border-color: var(--color-accent-strong, #e8b878);
+  box-shadow: 0 6px 18px -8px rgba(0,0,0,.5);
+}
+
+/* series-next-cta-wrap — outer wrapper around the bottom "next part" CTA.
+   The .series-next-cta itself is already styled; this just gives it breathing room
+   so it doesn't collide with the author-card below. */
+.series-next-cta-wrap {
+  margin: clamp(36px, 5vw, 56px) 0 clamp(24px, 4vw, 36px);
 }
