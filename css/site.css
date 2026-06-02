@@ -927,7 +927,6 @@ html.dark .pullquote .pq-attribution { color: var(--color-accent); }
   inset: 0;
   width: 100%; height: 100%;
   backface-visibility: hidden;
-  -webkit-backface-visibility: hidden;
   border-radius: 8px;
   overflow: hidden;
 }
@@ -2923,7 +2922,6 @@ html.dark .sd-btn--copy.copied .sd-icon { background: var(--quiz-correct-bg); co
   min-height: inherit;
   box-sizing: border-box;
   backface-visibility: hidden;
-  -webkit-backface-visibility: hidden;
   border-radius: 5px;
   padding: 16px 18px;
   border: 1px solid;
@@ -2971,7 +2969,6 @@ html.dark .flip-card-back h4 { color: #80c880; }
   min-height: inherit;
   box-sizing: border-box;
   backface-visibility: hidden;
-  -webkit-backface-visibility: hidden;
   border-radius: 8px;
   padding: 18px 22px 14px;
   border: 1px solid;
