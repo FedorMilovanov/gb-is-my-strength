@@ -1,6 +1,6 @@
 # gospod-bog.ru — llms.txt
 # AI-readable content index for LLM search engines (Perplexity, ChatGPT Search, Claude, Grok)
-# Format: https://llmstxt.org/ | Updated: 2026-06-02
+# Format: https://llmstxt.org/ | Updated: 2026-06-04
 
 # About
 > gospod-bog.ru — христианский богословский проект на русском языке.
@@ -12,22 +12,25 @@
 
 - [Главная](https://gospod-bog.ru/): обзор всех разделов и последних материалов
 - [Об авторе](https://gospod-bog.ru/about/): о Фёдоре Милованове, методологии подготовки материалов
+- [Все статьи](https://gospod-bog.ru/articles/): каталог всех публикаций
+- [Биографии служителей](https://gospod-bog.ru/biografii/): каталог биографических серий
 
 ## Article series
 
-- [Серия о Джоне Гилле](https://gospod-bog.ru/biologiografii/): биография и богословие английского баптистского пастора и богослова XVII-XVIII вв.
-- [Нагорная проповедь](https://gospod-bog.ru/nagornaya/): экзегетический разбор Матфея 5-7 в 5 частях
+- [Нагорная проповедь](https://gospod-bog.ru/nagornaya/): экзегетический разбор Матфея 5–7 в 5 частях (содержание, методология, адресат, богодухновенность, закон и Евангелие)
+- [Серия о Джоне Гилле](https://gospod-bog.ru/biografii/): биография и богословие английского баптистского пастора и богослова XVII–XVIII вв., 5 текстов (Часть I — Человек, Часть II — Учёный, Часть III — Наследие, Исторический контекст, Справочник)
+- [Тёмная сторона кафедры](https://gospod-bog.ru/pastor-series/): серия о пасторском авторитаризме и его антидоте
 
 ## Articles
 
-- [Кот да Винчи — апологетический разбор](https://gospod-bog.ru/articles/kod-da-vinchi/): критический анализ книги Дэна Брауна с богословской и исторической позиции
+- [Код да Винчи — апологетический разбор](https://gospod-bog.ru/articles/kod-da-vinchi/): критический анализ книги Дэна Брауна с богословской и исторической позиции
 - [Крайне ли испорчено сердце? (Иер. 17:9)](https://gospod-bog.ru/articles/krajne-li-isporcheno-serdce/): экзегетика ключевого текста о природе человека
-- [20 советов пастору](https://gospod-bog.ru/articles/20-antisovetov-pastoru/): практическое руководство по пасторскому служению
-- [Герменевтическая оценка христоцентричной герменевтики](https://gospod-bog.ru/articles/hermenevticheskaya-otsenka-hristotsentrichnoy-germenevtiki/): перевод статьи Абнера Чау
-- [Джон Гилл: Часть I — Человек](https://gospod-bog.ru/articles/dzhon-gill-chast-1-chelovek/): биография Джона Гилла (1697-1771)
-- [Джон Гилл: Часть II — Учёный](https://gospod-bog.ru/articles/dzhon-gill-chast-2-uchenyi/): богословское наследие
-- [Джон Гилл: Часть III — Наследие](https://gospod-bog.ru/articles/dzhon-gill-chast-3-nasledie/): влияние на баптистскую традицию
-- [Джон Гилл: Исторический контекст](https://gospod-bog.ru/articles/dzhon-gill-istoricheskiy-kontekst/): Лондон XVII-XVIII вв. и нонконформизм
+- [20 антисоветов пастору](https://gospod-bog.ru/articles/20-antisovetov-pastoru/): сатирическое руководство «как сломать церковь и людей в ней» — обратной стороной показывает признаки здорового пасторского служения
+- [Герменевтическая оценка христоцентричной герменевтики](https://gospod-bog.ru/articles/hermenevticheskaya-otsenka-hristotsentrichnoy-germenevtiki/): перевод статьи Абнера Чау (Master's Seminary Journal 27/2, Fall 2016)
+- [Джон Гилл: Часть I — Человек](https://gospod-bog.ru/articles/dzhon-gill-chast-1-chelovek/): биография Джона Гилла (1697–1771) — ранние годы, обращение, формирование характера
+- [Джон Гилл: Часть II — Учёный](https://gospod-bog.ru/articles/dzhon-gill-chast-2-uchenyi/): экзегеза, раввинистика, 9-томный комментарий, учение о Троице, «Свод богословия» 1769
+- [Джон Гилл: Часть III — Наследие](https://gospod-bog.ru/articles/dzhon-gill-chast-3-nasledie/): полемика с Уэсли, гиперкальвинизм, Сперджен, влияние на Америку
+- [Джон Гилл: Исторический контекст](https://gospod-bog.ru/articles/dzhon-gill-istoricheskiy-kontekst/): Лондон XVII–XVIII вв., нонконформизм, Acts of Uniformity
 - [Джон Гилл: Справочник](https://gospod-bog.ru/articles/dzhon-gill-spravochnik/): словарь терминов, хронология, библиография
 
 ## Theological position
