@@ -3081,10 +3081,9 @@ html.dark .sd-btn--copy.copied .sd-icon { background: var(--quiz-correct-bg); co
   -webkit-user-select: all;
 }
 
-.sd-url-strip { display: none !important; }
-.sd-divider   { display: none !important; }
-.sd-url-copy  { display: none !important; }
-.sd-label-default { display: none !important; }
+/* (.sd-url-strip / .sd-divider / .sd-url-copy / .sd-label-default
+   были display:none с важностью — классы нигде в HTML/JS не используются,
+   правила удалены в PLAN-04 P4) */
 
 @media print { #share-dialog-overlay { display: none !important; } }
 
@@ -6650,16 +6649,6 @@ button, a, label, summary, [role="button"], input[type="button"], input[type="su
   .compare-cards, .stat-grid, .figure-pair { grid-template-columns: 1fr !important; }
 }
 
-@media (orientation: landscape) and (max-height: 500px) {
-  .bottom-bar,
-  .h-mobile-nav,
-  #share-dialog {
-    padding-left: max(20px, env(safe-area-inset-left, 0px)) !important;
-    padding-right: max(20px, env(safe-area-inset-right, 0px)) !important;
-  }
-  .article-header h1 { font-size: clamp(22px, 4vh, 32px); }
-}
-
 html[data-scroll-locked="1"] {
   height: 100%;
   width: 100%;
@@ -6690,6 +6679,19 @@ textarea, select {
 .btoc-panel {
   padding-left: max(0px, env(safe-area-inset-left, 0px));
   padding-right: max(0px, env(safe-area-inset-right, 0px));
+}
+
+/* Landscape iPhone (короткие альбомные экраны) — перебиваем базовый
+   padding-left/right с большим safe-area inset. Размещено ПОСЛЕ базы,
+   поэтому важность-override не требуется (PLAN-04 P4). */
+@media (orientation: landscape) and (max-height: 500px) {
+  .bottom-bar,
+  .h-mobile-nav,
+  #share-dialog {
+    padding-left: max(20px, env(safe-area-inset-left, 0px));
+    padding-right: max(20px, env(safe-area-inset-right, 0px));
+  }
+  .article-header h1 { font-size: clamp(22px, 4vh, 32px); }
 }
 
 .fn-marker:focus {
