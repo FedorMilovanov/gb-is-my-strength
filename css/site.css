@@ -7195,12 +7195,9 @@ html.dark .fn-marker:hover { color: #f5d8a8; }
 
 /* === 3. NAGORNAYA THEME TOGGLE — встроенная кнопка в navbar/breadcrumbs === */
 
-/* В светлой теме на breadcrumbs (фон светлый) — тёмная кнопка */
-/* На nagornaya-page скрываем floating-кнопку — есть встроенная */
-body.nagornaya-page #themeFloat,
-body.nagornaya-page .theme-float-btn {
-  display: none !important;
-}
+/* (Legacy: правило body.nagornaya-page для #themeFloat / .theme-float-btn
+   удалено в PLAN-04 P5 — обе кнопки больше не создаются JS-ом, источник
+   плавающих контролов — gbFloatingControls (.gb-fc-theme / .gb-fc-search).) */
 
 /* === 4. NAGORNAYA QUIZ — h2 + placeholder hint === */
 
@@ -7356,8 +7353,7 @@ body.ng-toc-lock .btoc-nav {
 .bar-icon-btn,
 .btoc-close,
 .btoc-fontsize-btn,
-.btoc-share-btn,
-.theme-float-btn {
+.btoc-share-btn {
   min-width: 44px;
   min-height: 44px;
 }
@@ -7365,8 +7361,7 @@ body.ng-toc-lock .btoc-nav {
   .bar-icon-btn,
   .btoc-close,
   .btoc-fontsize-btn,
-  .btoc-share-btn,
-  .theme-float-btn {
+  .btoc-share-btn {
     width: 44px;
     height: 44px;
   }
@@ -7380,51 +7375,16 @@ img[src*="mc.yandex.ru"] {
 
 /* === 14. Bottom-bar backdrop === */
 
-/* === 15. THEME-FLOAT — позиция уведена выше bottom-bar, скрыта на nagornaya === */
-.theme-float-btn {
-  position: fixed;
-  right: clamp(14px, 2vw, 22px);
-  bottom: clamp(84px, 10vw, 100px);
-  width: 46px; height: 46px;
-  border-radius: 50%;
-  border: 1px solid var(--color-border, #e7e2d8);
-  background: var(--color-surface, #fff);
-  color: var(--color-text, #1c1917);
-  display: grid; place-items: center;
-  cursor: pointer;
-  z-index: var(--z-raised-high); /* 100, выше content но ниже sticky/btoc */
-  box-shadow:
-    0 6px 18px -8px rgba(28,25,23,.22),
-    0 2px 4px rgba(28,25,23,.06);
-  transition: transform .2s ease, box-shadow .2s ease, background .2s ease;
-}
-@media (hover: hover) and (pointer: fine) {
-  .theme-float-btn:hover {
-    transform: translateY(-2px) scale(1.04);
-    box-shadow:
-      0 1px 0 rgba(255,255,255,.7) inset,
-      0 14px 28px -10px rgba(28,25,23,.30);
-  }
-}
-.theme-float-btn:focus-visible { outline: 2px solid var(--color-accent, #7a2e2e); outline-offset: 2px; }
-html.dark .theme-float-btn {
-  background: var(--color-surface, #1f1a15);
-  border-color: var(--color-border, #3a3028);
-  color: #f5c542;
-}
-@media (min-width: 900px) {
-  .theme-float-btn {
-    bottom: clamp(24px, 3vw, 36px);
-    width: 50px; height: 50px;
-  }
-}
+/* === 15. (REMOVED) THEME-FLOAT legacy кнопка
+   Заменена единым блоком gbFloatingControls (js/site.js модуль 29) с
+   классами .gb-fc-theme / .gb-fc-search. Здесь убрано ~110 строк CSS
+   мёртвых правил. (PLAN-04 P5) */
 
 /* === 16. Reduced motion === */
 @media (prefers-reduced-motion: reduce) {
   .summary-card__item,
   .h-article-card,
   .bottom-bar,
-  .theme-float-btn,
   .toc-link,
   .btoc-link,
   .quiz-option,
@@ -8586,9 +8546,6 @@ html.dark .gb-floating-controls .gb-fc-search { color: #d4a574; }
    единый блок .gb-floating-controls. */
 body.gb-fc-active .theme-toggle,
 body.gb-fc-active #themeToggle,
-body.gb-fc-active #themeFloat,
-body.gb-fc-active .theme-float-btn,
-body.gb-fc-active #gbSearchFloat,
 body.gb-fc-active .nag-sidebar-theme-btn {
   display: none !important;
 }
