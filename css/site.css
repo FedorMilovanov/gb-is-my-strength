@@ -514,30 +514,30 @@ html.dark .breadcrumb__link:focus-visible {
     width: 100%;
     max-width: 100%;
     font-size: 13px;
-    overflow-x: auto;
-    overflow-y: hidden;
-    -webkit-overflow-scrolling: touch;
-    scrollbar-width: none;
+    padding-right: 48px; /* Резервируем место под кнопку темы справа */
   }
-  .breadcrumb::-webkit-scrollbar{ display: none; }
   .breadcrumb__list{
-    flex-wrap: nowrap;
-    gap: 5px;
-    row-gap: 0;
-    min-width: max-content;
-    white-space: nowrap;
+    display: flex;
+    flex-wrap: wrap; /* Разрешаем аккуратный перенос элементов */
+    gap: 4px 6px;
+    row-gap: 4px;
+    min-width: 0;
+    white-space: normal;
   }
   .breadcrumb__item{
     flex: 0 0 auto;
+    display: inline-flex;
+    align-items: center;
   }
   .breadcrumb__item + .breadcrumb__item::before{
-    margin-right: 5px;
+    margin-right: 6px;
   }
   .breadcrumb__current{
-    max-width: calc(58vw - 54px); /* учитываем кнопку темы справа */
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
+    max-width: 100%;
+    overflow: visible;
+    text-overflow: clip;
+    white-space: normal; /* Длинный заголовок переносится, а не обрезается */
+    line-height: 1.4;
   }
 }
 
@@ -911,9 +911,12 @@ html.dark .pullquote .pq-attribution { color: var(--color-accent); }
   line-height: 0;
 }
 .article-img img {
-  width: 100%;
+  max-width: 100%;
+  max-height: 580px; /* Предотвращает избыточную высоту вертикальных изображений */
+  width: auto;
   height: auto;
   display: block;
+  margin: 0 auto;
   border-radius: 4px;
   cursor: zoom-in;
 }
@@ -3792,7 +3795,7 @@ body.has-bottom-bar .bookmark-toast {
 /* empty .btoc-fontsize-dot rule removed (was no-op) */
 
 :root {  --article-font-size: 17px;
-  --f-hebrew-display: "SBL Hebrew", "Ezra SIL", "Times New Roman", "Noto Sans Hebrew", serif;}
+  --f-hebrew-display: "David Libre", "SBL Hebrew", "Ezra SIL", "Times New Roman", "Noto Sans Hebrew", serif;}
 
 .article-main .quiz-question-text,
 .article-body .quiz-question-text,

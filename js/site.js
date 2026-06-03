@@ -4615,7 +4615,6 @@
      там этот модуль не нужен. */
   function shouldActivate() {
     if (document.querySelector('.breadcrumb')) return true;
-    if (document.body && document.body.classList.contains('nagornaya-page')) return true;
     return false;
   }
 
@@ -4673,7 +4672,9 @@
     searchBtn.innerHTML = SEARCH_SVG;
 
     wrap.appendChild(themeBtn);
-    wrap.appendChild(searchBtn);
+    if (!document.body.classList.contains('nagornaya-page')) {
+      wrap.appendChild(searchBtn);
+    }
     document.body.appendChild(wrap);
 
     /* ── Логика темы ──────────────────────────────────────────── */

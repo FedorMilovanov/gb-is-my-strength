@@ -36,6 +36,8 @@ const SPECS = [
   ['Inter', 500, 'normal', 'cyrillic', 'Inter/inter-cyrillic-500'],
   ['Inter', 600, 'normal', 'cyrillic', 'Inter/inter-cyrillic-600'],
   ['Noto Sans Hebrew', 400, 'normal', 'hebrew', 'NotoSansHebrew/notosanshebrew-400'],
+  ['David Libre',      400, 'normal', 'hebrew', 'DavidLibre/davidlibre-hebrew-400'],
+  ['David Libre',      500, 'normal', 'hebrew', 'DavidLibre/davidlibre-hebrew-500'],
   ['Noto Sans',        400, 'normal', 'greek',  'NotoSansGreek/notosansgreek-400']
 ];
 
