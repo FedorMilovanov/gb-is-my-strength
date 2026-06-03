@@ -1,0 +1,85 @@
+name: Notify on Workflow Failure
+
+# Слушает завершение наших трёх ключевых workflow'ов;
+# если любой из них упал — создаёт (или поднимает) GitHub Issue с алертом.
+#
+# Зачем: статический сайт деплоится через GitHub Pages + IndexNow.
+# Если deploy.yml упал — сайт не обновится, читатели увидят старую версию.
+# Если indexnow.yml упал — Yandex/Bing не узнают про новую статью.
+# Issue даёт владельцу видимое уведомление прямо в GitHub.
+
+on:
+  workflow_run:
+    workflows:
+      - "Deploy to GitHub Pages"
+      - "IndexNow — Notify Search Engines"
+    types:
+      - completed
+
+permissions:
+  issues: write
+  actions: read
+
+jobs:
+  notify:
+    if: ${{ github.event.workflow_run.conclusion == 'failure' }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Open or update failure issue
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const wf = context.payload.workflow_run;
+            const wfName = wf.name;
+            const wfUrl = wf.html_url;
+            const sha = wf.head_sha.slice(0, 7);
+            const branch = wf.head_branch;
+            const commitMsg = wf.head_commit
+              ? wf.head_commit.message.split('\n')[0]
+              : '(no commit message)';
+            const triggerActor = wf.actor ? wf.actor.login : 'unknown';
+
+            const title = `🚨 CI failure: ${wfName}`;
+            const body = [
+              `Workflow **${wfName}** упал на коммите \`${sha}\` (ветка \`${branch}\`).`,
+              ``,
+              `**Коммит:** ${commitMsg}`,
+              `**Запустил:** @${triggerActor}`,
+              `**Run URL:** ${wfUrl}`,
+              ``,
+              `Если упал \`Deploy to GitHub Pages\` — прод не обновился, читатели видят старую версию сайта.`,
+              `Если упал \`IndexNow\` — поисковики (Яндекс, Bing) не узнали про изменения.`,
+              ``,
+              `Это сообщение создано автоматически workflow'ом \`notify-on-failure.yml\`.`,
+              `Закрой это issue, когда проблема устранена; следующее падение откроет новое.`
+            ].join('\n');
+
+            // Найти открытый issue с тем же названием — чтобы не плодить дубликаты
+            const { data: existing } = await github.rest.issues.listForRepo({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              state: 'open',
+              labels: 'ci-failure',
+              per_page: 50
+            });
+
+            const dup = existing.find(i => i.title === title);
+            if (dup) {
+              // Добавить комментарий вместо нового issue
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: dup.number,
+                body
+              });
+              core.info(`Updated existing issue #${dup.number}`);
+            } else {
+              const created = await github.rest.issues.create({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                title,
+                body,
+                labels: ['ci-failure', 'bug']
+              });
+              core.info(`Created issue #${created.data.number}`);
+            }
