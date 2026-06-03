@@ -9,6 +9,8 @@
 **Commit:** `r59: CSS Phase 2 - safe hover guards, design tokens, inline CSS migration & validation fix`
 
 ### What was improved:
+- **Footnote Bottom Sheet Animation Bug Fix:** Discovered that mobile footnotes (`.fn-marker .tooltip`) snapped instantly without slide-up transition. Fixed by adding `transform .28s` to the base `.tooltip` transition list, matching the smooth sliding animation of the glossary sheets.
+- **Active Section Card Visual Bug Fix:** Discovered that the active "Биографии" card on the homepage was styled as `.h-card-planned` (grayed-out / disabled style). Fixed by promoting it to `.h-card-glass` for proper active state contrast and hover reactions.
 - **Premium Hebrew Serif Font (David Libre):** Downloaded and self-hosted the beautiful, traditional Hebrew book-font `"David Libre"` (regular 400 & medium 500) and linked it in `/fonts/fonts.css` and `--f-hebrew-display` inside `site.css`. All scriptural Hebrew text now renders in authentic, gorgeous classical manuscript-style typography.
 - **Scripture Reference Cleanup:** Removed the Hebrew translation citations (`חבקוק ג:יט`) from both home page Scripture blocks, leaving only the neat Russian citation `Аввакум 3:19` as requested.
 - **Mobile Breadcrumb Layout & Overflow Fix:** Replaced the scroll-based mobile breadcrumbs with a wrap-based responsive block. Added a `padding-right: 48px` safeguard to completely prevent collisions with the floating theme toggle, permanently fixing horizontal page overflow jank on small mobile screens.
