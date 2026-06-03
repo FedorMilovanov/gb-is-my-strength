@@ -218,8 +218,8 @@ node scripts/audit-pro.js
 | hotfix | `d0a7193` | 2026-06-03 | Замена мёртвой ссылки anglicanbooksrevitalized.us на web.archive.org |
 | P1 | `2108bc7` | 2026-06-03 | 3 настоящих top-level дубль-селектора (blockquote, .bottom-bar, article p) → слиты |
 | P1b | `56367d3` | 2026-06-03 | 6 premium-section дублей (body font-features, h1, h1-large, article a, .pq-scripture, #reading-progress, .pullquote::before) → слиты |
-| P2 | ⏳ | — | `.fn-marker .tooltip:hover` — 2 `!important` сняты (псевдокласс выше специфичностью) |
-| P2-большая | ⏸ ОТЛОЖЕНА | — | `.h-hero-title:hover` (9 `!important`) — требует архитектурного решения: код в site.css перебивает home.css через `!important`. Правильно: переместить блок в home.css и убрать `!important`. Риск визуальной регрессии hover hero на главной → требуется отдельная партия с явным согласованием. |
+| P2 | `ce6af68` | 2026-06-03 | `.fn-marker .tooltip:hover` — 2 `!important` сняты (псевдокласс выше специфичностью) |
+| P3 | ⏳ | — | `.h-hero-title:hover` архитектурный фикс: значения из site.css `!important`-block перенесены в home.css без `!important` (источник правды один). site.css −13 `!important`, home.css ±0. Удалено также soseden'ee `@media (hover: none), (max-width: 640px)` reset-блок. |
 
 ---
 
