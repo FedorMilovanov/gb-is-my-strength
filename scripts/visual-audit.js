@@ -187,24 +187,35 @@ async function auditPage(browser, urlPath, vp) {
         SEEN.add(el);
         const txt = (el.innerText || '').trim();
         if (!txt || txt.length < 4) return;
+        if (el.closest('[aria-hidden="true"]')) return;
+        if (el.classList.contains('article-topnav-title') && !el.closest('.article-topnav.title-visible')) return;
         const r = el.getBoundingClientRect();
         if (r.width < 5 || r.height < 5) return;
         const cs = getComputedStyle(el);
         if (cs.display === 'none' || cs.visibility === 'hidden') return;
         if (parseFloat(cs.opacity) === 0) {
-          out.invisibleText.push({ tag: el.tagName.toLowerCase(), cls: (el.className||'').toString().slice(0,60), why: 'opacity:0', txt: txt.slice(0,60) });
+          const cls = (el.className || '').toString();
+          if (/\b(h-)?reveal\b/.test(cls) && (r.top > window.innerHeight || r.bottom < 0)) return;
+          out.invisibleText.push({ tag: el.tagName.toLowerCase(), cls: cls.slice(0,60), why: 'opacity:0', txt: txt.slice(0,60) });
           return;
         }
         const c = rgbToArr(cs.color);
-        // walk up to find effective bg
+        // walk up to find effective bg; skip image/gradient-backed heroes because
+        // this lightweight audit cannot model background images or pseudo overlays.
         let bg = null;
+        let hasPaintedBackdrop = false;
         let cur = el;
         while (cur && cur !== document.documentElement) {
-          const b = rgbToArr(getComputedStyle(cur).backgroundColor);
+          const curStyle = getComputedStyle(cur);
+          if (curStyle.backgroundImage && curStyle.backgroundImage !== 'none') {
+            hasPaintedBackdrop = true;
+            break;
+          }
+          const b = rgbToArr(curStyle.backgroundColor);
           if (b && (b[3] === undefined || b[3] > 0.5)) { bg = b; break; }
           cur = cur.parentElement;
         }
-        if (!c || !bg) return;
+        if (hasPaintedBackdrop || !c || !bg) return;
         const dr = Math.abs(c[0] - bg[0]) + Math.abs(c[1] - bg[1]) + Math.abs(c[2] - bg[2]);
         if (dr < 30) {
           out.invisibleText.push({ tag: el.tagName.toLowerCase(), cls: (el.className||'').toString().slice(0,60), why: 'low-contrast', color: cs.color, bg: 'rgb('+bg.slice(0,3).join(',')+')', txt: txt.slice(0,60) });
