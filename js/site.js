@@ -5086,4 +5086,34 @@
     }, { passive: false });
   })();
 
+
+  /* ============================================================
+     Z. Table Scroll Auto-Wrapping
+     Ensures all .manuscript-table elements are wrapped in a 
+     responsive scrollable .table-scroll container on mobile.
+     ============================================================ */
+  (function () {
+    function wrapTables() {
+      var tables = document.querySelectorAll('.manuscript-table');
+      tables.forEach(function (table) {
+        if (table.parentNode && table.parentNode.classList.contains('table-scroll')) return;
+        
+        var wrapper = document.createElement('div');
+        wrapper.className = 'table-scroll';
+        wrapper.setAttribute('role', 'region');
+        wrapper.setAttribute('tabindex', '0');
+        var ariaLabel = table.getAttribute('aria-label') || 'Таблица';
+        wrapper.setAttribute('aria-label', ariaLabel);
+        
+        table.parentNode.insertBefore(wrapper, table);
+        wrapper.appendChild(table);
+      });
+    }
+
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', wrapTables);
+    } else {
+      wrapTables();
+    }
+  })();
 })();

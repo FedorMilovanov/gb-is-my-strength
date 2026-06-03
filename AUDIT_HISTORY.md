@@ -9,6 +9,8 @@
 **Commit:** `r59: CSS Phase 2 - safe hover guards, design tokens, inline CSS migration & validation fix`
 
 ### What was improved:
+- **Programmatic Responsive Table Wrapping:** Identified a layout bug on mobile screens where `.manuscript-table` stretched and overflowed off-screen, causing the entire page to wobble horizontally. Solved cleanly and permanently by adding a global Javascript IIFE helper in `/js/site.js` that automatically wraps all manuscript tables inside accessible, scrollable `.table-scroll` containers with `role="region"` and keyboard focus support.
+- **Wesley Dispute Page-Decluttering:** Cleaned up image crowding in John Gill Part 3 under the Wesley dispute subsection by removing the redundant `gill-wesley-letters.jpg` image that sat directly adjacent to `gill-wesley-debate.jpg`.
 - **Footnote Bottom Sheet Animation Bug Fix:** Discovered that mobile footnotes (`.fn-marker .tooltip`) snapped instantly without slide-up transition. Fixed by adding `transform .28s` to the base `.tooltip` transition list, matching the smooth sliding animation of the glossary sheets.
 - **Active Section Card Visual Bug Fix:** Discovered that the active "Биографии" card on the homepage was styled as `.h-card-planned` (grayed-out / disabled style). Fixed by promoting it to `.h-card-glass` for proper active state contrast and hover reactions.
 - **Premium Hebrew Serif Font (David Libre):** Downloaded and self-hosted the beautiful, traditional Hebrew book-font `"David Libre"` (regular 400 & medium 500) and linked it in `/fonts/fonts.css` and `--f-hebrew-display` inside `site.css`. All scriptural Hebrew text now renders in authentic, gorgeous classical manuscript-style typography.
