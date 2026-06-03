@@ -5132,7 +5132,9 @@ html.dark .article-reading-progress-label.completed-label {
 }
 
 @media (max-width: 768px) {
-  .kbd-hint-toast { display: none !important; }
+  /* Та же специфичность что у базового .kbd-hint-toast — поздняя декларация
+     выигрывает без важности-override. (PLAN-04 P13) */
+  .kbd-hint-toast { display: none; }
 }
 
 @media (min-width: 900px) {
@@ -6535,13 +6537,15 @@ button, a, label, summary, [role="button"], input[type="button"], input[type="su
 }
 
 @media (max-width: 768px) {
+  /* id-селектор (1,0,0) та же специфичность что у базового #back-to-top;
+     поздний @media выигрывает без важности-override. (PLAN-04 P13) */
   #back-to-top {
-    width: 44px !important;
-    height: 44px !important;
-    bottom: max(20px, env(safe-area-inset-bottom, 0px)) !important;
-    right: max(16px, env(safe-area-inset-right, 0px)) !important;
+    width: 44px;
+    height: 44px;
+    bottom: max(20px, env(safe-area-inset-bottom, 0px));
+    right: max(16px, env(safe-area-inset-right, 0px));
   }
-  #back-to-top svg { width: 20px !important; height: 20px !important; }
+  #back-to-top svg { width: 20px; height: 20px; }
 }
 
 .bar-icon-btn {
@@ -7740,20 +7744,24 @@ body.nagornaya-page main > .max-w-4xl > .mb-6 > p.article-updated {
    На мобильных переводим такие строки в вертикальный стек.
    ═══════════════ */
 @media (max-width: 640px) {
+  /* Tailwind override на nagornaya. Специфичность body.nagornaya-page +
+     4 классов (0,6,1) гораздо выше Tailwind utilities (0,1,0); порядок
+     загрузки tw.min.css → site.css значит site.css перебивает по каскаду.
+     Важность-override не требуется. (PLAN-04 P13) */
   body.nagornaya-page .flex.items-start.justify-between.gap-3,
   body.nagornaya-page .flex.items-start.justify-between.gap-3.mb-2,
   body.nagornaya-page .flex.items-start.justify-between.gap-3.mb-3 {
-    flex-direction: column !important;
-    align-items: flex-start !important;
+    flex-direction: column;
+    align-items: flex-start;
   }
   body.nagornaya-page .flex.items-start.justify-between.gap-3 > .shrink-0.text-xs,
   body.nagornaya-page .flex.items-start.justify-between.gap-3.mb-2 > .shrink-0.text-xs,
   body.nagornaya-page .flex.items-start.justify-between.gap-3.mb-3 > .shrink-0.text-xs {
-    flex-shrink: 1 !important;
-    max-width: 100% !important;
-    white-space: normal !important;
-    overflow-wrap: anywhere !important;
-    align-self: flex-start !important;
+    flex-shrink: 1;
+    max-width: 100%;
+    white-space: normal;
+    overflow-wrap: anywhere;
+    align-self: flex-start;
   }
 }
 
@@ -7762,45 +7770,48 @@ body.nagornaya-page main > .max-w-4xl > .mb-6 > p.article-updated {
    Убираем внутренний горизонтальный скролл и ужимаем подписи.
    ═══════════════ */
 @media (max-width: 640px) {
+  /* #canonTimeline scope — id-селектор (1,1,0) та же специфичность что у
+     базовых правил выше; поздний @media выигрывает по каскаду.
+     Важность-override не требуется. (PLAN-04 P13) */
   #canonTimeline .ctw-body {
-    overflow-x: hidden !important;
+    overflow-x: hidden;
   }
   #canonTimeline .ctw-track {
-    min-width: 0 !important;
-    width: 100% !important;
+    min-width: 0;
+    width: 100%;
   }
   #canonTimeline .ctw-spacer,
   #canonTimeline .ctw-rlabel {
-    flex: 0 0 96px !important;
-    max-width: 96px !important;
-    font-size: .62rem !important;
-    line-height: 1.25 !important;
-    white-space: normal !important;
-    overflow: visible !important;
-    text-overflow: clip !important;
+    flex: 0 0 96px;
+    max-width: 96px;
+    font-size: .62rem;
+    line-height: 1.25;
+    white-space: normal;
+    overflow: visible;
+    text-overflow: clip;
   }
   #canonTimeline .ctw-axis {
-    font-size: .58rem !important;
+    font-size: .58rem;
   }
   #canonTimeline .ctw-row {
-    align-items: flex-start !important;
+    align-items: flex-start;
   }
   #canonTimeline .ctw-bar {
-    height: 18px !important;
+    height: 18px;
   }
   #canonTimeline .ctw-bin {
-    display: none !important;
+    display: none;
   }
   #canonTimeline .ctw-bout,
   #canonTimeline .ctw-pin-yr,
   #canonTimeline .ctw-pin-lbl {
-    font-size: .58rem !important;
+    font-size: .58rem;
   }
   #canonTimeline .ctw-pin-row {
-    min-height: 44px !important;
+    min-height: 44px;
   }
   #canonTimeline .ctw-pin-line {
-    height: 18px !important;
+    height: 18px;
   }
 }
 
