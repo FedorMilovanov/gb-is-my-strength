@@ -126,8 +126,8 @@ function validateArticle(slug) {
   const bylineStrong = html.match(/<span class="article-byline__strong">([^<]+)<\/span>/)?.[1];
   if (!bylineStrong) {
     warn(slug, 'article-byline__strong не найден');
-  } else if (!/^(Редактор:|Редакция перевода:)/.test(bylineStrong.trim())) {
-    err(slug, `byline "${bylineStrong}" не содержит роль (Редактор: / Редакция перевода:)`);
+  } else if (!/^(Редактор:|Редакция перевода:|Автор-редактор:)/.test(bylineStrong.trim())) {
+    err(slug, `byline "${bylineStrong}" не содержит роль (Редактор: / Редакция перевода: / Автор-редактор:)`);
   }
 
   // #6 author-card присутствует
