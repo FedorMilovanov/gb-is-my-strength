@@ -288,16 +288,26 @@
 
 ### 4.2 `!important`
 
-Сейчас (2026-06-02, после дедупа в commits A–H):
-- `site.css`: ~189 (AGENTS-r50c: −153 от r41 start; лимит ≤200 архитектурный минимум)
-- `home.css`: 15
-- `command-palette.css`: 4
-- `mobile-hotfix.css`: 59 (по дизайну: переопределяет поведение для touch / pointer: coarse)
-- `nagornaya-mobile-toc.css`: 3
+Сейчас (2026-06-04, после PLAN-04 P1..P15 cleanup):
+- `site.css`: **199** ✅ (PLAN-04: −143 от регрессии 342; лимит ≤200 архитектурный минимум — В ПРЕДЕЛАХ)
+- `home.css`: 20
+- `command-palette.css`: 7
+- `mobile-hotfix.css`: 74 (по дизайну: переопределяет поведение для touch / pointer: coarse)
+- `nagornaya-mobile-toc.css`: 122 (Tailwind override на nagornaya-page — легитимно)
 
-В commits A–H удалено 55+ дублирующих rule-блоков (~10 КБ); удалены 5-кратные дубли `.premium-frame`, 8-кратные `button.bref`, 8-кратные `.mobile-controls .theme-toggle`. Если попадаются новые дубли — это регрессия.
+Корректный подсчёт: `grep -o '!important' file | wc -l` (не `grep -c` — он считает строки, не вхождения).
 
-Не добавлять новые `!important`, пока возможно через специфичность. Если уже есть `!important` на том же селекторе — **исправь существующий**, не добавляй второй.
+**История регрессии и восстановления:**
+- AGENTS-r50c (2026-06-02): site.css = 189 ✅
+- Регрессия за июнь (r51..r61.21, добавление SVG dove, mobile compactности, hero hover polish, summary-card премиум, и др.): 189 → 342 (+153)
+- PLAN-04 (2026-06-04, 15 партий P1..P15): 342 → 199 (−143), архитектурный лимит восстановлен.
+
+Не добавлять новые `!important`, пока возможно через специфичность. Если уже есть `!important` на том же селекторе — **исправь существующий**, не добавляй второй. Перед добавлением `!important` ОБЯЗАТЕЛЬНО:
+1. Найди конкурента (`grep <selector>` по всем CSS-файлам).
+2. Рассчитай специфичность обоих правил.
+3. Если твоё выше — `!important` не нужен; используй каскад.
+4. Если ниже — увеличь специфичность через дополнительный класс/id/атрибут.
+5. `!important` оправдан ТОЛЬКО для: print, prefers-reduced-motion, forced-colors, Tailwind override на nagornaya-page, defensive disable (`display: none`).
 
 ### 4.3 Тёмная тема
 
@@ -696,3 +706,4 @@ npm run validate:all      # ← рекомендуется перед кажды
 | AGENTS-r61.15 | 2026-06-03 | **Manual screenshot QA: 20-Antisovetov series DOM + reliable bot screenshots.** Manual bottom screenshot review found broken overlapping series-card layout caused by unclosed `series-card__*` spans and raw `h3` children inside the series `<ul>`; closed the spans and converted block headings into valid list/grid items. Hardened visual-audit scrolling with instant scroll + wait-for-scroll before CDP capture, so bottom screenshots reach true page bottoms. |
 | AGENTS-r61.16 | 2026-06-03 | **Mobile compact premium cards.** Manual mobile review found archive/series `.h-article-card` items becoming tall “портянки” because mobile layout forced thumbnails above text. Added scoped compact row layout for non-home mobile article lists in `home.css`, with 104×76 thumbnails, line-clamped titles/abstracts, and compact planned placeholders. Also compacted the 20-Antisovetov mobile series navigator cards (less padding, wider content, clamped excerpts) while preserving desktop layout. Cache-bust and Playwright re-run. |
 | AGENTS-r61.17 | 2026-06-03 | **Mobile long-block premium compaction.** Added mobile-only enhancement for very long editorial blocks (`summary-card`, `note-box`, `info-box`, `warn-box`, `quote-box`) in `enhancements.js` + `site.css`: long blocks collapse to a premium 560px preview with gradient fade and accessible expand/collapse button. Thresholds are conservative (summary ≥740px, other blocks ≥950px) to avoid button spam while eliminating mobile “портянки”; desktop remains unchanged. |
+| **AGENTS-r62** | **2026-06-04** | **🎯 PLAN-04: !important cleanup — site.css 342 → 199.** 15 партий точечной чистки. Архитектурный лимит `≤200 !important` в site.css (зафиксирован AGENTS-r42 §4.2) — восстановлен после регрессии за июнь (r51..r61.21). Метод: для каждого !important рассчитана CSS specificity конкурентов; снято только там, где доказано — каскад/специфичность уже выигрывает без важности-override. Также: hotfix мёртвой ссылки anglicanbooksrevitalized.us (302→спам) на web.archive.org; удалены мёртвые компоненты `.ai-disclosure`, `.theme-float-btn`, `.fx-lift`, `.epilogue-*`, `.float-fallback`, `.sd-url-strip/divider/copy/label-default`, `.card.fx-lift`, `.article-img--portrait-wide`; перемещены `.h-hero-title:hover` и `.h-phrase--greek/hebrew` из site.css в home.css; добавлен `.github/workflows/notify-on-failure.yml`. Полный план и журнал партий: `audit/AUDIT_CLEANUP_PLAN_2026-06-04.md`. site.css: 267 905 b → 264 887 b (−3 КБ), 199 `!important`. all checks PASSED. |
