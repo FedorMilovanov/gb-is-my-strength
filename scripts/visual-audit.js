@@ -235,12 +235,16 @@ async function auditPage(browser, urlPath, vp) {
       // aria issues: links with no accessible name
       document.querySelectorAll('a').forEach((a) => {
         if (out.ariaIssues.length >= 5) return;
+        const cs = getComputedStyle(a);
+        const r = a.getBoundingClientRect();
+        if (cs.display === 'none' || cs.visibility === 'hidden' || parseFloat(cs.opacity) === 0) return;
+        if (r.width < 2 || r.height < 2) return;
         const name = (a.innerText || a.getAttribute('aria-label') || a.getAttribute('title') || '').trim();
         if (!name) {
           const hasImg = a.querySelector('img[alt]');
           const hasSvg = a.querySelector('svg');
           if (!hasImg && !hasSvg) {
-            out.ariaIssues.push({ href: (a.getAttribute('href')||'').slice(0,80), why: 'no-name' });
+            out.ariaIssues.push({ href: (a.getAttribute('href')||'').slice(0,80), why: 'visible link has no accessible name' });
           }
         }
       });
