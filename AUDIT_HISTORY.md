@@ -5,6 +5,25 @@
 
 ---
 
+## v20 — Visual audit accessible-link noise cleanup (2026-06-03)
+
+**Commit:** `r61.12: Harden visual audit link-name checks`
+
+### What was improved:
+- Hardened `scripts/visual-audit.js` accessible-name checking for links.
+- Hidden/zero-size links from closed mobile menus and hidden bottom TOC panels are now skipped.
+- Visible unnamed links are still reported.
+- Result: visual audit raw findings dropped to 28 intentional invisible-text cases and 0 filtered bugs.
+
+### Verified:
+- `node --check js/*.js scripts/*.js sw.js` → ✅ PASS.
+- `npm run validate:all` → ✅ PASS (0 errors, 0 warnings).
+- `npm run tokens:check` → ✅ PASS (`0 / 0` legacy var references).
+- `node scripts/audit-pro.js` → ✅ PASS (29 passed, 0 errors; only existing CSS/JS budget warnings).
+- `npm run visual-audit` → ✅ PASS: 32 page/viewport runs, 96 screenshots, 0 console errors, 0 network errors, 0 filtered findings.
+
+---
+
 ## v19 — 20-Antisovetov JS/HTML stabilization (2026-06-03)
 
 **Commit:** `r61.11: Stabilize antisovetov FAQ and phase audit`

@@ -50,6 +50,12 @@
 - Closed malformed FAQ button spans in `20-antisovetov`, restoring proper FAQ layout semantics.
 - Stabilized the page-specific FAQ handler in `enhancements.js`: it marks enhanced accordions, skips the generic competing handler, and synchronizes `.is-open` with canonical `.open` so both the inline premium styles and global grid animation work together.
 
+### r61.12 — Visual audit accessible-link noise cleanup
+
+- Hardened visible-link accessible-name checks in `scripts/visual-audit.js`.
+- Hidden closed-menu and hidden bottom-TOC links are ignored; visible unnamed links are still reported.
+- `npm run visual-audit`: 32 page/viewport runs, 96 screenshots, 0 console errors, 0 network errors, 0 filtered findings.
+
 ## Verification matrix used
 
 ```bash
