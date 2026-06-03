@@ -5036,7 +5036,9 @@ html.dark #selection-share-popup {
 }
 
 @media (max-width: 440px) {
-  #selection-share-popup { display: none !important; }
+  /* id-селектор (1,0,0) та же специфичность что у базового; поздний @media
+     выигрывает по каскаду без важности-override. (PLAN-04 P14) */
+  #selection-share-popup { display: none; }
 }
 
 .article-reading-progress {
@@ -7518,21 +7520,24 @@ html.dark .h-scripture-bg::before {
    полностью живут в css/home.css. Раньше тут был дублирующий блок
    с !important — он перебивал home.css; теперь источник правды — home.css. */
 
+/* Tailwind override на nagornaya. Селектор имеет специфичность (0,4,3) — далеко
+   выше Tailwind utilities (0,1,0). Плюс site.css грузится после tw.min.css.
+   Важность-override не требуется. (PLAN-04 P14) */
 body.nagornaya-page main > .max-w-4xl > .mb-6 > p.text-stone-500,
 body.nagornaya-page main > .max-w-4xl > .mb-6 > p.text-stone-400,
 body.nagornaya-page main > .max-w-4xl > .mb-6 > p.article-updated {
-  display: inline-flex !important;
-  width: auto !important;
-  margin-top: 10px !important;
-  margin-right: 8px !important;
-  padding: 6px 10px !important;
-  border-radius: 999px !important;
-  border: 1px solid rgba(120,83,46,.10) !important;
-  background: rgba(255,255,255,.42) !important;
-  color: #6f6255 !important;
-  font-family: 'Source Sans 3', system-ui, sans-serif !important;
-  font-size: 12px !important;
-  line-height: 1.35 !important;
+  display: inline-flex;
+  width: auto;
+  margin-top: 10px;
+  margin-right: 8px;
+  padding: 6px 10px;
+  border-radius: 999px;
+  border: 1px solid rgba(120,83,46,.10);
+  background: rgba(255,255,255,.42);
+  color: #6f6255;
+  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-size: 12px;
+  line-height: 1.35;
 }
 
 /* AUDIT v13: final summary guard — no filled header, no v9 pseudo-check conflicts */
@@ -7815,23 +7820,27 @@ body.nagornaya-page main > .max-w-4xl > .mb-6 > p.article-updated {
   }
 }
 
-body.has-bottom-bar #back-to-top { bottom: max(80px, calc(env(safe-area-inset-bottom, 0px) + 80px)) !important; }
+/* body.has-bottom-bar #back-to-top (1,1,1) ВЫШЕ специфичность чем
+   базовое #back-to-top (1,0,0); важность-override не требуется. (PLAN-04 P14) */
+body.has-bottom-bar #back-to-top { bottom: max(80px, calc(env(safe-area-inset-bottom, 0px) + 80px)); }
 
+/* .mobile-controls .theme-toggle (0,2,0) выше специфичностью чем базовое
+   .theme-toggle (0,1,0) — важность-override не требуется. (PLAN-04 P14) */
 .mobile-controls .theme-toggle {
-  position: relative !important;
-  top: auto !important;
-  right: auto !important;
-  z-index: 1 !important;
-  padding: 8px !important;
-  width: 44px !important;
-  height: 44px !important;
-  margin: 0 !important;
-  display: flex !important;
-  align-items: center !important;
-  justify-content: center !important;
+  position: relative;
+  top: auto;
+  right: auto;
+  z-index: 1;
+  padding: 8px;
+  width: 44px;
+  height: 44px;
+  margin: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 html.dark .mobile-controls .theme-toggle svg {
-  color: #f5c542 !important;
+  color: #f5c542;
 }
 
 /* Reset browser button styling for .bref (Bible references) to make them look like elegant inline text links */
