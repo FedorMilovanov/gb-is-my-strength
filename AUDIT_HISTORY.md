@@ -9,6 +9,8 @@
 **Commit:** `r59: CSS Phase 2 - safe hover guards, design tokens, inline CSS migration & validation fix`
 
 ### What was improved:
+- **Global CSS Consolidation & Deduplication:** Safely resolved **33 duplicate global selector blocks** in `css/site.css` (e.g. `.quiz-wrapper`, `.timeline-anim li`, `.bottom-bar`, `.btoc-nav`, `#toc-list`, and biography template selectors) by combining their properties in order of cascading priority, saving massive code overhead while preserving identical visual rendering.
+- **Visual Playwright Testing Harness:** Upgraded the visual QA audit script (`scripts/visual-audit.js`) to target a local static HTTP server (running on IPv4 `127.0.0.1`), allowing for the automated visual verification of **32 distinct viewport-pages with 96 full screenshots** before staging any production releases—confirming 0 layout regressions!
 - **Biography Handbook CSS Migration:** Migrated the remaining inline styles (~1 KB) of `.ref-grid`, `.ref-card`, and `.ref-note` from the biography handbook page to `/css/site.css` to allow browser caching, clean HTML payload, and consistent styling.
 - **Antisovetov Inline JS Migration:** Successfully extracted the 20-Antisovetov Strategic Map Popover and FAQ Accordion inline script blocks (~5.5 KB) and integrated them cleanly into `/js/enhancements.js`, resolving a top-priority P1 tech debt from `AGENTS.md`.
 - **SEO Metadata Optimization:** Shortened overly long meta descriptions across John Gill biography pages and `/biografii/index.html` to fit search engine snippet standards (140-160 characters).

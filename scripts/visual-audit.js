@@ -5,9 +5,7 @@
  */
 'use strict';
 
-process.env.PLAYWRIGHT_BROWSERS_PATH =
-  process.env.PLAYWRIGHT_BROWSERS_PATH ||
-  require('path').join(__dirname, '..', '.playwright-browsers');
+process.env.PLAYWRIGHT_BROWSERS_PATH = '/home/user/.cache/ms-playwright';
 
 const { chromium } = require('playwright');
 const fs = require('fs');
@@ -34,7 +32,7 @@ const URLS = [
   '/pastor-series/',
   '/404.html',
 ];
-const BASE = 'https://gospod-bog.ru';
+const BASE = 'http://127.0.0.1:8080';
 
 const VIEWPORTS = [
   { name: 'mobile',  width: 375,  height: 812 },
@@ -286,6 +284,7 @@ async function auditPage(browser, urlPath, vp) {
       stats.screenshots++;
     }
   } catch (e) {
+    console.error('AUDIT PAGE ERROR:', e);
     bugs.push({
       severity: 'HIGH',
       page: urlPath,
