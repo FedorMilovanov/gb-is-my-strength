@@ -2199,3 +2199,48 @@ body:not(.home-page) .h-rule {
   .h-nav-links { gap: 12px; }
   .h-nav-links a { font-size: 12px; }
 }
+
+/* ── Pastor-series planned thumbnails (r61.13): premium placeholder, no empty boxes ── */
+.h-article-thumb--planned {
+  position: relative;
+  display: grid;
+  place-items: center;
+  border: 1px solid color-mix(in srgb, var(--h-accent, #8b2626) 18%, var(--h-border));
+  background:
+    radial-gradient(circle at 24% 20%, rgba(139, 38, 38, 0.10), transparent 34%),
+    linear-gradient(135deg, var(--h-surface), #f3ece3);
+  color: color-mix(in srgb, var(--h-accent, #8b2626) 58%, var(--h-muted));
+}
+
+.h-article-thumb--planned::before {
+  content: attr(data-part);
+  font-family: var(--f-serif);
+  font-size: clamp(38px, 9vw, 58px);
+  font-weight: 700;
+  line-height: 1;
+  letter-spacing: -0.04em;
+  opacity: 0.22;
+}
+
+.h-article-thumb--planned::after {
+  content: "планируется";
+  position: absolute;
+  inset-inline: 14px;
+  bottom: 12px;
+  padding-top: 8px;
+  border-top: 1px solid color-mix(in srgb, currentColor 18%, transparent);
+  font-family: var(--f-ui);
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  text-align: center;
+  opacity: 0.72;
+}
+
+html.dark .h-article-thumb--planned {
+  background:
+    radial-gradient(circle at 24% 20%, rgba(217, 122, 108, 0.18), transparent 34%),
+    linear-gradient(135deg, #201c18, #30231f);
+  color: color-mix(in srgb, var(--h-accent, #d97a6c) 72%, var(--h-muted));
+}

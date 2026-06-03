@@ -290,6 +290,10 @@ async function auditPage(browser, urlPath, vp) {
     });
 
     // screenshots: top, middle, bottom
+    // Use CDP clipped screenshots instead of page.screenshot({ fullPage:false }).
+    // Headless Chromium can return a blank viewport on long mobile documents after
+    // programmatic scroll; clipping the document at the actual scrollY is reliable.
+    const cdp = await ctx.newCDPSession(page);
     const positions = [0, 0.5, 1];
     for (let i = 0; i < positions.length; i++) {
       const pos = positions[i];
@@ -297,9 +301,15 @@ async function auditPage(browser, urlPath, vp) {
         const max = document.documentElement.scrollHeight - window.innerHeight;
         window.scrollTo(0, Math.max(0, max * p));
       }, pos);
-      await page.waitForTimeout(400);
+      await page.waitForTimeout(900);
+      const y = await page.evaluate(() => window.scrollY);
       const file = path.join(SHOTS, `${tag}__${i === 0 ? 'top' : i === 1 ? 'mid' : 'bot'}.png`);
-      await page.screenshot({ path: file, fullPage: false });
+      const shot = await cdp.send('Page.captureScreenshot', {
+        format: 'png',
+        captureBeyondViewport: true,
+        clip: { x: 0, y, width: vp.width, height: vp.height, scale: 1 }
+      });
+      fs.writeFileSync(file, Buffer.from(shot.data, 'base64'));
       stats.screenshots++;
     }
   } catch (e) {
