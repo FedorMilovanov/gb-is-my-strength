@@ -9,6 +9,7 @@
 **Commit:** `r59: CSS Phase 2 - safe hover guards, design tokens, inline CSS migration & validation fix`
 
 ### What was improved:
+- **Hebrew Font Restoration:** Reverted the experimental serif David Libre font choice back to the clean, trusted modern sans-serif `"Noto Sans Hebrew"` as the primary font for scriptural Hebrew display, matching the long-standing design. Deleted the unused David Libre assets and cleared its font-face blocks.
 - **Full-Width Landscape Images Restoration:** Restored `.article-img img` to `width: 100%` to keep the original premium grid alignment for all landscape (16:9) images in the biographies.
 - **Isolated Portrait Constraint Class:** Created `.article-img--vertical` with a `max-height: 580px; width: auto;` limit to restrict vertical/portrait images (like the succession schema, doctorate diploma, and Bunhill graveyard) selectively in HTML, preventing them from stretching and cluttering the desktop layout.
 - **Programmatic Responsive Table Wrapping:** Identified a layout bug on mobile screens where `.manuscript-table` stretched and overflowed off-screen, causing the entire page to wobble horizontally. Solved cleanly and permanently by adding a global Javascript IIFE helper in `/js/site.js` that automatically wraps all manuscript tables inside accessible, scrollable `.table-scroll` containers with `role="region"` and keyboard focus support.
