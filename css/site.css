@@ -762,6 +762,9 @@ article p {
   -webkit-hyphenate-limit-before: 4;
   -webkit-hyphenate-limit-after: 4;
   hyphenate-limit-lines: 2;
+  /* Кириллица на justified text выглядит лучше с чуть большим
+     межсловным интервалом (на узких экранах сбрасывается, см. @media (max-width: 600px) ниже). */
+  word-spacing: 0.02em;
   /* On narrow screens, disable justify to avoid large word gaps */
   overflow-wrap: break-word;
 }
@@ -832,9 +835,10 @@ html.dark article a:focus-visible {
 
 blockquote {
   margin: clamp(24px, 4vw, 36px) 0;
-  padding: 6px 0 6px clamp(20px, 3vw, 32px);
-  border-left: 2px solid #7a2e2e;
-  border-inline-start: 2px solid #7a2e2e;
+  padding: 6px 0 6px clamp(18px, 2.5vw, 28px);
+  /* Fallback for Safari < 15.4 — both logical and physical for full support */
+  border-left: 2px solid var(--color-accent);
+  border-inline-start: 2px solid var(--color-accent);
   background: none;
   font-style: italic;
   font-size: 0.97em;
@@ -8748,16 +8752,9 @@ article a:focus-visible {
   opacity: 0.15;
 }
 
-/* ── 7. Blockquote premium ──────────────────────────────────────
-   Более изящный borderless с Lora курсивом */
-
-blockquote {
-  /* Fallback для Safari < 15.4 */
-  border-left: 2px solid var(--color-accent);
-  border-inline-start: 2px solid var(--color-accent);
-  padding-left: clamp(18px, 2.5vw, 28px);
-}
-/* Progressive enhancement: gradient border где поддерживается */
+/* ── 7. Blockquote premium — progressive enhancement
+   Базовый borderless с цветом-акцентом задан в основном правиле выше.
+   Здесь — только gradient-border улучшение для современных движков. */
 @supports (border-image: linear-gradient(red,blue) 1) {
   blockquote {
     border-image: linear-gradient(to bottom, transparent, var(--color-accent) 25%, var(--color-accent) 75%, transparent) 1;
@@ -8901,12 +8898,10 @@ html.dark .gtip.gb-floating-tip {
   }
 }
 
-/* ── 17. Bottom bar — glass effect улучшен ─────────────────────
-   Добавляем subtle border-top glow */
+/* ── 17. Bottom bar — glass effect (border-top glow)
+   Базовый border-top задан выше (border: 1px solid var(--color-border)).
+   Здесь — progressive gradient-fade улучшение, где поддерживается border-image. */
 
-.bottom-bar {
-  /* border-top fallback — уже задан выше как border: 1px solid var(--color-border) */
-}
 @supports (border-image: linear-gradient(red,blue) 1) {
   .bottom-bar {
     border-top: 1px solid transparent;
@@ -8945,13 +8940,8 @@ html.dark {
   color-scheme: dark;
 }
 
-/* ── 20. Article body — улучшенный word-spacing для кириллицы ──
-   Кириллица на justified text выглядит лучше с чуть большим
-   межсловным интервалом */
-
-article p {
-  word-spacing: 0.02em;
-}
+/* ── 20. Article body — word-spacing для кириллицы (см. также основное правило article p выше).
+   Сброс на узких экранах, чтобы избежать больших пробелов между словами. */
 
 @media (max-width: 600px) {
   article p {
