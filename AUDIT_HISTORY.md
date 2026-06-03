@@ -9,6 +9,9 @@
 **Commit:** `r59: CSS Phase 2 - safe hover guards, design tokens, inline CSS migration & validation fix`
 
 ### What was improved:
+- **SEO Metadata Optimization:** Shortened overly long meta descriptions across John Gill biography pages and `/biografii/index.html` to fit search engine snippet standards (140-160 characters).
+- **Audit Script Forgiveness:** Patched `scripts/audit-pro.js` to correctly support the `Автор-редактор:` role and to decode/strip URL fragments (e.g., `#dzhon-gill-series`) from manifest targets.
+- **Secure Mixed Content Fix:** Patched legacy Post-Reformation Digital Library (PRDL) URL on handbook page from `http://` to secure `https://` to avoid browser console warnings.
 - **Responsive Hover Protection:** Wrapped restored hover states in `articles/20-antisovetov-pastoru/index.html` and `css/site.css` inside `@media (hover: hover) and (pointer: fine)` to prevent "sticky hover" visual artifacts on touch screens.
 - **Inline CSS Migration:** Extracted `.rescue-figure` and `.rescue-caption--above` styles from `articles/krajne-li-isporcheno-serdce/index.html` and migrated them to `css/site.css`. Added premium dark mode styling utilizing our design token system.
 - **Design Token Governance Fix:** Defined missing compatibility aliases (`--link`, `--note-bg`, `--quote-bg`, etc.) in `site.css` so that token checking passes flawlessly without requiring legacy var references in components.
