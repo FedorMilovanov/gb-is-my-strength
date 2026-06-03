@@ -4460,8 +4460,8 @@ h2:hover .heading-anchor, h3:hover .heading-anchor, h4:hover .heading-anchor {  
   transform: translateX(2px);}
 .heading-anchor:focus, .heading-anchor:focus-visible { opacity: 1; outline: 2px solid var(--color-accent); outline-offset: 2px; border-radius: 4px; }
 .heading-anchor:hover { color: var(--color-text-muted); }
-.heading-anchor.copied { color: #7a2e2e !important; opacity: 1; }
-html.dark .heading-anchor.copied { color: var(--color-accent) !important; }
+.heading-anchor.copied { color: #7a2e2e; opacity: 1; }
+html.dark .heading-anchor.copied { color: var(--color-accent); }
 /* Touch devices: no :hover, so always show anchors at reduced opacity so users can tap-copy section link */
 @media (hover: none) and (pointer: coarse) {
   .heading-anchor { opacity: .55; }
@@ -7193,19 +7193,19 @@ html.dark .gb-accuracy-inner {
   font-family: 'Lora', Georgia, serif;
   font-weight: 600;
   font-size: clamp(20px, 2.4vw, 26px);
-  color: var(--color-text, #1c1917) !important;
+  color: var(--color-text, #1c1917);
   margin: 0 0 10px;
   line-height: 1.25;
 }
 .gb-accuracy-desc {
   font-family: 'Source Sans 3', system-ui, sans-serif;
   font-size: 14.5px;
-  color: var(--color-text-muted, #78716c) !important;
+  color: var(--color-text-muted, #78716c);
   margin: 0 0 22px;
   line-height: 1.55;
 }
-html.dark .gb-accuracy-title { color: var(--color-text, #f5ede0) !important; }
-html.dark .gb-accuracy-desc { color: var(--color-text-muted, #a8a29e) !important; }
+html.dark .gb-accuracy-title { color: var(--color-text, #f5ede0); }
+html.dark .gb-accuracy-desc { color: var(--color-text-muted, #a8a29e); }
 
 /* На nagornaya/* main имеет dark Tailwind фон. Принудительный контраст для блока. */
 body.nagornaya-page .gb-accuracy-block { color: var(--color-text, #1c1917); }
