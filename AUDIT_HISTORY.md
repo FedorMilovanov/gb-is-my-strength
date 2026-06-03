@@ -5,6 +5,26 @@
 
 ---
 
+## v21 — Manual screenshot QA + premium planned-card polish (2026-06-03)
+
+**Commit:** `r61.13: Fix visual audit screenshots and planned-card polish`
+
+### What was improved:
+- Fixed the Playwright visual-audit screenshot pipeline: scrolled screenshots now use Chrome DevTools Protocol document clipping after `scrollY`, avoiding blank mid/bottom screenshots on long mobile pages.
+- Manually reviewed contact sheets from the 96 screenshots instead of trusting numeric pass/fail only.
+- Found non-premium empty planned placeholders in `/pastor-series/` (large pale boxes with exclamation icons).
+- Replaced repeated inline SVG placeholder markup with a reusable `.h-article-thumb--planned` style in `css/home.css`, using Roman numerals and a subtle premium placeholder treatment.
+- Refreshed cache-bust hashes.
+
+### Verification plan:
+- `node --check js/*.js scripts/*.js sw.js` → ✅ PASS.
+- `npm run validate:all` → ✅ PASS (0 errors, 0 warnings).
+- `npm run tokens:check` → ✅ PASS (`0 / 0` legacy var references).
+- `node scripts/audit-pro.js` → ✅ PASS (29 passed, 0 errors; only existing CSS/JS budget warnings).
+- `npm run visual-audit` → ✅ PASS: 32 page/viewport runs, 96 screenshots, 0 console errors, 0 network errors, 0 filtered findings.
+
+---
+
 ## v20 — Visual audit accessible-link noise cleanup (2026-06-03)
 
 **Commit:** `r61.12: Harden visual audit link-name checks`

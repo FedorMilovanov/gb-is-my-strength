@@ -56,6 +56,13 @@
 - Hidden closed-menu and hidden bottom-TOC links are ignored; visible unnamed links are still reported.
 - `npm run visual-audit`: 32 page/viewport runs, 96 screenshots, 0 console errors, 0 network errors, 0 filtered findings.
 
+### r61.13 — Manual screenshot QA + premium planned-card polish
+
+- Fixed `scripts/visual-audit.js` screenshot capture for long scrolled mobile pages by using CDP clipped screenshots after `scrollY`; this prevents blank mid/bottom screenshots and makes manual review trustworthy.
+- Generated contact sheets for all 96 screenshots and manually inspected them for premium-class issues.
+- Found `/pastor-series/` planned materials using large empty placeholder boxes with exclamation icons.
+- Replaced them with reusable `.h-article-thumb--planned` Roman-numeral premium placeholders in `css/home.css`; no new CSS file.
+
 ## Verification matrix used
 
 ```bash
