@@ -9284,3 +9284,42 @@ html.dark .rescue-caption--above {
   background: linear-gradient(to bottom, rgba(184, 136, 42, 0.12), transparent);
 }
 
+/* ── Biography handbook grid & cards (originally inline in articles/dzhon-gill-spravochnik) ─ */
+.ref-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 14px;
+  margin: 24px 0;
+}
+.ref-card {
+  border: 1px solid var(--color-border);
+  border-radius: 16px;
+  padding: 16px;
+  background: var(--color-surface-quote);
+}
+.ref-card strong {
+  display: block;
+  color: var(--color-accent-strong);
+  margin-bottom: 6px;
+}
+.ref-note {
+  border-left: 4px solid var(--color-accent);
+  border-radius: 12px;
+  background: var(--color-surface-quote);
+  padding: 18px 20px;
+  margin: 24px 0;
+}
+.ref-small {
+  font-size: 0.92em;
+  color: var(--color-text-secondary);
+}
+@media (max-width: 760px) {
+  .ref-grid {
+    grid-template-columns: 1fr;
+  }
+  .manuscript-table {
+    font-size: 14px;
+  }
+}
+
+
