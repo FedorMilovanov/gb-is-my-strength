@@ -4920,7 +4920,7 @@ footer.footer-home {
   opacity: 1;
 }
 
-.dark .quiz-launch-label {
+html.dark .quiz-launch-label {
   text-shadow: 0 1px 8px rgba(0,0,0,0.5);
 }
 
