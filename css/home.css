@@ -902,33 +902,43 @@ html.dark .h-tetra-label {
   cursor: default;
 }
 
-@media (hover: hover) {
-
-.h-hero-title:hover .h-title-static {
-  opacity: 0.9;
-  letter-spacing: 0.055em;
+/* h-hero-title hover polish — единый блок (PLAN-04 P3)
+   Ранее: значения тут перебивались через важность-override из site.css.
+   Теперь все рабочие значения здесь, без важности. */
+@media (hover: hover) and (pointer: fine) {
+  .h-hero-title:hover .h-title-static {
+    opacity: .96;
+    letter-spacing: 0;
+    transform: translateX(-.012em);
+  }
+  .h-hero-title:hover .h-title-dash {
+    transform: scaleX(1.18);
+    margin-inline: .26em;
+    opacity: .9;
+  }
+  .h-hero-title:hover .h-title-accent {
+    letter-spacing: 0;
+    transform: translateX(.012em);
+    text-shadow: 0 10px 30px rgba(122,46,46,.10);
+  }
+  html.dark .h-hero-title:hover .h-title-accent {
+    text-shadow: 0 2px 24px rgba(217, 122, 108, 0.25);
+  }
 }
 
-}
-@media (hover: hover) {
-
-.h-hero-title:hover .h-title-dash { transform: scaleX(1.28); }
-
-}
-@media (hover: hover) {
-
-.h-hero-title:hover .h-title-accent {
-  letter-spacing: 0.045em;
-  text-shadow: 0 2px 24px rgba(139, 38, 38, 0.18);
-}
-
-}
-@media (hover: hover) {
-
-html.dark .h-hero-title:hover .h-title-accent {
-  text-shadow: 0 2px 24px rgba(217, 122, 108, 0.25);
-}
-
+/* Reset hover transform/letter-spacing/shadow when device has no real hover
+   (touch) or when screen is narrow — to avoid jitter on tap. */
+@media (hover: none), (max-width: 640px) {
+  .h-hero-title:hover .h-title-static,
+  .h-hero-title:hover .h-title-accent {
+    letter-spacing: 0;
+    transform: none;
+    text-shadow: none;
+  }
+  .h-hero-title:hover .h-title-dash {
+    transform: none;
+    margin-inline: .22em;
+  }
 }
 .h-hero-desc {
   font-family: var(--f-body);

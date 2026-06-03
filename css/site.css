@@ -7593,39 +7593,9 @@ html.dark .h-scripture-bg::before {
   }
 }
 
-/* AUDIT v14: Hebrew word expansion lives in css/home.css.
-   Keep this site.css section for the home hero hover polish only;
-   do not position .hb-back here, otherwise it can override the
-   inline expansion that pushes neighboring words apart. */
-@media (hover: hover) and (pointer: fine) {
-  .h-hero-title:hover .h-title-static {
-    opacity: .96 !important;
-    letter-spacing: 0 !important;
-    transform: translateX(-.012em) !important;
-  }
-  .h-hero-title:hover .h-title-dash {
-    transform: scaleX(1.18) !important;
-    margin-inline: .26em !important;
-    opacity: .9 !important;
-  }
-  .h-hero-title:hover .h-title-accent {
-    letter-spacing: 0 !important;
-    transform: translateX(.012em) !important;
-    text-shadow: 0 10px 30px rgba(122,46,46,.10) !important;
-  }
-}
-@media (hover: none), (max-width: 640px) {
-  .h-hero-title:hover .h-title-static,
-  .h-hero-title:hover .h-title-accent {
-    letter-spacing: 0 !important;
-    transform: none !important;
-    text-shadow: none !important;
-  }
-  .h-hero-title:hover .h-title-dash {
-    transform: none !important;
-    margin-inline: .22em !important;
-  }
-}
+/* AUDIT v14 / PLAN-04 P3: Hebrew word expansion + hover hero polish
+   полностью живут в css/home.css. Раньше тут был дублирующий блок
+   с !important — он перебивал home.css; теперь источник правды — home.css. */
 
 body.nagornaya-page main > .max-w-4xl > .mb-6 > p.text-stone-500,
 body.nagornaya-page main > .max-w-4xl > .mb-6 > p.text-stone-400,
