@@ -3798,7 +3798,7 @@ body.has-bottom-bar .bookmark-toast {
 /* empty .btoc-fontsize-dot rule removed (was no-op) */
 
 :root {  --article-font-size: 17px;
-  --f-hebrew-display: "David Libre", "SBL Hebrew", "Ezra SIL", "Times New Roman", "Noto Sans Hebrew", serif;}
+  --f-hebrew-display: "Noto Sans Hebrew", "SBL Hebrew", "Ezra SIL", "Times New Roman", serif;}
 
 .article-main .quiz-question-text,
 .article-body .quiz-question-text,
