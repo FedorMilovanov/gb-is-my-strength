@@ -324,7 +324,7 @@ function rootsFromLd(data) {
     if (/author-card-label[^>]*>\s*Автор\s*</i.test(html)) { bad++; R.err(`Attribution violation in ${file}: author-card-label is "Автор"`); }
     if (/^articles\/[^/]+\/index\.html$/.test(file)) {
       const byline = html.match(/<span\s+class=["']article-byline__strong["']>([^<]+)<\/span>/i)?.[1]?.trim() || '';
-      if (!/^(Редактор:|Редакция перевода:)\s*Ф[её]дор\s+Милованов/.test(byline)) {
+      if (!/^(Редактор:|Редакция перевода:|Автор-редактор:)\s*Ф[её]дор\s+Милованов/.test(byline)) {
         bad++; R.err(`Article byline invalid in ${file}: "${byline || 'missing'}"`);
       }
       if (!html.includes('class="author-card"')) R.warn(`Article author-card missing in ${file}`);
@@ -434,7 +434,7 @@ function rootsFromLd(data) {
     for (const item of items) {
       const url = item.url || '';
       if (!url) { bad++; R.err(`search-manifest item without url: ${item.id || item.title || 'unknown'}`); continue; }
-      const abs = path.join(ROOT, url.replace(/^\//, ''));
+      const abs = path.join(ROOT, stripQuery(url).replace(/^\//, ''));
       if (!localTargetExists(abs)) { bad++; R.err(`search-manifest URL missing: ${url}`); }
     }
     if (!bad) R.ok(`search-manifest URLs valid (${items.length} items)`);
