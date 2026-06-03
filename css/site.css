@@ -9424,3 +9424,71 @@ html.dark .rescue-caption--above {
     margin-top: 12px;
   }
 }
+
+/* r61.17: mobile premium compaction for long editorial blocks */
+@media (max-width: 560px) {
+  article .gb-mobile-collapsible {
+    position: relative;
+    max-height: 560px;
+    overflow: hidden;
+  }
+
+  article .gb-mobile-collapsible::after {
+    content: "";
+    position: absolute;
+    inset-inline: 0;
+    bottom: 0;
+    height: 96px;
+    pointer-events: none;
+    background: linear-gradient(to bottom, rgba(253, 252, 249, 0), var(--color-canvas) 86%);
+  }
+
+  article .gb-mobile-collapsible.is-expanded {
+    max-height: none;
+    overflow: visible;
+  }
+
+  article .gb-mobile-collapsible.is-expanded::after {
+    display: none;
+  }
+
+  .gb-mobile-expand-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    width: 100%;
+    min-height: 44px;
+    margin: -8px 0 24px;
+    border: 1px solid var(--color-border);
+    border-radius: 999px;
+    background: var(--color-surface);
+    color: var(--color-accent);
+    box-shadow: 0 10px 26px rgba(40, 30, 20, 0.06);
+    font-family: var(--f-ui);
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+  }
+
+  .gb-mobile-expand-btn::after {
+    content: "↓";
+    font-size: 14px;
+    line-height: 1;
+    transform: translateY(-1px);
+  }
+
+  .gb-mobile-expand-btn[aria-expanded="true"]::after {
+    content: "↑";
+  }
+
+  html.dark article .gb-mobile-collapsible::after {
+    background: linear-gradient(to bottom, rgba(23, 20, 17, 0), var(--color-canvas) 86%);
+  }
+
+  html.dark .gb-mobile-expand-btn {
+    background: var(--color-surface);
+    border-color: var(--color-border-strong);
+  }
+}

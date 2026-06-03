@@ -5,6 +5,26 @@
 
 ---
 
+## v25 — Mobile long-block premium compaction (2026-06-03)
+
+**Commit:** `r61.17: Add mobile long-block compaction`
+
+### What was improved:
+- Manual mobile review and measurement found very long editorial blocks (`note-box`, `info-box`, `warn-box`, `summary-card`) creating multi-screen “портянки”.
+- Added mobile-only progressive enhancement in `js/enhancements.js`: long blocks get an accessible expand/collapse control.
+- Added premium mobile styling in `css/site.css`: 560px preview, gradient fade, pill-shaped expand button, dark-mode support.
+- Conservative thresholds avoid button spam: `summary-card ≥ 740px`, other editorial blocks ≥ 950px.
+- Desktop is unchanged and all content stays in the DOM/readable after expansion. Cache-bust refreshed.
+
+### Verified:
+- `node --check js/*.js scripts/*.js sw.js` → ✅ PASS.
+- `npm run validate:all` → ✅ PASS (0 errors, 0 warnings).
+- `npm run tokens:check` → ✅ PASS (`0 / 0` legacy var references).
+- `node scripts/audit-pro.js` → ✅ PASS (29 passed, 0 errors; only existing CSS/JS budget warnings).
+- `npm run visual-audit` → ✅ PASS: 32 page/viewport runs, 96 screenshots, 0 console errors, 0 network errors, 0 filtered findings.
+
+---
+
 ## v24 — Mobile compact premium cards (2026-06-03)
 
 **Commit:** `r61.16: Compact mobile archive and series cards`
