@@ -4066,7 +4066,18 @@
     }
 
     if (target) {
-      article.insertBefore(block, target);
+      /* FIX r58.3: target может быть вложенным элементом (внутри <span>
+         с забытым </span> и т.д.). insertBefore требует прямого child.
+         Поднимаемся по DOM до прямого ребёнка <article>. */
+      var directChild = target;
+      while (directChild && directChild.parentNode && directChild.parentNode !== article) {
+        directChild = directChild.parentNode;
+      }
+      if (directChild && directChild.parentNode === article) {
+        article.insertBefore(block, directChild);
+      } else {
+        article.appendChild(block);
+      }
     } else {
       article.appendChild(block);
     }

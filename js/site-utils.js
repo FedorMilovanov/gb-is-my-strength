@@ -54,6 +54,23 @@
 
   window.SiteUtils = window.SiteUtils || {};
 
+  /* ── ready(fn) ────────────────────────────────────────────────────
+     Кросс-модульный DOMContentLoaded helper.
+     Объявлен ЗДЕСЬ (а не в site.js), потому что site-utils.js загружается
+     ПЕРВЫМ, а nagornaya-mobile-toc.js и др. используют SiteUtils.ready()
+     до выполнения site.js — иначе TypeError 'is not a function'.
+     site.js затем может переопределить через merge, но базовая версия
+     должна существовать до этого момента. (Fix r58.2) */
+  if (typeof window.SiteUtils.ready !== 'function') {
+    window.SiteUtils.ready = function (fn) {
+      if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', fn);
+      } else {
+        fn();
+      }
+    };
+  }
+
   window.SiteUtils._startEmergencyTimer = function () {
     if (!emergencyTimer) {
       emergencyTimer = setInterval(emergencyCheck, 3000);
