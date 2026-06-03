@@ -63,6 +63,12 @@
 - Found `/pastor-series/` planned materials using large empty placeholder boxes with exclamation icons.
 - Replaced them with reusable `.h-article-thumb--planned` Roman-numeral premium placeholders in `css/home.css`; no new CSS file.
 
+### r61.14 — Manual mobile navbar premium fix
+
+- Contact-sheet review found desktop `.h-nav-links` squeezed into 375px headers on home/archive/series pages.
+- Added scoped mobile CSS in `home.css` to hide desktop links under 760px; burger/mobile menu remains available.
+- Verified `/`, `/articles/`, and `/pastor-series/` mobile nav now show clean logo + controls instead of clipped links.
+
 ## Verification matrix used
 
 ```bash
