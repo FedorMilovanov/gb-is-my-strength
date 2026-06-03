@@ -9,7 +9,7 @@
    — Все остальные запросы → Network First
    ============================================================ */
 
-var CACHE_VERSION = 'gb-v169-r49-deep-opt-20260603';
+var CACHE_VERSION = 'gb-v170-r61-typography-20260603';
 var CACHE_STATIC   = CACHE_VERSION + '-static';
 var CACHE_CONTENT  = CACHE_VERSION + '-content';
 var CACHE_IMAGES   = CACHE_VERSION + '-images';
