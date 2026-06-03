@@ -488,9 +488,9 @@ body.nagornaya-page .btoc-share-btn svg {
   font-size: clamp(1.5rem, 3.5vw, 1.9rem);
   border-bottom: 1px solid var(--color-border, #e7e2d8);
   padding-bottom: 0.75rem;
-  margin-top: clamp(40px, 5vw, 64px);
+  margin-top: clamp(40px, 5vw, 64px) !important;
   margin-bottom: 1.25rem;
-  color: var(--color-text, #1a1a1a);
+  color: var(--color-text, var(--color-text, #1a1a1a));
   clear: both;
   position: relative;
   z-index: 1;
@@ -507,23 +507,17 @@ html.dark .nag-quiz-h2 {
   display: flex;
   align-items: center;
   gap: 8px;
-  padding: 10px 20px;
-  margin: 0;
-  border-bottom: 1px solid rgba(28,25,23,0.10);
-  background: transparent;
+  padding: 12px 5px 0;
+  border-top: 1px solid rgba(255,255,255,0.08);
+  margin-top: 8px;
 }
-html.dark .nag-sidebar-controls {
-  border-bottom-color: rgba(255,255,255,0.08);
-  background: rgba(0,0,0,0.12);
-}
-
 .nag-sidebar-theme-btn {
   width: 34px;
   height: 34px;
   border-radius: 10px;
-  border: 1px solid rgba(28,25,23,0.10);
-  background: rgba(28,25,23,0.04);
-  color: var(--color-text-muted, #78716c);
+  border: 1px solid rgba(255,255,255,0.12);
+  background: rgba(255,255,255,0.04);
+  color: rgba(255,255,255,0.60);
   display: grid;
   place-items: center;
   cursor: pointer;
@@ -531,19 +525,19 @@ html.dark .nag-sidebar-controls {
   flex-shrink: 0;
 }
 .nag-sidebar-theme-btn:hover {
-  background: rgba(28,25,23,0.10);
-  border-color: rgba(28,25,23,0.20);
-  color: var(--color-text, #1a1a1a);
-}
-html.dark .nag-sidebar-theme-btn {
-  border-color: rgba(255,255,255,0.12);
-  background: rgba(255,255,255,0.04);
-  color: rgba(255,255,255,0.60);
-}
-html.dark .nag-sidebar-theme-btn:hover {
   background: rgba(255,255,255,0.10);
   border-color: rgba(255,255,255,0.20);
   color: rgba(255,255,255,0.90);
+}
+.nag-sidebar-theme-btn {
+  background: rgba(28,25,23,0.04);
+  border-color: rgba(28,25,23,0.10);
+  color: var(--color-text-muted, var(--color-text-muted, #78716c));
+}
+.nag-sidebar-theme-btn:hover {
+  background: rgba(28,25,23,0.10);
+  border-color: rgba(28,25,23,0.20);
+  color: var(--color-text, var(--color-text, #1a1a1a));
 }
 .nag-sidebar-theme-btn svg { width: 18px; height: 18px; }
 
@@ -557,9 +551,9 @@ html.dark .nag-sidebar-theme-btn:hover {
   width: 30px;
   height: 30px;
   border-radius: 8px;
-  border: 1px solid rgba(28,25,23,0.08);
-  background: rgba(28,25,23,0.03);
-  color: var(--color-text-muted, #78716c);
+  border: 1px solid rgba(255,255,255,0.10);
+  background: rgba(255,255,255,0.03);
+  color: rgba(255,255,255,0.50);
   font-family: 'Source Sans 3', system-ui, sans-serif;
   font-size: 13px;
   font-weight: 700;
@@ -570,59 +564,159 @@ html.dark .nag-sidebar-theme-btn:hover {
   line-height: 1;
 }
 .nag-fontsize-btn:hover {
-  background: rgba(28,25,23,0.08);
-  border-color: rgba(28,25,23,0.16);
-  color: var(--color-text, #1a1a1a);
-}
-html.dark .nag-fontsize-btn {
-  border-color: rgba(255,255,255,0.10);
-  background: rgba(255,255,255,0.03);
-  color: rgba(255,255,255,0.50);
-}
-html.dark .nag-fontsize-btn:hover {
   background: rgba(255,255,255,0.10);
   border-color: rgba(255,255,255,0.18);
   color: rgba(255,255,255,0.80);
 }
-/* .nag-summary base styles: scoped and canonical block is below (body.nagornaya-page) */
-/* .nag-summary__num, ::before, __text — defined canonically below under body.nagornaya-page scope */
+.nag-fontsize-btn {
+  background: rgba(28,25,23,0.03);
+  border-color: rgba(28,25,23,0.08);
+  color: var(--color-text-muted, var(--color-text-muted, #78716c));
+}
+.nag-fontsize-btn:hover {
+  background: rgba(28,25,23,0.08);
+  border-color: rgba(28,25,23,0.16);
+  color: var(--color-text, var(--color-text, #1a1a1a));
+}
+.nag-sidebar-controls {
+  padding: 10px 20px !important;
+  margin: 0 !important;
+  border-bottom: 1px solid rgba(255,255,255,0.08) !important;
+  background: rgba(0,0,0,0.12) !important;
+}
+.nag-summary {
+  margin: 16px 0 16px !important;
+  padding: 12px 0 0 !important;
+  background: transparent !important;
+  border: 0 !important;
+  border-top: 1px solid rgba(120,83,46,.14) !important;
+  border-radius: 0 !important;
+  overflow: visible !important;
+  box-shadow: none !important;
+}
+html.dark body.nagornaya-page .nag-summary {
+  border-top-color: rgba(245,213,166,.16) !important;
+}
+.nag-summary__head {
+  display: block !important;
+  width: auto !important;
+  background: transparent !important;
+  color: #7a2e2e !important;
+  padding: 0 !important;
+  margin: 0 0 9px !important;
+  border: 0 !important;
+  font-family: 'Source Sans 3', system-ui, sans-serif !important;
+  font-size: 9px !important;
+  line-height: 1.1 !important;
+  letter-spacing: .20em !important;
+  text-transform: uppercase !important;
+}
+html.dark body.nagornaya-page .nag-summary__head {
+  color: rgba(245,226,198,.72) !important;
+}
+.nag-summary__list {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 6px !important;
+  list-style: none !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  background: transparent !important;
+}
+.nag-summary__item {
+  display: flex !important;
+  align-items: flex-start !important;
+  gap: 9px !important;
+  width: 100% !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  background: transparent !important;
+  border: 0 !important;
+  box-shadow: none !important;
+  color: #4b4036 !important;
+  font-size: 13px !important;
+  line-height: 1.48 !important;
+  position: relative !important;
+}
+.nag-summary__item::before,
+body.nagornaya-page .nag-summary__item::after {
+  content: none !important;
+  display: none !important;
+}
+html.dark body.nagornaya-page .nag-summary__item {
+  color: rgba(250,243,232,.78) !important;
+}
+.nag-summary__num {
+  display: inline-flex !important;
+  flex: 0 0 18px !important;
+  width: 18px !important;
+  height: 18px !important;
+  min-width: 18px !important;
+  align-items: center !important;
+  justify-content: center !important;
+  border-radius: 50% !important;
+  font-size: 0 !important;
+  line-height: 1 !important;
+  margin-top: 1px !important;
+  background: rgba(116,151,117,.10) !important;
+  border: 1px solid rgba(116,151,117,.18) !important;
+}
+.nag-summary__num::before {
+  content: "✓" !important;
+  display: block !important;
+  font-size: 12px !important;
+  color: #6f9d70 !important;
+}
+.nag-summary__text {
+  display: block !important;
+  flex: 1 1 auto !important;
+  min-width: 0 !important;
+  width: auto !important;
+  max-width: none !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  line-height: 1.48 !important;
+  white-space: normal !important;
+  word-break: normal !important;
+  overflow-wrap: anywhere !important;
+}
 
 /* R21 guardrail: summary must keep readable text colors even after Tailwind/dark overrides. */
 body.nagornaya-page .nag-summary,
 body.nagornaya-page .nag-summary__list,
 body.nagornaya-page .nag-summary__item {
-  background: transparent;
+  background: transparent !important;
 }
 body.nagornaya-page .nag-summary__head {
-  color: #7a2e2e;
+  color: #7a2e2e !important;
 }
 body.nagornaya-page .nag-summary__item,
 body.nagornaya-page .nag-summary__text {
-  color: #4b4036;
+  color: #4b4036 !important;
 }
 body.nagornaya-page .nag-summary__num {
-  background: rgba(116,151,117,.10);
-  border-color: rgba(116,151,117,.18);
+  background: rgba(116,151,117,.10) !important;
+  border-color: rgba(116,151,117,.18) !important;
 }
 body.nagornaya-page .nag-summary__num::before {
-  color: #5f8f61;
+  color: #5f8f61 !important;
 }
 html.dark body.nagornaya-page .nag-summary {
-  border-top-color: rgba(245,213,166,.16);
+  border-top-color: rgba(245,213,166,.16) !important;
 }
 html.dark body.nagornaya-page .nag-summary__head {
-  color: rgba(245,226,198,.76);
+  color: rgba(245,226,198,.76) !important;
 }
 html.dark body.nagornaya-page .nag-summary__item,
 html.dark body.nagornaya-page .nag-summary__text {
-  color: rgba(250,243,232,.84);
+  color: rgba(250,243,232,.84) !important;
 }
 html.dark body.nagornaya-page .nag-summary__num {
-  background: rgba(122,200,122,.11);
-  border-color: rgba(122,200,122,.24);
+  background: rgba(122,200,122,.11) !important;
+  border-color: rgba(122,200,122,.24) !important;
 }
 html.dark body.nagornaya-page .nag-summary__num::before {
-  color: #8ed08a;
+  color: #8ed08a !important;
 }
 
 
@@ -631,7 +725,7 @@ html.dark body.nagornaya-page #sec-quiz {
   clear: both;
   position: relative;
   z-index: 1;
-  margin-top: clamp(40px, 5vw, 64px);
+  margin-top: clamp(40px, 5vw, 64px) !important;
 }
 html.dark body.nagornaya-page .gb-accuracy-inner {
   background: #221b14;
@@ -732,23 +826,3 @@ html.dark body.nagornaya-page main > .max-w-4xl > .mb-6 {
   }
 
 } /* @media (pointer: coarse), (max-width: 899px) */
-
-/* ── Nagornaya read-progress bar — перенесено из inline <style> (×5 chast-1..5) ──
-   Было: <style>#read-progress{...}</style> в каждом из 5 файлов nagornaya/chast-N/index.html
-   Стало: один раз здесь. Управление через JS: nagornaya-mobile-toc.js module C. */
-body.nagornaya-page #read-progress {
-  position: fixed;
-  top: 0; left: 0;
-  width: 0%;
-  height: 3px;
-  background: linear-gradient(90deg, #d97706, #f59e0b);
-  z-index: var(--z-absolute, 99999);
-  transition: width .1s linear;
-  pointer-events: none;
-}
-@media (min-width: 1024px) {
-  body.nagornaya-page #read-progress {
-    left: 256px;
-    width: calc(var(--rp, 0) * (100% - 256px));
-  }
-}
