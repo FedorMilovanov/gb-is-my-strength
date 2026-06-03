@@ -337,10 +337,12 @@ main:not([class]) {
   transform: translate(-50%, -50%);
   transition: opacity .25s, transform .15s, color .25s;
 }
-.theme-toggle:hover svg { transform: translate(-50%, -50%) scale(1.08); }
 .icon-sun { opacity: 0; }
 html.dark .icon-moon { opacity: 0; }
 html.dark .icon-sun { opacity: 1; color: #f5c542; }
+@media (hover: hover) and (pointer: fine) {
+  .theme-toggle:hover svg { transform: translate(-50%, -50%) scale(1.08); }
+}
 
 .article-topnav {
   display: none;
@@ -1559,8 +1561,12 @@ html.dark .card.fx-lift:focus-within{
 }
 .series-next-cta:hover {
   border-color: var(--color-accent);
-  transform: translateY(-2px);
   box-shadow: 0 10px 30px -16px rgba(62, 42, 22, 0.35);
+}
+@media (hover: hover) and (pointer: fine) {
+  .series-next-cta:hover {
+    transform: translateY(-2px);
+  }
 }
 .series-next-cta__eyebrow {
   font-family: 'Source Sans 3', system-ui, sans-serif;
@@ -1984,9 +1990,11 @@ html.dark .compare-table:not(.compare-table--scroll) tr {
   transform-origin: 50% 50%;
   animation: fx-breathe 2.4s ease-in-out infinite;
 }
-.article-figure:hover::after{
-  animation: none;
-  transform: scale(1.02);
+@media (hover: hover) and (pointer: fine) {
+  .article-figure:hover::after{
+    animation: none;
+    transform: scale(1.02);
+  }
 }
 
 @keyframes fx-breathe{
@@ -2835,7 +2843,7 @@ html.dark #reading-progress { background: var(--color-accent); }
   box-shadow: 0 2px 10px rgba(0,0,0,.1);
 }
 #back-to-top.visible { opacity: 1; pointer-events: auto; }
-#back-to-top:hover { background: var(--color-border); transform: translateY(-2px); }
+#back-to-top:hover { background: var(--color-border); }
 #back-to-top svg {
   width: 16px; height: 16px;
   stroke: currentColor;
@@ -3002,7 +3010,9 @@ html.dark #reading-progress { background: var(--color-accent); }
   flex-shrink: 0;
   transition: transform .18s cubic-bezier(.2,.7,.2,1);
 }
-.sd-btn:hover .sd-icon { transform: scale(1.08); }
+@media (hover: hover) and (pointer: fine) {
+  .sd-btn:hover .sd-icon { transform: scale(1.08); }
+}
 
 .sd-btn--tg   .sd-icon { background: #e8f4ff; color: #229ed9; }
 .sd-btn--vk   .sd-icon { background: #e8eeff; color: #0077ff; }
@@ -5655,7 +5665,6 @@ html:not(.dark) .quiz-review-prev {
     box-shadow .35s ease,
     border-color .35s ease;
 }
-.related-articles__item:hover,
 .related-articles__item:focus-within {
   transform: translateY(-4px);
   border-color: rgba(0,0,0,.1);
@@ -5663,12 +5672,26 @@ html:not(.dark) .quiz-review-prev {
     0 1px 2px rgba(0,0,0,.04),
     0 10px 24px -10px rgba(0,0,0,.18);
 }
-html.dark .related-articles__item:hover,
 html.dark .related-articles__item:focus-within {
   border-color: rgba(255,255,255,.12);
   box-shadow:
     0 1px 2px rgba(0,0,0,.28),
     0 10px 24px -10px rgba(0,0,0,.5);
+}
+@media (hover: hover) and (pointer: fine) {
+  .related-articles__item:hover {
+    transform: translateY(-4px);
+    border-color: rgba(0,0,0,.1);
+    box-shadow:
+      0 1px 2px rgba(0,0,0,.04),
+      0 10px 24px -10px rgba(0,0,0,.18);
+  }
+  html.dark .related-articles__item:hover {
+    border-color: rgba(255,255,255,.12);
+    box-shadow:
+      0 1px 2px rgba(0,0,0,.28),
+      0 10px 24px -10px rgba(0,0,0,.5);
+  }
 }
 .related-articles__img-wrap {
   overflow: hidden;
@@ -5681,9 +5704,13 @@ html.dark .related-articles__item:focus-within {
   display: block;
   transition: transform .45s cubic-bezier(.2,.7,.2,1);
 }
-.related-articles__item:hover .related-articles__img,
 .related-articles__item:focus-within .related-articles__img {
   transform: scale(1.05);
+}
+@media (hover: hover) and (pointer: fine) {
+  .related-articles__item:hover .related-articles__img {
+    transform: scale(1.05);
+  }
 }
 .related-articles__body {
   padding: 14px 16px 16px;
@@ -7407,11 +7434,13 @@ img[src*="mc.yandex.ru"] {
     0 2px 4px rgba(28,25,23,.06);
   transition: transform .2s ease, box-shadow .2s ease, background .2s ease;
 }
-.theme-float-btn:hover {
-  transform: translateY(-2px) scale(1.04);
-  box-shadow:
-    0 1px 0 rgba(255,255,255,.7) inset,
-    0 14px 28px -10px rgba(28,25,23,.30);
+@media (hover: hover) and (pointer: fine) {
+  .theme-float-btn:hover {
+    transform: translateY(-2px) scale(1.04);
+    box-shadow:
+      0 1px 0 rgba(255,255,255,.7) inset,
+      0 14px 28px -10px rgba(28,25,23,.30);
+  }
 }
 .theme-float-btn:focus-visible { outline: 2px solid var(--color-accent, #7a2e2e); outline-offset: 2px; }
 html.dark .theme-float-btn {
@@ -8666,11 +8695,13 @@ html.dark .context-links a:hover {
   border-radius: 50%;
   transition: color .2s ease, transform .15s ease, background-color .2s ease;
 }
-.gb-floating-controls .gb-fc-btn:hover {
-  transform: scale(1.08);
-  /* Fallback for Safari <15.2 (color-mix unsupported) */
-  background-color: rgba(122, 46, 46, 0.08);
-  background-color: color-mix(in srgb, var(--color-accent, #7a2e2e) 8%, transparent);
+@media (hover: hover) and (pointer: fine) {
+  .gb-floating-controls .gb-fc-btn:hover {
+    transform: scale(1.08);
+    /* Fallback for Safari <15.2 (color-mix unsupported) */
+    background-color: rgba(122, 46, 46, 0.08);
+    background-color: color-mix(in srgb, var(--color-accent, #7a2e2e) 8%, transparent);
+  }
 }
 .gb-floating-controls .gb-fc-btn:focus-visible {
   outline: 2px solid var(--color-accent, #7a2e2e);
@@ -9034,8 +9065,14 @@ html.dark .gtip.gb-floating-tip {
    Добавляем arrow animation при hover */
 
 @media (hover: hover) and (pointer: fine) {
+  #back-to-top {
+    transform: translateY(0);
+  }
   #back-to-top svg {
     transition: transform .25s cubic-bezier(.2,.7,.2,1);
+  }
+  #back-to-top:hover {
+    transform: translateY(-2px);
   }
   #back-to-top:hover svg {
     transform: translateY(-2px);
