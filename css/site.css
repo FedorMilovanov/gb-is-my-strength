@@ -8668,6 +8668,8 @@ html.dark .context-links a:hover {
 }
 .gb-floating-controls .gb-fc-btn:hover {
   transform: scale(1.08);
+  /* Fallback for Safari <15.2 (color-mix unsupported) */
+  background-color: rgba(122, 46, 46, 0.08);
   background-color: color-mix(in srgb, var(--color-accent, #7a2e2e) 8%, transparent);
 }
 .gb-floating-controls .gb-fc-btn:focus-visible {
@@ -8979,11 +8981,14 @@ blockquote {
    Делаем полосу не монотонной а gradient */
 
 #reading-progress {
-  background: linear-gradient(
-    90deg,
-    var(--color-accent) 0%,
-    color-mix(in srgb, var(--color-accent) 75%, var(--color-accent-strong)) 100%
-  );
+  /* Fallback: simple gradient for browsers without color-mix support (Safari <15.2) */
+  --rp-end: var(--color-accent-strong);
+  background: linear-gradient(90deg, var(--color-accent) 0%, var(--rp-end) 100%);
+  /* Enhanced: color-mix for richer gradient (modern browsers) */
+  --rp-end: color-mix(in srgb, var(--color-accent) 75%, var(--color-accent-strong));
+  background: linear-gradient(90deg, var(--color-accent) 0%, var(--rp-end) 100%);
+  /* Fallback: basic shadow for Safari <15.2 */
+  box-shadow: 0 1px 4px rgba(122, 46, 46, 0.4);
   box-shadow: 0 1px 4px color-mix(in srgb, var(--color-accent) 40%, transparent);
 }
 
