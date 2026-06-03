@@ -7097,8 +7097,8 @@ html.dark .summary-card__item:not(:has(.summary-card__num))::before {
   margin: 0;
   padding: 0 0 0 clamp(14px, 2vw, 22px);
 }
-.summary-card__text strong { color: var(--color-accent, #7a2e2e) !important; font-weight: 700 !important; }
-html.dark .summary-card__text strong { color: var(--color-accent-strong, #e8b878) !important; }
+.summary-card__text strong { color: var(--color-accent, #7a2e2e); font-weight: 700; }
+html.dark .summary-card__text strong { color: var(--color-accent-strong, #e8b878); }
 
 /* КРИТИЧНО: drop-cap НЕ должен трогать summary-card */
 .summary-card__text::first-letter,
@@ -7111,17 +7111,16 @@ html.dark .summary-card__text strong { color: var(--color-accent-strong, #e8b878
   font-weight: inherit !important;
   line-height: inherit !important;
 }
-.summary-card__text.drop-cap {
-  /* класс drop-cap, ошибочно добавленный JS-ом — нейтрализуем */
-}
+/* (.summary-card__text.drop-cap — пустое правило-плейсхолдер, нейтрализация
+   на уровне ::first-letter выше уже сделана; удалено в PLAN-04 P10) */
 
 @media (max-width: 560px) {
   .summary-card { padding: 22px 16px; border-radius: 16px; }
-  .summary-card__item { grid-template-columns: 38px 44px 1fr; padding: 12px 14px !important; border-radius: 12px !important; }
-  .summary-card__check { width: 32px !important; height: 32px !important; }
+  .summary-card__item { grid-template-columns: 38px 44px 1fr; padding: 12px 14px; border-radius: 12px; }
+  .summary-card__check { width: 32px; height: 32px; }
   .summary-card__num,
   .summary-card__item:not(:has(.summary-card__num))::before { font-size: 22px; padding: 0 12px 0 8px; }
-  .summary-card__text { font-size: 14px !important; padding-left: 12px !important; }
+  .summary-card__text { font-size: 14px; padding-left: 12px; }
 }
 @media (max-width: 380px) {
   .summary-card__item { grid-template-columns: 32px 1fr; grid-template-rows: auto auto; column-gap: 12px; row-gap: 6px; }
@@ -7131,7 +7130,7 @@ html.dark .summary-card__text strong { color: var(--color-accent-strong, #e8b878
     grid-column: 2; grid-row: 1;
     border-right: 0; padding: 0; font-size: 20px; opacity: .9;
   }
-  .summary-card__text { grid-column: 2; grid-row: 2; padding-left: 0 !important; }
+  .summary-card__text { grid-column: 2; grid-row: 2; padding-left: 0; }
 }
 .fn-marker:hover, .fn-marker:focus-visible {
   color: var(--color-accent-strong, #5f2323);
