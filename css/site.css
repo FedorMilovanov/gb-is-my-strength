@@ -6967,14 +6967,14 @@ html.dark .summary-card {
   counter-reset: summaryitem;
 }
 .summary-card__item {
-  display: grid !important;
+  display: grid;
   grid-template-columns: clamp(40px, 5.5vw, 56px) clamp(38px, 5.5vw, 60px) 1fr;
   align-items: center;
-  gap: 0 !important;
-  padding: clamp(14px, 2vw, 20px) clamp(18px, 2.5vw, 28px) !important;
-  background: var(--color-surface, #fff) !important;
-  border: 1px solid color-mix(in srgb, var(--color-border, #e7e2d8) 60%, transparent) !important;
-  border-radius: 14px !important;
+  gap: 0;
+  padding: clamp(14px, 2vw, 20px) clamp(18px, 2.5vw, 28px);
+  background: var(--color-surface, #fff);
+  border: 1px solid color-mix(in srgb, var(--color-border, #e7e2d8) 60%, transparent);
+  border-radius: 14px;
   box-shadow:
     0 6px 14px -10px rgba(28,25,23,.10);
   transition: transform .22s cubic-bezier(.22,1,.36,1), box-shadow .22s ease, border-color .22s ease;
@@ -6985,38 +6985,38 @@ html.dark .summary-card {
   box-shadow:
     0 12px 26px -12px rgba(28,25,23,.18);
   border-color: var(--color-accent, #7a2e2e);
-  border-color: color-mix(in srgb, var(--color-accent, #7a2e2e) 28%, var(--color-border, #e7e2d8)) !important;
+  border-color: color-mix(in srgb, var(--color-accent, #7a2e2e) 28%, var(--color-border, #e7e2d8));
 }
 html.dark .summary-card__item {
   background: var(--color-surface, #1f1a15);
-  background: color-mix(in srgb, var(--color-surface, #1f1a15) 96%, transparent) !important;
+  background: color-mix(in srgb, var(--color-surface, #1f1a15) 96%, transparent);
   border-color: var(--color-border, #3a3028);
-  border-color: color-mix(in srgb, var(--color-border, #3a3028) 85%, transparent) !important;
+  border-color: color-mix(in srgb, var(--color-border, #3a3028) 85%, transparent);
   box-shadow:
     0 8px 18px -10px rgba(0,0,0,.55);
 }
 
 /* Кружок-чекмарк (зелёный) */
 .summary-card__check {
-  width: clamp(34px, 4.4vw, 44px) !important;
-  height: clamp(34px, 4.4vw, 44px) !important;
-  border-radius: 50% !important;
-  background: #fff !important;
-  border: 1px solid color-mix(in srgb, #6ba368 35%, var(--color-border, #e7e2d8)) !important;
+  width: clamp(34px, 4.4vw, 44px);
+  height: clamp(34px, 4.4vw, 44px);
+  border-radius: 50%;
+  background: #fff;
+  border: 1px solid color-mix(in srgb, #6ba368 35%, var(--color-border, #e7e2d8));
   box-shadow:
     0 1px 2px rgba(28,25,23,.04);
-  display: grid !important; place-items: center !important;
-  flex-shrink: 0; margin: 0 !important; padding: 0 !important;
-  color: #4a8a4a !important;
-  font-size: 0 !important;
+  display: grid; place-items: center;
+  flex-shrink: 0; margin: 0; padding: 0;
+  color: #4a8a4a;
+  font-size: 0;
   position: relative;
   align-self: center;
 }
 html.dark .summary-card__check {
   background: var(--color-surface, #1f1a15);
-  background: color-mix(in srgb, #4a8a4a 14%, var(--color-surface, #1f1a15)) !important;
-  border-color: color-mix(in srgb, #6ba368 40%, transparent) !important;
-  color: #7ac87a !important;
+  background: color-mix(in srgb, #4a8a4a 14%, var(--color-surface, #1f1a15));
+  border-color: color-mix(in srgb, #6ba368 40%, transparent);
+  color: #7ac87a;
 }
 .summary-card__check svg {
   /* Высокая специфичность descendant-селектора (0,2,1) + узкий компонент
