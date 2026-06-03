@@ -4502,6 +4502,8 @@
   (function () {
     document.querySelectorAll('.faq-accordion__q').forEach(function (btn) {
       btn.addEventListener('click', function () {
+        var acc = btn.closest('.faq-accordion');
+        if (acc && acc.getAttribute('data-gb-faq-enhanced')) return;
         var item = btn.closest('.faq-accordion__item');
         if (!item) return;
         var isOpen = item.classList.contains('open');

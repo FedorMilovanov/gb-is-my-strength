@@ -5,6 +5,80 @@
 
 ---
 
+## v19 — 20-Antisovetov JS/HTML stabilization (2026-06-03)
+
+**Commit:** `r61.11: Stabilize antisovetov FAQ and phase audit`
+
+### What was improved:
+- Fixed a real reachability bug in `enhancements.js`: the 20-Antisovetov strategic-map popover module was accidentally behind the homepage ambient-scripture early return.
+- Closed unclosed hidden `data-pagefind-meta` spans in 4 article pages; these spans could swallow visible article content into `display:none` ancestors.
+- Closed malformed FAQ button spans in `20-antisovetov`, restoring sane FAQ DOM/layout.
+- Stabilized the page-specific FAQ handler in `enhancements.js`: it marks enhanced accordions, skips the generic competing handler, and synchronizes `.is-open` with canonical `.open` so both the inline premium styles and global grid animation work together.
+- Added `docs/PHASE_AUDIT_2026-06-03.md` as the phase-by-phase stabilization ledger requested by the editor.
+- Refreshed cache-bust hashes for the JS/HTML changes.
+
+### Verified:
+- `node --check js/*.js scripts/*.js sw.js` → ✅ PASS.
+- `npm run validate:all` → ✅ PASS (0 errors, 0 warnings).
+- `npm run tokens:check` → ✅ PASS (`0 / 0` legacy var references).
+- `node scripts/audit-pro.js` → ✅ PASS (29 passed, 0 errors; only existing CSS/JS budget warnings).
+- `npm run visual-audit` → ✅ PASS: 32 page/viewport runs, 96 screenshots, 0 console errors, 0 network errors, 0 filtered findings.
+
+---
+
+## v18 — Playwright visual-audit noise hardening (2026-06-03)
+
+**Commit:** `r61.10: Harden Playwright visual audit filters`
+
+### What was improved:
+- Reduced Playwright visual audit false positives without touching production runtime code.
+- The invisible-text checker now ignores intentional hidden states: `aria-hidden` Hebrew backs, pre-scroll article topnav titles, and offscreen reveal cards.
+- It also avoids naive low-contrast claims on image/gradient-backed hero areas where the lightweight checker cannot model background images or pseudo overlays.
+- Result: `npm run visual-audit` reports 0 filtered findings while keeping console, network, broken image, overflow, bad text, and accessibility-name checks active.
+
+### Verified:
+- `npm run visual-audit` → ✅ PASS: 32 page/viewport runs, 96 screenshots, 0 console errors, 0 network errors, 0 filtered findings.
+
+---
+
+## v17 — Safe Biografii CSS migration phase C (2026-06-03)
+
+**Commit:** `r61.9: Migrate biografii inline CSS safely`
+
+### What was improved:
+- Moved the `/biografii/` hub-only inline `@layer components` CSS into the existing `css/site.css` file under a dedicated scoped section.
+- Kept the fixed AGENTS architecture: no new CSS/JS files, no protected article/nagornaya structure changes.
+- Refreshed cache-bust hashes after the CSS migration.
+- Result: `/biografii/index.html` now has 0 inline `<style>` blocks; current remaining inline CSS is limited to the page-specific `20-antisovetov` style island.
+
+### Verified:
+- `node --check js/*.js scripts/*.js sw.js` → ✅ PASS.
+- `npm run validate:all` → ✅ PASS (0 errors, 0 warnings).
+- `npm run tokens:check` → ✅ PASS (`0 / 0` legacy var references).
+- `node scripts/audit-pro.js` → ✅ PASS (29 passed, 0 errors; only existing CSS/JS budget warnings).
+- `npm run visual-audit` → ✅ PASS: 32 page/viewport runs, 96 screenshots, 0 console errors, 0 network errors.
+
+---
+
+## v16 — Safe CSS inline cleanup phase B (2026-06-03)
+
+**Commit:** `r61.8: Safe CSS inline cleanup and cache-bust`
+
+### What was improved:
+- Migrated the small `404.html` inline style block into the existing `css/site.css` file; no new CSS files were created.
+- Replaced legacy token aliases in the migrated CSS with canonical design tokens so `tokens:check` remains at `0 / 0` legacy references.
+- Removed duplicated inline `.skip-link` rules from `/biografii/` and `articles/20-antisovetov-pastoru/`; the canonical implementation already lives in `site.css`.
+- Refreshed cache-bust hashes after the CSS change.
+
+### Verified:
+- `node --check js/*.js scripts/*.js sw.js` → ✅ PASS.
+- `npm run validate:all` → ✅ PASS (0 errors, 0 warnings).
+- `npm run tokens:check` → ✅ PASS (`0 / 0` legacy var references).
+- `node scripts/audit-pro.js` → ✅ PASS (29 passed, 0 errors; only existing CSS/JS budget warnings).
+- `npm run visual-audit` → ✅ PASS: 32 page/viewport runs, 96 screenshots, 0 console errors, 0 network errors.
+
+---
+
 ## v15 — Safe stabilization phase A (2026-06-03)
 
 **Commit:** `r61.7: Safe cleanup and Playwright audit hardening`

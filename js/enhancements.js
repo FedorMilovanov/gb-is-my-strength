@@ -582,9 +582,12 @@
    Активируется только если есть .h-phrase--ambient (главная).
 ============================================================ */
 (function () {
-  if (!document.querySelector('.h-phrase--ambient')) return;
-  /* Skip ambient animation on reduced-motion preference */
-  if (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+  /* Skip only the ambient animation on non-home/reduced-motion pages;
+     keep the later 20-Antisovetov module reachable. */
+  var shouldRunAmbient = document.querySelector('.h-phrase--ambient') &&
+    !(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
+
+  if (shouldRunAmbient) {
   /* ── Ambient Scripture Background ── */
   var phrases = [
     /* Greek */
@@ -651,6 +654,7 @@
       el.setAttribute('aria-hidden', 'true'); if (p.lang === 'greek') el.setAttribute('lang', 'grc'); if (p.lang === 'hebrew') el.setAttribute('lang', 'he');
       bg.appendChild(el);
     });
+  }
   }
 
   /* ============================================================
@@ -752,27 +756,35 @@
         if (!popover.contains(e.target)) hidePopover();
       });
 
-      // FAQ: accordion logic
+      // FAQ: height-based accordion logic for this page-specific premium FAQ UI.
+      // Mark accordions so the generic site.js handler does not attach a competing .open state.
+      document.querySelectorAll('.faq-accordion').forEach(function (acc) {
+        acc.setAttribute('data-gb-faq-enhanced', 'height');
+      });
       document.querySelectorAll('.faq-accordion__q').forEach(function (btn) {
         btn.addEventListener('click', function () {
           var body = btn.nextElementSibling;
           var item = btn.parentElement;
           if (!body || !item) return;
+          var inner = body.querySelector('.faq-accordion__body-inner');
+          var targetHeight = (inner ? inner.scrollHeight : body.scrollHeight) + 'px';
           var isOpen = item.classList.contains('is-open');
 
           if (isOpen) {
-            body.style.maxHeight = body.scrollHeight + 'px';
+            body.style.maxHeight = targetHeight;
             requestAnimationFrame(function () {
               requestAnimationFrame(function () {
                 body.style.maxHeight = '0';
               });
             });
             item.classList.remove('is-open');
+            item.classList.remove('open');
             btn.setAttribute('aria-expanded', 'false');
           } else {
             item.classList.add('is-open');
+            item.classList.add('open');
             btn.setAttribute('aria-expanded', 'true');
-            body.style.maxHeight = body.scrollHeight + 'px';
+            body.style.maxHeight = targetHeight;
             var onEnd = function (e) {
               if (e.propertyName !== 'max-height') return;
               if (item.classList.contains('is-open')) {
@@ -788,7 +800,8 @@
       window.addEventListener('resize', function () {
         document.querySelectorAll('.faq-accordion__item.is-open .faq-accordion__body').forEach(function (body) {
           if (body.style.maxHeight !== 'none') {
-            body.style.maxHeight = body.scrollHeight + 'px';
+            var inner = body.querySelector('.faq-accordion__body-inner');
+            body.style.maxHeight = ((inner ? inner.scrollHeight : body.scrollHeight) + 'px');
           }
         });
       }, { passive: true });
