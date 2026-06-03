@@ -9,6 +9,8 @@
 **Commit:** `r59: CSS Phase 2 - safe hover guards, design tokens, inline CSS migration & validation fix`
 
 ### What was improved:
+- **Full-Width Landscape Images Restoration:** Restored `.article-img img` to `width: 100%` to keep the original premium grid alignment for all landscape (16:9) images in the biographies.
+- **Isolated Portrait Constraint Class:** Created `.article-img--vertical` with a `max-height: 580px; width: auto;` limit to restrict vertical/portrait images (like the succession schema, doctorate diploma, and Bunhill graveyard) selectively in HTML, preventing them from stretching and cluttering the desktop layout.
 - **Programmatic Responsive Table Wrapping:** Identified a layout bug on mobile screens where `.manuscript-table` stretched and overflowed off-screen, causing the entire page to wobble horizontally. Solved cleanly and permanently by adding a global Javascript IIFE helper in `/js/site.js` that automatically wraps all manuscript tables inside accessible, scrollable `.table-scroll` containers with `role="region"` and keyboard focus support.
 - **Wesley Dispute Page-Decluttering:** Cleaned up image crowding in John Gill Part 3 under the Wesley dispute subsection by removing the redundant `gill-wesley-letters.jpg` image that sat directly adjacent to `gill-wesley-debate.jpg`.
 - **Footnote Bottom Sheet Animation Bug Fix:** Discovered that mobile footnotes (`.fn-marker .tooltip`) snapped instantly without slide-up transition. Fixed by adding `transform .28s` to the base `.tooltip` transition list, matching the smooth sliding animation of the glossary sheets.
