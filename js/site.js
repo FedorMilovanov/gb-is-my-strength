@@ -3,7 +3,7 @@
    Единый общий JS для всего сайта
    Версия 1.6.0 (sync: package.json)
 
-   Структура:
+   Структура (модули внутри основного IIFE, lines 40..~4582):
    01. SiteUtils — helpers / config access
    02. Theme Toggle
    03. Share Dialog
@@ -28,10 +28,16 @@
    22. Keyboard Shortcuts + Hint Toast — T (TOC), D (тема), B (наверх)
    23. Selection Share — выделил → поделиться
    24. Homepage Article Reading Progress (delegates to bookmark-engine)
-   25. (зарезервировано)
    26. Article Date Display — дата публикации/обновления из meta
    26a. Auto Drop Cap — первый <p> (не применяется к Типу C)
    27. Article End Block — кнопки «Поделиться» + «Распечатать/PDF» + SDG + крест
+   28. Font Size Control — a / A (.btoc-footer + #tocSidebar)
+
+   Модули после основного IIFE (отдельные IIFE):
+   29. Floating Controls (UNIFIED) — единый sticky-блок «тема + поиск»
+       (AGENTS-r17, заменяет legacy .theme-float-btn / #themeFloat /
+        #gbSearchFloat / .nag-sidebar-theme-btn — все удалены в PLAN-04 P5)
+   30. Glossary cross-ref clicks внутри тултипов (AGENTS-r17)
 
    Каждый модуль проверяет наличие нужных DOM-элементов
    и просто ничего не делает, если их нет.
