@@ -5,11 +5,14 @@
  */
 'use strict';
 
-process.env.PLAYWRIGHT_BROWSERS_PATH = '/home/user/.cache/ms-playwright';
-
-const { chromium } = require('playwright');
 const fs = require('fs');
 const path = require('path');
+
+process.env.PLAYWRIGHT_BROWSERS_PATH =
+  process.env.PLAYWRIGHT_BROWSERS_PATH ||
+  path.join(process.env.HOME || process.cwd(), '.cache', 'ms-playwright');
+
+const { chromium } = require('playwright');
 
 const SHOTS = path.join(__dirname, '..', 'shots');
 fs.mkdirSync(SHOTS, { recursive: true });
@@ -32,7 +35,7 @@ const URLS = [
   '/pastor-series/',
   '/404.html',
 ];
-const BASE = 'http://127.0.0.1:8080';
+const BASE = (process.env.AUDIT_BASE || 'http://127.0.0.1:8080').replace(/\/$/, '');
 
 const VIEWPORTS = [
   { name: 'mobile',  width: 375,  height: 812 },
@@ -52,6 +55,7 @@ async function auditPage(browser, urlPath, vp) {
   const ctx = await browser.newContext({
     viewport: { width: vp.width, height: vp.height },
     deviceScaleFactor: 1,
+    bypassCSP: true,
     userAgent:
       'Mozilla/5.0 (compatible; VisualAuditBot/1.0; +https://arena.ai/)',
   });

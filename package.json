@@ -14,7 +14,8 @@
     "fonts:download": "node scripts/download-fonts.js",
     "avif:build": "bash scripts/build-avif.sh",
     "ci:check": "npm run cache-bust && npm run tokens:check && npm run validate:all",
-    "tokens:check": "node scripts/check-design-tokens.js"
+    "tokens:check": "node scripts/check-design-tokens.js",
+    "visual-audit": "node scripts/visual-audit.js"
   },
   "engines": {
     "node": ">=20"
