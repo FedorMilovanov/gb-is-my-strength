@@ -1593,29 +1593,9 @@ html.dark .fact-box h4 { color: #80c880; }
 }
 .series-next-cta:hover .series-next-cta__action { color: var(--color-accent-strong); }
 
-.ai-disclosure {
-  display: flex;
-  gap: 12px;
-  align-items: flex-start;
-  margin: 24px 0;
-  padding: 14px 16px;
-  border-radius: 16px;
-  border: 1px solid color-mix(in srgb, var(--color-accent) 18%, transparent);
-  background: color-mix(in srgb, var(--color-accent) 6%, transparent);
-  color: var(--color-text-muted);
-  font-size: 14px;
-  line-height: 1.55;
-}
-.ai-disclosure__icon {
-  flex: 0 0 auto;
-  color: var(--color-accent);
-  margin-top: 2px;
-}
-.ai-disclosure p { margin: 0; }
-html.dark .ai-disclosure {
-  border-color: color-mix(in srgb, var(--color-accent-strong, #e8b878) 22%, transparent);
-  background: color-mix(in srgb, var(--color-accent-strong, #e8b878) 8%, transparent);
-}
+/* (.ai-disclosure + .ai-disclosure__icon — DEAD: AGENTS-r11 явно
+   удалил AI-disclosure JS-модуль, AGENTS §0 пункт 9 запрещает возвращать.
+   Класс нигде в HTML/JS не используется. Удалено в PLAN-04 P7.) */
 
 .quote-box {
   border-left: 3px solid var(--color-accent);
@@ -6923,12 +6903,8 @@ html.dark {
   max-height: 80vh;
   object-fit: contain;
 }
-.article-img--portrait-wide img {
-  max-height: 600px;
-  width: auto !important;
-  margin-left: auto;
-  margin-right: auto;
-}
+/* (.article-img--portrait-wide img — DEAD: класс .article-img--portrait-wide
+   нигде в HTML/JS, удалено в PLAN-04 P7) */
 
 } /* @layer utilities */
 
@@ -7237,8 +7213,9 @@ html:not(.dark) body.nagornaya-page .gb-accuracy-inner {  background: transparen
 /* === 6. NAGORNAYA LIGHT THEME — overrides Tailwind dark-only styles === */
 html:not(.dark) body.nagornaya-page,
 html:not(.dark) body.nagornaya-page main,
-html:not(.dark) body.nagornaya-page .bg-stone-900,
-html:not(.dark) body.nagornaya-page .bg-stone-950 {
+html:not(.dark) body.nagornaya-page .bg-stone-900 {
+  /* .bg-stone-950 убран из списка — не используется ни в одном HTML
+     серии Нагорной (PLAN-04 P7). */
   background: #faf8f4 !important;
   color: #1c1917 !important;
 }
@@ -7247,8 +7224,9 @@ html:not(.dark) body.nagornaya-page .text-stone-400 {
   color: #5a4838 !important;
 }
 html:not(.dark) body.nagornaya-page .text-white { color: #1c1917 !important; }
-html:not(.dark) body.nagornaya-page .border-stone-700,
-html:not(.dark) body.nagornaya-page .border-stone-800 {
+html:not(.dark) body.nagornaya-page .border-stone-700 {
+  /* .border-stone-800 убран из списка — не используется в HTML
+     серии Нагорной (PLAN-04 P7). */
   border-color: #e7e2d8 !important;
 }
 html:not(.dark) body.nagornaya-page aside.bg-stone-900,
