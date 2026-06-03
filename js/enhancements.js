@@ -807,4 +807,50 @@
       }, { passive: true });
     });
   })();
+
+  /* ============================================================
+     G. Mobile premium compaction for very long editorial blocks.
+     Keeps desktop unchanged; on small screens prevents note/summary blocks
+     from becoming half-page scroll “портянки” while preserving all content.
+     ============================================================ */
+  (function () {
+    function ready(fn) {
+      if (window.SiteUtils && SiteUtils.ready) { SiteUtils.ready(fn); return; }
+      if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', fn);
+      else fn();
+    }
+
+    ready(function () {
+      var mq = window.matchMedia && window.matchMedia('(max-width: 560px)');
+      if (!mq || !mq.matches) return;
+
+      var selector = 'article .summary-card, article .note-box, article .info-box, article .warn-box, article .quote-box';
+      document.querySelectorAll(selector).forEach(function (box, idx) {
+        if (box.dataset.mobileCollapse === 'off' || box.closest('.author-card')) return;
+        var threshold = box.classList.contains('summary-card') ? 740 : 950;
+        if (box.scrollHeight < threshold) return;
+
+        var id = box.id || ('gb-mobile-block-' + idx + '-' + Math.random().toString(36).slice(2, 7));
+        box.id = id;
+        box.classList.add('gb-mobile-collapsible');
+        box.setAttribute('data-mobile-collapsed', 'true');
+
+        var btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = 'gb-mobile-expand-btn';
+        btn.setAttribute('aria-controls', id);
+        btn.setAttribute('aria-expanded', 'false');
+        btn.textContent = 'Развернуть блок';
+
+        btn.addEventListener('click', function () {
+          var expanded = box.classList.toggle('is-expanded');
+          box.setAttribute('data-mobile-collapsed', expanded ? 'false' : 'true');
+          btn.setAttribute('aria-expanded', String(expanded));
+          btn.textContent = expanded ? 'Свернуть блок' : 'Развернуть блок';
+        });
+
+        box.insertAdjacentElement('afterend', btn);
+      });
+    });
+  })();
 })();

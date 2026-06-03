@@ -81,6 +81,12 @@
 - Added compact row mobile layout for non-home `.h-article-card` lists with small thumbnails, title/abstract line clamps, and compact planned placeholders.
 - Compacted `20-antisovetov` mobile series navigator cards without changing desktop layout.
 
+### r61.17 — Mobile long-block premium compaction
+
+- Added mobile-only progressive enhancement for very long editorial blocks: `summary-card`, `note-box`, `info-box`, `warn-box`, `quote-box`.
+- Blocks above conservative thresholds collapse into a premium preview with gradient fade and accessible expand/collapse button.
+- Preserves all content in DOM and keeps desktop unchanged; eliminates multi-screen “портянки” on mobile.
+
 ## Verification matrix used
 
 ```bash
