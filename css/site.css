@@ -840,7 +840,9 @@ blockquote {
   font-size: 0.97em;
   color: var(--color-text);
 }
-html.dark blockquote { border-left-color: var(--color-accent); border-inline-start-color: var(--color-accent); }
+html.dark blockquote {  border-left-color: var(--color-accent);
+  border-inline-start-color: var(--color-accent);
+  border-image: linear-gradient(to bottom, transparent, var(--color-accent) 25%, var(--color-accent) 75%, transparent) 1;}
 
 .pullquote {
   margin: clamp(32px, 5vw, 52px) auto;
@@ -1185,10 +1187,9 @@ html.dark .heart-flip-back { background: #110e07; }
   transform: translateY(22px);
   transition: opacity 0.55s ease, transform 0.55s ease;
 }
-.reveal.revealed {
-  opacity: 1;
+.reveal.revealed {  opacity: 1;
   transform: none;
-}
+  animation: none;}
 
 sup a {
   font-family: 'Source Sans 3', system-ui, sans-serif;
@@ -1240,14 +1241,12 @@ sup a {
   border: none;
   padding: 0;
 }
-.tldr-list {
-  list-style: none;
+.tldr-list {  list-style: none;
   padding: 0;
   margin: 0;
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-  gap: 12px;
-}
+  grid-template-columns: repeat(auto-fill, minmax(min(280px, 100%), 1fr));
+  gap: 12px;}
 .tldr-list li {
   font-family: 'Source Sans 3', system-ui, sans-serif;
   font-size: 14px;
@@ -1417,19 +1416,16 @@ html.dark .fact-box h4 { color: #80c880; }
 }
 /* touch-safe hover: только border/shadow — transform в @media (hover:hover) Deep Polish ниже */
 .card.fx-lift:hover,
-.card.fx-lift:focus-within{
-  border-color: rgba(0,0,0,.12);
-  box-shadow:
-    0 1px 2px rgba(0,0,0,.04),
-    0 12px 28px -12px rgba(0,0,0,.18);
-}
+.card.fx-lift:focus-within{  border-color: rgba(0,0,0,.12);
+  box-shadow: 0 2px 4px rgba(0,0,0,.04),
+      0 14px 32px -12px rgba(0,0,0,.2),
+      0 0 0 1px rgba(0,0,0,.04);
+  transform: translateY(-5px) perspective(600px) rotateX(1.5deg);}
 html.dark .card.fx-lift:hover,
-html.dark .card.fx-lift:focus-within{
-  border-color: rgba(255,255,255,.14);
-  box-shadow:
-    0 1px 2px rgba(0,0,0,.28),
-    0 12px 28px -12px rgba(0,0,0,.55);
-}
+html.dark .card.fx-lift:focus-within{  border-color: rgba(255,255,255,.14);
+  box-shadow: 0 2px 4px rgba(0,0,0,.35),
+      0 14px 32px -12px rgba(0,0,0,.6);
+  transform: translateY(-5px) perspective(600px) rotateX(1.5deg);}
 
 .article-list { list-style: none; padding: 0; margin: 0; }
 .article-item {
@@ -1439,14 +1435,16 @@ html.dark .card.fx-lift:focus-within{
 .article-item:first-child { padding-top: 0; }
 .article-item:last-child { border-bottom: none; }
 
-.article-item.card{
-  padding: 22px 24px;
+.article-item.card{  padding: 22px 24px;
   margin: 0 0 14px;
   border-bottom: none;
-}
+  cursor: pointer;
+  animation: reveal-sda linear both;
+  animation-duration: auto;
+  animation-timeline: view();
+  animation-range: entry 0% entry 40%;}
 
 .article-item.card:last-child{ margin-bottom: 0; }
-.article-item.card{ cursor: pointer; }
 .article-item.card .article-title:hover{ text-decoration: none; }
 
 .article-title {
@@ -2190,16 +2188,18 @@ html.dark .compare-table:not(.compare-table--scroll) tr {
   overflow: hidden;
 }
 .timeline-anim::before { display: none; }
-.timeline-anim li {
-  display: flex;
+.timeline-anim li {  display: flex;
   align-items: center;
   gap: 12px;
   padding: 10px 0;
   position: relative;
-  opacity: 0;
-  transform: translateY(18px);
-  transition: opacity 0.5s ease, transform 0.5s ease;
-}
+  opacity: revert;
+  transform: revert;
+  transition: none;
+  animation: reveal-sda linear both;
+  animation-duration: auto;
+  animation-timeline: view();
+  animation-range: entry 5% entry 45%;}
 .timeline-anim li.tl-visible { opacity: 1; transform: translateY(0); }
 .timeline-anim .tl-dot {
   display: block;
@@ -2584,12 +2584,12 @@ html.dark .bar-icon-sun  { display: block; color: #f5c542; }
   text-align: right;
 }
 
-.btoc-nav {
-  flex: 1;
+.btoc-nav {  flex: 1;
   min-height: 0;
   overflow-y: auto;
   padding: 0 0 calc(20px + env(safe-area-inset-bottom, 0px));
-}
+  position: relative;
+  padding-left: 4px;}
 
 .btoc-link-num {
   font-family: 'Source Sans 3', system-ui, sans-serif;
@@ -2736,15 +2736,17 @@ html.dark .bar-icon-sun  { display: block; color: #f5c542; }
   padding: 0;
   border: none;
 }
-#toc-list { list-style: none; margin: 0; padding: 0; }
-#toc-list li { margin: 0; }
 #toc-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
   position: relative;
-
   border-left: 1px solid var(--color-border);
   padding-left: 0;
   margin-left: 4px;
 }
+#toc-list li { margin: 0; }
+
 #toc-list a {
   display: block;
   font-family: 'Source Sans 3', system-ui, sans-serif;
@@ -2785,11 +2787,6 @@ html.dark .bar-icon-sun  { display: block; color: #f5c542; }
 }
 #toc-list a.toc-h3.toc-active {
   padding-left: 30px;
-}
-
-.btoc-nav{
-  position: relative;
-  padding-left: 4px;
 }
 .btoc-nav::before{ content: none; }
 .btoc-link{
@@ -3299,13 +3296,16 @@ html.dark .error-flip-label-fact { color: #80c890; }
   .error-flip-card { min-height: 132px; }
 }
 
-.quiz-wrapper {
-  background: var(--color-surface-muted);
+.quiz-wrapper {  background: var(--color-surface-muted);
   border: 1px solid var(--color-border);
   border-radius: 8px;
   padding: 28px;
   margin: 24px 0;
-}
+  position: relative;
+  min-height: 320px;
+  contain: layout style;
+  content-visibility: auto;
+  contain-intrinsic-size: auto 320px;}
 
 .quiz-counter-row {
   display: flex;
@@ -3451,7 +3451,7 @@ html.dark .error-flip-label-fact { color: #80c890; }
   margin: 0 0 24px;
   line-height: 1.5;
 }
-.quiz-options { display: flex; flex-direction: column; gap: 8px; }
+.quiz-options { display: flex; flex-direction: column; gap: 8px; min-height: 200px; }
 .quiz-option {
   padding: 11px 16px;
   min-height: 44px;
@@ -3688,27 +3688,25 @@ body.has-bottom-bar .bookmark-toast {
 }
 
 /* .btoc-banner: canonical block below in AUDIT-FIXES §10 (h:128px + filter) */
-.btoc-banner-grad {
-  position: absolute;
+.btoc-banner-grad {  position: absolute;
   inset: 0;
-  background: linear-gradient(to top, rgba(0,0,0,0.72) 0%, rgba(0,0,0,0.12) 55%, transparent 100%);
-}
-.btoc-banner-title {
-  position: absolute;
-  bottom: 12px;
-  left: 16px;
-  right: 16px;
+  background: linear-gradient(to top, rgba(20,16,12,0.78) 0%, rgba(20,16,12,0.20) 55%, transparent 100%);
+  pointer-events: none;}
+.btoc-banner-title {  position: absolute;
+  bottom: 14px;
+  left: 18px;
+  right: 18px;
   font-family: 'Source Sans 3', system-ui, sans-serif;
-  font-size: 12px;
-  font-weight: 600;
-  color: rgba(255,255,255,0.92);
+  font-size: 13px;
+  font-weight: 700;
+  color: rgba(255,255,255,0.96);
   line-height: 1.35;
   display: -webkit-box;
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
   overflow: hidden;
-  letter-spacing: 0.01em;
-}
+  letter-spacing: 0.015em;
+  text-shadow: 0 1px 12px rgba(0,0,0,.35);}
 
 .btoc-fontsize {
   display: flex;
@@ -3793,11 +3791,8 @@ body.has-bottom-bar .bookmark-toast {
 
 /* empty .btoc-fontsize-dot rule removed (was no-op) */
 
-:root {
-  /* AUDIT V8: z-index variables were duplicated here (identical to definitions
-     at the top of file). Removed redundant vars; only article-font-size remains. */
-  --article-font-size: 17px;
-}
+:root {  --article-font-size: 17px;
+  --f-hebrew-display: "SBL Hebrew", "Ezra SIL", "Times New Roman", "Noto Sans Hebrew", serif;}
 
 .article-main .quiz-question-text,
 .article-body .quiz-question-text,
@@ -3855,14 +3850,11 @@ body.has-bottom-bar .bookmark-toast {
     border-color .35s ease;
   will-change: transform;
 }
-.resume-list-item:hover {
-  transform: translateY(-4px);
+.resume-list-item:hover {  transform: translateY(-5px) perspective(600px) rotateX(1.2deg);
   border-color: var(--color-accent);
-  box-shadow:
-    0 1px 2px rgba(0,0,0,.04),
+  box-shadow: 0 1px 2px rgba(0,0,0,.04),
     0 12px 28px -12px rgba(0,0,0,.18);
-  text-decoration: none;
-}
+  text-decoration: none;}
 html.dark .resume-list-item:hover {
   border-color: var(--color-accent);
   box-shadow:
@@ -3897,22 +3889,24 @@ html.dark .resume-list-item:hover {
   pointer-events: none;
 }
 
-.fn-marker {
-  position: relative;
+.fn-marker {  position: relative;
   display: inline-block;
-  font-size: 0.75em;
+  font-size: 0.7em !important;
   vertical-align: super;
   cursor: pointer;
-  color: var(--color-link);
-  font-weight: 600;
-  margin-left: 2px;
-
-  min-width: 24px;
+  color: var(--color-accent, #7a2e2e);
+  font-weight: 700;
+  margin-left: -0.05em !important;
+  min-width: 0 !important;
   min-height: unset;
-  padding: 4px 3px;
+  padding: 0 0.12em !important;
   text-align: center;
-  line-height: inherit;
-}
+  line-height: 1 !important;
+  letter-spacing: 0 !important;
+  font-family: 'Source Sans 3', system-ui, sans-serif;
+  border-bottom: 0 !important;
+  text-decoration: none;
+  transition: color .15s ease, transform .15s ease;}
 .tooltip {
   position: fixed;
   width: min(340px, 90vw);
@@ -4086,8 +4080,7 @@ html.dark .gterm.is-open {
 html.gb-tooltip-open .article-body {
   content-visibility: visible !important;
 }
-.gterm .gtip::before {
-  content: '';
+.gterm .gtip::before {  content: '';
   position: absolute;
   width: 12px;
   height: 12px;
@@ -4098,7 +4091,7 @@ html.gb-tooltip-open .article-body {
   border-top: 1px solid rgba(0, 0, 0, 0.06);
   transform: rotate(45deg);
   pointer-events: none;
-}
+  display: none !important;}
 .gterm .gtip[data-placement="top"]::before { bottom: -6px; }
 .gterm .gtip[data-placement="bottom"]::before {
   top: -6px;
@@ -4146,17 +4139,14 @@ html.dark .gterm .gtip::before {
   pointer-events: none;
 }
 .gtip-luxury__handle { display: none; }
-.gtip-luxury__header {
-  display: flex;
-  align-items: center;
+.gtip-luxury__header {  display: flex;
+  align-items: flex-start !important;
   justify-content: space-between;
   gap: 12px;
-  margin-bottom: 12px;
-}
-.gtip-luxury__category {
-  display: inline-flex;
+  margin-bottom: 8px !important;}
+.gtip-luxury__category {  display: inline-flex !important;
   align-items: center;
-  max-width: 100%;
+  max-width: calc(100% - 44px);
   padding: 4px 10px;
   border-radius: 999px;
   background: color-mix(in srgb, var(--gtip-cat-color, var(--color-accent)) 9%, transparent);
@@ -4166,7 +4156,8 @@ html.dark .gterm .gtip::before {
   line-height: 1.2;
   letter-spacing: .08em;
   text-transform: uppercase;
-}
+  flex: 1 1 auto;
+  width: fit-content;}
 .gtip-luxury__category[data-category="heresy"] { --gtip-cat-color: #b45309; }
 .gtip-luxury__category[data-category="doctrine"] { --gtip-cat-color: #7a2e2e; }
 .gtip-luxury__category[data-category="confession"] { --gtip-cat-color: #6d5a2e; }
@@ -4177,8 +4168,7 @@ html.dark .gterm .gtip::before {
 .gtip-luxury__category[data-category="soteriology"] { --gtip-cat-color: #7a2e2e; }
 .gtip-luxury__category[data-category="hermeneutics"] { --gtip-cat-color: #0f766e; }
 .gtip-luxury__category[data-category="language"] { --gtip-cat-color: #8b5cf6; }
-.gtip-luxury__close {
-  flex: 0 0 auto;
+.gtip-luxury__close {  flex: 0 0 auto;
   width: 28px;
   height: 28px;
   display: inline-flex;
@@ -4190,7 +4180,7 @@ html.dark .gterm .gtip::before {
   color: rgba(0, 0, 0, .36);
   cursor: pointer;
   transition: background-color .18s ease, color .18s ease, transform .18s ease;
-}
+  margin-left: auto;}
 .gtip-luxury__close:hover,
 .gtip-luxury__close:focus-visible {
   background: rgba(0, 0, 0, .055);
@@ -4481,7 +4471,8 @@ html.dark .gtip.gb-floating-tip::before {
   align-items: center;
 }
 .heading-anchor svg { display: block; }
-h2:hover .heading-anchor, h3:hover .heading-anchor, h4:hover .heading-anchor { opacity: 1; }
+h2:hover .heading-anchor, h3:hover .heading-anchor, h4:hover .heading-anchor {  opacity: 1;
+  transform: translateX(2px);}
 .heading-anchor:focus, .heading-anchor:focus-visible { opacity: 1; outline: 2px solid var(--color-accent); outline-offset: 2px; border-radius: 4px; }
 .heading-anchor:hover { color: var(--color-text-muted); }
 .heading-anchor.copied { color: #7a2e2e !important; opacity: 1; }
@@ -4723,7 +4714,8 @@ footer.footer-home {
   .heart-flip-card.flipped .heart-flip-hint { transition: none !important; }
   .flip-card-inner,
   .error-flip-inner,
-  .heart-flip-inner { transition: none !important; }
+  .heart-flip-inner {  transition: none !important;
+  transform: none !important;}
   .heart-flip-card { transition: none !important; }
   .timeline-anim li {
     opacity: 1 !important;
@@ -4792,8 +4784,6 @@ footer.footer-home {
   font-weight: 600;
   color: var(--color-text);
 }
-
-.quiz-wrapper { position: relative; }
 
 .quiz-main--hidden { filter: blur(5px); opacity: 0.5; pointer-events: none; user-select: none; min-height: 260px; }
 
@@ -4979,23 +4969,19 @@ html.dark .quiz-launch-label {
   transition: width 1s linear;
 }
 
-#selection-share-popup {
-  position: absolute;
-  z-index: var(--z-popover);
+#selection-share-popup {  position: absolute;
+  z-index: var(--z-modal-1);
   display: flex;
   align-items: stretch;
   background: var(--color-canvas);
   border: 1px solid var(--color-border);
   border-radius: 10px;
-  box-shadow:
-    0 1px 4px  rgba(0, 0, 0, .06);
+  box-shadow: 0 1px 4px  rgba(0, 0, 0, .06);
   opacity: 0;
   pointer-events: none;
   transform: translateY(6px);
   transition: opacity .18s ease, transform .18s ease;
-  overflow: visible;
-
-}
+  overflow: visible;}
 
 #selection-share-popup::after {
   content: '';
@@ -5308,10 +5294,6 @@ html.dark .article-end-sdg svg {
 @media (max-width: 480px) {
   .article-end-btn { font-size: 13px; padding: 9px 16px; }
   .article-end-actions { gap: 8px; }
-}
-
-.tldr-list {
-  grid-template-columns: repeat(auto-fill, minmax(min(280px, 100%), 1fr));
 }
 
 @media (max-width: 899px) {
@@ -6118,10 +6100,6 @@ html.dark .faq-accordion__q:hover { background: var(--color-surface); background
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .flip-card-inner, .error-flip-inner, .heart-flip-inner {
-    transition: none !important;
-    transform: none !important;
-  }
   .flip-card.flipped .flip-card-inner,
   .error-flip-card.flipped .error-flip-inner,
   .heart-flip-card.flipped .heart-flip-inner {
@@ -6163,11 +6141,9 @@ html.dark .warn-box a, html.dark .ehrman-block a {
   direction: rtl;
   unicode-bidi: embed;
 }
-[lang="grc"], [lang="el"] {
-  font-family: 'Noto Sans Greek', 'GFS Neohellenic', 'Times New Roman', serif;
+[lang="grc"], [lang="el"] {  font-family: 'Noto Sans Greek', 'GFS Neohellenic', 'Times New Roman', serif;
   font-feature-settings: "kern" 1, "mark" 1;
-  line-height: 1.7;
-}
+  line-height: 1.7;}
 [lang="he"][data-translit]::after,
 [lang="grc"][data-translit]::after {
   content: " (" attr(data-translit) ")";
@@ -6183,15 +6159,8 @@ abbr.gterm {
 }
 abbr.gterm:hover { text-decoration: none; }
 
-.quiz-wrapper {
-  min-height: 320px;
-  contain: layout style;
-  content-visibility: auto;
-  contain-intrinsic-size: auto 320px;
-}
 .quiz-card { min-height: 420px; }
 .quiz-question { min-height: 80px; }
-.quiz-options { min-height: 200px; }
 
 .fn-sheet {
   position: fixed;
@@ -6216,8 +6185,6 @@ abbr.gterm:hover { text-decoration: none; }
   border: 0; background: transparent;
   cursor: pointer; color: var(--color-text);
 }
-
-#selection-share-popup { z-index: var(--z-modal-1); }
 
 [data-series-cards] {
   display: grid;
@@ -7180,24 +7147,6 @@ html.dark .summary-card__text strong { color: var(--color-accent-strong, #e8b878
   }
   .summary-card__text { grid-column: 2; grid-row: 2; padding-left: 0 !important; }
 }
-
-/* === 2. FOOTNOTE MARKERS — без лишнего пробела === */
-.fn-marker {
-  min-width: 0 !important;
-  margin-left: -0.05em !important;
-  padding: 0 0.12em !important;
-  letter-spacing: 0 !important;
-  font-family: 'Source Sans 3', system-ui, sans-serif;
-  font-weight: 700;
-  font-size: 0.7em !important;
-  vertical-align: super;
-  line-height: 1 !important;
-  color: var(--color-accent, #7a2e2e);
-  cursor: pointer;
-  border-bottom: 0 !important;
-  text-decoration: none;
-  transition: color .15s ease, transform .15s ease;
-}
 .fn-marker:hover, .fn-marker:focus-visible {
   color: var(--color-accent-strong, #5f2323);
   transform: translateY(-1px);
@@ -7278,10 +7227,8 @@ html.dark .gb-accuracy-desc { color: var(--color-text-muted, #a8a29e) !important
 
 /* На nagornaya/* main имеет dark Tailwind фон. Принудительный контраст для блока. */
 body.nagornaya-page .gb-accuracy-block { color: var(--color-text, #1c1917); }
-html:not(.dark) body.nagornaya-page .gb-accuracy-inner {
-  background: #ffffff;
-  border-color: #e7e2d8;
-}
+html:not(.dark) body.nagornaya-page .gb-accuracy-inner {  background: transparent !important;
+  border-color: rgba(28,25,23,0.08) !important;}
 
 /* === 6. NAGORNAYA LIGHT THEME — overrides Tailwind dark-only styles === */
 html:not(.dark) body.nagornaya-page,
@@ -7351,9 +7298,6 @@ main .gb-accuracy-block {
 .hb-front, .hb-back, [lang="he"], [lang="iw"] {
   font-family: 'Noto Sans Hebrew', 'SBL Hebrew', 'David Libre', serif;
 }
-[lang="grc"], [lang="el"] {
-  font-family: 'Noto Sans Greek', 'GFS Neohellenic', 'Times New Roman', serif;
-}
 
 /* === 9. SCROLL-LOCK + iOS momentum === */
 html[data-scroll-locked="1"], html[data-scroll-locked="1"] body, body.ng-toc-lock {
@@ -7374,20 +7318,6 @@ body.ng-toc-lock .btoc-nav {
   background-size: cover; background-position: center top;
   background-color: var(--color-accent-soft, #f4e4d4);
   filter: saturate(105%);
-}
-.btoc-banner-grad {
-  position: absolute; inset: 0;
-  background: linear-gradient(to top, rgba(20,16,12,0.78) 0%, rgba(20,16,12,0.20) 55%, transparent 100%);
-  pointer-events: none;
-}
-.btoc-banner-title {
-  position: absolute; bottom: 14px; left: 18px; right: 18px;
-  font-family: 'Source Sans 3', system-ui, sans-serif;
-  font-size: 13px; font-weight: 700;
-  color: rgba(255,255,255,0.96);
-  line-height: 1.35; letter-spacing: 0.015em;
-  text-shadow: 0 1px 12px rgba(0,0,0,.35);
-  display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
 }
 
 /* === 11. TOUCH TARGETS === */
@@ -7417,10 +7347,6 @@ img[src*="mc.yandex.ru"] {
 }
 
 /* === 14. Bottom-bar backdrop === */
-.bottom-bar {
-  -webkit-backdrop-filter: blur(20px) saturate(160%);
-  backdrop-filter: blur(20px) saturate(160%);
-}
 
 /* === 15. THEME-FLOAT — позиция уведена выше bottom-bar, скрыта на nagornaya === */
 .theme-float-btn {
@@ -7558,10 +7484,6 @@ body.nagornaya-page .gb-accuracy-inner {
   border-color: rgba(255,255,255,0.08) !important;
   box-shadow: none !important;
 }
-html:not(.dark) body.nagornaya-page .gb-accuracy-inner {
-  background: transparent !important;
-  border-color: rgba(28,25,23,0.08) !important;
-}
 body.nagornaya-page .gb-accuracy-title {
   color: rgba(255,255,255,0.80) !important;
 }
@@ -7613,11 +7535,6 @@ body.nagornaya-page .author-card {
 /* Убрать свечение полностью */
 html.dark .h-scripture-bg::before {
   background: none !important;
-}
-
-/* AUDIT v10/v11: visual polish — Nagornaya quiz/palette/summary + home Hebrew/title + catalog */
-:root {
-  --f-hebrew-display: "SBL Hebrew", "Ezra SIL", "Times New Roman", "Noto Sans Hebrew", serif;
 }
 
 .h-phrase--hebrew, .h-phrase[lang="he"], .h-phrase[lang="iw"],
@@ -8064,23 +7981,35 @@ html.dark .premium-frame-text {
   z-index: 2;
 }
 
-/* UNIFY ALL TOOLTIPS: Hide glossary pointing arrows/handles to avoid overlaps and create 100% uniform, minimal, flat floating cards */
-
 /* Fix timeline vertical line overlap bug by keeping timeline circles perfectly solid and opaque */
-
-/* Premium Frame Style — highly elegant, classic, and professional manuscript borders */
-/* Delicate dashed inner border for old-world feel */
-
-/* UNIFY ALL TOOLTIPS: Hide glossary pointing arrows/handles to avoid overlaps and create 100% uniform, minimal, flat floating cards */
-.gterm .gtip::before { display: none !important; }
-
-/* Fix timeline vertical line overlap bug by keeping timeline circles perfectly solid and opaque */
-/* R28: keep category label visible; flex layout prevents overlap with close button. */
-.gtip-luxury__header { align-items: flex-start !important; margin-bottom: 8px !important; }
-.gtip-luxury__category { display: inline-flex !important; flex: 1 1 auto; width: fit-content; max-width: calc(100% - 44px); }
-.gtip-luxury__close { margin-left: auto; }
+/* R28: keep category label visible;
 /* Lux Upgrade v3.0: remove intrusive top scroll bar */
-/* Lux Upgrade v3.0: biography card polish - single border */ .biography-hero::after{display:none!important} .biography-hero{border-width:1px!important;box-shadow:0 8px 32px rgba(0,0,0,.06)!important} .biography-portrait{border-width:4px!important;box-shadow:0 4px 16px rgba(0,0,0,.08)!important}
+/* Lux Upgrade v3.0: biography card polish - single border */ .biography-hero::after{  display: none!important;
+  content: '';
+  position: absolute;
+  inset: 12px;
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+  pointer-events: none;
+  opacity: 0.6;} .biography-hero{  border-width: 1px!important;
+  box-shadow: 0 8px 32px rgba(0,0,0,.06)!important;
+  position: relative;
+  background: var(--color-surface-quote);
+  border: 1px solid var(--color-border-strong);
+  border-radius: 12px;
+  padding: clamp(24px, 5vw, 48px);
+  margin-bottom: var(--s-7);
+  overflow: hidden;} .biography-portrait{  border-width: 4px!important;
+  box-shadow: 0 0 0 1px var(--color-border);
+  width: clamp(140px, 20vw, 180px);
+  aspect-ratio: 3/4;
+  margin: 0;
+  background: var(--color-surface, #fdfcf9) !important;
+  z-index: 2 !important;
+  border: 8px solid var(--color-surface);
+  position: relative;
+  font-family: ui-serif, Georgia, serif;
+  overflow: hidden;}
 
 /* 2026-06-01: mobile tooltip hardening.
    Long URLs, names and theological terms must not create horizontal scroll
@@ -8126,34 +8055,31 @@ html.dark .premium-frame-text {
    Editorial pull-quote with subtle parchment background, no large
    decorative quote marks (those would compete with .pullquote).
    Added 2026-06-02 to make existing markup actually render. */
-.manuscript-quote {
-  position: relative;
-  margin: clamp(28px, 4vw, 44px) 0;
-  padding: clamp(18px, 2.5vw, 26px) clamp(20px, 3vw, 32px);
-  background: var(--color-surface-quote, #fbf7ee);
-  border-left: 3px solid var(--color-accent, #7a2e2e);
-  border-radius: 0 10px 10px 0;
-  font-family: 'Lora', Georgia, serif;
-}
-.manuscript-quote-text {
-  font-size: clamp(15px, 1.9vw, 17px);
+.manuscript-quote {  position: relative;
+  margin: var(--s-6) 0;
+  padding: var(--s-4) var(--s-5);
+  background: var(--color-surface-quote);
+  border-left: 4px solid var(--color-accent-selection);
+  border-radius: 0 8px 8px 0;
+  font-family: ui-serif, Georgia, serif;
+  border: 1px solid var(--color-border-strong);}
+.manuscript-quote-text {  font-size: clamp(15px, 1.9vw, 17px);
   font-style: italic;
   line-height: 1.7;
-  color: var(--color-text-warm, var(--color-text, #2b2317));
-  margin: 0;
-}
-.manuscript-quote-source {
-  display: block;
-  margin-top: 12px;
+  color: var(--color-text-warm);
+  margin: 0;}
+.manuscript-quote-source {  display: block;
+  margin-top: var(--s-3);
   font-family: 'Source Sans 3', system-ui, sans-serif;
   font-style: normal;
-  font-size: 12px;
+  font-size: 13px;
   font-weight: 700;
-  letter-spacing: 0.06em;
+  letter-spacing: 0.03em;
   text-transform: uppercase;
-  color: var(--color-accent, #7a2e2e);
+  color: var(--color-text-muted);
   opacity: 0.9;
-}
+  text-align: right;
+  font-variant: small-caps;}
 html.dark .manuscript-quote {
   background: color-mix(in srgb, var(--color-accent) 6%, var(--color-surface));
   border-left-color: var(--color-accent-strong, #e8b878);
@@ -8239,29 +8165,7 @@ html.dark .context-links a:hover {
 
 /* ============================================================
    BIOGRAPHY TEMPLATE — shared by John Gill biography trilogy
-   (Часть I, II, III; previously inline in each HTML file)
-   Closes AGENTS.md §3.6 tech debt — 2026-06-02 (commit I)
-
-   Selectors covered:
-     .biography-hero / .biography-hero::before / .biography-meta
-     .biography-portrait / .biography-dates / .biography-title /
-     .biography-subtitle / .biography-epigraph / .biography-stats /
-     .stat-item / .stat-value / .stat-label / .biography-timeline /
-     .timeline-entry / .timeline-year / .timeline-title /
-     .timeline-desc / .foliant-mark
-   ============================================================ */
-/* Биографический стиль — древний манускрипт в системе токенов */
-
-      /* Обложка-биография с текстурой пергамента */
-      .biography-hero {
-        position: relative;
-        background: var(--color-surface-quote);
-        border: 1px solid var(--color-border-strong);
-        border-radius: 12px;
-        padding: clamp(24px, 5vw, 48px);
-        margin-bottom: var(--s-7);
-        overflow: hidden;
-      }
+   (Часть I, II, III;
 
       /* Текстура пергамента поверх фона */
       .biography-hero::before {
@@ -8274,17 +8178,6 @@ html.dark .context-links a:hover {
         mix-blend-mode: multiply;
       }
 
-      /* Декоративная рамка-орнамент */
-      .biography-hero::after {
-        content: '';
-        position: absolute;
-        inset: 12px;
-        border: 1px solid var(--color-border);
-        border-radius: 8px;
-        pointer-events: none;
-        opacity: 0.6;
-      }
-
       .biography-meta {
         position: relative;
         z-index: 1;
@@ -8292,20 +8185,6 @@ html.dark .context-links a:hover {
         grid-template-columns: auto 1fr;
         gap: var(--s-6);
         align-items: start;
-      }
-
-      /* Портрет в стиле гравюры */
-      .biography-portrait {
-        width: clamp(140px, 20vw, 180px);
-        aspect-ratio: 3/4;
-        margin: 0;
-        background: var(--color-surface, #fdfcf9) !important; z-index: 2 !important;
-        border: 8px solid var(--color-surface);
-        box-shadow:
-          0 0 0 1px var(--color-border);
-        position: relative;
-        font-family: ui-serif, Georgia, serif;
-        overflow: hidden;
       }
       .biography-portrait > picture,
       .biography-portrait img {
@@ -8468,18 +8347,6 @@ html.dark .context-links a:hover {
         line-height: 1.6;
       }
 
-      /* Цитата из источника — как маргиналия */
-      .manuscript-quote {
-        background: var(--color-surface-quote);
-        border: 1px solid var(--color-border-strong);
-        border-left: 4px solid var(--color-accent-selection);
-        padding: var(--s-4) var(--s-5);
-        margin: var(--s-6) 0;
-        position: relative;
-        font-family: ui-serif, Georgia, serif;
-        border-radius: 0 8px 8px 0;
-      }
-
       .manuscript-quote::before {
         content: '❧';
         position: absolute;
@@ -8496,22 +8363,6 @@ html.dark .context-links a:hover {
         font-size: 14px;
         color: var(--color-accent-selection);
         font-family: ui-serif, Georgia, serif;
-      }
-
-      .manuscript-quote-text {
-        font-style: italic;
-        line-height: 1.7;
-        color: var(--color-text-warm);
-      }
-
-      .manuscript-quote-source {
-        margin-top: var(--s-3);
-        font-size: 13px;
-        color: var(--color-text-muted);
-        font-style: normal;
-        text-align: right;
-        font-variant: small-caps;
-        letter-spacing: 0.03em;
       }
 
       /* Ивритская цитата как на титульном листе */
@@ -8551,15 +8402,15 @@ html.dark .context-links a:hover {
       }
 
       /* Таблица как в старой книге */
-      .manuscript-table {
-        width: 100%;
-        border-collapse: collapse;
-        margin: var(--s-6) 0;
-        font-variant-numeric: tabular-nums;
-        background: var(--color-surface, #fdfcf9) !important; z-index: 2 !important;
-        border: 1px solid var(--color-border-strong);
-        box-shadow: var(--shadow-sm);
-      }
+      .manuscript-table {  width: 100%;
+  border-collapse: collapse;
+  margin: var(--s-6) 0;
+  font-variant-numeric: tabular-nums;
+  background: var(--color-surface, #fdfcf9) !important;
+  z-index: 2 !important;
+  border: 1px solid var(--color-border-strong);
+  box-shadow: var(--shadow-sm);
+  font-size: 14px;}
 
       .manuscript-table th {
         background: var(--color-accent-soft);
@@ -8785,12 +8636,6 @@ h1, h2, h3, h4, .article-title, .resume-reading-title,
     /* SDA управляет анимацией — transition не нужен (JS .revealed тоже не нужен) */
     transition: none;
   }
-  /* Если JS всё же добавил .revealed — не конфликтуем */
-  .reveal.revealed {
-    animation: none;
-    opacity: 1;
-    transform: none;
-  }
 
   @keyframes reveal-sda {
     from {
@@ -8801,26 +8646,6 @@ h1, h2, h3, h4, .article-title, .resume-reading-title,
       opacity: 1;
       transform: translateY(0);
     }
-  }
-
-  /* Карточки — мягче и с задержкой по nth-child */
-  .article-item.card {
-    animation: reveal-sda linear both;
-    animation-duration: auto;
-    animation-timeline: view();
-    animation-range: entry 0% entry 40%;
-  }
-
-  /* timeline-list items */
-  .timeline-anim li {
-    animation: reveal-sda linear both;
-    animation-duration: auto;
-    animation-timeline: view();
-    animation-range: entry 5% entry 45%;
-    /* Сбрасываем JS-заданные начальные значения — SDA управляет анимацией */
-    opacity: revert;
-    transform: revert;
-    transition: none;
   }
 }
 
@@ -8847,31 +8672,9 @@ h1, h2, h3, h4, .article-title, .resume-reading-title,
     transform-style: flat;
   }
 
-  .card.fx-lift:hover,
-  .card.fx-lift:focus-within {
-    transform: translateY(-5px) perspective(600px) rotateX(1.5deg);
-    box-shadow:
-      0 2px 4px rgba(0,0,0,.04),
-      0 14px 32px -12px rgba(0,0,0,.2),
-      0 0 0 1px rgba(0,0,0,.04);
-  }
-
-  html.dark .card.fx-lift:hover,
-  html.dark .card.fx-lift:focus-within {
-    transform: translateY(-5px) perspective(600px) rotateX(1.5deg);
-    box-shadow:
-      0 2px 4px rgba(0,0,0,.35),
-      0 14px 32px -12px rgba(0,0,0,.6);
-  }
-
   /* Related articles — тот же эффект */
   .related-articles__item:hover,
   .related-articles__item:focus-within {
-    transform: translateY(-5px) perspective(600px) rotateX(1.2deg);
-  }
-
-  /* Resume reading item */
-  .resume-list-item:hover {
     transform: translateY(-5px) perspective(600px) rotateX(1.2deg);
   }
 }
@@ -8900,11 +8703,6 @@ article a:focus-visible {
 @media (hover: hover) and (pointer: fine) {
   .heading-anchor {
     transition: opacity .2s ease, color .2s ease, transform .2s ease;
-  }
-  h2:hover .heading-anchor,
-  h3:hover .heading-anchor,
-  h4:hover .heading-anchor {
-    transform: translateX(2px);
   }
 }
 
@@ -8956,9 +8754,6 @@ blockquote {
 /* Progressive enhancement: gradient border где поддерживается */
 @supports (border-image: linear-gradient(red,blue) 1) {
   blockquote {
-    border-image: linear-gradient(to bottom, transparent, var(--color-accent) 25%, var(--color-accent) 75%, transparent) 1;
-  }
-  html.dark blockquote {
     border-image: linear-gradient(to bottom, transparent, var(--color-accent) 25%, var(--color-accent) 75%, transparent) 1;
   }
 }
@@ -9317,9 +9112,5 @@ html.dark .rescue-caption--above {
   .ref-grid {
     grid-template-columns: 1fr;
   }
-  .manuscript-table {
-    font-size: 14px;
-  }
 }
-
 
