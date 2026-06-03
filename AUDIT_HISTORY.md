@@ -1,7 +1,81 @@
 # Audit History — gospod-bog.ru
 
 > All audit changelogs consolidated into one file.
-> Last updated: 2026-06-03
+> Last updated: 2026-06-04
+
+---
+
+## v26 — 🎯 PLAN-04: !important cleanup wave (2026-06-04)
+
+**Commits:** `f0f3982` (plan) ... `a37664a` (P15, target reached) + `notify-on-failure.yml`
+
+**Goal:** Восстановить архитектурный лимит `site.css ≤200 !important` (AGENTS-r42 §4.2)
+после регрессии за июнь 2026 (342 vs контракт 200).
+
+**Method:** 15 точечных партий. Для каждого `!important` рассчитана CSS specificity
+конкурентов; снимались только те, где **математически доказано**, что каскадная
+победа гарантирована без важности-override. Никаких массовых «эстетических»
+правок — каждое изменение обосновано.
+
+### What was improved:
+
+| # | Commit | Effect |
+|---|--------|--------|
+| hotfix | `d0a7193` | Замена мёртвой ссылки `anglicanbooksrevitalized.us` (302 → спам-домен `survey-smiles.com`) на `web.archive.org` снимок 2025-05-14 |
+| P1 | `2108bc7` | 3 настоящих top-level дубль-селектора (blockquote, .bottom-bar, article p) слиты |
+| P1b | `56367d3` | 6 premium-section дубль-селекторов слиты (body, h1, h1-large, article a, .pq-scripture, #reading-progress, .pullquote::before) |
+| P2 | `ce6af68` | `.fn-marker .tooltip:hover` — псевдокласс специфичности (−2) |
+| P3 | `af7f3c5` | **`.h-hero-title:hover` архитектурный фикс**: значения перенесены из site.css в home.css БЕЗ важности-override (−13) |
+| P4 | `61713f5` | Landscape cascade reorder + 4 мёртвых `.sd-*` правила (−6) |
+| P5 | `d683088` | Удалён legacy `.theme-float-btn` (AGENTS-r17 заменил на `.gb-fc-theme`), ~110 строк CSS, −1.2 КБ |
+| P6 | `1ee834c` | 4 мёртвых класса: `.epilogue-*`, `.h-section-link`, `.article-img.float-fallback`, `.card.fx-lift` (−7, −900b) |
+| P7 | `c141f36` | `.ai-disclosure` (DEAD per AGENTS-r11) + 2 dead Tailwind overrides (−1) |
+| P8 | `fd732b0` | `.summary-card__check svg` — нет конкурентов (−6) |
+| P9 | `54bce49` | `.summary-card{,__item,__check}` массовая чистка — нет конкурентов (−23) |
+| P10 | `945cd4b` | Финальная чистка .summary-card mobile overrides (−10) |
+| P11 | `db3860c` | `.gb-accuracy-*` + `.heading-anchor.copied` — specificity (−6) |
+| P12 | `a2228a1` | **Добавлен `.github/workflows/notify-on-failure.yml`** — открывает GitHub issue при падении deploy/indexnow |
+| P13 | `4582635` | Mobile-overrides где specificity уже выигрывает: `.kbd-hint-toast`, `#back-to-top`, `body.nagornaya-page .flex.*`, `#canonTimeline .ctw-*` (−31) |
+| P14 | `7d8df6d` | Specificity-audit: `.mobile-controls .theme-toggle`, `body.nagornaya-page .max-w-4xl > .mb-6 > p.text-stone-*`, `body.has-bottom-bar #back-to-top`, `#selection-share-popup` (−26) |
+| **P15** | **`a37664a`** | **🎯 ЦЕЛЬ ДОСТИГНУТА.** `.biography-hero/portrait`, `.h-phrase--greek/hebrew` (move to home.css), `.fn-marker.fn-trans` (−11) |
+
+### Final numbers:
+
+| Metric | Baseline (2026-06-03) | After P15 (2026-06-04) | Target |
+|---|-:|-:|-:|
+| `site.css` !important | **342** | **199** ✅ | ≤200 |
+| `site.css` size | 267 905 b | 264 887 b (−3 КБ) | — |
+| `home.css` !important | 20 | 20 | — |
+| Top-level duplicate selectors | 14 | 0 (4 legitimate) | 0 |
+| audit-pro | ✅ PASSED 29/2/0 | ✅ PASSED 29/2/0 | ✅ |
+| `notify-on-failure.yml` | not installed | **installed** ✅ | installed |
+
+### Verified after every batch:
+
+- `node --check js/*.js scripts/*.js sw.js` → PASS
+- `npm run cache-bust` → matched
+- `npm run validate:all` → PASS (0 errors, 0 warnings)
+- `npm run tokens:check` → PASS (0/0)
+- `node scripts/audit-pro.js` → PASSED 29 / 2 warn / 0 err
+
+### Plan & per-batch journal:
+
+Полный план и журнал партий: [`audit/AUDIT_CLEANUP_PLAN_2026-06-04.md`](audit/AUDIT_CLEANUP_PLAN_2026-06-04.md)
+
+### Что НЕ менялось (контракт):
+
+- Атрибуция авторства (AGENTS-r4 §3.1) — `Автор-редактор` / `Редактор`
+- JSON-LD структура (§3.2), OG/Twitter теги (§3.3)
+- Tailwind в nagornaya/tw.min.css — не трогали
+- Структура папок, имена файлов
+- 5 CSS + 11 JS — никаких новых файлов
+- Бюджеты в audit-pro.js (375K CSS / 365K JS) — не повышались
+
+### Note for future agents:
+
+AGENTS.md §4.2 обновлён с актуальными цифрами и историей регрессии-восстановления.
+Для предотвращения новой регрессии — следовать §4.2 чеклисту перед добавлением
+любого нового `!important`.
 
 ---
 
