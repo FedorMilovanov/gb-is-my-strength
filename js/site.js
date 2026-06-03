@@ -520,14 +520,14 @@
 
     articleEl: function () {
       if (!SiteUtils._articleEl) {
-        SiteUtils._articleEl = SiteUtils.articleEl();
+        SiteUtils._articleEl = document.querySelector('article') || null;
       }
       return SiteUtils._articleEl;
     },
 
     h1El: function () {
       if (!SiteUtils._h1El) {
-        SiteUtils._h1El = SiteUtils.h1El();
+        SiteUtils._h1El = document.querySelector('article h1, .article-header h1, h1') || null;
       }
       return SiteUtils._h1El;
     },
@@ -562,7 +562,7 @@
 
 
     isEscape: function (e) {
-      return SiteUtils.isEscape(e);
+      return e.key === 'Escape' || e.key === 'Esc';
     },
     isArticle: function () {
       return SiteUtils.pageType() === 'article';
@@ -577,10 +577,17 @@
       ) - window.innerHeight;
     },
 
-        barThemeBtn: function () {
+    featureToc: function (def) {
+      return SiteUtils.getConfig('features.toc', def !== undefined ? def : true);
+    },
+    featureShare: function (def) {
+      return SiteUtils.getConfig('features.share', def !== undefined ? def : true);
+    },
+
+    barThemeBtn: function () {
       /* Кнопка темы в bottom-bar (мобильная). Кэшируется после первого вызова. */
       if (SiteUtils._barThemeBtn === undefined) {
-        SiteUtils._barThemeBtn = SiteUtils.barThemeBtn() || null;
+        SiteUtils._barThemeBtn = document.getElementById('barThemeBtn') || null;
       }
       return SiteUtils._barThemeBtn;
     },

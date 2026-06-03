@@ -130,11 +130,6 @@ body { overflow-x: hidden; }
   --t-card:      transform 0.55s cubic-bezier(.4,0,.2,1);
   --t-quick:     opacity .18s ease, transform .18s ease;
   --t-slide:     transform .45s cubic-bezier(.2,.7,.2,1);
-  --t-reveal:    opacity 0.6s ease, transform 0.6s ease;
-  --t-fade:      opacity .18s ease;
-  --t-bg:        background .15s;
-  --t-bg-color:  background .15s, color .15s;
-  --t-border:    border-color .2s ease;
   --back-height:        auto;
 
   --visual-viewport-h: 100dvh;
