@@ -46,6 +46,24 @@ body.nagornaya-page.ng-toc-lock {
   overflow: hidden;
 }
 
+/* Read-progress bar — перенесено из inline <style> в nagornaya/chast-N (r42) */
+body.nagornaya-page #read-progress {
+  position: fixed;
+  top: 0; left: 0;
+  width: 0%;
+  height: 3px;
+  background: linear-gradient(90deg, #d97706, #f59e0b);
+  z-index: var(--z-absolute, 99999);
+  transition: width .1s linear;
+  pointer-events: none;
+}
+@media (min-width: 1024px) {
+  body.nagornaya-page #read-progress {
+    left: 256px;
+    width: calc(var(--rp, 0) * (100% - 256px));
+  }
+}
+
 /* Existing nagornaya read-progress bar sits at the bottom of the source.
    On mobile the bottom app bar is the progress UI, so hide duplicate line. */
 @media (max-width: 899px) {
