@@ -1,73 +1,139 @@
-# Архитектура сайта — Господь Бог — Сила Моя
-## Версия 2.2 — Май 2026
+# Господь Бог — Сила Моя · gospod-bog.ru
+
+Архитектурная документация сайта-библиотеки для серьёзного изучения Писания:
+экзегеза, богословие, апологетика, переводы.
+
+**Версия документа:** v3 · 2026-06-04 · полная перезапись (PLAN-05)
+**Прод:** https://gospod-bog.ru · GitHub Pages из ветки `main`
+
+> Этот README — для **владельца, редакторов и контент-менеджеров.**
+> Если ты — ИИ-агент, твой первый документ — [`AGENTS.md`](AGENTS.md).
+> История правок и аудитов — [`AUDIT_HISTORY.md`](AUDIT_HISTORY.md).
 
 ---
 
+## Содержание
+
+1. [Стек и хостинг](#1-стек-и-хостинг)
+2. [SEO-инфраструктура (IndexNow + sitemap + feed + JSON-LD)](#2-seo-инфраструктура)
+3. [Правила атрибуции авторства](#3-правила-атрибуции-авторства)
+4. [Добавление новой статьи — полный чеклист](#4-добавление-новой-статьи)
+5. [Шаблон статьи (`<head>`, `<body>`, обязательные блоки)](#5-шаблон-новой-статьи)
+6. [Контракт `window.SITE_CONFIG`](#6-контракт-windowsite_config)
+7. [Контракт разметки — нельзя переименовывать](#7-контракт-разметки)
+8. [Build-скрипты (`npm run …`)](#8-build-скрипты)
+9. [Структура файлов](#9-структура-файлов)
+
 ---
 
-## SEO-инфраструктура — Версия 2.0 (Апрель 2026)
+## 1. Стек и хостинг
+
+- **HTML + CSS + JS, vanilla**, без bundler'а, без TypeScript, без React.
+- **Хостинг:** GitHub Pages, автодеплой через `.github/workflows/deploy.yml`.
+- **Поисковая индексация:** `.github/workflows/indexnow.yml` (Яндекс + Bing).
+- **Алерты на падение CI:** `.github/workflows/notify-on-failure.yml` (открывает GitHub Issue).
+- **Service Worker** (`sw.js`) — версионируется автоматически (`scripts/cache-bust.js`).
+- **Node** для build-скриптов: `>=20`.
+- **CNAME:** `gospod-bog.ru`.
+
+---
+
+## 2. SEO-инфраструктура
 
 ### Что настроено
 
-| Файл / место | Что делает |
+| Файл / место | Назначение |
 |---|---|
-| `.github/workflows/indexnow.yml` | При каждом push в `main` автоматически уведомляет Яндекс и Bing об изменённых страницах через IndexNow |
-| `sitemap.xml` | Содержит все страницы включая `/articles/` |
-| `feed.xml` | RSS-лента для агрегаторов и поиска |
-| `articles/index.html` | Страница-каталог всех статей; промежуточный уровень в BreadcrumbList |
-| JSON-LD `@graph` главной | `WebSite` + `CollectionPage` + `Person` (с `sameAs` на соцсети) |
-| JSON-LD статей | `Article` / `ScholarlyArticle` + `BreadcrumbList` (3 уровня: Главная → Статьи → Статья) |
+| `.github/workflows/indexnow.yml` | При каждом push в `main` уведомляет Яндекс и Bing об изменённых страницах |
+| `.github/workflows/notify-on-failure.yml` | При падении `deploy.yml` или `indexnow.yml` открывает GitHub Issue с тегом `ci-failure` |
+| `sitemap.xml` | Все страницы. `lastmod` — только ISO8601 с `+03:00` (МСК). |
+| `feed.xml` | RSS-лента. Новые статьи — в начало `<channel>`, плюс обновить `<lastBuildDate>`. |
+| `robots.txt` | Управление ботами, включая AI-боты (GPTBot, ClaudeBot, Google-Extended). |
+| `articles/index.html` | Каталог всех статей; промежуточный уровень в BreadcrumbList. |
+| JSON-LD `@graph` главной | `WebSite` + `CollectionPage` + `Person` (с `sameAs` на соцсети). |
+| JSON-LD статей | `Article` (или `ScholarlyArticle` для переводов) + `BreadcrumbList` (3 уровня). |
+| `llms.txt` | Правила для LLM-краулеров. |
 
-### IndexNow — что нужно сделать один раз
+### IndexNow — однократная настройка
 
-1. Сгенерировать ключ на [indexnow.org](https://www.indexnow.org/en)
-2. В GitHub → Settings → Secrets and variables → Actions добавить repository secret `INDEXNOW_KEY` = значение ключа
-3. **Не коммитить** `{ключ}.txt` в репозиторий: `deploy.yml` сам создаёт файл проверки `${INDEXNOW_KEY}.txt` в корне Pages-артефакта перед деплоем
-4. После добавления или ротации ключа один раз вручную запустить workflow **Deploy to GitHub Pages**, чтобы новый `{ключ}.txt` появился на живом сайте
-5. Проверить, что файл доступен по адресу `https://gospod-bog.ru/{ключ}.txt`
-6. Зарегистрировать ключ в [Яндекс.Вебмастер → IndexNow](https://webmaster.yandex.ru/indexnow/) и [Bing Webmaster](https://www.bing.com/indexnow)
+1. Сгенерировать ключ на [indexnow.org](https://www.indexnow.org/en).
+2. GitHub → Settings → Secrets and variables → Actions → repository secret `INDEXNOW_KEY` = значение ключа.
+3. **Не коммитить** `<INDEXNOW_KEY>.txt` в репозиторий: `deploy.yml` сам создаёт его в Pages-артефакте перед деплоем.
+4. После добавления/ротации ключа — один раз вручную запустить workflow **Deploy to GitHub Pages**, чтобы новый `<INDEXNOW_KEY>.txt` появился на живом сайте.
+5. Проверить: `https://gospod-bog.ru/<INDEXNOW_KEY>.txt` доступен.
+6. Зарегистрировать ключ в [Яндекс.Вебмастер → IndexNow](https://webmaster.yandex.ru/indexnow/) и [Bing Webmaster](https://www.bing.com/indexnow).
 
-После этого каждый `git push main` будет автоматически уведомлять поисковики.
-
-
-
-## Правила атрибуции — Автор-редактор: Фёдор Милованов
-
-На сайте Фёдор Милованов является **автором-редактором** оригинальных статей и **редактором** переводов, а не «автором» в традиционном смысле: он задаёт направление, редактирует текст, исправляет неточности и собирает информацию при помощи ИИ. Это отражается везде единообразно.
-
-### Три типа статей
-
-| Тип | Описание | Byline | author-card-label |
-|-----|----------|--------|-------------------|
-| **A** | Авторская статья | `Автор-редактор: Фёдор Милованов` | `Автор-редактор` |
-| **B** | Авторская серия / разбор | `Автор-редактор: Фёдор Милованов` | `Автор-редактор` |
-| **C** | Перевод зарубежной статьи | `Редактор: Фёдор Милованов` | `Редактор` |
-
-### Где проставляется атрибуция
-
-1. **`<meta name="author">`** — для Типа A/B: `Фёдор Милованов`; для Типа C: имя оригинального автора + `<meta name="translator" content="Фёдор Милованов">`.
-2. **`article:author` OG** — для Типа A/B: `Фёдор Милованов`; для Типа C: имя оригинального автора.
-3. **`.article-byline__strong`** в `<header>` — полный ярлык: `Автор-редактор: Фёдор Милованов` (Тип A/B) или `Редактор: Фёдор Милованов` (Тип C).
-4. **`.author-card-label`** в `<aside class="author-card">` — сокращённо: `Автор-редактор` (Тип A/B) или `Редактор` (Тип C).
-5. **Карточки на `index.html` и `articles/index.html`** — `Автор-редактор: Фёдор Милованов` (Тип A/B) или `Ред.: Фёдор Милованов` (Тип C).
-6. **`feed.xml`** — `<dc:creator>Фёдор Милованов</dc:creator>` (во всех типах).
-7. **Нагорная проповедь и другие серии** — мелкая подпись `Ред.: Фёдор Милованов` в футере каждой части.
-
-> **Важно:** для оригинальных статей (Тип A/B) используется «Автор-редактор», для переводов (Тип C) — «Редактор». Страница `/about/` и SEO-описания используют «автор и редактор» как общую характеристику роли на сайте — это допустимо.
+После этого каждый `git push main` автоматически уведомляет поисковики.
 
 ---
 
-## Добавление новой статьи — полный чеклист
+## 3. Правила атрибуции авторства
 
-### 1. Создать файл статьи
+Фёдор Милованов на сайте — **автор-редактор** (оригинальные статьи) и **редактор** (переводы). **НЕ «автор»** в традиционном смысле: он задаёт направление, редактирует, исправляет неточности, собирает материал с помощью ИИ.
 
+### Три типа статей
+
+| Тип | Описание | Byline в `<header>` | `.author-card-label` | Карточки в каталогах |
+|---|---|---|---|---|
+| **A** | Авторская статья | `Автор-редактор: Фёдор Милованов` | `Автор-редактор` | `Автор-редактор: Фёдор Милованов` |
+| **B** | Авторская серия / разбор | `Автор-редактор: Фёдор Милованов` | `Автор-редактор` | `Автор-редактор: Фёдор Милованов` |
+| **C** | Перевод зарубежной статьи | `Редактор: Фёдор Милованов` | `Редактор` | `Ред.: Фёдор Милованов` |
+
+### Meta-теги
+
+- **Тип A/B:**
+  ```html
+  <meta name="author" content="Фёдор Милованов">
+  <meta property="article:author" content="Фёдор Милованов">
+  ```
+- **Тип C (перевод):**
+  ```html
+  <meta name="author" content="Имя оригинального автора">
+  <meta name="translator" content="Фёдор Милованов">
+  <meta property="article:author" content="Имя оригинального автора">
+  ```
+
+### feed.xml — для всех типов
+
+```xml
+<dc:creator>Фёдор Милованов</dc:creator>
 ```
-articles/{slug}/index.html
-```
 
-Взять за основу шаблон ниже. Slug — строчные латинские буквы и дефисы, без слэша в начале.
+> Страница `/about/` и SEO-описания используют «автор и редактор» как общую характеристику роли на сайте — это допустимо.
 
-### 2. Обязательные мета-теги в `<head>`
+---
+
+## 4. Добавление новой статьи
+
+### Чеклист (короткий)
+
+1. Создать папку `articles/<slug>/index.html` по шаблону из §5.
+2. Подготовить OG-изображение **1200 × 630 px** (`.webp` или `.jpg`), положить в `/images/`.
+3. Обновить `sitemap.xml` (добавить `<url>` с ISO8601 `lastmod`).
+4. Обновить `feed.xml` (добавить `<item>` в начало `<channel>` + обновить `<lastBuildDate>`).
+5. (Если статья — часть серии) обновить `data/series.json`.
+6. Обновить `data/search-manifest.json` для Ctrl+K поиска.
+7. Добавить карточку на `/articles/index.html` (и при необходимости — на `/index.html`).
+8. `npm run cache-bust` (хеши + SW CACHE_VERSION).
+9. `npm run validate:all` + `node scripts/audit-pro.js` — оба должны быть PASS.
+10. `git commit && git push main` — IndexNow сам уведомит Яндекс/Bing.
+
+### Slug
+
+Строчные латинские буквы и дефисы. Без слэша в начале. Папка статьи = `articles/<slug>/`.
+
+### OG-изображение
+
+- **Размер:** 1200 × 630 px (соотношение 40:21).
+- **Формат:** `.webp` (предпочтительно) или `.jpg`. PNG только для backup, не для `<img>`/`<picture>`.
+- **JPG-fallback в OG-meta** ставить ТОЛЬКО если `.jpg` файл реально существует.
+- **Расположение:** `/images/`.
+
+---
+
+## 5. Шаблон новой статьи
+
+### `<head>` — обязательные мета-теги
 
 ```html
 <!-- SEO -->
@@ -76,13 +142,15 @@ articles/{slug}/index.html
 <meta name="keywords" content="ключевое слово 1, слово 2, слово 3">
 <meta name="robots" content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1">
 <meta name="author" content="Фёдор Милованов">
-<!-- Если статья — перевод, добавить обе строки: -->
+<!-- Если перевод (Тип C), вместо строки выше: -->
 <!-- <meta name="author" content="Имя Автора Оригинала"> -->
-<!-- <meta name="translator" content="Фёдор Милованов"> -->
+<!-- <meta name="translator" content="Фёдор Милованов">     -->
 <meta name="geo.region" content="RU-SPE">
 <meta name="geo.placename" content="Санкт-Петербург">
 <link rel="canonical" href="https://gospod-bog.ru/articles/{slug}/">
-<link rel="alternate" type="application/rss+xml" title="Господь Бог — Сила Моя — RSS" href="https://gospod-bog.ru/feed.xml">
+<link rel="alternate" type="application/rss+xml"
+      title="Господь Бог — Сила Моя — RSS"
+      href="https://gospod-bog.ru/feed.xml">
 
 <!-- Open Graph -->
 <meta property="og:type" content="article">
@@ -93,7 +161,7 @@ articles/{slug}/index.html
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
 <meta property="og:image:type" content="image/jpeg">
-<!-- Если изображение .webp — менять на image/webp -->
+<!-- Если изображение .webp — заменить тип на image/webp -->
 <meta property="og:image:alt" content="Описание изображения">
 <meta property="og:site_name" content="Господь Бог — Сила Моя">
 <meta property="og:locale" content="ru_RU">
@@ -101,66 +169,65 @@ articles/{slug}/index.html
 <meta property="article:modified_time" content="2026-MM-DDT00:00:00+03:00">
 <meta property="article:author" content="Фёдор Милованов">
 <meta property="article:section" content="Богословие">
-<!-- Повторить для каждого тега: -->
 <meta property="article:tag" content="тег 1">
 <meta property="article:tag" content="тег 2">
 
-<!-- Preload LCP-изображения (если есть hero-картинка в начале статьи) -->
+<!-- Preload LCP-изображения (если есть hero в начале статьи) -->
 <link rel="preload" as="image" fetchpriority="high" href="../../images/{slug}-hero.jpg">
 ```
 
-### 3. JSON-LD в `<head>`
+### JSON-LD (Article + BreadcrumbList)
 
 ```json
 {
   "@context": "https://schema.org",
   "@graph": [
-  {
-    "@type": "Article",
-    "@id": "https://gospod-bog.ru/articles/{slug}/#article",
-    "headline": "Полный заголовок статьи",
-    "description": "Краткое описание.",
-    "url": "https://gospod-bog.ru/articles/{slug}/",
-    "datePublished": "2026-MM-DDT00:00:00+03:00",
-    "dateModified": "2026-MM-DDT00:00:00+03:00",
-    "inLanguage": "ru",
-    "author": { "@id": "https://gospod-bog.ru/about/#person" },
-    "publisher": { "@id": "https://gospod-bog.ru/about/#person" },
-    "image": {
-      "@type": "ImageObject",
-      "url": "https://gospod-bog.ru/images/{slug}-preview.jpg",
-      "width": 1200,
-      "height": 630
+    {
+      "@type": "Article",
+      "@id": "https://gospod-bog.ru/articles/{slug}/#article",
+      "headline": "Полный заголовок статьи",
+      "description": "Краткое описание.",
+      "url": "https://gospod-bog.ru/articles/{slug}/",
+      "datePublished": "2026-MM-DDT00:00:00+03:00",
+      "dateModified": "2026-MM-DDT00:00:00+03:00",
+      "inLanguage": "ru",
+      "author":    { "@id": "https://gospod-bog.ru/about/#person" },
+      "publisher": { "@id": "https://gospod-bog.ru/about/#person" },
+      "image": {
+        "@type": "ImageObject",
+        "url": "https://gospod-bog.ru/images/{slug}-preview.jpg",
+        "width": 1200,
+        "height": 630
+      },
+      "mainEntityOfPage": {
+        "@type": "WebPage",
+        "@id": "https://gospod-bog.ru/articles/{slug}/"
+      },
+      "articleSection": "Богословие",
+      "keywords": "ключевые слова через запятую"
     },
-    "mainEntityOfPage": {
-      "@type": "WebPage",
-      "@id": "https://gospod-bog.ru/articles/{slug}/"
-    },
-    "articleSection": "Богословие",
-    "keywords": "ключевые слова через запятую"
-  },
-  {
-    "@type": "BreadcrumbList",
-    "itemListElement": [
-      {"@type": "ListItem", "position": 1, "name": "Главная", "item": "https://gospod-bog.ru/"},
-      {"@type": "ListItem", "position": 2, "name": "Статьи", "item": "https://gospod-bog.ru/articles/"},
-      {"@type": "ListItem", "position": 3, "name": "Название статьи", "item": "https://gospod-bog.ru/articles/{slug}/"}
-    ]
-  }
+    {
+      "@type": "BreadcrumbList",
+      "itemListElement": [
+        { "@type": "ListItem", "position": 1, "name": "Главная", "item": "https://gospod-bog.ru/" },
+        { "@type": "ListItem", "position": 2, "name": "Статьи",   "item": "https://gospod-bog.ru/articles/" },
+        { "@type": "ListItem", "position": 3, "name": "Название статьи", "item": "https://gospod-bog.ru/articles/{slug}/" }
+      ]
+    }
   ]
 }
 ```
 
-Если статья — перевод, заменить тип `Article` на `ScholarlyArticle` и добавить поле `translator`:
+**Для переводов (Тип C):**
 ```json
 "@type": "ScholarlyArticle",
 "author": { "@type": "Person", "name": "Имя Автора Оригинала" },
 "translator": { "@id": "https://gospod-bog.ru/about/#person" }
 ```
 
-### 4. Обновить `sitemap.xml`
+### Обновить `sitemap.xml`
 
-Добавить блок перед `</urlset>`:
+Добавить перед `</urlset>`:
 ```xml
 <url>
   <loc>https://gospod-bog.ru/articles/{slug}/</loc>
@@ -170,9 +237,9 @@ articles/{slug}/index.html
 </url>
 ```
 
-### 5. Обновить `feed.xml`
+### Обновить `feed.xml`
 
-Добавить `<item>` в начало `<channel>` (новые статьи идут первыми):
+В начало `<channel>` (новые — первыми) + обновить `<lastBuildDate>`:
 ```xml
 <item>
   <title>Заголовок статьи</title>
@@ -188,411 +255,14 @@ articles/{slug}/index.html
 </item>
 ```
 
-
-### 7. Добавить карточку на `/articles/index.html` и на `index.html`
-
-В обоих файлах — в нужный раздел (`<section id="publikacii">` или `<section id="razbor">`) добавить `<li>` с карточкой статьи по образцу существующих карточек.
-
-### 8. Обновить `lastBuildDate` в `feed.xml`
-
-```xml
-<lastBuildDate>Mon, 01 Jan 2026 00:00:00 +0000</lastBuildDate>
-```
-
-### 9. Подготовить OG-изображение
-
-Размер: **1200 × 630 px** (соотношение 40:21).
-Форматы: `.jpg` или `.webp`. Если `.jpg` — в мета-теге `og:image:type` указать `image/jpeg`.
-Разместить в `/images/`.
-
-### 10. IndexNow — автоматически
-
-После `git push main` GitHub Actions сам отправит URL новой статьи в Яндекс и Bing. Ничего делать не нужно — только убедиться, что секрет `INDEXNOW_KEY` настроен (один раз).
-
----
-
-## Структура файлов (актуальная)
-
-> ✅ **Все изображения включены в репозиторий** — все контентные изображения (иллюстрации статей) размещаются отдельно (например, через CDN или локально). OG-изображения для Нагорной проповеди уже присутствуют в `/images/`. Остальные файлы перечислены ниже.
-
-### Отсутствующие изображения (требуют загрузки)
-
-| Файл | Используется в |
-|------|----------------|
-| `images/og-preview.jpg` ✅ | Главная, fallback OG для статей |
-| `images/og-nagornaya-propoved*.webp` ✅ | Нагорная проповедь (chast 1–5) |
-| `images/hero-kod-da-vinchi.jpg` ✅ | Карточки на главной и в каталоге |
-| `images/ieremia-cover.jpg` ✅ | Карточки «Крайне ли испорчено сердце» |
-| `images/hermenevtika-preview.webp` ✅ | Карточки «Герменевтика» |
-| `images/pastor-series/hero.png` ✅ | PNG-fallback в `<picture>` (статья + серия) |
-| `images/pastor-series/hero-main.webp` ✅ | Основной webp-герой статьи и миниатюр |
-| `images/pastor-series/hero.webp` ✅ | Иллюстрация «Откуда берётся» внутри статьи |
-| `images/pastor-series/mirror.png` ✅ | PNG-fallback в `<picture>` (статья + серия) |
-| `images/pastor-series/manipulation.png` ✅ | PNG-fallback в `<picture>` (карточка части II) |
-| `images/ieremia-*.webp` (15 штук) | Иллюстрации внутри статьи «Иеремия 17» |
-
-**Пока изображения отсутствуют** — OG-теги в статьях `kod-da-vinchi`, `krajne-li-isporcheno-serdce` и `hermenevticheskaya` временно используют `/images/og-preview.jpg`. После загрузки статейных OG-изображений вернуть оригинальные URL в `og:image` и `twitter:image`.
-
-
-
-```
-/
-├── index.html                              ← Главная страница
-├── about/index.html                        ← Страница об авторе
-├── articles/
-│   ├── 20-antisovetov-pastoru/index.html
-├── pastor-series/index.html  # серия «Тёмная сторона кафедры»
-│   ├── 20-antisovetov-pastoru/index.html
-├── pastor-series/index.html  # серия «Тёмная сторона кафедры»
-│   ├── 20-antisovetov-pastoru/index.html
-├── pastor-series/index.html  # серия «Тёмная сторона кафедры»
-│   ├── index.html                          ← Каталог всех статей (/articles/)
-│   ├── {slug}/index.html                   ← Каждая статья в своей папке
-│   └── ...
-├── css/
-│   ├── site.css                            ← Все общие стили
-│   └── home.css                            ← Стили главной страницы
-├── js/
-│   ├── site.js                             ← Все общие скрипты
-│   └── bookmark-engine.js                  ← Движок закладок (не трогать)
-├── images/                                 ← Все изображения
-├── sitemap.xml                             ← Карта сайта для поисковиков
-├── feed.xml                                ← RSS-лента
-├── robots.txt                              ← Управление ботами (вкл. AI-боты)
-├── {indexnow-key}.txt                      ← Генерируется только в Pages-артефакте, не хранится в git
-└── .github/
-    └── workflows/
-        └── indexnow.yml                    ← GitHub Actions: push-индексация
-```
-
-
----
-
-## Что вынесено в site.css (40 секций)
-
-| # | Секция |
-|---|--------|
-| 01 | Reset |
-| 02 | Variables / Colors / Dark theme |
-| 03 | Body / Typography base |
-| 04 | Layout (.page-wrap, main.article-main, main.home-main) |
-| 05 | Theme toggle |
-| 06 | Breadcrumb |
-| 07 | Article header |
-| 08 | Article body |
-| 09 | Homepage header & article list |
-| 10 | Utility blocks (info, warn, quote, ehrman, opusdei) |
-| 11 | Tables |
-| 12 | Figures |
-| 13 | Timeline |
-| 14 | FAQ |
-| 15 | TOC Sidebar (desktop scrollspy) |
-| 16 | Mobile Bottom Bar + TOC Overlay (код да Винчи style) |
-| 17 | Mobile TOC slide panel (герменевтика style) |
-| 18 | Buttons / Progress / Back-to-top / Share / Section label |
-| 19 | Flip Cards |
-| 20 | Quiz |
-| 21 | Bookmark / Resume toast |
-| 22 | Homepage Resume Reading blocks |
-| 25–27 | Footnote tooltips (fn-ref, fn-marker, bref/btip) |
-| 28 | Heading anchors |
-| 29 | Sources block |
-| 30 | Drop caps |
-| 31 | Author card |
-| 32 | Footer |
-| 33 | Epigraph / About |
-| 34 | SDG / Cross |
-| 35 | Print |
-| 36 | Reduced motion |
-| 37 | Article date display |
-| 38 | Article end block (кнопки + SDG + крест) |
-| 39 | Quiz review mode (разбор ошибок, бонусный тизер) |
-| 40 | Article UI components (stat-grid, compare-cards, pq-scripture, faq-accordion, summary-card) |
-
----
-
-## Что вынесено в site.js (27 модулей)
-
-| # | Модуль | Триггер |
-|---|--------|---------|
-| 01 | `window.SiteUtils` — helpers | Всегда |
-| 02 | Theme Toggle | `#themeToggle`, `#barThemeBtn` |
-| 03 | Share | `#shareBtn`, `#barShareBtn` |
-| 04 | Reading Progress Bar | `#reading-progress` |
-| 05 | Back To Top | `#back-to-top` |
-| 06 | Section Label | `#section-label` |
-| 07 | Mobile TOC (slide panel) | `#toc-toggle`, `#toc-panel` |
-| 08 | Desktop TOC (scrollspy) | `#tocSidebar` |
-| 09 | Bottom App Bar + BTOC Overlay | `#bottomBar`, `#btocOverlay` |
-| 10 | Timeline Animation | `.timeline-anim li` |
-| 11 | Animate Boxes on Scroll | `.quote-box`, `.warn-box` и др. |
-| 12 | Footnote Tooltips (fn-ref) | `sup a[href^="#src"]` |
-| 13 | Flip Cards toggle + keyboard | `.flip-card`, `.error-flip-card` |
-| 14 | Flip Card Fingers | `.flip-card-front` |
-| 15 | Flip Card Height Sync | Авто |
-| 16 | Quiz Engine v3 (основной тест + разбор ошибок + бонусный раунд) | `#quizWrapper` + `SITE_CONFIG.quiz` |
-| 17 | Heading Anchor Copy | `.heading-anchor` |
-| 18 | Hover bridge for fn-marker | Desktop only |
-| 19 | Bible Reference Tooltips | `.bref[data-ref]` + `#bibleRefs` |
-| 20 | Academic Footnotes | `.fn-marker` |
-| 21 | Typography (неразрывные пробелы) | `article, .article-body` |
-| 22 | Keyboard Shortcuts | `T` TOC · `D` тема · `B` наверх |
-| 23 | Selection Share | Выделение текста в `article` |
-| 24 | Homepage Reading Progress | `.article-list` |
-| 26 | Article Date Display | `meta[property="article:*_time"]` |
-| 26a | Auto Drop Cap | Тип A и B; Тип C исключён |
-| 27 | Article End Block Injector | `page.type === 'article'` |
-
-**Принцип:** каждый модуль сначала проверяет наличие нужных DOM-элементов. Если элемента нет — ничего не происходит, ошибок нет.
-
----
-
-## Контракт window.SITE_CONFIG
-
-### Обязательные секции
-
-```js
-window.SITE_CONFIG = {
-  version: 1,
-  site: { id, name, baseUrl, locale, themeStorageKey },
-  page: { type, id, title },
-  features: { ... }
-};
-```
-
-### `page.type` — тип страницы
-
-| Значение | Страница |
-|----------|----------|
-| `'article'` | Статья |
-| `'home'` | Главная |
-| `'page'` | Прочая страница |
-
-### `features` — что включить на странице
-
-Каждая функция имеет `enabled: true/false`. Если `enabled: false` — модуль в site.js тихо выходит.
-
-```js
-features: {
-  themeToggle:     { enabled: true },
-  share:           { enabled: true, title: '...', text: '...' },
-  backToTop:       { enabled: true, showAfter: 400 },
-  readingProgress: { enabled: true },
-  toc:             { enabled: true, mobile: true, desktop: true },
-  footnotes:       { enabled: true },
-  timeline:        { enabled: true, threshold: 0.15 },
-  flipCards:       { enabled: true, keyboard: true, fingers: true },
-  quiz:            { enabled: true, passingMode: 'half', shareResults: true },
-  bookmarks:       { enabled: true, ... },
-  homepageResume:  { enabled: false, maxItems: 5 },
-  headingAnchors:  { enabled: true }
-}
-```
-
-### Опциональные секции
-
-```js
-toc: {
-  items: [
-    { id: 'sec-intro', label: 'Введение' },
-    ...
-  ]
-}
-
-quiz: {
-  questions: [ { id, q, options, answer, ok, err, focus }, ... ],
-  scores:    [ { id, min, max, title, desc }, ... ]
-}
-```
-
-**Если `toc.items` не задан** — desktop TOC и bottom bar TOC строятся автоматически из `article h2[id]`.
-
-**Если `quiz` не задан** — quiz модуль ничего не делает даже при `features.quiz.enabled: true`.
-
----
-
-
-## Актуальные требования к новым статьям (обновлено 2026-05-28)
-
-### Runtime-компоненты
-
-- **AI disclosure**: `site.js` автоматически добавляет `.ai-disclosure` для всех страниц с `SITE_CONFIG.page.type === 'article'`. Вручную дублировать блок не нужно.
-- `js/glossary.js` подключается на article-страницах и после автозамены вызывает `SiteUtils.initGlossaryTooltips(article)`, поэтому новые термины получают luxury tooltip-оболочку.
-- Ручные термины оформляются как:
-  ```html
-  <span class="gterm" tabindex="0">термин<span class="gtip">Определение...</span></span>
-  ```
-  Для ручной категории допускаются `data-category` и `data-category-slug`.
-- Академические сноски `.fn-marker` и глоссарные `.gterm` на мобильных открываются как bottom sheet. Не писать отдельные touch-обработчики в статье.
-- `.gb-accuracy-btn--email` должен вести на `mailto:viktorcoy2012@gmail.com`; subject/body формируются автоматически из `h1` и URL.
-
-### Quiz Engine v3+
-
-Вопросы могут содержать поле `sourceRef` для академического feedback:
-
-```js
-{
-  q: 'Вопрос...',
-  options: ['...', '...', '...'],
-  answer: 1,
-  ok: 'Почему верно...',
-  err: 'Почему дистрактор ошибочен...',
-  sourceRef: { label: 'Иер. 17:9', href: '#istoricheskiy-fon' }
-}
-```
-
-`sourceRef` может быть строкой, объектом `{ label, href }` или массивом таких значений. Результаты квиза сохраняются в `localStorage` как `quiz-result-v2:{page.id}` с `lastScore`, `bestScore`, `total`, `gradeTitle`, `completedAt`.
-
-
-### Share payload для цитат и квизов
-
-`SiteShare.open()` принимает объектный payload. Для цитат, результатов квиза и других нестандартных сценариев не подменяйте заголовок диалога через DOM:
-
-```js
-window.SiteShare.open(button, {
-  dialogTitle: 'Поделиться цитатой',
-  title: document.title,
-  text: '«цитата» — Название статьи',
-  url: 'https://gospod-bog.ru/article/#:~:text=...'
-});
-```
-
-Платформы Telegram / WhatsApp / VK / MAX / OK и кнопка копирования используют `activeShareUrl`, `activeShareTitle`, `activeShareText` из payload.
-
-### SEO / cache-bust
-
-- `sitemap.xml` использует только ISO8601 `lastmod` с `+03:00`.
-- После изменения CSS/JS запускать `npm run cache-bust`.
-- Перед коммитом: `npm run validate:all`, `npm run tokens:check`, `npm run cache-bust -- --dry-run`.
-
-## Шаблон новой статьи
+### Каркас body
 
 ```html
-<!DOCTYPE html>
-<html lang="ru">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-
-  <!-- SEO -->
-  <title>Заголовок — Господь Бог — Сила Моя</title>
-  <meta name="description" content="..." />
-  <link rel="canonical" href="https://gospod-bog.ru/articles/slug/" />
-  <link rel="icon" type="image/x-icon" href="/favicon.ico">
-
-  <!-- Open Graph / Twitter -->
-  <!-- JSON-LD -->
-
-  <!-- Fonts (AUDIT V2 / PERF-1: self-host вместо Google Fonts CDN) -->
-  <link rel="preload" as="style" href="../../fonts/fonts.css">
-  <link rel="stylesheet" href="../../fonts/fonts.css">
-
-  <!-- Shared styles -->
-  <link rel="stylesheet" href="../../css/site.css" />
-
-  <!-- Breadcrumb JSON-LD (ДОЛЖЕН совпадать с видимыми крошками 1:1) -->
-  <script type="application/ld+json">
-  {
-    "@context": "https://schema.org",
-    "@type": "BreadcrumbList",
-    "itemListElement": [
-      {
-        "@type": "ListItem",
-        "position": 1,
-        "name": "Главная",
-        "item": "https://gospod-bog.ru/"
-      },
-      {
-        "@type": "ListItem",
-        "position": 2,
-        "name": "Раздел",
-        "item": "https://gospod-bog.ru/#razdel"
-      },
-      {
-        "@type": "ListItem",
-        "position": 3,
-        "name": "Заголовок статьи",
-        "item": "https://gospod-bog.ru/articles/slug/"
-      }
-    ]
-  }
-  </script>
-
-  <script>
-  window.SITE_CONFIG = {
-    version: 1,
-    site: {
-      id: 'gb-strength',
-      name: 'Господь Бог — Сила Моя',
-      baseUrl: 'https://gospod-bog.ru',
-      locale: 'ru-RU',
-      themeStorageKey: 'theme',
-      debug: false
-    },
-    page: {
-      type: 'article',
-      id: 'article-slug',
-      title: 'Заголовок статьи',
-      section: 'Раздел',
-      readingTime: 10,
-      wordCount: 5000
-    },
-    features: {
-      themeToggle:     { enabled: true },
-      share:           { enabled: true, title: '...', text: '...' },
-      backToTop:       { enabled: false },
-      readingProgress: { enabled: false },
-      toc:             { enabled: true, mobile: true, desktop: true },
-      footnotes:       { enabled: true },
-      timeline:        { enabled: false },
-      flipCards:       { enabled: false },
-      quiz:            { enabled: false },
-      bookmarks: {
-        enabled: true,
-        articleSelector: 'article',
-        headingSelector: 'h2[id]',
-        minScrollToSave: 320,
-        minProgressToSave: 6,
-        maxProgressToSave: 96,
-        completedAtProgress: 97,
-        minTimeOnPage: 10000,
-        scrollThrottle: 600,
-        periodicSaveInterval: 15000,
-        maxAgeDays: 14,
-        cleanupAgeDays: 45,
-        cleanupIntervalHours: 24,
-        promptDelay: 900,
-        promptAutoHide: 12000,
-        showPrompt: true,
-        dismissForSession: true,
-        respectHashNavigation: true,
-        minDocumentHeightRatio: 2.0
-      }
-    }
-  };
-  </script>
-</head>
-
 <body>
 
 <button id="themeToggle" class="theme-toggle" aria-label="Переключить тему">
-  <svg class="icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-    <path d="M21 12.8A9 9 0 1111.2 3 7 7 0 0021 12.8z"/>
-  </svg>
-  <svg class="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-    <circle cx="12" cy="12" r="5"/>
-    <line x1="12" y1="1" x2="12" y2="4"/><line x1="12" y1="20" x2="12" y2="23"/>
-    <line x1="1" y1="12" x2="4" y2="12"/><line x1="20" y1="12" x2="23" y2="12"/>
-    <line x1="4.2" y1="4.2" x2="6.3" y2="6.3"/><line x1="17.7" y1="17.7" x2="19.8" y2="19.8"/>
-    <line x1="4.2" y1="19.8" x2="6.3" y2="17.7"/><line x1="17.7" y1="6.3" x2="19.8" y2="4.2"/>
-  </svg>
+  <!-- sun/moon SVG-иконки — site.js модуль 02 инжектит канонические -->
 </button>
-
-<div class="toc-sidebar" id="tocSidebar">
-  <nav aria-label="Содержание">
-    <div class="toc-label">Содержание</div>
-  </nav>
-</div>
 
 <div class="page-wrap">
 
@@ -617,23 +287,21 @@ window.SiteShare.open(button, {
     <p class="section-label">Раздел</p>
     <h1>Заголовок статьи</h1>
     <p class="article-desc">Краткое описание.</p>
-    <!-- Авторская статья (Тип A / B): -->
-    <p class="article-byline"><span class="article-byline__strong">Автор-редактор: Фёдор Милованов</span></p>
-    <!-- Перевод (Тип C): -->
-    <!-- <p class="article-byline"><span class="article-byline__strong">Редакция перевода: Фёдор Милованов</span></p> -->
+    <!-- Тип A/B (авторская): -->
+    <p class="article-byline">
+      <span class="article-byline__strong">Автор-редактор: Фёдор Милованов</span>
+    </p>
+    <!-- Тип C (перевод):                                                              -->
+    <!-- <p class="article-byline"><span class="article-byline__strong">Редактор: Фёдор Милованов</span></p> -->
   </header>
 
   <article class="article-body">
-
     <h2 id="sec-intro">Введение</h2>
-    <p>Текст...</p>
-
-    <!-- ... -->
+    <p>Текст…</p>
+    <!-- … -->
 
     <!-- ← JS автоматически вставит .article-end-block перед .sources-block -->
 
-    <!-- Author card — ставить ПЕРЕД sources-block / reading-list -->
-    <!-- Авторская статья (Тип A / B): -->
     <aside class="author-card">
       <div aria-hidden="true" class="author-card-icon">ФМ</div>
       <div class="author-card-body">
@@ -641,28 +309,10 @@ window.SiteShare.open(button, {
         <div class="author-card-name">Фёдор Милованов</div>
         <p class="author-card-desc">
           Основатель и редактор проекта «Господь Бог — Сила Моя», Санкт-Петербург.
-          Фёдор Милованов задаёт направление, редактирует мысли, исправляет неточности
-          и собирает материал при помощи ИИ.
           <a href="../../about/">Об авторе →</a>
         </p>
       </div>
     </aside>
-    <!-- Перевод (Тип C) — заменить label и desc: -->
-    <!--
-    <aside class="author-card">
-      <div aria-hidden="true" class="author-card-icon">ФМ</div>
-      <div class="author-card-body">
-        <div class="author-card-label">Редактор</div>
-        <div class="author-card-name">Фёдор Милованов</div>
-        <p class="author-card-desc">
-          Первичный перевод — ИИ. Редактура богословской и терминологической точности,
-          исправление ошибок, отсечение неверифицированных цитат — авторские.
-          <a href="../../about/">Об авторе →</a>
-        </p>
-      </div>
-    </aside>
-    -->
-
   </article>
 
   <footer>
@@ -672,96 +322,294 @@ window.SiteShare.open(button, {
 
 </div><!-- /page-wrap -->
 
-<!-- BOTTOM APP BAR (если нужен) -->
-<!-- ... -->
-
-<!-- Bookmark toast (обязателен если bookmarks.enabled: true) -->
-<div class="bookmark-toast" id="bookmarkToast" hidden>
-  <div class="bookmark-toast-inner">
-    <div class="bookmark-toast-top">
-      <span class="bookmark-toast-icon" aria-hidden="true">📖</span>
-      <div class="bookmark-toast-copy">
-        <span class="bookmark-toast-label">Продолжить чтение</span>
-        <span class="bookmark-toast-title" id="bookmarkToastTitle"></span>
-        <span class="bookmark-toast-meta" id="bookmarkToastMeta"></span>
-      </div>
-      <button type="button" class="bookmark-toast-close" id="bookmarkToastClose" aria-label="Закрыть">✕</button>
-    </div>
-    <div class="bookmark-toast-actions">
-      <button type="button" class="bookmark-btn bookmark-btn-primary" id="bookmarkToastResume">Продолжить</button>
-      <button type="button" class="bookmark-btn bookmark-btn-secondary" id="bookmarkToastRestart">Сначала</button>
-    </div>
-    <div class="bookmark-toast-progress" aria-hidden="true">
-      <div class="bookmark-toast-progress-fill" id="bookmarkToastProgress"></div>
-    </div>
-  </div>
-</div>
-
 <script src="../../js/bookmark-engine.js"></script>
 <script src="../../js/site.js"></script>
 </body>
-</html>
 ```
 
 ---
 
-## Контракт разметки — нельзя менять
+## 6. Контракт `window.SITE_CONFIG`
 
-Следующие id и классы используются движком — их нельзя переименовывать:
+В `<head>` каждой статьи **перед** подключением `js/site.js`:
+
+```html
+<script>
+window.SITE_CONFIG = {
+  version: 1,
+  site: {
+    id: 'gb-strength',
+    name: 'Господь Бог — Сила Моя',
+    baseUrl: 'https://gospod-bog.ru',
+    locale: 'ru-RU',
+    themeStorageKey: 'theme',
+    debug: false
+  },
+  page: {
+    type: 'article',          // 'article' | 'home' | 'page'
+    id: 'article-slug',
+    title: 'Заголовок статьи',
+    section: 'Раздел',
+    readingTime: 10,
+    wordCount: 5000
+  },
+  features: {
+    themeToggle:     { enabled: true },
+    share:           { enabled: true, title: '...', text: '...' },
+    backToTop:       { enabled: true, showAfter: 400 },
+    readingProgress: { enabled: true },
+    toc:             { enabled: true, mobile: true, desktop: true },
+    footnotes:       { enabled: true },
+    timeline:        { enabled: true, threshold: 0.15 },
+    flipCards:       { enabled: true, keyboard: true, fingers: true },
+    quiz:            { enabled: true, passingMode: 'half', shareResults: true },
+    bookmarks:       { enabled: true, /* …см. полный список ниже */ },
+    homepageResume:  { enabled: false, maxItems: 5 },
+    headingAnchors:  { enabled: true }
+  }
+};
+</script>
+```
+
+Если функция не нужна — `enabled: false`. Если `enabled: true`, но в DOM нет нужных элементов — модуль тихо выходит без ошибок.
+
+### Опциональные секции
+
+```js
+toc: {
+  items: [
+    { id: 'sec-intro', label: 'Введение' },
+    // ...
+  ]
+}
+
+quiz: {
+  questions: [
+    { id, q, options, answer, ok, err, focus,
+      sourceRef: { label: 'Иер. 17:9', href: '#istoricheskiy-fon' } },
+    // ...
+  ],
+  scores: [
+    { id, min, max, title, desc },
+    // ...
+  ]
+}
+```
+
+- Если `toc.items` не задан — desktop TOC и bottom-bar TOC строятся автоматически из `article h2[id]`.
+- Если `quiz` не задан — quiz-модуль ничего не делает даже при `features.quiz.enabled: true`.
+- `quiz.questions[].sourceRef` может быть строкой, объектом `{ label, href }` или массивом — выводится в feedback.
+
+### Полный пример `bookmarks`
+
+```js
+bookmarks: {
+  enabled: true,
+  articleSelector: 'article',
+  headingSelector: 'h2[id]',
+  minScrollToSave: 320,
+  minProgressToSave: 6,
+  maxProgressToSave: 96,
+  completedAtProgress: 97,
+  minTimeOnPage: 10000,
+  scrollThrottle: 600,
+  periodicSaveInterval: 15000,
+  maxAgeDays: 14,
+  cleanupAgeDays: 45,
+  cleanupIntervalHours: 24,
+  promptDelay: 900,
+  promptAutoHide: 12000,
+  showPrompt: true,
+  dismissForSession: true,
+  respectHashNavigation: true,
+  minDocumentHeightRatio: 2.0
+}
+```
+
+---
+
+## 7. Контракт разметки — нельзя переименовывать
+
+Эти id и классы используются движком — их нельзя переименовывать.
 
 ### Секции статьи
 - `<h2 id="sec-...">` — якоря разделов (TOC, scrollspy, bookmark)
 
-### Источники
+### Источники / сноски
 - `<sup><a href="#srcN">[N]</a></sup>` — ссылки на сноски
 - `<li data-num="N" id="srcN">` — сами сноски
+- `<span class="fn-marker" role="button" tabindex="0">N<span class="tooltip">…</span></span>` — академические сноски с tooltip + mobile bottom-sheet
 
-### Quiz
+### Глоссарий и tooltip-ы (три канонических вида, см. AGENTS §4.4 п.7)
+- `<span class="gterm" tabindex="0">термин<span class="gtip">Определение…</span></span>` — глоссарий
+- `.fn-marker > .tooltip` — академические сноски
+- `<button class="bref" data-ref="Иер 17:9"><span class="btip">…</span></button>` — Библейские ссылки
+
+### Quiz Engine v3
 `#quizWrapper`, `#quizMain`, `#quizBody`, `#quizCounter`, `#quizQuestion`, `#quizFocus`, `#quizOptions`, `#quizFeedback`, `#quizNext`, `#quizFill`, `#quizResult`, `#quizResultScore`, `#quizResultTotal`, `#quizResultLabel`, `#quizResultBar`, `#quizScoreDesc`, `#quizScore`, `#quizScoreTitle`, `#quizScoreBadge`, `#quizRestart`, `#quizShare`, `#quizOverlay`, `#quizLaunch`
 
-**Бонусный раунд** (только если `bonusEnabled: true`):
+**Бонусный раунд** (если `bonusEnabled: true`):
 `#quizBonusSection`, `#quizBonusStart`, `#quizBonusBody`, `#quizBonusCounter`, `#quizBonusQuestion`, `#quizBonusFocus`, `#quizBonusOptions`, `#quizBonusFeedback`, `#quizBonusNext`, `#quizBonusFill`, `#quizBonusScore`, `#quizBonusScoreTitle`, `#quizBonusScoreBadge`, `#quizBonusScoreDesc`, `#quizBonusLock`, `#quizBonusUnlock`
 
 **Разбор ошибок** (инжектируется JS автоматически — не добавлять в HTML):
 `#quizStartReview`, `#quizReviewSection`, `#quizReviewDone`
 
 ### Flip Cards
-`.flip-card > .flip-card-inner > .flip-card-front / .flip-card-back`
-`.error-flip-card > .error-flip-inner > .error-flip-front / .error-flip-back`
+- `.flip-card > .flip-card-inner > .flip-card-front / .flip-card-back`
+- `.error-flip-card > .error-flip-inner > .error-flip-front / .error-flip-back`
 
-### Bookmark Toast
+### Bookmark Toast (обязателен если `bookmarks.enabled: true`)
 `#bookmarkToast`, `#bookmarkToastTitle`, `#bookmarkToastMeta`, `#bookmarkToastProgress`, `#bookmarkToastClose`, `#bookmarkToastResume`, `#bookmarkToastRestart`
 
-### TOC (bottom bar)
-`#bottomBar`, `#btocOverlay`, `#btocPanel`, `#btocClose`, `#btocNav`, `#barProgressFill`, `#barProgressText`, `#barSectionName`, `#barSectionBtn`, `#barUpBtn`, `#barThemeBtn`, `#barShareBtn`
+### TOC
+- **Bottom bar:** `#bottomBar`, `#btocOverlay`, `#btocPanel`, `#btocClose`, `#btocNav`, `#barProgressFill`, `#barProgressText`, `#barSectionName`, `#barSectionBtn`, `#barUpBtn`, `#barThemeBtn`, `#barShareBtn`
+- **Mobile slide:** `#toc-toggle`, `#toc-panel`, `#toc-overlay`, `#toc-close`, `#toc-list`
+- **Desktop:** `#tocSidebar`
 
-### TOC (mobile slide)
-`#toc-toggle`, `#toc-panel`, `#toc-overlay`, `#toc-close`, `#toc-list`
-
-### TOC (desktop)
-`#tocSidebar`
-
-### Bookmark homepage
+### Bookmark на главной
 `#resumeReadingBlock`, `#resumeReadingTitle`, `#resumeReadingMeta`, `#resumeReadingProgress`, `#resumeReadingLink`, `#resumeReadingDismiss`, `#resumeListBlock`, `#resumeList`
+
+### Плавающие контролы (gbFloatingControls, site.js модуль 29)
+- `#gbFloatingControls`, `.gb-fc-theme`, `.gb-fc-search` — единственные canonical классы. Legacy `.theme-float-btn` / `#themeFloat` / `#gbSearchFloat` удалены, **не возвращать**.
 
 ---
 
-## Добавление новой функции
+## 8. Build-скрипты
 
-1. Добавить новый ключ в `features` в SITE_CONFIG статьи
-2. Добавить CSS в `site.css` (новая пронумерованная секция)
-3. Добавить JS модуль в `site.js` (с проверкой `features.newFeature.enabled`)
-4. Добавить нужную разметку в HTML статьи
+```bash
+# Хеши cache-bust в HTML + CACHE_VERSION в sw.js
+npm run cache-bust
 
-Пример нового модуля в site.js:
-```js
-(function () {
-  var cfg = SiteUtils.getConfig('features.myFeature', {});
-  if (cfg.enabled === false) return;
+# Валидация HTML / JSON / манифестов
+npm run validate              # обычная
+npm run validate:strict       # строгая
 
-  var el = document.getElementById('myFeatureRoot');
-  if (!el) return;
+# SEO-аудит
+npm run seo-audit
 
-  // ... логика
-})();
+# Полная валидация (strict + SEO)
+npm run validate:all
+
+# Дизайн-токены
+npm run tokens:check
+
+# Главный аудит (29 проверок)
+node scripts/audit-pro.js
+
+# CI-чек (cache-bust + tokens + validate:all)
+npm run ci:check
+
+# Visual QA (Playwright + chromium, опционально)
+# 1) запустить локальный сервер: python3 -m http.server 8080 --bind 127.0.0.1
+# 2) AUDIT_BASE=http://127.0.0.1:8080 npm run visual-audit
+#    Должно: 0 console errors, 0 network errors
+
+# Обновление meta-тегов (полуавтомат)
+npm run update-meta
+
+# Скачать шрифты
+npm run fonts:download
+
+# AVIF (опционально)
+npm run avif:build
 ```
+
+**Перед коммитом, как минимум:**
+```bash
+npm run cache-bust
+npm run validate:all
+node scripts/audit-pro.js     # должно: ✅ PASSED
+```
+
+---
+
+## 9. Структура файлов
+
+```
+/
+├── index.html                              ← главная
+├── 404.html                                ← страница ошибки
+├── about/index.html                        ← о проекте
+├── articles/
+│   ├── index.html                          ← каталог всех статей
+│   └── {slug}/index.html                   ← каждая статья
+├── biografii/index.html                    ← каталог биографий
+├── pastor-series/index.html                ← серия «Тёмная сторона кафедры»
+├── nagornaya/                              ← серия «Нагорная проповедь»
+│   ├── chast-1/ … chast-5/                 ← 5 частей
+│   ├── istochniki/, nakhodki/, seriya/     ← вспомогательные страницы
+│   ├── index.html
+│   └── tw.min.css                          ← Tailwind (НЕ ТРОГАТЬ)
+│
+├── css/                                    ← РОВНО 5 ФАЙЛОВ (см. AGENTS §2)
+│   ├── site.css                            ← основной слой, тёмная тема
+│   ├── home.css                            ← главная + каталоги
+│   ├── command-palette.css                 ← поиск Ctrl+K
+│   ├── mobile-hotfix.css                   ← touch / pointer:coarse
+│   └── nagornaya-mobile-toc.css            ← мобильный TOC проповеди
+├── fonts/fonts.css                         ← @font-face декларации
+│
+├── js/                                     ← РОВНО 11 ФАЙЛОВ
+│   ├── site.js                             ← главный (≈29 модулей)
+│   ├── site-utils.js                       ← общие хелперы
+│   ├── scroll-perf.js
+│   ├── search.js                           ← Ctrl+K
+│   ├── enhancements.js                     ← scroll-эффекты, ambient phrases
+│   ├── highlights.js                       ← подсветка текста
+│   ├── glossary.js                         ← глоссарий
+│   ├── bookmark-engine.js                  ← закладки
+│   ├── series-cards.js                     ← карточки серий
+│   ├── nagornaya-mobile-toc.js
+│   └── sw-register.js                      ← регистрация SW
+│
+├── data/                                   ← JSON-данные runtime
+│   ├── glossary.json
+│   ├── search-manifest.json
+│   ├── series.json
+│   └── strategic-map-antisovetov.json
+│
+├── images/                                 ← все изображения (.webp основной)
+├── icons/                                  ← favicon/apple-touch
+│
+├── sitemap.xml, feed.xml, robots.txt, llms.txt, manifest.json
+├── sw.js                                   ← Service Worker
+├── CNAME                                   ← gospod-bog.ru
+│
+├── AGENTS.md                               ← ⭐ контракт для ИИ-агентов
+├── README.md                               ← этот файл
+├── AUDIT_HISTORY.md                        ← changelog аудитов (v1..v27+)
+├── audit/                                  ← последние audit-pro отчёты + планы
+│
+├── scripts/                                ← build-инструменты (Node.js + Bash + Python)
+│   ├── cache-bust.js                       ← ⭐ хеши + SW CACHE_VERSION
+│   ├── audit-pro.js                        ← 29 проверок
+│   ├── validate.js, seo-audit.js
+│   ├── visual-audit.js                     ← Playwright
+│   ├── check-design-tokens.js
+│   ├── update-meta.js
+│   ├── download-fonts.js
+│   ├── build-avif.sh
+│   ├── deep-check.js, _audit-deep.js       ← внутренние
+│   └── resize_og.py                        ← Pillow для OG-картинок
+│
+├── package.json                            ← scripts только, без runtime deps
+└── .github/workflows/
+    ├── deploy.yml                          ← деплой на GitHub Pages
+    ├── indexnow.yml                        ← Яндекс + Bing уведомления
+    └── notify-on-failure.yml               ← GitHub Issue при падении CI
+```
+
+### Подробности про CSS-секции и JS-модули
+
+- `css/site.css` (~265 КБ, 199 `!important` после PLAN-04) — основная декларативная база + блок "Deep Polish r35" (~22 enhancement-секций в конце файла, документированных пронумерованными комментариями `/* ── N. */`).
+- `js/site.js` (~5100 строк) — единый IIFE, ≈29 пронумерованных модулей (01..30, с зарезервированным 25). Полный список модулей — в шапке файла. **Не дробить** на новые файлы — это архитектурный выбор (см. AGENTS §5.1).
+
+---
+
+## История этого документа
+
+| Версия | Дата | Что изменилось |
+|---|---|---|
+| **v3** | 2026-06-04 | Полная перезапись (PLAN-05). Убраны: двойной `---` в шапке, сломанный ASCII-tree (`pastor-series/…` дублировался ×3), устаревший раздел «Отсутствующие изображения», устаревший «Версия 2.2 — Май 2026», устаревшая «SEO-инфраструктура Версия 2.0 — Апрель 2026». Численные данные о CSS-секциях / JS-модулях приведены в соответствие с фактическим кодом. Добавлены ссылки на AGENTS.md, AUDIT_HISTORY.md. |
+| v2 (2026-05) | старая | Множественные редакции после PATCH-V*-серий. |
+| v1 (2026-04) | старая | Первая версия + SEO-инфраструктура. |

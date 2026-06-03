@@ -7,7 +7,7 @@
 
 ## v27 — PLAN-05: docs cleanup + visual QA + HTML hotfix (2026-06-04)
 
-**Commits:** `e59f6df` (hotfix HTML) · `971475a` (AGENTS-r63 rewrite) · `<TBD>` (this changelog cleanup)
+**Commits:** `e59f6df` (hotfix HTML) · `971475a` (AGENTS-r63 rewrite) · `643f4a7` (this changelog cleanup)
 
 ### What was improved:
 
