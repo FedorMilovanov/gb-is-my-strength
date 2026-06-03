@@ -118,6 +118,14 @@ body { overflow-x: hidden; }
   --accent:             var(--color-accent);
   --accent-soft:        var(--color-accent-soft);
   --accent-strong:      var(--color-accent-strong);
+  --link:               var(--color-link);
+  --note-bg:            var(--color-surface-muted);
+  --quote-bg:           var(--color-surface-quote);
+  --text-primary:       var(--color-text-primary);
+  --text-secondary:     var(--color-text-secondary);
+  --text-muted:         var(--color-text-faint);
+  --fg:                 var(--color-text-warm);
+  --fg-secondary:       var(--color-text-warm-muted);
   --success-border:     var(--color-success-border);
   --warn-bg:            var(--color-warning-bg);
   --warn-border:        var(--color-warning-border);
@@ -337,12 +345,12 @@ main:not([class]) {
   transform: translate(-50%, -50%);
   transition: opacity .25s, transform .15s, color .25s;
 }
-.icon-sun { opacity: 0; }
-html.dark .icon-moon { opacity: 0; }
-html.dark .icon-sun { opacity: 1; color: #f5c542; }
 @media (hover: hover) and (pointer: fine) {
   .theme-toggle:hover svg { transform: translate(-50%, -50%) scale(1.08); }
 }
+.icon-sun { opacity: 0; }
+html.dark .icon-moon { opacity: 0; }
+html.dark .icon-sun { opacity: 1; color: #f5c542; }
 
 .article-topnav {
   display: none;
@@ -1559,13 +1567,11 @@ html.dark .card.fx-lift:focus-within{
   text-decoration: none;
   transition: border-color .2s ease, transform .2s ease, box-shadow .2s ease;
 }
-.series-next-cta:hover {
-  border-color: var(--color-accent);
-  box-shadow: 0 10px 30px -16px rgba(62, 42, 22, 0.35);
-}
 @media (hover: hover) and (pointer: fine) {
   .series-next-cta:hover {
+    border-color: var(--color-accent);
     transform: translateY(-2px);
+    box-shadow: 0 10px 30px -16px rgba(62, 42, 22, 0.35);
   }
 }
 .series-next-cta__eyebrow {
@@ -2843,7 +2849,7 @@ html.dark #reading-progress { background: var(--color-accent); }
   box-shadow: 0 2px 10px rgba(0,0,0,.1);
 }
 #back-to-top.visible { opacity: 1; pointer-events: auto; }
-#back-to-top:hover { background: var(--color-border); }
+#back-to-top:hover { background: var(--color-border); transform: translateY(-2px); }
 #back-to-top svg {
   width: 16px; height: 16px;
   stroke: currentColor;
@@ -8698,8 +8704,6 @@ html.dark .context-links a:hover {
 @media (hover: hover) and (pointer: fine) {
   .gb-floating-controls .gb-fc-btn:hover {
     transform: scale(1.08);
-    /* Fallback for Safari <15.2 (color-mix unsupported) */
-    background-color: rgba(122, 46, 46, 0.08);
     background-color: color-mix(in srgb, var(--color-accent, #7a2e2e) 8%, transparent);
   }
 }
@@ -9012,14 +9016,13 @@ blockquote {
    Делаем полосу не монотонной а gradient */
 
 #reading-progress {
-  /* Fallback: simple gradient for browsers without color-mix support (Safari <15.2) */
-  --rp-end: var(--color-accent-strong);
-  background: linear-gradient(90deg, var(--color-accent) 0%, var(--rp-end) 100%);
-  /* Enhanced: color-mix for richer gradient (modern browsers) */
-  --rp-end: color-mix(in srgb, var(--color-accent) 75%, var(--color-accent-strong));
-  background: linear-gradient(90deg, var(--color-accent) 0%, var(--rp-end) 100%);
-  /* Fallback: basic shadow for Safari <15.2 */
-  box-shadow: 0 1px 4px rgba(122, 46, 46, 0.4);
+  --rp-end-color: color-mix(in srgb, var(--color-accent) 75%, var(--color-accent-strong));
+  background: var(--color-accent);
+  background: linear-gradient(
+    90deg,
+    var(--color-accent) 0%,
+    var(--rp-end-color) 100%
+  );
   box-shadow: 0 1px 4px color-mix(in srgb, var(--color-accent) 40%, transparent);
 }
 
@@ -9065,14 +9068,8 @@ html.dark .gtip.gb-floating-tip {
    Добавляем arrow animation при hover */
 
 @media (hover: hover) and (pointer: fine) {
-  #back-to-top {
-    transform: translateY(0);
-  }
   #back-to-top svg {
     transition: transform .25s cubic-bezier(.2,.7,.2,1);
-  }
-  #back-to-top:hover {
-    transform: translateY(-2px);
   }
   #back-to-top:hover svg {
     transform: translateY(-2px);
@@ -9253,3 +9250,37 @@ article p {
     }
   }
 }
+
+/* ── Rescue figure (originally inline in articles/krajne-li-isporcheno-serdce) ─ */
+.rescue-figure {
+  margin: 2.5rem 0 0;
+}
+.rescue-caption--above {
+  display: block;
+  text-align: center;
+  font-size: 1.15rem;
+  font-style: italic;
+  line-height: 1.6;
+  color: var(--color-text-warm-muted, #4a3728);
+  padding: 1.1rem 1.5rem 1.4rem;
+  border-top: 2px solid #c8a97e;
+  border-bottom: none;
+  position: relative;
+  margin-bottom: 0;
+  background: linear-gradient(to bottom, rgba(200, 169, 126, 0.07), transparent);
+}
+.rescue-caption--above::after {
+  content: "↓";
+  display: block;
+  font-size: 1.4rem;
+  color: #c8a97e;
+  margin-top: 0.6rem;
+  font-style: normal;
+  line-height: 1;
+}
+html.dark .rescue-caption--above {
+  color: var(--color-text-warm, #e8e3d5);
+  border-top-color: #b8882a;
+  background: linear-gradient(to bottom, rgba(184, 136, 42, 0.12), transparent);
+}
+
