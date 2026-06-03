@@ -2135,125 +2135,7 @@ html.dark .dark\:border-\[\#2e2c27\]{border-color:#2e2c27}
   }
 }
 </script>
-<script>
-    document.addEventListener('DOMContentLoaded', () => {
-        // Read strategic map data from JSON data island
-        const _mapDataEl = document.getElementById('strategicMapData');
-        const STRATEGIC_MAP_DATA = _mapDataEl ? JSON.parse(_mapDataEl.textContent) : {};
-        const popover = document.createElement('div');
-        popover.className = 'singleton-popover';
-        document.body.appendChild(popover);
 
-        const hidePopover = () => {
-            popover.classList.remove('active');
-            setTimeout(() => { if(!popover.classList.contains('active')) popover.style.display = 'none'; }, 300);
-        };
-
-        document.querySelectorAll('.map-trigger').forEach(trigger => {
-            trigger.addEventListener('click', (e) => {
-                e.stopPropagation();
-                const id = trigger.getAttribute('data-tip');
-                const data = STRATEGIC_MAP_DATA[id];
-                if (!data) return;
-
-                popover.textContent = '';
-
-                const closeBtn = document.createElement('div');
-                closeBtn.className = 'popover-close-btn';
-                closeBtn.setAttribute('aria-hidden', 'true');
-                closeBtn.innerHTML = '<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true" style="display:inline-block;vertical-align:-1px"><path d="M6 6l12 12M18 6l-12 12"/></svg>';
-                popover.appendChild(closeBtn);
-
-                data.blocks.forEach(b => {
-                    const section = document.createElement('div');
-                    section.className = 'popover-section';
-
-                    const badge = document.createElement('span');
-                    badge.className = 'popover-badge color-' + String(b.type || '').replace(/[^a-z0-9_-]/gi, '');
-                    badge.textContent = b.title || '';
-
-                    const text = document.createElement('p');
-                    text.className = 'popover-text';
-                    text.textContent = b.text || '';
-
-                    section.appendChild(badge);
-                    section.appendChild(text);
-                    popover.appendChild(section);
-                });
-                popover.style.display = 'block';
-                
-                const rect = trigger.getBoundingClientRect();
-                const pWidth = popover.offsetWidth;
-                const pHeight = popover.offsetHeight;
-                
-                let top = rect.top - pHeight - 15;
-                let left = rect.left - (pWidth / 2) + (rect.width / 2);
-                
-                if (left < 10) left = 10;
-                if (left + pWidth > window.innerWidth - 10) left = window.innerWidth - pWidth - 10;
-                if (top < 10) top = rect.bottom + 15;
-
-                popover.style.top = top + 'px';
-                popover.style.left = left + 'px';
-                
-                requestAnimationFrame(() => popover.classList.add('active'));
-
-                popover.querySelector('.popover-close-btn').onclick = hidePopover;
-            });
-        });
-
-        document.addEventListener('click', (e) => {
-            if (!popover.contains(e.target)) hidePopover();
-        });
-
-        // FAQ: мгновенная реакция на клик + плавная анимация
-        // После окончания открытия снимаем ограничение высоты (max-height: none),
-        // чтобы динамический контент и изображения не обрезались.
-        document.querySelectorAll('.faq-accordion__q').forEach(btn => {
-            btn.addEventListener('click', () => {
-                const body = btn.nextElementSibling;
-                const item = btn.parentElement;
-                const isOpen = item.classList.contains('is-open');
-
-                if (isOpen) {
-                    // Фиксируем пиксельную высоту, затем через два rAF анимируем к 0.
-                    // Двойной requestAnimationFrame гарантирует, что браузер успевает
-                    // зарегистрировать изменение и запустить CSS transition без лишнего reflow-хака.
-                    body.style.maxHeight = body.scrollHeight + 'px';
-                    requestAnimationFrame(() => {
-                        requestAnimationFrame(() => {
-                            body.style.maxHeight = '0';
-                        });
-                    });
-                    item.classList.remove('is-open');
-                    btn.setAttribute('aria-expanded', 'false');
-                } else {
-                    item.classList.add('is-open');
-                    btn.setAttribute('aria-expanded', 'true');
-                    body.style.maxHeight = body.scrollHeight + 'px';
-                    // После завершения анимации открытия убираем ограничение.
-                    // removeEventListener — строго внутри обработчика нужного свойства,
-                    // чтобы случайный transitionend от другого свойства не удалил слушатель раньше времени.
-                    const onEnd = (e) => {
-                        if (e.propertyName !== 'max-height') return;
-                        if (item.classList.contains('is-open')) {
-                            body.style.maxHeight = 'none';
-                        }
-                        body.removeEventListener('transitionend', onEnd);
-                    };
-                    body.addEventListener('transitionend', onEnd);
-                }
-            });
-        });
-        window.addEventListener('resize', () => {
-            document.querySelectorAll('.faq-accordion__item.is-open .faq-accordion__body').forEach(body => {
-                if (body.style.maxHeight !== 'none') {
-                    body.style.maxHeight = body.scrollHeight + 'px';
-                }
-            });
-        }, { passive: true });
-    });
-</script>
 
 
 
@@ -2478,7 +2360,7 @@ window.SITE_CONFIG.quiz = {
     <script src="../../js/glossary.js?v=4f1b7174" defer></script>
 <script src="../../js/bookmark-engine.js?v=289fb6d7" defer></script>
 <script src="../../js/highlights.js?v=5395797c" defer></script>
-<script src="../../js/enhancements.js?v=3df7cc6f" defer></script>
+<script src="../../js/enhancements.js?v=9f400846" defer></script>
 <script src="../../js/sw-register.js?v=72d974d9" defer></script>
 <script src="../../js/search.js?v=0ac0f829" defer></script>
 <!-- .reveal IO handled by CSS SDA + site.js -->

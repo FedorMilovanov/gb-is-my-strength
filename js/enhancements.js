@@ -652,4 +652,146 @@
       bg.appendChild(el);
     });
   }
+
+  /* ============================================================
+     F. 20-Antisovetov: Strategic Map Popover & FAQ Accordion
+     Originally inline in articles/20-antisovetov-pastoru/index.html
+     ============================================================ */
+  (function () {
+    function ready(fn) {
+      if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', fn);
+      } else {
+        fn();
+      }
+    }
+
+    ready(function () {
+      var _mapDataEl = document.getElementById('strategicMapData');
+      if (!_mapDataEl) return;
+
+      var STRATEGIC_MAP_DATA = {};
+      try {
+        STRATEGIC_MAP_DATA = JSON.parse(_mapDataEl.textContent);
+      } catch (e) {
+        return;
+      }
+
+      var popover = document.createElement('div');
+      popover.className = 'singleton-popover';
+      document.body.appendChild(popover);
+
+      var hidePopover = function () {
+        popover.classList.remove('active');
+        setTimeout(function () {
+          if (!popover.classList.contains('active')) {
+            popover.style.display = 'none';
+          }
+        }, 300);
+      };
+
+      document.querySelectorAll('.map-trigger').forEach(function (trigger) {
+        trigger.addEventListener('click', function (e) {
+          e.stopPropagation();
+          var id = trigger.getAttribute('data-tip');
+          var data = STRATEGIC_MAP_DATA[id];
+          if (!data) return;
+
+          popover.textContent = '';
+
+          var closeBtn = document.createElement('div');
+          closeBtn.className = 'popover-close-btn';
+          closeBtn.setAttribute('aria-hidden', 'true');
+          closeBtn.innerHTML = '<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true" style="display:inline-block;vertical-align:-1px"><path d="M6 6l12 12M18 6l-12 12"/></svg>';
+          popover.appendChild(closeBtn);
+
+          (data.blocks || []).forEach(function (b) {
+            var section = document.createElement('div');
+            section.className = 'popover-section';
+
+            var badge = document.createElement('span');
+            badge.className = 'popover-badge color-' + String(b.type || '').replace(/[^a-z0-9_-]/gi, '');
+            badge.textContent = b.title || '';
+
+            var text = document.createElement('p');
+            text.className = 'popover-text';
+            text.textContent = b.text || '';
+
+            section.appendChild(badge);
+            section.appendChild(text);
+            popover.appendChild(section);
+          });
+          popover.style.display = 'block';
+
+          var rect = trigger.getBoundingClientRect();
+          var pWidth = popover.offsetWidth;
+          var pHeight = popover.offsetHeight;
+
+          var top = rect.top - pHeight - 15;
+          var left = rect.left - (pWidth / 2) + (rect.width / 2);
+
+          if (left < 10) left = 10;
+          if (left + pWidth > window.innerWidth - 10) left = window.innerWidth - pWidth - 10;
+          if (top < 10) top = rect.bottom + 15;
+
+          popover.style.top = top + 'px';
+          popover.style.left = left + 'px';
+
+          requestAnimationFrame(function () {
+            popover.classList.add('active');
+          });
+
+          var popClose = popover.querySelector('.popover-close-btn');
+          if (popClose) {
+            popClose.onclick = hidePopover;
+          }
+        });
+      });
+
+      document.addEventListener('click', function (e) {
+        if (!popover.contains(e.target)) hidePopover();
+      });
+
+      // FAQ: accordion logic
+      document.querySelectorAll('.faq-accordion__q').forEach(function (btn) {
+        btn.addEventListener('click', function () {
+          var body = btn.nextElementSibling;
+          var item = btn.parentElement;
+          if (!body || !item) return;
+          var isOpen = item.classList.contains('is-open');
+
+          if (isOpen) {
+            body.style.maxHeight = body.scrollHeight + 'px';
+            requestAnimationFrame(function () {
+              requestAnimationFrame(function () {
+                body.style.maxHeight = '0';
+              });
+            });
+            item.classList.remove('is-open');
+            btn.setAttribute('aria-expanded', 'false');
+          } else {
+            item.classList.add('is-open');
+            btn.setAttribute('aria-expanded', 'true');
+            body.style.maxHeight = body.scrollHeight + 'px';
+            var onEnd = function (e) {
+              if (e.propertyName !== 'max-height') return;
+              if (item.classList.contains('is-open')) {
+                body.style.maxHeight = 'none';
+              }
+              body.removeEventListener('transitionend', onEnd);
+            };
+            body.addEventListener('transitionend', onEnd);
+          }
+        });
+      });
+
+      window.addEventListener('resize', function () {
+        document.querySelectorAll('.faq-accordion__item.is-open .faq-accordion__body').forEach(function (body) {
+          if (body.style.maxHeight !== 'none') {
+            body.style.maxHeight = body.scrollHeight + 'px';
+          }
+        });
+      }, { passive: true });
+    });
+  })();
 })();
