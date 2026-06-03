@@ -1155,16 +1155,8 @@ html.dark .heart-flip-back { background: #110e07; }
   padding-top: 0;
 }
 
-.article-img.float-fallback {
-  float: none !important;
-  clear: both;
-  width: auto !important;
-  margin: 44px -24px !important;
-  shape-outside: none !important;
-}
-@media (max-width: 680px) {
-  .article-img.float-fallback { margin: 44px -16px !important; }
-}
+/* (.article-img.float-fallback — мёртвый класс (нигде в HTML/JS не используется),
+   base + @media 680px override удалены в PLAN-04 P6) */
 
 @media (max-width: 768px) {
   .article-img.float-right,
@@ -1423,23 +1415,8 @@ html.dark .fact-box h4 { color: #80c880; }
   border: 1px solid var(--color-border);
   border-radius: 16px;
 }
-.card.fx-lift{
-  transition:
-    border-color .35s ease;
-  will-change: transform;
-}
-/* touch-safe hover: только border/shadow — transform в @media (hover:hover) Deep Polish ниже */
-.card.fx-lift:hover,
-.card.fx-lift:focus-within{  border-color: rgba(0,0,0,.12);
-  box-shadow: 0 2px 4px rgba(0,0,0,.04),
-      0 14px 32px -12px rgba(0,0,0,.2),
-      0 0 0 1px rgba(0,0,0,.04);
-  transform: translateY(-5px) perspective(600px) rotateX(1.5deg);}
-html.dark .card.fx-lift:hover,
-html.dark .card.fx-lift:focus-within{  border-color: rgba(255,255,255,.14);
-  box-shadow: 0 2px 4px rgba(0,0,0,.35),
-      0 14px 32px -12px rgba(0,0,0,.6);
-  transform: translateY(-5px) perspective(600px) rotateX(1.5deg);}
+/* (.card.fx-lift / :hover / html.dark — мёртвый класс (нигде в HTML/JS),
+   удалён в PLAN-04 P6) */
 
 .article-list { list-style: none; padding: 0; margin: 0; }
 .article-item {
@@ -4725,7 +4702,6 @@ footer.footer-home {
     transform: none !important;
     transition: none !important;
   }
-  .card.fx-lift,
   .resume-list-item{
     transform: none !important;
     transition: none !important;
@@ -6766,8 +6742,8 @@ html.dark .fn-marker:focus-visible {
 }
 
 @media (max-width: 600px) {
-  .epilogue-caption { padding: clamp(28px, 8vw, 56px) clamp(20px, 5vw, 40px) !important; }
-  .epilogue-prose { padding: clamp(20px, 5vw, 32px) clamp(20px, 5vw, 40px) !important; }
+  /* (.epilogue-caption и .epilogue-prose — мёртвые классы (нигде в HTML/JS),
+     правила удалены в PLAN-04 P6) */
   .heart-flip-back { padding: clamp(24px, 6vw, 36px) clamp(20px, 5vw, 40px) !important; }
   .heart-flip-wrap { margin: clamp(28px, 6vw, 48px) 0 !important; }
   .author-card { margin: clamp(24px, 5vw, 40px) 0 !important; }
@@ -6859,7 +6835,6 @@ button, a, [role="button"], [tabindex="0"], summary, input, textarea, select {
   .series-card:hover,
   .related-articles__item:hover,
   .h-article-card:hover,
-  .h-section-link:hover,
   .article-topnav-home:hover {
     background: inherit;
     color: inherit;
@@ -8623,14 +8598,6 @@ h1, h2, h3, h4, .article-title, .resume-reading-title,
    Только на devices с точным указателем (мышь). */
 
 @media (hover: hover) and (pointer: fine) {
-  .card.fx-lift {
-    transition:
-      transform .35s cubic-bezier(.2,.7,.2,1),
-      box-shadow .35s ease,
-      border-color .35s ease;
-    transform-style: flat;
-  }
-
   /* Related articles — тот же эффект */
   .related-articles__item:hover,
   .related-articles__item:focus-within {
