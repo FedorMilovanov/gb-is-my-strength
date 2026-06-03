@@ -1,38 +1,48 @@
 # AGENTS.md — gb-is-my-strength (gospod-bog.ru)
 
-> **Если ты ИИ-агент (Cursor, Arena Agent, Copilot Workspace, Kilo, любой) — этот файл обязателен к прочтению ДО любого изменения кода.**
+> **Обязательно к прочтению ДО любой правки кода**, если ты — ИИ-агент
+> (Cursor / Arena Agent / Copilot Workspace / Kilo / любой).
 >
-> Проект — христианский богословский сайт. Ошибки в богословии и в атрибуции авторства недопустимы.
+> Этот файл — **договор** между владельцем (Фёдор Милованов) и любым агентом.
+> Нарушение = регресс, который видят сотни читателей сайта.
+> Если правило кажется глупым — **спроси, ПОЧЕМУ оно появилось**.
 
-**Владелец:** Фёдор Милованов (редактор, не «автор»)
-**Производственный сайт:** https://gospod-bog.ru
-**Дата документа:** 2026-06-03 | **Версия:** AGENTS-r52b
+| Версия документа | Дата | Состояние |
+|---|---|---|
+| **AGENTS-r63** | 2026-06-04 | Полная перезапись (PLAN-05). Старая история свёрнута. |
+
+**Владелец:** Фёдор Милованов (редактор/автор-редактор, не «автор»)
+**Прод:** https://gospod-bog.ru · GitHub Pages из ветки `main`
+**Node:** требуется `>=20`
 
 ---
 
 ## 0. TLDR — что СРАЗУ нельзя делать
 
-1. ❌ Создавать новые CSS/JS файлы (есть **5 CSS** + **11 JS** — этого достаточно).
-2. ❌ Менять byline на «Автор: Фёдор Милованов». Только «Редактор» / «Редакция перевода».
-3. ❌ Изменять структуру `articles/<slug>/index.html` или `nagornaya/chast-N/index.html`.
-4. ❌ Запускать `prettier --write .` или `eslint --fix` по всему проекту.
-5. ❌ Обновлять зависимости в `package.json` без явного запроса.
-6. ❌ Удалять или переименовывать `?v=...` хеши (у каждого файла свой, генерятся `scripts/cache-bust.js`).
-7. ❌ Удалять заголовки `<header class="article-header">` или `<aside class="author-card">`.
-8. ❌ Создавать в корне репо `.patch`, `*.py`, `*.tsx` файлы — статический сайт без сборщика (см. §10).
-9. ❌ Возвращать AI-disclosure: ни JS-модуль (удалён 2026-06-02), ни ручные `<aside class="ai-disclosure">`, ни «при помощи ИИ» в figcaption. Об ИИ — только на странице `/about/`.
-10. ❌ Дублировать `<meta og:*>` теги в `<head>`. Один `og:image` per page. JPG-fallback — только если `.jpg` файл реально существует.
-11. ✅ После любой правки CSS/JS — запустить `npm run cache-bust` для обновления хешей.
-12. ✅ Перед коммитом — запустить `npm run validate:all`.
+1. ❌ **Создавать новые CSS/JS файлы.** Архитектурный максимум: **5 CSS + 1 шрифтовой + 11 JS**. Список фиксирован, см. §2.
+2. ❌ **Менять byline на «Автор: Фёдор Милованов».** Только `Автор-редактор:` (тип A/B) или `Редактор:` (тип C — переводы). См. §3.1.
+3. ❌ **Возвращать `AI-disclosure`.** Удалён 2026-06-02 (`AGENTS-r11`), повторно удалён в PLAN-04 (CSS-остатки). Об ИИ — только на `/about/`.
+4. ❌ **Запускать `prettier --write .` или `eslint --fix .`** по всему дереву. Только точечно.
+5. ❌ **Обновлять зависимости в `package.json`** без явного запроса.
+6. ❌ **Удалять/переименовывать `?v=...` хеши.** Они генерируются `scripts/cache-bust.js`. После любой правки CSS/JS — запусти `npm run cache-bust`.
+7. ❌ **Удалять заголовки `<header class="article-header">` или `<aside class="author-card">`.** Это контракт разметки.
+8. ❌ **Создавать в корне репо `.patch`, `*.py`, `*.tsx`, `src/components/*`** — статический сайт без сборщика, см. §10.
+9. ❌ **Дублировать `<meta og:*>`.** Один `og:image` per page. JPG-fallback — только если `.jpg` файл реально есть на диске.
+10. ❌ **Создавать legacy-кнопки** `.theme-float-btn`, `#themeFloat`, `#gbSearchFloat`, `.nag-theme-btn`. Удалены в PLAN-04 P5. Единственный canonical блок плавающих контролов — `gbFloatingControls` (`js/site.js` модуль 29), классы `.gb-fc-theme` / `.gb-fc-search`.
+11. ❌ **Добавлять новые `!important` без анализа конкурента.** См. §4.2 — обязательный 5-шаговый чеклист.
+12. ✅ **После любой правки CSS/JS** → `npm run cache-bust`.
+13. ✅ **Перед коммитом** → `npm run validate:all` + `node scripts/audit-pro.js`. Оба должны быть PASS.
 
 ---
 
 ## 1. О проекте
 
-- **Что это:** христианский сайт со статьями и серией «Нагорная проповедь» (5 частей + источники + находки).
-- **Стек:** статический HTML + CSS + JS, без сборщика; есть build-скрипты для cache-bust, validation, SEO-аудита.
-- **Хостинг:** GitHub Pages, автодеплой через `.github/workflows/deploy.yml`.
-- **Node:** требуется `>=20`.
+Христианский богословский сайт со статьями, биографиями, серией «Нагорная проповедь» (5 частей), серией «Тёмная сторона кафедры» (pastor-series), серией о Джоне Гилле (5 текстов), статьями о Коде да Винчи / герменевтике / Иеремии и др.
+
+**Стек:** статический HTML + CSS + JS, без сборщика, без TypeScript, без React.
+**Хостинг:** GitHub Pages, автодеплой через `.github/workflows/deploy.yml`.
+**Поисковая индексация:** `.github/workflows/indexnow.yml` уведомляет Яндекс/Bing при push в main.
+**Алерты на падение CI:** `.github/workflows/notify-on-failure.yml` открывает GitHub issue (label `ci-failure`).
 
 ### 1.1 Целевые браузеры
 
@@ -45,8 +55,7 @@
 | Mobile | Android Chrome | 90+ |
 | Mobile | Samsung Internet | 16+ |
 
-> CSS-фичи, не поддерживаемые в этих версиях (`color-mix()`, `grid-template-rows: 0fr`),
-> **обязаны** иметь `@supports`-fallback или каскадный fallback.
+CSS-фичи, не поддерживаемые в этих версиях (`color-mix()`, `grid-template-rows: 0fr`, `:has()`), **обязаны** иметь `@supports`-fallback или каскадный fallback (`property: rgb(...); property: color-mix(...);`).
 
 ### 1.2 Метрики качества
 
@@ -56,11 +65,15 @@
 | Lighthouse Accessibility | ≥ 95 |
 | Core Web Vitals LCP | < 2.5s |
 | Core Web Vitals CLS | < 0.1 |
-| CSS `!important` count | снижать, не добавлять новые (см. §4.2 актуальные цифры) |
+| `audit-pro` | ✅ PASSED, errors = 0 |
+| `validate:all` | ✅ 0 errors, 0 warnings |
+| `tokens:check` | ✅ 0 / 0 |
+| `visual-audit` (Playwright) | 0 console-errors, 0 network-errors |
+| CSS `!important` в `site.css` | **≤ 200** (после PLAN-04 — **199** ✅) |
 
 ---
 
-## 2. АРХИТЕКТУРА — единственно верная
+## 2. Архитектура — единственно верная
 
 ```
 /
@@ -68,213 +81,193 @@
 ├── 404.html                        ← страница ошибки
 ├── sw.js                           ← Service Worker
 ├── manifest.json                   ← PWA
-├── feed.xml                        ← RSS-лента
+├── feed.xml                        ← RSS
 ├── robots.txt, sitemap.xml         ← SEO
 ├── llms.txt                        ← правила для LLM
-├── AGENTS.md                       ← ⭐ ЭТОТ файл (для AI-агентов)
-├── README.md                       ← документация
+├── AGENTS.md                       ← ⭐ ЭТОТ файл
+├── README.md                       ← пользовательская архитектурная документация
+├── AUDIT_HISTORY.md                ← консолидированный changelog аудитов
 ├── CNAME                           ← gospod-bog.ru
 │
 ├── package.json                    ← build-скрипты, без рантайм-зависимостей
-├── .github/workflows/              ← deploy.yml + indexnow.yml
+├── .github/workflows/              ← deploy.yml + indexnow.yml + notify-on-failure.yml
 │
 ├── css/                            ← РОВНО 5 ФАЙЛОВ. БОЛЬШЕ НЕ СОЗДАВАТЬ.
 │   ├── site.css                    ← основной слой (статьи, шапка, тёмная тема)
-│   ├── home.css                    ← только главная страница (hero, dashboard)
+│   ├── home.css                    ← только главная + каталоги (hero, dashboard)
 │   ├── command-palette.css         ← поиск (Ctrl+K)
 │   ├── mobile-hotfix.css           ← мобильные производительные hotfix-правки
-│   └── nagornaya-mobile-toc.css    ← мобильное оглавление в Нагорной проповеди
+│   └── nagornaya-mobile-toc.css    ← мобильное оглавление Нагорной проповеди
 │
 ├── fonts/
 │   └── fonts.css                   ← @font-face деклараты, не трогать
 │
 ├── js/                             ← РОВНО 11 ФАЙЛОВ. БОЛЬШЕ НЕ СОЗДАВАТЬ.
-│   ├── site.js                     ← главное (theme, nav, mobile menu, quiz, tooltips)
-│   ├── site-utils.js               ← утилиты, используемые отдельными страницами
+│   ├── site.js                     ← главное (theme, nav, quiz, tooltips, gbFloatingControls)
+│   ├── site-utils.js               ← утилиты, доступные отдельным страницам
 │   ├── scroll-perf.js              ← производительность scroll/observers
 │   ├── search.js                   ← Ctrl+K поиск (CommandPalette)
-│   ├── enhancements.js             ← scroll-эффекты, lazy load
+│   ├── enhancements.js             ← scroll-эффекты, lazy load, ambient phrases
 │   ├── highlights.js               ← подсветка текста, заметки
 │   ├── glossary.js                 ← глоссарий богословских терминов
 │   ├── bookmark-engine.js          ← закладки (localStorage)
-│   ├── series-cards.js             ← карточки серий на главной
+│   ├── series-cards.js             ← карточки серий
 │   ├── nagornaya-mobile-toc.js     ← мобильное TOC для проповеди
 │   └── sw-register.js              ← регистрация Service Worker
 │
 ├── data/                           ← JSON-данные для рантайма
 │   ├── glossary.json               ← термины глоссария
 │   ├── search-manifest.json        ← индекс поиска
-│   └── series.json                 ← карточки серий
+│   ├── series.json                 ← карточки серий
+│   └── strategic-map-antisovetov.json  ← MAP_DATA для 20-antisovetov-pastoru
 │
 ├── articles/                       ← статьи (каждая = папка с index.html)
+│   ├── index.html                  ← каталог всех статей
 │   ├── 20-antisovetov-pastoru/
+│   ├── dzhon-gill-chast-1-chelovek/
+│   ├── dzhon-gill-chast-2-uchenyi/
+│   ├── dzhon-gill-chast-3-nasledie/
+│   ├── dzhon-gill-istoricheskiy-kontekst/
+│   ├── dzhon-gill-spravochnik/
+│   ├── hermenevticheskaya-otsenka-hristotsentrichnoy-germenevtiki/
 │   ├── kod-da-vinchi/
-│   └── ...
+│   └── krajne-li-isporcheno-serdce/
 │
 ├── nagornaya/                      ← серия «Нагорная проповедь»
 │   ├── chast-1/ ... chast-5/       ← 5 частей
 │   ├── istochniki/                 ← библиография
-│   ├── nakhodki/                   ← дополнительные находки
+│   ├── nakhodki/                   ← находки
 │   ├── seriya/                     ← обзор серии
-│   ├── tw.min.css                  ← Tailwind для проповеди (см. §3.5 о регенерации)
-│   └── index.html                  ← обзор всей серии
+│   ├── tw.min.css                  ← Tailwind (НЕ ТРОГАТЬ — отдельная генерация)
+│   └── index.html                  ← обзор серии
 │
-├── about/, pastor-series/          ← статичные разделы
+├── about/, pastor-series/, biografii/   ← статичные разделы
 │
 ├── scripts/                        ← build-инструменты (Node.js)
-│   ├── cache-bust.js               ← ⭐ генерит ?v=... хеши, запускать после правок
+│   ├── cache-bust.js               ← ⭐ генерит ?v=... хеши
 │   ├── validate.js                 ← валидация HTML/JSON/манифестов
+│   ├── audit-pro.js                ← главный аудит (запускать перед каждым push)
 │   ├── seo-audit.js                ← SEO-проверки
+│   ├── visual-audit.js             ← Playwright скриншоты + console/network errors
 │   ├── update-meta.js              ← обновление meta-тегов
+│   ├── check-design-tokens.js      ← валидация дизайн-токенов
+│   ├── deep-check.js, _audit-deep.js  ← глубокий аудит (внутренние)
 │   ├── download-fonts.js           ← скачка шрифтов
 │   ├── build-avif.sh               ← конвертация в AVIF
-│   └── _audit-deep.js              ← глубокий audit (внутренний)
+│   └── resize_og.py                ← рескейл OG-картинок (Pillow)
 │
-├── audit/                          ← последние audit-pro отчёты (2-3 файла)
-├── AUDIT_HISTORY.md                ← консолидированная история аудитов
-└── DEEPENED_AUDIT_2026-05-22.md    ← глубокий технический аудит
+├── audit/                          ← последние audit-pro отчёты + AUDIT_CLEANUP_PLAN
+└── images/                         ← все изображения
 ```
 
-### ⛔ ЗАПРЕЩЕНО создавать новые CSS-файлы
+### Запрещено создавать новые CSS-файлы
 
-У сайта **ровно 5 CSS + 1 шрифтовой** — этого достаточно для всего.
-
-> **Почему:** Статический хостинг без bundler'а — каждый файл = отдельный HTTP-запрос.
-> 4 файла = оптимальный баланс модульности и сетевой производительности.
-> На странице статьи подключаются только 2 CSS (fonts + site). Любая новая правка идёт в существующий файл по таблице:
+У сайта **ровно 5 CSS + 1 шрифтовой**. Каждый файл = отдельный HTTP-запрос на статическом хостинге без bundler'а. Новая правка идёт в существующий файл по таблице:
 
 | Что правишь | В какой CSS |
 |---|---|
-| Шапка / навигация / общие компоненты / статьи | `site.css` |
-| Главная страница (только то, чего нет на других страницах) | `home.css` |
+| Общие компоненты, статьи, шапка, тёмная тема | `site.css` |
+| Главная + каталоги (только то, чего нет на других страницах) | `home.css` |
 | Поиск (Ctrl+K, всплывашка) | `command-palette.css` |
-| Мобильные производительные hotfix-правки (без bundler) | `mobile-hotfix.css` |
+| Мобильные hotfix touch-pointer overrides | `mobile-hotfix.css` |
 | Мобильное оглавление Нагорной проповеди | `nagornaya-mobile-toc.css` |
 | @font-face декларации | `fonts/fonts.css` |
-| Tailwind для проповеди | `nagornaya/tw.min.css` (НЕ ТРОГАТЬ, генерируется отдельно) |
+| Tailwind для Нагорной | `nagornaya/tw.min.css` (НЕ ТРОГАТЬ) |
 
-### ⛔ ЗАПРЕЩЕНО создавать новые JS-файлы в `js/`
+### Запрещено создавать новые JS-файлы в `js/`
 
-Все 11 JS-файлов — фиксированный набор. Новая логика идёт **внутрь существующего** файла по теме (если новое — в `enhancements.js`).
+Все 11 файлов — фиксированный набор. Новая логика идёт **внутрь существующего** файла по теме (если ничего не подходит — в `enhancements.js`).
 
 ---
 
-## 3. PROTECTED — НЕ ТРОГАТЬ БЕЗ ПИСЬМЕННОГО РАЗРЕШЕНИЯ
+## 3. PROTECTED — не трогать без письменного разрешения
 
 ### 3.1 Атрибуция авторства (КРИТИЧНО)
 
-Фёдор Милованов на сайте — **редактор**, не «автор» в традиционном смысле. Он задаёт направление, редактирует, исправляет неточности и собирает материал при помощи ИИ.
+Фёдор Милованов на сайте — **автор-редактор** оригинальных статей и **редактор** переводов. **НЕ «автор»** в традиционном смысле. Он задаёт направление, редактирует, исправляет неточности и собирает материал при помощи ИИ.
 
 #### Правило: нигде не писать «Автор: Фёдор Милованов».
 
-| Тип контента | Byline в `<header>` | author-card-label | Мелкий футер серий |
+| Тип контента | Byline в `<header>` | `.author-card-label` | Карточки в каталогах |
 |---|---|---|---|
-| Авторская статья (Тип A/B) | `Автор-редактор: Фёдор Милованов` | `Автор-редактор` | `Авт.-ред.: Фёдор Милованов` |
-| Перевод (Тип C) | `Редакция перевода: Фёдор Милованов` | `Редакция перевода` | — |
+| Тип A — авторская статья | `Автор-редактор: Фёдор Милованов` | `Автор-редактор` | `Автор-редактор: Фёдор Милованов` |
+| Тип B — авторская серия / разбор | `Автор-редактор: Фёдор Милованов` | `Автор-редактор` | `Автор-редактор: Фёдор Милованов` |
+| Тип C — перевод зарубежной статьи | `Редактор: Фёдор Милованов` | `Редактор` | `Ред.: Фёдор Милованов` |
 
-#### Обязательные HTML-паттерны
+#### Meta-теги:
 
-**Byline в `<header class="article-header">`** (Тип A/B):
-```html
-<p class="article-byline"><span class="article-byline__strong">Автор-редактор: Фёдор Милованов</span></p>
-```
+- **Тип A/B:** `<meta name="author" content="Фёдор Милованов">` + `<meta property="article:author" content="Фёдор Милованов">`.
+- **Тип C:** `<meta name="author" content="Имя оригинального автора">` + `<meta name="translator" content="Фёдор Милованов">` + `<meta property="article:author" content="Имя оригинального автора">`.
 
-**Byline (Тип C — перевод):**
-```html
-<p class="article-byline"><span class="article-byline__strong">Редакция перевода: Фёдор Милованов</span></p>
-```
+#### feed.xml для всех типов:
 
-**Author card** в `<article>` перед `.sources-block` / `.reading-list`:
-```html
-<aside class="author-card">
-  <div aria-hidden="true" class="author-card-icon">ФМ</div>
-  <div class="author-card-body">
-    <div class="author-card-label">Автор-редактор</div>
-    <div class="author-card-name">Фёдор Милованов</div>
-    <p class="author-card-desc">
-      Основатель и редактор проекта «Господь Бог — Сила Моя», Санкт-Петербург.
-      <a href="../../about/">Об авторе →</a>
-    </p>
-  </div>
-</aside>
+```xml
+<dc:creator>Фёдор Милованов</dc:creator>
 ```
 
 ### 3.2 JSON-LD структура
 
-В каждой статье есть `<script type="application/ld+json">` с `Article`, `BreadcrumbList`, `Person` (автор оригинала или Фёдор как редактор). **Не упрощать, не «оптимизировать», не удалять**. Это критично для SEO.
+В каждой статье есть `<script type="application/ld+json">` с `Article` (или `ScholarlyArticle` для переводов) + `BreadcrumbList` + `Person` (автор оригинала или Фёдор как редактор). **Не упрощать, не «оптимизировать», не удалять.** Это критично для SEO.
+
+Для переводов:
+```json
+"@type": "ScholarlyArticle",
+"author": { "@type": "Person", "name": "Имя Автора Оригинала" },
+"translator": { "@id": "https://gospod-bog.ru/about/#person" }
+```
 
 ### 3.3 OpenGraph + Twitter Card теги
 
-В каждой `index.html` статьи есть полный набор `<meta property="og:*">`. Не удалять и не сокращать «для чистоты».
+В каждой `index.html` статьи есть полный набор `<meta property="og:*">`. Не удалять, не сокращать «для чистоты». **Один `og:image` per page.** JPG-fallback можно ставить ТОЛЬКО если файл `images/<name>.jpg` реально существует.
 
 ### 3.4 Service Worker и cache-bust
 
-Версии файлов выглядят так:
+Версии файлов в HTML:
 ```html
 <link rel="stylesheet" href="css/site.css?v=2223865f">
 <script src="js/site.js?v=54e3f377"></script>
 ```
 
-Хеши `2223865f`, `54e3f377` — это **CRC32-хеши содержимого файлов**, генерируются скриптом `scripts/cache-bust.js`. Не трогать руками. После правки CSS/JS — запустить `npm run cache-bust`.
+Хеши — **CRC32 содержимого файлов**, генерируются `scripts/cache-bust.js`. **Не трогать руками.** После правки CSS/JS — обязательно `npm run cache-bust`.
 
 `CACHE_NAME` в `sw.js` также пересчитывается автоматически.
 
 ### 3.5 Структура Нагорной проповеди
 
-Серия «Нагорная проповедь» состоит из 5 частей + 3 вспомогательных страниц (`istochniki`, `nakhodki`, `seriya`). Внутри каждой части — `<aside class="article-toc">` с оглавлением. **Не упрощать TOC, не сжимать вёрстку, не удалять `tw.min.css` подключение в Нагорной**.
+Серия = 5 частей + 3 вспомогательных страницы (`istochniki`, `nakhodki`, `seriya`). Внутри каждой части — `<aside class="article-toc">`. **Не упрощать TOC, не сжимать вёрстку, не удалять подключение `tw.min.css`** в Нагорной.
 
-**`tw.min.css`** — минифицированный Tailwind CSS, генерируется отдельно от основного проекта.
-Если нужно добавить новый Tailwind-класс в HTML `nagornaya/chast-*`:
-1. Класс уже может быть в `tw.min.css` (Tailwind включает стандартные утилиты).
-2. Если нет — обратиться к владельцу для регенерации `tw.min.css`.
+`tw.min.css` — минифицированный Tailwind, генерируется отдельно от основного проекта. Если нужен новый Tailwind-класс в `nagornaya/chast-*` — обратись к владельцу для регенерации.
 
-### 3.6 Известный технический долг
+### 3.6 Изображения
 
-Закрыт 2026-06-02 (commit I). История:
+| Правило | Подробнее |
+|---|---|
+| **Формат** | `.webp` основной; `.png/.jpg` — backup, не для `<img>` напрямую |
+| **Размеры** | Обязательно 3 ширины: `600w`, `900w`, `1200w` |
+| **Именование** | `images/<name>.webp`, `images/<name>-600w.webp`, ... |
+| **Качество WebP** | 82–85% |
+| **OG** | один `og:image` per page; JPG-fallback только если файл реален |
+| **figcaption** | НЕ вставлять `<span class="ai-note">` или «Изображение сгенерировано ИИ». Прозрачность — только на `/about/`. |
 
-- **~12 КБ inline `<style>` блоков** в `articles/dzhon-gill-chast-1-chelovek/index.html`, `…chast-2-uchenyi`, `…chast-3-nasledie`. Класс шаблона `.biography-*` / `.timeline-*` / `.stat-*` / `.foliant-mark`. Вынесены в `css/site.css` под комментарием `/* BIOGRAPHY TEMPLATE — shared by John Gill biography trilogy */`. Канонической версией принята P2/P3 (P1 имел незначительные pixel-tuning расхождения, которые унифицированы). Правило `.biography-portrait figcaption` из P1 не перенесено, т.к. в HTML нет `<figcaption>` внутри `.biography-portrait` (мёртвый CSS).
+#### Шаблон `<picture>`:
 
-**Актуальный техдолг (зафиксирован AGENTS-r42, для r43+):**
-
-| Приоритет | Файл | Тип | Размер | Описание |
-|-----------|------|-----|--------|----------|
-| ~~🔴 P0~~ | `articles/hermenevticheskaya-otsenka-*` | inline JS 76KB | **Переоценено**: `<script type="application/json" id="bibleRefs">` — это правильный JSON data island (браузер не выполняет, используется `getElementById`). Оставить. |
-| 🟠 P1 | `articles/20-antisovetov-pastoru/index.html` | inline JS | 17 KB | `STRATEGIC_MAP_DATA` — вынести в `data/strategic-map.json` |
-| 🟡 P2 | `articles/20-antisovetov-pastoru/index.html` | inline CSS | 12.5 KB | 16 дублей site.css удалены r43 (−2.5KB); оставшееся специфично для страницы |
-| 🟠 P1 | `articles/20-antisovetov-pastoru/index.html` | inline JS | 5.5 KB | Popover widget — вынести в `js/enhancements.js` |
-| ~~🟠 P1~~ | ~~`articles/krajne-li-isporcheno-serdce/index.html`~~ | ~~inline JS 1.7KB~~ | **Закрыто r43** — перенесено в `site.js` модуль 15a |
-| 🟡 P2 | `articles/krajne-li-isporcheno-serdce/index.html` | inline CSS | 885 b | `.rescue-figure` — вынести в site.css; убрать дубль `.article-img img { cursor:zoom-in }` |
-
-Закрыто в r42: `nagornaya/chast-1..5` inline `<style>#read-progress</style>` → `nagornaya-mobile-toc.css`.
-
-### 3.7 Работа с изображениями (КРИТИЧНО)
-
-Все новые изображения должны быть приведены к стандартам производительности сайта:
-
-1. **Формат:** WebP — основной формат фронтенда. PNG/JPG — backup в `images/<base-name>.png`, не для использования в `<img>` или `<picture>`.
-2. **Размеры:** Обязательная генерация 3 вариантов ширины для `srcset`:
-   - `600w` (мобильные)
-   - `900w` (планшеты)
-   - `1200w` (десктоп, ретина)
-3. **Именование:** `images/<base-name>.webp`, `images/<base-name>-600w.webp`, и т.д.
-4. **Конвертация:** Python (PIL/Pillow) или `cwebp`. Качество WebP: 82–85%.
-5. **`<picture>` шаблон**:
-   ```html
-   <figure class="article-img wide reveal">
-     <picture>
-       <source srcset="../../images/<name>-600w.webp 600w, ../../images/<name>-900w.webp 900w, ../../images/<name>-1200w.webp 1200w"
-               sizes="(max-width: 640px) 92vw, 1200px" type="image/webp">
-       <img src="../../images/<name>.webp" alt="…" width="1200" height="630" loading="lazy" decoding="async">
-     </picture>
-     <figcaption>Подпись без упоминания ИИ.</figcaption>
-   </figure>
-   ```
-6. **OG / Twitter картинки**: один `og:image` per page. JPG-fallback можно ставить ТОЛЬКО если файл `images/<name>.jpg` реально существует. Не плодить теги «на всякий случай».
-7. **figcaption**: не вставлять `<span class="ai-note">` или «Изображение сгенерировано ИИ». Прозрачность — на странице `/about/`.
+```html
+<figure class="article-img wide reveal">
+  <picture>
+    <source srcset="../../images/<name>-600w.webp 600w,
+                    ../../images/<name>-900w.webp 900w,
+                    ../../images/<name>-1200w.webp 1200w"
+            sizes="(max-width: 640px) 92vw, 1200px" type="image/webp">
+    <img src="../../images/<name>.webp" alt="…"
+         width="1200" height="630" loading="lazy" decoding="async">
+  </picture>
+  <figcaption>Подпись без упоминания ИИ.</figcaption>
+</figure>
+```
 
 ---
 
-## 4. CSS-ПРАВИЛА
+## 4. CSS-правила
 
 ### 4.1 Каскад
 
@@ -282,428 +275,293 @@
 
 1. `fonts/fonts.css` (preload + stylesheet)
 2. `css/site.css`
-3. `css/home.css` (только на главной)
+3. `css/home.css` (на главной и каталогах)
 4. `css/command-palette.css`
-5. Дополнительные (только на специфических страницах)
+5. На Нагорной — **сначала** `nagornaya/tw.min.css`, **потом** `site.css` (Tailwind обязан грузиться раньше — site.css перебивает его по каскаду).
 
-### 4.2 `!important`
+### 4.2 `!important` — обязательный чеклист перед добавлением
 
-Сейчас (2026-06-04, после PLAN-04 P1..P15 cleanup):
-- `site.css`: **199** ✅ (PLAN-04: −143 от регрессии 342; лимит ≤200 архитектурный минимум — В ПРЕДЕЛАХ)
-- `home.css`: 20
-- `command-palette.css`: 7
-- `mobile-hotfix.css`: 74 (по дизайну: переопределяет поведение для touch / pointer: coarse)
-- `nagornaya-mobile-toc.css`: 122 (Tailwind override на nagornaya-page — легитимно)
+**Текущее состояние (2026-06-04, после PLAN-04):**
 
-Корректный подсчёт: `grep -o '!important' file | wc -l` (не `grep -c` — он считает строки, не вхождения).
+| Файл | `!important` | Назначение |
+|---|---:|---|
+| `site.css` | **199** ✅ | лимит ≤200 (архитектурный минимум) |
+| `home.css` | 20 | OK |
+| `command-palette.css` | 7 | OK |
+| `mobile-hotfix.css` | 74 | touch / pointer:coarse overrides — легитимно |
+| `nagornaya-mobile-toc.css` | 122 | Tailwind override на nagornaya-page — легитимно |
 
-**История регрессии и восстановления:**
-- AGENTS-r50c (2026-06-02): site.css = 189 ✅
-- Регрессия за июнь (r51..r61.21, добавление SVG dove, mobile compactности, hero hover polish, summary-card премиум, и др.): 189 → 342 (+153)
-- PLAN-04 (2026-06-04, 15 партий P1..P15): 342 → 199 (−143), архитектурный лимит восстановлен.
+**Корректный подсчёт:** `grep -o '!important' file | wc -l` (НЕ `grep -c` — он считает строки).
 
-Не добавлять новые `!important`, пока возможно через специфичность. Если уже есть `!important` на том же селекторе — **исправь существующий**, не добавляй второй. Перед добавлением `!important` ОБЯЗАТЕЛЬНО:
-1. Найди конкурента (`grep <selector>` по всем CSS-файлам).
-2. Рассчитай специфичность обоих правил.
-3. Если твоё выше — `!important` не нужен; используй каскад.
-4. Если ниже — увеличь специфичность через дополнительный класс/id/атрибут.
-5. `!important` оправдан ТОЛЬКО для: print, prefers-reduced-motion, forced-colors, Tailwind override на nagornaya-page, defensive disable (`display: none`).
+#### 5-шаговый чеклист перед добавлением нового `!important`:
+
+1. **Найди конкурента.** `grep -nE 'твой-селектор' css/*.css`.
+2. **Рассчитай specificity** обоих правил (id=100, class=10, element=1).
+3. **Если твоё выше** → `!important` не нужен; используй каскад.
+4. **Если ниже** → увеличь специфичность через дополнительный класс/id/атрибут (например, `body.your-page .selector` или `.parent .selector`).
+5. **`!important` оправдан ТОЛЬКО для:**
+   - `@media print`
+   - `@media (prefers-reduced-motion: reduce)`
+   - `@media (forced-colors: active)`
+   - `@media (scripting: none)` — no-JS fallback
+   - Tailwind override на nagornaya (если selectivity не помогает)
+   - Defensive disable (`display: none !important`) для скрытия legacy/повреждённого элемента
+   - Внутри `@layer components/utilities` — для перебивания правил вне layer (правила вне `@layer` имеют выше priority по spec)
+
+**Если уже есть `!important` на том же селекторе/свойстве — исправь существующий, не добавляй второй.**
 
 ### 4.3 Тёмная тема
 
-Используется класс `html.dark` на `<html>` (переключается JS-ом в site.js). Все цвета — через CSS-переменные. **Не хардкодить** `#fff`, `#000` — использовать `var(--text)`, `var(--bg)`, `var(--accent)` и т.д.
+Используется класс `html.dark` на `<html>` (переключается JS в `site.js`).
 
+| Правило | Пример |
+|---|---|
+| ✅ Используй переменные | `color: var(--color-text)`, `background: var(--color-bg)` |
+| ❌ Не хардкодить `#fff`, `#000` | искл.: фолбэки в `color-mix(in srgb, ... var(--color-x, #fff))` |
+| ✅ `html.dark` всегда | НЕ просто `.dark` — JS выставляет именно `html.dark` |
+| ✅ `color-mix()` fallback | Сначала простое значение, потом `color-mix` ниже — каскад перебивает |
 
-### 4.4 CSS Integrity Rules — анти-регрессия для ИИ-агентов
+### 4.4 CSS Integrity Rules — анти-регрессия
 
-Эти правила введены в AGENTS-r31 после глубокого аудита. Нарушение = мгновенный регресс.
+Эти правила введены после серии регрессий май-июнь 2026 (см. AUDIT_HISTORY).
 
-1. **`html.dark` — всегда, никогда просто `.dark`**  
-   JS выставляет `html.dark`. Класс `.dark` на body не используется → переменные не применятся.
+1. **`html.dark` — всегда, никогда просто `.dark`.** Класс `.dark` на body не используется.
 
-2. **Дублирование блоков — запрещено**  
-   Перед добавлением правила для `.foo` — сделай `grep ".foo"` по файлу. Найдено → расширяй, не добавляй новый блок.
+2. **Дублирование top-level селекторов запрещено.** Перед добавлением правила для `.foo` — `grep ".foo"` по файлу. Найдено → расширяй существующее, не добавляй новый блок. PLAN-04 P1+P1b слили 9 настоящих дублей.
 
-3. **Пустые правила `{}` — мусор, удалять**  
-   Допустимо только намеренное `:empty` с пояснительным комментарием.
+3. **Пустые правила `{}` — мусор, удалять.** Допустимо только намеренное `:empty` с пояснительным комментарием.
 
-4. **Двойное свойство в одном блоке — первое мёртво**  
-   Два `box-shadow`, два `color` в одном `{}` — первый всегда перебивается. Удаляй его.
+4. **Двойное свойство в одном блоке — первое мёртво.** Два `box-shadow`, два `color` в одном `{}` — первый всегда перебивается. Удаляй его. **Исключение:** color-mix fallback pattern (`color: #fff; color: color-mix(...);`) — это намеренно.
 
-5. **`:hover` с важным эффектом — только внутри `@media (hover: hover) and (pointer: fine)`**  
-   Без guard — эффект срабатывает на тапе (iOS, Android). Исключение: декоративные opacity/color которые не меняют layout.
+5. **`:hover` с важным эффектом — только внутри `@media (hover: hover) and (pointer: fine)`.** Без guard — срабатывает на тапе (iOS/Android). Исключение: декоративные opacity/color, не меняющие layout.
 
-6. **Переключатель темы — singleton, не трогать**  
-   Архитектура: `gbFloatingControls` (JS-инжект, модуль 29) + `bar-icon-btn[data-action=theme]` (bottom-bar).  
-   ❌ Не создавать `<button class="theme-toggle">` в HTML статей  
-   ❌ Не создавать `.theme-float-btn` в новых CSS/JS-модулях  
-   ❌ Не добавлять `nag-theme-btn` или аналоги — legacy скрыт через `body.gb-fc-active`
+6. **Переключатель темы — singleton.** Три канонических места:
+   - `.theme-toggle` (absolute, в статьях рядом с breadcrumbs)
+   - `.gb-fc-theme` (FAB через `gbFloatingControls` site.js модуль 29)
+   - `.bar-icon-btn[data-action=theme]` (bottom-bar, mobile)
 
-7. **Tooltip — три канонических вида**  
-   `.gterm > .gtip` (глоссарий), `.fn-marker > .tooltip` (сноски), `.bref > .btip` (Библия).  
-   ❌ Не добавлять четвёртый тип с другими классами/позиционированием.
+   ❌ Не создавать четвёртую: `.theme-float-btn`, `#themeFloat`, `.nag-theme-btn` — всё удалено в PLAN-04 P5.
 
-8. **`!important` — только при реальном конкуренте**  
-   Tailwind в `nagornaya/*` — законная причина. Просто "на всякий случай" — нет.  
-   Проверь: какой селектор перебивает? Если ответа нет — уберизм `!important`.
+7. **Tooltip — три канонических вида, один контроллер.**
+   - `.gterm > .gtip` (глоссарий)
+   - `.fn-marker > .tooltip` (академические сноски)
+   - `.bref > .btip` (Библейские ссылки)
 
-9. **CSS-переменные — не объявлять "про запас"**  
-   Объявленная в `:root` переменная без `var(--...)` нигде = мёртвый код.  
-   Канонические токены: `--color-*`, `--z-*`, `--s-*`, `--shadow-*`, `--scroll-margin`.  
-   Убитые в r34: `--fg`, `--link`, `--note-bg`, `--z-toc`, `--z-raised`, `--shadow-md`,  
-   `--nicea-color`, `--keyboard-height`, `--color-violet/emerald/green/purple/sky/yellow`.  
-   Живые aliases которые используются: `--accent`, `--bg`, `--border`, `--accent-soft`, `--accent-strong`.
+   Контроллер: `SiteUtils.makeTooltipController()` (единственная реализация).
+   ❌ Не добавлять четвёртый тип tooltip с другими классами/позиционированием.
 
-10. **Дубль-кнопка темы — запрещено создавать третью точку переключения**
+8. **CSS-переменные — не объявлять «про запас».** Объявленная в `:root` переменная без `var(--...)` нигде = мёртвый код, удалить.
 
-   Три канонических места переключения темы — и только три:
-   - `.theme-toggle` (position: absolute) — выровнена по крошкам, в статьях
-   - `.theme-float-btn` (position: fixed, FAB) — инжектируется `gbFloatingControls` (site.js модуль 29)
-   - `.bar-icon-btn[data-action=theme]` — иконка в bottom-bar (mobile only)
+9. **Мёртвый компонент = удалить.** Если класс нигде в HTML/JS не используется (включая динамическую конкатенацию в JS `'class--' + variant`) — удалить CSS-правила. PLAN-04 P5-P7 удалил `.theme-float-btn`, `.ai-disclosure`, `.fx-lift`, `.epilogue-*`, `.float-fallback`, `.sd-url-strip/divider/copy/label-default`, `.article-img--portrait-wide`, `.card.fx-lift` и др.
 
-   ❌ Не создавать `<button class="nag-theme-btn">`, `<button id="themeFloat">`, ни любую другую кнопку.
-   ❌ Не создавать новую страницу или компонент со своим `onclick` для смены темы.
-   JS: единственный handler `data-action=theme` в SiteUtils.initTheme() (site.js модуль 02).
-
-11. **Tooltip-система — ровно три вида, ровно один контроллер**
-
-   Три вида: `.gterm > .gtip` (глоссарий), `.fn-marker > .tooltip` (сноски), `.bref > .btip` (Библия).
-   Контроллер: `SiteUtils.makeTooltipController()` — единственная реализация.
-   `.tooltip-trigger` — конвертируется в `.gterm` через `initTooltipTriggers()` (site.js модуль 33).
-
-   ❌ Не создавать новый тип tooltip с другими CSS-классами или другим позиционированием.
-   ❌ Не добавлять inline `<script>` с логикой показа/скрытия подсказок.
-
-12. **`!important` — лимит и лоцман** (r42+)
-
-   Лимит: `site.css` ≤ 200 `!important` (архитектурный минимум ~189). Если после правки число выросло — это регрессия.
-   Проверка: `grep -o '!important' css/site.css | wc -l`
-   Легитимные категории: print-override, prefers-reduced-motion, forced-colors, Tailwind-override в nagornaya/*.
-   Нелегитимные: перебивание своего же правила в том же файле без реального конкурента.
+10. **`!important` лимит для `site.css` — ≤ 200.** Проверка перед коммитом:
+    ```bash
+    grep -o '!important' css/site.css | wc -l
+    ```
+    Если выросло — это **регрессия**. PLAN-04 восстановил лимит после регрессии 189 → 342 → 199.
 
 ---
 
-## 5. JS-ПРАВИЛА
+## 5. JS-правила
 
 ### 5.1 Архитектура
 
-Каждый JS-файл — самодостаточный, под одну тему. **НЕ создавать общий `utils.js`** — это сломает текущую модульность.
+Каждый JS-файл — самодостаточный, под одну тему. **НЕ создавать общий `utils.js`** — это сломает текущую модульность (`site-utils.js` существует, но имеет узкую роль). Подробная карта 27 модулей внутри `site.js` — в `README.md`.
 
 ### 5.2 Запреты
 
-- ❌ Не использовать `eval()`, `Function()`, `innerHTML = userInput`
-- ❌ Не добавлять `addEventListener` без `removeEventListener` (память)
-- ❌ Не создавать dependencies на CDN (jQuery, Lodash и т.п.) — проект бессет
-- ❌ Не использовать ES2024+ фичи без проверки на старых Safari
+- ❌ `eval()`, `Function()`, `innerHTML = userInput`
+- ❌ `addEventListener` без `removeEventListener` (память)
+- ❌ CDN-зависимости (jQuery, Lodash) — проект bessebt (vanilla)
+- ❌ ES2024+ фичи без проверки на Safari 15+
+- ❌ Переход на TypeScript / Vite / любой bundler — архитектурный выбор vanilla
 
-### 5.3 Перед коммитом — обязательно:
+### 5.3 Обязательные проверки перед коммитом
 
 ```bash
+# Синтаксис JS — все 11 файлов + sw.js + scripts
 node --check js/*.js
 node --check scripts/*.js
 node --check sw.js
+
+# Хеши cache-bust свежие
+npm run cache-bust
+
+# Полная валидация (HTML, JSON, manifest, SEO)
+npm run validate:all
+
+# Дизайн-токены
+npm run tokens:check
+
+# Главный аудит (29 проверок)
+node scripts/audit-pro.js
+# Должно: ✅ PASSED, errors = 0
 ```
 
-Если хоть один FAIL — **не коммитить**.
+Если хоть одна — FAIL, **не коммитить**.
+
+#### Visual audit (Playwright, опционально но рекомендовано перед крупными CSS-правками)
+
+```bash
+# 1. Локальный HTTP-сервер (отдельная вкладка)
+python3 -m http.server 8080 --bind 127.0.0.1
+
+# 2. Playwright + chromium (один раз)
+npm install --no-save playwright
+npx playwright install chromium
+
+# 3. Аудит (32 страницы × 96 скринов в shots/)
+AUDIT_BASE=http://127.0.0.1:8080 npm run visual-audit
+```
+
+Должно: `0 console errors, 0 network errors, 0 raw bugs` (или все подавлены).
 
 ---
 
-## 6. СТАТЬИ — как добавлять
+## 6. Статьи — как добавлять
 
-Структура каждой статьи:
+### 6.1 Структура
 
 ```
 articles/<slug>/
 └── index.html
 ```
 
-Каждая статья имеет:
-1. `<head>` с meta description, OG, Twitter Card, canonical link, JSON-LD
-2. `<header class="article-header">` с h1, byline, метаданными (дата, читать N мин)
-3. `<aside class="author-card">` перед `.sources-block` / `.reading-list`
-4. `<aside class="article-toc">` (для длинных статей)
-5. Финальный footer с навигацией
+slug — строчные латинские буквы и дефисы, без слэша в начале.
 
-**Шаблон** для новой статьи — взять последнюю созданную и копировать структуру.
+### 6.2 Обязательные блоки в `<head>`
 
-### 6.1 Обязательные runtime-компоненты новой статьи (2026-05-28)
+См. [`README.md` § «Добавление новой статьи»](README.md) — полный шаблон с meta-тегами, JSON-LD, OG/Twitter, SITE_CONFIG, breadcrumb JSON-LD.
 
-1. **AI disclosure** не вставлять вручную: `site.js` автоматически добавляет `.ai-disclosure` для `page.type === 'article'`. Отключать только явно:
-   ```js
-   features: { aiDisclosure: { enabled: false } }
-   ```
-2. **Глоссарий**: сложные термины размечать как `.gterm` с вложенным `.gtip`. Категория определяется автоматически; при необходимости можно задать:
-   ```html
-   <span class="gterm" data-category="Богословие" data-category-slug="doctrine">термин<span class="gtip">...</span></span>
-   ```
-3. **Сноски** `.fn-marker` и глоссарий на мобильных открываются как bottom sheet. Не добавлять отдельные touch-хендлеры в HTML.
-4. **Квиз**: для новых вопросов использовать `sourceRef` — строку, объект `{ label, href }` или массив. Это источник, который выводится в feedback при ошибке/ответе.
-   ```js
-   { q: '...', options: [...], answer: 1, ok: '...', err: '...', sourceRef: { label: 'Иер. 17:9', href: '#istoricheskiy-fon' } }
-   ```
-5. **Accuracy block email**: не хардкодить subject/body. `site.js` сам формирует тему и тело письма из `h1` и `location.href`. Email должен быть только `viktorcoy2012@gmail.com`.
-6. **Sitemap**: `lastmod` только ISO8601 с московским `+03:00`, например `2026-05-26T00:00:00+03:00`.
+### 6.3 Runtime-компоненты
 
-7. **Share API**: для цитат/квизов использовать объектный payload, а не временную подмену DOM:
-   ```js
-   window.SiteShare.open(button, { dialogTitle: 'Поделиться цитатой', title, text, url });
-   ```
-8. **AI disclosure placement**: если `article` содержит собственный `header.article-header` или hero-figure, runtime вставляет `.ai-disclosure` после них — перед основным текстом. Не вставлять второй блок вручную.
+| Компонент | Поведение |
+|---|---|
+| `<header class="article-header">` | h1, byline (см. §3.1), метаданные (дата, ≈мин чтения) |
+| `<aside class="author-card">` | Перед `.sources-block` / `.reading-list` |
+| `<aside class="article-toc">` | Для длинных статей (>20мин) |
+| Глоссарий `<span class="gterm">термин<span class="gtip">…</span></span>` | luxury tooltip, mobile bottom-sheet |
+| Академические сноски `<span class="fn-marker">N<span class="tooltip">…</span></span>` | mobile bottom-sheet |
+| Библейские ссылки `<button class="bref" data-ref="Иер 17:9">` | tooltip с переводами |
+| `.gb-accuracy-btn--email` | mailto: только `viktorcoy2012@gmail.com`, subject/body формируются JS из h1 + URL |
 
+### 6.4 SITE_CONFIG — обязательная часть HTML
 
-После добавления статьи:
-1. Обновить `sitemap.xml` (добавить URL)
-2. Обновить `data/series.json` (если статья входит в серию)
-3. Обновить `data/search-manifest.json` (для Ctrl+K поиска)
-4. Запустить `npm run cache-bust`
+См. README.md § «Контракт `window.SITE_CONFIG`».
 
----
+### 6.5 Quiz Engine v3+
 
-## 7. ОБЯЗАТЕЛЬНЫЕ ПРОВЕРКИ
+Вопросы могут содержать `sourceRef` для академического feedback:
 
-```bash
-# 1. Синтаксис JS — все 11 файлов + sw.js + scripts
-node --check js/*.js
-node --check scripts/*.js
-node --check sw.js
-
-# 2. Хеши cache-bust свежие
-npm run cache-bust
-
-# 3. Полная валидация (HTML, JSON, манифесты)
-npm run validate          # HTML, JSON, манифесты
-
-# 4. SEO-проверки
-npm run seo-audit
-
-# 5. Всё вместе (validate + seo-audit + cache-bust)
-npm run validate:all      # ← рекомендуется перед каждым коммитом
+```js
+{
+  q: 'Вопрос...',
+  options: ['...', '...', '...'],
+  answer: 1,
+  ok: 'Почему верно...',
+  err: 'Почему дистрактор ошибочен...',
+  sourceRef: { label: 'Иер. 17:9', href: '#istoricheskiy-fon' }
+}
 ```
 
-Если хоть одна проверка FAIL — **не коммитить**.
+`sourceRef` — строка, объект `{ label, href }` или массив. Результаты квиза сохраняются в `localStorage` как `quiz-result-v2:{page.id}`.
+
+### 6.6 Share API (для цитат, результатов квизов)
+
+```js
+window.SiteShare.open(button, {
+  dialogTitle: 'Поделиться цитатой',
+  title: document.title,
+  text: '«цитата» — Название статьи',
+  url: 'https://gospod-bog.ru/article/#:~:text=...'
+});
+```
+
+НЕ подменять заголовок диалога через DOM. Все платформы (TG/WA/VK/MAX/OK/Copy) используют `activeShareUrl/Title/Text` из payload.
+
+### 6.7 После добавления статьи
+
+1. Обновить `sitemap.xml` (ISO8601 lastmod с +03:00)
+2. Обновить `feed.xml` (`<item>` в начало `<channel>` + `<lastBuildDate>`)
+3. Обновить `data/series.json` (если статья входит в серию)
+4. Обновить `data/search-manifest.json` (для Ctrl+K)
+5. Добавить карточку на `/articles/index.html` и (если уместно) на `/index.html`
+6. Подготовить OG-картинку (1200×630, `.webp` или `.jpg`)
+7. `npm run cache-bust`
+8. `npm run validate:all` + `node scripts/audit-pro.js`
+
+IndexNow при `git push main` сам уведомит Яндекс/Bing.
 
 ---
 
-## 8. КРАСНЫЕ ФЛАГИ
+## 7. Красные флаги
 
-| Если собираешься сделать | Почему стоп |
+| Если ты собираешься… | …почему НЕТ |
 |---|---|
 | «Создать новый CSS для article-share-buttons.css» | См. §2. Используй `site.css`. |
-| «Создать utils.js для общих функций» | См. §5.1. У каждого JS своя тема. |
+| «Создать `utils.js` для общих функций» | См. §5.1. У каждого JS своя тема. |
 | «Заменить "Редактор" на "Автор" — короче» | См. §3.1. Это намеренно. |
 | «Упростить JSON-LD — слишком много свойств» | См. §3.2. Это для SEO. |
-| «Удалить старые AUDIT_*.md — лишний мусор» | Оставить `AUDIT_HISTORY.md` + `DEEPENED_AUDIT_*.md` в корне. |
-| «Обновлю pretty каждый файл — для красоты» | НЕТ. Diff будет нечитаем. |
-| «Прогоню eslint --fix — улучшит код» | НЕТ. Только точечно. |
-| «Поправил CSS, не запустил cache-bust» | См. §4 / §7. Запусти. |
-| «Заменю jQuery-стиль селекторы на современный API» | НЕТ. Проект без jQuery, не вмешивайся. |
-| «Добавлю TypeScript для надёжности» | НЕТ. Проект на vanilla JS, это архитектурный выбор. |
+| «Удалить старые AUDIT_*.md — лишний мусор» | Оставлять `AUDIT_HISTORY.md`. `audit/AUDIT_CLEANUP_PLAN_*.md` оставлять до завершения плана. |
+| «Обновлю pretty каждый файл — для красоты» | НЕТ. Diff нечитаем. |
+| «Прогоню `eslint --fix` — улучшит код» | НЕТ. Только точечно. |
+| «Поправил CSS — забыл `cache-bust`» | Запусти. SW не подхватит правки. |
+| «Заменю vanilla на TypeScript для надёжности» | НЕТ. Архитектурный выбор vanilla. |
+| «Верну AI-disclosure для прозрачности» | См. §0 п.3. Об ИИ — только на `/about/`. |
+| «Добавлю `!important` на всякий случай» | См. §4.2 чеклист. |
+| «Перепишу `summary-card` с `!important` для надёжности» | НЕТ. PLAN-04 P8-P10 сняли 39 ненужных. Конкурентов в каскаде нет (компонент только на 2 не-nagornaya страницах). |
 
 ---
 
-## 10. ЧТО ИЗ КОРНЯ РЕПО НИКОГДА НЕ КОММИТИТЬ
+## 8. Service Worker — что важно
 
-К 2026-06-02 из репо удалены и больше не должны появляться в корне:
+`sw.js` — версионируется автоматически (`scripts/cache-bust.js` обновляет `CACHE_VERSION`). При правке `sw.js` руками — **не править version-строку**, скрипт это сделает.
+
+Precache список — в самом `sw.js`. При добавлении нового шрифта/JS-файла — добавь в precache.
+
+---
+
+## 9. Безопасность / гигиена
+
+- ❌ Не добавлять `http://` ссылки в контент — `audit-pro` ругается на mixed-content. Используй `https://` или (для умерших источников) `https://web.archive.org/web/2025/http://...`.
+- ❌ Не хранить ключи / токены в репозитории. `INDEXNOW_KEY` — только в GitHub Secrets.
+- ❌ Не использовать `eval` / `Function` / `innerHTML = userInput`.
+
+---
+
+## 10. Что из корня репо никогда не коммитить
 
 | Файл / маска | Почему нельзя |
 |---|---|
-| `*.patch` | `.patch`-файлы — рабочие артефакты git, не контент. Не нужны на проде. |
-| `*.py` в корне | Статический сайт без серверного Python. Все Python-скрипты — только в `scripts/` (build-tools). |
-| `*.tsx`, `*.ts`, `src/components/` | Сайт собран как vanilla HTML+CSS+JS. TypeScript/React-компоненты — мёртвый код, не компилируется. |
-| `README-<что-то>.txt`, `README.txt` | Дубли `README.md`. |
-| `PATCH-V*-SUMMARY.md`, `AUDIT_REPORT_*.md`, `*_PLAN_*.md` | Истёкшие планы и отчёты. История сохраняется в git log и `AUDIT_HISTORY.md`. |
-| `apply_*.py`, `fix_*.py`, `final_*.py`, `split_*.py` | Одноразовые костыли — следы прошлых неудачных правок. Если нужен скрипт — клади в `scripts/` и документируй в `package.json`. |
+| `*.patch` | git-артефакты, не контент |
+| `*.py` в корне | Статический сайт. Python — только в `scripts/` (build-tools) |
+| `*.tsx`, `*.ts`, `src/components/` | Vanilla проект, TypeScript-компоненты — мёртвый код |
+| `README-<что-то>.txt`, `README.txt` | Дубли `README.md` |
+| `PATCH-V*-SUMMARY.md`, `AUDIT_REPORT_*.md`, `*_PLAN_*.md` (в корне) | Истёкшие планы; история — в git log и `AUDIT_HISTORY.md`. План в `audit/` — оставлять до завершения. |
+| `apply_*.py`, `fix_*.py`, `final_*.py`, `split_*.py` | Одноразовые костыли. Нужен скрипт — в `scripts/` + `package.json` |
+| `shots/`, `visual-audit-report.json`, `deep-check.json`, `node_modules/`, `.playwright-browsers/` | Уже в `.gitignore` |
+| `<INDEXNOW_KEY>.txt` | Генерируется `deploy.yml` только в Pages-артефакте |
 
-Если AI-агент создал такой файл в процессе работы — он обязан удалить его перед коммитом.
-
----
-
-## 11. История этого документа
-
-| Версия | Дата | Что |
-|---|---|---|
-| AGENTS-r1 | 2026-05-?? | Создан, только правила byline |
-| AGENTS-r2 | 2026-05-17 | Расширен: вся архитектура, 9 JS, 4 CSS, защищённые блоки, чек-лист |
-| AGENTS-r3 | 2026-05-22 | Удалены ссылки на docs/archive и patch-скрипты, обновлена архитектура |
-| AGENTS-r4 | 2026-05-23 | Матрица браузеров §1.1, metrics §1.2, tw.min.css §3.5, html.dark §4.3, хеши §3.4 |
-| AGENTS-r5 | 2026-05-24 | Добавлены v27-v30: полное сжатие и исправление кнопок шрифтов A−/A+, удаление дублей CSS, финальная победа над легаси-токенами (0 / 0) |
-| AGENTS-r6 | 2026-05-24 | v31: Исправлено агрессивное наследование шрифта в Нагорной серии, исправлен обход валидатора EXTRA_PAGES и предупреждение javascript:void(0) |
-| AGENTS-r7 | 2026-05-24 | v32: Полный аудит кода, глубокий селекторный анализ, удаление 140+ строк мёртвого CSS (.epilogue-, .back-to-index), оптимизация веса стилей на 3 КБ |
-| AGENTS-r8 | 2026-05-28 | Актуализированы 5 CSS / 11 JS, AI disclosure, glossary categories, mobile footnotes, quiz sourceRef, accuracy mailto |
-| AGENTS-r9 | 2026-05-28 | Уточнены SiteShare object payload, AI disclosure placement, quiz sourceRef fallback по focus |
-| AGENTS-r10 | 2026-05-30 | Биографии: восстановлена малая карточка `h-intro-card--biographies` на главной + добавлен раздел `biografii/` со страницей серии. Закрыт пакет JS-багов (SiteUtils merge, quizBonusResult показ, tooltip aria-expanded, visualViewport dedup, _searchGen guard, плюрализация). Актуализированы счётчики !important (§4.2), таблица CSS-файлов (§2), пояснение к ?v= хешам (§0/§3.4). |
-| AGENTS-r11 | 2026-06-02 | Закрытие техдолга после crash-recovery предыдущего агента. Commits A–H: вырезан AI-disclosure JS-модуль; восстановлены 4 URL в sitemap (+ISO8601); добавлена серия `dzhon-gill` в `series.json`; превью справочника = bookshelf, не Гилл; статья «Исторический контекст» расширена с 790 до 2812 слов (6 → 10 разделов); удалены 55 дубликатов CSS (~10 КБ — `.premium-frame` 5x, `button.bref` 8x, `.mobile-controls .theme-toggle` 8x и др.); определены `.note-box`, `.context-links`, `.manuscript-quote`; добавлен JSON-LD в kontekst; Top-10 must-read с live-ссылками в справочник; унифицирована шапка статей Гилла (удалён чужеродный `<header class="site-header">`); заменена картинка Уайтфилда на исторически достоверную (фигура в чёрной рясе на сколоченной деревянной кафедре); задействованы все 5 остававшихся неиспользуемых изображений Гилла. Удалён мусор из корня (1.1 МБ: `gill-trilogy-split.patch` 941 КБ, `src/components/*.tsx` 135 КБ, ad-hoc Python скрипты, истёкшие `*_PLAN_*.md`). Новые правила: §0 пункты 8–10, §3.6 (известный техдолг), §3.7 расширен (`<picture>` шаблон, OG-правила, без AI-notes), §10 (что не коммитить в корень). |
-| AGENTS-r12 | 2026-06-02 | Закрытие §3.6 техдолга (commit I): inline `<style>` из Part 1/2/3 вынесены в `css/site.css` (−36 КБ из HTML, +12.6 КБ в CSS — однократно кэшируется). Дополнительные оптимизации в том же коммите: единый `og:image` в каждой статье Гилла (убраны JPG-двойники, AGENTS §3.7 пункт 6); починены 3 битые ссылки на изображения (`gill-library-shelf.jpg`, `gill-transatlantic-map.png/.webp` сгенерированы из 900w); починена карточка справочника на `articles/index.html` (превью bookshelf вместо портрета); удалены 9 мёртвых файлов изображений (~4 МБ — 4× `og-dzhon-gill-1697-1771.*` после исправления ссылок, 5× `gill-library-interior.*` неиспользованные). CACHE_VERSION → gb-v167-biography-shared-css.|
+Если AI-агент создал такой файл во время работы — обязан удалить перед коммитом.
 
 ---
 
-> Этот файл — **«договор»** между владельцем и любым ИИ.
->
-> Нарушение = регресс, который видят сотни читателей сайта. Если правило кажется глупым — спроси, **почему** оно появилось.
+## 11. История документа (свёрнуто)
 
-## AGENTS-r14 (2026-06-02)
-- **CSS Audit**: Removed massive blocks of duplicated/broken selectors in `css/site.css` (lines 8500-8800) that were breaking `.theme-toggle` and tooltips.
-- **Image Infrastructure**: 
-  - Fixed circular reference: `gill-context-scroll` (Boy in Shop) $\to$ `gill-young-boy-shop` link; `gill-young-boy-shop` (Inkwell) $\to$ `gill-inkwell-macro` link.
-  - Replaced hero image in Historical Context article with `gill-library-shelf`.
-  - Corrected `width` and `height` attributes for 14+ images across the biography trilogy and context articles to match real aspect ratios.
-- **Semantic Polish**:
-  - Expanded explanation of *Nonconformist* vs *Dissenter* vs *Baptist* in the context article with English terminology.
-  - Fixed "Баптист — диссентер" spacing.
-  - Wrapped plural and adjective forms of key theological terms in `.gterm` for consistent tooltip support.
-- **Stability**: Verified only one George Whitefield image remains (the correct one with spires).
+Полная история r1..r62 — в `git log` (`git log --oneline --grep="AGENTS-r"`).
+
+Сохранены здесь только последние 5 значимых вех:
+
+| Версия | Дата | Главное |
+|---|---|---|
+| **AGENTS-r63** | 2026-06-04 | **Полная перезапись (PLAN-05).** Свёрнута история 60+ записей (полная — в git log). Убраны противоречия: AGENTS до этого учил создавать `.theme-float-btn`, `.ai-disclosure` (давно удалены) и держал устаревший счётчик `!important` ~189. Зафиксированы актуальные числа после PLAN-04 (199). Добавлен §9 «Безопасность/гигиена», §8 «Service Worker». §4.4 расширен пунктами 9 (мёртвый код = удалить) и 10 (лимит ≤200). Объединена сломанная нумерация (было два §11). |
+| AGENTS-r62 | 2026-06-04 | **PLAN-04 — !important cleanup, site.css 342 → 199.** 15 партий точечной чистки + 1 hotfix HTML-бага + notify-on-failure.yml workflow. См. `audit/AUDIT_CLEANUP_PLAN_2026-06-04.md`. |
+| AGENTS-r61.17 | 2026-06-03 | Mobile long-block premium compaction (summary-card / note-box / info-box collapse-to-preview ≥740-950px на мобильных). |
+| AGENTS-r17 | 2026-06-02 | **Unified Floating Controls (модуль 29).** Единый `.gb-fc-theme + .gb-fc-search` блок заменяет legacy `.theme-float-btn / #themeFloat / #gbSearchFloat / .nag-sidebar-theme-btn`. Эти legacy окончательно удалены из CSS в PLAN-04 P5. |
+| AGENTS-r11 | 2026-06-02 | **AI-disclosure JS-модуль удалён.** Класс `.ai-disclosure` остался в CSS как мёртвый код; удалён из CSS в PLAN-04 P7. |
 
 ---
 
-## AGENTS-r17 (2026-06-02) — UNIFIED FLOATING CONTROLS + GLOSSARY CROSS-REFS + IMAGE FIXES
-
-> **Контекст:** r16 закрыл glossary-дубликаты и legacy `#gterm-inline-tip`. Оставались три
-> разрозненных артефакта плавающих кнопок (тема/поиск), битый «кружочек» вместо солнца на
-> части страниц, и два неработающих превью в каталоге `/biografii/`. Прошлые два агента
-> (r15/r16) упали на pool-таймауте до того как закрыть. Закрыто здесь.
-
-### 1. Единый блок «тема + поиск» (Floating Controls)
-
-**Новый модуль 29 в `js/site.js`** — `gb-floating-controls`. Один на всё. Заменяет:
-
-| Что было | Где жило | Проблема |
-|---|---|---|
-| `<button class="theme-toggle">` в шапке статьи | `articles/*/index.html` (inline) | `position: absolute` — уезжал при скролле |
-| `#themeFloat` / `.theme-float-btn` | js/site.js (бывший `theme-toggle-floating`) | FAB внизу справа, не на уровне крошек |
-| `#gbSearchFloat` | js/site.js (бывший Floating Search Button) | Inline-styled, отдельно от темы |
-| `.nag-sidebar-theme-btn` | `nagornaya/chast-*/index.html` (sidebar) | Свой стиль, свой SVG |
-
-#### Правила Floating Controls (НЕ нарушать):
-1. **Активация:** `body.gb-fc-active` ставится JS-ом, **если** на странице есть `.breadcrumb`
-   **или** `body.nagornaya-page`. На главной/каталогах (index, articles/, biografii/,
-   pastor-series/, nagornaya/seriya/, about/-если без хлебных крошек) — не активен:
-   там переключатель темы уже встроен в `.mobile-controls` верхнего nav-bar.
-2. **Структура:** `<div id="gbFloatingControls"> <button.gb-fc-theme> <button.gb-fc-search>`.
-3. **Позиция:** `position: fixed`; `top: calc(clamp(24px, 3.5vw, 44px) - 10px)` (тот же
-   уровень что у `.breadcrumb`); `right: max(8.5vw, env(safe-area-inset-right, 12px))`.
-   Поиск ниже темы на `gap: 12px` (≈ 56 px центр-к-центру).
-4. **Иконки:** канонические `SUN_SVG` / `MOON_SVG` / `SEARCH_SVG` инжектятся JS-ом
-   из единых констант в модуле 29. **Никакой другой SVG для темы/поиска
-   в HTML/CSS не должен использоваться** — это лечит баг «вместо солнышка кружочек»,
-   когда в `articles/dzhon-gill-istoricheskiy-kontekst/` лежал `<circle r="5">`
-   без лучей, и `articles/dzhon-gill-spravochnik/` вообще не имел иконки темы.
-5. **Логика темы:** переключает `html.dark`, пишет `localStorage.theme`,
-   диспатчит `theme:changed`. `MutationObserver` синхронизирует иконку с внешними
-   переключениями (bottom-bar и т.п.).
-6. **Логика поиска:** `GBSearch.open()` или `window.dispatchEvent(new CustomEvent('gb:openSearch'))`.
-7. **Канонизация легаси-иконок:** видимые `.bottom-bar .theme-toggle` /
-   `.mobile-controls .theme-toggle` автоматически получают канонический SVG через
-   `canonizeLegacyIcons()` (фикс «кружочка» для bottom-bar).
-8. **CSS-подавление legacy:** `body.gb-fc-active .theme-toggle, …` → `display: none`.
-   Исключение: `.bottom-bar .theme-toggle, .mobile-controls .theme-toggle` остаются видимыми.
-9. **⛔ Запрет:** новый агент **НЕ создаёт** отдельные плавающие кнопки темы/поиска
-   в HTML или в новых JS-модулях. Только этот единый модуль.
-
-### 2. Glossary cross-ref clicks (новый модуль 30 в `js/site.js`)
-
-В `/data/glossary.json` определения могут содержать ссылки вида
-`<a class="gterm" href="#" data-term="экзегеза">…</a>` (cross-ref на другой термин).
-До r17 эти ссылки попадали в DOM-у тултипа, но клик по ним не делал ничего полезного.
-
-Теперь делегированный handler:
-- Перехватывает клик по `.gtip a.gterm[data-term]` / `.gtip-luxury__body a.gterm[data-term]`.
-- Находит на странице первый «настоящий» `.gterm[data-term="<term>"]` (вне любого `.gtip`).
-- Скроллит к нему и эмулирует клик → открывается тултип целевого термина.
-- Если такого термина на странице нет — клик глушится (preventDefault), без `[object Object]`.
-
-### 3. Glossary унификация (актуальное состояние, r16+r17)
-
-- `js/glossary.js` работает на **любой** странице, где есть `<article>` или
-  `<main[data-pagefind-body]>` — НЕ только на `pageType === 'article'`.
-- `getDefinitionText()` корректно достаёт строку из `dict[k].definition.definition`
-  (двухуровневый legacy-формат glossary.json).
-- alias→canonical map: жадный матч по длинным алиасам первыми, Unicode-граница `\p{L}`.
-- Никаких больше отдельных `#gterm-inline-tip`. Только `makeTooltipController('.gterm','.gtip', …)`
-  через `SiteUtils.initGlossaryTooltips(root)` в module 20b.
-- TreeWalker отвергает содержимое `.gtip` / `.gtip-luxury` (не плодим рекурсивные тултипы).
-
-### 4. Превью в каталоге `/biografii/`
-
-| Карточка | Было | Стало |
-|---|---|---|
-| «Джон Гилл: справочник» | `og-dzhon-gill-1697-1771-600w.webp` (файла нет → битая ссылка) | `gill-nine-volumes-600w.webp` + `gill-nine-volumes-900w.webp` (стопка 9 томов *Body of Divinity*) |
-| «Часть I: Человек» (×2 — featured + full list) | `og-dzhon-gill-chast-1-chelovek.jpg` (пейзаж Саутварка — не Гилл) | `dzhon-gill-portret.jpg` + `dzhon-gill-portret.webp` + `dzhon-gill-portret-360w.webp` (аутентичный портрет Гилла за рабочим столом с пером и книгой) |
-
-### 5. Правила, обязательные для будущих агентов
-
-1. **Единая функция вместо per-page стилей.** Если требуется одинаковое поведение
-   на >1 странице — это `js/site.js` модуль + правило в `css/site.css`, **не** копипаста
-   inline-стилей и не отдельный файл `js/<feature>.js`.
-2. **Глоссарий — для всего сайта.** Условие «`pageType === 'article'`» больше
-   нигде не должно фильтровать инициализацию глоссария.
-3. **Тултипы.** Единственная точка входа — `SiteUtils.makeTooltipController(anchor, tip, opts)`.
-   `.bref/.btip` (Bible refs), `.fn-marker/.tooltip` (footnotes), `.gterm/.gtip` (glossary) —
-   три типа, один контроллер. Нельзя создавать индивидуальные обработчики
-   для конкретной серии или конкретной статьи.
-4. **Иконки темы и поиска** — только канонические SVG из модуля 29 `js/site.js`.
-   Не редактировать встроенный `<svg>` в HTML — он скрыт CSS-ом и не используется.
-5. **Превью изображения** в каталогах: `<picture>` с двумя `srcset` (600w+900w)
-   или `360w + base`. `loading="lazy"` (или `eager` для первой карточки above-the-fold),
-   `decoding="async"`, явные `width`/`height` — см. §3.7.
-
----
-
-## 11. История этого документа (продолжение)
-
-| Версия | Дата | Что |
-|---|---|---|
-| AGENTS-r13 | 2026-06-02 | (резерв, не использовался) |
-| AGENTS-r14 | 2026-06-02 | CSS audit (8500-8800), image infrastructure fixes, semantic polish |
-| AGENTS-r15.x | 2026-06-02 | Glossary professional logic (canonical keys + aliases), tooltip cleanup, Part I image fix, Whitefield reset, head rendering & recursive tooltips fix |
-| AGENTS-r16 | 2026-06-02 | Унификация тултипов и глоссария для всего сайта: убран `#gterm-inline-tip`, glossary.js работает на любой странице с `<article>`, исправлено извлечение definition.definition |
-| AGENTS-r17 | 2026-06-02 | **UNIFIED FLOATING CONTROLS** (модуль 29 в site.js): единый sticky-блок «тема + поиск» на уровне breadcrumb, заменяет три разрозненных артефакта (.theme-toggle / #themeFloat / #gbSearchFloat / .nag-sidebar-theme-btn). Канонические SVG sun/moon/search — фикс «вместо солнышка кружочек» на dzhon-gill-istoricheskiy-kontekst и dzhon-gill-spravochnik. **Glossary cross-ref clicks** (модуль 30): клик по `<a class="gterm">` внутри тултипа переключает на тултип целевого термина. **Превью** в `/biografii/`: справочник → gill-nine-volumes (был битый og-dzhon-gill-1697-1771), Часть I → dzhon-gill-portret.jpg (был пейзаж Саутварка). |
-| AGENTS-r17.1 | 2026-06-02 | **7 новых ассетов от редактора** в `images/` (полный набор `.jpg/.png + .webp + -600w + -900w + -1200w` для каждого): `gill-five-volumes-shelf` (5 томов Гилла на полке), `gill-clarendon-code-acts` (свитки Corporation/Uniformity/Conventicle/Five Mile Acts), `gill-engraving-talmud-study` (ч/б гравюра Гилла за Талмудом), `gill-portret-full-study` (расширенный 16:9 портрет Гилла за столом — дополняет, не заменяет, существующий `dzhon-gill-portret`), `gill-bunhill-defoe-plaque` (фото мемор. таблички в Bunhill — дополняет существующую гравюру `gill-bunhill-fields` с похоронной процессией), `gill-hebrew-scroll-yad` (свиток с серебряной указкой). Для `gill-baptism-scene` добавлены недостающие base `.jpg` / `.webp` / `-1200w.webp` (раньше серия была неполной — только 600w + 900w). Существующие ассеты не перезаписаны (проверено визуально). |
-| AGENTS-r18 | 2026-06-02 | **Чистка мусора + превью Части I + SEO-фикс.** Удалены неиспользуемые ассеты: `gill-bunhill-defoe-plaque*` (это мемор. табличка Defoe, не Gill — не относится к теме), `gill-inkwell-macro*` (визуальный дубликат `gill-five-volumes-shelf` под путаным slug'ом, нигде не используется), `acts-of-suppression.png` (заменён `gill-clarendon-code-acts` в r17, остаток). Превью Части I в `/biografii/` (обе карточки) переведено `dzhon-gill-portret.jpg` (portrait-кроп) → `gill-portret-full-study` (16:9 landscape, корректно ложится в thumb 160×108). SEO-фикс: в JSON-LD `@graph` страницы `dzhon-gill-istoricheskiy-kontekst` добавлен отсутствовавший узел `WebSite #website` (устранена единственная hard-ошибка seo-audit). `whitefield-field` НЕ удалён (оставлен как master-резерв; визуально близок к используемому `whitefield-preaching`). |
-| AGENTS-r32 | 2026-06-02 | **Byline «Автор-редактор» + SEO.** Обновлено правило §3.1: для авторских статей (Тип A/B) byline теперь «Автор-редактор: Фёдор Милованов» (он создаёт материалы + редактирует). Переводы (Тип C) без изменений — «Редакция перевода». `about/index.html`: обновлён `article-desc`, `og:description`, JSON-LD Person добавлены `jobTitle`, `description`, `knowsAbout`, YouTube в `sameAs`. Создан `llms.txt` для AI Search (Perplexity, ChatGPT, Claude, Grok). |
-| AGENTS-r33 | 2026-06-02 | **CSS bug fixes + dark mode + чистка.** `biography-epigraph::before`: удалён двойной `content: none !important` (был ×2 перед реальным `content: '"'`). z-index токенизированы: `.gb-floating-controls` 9998→`var(--z-toast-high)`, `.theme-float-btn` 90→`var(--z-raised-high)`. Dark mode fix в `20-antisovetov`: 16 inline hex colors (`#d97706/2b6cb0/e11d48`) → `var(--color-amber/blue/rose, fallback)`. Удалён `important_audit.txt` из корня (нарушал §10). |
-| AGENTS-r34 | 2026-06-02 | **CSS-переменные аудит + dead var removal.** Глубокий анализ всех 121 объявленных CSS-переменных. Выявлены и удалены 21 мёртвая переменная (39 строк, из `:root` и `html.dark`): legacy aliases `--fg/fg-secondary/text-primary/text-secondary/text-muted/link/note-bg/quote-bg/success-bg/surface-2`, устаревшие z-index `--z-raised/z-toc`, `--shadow-md`, `--nicea-color`, `--keyboard-height`, неиспользуемые Tailwind-токены `--color-violet/emerald/green/purple/sky/yellow`. Объяснение: переменные "про запас" в `:root` = мёртвый код → в §4.4 добавлено правило 9. |
-| AGENTS-r44b | 2026-06-03 | **CSS fn-marker unification + hover guards.** Merged .fn-marker base+AUDIT§2 blocks (−8 !important); collapsed :focus+:focus-visible → :focus-visible; added @media(hover:hover) guard to .fn-marker:hover transform; removed !important from .fn-marker.fn-trans. |
-| AGENTS-r44c | 2026-06-03 | **JS passive listeners.** site.js: scroll 4→13 passive (+8); touch all correct. Fixed double passive artefact. |
-| AGENTS-r44d | 2026-06-03 | **CSS !important deep cleanup (301→257, −44).** Removed §9 SCROLL-LOCK duplicate (in mobile-hotfix.css); §8 phrases −6; §5 gb-accuracy −1; h-hero-title hover transforms −14 (guarded @media); display:none on unused classes −7. site.css: 258KB → 244KB (−5.3%). |
-| AGENTS-r44e | 2026-06-03 | **JS passive listeners all files + SEO.** scroll-perf/enhancements/bookmark-engine/nagornaya-toc: +passive. sitemap.xml: lastmod →2026-06-03 (28 URLs). manifest.json: +shortcuts, +categories. sw.js: CACHE_VERSION bumped. |
-| AGENTS-r51 | 2026-06-03 | **CSS/JS deep dedup + color tokens.** CSS: 8 duplicate blocks merged (faq-icon, gb-accuracy-btn, fn-marker, btoc-fontsize-btn, theme-float-btn, pullquote::before, heart-flip-back). New tokens: --color-sun-yellow/danger-text/success-text/amber-strong (24 hardcodes tokenized). §11 dead dangling selectors fixed; §14 removed (backdrop-filter already in base). JS: SiteUtils.barThemeBtn() + featureToc() + featureShare() added, 11 calls replaced. |
-| AGENTS-r50 | 2026-06-03 | **CSS gtip-luxury merges + JS SiteUtils.scrollRaf.** gtip-luxury 7 blocks merged (header align, close margin, category flex, definition overflow-wrap). .gterm .gtip::before duplicate removed. .article-img.float-left, .article-item.card, .btoc-fontsize-btn, .resume-reading-dismiss deduplicated. .bar-icon-btn 40→44px in base, @layer dup removed. .btoc-close 32→44px in base. JS: SiteUtils.scrollRaf() added, 5× ticking+rAF patterns → SiteUtils.scrollRaf(). |
-| AGENTS-r50b | 2026-06-03 | **Dead CSS removal + h1El refactor.** .pq-attribution (435b) + .h-section-link (287b) removed. articleTopnav ticking → scrollRaf. querySelector h1 variants ×3 → SiteUtils.h1El(). Fixed orphan } from grouped selector removal. site.css: 258,110→233,808b (−9%), !important 342→189. |
-| AGENTS-r50c | 2026-06-03 | **.btip/selection-share/pq-scripture/meta merges.** .btip.gb-floating-tip will-change into base. .quiz-launch-hero 2px removed (3px overrides). #selection-share-popup z-index consolidated. .related-articles__meta font-feature-settings into base. .pq-scripture Deep Polish 8→10px radius + transition into base. |
-| AGENTS-r49 | 2026-06-03 | **Deep CSS/JS continued optimization.** CSS: .quiz-feedback::before extracted 9 common props (−622b); .bar-icon-btn svg 18px→20px + dedup; #reading-progress #7a2e2e→var(--color-accent); #toc-list merged. mobile-hotfix.css: 15 dead classes removed (−2109b), !important 72→59. JS: SiteUtils.themeKey='theme' (DRY), nagornaya-mobile-toc.js local ready()→SiteUtils.ready() (−75b), quiz-feedback base class extracted. sw.js CACHE_VERSION bumped. |
-| AGENTS-r48 | 2026-06-03 | **CSS comment compression (−3.9KB) + JS SiteUtils.articleEl/h1El.** 15 large comments shortened (audit explanations → 1-line summaries). Dead legacy aliases removed (--color-surface-2, --accent-strong, --accent-selection). CSS block merges: .quiz-options, .btoc-nav, .sd-close, #reading-progress gradient order fixed. site.css: 240,728→235,793b (−4,935b). |
-| AGENTS-r48b | 2026-06-03 | **Vendor prefixes + SVG dedup + CSS block merges.** -webkit-backface-visibility removed (Safari 15+ target). Extracted 3 duplicate SVG strings → constants (−297b). Merged .bottom-bar backdrop-filter + .btoc-panel safe-area/viewport-h into base blocks. Removed empty .bottom-bar comment block. site.css: −22,317b total from r41 (−8.6%). |
-| AGENTS-r47 | 2026-06-03 | **CSS dedup + JS DRY + passive resize.** CSS: merged split blocks (.bar-icon-btn, .btoc-close, .quiz-wrapper, article p, .tldr-list, .article-img img); removed dead vars (--z-dropdown-high/overlay/tooltip-low/absolute, --s-1, --color-success-bg); fixed .tldr-list grid to min(280px,100%). JS: added SiteUtils.pageType() cached getter, replaced 6 getConfig('page.type','') calls; all resize listeners → passive (site.js/enhancements/nagornaya-toc/bookmark-engine). |
-| AGENTS-r46 | 2026-06-03 | **MAP_DATA data island + CSS dead code.** 20-antisovetov: STRATEGIC_MAP_DATA (17KB) → `data/strategic-map-antisovetov.json` as `<script type="application/json">` data island; popover reads via JSON.parse. CSS: §1 drop-cap guard removed (−392b), hebrew font rules, nagornaya pill, canonTimeline @media, biography-portrait, fn-dove-icon hover guard, gtip-luxury__category, .biography-info. !important 229→198 (−31). |
-| AGENTS-r46b | 2026-06-03 | **SiteUtils.ready() + final !important cleanup.** js/site.js: added SiteUtils.ready(fn) helper; replaced 6 readyState patterns (−709b). CSS site.css: §5 gb-accuracy colors −4, §7 spacing margins −3, §16 reduced-motion preserved. !important 198→191. TOTAL site.css reduction from r41: 258,110→242,620b (−15,490b, −6%), !important ~480→319 total CSS (−161). |
-| AGENTS-r45a | 2026-06-03 | **CSS !important 257→229 (−28).** Removed unnecessary !important: body.topnav-active, #selection-share-popup in @media 440px, .bookmark-toast-close padding, -webkit-appearance in @layer utilities, .article-img--portrait-wide, 7× @media 600px mobile margins, .kbd-hint-toast, #back-to-top svg, .bref:hover. |
-| AGENTS-r45b | 2026-06-03 | **JS critical bug fixes + CSS refactor.** CRITICAL: Fixed 11 broken scroll listeners `function (, {passive})` introduced by r44c automation (across site.js, scroll-perf.js, bookmark-engine.js, nagornaya-mobile-toc.js). Refactored 4 direct clipboard.writeText() → SiteUtils.copyText() (−1.6KB). Removed dead CSS: 5 classes, 5 @media print blocks → 1, 3 @media pointer:coarse blocks → 1, duplicate property declarations (color-mix fallback pattern). nagornaya-mobile-toc.css: 59→31 !important (−28, removed unscoped .nag-summary__* blocks). |
-| AGENTS-r44 | 2026-06-03 | **Big Deep Upgrade.** A: Dead CSS −6.4KB (26 мёртвых классов: `.ai-disclosure`, `.fn-sheet`, `.faq-item` ×6, `.ancient-epigraph`, `.card-cover-wrap` и др.); дубль `@keyframes fx-breathe` удалён; CSS структура валидирована (0 orphan braces). B: `:root` blocks 9→2 (consolidated into `@layer base`); `--color-amber/blue/rose/red`, `--f-hebrew-display`, `color-scheme`, `--visual-viewport-h`, `--article-font-size` теперь в canonical `:root`. C: `nagornaya-mobile-toc.css` !important 73→59 (R21 guardrail block + nag-quiz-h2). D: `site.js` mod29: `aria-live` announcer при смене темы; `enhancements.js`: `prefers-reduced-motion` guard для Ambient Scripture. E: `feed.xml` lastBuildDate обновлён. F: SW cache version bumped. Итого: site.css −12.6KB (−4.9%), 258KB→245KB. |
-| AGENTS-r43b | 2026-06-02 | **Home page inline dedup + skip-link.** `index.html`: убраны Reading Progress/Navbar/ScrollTop/Reveal (−9882b дублей site.js mod35); Hebrew tap-toggle (2630b) + Ambient Scripture (5177b) → `js/enhancements.js`; добавлен `<script src=js/enhancements.js>`. `404.html`, `pastor-series/`, `about/`: удалён inline `<style>.skip-link</style>` (−848b) — уже в site.css. Итого r43b: −10730b inline. |
-| AGENTS-r43c | 2026-06-02 | **Micro inline dedup.** `articles/krajne-li-isporcheno-serdce`: убраны `.article-img img { cursor:zoom-in }` и `.fn-marker { position:relative }` (−148b) — оба в site.css; оставлены `.rescue-figure/.rescue-caption--above` (737b, page-specific). |
-| AGENTS-r43 | 2026-06-02 | **Inline JS/CSS dedup — модули 15a + 20 aria.** `js/site.js`: модуль 15a (heart-flip mobile `--back-height` handler, idempotent, все страницы); модуль 20: добавлены `aria-label/role/tabindex` на `.fn-marker`. `articles/krajne-li-isporcheno-serdce`: удалены 2 inline `<script>` (heart-flip 1680b + fn-marker 384b = 2064b). `articles/20-antisovetov-pastoru`: удалены 16 дублей CSS из site.css (−2558b), исправлены `.dark` → `html.dark` (×2). Итого r43: −4622b inline кода. |
-| AGENTS-r42 | 2026-06-02 | **CSS anti-regression hardening + !important cleanup.** `css/site.css`: исправлен баг `.dark .quiz-launch-label` → `html.dark .quiz-launch-label` (правило никогда не срабатывало); удалён дублирующий `border-left` в `blockquote` (оставлен только `border-inline-start` — логическое свойство, поддержка Chrome 89+/FF61+/Safari 12.1+); слиты два идентичных псевдоэлемента `.summary-card__check:empty::after` и `:not(:has(svg))::after` в один `:not(:has(svg))`; удалён первый дублирующий блок `.btoc-banner-grad/.btoc-banner-title` (был placeholder с комментарием «canonical below»); убраны 34 лишних `!important` из `.summary-card__item` (×5), `.summary-card__check` (×10), `.summary-card__check svg` (×6), `.summary-card__text strong` (×4), `.btoc-progress-fill-done` (×2), dark variants. Итого: 342 → 301 `!important`. AGENTS.md: обновлён §4.2 (счётчик 313→308); добавлены правила 10–12 в §4.4 (дубль-кнопка темы, дубль-tooltip-система, лимит !important ≤320). `nagornaya/chast-1..5`: удалён inline `<style>#read-progress</style>` (302b × 5) → `nagornaya-mobile-toc.css` (body.nagornaya-page scoped). Tech debt r43: зафиксирован §3.6 (P0: 76KB JSON в hermenevtika; P1: 20-antisovetov widgets). |
-| AGENTS-r31 | 2026-06-02 | **CSS/JS глубокий аудит.** `css/site.css`: исправлено 4 P0-бага (`.dark`→`html.dark`, дубль `html.dark .heart-flip-back`, двойной `box-shadow` в `.tooltip`, незащищённый `.h-hero-title:hover` на touch); удалено 12 дублирующихся блоков (`.btoc-banner` x2, `.bar-icon-btn` x3, `.fn-marker` x2, и др.); удалено 3 пустых правила; убраны 42 лишних `!important` (summary-card, touch targets); удалён мёртвый CSS: `.gill-fact-card`, `.btip-tabs`, `.antisovet-label`, `.btip-pane`/`.btip-tab`. `css/nagornaya-mobile-toc.css`: удалены мёртвые `.nag-theme-btn` x4, `.nag-icon-*`, унифицирован `.nag-quiz-h2` dark (был `.dark` вместо `html.dark`); итого −39 строк. Добавлен §4.4 "CSS Integrity Rules" — 8 конкретных правил для предотвращения регрессий. |
-| AGENTS-r19–r28 | 2026-06-02 | **Аудит и стабилизация:** Фиксы суммари Нагорной проповеди, доработка минималистичного поиска, закрытие битых span-тегов в байлайнах и каталогах. Унификация тултипов, очистка dangling CSS-селекторов, устранение протечки глоссария в заголовки. Добавлены и разведены баптистские термины в глоссарии, устранены наложения категорий. Полное приведение репозитория в соответствие правилам AGENTS.md (исправлены дубликаты `og:image`, ASCII-кавычки в статьях). |
-| AGENTS-r59 | 2026-06-03 | **CSS Phase 2 & Quality Safeguards.** Safely moved `.rescue-figure` styles from krajne-isporcheno article inline to site.css, modernizing them with design tokens and dark mode support. Wrapped restored hover states in 20-antisovetov and site.css with `@media (hover: hover) and (pointer: fine)` to protect touch-screen devices from sticky hover artifacts. Defined missing compatibility variables in site.css to ensure token check passes. Fixed a critical color-mix gradient bug breaking older browsers. Resolved validation errors in byline check by supporting 'Автор-редактор'. Unified mobile hotfix breakpoint variables with standard design system values. Run full cache bust, validation check, and pushed to remote repo. |
-| AGENTS-r59.1 | 2026-06-03 | **Audit-Pro Clean & SEO Optimizations.** Fixed bugs in `scripts/audit-pro.js` including byline regex to support 'Автор-редактор' role and search-manifest URL validation to strip hash/query fragments before physical target verification. Shortened long meta descriptions for John Gill biographies and catalog page to optimize SEO length. Resolved HTTP mixed content warning in handbook page. Ran full cache bust and pushed to remote. |
-| AGENTS-r59.2 | 2026-06-03 | **Antisovetov Inline JS Migration (Popover + FAQ).** Extracted the Popover and FAQ Accordion widgets from `articles/20-antisovetov-pastoru/index.html` and migrated them to `js/enhancements.js`. This fully resolved the P1 priority tech debt from AGENTS.md §3.6. Ran full cache bust, validation check, and pushed to remote. |
-| AGENTS-r59.3 | 2026-06-03 | **Biography Handbook CSS Migration.** Migrated inline `.ref-grid`, `.ref-card`, and `.ref-note` styles from `articles/dzhon-gill-spravochnik/index.html` to the bottom of `site.css`, making HTML cleaner and utilizing browser caching. Verified tokens and responsive performance. Ran cache bust, and pushed to remote repo. |
-| AGENTS-r60 | 2026-06-03 | **Comprehensive CSS/Important Optimization & Consolidation.** Wrote a custom parser and consolidator script to identify and merge 33 duplicate selector groups inside `site.css` (such as `.quiz-options`, `.bottom-bar`, `.btoc-nav`, `#toc-list`, `.quiz-wrapper`, biography layout elements, etc.). Successfully eliminated duplicate selector overhead, safely combined cascading properties in order, and resolved redundant overrides. Ran full local static server with Playwright to verify 32 pages with 96 screenshots—0 visual regressions found. Passed token, strict validate, and pro-audit checks. |
-| AGENTS-r61 | 2026-06-03 | **Hebrew Typography, Mobile Breadcrumbs & Image Clutter Fix.** Integrated the premium serif Hebrew font `"David Libre"` as a self-hosted woff2 asset and updated CSS to load it for all display Hebrew, dramatically improving scriptural typography. Removed translation citations in Hebrew scripture blocks on the homepage, leaving only Russian. Resolved mobile breadcrumbs overflow by wrapping list items instead of scrolling, adding padding to prevent theme toggle collision. Fixed oversized biography portrait images on desktop by setting a `max-height: 580px` limit with automatic width scaling, and cleared redundant image duplicates in John Gill Part 2. |
-| AGENTS-r61.1 | 2026-06-03 | **Autonomous Visual and Usability Bug Fixes.** Conducted a rigorous, independent audit of the 96 visual-audit screenshots. Discovered and fixed a major animation bug where the mobile footnote bottom-sheet (`.fn-marker .tooltip`) snapped instantly without a transition; added `transform` transition to match glossary bottom sheets smoothly. Discovered and fixed a homepage visual bug where the active "Биографии" card was styled with `.h-card-planned` (grayed out and flat); changed it to `.h-card-glass` for consistent active styling. Pushed to remote repo. |
-| AGENTS-r61.2 | 2026-06-03 | **Responsive Tables and Spacing Optimization.** Discovered a hidden mobile bug where `.manuscript-table` stretched and broke mobile viewport boundaries (causing horizontal body overflow / page wobble). Programmatically resolved this by implementing an automatic table-wrapping IIFE helper in `site.js` that wraps all manuscript tables inside an accessible `.table-scroll` container. Discovered and fixed a visual clutter issue in John Gill Part 3 by removing the redundant `gill-wesley-letters.jpg` illustration which sat directly next to `gill-wesley-debate.jpg` without separation. Ran cache-bust, validate, and pushed. |
-| AGENTS-r61.3 | 2026-06-03 | **Grid Layout Restore & Portrait Class Isolation.** Restored the full-width grid layout for all landscape (16:9) images across articles by reverting `.article-img img` to its original 100% width behavior. Isolated the vertical constraint (`max-height: 580px; width: auto;`) into a dedicated class `.article-img--vertical` and applied it to the vertical figures in Part 1, Part 2 (diploma), and Part 3 (Bunhill). Ran full static server visual Playwright checks. |
-| AGENTS-r61.4 | 2026-06-03 | **Hebrew Font Restoration to Noto Sans.** Reverted the Hebrew display font choice from the serif David Libre back to the clean, original modern sans-serif `"Noto Sans Hebrew"` as preferred by the editor. Cleaned up David Libre assets and font-face blocks. Ran full verification, cache-bust, and pushed to remote master:main. |
-| AGENTS-r61.7 | 2026-06-03 | **Safe stabilization phase A.** Cleaned generated local audit artefacts, pruned `audit/` to the latest audit-pro reports according to §2, hardened `scripts/visual-audit.js` for portable Playwright runs (`PLAYWRIGHT_BROWSERS_PATH` fallback, `AUDIT_BASE`, `bypassCSP` to avoid localhost CSP false positives), added `npm run visual-audit`, and completed 404 meta/OG tags without touching protected article structures. |
-| AGENTS-r61.8 | 2026-06-03 | **Safe CSS inline cleanup phase B.** Migrated the 404-only inline style block into `css/site.css` using canonical design tokens, removed duplicated `.skip-link` inline rules from `/biografii/` and `20-antisovetov` because `site.css` is canonical, then refreshed cache-bust hashes. No JS behavior changes. |
-| AGENTS-r61.9 | 2026-06-03 | **Safe Biografii CSS migration phase C.** Moved the `/biografii/` hub-only inline `@layer components` CSS into existing `css/site.css` under a scoped section; no new CSS/JS files, no structure changes, and cache-bust hashes refreshed. This reduced `biografii/index.html` inline style blocks from 1 to 0 while preserving canonical tokens (`tokens:check` 0/0). |
-| AGENTS-r61.10 | 2026-06-03 | **Playwright visual-audit noise hardening.** Improved `scripts/visual-audit.js` so intentional hidden states (`aria-hidden` Hebrew backs, article topnav pre-scroll titles, offscreen reveal cards) and image/gradient-backed hero text no longer appear as false invisible-text bugs. Visual audit now ends with 0 filtered findings while preserving console/network/broken-image/overflow checks. |
-| AGENTS-r61.11 | 2026-06-03 | **20-Antisovetov JS/HTML stabilization.** Fixed `enhancements.js` reachability so the strategic-map popover module is no longer blocked by the homepage ambient-scripture early return; closed unclosed hidden `data-pagefind-meta` spans in 4 article pages and malformed FAQ button spans in `20-antisovetov`; stabilized the page-specific FAQ handler so it marks enhanced accordions and synchronizes `.is-open` with canonical `.open`, avoiding competing generic handling while preserving the global grid animation. Added `docs/PHASE_AUDIT_2026-06-03.md`. Cache-bust refreshed. |
-| AGENTS-r61.12 | 2026-06-03 | **Visual audit accessible-link noise cleanup.** Hardened `scripts/visual-audit.js` so the link accessible-name check ignores non-visible/zero-size links (closed mobile menus, hidden bottom TOC), reducing raw Playwright findings from 103/75-suppressed to 28/0 filtered while preserving visible unnamed-link detection. |
-| AGENTS-r61.13 | 2026-06-03 | **Manual screenshot QA + premium planned-card polish.** Visual audit screenshots now use CDP document clipping after scroll (fixes blank mid/bottom screenshots on long mobile pages), making manual screenshot review reliable. Manual review found non-premium empty planned placeholders in `/pastor-series/`; replaced them with styled `.h-article-thumb--planned` Roman-numeral placeholders in `home.css` and removed repeated inline SVG placeholder markup. Cache-bust refreshed. |
-| AGENTS-r61.14 | 2026-06-03 | **Manual mobile navbar premium fix.** Manual screenshot review showed desktop `.h-nav-links` squeezed into 375px home/archive/series headers, visually clipping navigation despite burger menus existing. Added a scoped mobile rule in `home.css` to hide desktop nav links under 760px and keep the premium logo + controls header. Cache-bust refreshed and Playwright re-run. |
-| AGENTS-r61.15 | 2026-06-03 | **Manual screenshot QA: 20-Antisovetov series DOM + reliable bot screenshots.** Manual bottom screenshot review found broken overlapping series-card layout caused by unclosed `series-card__*` spans and raw `h3` children inside the series `<ul>`; closed the spans and converted block headings into valid list/grid items. Hardened visual-audit scrolling with instant scroll + wait-for-scroll before CDP capture, so bottom screenshots reach true page bottoms. |
-| AGENTS-r61.16 | 2026-06-03 | **Mobile compact premium cards.** Manual mobile review found archive/series `.h-article-card` items becoming tall “портянки” because mobile layout forced thumbnails above text. Added scoped compact row layout for non-home mobile article lists in `home.css`, with 104×76 thumbnails, line-clamped titles/abstracts, and compact planned placeholders. Also compacted the 20-Antisovetov mobile series navigator cards (less padding, wider content, clamped excerpts) while preserving desktop layout. Cache-bust and Playwright re-run. |
-| AGENTS-r61.17 | 2026-06-03 | **Mobile long-block premium compaction.** Added mobile-only enhancement for very long editorial blocks (`summary-card`, `note-box`, `info-box`, `warn-box`, `quote-box`) in `enhancements.js` + `site.css`: long blocks collapse to a premium 560px preview with gradient fade and accessible expand/collapse button. Thresholds are conservative (summary ≥740px, other blocks ≥950px) to avoid button spam while eliminating mobile “портянки”; desktop remains unchanged. |
-| **AGENTS-r62** | **2026-06-04** | **🎯 PLAN-04: !important cleanup — site.css 342 → 199.** 15 партий точечной чистки. Архитектурный лимит `≤200 !important` в site.css (зафиксирован AGENTS-r42 §4.2) — восстановлен после регрессии за июнь (r51..r61.21). Метод: для каждого !important рассчитана CSS specificity конкурентов; снято только там, где доказано — каскад/специфичность уже выигрывает без важности-override. Также: hotfix мёртвой ссылки anglicanbooksrevitalized.us (302→спам) на web.archive.org; удалены мёртвые компоненты `.ai-disclosure`, `.theme-float-btn`, `.fx-lift`, `.epilogue-*`, `.float-fallback`, `.sd-url-strip/divider/copy/label-default`, `.card.fx-lift`, `.article-img--portrait-wide`; перемещены `.h-hero-title:hover` и `.h-phrase--greek/hebrew` из site.css в home.css; добавлен `.github/workflows/notify-on-failure.yml`. Полный план и журнал партий: `audit/AUDIT_CLEANUP_PLAN_2026-06-04.md`. site.css: 267 905 b → 264 887 b (−3 КБ), 199 `!important`. all checks PASSED. |
+> **Если правило кажется глупым — спроси, ПОЧЕМУ оно появилось.**
+> Большинство «странных» правил появилось после реальных регрессий.
+> Прежде чем менять контракт — открой `AUDIT_HISTORY.md`.
