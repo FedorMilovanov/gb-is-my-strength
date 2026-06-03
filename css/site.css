@@ -765,7 +765,7 @@ article p {
   /* On narrow screens, disable justify to avoid large word gaps */
   overflow-wrap: break-word;
 }
-@media (max-width: 400px) {
+@media (max-width: 380px) {
   article p {
     text-align: left;
     hyphens: manual;

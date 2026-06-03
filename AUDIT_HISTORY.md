@@ -4,6 +4,24 @@
 > Last updated: 2026-05-30
 
 ---
+## v14 — CSS Phase 2 & Quality Safeguards (2026-06-03)
+
+**Commit:** `r59: CSS Phase 2 - safe hover guards, design tokens, inline CSS migration & validation fix`
+
+### What was improved:
+- **Responsive Hover Protection:** Wrapped restored hover states in `articles/20-antisovetov-pastoru/index.html` and `css/site.css` inside `@media (hover: hover) and (pointer: fine)` to prevent "sticky hover" visual artifacts on touch screens.
+- **Inline CSS Migration:** Extracted `.rescue-figure` and `.rescue-caption--above` styles from `articles/krajne-li-isporcheno-serdce/index.html` and migrated them to `css/site.css`. Added premium dark mode styling utilizing our design token system.
+- **Design Token Governance Fix:** Defined missing compatibility aliases (`--link`, `--note-bg`, `--quote-bg`, etc.) in `site.css` so that token checking passes flawlessly without requiring legacy var references in components.
+- **Cross-browser CSS Fix:** Resolved critical validator error on `color-mix` inside `linear-gradient` by moving the mix operation to a dedicated `--rp-end-color` custom property.
+- **Validation Standard Alignment:** Updated `scripts/validate.js` to support `Автор-редактор:` as a valid role in bylines, eliminating false positives on production articles.
+- **Breakpoint Standardization:** Aligned arbitrary breakpoints (`400px`, `340px`) in `css/site.css` and `css/mobile-hotfix.css` with canonical values (`380px`, `360px`) of our design system.
+
+### Verified:
+- `npm run validate:all` ── ✅ **PASS (0 errors, 0 warnings)**
+- `npm run tokens:check` ── ✅ **PASS (Foundation OK)**
+- `npm run cache-bust` ── ✅ **SUCCESS (24 HTML files updated)**
+
+---
 
 ## v13 — Editorial pass: статья «Код да Винчи» (2026-05-30)
 

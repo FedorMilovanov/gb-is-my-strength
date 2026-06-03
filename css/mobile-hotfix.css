@@ -66,11 +66,11 @@ html.cp-scroll-lock body {
 }
 
 /* P1-2: navbar overflow 320-360px */
-@media (max-width: 400px) {
+@media (max-width: 380px) {
   .h-nav-logo { min-width: 0; max-width: calc(100vw - 112px); overflow: hidden; }
   .h-nav-logo-main, .h-nav-logo-dash, .h-nav-logo-accent { font-size: clamp(14px, 4.1vw, 18px); }
 }
-@media (max-width: 340px) {
+@media (max-width: 360px) {
   .h-nav-logo-dash { transform: scaleX(0.75); }
   .h-nav-logo { gap: 2px; }
 }
