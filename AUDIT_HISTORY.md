@@ -5,6 +5,25 @@
 
 ---
 
+## v22 — Manual mobile navbar premium fix (2026-06-03)
+
+**Commit:** `r61.14: Fix mobile home navbar overflow`
+
+### What was improved:
+- Manual screenshot review found desktop navigation links squeezed into 375px headers on home/archive/series layouts.
+- Added a scoped mobile rule in `css/home.css` hiding `.h-navbar .h-nav-links` below 760px, leaving the premium logo + theme/search/burger controls.
+- Verified `/`, `/articles/`, and `/pastor-series/` mobile nav now show clean logo + burger instead of clipped desktop links.
+- Refreshed cache-bust hashes.
+
+### Verified:
+- `node --check js/*.js scripts/*.js sw.js` → ✅ PASS.
+- `npm run validate:all` → ✅ PASS (0 errors, 0 warnings).
+- `npm run tokens:check` → ✅ PASS (`0 / 0` legacy var references).
+- `node scripts/audit-pro.js` → ✅ PASS (29 passed, 0 errors; only existing CSS/JS budget warnings).
+- `npm run visual-audit` → ✅ PASS: 32 page/viewport runs, 96 screenshots, 0 console errors, 0 network errors, 0 filtered findings.
+
+---
+
 ## v21 — Manual screenshot QA + premium planned-card polish (2026-06-03)
 
 **Commit:** `r61.13: Fix visual audit screenshots and planned-card polish`

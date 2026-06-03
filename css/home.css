@@ -2244,3 +2244,10 @@ html.dark .h-article-thumb--planned {
     linear-gradient(135deg, #201c18, #30231f);
   color: color-mix(in srgb, var(--h-accent, #d97a6c) 72%, var(--h-muted));
 }
+
+/* r61.14: mobile navbar must not squeeze desktop links into the 375px header. */
+@media (max-width: 760px) {
+  .h-navbar .h-nav-links {
+    display: none !important;
+  }
+}
