@@ -387,6 +387,54 @@ function validateSitemapFeed() {
   }
 }
 
+
+// ── JS validation (NEW r58): node-side syntax check + sanity ──────────────────
+function validateJS() {
+  const { execFileSync } = require('child_process');
+  const JS_DIR = path.resolve(__dirname, '../js');
+  if (!fs.existsSync(JS_DIR)) return;
+  const files = fs.readdirSync(JS_DIR).filter(f => f.endsWith('.js'));
+
+  for (const f of files) {
+    const fp = path.join(JS_DIR, f);
+    // 1) node --check — ловит SyntaxError'ы (защита от регрессии r48b)
+    try {
+      execFileSync('node', ['--check', fp], { stdio: ['ignore', 'pipe', 'pipe'] });
+    } catch (e) {
+      const msg = (e.stderr ? e.stderr.toString() : '').split('\n').slice(0, 3).join(' | ');
+      err('js/' + f, 'syntax error — node --check FAILED: ' + msg);
+    }
+
+    // 2) sanity-check: var/let/const объявления внутри строк
+    //    Защита от dedup-катастрофы r48b: 'var SVG_X = ...;<остаток_строки>'
+    const src = fs.readFileSync(fp, 'utf8');
+    const lines = src.split('\n');
+    lines.forEach((ln, i) => {
+      // Шаблон: 'var SOMETHING = '...';СУФФИКС' — где СУФФИКС не пустой и не комментарий
+      const m = ln.match(/^\s*(var|let|const)\s+[A-Z_][A-Z0-9_]*\s*=\s*['"][^'"]*['"]\s*;\s*\S/);
+      if (m) {
+        err('js/' + f, `L${i+1}: подозрение на dedup-катастрофу (объявление склеено с кодом): ${ln.trim().slice(0,120)}`);
+      }
+    });
+
+    // 3) лишние '}}' подряд после метода объекта — защита от регрессии r44f
+    //    (там debounce закрылся '}}' что закрыло весь SiteUtils)
+    //    Эвристика: ищем '}},' после которого идёт 'name: function'
+    for (let i = 0; i < lines.length - 3; i++) {
+      if (/^\s*}},\s*$/.test(lines[i])) {
+        // проверим, что следующие 1-3 строки — это property:function
+        for (let j = i + 1; j <= Math.min(i + 4, lines.length - 1); j++) {
+          if (/^\s*[a-zA-Z_$][\w$]*\s*:\s*function/.test(lines[j])) {
+            err('js/' + f, `L${i+1}: подозрение на лишнюю '}' — '}},' за которым через ${j-i} стр. идёт ${lines[j].trim().slice(0,60)}`);
+            break;
+          }
+        }
+      }
+    }
+  }
+}
+
+
 // ── Main ──────────────────────────────────────────────────────────────────────
 
 function main() {
@@ -395,6 +443,10 @@ function main() {
   // CSS
   console.log('  📁  css/');
   validateCSS();
+
+  // JS (NEW r58): syntax + sanity check для js/*.js
+  console.log('  📁  js/');
+  validateJS();
 
   // Каждая статья
   const slugs = fs.readdirSync(ARTICLES, { withFileTypes: true })
