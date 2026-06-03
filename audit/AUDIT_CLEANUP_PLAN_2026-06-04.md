@@ -219,7 +219,8 @@ node scripts/audit-pro.js
 | P1 | `2108bc7` | 2026-06-03 | 3 настоящих top-level дубль-селектора (blockquote, .bottom-bar, article p) → слиты |
 | P1b | `56367d3` | 2026-06-03 | 6 premium-section дублей (body font-features, h1, h1-large, article a, .pq-scripture, #reading-progress, .pullquote::before) → слиты |
 | P2 | `ce6af68` | 2026-06-03 | `.fn-marker .tooltip:hover` — 2 `!important` сняты (псевдокласс выше специфичностью) |
-| P3 | ⏳ | — | `.h-hero-title:hover` архитектурный фикс: значения из site.css `!important`-block перенесены в home.css без `!important` (источник правды один). site.css −13 `!important`, home.css ±0. Удалено также soseden'ee `@media (hover: none), (max-width: 640px)` reset-блок. |
+| P3 | `af7f3c5` | 2026-06-03 | `.h-hero-title:hover` архитектурный фикс: значения из site.css `!important`-block перенесены в home.css без `!important` (источник правды один). site.css −13 `!important`. Удалён также соседний `@media (hover: none), (max-width: 640px)` reset-блок (тоже без `!important` в home.css). |
+| P4 | ⏳ | — | (a) `@media (orientation: landscape) and (max-height: 500px)` перемещён ПОСЛЕ базового `.bottom-bar, #share-dialog, .btoc-panel` padding-правила — `!important` больше не нужен (каскад). −2. (b) 4 мёртвых правила `.sd-url-strip / .sd-divider / .sd-url-copy / .sd-label-default { display: none !important }` удалены — классы нигде в HTML/JS не используются. −4. ИТОГО: −6 |
 
 ---
 
