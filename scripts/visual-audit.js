@@ -298,10 +298,18 @@ async function auditPage(browser, urlPath, vp) {
     for (let i = 0; i < positions.length; i++) {
       const pos = positions[i];
       await page.evaluate((p) => {
+        document.documentElement.style.scrollBehavior = 'auto';
+        document.body.style.scrollBehavior = 'auto';
         const max = document.documentElement.scrollHeight - window.innerHeight;
-        window.scrollTo(0, Math.max(0, max * p));
+        const target = Math.max(0, max * p);
+        window.scrollTo({ left: 0, top: target, behavior: 'instant' });
       }, pos);
-      await page.waitForTimeout(900);
+      await page.waitForFunction((p) => {
+        const max = document.documentElement.scrollHeight - window.innerHeight;
+        const target = Math.max(0, max * p);
+        return Math.abs(window.scrollY - target) < 4;
+      }, pos, { timeout: 5000 }).catch(() => {});
+      await page.waitForTimeout(250);
       const y = await page.evaluate(() => window.scrollY);
       const file = path.join(SHOTS, `${tag}__${i === 0 ? 'top' : i === 1 ? 'mid' : 'bot'}.png`);
       const shot = await cdp.send('Page.captureScreenshot', {

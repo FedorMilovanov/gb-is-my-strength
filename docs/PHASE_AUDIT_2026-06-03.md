@@ -69,6 +69,12 @@
 - Added scoped mobile CSS in `home.css` to hide desktop links under 760px; burger/mobile menu remains available.
 - Verified `/`, `/articles/`, and `/pastor-series/` mobile nav now show clean logo + controls instead of clipped links.
 
+### r61.15 — Manual screenshot QA: 20-Antisovetov series DOM + reliable bottom screenshots
+
+- Bottom contact-sheet review found the `20-antisovetov` series navigator visually overlapping.
+- Fixed malformed unclosed `series-card__*` spans and made block headings valid list/grid items.
+- Hardened visual-audit scroll capture with instant scrolling + wait-for-scroll before CDP clipping, so bottom screenshots reach true page bottoms on very long documents.
+
 ## Verification matrix used
 
 ```bash

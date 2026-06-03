@@ -5,6 +5,25 @@
 
 ---
 
+## v23 — Manual screenshot QA: 20-Antisovetov series DOM + reliable bottom screenshots (2026-06-03)
+
+**Commit:** `r61.15: Fix antisovetov series card DOM and screenshot scroll`
+
+### What was improved:
+- Manual bottom screenshot review found a severe overlap in the `20-antisovetov` series navigator.
+- Root cause: unclosed `series-card__current-badge`, `series-card__num`, and `series-card__tag` spans caused nested text/card swallowing.
+- Closed the malformed spans and converted raw `h3` block headings inside the series `<ul>` into valid list/grid items.
+- Hardened `scripts/visual-audit.js` scrolling with instant scroll behavior and a wait-for-scroll check before CDP screenshot capture, so bottom screenshots reliably reach true page bottoms even on very long articles.
+
+### Verified:
+- `node --check js/*.js scripts/*.js sw.js` → ✅ PASS.
+- `npm run validate:all` → ✅ PASS (0 errors, 0 warnings).
+- `npm run tokens:check` → ✅ PASS (`0 / 0` legacy var references).
+- `node scripts/audit-pro.js` → ✅ PASS (29 passed, 0 errors; only existing CSS/JS budget warnings).
+- `npm run visual-audit` → ✅ PASS: 32 page/viewport runs, 96 screenshots, 0 console errors, 0 network errors, 0 filtered findings.
+
+---
+
 ## v22 — Manual mobile navbar premium fix (2026-06-03)
 
 **Commit:** `r61.14: Fix mobile home navbar overflow`
