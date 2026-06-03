@@ -319,8 +319,22 @@ html.dark .h-scripture-bg::before {
   pointer-events: none;
   white-space: nowrap;
 }
-.h-phrase--hebrew { font-family: var(--f-hebrew); direction: rtl; }
-.h-phrase--greek { font-family: var(--f-greek); font-style: normal; direction: ltr; letter-spacing: .005em; }
+/* PLAN-04 P15: эти значения раньше дублировались в site.css с важностью-override
+   для перебивания home.css по каскаду. Теперь единственный источник правды — здесь. */
+.h-phrase--hebrew {
+  font-family: var(--f-hebrew);
+  font-weight: 400;
+  font-style: normal;
+  direction: rtl;
+  letter-spacing: 0;
+}
+.h-phrase--greek {
+  font-family: var(--f-greek);
+  font-weight: 400;
+  font-style: normal;
+  direction: ltr;
+  letter-spacing: .005em;
+}
 .h-phrase--latin { font-family: var(--f-body); font-style: italic; direction: ltr; }
 
 

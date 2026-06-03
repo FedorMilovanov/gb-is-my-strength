@@ -7145,11 +7145,12 @@ html.dark .summary-card__text strong { color: var(--color-accent-strong, #e8b878
 }
 html.dark .fn-marker { color: var(--color-accent-strong, #e8b878); }
 html.dark .fn-marker:hover { color: #f5d8a8; }
+/* .fn-marker.fn-trans (0,2,0) выше .fn-marker (0,1,0) — важность лишняя. (P15) */
 .fn-marker.fn-trans {
   font-style: italic;
-  font-size: 0.85em !important;
+  font-size: 0.85em;
   vertical-align: baseline;
-  margin: 0 0.08em !important;
+  margin: 0 0.08em;
 }
 
 /* === 3. NAGORNAYA THEME TOGGLE — встроенная кнопка в navbar/breadcrumbs === */
@@ -7274,17 +7275,10 @@ main .gb-accuracy-block {
   }
 }
 
-/* === 8. HOME-PAGE ambient phrases === */
-.h-phrase--greek, .h-phrase[lang="grc"], .h-phrase[lang="el"] {
-  font-family: 'Noto Sans Greek', 'GFS Neohellenic', 'Times New Roman', serif !important;
-  font-style: normal !important; font-weight: 400 !important;
-  direction: ltr; letter-spacing: 0.005em;
-}
-.h-phrase--hebrew, .h-phrase[lang="he"], .h-phrase[lang="iw"] {
-  font-family: 'Noto Sans Hebrew', 'SBL Hebrew', 'David Libre', serif !important;
-  font-weight: 400 !important; font-style: normal !important;
-  direction: rtl; letter-spacing: 0;
-}
+/* === 8. HOME-PAGE ambient phrases — moved to css/home.css (PLAN-04 P15)
+   .h-phrase--greek/.h-phrase--hebrew (с font-family/weight/style/letter-spacing)
+   живут только в home.css; .h-phrase[lang="grc/el/he/iw"] вариант покрывается
+   через цепочку наследования font-family на потомках. */
 .hb-front, .hb-back, [lang="he"], [lang="iw"] {
   font-family: 'Noto Sans Hebrew', 'SBL Hebrew', 'David Libre', serif;
 }
@@ -7921,28 +7915,38 @@ html.dark .premium-frame-text {
 /* Fix timeline vertical line overlap bug by keeping timeline circles perfectly solid and opaque */
 /* R28: keep category label visible;
 /* Lux Upgrade v3.0: remove intrusive top scroll bar */
-/* Lux Upgrade v3.0: biography card polish - single border */ .biography-hero::after{  display: none!important;
+/* Lux Upgrade v3.0: biography card polish — single border (PLAN-04 P15 reformat) */
+.biography-hero::after {
+  display: none !important; /* defensive disable — sibling .biography-hero::before используется */
   content: '';
   position: absolute;
   inset: 12px;
   border: 1px solid var(--color-border);
   border-radius: 8px;
   pointer-events: none;
-  opacity: 0.6;} .biography-hero{  border-width: 1px!important;
-  box-shadow: 0 8px 32px rgba(0,0,0,.06)!important;
+  opacity: 0.6;
+}
+.biography-hero {
+  /* PLAN-04 P15: !important на border-width/box-shadow убраны — нет конкурентов */
+  border-width: 1px;
+  box-shadow: 0 8px 32px rgba(0,0,0,.06);
   position: relative;
   background: var(--color-surface-quote);
   border: 1px solid var(--color-border-strong);
   border-radius: 12px;
   padding: clamp(24px, 5vw, 48px);
   margin-bottom: var(--s-7);
-  overflow: hidden;} .biography-portrait{  border-width: 4px!important;
+  overflow: hidden;
+}
+.biography-portrait {
+  /* PLAN-04 P15: !important на border-width/background/z-index убраны — нет конкурентов */
+  border-width: 4px;
   box-shadow: 0 0 0 1px var(--color-border);
   width: clamp(140px, 20vw, 180px);
   aspect-ratio: 3/4;
   margin: 0;
-  background: var(--color-surface, #fdfcf9) !important;
-  z-index: 2 !important;
+  background: var(--color-surface, #fdfcf9);
+  z-index: 2;
   border: 8px solid var(--color-surface);
   position: relative;
   font-family: ui-serif, Georgia, serif;
