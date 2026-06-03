@@ -75,6 +75,12 @@
 - Fixed malformed unclosed `series-card__*` spans and made block headings valid list/grid items.
 - Hardened visual-audit scroll capture with instant scrolling + wait-for-scroll before CDP clipping, so bottom screenshots reach true page bottoms on very long documents.
 
+### r61.16 — Mobile compact premium cards
+
+- Manual mobile review found archive/series cards turning into tall “портянки”.
+- Added compact row mobile layout for non-home `.h-article-card` lists with small thumbnails, title/abstract line clamps, and compact planned placeholders.
+- Compacted `20-antisovetov` mobile series navigator cards without changing desktop layout.
+
 ## Verification matrix used
 
 ```bash

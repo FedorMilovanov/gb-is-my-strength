@@ -5,6 +5,26 @@
 
 ---
 
+## v24 — Mobile compact premium cards (2026-06-03)
+
+**Commit:** `r61.16: Compact mobile archive and series cards`
+
+### What was improved:
+- Manual mobile review found archive/series cards becoming tall “портянки”: thumbnails stacked above text and planned cards taking too much vertical space.
+- Added a scoped compact row layout for non-home mobile `.h-article-card` lists in `css/home.css` under 440px.
+- Mobile list thumbnails are now compact 104×76, titles/abstracts are line-clamped, and planned placeholders remain premium but no longer dominate half the screen.
+- Compacted the `20-antisovetov` mobile series navigator: lower padding, wider cards, static badge, smaller meta, and clamped excerpts.
+- Desktop layout is unchanged. Cache-bust refreshed.
+
+### Verified:
+- `node --check js/*.js scripts/*.js sw.js` → ✅ PASS.
+- `npm run validate:all` → ✅ PASS (0 errors, 0 warnings).
+- `npm run tokens:check` → ✅ PASS (`0 / 0` legacy var references).
+- `node scripts/audit-pro.js` → ✅ PASS (29 passed, 0 errors; only existing CSS/JS budget warnings).
+- `npm run visual-audit` → ✅ PASS: 32 page/viewport runs, 96 screenshots, 0 console errors, 0 network errors, 0 filtered findings.
+
+---
+
 ## v23 — Manual screenshot QA: 20-Antisovetov series DOM + reliable bottom screenshots (2026-06-03)
 
 **Commit:** `r61.15: Fix antisovetov series card DOM and screenshot scroll`
