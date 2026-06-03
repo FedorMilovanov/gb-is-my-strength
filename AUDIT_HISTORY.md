@@ -1,9 +1,28 @@
 # Audit History — gospod-bog.ru
 
 > All audit changelogs consolidated into one file.
-> Last updated: 2026-05-30
+> Last updated: 2026-06-03
 
 ---
+
+## v15 — Safe stabilization phase A (2026-06-03)
+
+**Commit:** `r61.7: Safe cleanup and Playwright audit hardening`
+
+### What was improved:
+- Pruned generated/local audit artefacts and aligned `audit/` with AGENTS.md expectation of keeping only the latest audit-pro reports.
+- Hardened `scripts/visual-audit.js`: portable Playwright browser path fallback, `AUDIT_BASE` override, and `bypassCSP` to prevent localhost-only CSP false positives from hiding real console errors.
+- Added `npm run visual-audit` as the canonical Playwright desktop/mobile verification command.
+- Added complete description/OpenGraph metadata to `404.html` without changing its protected runtime structure.
+
+### Verified:
+- `node --check js/*.js scripts/*.js sw.js` → ✅ PASS.
+- `npm run validate:all` → ✅ PASS (0 errors, 0 warnings).
+- `node scripts/audit-pro.js` → ✅ PASS (29 passed, 0 errors; only existing CSS/JS budget warnings).
+- `npm run visual-audit` → ✅ PASS: 32 page/viewport runs, 96 screenshots, 0 console errors, 0 network errors.
+
+---
+
 ## v14 — CSS Phase 2 & Quality Safeguards (2026-06-03)
 
 **Commit:** `r59: CSS Phase 2 - safe hover guards, design tokens, inline CSS migration & validation fix`
