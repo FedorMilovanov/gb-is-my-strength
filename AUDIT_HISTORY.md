@@ -9,6 +9,7 @@
 **Commit:** `r59: CSS Phase 2 - safe hover guards, design tokens, inline CSS migration & validation fix`
 
 ### What was improved:
+- **Antisovetov Inline JS Migration:** Successfully extracted the 20-Antisovetov Strategic Map Popover and FAQ Accordion inline script blocks (~5.5 KB) and integrated them cleanly into `/js/enhancements.js`, resolving a top-priority P1 tech debt from `AGENTS.md`.
 - **SEO Metadata Optimization:** Shortened overly long meta descriptions across John Gill biography pages and `/biografii/index.html` to fit search engine snippet standards (140-160 characters).
 - **Audit Script Forgiveness:** Patched `scripts/audit-pro.js` to correctly support the `Автор-редактор:` role and to decode/strip URL fragments (e.g., `#dzhon-gill-series`) from manifest targets.
 - **Secure Mixed Content Fix:** Patched legacy Post-Reformation Digital Library (PRDL) URL on handbook page from `http://` to secure `https://` to avoid browser console warnings.
