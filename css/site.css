@@ -7019,12 +7019,15 @@ html.dark .summary-card__check {
   color: #7ac87a !important;
 }
 .summary-card__check svg {
-  display: block !important;
-  width: clamp(15px, 1.8vw, 18px) !important;
-  height: clamp(15px, 1.8vw, 18px) !important;
-  stroke: currentColor !important;
-  stroke-width: 2.5 !important;
-  fill: none !important;
+  /* Высокая специфичность descendant-селектора (0,2,1) + узкий компонент
+     (используется только на 2 не-nagornaya страницах, см. PLAN-04 P8).
+     Нет реальных конкурентов в каскаде → важность-override снят. */
+  display: block;
+  width: clamp(15px, 1.8vw, 18px);
+  height: clamp(15px, 1.8vw, 18px);
+  stroke: currentColor;
+  stroke-width: 2.5;
+  fill: none;
 }
 .summary-card__check:empty::after {
 
