@@ -40,6 +40,12 @@
 (function () {
   'use strict';
 
+
+  /* SVG dedup: общие префиксы для нескольких иконок этого модуля.
+     Объявлены ДО первого использования (исправлено в r58). */
+  var SVG_ICON_114 = '<svg viewBox="0 0 24 24" width="16" height="16" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">';
+  var SVG_ICON_148 = '<svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">';
+
   /* ============================================================
      01. SiteUtils — helpers / config access
      ============================================================ */
@@ -72,7 +78,7 @@
         var ctx = this;
         timer = setTimeout(function () { fn.apply(ctx, args); }, delay);
       };
-    }},
+    },
 
     /* ── Shared tooltip positioning ──────────────────────────────────────
        Positions `tip` (fixed/absolute element) relative to `anchor`.
@@ -4586,6 +4592,10 @@
 (function () {
   'use strict';
 
+  /* SVG dedup: общие префиксы для нескольких иконок этого модуля.
+     Объявлены ДО первого использования (исправлено в r58). */
+  var SVG_SEARCH_LARGE = '<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">';
+
   /* Запуск на reading-страницах: article/series-pages с навигационной
      цепочкой (.breadcrumb) и на страницах серии «Нагорная проповедь»
      (body.nagornaya-page) — у них собственный sidebar вместо breadcrumb.
@@ -4622,13 +4632,10 @@
   }
 
   ready(function () {
-    if (!
-  var SVG_ICON_114 = '<svg viewBox="0 0 24 24" width="16" height="16" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">';shouldActivate()) return;
-    if (document.getElementById('gbFloatin
-  var SVG_ICON_148 = '<svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">';gControls')) return;
+    if (!shouldActivate()) return;
+    if (document.getElementById('gbFloatingControls')) return;
 
-    /* Маркер на body — позволяет CSS скрыть legac
-  var SVG_SEARCH_LARGE = '<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">';y-кнопки только тут. */
+    /* Маркер на body — позволяет CSS скрыть legacy-кнопки только тут. */
     document.body.classList.add('gb-fc-active');
 
     /* ── Контейнер ──────────────────────────────────────────────── */
