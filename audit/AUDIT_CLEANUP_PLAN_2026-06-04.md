@@ -10,16 +10,21 @@
 
 ---
 
-## 0. Текущее состояние (baseline, 2026-06-03)
+## 0. Текущее состояние (baseline, 2026-06-04)
 
-| Файл | Размер | `!important` | Заметки |
-|------|--------|-------------:|---------|
-| `css/site.css` | 267 751 b | **323** | Лимит AGENTS-r42: ≤200. **Регрессия +123.** |
-| `css/home.css` | 49 944 b | 16 | OK |
-| `css/command-palette.css` | 38 132 b | 4 | OK |
-| `css/mobile-hotfix.css` | 12 220 b | 70 | По дизайну переопределяет — большая часть легитимна |
-| `css/nagornaya-mobile-toc.css` | 22 957 b | 122 | Tailwind override — легитимно, но звучит как много |
-| **CSS итого** | **432 851 b** (gzip 84 K) | **535** | Audit-pro warning: > 375 K |
+> **ВАЖНО — fix baseline:** в v1 этого файла цифры `!important` были занижены
+> (использовался `grep -c` — считает строки, а не вхождения). Корректный счёт
+> через `grep -o '!important' file | wc -l`. AGENTS-r42 цитирует именно такой
+> счёт; AUDIT_HISTORY также. Пересчитано:
+
+| Файл | Размер | `!important` (true) | Заметки |
+|------|--------|--------------------:|---------|
+| `css/site.css` | ~267 KB | **342** | Лимит AGENTS-r42: ≤200. **Регрессия +142.** |
+| `css/home.css` | 49 944 b | 20 | OK |
+| `css/command-palette.css` | 38 132 b | 7 | OK |
+| `css/mobile-hotfix.css` | 12 220 b | 74 | По дизайну (touch-overrides) — большая часть легитимна |
+| `css/nagornaya-mobile-toc.css` | 22 957 b | 122 | Tailwind override — легитимно |
+| **CSS итого** | **432 851 b** (gzip 84 K) | **565** | Audit-pro warning: > 375 K |
 | `js/site.js` | 236 231 b (5121 строк) | — | Один монолит 27 модулей |
 | `js/search.js` | 72 269 b | — | |
 | `js/enhancements.js` | 35 799 b | — | |
@@ -203,7 +208,18 @@ node scripts/audit-pro.js
 
 | Версия | Дата | Что |
 |---|---|---|
-| v1 | 2026-06-04 | Создан, baseline зафиксирован |
+| v1 | 2026-06-04 | Создан, baseline зафиксирован (с неверным счётом `!important`) |
+| v2 | 2026-06-04 | Fix baseline: `!important` в site.css — 342, не 323 (grep -c считает строки) |
+
+## 9. Журнал партий (фактическое выполнение)
+
+| Партия | Коммит | Дата | Результат |
+|--------|--------|------|-----------|
+| hotfix | `d0a7193` | 2026-06-03 | Замена мёртвой ссылки anglicanbooksrevitalized.us на web.archive.org |
+| P1 | `2108bc7` | 2026-06-03 | 3 настоящих top-level дубль-селектора (blockquote, .bottom-bar, article p) → слиты |
+| P1b | `56367d3` | 2026-06-03 | 6 premium-section дублей (body font-features, h1, h1-large, article a, .pq-scripture, #reading-progress, .pullquote::before) → слиты |
+| P2 | ⏳ | — | `.fn-marker .tooltip:hover` — 2 `!important` сняты (псевдокласс выше специфичностью) |
+| P2-большая | ⏸ ОТЛОЖЕНА | — | `.h-hero-title:hover` (9 `!important`) — требует архитектурного решения: код в site.css перебивает home.css через `!important`. Правильно: переместить блок в home.css и убрать `!important`. Риск визуальной регрессии hover hero на главной → требуется отдельная партия с явным согласованием. |
 
 ---
 
