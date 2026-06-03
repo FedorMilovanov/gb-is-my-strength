@@ -3960,7 +3960,9 @@ html.dark .resume-list-item:hover {
   .fn-marker:hover .tooltip { opacity: 1; pointer-events: auto; }
 
   .fn-marker .tooltip { padding-top: 20px; margin-top: -12px; }
-  .fn-marker .tooltip:hover { opacity: 1 !important; pointer-events: auto !important; }
+  /* :hover overrides без важности — псевдокласс выше специфичностью
+     чем базовый .fn-marker .tooltip. (PLAN-04 P2) */
+  .fn-marker .tooltip:hover { opacity: 1; pointer-events: auto; }
 }
 
 @media (max-width: 768px) {
