@@ -3925,7 +3925,7 @@ html.dark .resume-list-item:hover {
   text-align: left;
   opacity: 0;
   pointer-events: none;
-  transition: opacity .18s ease;
+  transition: opacity .18s ease, transform .28s cubic-bezier(.22, 1, .36, 1);
   box-shadow: 0 10px 24px rgba(0,0,0,.22);
   z-index: var(--z-critical);
   top: -9999px;
