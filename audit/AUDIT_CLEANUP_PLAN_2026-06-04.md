@@ -187,14 +187,14 @@ node scripts/audit-pro.js
 
 ## 6. Целевые числа после полной волны чистки (ориентиры, не догма)
 
-| Метрика | Сейчас | Цель |
-|---|-:|-:|
-| `site.css` !important | 323 | ≤ 200 (AGENTS §4.2 контракт) |
-| `site.css` дубль-селекторы | 11 групп | 0 групп |
-| `site.css` размер | 268 КБ | ≤ 250 КБ (без потери функционала) |
-| `site.js` размер | 236 КБ | ≤ 220 КБ (без потери функционала) |
-| `audit-pro` | ✅ PASSED 29/2/0 | ✅ PASSED 29/0–2/0 |
-| `notify-on-failure.yml` | не установлен | установлен |
+| Метрика | Baseline | **После P15** | Цель |
+|---|-:|-:|-:|
+| `site.css` !important | **342** | **199** 🎯 | ≤ 200 (AGENTS §4.2 контракт) |
+| `site.css` дубль-селекторы | 14 групп | **0 реальных** | 0 групп |
+| `site.css` размер | 267 905 b | 264 887 b | ≤ 250 КБ (опционально) |
+| `site.js` размер | 236 231 b | без изменений | ≤ 220 КБ (опционально) |
+| `audit-pro` | ✅ 29/2/0 | ✅ 29/2/0 | ✅ |
+| `notify-on-failure.yml` | не установлен | **установлен** ✅ | установлен |
 
 ---
 
@@ -230,7 +230,8 @@ node scripts/audit-pro.js
 | P11 | `db3860c` | 2026-06-03 | (a) `.gb-accuracy-title` / `.gb-accuracy-desc` color + `html.dark` варианты (4 `!important`) — конкурент `body.nagornaya-page .gb-accuracy-*` имеет ВЫШЕ специфичность (0,2,0 vs 0,1,0/0,2,0); `!important` лишний. (b) `.heading-anchor.copied` + `html.dark` вариант (2 `!important`) — конкурент `:hover` имеет 0,1,1 vs 0,2,0 у `.copied`; `!important` лишний. −6 `!important`. |
 | P12 | `a2228a1` | 2026-06-03 | Добавлен `.github/workflows/notify-on-failure.yml` — слушает завершение `deploy.yml` и `indexnow.yml`; при `conclusion == 'failure'` открывает GitHub issue с тегом `ci-failure` + `bug`. Дубликаты предотвращаются (поиск открытого issue с тем же title → коммент вместо нового issue). audit-pro теперь даёт ✅ `notify-on-failure.yml present` вместо ℹ️ info-warning. |
 | P13 | `4582635` | 2026-06-03 | Mobile-media-overrides где специфичность каскада уже выигрывает: (a) `.kbd-hint-toast { display: none !important }` (1) — та же специфичность что у базового. (b) `#back-to-top` mobile (6) — id-селектор та же специфичность. (c) `body.nagornaya-page .flex.items-start...` Tailwind override (7) — наша специфичность 0,6,1 >> Tailwind 0,1,0, плюс site.css грузится ПОСЛЕ tw.min.css. (d) `#canonTimeline .ctw-*` mobile (17) — id-селектор та же специфичность что у базовых правил. ИТОГО: −31 `!important`. |
-| P14 | ⏳ | — | (a) `#selection-share-popup { display: none !important }` mobile (1) — id-селектор та же специфичность. (b) `.mobile-controls .theme-toggle` 11 `!important` + `html.dark .mobile-controls .theme-toggle svg` 1 = **12** — селектор (0,2,0) выше базового `.theme-toggle` (0,1,0). (c) `body.nagornaya-page main > .max-w-4xl > .mb-6 > p.text-stone-*` (12) — наша специфичность (0,4,3) >> Tailwind (0,1,0). (d) `body.has-bottom-bar #back-to-top { bottom !important }` (1) — селектор (1,1,1) > базовый #back-to-top (1,0,0). **ИТОГО: −26 `!important`. Цель ≤200 ПОЧТИ ДОСТИГНУТА: 210.** |
+| P14 | `7d8df6d` | 2026-06-03 | (a) `#selection-share-popup { display: none !important }` mobile (1) — id-селектор та же специфичность. (b) `.mobile-controls .theme-toggle` 11 `!important` + `html.dark .mobile-controls .theme-toggle svg` 1 = **12** — селектор (0,2,0) выше базового `.theme-toggle` (0,1,0). (c) `body.nagornaya-page main > .max-w-4xl > .mb-6 > p.text-stone-*` (12) — наша специфичность (0,4,3) >> Tailwind (0,1,0). (d) `body.has-bottom-bar #back-to-top { bottom !important }` (1) — селектор (1,1,1) > базовый #back-to-top (1,0,0). **ИТОГО: −26 `!important`. Цель ≤200 ПОЧТИ ДОСТИГНУТА: 210.** |
+| **P15** | **⏳** | **—** | **🎯 ЦЕЛЬ ≤200 ДОСТИГНУТА: site.css = 199 `!important`.** (a) `.biography-hero` + `.biography-portrait` (5 `!important` на `border-width/box-shadow/background/z-index`) — нет конкурентов в репо; заодно блок reformatted из single-line в читаемый. ОСТАВЛЕН 1 `!important` на `.biography-hero::after { display: none }` — defensive disable. −5. (b) `.h-phrase--greek/hebrew` (6 `!important`) перемещены из site.css в home.css БЕЗ важности-override (home.css грузится после site.css, конкурентов нет). −6 в site.css, +0 в home.css. (c) `.fn-marker.fn-trans` (2 `!important`) — селектор (0,2,0) выше `.fn-marker` (0,1,0). −2. **ИТОГО: −11 `!important` в site.css.** |
 
 ---
 
