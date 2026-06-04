@@ -76,11 +76,99 @@ window.SITE_CONFIG = {
  selectors: { headings: 'article h2[id], article h3[id]' },
  quiz: {
  questions: [
- { id:'q1', q:'Какой труд Гилла стал полной догматико-практической систематикой?', options:['«Дело Бога и истины» (The Cause of God and Truth)','«Свод догматического и практического богословия» (A Body of Doctrinal and Practical Divinity)','«Древний способ крещения» (The Ancient Mode of Baptizing)','«Учение о предопределении» (The Doctrine of Predestination)'], answer:1, ok:'Верно: Свод догматического и практического богословия — итоговая систематика Гилла.', err:'Неверно. Полная систематика — «Свод догматического и практического богословия» (A Body of Doctrinal and Practical Divinity).', focus:'sec-works' },
- { id:'q2', q:'Сколько названий фиксирует PRDL за Джоном Гиллом?', options:['23','52','113','300'], answer:2, ok:'Верно: PRDL указывает 113 названий в 148 томах.', err:'Неверно. В справочнике PRDL — 113 titles / 148 vols.', focus:'sec-prdl' },
- { id:'q3', q:'Какие два адресных слоя связаны с часовней Картер-Лейн?', options:['Oxford Street / Fleet Street','Tooley Street / St. Olave’s Street','Bunhill Fields / Moorfields','Kettering / Higham Ferrers'], answer:1, ok:'Верно: у Риппона встречаются оба слоя — Tooley Street и Saint Olave’s Street.', err:'Неверно. Речь о Tooley Street и St. Olave’s Street.', focus:'sec-timeline' },
- { id:'q4', q:'Почему таблица оценок Гилла должна включать Сеймура?', options:['Чтобы принять его выводы без проверки','Чтобы показать крайнюю критическую позицию XX века и сравнить её с современными исследованиями','Потому что Сеймур был учеником Гилла','Потому что Сеймур написал мемуар 1838 года'], answer:1, ok:'Верно: Сеймур важен как крайняя критическая точка, а не как окончательный суд.', err:'Неверно. Сеймур — критик XX века, не ученик и не автор мемуара.', focus:'sec-disputes' }
- ],
+        {
+          "id": "q1",
+          "type": "single",
+          "category": "context",
+          "difficulty": "medium",
+          "question": "Какой труд Гилла стал полной догматико-практической систематикой?",
+          "options": [
+            "«Дело Бога и истины» (The Cause of God and Truth)",
+            "«Свод догматического и практического богословия» (A Body of Doctrinal and Practical Divinity)",
+            "«Древний способ крещения» (The Ancient Mode of Baptizing)",
+            "«Учение о предопределении» (The Doctrine of Predestination)"
+          ],
+          "correct": 1,
+          "explanation": {
+            "short": ": Свод догматического и практического богословия — итоговая систематика Гилла.",
+            "full": ": Свод догматического и практического богословия — итоговая систематика Гилла. Полная систематика — «Свод догматического и практического богословия» (A Body of Doctrinal and Practical Divinity).",
+            "anchor": "sec-works"
+          },
+          "sourceRef": {
+            "label": "III. Основные труды",
+            "href": "#sec-works"
+          }
+        },
+        {
+          "id": "q2",
+          "type": "single",
+          "category": "context",
+          "difficulty": "medium",
+          "question": "Сколько названий фиксирует PRDL за Джоном Гиллом?",
+          "options": [
+            "23",
+            "52",
+            "113",
+            "300"
+          ],
+          "correct": 2,
+          "explanation": {
+            "short": ": PRDL указывает 113 названий в 148 томах.",
+            "full": ": PRDL указывает 113 названий в 148 томах. В справочнике PRDL — 113 titles / 148 vols.",
+            "anchor": "sec-prdl"
+          },
+          "sourceRef": {
+            "label": "I. Масштаб корпуса",
+            "href": "#sec-prdl"
+          }
+        },
+        {
+          "id": "q3",
+          "type": "single",
+          "category": "context",
+          "difficulty": "medium",
+          "question": "Какие два адресных слоя связаны с часовней Картер-Лейн?",
+          "options": [
+            "Oxford Street / Fleet Street",
+            "Tooley Street / St. Olave’s Street",
+            "Bunhill Fields / Moorfields",
+            "Kettering / Higham Ferrers"
+          ],
+          "correct": 1,
+          "explanation": {
+            "short": ": у Риппона встречаются оба слоя — Tooley Street и Saint Olave’s Street.",
+            "full": ": у Риппона встречаются оба слоя — Tooley Street и Saint Olave’s Street. Речь о Tooley Street и St. Olave’s Street.",
+            "anchor": "sec-timeline"
+          },
+          "sourceRef": {
+            "label": "II. Хронология жизни и служения",
+            "href": "#sec-timeline"
+          }
+        },
+        {
+          "id": "q4",
+          "type": "single",
+          "category": "context",
+          "difficulty": "medium",
+          "question": "Почему таблица оценок Гилла должна включать Сеймура?",
+          "options": [
+            "Чтобы принять его выводы без проверки",
+            "Чтобы показать крайнюю критическую позицию XX века и сравнить её с современными исследованиями",
+            "Потому что Сеймур был учеником Гилла",
+            "Потому что Сеймур написал мемуар 1838 года"
+          ],
+          "correct": 1,
+          "explanation": {
+            "short": ": Сеймур важен как крайняя критическая точка, а не как окончательный суд.",
+            "full": ": Сеймур важен как крайняя критическая точка, а не как окончательный суд. Сеймур — критик XX века, не ученик и не автор мемуара.",
+            "anchor": "sec-disputes"
+          },
+          "sourceRef": {
+            "label": "VI. Спорные темы и как их читать",
+            "href": "#sec-disputes"
+          }
+        }
+      ],
  scores: [
  { id:'perfect', min:4, max:4, title:'Справочник освоен', desc:'Вы уверенно ориентируетесь в хронологии, трудах и спорных вопросах наследия Гилла.' },
  { id:'good', min:2, max:3, title:'Хорошая база', desc:'Вы уловили главные справочные линии, но стоит перечитать таблицы.' },
