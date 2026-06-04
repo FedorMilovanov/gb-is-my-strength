@@ -5,6 +5,27 @@
 
 ---
 
+## v37 — 20-Antisovetov generic-style fallback to global CSS (2026-06-04)
+
+### What was improved:
+- Continued shrinking the remaining inline `<style>` island in `articles/20-antisovetov-pastoru/index.html`.
+- Removed generic styling blocks that are already provided globally by `css/site.css`, letting the page fall back to canonical site-wide styles instead of duplicating them inline:
+  - `.note-box`
+  - `.info-box`
+  - `.warn-box`
+  - `.divider`
+  - `.article-figure` and descendants
+  - `.pullquote`
+  - `.drop-cap::first-letter`
+- Kept only page-specific inline selectors that still have no safe global home.
+- Result: `20-antisovetov` inline-style payload reduced further from **14242** → **12940** bytes.
+
+### Verified:
+- `npm run validate:all` → ✅ PASS.
+- `node scripts/audit-pro.js` → ✅ PASS (33 passed / 2 warnings / 0 errors).
+
+---
+
 ## v36 — 20-Antisovetov inline-style trim + selector dedup (2026-06-04)
 
 ### What was improved:
