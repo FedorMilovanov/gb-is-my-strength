@@ -5,6 +5,71 @@
 
 ---
 
+## v28 — PLAN-06: JS cleanup (professional, careful, with Playwright re-checks) (2026-06-04)
+
+**Commits:** `bdf8fe0` (plan) · `3872ba9` (P1) · `34ca8d6` (P2) · `acdd6d2` (P3) · `<TBD>` (P6 finalize)
+
+### Цель
+
+Аккуратно проверить и почистить JS-код проекта (9436 строк, 440 КБ raw / 112 KB gzip).
+**Главный приоритет:** не сломать функционал. Каждая партия → Playwright visual-audit (0 console / 0 network errors) → push.
+
+### Результат
+
+**JS код был уже чистым.** Обнаружены только косметические/документационные рассогласования:
+
+| Партия | Файл | Что | Изменения в коде |
+|---|---|---|---|
+| **P1** `3872ba9` | `js/site.js` | Шапка-оглавление: убрано «25. (зарезервировано)» (модуля нет в коде), добавлены 28/29/30 модули с пометками AGENTS-r17 и PLAN-04 P5. | Comment-only |
+| **P2** `34ca8d6` | `js/enhancements.js` | 3 безымянных модуля получили буквы C/D/E (Quiz Interactive, Hebrew Tap-Toggle, Ambient Scripture). Добавлено полное оглавление A..G в шапку. | Comment-only |
+| **P3** `acdd6d2` | `js/site.js` | Один неточный комментарий `qFocus = ... /* legacy — kept for HTML compat */` заменён на точный. Два других legacy-комментария проверены и подтверждены легитимными. | Comment-only |
+| **P4** (audit-only) | весь JS | Глубокий поиск: unused functions, dead DOM-refs, dead helpers. **Реальный dead-code не найден.** Все 12 «unused» из regex-scan оказались false positives (используются через property access / passed as callback / IIFE). 47 dead DOM-refs → 16 → 0 (все легитимные defensive fallback / template-literal injection / documented feature slot из AGENTS §11.2). | None |
+| **P5** | — | Пропущена (P4 ничего не дал — нечего чистить). | — |
+
+### Что было исследовано и явно НЕ изменено
+
+- **Модуль 07 TOC Mobile** (~80 строк JS) — `#toc-panel/list/toggle/overlay/close` нет ни в одном HTML. Однако это **documented feature slot** (AGENTS §11.2 «Контракт разметки»), активируется при появлении в будущей статье. **Оставлен.**
+- **`/* legacy key: keep for backwards compatibility */`** на `quiz-best-<slug>` localStorage key — это **активный compat** со старыми пользовательскими данными (новый ключ `quiz-result-v2:...` через `writeQuizMemory`). **Оставлен.**
+- **`hCpBtnNav` → `gbSearchBtn` alias в `js/search.js`** — активный legacy compat. **Оставлен.**
+- **130 `addEventListener` без `removeEventListener` в `js/site.js`** — большинство на `document/window/body` (живут навсегда). Симметризация = архитектурный refactor, не точечная чистка. **Оставлено как есть.**
+- **`qFocus` placeholder с `display:none`** — формально мёртвый в main quiz-flow, но возможно используется в review-режиме (через `revFocus`). Полное удаление требует Playwright проверки interactive quiz flow — **отложено** до отдельной сессии.
+
+### Verified after every batch:
+
+- `node --check js/*.js scripts/*.js sw.js` → ✅ PASS
+- `npm run cache-bust` → matched
+- `npm run validate:all` → ✅ PASS (0 errors, 0 warnings)
+- `npm run tokens:check` → ✅ PASS (0/0)
+- `node scripts/audit-pro.js` → ✅ PASSED 29 / 2 warn / 0 err
+- **`npm run visual-audit` (Playwright × 96 screenshots × 3 раза)** → ✅ **0 console errors, 0 network errors** на baseline, после P1, после P2, после P3
+
+### Numbers
+
+JS baseline и итог совпадают — это была проверка качества, а не оптимизация веса:
+
+| Метрика | Baseline | После P1-P3 |
+|---|-:|-:|
+| `js/site.js` строк | 5121 | 5129 (+8 строк комментариев) |
+| Console errors | 0 | 0 |
+| Network errors | 0 | 0 |
+| `audit-pro` | ✅ PASSED 29/2/0 | ✅ PASSED 29/2/0 |
+| Рассогласование `site.js` шапки с кодом | 3 (25/28/29/30) | **0** ✅ |
+| Рассогласование `enhancements.js` нумерации | 3 (C/D/E пропущены) | **0** ✅ |
+
+### Plan & journal
+
+Полный план и журнал партий: [`audit/PLAN-06-DONE.md`](audit/PLAN-06-DONE.md)
+
+### Note для будущих агентов
+
+Если возникнет соблазн «разбить site.js на модули» — **нет**. Это намеренный архитектурный выбор (AGENTS §5.1), подтверждённый в PLAN-06 P4: дублей нет, чистка не нужна.
+
+Если возникнет соблазн «удалить TOC Mobile модуль 07 (он мёртвый)» — **нет**. Это documented feature slot. Активируется при `<div id="toc-toggle">` в HTML статьи.
+
+Если возникнет соблазн «удалить `qFocus`-placeholder» — **сначала тщательная проверка review-режима квиза в Playwright** (interactive flow).
+
+---
+
 ## v27 — PLAN-05: docs cleanup + visual QA + HTML hotfix (2026-06-04)
 
 **Commits:** `e59f6df` (hotfix HTML) · `971475a` (AGENTS-r63 rewrite) · `643f4a7` (this changelog cleanup)

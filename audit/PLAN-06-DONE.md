@@ -1,10 +1,25 @@
-# PLAN-06 — JS cleanup (professional, careful, with re-checks)
+# PLAN-06 — DONE (executed 2026-06-04)
 
-> **Status:** ⏳ IN PROGRESS
-> **Date:** 2026-06-04
+> **Status:** ✅ COMPLETED.
+> **Цель:** профессиональная чистка JS с Playwright re-checks.
+> **Главный результат:** JS код проекта уже был чистым — обнаружены только
+> косметические правки заголовков модулей (P1, P2, P3 — comment-only).
+> Глубокий аудит unused functions / dead DOM-refs / dead helpers (P4) подтвердил отсутствие реального dead code.
+>
+> Этот файл сохранён как **историческая ссылка** на проделанную работу.
+
+---
+
+# PLAN-06 — JS cleanup (исходный план)
+
+> **Status:** ✅ COMPLETED 2026-06-04
 > **Owner:** Arena Agent (по запросу Фёдора Милованова)
 > **Цель:** профессионально и аккуратно почистить JS — без потери функционала.
 > Качество > размер. Каждая партия → проверки → коммит → push → Playwright re-check.
+
+> **Главный вывод:** JS уже был **чистым**. Cosmetic правки в headers (P1, P2, P3),
+> аудит-only deep scan (P4) подтвердил отсутствие dead code в site.js / enhancements.js.
+> Real-world cleanup в этом репо был сделан правильно — никаких «забытых» legacy функций.
 
 ---
 
@@ -134,6 +149,7 @@ AUDIT_BASE=http://127.0.0.1:8080 npm run visual-audit
 | Версия | Дата | Что |
 |---|---|---|
 | v1 | 2026-06-04 | Создан, baseline зафиксирован |
+| v2 | 2026-06-04 | План завершён (P1-P4 выполнены, P5 пропущен как ненужный, P6 = финал) |
 
 ---
 
@@ -141,9 +157,9 @@ AUDIT_BASE=http://127.0.0.1:8080 npm run visual-audit
 
 | Партия | Коммит | Дата | Результат |
 |---|---|---|---|
-| P1 | ⏳ | — | — |
-| P2 | ⏳ | — | — |
-| P3 | ⏳ | — | — |
-| P4 | ⏳ | — | — |
-| P5 | ⏳ | — | — |
-| P6 | ⏳ | — | — |
+| P1 | `3872ba9` | 2026-06-04 | js/site.js шапка: убрано "25. (зарезервировано)", добавлены 28/29/30 модули с пометками AGENTS-r17 + PLAN-04 P5. Comment-only. |
+| P2 | `34ca8d6` | 2026-06-04 | js/enhancements.js: 3 безымянных модуля получили буквы C/D/E (Quiz Interactive, Hebrew Tap-Toggle, Ambient Scripture). Добавлено оглавление A..G в шапку. Comment-only. |
+| P3 | `acdd6d2` | 2026-06-04 | js/site.js:2320 — комментарий `qFocus = ...  /* legacy — kept for HTML compat */` заменён на точный (placeholder ref, всегда display:none в main flow). 2 других legacy-пометки (quiz-best key, gbFloatingControls) подтверждены легитимными — оставлены. Comment-only. |
+| P4 | (audit-only, без правок кода) | 2026-06-04 | Глубокий поиск unused functions (12 кандидатов через regex, все оказались false positives — функции активно используются), dead DOM-refs (47→16→0, все легитимные defensive/template-literal/documented feature slot), пустых functions (все catch-handlers), early-out checks (119 в site.js — обязательны по AGENTS §2). **Вывод: JS уже чистый.** |
+| P5 | (skipped) | — | Поиск unused private helpers не дал результатов в P4 — пропущен. |
+| P6 | ⏳ | — | Финал: AUDIT_HISTORY v28 + переименование PLAN-06 → DONE |
