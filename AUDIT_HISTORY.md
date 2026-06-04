@@ -5,6 +5,24 @@
 
 ---
 
+## v35 — Dead inline-style cleanup + small CSS budget recovery (2026-06-04)
+
+### What was improved:
+- Removed the now-redundant inline `<style>` block from `articles/krajne-li-isporcheno-serdce/index.html`.
+- Deleted dead `.rescue-caption--above*` rules from `css/site.css` after verifying the class is not used anywhere in HTML/JS.
+- Kept the still-used `.rescue-figure` rule in global CSS.
+- Result:
+  - remaining inline `<style>` blocks across the whole site: **1** (only the known high-risk `20-antisovetov` island remains);
+  - CSS budget improved slightly (`432887` → `432135` bytes);
+  - gzip CSS improved (`85361` → `85178` bytes).
+
+### Verified:
+- `npm run cache-bust` → ✅ PASS.
+- `npm run validate:all` → ✅ PASS.
+- `node scripts/audit-pro.js` → ✅ PASS (33 passed / 2 warnings / 0 errors).
+
+---
+
 ## v34 — Inline-script dedup: topnav/reveal cleanup moved to global JS (2026-06-04)
 
 ### What was improved:

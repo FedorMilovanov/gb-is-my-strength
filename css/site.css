@@ -8929,34 +8929,6 @@ html.dark {
 .rescue-figure {
   margin: 2.5rem 0 0;
 }
-.rescue-caption--above {
-  display: block;
-  text-align: center;
-  font-size: 1.15rem;
-  font-style: italic;
-  line-height: 1.6;
-  color: var(--color-text-warm-muted, #4a3728);
-  padding: 1.1rem 1.5rem 1.4rem;
-  border-top: 2px solid #c8a97e;
-  border-bottom: none;
-  position: relative;
-  margin-bottom: 0;
-  background: linear-gradient(to bottom, rgba(200, 169, 126, 0.07), transparent);
-}
-.rescue-caption--above::after {
-  content: "↓";
-  display: block;
-  font-size: 1.4rem;
-  color: #c8a97e;
-  margin-top: 0.6rem;
-  font-style: normal;
-  line-height: 1;
-}
-html.dark .rescue-caption--above {
-  color: var(--color-text-warm, #e8e3d5);
-  border-top-color: #b8882a;
-  background: linear-gradient(to bottom, rgba(184, 136, 42, 0.12), transparent);
-}
 
 /* ── Biography handbook grid & cards (originally inline in articles/dzhon-gill-spravochnik) ─ */
 .ref-grid {
