@@ -2317,7 +2317,7 @@
     /* ---- 3. Main DOM refs ---- */
     var counter      = document.getElementById('quizCounter');
     var qText        = document.getElementById('quizQuestion');
-    var qFocus       = document.getElementById('quizFocus');   /* legacy — kept for HTML compat */
+    var qFocus       = document.getElementById('quizFocus');   /* placeholder ref; в main quiz-flow всегда display:none (используется только в review-режиме через revFocus) */
     var opts         = document.getElementById('quizOptions');
     var feedback     = document.getElementById('quizFeedback');
     var nextBtn      = document.getElementById('quizNext');
