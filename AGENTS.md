@@ -480,16 +480,23 @@ slug — строчные латинские буквы и дефисы, без 
 
 ```js
 {
-  q: 'Вопрос...',
+  id: 'q1',
+  type: 'single',
+  category: 'theology',
+  difficulty: 'medium',
+  question: 'Вопрос...',
   options: ['...', '...', '...'],
-  answer: 1,
-  ok: 'Почему верно...',
-  err: 'Почему дистрактор ошибочен...',
-  sourceRef: { label: 'Иер. 17:9', href: '#istoricheskiy-fon' }
+  correct: 1,
+  explanation: {
+    short: 'Короткий вывод.',
+    full: 'Развёрнутое объяснение ответа.',
+    anchor: 'sec-intro'
+  },
+  sourceRef: { label: 'Иер. 17:9', href: '#sec-intro' }
 }
 ```
 
-`sourceRef` — строка, объект `{ label, href }` или массив. Результаты квиза сохраняются в `localStorage` как `quiz-result-v2:{page.id}`.
+`sourceRef` — строка, объект `{ label, href }` или массив. Результаты квиза сохраняются в `localStorage` как `quiz-result-v2:{page.id}`. Legacy-формат `q / answer / ok / err / focus` поддерживается только для старых страниц; новые вопросы писать в новом формате.
 
 ### 6.6 Share API (для цитат, результатов квизов)
 

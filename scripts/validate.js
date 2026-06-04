@@ -37,6 +37,7 @@
 
 const fs   = require('fs');
 const path = require('path');
+const vm   = require('vm');
 
 const ARTICLES  = path.resolve(__dirname, '../articles');
 const CSS_DIR   = path.resolve(__dirname, '../css');
@@ -434,6 +435,46 @@ function validateJS() {
   }
 }
 
+function walkHtmlFiles(dir, out = []) {
+  const skip = new Set(['.git', 'node_modules', '.arena', '.cache', 'dist', 'build', 'coverage', 'out', 'target']);
+  for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
+    if (skip.has(entry.name)) continue;
+    const full = path.join(dir, entry.name);
+    if (entry.isDirectory()) {
+      walkHtmlFiles(full, out);
+    } else if (entry.isFile() && entry.name.endsWith('.html')) {
+      out.push(full);
+    }
+  }
+  return out;
+}
+
+function validateInlineScripts() {
+  const ROOT = path.resolve(__dirname, '..');
+  const htmlFiles = walkHtmlFiles(ROOT);
+
+  htmlFiles.forEach((file) => {
+    const rel = path.relative(ROOT, file).replace(/\\/g, '/');
+    const html = fs.readFileSync(file, 'utf8');
+    let idx = 0;
+
+    for (const match of html.matchAll(/<script\b([^>]*)>([\s\S]*?)<\/script>/gi)) {
+      idx += 1;
+      const attrs = match[1] || '';
+      const code = match[2] || '';
+      if (/\bsrc\s*=\s*/i.test(attrs)) continue;
+      if (/type\s*=\s*["']application\/(ld\+json|json)["']/i.test(attrs)) continue;
+      if (!code.trim()) continue;
+
+      try {
+        new vm.Script(code, { filename: `${rel}#inline-script-${idx}` });
+      } catch (e) {
+        err(rel, `inline <script> syntax error (#${idx}): ${e.message}`);
+      }
+    }
+  });
+}
+
 
 // ── Main ──────────────────────────────────────────────────────────────────────
 
@@ -447,6 +488,10 @@ function main() {
   // JS (NEW r58): syntax + sanity check для js/*.js
   console.log('  📁  js/');
   validateJS();
+
+  // Inline <script> во всех HTML (ловит битый SITE_CONFIG / page-specific JS)
+  console.log('  📁  inline-scripts/');
+  validateInlineScripts();
 
   // Каждая статья
   const slugs = fs.readdirSync(ARTICLES, { withFileTypes: true })

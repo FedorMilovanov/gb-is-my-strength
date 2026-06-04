@@ -2288,6 +2288,126 @@
     var bonusScores    = SiteUtils.getConfig('quiz.bonusScores', null);
     if (!questions || !questions.length) return;
 
+    /* ---- 1b. Backwards compatibility + heading/source resolution ---- */
+    var headingRefs = Array.prototype.map.call(document.querySelectorAll('article h2[id], article h3[id]'), function (el) {
+      return {
+        id: el.id,
+        text: (el.textContent || '').replace(/\s+/g, ' ').trim(),
+        norm: normalizeLookupValue(el.textContent || '')
+      };
+    });
+
+    function stripMarkup(str) {
+      return String(str == null ? '' : str)
+        .replace(/<br\s*\/?>/gi, ' ')
+        .replace(/<[^>]+>/g, ' ')
+        .replace(/\s+/g, ' ')
+        .trim();
+    }
+
+    function normalizeLookupValue(str) {
+      return stripMarkup(str)
+        .toLowerCase()
+        .replace(/ё/g, 'е')
+        .replace(/[«»"'()!?.,:;—–-]+/g, ' ')
+        .replace(/\s+/g, ' ')
+        .trim();
+    }
+
+    function cleanFeedbackLead(str) {
+      return String(str == null ? '' : str)
+        .replace(/^\s*(Верно!?|Точно!?|Именно так!?|Неверно\.?|Не совсем\.?|Осторожно\s*[—-]\s*)\s*/i, '')
+        .trim();
+    }
+
+    function resolveHeadingId(value) {
+      if (!value) return null;
+      var raw = String(value).trim();
+      if (!raw) return null;
+      if (raw.charAt(0) === '#') raw = raw.slice(1);
+      if (document.getElementById(raw)) return raw;
+
+      var norm = normalizeLookupValue(raw);
+      if (!norm) return null;
+
+      for (var i = 0; i < headingRefs.length; i++) {
+        if (headingRefs[i].norm === norm) return headingRefs[i].id;
+      }
+      for (var j = 0; j < headingRefs.length; j++) {
+        if (headingRefs[j].norm.indexOf(norm) !== -1 || norm.indexOf(headingRefs[j].norm) !== -1) return headingRefs[j].id;
+      }
+      return null;
+    }
+
+    function buildSourceRef(q) {
+      if (q.sourceRef) return q.sourceRef;
+      var anchor = q && q.explanation && q.explanation.anchor ? q.explanation.anchor : null;
+      var focusValue = anchor || q.focus || null;
+      var resolvedId = resolveHeadingId(focusValue);
+      if (resolvedId) return { label: 'Перечитать раздел', href: '#' + resolvedId };
+      if (typeof q.focus === 'string' && q.focus.trim()) return { label: q.focus.trim() };
+      return null;
+    }
+
+    function normalizeQuestion(q, i) {
+      var type = q.type || 'single';
+      var text = q.q || q.question || '';
+      var answer = typeof q.answer === 'number' ? q.answer : null;
+      var correct = Array.isArray(q.correct) ? q.correct.slice() : q.correct;
+
+      if (type === 'single' && answer == null && typeof correct === 'number') answer = correct;
+      if (type !== 'single' && correct == null && Array.isArray(q.answer)) correct = q.answer.slice();
+
+      var explanation = q.explanation && typeof q.explanation === 'object'
+        ? {
+            short: q.explanation.short || cleanFeedbackLead(q.ok || q.err || ''),
+            full: q.explanation.full || cleanFeedbackLead(q.err || q.ok || ''),
+            anchor: q.explanation.anchor || resolveHeadingId(q.focus || '') || null
+          }
+        : {
+            short: cleanFeedbackLead(q.ok || q.err || ''),
+            full: cleanFeedbackLead(q.err || q.ok || ''),
+            anchor: resolveHeadingId(q.focus || '') || null
+          };
+
+      if (!explanation.full) explanation.full = explanation.short;
+
+      var sourceRef = buildSourceRef({
+        sourceRef: q.sourceRef,
+        explanation: explanation,
+        focus: q.focus
+      });
+
+      var focusId = explanation.anchor || resolveHeadingId(q.focus || '') || null;
+      var okText = q.ok || explanation.short || 'Верно.';
+      var errText = q.err || explanation.full || explanation.short || 'Проверьте ответ и перечитайте раздел статьи.';
+
+      return {
+        id: q.id || ('q' + (i + 1)),
+        type: type,
+        category: q.category || 'theology',
+        difficulty: q.difficulty || 'medium',
+        q: text,
+        question: text,
+        options: Array.isArray(q.options) ? q.options.slice() : [],
+        answer: answer,
+        correct: Array.isArray(correct) ? correct.slice() : correct,
+        ok: okText,
+        err: errText,
+        focus: focusId,
+        sourceRef: sourceRef,
+        explanation: explanation
+      };
+    }
+
+    function normalizeQuestionSet(list) {
+      if (!Array.isArray(list)) return null;
+      return list.map(normalizeQuestion);
+    }
+
+    questions = normalizeQuestionSet(questions);
+    bonusQuestions = normalizeQuestionSet(bonusQuestions);
+
     // ===== СТАНДАРТ КАЧЕСТВА (валидация) =====
     // ===== ЖЁСТКАЯ ВАЛИДАЦИЯ СТАНДАРТА v3.5 =====
     questions.forEach(function(q, i) {
@@ -2300,6 +2420,9 @@
       }
       if (!['single','multiple','order'].includes(q.type || 'single')) {
         console.warn('[Quiz v3.5] Вопрос '+(i+1)+' — неизвестный type');
+      }
+      if (!q.q || !Array.isArray(q.options) || !q.options.length) {
+        console.warn('[Quiz v3.5] Вопрос '+(i+1)+' — пустой текст или options');
       }
     });
 
@@ -2332,11 +2455,36 @@
     }
     function prepareDeck(qs, attemptSeed, deckName) {
       return shuffleSeeded(qs, hashString(deckName + ':' + attemptSeed)).map(function (q) {
-        var optSeed     = hashString(q.q.slice(0, 20) + ':' + deckName + ':' + attemptSeed);
-        var orig        = q.options.slice();
-        var shuffled    = shuffleSeeded(orig, optSeed);
-        var correctText = orig[q.answer];
-        return { q: q.q, options: shuffled, answer: shuffled.indexOf(correctText), ok: q.ok, err: q.err, focus: q.focus || null };
+        var questionSeed = stripMarkup(q.q || q.question || '').slice(0, 40) || ('question-' + deckName);
+        var optSeed = hashString(questionSeed + ':' + deckName + ':' + attemptSeed);
+        var originalOptions = Array.isArray(q.options) ? q.options.slice() : [];
+        var shuffledOptions = q.type === 'order' ? originalOptions.slice() : shuffleSeeded(originalOptions, optSeed);
+        var answer = q.answer;
+        var correct = Array.isArray(q.correct) ? q.correct.slice() : q.correct;
+
+        if (q.type === 'single') {
+          var correctText = originalOptions[answer];
+          answer = shuffledOptions.indexOf(correctText);
+        } else if (q.type === 'multiple' && Array.isArray(correct)) {
+          correct = correct.map(function (idx) { return shuffledOptions.indexOf(originalOptions[idx]); });
+        }
+
+        return {
+          id: q.id,
+          type: q.type,
+          category: q.category,
+          difficulty: q.difficulty,
+          q: q.q,
+          question: q.question,
+          options: shuffledOptions,
+          answer: answer,
+          correct: correct,
+          ok: q.ok,
+          err: q.err,
+          focus: q.focus || null,
+          sourceRef: q.sourceRef || null,
+          explanation: q.explanation || null
+        };
       });
     }
 
@@ -2586,26 +2734,42 @@
         var label = escapeHTML(ref.label || ref.text || ref.href || 'Источник');
         var href = ref.href || ref.url || '';
         if (!href) return '<span class="quiz-source-ref__item">' + label + '</span>';
+        if (href.charAt(0) === '#') return '<a class="quiz-source-ref__item" href="' + escapeHTML(href) + '">' + label + '</a>';
         return '<a class="quiz-source-ref__item" href="' + escapeHTML(href) + '" target="_blank" rel="noopener noreferrer">' + label + '</a>';
       }).join('');
       return '<div class="quiz-source-ref" aria-label="Источник для проверки ответа">' +
         '<span class="quiz-source-ref__label">Источник:</span>' + links + '</div>';
     }
 
+    function emitQuizRender(root) {
+      if (!root) return;
+      try {
+        document.dispatchEvent(new CustomEvent('gb:quiz-rendered', { detail: { root: root } }));
+      } catch (e) {}
+      if (window.SiteUtils && typeof window.SiteUtils.hydrateGlossaryTerms === 'function') {
+        window.SiteUtils.hydrateGlossaryTerms(root);
+      } else if (window.SiteUtils && typeof window.SiteUtils.initGlossaryTooltips === 'function') {
+        window.SiteUtils.initGlossaryTooltips(root);
+      }
+    }
+
     function setFeedback(el, html, cls, q) {
       if (!el) return;
 
-      // Новая система объяснений (приоритет)
       var explanationHTML = '';
       if (q && q.explanation) {
         if (q.explanation.short) {
-          explanationHTML = '<div class="quiz-explanation-short">' + escapeHTML(q.explanation.short) + '</div>';
+          explanationHTML += '<div class="quiz-explanation-short">' + q.explanation.short + '</div>';
+        }
+        if (q.explanation.full && stripMarkup(q.explanation.full) !== stripMarkup(q.explanation.short || '')) {
+          explanationHTML += '<div class="quiz-explanation-full">' + q.explanation.full + '</div>';
         }
       }
 
       var content = explanationHTML || (html || '');
       el.innerHTML = content + renderSourceRefs(q);
       el.className = cls || 'quiz-feedback';
+      emitQuizRender(el);
     }
 
     /* ===== НОВАЯ ЛОГИКА ТИПОВ ВОПРОСОВ (multiple + order) ===== */
@@ -2737,6 +2901,7 @@
       counter.textContent = 'Вопрос ' + (current + 1) + ' из ' + total;
       if (fill) fill.style.width = ((current + 1) / total * 100) + '%';
       qText.innerHTML = q.q;
+      emitQuizRender(qText);
       if (qFocus) qFocus.style.display = 'none';
       if (feedback) { feedback.textContent = ''; feedback.className = 'quiz-feedback'; }
       if (nextBtn) nextBtn.style.display = 'none';
@@ -2751,6 +2916,7 @@
           opts.appendChild(makeOptionBtn(opt, i, handleAnswer));
         });
       }
+      emitQuizRender(opts);
 
       if (timeLimit > 0) startTimer(function () { if (!answered) handleAnswer(-1); });
     }
@@ -2778,7 +2944,7 @@
         } else {
           selectedBtns.forEach(function(b){ b.classList.add('wrong'); });
           setFeedback(feedback, q.err, 'quiz-feedback err', q);
-          wrongAnswers.push({ q: q.q, options: q.options.slice(), answer: q.answer, chosenIdx: userAnswer, ok: q.ok, err: q.err, focus: q.focus });
+          wrongAnswers.push({ q: q.q, options: q.options.slice(), answer: q.answer, correct: q.correct, chosenIdx: userAnswer, ok: q.ok, err: q.err, focus: q.focus, sourceRef: q.sourceRef, explanation: q.explanation, type: q.type });
           streak = 0;
         }
       } else if (type === 'order') {
@@ -2789,7 +2955,7 @@
         } else {
           allBtns.forEach(function(b){ b.classList.add('wrong'); });
           setFeedback(feedback, q.err, 'quiz-feedback err', q);
-          wrongAnswers.push({ q: q.q, options: q.options.slice(), answer: q.answer, chosenIdx: userAnswer, ok: q.ok, err: q.err, focus: q.focus });
+          wrongAnswers.push({ q: q.q, options: q.options.slice(), answer: q.answer, correct: q.correct, chosenIdx: userAnswer, ok: q.ok, err: q.err, focus: q.focus, sourceRef: q.sourceRef, explanation: q.explanation, type: q.type });
           streak = 0;
         }
       } else {
@@ -2803,7 +2969,7 @@
           if (userAnswer >= 0 && allBtns[userAnswer]) allBtns[userAnswer].classList.add('wrong','shake');
           if (allBtns[q.answer]) allBtns[q.answer].classList.add('correct');
           setFeedback(feedback, q.err, 'quiz-feedback err', q);
-          wrongAnswers.push({ q: q.q, options: q.options.slice(), answer: q.answer, chosenIdx: userAnswer, ok: q.ok, err: q.err, focus: q.focus });
+          wrongAnswers.push({ q: q.q, options: q.options.slice(), answer: q.answer, correct: q.correct, chosenIdx: userAnswer, ok: q.ok, err: q.err, focus: q.focus, sourceRef: q.sourceRef, explanation: q.explanation, type: q.type });
           streak = 0;
         }
       }
@@ -2966,12 +3132,16 @@
 
       if (revCounter)  revCounter.textContent = (reviewCurrent + 1) + '\u00a0/\u00a0' + total;
       if (revFill)     revFill.style.width    = ((reviewCurrent + 1) / total * 100) + '%';
-      if (revQuestion) revQuestion.innerHTML  = q.q;
+      if (revQuestion) {
+        revQuestion.innerHTML  = q.q;
+        emitQuizRender(revQuestion);
+      }
 
       if (revPrev) {
         if (q.chosenIdx >= 0 && q.options[q.chosenIdx]) {
           revPrev.innerHTML    = '<span class="quiz-review-prev__label">Вы ответили:</span>\u00a0' + q.options[q.chosenIdx];
           revPrev.style.display = 'block';
+          emitQuizRender(revPrev);
         } else {
           revPrev.style.display = 'none';
         }
@@ -2985,6 +3155,7 @@
         revOpts.innerHTML = '';
         revOpts.setAttribute('aria-labelledby', '_rvq');
         q.options.forEach(function (opt, i) { revOpts.appendChild(makeOptionBtn(opt, i, handleReviewAnswer)); });
+        emitQuizRender(revOpts);
       }
     }
 
@@ -3088,7 +3259,10 @@
 
       if (bonusBc)    bonusBc.textContent = 'Вопрос ' + (bonusCurrent + 1) + ' из ' + total;
       if (bonusBfill) bonusBfill.style.width = ((bonusCurrent + 1) / total * 100) + '%';
-      if (bonusBq)    bonusBq.innerHTML = q.q;
+      if (bonusBq) {
+        bonusBq.innerHTML = q.q;
+        emitQuizRender(bonusBq);
+      }
       if (bonusBf)    bonusBf.style.display = 'none';
       if (bonusBfb) { bonusBfb.textContent = ''; bonusBfb.className = 'quiz-feedback'; }
       if (bonusBn)    bonusBn.style.display = 'none';
@@ -3097,6 +3271,7 @@
         bonusBo.setAttribute('role', 'radiogroup');
         bonusBo.setAttribute('aria-labelledby', 'quizBonusQuestion');
         q.options.forEach(function (opt, i) { bonusBo.appendChild(makeOptionBtn(opt, i, handleBonusAnswer)); });
+        emitQuizRender(bonusBo);
       }
     }
 

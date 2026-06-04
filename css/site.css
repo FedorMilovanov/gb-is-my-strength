@@ -3466,6 +3466,16 @@ html.dark .quiz-option.wrong { background: var(--quiz-wrong-bg); border-color: v
 .quiz-option.shake { animation: shake 0.4s ease; }
 
 .quiz-feedback { margin-top: 12px; font-family: 'Source Sans 3', system-ui, sans-serif; font-size: 13px; line-height: 1.55; min-height: 20px; }
+.quiz-explanation-short {
+  font-weight: 700;
+  color: var(--color-text);
+}
+.quiz-explanation-full {
+  margin-top: 8px;
+  color: var(--color-text-muted);
+}
+.quiz-feedback.ok .quiz-explanation-short { color: inherit; }
+.quiz-feedback.err .quiz-explanation-short { color: inherit; }
 
 .quiz-source-ref {
   display: flex;
