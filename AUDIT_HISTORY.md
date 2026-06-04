@@ -5,6 +5,27 @@
 
 ---
 
+## v39 — Playwright runtime verification + home inline-script dedup (2026-06-04)
+
+### What was improved:
+- Installed Playwright locally (`npm install --no-save playwright`) and downloaded Chromium for real-browser QA.
+- Installed missing system libraries required by headless Chromium (`libnspr4`, `libnss3`, `libatk*`, `libcups`, `libxdamage`, `libxkbcommon`, etc.).
+- Ran full visual audit against a local HTTP server:
+  - **16 pages × 2 viewports = 32 runs**
+  - **96 screenshots**
+  - **0 console errors**
+  - **0 network errors**
+  - **0 unsuppressed visual bugs**
+- Removed a now-dead duplicated inline home-page mobile-menu controller from `index.html` because `js/site.js` already owns `hMobileMenuBtn / hMobileNav / hMobileBackdrop` globally.
+- Result: total inline-script blocks across audited HTML pages dropped again (**79 → 78**), with no visual regressions in Playwright.
+
+### Verified:
+- `npm run validate:all` → ✅ PASS.
+- `node scripts/audit-pro.js` → ✅ PASS (33 passed / 2 warnings / 0 errors).
+- `AUDIT_BASE=http://127.0.0.1:8080 npm run visual-audit` → ✅ PASS.
+
+---
+
 ## v38 — 20-Antisovetov comment-stripping pass (2026-06-04)
 
 ### What was improved:
