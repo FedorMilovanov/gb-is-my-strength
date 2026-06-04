@@ -2564,8 +2564,88 @@
 
     function setFeedback(el, html, cls, q) {
       if (!el) return;
-      el.innerHTML = (html || '') + renderSourceRefs(q);
+
+      // Новая система объяснений (приоритет)
+      var explanationHTML = '';
+      if (q && q.explanation) {
+        if (q.explanation.short) {
+          explanationHTML = '<div class="quiz-explanation-short">' + escapeHTML(q.explanation.short) + '</div>';
+        }
+      }
+
+      var content = explanationHTML || (html || '');
+      el.innerHTML = content + renderSourceRefs(q);
       el.className = cls || 'quiz-feedback';
+    }
+
+    /* ===== НОВАЯ ЛОГИКА ТИПОВ ВОПРОСОВ (multiple + order) ===== */
+
+    function validateAnswer(q, userAnswer) {
+      if (!q) return false;
+      var type = q.type || 'single';
+
+      switch (type) {
+        case 'single':
+          return userAnswer === q.answer;
+        case 'multiple':
+          if (!Array.isArray(userAnswer) || !Array.isArray(q.correct)) return false;
+          var a = userAnswer.slice().sort();
+          var b = q.correct.slice().sort();
+          return a.length === b.length && a.every(function(v,i){return v===b[i];});
+        case 'order':
+          if (!Array.isArray(userAnswer) || !Array.isArray(q.correct)) return false;
+          return userAnswer.length === q.correct.length &&
+                 userAnswer.every(function(v,i){return v===q.correct[i];});
+        default:
+          return userAnswer === q.answer;
+      }
+    }
+
+    function renderMultipleChoice(q, container, handler) {
+      container.innerHTML = '';
+      container.setAttribute('role', 'group');
+      q.options.forEach(function(opt, i) {
+        var btn = makeOptionBtn(opt, i, function(){ btn.classList.toggle('selected'); });
+        btn.dataset.multi = 'true';
+        container.appendChild(btn);
+      });
+
+      var confirm = document.createElement('button');
+      confirm.className = 'quiz-next-btn quiz-multi-confirm';
+      confirm.textContent = 'Подтвердить ответ';
+      confirm.style.marginTop = '16px';
+      confirm.addEventListener('click', function() {
+        var selected = [];
+        container.querySelectorAll('.quiz-option.selected').forEach(function(b){
+          selected.push(parseInt(b.dataset.idx));
+        });
+        handler(selected);
+      });
+      container.appendChild(confirm);
+    }
+
+    function renderOrderQuestion(q, container, handler) {
+      container.innerHTML = '';
+      q.options.forEach(function(opt, i) {
+        var el = document.createElement('div');
+        el.className = 'quiz-order-item';
+        el.dataset.idx = i;
+        el.innerHTML = '<span class="quiz-order-number">' + (i+1) + '</span> ' + escapeHTML(opt);
+        el.draggable = true;
+        el.addEventListener('dragstart', function(e){ e.dataTransfer.setData('text/plain', i); el.classList.add('dragging'); });
+        el.addEventListener('dragend', function(){ el.classList.remove('dragging'); });
+        el.addEventListener('dragover', function(e){ e.preventDefault(); });
+        el.addEventListener('drop', function(e){
+          e.preventDefault();
+          var from = parseInt(e.dataTransfer.getData('text/plain'));
+          var to = i;
+          if (from === to) return;
+          var arr = Array.from(container.children);
+          container.insertBefore(arr[from], to > from ? arr[to].nextSibling : arr[to]);
+          handler(Array.from(container.children).map(function(c){ return parseInt(c.dataset.idx); }));
+        });
+        container.appendChild(el);
+      });
     }
 
     renderPreviousQuizResult();
@@ -2622,51 +2702,86 @@
       clearTimer();
       var q     = activeDeck[current];
       var total = activeDeck.length;
+      var type  = q.type || 'single';
+
       counter.textContent = 'Вопрос ' + (current + 1) + ' из ' + total;
       if (fill) fill.style.width = ((current + 1) / total * 100) + '%';
       qText.innerHTML = q.q;
-      if (qFocus)   qFocus.style.display = 'none';
+      if (qFocus) qFocus.style.display = 'none';
       if (feedback) { feedback.textContent = ''; feedback.className = 'quiz-feedback'; }
-      if (nextBtn)  nextBtn.style.display = 'none';
+      if (nextBtn) nextBtn.style.display = 'none';
       opts.innerHTML = '';
-      opts.setAttribute('role', 'radiogroup');
-      opts.setAttribute('aria-labelledby', 'quizQuestion');
-      q.options.forEach(function (opt, i) { opts.appendChild(makeOptionBtn(opt, i, handleAnswer)); });
+
+      if (type === 'multiple') {
+        renderMultipleChoice(q, opts, handleAnswer);
+      } else if (type === 'order') {
+        renderOrderQuestion(q, opts, handleAnswer);
+      } else {
+        q.options.forEach(function(opt, i) {
+          opts.appendChild(makeOptionBtn(opt, i, handleAnswer));
+        });
+      }
+
       if (timeLimit > 0) startTimer(function () { if (!answered) handleAnswer(-1); });
     }
 
-    function handleAnswer(idx) {
+    function handleAnswer(userAnswer) {
       if (answered) return;
       answered = true;
       clearTimer();
-      var q       = activeDeck[current];
-      var allBtns = opts.querySelectorAll('.quiz-option');
-      allBtns.forEach(function (b) { b.disabled = true; b.setAttribute('aria-checked', 'false'); });
-      if (idx >= 0 && allBtns[idx]) allBtns[idx].setAttribute('aria-checked', 'true');
 
-      if (idx === q.answer) {
-        if (allBtns[idx]) allBtns[idx].classList.add('correct');
-        setFeedback(feedback, q.ok, 'quiz-feedback ok', q);
-        score++;
-        streak++;
-      } else {
-        if (idx >= 0 && allBtns[idx]) {
-          allBtns[idx].classList.add('wrong', 'shake');
-          allBtns[idx].addEventListener('animationend', function () { allBtns[idx].classList.remove('shake'); }, { once: true });
+      var q = activeDeck[current];
+      var type = q.type || 'single';
+      var isCorrect = validateAnswer(q, userAnswer);
+
+      var allBtns = opts.querySelectorAll('.quiz-option');
+      allBtns.forEach(function(b){ b.disabled = true; b.setAttribute('aria-checked','false'); });
+
+      if (type === 'multiple') {
+        var selectedBtns = opts.querySelectorAll('.quiz-option.selected');
+        selectedBtns.forEach(function(b){ b.setAttribute('aria-checked','true'); });
+
+        if (isCorrect) {
+          selectedBtns.forEach(function(b){ b.classList.add('correct'); });
+          setFeedback(feedback, q.ok, 'quiz-feedback ok', q);
+          score++; streak++;
+        } else {
+          selectedBtns.forEach(function(b){ b.classList.add('wrong'); });
+          setFeedback(feedback, q.err, 'quiz-feedback err', q);
+          wrongAnswers.push({ q: q.q, options: q.options.slice(), answer: q.answer, chosenIdx: userAnswer, ok: q.ok, err: q.err, focus: q.focus });
+          streak = 0;
         }
-        if (allBtns[q.answer]) allBtns[q.answer].classList.add('correct');
-        setFeedback(feedback, q.err, 'quiz-feedback err', q);
-        wrongAnswers.push({ q: q.q, options: q.options.slice(), answer: q.answer, chosenIdx: idx, ok: q.ok, err: q.err, focus: q.focus, sourceRef: q.sourceRef });
-        streak = 0;
+      } else if (type === 'order') {
+        if (isCorrect) {
+          allBtns.forEach(function(b){ b.classList.add('correct'); });
+          setFeedback(feedback, q.ok, 'quiz-feedback ok', q);
+          score++; streak++;
+        } else {
+          allBtns.forEach(function(b){ b.classList.add('wrong'); });
+          setFeedback(feedback, q.err, 'quiz-feedback err', q);
+          wrongAnswers.push({ q: q.q, options: q.options.slice(), answer: q.answer, chosenIdx: userAnswer, ok: q.ok, err: q.err, focus: q.focus });
+          streak = 0;
+        }
+      } else {
+        // single
+        if (userAnswer >= 0 && allBtns[userAnswer]) allBtns[userAnswer].setAttribute('aria-checked','true');
+        if (isCorrect) {
+          if (allBtns[userAnswer]) allBtns[userAnswer].classList.add('correct');
+          setFeedback(feedback, q.ok, 'quiz-feedback ok', q);
+          score++; streak++;
+        } else {
+          if (userAnswer >= 0 && allBtns[userAnswer]) allBtns[userAnswer].classList.add('wrong','shake');
+          if (allBtns[q.answer]) allBtns[q.answer].classList.add('correct');
+          setFeedback(feedback, q.err, 'quiz-feedback err', q);
+          wrongAnswers.push({ q: q.q, options: q.options.slice(), answer: q.answer, chosenIdx: userAnswer, ok: q.ok, err: q.err, focus: q.focus });
+          streak = 0;
+        }
       }
 
       updateStreakBadge();
       if (nextBtn) {
-        nextBtn.textContent    = current < activeDeck.length - 1 ? 'Следующий вопрос →' : 'Узнать результат →';
+        nextBtn.textContent = current < activeDeck.length-1 ? 'Следующий вопрос →' : 'Узнать результат →';
         nextBtn.style.display = 'inline-block';
-      }
-      if (feedback && window.innerWidth < 768) {
-        setTimeout(function () { feedback.scrollIntoView({ behavior: 'smooth', block: 'nearest' }); }, 80);
       }
     }
 
