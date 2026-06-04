@@ -2174,7 +2174,22 @@
 
 
   /* ============================================================
-     16. Quiz Engine  [v3: review mode + wrong-answer tracking]
+     16. Quiz Engine v3.5 — Топовый уровень (2026-06)
+
+     ЕДИНЫЙ СТАНДАРТ ВОПРОСОВ (обязателен для всех статей):
+
+     Обязательные поля:
+       - type: "single" | "multiple" | "order"
+       - category: "exegesis" | "theology" | "context" | "text" | "apologetics"
+       - difficulty: "easy" | "medium" | "hard"
+       - explanation: { short: string, full: string, anchor?: string }
+
+     Правила качества:
+       - explanation.short — 1-2 предложения, чёткий вывод
+       - explanation.full — 4-8 предложений, богословская/экзегетическая глубина
+       - Минимум 30% вопросов должны быть multiple или order
+       - Каждый вопрос должен проверять понимание, а не только память
+
      ============================================================ */
   (function () {
 
@@ -2272,6 +2287,21 @@
     var scores         = SiteUtils.getConfig('quiz.scores', null);
     var bonusScores    = SiteUtils.getConfig('quiz.bonusScores', null);
     if (!questions || !questions.length) return;
+
+    // ===== СТАНДАРТ КАЧЕСТВА (валидация) =====
+    // ===== ЖЁСТКАЯ ВАЛИДАЦИЯ СТАНДАРТА v3.5 =====
+    questions.forEach(function(q, i) {
+      var hasExplanation = q.explanation && q.explanation.short && q.explanation.full;
+      if (!hasExplanation) {
+        console.warn('[Quiz v3.5] Вопрос '+(i+1)+' — отсутствует explanation (short + full)');
+      }
+      if (!q.category) {
+        console.warn('[Quiz v3.5] Вопрос '+(i+1)+' — отсутствует category');
+      }
+      if (!['single','multiple','order'].includes(q.type || 'single')) {
+        console.warn('[Quiz v3.5] Вопрос '+(i+1)+' — неизвестный type');
+      }
+    });
 
     /* ---- 2. RNG + deck preparation ---- */
     function hashString(str) {
