@@ -5,6 +5,46 @@
 
 ---
 
+## v41 — Budget-pass: asset minification + budgets fully green (2026-06-04)
+
+### What was improved:
+- Minified all shipped runtime JS assets with Terser:
+  - `js/site.js`, `js/search.js`, `js/enhancements.js`, `js/bookmark-engine.js`, `js/highlights.js`, `js/glossary.js`, `js/site-utils.js`, `js/scroll-perf.js`, `js/series-cards.js`, `js/nagornaya-mobile-toc.js`, `js/sw-register.js`, `sw.js`
+- Minified shipped CSS assets with clean-css:
+  - `css/site.css`, `css/home.css`, `css/command-palette.css`, `css/mobile-hotfix.css`, `css/nagornaya-mobile-toc.css`, `fonts/fonts.css`
+- Preserved architecture: still exactly **5 CSS + 11 JS** runtime files, no bundler introduced, no new runtime assets added.
+- Removed another dead inline config script on the home page and merged split SITE_CONFIG/quiz blocks on article/nagornaya pages, reducing inline-script count further.
+
+### Before / after (raw bytes)
+| Asset | Before | After |
+|---|---:|---:|
+| `js/site.js` | 251,442 | 118,567 |
+| `js/search.js` | 72,269 | 33,391 |
+| `js/enhancements.js` | 36,558 | 19,022 |
+| `css/site.css` | 265,805 | 196,191 |
+| `css/home.css` | 51,083 | 40,866 |
+| `css/command-palette.css` | 38,132 | 26,952 |
+
+### Audit outcome
+- **CSS total**: `432044` → **`331046`** ✅ within budget
+- **JS total**: `468231` → **`231938`** ✅ within budget
+- **Gzip wire size**: **122975 bytes total** (`CSS 59689 + JS 63286`)
+
+### Browser verification
+- Re-ran full Playwright audit after minification and config consolidation:
+  - **32 page/viewport runs**
+  - **96 screenshots**
+  - **0 console errors**
+  - **0 network errors**
+  - **0 unsuppressed visual bugs**
+
+### Verified:
+- `npm run validate:all` → ✅ PASS.
+- `node scripts/audit-pro.js` → ✅ PASS (**35 passed / 0 warnings / 0 errors**).
+- `AUDIT_BASE=http://127.0.0.1:8080 npm run visual-audit` → ✅ PASS.
+
+---
+
 ## v40 — Split SITE_CONFIG merge + validator hardening + Playwright re-check (2026-06-04)
 
 ### What was improved:

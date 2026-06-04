@@ -81,6 +81,33 @@ function normStr(s) {
     .trim();
 }
 
+function findColorMixInsideLinearGradients(text) {
+  const out = [];
+  const needle = 'linear-gradient(';
+  let idx = 0;
+
+  while ((idx = text.indexOf(needle, idx)) !== -1) {
+    let i = idx + needle.length;
+    let depth = 1;
+    for (; i < text.length; i++) {
+      const ch = text[i];
+      if (ch === '(') depth++;
+      else if (ch === ')') {
+        depth--;
+        if (depth === 0) {
+          const segment = text.slice(idx, i + 1);
+          if (segment.includes('color-mix(')) out.push(segment);
+          idx = i + 1;
+          break;
+        }
+      }
+    }
+    if (i >= text.length) break;
+  }
+
+  return out;
+}
+
 // ── Проверки HTML статьи ──────────────────────────────────────────────────────
 
 function validateArticle(slug) {
@@ -138,8 +165,8 @@ function validateArticle(slug) {
   }
 
   // #7 Нет color-mix внутри linear-gradient
-  for (const m of html.matchAll(/linear-gradient\([^)]*color-mix[^)]*\)/g)) {
-    err(slug, `color-mix внутри linear-gradient: ${m[0].slice(0, 80)}`);
+  for (const hit of findColorMixInsideLinearGradients(html)) {
+    err(slug, `color-mix внутри linear-gradient: ${hit.slice(0, 80)}`);
   }
 
   // #8 Нестандартный брейкпоинт в inline-стиле (не из PROJECT_BREAKPOINTS)
@@ -316,8 +343,8 @@ function validateCSS() {
     const label = `css/${fname}`;
 
     // color-mix внутри linear-gradient
-    for (const m of css.matchAll(/linear-gradient\([^;]*color-mix[^;]*;/g)) {
-      err(label, `color-mix внутри linear-gradient: ${m[0].slice(0, 80)}`);
+    for (const hit of findColorMixInsideLinearGradients(css)) {
+      err(label, `color-mix внутри linear-gradient: ${hit.slice(0, 80)}`);
     }
 
     // Нестандартные брейкпоинты (не из PROJECT_BREAKPOINTS)
