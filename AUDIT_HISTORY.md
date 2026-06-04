@@ -5,6 +5,30 @@
 
 ---
 
+## v44 — Editorial premium pass: remaining quiz backlinks + article copy polish (2026-06-04)
+
+### What was improved:
+- Added missing `sourceRef` backlinks to the remaining pages that still had canonical questions without section references:
+  - `dzhon-gill-chast-1-chelovek`
+  - `dzhon-gill-chast-2-uchenyi`
+  - `dzhon-gill-chast-3-nasledie`
+  - `hermenevticheskaya-otsenka-hristotsentrichnoy-germenevtiki` (final missing question)
+- Result: **all 96 quiz / bonus questions site-wide now have `sourceRef`**.
+- Polished article prose and metadata in a few high-visibility places:
+  - improved `author-card-desc` in `dzhon-gill-istoricheskiy-kontekst`
+  - improved `author-card-desc` in `dzhon-gill-spravochnik`
+  - normalized one awkward attribution line in `dzhon-gill-chast-2-uchenyi`
+  - cleaned the remaining `hreflang` editorial placeholder in `hermenevtika`
+  - cleaned the remaining awkward keywords phrase in `dzhon-gill-spravochnik`
+- This pass focused on quality-of-reading and editorial dignity rather than architecture, because the main technical debt and budgets were already resolved.
+
+### Verified:
+- `npm run validate:all` → ✅ PASS.
+- `node scripts/audit-pro.js` → ✅ PASS (**35 passed / 0 warnings / 0 errors**).
+- `AUDIT_BASE=http://127.0.0.1:8080 npm run visual-audit` → ✅ PASS after re-installing browser/system deps for the turn.
+
+---
+
 ## v42 — Final polish after budget-pass: tighter 20-Antisovetov inline CSS + Playwright reconfirmation (2026-06-04)
 
 ### What was improved:
