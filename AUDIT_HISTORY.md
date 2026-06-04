@@ -7,7 +7,7 @@
 
 ## v28 — PLAN-06: JS cleanup (professional, careful, with Playwright re-checks) (2026-06-04)
 
-**Commits:** `bdf8fe0` (plan) · `3872ba9` (P1) · `34ca8d6` (P2) · `acdd6d2` (P3) · `<TBD>` (P6 finalize)
+**Commits:** `bdf8fe0` (plan) · `3872ba9` (P1) · `34ca8d6` (P2) · `acdd6d2` (P3) · `27d2543` (P6 finalize)
 
 ### Цель
 
