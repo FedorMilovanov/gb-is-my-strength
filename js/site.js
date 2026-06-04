@@ -2316,35 +2316,44 @@
 
     function cleanFeedbackLead(str) {
       return String(str == null ? '' : str)
-        .replace(/^\s*(Верно!?|Точно!?|Именно так!?|Неверно\.?|Не совсем\.?|Осторожно\s*[—-]\s*)\s*/i, '')
+        .replace(/^\s*(Верно|Точно|Именно так|Неверно|Не совсем|Осторожно)(?:\s*[!?.…]+)?(?:\s*[—-])?\s*/i, '')
         .trim();
     }
 
-    function resolveHeadingId(value) {
+    function findHeadingRef(value) {
       if (!value) return null;
       var raw = String(value).trim();
       if (!raw) return null;
       if (raw.charAt(0) === '#') raw = raw.slice(1);
-      if (document.getElementById(raw)) return raw;
+      var byId = document.getElementById(raw);
+      if (byId) {
+        var byIdText = (byId.textContent || '').replace(/\s+/g, ' ').trim() || 'Перечитать раздел';
+        return { id: raw, text: byIdText, norm: normalizeLookupValue(byIdText) };
+      }
 
       var norm = normalizeLookupValue(raw);
       if (!norm) return null;
 
       for (var i = 0; i < headingRefs.length; i++) {
-        if (headingRefs[i].norm === norm) return headingRefs[i].id;
+        if (headingRefs[i].norm === norm) return headingRefs[i];
       }
       for (var j = 0; j < headingRefs.length; j++) {
-        if (headingRefs[j].norm.indexOf(norm) !== -1 || norm.indexOf(headingRefs[j].norm) !== -1) return headingRefs[j].id;
+        if (headingRefs[j].norm.indexOf(norm) !== -1 || norm.indexOf(headingRefs[j].norm) !== -1) return headingRefs[j];
       }
       return null;
+    }
+
+    function resolveHeadingId(value) {
+      var ref = findHeadingRef(value);
+      return ref ? ref.id : null;
     }
 
     function buildSourceRef(q) {
       if (q.sourceRef) return q.sourceRef;
       var anchor = q && q.explanation && q.explanation.anchor ? q.explanation.anchor : null;
       var focusValue = anchor || q.focus || null;
-      var resolvedId = resolveHeadingId(focusValue);
-      if (resolvedId) return { label: 'Перечитать раздел', href: '#' + resolvedId };
+      var heading = findHeadingRef(focusValue);
+      if (heading) return { label: heading.text || 'Перечитать раздел', href: '#' + heading.id };
       if (typeof q.focus === 'string' && q.focus.trim()) return { label: q.focus.trim() };
       return null;
     }
@@ -2358,15 +2367,21 @@
       if (type === 'single' && answer == null && typeof correct === 'number') answer = correct;
       if (type !== 'single' && correct == null && Array.isArray(q.answer)) correct = q.answer.slice();
 
+      var okLead = cleanFeedbackLead(q.ok || '');
+      var errLead = cleanFeedbackLead(q.err || '');
+      var combinedLead = [okLead, errLead].filter(function (part, idx, arr) {
+        return part && arr.indexOf(part) === idx;
+      }).join(' ');
+
       var explanation = q.explanation && typeof q.explanation === 'object'
         ? {
-            short: q.explanation.short || cleanFeedbackLead(q.ok || q.err || ''),
-            full: q.explanation.full || cleanFeedbackLead(q.err || q.ok || ''),
-            anchor: q.explanation.anchor || resolveHeadingId(q.focus || '') || null
+            short: q.explanation.short || okLead || errLead,
+            full: q.explanation.full || combinedLead || okLead || errLead,
+            anchor: resolveHeadingId(q.explanation.anchor || q.focus || '') || null
           }
         : {
-            short: cleanFeedbackLead(q.ok || q.err || ''),
-            full: cleanFeedbackLead(q.err || q.ok || ''),
+            short: okLead || errLead,
+            full: combinedLead || okLead || errLead,
             anchor: resolveHeadingId(q.focus || '') || null
           };
 
