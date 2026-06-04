@@ -295,7 +295,7 @@
 (function(){try{var t=localStorage.getItem('theme');if(t==='dark'||(!t&&window.matchMedia('(prefers-color-scheme: dark)').matches)){document.documentElement.classList.add('dark');}}catch(e){}})();
 </script>
 <link as="image" fetchpriority="high" href="../../images/pastor-series/mirror-600w.webp" rel="preload" type="image/webp">
-<link href="../../css/site.css?v=f14a1dbc" rel="stylesheet">
+<link href="../../css/site.css?v=187c447a" rel="stylesheet">
 <link rel="stylesheet" href="../../css/command-palette.css?v=5de00c2c">
     <link rel="stylesheet" href="../../css/mobile-hotfix.css?v=ae910d79">
 <script type="text/javascript">
@@ -408,14 +408,6 @@ window.SITE_CONFIG = {
 }
 
 .series-nav { margin: 60px 0; padding: 40px; background: var(--accent-soft); border-radius: 20px; border: 1px solid var(--border); }
-.series-nav-title { font-family: var(--font-display, 'Playfair Display', serif); font-size: 1.5rem; font-weight: 700; margin-bottom: 20px; color: var(--accent); }
-.series-list { list-style: none; padding: 0; margin: 0; display: grid; gap: 12px; }
-.series-item { padding: 16px; border-radius: 12px; border: 1px solid var(--border); background: var(--bg-elevated); transition: background-color .2s ease, color .2s ease, border-color .2s ease, transform .2s ease, box-shadow .2s ease; display: flex; align-items: center; gap: 15px; text-decoration: none; color: var(--text); }
-.series-item.active { border-color: var(--accent); background: var(--accent-soft); }
-@media (hover: hover) and (pointer: fine) { .series-item:not(.active):hover { transform: translateX(5px); border-color: var(--accent); } }
-.series-num { font-weight: 800; font-size: 0.9rem; opacity: 0.5; }
-.series-item-title { font-weight: 600; font-family: var(--font-body, 'Lora', serif); }
-.series-soon { opacity: 0.6; font-style: italic; font-size: 0.85rem; }
 .note-box { background: var(--bg-elevated); border-radius: 16px; padding: 1.5rem; margin: 2rem 0; }
 .info-box { background: color-mix(in srgb, var(--accent-soft) 60%, transparent); border-radius: 16px; padding: 1.5rem; margin: 2rem 0; }
 .warn-box { background: color-mix(in srgb, #fef3c7 80%, transparent); border-radius: 16px; padding: 1.5rem; margin: 2rem 0; }
@@ -427,12 +419,6 @@ window.SITE_CONFIG = {
 .pullquote { font-family: var(--font-display, 'Playfair Display', serif); font-size: 1.15rem; font-style: italic; line-height: 1.7; color: var(--accent); border-left: 3px solid var(--accent); border-inline-start: 3px solid var(--accent); padding: 1rem 1.5rem; margin: 2rem 0; background: var(--accent-soft); border-radius: 0 12px 12px 0; }
 .drop-cap::first-letter { font-family: var(--font-display, 'Playfair Display', serif); font-size: 3.5em; font-weight: 700; float: left; line-height: 0.75; margin-right: 0.08em; color: var(--accent); }
 .heading-serif { font-family: var(--font-display, 'Playfair Display', serif); }
-.bug-box { margin-top: 60px; padding: 30px; border: 2px dashed var(--border); border-radius: 20px; text-align: center; background: var(--bg-elevated); }
-.bug-title { font-family: var(--font-display, 'Playfair Display', serif); font-size: 1.25rem; font-weight: 700; margin-bottom: 10px; }
-.bug-text { font-size: 0.95rem; color: var(--muted); margin-bottom: 20px; }
-.bug-links { display: flex; justify-content: center; gap: 20px; flex-wrap: wrap; }
-.bug-link { display: inline-flex; align-items: center; gap: 8px; font-weight: 600; color: var(--accent); text-decoration: none; padding: 8px 16px; border-radius: 10px; background: var(--accent-soft); transition: background-color .2s ease, color .2s ease, border-color .2s ease, transform .2s ease, box-shadow .2s ease; }
-@media (hover: hover) and (pointer: fine) { .bug-link:hover { background: var(--accent); color: #fff; } }
 /* h2/h3/h4 heading tweaks for article sections */
 article h2.heading-serif { font-size: clamp(1.6rem, 3.5vw, 2rem); border-bottom: 1px solid var(--border); padding-bottom: 0.75rem; margin-top: 3.5rem; margin-bottom: 1.5rem; }
 article h3.heading-serif { font-size: clamp(1.25rem, 2.5vw, 1.5rem); margin-top: 2.5rem; margin-bottom: 1rem; }

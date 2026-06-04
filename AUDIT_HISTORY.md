@@ -5,6 +5,25 @@
 
 ---
 
+## v36 — 20-Antisovetov inline-style trim + selector dedup (2026-06-04)
+
+### What was improved:
+- Reduced the remaining high-risk inline `<style>` island in `articles/20-antisovetov-pastoru/index.html` by removing clearly dead selector groups:
+  - old unused `.series-item*` family
+  - dead `.bug-*` family
+- Merged duplicated `.article-img img` rules inside `css/site.css` into a single canonical selector block.
+- Result:
+  - `20-antisovetov` inline-style payload reduced from **16139** → **14242** bytes;
+  - CSS budget improved again (**432135** → **432044** bytes);
+  - gzip CSS improved again (**85178** → **85137** bytes).
+
+### Verified:
+- `npm run cache-bust` → ✅ PASS.
+- `npm run validate:all` → ✅ PASS.
+- `node scripts/audit-pro.js` → ✅ PASS (33 passed / 2 warnings / 0 errors).
+
+---
+
 ## v35 — Dead inline-style cleanup + small CSS budget recovery (2026-06-04)
 
 ### What was improved:
