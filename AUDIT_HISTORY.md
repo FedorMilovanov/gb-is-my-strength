@@ -5,6 +5,28 @@
 
 ---
 
+## v42 — Final polish after budget-pass: tighter 20-Antisovetov inline CSS + Playwright reconfirmation (2026-06-04)
+
+### What was improved:
+- Minified the remaining inline `<style>` island in `articles/20-antisovetov-pastoru/index.html` with a safe CSS minification pass.
+- Result: inline-style payload reduced further from **12495** → **11569** bytes.
+- Re-ran full Playwright audit after the inline-style minification to ensure no visual regressions.
+
+### Playwright verification:
+- **32 page/viewport runs**
+- **96 screenshots**
+- **0 console errors**
+- **0 network errors**
+- **0 unsuppressed visual bugs**
+
+### Current headline state:
+- `validate:all` → ✅ PASS
+- `audit-pro.js` → ✅ PASS (**35 passed / 0 warnings / 0 errors**)
+- Budget warnings fully eliminated
+- Inline script blocks across audited HTML pages: **71**
+
+---
+
 ## v41 — Budget-pass: asset minification + budgets fully green (2026-06-04)
 
 ### What was improved:
