@@ -5,6 +5,29 @@
 
 ---
 
+## v30 — Quiz engine hardening + glossary hydration + inline-script guard (2026-06-04)
+
+### What was improved:
+- Fixed the quiz-engine regression where new-format questions (`question / correct / explanation`) crashed the runtime that still expected legacy `q / answer / ok / err` fields.
+- Added a backward-compatible normalization layer in `js/site.js`: old and new quiz schemas now work together safely, including `type`, `correct`, `explanation`, `sourceRef`, and heading-anchor resolution.
+- Upgraded feedback rendering: `explanation.short` and `explanation.full` are now both surfaced in the UI instead of being silently reduced to a single escaped string.
+- Added glossary hydration for dynamic quiz HTML via `js/glossary.js` + `gb:quiz-rendered` events, so `.gterm[data-term]` inside quiz questions/options becomes a real tooltip rather than dead decorative markup.
+- Expanded `data/glossary.json` with missing aliases/entries used by the new quiz/tooltips wave (`kettering`, `gin-craze`, `song-of-songs`, `polemic`, `witness`, `gnostic`, `nicea`, `priory-of-sion`, etc.).
+- Repaired broken inline `SITE_CONFIG` quiz blocks in John Gill Part I / II / III and cleaned wording/typos (`Сперджен`, `смиренный`, `тексты`, `первый систематик`).
+- Fixed John Gill Part I body markup where a footnote tooltip swallowed a whole paragraph after a tooltip insertion.
+- Corrected the Hermeneutics quiz mismatch where a question about `Heilsgeschichte` had options/explanations from another question.
+- Added inline `<script>` syntax validation to both `scripts/validate.js` and `scripts/audit-pro.js`, closing the QA blind spot that previously missed broken page-level JavaScript.
+- Updated `README.md` and `AGENTS.md` quiz examples to document the new canonical quiz schema while explicitly marking legacy schema as backward-compat only.
+
+### Verified:
+- `node --check js/*.js scripts/*.js sw.js` → ✅ PASS.
+- `npm run cache-bust` → ✅ PASS.
+- `npm run validate:all` → ✅ PASS (0 errors, 0 warnings).
+- `npm run tokens:check` → ✅ PASS.
+- `node scripts/audit-pro.js` → ✅ PASS (31 passed / 2 budget warnings / 0 errors).
+
+---
+
 ## v29 — Image contract fixes: `<picture>` wrappers, base files, PNG cleanup (2026-06-04)
 
 **Commits:** `PLAN-07` (this release)

@@ -385,8 +385,21 @@ toc: {
 
 quiz: {
   questions: [
-    { id, q, options, answer, ok, err, focus,
-      sourceRef: { label: 'Иер. 17:9', href: '#istoricheskiy-fon' } },
+    {
+      id: 'q1',
+      type: 'single',
+      category: 'theology',
+      difficulty: 'medium',
+      question: 'Вопрос...',
+      options: ['...', '...', '...'],
+      correct: 1,
+      explanation: {
+        short: 'Короткий вывод.',
+        full: 'Развёрнутое богословское или историческое объяснение.',
+        anchor: 'sec-intro'
+      },
+      sourceRef: { label: 'Иер. 17:9', href: '#sec-intro' }
+    },
     // ...
   ],
   scores: [
@@ -399,6 +412,7 @@ quiz: {
 - Если `toc.items` не задан — desktop TOC и bottom-bar TOC строятся автоматически из `article h2[id]`.
 - Если `quiz` не задан — quiz-модуль ничего не делает даже при `features.quiz.enabled: true`.
 - `quiz.questions[].sourceRef` может быть строкой, объектом `{ label, href }` или массивом — выводится в feedback.
+- Legacy-формат `q / answer / ok / err / focus` всё ещё поддерживается рантаймом для старых страниц, но **новые вопросы добавлять только в формате `question / correct / explanation`**.
 
 ### Полный пример `bookmarks`
 

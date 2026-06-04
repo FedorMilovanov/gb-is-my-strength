@@ -24,6 +24,7 @@ const fs = require('fs');
 const path = require('path');
 const crypto = require('crypto');
 const gzip = require('zlib').gzipSync;
+const vm = require('vm');
 const { spawnSync } = require('child_process');
 
 const ROOT = path.resolve(__dirname, '..');
@@ -216,7 +217,33 @@ function rootsFromLd(data) {
   if (!failed) R.ok(`JS syntax valid (${jsToCheck.length} files)`);
 })();
 
-// 4. JSON validity
+// 4. Inline script syntax (HTML)
+(function inlineScriptSyntax() {
+  let bad = 0;
+  let checked = 0;
+  for (const p of htmlPages) {
+    const html = fs.readFileSync(p, 'utf8');
+    let idx = 0;
+    for (const match of html.matchAll(/<script\b([^>]*)>([\s\S]*?)<\/script>/gi)) {
+      idx += 1;
+      const attrs = match[1] || '';
+      const code = match[2] || '';
+      if (/\bsrc\s*=\s*/i.test(attrs)) continue;
+      if (/type\s*=\s*["']application\/(ld\+json|json)["']/i.test(attrs)) continue;
+      if (!code.trim()) continue;
+      checked += 1;
+      try {
+        new vm.Script(code, { filename: rel(p) + '#inline-script-' + idx });
+      } catch (e) {
+        bad += 1;
+        R.err(`Inline script syntax failed: ${rel(p)} (#${idx}) — ${e.message}`);
+      }
+    }
+  }
+  if (!bad) R.ok(`Inline script syntax valid (${checked} blocks)`);
+})();
+
+// 5. JSON validity
 (function jsonValidity() {
   const jsonFiles = allFiles.filter(p => p.endsWith('.json')).map(rel).sort();
   let bad = 0;
