@@ -5,6 +5,23 @@
 
 ---
 
+## v33 — QA guardrails: canonical quiz schema + OG image uniqueness enforcement (2026-06-04)
+
+### What was improved:
+- Extended `scripts/validate.js` with two new global HTML contract checks:
+  - canonical quiz-source schema enforcement (`question / correct / explanation` only);
+  - duplicate OpenGraph image meta detection (`og:image`, `og:image:width`, `og:image:height`, `og:image:type`, `og:image:alt`).
+- Extended `scripts/audit-pro.js` with the same production-facing guarantees.
+- Added a lightweight `SITE_CONFIG` extraction path in both validators, so page-level quiz data is now audited semantically, not just syntactically.
+- Result: future regressions of the exact kind that caused the June quiz wave issues are now blocked automatically in CI/audit.
+
+### Verified:
+- `node --check scripts/validate.js scripts/audit-pro.js` → ✅ PASS.
+- `npm run validate:all` → ✅ PASS.
+- `node scripts/audit-pro.js` → ✅ PASS (33 passed / 2 warnings / 0 errors).
+
+---
+
 ## v32 — Remaining quiz-source canonicalization + OG duplicate cleanup (2026-06-04)
 
 ### What was improved:

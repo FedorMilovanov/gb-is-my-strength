@@ -475,6 +475,100 @@ function validateInlineScripts() {
   });
 }
 
+function extractSiteConfigFromHtml(html, fileLabel) {
+  const sandbox = {
+    window: {},
+    localStorage: { getItem() { return null; }, setItem() {} },
+    document: { documentElement: { classList: { add() {} } } },
+    matchMedia() { return { matches: false }; },
+    console: { warn() {}, log() {}, error() {} }
+  };
+  sandbox.window = sandbox;
+  sandbox.window.matchMedia = sandbox.matchMedia;
+  vm.createContext(sandbox);
+
+  let found = false;
+  let idx = 0;
+  for (const match of html.matchAll(/<script\b([^>]*)>([\s\S]*?)<\/script>/gi)) {
+    idx += 1;
+    const attrs = match[1] || '';
+    const code = match[2] || '';
+    if (/\bsrc\s*=\s*/i.test(attrs)) continue;
+    if (/type\s*=\s*["']application\/(ld\+json|json)["']/i.test(attrs)) continue;
+    if (!code.includes('window.SITE_CONFIG')) continue;
+    found = true;
+    try {
+      new vm.Script(code, { filename: `${fileLabel}#site-config-${idx}` }).runInContext(sandbox, { timeout: 1000 });
+    } catch (e) {
+      err(fileLabel, `SITE_CONFIG runtime parse error (#${idx}): ${e.message}`);
+      return null;
+    }
+  }
+
+  return found ? (sandbox.window.SITE_CONFIG || null) : null;
+}
+
+function validateQuizSchema() {
+  const ROOT = path.resolve(__dirname, '..');
+  const htmlFiles = walkHtmlFiles(ROOT);
+
+  htmlFiles.forEach((file) => {
+    const rel = path.relative(ROOT, file).replace(/\\/g, '/');
+    const html = fs.readFileSync(file, 'utf8');
+    const cfg = extractSiteConfigFromHtml(html, rel);
+    if (!cfg || !cfg.quiz) return;
+
+    ['questions', 'bonusQuestions'].forEach((key) => {
+      const arr = cfg.quiz[key];
+      if (!Array.isArray(arr) || !arr.length) return;
+      arr.forEach((q, idx) => {
+        const label = `${rel} ${key}[${idx}]`;
+        if ('q' in q || 'answer' in q || 'ok' in q || 'err' in q) {
+          err(rel, `${key}[${idx}] uses legacy quiz fields (q/answer/ok/err) — source HTML must be canonical`);
+        }
+        if (!('question' in q) || typeof q.question !== 'string' || !q.question.trim()) {
+          err(rel, `${key}[${idx}] missing canonical question text`);
+        }
+        const type = q.type || 'single';
+        if (type === 'single') {
+          if (typeof q.correct !== 'number') err(rel, `${key}[${idx}] missing numeric correct`);
+        } else if (!Array.isArray(q.correct)) {
+          err(rel, `${key}[${idx}] for type=${type} must use array correct`);
+        }
+        if (!q.explanation || typeof q.explanation !== 'object' || !q.explanation.short || !q.explanation.full) {
+          err(rel, `${key}[${idx}] missing explanation.short/full`);
+        }
+      });
+    });
+  });
+}
+
+function validateMetaUniqueness() {
+  const ROOT = path.resolve(__dirname, '..');
+  const htmlFiles = walkHtmlFiles(ROOT);
+  const props = [
+    'og:image',
+    'og:image:width',
+    'og:image:height',
+    'og:image:type',
+    'og:image:alt'
+  ];
+
+  htmlFiles.forEach((file) => {
+    const rel = path.relative(ROOT, file).replace(/\\/g, '/');
+    const html = fs.readFileSync(file, 'utf8');
+    props.forEach((prop) => {
+      const re = new RegExp(`<meta\\s+[^>]*property=["']${prop.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}["'][^>]*>`, 'gi');
+      const count = (html.match(re) || []).length;
+      if (prop === 'og:image') {
+        if (count > 1) err(rel, `duplicate ${prop} meta (${count})`);
+      } else if (count > 1) {
+        err(rel, `duplicate ${prop} meta (${count})`);
+      }
+    });
+  });
+}
+
 
 // ── Main ──────────────────────────────────────────────────────────────────────
 
@@ -492,6 +586,11 @@ function main() {
   // Inline <script> во всех HTML (ловит битый SITE_CONFIG / page-specific JS)
   console.log('  📁  inline-scripts/');
   validateInlineScripts();
+
+  // Глобальный контракт quiz schema / OG meta uniqueness
+  console.log('  📁  html-contracts/');
+  validateQuizSchema();
+  validateMetaUniqueness();
 
   // Каждая статья
   const slugs = fs.readdirSync(ARTICLES, { withFileTypes: true })

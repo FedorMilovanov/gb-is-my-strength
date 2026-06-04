@@ -162,6 +162,38 @@ function rootsFromLd(data) {
   if (data && Array.isArray(data['@graph'])) return data['@graph'];
   return data ? [data] : [];
 }
+function extractSiteConfig(html, fileLabel) {
+  const sandbox = {
+    window: {},
+    localStorage: { getItem() { return null; }, setItem() {} },
+    document: { documentElement: { classList: { add() {} } } },
+    matchMedia() { return { matches: false }; },
+    console: { warn() {}, log() {}, error() {} }
+  };
+  sandbox.window = sandbox;
+  sandbox.window.matchMedia = sandbox.matchMedia;
+  vm.createContext(sandbox);
+
+  let found = false;
+  let idx = 0;
+  for (const match of html.matchAll(/<script\b([^>]*)>([\s\S]*?)<\/script>/gi)) {
+    idx += 1;
+    const attrs = match[1] || '';
+    const code = match[2] || '';
+    if (/\bsrc\s*=\s*/i.test(attrs)) continue;
+    if (/type\s*=\s*["']application\/(ld\+json|json)["']/i.test(attrs)) continue;
+    if (!code.includes('window.SITE_CONFIG')) continue;
+    found = true;
+    try {
+      new vm.Script(code, { filename: `${fileLabel}#site-config-${idx}` }).runInContext(sandbox, { timeout: 1000 });
+    } catch (e) {
+      R.err(`SITE_CONFIG runtime parse failed: ${fileLabel} (#${idx}) — ${e.message}`);
+      return null;
+    }
+  }
+
+  return found ? (sandbox.window.SITE_CONFIG || null) : null;
+}
 
 // 1. Structure guard
 (function structureGuard() {
@@ -243,7 +275,62 @@ function rootsFromLd(data) {
   if (!bad) R.ok(`Inline script syntax valid (${checked} blocks)`);
 })();
 
-// 5. JSON validity
+// 5. HTML quiz/meta contract
+(function htmlContractGuard() {
+  let quizIssues = 0;
+  let metaIssues = 0;
+  const ogProps = ['og:image', 'og:image:width', 'og:image:height', 'og:image:type', 'og:image:alt'];
+
+  for (const p of htmlPages) {
+    const file = rel(p);
+    const html = read(file);
+
+    ogProps.forEach((prop) => {
+      const re = new RegExp(`<meta\\s+[^>]*property=["']${prop.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}["'][^>]*>`, 'gi');
+      const count = (html.match(re) || []).length;
+      if (count > 1) {
+        metaIssues++;
+        R.err(`Duplicate ${prop} meta in ${file} (${count})`);
+      }
+    });
+
+    const cfg = extractSiteConfig(html, file);
+    if (!cfg || !cfg.quiz) continue;
+    for (const key of ['questions', 'bonusQuestions']) {
+      const arr = cfg.quiz[key];
+      if (!Array.isArray(arr) || !arr.length) continue;
+      arr.forEach((q, idx) => {
+        if ('q' in q || 'answer' in q || 'ok' in q || 'err' in q) {
+          quizIssues++;
+          R.err(`Legacy quiz fields in ${file} ${key}[${idx}]`);
+        }
+        if (!('question' in q) || typeof q.question !== 'string' || !q.question.trim()) {
+          quizIssues++;
+          R.err(`Missing canonical question in ${file} ${key}[${idx}]`);
+        }
+        const type = q.type || 'single';
+        if (type === 'single') {
+          if (typeof q.correct !== 'number') {
+            quizIssues++;
+            R.err(`Missing numeric correct in ${file} ${key}[${idx}]`);
+          }
+        } else if (!Array.isArray(q.correct)) {
+          quizIssues++;
+          R.err(`Missing array correct in ${file} ${key}[${idx}] for type=${type}`);
+        }
+        if (!q.explanation || typeof q.explanation !== 'object' || !q.explanation.short || !q.explanation.full) {
+          quizIssues++;
+          R.err(`Missing explanation.short/full in ${file} ${key}[${idx}]`);
+        }
+      });
+    }
+  }
+
+  if (!quizIssues) R.ok('Quiz source schema is canonical across HTML pages');
+  if (!metaIssues) R.ok('OpenGraph image meta uniqueness passed');
+})();
+
+// 6. JSON validity
 (function jsonValidity() {
   const jsonFiles = allFiles.filter(p => p.endsWith('.json')).map(rel).sort();
   let bad = 0;
