@@ -5,6 +5,29 @@
 
 ---
 
+## v45 — Editorial premium pass II: author-card refinement + full quiz backlink completion (2026-06-04)
+
+### What was improved:
+- Completed the last remaining quiz backlink gaps on the Gill trilogy and the final missing Hermeneutics question.
+- Result: **all 96 quiz / bonus questions site-wide now include `sourceRef`**.
+- Performed a second editorial polish pass on high-visibility article metadata / support copy:
+  - refined `author-card-desc` across the John Gill trilogy,
+  - refined `author-card-desc` in `dzhon-gill-istoricheskiy-kontekst`,
+  - refined `author-card-desc` in `dzhon-gill-spravochnik`,
+  - refined `author-card-desc` in `kod-da-vinchi`,
+  - refined `author-card-desc` in `krajne-li-isporcheno-serdce`,
+  - expanded the terse `author-card-desc` in `rimlyanam-7-veruyushchiy-ili-neveruyushchiy`,
+  - polished the translator/editor note in `hermenevtika` to read less mechanically,
+  - refined one awkward attribution line in `dzhon-gill-chast-2-uchenyi`.
+- Goal of this pass: make the site read more like a finished editorial publication and less like a technically correct draft.
+
+### Verified:
+- `npm run validate:all` → ✅ PASS.
+- `node scripts/audit-pro.js` → ✅ PASS (**35 passed / 0 warnings / 0 errors**).
+- `AUDIT_BASE=http://127.0.0.1:8080 npm run visual-audit` → ✅ PASS.
+
+---
+
 ## v44 — Editorial premium pass: remaining quiz backlinks + article copy polish (2026-06-04)
 
 ### What was improved:
