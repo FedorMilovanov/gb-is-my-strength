@@ -5,6 +5,26 @@
 
 ---
 
+## v34 — Inline-script dedup: topnav/reveal cleanup moved to global JS (2026-06-04)
+
+### What was improved:
+- Added a global `.reveal` fallback observer in `js/site.js`, so long-form article reveal animations no longer require page-specific inline IntersectionObserver snippets.
+- Removed duplicated inline topnav scroll controllers from:
+  - `articles/krajne-li-isporcheno-serdce/`
+  - `articles/rimlyanam-7-veruyushchiy-ili-neveruyushchiy/`
+  because `js/site.js` module 34 already owns `#articleTopnav` globally.
+- Removed duplicated inline reveal observers from the same pages.
+- Removed redundant inline `.fn-marker` aria-label scripts from the same pages because `js/site.js` module 20 already sets those attributes centrally.
+- Removed one dead inline `qbc-exclaim` script from `krajne-li-isporcheno-serdce` (selector absent in DOM).
+- Result: fewer inline-script blocks (86 → 79), fewer duplicate scroll listeners, cleaner article HTML, and one less class of page-specific JS drift.
+
+### Verified:
+- `npm run cache-bust` → ✅ PASS.
+- `npm run validate:all` → ✅ PASS.
+- `node scripts/audit-pro.js` → ✅ PASS (33 passed / 2 warnings / 0 errors).
+
+---
+
 ## v33 — QA guardrails: canonical quiz schema + OG image uniqueness enforcement (2026-06-04)
 
 ### What was improved:

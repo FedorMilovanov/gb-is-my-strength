@@ -830,30 +830,7 @@ window.SITE_CONFIG = {
   </a>
 <span class="article-topnav-title">Крайне ли испорчено сердце?</span>
 </nav>
-<script>
-(function(){
-  var nav = document.getElementById('articleTopnav');
-  if (!nav) return;
-  document.body.classList.add('topnav-active');
-  var h1 = document.querySelector('h1');
-  var ticking = false;
-  function onScroll() {
-    if (ticking) return;
-    ticking = true;
-    requestAnimationFrame(function() {
-      var scrollY = window.scrollY || window.pageYOffset;
-      nav.classList.toggle('visible', scrollY > 60);
-      if (h1) {
-        var h1Bottom = h1.getBoundingClientRect().bottom;
-        nav.classList.toggle('title-visible', h1Bottom < 0);
-      }
-      ticking = false;
-    });
-  }
-  window.addEventListener('scroll', onScroll, { passive: true });
-  onScroll();
-})();
-</script>
+<!-- article-topnav scroll handled by js/site.js?v=9a54d2dc module 34 -->
 <main class="article-main" id="content">
 <div class="article-topline">
 <nav aria-label="Хлебные крошки" class="breadcrumb">
@@ -1541,40 +1518,10 @@ window.SITE_CONFIG = {
 </div>
 </div>
 </div>
-<script>
-(function(){
-  if (!window.IntersectionObserver) return;
-  var obs = new IntersectionObserver(function(entries) {
-    entries.forEach(function(e) {
-      if (e.isIntersecting) {
-        e.target.classList.add('revealed');
-        obs.unobserve(e.target);
-      }
-    });
-  }, { threshold: 0.1, rootMargin: '0px 0px -40px 0px' });
-  document.querySelectorAll('article h2, article > p, article blockquote, article ul, article .quote-box, article figure').forEach(function(el) {
-    if (!el.classList.contains('quote-box')) {
-      el.classList.add('reveal');
-    }
-    obs.observe(el);
-  });
-})();
-</script>
-<script>
-/* ── Русские aria-label на сносках ── */
-(function () {
-  document.querySelectorAll('.fn-marker').forEach(function (m) {
-    var num = m.childNodes[0] ? m.childNodes[0].textContent.trim() : '';
-    m.setAttribute('aria-label', 'Источник ' + num + ' — нажмите, чтобы открыть');
-    m.setAttribute('role', 'button');
-    m.setAttribute('tabindex', '0');
-  });
-})();
-</script>
 <script defer="" src="../../js/bookmark-engine.js?v=289fb6d7"></script>
 <script src="../../js/site-utils.js?v=e01791b0"></script>
     <script src="../../js/scroll-perf.js?v=84977eec"></script>
-    <script defer="" src="../../js/site.js?v=a86b7d73"></script>
+    <script defer="" src="../../js/site.js?v=9a54d2dc"></script>
     <script src="../../js/glossary.js?v=ac813c99" defer></script>
 <script>
 /* ── Мобильный heart-flip: 3D-переворот + плавное расширение высоты ── */
@@ -1627,20 +1574,6 @@ window.SITE_CONFIG = {
     if (isMobile() && card.classList.contains('flipped')) {
       setBackHeight();
     }
-  });
-})();
-</script>
-<script>
-(function () {
-  var btn = document.querySelector('.qbc-exclaim');
-  if (!btn) return;
-  btn.addEventListener('click', function () {
-    btn.classList.remove('pulse');
-    void btn.offsetWidth;
-    btn.classList.add('pulse');
-  });
-  btn.addEventListener('animationend', function () {
-    btn.classList.remove('pulse');
   });
 })();
 </script>
