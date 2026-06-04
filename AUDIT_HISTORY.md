@@ -5,6 +5,36 @@
 
 ---
 
+## v31 — Quiz canonicalization + sourceRef enrichment + metadata cleanup (2026-06-04)
+
+### What was improved:
+- Converted the three recently affected quiz pages to the canonical schema in source HTML:
+  - `kod-da-vinchi`
+  - `hermenevticheskaya-otsenka-hristotsentrichnoy-germenevtiki`
+  - `krajne-li-isporcheno-serdce`
+- Result: no more mixed `legacy/new` quiz definitions inside those pages; all questions now use `question / correct / explanation` directly in source.
+- Rebuilt bonus-question blocks in Hermeneutics and Krajne to the same canonical format.
+- Added explicit `sourceRef` objects across the upgraded quiz sets, so feedback now points readers back to relevant sections instead of generic "перечитать раздел" hints.
+- Hardened `js/site.js` further:
+  - heading lookup now returns real section titles for source references;
+  - explanation fallback now combines legacy `ok/err` material more intelligently;
+  - bad/legacy anchors are normalized more safely.
+- Cleaned malformed HTML/metadata on the same pages:
+  - removed stray `</link></link>` garbage;
+  - removed conflicting duplicate `og:image:type/alt/width/height` blocks where they contradicted the actual `og:image` file.
+
+### Verified:
+- `npm run cache-bust` → ✅ PASS.
+- `npm run validate:all` → ✅ PASS.
+- `npm run tokens:check` → ✅ PASS.
+- `node scripts/audit-pro.js` → ✅ PASS (31 passed / 2 warnings / 0 errors).
+- Canonical quiz-state check:
+  - `kod-da-vinchi` → 10/10 canonical questions
+  - `hermenevtika` → 11/11 canonical questions + 6/6 canonical bonus questions
+  - `krajne` → 12/12 canonical questions + 6/6 canonical bonus questions
+
+---
+
 ## v30 — Quiz engine hardening + glossary hydration + inline-script guard (2026-06-04)
 
 ### What was improved:
