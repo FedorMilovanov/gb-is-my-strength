@@ -5,6 +5,39 @@
 
 ---
 
+## v29 — Image contract fixes: `<picture>` wrappers, base files, PNG cleanup (2026-06-04)
+
+**Commits:** `PLAN-07` (this release)
+
+### Что исправлено
+
+| Проблема | Решение | Файлы |
+|---|---|---|
+| Rim7: 10 `<img srcset>` без `<picture>` | Обёрнуты в `<picture><source type="image/webp"><img>` | `rimlyanam-7-veruyushchiy-ili-neveruyushchiy` |
+| Rim7: 5 изображений без base-файлов | Созданы из largest variants (`-1600w` → `.webp`) | `rim7-threshold-hero`, `rim7-rom6-8-banner`, `rim7-positions-map`, `rim7-old-new-covenant`, `rim7-no-condemnation-banner` |
+| Gill: 2 изображения без base-файлов | Созданы из largest variants | `gill-preacher-pulpit`, `gill-nine-volumes` |
+| `underground-puritan-meeting.png` — единственный `<img>` без webp | Конвертирован в webp + responsive variants + JPG fallback, обёрнут в `<picture>` | `dzhon-gill-istoricheskiy-kontekst` |
+| `20-antisovetov-pastoru`: 10 `<img srcset>` без `<picture>` | Обёрнуты в `<picture>`, srcset/sizes перенесены на `<source>` | `20-antisovetov-pastoru` |
+| `krajne-li-isporcheno-serdce`: 16 `<img srcset>` без `<picture>` + 2 сломанных `<img <picture>` | Все 18 обёрнуты в `<picture>`, исправлены сломанные теги | `krajne-li-isporcheno-serdce` |
+| `kod-da-vinchi`: hero img srcset на `<img>` внутри `<picture>` | srcset перенесён на `<source>`, JPG fallback исправлен | `kod-da-vinchi` |
+| PNG-бэкапы Gill (10 файлов, ~7MB) | Удалены (webp-пары существуют) | `images/gill-*.png` |
+| `whitefield-field*` (5 файлов, ~3MB) | Удалены (не использовались) | `images/whitefield-field*` |
+| `biografii/index.html`: PNG ref | Заменён на `.webp` | `biografii` |
+| `dzhon-gill-chast-2`: preload PNG ref | Заменён на `.webp` | `dzhon-gill-chast-2-uchenyi` |
+| `krajne`: 14 несуществующих JPG `<source>` fallback | Удалены | `krajne-li-isporcheno-serdce` |
+
+### Результаты
+
+- **`validate:all`**: ✅ 0 errors, 0 warnings
+- **`audit-pro.js`**: ✅ 30 passed / 2 warn (budget only) / 0 errors
+- Все 44 `<img>` с `srcset` теперь обёрнуты в `<picture>` с `<source type="image/webp">`
+- Созданы 7 base-файлов изображений, 7 responsive-вариантов
+- Удалено 16 неиспользуемых файлов (~10MB)
+
+---
+
+---
+
 ## v28 — PLAN-06: JS cleanup (professional, careful, with Playwright re-checks) (2026-06-04)
 
 **Commits:** `bdf8fe0` (plan) · `3872ba9` (P1) · `34ca8d6` (P2) · `acdd6d2` (P3) · `27d2543` (P6 finalize)
