@@ -5,6 +5,33 @@
 
 ---
 
+## v46 — Editorial premium pass III: long-form prose polish on four key articles (2026-06-04)
+
+### What was improved:
+- Continued the full editorial polish with a direct prose pass on the longest, highest-impact articles:
+  - `20-antisovetov-pastoru`
+  - `kod-da-vinchi`
+  - `krajne-li-isporcheno-serdce`
+  - `rimlyanam-7-veruyushchiy-ili-neveruyushchiy`
+- Rewrote several high-visibility opening and concluding paragraphs to make them:
+  - less mechanically generated in tone,
+  - more syntactically balanced,
+  - more pastorally precise,
+  - and more publication-ready in Russian style.
+- Examples of polish in this pass:
+  - `20-antisovetov`: opening frame and conclusion made less slogan-heavy and more analytically sober.
+  - `kod-da-vinchi`: introduction tightened; conclusion made more direct and less repetitive.
+  - `krajne`: opening thesis and conclusion made smoother and less abrupt.
+  - `rimlyanam-7`: framing question and pastoral application sharpened for clarity and pastoral usefulness.
+- This pass intentionally focused on reader experience rather than architecture: the goal was to move these articles from “technically solid” to “editorially confident.”
+
+### Verified:
+- `npm run validate:all` → ✅ PASS.
+- `node scripts/audit-pro.js` → ✅ PASS (**35 passed / 0 warnings / 0 errors**).
+- `AUDIT_BASE=http://127.0.0.1:8080 npm run visual-audit` → ✅ PASS.
+
+---
+
 ## v45 — Editorial premium pass II: author-card refinement + full quiz backlink completion (2026-06-04)
 
 ### What was improved:
