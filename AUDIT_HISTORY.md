@@ -5,6 +5,40 @@
 
 ---
 
+## v32 — Remaining quiz-source canonicalization + OG duplicate cleanup (2026-06-04)
+
+### What was improved:
+- Canonicalized the remaining legacy quiz sources across the site:
+  - `20-antisovetov-pastoru`
+  - `dzhon-gill-spravochnik`
+  - `nagornaya/chast-1`
+  - `nagornaya/chast-2`
+  - `nagornaya/chast-3`
+  - `nagornaya/chast-4`
+  - `nagornaya/chast-5`
+- Converted those quiz definitions from legacy `q / answer / ok / err` source shape into the canonical `question / correct / explanation` source shape while preserving the current runtime compatibility layer.
+- Canonicalized the `20-antisovetov` bonus round as well.
+- Result: all site quiz sources are now consistently authored in the modern schema, not just supported by compatibility code.
+- Cleaned duplicate OpenGraph image metadata on:
+  - `/index.html`
+  - `/biografii/index.html`
+  removing conflicting duplicate `og:image:type/alt/width/height` blocks.
+
+### Verified:
+- Canonical quiz-state check:
+  - `20-antisovetov` → 10/10 canonical questions + 6/6 canonical bonus questions
+  - `dzhon-gill-spravochnik` → 4/4 canonical questions
+  - `nagornaya/chast-1` → 3/3 canonical questions
+  - `nagornaya/chast-2` → 4/4 canonical questions
+  - `nagornaya/chast-3` → 3/3 canonical questions
+  - `nagornaya/chast-4` → 5/5 canonical questions
+  - `nagornaya/chast-5` → 4/4 canonical questions
+- `npm run validate:all` → ✅ PASS.
+- `npm run tokens:check` → ✅ PASS.
+- `node scripts/audit-pro.js` → ✅ PASS (31 passed / 2 warnings / 0 errors).
+
+---
+
 ## v31 — Quiz canonicalization + sourceRef enrichment + metadata cleanup (2026-06-04)
 
 ### What was improved:
