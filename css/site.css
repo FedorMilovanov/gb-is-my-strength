@@ -924,6 +924,8 @@ html.dark .pullquote .pq-attribution { color: var(--color-accent); }
   display: block;
   border-radius: 4px;
   cursor: zoom-in;
+  max-height: 80vh;
+  object-fit: contain;
 }
 .article-img--vertical img {
   max-height: 580px !important;
@@ -6914,11 +6916,6 @@ html.dark {
   --color-red: #f87171;
 }
 
-/* Fix for oversized portrait images to prevent full-screen height */
-.article-img img {
-  max-height: 80vh;
-  object-fit: contain;
-}
 /* (.article-img--portrait-wide img — DEAD: класс .article-img--portrait-wide
    нигде в HTML/JS, удалено в PLAN-04 P7) */
 
