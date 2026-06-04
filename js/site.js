@@ -1876,6 +1876,33 @@
 
 
   /* ============================================================
+     11a. Generic Article Reveal Observer
+     Safe fallback for .reveal elements on article pages.
+     Replaces duplicated inline reveal scripts in long-form articles.
+     ============================================================ */
+  (function () {
+    var reveals = document.querySelectorAll('.reveal:not(.revealed)');
+    if (!reveals.length) return;
+
+    if (!window.IntersectionObserver) {
+      reveals.forEach(function (el) { el.classList.add('revealed'); });
+      return;
+    }
+
+    var revealObserver = new IntersectionObserver(function (entries) {
+      entries.forEach(function (entry) {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('revealed');
+          revealObserver.unobserve(entry.target);
+        }
+      });
+    }, { threshold: 0.1, rootMargin: '0px 0px -40px 0px' });
+
+    reveals.forEach(function (el) { revealObserver.observe(el); });
+  })();
+
+
+  /* ============================================================
      12. Footnote Tooltips (fn-ref / inline sup)
      ============================================================ */
   (function () {
