@@ -1,6 +1,14 @@
 /* ============================================================
-   enhancements.js — Segmented Progress Bar + FAQPage JSON-LD
-   Господь Бог — Сила Моя · v1.1
+   enhancements.js — Господь Бог — Сила Моя · v1.1
+
+   Структура (каждый модуль — отдельный IIFE):
+   A. FAQPage JSON-LD Auto-Generation     (article-страницы с .faq-accordion)
+   B. Segmented Progress Bar              (mobile bottom-bar, сегменты по h2)
+   C. Quiz Interactive                    (.interactive-quiz, в т.ч. nagornaya/*)
+   D. HOME: Hebrew Word Tap-Toggle        (.hb-w / .h-tetra на главной)
+   E. HOME: Ambient Scripture Background  (.h-phrase ambient layer)
+   F. 20-Antisovetov: Strategic Map Popover & FAQ Accordion
+   G. Mobile premium compaction для длинных editorial-блоков
 
    Изменения v1.1:
    · FAQPage JSON-LD: поддержка @graph — если на странице уже
@@ -403,11 +411,11 @@
 
 })();
 
-/* === MERGED: quiz-interactive (AUDIT v5) === */
 /* ============================================================
-   quiz-interactive.js — обработчик для .interactive-quiz/.quiz-btn
+   C. Quiz Interactive — обработчик для .interactive-quiz / .quiz-btn
    Используется на страницах с Tailwind-разметкой (nagornaya/chast-*).
    Поддерживает множественные quiz-блоки на одной странице.
+   (Originally MERGED from quiz-interactive.js — AUDIT v5)
    ============================================================ */
 (function () {
   'use strict';
@@ -498,7 +506,7 @@
 })();
 
 /* ============================================================
-   HOME: Hebrew Word Tap-Toggle
+   D. HOME: Hebrew Word Tap-Toggle
    Перенесено из inline <script> index.html — AGENTS-r43.
    :active reverts on finger-lift, so data-toggled keeps translation
    visible until user taps again or elsewhere.
@@ -576,10 +584,12 @@
 })();
 
 /* ============================================================
-   HOME: Ambient Scripture Background (.h-phrase animation)
+   E. HOME: Ambient Scripture Background (.h-phrase animation)
    Перенесено из inline <script> index.html — AGENTS-r43.
-   Управляет случайной расстановкой ambient текстовых фраз.
-   Активируется только если есть .h-phrase--ambient (главная).
+   Управляет случайной расстановкой ambient текстовых фраз
+   (греческий / латинский / иврит — фоновый layer на главной).
+   Активируется только если есть .h-phrase--ambient (главная)
+   и НЕ установлен prefers-reduced-motion.
 ============================================================ */
 (function () {
   /* Skip only the ambient animation on non-home/reduced-motion pages;
