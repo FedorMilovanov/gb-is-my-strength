@@ -5,6 +5,19 @@
 
 ---
 
+## v38 — 20-Antisovetov comment-stripping pass (2026-06-04)
+
+### What was improved:
+- Performed a safe no-behavior-change trim on the remaining inline `<style>` block in `articles/20-antisovetov-pastoru/index.html`.
+- Removed explanatory CSS comments and collapsed redundant blank lines inside that block.
+- Result: the inline-style payload shrank from **12940** → **12495** bytes without changing runtime behavior or moving more rules into the global CSS budget.
+
+### Verified:
+- `npm run validate:all` → ✅ PASS.
+- `node scripts/audit-pro.js` → ✅ PASS (33 passed / 2 warnings / 0 errors).
+
+---
+
 ## v37 — 20-Antisovetov generic-style fallback to global CSS (2026-06-04)
 
 ### What was improved:
