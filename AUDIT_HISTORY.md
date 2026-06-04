@@ -5,6 +5,41 @@
 
 ---
 
+## v40 — Split SITE_CONFIG merge + validator hardening + Playwright re-check (2026-06-04)
+
+### What was improved:
+- Merged split `window.SITE_CONFIG` + follow-up `window.SITE_CONFIG.quiz = ...` patterns into a single canonical config script on:
+  - `articles/20-antisovetov-pastoru/`
+  - `articles/hermenevticheskaya-otsenka-hristotsentrichnoy-germenevtiki/`
+  - `nagornaya/chast-1`
+  - `nagornaya/chast-2`
+  - `nagornaya/chast-3`
+  - `nagornaya/chast-4`
+  - `nagornaya/chast-5`
+- Result: inline script blocks across audited HTML pages dropped again **78 → 71**.
+- Hardened `scripts/validate.js` further: `validateArticle()` now reads `page.section` from parsed `SITE_CONFIG` rather than brittle regex matching, so canonical JSON-style config blocks validate correctly.
+- Continued shrinking the `20-antisovetov` inline-style island by stripping dead explanatory comments and collapsing whitespace:
+  - **12940 → 12495 bytes**.
+- Re-installed Playwright + Chromium and re-ran full visual audit after these structural changes.
+
+### Playwright verification:
+- Installed runtime packages: `npm install --no-save playwright`
+- Installed browser: `npx playwright install chromium`
+- Installed required system libs (`libnspr4`, `libnss3`, `libatk*`, `libcups*`, `libxdamage1`, `libxkbcommon0`, etc.)
+- Full run result:
+  - **32 page/viewport runs**
+  - **96 screenshots**
+  - **0 console errors**
+  - **0 network errors**
+  - **0 unsuppressed visual bugs**
+
+### Verified:
+- `npm run validate:all` → ✅ PASS.
+- `node scripts/audit-pro.js` → ✅ PASS (33 passed / 2 warnings / 0 errors).
+- `AUDIT_BASE=http://127.0.0.1:8080 npm run visual-audit` → ✅ PASS.
+
+---
+
 ## v39 — Playwright runtime verification + home inline-script dedup (2026-06-04)
 
 ### What was improved:

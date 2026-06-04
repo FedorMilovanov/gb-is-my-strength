@@ -88,6 +88,7 @@ function validateArticle(slug) {
   if (!fs.existsSync(file)) { err(slug, 'нет index.html'); return; }
 
   const html = fs.readFileSync(file, 'utf8');
+  const cfg = extractSiteConfigFromHtml(html, slug) || {};
 
   // #1 canonical совпадает со slugом
   const canonical = html.match(/<link\s+[^>]*rel="canonical"[^>]*href="([^"]+)"/)?.[1]
@@ -99,7 +100,7 @@ function validateArticle(slug) {
   }
 
   // #2 article:section присутствует и валиден
-  const section = html.match(/section:\s*'([^']+)'/)?.[1];
+  const section = cfg && cfg.page ? cfg.page.section : null;
   if (!section) {
     err(slug, 'page.section не найден в SITE_CONFIG');
   } else if (!VALID_SECTIONS.has(section)) {

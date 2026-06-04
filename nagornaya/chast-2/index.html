@@ -55,48 +55,129 @@
   <link rel="stylesheet" href="/nagornaya/tw.min.css?v=2670414e">
   <link rel="stylesheet" href="/css/site.css?v=187c447a">
   <script>
-  window.SITE_CONFIG = {
-    version: 1778943682,
-    site: {
-      id: 'gb-strength',
-      name: 'Господь Бог — Сила Моя',
-      baseUrl: 'https://gospod-bog.ru',
-      locale: 'ru-RU',
-      themeStorageKey: 'theme',
-      debug: false
+window.SITE_CONFIG = {
+  "version": 1778943682,
+  "site": {
+    "id": "gb-strength",
+    "name": "Господь Бог — Сила Моя",
+    "baseUrl": "https://gospod-bog.ru",
+    "locale": "ru-RU",
+    "themeStorageKey": "theme",
+    "debug": false
+  },
+  "page": {
+    "type": "article",
+    "id": "nagornaya-chast-2",
+    "title": "Методология записи — Часть II",
+    "section": "Нагорная проповедь",
+    "readingTime": 11
+  },
+  "features": {
+    "bookmarks": {
+      "enabled": true,
+      "articleSelector": "[data-pagefind-body]",
+      "headingSelector": "h2[id]",
+      "minScrollToSave": 320,
+      "minProgressToSave": 6,
+      "maxProgressToSave": 96,
+      "completedAtProgress": 97,
+      "minTimeOnPage": 10000,
+      "scrollThrottle": 600,
+      "periodicSaveInterval": 15000,
+      "maxAgeDays": 14,
+      "cleanupAgeDays": 45,
+      "cleanupIntervalHours": 24,
+      "promptDelay": 900,
+      "promptAutoHide": 12000,
+      "showPrompt": true,
+      "dismissForSession": true,
+      "respectHashNavigation": true,
+      "minDocumentHeightRatio": 2
     },
-    page: {
-      type: 'article',
-      id: 'nagornaya-chast-2',
-      title: 'Методология записи — Часть II',
-      section: 'Нагорная проповедь',
-      readingTime: 11,
-    },
-    features: {
-      bookmarks: {
-        enabled: true,
-        articleSelector: '[data-pagefind-body]',
-        headingSelector: 'h2[id]',
-        minScrollToSave: 320,
-        minProgressToSave: 6,
-        maxProgressToSave: 96,
-        completedAtProgress: 97,
-        minTimeOnPage: 10000,
-        scrollThrottle: 600,
-        periodicSaveInterval: 15000,
-        maxAgeDays: 14,
-        cleanupAgeDays: 45,
-        cleanupIntervalHours: 24,
-        promptDelay: 900,
-        promptAutoHide: 12000,
-        showPrompt: true,
-        dismissForSession: true,
-        respectHashNavigation: true,
-        minDocumentHeightRatio: 2.0
-      }
+    "quiz": {
+      "enabled": true,
+      "bonusEnabled": false,
+      "shareResults": false
     }
-  };
-  </script>
+  },
+  "quiz": {
+    "questions": [
+      {
+        "id": "q1",
+        "type": "single",
+        "category": "theology",
+        "difficulty": "hard",
+        "question": "Что означает термин <em>concursus</em> в классическом консервативном богословии?",
+        "options": [
+          "Бог механически диктовал слова — авторы были пассивными писцами",
+          "Святой Дух действовал через личности и стили авторов так, что текст одновременно полностью Божий и полностью человеческий",
+          "Бог вдохновлял общие мысли, оставляя авторам полную свободу в выборе слов"
+        ],
+        "correct": 1,
+        "explanation": {
+          "short": "Уорфилд (Shorter Writings, 2:629): Писание — совместный продукт Божественной и человеческой деятельности «в каждой детали».",
+          "full": "Уорфилд (Shorter Writings, 2:629): Писание — совместный продукт Божественной и человеческой деятельности «в каждой детали». Первая опция — карикатура («теория диктовки»), которую консервативное богословие не разделяет. Третья — динамическая теория, отвергнутая Чикагским заявлением.",
+          "anchor": null
+        }
+      },
+      {
+        "id": "q2",
+        "type": "single",
+        "category": "theology",
+        "difficulty": "hard",
+        "question": "Какое арамейское слово стоит за πτωχοὶ τῷ πνεύματι («нищие духом») в Мф 5:3?",
+        "options": [
+          "<em>chesed</em> — милость завета",
+          "<em>ʿanawim</em> — смиренные/беспомощные перед Богом",
+          "<em>shalom</em> — мир и целостность"
+        ],
+        "correct": 1,
+        "explanation": {
+          "short": "<em>ʿanawim</em> — терминус технический в Псалтири и Исаии: те, кто полностью полагается на Господа в нищете и бесправии (Пс 33:7; Ис 61:1).",
+          "full": "<em>ʿanawim</em> — терминус технический в Псалтири и Исаии: те, кто полностью полагается на Господа в нищете и бесправии (Пс 33:7; Ис 61:1). <em>Chesed</em> — это завётная любовь, <em>shalom</em> — мир/благополучие. Ни то, ни другое не передаёт идею «нищеты духа» как полной зависимости от Бога.",
+          "anchor": null
+        }
+      },
+      {
+        "id": "q3",
+        "type": "single",
+        "category": "theology",
+        "difficulty": "hard",
+        "question": "Какое обетование Христа в Ин 14:26 фундаментально для понимания письменной фиксации Нагорной проповеди?",
+        "options": [
+          "Дух Святой даст ученикам новое откровение, отменяющее слова Иисуса",
+          "Дух Святой научит всему и напомнит всё, что говорил Иисус",
+          "Дух Святой защитит апостолов от смерти, пока не запишут учение"
+        ],
+        "correct": 1,
+        "explanation": {
+          "short": "«Утешитель, Дух Святой… научит вас всему и напомнит вам всё, что Я говорил вам» (Ин 14:26) — это сверхъестественное обеспечение точности апостольской памяти.",
+          "full": "«Утешитель, Дух Святой… научит вас всему и напомнит вам всё, что Я говорил вам» (Ин 14:26) — это сверхъестественное обеспечение точности апостольской памяти. Первая опция противоречит principle of non-contradiction Писания. Третья — фактически неверна (большинство апостолов приняли мученичество).",
+          "anchor": null
+        }
+      },
+      {
+        "id": "q4",
+        "type": "single",
+        "category": "theology",
+        "difficulty": "hard",
+        "question": "Какой принцип Чикагского заявления (1978) разрешает variant selections и тематическое расположение материала у евангелистов?",
+        "options": [
+          "Article VIII — Бог использовал личности и стили авторов",
+          "Article XIII — variant selections, topical arrangement, free citations совместимы с непогрешимостью",
+          "Article XX — Писание не учит ничему ошибочному"
+        ],
+        "correct": 1,
+        "explanation": {
+          "short": "Статья XIII прямо допускает выборочное цитирование, тематическое (а не строго хронологическое) расположение и свободные парафразы.",
+          "full": "Статья XIII прямо допускает выборочное цитирование, тематическое (а не строго хронологическое) расположение и свободные парафразы. Article VIII — про concursus авторства, Article XX — про учительную безошибочность. А именно XIII решает вопрос редакционных различий.",
+          "anchor": null
+        }
+      }
+    ]
+  }
+};
+</script>
   <!-- Yandex Metrika -->
   <script type="text/javascript">
     (function(m,e,t,r,i,k,a){m[i]=m[i]||function(){(m[i].a=m[i].a||[]).push(arguments)};m[i].l=1*new Date();for(var j=0;j<document.scripts.length;j++){if(document.scripts[j].src===r){return}}k=e.createElement(t),a=e.getElementsByTagName(t)[0],k.async=1,k.src=r,a.parentNode.insertBefore(k,a)})(window,document,'script','https://mc.yandex.ru/metrika/tag.js?id=108353327','ym');
@@ -795,91 +876,6 @@
 <div id="read-progress" role="progressbar" aria-label="Прогресс чтения" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"></div>
 <!-- read-progress handled by js/nagornaya-mobile-toc.js?v=4ea824a2 module C -->
 
-
-<script>
-/* AUDIT v6: quiz config via SITE_CONFIG, использует Quiz Engine v3 из site.js */
-(function(){
-  window.SITE_CONFIG = window.SITE_CONFIG || {};
-  window.SITE_CONFIG.features = window.SITE_CONFIG.features || {};
-  window.SITE_CONFIG.features.quiz = { enabled: true, bonusEnabled: false, shareResults: false };
-  window.SITE_CONFIG.quiz = {
-    questions: [
-        {
-          "id": "q1",
-          "type": "single",
-          "category": "theology",
-          "difficulty": "hard",
-          "question": "Что означает термин <em>concursus</em> в классическом консервативном богословии?",
-          "options": [
-            "Бог механически диктовал слова — авторы были пассивными писцами",
-            "Святой Дух действовал через личности и стили авторов так, что текст одновременно полностью Божий и полностью человеческий",
-            "Бог вдохновлял общие мысли, оставляя авторам полную свободу в выборе слов"
-          ],
-          "correct": 1,
-          "explanation": {
-            "short": "Уорфилд (Shorter Writings, 2:629): Писание — совместный продукт Божественной и человеческой деятельности «в каждой детали».",
-            "full": "Уорфилд (Shorter Writings, 2:629): Писание — совместный продукт Божественной и человеческой деятельности «в каждой детали». Первая опция — карикатура («теория диктовки»), которую консервативное богословие не разделяет. Третья — динамическая теория, отвергнутая Чикагским заявлением.",
-            "anchor": null
-          }
-        },
-        {
-          "id": "q2",
-          "type": "single",
-          "category": "theology",
-          "difficulty": "hard",
-          "question": "Какое арамейское слово стоит за πτωχοὶ τῷ πνεύματι («нищие духом») в Мф 5:3?",
-          "options": [
-            "<em>chesed</em> — милость завета",
-            "<em>ʿanawim</em> — смиренные/беспомощные перед Богом",
-            "<em>shalom</em> — мир и целостность"
-          ],
-          "correct": 1,
-          "explanation": {
-            "short": "<em>ʿanawim</em> — терминус технический в Псалтири и Исаии: те, кто полностью полагается на Господа в нищете и бесправии (Пс 33:7; Ис 61:1).",
-            "full": "<em>ʿanawim</em> — терминус технический в Псалтири и Исаии: те, кто полностью полагается на Господа в нищете и бесправии (Пс 33:7; Ис 61:1). <em>Chesed</em> — это завётная любовь, <em>shalom</em> — мир/благополучие. Ни то, ни другое не передаёт идею «нищеты духа» как полной зависимости от Бога.",
-            "anchor": null
-          }
-        },
-        {
-          "id": "q3",
-          "type": "single",
-          "category": "theology",
-          "difficulty": "hard",
-          "question": "Какое обетование Христа в Ин 14:26 фундаментально для понимания письменной фиксации Нагорной проповеди?",
-          "options": [
-            "Дух Святой даст ученикам новое откровение, отменяющее слова Иисуса",
-            "Дух Святой научит всему и напомнит всё, что говорил Иисус",
-            "Дух Святой защитит апостолов от смерти, пока не запишут учение"
-          ],
-          "correct": 1,
-          "explanation": {
-            "short": "«Утешитель, Дух Святой… научит вас всему и напомнит вам всё, что Я говорил вам» (Ин 14:26) — это сверхъестественное обеспечение точности апостольской памяти.",
-            "full": "«Утешитель, Дух Святой… научит вас всему и напомнит вам всё, что Я говорил вам» (Ин 14:26) — это сверхъестественное обеспечение точности апостольской памяти. Первая опция противоречит principle of non-contradiction Писания. Третья — фактически неверна (большинство апостолов приняли мученичество).",
-            "anchor": null
-          }
-        },
-        {
-          "id": "q4",
-          "type": "single",
-          "category": "theology",
-          "difficulty": "hard",
-          "question": "Какой принцип Чикагского заявления (1978) разрешает variant selections и тематическое расположение материала у евангелистов?",
-          "options": [
-            "Article VIII — Бог использовал личности и стили авторов",
-            "Article XIII — variant selections, topical arrangement, free citations совместимы с непогрешимостью",
-            "Article XX — Писание не учит ничему ошибочному"
-          ],
-          "correct": 1,
-          "explanation": {
-            "short": "Статья XIII прямо допускает выборочное цитирование, тематическое (а не строго хронологическое) расположение и свободные парафразы.",
-            "full": "Статья XIII прямо допускает выборочное цитирование, тематическое (а не строго хронологическое) расположение и свободные парафразы. Article VIII — про concursus авторства, Article XX — про учительную безошибочность. А именно XIII решает вопрос редакционных различий.",
-            "anchor": null
-          }
-        }
-      ]
-  };
-})();
-</script>
 
 <!-- font-size handled by js/nagornaya-mobile-toc.js?v=4ea824a2 module D -->
 

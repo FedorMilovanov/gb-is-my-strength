@@ -55,48 +55,111 @@
   <link rel="stylesheet" href="/nagornaya/tw.min.css?v=2670414e">
   <link rel="stylesheet" href="/css/site.css?v=187c447a">
   <script>
-  window.SITE_CONFIG = {
-    version: 1778943682,
-    site: {
-      id: 'gb-strength',
-      name: 'Господь Бог — Сила Моя',
-      baseUrl: 'https://gospod-bog.ru',
-      locale: 'ru-RU',
-      themeStorageKey: 'theme',
-      debug: false
+window.SITE_CONFIG = {
+  "version": 1778943682,
+  "site": {
+    "id": "gb-strength",
+    "name": "Господь Бог — Сила Моя",
+    "baseUrl": "https://gospod-bog.ru",
+    "locale": "ru-RU",
+    "themeStorageKey": "theme",
+    "debug": false
+  },
+  "page": {
+    "type": "article",
+    "id": "nagornaya-chast-1",
+    "title": "Два текста, один Иисус — Часть I",
+    "section": "Нагорная проповедь",
+    "readingTime": 16
+  },
+  "features": {
+    "bookmarks": {
+      "enabled": true,
+      "articleSelector": "[data-pagefind-body]",
+      "headingSelector": "h2[id]",
+      "minScrollToSave": 320,
+      "minProgressToSave": 6,
+      "maxProgressToSave": 96,
+      "completedAtProgress": 97,
+      "minTimeOnPage": 10000,
+      "scrollThrottle": 600,
+      "periodicSaveInterval": 15000,
+      "maxAgeDays": 14,
+      "cleanupAgeDays": 45,
+      "cleanupIntervalHours": 24,
+      "promptDelay": 900,
+      "promptAutoHide": 12000,
+      "showPrompt": true,
+      "dismissForSession": true,
+      "respectHashNavigation": true,
+      "minDocumentHeightRatio": 2
     },
-    page: {
-      type: 'article',
-      id: 'nagornaya-chast-1',
-      title: 'Два текста, один Иисус — Часть I',
-      section: 'Нагорная проповедь',
-      readingTime: 16,
-    },
-    features: {
-      bookmarks: {
-        enabled: true,
-        articleSelector: '[data-pagefind-body]',
-        headingSelector: 'h2[id]',
-        minScrollToSave: 320,
-        minProgressToSave: 6,
-        maxProgressToSave: 96,
-        completedAtProgress: 97,
-        minTimeOnPage: 10000,
-        scrollThrottle: 600,
-        periodicSaveInterval: 15000,
-        maxAgeDays: 14,
-        cleanupAgeDays: 45,
-        cleanupIntervalHours: 24,
-        promptDelay: 900,
-        promptAutoHide: 12000,
-        showPrompt: true,
-        dismissForSession: true,
-        respectHashNavigation: true,
-        minDocumentHeightRatio: 2.0
-      }
+    "quiz": {
+      "enabled": true,
+      "bonusEnabled": false,
+      "shareResults": false
     }
-  };
-  </script>
+  },
+  "quiz": {
+    "questions": [
+      {
+        "id": "q1",
+        "type": "single",
+        "category": "context",
+        "difficulty": "medium",
+        "question": "В чём ключевое различие между Нагорной проповедью у Матфея (5–7) и проповедью на равнине у Луки (6:17–49)?",
+        "options": [
+          "Матфей и Лука описывают два разных события: одно — на горе, другое — на равнине",
+          "Матфей систематизирует и расширяет учение для иудеохристиан; Лука даёт сжатую этическую версию для языкохристиан",
+          "Лука сократил оригинал, а Матфей выдумал большую часть текста"
+        ],
+        "correct": 1,
+        "explanation": {
+          "short": "Кальвин прямо отвергает идею «двух разных проповедей»: это одно событие, переданное в двух редакционных перспективах с разной целью и аудиторией.",
+          "full": "Кальвин прямо отвергает идею «двух разных проповедей»: это одно событие, переданное в двух редакционных перспективах с разной целью и аудиторией. Первая опция игнорирует прямую позицию Кальвина и реформатскую традицию. Третья — обвинение, несовместимое с доктриной богодухновенности.",
+          "anchor": null
+        }
+      },
+      {
+        "id": "q2",
+        "type": "single",
+        "category": "context",
+        "difficulty": "medium",
+        "question": "Сколько крупных «досок» (учительных блоков) выделяет Матфей в Евангелии, и какое место занимает Нагорная проповедь?",
+        "options": [
+          "Три блока; Нагорная — второй",
+          "Пять блоков, по аналогии с Пятикнижием Моисея; Нагорная — первый",
+          "Семь блоков, по числу полноты; Нагорная — центральный"
+        ],
+        "correct": 1,
+        "explanation": {
+          "short": "Матфей выстраивает Евангелие как «новое Пятикнижие нового Моисея». Нагорная проповедь — первый из пяти больших учительных блоков.",
+          "full": "Матфей выстраивает Евангелие как «новое Пятикнижие нового Моисея». Нагорная проповедь — первый из пяти больших учительных блоков. Структура Матфея — пять блоков (главы 5–7, 10, 13, 18, 24–25), а не три или семь. Это базовое наблюдение синоптической литературы.",
+          "anchor": null
+        }
+      },
+      {
+        "id": "q3",
+        "type": "single",
+        "category": "context",
+        "difficulty": "medium",
+        "question": "Что обозначает в Мф 5:1 деталь «увидев народ, Он взошёл на гору»?",
+        "options": [
+          "Иисус хотел отделиться от толпы и обращался только к ближайшим ученикам, исключая остальных",
+          "Иисус провозглашает новый Закон с горы — параллель Синаю и Моисею",
+          "Это просто географическая деталь без богословского значения"
+        ],
+        "correct": 1,
+        "explanation": {
+          "short": "Гора в Мф 5:1 — намеренная параллель Синаю: Иисус провозглашает Закон Царства как новый Моисей, но с большим авторитетом («а Я говорю вам»).",
+          "full": "Гора в Мф 5:1 — намеренная параллель Синаю: Иисус провозглашает Закон Царства как новый Моисей, но с большим авторитетом («а Я говорю вам»). Толпа никуда не уходит — она слушает (Мф 7:28). Это не «приватная» проповедь. И деталь о горе — глубоко богословская, не случайная.",
+          "anchor": null
+        }
+      }
+    ]
+  }
+};
+</script>
   <!-- Yandex Metrika -->
   <script type="text/javascript">
     (function(m,e,t,r,i,k,a){m[i]=m[i]||function(){(m[i].a=m[i].a||[]).push(arguments)};m[i].l=1*new Date();for(var j=0;j<document.scripts.length;j++){if(document.scripts[j].src===r){return}}k=e.createElement(t),a=e.getElementsByTagName(t)[0],k.async=1,k.src=r,a.parentNode.insertBefore(k,a)})(window,document,'script','https://mc.yandex.ru/metrika/tag.js?id=108353327','ym');
@@ -924,73 +987,6 @@
 <div id="read-progress" role="progressbar" aria-label="Прогресс чтения" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"></div>
 <!-- read-progress handled by js/nagornaya-mobile-toc.js?v=4ea824a2 module C -->
 
-
-<script>
-/* AUDIT v6: quiz config via SITE_CONFIG, использует Quiz Engine v3 из site.js */
-(function(){
-  window.SITE_CONFIG = window.SITE_CONFIG || {};
-  window.SITE_CONFIG.features = window.SITE_CONFIG.features || {};
-  window.SITE_CONFIG.features.quiz = { enabled: true, bonusEnabled: false, shareResults: false };
-  window.SITE_CONFIG.quiz = {
-    questions: [
-        {
-          "id": "q1",
-          "type": "single",
-          "category": "context",
-          "difficulty": "medium",
-          "question": "В чём ключевое различие между Нагорной проповедью у Матфея (5–7) и проповедью на равнине у Луки (6:17–49)?",
-          "options": [
-            "Матфей и Лука описывают два разных события: одно — на горе, другое — на равнине",
-            "Матфей систематизирует и расширяет учение для иудеохристиан; Лука даёт сжатую этическую версию для языкохристиан",
-            "Лука сократил оригинал, а Матфей выдумал большую часть текста"
-          ],
-          "correct": 1,
-          "explanation": {
-            "short": "Кальвин прямо отвергает идею «двух разных проповедей»: это одно событие, переданное в двух редакционных перспективах с разной целью и аудиторией.",
-            "full": "Кальвин прямо отвергает идею «двух разных проповедей»: это одно событие, переданное в двух редакционных перспективах с разной целью и аудиторией. Первая опция игнорирует прямую позицию Кальвина и реформатскую традицию. Третья — обвинение, несовместимое с доктриной богодухновенности.",
-            "anchor": null
-          }
-        },
-        {
-          "id": "q2",
-          "type": "single",
-          "category": "context",
-          "difficulty": "medium",
-          "question": "Сколько крупных «досок» (учительных блоков) выделяет Матфей в Евангелии, и какое место занимает Нагорная проповедь?",
-          "options": [
-            "Три блока; Нагорная — второй",
-            "Пять блоков, по аналогии с Пятикнижием Моисея; Нагорная — первый",
-            "Семь блоков, по числу полноты; Нагорная — центральный"
-          ],
-          "correct": 1,
-          "explanation": {
-            "short": "Матфей выстраивает Евангелие как «новое Пятикнижие нового Моисея». Нагорная проповедь — первый из пяти больших учительных блоков.",
-            "full": "Матфей выстраивает Евангелие как «новое Пятикнижие нового Моисея». Нагорная проповедь — первый из пяти больших учительных блоков. Структура Матфея — пять блоков (главы 5–7, 10, 13, 18, 24–25), а не три или семь. Это базовое наблюдение синоптической литературы.",
-            "anchor": null
-          }
-        },
-        {
-          "id": "q3",
-          "type": "single",
-          "category": "context",
-          "difficulty": "medium",
-          "question": "Что обозначает в Мф 5:1 деталь «увидев народ, Он взошёл на гору»?",
-          "options": [
-            "Иисус хотел отделиться от толпы и обращался только к ближайшим ученикам, исключая остальных",
-            "Иисус провозглашает новый Закон с горы — параллель Синаю и Моисею",
-            "Это просто географическая деталь без богословского значения"
-          ],
-          "correct": 1,
-          "explanation": {
-            "short": "Гора в Мф 5:1 — намеренная параллель Синаю: Иисус провозглашает Закон Царства как новый Моисей, но с большим авторитетом («а Я говорю вам»).",
-            "full": "Гора в Мф 5:1 — намеренная параллель Синаю: Иисус провозглашает Закон Царства как новый Моисей, но с большим авторитетом («а Я говорю вам»). Толпа никуда не уходит — она слушает (Мф 7:28). Это не «приватная» проповедь. И деталь о горе — глубоко богословская, не случайная.",
-            "anchor": null
-          }
-        }
-      ]
-  };
-})();
-</script>
 
 <!-- font-size handled by js/nagornaya-mobile-toc.js?v=4ea824a2 module D -->
 
