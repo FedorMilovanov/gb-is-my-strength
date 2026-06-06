@@ -29,6 +29,7 @@
  *   #14 все <img src=""> существуют на диске                      [NEW]
  *   #15 <h1> ровно один раз                                       [NEW]
  *   #16 FAQPage JSON-LD вопросы = вопросы faq-accordion           [NEW]
+ *   #17 Russian quote policy: нет английских прямых цитат в русских статьях
  *   CSS нет color-mix в linear-gradient, нет нестандартных bp
  *   sitemap + feed содержат все статьи
  */
