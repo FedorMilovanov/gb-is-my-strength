@@ -9,13 +9,14 @@
 
 ### What was improved:
 - Added a project-wide rule to `AGENTS.md` and `README.md`: Russian articles must not contain English direct quotations in reader-facing prose. English book/article titles, URLs, DOI and bibliographic identifiers remain allowed; quoted thoughts and direct speech must be translated into Russian with a link to the original source.
+- Added automated Russian quote policy guards to `scripts/validate.js` and `scripts/audit-pro.js`; these checks also inspect quiz strings from `SITE_CONFIG`.
 - Replaced remaining English direct-quote fragments in the Nagornaya series and Gill materials with Russian translations while preserving English bibliographic titles and source links.
 - Continued the source-verification wave across key articles: TMSJ, GTY, Ligonier, Internet Archive, PRDL, CCEL, JETS and other primary/near-primary sources were linked where relevant.
 - Added and maintained `audit/content-source-audit-2026-06-06.md` as the running source-audit log.
 
 ### Verified:
 - `npm run validate:all` → PASS.
-- `node scripts/audit-pro.js` → PASS.
+- `node scripts/audit-pro.js` → PASS (**36 passed / 0 warnings / 0 errors**).
 
 ---
 
