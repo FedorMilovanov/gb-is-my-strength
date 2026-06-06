@@ -272,3 +272,15 @@ node scripts/audit-pro.js
 - `articles/dzhon-gill-chast-2-uchenyi/`, `articles/dzhon-gill-chast-3-nasledie/`, `articles/dzhon-gill-istoricheskiy-kontekst/` — усилены ссылками на первоисточники Gill / Rippon / PRDL / SBJT / официальные тексты Act of Uniformity.
 
 Принцип второго прохода: не добавлять «для веса» случайные ссылки, а усиливать только те места, где читатель реально должен иметь возможность проверить цитату, позицию или источник факта.
+
+---
+
+## 9. Дополнение после третьего источникового прохода
+
+Третий проход был направлен на Нагорную серию и справочник по Гиллу:
+
+- `nagornaya/chast-3/` — добавлены кликабельные ссылки к Thomas, TMSJ 21/1; Turner, JETS 53/4; Ligonier Open Book interview с John MacArthur. Это закрывает ключевые тезисы о применимости Нагорной проповеди и о смягчении/пересмотре диспенсациональных позиций.
+- `nagornaya/chast-5/` — добавлены ссылки к GTY #2222, GTY #2224, GTY #42-90, GTY #2252, Spurgeon/CCEL, Calvin/BibleHub, Ligonier Lordship Salvation и Ligonier/Sproul. Это усиливает проверяемость цитат по Lordship Salvation, easy-believism, Мф 7:21–23 и связи закона/Евангелия.
+- `articles/dzhon-gill-spravochnik/` — расширен блок полных текстов Гилла: добавлены прямые Internet Archive ссылки на `The Doctrine of the Trinity` (1731), `A Dissertation Concerning the Antiquity of the Hebrew-Language...` (1767) и `A Body of Practical Divinity` (1770).
+
+Все добавленные в этом проходе ключевые новые ссылки вручную проверены на доступность: GTY, Ligonier, TMSJ PDF, JETS PDF и Internet Archive отвечают 200.
