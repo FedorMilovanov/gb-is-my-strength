@@ -429,6 +429,76 @@ function extractSiteConfig(html, fileLabel) {
 })();
 
 // 8. Theological attribution guard
+
+(function russianQuotePolicyGuard() {
+  function stripHtmlLite(x) { return String(x || '').replace(/<[^>]+>/g, ' '); }
+  function isAllowedEnglishQuoteFragment(fragment) {
+    const allowed = [
+      'ipsissima', 'Logia Jesu', 'anomia', 'Suo Marte', 'sola scriptura', 'pactum salutis',
+      'Semper invictus', 'fervore perpetuo ardenti', 'Coffee House Association', 'Goat',
+      'Doctor of Divinity', 'The Master', 'TMSJ', 'CCEL', 'GTY', 'JETS', 'PRDL'
+    ];
+    return allowed.some(x => fragment.includes(x));
+  }
+  function isLikelyEnglishSourceTitle(fragment) {
+    const clean = stripHtmlLite(fragment)
+      .replace(/[’']/g, '')
+      .replace(/[?!.:;,()\[\]—–-]/g, ' ')
+      .replace(/\s+/g, ' ')
+      .trim();
+    const words = clean.match(/[A-Za-z]+/g) || [];
+    if (words.length < 3) return false;
+    const small = new Set(['a','an','and','as','at','be','by','for','from','in','into','of','on','or','the','to','with','without','is']);
+    let ok = 0;
+    for (const w of words) {
+      if (small.has(w.toLowerCase()) || /^[A-Z][A-Za-z]*$/.test(w) || /^[A-Z]{2,}$/.test(w)) ok += 1;
+    }
+    return ok / words.length >= 0.85;
+  }
+  function hasEnglishDirectQuote(fragment) {
+    const clean = stripHtmlLite(fragment);
+    const latinWords = clean.match(/[A-Za-z]{4,}/g) || [];
+    if (latinWords.length < 3) return false;
+    if (isAllowedEnglishQuoteFragment(clean)) return false;
+    if (isLikelyEnglishSourceTitle(clean)) return false;
+    return true;
+  }
+  const quoteRe = /[«“]([^»”]{0,260}[A-Za-z]{4,}[^»”]{0,260})[»”]/g;
+  const bibliographicLineRe = /(href=|src=|<meta\b|<link\b|rel=|property=|content=|reading-list|sources-list|rl-author|font-mono|sourceRef|data-pagefind|Источник:|Оригинал|Примечание к сноскам|Библиография|Источники|<cite\b)/i;
+  let bad = 0;
+  function checkText(label, text) {
+    for (const m of String(text || '').matchAll(quoteRe)) {
+      const fragment = stripHtmlLite(String(m[1] || '')).trim();
+      if (hasEnglishDirectQuote(fragment)) {
+        bad += 1;
+        R.err(`Russian quote policy violation in ${label}: «${fragment.slice(0, 100)}»`);
+      }
+    }
+  }
+  function walkStrings(label, value) {
+    if (typeof value === 'string') checkText(label, value);
+    else if (Array.isArray(value)) value.forEach(v => walkStrings(label, v));
+    else if (value && typeof value === 'object') Object.values(value).forEach(v => walkStrings(label, v));
+  }
+
+  for (const file of htmlFiles) {
+    if (!file.startsWith('articles/') && !file.startsWith('nagornaya/')) continue;
+    const html = read(file);
+    const body = (html.match(/<body\b[^>]*>([\s\S]*?)<\/body>/i)?.[1] || html)
+      .replace(/<script\b[\s\S]*?<\/script>/gi, '')
+      .replace(/<style\b[\s\S]*?<\/style>/gi, '')
+      .replace(/<svg\b[\s\S]*?<\/svg>/gi, '')
+      .replace(/<span[^>]*class=["'][^"']*tooltip[^"']*["'][^>]*>[\s\S]*?<\/span>/gi, '');
+    body.split(/\n/).forEach((line, idx) => {
+      if (bibliographicLineRe.test(line)) return;
+      checkText(`${file}:L${idx + 1}`, line.replace(/<[^>]+>/g, ' '));
+    });
+    const cfg = extractSiteConfig(html, file);
+    if (cfg && cfg.quiz) walkStrings(`${file}:SITE_CONFIG.quiz`, cfg.quiz);
+  }
+  if (!bad) R.ok('Russian quote policy passed: no English direct quotes in reader-facing Russian text');
+})();
+
 (function attributionGuard() {
   let bad = 0;
   for (const p of htmlPages) {
