@@ -284,3 +284,21 @@ node scripts/audit-pro.js
 - `articles/dzhon-gill-spravochnik/` — расширен блок полных текстов Гилла: добавлены прямые Internet Archive ссылки на `The Doctrine of the Trinity` (1731), `A Dissertation Concerning the Antiquity of the Hebrew-Language...` (1767) и `A Body of Practical Divinity` (1770).
 
 Все добавленные в этом проходе ключевые новые ссылки вручную проверены на доступность: GTY, Ligonier, TMSJ PDF, JETS PDF и Internet Archive отвечают 200.
+
+---
+
+## 10. Дополнение после общего внешнего link-аудита
+
+Выполнен общий внешний link-аудит всех HTML-страниц сайта: найдено 111 уникальных внешних URL.
+
+Результат:
+
+- Реальных 404 после текущих правок не найдено.
+- Остались только ответы, похожие на антибот/метод-защиту, а не битые ссылки:
+  - Brill — `405 Method Not Allowed` на HEAD/автоматический запрос;
+  - Wiley — `403 Forbidden`;
+  - SBTS repository — `403 Forbidden`;
+  - London Lyceum — ранее давал `403` на бот-запросы.
+- Ключевые новые ссылки третьего прохода проверены вручную: GTY, Ligonier, TMSJ PDF, JETS PDF, Internet Archive — `200`.
+
+Дополнительно усилена статья-перевод Abner Chou: в блок источника добавлено пояснение, что нумерованные сноски следуют аппарату оригинальной статьи TMSJ, а переводческие пояснения отмечены отдельно; добавлена библиографическая ссылка на книгу Chou `The Hermeneutics of the Biblical Writers` (Kregel Academic, 2018).
