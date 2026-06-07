@@ -106,6 +106,9 @@ async function auditPage(browser, urlPath, vp) {
         hOverflow: null,
         brokenImgs: [],
         badText: [],
+        ambientPhrases: 0,
+        fcControlsH: null,
+        bioCoverMissing: false,
         invisibleText: [],
         emptyHeadings: [],
         ariaIssues: [],
@@ -249,6 +252,21 @@ async function auditPage(browser, urlPath, vp) {
         }
       });
 
+
+      // ── REGRESSION GUARDS ─────────────────────────────
+      // 1. Ambient phrases (home page only)
+      const phrases = document.querySelectorAll('.h-phrase');
+      out.ambientPhrases = phrases.length;
+      
+      // 2. FC controls height (must be compact pill, < 100px)
+      const fc = document.getElementById('gbFloatingControls');
+      if (fc) out.fcControlsH = Math.round(fc.getBoundingClientRect().height);
+      
+      // 3. bio-cover on gill chast-1 (only check if on that page)
+      if (location.pathname.includes('dzhon-gill-chast-1')) {
+        out.bioCoverMissing = !document.querySelector('.bio-cover');
+      }
+
       return out;
     });
 
@@ -268,6 +286,19 @@ async function auditPage(browser, urlPath, vp) {
     findings.badText.forEach((b) =>
       bugs.push({ severity: 'HIGH', page: urlPath, viewport: vp.name, kind: 'bad-text', detail: `${b.tag}: ${b.sample}` })
     );
+    // Regression guard bugs
+    if (urlPath === '/' && findings.ambientPhrases === 0) {
+      bugs.push({ severity: 'CRITICAL', page: urlPath, viewport: vp.name, kind: 'ambient-phrases-missing',
+        detail: 'Home page ambient phrases (names of God) count = 0 — guard failed!' });
+    }
+    if (findings.fcControlsH !== null && findings.fcControlsH > 110) {
+      bugs.push({ severity: 'HIGH', page: urlPath, viewport: vp.name, kind: 'fc-controls-too-tall',
+        detail: `Floating controls height=${findings.fcControlsH}px, expected ≤ 110px (compact pill)` });
+    }
+    if (findings.bioCoverMissing) {
+      bugs.push({ severity: 'HIGH', page: urlPath, viewport: vp.name, kind: 'bio-cover-missing',
+        detail: 'bio-cover 16:9 block missing from Gill chast-1 article' });
+    }
     findings.invisibleText.forEach((b) =>
       bugs.push({ severity: 'MEDIUM', page: urlPath, viewport: vp.name, kind: 'invisible-text', detail: JSON.stringify(b) })
     );
