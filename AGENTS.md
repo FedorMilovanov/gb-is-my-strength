@@ -616,3 +616,43 @@ Precache список — в самом `sw.js`. При добавлении н�
 > **Если правило кажется глупым — спроси, ПОЧЕМУ оно появилось.**
 > Большинство «странных» правил появилось после реальных регрессий.
 > Прежде чем менять контракт — открой `AUDIT_HISTORY.md`.
+
+
+---
+
+## 9. Железобетонные UI-правила (НИКОГДА не нарушать)
+
+### 9.1 Имена Бога на главной странице
+- `js/enhancements.js` содержит блок ambient-фраз (35 фраз: иврит/греческий/латинский)
+- **Страж запуска**: `if (!document.getElementById('hScriptureBg')) return;`  
+- НЕ менять на проверку `.h-phrase--ambient` — элемента в статическом HTML нет
+- При любых правках `js/enhancements.js` — проверить что `document.querySelectorAll('.h-phrase').length === 35`
+
+### 9.2 FC-controls (плавающие кнопки тема/поиск)
+- Компактный пилл-контейнер с `backdrop-filter`, `border-radius:24px`, `padding:3px`
+- Кнопки `36x36px`, NO `border-radius:50%`, NO `background-color` на hover
+- Hover: ТОЛЬКО `transform:translateY(-2px)` — никаких кругов, никакого фона
+- Высота контейнера ≤ 110px (две кнопки + padding)
+- Класс `.gb-floating-controls` в `css/site.css`
+
+### 9.3 bio-cover в статьях о Гилле
+- `articles/dzhon-gill-chast-1-chelovek/index.html` ДОЛЖЕН содержать `.bio-cover` с изображением `gill-portret-full-study`
+- Это 16:9 "Гилл за письменным столом" — НЕ city-view, НЕ portrait 3:4
+- `aspect-ratio` в `.bio-cover` = `16/9` (не 21/9)
+
+### 9.4 Карточки-thumbnails серии Гилла на главной
+- Часть 1 (`dzhon-gill-chast-1`): thumbnail = `gill-portret-full-study` (широкоформатный)
+- НЕ использовать `og-dzhon-gill-chast-1-chelovek` (показывает город, а не Гилла)
+
+### 9.5 Запрет дублирования контента
+- В `chast-1` — НЕ должно быть двух одинаковых портретов Гилла
+- `biography-portrait` (малый 3:4) в шапке — оставить
+- `float-left article-img` с тем же портретом — УДАЛИТЬ (дублируется bio-cover)
+
+### 9.6 Playwright-регрессионные проверки
+`scripts/visual-audit.js` содержит автоматические проверки:
+- `ambientPhrases === 0` на `/` → CRITICAL bug
+- `fcControlsH > 110` → HIGH bug  
+- `.bio-cover` отсутствует на gill chast-1 → HIGH bug
+
+Запуск перед каждым коммитом: `npm run validate:all && node scripts/audit-pro.js`
