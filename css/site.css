@@ -56,3 +56,46 @@ html.dark .fn-marker--dove>.fn-dove-icon{color:#6aa6d9;filter:drop-shadow(0 0 4p
 @media (hover:hover) and (pointer:fine){.fn-marker--dove:hover::before{transform:translateY(-1px) scale(1.08)}.fn-marker--dove:hover>.fn-dove-icon,.fn-marker--dove:focus-visible>.fn-dove-icon{transform:translateY(-1px) scale(1.08)}.fn-marker--dove:hover .fn-dove-wing,.fn-marker--dove:focus-visible .fn-dove-wing{animation:fn-dove-flap 1.05s cubic-bezier(.4,0,.3,1) 1}}
 @keyframes fn-dove-flap{0%{transform:rotate(0deg)}18%{transform:rotate(11deg)}38%{transform:rotate(-9deg)}58%{transform:rotate(8deg)}78%{transform:rotate(-5deg)}100%{transform:rotate(0deg)}}
 @media (prefers-reduced-motion:reduce){.fn-marker--dove:hover .fn-dove-wing,.fn-marker--dove:focus-visible .fn-dove-wing{animation:none}}
+
+/* ===== tooltip hardening (flat, depth-0) — fixes buried-nesting bugs (2026-06-08) =====
+   Root cause: base .tooltip/.gtip/.btip and .gb-floating-tip card rules live deep in
+   unclosed @media nesting in this file, so on desktop at-rest tooltips render full-width
+   (horizontal overflow) and OPENED tooltips lose both their width clamp AND their card
+   background/border/shadow. These flat rules apply reliably at cascade depth 0. */
+/* 1) At rest (not promoted by the JS controller): out of flow, zero footprint. */
+.fn-marker .tooltip:not(.gb-floating-tip),
+.gterm .gtip:not(.gb-floating-tip),
+.bref .btip:not(.gb-floating-tip){
+  position:absolute;left:-9999px;top:auto;width:1px;height:1px;max-width:1px;
+  overflow:hidden;opacity:0;pointer-events:none;clip:rect(0 0 0 0);
+}
+/* 2) Promoted/opened by the controller: premium floating card, clamped, on-screen. */
+.gb-floating-tip{
+  position:fixed;left:auto;top:auto;clip:auto;
+  width:min(360px,calc(100vw - 32px));max-width:calc(100vw - 32px);
+  height:auto;max-height:min(70vh,560px);overflow:auto;
+  padding:16px 18px 18px;border-radius:22px;
+  background:rgba(255,253,250,.988);color:#1d1711;
+  border:1px solid rgba(20,61,99,.10);
+  box-shadow:0 18px 50px -18px rgba(20,31,45,.28),0 3px 12px rgba(20,31,45,.08),inset 0 1px 0 rgba(255,255,255,.68);
+  -webkit-backdrop-filter:blur(18px) saturate(160%);backdrop-filter:blur(18px) saturate(160%);
+  font-family:'Source Sans 3',system-ui,sans-serif;font-size:14px;line-height:1.58;font-weight:400;
+  text-align:left;overflow-wrap:break-word;hyphens:none;
+}
+html.dark .gb-floating-tip{
+  background:rgba(28,29,33,.988);color:var(--color-text,#ece7dd);
+  border-color:rgba(106,166,217,.18);
+  box-shadow:0 18px 50px -18px rgba(0,0,0,.62),0 3px 12px rgba(0,0,0,.28),inset 0 1px 0 rgba(255,255,255,.08);
+}
+
+/* ===== narrow-screen overflow fixes (flat, depth-0) — found via Playwright visual-audit ===== */
+@media (max-width:480px){
+  /* series-nav uses negative side margins for full-bleed; clamp so it never exceeds viewport */
+  section.series-nav{margin-left:0;margin-right:0}
+}
+/* Long-text pills in nagornaya comparison rows: allow them to shrink/wrap instead of overflowing */
+@media (max-width:560px){
+  .flex.items-start.justify-between span.shrink-0{
+    min-width:0;white-space:normal;overflow-wrap:anywhere;flex-shrink:1;
+  }
+}

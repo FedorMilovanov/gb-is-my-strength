@@ -9,6 +9,7 @@
 
 | Версия документа | Дата | Состояние |
 |---|---|---|
+| **AGENTS-r70** | 2026-06-08 | Browser-QA проход (Playwright/Chromium). Исправлены реальные баги, найденные `visual-audit`: (1) 36 незакрытых `<span>`-маркеров и 6 «eyebrow»-лейблов в `20-antisovetov-pastoru` ломали вёрстку (paragraphs становились flex-детьми → horizontal-overflow); (2) тултипы на десктопе теряли width-clamp и фон-карточку (правила погребены во вложенности) — добавлен плоский tooltip-hardening блок на глубине 0; (3) overflow `series-nav` (negative margins) и nagornaya `shrink-0` pills на узких экранах; (4) ложный low-contrast на `.h-featured-series`. `visual-audit`: 8 → 0 raw bugs. !important без изменений (270). |
 | **AGENTS-r69** | 2026-06-08 | Голубь-сноска `.fn-marker--dove` обновлён (новый премиум-силуэт, hover-взмах крыла), мёртвый inline `fn-dove-icon` удалён из HTML. В `audit-pro` добавлены guard-проверки: авто-потолок `!important` (`IMPORTANT_CEIL`), целостность dove-маркеров. site.css `!important` 295→270. Проверок теперь 38. |
 | **AGENTS-r68** | 2026-06-06 | Добавлен `docs/EDITORIAL-SOURCE-POLICY.md` и ссылки на него; актуализировано число проверок `audit-pro` до 36. |
 | AGENTS-r67 | 2026-06-06 | Добавлен технический guard в `validate.js` и `audit-pro.js`: английские прямые цитаты в русских статьях блокируются проверками. |
@@ -390,6 +391,11 @@ CSS-фичи, не поддерживаемые в этих версиях (`col
    только `@media (hover:hover) and (pointer:fine)`, отключается при `prefers-reduced-motion`).
    ❌ Не возвращать инлайновый `<svg class="fn-dove-icon">` в HTML статей — JS инжектит его сам
    (audit-pro это проверяет и упадёт).
+   ⚠️ **Все inline-маркеры закрывай явно** (`<span ...></span>`). `.fn-marker--dove` —
+   `display:inline-flex`; незакрытый `<span>` «проглатывает» следующие `<p>/<h4>`, делая их
+   flex-детьми → горизонтальный overflow. То же с «eyebrow»-лейблами `<span style="display:inline-flex">`.
+   После правок контента/CSS прогоняй **visual-audit** (Playwright) — он ловит overflow и контраст:
+   `python3 -m http.server 8080 & ; sudo npx playwright install-deps chromium ; AUDIT_BASE=http://127.0.0.1:8080 npm run visual-audit` → должно быть `0 raw bugs`.
 
 8. **CSS-переменные — не объявлять «про запас».** Объявленная в `:root` переменная без `var(--...)` нигде = мёртвый код, удалить.
 
