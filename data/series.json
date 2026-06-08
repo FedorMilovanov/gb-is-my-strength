@@ -2,23 +2,96 @@
   "nagornaya": {
     "title": "Нагорная проповедь",
     "parts": [
-      { "n": 1, "slug": "chast-1", "title": "Содержание",       "status": "published", "readingTime": 25 },
-      { "n": 2, "slug": "chast-2", "title": "Методология",      "status": "published", "readingTime": 22 },
-      { "n": 3, "slug": "chast-3", "title": "Адресат",          "status": "published", "readingTime": 24 },
-      { "n": 4, "slug": "chast-4", "title": "Богодухновенность","status": "published", "readingTime": 28 },
-      { "n": 5, "slug": "chast-5", "title": "Закон и Евангелие","status": "published", "readingTime": 23 }
-    ]
+      {
+        "n": 1,
+        "slug": "chast-1",
+        "title": "Содержание",
+        "status": "published",
+        "readingTime": 25
+      },
+      {
+        "n": 2,
+        "slug": "chast-2",
+        "title": "Методология",
+        "status": "published",
+        "readingTime": 22
+      },
+      {
+        "n": 3,
+        "slug": "chast-3",
+        "title": "Адресат",
+        "status": "published",
+        "readingTime": 24
+      },
+      {
+        "n": 4,
+        "slug": "chast-4",
+        "title": "Богодухновенность",
+        "status": "published",
+        "readingTime": 28
+      },
+      {
+        "n": 5,
+        "slug": "chast-5",
+        "title": "Закон и Евангелие",
+        "status": "published",
+        "readingTime": 23
+      }
+    ],
+    "baseUrl": "/nagornaya/"
   },
-
   "dzhon-gill": {
     "title": "Джон Гилл (1697–1771)",
     "baseUrl": "/articles/",
     "parts": [
-      { "n": 1, "slug": "dzhon-gill-istoricheskiy-kontekst", "title": "Исторический контекст",    "status": "published", "readingTime": 12 },
-      { "n": 2, "slug": "dzhon-gill-chast-1-chelovek",        "title": "Часть I. Человек",         "status": "published", "readingTime": 28 },
-      { "n": 3, "slug": "dzhon-gill-chast-2-uchenyi",         "title": "Часть II. Учёный",         "status": "published", "readingTime": 22 },
-      { "n": 4, "slug": "dzhon-gill-chast-3-nasledie",        "title": "Часть III. Наследие",      "status": "published", "readingTime": 24 },
-      { "n": 5, "slug": "dzhon-gill-spravochnik",             "title": "Справочник по Гиллу",      "status": "published", "readingTime": 18 }
+      {
+        "n": 1,
+        "slug": "dzhon-gill-istoricheskiy-kontekst",
+        "title": "Исторический контекст",
+        "status": "published",
+        "readingTime": 12
+      },
+      {
+        "n": 2,
+        "slug": "dzhon-gill-chast-1-chelovek",
+        "title": "Часть I. Человек",
+        "status": "published",
+        "readingTime": 28
+      },
+      {
+        "n": 3,
+        "slug": "dzhon-gill-chast-2-uchenyi",
+        "title": "Часть II. Учёный",
+        "status": "published",
+        "readingTime": 22
+      },
+      {
+        "n": 4,
+        "slug": "dzhon-gill-chast-3-nasledie",
+        "title": "Часть III. Наследие",
+        "status": "published",
+        "readingTime": 24
+      },
+      {
+        "n": 5,
+        "slug": "dzhon-gill-spravochnik",
+        "title": "Справочник по Гиллу",
+        "status": "published",
+        "readingTime": 18
+      }
+    ]
+  },
+  "pastor-series": {
+    "title": "Тёмная сторона кафедры",
+    "baseUrl": "/articles/",
+    "parts": [
+      {
+        "n": 1,
+        "slug": "20-antisovetov-pastoru",
+        "title": "20 антисоветов пастору",
+        "status": "published",
+        "readingTime": 25
+      }
     ]
   }
 }
