@@ -74,10 +74,46 @@
     host.classList.add("gb-strip");
     host.setAttribute("role", "navigation");
     host.setAttribute("aria-label", "Навигация по серии " + info.title);
+    // Build dropdown content
+    var dropdownItems = info.parts.map(function (p, i) {
+      var u = urlFor(base, p.slug);
+      var here = i === currentIdx;
+      var num = p.n || (i + 1);
+      var meta = p.readingTime ? ' · ' + esc(p.readingTime) + ' мин' : '';
+      var inner = '<span class="gb-strip-dd__num">' + esc(num) + '</span><span class="gb-strip-dd__body"><span class="gb-strip-dd__title">' + esc(p.title) + '</span><span class="gb-strip-dd__meta">' + meta + '</span></span>';
+      return here
+        ? '<li class="gb-strip-dd__item is-current"><span class="gb-strip-dd__link" aria-current="page">' + inner + '</span></li>'
+        : '<li class="gb-strip-dd__item"><a class="gb-strip-dd__link" href="' + esc(u) + '">' + inner + '</a></li>';
+    }).join('');
+    var dropdown = '<div class="gb-strip__dropdown" hidden><ol class="gb-strip-dd__list">' + dropdownItems + '</ol></div>';
+
     host.innerHTML =
       prevHtml +
-      '<div class="gb-strip__center"><div class="gb-strip__series">' + esc(info.title) + '</div><div class="gb-strip__dots">' + dots + '</div></div>' +
+      '<div class="gb-strip__center"><button type="button" class="gb-strip__toggle" aria-expanded="false" aria-label="Показать все части серии"><div class="gb-strip__series">' + esc(info.title) + ' <svg class="gb-strip__chevron" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M6 9l6 6 6-6"/></svg></div><div class="gb-strip__dots">' + dots + '</div></button>' + dropdown + '</div>' +
       nextHtml;
+
+    // Add click handler for dropdown toggle
+    var toggleBtn = host.querySelector('.gb-strip__toggle');
+    var dd = host.querySelector('.gb-strip__dropdown');
+    if (toggleBtn && dd) {
+      toggleBtn.addEventListener('click', function (ev) {
+        ev.stopPropagation();
+        var open = dd.hidden;
+        dd.hidden = !open;
+        toggleBtn.setAttribute('aria-expanded', String(open));
+        if (open) {
+          // Close on outside click
+          var closeHandler = function (e) {
+            if (!host.contains(e.target)) {
+              dd.hidden = true;
+              toggleBtn.setAttribute('aria-expanded', 'false');
+              document.removeEventListener('click', closeHandler);
+            }
+          };
+          setTimeout(function () { document.addEventListener('click', closeHandler); }, 0);
+        }
+      });
+    }
   }
 
   function renderNav(host, key, data) {
