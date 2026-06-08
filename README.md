@@ -469,6 +469,10 @@ bookmarks: {
 - `<span class="gterm" tabindex="0">термин<span class="gtip">Определение…</span></span>` — глоссарий
 - `.fn-marker > .tooltip` — академические сноски
 - `<button class="bref" data-ref="Иер 17:9"><span class="btip">…</span></button>` — Библейские ссылки
+- **`.fn-marker--dove`** — вариант сноски с иконкой голубя (не отдельный тип tooltip). Глиф —
+  inline-SVG, инжектится `js/site.js` (`e()`); тело `.fn-dove-body` + крыло `.fn-dove-wing`,
+  которое машет на hover (desktop + мышь, с учётом `prefers-reduced-motion`). `::before` —
+  статический no-JS фолбэк. Инлайновый `<svg class="fn-dove-icon">` в HTML не нужен.
 
 ### Quiz Engine v3
 `#quizWrapper`, `#quizMain`, `#quizBody`, `#quizCounter`, `#quizQuestion`, `#quizFocus`, `#quizOptions`, `#quizFeedback`, `#quizNext`, `#quizFill`, `#quizResult`, `#quizResultScore`, `#quizResultTotal`, `#quizResultLabel`, `#quizResultBar`, `#quizScoreDesc`, `#quizScore`, `#quizScoreTitle`, `#quizScoreBadge`, `#quizRestart`, `#quizShare`, `#quizOverlay`, `#quizLaunch`
