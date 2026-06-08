@@ -402,6 +402,49 @@ function extractSiteConfig(html, fileLabel) {
   if (!metaIssues) R.ok('OpenGraph / article singleton meta uniqueness passed');
 })();
 
+// 5b. SITE_CONFIG runtime contract — mirrors the live js/site.js validator (see js/site.js
+// "[SITE_CONFIG contract]"). Catches breakage statically before pages reach Playwright.
+(function siteConfigContractGuard() {
+  let contractIssues = 0;
+  for (const p of htmlPages) {
+    const file = rel(p);
+    const html = read(file);
+    if (!html.includes('window.SITE_CONFIG')) continue;
+    const cfg = extractSiteConfig(html, file);
+    if (!cfg) continue;
+    const missing = [];
+    function need(pathStr, type) {
+      const segs = pathStr.split('.');
+      let cur = cfg;
+      for (const seg of segs) {
+        if (cur == null || typeof cur !== 'object' || !(seg in cur)) {
+          missing.push(`${pathStr} отсутствует`);
+          return;
+        }
+        cur = cur[seg];
+      }
+      if (type && typeof cur !== type) missing.push(`${pathStr} должен быть ${type}`);
+    }
+    need('site.name', 'string');
+    need('site.baseUrl', 'string');
+    need('site.locale', 'string');
+    need('page.type', 'string');
+    need('page.id', 'string');
+    need('page.title', 'string');
+    if (cfg.page && cfg.page.type === 'article' && cfg.page.id && !/^[a-z0-9-]+$/.test(cfg.page.id)) {
+      missing.push('page.id статьи должен быть slug-like');
+    }
+    if (cfg.features && cfg.features.quiz && cfg.features.quiz.enabled) {
+      if (!cfg.quiz || !Array.isArray(cfg.quiz.questions)) missing.push('features.quiz.enabled=true требует quiz.questions[]');
+    }
+    if (missing.length) {
+      contractIssues++;
+      R.err(`SITE_CONFIG contract violated in ${file}: ${missing.join(', ')}`);
+    }
+  }
+  if (!contractIssues) R.ok('SITE_CONFIG runtime contract passed across HTML pages');
+})();
+
 // 6. JSON validity
 (function jsonValidity() {
   const jsonFiles = allFiles.filter(p => p.endsWith('.json')).map(rel).sort();
