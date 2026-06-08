@@ -62,7 +62,7 @@
     pop.style.visibility='';
   }
   function schedule(a){last=a||last;[0,60,180,360].forEach(function(ms){setTimeout(function(){place(active(),last)},ms)})}
-  document.addEventListener('click',function(e){var a=e.target&&e.target.closest&&e.target.closest('.map-trigger,.info-badge'); if(a)schedule(a)},true);
+  document.addEventListener('click',function(e){var a=e.target&&e.target.closest&&e.target.closest('.map-trigger'); if(a)schedule(a)},true);
   new MutationObserver(function(){if(last)schedule(last)}).observe(document.documentElement,{subtree:true,attributes:true,attributeFilter:['class','style']});
   addEventListener('resize',function(){schedule(last)},{passive:true}); addEventListener('scroll',function(){schedule(last)},{passive:true});
 })();
