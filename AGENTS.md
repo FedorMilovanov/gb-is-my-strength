@@ -9,7 +9,9 @@
 
 | Версия документа | Дата | Состояние |
 |---|---|---|
-| **AGENTS-r72** | 2026-06-08 | User-reported visual regression pass II (Arena Agent). Перевод 31 ambient-фразы на главной (Solus Christus → «Только Христос», Dominus illuminatio mea → «Господь — свет мой», Ego sum via veritas et vita → «Я есмь путь и истина и жизнь» и т.д.) + источник под подписью (`.h-phrase-source`, минималистично, мелким шрифтом, появляется на hover без перекрытия). Заменена вторая картинка Уайтфилда в `dzhon-gill-istoricheskiy-kontekst` (была визуально дубликатом первой) на новую Kennington Common ~1739. Порядок Гилла на `/biografii/`: [контекст, ч.1, ч.2, ч.3, справочник]. Порядок на `/articles/`: контекст → справочник. Введён 2-колоночный grid `.h-article-list--grid` для одиночных статей (компактнее при росте каталога). Удалены inline `padding-top:0` overrides — секция «Разбор заблуждений» больше не упирается в предыдущую. |
+| **AGENTS-r74** | 2026-06-08 | User-reported regression pass III. Восстановлен **анимированный голубь с махающим крылом** (`.fn-marker--dove::before` + JS-inject `.fn-dove-body` + `.fn-dove-wing` + `@keyframes fn-dove-flap`) — был случайно откатан r71 на статичный FA-голубь. Возвращена картинка `whitefield-preaching` (вторая в `/articles/dzhon-gill-istoricheskiy-kontekst/`) — мой Kennington Common был хуже оригинала. Удалены сгенерированные мной файлы `images/whitefield-kennington-common-*` (8 файлов). **Картинка `gill-library-shelf` перенесена** из позиции «впритык после whitefield-field» в Section I после первого параграфа — теперь между ними есть текст. **Удалён `article-topnav`** (sticky шапка при скролле статей) из всех 8 статей — пользователь его не хочет. Чёткое правило: **theme-toggle / search-icon = ЧИСТЫЙ SVG БЕЗ КРУЖОЧКОВ / РАМОК / БЭКГРАУНДА** (см. §9.7). Убран `opacity:.86!important` из `mobile-hotfix.css` который вызывал двойное наложение sun+moon при переключении темы. Убран pill-фон `.gb-fc-btn` (был border + background + box-shadow) — теперь чисто SVG. Добавлен preload для Inter-600 и Playfair-700 — FOUC на «АВВАКУМ 3:19» исчезает. Цвет hover-заголовка `.h-article-title` в тёмной теме изменён с розового `--h-accent` (#d97a6c) на золотистый `#e8c97a`. Восстановлен margin-bottom 24px на `.context-bridge` (был встык со следующим `<p>`). Починен summary-card grid (3 варианта: только-num / check+num) — текст больше не сжимается в 60px. SITE_CONFIG contract guard добавлен в `audit-pro`. **!important** в site.css: 196 (≤200 ✅). |
+| **AGENTS-r73** | 2026-06-08 | User-reported quality pass. Восстановлен `window.SITE_CONFIG` контракт на 3 страницах (kontekst/spravochnik: `base:` → `site:`; rim7: добавлен `site:` блок). Topnav layout исправлен: `.article-topnav-title` получил `margin:0 auto;padding:0 16px` чтобы корректно центрироваться между home-ссылкой и search-кнопкой (было: «Сила МояДжон Гилл» слитно). Закрыты `</span>` на 6 файлах. nag-summary внутри indigo/teal hero получил светлый текст (читабельный контраст). Добавлена `audit-pro` проверка SITE_CONFIG runtime contract (46 проверок). |
+| AGENTS-r72 | 2026-06-08 | User-reported visual regression pass II (Arena Agent). Перевод 31 ambient-фразы на главной (Solus Christus → «Только Христос», Dominus illuminatio mea → «Господь — свет мой», Ego sum via veritas et vita → «Я есмь путь и истина и жизнь» и т.д.) + источник под подписью (`.h-phrase-source`, минималистично, мелким шрифтом, появляется на hover без перекрытия). Заменена вторая картинка Уайтфилда в `dzhon-gill-istoricheskiy-kontekst` (была визуально дубликатом первой) на новую Kennington Common ~1739. Порядок Гилла на `/biografii/`: [контекст, ч.1, ч.2, ч.3, справочник]. Порядок на `/articles/`: контекст → справочник. Введён 2-колоночный grid `.h-article-list--grid` для одиночных статей (компактнее при росте каталога). Удалены inline `padding-top:0` overrides — секция «Разбор заблуждений» больше не упирается в предыдущую. |
 | **AGENTS-r71** | 2026-06-08 | CRITICAL fix: предыдущий `49882d9 «balance 151 unclosed braces»` восстановил счёт `{}`, но в неверных позициях. site.css парсился как 1 top-level правило с 19 cssRules вместо ~1222 — половина страниц рендерилась без основного CSS, шрифт падал в Times New Roman, share-кнопки раздувались. Восстановлен чистый baseline `32e8c63` (1703/1703 braces, 194 !important — снова в рамках PLAN-04 ≤200) + аккуратно дополнен финальным dove-маркером. В `audit-pro` уже есть структурный guard CSS-braces (от r71) — теперь сработает при любой подобной регрессии. |
 | AGENTS-r70 | 2026-06-08 | Browser-QA проход (Playwright/Chromium). Исправлены реальные баги, найденные `visual-audit`: (1) 36 незакрытых `<span>`-маркеров и 6 «eyebrow»-лейблов в `20-antisovetov-pastoru` ломали вёрстку (paragraphs становились flex-детьми → horizontal-overflow); (2) тултипы на десктопе теряли width-clamp и фон-карточку (правила погребены во вложенности) — добавлен плоский tooltip-hardening блок на глубине 0; (3) overflow `series-nav` (negative margins) и nagornaya `shrink-0` pills на узких экранах; (4) ложный low-contrast на `.h-featured-series`. `visual-audit`: 8 → 0 raw bugs. !important без изменений (270). |
 | **AGENTS-r69** | 2026-06-08 | Голубь-сноска `.fn-marker--dove` обновлён (новый премиум-силуэт, hover-взмах крыла), мёртвый inline `fn-dove-icon` удалён из HTML. В `audit-pro` добавлены guard-проверки: авто-потолок `!important` (`IMPORTANT_CEIL`), целостность dove-маркеров. site.css `!important` 295→270. Проверок теперь 38. |
@@ -691,3 +693,29 @@ Precache список — в самом `sw.js`. При добавлении н�
 - `.bio-cover` отсутствует на gill chast-1 → HIGH bug
 
 Запуск перед каждым коммитом: `npm run validate:all && node scripts/audit-pro.js`
+
+### 9.7 Theme-toggle / search-icon — ЧИСТЫЙ SVG БЕЗ РАМОК
+**Никогда не добавлять** `background`, `border`, `border-radius`, `box-shadow`, `backdrop-filter` к иконкам переключения темы и поиска. Это:
+- `.theme-toggle` (absolute, в статьях)
+- `.gb-fc-theme`, `.gb-fc-search` (FAB, `js/site.js` модуль 29)
+- `.h-cp-btn`, `.gb-nav-search-icon` (в шапке home)
+- `.bar-icon-btn` (bottom-bar, mobile)
+
+Должно быть: **только сам SVG** (stroke=currentColor), `background:transparent`, `border:none`, никаких pill/circle обводок. Hover-эффект только `transform:translateY(-2px) scale(1.08)` + изменение `color`, без opacity-флипа (иначе оба `.icon-sun` и `.icon-moon` могут показаться одновременно — баг от 2026-06-08).
+
+**Исключение:** серия «Нагорная проповедь» (`body.nagornaya-page`) — там своя система с Tailwind-классами, не трогать.
+
+### 9.8 article-topnav — УДАЛЁН
+Sticky шапка `.article-topnav` (показывалась при скролле статьи с «← Господь Бог — Сила Моя | TITLE | поиск») **удалена из всех 8 статей** по запросу владельца 2026-06-08. **Не возвращать.** Хлебных крошек (`.breadcrumb`) достаточно для навигации.
+
+CSS-правила `.article-topnav*` пока остаются в site.css как dead code (для возможного восстановления). При полной чистке можно удалить через PLAN; до этого не реанимировать в HTML.
+
+### 9.9 Hover на ссылках-карточках в тёмной теме — НЕ розовый
+`.h-article-card:hover .h-article-title` в светлой теме = `--h-accent` (#8b2626 темно-красный — ок). В **тёмной** теме `--h-accent` = #d97a6c — это **розово-красный**, плохо контрастирующий с золотисто-палевым телом. Поэтому в `html.dark` hover-цвет переопределён на **золотистый `#e8c97a`** (`css/home.css`). Не возвращать на `var(--h-accent)`.
+
+### 9.10 FOUC шрифтов на главной
+Кроме `Lora-cyrillic-400`, **обязательно preload** для:
+- `Inter-cyrillic-600` (используется в `.h-sacred-ref` — «АВВАКУМ 3:19»)
+- `PlayfairDisplay-cyrillic-700` (используется в `.h-section-title`, hero и др.)
+
+Иначе виден FOUC: сначала рендерится fallback Times New Roman, потом подмена. Это видно на главной при перезагрузке.
