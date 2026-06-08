@@ -119,3 +119,7 @@ a.gb-strip-dd__link:hover{background:color-mix(in srgb,var(--accent) 10%,transpa
 .gtip.gb-floating-tip .gtip-luxury{overflow:visible}
 .gtip-luxury__definition{overflow:visible;max-height:none}
 .gtip-luxury__body{overflow:visible}
+
+/* Disable floating glossary tooltips inside summary-card — too distracting */
+.summary-card .gterm{pointer-events:none;cursor:default;text-decoration:underline;text-decoration-style:dotted;text-underline-offset:3px}
+.summary-card .gterm .gtip{display:none}
