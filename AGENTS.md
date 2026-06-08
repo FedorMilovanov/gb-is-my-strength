@@ -661,10 +661,10 @@ Precache список — в самом `sw.js`. При добавлении н�
 ## 9. Железобетонные UI-правила (НИКОГДА не нарушать)
 
 ### 9.1 Имена Бога на главной странице
-- `js/enhancements.js` содержит блок ambient-фраз (35 фраз: иврит/греческий/латинский)
+- `js/enhancements.js` содержит блок ambient-фраз (42 фразы: иврит/греческий/латинский (35 боковых + 7 центральных))
 - **Страж запуска**: `if (!document.getElementById('hScriptureBg')) return;`  
 - НЕ менять на проверку `.h-phrase--ambient` — элемента в статическом HTML нет
-- При любых правках `js/enhancements.js` — проверить что `document.querySelectorAll('.h-phrase').length === 35`
+- При любых правках `js/enhancements.js` — проверить что `document.querySelectorAll('.h-phrase').length >= 35`
 
 ### 9.2 FC-controls (плавающие кнопки тема/поиск)
 - Компактный пилл-контейнер с `backdrop-filter`, `border-radius:24px`, `padding:3px`
