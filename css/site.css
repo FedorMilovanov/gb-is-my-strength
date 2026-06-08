@@ -121,33 +121,29 @@ a.gb-strip-dd__link:hover{background:color-mix(in srgb,var(--accent) 10%,transpa
 .gtip-luxury__body{overflow:visible}
 
 /* Disable floating glossary tooltips inside summary-card — too distracting */
-
-
-
-
-
-/* ── Summary Card — unified minimal style (matches Nagornaya) ── */
-.summary-card{position:relative;margin:clamp(24px,3.5vw,40px) 0;padding:clamp(12px,2vw,18px) clamp(14px,2vw,20px);background:var(--color-surface,#fff);border:1px solid var(--color-border);border-radius:16px;box-shadow:0 1px 4px rgba(28,25,23,.06)}
-html.dark .summary-card{background:var(--color-surface,#1f1a15);border-color:var(--color-border);box-shadow:0 1px 4px rgba(0,0,0,.3)}
-.summary-card__head{color:var(--color-text-muted);padding:0 0 10px 4px;margin:0 0 clamp(10px,1.5vw,16px);font-family:'Source Sans 3',system-ui,sans-serif;font-size:11px;font-weight:700;letter-spacing:.26em;text-transform:uppercase;position:relative;line-height:1.2}
-.summary-card__head::after{content:"";position:absolute;left:4px;bottom:-2px;width:32px;height:2px;background:var(--color-accent);border-radius:2px;opacity:.85}
-.summary-card__body{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:0;counter-reset:summaryitem}
-.summary-card__item{display:flex;align-items:flex-start;gap:12px;padding:clamp(8px,1.2vw,12px) 4px;border-bottom:1px solid color-mix(in srgb,var(--color-border) 40%,transparent);counter-increment:summaryitem}
-.summary-card__item:last-child{border-bottom:none}
-.summary-card__item:hover{background:transparent}
-.summary-card__check{width:22px;height:22px;flex-shrink:0;display:flex;align-items:center;justify-content:center;color:#4a8a4a;margin-top:2px}
-.summary-card__check svg{width:16px;height:16px;stroke:currentColor;stroke-width:2.5;fill:none}
-.summary-card__check:empty::after,.summary-card__check:not(:has(svg))::after{content:"";width:14px;height:8px;border-left:2.5px solid currentColor;border-bottom:2.5px solid currentColor;transform:rotate(-45deg) translateY(-2px)}
-html.dark .summary-card__check{color:#7ac87a}
-.summary-card__num{font-family:'Playfair Display',Georgia,serif;font-weight:600;font-size:clamp(16px,2vw,20px);line-height:1.3;color:#b8860b;min-width:28px;user-select:none}
-html.dark .summary-card__num{color:#e0b157}
-.summary-card__item:not(:has(.summary-card__num))::before{content:counter(summaryitem,decimal-leading-zero);font-family:'Playfair Display',Georgia,serif;font-weight:600;font-size:clamp(16px,2vw,20px);line-height:1.3;color:#b8860b;min-width:28px}
-html.dark .summary-card__item:not(:has(.summary-card__num))::before{color:#e0b157}
-.summary-card__text{font-family:'Source Sans 3',system-ui,sans-serif;font-size:clamp(14px,1.5vw,15px);line-height:1.55;color:var(--color-text);margin:0;flex:1}
-.summary-card__text strong{color:var(--color-accent);font-weight:700}
-html.dark .summary-card__text strong{color:var(--color-accent-strong)}
-.summary-card__text::first-letter{font-size:inherit!important;float:none!important;margin:0!important;color:inherit!important;font-family:inherit!important;font-weight:inherit!important;line-height:inherit!important}
 .summary-card .gterm{pointer-events:none;cursor:default;text-decoration:underline;text-decoration-style:dotted;text-underline-offset:3px}
 .summary-card .gterm .gtip{display:none}
-@media (max-width:560px){.summary-card{padding:12px 10px;border-radius:12px}.summary-card__item{padding:8px 2px;gap:8px}.summary-card__check{width:20px;height:20px}.summary-card__num,.summary-card__item:not(:has(.summary-card__num))::before{font-size:16px;min-width:24px}.summary-card__text{font-size:14px}}
+
+/* ── Summary Card — minimal Nagornaya-matching style ── */
+.summary-card{margin:16px 0;padding:12px 0 0;background:0 0;border:0;border-top:1px solid rgba(120,83,46,.14);border-radius:0;box-shadow:none;overflow:visible}
+html.dark .summary-card{border-top-color:rgba(245,213,166,.16)}
+.summary-card__head{display:block;width:auto;background:0 0;color:#7a2e2e;padding:0;margin:0 0 9px;border:0;font-family:'Source Sans 3',system-ui,sans-serif;font-size:9px;line-height:1.1;letter-spacing:.2em;text-transform:uppercase}
+.summary-card__head::after{display:none}
+html.dark .summary-card__head{color:rgba(245,226,198,.72)}
+.summary-card__body{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:6px}
+.summary-card__item{display:flex;align-items:flex-start;gap:9px;width:100%;padding:0;margin:0;background:0 0;border:0;border-bottom:none;box-shadow:none;color:#4b4036;font-size:13px;line-height:1.48;position:relative}
+.summary-card__item::before{content:none!important;display:none!important}
+.summary-card__item:hover{background:0 0}
+html.dark .summary-card__item{color:rgba(250,243,232,.78)}
+.summary-card__check{display:none}
+.summary-card__num{display:inline-flex;flex:0 0 18px;width:18px;height:18px;min-width:18px;align-items:center;justify-content:center;border-radius:50%;font-family:'Source Sans 3',system-ui,sans-serif;font-size:0;line-height:1;margin-top:1px;background:rgba(116,151,117,.1);border:1px solid rgba(116,151,117,.18);user-select:none}
+.summary-card__num::before{content:"\2713";display:block;font-size:12px;color:#6f9d70}
+html.dark .summary-card__num{background:rgba(122,200,122,.11);border-color:rgba(122,200,122,.24)}
+html.dark .summary-card__num::before{color:#8ed08a}
+.summary-card__text{display:block;flex:1 1 auto;min-width:0;width:auto;max-width:none;margin:0;padding:0;font-family:'Source Sans 3',system-ui,sans-serif;font-size:14px;line-height:1.48;color:#4b4036;white-space:normal;word-break:normal;overflow-wrap:anywhere}
+.summary-card__text strong{color:var(--color-accent);font-weight:700}
+html.dark .summary-card__text{color:rgba(250,243,232,.84)}
+html.dark .summary-card__text strong{color:var(--color-accent-strong)}
+.summary-card__text::first-letter{font-size:inherit!important;float:none!important;margin:0!important;color:inherit!important;font-family:inherit!important;font-weight:inherit!important;line-height:inherit!important}
+@media (max-width:560px){.summary-card__item{gap:7px}.summary-card__num{flex:0 0 16px;width:16px;height:16px;min-width:16px}.summary-card__num::before{font-size:11px}.summary-card__text{font-size:13px}}
 @media (prefers-reduced-motion:reduce){.summary-card,.summary-card__item{transition:none!important}}
