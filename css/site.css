@@ -104,3 +104,10 @@ a.gb-strip-dd__link:hover{background:color-mix(in srgb,var(--accent) 10%,transpa
 .original-author-card{margin:0 0 8px;padding:14px 0;border-bottom:1px solid var(--color-border)}
 .original-author-card__name{font-family:'Playfair Display',Georgia,serif;font-size:clamp(20px,2.5vw,26px);font-weight:600;line-height:1.3;color:var(--color-text)}
 .original-author-card__role{font-family:'Source Sans 3',system-ui,sans-serif;font-size:13px;color:var(--color-text-muted);margin-top:2px;letter-spacing:.02em}
+
+/* Summary card compaction */
+.summary-card__body{gap:8px}
+.summary-card__item{padding:clamp(10px,1.5vw,14px) clamp(14px,2vw,20px)}
+.summary-card__num{font-size:clamp(18px,2.5vw,24px)}
+.summary-card__item:not(:has(.summary-card__num))::before{font-size:clamp(18px,2.5vw,24px)}
+.summary-card__text{font-size:clamp(13.5px,1.5vw,15px)}
