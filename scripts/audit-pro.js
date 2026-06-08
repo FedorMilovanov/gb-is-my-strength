@@ -82,6 +82,11 @@ const CACHE_BUST_ASSETS = [
 const MAX_CSS_TOTAL = 375_000; // includes visual dark premium overrides; gzip ~70KB
 const MAX_JS_TOTAL = 365_000; // includes sw.js + mobile utils; site.js is intentionally large right now
 const MAX_HTML = 450_000;
+// Anti-regression ceiling for !important in css/site.css. AGENTS §4.10 target is ≤200.
+// Ratchet: this number must only ever go DOWN. Current value reflects the safe post-dove state.
+// Hard-fail above CEIL; warn when above the long-term GOAL so we keep paying down the debt.
+const IMPORTANT_CEIL = 272; // hard cap — raising this is a regression and must be justified in PR
+const IMPORTANT_GOAL = 200; // AGENTS §4.10 long-term target
 const MIN_DESC = 50;
 const MAX_DESC = 180;
 
@@ -232,6 +237,55 @@ function extractSiteConfig(html, fileLabel) {
   for (const p of htmlPages) {
     const sz = fs.statSync(p).size;
     if (sz > MAX_HTML) R.warn(`Large HTML: ${rel(p)} (${sz} bytes)`);
+  }
+})();
+
+// 2b. !important budget for site.css (anti-regression guard, AGENTS §4.10)
+(function importantBudget() {
+  const f = path.join(ROOT, 'css/site.css');
+  if (!fs.existsSync(f)) { R.warn('css/site.css not found for !important check'); return; }
+  const count = (fs.readFileSync(f, 'utf8').match(/!important/g) || []).length;
+  if (count > IMPORTANT_CEIL) {
+    R.err(`site.css has ${count} !important — exceeds ceiling ${IMPORTANT_CEIL}. ` +
+      `This is a regression: refactor into @layer instead of adding !important. ` +
+      `(AGENTS §4.10 target ≤ ${IMPORTANT_GOAL})`);
+  } else if (count > IMPORTANT_GOAL) {
+    R.warn(`site.css has ${count} !important (≤ ceiling ${IMPORTANT_CEIL}, but above goal ${IMPORTANT_GOAL}). ` +
+      `Keep paying down — lower IMPORTANT_CEIL whenever you reduce it.`);
+  } else {
+    R.ok(`site.css !important within goal: ${count} ≤ ${IMPORTANT_GOAL}`);
+  }
+})();
+
+// 2c. Dove markers integrity (anti-regression guard for the tooltip "dove" modifier)
+(function doveGuard() {
+  let inlineDoveSvgPages = [];
+  let badMarkers = [];
+  for (const p of htmlPages) {
+    const html = fs.readFileSync(p, 'utf8');
+    // No inline <svg class="fn-dove-icon"> should remain in HTML — JS injects the animated dove.
+    if (/<svg[^>]*class="[^"]*fn-dove-icon/.test(html)) inlineDoveSvgPages.push(rel(p));
+    // Every fn-marker--dove must be either a map-trigger (data-tip) or carry a .tooltip child.
+    const markers = html.match(/<span class="fn-marker fn-marker--dove[^>]*>[\s\S]*?<\/span>\s*<\/span>|<span class="fn-marker fn-marker--dove[^>]*>/g) || [];
+    const doveOpens = (html.match(/class="fn-marker fn-marker--dove/g) || []).length;
+    if (doveOpens) {
+      // markers must have either data-tip OR a following .tooltip (lightweight heuristic)
+      const withTip = (html.match(/class="fn-marker fn-marker--dove[^>]*data-tip=/g) || []).length;
+      const withTooltip = (html.match(/class="fn-marker fn-marker--dove[^>]*>(?:(?!<\/p>|<span class="fn-marker)[\s\S])*?<span class="tooltip"/g) || []).length;
+      if (withTip + withTooltip < doveOpens) {
+        badMarkers.push(`${rel(p)} (${doveOpens} dove, ${withTip} map-trigger + ${withTooltip} tooltip)`);
+      }
+    }
+  }
+  if (inlineDoveSvgPages.length) {
+    R.err(`Inline <svg class="fn-dove-icon"> found (dead markup — JS injects the dove): ${inlineDoveSvgPages.join(', ')}`);
+  } else {
+    R.ok('Dove markers: no dead inline fn-dove-icon SVG in HTML');
+  }
+  if (badMarkers.length) {
+    R.err(`Dove markers without tooltip/data-tip content: ${badMarkers.join('; ')}`);
+  } else {
+    R.ok('Dove markers: every fn-marker--dove has tooltip or data-tip content');
   }
 })();
 
