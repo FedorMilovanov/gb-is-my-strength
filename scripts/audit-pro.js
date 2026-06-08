@@ -456,7 +456,22 @@ function extractSiteConfig(html, fileLabel) {
   if (!bad) R.ok(`JSON valid (${jsonFiles.length} files)`);
 })();
 
-// 5. Cache-bust hash integrity
+
+  // ── Span balance guard (added r76) ──────────────────────────────────────
+  {
+    let spanBugs = 0;
+    for (const hf of htmlPages) {
+      const html = fs.readFileSync(hf, 'utf8');
+      const opens = (html.match(/<span\b/g) || []).length;
+      const closes = (html.match(/<\/span>/g) || []).length;
+      const diff = opens - closes;
+      if (diff > 20) { spanBugs++; R.err(rel(hf) + ': ' + diff + ' unclosed <span> tags'); }
+    }
+    if (spanBugs === 0) R.ok('HTML span balance: all files balanced');
+    else R.err('HTML span balance: ' + spanBugs + ' files with unclosed spans');
+  }
+
+  // 5. Cache-bust hash integrity
 (function cacheBustIntegrity() {
   const hashes = Object.fromEntries(CACHE_BUST_ASSETS.filter(exists).map(f => [f, md5short(f)]));
   let checked = 0;

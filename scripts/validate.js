@@ -608,6 +608,8 @@ function hasEnglishDirectQuote(fragment) {
   if (latinWords.length < 3) return false;
   if (isAllowedEnglishQuoteFragment(clean)) return false;
   if (isLikelyEnglishSourceTitle(clean)) return false;
+  // Skip French/Latin/other non-English phrases (accented chars = not English)
+  if (/[àâäéèêëïîôùûüçñÉÈ]/.test(clean)) return false;
   return true;
 }
 
