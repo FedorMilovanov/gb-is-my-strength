@@ -151,3 +151,4 @@ html.dark .summary-card__text strong{color:var(--color-accent-strong)}
 .summary-card__text::first-letter{font-size:inherit!important;float:none!important;margin:0!important;color:inherit!important;font-family:inherit!important;font-weight:inherit!important;line-height:inherit!important}
 @media (max-width:560px){.summary-card__item{gap:7px}.summary-card__num{flex:0 0 16px;width:16px;height:16px;min-width:16px}.summary-card__num::before{font-size:11px}.summary-card__text{font-size:13px}}
 @media (prefers-reduced-motion:reduce){.summary-card,.summary-card__item{transition:none!important}}
+.article-end-actions-wrap{margin-bottom:0}.article-end-sdg-wrap{margin-top:0}
