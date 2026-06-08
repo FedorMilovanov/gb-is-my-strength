@@ -1,7 +1,33 @@
 # Audit History — gospod-bog.ru
 
 > All audit changelogs consolidated into one file.
-> Last updated: 2026-06-06
+> Last updated: 2026-06-08
+
+---
+
+## v49 — User-reported visual regression pass II + ambient phrases editorial (2026-06-08)
+
+### CRITICAL — site.css cascade restored
+- Previous `49882d9 «fix(bugs): close malformed spans + flatten tooltip card»` claimed to balance 151 unclosed braces but inserted them in wrong positions, leaving the file parseable only as **one top-level rule with 19 cssRules** (vs. the expected ~1222).
+- Symptoms reported by owner: half of pages rendered without core CSS, fonts fell back to Times New Roman, share icons rendered as gigantic blue squares, theme/search controls collapsed.
+- Fix: rebased `css/site.css` on the last fully-clean baseline (`32e8c63`, 1703/1703 braces, 194 `!important` — back inside PLAN-04 ≤200 budget) and re-appended the final clean `.fn-marker--dove` ruleset (FontAwesome 6.7 dove glyph + light/dark variants + hover lift).
+- The previously-added structural guard in `audit-pro.js` (`css brace balance`) now catches any future regression of this kind.
+
+### Editorial fixes
+- All 31 ambient phrases on the home page (10 Greek, 10 Latin, 11 Hebrew) re-translated for theological precision: Solus Christus → «Только Христос», Dominus illuminatio mea → «Господь — свет мой» (Пс. 26:1), Ego sum via veritas et vita → «Я есмь путь и истина и жизнь» (Ин. 14:6), τὸ ἄλφα καὶ τὸ ὦ → «Альфа и Омега» (Откр. 1:8), ὁ ὢν καὶ ὁ ἦν καὶ ὁ ἐρχόμενος → «Который есть и был и грядёт», אוֹר לְרַגְלִי דְבָרֶךָ → «Светильник ноге моей — слово Твоё» (Пс. 118:105), etc.
+- Each phrase now has a `.h-phrase-source` micro-citation rendered on hover beneath the translation label (e.g. «Ин. 1:1», «Реформ. solae», «Быт. 1:1 LXX», «Тосефта Сангедрин 13:2»). Minimal styling, uppercase tracking, mutes to ~70% opacity; never overlaps the main phrase glyph.
+- `dzhon-gill-istoricheskiy-kontekst`: replaced second Whitefield image (was visually a duplicate of the first «open field» scene) with a freshly generated «Kennington Common ~1739» — Whitefield on a wooden preaching scaffold, crowd in tricorn hats, St Paul’s dome and a windmill on the London skyline. Full 600/900/1200w webp + jpg fallback per AGENTS §3.6.
+
+### Catalog layout
+- `/biografii/` Gill series re-ordered per user request: was `[контекст, справочник, ч.1, ч.2, ч.3]`, now **`[контекст, ч.1, ч.2, ч.3, справочник]`** — reflects natural reading flow (context → biography → reference).
+- `/articles/` Gill: «справочник» was first; now `контекст → справочник`.
+- Introduced `.h-article-list--grid` modifier on `home.css`: a compact 2-column grid for single articles. Series cards keep full width via `.h-article-li--full`. Mobile collapses cleanly to 1 column. Catalog stays scannable as the corpus grows past 30 articles.
+- Removed inline `style="padding-top:0"` overrides on `<section id="razbor">` (both `index.html` and `articles/index.html`) — restored the canonical 56px breathing room defined by `.h-section`.
+
+### Verified
+- `node scripts/validate.js` → ✅ clean.
+- `node scripts/audit-pro.js` → ✅ **36 passed / 0 warnings / 0 errors** (CSS brace guard ✅, dove integrity ✅, `!important` 194 ≤ 200 ✅).
+- Playwright sweep (Chromium 1223, desktop 1366×900 + mobile 390×844, 7 key pages × 3 fold positions = 42 screenshots): cascade restored, fonts loaded, theme/search FAB renders as two separate pill-buttons (no frame), Gill-1 typography restored, articles grid responsive, ambient hover reveals translation + source without overlap.
 
 ---
 
