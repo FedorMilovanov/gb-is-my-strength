@@ -85,7 +85,7 @@ const MAX_HTML = 450_000;
 // Anti-regression ceiling for !important in css/site.css. AGENTS §4.10 target is ≤200.
 // Ratchet: this number must only ever go DOWN. Current value reflects the safe post-dove state.
 // Hard-fail above CEIL; warn when above the long-term GOAL so we keep paying down the debt.
-const IMPORTANT_CEIL = 272; // hard cap — raising this is a regression and must be justified in PR
+const IMPORTANT_CEIL = 270; // hard cap — raising this is a regression and must be justified in PR
 const IMPORTANT_GOAL = 200; // AGENTS §4.10 long-term target
 const MIN_DESC = 50;
 const MAX_DESC = 180;
@@ -254,6 +254,24 @@ function extractSiteConfig(html, fileLabel) {
       `Keep paying down — lower IMPORTANT_CEIL whenever you reduce it.`);
   } else {
     R.ok(`site.css !important within goal: ${count} ≤ ${IMPORTANT_GOAL}`);
+  }
+})();
+
+// 2b2. CSS brace balance (structural guard). Unbalanced braces = unclosed @media/@layer
+// nesting, which buries rules at huge depth and forces !important everywhere. Must be 0.
+(function braceBalance() {
+  for (const f of ['css/site.css', 'css/home.css', 'css/command-palette.css',
+                   'css/mobile-hotfix.css', 'css/nagornaya-mobile-toc.css', 'fonts/fonts.css']) {
+    const p = path.join(ROOT, f);
+    if (!fs.existsSync(p)) continue;
+    const s = fs.readFileSync(p, 'utf8');
+    const net = (s.match(/\{/g) || []).length - (s.match(/\}/g) || []).length;
+    if (net !== 0) {
+      R.err(`${f}: unbalanced braces (net ${net > 0 ? '+' : ''}${net}). ` +
+        `Unclosed @media/@layer nesting buries rules and forces !important. Close all blocks.`);
+    } else {
+      R.ok(`${f}: braces balanced`);
+    }
   }
 })();
 
