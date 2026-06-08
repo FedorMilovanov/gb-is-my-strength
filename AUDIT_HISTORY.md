@@ -5,6 +5,54 @@
 
 ---
 
+## v50 — Critical span regression fix + dove/digit split (2026-06-08)
+
+### CRITICAL FIX — 464 unclosed `<span>` tags restored
+
+Regression from commit `7f16c2c` (AGENTS-r15.7, "Absolute reset of tooltips") deleted all `</span>` closings from fn-marker+tooltip pairs in 8 article files. Last clean commit: `6820076` (Gill cleanup I).
+
+Fixed using a nesting-aware algorithm that correctly handles nested footnotes (e.g. kod-da-vinchi snoska 21 containing snoska 22 inside its tooltip).
+
+| File | Unclosed spans | After fix |
+|---|:---:|:---:|
+| hermenevtika | 245 | 0 |
+| kod-da-vinchi | 95 | 0 |
+| gill-chast-3 | 36 | 0 |
+| gill-chast-2 | 28 | 0 |
+| gill-chast-1 | 27 | 0 |
+| gill-spravochnik | 17 | 0 |
+| 20-antisovetov | 15 | 0 |
+| gill-kontekst | 1 | 0 |
+| **TOTAL** | **464** | **0** |
+
+### Dove/digit footnote split (§9.12)
+
+Per owner requirement: digit footnotes for source references, dove footnotes for editorial notes only.
+
+- **205 digit footnotes** restored (hermenev 114, kodvinchi 24, gill1 7, gill2 6, gill3 8, krajne 38, rim7 8)
+- **38 dove footnotes** kept (20-antisovetov: 36, hermenev: 1 †, gill1: 1)
+- AGENTS §9.12 added with explicit rules per article type
+
+### Guards added
+
+- `audit-pro.js`: span balance check (threshold >20 catches mass deletion, currently 47 checks)
+- `validate.js`: French/accented text excluded from Russian quote policy (false positive fix)
+
+### Also
+
+- `sitemap.xml` lastmod updated to 2026-06-08
+- `docs/OWNER-REQUIREMENTS.md` created (consolidated owner requirements from chat)
+
+### Verified
+
+- `npm run validate:all` → ✅ PASS
+- `node scripts/audit-pro.js` → ✅ **47 passed / 0 warnings / 0 errors**
+- CSS braces: 1783/1783 ✅
+- `!important`: 196 ≤ 200 ✅
+- Playwright: 10 pages × light/dark, 0 JS errors, 0 visual bugs
+
+---
+
 ## v49 — User-reported visual regression pass II + ambient phrases editorial (2026-06-08)
 
 ### CRITICAL — site.css cascade restored
