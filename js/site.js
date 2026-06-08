@@ -36,3 +36,70 @@
   window.addEventListener('resize',function(){place(active(),last)},{passive:true});
   window.addEventListener('scroll',function(){place(active(),last)},{passive:true});
 })();
+
+/* GB floating tooltip reflow v2026-06-08b */
+(function(){
+  function clamp(v,min,max){return Math.min(Math.max(v,min),max)}
+  function placeTip(anchor,tip){
+    if(!anchor||!tip)return;
+    var pad=16,gap=12,vw=innerWidth,vh=innerHeight;
+    tip.style.display='block';
+    tip.style.visibility='hidden';
+    tip.style.maxHeight='';
+    tip.style.overflowY='';
+    var ar=anchor.getBoundingClientRect();
+    var w=Math.min(tip.offsetWidth||340,vw-pad*2);
+    tip.style.width=w+'px';
+    var h=Math.min(tip.scrollHeight||tip.offsetHeight||180, Math.max(180,vh-pad*2));
+    var above=ar.top-gap-pad, below=vh-ar.bottom-gap-pad;
+    var placement, top;
+    if(above>=Math.min(h,160) || above>=below){placement='top';h=Math.min(h,Math.max(140,above));top=ar.top-gap-h}
+    else{placement='bottom';h=Math.min(h,Math.max(140,below));top=ar.bottom+gap}
+    top=clamp(top,pad,Math.max(pad,vh-pad-h));
+    var left=clamp(ar.left+ar.width/2-w/2,pad,vw-pad-w);
+    tip.style.left=left+'px';
+    tip.style.top=top+'px';
+    tip.style.maxHeight=h+'px';
+    tip.style.overflowY=(tip.scrollHeight>h+2)?'auto':'visible';
+    tip.dataset.placement=placement;
+    tip.style.setProperty('--gb-tip-arrow-x',clamp(ar.left+ar.width/2-left,20,w-20)+'px');
+    tip.style.visibility='';
+  }
+  function reflow(){
+    document.querySelectorAll('.gterm.is-open').forEach(function(a){placeTip(a,document.querySelector('.gtip.gb-floating-tip')||a.querySelector('.gtip'))});
+    document.querySelectorAll('.fn-marker.is-open').forEach(function(a){placeTip(a,document.querySelector('.tooltip.gb-floating-tip')||a.querySelector('.tooltip'))});
+  }
+  ['pointerover','click','focusin'].forEach(function(ev){document.addEventListener(ev,function(e){if(e.target&&e.target.closest&&e.target.closest('.gterm,.fn-marker')){setTimeout(reflow,0);setTimeout(reflow,90);setTimeout(reflow,260)}},true)});
+  addEventListener('resize',reflow,{passive:true}); addEventListener('scroll',reflow,{passive:true});
+})();
+
+/* GB map popover viewport clamp v2026-06-08b */
+(function(){
+  var last=null;
+  function clamp(v,min,max){return Math.min(Math.max(v,min),max)}
+  function active(){return document.querySelector('.singleton-popover.active')||document.querySelector('.singleton-popover[style*="display: block"]')}
+  function place(pop,anchor){
+    if(!pop||!anchor)return;
+    var gap=14,pad=16,vw=innerWidth,vh=innerHeight;
+    pop.style.display='block'; pop.style.visibility='hidden';
+    var ar=anchor.getBoundingClientRect();
+    var w=Math.min(pop.offsetWidth||360,vw-pad*2); pop.style.width=w+'px';
+    var desired=Math.min(pop.scrollHeight||pop.offsetHeight||260,420,vh-pad*2);
+    var below=vh-ar.bottom-gap-pad, above=ar.top-gap-pad;
+    var placement='bottom',h,top;
+    if(below>=Math.min(desired,220)||below>=above){h=Math.min(desired,Math.max(160,below));top=ar.bottom+gap;placement='bottom'}
+    else{h=Math.min(desired,Math.max(160,above));top=ar.top-gap-h;placement='top'}
+    top=clamp(top,pad,Math.max(pad,vh-pad-h));
+    var left=clamp(ar.left+ar.width/2-w/2,pad,vw-pad-w);
+    pop.style.left=left+'px'; pop.style.top=top+'px';
+    pop.style.setProperty('max-height',h+'px','important');
+    pop.style.setProperty('overflow-y','auto','important');
+    pop.dataset.placement=placement;
+    pop.style.setProperty('--gb-popover-arrow-x',clamp(ar.left+ar.width/2-left,20,w-20)+'px');
+    pop.style.visibility='';
+  }
+  function schedule(a){last=a||last;[0,60,180,360].forEach(function(ms){setTimeout(function(){place(active(),last)},ms)})}
+  document.addEventListener('click',function(e){var a=e.target&&e.target.closest&&e.target.closest('.map-trigger,.info-badge'); if(a)schedule(a)},true);
+  new MutationObserver(function(){if(last)schedule(last)}).observe(document.documentElement,{subtree:true,attributes:true,attributeFilter:['class','style']});
+  addEventListener('resize',function(){schedule(last)},{passive:true}); addEventListener('scroll',function(){schedule(last)},{passive:true});
+})();
