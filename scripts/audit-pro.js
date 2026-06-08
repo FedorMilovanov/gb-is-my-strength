@@ -279,13 +279,13 @@ function extractSiteConfig(html, fileLabel) {
 (function htmlContractGuard() {
   let quizIssues = 0;
   let metaIssues = 0;
-  const ogProps = ['og:image', 'og:image:width', 'og:image:height', 'og:image:type', 'og:image:alt'];
+  const singletonMetaProps = ['og:image', 'og:image:width', 'og:image:height', 'og:image:type', 'og:image:alt', 'article:published_time', 'article:modified_time'];
 
   for (const p of htmlPages) {
     const file = rel(p);
     const html = read(file);
 
-    ogProps.forEach((prop) => {
+    singletonMetaProps.forEach((prop) => {
       const re = new RegExp(`<meta\\s+[^>]*property=["']${prop.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}["'][^>]*>`, 'gi');
       const count = (html.match(re) || []).length;
       if (count > 1) {
@@ -327,7 +327,7 @@ function extractSiteConfig(html, fileLabel) {
   }
 
   if (!quizIssues) R.ok('Quiz source schema is canonical across HTML pages');
-  if (!metaIssues) R.ok('OpenGraph image meta uniqueness passed');
+  if (!metaIssues) R.ok('OpenGraph / article singleton meta uniqueness passed');
 })();
 
 // 6. JSON validity
