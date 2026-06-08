@@ -9,6 +9,7 @@
 
 | Версия документа | Дата | Состояние |
 |---|---|---|
+| **AGENTS-r75** | 2026-06-08 | Unified Series Navigator v2. Расширен `js/series-cards.js` (без новых JS-файлов): добавлены 2 новых рендер-режима поверх существующего `[data-series-cards]`: **`[data-series-strip="key"]`** — компактная топ-навигация для статей серии (← prev | dots | next →), **`[data-series-nav="key"]`** — премиум-сайдбар (для будущего использования). Данные читаются из `data/series.json` (добавлены `baseUrl` для nagornaya/pastor-series). Все 5 статей трилогии о Гилле получили `<aside data-series-strip="dzhon-gill">` вверху; одновременно удалены огромные inline-styled блоки «Трилогия о Джоне Гилле» (~12.5 КБ HTML-мусора с тремя ручными карточками опасностью регрессии при добавлении новых частей). Теперь добавление новой части серии = одна правка `data/series.json` + автоматический рендер на всех страницах серии. Стили в `css/site.css` (`.gb-strip`, `.gb-snav`), `!important` без изменений (196 ≤ 200). |
 | **AGENTS-r74** | 2026-06-08 | User-reported regression pass III. Восстановлен **анимированный голубь с махающим крылом** (`.fn-marker--dove::before` + JS-inject `.fn-dove-body` + `.fn-dove-wing` + `@keyframes fn-dove-flap`) — был случайно откатан r71 на статичный FA-голубь. Возвращена картинка `whitefield-preaching` (вторая в `/articles/dzhon-gill-istoricheskiy-kontekst/`) — мой Kennington Common был хуже оригинала. Удалены сгенерированные мной файлы `images/whitefield-kennington-common-*` (8 файлов). **Картинка `gill-library-shelf` перенесена** из позиции «впритык после whitefield-field» в Section I после первого параграфа — теперь между ними есть текст. **Удалён `article-topnav`** (sticky шапка при скролле статей) из всех 8 статей — пользователь его не хочет. Чёткое правило: **theme-toggle / search-icon = ЧИСТЫЙ SVG БЕЗ КРУЖОЧКОВ / РАМОК / БЭКГРАУНДА** (см. §9.7). Убран `opacity:.86!important` из `mobile-hotfix.css` который вызывал двойное наложение sun+moon при переключении темы. Убран pill-фон `.gb-fc-btn` (был border + background + box-shadow) — теперь чисто SVG. Добавлен preload для Inter-600 и Playfair-700 — FOUC на «АВВАКУМ 3:19» исчезает. Цвет hover-заголовка `.h-article-title` в тёмной теме изменён с розового `--h-accent` (#d97a6c) на золотистый `#e8c97a`. Восстановлен margin-bottom 24px на `.context-bridge` (был встык со следующим `<p>`). Починен summary-card grid (3 варианта: только-num / check+num) — текст больше не сжимается в 60px. SITE_CONFIG contract guard добавлен в `audit-pro`. **!important** в site.css: 196 (≤200 ✅). |
 | **AGENTS-r73** | 2026-06-08 | User-reported quality pass. Восстановлен `window.SITE_CONFIG` контракт на 3 страницах (kontekst/spravochnik: `base:` → `site:`; rim7: добавлен `site:` блок). Topnav layout исправлен: `.article-topnav-title` получил `margin:0 auto;padding:0 16px` чтобы корректно центрироваться между home-ссылкой и search-кнопкой (было: «Сила МояДжон Гилл» слитно). Закрыты `</span>` на 6 файлах. nag-summary внутри indigo/teal hero получил светлый текст (читабельный контраст). Добавлена `audit-pro` проверка SITE_CONFIG runtime contract (46 проверок). |
 | AGENTS-r72 | 2026-06-08 | User-reported visual regression pass II (Arena Agent). Перевод 31 ambient-фразы на главной (Solus Christus → «Только Христос», Dominus illuminatio mea → «Господь — свет мой», Ego sum via veritas et vita → «Я есмь путь и истина и жизнь» и т.д.) + источник под подписью (`.h-phrase-source`, минималистично, мелким шрифтом, появляется на hover без перекрытия). Заменена вторая картинка Уайтфилда в `dzhon-gill-istoricheskiy-kontekst` (была визуально дубликатом первой) на новую Kennington Common ~1739. Порядок Гилла на `/biografii/`: [контекст, ч.1, ч.2, ч.3, справочник]. Порядок на `/articles/`: контекст → справочник. Введён 2-колоночный grid `.h-article-list--grid` для одиночных статей (компактнее при росте каталога). Удалены inline `padding-top:0` overrides — секция «Разбор заблуждений» больше не упирается в предыдущую. |
@@ -719,3 +720,31 @@ CSS-правила `.article-topnav*` пока остаются в site.css ка
 - `PlayfairDisplay-cyrillic-700` (используется в `.h-section-title`, hero и др.)
 
 Иначе виден FOUC: сначала рендерится fallback Times New Roman, потом подмена. Это видно на главной при перезагрузке.
+
+### 9.11 Series Navigator — единый компонент (с 2026-06-08)
+Серии (Нагорная, Гилл, Пастор-серия) **обязаны** использовать единый компонент, не плодя inline-styled карточки на каждой статье:
+
+- **`<aside data-series-strip="<key>"></aside>`** — компактный strip (prev | dots | next) сверху статьи. Авто-выделяет текущую часть по URL slug.
+- **`<aside data-series-nav="<key>"></aside>`** — расширенный сайдбар-навигатор (опционально, для очень длинных серий).
+- **`<div data-series-cards="<key>"></div>`** — большие карточки для индекс-страниц (`/articles/`, `/biografii/` и т.д.) — без изменений (legacy).
+
+Все 3 компонента читают из `data/series.json`:
+```json
+{
+  "<series-key>": {
+    "title": "Название серии",
+    "baseUrl": "/articles/",      // или "/nagornaya/" и т.д.
+    "parts": [
+      {"n": 1, "slug": "url-slug-of-part", "title": "Часть I. Заголовок", "status": "published", "readingTime": 25}
+    ]
+  }
+}
+```
+
+Подключение JS: `<script defer src="../../js/series-cards.js?v=..."></script>` (один файл на все 3 режима).
+
+**Запрещено:**
+- Дублировать inline-карточки «Часть I / II / III» вручную в HTML (как было в трилогии о Гилле до r75 — 4 КБ inline-styled CSS на каждой странице ⇒ при добавлении новой части серии нужно править 5 страниц синхронно ⇒ регрессии).
+- Создавать новые JS-файлы для каждой серии. Один `series-cards.js` обслуживает все.
+
+**Нагорная проповедь** — историческое исключение (свой Tailwind-sidebar + nagornaya-mobile-toc.js). Не трогать; новых серий по такому образцу не плодить — использовать `data-series-strip` / `data-series-nav`.
