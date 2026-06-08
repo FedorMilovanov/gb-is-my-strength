@@ -93,5 +93,25 @@
         "readingTime": 25
       }
     ]
+  },
+  "hard-texts": {
+    "title": "Тайны человеческого сердца",
+    "baseUrl": "/articles/",
+    "parts": [
+      {
+        "n": 1,
+        "slug": "krajne-li-isporcheno-serdce",
+        "title": "Крайне ли испорчено сердце верующего?",
+        "status": "published",
+        "readingTime": 32
+      },
+      {
+        "n": 2,
+        "slug": "rimlyanam-7-veruyushchiy-ili-neveruyushchiy",
+        "title": "Римлянам 7: верующий, неверующий или человек под законом?",
+        "status": "published",
+        "readingTime": 18
+      }
+    ]
   }
 }
