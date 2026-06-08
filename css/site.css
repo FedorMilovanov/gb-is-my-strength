@@ -152,3 +152,81 @@ html.dark .summary-card__text strong{color:var(--color-accent-strong)}
 @media (max-width:560px){.summary-card__item{gap:7px}.summary-card__num{flex:0 0 16px;width:16px;height:16px;min-width:16px}.summary-card__num::before{font-size:11px}.summary-card__text{font-size:13px}}
 @media (prefers-reduced-motion:reduce){.summary-card,.summary-card__item{transition:none!important}}
 .article-end-actions-wrap{margin-bottom:0}.article-end-sdg-wrap{margin-top:0}
+
+@media print {
+  /* Hide all non-content UI */
+  .h-navbar, .theme-toggle, .toc-sidebar, .bottom-bar, .h-mobile-nav, 
+  #back-to-top, .article-topnav, .article-end-actions, .gb-floating-controls,
+  .bookmark-toast, .btoc-overlay, #share-dialog-overlay, .gb-accuracy-block {
+    display: none !important;
+  }
+
+  /* Reset layout for paper */
+  body, .page-wrap, main.article-main {
+    width: 100% !important;
+    max-width: none !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    background: #fff !important;
+    color: #000 !important;
+    overflow: visible !important;
+  }
+
+  /* Fix 'empty space' bug by disabling modern layout optimizations during print */
+  html, body {
+    height: auto !important;
+    content-visibility: visible !important;
+  }
+  
+  .article-body, article {
+    content-visibility: visible !important;
+    contain: none !important;
+  }
+
+  /* Ensure blocks don't split mid-page in a buggy way */
+  .summary-card, .quote-box, .info-box, .warn-box, figure, 
+  .author-card, .sources-block, .related-articles, .article-end-sdg {
+    break-inside: avoid !important;
+    page-break-inside: avoid !important;
+    border-color: #ddd !important;
+  }
+
+  /* Typography for readability */
+  h1, h2, h3, h4 {
+    color: #000 !important;
+    break-after: avoid !important;
+    page-break-after: avoid !important;
+  }
+  
+  p {
+    orphans: 3;
+    widows: 3;
+  }
+
+  /* Handle images */
+  img {
+    max-width: 100% !important;
+    filter: grayscale(1) !important; /* Save toner */
+  }
+
+  /* Links - show URL next to link text */
+  /*
+  a[href^="http"]:not([href*="gospod-bog.ru"])::after {
+    content: " (" attr(href) ")";
+    font-size: 0.8em;
+    color: #666;
+  }
+  */
+
+  /* Soli Deo Gloria cross should be centered and stable */
+  .article-end-sdg {
+    margin-top: 30px !important;
+    opacity: 1 !important;
+  }
+  
+  /* Reset link colors */
+  a {
+    color: #000 !important;
+    text-decoration: underline !important;
+  }
+}
