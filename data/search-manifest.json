@@ -50,7 +50,7 @@
       "featured": true,
       "priority": 96,
       "publishedTime": "2026-05-26T00:00:00+03:00",
-      "modifiedTime": "2026-06-02T00:30:00+03:00"
+      "modifiedTime": "2026-06-10T00:00:00+03:00"
     },
     {
       "id": "dzhon-gill-istoricheskiy-kontekst",
@@ -72,7 +72,7 @@
       "featured": true,
       "priority": 95,
       "publishedTime": "2026-06-01T00:00:00+03:00",
-      "modifiedTime": "2026-06-02T00:30:00+03:00"
+      "modifiedTime": "2026-06-10T00:00:00+03:00"
     },
     {
       "id": "pastor-series",
@@ -105,7 +105,7 @@
       "section": "Биографии служителей",
       "editor": "Фёдор Милованов",
       "readTime": 28,
-      "image": "/images/og-gill-authentic-study-cover.webp",
+      "image": "/images/gill-authentic-study-cover.webp",
       "tags": [
         "биографии",
         "баптисты",
@@ -115,7 +115,7 @@
       ],
       "featured": true,
       "priority": 92,
-      "modifiedTime": "2026-06-02T00:30:00+03:00",
+      "modifiedTime": "2026-06-10T00:00:00+03:00",
       "publishedTime": "2026-05-26T00:00:00+03:00"
     },
     {
@@ -126,8 +126,8 @@
       "description": "Экзегеза, систематика, иврит и раввинистика. Девятитомный комментарий на всю Библию и «Свод богословия» — первая баптистская систематика на английском.",
       "section": "Биографии служителей",
       "editor": "Фёдор Милованов",
-      "readTime": 22,
-      "image": "/images/og-dzhon-gill-chast-2-uchenyi.webp",
+      "readTime": 12,
+      "image": "/images/gill-talmud-study-authentic.webp",
       "tags": [
         "биографии",
         "Джон Гилл",
@@ -140,7 +140,7 @@
       "featured": true,
       "priority": 91,
       "publishedTime": "2026-05-26T00:00:00+03:00",
-      "modifiedTime": "2026-06-02T00:30:00+03:00"
+      "modifiedTime": "2026-06-10T00:00:00+03:00"
     },
     {
       "id": "rimlyanam-7-veruyushchiy-ili-neveruyushchiy",
@@ -220,7 +220,7 @@
       "description": "Полемика с арминианством и Римом, влияние на Сперджена, спор о гиперкальвинизме, англо-американская преемственность и память о Гилле в XX–XXI веках.",
       "section": "Биографии служителей",
       "editor": "Фёдор Милованов",
-      "readTime": 24,
+      "readTime": 22,
       "image": "/images/og-dzhon-gill-chast-3-nasledie.webp",
       "tags": [
         "биографии",
@@ -233,7 +233,7 @@
       "featured": true,
       "priority": 90,
       "publishedTime": "2026-05-26T00:00:00+03:00",
-      "modifiedTime": "2026-06-02T00:30:00+03:00"
+      "modifiedTime": "2026-06-10T00:00:00+03:00"
     },
     {
       "id": "dzhon-gill-spravochnik",
@@ -243,7 +243,7 @@
       "description": "Справочник к трилогии о Джоне Гилле: хронология жизни, основные труды, структура Body of Divinity, сеть влияний, источники и Богословский словарь эпохи.",
       "section": "Биографии служителей",
       "editor": "Фёдор Милованов",
-      "readTime": 22,
+      "readTime": 11,
       "image": "/images/og-gill-five-volumes-shelf.webp",
       "tags": [
         "биографии",
@@ -255,7 +255,7 @@
       "featured": true,
       "priority": 88,
       "publishedTime": "2026-06-01T00:00:00+03:00",
-      "modifiedTime": "2026-06-02T00:30:00+03:00"
+      "modifiedTime": "2026-06-10T00:00:00+03:00"
     },
     {
       "id": "hermenevtika",
