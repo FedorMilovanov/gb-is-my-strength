@@ -3681,6 +3681,146 @@ const JS_SIZE_FLOORS = {
   }
 })();
 
+// ─────────────────────────────────────────────────────────────────────────
+// SMART ANTI-REGRESSION GUARDS — ROUND 12 (added 2026-06-09)
+// Mobile-specific layout/UX hygiene. Catch the bugs that only show up
+// at < 480px viewport — overflows, touch-targets, sticky overlap, etc.
+// ─────────────────────────────────────────────────────────────────────────
+
+// G96. body { overflow-x } sentinel.
+//   Site relies on body{overflow-x:hidden} + html{overflow-x:clip} to prevent
+//   any rogue inline-width element from creating a horizontal scrollbar.
+//   If a future agent removes either rule, the page becomes draggable
+//   sideways on mobile — extremely jarring UX. Guard the two declarations.
+(function bodyOverflowSentinelGuard() {
+  const css = fs.readFileSync(path.join(ROOT, 'css/site.css'), 'utf8');
+  const problems = [];
+  if (!/body\s*\{[^}]*overflow-x\s*:\s*hidden/i.test(css)) {
+    problems.push('css/site.css: body{overflow-x:hidden} missing — page becomes horizontally scrollable on mobile');
+  }
+  if (!/html\s*\{[^}]*overflow-x\s*:\s*clip/i.test(css)) {
+    problems.push('css/site.css: html{overflow-x:clip} missing — fixed-position elements can leak scroll on Safari');
+  }
+  if (problems.length) {
+    R.err(`Body/html overflow-x sentinel violated (mobile horizontal-scroll regression):\n  - ${problems.join('\n  - ')}`);
+  } else {
+    R.ok('Body/html overflow-x sentinel intact (no mobile sideways scroll possible)');
+  }
+})();
+
+// G97. Inline style="width:NNNpx" without max-width safeguard.
+//   Mobile screens are ≥320px. Any inline width >300px without max-width
+//   creates overflow. Detect and flag.
+(function inlineWidthOverflowGuard() {
+  const files = walk(ROOT).filter(f => f.endsWith('.html'));
+  const offenders = [];
+  for (const f of files) {
+    const html = fs.readFileSync(f, 'utf8');
+    // find style="…width:NNNpx…" without max-width nearby
+    const matches = [...html.matchAll(/style\s*=\s*["']([^"']{0,200})["']/g)];
+    for (const m of matches) {
+      const s = m[1];
+      // width: NNNpx (not min-width / max-width)
+      const wm = s.match(/(?<![-a-z])width\s*:\s*(\d+)px/i);
+      if (!wm) continue;
+      const w = parseInt(wm[1], 10);
+      if (w < 320) continue;
+      // OK if there's max-width: 100% nearby
+      if (/max-width\s*:\s*(?:100%|none|auto|\d+%|min\()/i.test(s)) continue;
+      offenders.push(`${rel(f)}: style="width:${w}px" without max-width safeguard`);
+    }
+  }
+  if (offenders.length) {
+    R.warn(`Inline width ≥ 320px without max-width safeguard (mobile overflow):\n  - ${offenders.slice(0, 6).join('\n  - ')}`);
+  } else {
+    R.ok('Inline widths: no fixed ≥320px without max-width safeguard');
+  }
+})();
+
+// G98. Touch-target sizing for interactive elements on coarse pointer.
+//   AGENTS rule: any clickable .btoc-close / .h-mobile-menu-btn /
+//   .theme-toggle / .gb-nav-search-icon / .cp-close-btn must be ≥44×44 on
+//   coarse pointer (Apple HIG / WCAG 2.5.5).
+//   Check that mobile-hotfix.css has the @media (pointer:coarse) block
+//   enforcing these dimensions for the canonical list of icon buttons.
+(function touchTargetCoverageGuard() {
+  const hf = path.join(ROOT, 'css/mobile-hotfix.css');
+  if (!fs.existsSync(hf)) { R.warn('mobile-hotfix.css missing'); return; }
+  const css = fs.readFileSync(hf, 'utf8');
+  const REQUIRED_CLASSES = [
+    '.btoc-close', '.cp-close-btn', '.h-cp-btn', '.h-mobile-menu-btn',
+    '.gb-nav-search-icon', '.bar-icon-btn', '.mobile-nav-close',
+  ];
+  // we need ONE @media (pointer:coarse) block that selects all of these
+  // and sets min-width:44px / min-height:44px
+  const coarseBlocks = [...css.matchAll(/@media\s*\(pointer\s*:\s*coarse\)\s*\{([\s\S]*?)\}\s*(?=@|$)/g)].map(m => m[1]);
+  if (coarseBlocks.length === 0) {
+    R.err('mobile-hotfix.css: no @media (pointer:coarse) block — touch targets unsafe (WCAG 2.5.5)');
+    return;
+  }
+  const allCoarse = coarseBlocks.join(' ');
+  const missing = REQUIRED_CLASSES.filter(c => !allCoarse.includes(c));
+  // also confirm min-width/min-height 44 enforced somewhere there
+  const hasMin44 = /min-(?:width|height)\s*:\s*44px/i.test(allCoarse);
+  if (missing.length || !hasMin44) {
+    const probs = [];
+    if (missing.length) probs.push(`classes not covered: ${missing.join(', ')}`);
+    if (!hasMin44) probs.push('no min-width/min-height: 44px rule in coarse block');
+    R.err(`Touch-target sizing incomplete (WCAG 2.5.5):\n  - ${probs.join('\n  - ')}`);
+  } else {
+    R.ok(`Touch-target sizing: ${REQUIRED_CLASSES.length} icon buttons ≥44×44 on coarse pointer`);
+  }
+})();
+
+// G99. Mobile menu wiring sentinel: every page with .h-mobile-menu-btn must
+//   also have #hMobileNav AND #hMobileBackdrop in HTML — otherwise the
+//   menu button shows but does nothing.
+(function mobileMenuWiringGuard() {
+  const files = walk(ROOT).filter(f => f.endsWith('.html'));
+  const offenders = [];
+  for (const f of files) {
+    const html = fs.readFileSync(f, 'utf8');
+    if (!/class\s*=\s*["'][^"']*\bh-mobile-menu-btn\b/.test(html)) continue;
+    const missing = [];
+    if (!/id\s*=\s*["']hMobileNav["']/.test(html)) missing.push('#hMobileNav');
+    if (!/id\s*=\s*["']hMobileBackdrop["']/.test(html)) missing.push('#hMobileBackdrop');
+    if (missing.length) {
+      offenders.push(`${rel(f)}: has burger button but no ${missing.join(' + ')} target(s)`);
+    }
+  }
+  if (offenders.length) {
+    R.err(`Mobile menu button has no target panel:\n  - ${offenders.join('\n  - ')}`);
+  } else {
+    R.ok('Mobile menu: every burger button has #hMobileNav + #hMobileBackdrop wired');
+  }
+})();
+
+// G100. Sticky/fixed elements vs bottom-bar: any element with
+//   `position:fixed; bottom:NN` AND `body.has-bottom-bar` selector must
+//   add 72px (bottom-bar height) to its bottom offset. Otherwise it sits
+//   UNDER the bottom-bar on article pages.
+//   Sample check: .bookmark-toast must have body.has-bottom-bar adjustment.
+(function stickyOverlapsBottomBarGuard() {
+  const css = fs.readFileSync(path.join(ROOT, 'css/site.css'), 'utf8');
+  const problems = [];
+  // The canonical pattern is `body.has-bottom-bar .X { bottom: calc(72px + …) }`
+  const STICKIES = ['bookmark-toast', 'h-scroll-top', 'mobile-nav', 'gb-floating-controls'];
+  for (const s of STICKIES) {
+    const hasSticky = new RegExp(`\\.${s}\\s*\\{[^}]*position\\s*:\\s*fixed[^}]*bottom\\s*:`, 'i').test(css);
+    if (!hasSticky) continue;
+    // does an override exist?
+    const hasAdjust = new RegExp(`body\\.has-bottom-bar[^{]*\\.${s}\\s*\\{`).test(css);
+    if (!hasAdjust) {
+      problems.push(`.${s} is fixed bottom + has-bottom-bar adjustment missing (sits under bar)`);
+    }
+  }
+  if (problems.length) {
+    R.warn(`Sticky elements may overlap bottom-bar on article pages:\n  - ${problems.join('\n  - ')}`);
+  } else {
+    R.ok('Sticky/fixed elements: bottom-bar overlap protection in place');
+  }
+})();
+
 // Output
 const duration = ((Date.now() - R.start) / 1000).toFixed(2);
 const sep = '═'.repeat(78);
