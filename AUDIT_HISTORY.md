@@ -5,6 +5,27 @@
 
 ---
 
+## v52 — John Gill UI polish pass: remove trilogy context-bridge + ordinary summary-card upgrade (2026-06-10)
+
+### What was improved:
+- Re-checked the whole John Gill cluster again after v51: documentation, all 5 Gill pages, portrait/vertical images, DOM placement, catalog cards and summary blocks.
+- Removed the redundant `context-bridge` block («Исторический фон серии…») from the Gill trilogy pages (`chast-1`, `chast-2`, `chast-3`) after owner review. The links remain available through the series strip and catalogs, so the block was pure duplication.
+- Added a focused summary-card polish for **ordinary articles only**:
+  - non-Nagornaya article summaries now have a subtle framed card,
+  - clearer spacing,
+  - visible numbered badges instead of the previous generic checkmark treatment,
+  - better first-screen editorial hierarchy on long biography pages.
+- Kept Nagornaya’s summary-card untouched via `body:not(.nagornaya-page)` scoping, so the Tailwind-driven Nagornaya rhythm remains intact.
+- Re-verified that Gill portrait / 9:16 images remain correctly classed with `article-img--vertical` and are not returning as buggy huge standalone portraits.
+- Added an AGENTS lock forbidding future reintroduction of the trilogy `context-bridge` block.
+
+### Verified:
+- `npm run validate:all` → ✅ PASS.
+- `node scripts/audit-pro.js` → ✅ PASS (**142 passed / 0 warnings / 0 errors**).
+- Browser re-check (desktop + mobile, headless Chromium) → ✅ no overflow, no trilogy `context-bridge`, ordinary summary-card visually upgraded, Nagornaya summary-card unchanged, all Gill portrait images correctly classed.
+
+---
+
 ## v51 — John Gill self-audit: image truth-lock + stale preload cleanup (2026-06-10)
 
 ### What was improved:
