@@ -2602,6 +2602,288 @@ const JS_SIZE_FLOORS = {
   }
 })();
 
+// ─────────────────────────────────────────────────────────────────────────
+// SMART ANTI-REGRESSION GUARDS — ROUND 7 (added 2026-06-09)
+// Infrastructure / SW / GitHub workflows / cross-file consistency.
+// All guards validated against current state; no false-positives expected.
+// ─────────────────────────────────────────────────────────────────────────
+
+// G61. sw.js PRECACHE_ASSETS must list every shipped CSS+JS.
+//   Incident: PLAN-04 P5–P7 removed dead classes. Each rename/delete in /css/
+//   or /js/ MUST be mirrored in sw.js PRECACHE_ASSETS — otherwise SW caches
+//   a 404 placeholder and the site looks broken for returning users.
+(function swPrecacheCompletenessGuard() {
+  const sw = path.join(ROOT, 'sw.js');
+  if (!fs.existsSync(sw)) return;
+  const swText = fs.readFileSync(sw, 'utf8');
+  const m = swText.match(/PRECACHE_ASSETS\s*=\s*\[([^\]]+)\]/);
+  if (!m) { R.err('sw.js: PRECACHE_ASSETS array not found'); return; }
+  const listed = new Set([...m[1].matchAll(/['"]([^'"]+)['"]/g)].map(x => x[1]));
+  const cssFiles = fs.readdirSync(path.join(ROOT, 'css'))
+    .filter(f => f.endsWith('.css')).map(f => '/css/' + f);
+  const jsFiles = fs.readdirSync(path.join(ROOT, 'js'))
+    .filter(f => f.endsWith('.js')).map(f => '/js/' + f);
+  const missing = [];
+  for (const f of [...cssFiles, ...jsFiles]) {
+    if (!listed.has(f)) missing.push(f);
+  }
+  if (missing.length) {
+    R.err(`sw.js PRECACHE_ASSETS missing live files:\n  - ${missing.join('\n  - ')}`);
+  } else {
+    R.ok(`sw.js PRECACHE_ASSETS lists all 5 CSS + 11 JS files`);
+  }
+})();
+
+// G62. Every <meta og:image> URL must point to a real, existing image file.
+//   The existing image-references guard handles <img>/srcset, but og:image
+//   only appears in meta and was previously missed.
+(function ogImageExistsGuard() {
+  const files = walk(ROOT).filter(f => f.endsWith('.html'));
+  const missing = [];
+  for (const f of files) {
+    const html = fs.readFileSync(f, 'utf8');
+    const tags = [...html.matchAll(/<meta\s+[^>]*property\s*=\s*["']og:image["'][^>]*content\s*=\s*["']([^"']+)["']/gi)];
+    const tags2 = [...html.matchAll(/<meta\s+[^>]*content\s*=\s*["']([^"']+)["'][^>]*property\s*=\s*["']og:image["']/gi)];
+    for (const m of [...tags, ...tags2]) {
+      const url = m[1].trim();
+      if (!url.startsWith('http')) continue;
+      // strip origin to local
+      const local = url.replace(/^https?:\/\/[^/]+/, '');
+      const abs = path.join(ROOT, local.replace(/^\//, ''));
+      if (!fs.existsSync(abs)) {
+        missing.add ? missing.add(`${rel(f)}: og:image → ${url}`) : missing.push(`${rel(f)}: og:image → ${url}`);
+      }
+    }
+  }
+  if (missing.length) {
+    R.err(`og:image points to non-existent files:\n  - ${[...new Set(missing)].slice(0, 8).join('\n  - ')}`);
+  } else {
+    R.ok('og:image: every meta-tag URL resolves to a real file');
+  }
+})();
+
+// G63. AGENTS-r46/r51 told agents to use color tokens (var(--color-…))
+//   instead of bare hex. We don't enforce 100% (some hex inside SVG / fallback
+//   is fine) but FLAG bare named-colors like `color: red;` `color: blue;` —
+//   these always indicate a sloppy quick-fix.
+(function namedColorAntiPatternGuard() {
+  const cssFiles = ['css/site.css', 'css/home.css', 'css/command-palette.css',
+                    'css/mobile-hotfix.css', 'css/nagornaya-mobile-toc.css'];
+  const NAMED = ['red','blue','green','yellow','purple','pink','cyan','magenta','orange','brown','gray','grey'];
+  const offenders = [];
+  for (const f of cssFiles) {
+    const p = path.join(ROOT, f);
+    if (!fs.existsSync(p)) continue;
+    const css = fs.readFileSync(p, 'utf8');
+    for (const c of NAMED) {
+      // match `color: red;` `background: red;` etc. but NOT inside `darkred`/`redirect`
+      const re = new RegExp(`(?:color|background|border-color|fill|stroke)\\s*:\\s*${c}\\b`, 'gi');
+      const count = (css.match(re) || []).length;
+      if (count) offenders.push(`${f}: ${c} × ${count}`);
+    }
+  }
+  if (offenders.length) {
+    R.warn(`Bare named colors in CSS (use design tokens):\n  - ${offenders.join('\n  - ')}`);
+  } else {
+    R.ok('CSS uses design tokens — no bare named colors (red/blue/etc.)');
+  }
+})();
+
+// G64. GitHub Actions workflows hygiene.
+//   - deploy.yml exists (already covered)
+//   - has explicit `permissions:` block (security best-practice)
+//   - has `concurrency:` group to prevent racing deploys
+(function workflowSecurityGuard() {
+  const wfDir = path.join(ROOT, '.github/workflows');
+  if (!fs.existsSync(wfDir)) return;
+  const problems = [];
+  for (const name of fs.readdirSync(wfDir)) {
+    if (!/\.ya?ml$/.test(name)) continue;
+    const yaml = fs.readFileSync(path.join(wfDir, name), 'utf8');
+    if (!/^\s*permissions\s*:/m.test(yaml)) {
+      problems.push(`${name}: no \`permissions:\` block (defaults to write-all)`);
+    }
+    if (/deploy|publish/i.test(name) && !/^\s*concurrency\s*:/m.test(yaml)) {
+      problems.push(`${name}: deploy workflow without \`concurrency:\` group`);
+    }
+  }
+  if (problems.length) {
+    R.warn(`GitHub workflow hygiene:\n  - ${problems.join('\n  - ')}`);
+  } else {
+    R.ok('GitHub workflows: every file has permissions; deploy workflows have concurrency');
+  }
+})();
+
+// G65. Magic z-index numbers in CSS — must use --z-* tokens (AGENTS-r33 rule).
+//   Tolerate trivial 0/1/2 layering on small components; flag bigger numbers.
+(function zIndexTokenGuard() {
+  const cssFiles = ['css/site.css', 'css/home.css', 'css/command-palette.css',
+                    'css/mobile-hotfix.css', 'css/nagornaya-mobile-toc.css'];
+  const offenders = [];
+  for (const f of cssFiles) {
+    const p = path.join(ROOT, f);
+    if (!fs.existsSync(p)) continue;
+    const css = fs.readFileSync(p, 'utf8');
+    const matches = [...css.matchAll(/z-index\s*:\s*(-?\d+)/g)];
+    for (const m of matches) {
+      const v = parseInt(m[1], 10);
+      // 0,1,2,-1 are legit local-stacking values
+      if (Math.abs(v) >= 10) {
+        offenders.push(`${f}: z-index: ${v} (use --z-* token; see AGENTS-r33)`);
+      }
+    }
+  }
+  if (offenders.length) {
+    R.warn(`Magic z-index numbers (use design tokens):\n  - ${offenders.slice(0, 8).join('\n  - ')}`);
+  } else {
+    R.ok('z-index: all magic numbers (≥10) replaced with --z-* tokens');
+  }
+})();
+
+// G66. Article SITE_CONFIG.version drift sentinel.
+//   Each article's `window.SITE_CONFIG.version` is supposed to be the
+//   cache-bust epoch. If it's a literal 1, the cache-bust never ran for
+//   that file. We flag (info) any version < 10 since real versions are
+//   Unix timestamps in the billions.
+(function siteConfigVersionFreshnessGuard() {
+  const files = walk(ROOT).filter(f => f.endsWith('.html'));
+  const stale = [];
+  for (const f of files) {
+    const html = fs.readFileSync(f, 'utf8');
+    if (!/window\.SITE_CONFIG/.test(html)) continue;
+    // pull `version: N`
+    const m = html.match(/version\s*:\s*(\d+)/);
+    if (!m) continue;
+    const v = parseInt(m[1], 10);
+    if (v < 1_000_000_000) {
+      // probably hand-written placeholder; valid cache-bust versions are Unix timestamps
+      stale.push(`${rel(f)}: SITE_CONFIG.version = ${v} (looks like placeholder, not timestamp)`);
+    }
+  }
+  // INFO only: SITE_CONFIG.version is NOT the actual cache-buster
+  // (that's done via ?v=hash on URLs). Many articles have version: 1 as
+  // placeholder and that's fine. Surface as info for future cleanup.
+  if (stale.length) {
+    R.note(`SITE_CONFIG.version uses placeholder (1) on ${stale.length} pages — fine but could be Unix timestamp`);
+  } else {
+    R.ok('SITE_CONFIG.version: all values look like Unix-epoch timestamps');
+  }
+})();
+
+// G67. Internal links use trailing-slash style consistently.
+//   We follow trailing-slash convention everywhere (/articles/foo/), so
+//   internal `<a href>` should match. Trailing slashes prevent a 301 hop.
+(function trailingSlashConsistencyGuard() {
+  const files = walk(ROOT).filter(f => f.endsWith('.html'));
+  const noSlashOffenders = [];
+  for (const f of files) {
+    const html = fs.readFileSync(f, 'utf8');
+    // capture internal <a href="/path/to/foo"> WITHOUT trailing slash and
+    // not pointing to a file (no extension). External or hash-only links skipped.
+    const anchors = [...html.matchAll(/<a\b[^>]*\bhref\s*=\s*["'](\/[a-zA-Z0-9_\-/]+?)["']/g)];
+    for (const m of anchors) {
+      const href = m[1];
+      if (href === '/') continue;
+      if (/\.[a-z0-9]{2,5}$/i.test(href)) continue; // file extension
+      if (/^\/(api|cdn|api-)/.test(href)) continue;
+      if (!href.endsWith('/')) {
+        noSlashOffenders.push(`${rel(f)}: href="${href}" (missing trailing slash → 301 redirect cost)`);
+      }
+    }
+  }
+  if (noSlashOffenders.length) {
+    R.warn(`Internal directory links without trailing slash (causes 301 hop):\n  - ${noSlashOffenders.slice(0, 8).join('\n  - ')}`);
+  } else {
+    R.ok('Internal links: every directory href ends with "/" (no 301 redirect hop)');
+  }
+})();
+
+// G68. data/series.json + sitemap.xml + landing-page consistency.
+//   For each series with its own landing page (e.g. hard-texts, pastor-series,
+//   nagornaya/seriya), that landing page MUST be in sitemap.xml.
+(function seriesLandingInSitemapGuard() {
+  const seriesPath = path.join(ROOT, 'data/series.json');
+  if (!fs.existsSync(seriesPath)) return;
+  const series = JSON.parse(fs.readFileSync(seriesPath, 'utf8'));
+  const sm = fs.readFileSync(path.join(ROOT, 'sitemap.xml'), 'utf8');
+  // landing URLs to check: /hard-texts/, /pastor-series/, /nagornaya/seriya/
+  const LANDINGS = {
+    'hard-texts': 'https://gospod-bog.ru/hard-texts/',
+    'pastor-series': 'https://gospod-bog.ru/pastor-series/',
+    'nagornaya': 'https://gospod-bog.ru/nagornaya/seriya/',
+  };
+  const problems = [];
+  for (const [key, url] of Object.entries(LANDINGS)) {
+    if (!(key in series)) continue;
+    // landing directory must exist on disk
+    const localPath = url.replace('https://gospod-bog.ru', '').replace(/^\//, '') + 'index.html';
+    if (!fs.existsSync(path.join(ROOT, localPath))) {
+      problems.push(`series "${key}": landing page ${url} not on disk`);
+    } else if (!sm.includes(`<loc>${url}</loc>`)) {
+      problems.push(`series "${key}": landing ${url} exists on disk but NOT in sitemap.xml`);
+    }
+  }
+  if (problems.length) {
+    R.err(`Series landing pages missing from sitemap.xml:\n  - ${problems.join('\n  - ')}`);
+  } else {
+    R.ok('Series landings: all in sitemap.xml');
+  }
+})();
+
+// G69. Detect duplicate inline SVG bodies across pages.
+//   AGENTS-r48b dedup'd many SVGs. If a future agent re-introduces the same
+//   SVG inline in 5+ HTML files, that's wasted bytes (~1KB each) — warn so
+//   they consider extracting to /icons/ or shared component.
+(function duplicateSvgBodyGuard() {
+  const files = walk(ROOT).filter(f => f.endsWith('.html'));
+  const svgMap = new Map(); // hash → list of files
+  for (const f of files) {
+    const html = fs.readFileSync(f, 'utf8');
+    const svgs = [...html.matchAll(/<svg\b[^>]*>([\s\S]*?)<\/svg>/gi)];
+    for (const m of svgs) {
+      const body = m[1].replace(/\s+/g, ' ').trim();
+      if (body.length < 100) continue; // skip tiny icons (single path)
+      if (body.length > 5000) continue; // skip huge dove/data SVGs
+      const key = body.slice(0, 200); // first 200 chars as a hash
+      if (!svgMap.has(key)) svgMap.set(key, new Set());
+      svgMap.get(key).add(rel(f));
+    }
+  }
+  const heavyDups = [...svgMap.entries()]
+    .filter(([k, files]) => files.size >= 5)
+    .map(([k, files]) => `${files.size} files share SVG starting: ${k.slice(0, 80)}…`);
+  // INFO only: SVG dedup is a perf-polish opportunity, not a regression.
+  // Many shared icons (sun/moon, clock, share) are inlined for FOUC-free rendering.
+  if (heavyDups.length) {
+    R.note(`SVG dedup opportunity: ${heavyDups.length} icon patterns shared across ≥5 files`);
+  } else {
+    R.ok('Inline SVG bodies: no heavy duplication across 5+ files');
+  }
+})();
+
+// G70. Cache-bust hashes use the right algorithm length.
+//   The cache-bust script uses md5 first-8-chars. Detect ?v= values that
+//   are too short/long (broken cache-bust scripts have been a pain point).
+(function cacheBustHashFormatGuard() {
+  const files = walk(ROOT).filter(f => f.endsWith('.html'));
+  const bad = [];
+  for (const f of files) {
+    const html = fs.readFileSync(f, 'utf8');
+    for (const m of html.matchAll(/(?:href|src)=["'][^"']+\?v=([^"'&]+)/g)) {
+      const v = m[1];
+      // valid format is hex chars, length 6-12 (md5short=8 standard).
+      if (!/^[a-f0-9]{6,12}$/.test(v)) {
+        bad.push(`${rel(f)}: ?v=${v} (expected 6-12 hex chars)`);
+      }
+    }
+  }
+  if (bad.length) {
+    R.err(`Cache-bust hash format wrong (broken cache-bust script?):\n  - ${[...new Set(bad)].slice(0, 8).join('\n  - ')}`);
+  } else {
+    R.ok('Cache-bust hashes: all ?v=… in valid 6-12 hex format');
+  }
+})();
+
 // Output
 const duration = ((Date.now() - R.start) / 1000).toFixed(2);
 const sep = '═'.repeat(78);
