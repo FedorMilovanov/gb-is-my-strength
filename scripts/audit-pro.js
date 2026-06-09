@@ -1700,6 +1700,305 @@ const SITE_CSS_MIN_BYTES = 200_000;
   }
 })();
 
+// ─────────────────────────────────────────────────────────────────────────
+// SMART ANTI-REGRESSION GUARDS — ROUND 4 (added 2026-06-09)
+// Indexing/SEO/asset hygiene blind spots from the 624-commit history.
+// Each guard ties to a real failure mode.
+// ─────────────────────────────────────────────────────────────────────────
+
+// G31. Pages listed in sitemap MUST NOT be `noindex`.
+//   Found today: nagornaya/istochniki/ and nagornaya/nakhodki/ had
+//   robots="noindex" yet were in sitemap.xml — Google sees the conflict and
+//   distrusts the whole sitemap. Either include with `index` OR remove from
+//   sitemap entirely.
+(function sitemapNoindexConflictGuard() {
+  const sm = path.join(ROOT, 'sitemap.xml');
+  if (!fs.existsSync(sm)) { R.warn('sitemap.xml missing'); return; }
+  const xml = fs.readFileSync(sm, 'utf8');
+  const locs = [...xml.matchAll(/<loc>([^<]+)<\/loc>/g)].map(m => m[1]);
+  const offenders = [];
+  for (const url of locs) {
+    // map gospod-bog.ru/foo/ → ./foo/index.html
+    let local = url.replace(/^https?:\/\/[^/]+/, '').replace(/^\//, '');
+    if (local === '' || local.endsWith('/')) local = (local || '') + 'index.html';
+    const abs = path.join(ROOT, local);
+    if (!fs.existsSync(abs)) continue; // a separate guard handles missing files
+    const html = fs.readFileSync(abs, 'utf8');
+    const m = html.match(/<meta\s+[^>]*name\s*=\s*["']robots["'][^>]*content\s*=\s*["']([^"']+)["']/i);
+    if (m && /\bnoindex\b/i.test(m[1])) {
+      offenders.push(`${local} — robots="${m[1].trim()}" but listed in sitemap`);
+    }
+  }
+  if (offenders.length) {
+    R.err(`sitemap.xml lists pages marked noindex (search engines distrust the sitemap):\n  - ${offenders.join('\n  - ')}`);
+  } else {
+    R.ok(`sitemap.xml: no noindex pages listed (checked ${locs.length} URLs)`);
+  }
+})();
+
+// G32. Canonical URL must (a) exist, (b) be unique across pages,
+//   (c) match its own page's actual URL (e.g. /articles/foo/ has
+//   canonical https://gospod-bog.ru/articles/foo/).
+(function canonicalSanityGuard() {
+  const files = walk(ROOT).filter(f => f.endsWith('.html'));
+  const seen = new Map(); // canonical url → first file that used it
+  const problems = [];
+  for (const f of files) {
+    const r = rel(f);
+    const base = path.basename(r);
+    if (/^(google|yandex|microsoft)/i.test(base)) continue;
+    if (base === '404.html') continue;
+    const html = fs.readFileSync(f, 'utf8');
+    // tolerate any attribute order: href before rel OR rel before href
+    let url = null;
+    const candidates = [...html.matchAll(/<link\b([^>]+)>/gi)];
+    for (const c of candidates) {
+      const attrs = c[1];
+      if (!/\brel\s*=\s*["']canonical["']/i.test(attrs)) continue;
+      const hm = attrs.match(/\bhref\s*=\s*["']([^"']+)["']/i);
+      if (hm) { url = hm[1].trim(); break; }
+    }
+    if (!url) {
+      problems.push(`${r}: missing <link rel="canonical">`);
+      continue;
+    }
+    // a) must use https://gospod-bog.ru/
+    if (!/^https:\/\/gospod-bog\.ru\//.test(url)) {
+      problems.push(`${r}: canonical "${url}" not on https://gospod-bog.ru/`);
+      continue;
+    }
+    // b) uniqueness
+    if (seen.has(url)) {
+      problems.push(`${r}: canonical "${url}" already used by ${seen.get(url)}`);
+    } else {
+      seen.set(url, r);
+    }
+    // c) match own URL: derive expected from file path
+    let expected = '/' + r.replace(/\\/g, '/');
+    expected = expected.replace(/\/index\.html$/, '/');
+    if (expected === '/index.html') expected = '/';
+    const expectedFull = 'https://gospod-bog.ru' + expected;
+    if (url !== expectedFull) {
+      problems.push(`${r}: canonical "${url}" ≠ expected "${expectedFull}"`);
+    }
+  }
+  if (problems.length) {
+    R.err(`Canonical URL issues:\n  - ${problems.slice(0, 12).join('\n  - ')}`);
+  } else {
+    R.ok(`Canonical URLs: present + unique + match own page (${seen.size} pages)`);
+  }
+})();
+
+// G33. <meta name="viewport"> must NOT block user zoom.
+//   `user-scalable=no` or `maximum-scale=1` is an a11y violation.
+(function viewportZoomGuard() {
+  const files = walk(ROOT).filter(f => f.endsWith('.html'));
+  const offenders = [];
+  for (const f of files) {
+    const html = fs.readFileSync(f, 'utf8');
+    const m = html.match(/<meta\s+[^>]*name\s*=\s*["']viewport["'][^>]*content\s*=\s*["']([^"']+)["']/i);
+    if (!m) continue;
+    const c = m[1];
+    if (/user-scalable\s*=\s*no/i.test(c)) offenders.push(`${rel(f)}: viewport has user-scalable=no`);
+    if (/maximum-scale\s*=\s*1(?:\.0)?\b/.test(c)) offenders.push(`${rel(f)}: viewport has maximum-scale=1`);
+  }
+  if (offenders.length) {
+    R.err(`Viewport blocks zoom (a11y violation, WCAG 1.4.4):\n  - ${offenders.join('\n  - ')}`);
+  } else {
+    R.ok('Viewport: user zoom allowed on all pages (no user-scalable=no / maximum-scale=1)');
+  }
+})();
+
+// G34. Inline event handlers (onclick, onerror, onload, onmouseover…) are
+//   forbidden by our CSP (default-src 'self'; script-src 'self' …).
+//   They would silently break in production while running fine in DevTools.
+//   We allow `onerror=""` on Yandex Metrika noscript <img> since it has no JS.
+(function inlineEventHandlerGuard() {
+  const files = walk(ROOT).filter(f => f.endsWith('.html'));
+  const HANDLERS = /\bon(?:click|change|submit|load|error|mouseover|mouseout|mouseenter|mouseleave|focus|blur|keydown|keyup|keypress|input|scroll|wheel|touchstart|touchend|touchmove)\s*=\s*["'][^"']/i;
+  const offenders = [];
+  for (const f of files) {
+    const html = fs.readFileSync(f, 'utf8');
+    // strip noscript/style/script blocks (where inline handlers would just be code)
+    const stripped = html
+      .replace(/<noscript[\s\S]*?<\/noscript>/gi, '')
+      .replace(/<script[\s\S]*?<\/script>/gi, '')
+      .replace(/<style[\s\S]*?<\/style>/gi, '')
+      .replace(/<!--[\s\S]*?-->/g, '');
+    const m = stripped.match(HANDLERS);
+    if (m) offenders.push(`${rel(f)}: inline handler "${m[0].slice(0, 40)}…" (CSP forbids; move to JS)`);
+  }
+  if (offenders.length) {
+    R.err(`Inline event handlers (CSP violation, will fail silently in prod):\n  - ${offenders.join('\n  - ')}`);
+  } else {
+    R.ok('No inline event handlers (onclick/onload/…) in HTML — CSP-safe');
+  }
+})();
+
+// G35. <meta charset="…"> must appear in the first 1024 bytes of <head>.
+//   Otherwise the browser may guess wrong, then re-parse — visible text flash.
+(function charsetEarlyGuard() {
+  const files = walk(ROOT).filter(f => f.endsWith('.html'));
+  const offenders = [];
+  for (const f of files) {
+    const r = rel(f);
+    const base = path.basename(r);
+    if (/^(google|yandex|microsoft)/i.test(base)) continue;
+    const buf = Buffer.alloc(1024);
+    const fd = fs.openSync(f, 'r');
+    fs.readSync(fd, buf, 0, 1024, 0);
+    fs.closeSync(fd);
+    const first1k = buf.toString('utf8');
+    if (!/<meta\s+charset\s*=/i.test(first1k) && !/<meta\s+[^>]*http-equiv\s*=\s*["']content-type["']/i.test(first1k)) {
+      offenders.push(`${r}: <meta charset> not in first 1KB`);
+    }
+  }
+  if (offenders.length) {
+    R.err(`<meta charset> not in first 1024 bytes (browser may re-parse):\n  - ${offenders.join('\n  - ')}`);
+  } else {
+    R.ok('<meta charset> appears in first 1KB of every page');
+  }
+})();
+
+// G36. SW precache list must NOT reference deleted images.
+//   This catches "we removed image X but forgot to remove from sw.js precache",
+//   which causes SW install to fail for users and breaks offline mode.
+//   Pagefind assets are generated in CI (not in repo) — whitelisted.
+(function swPrecacheAssetExistGuard() {
+  const sw = path.join(ROOT, 'sw.js');
+  if (!fs.existsSync(sw)) return;
+  const swText = fs.readFileSync(sw, 'utf8');
+  const SKIP_PREFIXES = ['/pagefind/'];
+  // grab string literals that look like URL paths starting with /
+  const urls = [...swText.matchAll(/['"](\/[A-Za-z0-9_\-/.]+\.(?:webp|jpg|jpeg|png|svg|css|js|html|ico|json|xml|woff2?))['"]/g)]
+    .map(m => m[1])
+    .filter(u => !SKIP_PREFIXES.some(p => u.startsWith(p)));
+  const missing = [];
+  for (const u of urls) {
+    const local = path.join(ROOT, u.replace(/^\//, ''));
+    if (!fs.existsSync(local)) missing.push(u);
+  }
+  if (missing.length) {
+    R.err(`sw.js precache references missing files:\n  - ${missing.slice(0, 10).join('\n  - ')}`);
+  } else {
+    R.ok(`sw.js precache: every referenced asset exists (${urls.length} checked, pagefind/ skipped)`);
+  }
+})();
+
+// G37. CSP img-src must include all external hosts actually referenced via <img>.
+//   Incident: CSP added wss/Yandex but agents added new Wikimedia/web.archive
+//   <img> without updating img-src — browser silently blocks images.
+(function cspExternalHostCoverageGuard() {
+  const files = walk(ROOT).filter(f => f.endsWith('.html'));
+  const problems = [];
+  for (const f of files) {
+    const r = rel(f);
+    const base = path.basename(r);
+    if (/^(google|yandex|microsoft)/i.test(base) || base === '404.html') continue;
+    const html = fs.readFileSync(f, 'utf8');
+    const cspM = html.match(/<meta\s+http-equiv\s*=\s*["']Content-Security-Policy["'][^>]*content\s*=\s*["']([^"']+)["']/i);
+    if (!cspM) continue; // pages without CSP — out of scope here
+    const csp = cspM[1];
+    // extract `img-src ...;` directive (terminated by `;` or end of string)
+    const imgSrcM = csp.match(/(?:^|;)\s*img-src\s+([^;]+)/i);
+    if (!imgSrcM) continue;
+    // each token is space-separated; tokens can be schemes, hosts, 'self', etc.
+    const tokens = imgSrcM[1].trim().split(/\s+/).map(t => t.trim()).filter(Boolean);
+    // Parse host whitelist: strip leading scheme://, lowercase
+    const allowedHosts = tokens
+      .filter(t => /^https?:\/\//.test(t) || /^[*a-z0-9.-]+$/i.test(t) && t !== '*' && !t.includes(':'))
+      .map(t => t.replace(/^https?:\/\//, '').toLowerCase().replace(/\/$/, ''));
+    // collect all <img src=https://…> external hosts on this page
+    const exts = [...html.matchAll(/<img\b[^>]*\bsrc\s*=\s*["'](https?:\/\/[^"']+)/gi)].map(m => m[1]);
+    for (const url of exts) {
+      let host;
+      try { host = new URL(url).host.toLowerCase(); } catch { continue; }
+      const ok = allowedHosts.some(h => {
+        if (h.startsWith('*.')) return host === h.slice(2) || host.endsWith('.' + h.slice(2));
+        return host === h;
+      });
+      if (!ok) problems.push(`${r}: <img src="${host}…"> not covered by CSP img-src`);
+    }
+  }
+  if (problems.length) {
+    R.err(`CSP img-src does not cover all external image hosts on the page:\n  - ${[...new Set(problems)].slice(0, 10).join('\n  - ')}`);
+  } else {
+    R.ok('CSP img-src covers every external <img> host found in HTML');
+  }
+})();
+
+// G38. RSS feed lastBuildDate must not be older than 60 days.
+//   Catches a frozen feed-generator (deploy.yml broke / removed).
+(function feedFreshnessGuard() {
+  const p = path.join(ROOT, 'feed.xml');
+  if (!fs.existsSync(p)) { R.warn('feed.xml missing'); return; }
+  const xml = fs.readFileSync(p, 'utf8');
+  const m = xml.match(/<lastBuildDate>([^<]+)<\/lastBuildDate>/);
+  if (!m) { R.warn('feed.xml: no <lastBuildDate>'); return; }
+  const built = new Date(m[1]);
+  if (isNaN(built)) { R.warn(`feed.xml: unparseable lastBuildDate "${m[1]}"`); return; }
+  const ageDays = (Date.now() - built.getTime()) / 86400000;
+  if (ageDays > 60) {
+    R.warn(`feed.xml lastBuildDate is ${ageDays.toFixed(0)} days old — may need rebuilding`);
+  } else {
+    R.ok(`feed.xml lastBuildDate is ${ageDays.toFixed(0)} days old (fresh)`);
+  }
+})();
+
+// G39. JSON-LD strict shape: each block must be valid AND set "@context".
+//   The existing jsonLdValidity guard only checks parse-validity. This adds:
+//   - require @context = "https://schema.org" (or "schema.org/")
+//   - require @type field exists (or @graph)
+(function jsonLdShapeGuard() {
+  const files = walk(ROOT).filter(f => f.endsWith('.html'));
+  const problems = [];
+  for (const f of files) {
+    const html = fs.readFileSync(f, 'utf8');
+    const blocks = [...html.matchAll(/<script\b[^>]*type\s*=\s*["']application\/ld\+json["'][^>]*>([\s\S]*?)<\/script>/gi)];
+    for (const b of blocks) {
+      let json;
+      try { json = JSON.parse(b[1]); } catch { continue; }
+      const root = Array.isArray(json) ? json[0] : json;
+      const ctx = root['@context'];
+      const hasGoodCtx = (typeof ctx === 'string' && /schema\.org/.test(ctx))
+        || (Array.isArray(ctx) && ctx.some(x => typeof x === 'string' && /schema\.org/.test(x)));
+      if (!hasGoodCtx) {
+        problems.push(`${rel(f)}: JSON-LD missing or invalid @context`);
+      } else if (!root['@type'] && !root['@graph']) {
+        problems.push(`${rel(f)}: JSON-LD missing @type or @graph`);
+      }
+    }
+  }
+  if (problems.length) {
+    R.err(`JSON-LD shape problems:\n  - ${[...new Set(problems)].slice(0, 10).join('\n  - ')}`);
+  } else {
+    R.ok('JSON-LD shape: every block has valid @context (schema.org) and @type/@graph');
+  }
+})();
+
+// G40. <meta name="description"> length sanity (Google truncates ~155-170 chars,
+//   but we are bilingual UTF-8; use Russian-friendly cap ~300 chars).
+//   Pure warning — not all sites care. Skip 404, robot stubs.
+(function descriptionLengthGuard() {
+  const files = walk(ROOT).filter(f => f.endsWith('.html'));
+  const fat = [];
+  for (const f of files) {
+    const r = rel(f);
+    const base = path.basename(r);
+    if (/^(google|yandex|microsoft)/i.test(base) || base === '404.html') continue;
+    const html = fs.readFileSync(f, 'utf8');
+    const m = html.match(/<meta\s+[^>]*name\s*=\s*["']description["'][^>]*content\s*=\s*["']([^"']+)["']/i);
+    if (!m) continue;
+    const len = [...m[1]].length; // Unicode code-point count
+    if (len > 300) fat.push(`${r}: description ${len} chars (Google truncates; trim to ≤300)`);
+  }
+  if (fat.length) {
+    R.warn(`Meta descriptions over 300 chars (consider trimming):\n  - ${fat.join('\n  - ')}`);
+  } else {
+    R.ok('Meta descriptions: all ≤ 300 chars (Russian-friendly cap)');
+  }
+})();
+
 // Output
 const duration = ((Date.now() - R.start) / 1000).toFixed(2);
 const sep = '═'.repeat(78);

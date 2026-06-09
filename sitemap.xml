@@ -100,28 +100,6 @@
     <image:image><image:loc>https://gospod-bog.ru/images/og-nagornaya-propoved-chast-5.webp</image:loc></image:image>
   </url>
 
-  <url>
-    <loc>https://gospod-bog.ru/nagornaya/istochniki/</loc>
-    <lastmod>2026-06-08T00:00:00+03:00</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.6</priority>
-    <image:image>
-      <image:loc>https://gospod-bog.ru/images/og-nagornaya-propoved.webp</image:loc>
-      <image:title>Нагорная проповедь: 120+ источников</image:title>
-    </image:image>
-  </url>
-
-  <url>
-    <loc>https://gospod-bog.ru/nagornaya/nakhodki/</loc>
-    <lastmod>2026-06-08T00:00:00+03:00</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.6</priority>
-    <image:image>
-      <image:loc>https://gospod-bog.ru/images/og-nagornaya-propoved.webp</image:loc>
-      <image:title>Нагорная проповедь: 21 находка</image:title>
-    </image:image>
-  </url>
-
   <!-- Биографии: серия о Джоне Гилле (порядок: контекст → 3 части → справочник) -->
   <url>
     <loc>https://gospod-bog.ru/articles/dzhon-gill-istoricheskiy-kontekst/</loc>
