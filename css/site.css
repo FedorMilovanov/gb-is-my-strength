@@ -294,3 +294,17 @@ html.dark .summary-card__text strong{color:var(--color-accent-strong)}
   .article-end-sdg span { display: block; margin-bottom: 1em; }
   .article-end-sdg svg { width: 40pt; height: auto; margin: 0 auto; }
 }
+
+/* ── Vertical (portrait) image in float-left/right position ──────────────
+   Catches 9:16 DALL-E images that otherwise dominate the column.
+   Locked to 270px wide on desktop, 160px on mobile. Beats existing
+   .article-img--vertical max-height rule via specificity (3 classes).
+   Added 2026-06-09 after the gill-context-scroll regression. */
+.article-img.article-img--vertical.float-left,
+.article-img.article-img--vertical.float-right{width:270px;max-width:38%}
+.article-img.article-img--vertical.float-left img,
+.article-img.article-img--vertical.float-right img{width:100%;height:auto;max-height:none;margin:0;border-radius:6px;object-fit:contain}
+@media (max-width:560px){
+  .article-img.article-img--vertical.float-left,
+  .article-img.article-img--vertical.float-right{float:left;width:160px;max-width:45%;margin:6px 16px 12px 0;shape-outside:margin-box}
+}

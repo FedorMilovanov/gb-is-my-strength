@@ -2884,6 +2884,179 @@ const JS_SIZE_FLOORS = {
   }
 })();
 
+// ─────────────────────────────────────────────────────────────────────────
+// SMART ANTI-REGRESSION GUARDS — ROUND 8 (added 2026-06-09)
+// Image presentation / DALL-E layout hygiene. Many DALL-E outputs come in
+// 9:16 portrait — without proper class they dominate the column on mobile.
+// ─────────────────────────────────────────────────────────────────────────
+
+// G71. Vertical (portrait) <img> must be inside <figure class="…article-img--vertical…">
+//   Incident: gill-context-scroll (1504x2784, ratio 1.85) was inside a plain
+//   .article-img.float-left and on mobile took ~666px of vertical space —
+//   "9:16 на весь экран" exactly like the owner described.
+//   Rule: <img> declared with height/width attrs where height >= 1.4*width
+//   MUST sit in a figure with class containing 'article-img--vertical'.
+(function verticalImageClassGuard() {
+  const files = walk(ROOT).filter(f => f.endsWith('.html'));
+  const offenders = [];
+  for (const f of files) {
+    const r = rel(f);
+    if (/^(google|yandex)/i.test(path.basename(r))) continue;
+    const html = fs.readFileSync(f, 'utf8');
+    // pull <figure …> blocks
+    const figures = [...html.matchAll(/<figure\b([^>]*)>([\s\S]*?)<\/figure>/gi)];
+    for (const fig of figures) {
+      const figAttrs = fig[1];
+      const figBody = fig[2];
+      // only inspect article-img figures
+      if (!/\barticle-img\b/.test(figAttrs)) continue;
+      // grab the inner <img …> width/height
+      const imgM = figBody.match(/<img\b[^>]*\bwidth\s*=\s*["'](\d+)["'][^>]*\bheight\s*=\s*["'](\d+)["']/i)
+                || figBody.match(/<img\b[^>]*\bheight\s*=\s*["'](\d+)["'][^>]*\bwidth\s*=\s*["'](\d+)["']/i);
+      if (!imgM) continue;
+      const [w, h] = imgM[0].match(/width\s*=\s*["']\d+["']/i)
+        ? [parseInt(imgM[1], 10), parseInt(imgM[2], 10)]
+        : [parseInt(imgM[2], 10), parseInt(imgM[1], 10)];
+      if (!w || !h) continue;
+      const ratio = h / w;
+      if (ratio < 1.4) continue; // not portrait
+      // Now check class includes 'article-img--vertical' OR file is in /icons/
+      const hasVertical = /\barticle-img--vertical\b/.test(figAttrs);
+      if (!hasVertical) {
+        const srcM = figBody.match(/<img\b[^>]*\bsrc\s*=\s*["']([^"']+)["']/i);
+        const src = srcM ? srcM[1].split('/').pop() : '(unknown)';
+        offenders.push(`${r}: portrait image (${w}×${h}, ratio ${ratio.toFixed(2)}) "${src}" needs class "article-img--vertical"`);
+      }
+    }
+  }
+  if (offenders.length) {
+    R.err(`Portrait (9:16) images without --vertical class will dominate on mobile:\n  - ${offenders.slice(0, 10).join('\n  - ')}`);
+  } else {
+    R.ok('Portrait images: all 9:16/2:3 figures use article-img--vertical class');
+  }
+})();
+
+// G72. <figure class="article-img"> must contain a <figcaption>.
+//   Best practice: every embedded image carries semantic caption for a11y
+//   AND SEO. Some agents drop caption when copy-pasting.
+(function figureCaptionGuard() {
+  const files = walk(ROOT).filter(f => f.endsWith('.html'));
+  const offenders = [];
+  for (const f of files) {
+    const html = fs.readFileSync(f, 'utf8');
+    const figures = [...html.matchAll(/<figure\b[^>]*\bclass\s*=\s*["'][^"']*\barticle-img\b[^"']*["'][\s\S]*?<\/figure>/gi)];
+    for (const fig of figures) {
+      if (!/<figcaption\b/i.test(fig[0])) {
+        const srcM = fig[0].match(/<img\b[^>]*\bsrc\s*=\s*["']([^"']+)["']/i);
+        const src = srcM ? srcM[1].split('/').pop() : '(unknown)';
+        offenders.push(`${rel(f)}: <figure article-img> without <figcaption>, src=${src}`);
+      }
+    }
+  }
+  if (offenders.length) {
+    R.warn(`Article images without <figcaption> (a11y/SEO):\n  - ${offenders.slice(0, 6).join('\n  - ')}`);
+  } else {
+    R.ok('Article images: every <figure article-img> carries a <figcaption>');
+  }
+})();
+
+// G73. Series-strip aside must come BEFORE summary-card.
+//   The strip is a top-of-article navigator. Owner explicitly fixed this in
+//   commit 2920a36e ("move summary-card AFTER series-strip"). We enforce it.
+//   We don't require strip-right-after-h1 (both <header><h1></header><strip>
+//   and <article><strip><summary-card> patterns are legitimate).
+(function seriesStripPlacementGuard() {
+  const files = walk(ROOT).filter(f => f.endsWith('.html'));
+  const offenders = [];
+  for (const f of files) {
+    const html = fs.readFileSync(f, 'utf8');
+    if (!/data-series-strip/.test(html)) continue;
+    const stripIdx = html.search(/<aside\b[^>]*data-series-strip/);
+    const summaryIdx = html.search(/<section\b[^>]*class\s*=\s*["'][^"']*summary-card\b/);
+    if (stripIdx === -1) continue;
+    if (summaryIdx !== -1 && summaryIdx < stripIdx) {
+      offenders.push(`${rel(f)}: summary-card appears BEFORE <aside data-series-strip> (regression of #2920a36e)`);
+    }
+  }
+  if (offenders.length) {
+    R.err(`Series-strip must precede summary-card (AGENTS #2920a36e):\n  - ${offenders.join('\n  - ')}`);
+  } else {
+    R.ok('Series-strip placement: appears before summary-card on every series article');
+  }
+})();
+
+// G74. Image alt text quality: not empty, not redundant ("image of…", "picture of…"),
+//   not the filename itself ("gill-portret.jpg").
+(function altTextQualityGuard() {
+  const files = walk(ROOT).filter(f => f.endsWith('.html'));
+  const offenders = [];
+  for (const f of files) {
+    const html = fs.readFileSync(f, 'utf8');
+    // skip yandex tracker, decorative images
+    const imgs = [...html.matchAll(/<img\b([^>]+)>/gi)];
+    for (const m of imgs) {
+      const attrs = m[1];
+      const altM = attrs.match(/\balt\s*=\s*["']([^"']*)["']/i);
+      if (!altM) continue;
+      const alt = altM[1].trim();
+      if (!alt) continue; // empty alt = decorative, that's OK
+      // Bad patterns
+      if (/^(?:image|picture|photo|изображение|картинка|фото)\s+(?:of|with|showing)\b/i.test(alt)) {
+        offenders.push(`${rel(f)}: redundant "image of…" alt: "${alt.slice(0, 60)}…"`);
+      }
+      // alt = filename
+      if (/\.(jpe?g|png|webp|gif|svg)$/i.test(alt)) {
+        offenders.push(`${rel(f)}: alt looks like a filename: "${alt}"`);
+      }
+      // alt is too short (1-2 chars)
+      if (alt.length < 3 && !/^[А-Яа-я0-9]/.test(alt)) {
+        offenders.push(`${rel(f)}: alt suspiciously short: "${alt}"`);
+      }
+    }
+  }
+  if (offenders.length) {
+    R.warn(`Image alt text quality issues:\n  - ${offenders.slice(0, 6).join('\n  - ')}`);
+  } else {
+    R.ok('Image alt text: no "image of…" / filename / too-short patterns');
+  }
+})();
+
+// G75. Picture <source srcset> width descriptors match actual file dimensions.
+//   E.g. <source srcset="…-600w.webp 600w"> ought to point at a 600px-wide file.
+//   Wrong descriptor confuses the browser image selector → wrong file loaded.
+(function srcsetDescriptorAccuracyGuard() {
+  const files = walk(ROOT).filter(f => f.endsWith('.html'));
+  const mismatches = [];
+  for (const f of files) {
+    const html = fs.readFileSync(f, 'utf8');
+    const srcsets = [...html.matchAll(/srcset\s*=\s*["']([^"']+)["']/g)].map(m => m[1]);
+    for (const set of srcsets) {
+      for (const piece of set.split(',')) {
+        const p = piece.trim();
+        const parts = p.split(/\s+/);
+        if (parts.length !== 2) continue;
+        const [url, descriptor] = parts;
+        const widthM = descriptor.match(/^(\d+)w$/);
+        if (!widthM) continue;
+        const declaredW = parseInt(widthM[1], 10);
+        // filename hint: -600w.webp → expects 600
+        const fileWidthM = url.match(/-(\d+)w\.(?:webp|jpe?g|png)$/);
+        if (fileWidthM) {
+          const fileW = parseInt(fileWidthM[1], 10);
+          if (fileW !== declaredW) {
+            mismatches.push(`${rel(f)}: srcset "${url}" declared as ${declaredW}w but filename suggests ${fileW}w`);
+          }
+        }
+      }
+    }
+  }
+  if (mismatches.length) {
+    R.err(`srcset width descriptors mismatch filename hints:\n  - ${[...new Set(mismatches)].slice(0, 6).join('\n  - ')}`);
+  } else {
+    R.ok('srcset width descriptors match filename hints (Xw matches -Xw.ext)');
+  }
+})();
+
 // Output
 const duration = ((Date.now() - R.start) / 1000).toFixed(2);
 const sep = '═'.repeat(78);
