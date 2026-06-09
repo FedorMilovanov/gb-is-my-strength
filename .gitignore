@@ -17,3 +17,4 @@ node_modules/
 # Локальные архивы репозитория не коммитим
 /gb-is-my-strength.zip
 audit/audit-pro-*.md
+.npm/
