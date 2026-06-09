@@ -2356,9 +2356,12 @@ const JS_SIZE_FLOORS = {
 // Each guard validated against existing prod state to avoid false positives.
 // ─────────────────────────────────────────────────────────────────────────
 
-// G51. fetchpriority="high" — at most ONE per page (web.dev / Google PageSpeed).
-//   Multiple high-priority resources cancel each other out and HURT LCP.
-//   Pure warning since owner may intentionally tune this.
+// G51. fetchpriority="high" — at most ONE UNIQUE resource per page (web.dev).
+//   Surgical: we count UNIQUE URLs marked high-priority, not raw occurrences.
+//   The standard web.dev pattern is to put fetchpriority="high" on BOTH
+//   the <link rel="preload"> and the <img>/<video> of the same hero — this
+//   is legitimate (one resource, two declarations) and should NOT trigger.
+//   We flag only when ≥2 DIFFERENT URLs are marked high-priority.
 (function fetchPriorityHighGuard() {
   const files = walk(ROOT).filter(f => f.endsWith('.html'));
   const offenders = [];
@@ -2367,13 +2370,33 @@ const JS_SIZE_FLOORS = {
     const base = path.basename(r);
     if (/^(google|yandex|microsoft)/i.test(base) || base === '404.html') continue;
     const html = fs.readFileSync(f, 'utf8');
-    const count = (html.match(/\bfetchpriority\s*=\s*["']high["']/gi) || []).length;
-    if (count > 1) offenders.push(`${r}: ${count} fetchpriority="high" (recommend 1 for LCP)`);
+    // Pull all tags that have fetchpriority="high"
+    const tags = [...html.matchAll(/<(?:link|img|source|video|script)\b[^>]*\bfetchpriority\s*=\s*["']high["'][^>]*>/gi)].map(m => m[0]);
+    if (tags.length < 2) continue;
+    // Extract URL hint (href / src / imagesrcset's first URL)
+    const urls = new Set();
+    for (const tag of tags) {
+      const u = (tag.match(/\b(?:href|src)\s*=\s*["']([^"']+)["']/i) || [])[1]
+            || ((tag.match(/\bimagesrcset\s*=\s*["']([^"']+)["']/i) || [])[1] || '').split(',')[0].trim().split(/\s+/)[0];
+      if (u) {
+        // normalize: strip dir, width-suffix, AND extension — so
+        // `dzhon-gill-portret.webp`, `dzhon-gill-portret.jpg`, and
+        // `dzhon-gill-portret-600w.webp` all collapse to one base resource.
+        const norm = u
+          .split('/').pop()
+          .replace(/-\d+w\./i, '.')
+          .replace(/\.(webp|jpe?g|png|avif|gif)$/i, '');
+        urls.add(norm);
+      }
+    }
+    if (urls.size > 1) {
+      offenders.push(`${r}: ${urls.size} different resources marked fetchpriority="high" (${[...urls].slice(0, 4).join(', ')})`);
+    }
   }
   if (offenders.length) {
-    R.warn(`Multiple fetchpriority="high" per page (web.dev: 1 max for LCP):\n  - ${offenders.join('\n  - ')}`);
+    R.warn(`Multiple UNIQUE fetchpriority="high" per page (web.dev: 1 max for LCP):\n  - ${offenders.join('\n  - ')}`);
   } else {
-    R.ok('fetchpriority="high": at most 1 per page (good LCP signal)');
+    R.ok('fetchpriority="high": at most 1 unique resource per page (LCP-friendly)');
   }
 })();
 
@@ -3354,6 +3377,157 @@ const JS_SIZE_FLOORS = {
     R.warn(`AGENTS.md has ${rows} AGENTS-rN changelog rows — consider archiving older to AUDIT_HISTORY.md`);
   } else {
     R.note(`AGENTS.md changelog: ${rows} rows (under 100, healthy)`);
+  }
+})();
+
+// ─────────────────────────────────────────────────────────────────────────
+// SMART ANTI-REGRESSION GUARDS — ROUND 10 (added 2026-06-09)
+// Final round: cross-data consistency, font hygiene, edge-case bugs.
+// All checks validated against real prod state — no false positives.
+// ─────────────────────────────────────────────────────────────────────────
+
+// G86. Reading time consistency: data/series.json readingTime vs HTML caption.
+//   INFO-level only — minor drift is fine since reading-time can be re-estimated.
+//   Major drift (>20 min) suggests a stale series.json entry.
+(function readingTimeConsistencyInfo() {
+  const sp = path.join(ROOT, 'data/series.json');
+  if (!fs.existsSync(sp)) return;
+  const series = JSON.parse(fs.readFileSync(sp, 'utf8'));
+  const driftSevere = [];
+  for (const [key, def] of Object.entries(series)) {
+    for (const part of def.parts || []) {
+      if (!part.readingTime || !part.slug) continue;
+      const candidates = [
+        path.join(ROOT, 'articles', part.slug, 'index.html'),
+        path.join(ROOT, 'nagornaya', part.slug, 'index.html'),
+      ];
+      const file = candidates.find(p => fs.existsSync(p));
+      if (!file) continue;
+      const html = fs.readFileSync(file, 'utf8');
+      // first reading-time hint in the page (X мин)
+      const m = html.match(/[~≈]\s*(\d+)\s*мин(?:\s*чтения)?/i);
+      if (!m) continue;
+      const realMin = parseInt(m[1], 10);
+      const drift = Math.abs(realMin - part.readingTime);
+      if (drift > 20) {
+        driftSevere.push(`${key}/${part.slug}: series.json=${part.readingTime}мин, HTML shows ~${realMin}мин (drift ${drift})`);
+      }
+    }
+  }
+  if (driftSevere.length) {
+    R.warn(`Reading-time severely drifted between series.json and HTML:\n  - ${driftSevere.join('\n  - ')}`);
+  } else {
+    R.ok('Reading-time series.json ↔ HTML: no severe drift (>20 min)');
+  }
+})();
+
+// G87. Preloaded font URLs MUST exist on disk.
+//   Owner has 47+ <link rel="preload" as="font">; we already check that
+//   the file exists, but this is a dedicated guard that's noisier and
+//   easier to debug than the generic asset-existence check.
+(function preloadedFontsExistGuard() {
+  const files = walk(ROOT).filter(f => f.endsWith('.html'));
+  const missing = new Set();
+  for (const f of files) {
+    const html = fs.readFileSync(f, 'utf8');
+    const preloads = [...html.matchAll(/<link\b[^>]*\brel\s*=\s*["']preload["'][^>]*\bas\s*=\s*["']font["'][^>]*\bhref\s*=\s*["']([^"']+)["']/gi)];
+    for (const p of preloads) {
+      const url = p[1];
+      if (url.startsWith('http')) continue;
+      // Resolve both root-relative (/foo) and path-relative (../foo)
+      const local = url.startsWith('/')
+        ? path.join(ROOT, url.replace(/^\//, ''))
+        : path.resolve(path.dirname(f), url);
+      if (!fs.existsSync(local)) missing.add(`${rel(f)}: preloads ${url}`);
+    }
+  }
+  if (missing.size) {
+    R.err(`Preloaded font URLs do not exist on disk:\n  - ${[...missing].slice(0, 8).join('\n  - ')}`);
+  } else {
+    R.ok('Preloaded fonts: every <link rel="preload" as="font"> resolves');
+  }
+})();
+
+// G88. llms.txt — AI-readable index hygiene.
+//   Owner cares about LLM discoverability (Perplexity/ChatGPT Search/Claude/Grok).
+//   - Every Article URL listed in llms.txt must exist on disk.
+//   - llms.txt must not reference any noindex page.
+(function llmsTxtSanityGuard() {
+  const p = path.join(ROOT, 'llms.txt');
+  if (!fs.existsSync(p)) { R.note('llms.txt missing — consider adding for LLM SEO'); return; }
+  const txt = fs.readFileSync(p, 'utf8');
+  const urls = [...txt.matchAll(/https:\/\/gospod-bog\.ru(\/[^)\s]*)/g)].map(m => m[1].replace(/\)$/, ''));
+  const problems = [];
+  for (const u of urls) {
+    const local = u.endsWith('/') ? path.join(ROOT, u.replace(/^\//, ''), 'index.html') : path.join(ROOT, u.replace(/^\//, ''));
+    if (!fs.existsSync(local)) {
+      problems.push(`llms.txt → ${u} (file not on disk)`);
+      continue;
+    }
+    // also check it's not noindex
+    const h = fs.readFileSync(local, 'utf8');
+    if (/<meta\s+[^>]*name\s*=\s*["']robots["'][^>]*content\s*=\s*["'][^"']*noindex/i.test(h)) {
+      problems.push(`llms.txt → ${u} (page is noindex — should not be promoted to LLMs either)`);
+    }
+  }
+  if (problems.length) {
+    R.warn(`llms.txt issues:\n  - ${problems.slice(0, 8).join('\n  - ')}`);
+  } else {
+    R.ok(`llms.txt: all ${urls.length} referenced URLs exist and are indexable`);
+  }
+})();
+
+// G89. sitemap.xml image:image entries — each image:loc must exist.
+//   Owner uses image sitemap extension for richer image search. Stale image:loc
+//   = broken signal to Google Images.
+(function sitemapImageExistGuard() {
+  const p = path.join(ROOT, 'sitemap.xml');
+  if (!fs.existsSync(p)) return;
+  const xml = fs.readFileSync(p, 'utf8');
+  const imgLocs = [...xml.matchAll(/<image:loc>([^<]+)<\/image:loc>/g)].map(m => m[1].trim());
+  const missing = [];
+  for (const u of imgLocs) {
+    const local = u.replace(/^https?:\/\/[^/]+/, '').replace(/^\//, '');
+    if (!fs.existsSync(path.join(ROOT, local))) {
+      missing.push(`image:loc ${u} → file missing`);
+    }
+  }
+  if (missing.length) {
+    R.err(`sitemap.xml image:loc references missing files:\n  - ${missing.slice(0, 8).join('\n  - ')}`);
+  } else {
+    R.ok(`sitemap.xml: all ${imgLocs.length} image:loc URLs resolve`);
+  }
+})();
+
+// G90. Heroes use the same image for OG-meta and on-page hero.
+//   Detected previously: home page preloads og-nagornaya-propoved AND
+//   shows og-biografii hero with fetchpriority="high" — conflicting LCP
+//   candidates. Add a sanity check: the page's og:image SHOULD match a
+//   fetchpriority="high" / preloaded image on the page (alignment signal).
+(function ogImageHeroAlignmentGuard() {
+  const files = walk(ROOT).filter(f => f.endsWith('.html'));
+  const offenders = [];
+  for (const f of files) {
+    const r = rel(f);
+    const base = path.basename(r);
+    if (/^(google|yandex)/i.test(base) || base === '404.html') continue;
+    const html = fs.readFileSync(f, 'utf8');
+    const ogM = html.match(/<meta\s+[^>]*property\s*=\s*["']og:image["'][^>]*content\s*=\s*["']([^"']+)["']/i);
+    if (!ogM) continue;
+    const ogName = ogM[1].split('/').pop().replace(/-\d+w\./, '.').replace(/\.(webp|jpe?g|png)$/i, '');
+    // find any LCP-priority resource on the page
+    const lcpCandidates = [...html.matchAll(/(?:href|src)\s*=\s*["']([^"']+\.(?:webp|jpe?g|png))["'][^>]*\bfetchpriority\s*=\s*["']high["']/gi)]
+      .concat([...html.matchAll(/\bfetchpriority\s*=\s*["']high["'][^>]*(?:href|src)\s*=\s*["']([^"']+\.(?:webp|jpe?g|png))["']/gi)])
+      .map(m => m[1].split('/').pop().replace(/-\d+w\./, '.').replace(/\.(webp|jpe?g|png)$/i, ''));
+    if (lcpCandidates.length === 0) continue; // no LCP signal at all — skip
+    if (!lcpCandidates.includes(ogName)) {
+      offenders.push(`${r}: og:image=${ogName}, but LCP-priority images are: ${[...new Set(lcpCandidates)].slice(0, 3).join(', ')}`);
+    }
+  }
+  if (offenders.length) {
+    R.note(`og:image differs from LCP-priority image (consider aligning for social-share consistency):\n  - ${offenders.slice(0, 6).join('\n  - ')}`);
+  } else {
+    R.ok('og:image / LCP-priority image alignment: consistent across pages');
   }
 })();
 
