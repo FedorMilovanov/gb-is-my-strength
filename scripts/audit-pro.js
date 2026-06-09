@@ -3865,6 +3865,68 @@ const JS_SIZE_FLOORS = {
   }
 })();
 
+// ─────────────────────────────────────────────────────────────────────────
+// SMART ANTI-REGRESSION GUARDS — ROUND 14 (added 2026-06-09)
+// Catch RSS/sitemap/manifest image references to deleted files.
+// Found today: feed.xml referenced images/og-preview.jpg (deleted in
+// commit 89679fc7) — RSS aggregators got 404 for the feed image.
+// ─────────────────────────────────────────────────────────────────────────
+
+// G102. feed.xml + manifest.json + llms.txt — every absolute or relative
+//   image/asset URL must point to an existing file on disk.
+//   Existing G89 covers sitemap.xml image:loc. This adds feed.xml,
+//   manifest.json icons, llms.txt links.
+(function dataAssetReferenceGuard() {
+  const sources = ['feed.xml', 'manifest.json', 'llms.txt', 'data/search-manifest.json'];
+  const missing = new Set();
+  for (const src of sources) {
+    const p = path.join(ROOT, src);
+    if (!fs.existsSync(p)) continue;
+    const txt = fs.readFileSync(p, 'utf8');
+    // Extract both absolute (https://gospod-bog.ru/…) and root-relative (/images/…) URLs
+    const urls = new Set();
+    for (const m of txt.matchAll(/https:\/\/gospod-bog\.ru(\/[a-zA-Z0-9_./\-+]+\.(?:webp|jpe?g|png|svg|ico|js|css|html|woff2?))/gi)) {
+      urls.add(m[1]);
+    }
+    for (const m of txt.matchAll(/(?:"|>|\s)(\/(?:images|css|js|fonts|icons)\/[a-zA-Z0-9_./\-+]+\.(?:webp|jpe?g|png|svg|ico|js|css|woff2?))/gi)) {
+      urls.add(m[1]);
+    }
+    for (const url of urls) {
+      const local = path.join(ROOT, url.replace(/^\//, ''));
+      if (!fs.existsSync(local)) {
+        missing.add(`${src} → ${url} (file deleted but link remains)`);
+      }
+    }
+  }
+  if (missing.size) {
+    R.err(`Data files reference non-existent assets (RSS/manifest/llms.txt 404s):\n  - ${[...missing].slice(0, 10).join('\n  - ')}`);
+  } else {
+    R.ok('Data files (feed.xml/manifest.json/llms.txt/search-manifest): all referenced assets exist');
+  }
+})();
+
+// G103. AGENTS-r-rXX changelog row consistency.
+//   When I add a new "AGENTS-r90", the actual code state should reflect what
+//   the description claims. Surface a quick numeric sanity: the count of
+//   IIFE guards in audit-pro.js should match the «Total active guards: N»
+//   claim in the latest AGENTS-r entry. INFO only, no fail.
+(function changelogCodeConsistencyInfo() {
+  const md = fs.readFileSync(path.join(ROOT, 'AGENTS.md'), 'utf8');
+  // most recent AGENTS-rNN row claims "Total active guards: NNN" or "NNN passed"
+  const claimM = md.match(/\*\*AGENTS-r(\d+)\*\*[\s\S]{0,3000}?(?:Total active guards:|Итог:)[^|]{0,200}?(\d+)\s*passed/);
+  if (!claimM) { R.note('AGENTS.md: latest row has no machine-readable "NN passed" claim'); return; }
+  const claimed = parseInt(claimM[2], 10);
+  // count R.ok in audit-pro
+  const src = fs.readFileSync(path.join(ROOT, 'scripts/audit-pro.js'), 'utf8');
+  const okCount = (src.match(/R\.ok\(/g) || []).length;
+  const rev = claimM[1];
+  if (Math.abs(okCount - claimed) > 5) {
+    R.note(`AGENTS-r${rev} claims ${claimed} passed but audit has ${okCount} R.ok() calls (drift)`);
+  } else {
+    R.ok(`AGENTS-r${rev} numeric claim (${claimed} passed) matches audit (~${okCount} R.ok)`);
+  }
+})();
+
 // Output
 const duration = ((Date.now() - R.start) / 1000).toFixed(2);
 const sep = '═'.repeat(78);
