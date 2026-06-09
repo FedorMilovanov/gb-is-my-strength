@@ -1177,7 +1177,7 @@ const SITE_CSS_MIN_BYTES = 200_000;
     { name: '#themeFloat',      why: 'PLAN-04 P5 — replaced by .gb-fc-theme' },
     { name: '#gbSearchFloat',   why: 'PLAN-04 P5 — replaced by .gb-fc-search' },
   ];
-  const all = walk(ROOT).filter(f => /\.(html|css|js)$/.test(f) && !f.includes('/scripts/'));
+  const all = walk(ROOT).filter(f => /\.(html|css|js)$/.test(f) && !/[\\/]scripts[\\/]/.test(f));
   const offenders = [];
   for (const f of all) {
     const txt = fs.readFileSync(f, 'utf8');
@@ -1285,7 +1285,7 @@ const SITE_CSS_MIN_BYTES = 200_000;
 //   Incident: AGENTS-r47c/d and r45c — multiple agents broke listeners by
 //   writing the comma-after-paren pattern. Catch it before deploy.
 (function brokenListenerPatternGuard() {
-  const jsFiles = walk(ROOT).filter(f => f.endsWith('.js') && !f.includes('/scripts/') && !/min\.js$/.test(f));
+  const jsFiles = walk(ROOT).filter(f => f.endsWith('.js') && !/[\\/]scripts[\\/]/.test(f) && !/min\.js$/.test(f));
   const offenders = [];
   for (const f of jsFiles) {
     const js = fs.readFileSync(f, 'utf8');
@@ -2115,7 +2115,7 @@ const JS_SIZE_FLOORS = {
 //   Anything assigning from our own controlled data structures is fine.
 (function innerHtmlXssHeuristic() {
   const jsFiles = walk(ROOT).filter(f =>
-    f.endsWith('.js') && !f.includes('/scripts/') && !/\.min\.js$/.test(f));
+    f.endsWith('.js') && !/[\\/]scripts[\\/]/.test(f) && !/\.min\.js$/.test(f));
   const offenders = [];
   // Sources of UNTRUSTED data — innerHTML assignment using these = XSS risk
   const UNTRUSTED_SOURCES = [
@@ -3987,3 +3987,4 @@ try {
 }
 
 process.exit(R.errors.length ? 1 : 0);
+
