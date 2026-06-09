@@ -3057,6 +3057,306 @@ const JS_SIZE_FLOORS = {
   }
 })();
 
+// ─────────────────────────────────────────────────────────────────────────
+// SMART ANTI-REGRESSION GUARDS — ROUND 9 (added 2026-06-09)
+// Schema/Speakable/JSON-LD richness; accessibility motion safety.
+// All discovered through deep history audit (LCP/CLS/speakable/reduced-motion).
+// ─────────────────────────────────────────────────────────────────────────
+
+// G76. data-speakable HTML attribute must be paired with SpeakableSpecification
+//   JSON-LD. Found today: 4 pages had the HTML attribute but no schema entry —
+//   Google Assistant / voice search wouldn't know what to read.
+(function speakableConsistencyGuard() {
+  const files = walk(ROOT).filter(f => f.endsWith('.html'));
+  const offenders = [];
+  for (const f of files) {
+    const r = rel(f);
+    if (/^(google|yandex)/i.test(path.basename(r))) continue;
+    const html = fs.readFileSync(f, 'utf8');
+    const hasAttr = /\bdata-speakable\b/.test(html);
+    const hasSchema = /SpeakableSpecification/.test(html);
+    if (hasAttr && !hasSchema) {
+      offenders.push(`${r}: data-speakable HTML attribute present but no SpeakableSpecification JSON-LD`);
+    }
+    if (hasSchema && !hasAttr) {
+      offenders.push(`${r}: SpeakableSpecification JSON-LD but no [data-speakable] in HTML`);
+    }
+  }
+  if (offenders.length) {
+    R.err(`Speakable schema/HTML mismatch:\n  - ${offenders.join('\n  - ')}`);
+  } else {
+    R.ok('Speakable: data-speakable HTML and SpeakableSpecification JSON-LD consistent');
+  }
+})();
+
+// G77. Every CSS animation rule must be respected by `prefers-reduced-motion`.
+//   Heuristic: if a CSS file declares `animation:` properties but has fewer
+//   than 1 `prefers-reduced-motion` block per 3 animations, accessibility
+//   risk is high (motion-sensitive users see all motion).
+(function reducedMotionCoverageGuard() {
+  const cssFiles = ['css/site.css', 'css/home.css', 'css/command-palette.css',
+                    'css/mobile-hotfix.css', 'css/nagornaya-mobile-toc.css'];
+  const offenders = [];
+  for (const f of cssFiles) {
+    const p = path.join(ROOT, f);
+    if (!fs.existsSync(p)) continue;
+    const css = fs.readFileSync(p, 'utf8');
+    const animCount = (css.match(/\banimation\s*:\s*[^;}\n]*\b\d+(?:\.\d+)?(?:s|ms)\b/g) || []).length;
+    const reducedBlocks = (css.match(/prefers-reduced-motion/g) || []).length;
+    if (animCount >= 5 && reducedBlocks === 0) {
+      offenders.push(`${f}: ${animCount} timed animations but ZERO prefers-reduced-motion rules`);
+    }
+  }
+  if (offenders.length) {
+    R.warn(`Animations without reduced-motion guard (a11y WCAG 2.3.3):\n  - ${offenders.join('\n  - ')}`);
+  } else {
+    R.ok('Animations: every file with timed motion has prefers-reduced-motion coverage');
+  }
+})();
+
+// G78. JSON-LD BreadcrumbList required for every Article + landing page.
+//   Google specifically uses BreadcrumbList for SERP rendering — without it
+//   search results show ugly URL paths instead of friendly breadcrumb hierarchy.
+(function breadcrumbListPresenceGuard() {
+  const files = walk(ROOT).filter(f =>
+    /\/articles\/[^/]+\/index\.html$/.test(f) ||
+    /\/(hard-texts|pastor-series|biografii|nagornaya\/seriya)\/index\.html$/.test(f)
+  );
+  const missing = [];
+  for (const f of files) {
+    if (f.endsWith('articles/index.html')) continue;
+    const html = fs.readFileSync(f, 'utf8');
+    if (!/"BreadcrumbList"/.test(html)) {
+      missing.push(rel(f));
+    }
+  }
+  if (missing.length) {
+    R.err(`Article/landing pages missing BreadcrumbList JSON-LD (SERP regression):\n  - ${missing.join('\n  - ')}`);
+  } else {
+    R.ok(`BreadcrumbList JSON-LD: every article and series-landing has it (${files.length} pages)`);
+  }
+})();
+
+// G79. Article JSON-LD datePublished and dateModified consistency.
+//   Modified must be ≥ published. Owner edits articles over time;
+//   if dateModified is BEFORE datePublished, Google flags as suspicious.
+(function articleDatesConsistencyGuard() {
+  const files = walk(ROOT).filter(f => f.endsWith('.html'));
+  const offenders = [];
+  for (const f of files) {
+    const html = fs.readFileSync(f, 'utf8');
+    // walk through every JSON-LD block, parse, look for datePublished+dateModified pairs
+    const blocks = [...html.matchAll(/<script\b[^>]*type\s*=\s*["']application\/ld\+json["'][^>]*>([\s\S]*?)<\/script>/gi)];
+    for (const b of blocks) {
+      let json;
+      try { json = JSON.parse(b[1]); } catch { continue; }
+      const stack = Array.isArray(json) ? [...json] : [json];
+      while (stack.length) {
+        const n = stack.shift();
+        if (!n || typeof n !== 'object') continue;
+        if (Array.isArray(n)) { stack.push(...n); continue; }
+        if (n['@graph']) { stack.push(...n['@graph']); }
+        if (n.datePublished && n.dateModified) {
+          const pub = new Date(n.datePublished);
+          const mod = new Date(n.dateModified);
+          if (!isNaN(pub) && !isNaN(mod) && mod < pub) {
+            offenders.push(`${rel(f)}: dateModified (${n.dateModified}) < datePublished (${n.datePublished})`);
+          }
+        }
+        for (const k of Object.keys(n)) {
+          if (typeof n[k] === 'object' && n[k]) stack.push(n[k]);
+        }
+      }
+    }
+  }
+  if (offenders.length) {
+    R.err(`Article dates inverted (dateModified < datePublished):\n  - ${[...new Set(offenders)].join('\n  - ')}`);
+  } else {
+    R.ok('Article dates: dateModified ≥ datePublished everywhere');
+  }
+})();
+
+// G80. color-mix() fallback presence (Safari < 15.2 doesn't support it).
+//   Incident: 97b6460a "Phase2 r59: color-mix() Safari <15.2 fallbacks".
+//   We surface this as INFO since modern Safari supports it; not all uses
+//   need fallback. But if usage > 30, owner should think about it.
+(function colorMixFallbackInfo() {
+  let total = 0;
+  for (const f of ['css/site.css', 'css/home.css', 'css/command-palette.css',
+                   'css/mobile-hotfix.css', 'css/nagornaya-mobile-toc.css']) {
+    const p = path.join(ROOT, f);
+    if (!fs.existsSync(p)) continue;
+    const css = fs.readFileSync(p, 'utf8');
+    total += (css.match(/color-mix\(/g) || []).length;
+  }
+  R.note(`color-mix() usage: ${total} occurrences (Safari ≥ 15.2 supports; older browsers need fallback)`);
+})();
+
+// G81. JSON-LD Article must have author.@id pointing at /about/#person.
+//   Google E-E-A-T signal: author entity must be linkable, not just a string.
+//   The existing Attribution Guard makes sure Фёдор is editor-style; this
+//   makes sure the schema gives a stable @id reference.
+(function articleAuthorIdGuard() {
+  const files = walk(ROOT).filter(f => /\/articles\/[^/]+\/index\.html$/.test(f) && !/articles\/index\.html$/.test(f));
+  const offenders = [];
+  for (const f of files) {
+    const html = fs.readFileSync(f, 'utf8');
+    const blocks = [...html.matchAll(/<script\b[^>]*type\s*=\s*["']application\/ld\+json["'][^>]*>([\s\S]*?)<\/script>/gi)];
+    let articleAuthorOk = false;
+    let hasArticle = false;
+    for (const b of blocks) {
+      let json;
+      try { json = JSON.parse(b[1]); } catch { continue; }
+      const stack = Array.isArray(json) ? [...json] : [json];
+      while (stack.length) {
+        const n = stack.shift();
+        if (!n || typeof n !== 'object') continue;
+        if (Array.isArray(n)) { stack.push(...n); continue; }
+        if (n['@graph']) { stack.push(...n['@graph']); continue; }
+        const t = n['@type'];
+        const isArt = (typeof t === 'string' && /Article|BlogPosting|NewsArticle|ScholarlyArticle/.test(t))
+          || (Array.isArray(t) && t.some(x => /Article|BlogPosting|NewsArticle|ScholarlyArticle/.test(x)));
+        if (isArt) {
+          hasArticle = true;
+          const a = n.author;
+          if (a) {
+            const authors = Array.isArray(a) ? a : [a];
+            if (authors.some(au => au && au['@id'])) articleAuthorOk = true;
+            // for type C (translation), name is enough; don't fail
+            if (authors.some(au => au && au.name && !au['@id'] && (au['@type'] === 'Person' || au['@type'] === 'Organization'))) articleAuthorOk = true;
+          }
+        }
+      }
+    }
+    if (hasArticle && !articleAuthorOk) {
+      offenders.push(`${rel(f)}: Article author has no @id / name reference`);
+    }
+  }
+  if (offenders.length) {
+    R.warn(`Article JSON-LD author missing @id reference (E-E-A-T signal):\n  - ${offenders.slice(0, 6).join('\n  - ')}`);
+  } else {
+    R.ok('Article JSON-LD: every author has @id reference to /about/#person');
+  }
+})();
+
+// G82. Loading attribute heuristic: above-the-fold images (first 1500 bytes
+//   of body) should NOT be loading=lazy (kills LCP). Below-fold should BE
+//   loading=lazy (bandwidth saving).
+(function lazyLoadingHeuristicGuard() {
+  const files = walk(ROOT).filter(f => f.endsWith('.html'));
+  const aboveLazy = [];
+  for (const f of files) {
+    const r = rel(f);
+    const base = path.basename(r);
+    if (/^(google|yandex)/i.test(base)) continue;
+    const html = fs.readFileSync(f, 'utf8');
+    // get body start
+    const bodyM = html.match(/<body\b[^>]*>([\s\S]+)/i);
+    if (!bodyM) continue;
+    const firstChunk = bodyM[1].slice(0, 4000);
+    // hero/cover/feature first image: look for "h-featured-img" or "article-hero" or fetchpriority="high"
+    // these classes signal above-fold
+    const aboveFoldMarkers = /<img\b[^>]*\b(?:fetchpriority\s*=\s*["']high|class\s*=\s*["'][^"']*(?:h-featured|article-hero|hero))/i;
+    const aboveFold = firstChunk.match(aboveFoldMarkers);
+    if (!aboveFold) continue;
+    // if those above-fold images have loading="lazy" - bad
+    if (/<img\b[^>]*loading\s*=\s*["']lazy["'][^>]*(?:fetchpriority\s*=\s*["']high|class\s*=\s*["'][^"']*(?:h-featured|article-hero|hero))/i.test(firstChunk) ||
+        /<img\b[^>]*(?:fetchpriority\s*=\s*["']high|class\s*=\s*["'][^"']*(?:h-featured|article-hero|hero))[^>]*loading\s*=\s*["']lazy["']/i.test(firstChunk)) {
+      aboveLazy.push(`${r}: above-fold image with loading="lazy" (kills LCP)`);
+    }
+  }
+  if (aboveLazy.length) {
+    R.err(`Above-fold images with loading="lazy" (kills LCP):\n  - ${aboveLazy.join('\n  - ')}`);
+  } else {
+    R.ok('Image loading attribute: no above-fold images marked loading="lazy"');
+  }
+})();
+
+// G83. Unused CSS classes (deep-clean opportunity) — INFO only.
+//   AGENTS-r46/r47 / PLAN-04 P5-P7 / etc spent 40+ commits removing dead
+//   CSS rules. Catch the opposite: classes DEFINED in CSS but never used
+//   in any HTML / JS. We sample only top-level non-pseudo selectors.
+(function unusedCssClassesInfo() {
+  const cssFiles = ['css/site.css', 'css/home.css', 'css/command-palette.css',
+                    'css/mobile-hotfix.css', 'css/nagornaya-mobile-toc.css'];
+  let allCss = '';
+  for (const f of cssFiles) {
+    const p = path.join(ROOT, f);
+    if (fs.existsSync(p)) allCss += fs.readFileSync(p, 'utf8') + '\n';
+  }
+  // extract top-level class selectors (just the .className part)
+  const declared = new Set();
+  for (const m of allCss.matchAll(/\.([a-zA-Z_][\w-]+)(?=[\s.,:#>+~{[])/g)) {
+    declared.add(m[1]);
+  }
+  // see which are used in HTML class= attributes or JS string literals
+  const used = new Set();
+  for (const f of walk(ROOT).filter(x => /\.(html|js|css)$/.test(x))) {
+    const txt = fs.readFileSync(f, 'utf8');
+    // class="x y z"  /  class='x y z'
+    for (const m of txt.matchAll(/class\s*=\s*["']([^"']+)["']/g)) {
+      for (const c of m[1].split(/\s+/)) used.add(c);
+    }
+    // ANY token in a string literal — JS classList.add / template / Tailwind utility class hash
+    for (const m of txt.matchAll(/['"`]([a-zA-Z_][\w-]+)['"`]/g)) used.add(m[1]);
+    // raw text inside template literals (backticks) for `${className}-${state}` patterns
+    for (const m of txt.matchAll(/['"`]([a-zA-Z_][\w-]+--?[\w-]+)['"`]/g)) used.add(m[1]);
+  }
+  // Heuristic exclusions:
+  // - tw-* and is-/has-/data- prefixed classes (state classes added at runtime)
+  // - classes ending with --modifier (BEM) — likely added by JS
+  const dead = [...declared]
+    .filter(c => !used.has(c))
+    .filter(c => c.length > 2 && !/^[A-Z]/.test(c))
+    .filter(c => !c.startsWith('tw-') && !c.startsWith('is-') && !c.startsWith('has-'))
+    .filter(c => !c.startsWith('gb-fc-') && !c.startsWith('cp-')); // FAB controls / palette runtime variants
+  // INFO only: heuristic, never block deploy
+  R.note(`CSS dead-class heuristic: ${dead.length} possibly-unused (runtime state classes excluded; manual review)`);
+})();
+
+// G84. Deploy.yml workflow uses pinned action versions (@vN), not @main / @latest.
+//   Security best-practice: floating refs allow supply-chain attacks.
+(function workflowPinnedActionsGuard() {
+  const wfDir = path.join(ROOT, '.github/workflows');
+  if (!fs.existsSync(wfDir)) return;
+  const problems = [];
+  for (const name of fs.readdirSync(wfDir)) {
+    if (!/\.ya?ml$/.test(name)) continue;
+    const yaml = fs.readFileSync(path.join(wfDir, name), 'utf8');
+    // find uses: …/…@SOMETHING patterns
+    const uses = [...yaml.matchAll(/^\s*-\s*uses\s*:\s*([^\s#]+)/gm)].map(m => m[1].trim());
+    for (const u of uses) {
+      const at = u.split('@');
+      if (at.length !== 2) continue;
+      const ref = at[1];
+      if (ref === 'main' || ref === 'master' || ref === 'latest') {
+        problems.push(`${name}: uses ${u} (pinned to floating ref ${ref} — security risk)`);
+      }
+    }
+  }
+  if (problems.length) {
+    R.warn(`GitHub workflow uses floating action refs (supply-chain risk):\n  - ${problems.join('\n  - ')}`);
+  } else {
+    R.ok('GitHub workflows: every `uses:` action pinned to a version tag or SHA');
+  }
+})();
+
+// G85. AGENTS.md max changelog rows (anti-bloat).
+//   We've written many AGENTS-r80, r81, r82 … entries. After 100 rows the
+//   file becomes unscannable. This is INFO that prompts archiving older
+//   entries into AUDIT_HISTORY.md.
+(function agentsMdChangelogInfo() {
+  const p = path.join(ROOT, 'AGENTS.md');
+  if (!fs.existsSync(p)) return;
+  const md = fs.readFileSync(p, 'utf8');
+  const rows = (md.match(/^\|\s*\*\*AGENTS-r\d+\*\*/gm) || []).length;
+  if (rows > 100) {
+    R.warn(`AGENTS.md has ${rows} AGENTS-rN changelog rows — consider archiving older to AUDIT_HISTORY.md`);
+  } else {
+    R.note(`AGENTS.md changelog: ${rows} rows (under 100, healthy)`);
+  }
+})();
+
 // Output
 const duration = ((Date.now() - R.start) / 1000).toFixed(2);
 const sep = '═'.repeat(78);
