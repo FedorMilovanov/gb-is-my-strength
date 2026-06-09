@@ -29,3 +29,30 @@
   .h-phrase--float .h-phrase-source{transition:none!important}
   .h-phrase--float:hover .h-phrase-source{opacity:.72;filter:blur(0);transform:translate(-50%,0)}
 }
+
+/* ─────────────────────────────────────────────────────────────
+   Articles index page (/articles/) — wide premium catalog
+   Pull the layout wider on desktop so the article cards don't
+   feel cramped inside the 1000px column.
+   ──────────────────────────────────────────────────────────── */
+body.articles-index-page .home-content{max-width:min(1280px, calc(100vw - 56px))}
+body.articles-index-page .h-hero{padding-top:96px;padding-bottom:32px;text-align:center}
+body.articles-index-page .h-hero .h-hero-tagline,
+body.articles-index-page .h-hero .h-hero-title,
+body.articles-index-page .h-hero .h-hero-desc{margin-left:auto;margin-right:auto}
+body.articles-index-page .h-hero .h-hero-desc{max-width:760px}
+body.articles-index-page .h-hero .h-rule{margin-left:auto;margin-right:auto;max-width:760px}
+body.articles-index-page .h-section{padding-top:40px;padding-bottom:24px}
+
+@media (min-width:1100px){
+  body.articles-index-page .h-article-list.h-article-list--grid{grid-template-columns:repeat(3,minmax(0,1fr));gap:22px}
+  body.articles-index-page .h-article-list.h-article-list--grid > li.h-article-li--full{grid-column:1 / -1}
+  body.articles-index-page .h-article-list.h-article-list--grid .h-article-card{flex-direction:column;align-items:stretch;padding:18px;gap:14px}
+  body.articles-index-page .h-article-list.h-article-list--grid .h-article-thumb{flex:0 0 auto;width:100%;height:172px;border-radius:11px}
+  body.articles-index-page .h-article-list.h-article-list--grid .h-article-title{font-size:18px;line-height:1.3;-webkit-line-clamp:3}
+  body.articles-index-page .h-article-list.h-article-list--grid .h-article-abstract{font-size:14px;-webkit-line-clamp:4}
+}
+
+@media (min-width:1400px){
+  body.articles-index-page .home-content{max-width:1320px}
+}
