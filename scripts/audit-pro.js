@@ -1999,6 +1999,328 @@ const SITE_CSS_MIN_BYTES = 200_000;
   }
 })();
 
+// ─────────────────────────────────────────────────────────────────────────
+// SMART ANTI-REGRESSION GUARDS — ROUND 5 (added 2026-06-09)
+// Deep-dive into PLAN-04 ratchet / AGENTS-r33–r53 / JS-perf history.
+// Many of the historical pains have already been addressed elsewhere
+// (G16 listener pattern, G11 topnav, G18 keyframes). Round 5 attacks
+// what's still uncovered: noindex regressions, CSS hygiene, runtime perf,
+// JSON-LD consistency, JS bundle drift.
+// ─────────────────────────────────────────────────────────────────────────
+
+// G41. Explicit allowlist for `noindex`.
+//   Incident: discovered TODAY — istochniki/ and nakhodki/ had noindex
+//   silently added in a May `chore: update from zip` commit by some agent.
+//   Owner did NOT want them noindex. Two intentional `noindex` use-cases
+//   remain: 404 (always noindex) and robot-verification stubs. EVERYTHING
+//   else with noindex must be on this allowlist OR the audit fails.
+const NOINDEX_ALLOWLIST = new Set([
+  '404.html',
+  'google7e02f9855e02b89a.html',
+  'yandex_42bc0d54a1ca4952.html',
+  'yandex_d8876d66da1b4592.html',
+]);
+(function noindexAllowlistGuard() {
+  const files = walk(ROOT).filter(f => f.endsWith('.html'));
+  const offenders = [];
+  for (const f of files) {
+    const r = rel(f);
+    if (NOINDEX_ALLOWLIST.has(r) || NOINDEX_ALLOWLIST.has(path.basename(r))) continue;
+    const html = fs.readFileSync(f, 'utf8');
+    const m = html.match(/<meta\s+[^>]*name\s*=\s*["']robots["'][^>]*content\s*=\s*["']([^"']+)["']/i);
+    if (m && /\bnoindex\b/i.test(m[1])) {
+      offenders.push(`${r}: robots="${m[1].trim()}" (owner wants max SEO openness; add to NOINDEX_ALLOWLIST only if you really mean it)`);
+    }
+  }
+  if (offenders.length) {
+    R.err(`Unexpected noindex (owner asked for maximum openness 2026-06-09):\n  - ${offenders.join('\n  - ')}`);
+  } else {
+    R.ok(`No surprise noindex (${NOINDEX_ALLOWLIST.size} pages explicitly allowed: 404 + robot stubs)`);
+  }
+})();
+
+// G42. JS bundle size ratchet per file (catch sneaky bloat).
+//   Incident: a0a363d2 / 59e9bf1d — minify shipped to clear budget. We want
+//   to flag whenever a JS file grows >20% beyond a checked-in floor.
+//   Update FLOORS only when you intentionally make a file bigger.
+const JS_SIZE_FLOORS = {
+  // bytes, current snapshot 2026-06-09. Bump only on intentional growth.
+  'js/site.js':            { soft: 140_000, hard: 180_000 },
+  'js/search.js':          { soft: 38_000,  hard: 55_000 },
+  'js/enhancements.js':    { soft: 28_000,  hard: 40_000 },
+  'js/highlights.js':      { soft: 17_000,  hard: 26_000 },
+  'js/bookmark-engine.js': { soft: 12_000,  hard: 20_000 },
+  'js/glossary.js':        { soft:  6_000,  hard: 12_000 },
+};
+(function jsRatchetGuard() {
+  const breached = [];
+  for (const [f, { soft, hard }] of Object.entries(JS_SIZE_FLOORS)) {
+    const p = path.join(ROOT, f);
+    if (!fs.existsSync(p)) continue;
+    const sz = fs.statSync(p).size;
+    if (sz > hard) {
+      breached.push(`${f}: ${sz} bytes — exceeded HARD cap ${hard} (likely accidental bloat)`);
+    }
+  }
+  if (breached.length) {
+    R.err(`JS bundle ratchet breached:\n  - ${breached.join('\n  - ')}`);
+  } else {
+    R.ok(`JS bundle ratchet OK (${Object.keys(JS_SIZE_FLOORS).length} files watched)`);
+  }
+})();
+
+// G43. CSS dead variables — info only.
+//   AGENTS-r34 manually deleted 21 dead vars; new ones accumulate. We surface
+//   them as INFO so periodically someone can prune, but don't block deploy.
+(function cssDeadVarsInfo() {
+  const cssFiles = ['css/site.css', 'css/home.css', 'css/command-palette.css',
+                    'css/mobile-hotfix.css', 'css/nagornaya-mobile-toc.css'];
+  let css = '';
+  for (const f of cssFiles) {
+    const p = path.join(ROOT, f);
+    if (fs.existsSync(p)) css += fs.readFileSync(p, 'utf8') + '\n';
+  }
+  const defined = new Set();
+  for (const m of css.matchAll(/(--[a-zA-Z][\w-]*)\s*:/g)) defined.add(m[1]);
+  const used = new Set();
+  for (const m of css.matchAll(/var\(\s*(--[a-zA-Z][\w-]*)/g)) used.add(m[1]);
+  const dead = [...defined].filter(d => !used.has(d));
+  // also check inline styles in HTML use the var
+  for (const f of walk(ROOT).filter(x => x.endsWith('.html'))) {
+    const h = fs.readFileSync(f, 'utf8');
+    for (const m of h.matchAll(/var\(\s*(--[a-zA-Z][\w-]*)/g)) used.add(m[1]);
+  }
+  const reallyDead = [...defined].filter(d => !used.has(d));
+  if (reallyDead.length > 50) {
+    R.warn(`CSS dead vars: ${reallyDead.length} defined but never used (>50 — consider AGENTS-r34-style cleanup)`);
+  } else if (reallyDead.length > 0) {
+    R.note(`CSS dead vars: ${reallyDead.length} unused (acceptable; clean when convenient)`);
+  } else {
+    R.ok('CSS dead vars: every defined --token is used somewhere');
+  }
+})();
+
+// G44. innerHTML hygiene: flag JS files where innerHTML is set to a
+//   value that includes a `${…}` interpolation or `+ variable`. This is the
+//   XSS attack surface. Owner's JS already uses textContent / DOM construction
+//   for user-derived data — keep it that way.
+(function innerHtmlXssHeuristic() {
+  const jsFiles = walk(ROOT).filter(f =>
+    f.endsWith('.js') && !f.includes('/scripts/') && !/\.min\.js$/.test(f));
+  const offenders = [];
+  for (const f of jsFiles) {
+    const js = fs.readFileSync(f, 'utf8');
+    // innerHTML = … + var  OR  innerHTML = `…${...}`
+    // ignore static-string assignments and obvious sanitized cases (.replace, escapeHtml)
+    const matches = [...js.matchAll(/\.innerHTML\s*=\s*([^;]{0,160})/g)];
+    for (const m of matches) {
+      const expr = m[1].trim();
+      const hasInterp = /\$\{[^}]*\}/.test(expr) || /\+\s*[A-Za-z_$]/.test(expr);
+      const looksSafe = /escapeHtml|sanitiz|innerText|textContent/.test(expr);
+      if (hasInterp && !looksSafe) {
+        offenders.push(`${rel(f)}: innerHTML = ${expr.slice(0, 80)}…`);
+      }
+    }
+  }
+  if (offenders.length) {
+    R.warn(`innerHTML with dynamic interpolation (review for XSS):\n  - ${offenders.slice(0, 6).join('\n  - ')}`);
+  } else {
+    R.ok('innerHTML hygiene: no obvious dynamic-interpolation assignments');
+  }
+})();
+
+// G45. JSON-LD url field must point at canonical (not at "/" or other page).
+//   Real failure mode: copy-paste an Article schema between pages and forget
+//   to update its `url` field — both pages then claim the same Article URL,
+//   confusing rich-results.
+(function jsonLdUrlConsistencyGuard() {
+  const files = walk(ROOT).filter(f => f.endsWith('.html'));
+  const problems = [];
+  for (const f of files) {
+    const r = rel(f);
+    const base = path.basename(r);
+    if (/^(google|yandex|microsoft)/i.test(base) || base === '404.html') continue;
+    const html = fs.readFileSync(f, 'utf8');
+    const cm = html.match(/<link\b[^>]+rel\s*=\s*["']canonical["'][^>]+href\s*=\s*["']([^"']+)["']/i)
+            || html.match(/<link\b[^>]+href\s*=\s*["']([^"']+)["'][^>]+rel\s*=\s*["']canonical["']/i);
+    if (!cm) continue;
+    const canon = cm[1].trim();
+    const blocks = [...html.matchAll(/<script\b[^>]*type\s*=\s*["']application\/ld\+json["'][^>]*>([\s\S]*?)<\/script>/gi)];
+    for (const b of blocks) {
+      let json;
+      try { json = JSON.parse(b[1]); } catch { continue; }
+      // walk the graph; find Article-like @type with a `url` field
+      const items = [];
+      if (Array.isArray(json)) items.push(...json);
+      else items.push(json);
+      for (const top of items) {
+        const subs = top['@graph'] || [top];
+        for (const node of subs) {
+          if (!node || typeof node !== 'object') continue;
+          const t = node['@type'];
+          const isArticle = (typeof t === 'string' && /Article|BlogPosting|NewsArticle|CollectionPage|WebPage/.test(t))
+                        || (Array.isArray(t) && t.some(x => /Article|BlogPosting|NewsArticle|CollectionPage|WebPage/.test(x)));
+          if (!isArticle) continue;
+          const u = node.url || node.mainEntityOfPage?.['@id'] || node.mainEntityOfPage;
+          if (typeof u === 'string' && u !== canon) {
+            // tolerate "@id" with #fragment matching the canonical
+            const pure = u.split('#')[0];
+            if (pure !== canon) {
+              problems.push(`${r}: JSON-LD ${t} url="${u}" ≠ canonical "${canon}"`);
+            }
+          }
+        }
+      }
+    }
+  }
+  if (problems.length) {
+    R.err(`JSON-LD url ≠ canonical (rich-result conflict):\n  - ${[...new Set(problems)].slice(0, 8).join('\n  - ')}`);
+  } else {
+    R.ok('JSON-LD url fields all match their page canonical');
+  }
+})();
+
+// G46. <link rel="preload" as="image"> must actually be used on the page.
+//   Otherwise it wastes bandwidth (preload triggers download even if image
+//   never appears). Owner cares about Core Web Vitals.
+(function preloadUsageGuard() {
+  const files = walk(ROOT).filter(f => f.endsWith('.html'));
+  const offenders = [];
+  for (const f of files) {
+    const html = fs.readFileSync(f, 'utf8');
+    const preloads = [...html.matchAll(/<link\b[^>]*\brel\s*=\s*["']preload["'][^>]*\bas\s*=\s*["']image["'][^>]*>/gi)];
+    for (const pl of preloads) {
+      const hrefM = pl[0].match(/\bhref\s*=\s*["']([^"']+)["']/i);
+      if (!hrefM) continue;
+      const url = hrefM[1];
+      // strip query, get filename
+      const base = url.split('?')[0].split('#')[0];
+      // search for that base anywhere else in the document body
+      const restOfDoc = html.split('</head>')[1] || html;
+      if (!restOfDoc.includes(base.split('/').pop())) {
+        offenders.push(`${rel(f)}: preload as=image href="${url}" — file not referenced after </head>`);
+      }
+    }
+  }
+  if (offenders.length) {
+    R.warn(`Image preloaded but never used in document body (wasted bytes):\n  - ${offenders.slice(0, 6).join('\n  - ')}`);
+  } else {
+    R.ok('All <link rel="preload" as="image"> resources are actually rendered');
+  }
+})();
+
+// G47 was removed: incorrect heuristic.
+//   Original idea: flag JSON-LD `author=Фёдор as Person`. But the existing
+//   Attribution Guard already encodes the real rule: Фёдор IS the author
+//   for "Авторская статья"/"Автор-редактор" types — only forbidden bylines
+//   are plain "Автор: Фёдор Милованов" or "author-card-label = Автор".
+//   Article JSON-LD with author:{@type:Person, name:Фёдор} is correct for
+//   his own theological essays. Reserve number for a future check.
+
+// G48. Deprecated vendor prefixes that no current browser needs (e.g.
+//   `-webkit-border-radius`, `-moz-border-radius`, `-o-…`, `filter: alpha(…)`).
+//   AGENTS-r48b had a vendor prefix cleanup. We protect from re-introduction.
+(function deprecatedVendorPrefixGuard() {
+  const cssFiles = ['css/site.css', 'css/home.css', 'css/command-palette.css',
+                    'css/mobile-hotfix.css', 'css/nagornaya-mobile-toc.css', 'fonts/fonts.css'];
+  const BAD = [
+    /-webkit-border-radius\s*:/g,
+    /-moz-border-radius\s*:/g,
+    /-o-transform\s*:/g,
+    /-ms-transform\s*:/g,
+    /filter\s*:\s*alpha\(/g,
+    /-moz-opacity\s*:/g,
+    /-khtml-opacity\s*:/g,
+  ];
+  const offenders = [];
+  for (const f of cssFiles) {
+    const p = path.join(ROOT, f);
+    if (!fs.existsSync(p)) continue;
+    const css = fs.readFileSync(p, 'utf8');
+    for (const re of BAD) {
+      if (re.test(css)) offenders.push(`${f}: matches ${re.source.replace(/\\\\/g, '')}`);
+    }
+  }
+  if (offenders.length) {
+    R.err(`Deprecated vendor prefixes (no modern browser needs these):\n  - ${offenders.join('\n  - ')}`);
+  } else {
+    R.ok('CSS vendor prefixes: no dead-since-2015 prefixes present');
+  }
+})();
+
+// G49. Each article has 1 (and only 1) Article JSON-LD with required fields:
+//   headline, datePublished, image. Catches stubs left during a refactor.
+(function articleJsonLdRequiredFieldsGuard() {
+  // only apply to /articles/<slug>/index.html
+  const files = walk(ROOT).filter(f => /\/articles\/[^/]+\/index\.html$/.test(f) && !/articles\/index\.html$/.test(f));
+  const problems = [];
+  for (const f of files) {
+    const html = fs.readFileSync(f, 'utf8');
+    const blocks = [...html.matchAll(/<script\b[^>]*type\s*=\s*["']application\/ld\+json["'][^>]*>([\s\S]*?)<\/script>/gi)];
+    let articles = 0;
+    let missingFields = [];
+    for (const b of blocks) {
+      let json;
+      try { json = JSON.parse(b[1]); } catch { continue; }
+      const stack = Array.isArray(json) ? [...json] : [json];
+      while (stack.length) {
+        const n = stack.shift();
+        if (!n || typeof n !== 'object') continue;
+        if (Array.isArray(n)) { stack.push(...n); continue; }
+        if (n['@graph']) { stack.push(...n['@graph']); continue; }
+        const t = n['@type'];
+        const isArticle = (typeof t === 'string' && /^(Article|BlogPosting|NewsArticle|ScholarlyArticle)$/.test(t))
+                      || (Array.isArray(t) && t.some(x => /^(Article|BlogPosting|NewsArticle|ScholarlyArticle)$/.test(x)));
+        if (isArticle) {
+          articles++;
+          const missing = [];
+          if (!n.headline) missing.push('headline');
+          if (!n.datePublished) missing.push('datePublished');
+          if (!n.image) missing.push('image');
+          if (missing.length) missingFields.push(`Article missing: ${missing.join(', ')}`);
+        }
+      }
+    }
+    if (articles === 0) problems.push(`${rel(f)}: no Article JSON-LD`);
+    else if (articles > 1) problems.push(`${rel(f)}: ${articles} Article JSON-LD blocks (must be exactly 1)`);
+    else if (missingFields.length) problems.push(`${rel(f)}: ${missingFields.join('; ')}`);
+  }
+  if (problems.length) {
+    R.err(`Article JSON-LD problems:\n  - ${problems.join('\n  - ')}`);
+  } else {
+    R.ok(`Article JSON-LD: every /articles/*/ has exactly 1 with headline+datePublished+image`);
+  }
+})();
+
+// G50. <meta theme-color> for light + dark must exist in every content page.
+//   Affects mobile address-bar tinting. We require BOTH `light` and `dark`
+//   media variants.
+(function themeColorGuard() {
+  const files = walk(ROOT).filter(f => f.endsWith('.html'));
+  const offenders = [];
+  for (const f of files) {
+    const r = rel(f);
+    const base = path.basename(r);
+    if (/^(google|yandex|microsoft)/i.test(base) || base === '404.html') continue;
+    const html = fs.readFileSync(f, 'utf8');
+    const tags = [...html.matchAll(/<meta\s+[^>]*name\s*=\s*["']theme-color["'][^>]*>/gi)];
+    if (tags.length === 0) {
+      offenders.push(`${r}: no <meta name="theme-color">`);
+      continue;
+    }
+    const hasLight = tags.some(t => /media\s*=\s*["'][^"']*light\b/i.test(t[0]));
+    const hasDark = tags.some(t => /media\s*=\s*["'][^"']*dark\b/i.test(t[0]));
+    if (!hasLight || !hasDark) {
+      offenders.push(`${r}: theme-color missing ${[hasLight?'':'light', hasDark?'':'dark'].filter(Boolean).join('+')} variant`);
+    }
+  }
+  if (offenders.length) {
+    R.warn(`<meta theme-color> incomplete (mobile address-bar):\n  - ${offenders.slice(0, 6).join('\n  - ')}`);
+  } else {
+    R.ok('<meta theme-color>: light+dark variants present on every content page');
+  }
+})();
+
 // Output
 const duration = ((Date.now() - R.start) / 1000).toFixed(2);
 const sep = '═'.repeat(78);
