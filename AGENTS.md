@@ -690,12 +690,12 @@ Precache список — в самом `sw.js`. При добавлении н�
 - Класс `.gb-floating-controls` в `css/site.css`
 
 ### 9.3 bio-cover в статьях о Гилле
-- `articles/dzhon-gill-chast-1-chelovek/index.html` ДОЛЖЕН содержать `.bio-cover` с изображением `gill-portret-full-study`
-- Это 16:9 "Гилл за письменным столом" — НЕ city-view, НЕ portrait 3:4
+- `articles/dzhon-gill-chast-1-chelovek/index.html` ДОЛЖЕН содержать `.bio-cover` с изображением `gill-pulpit-cover`
+- Это 16:9 "Гилл за кафедрой" — НЕ city-view, НЕ portrait 3:4
 - `aspect-ratio` в `.bio-cover` = `16/9` (не 21/9)
 
 ### 9.4 Карточки-thumbnails серии Гилла на главной
-- Часть 1 (`dzhon-gill-chast-1`): thumbnail = `gill-portret-full-study` (широкоформатный)
+- Часть 1 (`dzhon-gill-chast-1`): thumbnail = `gill-pulpit-cover` (широкоформатный)
 - НЕ использовать `og-dzhon-gill-chast-1-chelovek` (показывает город, а не Гилла)
 
 ### 9.5 Запрет дублирования контента
@@ -800,3 +800,15 @@ JS `site.js` функция `e()` инжектит SVG тело голубя т�
 - Создавать новые JS-файлы для каждой серии. Один `series-cards.js` обслуживает все.
 
 **Нагорная проповедь** — историческое исключение (свой Tailwind-sidebar + nagornaya-mobile-toc.js). Не трогать; новых серий по такому образцу не плодить — использовать `data-series-strip` / `data-series-nav`.
+
+
+### 9.10 John Gill image system — final editorial lock
+
+  * Часть 1 bio-cover и thumbnail = `gill-pulpit-cover` (Гилл за кафедрой). Не возвращать `gill-portret-full-study` без явного запроса владельца.
+  * В `chast-1` не дублировать типографию: `gill-printing-press` используется только в Части II рядом с первыми опубликованными трудами.
+  * Слот скорби/пастырского утешения в Части I = `gill-pastoral-consolation`, не типография.
+  * Книжная лавка Кеттеринга = `gill-bookshop-strip` как узкая горизонтальная полоса. Не возвращать вертикальный `gill-context-scroll` без `article-img--vertical`.
+  * Кафедра Гилла в тексте = `gill-pulpit-strip` как узкая горизонтальная полоса.
+  * Учёный Гилл за книгой = `gill-study-at-book`.
+  * `gill-pastoral-succession` не трогать: владелец отдельно попросил оставить эту схему как есть. Если файл временно не используется в HTML, не удалять его без отдельного подтверждения.
+  * Защищённые исходники схемы преемственности: `images/gill-pastoral-succession.webp`, `images/gill-pastoral-succession.jpg`, `images/gill-pastoral-succession-600w.webp`, `images/gill-pastoral-succession-900w.webp`, `images/gill-pastoral-succession-1200w.webp`.
