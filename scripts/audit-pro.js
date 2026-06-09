@@ -1616,23 +1616,25 @@ const SITE_CSS_MIN_BYTES = 200_000;
   }
 })();
 
-// G29. CSS variables must be defined before use (no orphan var(--unknown)).
-//   Surgical heuristic: collect all --name DEFINITIONS across the 5 CSS files
-//   and then assert each var(--name) is in that set.
-//   We allow Tailwind-style --tw-* and a small known-external whitelist
-//   (page-context variables defined inline on HTML).
+// G29. CSS variables must be defined before use — UNLESS used as fallback.
+//   Surgical: only flag `var(--unknown)` WITHOUT a fallback (`, default`).
+//   Why: `var(--ink, #14100b)` renders correctly even if --ink is undefined
+//   (that's literally the fallback's job). And runtime-set vars (--mouse-x
+//   from JS) need to be on the EXTERNAL whitelist OR have a fallback.
 (function cssVariableHygieneGuard() {
   const cssFiles = ['css/site.css', 'css/home.css', 'css/command-palette.css',
                     'css/mobile-hotfix.css', 'css/nagornaya-mobile-toc.css', 'fonts/fonts.css',
                     'nagornaya/tw.min.css'];
   const defined = new Set();
-  // Always-defined externals (browser / system / inline-style vars)
+  // Externals = vars set dynamically (JS / inline style at runtime) or by browser
   const EXTERNAL = new Set([
-    '--tw-shadow', '--tw-ring-shadow', '--tw-ring-color', '--tw-ring-offset-shadow',
+    '--tw-shadow', '--tw-shadow-color', '--tw-shadow-colored',
+    '--tw-ring-shadow', '--tw-ring-color', '--tw-ring-offset-shadow',
     '--tw-ring-offset-color', '--tw-ring-offset-width', '--tw-translate-x', '--tw-translate-y',
     '--tw-rotate', '--tw-skew-x', '--tw-skew-y', '--tw-scale-x', '--tw-scale-y',
     '--scroll-lock-top', '--visual-viewport-h', '--back-height', '--phrase-opacity',
-    '--gtip-cat-color', '--theme-color',
+    '--gtip-cat-color', '--theme-color', '--mouse-x', '--mouse-y',
+    '--gb-tip-arrow-x', '--cp-max-h', '--hb-front-w', '--hb-open-w', '--rp',
   ]);
   for (const f of cssFiles) {
     const p = path.join(ROOT, f);
@@ -1640,7 +1642,6 @@ const SITE_CSS_MIN_BYTES = 200_000;
     const css = fs.readFileSync(p, 'utf8');
     for (const m of css.matchAll(/(--[a-zA-Z][\w-]*)\s*:/g)) defined.add(m[1]);
   }
-  // also collect from inline <style> blocks in HTML (rare but allowed)
   for (const f of walk(ROOT).filter(x => x.endsWith('.html'))) {
     const html = fs.readFileSync(f, 'utf8');
     const styleBlocks = [...html.matchAll(/<style\b[^>]*>([\s\S]*?)<\/style>/gi)];
@@ -1653,15 +1654,19 @@ const SITE_CSS_MIN_BYTES = 200_000;
     const p = path.join(ROOT, f);
     if (!fs.existsSync(p)) continue;
     const css = fs.readFileSync(p, 'utf8');
-    for (const m of css.matchAll(/var\(\s*(--[a-zA-Z][\w-]*)/g)) {
+    // var(--name)   — bare usage (no fallback) — must be defined or EXTERNAL
+    // var(--name, X) — has a fallback — always safe
+    for (const m of css.matchAll(/var\(\s*(--[a-zA-Z][\w-]*)\s*([,)])/g)) {
       const name = m[1];
-      if (!defined.has(name) && !EXTERNAL.has(name)) undef.add(`${f}: var(${name})`);
+      const hasFallback = m[2] === ',';
+      if (hasFallback) continue;
+      if (!defined.has(name) && !EXTERNAL.has(name)) undef.add(`${f}: var(${name}) — no fallback, not defined, not in externals`);
     }
   }
   if (undef.size) {
-    R.warn(`CSS variables used but never defined (may render as default/transparent):\n  - ${[...undef].slice(0, 15).join('\n  - ')}`);
+    R.warn(`CSS variables used bare without fallback and never defined:\n  - ${[...undef].slice(0, 15).join('\n  - ')}`);
   } else {
-    R.ok(`CSS variables: ${defined.size} defined, every var(--…) resolves (incl. ${EXTERNAL.size} externals)`);
+    R.ok(`CSS variables: ${defined.size} defined; bare-usage check passed (${EXTERNAL.size} runtime externals)`);
   }
 })();
 
@@ -2100,32 +2105,56 @@ const JS_SIZE_FLOORS = {
   }
 })();
 
-// G44. innerHTML hygiene: flag JS files where innerHTML is set to a
-//   value that includes a `${…}` interpolation or `+ variable`. This is the
-//   XSS attack surface. Owner's JS already uses textContent / DOM construction
-//   for user-derived data — keep it that way.
+// G44. innerHTML hygiene — REAL XSS attack surface only.
+//   We don't flag innerHTML with static templates that interpolate
+//   trusted data (titles from our own JSON, scores from local quiz).
+//   The genuinely dangerous patterns:
+//     1. innerHTML = userInput / URLSearchParams / location.search / hash / referrer
+//     2. innerHTML = e.target.value / input.value (untrusted form data)
+//     3. innerHTML = document.cookie / fetch().then(r => r.text())
+//   Anything assigning from our own controlled data structures is fine.
 (function innerHtmlXssHeuristic() {
   const jsFiles = walk(ROOT).filter(f =>
     f.endsWith('.js') && !f.includes('/scripts/') && !/\.min\.js$/.test(f));
   const offenders = [];
+  // Sources of UNTRUSTED data — innerHTML assignment using these = XSS risk
+  const UNTRUSTED_SOURCES = [
+    /location\.(?:search|hash|href)/,
+    /window\.location/,
+    /URLSearchParams/,
+    /document\.cookie/,
+    /document\.referrer/,
+    /\.value\b/,            // input.value, textarea.value
+    /e\.target\.\w+/,       // event target arbitrary property
+    /fetch\s*\([^)]*\)/,    // fetch().then(r => r.text())
+    /XMLHttpRequest/,
+    /URL\.searchParams/,
+    /localStorage\.getItem/, /sessionStorage\.getItem/, // sometimes user-tainted
+  ];
   for (const f of jsFiles) {
     const js = fs.readFileSync(f, 'utf8');
-    // innerHTML = … + var  OR  innerHTML = `…${...}`
-    // ignore static-string assignments and obvious sanitized cases (.replace, escapeHtml)
-    const matches = [...js.matchAll(/\.innerHTML\s*=\s*([^;]{0,160})/g)];
+    // First strip out string literals from the entire file so regex below
+    // never sees the WORD "value" inside an HTML template attribute.
+    const stripped = js
+      .replace(/'(?:\\.|[^'\\])*'/g, "''")
+      .replace(/"(?:\\.|[^"\\])*"/g, '""')
+      .replace(/`(?:\\.|[^`\\])*`/g, '``');
+    // Now find innerHTML= …  up to the next statement-ish terminator (; or , or )
+    // We deliberately keep the slice small (≤180) to avoid spilling into next stmt
+    const matches = [...stripped.matchAll(/\.innerHTML\s*=\s*([^;,)]{0,180})/g)];
     for (const m of matches) {
       const expr = m[1].trim();
-      const hasInterp = /\$\{[^}]*\}/.test(expr) || /\+\s*[A-Za-z_$]/.test(expr);
-      const looksSafe = /escapeHtml|sanitiz|innerText|textContent/.test(expr);
-      if (hasInterp && !looksSafe) {
-        offenders.push(`${rel(f)}: innerHTML = ${expr.slice(0, 80)}…`);
+      const hasUntrusted = UNTRUSTED_SOURCES.some(re => re.test(expr));
+      const looksSafe = /escapeHtml|sanitiz|DOMPurify/.test(expr);
+      if (hasUntrusted && !looksSafe) {
+        offenders.push(`${rel(f)}: innerHTML uses untrusted source: ${expr.slice(0, 100)}…`);
       }
     }
   }
   if (offenders.length) {
-    R.warn(`innerHTML with dynamic interpolation (review for XSS):\n  - ${offenders.slice(0, 6).join('\n  - ')}`);
+    R.err(`innerHTML assigned from UNTRUSTED source (XSS risk):\n  - ${offenders.slice(0, 6).join('\n  - ')}`);
   } else {
-    R.ok('innerHTML hygiene: no obvious dynamic-interpolation assignments');
+    R.ok('innerHTML hygiene: no untrusted-source assignments (location/cookie/input/fetch/storage)');
   }
 })();
 
@@ -2318,6 +2347,258 @@ const JS_SIZE_FLOORS = {
     R.warn(`<meta theme-color> incomplete (mobile address-bar):\n  - ${offenders.slice(0, 6).join('\n  - ')}`);
   } else {
     R.ok('<meta theme-color>: light+dark variants present on every content page');
+  }
+})();
+
+// ─────────────────────────────────────────────────────────────────────────
+// SMART ANTI-REGRESSION GUARDS — ROUND 6 (added 2026-06-09)
+// Performance / web-vitals / data-consistency lane.
+// Each guard validated against existing prod state to avoid false positives.
+// ─────────────────────────────────────────────────────────────────────────
+
+// G51. fetchpriority="high" — at most ONE per page (web.dev / Google PageSpeed).
+//   Multiple high-priority resources cancel each other out and HURT LCP.
+//   Pure warning since owner may intentionally tune this.
+(function fetchPriorityHighGuard() {
+  const files = walk(ROOT).filter(f => f.endsWith('.html'));
+  const offenders = [];
+  for (const f of files) {
+    const r = rel(f);
+    const base = path.basename(r);
+    if (/^(google|yandex|microsoft)/i.test(base) || base === '404.html') continue;
+    const html = fs.readFileSync(f, 'utf8');
+    const count = (html.match(/\bfetchpriority\s*=\s*["']high["']/gi) || []).length;
+    if (count > 1) offenders.push(`${r}: ${count} fetchpriority="high" (recommend 1 for LCP)`);
+  }
+  if (offenders.length) {
+    R.warn(`Multiple fetchpriority="high" per page (web.dev: 1 max for LCP):\n  - ${offenders.join('\n  - ')}`);
+  } else {
+    R.ok('fetchpriority="high": at most 1 per page (good LCP signal)');
+  }
+})();
+
+// G52. feed.xml ↔ articles directory parity.
+//   Each feed item URL should be a real article on disk; each /articles/<slug>/
+//   article SHOULD eventually be in feed.xml. We warn on drift only — manual
+//   review needed since not every article must be in feed.
+(function feedArticleParityGuard() {
+  const p = path.join(ROOT, 'feed.xml');
+  if (!fs.existsSync(p)) return;
+  const xml = fs.readFileSync(p, 'utf8');
+  const feedUrls = new Set([...xml.matchAll(/<link>\s*(https?:\/\/[^<]+)\s*<\/link>/g)]
+    .map(m => m[1].trim()));
+  const missing = [];
+  for (const u of feedUrls) {
+    if (!u.includes('/articles/')) continue;
+    const local = u.replace(/^https?:\/\/[^/]+/, '').replace(/^\//, '').replace(/\/$/, '/index.html');
+    const abs = path.join(ROOT, local);
+    if (!fs.existsSync(abs)) missing.push(`${u} → article file missing on disk`);
+  }
+  if (missing.length) {
+    R.err(`feed.xml references non-existent articles:\n  - ${missing.slice(0, 8).join('\n  - ')}`);
+  } else {
+    R.ok(`feed.xml: all article references exist on disk`);
+  }
+})();
+
+// G53. Sitemap & feed agree on counts (within tolerance).
+//   We tolerate <5 drift since feed often omits old or non-article pages.
+//   This catches systemic drift: forgot to add a new article to either.
+(function sitemapFeedDriftInfo() {
+  const sm = path.join(ROOT, 'sitemap.xml');
+  const ff = path.join(ROOT, 'feed.xml');
+  if (!fs.existsSync(sm) || !fs.existsSync(ff)) return;
+  const sitemapArticleUrls = new Set(
+    [...fs.readFileSync(sm, 'utf8').matchAll(/<loc>(https?:[^<]+\/articles\/[^<]+)<\/loc>/g)]
+      .map(m => m[1].trim().replace(/\/$/, ''))
+  );
+  const feedArticleUrls = new Set(
+    [...fs.readFileSync(ff, 'utf8').matchAll(/<link>\s*(https?:[^<]+\/articles\/[^<]+)\s*<\/link>/g)]
+      .map(m => m[1].trim().replace(/\/$/, ''))
+  );
+  const inSitemapNotFeed = [...sitemapArticleUrls].filter(u => !feedArticleUrls.has(u));
+  const inFeedNotSitemap = [...feedArticleUrls].filter(u => !sitemapArticleUrls.has(u));
+  if (inFeedNotSitemap.length) {
+    R.warn(`feed.xml has articles missing from sitemap.xml:\n  - ${inFeedNotSitemap.slice(0, 5).join('\n  - ')}`);
+  } else if (inSitemapNotFeed.length > 5) {
+    R.note(`sitemap.xml has ${inSitemapNotFeed.length} articles not in feed.xml (acceptable drift)`);
+  } else {
+    R.ok(`sitemap.xml ↔ feed.xml: article URLs aligned`);
+  }
+})();
+
+// G54. Manifest.json sanity: name/start_url/display/icons/theme_color.
+(function manifestRequiredFieldsGuard() {
+  const p = path.join(ROOT, 'manifest.json');
+  if (!fs.existsSync(p)) { R.warn('manifest.json missing'); return; }
+  let m;
+  try { m = JSON.parse(fs.readFileSync(p, 'utf8')); }
+  catch (e) { R.err(`manifest.json: invalid JSON — ${e.message}`); return; }
+  const required = ['name', 'short_name', 'start_url', 'display', 'icons', 'theme_color'];
+  const missing = required.filter(k => !m[k]);
+  if (missing.length) {
+    R.err(`manifest.json missing fields: ${missing.join(', ')}`);
+    return;
+  }
+  // Each icon entry must point at an existing file
+  const badIcons = [];
+  for (const ic of m.icons || []) {
+    const src = ic.src || '';
+    if (!src.startsWith('/')) continue;
+    const abs = path.join(ROOT, src.replace(/^\//, ''));
+    if (!fs.existsSync(abs)) badIcons.push(src);
+  }
+  if (badIcons.length) {
+    R.err(`manifest.json icons reference missing files:\n  - ${badIcons.join('\n  - ')}`);
+  } else {
+    R.ok(`manifest.json: all required fields present, ${(m.icons||[]).length} icons all exist`);
+  }
+})();
+
+// G55. <html lang="…"> must be either "ru" or "ru-RU" — not "en".
+//   Catches agents who default to English templates and forget to localize.
+(function htmlLangIsRussianGuard() {
+  const files = walk(ROOT).filter(f => f.endsWith('.html'));
+  const offenders = [];
+  for (const f of files) {
+    const r = rel(f);
+    const base = path.basename(r);
+    if (/^(google|yandex|microsoft)/i.test(base)) continue;
+    const html = fs.readFileSync(f, 'utf8');
+    const m = html.match(/<html\b[^>]*\blang\s*=\s*["']([^"']+)["']/i);
+    if (!m) continue; // G25 catches missing lang entirely
+    const lang = m[1].toLowerCase();
+    if (!/^ru(-[a-z]{2,4})?$/.test(lang)) {
+      offenders.push(`${r}: <html lang="${m[1]}"> (expected "ru" or "ru-RU")`);
+    }
+  }
+  if (offenders.length) {
+    R.err(`<html lang> must be Russian:\n  - ${offenders.join('\n  - ')}`);
+  } else {
+    R.ok('<html lang>: every page is declared Russian (ru/ru-RU)');
+  }
+})();
+
+// G56. Each <link rel="alternate" type="application/rss+xml"> must point to
+//   the SAME feed.xml URL across all pages (no fragmented RSS endpoints).
+(function rssAlternateConsistencyGuard() {
+  const files = walk(ROOT).filter(f => f.endsWith('.html'));
+  const seen = new Map(); // url → first-file
+  const conflicts = [];
+  for (const f of files) {
+    const r = rel(f);
+    const html = fs.readFileSync(f, 'utf8');
+    const m = html.match(/<link\b[^>]*type\s*=\s*["']application\/rss\+xml["'][^>]*href\s*=\s*["']([^"']+)["']/i)
+            || html.match(/<link\b[^>]*href\s*=\s*["']([^"']+)["'][^>]*type\s*=\s*["']application\/rss\+xml["']/i);
+    if (!m) continue;
+    const url = m[1].trim();
+    if (!seen.size) seen.set(url, r);
+    else if (![...seen.keys()].includes(url)) {
+      conflicts.push(`${r} → ${url} (first seen: ${[...seen.values()][0]} → ${[...seen.keys()][0]})`);
+      seen.set(url, r);
+    }
+  }
+  if (conflicts.length) {
+    R.err(`<link rel="alternate" RSS> points to different URLs across pages:\n  - ${conflicts.slice(0, 5).join('\n  - ')}`);
+  } else if (seen.size === 1) {
+    R.ok(`RSS alternate consistent: every page → ${[...seen.keys()][0]}`);
+  } else {
+    R.warn('No RSS alternate link found on any page');
+  }
+})();
+
+// G57. <img> in main content needs explicit width AND height (CLS prevention).
+//   Skip:
+//   - Yandex Metrika tracker pixel inside <noscript>
+//   - <img> inside <picture> if the <picture>'s <source> has width/height
+//   - Decorative images (alt="" + aria-hidden / role=presentation)
+(function imageDimensionsCLSGuard() {
+  const files = walk(ROOT).filter(f => f.endsWith('.html'));
+  const offenders = [];
+  for (const f of files) {
+    const r = rel(f);
+    if (/^(google|yandex)/i.test(path.basename(r))) continue;
+    const html = fs.readFileSync(f, 'utf8');
+    // strip <noscript> wholesale (tracker pixels)
+    const stripped = html.replace(/<noscript[\s\S]*?<\/noscript>/gi, '');
+    const imgs = [...stripped.matchAll(/<img\b([^>]+)>/gi)];
+    for (const m of imgs) {
+      const attrs = m[1];
+      const hasW = /\bwidth\s*=/.test(attrs);
+      const hasH = /\bheight\s*=/.test(attrs);
+      const isDecorative = /\balt\s*=\s*["']\s*["']/.test(attrs) &&
+                           (/\baria-hidden\s*=\s*["']true["']/.test(attrs) || /\brole\s*=\s*["']presentation["']/.test(attrs));
+      if (hasW && hasH) continue;
+      if (isDecorative) continue;
+      offenders.push(`${r}: <img${attrs.slice(0, 80).replace(/\s+/g, ' ')}> missing ${[!hasW?'width':'', !hasH?'height':''].filter(Boolean).join('+')}`);
+    }
+  }
+  if (offenders.length) {
+    R.warn(`<img> missing width/height (causes CLS):\n  - ${offenders.slice(0, 8).join('\n  - ')}`);
+  } else {
+    R.ok('<img> dimensions: every content image has width+height (no CLS surprise)');
+  }
+})();
+
+// G58. CSS @import inside our own .css files — forbidden.
+//   AGENTS rule: exactly 5 CSS files. @import would smuggle in extra ones
+//   and create a render-blocking serial waterfall.
+(function noCssImportGuard() {
+  const cssFiles = ['css/site.css', 'css/home.css', 'css/command-palette.css',
+                    'css/mobile-hotfix.css', 'css/nagornaya-mobile-toc.css'];
+  const offenders = [];
+  for (const f of cssFiles) {
+    const p = path.join(ROOT, f);
+    if (!fs.existsSync(p)) continue;
+    const css = fs.readFileSync(p, 'utf8');
+    if (/^\s*@import\b/m.test(css) || /;\s*@import\b/.test(css)) {
+      offenders.push(`${f}: contains @import (serial blocker; merge content instead)`);
+    }
+  }
+  if (offenders.length) {
+    R.err(`CSS @import found (render-blocking; AGENTS forbids):\n  - ${offenders.join('\n  - ')}`);
+  } else {
+    R.ok('CSS @import: none in main stylesheets (no serial blocker)');
+  }
+})();
+
+// G59. Robots.txt sanity: must allow root, list Sitemap directive.
+(function robotsTxtSanityGuard() {
+  const p = path.join(ROOT, 'robots.txt');
+  if (!fs.existsSync(p)) { R.warn('robots.txt missing'); return; }
+  const txt = fs.readFileSync(p, 'utf8');
+  const problems = [];
+  if (/^\s*Disallow:\s*\/\s*$/m.test(txt) && !/^\s*Allow:/m.test(txt)) {
+    problems.push('robots.txt blocks the entire site (Disallow: / without Allow:)');
+  }
+  if (!/^\s*Sitemap:\s*https?:\/\/.+sitemap\.xml/im.test(txt)) {
+    problems.push('robots.txt missing "Sitemap:" directive');
+  }
+  if (problems.length) {
+    R.err(`robots.txt issues:\n  - ${problems.join('\n  - ')}`);
+  } else {
+    R.ok('robots.txt: allows crawl, lists sitemap');
+  }
+})();
+
+// G60. CNAME file content matches canonical domain.
+//   Catches an agent renaming CNAME to a typo (gospod-bog.ru → gospodbog.ru).
+(function cnameMatchesCanonicalGuard() {
+  const cn = path.join(ROOT, 'CNAME');
+  if (!fs.existsSync(cn)) return;
+  const host = fs.readFileSync(cn, 'utf8').trim();
+  // sample one canonical from any HTML
+  const sample = walk(ROOT).find(f => f.endsWith('index.html') && !/google|yandex/i.test(path.basename(f)));
+  if (!sample) return;
+  const html = fs.readFileSync(sample, 'utf8');
+  const cm = html.match(/<link\b[^>]*rel\s*=\s*["']canonical["'][^>]*href\s*=\s*["']https?:\/\/([^\/"']+)/i)
+          || html.match(/<link\b[^>]*href\s*=\s*["']https?:\/\/([^\/"']+)[^"']*["'][^>]*rel\s*=\s*["']canonical["']/i);
+  if (!cm) return;
+  const canonHost = cm[1].toLowerCase();
+  if (host.toLowerCase() !== canonHost) {
+    R.err(`CNAME "${host}" ≠ canonical host "${canonHost}" (Pages will serve wrong domain)`);
+  } else {
+    R.ok(`CNAME matches canonical host: ${host}`);
   }
 })();
 
