@@ -240,6 +240,23 @@ function extractSiteConfig(html, fileLabel) {
   }
 })();
 
+// 2a-bis. site.css minimum size guard (anti-catastrophic-deletion).
+// On 2026-06-09 a script accidentally deleted ~150 KB of CSS from site.css and the audit didn't catch it
+// (the remaining file was syntactically valid). This guard blocks deploys if site.css shrinks below
+// a sane floor — 200 KB. Bump SITE_CSS_MIN_BYTES only deliberately, never to "make audit pass".
+const SITE_CSS_MIN_BYTES = 200_000;
+(function siteCssSizeFloor() {
+  const f = path.join(ROOT, 'css/site.css');
+  if (!fs.existsSync(f)) { R.err('css/site.css missing'); return; }
+  const bytes = fs.statSync(f).size;
+  if (bytes < SITE_CSS_MIN_BYTES) {
+    R.err(`site.css is ${bytes} bytes — below floor ${SITE_CSS_MIN_BYTES}. ` +
+      `Possible catastrophic deletion. Restore from git history before committing.`);
+  } else {
+    R.ok(`site.css size ${bytes} bytes ≥ floor ${SITE_CSS_MIN_BYTES} (anti-deletion guard)`);
+  }
+})();
+
 // 2b. !important budget for site.css (anti-regression guard, AGENTS §4.10)
 (function importantBudget() {
   const f = path.join(ROOT, 'css/site.css');
