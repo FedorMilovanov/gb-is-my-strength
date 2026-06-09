@@ -3,6 +3,16 @@
         xmlns:image="http://www.google.com/schemas/sitemap-image/1.1">
 
   <url>
+    <loc>https://gospod-bog.ru/hard-texts/</loc>
+    <lastmod>2026-06-09</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+    <image:image>
+      <image:loc>https://gospod-bog.ru/images/og-series-heart.webp</image:loc>
+      <image:title>Тайны человеческого сердца</image:title>
+    </image:image>
+  </url>
+  <url>
     <loc>https://gospod-bog.ru/</loc>
     <lastmod>2026-06-08T00:00:00+03:00</lastmod>
     <changefreq>weekly</changefreq>
