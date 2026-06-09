@@ -49,35 +49,35 @@
         "slug": "dzhon-gill-istoricheskiy-kontekst",
         "title": "Исторический контекст",
         "status": "published",
-        "readingTime": 12
+        "readingTime": 16
       },
       {
         "n": 2,
         "slug": "dzhon-gill-chast-1-chelovek",
         "title": "Часть I. Человек",
         "status": "published",
-        "readingTime": 34
+        "readingTime": 28
       },
       {
         "n": 3,
         "slug": "dzhon-gill-chast-2-uchenyi",
         "title": "Часть II. Учёный",
         "status": "published",
-        "readingTime": 34
+        "readingTime": 12
       },
       {
         "n": 4,
         "slug": "dzhon-gill-chast-3-nasledie",
         "title": "Часть III. Наследие",
         "status": "published",
-        "readingTime": 34
+        "readingTime": 22
       },
       {
         "n": 5,
         "slug": "dzhon-gill-spravochnik",
         "title": "Справочник по Гиллу",
         "status": "published",
-        "readingTime": 18
+        "readingTime": 11
       }
     ]
   },
@@ -110,7 +110,7 @@
         "slug": "rimlyanam-7-veruyushchiy-ili-neveruyushchiy",
         "title": "Римлянам 7: верующий, неверующий или человек под законом?",
         "status": "published",
-        "readingTime": 18
+        "readingTime": 11
       },
       {
         "n": 3,

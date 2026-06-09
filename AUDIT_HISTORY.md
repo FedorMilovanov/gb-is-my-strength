@@ -1,7 +1,28 @@
 # Audit History — gospod-bog.ru
 
 > All audit changelogs consolidated into one file.
-> Last updated: 2026-06-08
+> Last updated: 2026-06-10
+
+---
+
+## v51 — John Gill self-audit: image truth-lock + stale preload cleanup (2026-06-10)
+
+### What was improved:
+- Per owner request, re-audited the full John Gill cluster end-to-end: documentation, all 5 Gill pages, `/`, `/biografii/`, `/articles/`, metadata and browser rendering.
+- Fixed a secondary markup regression in `dzhon-gill-chast-1-chelovek`: the restored birth-date dove footnote marker had been left semantically open and was swallowing the rest of the paragraph.
+- Rewrote the `gill-kettering-1697` alt/caption so it describes the **actual** approved image (early Kettering domestic/remeslennaya setting) rather than a generic “town / workshops / church spire” label or the previously broken funeral caption.
+- Translated Gill’s baptism hymn into Russian in Part I and kept the English original inside `<details>`.
+- Removed a stale Part III preload for `gill-wesley-letters.jpg` that no longer corresponds to rendered content.
+- Corrected Part III image truthfulness:
+  - `gill-spurgeon-succession` now described as a **symbolic succession / pulpit** scene, not a literal portrait of Spurgeon;
+  - `gill-bunhill-fields` now described as a **funeral procession / memorial engraving**, not an empty cemetery view.
+- Fixed invalid nested `<picture>` markup in `dzhon-gill-istoricheskiy-kontekst`.
+- Added AGENTS-r92 editorial locks so future agents do not blindly trust Gill filenames when writing `alt` / `figcaption`, and do not restore old images merely because a filename sounds “more accurate.”
+
+### Verified:
+- `npm run validate:all` → ✅ PASS.
+- `node scripts/audit-pro.js` → ✅ PASS (**142 passed / 0 warnings / 0 errors**).
+- Browser re-check (desktop + mobile, headless Chromium) → ✅ overflow-free, no stale Gill preload, no nested `<picture>`, corrected captions visible in DOM.
 
 ---
 
