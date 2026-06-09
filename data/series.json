@@ -56,21 +56,21 @@
         "slug": "dzhon-gill-chast-1-chelovek",
         "title": "Часть I. Человек",
         "status": "published",
-        "readingTime": 28
+        "readingTime": 34
       },
       {
         "n": 3,
         "slug": "dzhon-gill-chast-2-uchenyi",
         "title": "Часть II. Учёный",
         "status": "published",
-        "readingTime": 22
+        "readingTime": 34
       },
       {
         "n": 4,
         "slug": "dzhon-gill-chast-3-nasledie",
         "title": "Часть III. Наследие",
         "status": "published",
-        "readingTime": 24
+        "readingTime": 34
       },
       {
         "n": 5,
@@ -103,7 +103,7 @@
         "slug": "krajne-li-isporcheno-serdce",
         "title": "Крайне ли испорчено сердце верующего?",
         "status": "published",
-        "readingTime": 32
+        "readingTime": 40
       },
       {
         "n": 2,
