@@ -157,22 +157,22 @@ html.dark .summary-card__text strong{color:var(--color-accent-strong)}
 @media print {
   /* --- 1. Top Tier Reset --- */
   *, *::before, *::after {
-    background: transparent !important;
-    color: #000 !important;
-    box-shadow: none !important;
-    text-shadow: none !important;
-    transition: none !important;
-    -webkit-print-color-adjust: exact !important;
-    print-color-adjust: exact !important;
+    background: transparent;
+    color: #000;
+    box-shadow: none;
+    text-shadow: none;
+    transition: none;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
   }
   
   html, body {
-    height: auto !important;
-    font-size: 11.5pt !important;
-    line-height: 1.6 !important;
-    background: #fff !important;
-    margin: 0 !important;
-    padding: 0 !important;
+    height: auto;
+    font-size: 11.5pt;
+    line-height: 1.6;
+    background: #fff;
+    margin: 0;
+    padding: 0;
   }
 
   /* --- 2. Heavy Cleaning --- */
@@ -183,45 +183,45 @@ html.dark .summary-card__text strong{color:var(--color-accent-strong)}
   .ManuscripTable-scroll-hint, button, .gtip, .tooltip, .btip, 
   .mobile-controls, #hCpBtnNav, .h-reading-progress, .toc-sidebar,
   .gb-accuracy-inner {
-    display: none !important;
-    visibility: hidden !important;
-    opacity: 0 !important;
+    display: none;
+    visibility: hidden;
+    opacity: 0;
   }
 
   /* --- 3. Layout Stabilization --- */
   .page-wrap, main, article, .article-main, .article-body {
-    display: block !important;
-    width: 100% !important;
-    max-width: none !important;
-    margin: 0 !important;
-    padding: 0 !important;
-    border: none !important;
-    overflow: visible !important;
-    contain: none !important;
-    content-visibility: visible !important;
+    display: block;
+    width: 100%;
+    max-width: none;
+    margin: 0;
+    padding: 0;
+    border: none;
+    overflow: visible;
+    contain: none;
+    content-visibility: visible;
   }
 
   /* --- 4. Gaps & Breaks Optimization --- */
   .summary-card, .quote-box, .info-box, .warn-box, .author-card {
-    break-inside: auto !important;
-    page-break-inside: auto !important;
-    border: 1.5pt solid #f0f0f0 !important;
-    margin: 2em 0 !important;
-    padding: 1.2em !important;
-    background: #fafafa !important;
+    break-inside: auto;
+    page-break-inside: auto;
+    border: 1.5pt solid #f0f0f0;
+    margin: 2em 0;
+    padding: 1.2em;
+    background: #fafafa;
   }
   
   figure, .article-img, .article-header, .article-end-sdg, .sources-block h2 {
-    break-inside: avoid !important;
-    page-break-inside: avoid !important;
+    break-inside: avoid;
+    page-break-inside: avoid;
   }
 
   h1, h2, h3, h4, h5, h6 {
-    break-after: avoid !important;
-    page-break-after: avoid !important;
-    color: #000 !important;
-    margin-top: 2.5em !important;
-    margin-bottom: 0.8em !important;
+    break-after: avoid;
+    page-break-after: avoid;
+    color: #000;
+    margin-top: 2.5em;
+    margin-bottom: 0.8em;
   }
 
   p, li {
@@ -231,15 +231,15 @@ html.dark .summary-card__text strong{color:var(--color-accent-strong)}
 
   /* --- 5. Typography & Branding --- */
   .article-header {
-    text-align: left !important;
-    border-bottom: 1pt solid #eee !important;
-    margin-bottom: 3em !important;
-    padding-bottom: 1em !important;
+    text-align: left;
+    border-bottom: 1pt solid #eee;
+    margin-bottom: 3em;
+    padding-bottom: 1em;
   }
   
-  .article-header h1 { font-size: 28pt !important; line-height: 1.1 !important; }
-  .article-desc { font-size: 13pt !important; font-style: italic !important; margin: 1em 0 !important; }
-  .article-byline { font-size: 11pt !important; margin-bottom: 0.5em !important; }
+  .article-header h1 { font-size: 28pt; line-height: 1.1; }
+  .article-desc { font-size: 13pt; font-style: italic; margin: 1em 0; }
+  .article-byline { font-size: 11pt; margin-bottom: 0.5em; }
 
   /* Professional Centered Logo Header */
   body::before {
@@ -257,22 +257,22 @@ html.dark .summary-card__text strong{color:var(--color-accent-strong)}
 
   /* --- 6. Media Handling --- */
   img {
-    max-width: 100% !important;
-    filter: grayscale(100%) !important;
-    border-radius: 0 !important;
+    max-width: 100%;
+    filter: grayscale(100%);
+    border-radius: 0;
   }
   
   figcaption {
-    font-size: 10pt !important;
-    color: #444 !important;
-    margin-top: 0.5em !important;
-    text-align: center !important;
+    font-size: 10pt;
+    color: #444;
+    margin-top: 0.5em;
+    text-align: center;
   }
 
   /* --- 7. Links --- */
   a {
-    text-decoration: underline !important;
-    color: #000 !important;
+    text-decoration: underline;
+    color: #000;
   }
   
   /* Link hint for printed matter */
@@ -285,12 +285,12 @@ html.dark .summary-card__text strong{color:var(--color-accent-strong)}
 
   /* --- 8. Signature Block --- */
   .article-end-sdg {
-    margin: 5cm auto 0 !important;
-    padding: 2cm 0 !important;
-    text-align: center !important;
-    opacity: 1 !important;
-    border-top: 0.5pt solid #eee !important;
+    margin: 5cm auto 0;
+    padding: 2cm 0;
+    text-align: center;
+    opacity: 1;
+    border-top: 0.5pt solid #eee;
   }
-  .article-end-sdg span { display: block !important; margin-bottom: 1em !important; }
-  .article-end-sdg svg { width: 40pt !important; height: auto !important; margin: 0 auto !important; }
+  .article-end-sdg span { display: block; margin-bottom: 1em; }
+  .article-end-sdg svg { width: 40pt; height: auto; margin: 0 auto; }
 }
