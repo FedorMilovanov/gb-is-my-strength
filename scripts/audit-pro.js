@@ -3821,6 +3821,50 @@ const JS_SIZE_FLOORS = {
   }
 })();
 
+// ─────────────────────────────────────────────────────────────────────────
+// SMART ANTI-REGRESSION GUARDS — ROUND 13 (added 2026-06-09)
+// Orphan asset detection. Found today: 6+ MB of unused images
+// accumulated over many agent rounds (OG variants from deleted articles,
+// gill-hebrew-scroll-yad full set, gill-manuscript-drafts, etc).
+// ─────────────────────────────────────────────────────────────────────────
+
+// G101. No orphan images in /images/.
+//   Catch images that aren't referenced anywhere in HTML/CSS/JS/JSON/XML.
+//   Surgical: ANY text file scan with substring `includes(name)` — this
+//   correctly handles srcset comma-separated patterns and og:image meta.
+//   Whitelist: explicit "keep-as-source" suffixes (-original, --keep).
+(function orphanImagesGuard() {
+  const IMG_RE = /\.(?:webp|jpe?g|png|svg|gif|avif)$/i;
+  const KEEP_SUFFIX = /(?:-original|--keep)\./i;
+  // build text-content map ONCE
+  const texts = [];
+  for (const f of walk(ROOT).filter(x => /\.(html|css|js|json|xml|md|txt)$/.test(x) && !x.includes('/audit/'))) {
+    try { texts.push(fs.readFileSync(f, 'utf8')); } catch {}
+  }
+  const imgDir = path.join(ROOT, 'images');
+  if (!fs.existsSync(imgDir)) return;
+  const orphans = [];
+  for (const f of fs.readdirSync(imgDir)) {
+    if (fs.statSync(path.join(imgDir, f)).isDirectory()) continue;
+    if (!IMG_RE.test(f)) continue;
+    if (KEEP_SUFFIX.test(f)) continue;
+    if (!texts.some(t => t.includes(f))) {
+      const sz = Math.round(fs.statSync(path.join(imgDir, f)).size / 1024);
+      orphans.push({ name: f, kb: sz });
+    }
+  }
+  if (orphans.length) {
+    const total = orphans.reduce((s, o) => s + o.kb, 0);
+    const list = orphans
+      .sort((a, b) => b.kb - a.kb)
+      .slice(0, 12)
+      .map(o => `${o.kb}KB ${o.name}`);
+    R.err(`Orphan images in /images/ — ${orphans.length} files, ${total}KB wasted:\n  - ${list.join('\n  - ')}`);
+  } else {
+    R.ok('No orphan images: every file in /images/ is referenced somewhere');
+  }
+})();
+
 // Output
 const duration = ((Date.now() - R.start) / 1000).toFixed(2);
 const sep = '═'.repeat(78);
