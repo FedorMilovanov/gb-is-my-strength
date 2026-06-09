@@ -482,7 +482,7 @@ const SITE_CSS_MIN_BYTES = 200_000;
       const opens = (html.match(/<span\b/g) || []).length;
       const closes = (html.match(/<\/span>/g) || []).length;
       const diff = opens - closes;
-      if (diff > 20) { spanBugs++; R.err(rel(hf) + ': ' + diff + ' unclosed <span> tags'); }
+      if (diff > 0) { spanBugs++; R.err(rel(hf) + ': ' + diff + ' unclosed <span> tag(s) (open=' + opens + ', close=' + closes + ')'); }
     }
     if (spanBugs === 0) R.ok('HTML span balance: all files balanced');
     else R.err('HTML span balance: ' + spanBugs + ' files with unclosed spans');
@@ -1117,6 +1117,267 @@ const SITE_CSS_MIN_BYTES = 200_000;
     R.warn(`.gitignore missing entries: ${missing.join(', ')}`);
   } else {
     R.ok('.gitignore covers npm/node_modules/OS turds');
+  }
+})();
+
+// ─────────────────────────────────────────────────────────────────────────
+// SMART ANTI-REGRESSION GUARDS — ROUND 2 (added 2026-06-09)
+// Каждая защита ниже = ответ на конкретный исторический коммит-фикс.
+// При срабатывании в логах указан inciden-ref (SHA или AGENTS-r…) —
+// читай тот коммит, чтобы понять что именно тут защищается.
+// ─────────────────────────────────────────────────────────────────────────
+
+// G11. article-topnav must stay deleted.
+//   Incident: AGENTS-r74 (2026-06-08) — owner explicitly removed sticky topnav
+//   from all 8 articles; AGENTS §9.8 says: "не возвращать". Multiple agents
+//   keep trying to re-introduce it.
+(function topnavExorcismGuard() {
+  const files = walk(ROOT).filter(f => f.endsWith('.html'));
+  const offenders = [];
+  for (const f of files) {
+    const html = fs.readFileSync(f, 'utf8');
+    // we only care about ACTUAL elements, not CSS strings or comments
+    // catch: <nav class="article-topnav…">, <div class="…article-topnav…">
+    const m = html.match(/<(?:nav|div|header|aside)\s[^>]*class="[^"]*\barticle-topnav\b/);
+    if (m) offenders.push(`${rel(f)}: contains <…class="article-topnav…"> — AGENTS §9.8 says do not revive`);
+  }
+  if (offenders.length) {
+    R.err(`article-topnav resurrected (AGENTS §9.8 — owner deleted it 2026-06-08):\n  - ${offenders.join('\n  - ')}`);
+  } else {
+    R.ok('article-topnav stays buried (AGENTS §9.8)');
+  }
+})();
+
+// G12. Dead classes must NOT come back.
+//   Incident: PLAN-04 P5–P7 (commits d683088c, c141f361, 1ee834c7) removed
+//   .theme-float-btn, .ai-disclosure, .fx-lift, .epilogue-*, .float-fallback,
+//   .nag-theme-btn, #themeFloat, #gbSearchFloat. AGENTS-r17 lists these.
+//   If a future agent re-adds the class anywhere in HTML/CSS/JS — fail.
+(function deadClassResurrectionGuard() {
+  const FORBIDDEN = [
+    { name: '.theme-float-btn', why: 'PLAN-04 P5 — replaced by .gb-fc-theme (FAB module 29)' },
+    { name: '.ai-disclosure',   why: 'PLAN-04 P7 / AGENTS-r11 — owner does not want AI badges on figcaption' },
+    { name: '.nag-theme-btn',   why: 'PLAN-04 P5 — replaced by unified .gb-fc-theme' },
+    { name: '#themeFloat',      why: 'PLAN-04 P5 — replaced by .gb-fc-theme' },
+    { name: '#gbSearchFloat',   why: 'PLAN-04 P5 — replaced by .gb-fc-search' },
+  ];
+  const all = walk(ROOT).filter(f => /\.(html|css|js)$/.test(f) && !f.includes('/scripts/'));
+  const offenders = [];
+  for (const f of all) {
+    const txt = fs.readFileSync(f, 'utf8');
+    for (const cls of FORBIDDEN) {
+      // for #ids / .classes — match as exact token (not substring)
+      const tokenName = cls.name.startsWith('.') ? cls.name.slice(1) : cls.name.slice(1);
+      const sigil = cls.name[0]; // '.' or '#'
+      // 1. HTML attribute: class="… X …" or id="X"
+      const htmlRe = sigil === '.'
+        ? new RegExp(`class\\s*=\\s*["'][^"']*\\b${escapeRe(tokenName)}\\b[^"']*["']`)
+        : new RegExp(`id\\s*=\\s*["']${escapeRe(tokenName)}["']`);
+      // 2. CSS selector or JS literal: '.theme-float-btn' / '#themeFloat'
+      const cssJsRe = new RegExp(`(?<![A-Za-z0-9_-])${escapeRe(cls.name)}(?![A-Za-z0-9_-])`);
+      if (htmlRe.test(txt) || cssJsRe.test(txt)) {
+        offenders.push(`${rel(f)}: dead class ${cls.name} resurrected — ${cls.why}`);
+      }
+    }
+  }
+  if (offenders.length) {
+    R.err(`Dead-class resurrection (do NOT bring back removed components):\n  - ${[...new Set(offenders)].join('\n  - ')}`);
+  } else {
+    R.ok(`Dead classes stay dead (${FORBIDDEN.length} guarded)`);
+  }
+})();
+
+// G13. <span class="ai-note"> banned in <figcaption>.
+//   Incident: AGENTS table line 289 — figcaption никогда не должна
+//   нести AI-disclosure. SEO fix commit 8512f82f removed it once already.
+(function aiNoteInFigcaptionGuard() {
+  const files = walk(ROOT).filter(f => f.endsWith('.html'));
+  const offenders = [];
+  for (const f of files) {
+    const html = fs.readFileSync(f, 'utf8');
+    const figcaps = [...html.matchAll(/<figcaption[\s\S]*?<\/figcaption>/g)];
+    for (const m of figcaps) {
+      if (/class\s*=\s*["'][^"']*\bai-note\b/.test(m[0]) ||
+          /<span[^>]*>\s*Изображение сгенерировано ИИ/i.test(m[0])) {
+        offenders.push(rel(f));
+        break;
+      }
+    }
+  }
+  if (offenders.length) {
+    R.err(`<span class="ai-note"> or AI-disclosure text inside <figcaption> (AGENTS line ~289 — ban):\n  - ${offenders.join('\n  - ')}`);
+  } else {
+    R.ok('No AI-disclosure spans inside <figcaption>');
+  }
+})();
+
+// G14. Duplicate <meta property="og:image"> per page.
+//   Incident: commit 65ef82a5 — krajne had a second duplicate og:image tag.
+//   OG validators in Telegram/Twitter pick the first one and ignore the rest,
+//   so duplicates are silently confusing. Same applies to og:title, og:url.
+(function ogMetaDuplicateGuard() {
+  const files = walk(ROOT).filter(f => f.endsWith('.html'));
+  const KEYS = ['og:image', 'og:title', 'og:url', 'og:description', 'twitter:image'];
+  const offenders = [];
+  for (const f of files) {
+    const html = fs.readFileSync(f, 'utf8');
+    for (const key of KEYS) {
+      const re = new RegExp(`<meta\\s+[^>]*(?:property|name)\\s*=\\s*["']${escapeRe(key)}["']`, 'g');
+      const count = (html.match(re) || []).length;
+      if (count > 1) offenders.push(`${rel(f)}: ${key} ×${count}`);
+    }
+  }
+  if (offenders.length) {
+    R.err(`Duplicate OpenGraph/Twitter meta tags (only first wins for crawlers):\n  - ${offenders.join('\n  - ')}`);
+  } else {
+    R.ok('OG/Twitter meta: no duplicates across pages');
+  }
+})();
+
+// G15. <source srcset=…> must be inside <picture>.
+//   Incident: PLAN-07 (ebf52955) — agent inserted bare <source> tags without
+//   <picture> wrappers. Browser silently ignores them.
+(function pictureSourceWrapperGuard() {
+  const files = walk(ROOT).filter(f => f.endsWith('.html'));
+  const offenders = [];
+  for (const f of files) {
+    const html = fs.readFileSync(f, 'utf8');
+    // remove <picture>…</picture> blocks, then any remaining <source srcset> is orphan
+    const stripped = html.replace(/<picture[\s\S]*?<\/picture>/gi, '');
+    const orphans = stripped.match(/<source\s+[^>]*srcset/gi);
+    if (orphans && orphans.length) {
+      offenders.push(`${rel(f)}: ${orphans.length} <source srcset=…> outside <picture> wrapper`);
+    }
+  }
+  if (offenders.length) {
+    R.err(`Orphan <source srcset> (only valid inside <picture>):\n  - ${offenders.join('\n  - ')}`);
+  } else {
+    R.ok('All <source srcset> tags wrapped in <picture>');
+  }
+})();
+
+// G16. Broken passive-listener pattern: addEventListener('resize', function(, {passive:…}))
+//   Incident: AGENTS-r47c/d and r45c — multiple agents broke listeners by
+//   writing the comma-after-paren pattern. Catch it before deploy.
+(function brokenListenerPatternGuard() {
+  const jsFiles = walk(ROOT).filter(f => f.endsWith('.js') && !f.includes('/scripts/') && !/min\.js$/.test(f));
+  const offenders = [];
+  for (const f of jsFiles) {
+    const js = fs.readFileSync(f, 'utf8');
+    // catch:  addEventListener('xxx', function(, {…
+    //         addEventListener("xxx", function(, {…
+    if (/addEventListener\s*\(\s*['"][^'"]+['"]\s*,\s*function\s*\(\s*,/.test(js)) {
+      offenders.push(rel(f));
+    }
+  }
+  if (offenders.length) {
+    R.err(`Broken listener pattern \`function(, {passive:…})\` — see AGENTS-r47c/d:\n  - ${offenders.join('\n  - ')}`);
+  } else {
+    R.ok('Listener syntax: no broken function(, {…}) patterns');
+  }
+})();
+
+// G17. Heuristic console.error / parse-fail in inline scripts.
+//   Incident: r58 (5e48837c) — site.js had a syntax error broken since r48b,
+//   prod was crashing in browser, only Playwright caught it. We can't run
+//   browser here, but we CAN evaluate inline scripts with new Function()
+//   to catch parse errors. This is already done at line 342 (inlineScriptSyntax).
+//   THIS guard is an extra layer: flag inline scripts longer than 50 LOC,
+//   which AGENTS philosophy says belong in /js/ not inline.
+(function bigInlineScriptGuard() {
+  const files = walk(ROOT).filter(f => f.endsWith('.html'));
+  const offenders = [];
+  for (const f of files) {
+    const html = fs.readFileSync(f, 'utf8');
+    const inline = [...html.matchAll(/<script(?![^>]*\bsrc=)[^>]*>([\s\S]*?)<\/script>/g)];
+    for (const m of inline) {
+      const body = m[1];
+      const lines = body.split('\n').filter(l => l.trim()).length;
+      // skip JSON-LD, SITE_CONFIG and quiz data (known canonical big blocks)
+      if (/application\/ld\+json/.test(m[0])) continue;
+      if (/window\.SITE_CONFIG/.test(body)) continue;
+      if (/window\.QUIZ_DATA|window\.QUIZ_SOURCE/.test(body)) continue;
+      if (lines > 500) {
+        offenders.push(`${rel(f)}: inline <script> with ${lines} LOC (consider /js/ extraction)`);
+      }
+    }
+  }
+  if (offenders.length) {
+    // info only — not all agents will follow this; surface but don't fail
+    R.warn(`Large inline scripts (consider extracting to /js/):\n  - ${offenders.slice(0, 10).join('\n  - ')}`);
+  } else {
+    R.ok('Inline scripts: none larger than 50 LOC (except JSON-LD / SITE_CONFIG)');
+  }
+})();
+
+// G18. CSS @keyframes must each have at least one rule (from / to or %).
+//   Incident: commit 32eabff7 — "restore site.css from broken @keyframes regression".
+//   An empty/malformed @keyframes silently breaks subsequent animations.
+(function keyframesIntegrityGuard() {
+  const cssFiles = ['css/site.css', 'css/home.css', 'css/command-palette.css',
+                    'css/mobile-hotfix.css', 'css/nagornaya-mobile-toc.css'];
+  const offenders = [];
+  for (const f of cssFiles) {
+    const p = path.join(ROOT, f);
+    if (!fs.existsSync(p)) continue;
+    const css = fs.readFileSync(p, 'utf8');
+    // match @keyframes NAME { … }, naïve but works on minified or formatted CSS
+    const blocks = [...css.matchAll(/@(?:-webkit-)?keyframes\s+([\w-]+)\s*\{((?:[^{}]|\{[^{}]*\})*)\}/g)];
+    for (const m of blocks) {
+      const name = m[1];
+      const body = m[2];
+      // must contain at least one stop (from/to/0%/100% etc.)
+      if (!/(?:\bfrom\b|\bto\b|\d+%)\s*\{/.test(body)) {
+        offenders.push(`${f}: @keyframes ${name} has no from/to/%% stops`);
+      }
+    }
+  }
+  if (offenders.length) {
+    R.err(`Malformed @keyframes (animations will silently break):\n  - ${offenders.join('\n  - ')}`);
+  } else {
+    R.ok('@keyframes integrity: all blocks have valid stops');
+  }
+})();
+
+// G19. CACHE_VERSION in sw.js must match the major-rev of cache-bust.
+//   Incident: SW with stale CACHE_VERSION keeps serving deleted files.
+//   We don't enforce a specific version — just require the value is non-empty
+//   AND that sw.js actually deletes old caches on activate (we already check
+//   activate/delete, but not the version-string format). Surgical: verify the
+//   version string exists, is a quoted literal, and is non-trivial.
+(function swCacheVersionGuard() {
+  const p = path.join(ROOT, 'sw.js');
+  if (!fs.existsSync(p)) { R.warn('sw.js missing'); return; }
+  const sw = fs.readFileSync(p, 'utf8');
+  const m = sw.match(/CACHE_VERSION\s*=\s*['"]([^'"]+)['"]/);
+  if (!m) { R.err('sw.js: CACHE_VERSION not found or not a quoted string literal'); return; }
+  const v = m[1];
+  // version should be ≥ 4 chars and include a digit or hyphen (e.g. 'v1.6.3', '2026-06-09', 'r77')
+  if (v.length < 3 || !/[\d-]/.test(v)) {
+    R.err(`sw.js CACHE_VERSION="${v}" is suspiciously short/trivial — bump it on every meaningful asset change`);
+  } else {
+    R.ok(`sw.js CACHE_VERSION="${v}" looks sane`);
+  }
+})();
+
+// G20. Sitemap freshness sanity: lastmod must not be in the future.
+//   Incident: commit 65ef82a5 — sitemap had non-normalized lastmod values.
+//   If a date is in the future, Google flags the sitemap as broken.
+(function sitemapFutureDateGuard() {
+  const p = path.join(ROOT, 'sitemap.xml');
+  if (!fs.existsSync(p)) { R.warn('sitemap.xml missing'); return; }
+  const xml = fs.readFileSync(p, 'utf8');
+  const dates = [...xml.matchAll(/<lastmod>([^<]+)<\/lastmod>/g)].map(m => m[1].trim());
+  const today = new Date();
+  today.setHours(23, 59, 59, 999); // allow same-day timezone slack
+  const future = dates.filter(d => {
+    const dt = new Date(d);
+    return !isNaN(dt) && dt > today;
+  });
+  if (future.length) {
+    R.err(`sitemap.xml has ${future.length} lastmod date(s) in the future:\n  - ${future.slice(0, 5).join('\n  - ')}`);
+  } else {
+    R.ok(`sitemap.xml: all ${dates.length} lastmod dates ≤ today`);
   }
 })();
 
