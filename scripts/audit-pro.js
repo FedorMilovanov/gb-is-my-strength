@@ -3531,6 +3531,156 @@ const JS_SIZE_FLOORS = {
   }
 })();
 
+// ─────────────────────────────────────────────────────────────────────────
+// SMART ANTI-REGRESSION GUARDS — ROUND 11 (added 2026-06-09)
+// Catch real production regressions that survived prior rounds.
+// ─────────────────────────────────────────────────────────────────────────
+
+// G91. Yandex.Metrika init consistency.
+//   Real production gap discovered today: 3 article pages had the
+//   <noscript><img src=mc.yandex.ru> tracker pixel but NO JS ym() init.
+//   → no analytics for any JS-enabled visitor on those pages.
+//   Rule: every content page that ships the noscript pixel MUST also
+//   call ym(108353327, 'init', …) — they are a matched pair.
+(function yandexMetrikaConsistencyGuard() {
+  const files = walk(ROOT).filter(f => f.endsWith('.html'));
+  const offenders = [];
+  for (const f of files) {
+    const r = rel(f);
+    const base = path.basename(r);
+    if (/^(google|yandex|microsoft)/i.test(base)) continue;
+    const html = fs.readFileSync(f, 'utf8');
+    const hasPixel = /mc\.yandex\.ru\/watch\/\d+/.test(html);
+    const hasInit = /\bym\s*\(\s*\d+\s*,\s*['"]init['"]/.test(html);
+    if (hasPixel && !hasInit) {
+      offenders.push(`${r}: <noscript> Yandex pixel present, but NO ym(…, 'init') JS call (analytics broken)`);
+    }
+    if (hasInit && !hasPixel) {
+      offenders.push(`${r}: ym() init present, but NO <noscript> fallback pixel (no-JS visitors not tracked)`);
+    }
+  }
+  if (offenders.length) {
+    R.err(`Yandex.Metrika init / pixel mismatch (analytics gap):\n  - ${offenders.join('\n  - ')}`);
+  } else {
+    R.ok('Yandex.Metrika: every page has BOTH ym() init AND <noscript> tracker pixel');
+  }
+})();
+
+// G92. Internal links: no protocol-relative `//path` (legacy http/https-agnostic
+//   pattern). Modern best practice = absolute https://, or root-relative /path.
+//   Protocol-relative breaks file:// previews and bare-curl tests.
+(function protocolRelativeLinkGuard() {
+  const files = walk(ROOT).filter(f => /\.(html|css|js)$/.test(f) && !f.includes('/.git/'));
+  const offenders = [];
+  for (const f of files) {
+    const txt = fs.readFileSync(f, 'utf8');
+    const matches = [...txt.matchAll(/(?:href|src)\s*=\s*["']\/\/(?!\/)/g)];
+    if (matches.length) offenders.push(`${rel(f)}: ${matches.length} protocol-relative //... reference(s)`);
+  }
+  if (offenders.length) {
+    R.warn(`Protocol-relative URLs (//path) — prefer absolute https:// or /path:\n  - ${offenders.slice(0, 6).join('\n  - ')}`);
+  } else {
+    R.ok('No protocol-relative //path URLs');
+  }
+})();
+
+// G93. <picture> element MUST contain at least one <img> as fallback.
+//   Surgical: catches the broken pattern where a refactor leaves <picture>
+//   with only <source> children — browser shows nothing.
+(function pictureNeedsImgFallbackGuard() {
+  const files = walk(ROOT).filter(f => f.endsWith('.html'));
+  const offenders = [];
+  for (const f of files) {
+    const html = fs.readFileSync(f, 'utf8');
+    const pics = [...html.matchAll(/<picture\b[^>]*>([\s\S]*?)<\/picture>/gi)];
+    for (const m of pics) {
+      if (!/<img\b/i.test(m[1])) {
+        offenders.push(`${rel(f)}: <picture> without <img> fallback`);
+      }
+    }
+  }
+  if (offenders.length) {
+    R.err(`<picture> without <img> fallback (browsers render nothing):\n  - ${offenders.slice(0, 6).join('\n  - ')}`);
+  } else {
+    R.ok('<picture>: every element has an <img> fallback child');
+  }
+})();
+
+// G94. JSON-LD nodes' image references must exist on disk (covers
+//   ImageObject.contentUrl, Article.image, CollectionPage.image — all
+//   variants). G62 already does this for <meta og:image>; G89 does
+//   <image:loc> in sitemap. This is the third gap: schema-graph images.
+(function jsonLdImageReferencesGuard() {
+  const files = walk(ROOT).filter(f => f.endsWith('.html'));
+  const missing = new Set();
+  for (const f of files) {
+    const html = fs.readFileSync(f, 'utf8');
+    const blocks = [...html.matchAll(/<script\b[^>]*type\s*=\s*["']application\/ld\+json["'][^>]*>([\s\S]*?)<\/script>/gi)];
+    for (const b of blocks) {
+      let json;
+      try { json = JSON.parse(b[1]); } catch { continue; }
+      const stack = Array.isArray(json) ? [...json] : [json];
+      while (stack.length) {
+        const n = stack.shift();
+        if (!n || typeof n !== 'object') continue;
+        if (Array.isArray(n)) { stack.push(...n); continue; }
+        if (n['@graph']) { stack.push(...n['@graph']); }
+        const urls = [];
+        if (typeof n.image === 'string') urls.push(n.image);
+        if (n.image && typeof n.image === 'object') {
+          if (n.image.url) urls.push(n.image.url);
+          if (n.image.contentUrl) urls.push(n.image.contentUrl);
+        }
+        if (n.contentUrl) urls.push(n.contentUrl);
+        if (n.logo && typeof n.logo === 'object' && n.logo.url) urls.push(n.logo.url);
+        for (const u of urls) {
+          if (typeof u !== 'string' || !u.startsWith('http')) continue;
+          const local = u.replace(/^https?:\/\/[^/]+/, '').replace(/^\//, '');
+          if (!fs.existsSync(path.join(ROOT, local))) {
+            missing.add(`${rel(f)}: JSON-LD image → ${u}`);
+          }
+        }
+        for (const k of Object.keys(n)) if (typeof n[k] === 'object' && n[k]) stack.push(n[k]);
+      }
+    }
+  }
+  if (missing.size) {
+    R.err(`JSON-LD image/logo references to missing files:\n  - ${[...missing].slice(0, 8).join('\n  - ')}`);
+  } else {
+    R.ok('JSON-LD images: every image/logo/contentUrl resolves to a real file');
+  }
+})();
+
+// G95. <head> integrity sentinels: no <body>/<main>/<article> tag inside <head>.
+//   Catches a class of catastrophic copy-paste where an agent pastes a
+//   chunk of <body> markup mid-<head>. Browser parses it as malformed,
+//   silently moves it, and breaks layout.
+(function headIntegrityGuard() {
+  const files = walk(ROOT).filter(f => f.endsWith('.html'));
+  const offenders = [];
+  for (const f of files) {
+    const html = fs.readFileSync(f, 'utf8');
+    const headM = html.match(/<head\b[^>]*>([\s\S]*?)<\/head>/i);
+    if (!headM) continue;
+    // strip <noscript>…</noscript> blocks first — analytics tracker pixels live there legitimately
+    const head = headM[1].replace(/<noscript[\s\S]*?<\/noscript>/gi, '');
+    // these tags must NEVER appear inside <head> (outside of <noscript>)
+    const FORBIDDEN = ['body', 'main', 'article', 'section', 'header', 'footer', 'nav', 'aside', 'h1', 'h2', 'h3', 'p', 'img', 'figure', 'figcaption'];
+    for (const tag of FORBIDDEN) {
+      const re = new RegExp(`<${tag}\\b`, 'i');
+      if (re.test(head)) {
+        offenders.push(`${rel(f)}: <${tag}> inside <head> (malformed HTML)`);
+        break;
+      }
+    }
+  }
+  if (offenders.length) {
+    R.err(`Body-only tags inside <head> (malformed HTML):\n  - ${offenders.join('\n  - ')}`);
+  } else {
+    R.ok('<head> integrity: no body-only tags inside <head>');
+  }
+})();
+
 // Output
 const duration = ((Date.now() - R.start) / 1000).toFixed(2);
 const sep = '═'.repeat(78);
