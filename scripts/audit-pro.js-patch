@@ -1,0 +1,14 @@
+const fs = require('fs');
+const file = 'scripts/audit-pro.js';
+let content = fs.readFileSync(file, 'utf8');
+if (!content.includes('site.css size >= 200KB')) {
+    content = content.replace('checkCssJsSizes();', '''checkCssJsSizes();
+    // Guard against catastrophic CSS deletion (e.g. wiped file)
+    const siteCssPath = "css/site.css";
+    const siteCssSize = fs.statSync(siteCssPath).size;
+    if (siteCssSize < 200000) {
+        throw new Error(`CRITICAL: css/site.css is too small (${siteCssSize} bytes). A catastrophic deletion likely occurred. Expected > 200,000 bytes.`);
+    }
+    pass("site.css size >= 200KB");''')
+    fs.writeFileSync(file, content);
+}
