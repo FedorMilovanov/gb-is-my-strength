@@ -690,13 +690,13 @@ Precache список — в самом `sw.js`. При добавлении н�
 - Класс `.gb-floating-controls` в `css/site.css`
 
 ### 9.3 bio-cover в статьях о Гилле
-- `articles/dzhon-gill-chast-1-chelovek/index.html` ДОЛЖЕН содержать `.bio-cover` с изображением `gill-pulpit-cover`
+- `articles/dzhon-gill-chast-1-chelovek/index.html` ДОЛЖЕН содержать `.bio-cover` с изображением `gill-authentic-study-cover`
 - Это 16:9 "Гилл за кафедрой" — НЕ city-view, НЕ portrait 3:4
 - `aspect-ratio` в `.bio-cover` = `16/9` (не 21/9)
 
 ### 9.4 Карточки-thumbnails серии Гилла на главной
-- Часть 1 (`dzhon-gill-chast-1`): thumbnail = `gill-pulpit-cover` (широкоформатный)
-- НЕ использовать `og-dzhon-gill-chast-1-chelovek` (показывает город, а не Гилла)
+- Часть 1 (`dzhon-gill-chast-1`): thumbnail = `gill-authentic-study-cover` (широкоформатный)
+- НЕ использовать `og-gill-authentic-study-cover` (показывает город, а не Гилла)
 
 ### 9.5 Запрет дублирования контента
 - В `chast-1` — НЕ должно быть двух одинаковых портретов Гилла
@@ -804,7 +804,16 @@ JS `site.js` функция `e()` инжектит SVG тело голубя т�
 
 ### 9.10 John Gill image system — final editorial lock
 
-  * Часть 1 bio-cover и thumbnail = `gill-pulpit-cover` (Гилл за кафедрой). Не возвращать `gill-portret-full-study` без явного запроса владельца.
+  * Часть 1 bio-cover и thumbnail = `gill-authentic-study-cover`: монументальный портрет Джона Гилла в библиотеке, 16:9.
+  * Малый 3:4 портрет `dzhon-gill-portret` в верхней карточке Части I не использовать: он создаёт дублирование и непремиальную белую рамку.
+  * На первом экране Части I должен быть один главный визуальный образ, а не два портрета подряд.
+  * Типография `gill-printing-press` используется только один раз в Части II рядом с первыми опубликованными трудами.
+  * В Части I после рассказа о крещении должна быть иллюстрация `gill-baptism-scene`.
+  * В Части II в блоке о раввинистике/Талмуде использовать `gill-talmud-study-authentic`: один крупный фолиант на столе, без второй книги в руках, без призрачной тени, без крупных декоративных надписей на корешках.
+  * Если заменяешь кабинетную сцену Гилла, сначала проверь книжные артефакты: корешок, разворот, руки, отсутствие псевдо-плакатных надписей.
+  * `gill-pastoral-succession` не трогать: владелец отдельно попросил оставить эту схему как есть.
+
+  * Часть 1 bio-cover и thumbnail = `gill-authentic-study-cover` (Гилл за кафедрой). Не возвращать `gill-authentic-study-cover` без явного запроса владельца.
   * В `chast-1` не дублировать типографию: `gill-printing-press` используется только в Части II рядом с первыми опубликованными трудами.
   * Слот скорби/пастырского утешения в Части I = `gill-pastoral-consolation`, не типография.
   * Книжная лавка Кеттеринга = `gill-bookshop-strip` как узкая горизонтальная полоса. Не возвращать вертикальный `gill-context-scroll` без `article-img--vertical`.
