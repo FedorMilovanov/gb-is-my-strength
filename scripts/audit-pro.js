@@ -852,34 +852,50 @@ const SITE_CSS_MIN_BYTES = 200_000;
 // сначала пойми, какой инцидент она ловит. Документация ниже в комментариях.
 // ─────────────────────────────────────────────────────────────────────────
 
-// G1. No garbage in repo root / scripts /.
+// G1. No garbage anywhere in the repo (recursive).
 //   Incident: I left fix_home.py, fix_print.py, audit-pro.js-patch in commits.
-//   Rule: никаких *.py / *.patch / uploads/ в корне проекта. Скрипты-помощники
-//   принадлежат /scripts/ — но даже там запрещены *.patch и *-patch файлы.
+//   Earlier version only scanned 1-level; agents can drop junk in any subdir.
 (function junkFilesGuard() {
-  const ROOTS = ['', 'scripts', 'images'];
   const BAD_PATTERNS = [
     { re: /\.patch$/i,            why: 'patch files are throw-away helpers' },
     { re: /-patch$/i,             why: 'patch files are throw-away helpers' },
     { re: /^fix_.*\.py$/i,        why: 'ad-hoc fix_*.py scripts must be deleted after use' },
-    { re: /^uploads$/i,           why: 'uploads/ is for raw user dumps, never commit it' },
-    { re: /^.*\.DS_Store$/i,      why: 'macOS turd' },
+    { re: /\.DS_Store$/i,         why: 'macOS turd' },
     { re: /^Thumbs\.db$/i,        why: 'Windows turd' },
+    { re: /\.bak$/i,              why: 'editor backup file' },
+    { re: /\.orig$/i,             why: 'git merge artifact' },
+    { re: /\.rej$/i,              why: 'rejected patch hunk' },
+    { re: /~$/,                   why: 'editor backup with ~ suffix' },
   ];
+  const EXCLUDE_DIRS = new Set(['.git', 'node_modules', '.npm', 'pagefind', '.playwright-browsers',
+    'shots', 'shots-after', 'audit', '.cache']);
   const offenders = [];
-  for (const root of ROOTS) {
-    const dir = path.join(ROOT, root);
-    if (!fs.existsSync(dir)) continue;
+  function scan(dir) {
+    if (!fs.existsSync(dir)) return;
     for (const name of fs.readdirSync(dir)) {
-      for (const p of BAD_PATTERNS) {
-        if (p.re.test(name)) offenders.push(`${root ? root + '/' : ''}${name} — ${p.why}`);
+      if (EXCLUDE_DIRS.has(name)) continue;
+      const full = path.join(dir, name);
+      const st = fs.statSync(full);
+      if (st.isDirectory()) {
+        if (/^uploads$/i.test(name)) {
+          offenders.push(`${path.relative(ROOT, full)}/ — uploads/ is for raw dumps, never commit`);
+          continue; // don't recurse into uploads
+        }
+        scan(full);
+      } else {
+        for (const p of BAD_PATTERNS) {
+          if (p.re.test(name)) {
+            offenders.push(`${path.relative(ROOT, full).replace(/\\/g, '/')} — ${p.why}`);
+          }
+        }
       }
     }
   }
+  scan(ROOT);
   if (offenders.length) {
     R.err(`Garbage files detected (clean before commit):\n  - ${offenders.join('\n  - ')}`);
   } else {
-    R.ok('No garbage files (*.py / *.patch / uploads/ / OS turds)');
+    R.ok('No garbage files (*.py / *.patch / *.bak / *.orig / *.rej / uploads/ / OS turds) anywhere in repo');
   }
 })();
 
@@ -917,7 +933,7 @@ const SITE_CSS_MIN_BYTES = 200_000;
   if (offenders.length) {
     R.err(`Oversized raw images in /images/ (convert to webp + responsive sizes, or add to ALLOWLIST):\n  - ${offenders.join('\n  - ')}`);
   } else {
-    R.ok(`Image size hygiene: no PNG/JPG > ${LIMIT/1024} KB in /images/ (allowlist: ${ALLOWLIST.size})`);
+    R.ok(`Image size hygiene: no PNG/JPG > ${Math.round(LIMIT/1024)} KB in /images/ (allowlist: ${ALLOWLIST.size})`);
   }
 })();
 
@@ -1025,9 +1041,9 @@ const SITE_CSS_MIN_BYTES = 200_000;
   const offenders = [];
   for (const f of files) {
     const html = fs.readFileSync(f, 'utf8');
-    if (!/class="h-nav-links"/.test(html)) continue; // only pages with the unified nav
-    // extract the <ul class="h-nav-links">…</ul> block
-    const m = html.match(/<ul class="h-nav-links"[\s\S]*?<\/ul>/);
+    if (!/class\s*=\s*["'][^"']*\bh-nav-links\b/.test(html)) continue; // only pages with the unified nav
+    // extract the <ul …class=…h-nav-links…>…</ul> block (tolerate attribute order / quote style)
+    const m = html.match(/<ul[^>]*\bclass\s*=\s*["'][^"']*\bh-nav-links\b[^"']*["'][^>]*>[\s\S]*?<\/ul>/);
     if (!m) continue;
     const block = m[0];
     const missing = REQUIRED.filter(label => !block.includes(`>${label}<`));
@@ -1051,7 +1067,7 @@ const SITE_CSS_MIN_BYTES = 200_000;
   const offenders = [];
   for (const f of files) {
     const html = fs.readFileSync(f, 'utf8');
-    const m = html.match(/<ul class="h-nav-links"[\s\S]*?<\/ul>/);
+    const m = html.match(/<ul[^>]*\bclass\s*=\s*["'][^"']*\bh-nav-links\b[^"']*["'][^>]*>[\s\S]*?<\/ul>/);
     if (!m) continue;
     if (/<button\b/i.test(m[0])) offenders.push(rel(f));
   }
@@ -1213,24 +1229,33 @@ const SITE_CSS_MIN_BYTES = 200_000;
 
 // G14. Duplicate <meta property="og:image"> per page.
 //   Incident: commit 65ef82a5 — krajne had a second duplicate og:image tag.
-//   OG validators in Telegram/Twitter pick the first one and ignore the rest,
-//   so duplicates are silently confusing. Same applies to og:title, og:url.
+//   OG validators in Telegram/Twitter pick the first one and ignore the rest.
+//   Attribute order is normalized: `<meta property=… content=…>` and the
+//   reverse both count. We also tolerate single/double quotes.
 (function ogMetaDuplicateGuard() {
   const files = walk(ROOT).filter(f => f.endsWith('.html'));
-  const KEYS = ['og:image', 'og:title', 'og:url', 'og:description', 'twitter:image'];
+  const KEYS = ['og:image', 'og:title', 'og:url', 'og:description', 'twitter:image', 'og:type'];
   const offenders = [];
   for (const f of files) {
     const html = fs.readFileSync(f, 'utf8');
-    for (const key of KEYS) {
-      const re = new RegExp(`<meta\\s+[^>]*(?:property|name)\\s*=\\s*["']${escapeRe(key)}["']`, 'g');
-      const count = (html.match(re) || []).length;
-      if (count > 1) offenders.push(`${rel(f)}: ${key} ×${count}`);
+    const tags = [...html.matchAll(/<meta\b([^>]+)>/gi)].map(m => m[1]);
+    const counter = {};
+    for (const attrs of tags) {
+      // grab property=… or name=… (whichever is present, regardless of position)
+      const pm = attrs.match(/\b(?:property|name)\s*=\s*['"]([^'"]+)['"]/i);
+      if (!pm) continue;
+      const key = pm[1].trim().toLowerCase();
+      if (!KEYS.includes(key)) continue;
+      counter[key] = (counter[key] || 0) + 1;
+    }
+    for (const [k, c] of Object.entries(counter)) {
+      if (c > 1) offenders.push(`${rel(f)}: ${k} ×${c}`);
     }
   }
   if (offenders.length) {
     R.err(`Duplicate OpenGraph/Twitter meta tags (only first wins for crawlers):\n  - ${offenders.join('\n  - ')}`);
   } else {
-    R.ok('OG/Twitter meta: no duplicates across pages');
+    R.ok(`OG/Twitter meta: no duplicates across pages (checked: ${KEYS.join(', ')})`);
   }
 })();
 
@@ -1306,7 +1331,7 @@ const SITE_CSS_MIN_BYTES = 200_000;
     // info only — not all agents will follow this; surface but don't fail
     R.warn(`Large inline scripts (consider extracting to /js/):\n  - ${offenders.slice(0, 10).join('\n  - ')}`);
   } else {
-    R.ok('Inline scripts: none larger than 50 LOC (except JSON-LD / SITE_CONFIG)');
+    R.ok('Inline scripts: none larger than 500 LOC (except JSON-LD / SITE_CONFIG / QUIZ_DATA)');
   }
 })();
 
@@ -1378,6 +1403,300 @@ const SITE_CSS_MIN_BYTES = 200_000;
     R.err(`sitemap.xml has ${future.length} lastmod date(s) in the future:\n  - ${future.slice(0, 5).join('\n  - ')}`);
   } else {
     R.ok(`sitemap.xml: all ${dates.length} lastmod dates ≤ today`);
+  }
+})();
+
+// ─────────────────────────────────────────────────────────────────────────
+// SMART ANTI-REGRESSION GUARDS — ROUND 3 (added 2026-06-09)
+// Hand-picked from unexplored history domains: a11y, browser compat,
+// scroll-lock, RTL, mixed-protocol, duplicate H1, semantic correctness.
+// ─────────────────────────────────────────────────────────────────────────
+
+// G21. Exactly one <h1> per content page.
+//   Incident: SEO standard. Multiple <h1> confuse crawlers and screen readers.
+//   We skip robot-verification files (google*.html, yandex_*.html).
+(function singleH1Guard() {
+  const files = walk(ROOT).filter(f => f.endsWith('.html'));
+  const offenders = [];
+  for (const f of files) {
+    const r = rel(f);
+    if (/^(google|yandex|microsoft|favicon|404)/i.test(path.basename(r))) continue;
+    const html = fs.readFileSync(f, 'utf8');
+    const count = (html.match(/<h1\b[^>]*>/gi) || []).length;
+    if (count === 0) offenders.push(`${r}: missing <h1>`);
+    else if (count > 1) offenders.push(`${r}: ${count} <h1> tags (must be exactly 1)`);
+  }
+  if (offenders.length) {
+    R.err(`Single-<h1> rule violated (SEO + a11y):\n  - ${offenders.join('\n  - ')}`);
+  } else {
+    R.ok('Single <h1> per page: all content pages have exactly one');
+  }
+})();
+
+// G22. No mixed-content http:// in href/src (except web.archive.org snapshots).
+//   Mixed-content blocks resources on https sites and triggers browser warnings.
+//   Tooltip footnotes legitimately reference http://web.archive.org/web/…/http://…
+//   so we whitelist that exact pattern.
+(function mixedProtocolGuard() {
+  const files = walk(ROOT).filter(f => /\.(html|css|js|json|xml)$/i.test(f));
+  const offenders = [];
+  for (const f of files) {
+    const txt = fs.readFileSync(f, 'utf8');
+    // Find http://… in src= or href= attribute values only (not inside tooltips or prose)
+    const matches = [...txt.matchAll(/(?:href|src)\s*=\s*["']http:\/\/([^"'\s/]+)/g)];
+    for (const m of matches) {
+      const host = m[1].toLowerCase();
+      // legitimate: w3.org schemas, archive.org snapshots
+      if (host === 'www.w3.org' || host === 'web.archive.org') continue;
+      offenders.push(`${rel(f)}: http://${host} (use https or remove)`);
+    }
+  }
+  if (offenders.length) {
+    R.err(`Mixed-content http:// links/sources (browsers block on https):\n  - ${[...new Set(offenders)].slice(0, 10).join('\n  - ')}`);
+  } else {
+    R.ok('Mixed-content: no http:// href/src (web.archive.org & w3.org whitelisted)');
+  }
+})();
+
+// G23. target="_blank" links must have rel including 'noopener'.
+//   Without it, the opened page gets window.opener access — security/perf risk.
+(function targetBlankRelGuard() {
+  const files = walk(ROOT).filter(f => f.endsWith('.html'));
+  const offenders = [];
+  for (const f of files) {
+    const html = fs.readFileSync(f, 'utf8');
+    // grab full <a …> tags with target="_blank"
+    const anchors = [...html.matchAll(/<a\b[^>]*target\s*=\s*["']_blank["'][^>]*>/gi)];
+    for (const a of anchors) {
+      const tag = a[0];
+      // accept rel containing noopener (with or without other tokens)
+      if (!/rel\s*=\s*["'][^"']*\bnoopener\b/i.test(tag)) {
+        offenders.push(`${rel(f)}: ${tag.slice(0, 110)}`);
+      }
+    }
+  }
+  if (offenders.length) {
+    R.err(`<a target="_blank"> without rel="noopener" (security/perf):\n  - ${offenders.slice(0, 8).join('\n  - ')}`);
+  } else {
+    R.ok('target="_blank" links: all carry rel="noopener"');
+  }
+})();
+
+// G24. href="javascript:" — bad UX/a11y.
+//   Already enforced by validate.js for javascript:void(0); this complements it.
+//   We DO NOT flag bare href="#" when the anchor has data-* attributes that
+//   indicate JS will fill the href dynamically (data-resume-link, data-action,
+//   data-target, role="tab", etc.) — legitimate progressive-enhancement pattern.
+(function badAnchorHrefGuard() {
+  const files = walk(ROOT).filter(f => f.endsWith('.html'));
+  const offenders = [];
+  for (const f of files) {
+    const html = fs.readFileSync(f, 'utf8');
+    // javascript: scheme is always bad
+    const jsAnchors = [...html.matchAll(/<a\b[^>]*href\s*=\s*["']\s*javascript:[^>]*>/gi)];
+    for (const a of jsAnchors) offenders.push(`${rel(f)}: ${a[0].slice(0, 80)}…`);
+    // bare href="#" only flagged if no data-* / role= indicator
+    const bareHashAnchors = [...html.matchAll(/<a\b([^>]*)href\s*=\s*["']#["']([^>]*)>/gi)];
+    for (const m of bareHashAnchors) {
+      const attrs = m[1] + m[2];
+      if (/\bdata-[a-z-]+/i.test(attrs)) continue;
+      if (/\brole\s*=/i.test(attrs)) continue;
+      offenders.push(`${rel(f)}: bare href="#" without data-/role attrs (${m[0].slice(0, 70)}…)`);
+    }
+  }
+  if (offenders.length) {
+    R.err(`Bad anchor href values (UX/a11y):\n  - ${offenders.join('\n  - ')}`);
+  } else {
+    R.ok('Anchor href values: no href="javascript:…" and no truly-bare href="#"');
+  }
+})();
+
+// G25. <html lang="ru"> on every content page.
+//   Incident: SEO/a11y require explicit language. Catch agents copying
+//   templates without lang attribute. Skip robot-verification stubs.
+(function htmlLangGuard() {
+  const files = walk(ROOT).filter(f => f.endsWith('.html'));
+  const offenders = [];
+  for (const f of files) {
+    const r = rel(f);
+    if (/^(google|yandex|microsoft)/i.test(path.basename(r))) continue;
+    const html = fs.readFileSync(f, 'utf8');
+    if (!/<html\b[^>]*\blang\s*=/.test(html)) {
+      offenders.push(`${r}: <html> missing lang attribute`);
+    }
+  }
+  if (offenders.length) {
+    R.err(`<html> without lang attribute (a11y/SEO):\n  - ${offenders.join('\n  - ')}`);
+  } else {
+    R.ok('All content pages have <html lang="…">');
+  }
+})();
+
+// G26. Each non-empty <a> link must have visible text OR aria-label OR title.
+//   Catches "naked" links like <a href="…"><img …></a> with no accessible text.
+//   We allow <a> wrapping <img alt="…"> because alt provides the accessible name.
+(function linkAccessibleNameGuard() {
+  const files = walk(ROOT).filter(f => f.endsWith('.html'));
+  const offenders = [];
+  for (const f of files) {
+    const html = fs.readFileSync(f, 'utf8');
+    const anchors = [...html.matchAll(/<a\b([^>]*)>([\s\S]*?)<\/a>/gi)];
+    for (const a of anchors) {
+      const attrs = a[1];
+      const body = a[2];
+      // direct text content (strip tags, decode entities crudely)
+      const textOnly = body.replace(/<[^>]+>/g, '').replace(/&[#a-z0-9]+;/gi, '?').trim();
+      if (textOnly.length > 0) continue;
+      // aria-label / title / aria-labelledby in <a> itself
+      if (/\baria-label\s*=\s*["'][^"']+["']/i.test(attrs)) continue;
+      if (/\btitle\s*=\s*["'][^"']+["']/i.test(attrs)) continue;
+      if (/\baria-labelledby\s*=/i.test(attrs)) continue;
+      // <img alt="…"> with non-empty alt inside
+      const imgAlt = body.match(/<img\b[^>]*\balt\s*=\s*["']([^"']*)["']/i);
+      if (imgAlt && imgAlt[1].trim()) continue;
+      // <svg> with aria-label inside is accessible-name
+      if (/<svg\b[^>]*\baria-label\s*=\s*["'][^"']+["']/i.test(body)) continue;
+      // SVG with role="img" + <title> child
+      if (/<title>[^<]+<\/title>/i.test(body)) continue;
+      offenders.push(`${rel(f)}: <a${attrs.slice(0, 80)}…> has no accessible name`);
+    }
+  }
+  if (offenders.length) {
+    R.err(`Anchors without accessible name (a11y):\n  - ${offenders.slice(0, 10).join('\n  - ')}`);
+  } else {
+    R.ok('Anchors: every <a> has visible text / aria-label / alt');
+  }
+})();
+
+// G27. Every <button> must have text or aria-label.
+//   Incident: AGENTS-r74 said theme/search buttons must be clean SVG —
+//   but they MUST still carry aria-label. Same for h-mobile-menu-btn.
+(function buttonAccessibleNameGuard() {
+  const files = walk(ROOT).filter(f => f.endsWith('.html'));
+  const offenders = [];
+  for (const f of files) {
+    const html = fs.readFileSync(f, 'utf8');
+    const buttons = [...html.matchAll(/<button\b([^>]*)>([\s\S]*?)<\/button>/gi)];
+    for (const b of buttons) {
+      const attrs = b[1];
+      const body = b[2];
+      const textOnly = body.replace(/<[^>]+>/g, '').replace(/&[#a-z0-9]+;/gi, '?').trim();
+      if (textOnly.length > 0) continue;
+      if (/\baria-label\s*=\s*["'][^"']+["']/i.test(attrs)) continue;
+      if (/\baria-labelledby\s*=/i.test(attrs)) continue;
+      if (/\btitle\s*=\s*["'][^"']+["']/i.test(attrs)) continue;
+      if (/<svg\b[^>]*\baria-label\s*=/i.test(body)) continue;
+      offenders.push(`${rel(f)}: icon-only <button> without aria-label`);
+    }
+  }
+  if (offenders.length) {
+    R.err(`Icon-only buttons without aria-label (a11y):\n  - ${[...new Set(offenders)].slice(0, 8).join('\n  - ')}`);
+  } else {
+    R.ok('Buttons: every icon-only <button> carries aria-label');
+  }
+})();
+
+// G28. Tab-index hygiene: tabindex > 0 is an anti-pattern (creates manual
+// keyboard-order hell). tabindex="0" or "-1" are fine.
+(function tabindexAntiPatternGuard() {
+  const files = walk(ROOT).filter(f => f.endsWith('.html'));
+  const offenders = [];
+  for (const f of files) {
+    const html = fs.readFileSync(f, 'utf8');
+    const m = [...html.matchAll(/\btabindex\s*=\s*["'](\d+)["']/gi)];
+    for (const x of m) {
+      const v = parseInt(x[1], 10);
+      if (v > 0) offenders.push(`${rel(f)}: tabindex="${v}" (use 0 or -1, never positive)`);
+    }
+  }
+  if (offenders.length) {
+    R.err(`Positive tabindex (a11y anti-pattern):\n  - ${offenders.slice(0, 8).join('\n  - ')}`);
+  } else {
+    R.ok('Tabindex hygiene: no positive tabindex values');
+  }
+})();
+
+// G29. CSS variables must be defined before use (no orphan var(--unknown)).
+//   Surgical heuristic: collect all --name DEFINITIONS across the 5 CSS files
+//   and then assert each var(--name) is in that set.
+//   We allow Tailwind-style --tw-* and a small known-external whitelist
+//   (page-context variables defined inline on HTML).
+(function cssVariableHygieneGuard() {
+  const cssFiles = ['css/site.css', 'css/home.css', 'css/command-palette.css',
+                    'css/mobile-hotfix.css', 'css/nagornaya-mobile-toc.css', 'fonts/fonts.css',
+                    'nagornaya/tw.min.css'];
+  const defined = new Set();
+  // Always-defined externals (browser / system / inline-style vars)
+  const EXTERNAL = new Set([
+    '--tw-shadow', '--tw-ring-shadow', '--tw-ring-color', '--tw-ring-offset-shadow',
+    '--tw-ring-offset-color', '--tw-ring-offset-width', '--tw-translate-x', '--tw-translate-y',
+    '--tw-rotate', '--tw-skew-x', '--tw-skew-y', '--tw-scale-x', '--tw-scale-y',
+    '--scroll-lock-top', '--visual-viewport-h', '--back-height', '--phrase-opacity',
+    '--gtip-cat-color', '--theme-color',
+  ]);
+  for (const f of cssFiles) {
+    const p = path.join(ROOT, f);
+    if (!fs.existsSync(p)) continue;
+    const css = fs.readFileSync(p, 'utf8');
+    for (const m of css.matchAll(/(--[a-zA-Z][\w-]*)\s*:/g)) defined.add(m[1]);
+  }
+  // also collect from inline <style> blocks in HTML (rare but allowed)
+  for (const f of walk(ROOT).filter(x => x.endsWith('.html'))) {
+    const html = fs.readFileSync(f, 'utf8');
+    const styleBlocks = [...html.matchAll(/<style\b[^>]*>([\s\S]*?)<\/style>/gi)];
+    for (const sb of styleBlocks) {
+      for (const m of sb[1].matchAll(/(--[a-zA-Z][\w-]*)\s*:/g)) defined.add(m[1]);
+    }
+  }
+  const undef = new Set();
+  for (const f of cssFiles) {
+    const p = path.join(ROOT, f);
+    if (!fs.existsSync(p)) continue;
+    const css = fs.readFileSync(p, 'utf8');
+    for (const m of css.matchAll(/var\(\s*(--[a-zA-Z][\w-]*)/g)) {
+      const name = m[1];
+      if (!defined.has(name) && !EXTERNAL.has(name)) undef.add(`${f}: var(${name})`);
+    }
+  }
+  if (undef.size) {
+    R.warn(`CSS variables used but never defined (may render as default/transparent):\n  - ${[...undef].slice(0, 15).join('\n  - ')}`);
+  } else {
+    R.ok(`CSS variables: ${defined.size} defined, every var(--…) resolves (incl. ${EXTERNAL.size} externals)`);
+  }
+})();
+
+// G30. Image overlap with .webp/.jpg pair must include both files.
+//   Incident: PLAN-07 (ebf52955) — base files missing for some <picture>.
+//   For each `<img src="foo.jpg">`, the corresponding `foo.webp` (and `*-600w.webp`,
+//   `*-900w.webp` if referenced in srcset) must exist.
+(function imageResponsiveSetGuard() {
+  const files = walk(ROOT).filter(f => f.endsWith('.html'));
+  const missing = new Set();
+  for (const f of files) {
+    const html = fs.readFileSync(f, 'utf8');
+    const refs = new Set();
+    // collect from src=, srcset= (handle 600w / 900w descriptors)
+    for (const m of html.matchAll(/(?:src|srcset)\s*=\s*["']([^"']+)["']/g)) {
+      const value = m[1];
+      for (const piece of value.split(',')) {
+        const url = piece.trim().split(/\s+/)[0];
+        if (!url) continue;
+        if (!/\.(webp|jpe?g|png|avif|gif)$/i.test(url)) continue;
+        if (/^https?:|^data:|^\/\//.test(url)) continue;
+        refs.add({ url, from: f });
+      }
+    }
+    for (const { url, from } of refs) {
+      const abs = resolveLocal(from, url);
+      if (!abs || !fs.existsSync(abs)) {
+        missing.add(`${rel(from)} → ${url} (file does not exist)`);
+      }
+    }
+  }
+  if (missing.size) {
+    R.err(`Image references to non-existent files:\n  - ${[...missing].slice(0, 12).join('\n  - ')}`);
+  } else {
+    R.ok('Image references: every src/srcset URL resolves to an existing file');
   }
 })();
 
