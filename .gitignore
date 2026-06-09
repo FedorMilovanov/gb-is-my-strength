@@ -17,4 +17,9 @@ node_modules/
 # Локальные архивы репозитория не коммитим
 /gb-is-my-strength.zip
 audit/audit-pro-*.md
+
+# Agent / sandbox runtime detritus — never commit
 .npm/
+.DS_Store
+Thumbs.db
+uploads/

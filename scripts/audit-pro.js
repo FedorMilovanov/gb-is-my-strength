@@ -846,6 +846,280 @@ const SITE_CSS_MIN_BYTES = 200_000;
   else R.note('notify-on-failure.yml not installed yet — failure issue alerts disabled');
 })();
 
+// ─────────────────────────────────────────────────────────────────────────
+// SMART ANTI-REGRESSION GUARDS (added 2026-06-09 after several agent screw-ups)
+// Каждая проверка появилась как ответ на реальный инцидент. Если меняешь —
+// сначала пойми, какой инцидент она ловит. Документация ниже в комментариях.
+// ─────────────────────────────────────────────────────────────────────────
+
+// G1. No garbage in repo root / scripts /.
+//   Incident: I left fix_home.py, fix_print.py, audit-pro.js-patch in commits.
+//   Rule: никаких *.py / *.patch / uploads/ в корне проекта. Скрипты-помощники
+//   принадлежат /scripts/ — но даже там запрещены *.patch и *-patch файлы.
+(function junkFilesGuard() {
+  const ROOTS = ['', 'scripts', 'images'];
+  const BAD_PATTERNS = [
+    { re: /\.patch$/i,            why: 'patch files are throw-away helpers' },
+    { re: /-patch$/i,             why: 'patch files are throw-away helpers' },
+    { re: /^fix_.*\.py$/i,        why: 'ad-hoc fix_*.py scripts must be deleted after use' },
+    { re: /^uploads$/i,           why: 'uploads/ is for raw user dumps, never commit it' },
+    { re: /^.*\.DS_Store$/i,      why: 'macOS turd' },
+    { re: /^Thumbs\.db$/i,        why: 'Windows turd' },
+  ];
+  const offenders = [];
+  for (const root of ROOTS) {
+    const dir = path.join(ROOT, root);
+    if (!fs.existsSync(dir)) continue;
+    for (const name of fs.readdirSync(dir)) {
+      for (const p of BAD_PATTERNS) {
+        if (p.re.test(name)) offenders.push(`${root ? root + '/' : ''}${name} — ${p.why}`);
+      }
+    }
+  }
+  if (offenders.length) {
+    R.err(`Garbage files detected (clean before commit):\n  - ${offenders.join('\n  - ')}`);
+  } else {
+    R.ok('No garbage files (*.py / *.patch / uploads/ / OS turds)');
+  }
+})();
+
+// G2. No oversized raw images committed.
+//   Incident: I committed 2.3 MB og-rimlyanam-7-new.png and 1.4 MB og-series-heart.png
+//   raw originals instead of using the *.webp pipeline.
+//   Rule: PNG/JPG > 700 KB в /images/ почти всегда — забытый сырой исходник,
+//   надо нарезать в webp 600w/900w + jpg fallback.
+(function oversizedImagesGuard() {
+  const LIMIT = 700_000;
+  // Known archival originals kept intentionally (historical, pre-existing).
+  // Add new entries only when an owner explicitly asks to keep a raw source.
+  // To pass without whitelisting, prefer `*-original.*` or `*--keep.*` naming.
+  const ALLOWLIST = new Set([
+    'images/whitefield-field.png',     // r14.1 — owner-restored historical print
+  ]);
+  const offenders = [];
+  function walkImg(dir) {
+    if (!fs.existsSync(dir)) return;
+    for (const name of fs.readdirSync(dir)) {
+      const p = path.join(dir, name);
+      const st = fs.statSync(p);
+      if (st.isDirectory()) { walkImg(p); continue; }
+      if (!/\.(png|jpe?g)$/i.test(name)) continue;
+      const relPath = path.relative(ROOT, p).replace(/\\/g, '/');
+      if (ALLOWLIST.has(relPath)) continue;
+      // owner-uploaded scans/portraits intentionally large are exempt by suffix
+      if (/-original\.|--keep\./i.test(name)) continue;
+      if (st.size > LIMIT) {
+        offenders.push(`${relPath} — ${(st.size/1024).toFixed(0)} KB > ${LIMIT/1024} KB`);
+      }
+    }
+  }
+  walkImg(path.join(ROOT, 'images'));
+  if (offenders.length) {
+    R.err(`Oversized raw images in /images/ (convert to webp + responsive sizes, or add to ALLOWLIST):\n  - ${offenders.join('\n  - ')}`);
+  } else {
+    R.ok(`Image size hygiene: no PNG/JPG > ${LIMIT/1024} KB in /images/ (allowlist: ${ALLOWLIST.size})`);
+  }
+})();
+
+// G3. Series consistency: every series in data/series.json must have BOTH
+//   (a) a landing page at baseUrl OR a dedicated /<key>/ page, AND
+//   (b) each published part must exist on disk under articles/<slug>/.
+//   Incident: I created /hard-texts/ landing manually and could have desynced it
+//   from data/series.json.
+(function seriesConsistencyGuard() {
+  const seriesPath = path.join(ROOT, 'data/series.json');
+  if (!fs.existsSync(seriesPath)) { R.warn('data/series.json missing'); return; }
+  let series;
+  try { series = JSON.parse(fs.readFileSync(seriesPath, 'utf8')); }
+  catch (e) { R.err(`data/series.json invalid JSON: ${e.message}`); return; }
+  const problems = [];
+  for (const [key, def] of Object.entries(series)) {
+    if (!def.title) problems.push(`${key}: missing title`);
+    if (!Array.isArray(def.parts) || !def.parts.length) {
+      problems.push(`${key}: has no parts`);
+      continue;
+    }
+    // check each published part exists on disk
+    for (const part of def.parts) {
+      if (part.status === 'planned') continue;
+      const articlePath = path.join(ROOT, 'articles', part.slug || '', 'index.html');
+      const nagornayaPath = path.join(ROOT, 'nagornaya', part.slug || '', 'index.html');
+      if (!fs.existsSync(articlePath) && !fs.existsSync(nagornayaPath)) {
+        problems.push(`${key} part ${part.n} "${part.slug}": no index.html on disk`);
+      }
+    }
+  }
+  if (problems.length) {
+    R.err(`Series data/series.json inconsistencies:\n  - ${problems.join('\n  - ')}`);
+  } else {
+    const total = Object.keys(series).length;
+    R.ok(`Series consistency: ${total} series in series.json, all published parts exist on disk`);
+  }
+})();
+
+// G4. Series landing page semantic guard: a /hard-texts/, /pastor-series/,
+//   /nagornaya/seriya/, etc. page must NOT reference a foreign series by name.
+//   Incident: when I created /hard-texts/index.html by copying /pastor-series/
+//   I left H1 "Тёмная сторона кафедры" + summary про пасторские патологии.
+//   This guard cross-checks each landing page H1 vs series.json title.
+(function seriesLandingTitleGuard() {
+  const seriesPath = path.join(ROOT, 'data/series.json');
+  if (!fs.existsSync(seriesPath)) return; // G3 already warned
+  const series = JSON.parse(fs.readFileSync(seriesPath, 'utf8'));
+  // map of "directory key on disk" → expected title fragment
+  const landings = [
+    { dir: 'hard-texts',      key: 'hard-texts',    forbid: ['кафедры', 'пасторских патологий', 'газлайт', 'диотреф'] },
+    { dir: 'pastor-series',   key: 'pastor-series', forbid: ['тайны человеческого сердца', 'Иеремия 17'] },
+    { dir: 'nagornaya/seriya', key: 'nagornaya',    forbid: ['кафедры', 'пасторских патологий'] },
+  ];
+  const problems = [];
+  for (const L of landings) {
+    const f = path.join(ROOT, L.dir, 'index.html');
+    if (!fs.existsSync(f)) continue;
+    const html = fs.readFileSync(f, 'utf8');
+    const expectedTitle = series[L.key]?.title || '';
+    // 1. expected title appears at least once
+    if (expectedTitle && !html.includes(expectedTitle)) {
+      problems.push(`/${L.dir}/ does not mention its own series title "${expectedTitle}"`);
+    }
+    // 2. forbidden cross-series terms must not appear
+    for (const bad of L.forbid) {
+      const re = new RegExp(bad, 'i');
+      if (re.test(html)) problems.push(`/${L.dir}/ contains foreign-series term "${bad}" (cross-contamination from copy-paste)`);
+    }
+  }
+  if (problems.length) {
+    R.err(`Series landing page contamination:\n  - ${problems.join('\n  - ')}`);
+  } else {
+    R.ok('Series landing pages: no cross-series contamination');
+  }
+})();
+
+// G5. No duplicate article cards on /articles/ catalog.
+//   Incident: in /articles/index.html the Jeremiah and Romans 7 cards appeared
+//   TWICE in the same list (different sub-blocks).
+(function catalogDuplicatesGuard() {
+  const f = path.join(ROOT, 'articles/index.html');
+  if (!fs.existsSync(f)) return;
+  const html = fs.readFileSync(f, 'utf8');
+  const hrefs = [...html.matchAll(/<a[^>]+href="(?!\/|https?:|#|mailto)([^"#?]+)"[^>]*class="[^"]*h-article-card/g)]
+    .map(m => m[1].replace(/\/$/, '').toLowerCase());
+  const seen = new Map();
+  for (const h of hrefs) seen.set(h, (seen.get(h) || 0) + 1);
+  const dups = [...seen.entries()].filter(([, c]) => c > 1);
+  if (dups.length) {
+    R.err(`/articles/index.html has duplicate article cards:\n  - ${dups.map(([h, c]) => `${h} (×${c})`).join('\n  - ')}`);
+  } else {
+    R.ok(`/articles/ catalog: ${hrefs.length} cards, no duplicates`);
+  }
+})();
+
+// G6. Unified header — every page with `<ul class="h-nav-links">` must have
+//   the SAME canonical set of links.
+//   Incident: /hard-texts/, /pastor-series/, /biografii/, /nagornaya/seriya/
+//   were each missing 1-2 nav items (Биографии / Все статьи / Разбор заблуждений),
+//   so the header was inconsistent between pages.
+(function unifiedHeaderGuard() {
+  const REQUIRED = ['Публикации', 'Разбор заблуждений', 'Биографии', 'Все статьи', 'О библиотеке'];
+  const files = walk(ROOT).filter(f => f.endsWith('.html'));
+  const offenders = [];
+  for (const f of files) {
+    const html = fs.readFileSync(f, 'utf8');
+    if (!/class="h-nav-links"/.test(html)) continue; // only pages with the unified nav
+    // extract the <ul class="h-nav-links">…</ul> block
+    const m = html.match(/<ul class="h-nav-links"[\s\S]*?<\/ul>/);
+    if (!m) continue;
+    const block = m[0];
+    const missing = REQUIRED.filter(label => !block.includes(`>${label}<`));
+    if (missing.length) {
+      offenders.push(`${rel(f)}: missing nav items [${missing.join(', ')}]`);
+    }
+  }
+  if (offenders.length) {
+    R.err(`Unified header drift — pages with <ul class="h-nav-links"> must contain all of [${REQUIRED.join(' · ')}]:\n  - ${offenders.join('\n  - ')}`);
+  } else {
+    R.ok(`Unified header: all pages with h-nav-links contain the canonical ${REQUIRED.length}-item set`);
+  }
+})();
+
+// G7. No <button> children inside <ul class="h-nav-links">.
+//   Incident: I once put <button class="h-cp-btn"> inside a <li> in the nav
+//   list. This breaks semantics AND made the icon inherit link color (looked
+//   black while the moon was grey) — see AGENTS §9.7.
+(function navListSemanticsGuard() {
+  const files = walk(ROOT).filter(f => f.endsWith('.html'));
+  const offenders = [];
+  for (const f of files) {
+    const html = fs.readFileSync(f, 'utf8');
+    const m = html.match(/<ul class="h-nav-links"[\s\S]*?<\/ul>/);
+    if (!m) continue;
+    if (/<button\b/i.test(m[0])) offenders.push(rel(f));
+  }
+  if (offenders.length) {
+    R.err(`<button> found inside <ul class="h-nav-links"> (use .mobile-controls instead):\n  - ${offenders.join('\n  - ')}`);
+  } else {
+    R.ok('Nav semantics: no <button> inside <ul class="h-nav-links">');
+  }
+})();
+
+// G8. Hard-texts series landing must link only to its own parts.
+//   Incident: stale article links from another series remained in the
+//   landing page's article-list AND in JSON-LD `hasPart`.
+(function hardTextsLinkAuditGuard() {
+  const f = path.join(ROOT, 'hard-texts/index.html');
+  if (!fs.existsSync(f)) return;
+  const html = fs.readFileSync(f, 'utf8');
+  const seriesPath = path.join(ROOT, 'data/series.json');
+  if (!fs.existsSync(seriesPath)) return;
+  const series = JSON.parse(fs.readFileSync(seriesPath, 'utf8'))['hard-texts'];
+  if (!series) return;
+  const allowedSlugs = new Set(series.parts.map(p => p.slug));
+  // article-card links inside the landing page must reference only allowed slugs
+  const cards = [...html.matchAll(/<a[^>]+href="\.\.\/articles\/([^"\/]+)\//g)];
+  const bad = cards.map(c => c[1]).filter(s => !allowedSlugs.has(s));
+  if (bad.length) {
+    R.err(`/hard-texts/ landing contains article-card links NOT in series.json hard-texts.parts:\n  - ${[...new Set(bad)].join('\n  - ')}`);
+  } else {
+    R.ok(`/hard-texts/ landing: all ${cards.length} article links are members of the series`);
+  }
+})();
+
+// G9. Hashed CSS/JS URLs in HTML must point to files that actually exist.
+//   (Catches a half-finished cache-bust run that left stale ?v=… hashes.)
+(function hashedAssetExistenceGuard() {
+  const files = walk(ROOT).filter(f => f.endsWith('.html'));
+  const missing = new Set();
+  for (const f of files) {
+    const html = fs.readFileSync(f, 'utf8');
+    const refs = [...html.matchAll(/(?:href|src)=["']([^"']+\.(?:css|js))\?v=[a-f0-9]+["']/g)];
+    for (const m of refs) {
+      const url = m[1];
+      if (/^https?:/.test(url)) continue;
+      const abs = resolveLocal(f, url);
+      if (!abs || !fs.existsSync(abs)) missing.add(`${rel(f)} → ${url}`);
+    }
+  }
+  if (missing.size) {
+    R.err(`Hashed asset URLs point to missing files:\n  - ${[...missing].slice(0, 20).join('\n  - ')}`);
+  } else {
+    R.ok('Hashed asset URLs: every ?v=… reference resolves to an existing file');
+  }
+})();
+
+// G10. .npm/ and other agent-runtime detritus must not be tracked.
+(function gitignoreSanityGuard() {
+  const gi = path.join(ROOT, '.gitignore');
+  if (!fs.existsSync(gi)) { R.warn('.gitignore missing'); return; }
+  const txt = fs.readFileSync(gi, 'utf8');
+  const required = ['.npm', 'node_modules', '.DS_Store'];
+  const missing = required.filter(r => !new RegExp(`^\\s*${r.replace('.', '\\.')}/?\\s*$`, 'm').test(txt));
+  if (missing.length) {
+    R.warn(`.gitignore missing entries: ${missing.join(', ')}`);
+  } else {
+    R.ok('.gitignore covers npm/node_modules/OS turds');
+  }
+})();
+
 // Output
 const duration = ((Date.now() - R.start) / 1000).toFixed(2);
 const sep = '═'.repeat(78);
