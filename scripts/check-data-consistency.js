@@ -40,10 +40,82 @@ function assertEqual(label, values) {
   if (bad.length) fail('read-time-drift', `${label}: ${present.map(([k,v]) => `${k}=${v}`).join(', ')}`);
 }
 
+function textOfFirstH1(file) {
+  if (!exists(file)) return '';
+  const html = read(file);
+  const m = html.match(/<h1\b[^>]*>([\s\S]*?)<\/h1>/i);
+  if (!m) return '';
+  return m[1]
+    .replace(/<script[\s\S]*?<\/script>/gi, '')
+    .replace(/<style[\s\S]*?<\/style>/gi, '')
+    .replace(/<[^>]+>/g, ' ')
+    .replace(/&nbsp;|&#160;/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+function norm(s) {
+  return String(s || '')
+    .toLowerCase()
+    .replace(/ё/g, 'е')
+    .replace(/[«»"'.,:;!?()\[\]{}]/g, ' ')
+    .replace(/[–—-]/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+function isLocalImage(img) {
+  return typeof img === 'string' && /^\/images\//.test(img);
+}
+function dateValue(s) {
+  const t = Date.parse(String(s || ''));
+  return Number.isFinite(t) ? t : null;
+}
+
 const searchRaw = JSON.parse(read('data/search-manifest.json'));
 const searchItems = Array.isArray(searchRaw) ? searchRaw : (searchRaw.items || []);
 const searchByUrl = new Map(searchItems.map(i => [i.url, i]));
 const series = JSON.parse(read('data/series.json'));
+
+// 0. Basic manifest integrity: stable unique IDs/URLs, no stale generatedAt.
+{
+  const seenIds = new Set();
+  const seenUrls = new Set();
+  let maxModified = null;
+  for (const item of searchItems) {
+    if (!item.id) fail('search-item-missing-id', JSON.stringify(item).slice(0, 160));
+    if (!item.url) fail('search-item-missing-url', item.id || '(no id)');
+    if (seenIds.has(item.id)) fail('search-item-duplicate-id', item.id);
+    if (seenUrls.has(item.url)) fail('search-item-duplicate-url', item.url);
+    seenIds.add(item.id);
+    seenUrls.add(item.url);
+    for (const key of ['title', 'description', 'section']) {
+      if (typeof item[key] === 'string' && /[\r\n\t]/.test(item[key])) {
+        fail('search-item-control-char', `${item.url} ${key}`);
+      }
+    }
+    if (item.image && isLocalImage(item.image) && !exists(item.image.replace(/^\//, ''))) {
+      fail('search-item-image-missing', `${item.url}: ${item.image}`);
+    }
+    const mv = dateValue(item.modifiedTime);
+    if (mv !== null && (maxModified === null || mv > maxModified)) maxModified = mv;
+  }
+  if (!Array.isArray(searchRaw) && searchRaw.generatedAt && maxModified !== null) {
+    const gv = dateValue(searchRaw.generatedAt);
+    if (gv !== null && gv < maxModified) {
+      fail('search-manifest-generatedAt-stale', `generatedAt=${searchRaw.generatedAt}, max modifiedTime=${new Date(maxModified).toISOString()}`);
+    }
+  }
+}
+
+// 0b. Series data must be reviewable and free of embedded newlines in labels.
+for (const [key, info] of Object.entries(series)) {
+  if (!info.title) fail('series-missing-title', key);
+  if (/[\r\n\t]/.test(info.title || '')) fail('series-title-control-char', key);
+  for (const part of info.parts || []) {
+    if (!part.slug) fail('series-part-missing-slug', key);
+    if (!part.title) fail('series-part-missing-title', `${key}/${part.slug || '(no slug)'}`);
+    if (/[\r\n\t]/.test(part.title || '')) fail('series-part-title-control-char', `${key}/${part.slug}`);
+  }
+}
 
 // 1. HTML internal consistency + search-manifest consistency for every manifest URL with local HTML.
 for (const item of searchItems) {
@@ -51,6 +123,16 @@ for (const item of searchItems) {
   if (!url || !url.startsWith('/')) continue;
   const file = routeToFile(url);
   if (!exists(file)) continue;
+  const h1 = textOfFirstH1(file);
+  if (item.type === 'article' && h1) {
+    const nt = norm(item.title);
+    const nh = norm(h1);
+    // Titles may add category/subtitle, but should at least contain the H1 core or vice versa.
+    if (nh.length > 12 && nt.length > 12 && !nt.includes(nh) && !nh.includes(nt)) {
+      const hCore = nh.split(' ').filter(w => w.length > 3).slice(0, 3);
+      if (!hCore.every(w => nt.includes(w))) fail('search-title-h1-drift', `${item.url}: h1="${h1}", manifest="${item.title}"`);
+    }
+  }
   const htmlTimes = extractHtmlReadTimes(file) || {};
   const canonical = canonicalFromHtml(file, item.readTime);
   assertEqual(`${file}`, { ...htmlTimes, search: item.readTime });

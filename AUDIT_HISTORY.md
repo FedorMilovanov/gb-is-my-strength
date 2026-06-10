@@ -5,6 +5,25 @@
 
 ---
 
+## v66 — Source-link audit + stronger data consistency (2026-06-10)
+
+### What was improved:
+- Added `scripts/source-link-audit.js` + `npm run source:links` / `npm run validate:external`.
+- The source-link audit checks external `<a href>` URLs and hard-fails browser-invalid source links: malformed URLs, TLS/certificate errors, known bad hosts (for example `arthistoryresources.net`), non-allowlisted `http://`, and HTTP 404/410. Bot blocks and rate limits (403/405/429/timeouts/5xx) are reported as warnings for manual review.
+- Strengthened `scripts/check-data-consistency.js` beyond reading time:
+  - search-manifest id/url uniqueness;
+  - required local image existence;
+  - no control characters in manifest/series titles;
+  - `generatedAt` not older than newest manifest `modifiedTime`;
+  - article search title vs H1 drift heuristic.
+- Updated `data/search-manifest.json` generatedAt and Nagornaya part titles to match current public H1s.
+- Documented data/source checks in README/AGENTS.
+
+### Verified:
+- `npm run data:consistency` → ✅ PASS.
+- `npm run source:links` → ✅ hard-check PASS (warnings only for known bot-block/rate-limit/timeout cases).
+- `npm run validate:publication` → ✅ PASS.
+
 ## v65 — Editorial tone lint + publication-Russian cleanup (2026-06-10)
 
 ### What was improved:

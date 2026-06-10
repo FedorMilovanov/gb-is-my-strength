@@ -20,7 +20,9 @@
     "readable-audit": "node scripts/readable-audit.js",
     "validate:publication": "npm run validate:all && npm run tokens:check && node scripts/audit-pro.js && npm run readable-audit && npm run editorial:lint && npm run data:consistency && npm run interactive-audit",
     "data:consistency": "node scripts/check-data-consistency.js",
-    "editorial:lint": "node scripts/editorial-lint.js"
+    "editorial:lint": "node scripts/editorial-lint.js",
+    "source:links": "node scripts/source-link-audit.js",
+    "validate:external": "npm run source:links"
   },
   "engines": {
     "node": ">=20"
