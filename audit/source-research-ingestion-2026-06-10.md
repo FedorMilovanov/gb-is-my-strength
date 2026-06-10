@@ -531,3 +531,23 @@ Verification after Batch 019:
 - `node scripts/audit-pro.js` — PASS.
 - `npm run visual-audit` — PASS: 32 page/viewport, 96 screenshots, 0 console errors, 0 network errors, 0 unsuppressed visual bugs.
 - `git diff --check` — PASS.
+
+## 26. Batch 020 applied — Murray/Bavinck/Warfield loci closed (2026-06-10)
+
+Applied:
+
+1. `articles/krajne-li-isporcheno-serdce/index.html`:
+   - closed Murray `Redemption Accomplished and Applied` locus as `Sanctification`, pp. 150–154, especially p. 154;
+   - closed Bavinck locus as `Reformed Dogmatics`, vol. 4: `Holy Spirit, Church, and New Creation`, pp. 477–480;
+   - kept Murray Romans commentary page edition-dependent, as no exact open edition page was pinned.
+
+2. `nagornaya/nakhodki/index.html`:
+   - replaced open Warfield bibliographic TODO with closed locus: Warfield, “Inspiration” (1909), `Selected Shorter Writings`, vol. 2, p. 629; related: “The Divine and Human in the Bible,” vol. 2, pp. 542–548, esp. p. 546.
+
+Verification after Batch 020:
+
+- `npm run validate:all` — PASS.
+- `npm run tokens:check` — PASS.
+- `node scripts/audit-pro.js` — PASS.
+- `npm run visual-audit` — PASS: 32 page/viewport, 96 screenshots, 0 console errors, 0 network errors, 0 unsuppressed visual bugs.
+- `git diff --check` — PASS.
