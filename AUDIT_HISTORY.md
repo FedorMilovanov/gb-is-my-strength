@@ -5,6 +5,24 @@
 
 ---
 
+## v60 — Meta hygiene guards: article author + 404 social/canonical (2026-06-10)
+
+### What was improved:
+- Fixed missing `<meta property="article:author">` on `articles/dzhon-gill-istoricheskiy-kontekst/`.
+- Fixed the same article-author meta gap on `nagornaya/seriya/`, which declares `og:type=article`.
+- Added canonical URL and OG/Twitter image alt text to `404.html` while keeping it `noindex, nofollow`.
+- Added `audit-pro.js` guards:
+  - G110: every `og:type=article` page must have `article:author`;
+  - G111: `404.html` must keep canonical + `og:image:alt` + `twitter:image:alt`.
+
+### Verified:
+- `npm run validate:all` → ✅ PASS.
+- `npm run tokens:check` → ✅ PASS.
+- `node scripts/audit-pro.js` → ✅ PASS (**151 passed / 0 warnings / 0 errors**).
+- `npm run interactive-audit` → ✅ PASS.
+
+---
+
 ## v59 — Visual audit coverage expansion for Gill / catalogs / Rim7 (2026-06-10)
 
 ### What was improved:
