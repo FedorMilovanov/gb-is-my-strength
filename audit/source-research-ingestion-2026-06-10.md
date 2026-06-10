@@ -513,3 +513,21 @@ Verification after Batch 018:
 - `node scripts/audit-pro.js` — PASS.
 - `npm run visual-audit` — PASS: 32 page/viewport, 96 screenshots, 0 console errors, 0 network errors, 0 unsuppressed visual bugs.
 - `git diff --check` — PASS.
+
+## 25. Batch 019 applied — Today Show transcript recovered (2026-06-10)
+
+Applied:
+
+1. `articles/kod-da-vinchi/index.html`:
+   - recovered archived `danbrown.com/media/todayshow.htm` via Wayback (NBC News Transcripts, Today, 7:00 AM ET, 9 June 2003, length 1418 words);
+   - reinstated Today Show as an archived transcript source, not merely noisy ASR/video hearsay;
+   - article now uses both verified CNN (25 May 2003, “99 percent”) and archived NBC Today transcript (9 June 2003, “Absolutely all of it”) while preserving context: Robert Langdon is fictional, but Brown presented art, architecture, secret rituals and secret societies as historical fact.
+
+Verification after Batch 019:
+
+- Wayback transcript fetched successfully.
+- `npm run validate:all` — PASS.
+- `npm run tokens:check` — PASS.
+- `node scripts/audit-pro.js` — PASS.
+- `npm run visual-audit` — PASS: 32 page/viewport, 96 screenshots, 0 console errors, 0 network errors, 0 unsuppressed visual bugs.
+- `git diff --check` — PASS.
