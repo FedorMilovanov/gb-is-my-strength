@@ -5,6 +5,27 @@
 
 ---
 
+## v57 — Series strip dropdown hitbox repair + interactive audit (2026-06-10)
+
+### What was improved:
+- Fixed `gb-strip` dropdown click regression: `.gb-strip__toggle` no longer contains anchor dots. The toggle now opens the dropdown; `.gb-strip__dots` links live as siblings and still navigate when clicked directly.
+- Added CSS hitbox stability for the strip and FAQ blocks: collapsed FAQ bodies no longer intercept clicks above the visible page, and strip center/dropdown has an explicit layer.
+- Added `audit-pro.js` G109: no nested interactive controls inside `<button>` and no anchors inside the series toggle template.
+- Added `scripts/interactive-audit.js` + `npm run interactive-audit` covering:
+  - series dropdown open/close without URL navigation on Gill + hard-texts series;
+  - quiz launch renders question/options;
+  - glossary smoke and summary no-glossary check.
+- Updated AGENTS/README with the series strip and interactive QA rules.
+
+### Verified:
+- Playwright series probe on 7 series pages → ✅ URL unchanged, dropdown visible, outside click closes, no anchors inside toggle.
+- `npm run interactive-audit` → ✅ PASS.
+- `npm run validate:all` → ✅ PASS.
+- `npm run tokens:check` → ✅ PASS.
+- `node scripts/audit-pro.js` → ✅ PASS (**149 passed / 0 warnings / 0 errors**).
+
+---
+
 ## v56 — Quiz runtime mount repair for Da Vinci + Krajne (2026-06-10)
 
 ### What was improved:

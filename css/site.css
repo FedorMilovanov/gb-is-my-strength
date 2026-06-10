@@ -336,3 +336,12 @@ html.dark body:not(.nagornaya-page) .article-body>.summary-card .summary-card__t
 .gtip.gb-floating-tip[data-luxury="true"] .gtip-luxury__definition{display:block;overflow:visible;max-height:none}
 .summary-card .gterm{border-bottom:0;text-decoration:none;background:transparent;color:inherit;box-shadow:none;padding:0;cursor:inherit;pointer-events:none}
 .summary-card .gterm .gtip{display:none}
+
+/* GB series strip / FAQ hitbox stability 2026-06-10: collapsed FAQ bodies must not intercept clicks above; strip center toggle must own its hitbox. */
+.faq-accordion__item:not(.open):not(.is-open) .faq-accordion__body{max-height:0;grid-template-rows:0fr;overflow:hidden;pointer-events:none}
+.faq-accordion__item:not(.open):not(.is-open) .faq-accordion__body-inner{padding-bottom:0;pointer-events:none}
+.faq-accordion__item.open .faq-accordion__body,.faq-accordion__item.is-open .faq-accordion__body{pointer-events:auto}
+.gb-strip{z-index:var(--z-raised-high);isolation:isolate}
+.gb-strip__center{position:relative;z-index:2}
+.gb-strip__nav{position:relative;z-index:1}
+.gb-strip__dropdown{z-index:var(--z-dropdown-high)}
