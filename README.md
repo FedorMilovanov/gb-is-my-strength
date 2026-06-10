@@ -552,6 +552,11 @@ npm run data:consistency
 # External source links (network audit; 403/429/timeouts are warnings, 404/TLS/bad hosts are errors)
 npm run source:links
 
+# CI/workflows:
+# - indexnow.yml and deploy.yml run validate:static-publication as blocking gates.
+# - source-links.yml runs npm run source:links weekly/manual.
+# - interactive-audit.yml runs npm run interactive-audit weekly/manual.
+
 # Publication gate после крупных контентных правок
 # (validate + tokens + audit-pro + readable + data consistency + interactive; interactive требует локальный сервер)
 AUDIT_BASE=http://127.0.0.1:8080 npm run validate:publication

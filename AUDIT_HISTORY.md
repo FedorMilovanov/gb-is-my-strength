@@ -5,6 +5,26 @@
 
 ---
 
+## v67 — CI/workflow publication gates (2026-06-10)
+
+### What was improved:
+- Added blocking static publication gates to GitHub workflows:
+  - `indexnow.yml` now runs `npm run validate:static-publication` after metadata/cache-bust and before auto-commit / IndexNow payload;
+  - `deploy.yml` also runs `npm run validate:static-publication`, covering asset-only/manual deployments that bypass IndexNow.
+- Added scheduled/manual network/runtime workflows:
+  - `.github/workflows/source-links.yml` runs `npm run source:links` weekly/manual;
+  - `.github/workflows/interactive-audit.yml` installs Playwright Chromium, starts a local server and runs `npm run interactive-audit` weekly/manual.
+- Extended `notify-on-failure.yml` so source-link and runtime-interactive failures open/update GitHub issues just like deploy/indexnow failures.
+- Added `validate:static-publication` script so CI can run all deterministic static gates without requiring a browser server.
+
+### Verified:
+- `npm run validate:static-publication` → ✅ PASS.
+- `npm run source:links` → ✅ hard-check PASS (warnings only for known bot-block/rate-limit/timeout cases).
+- `npm run interactive-audit` → ✅ PASS locally.
+- `node scripts/audit-pro.js` → ✅ PASS.
+
+---
+
 ## v66 — Source-link audit + stronger data consistency (2026-06-10)
 
 ### What was improved:

@@ -1,0 +1,32 @@
+name: Source Link Audit
+
+on:
+  workflow_dispatch:
+  schedule:
+    # Weekly Monday 03:00 UTC. Network checks are intentionally not run on every push.
+    - cron: '0 3 * * 1'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: source-links
+  cancel-in-progress: true
+
+jobs:
+  source-links:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Source link audit
+        run: npm run source:links
