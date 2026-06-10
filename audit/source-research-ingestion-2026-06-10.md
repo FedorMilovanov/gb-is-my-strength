@@ -313,3 +313,29 @@ Verification after Batch 008:
 - `node scripts/audit-pro.js` — PASS: `142 passed / 0 warnings / 0 errors / 9 info`.
 - `npm run visual-audit` — PASS: 32 page/viewport, 96 screenshots, 0 console errors, 0 network errors, 0 unsuppressed visual bugs.
 - `git diff --check` — PASS.
+
+## 15. Batch 009 applied — source-link hotfix + new probe guards (2026-06-10)
+
+Applied:
+
+1. `articles/kod-da-vinchi/index.html`:
+   - replaced SSL-problematic `arthistoryresources.net` Gregory Homily 33 link with Roger Pearse HTTPS page;
+   - source note now frames Gregory Homily 33 as a sermon with PL 76 locus, not a papal decree.
+
+2. `articles/dzhon-gill-chast-1-chelovek/index.html`:
+   - fixed broken sentence around Corporation Act / Test Acts civil disabilities:
+     `...оставались поражёнными... лишали...` → coherent sentence about exclusion from public service/Oxford/Cambridge until repeal in 1828.
+
+3. `scripts/audit-pro.js`:
+   - added `nestedSourceTooltipGuard`: fails if `.fn-marker` appears inside another `.tooltip` source apparatus;
+   - added `knownBadExternalSourceHostGuard`: fails on known bad external source hosts such as `arthistoryresources.net` that may pass ordinary mixed-content checks but fail browser SSL/certificate probing.
+
+Verification after Batch 009:
+
+- Roger Pearse source fetched successfully; page identifies Homily 33, PL 76, col. 1239A and explicitly notes that a sermon is not a decree.
+- `node --check scripts/audit-pro.js` — PASS.
+- `node scripts/audit-pro.js` — PASS; new guards report OK.
+- `npm run validate:all` — PASS.
+- `npm run tokens:check` — PASS.
+- `npm run visual-audit` — PASS: 32 page/viewport, 96 screenshots, 0 console errors, 0 network errors, 0 unsuppressed visual bugs.
+- `git diff --check` — PASS.

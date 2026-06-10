@@ -3872,6 +3872,55 @@ const JS_SIZE_FLOORS = {
 // commit 89679fc7) — RSS aggregators got 404 for the feed image.
 // ─────────────────────────────────────────────────────────────────────────
 
+// G104. Source tooltip nesting guard.
+//   Regression class: visually green span balance can still hide semantic bugs when
+//   a .fn-marker is nested inside another .tooltip. This creates confusing source
+//   apparatus and mobile tooltip behavior. Found in Da Vinci source pass.
+(function nestedSourceTooltipGuard() {
+  const offenders = [];
+  for (const abs of htmlPages) {
+    const file = rel(abs);
+    const html = fs.readFileSync(abs, 'utf8');
+    const markerRe = /<span\b[^>]*class=["'][^"']*\bfn-marker\b[^"']*["'][^>]*>[\s\S]*?<\/span>/gi;
+    let m;
+    while ((m = markerRe.exec(html))) {
+      const marker = m[0];
+      const tipM = marker.match(/<span\b[^>]*class=["'][^"']*\btooltip\b[^"']*["'][^>]*>([\s\S]*)<\/span>\s*<\/span>\s*$/i);
+      if (tipM && /<span\b[^>]*class=["'][^"']*\bfn-marker\b/i.test(tipM[1])) {
+        const line = html.slice(0, m.index).split(/\n/).length;
+        offenders.push(`${file}:${line}`);
+      }
+    }
+  }
+  if (offenders.length) {
+    R.err(`Nested fn-marker inside tooltip (source apparatus regression):\n  - ${offenders.slice(0, 20).join('\n  - ')}`);
+  } else {
+    R.ok('Source tooltips: no nested fn-marker inside tooltip');
+  }
+})();
+
+// G105. Known bad external source hosts.
+//   Probe found arthistoryresources.net has HTTPS certificate mismatch. The link
+//   can pass ordinary mixed-content and local-ref checks yet still fail in browser.
+(function knownBadExternalSourceHostGuard() {
+  const badHosts = ['arthistoryresources.net'];
+  const offenders = [];
+  for (const abs of htmlPages) {
+    const file = rel(abs);
+    const html = fs.readFileSync(abs, 'utf8');
+    for (const host of badHosts) {
+      if (new RegExp(`https?:\/\/${escapeRe(host)}(?:\/|["'#?])`, 'i').test(html)) {
+        offenders.push(`${file} → ${host}`);
+      }
+    }
+  }
+  if (offenders.length) {
+    R.err(`Known bad external source host(s) with browser/SSL issues:\n  - ${offenders.join('\n  - ')}`);
+  } else {
+    R.ok('External source hosts: no known SSL-bad blocked hosts');
+  }
+})();
+
 // G102. feed.xml + manifest.json + llms.txt — every absolute or relative
 //   image/asset URL must point to an existing file on disk.
 //   Existing G89 covers sitemap.xml image:loc. This adds feed.xml,
