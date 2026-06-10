@@ -3976,6 +3976,46 @@ const JS_SIZE_FLOORS = {
   }
 })();
 
+
+// ─────────────────────────────────────────────────────────────────────────
+// SMART ANTI-REGRESSION GUARDS — TOOLTIP / SUMMARY (added 2026-06-10)
+// Owner-reported regression: glossary terms inside summary-card created noisy
+// dotted underlines and triggered broken clipped tooltip cards. Summaries must
+// stay plain/minimal; glossary hydration belongs to article body prose only.
+// ─────────────────────────────────────────────────────────────────────────
+
+// G106. Summary cards must not contain active glossary terms/tooltips.
+(function summaryCardNoGlossaryGuard() {
+  const htmlFiles = walk(ROOT).filter(f => f.endsWith('.html'));
+  const offenders = [];
+  for (const f of htmlFiles) {
+    const html = fs.readFileSync(f, 'utf8');
+    const cards = html.match(/<section[^>]*class="[^"]*\bsummary-card\b[\s\S]*?<\/section>/g) || [];
+    cards.forEach((card, idx) => {
+      if (/\bclass="[^"]*\bgterm\b/.test(card) || /\bclass="[^"]*\bgtip\b/.test(card)) {
+        offenders.push(`${rel(f)} summary-card #${idx + 1}`);
+      }
+    });
+  }
+  if (offenders.length) {
+    R.err(`Summary cards must stay plain text — no glossary gterm/gtip inside:\n  - ${offenders.slice(0, 20).join('\n  - ')}`);
+  } else {
+    R.ok('Summary cards: no active glossary terms/tooltips inside');
+  }
+})();
+
+// G107. Glossary runtime must explicitly skip summary-card hydration.
+(function glossarySkipsSummaryGuard() {
+  const js = fs.readFileSync(path.join(ROOT, 'js/glossary.js'), 'utf8');
+  const hasWalkerSkip = /closest\("[^"]*\.summary-card/.test(js);
+  const hasHydrateSkip = /closest&&e\.closest\("\.summary-card"\)\)return/.test(js);
+  if (!hasWalkerSkip || !hasHydrateSkip) {
+    R.err('Glossary runtime must skip .summary-card both in auto-hydration walker and hydrateGlossaryTerms()');
+  } else {
+    R.ok('Glossary runtime skips summary-card hydration');
+  }
+})();
+
 // Output
 const duration = ((Date.now() - R.start) / 1000).toFixed(2);
 const sep = '═'.repeat(78);
