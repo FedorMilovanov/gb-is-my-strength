@@ -4080,6 +4080,42 @@ const JS_SIZE_FLOORS = {
   }
 })();
 
+// G110. Article OpenGraph author meta contract.
+//   Project attribution policy requires article:author on article pages. This
+//   catches pages where name=author exists but OG article metadata is incomplete.
+(function articleAuthorMetaGuard() {
+  const offenders = [];
+  for (const abs of htmlPages) {
+    const html = fs.readFileSync(abs, 'utf8');
+    const isArticle = /<meta\b[^>]*(?:property=["']og:type["'][^>]*content=["']article["']|content=["']article["'][^>]*property=["']og:type["'])/i.test(html);
+    if (!isArticle) continue;
+    if (!/<meta\b[^>]*property=["']article:author["'][^>]*>/i.test(html)) {
+      offenders.push(rel(abs));
+    }
+  }
+  if (offenders.length) {
+    R.err(`Article pages missing <meta property="article:author">:\n  - ${offenders.join('\n  - ')}`);
+  } else {
+    R.ok('Article meta: every og:type=article page has article:author');
+  }
+})();
+
+// G111. 404 social/canonical hygiene.
+(function notFoundMetaHygieneGuard() {
+  const p = path.join(ROOT, '404.html');
+  if (!fs.existsSync(p)) return;
+  const html = fs.readFileSync(p, 'utf8');
+  const missing = [];
+  if (!/<link\b[^>]*rel=["']canonical["'][^>]*href=["']https:\/\/gospod-bog\.ru\/404\.html["']/i.test(html)) missing.push('canonical /404.html');
+  if (!/<meta\b[^>]*property=["']og:image:alt["'][^>]*content=["'][^"']{10,}["']/i.test(html)) missing.push('og:image:alt');
+  if (!/<meta\b[^>]*name=["']twitter:image:alt["'][^>]*content=["'][^"']{10,}["']/i.test(html)) missing.push('twitter:image:alt');
+  if (missing.length) {
+    R.err(`404.html missing social/canonical hygiene fields: ${missing.join(', ')}`);
+  } else {
+    R.ok('404.html meta: canonical + image alt tags present');
+  }
+})();
+
 // Output
 const duration = ((Date.now() - R.start) / 1000).toFixed(2);
 const sep = '═'.repeat(78);
