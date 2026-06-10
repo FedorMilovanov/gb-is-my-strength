@@ -5,6 +5,24 @@
 
 ---
 
+## v64 — Reading-time data consistency sync + guard (2026-06-10)
+
+### What was improved:
+- Synchronized reading time across public HTML, `data/search-manifest.json` and `data/series.json` for article pages and series landings.
+- Fixed visible/readable drift examples:
+  - `20-antisovetov`: 67 min consistently;
+  - `Krajne`: 41 min consistently;
+  - `Romans 7`: 18 min consistently;
+  - `Da Vinci`: 28 min consistently;
+  - `Nagornaya` parts and Gill series totals now match their source parts.
+- Added `scripts/check-data-consistency.js` + `npm run data:consistency`.
+- Extended `validate:publication` so it now runs validate, tokens, audit-pro, readable-audit, data consistency and interactive-audit.
+
+### Verified:
+- `npm run data:consistency` → ✅ PASS.
+- `npm run readable-audit` → ✅ PASS.
+- `npm run validate:publication` → ✅ PASS.
+
 ## v63 — Readable/publication layer cleanup + guard (2026-06-10)
 
 ### What was improved:

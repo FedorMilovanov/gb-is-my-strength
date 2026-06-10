@@ -7,35 +7,35 @@
         "slug": "chast-1",
         "title": "Содержание",
         "status": "published",
-        "readingTime": 25
+        "readingTime": 16
       },
       {
         "n": 2,
         "slug": "chast-2",
         "title": "Методология",
         "status": "published",
-        "readingTime": 22
+        "readingTime": 11
       },
       {
         "n": 3,
         "slug": "chast-3",
         "title": "Адресат",
         "status": "published",
-        "readingTime": 24
+        "readingTime": 12
       },
       {
         "n": 4,
         "slug": "chast-4",
         "title": "Богодухновенность",
         "status": "published",
-        "readingTime": 28
+        "readingTime": 25
       },
       {
         "n": 5,
         "slug": "chast-5",
         "title": "Закон и Евангелие",
         "status": "published",
-        "readingTime": 23
+        "readingTime": 25
       }
     ],
     "baseUrl": "/nagornaya/"
@@ -90,7 +90,7 @@
         "slug": "20-antisovetov-pastoru",
         "title": "20 антисоветов пастору",
         "status": "published",
-        "readingTime": 25
+        "readingTime": 67
       }
     ]
   },
@@ -103,14 +103,14 @@
         "slug": "krajne-li-isporcheno-serdce",
         "title": "Крайне ли испорчено сердце верующего?",
         "status": "published",
-        "readingTime": 40
+        "readingTime": 41
       },
       {
         "n": 2,
         "slug": "rimlyanam-7-veruyushchiy-ili-neveruyushchiy",
         "title": "Римлянам 7: верующий, неверующий или человек под законом?",
         "status": "published",
-        "readingTime": 11
+        "readingTime": 18
       },
       {
         "n": 3,

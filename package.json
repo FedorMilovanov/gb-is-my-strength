@@ -18,7 +18,8 @@
     "visual-audit": "node scripts/visual-audit.js",
     "interactive-audit": "node scripts/interactive-audit.js",
     "readable-audit": "node scripts/readable-audit.js",
-    "validate:publication": "npm run validate:all && npm run tokens:check && node scripts/audit-pro.js && npm run readable-audit && npm run interactive-audit"
+    "validate:publication": "npm run validate:all && npm run tokens:check && node scripts/audit-pro.js && npm run readable-audit && npm run data:consistency && npm run interactive-audit",
+    "data:consistency": "node scripts/check-data-consistency.js"
   },
   "engines": {
     "node": ">=20"

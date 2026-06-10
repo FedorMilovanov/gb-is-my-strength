@@ -543,8 +543,11 @@ npm run ci:check
 # Readable/publication QA: reader-mode/screen-reader/plain-text слой
 npm run readable-audit
 
+# Data consistency: reading time in HTML / search-manifest / series.json
+npm run data:consistency
+
 # Publication gate после крупных контентных правок
-# (validate + tokens + audit-pro + readable + interactive; interactive требует локальный сервер)
+# (validate + tokens + audit-pro + readable + data consistency + interactive; interactive требует локальный сервер)
 AUDIT_BASE=http://127.0.0.1:8080 npm run validate:publication
 
 # Обновление meta-тегов (полуавтомат)
