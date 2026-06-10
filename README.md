@@ -475,7 +475,9 @@ bookmarks: {
   статический no-JS фолбэк. Инлайновый `<svg class="fn-dove-icon">` в HTML не нужен.
 
 ### Quiz Engine v3
-`#quizWrapper`, `#quizMain`, `#quizBody`, `#quizCounter`, `#quizQuestion`, `#quizFocus`, `#quizOptions`, `#quizFeedback`, `#quizNext`, `#quizFill`, `#quizResult`, `#quizResultScore`, `#quizResultTotal`, `#quizResultLabel`, `#quizResultBar`, `#quizScoreDesc`, `#quizScore`, `#quizScoreTitle`, `#quizScoreBadge`, `#quizRestart`, `#quizShare`, `#quizOverlay`, `#quizLaunch`
+Если `features.quiz.enabled: true` и есть `SITE_CONFIG.quiz.questions`, в HTML ставится только канонический mount `<div id="quizPlaceholder"></div>`. `site.js` сам генерирует runtime-разметку ниже; вручную legacy `#quizWrapper` не вставлять.
+
+Runtime ids: `#quizWrapper`, `#quizMain`, `#quizBody`, `#quizCounter`, `#quizQuestion`, `#quizFocus`, `#quizOptions`, `#quizFeedback`, `#quizNext`, `#quizFill`, `#quizResult`, `#quizResultScore`, `#quizResultTotal`, `#quizResultLabel`, `#quizResultBar`, `#quizScoreDesc`, `#quizScore`, `#quizScoreTitle`, `#quizScoreBadge`, `#quizRestart`, `#quizShare`, `#quizOverlay`, `#quizLaunch`
 
 **Бонусный раунд** (если `bonusEnabled: true`):
 `#quizBonusSection`, `#quizBonusStart`, `#quizBonusBody`, `#quizBonusCounter`, `#quizBonusQuestion`, `#quizBonusFocus`, `#quizBonusOptions`, `#quizBonusFeedback`, `#quizBonusNext`, `#quizBonusFill`, `#quizBonusScore`, `#quizBonusScoreTitle`, `#quizBonusScoreBadge`, `#quizBonusScoreDesc`, `#quizBonusLock`, `#quizBonusUnlock`

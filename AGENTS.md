@@ -537,6 +537,8 @@ slug — строчные латинские буквы и дефисы, без 
 
 ### 6.5 Quiz Engine v3+
 
+Если `features.quiz.enabled === true` и в `window.SITE_CONFIG.quiz.questions` есть вопросы, HTML обязан содержать канонический mount `<div id="quizPlaceholder"></div>`. **Не вставлять вручную legacy `#quizWrapper`**: runtime сам генерирует `#quizWrapper`, `#quizLaunch`, `#quizQuestion`, `.quiz-option` и bonus-блоки. Ручной wrapper уже ломал Da Vinci / Krajne: overlay открывался, но вопрос и варианты не рендерились.
+
 Вопросы могут содержать `sourceRef` для академического feedback:
 
 ```js
