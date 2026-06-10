@@ -540,6 +540,13 @@ npm run ci:check
 # 2) AUDIT_BASE=http://127.0.0.1:8080 npm run interactive-audit
 #    Должно: Interactive audit passed
 
+# Readable/publication QA: reader-mode/screen-reader/plain-text слой
+npm run readable-audit
+
+# Publication gate после крупных контентных правок
+# (validate + tokens + audit-pro + readable + interactive; interactive требует локальный сервер)
+AUDIT_BASE=http://127.0.0.1:8080 npm run validate:publication
+
 # Обновление meta-тегов (полуавтомат)
 npm run update-meta
 
