@@ -177,3 +177,21 @@ Verification after Batch 002:
 - `node scripts/audit-pro.js` — PASS: `142 passed / 0 warnings / 0 errors / 9 info`.
 - `npm run visual-audit` — PASS: 32 page/viewport, 96 screenshots, 0 console errors, 0 network errors, 0 unsuppressed visual bugs.
 - `git diff --check` — PASS.
+
+## 9. Batch 003 applied — Da Vinci nested-source tooltip cleanup (2026-06-10)
+
+Applied:
+
+1. `articles/kod-da-vinchi/index.html`:
+   - removed nested `fn-marker` inside tooltip 2 (`Holy Blood, Holy Grail` / Random House lawsuit); merged court-case context into the parent tooltip;
+   - removed nested `fn-marker` inside tooltip 9 (Nicaea / Ehrman); merged Ehrman note into the parent tooltip;
+   - removed nested `fn-marker` inside tooltip 21 (Prieuré de Sion); replaced weak nested CBS-style note with primary/official framing from `Journal Officiel` + BnF catalogue/authority direction;
+   - verified with BeautifulSoup parser: `bad count 0`, `fn count 21` for `kod-da-vinchi`.
+
+Verification after Batch 003:
+
+- `npm run tokens:check` — PASS.
+- `npm run validate:all` — PASS.
+- `node scripts/audit-pro.js` — PASS: `142 passed / 0 warnings / 0 errors / 9 info`.
+- `npm run visual-audit` — PASS: 32 page/viewport, 96 screenshots, 0 console errors, 0 network errors, 0 unsuppressed visual bugs.
+- `git diff --check` — PASS.
