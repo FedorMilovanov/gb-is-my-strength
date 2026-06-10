@@ -5,6 +5,23 @@
 
 ---
 
+## v65 — Editorial tone lint + publication-Russian cleanup (2026-06-10)
+
+### What was improved:
+- Added `scripts/editorial-lint.js` + `npm run editorial:lint` and included it in `validate:publication`.
+- Cleaned exact high-risk publication phrases flagged by the GPT reader audit:
+  - Da Vinci: `БРАУН` → `В романе`, `НА САМОМ ДЕЛЕ` → `По источникам`, `Самые грубые ошибки Брауна` → `Ключевые исторические ошибки романа`, `Бонус: ляп` → `Показательный анахронизм`;
+  - pastor-series / 20-antisovetov: replaced prominent `пасторские патологии` / `диагностическая рамка` wording with more pastoral language about `искажения пастырской власти`, `библейское зеркало`, подотчётность and restoration;
+  - Nagornaya/Gill: softened exact overheated phrases such as `меняет правила игры`, `кромсавшие`, `сокрушительный`.
+- Kept the lint surgical: exact known-risk phrases only, not broad bans on legitimate theological or pastoral terms.
+
+### Verified:
+- `npm run editorial:lint` → ✅ PASS.
+- `npm run validate:publication` → ✅ PASS.
+- `npm run visual-audit` → ✅ PASS (52 contexts / 156 screenshots / 0 console / 0 network / 0 unsuppressed).
+
+---
+
 ## v64 — Reading-time data consistency sync + guard (2026-06-10)
 
 ### What was improved:
