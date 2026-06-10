@@ -28,7 +28,9 @@ const banned = [
   { kind:'bad-title-case', rx:/Анатомия Мотивов/ },
   { kind:'pastor-series-pathology-label', rx:/пасторск(?:ие|их) патолог(?:ии|ий)/i },
   { kind:'diagnostic-frame-label', rx:/диагностическая рамка/i },
-  { kind:'heated-cliche', rx:/меняет правила игры|кромсавш|сокрушител/i },
+  { kind:'heated-cliche', rx:/меняет правила игры|кромсавш|сокрушител|жёсткий заслон|богословский фарс|мощн(?:ая|ую) консервативн(?:ая|ую) апологи/i },
+  { kind:'da-vinci-sensational-frame', rx:/опасен не потому|вымысел, маскирующийся|разоблачённую правду/i },
+  { kind:'pastoral-forensic-overphrase', rx:/духовный газлайтинг|отлаженного механизма самосохранения|манипулятор тут же вытаскивает/i },
   { kind:'home-brand-spacing', rx:/Господь Бог—Сила Моя/ },
   { kind:'typo-eto', rx:/\bЭ то\b/ },
 ];
