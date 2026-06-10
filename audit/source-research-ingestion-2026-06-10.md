@@ -435,3 +435,22 @@ Verification after Batch 014:
 - `node scripts/audit-pro.js` — PASS.
 - `npm run visual-audit` — PASS: 32 page/viewport, 96 screenshots, 0 console errors, 0 network errors, 0 unsuppressed visual bugs.
 - `git diff --check` — PASS.
+
+## 21. Batch 015 applied — public wording polish for source-caution notes (2026-06-10)
+
+Applied:
+
+1. `articles/dzhon-gill-istoricheskiy-kontekst/index.html`:
+   - replaced public-facing “неподтверждённые two million gallons in Southwark” wording with a cleaner editorial sentence about avoiding exact local statistics and focusing on the broader London Gin Craze context.
+
+2. `articles/krajne-li-isporcheno-serdce/index.html`:
+   - polished Murray/Bavinck/Berkhof tooltip/source wording so public text does not read like an internal TODO while still staying honest about edition-dependent page references;
+   - Bavinck reading-list line now says “broad theological frame” rather than “unverified exact quote.”
+
+Verification after Batch 015:
+
+- `npm run validate:all` — PASS.
+- `npm run tokens:check` — PASS.
+- `node scripts/audit-pro.js` — PASS.
+- `npm run visual-audit` — PASS: 32 page/viewport, 96 screenshots, 0 console errors, 0 network errors, 0 unsuppressed visual bugs.
+- `git diff --check` — PASS.
