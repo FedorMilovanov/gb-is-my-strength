@@ -379,3 +379,23 @@ Verification after Batch 011:
 - `node scripts/audit-pro.js` — PASS.
 - `npm run visual-audit` — PASS: 32 page/viewport, 96 screenshots, 0 console errors, 0 network errors, 0 unsuppressed visual bugs.
 - `git diff --check` — PASS.
+
+## 18. Batch 012 applied — Krajne Berkhof/Murray source tightening (2026-06-10)
+
+Applied:
+
+1. `articles/krajne-li-isporcheno-serdce/index.html`:
+   - replaced unverified exact Berkhof quotation/page 427 with source-safe paraphrase tied to CCEL `Systematic Theology`, Sanctification §H.2.c.(2);
+   - Berkhof now supports the “old man / human nature controlled by sin” and “warfare between flesh and Spirit” line, not a fabricated exact quote;
+   - removed exact Murray page claims where direct edition page verification was not pinned;
+   - Murray RAA section now states the supported theological substance: deliverance from sin’s power does not eliminate all sin from the believer’s heart/life;
+   - Murray `Principles of Conduct` note now marked as cf./page-to-verify rather than direct quotation with page 214;
+   - kept Bavinck as softened broader Reformed frame, not exact unsupported citation.
+
+Verification after Batch 012:
+
+- `npm run validate:all` — PASS.
+- `npm run tokens:check` — PASS.
+- `node scripts/audit-pro.js` — PASS.
+- `npm run visual-audit` — PASS: 32 page/viewport, 96 screenshots, 0 console errors, 0 network errors, 0 unsuppressed visual bugs.
+- `git diff --check` — PASS.
