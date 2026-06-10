@@ -4031,6 +4031,27 @@ const JS_SIZE_FLOORS = {
   }
 })();
 
+// G108. Quiz runtime mount contract.
+//   If SITE_CONFIG enables quiz and declares questions, the page must expose
+//   the canonical #quizPlaceholder. Static legacy #quizWrapper blocks without
+//   the placeholder silently render empty quizzes (found in Da Vinci + Krajne).
+(function quizPlaceholderContractGuard() {
+  const offenders = [];
+  for (const abs of htmlPages) {
+    const html = fs.readFileSync(abs, 'utf8');
+    const hasEnabledQuiz = /features\s*:\s*\{[\s\S]{0,1800}?quiz\s*:\s*\{[\s\S]{0,260}?enabled\s*:\s*true/.test(html);
+    const hasQuestions = /\bquiz\s*:\s*\{\s*questions\s*:\s*\[/.test(html);
+    if (hasEnabledQuiz && hasQuestions && !/\bid=["']quizPlaceholder["']/.test(html)) {
+      offenders.push(rel(abs));
+    }
+  }
+  if (offenders.length) {
+    R.err(`Quiz enabled with questions but missing #quizPlaceholder:\n  - ${offenders.join('\n  - ')}`);
+  } else {
+    R.ok('Quiz mount contract: enabled quizzes have #quizPlaceholder');
+  }
+})();
+
 // Output
 const duration = ((Date.now() - R.start) / 1000).toFixed(2);
 const sep = '═'.repeat(78);

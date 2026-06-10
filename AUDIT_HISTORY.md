@@ -5,6 +5,22 @@
 
 ---
 
+## v56 — Quiz runtime mount repair for Da Vinci + Krajne (2026-06-10)
+
+### What was improved:
+- Fixed two user-facing broken quizzes: `articles/kod-da-vinchi/` and `articles/krajne-li-isporcheno-serdce/`.
+- Replaced legacy hand-written `#quizWrapper` blocks with the canonical runtime mount `<div id="quizPlaceholder"></div>` so `site.js` can generate the full quiz DOM consistently.
+- Added `audit-pro.js` G108: if a page enables quiz and declares `SITE_CONFIG.quiz.questions`, `#quizPlaceholder` is required.
+- Updated `AGENTS.md` with the quiz mount contract so future agents do not reintroduce manual wrappers.
+
+### Verified:
+- Playwright quiz probe on Da Vinci / Krajne / Gill Part I → ✅ `#quizQuestion` non-empty and `.quiz-option` renders after `#quizLaunch` click.
+- `npm run validate:all` → ✅ PASS.
+- `npm run tokens:check` → ✅ PASS.
+- `node scripts/audit-pro.js` → ✅ PASS (**148 passed / 0 warnings / 0 errors**).
+
+---
+
 ## v55 — Hermeneutics source-tooltip DOM repair (2026-06-10)
 
 ### What was improved:
