@@ -363,3 +363,19 @@ Verification after Batch 010:
 - `node scripts/audit-pro.js` — PASS.
 - `npm run visual-audit` — PASS: 32 page/viewport, 96 screenshots, 0 console errors, 0 network errors, 0 unsuppressed visual bugs.
 - `git diff --check` — PASS.
+
+## 17. Batch 011 applied — Nagornaya source-page direct links (2026-06-10)
+
+Applied:
+
+1. `nagornaya/istochniki/index.html` and `nagornaya/chast-1/index.html`:
+   - replaced generic TMS journal archive link for Bruce W. Alvord, “The Question of Application in Preaching: The Sermon on the Mount as a Test Case” with direct PDF `https://tyndale.tms.edu/wp-content/uploads/2021/09/tmsj24f.pdf`;
+   - replaced generic TMS journal archive link for Donald E. Green, “Evangelicals and Ipsissima Vox” with direct PDF `https://tms.edu/wp-content/uploads/2021/09/tmsj12d.pdf`.
+
+Verification after Batch 011:
+
+- `npm run validate:all` — PASS.
+- `npm run tokens:check` — PASS.
+- `node scripts/audit-pro.js` — PASS.
+- `npm run visual-audit` — PASS: 32 page/viewport, 96 screenshots, 0 console errors, 0 network errors, 0 unsuppressed visual bugs.
+- `git diff --check` — PASS.
