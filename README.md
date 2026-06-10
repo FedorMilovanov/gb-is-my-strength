@@ -543,6 +543,9 @@ npm run ci:check
 # Readable/publication QA: reader-mode/screen-reader/plain-text слой
 npm run readable-audit
 
+# Editorial tone lint: overclaim labels, overheated clichés, known publication-Russian risks
+npm run editorial:lint
+
 # Data consistency: reading time in HTML / search-manifest / series.json
 npm run data:consistency
 
