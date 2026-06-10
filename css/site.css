@@ -355,3 +355,11 @@ body:not(.nagornaya-page) .article-body>.summary-card .summary-card__num::before
 
 /* GB accessibility utility 2026-06-10: readable text for decorative hero layers. */
 .sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
+
+/* GB Hebrew hero typography restore 2026-06-10: keep the old serif Hebrew face and prevent hover translations from being clipped. */
+:root{--f-hebrew-display:"Noto Serif Hebrew","Noto Sans Hebrew","SBL Hebrew","David Libre",serif}
+.h-sacred-block .h-sacred-line,.h-sacred-block .hb-front{font-family:var(--f-hebrew-display)!important;font-weight:500!important}
+.h-sacred-block .h-tetra .hb-front{font-weight:700!important}
+.h-sacred-block .hb-back,.h-sacred-block .h-tetra-back .h-tetra-name{font-family:var(--f-body,"Cormorant Garamond",Georgia,serif)!important;font-style:italic!important}
+.h-sacred-block .hb-w{overflow:visible;position:relative;z-index:1}
+.h-sacred-block .hb-w:hover,.h-sacred-block .hb-w[data-toggled],.h-sacred-block .h-tetra:hover,.h-sacred-block .h-tetra[data-toggled]{z-index:4}

@@ -5,6 +5,21 @@
 
 ---
 
+## v70 — Hebrew hero font restore + hover clipping fix (2026-06-10)
+
+### What was improved:
+- Restored the home Habakkuk 3:19 Hebrew hero to the intended serif Hebrew stack by forcing `--f-hebrew-display` back to `Noto Serif Hebrew` first. This removes the later sans override that appeared after page load.
+- Explicitly set Russian hover translations to the site body/display serif (`Cormorant Garamond`) instead of inheriting Hebrew fonts.
+- Prevented long hover translations from being clipped by making `.h-sacred-block .hb-w` overflow visible and raising hovered/toggled words above neighbors.
+- Kept the visual hover/click translation effect intact while retaining the readable `sr-only` Habakkuk summary and `aria-hidden` decorative layer.
+- Extended `readable-audit` to guard the Hebrew display font and no-clipping contract.
+
+### Verified:
+- Playwright computed-style probe → ✅ `.hb-front` uses `Noto Serif Hebrew`; `.hb-back` uses `Cormorant Garamond`; hover translation visible with `overflow: visible`.
+- `npm run readable-audit` → ✅ PASS.
+
+---
+
 ## v69 — Home positioning + Habakkuk readable fallback (2026-06-10)
 
 ### What was improved:

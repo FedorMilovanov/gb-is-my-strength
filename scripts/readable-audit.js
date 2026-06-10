@@ -124,6 +124,13 @@ for (const f of htmlFiles) {
   if (sacredMatch && /tabindex=["']0["']/.test(sacredMatch[0])) {
     fail('home-sacred-hidden-focusable', 'index.html', 'aria-hidden decorative Hebrew layer must not contain tabindex=0 elements');
   }
+  const siteCss = fs.readFileSync(path.join(ROOT, 'css/site.css'), 'utf8');
+  if (!/--f-hebrew-display:[^;]*Noto Serif Hebrew/.test(siteCss)) {
+    fail('home-hebrew-display-font-regression', 'css/site.css', 'Hebrew hero must use Noto Serif Hebrew first, not sans override');
+  }
+  if (!/\.h-sacred-block \.hb-w\{[^}]*overflow:visible/.test(siteCss)) {
+    fail('home-hebrew-hover-clipping-risk', 'css/site.css', 'Hebrew hover translation wrappers must not clip long Russian translations');
+  }
 }
 
 console.log('\nGB READABLE AUDIT');
