@@ -271,3 +271,25 @@ Verification after Batch 006:
 - `node scripts/audit-pro.js` — PASS: `142 passed / 0 warnings / 0 errors / 9 info`.
 - `npm run visual-audit` — PASS: 32 page/viewport, 96 screenshots, 0 console errors, 0 network errors, 0 unsuppressed visual bugs.
 - `git diff --check` — PASS.
+
+## 13. Batch 007 applied — Nagornaya Part II synoptic/Q nuance (2026-06-10)
+
+Applied:
+
+1. `nagornaya/chast-2/index.html`:
+   - separated Thomas/Farnell/TMS framing from “the whole conservative spectrum”;
+   - softened “traditional church view for 1700 years = Independence View” into a more precise historical contrast;
+   - changed the two-source/Q label from “dominates liberal scholarship” to “widely present in academic discussion”;
+   - distinguished Q as a literary hypothesis from Q used as a dehistoricizing tool;
+   - rewrote Papias/logia paragraph: Papias is now important early evidence for Matthean tradition, not a mathematical disproof of Q or automatic identification with canonical Greek Matthew;
+   - softened the TMS/Farnell critique of literary-dependence models to avoid saying every dependency model is inherently hostile to inerrancy;
+   - rewrote ipsissima vox section as an intra-conservative spectrum issue: broad vox becomes dangerous when it dehistoricizes Jesus’ teaching, not merely because it is not the narrow TMS view;
+   - changed the “wide ipsissima vox” card from red fail to amber caution.
+
+Verification after Batch 007:
+
+- `npm run validate:all` — PASS.
+- `npm run tokens:check` — PASS.
+- `node scripts/audit-pro.js` — PASS: `142 passed / 0 warnings / 0 errors / 9 info`.
+- `npm run visual-audit` — PASS: 32 page/viewport, 96 screenshots, 0 console errors, 0 network errors, 0 unsuppressed visual bugs.
+- `git diff --check` — PASS.
