@@ -417,3 +417,21 @@ Verification after Batch 013:
 - `node scripts/audit-pro.js` — PASS.
 - `npm run visual-audit` — PASS: 32 page/viewport, 96 screenshots, 0 console errors, 0 network errors, 0 unsuppressed visual bugs.
 - `git diff --check` — PASS.
+
+## 20. Batch 014 applied — Da Vinci primary-interview wording sync (2026-06-10)
+
+Applied:
+
+1. `articles/kod-da-vinchi/index.html`:
+   - synchronized intro paragraph with rebuilt source apparatus;
+   - CNN Sunday Morning 25 May 2003 transcript now carries the primary-source weight for Brown’s “99 percent” claim;
+   - Today Show “Absolutely all of it” is no longer stated in the body as a verified direct quotation; it is described as widely cited but requiring manual transcription of archived video before being used as a standalone primary-source quote;
+   - tooltip 1 now matches source-list item 1.
+
+Verification after Batch 014:
+
+- `npm run validate:all` — PASS.
+- `npm run tokens:check` — PASS.
+- `node scripts/audit-pro.js` — PASS.
+- `npm run visual-audit` — PASS: 32 page/viewport, 96 screenshots, 0 console errors, 0 network errors, 0 unsuppressed visual bugs.
+- `git diff --check` — PASS.
