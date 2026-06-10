@@ -325,3 +325,14 @@ html.dark body:not(.nagornaya-page) .article-body>.summary-card .summary-card__t
   .article-img.article-img--vertical.float-left,
   .article-img.article-img--vertical.float-right{float:left;width:160px;max-width:45%;margin:6px 16px 12px 0;shape-outside:margin-box}
 }
+
+/* GB tooltip stability patch 2026-06-10: glossary cards must not clip/scroll on desktop; summaries are plain text. */
+.gtip.gb-floating-tip[data-luxury="true"]{overflow:visible;box-sizing:border-box}
+.gtip.gb-floating-tip[data-luxury="true"] .gtip-luxury{display:block;box-sizing:border-box;width:100%;overflow:hidden;border-radius:inherit}
+.gtip.gb-floating-tip[data-luxury="true"] .gtip-luxury__header{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:0 0 10px}
+.gtip.gb-floating-tip[data-luxury="true"] .gtip-luxury__category{flex:0 1 auto;width:auto;max-width:calc(100% - 44px)}
+.gtip.gb-floating-tip[data-luxury="true"] .gtip-luxury__title{display:block;margin:0 0 12px}
+.gtip.gb-floating-tip[data-luxury="true"] .gtip-luxury__body{display:block;overflow:visible}
+.gtip.gb-floating-tip[data-luxury="true"] .gtip-luxury__definition{display:block;overflow:visible;max-height:none}
+.summary-card .gterm{border-bottom:0;text-decoration:none;background:transparent;color:inherit;box-shadow:none;padding:0;cursor:inherit;pointer-events:none}
+.summary-card .gterm .gtip{display:none}

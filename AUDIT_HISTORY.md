@@ -5,6 +5,26 @@
 
 ---
 
+## v54 — Glossary tooltip stability + summary-card cleanup guard (2026-06-10)
+
+### What was improved:
+- Investigated owner-reported Gill glossary popup regression with real screenshots and Playwright reproduction.
+- Fixed glossary card layout so desktop `.gtip-luxury` content is rendered as a solid block card instead of inline-flow fragments that caused clipped/scrollbar-looking popups.
+- Prevented future glossary auto-hydration inside `.summary-card`: summary blocks are now plain minimal text, without dotted glossary underlines or interactive tooltips.
+- Added `audit-pro.js` guards:
+  - G106: summary cards must not contain active `.gterm` / `.gtip` glossary markup;
+  - G107: `js/glossary.js` must explicitly skip `.summary-card` in both auto-hydration and manual hydration.
+- Updated `AGENTS.md` with a hard lock for summary-card / tooltip behaviour.
+
+### Verified:
+- `npm run validate:all` → ✅ PASS.
+- `npm run tokens:check` → ✅ PASS (`0 / 0` legacy vars).
+- `node scripts/audit-pro.js` → ✅ PASS (**145 passed / 0 warnings / 0 errors**).
+- Playwright glossary probe across Gill context / Gill Part I / Krajne → ✅ no summary gterms, visible opaque glossary cards, no clipped block layout.
+- `npm run visual-audit` → ✅ 32 page/viewport, 96 screenshots, 0 console errors, 0 network errors, 0 unsuppressed visual bugs.
+
+---
+
 ## v53 — Primary-source marathon: Da Vinci / Gill / Krajne / Nagornaya + probe guards (2026-06-10)
 
 ### What was improved:
@@ -27,6 +47,8 @@
 - `npm run tokens:check` → ✅ PASS.
 - `node scripts/audit-pro.js` → ✅ PASS (**145 passed / 0 warnings / 0 errors / 8 info**).
 - `npm run visual-audit` → ✅ PASS (**32 page/viewport runs, 96 screenshots, 0 console errors, 0 network errors, 0 unsuppressed visual bugs**).
+
+---
 
 ## v52 — John Gill UI polish pass: remove trilogy context-bridge + ordinary summary-card upgrade (2026-06-10)
 
