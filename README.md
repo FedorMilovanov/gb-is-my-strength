@@ -556,6 +556,11 @@ npm run source:links
 # - indexnow.yml and deploy.yml run validate:static-publication as blocking gates.
 # - source-links.yml runs npm run source:links weekly/manual.
 # - interactive-audit.yml runs npm run interactive-audit weekly/manual.
+# - workflows:check protects these workflow contracts from accidental weakening.
+npm run workflows:check
+
+# Local static CI gate (cache-bust + full static-publication + workflow policy)
+npm run ci:check
 
 # Publication gate после крупных контентных правок
 # (validate + tokens + audit-pro + readable + data consistency + interactive; interactive требует локальный сервер)

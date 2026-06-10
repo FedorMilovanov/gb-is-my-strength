@@ -13,7 +13,7 @@
     "validate:all": "npm run validate:strict && npm run seo-audit",
     "fonts:download": "node scripts/download-fonts.js",
     "avif:build": "bash scripts/build-avif.sh",
-    "ci:check": "npm run cache-bust && npm run tokens:check && npm run validate:all",
+    "ci:check": "npm run cache-bust && npm run validate:static-publication && npm run workflows:check",
     "tokens:check": "node scripts/check-design-tokens.js",
     "visual-audit": "node scripts/visual-audit.js",
     "interactive-audit": "node scripts/interactive-audit.js",
@@ -23,7 +23,8 @@
     "editorial:lint": "node scripts/editorial-lint.js",
     "source:links": "node scripts/source-link-audit.js",
     "validate:external": "npm run source:links",
-    "validate:static-publication": "npm run validate:all && npm run tokens:check && node scripts/audit-pro.js && npm run readable-audit && npm run editorial:lint && npm run data:consistency"
+    "validate:static-publication": "npm run validate:all && npm run tokens:check && node scripts/audit-pro.js && npm run readable-audit && npm run editorial:lint && npm run data:consistency",
+    "workflows:check": "node scripts/check-workflows.js"
   },
   "engines": {
     "node": ">=20"

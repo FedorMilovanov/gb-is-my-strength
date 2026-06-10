@@ -21,6 +21,9 @@ on:
       - 'sitemap.xml'
       - 'feed.xml'
 
+permissions:
+  contents: write
+
 jobs:
   notify:
     runs-on: ubuntu-latest

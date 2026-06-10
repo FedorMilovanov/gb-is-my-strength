@@ -5,6 +5,26 @@
 
 ---
 
+## v68 — Workflow policy guard + local CI parity (2026-06-10)
+
+### What was improved:
+- Added `scripts/check-workflows.js` + `npm run workflows:check`.
+- The workflow policy guard verifies:
+  - every workflow has name/on/permissions;
+  - deploy and indexnow keep `npm run validate:static-publication`;
+  - source link audit remains manual+scheduled and runs `npm run source:links`;
+  - runtime interactive audit remains manual+scheduled, installs Chromium, starts a local server and runs `npm run interactive-audit`;
+  - notify-on-failure listens for source link and runtime audit failures.
+- Updated `ci:check` so local CI parity is now: `cache-bust + validate:static-publication + workflows:check`.
+- Added top-level `permissions: contents: write` to `indexnow.yml` so workflow policy is explicit at file level.
+- Updated AGENTS/README with the workflow policy contract.
+
+### Verified:
+- `npm run workflows:check` → ✅ PASS.
+- `npm run ci:check` → ✅ PASS.
+
+---
+
 ## v67 — CI/workflow publication gates (2026-06-10)
 
 ### What was improved:
