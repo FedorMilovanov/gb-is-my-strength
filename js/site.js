@@ -66,3 +66,29 @@
   new MutationObserver(function(){if(last)schedule(last)}).observe(document.documentElement,{subtree:true,attributes:true,attributeFilter:['class','style']});
   addEventListener('resize',function(){schedule(last)},{passive:true}); addEventListener('scroll',function(){schedule(last)},{passive:true});
 })();
+
+/* GB late theme bridge v2026-06-10: bottom-bar theme may be created after the core theme module cached barThemeBtn. */
+(function(){
+  var preClickDark = null;
+  function setTheme(dark){
+    document.documentElement.classList.toggle('dark', dark);
+    try{localStorage.setItem('theme', dark ? 'dark' : 'light')}catch(_){ }
+    document.querySelectorAll('#themeToggle,#hThemeBtn,#barThemeBtn,.gb-fc-theme,.nag-sidebar-theme-btn').forEach(function(btn){
+      if(btn && btn.setAttribute) btn.setAttribute('aria-pressed', dark ? 'true' : 'false');
+    });
+  }
+  document.addEventListener('click', function(ev){
+    var btn = ev.target && ev.target.closest && ev.target.closest('#barThemeBtn');
+    if(!btn) return;
+    preClickDark = document.documentElement.classList.contains('dark');
+  }, true);
+  document.addEventListener('click', function(ev){
+    var btn = ev.target && ev.target.closest && ev.target.closest('#barThemeBtn');
+    if(!btn) return;
+    var before = preClickDark;
+    setTimeout(function(){
+      if(document.documentElement.classList.contains('dark') === before) setTheme(!before);
+      preClickDark = null;
+    }, 0);
+  }, false);
+})();

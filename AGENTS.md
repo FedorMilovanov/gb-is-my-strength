@@ -692,6 +692,7 @@ Precache список — в самом `sw.js`. При добавлении н�
 - Hover: ТОЛЬКО `transform:translateY(-2px)` — никаких кругов, никакого фона
 - Высота контейнера ≤ 110px (две кнопки + padding)
 - Класс `.gb-floating-controls` в `css/site.css`
+- На mobile, если `features.themeToggle.enabled !== false`, должен быть видимый theme control: `.gb-fc-theme`, `#barThemeBtn`, `#themeToggle` или Нагорная sidebar/bottom-bar equivalent. Не скрывать `.gb-fc-theme` только потому, что есть bottom-bar: это уже приводило к отсутствию темы на статьях.
 
 ### 9.3 bio-cover в статьях о Гилле
 - `articles/dzhon-gill-chast-1-chelovek/index.html` ДОЛЖЕН содержать `.bio-cover` с изображением `gill-authentic-study-cover`

@@ -345,3 +345,7 @@ html.dark body:not(.nagornaya-page) .article-body>.summary-card .summary-card__t
 .gb-strip__center{position:relative;z-index:2}
 .gb-strip__nav{position:relative;z-index:1}
 .gb-strip__dropdown{z-index:var(--z-dropdown-high)}
+
+/* GB mobile theme control stability 2026-06-10: if theme is enabled, the canonical floating theme button must remain visible on article pages even when bottom-bar exists. */
+body.has-bottom-bar .gb-floating-controls .gb-fc-theme{display:inline-flex}
+@media (pointer:coarse){.gb-floating-controls .gb-fc-btn{min-width:44px;min-height:44px}}

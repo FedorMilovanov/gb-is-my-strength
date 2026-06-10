@@ -5,6 +5,23 @@
 
 ---
 
+## v58 — Mobile theme control restoration + interactive guard (2026-06-10)
+
+### What was improved:
+- Restored visible mobile theme control on article pages that use the canonical floating controls: `.gb-fc-theme` remains visible even when `body.has-bottom-bar` exists.
+- Added coarse-pointer minimum hitbox protection for floating control buttons.
+- Added a late bottom-bar theme bridge in `js/site.js`: if `#barThemeBtn` is created after the core theme module cached controls, the bridge toggles/persists theme only when the original listener did not already do so.
+- Extended `scripts/interactive-audit.js` with mobile theme checks: visible control, click toggles `html.dark`, reload persists selected theme.
+- Updated AGENTS/README with the mobile theme-control contract.
+
+### Verified:
+- `npm run interactive-audit` → ✅ PASS (`theme: 6`).
+- `npm run validate:all` → ✅ PASS.
+- `npm run tokens:check` → ✅ PASS.
+- `node scripts/audit-pro.js` → ✅ PASS.
+
+---
+
 ## v57 — Series strip dropdown hitbox repair + interactive audit (2026-06-10)
 
 ### What was improved:
