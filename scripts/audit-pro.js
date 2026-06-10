@@ -4052,6 +4052,34 @@ const JS_SIZE_FLOORS = {
   }
 })();
 
+// G109. No nested interactive controls inside buttons.
+//   Found in series strip: <button class="gb-strip__toggle"> contained <a> dots,
+//   so clicking the toggle could navigate to another article instead of opening
+//   the dropdown. Buttons must not contain anchors/buttons/inputs/selects.
+(function noNestedInteractiveInButtonsGuard() {
+  const offenders = [];
+  const buttonRe = /<button\b[^>]*>[\s\S]*?<\/button>/gi;
+  for (const abs of htmlPages) {
+    const html = fs.readFileSync(abs, 'utf8');
+    let m;
+    while ((m = buttonRe.exec(html))) {
+      if (/<(?:a|button|input|select|textarea)\b/i.test(m[0].replace(/^<button\b[^>]*>/i, ''))) {
+        const line = html.slice(0, m.index).split(/\n/).length;
+        offenders.push(`${rel(abs)}:${line}`);
+      }
+    }
+  }
+  const seriesJs = fs.readFileSync(path.join(ROOT, 'js/series-cards.js'), 'utf8');
+  if (/gb-strip__toggle[\s\S]{0,900}<a\b/.test(seriesJs)) {
+    offenders.push('js/series-cards.js: gb-strip__toggle template contains <a>');
+  }
+  if (offenders.length) {
+    R.err(`Nested interactive controls inside <button> (invalid HTML / click hijack risk):\n  - ${offenders.slice(0, 30).join('\n  - ')}`);
+  } else {
+    R.ok('Interactive controls: no anchors/buttons nested inside buttons');
+  }
+})();
+
 // Output
 const duration = ((Date.now() - R.start) / 1000).toFixed(2);
 const sep = '═'.repeat(78);

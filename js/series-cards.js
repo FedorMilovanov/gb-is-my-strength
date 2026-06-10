@@ -89,7 +89,7 @@
 
     host.innerHTML =
       prevHtml +
-      '<div class="gb-strip__center"><button type="button" class="gb-strip__toggle" aria-expanded="false" aria-label="Показать все части серии"><div class="gb-strip__series">' + esc(info.title) + ' <svg class="gb-strip__chevron" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M6 9l6 6 6-6"/></svg></div><div class="gb-strip__dots">' + dots + '</div></button>' + dropdown + '</div>' +
+      '<div class="gb-strip__center"><button type="button" class="gb-strip__toggle" aria-expanded="false" aria-label="Показать все части серии"><div class="gb-strip__series">' + esc(info.title) + ' <svg class="gb-strip__chevron" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M6 9l6 6 6-6"/></svg></div></button><div class="gb-strip__dots" aria-label="Части серии">' + dots + '</div>' + dropdown + '</div>' +
       nextHtml;
 
     // Add click handler for dropdown toggle

@@ -535,6 +535,11 @@ npm run ci:check
 # 2) AUDIT_BASE=http://127.0.0.1:8080 npm run visual-audit
 #    Должно: 0 console errors, 0 network errors
 
+# Interactive QA (Playwright): series dropdown, quiz launch, glossary smoke
+# 1) запустить локальный сервер: python3 -m http.server 8080 --bind 127.0.0.1
+# 2) AUDIT_BASE=http://127.0.0.1:8080 npm run interactive-audit
+#    Должно: Interactive audit passed
+
 # Обновление meta-тегов (полуавтомат)
 npm run update-meta
 

@@ -802,8 +802,11 @@ JS `site.js` функция `e()` инжектит SVG тело голубя т�
 **Запрещено:**
 - Дублировать inline-карточки «Часть I / II / III» вручную в HTML (как было в трилогии о Гилле до r75 — 4 КБ inline-styled CSS на каждой странице ⇒ при добавлении новой части серии нужно править 5 страниц синхронно ⇒ регрессии).
 - Создавать новые JS-файлы для каждой серии. Один `series-cards.js` обслуживает все.
+- Вкладывать ссылки-точки внутрь `<button class="gb-strip__toggle">`. Это invalid interactive nesting и уже ломало strip: клик по toggle уводил на следующую статью вместо открытия dropdown. Dots/links должны быть sibling `.gb-strip__dots`, а toggle — только кнопка открытия списка.
 
 **Нагорная проповедь** — историческое исключение (свой Tailwind-sidebar + nagornaya-mobile-toc.js). Не трогать; новых серий по такому образцу не плодить — использовать `data-series-strip` / `data-series-nav`.
+
+Перед изменением `series-cards.js` или `.gb-strip` обязательно прогнать `npm run interactive-audit`: он кликает strip dropdown на Gill + hard-texts series и проверяет, что URL не меняется, dropdown видим и закрывается по outside click.
 
 
 ### 9.10 John Gill image system — final editorial lock
