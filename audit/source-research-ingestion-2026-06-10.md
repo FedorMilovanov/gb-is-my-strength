@@ -454,3 +454,25 @@ Verification after Batch 015:
 - `node scripts/audit-pro.js` — PASS.
 - `npm run visual-audit` — PASS: 32 page/viewport, 96 screenshots, 0 console errors, 0 network errors, 0 unsuppressed visual bugs.
 - `git diff --check` — PASS.
+
+## 22. Batch 016 applied — Nagornaya/Gill public source-risk wording polish (2026-06-10)
+
+Applied:
+
+1. `nagornaya/chast-3/index.html`:
+   - softened Chou “new Sinai” paragraph: no longer says the point “destroys” dispensational postponement; now states that Matthew 5–7 is difficult to reduce to postponed millennial ethics while preserving systematic distinctions;
+   - replaced generic TMS archive link for Stephen J. Nichols, “The Dispensational View of the Davidic Kingdom,” with direct PDF `https://tms.edu/wp-content/uploads/2021/09/tmsj7h.pdf`.
+
+2. `articles/dzhon-gill-chast-2-uchenyi/index.html` and `articles/dzhon-gill-chast-3-nasledie/index.html`:
+   - polished Kennicott and mourning wording so public text does not sound like internal TODO language while still avoiding overclaim.
+
+3. `nagornaya/nakhodki/index.html`:
+   - reframed open research items as public-safe roadmap wording rather than raw “verify/check” notes.
+
+Verification after Batch 016:
+
+- `npm run validate:all` — PASS.
+- `npm run tokens:check` — PASS.
+- `node scripts/audit-pro.js` — PASS.
+- `npm run visual-audit` — PASS: 32 page/viewport, 96 screenshots, 0 console errors, 0 network errors, 0 unsuppressed visual bugs.
+- `git diff --check` — PASS.
