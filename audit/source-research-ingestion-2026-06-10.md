@@ -399,3 +399,21 @@ Verification after Batch 012:
 - `node scripts/audit-pro.js` — PASS.
 - `npm run visual-audit` — PASS: 32 page/viewport, 96 screenshots, 0 console errors, 0 network errors, 0 unsuppressed visual bugs.
 - `git diff --check` — PASS.
+
+
+## 19. Batch 013 applied — Gill remaining source precision (2026-06-10)
+
+Applied:
+
+1. `articles/dzhon-gill-chast-3-nasledie/index.html`:
+   - rewrote quiz item that used Spurgeon “not my Rabbi” as exact quote; now asks more generally about Spurgeon’s relation to Gill without unpinned direct quotation;
+   - upgraded Bunhill epitaph tooltip to direct Archive OCR link for J. A. Jones, `Bunhill Memorials` (1849);
+   - added `Bunhill Memorials` to Part III reading list as source for Gill’s Latin epitaph and translation.
+
+Verification after Batch 013:
+
+- `npm run validate:all` — PASS.
+- `npm run tokens:check` — PASS.
+- `node scripts/audit-pro.js` — PASS.
+- `npm run visual-audit` — PASS: 32 page/viewport, 96 screenshots, 0 console errors, 0 network errors, 0 unsuppressed visual bugs.
+- `git diff --check` — PASS.
