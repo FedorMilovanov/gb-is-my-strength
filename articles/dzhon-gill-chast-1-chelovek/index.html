@@ -67,112 +67,87 @@
  (function(){try{var t=localStorage.getItem('theme');if(t==='dark'||(!t&&window.matchMedia('(prefers-color-scheme: dark)').matches)){document.documentElement.classList.add('dark');}}catch(e){}})();
 </script>
 <!-- Shared styles -->
-<link href="../../css/site.css?v=529dcecb" rel="stylesheet"/>
+<link href="../../css/site.css?v=17b6223e" rel="stylesheet"/>
 <link href="../../css/command-palette.css?v=7dffba7c" rel="stylesheet"/>
 <link href="../../css/mobile-hotfix.css?v=a7abca8e" rel="stylesheet"/>
 <!-- Биографический стиль раздела «Биографии служителей» — уникальный для отдела, на токенах сайта -->
 <!-- Structured Data -->
 <script type="application/ld+json">{
-  "@context": "https://schema.org",
-  "@graph": [
-    {
-      "@type": "Organization",
-      "@id": "https://gospod-bog.ru/#organization",
-      "name": "Господь Бог — Сила Моя",
-      "url": "https://gospod-bog.ru/",
-      "logo": {
-        "@type": "ImageObject",
-        "url": "https://gospod-bog.ru/icons/icon-512.png",
-        "width": 512,
-        "height": 512
-      },
-      "sameAs": [
-        "https://t.me/fedormilovanov",
-        "https://vk.com/curtmf"
-      ]
-    },
-    {
-      "@type": "WebSite",
-      "@id": "https://gospod-bog.ru/#website",
-      "name": "Господь Бог — Сила Моя",
-      "url": "https://gospod-bog.ru/",
-      "inLanguage": "ru",
-      "publisher": {
-        "@id": "https://gospod-bog.ru/#organization"
-      }
-    },
-    {
-      "@type": "Article",
-      "@id": "https://gospod-bog.ru/articles/dzhon-gill-chast-1-chelovek/#article",
-      "headline": "Джон Гилл. Часть I: Человек и гигант библейского богословия",
-      "description": "Самостоятельно освоивший иврит без университетов. Девятитомный комментарий на всю Библию. Защитник Троицы против унитарианства. Патриарх баптистского богословия XVIII века. Биография по первичным источникам.",
-      "url": "https://gospod-bog.ru/articles/dzhon-gill-chast-1-chelovek/",
-      "datePublished": "2026-05-31T01:05:00+03:00",
-      "dateModified": "2026-06-10T00:00:00+03:00",
-      "inLanguage": "ru",
-      "author": {
-        "@id": "https://gospod-bog.ru/about/#person",
-        "@type": "Person",
-        "name": "Фёдор Милованов",
-        "url": "https://gospod-bog.ru/about/"
-      },
-      "publisher": {
-        "@id": "https://gospod-bog.ru/#organization"
-      },
-      "image": {
-        "@type": "ImageObject",
-        "url": "https://gospod-bog.ru/images/og-gill-authentic-study-cover.webp",
-        "contentUrl": "https://gospod-bog.ru/images/og-gill-authentic-study-cover.webp",
-        "width": 1200,
-        "height": 630
-      },
-      "mainEntityOfPage": {
-        "@type": "WebPage",
-        "@id": "https://gospod-bog.ru/articles/dzhon-gill-chast-1-chelovek/"
-      },
-      "articleSection": "Биографии служителей",
-      "keywords": "Джон Гилл, биография, тринитарное богословие, экзегеза, еврейский язык",
-      "speakable": {
-        "@type": "SpeakableSpecification",
-        "cssSelector": [
-          "h1",
-          ".article-lead",
-          ".summary-card",
-          "[data-speakable]"
-        ]
-      },
-      "isPartOf": {
-        "@type": "CreativeWorkSeries",
-        "@id": "https://gospod-bog.ru/biografii/#dzhon-gill",
-        "name": "Джон Гилл (1697–1771)",
-        "position": 2
-      }
-    },
-    {
-      "@type": "BreadcrumbList",
-      "@id": "https://gospod-bog.ru/articles/dzhon-gill-chast-1-chelovek/#breadcrumbs",
-      "itemListElement": [
-        {
-          "@type": "ListItem",
-          "position": 1,
-          "name": "Главная",
-          "item": "https://gospod-bog.ru/"
-        },
-        {
-          "@type": "ListItem",
-          "position": 2,
-          "name": "Биографии служителей",
-          "item": "https://gospod-bog.ru/biografii/"
-        },
-        {
-          "@type": "ListItem",
-          "position": 3,
-          "name": "Джон Гилл (1697–1771). Часть I: Человек — детство, призвание, семья",
-          "item": "https://gospod-bog.ru/articles/dzhon-gill-chast-1-chelovek/"
-        }
-      ]
-    }
-  ]
+ "@context": "https://schema.org",
+ "@graph": [
+ {
+ "@type": "Organization",
+ "@id": "https://gospod-bog.ru/#organization",
+ "name": "Господь Бог — Сила Моя",
+ "url": "https://gospod-bog.ru/",
+ "logo": {
+ "@type": "ImageObject",
+ "url": "https://gospod-bog.ru/icons/icon-512.png",
+ "width": 512,
+ "height": 512
+ },
+ "sameAs": [
+ "https://t.me/fedormilovanov",
+ "https://vk.com/curtmf"
+ ]
+ },
+ {
+ "@type": "WebSite",
+ "@id": "https://gospod-bog.ru/#website",
+ "name": "Господь Бог — Сила Моя",
+ "url": "https://gospod-bog.ru/",
+ "inLanguage": "ru",
+ "publisher": { "@id": "https://gospod-bog.ru/#organization" }
+ },
+ {
+ "@type": "Article",
+ "@id": "https://gospod-bog.ru/articles/dzhon-gill-chast-1-chelovek/#article",
+ "headline": "Джон Гилл. Часть I: Человек и гигант библейского богословия",
+ "description": "Самостоятельно освоивший иврит без университетов. Девятитомный комментарий на всю Библию. Защитник Троицы против унитарианства. Патриарх баптистского богословия XVIII века. Биография по первичным источникам.",
+ "url": "https://gospod-bog.ru/articles/dzhon-gill-chast-1-chelovek/",
+ "datePublished": "2026-05-31T01:05:00+03:00",
+ "dateModified": "2026-06-10T00:00:00+03:00",
+ "inLanguage": "ru",
+ "author": {
+ "@id": "https://gospod-bog.ru/about/#person",
+ "@type": "Person",
+ "name": "Фёдор Милованов",
+ "url": "https://gospod-bog.ru/about/"
+ },
+ "publisher": { "@id": "https://gospod-bog.ru/#organization" },
+ "image": {
+ "@type": "ImageObject",
+ "url": "https://gospod-bog.ru/images/og-gill-authentic-study-cover.webp",
+ "contentUrl": "https://gospod-bog.ru/images/og-gill-authentic-study-cover.webp",
+ "width": 1200,
+ "height": 630
+ },
+ "mainEntityOfPage": {
+ "@type": "WebPage",
+ "@id": "https://gospod-bog.ru/articles/dzhon-gill-chast-1-chelovek/"
+ },
+ "articleSection": "Биографии служителей",
+ "keywords": "Джон Гилл, биография, тринитарное богословие, экзегеза, еврейский язык",
+ "speakable": {
+   "@type": "SpeakableSpecification",
+   "cssSelector": [
+     "h1",
+     ".article-lead",
+     ".summary-card",
+     "[data-speakable]"
+   ]
+ }
+ },
+ {
+ "@type": "BreadcrumbList",
+ "@id": "https://gospod-bog.ru/articles/dzhon-gill-chast-1-chelovek/#breadcrumbs",
+ "itemListElement": [
+ { "@type": "ListItem", "position": 1, "name": "Главная", "item": "https://gospod-bog.ru/" },
+ { "@type": "ListItem", "position": 2, "name": "Биографии служителей", "item": "https://gospod-bog.ru/biografii/" },
+ { "@type": "ListItem", "position": 3, "name": "Джон Гилл (1697–1771). Часть I: Человек — детство, призвание, семья", "item": "https://gospod-bog.ru/articles/dzhon-gill-chast-1-chelovek/" }
+ ]
+ }
+ ]
 }</script>
 <script>
  window.SITE_CONFIG = {
@@ -333,10 +308,7 @@
  };
  </script>
 </head>
-<body class="gbs-world">
-<aside class="gbs-rail" data-series-rail="dzhon-gill"></aside>
-<header class="gbs-mhead" data-series-mobile-head="dzhon-gill"></header>
-
+<body>
 <a class="skip-link" href="#content">Перейти к содержанию</a>
 <div id="reading-progress"></div>
 <div aria-hidden="true" id="section-label"></div>
@@ -387,6 +359,9 @@
 <p class="reveal article-byline"><span class="article-byline__strong">Автор-редактор: Фёдор Милованов</span></p>
 </header>
 <article class="article-body">
+
+<aside data-series-strip="dzhon-gill" class="gb-strip"></aside>
+
 <section class="summary-card" aria-labelledby="summary-title-auto" data-speakable>
   <h2 id="summary-title-auto" class="summary-card__head">Коротко</h2>
   <ol class="summary-card__body" role="list">
@@ -908,9 +883,6 @@
 </aside>
 
 </article>
-
-<nav class="gbs-next" data-series-next="dzhon-gill" aria-label="Соседние части серии"></nav>
-<section class="gbs-timeline" data-series-timeline="dzhon-gill" aria-label="Карта серии"></section>
 </main>
 <aside aria-label="Обратная связь" class="gb-accuracy-block">
 <div class="gb-accuracy-inner">
@@ -1047,16 +1019,13 @@
 <script defer="" src="../../js/sw-register.js?v=8a077d35"></script>
 <script defer="" src="../../js/search.js?v=c6c57ddf"></script>
 <script defer="" src="../../js/highlights.js?v=a1706b06"></script>
-<script defer="" src="../../js/enhancements.js?v=f1fe365d"></script>
+<script defer="" src="../../js/enhancements.js?v=2fac7b1a"></script>
 <button aria-label="Наверх" id="back-to-top" type="button">
 <svg aria-hidden="true" fill="none" height="20" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" viewbox="0 0 24 24" width="20">
 <path d="M12 19V5M5 12l7-7 7 7"></path>
 </svg>
 </button>
 <!-- IntersectionObserver reveal handled by CSS scroll-driven animations + site.js -->
-<script defer src="../../js/series-cards.js?v=132bfdd0"></script>
-
-<div class="gbs-sheet" data-series-sheet="dzhon-gill"></div>
-<nav class="gbs-bbar" data-series-bbar="dzhon-gill" aria-label="Мобильная навигация серии"></nav>
+<script defer src="../../js/series-cards.js?v=10b00427"></script>
 </body>
 </html>
