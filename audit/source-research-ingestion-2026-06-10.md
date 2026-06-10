@@ -339,3 +339,27 @@ Verification after Batch 009:
 - `npm run tokens:check` — PASS.
 - `npm run visual-audit` — PASS: 32 page/viewport, 96 screenshots, 0 console errors, 0 network errors, 0 unsuppressed visual bugs.
 - `git diff --check` — PASS.
+
+## 16. Batch 010 applied — Nagornaya Part IV inerrancy/source nuance (2026-06-10)
+
+Applied:
+
+1. `nagornaya/chast-4/index.html`:
+   - removed unsupported summary claim that Matt 5–7 has high textual stability specifically “by early papyri”; replaced with source-safer wording about well-attested Gospel tradition and variants not destroying meaning/theology;
+   - softened “Jesus preached in Aramaic” to “Jesus likely often taught in Aramaic; Greek is also possible in some contexts”;
+   - replaced “supernatural translation” wording with organic inspiration language: Spirit used ordinary memory/translation/transmission processes to give true Greek Gospel witness;
+   - corrected MacArthur title from “Inspiration under attack” to “Inerrancy under attack” wording;
+   - changed GTY #2222 quote from unpinned direct quotation to paraphrase about Jesus teaching with authority;
+   - rewrote Papias/logia paragraph: important evidence for Matthean tradition, not a simple disproof of Q or automatic identity with canonical Greek Matthew;
+   - softened Chrysostom line: differences support living multiple witness but are not mathematical proof against every literary-dependence model;
+   - softened Ehrman paragraph: removed “psychological sophism,” “invented stenography standard,” and “radical flip” rhetoric;
+   - softened “if Gospels err then Christ erred” line into a careful confessional claim about canonical witness and John 14:26;
+   - removed overclaim that differences “prove historical independence.”
+
+Verification after Batch 010:
+
+- `npm run validate:all` — PASS.
+- `npm run tokens:check` — PASS.
+- `node scripts/audit-pro.js` — PASS.
+- `npm run visual-audit` — PASS: 32 page/viewport, 96 screenshots, 0 console errors, 0 network errors, 0 unsuppressed visual bugs.
+- `git diff --check` — PASS.
