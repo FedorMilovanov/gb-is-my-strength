@@ -5,6 +5,28 @@
 
 ---
 
+## v61 — Search keyboard shortcuts hardening (2026-06-10)
+
+### What was improved:
+- Fixed command palette keyboard shortcut: `Ctrl/⌘+K` is now case-insensitive (`String(e.key).toLowerCase() === 'k'`), so Chromium/Playwright `key="K"` no longer breaks opening.
+- Preserved native browser search: `Ctrl/⌘+F` is not prevented and does not open the command palette.
+- Changed Escape behavior inside command palette input to close the palette consistently, matching the footer hint “esc закрыть”.
+- Extended `interactive-audit.js` with search checks across home, article, hard-texts article and Nagornaya page:
+  - `Ctrl+F` not defaultPrevented and palette remains closed;
+  - `Ctrl+K` opens palette and focuses input;
+  - query `Гилл` renders results;
+  - `Escape` closes.
+- Added `audit-pro.js` G112 static guard for the keyboard-search contract.
+- Updated AGENTS/README with the search shortcut rule.
+
+### Verified:
+- `npm run interactive-audit` → ✅ PASS (`search: 4`).
+- `npm run validate:all` → ✅ PASS.
+- `npm run tokens:check` → ✅ PASS.
+- `node scripts/audit-pro.js` → ✅ PASS.
+
+---
+
 ## v60 — Meta hygiene guards: article author + 404 social/canonical (2026-06-10)
 
 ### What was improved:

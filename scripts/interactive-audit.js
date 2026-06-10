@@ -45,9 +45,15 @@ const THEME_URLS = [
   '/nagornaya/',
   '/nagornaya/chast-1/',
 ];
+const SEARCH_URLS = [
+  '/',
+  '/articles/dzhon-gill-chast-1-chelovek/',
+  '/articles/krajne-li-isporcheno-serdce/',
+  '/nagornaya/chast-1/',
+];
 
 const issues = [];
-const stats = { pages: 0, series: 0, quizzes: 0, glossary: 0, theme: 0 };
+const stats = { pages: 0, series: 0, quizzes: 0, glossary: 0, theme: 0, search: 0 };
 
 function isNoise(text) {
   return /Content Security Policy directive.*https:\/\/gospod-bog\.ru\/(?:favicon|apple-touch-icon|icons|images)|favicon\.ico|mc\.yandex/i.test(text);
@@ -218,6 +224,53 @@ async function checkMobileTheme(browser) {
   }
 }
 
+async function checkSearchShortcuts(browser) {
+  for (const url of SEARCH_URLS) {
+    const page = await openPage(browser, url, { width: 1200, height: 800 });
+    await page.evaluate(() => {
+      window.__gbKeyAudit = [];
+      document.addEventListener('keydown', e => {
+        if ((e.ctrlKey || e.metaKey) && (String(e.key).toLowerCase() === 'f' || String(e.key).toLowerCase() === 'k')) {
+          window.__gbKeyAudit.push({ key: e.key, ctrl: e.ctrlKey, meta: e.metaKey, defaultPrevented: e.defaultPrevented, phase: 'late-bubble' });
+        }
+      }, false);
+    });
+    await page.keyboard.press('Control+F');
+    await page.waitForTimeout(250);
+    const ctrlF = await page.evaluate(() => ({
+      events: window.__gbKeyAudit || [],
+      cpOpen: !!document.querySelector('.cp-backdrop.is-open'),
+      activeTag: document.activeElement && document.activeElement.tagName,
+    }));
+    const fEvent = ctrlF.events.find(e => String(e.key).toLowerCase() === 'f' && e.ctrl);
+    if (!fEvent) push('ctrl-f-not-observed', url, ctrlF);
+    else if (fEvent.defaultPrevented || ctrlF.cpOpen) push('ctrl-f-hijacked', url, ctrlF);
+    await page.keyboard.press('Escape');
+    await page.waitForTimeout(150);
+    await page.keyboard.press('Control+K');
+    await page.waitForTimeout(450);
+    const ctrlK = await page.evaluate(() => ({
+      cpOpen: !!document.querySelector('.cp-backdrop.is-open'),
+      inputFocused: document.activeElement && document.activeElement.classList && document.activeElement.classList.contains('cp-input'),
+      activeTag: document.activeElement && document.activeElement.tagName,
+      activeClass: document.activeElement && document.activeElement.className,
+    }));
+    if (!ctrlK.cpOpen || !ctrlK.inputFocused) push('ctrl-k-command-palette-not-open', url, ctrlK);
+    if (ctrlK.cpOpen) {
+      await page.keyboard.type('Гилл');
+      await page.waitForTimeout(450);
+      const results = await page.evaluate(() => ({ items: document.querySelectorAll('.cp-item').length, empty: !!document.querySelector('.cp-empty') }));
+      if (results.items < 1) push('command-palette-no-results-for-gill', url, results);
+      await page.keyboard.press('Escape');
+      await page.waitForTimeout(150);
+      const closed = await page.evaluate(() => !document.querySelector('.cp-backdrop.is-open'));
+      if (!closed) push('command-palette-escape-did-not-close', url, null);
+    }
+    stats.search++;
+    await page.close();
+  }
+}
+
 (async () => {
   const browser = await chromium.launch({ headless: true, args: ['--no-sandbox', '--disable-gpu', '--disable-dev-shm-usage'] });
   try {
@@ -225,11 +278,12 @@ async function checkMobileTheme(browser) {
     await checkQuiz(browser);
     await checkGlossary(browser);
     await checkMobileTheme(browser);
+    await checkSearchShortcuts(browser);
   } finally {
     await browser.close();
   }
   console.log('\nGB INTERACTIVE AUDIT');
-  console.log(`Pages: ${stats.pages} · series: ${stats.series} · quizzes: ${stats.quizzes} · glossary: ${stats.glossary} · theme: ${stats.theme}`);
+  console.log(`Pages: ${stats.pages} · series: ${stats.series} · quizzes: ${stats.quizzes} · glossary: ${stats.glossary} · theme: ${stats.theme} · search: ${stats.search}`);
   if (issues.length) {
     console.log(`❌ ${issues.length} issue(s):`);
     issues.forEach(i => console.log(`- ${i.kind} ${i.url}: ${JSON.stringify(i.detail)}`));
