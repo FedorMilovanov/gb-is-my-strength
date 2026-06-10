@@ -150,3 +150,30 @@ Verification after Batch 001:
 - `node scripts/audit-pro.js` — PASS: `142 passed / 0 warnings / 0 errors / 9 info`.
 - `npm run visual-audit` — PASS: 32 page/viewport, 96 screenshots, 0 console errors, 0 network errors, 0 unsuppressed visual bugs.
 - `git diff --check` — PASS.
+
+## 8. Batch 002 applied — Gill historical-context source tightening (2026-06-10)
+
+Applied:
+
+1. `articles/dzhon-gill-istoricheskiy-kontekst/index.html`:
+   - corrected Clarendon Code classification: strict Clarendon Code = four acts 1661–1665; Test Act 1673 is now framed as a later religious test, not a fifth Clarendon-Code act;
+   - updated Clarendon image figcaption to match the actual image with four scrolls and the legal distinction;
+   - tightened legal table wording: Corporation Act, Act of Uniformity, Conventicle Act, Five Mile Act, Test Act;
+   - replaced Russian “каторга” wording for Conventicle Act with the more source-faithful transportation/exile language;
+   - rewrote Dissenting Academies paragraph to avoid the Morton/Defoe/Watts conflation flagged by QMUL;
+   - removed unsupported academy-cost / Edward Gill affordability claim and grounded the education paragraph in Rippon’s grammar-school/funds evidence;
+   - corrected Particular Baptist Fund / Bristol Academy genealogy: PBF is no longer presented as the source from which Bristol Academy grew;
+   - softened Salters’ Hall attendance from “about 150” to “more than 100” with the decisive 53/57 vote;
+   - added subscription nuance: non-subscription was not identical to anti-Trinitarianism;
+   - replaced the unsupported “Bible, Bible alone...” eyewitness-shout with the cautious “The Bible carried it by four” tradition;
+   - removed the unsupported Southwark “2 million gallons” statistic and Hogarth topographical identification;
+   - removed unsupported “direct line of sight” Kennington claim;
+   - expanded reading list with direct legal/QMUL/BHO sources.
+
+Verification after Batch 002:
+
+- `npm run tokens:check` — PASS.
+- `npm run validate:all` — PASS.
+- `node scripts/audit-pro.js` — PASS: `142 passed / 0 warnings / 0 errors / 9 info`.
+- `npm run visual-audit` — PASS: 32 page/viewport, 96 screenshots, 0 console errors, 0 network errors, 0 unsuppressed visual bugs.
+- `git diff --check` — PASS.
