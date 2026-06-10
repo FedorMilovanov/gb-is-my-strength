@@ -476,3 +476,21 @@ Verification after Batch 016:
 - `node scripts/audit-pro.js` — PASS.
 - `npm run visual-audit` — PASS: 32 page/viewport, 96 screenshots, 0 console errors, 0 network errors, 0 unsuppressed visual bugs.
 - `git diff --check` — PASS.
+
+## 23. Batch 017 applied — Da Vinci commercial-stat source sync (2026-06-10)
+
+Applied:
+
+1. `articles/kod-da-vinchi/index.html`:
+   - changed exact “44 languages” intro wording to source-safer “more than 40 languages”;
+   - expanded source-list item 1 with commercial-stat sources: Penguin Random House (>85M), Britannica (>80M by 2009 / about 40 languages), Christian Science Monitor (publisher claim: 14 consecutive NYT #1 weeks), Box Office Mojo (~$760M worldwide box office);
+   - kept CNN transcript as the primary source for Brown’s “99 percent” interview claim;
+   - Today Show “Absolutely all of it” remains explicitly marked as requiring manual video transcription before being used as standalone primary quotation.
+
+Verification after Batch 017:
+
+- `npm run validate:all` — PASS.
+- `npm run tokens:check` — PASS.
+- `node scripts/audit-pro.js` — PASS.
+- `npm run visual-audit` — PASS after reinstalling Playwright browser/deps in fresh clone: 32 page/viewport, 96 screenshots, 0 console errors, 0 network errors, 0 unsuppressed visual bugs.
+- `git diff --check` — PASS.
