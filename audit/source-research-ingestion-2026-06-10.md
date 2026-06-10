@@ -293,3 +293,23 @@ Verification after Batch 007:
 - `node scripts/audit-pro.js` — PASS: `142 passed / 0 warnings / 0 errors / 9 info`.
 - `npm run visual-audit` — PASS: 32 page/viewport, 96 screenshots, 0 console errors, 0 network errors, 0 unsuppressed visual bugs.
 - `git diff --check` — PASS.
+
+## 14. Batch 008 applied — Nagornaya Part V Lordship/Free-Grace nuance (2026-06-10)
+
+Applied:
+
+1. `nagornaya/chast-5/index.html`:
+   - corrected `Free Grace`: no longer presented as neutral translation “дешёвая благодать”; now identified as the movement’s self-designation, with “cheap/antinomian grace” framed as opponents’ critique;
+   - replaced overclaim “supported by all leading conservative theologians” with “supported by a number of known Reformed/evangelical theologians”;
+   - rewrote the Stott/Chantry/Tozer/Boice paragraph as a cautious overview instead of unverified long quotation chain;
+   - rewrote Hodges/Ryrie/Hutson paragraph as fair summary of Free Grace objections without exact page/quote claims pending source-page verification;
+   - changed “дешёвая благодать” in the Matthew 7 warning section to source-safer “исповедание без послушания”;
+   - corrected Walter Chantry framing: modern Reformed Baptist author in Puritan tradition, not historically “a Puritan theologian.”
+
+Verification after Batch 008:
+
+- `npm run validate:all` — PASS.
+- `npm run tokens:check` — PASS.
+- `node scripts/audit-pro.js` — PASS: `142 passed / 0 warnings / 0 errors / 9 info`.
+- `npm run visual-audit` — PASS: 32 page/viewport, 96 screenshots, 0 console errors, 0 network errors, 0 unsuppressed visual bugs.
+- `git diff --check` — PASS.
