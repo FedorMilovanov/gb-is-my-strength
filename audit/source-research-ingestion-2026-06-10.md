@@ -195,3 +195,28 @@ Verification after Batch 003:
 - `node scripts/audit-pro.js` — PASS: `142 passed / 0 warnings / 0 errors / 9 info`.
 - `npm run visual-audit` — PASS: 32 page/viewport, 96 screenshots, 0 console errors, 0 network errors, 0 unsuppressed visual bugs.
 - `git diff --check` — PASS.
+
+## 10. Batch 004 applied — Da Vinci source-list rebuild (2026-06-10)
+
+Applied:
+
+1. `articles/kod-da-vinchi/index.html` sources block:
+   - rebuilt all 24 source-list entries from rough bibliography into URL/locus-aware source apparatus;
+   - added direct CNN transcript for Dan Brown’s “99 percent” claim;
+   - preserved Today Show “Absolutely all of it” only as requiring manual video transcription, not as a freestanding exact primary transcript;
+   - added 5RB High Court and Court of Appeal PDFs for `Baigent & Leigh v Random House`;
+   - added NASSCAL for Gospel of Philip;
+   - corrected Origen locus from `III.55` to `II.55`;
+   - added Vatican Press Office / PDF sources for Mary Magdalene 2016;
+   - added direct New Advent / CCEL / Early Church Texts sources for Nicaea, Justin, Irenaeus, Athanasius, Tertullian;
+   - added Commons source links for Muratorian Fragment, Great Isaiah Scroll, Codex II Nag Hammadi image;
+   - replaced weak Prieuré de Sion source notes with Journal Officiel IA scan and BnF notices for Dossiers/Plantard/de Chérisey;
+   - kept popular/apologetic works as secondary/recommended, not primary basis for strong claims.
+
+Verification after Batch 004:
+
+- `npm run validate:all` — PASS.
+- `npm run tokens:check` — PASS.
+- `node scripts/audit-pro.js` — first caught mixed-content `http://arthistoryresources.net`; fixed to `https://...`; rerun PASS: `142 passed / 0 warnings / 0 errors / 9 info`.
+- `npm run visual-audit` — PASS: 32 page/viewport, 96 screenshots, 0 console errors, 0 network errors, 0 unsuppressed visual bugs.
+- `git diff --check` — PASS.
