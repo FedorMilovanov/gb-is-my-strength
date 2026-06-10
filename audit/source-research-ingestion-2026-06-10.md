@@ -239,3 +239,35 @@ Verification after Batch 005:
 - `node scripts/audit-pro.js` — PASS: `142 passed / 0 warnings / 0 errors / 9 info`.
 - `npm run visual-audit` — PASS: 32 page/viewport, 96 screenshots, 0 console errors, 0 network errors, 0 unsuppressed visual bugs.
 - `git diff --check` — PASS.
+
+## 12. Batch 006 applied — Gill Part II/III source-risk tightening (2026-06-10)
+
+Applied:
+
+1. `articles/dzhon-gill-chast-2-uchenyi/index.html`:
+   - corrected commentary timeline label to `1746–1766`;
+   - softened summary claim from overbroad “first English whole-Bible commentary” to source-safe “first complete verse-by-verse whole-Bible commentary by a Baptist theologian”;
+   - replaced blended G3/Spurgeon rabbinic quote with an attributed Spurgeon `Commenting and Commentaries` summary;
+   - softened Kennicott assistance claim until exact source/locus is pinned;
+   - softened `Body of Divinity` claim to “one of the first and most complete Baptist systems” rather than an overabsolute firstness claim;
+   - removed inflated Rippon-style Lord’s Supper quotation and replaced it with a sober pastoral paragraph;
+   - upgraded Spurgeon source link from BibleOutlines to direct CCEL `Commenting and Commentaries`.
+
+2. `articles/dzhon-gill-chast-3-nasledie/index.html`:
+   - softened America/Brown/Manning claims; removed unsourced exact donation/degree certainty;
+   - removed high-risk “52 folio volumes” premium quote block until Brown/Manning archival source is pinned;
+   - softened Fuller/Carey/BMS causation claim: next generation read and contested Gill within Baptist Calvinist soil rather than simply continuing him;
+   - grounded death paragraph in Rippon’s verified date/place/age rather than literary embellishment;
+   - softened Bunhill/Pantycelyn paragraph: kept Bunhill epitaph broadly, marked Pantycelyn deathbed tradition as requiring primary source;
+   - removed unsupported Rippon superlative mourning quote and replaced it with cautious wording;
+   - removed unsupported “John Gill Project 2023–2025” claim; replaced with concrete modern reassessment via SBJT/Rathel/Green/Mesa/Macritchie;
+   - upgraded Spurgeon reading-list link from BibleOutlines to direct CCEL;
+   - softened transatlantic map caption.
+
+Verification after Batch 006:
+
+- `npm run validate:all` — PASS.
+- `npm run tokens:check` — PASS.
+- `node scripts/audit-pro.js` — PASS: `142 passed / 0 warnings / 0 errors / 9 info`.
+- `npm run visual-audit` — PASS: 32 page/viewport, 96 screenshots, 0 console errors, 0 network errors, 0 unsuppressed visual bugs.
+- `git diff --check` — PASS.
