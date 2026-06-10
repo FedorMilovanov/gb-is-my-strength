@@ -37,9 +37,17 @@ const GLOSSARY_URLS = [
   '/articles/dzhon-gill-chast-1-chelovek/',
   '/articles/krajne-li-isporcheno-serdce/',
 ];
+const THEME_URLS = [
+  '/',
+  '/articles/dzhon-gill-chast-1-chelovek/',
+  '/articles/hermenevticheskaya-otsenka-hristotsentrichnoy-germenevtiki/',
+  '/articles/krajne-li-isporcheno-serdce/',
+  '/nagornaya/',
+  '/nagornaya/chast-1/',
+];
 
 const issues = [];
-const stats = { pages: 0, series: 0, quizzes: 0, glossary: 0 };
+const stats = { pages: 0, series: 0, quizzes: 0, glossary: 0, theme: 0 };
 
 function isNoise(text) {
   return /Content Security Policy directive.*https:\/\/gospod-bog\.ru\/(?:favicon|apple-touch-icon|icons|images)|favicon\.ico|mc\.yandex/i.test(text);
@@ -159,17 +167,69 @@ async function checkGlossary(browser) {
   }
 }
 
+async function visibleThemeHandle(page) {
+  return await page.evaluateHandle(() => {
+    const selectors = ['.gb-fc-theme', '#barThemeBtn', '#themeToggle', '.theme-toggle', '.nag-sidebar-theme-btn'];
+    function visible(el) {
+      const cs = getComputedStyle(el);
+      const r = el.getBoundingClientRect();
+      return cs.display !== 'none' && cs.visibility !== 'hidden' && Number(cs.opacity) !== 0 &&
+        r.width >= 20 && r.height >= 20 && r.bottom >= 0 && r.right >= 0 && r.top <= innerHeight && r.left <= innerWidth;
+    }
+    for (const sel of selectors) {
+      for (const el of document.querySelectorAll(sel)) {
+        if (visible(el)) return el;
+      }
+    }
+    return null;
+  });
+}
+
+async function checkMobileTheme(browser) {
+  for (const url of THEME_URLS) {
+    const page = await browser.newPage({ viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true });
+    page.on('console', msg => { if (msg.type() === 'error' && !isNoise(msg.text())) push('mobile-theme-console-error', url, msg.text()); });
+    page.on('pageerror', err => push('mobile-theme-page-error', url, err.message));
+    const resp = await page.goto(BASE + url, { waitUntil: 'domcontentloaded', timeout: 30000 });
+    await page.waitForTimeout(900);
+    stats.pages++;
+    if (!resp || !resp.ok()) push('mobile-theme-page-status', url, resp ? resp.status() : 'null response');
+    const enabled = await page.evaluate(() => !(window.SITE_CONFIG && window.SITE_CONFIG.features && window.SITE_CONFIG.features.themeToggle && window.SITE_CONFIG.features.themeToggle.enabled === false));
+    if (!enabled) { await page.close(); continue; }
+    await page.evaluate(() => { try { localStorage.setItem('theme', 'light'); } catch (_) {} document.documentElement.classList.remove('dark'); });
+    const handle = await visibleThemeHandle(page);
+    const el = handle.asElement();
+    if (!el) {
+      push('mobile-theme-control-not-visible', url, 'theme enabled but no visible control');
+      await page.close();
+      continue;
+    }
+    const before = await page.evaluate(() => document.documentElement.classList.contains('dark'));
+    await el.click({ timeout: 5000 });
+    await page.waitForTimeout(250);
+    const after = await page.evaluate(() => document.documentElement.classList.contains('dark'));
+    if (after === before) push('mobile-theme-click-did-not-toggle', url, { before, after });
+    await page.reload({ waitUntil: 'domcontentloaded' });
+    await page.waitForTimeout(300);
+    const persisted = await page.evaluate(() => document.documentElement.classList.contains('dark'));
+    if (persisted !== after) push('mobile-theme-not-persisted', url, { after, persisted });
+    stats.theme++;
+    await page.close();
+  }
+}
+
 (async () => {
   const browser = await chromium.launch({ headless: true, args: ['--no-sandbox', '--disable-gpu', '--disable-dev-shm-usage'] });
   try {
     await checkSeries(browser);
     await checkQuiz(browser);
     await checkGlossary(browser);
+    await checkMobileTheme(browser);
   } finally {
     await browser.close();
   }
   console.log('\nGB INTERACTIVE AUDIT');
-  console.log(`Pages: ${stats.pages} · series: ${stats.series} · quizzes: ${stats.quizzes} · glossary: ${stats.glossary}`);
+  console.log(`Pages: ${stats.pages} · series: ${stats.series} · quizzes: ${stats.quizzes} · glossary: ${stats.glossary} · theme: ${stats.theme}`);
   if (issues.length) {
     console.log(`❌ ${issues.length} issue(s):`);
     issues.forEach(i => console.log(`- ${i.kind} ${i.url}: ${JSON.stringify(i.detail)}`));
