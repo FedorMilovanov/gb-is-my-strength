@@ -220,3 +220,22 @@ Verification after Batch 004:
 - `node scripts/audit-pro.js` — first caught mixed-content `http://arthistoryresources.net`; fixed to `https://...`; rerun PASS: `142 passed / 0 warnings / 0 errors / 9 info`.
 - `npm run visual-audit` — PASS: 32 page/viewport, 96 screenshots, 0 console errors, 0 network errors, 0 unsuppressed visual bugs.
 - `git diff --check` — PASS.
+
+## 11. Batch 005 applied — Krajne high-risk attribution tightening (2026-06-10)
+
+Applied:
+
+1. `articles/krajne-li-isporcheno-serdce/index.html`:
+   - corrected Piper `Is the Christian's Heart Deceitfully Wicked?` source date from 2014 to 2020;
+   - removed unverified Beeke personal quotation/attribution and replaced it with a source-grounded Owen-style mortification paragraph;
+   - removed unverified Washer personal quotation/attribution and rewrote it as a general pastoral conclusion without quotation marks;
+   - softened Bavinck identity language in both body and quiz: no longer says residual sin is simply “not part of identity” without qualification; now distinguishes renewed “I” from remaining corruption while affirming that sin still remains in the same person;
+   - resolved Bavinck source-list inconsistency by listing `Reformed Dogmatics`, vols. 3–4, as broader theological frame rather than exact unsupported quotation source.
+
+Verification after Batch 005:
+
+- `npm run validate:all` — PASS.
+- `npm run tokens:check` — PASS.
+- `node scripts/audit-pro.js` — PASS: `142 passed / 0 warnings / 0 errors / 9 info`.
+- `npm run visual-audit` — PASS: 32 page/viewport, 96 screenshots, 0 console errors, 0 network errors, 0 unsuppressed visual bugs.
+- `git diff --check` — PASS.
