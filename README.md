@@ -549,6 +549,9 @@ npm run editorial:lint
 # Data consistency: reading time in HTML / search-manifest / series.json
 npm run data:consistency
 
+# External source links (network audit; 403/429/timeouts are warnings, 404/TLS/bad hosts are errors)
+npm run source:links
+
 # Publication gate после крупных контентных правок
 # (validate + tokens + audit-pro + readable + data consistency + interactive; interactive требует локальный сервер)
 AUDIT_BASE=http://127.0.0.1:8080 npm run validate:publication
