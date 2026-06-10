@@ -49,64 +49,37 @@
         "slug": "dzhon-gill-istoricheskiy-kontekst",
         "title": "Исторический контекст",
         "status": "published",
-        "readingTime": 16,
-        "sub": "Англия XVIII века",
-        "cover": "/images/og-dzhon-gill-istoricheskiy-kontekst-600w.webp",
-        "era": "1697–1719",
-        "roman": "I"
+        "readingTime": 16
       },
       {
         "n": 2,
         "slug": "dzhon-gill-chast-1-chelovek",
         "title": "Часть I. Человек",
         "status": "published",
-        "readingTime": 28,
-        "sub": "Кеттеринг → Лондон",
-        "cover": "/images/gill-authentic-study-cover-600w.webp",
-        "era": "1719–1729",
-        "roman": "II"
+        "readingTime": 28
       },
       {
         "n": 3,
         "slug": "dzhon-gill-chast-2-uchenyi",
         "title": "Часть II. Учёный",
         "status": "published",
-        "readingTime": 12,
-        "sub": "Экзегеза и Троица",
-        "cover": "/images/og-dzhon-gill-chast-2-uchenyi-600w.webp",
-        "era": "1729–1748",
-        "roman": "III"
+        "readingTime": 12
       },
       {
         "n": 4,
         "slug": "dzhon-gill-chast-3-nasledie",
         "title": "Часть III. Наследие",
         "status": "published",
-        "readingTime": 22,
-        "sub": "Сперджен и кафедра",
-        "cover": "/images/og-dzhon-gill-chast-3-nasledie-600w.webp",
-        "era": "1748–1771",
-        "roman": "IV"
+        "readingTime": 22
       },
       {
         "n": 5,
         "slug": "dzhon-gill-spravochnik",
         "title": "Справочник по Гиллу",
         "status": "published",
-        "readingTime": 11,
-        "sub": "Карта всех трудов",
-        "cover": "/images/gill-five-volumes-shelf-600w.webp",
-        "era": "Наследие",
-        "roman": "V"
+        "readingTime": 11
       }
-    ],
-    "category": "Биографии",
-    "categoryUrl": "/biografii/",
-    "accent": "#7a2e2e",
-    "accent2": "#b85c3e",
-    "accentDark": "#d4a574",
-    "accentDark2": "#e8b878",
-    "timelineLabel": "1697 → 1771"
+    ]
   },
   "pastor-series": {
     "title": "Тёмная сторона кафедры",
@@ -117,20 +90,9 @@
         "slug": "20-antisovetov-pastoru",
         "title": "20 антисоветов пастору",
         "status": "published",
-        "readingTime": 67,
-        "sub": "Диагностика власти",
-        "cover": "/images/pastor-series/og-hero-600w.webp",
-        "era": "Практика",
-        "roman": "I"
+        "readingTime": 67
       }
-    ],
-    "category": "Пастырство",
-    "categoryUrl": "/pastor-series/",
-    "accent": "#7a2e2e",
-    "accent2": "#b85c3e",
-    "accentDark": "#d4a574",
-    "accentDark2": "#e8b878",
-    "timelineLabel": "Служение"
+    ]
   },
   "hard-texts": {
     "title": "Тайны человеческого сердца",
@@ -141,39 +103,21 @@
         "slug": "krajne-li-isporcheno-serdce",
         "title": "Крайне ли испорчено сердце верующего?",
         "status": "published",
-        "readingTime": 41,
-        "sub": "Иеремия 17:9",
-        "era": "Диагноз",
-        "roman": "I",
-        "cover": "/images/og-krajne-isporcheno-600w.webp"
+        "readingTime": 41
       },
       {
         "n": 2,
         "slug": "rimlyanam-7-veruyushchiy-ili-neveruyushchiy",
         "title": "Римлянам 7: верующий, неверующий или человек под законом?",
         "status": "published",
-        "readingTime": 18,
-        "sub": "Римлянам 7",
-        "era": "Борьба",
-        "roman": "II",
-        "cover": "/images/og-rimlyanam-7-600w.webp"
+        "readingTime": 18
       },
       {
         "n": 3,
         "slug": "zakon-duha-zhizni-rimlyanam-8",
         "title": "Закон духа жизни: Римлянам 8",
-        "status": "planned",
-        "sub": "Римлянам 8",
-        "era": "Освобождение",
-        "roman": "III"
+        "status": "planned"
       }
-    ],
-    "category": "Трудные тексты",
-    "categoryUrl": "/hard-texts/",
-    "accent": "#5b3a8a",
-    "accent2": "#8b6fc0",
-    "accentDark": "#c7b5ff",
-    "accentDark2": "#e1d7ff",
-    "timelineLabel": "Иер. 17 → Рим. 8"
+    ]
   }
 }
