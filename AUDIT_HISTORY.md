@@ -5,6 +5,26 @@
 
 ---
 
+## v55 — Hermeneutics source-tooltip DOM repair (2026-06-10)
+
+### What was improved:
+- Repaired the Chou / hermeneutics article source-tooltip DOM corruption: 62 nested `.fn-marker` / `.tooltip` chains were flattened.
+- Restored swallowed main text from source tooltips back into visible article prose, including the opening “meaning/significance” definitions and later footnote-heavy sections.
+- Strengthened `audit-pro.js` G104 from a fragile regex into a lightweight span-stack parser that catches:
+  - `.tooltip .fn-marker`,
+  - `.tooltip .tooltip`,
+  - `.fn-marker .fn-marker`.
+- Updated `AGENTS.md` to lock the flat source-tooltip DOM rule.
+
+### Verified:
+- Static DOM check → ✅ `.tooltip .fn-marker = 0`, `.tooltip .tooltip = 0`, `.fn-marker .fn-marker = 0`.
+- Playwright probe on hermeneutics → ✅ 116 footnotes, 0 nested tooltip nodes, visible body text restored, sampled source tooltips open with non-zero dimensions.
+- `npm run validate:all` → ✅ PASS.
+- `npm run tokens:check` → ✅ PASS.
+- `node scripts/audit-pro.js` → ✅ PASS (**147 passed / 0 warnings / 0 errors**).
+
+---
+
 ## v54 — Glossary tooltip stability + summary-card cleanup guard (2026-06-10)
 
 ### What was improved:
