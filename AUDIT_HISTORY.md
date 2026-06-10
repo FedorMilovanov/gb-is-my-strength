@@ -5,6 +5,29 @@
 
 ---
 
+## v53 — Primary-source marathon: Da Vinci / Gill / Krajne / Nagornaya + probe guards (2026-06-10)
+
+### What was improved:
+- Ingested and audited the external `MASTER-SOURCE-RESEARCH-2026-06-08` gist corpus (`pass-001` through `pass-027`, ~10k lines) as the working map for source hardening.
+- Applied a sequence of small verified source-fix batches:
+  - Da Vinci Code: source apparatus rebuilt; CNN transcript used as the primary proof for Brown’s “99 percent” claim; Today Show “Absolutely all of it” removed as public proof until manual video transcription; BAS Nag Hammadi hotlink replaced; image captions tightened; commercial stats tied to PRH/Britannica/CSMonitor/BoxOfficeMojo.
+  - John Gill: Goat Yard Declaration table fixed; Toon Wayback links canonicalized; Clarendon/Test Acts corrected; Dissenting Academies/Morton/Watts issue fixed; Salters’ Hall wording nuanced; America/Carey/Brown/Manning/Bunhill/Spurgeon claims softened or sourced.
+  - Krajne: Piper date fixed; Beeke/Washer unpinned quotations removed; Berkhof exact-quote overclaim replaced with CCEL-supported paraphrase; Murray page claims softened pending edition-level verification; Bavinck identity language nuanced.
+  - Nagornaya: Q/Papias/Chicago/ipsissima vox overclaims softened; Free Grace/Lordship wording corrected; Part IV inerrancy rhetoric and Aramaic/Greek claims nuanced; generic TMS archive links replaced by direct PDFs.
+- Fixed owner-reported source/link bugs:
+  - replaced SSL-bad `arthistoryresources.net` Gregory Homily 33 link with a stable Roger Pearse page pointing to Homily 33 / PL 76 locus and noting sermon ≠ decree;
+  - corrected broken Gill Part I sentence around Corporation Act / Test Acts / civil disabilities.
+- Added `audit/source-research-ingestion-2026-06-10.md` as the working source-marathon ledger.
+- Added audit-pro guards:
+  - `G104 nestedSourceTooltipGuard` — blocks `.fn-marker` nested inside `.tooltip` source apparatus;
+  - `G105 knownBadExternalSourceHostGuard` — blocks known SSL/browser-bad source hosts such as `arthistoryresources.net`.
+
+### Verified:
+- `npm run validate:all` → ✅ PASS.
+- `npm run tokens:check` → ✅ PASS.
+- `node scripts/audit-pro.js` → ✅ PASS (**145 passed / 0 warnings / 0 errors / 8 info**).
+- `npm run visual-audit` → ✅ PASS (**32 page/viewport runs, 96 screenshots, 0 console errors, 0 network errors, 0 unsuppressed visual bugs**).
+
 ## v52 — John Gill UI polish pass: remove trilogy context-bridge + ordinary summary-card upgrade (2026-06-10)
 
 ### What was improved:
