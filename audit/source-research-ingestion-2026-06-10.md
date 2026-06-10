@@ -494,3 +494,22 @@ Verification after Batch 017:
 - `node scripts/audit-pro.js` — PASS.
 - `npm run visual-audit` — PASS after reinstalling Playwright browser/deps in fresh clone: 32 page/viewport, 96 screenshots, 0 console errors, 0 network errors, 0 unsuppressed visual bugs.
 - `git diff --check` — PASS.
+
+## 24. Batch 018 applied — Da Vinci interview/stat proof boundary (2026-06-10)
+
+Applied:
+
+1. `articles/kod-da-vinchi/index.html`:
+   - commercial intro now uses source-safe “more than 40 languages” rather than exact 44;
+   - source-list item 1 now cites Penguin Random House / Britannica / Christian Science Monitor / Box Office Mojo for scale claims;
+   - public proof for Brown’s historical-accuracy claim now rests only on verified CNN Sunday Morning transcript (25 May 2003, “99 percent”);
+   - Today Show “Absolutely all of it” is no longer used as a public proof claim; archived video was downloaded from Wayback, but without manual transcription it remains research material only.
+
+Verification after Batch 018:
+
+- Wayback `.mov` exists and downloads, but no transcript was asserted without listening/transcribing.
+- `npm run validate:all` — PASS.
+- `npm run tokens:check` — PASS.
+- `node scripts/audit-pro.js` — PASS.
+- `npm run visual-audit` — PASS: 32 page/viewport, 96 screenshots, 0 console errors, 0 network errors, 0 unsuppressed visual bugs.
+- `git diff --check` — PASS.
