@@ -4116,6 +4116,33 @@ const JS_SIZE_FLOORS = {
   }
 })();
 
+// G112. Search keyboard shortcuts contract.
+//   Ctrl/⌘+F must remain native browser find (never preventDefault/open palette).
+//   Ctrl/⌘+K opens the command palette and must be case-insensitive: Chromium
+//   reports Ctrl+K as key="K" in Playwright, so strict key==="k" breaks it.
+(function searchShortcutContractGuard() {
+  const offenders = [];
+  const searchJsPath = path.join(ROOT, 'js/search.js');
+  const searchJs = fs.existsSync(searchJsPath) ? fs.readFileSync(searchJsPath, 'utf8') : '';
+  if (!/String\(e\.key\)\.toLowerCase\(\).*?===\s*["']k["']|["']k["']\s*===\s*String\(e\.key\)\.toLowerCase\(\)/.test(searchJs)) {
+    offenders.push('js/search.js: Ctrl/⌘+K must compare String(e.key).toLowerCase() to "k"');
+  }
+  if (!/case["']Escape["']\s*:\s*e\.preventDefault\(\),e\.stopPropagation\(\),re\(\)/.test(searchJs)) {
+    offenders.push('js/search.js: Escape inside command palette input must close palette, not merely clear query');
+  }
+  const jsFiles = walk(ROOT).filter(f => f.endsWith('.js') && !/[\\/]node_modules[\\/]/.test(f));
+  for (const f of jsFiles) {
+    const js = fs.readFileSync(f, 'utf8').replace(/\/\*[\s\S]*?\*\//g, '').replace(/\/\/.*$/gm, '');
+    const suspicious = /(ctrlKey|metaKey)[\s\S]{0,160}(?:["']f["']|toLowerCase\(\)\s*===\s*["']f["'])[\s\S]{0,160}preventDefault\s*\(/i;
+    if (suspicious.test(js)) offenders.push(`${rel(f)}: possible Ctrl/⌘+F preventDefault`);
+  }
+  if (offenders.length) {
+    R.err(`Search shortcut regression risk:\n  - ${offenders.join('\n  - ')}`);
+  } else {
+    R.ok('Search shortcuts: Ctrl/⌘+F stays native; Ctrl/⌘+K is case-insensitive');
+  }
+})();
+
 // Output
 const duration = ((Date.now() - R.start) / 1000).toFixed(2);
 const sep = '═'.repeat(78);
