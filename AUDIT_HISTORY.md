@@ -5,6 +5,28 @@
 
 ---
 
+## v59 — Visual audit coverage expansion for Gill / catalogs / Rim7 (2026-06-10)
+
+### What was improved:
+- Expanded `scripts/visual-audit.js` URL coverage from 16 URLs to 26 URLs.
+- Newly covered pages include:
+  - `/biografii/`, `/hard-texts/`;
+  - all 5 Gill cluster pages (`context`, `part I`, `part II`, `part III`, `spravochnik`);
+  - `rimlyanam-7-veruyushchiy-ili-neveruyushchiy`;
+  - `/nagornaya/istochniki/`, `/nagornaya/nakhodki/`.
+- Visual QA now runs **26 URLs × 2 viewports = 52 page/viewport contexts** and takes **156 screenshots**.
+- Kept `interactive-audit` as the click/runtime guard for series dropdown, quizzes, glossary and mobile theme; `visual-audit` remains screenshot/console/network coverage.
+- Updated AGENTS/README count documentation.
+
+### Verified:
+- `npm run visual-audit` → ✅ PASS (**52 page/viewport runs, 156 screenshots, 0 console errors, 0 network errors, 0 unsuppressed visual bugs**).
+- `npm run interactive-audit` → ✅ PASS.
+- `npm run validate:all` → ✅ PASS.
+- `npm run tokens:check` → ✅ PASS.
+- `node scripts/audit-pro.js` → ✅ PASS.
+
+---
+
 ## v58 — Mobile theme control restoration + interactive guard (2026-06-10)
 
 ### What was improved:
