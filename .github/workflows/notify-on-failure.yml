@@ -1,11 +1,13 @@
 name: Notify on Workflow Failure
 
-# Слушает завершение наших трёх ключевых workflow'ов;
+# Слушает завершение ключевых workflow'ов;
 # если любой из них упал — создаёт (или поднимает) GitHub Issue с алертом.
 #
 # Зачем: статический сайт деплоится через GitHub Pages + IndexNow.
 # Если deploy.yml упал — сайт не обновится, читатели увидят старую версию.
 # Если indexnow.yml упал — Yandex/Bing не узнают про новую статью.
+# Если source-links / interactive audit упали — появился hard-broken источник
+# или пользовательский runtime-сценарий.
 # Issue даёт владельцу видимое уведомление прямо в GitHub.
 
 on:
@@ -13,6 +15,8 @@ on:
     workflows:
       - "Deploy to GitHub Pages"
       - "IndexNow — Notify Search Engines"
+      - "Source Link Audit"
+      - "Runtime Interactive Audit"
     types:
       - completed
 
@@ -49,6 +53,8 @@ jobs:
               ``,
               `Если упал \`Deploy to GitHub Pages\` — прод не обновился, читатели видят старую версию сайта.`,
               `Если упал \`IndexNow\` — поисковики (Яндекс, Bing) не узнали про изменения.`,
+              `Если упал \`Source Link Audit\` — появился hard-broken внешний источник (TLS/404/bad host).`,
+              `Если упал \`Runtime Interactive Audit\` — сломался пользовательский сценарий (series/quiz/search/theme/media).`,
               ``,
               `Это сообщение создано автоматически workflow'ом \`notify-on-failure.yml\`.`,
               `Закрой это issue, когда проблема устранена; следующее падение откроет новое.`

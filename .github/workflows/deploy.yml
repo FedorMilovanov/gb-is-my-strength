@@ -72,6 +72,9 @@ jobs:
       - name: Cache bust assets
         run: node scripts/cache-bust.js || echo "Cache bust skipped"
 
+      - name: Static publication gates
+        run: npm run validate:static-publication
+
       - name: Publish IndexNow key file from secret
         run: |
           KEY="${{ secrets.INDEXNOW_KEY }}"

@@ -1,0 +1,50 @@
+name: Runtime Interactive Audit
+
+on:
+  workflow_dispatch:
+  schedule:
+    # Weekly Monday 03:30 UTC. Browser runtime checks are heavier than static gates.
+    - cron: '30 3 * * 1'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: runtime-interactive-audit
+  cancel-in-progress: true
+
+jobs:
+  interactive-audit:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install Chromium for Playwright
+        run: npx playwright install --with-deps chromium
+
+      - name: Start local server
+        run: |
+          python3 -m http.server 8080 --bind 127.0.0.1 > /tmp/gb-http.log 2>&1 &
+          echo $! > /tmp/gb-http.pid
+          sleep 2
+
+      - name: Runtime interactive audit
+        env:
+          AUDIT_BASE: http://127.0.0.1:8080
+        run: npm run interactive-audit
+
+      - name: Stop local server
+        if: always()
+        run: |
+          if [ -f /tmp/gb-http.pid ]; then
+            kill "$(cat /tmp/gb-http.pid)" 2>/dev/null || true
+          fi

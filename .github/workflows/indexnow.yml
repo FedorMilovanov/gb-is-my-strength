@@ -50,11 +50,8 @@ jobs:
       - name: Cache bust assets
         run: node scripts/cache-bust.js
 
-      - name: Validate (HTML/CSS/JS)
-        run: node scripts/validate.js --strict
-
-      - name: SEO / AEO / GEO audit
-        run: node scripts/seo-audit.js
+      - name: Static publication gates
+        run: npm run validate:static-publication
 
       - name: Commit updated metadata
         run: |
@@ -81,11 +78,9 @@ jobs:
           # Collect changed URLs from pushed commits — includes catalog pages.
           # GitHub runs bash with -o pipefail; grep with no matches must not fail deploy.
           CHANGED=$(git diff --name-only ${{ github.event.before }} ${{ github.event.after }} 2>/dev/null || true)
-          URLS=$(printf '%s
-' "$CHANGED" \
+          URLS=$(printf '%s\n' "$CHANGED" \
             | grep -E '^(index\.html|about/index\.html|articles/index\.html|pastor-series/index\.html|nagornaya/index\.html|(articles|nagornaya)/[^/]+/index\.html)$' || true)
-          URLS=$(printf '%s
-' "$URLS" \
+          URLS=$(printf '%s\n' "$URLS" \
             | sed 's|^index\.html$||' \
             | sed 's|/index\.html$|/|' \
             | sed '/^$/!s|^|${BASE}/|' \
