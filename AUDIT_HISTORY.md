@@ -5,6 +5,29 @@
 
 ---
 
+## v69 — Home positioning + Habakkuk readable fallback (2026-06-10)
+
+### What was improved:
+- Repositioned the home page away from the too-narrow label “богословская библиотека” toward a more accurate and quieter identity: materials for studying Scripture.
+- Updated home page visible/SEO wording:
+  - hero tagline: `Для изучения Писания`;
+  - description: `Материалы для вдумчивого изучения Писания: экзегеза, богословие, апологетика, переводы, биографии и непростые вопросы`;
+  - search labels: `по материалам сайта`;
+  - nav/about labels: `О проекте`.
+- Updated `/about/` wording from “долгая богословская библиотека” to “собрание материалов для изучения Писания”.
+- Made the decorative Hebrew Habakkuk 3:19 hero layer `aria-hidden="true"` and removed focusable `tabindex=0` descendants, while preserving hover/click visual translation effects.
+- Added a separate `.sr-only` readable verse summary for assistive/readable layers.
+- Extended `readable-audit` with home positioning and Habakkuk-readable guards.
+- Updated `audit-pro` unified header contract to use `О проекте`.
+
+### Verified:
+- Playwright hover probe on Hebrew hero words → ✅ visual translation effect still works.
+- `npm run validate:publication` → ✅ PASS.
+- `npm run visual-audit` → ✅ PASS.
+- `npm run readable-audit` / `data:consistency` / `editorial:lint` → ✅ PASS.
+
+---
+
 ## v68 — Workflow policy guard + local CI parity (2026-06-10)
 
 ### What was improved:

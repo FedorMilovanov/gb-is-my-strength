@@ -106,6 +106,26 @@ for (const f of htmlFiles) {
   });
 }
 
+
+// R7. Home positioning/readable hero contract.
+{
+  const f = path.join(ROOT, 'index.html');
+  const html = fs.readFileSync(f, 'utf8');
+  if (/Богословская библиотека|Библиотека материалов|О библиотеке|Поиск по библиотеке/.test(html)) {
+    fail('home-outdated-library-positioning', 'index.html', 'Use precise site/materials wording, not old library-only wording');
+  }
+  if (!/<div\b[^>]*class=["'][^"']*\bh-sacred-block\b[^"']*["'][^>]*aria-hidden=["']true["'][^>]*>/i.test(html)) {
+    fail('home-sacred-block-not-aria-hidden', 'index.html', 'Decorative Hebrew hero layer should be aria-hidden with separate readable verse');
+  }
+  if (!/Девиз проекта\s+—\s+Аввакум 3:19/.test(html)) {
+    fail('home-sacred-readable-summary-missing', 'index.html', 'Missing readable Habakkuk 3:19 summary');
+  }
+  const sacredMatch = html.match(/<div\b[^>]*class=["'][^"']*\bh-sacred-block\b[\s\S]*?<\/div>\s*<p class=["']sr-only["']/i);
+  if (sacredMatch && /tabindex=["']0["']/.test(sacredMatch[0])) {
+    fail('home-sacred-hidden-focusable', 'index.html', 'aria-hidden decorative Hebrew layer must not contain tabindex=0 elements');
+  }
+}
+
 console.log('\nGB READABLE AUDIT');
 if (issues.length) {
   const byKind = issues.reduce((a, i) => (a[i.kind] = (a[i.kind] || 0) + 1, a), {});

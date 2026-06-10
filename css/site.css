@@ -352,3 +352,6 @@ body.has-bottom-bar .gb-floating-controls .gb-fc-theme{display:inline-flex}
 
 /* GB readable summaries 2026-06-10: decorative summary numbers are CSS-only, not reader text. */
 body:not(.nagornaya-page) .article-body>.summary-card .summary-card__num::before{content:attr(data-num)}
+
+/* GB accessibility utility 2026-06-10: readable text for decorative hero layers. */
+.sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}

@@ -1036,7 +1036,7 @@ const SITE_CSS_MIN_BYTES = 200_000;
 //   were each missing 1-2 nav items (Биографии / Все статьи / Разбор заблуждений),
 //   so the header was inconsistent between pages.
 (function unifiedHeaderGuard() {
-  const REQUIRED = ['Публикации', 'Разбор заблуждений', 'Биографии', 'Все статьи', 'О библиотеке'];
+  const REQUIRED = ['Публикации', 'Разбор заблуждений', 'Биографии', 'Все статьи', 'О проекте'];
   const files = walk(ROOT).filter(f => f.endsWith('.html'));
   const offenders = [];
   for (const f of files) {
