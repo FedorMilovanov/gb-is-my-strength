@@ -496,7 +496,7 @@ python3 -m http.server 8080 --bind 127.0.0.1
 npm install --no-save playwright
 npx playwright install chromium
 
-# 3. Аудит (32 страницы × 96 скринов в shots/)
+# 3. Аудит (52 контекста / 156 скринов в shots/)
 AUDIT_BASE=http://127.0.0.1:8080 npm run visual-audit
 ```
 
