@@ -3878,24 +3878,39 @@ const JS_SIZE_FLOORS = {
 //   apparatus and mobile tooltip behavior. Found in Da Vinci source pass.
 (function nestedSourceTooltipGuard() {
   const offenders = [];
+  const spanToken = /<span\b[^>]*>|<\/span>/gi;
+  function clsOf(tag) {
+    const m = tag.match(/\bclass=["']([^"']*)["']/i);
+    return m ? m[1] : '';
+  }
+  function has(cls, name) {
+    return new RegExp(`(^|\\s)${escapeRe(name)}(\\s|$)`).test(cls || '');
+  }
   for (const abs of htmlPages) {
     const file = rel(abs);
     const html = fs.readFileSync(abs, 'utf8');
-    const markerRe = /<span\b[^>]*class=["'][^"']*\bfn-marker\b[^"']*["'][^>]*>[\s\S]*?<\/span>/gi;
+    const stack = [];
     let m;
-    while ((m = markerRe.exec(html))) {
-      const marker = m[0];
-      const tipM = marker.match(/<span\b[^>]*class=["'][^"']*\btooltip\b[^"']*["'][^>]*>([\s\S]*)<\/span>\s*<\/span>\s*$/i);
-      if (tipM && /<span\b[^>]*class=["'][^"']*\bfn-marker\b/i.test(tipM[1])) {
-        const line = html.slice(0, m.index).split(/\n/).length;
-        offenders.push(`${file}:${line}`);
+    while ((m = spanToken.exec(html))) {
+      const tok = m[0];
+      if (/^<\/span/i.test(tok)) {
+        stack.pop();
+        continue;
       }
+      const cls = clsOf(tok);
+      const inTooltip = stack.some(x => has(x, 'tooltip'));
+      const inFn = stack.some(x => has(x, 'fn-marker'));
+      const line = html.slice(0, m.index).split(/\n/).length;
+      if (has(cls, 'fn-marker') && inTooltip) offenders.push(`${file}:${line} (.tooltip > .fn-marker)`);
+      if (has(cls, 'tooltip') && inTooltip) offenders.push(`${file}:${line} (.tooltip > .tooltip)`);
+      if (has(cls, 'fn-marker') && inFn) offenders.push(`${file}:${line} (.fn-marker > .fn-marker)`);
+      stack.push(cls);
     }
   }
   if (offenders.length) {
-    R.err(`Nested fn-marker inside tooltip (source apparatus regression):\n  - ${offenders.slice(0, 20).join('\n  - ')}`);
+    R.err(`Nested source tooltip / footnote markup regression:\n  - ${offenders.slice(0, 30).join('\n  - ')}`);
   } else {
-    R.ok('Source tooltips: no nested fn-marker inside tooltip');
+    R.ok('Source tooltips: no nested fn-marker/tooltip markup');
   }
 })();
 
