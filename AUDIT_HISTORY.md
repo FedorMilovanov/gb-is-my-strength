@@ -5,6 +5,29 @@
 
 ---
 
+## v63 — Readable/publication layer cleanup + guard (2026-06-10)
+
+### What was improved:
+- Added `scripts/readable-audit.js` + npm scripts:
+  - `npm run readable-audit`,
+  - `npm run validate:publication`.
+- Cleaned reader/plain-text layer issues:
+  - summary-card decorative numbers are now empty `aria-hidden` spans with `data-num`; visual numbers are CSS-generated, so reader/screen-reader text no longer says `01/02/03`;
+  - home H1 now reads `Господь Бог — Сила Моя` in `innerText`;
+  - Da Vinci badge changed from overclaiming `Проверено историками` to `С опорой на исторические источники`;
+  - Nagornaya source stats labels changed from internal enum labels (`Book`, `Confession`, `ChicagoDoc`, `Father`, `Academic`, `Warning`) to Russian public labels;
+  - bibliography separator dots on Nagornaya sources changed to spaced dashes for cleaner reader text.
+- Added readable guards for raw visible image-path leaks, summary decorative numbers, home H1 spacing, Da Vinci overclaim badge, enum labels and obvious punctuation-spacing risks.
+- Updated AGENTS/README with the readable/publication contract.
+
+### Verified:
+- `npm run readable-audit` → ✅ PASS.
+- Playwright `innerText` spot-check on `/`, Nagornaya pages, Da Vinci, Krajne → ✅ no `/images` leak, no summary `01` text, home H1 spaced.
+- `npm run validate:publication` → ✅ PASS.
+- `npm run visual-audit` → ✅ PASS.
+
+---
+
 ## v62 — Image viewer + share dialog interactive coverage (2026-06-10)
 
 ### What was improved:
