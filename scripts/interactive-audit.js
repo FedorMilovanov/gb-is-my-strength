@@ -51,9 +51,13 @@ const SEARCH_URLS = [
   '/articles/krajne-li-isporcheno-serdce/',
   '/nagornaya/chast-1/',
 ];
+const MEDIA_URLS = [
+  '/articles/dzhon-gill-chast-1-chelovek/',
+  '/articles/krajne-li-isporcheno-serdce/',
+];
 
 const issues = [];
-const stats = { pages: 0, series: 0, quizzes: 0, glossary: 0, theme: 0, search: 0 };
+const stats = { pages: 0, series: 0, quizzes: 0, glossary: 0, theme: 0, search: 0, media: 0 };
 
 function isNoise(text) {
   return /Content Security Policy directive.*https:\/\/gospod-bog\.ru\/(?:favicon|apple-touch-icon|icons|images)|favicon\.ico|mc\.yandex/i.test(text);
@@ -271,6 +275,48 @@ async function checkSearchShortcuts(browser) {
   }
 }
 
+async function checkMediaViewerAndShare(browser) {
+  for (const url of MEDIA_URLS) {
+    const page = await openPage(browser, url, { width: 1000, height: 800 });
+    const imgCount = await page.locator('.article-figure img, .article-img img, .nagornaya-hero-img').count();
+    if (imgCount > 0) {
+      await page.locator('.article-figure img, .article-img img, .nagornaya-hero-img').first().click({ force: true });
+      await page.waitForTimeout(250);
+      const opened = await page.evaluate(() => ({ open: !!document.querySelector('.img-viewer.is-open'), overflow: document.documentElement.style.overflow }));
+      if (!opened.open || opened.overflow !== 'hidden') push('image-viewer-did-not-open-lock-scroll', url, opened);
+      await page.keyboard.press('Escape');
+      await page.waitForTimeout(420);
+      const closed = await page.evaluate(() => ({ open: !!document.querySelector('.img-viewer.is-open'), overflow: document.documentElement.style.overflow }));
+      if (closed.open || closed.overflow) push('image-viewer-escape-did-not-close', url, closed);
+    }
+    const endShare = await page.locator('#articleEndShareBtn').count();
+    if (endShare > 0) {
+      await page.locator('#articleEndShareBtn').scrollIntoViewIfNeeded();
+      await page.waitForTimeout(150);
+      await page.locator('#articleEndShareBtn').click({ timeout: 5000 });
+      await page.waitForTimeout(250);
+      const state = await page.evaluate(() => {
+        const ov = document.querySelector('#share-dialog-overlay');
+        const canonical = document.querySelector('link[rel="canonical"]')?.href || '';
+        return {
+          open: !!(ov && (ov.classList.contains('is-open') || ov.getAttribute('aria-hidden') === 'false')),
+          hidden: ov && ov.getAttribute('aria-hidden'),
+          canonical,
+          buttons: document.querySelectorAll('#share-dialog button').length,
+        };
+      });
+      if (!state.open || state.hidden !== 'false' || state.buttons < 3) push('share-dialog-did-not-open', url, state);
+      if (state.canonical && /preview|localhost|127\.0\.0\.1/i.test(state.canonical)) push('share-canonical-url-suspicious', url, state.canonical);
+      await page.keyboard.press('Escape');
+      await page.waitForTimeout(250);
+      const closed = await page.evaluate(() => ({ open: !!document.querySelector('#share-dialog-overlay.is-open'), hidden: document.querySelector('#share-dialog-overlay')?.getAttribute('aria-hidden') }));
+      if (closed.open || closed.hidden !== 'true') push('share-dialog-escape-did-not-close', url, closed);
+    }
+    stats.media++;
+    await page.close();
+  }
+}
+
 (async () => {
   const browser = await chromium.launch({ headless: true, args: ['--no-sandbox', '--disable-gpu', '--disable-dev-shm-usage'] });
   try {
@@ -279,11 +325,12 @@ async function checkSearchShortcuts(browser) {
     await checkGlossary(browser);
     await checkMobileTheme(browser);
     await checkSearchShortcuts(browser);
+    await checkMediaViewerAndShare(browser);
   } finally {
     await browser.close();
   }
   console.log('\nGB INTERACTIVE AUDIT');
-  console.log(`Pages: ${stats.pages} · series: ${stats.series} · quizzes: ${stats.quizzes} · glossary: ${stats.glossary} · theme: ${stats.theme} · search: ${stats.search}`);
+  console.log(`Pages: ${stats.pages} · series: ${stats.series} · quizzes: ${stats.quizzes} · glossary: ${stats.glossary} · theme: ${stats.theme} · search: ${stats.search} · media: ${stats.media}`);
   if (issues.length) {
     console.log(`❌ ${issues.length} issue(s):`);
     issues.forEach(i => console.log(`- ${i.kind} ${i.url}: ${JSON.stringify(i.detail)}`));

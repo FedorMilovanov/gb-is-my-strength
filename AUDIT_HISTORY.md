@@ -5,6 +5,26 @@
 
 ---
 
+## v62 — Image viewer + share dialog interactive coverage (2026-06-10)
+
+### What was improved:
+- Extended `scripts/interactive-audit.js` with media/share runtime checks on long article pages.
+- New checks verify:
+  - article image click opens `.img-viewer`;
+  - image viewer locks scroll and closes via Escape with overflow restored;
+  - `#articleEndShareBtn` opens `#share-dialog-overlay`;
+  - share dialog has interactive buttons and closes via Escape;
+  - share canonical URL is not preview/local.
+- Updated AGENTS/README with the media/share runtime contract.
+
+### Verified:
+- `npm run interactive-audit` → ✅ PASS (`media: 2`).
+- `npm run validate:all` → ✅ PASS.
+- `npm run tokens:check` → ✅ PASS.
+- `node scripts/audit-pro.js` → ✅ PASS.
+
+---
+
 ## v61 — Search keyboard shortcuts hardening (2026-06-10)
 
 ### What was improved:
