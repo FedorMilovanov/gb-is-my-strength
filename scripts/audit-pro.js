@@ -79,7 +79,7 @@ const CACHE_BUST_ASSETS = [
   'js/nagornaya-mobile-toc.js'
 ];
 
-const MAX_CSS_TOTAL = 375_000; // includes visual dark premium overrides; gzip ~70KB
+const MAX_CSS_TOTAL = 390_000; // includes GBS reference-world visual layer; gzip still ~70KB
 const MAX_JS_TOTAL = 365_000; // includes sw.js + mobile utils; site.js is intentionally large right now
 const MAX_HTML = 450_000;
 // Anti-regression ceiling for !important in css/site.css. AGENTS §4.10 target is ≤200.
