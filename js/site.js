@@ -119,3 +119,134 @@ cB.addEventListener("click",function(){st();el.classList.remove("gbx-tts--visibl
 window.addEventListener("beforeunload",function(){speechSynthesis.cancel()});
 document.addEventListener("visibilitychange",function(){if(!playing)return;document.hidden?speechSynthesis.pause():speechSynthesis.resume()});
 }();
+;!function(){"use strict";
+/* §1.5 Epigraph line-by-line reveal + §1.6 Pull-quote line draw + §1.8 Hero shrink */
+if(!("IntersectionObserver" in window))return;
+/* §1.5 — wrap words in spans for staggered reveal */
+document.querySelectorAll(".gbx-epi").forEach(function(el){
+if(el.querySelector("span"))return;
+var cite=el.querySelector("cite");
+var nodes=[];el.childNodes.forEach(function(n){if(n!==cite)nodes.push(n)});
+var text="";nodes.forEach(function(n){text+=n.textContent});
+nodes.forEach(function(n){n.remove()});
+var words=text.trim().split(/\s+/);
+words.forEach(function(w,i){var s=document.createElement("span");s.textContent=w+" ";s.style.transitionDelay=(i*0.07)+"s";el.insertBefore(s,cite)});
+var obs=new IntersectionObserver(function(entries){entries.forEach(function(e){if(e.isIntersecting){el.classList.add("gbx-epi--revealed");obs.disconnect()}})},{threshold:0.4});
+obs.observe(el);
+});
+/* §1.6 — pull-quote line draw */
+document.querySelectorAll(".gbx-pq").forEach(function(el){
+var obs=new IntersectionObserver(function(entries){entries.forEach(function(e){if(e.isIntersecting){el.classList.add("gbx-pq--visible");obs.disconnect()}})},{threshold:0.5});
+obs.observe(el);
+});
+/* §1.8 — hero shrink fallback for browsers without animation-timeline */
+if(!CSS.supports||!CSS.supports("animation-timeline","scroll()")){
+document.querySelectorAll(".gbx-hero-shrink").forEach(function(el){
+var done=false;
+window.addEventListener("scroll",function(){
+var y=window.scrollY||0;
+if(!done&&y>200){el.classList.add("gbx-hero--scrolled");done=true}
+else if(done&&y<50){el.classList.remove("gbx-hero--scrolled");done=false}
+},{passive:true});
+});
+}
+}();
+;!function(){"use strict";
+/* §1.9 Bible verse popovers (.gbx-verse[data-verse]) */
+var vD=null,vTip=null;
+function vInit(){
+var els=document.querySelectorAll(".gbx-verse[data-verse]");
+if(!els.length)return;
+fetch("/data/verses.json").then(function(r){return r.ok?r.json():null}).then(function(d){
+if(!d)return;vD=d;
+vTip=document.createElement("div");vTip.className="gbx-verse-tip";document.body.appendChild(vTip);
+els.forEach(function(el){
+el.setAttribute("tabindex","0");el.setAttribute("role","button");
+el.addEventListener("click",function(e){e.preventDefault();vShow(el)});
+el.addEventListener("pointerover",function(){if(window.matchMedia("(hover:hover)").matches)vShow(el)});
+el.addEventListener("pointerout",function(){vHide()});
+el.addEventListener("focusin",function(){vShow(el)});
+el.addEventListener("focusout",function(){vHide()});
+});
+document.addEventListener("keydown",function(e){if(e.key==="Escape")vHide()});
+document.addEventListener("click",function(e){if(vTip&&!e.target.closest(".gbx-verse")&&!e.target.closest(".gbx-verse-tip"))vHide()});
+});
+}
+function vShow(el){
+if(!vD||!vTip)return;
+var ref=el.getAttribute("data-verse");
+var text=vD[ref];if(!text)return;
+vTip.innerHTML='<span class="gbx-verse-tip__ref">'+ref+'</span><span class="gbx-verse-tip__text">'+text+'</span>';
+vTip.classList.add("gbx-verse-tip--open");
+if(window.SiteUtils)SiteUtils.positionTip(vTip,el);
+}
+function vHide(){if(vTip){vTip.classList.remove("gbx-verse-tip--open");vTip.style.top="-9999px"}}
+vInit();
+
+/* §1.10 Original word cards (.gbx-ow[data-ow]) */
+var owD=null,owCard=null;
+function owInit(){
+var els=document.querySelectorAll(".gbx-ow[data-ow]");
+if(!els.length)return;
+fetch("/data/original-words.json").then(function(r){return r.ok?r.json():null}).then(function(d){
+if(!d)return;owD=d;
+owCard=document.createElement("div");owCard.className="gbx-ow-card";document.body.appendChild(owCard);
+els.forEach(function(el){
+el.setAttribute("tabindex","0");el.setAttribute("role","button");
+el.addEventListener("click",function(e){e.preventDefault();owShow(el)});
+el.addEventListener("pointerover",function(){if(window.matchMedia("(hover:hover)").matches)owShow(el)});
+el.addEventListener("pointerout",function(){owHide()});
+el.addEventListener("focusin",function(){owShow(el)});
+el.addEventListener("focusout",function(){owHide()});
+});
+document.addEventListener("keydown",function(e){if(e.key==="Escape")owHide()});
+document.addEventListener("click",function(e){if(owCard&&!e.target.closest(".gbx-ow")&&!e.target.closest(".gbx-ow-card"))owHide()});
+});
+}
+function owShow(el){
+if(!owD||!owCard)return;
+var key=el.getAttribute("data-ow");
+var w=owD[key];if(!w||w._comment)return;
+var langLabel=w.lang==="he"?"Иврит":"Греческий";
+owCard.innerHTML='<div class="gbx-ow__head"><span class="gbx-ow__lang">'+langLabel+'</span><div class="gbx-ow__original" data-lang="'+w.lang+'">'+w.original+'</div><span class="gbx-ow__translit">'+w.transliteration+'</span></div><div class="gbx-ow__body"><div class="gbx-ow__gloss">'+w.gloss+'</div><p class="gbx-ow__def">'+w.definition+'</p><span class="gbx-ow__src">'+w.source+'</span></div>';
+owCard.classList.add("gbx-ow--open");
+if(window.SiteUtils)SiteUtils.positionTip(owCard,el);
+}
+function owHide(){if(owCard){owCard.classList.remove("gbx-ow--open");owCard.style.top="-9999px"}}
+owInit();
+}();
+;!function(){"use strict";
+/* §1.11 Next-article ethical suggestion (standalone articles only) */
+if(document.body.classList.contains("gbs-world")||document.body.classList.contains("gbs2-world"))return;
+var ra=document.querySelector(".related-articles__item a[href]");
+if(!ra)return;
+var title=ra.querySelector(".related-articles__link");
+if(!title)return;
+var titleText=title.textContent.trim();
+var href=ra.getAttribute("href");
+if(!titleText||!href)return;
+var shown=false,timer=null,circ=2*Math.PI*14;
+function show(){
+if(shown)return;shown=true;
+var el=document.createElement("div");el.className="gbx-next-suggest";el.id="gbxNextSuggest";
+el.innerHTML='<div class="gbx-next-suggest__label">Следующая по теме</div><div class="gbx-next-suggest__title">'+titleText+'</div><div class="gbx-next-suggest__actions"><a class="gbx-next-suggest__go" href="'+href+'"><svg class="gbx-next-suggest__ring" viewBox="0 0 100% 100%" style="position:absolute;inset:0;width:100%;height:100%;border-radius:inherit" aria-hidden="true"></svg>Читать →</a><button class="gbx-next-suggest__stay" type="button">Остаться</button></div>';
+document.body.appendChild(el);
+requestAnimationFrame(function(){requestAnimationFrame(function(){el.classList.add("gbx-next-suggest--visible")})});
+var stayBtn=el.querySelector(".gbx-next-suggest__stay");
+stayBtn.addEventListener("click",function(){dismiss(el)});
+document.addEventListener("keydown",function esc(e){if(e.key==="Escape"){dismiss(el);document.removeEventListener("keydown",esc)}});
+/* auto-dismiss after 12s */
+timer=setTimeout(function(){dismiss(el)},12000);
+}
+function dismiss(el){clearTimeout(timer);el.classList.remove("gbx-next-suggest--visible");setTimeout(function(){el.remove()},400)}
+/* trigger: when user scrolls to ~85% of article */
+var art=document.querySelector("article")||document.querySelector("main");
+if(!art)return;
+function check(){
+var rect=art.getBoundingClientRect();
+var total=rect.height;
+var scrolled=-rect.top;
+if(total>0&&scrolled/total>0.85)show();
+}
+window.addEventListener("scroll",check,{passive:true});
+}();
