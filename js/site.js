@@ -418,3 +418,39 @@ if(outBlock&&insertPoint)insertPoint.parentNode.insertBefore(outBlock,insertPoin
 if(inBlock&&insertPoint)insertPoint.parentNode.insertBefore(inBlock,insertPoint);
 });
 }();
+;!function(){"use strict";
+/* §2.1 — StoryMap component (.gbx-storymap) */
+document.querySelectorAll(".gbx-storymap").forEach(function(el){
+var dots=el.querySelectorAll(".smap-dot"),labels=el.querySelectorAll(".smap-label"),stops=el.querySelectorAll(".gbx-storymap__stop");
+if(!stops.length)return;
+var active=0;
+function activate(i){
+active=i;
+dots.forEach(function(d,j){d.classList.toggle("smap-active",j===i)});
+labels.forEach(function(l,j){l.classList.toggle("smap-active",j===i)});
+stops.forEach(function(s,j){
+s.classList.toggle("smap-active",j===i);
+if(j===i)s.scrollIntoView({behavior:"smooth",block:"nearest"});
+});
+}
+activate(0);
+stops.forEach(function(s,i){s.addEventListener("click",function(){activate(i)})});
+dots.forEach(function(d,i){d.addEventListener("click",function(){activate(i)})});
+/* Auto-advance on scroll into view */
+if("IntersectionObserver" in window){
+var obs=new IntersectionObserver(function(entries){
+entries.forEach(function(e){
+if(e.isIntersecting){
+var timer=setInterval(function(){
+if(active<stops.length-1)activate(active+1);else clearInterval(timer);
+},3000);
+var clear=function(){clearInterval(timer);obs.disconnect()};
+el.addEventListener("click",clear,{once:true});
+el.addEventListener("pointerdown",clear,{once:true});
+obs.disconnect();
+}
+})},{threshold:0.4});
+obs.observe(el);
+}
+});
+}();
