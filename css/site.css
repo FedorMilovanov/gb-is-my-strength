@@ -27,81 +27,19 @@ html.dark .fn-marker--dove>.fn-dove-icon{color:#6aa6d9;filter:drop-shadow(0 1px 
 /* GB FC pill → separate FAB icons (2026-06-08) */
 html.dark html.dark .gb-floating-controls .gb-fc-btn{color:#e6e1d7;background:transparent;border:none;box-shadow:none}
 @media (hover:hover) and (pointer:fine){.gb-floating-controls .gb-fc-btn:hover{transform:translateY(-2px) scale(1.08);color:var(--color-text,#1a1a1a)}html.dark .gb-floating-controls .gb-fc-btn:hover{color:#fff}}
-
-/* === GB Series Navigator v2 (2026-06-08) ============================================
- * Unified premium navigation for any series.
- * 3 surfaces:
- *   .gb-strip   — compact top/bottom strip (prev | dots | next)
- *   .gb-snav    — sidebar card with full list of parts
- *   .series-card — existing card-grid (kept untouched)
- * =================================================================================== */
-
-/* --- Strip (top-of-article) ----------------------------------------------- */
-.gb-strip{position:relative;display:grid;grid-template-columns:1fr auto 1fr;gap:clamp(12px,2vw,24px);align-items:center;margin:0 0 clamp(28px,4vw,40px);padding:14px clamp(14px,2vw,20px);border:1px solid var(--color-border);border-radius:14px;background:var(--color-surface);box-shadow:0 1px 0 rgba(255,255,255,.4) inset,0 4px 16px -10px rgba(28,25,23,.08)}
-html.dark .gb-strip{background:var(--color-surface);box-shadow:0 1px 0 rgba(255,255,255,.05) inset,0 4px 18px -10px rgba(0,0,0,.55)}
-.gb-strip__nav{display:flex;flex-direction:column;gap:2px;font-family:'Source Sans 3',system-ui,sans-serif;text-decoration:none!important;color:var(--color-text);min-width:0;transition:color .18s ease,transform .18s ease}
-.gb-strip__nav--prev{text-align:left;align-items:flex-start}
-.gb-strip__nav--next{text-align:right;align-items:flex-end}
-.gb-strip__nav.is-disabled{visibility:hidden}
-.gb-strip__nav-label{font-size:11px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--color-text-muted);transition:color .18s ease}
-.gb-strip__nav-title{font-size:14px;line-height:1.3;color:var(--color-text);font-weight:600;max-width:220px;overflow:hidden;text-overflow:ellipsis;display:-webkit-box;-webkit-line-clamp:1;-webkit-box-orient:vertical}
-@media (hover:hover) and (pointer:fine){.gb-strip__nav:hover{color:var(--color-accent)}.gb-strip__nav:hover .gb-strip__nav-label{color:var(--color-accent)}html.dark .gb-strip__nav:hover{color:var(--color-accent-strong)}html.dark .gb-strip__nav:hover .gb-strip__nav-label{color:var(--color-accent-strong)}}
-.gb-strip__center{text-align:center;display:flex;flex-direction:column;gap:6px;align-items:center;min-width:0}
-.gb-strip__series{font-family:'Source Sans 3',system-ui,sans-serif;font-size:10px;font-weight:700;letter-spacing:.22em;text-transform:uppercase;color:var(--color-text-muted)}
-.gb-strip__dots{display:inline-flex;gap:6px}
-.gb-strip__dot{display:inline-flex;align-items:center;justify-content:center;width:24px;height:24px;border-radius:50%;font-family:'Source Sans 3',system-ui,sans-serif;font-size:11px;font-weight:700;font-variant-numeric:tabular-nums;border:1px solid var(--color-border);background:var(--color-canvas);color:var(--color-text-muted);text-decoration:none!important;transition:color .18s ease,background .18s ease,border-color .18s ease,transform .18s ease}
-@media (hover:hover) and (pointer:fine){.gb-strip__dot:hover{color:var(--color-accent);border-color:var(--color-accent);background:var(--color-accent-soft);transform:translateY(-1px)}}
-.gb-strip__dot.is-current{background:var(--color-accent);color:#fff;border-color:var(--color-accent);cursor:default}
-html.dark .gb-strip__dot.is-current{background:var(--color-accent-strong);color:#0e1116;border-color:var(--color-accent-strong)}
-@media (max-width:600px){.gb-strip{grid-template-columns:1fr;gap:10px;padding:12px 14px}.gb-strip__nav{text-align:center;align-items:center;flex-direction:row;gap:6px;justify-content:center}.gb-strip__nav-title{max-width:none;font-size:13px}.gb-strip__nav-label{font-size:10px}.gb-strip__center{order:-1}}
+@media (hover:hover) and (pointer:fine){}
+@media (hover:hover) and (pointer:fine){}
+@media (max-width:600px){}
 
 /* --- Sidebar navigator (sticky on desktop, inline on mobile) -------------- */
 .gb-snav{position:relative;background:var(--color-surface);border:1px solid var(--color-border);border-radius:16px;padding:18px 18px 14px;box-shadow:0 1px 0 rgba(255,255,255,.4) inset,0 8px 26px -16px rgba(28,25,23,.14);margin:0 0 clamp(28px,4vw,40px);font-family:'Source Sans 3',system-ui,sans-serif}
-html.dark .gb-snav{background:var(--color-surface);box-shadow:0 1px 0 rgba(255,255,255,.05) inset,0 8px 26px -16px rgba(0,0,0,.55)}
-.gb-snav__head{display:flex;flex-direction:column;gap:2px;padding-bottom:12px;margin-bottom:10px;border-bottom:1px solid var(--color-border)}
-.gb-snav__kicker{font-size:10px;font-weight:700;letter-spacing:.22em;text-transform:uppercase;color:var(--color-accent)}
-html.dark .gb-snav__kicker{color:var(--color-accent-strong)}
-.gb-snav__title-main{font-family:Lora,Georgia,serif;font-size:18px;font-weight:600;line-height:1.25;margin:2px 0 0;color:var(--color-text)}
-.gb-snav__count{font-size:11px;color:var(--color-text-muted);margin-top:2px}
-.gb-snav__list{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:2px}
-.gb-snav__item{margin:0}
-.gb-snav__link{display:flex;align-items:flex-start;gap:12px;padding:9px 10px;border-radius:10px;text-decoration:none;color:var(--color-text);transition:background .18s ease,color .18s ease}
-@media (hover:hover) and (pointer:fine){.gb-snav__link:not([aria-current]):hover{background:var(--color-accent-soft);color:var(--color-accent)}html.dark .gb-snav__link:not([aria-current]):hover{background:color-mix(in srgb,var(--color-accent-strong) 10%,transparent);color:var(--color-accent-strong)}}
-.gb-snav__num{flex-shrink:0;display:inline-flex;align-items:center;justify-content:center;width:26px;height:26px;border-radius:50%;font-size:12px;font-weight:700;font-variant-numeric:tabular-nums;background:var(--color-surface-muted);color:var(--color-text-muted);border:1px solid var(--color-border)}
-.gb-snav__body{display:flex;flex-direction:column;gap:1px;min-width:0;flex:1}
-.gb-snav__title{font-size:13.5px;font-weight:500;line-height:1.32;color:inherit;overflow-wrap:anywhere}
-.gb-snav__meta{font-size:10.5px;letter-spacing:.06em;text-transform:uppercase;color:var(--color-text-muted);margin-top:2px}
-.gb-snav__item.is-current .gb-snav__link{background:var(--color-accent-soft);color:var(--color-accent);cursor:default}
-html.dark .gb-snav__item.is-current .gb-snav__link{background:color-mix(in srgb,var(--color-accent-strong) 12%,var(--color-surface));color:var(--color-accent-strong)}
-.gb-snav__item.is-current .gb-snav__num{background:var(--color-accent);color:#fff;border-color:var(--color-accent)}
-html.dark .gb-snav__item.is-current .gb-snav__num{background:var(--color-accent-strong);color:#0e1116;border-color:var(--color-accent-strong)}
-.gb-snav__item.is-current .gb-snav__title{font-weight:700}
+@media (hover:hover) and (pointer:fine){}
 
 /* Sidebar layout: when placed in .article-with-snav, snav is sticky on the side */
 @media (min-width:1100px){
   .article-with-snav{display:grid;grid-template-columns:240px minmax(0,1fr);gap:36px;align-items:start}
-  .article-with-snav .gb-snav{position:sticky;top:24px;max-width:240px}
 }
-/* === END Series Navigator v2 ====================================================== */
-
-
-/* ── Strip dropdown (series nav expansion) ───────────── */
-.gb-strip__toggle{all:unset;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:4px}
-.gb-strip__chevron{transition:transform .2s ease;vertical-align:-1px;margin-left:4px;opacity:.5}
-.gb-strip__toggle[aria-expanded="true"] .gb-strip__chevron{transform:rotate(180deg)}
-.gb-strip__dropdown{position:absolute;top:100%;left:50%;transform:translateX(-50%);z-index:var(--z-raised-high,100);width:min(380px,90vw);margin-top:8px;background:var(--color-surface,#fff);border:1px solid var(--color-border);border-radius:14px;box-shadow:0 12px 36px -8px rgba(0,0,0,.18);padding:10px 6px;animation:gb-dd-in .2s ease}
-html.dark .gb-strip__dropdown{background:var(--color-surface,#1e1e22);box-shadow:0 12px 36px -8px rgba(0,0,0,.55)}
 @keyframes gb-dd-in{from{opacity:0;transform:translateX(-50%) translateY(-6px)}to{opacity:1;transform:translateX(-50%) translateY(0)}}
-.gb-strip-dd__list{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:2px}
-.gb-strip-dd__item{margin:0}
-.gb-strip-dd__link{display:flex;align-items:center;gap:10px;padding:8px 12px;border-radius:10px;text-decoration:none!important;color:var(--color-text);transition:background .15s ease}
-a.gb-strip-dd__link:hover{background:color-mix(in srgb,var(--color-accent) 10%,transparent)}
-.gb-strip-dd__item.is-current .gb-strip-dd__link{background:color-mix(in srgb,var(--color-accent) 14%,transparent);font-weight:600}
-.gb-strip-dd__num{flex-shrink:0;display:inline-flex;align-items:center;justify-content:center;width:28px;height:28px;border-radius:50%;font-size:12px;font-weight:700;background:var(--color-surface,#f5f3ef);border:1px solid var(--color-border);color:var(--color-text-muted)}
-.gb-strip-dd__item.is-current .gb-strip-dd__num{background:var(--color-accent);color:#fff;border-color:var(--color-accent)}
-.gb-strip-dd__body{display:flex;flex-direction:column;gap:1px;min-width:0}
-.gb-strip-dd__title{font-size:13.5px;font-weight:500;line-height:1.3}
-.gb-strip-dd__meta{font-size:11px;color:var(--color-text-muted)}
 
 
 /* Original author card (for translations) */
@@ -341,10 +279,6 @@ html.dark body:not(.nagornaya-page) .article-body>.summary-card .summary-card__t
 .faq-accordion__item:not(.open):not(.is-open) .faq-accordion__body{max-height:0;grid-template-rows:0fr;overflow:hidden;pointer-events:none}
 .faq-accordion__item:not(.open):not(.is-open) .faq-accordion__body-inner{padding-bottom:0;pointer-events:none}
 .faq-accordion__item.open .faq-accordion__body,.faq-accordion__item.is-open .faq-accordion__body{pointer-events:auto}
-.gb-strip{z-index:var(--z-raised-high);isolation:isolate}
-.gb-strip__center{position:relative;z-index:2}
-.gb-strip__nav{position:relative;z-index:1}
-.gb-strip__dropdown{z-index:var(--z-dropdown-high)}
 
 /* GB mobile theme control stability 2026-06-10: if theme is enabled, the canonical floating theme button must remain visible on article pages even when bottom-bar exists. */
 body.has-bottom-bar .gb-floating-controls .gb-fc-theme{display:inline-flex}
