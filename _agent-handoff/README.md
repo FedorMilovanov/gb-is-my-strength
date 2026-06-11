@@ -9,9 +9,9 @@
 
 | Поле | Значение |
 |---|---|
-| Обновлено | 2026-06-11 |
+| Обновлено | 2026-06-11 (вечер) |
 | Кто обновил | Arena Agent (session: продолжение после упавшего агента) |
-| Текущая фаза | GBS-эталон на серии «Джон Гилл», миграция страниц по одной |
+| Текущая фаза | ✅ ВСЯ серия «Джон Гилл» (5/5 страниц) переведена на GBS |
 | Прод | https://gospod-bog.ru (GitHub Pages, ветка `main`) |
 
 ---
@@ -42,13 +42,17 @@ CSS/JS-файла (всё в `css/site.css` секция `gbs2-*` и `js/enhance
 
 | Страница | Состояние |
 |---|---|
-| `articles/dzhon-gill-istoricheskiy-kontekst/` | ✅ GBS-эталон (визуально согласован владельцем), legacy-CTA удалён |
+| `articles/dzhon-gill-istoricheskiy-kontekst/` | ✅ GBS-эталон; legacy-CTA и мёртвый themeToggle удалены (dc8d8de7, 1502d865) |
 | `articles/dzhon-gill-chast-1-chelovek/` | ✅ GBS + вложенный TOC (H2+H3). Хвосты упавшего агента вычищены (dc8d8de7) |
-| `articles/dzhon-gill-chast-2-uchenyi/` | ⏳ СЛЕДУЮЩАЯ: ещё старый вид (gb-strip + legacy bottom-bar) |
-| `articles/dzhon-gill-chast-3-nasledie/` | ⏳ старый вид |
-| `articles/dzhon-gill-spravochnik/` | ⏳ старый вид |
+| `articles/dzhon-gill-chast-2-uchenyi/` | ✅ GBS (1e73e204), TOC 6 секций, done=44/part=12 |
+| `articles/dzhon-gill-chast-3-nasledie/` | ✅ GBS (3ed9189e), вложенный TOC 16 секций, done=56/part=22 |
+| `articles/dzhon-gill-spravochnik/` | ✅ GBS (bcf6389f), плоский TOC 9 секций, done=78/part=11, одна back-карточка |
 | Нагорная проповедь | ❄️ НЕ ТРОГАТЬ функционально (AGENTS-r95). Только cache-bust хэши |
-| hard-texts / pastor-series | 🔮 после полного согласования Гилла |
+| hard-texts / pastor-series | 🔮 СЛЕДУЮЩИЙ КАНДИДАТ — только после «да» владельца |
+
+**Финальный сквозной Playwright-проход 2026-06-11:** все 5 страниц —
+`world/rail/current/sheet-current/toc/timeline/bbar` ✅, legacy-блоков 0,
+старых CTA/strip 0, JS-ошибок 0, light+dark, desktop 1440 + mobile 390.
 
 ### Где упал предыдущий агент (исправлено, но знай суть)
 Он мигрировал `chast-1-chelovek`, но не удалил legacy-блоки:
@@ -59,13 +63,13 @@ CSS/JS-файла (всё в `css/site.css` секция `gbs2-*` и `js/enhance
 
 ## 3. План (выполнять по одной странице, после каждой — полный чек)
 
-1. ✅ Вычистить хвосты упавшего агента (сделано, dc8d8de7).
-2. ⏳ Мигрировать `dzhon-gill-chast-2-uchenyi` по PATTERN.md.
-3. ⏳ Мигрировать `dzhon-gill-chast-3-nasledie`.
-4. ⏳ Мигрировать `dzhon-gill-spravochnik`.
-5. ⏳ Сквозной Playwright-проход всех 5 страниц серии (desktop+mobile,
-   light+dark), сверка скриншотов глазами.
-6. ⏳ Обновить AGENTS.md changelog (новая строка r9N) + этот файл.
+1. ✅ Вычистить хвосты упавшего агента (dc8d8de7).
+2. ✅ Мигрировать `dzhon-gill-chast-2-uchenyi` (1e73e204).
+3. ✅ Мигрировать `dzhon-gill-chast-3-nasledie` (3ed9189e).
+4. ✅ Мигрировать `dzhon-gill-spravochnik` (bcf6389f).
+5. ✅ Сквозной Playwright-проход всех 5 страниц (desktop+mobile, light+dark)
+   + точечный фикс: мёртвый themeToggle в kontekst (1502d865).
+6. ✅ AGENTS.md changelog обновлён (r96) + этот файл.
 7. 🔮 Обсудить с владельцем перенос паттерна на hard-texts (3 части)
    и будущие серии. НЕ масштабировать без его «да».
 
