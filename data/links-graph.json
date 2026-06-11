@@ -1,0 +1,154 @@
+{
+  "nodes": [
+    {
+      "id": "20-antisovetov-pastoru",
+      "title": "20 антисоветов, как пастору разрушить своё служение",
+      "url": "/articles/20-antisovetov-pastoru/",
+      "group": "standalone"
+    },
+    {
+      "id": "dzhon-gill-chast-1-chelovek",
+      "title": "Джон Гилл (1697–1771). Часть I: Человек",
+      "url": "/articles/dzhon-gill-chast-1-chelovek/",
+      "group": "gill"
+    },
+    {
+      "id": "dzhon-gill-chast-2-uchenyi",
+      "title": "Джон Гилл (1697–1771). Часть II: Учёный",
+      "url": "/articles/dzhon-gill-chast-2-uchenyi/",
+      "group": "gill"
+    },
+    {
+      "id": "dzhon-gill-chast-3-nasledie",
+      "title": "Джон Гилл (1697–1771). Часть III: Наследие",
+      "url": "/articles/dzhon-gill-chast-3-nasledie/",
+      "group": "gill"
+    },
+    {
+      "id": "dzhon-gill-istoricheskiy-kontekst",
+      "title": "Джон Гилл: исторический контекст",
+      "url": "/articles/dzhon-gill-istoricheskiy-kontekst/",
+      "group": "gill"
+    },
+    {
+      "id": "dzhon-gill-spravochnik",
+      "title": "Джон Гилл: справочник",
+      "url": "/articles/dzhon-gill-spravochnik/",
+      "group": "gill"
+    },
+    {
+      "id": "hermenevticheskaya-otsenka-hristotsentrichnoy-germenevtiki",
+      "title": "Оценка христоцентричной герменевтики",
+      "url": "/articles/hermenevticheskaya-otsenka-hristotsentrichnoy-germenevtiki/",
+      "group": "standalone"
+    },
+    {
+      "id": "kod-da-vinchi",
+      "title": "«Код да Винчи»: мифы о Марии Магдалине и Никее",
+      "url": "/articles/kod-da-vinchi/",
+      "group": "standalone"
+    },
+    {
+      "id": "krajne-li-isporcheno-serdce",
+      "title": "Крайне ли испорчено сердце верующего?",
+      "url": "/articles/krajne-li-isporcheno-serdce/",
+      "group": "hard-texts"
+    },
+    {
+      "id": "rimlyanam-7-veruyushchiy-ili-neveruyushchiy",
+      "title": "Римлянам 7: верующий, неверующий или человек под законом?",
+      "url": "/articles/rimlyanam-7-veruyushchiy-ili-neveruyushchiy/",
+      "group": "hard-texts"
+    }
+  ],
+  "edges": [
+    [
+      "dzhon-gill-chast-1-chelovek",
+      "dzhon-gill-istoricheskiy-kontekst"
+    ],
+    [
+      "dzhon-gill-chast-1-chelovek",
+      "dzhon-gill-chast-2-uchenyi"
+    ],
+    [
+      "dzhon-gill-chast-1-chelovek",
+      "dzhon-gill-chast-3-nasledie"
+    ],
+    [
+      "dzhon-gill-chast-1-chelovek",
+      "dzhon-gill-spravochnik"
+    ],
+    [
+      "dzhon-gill-chast-2-uchenyi",
+      "dzhon-gill-istoricheskiy-kontekst"
+    ],
+    [
+      "dzhon-gill-chast-2-uchenyi",
+      "dzhon-gill-chast-1-chelovek"
+    ],
+    [
+      "dzhon-gill-chast-2-uchenyi",
+      "dzhon-gill-chast-3-nasledie"
+    ],
+    [
+      "dzhon-gill-chast-2-uchenyi",
+      "dzhon-gill-spravochnik"
+    ],
+    [
+      "dzhon-gill-chast-3-nasledie",
+      "dzhon-gill-istoricheskiy-kontekst"
+    ],
+    [
+      "dzhon-gill-chast-3-nasledie",
+      "dzhon-gill-chast-1-chelovek"
+    ],
+    [
+      "dzhon-gill-chast-3-nasledie",
+      "dzhon-gill-chast-2-uchenyi"
+    ],
+    [
+      "dzhon-gill-chast-3-nasledie",
+      "dzhon-gill-spravochnik"
+    ],
+    [
+      "dzhon-gill-istoricheskiy-kontekst",
+      "dzhon-gill-chast-1-chelovek"
+    ],
+    [
+      "dzhon-gill-istoricheskiy-kontekst",
+      "dzhon-gill-chast-2-uchenyi"
+    ],
+    [
+      "dzhon-gill-istoricheskiy-kontekst",
+      "dzhon-gill-chast-3-nasledie"
+    ],
+    [
+      "dzhon-gill-istoricheskiy-kontekst",
+      "dzhon-gill-spravochnik"
+    ],
+    [
+      "dzhon-gill-spravochnik",
+      "dzhon-gill-istoricheskiy-kontekst"
+    ],
+    [
+      "dzhon-gill-spravochnik",
+      "dzhon-gill-chast-1-chelovek"
+    ],
+    [
+      "dzhon-gill-spravochnik",
+      "dzhon-gill-chast-2-uchenyi"
+    ],
+    [
+      "dzhon-gill-spravochnik",
+      "dzhon-gill-chast-3-nasledie"
+    ],
+    [
+      "krajne-li-isporcheno-serdce",
+      "rimlyanam-7-veruyushchiy-ili-neveruyushchiy"
+    ],
+    [
+      "rimlyanam-7-veruyushchiy-ili-neveruyushchiy",
+      "krajne-li-isporcheno-serdce"
+    ]
+  ]
+}
