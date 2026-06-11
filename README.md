@@ -625,9 +625,12 @@ node scripts/audit-pro.js     # должно: ✅ PASSED
 │   └── sw-register.js                      ← регистрация SW
 │
 ├── data/                                   ← JSON-данные runtime
-│   ├── glossary.json
+│   ├── glossary.json                       ← 101 термин (definition+detail+category+aliases)
 │   ├── search-manifest.json
 │   ├── series.json
+│   ├── verses.json                         ← стихи для поповеров .gbx-verse
+│   ├── original-words.json                 ← слова оригинала для .gbx-ow
+│   ├── links-graph.json                    ← граф внутренних ссылок (/map/)
 │   └── strategic-map-antisovetov.json
 │
 ├── images/                                 ← все изображения (.webp основной)
@@ -640,6 +643,7 @@ node scripts/audit-pro.js     # должно: ✅ PASSED
 ├── AGENTS.md                               ← ⭐ контракт для ИИ-агентов
 ├── README.md                               ← этот файл
 ├── AUDIT_HISTORY.md                        ← changelog аудитов (v1..v27+)
+├── docs/GBS-PATTERN.md                     ← анатомия GBS-страницы (миграции серий)
 ├── audit/                                  ← последние audit-pro отчёты + планы
 │
 ├── scripts/                                ← build-инструменты (Node.js + Bash + Python)

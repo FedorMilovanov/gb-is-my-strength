@@ -1,4 +1,9 @@
-# PATTERN.md — анатомия GBS-страницы (эталон для миграции)
+# GBS-PATTERN.md — анатомия GBS-страницы (эталон для миграции)
+
+> Перенесено из `_agent-handoff/PATTERN.md` (2026-06-12) при закрытии временной
+> папки координации: раскатка GBS завершена, документ сохранён как постоянный
+> справочник для будущих миграций (Римлянам 8, новые части pastor-series).
+> Числа серии Гилла обновлены после пересчёта читminut (AGENTS-r104).
 
 > Шаблон собран из живых эталонов:
 > `articles/dzhon-gill-istoricheskiy-kontekst/index.html` (плоский TOC)
@@ -7,7 +12,7 @@
 > значения из README.md §4 и сверяйся с эталоном.
 
 Плейсхолдеры: `{N_ROMAN}` (I…V), `{N}` (1…5), `{TITLE}`, `{COVER}`,
-`{PART_MIN}`, `{DONE_MIN}`, `{TOTAL_MIN}`=89, `{PREV_*}/{NEXT_*}`.
+`{PART_MIN}`, `{DONE_MIN}`, `{TOTAL_MIN}`=69 (Гилл, после r104), `{PREV_*}/{NEXT_*}`.
 
 ---
 
@@ -36,7 +41,7 @@ bookmark-toast, все `<script>` подключения.
 ## Шаг 1. `<body>`
 
 ```html
-<body class="gbs-world" data-gbs2-done-min="{DONE_MIN}" data-gbs2-part-min="{PART_MIN}" data-gbs2-total-min="89">
+<body class="gbs-world" data-gbs2-done-min="{DONE_MIN}" data-gbs2-part-min="{PART_MIN}" data-gbs2-total-min="{TOTAL_MIN}">
 ```
 
 ## Шаг 2. Сразу после skip-link — мобильная шапка
@@ -58,7 +63,7 @@ bookmark-toast, все `<script>` подключения.
 
 - `aria-current="page"` — на ссылку текущей части (href="./");
 - проценты в `<b id="gbs2Pct">` — стартовое значение
-  `round((DONE_MIN / 89) * 100)`%, JS пересчитает;
+  `round((DONE_MIN / TOTAL_MIN) * 100)`%, JS пересчитает;
 - `<span id="gbs2Meta">Часть {N} из 5</span>`;
 - блок `.gbs2-current`: `--gbs2-cover:url(../../images/{COVER})`,
   заголовок = {TITLE};
