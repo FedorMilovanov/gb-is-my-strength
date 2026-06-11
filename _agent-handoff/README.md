@@ -48,7 +48,20 @@ CSS/JS-файла (всё в `css/site.css` секция `gbs2-*` и `js/enhance
 | `articles/dzhon-gill-chast-3-nasledie/` | ✅ GBS (3ed9189e), вложенный TOC 16 секций, done=56/part=22 |
 | `articles/dzhon-gill-spravochnik/` | ✅ GBS (bcf6389f), плоский TOC 9 секций, done=78/part=11, одна back-карточка |
 | Нагорная проповедь | ❄️ НЕ ТРОГАТЬ функционально (AGENTS-r95). Только cache-bust хэши |
-| hard-texts / pastor-series | 🔮 СЛЕДУЮЩИЙ КАНДИДАТ — только после «да» владельца |
+| `articles/krajne-li-isporcheno-serdce/` | ✅ GBS, серия hard-texts ч.1 (done=0/part=41/total=79), c1e69cb3 |
+| `articles/rimlyanam-7-veruyushchiy-ili-neveruyushchiy/` | ✅ GBS, ч.2 (done=41/part=18), planned-ч.3 показана приглушённой |
+| `zakon-duha-zhizni-rimlyanam-8` | 📝 planned в series.json — когда статья будет написана, мигрировать по PATTERN.md (done=59/part=?/total=обновить) |
+| pastor-series (1 статья) | 🔮 серия из одной части — GBS пока не имеет смысла, ждать новых частей |
+
+**Особенности hard-texts (отличия от Гилла) — учтены в CSS:**
+- Эти страницы используют `main.article-main` как прямой ребёнок `.gbs2-world`
+  (нет `div.page-wrap`). Селекторы расширены: `.gbs2-world>.article-main`
+  получил те же grid/width правила, что и `.page-wrap`.
+- Маркер `<!-- btocShareBtn is wired -->` на krajne ОТСУТСТВОВАЛ — границу
+  legacy-блока определять по `<script ... bookmark-engine.js`.
+- Guard G86 (reading-time drift): первая «~NN мин» на странице должна
+  совпадать с series.json ±20 мин. Поэтому в mobile-head пишем
+  «~41 мин» (минуты ЧАСТИ), а в rail-sub «79 мин серии» без тильды.
 
 **Финальный сквозной Playwright-проход 2026-06-11:** все 5 страниц —
 `world/rail/current/sheet-current/toc/timeline/bbar` ✅, legacy-блоков 0,
