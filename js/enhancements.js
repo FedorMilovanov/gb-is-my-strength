@@ -61,7 +61,7 @@
           if(lr.top<sr.top+46||lr.bottom>sr.bottom-46)scroller.scrollTo({top:Math.max(0,target),behavior:"smooth"});
         }
       }
-      var pc=pagePct(), seriesPc=Math.round(pc*(16/89)); /* part 1 readingTime / total series time */
+      var pc=pagePct(), doneMin=Number(document.body.getAttribute("data-gbs2-done-min")||0), partMin=Number(document.body.getAttribute("data-gbs2-part-min")||16), totalMin=Number(document.body.getAttribute("data-gbs2-total-min")||89), seriesPc=Math.round(((doneMin+(pc*partMin/100))/Math.max(1,totalMin))*100);
       if(curbar)curbar.style.width=pc+"%";
       if(ring)ring.style.strokeDashoffset=String(113-113*seriesPc/100);
       if(pctEl)pctEl.textContent=seriesPc+"%"; if(mobPct)mobPct.textContent=seriesPc+"%";

@@ -402,3 +402,6 @@ body.gbs-world article.article-body{font-size:calc(1em * var(--gbs2-font-scale,1
 
 /* GBS: H3 subpoints in rail and sheet TOC. */
 .gbs2-toc li.gbs2-sub a{padding-left:24px;font-size:10.8px;color:rgba(255,255,255,.54)}.gbs2-toc li.gbs2-sub .gbs2-dot{width:7px;height:7px;margin-top:-3.5px;left:-16px;border-width:1.5px}.gbs2-toc li.gbs2-sub a.gbs2-active{color:#fff}.gbs2-sheet-toclink.gbs2-sheet-sub{grid-template-columns:36px minmax(0,1fr);padding-left:22px;font-size:.94em;color:var(--color-text-muted)}.gbs2-sheet-toclink.gbs2-sheet-sub span{opacity:.72}
+
+/* GBS pilot pages use the rail TOC, not the legacy floating article TOC. */
+body.gbs-world .toc-sidebar{display:none}
