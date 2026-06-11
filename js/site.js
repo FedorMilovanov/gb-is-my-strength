@@ -92,3 +92,30 @@
     }, 0);
   }, false);
 })();
+;!function(){"use strict";
+/* §1.2 TTS — gospod-bog.ru sitewide article player */
+if(!("speechSynthesis" in window))return;
+var art=document.querySelector("article")||document.querySelector("main[data-pagefind-body]");
+if(!art)return;
+var body=art.querySelector(".article-body")||art;
+var paras=Array.from(body.querySelectorAll("p")).filter(function(p){return!p.closest("figcaption,.quiz-wrapper,.author-card,.sources-section,.summary-card,blockquote.pq-scripture,nav,.gbs2-rail")&&p.textContent.trim().length>20});
+if(paras.length<3)return;
+var idx=0,playing=false,rate=parseFloat(localStorage.getItem("gbx-tts-rate"))||1,speeds=[1,1.25,1.5],utt=null,C=2*Math.PI*17;
+var el=document.createElement("div");el.className="gbx-tts";el.setAttribute("role","region");el.setAttribute("aria-label","Аудиоплеер");
+el.innerHTML='<button class="gbx-tts-play" aria-label="Слушать статью" type="button"><svg class="gbx-tts-ring" viewBox="0 0 46 46" aria-hidden="true"><circle cx="23" cy="23" r="17" stroke-dasharray="'+C.toFixed(1)+'" stroke-dashoffset="'+C.toFixed(1)+'"/></svg><svg class="gbx-tts-ico-play" viewBox="0 0 24 24" aria-hidden="true"><polygon points="6,3 20,12 6,21"/></svg><svg class="gbx-tts-ico-pause" viewBox="0 0 24 24" aria-hidden="true" style="display:none"><rect x="5" y="3" width="4" height="18" rx="1"/><rect x="15" y="3" width="4" height="18" rx="1"/></svg></button><div class="gbx-tts-meta"><span class="gbx-tts-label">Слушать</span><span class="gbx-tts-section">Нажмите ▶</span></div><button class="gbx-tts-speed" type="button" aria-label="Скорость">'+rate+'\u00d7</button><button class="gbx-tts-close" type="button" aria-label="Закрыть"><svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" aria-hidden="true"><path d="M1 1l12 12M13 1L1 13"/></svg></button>';
+var btn=el.querySelector(".gbx-tts-play"),iP=el.querySelector(".gbx-tts-ico-play"),iQ=el.querySelector(".gbx-tts-ico-pause"),ring=el.querySelector(".gbx-tts-ring circle"),mL=el.querySelector(".gbx-tts-label"),mS=el.querySelector(".gbx-tts-section"),sB=el.querySelector(".gbx-tts-speed"),cB=el.querySelector(".gbx-tts-close");
+document.body.appendChild(el);setTimeout(function(){el.classList.add("gbx-tts--visible")},1200);
+function uR(){var p=paras.length>1?idx/(paras.length-1):0;ring.style.strokeDashoffset=(C*(1-p)).toFixed(1)}
+function sI(){iP.style.display=playing?"none":"";iQ.style.display=playing?"":"none";mL.textContent=playing?"Читаю":"Пауза"}
+function cH(){body.querySelectorAll(".gbx-speaking").forEach(function(e){e.classList.remove("gbx-speaking")})}
+function hL(p){cH();p.classList.add("gbx-speaking");p.scrollIntoView({behavior:"smooth",block:"center"})}
+function sP(i){if(i>=paras.length){st();return}idx=i;uR();var t=paras[i].textContent.replace(/\s+/g," ").trim();var sh=t.length>50?t.slice(0,50)+"\u2026":t;mS.textContent=sh;hL(paras[i]);utt=new SpeechSynthesisUtterance(t);utt.lang="ru-RU";utt.rate=rate;utt.onend=function(){if(playing)sP(i+1)};utt.onerror=function(e){if(e.error!=="canceled"&&e.error!=="interrupted"&&playing)sP(i+1)};speechSynthesis.speak(utt)}
+function pl(){if(playing)return;playing=true;sI();speechSynthesis.cancel();setTimeout(function(){sP(idx)},50)}
+function pa(){playing=false;sI();speechSynthesis.cancel();cH();mL.textContent="Пауза"}
+function st(){playing=false;idx=0;sI();speechSynthesis.cancel();cH();uR();mS.textContent="Нажмите ▶";mL.textContent="Слушать"}
+btn.addEventListener("click",function(){playing?pa():pl()});
+sB.addEventListener("click",function(){var si=speeds.indexOf(rate);rate=speeds[(si+1)%speeds.length];localStorage.setItem("gbx-tts-rate",String(rate));sB.textContent=rate+"\u00d7";if(playing){speechSynthesis.cancel();setTimeout(function(){sP(idx)},50)}});
+cB.addEventListener("click",function(){st();el.classList.remove("gbx-tts--visible");setTimeout(function(){el.remove()},300)});
+window.addEventListener("beforeunload",function(){speechSynthesis.cancel()});
+document.addEventListener("visibilitychange",function(){if(!playing)return;document.hidden?speechSynthesis.pause():speechSynthesis.resume()});
+}();
