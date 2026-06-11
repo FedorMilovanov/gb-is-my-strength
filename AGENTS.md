@@ -792,36 +792,41 @@ CSS поддерживает оба типа:
 
 JS `site.js` функция `e()` инжектит SVG тело голубя только в `.fn-marker--dove`.
 
-### 9.11 Series Navigator — единый компонент (с 2026-06-08)
-Серии (Нагорная, Гилл, Пастор-серия) **обязаны** использовать единый компонент, не плодя inline-styled карточки на каждой статье:
+### 9.11 Series World (GBS) — единый канон для серий статей (с 2026-06-11, r96–r99)
 
-- **`<aside data-series-strip="<key>"></aside>`** — компактный strip (prev | dots | next) сверху статьи. Авто-выделяет текущую часть по URL slug.
-- **`<aside data-series-nav="<key>"></aside>`** — расширенный сайдбар-навигатор (опционально, для очень длинных серий).
-- **`<div data-series-cards="<key>"></div>`** — большие карточки для индекс-страниц (`/articles/`, `/biografii/` и т.д.) — без изменений (legacy).
+Все многочастные серии статей используют **GBS** («мир серии»):
+тёмный левый рельс (desktop) + sticky-шапка и нижняя капсула со шторкой (mobile),
+weighted-прогресс серии по минутам, живой TOC, hero+kinetic, prev/next-карточки,
+era-timeline. Живые эталоны: 5 страниц Гилла + 2 hard-texts.
 
-Все 3 компонента читают из `data/series.json`:
+- Стили: `css/site.css`, секция `body.gbs-world` / `gbs2-*` (минифицировано, ~строки 369–373).
+- Поведение: `js/enhancements.js`, 3 IIFE «GBS reference pilot v2».
+- Анатомия миграции страницы, плейсхолдеры и грабли: **`_agent-handoff/PATTERN.md`** (пока папка существует).
+- `data/series.json` остаётся источником данных серий (тайтлы/slug'и/минуты/status); формат прежний:
 ```json
 {
   "<series-key>": {
     "title": "Название серии",
-    "baseUrl": "/articles/",      // или "/nagornaya/" и т.д.
+    "baseUrl": "/articles/",
     "parts": [
       {"n": 1, "slug": "url-slug-of-part", "title": "Часть I. Заголовок", "status": "published", "readingTime": 25}
     ]
   }
 }
 ```
-
-Подключение JS: `<script defer src="../../js/series-cards.js?v=..."></script>` (один файл на все 3 режима).
+- Прогресс серии в рельсе — data-атрибуты на body: `data-gbs2-done-min` (сумма минут предыдущих частей), `data-gbs2-part-min`, `data-gbs2-total-min`. При добавлении части — пересчитать на ВСЕХ страницах серии + series.json.
+- Для встраивания gbs2-компонентов (timeline, next-card) на страницы БЕЗ `body.gbs-world` (лендинги серий, каталоги) — класс **`.gbs2-scope`** на секции-контейнере (даёт переменные light+dark). Пример: `/hard-texts/`.
+- `status: "planned"` части показываются приглушёнными (`opacity:.55`, без href) в рельсе/шторке/next-картах.
 
 **Запрещено:**
-- Дублировать inline-карточки «Часть I / II / III» вручную в HTML (как было в трилогии о Гилле до r75 — 4 КБ inline-styled CSS на каждой странице ⇒ при добавлении новой части серии нужно править 5 страниц синхронно ⇒ регрессии).
-- Создавать новые JS-файлы для каждой серии. Один `series-cards.js` обслуживает все.
-- Вкладывать ссылки-точки внутрь `<button class="gb-strip__toggle">`. Это invalid interactive nesting и уже ломало strip: клик по toggle уводил на следующую статью вместо открытия dropdown. Dots/links должны быть sibling `.gb-strip__dots`, а toggle — только кнопка открытия списка.
+- Возвращать legacy series-UI: `data-series-strip` / `data-series-nav` / `.gb-strip` / `.series-next-cta` — удалены со всех страниц в r96–r97. Рендереры strip/nav в `js/series-cards.js` оставлены как мёртвый код до решения владельца, `data-series-cards` (каталоги) — единственный живой режим; сам файл к article-страницам больше не подключается (r99).
+- Дублировать inline-карточки «Часть I / II / III» вручную в HTML.
+- Создавать новые CSS/JS-файлы под серию — GBS живёт в существующих файлах.
+- Оставлять при миграции legacy-блоки `#reading-progress`, `#section-label`, старый `#themeToggle`, `#tocSidebar`, `#bottomBar`, `#btocOverlay` — именно так упал агент до r96 (двойная полоса прогресса).
 
-**Нагорная проповедь** — историческое исключение (свой Tailwind-sidebar + nagornaya-mobile-toc.js). Не трогать; новых серий по такому образцу не плодить — использовать `data-series-strip` / `data-series-nav`.
+**Нагорная проповедь** — историческое исключение (свой Tailwind-sidebar + nagornaya-mobile-toc.js). Не трогать; новые серии делать на GBS.
 
-Перед изменением `series-cards.js` или `.gb-strip` обязательно прогнать `npm run interactive-audit`: он кликает strip dropdown на Gill + hard-texts series и проверяет, что URL не меняется, dropdown видим и закрывается по outside click.
+Перед изменением GBS-кода обязательно прогнать `npm run interactive-audit`: он проверяет на всех 7 series-страницах рельс/aria-current/toc/ring, отсутствие legacy-UI, клик по TOC (скролл, не навигация), а на мобиле — открытие шторки, переключение вкладок и закрытие.
 
 
 ### 9.10 John Gill image system — final editorial lock
