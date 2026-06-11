@@ -2052,7 +2052,7 @@ const JS_SIZE_FLOORS = {
   // bytes, current snapshot 2026-06-09. Bump only on intentional growth.
   'js/site.js':            { soft: 140_000, hard: 180_000 },
   'js/search.js':          { soft: 38_000,  hard: 55_000 },
-  'js/enhancements.js':    { soft: 28_000,  hard: 40_000 },
+  'js/enhancements.js':    { soft: 34_000,  hard: 48_000 }, // 2026-06-11: intentional growth — GBS phase 2 behavior module (honest progress, resume, keyboard, fallbacks) per _agent-handoff/ROADMAP.md §0
   'js/highlights.js':      { soft: 17_000,  hard: 26_000 },
   'js/bookmark-engine.js': { soft: 12_000,  hard: 20_000 },
   'js/glossary.js':        { soft:  6_000,  hard: 12_000 },
