@@ -79,42 +79,60 @@ async function openPage(browser, urlPath, viewport = { width: 1200, height: 800 
 
 async function checkSeries(browser) {
   for (const url of SERIES_URLS) {
-    const page = await openPage(browser, url);
-    const count = await page.locator('.gb-strip__toggle').count();
-    if (!count) { push('series-missing-toggle', url, 'no .gb-strip__toggle'); await page.close(); continue; }
-    const before = page.url();
-    try { await page.locator('.gb-strip__toggle').first().click({ timeout: 5000 }); }
-    catch (e) { push('series-toggle-click-failed', url, e.message.slice(0, 240)); await page.close(); continue; }
-    await page.waitForTimeout(250);
-    const after = page.url();
-    const state = await page.evaluate(() => {
-      const dd = document.querySelector('.gb-strip__dropdown');
-      const btn = document.querySelector('.gb-strip__toggle');
-      if (!dd || !btn) return null;
-      const r = dd.getBoundingClientRect();
-      const cs = getComputedStyle(dd);
-      return {
-        hidden: dd.hidden,
-        display: cs.display,
-        w: Math.round(r.width),
-        h: Math.round(r.height),
-        aria: btn.getAttribute('aria-expanded'),
-        btnContainsAnchor: !!document.querySelector('.gb-strip__toggle a'),
-        dotsOutside: !!document.querySelector('.gb-strip__center > .gb-strip__dots'),
-      };
-    });
-    if (after !== before) push('series-toggle-navigated', url, { before, after });
-    if (!state || state.hidden || state.display === 'none' || state.w < 100 || state.h < 40 || state.aria !== 'true') {
-      push('series-dropdown-not-visible', url, state);
+    // Desktop: GBS rail must exist with current part + live toc, no legacy UI
+    const page = await openPage(browser, url, { width: 1366, height: 850 });
+    const state = await page.evaluate(() => ({
+      world: !!document.querySelector('.gbs2-world'),
+      rail: !!document.querySelector('.gbs2-rail'),
+      railVisible: (() => { const r = document.querySelector('.gbs2-rail'); if (!r) return false; const b = r.getBoundingClientRect(); return b.width > 200 && b.height > 400; })(),
+      current: !!document.querySelector('.gbs2-part[aria-current="page"]'),
+      tocLinks: document.querySelectorAll('.gbs2-toc a').length,
+      ring: !!document.getElementById('gbs2Ring'),
+      legacy: ['reading-progress', 'bottomBar', 'btocOverlay', 'tocSidebar', 'themeToggle'].filter(id => document.getElementById(id)),
+      oldSeriesUi: document.querySelectorAll('[data-series-strip],[data-series-nav],.gb-strip,.series-next-cta').length,
+    }));
+    if (!state.world || !state.rail) push('gbs-world-missing', url, state);
+    else {
+      if (!state.railVisible) push('gbs-rail-not-visible', url, state);
+      if (!state.current) push('gbs-no-current-part', url, state);
+      if (!state.tocLinks) push('gbs-empty-toc', url, state);
+      if (!state.ring) push('gbs-no-progress-ring', url, state);
     }
-    if (state && state.btnContainsAnchor) push('series-button-contains-anchor', url, state);
-    if (state && !state.dotsOutside) push('series-dots-not-outside-toggle', url, state);
-    await page.mouse.click(10, 10);
-    await page.waitForTimeout(120);
-    const closed = await page.evaluate(() => document.querySelector('.gb-strip__dropdown')?.hidden);
-    if (!closed) push('series-dropdown-does-not-close-outside', url, null);
-    stats.series++;
+    if (state.legacy.length) push('gbs-legacy-leftover', url, state.legacy);
+    if (state.oldSeriesUi) push('gbs-old-series-ui-leftover', url, state.oldSeriesUi);
+    // toc click must scroll, not navigate away
+    const before = page.url();
+    const clicked = await page.evaluate(() => {
+      const a = document.querySelector('.gbs2-toc a'); if (!a) return false; a.click(); return true;
+    });
+    await page.waitForTimeout(300);
+    if (clicked && page.url().split('#')[0] !== before.split('#')[0]) push('gbs-toc-click-navigated', url, page.url());
     await page.close();
+
+    // Mobile: bottom capsule opens sheet, tabs switch, sheet closes
+    const mob = await openPage(browser, url, { width: 390, height: 844 });
+    const mobState = await mob.evaluate(() => ({
+      head: !!document.querySelector('.gbs2-mobile-head'),
+      bbar: !!document.getElementById('gbs2Bbar'),
+      sheet: !!document.getElementById('gbs2Sheet'),
+    }));
+    if (!mobState.head || !mobState.bbar || !mobState.sheet) { push('gbs-mobile-ui-missing', url, mobState); await mob.close(); continue; }
+    try { await mob.locator('#gbs2Bbar').click({ timeout: 5000 }); } catch (e) { push('gbs-sheet-open-failed', url, e.message.slice(0, 200)); await mob.close(); continue; }
+    await mob.waitForTimeout(350);
+    const open = await mob.evaluate(() => document.getElementById('gbs2Sheet').classList.contains('gbs2-open'));
+    if (!open) push('gbs-sheet-did-not-open', url, null);
+    const tabOk = await mob.evaluate(() => {
+      const t = document.querySelector('.gbs2-sheet-tab[data-gbs2-tab="toc"]'); if (!t) return false; t.click();
+      const pane = document.querySelector('.gbs2-sheet-pane[data-gbs2-pane="toc"]');
+      return !!(pane && pane.classList.contains('gbs2-on'));
+    });
+    if (!tabOk) push('gbs-sheet-tab-broken', url, null);
+    await mob.evaluate(() => { const c = document.querySelector('[data-gbs2-close]'); if (c) c.click(); });
+    await mob.waitForTimeout(250);
+    const closed = await mob.evaluate(() => !document.getElementById('gbs2Sheet').classList.contains('gbs2-open'));
+    if (!closed) push('gbs-sheet-did-not-close', url, null);
+    stats.series++;
+    await mob.close();
   }
 }
 
@@ -179,7 +197,7 @@ async function checkGlossary(browser) {
 
 async function visibleThemeHandle(page) {
   return await page.evaluateHandle(() => {
-    const selectors = ['.gb-fc-theme', '#barThemeBtn', '#themeToggle', '.theme-toggle', '.nag-sidebar-theme-btn'];
+    const selectors = ['.gbs2-mctl[data-gbs2-theme]', '.gbs2-ctl[data-gbs2-theme]', '.gb-fc-theme', '#barThemeBtn', '#themeToggle', '.theme-toggle', '.nag-sidebar-theme-btn'];
     function visible(el) {
       const cs = getComputedStyle(el);
       const r = el.getBoundingClientRect();

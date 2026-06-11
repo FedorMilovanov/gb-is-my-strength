@@ -4143,6 +4143,40 @@ const JS_SIZE_FLOORS = {
   }
 })();
 
+// G113. GBS series-world integrity contract.
+//   Every body.gbs-world page must carry the full GBS kit and ZERO legacy
+//   series/progress UI. This is exactly the failure mode of the crashed agent
+//   before r96: GBS inserted, legacy blocks left behind -> double progress bars.
+(function gbsWorldIntegrityGuard() {
+  const offenders = [];
+  let worldPages = 0;
+  for (const abs of htmlPages) {
+    const html = fs.readFileSync(abs, 'utf8');
+    if (!/<body[^>]*class="[^"]*\bgbs-world\b/.test(html)) continue;
+    worldPages++;
+    const p = rel(abs);
+    const probs = [];
+    // required kit
+    if (!/data-gbs2-done-min="\d+"/.test(html) || !/data-gbs2-part-min="\d+"/.test(html) || !/data-gbs2-total-min="\d+"/.test(html))
+      probs.push('missing data-gbs2-*-min attrs');
+    for (const need of ['gbs2-mobile-head', 'class="gbs2-world"', 'class="gbs2-rail"', 'id="gbs2Ring"', 'id="gbs2Toc"', 'id="gbs2Bbar"', 'id="gbs2Sheet"'])
+      if (!html.includes(need)) probs.push(`missing ${need}`);
+    if (!/<a\b(?=[^>]*\bclass="[^"]*\bgbs2-part\b)(?=[^>]*aria-current="page")[^>]*>/.test(html))
+      probs.push('no aria-current part in rail');
+    // forbidden legacy leftovers
+    for (const bad of ['id="reading-progress"', 'id="bottomBar"', 'id="btocOverlay"', 'id="tocSidebar"', 'id="themeToggle"', 'data-series-strip', 'data-series-nav', 'series-next-cta'])
+      if (html.includes(bad)) probs.push(`legacy leftover: ${bad}`);
+    // dead script: series-cards.js is catalog-only since r99
+    if (/js\/series-cards\.js/.test(html)) probs.push('series-cards.js linked on a gbs-world page (dead weight)');
+    if (probs.length) offenders.push(`${p}: ${probs.join('; ')}`);
+  }
+  if (offenders.length) {
+    R.err(`GBS world integrity violations:\n  - ${offenders.join('\n  - ')}`);
+  } else {
+    R.ok(`GBS world integrity: ${worldPages} pages carry full kit, zero legacy series UI`);
+  }
+})();
+
 // Output
 const duration = ((Date.now() - R.start) / 1000).toFixed(2);
 const sep = '═'.repeat(78);
