@@ -24,7 +24,8 @@
     "source:links": "node scripts/source-link-audit.js",
     "validate:external": "npm run source:links",
     "validate:static-publication": "npm run validate:all && npm run tokens:check && node scripts/audit-pro.js && npm run readable-audit && npm run editorial:lint && npm run data:consistency",
-    "workflows:check": "node scripts/check-workflows.js"
+    "workflows:check": "node scripts/check-workflows.js",
+    "typograf:dry": "node scripts/typograf.js --dry-run"
   },
   "engines": {
     "node": ">=20"
