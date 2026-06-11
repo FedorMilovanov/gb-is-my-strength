@@ -86,11 +86,11 @@ jobs:
           URLS=$(printf '%s\n' "$URLS" \
             | sed 's|^index\.html$||' \
             | sed 's|/index\.html$|/|' \
-            | sed '/^$/!s|^|${BASE}/|' \
+            | sed "/^\$/!s|^|${BASE}/|" \
             | jq -R 'select(length > 0)' | jq -sc .)
 
           # Always include homepage so IndexNow gets at least one canonical URL.
-          URLS=$(echo "$URLS" | jq --arg home "${BASE}/" '. + [$home] | unique')
+          URLS=$(echo "$URLS" | jq -c --arg home "${BASE}/" '. + [$home] | unique')
 
           echo "urls=$URLS"             >> $GITHUB_OUTPUT
           echo "key=$KEY"               >> $GITHUB_OUTPUT
