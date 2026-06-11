@@ -4,71 +4,133 @@
       "id": "20-antisovetov-pastoru",
       "title": "20 антисоветов, как пастору разрушить своё служение",
       "url": "/articles/20-antisovetov-pastoru/",
-      "group": "standalone"
+      "group": "standalone",
+      "readingTime": 0
     },
     {
       "id": "dzhon-gill-chast-1-chelovek",
       "title": "Джон Гилл (1697–1771). Часть I: Человек",
       "url": "/articles/dzhon-gill-chast-1-chelovek/",
-      "group": "gill"
+      "group": "gill",
+      "readingTime": 0
     },
     {
       "id": "dzhon-gill-chast-2-uchenyi",
       "title": "Джон Гилл (1697–1771). Часть II: Учёный",
       "url": "/articles/dzhon-gill-chast-2-uchenyi/",
-      "group": "gill"
+      "group": "gill",
+      "readingTime": 0
     },
     {
       "id": "dzhon-gill-chast-3-nasledie",
       "title": "Джон Гилл (1697–1771). Часть III: Наследие",
       "url": "/articles/dzhon-gill-chast-3-nasledie/",
-      "group": "gill"
+      "group": "gill",
+      "readingTime": 0
     },
     {
       "id": "dzhon-gill-istoricheskiy-kontekst",
       "title": "Джон Гилл: исторический контекст",
       "url": "/articles/dzhon-gill-istoricheskiy-kontekst/",
-      "group": "gill"
+      "group": "gill",
+      "readingTime": 0
     },
     {
       "id": "dzhon-gill-spravochnik",
       "title": "Джон Гилл: справочник",
       "url": "/articles/dzhon-gill-spravochnik/",
-      "group": "gill"
+      "group": "gill",
+      "readingTime": 0
     },
     {
       "id": "hermenevticheskaya-otsenka-hristotsentrichnoy-germenevtiki",
       "title": "Оценка христоцентричной герменевтики",
       "url": "/articles/hermenevticheskaya-otsenka-hristotsentrichnoy-germenevtiki/",
-      "group": "standalone"
+      "group": "standalone",
+      "readingTime": 0
     },
     {
       "id": "kod-da-vinchi",
       "title": "«Код да Винчи»: мифы о Марии Магдалине и Никее",
       "url": "/articles/kod-da-vinchi/",
-      "group": "standalone"
+      "group": "standalone",
+      "readingTime": 0
     },
     {
       "id": "krajne-li-isporcheno-serdce",
       "title": "Крайне ли испорчено сердце верующего?",
       "url": "/articles/krajne-li-isporcheno-serdce/",
-      "group": "hard-texts"
+      "group": "hard-texts",
+      "readingTime": 0
     },
     {
       "id": "rimlyanam-7-veruyushchiy-ili-neveruyushchiy",
       "title": "Римлянам 7: верующий, неверующий или человек под законом?",
       "url": "/articles/rimlyanam-7-veruyushchiy-ili-neveruyushchiy/",
-      "group": "hard-texts"
+      "group": "hard-texts",
+      "readingTime": 0
+    },
+    {
+      "id": "nagornaya-chast-1",
+      "title": "Два текста, один Иисус",
+      "url": "/nagornaya/chast-1/",
+      "group": "nagornaya",
+      "readingTime": 0
+    },
+    {
+      "id": "nagornaya-chast-2",
+      "title": "Синоптическая проблема",
+      "url": "/nagornaya/chast-2/",
+      "group": "nagornaya",
+      "readingTime": 0
+    },
+    {
+      "id": "nagornaya-chast-3",
+      "title": "Кому адресована Нагорная проповедь? Часть III",
+      "url": "/nagornaya/chast-3/",
+      "group": "nagornaya",
+      "readingTime": 0
+    },
+    {
+      "id": "nagornaya-chast-4",
+      "title": "Можно ли доверять Евангелиям? Часть IV",
+      "url": "/nagornaya/chast-4/",
+      "group": "nagornaya",
+      "readingTime": 0
+    },
+    {
+      "id": "nagornaya-chast-5",
+      "title": "Закон и Евангелие",
+      "url": "/nagornaya/chast-5/",
+      "group": "nagornaya",
+      "readingTime": 0
+    },
+    {
+      "id": "biografii",
+      "title": "Биографии служителей",
+      "url": "/biografii/",
+      "group": "landing",
+      "readingTime": 0
+    },
+    {
+      "id": "hard-texts",
+      "title": "Тайны человеческого сердца",
+      "url": "/hard-texts/",
+      "group": "landing",
+      "readingTime": 0
+    },
+    {
+      "id": "pastor-series",
+      "title": "Тёмная сторона кафедры",
+      "url": "/pastor-series/",
+      "group": "landing",
+      "readingTime": 0
     }
   ],
   "edges": [
     [
-      "dzhon-gill-chast-1-chelovek",
-      "dzhon-gill-istoricheskiy-kontekst"
-    ],
-    [
-      "dzhon-gill-chast-1-chelovek",
-      "dzhon-gill-chast-2-uchenyi"
+      "20-antisovetov-pastoru",
+      "pastor-series"
     ],
     [
       "dzhon-gill-chast-1-chelovek",
@@ -76,15 +138,19 @@
     ],
     [
       "dzhon-gill-chast-1-chelovek",
+      "dzhon-gill-chast-2-uchenyi"
+    ],
+    [
+      "dzhon-gill-chast-1-chelovek",
+      "biografii"
+    ],
+    [
+      "dzhon-gill-chast-1-chelovek",
       "dzhon-gill-spravochnik"
     ],
     [
-      "dzhon-gill-chast-2-uchenyi",
+      "dzhon-gill-chast-1-chelovek",
       "dzhon-gill-istoricheskiy-kontekst"
-    ],
-    [
-      "dzhon-gill-chast-2-uchenyi",
-      "dzhon-gill-chast-1-chelovek"
     ],
     [
       "dzhon-gill-chast-2-uchenyi",
@@ -92,10 +158,18 @@
     ],
     [
       "dzhon-gill-chast-2-uchenyi",
+      "dzhon-gill-chast-1-chelovek"
+    ],
+    [
+      "dzhon-gill-chast-2-uchenyi",
+      "biografii"
+    ],
+    [
+      "dzhon-gill-chast-2-uchenyi",
       "dzhon-gill-spravochnik"
     ],
     [
-      "dzhon-gill-chast-3-nasledie",
+      "dzhon-gill-chast-2-uchenyi",
       "dzhon-gill-istoricheskiy-kontekst"
     ],
     [
@@ -108,15 +182,15 @@
     ],
     [
       "dzhon-gill-chast-3-nasledie",
+      "biografii"
+    ],
+    [
+      "dzhon-gill-chast-3-nasledie",
       "dzhon-gill-spravochnik"
     ],
     [
-      "dzhon-gill-istoricheskiy-kontekst",
-      "dzhon-gill-chast-1-chelovek"
-    ],
-    [
-      "dzhon-gill-istoricheskiy-kontekst",
-      "dzhon-gill-chast-2-uchenyi"
+      "dzhon-gill-chast-3-nasledie",
+      "dzhon-gill-istoricheskiy-kontekst"
     ],
     [
       "dzhon-gill-istoricheskiy-kontekst",
@@ -124,31 +198,231 @@
     ],
     [
       "dzhon-gill-istoricheskiy-kontekst",
+      "dzhon-gill-chast-1-chelovek"
+    ],
+    [
+      "dzhon-gill-istoricheskiy-kontekst",
+      "biografii"
+    ],
+    [
+      "dzhon-gill-istoricheskiy-kontekst",
       "dzhon-gill-spravochnik"
+    ],
+    [
+      "dzhon-gill-istoricheskiy-kontekst",
+      "dzhon-gill-chast-2-uchenyi"
+    ],
+    [
+      "dzhon-gill-spravochnik",
+      "dzhon-gill-chast-3-nasledie"
+    ],
+    [
+      "dzhon-gill-spravochnik",
+      "dzhon-gill-chast-1-chelovek"
+    ],
+    [
+      "dzhon-gill-spravochnik",
+      "dzhon-gill-chast-2-uchenyi"
+    ],
+    [
+      "dzhon-gill-spravochnik",
+      "biografii"
     ],
     [
       "dzhon-gill-spravochnik",
       "dzhon-gill-istoricheskiy-kontekst"
     ],
     [
-      "dzhon-gill-spravochnik",
-      "dzhon-gill-chast-1-chelovek"
+      "hermenevticheskaya-otsenka-hristotsentrichnoy-germenevtiki",
+      "kod-da-vinchi"
     ],
     [
-      "dzhon-gill-spravochnik",
-      "dzhon-gill-chast-2-uchenyi"
+      "hermenevticheskaya-otsenka-hristotsentrichnoy-germenevtiki",
+      "krajne-li-isporcheno-serdce"
     ],
     [
-      "dzhon-gill-spravochnik",
-      "dzhon-gill-chast-3-nasledie"
+      "kod-da-vinchi",
+      "hermenevticheskaya-otsenka-hristotsentrichnoy-germenevtiki"
+    ],
+    [
+      "kod-da-vinchi",
+      "krajne-li-isporcheno-serdce"
+    ],
+    [
+      "krajne-li-isporcheno-serdce",
+      "hard-texts"
+    ],
+    [
+      "krajne-li-isporcheno-serdce",
+      "hermenevticheskaya-otsenka-hristotsentrichnoy-germenevtiki"
     ],
     [
       "krajne-li-isporcheno-serdce",
       "rimlyanam-7-veruyushchiy-ili-neveruyushchiy"
     ],
     [
+      "krajne-li-isporcheno-serdce",
+      "kod-da-vinchi"
+    ],
+    [
+      "rimlyanam-7-veruyushchiy-ili-neveruyushchiy",
+      "hard-texts"
+    ],
+    [
       "rimlyanam-7-veruyushchiy-ili-neveruyushchiy",
       "krajne-li-isporcheno-serdce"
+    ],
+    [
+      "nagornaya-chast-1",
+      "nagornaya-chast-5"
+    ],
+    [
+      "nagornaya-chast-1",
+      "hermenevticheskaya-otsenka-hristotsentrichnoy-germenevtiki"
+    ],
+    [
+      "nagornaya-chast-1",
+      "nagornaya-chast-3"
+    ],
+    [
+      "nagornaya-chast-1",
+      "nagornaya-chast-2"
+    ],
+    [
+      "nagornaya-chast-1",
+      "nagornaya-chast-4"
+    ],
+    [
+      "nagornaya-chast-1",
+      "krajne-li-isporcheno-serdce"
+    ],
+    [
+      "nagornaya-chast-2",
+      "nagornaya-chast-1"
+    ],
+    [
+      "nagornaya-chast-2",
+      "nagornaya-chast-5"
+    ],
+    [
+      "nagornaya-chast-2",
+      "hermenevticheskaya-otsenka-hristotsentrichnoy-germenevtiki"
+    ],
+    [
+      "nagornaya-chast-2",
+      "nagornaya-chast-3"
+    ],
+    [
+      "nagornaya-chast-2",
+      "nagornaya-chast-4"
+    ],
+    [
+      "nagornaya-chast-2",
+      "krajne-li-isporcheno-serdce"
+    ],
+    [
+      "nagornaya-chast-3",
+      "nagornaya-chast-1"
+    ],
+    [
+      "nagornaya-chast-3",
+      "nagornaya-chast-5"
+    ],
+    [
+      "nagornaya-chast-3",
+      "hermenevticheskaya-otsenka-hristotsentrichnoy-germenevtiki"
+    ],
+    [
+      "nagornaya-chast-3",
+      "nagornaya-chast-2"
+    ],
+    [
+      "nagornaya-chast-3",
+      "nagornaya-chast-4"
+    ],
+    [
+      "nagornaya-chast-3",
+      "krajne-li-isporcheno-serdce"
+    ],
+    [
+      "nagornaya-chast-4",
+      "nagornaya-chast-2"
+    ],
+    [
+      "nagornaya-chast-4",
+      "nagornaya-chast-5"
+    ],
+    [
+      "nagornaya-chast-4",
+      "nagornaya-chast-1"
+    ],
+    [
+      "nagornaya-chast-4",
+      "nagornaya-chast-3"
+    ],
+    [
+      "nagornaya-chast-5",
+      "nagornaya-chast-1"
+    ],
+    [
+      "nagornaya-chast-5",
+      "hermenevticheskaya-otsenka-hristotsentrichnoy-germenevtiki"
+    ],
+    [
+      "nagornaya-chast-5",
+      "nagornaya-chast-3"
+    ],
+    [
+      "nagornaya-chast-5",
+      "nagornaya-chast-2"
+    ],
+    [
+      "nagornaya-chast-5",
+      "nagornaya-chast-4"
+    ],
+    [
+      "nagornaya-chast-5",
+      "krajne-li-isporcheno-serdce"
+    ],
+    [
+      "biografii",
+      "dzhon-gill-chast-3-nasledie"
+    ],
+    [
+      "biografii",
+      "dzhon-gill-chast-1-chelovek"
+    ],
+    [
+      "biografii",
+      "dzhon-gill-chast-2-uchenyi"
+    ],
+    [
+      "biografii",
+      "dzhon-gill-spravochnik"
+    ],
+    [
+      "biografii",
+      "dzhon-gill-istoricheskiy-kontekst"
+    ],
+    [
+      "hard-texts",
+      "biografii"
+    ],
+    [
+      "hard-texts",
+      "rimlyanam-7-veruyushchiy-ili-neveruyushchiy"
+    ],
+    [
+      "hard-texts",
+      "krajne-li-isporcheno-serdce"
+    ],
+    [
+      "pastor-series",
+      "20-antisovetov-pastoru"
+    ],
+    [
+      "pastor-series",
+      "biografii"
     ]
   ]
 }
