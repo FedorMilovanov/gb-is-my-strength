@@ -361,3 +361,60 @@ return caches.open(CACHE).then(function(c){return Promise.all(urls.map(function(
 }).then(function(){checkCached();btn.disabled=false}).catch(function(){btn.textContent="Ошибка";btn.disabled=false;setTimeout(checkCached,2000)})
 });
 }();
+;!function(){"use strict";
+/* §2.4a — Backlinks/outlinks block at bottom of articles */
+var art=document.querySelector("article")||document.querySelector("main[data-pagefind-body]");
+if(!art)return;
+var path=decodeURIComponent(location.pathname).replace(/\/+$/,"/")+"/";
+path=path.replace(/\/\//g,"/");
+
+fetch("/data/links-graph.json").then(function(r){return r.ok?r.json():null}).then(function(d){
+if(!d||!d.nodes||!d.edges)return;
+var me=null;
+d.nodes.forEach(function(n){if(path.indexOf(n.url.replace(/\/$/,"/"))>-1||path.indexOf("/"+n.id+"/")>-1)me=n});
+if(!me)return;
+
+var outIds=new Set(),inIds=new Set();
+d.edges.forEach(function(e){
+if(e[0]===me.id)outIds.add(e[1]);
+if(e[1]===me.id)inIds.add(e[0]);
+});
+
+// Remove self and series-internal (same group) for cleaner display
+var nodeMap={};
+d.nodes.forEach(function(n){nodeMap[n.id]=n});
+
+function makeBlock(title,icon,ids){
+if(!ids.size)return null;
+var filtered=[];
+ids.forEach(function(id){
+var n=nodeMap[id];
+if(n&&n.group!==me.group)filtered.push(n); // cross-group only for clean display
+});
+// If no cross-group, show all
+if(!filtered.length)ids.forEach(function(id){var n=nodeMap[id];if(n)filtered.push(n)});
+if(!filtered.length)return null;
+
+var sec=document.createElement("section");
+sec.className="gbx-backlinks";
+sec.innerHTML='<div class="gbx-backlinks__title"><svg viewBox="0 0 24 24"><path d="'+icon+'"/></svg>'+title+'</div><div class="gbx-backlinks__grid"></div>';
+var grid=sec.querySelector(".gbx-backlinks__grid");
+filtered.forEach(function(n){
+var a=document.createElement("a");
+a.className="gbx-backlinks__link";
+a.href=n.url;
+var groupNames={gill:"Джон Гилл","hard-texts":"Тайны сердца",nagornaya:"Нагорная",standalone:"Статья",landing:"Каталог"};
+a.innerHTML=n.title+'<small>'+(groupNames[n.group]||"")+'</small>';
+grid.appendChild(a);
+});
+return sec;
+}
+
+var outBlock=makeBlock("Эта статья ссылается на","M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6M15 3h6v6M10 14L21 3",outIds);
+var inBlock=makeBlock("На эту статью ссылаются","M15 18l-6-6 6-6",inIds);
+
+var insertPoint=art.querySelector(".author-card")||art.querySelector(".related-articles")||art.lastElementChild;
+if(outBlock&&insertPoint)insertPoint.parentNode.insertBefore(outBlock,insertPoint);
+if(inBlock&&insertPoint)insertPoint.parentNode.insertBefore(inBlock,insertPoint);
+});
+}();
