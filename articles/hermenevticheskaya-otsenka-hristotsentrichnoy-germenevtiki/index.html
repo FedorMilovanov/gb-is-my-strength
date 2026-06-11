@@ -249,7 +249,7 @@
  (function(){try{var t=localStorage.getItem('theme');if(t==='dark'||(!t&&window.matchMedia('(prefers-color-scheme: dark)').matches)){document.documentElement.classList.add('dark');}}catch(e){}})();
  </script>
 <!-- Shared styles -->
-<link href="../../css/site.css?v=0acda523" rel="stylesheet"/>
+<link href="../../css/site.css?v=bd21c665" rel="stylesheet"/>
 <script>
 window.SITE_CONFIG = {
  "version": 1778943682,
@@ -774,7 +774,7 @@ window.SITE_CONFIG = {
 <link href="../../css/command-palette.css?v=7dffba7c" rel="stylesheet"/>
 <link href="../../css/mobile-hotfix.css?v=a7abca8e" rel="stylesheet"/>
 </head>
-<body>
+<body class="gbs-paper">
 <div id="reading-progress"></div>
 <div aria-hidden="true" id="section-label"></div>
 <button aria-label="Наверх" id="back-to-top" type="button">
@@ -995,7 +995,7 @@ window.SITE_CONFIG = {
 </div>
 <h2 id="sec-quiz" style="font-size: clamp(1.6rem, 3.5vw, 2rem); border-bottom: 1px solid var(--border); padding-bottom: 0.75rem; margin-top: 3.5rem; margin-bottom: 1.5rem; font-family: var(--font-heading, 'Lora', Georgia, serif); font-weight: 700;">Проверь себя</h2>
 <div id="quizPlaceholder"></div>
-<aside class="author-card">
+<div aria-hidden="true" class="gbs2-vignette"></div><aside class="author-card">
 <div aria-hidden="true" class="author-card-icon">ФМ</div>
 <div class="author-card-body">
 <div class="author-card-label">Редактор</div>
