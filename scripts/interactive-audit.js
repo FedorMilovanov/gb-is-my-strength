@@ -300,12 +300,18 @@ async function checkMediaViewerAndShare(browser) {
     if (imgCount > 0) {
       await page.locator('.article-figure img, .article-img img, .nagornaya-hero-img').first().click({ force: true });
       await page.waitForTimeout(250);
-      const opened = await page.evaluate(() => ({ open: !!document.querySelector('.img-viewer.is-open'), overflow: document.documentElement.style.overflow }));
-      if (!opened.open || opened.overflow !== 'hidden') push('image-viewer-did-not-open-lock-scroll', url, opened);
+      const opened = await page.evaluate(() => ({
+        open: !!document.querySelector('.img-viewer.is-open, .gbx-imgview.gbx-imgview--open'),
+        scrollLocked: document.documentElement.dataset.scrollLocked === '1' || document.body.style.position === 'fixed' || document.documentElement.style.overflow === 'hidden'
+      }));
+      if (!opened.open || !opened.scrollLocked) push('image-viewer-did-not-open-lock-scroll', url, opened);
       await page.keyboard.press('Escape');
       await page.waitForTimeout(420);
-      const closed = await page.evaluate(() => ({ open: !!document.querySelector('.img-viewer.is-open'), overflow: document.documentElement.style.overflow }));
-      if (closed.open || closed.overflow) push('image-viewer-escape-did-not-close', url, closed);
+      const closed = await page.evaluate(() => ({
+        open: !!document.querySelector('.img-viewer.is-open, .gbx-imgview.gbx-imgview--open'),
+        scrollLocked: document.documentElement.dataset.scrollLocked === '1' || document.body.style.position === 'fixed' || document.documentElement.style.overflow === 'hidden'
+      }));
+      if (closed.open || closed.scrollLocked) push('image-viewer-escape-did-not-close', url, closed);
     }
     const endShare = await page.locator('#articleEndShareBtn').count();
     if (endShare > 0) {
