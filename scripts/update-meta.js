@@ -49,7 +49,6 @@ function toMoscowISO(d) {
   return `${m.getUTCFullYear()}-${p(m.getUTCMonth()+1)}-${p(m.getUTCDate())}T${p(m.getUTCHours())}:${p(m.getUTCMinutes())}:${p(m.getUTCSeconds())}${TZ_OFFSET}`;
 }
 
-function toDate(d)           { return toMoscowISO(d).slice(0, 10); }
 function toSitemapLastmod(d) { return toMoscowISO(d); }  // SITEMAP-01: full ISO8601 with +03:00
 
 function normalizeSitemapLastmods(xml) {
@@ -279,7 +278,7 @@ function updateSitemap(changes, nagornayaChanges = {}) {
     const url = `${BASE_URL}/articles/${slug}/`;
     xml = xml.replace(
       new RegExp(`(<loc>${reEsc(url)}<\\/loc>\\s*<lastmod>)[^<]*(<\\/lastmod>)`, 'g'),
-      `$1${toDate(modISO)}$2`);
+      `$1${toSitemapLastmod(modISO)}$2`);
   }
 
   // Обновить lastmod существующих страниц nagornaya/*
@@ -287,7 +286,7 @@ function updateSitemap(changes, nagornayaChanges = {}) {
     const url = `${BASE_URL}/nagornaya/${slug}/`;
     xml = xml.replace(
       new RegExp(`(<loc>${reEsc(url)}<\\/loc>\\s*<lastmod>)[^<]*(<\\/lastmod>)`, 'g'),
-      `$1${toDate(modISO)}$2`);
+      `$1${toSitemapLastmod(modISO)}$2`);
   }
 
   // Добавить новые
@@ -304,7 +303,7 @@ function updateSitemap(changes, nagornayaChanges = {}) {
   if (latest) {
     xml = xml.replace(
       new RegExp(`(<loc>${reEsc(BASE_URL + '/')}<\\/loc>\\s*<lastmod>)[^<]*(<\\/lastmod>)`, 'g'),
-      `$1${toDate(latest)}$2`);
+      `$1${toSitemapLastmod(latest)}$2`);
   }
 
   writeIfChanged(SITEMAP, xml, 'sitemap.xml');
