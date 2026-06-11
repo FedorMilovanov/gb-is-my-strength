@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Карта связей | Господь Бог — сила моя</title>
+<meta name="description" content="Интерактивная карта связей между всеми статьями сайта gospod-bog.ru — визуализация богословских тем и внутренних ссылок">
+<meta name="robots" content="index, follow">
+<link rel="canonical" href="https://gospod-bog.ru/map/">
+<meta property="og:title" content="Карта связей | Господь Бог — сила моя">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://gospod-bog.ru/map/">
+<meta property="og:description" content="Интерактивная визуализация связей между статьями сайта">
+<meta property="og:image" content="https://gospod-bog.ru/images/og-preview-1200x630.webp">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Карта связей | Господь Бог — сила моя">
+<meta name="twitter:description" content="Интерактивная визуализация связей между статьями сайта">
+<meta name="twitter:image" content="https://gospod-bog.ru/images/og-preview-1200x630.webp">
+<meta name="twitter:site" content="@FedorMilovanov">
+<meta name="twitter:creator" content="@FedorMilovanov">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:type" content="image/webp">
+<link rel="alternate" type="application/rss+xml" title="gospod-bog.ru RSS" href="https://gospod-bog.ru/feed.xml">
+<meta name="theme-color" content="#fdfcf9" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#0e1116" media="(prefers-color-scheme: dark)">
+<style>
+*{box-sizing:border-box;margin:0}
+:root{--bg:#fdfcf9;--fg:#1a1a1a;--muted:#6a6a6a;--border:#e5e2dc;--accent:#7a2e2e;--accent2:#0f766e;--surface:#fff;--gill:#7a2e2e;--hard:#2563eb;--nag:#0f766e;--stand:#6d5a2e;--landing:#8b5cf6}
+html.dark{--bg:#0e1116;--fg:#e6e1d7;--muted:#6b7280;--border:#232830;--accent:#d4a574;--accent2:#34d399;--surface:#161a21;--gill:#d4a574;--hard:#60a5fa;--nag:#34d399;--stand:#e8b878;--landing:#a78bfa}
+body{background:var(--bg);color:var(--fg);font-family:'Source Sans 3',system-ui,sans-serif;min-height:100vh;display:flex;flex-direction:column}
+.map-header{padding:24px max(24px,4vw);display:flex;align-items:center;justify-content:space-between;gap:16px;border-bottom:1px solid var(--border)}
+.map-header h1{font-family:'Playfair Display',Georgia,serif;font-size:clamp(20px,4vw,32px);font-weight:700;line-height:1.2}
+.map-back{color:var(--muted);text-decoration:none;font-size:14px;font-weight:600;white-space:nowrap;display:flex;align-items:center;gap:6px;transition:color .15s}
+.map-back:hover{color:var(--fg)}
+.map-back svg{width:14px;height:14px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.map-theme{width:36px;height:36px;border:none;background:none;cursor:pointer;color:var(--fg);display:flex;align-items:center;justify-content:center;border-radius:50%;transition:background .15s}
+.map-theme:hover{background:var(--border)}
+.map-theme svg{width:18px;height:18px;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.map-legend{display:flex;flex-wrap:wrap;gap:12px 20px;padding:16px max(24px,4vw);font-size:12px;font-weight:600;color:var(--muted)}
+.map-legend span{display:flex;align-items:center;gap:5px}
+.map-legend i{width:10px;height:10px;border-radius:50%;flex-shrink:0}
+.map-wrap{flex:1;position:relative;overflow:hidden}
+#mapCanvas{width:100%;height:100%;cursor:grab}
+#mapCanvas:active{cursor:grabbing}
+.map-node{cursor:pointer;transition:opacity .15s}
+.map-node:hover{opacity:1 !important}
+.map-node circle{transition:r .2s,filter .2s}
+.map-node:hover circle{filter:drop-shadow(0 0 8px currentColor)}
+.map-node text{font-family:'Source Sans 3',system-ui,sans-serif;fill:var(--fg);font-size:11px;font-weight:600;pointer-events:none;text-anchor:middle}
+.map-edge{stroke:var(--border);stroke-width:1;fill:none;opacity:.4;transition:opacity .2s,stroke .2s}
+.map-edge.map-edge--hl{opacity:1;stroke-width:2}
+.map-tooltip{position:fixed;z-index:100;padding:12px 16px;border-radius:12px;background:var(--surface);border:1px solid var(--border);box-shadow:0 8px 24px rgba(0,0,0,.15);font-size:13px;max-width:260px;pointer-events:none;opacity:0;transition:opacity .15s;line-height:1.5}
+.map-tooltip.show{opacity:1;pointer-events:auto}
+.map-tooltip strong{display:block;font-size:14px;margin-bottom:4px;color:var(--fg)}
+.map-tooltip .mt-group{font-size:10px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;margin-bottom:6px}
+.map-tooltip .mt-links{font-size:12px;color:var(--muted)}
+.map-tooltip a{color:var(--accent);text-decoration:none;font-weight:700;display:block;margin-top:8px;font-size:13px}
+.map-tooltip a:hover{text-decoration:underline}
+html.dark .map-tooltip{background:var(--surface);border-color:var(--border);box-shadow:0 8px 24px rgba(0,0,0,.5)}
+@media (max-width:600px){.map-header{padding:16px}.map-legend{padding:12px 16px;gap:8px 14px}}
+@media (prefers-reduced-motion:reduce){.map-node circle,.map-edge,.map-tooltip{transition:none}}
+</style>
+</head>
+<body>
+<header class="map-header">
+<a class="map-back" href="/"><svg viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6"/></svg>Главная</a>
+<h1>Карта связей</h1>
+<button class="map-theme" id="mapTheme" aria-label="Переключить тему" type="button">
+<svg class="icon-moon" viewBox="0 0 24 24"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>
+</button>
+</header>
+<div class="map-legend">
+<span><i style="background:var(--gill)"></i>Джон Гилл</span>
+<span><i style="background:var(--hard)"></i>Тайны сердца</span>
+<span><i style="background:var(--nag)"></i>Нагорная</span>
+<span><i style="background:var(--stand)"></i>Статьи</span>
+<span><i style="background:var(--landing)"></i>Каталоги</span>
+</div>
+<div class="map-wrap">
+<svg id="mapCanvas" viewBox="0 0 900 600"></svg>
+</div>
+<div class="map-tooltip" id="mapTip"></div>
+
+<script>
+(function(){
+  var dark = localStorage.getItem('theme')==='dark' || (!localStorage.getItem('theme') && matchMedia('(prefers-color-scheme:dark)').matches);
+  if(dark) document.documentElement.classList.add('dark');
+  document.getElementById('mapTheme').addEventListener('click',function(){
+    document.documentElement.classList.toggle('dark');
+    localStorage.setItem('theme',document.documentElement.classList.contains('dark')?'dark':'light');
+  });
+
+  var svg = document.getElementById('mapCanvas');
+  var tip = document.getElementById('mapTip');
+  var W = 900, H = 600;
+
+  fetch('/data/links-graph.json').then(function(r){return r.json()}).then(function(data){
+    var nodes = data.nodes, edges = data.edges;
+    var N = nodes.length;
+    var idxMap = {};
+    nodes.forEach(function(n,i){idxMap[n.id]=i});
+
+    // Force-directed layout — simple simulation
+    var pos = nodes.map(function(n,i){
+      var angle = (i/N)*Math.PI*2;
+      var r = 180 + Math.random()*60;
+      return {x: W/2 + Math.cos(angle)*r, y: H/2 + Math.sin(angle)*r, vx:0, vy:0};
+    });
+
+    // Group centers for initial clustering
+    var gc = {gill:{x:250,y:200},nagornaya:{x:650,y:180},'hard-texts':{x:450,y:420},standalone:{x:700,y:420},landing:{x:450,y:120}};
+    nodes.forEach(function(n,i){
+      var c = gc[n.group];
+      if(c){pos[i].x = c.x + (Math.random()-.5)*120; pos[i].y = c.y + (Math.random()-.5)*80;}
+    });
+
+    // Simulate
+    for(var iter=0;iter<300;iter++){
+      var alpha = 1 - iter/300;
+      // Repulsion
+      for(var i=0;i<N;i++){
+        for(var j=i+1;j<N;j++){
+          var dx=pos[j].x-pos[i].x, dy=pos[j].y-pos[i].y;
+          var d=Math.sqrt(dx*dx+dy*dy)||1;
+          var f = 4000/(d*d) * alpha;
+          pos[i].vx -= dx/d*f; pos[i].vy -= dy/d*f;
+          pos[j].vx += dx/d*f; pos[j].vy += dy/d*f;
+        }
+      }
+      // Attraction along edges
+      edges.forEach(function(e){
+        var ai=idxMap[e[0]], bi=idxMap[e[1]];
+        if(ai==null||bi==null)return;
+        var dx=pos[bi].x-pos[ai].x, dy=pos[bi].y-pos[ai].y;
+        var d=Math.sqrt(dx*dx+dy*dy)||1;
+        var f = (d-120)*0.005*alpha;
+        pos[ai].vx += dx/d*f; pos[ai].vy += dy/d*f;
+        pos[bi].vx -= dx/d*f; pos[bi].vy -= dy/d*f;
+      });
+      // Center gravity
+      for(var i=0;i<N;i++){
+        pos[i].vx += (W/2-pos[i].x)*0.001*alpha;
+        pos[i].vy += (H/2-pos[i].y)*0.001*alpha;
+        pos[i].x += pos[i].vx; pos[i].y += pos[i].vy;
+        pos[i].vx *= 0.9; pos[i].vy *= 0.9;
+        pos[i].x = Math.max(50, Math.min(W-50, pos[i].x));
+        pos[i].y = Math.max(40, Math.min(H-40, pos[i].y));
+      }
+    }
+
+    // Color map
+    var colors = {gill:'var(--gill)','hard-texts':'var(--hard)',nagornaya:'var(--nag)',standalone:'var(--stand)',landing:'var(--landing)'};
+
+    // Render edges
+    var edgeEls = [];
+    edges.forEach(function(e){
+      var ai=idxMap[e[0]], bi=idxMap[e[1]];
+      if(ai==null||bi==null)return;
+      var line = document.createElementNS('http://www.w3.org/2000/svg','line');
+      line.setAttribute('x1',pos[ai].x); line.setAttribute('y1',pos[ai].y);
+      line.setAttribute('x2',pos[bi].x); line.setAttribute('y2',pos[bi].y);
+      line.classList.add('map-edge');
+      line.dataset.from = e[0]; line.dataset.to = e[1];
+      svg.appendChild(line);
+      edgeEls.push(line);
+    });
+
+    // Render nodes
+    var nodeEls = [];
+    nodes.forEach(function(n,i){
+      var g = document.createElementNS('http://www.w3.org/2000/svg','g');
+      g.classList.add('map-node');
+      g.dataset.id = n.id;
+      
+      // Count connections
+      var conns = edges.filter(function(e){return e[0]===n.id||e[1]===n.id}).length;
+      var r = Math.max(8, Math.min(18, 6 + conns*1.2));
+      
+      var circle = document.createElementNS('http://www.w3.org/2000/svg','circle');
+      circle.setAttribute('cx', pos[i].x);
+      circle.setAttribute('cy', pos[i].y);
+      circle.setAttribute('r', r);
+      circle.setAttribute('fill', colors[n.group]||'var(--accent)');
+      circle.setAttribute('stroke', 'var(--bg)');
+      circle.setAttribute('stroke-width', '2');
+      g.appendChild(circle);
+
+      // Short label
+      var label = n.title.length>25 ? n.title.slice(0,22)+'…' : n.title;
+      var text = document.createElementNS('http://www.w3.org/2000/svg','text');
+      text.setAttribute('x', pos[i].x);
+      text.setAttribute('y', pos[i].y + r + 14);
+      text.textContent = label;
+      g.appendChild(text);
+
+      svg.appendChild(g);
+      nodeEls.push({el:g, node:n, idx:i, r:r});
+    });
+
+    // Interactions
+    var activeNode = null;
+
+    function highlight(nodeId){
+      activeNode = nodeId;
+      var connected = new Set();
+      edges.forEach(function(e){
+        if(e[0]===nodeId){connected.add(e[1]);}
+        if(e[1]===nodeId){connected.add(e[0]);}
+      });
+      
+      nodeEls.forEach(function(ne){
+        var isActive = ne.node.id===nodeId;
+        var isConn = connected.has(ne.node.id);
+        ne.el.style.opacity = (isActive||isConn) ? '1' : '0.15';
+        if(isActive) ne.el.querySelector('circle').setAttribute('r', ne.r*1.3);
+      });
+      
+      edgeEls.forEach(function(le){
+        var isHL = (le.dataset.from===nodeId||le.dataset.to===nodeId);
+        le.classList.toggle('map-edge--hl', isHL);
+        le.style.opacity = isHL ? '1' : '0.06';
+        if(isHL){
+          var color = colors[nodes[idxMap[nodeId]].group] || 'var(--accent)';
+          le.setAttribute('stroke', color);
+        } else {
+          le.removeAttribute('stroke');
+        }
+      });
+    }
+
+    function unhighlight(){
+      activeNode = null;
+      nodeEls.forEach(function(ne){
+        ne.el.style.opacity = '';
+        ne.el.querySelector('circle').setAttribute('r', ne.r);
+      });
+      edgeEls.forEach(function(le){
+        le.classList.remove('map-edge--hl');
+        le.style.opacity = '';
+        le.removeAttribute('stroke');
+      });
+      tip.classList.remove('show');
+    }
+
+    var groupNames = {gill:'Джон Гилл','hard-texts':'Тайны сердца',nagornaya:'Нагорная проповедь',standalone:'Статья',landing:'Каталог'};
+
+    nodeEls.forEach(function(ne){
+      ne.el.addEventListener('pointerenter', function(e){
+        highlight(ne.node.id);
+        var conns = edges.filter(function(ed){return ed[0]===ne.node.id||ed[1]===ne.node.id}).length;
+        tip.innerHTML = '<div class="mt-group" style="color:'+
+          (colors[ne.node.group]||'var(--accent)')+'">'+
+          (groupNames[ne.node.group]||ne.node.group)+'</div>'+
+          '<strong>'+ne.node.title+'</strong>'+
+          '<div class="mt-links">'+conns+' связ'+(conns===1?'ь':conns<5?'и':'ей')+'</div>'+
+          '<a href="'+ne.node.url+'">Открыть →</a>';
+        tip.classList.add('show');
+        var rect = svg.getBoundingClientRect();
+        var nx = rect.left + pos[ne.idx].x/W*rect.width;
+        var ny = rect.top + pos[ne.idx].y/H*rect.height;
+        tip.style.left = Math.min(nx + 20, window.innerWidth - 280) + 'px';
+        tip.style.top = Math.max(10, ny - 30) + 'px';
+      });
+      ne.el.addEventListener('pointerleave', function(){
+        unhighlight();
+      });
+      ne.el.addEventListener('click', function(){
+        window.location.href = ne.node.url;
+      });
+    });
+
+    svg.addEventListener('pointerleave', unhighlight);
+  });
+})();
+</script>
+</body>
+</html>
