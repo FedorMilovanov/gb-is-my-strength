@@ -456,3 +456,18 @@ obs.observe(el);
 }();
 
 ;!function(){"use strict";var ov=null;function co(){if(ov)return;ov=document.createElement("div");ov.className="gbx-imgview";ov.addEventListener("click",function(){ov.classList.remove("gbx-imgview--open");if(window.SiteUtils)SiteUtils.unlockScroll("imgview")});document.body.appendChild(ov)}document.addEventListener("click",function(e){var img=e.target.closest&&e.target.closest(".article-img img, .bio-cover img");if(!img)return;e.preventDefault();co();var c=document.createElement("img");c.src=img.currentSrc||img.src;c.alt=img.alt||"";ov.innerHTML="";ov.appendChild(c);requestAnimationFrame(function(){ov.classList.add("gbx-imgview--open")});if(window.SiteUtils)SiteUtils.lockScroll("imgview")});document.addEventListener("keydown",function(e){if(e.key==="Escape"&&ov&&ov.classList.contains("gbx-imgview--open")){ov.classList.remove("gbx-imgview--open");if(window.SiteUtils)SiteUtils.unlockScroll("imgview")}});}();
+;!function(){"use strict";
+/* Rail thumbnails: inject roman numeral into gradient circles */
+document.querySelectorAll(".gbs2-thumb").forEach(function(t){
+if(t.querySelector(".gbs2-thumb-num"))return;
+var pn=t.parentElement&&t.parentElement.querySelector(".gbs2-pn");
+if(!pn)return;
+var m=pn.textContent.match(/^([IVXLC]+)/);
+if(!m)return;
+var s=document.createElement("span");
+s.className="gbs2-thumb-num";
+s.textContent=m[1];
+s.setAttribute("aria-hidden","true");
+t.appendChild(s);
+});
+}();
