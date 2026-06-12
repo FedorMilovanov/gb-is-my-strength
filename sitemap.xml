@@ -20,6 +20,20 @@
     <image:image><image:loc>https://gospod-bog.ru/images/og-preview-1200x630.webp</image:loc></image:image>
   </url>
   <url>
+    <loc>https://gospod-bog.ru/konfessii/</loc>
+    <lastmod>2026-06-12T00:00:00+03:00</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+    <image:image><image:loc>https://gospod-bog.ru/images/og-konfessii-1200x630.webp</image:loc></image:image>
+  </url>
+  <url>
+    <loc>https://gospod-bog.ru/konfessii/russkij-baptizm/</loc>
+    <lastmod>2026-06-12T00:00:00+03:00</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+    <image:image><image:loc>https://gospod-bog.ru/images/og-konfessii-russkij-baptizm-1200x630.webp</image:loc></image:image>
+  </url>
+  <url>
     <loc>https://gospod-bog.ru/karty/</loc>
     <lastmod>2026-06-12T00:00:00+03:00</lastmod>
     <changefreq>weekly</changefreq>
