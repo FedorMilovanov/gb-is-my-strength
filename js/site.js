@@ -416,6 +416,13 @@ var inBlock=makeBlock("На эту статью ссылаются","M15 18l-6-6
 var insertPoint=art.querySelector(".author-card")||art.querySelector(".related-articles")||art.lastElementChild;
 if(outBlock&&insertPoint)insertPoint.parentNode.insertBefore(outBlock,insertPoint);
 if(inBlock&&insertPoint)insertPoint.parentNode.insertBefore(inBlock,insertPoint);
+if((outBlock||inBlock)&&insertPoint){
+var mapLink=document.createElement("a");
+mapLink.className="gbx-backlinks__maplink";
+mapLink.href="/map/?focus="+encodeURIComponent(me.id);
+mapLink.innerHTML='<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="5" cy="6" r="2"/><circle cx="19" cy="6" r="2"/><circle cx="12" cy="18" r="2"/><path d="M7 7l3 9M17 7l-3 9M7 6h10"/></svg>Посмотреть на карте связей';
+(inBlock||outBlock).appendChild(mapLink);
+}
 });
 }();
 ;!function(){"use strict";
