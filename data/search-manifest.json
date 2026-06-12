@@ -1,490 +1,493 @@
 {
- "version": 1,
- "generatedAt": "2026-06-10T00:00:00+03:00",
- "project": {
-  "name": "Господь Бог — Сила Моя",
-  "url": "https://gospod-bog.ru/",
-  "curator": "Фёдор Милованов",
-  "curatorRole": "Редактор-составитель и куратор библиотеки",
-  "curatorUrl": "/about/"
- },
- "items": [
-  {
-   "id": "nagornaya-seriya",
-   "type": "series",
-   "url": "/nagornaya/seriya/",
-   "title": "Нагорная проповедь — полная серия",
-   "description": "Сравнительное исследование Матфея 5–7 и Луки 6:17–49 в пяти частях · 120+ источников",
-   "section": "Нагорная проповедь",
-   "editor": "Фёдор Милованов",
-   "readTime": 89,
-   "image": "/images/og-nagornaya-propoved.webp",
-   "tags": [
-    "серия",
-    "Матфей 5–7",
-    "Лука 6",
-    "TMS"
-   ],
-   "featured": true,
-   "priority": 100,
-   "publishedTime": "2026-01-01T00:00:00+03:00",
-   "modifiedTime": "2026-05-01T00:00:00+03:00"
+  "version": 1,
+  "generatedAt": "2026-06-10T00:00:00+03:00",
+  "project": {
+    "name": "Господь Бог — Сила Моя",
+    "url": "https://gospod-bog.ru/",
+    "curator": "Фёдор Милованов",
+    "curatorRole": "Редактор-составитель и куратор библиотеки",
+    "curatorUrl": "/about/"
   },
-  {
-   "id": "dzhon-gill-seriya",
-   "type": "series",
-   "url": "/biografii/#dzhon-gill-series",
-   "title": "Джон Гилл (1697–1771) — биографическая серия",
-   "description": "Серия из 5 материалов о Джоне Гилле: исторический контекст, биография в трёх частях и справочник. По первичным источникам.",
-   "section": "Биографии служителей",
-   "editor": "Фёдор Милованов",
-   "readTime": 69,
-   "image": "/images/gill-authentic-study-cover.webp",
-   "tags": [
-    "серия",
-    "биографии",
-    "Джон Гилл",
-    "баптисты",
-    "XVIII век"
-   ],
-   "featured": true,
-   "priority": 96,
-   "publishedTime": "2026-05-26T00:00:00+03:00",
-   "modifiedTime": "2026-06-10T00:00:00+03:00"
-  },
-  {
-   "id": "dzhon-gill-istoricheskiy-kontekst",
-   "type": "article",
-   "url": "/articles/dzhon-gill-istoricheskiy-kontekst/",
-   "title": "Джон Гилл: исторический контекст — диссентеры, Саутварк, книги",
-   "description": "Англия после Акта о единообразии, правовое положение диссентеров, Хорслидаун, Goat’s Yard, Картер-Лейн и книжная культура, без которых биография Гилла теряет историческую плотность.",
-   "section": "Биографии служителей",
-   "editor": "Фёдор Милованов",
-   "readTime": 16,
-   "image": "/images/og-dzhon-gill-istoricheskiy-kontekst.webp",
-   "tags": [
-    "биографии",
-    "Джон Гилл",
-    "диссентеры",
-    "Саутварк",
-    "история церкви"
-   ],
-   "featured": true,
-   "priority": 95,
-   "publishedTime": "2026-06-01T00:00:00+03:00",
-   "modifiedTime": "2026-06-10T00:00:00+03:00"
-  },
-  {
-   "id": "pastor-series",
-   "type": "series",
-   "url": "/pastor-series/",
-   "title": "Тёмная сторона кафедры — серия материалов",
-   "description": "Системный анализ пасторских патологий: власть без подотчётности, манипуляция Писанием, портреты авторитарности и пути к здоровой церковной культуре.",
-   "section": "Служение",
-   "editor": "Фёдор Милованов",
-   "readTime": 67,
-   "image": "/images/pastor-series/hero-main.webp",
-   "tags": [
-    "серия",
-    "пасторство",
-    "диотрефство",
-    "авторитаризм",
-    "здоровая церковь"
-   ],
-   "featured": true,
-   "priority": 95,
-   "publishedTime": "2026-05-13T00:00:00+03:00",
-   "modifiedTime": "2026-05-13T00:00:00+03:00"
-  },
-  {
-   "id": "dzhon-gill-chast-1-chelovek",
-   "type": "article",
-   "url": "/articles/dzhon-gill-chast-1-chelovek/",
-   "title": "Джон Гилл (1697–1771). Часть I. Человек",
-   "description": "Защитник Троицы против унитарианства, самостоятельно освоивший иврит, девятитомный комментарий на всю Библию. Биография по первичным источникам.",
-   "section": "Биографии служителей",
-   "editor": "Фёдор Милованов",
-   "readTime": 21,
-   "image": "/images/gill-authentic-study-cover.webp",
-   "tags": [
-    "биографии",
-    "баптисты",
-    "богословие",
-    "экзегеза",
-    "Джон Гилл"
-   ],
-   "featured": true,
-   "priority": 92,
-   "modifiedTime": "2026-06-10T00:00:00+03:00",
-   "publishedTime": "2026-05-26T00:00:00+03:00"
-  },
-  {
-   "id": "dzhon-gill-chast-2-uchenyi",
-   "type": "article",
-   "url": "/articles/dzhon-gill-chast-2-uchenyi/",
-   "title": "Джон Гилл (1697–1771). Часть II. Учёный",
-   "description": "Экзегеза, систематика, иврит и раввинистика. Девятитомный комментарий на всю Библию и «Свод богословия» — первая баптистская систематика на английском.",
-   "section": "Биографии служителей",
-   "editor": "Фёдор Милованов",
-   "readTime": 8,
-   "image": "/images/gill-talmud-study-authentic.webp",
-   "tags": [
-    "биографии",
-    "Джон Гилл",
-    "экзегеза",
-    "систематика",
-    "иврит",
-    "раввинистика",
-    "Body of Divinity"
-   ],
-   "featured": true,
-   "priority": 91,
-   "publishedTime": "2026-05-26T00:00:00+03:00",
-   "modifiedTime": "2026-06-10T00:00:00+03:00"
-  },
-  {
-   "id": "rimlyanam-7-veruyushchiy-ili-neveruyushchiy",
-   "type": "article",
-   "url": "/articles/rimlyanam-7-veruyushchiy-ili-neveruyushchiy/",
-   "title": "Римлянам 7: верующий, неверующий или человек под законом?",
-   "description": "Дотошный разбор Рим. 7:14–25: Павел как верующий, человек под законом, Ллойд-Джонс, TMSJ/Jay Street и путь к Рим. 8:1.",
-   "section": "Богословие",
-   "editor": "Фёдор Милованов",
-   "readTime": 12,
-   "image": "/images/og-rimlyanam-7.webp",
-   "tags": [
-    "Римлянам 7",
-    "освящение",
-    "остаточный грех",
-    "плоть и Дух",
-    "Ллойд-Джонс",
-    "TMSJ"
-   ],
-   "featured": true,
-   "priority": 91,
-   "publishedTime": "2026-06-02T00:00:00+03:00",
-   "modifiedTime": "2026-06-04T00:00:00+03:00"
-  },
-  {
-   "id": "krajne-isporcheno",
-   "type": "article",
-   "url": "/articles/krajne-li-isporcheno-serdce/",
-   "title": "Крайне ли испорчено сердце верующего?",
-   "description": "Разбор Иеремии 17:9–10: сердце, самообман, новое сердце, остаточный грех и мост к Римлянам 7–8.",
-   "section": "Богословие",
-   "editor": "Фёдор Милованов",
-   "readTime": 41,
-   "image": "/images/og-krajne-isporcheno.webp",
-   "tags": [
-    "Иеремия",
-    "сердце",
-    "остаточный грех",
-    "Римлянам 7",
-    "освящение"
-   ],
-   "featured": true,
-   "priority": 90,
-   "modifiedTime": "2026-06-04T00:00:00+03:00",
-   "publishedTime": "2026-04-01T00:00:00+03:00"
-  },
-  {
-   "id": "20-antisovetov-pastoru",
-   "type": "article",
-   "url": "/articles/20-antisovetov-pastoru/",
-   "title": "20 антисоветов, как пастору разрушить своё служение",
-   "description": "Системный библейский анализ пасторских патологий: власть, подотчётность, страх, манипуляция Писанием и путь к здоровой церковной культуре.",
-   "section": "Служение",
-   "editor": "Фёдор Милованов",
-   "readTime": 67,
-   "image": "/images/pastor-series/hero-main.webp",
-   "tags": [
-    "пасторство",
-    "антисоветы",
-    "диотрефство",
-    "авторитаризм",
-    "подотчётность"
-   ],
-   "featured": false,
-   "priority": 90,
-   "publishedTime": "2026-05-13T00:00:00+03:00",
-   "wordCount": 12000,
-   "seriesId": "pastor-series",
-   "seriesPosition": 1,
-   "modifiedTime": "2026-05-21T23:09:05+03:00"
-  },
-  {
-   "id": "dzhon-gill-chast-3-nasledie",
-   "type": "article",
-   "url": "/articles/dzhon-gill-chast-3-nasledie/",
-   "title": "Джон Гилл (1697–1771). Часть III. Наследие",
-   "description": "Полемика с арминианством и Римом, влияние на Сперджена, спор о гиперкальвинизме, англо-американская преемственность и память о Гилле в XX–XXI веках.",
-   "section": "Биографии служителей",
-   "editor": "Фёдор Милованов",
-   "readTime": 16,
-   "image": "/images/og-dzhon-gill-chast-3-nasledie.webp",
-   "tags": [
-    "биографии",
-    "Джон Гилл",
-    "Сперджен",
-    "полемика",
-    "наследие",
-    "гиперкальвинизм"
-   ],
-   "featured": true,
-   "priority": 90,
-   "publishedTime": "2026-05-26T00:00:00+03:00",
-   "modifiedTime": "2026-06-10T00:00:00+03:00"
-  },
-  {
-   "id": "dzhon-gill-spravochnik",
-   "type": "article",
-   "url": "/articles/dzhon-gill-spravochnik/",
-   "title": "Джон Гилл: справочник — хронология, труды, источники",
-   "description": "Справочник к трилогии о Джоне Гилле: хронология жизни, основные труды, структура Body of Divinity, сеть влияний, источники и Богословский словарь эпохи.",
-   "section": "Биографии служителей",
-   "editor": "Фёдор Милованов",
-   "readTime": 8,
-   "image": "/images/og-gill-five-volumes-shelf.webp",
-   "tags": [
-    "биографии",
-    "Джон Гилл",
-    "справочник",
-    "хронология",
-    "Body of Divinity"
-   ],
-   "featured": true,
-   "priority": 88,
-   "publishedTime": "2026-06-01T00:00:00+03:00",
-   "modifiedTime": "2026-06-10T00:00:00+03:00"
-  },
-  {
-   "id": "hermenevtika",
-   "type": "article",
-   "url": "/articles/hermenevticheskaya-otsenka-hristotsentrichnoy-germenevtiki/",
-   "title": "Герменевтическая оценка христоцентричной герменевтики",
-   "description": "Грамматико-исторический метод оправдан Писанием и более чем достаточен — перевод Абнера Чау",
-   "section": "Переводы",
-   "author": "Абнер Чау",
-   "editor": "Фёдор Милованов",
-   "readTime": 50,
-   "image": "/images/hermenevtika-preview.webp",
-   "tags": [
-    "герменевтика",
-    "перевод",
-    "Чау",
-    "реформатское"
-   ],
-   "featured": true,
-   "priority": 88,
-   "modifiedTime": "2026-05-21T23:09:05+03:00",
-   "publishedTime": "2016-09-01"
-  },
-  {
-   "id": "biografii",
-   "type": "series",
-   "url": "/biografii/",
-   "title": "Биографии служителей",
-   "description": "Новый отдел: биографии пасторов, богословов, реформаторов и миссионеров — от Ранней Церкви до XXI века.",
-   "section": "Биографии служителей",
-   "editor": "Фёдор Милованов",
-   "readTime": 5,
-   "image": "/images/og-biografii.webp",
-   "tags": [
-    "биографии",
-    "христианское наследие",
-    "история церкви"
-   ],
-   "featured": true,
-   "priority": 85,
-   "modifiedTime": "2026-05-28T00:00:00+03:00",
-   "publishedTime": "2026-05-28T00:00:00+03:00"
-  },
-  {
-   "id": "kod-da-vinchi",
-   "type": "article",
-   "url": "/articles/kod-da-vinchi/",
-   "title": "«Код да Винчи»: блестящий триллер или историческая подмена?",
-   "description": "Никейский собор, канон Нового Завета, Свитки Мёртвого моря, Наг-Хаммади — что правда, а что вымысел",
-   "section": "Апологетика",
-   "editor": "Фёдор Милованов",
-   "readTime": 30,
-   "image": "/images/og-kod-da-vinchi.jpg",
-   "tags": [
-    "апологетика",
-    "Никея",
-    "канон",
-    "гностицизм"
-   ],
-   "featured": true,
-   "priority": 85,
-   "modifiedTime": "2026-05-21T23:09:05+03:00",
-   "publishedTime": "2026-04-01T00:00:00+03:00"
-  },
-  {
-   "id": "nagornaya-ch1",
-   "type": "article",
-   "url": "/nagornaya/chast-1/",
-   "title": "Нагорная проповедь — часть 1: Два текста, один Иисус",
-   "description": "Экзегеза Мф 5:1–12 и Лк 6:20–23 · Блаженства как инверсия ценностей Царства",
-   "section": "Нагорная проповедь",
-   "editor": "Фёдор Милованов",
-   "readTime": 16,
-   "image": "/images/og-nagornaya-propoved-chast-1.webp",
-   "tags": [
-    "Нагорная проповедь",
-    "Блаженства",
-    "Матфей 5"
-   ],
-   "featured": false,
-   "priority": 80,
-   "modifiedTime": "2026-05-22T00:46:34+03:00",
-   "publishedTime": "2026-05-01T00:00:00+03:00"
-  },
-  {
-   "id": "nagornaya-ch2",
-   "type": "article",
-   "url": "/nagornaya/chast-2/",
-   "title": "Нагорная проповедь — часть 2: Как это записывалось",
-   "description": "Мф 5:13–16 · Образ соли и светильника в контексте Второго Храма",
-   "section": "Нагорная проповедь",
-   "editor": "Фёдор Милованов",
-   "readTime": 11,
-   "image": "/images/og-nagornaya-propoved-chast-2.webp",
-   "tags": [
-    "Нагорная проповедь",
-    "Матфей 5"
-   ],
-   "featured": false,
-   "priority": 78,
-   "modifiedTime": "2026-05-22T00:46:34+03:00",
-   "publishedTime": "2026-05-01T00:00:00+03:00"
-  },
-  {
-   "id": "nagornaya-ch3",
-   "type": "article",
-   "url": "/nagornaya/chast-3/",
-   "title": "Нагорная проповедь — часть 3: Кому это сказано?",
-   "description": "Мф 5:17–48 · Христос как исполнение Закона · Антитезы и праведность",
-   "section": "Нагорная проповедь",
-   "editor": "Фёдор Милованов",
-   "readTime": 12,
-   "image": "/images/og-nagornaya-propoved-chast-3.webp",
-   "tags": [
-    "Нагорная проповедь",
-    "Матфей 5",
-    "Закон"
-   ],
-   "featured": false,
-   "priority": 76,
-   "modifiedTime": "2026-05-22T00:46:34+03:00",
-   "publishedTime": "2026-05-01T00:00:00+03:00"
-  },
-  {
-   "id": "nagornaya-ch4",
-   "type": "article",
-   "url": "/nagornaya/chast-4/",
-   "title": "Нагорная проповедь — часть 4: Можно ли доверять Евангелиям?",
-   "description": "Мф 6:1–18 · Отче наш · Внутреннее благочестие против показного",
-   "section": "Нагорная проповедь",
-   "editor": "Фёдор Милованов",
-   "readTime": 25,
-   "image": "/images/og-nagornaya-propoved-chast-4.webp",
-   "tags": [
-    "Нагорная проповедь",
-    "Молитва",
-    "Матфей 6"
-   ],
-   "featured": false,
-   "priority": 74,
-   "modifiedTime": "2026-05-22T00:46:34+03:00",
-   "publishedTime": "2026-05-01T00:00:00+03:00"
-  },
-  {
-   "id": "nagornaya-ch5",
-   "type": "article",
-   "url": "/nagornaya/chast-5/",
-   "title": "Нагорная проповедь — часть 5: Закон, Евангелие и Нагорная проповедь",
-   "description": "Мф 7:1–29 · Суждение, просьба, золотое правило, два пути",
-   "section": "Нагорная проповедь",
-   "editor": "Фёдор Милованов",
-   "readTime": 25,
-   "image": "/images/og-nagornaya-propoved-chast-5.webp",
-   "tags": [
-    "Нагорная проповедь",
-    "Матфей 7"
-   ],
-   "featured": false,
-   "priority": 72,
-   "modifiedTime": "2026-05-22T00:46:34+03:00",
-   "publishedTime": "2026-05-01T00:00:00+03:00"
-  },
-  {
-   "id": "about",
-   "type": "page",
-   "url": "/about/",
-   "title": "О редакторе и проекте",
-   "description": "Фёдор Милованов — редактор-составитель и куратор библиотеки богословских материалов",
-   "section": "О проекте",
-   "editor": "Фёдор Милованов",
-   "readTime": 3,
-   "tags": [
-    "о проекте",
-    "редактор"
-   ],
-   "featured": false,
-   "priority": 50,
-   "modifiedTime": "2026-04-18T00:00:00+03:00",
-   "image": "/images/og-about.webp"
-  },
-  {
-   "id": "karty",
-   "url": "/karty/",
-   "title": "Карты",
-   "description": "Интерактивные карты библейского мира — археология, география, маршруты",
-   "type": "catalog",
-   "tags": [
-    "карты",
-    "география",
-    "археология"
-   ]
-  },
-  {
-   "id": "karty-avraam",
-   "url": "/karty/avraam/",
-   "title": "Путь Авраама",
-   "description": "Интерактивная карта пути Авраама — Бытие 11–25, 19 мест, археология и источники",
-   "type": "article",
-   "tags": [
-    "Авраам",
-    "Бытие",
-    "карты",
-    "археология"
-   ],
-   "readingTime": 15
-  },
-  {
-   "id": "map-svyazi",
-   "url": "/map/",
-   "title": "Карта связей",
-   "description": "Навигационная карта проекта — разделы, темы, серии, маршруты чтения",
-   "type": "navigation",
-   "tags": [
-    "навигация",
-    "карта"
-   ]
-  },
-  {
-   "id": "hard-texts-landing",
-   "url": "/hard-texts/",
-   "title": "Тайны человеческого сердца",
-   "description": "Серия экзегетических разборов о природе падшего и возрождённого сердца",
-   "type": "series",
-   "tags": [
-    "Иеремия 17",
-    "Римлянам 7",
-    "экзегеза",
-    "сердце"
-   ]
-  }
- ]
+  "items": [
+    {
+      "id": "nagornaya-seriya",
+      "type": "series",
+      "url": "/nagornaya/seriya/",
+      "title": "Нагорная проповедь — полная серия",
+      "description": "Сравнительное исследование Матфея 5–7 и Луки 6:17–49 в пяти частях · 120+ источников",
+      "section": "Нагорная проповедь",
+      "editor": "Фёдор Милованов",
+      "readTime": 89,
+      "image": "/images/og-nagornaya-propoved.webp",
+      "tags": [
+        "серия",
+        "Матфей 5–7",
+        "Лука 6",
+        "TMS"
+      ],
+      "featured": true,
+      "priority": 100,
+      "publishedTime": "2026-01-01T00:00:00+03:00",
+      "modifiedTime": "2026-05-01T00:00:00+03:00"
+    },
+    {
+      "id": "dzhon-gill-seriya",
+      "type": "series",
+      "url": "/biografii/#dzhon-gill-series",
+      "title": "Джон Гилл (1697–1771) — биографическая серия",
+      "description": "Серия из 5 материалов о Джоне Гилле: исторический контекст, биография в трёх частях и справочник. По первичным источникам.",
+      "section": "Биографии служителей",
+      "editor": "Фёдор Милованов",
+      "readTime": 149,
+      "image": "/images/gill-authentic-study-cover.webp",
+      "tags": [
+        "серия",
+        "биографии",
+        "Джон Гилл",
+        "баптисты",
+        "XVIII век"
+      ],
+      "featured": true,
+      "priority": 96,
+      "publishedTime": "2026-05-26T00:00:00+03:00",
+      "modifiedTime": "2026-06-10T00:00:00+03:00"
+    },
+    {
+      "id": "dzhon-gill-istoricheskiy-kontekst",
+      "type": "article",
+      "url": "/articles/dzhon-gill-istoricheskiy-kontekst/",
+      "title": "Джон Гилл: исторический контекст — диссентеры, Саутварк, книги",
+      "description": "Англия после Акта о единообразии, правовое положение диссентеров, Хорслидаун, Goat’s Yard, Картер-Лейн и книжная культура, без которых биография Гилла теряет историческую плотность.",
+      "section": "Биографии служителей",
+      "editor": "Фёдор Милованов",
+      "readTime": 16,
+      "image": "/images/og-dzhon-gill-istoricheskiy-kontekst.webp",
+      "tags": [
+        "биографии",
+        "Джон Гилл",
+        "диссентеры",
+        "Саутварк",
+        "история церкви"
+      ],
+      "featured": true,
+      "priority": 95,
+      "publishedTime": "2026-06-01T00:00:00+03:00",
+      "modifiedTime": "2026-06-10T00:00:00+03:00"
+    },
+    {
+      "id": "pastor-series",
+      "type": "series",
+      "url": "/pastor-series/",
+      "title": "Тёмная сторона кафедры — серия материалов",
+      "description": "Системный анализ пасторских патологий: власть без подотчётности, манипуляция Писанием, портреты авторитарности и пути к здоровой церковной культуре.",
+      "section": "Служение",
+      "editor": "Фёдор Милованов",
+      "readTime": 67,
+      "image": "/images/pastor-series/hero-main.webp",
+      "tags": [
+        "серия",
+        "пасторство",
+        "диотрефство",
+        "авторитаризм",
+        "здоровая церковь"
+      ],
+      "featured": true,
+      "priority": 95,
+      "publishedTime": "2026-05-13T00:00:00+03:00",
+      "modifiedTime": "2026-05-13T00:00:00+03:00"
+    },
+    {
+      "id": "dzhon-gill-chast-1-chelovek",
+      "type": "article",
+      "url": "/articles/dzhon-gill-chast-1-chelovek/",
+      "title": "Джон Гилл (1697–1771). Часть I. Человек",
+      "description": "Защитник Троицы против унитарианства, самостоятельно освоивший иврит, девятитомный комментарий на всю Библию. Биография по первичным источникам.",
+      "section": "Биографии служителей",
+      "editor": "Фёдор Милованов",
+      "readTime": 32,
+      "image": "/images/gill-authentic-study-cover.webp",
+      "tags": [
+        "биографии",
+        "баптисты",
+        "богословие",
+        "экзегеза",
+        "Джон Гилл"
+      ],
+      "featured": true,
+      "priority": 92,
+      "modifiedTime": "2026-06-10T00:00:00+03:00",
+      "publishedTime": "2026-05-26T00:00:00+03:00",
+      "readingTime": 32
+    },
+    {
+      "id": "dzhon-gill-chast-2-uchenyi",
+      "type": "article",
+      "url": "/articles/dzhon-gill-chast-2-uchenyi/",
+      "title": "Джон Гилл (1697–1771). Часть II. Учёный",
+      "description": "Экзегеза, систематика, иврит и раввинистика. Девятитомный комментарий на всю Библию и «Свод богословия» — первая баптистская систематика на английском.",
+      "section": "Биографии служителей",
+      "editor": "Фёдор Милованов",
+      "readTime": 39,
+      "image": "/images/gill-talmud-study-authentic.webp",
+      "tags": [
+        "биографии",
+        "Джон Гилл",
+        "экзегеза",
+        "систематика",
+        "иврит",
+        "раввинистика",
+        "Body of Divinity"
+      ],
+      "featured": true,
+      "priority": 91,
+      "publishedTime": "2026-05-26T00:00:00+03:00",
+      "modifiedTime": "2026-06-10T00:00:00+03:00",
+      "readingTime": 39
+    },
+    {
+      "id": "rimlyanam-7-veruyushchiy-ili-neveruyushchiy",
+      "type": "article",
+      "url": "/articles/rimlyanam-7-veruyushchiy-ili-neveruyushchiy/",
+      "title": "Римлянам 7: верующий, неверующий или человек под законом?",
+      "description": "Дотошный разбор Рим. 7:14–25: Павел как верующий, человек под законом, Ллойд-Джонс, TMSJ/Jay Street и путь к Рим. 8:1.",
+      "section": "Богословие",
+      "editor": "Фёдор Милованов",
+      "readTime": 12,
+      "image": "/images/og-rimlyanam-7.webp",
+      "tags": [
+        "Римлянам 7",
+        "освящение",
+        "остаточный грех",
+        "плоть и Дух",
+        "Ллойд-Джонс",
+        "TMSJ"
+      ],
+      "featured": true,
+      "priority": 91,
+      "publishedTime": "2026-06-02T00:00:00+03:00",
+      "modifiedTime": "2026-06-04T00:00:00+03:00"
+    },
+    {
+      "id": "krajne-isporcheno",
+      "type": "article",
+      "url": "/articles/krajne-li-isporcheno-serdce/",
+      "title": "Крайне ли испорчено сердце верующего?",
+      "description": "Разбор Иеремии 17:9–10: сердце, самообман, новое сердце, остаточный грех и мост к Римлянам 7–8.",
+      "section": "Богословие",
+      "editor": "Фёдор Милованов",
+      "readTime": 41,
+      "image": "/images/og-krajne-isporcheno.webp",
+      "tags": [
+        "Иеремия",
+        "сердце",
+        "остаточный грех",
+        "Римлянам 7",
+        "освящение"
+      ],
+      "featured": true,
+      "priority": 90,
+      "modifiedTime": "2026-06-04T00:00:00+03:00",
+      "publishedTime": "2026-04-01T00:00:00+03:00"
+    },
+    {
+      "id": "20-antisovetov-pastoru",
+      "type": "article",
+      "url": "/articles/20-antisovetov-pastoru/",
+      "title": "20 антисоветов, как пастору разрушить своё служение",
+      "description": "Системный библейский анализ пасторских патологий: власть, подотчётность, страх, манипуляция Писанием и путь к здоровой церковной культуре.",
+      "section": "Служение",
+      "editor": "Фёдор Милованов",
+      "readTime": 67,
+      "image": "/images/pastor-series/hero-main.webp",
+      "tags": [
+        "пасторство",
+        "антисоветы",
+        "диотрефство",
+        "авторитаризм",
+        "подотчётность"
+      ],
+      "featured": false,
+      "priority": 90,
+      "publishedTime": "2026-05-13T00:00:00+03:00",
+      "wordCount": 12000,
+      "seriesId": "pastor-series",
+      "seriesPosition": 1,
+      "modifiedTime": "2026-05-21T23:09:05+03:00"
+    },
+    {
+      "id": "dzhon-gill-chast-3-nasledie",
+      "type": "article",
+      "url": "/articles/dzhon-gill-chast-3-nasledie/",
+      "title": "Джон Гилл (1697–1771). Часть III. Наследие",
+      "description": "Полемика с арминианством и Римом, влияние на Сперджена, спор о гиперкальвинизме, англо-американская преемственность и память о Гилле в XX–XXI веках.",
+      "section": "Биографии служителей",
+      "editor": "Фёдор Милованов",
+      "readTime": 54,
+      "image": "/images/og-dzhon-gill-chast-3-nasledie.webp",
+      "tags": [
+        "биографии",
+        "Джон Гилл",
+        "Сперджен",
+        "полемика",
+        "наследие",
+        "гиперкальвинизм"
+      ],
+      "featured": true,
+      "priority": 90,
+      "publishedTime": "2026-05-26T00:00:00+03:00",
+      "modifiedTime": "2026-06-10T00:00:00+03:00",
+      "readingTime": 54
+    },
+    {
+      "id": "dzhon-gill-spravochnik",
+      "type": "article",
+      "url": "/articles/dzhon-gill-spravochnik/",
+      "title": "Джон Гилл: справочник — хронология, труды, источники",
+      "description": "Справочник к трилогии о Джоне Гилле: хронология жизни, основные труды, структура Body of Divinity, сеть влияний, источники и Богословский словарь эпохи.",
+      "section": "Биографии служителей",
+      "editor": "Фёдор Милованов",
+      "readTime": 8,
+      "image": "/images/og-gill-five-volumes-shelf.webp",
+      "tags": [
+        "биографии",
+        "Джон Гилл",
+        "справочник",
+        "хронология",
+        "Body of Divinity"
+      ],
+      "featured": true,
+      "priority": 88,
+      "publishedTime": "2026-06-01T00:00:00+03:00",
+      "modifiedTime": "2026-06-10T00:00:00+03:00"
+    },
+    {
+      "id": "hermenevtika",
+      "type": "article",
+      "url": "/articles/hermenevticheskaya-otsenka-hristotsentrichnoy-germenevtiki/",
+      "title": "Герменевтическая оценка христоцентричной герменевтики",
+      "description": "Грамматико-исторический метод оправдан Писанием и более чем достаточен — перевод Абнера Чау",
+      "section": "Переводы",
+      "author": "Абнер Чау",
+      "editor": "Фёдор Милованов",
+      "readTime": 50,
+      "image": "/images/hermenevtika-preview.webp",
+      "tags": [
+        "герменевтика",
+        "перевод",
+        "Чау",
+        "реформатское"
+      ],
+      "featured": true,
+      "priority": 88,
+      "modifiedTime": "2026-05-21T23:09:05+03:00",
+      "publishedTime": "2016-09-01"
+    },
+    {
+      "id": "biografii",
+      "type": "series",
+      "url": "/biografii/",
+      "title": "Биографии служителей",
+      "description": "Новый отдел: биографии пасторов, богословов, реформаторов и миссионеров — от Ранней Церкви до XXI века.",
+      "section": "Биографии служителей",
+      "editor": "Фёдор Милованов",
+      "readTime": 5,
+      "image": "/images/og-biografii.webp",
+      "tags": [
+        "биографии",
+        "христианское наследие",
+        "история церкви"
+      ],
+      "featured": true,
+      "priority": 85,
+      "modifiedTime": "2026-05-28T00:00:00+03:00",
+      "publishedTime": "2026-05-28T00:00:00+03:00"
+    },
+    {
+      "id": "kod-da-vinchi",
+      "type": "article",
+      "url": "/articles/kod-da-vinchi/",
+      "title": "«Код да Винчи»: блестящий триллер или историческая подмена?",
+      "description": "Никейский собор, канон Нового Завета, Свитки Мёртвого моря, Наг-Хаммади — что правда, а что вымысел",
+      "section": "Апологетика",
+      "editor": "Фёдор Милованов",
+      "readTime": 30,
+      "image": "/images/og-kod-da-vinchi.jpg",
+      "tags": [
+        "апологетика",
+        "Никея",
+        "канон",
+        "гностицизм"
+      ],
+      "featured": true,
+      "priority": 85,
+      "modifiedTime": "2026-05-21T23:09:05+03:00",
+      "publishedTime": "2026-04-01T00:00:00+03:00"
+    },
+    {
+      "id": "nagornaya-ch1",
+      "type": "article",
+      "url": "/nagornaya/chast-1/",
+      "title": "Нагорная проповедь — часть 1: Два текста, один Иисус",
+      "description": "Экзегеза Мф 5:1–12 и Лк 6:20–23 · Блаженства как инверсия ценностей Царства",
+      "section": "Нагорная проповедь",
+      "editor": "Фёдор Милованов",
+      "readTime": 16,
+      "image": "/images/og-nagornaya-propoved-chast-1.webp",
+      "tags": [
+        "Нагорная проповедь",
+        "Блаженства",
+        "Матфей 5"
+      ],
+      "featured": false,
+      "priority": 80,
+      "modifiedTime": "2026-05-22T00:46:34+03:00",
+      "publishedTime": "2026-05-01T00:00:00+03:00"
+    },
+    {
+      "id": "nagornaya-ch2",
+      "type": "article",
+      "url": "/nagornaya/chast-2/",
+      "title": "Нагорная проповедь — часть 2: Как это записывалось",
+      "description": "Мф 5:13–16 · Образ соли и светильника в контексте Второго Храма",
+      "section": "Нагорная проповедь",
+      "editor": "Фёдор Милованов",
+      "readTime": 11,
+      "image": "/images/og-nagornaya-propoved-chast-2.webp",
+      "tags": [
+        "Нагорная проповедь",
+        "Матфей 5"
+      ],
+      "featured": false,
+      "priority": 78,
+      "modifiedTime": "2026-05-22T00:46:34+03:00",
+      "publishedTime": "2026-05-01T00:00:00+03:00"
+    },
+    {
+      "id": "nagornaya-ch3",
+      "type": "article",
+      "url": "/nagornaya/chast-3/",
+      "title": "Нагорная проповедь — часть 3: Кому это сказано?",
+      "description": "Мф 5:17–48 · Христос как исполнение Закона · Антитезы и праведность",
+      "section": "Нагорная проповедь",
+      "editor": "Фёдор Милованов",
+      "readTime": 12,
+      "image": "/images/og-nagornaya-propoved-chast-3.webp",
+      "tags": [
+        "Нагорная проповедь",
+        "Матфей 5",
+        "Закон"
+      ],
+      "featured": false,
+      "priority": 76,
+      "modifiedTime": "2026-05-22T00:46:34+03:00",
+      "publishedTime": "2026-05-01T00:00:00+03:00"
+    },
+    {
+      "id": "nagornaya-ch4",
+      "type": "article",
+      "url": "/nagornaya/chast-4/",
+      "title": "Нагорная проповедь — часть 4: Можно ли доверять Евангелиям?",
+      "description": "Мф 6:1–18 · Отче наш · Внутреннее благочестие против показного",
+      "section": "Нагорная проповедь",
+      "editor": "Фёдор Милованов",
+      "readTime": 25,
+      "image": "/images/og-nagornaya-propoved-chast-4.webp",
+      "tags": [
+        "Нагорная проповедь",
+        "Молитва",
+        "Матфей 6"
+      ],
+      "featured": false,
+      "priority": 74,
+      "modifiedTime": "2026-05-22T00:46:34+03:00",
+      "publishedTime": "2026-05-01T00:00:00+03:00"
+    },
+    {
+      "id": "nagornaya-ch5",
+      "type": "article",
+      "url": "/nagornaya/chast-5/",
+      "title": "Нагорная проповедь — часть 5: Закон, Евангелие и Нагорная проповедь",
+      "description": "Мф 7:1–29 · Суждение, просьба, золотое правило, два пути",
+      "section": "Нагорная проповедь",
+      "editor": "Фёдор Милованов",
+      "readTime": 25,
+      "image": "/images/og-nagornaya-propoved-chast-5.webp",
+      "tags": [
+        "Нагорная проповедь",
+        "Матфей 7"
+      ],
+      "featured": false,
+      "priority": 72,
+      "modifiedTime": "2026-05-22T00:46:34+03:00",
+      "publishedTime": "2026-05-01T00:00:00+03:00"
+    },
+    {
+      "id": "about",
+      "type": "page",
+      "url": "/about/",
+      "title": "О редакторе и проекте",
+      "description": "Фёдор Милованов — редактор-составитель и куратор библиотеки богословских материалов",
+      "section": "О проекте",
+      "editor": "Фёдор Милованов",
+      "readTime": 3,
+      "tags": [
+        "о проекте",
+        "редактор"
+      ],
+      "featured": false,
+      "priority": 50,
+      "modifiedTime": "2026-04-18T00:00:00+03:00",
+      "image": "/images/og-about.webp"
+    },
+    {
+      "id": "karty",
+      "url": "/karty/",
+      "title": "Карты",
+      "description": "Интерактивные карты библейского мира — археология, география, маршруты",
+      "type": "catalog",
+      "tags": [
+        "карты",
+        "география",
+        "археология"
+      ]
+    },
+    {
+      "id": "karty-avraam",
+      "url": "/karty/avraam/",
+      "title": "Путь Авраама",
+      "description": "Интерактивная карта пути Авраама — Бытие 11–25, 19 мест, археология и источники",
+      "type": "article",
+      "tags": [
+        "Авраам",
+        "Бытие",
+        "карты",
+        "археология"
+      ],
+      "readingTime": 15
+    },
+    {
+      "id": "map-svyazi",
+      "url": "/map/",
+      "title": "Карта связей",
+      "description": "Навигационная карта проекта — разделы, темы, серии, маршруты чтения",
+      "type": "navigation",
+      "tags": [
+        "навигация",
+        "карта"
+      ]
+    },
+    {
+      "id": "hard-texts-landing",
+      "url": "/hard-texts/",
+      "title": "Тайны человеческого сердца",
+      "description": "Серия экзегетических разборов о природе падшего и возрождённого сердца",
+      "type": "series",
+      "tags": [
+        "Иеремия 17",
+        "Римлянам 7",
+        "экзегеза",
+        "сердце"
+      ]
+    }
+  ]
 }
