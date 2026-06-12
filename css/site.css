@@ -57,6 +57,17 @@ html.dark .border-\[\#2e2c27\]{border-color:#2e2c27}
 .breadcrumb__home{font-size:14px;line-height:1;opacity:.65;margin-right:2px}
 .article-footer{margin-top:var(--s-7,48px);padding-top:var(--s-6,32px);border-top:1px solid var(--color-border)}
 /* Reading list component (krajne article) */
+/* Antisovetov kicker label (extracted from 53 inline styles) */
+/* Gill part-card styles (extracted from inline) */
+.gill-card{background:var(--color-surface);border:1px solid var(--color-border);border-radius:8px;padding:16px;display:flex;flex-direction:column;opacity:.75}
+.gill-card--active{border-color:var(--color-accent);opacity:1}
+.gill-card__kicker{font-weight:700;font-size:.7rem;color:var(--color-text-muted);text-transform:uppercase;letter-spacing:.1em;margin-bottom:6px}
+.gill-card__kicker--current{color:var(--color-accent)}
+.gill-card__title{font-weight:700;font-size:1rem;margin-bottom:4px;color:var(--color-text-primary)}
+.gill-card__desc{font-size:.8rem;color:var(--color-text-secondary);margin:0;flex-grow:1}
+.gill-card__time{margin-top:10px;padding-top:10px;border-top:1px dashed var(--color-border);font-size:.7rem;color:var(--color-text-muted)}
+.gill-card__cta{display:block;margin-top:8px;font-size:.75rem;color:var(--color-accent);text-decoration:none;font-weight:600}
+.anti-kicker{text-transform:uppercase;font-size:.7rem;font-weight:700;letter-spacing:.12em;color:var(--color-accent);margin-bottom:10px}
 .reading-list__title{font-family:'Source Sans 3',system-ui,sans-serif;font-size:13px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--color-text-muted);margin:0 0 8px}
 .reading-list__intro{font-size:14px;color:var(--color-text-muted);line-height:1.6;margin:0 0 24px}
 .reading-list__group{margin-bottom:28px}
