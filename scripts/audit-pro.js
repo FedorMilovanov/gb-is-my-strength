@@ -3403,8 +3403,9 @@ const JS_SIZE_FLOORS = {
       const file = candidates.find(p => fs.existsSync(p));
       if (!file) continue;
       const html = fs.readFileSync(file, 'utf8');
-      // first reading-time hint in the page (X мин)
-      const m = html.match(/[~≈]\s*(\d+)\s*мин(?:\s*чтения)?/i);
+      // Prefer data-gbs2-part-min (precise), fall back to first ≈X мин hint
+      const gbs = html.match(/data-gbs2-part-min="(\d+)"/);
+      const m = gbs || html.match(/[~≈]\s*(\d+)\s*мин(?:\s*чтения)?/i);
       if (!m) continue;
       const realMin = parseInt(m[1], 10);
       const drift = Math.abs(realMin - part.readingTime);
@@ -4177,6 +4178,58 @@ const JS_SIZE_FLOORS = {
 })();
 
 // Output
+// Article content word-count floor guard (anti-catastrophic-deletion).
+// On 2026-06-10 a refactor commit deleted 16,498 words (66%) from the Gill trilogy.
+// This guard blocks deploys if any article's <article> body drops below its floor.
+// Floors are ~80% of known-good word counts as of 2026-06-12.
+// Bump a floor only deliberately after genuine content changes, never to "make audit pass".
+(function articleWordCountFloors() {
+  const FLOORS = {
+    'articles/20-antisovetov-pastoru/index.html': 12000,
+    'articles/dzhon-gill-chast-1-chelovek/index.html': 5500,
+    'articles/dzhon-gill-chast-2-uchenyi/index.html': 6500,
+    'articles/dzhon-gill-chast-3-nasledie/index.html': 9000,
+    'articles/dzhon-gill-istoricheskiy-kontekst/index.html': 2800,
+    'articles/dzhon-gill-spravochnik/index.html': 1500,
+    'articles/hermenevticheskaya-otsenka-hristotsentrichnoy-germenevtiki/index.html': 9000,
+    'articles/kod-da-vinchi/index.html': 5500,
+    'articles/krajne-li-isporcheno-serdce/index.html': 7500,
+    'articles/rimlyanam-7-veruyushchiy-ili-neveruyushchiy/index.html': 2200,
+  };
+
+  function extractWords(html) {
+    const m = html.match(/<article[^>]*>([\s\S]*?)<\/article>/);
+    if (!m) return null;
+    const text = m[1]
+      .replace(/<script[\s\S]*?<\/script>/gi, '')
+      .replace(/<style[\s\S]*?<\/style>/gi, '')
+      .replace(/<[^>]+>/g, ' ')
+      .replace(/&[a-z]+;/gi, ' ')
+      .replace(/&#\d+;/gi, ' ')
+      .replace(/\s+/g, ' ')
+      .trim();
+    return text.split(/\s+/).filter(w => w.length > 0).length;
+  }
+
+  const violations = [];
+  for (const [file, floor] of Object.entries(FLOORS)) {
+    const fp = path.join(ROOT, file);
+    if (!fs.existsSync(fp)) { violations.push(`${file}: FILE MISSING`); continue; }
+    const html = fs.readFileSync(fp, 'utf8');
+    const wc = extractWords(html);
+    if (wc === null) { violations.push(`${file}: no <article> tag found`); continue; }
+    if (wc < floor) {
+      violations.push(`${file}: ${wc} words < floor ${floor} (${Math.round((1 - wc / floor) * 100)}% loss)`);
+    }
+  }
+
+  if (violations.length) {
+    R.err(`Article content word-count floor violation (possible catastrophic deletion):\n  - ${violations.join('\n  - ')}`);
+  } else {
+    R.ok(`Article word-count floors: ${Object.keys(FLOORS).length} articles above minimum thresholds`);
+  }
+})();
+
 const duration = ((Date.now() - R.start) / 1000).toFixed(2);
 const sep = '═'.repeat(78);
 console.log(`\n${sep}\nGB-IS-MY-STRENGTH — PROFESSIONAL AUDIT\n${new Date().toISOString()} · ${duration}s\n${sep}\n`);
