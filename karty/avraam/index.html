@@ -431,6 +431,41 @@ body{overscroll-behavior:none;-webkit-overscroll-behavior:none}
     <text class="region-label" x="1075" y="1000" font-size="16" letter-spacing=".4em" opacity=".3">АРАВИЙСКАЯ ПУСТЫНЯ</text>
     <text class="region-label" x="378" y="412" font-size="10" letter-spacing=".25em" opacity=".35">КИПР</text>
   </g>
+
+  <!-- ============ ANCIENT TRADE ROUTES ============ -->
+  <g id="tradeRoutes" opacity=".45">
+    <!-- Via Maris / Дорога моря — Египет → побережье → Мегиддо → Дамаск → Месопотамия -->
+    <path fill="none" stroke="#7fa7c4" stroke-width="2.5" stroke-dasharray="8 6" stroke-linecap="round" opacity=".7"
+      d="M210,920 C280,880 340,850 400,830 C460,810 520,780 560,750 C580,730 600,710 613,706 C640,690 660,665 665,625 C690,600 715,585 731,594"/>
+    <text class="region-label lbl-z1" x="420" y="790" font-size="7" fill="#7fa7c4" opacity=".7" letter-spacing=".22em" transform="rotate(-26 420 790)">VIA MARIS · דֶּרֶךְ הַיָּם</text>
+
+    <!-- King's Highway / Царская дорога — Эцион-Гевер → Мёртвое море (вост.) → Дамаск -->
+    <path fill="none" stroke="#c4a07f" stroke-width="2.5" stroke-dasharray="8 6" stroke-linecap="round" opacity=".7"
+      d="M720,1050 C710,980 700,930 692,880 C685,850 680,820 678,795 C676,760 674,730 672,700 C674,660 690,620 710,590 C720,574 730,560 731,594"/>
+    <text class="region-label lbl-z1" x="698" y="890" font-size="7" fill="#c4a07f" opacity=".7" letter-spacing=".18em" transform="rotate(-84 698 890)">ЦАРСКАЯ ДОРОГА · דֶּרֶךְ הַמֶּלֶךְ</text>
+
+    <!-- Way of Shur / Дорога Сура — Египет (Дельта) → Беэр-Шева → Ханаан -->
+    <path fill="none" stroke="#a0c47f" stroke-width="2.2" stroke-dasharray="6 5" stroke-linecap="round" opacity=".65"
+      d="M260,918 C320,910 380,900 440,890 C490,878 530,865 561,847 C580,838 596,830 610,829"/>
+    <text class="region-label lbl-z1" x="370" y="878" font-size="6.5" fill="#a0c47f" opacity=".7" letter-spacing=".2em" transform="rotate(-7 370 878)">ДОРОГА СУРА · דֶּרֶךְ שׁוּר</text>
+  </g>
+
+  <!-- ============ MOUNTAINS NEAR SHECHEM ============ -->
+  <g id="mountains" opacity=".55">
+    <!-- Гевал (Эйвал) — к северу от Сихема -->
+    <g class="lbl-z1">
+      <path d="M622,728 L628,718 L634,728 Z" fill="none" stroke="#8b7d5a" stroke-width="1.2"/>
+      <text x="628" y="714" font-size="5" fill="#8b7d5a" text-anchor="middle" letter-spacing=".1em">ГЕВАЛ</text>
+      <text x="628" y="710" font-size="4" fill="#cdbd95" text-anchor="middle" opacity=".6">עֵיבָל</text>
+    </g>
+    <!-- Геризим (Гризим) — к югу от Сихема -->
+    <g class="lbl-z1">
+      <path d="M622,768 L628,758 L634,768 Z" fill="none" stroke="#8b7d5a" stroke-width="1.2"/>
+      <text x="628" y="774" font-size="5" fill="#8b7d5a" text-anchor="middle" letter-spacing=".1em">ГЕРИЗИМ</text>
+      <text x="628" y="778" font-size="4" fill="#cdbd95" text-anchor="middle" opacity=".6">גְּרִזִּים</text>
+    </g>
+  </g>
+
 </g>
 
 <!-- ============ DEBATE: spor o Sodome ============ -->
@@ -1055,6 +1090,8 @@ const LAYERS=[
  {id:'war',label:'Война царей',col:'#cf5b6b',on:true},
  {id:'cand',label:'Гипотезы',col:'#9b8cf0',on:true},
  {id:'ctx',label:'Контекст',col:'#8b8f96',on:true},
+ {id:'trades',label:'Торговые пути',col:'#7fa7c4',on:false},
+ {id:'mounts',label:'Горы',col:'#8b7d5a',on:true},
  {id:'debate',label:'Спор о Содоме',col:'#6fb3a8',on:false},
 ];
 try{const sv=JSON.parse(localStorage.getItem('gbk_layers')||'null');
@@ -1116,6 +1153,8 @@ function applyLayers(){
   });
   ctxG.style.display=on('ctx')?'':'none';
   document.getElementById('debate').style.display=on('debate')?'':'none';
+  document.getElementById('tradeRoutes').style.display=on('trades')?'':'none';
+  document.getElementById('mountains').style.display=on('mounts')?'':'none';
 }
 applyLayers();
 
