@@ -436,3 +436,4 @@ html.dark .gtip-expand-btn:hover{background:linear-gradient(180deg,#463c27,#3a31
 html.dark .gbx-backlinks__maplink{color:var(--color-accent-strong,#e8b878);border-color:color-mix(in srgb,var(--color-accent-strong,#e8b878) 28%,transparent)}
 html.dark .gbx-backlinks__maplink:hover{background:color-mix(in srgb,var(--color-accent-strong,#e8b878) 10%,transparent)}
 @media print{.gbx-backlinks__maplink{display:none}}
+.article-end-sdg{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px}.article-end-sdg .sdg{margin:0}.article-end-sdg svg{display:block;color:var(--color-text);filter:drop-shadow(rgba(0,0,0,0.4) 1px 3px 3px);opacity:0.85;transition:opacity 0.25s,color 0.25s}html.dark .article-end-sdg svg{opacity:0.65}
