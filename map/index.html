@@ -282,7 +282,7 @@ svg.plucking{cursor:grabbing}
 </div>
 
 <aside class="card" id="card" role="dialog" aria-label="Превью статьи" aria-hidden="true">
-  <div class="cov"><span class="grp" id="cGrp"></span><img id="cImg" alt="" decoding="async"></div>
+  <div class="cov"><span class="grp" id="cGrp"></span><img id="cImg" alt="" decoding="async" width="330" height="138"></div>
   <div class="bd">
     <div class="ttl" id="cTtl"></div>
     <p class="dsc" id="cDsc"></p>
@@ -491,7 +491,7 @@ function hideCardSoon(){clearTimeout(hideT);hideT=setTimeout(function(){if(!pinn
     if(!list.length){dd.innerHTML='<div class="srch-empty">Ничего не найдено</div>';dd.classList.add('on');return}list.forEach(function(n,i){
       var G=GROUPS[n.group]||{color:'#c9b186'};var b=document.createElement('button');
       b.type='button';b.className='srch-it';b.setAttribute('role','option');
-      b.innerHTML=(n.cover?'<img src="'+n.cover+'" alt="" loading="lazy">':'<i style="background:'+G.color+';color:'+G.color+'"></i>')+'<span class="t">'+n.title+'</span>';
+      b.innerHTML=(n.cover?'<img src="'+n.cover+'" alt="" loading="lazy" width="34" height="34">':'<i style="background:'+G.color+';color:'+G.color+'"></i>')+'<span class="t">'+n.title+'</span>';
       b.addEventListener('click',function(){go(n)});dd.appendChild(b);});dd.classList.add('on');}function go(n){
     dd.classList.remove('on');inp.value=n.title;if(collapsed[n.group])expand(n.group);flyTo(n);}
   inp.addEventListener('input',function(){var q=norm(inp.value.trim());
