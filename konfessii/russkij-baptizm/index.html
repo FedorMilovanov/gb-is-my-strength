@@ -1203,18 +1203,18 @@ if(gf){gf.addEventListener('click',function(e){var b=e.target.closest('.tlf');if
   render();
 })();
 
-/* ===================== CONSTELLATION MAP ===================== */
+/* ===================== CONSTELLATION MAP v2 (premium) ===================== */
 (function(){
   var NODES=[{"id":"root","label":"Русский баптизм","year":"1867","group":"root","size":13},{"id":"spb","label":"Петербург","year":"1874","group":"union","size":9},{"id":"trans","label":"Закавказье","year":"1867","group":"union","size":9},{"id":"ukr","label":"Южная Украина","year":"1869","group":"union","size":9},{"id":"vsb","label":"Союз баптистов","year":"1884","group":"union","size":10},{"id":"vseh","label":"ВСЕХ","year":"1909","group":"union","size":9},{"id":"vsehb","label":"ВСЕХБ","year":"1944","group":"merger","size":11},{"id":"sc","label":"СЦ ЕХБ","year":"1965","group":"split","size":9},{"id":"rsehb","label":"РС ЕХБ","year":"1992","group":"modern","size":9},{"id":"voronin","label":"Н. Воронин","year":"1840–1905","group":"leader","size":8,"desc":"Первый русский баптист, крещён Кальвейтом в реке Кура."},{"id":"pavlov","label":"В. Павлов","year":"1854–1924","group":"leader","size":9,"desc":"Пресвитер Тифлиса, председатель Союза баптистов России."},{"id":"mazaev","label":"Д. Мазаев","year":"1855–1922","group":"leader","size":8,"desc":"Многолетний председатель Союза баптистов, издатель «Баптиста»."},{"id":"pashkov","label":"В. Пашков","year":"1834–1902","group":"leader","size":8,"desc":"Организатор петербургского евангельского пробуждения."},{"id":"prokhanov","label":"И. Проханов","year":"1869–1935","group":"leader","size":8,"desc":"Лидер ВСЕХ и ключевая фигура евангельского движения."},{"id":"kargel","label":"И. Каргель","year":"1849–1937","group":"leader","size":9,"desc":"Богослов и связующее звено трёх очагов."},{"id":"zhidkov","label":"Я. Жидков","year":"1885–1966","group":"leader","size":8,"desc":"Первый председатель ВСЕХБ."},{"id":"kryuchkov","label":"Г. Крючков","year":"1926–2007","group":"leader","size":8,"desc":"Лидер Совета Церквей ЕХБ."},{"id":"karev","label":"А. Карев","year":"1894–1971","group":"leader","size":8,"desc":"Генеральный секретарь ВСЕХБ и редактор «Братского вестника»."},{"id":"vins","label":"Г. Винс","year":"1928–1998","group":"leader","size":8,"desc":"Секретарь СЦ ЕХБ, узник совести и правозащитник."},{"id":"kalweit","label":"М. Кальвейт","year":"1833–1918","group":"leader","size":7,"desc":"Немецкий баптист, совершивший крещение Никиты Воронина в Тифлисе."},{"id":"redstock","label":"Лорд Редсток","year":"1833–1913","group":"leader","size":7,"desc":"Английский евангелист, давший толчок пашковскому движению."},{"id":"weiler","label":"И. Вилер","year":"1839–1889","group":"leader","size":7,"desc":"Немецкий руководитель южно-украинского штундистского очага."},{"id":"tsymbal","label":"Е. Цымбал","year":"ок. 1830–1890-е","group":"leader","size":7,"desc":"Первый южно-украинский штундист, принявший баптистское крещение."}];var LINKS=[{"id":"l1","s":"spb","t":"root","label":"Петербургский исток","desc":"1874"},{"id":"l2","s":"trans","t":"root","label":"Тифлисский исток","desc":"1867"},{"id":"l3","s":"ukr","t":"root","label":"Украинский исток","desc":"1869"},{"id":"l4","s":"spb","t":"vseh","label":"Линия Проханова","desc":"1909"},{"id":"l5","s":"trans","t":"vsb","label":"Образовали","desc":"1884"},{"id":"l6","s":"ukr","t":"vsb","label":"Образовали","desc":"1884"},{"id":"l7","s":"vsb","t":"vsehb","label":"Слились в","desc":"1944"},{"id":"l8","s":"vseh","t":"vsehb","label":"Слились в","desc":"1944"},{"id":"l9","s":"vsehb","t":"sc","label":"Раскол","desc":"1961–1965"},{"id":"l10","s":"vsehb","t":"rsehb","label":"Реорганизация","desc":"1992"},{"id":"l11","s":"voronin","t":"trans","label":"Тифлис","desc":"1867"},{"id":"l12","s":"pavlov","t":"trans","label":"Тифлис","desc":"1871"},{"id":"l13","s":"pavlov","t":"vsb","label":"Председатель","desc":"1909"},{"id":"l14","s":"mazaev","t":"vsb","label":"Председатель","desc":"1887–1909"},{"id":"l15","s":"pashkov","t":"spb","label":"Организовал","desc":"1874"},{"id":"l16","s":"prokhanov","t":"vseh","label":"Основал","desc":"1909"},{"id":"l17","s":"kargel","t":"spb","label":"Богослов","desc":"Петербург"},{"id":"l18","s":"kargel","t":"trans","label":"Крещение","desc":"1869"},{"id":"l19","s":"kargel","t":"ukr","label":"Вилер","desc":"1872–1873"},{"id":"l20","s":"zhidkov","t":"vsehb","label":"Председатель","desc":"1944"},{"id":"l21","s":"kryuchkov","t":"sc","label":"Лидер","desc":"1965"},{"id":"l22","s":"kalweit","t":"trans","label":"Крестил","desc":"1867"},{"id":"l23","s":"redstock","t":"spb","label":"Пробуждение","desc":"1874"},{"id":"l24","s":"weiler","t":"ukr","label":"Штундизм","desc":"1860-е"},{"id":"l25","s":"tsymbal","t":"ukr","label":"Крещение","desc":"1869"},{"id":"l26","s":"karev","t":"vsehb","label":"Редактор","desc":"1945"},{"id":"l27","s":"vins","t":"sc","label":"Секретарь","desc":"1965"}];var ROUTES=[{"id":"all","label":"Все связи","color":"#e8c879","nodes":null},{"id":"route-origins","label":"Три истока","color":"#d4a857","focus":"root","nodes":["root","spb","trans","ukr","vseh","vsb","vsehb"],"summary":"Петербург, Закавказье и Южная Украина сходятся в единую историю ЕХБ."},{"id":"route-tiflis","label":"Тифлис","color":"#00c8c8","focus":"trans","nodes":["trans","voronin","pavlov","kalweit","kargel","vsb"],"summary":"Кальвейт, Воронин, Павлов и Каргель показывают тифлисскую линию."},{"id":"route-ukraine","label":"Украина","color":"#f0a830","focus":"ukr","nodes":["ukr","weiler","tsymbal","mazaev","kargel","vsb"],"summary":"Штундистский очаг: Вилер, Цымбал, Мазаев и Союз баптистов."},{"id":"route-petersburg","label":"Петербург","color":"#ff64b4","focus":"spb","nodes":["spb","redstock","pashkov","kargel","prokhanov","vseh"],"summary":"Петербургское пробуждение: Редсток, Пашков, Каргель и Проханов."},{"id":"route-soviet","label":"Советский период","color":"#ff4b6e","focus":"vsehb","nodes":["vsehb","zhidkov","karev","sc","kryuchkov","vins","rsehb"],"summary":"ВСЕХБ, раскол, Совет Церквей и постсоветская реорганизация."}];
   var GROUP_COLOR={root:'#f0d896',union:'#e8c879',merger:'#8b5cf6',split:'#ec4899',modern:'#06b6d4',leader:'#9aa2ae'};
   var canvas=document.getElementById('mapcanvas');if(!canvas)return;var ctx=canvas.getContext('2d');
   var byId={};NODES.forEach(function(n){byId[n.id]=n;});
-  // resolve links to node refs
   var edges=LINKS.map(function(l){return {a:byId[l.s],b:byId[l.t],label:l.label,desc:l.desc,id:l.id};}).filter(function(e){return e.a&&e.b;});
   var adj={};edges.forEach(function(e){(adj[e.a.id]=adj[e.a.id]||[]).push(e.b.id);(adj[e.b.id]=adj[e.b.id]||[]).push(e.a.id);});
   function degree(id){return (adj[id]||[]).length;}
+  function hexRGB(c){c=c.replace('#','');return parseInt(c.substr(0,2),16)+','+parseInt(c.substr(2,2),16)+','+parseInt(c.substr(4,2),16);}
 
-  /* seeded layout: deterministic radial by group + force relax */
+  /* deterministic seeded layout + force relax */
   function seeded(s){var x=Math.sin(s)*10000;return x-Math.floor(x);}
   var ringOrder=['root','union','merger','split','modern','leader'];
   NODES.forEach(function(n,i){
@@ -1222,101 +1222,147 @@ if(gf){gf.addEventListener('click',function(e){var b=e.target.closest('.tlf');if
     var r=n.group==='root'?0:(60+ring*46+seeded(i+1)*40);
     var ang=seeded(i*3.3+7)*Math.PI*2;
     n.x=Math.cos(ang)*r;n.y=Math.sin(ang)*r;n.vx=0;n.vy=0;
+    n.ph=seeded(i*7.7+3)*Math.PI*2; /* breathing phase */
+    n.ax=0;n.ay=0; /* drift anchor (set after relax) */
   });
-  // relax
-  for(var iter=0;iter<320;iter++){
-    for(var a=0;a<NODES.length;a++){for(var b=a+1;b<NODES.length;b++){var na=NODES[a],nb=NODES[b];var dx=nb.x-na.x,dy=nb.y-na.y;var d2=dx*dx+dy*dy||0.01;var d=Math.sqrt(d2);var rep=1400/d2;var ux=dx/d,uy=dy/d;na.vx-=ux*rep;na.vy-=uy*rep;nb.vx+=ux*rep;nb.vy+=uy*rep;}}
-    edges.forEach(function(e){var dx=e.b.x-e.a.x,dy=e.b.y-e.a.y;var d=Math.sqrt(dx*dx+dy*dy)||0.01;var f=(d-96)*0.012;var ux=dx/d,uy=dy/d;e.a.vx+=ux*f;e.a.vy+=uy*f;e.b.vx-=ux*f;e.b.vy-=uy*f;});
+  for(var iter=0;iter<340;iter++){
+    for(var a=0;a<NODES.length;a++){for(var b=a+1;b<NODES.length;b++){var na=NODES[a],nb=NODES[b];var dx=nb.x-na.x,dy=nb.y-na.y;var d2=dx*dx+dy*dy||0.01;var d=Math.sqrt(d2);var rep=1500/d2;var ux=dx/d,uy=dy/d;na.vx-=ux*rep;na.vy-=uy*rep;nb.vx+=ux*rep;nb.vy+=uy*rep;}}
+    edges.forEach(function(e){var dx=e.b.x-e.a.x,dy=e.b.y-e.a.y;var d=Math.sqrt(dx*dx+dy*dy)||0.01;var f=(d-98)*0.012;var ux=dx/d,uy=dy/d;e.a.vx+=ux*f;e.a.vy+=uy*f;e.b.vx-=ux*f;e.b.vy-=uy*f;});
     NODES.forEach(function(n){if(n.group==='root'){n.x*=0.6;n.y*=0.6;}n.vx-=n.x*0.0016;n.vy-=n.y*0.0016;n.x+=n.vx;n.y+=n.vy;n.vx*=0.82;n.vy*=0.82;});
   }
+  NODES.forEach(function(n){n.ax=n.x;n.ay=n.y;}); /* freeze anchors */
+
+  /* starfield (parallax) */
+  var STARS=[];for(var s=0;s<70;s++){STARS.push({x:seeded(s*1.3+1)*2-1,y:seeded(s*2.1+5)*2-1,r:seeded(s*3.7)*1.3+0.3,tw:seeded(s*5.5)*Math.PI*2});}
 
   var view={x:0,y:0,scale:1},dpr=Math.min(devicePixelRatio||1,2);
   function resize(){var w=canvas.clientWidth,h=canvas.clientHeight;canvas.width=w*dpr;canvas.height=h*dpr;}
-  function fit(){var minx=1e9,miny=1e9,maxx=-1e9,maxy=-1e9;NODES.forEach(function(n){minx=Math.min(minx,n.x);miny=Math.min(miny,n.y);maxx=Math.max(maxx,n.x);maxy=Math.max(maxy,n.y);});
-    var w=canvas.clientWidth,h=canvas.clientHeight;var pad=70;var sx=(w-pad*2)/(maxx-minx||1),sy=(h-pad*2)/(maxy-miny||1);view.scale=Math.min(sx,sy,1.4);
+  function fit(){var minx=1e9,miny=1e9,maxx=-1e9,maxy=-1e9;NODES.forEach(function(n){minx=Math.min(minx,n.ax);miny=Math.min(miny,n.ay);maxx=Math.max(maxx,n.ax);maxy=Math.max(maxy,n.ay);});
+    var w=canvas.clientWidth,h=canvas.clientHeight;var pad=78;var sx=(w-pad*2)/(maxx-minx||1),sy=(h-pad*2)/(maxy-miny||1);view.scale=Math.min(sx,sy,1.4);
     view.x=w/2-((minx+maxx)/2)*view.scale;view.y=h/2-((miny+maxy)/2)*view.scale;}
 
-  var activeRoute='all',routeSet=null,routeFocus=null,hoverNode=null,pinNode=null,searchHi=null,introT=RM?1:0;
+  var activeRoute='all',routeSet=null,hoverNode=null,pinNode=null,searchHi=null,introT=RM?1:0;
+  var T0=performance.now(),clock=0;
   function toScreen(n){return {x:n.x*view.scale+view.x,y:n.y*view.scale+view.y};}
   function inRoute(id){return !routeSet||routeSet.has(id);}
+  function focusNode(){return pinNode||hoverNode;}
+  function edgeLit(e){var f=focusNode();return f&&(e.a.id===f.id||e.b.id===f.id);}
+
+  /* ambient breathing/drift applied to render positions (anchors stay fixed) */
+  function ambient(n){
+    if(RM)return{x:n.ax,y:n.ay};
+    var dr=2.4*Math.sin(clock*0.0006+n.ph);
+    return {x:n.ax+Math.cos(n.ph+clock*0.00018)*dr, y:n.ay+Math.sin(n.ph*1.3+clock*0.00021)*dr};
+  }
 
   function draw(){
     var w=canvas.clientWidth,h=canvas.clientHeight;ctx.setTransform(dpr,0,0,dpr,0,0);ctx.clearRect(0,0,w,h);
-    // edges
+    /* starfield backdrop */
+    if(!RM){for(var i=0;i<STARS.length;i++){var st=STARS[i];var sx=(st.x*0.5+0.5)*w+(view.x*0.02),sy=(st.y*0.5+0.5)*h+(view.y*0.02);var tw=0.25+0.55*(0.5+0.5*Math.sin(clock*0.001+st.tw));ctx.beginPath();ctx.arc(((sx%w)+w)%w,((sy%h)+h)%h,st.r,0,7);ctx.fillStyle='rgba(232,200,121,'+(tw*0.10*introT)+')';ctx.fill();}}
+
+    /* edges */
     edges.forEach(function(e){
       var on=inRoute(e.a.id)&&inRoute(e.b.id);
-      var lit=(hoverNode&&(e.a.id===hoverNode.id||e.b.id===hoverNode.id))||(pinNode&&(e.a.id===pinNode.id||e.b.id===pinNode.id));
-      var pa=toScreen(e.a),pb=toScreen(e.b);
+      var lit=edgeLit(e);
+      var aa=ambient(e.a),bb=ambient(e.b);
+      var pa=toScreen(aa),pb=toScreen(bb);
       var mx=(pa.x+pb.x)/2,my=(pa.y+pb.y)/2;var nx=-(pb.y-pa.y),ny=(pb.x-pa.x);var ln=Math.sqrt(nx*nx+ny*ny)||1;var bow=18;mx+=nx/ln*bow;my+=ny/ln*bow;
+      var ca=GROUP_COLOR[e.a.group]||'#9aa2ae',cb=GROUP_COLOR[e.b.group]||'#9aa2ae';
       ctx.beginPath();ctx.moveTo(pa.x,pa.y);ctx.quadraticCurveTo(mx,my,pb.x,pb.y);
-      ctx.lineWidth=lit?2:1;
-      ctx.strokeStyle=lit?'rgba(240,216,150,'+(.9*introT)+')':(on?'rgba(232,200,121,'+(.18*introT)+')':'rgba(120,120,140,'+(.05*introT)+')');
-      if(lit){ctx.shadowColor='rgba(240,216,150,.6)';ctx.shadowBlur=8;}ctx.stroke();ctx.shadowBlur=0;
+      ctx.lineWidth=lit?2.2:(on?1.1:0.8);
+      if(lit){var g=ctx.createLinearGradient(pa.x,pa.y,pb.x,pb.y);g.addColorStop(0,'rgba('+hexRGB(ca)+',0.95)');g.addColorStop(1,'rgba('+hexRGB(cb)+',0.95)');ctx.strokeStyle=g;ctx.shadowColor='rgba(240,216,150,.55)';ctx.shadowBlur=10;}
+      else ctx.strokeStyle=on?'rgba(232,200,121,'+(.16*introT)+')':'rgba(120,120,140,'+(.045*introT)+')';
+      ctx.stroke();ctx.shadowBlur=0;
+      /* flowing particle on lit edges */
+      if(lit&&!RM){var prog=(clock*0.0004)%1;var t=prog,it=1-t;var px=it*it*pa.x+2*it*t*mx+t*t*pb.x,py=it*it*pa.y+2*it*t*my+t*t*pb.y;ctx.beginPath();ctx.arc(px,py,2.6,0,7);ctx.fillStyle='rgba(246,234,200,.95)';ctx.shadowColor='rgba(246,234,200,.8)';ctx.shadowBlur=8;ctx.fill();ctx.shadowBlur=0;
+        /* edge label */
+        if(view.scale>0.45&&e.label){ctx.font='600 10px "Segoe UI",system-ui,sans-serif';ctx.textAlign='center';var lbl=e.label+(e.desc?' · '+e.desc:'');var tw=ctx.measureText(lbl).width;ctx.fillStyle='rgba(10,11,18,.82)';ctx.fillRect(mx-tw/2-5,my-8,tw+10,16);ctx.fillStyle='rgba(240,228,196,.92)';ctx.fillText(lbl,mx,my+4);}
+      }
     });
-    // nodes
+
+    /* nodes */
     NODES.forEach(function(n,idx){
-      var p=toScreen(n);var col=GROUP_COLOR[n.group]||'#9aa2ae';var on=inRoute(n.id);
+      var aa=ambient(n);var p=toScreen(aa);var col=GROUP_COLOR[n.group]||'#9aa2ae';var on=inRoute(n.id);
       var pop=RM?1:Math.max(0,Math.min(1,(introT*NODES.length-idx)/3));if(pop<=0)return;
-      var r=(n.size||7)*0.9*view.scale*(0.4+0.6*pop);if(r<2)r=2;
-      var dim=!on?0.18:1;
+      var breathe=RM?1:(1+0.06*Math.sin(clock*0.0016+n.ph));
+      var base=(n.size||7)*0.92*view.scale*(0.4+0.6*pop)*breathe;if(base<2)base=2;
+      var dim=!on?0.16:1;
       var isHi=(searchHi===n.id)||(pinNode&&pinNode.id===n.id)||(hoverNode&&hoverNode.id===n.id);
-      // halo
-      ctx.beginPath();ctx.arc(p.x,p.y,r+ (isHi?9:5),0,7);ctx.fillStyle='rgba('+hex(col)+','+(0.12*dim*pop)+')';ctx.fill();
-      // body
-      ctx.beginPath();ctx.arc(p.x,p.y,r,0,7);ctx.fillStyle='rgba(13,14,22,'+(0.92*pop)+')';ctx.fill();
-      ctx.lineWidth=isHi?2.4:1.6;ctx.strokeStyle='rgba('+hex(col)+','+(dim*pop)+')';
-      if(isHi){ctx.shadowColor=col;ctx.shadowBlur=14;}ctx.stroke();ctx.shadowBlur=0;
-      // label
-      if(view.scale>0.55&&on&&pop>0.5){ctx.font='600 '+Math.max(9,10.5*Math.min(view.scale,1.3))+'px "Segoe UI",system-ui,sans-serif';ctx.textAlign='center';ctx.fillStyle='rgba(240,236,230,'+(0.82*dim)+')';ctx.fillText(n.label,p.x,p.y+r+13);}
+      var pulse=isHi&&!RM?(1+0.22*Math.sin(clock*0.006)):1;
+      var r=base*pulse;
+      /* soft radial glow */
+      var gr=ctx.createRadialGradient(p.x,p.y,0,p.x,p.y,r*(isHi?3.2:2.2));
+      gr.addColorStop(0,'rgba('+hexRGB(col)+','+(0.30*dim*pop)+')');gr.addColorStop(1,'rgba('+hexRGB(col)+',0)');
+      ctx.beginPath();ctx.arc(p.x,p.y,r*(isHi?3.2:2.2),0,7);ctx.fillStyle=gr;ctx.fill();
+      /* pulse ring on highlight */
+      if(isHi&&!RM){var pr=(clock*0.06)%1;ctx.beginPath();ctx.arc(p.x,p.y,r+pr*22,0,7);ctx.strokeStyle='rgba('+hexRGB(col)+','+((1-pr)*0.5)+')';ctx.lineWidth=1.4;ctx.stroke();}
+      /* body */
+      ctx.beginPath();ctx.arc(p.x,p.y,r,0,7);ctx.fillStyle='rgba(12,13,21,'+(0.94*pop)+')';ctx.fill();
+      ctx.lineWidth=isHi?2.6:1.6;ctx.strokeStyle='rgba('+hexRGB(col)+','+(dim*pop)+')';
+      if(isHi){ctx.shadowColor=col;ctx.shadowBlur=16;}ctx.stroke();ctx.shadowBlur=0;
+      /* inner dot for root/merger emphasis */
+      if(n.group==='root'){ctx.beginPath();ctx.arc(p.x,p.y,r*0.4,0,7);ctx.fillStyle='rgba('+hexRGB(col)+','+(0.85*pop)+')';ctx.fill();}
+      /* label */
+      if(view.scale>0.5&&on&&pop>0.5){ctx.font=(isHi?'700 ':'600 ')+Math.max(9,10.5*Math.min(view.scale,1.3))+'px "Segoe UI",system-ui,sans-serif';ctx.textAlign='center';ctx.lineWidth=3;ctx.strokeStyle='rgba(8,8,14,.7)';ctx.strokeText(n.label,p.x,p.y+r+13);ctx.fillStyle='rgba(241,237,231,'+(0.86*dim)+')';ctx.fillText(n.label,p.x,p.y+r+13);}
     });
   }
-  function hex(c){c=c.replace('#','');return [parseInt(c.substr(0,2),16),parseInt(c.substr(2,2),16),parseInt(c.substr(4,2),16)].join(',');}
 
-  /* intro animation */
-  function animateIntro(){if(RM){introT=1;draw();return;}var t0=performance.now();function step(now){introT=Math.min(1,(now-t0)/1100);draw();if(introT<1)requestAnimationFrame(step);}requestAnimationFrame(step);}
+  /* RAF loop — ambient life runs continuously (gentle); pauses when canvas off-screen or tab hidden */
+  var rafId=null;
+  function onScreen(){var r=canvas.getBoundingClientRect();return r.bottom>0 && r.top<(innerHeight||document.documentElement.clientHeight);}
+  function needsAnimation(){return !RM && !document.hidden && onScreen();}
+  function loop(now){clock=now-T0;if(introT<1)introT=Math.min(1,(now-introStart)/1100);draw();
+    if(needsAnimation()){rafId=requestAnimationFrame(loop);} else {rafId=null;}}
+  function kick(){if(rafId==null && needsAnimation()){rafId=requestAnimationFrame(loop);}}
+  var introStart=0,flying=false;
+  function animateIntro(){if(RM){introT=1;draw();return;}introStart=performance.now();introT=0;rafId=requestAnimationFrame(loop);}
+  /* resume RAF on tab focus + on scroll into view */
+  document.addEventListener('visibilitychange',function(){if(!document.hidden)kick();});
+  addEventListener('scroll',function(){kick();},{passive:true});
 
   /* picking */
-  function pick(mx,my){var best=null,bd=22;NODES.forEach(function(n){if(!inRoute(n.id))return;var p=toScreen(n);var r=(n.size||7)*0.9*view.scale;var d=Math.hypot(mx-p.x,my-p.y);if(d<Math.max(r+8,bd)&&d<bd){bd=d;best=n;}});return best;}
+  function pick(mx,my){var best=null,bd=24;NODES.forEach(function(n){if(!inRoute(n.id))return;var aa=ambient(n);var p=toScreen(aa);var r=(n.size||7)*0.92*view.scale;var d=Math.hypot(mx-p.x,my-p.y);if(d<Math.max(r+10,bd)&&d<bd){bd=d;best=n;}});return best;}
 
   /* card */
   var card=document.getElementById('mapcard');
-  function showCard(n,pin){
+  function showCard(n){
     var col=GROUP_COLOR[n.group]||'#9aa2ae';var deg=degree(n.id);
     var kind=n.group==='leader'?'Деятель':(n.group==='root'?'Корень':(n.group==='merger'?'Объединение':(n.group==='split'?'Раскол':(n.group==='modern'?'Современность':'Союз / исток'))));
-    card.innerHTML='<div class="mk" style="color:'+col+'">'+kind+'</div><h4>'+n.label+'</h4><div class="my">'+(n.year||'')+'</div>'+(n.desc?'<p>'+n.desc+'</p>':'')+'<div class="mlinks">'+deg+' связ.</div>';
-    var p=toScreen(n);var w=canvas.clientWidth;var cardW=248;var left=p.x+16;if(left+cardW>w-8)left=p.x-cardW-16;if(left<8)left=8;var top=p.y-20;if(top<8)top=8;if(top+150>canvas.clientHeight)top=canvas.clientHeight-160;
+    var rels=(adj[n.id]||[]).slice(0,6).map(function(id){return (byId[id]&&byId[id].label)||id;});
+    card.innerHTML='<div class="mk" style="color:'+col+'">'+kind+'</div><h4>'+n.label+'</h4><div class="my">'+(n.year||'')+'</div>'+(n.desc?'<p>'+n.desc+'</p>':'')+'<div class="mlinks">'+deg+' связ.: '+rels.join(', ')+'</div>';
+    var aa=ambient(n);var p=toScreen(aa);var w=canvas.clientWidth;var cardW=252;var left=p.x+18;if(left+cardW>w-8)left=p.x-cardW-18;if(left<8)left=8;var top=p.y-20;if(top<8)top=8;if(top+170>canvas.clientHeight)top=canvas.clientHeight-180;
     card.style.left=left+'px';card.style.top=top+'px';card.classList.add('show');
   }
   function hideCard(){card.classList.remove('show');}
 
-  /* events: drag/zoom/hover */
+  /* events */
   var dragging=false,moved=false,lx=0,ly=0;
   canvas.addEventListener('pointerdown',function(e){dragging=true;moved=false;lx=e.clientX;ly=e.clientY;canvas.setPointerCapture(e.pointerId);});
   canvas.addEventListener('pointermove',function(e){var rect=canvas.getBoundingClientRect();var mx=e.clientX-rect.left,my=e.clientY-rect.top;
-    if(dragging){var dx=e.clientX-lx,dy=e.clientY-ly;if(Math.abs(dx)+Math.abs(dy)>3)moved=true;view.x+=dx;view.y+=dy;lx=e.clientX;ly=e.clientY;draw();return;}
-    var n=pick(mx,my);if(n!==hoverNode){hoverNode=n;canvas.style.cursor=n?'pointer':'grab';if(!pinNode){if(n)showCard(n);else hideCard();}draw();}});
-  function endDrag(e){dragging=false;}
+    if(dragging){var dx=e.clientX-lx,dy=e.clientY-ly;if(Math.abs(dx)+Math.abs(dy)>3)moved=true;view.x+=dx;view.y+=dy;lx=e.clientX;ly=e.clientY;kick();if(rafId==null)draw();return;}
+    var n=pick(mx,my);if(n!==hoverNode){hoverNode=n;canvas.style.cursor=n?'pointer':'grab';if(!pinNode){if(n)showCard(n);else hideCard();}kick();if(rafId==null)draw();}});
   canvas.addEventListener('pointerup',function(e){var rect=canvas.getBoundingClientRect();var mx=e.clientX-rect.left,my=e.clientY-rect.top;dragging=false;
-    if(!moved){var n=pick(mx,my);if(n){pinNode=(pinNode&&pinNode.id===n.id)?null:n;if(pinNode){showCard(pinNode,true);}else{hideCard();}}else{pinNode=null;hideCard();}draw();}});
-  canvas.addEventListener('pointerleave',function(){if(!pinNode){hoverNode=null;hideCard();draw();}});
-  canvas.addEventListener('wheel',function(e){e.preventDefault();var rect=canvas.getBoundingClientRect();var mx=e.clientX-rect.left,my=e.clientY-rect.top;var f=e.deltaY<0?1.12:0.89;var ns=Math.max(0.35,Math.min(3,view.scale*f));var k=ns/view.scale;view.x=mx-(mx-view.x)*k;view.y=my-(my-view.y)*k;view.scale=ns;draw();},{passive:false});
+    if(!moved){var n=pick(mx,my);if(n){pinNode=(pinNode&&pinNode.id===n.id)?null:n;if(pinNode){showCard(pinNode);}else{hideCard();}}else{pinNode=null;hideCard();}kick();if(rafId==null)draw();}});
+  canvas.addEventListener('pointerleave',function(){if(!pinNode){hoverNode=null;hideCard();if(rafId==null)draw();}});
+  canvas.addEventListener('wheel',function(e){e.preventDefault();var rect=canvas.getBoundingClientRect();var mx=e.clientX-rect.left,my=e.clientY-rect.top;var f=e.deltaY<0?1.12:0.89;var ns=Math.max(0.35,Math.min(3.2,view.scale*f));var k=ns/view.scale;view.x=mx-(mx-view.x)*k;view.y=my-(my-view.y)*k;view.scale=ns;if(rafId==null)draw();},{passive:false});
   document.getElementById('mapzin').addEventListener('click',function(){zoomBtn(1.2);});
   document.getElementById('mapzout').addEventListener('click',function(){zoomBtn(0.83);});
-  document.getElementById('mapfit').addEventListener('click',function(){fit();draw();});
-  function zoomBtn(f){var w=canvas.clientWidth/2,h=canvas.clientHeight/2;var ns=Math.max(0.35,Math.min(3,view.scale*f));var k=ns/view.scale;view.x=w-(w-view.x)*k;view.y=h-(h-view.y)*k;view.scale=ns;draw();}
+  document.getElementById('mapfit').addEventListener('click',function(){fit();if(rafId==null)draw();});
+  function zoomBtn(f){var w=canvas.clientWidth/2,h=canvas.clientHeight/2;var ns=Math.max(0.35,Math.min(3.2,view.scale*f));var k=ns/view.scale;view.x=w-(w-view.x)*k;view.y=h-(h-view.y)*k;view.scale=ns;if(rafId==null)draw();}
 
   /* routes */
   document.querySelector('.routebar').addEventListener('click',function(e){var b=e.target.closest('.routebtn');if(!b)return;
-    document.querySelectorAll('.routebtn').forEach(function(x){x.classList.remove('on');});b.classList.add('on');
+    document.querySelectorAll('.routebtn').forEach(function(x){x.classList.remove('on');x.setAttribute('aria-pressed','false');});b.classList.add('on');b.setAttribute('aria-pressed','true');
     activeRoute=b.dataset.route;var r=ROUTES.find(function(x){return x.id===activeRoute;});
     routeSet=(r&&r.nodes)?new Set(r.nodes):null;pinNode=null;hideCard();
     var hint=document.getElementById('maphint');hint.textContent=(r&&r.summary)?r.summary:'Перетаскивайте для перемещения · колесо для масштаба · клик по узлу — закрепить карточку';
-    if(r&&r.focus){var fn=byId[r.focus];if(fn)flyTo(fn);else draw();}else{draw();}});
+    if(r&&r.focus){var fn=byId[r.focus];if(fn)flyTo(fn);else if(rafId==null)draw();}else{if(rafId==null)draw();}});
 
-  function flyTo(n){var w=canvas.clientWidth,h=canvas.clientHeight;var ts=Math.max(view.scale,1.1);var tx=w/2-n.x*ts,ty=h/2-n.y*ts;
-    if(RM){view.x=tx;view.y=ty;view.scale=ts;searchHi=n.id;draw();return;}
-    var sx=view.x,sy=view.y,ss=view.scale,t0=performance.now();searchHi=n.id;
-    function step(now){var t=Math.min(1,(now-t0)/620);var e=1-Math.pow(1-t,3);view.x=sx+(tx-sx)*e;view.y=sy+(ty-sy)*e;view.scale=ss+(ts-ss)*e;draw();if(t<1)requestAnimationFrame(step);}requestAnimationFrame(step);}
+  function flyTo(n){var w=canvas.clientWidth,h=canvas.clientHeight;var ts=Math.max(view.scale,1.15);var tx=w/2-n.ax*ts,ty=h/2-n.ay*ts;searchHi=n.id;
+    if(RM){view.x=tx;view.y=ty;view.scale=ts;draw();return;}
+    var sx=view.x,sy=view.y,ss=view.scale,t0=performance.now();flying=true;kick();
+    function step(now){var t=Math.min(1,(now-t0)/640);var e=1-Math.pow(1-t,3);view.x=sx+(tx-sx)*e;view.y=sy+(ty-sy)*e;view.scale=ss+(ts-ss)*e;if(t<1){requestAnimationFrame(step);}else{flying=false;}}
+    requestAnimationFrame(step);}
 
   /* search */
   var si=document.getElementById('mapsearch'),sr=document.getElementById('mapresults');var kbd=-1,cur=[];
@@ -1328,17 +1374,18 @@ if(gf){gf.addEventListener('click',function(e){var b=e.target.closest('.tlf');if
   si.addEventListener('keydown',function(e){if(!cur.length)return;if(e.key==='ArrowDown'){e.preventDefault();kbd=Math.min(cur.length-1,kbd+1);}else if(e.key==='ArrowUp'){e.preventDefault();kbd=Math.max(0,kbd-1);}else if(e.key==='Enter'){e.preventDefault();if(kbd>=0)select(cur[kbd]);else if(cur[0])select(cur[0]);return;}else if(e.key==='Escape'){sr.classList.remove('show');si.blur();return;}
     sr.querySelectorAll('.mres').forEach(function(el,i){el.classList.toggle('kbd',i===kbd);});});
   sr.addEventListener('click',function(e){var el=e.target.closest('.mres[data-id]');if(!el)return;select(byId[el.dataset.id]);});
-  function select(n){if(!n)return;si.value=n.label;sr.classList.remove('show');if(routeSet&&!routeSet.has(n.id)){routeSet=null;activeRoute='all';document.querySelectorAll('.routebtn').forEach(function(x){x.classList.toggle('on',x.dataset.route==='all');});}flyTo(n);pinNode=n;showCard(n,true);}
+  function select(n){if(!n)return;si.value=n.label;sr.classList.remove('show');if(routeSet&&!routeSet.has(n.id)){routeSet=null;activeRoute='all';document.querySelectorAll('.routebtn').forEach(function(x){var on=x.dataset.route==='all';x.classList.toggle('on',on);x.setAttribute('aria-pressed',String(on));});}flyTo(n);pinNode=n;showCard(n);kick();}
   document.addEventListener('click',function(e){if(!e.target.closest('.mapsearchwrap'))sr.classList.remove('show');});
-  document.addEventListener('keydown',function(e){if(e.key==='Escape'){pinNode=null;searchHi=null;hideCard();draw();}});
+  document.addEventListener('keydown',function(e){if(e.key==='Escape'){pinNode=null;searchHi=null;hideCard();if(rafId==null)draw();}});
 
-  /* init when visible */
+  /* init on first viewport entry; RAF self-pauses via onScreen() when scrolled away (perf) */
   function init(){resize();fit();animateIntro();}
   var started=false;
-  var mio=new IntersectionObserver(function(es){es.forEach(function(en){if(en.isIntersecting&&!started){started=true;init();}});},{threshold:.15});
+  var mio=new IntersectionObserver(function(es){es.forEach(function(en){
+    if(en.isIntersecting){if(!started){started=true;init();}else{kick();}}
+  });},{threshold:0.01});
   mio.observe(canvas);
-  addEventListener('resize',function(){resize();fit();draw();});
-  // fallback if already in view
+  addEventListener('resize',function(){resize();fit();if(rafId==null)draw();});
   setTimeout(function(){if(!started){var r=canvas.getBoundingClientRect();if(r.top<innerHeight&&r.bottom>0){started=true;init();}}},400);
 })();
 })();
