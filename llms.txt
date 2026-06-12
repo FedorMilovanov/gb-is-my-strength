@@ -1,6 +1,6 @@
 # gospod-bog.ru — llms.txt
 # AI-readable content index for LLM search engines (Perplexity, ChatGPT Search, Claude, Grok)
-# Format: https://llmstxt.org/ | Updated: 2026-06-04
+# Format: https://llmstxt.org/ | Updated: 2026-06-12
 
 # About
 > gospod-bog.ru — христианский богословский проект на русском языке.
@@ -20,12 +20,14 @@
 - [Нагорная проповедь](https://gospod-bog.ru/nagornaya/): экзегетический разбор Матфея 5–7 в 5 частях (содержание, методология, адресат, богодухновенность, закон и Евангелие)
 - [Серия о Джоне Гилле](https://gospod-bog.ru/biografii/): биография и богословие английского баптистского пастора и богослова XVII–XVIII вв., 5 текстов (Часть I — Человек, Часть II — Учёный, Часть III — Наследие, Исторический контекст, Справочник)
 - [Тёмная сторона кафедры](https://gospod-bog.ru/pastor-series/): серия о пасторском авторитаризме и его антидоте
+- [Тайны человеческого сердца](https://gospod-bog.ru/hard-texts/): серия «трудных текстов» — Иеремия 17, Римлянам 7, Римлянам 8
 
 ## Articles
 
 - [Код да Винчи — апологетический разбор](https://gospod-bog.ru/articles/kod-da-vinchi/): критический анализ книги Дэна Брауна с богословской и исторической позиции
 - [Крайне ли испорчено сердце? (Иер. 17:9)](https://gospod-bog.ru/articles/krajne-li-isporcheno-serdce/): экзегетика ключевого текста о природе человека
 - [20 антисоветов пастору](https://gospod-bog.ru/articles/20-antisovetov-pastoru/): сатирическое руководство «как сломать церковь и людей в ней» — обратной стороной показывает признаки здорового пасторского служения
+- [Римлянам 7: верующий или неверующий?](https://gospod-bog.ru/articles/rimlyanam-7-veruyushchiy-ili-neveruyushchiy/): экзегетический анализ — кто «я» в Рим. 7:14–25: Павел-фарисей, верующий или человек под законом?
 - [Герменевтическая оценка христоцентричной герменевтики](https://gospod-bog.ru/articles/hermenevticheskaya-otsenka-hristotsentrichnoy-germenevtiki/): перевод статьи Абнера Чау (Master's Seminary Journal 27/2, Fall 2016)
 - [Джон Гилл: Часть I — Человек](https://gospod-bog.ru/articles/dzhon-gill-chast-1-chelovek/): биография Джона Гилла (1697–1771) — ранние годы, обращение, формирование характера
 - [Джон Гилл: Часть II — Учёный](https://gospod-bog.ru/articles/dzhon-gill-chast-2-uchenyi/): экзегеза, раввинистика, 9-томный комментарий, учение о Троице, «Свод богословия» 1769
@@ -42,7 +44,7 @@
 ## Maps / Карты
 
 - [Карты](https://gospod-bog.ru/karty/): хаб интерактивных карт библейского мира
-- [Путь Авраама](https://gospod-bog.ru/karty/avraam/): интерактивная карта пути Авраама по Бытию 11–25 (19 мест, археология, источники)
+- [Путь Авраама](https://gospod-bog.ru/karty/avraam/): интерактивная карта пути Авраама по Бытию 11–25 (19 мест, 7 контекстных точек, 3 торговых пути, 8 этапов кинотура, археология)
 
 ## Site navigation
 
