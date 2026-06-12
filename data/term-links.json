@@ -177,6 +177,21 @@
       ]
     },
     {
+      "id": "term:нонконформист",
+      "term": "нонконформист",
+      "cat": "История церкви",
+      "color": "#c9b186",
+      "brief": "Английский протестант, отказавшийся conformироваться установленным требованиям государственной Англиканской церкви.",
+      "articles": [
+        "biografii",
+        "dzhon-gill-chast-1-chelovek",
+        "dzhon-gill-chast-2-uchenyi",
+        "dzhon-gill-chast-3-nasledie",
+        "dzhon-gill-istoricheskiy-kontekst",
+        "dzhon-gill-spravochnik"
+      ]
+    },
+    {
       "id": "term:унитарианство",
       "term": "унитарианство",
       "cat": "Ереси и споры",
@@ -188,6 +203,82 @@
         "dzhon-gill-chast-3-nasledie",
         "dzhon-gill-istoricheskiy-kontekst",
         "dzhon-gill-spravochnik"
+      ]
+    },
+    {
+      "id": "term:sola scriptura",
+      "term": "sola scriptura",
+      "cat": "Богословие",
+      "color": "#d4a574",
+      "brief": "Реформационный принцип, согласно которому только Священное Писание обладает высшим, непогрешимым и окончательно нормирующим авторитетом для всей Церкви.",
+      "articles": [
+        "20-antisovetov-pastoru",
+        "kod-da-vinchi",
+        "nagornaya-chast-1",
+        "nagornaya-chast-5",
+        "rimlyanam-7-veruyushchiy-ili-neveruyushchiy"
+      ]
+    },
+    {
+      "id": "term:типология",
+      "term": "типология",
+      "cat": "Герменевтика",
+      "color": "#5fc9a8",
+      "brief": "Способ чтения Библии, при котором реальные ветхозаветные лица, события и установления понимаются как прообразы, находящие исполнение во Христе и Новом Завете.",
+      "articles": [
+        "hermenevticheskaya-otsenka-hristotsentrichnoy-germenevtiki",
+        "kod-da-vinchi",
+        "nagornaya-chast-1",
+        "nagornaya-chast-5"
+      ]
+    },
+    {
+      "id": "term:арминианство",
+      "term": "арминианство",
+      "cat": "Ереси и споры",
+      "color": "#cf5b6b",
+      "brief": "Протестантское богословское движение начала XVII века, связанное с именем Якоба Арминия и утверждающее совместимость Божьей суверенности и подлинного человеческого ответа на бла...",
+      "articles": [
+        "dzhon-gill-chast-3-nasledie",
+        "kod-da-vinchi",
+        "krajne-li-isporcheno-serdce",
+        "rimlyanam-7-veruyushchiy-ili-neveruyushchiy"
+      ]
+    },
+    {
+      "id": "term:эйзегеза",
+      "term": "эйзегеза",
+      "cat": "Герменевтика",
+      "color": "#5fc9a8",
+      "brief": "Чтение, при котором толкователь вносит в текст готовый смысл извне, вместо того чтобы услышать то, что текст говорит сам.",
+      "articles": [
+        "hermenevticheskaya-otsenka-hristotsentrichnoy-germenevtiki",
+        "kod-da-vinchi",
+        "krajne-li-isporcheno-serdce"
+      ]
+    },
+    {
+      "id": "term:пелагианство",
+      "term": "пелагианство",
+      "cat": "Ереси и споры",
+      "color": "#cf5b6b",
+      "brief": "Учение, отрицающее глубину повреждения человеческой природы и тем самым уменьшающее необходимость предваряющей благодати.",
+      "articles": [
+        "kod-da-vinchi",
+        "krajne-li-isporcheno-serdce",
+        "rimlyanam-7-veruyushchiy-ili-neveruyushchiy"
+      ]
+    },
+    {
+      "id": "term:Heilsgeschichte",
+      "term": "Heilsgeschichte",
+      "cat": "Богословие",
+      "color": "#d4a574",
+      "brief": "Немецкий термин для «истории спасения» — взгляда на Библию как на единое развёртывание Божьего искупительного замысла в истории.",
+      "articles": [
+        "kod-da-vinchi",
+        "nagornaya-chast-1",
+        "nagornaya-chast-5"
       ]
     }
   ]
