@@ -29,7 +29,7 @@ function ok(msg) { console.log(`✅ ${msg}`); }
 
 function walk(dir, out = []) {
   for (const ent of fs.readdirSync(dir, { withFileTypes: true })) {
-    if (['.git', 'node_modules', '.next', '.npm'].includes(ent.name)) continue;
+    if (['.git', 'node_modules', '.next', '.npm', '_app'].includes(ent.name)) continue;
     const p = path.join(dir, ent.name);
     if (ent.isDirectory()) walk(p, out);
     else out.push(p);
