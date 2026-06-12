@@ -145,8 +145,16 @@ footer.k a:hover{color:var(--gold)}
     <div class="art" aria-hidden="true">
       <svg viewBox="0 0 360 150" preserveAspectRatio="xMidYMid slice">
         <rect width="360" height="150" fill="#1d1c14"/>
-        <path fill="#0d1d2e" d="M120,150 C140,110 150,80 150,40 L210,40 C210,85 222,115 245,150 Z" opacity=".8"/>
-        <path fill="none" stroke="#6b6248" stroke-width="1.5" stroke-dasharray="4 6" opacity=".5" d="M60,120 C100,110 150,100 180,80 C220,55 260,50 310,42"/>
+        <!-- Sinai peninsula shape -->
+        <path fill="#22241f" d="M100,150 C120,130 140,100 170,75 C190,60 200,50 210,55 C220,60 240,80 260,100 C280,120 300,140 320,150 Z" opacity=".7"/>
+        <!-- Red Sea waters -->
+        <path fill="#0d1d2e" d="M80,150 C90,130 105,110 120,95 C135,85 150,80 168,76 L100,150 Z" opacity=".8"/>
+        <path fill="#0d1d2e" d="M210,55 C225,50 240,55 260,65 C290,80 320,100 350,120 L360,150 L260,150 C260,120 240,100 210,55 Z" opacity=".7"/>
+        <!-- route hint -->
+        <path fill="none" stroke="#e8c879" stroke-width="1.8" stroke-dasharray="4 6" stroke-linecap="round" opacity=".5" d="M40,120 C70,115 100,108 130,95 C160,82 175,76 190,72 C210,68 240,74 270,88"/>
+        <!-- Sinai mountain -->
+        <path d="M186,68 L190,58 L194,68" fill="none" stroke="#8b7d5a" stroke-width="1" opacity=".6"/>
+        <text x="190" y="55" font-size="6" fill="#8b7d5a" text-anchor="middle" opacity=".5">סִינַי</text>
       </svg>
     </div>
     <div class="body">
@@ -164,8 +172,20 @@ footer.k a:hover{color:var(--gold)}
     <div class="art" aria-hidden="true">
       <svg viewBox="0 0 360 150" preserveAspectRatio="xMidYMid slice">
         <rect width="360" height="150" fill="#1d1c14"/>
-        <path fill="#0d1d2e" d="M0,70 C60,55 130,60 200,75 C260,88 320,85 360,75 L360,150 L0,150 Z" opacity=".85"/>
-        <path fill="none" stroke="#6b6248" stroke-width="1.5" stroke-dasharray="4 6" opacity=".5" d="M320,60 C270,45 210,40 160,48 C110,56 60,52 20,40"/>
+        <!-- Mediterranean Sea -->
+        <path fill="#0d1d2e" d="M0,60 C40,50 90,45 140,48 C200,52 260,65 320,55 C340,52 355,55 360,58 L360,150 L0,150 Z" opacity=".85"/>
+        <!-- coastlines -->
+        <path fill="#22241f" d="M0,0 L0,60 C40,50 90,45 140,48 C180,50 200,40 210,30 L280,0 Z" opacity=".5"/>
+        <path fill="#22241f" d="M0,150 C20,135 50,120 80,115 C110,110 140,120 150,150 Z" opacity=".4"/>
+        <!-- route: Antioch → Ephesus → Athens → Rome -->
+        <path fill="none" stroke="#e8c879" stroke-width="1.8" stroke-dasharray="5 5" stroke-linecap="round" opacity=".5" d="M310,35 C280,40 250,50 200,48 C160,46 130,50 90,58 C60,64 30,58 10,48"/>
+        <!-- city dots -->
+        <circle cx="310" cy="35" r="2.5" fill="#0d1117" stroke="#e8c879" stroke-width="1" opacity=".7"/>
+        <circle cx="200" cy="48" r="2.5" fill="#0d1117" stroke="#e8c879" stroke-width="1" opacity=".7"/>
+        <circle cx="130" cy="52" r="2.5" fill="#0d1117" stroke="#e8c879" stroke-width="1" opacity=".7"/>
+        <circle cx="10" cy="48" r="2.5" fill="#0d1117" stroke="#e8c879" stroke-width="1" opacity=".7"/>
+        <text x="305" y="28" font-size="6" fill="#9aa2ae" letter-spacing=".08em" opacity=".5">אנטיוכיה</text>
+        <text x="10" y="42" font-size="6" fill="#9aa2ae" letter-spacing=".08em" opacity=".5">רומא</text>
       </svg>
     </div>
     <div class="body">
