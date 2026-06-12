@@ -314,9 +314,16 @@
 </style>
   <link rel="alternate" type="application/rss+xml" title="Господь Бог — Сила Моя — RSS" href="https://gospod-bog.ru/feed.xml">
   <link rel="manifest" href="/manifest.json">
+<style>
+.avraam-footer{position:fixed;bottom:0;right:0;padding:6px 14px;font-family:'Source Sans 3',system-ui,sans-serif;font-size:10px;z-index:2}
+.avraam-footer a{color:rgba(205,185,144,.35);text-decoration:none;transition:opacity .2s}
+.avraam-footer a:hover{opacity:1;color:rgba(205,185,144,.7)}
+.avraam-skip{position:absolute;left:-9999px;top:auto;width:1px;height:1px;overflow:hidden;z-index:9999;padding:12px;background:var(--bg,#0d1117);color:var(--gold,#cdb990);font-size:14px;text-decoration:none;border-radius:0 0 8px 0}
+.avraam-skip:focus{position:fixed;left:0;top:0;width:auto;height:auto;overflow:visible}
+</style>
 </head>
 <body>
-
+<a href="#svg-map" class="avraam-skip">Перейти к карте</a>
 <div id="stage">
 <svg id="svg" viewBox="0 0 1900 1430" preserveAspectRatio="xMidYMid slice" aria-label="Карта пути Авраама">
 <defs>
@@ -1558,5 +1565,6 @@ if(location.hash){
 </script>
 <noscript><div><img decoding="async" src="https://mc.yandex.ru/watch/108353327" style="position:absolute;left:-9999px;" alt=""></div></noscript>
 <!-- /Yandex.Metrika counter -->
+<footer class="avraam-footer"><a href="/about/">© gospod-bog.ru</a></footer>
 </body>
 </html>
