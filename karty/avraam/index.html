@@ -384,6 +384,10 @@ body{overscroll-behavior:none;-webkit-overscroll-behavior:none}
   <!-- Red Sea -->
   <path fill="url(#seaG)" stroke="#2e4d6b" stroke-width="1.2" stroke-opacity=".45" d="M424,1012 C418,1024 420,1044 428,1070 C440,1112 462,1170 490,1230 C504,1258 516,1278 526,1292 C548,1340 584,1392 622,1430 C660,1490 692,1560 714,1640 C730,1702 740,1768 744,1830 L1110,1830 C1064,1740 1018,1640 974,1546 C946,1486 920,1456 900,1430 C860,1402 818,1368 762,1318 C740,1298 722,1278 708,1258 C692,1190 678,1110 670,1044 C668,1030 660,1022 652,1028 C644,1100 632,1190 614,1262 C606,1290 596,1300 580,1288 C560,1240 532,1160 506,1090 C494,1056 480,1028 466,1016 C452,1004 432,1000 424,1012 Z"/>
   <!-- Nile delta hint -->
+  <g opacity=".3">
+    <path d="M220,852 C222,870 224,890 226,910 C228,930 230,950 232,970" fill="none" stroke="#2d4a66" stroke-width="2.5" stroke-linecap="round"/>
+    <text class="region-label lbl-z1" x="184" y="890" font-size="6" fill="#7fa7c4" opacity=".5" letter-spacing=".15em">ДЕЛЬТА НИЛА</text>
+  </g>
   
 
   <!-- Persian Gulf -->
@@ -437,33 +441,33 @@ body{overscroll-behavior:none;-webkit-overscroll-behavior:none}
   <g id="tradeRoutes" opacity=".45">
     <!-- Via Maris / Дорога моря — Египет → побережье → Мегиддо → Дамаск → Месопотамия -->
     <path fill="none" stroke="#7fa7c4" stroke-width="2.5" stroke-dasharray="8 6" stroke-linecap="round" opacity=".7"
-      d="M210,920 C280,880 340,850 400,830 C460,810 520,780 560,750 C580,730 600,710 613,706 C640,690 660,665 665,625 C690,600 715,585 731,594"/>
-    <text class="region-label lbl-z1" x="420" y="790" font-size="7" fill="#7fa7c4" opacity=".7" letter-spacing=".22em" transform="rotate(-26 420 790)">VIA MARIS · דֶּרֶךְ הַיָּם</text>
+      d="M210,920 C280,880 340,850 400,830 C460,810 520,780 560,750 C580,730 600,710 613,706 C630,690 645,668 658,648 C680,630 710,610 731,594"/>
+    <text class="region-label lbl-z1" x="440" y="785" font-size="7" fill="#7fa7c4" opacity=".7" letter-spacing=".22em" transform="rotate(-26 420 790)">VIA MARIS · דֶּרֶךְ הַיָּם</text>
 
     <!-- King's Highway / Царская дорога — Эцион-Гевер → Мёртвое море (вост.) → Дамаск -->
     <path fill="none" stroke="#c4a07f" stroke-width="2.5" stroke-dasharray="8 6" stroke-linecap="round" opacity=".7"
-      d="M720,1050 C710,980 700,930 692,880 C685,850 680,820 678,795 C676,760 674,730 672,700 C674,660 690,620 710,590 C720,574 730,560 731,594"/>
-    <text class="region-label lbl-z1" x="698" y="890" font-size="7" fill="#c4a07f" opacity=".7" letter-spacing=".18em" transform="rotate(-84 698 890)">ЦАРСКАЯ ДОРОГА · דֶּרֶךְ הַמֶּלֶךְ</text>
+      d="M730,1060 C720,990 712,940 705,890 C700,860 696,830 694,800 C692,760 694,720 700,680 C710,650 720,620 731,594"/>
+    <text class="region-label lbl-z1" x="710" y="870" font-size="7" fill="#c4a07f" opacity=".7" letter-spacing=".18em" transform="rotate(-84 698 890)">ЦАРСКАЯ ДОРОГА · דֶּרֶךְ הַמֶּלֶךְ</text>
 
     <!-- Way of Shur / Дорога Сура — Египет (Дельта) → Беэр-Шева → Ханаан -->
     <path fill="none" stroke="#a0c47f" stroke-width="2.2" stroke-dasharray="6 5" stroke-linecap="round" opacity=".65"
-      d="M260,918 C320,910 380,900 440,890 C490,878 530,865 561,847 C580,838 596,830 610,829"/>
+      d="M260,918 C320,910 380,900 440,890 C490,878 530,865 561,847 C570,855 578,860 584,864"/>
     <text class="region-label lbl-z1" x="370" y="878" font-size="6.5" fill="#a0c47f" opacity=".7" letter-spacing=".2em" transform="rotate(-7 370 878)">ДОРОГА СУРА · דֶּרֶךְ שׁוּר</text>
   </g>
 
   <!-- ============ MOUNTAINS NEAR SHECHEM ============ -->
   <g id="mountains" opacity=".55">
-    <!-- Гевал (Эйвал) — к северу от Сихема -->
+    <!-- Гевал (Эйвал) — 940 м, к северу от Сихема -->
     <g class="lbl-z1">
-      <path d="M622,728 L628,718 L634,728 Z" fill="none" stroke="#8b7d5a" stroke-width="1.2"/>
-      <text x="628" y="714" font-size="5" fill="#8b7d5a" text-anchor="middle" letter-spacing=".1em">ГЕВАЛ</text>
-      <text x="628" y="710" font-size="4" fill="#cdbd95" text-anchor="middle" opacity=".6">עֵיבָל</text>
+      <path d="M618,730 L624,716 L628,718 L632,716 L638,730 Z" fill="rgba(100,90,60,.12)" stroke="#8b7d5a" stroke-width="1.2" stroke-linejoin="round"/>
+      <text x="628" y="712" font-size="5" fill="#8b7d5a" text-anchor="middle" letter-spacing=".1em">ГЕВАЛ</text>
+      <text x="628" y="708" font-size="3.5" fill="#cdbd95" text-anchor="middle" opacity=".6">עֵיבָל · 940 м</text>
     </g>
-    <!-- Геризим (Гризим) — к югу от Сихема -->
+    <!-- Геризим (Гризим) — 881 м, к югу от Сихема -->
     <g class="lbl-z1">
-      <path d="M622,768 L628,758 L634,768 Z" fill="none" stroke="#8b7d5a" stroke-width="1.2"/>
-      <text x="628" y="774" font-size="5" fill="#8b7d5a" text-anchor="middle" letter-spacing=".1em">ГЕРИЗИМ</text>
-      <text x="628" y="778" font-size="4" fill="#cdbd95" text-anchor="middle" opacity=".6">גְּרִזִּים</text>
+      <path d="M618,770 L624,756 L628,758 L632,756 L638,770 Z" fill="rgba(100,90,60,.12)" stroke="#8b7d5a" stroke-width="1.2" stroke-linejoin="round"/>
+      <text x="628" y="776" font-size="5" fill="#8b7d5a" text-anchor="middle" letter-spacing=".1em">ГЕРИЗИМ</text>
+      <text x="628" y="780" font-size="3.5" fill="#cdbd95" text-anchor="middle" opacity=".6">גְּרִזִּים · 881 м</text>
     </g>
   </g>
 
