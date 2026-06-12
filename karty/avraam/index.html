@@ -213,7 +213,9 @@
   #ctxCard .cc-x:hover{color:var(--gold)}
   @media(prefers-reduced-motion:reduce){
     .pulse{animation:none;opacity:0}
-    #caption,#ctxCard,#panel,.stage-chip,.card{transition:none}
+    *{transition-duration:0.01ms!important;animation-duration:0.01ms!important}
+    #intro .inner{animation:none}
+    .pop,.btn,.chip,.tab,.marker .halo,.route,.caravan{transition:none}
   }
   @media(max-width:760px){#ctxCard{left:12px;right:12px;max-width:none;bottom:128px}}
 
