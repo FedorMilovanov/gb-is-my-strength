@@ -53,6 +53,16 @@ html.dark .border-\[\#2e2c27\]{border-color:#2e2c27}
 .gbs2-sheet-parts{display:flex;flex-direction:column;gap:2px}
 .breadcrumb__home{font-size:14px;line-height:1;opacity:.65;margin-right:2px}
 .article-footer{margin-top:var(--s-7,48px);padding-top:var(--s-6,32px);border-top:1px solid var(--color-border)}
+/* Reading list component (krajne article) */
+.reading-list__title{font-family:'Source Sans 3',system-ui,sans-serif;font-size:13px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--color-text-muted);margin:0 0 8px}
+.reading-list__intro{font-size:14px;color:var(--color-text-muted);line-height:1.6;margin:0 0 24px}
+.reading-list__group{margin-bottom:28px}
+.reading-list__group-title{font-family:'Source Sans 3',system-ui,sans-serif;font-size:15px;font-weight:700;color:var(--color-text);margin:0 0 10px}
+.reading-list__items{list-style:none;padding:0;margin:0}
+.reading-list__items li{font-size:14px;line-height:1.65;color:var(--color-text-secondary);margin-bottom:12px;padding-left:16px;position:relative}
+.reading-list__items li::before{content:"·";position:absolute;left:0;color:var(--color-accent);font-weight:700}
+.h-article-card--biography{border-left:3px solid var(--color-accent);padding-left:16px}
+
 
 .border-\[var\(--border\)\]{border-color:var(--color-border)}.text-\[var\(--muted\)\]{color:var(--color-text-muted)}.text-\[var\(--text\)\]{color:var(--color-text)}
 
