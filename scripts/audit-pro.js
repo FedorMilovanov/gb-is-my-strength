@@ -910,7 +910,6 @@ const SITE_CSS_MIN_BYTES = 200_000;
   // Add new entries only when an owner explicitly asks to keep a raw source.
   // To pass without whitelisting, prefer `*-original.*` or `*--keep.*` naming.
   const ALLOWLIST = new Set([
-    'images/whitefield-field.png',     // r14.1 — owner-restored historical print
   ]);
   const offenders = [];
   function walkImg(dir) {
