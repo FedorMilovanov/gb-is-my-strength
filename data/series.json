@@ -56,21 +56,21 @@
         "slug": "dzhon-gill-chast-1-chelovek",
         "title": "Часть I. Человек",
         "status": "published",
-        "readingTime": 21
+        "readingTime": 32
       },
       {
         "n": 3,
         "slug": "dzhon-gill-chast-2-uchenyi",
         "title": "Часть II. Учёный",
         "status": "published",
-        "readingTime": 8
+        "readingTime": 39
       },
       {
         "n": 4,
         "slug": "dzhon-gill-chast-3-nasledie",
         "title": "Часть III. Наследие",
         "status": "published",
-        "readingTime": 16
+        "readingTime": 54
       },
       {
         "n": 5,
