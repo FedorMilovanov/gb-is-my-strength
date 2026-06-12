@@ -9,6 +9,7 @@
 
 | Версия документа | Дата | Состояние |
 |---|---|---|
+| **AGENTS-r118** | 2026-06-13 | **«Карта Русского Баптизма»: восстановлена НАСТОЯЩАЯ 3D-карта оригинала (1-в-1) вместо упрощённого 2D-порта.** Владелец указал, что ранний vanilla-порт (2D canvas-«созвездие») сильно упростил оригинал — у LM Arena проекта настоящая 3D-сцена (Three.js + react-force-graph-3d + d3-geo: сферы-узлы со свечением, торы-орбиты, тубы-связи, карта стран Mercator, режимы граф/карта, лоадер, AI-ассистент). По согласованию (точность 1-в-1 > vanilla-канон для этого материала) встроен **оригинальный собранный бандл** как изолированный iframe-ассет: `/konfessii/russkij-baptizm/` стал нативной обёрткой (шапка/SEO/OG/JSON-LD/CSP `frame-src 'self'`/sr-only h1/лоадер) + `<iframe src="./_app/index.html">`. `_app/` — singlefile-бандл (~2.2 МБ, Vite `base:'./'` + vite-plugin-singlefile), со своей CSP (Three.js `unsafe-eval`/`blob:`, шрифты Google Fonts) и `robots=noindex`. Папка `_app` добавлена в skipDirs/EXCLUDE_DIRS 5 валидаторов (built-asset). Регресс-аудит `scripts/konfessii-map-audit.js` переписан под iframe-архитектуру (I1–I7: обёртка SEO/CSP/iframe, бандл singlefile/CSP/noindex, live-загрузка + **активация 3D WebGL-canvas** на desktop+mobile). Старый 2D-генератор удалён, `_build-tools/konfessii-baptizm/README.md` — инструкция пересборки. §9.23 переписан. QA: konfessii:audit 25/25 ✔ (включая реальный WebGL 3D), audit-pro 152 passed · 0 errors, validate/seo/tokens/readable/editorial/data — green. |
 | **AGENTS-r117** | 2026-06-12 | **«Карта связей» отдела баптизма поднята до премиум-уровня + регресс-защита (§9.23).** Полный апгрейд canvas-карты `/konfessii/russkij-baptizm/`: (1) **живая ambient-анимация** — дыхание/дрейф узлов, мягкое свечение (радиальные градиенты на узел), пульс-кольца на выделении, **частицы, бегущие по подсвеченным рёбрам**, параллакс-старфилд на фоне; (2) **рёбра-градиенты** (цвет источника→цели) + **подписи связей при наведении** (раньше данные label/desc рёбер — «Слились в · 1944», «Раскол · 1961–1965» — не использовались, теперь видны на hover); (3) карточка узла теперь перечисляет связанные узлы; (4) **перф:** RAF-цикл крутится только когда canvas в зоне видимости и вкладка активна (60fps в кадре, **0 RAF вне экрана** — Playwright-замер), `prefers-reduced-motion` → статичная отрисовка без RAF; (5) aria-pressed на кнопках-маршрутах. **Регресс-защита:** `scripts/konfessii-map-audit.js` (npm run konfessii:audit) — 9 инвариантов I1–I9 (рендер, ambient, перф-пауза, reduced-motion, поиск→pin, маршрут, хронология/глоссарий/викторина, overflow/pageerror, контент-паритет 23 узла/27 связей/25 вопросов/15 терминов + блоки Пашков/зарубежные работы) на desktop+mobile; без браузера — SKIP. QA: Chromium+WebKit(Safari) × desktop+mobile — все интеракции PASS, 0 pageerrors, 0 overflow; konfessii:audit 25/25 ✔. audit-pro 152 passed · 0 errors. |
 | **AGENTS-r116** | 2026-06-12 | **Новый отдел «Конфессии и Деноминации» + миграция токенов завершена + регистр названий разделов.** (1) Создан раздел `/konfessii/` (хаб по эталону `/karty/`) и `/konfessii/russkij-baptizm/` — полный перенос проекта из LM Arena Coding Battle на vanilla HTML/CSS/JS (без React/Vite/Three.js, как требует §10): все секции (три истока, интерактивная «карта связей» — 2D-созвездие на canvas в дизайн-языке /map/ r112–114, 23 узла/27 связей/5 маршрутов с drag/zoom/поиском/hover, хронология, съезды, два пути, гонения, союзы, 14 фигур с досье, находки v6, архивы, открытые вопросы, сравнение РС/МСЦ ЕХБ, глоссарий, викторина на 20 вопросов). Самодостаточные страницы с CSP/OG/JSON-LD/breadcrumbs/Yandex/SDG, 2 OG-обложки 1200×630 webp. Главная: пункт «Конфессии» в navbar+mobile-nav, карточка отдела «Открыт». sitemap +2 URL. (2) **tokens:check завершён:** в `:root` site.css домаплены 10 недостающих legacy-алиасов (`--border-strong`,`--accent-strong`,`--link`,`--note-bg`,`--quote-bg`,`--text-primary`,`--text-secondary`,`--text-muted`→`--color-text-faint`,`--fg`,`--fg-secondary`) на канонические `--color-*`; ratchet прямых var(--legacy)=0 сохранён; cache-bust прогнан (26 файлов). (3) **§9.22:** зафиксирован регистр названий отделов — Title Case (эталон «Конфессии и Деноминации»), без массовой капитализации русских заголовков статей/секций. Playwright: 0 pageerrors (desktop+mobile 390px), карта/маршруты/поиск/хронология/глоссарий/викторина работают. audit-pro 152 passed · 0 errors. |
 | **AGENTS-r115** | 2026-06-12 | **Карта Авраама: археологическое обогащение + торговые пути + горы + era-tags.** Добавлены 3 торговых пути SVG (Via Maris, Царская дорога, Дорога Сура) с ивритскими подписями; горы Геризим и Гевал; 7-я CTX-точка Хацор (ЮНЕСКО, 80 га, 18 клинописных табличек); era:["bronze"] на 19 PLACES + data-layer="base-geo" для будущего выноса по docs/MAPS-ARCHITECTURE.md; 8 слоёв карты (abr/lot/war/cand/ctx/trades/mounts/debate); km на timeline chips; археологические данные 13/19 мест верифицированы по академическим источникам (Nature, BAR, UNESCO, Wikipedia). CSS: удалены 18 dead vars + orphan @keyframes + empty @media. links-graph: 20/20 readingTime + 20/20 tags. SW: v170→v171. SITE_CONFIG timestamps. llms.txt +2 URL. Content word-count floor guard (10 статей, ~80% порог). Gill reading-time sync (149 мин серии). audit-pro 152 passed · 0 errors. |
@@ -977,30 +978,32 @@ era-timeline. Живые эталоны: 5 страниц Гилла + 2 hard-te
     согласованно (видимый текст + JSON-LD + breadcrumbs + SITE_CONFIG на всех
     страницах раздела) — иначе не трогать ради косметики.
 
-### 9.23 Отдел «Конфессии и Деноминации» — карта связей и регресс-защита (с 2026-06-12)
+### 9.23 Отдел «Конфессии и Деноминации» — 3D-карта (iframe-приложение) и регресс-защита (с 2026-06-13)
 
-  * `/konfessii/russkij-baptizm/` — самодостаточное приложение (inline canvas-«созвездие»
-    + викторина + глоссарий + хронология + география). Вне контракта «11 JS»: автономная
-    страница-приложение (как nagornaya/tw.min.css, как /karty/avraam/).
-  * **Карта связей = canvas 2D** (не SVG как /map/): много анимированных узлов, плавный
-    pan/zoom, частицы по рёбрам, ambient-дрейф. Дизайн-язык — золотая палитра сайта.
-  * **Перф-инварианты (не нарушать):** RAF-цикл идёт ТОЛЬКО пока canvas в зоне видимости
-    (`onScreen()`) и вкладка активна; вне экрана/при `document.hidden` цикл сам
-    останавливается (0 RAF). `prefers-reduced-motion` → карта рисуется один раз статично,
-    бесконечный RAF не запускается.
-  * **Данные карты вшиты в страницу** (NODES/LINKS/ROUTES) и сгенерированы из
-    `build-baptizm/data.js` через билдер (см. ниже). Контент-паритет с референсом
-    (LM Arena): 23 узла, 27 связей, 5 маршрутов, 25 вопросов викторины, 15 терминов
-    глоссария, блоки «Архив Пашкова» и «Зарубежные работы». Менять числа — только
-    осознанно, синхронно обновив `scripts/konfessii-map-audit.js`.
-  * **Регресс-защита:** `npm run konfessii:audit` (Playwright) проверяет 9 инвариантов
-    I1–I9 на desktop+mobile (рендер карты, ambient-анимация, перф-пауза, reduced-motion,
-    поиск→pin, маршрут+aria, хронология/глоссарий/викторина, overflow/pageerror,
-    контент-паритет). Без браузера — мягкий SKIP (exit 0). Прогонять после ЛЮБЫХ
-    правок страницы баптизма. Если падает — чинить страницу, не упрощать тест.
-  * **Сборка страницы:** генератор в репо — `_build-tools/konfessii-baptizm/`
-    (Node, без сборщика): `data.js` (контент), `body.js` (секции), `runtime.js`
-    (inline-JS с картой), `build.js` (CSS+head+мета), `main.js` (сборка), `README.md`.
-    Правка контента/карты = правка здесь → `node _build-tools/konfessii-baptizm/main.js`
-    → перезапишет `konfessii/russkij-baptizm/index.html`. Прямую правку финального HTML
-    избегать (перезатрётся сборкой). Вывод детерминирован (byte-identical при тех же данных).
+  * `/konfessii/russkij-baptizm/` — **нативная обёртка сайта** (шапка/крошки,
+    SEO/OG/JSON-LD/canonical, sr-only `<h1>`, CSP `frame-src 'self'`, Yandex, лоадер),
+    внутри `<iframe src="./_app/index.html">`.
+  * **Внутри iframe — ОРИГИНАЛЬНОЕ 3D-приложение** из LM Arena (перенос 1-в-1):
+    React 19 + TypeScript + Vite + Tailwind 4 + **Three.js + react-force-graph-3d + d3-geo**.
+    Настоящая 3D-сцена: сферы-узлы со свечением, торы-орбиты, тубы-связи, карта стран
+    (d3-geo Mercator + world-atlas), режимы «граф/карта», маршруты, инспектор, лоадер,
+    AI-ассистент (Gemini, без ключа graceful-null). Это собранный singlefile-бандл ~2.2 МБ.
+    **Почему так:** ранний vanilla-порт (2D canvas) сильно упрощал оригинал — владелец
+    потребовал точное 1-в-1; согласовано встроить оригинал как изолированный iframe-ассет.
+  * **`_app/` — built-asset, исключён из статических валидаторов** (skipDirs/EXCLUDE_DIRS
+    в validate.js, audit-pro.js, seo-audit.js, readable-audit.js, editorial-lint.js).
+    НЕ редактировать бандл руками (кроме обязательных мета — см. README); пересобирать
+    из исходников приложения.
+  * **CSP бандла** (своя, в `_app/index.html`): Three.js требует `script-src 'unsafe-eval'
+    blob:` и `worker-src blob:`; шрифты Inter/JetBrains — `style-src/font-src/connect-src`
+    с `fonts.googleapis.com`/`fonts.gstatic.com`. Бандл несёт `robots=noindex` (индексируется
+    только обёртка). Обёртка остаётся в строгой CSP сайта + `frame-src 'self'`.
+  * **Регресс-защита:** `npm run konfessii:audit` (`scripts/konfessii-map-audit.js`,
+    Playwright) — инварианты I1–I7 на desktop+mobile: обёртка (canonical/og/h1/JSON-LD/
+    theme-color/CSP/iframe-src), бандл (singlefile/viewport/CSP/noindex/root), live
+    (загрузка приложения в iframe, скрытие лоадера, **активация 3D WebGL-canvas**,
+    0 pageerror, 0 overflow). Без браузера/WebGL — мягкий SKIP (exit 0). Прогонять после
+    любой пересборки `_app`. Если падает — чинить страницу/пересобрать бандл, не упрощать тест.
+  * **Сборка/пересборка:** инструкция в `_build-tools/konfessii-baptizm/README.md`
+    (исходники приложения — отдельный Vite-проект у владельца; `base:'./'`,
+    `vite-plugin-singlefile`, после сборки вернуть CSP/noindex/favicon в `<head>`).

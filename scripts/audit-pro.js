@@ -90,7 +90,7 @@ const IMPORTANT_GOAL = 200; // AGENTS §4.10 long-term target
 const MIN_DESC = 50;
 const MAX_DESC = 180;
 
-const skipDirs = new Set(['.git', 'node_modules', 'pagefind', 'audit']);
+const skipDirs = new Set(['.git', 'node_modules', 'pagefind', 'audit', '_app']);
 const verificationFileRe = /^(google|yandex)[^/]*\.html$/i;
 
 const R = {
@@ -868,7 +868,7 @@ const SITE_CSS_MIN_BYTES = 200_000;
     { re: /~$/,                   why: 'editor backup with ~ suffix' },
   ];
   const EXCLUDE_DIRS = new Set(['.git', 'node_modules', '.npm', 'pagefind', '.playwright-browsers',
-    'shots', 'shots-after', 'audit', '.cache']);
+    'shots', 'shots-after', 'audit', '.cache', '_app']);
   const offenders = [];
   function scan(dir) {
     if (!fs.existsSync(dir)) return;
