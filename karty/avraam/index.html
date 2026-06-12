@@ -11,14 +11,15 @@
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://gospod-bog.ru/karty/avraam/">
 <meta property="og:description" content="От Ура Халдейского до горы Мория: кинотур по 8 этапам, 19 мест с археологией и ивритом, война царей, спор о Содоме, род Тераха, 175 лет жизни.">
-<meta property="og:image" content="https://gospod-bog.ru/images/og-preview-1200x630.webp">
+<meta property="og:image" content="https://gospod-bog.ru/images/og-karty-1200x630.webp">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
 <meta property="og:image:type" content="image/webp">
+<meta property="og:image:alt" content="Путь Авраама: маршрут от Ура через Харран в Ханаан и Египет на кинематографической карте">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="Путь Авраама — интерактивная карта">
 <meta name="twitter:description" content="Кинематографическая карта Бытия 11–25: Ур, Харран, Ханаан, Содом, Мория.">
-<meta name="twitter:image" content="https://gospod-bog.ru/images/og-preview-1200x630.webp">
+<meta name="twitter:image" content="https://gospod-bog.ru/images/og-karty-1200x630.webp">
 <meta name="twitter:site" content="@FedorMilovanov">
 <meta name="twitter:creator" content="@FedorMilovanov">
 <meta name="theme-color" content="#070a10" media="(prefers-color-scheme: dark)">
@@ -39,6 +40,7 @@
   #stage{position:fixed;inset:0}
   svg{width:100%;height:100%;display:block;cursor:grab;touch-action:none}
   svg.dragging{cursor:grabbing}
+  svg.dragging .pulse{animation-play-state:paused}
   text{user-select:none;pointer-events:none}
 
   /* ---------- map typography ---------- */
@@ -81,6 +83,7 @@
   #tools{top:18px;right:18px;display:flex;flex-direction:column;gap:8px;align-items:flex-end}
   .btn{background:var(--panel);border:1px solid var(--panel-line);color:var(--txt);width:38px;height:38px;border-radius:11px;font-size:17px;cursor:pointer;backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);display:grid;place-items:center;transition:.2s;box-shadow:0 4px 18px rgba(0,0,0,.45)}
   .btn:hover{border-color:var(--gold);color:var(--gold);transform:translateY(-1px)}
+  .btn:focus-visible,.stage-chip:focus-visible,.tab:focus-visible{outline:2px solid var(--gold);outline-offset:2px}
   .btn.wide{width:auto;padding:0 14px;font-size:12px;letter-spacing:.1em;height:34px}
   .btn.on{border-color:var(--gold);color:#1a1407;background:var(--gold)}
   #mHud{position:fixed;left:50%;top:74px;transform:translateX(-50%);z-index:27;pointer-events:none;background:rgba(14,20,18,.92);border:1px solid rgba(143,208,197,.45);padding:9px 18px;border-radius:999px;font-size:12px;color:#bfe6de;letter-spacing:.05em;backdrop-filter:blur(12px);box-shadow:0 8px 24px rgba(0,0,0,.4);display:none}
@@ -134,7 +137,7 @@
   #timeline{bottom:0;left:0;right:0;padding:10px 16px calc(14px + env(safe-area-inset-bottom));display:flex;gap:8px;align-items:flex-end;justify-content:center;background:linear-gradient(to top,rgba(5,8,13,.92),rgba(5,8,13,.55) 60%,transparent)}
   #tl-scroll{display:flex;gap:8px;overflow-x:auto;padding:6px 2px;scrollbar-width:none;max-width:calc(100vw - 140px)}
   #tl-scroll::-webkit-scrollbar{display:none}
-  .stage-chip{flex:0 0 auto;background:var(--panel);border:1px solid rgba(255,255,255,.1);border-radius:13px;padding:8px 13px;cursor:pointer;backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);transition:.25s;min-width:118px;box-shadow:0 6px 20px rgba(0,0,0,.4)}
+  .stage-chip{font-family:var(--sans);text-align:left;color:inherit;flex:0 0 auto;background:var(--panel);border:1px solid rgba(255,255,255,.1);border-radius:13px;padding:8px 13px;cursor:pointer;backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);transition:.25s;min-width:118px;box-shadow:0 6px 20px rgba(0,0,0,.4)}
   .stage-chip .n{font-family:var(--serif);font-size:11px;color:var(--gold);letter-spacing:.2em}
   .stage-chip .t{font-size:11.5px;color:var(--txt);margin-top:3px;line-height:1.3}
   .stage-chip .r{font-size:9.5px;color:var(--txt-dim);margin-top:3px;letter-spacing:.05em}
@@ -183,6 +186,32 @@
   #pfoot{padding:11px 24px calc(14px + env(safe-area-inset-bottom));border-top:1px solid rgba(255,255,255,.07);display:flex;justify-content:space-between;align-items:center;gap:8px}
   #pfoot button{background:none;border:none;color:var(--txt-dim);font-size:11px;letter-spacing:.1em;cursor:pointer;padding:6px 4px;transition:.2s}
   #pfoot button:hover{color:var(--gold)}
+
+  /* ---------- ctx icons ---------- */
+  .ci{fill:rgba(139,143,150,.9);opacity:0;transition:opacity .35s}
+  svg.z1 .ci{opacity:.85}
+  .ci .ci-arch{fill:#0b0f16}
+  .ci .ci-ln{fill:none;stroke:#0b0f16;stroke-width:1.1;stroke-linecap:round}
+  .ctx-dot:hover .ci{fill:#cdbd95}
+
+  /* ---------- context card ---------- */
+  #ctxCard{position:fixed;left:22px;bottom:118px;z-index:29;max-width:400px;background:var(--panel);border:1px solid rgba(160,166,176,.35);border-radius:16px;padding:16px 18px;backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);box-shadow:0 14px 44px rgba(0,0,0,.55);opacity:0;transform:translateY(14px);transition:.4s cubic-bezier(.2,.8,.2,1);pointer-events:none}
+  #ctxCard.show{opacity:1;transform:none;pointer-events:auto}
+  #ctxCard .cc-kick{font-size:9.5px;letter-spacing:.22em;color:var(--txt-dim);text-transform:uppercase}
+  #ctxCard h3{font-family:var(--serif);font-size:18px;margin:5px 0 2px;color:#f4eedd;font-weight:600}
+  #ctxCard .cc-he{font-size:13px;color:var(--gold);font-weight:400;margin-left:6px}
+  #ctxCard .cc-per{font-size:10px;color:var(--gold-soft);letter-spacing:.1em;margin-bottom:8px}
+  #ctxCard .cc-body{font-size:12.5px;line-height:1.6;color:#cfd4db}
+  #ctxCard .cc-facts{margin:10px 0 0;padding-left:16px}
+  #ctxCard .cc-facts li{font-size:11px;line-height:1.55;color:#a8aeb8;margin-bottom:4px}
+  #ctxCard .cc-facts li::marker{color:var(--gold-soft)}
+  #ctxCard .cc-x{position:absolute;top:10px;right:12px;background:none;border:none;color:var(--txt-dim);font-size:14px;cursor:pointer}
+  #ctxCard .cc-x:hover{color:var(--gold)}
+  @media(prefers-reduced-motion:reduce){
+    .pulse{animation:none;opacity:0}
+    #caption,#ctxCard,#panel,.stage-chip,.card{transition:none}
+  }
+  @media(max-width:760px){#ctxCard{left:12px;right:12px;max-width:none;bottom:128px}}
 
   /* ---------- tooltip ---------- */
   #tip{position:fixed;z-index:50;pointer-events:none;background:rgba(10,13,20,.94);border:1px solid var(--panel-line);border-radius:10px;padding:8px 12px;font-size:12px;opacity:0;transition:opacity .15s;backdrop-filter:blur(8px);box-shadow:0 8px 24px rgba(0,0,0,.5);max-width:230px}
@@ -427,14 +456,14 @@
 <div class="chrome" id="brand">
   <a href="/karty/" id="backKarty"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>КАРТЫ</a>
   <h1>Путь <b>Авраама</b></h1>
-  <div class="he">אַבְרָהָם אָבִינוּ &#8226; לֶךְ-לְךָ</div>
+  <div class="he" lang="he">אַבְרָהָם אָבִינוּ &#8226; לֶךְ-לְךָ</div>
   <div class="tag">Интерактивная карта странствий по Книге Бытия 11–25 · от Ура Халдейского до горы Мория · с археологическим контекстом</div>
 </div>
 
 <div class="chrome" id="tools">
-  <button class="btn" id="zin" title="Приблизить">+</button>
-  <button class="btn" id="zout" title="Отдалить">−</button>
-  <button class="btn" id="zreset" title="Вся карта">⌂</button>
+  <button class="btn" id="zin" title="Приблизить" aria-label="Приблизить карту">+</button>
+  <button class="btn" id="zout" title="Отдалить" aria-label="Отдалить карту">−</button>
+  <button class="btn" id="zreset" title="Вся карта" aria-label="Показать всю карту">⌂</button>
   <button class="btn" id="searchBtn" title="Поиск (Ctrl+K)">⌕</button>
   <button class="btn" id="soundBtn" title="Амбиент кинотура">♪</button>
   <button class="btn" id="layersBtn" title="Слои карты">◈</button>
@@ -467,7 +496,7 @@
 <div id="mHud"></div>
 <div id="hint">Нажмите на маркер · колесо — масштаб · ▶ — кинотур по этапам</div>
 
-<div class="chrome" id="timeline">
+<div class="chrome" id="timeline" role="navigation" aria-label="Этапы пути">
   <button class="btn" id="playBtn" title="Кинотур">▶</button>
   <div id="tl-scroll"></div>
 </div>
@@ -486,7 +515,7 @@
 </div>
 
 <!-- ============ PANEL ============ -->
-<aside id="panel">
+<aside id="panel" role="dialog" aria-modal="false" aria-label="Информация о месте">
   <header>
     <button id="closeP">✕</button>
     <div class="kicker" id="p-kicker"></div>
@@ -578,6 +607,12 @@
     <div id="searchRes"></div>
     <div id="searchHint"><span><b>↑↓</b> выбор</span><span><b>Enter</b> открыть</span><span><b>Esc</b> закрыть</span></div>
   </div>
+</div>
+
+<div id="ctxCard">
+  <button class="cc-x" aria-label="Закрыть">✕</button>
+  <div class="cc-kick"></div><h3></h3><div class="cc-per"></div>
+  <p class="cc-body"></p><ul class="cc-facts"></ul>
 </div>
 
 <div id="tip"><div class="n" style="font-weight:600"></div><div class="h"></div><div class="s"></div></div>
@@ -708,12 +743,30 @@ arch:`<p>Надёжной идентификации нет; предлагал�
 ];
 
 const CTX=[
- {n:"Мари",x:1189,y:470,s:"архив XVIII в. до н.э. — мир, говорящий языком патриархов"},
- {n:"Вавилон",x:1542,y:709,s:"эпоха Хаммурапи — правовой фон обычаев Бытия"},
- {n:"Эбла",x:800,y:300,s:"архив III тыс. до н.э., торговые пути Сирии"},
- {n:"Ниневия",x:1410,y:256,s:"Ассирия — северный мир Месопотамии"},
- {n:"Мегиддо",x:613,y:706,s:"город средней бронзы на «морском пути»"},
- {n:"Пещера Лота",x:692,y:929,s:"Быт 19:30 — горы над Цоаром: рождение Моава и Бен-Амми; рядом — святилище Дейр-Айн-Абата"},
+ {n:"Вавилон",he:"בָּבֶל",sub:"Бавель · аккад. Bāb-ilim — «Врата бога»",x:1472,y:758,icon:"babel",per:"Быт 10:10; 11:1–9",
+  s:"Этеменанки — прообраз Вавилонской башни · клик — подробнее",
+  d:"«И сказали они: построим себе город и башню высотою до небес» (Быт 11:4). В сердце Вавилона стоял Этеменанки — «Дом основания неба и земли», семиярусный зиккурат Мардука с основанием 91×91 м и высотой около 91 м: главный кандидат на образ Вавилонской башни. Бытие помещает башню «в земле Сеннаар» — в этой же долине начинается история рода Авраама.",
+  facts:["Раскопки Р. Кольдевея (1899–1917): фундамент зиккурата, ворота Иштар, Дорога процессий","Геродот описал «восьмиярусную башню» с пандусом и святилищем наверху","Эпоха Хаммурапи (XVIII в. до н. э.) — правовой фон обычаев Бытия","Объект Всемирного наследия ЮНЕСКО с 2019 года"]},
+ {n:"Мари",he:"מָרִי",sub:"Телль Харири · среднее течение Евфрата",x:1189,y:470,icon:"tab",per:"архив XVIII в. до н. э.",
+  s:"архив 20 000+ табличек — мир, говорящий языком патриархов · клик — подробнее",
+  d:"Дворцовый город на Евфрате чуть ниже устья Хабура — прямо на пути каравана Тераха. Дворец Зимри-Лима (~300 помещений) сохранил архив более 20 000 клинописных табличек: племена, кочующие со стадами между Евфратом и Ханааном, договоры, пророки, имена типа Авам-рам и Иаков-эль — социальный мир, поразительно похожий на мир Бытия.",
+  facts:["Раскопки А. Парро с 1933 г. (миссия продолжается)","Упомянуты Харран и Нахур — города региона родни Авраама","Город разрушен Хаммурапи ок. 1759 г. до н. э.","Архив — главный «фон эпохи» для патриархальных повествований"]},
+ {n:"Эбла",he:"אֶבְלָה",sub:"Телль-Мардих · 55 км ЮЗ Алеппо",x:800,y:300,icon:"tab",per:"архив XXIV в. до н. э.",
+  s:"царский архив ~17 000 табличек · клик — подробнее",
+  d:"Столица первой великой державы Сирии (III тыс. до н. э.), открытая П. Маттиэ в 1964 г. Царский архив (~17 000 табличек и фрагментов) показал развитую дипломатию, торговлю и ранние западносемитские имена за века до Авраама. Караванный путь Харран→Дамаск проходил восточнее её владений.",
+  facts:["Влияние от Каркемиша до окрестностей Дамаска","Разрушена Аккадом (Саргон/Нарам-Син, ~2300–2240 гг. до н. э.)","Эблаитский — древнейший хорошо документированный семитский язык","Городские стены с четырьмя воротами, акрополь с дворцом G"]},
+ {n:"Ниневия",he:"נִינְוֵה",sub:"Куюнджик и Наби-Юнус · р. Тигр",x:1410,y:256,icon:"gate",per:"Быт 10:11–12",
+  s:"«из сей земли вышел Ассур и построил Ниневию» · клик — подробнее",
+  d:"Бытие называет Ниневию среди городов Нимрода: «из сей земли вышел Ассур и построил Ниневию» (10:11). В эпоху патриархов это уже древний культовый центр богини Иштар; столицей мировой державы Ассирии она станет много позже — к дням пророка Ионы.",
+  facts:["Холмы Куюнджик и Наби-Юнус («пророк Иона»)","Храм Иштар известен с III тыс. до н. э.","Позже — библиотека Ашшурбанипала с табличками о потопе (эпос о Гильгамеше)"]},
+ {n:"Мегиддо",he:"מְגִדּוֹ",sub:"Тель-Мегиддо · долина Изреель",x:613,y:706,icon:"gate",per:"средняя бронза",
+  s:"страж «Морского пути» · клик — подробнее",
+  d:"Крепость, запирающая Виа Марис — «Морской путь» из Египта в Месопотамию. Караваны эпохи патриархов, включая путь Аврама из Харрана, огибали её долину. Около 30 слоёв заселения; в среднюю бронзу — мощные ворота и валы.",
+  facts:["ЮНЕСКО «Библейские теллы» (2005) вместе с Хацором и Беэр-Шевой","Упомянут в египетских анналах Тутмоса III (битва ~1457 г. до н. э.)","Круглый жертвенник ранней бронзы — один из древнейших в Леванте"]},
+ {n:"Пещера Лота",he:"מְעָרַת לוֹט",sub:"горы над Цоаром · Дейр-Айн-Абата",x:692,y:929,icon:"cave",per:"Быт 19:30",
+  s:"убежище Лота после катастрофы · клик — подробнее",
+  d:"«И вышел Лот из Цоара и стал жить в горе… в пещере» (Быт 19:30). Здесь родились Моав и Бен-Амми — предки моавитян и аммонитян. Византийцы чтили пещеру над Цоаром: вокруг неё вырос монастырь Святого Лота.",
+  facts:["Дейр-Айн-Абата: базилика V–VII вв. у входа в пещеру (раскопки К. Политиса)","Находки в пещере — от ранней бронзы до Византии","Монастырь подписан на Мадабской карте VI века"]},
 ];
 
 const STAGES=[
@@ -928,17 +981,42 @@ PLACES.forEach(pl=>{
   g.addEventListener('pointermove',moveTip);
   g.addEventListener('pointerleave',hideTip);
 });
+const CICON={
+ babel:'<g class="ci lbl-z1" transform="translate(0,-15)"><path d="M-9,4 H9 V1 H6 V-2 H3.6 V-5 H1.8 V-7.5 H-1.8 V-5 H-3.6 V-2 H-6 V1 H-9 Z"/><path class="ci-arch" d="M-1.7,4 a1.7,2.3 0 0 1 3.4,0 Z"/></g>',
+ tab:'<g class="ci lbl-z1" transform="translate(0,-14)"><rect x="-4.6" y="-6" width="9.2" height="11" rx="1.6"/><path class="ci-ln" d="M-2.6,-3.4 H2.6 M-2.6,-1 H2.6 M-2.6,1.4 H1.2"/></g>',
+ gate:'<g class="ci lbl-z1" transform="translate(0,-14)"><path d="M-6.5,4.5 V-2 a6.5,6.5 0 0 1 13,0 V4.5 H3.5 V-1.5 a3.5,3.5 0 0 0 -7,0 V4.5 Z"/></g>',
+ cave:'<g class="ci lbl-z1" transform="translate(0,-12)"><path d="M-6,3.5 a6,6.5 0 0 1 12,0 Z"/><path class="ci-arch" d="M-2.6,3.5 a2.6,3.4 0 0 1 5.2,0 Z"/></g>'
+};
 const ctxG=document.getElementById('ctx');
-CTX.forEach(c=>{
+CTX.forEach((c,ci)=>{
   const g=document.createElementNS(NS,'g');
   g.setAttribute('class','ctx-dot');g.dataset.x=c.x;g.dataset.y=c.y;
-  g.innerHTML=`<circle r="3.4" fill="#8b8f96" opacity=".75"/><circle r="7" fill="transparent"/>
-    <text class="mk-sub lbl-z1" x="9" y="3.5" text-anchor="start" style="letter-spacing:.15em">${c.n.toUpperCase()}</text>`;
+  g.innerHTML=`${CICON[c.icon]||''}<circle r="3.4" fill="#8b8f96" opacity=".75"/><circle r="9" fill="transparent"/>
+    <text class="mk-sub lbl-z1" x="10" y="3.5" text-anchor="start" style="letter-spacing:.15em">${c.n.toUpperCase()}</text>
+    <text class="mk-he lbl-z2" x="10" y="14" text-anchor="start" style="font-size:8px">${c.he}</text>`;
   ctxG.appendChild(g);
-  g.addEventListener('pointerenter',e=>showTip(e,c.n,'',c.s));
+  g.addEventListener('pointerenter',e=>showTip(e,c.n,c.he,c.s));
   g.addEventListener('pointermove',moveTip);
   g.addEventListener('pointerleave',hideTip);
+  g.addEventListener('click',e=>{e.stopPropagation();openCtx(ci);});
 });
+/* ---- compact context card ---- */
+const ctxCard=document.getElementById('ctxCard');
+function openCtx(i){
+  const c=CTX[i];
+  closePanel();caption.classList.remove('show');
+  ctxCard.querySelector('.cc-kick').textContent=c.sub;
+  ctxCard.querySelector('h3').innerHTML=c.n+' <span class="cc-he">'+c.he+'</span>';
+  ctxCard.querySelector('.cc-per').textContent=c.per;
+  ctxCard.querySelector('.cc-body').textContent=c.d;
+  ctxCard.querySelector('.cc-facts').innerHTML=c.facts.map(f=>'<li>'+f+'</li>').join('');
+  ctxCard.classList.add('show');
+  const r=svg.getBoundingClientRect();
+  flyTo(c.x+(r.width>760?40:0),c.y,Math.min(view.w,620),800);
+}
+function closeCtx(){ctxCard.classList.remove('show');}
+ctxCard.querySelector('.cc-x').addEventListener('click',closeCtx);
+svg.addEventListener('pointerdown',()=>closeCtx());
 
 function plural(n,a,b,c){const m=n%100;if(m>10&&m<20)return c;const d=n%10;return d===1?a:(d>1&&d<5?b:c);}
 /* ================= TOOLTIP ================= */
@@ -965,6 +1043,8 @@ const LAYERS=[
  {id:'ctx',label:'Контекст',col:'#8b8f96',on:true},
  {id:'debate',label:'Спор о Содоме',col:'#6fb3a8',on:false},
 ];
+try{const sv=JSON.parse(localStorage.getItem('gbk_layers')||'null');
+  if(Array.isArray(sv)&&sv.length===LAYERS.length)LAYERS.forEach((l,i)=>l.on=!!sv[i]);}catch(e){}
 const fWrap=document.getElementById('layersList');
 LAYERS.forEach(L=>{
   const c=document.createElement('div');c.className='chip'+(L.on?' on':'');
@@ -999,6 +1079,7 @@ document.getElementById('plSearch').addEventListener('input',e=>{
 });
 document.getElementById('plSearch').addEventListener('pointerdown',e=>e.stopPropagation());
 function applyLayers(){
+  try{localStorage.setItem('gbk_layers',JSON.stringify(LAYERS.map(l=>l.on)));}catch(e){}
   const on=id=>LAYERS.find(l=>l.id===id).on;
   segEls.forEach(g=>{
     const cls=g.dataset.cls;
@@ -1029,6 +1110,7 @@ const panel=document.getElementById('panel');
 let curPlace=-1,curTab='story';
 const MAIN_ORDER=PLACES.map((p,i)=>i).filter(i=>PLACES[i].type!=='cand');
 function openPlace(id,fly=true){
+  if(typeof closeCtx==='function')closeCtx();
   const i=placeIndex[id];const pl=PLACES[i];curPlace=i;
   document.querySelectorAll('.marker').forEach(m=>m.classList.toggle('active',m.dataset.id===id));
   document.getElementById('p-kicker').textContent=pl.kick;
@@ -1079,7 +1161,7 @@ document.addEventListener('keydown',e=>{
 /* ================= TIMELINE & TOUR ================= */
 const tl=document.getElementById('tl-scroll');
 STAGES.forEach((st,i)=>{
-  const c=document.createElement('div');c.className='stage-chip';
+  const c=document.createElement('button');c.className='stage-chip';c.type='button';c.setAttribute('aria-label','Этап '+st.n+': '+st.t);
   c.innerHTML=`<div class="n">ЭТАП ${st.n}</div><div class="t">${st.t}</div><div class="r">${st.r}</div>`;
   c.onclick=()=>{stopTour();focusStage(i,true);};
   tl.appendChild(c);
@@ -1106,6 +1188,7 @@ function showCaption(i){
   caption.classList.add('show');
 }
 function focusStage(i,withCam){
+  if(typeof closeCtx==='function')closeCtx();
   curStage=i;
   chips.forEach((c,j)=>c.classList.toggle('cur',i===j));
   chips[i].scrollIntoView({behavior:'smooth',inline:'center',block:'nearest'});
@@ -1445,6 +1528,16 @@ if(location.hash){
   const id=location.hash.slice(1);
   if(placeIndex[id]!==undefined){dismissIntro();setTimeout(()=>openPlace(id),900);}
 }
+/* swipe-down closes panel on touch devices */
+(function(){
+  let sy=null;
+  const pb=document.getElementById('panel');
+  pb.addEventListener('touchstart',e=>{if(pb.scrollTop<=0)sy=e.touches[0].clientY;},{passive:true});
+  pb.addEventListener('touchmove',e=>{
+    if(sy!==null&&e.touches[0].clientY-sy>90&&document.getElementById('panel-body').scrollTop===0){closePanel();sy=null;}
+  },{passive:true});
+  pb.addEventListener('touchend',()=>{sy=null;},{passive:true});
+})();
 </script>
 </body>
 </html>
