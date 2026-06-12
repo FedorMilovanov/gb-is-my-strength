@@ -324,6 +324,13 @@ footer.site .ed{margin-top:8px;color:#55514c}
 .reveal{opacity:0;transform:translateY(22px);transition:opacity .7s cubic-bezier(.2,.7,.2,1),transform .7s cubic-bezier(.2,.7,.2,1)}
 .reveal.in{opacity:1;transform:none}
 @media (prefers-reduced-motion:reduce){.reveal{opacity:1;transform:none;transition:none}html{scroll-behavior:auto}}
+/* keyboard focus visibility (a11y) — единый видимый фокус для тёмной темы */
+a:focus-visible,button:focus-visible,input:focus-visible,[tabindex]:focus-visible,
+.routebtn:focus-visible,.tlf:focus-visible,.qopt:focus-visible,.gitem button:focus-visible,
+.mapbtns button:focus-visible,.secnav a:focus-visible,.btn:focus-visible,#stop:focus-visible,
+.tlcard:focus-visible,.pcard:focus-visible{outline:2px solid var(--gold);outline-offset:2px;border-radius:8px}
+#mapsearch:focus-visible,#gsearch:focus-visible{outline:2px solid var(--gold);outline-offset:3px}
+canvas#mapcanvas:focus-visible{outline:2px solid var(--gold);outline-offset:-2px}
 @media(max-width:760px){
   .sec{padding:56px 0}
   .hstats{grid-template-columns:repeat(2,1fr)}
@@ -424,14 +431,14 @@ footer.site .ed{margin-top:8px;color:#55514c}
     <div id="mapwrap" class="reveal">
       <canvas id="mapcanvas" role="img" aria-label="Интерактивная карта связей русского баптизма: узлы-фигуры и события, соединённые нитями"></canvas>
       <div class="maptop">
-        <div class="routebar"><button class="routebtn on" data-route="all"><span class="dot" style="background:#e8c879"></span>Все связи</button><button class="routebtn" data-route="route-origins"><span class="dot" style="background:#d4a857"></span>Три истока</button><button class="routebtn" data-route="route-tiflis"><span class="dot" style="background:#00c8c8"></span>Тифлис</button><button class="routebtn" data-route="route-ukraine"><span class="dot" style="background:#f0a830"></span>Украина</button><button class="routebtn" data-route="route-petersburg"><span class="dot" style="background:#ff64b4"></span>Петербург</button><button class="routebtn" data-route="route-soviet"><span class="dot" style="background:#ff4b6e"></span>Советский период</button></div>
+        <div class="routebar"><button type="button" class="routebtn on" data-route="all"><span class="dot" style="background:#e8c879"></span>Все связи</button><button type="button" class="routebtn" data-route="route-origins"><span class="dot" style="background:#d4a857"></span>Три истока</button><button type="button" class="routebtn" data-route="route-tiflis"><span class="dot" style="background:#00c8c8"></span>Тифлис</button><button type="button" class="routebtn" data-route="route-ukraine"><span class="dot" style="background:#f0a830"></span>Украина</button><button type="button" class="routebtn" data-route="route-petersburg"><span class="dot" style="background:#ff64b4"></span>Петербург</button><button type="button" class="routebtn" data-route="route-soviet"><span class="dot" style="background:#ff4b6e"></span>Советский период</button></div>
         <div class="mapsearchwrap">
           <div class="mapsearch"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4-4"/></svg><input id="mapsearch" type="text" placeholder="Найти фигуру или союз…" autocomplete="off" aria-label="Поиск по карте"></div>
           <div id="mapresults"></div>
         </div>
       </div>
       <div class="maplegend"><span class="lg"><i style="background:#f0d896"></i>Корень</span><span class="lg"><i style="background:#e8c879"></i>Истоки и союзы</span><span class="lg"><i style="background:#8b5cf6"></i>Объединение</span><span class="lg"><i style="background:#ec4899"></i>Раскол</span><span class="lg"><i style="background:#06b6d4"></i>Современность</span><span class="lg"><i style="background:#9aa2ae"></i>Деятели</span></div>
-      <div class="mapbtns"><button id="mapzin" aria-label="Приблизить">+</button><button id="mapzout" aria-label="Отдалить">−</button><button id="mapfit" aria-label="Показать всё">⌂</button></div>
+      <div class="mapbtns"><button type="button" id="mapzin" aria-label="Приблизить">+</button><button type="button" id="mapzout" aria-label="Отдалить">−</button><button type="button" id="mapfit" aria-label="Показать всё">⌂</button></div>
       <div class="mapcard" id="mapcard"></div>
     </div>
     <p class="maphint" id="maphint">Перетаскивайте для перемещения · колесо для масштаба · клик по узлу — закрепить карточку</p>
@@ -446,9 +453,9 @@ footer.site .ed{margin-top:8px;color:#55514c}
     <div class="rule"></div>
   </div>
     <div style="display:flex;gap:8px;justify-content:center;margin-bottom:26px" id="geofilters">
-      <button class="tlf on" data-gk="all">Все</button>
-      <button class="tlf" data-gk="country">Страны</button>
-      <button class="tlf" data-gk="city">Города</button>
+      <button type="button" class="tlf on" data-gk="all">Все</button>
+      <button type="button" class="tlf" data-gk="country">Страны</button>
+      <button type="button" class="tlf" data-gk="city">Города</button>
     </div>
     <div class="grid g3" id="geogrid">
     <article class="card rec reveal" data-kind="country">
@@ -532,7 +539,7 @@ footer.site .ed{margin-top:8px;color:#55514c}
     <p class="ssub">От первой баптистской общины в Амстердаме до современных союзов. Нажмите на событие, чтобы раскрыть детали и источники.</p>
     <div class="rule"></div>
   </div>
-    <div class="tlfilters" id="tlfilters"><button class="tlf on" data-cat="all">Все</button><button class="tlf" data-cat="origin"><i style="background:#10b981"></i>Истоки</button><button class="tlf" data-cat="growth"><i style="background:#f59e0b"></i>Рост</button><button class="tlf" data-cat="persecution"><i style="background:#ef4444"></i>Гонения</button><button class="tlf" data-cat="union"><i style="background:#8b5cf6"></i>Союзы</button><button class="tlf" data-cat="split"><i style="background:#ec4899"></i>Разделения</button><button class="tlf" data-cat="modern"><i style="background:#06b6d4"></i>Современность</button></div>
+    <div class="tlfilters" id="tlfilters"><button type="button" class="tlf on" data-cat="all">Все</button><button type="button" class="tlf" data-cat="origin"><i style="background:#10b981"></i>Истоки</button><button type="button" class="tlf" data-cat="growth"><i style="background:#f59e0b"></i>Рост</button><button type="button" class="tlf" data-cat="persecution"><i style="background:#ef4444"></i>Гонения</button><button type="button" class="tlf" data-cat="union"><i style="background:#8b5cf6"></i>Союзы</button><button type="button" class="tlf" data-cat="split"><i style="background:#ec4899"></i>Разделения</button><button type="button" class="tlf" data-cat="modern"><i style="background:#06b6d4"></i>Современность</button></div>
     <div class="tl" id="tl"><div class="tlitem reveal" data-cat="origin">
       <span class="node" style="color:#10b981"></span>
       <div class="tlcard" data-toggle="1">
@@ -1125,7 +1132,7 @@ footer.site .ed{margin-top:8px;color:#55514c}
   <div><a href="/">gospod-bog.ru</a> · отдел <a href="/konfessii/">«Конфессии и Деноминации»</a> · «Карта Русского Баптизма»</div>
   <div class="ed">Материал нейтрально-исторический, с опорой на первичные источники и архивы. Раздел дорабатывается.</div>
 </footer>
-<button id="stop" aria-label="Наверх"><svg viewBox="0 0 24 24"><path d="M18 15l-6-6-6 6"/></svg></button>
+<button type="button" id="stop" aria-label="Наверх"><svg viewBox="0 0 24 24"><path d="M18 15l-6-6-6 6"/></svg></button>
 <script>
 
 (function(){
@@ -1168,15 +1175,15 @@ if(gf){gf.addEventListener('click',function(e){var b=e.target.closest('.tlf');if
   var Q=[{"q":"Когда и где был крещён первый русский баптист Никита Воронин?","options":["20 августа 1867 г., р. Кура, Тифлис","11 июня 1869 г., Старый Данциг","1 мая 1884 г., Ново-Васильевка","1874 г., Санкт-Петербург"],"correct":0,"explanation":"Мартин Кальвейт крестил Никиту Воронина в реке Кура в Тифлисе. Дата принята как начало русско-украинского баптизма.","source":"Журнал «Баптист», pravenc.ru"},{"q":"Из какого сословия вышел Никита Воронин?","options":["Православные старообрядцы","Молокане","Лютеране","Меннониты"],"correct":1,"explanation":"Воронин происходил из молоканской среды Тифлиса. Именно из молокан вышли многие первые русские баптисты."},{"q":"Что означает слово «штундист»?","options":["Сектант","Участник молитвенных часов (нем. Stunde)","Последователь пастора Штунда","Читатель Закона"],"correct":1,"explanation":"Нем. Stunde — «час»: так называли собрания немецких библейских часов в украинских немецких колониях."},{"q":"Кто приглашал лорда Редстока в Петербург?","options":["В. А. Пашков","И. С. Проханов","Е. И. Черткова","Д. И. Мазаев"],"correct":2,"explanation":"Елизавета Ивановна Черткова пригласила Редстока в 1874. Пашков стал главным организатором движения после него."},{"q":"Как следует описывать роль И. В. Каргеля?","options":["Основоположник русского баптизма","Выдающийся богослов и духовный учитель","Первый председатель ВСЕХБ","Лидер МСЦ ЕХБ"],"correct":1,"explanation":"По уточнению исследователей, Каргель — не «основоположник», а выдающийся богослов и духовный наставник.","source":"А. В. Синичкин; pravenc.ru"},{"q":"Кто был первым редактором журнала «Братский вестник»?","options":["И. С. Проханов","Д. И. Мазаев","А. В. Карев","Г. К. Крючков"],"correct":2,"explanation":"А. В. Карев стал первым редактором «Братского вестника» (с 1945). Д. И. Мазаев был первым редактором журнала «Баптист» (1907–1909)."},{"q":"Когда был создан Союз русских баптистов?","options":["1867","1884","1909","1944"],"correct":1,"explanation":"Союз русских баптистов основан в 1884 г. на съезде в Ново-Васильевке (Украина).","source":"baptist.org.ru"},{"q":"Когда был основан ВСЕХ (Всероссийский союз евангельских христиан)?","options":["1905","1909","1917","1944"],"correct":1,"explanation":"ВСЕХ создан в сентябре 1909 в Санкт-Петербурге. Лидер — И. С. Проханов."},{"q":"Когда создан ВСЕХБ?","options":["26–29 октября 1944","1 января 1946","17 апреля 1905","1 мая 1909"],"correct":0,"explanation":"ВСЕХБ создан 26–29 октября 1944 г. на совещании в Москве.","source":"«Братский вестник» №1/1945"},{"q":"В каком году был создан СЦ ЕХБ (Совет Церквей)?","options":["1960","1961","1965","1967"],"correct":2,"explanation":"СЦ ЕХБ создан в сентябре 1965. Инициативная группа образовалась в 1961, но официальный Совет — в 1965.","source":"pravenc.ru"},{"q":"Что произошло в апреле 1905 г. для баптистов России?","options":["Создан ВСЕХБ","Издан закон о веротерпимости","Первый съезд баптистов","Начало гонений"],"correct":1,"explanation":"Указ от 17 апреля 1905 г. о веротерпимости легализовал баптизм. Это не Манифест 17 октября."},{"q":"Что запрещало «Инструктивное письмо» ВСЕХБ 1960 г.?","options":["Иметь Библии","Регистрировать церкви","14 видов деятельности пресвитеров","Петь гимны"],"correct":2,"explanation":"Письмо 1960 г. перечисляло 14 видов деятельности, которые пресвитеры обязывались прекратить под угрозой снятия регистрации.","source":"pravenc.ru; baptistru.info"},{"q":"Сколько лет в заключении провёл Г. К. Крючков?","options":["5 лет","8 лет","более 12 лет","25 лет"],"correct":2,"explanation":"Геннадий Крючков провёл в советских лагерях и тюрьмах более 12 лет за религиозную деятельность."},{"q":"Сколько членов сегодня насчитывает РС ЕХБ?","options":["~20 000","~72 000","~200 000","~500 000"],"correct":1,"explanation":"По данным на 2020 год, Российский союз ЕХБ насчитывает около 72 000 членов."},{"q":"Какой принцип отличает баптизм от православия в вопросе крещения?","options":["Крещение детей","Крещение только сознательно уверовавших","Троекратное погружение","Крещение в реке"],"correct":1,"explanation":"Главный принцип баптизма — крещение только сознательно уверовавших людей (не младенцев)."},{"q":"Что означает принцип «Sola Scriptura»?","options":["Только Библия как источник доктрины","Только церковные соборы","Только Ветхий Завет","Только апостольское предание"],"correct":0,"explanation":"Sola Scriptura (лат. «только Писание») — реформаторский принцип, что Библия — единственный непогрешимый авторитет в вере."},{"q":"Кто крестил В. Г. Павлова в апреле 1871 года?","options":["Мартин Кальвейт","Н. И. Воронин","И. Г. Онкен","Д. И. Мазаев"],"correct":1,"explanation":"По v6 Павлов в 16 лет принял водное крещение от Н. И. Воронина и вошёл в первые десять членов Тифлисской общины.","source":"baptist.org.ru; v6 findings"},{"q":"Кто обучал Павлова в Гамбурге в 1875 году, когда семинария была распущена?","options":["Пётр Вильрат","Иоганн Вилер","Василий Пашков","Иван Каргель"],"correct":0,"explanation":"Онкен назначил проповедника Петра Вильрата для обучения Павлова богословию и немецкому языку.","source":"baptistru.info; baptist.org.ru"},{"q":"В какой реке были крещены Дей и Гавриил Мазаевы 11 ноября 1884 года?","options":["Кура","Кавалерка","Днепр","Нева"],"correct":1,"explanation":"Дей и Гавриил вместе с жёнами были крещены в реке Кавалерке пресвитером В. Р. Колодиным.","source":"pravenc.ru; v6 findings"},{"q":"Какой закон немедленно применили к петербургским евангельским христианам?","options":["Маковский циркуляр 1879","Мнение Государственного совета 3 мая 1883","Указ 17 апреля 1905","Декрет 1918 года"],"correct":1,"explanation":"Закон 3 мая 1883 позволял преследовать ЕХ как сектантов за распространение «заблуждений среди православных».","source":"pravenc.ru; v6 findings"}];var box=document.getElementById('quizbox');if(!box)return;var i=0,score=0,answered=false;
   function render(){
     if(i>=Q.length){var pct=Math.round(score/Q.length*100);
-      box.innerHTML='<div class="qresult"><div class="score">'+score+' / '+Q.length+'</div><p>Верных ответов: '+pct+'%</p><button class="btn btn-p" id="qrestart" style="margin:0 auto">Пройти заново</button></div>';
+      box.innerHTML='<div class="qresult"><div class="score">'+score+' / '+Q.length+'</div><p>Верных ответов: '+pct+'%</p><button type="button" class="btn btn-p" id="qrestart" style="margin:0 auto">Пройти заново</button></div>';
       document.getElementById('qrestart').addEventListener('click',function(){i=0;score=0;answered=false;render();});return;}
     var q=Q[i];answered=false;var letters=['А','Б','В','Г'];
     box.innerHTML='<div class="qprog"><span>Вопрос '+(i+1)+' из '+Q.length+'</span><span>Счёт: '+score+'</span></div>'+
       '<div class="qbar"><i style="width:'+(i/Q.length*100)+'%"></i></div>'+
       '<div class="qq">'+q.q+'</div>'+
-      '<div class="qopts">'+q.options.map(function(o,idx){return '<button class="qopt" data-i="'+idx+'"><span class="ql">'+letters[idx]+'</span><span>'+o+'</span></button>';}).join('')+'</div>'+
+      '<div class="qopts">'+q.options.map(function(o,idx){return '<button type="button" class="qopt" data-i="'+idx+'"><span class="ql">'+letters[idx]+'</span><span>'+o+'</span></button>';}).join('')+'</div>'+
       '<div class="qexpl" id="qexpl"></div>'+
-      '<div class="qnav"><button class="btn btn-s" id="qnext" style="display:none">'+(i===Q.length-1?'Результат':'Дальше')+' →</button></div>';
+      '<div class="qnav"><button type="button" class="btn btn-s" id="qnext" style="display:none">'+(i===Q.length-1?'Результат':'Дальше')+' →</button></div>';
     box.querySelectorAll('.qopt').forEach(function(btn){btn.addEventListener('click',function(){if(answered)return;answered=true;var sel=+btn.dataset.i;var correct=q.correct;
       box.querySelectorAll('.qopt').forEach(function(b){b.disabled=true;var bi=+b.dataset.i;if(bi===correct)b.classList.add('correct');else if(bi===sel)b.classList.add('wrong');});
       if(sel===correct)score++;var ex=document.getElementById('qexpl');ex.innerHTML=q.explanation+(q.source?'<div class="src">Источник: '+q.source+'</div>':'');ex.classList.add('show');
