@@ -2,277 +2,489 @@
 <html lang="ru">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>Карта связей | Господь Бог — Сила Моя</title>
-<meta name="description" content="Интерактивная карта связей между всеми статьями сайта gospod-bog.ru — визуализация богословских тем и внутренних ссылок">
+<meta name="description" content="Интерактивная карта связей между всеми статьями сайта gospod-bog.ru — созвездие тем: серии, биографии, экзегеза и внутренние нити между ними">
 <meta name="robots" content="index, follow">
 <link rel="canonical" href="https://gospod-bog.ru/map/">
 <meta property="og:title" content="Карта связей | Господь Бог — Сила Моя">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://gospod-bog.ru/map/">
-<meta property="og:description" content="Интерактивная визуализация связей между статьями сайта">
+<meta property="og:description" content="Созвездие статей: как материалы сайта связаны между собой">
 <meta property="og:image" content="https://gospod-bog.ru/images/og-map-connections.webp">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:site_name" content="Господь Бог — Сила Моя">
+<meta property="og:locale" content="ru_RU">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="Карта связей | Господь Бог — Сила Моя">
-<meta name="twitter:description" content="Интерактивная визуализация связей между статьями сайта">
+<meta name="twitter:description" content="Созвездие статей: как материалы сайта связаны между собой">
 <meta name="twitter:image" content="https://gospod-bog.ru/images/og-map-connections.webp">
 <meta name="twitter:site" content="@FedorMilovanov">
 <meta name="twitter:creator" content="@FedorMilovanov">
-<meta property="og:image:width" content="1200">
-<meta property="og:image:height" content="630">
-<meta property="og:image:type" content="image/webp">
+<meta name="theme-color" content="#070a10" media="(prefers-color-scheme: dark)">
+<meta name="theme-color" content="#070a10" media="(prefers-color-scheme: light)">
+<link rel="icon" href="/favicon.ico" sizes="any">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
 <link rel="alternate" type="application/rss+xml" title="gospod-bog.ru RSS" href="https://gospod-bog.ru/feed.xml">
-<meta name="theme-color" content="#fdfcf9" media="(prefers-color-scheme: light)">
-<meta name="theme-color" content="#0e1116" media="(prefers-color-scheme: dark)">
+<link rel="preload" href="/fonts/PlayfairDisplay/playfairdisplay-cyrillic-700.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="/fonts/fonts.css?v=4504f3cb">
 <script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"Organization","@id":"https://gospod-bog.ru/#organization","name":"Господь Бог — Сила Моя","url":"https://gospod-bog.ru/","logo":{"@type":"ImageObject","url":"https://gospod-bog.ru/icons/icon-512.png","width":512,"height":512},"sameAs":["https://t.me/fedormilovanov","https://vk.com/curtmf"]},{"@type":"WebSite","@id":"https://gospod-bog.ru/#website","name":"Господь Бог — Сила Моя","url":"https://gospod-bog.ru/","inLanguage":"ru","publisher":{"@id":"https://gospod-bog.ru/#organization"}},{"@type":"WebPage","@id":"https://gospod-bog.ru/map/#webpage","url":"https://gospod-bog.ru/map/","name":"Карта связей | Господь Бог — Сила Моя","description":"Интерактивная визуализация связей между статьями сайта gospod-bog.ru","inLanguage":"ru","isPartOf":{"@id":"https://gospod-bog.ru/#website"},"breadcrumb":{"@id":"https://gospod-bog.ru/map/#breadcrumb"}},{"@type":"BreadcrumbList","@id":"https://gospod-bog.ru/map/#breadcrumb","itemListElement":[{"@type":"ListItem","position":1,"name":"Главная","item":"https://gospod-bog.ru/"},{"@type":"ListItem","position":2,"name":"Карта связей","item":"https://gospod-bog.ru/map/"}]}]}</script>
 <style>
-*{box-sizing:border-box;margin:0}
-:root{--bg:#fdfcf9;--fg:#1a1a1a;--muted:#6a6a6a;--border:#e5e2dc;--accent:#7a2e2e;--accent2:#0f766e;--surface:#fff;--gill:#7a2e2e;--hard:#2563eb;--nag:#0f766e;--stand:#6d5a2e;--landing:#8b5cf6}
-html.dark{--bg:#0e1116;--fg:#e6e1d7;--muted:#6b7280;--border:#232830;--accent:#d4a574;--accent2:#34d399;--surface:#161a21;--gill:#d4a574;--hard:#60a5fa;--nag:#34d399;--stand:#e8b878;--landing:#a78bfa}
-body{background:var(--bg);color:var(--fg);font-family:'Source Sans 3',system-ui,sans-serif;min-height:100vh;display:flex;flex-direction:column}
-.map-header{padding:24px max(24px,4vw);display:flex;align-items:center;justify-content:space-between;gap:16px;border-bottom:1px solid var(--border)}
-.map-header h1{font-family:'Playfair Display',Georgia,serif;font-size:clamp(20px,4vw,32px);font-weight:700;line-height:1.2}
-.map-back{color:var(--muted);text-decoration:none;font-size:14px;font-weight:600;white-space:nowrap;display:flex;align-items:center;gap:6px;transition:color .15s}
-.map-back:hover{color:var(--fg)}
-.map-back svg{width:14px;height:14px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
-.map-theme{width:36px;height:36px;border:none;background:none;cursor:pointer;color:var(--fg);display:flex;align-items:center;justify-content:center;border-radius:50%;transition:background .15s}
-.map-theme:hover{background:var(--border)}
-.map-theme svg{width:18px;height:18px;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
-.map-legend{display:flex;flex-wrap:wrap;gap:12px 20px;padding:16px max(24px,4vw);font-size:12px;font-weight:600;color:var(--muted)}
-.map-legend span{display:flex;align-items:center;gap:5px}
-.map-legend i{width:10px;height:10px;border-radius:50%;flex-shrink:0}
-.map-wrap{flex:1;position:relative;overflow:hidden}
-#mapCanvas{width:100%;height:100%;cursor:grab}
-#mapCanvas:active{cursor:grabbing}
-.map-node{cursor:pointer;transition:opacity .15s}
-.map-node:hover{opacity:1 !important}
-.map-node circle{transition:r .2s,filter .2s}
-.map-node:hover circle{filter:drop-shadow(0 0 8px currentColor)}
-.map-node text{font-family:'Source Sans 3',system-ui,sans-serif;fill:var(--fg);font-size:11px;font-weight:600;pointer-events:none;text-anchor:middle}
-.map-edge{stroke:var(--border);stroke-width:1;fill:none;opacity:.4;transition:opacity .2s,stroke .2s}
-.map-edge.map-edge--hl{opacity:1;stroke-width:2}
-.map-tooltip{position:fixed;z-index:100;padding:12px 16px;border-radius:12px;background:var(--surface);border:1px solid var(--border);box-shadow:0 8px 24px rgba(0,0,0,.15);font-size:13px;max-width:260px;pointer-events:none;opacity:0;transition:opacity .15s;line-height:1.5}
-.map-tooltip.show{opacity:1;pointer-events:auto}
-.map-tooltip strong{display:block;font-size:14px;margin-bottom:4px;color:var(--fg)}
-.map-tooltip .mt-group{font-size:10px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;margin-bottom:6px}
-.map-tooltip .mt-links{font-size:12px;color:var(--muted)}
-.map-tooltip a{color:var(--accent);text-decoration:none;font-weight:700;display:block;margin-top:8px;font-size:13px}
-.map-tooltip a:hover{text-decoration:underline}
-html.dark .map-tooltip{background:var(--surface);border-color:var(--border);box-shadow:0 8px 24px rgba(0,0,0,.5)}
-@media (max-width:600px){.map-header{padding:16px}.map-legend{padding:12px 16px;gap:8px 14px}}
-@media (prefers-reduced-motion:reduce){.map-node circle,.map-edge,.map-tooltip{transition:none}}
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --ink:#070a10; --ink-2:#0b0f16; --panel:rgba(13,17,26,.92); --panel-line:rgba(232,200,121,.26);
+  --gold:#e8c879; --gold-soft:rgba(232,200,121,.55); --gold-dim:rgba(232,200,121,.16);
+  --txt:#e9e4d6; --txt-dim:#9aa2ae; --txt-faint:#5e6570;
+  --gill:#d4a574; --hard:#7da2e8; --nag:#5fc9a8; --stand:#c9b186; --landing:#a78bfa;
+  --serif:'Playfair Display',Georgia,serif;
+  --body:'Cormorant Garamond',Georgia,serif;
+  --sans:'Source Sans 3',system-ui,-apple-system,sans-serif;
+}
+html,body{height:100%}
+body{
+  background:var(--ink); color:var(--txt); font-family:var(--sans);
+  overflow:hidden; -webkit-font-smoothing:antialiased;
+}
+body::before{content:"";position:fixed;inset:0;pointer-events:none;z-index:0;
+  background:
+    radial-gradient(1100px 700px at 72% 18%, rgba(38,48,72,.40), transparent 62%),
+    radial-gradient(900px 640px at 18% 84%, rgba(46,38,24,.42), transparent 60%),
+    radial-gradient(1400px 1000px at 50% 50%, rgba(11,15,22,0), rgba(4,6,10,.72) 100%);}
+body::after{content:"";position:fixed;inset:0;pointer-events:none;z-index:0;opacity:.05;mix-blend-mode:screen;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.8' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23n)' opacity='.5'/%3E%3C/svg%3E");}
+
+.hdr{position:fixed;top:0;left:0;right:0;z-index:30;display:flex;align-items:flex-start;justify-content:space-between;
+  padding:20px max(22px,3vw) 0;pointer-events:none}
+.hdr>*{pointer-events:auto}
+.hdr-left .back{display:inline-flex;align-items:center;gap:7px;color:var(--txt-faint);text-decoration:none;
+  font-size:11px;font-weight:700;letter-spacing:.18em;text-transform:uppercase;transition:color .2s}
+.hdr-left .back:hover{color:var(--gold)}
+.hdr-left .back svg{width:13px;height:13px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.hdr-left h1{font-family:var(--serif);font-weight:700;font-size:clamp(22px,3.4vw,34px);line-height:1.1;margin-top:8px;
+  color:#f3ecd9;letter-spacing:.01em}
+.hdr-left h1 em{font-style:normal;color:var(--gold)}
+.hdr-left .sub{margin-top:6px;font-family:var(--body);font-style:italic;font-size:14.5px;color:var(--txt-dim);max-width:380px;line-height:1.45}
+.hdr-left .stats{margin-top:8px;font-size:10.5px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:var(--txt-faint)}
+.hdr-left .stats b{color:var(--gold-soft);font-weight:700}
+
+.legend{position:fixed;left:max(22px,3vw);bottom:max(18px,env(safe-area-inset-bottom,0px) + 14px);z-index:30;
+  display:flex;flex-direction:column;gap:2px}
+.lg-title{font-size:9.5px;font-weight:800;letter-spacing:.22em;text-transform:uppercase;color:var(--txt-faint);margin-bottom:6px}
+.lg{display:inline-flex;align-items:center;gap:9px;padding:5px 10px 5px 6px;border:1px solid transparent;border-radius:10px;
+  background:none;color:var(--txt-dim);font-family:var(--sans);font-size:12.5px;font-weight:600;cursor:pointer;
+  transition:color .18s,border-color .18s,background .18s;text-align:left}
+.lg i{width:9px;height:9px;border-radius:50%;flex:0 0 auto;box-shadow:0 0 8px 1px currentColor;opacity:.95}
+.lg:hover{color:var(--txt)}
+.lg.off{opacity:.38}
+.lg.solo{color:var(--txt);border-color:var(--panel-line);background:rgba(13,17,26,.6)}
+.lg .n{margin-left:2px;font-size:10px;color:var(--txt-faint);font-weight:700}
+
+.svgwrap{position:fixed;inset:0;z-index:10}
+#cnv{width:100%;height:100%;display:block;cursor:grab}
+#cnv.dragging{cursor:grabbing}
+#cnv:focus-visible{outline:2px solid var(--gold);outline-offset:-3px}
+
+.edge{stroke:#56607a;stroke-opacity:.16;fill:none;transition:stroke-opacity .25s,stroke .25s}
+.edge.lit{stroke:var(--gold);stroke-opacity:.55}
+.edge.dim{stroke-opacity:.04}
+.node{cursor:pointer}
+.node circle.core{transition:opacity .25s}
+.node circle.halo{opacity:0;transition:opacity .3s}
+.node.lit circle.halo{opacity:.9}
+.node.dim{opacity:.18}
+.node text{font-family:var(--sans);font-size:9px;letter-spacing:.02em;font-weight:600;fill:#aab3c2;paint-order:stroke;
+  stroke:rgba(7,10,16,.85);stroke-width:3px;pointer-events:none;transition:fill .25s,opacity .25s}
+.node.lit text{fill:#f3ecd9}
+.node.hub text{font-family:var(--serif);font-size:11px;font-weight:700;fill:#cdb990;letter-spacing:.04em}
+.node.hub.lit text{fill:var(--gold)}
+
+.card{position:fixed;z-index:40;width:min(330px,calc(100vw - 28px));
+  background:var(--panel);border:1px solid var(--panel-line);border-radius:16px;overflow:hidden;
+  box-shadow:0 30px 80px -18px rgba(0,0,0,.85),0 0 0 1px rgba(0,0,0,.4),inset 0 1px 0 rgba(232,200,121,.08);
+  opacity:0;transform:translateY(10px) scale(.97);pointer-events:none;
+  transition:opacity .28s cubic-bezier(.33,1,.45,1),transform .34s cubic-bezier(.33,1,.45,1);
+  backdrop-filter:blur(18px) saturate(140%);-webkit-backdrop-filter:blur(18px) saturate(140%)}
+.card.on{opacity:1;transform:translateY(0) scale(1);pointer-events:auto}
+.card .cov{position:relative;height:138px;background:#10141d;overflow:hidden}
+.card .cov img{width:100%;height:100%;object-fit:cover;display:block;opacity:0;transform:scale(1.06);
+  transition:opacity .5s ease,transform 1.4s cubic-bezier(.22,1,.36,1)}
+.card .cov img.ld{opacity:1;transform:scale(1)}
+.card .cov::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,rgba(13,17,26,0) 30%,rgba(13,17,26,.94) 100%)}
+.card .cov .grp{position:absolute;left:12px;top:12px;z-index:2;display:inline-flex;align-items:center;gap:6px;
+  padding:4px 10px;border-radius:999px;background:rgba(7,10,16,.72);border:1px solid rgba(232,200,121,.22);
+  font-size:9px;font-weight:800;letter-spacing:.18em;text-transform:uppercase;color:var(--gold-soft);
+  backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px)}
+.card .cov .grp i{width:6px;height:6px;border-radius:50%;box-shadow:0 0 6px currentColor}
+.card .bd{padding:14px 16px 15px;margin-top:-34px;position:relative;z-index:2}
+.card .ttl{font-family:var(--serif);font-weight:700;font-size:17px;line-height:1.28;color:#f3ecd9;
+  display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.card .dsc{margin-top:7px;font-family:var(--body);font-size:14px;line-height:1.5;color:var(--txt-dim);
+  display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
+.card .meta{display:flex;align-items:center;gap:12px;margin-top:10px;font-size:10.5px;font-weight:700;
+  letter-spacing:.12em;text-transform:uppercase;color:var(--txt-faint)}
+.card .meta b{color:var(--gold-soft);font-weight:700}
+.card .go{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-top:12px;
+  padding:9px 13px;border-radius:11px;border:1px solid var(--panel-line);
+  background:linear-gradient(180deg,rgba(232,200,121,.13),rgba(232,200,121,.05));
+  color:var(--gold);text-decoration:none;font-size:11.5px;font-weight:800;letter-spacing:.14em;text-transform:uppercase;
+  transition:background .2s,border-color .2s,transform .15s}
+.card .go:hover{background:linear-gradient(180deg,rgba(232,200,121,.2),rgba(232,200,121,.09));border-color:rgba(232,200,121,.45);transform:translateY(-1px)}
+.card .go svg{width:13px;height:13px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;flex:0 0 auto}
+
+.hint{position:fixed;right:max(22px,3vw);bottom:max(18px,env(safe-area-inset-bottom,0px) + 14px);z-index:30;
+  font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--txt-faint);text-align:right;line-height:1.9}
+.hint b{color:var(--txt-dim);font-weight:700}
+.zoomui{position:fixed;right:max(18px,2.6vw);top:50%;transform:translateY(-50%);z-index:30;display:flex;flex-direction:column;gap:8px}
+.zbtn{width:38px;height:38px;border-radius:11px;border:1px solid var(--panel-line);background:var(--panel);color:var(--txt-dim);
+  font-size:19px;line-height:1;cursor:pointer;transition:color .18s,border-color .18s,transform .12s;
+  display:flex;align-items:center;justify-content:center;font-family:var(--sans)}
+.zbtn:hover{color:var(--gold);border-color:rgba(232,200,121,.5)}
+.zbtn:active{transform:scale(.94)}
+.zbtn:focus-visible{outline:2px solid var(--gold);outline-offset:2px}
+
+@media (max-width:720px){
+  .hdr-left .sub{display:none}
+  .hdr-left h1{font-size:21px}
+  .legend{left:14px;bottom:calc(14px + env(safe-area-inset-bottom,0px));gap:0}
+  .lg{padding:4px 8px 4px 5px;font-size:11.5px}
+  .hint{display:none}
+  .zoomui{right:12px;top:auto;bottom:calc(14px + env(safe-area-inset-bottom,0px));transform:none;flex-direction:row}
+  .card{left:14px !important;right:14px;bottom:calc(64px + env(safe-area-inset-bottom,0px));top:auto !important;width:auto}
+  .card .cov{height:110px}
+}
+@media (prefers-reduced-motion:reduce){
+  .card,.card .cov img,.edge,.node circle.core,.node circle.halo,.node text{transition:none}
+}
 </style>
 </head>
 <body>
-<header class="map-header">
-<a class="map-back" href="/"><svg viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6"/></svg>Главная</a>
-<h1>Карта связей</h1>
-<button class="map-theme" id="mapTheme" aria-label="Переключить тему" type="button">
-<svg class="icon-moon" viewBox="0 0 24 24"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>
-</button>
+
+<header class="hdr">
+  <div class="hdr-left">
+    <a class="back" href="/"><svg viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6"/></svg>На главную</a>
+    <h1>Карта <em>связей</em></h1>
+    <p class="sub">Созвездие материалов сайта: каждая точка — статья, каждая нить — внутренняя ссылка между ними.</p>
+    <p class="stats" id="stats"></p>
+  </div>
 </header>
-<div class="map-legend">
-<span><i style="background:var(--gill)"></i>Джон Гилл</span>
-<span><i style="background:var(--hard)"></i>Тайны сердца</span>
-<span><i style="background:var(--nag)"></i>Нагорная</span>
-<span><i style="background:var(--stand)"></i>Статьи</span>
-<span><i style="background:var(--landing)"></i>Каталоги</span>
+
+<div class="svgwrap">
+  <svg id="cnv" role="application" aria-label="Интерактивная карта связей статей. Колесо — масштаб, перетаскивание — перемещение, клик по точке — карточка статьи." tabindex="0"></svg>
 </div>
-<div class="map-wrap">
-<svg id="mapCanvas" viewBox="0 0 900 600"></svg>
+
+<nav class="legend" id="legend" aria-label="Фильтр по разделам">
+  <span class="lg-title">Разделы</span>
+</nav>
+
+<div class="hint">
+  <b>наведите</b> на точку — превью<br>
+  <b>колесо</b> — масштаб · <b>тяните</b> — обзор
 </div>
-<div class="map-tooltip" id="mapTip"></div>
+
+<div class="zoomui">
+  <button class="zbtn" id="zin" aria-label="Приблизить" type="button">+</button>
+  <button class="zbtn" id="zout" aria-label="Отдалить" type="button">−</button>
+  <button class="zbtn" id="zfit" aria-label="Показать всё" type="button" style="font-size:13px">⌂</button>
+</div>
+
+<aside class="card" id="card" role="dialog" aria-label="Превью статьи" aria-hidden="true">
+  <div class="cov"><span class="grp" id="cGrp"></span><img id="cImg" alt="" decoding="async"></div>
+  <div class="bd">
+    <div class="ttl" id="cTtl"></div>
+    <p class="dsc" id="cDsc"></p>
+    <div class="meta" id="cMeta"></div>
+    <a class="go" id="cGo" href="/articles/" role="button"><span>Открыть статью</span><svg viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a>
+  </div>
+</aside>
 
 <script>
 (function(){
-  var dark = localStorage.getItem('theme')==='dark' || (!localStorage.getItem('theme') && matchMedia('(prefers-color-scheme:dark)').matches);
-  if(dark) document.documentElement.classList.add('dark');
-  document.getElementById('mapTheme').addEventListener('click',function(){
-    document.documentElement.classList.toggle('dark');
-    localStorage.setItem('theme',document.documentElement.classList.contains('dark')?'dark':'light');
+'use strict';
+var NS='http://www.w3.org/2000/svg';
+var svg=document.getElementById('cnv');
+var card=document.getElementById('card');
+var GROUPS={
+  gill:{label:'Джон Гилл',color:'#d4a574'},
+  'hard-texts':{label:'Тайны сердца',color:'#7da2e8'},
+  nagornaya:{label:'Нагорная проповедь',color:'#5fc9a8'},
+  standalone:{label:'Статьи',color:'#c9b186'},
+  landing:{label:'Разделы',color:'#a78bfa'}
+};
+var W=1200,H=800;
+var view={x:0,y:0,k:1};
+var nodes=[],edges=[],byId={},deg={};
+var gEdges,gNodes;
+var hidden={};      // group -> true (выключен фильтром)
+var pinned=null;    // зафиксированная карточка (id)
+var hoverId=null;
+var reduced=matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+/* ---------- детерминированный PRNG (стабильная раскладка) ---------- */
+var seed=42;
+function rnd(){seed=(seed*1664525+1013904223)>>>0;return seed/4294967296}
+
+fetch('/data/links-graph.json').then(function(r){return r.json()}).then(function(data){
+  nodes=data.nodes; edges=data.edges;
+  nodes.forEach(function(n){byId[n.id]=n;deg[n.id]=0});
+  edges.forEach(function(e){deg[e[0]]=(deg[e[0]]||0)+1;deg[e[1]]=(deg[e[1]]||0)+1});
+  layout();
+  build();
+  fit(1);
+  document.getElementById('stats').innerHTML='<b>'+nodes.length+'</b> материалов · <b>'+edges.length+'</b> связи';
+  buildLegend();
+});
+
+/* ---------- force layout ---------- */
+function layout(){
+  var gc={gill:{x:W*.26,y:H*.34},nagornaya:{x:W*.74,y:H*.30},'hard-texts':{x:W*.40,y:H*.72},standalone:{x:W*.72,y:H*.68},landing:{x:W*.52,y:H*.46}};
+  nodes.forEach(function(n){
+    var c=gc[n.group]||{x:W/2,y:H/2};
+    n.x=c.x+(rnd()-.5)*170; n.y=c.y+(rnd()-.5)*130; n.vx=0; n.vy=0;
   });
-
-  var svg = document.getElementById('mapCanvas');
-  var tip = document.getElementById('mapTip');
-  var W = 900, H = 600;
-
-  fetch('/data/links-graph.json').then(function(r){return r.json()}).then(function(data){
-    var nodes = data.nodes, edges = data.edges;
-    var N = nodes.length;
-    var idxMap = {};
-    nodes.forEach(function(n,i){idxMap[n.id]=i});
-
-    // Force-directed layout — simple simulation
-    var pos = nodes.map(function(n,i){
-      var angle = (i/N)*Math.PI*2;
-      var r = 180 + Math.random()*60;
-      return {x: W/2 + Math.cos(angle)*r, y: H/2 + Math.sin(angle)*r, vx:0, vy:0};
-    });
-
-    // Group centers for initial clustering
-    var gc = {gill:{x:250,y:200},nagornaya:{x:650,y:180},'hard-texts':{x:450,y:420},standalone:{x:700,y:420},landing:{x:450,y:120}};
-    nodes.forEach(function(n,i){
-      var c = gc[n.group];
-      if(c){pos[i].x = c.x + (Math.random()-.5)*120; pos[i].y = c.y + (Math.random()-.5)*80;}
-    });
-
-    // Simulate
-    for(var iter=0;iter<300;iter++){
-      var alpha = 1 - iter/300;
-      // Repulsion
-      for(var i=0;i<N;i++){
-        for(var j=i+1;j<N;j++){
-          var dx=pos[j].x-pos[i].x, dy=pos[j].y-pos[i].y;
-          var d=Math.sqrt(dx*dx+dy*dy)||1;
-          var f = 4000/(d*d) * alpha;
-          pos[i].vx -= dx/d*f; pos[i].vy -= dy/d*f;
-          pos[j].vx += dx/d*f; pos[j].vy += dy/d*f;
-        }
-      }
-      // Attraction along edges
-      edges.forEach(function(e){
-        var ai=idxMap[e[0]], bi=idxMap[e[1]];
-        if(ai==null||bi==null)return;
-        var dx=pos[bi].x-pos[ai].x, dy=pos[bi].y-pos[ai].y;
-        var d=Math.sqrt(dx*dx+dy*dy)||1;
-        var f = (d-120)*0.005*alpha;
-        pos[ai].vx += dx/d*f; pos[ai].vy += dy/d*f;
-        pos[bi].vx -= dx/d*f; pos[bi].vy -= dy/d*f;
-      });
-      // Center gravity
-      for(var i=0;i<N;i++){
-        pos[i].vx += (W/2-pos[i].x)*0.001*alpha;
-        pos[i].vy += (H/2-pos[i].y)*0.001*alpha;
-        pos[i].x += pos[i].vx; pos[i].y += pos[i].vy;
-        pos[i].vx *= 0.9; pos[i].vy *= 0.9;
-        pos[i].x = Math.max(50, Math.min(W-50, pos[i].x));
-        pos[i].y = Math.max(40, Math.min(H-40, pos[i].y));
-      }
+  var iters=320;
+  for(var t=0;t<iters;t++){
+    var alpha=(1-t/iters)*.9;
+    // отталкивание
+    for(var i=0;i<nodes.length;i++)for(var j=i+1;j<nodes.length;j++){
+      var a=nodes[i],b=nodes[j],dx=b.x-a.x,dy=b.y-a.y,d2=dx*dx+dy*dy||1,d=Math.sqrt(d2);
+      var rep=9000/d2; if(d<170)rep*=1.6;
+      var fx=dx/d*rep,fy=dy/d*rep;
+      a.vx-=fx*alpha;a.vy-=fy*alpha;b.vx+=fx*alpha;b.vy+=fy*alpha;
     }
-
-    // Color map
-    var colors = {gill:'var(--gill)','hard-texts':'var(--hard)',nagornaya:'var(--nag)',standalone:'var(--stand)',landing:'var(--landing)'};
-
-    // Render edges
-    var edgeEls = [];
+    // пружины
     edges.forEach(function(e){
-      var ai=idxMap[e[0]], bi=idxMap[e[1]];
-      if(ai==null||bi==null)return;
-      var line = document.createElementNS('http://www.w3.org/2000/svg','line');
-      line.setAttribute('x1',pos[ai].x); line.setAttribute('y1',pos[ai].y);
-      line.setAttribute('x2',pos[bi].x); line.setAttribute('y2',pos[bi].y);
-      line.classList.add('map-edge');
-      line.dataset.from = e[0]; line.dataset.to = e[1];
-      svg.appendChild(line);
-      edgeEls.push(line);
+      var a=byId[e[0]],b=byId[e[1]];if(!a||!b)return;
+      var dx=b.x-a.x,dy=b.y-a.y,d=Math.sqrt(dx*dx+dy*dy)||1;
+      var want=165+(Math.min(deg[a.id],deg[b.id])>6?50:0);
+      var f=(d-want)*.015;
+      var fx=dx/d*f,fy=dy/d*f;
+      a.vx+=fx*alpha;a.vy+=fy*alpha;b.vx-=fx*alpha;b.vy-=fy*alpha;
     });
-
-    // Render nodes
-    var nodeEls = [];
-    nodes.forEach(function(n,i){
-      var g = document.createElementNS('http://www.w3.org/2000/svg','g');
-      g.classList.add('map-node');
-      g.dataset.id = n.id;
-      
-      // Count connections
-      var conns = edges.filter(function(e){return e[0]===n.id||e[1]===n.id}).length;
-      var r = Math.max(8, Math.min(18, 6 + conns*1.2));
-      
-      var circle = document.createElementNS('http://www.w3.org/2000/svg','circle');
-      circle.setAttribute('cx', pos[i].x);
-      circle.setAttribute('cy', pos[i].y);
-      circle.setAttribute('r', r);
-      circle.setAttribute('fill', colors[n.group]||'var(--accent)');
-      circle.setAttribute('stroke', 'var(--bg)');
-      circle.setAttribute('stroke-width', '2');
-      g.appendChild(circle);
-
-      // Short label
-      var label = n.title.length>25 ? n.title.slice(0,22)+'…' : n.title;
-      var text = document.createElementNS('http://www.w3.org/2000/svg','text');
-      text.setAttribute('x', pos[i].x);
-      text.setAttribute('y', pos[i].y + r + 14);
-      text.textContent = label;
-      g.appendChild(text);
-
-      svg.appendChild(g);
-      nodeEls.push({el:g, node:n, idx:i, r:r});
+    // гравитация к центру группы
+    var gc2=gc;
+    nodes.forEach(function(n){
+      var c=gc2[n.group];if(!c)return;
+      n.vx+=(c.x-n.x)*.004*alpha;n.vy+=(c.y-n.y)*.004*alpha;
+      n.x+=n.vx;n.y+=n.vy;n.vx*=.6;n.vy*=.6;
+      n.x=Math.max(90,Math.min(W-90,n.x));n.y=Math.max(70,Math.min(H-70,n.y));
     });
+  }
+}
 
-    // Interactions
-    var activeNode = null;
+/* ---------- построение SVG ---------- */
+function el(tag,attrs,parent){var e=document.createElementNS(NS,tag);for(var k in attrs)e.setAttribute(k,attrs[k]);if(parent)parent.appendChild(e);return e}
+function build(){
+  svg.setAttribute('viewBox','0 0 '+W+' '+H);
+  var defs=el('defs',{},svg);
+  // мягкое свечение узлов
+  var f=el('filter',{id:'glow',x:'-80%',y:'-80%',width:'260%',height:'260%'},defs);
+  el('feGaussianBlur',{'in':'SourceGraphic',stdDeviation:'5',result:'b'},f);
+  var m=el('feMerge',{},f); el('feMergeNode',{'in':'b'},m); el('feMergeNode',{'in':'SourceGraphic'},m);
 
-    function highlight(nodeId){
-      activeNode = nodeId;
-      var connected = new Set();
-      edges.forEach(function(e){
-        if(e[0]===nodeId){connected.add(e[1]);}
-        if(e[1]===nodeId){connected.add(e[0]);}
-      });
-      
-      nodeEls.forEach(function(ne){
-        var isActive = ne.node.id===nodeId;
-        var isConn = connected.has(ne.node.id);
-        ne.el.style.opacity = (isActive||isConn) ? '1' : '0.15';
-        if(isActive) ne.el.querySelector('circle').setAttribute('r', ne.r*1.3);
-      });
-      
-      edgeEls.forEach(function(le){
-        var isHL = (le.dataset.from===nodeId||le.dataset.to===nodeId);
-        le.classList.toggle('map-edge--hl', isHL);
-        le.style.opacity = isHL ? '1' : '0.06';
-        if(isHL){
-          var color = colors[nodes[idxMap[nodeId]].group] || 'var(--accent)';
-          le.setAttribute('stroke', color);
-        } else {
-          le.removeAttribute('stroke');
-        }
-      });
-    }
+  var root=el('g',{id:'root'},svg);
+  gEdges=el('g',{id:'edges'},root);
+  gNodes=el('g',{id:'nodes'},root);
 
-    function unhighlight(){
-      activeNode = null;
-      nodeEls.forEach(function(ne){
-        ne.el.style.opacity = '';
-        ne.el.querySelector('circle').setAttribute('r', ne.r);
-      });
-      edgeEls.forEach(function(le){
-        le.classList.remove('map-edge--hl');
-        le.style.opacity = '';
-        le.removeAttribute('stroke');
-      });
-      tip.classList.remove('show');
-    }
-
-    var groupNames = {gill:'Джон Гилл','hard-texts':'Тайны сердца',nagornaya:'Нагорная проповедь',standalone:'Статья',landing:'Каталог'};
-
-    nodeEls.forEach(function(ne){
-      ne.el.addEventListener('pointerenter', function(e){
-        highlight(ne.node.id);
-        var conns = edges.filter(function(ed){return ed[0]===ne.node.id||ed[1]===ne.node.id}).length;
-        tip.innerHTML = '<div class="mt-group" style="color:'+
-          (colors[ne.node.group]||'var(--accent)')+'">'+
-          (groupNames[ne.node.group]||ne.node.group)+'</div>'+
-          '<strong>'+ne.node.title+'</strong>'+
-          '<div class="mt-links">'+conns+' связ'+(conns===1?'ь':conns<5?'и':'ей')+'</div>'+
-          '<a href="'+ne.node.url+'">Открыть →</a>';
-        tip.classList.add('show');
-        var rect = svg.getBoundingClientRect();
-        var nx = rect.left + pos[ne.idx].x/W*rect.width;
-        var ny = rect.top + pos[ne.idx].y/H*rect.height;
-        tip.style.left = Math.min(nx + 20, window.innerWidth - 280) + 'px';
-        tip.style.top = Math.max(10, ny - 30) + 'px';
-      });
-      ne.el.addEventListener('pointerleave', function(){
-        unhighlight();
-      });
-      ne.el.addEventListener('click', function(){
-        window.location.href = ne.node.url;
-      });
-    });
-
-    svg.addEventListener('pointerleave', unhighlight);
+  edges.forEach(function(e,i){
+    var a=byId[e[0]],b=byId[e[1]];if(!a||!b)return;
+    var mx=(a.x+b.x)/2,my=(a.y+b.y)/2;
+    var dx=b.x-a.x,dy=b.y-a.y,d=Math.sqrt(dx*dx+dy*dy)||1;
+    var bend=Math.min(34,d*.16);
+    var px=-dy/d*bend,py=dx/d*bend;
+    var p=el('path',{'class':'edge',d:'M'+a.x+','+a.y+' Q'+(mx+px)+','+(my+py)+' '+b.x+','+b.y,'stroke-width':1.1,'data-a':a.id,'data-b':b.id},gEdges);
   });
+
+  nodes.forEach(function(n){
+    var col=(GROUPS[n.group]||{}).color||'#c9b186';
+    var r=6+Math.min(9,(deg[n.id]||1)*.85);
+    var isHub=n.group==='landing';
+    var g=el('g',{'class':'node'+(isHub?' hub':''),transform:'translate('+n.x+','+n.y+')','data-id':n.id,tabindex:'-1'},gNodes);
+    el('circle',{'class':'halo',r:r+7,fill:'none',stroke:col,'stroke-opacity':.5,'stroke-width':1.4,filter:'url(#glow)'},g);
+    el('circle',{'class':'ring',r:r+3.2,fill:'none',stroke:col,'stroke-opacity':.28,'stroke-width':1},g);
+    el('circle',{'class':'core',r:r,fill:col,'fill-opacity':.92,stroke:'rgba(7,10,16,.9)','stroke-width':1.6},g);
+    var label=n.title.length>28?n.title.slice(0,26)+'…':n.title;
+    var ly=(n._lab=((n.y*7+n.x*3)|0)%2)?-(r+8):(r+15);el('text',{y:ly,'text-anchor':'middle'},g).textContent=label;
+    n._g=g; n._r=r; n._col=col;
+  });
+
+  svg.addEventListener('pointerover',function(ev){
+    var g=ev.target.closest&&ev.target.closest('.node'); if(!g)return;
+    hoverId=g.getAttribute('data-id'); light(hoverId); showCard(hoverId,false);
+  });
+  svg.addEventListener('pointerout',function(ev){
+    var g=ev.target.closest&&ev.target.closest('.node'); if(!g)return;
+    if(pinned)return;
+    hoverId=null;
+    hideCardSoon();
+  });
+  svg.addEventListener('click',function(ev){
+    var g=ev.target.closest&&ev.target.closest('.node');
+    if(g){
+      var id=g.getAttribute('data-id');
+      if(pinned===id){pinned=null;unlight();hideCard()}
+      else{pinned=id;light(id);showCard(id,true)}
+      ev.stopPropagation();
+    }else if(pinned){pinned=null;unlight();hideCard()}
+  });
+  card.addEventListener('pointerenter',function(){clearTimeout(hideT)});
+  card.addEventListener('pointerleave',function(){if(!pinned)hideCardSoon()});
+  document.addEventListener('keydown',function(e){if(e.key==='Escape'&&(pinned||card.classList.contains('on'))){pinned=null;unlight();hideCard()}});
+
+  panzoom();
+}
+
+/* ---------- подсветка ---------- */
+function light(id){
+  var nb={}; nb[id]=1;
+  gEdges.querySelectorAll('.edge').forEach(function(p){
+    var a=p.getAttribute('data-a'),b=p.getAttribute('data-b');
+    var hit=(a===id||b===id);
+    p.classList.toggle('lit',hit); p.classList.toggle('dim',!hit);
+    if(hit){nb[a]=1;nb[b]=1}
+  });
+  nodes.forEach(function(n){
+    n._g.classList.toggle('lit',n.id===id);
+    n._g.classList.toggle('dim',!nb[n.id]);
+  });
+}
+function unlight(){
+  gEdges.querySelectorAll('.edge').forEach(function(p){p.classList.remove('lit','dim')});
+  nodes.forEach(function(n){n._g.classList.remove('lit','dim')});
+}
+
+/* ---------- карточка-превью ---------- */
+var hideT=null;
+function showCard(id,pin){
+  clearTimeout(hideT);
+  var n=byId[id];if(!n)return;
+  var G=GROUPS[n.group]||{label:n.group,color:'#c9b186'};
+  var img=document.getElementById('cImg');
+  img.classList.remove('ld'); img.removeAttribute('src');
+  if(n.cover){
+    img.onload=function(){img.classList.add('ld')};
+    img.src=n.cover;
+    img.parentElement.style.display='';
+  }else{
+    img.parentElement.style.display='none';
+  }
+  var grp=document.getElementById('cGrp');
+  grp.innerHTML='<i style="background:'+G.color+';color:'+G.color+'"></i>'+G.label;
+  document.getElementById('cTtl').textContent=n.title;
+  document.getElementById('cDsc').textContent=n.desc||'';
+  var links=deg[n.id]||0;
+  var mins=n.readingTime?('<b>'+n.readingTime+'</b> мин · '):'';
+  document.getElementById('cMeta').innerHTML=mins+'<span><b>'+links+'</b> '+plural(links,'связь','связи','связей')+'</span>';
+  document.getElementById('cGo').setAttribute('href',n.url);
+  card.setAttribute('aria-hidden','false');
+  position(n);
+  card.classList.add('on');
+}
+function plural(x,a,b,c){var m=x%100,d=x%10;return m>10&&m<20?c:d>1&&d<5?b:d===1?a:c}
+function position(n){
+  if(matchMedia('(max-width:720px)').matches)return; // мобайл: css прижимает вниз
+  var pt=svg.createSVGPoint();pt.x=n.x;pt.y=n.y;
+  var sp=pt.matrixTransform(gNodes.getScreenCTM());
+  var cw=330,ch=card.offsetHeight||300,pad=14;
+  var x=sp.x+24, y=sp.y-ch/2;
+  if(x+cw>innerWidth-pad)x=sp.x-cw-24;
+  if(x<pad)x=pad;
+  y=Math.max(pad+70,Math.min(innerHeight-ch-pad,y));
+  card.style.left=x+'px'; card.style.top=y+'px'; card.style.right='auto'; card.style.bottom='auto';
+}
+function hideCard(){card.classList.remove('on');card.setAttribute('aria-hidden','true')}
+function hideCardSoon(){clearTimeout(hideT);hideT=setTimeout(function(){if(!pinned){unlight();hideCard()}},260)}
+
+/* ---------- легенда-фильтры ---------- */
+function buildLegend(){
+  var lg=document.getElementById('legend');
+  Object.keys(GROUPS).forEach(function(k){
+    var count=nodes.filter(function(n){return n.group===k}).length;
+    var b=document.createElement('button');
+    b.type='button';b.className='lg';b.setAttribute('data-g',k);
+    b.innerHTML='<i style="background:'+GROUPS[k].color+';color:'+GROUPS[k].color+'"></i>'+GROUPS[k].label+'<span class="n">'+count+'</span>';
+    b.setAttribute('aria-pressed','true');
+    b.addEventListener('click',function(){
+      hidden[k]=!hidden[k];
+      b.classList.toggle('off',hidden[k]);
+      b.setAttribute('aria-pressed',hidden[k]?'false':'true');
+      applyFilter();
+    });
+    lg.appendChild(b);
+  });
+}
+function applyFilter(){
+  nodes.forEach(function(n){n._g.style.display=hidden[n.group]?'none':''});
+  gEdges.querySelectorAll('.edge').forEach(function(p){
+    var a=byId[p.getAttribute('data-a')],b=byId[p.getAttribute('data-b')];
+    p.style.display=(a&&hidden[a.group])||(b&&hidden[b.group])?'none':'';
+  });
+  if(pinned&&hidden[(byId[pinned]||{}).group]){pinned=null;unlight();hideCard()}
+}
+
+/* ---------- пан/зум ---------- */
+function apply(){
+  document.getElementById('root').setAttribute('transform','translate('+view.x+','+view.y+') scale('+view.k+')');
+  if(card.classList.contains('on')){var id=pinned||hoverId;if(id&&byId[id])position(byId[id])}
+}
+function fit(animate){
+  var pad=80;
+  var minx=1e9,miny=1e9,maxx=-1e9,maxy=-1e9;
+  nodes.forEach(function(n){minx=Math.min(minx,n.x);maxx=Math.max(maxx,n.x);miny=Math.min(miny,n.y);maxy=Math.max(maxy,n.y)});
+  var bw=maxx-minx+pad*2,bh=maxy-miny+pad*2;
+  var r=svg.getBoundingClientRect();
+  var sx=r.width/bw*(W/r.width),sy=r.height/bh*(H/r.height);
+  var k=Math.min(sx,sy,1.6)*0.92;
+  view.k=k;
+  view.x=(W-(minx+maxx)*k)/2;
+  view.y=(H-(miny+maxy)*k)/2 + 52;
+  apply();
+}
+function panzoom(){
+  var drag=null;
+  svg.addEventListener('pointerdown',function(e){
+    if(e.target.closest('.node'))return;
+    drag={x:e.clientX,y:e.clientY,vx:view.x,vy:view.y};
+    svg.classList.add('dragging');svg.setPointerCapture(e.pointerId);
+  });
+  svg.addEventListener('pointermove',function(e){
+    if(!drag)return;
+    var r=svg.getBoundingClientRect();var s=W/r.width;
+    view.x=drag.vx+(e.clientX-drag.x)*s; view.y=drag.vy+(e.clientY-drag.y)*s; apply();
+  });
+  function end(e){if(drag){drag=null;svg.classList.remove('dragging')}}
+  svg.addEventListener('pointerup',end);svg.addEventListener('pointercancel',end);
+  svg.addEventListener('wheel',function(e){
+    e.preventDefault();
+    var r=svg.getBoundingClientRect();
+    var mx=(e.clientX-r.left)*(W/r.width),my=(e.clientY-r.top)*(H/r.height);
+    var k2=Math.max(.45,Math.min(3.2,view.k*(e.deltaY<0?1.13:0.885)));
+    view.x=mx-(mx-view.x)*(k2/view.k); view.y=my-(my-view.y)*(k2/view.k); view.k=k2; apply();
+  },{passive:false});
+  // тач-пинч
+  var pts={},pd=0;
+  svg.addEventListener('touchstart',function(e){if(e.touches.length===2){pd=tdist(e)}},{passive:true});
+  svg.addEventListener('touchmove',function(e){
+    if(e.touches.length===2){
+      e.preventDefault();
+      var d=tdist(e);var k2=Math.max(.45,Math.min(3.2,view.k*(d/pd)));pd=d;
+      var r=svg.getBoundingClientRect();
+      var cx=((e.touches[0].clientX+e.touches[1].clientX)/2-r.left)*(W/r.width);
+      var cy=((e.touches[0].clientY+e.touches[1].clientY)/2-r.top)*(H/r.height);
+      view.x=cx-(cx-view.x)*(k2/view.k);view.y=cy-(cy-view.y)*(k2/view.k);view.k=k2;apply();
+    }
+  },{passive:false});
+  function tdist(e){var a=e.touches[0],b=e.touches[1];return Math.hypot(a.clientX-b.clientX,a.clientY-b.clientY)}
+  document.getElementById('zin').addEventListener('click',function(){zoomTo(view.k*1.3)});
+  document.getElementById('zout').addEventListener('click',function(){zoomTo(view.k/1.3)});
+  document.getElementById('zfit').addEventListener('click',function(){fit()});
+  function zoomTo(k2){
+    k2=Math.max(.45,Math.min(3.2,k2));
+    var cx=W/2,cy=H/2;
+    view.x=cx-(cx-view.x)*(k2/view.k);view.y=cy-(cy-view.y)*(k2/view.k);view.k=k2;apply();
+  }
+  addEventListener('resize',function(){fit()});
+}
 })();
 </script>
 </body>
