@@ -79,6 +79,39 @@ body{background:var(--bg);color:var(--txt);font-family:"Segoe UI",system-ui,-app
   if(f){f.addEventListener('load',hide);}
   setTimeout(hide,6000);
 })();
+
+/* FIX: wheel/zoom глитч в Three.js OrbitControls внутри iframe.
+   Проблема: браузер регистрирует wheel на документе как passive, не давая
+   OrbitControls вызвать preventDefault(). Решение: форвардим wheel events
+   в iframe с non-passive listener, предотвращая scroll страницы. */
+(function(){
+  var stage = document.querySelector('.stage');
+  if(!stage) return;
+  
+  // Блокируем scroll страницы пока курсор над 3D-сценой
+  var isOver = false;
+  stage.addEventListener('mouseenter', function(){ isOver = true; }, {passive:true});
+  stage.addEventListener('mouseleave', function(){ isOver = false; }, {passive:true});
+  stage.addEventListener('touchstart', function(){ isOver = true; }, {passive:true});
+  stage.addEventListener('touchend', function(){ isOver = false; }, {passive:true});
+  
+  // Non-passive wheel handler — позволяет preventDefault()
+  // Three.js OrbitControls сам обрабатывает зум внутри iframe
+  // Нам нужно только предотвратить скролл страницы
+  document.addEventListener('wheel', function(e){
+    if(isOver && e.target && e.target.closest && e.target.closest('.stage')){
+      e.preventDefault();
+    }
+  }, {passive: false});
+  
+  // Touch-pinch passthrough: предотвращаем bounce/zoom страницы
+  stage.addEventListener('touchmove', function(e){
+    if(e.touches.length >= 2){
+      e.preventDefault(); // Предотвращаем page zoom, Three.js обрабатывает pinch
+    }
+  }, {passive: false});
+  
+})();
 </script>
 <!-- Yandex.Metrika counter -->
 <script type="text/javascript">
