@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
   <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://mc.yandex.ru https://*.yandex.ru https://mc.yandex.com https://*.yandex.com https://cdn.jsdelivr.net; img-src 'self' https://mc.yandex.ru https://*.yandex.ru https://mc.yandex.com https://*.yandex.com https://commons.wikimedia.org https://upload.wikimedia.org data: blob:; style-src 'self' 'unsafe-inline'; font-src 'self' data:; connect-src 'self' https://mc.yandex.ru https://*.yandex.ru https://mc.yandex.com https://*.yandex.com wss://mc.yandex.ru wss://*.yandex.ru wss://mc.yandex.com wss://*.yandex.com; frame-src 'self' https://mc.yandex.ru https://*.yandex.ru https://mc.yandex.com https://*.yandex.com; object-src 'none'; base-uri 'self';">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>Путь Авраама — интерактивная карта | Господь Бог — Сила Моя</title>
+<title>Путь Авраама: интерактивная карта Бытия 11–25 | Господь Бог — Сила Моя</title>
 <meta name="description" content="Интерактивная карта Авраама: от Ура Халдейского до горы Мория. 20 мест, 8 этапов, 5 сюжетов (Лех-леха, Война царей, Акеда), кинотур, археология, иврит, хронология 175 лет.">
 <meta name="robots" content="index, follow">
 <link rel="canonical" href="https://gospod-bog.ru/karty/avraam/">
@@ -12,7 +12,7 @@
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://gospod-bog.ru/karty/avraam/">
   <meta property="og:locale" content="ru_RU">
-<meta property="og:description" content="От Ура Халдейского до горы Мория: кинотур по 8 этапам, 19 мест с археологией и ивритом, война царей, спор о Содоме, род Тераха, 175 лет жизни.">
+<meta property="og:description" content="От Ура Халдейского до горы Мория: 20 мест, 5 сюжетов (Лех-леха, Война царей, Акеда), кинотур по 8 этапам, иврит, археология, хронология 175 лет.">
 <meta property="og:image" content="https://gospod-bog.ru/images/og-karty-avraam.webp">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
@@ -320,6 +320,60 @@
   }
 
 body{overscroll-behavior:none;-webkit-overscroll-behavior:none}
+
+  /* ---------- story toast ---------- */
+  #story-toast{
+    position:fixed;left:50%;top:72px;transform:translateX(-50%) translateY(-8px);
+    z-index:50;background:rgba(10,14,22,.96);border:1px solid var(--gold);
+    border-radius:999px;padding:7px 20px;font-size:11px;letter-spacing:.14em;
+    color:var(--gold);backdrop-filter:blur(14px);
+    opacity:0;pointer-events:none;
+    transition:opacity .3s,transform .3s;
+    white-space:nowrap;
+  }
+  #story-toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+
+  /* ---------- panel breadcrumb (этап ↔ место) ---------- */
+  #p-stage-hint{
+    font-size:10px;color:#6c737e;letter-spacing:.1em;
+    padding:0 24px 10px;
+    border-bottom:1px solid rgba(255,255,255,.05);
+    min-height:0;
+  }
+  #p-stage-hint:empty{display:none}
+  #p-stage-hint b{color:var(--gold-soft)}
+
+  /* ---------- intro story pills ---------- */
+  #intro-stories{
+    display:flex;gap:7px;flex-wrap:wrap;justify-content:center;
+    margin:16px 0 4px;
+  }
+  .intro-story-btn{
+    background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.14);
+    color:#9aa2ae;font-size:10px;letter-spacing:.14em;
+    padding:5px 13px;border-radius:999px;cursor:pointer;
+    transition:.22s;font-family:var(--sans);
+  }
+  .intro-story-btn:hover{border-color:var(--gold-dim);color:var(--gold)}
+  .intro-story-btn.sel{border-color:var(--gold);color:var(--gold);background:rgba(232,200,121,.08)}
+
+  /* ---------- kbd-help update ---------- */
+
+  /* ---------- minimap active-story dots ---------- */
+  .mm-story-dot{pointer-events:none}
+
+  /* ---------- orientation msg ---------- */
+  #rotate-hint{
+    display:none;
+    position:fixed;inset:0;z-index:99;
+    background:rgba(5,8,13,.97);
+    place-items:center;flex-direction:column;gap:16px;
+    color:#9aa2ae;font-size:14px;letter-spacing:.1em;text-align:center;
+  }
+  @media (orientation:landscape) and (max-height:500px){
+    #rotate-hint{display:flex}
+  }
+
 </style>
   <link rel="alternate" type="application/rss+xml" title="Господь Бог — Сила Моя — RSS" href="https://gospod-bog.ru/feed.xml">
   <link rel="manifest" href="/manifest.json">
@@ -387,7 +441,7 @@ body{overscroll-behavior:none;-webkit-overscroll-behavior:none}
   }
 
   /* ---------- marker dim/highlight for stories ---------- */
-  #markers .marker.story-dim,#ctx .ctx-dot.story-dim{opacity:.1;transition:opacity .4s;pointer-events:none}
+  #markers .marker.story-dim,#ctx .ctx-dot.story-dim{opacity:.12;transition:opacity .4s;cursor:pointer}
   #markers .marker.story-hi,#ctx .ctx-dot.story-hi{opacity:1;transition:opacity .4s}
   .route.story-dim{opacity:.06!important;transition:opacity .4s}
   .route.story-hi{opacity:1!important;transition:opacity .4s}
@@ -656,10 +710,18 @@ body{overscroll-behavior:none;-webkit-overscroll-behavior:none}
   <div id="scalebar"><span id="scaleTxt">≈ 100 км</span><div class="bar" id="scaleBar" style="width:109px"></div></div>
 </div>
 
-<div class="kbd-help"><b>▶</b> кинотур &nbsp;<b>1–8</b> этапы &nbsp;<b>←</b><b>→</b> места &nbsp;<b>Esc</b> закрыть</div>
+<div class="kbd-help"><b>▶</b> кинотур &nbsp;<b>1–8</b> этапы &nbsp;<b>←</b><b>→</b> места &nbsp;<b>S</b> сюжет &nbsp;<b>Esc</b> закрыть</div>
 
 <div id="mHud"></div>
 <div id="hint">Нажмите на маркер · колесо — масштаб · ▶ — кинотур по этапам</div>
+<div id="story-toast" role="status" aria-live="polite"></div>
+<div id="rotate-hint">
+  <svg width="48" height="48" viewBox="0 0 48 48" fill="none" stroke="rgba(232,200,121,.6)" stroke-width="2" stroke-linecap="round">
+    <rect x="12" y="6" width="24" height="36" rx="4"/><path d="M18 38h12"/>
+    <animateTransform attributeName="transform" type="rotate" from="0 24 24" to="-90 24 24" dur="1.2s" repeatCount="indefinite"/>
+  </svg>
+  <span>Разверните экран горизонтально<br>для лучшего просмотра карты</span>
+</div>
 
 <div class="chrome" id="timeline" role="navigation" aria-label="Этапы пути">
   <button class="btn" id="playBtn" title="Кинотур">▶</button>
@@ -675,8 +737,15 @@ body{overscroll-behavior:none;-webkit-overscroll-behavior:none}
     <div class="sub">Четыре тысячи лет назад один человек вышел из великого города —<br>и пошёл в землю, которую ему обещали показать.</div>
     <div class="sub" style="margin-top:8px;font-size:11px;letter-spacing:.15em;color:#777e89">20 МЕСТ · 8 ЭТАПОВ · 5 СЮЖЕТОВ · 7 КОНТЕКСТНЫХ ТОЧЕК · 59 СТИХОВ</div>
     <div class="rule"></div>
+    <div id="intro-stories">
+      <button class="intro-story-btn" data-story="main">Весь путь</button>
+      <button class="intro-story-btn" data-story="lekh-lekha">Лех-леха</button>
+      <button class="intro-story-btn" data-story="lot">Линия Лота</button>
+      <button class="intro-story-btn" data-story="war">Война царей</button>
+      <button class="intro-story-btn" data-story="akeda">Акеда</button>
+    </div>
     <button class="go" id="introGo">НАЧАТЬ КИНОТУР</button>
-    <button class="skip" id="introSkip">ИССЛЕДОВАТЬ КАРТУ САМОСТОЯТЕЛЬНО</button>
+    <button class="skip" id="introSkip">ИССЛЕДОВАТЬ САМОСТОЯТЕЛЬНО</button>
   </div>
 </div>
 
@@ -693,6 +762,7 @@ body{overscroll-behavior:none;-webkit-overscroll-behavior:none}
     </div>
   </header>
   <div class="gold-rule"></div>
+  <div id="p-stage-hint"></div>
   <nav id="tabs">
     <div class="tab cur" data-t="story">СЮЖЕТ</div>
     <div class="tab" data-t="bible">ПИСАНИЕ</div>
@@ -1015,9 +1085,20 @@ const STORIES = [
 
 let activeStory = 'main';
 
+/* show story toast */
+function showStoryToast(label){
+  const t=document.getElementById('story-toast');
+  if(!t) return;
+  t.textContent='✦ '+label;
+  t.classList.add('show');
+  clearTimeout(showStoryToast._timer);
+  showStoryToast._timer=setTimeout(()=>t.classList.remove('show'),2200);
+}
+
 function applyStory(storyId){
   const st = STORIES.find(s=>s.id===storyId) || STORIES[0];
   activeStory = st.id;
+  showStoryToast(st.label+' — '+st.desc);
 
   // обновить кнопки
   document.querySelectorAll('.story-btn').forEach(b=>{
@@ -1025,6 +1106,10 @@ function applyStory(storyId){
     b.classList.toggle('active', on);
     b.setAttribute('aria-pressed', on ? 'true':'false');
   });
+  // если открыта панель маркера не из этого сюжета — закрыть
+  if(curPlace>=0 && st.places && !st.places.includes(PLACES[curPlace].id)){
+    closePanel();
+  }
 
   // dim/hi маркеры
   document.querySelectorAll('#markers .marker').forEach(m=>{
@@ -1064,6 +1149,22 @@ function applyStory(storyId){
   else u.searchParams.set('story', storyId);
   history.replaceState(null,'', u.toString().replace(u.origin,''));
 
+  // update minimap dots
+  const mmDots=document.getElementById('mmDots');
+  if(mmDots){
+    mmDots.innerHTML='';
+    const NS2='http://www.w3.org/2000/svg';
+    const dotsPlaces=st.places?PLACES.filter(p=>st.places.includes(p.id)):PLACES;
+    dotsPlaces.forEach(p=>{
+      const c=document.createElementNS(NS2,'circle');
+      const col=p.type==='lot'?'#e0813f':p.type==='cand'?'#9b8cf0':'#e8c879';
+      c.setAttribute('cx',p.x);c.setAttribute('cy',p.y);
+      c.setAttribute('r','14');c.setAttribute('fill',col);
+      c.setAttribute('opacity',st.places?'.65':'.4');
+      c.setAttribute('class','mm-story-dot');
+      mmDots.appendChild(c);
+    });
+  }
   // flyTo
   if(st.cam){
     const [cx,cy,w] = st.cam;
@@ -1176,7 +1277,20 @@ svg.addEventListener('pointerenter',e=>{
 document.getElementById('zin').onclick=()=>flyTo(view.x+view.w/2,view.y+view.h/2,view.w*0.6,600);
 document.getElementById('zout').onclick=()=>flyTo(view.x+view.w/2,view.y+view.h/2,view.w*1.7,600);
 document.getElementById('zreset').onclick=()=>{stopTour();flyTo(W0/2,H0/2,W0,800);};
-document.getElementById('srcBtn').onclick=()=>document.getElementById('modal').classList.add('open');
+document.getElementById('srcBtn').onclick=()=>{
+  const m=document.getElementById('modal');
+  m.classList.add('open');
+  // lazy-render bibliography if not done
+  if(!m.dataset.bibDone){
+    m.dataset.bibDone='1';
+    const ul=m.querySelector('ul');
+    if(ul){
+      const extra=document.createElement('li');
+      extra.innerHTML='<b>Полный список источников:</b> Anselm Atlas (anselm-project.com) · BiblePlaces.com · ANET (J.B. Pritchard) · L. Woolley, Ur of the Chaldees (1929) · K. Kitchen, On the Reliability of the Old Testament (2003) · W. Dever, Who Were the Early Israelites? (2003) · Scientific Reports retraction notice (24.04.2025, re: Tall el-Hammam)';
+      ul.appendChild(extra);
+    }
+  }
+};
 function showDebate(){
   const L=LAYERS.find(l=>l.id==='debate');
   if(!L.on){L.on=true;[...document.querySelectorAll('#layersList .chip')].at(-1).classList.add('on');applyLayers();}
@@ -1265,7 +1379,12 @@ PLACES.forEach(pl=>{
           <text class="mk-he ${tier2?'lbl-z2':'lbl-z1'}" x="${lp.x}" y="${lp.y+13}" text-anchor="${lp.a}">${pl.he}</text>`;
   g.innerHTML=inner;
   mG.appendChild(g);
-  g.addEventListener('click',e=>{e.stopPropagation();stopTour();openPlace(pl.id);});
+  g.addEventListener('click',e=>{
+    e.stopPropagation();stopTour();
+    // если маркер в story-dim — переключить на main чтобы показать
+    if(g.classList.contains('story-dim')) applyStory('main');
+    openPlace(pl.id);
+  });
   g.addEventListener('pointerenter',e=>showTip(e,pl.name,pl.he,pl.kick));
   g.addEventListener('pointermove',moveTip);
   g.addEventListener('pointerleave',hideTip);
@@ -1398,6 +1517,8 @@ function applyLayers(){
 }
 applyLayers();
 
+
+const RELATED={"ur": ["harran", "babylon"], "harran": ["ur", "damascus", "urfa"], "urfa": ["harran", "ur"], "damascus": ["harran", "shechem", "hovah"], "shechem": ["bethel", "hebron", "dan"], "bethel": ["shechem", "hebron", "sodom"], "egypt": ["shur", "kadesh", "lahairoi"], "hebron": ["bethel", "beersheba", "salem"], "salem": ["hebron", "dan", "beersheba"], "dan": ["hovah", "shechem", "hazar"], "sodom": ["hammam", "zoar", "bethel"], "hammam": ["sodom", "zoar", "bethel"], "zoar": ["sodom", "hammam"], "gerar": ["beersheba", "kadesh"], "beersheba": ["hebron", "kadesh", "gerar"], "kadesh": ["beersheba", "shur", "lahairoi"], "shur": ["egypt", "kadesh", "lahairoi"], "lahairoi": ["kadesh", "shur", "beersheba"], "hovah": ["damascus", "dan"], "babylon": ["ur", "mari"]};
 /* ================= PANEL ================= */
 const panel=document.getElementById('panel');
 let curPlace=-1,curTab='story';
@@ -1413,6 +1534,17 @@ function openPlace(id,fly=true){
   document.getElementById('p-translit').textContent=pl.tr;
   document.getElementById('p-id1').textContent=pl.id1;document.getElementById('p-id2').textContent=pl.id2;
   document.getElementById('p-ep1').textContent=pl.ep1;document.getElementById('p-ep2').textContent=pl.ep2;
+  // breadcrumb — этап
+  const stageHint=document.getElementById('p-stage-hint');
+  if(stageHint){
+    const si=pl.stage;
+    if(si>=0&&si<STAGES.length){
+      const st=STAGES[si];
+      stageHint.innerHTML=`Этап <b>${st.n}</b> · ${st.t} · <span style="color:#6c737e">${st.r}</span>`;
+    } else {
+      stageHint.innerHTML='';
+    }
+  }
   setTab(curTab);
   panel.classList.add('open');document.body.classList.add('panel-open');
   if(fly){
@@ -1431,6 +1563,25 @@ function setTab(t){
   const pl=PLACES[curPlace];if(!pl)return;
   document.getElementById('panel-body').innerHTML=pl[t==='story'?'story':t==='bible'?'bible':'arch'];
   document.getElementById('panel-body').scrollTop=0;
+  // render related places
+  const rels=RELATED[pl.id];
+  if(rels&&rels.length){
+    const relDiv=document.createElement('div');
+    relDiv.style.cssText='margin-top:18px;padding-top:14px;border-top:1px solid rgba(255,255,255,.07)';
+    relDiv.innerHTML='<div style="font-size:9.5px;letter-spacing:.22em;color:#6c737e;margin-bottom:8px">СВЯЗАННЫЕ МЕСТА</div>';
+    rels.forEach(rid=>{
+      const rpl=PLACES[placeIndex[rid]];
+      if(!rpl) return;
+      const btn=document.createElement('button');
+      btn.style.cssText='display:inline-flex;align-items:center;gap:7px;background:rgba(255,255,255,.035);border:1px solid rgba(255,255,255,.1);border-radius:10px;padding:6px 11px;margin:0 5px 5px 0;cursor:pointer;color:var(--txt-dim);font-size:11px;letter-spacing:.06em;transition:.2s';
+      btn.innerHTML=`<span style="color:var(--gold);font-size:12px;direction:rtl">${rpl.he}</span>${rpl.name}`;
+      btn.onmouseenter=()=>btn.style.borderColor='var(--gold)';
+      btn.onmouseleave=()=>btn.style.borderColor='rgba(255,255,255,.1)';
+      btn.onclick=()=>openPlace(rid);
+      relDiv.appendChild(btn);
+    });
+    document.getElementById('panel-body').appendChild(relDiv);
+  }
 }
 document.querySelectorAll('.tab').forEach(el=>el.onclick=()=>setTab(el.dataset.t));
 document.getElementById('closeP').onclick=closePanel;
@@ -1439,9 +1590,21 @@ document.getElementById('nextPl').onclick=()=>stepPlace(1);
 document.getElementById('prevPl').onclick=()=>stepPlace(-1);
 function stepPlace(d){
   if(curPlace<0)return openPlace(PLACES[0].id);
-  let idx=MAIN_ORDER.indexOf(curPlace);
-  if(idx<0)idx=0;else idx=(idx+d+MAIN_ORDER.length)%MAIN_ORDER.length;
-  openPlace(PLACES[MAIN_ORDER[idx]].id);
+  // если активен конкретный сюжет — навигируем только по его местам
+  const st=STORIES.find(s=>s.id===activeStory);
+  const storyIds=st&&st.places?st.places:null;
+  let order;
+  if(storyIds){
+    order=PLACES
+      .map((p,i)=>i)
+      .filter(i=>storyIds.includes(PLACES[i].id));
+    if(!order.length) order=MAIN_ORDER;
+  } else {
+    order=MAIN_ORDER;
+  }
+  let idx=order.indexOf(curPlace);
+  if(idx<0)idx=0;else idx=(idx+d+order.length)%order.length;
+  openPlace(PLACES[order[idx]].id);
 }
 svg.addEventListener('click',e=>{
   if(!e.target.closest('.marker')&&!drag?.moved){ /* click on empty map */ }
@@ -1785,6 +1948,10 @@ const mmSvg=document.getElementById('mmSvg');
   mmSvg.appendChild(rg);
   const rect=document.createElementNS(NS,'rect');
   rect.id='mmRect';mmSvg.appendChild(rect);
+  // story dots layer
+  const mmDotsG=document.createElementNS(NS,'g');
+  mmDotsG.id='mmDots';
+  mmSvg.appendChild(mmDotsG);
 })();
 const mmRect=document.getElementById('mmRect');
 function updateMinimap(){
@@ -1834,6 +2001,20 @@ const intro=document.getElementById('intro');
 function dismissIntro(){intro.classList.add('gone');setTimeout(()=>intro.remove(),1300);}
 document.getElementById('introGo').onclick=()=>{dismissIntro();setTimeout(startTour,700);};
 document.getElementById('introSkip').onclick=dismissIntro;
+// intro story buttons — выбрать сюжет и исследовать самостоятельно
+document.querySelectorAll('.intro-story-btn').forEach(btn=>{
+  btn.addEventListener('click',()=>{
+    const sid=btn.dataset.story;
+    dismissIntro();
+    setTimeout(()=>{
+      if(document.startViewTransition){
+        document.startViewTransition(()=>applyStory(sid));
+      } else {
+        applyStory(sid);
+      }
+    },600);
+  });
+});
 
 /* ================= CSP-SAFE DELEGATES ================= */
 document.getElementById('treeClose').addEventListener('click',()=>{document.getElementById('treeModal').style.display='none';});
@@ -1864,7 +2045,13 @@ document.querySelectorAll('.story-btn').forEach(btn=>{
 (function(){
   const sp=new URLSearchParams(location.search);
   const s=sp.get('story');
-  if(s&&STORIES.find(x=>x.id===s)) applyStory(s);
+  if(s&&STORIES.find(x=>x.id===s)){
+    applyStory(s);
+    // highlight matching intro btn
+    document.querySelectorAll('.intro-story-btn').forEach(b=>{
+      b.classList.toggle('sel',b.dataset.story===s);
+    });
+  }
 })();
 const _applyView=applyView;
 applyView=function(){_applyView();updateMinimap();};
@@ -1877,6 +2064,9 @@ function killHint(){const h=document.getElementById('hint');if(h){h.style.opacit
 setTimeout(killHint,6000);
 ['pointerdown','wheel'].forEach(ev=>svg.addEventListener(ev,killHint,{once:true,passive:true}));
 addEventListener('resize',()=>applyView());
+addEventListener('orientationchange',()=>{
+  setTimeout(()=>{applyView();updateMinimap();},350);
+});
 /* open deep link */
 if(location.hash){
   const id=location.hash.slice(1);
@@ -1931,7 +2121,8 @@ function showPrev(pl, clientX, clientY){
   _prevTimer = setTimeout(()=>{
     mPrev.querySelector('.mp-he').textContent = pl.he || '';
     mPrev.querySelector('.mp-nm').textContent = pl.name;
-    mPrev.querySelector('.mp-kk').textContent = pl.kick || '';
+    const typeLabel = pl.type==='lot'?'Линия Лота · ':pl.type==='cand'?'⚬ Кандидат · ':'';
+    mPrev.querySelector('.mp-kk').textContent = typeLabel+(pl.kick||'');
     const pw=240,ph=90;
     const x=Math.min(clientX+18,window.innerWidth-pw-8);
     const y=Math.min(clientY-10,window.innerHeight-ph-8);
