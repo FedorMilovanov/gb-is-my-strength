@@ -244,7 +244,9 @@
   #caption .age{display:inline-block;margin-top:9px;font-size:10px;color:#cdb87a;border:1px solid rgba(232,200,121,.3);border-radius:999px;padding:3px 11px;letter-spacing:.14em}
 
   /* ---------- place panel ---------- */
-  #panel{position:fixed;top:0;right:0;bottom:0;width:min(420px,92vw);z-index:40;background:linear-gradient(165deg,rgba(18,22,32,.96),rgba(8,11,18,.98));border-left:1px solid var(--panel-line);backdrop-filter:blur(24px);-webkit-backdrop-filter:blur(24px);transform:translateX(105%);transition:transform .48s cubic-bezier(.16,.84,.24,1);display:flex;flex-direction:column;box-shadow:-24px 0 70px rgba(0,0,0,.6);will-change:transform}
+  #panel{position:fixed;top:0;right:0;bottom:0;width:min(420px,92vw);z-index:40;background:linear-gradient(165deg,rgba(18,22,32,.96),rgba(8,11,18,.98));border-left:1px solid var(--panel-line);backdrop-filter:blur(24px);-webkit-backdrop-filter:blur(24px);transform:translateX(105%);display:flex;flex-direction:column;box-shadow:-24px 0 70px rgba(0,0,0,.6);will-change:transform}
+  /* transition только если нет rubber animation */
+  #panel:not(.open){transition:transform .38s cubic-bezier(.4,0,.2,1)}
   #panel.open{transform:none;opacity:1}
   #panel{opacity:0.98}
   #panel header{padding:24px 24px 0;position:relative;background:linear-gradient(180deg,rgba(15,19,28,.98) 0%,transparent 100%)}
@@ -432,10 +434,10 @@
       max-height:92vh;max-height:92svh;
       border-left:none;border-top:1px solid var(--panel-line);border-radius:22px 22px 0 0;
       transform:translateY(105%) translateZ(0);
-      transition:transform .42s cubic-bezier(.16,.84,.24,1);
       box-shadow:0 -12px 60px rgba(0,0,0,.65);
       -webkit-transform:translateY(105%) translateZ(0);
     }
+    #panel:not(.open){transition:transform .35s cubic-bezier(.4,0,.2,1)}
     #panel.open{transform:translateY(0)}
     /* drag handle */
     #panel header::after{
@@ -814,6 +816,163 @@ body{overscroll-behavior:none;-webkit-overscroll-behavior:none}
   .mm-story-dot{pointer-events:none;transition:opacity .4s}
   @keyframes mmPulse{0%,100%{opacity:.65}50%{opacity:.35}}
   .mm-story-dot.active-place{animation:mmPulse 2s ease infinite}
+
+  /* ====== WAVE 22: RUBBER / SPRING / ELASTIC ANIMATIONS ====== */
+
+  /* Резиновое открытие панели — overshoot + settle */
+  @keyframes panelRubberIn{
+    0%{transform:translateX(105%)}
+    55%{transform:translateX(-5%)}
+    75%{transform:translateX(2.5%)}
+    88%{transform:translateX(-1%)}
+    100%{transform:translateX(0)}
+  }
+  #panel.open{animation:panelRubberIn .55s cubic-bezier(.22,1,.36,1) both}
+  @media(max-width:760px){
+    @keyframes panelRubberIn{
+      0%{transform:translateY(100%)}
+      55%{transform:translateY(-4%)}
+      75%{transform:translateY(2%)}
+      88%{transform:translateY(-1%)}
+      100%{transform:translateY(0)}
+    }
+  }
+
+  /* 3D flip при смене вкладки */
+  @keyframes tabFlipIn{
+    0%{opacity:0;transform:rotateX(18deg) translateY(10px) scale(.97)}
+    60%{opacity:1;transform:rotateX(-3deg) translateY(-2px) scale(1.01)}
+    100%{opacity:1;transform:none}
+  }
+  #panel-body.fresh{animation:tabFlipIn .38s cubic-bezier(.22,1,.36,1) both}
+
+  /* Bounce при открытии маркера */
+  @keyframes markerBounceActive{
+    0%{transform:scale(1)}
+    25%{transform:scale(1.38)}
+    55%{transform:scale(.88)}
+    78%{transform:scale(1.12)}
+    100%{transform:scale(1)}
+  }
+  .marker.entering{animation:markerBounceActive .55s cubic-bezier(.22,1,.36,1) both}
+  .marker.just-opened{animation:markerBounceActive .45s cubic-bezier(.22,1,.36,1) both}
+
+  /* Spring-open для caption (этап-подпись) */
+  @keyframes captionSpring{
+    0%{opacity:0;transform:translateX(-50%) translateY(12px) scale(.93)}
+    55%{opacity:1;transform:translateX(-50%) translateY(-3px) scale(1.02)}
+    78%{transform:translateX(-50%) translateY(1px) scale(.99)}
+    100%{transform:translateX(-50%) translateY(0) scale(1)}
+  }
+  #caption.show{animation:captionSpring .5s cubic-bezier(.22,1,.36,1) both}
+
+  /* Elastic chip pulse при focusStage */
+  @keyframes chipElastic{
+    0%{transform:scale(1)}
+    35%{transform:scale(1.22)}
+    60%{transform:scale(.92)}
+    80%{transform:scale(1.06)}
+    100%{transform:scale(1)}
+  }
+  .stage-chip.elastic{animation:chipElastic .5s cubic-bezier(.22,1,.36,1) both}
+
+  /* CtxCard spring open */
+  @keyframes ctxSpring{
+    0%{opacity:0;transform:scale(.85) translateY(10px)}
+    60%{opacity:1;transform:scale(1.03) translateY(-2px)}
+    80%{transform:scale(.98) translateY(1px)}
+    100%{transform:scale(1) translateY(0)}
+  }
+  #ctxCard.show{animation:ctxSpring .42s cubic-bezier(.22,1,.36,1) both}
+
+  /* Intro кнопки появляются поочерёдно с bounce */
+  @keyframes introBtnBounce{
+    0%{opacity:0;transform:translateY(18px) scale(.9)}
+    55%{opacity:1;transform:translateY(-4px) scale(1.04)}
+    78%{transform:translateY(2px) scale(.98)}
+    100%{transform:translateY(0) scale(1)}
+  }
+  .intro-story-btn{animation:introBtnBounce .5s cubic-bezier(.22,1,.36,1) both}
+  .intro-story-btn:nth-child(1){animation-delay:.9s}
+  .intro-story-btn:nth-child(2){animation-delay:1.0s}
+  .intro-story-btn:nth-child(3){animation-delay:1.1s}
+  .intro-story-btn:nth-child(4){animation-delay:1.2s}
+  .intro-story-btn:nth-child(5){animation-delay:1.3s}
+
+  /* НАЧАТЬ КИНОТУР кнопка — пульсирующая подсказка */
+  @keyframes goRubber{
+    0%,100%{transform:translateY(0) scale(1)}
+    30%{transform:translateY(-4px) scale(1.04)}
+    60%{transform:translateY(2px) scale(.97)}
+    80%{transform:translateY(-1px) scale(1.01)}
+  }
+  #intro .go{animation:introFadeUp .8s ease 1.4s both, goRubber 3.5s ease 2.5s infinite}
+  #intro .skip{animation:introFadeUp .6s ease 1.5s both}
+
+  /* Hover Preview spring появление */
+  @keyframes prevSpring{
+    0%{opacity:0;transform:translateY(10px) scale(.9)}
+    60%{opacity:1;transform:translateY(-3px) scale(1.03)}
+    100%{opacity:1;transform:translateY(0) scale(1)}
+  }
+  #mPrev.vis{animation:prevSpring .28s cubic-bezier(.22,1,.36,1) both}
+
+  /* Story button spring active */
+  @keyframes storyBtnSpring{
+    0%{transform:scale(1)}
+    40%{transform:scale(1.12)}
+    70%{transform:scale(.95)}
+    100%{transform:scale(1)}
+  }
+  .story-btn.active{animation:storyBtnSpring .4s cubic-bezier(.22,1,.36,1) both}
+
+  /* Звёздное поле — parallax эффект при наведении (CSS custom props) */
+  #starDeep{transform:translate(calc(var(--sx,0)*0.3px),calc(var(--sy,0)*0.2px));transition:transform 0.8s ease}
+  #starMid{transform:translate(calc(var(--sx,0)*0.6px),calc(var(--sy,0)*0.4px));transition:transform 0.5s ease}
+  #starField{transform:translate(calc(var(--sx,0)*1px),calc(var(--sy,0)*0.7px));transition:transform 0.3s ease}
+
+  /* Мерцание Млечного Пути */
+  @keyframes milkyWay{0%,100%{opacity:.06}50%{opacity:.09}}
+  #starMilky{animation:milkyWay 12s ease infinite}
+
+  /* Стрелки навигации панели — spring */
+  @keyframes arrowBounce{
+    0%{transform:scale(1)}
+    40%{transform:scale(1.25)}
+    70%{transform:scale(.9)}
+    100%{transform:scale(1)}
+  }
+  #mPrev2:active,.pnav-btn:active{animation:arrowBounce .3s cubic-bezier(.22,1,.36,1) both}
+
+  /* Toast — rubber reveal */
+  @keyframes toastRubber{
+    0%{opacity:0;transform:translateX(-50%) translateY(-20px) scale(.85)}
+    55%{opacity:1;transform:translateX(-50%) translateY(4px) scale(1.04)}
+    78%{transform:translateX(-50%) translateY(-2px) scale(.98)}
+    100%{transform:translateX(-50%) translateY(0) scale(1)}
+  }
+  #story-toast.vis{animation:toastRubber .45s cubic-bezier(.22,1,.36,1) both!important}
+
+  /* Маркер opening ripple — spring wave */
+  @keyframes markerOpenWave{
+    0%{r:7;opacity:.8;stroke-width:2}
+    50%{r:22;opacity:.3;stroke-width:1.2}
+    100%{r:34;opacity:0;stroke-width:.5}
+  }
+  .marker-open-wave{animation:markerOpenWave .65s cubic-bezier(.22,1,.36,1) forwards;pointer-events:none}
+
+  /* prefers-reduced-motion — отключаем spring анимации */
+  @media(prefers-reduced-motion:reduce){
+    #panel.open{animation:none}
+    #panel-body.fresh{animation:contentFade .2s ease both}
+    .marker.entering,.marker.just-opened{animation:none}
+    #caption.show{animation:none}
+    .stage-chip.elastic{animation:none}
+    #ctxCard.show{animation:none}
+    .intro-story-btn{animation:none;opacity:1}
+    #intro .go{animation:none}
+    #starDeep,#starMid,#starField{transition:none}
+  }
 
   /* ---------- orientation msg ---------- */
   #rotate-hint{
@@ -1602,10 +1761,37 @@ body{overscroll-behavior:none;-webkit-overscroll-behavior:none}
 <g id="markers"></g>
 
 <rect x="-400" y="-400" width="2700" height="2230" filter="url(#grain)" pointer-events="none" opacity=".5"/>
-<!-- ============ ЗВЁЗДЫ НАД ХАРРАНОМ (декоративные) ============ -->
-<!-- Авраам вышел по звёздам — Быт 15:5 «Посмотри на небо, сосчитай звёзды» -->
-<g id="starField" opacity=".22" pointer-events="none">
-  <!-- Над Месопотамией и Харраном -->
+<!-- ============ ЗВЁЗДЫ — БЫТ 15:5 «ПОСМОТРИ НА НЕБО И СОСЧИТАЙ ЗВЁЗДЫ» ============ -->
+<!-- Слой 1: дальние звёзды (фон, мелкие, медленные — глубина) -->
+<g id="starDeep" opacity=".18" pointer-events="none">
+  <circle cx="680" cy="30" r=".55" fill="#c8d4f0"><animate attributeName="opacity" values=".6;.1;.6" dur="9.1s" begin="0s" repeatCount="indefinite"/></circle>
+  <circle cx="730" cy="55" r=".5" fill="#fff"><animate attributeName="opacity" values=".5;.08;.5" dur="11.3s" begin="1.2s" repeatCount="indefinite"/></circle>
+  <circle cx="790" cy="20" r=".6" fill="#e8d4a0"><animate attributeName="opacity" values=".55;.1;.55" dur="8.7s" begin="2.4s" repeatCount="indefinite"/></circle>
+  <circle cx="855" cy="45" r=".5" fill="#c8d4f0"><animate attributeName="opacity" values=".6;.05;.6" dur="10.2s" begin="0.7s" repeatCount="indefinite"/></circle>
+  <circle cx="910" cy="15" r=".65" fill="#fff"><animate attributeName="opacity" values=".5;.12;.5" dur="7.8s" begin="3.1s" repeatCount="indefinite"/></circle>
+  <circle cx="960" cy="35" r=".5" fill="#e8d4a0"><animate attributeName="opacity" values=".48;.08;.48" dur="12.4s" begin="1.8s" repeatCount="indefinite"/></circle>
+  <circle cx="1010" cy="22" r=".6" fill="#fff"><animate attributeName="opacity" values=".52;.1;.52" dur="9.5s" begin="0.4s" repeatCount="indefinite"/></circle>
+  <circle cx="1070" cy="42" r=".55" fill="#d4e0ff"><animate attributeName="opacity" values=".45;.07;.45" dur="11.8s" begin="2.9s" repeatCount="indefinite"/></circle>
+  <circle cx="1130" cy="18" r=".5" fill="#e8d4a0"><animate attributeName="opacity" values=".58;.1;.58" dur="8.2s" begin="1.5s" repeatCount="indefinite"/></circle>
+  <circle cx="1190" cy="38" r=".65" fill="#fff"><animate attributeName="opacity" values=".5;.09;.5" dur="10.7s" begin="0.2s" repeatCount="indefinite"/></circle>
+  <circle cx="1250" cy="25" r=".5" fill="#c8d4f0"><animate attributeName="opacity" values=".55;.08;.55" dur="9.3s" begin="3.6s" repeatCount="indefinite"/></circle>
+  <circle cx="1310" cy="45" r=".6" fill="#e8d4a0"><animate attributeName="opacity" values=".48;.12;.48" dur="7.5s" begin="1.1s" repeatCount="indefinite"/></circle>
+  <circle cx="1370" cy="20" r=".55" fill="#fff"><animate attributeName="opacity" values=".52;.06;.52" dur="13.2s" begin="2.2s" repeatCount="indefinite"/></circle>
+  <circle cx="1430" cy="40" r=".5" fill="#d4e0ff"><animate attributeName="opacity" values=".5;.1;.5" dur="8.9s" begin="0.8s" repeatCount="indefinite"/></circle>
+  <circle cx="1490" cy="28" r=".6" fill="#e8d4a0"><animate attributeName="opacity" values=".55;.08;.55" dur="11.1s" begin="4.1s" repeatCount="indefinite"/></circle>
+  <circle cx="1550" cy="48" r=".5" fill="#fff"><animate attributeName="opacity" values=".48;.1;.48" dur="9.8s" begin="1.7s" repeatCount="indefinite"/></circle>
+  <circle cx="1610" cy="22" r=".65" fill="#c8d4f0"><animate attributeName="opacity" values=".52;.07;.52" dur="7.4s" begin="3.4s" repeatCount="indefinite"/></circle>
+  <circle cx="1670" cy="38" r=".5" fill="#e8d4a0"><animate attributeName="opacity" values=".5;.09;.5" dur="12.6s" begin="0.6s" repeatCount="indefinite"/></circle>
+  <circle cx="1730" cy="55" r=".55" fill="#fff"><animate attributeName="opacity" values=".45;.08;.45" dur="8.5s" begin="2.8s" repeatCount="indefinite"/></circle>
+  <circle cx="1780" cy="30" r=".5" fill="#d4e0ff"><animate attributeName="opacity" values=".5;.1;.5" dur="10.3s" begin="1.4s" repeatCount="indefinite"/></circle>
+  <!-- Пустыня на юге — дальние -->
+  <circle cx="1100" cy="950" r=".5" fill="#e8d4a0"><animate attributeName="opacity" values=".3;.05;.3" dur="13.5s" begin="5s" repeatCount="indefinite"/></circle>
+  <circle cx="1250" cy="920" r=".45" fill="#fff"><animate attributeName="opacity" values=".28;.04;.28" dur="11.2s" begin="2.3s" repeatCount="indefinite"/></circle>
+  <circle cx="1400" cy="960" r=".5" fill="#e8d4a0"><animate attributeName="opacity" values=".32;.06;.32" dur="9.7s" begin="4.2s" repeatCount="indefinite"/></circle>
+</g>
+<!-- Слой 2: средние звёзды (основной слой, богатое мерцание) -->
+<g id="starMid" opacity=".26" pointer-events="none">
+  <!-- Широкая полоса Месопотамии -->
   <circle cx="980" cy="80" r="1.2" fill="#e8d4a0"><animate attributeName="opacity" values=".8;.2;.8" dur="4.2s" begin="0s" repeatCount="indefinite"/></circle>
   <circle cx="1050" cy="60" r=".9" fill="#fff"><animate attributeName="opacity" values=".6;.1;.6" dur="5.8s" begin=".8s" repeatCount="indefinite"/></circle>
   <circle cx="1120" cy="90" r="1.4" fill="#e8d4a0"><animate attributeName="opacity" values=".9;.3;.9" dur="3.5s" begin="1.5s" repeatCount="indefinite"/></circle>
@@ -1616,17 +1802,58 @@ body{overscroll-behavior:none;-webkit-overscroll-behavior:none}
   <circle cx="1500" cy="45" r=".9" fill="#d0e0ff"><animate attributeName="opacity" values=".6;.1;.6" dur="5.3s" begin="1.8s" repeatCount="indefinite"/></circle>
   <circle cx="1580" cy="70" r="1.1" fill="#e8d4a0"><animate attributeName="opacity" values=".8;.3;.8" dur="3.8s" begin=".4s" repeatCount="indefinite"/></circle>
   <circle cx="1650" cy="55" r=".8" fill="#fff"><animate attributeName="opacity" values=".65;.15;.65" dur="6.5s" begin="2.5s" repeatCount="indefinite"/></circle>
-  <!-- Над Харраном специально ярче -->
-  <circle cx="1003" cy="130" r="2" fill="#e8d4a0" filter="url(#glow)"><animate attributeName="opacity" values="1;.4;1" dur="3s" begin="0s" repeatCount="indefinite"/></circle>
-  <circle cx="990" cy="145" r="1.5" fill="#fff"><animate attributeName="opacity" values=".9;.3;.9" dur="4.5s" begin=".6s" repeatCount="indefinite"/></circle>
-  <circle cx="1020" cy="140" r="1.2" fill="#d0e0ff"><animate attributeName="opacity" values=".8;.2;.8" dur="5s" begin="1.2s" repeatCount="indefinite"/></circle>
-  <!-- Ночное небо к северу -->
+  <!-- Северное небо дополнительно -->
   <circle cx="850" cy="95" r="1" fill="#fff"><animate attributeName="opacity" values=".7;.2;.7" dur="4.8s" begin=".9s" repeatCount="indefinite"/></circle>
   <circle cx="920" cy="65" r=".8" fill="#e8d4a0"><animate attributeName="opacity" values=".6;.1;.6" dur="6s" begin="2.1s" repeatCount="indefinite"/></circle>
   <circle cx="770" cy="85" r="1.1" fill="#fff"><animate attributeName="opacity" values=".75;.2;.75" dur="5.5s" begin=".7s" repeatCount="indefinite"/></circle>
-  <!-- Пустыня Аравии — звёзды -->
+  <!-- Пустыня Аравии -->
   <circle cx="1200" cy="1020" r=".9" fill="#e8d4a0" opacity=".4"><animate attributeName="opacity" values=".4;.1;.4" dur="7s" begin="3s" repeatCount="indefinite"/></circle>
   <circle cx="1350" cy="980" r=".7" fill="#fff" opacity=".35"><animate attributeName="opacity" values=".35;.05;.35" dur="8s" begin="1.5s" repeatCount="indefinite"/></circle>
+</g>
+<!-- Слой 3: яркие звёзды переднего плана (крупные, с glow, «плывут») -->
+<g id="starField" opacity="1" pointer-events="none">
+  <!-- Яркие звёзды Харрана — Быт 12:1 призыв -->
+  <circle cx="1003" cy="130" r="2.2" fill="#e8d4a0" filter="url(#glow)">
+    <animate attributeName="opacity" values="1;.45;1" dur="3.1s" begin="0s" repeatCount="indefinite"/>
+    <animate attributeName="r" values="2.2;2.6;2.2" dur="3.1s" begin="0s" repeatCount="indefinite"/>
+  </circle>
+  <circle cx="990" cy="148" r="1.6" fill="#fff">
+    <animate attributeName="opacity" values=".9;.3;.9" dur="4.7s" begin=".6s" repeatCount="indefinite"/>
+    <animate attributeName="r" values="1.6;2.0;1.6" dur="4.7s" begin=".6s" repeatCount="indefinite"/>
+  </circle>
+  <circle cx="1022" cy="142" r="1.3" fill="#d0e4ff">
+    <animate attributeName="opacity" values=".85;.25;.85" dur="5.2s" begin="1.2s" repeatCount="indefinite"/>
+    <animate attributeName="r" values="1.3;1.7;1.3" dur="5.2s" begin="1.2s" repeatCount="indefinite"/>
+  </circle>
+  <!-- Северная яркая — Полярная аналогия -->
+  <circle cx="960" cy="55" r="1.8" fill="#fff" filter="url(#glow)">
+    <animate attributeName="opacity" values="1;.5;1" dur="6.8s" begin="0.3s" repeatCount="indefinite"/>
+    <animate attributeName="r" values="1.8;2.3;1.8" dur="6.8s" begin="0.3s" repeatCount="indefinite"/>
+  </circle>
+  <!-- Звезда над Ниппуром — Быт 15:5 «сосчитай звёзды» -->
+  <circle cx="1540" cy="100" r="1.5" fill="#ffe0a0" filter="url(#glow)">
+    <animate attributeName="opacity" values=".95;.4;.95" dur="4.3s" begin="1.8s" repeatCount="indefinite"/>
+    <animate attributeName="r" values="1.5;2.0;1.5" dur="4.3s" begin="1.8s" repeatCount="indefinite"/>
+  </circle>
+  <!-- Звезда над Уром — «вышел из Ура» -->
+  <circle cx="1705" cy="115" r="1.7" fill="#e8d4a0" filter="url(#glow)">
+    <animate attributeName="opacity" values="1;.35;1" dur="5.5s" begin="0.9s" repeatCount="indefinite"/>
+    <animate attributeName="r" values="1.7;2.2;1.7" dur="5.5s" begin="0.9s" repeatCount="indefinite"/>
+  </circle>
+</g>
+<!-- Слой 4: Туманность Млечного Пути — полоса звёзд (SVG blur) -->
+<g id="starMilky" pointer-events="none" opacity=".07" filter="url(#soft)">
+  <ellipse cx="1200" cy="50" rx="650" ry="22" fill="url(#caravanGrad)" transform="rotate(-8 1200 50)"/>
+  <ellipse cx="1200" cy="50" rx="450" ry="14" fill="url(#caravanGrad)" transform="rotate(-8 1200 50)"/>
+</g>
+<!-- Слой 5: «падающая звезда» — одна, очень редкая (60с цикл) -->
+<g id="starShoot" pointer-events="none" opacity="0">
+  <line x1="1600" y1="30" x2="1680" y2="80" stroke="#ffffff" stroke-width="1.2" stroke-linecap="round" opacity=".0">
+    <animate attributeName="opacity" values="0;0;0;0;0;0;0;0;0;.7;.0" dur="60s" begin="15s" repeatCount="indefinite"/>
+  </line>
+  <line x1="900" y1="20" x2="960" y2="60" stroke="#e8d4a0" stroke-width=".8" stroke-linecap="round" opacity=".0">
+    <animate attributeName="opacity" values="0;0;0;0;0;0;.5;0;0;0;0" dur="73s" begin="38s" repeatCount="indefinite"/>
+  </line>
 </g>
 <!-- Античная координатная сетка — с метками широты/долготы -->
 <g id="coordGrid" opacity=".04" pointer-events="none" stroke="#c8a84a" stroke-width=".8">
@@ -3142,41 +3369,90 @@ function spawnCaravan(stageIdx){
 /* dash animation + caravan */
 let touring=false,tourStep=0,tourTimer=null;
 const caravanLayer=document.getElementById('caravanLayer');
+
+/* ====================================================
+   КИНОТУР — ИСПРАВЛЕНИЕ БАГА r149
+   Проблемы:
+   1. paths[0] мог быть undefined → main.dataset → crash
+   2. getTotalLength() возвращает 0 если SVG ещё не layout-irован
+   3. animateStage вызывался без проверки готовности путей
+   ==================================================== */
+function _pathLen(p){
+  try{const l=p.getTotalLength();return l>0?l:1000;}catch(e){return 1000;}
+}
 function animateStage(i,done){
-  const st=STAGES[i];
+  if(!segEls[i]){done&&done();return;}
   const paths=segEls[i].querySelectorAll('.route');
+  if(!paths||paths.length===0){
+    // нет путей — пропускаем этап с задержкой
+    tourTimer=setTimeout(()=>{done&&done();},1200);
+    return;
+  }
   let main=paths[0];
-  // prepare draw animation on all paths of stage
-  const dur=2600;
+  // Fallback если main не определён
+  if(!main){done&&done();return;}
+  const dur=2800;
+  // Подготавливаем draw animation
   paths.forEach(p=>{
-    const len=p.getTotalLength();
+    const len=_pathLen(p);
     p.style.transition='none';
     p.style.strokeDasharray=len+' '+len;
-    p.style.strokeDashoffset=len;
+    p.style.strokeDashoffset=''+len;
   });
-  // caravan dot
+  // Золотой caravan dot с glow-trailing
+  const dotFill=SOLID&&SOLID[main.dataset.color]?SOLID[main.dataset.color]:'#e8c879';
   const dot=document.createElementNS(NS,'circle');
-  dot.setAttribute('r','5');dot.setAttribute('fill',SOLID[main.dataset.color]||'#e8c879');
-  dot.setAttribute('class','caravan');caravanLayer.appendChild(dot);
+  dot.setAttribute('r','5.5');
+  dot.setAttribute('fill',dotFill);
+  dot.setAttribute('class','caravan');
+  dot.setAttribute('filter','url(#goldGlow)');
+  caravanLayer.appendChild(dot);
+  // Trailing glow ring
+  const ring=document.createElementNS(NS,'circle');
+  ring.setAttribute('r','10');
+  ring.setAttribute('fill','rgba(232,200,121,.14)');
+  ring.setAttribute('pointer-events','none');
+  ring.setAttribute('class','caravan');
+  caravanLayer.appendChild(ring);
   const t0=performance.now();
+  let rafId=null;
   function frame(t){
-    if(!touring){caravanLayer.innerHTML='';restoreDash(i);return;}
-    let p=Math.min((t-t0)/dur,1);const e=p<.5?2*p*p:1-Math.pow(-2*p+2,2)/2;
+    if(!touring){
+      caravanLayer.innerHTML='';
+      restoreDash(i);
+      if(rafId)cancelAnimationFrame(rafId);
+      return;
+    }
+    let p=Math.min((t-t0)/dur,1);
+    // Ease: easeInOutQuart
+    const e=p<.5?8*p*p*p*p:1-Math.pow(-2*p+2,4)/2;
+    // Spring overshoot на финале (визуально «приезжает»)
+    const easeFinal=p>.85?e+(1-e)*Math.sin((p-.85)/.15*Math.PI)*0.06:e;
     paths.forEach(pa=>{
-      const len=pa.getTotalLength();
-      pa.style.strokeDashoffset=len*(1-e);
+      const len=_pathLen(pa);
+      pa.style.strokeDashoffset=''+(len*(1-easeFinal));
     });
-    const L=main.getTotalLength();
-    const pt=main.getPointAtLength(L*e);
-    dot.setAttribute('cx',pt.x);dot.setAttribute('cy',pt.y);
-    if(p<1)requestAnimationFrame(frame);
-    else{
-      tourTimer=setTimeout(()=>{caravanLayer.innerHTML='';restoreDash(i);done&&done();},2300);
+    // Анимируем dot
+    const L=_pathLen(main);
+    try{
+      const pt=main.getPointAtLength(L*easeFinal);
+      dot.setAttribute('cx',pt.x);dot.setAttribute('cy',pt.y);
+      ring.setAttribute('cx',pt.x);ring.setAttribute('cy',pt.y);
+    }catch(ex){}
+    if(p<1){
+      rafId=requestAnimationFrame(frame);
+    } else {
+      tourTimer=setTimeout(()=>{
+        caravanLayer.innerHTML='';
+        restoreDash(i);
+        done&&done();
+      },2600);
     }
   }
-  requestAnimationFrame(frame);
+  rafId=requestAnimationFrame(frame);
 }
 function restoreDash(i){
+  if(!segEls[i])return;
   segEls[i].querySelectorAll('.route').forEach(p=>{
     p.style.strokeDasharray=p.getAttribute('stroke-dasharray')||'';
     p.style.strokeDashoffset='';p.style.transition='';
@@ -3184,26 +3460,53 @@ function restoreDash(i){
 }
 const playBtn=document.getElementById('playBtn');
 playBtn.onclick=()=>{touring?stopTour():startTour();};
+
 function startTour(){
-  touring=true;playBtn.textContent='■';closePanel();(()=>{const tp=document.getElementById('tourProgress');if(tp)tp.classList.add('active');})();
-  if(ambientOn&&AC&&AC.state==='suspended')AC.resume();
-  tourStep=(curStage>=0&&curStage<STAGES.length-1)?curStage:0;
-  runStep();
+  // Ждём один rAF чтобы SVG был лейаутирован
+  requestAnimationFrame(()=>{
+    touring=true;
+    playBtn.textContent='■';
+    playBtn.style.color='var(--gold)';
+    closePanel();
+    const tp=document.getElementById('tourProgress');
+    if(tp){tp.classList.add('active');tp.style.width='0%';}
+    if(ambientOn&&AC&&AC.state==='suspended')AC.resume();
+    tourStep=(curStage>=0&&curStage<STAGES.length-1)?curStage:0;
+    runStep();
+  });
 }
 function runStep(){
   if(!touring)return;
-  if(tourStep>=STAGES.length){stopTour();flyTo(W0/2,H0/2,W0,1400);return;}
+  if(tourStep>=STAGES.length){
+    stopTour();
+    flyTo(W0/2,H0/2,W0,1400);
+    return;
+  }
   focusStage(tourStep,true);
-  setTimeout(()=>{if(touring)animateStage(tourStep,()=>{tourStep++;runStep();});},950);
+  // Elastic chip highlight
+  if(chips[tourStep]){
+    chips[tourStep].classList.remove('elastic');
+    requestAnimationFrame(()=>requestAnimationFrame(()=>chips[tourStep].classList.add('elastic')));
+    setTimeout(()=>chips[tourStep]&&chips[tourStep].classList.remove('elastic'),600);
+  }
+  // Задержка 1050ms даём flyTo начаться, потом анимируем маршрут
+  setTimeout(()=>{
+    if(touring)animateStage(tourStep,()=>{tourStep++;runStep();});
+  },1050);
 }
 function stopTour(){
   if(!touring&&playBtn.textContent==='▶')return;
-  touring=false;playBtn.textContent='▶';
-  const prog=document.getElementById('tourProgress');if(prog)prog.style.width='0';
-  clearTimeout(tourTimer);caravanLayer.innerHTML='';
+  touring=false;
+  playBtn.textContent='▶';
+  playBtn.style.color='';
+  const prog=document.getElementById('tourProgress');
+  if(prog){prog.style.width='0';prog.classList.remove('active');}
+  clearTimeout(tourTimer);
+  caravanLayer.innerHTML='';
   STAGES.forEach((s,i)=>restoreDash(i));
   setDim(-1);caption.classList.remove('show');
-  chips.forEach(c=>c.classList.remove('cur'));curStage=-1;
+  chips.forEach(c=>{c.classList.remove('cur');c.classList.remove('elastic');});
+  curStage=-1;
 }
 
 /* ================= SEARCH ================= */
@@ -3726,7 +4029,6 @@ function animateStageRoutes(stageIdx){
 }
 </script>
 <script>
-<script>
 /* ================= PHOTO GALLERY ================= */
 function renderPhotos(pl){
   if(!pl||!pl.photos||!pl.photos.length) return '';
@@ -3769,7 +4071,7 @@ document.addEventListener('keydown',e=>{
   if(e.key==='Escape'){
     const pm=document.getElementById('photoModal');
     if(pm&&pm.classList.contains('open')){pm.classList.remove('open');return;}
-  }open');
+  }
 });
 // Photo modal close: click backdrop + swipe down
 (function(){
@@ -3783,6 +4085,141 @@ document.addEventListener('keydown',e=>{
     }
     pmTouchY=null;
   },{passive:true});
+})();
+</script>
+
+<script>
+/* ====================================================
+   WAVE 22: PARALLAX ЗВЁЗДЫ + SPRING UX + БАГИ FIX
+   ==================================================== */
+(function(){
+  'use strict';
+
+  /* --- PARALLAX ЗВЁЗДЫ при движении мыши/тач --- */
+  const starLayers=[
+    {el:document.getElementById('starDeep'),mx:0.3,my:0.2},
+    {el:document.getElementById('starMid'), mx:0.6,my:0.4},
+    {el:document.getElementById('starField'),mx:1.0,my:0.7},
+  ];
+  let mouseX=0,mouseY=0,targetX=0,targetY=0,rafPX=null;
+  const reduced=window.matchMedia('(prefers-reduced-motion:reduce)').matches;
+  if(!reduced){
+    document.addEventListener('mousemove',e=>{
+      const r=document.documentElement.getBoundingClientRect();
+      mouseX=(e.clientX/window.innerWidth-.5)*16;
+      mouseY=(e.clientY/window.innerHeight-.5)*10;
+    },{passive:true});
+    // Touch parallax
+    document.addEventListener('touchmove',e=>{
+      if(e.touches.length!==1)return;
+      mouseX=(e.touches[0].clientX/window.innerWidth-.5)*10;
+      mouseY=(e.touches[0].clientY/window.innerHeight-.5)*6;
+    },{passive:true});
+    function animateParallax(){
+      rafPX=requestAnimationFrame(animateParallax);
+      targetX+=(mouseX-targetX)*0.06;
+      targetY+=(mouseY-targetY)*0.06;
+      starLayers.forEach(l=>{
+        if(!l.el)return;
+        l.el.style.transform=`translate(${(targetX*l.mx).toFixed(2)}px,${(targetY*l.my).toFixed(2)}px)`;
+      });
+    }
+    animateParallax();
+  }
+
+  /* --- SPRING ОТКРЫТИЕ МАРКЕРА --- */
+  // Добавляем spring wave при click на маркер
+  const svg=document.getElementById('svg');
+  if(svg){
+    svg.addEventListener('click',e=>{
+      const mk=e.target.closest('.marker');
+      if(!mk)return;
+      // Добавим spring wave SVG элемент
+      const NS2='http://www.w3.org/2000/svg';
+      const x=parseFloat(mk.dataset.x||0);
+      const y=parseFloat(mk.dataset.y||0);
+      const wave=document.createElementNS(NS2,'circle');
+      wave.setAttribute('cx',x);wave.setAttribute('cy',y);
+      wave.setAttribute('r','7');wave.setAttribute('fill','none');
+      wave.setAttribute('stroke','rgba(232,200,121,.7)');
+      wave.setAttribute('stroke-width','1.5');
+      wave.setAttribute('pointer-events','none');
+      wave.setAttribute('class','marker-open-wave');
+      const cl=document.getElementById('caravanLayer');
+      if(cl){cl.appendChild(wave);setTimeout(()=>wave.remove(),750);}
+      // just-opened bounce
+      mk.classList.remove('just-opened');
+      requestAnimationFrame(()=>requestAnimationFrame(()=>{
+        mk.classList.add('just-opened');
+        setTimeout(()=>mk.classList.remove('just-opened'),550);
+      }));
+    },{passive:true});
+  }
+
+  /* --- ELASTIC CHIP при фокусе этапа --- */
+  // Патч focusStage для elastic chip (добавочно к уже существующему)
+  // В runStep уже добавлен elastic, здесь доп. guard при клике по chip:
+  document.querySelectorAll('.stage-chip').forEach((ch,i)=>{
+    ch.addEventListener('pointerdown',()=>{
+      ch.classList.remove('elastic');
+      requestAnimationFrame(()=>requestAnimationFrame(()=>ch.classList.add('elastic')));
+      setTimeout(()=>ch.classList.remove('elastic'),600);
+    });
+  });
+
+  /* --- HOVER PREVIEW spring --- */
+  // mPrev уже анимирован через CSS .vis, просто убеждаемся что class vis правильно ставится
+  const mPrev=document.getElementById('mPrev');
+  if(mPrev){
+    // Удаляем устаревший transition, CSS animation берёт управление
+    mPrev.style.transition='none';
+  }
+
+  /* --- STORY BUTTON SPRING при нажатии --- */
+  document.querySelectorAll('.story-btn').forEach(btn=>{
+    btn.addEventListener('pointerdown',()=>{
+      btn.classList.remove('active');
+    });
+    btn.addEventListener('pointerup',()=>{
+      // active класс уже ставит applyStory, просто перезапустим анимацию
+      requestAnimationFrame(()=>requestAnimationFrame(()=>{
+        if(btn.classList.contains('active')){
+          btn.style.animation='none';
+          requestAnimationFrame(()=>{btn.style.animation='';});
+        }
+      }));
+    });
+  });
+
+  /* --- INTRO GO КНОПКА — надёжный обработчик --- */
+  // Убеждаемся что introGo работает даже если starTour вызывается до layout
+  const introGoBtn=document.getElementById('introGo');
+  if(introGoBtn){
+    // Снимаем старый handler, ставим новый
+    const newGoBtn=introGoBtn.cloneNode(true);
+    introGoBtn.parentNode&&introGoBtn.parentNode.replaceChild(newGoBtn,introGoBtn);
+    newGoBtn.addEventListener('click',()=>{
+      if(typeof dismissIntro==='function') dismissIntro();
+      // Даём 800ms на fade out intro, потом запускаем тур
+      setTimeout(()=>{
+        if(typeof startTour==='function') startTour();
+      },800);
+    });
+  }
+
+  /* --- PANEL OPEN: spring анимация только если нет reduced motion --- */
+  if(reduced){
+    // Для reduced motion убираем CSS animation на panelRubberIn
+    const style=document.createElement('style');
+    style.textContent='#panel.open{animation:none!important;transform:none!important}';
+    document.head.appendChild(style);
+  }
+
+  /* --- CAPTION SHOW: убираем конфликтующую transition --- */
+  // caption CSS уже имеет captionSpring, убедимся что нет transition конфликта
+  const cap=document.getElementById('caption');
+  if(cap) cap.style.transition='none';
+
 })();
 </script>
 
