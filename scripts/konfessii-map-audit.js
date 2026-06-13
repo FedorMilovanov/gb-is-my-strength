@@ -21,6 +21,8 @@
  *  I6  Контент-целостность _app: singlefile (inline script+style), есть мета viewport,
  *      есть CSP, robots=noindex (бандл не индексируется отдельно от обёртки).
  *  I7  Обёртка несёт SEO: canonical, og:image, 1×h1 (sr-only), JSON-LD, theme-color.
+ *  I8  3D-режим содержит событийный Timeline (не падает из-за undefined state и не голые годы).
+ *  I9  3D-режим содержит нижний роутер «Маршруты и города».
  */
 'use strict';
 const path = require('path');
@@ -104,6 +106,15 @@ if (chromium) (async () => {
         await page.waitForTimeout(6000);
         const gl = await frame.evaluate(() => { const c = document.querySelector('canvas'); if (!c) return false; try { return !!(c.getContext('webgl2') || c.getContext('webgl')) || c.width > 100; } catch (e) { return c.width > 100; } });
         gl ? ok(`I5 [${vp.label}] 3D WebGL canvas активируется`) : bad(`I5 [${vp.label}] 3D canvas не создан`);
+        await frame.evaluate(() => { const b = [...document.querySelectorAll('button,a')].find(x => /Начать исследование/i.test(x.textContent)); if (b) b.click(); });
+        await page.waitForTimeout(900);
+        const uiText = await frame.evaluate(() => document.body.innerText);
+        /Хронология\s+событий/i.test(uiText) && /Современность|РС\s*ЕХБ|Крещение/i.test(uiText)
+          ? ok(`I8 [${vp.label}] событийный Timeline видим`)
+          : bad(`I8 [${vp.label}] Timeline не привязан к событиям или сломан`);
+        /МАРШРУТЫ\s+И\s+ГОРОДА/i.test(uiText)
+          ? ok(`I9 [${vp.label}] нижний роутер маршрутов видим`)
+          : bad(`I9 [${vp.label}] нет понятного роутера «Маршруты и города»`);
       }
     }
     errs.length === 0 ? ok(`I1 [${vp.label}] 0 pageerror`) : bad(`I1 [${vp.label}] errors: ${errs.slice(0, 2).join(' | ')}`);

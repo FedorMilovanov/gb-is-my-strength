@@ -15,7 +15,7 @@ import { useTheme } from './ThemeContext';
 import { createGlowMaterial, createPremiumMaterial } from './mindmap3d/materials';
 import { resolveKind } from './mindmap3d/nodeKind';
 import type { LinkData, MapSelection, NodeData, RoutePreset } from './mindmap3d/types';
-import { timelineEvents, categoryColors } from '../data/timeline';
+import { timelineEvents, categoryColors, categoryLabels } from '../data/timeline';
 import { ANCHORS, CITY_MARKERS, COUNTRY_FOCUS, GROUP_COLORS, GROUP_LABELS, LINKS, MAP_AREAS, NODES, ROUTE_PRESETS } from './mindmap3d/data';
 
 const NIGHT_MAP_DATA_URL: string | null = (() => {
@@ -333,28 +333,30 @@ function TimelineOverlay({ timelineYearRef, bottomBarExpanded }: { timelineYearR
     timelineYearRef.current = null;
   };
 
+  const displayYear = year ?? 2026;
+  const recentEvent = useMemo(() => {
+    const activeEvents = timelineEvents.filter((e) => {
+      const match = e.year.match(/\d{4}/);
+      const y = match ? parseInt(match[0], 10) : 0;
+      return y > 0 && y <= displayYear;
+    });
+    return activeEvents[activeEvents.length - 1] ?? null;
+  }, [displayYear]);
+
   return (
     <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0, bottom: bottomBarExpanded ? '11.5rem' : '4.5rem' }} transition={{ duration: 0.3, ease: 'easeOut' }} className="absolute left-1/2 z-40 hidden w-full max-w-[800px] -translate-x-1/2 flex-col px-4 sm:flex pointer-events-none">
       <div className="pointer-events-auto">
-      {year !== null && year < 2026 && (() => {
-        const activeEvents = timelineEvents.filter((e) => {
-          const match = e.year.match(/\d{4}/);
-          const y = match ? parseInt(match[0], 10) : 0;
-          return y > year - 5 && y <= year;
-        });
-        const recentEvent = activeEvents[activeEvents.length - 1];
-        return recentEvent ? (
-          <div className="mx-auto mb-3 flex max-w-sm items-center gap-3 rounded-2xl border border-white/10 bg-black/60 px-4 py-2.5 backdrop-blur-xl">
+      {recentEvent && (
+          <div className="mx-auto mb-3 flex max-w-md items-center gap-3 rounded-2xl border border-white/10 bg-black/60 px-4 py-2.5 backdrop-blur-xl" style={{ boxShadow: `0 12px 42px rgba(0,0,0,0.38), 0 0 24px ${categoryColors[recentEvent.category]}18` }}>
             <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full" style={{ background: `${categoryColors[recentEvent.category]}22`, color: categoryColors[recentEvent.category] }}>
               <Sparkles size={14} />
             </div>
-            <div>
-              <div className="text-[10px] font-bold uppercase tracking-widest text-white/50">{recentEvent.year} • {recentEvent.category}</div>
-              <div className="text-[13px] font-bold text-white">{recentEvent.title}</div>
+            <div className="min-w-0">
+              <div className="text-[10px] font-bold uppercase tracking-widest text-white/50">Хронология событий · {recentEvent.year} • {categoryLabels[recentEvent.category]}</div>
+              <div className="truncate text-[13px] font-bold text-white">{recentEvent.title}</div>
             </div>
           </div>
-        ) : null;
-      })()}
+      )}
       
       <div className="relative flex w-full items-center gap-4 rounded-full border border-white/10 bg-black/45 px-6 py-2.5 backdrop-blur-2xl">
         <span className="text-[10px] font-bold text-[#c4a67e]">1860</span>
@@ -367,8 +369,8 @@ function TimelineOverlay({ timelineYearRef, bottomBarExpanded }: { timelineYearR
             const percent = ((y - 1860) / (2026 - 1860)) * 100;
             return <div key={i} className="pointer-events-none absolute h-2 w-[1px] bg-white/30" style={{ left: `${percent}%`, top: '50%', transform: 'translateY(-50%)' }} />;
           })}
-          <input type="range" min="1860" max="2026" value={year ?? 2026} onChange={handleChange} className="absolute inset-x-0 z-10 h-6 w-full cursor-pointer appearance-none bg-transparent opacity-0" />
-          <div className="pointer-events-none absolute top-1/2 h-3 w-3 -translate-x-1/2 -translate-y-1/2 rounded-full border-2 border-black bg-[#c4a67e] shadow-[0_0_12px_#c4a67e]" style={{ left: `${((year ?? 2026) - 1860) / (2026 - 1860) * 100}%` }} />
+          <input type="range" min="1860" max="2026" value={displayYear} onChange={handleChange} className="absolute inset-x-0 z-10 h-6 w-full cursor-pointer appearance-none bg-transparent opacity-0" />
+          <div className="pointer-events-none absolute top-1/2 h-3 w-3 -translate-x-1/2 -translate-y-1/2 rounded-full border-2 border-black bg-[#c4a67e] shadow-[0_0_12px_#c4a67e]" style={{ left: `${((displayYear) - 1860) / (2026 - 1860) * 100}%` }} />
         </div>
         <span className="text-[10px] font-bold text-[#c4a67e]">2026</span>
         <div className="flex items-center w-12 shrink-0">
@@ -865,18 +867,36 @@ export default function MindMap3D() {
 
   const dragReheatRef = useRef(0);
   const handleNodeDrag = useCallback((node: any) => {
-    if (!fgRef.current) return;
-    // VERY SMOOTH RUBBER BAND: 
-    // High velocity decay during drag so the dragged node's neighbors don't bounce wildly.
-    fgRef.current.d3VelocityDecay?.(0.45);
+    if (!fgRef.current || !node) return;
+    // Viscous rubber band: enough damping to avoid jitter, plus a tiny velocity pull
+    // on directly connected nodes so the constellation follows the cursor, not just
+    // the single grabbed sphere. Never write neighbor coordinates directly.
+    fgRef.current.d3VelocityDecay?.(0.32);
+    const draggedId = node.id as string;
+    const dragged = new THREE.Vector3(node.x ?? 0, node.y ?? 0, node.z ?? 0);
+    LINKS.forEach((link) => {
+      const sid = typeof link.source === 'object' ? link.source.id : link.source;
+      const tid = typeof link.target === 'object' ? link.target.id : link.target;
+      if (sid !== draggedId && tid !== draggedId) return;
+      const neighborId = sid === draggedId ? tid : sid;
+      const neighbor = graphData.nodes.find((n) => n.id === neighborId) as any;
+      if (!neighbor || neighbor.fx !== undefined || neighbor.fy !== undefined || neighbor.fz !== undefined) return;
+      const anchor = ANCHORS[neighborId];
+      const towardDrag = dragged.clone().sub(new THREE.Vector3(neighbor.x ?? 0, neighbor.y ?? 0, neighbor.z ?? 0)).multiplyScalar(0.0038);
+      const towardHome = anchor
+        ? new THREE.Vector3(anchor.x - (neighbor.x ?? anchor.x), anchor.y - (neighbor.y ?? anchor.y), anchor.z - (neighbor.z ?? anchor.z)).multiplyScalar(0.0016)
+        : new THREE.Vector3();
+      neighbor.vx = ((neighbor.vx ?? 0) * 0.78) + towardDrag.x + towardHome.x;
+      neighbor.vy = ((neighbor.vy ?? 0) * 0.78) + towardDrag.y + towardHome.y;
+      neighbor.vz = ((neighbor.vz ?? 0) * 0.78) + towardDrag.z + towardHome.z;
+    });
     const now = performance.now();
-    // Use a gentle alpha target so it constantly pulls neighbors slowly, without triggering a full violent reheat.
-    if (now - dragReheatRef.current > 200) {
+    if (now - dragReheatRef.current > 120) {
       dragReheatRef.current = now;
-      fgRef.current.d3AlphaTarget?.(0.1); 
+      fgRef.current.d3AlphaTarget?.(0.12);
       fgRef.current.d3ReheatSimulation?.();
     }
-  }, []);
+  }, [graphData.nodes]);
 
   const handleNodeDragEnd = useCallback((node: any) => {
     if (!fgRef.current) return;
@@ -885,9 +905,9 @@ export default function MindMap3D() {
       // Soft push back to anchor
       const anchor = ANCHORS[node.id as string];
       if (anchor) {
-        node.vx = ((node.vx ?? 0) * 0.2) + (anchor.x - (node.x ?? anchor.x)) * 0.02;
-        node.vy = ((node.vy ?? 0) * 0.2) + (anchor.y - (node.y ?? anchor.y)) * 0.02;
-        node.vz = ((node.vz ?? 0) * 0.2) + (anchor.z - (node.z ?? anchor.z)) * 0.02;
+        node.vx = ((node.vx ?? 0) * 0.32) + (anchor.x - (node.x ?? anchor.x)) * 0.010;
+        node.vy = ((node.vy ?? 0) * 0.32) + (anchor.y - (node.y ?? anchor.y)) * 0.010;
+        node.vz = ((node.vz ?? 0) * 0.32) + (anchor.z - (node.z ?? anchor.z)) * 0.010;
       }
     }
     // Return to normal physics
@@ -1544,17 +1564,16 @@ export default function MindMap3D() {
       const isTyping = target?.tagName === 'INPUT' || target?.tagName === 'TEXTAREA' || target?.isContentEditable;
       if (isTyping) return;
       if (e.key === 'Escape') { if (inspectorMode !== 'closed') { closeInspector(); } }
-      if (cameraNavEnabled && e.shiftKey) {
+      if (cameraNavEnabled && (e.key === '+' || e.key === '=')) { e.preventDefault(); handleCameraMove('forward'); return; }
+      if (cameraNavEnabled && (e.key === '-' || e.key === '_')) { e.preventDefault(); handleCameraMove('back'); return; }
+      if (focusNode && !e.shiftKey && (e.key === 'ArrowLeft' || e.key === 'ArrowRight')) {
+        e.preventDefault(); handleNeighborStep(e.key === 'ArrowRight' ? 1 : -1); return;
+      }
+      if (cameraNavEnabled && (e.shiftKey || !focusNode || e.key === 'ArrowUp' || e.key === 'ArrowDown')) {
         if (e.key === 'ArrowUp') { e.preventDefault(); handleCameraMove('up'); return; }
         if (e.key === 'ArrowDown') { e.preventDefault(); handleCameraMove('down'); return; }
         if (e.key === 'ArrowLeft') { e.preventDefault(); handleCameraMove('left'); return; }
         if (e.key === 'ArrowRight') { e.preventDefault(); handleCameraMove('right'); return; }
-      }
-      if (cameraNavEnabled && (e.key === '+' || e.key === '=')) { e.preventDefault(); handleCameraMove('forward'); return; }
-      if (cameraNavEnabled && (e.key === '-' || e.key === '_')) { e.preventDefault(); handleCameraMove('back'); return; }
-      if (focusNode && !e.shiftKey) {
-        if (e.key === 'ArrowRight' || e.key === 'ArrowDown') { e.preventDefault(); handleNeighborStep(1); }
-        if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') { e.preventDefault(); handleNeighborStep(-1); }
       }
     };
     window.addEventListener('keydown', onKey);
@@ -1606,52 +1625,8 @@ export default function MindMap3D() {
           <AnimatePresence>{hoveredNodeId && !focusNode && (() => { const hNode = NODES.find((n) => n.id === hoveredNodeId); if (!hNode) return null; return (<motion.div key={hoveredNodeId} initial={{ opacity: 0, y: 8, scale: 0.95 }} animate={{ opacity: 1, y: 0, scale: 1 }} exit={{ opacity: 0, y: 6, scale: 0.95 }} transition={{ duration: 0.12 }} className="pointer-events-none absolute bottom-28 left-1/2 z-40 -translate-x-1/2 rounded-2xl border backdrop-blur-2xl sm:bottom-32" style={{ color: GROUP_COLORS[hNode.group], borderColor: `${GROUP_COLORS[hNode.group]}35`, background: 'rgba(5,5,12,0.75)', boxShadow: `0 0 24px ${GROUP_COLORS[hNode.group]}18`, padding: '6px 14px 7px' }}><span className="text-[8.5px] uppercase tracking-[0.18em]" style={{ color: GROUP_COLORS[hNode.group], opacity: 0.6 }}>{GROUP_LABELS[hNode.group]}</span><div className="flex items-baseline gap-2"><span className="text-[13px] font-bold leading-tight text-white">{hNode.label}</span>{hNode.year && <span className="font-mono text-[9px]" style={{ color: GROUP_COLORS[hNode.group], opacity: 0.7 }}>{hNode.year}</span>}</div></motion.div>); })()}</AnimatePresence>
           {(focusNode || mapSelection) && (<div className="pointer-events-none absolute bottom-20 right-4 z-30 hidden rounded-2xl border border-white/[0.08] bg-black/40 px-3 py-2.5 text-[10px] text-white/55 backdrop-blur-xl md:block" style={{ boxShadow: '0 4px 20px rgba(0,0,0,0.3)' }}><div className="mb-1.5 flex items-center gap-2"><span className="h-1.5 w-6 rounded-full" style={{ background: 'linear-gradient(90deg, #c4a67e, #d4a857)' }} />прямая связь</div><div className="flex items-center gap-2"><span className="h-px w-6 rounded-full bg-white/30" />вторичная</div></div>)}
 
-          {/* NEW TIMELINE SLIDER (HORIZONTAL, NATIVE) */}
-          {!zenMode && (
-            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="absolute bottom-[4.5rem] left-1/2 z-40 hidden w-full max-w-[800px] -translate-x-1/2 flex-col px-4 sm:flex">
-              {timelineYear !== null && timelineYear < 2026 && (() => {
-                const activeEvents = timelineEvents.filter(e => {
-                  const y = parseInt(e.year.match(/\d{4}/)?.[0] || '0', 10);
-                  return y > timelineYear - 5 && y <= timelineYear;
-                });
-                const recentEvent = activeEvents[activeEvents.length - 1];
-                return recentEvent ? (
-                  <div className="mx-auto mb-3 flex max-w-sm items-center gap-3 rounded-2xl border border-white/10 bg-black/60 px-4 py-2.5 backdrop-blur-xl">
-                    <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full" style={{ background: `${categoryColors[recentEvent.category]}22`, color: categoryColors[recentEvent.category] }}>
-                      <Sparkles size={14} />
-                    </div>
-                    <div>
-                      <div className="text-[10px] font-bold uppercase tracking-widest text-white/50">{recentEvent.year} • {recentEvent.category}</div>
-                      <div className="text-[13px] font-bold text-white">{recentEvent.title}</div>
-                    </div>
-                  </div>
-                ) : null;
-              })()}
-              
-              <div className="relative flex w-full items-center gap-4 rounded-full border border-white/10 bg-black/45 px-6 py-2.5 backdrop-blur-2xl">
-                <span className="text-[10px] font-bold text-[#c4a67e]">1860</span>
-                <div className="relative flex h-6 flex-1 items-center">
-                  <div className="absolute inset-x-0 h-1 rounded-full bg-white/10" />
-                  {timelineEvents.map((evt, i) => {
-                    const y = parseInt(evt.year.match(/\d{4}/)?.[0] || '0', 10);
-                    if (!y || y < 1860 || y > 2026) return null;
-                    const percent = ((y - 1860) / (2026 - 1860)) * 100;
-                    return (
-                      <div key={i} className="pointer-events-none absolute h-2 w-[1px] bg-white/30" style={{ left: `${percent}%`, top: '50%', transform: 'translateY(-50%)' }} />
-                    );
-                  })}
-                  <input type="range" min="1860" max="2026" value={timelineYear ?? 2026} onChange={(e) => setTimelineYear(parseInt(e.target.value, 10))} className="absolute inset-x-0 z-10 h-6 w-full cursor-pointer appearance-none bg-transparent opacity-0" />
-                  <div className="pointer-events-none absolute top-1/2 h-3 w-3 -translate-x-1/2 -translate-y-1/2 rounded-full border-2 border-black bg-[#c4a67e] shadow-[0_0_12px_#c4a67e]" style={{ left: `${((timelineYear ?? 2026) - 1860) / (2026 - 1860) * 100}%` }} />
-                </div>
-                <span className="text-[10px] font-bold text-[#c4a67e]">2026</span>
-                <div className="flex items-center w-12 shrink-0">
-                  {timelineYear !== null && timelineYear < 2026 && (
-                    <button onClick={() => setTimelineYear(null)} className="ml-3 rounded-full border border-[#c4a67e]/30 bg-black px-2 py-1 text-[9px] font-bold text-[#c4a67e] hover:bg-[#c4a67e]/10 transition-colors">СБРОС</button>
-                  )}
-                </div>
-              </div>
-            </motion.div>
-          )}
+          {/* Timeline: ref-based so RAF can dim future nodes without rebuilding graph state. */}
+          {!zenMode && <TimelineOverlay timelineYearRef={timelineYearRef} bottomBarExpanded={bottomBarExpanded} />}
 
           {focusNode && !zenMode && (
             <>
