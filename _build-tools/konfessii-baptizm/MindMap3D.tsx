@@ -573,7 +573,7 @@ export default function MindMap3D() {
 
         object.traverse((child) => {
           if (child === object) return;
-          if (child.userData?.globeRotate) child.rotation.y += 0.0012;
+          if (child.userData?.globeRotate) child.rotation.y += (child.userData.rotateSpeed as number | undefined) ?? 0.0012;
           if (child.userData?.focusOrbit) child.rotation.z += child.userData.orbitSpeed as number;
           if (child.userData?.unionRing) {
             const axis = child.userData.rotateAxis as 'x' | 'y' | 'z';
@@ -987,10 +987,11 @@ export default function MindMap3D() {
           orbitGroup.rotation.z = def.tiltZ;
           const lineMat = createGlowMaterial(hex, 0.22);
           const line = new THREE.Mesh(new THREE.TorusGeometry(def.radius, def.tube, 6, 120), lineMat);
-          orbitGroup.add(line);
+          line.userData = { unionRing: true, rotateAxis: 'y', rotateSpeed: 0.003 * (i % 2 === 0 ? 1 : -1) };
           const dot = new THREE.Mesh(new THREE.SphereGeometry(def.dotR, 16, 16), dotMat);
           dot.userData = { isMoon: true, plane: 'xy', orbitRadius: def.radius, orbitSpeed: def.speed, orbitPhase: (i * Math.PI * 2) / orbitDefs.length, sphereRadius: r };
-          orbitGroup.add(dot);
+          line.add(dot);
+          orbitGroup.add(line);
           group.add(orbitGroup);
         });
       }
@@ -1004,19 +1005,19 @@ export default function MindMap3D() {
         const orbitGroupA = new THREE.Group();
         const rMatA = createPremiumMaterial(hex, { metalness: 0.95, roughness: 0.08, emissiveIntensity: 0.5, transparent: true, opacity: 0.55, side: THREE.DoubleSide });
         const ringA = new THREE.Mesh(new THREE.TorusGeometry(r * 1.5, r * 0.025, 16, 96), rMatA);
-        ringA.userData = { unionRing: true, rotateAxis: 'z', rotateSpeed: 0.006 };
-        orbitGroupA.add(ringA);
+        ringA.userData = { unionRing: true, rotateAxis: 'y', rotateSpeed: 0.006 };
         const moonMat = new THREE.MeshBasicMaterial({ color: new THREE.Color(hex).lerp(new THREE.Color('#ffffff'), 0.3), transparent: true, opacity: 0.92, depthWrite: false, blending: THREE.AdditiveBlending });
         const moon = new THREE.Mesh(new THREE.SphereGeometry(r * 0.1, 12, 12), moonMat);
         moon.userData = { isMoon: true, plane: 'xy', orbitRadius: r * 1.5, orbitSpeed: 0.9, orbitPhase: 0, sphereRadius: r };
-        orbitGroupA.add(moon);
+        ringA.add(moon);
+        orbitGroupA.add(ringA);
         group.add(orbitGroupA);
 
         const orbitGroupB = new THREE.Group();
         orbitGroupB.rotation.x = Math.PI / 2;
         const rMatB = createPremiumMaterial(hex, { metalness: 0.9, roughness: 0.1, emissiveIntensity: 0.4, transparent: true, opacity: 0.4, side: THREE.DoubleSide });
         const ringB = new THREE.Mesh(new THREE.TorusGeometry(r * 1.28, r * 0.018, 12, 96), rMatB);
-        ringB.userData = { unionRing: true, rotateAxis: 'z', rotateSpeed: -0.009 };
+        ringB.userData = { unionRing: true, rotateAxis: 'x', rotateSpeed: -0.009 };
         orbitGroupB.add(ringB);
         group.add(orbitGroupB);
       }
@@ -1175,19 +1176,22 @@ export default function MindMap3D() {
       });
     } else if (kind === 'modern') {
       const crystalGrp = new THREE.Group();
-      crystalGrp.userData = { globeRotate: true };
-      const glassMat = new THREE.MeshPhysicalMaterial({ transmission: 0.9, thickness: 1.5, roughness: 0.05, metalness: 0.2, ior: 1.5, color: new THREE.Color('#e0f0ff'), transparent: true, opacity: dimOpacity(0.7) });
+      crystalGrp.userData = { globeRotate: true, rotateSpeed: 0.004 };
+      const glassMat = new THREE.MeshPhysicalMaterial({ transmission: 0.95, thickness: 1.8, roughness: 0.02, metalness: 0.1, ior: 1.8, color: new THREE.Color('#e0f0ff'), transparent: true, opacity: dimOpacity(0.8) });
       const crystal = new THREE.Mesh(new THREE.OctahedronGeometry(r * 0.9, 0), glassMat);
       crystalGrp.add(crystal);
-      const coreMat = createPremiumMaterial(hex, { metalness: 0.8, roughness: 0.2, emissiveIntensity: 0.9 });
-      const core = new THREE.Mesh(new THREE.OctahedronGeometry(r * 0.4, 0), coreMat);
-      core.userData = { isSphere: true, baseEmissiveIntensity: 0.9 };
+      const coreMat = createPremiumMaterial(hex, { metalness: 0.9, roughness: 0.1, emissiveIntensity: 1.5 });
+      const core = new THREE.Mesh(new THREE.OctahedronGeometry(r * 0.35, 0), coreMat);
+      core.userData = { isSphere: true, baseEmissiveIntensity: 1.5 };
       crystalGrp.add(core);
       if (!isDimmed) {
-        const rimMat = createPremiumMaterial('#c0c8d8', { metalness: 0.92, roughness: 0.08 });
-        const ring = new THREE.Mesh(new THREE.TorusGeometry(r * 1.1, r * 0.02, 8, 64), rimMat);
-        ring.rotation.x = Math.PI / 2; ring.userData = { unionRing: true, rotateAxis: 'y', rotateSpeed: 0.01 };
+        const rimMat = createPremiumMaterial('#c0c8d8', { metalness: 0.95, roughness: 0.05 });
+        const ring = new THREE.Mesh(new THREE.TorusGeometry(r * 1.2, r * 0.015, 8, 64), rimMat);
+        ring.rotation.x = Math.PI / 2; ring.userData = { unionRing: true, rotateAxis: 'y', rotateSpeed: -0.008 };
         crystalGrp.add(ring);
+        const ring2 = new THREE.Mesh(new THREE.TorusGeometry(r * 1.4, r * 0.01, 8, 64), rimMat);
+        ring2.rotation.y = Math.PI / 2; ring2.userData = { unionRing: true, rotateAxis: 'x', rotateSpeed: 0.006 };
+        crystalGrp.add(ring2);
       }
       group.add(crystalGrp);
     } else if (kind === 'merger') {
@@ -1232,20 +1236,26 @@ export default function MindMap3D() {
       const isLeader = node.group === 'leader';
       const sR = isLeader ? r * 0.85 : r;
       
-      if (isLeader) {
+            if (isLeader) {
         const leaderGroup = new THREE.Group();
-        const glassMat = new THREE.MeshPhysicalMaterial({ transmission: 0.9, roughness: 0.1, metalness: 0.1, color: new THREE.Color(hex), transparent: true, opacity: dimOpacity(0.6) });
+        const glassMat = new THREE.MeshPhysicalMaterial({ 
+          transmission: 0.95, roughness: 0.05, metalness: 0.2, clearcoat: 1.0, ior: 1.5,
+          color: new THREE.Color(hex), transparent: true, opacity: dimOpacity(0.85) 
+        });
         const glassSphere = new THREE.Mesh(new THREE.SphereGeometry(sR, 32, 32), glassMat);
         glassSphere.userData = { globeRotate: true, isSphere: true, baseEmissiveIntensity: emissInt };
+        
+        const coreMat = new THREE.MeshBasicMaterial({ color: new THREE.Color(hex), transparent: true, opacity: dimOpacity(0.3), blending: THREE.AdditiveBlending });
+        const coreSphere = new THREE.Mesh(new THREE.SphereGeometry(sR * 0.4, 16, 16), coreMat);
         
         const initial = node.label.charAt(0);
         const text = new SpriteText(initial);
         text.color = isDimmed ? 'rgba(255,255,255,0.2)' : '#ffffff';
-        text.textHeight = sR * 1.2;
-        text.fontWeight = 'bold';
+        text.textHeight = sR * 1.1;
+        text.fontWeight = '900';
         text.renderOrder = 10;
         
-        leaderGroup.add(glassSphere, text);
+        leaderGroup.add(glassSphere, coreSphere, text);
         group.add(leaderGroup);
       } else {
         const sphereMat = createPremiumMaterial(hex, { map: earthTex, clearcoat: isFocused ? 0.95 : 0.7, emissiveIntensity: emissInt, transparent: isDimmed, opacity: dimOpacity(1) });
@@ -1259,12 +1269,14 @@ export default function MindMap3D() {
         orbitGroup.rotation.x = Math.PI / 2.2; orbitGroup.rotation.z = Math.PI / 5.5;
         const orbitMat = new THREE.MeshBasicMaterial({ color: new THREE.Color(hex), transparent: true, opacity: isFocused ? 0.48 : 0.22, side: THREE.DoubleSide, depthWrite: false });
         const orbit = new THREE.Mesh(new THREE.TorusGeometry(sR * 1.5, 0.018, 6, 80), orbitMat);
-        orbit.userData = { unionRing: true, rotateAxis: 'z', rotateSpeed: 0.007 };
-        orbitGroup.add(orbit);
+        orbit.userData = { unionRing: true, rotateAxis: 'y', rotateSpeed: 0.007 };
+        
         const moonMat = new THREE.MeshBasicMaterial({ color: new THREE.Color(hex), transparent: true, opacity: 0.88, depthWrite: false, blending: THREE.AdditiveBlending });
         const moon = new THREE.Mesh(new THREE.SphereGeometry(sR * 0.075, 12, 12), moonMat);
         moon.userData = { isMoon: true, plane: 'xy', orbitRadius: sR * 1.5, orbitSpeed: 1.4, orbitPhase: 0, sphereRadius: sR };
-        orbitGroup.add(moon);
+        
+        orbit.add(moon);
+        orbitGroup.add(orbit);
         group.add(orbitGroup);
       }
     }
@@ -1405,9 +1417,12 @@ export default function MindMap3D() {
     const time = Date.now() * 0.001; const speed = data.isActive ? 0.55 : 0.28; 
     const curve = data.curve;
     if (curve) {
-      data.beadA.position.copy(curve.getPoint((time * speed) % 1));
-      data.beadB.position.copy(curve.getPoint((time * speed + 0.33) % 1));
-      data.beadC.position.copy(curve.getPoint((time * speed + 0.66) % 1));
+      const tA = (time * speed) % 1;
+      const tB = (tA - 0.04 + 1) % 1;
+      const tC = (tA - 0.08 + 1) % 1;
+      data.beadA.position.copy(curve.getPoint(tA));
+      data.beadB.position.copy(curve.getPoint(tB));
+      data.beadC.position.copy(curve.getPoint(tC));
     }
     const pulse = data.isActive ? 0.9 + Math.sin(time * 5) * 0.3 : 1.0;
     data.beadA.scale.set(pulse, pulse, pulse); data.beadB.scale.set(pulse, pulse, pulse); data.beadC.scale.set(pulse, pulse, pulse);
