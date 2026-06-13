@@ -396,6 +396,7 @@ function getEarthTexture(): THREE.CanvasTexture | null {
 
 function TimelineOverlay({ timelineYearRef, bottomBarExpanded, onEventSelect }: { timelineYearRef: React.MutableRefObject<number | null>, bottomBarExpanded: boolean, onEventSelect?: (event: any, year: number) => void }) {
   const [year, setYear] = useState<number | null>(null);
+  const [hoveredTick, setHoveredTick] = useState<{ year: number; event: (typeof timelineEvents)[number]; count: number } | null>(null);
   
   useEffect(() => {
     const handleReset = () => {
@@ -442,19 +443,22 @@ function TimelineOverlay({ timelineYearRef, bottomBarExpanded, onEventSelect }: 
       return { year, event, count: events.length, major: majorYears.has(year) || event.title.includes('★') };
     }).sort((a, b) => a.year - b.year);
   }, []);
+  const visibleTimelineTicks = useMemo(() => timelineTicks.filter((tick) => tick.major || Math.abs(tick.year - displayYear) <= 3), [timelineTicks, displayYear]);
+  const displayEvent = hoveredTick?.event ?? recentEvent;
+  const displayCount = hoveredTick?.count ?? 1;
 
   return (
     <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0, bottom: bottomBarExpanded ? '11.5rem' : '4.5rem' }} transition={{ duration: 0.3, ease: 'easeOut' }} className="absolute left-1/2 z-40 hidden w-full max-w-[800px] -translate-x-1/2 flex-col px-4 sm:flex pointer-events-none">
       <div className="pointer-events-auto">
-      {recentEvent && (
-          <div className="mx-auto mb-3 flex max-w-md items-center gap-3 rounded-2xl border border-white/10 bg-black/60 px-4 py-2.5 backdrop-blur-xl" style={{ boxShadow: `0 12px 42px rgba(0,0,0,0.38), 0 0 24px ${categoryColors[recentEvent.category]}18` }}>
-            <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full" style={{ background: `${categoryColors[recentEvent.category]}22`, color: categoryColors[recentEvent.category] }}>
+      {displayEvent && (
+          <div className="mx-auto mb-3 flex max-w-md items-center gap-3 rounded-2xl border border-white/10 bg-black/60 px-4 py-2.5 backdrop-blur-xl" style={{ boxShadow: `0 12px 42px rgba(0,0,0,0.38), 0 0 24px ${categoryColors[displayEvent.category]}18` }}>
+            <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full" style={{ background: `${categoryColors[displayEvent.category]}22`, color: categoryColors[displayEvent.category] }}>
               <Sparkles size={14} />
             </div>
             <div className="min-w-0">
-              <div className="text-[10px] font-bold uppercase tracking-widest text-white/50">Хронология событий · {recentEvent.year} • {categoryLabels[recentEvent.category]}</div>
-              <div className="truncate text-[13px] font-bold text-white">{recentEvent.title}</div>
-              <div className="line-clamp-1 text-[10.5px] leading-4 text-white/45">{recentEvent.description}</div>
+              <div className="text-[10px] font-bold uppercase tracking-widest text-white/50">Хронология событий · {displayEvent.year} • {categoryLabels[displayEvent.category]}{displayCount > 1 ? ` · ${displayCount} события` : ''}</div>
+              <div className="truncate text-[13px] font-bold text-white">{displayEvent.title}</div>
+              <div className="line-clamp-1 text-[10.5px] leading-4 text-white/45">{displayEvent.description}</div>
             </div>
           </div>
       )}
@@ -463,10 +467,10 @@ function TimelineOverlay({ timelineYearRef, bottomBarExpanded, onEventSelect }: 
         <span className="text-[10px] font-bold text-[#c4a67e]">1860</span>
         <div className="relative flex h-6 flex-1 items-center">
           <div className="absolute inset-x-0 h-1 rounded-full bg-white/10" />
-          {timelineTicks.map((tick) => {
+          {visibleTimelineTicks.map((tick) => {
             const percent = ((tick.year - 1860) / (2026 - 1860)) * 100;
             const isActive = Math.abs(tick.year - displayYear) <= 2;
-            return <button key={tick.year} type="button" onClick={() => { setYear(tick.year); timelineYearRef.current = tick.year; onEventSelect?.(tick.event, tick.year); }} className={`absolute z-20 -translate-x-1/2 -translate-y-1/2 rounded-full border transition hover:scale-125 ${tick.major ? 'h-3 w-3' : 'h-1.5 w-1.5'}`} style={{ left: `${percent}%`, top: '50%', borderColor: isActive ? categoryColors[tick.event.category] : tick.major ? 'rgba(255,255,255,0.28)' : 'rgba(255,255,255,0.14)', background: isActive ? categoryColors[tick.event.category] : tick.major ? 'rgba(255,255,255,0.18)' : 'rgba(255,255,255,0.10)', boxShadow: isActive ? `0 0 12px ${categoryColors[tick.event.category]}80` : 'none', opacity: tick.major || isActive ? 1 : 0.42 }} aria-label={`Перейти к событию ${tick.event.year}: ${tick.event.title}${tick.count > 1 ? ` (и ещё ${tick.count - 1})` : ''}`} />;
+            return <button key={tick.year} type="button" onMouseEnter={() => setHoveredTick(tick)} onFocus={() => setHoveredTick(tick)} onMouseLeave={() => setHoveredTick(null)} onBlur={() => setHoveredTick(null)} onClick={() => { setYear(tick.year); timelineYearRef.current = tick.year; onEventSelect?.(tick.event, tick.year); }} className={`absolute z-20 -translate-x-1/2 -translate-y-1/2 rounded-full border transition hover:scale-125 ${tick.major ? 'h-3 w-3' : 'h-1.5 w-1.5'}`} style={{ left: `${percent}%`, top: '50%', borderColor: isActive ? categoryColors[tick.event.category] : tick.major ? 'rgba(255,255,255,0.28)' : 'rgba(255,255,255,0.14)', background: isActive ? categoryColors[tick.event.category] : tick.major ? 'rgba(255,255,255,0.18)' : 'rgba(255,255,255,0.10)', boxShadow: isActive ? `0 0 12px ${categoryColors[tick.event.category]}80` : 'none', opacity: tick.major || isActive ? 1 : 0.42 }} aria-label={`Перейти к событию ${tick.event.year}: ${tick.event.title}${tick.count > 1 ? ` (и ещё ${tick.count - 1})` : ''}`} />;
           })}
           <input type="range" min="1860" max="2026" value={displayYear} onChange={handleChange} className="absolute inset-x-0 z-10 h-6 w-full cursor-pointer appearance-none bg-transparent opacity-0" />
           <div className="pointer-events-none absolute top-1/2 h-3 w-3 -translate-x-1/2 -translate-y-1/2 rounded-full border-2 border-black bg-[#c4a67e] shadow-[0_0_12px_#c4a67e]" style={{ left: `${((displayYear) - 1860) / (2026 - 1860) * 100}%` }} />
@@ -1766,7 +1770,7 @@ export default function MindMap3D() {
               <filter id="countryGlowSmart" x="-40%" y="-40%" width="180%" height="180%"><feGaussianBlur stdDeviation="3.5" result="blur" /><feMerge><feMergeNode in="blur" /><feMergeNode in="SourceGraphic" /></feMerge></filter>
               <filter id="countryBorder" x="-20%" y="-20%" width="140%" height="140%"><feGaussianBlur stdDeviation="1.2" result="b" /><feMerge><feMergeNode in="b" /><feMergeNode in="SourceGraphic" /></feMerge></filter>
             </defs>
-            {countries.map((geo) => { const id = String(geo.id).padStart(3, '0'); const focus = COUNTRY_FOCUS[id]; const pathD = geoPathGenerator(geo as any) ?? undefined; if (!pathD) return null; const exact = Boolean(focus && (mapSelection?.id === focus.id || (focusNode && focus.nodes.includes(focusNode.id)))); const related = Boolean(focus && !exact && focus.nodes.some((nid) => connectedIds.has(nid))); return (<path key={id} d={pathD} fill={exact && focus ? `${focus.color}35` : related && focus ? `${focus.color}20` : 'rgba(255,255,255,0.012)'} stroke={focus ? focus.color : isLight ? 'rgba(0,0,0,0.07)' : 'rgba(255,255,255,0.055)'} strokeWidth={exact ? 1.8 : related ? 1.0 : 0.6} opacity={exact ? 0.9 : related ? 0.55 : focus ? 0.24 : 0.32} filter={exact || related ? 'url(#countryGlowSmart)' : 'url(#countryBorder)'} className="transition-all duration-500" style={{ pointerEvents: mapMode && focus ? 'auto' : 'none', cursor: mapMode && focus ? 'pointer' : 'default' }} onClick={(ev) => { if (!mapMode || !focus) return; ev.stopPropagation(); handleMapSelect({ id: focus.id, label: focus.label, color: focus.color, nodes: focus.nodes }); }} />); })}
+            {countries.map((geo) => { const id = String(geo.id).padStart(3, '0'); const focus = COUNTRY_FOCUS[id]; const pathD = geoPathGenerator(geo as any) ?? undefined; if (!pathD) return null; const exact = Boolean(focus && (mapSelection?.id === focus.id || (focusNode && focus.nodes.includes(focusNode.id)))); const related = Boolean(focus && !exact && focus.nodes.some((nid) => connectedIds.has(nid))); return (<path key={id} d={pathD} fill={exact && focus ? `${focus.color}1f` : related && focus ? `${focus.color}10` : 'rgba(255,255,255,0.010)'} stroke={focus ? focus.color : isLight ? 'rgba(0,0,0,0.07)' : 'rgba(255,255,255,0.050)'} strokeWidth={exact ? 1.35 : related ? 0.85 : 0.55} opacity={exact ? 0.66 : related ? 0.38 : focus ? 0.18 : 0.28} filter={exact ? 'url(#countryGlowSmart)' : 'url(#countryBorder)'} className="transition-all duration-500" style={{ pointerEvents: mapMode && focus ? 'auto' : 'none', cursor: mapMode && focus ? 'pointer' : 'default' }} onClick={(ev) => { if (!mapMode || !focus) return; ev.stopPropagation(); handleMapSelect({ id: focus.id, label: focus.label, color: focus.color, nodes: focus.nodes }); }} />); })}
           </svg>
           {CITY_MARKERS.map((city) => { const projected = projection([city.lon, city.lat]); if (!projected) return null; const exact = Boolean(mapSelection?.id === city.id || (focusNode && city.nodes.includes(focusNode.id))); const related = !exact && city.nodes.some((nid) => connectedIds.has(nid)); const visible = mapMode || exact || related || !focusNode; return (<button key={city.id} type="button" onClick={() => handleMapSelect({ id: city.id, label: city.label, color: city.color, nodes: city.nodes })} className="absolute z-20 -translate-x-1/2 -translate-y-1/2 transition-all duration-500" style={{ left: `${(projected[0] / 1200) * 100}%`, top: `${(projected[1] / 650) * 100}%`, pointerEvents: 'auto', opacity: visible ? (exact ? 1 : related ? 0.7 : 0.28) : 0.08 }}><div className="relative"><div className="absolute -inset-4 rounded-full blur-xl" style={{ background: `${city.color}55`, opacity: exact ? 0.9 : related ? 0.45 : 0.15 }} /><div className="relative rounded-full" style={{ width: exact ? 10 : 7, height: exact ? 10 : 7, background: city.color, boxShadow: `0 0 16px ${city.color}` }} /></div>{(mapMode || exact) && (<span className="pointer-events-none absolute left-full top-1/2 ml-2 -translate-y-1/2 whitespace-nowrap text-[11px] font-semibold" style={{ color: city.color, textShadow: '0 0 12px rgba(0,0,0,0.8)' }}>{city.label}</span>)}</button>); })}
           <div className="pointer-events-none absolute inset-0" style={{ background: isLight ? 'linear-gradient(90deg, rgba(250,248,245,0.45), rgba(250,248,245,0.08) 46%, rgba(250,248,245,0.45))' : 'radial-gradient(circle at 52% 46%, rgba(6,6,12,0.05), rgba(3,3,7,0.45) 80%), linear-gradient(90deg, rgba(3,3,7,0.55), rgba(3,3,7,0.05) 48%, rgba(3,3,7,0.55))' }} />

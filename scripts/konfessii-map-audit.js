@@ -94,9 +94,12 @@ if (src) {
   /findMapSelectionForNode/.test(src) && /setMapSelection\(selection\)/.test(src)
     ? ok('I8 source: timeline events synchronize map selection')
     : bad('I8 source: timeline events do not synchronize map selection');
-  /timelineTicks/.test(src) && !/title=\{`\$\{evt\.year\}:/.test(src)
+  /timelineTicks/.test(src) && /visibleTimelineTicks/.test(src) && /hoveredTick/.test(src) && !/title=\{`\$\{evt\.year\}:/.test(src)
     ? ok('I8 source: timeline ticks are clustered and avoid native title tooltips')
     : bad('I8 source: timeline ticks are noisy or use native title tooltips');
+  /fill=\{exact && focus \? `\$\{focus\.color\}1f`/.test(src) && /opacity=\{exact \? 0\.66/.test(src)
+    ? ok('I8 source: map highlight intensity is restrained')
+    : bad('I8 source: map highlight may overpower 3D scene');
   /html\.style\.overflow = 'hidden'/.test(src) && /body\.style\.overflow = 'hidden'/.test(src)
     ? ok('I5 source: 3D fullscreen locks document scroll')
     : bad('I5 source: 3D fullscreen does not lock document scroll');
