@@ -60,3 +60,23 @@
 - ❌ Растровые подложки (тайлы, спутник) — SVG-вектор держит зум, темы и вес.
 - ❌ Внешние карто-библиотеки (Leaflet/MapLibre) — оверкилл для стилизованной
   исторической карты, ломает эстетику и оффлайн-автономность.
+
+
+---
+
+## 5. Статус Sprint 3 (2026-06-13)
+
+| Файл | Статус | Описание |
+|---|---|---|
+| `karty/_engine/map-engine.js` | ✅ v0.1 skeleton | Публичный API движка, готов к наполнению |
+| `karty/_engine/base-geo.svg` | ✅ создан | Базовая география (34KB), экстракт из avraam |
+| `karty/avraam/route.json` | 🔲 приоритет | Данные avraam ещё inline в index.html |
+| `karty/ishod/route.json` | ✅ v0.1 | 7 ключевых мест, 6 этапов, все поля |
+| `karty/ishod/index.html` | ✅ scaffold | noindex, preview SVG, JSON-LD |
+
+**Следующий шаг Sprint 3:**
+1. Перенести PLACES/STAGES/CTX из `avraam/index.html` → `avraam/route.json`
+2. Научить движок загружать route.json через `fetch()`
+3. Построить полноценный `ishod/index.html` на базе движка
+
+**Триггер полного рефакторинга:** начало второй интерактивной карты (Исход).
