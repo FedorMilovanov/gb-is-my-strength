@@ -337,6 +337,8 @@ export default function MindMap3D() {
   const [bottomBarExpanded, setBottomBarExpanded] = useState(false);
   const [cameraNavEnabled, setCameraNavEnabled] = useState(true);
   const [timelineYear, setTimelineYear] = useState<number | null>(null);
+  const timelineYearRef = useRef<number | null>(null);
+  useEffect(() => { timelineYearRef.current = timelineYear; fgRef.current?.d3ReheatSimulation?.(); }, [timelineYear]);
   const [showIntro, setShowIntro] = useState(true);
   const [showLegend, setShowLegend] = useState(false);
 
@@ -559,15 +561,22 @@ export default function MindMap3D() {
     let frame = 0;
     const animate = () => {
       const t = performance.now() * 0.001;
+      const currentYear = timelineYearRef.current;
+      
       nodeObjectsRef.current.forEach((object) => {
         const hovered = object.userData.nodeId === hoveredNodeIdRef.current;
         const focused = (object.userData.focusScale as number | undefined) ?? 1;
-        const target = hovered ? 1.18 : focused;
+        
+        const nYear = object.userData.nodeYear;
+        const isFuture = currentYear !== null && nYear !== null && nYear > currentYear;
+        
+        const target = isFuture ? 0.001 : (hovered ? 1.18 : focused);
         const s = object.scale.x;
         const newScale = s + (target - s) * 0.22;
         object.scale.set(newScale, newScale, newScale);
+        object.visible = newScale > 0.01;
 
-        if (focused > 1.0) {
+        if (focused > 1.0 && !isFuture) {
           const breathe = 1 + Math.sin(t * 2.5) * 0.03;
           object.scale.set(newScale * breathe, newScale * breathe, newScale * breathe);
         }
@@ -952,13 +961,12 @@ export default function MindMap3D() {
     const isDirect = directIds.has(node.id);
     const isSecondary = secondaryIds.has(node.id);
     
-    // Timeline filter logic
+    // Extract year for Timeline
     const nodeYearMatch = node.year ? node.year.match(/\d{4}/) : null;
     const nodeYear = nodeYearMatch ? parseInt(nodeYearMatch[0], 10) : null;
-    const isFuture = timelineYear !== null && nodeYear !== null && nodeYear > timelineYear;
 
-    const isDimmed = (focusNode !== null && !isDirect && !isSecondary) || isFuture;
-    const nodeOpacity = isFuture ? 0.02 : (focusNode === null || isDirect ? 1 : isSecondary ? 0.46 : 0.14);
+    const isDimmed = (focusNode !== null && !isDirect && !isSecondary);
+    const nodeOpacity = (focusNode === null || isDirect ? 1 : isSecondary ? 0.46 : 0.14);
     const isFocused = focusNode?.id === node.id;
     const kind = resolveKind(node);
     const earthTex = getEarthTexture();
@@ -966,6 +974,7 @@ export default function MindMap3D() {
     group.userData.nodeId = node.id;
     group.userData.focusScale = isFocused ? 1.18 : 1;
     group.userData.nodeKind = kind;
+    group.userData.nodeYear = nodeYear;
     nodeObjectsRef.current.set(node.id, group);
 
     const dimOpacity = (base: number) => isDimmed ? Math.min(base, nodeOpacity) : base;
@@ -1380,7 +1389,7 @@ export default function MindMap3D() {
       group.add(sub);
     }
     return group;
-  }, [directIds, focusNode, isLight, secondaryIds, timelineYear]);
+  }, [directIds, focusNode, isLight, secondaryIds]);
 
   const linkThreeObject = useCallback((link: LinkData) => {
     const source = resolveNode(link.source); const target = resolveNode(link.target);
@@ -1398,7 +1407,14 @@ export default function MindMap3D() {
     const beadC = new THREE.Mesh(new THREE.IcosahedronGeometry(beadSize * 0.5, 2), beadMat.clone());
     group.add(beadA, beadB, beadC);
     const sourceRadius = (source?.size ?? 10) * 0.52; const targetRadius = (target?.size ?? 10) * 0.52;
-    group.userData = { core: group.children[0], glow: group.children[1], outerGlow: group.children[2], beadA, beadB, beadC, coreRadius, glowRadius, outerGlowRadius, isActive, isSecondary, isMain, sourceRadius, targetRadius };
+    
+    const syMatch = source?.year ? source.year.match(/\d{4}/) : null;
+    const sy = syMatch ? parseInt(syMatch[0], 10) : null;
+    const tyMatch = target?.year ? target.year.match(/\d{4}/) : null;
+    const ty = tyMatch ? parseInt(tyMatch[0], 10) : null;
+    const linkYear = (sy !== null && ty !== null) ? Math.max(sy, ty) : (sy ?? ty ?? null);
+    
+    group.userData = { core: group.children[0], glow: group.children[1], outerGlow: group.children[2], beadA, beadB, beadC, coreRadius, glowRadius, outerGlowRadius, isActive, isSecondary, isMain, sourceRadius, targetRadius, linkYear };
     return group;
   }, [activeLinkIds, secondaryLinkIds]);
 
@@ -1425,6 +1441,15 @@ export default function MindMap3D() {
       data.outerGlow.geometry.dispose(); data.outerGlow.geometry = new THREE.TubeGeometry(curve, 14, data.outerGlowRadius, 6, false);
       data.lastStart = start.clone(); data.lastEnd = end.clone();
     }
+    
+    const currentYear = timelineYearRef.current;
+    if (currentYear !== null && data.linkYear !== null && data.linkYear > currentYear) {
+      group.visible = false;
+      return true;
+    } else {
+      group.visible = true;
+    }
+
     const time = Date.now() * 0.001; const speed = data.isActive ? 0.55 : 0.28; 
     const curve = data.curve;
     if (curve) {
@@ -1547,9 +1572,11 @@ export default function MindMap3D() {
                   <div className="pointer-events-none absolute top-1/2 h-3 w-3 -translate-x-1/2 -translate-y-1/2 rounded-full border-2 border-black bg-[#c4a67e] shadow-[0_0_12px_#c4a67e]" style={{ left: `${((timelineYear ?? 2026) - 1860) / (2026 - 1860) * 100}%` }} />
                 </div>
                 <span className="text-[10px] font-bold text-[#c4a67e]">2026</span>
-                {timelineYear !== null && timelineYear < 2026 && (
-                  <button onClick={() => setTimelineYear(null)} className="absolute -right-2 top-0 -translate-y-1/2 rounded-full border border-[#c4a67e]/30 bg-black px-2 py-0.5 text-[8px] font-bold text-[#c4a67e] hover:bg-[#c4a67e]/10">СБРОС</button>
-                )}
+                <div className="flex items-center w-12 shrink-0">
+                  {timelineYear !== null && timelineYear < 2026 && (
+                    <button onClick={() => setTimelineYear(null)} className="ml-3 rounded-full border border-[#c4a67e]/30 bg-black px-2 py-1 text-[9px] font-bold text-[#c4a67e] hover:bg-[#c4a67e]/10 transition-colors">СБРОС</button>
+                  )}
+                </div>
               </div>
             </motion.div>
           )}
