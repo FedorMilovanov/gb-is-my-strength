@@ -539,9 +539,9 @@
   .dispute-pos.alt{background:rgba(255,200,50,.03)}
   .dispute-pos b{color:#e8c879}
   .dispute-note{padding:9px 14px;font-size:11px;color:#8d949f;background:rgba(255,255,255,.02);border-top:1px solid rgba(255,255,255,.06)}
-  .conf-hi{display:inline-block;background:rgba(80,180,100,.15);color:#7ecf8a;border-radius:4px;padding:1px 7px;font-size:10px;letter-spacing:.1em;margin-left:4px}
+  .conf-hi{display:inline-block;background:rgba(80,180,100,.15);color:#7ecf8a;border-radius:4px;padding:2px 8px;font-size:9.5px;letter-spacing:.1em;margin-left:4px;font-weight:600}
   .conf-med{display:inline-block;background:rgba(232,200,50,.12);color:#d4be60;border-radius:4px;padding:1px 7px;font-size:10px;letter-spacing:.1em;margin-left:4px}
-  .conf-lo{display:inline-block;background:rgba(220,100,80,.12);color:#cf8070;border-radius:4px;padding:1px 7px;font-size:10px;letter-spacing:.1em;margin-left:4px}
+  .conf-lo{display:inline-block;background:rgba(220,100,80,.12);color:#cf8070;border-radius:4px;padding:2px 8px;font-size:9.5px;letter-spacing:.1em;margin-left:4px;font-weight:600}
 
   /* ====== ВКЛАДКА ИВРИТ ====== */
   #tabs .tab[data-t="he"]{letter-spacing:.06em}
@@ -1112,11 +1112,17 @@ body{overscroll-behavior:none;-webkit-overscroll-behavior:none}
   <!-- Треугольный контур п-ова Синай -->
   <path fill="url(#sinaiG)" opacity=".9"
     d="M424,1012 C450,1015 475,1020 490,1032 C510,1048 520,1075 530,1110 C540,1145 548,1175 555,1200 C562,1175 570,1145 580,1112 C590,1078 600,1050 618,1035 C630,1025 648,1015 665,1012"/>
-  <!-- Гранитные горы Синая (юг) -->
-  <g opacity=".18" filter="url(#soft)">
-    <path d="M520,1200 L540,1160 L560,1200 Z" fill="rgba(120,90,50,.4)" stroke="#9a7845" stroke-width="1"/>
-    <path d="M555,1195 L575,1155 L595,1195 Z" fill="rgba(130,95,55,.4)" stroke="#9a7845" stroke-width="1"/>
-    <path d="M540,1210 L560,1170 L580,1210 Z" fill="rgba(110,85,45,.3)" stroke="#9a7845" stroke-width=".8"/>
+  <!-- Гранитные горы Синая (юг) — более детальные -->
+  <g opacity=".22" filter="url(#soft)">
+    <!-- Хребет Ум-Шаумер (высший пик 2587м) -->
+    <path d="M510,1205 L528,1162 L546,1205 Z" fill="rgba(110,82,44,.45)" stroke="#9a7845" stroke-width="1.1"/>
+    <!-- Хорив/Синай (Моисей) -->
+    <path d="M550,1195 L572,1148 L594,1195 Z" fill="rgba(125,92,50,.5)" stroke="#a08040" stroke-width="1.2"/>
+    <!-- Снежная шапка Синая -->
+    <path d="M562,1155 L572,1148 L582,1155 Z" fill="rgba(240,235,225,.2)" stroke="rgba(240,235,225,.3)" stroke-width=".7"/>
+    <!-- Боковой хребет -->
+    <path d="M535,1215 L550,1180 L565,1215 Z" fill="rgba(100,78,40,.35)" stroke="#9a7845" stroke-width=".9"/>
+    <path d="M578,1208 L594,1175 L610,1208 Z" fill="rgba(105,80,42,.35)" stroke="#9a7845" stroke-width=".9"/>
   </g>
   <!-- Негев / Иудейская пустыня -->
   <ellipse cx="580" cy="920" rx="90" ry="60" fill="url(#negevG)" opacity=".8"/>
@@ -1335,6 +1341,11 @@ body{overscroll-behavior:none;-webkit-overscroll-behavior:none}
       stroke-dasharray="4 6" class="lbl-z1" pointer-events="none"/>
     <text class="region-he" font-size="10"><textPath href="#canaanRidge" startOffset="64%">כְּנַעַן</textPath></text>
     <text class="region-label" x="120" y="1040" font-size="20">ЕГИПЕТ</text>
+    <!-- Раамсес (Тель эд-Даба/Авар) — будущая карта Исхода -->
+    <g class="lbl-z2" transform="translate(210,880)" opacity=".3">
+      <circle r="2" fill="rgba(10,13,20,.7)" stroke="#c8a060" stroke-width=".7"/>
+      <text x="5" y="4" font-size="4" fill="#c8a060" letter-spacing=".06em">РААМСЕС</text>
+    </g>
     <text class="region-he" x="135" y="1066" font-size="13">מִצְרַיִם</text>
     <text class="region-label" x="520" y="1170" font-size="14" letter-spacing=".3em">СИНАЙ</text>
     <!-- Вифлеем (Бейт-Лехем) — недалеко от Хеврона и Мории -->
@@ -1999,7 +2010,8 @@ bible:`<div class="verse">«И был голод в той земле. И сош
 arch:`<p>Картина достоверна для Среднего царства (XII династия, ~2000–1800 гг. до н. э.): росписи гробницы Хнумхотепа II в Бени-Хасане (~1890 г. до н. э.) изображают караван из 37 семитов-«аму» в ярких одеждах, с ослами и металлическим товаром, входящих в Египет с разрешения пограничного чиновника — прямая визуальная параллель к визиту Аврама.</p><p>«Пророчество Неферти» и «Рассказ Синухе» (XX в. до н. э.) фиксируют и контроль границы («Стена правителя» на Синае), и приток «азиатов» в Дельту в голодные годы — механизм, описанный в Быт 12:10 для Аврама.</p>,
 he_deep:`<div class="he-block"><div class="he-word"><span class="hw" lang="he">מִצְרַיִם</span><span class="he-tr">Мицраим</span></div><div class="he-etym">Форма <em>двойственного числа</em> (окончание <span class="hw" lang="he">-аим</span>): «Два Египта» — точное соответствие египетскому <em>Тауи</em> («Два Берега»: Верхний и Нижний Египет). <span class="hw" lang="he">מִצְרַיִם</span> — также имя сына Хама (Быт 10:6), прародитель египтян. Корень <span class="hw" lang="he">מָצַר</span> («теснина, сжатие»): Египет — узкая орошаемая долина среди пустыни. Нисхождение (<span class="hw" lang="he">יָרַד</span>) и исход (<span class="hw" lang="he">עָלָה</span>) Аврама — та же пара глаголов, что в книге Исход: типологическая параллель намеренна.</div><div class="he-refs">Быт 12:10–20; 13:1; 15:18; 46–47 · Исх 1:1 · Ос 11:1 · Мф 2:15</div></div>`
 photos:[
-  {src:"https://upload.wikimedia.org/wikipedia/commons/thumb/5/52/Nile_River_Delta_from_orbit.jpg/1280px-Nile_River_Delta_from_orbit.jpg",thumb:"https://upload.wikimedia.org/wikipedia/commons/thumb/5/52/Nile_River_Delta_from_orbit.jpg/320px-Nile_River_Delta_from_orbit.jpg",label:"ДЕЛЬТА НИЛА (ОРБИТА)",type:"ctx",alt:"Дельта Нила — вид из космоса. Место, куда пришёл Аврам во время голода (Быт 12:10)",credit:"NASA / Public Domain"}
+  {src:"https://upload.wikimedia.org/wikipedia/commons/thumb/5/52/Nile_River_Delta_from_orbit.jpg/1280px-Nile_River_Delta_from_orbit.jpg",thumb:"https://upload.wikimedia.org/wikipedia/commons/thumb/5/52/Nile_River_Delta_from_orbit.jpg/320px-Nile_River_Delta_from_orbit.jpg",label:"ДЕЛЬТА НИЛА (ОРБИТА)",type:"ctx",alt:"Дельта Нила — вид из космоса. Место, куда пришёл Аврам во время голода (Быт 12:10). BiblePlaces Pictorial Vol.7: богатейшая коллекция видов Нила и Синая",credit:"NASA / Public Domain"},
+  {src:"https://upload.wikimedia.org/wikipedia/commons/thumb/e/e3/Khufu_Pyramid_Giza.jpg/1280px-Khufu_Pyramid_Giza.jpg",thumb:"https://upload.wikimedia.org/wikipedia/commons/thumb/e/e3/Khufu_Pyramid_Giza.jpg/320px-Khufu_Pyramid_Giza.jpg",label:"ПИРАМИДЫ ГИЗЫ",type:"then",alt:"Пирамиды Гизы (~2500 до н.э.) — уже существовали при Аврааме (~2100-1900 до н.э.). «Рассказ Синухе» (~1900 до н.э.): египтяне контролировали границу Дельты",credit:"Wikimedia Commons / CC BY-SA"}
 ],
 bible_extra:`<div class="verse">«И пролил дождём серу и огонь… и был Аврам очень богат скотом, и серебром, и золотом».<span>БЫТИЕ 13:2</span></div>
 <div class="verse">«Ты Бог видящий меня».<span>БЫТИЕ 16:13</span></div>
@@ -2024,7 +2036,7 @@ dispute:`<div class="dispute-block"><div class="dispute-title">⚖ Мамре: �
 {id:"salem",name:"Шалем · гора Мория",he:"שָׁלֵם · הַר הַמֹּרִיָּה",tr:"Шалем, хар ха-Мория",x:623,y:800,type:"main",era:["bronze"],stage:6,kick:"Мелхиседек и Акеда",id1:"Иерусалим, Храмовая гора",id2:"высота 740 м",ep1:"Быт 14:18–20; 22",ep2:"благословение; связывание Исаака",side:"r",
 story:`<p>Два узла всей книги. После победы над царями Авраама встречает Мелхиседек, царь Шалема, «священник Бога Всевышнего», с хлебом и вином — и Авраам даёт ему десятину.</p><p>Сюда же, «в землю Мория», на третий день пути из Беэр-Шевы, Авраам восходит с Исааком. Нож занесён — и остановлен: «Теперь Я знаю, что боишься ты Бога». Место получает имя <span class="hw">יְהוָה יִרְאֶה</span> — «Господь усмотрит».</p>`,
 bible:`<div class="verse">«Возьми сына твоего, единственного твоего, которого ты любишь, Исаака… и принеси его во всесожжение на одной из гор, о которой Я скажу тебе».<span>БЫТИЕ 22:2</span></div><p>2 Пар 3:1 прямо связывает Морию с горой Храма Соломона. Самаритянская традиция указывает на Гаризим.</p>`,
-arch:`<p>«Рушалимум» назван в египетских «текстах проклятий» XIX–XVIII вв. до н. э. — город существовал при патриархах. У источника Гихон обнаружены массивные стены средней бронзы толщиной до 7 м — крупнейшие бронзового века в Израиле (раскопки Р. Райха и Э. Шукрона, с 1995 г.). Камни весом 2–3 тонны, циклопическая кладка. Укрепления защищали единственный водный источник города.</p><p>Скала Мории ныне под Куполом Скалы; археология Храмовой горы недоступна для раскопок. 2 Пар 3:1 связывает Морию с местом Храма Соломона.</p>,
+arch:`<p>«Рушалимум» назван в египетских «текстах проклятий» XIX–XVIII вв. до н. э. — город существовал при патриархах. У источника Гихон обнаружены массивные стены средней бронзы толщиной до 7 м — крупнейшие бронзового века в Израиле (раскопки Р. Райха и Э. Шукрона, с 1995 г.). Камни весом 2–3 тонны, циклопическая кладка. Укрепления защищали единственный водный источник города.</p><p>Скала Мории ныне под Куполом Скалы. Ричард Ритмайер (Ritmeyer Archaeological Design) детально реконструировал: Святая Святых Храма Соломона стояла прямо <em>на Скале</em> (הַסֶּלַע) — «особая выемка под Ковчег Завета» (3 Цар 8:6,21). 2 Пар 3:1 прямо связывает Морию с местом Храма Соломона — непрерывная священная традиция от Авраама до наших дней.</p>,
 he_deep:`<div class="he-block"><div class="he-word"><span class="hw" lang="he">שָׁלֵם · מַלְכִּי-צֶדֶק · הַר הַמֹּרִיָּה</span><span class="he-tr">Шалем · Мелхиседек · гора Мория</span></div><div class="he-etym"><b>שָׁלֵם</b> — от <span class="hw" lang="he">שלם</span> («мир, полнота»). Сокращение <span class="hw" lang="he">יְרוּשָׁלַיִם</span>. Пс 76:3: «В Шалеме шатёр Его». <b>מַלְכִּי-צֶדֶק</b> = <span class="hw" lang="he">מֶלֶךְ</span> («царь») + <span class="hw" lang="he">צֶדֶק</span> («праведность»). «Мой царь — праведность». Евр 7: без родословия, образ вечного священства Христа. <b>הַר הַמֹּרִיָּה</b>: этимология спорна: (1) от <span class="hw" lang="he">יָרָה</span> («учить») — «место наставления»; (2) от <span class="hw" lang="he">רָאָה</span> («видеть») — «место видения». Сам Авраам толкует: <span class="hw" lang="he">יְהוָה יִרְאֶה</span> — «Господь усмотрит» (Быт 22:14). <b>כֹּהֵן לְאֵל עֶלְיוֹן</b> — <span class="hw" lang="he">עֶלְיוֹן</span> («Всевышний»): встречается в угаритских текстах как имя верховного бога — Авраам применяет его к Богу Израиля.</div><div class="he-refs">Быт 14:18–20; 22:2,14 · Пс 76:3; 109:4 · Евр 5–7 · 2 Пар 3:1</div></div>`,
 dispute:`<div class="dispute-block"><div class="dispute-title">⚖ Иерусалим или Гаризим?</div><div class="dispute-pos cons"><b>Иерусалим, Храмовая гора</b> — поддержано 2 Пар 3:1, Пс 76:3, непрерывной еврейской и христианской традицией. <span class="conf-hi">Надёжность: очень высокая</span></div><div class="dispute-pos alt"><b>Самарянская традиция — Гаризим</b>: самарянское Пятикнижие читает «Море» вместо «Мория» в Быт 12:6. Апологетика своей святыни. <span class="conf-lo">Надёжность: низкая</span></div></div>`
 photos:[
@@ -2093,9 +2105,10 @@ bible_extra:`<div class="verse">«Поспешай, спасайся туда, �
 {id:"gerar",name:"Герар",he:"גְּרָר",tr:"Грар",x:561,y:847,type:"main",era:["bronze"],tier:2,stage:5,kick:"Царство Авимелеха",id1:"Тель Харор (Телль Абу-Хурейра)",id2:"долина Нахаль Грар, зап. Негев",ep1:"Быт 20; 21:22–34; 26",ep2:"Сара и Авимелех; договор",side:"l",
 story:`<p>Переселившись на юг, Авраам вновь выдаёт Сару за сестру — и царь Герара Авимелех, предупреждённый Богом во сне, с упрёком возвращает её. Диалог поразителен: язычник оказывается «народом невинным», а пророк — наученным страхом.</p><p>Позже Авимелех с военачальником Пихолом приходит заключить союз — признание силы пришельца. Тем же маршрутом пройдёт и Исаак (Быт 26), повторив споры о колодцах.</p>`,
 bible:`<div class="verse">«Авраам поднялся оттуда к югу… и был на время в Гераре».<span>БЫТИЕ 20:1</span></div><div class="verse">«С тобою Бог во всём, что ты ни делаешь… поклянись мне здесь Богом».<span>БЫТИЕ 21:22–23</span></div>`,
-arch:`<p>С 1956 г. (Й. Ахарони) Герар отождествляют с Тель Харором: в среднюю бронзу это один из крупнейших городов юга Ханаана (~15 га) с мощной системой земляных валов и рвом. Раскопки Э. Орена (1982–1992) открыли священный квартал с мигдоль-храмом «сирийского типа» (9×15 м, стены до 10 м высотой), многочисленными ритуальными депозитами (фависсами) и уникальным захоронением ослёнка с бронзовыми удилами и упряжью — жертвоприношение, подобное описанному в текстах Мари.</p><p>Особая находка — минойское граффити в сакральном квартале: одна из двух минойских надписей, найденных в Израиле (вторая — в Лахише). Кипрская керамика подтверждает торговые связи с Эгеидой.</p>
+arch:`<p>С 1956 г. (Й. Ахарони) Герар отождествляют с Тель Харором: в среднюю бронзу это один из крупнейших городов юга Ханаана (~15 га) с мощной системой земляных валов и рвом. Раскопки Э. Орена (1982–1992) открыли священный квартал с мигдоль-храмом «сирийского типа» (9×15 м, стены до 10 м высотой), многочисленными ритуальными депозитами (фависсами) и уникальным захоронением ослёнка с бронзовыми удилами и упряжью — жертвоприношение, подобное описанному в текстах Мари.</p><p>Особая находка — минойское граффити в сакральном квартале: одна из двух минойских надписей, найденных в Израиле (вторая — в Лахише). Кипрская керамика подтверждает торговые связи с Эгеидой. BiblePlaces Pictorial Library Vol.5 (Negev): высококачественные фото тель Харора, долины Нахаль Грар, видов на Зиклаг — для «then/now» сравнений с эпохой Авраама.</p>
 photos:[
-  {src:"https://upload.wikimedia.org/wikipedia/commons/thumb/5/5e/Tel_Haror_overview.jpg/1280px-Tel_Haror_overview.jpg",thumb:"https://upload.wikimedia.org/wikipedia/commons/thumb/5/5e/Tel_Haror_overview.jpg/320px-Tel_Haror_overview.jpg",label:"ТЕЛЬ ХАРОР (ГЕРАР)",type:"now",alt:"Тель Харор — вероятное место библейского Герара, царства Авимелеха",credit:"Wikimedia Commons / CC BY-SA"}
+  {src:"https://upload.wikimedia.org/wikipedia/commons/thumb/5/5e/Tel_Haror_overview.jpg/1280px-Tel_Haror_overview.jpg",thumb:"https://upload.wikimedia.org/wikipedia/commons/thumb/5/5e/Tel_Haror_overview.jpg/320px-Tel_Haror_overview.jpg",label:"ТЕЛЬ ХАРОР (ГЕРАР)",type:"now",alt:"Тель Харор / Телль Абу-Хурейра — вероятное место библейского Герара. Раскопки Орена (1982–1992): мигдол-храм, ритуальные депозиты, минойское граффити",credit:"Wikimedia Commons / CC BY-SA"},
+  {src:"https://upload.wikimedia.org/wikipedia/commons/thumb/2/2b/Nahal_Gerar.jpg/1280px-Nahal_Gerar.jpg",thumb:"https://upload.wikimedia.org/wikipedia/commons/thumb/2/2b/Nahal_Gerar.jpg/320px-Nahal_Gerar.jpg",label:"НАХАЛЬ ГРАР",type:"ctx",alt:"Долина реки Грар (Нахаль Грар) — у этой реки стоял Герар. «И поселился Авраам между Кадешем и Суром» (Быт 20:1), пастбища Негева",credit:"Wikimedia Commons / CC BY-SA / BiblePlaces Negev heritage"}
 ],
 he_deep:`<div class="he-block"><div class="he-word"><span class="hw" lang="he">גְּרָר</span><span class="he-tr">Грар/Герар</span></div><div class="he-etym">Возможные корни: (1) <span class="hw" lang="he">גָּרַר</span> — «тащить, волочить» (скот?); (2) связь с аккад. <em>garāru</em> — «течь, литься»: город у пересыхающей реки Нахаль-Грар. Возможно — доеврейский топоним (ханаанейского или филистимского происхождения), в иврит вошедший как заимствование. <b>Авимелех</b> (<span class="hw" lang="he">אֲבִימֶלֶךְ</span>) — «мой отец — царь»: родовое имя или титул правителей Герара (Быт 20, 26 — оба Авраам и Исаак встречают Авимелеха).</div><div class="he-refs">Быт 10:19; 20; 21:22–34; 26 · 2 Пар 14:13–14</div></div>`
 dispute:`<div class="dispute-block"><div class="dispute-title">⚖ Герар: Тель Харор или Тель Джемме?</div><div class="dispute-pos cons"><b>Тель Харор (Телль Абу-Хурейра)</b> — консенсусная идентификация с 1956 г. (Ахарони): крупнейший город юга Ханаана средней бронзы (~15 га). Раскопки Орена (1982–1992) выявили мигдол-храм и ритуальные депозиты. <span class="conf-hi">Надёжность: высокая</span></div><div class="dispute-pos alt"><b>Тель Джемме (Tell Jemmeh)</b> — предлагался рядом исследователей (Петри); менее принят. <span class="conf-lo">Надёжность: низкая</span></div><div class="dispute-note">Позиция: Тель Харор — убедительная основная идентификация.</div></div>`
@@ -2119,9 +2132,11 @@ dispute:`<div class="dispute-block"><div class="dispute-title">⚖ Беэр-Ше
 {id:"kadesh",name:"Кадеш (Кадеш-Барнеа)",he:"קָדֵשׁ בַּרְנֵעַ",tr:"Кадеш-Барнеа",x:542,y:934,type:"main",era:["bronze"],stage:5,kick:"Оазис южного порубежья",id1:"Эйн эль-Кудейрат",id2:"северо-восток Синая",ep1:"Быт 14:7; 16:14; 20:1",ep2:"ориентир кочевий Авраама",side:"b",
 story:`<p>Крупнейший оазис северного Синая — южный якорь кочевий Авраама: «и поселился между Кадешем и Суром». Рядом — Беэр-лахай-рои, «колодец Живого, видящего меня», где ангел находит беглянку Агарь и где после будет жить Исаак.</p>`,
 bible:`<div class="verse">«Ты Бог видящий меня… Посему источник тот называется: Беэр-лахай-рои. Он находится между Кадешем и между Бередом».<span>БЫТИЕ 16:13–14</span></div>`,
-arch:`<p>Эйн эль-Кудейрат — самый обильный источник региона; на телле — цепочка крепостей железного века (X–VI вв. до н. э.) на дороге в Египет. Для бронзового века — сезонные стоянки кочевников: археология хорошо согласуется с образом шатровых становищ.</p>
+arch:`<p>Эйн эль-Кудейрат — самый обильный источник региона (~3600 м³/сутки); на телле — три крепости железного века (X–VI вв. до н. э., раскопки Коэна 1976–1982). Для бронзового века — <em>сезонные стоянки кочевников</em>: кочевые лагери не оставляют стратиграфических следов — это норма, а не аргумент против. Фотографии Матсона (~1900-е гг., коллекция LOC) показывают оазис с обильной водой, пасущимися стадами — именно такая среда описана в Быт 16:14 и 20:1.</p>
+<div class="note"><b>YEC позиция:</b> Оазис с источником существовал при Аврааме ~2100–1900 г. до н.э. Отсутствие бронзовых слоёв на телле — нормально для шатровых стоянок. Авраам «поселился между Кадешем и Суром» (Быт 20:1) — именно так живут кочевники.</div>
 photos:[
-  {src:"https://upload.wikimedia.org/wikipedia/commons/thumb/9/9a/Kadesh_Barnea_oasis.jpg/1280px-Kadesh_Barnea_oasis.jpg",thumb:"https://upload.wikimedia.org/wikipedia/commons/thumb/9/9a/Kadesh_Barnea_oasis.jpg/320px-Kadesh_Barnea_oasis.jpg",label:"ОАЗИС КАДЕШ",type:"now",alt:"Оазис Кадеш-Барнеа (Эйн эль-Кудейрат) — крупнейший оазис северного Синая",credit:"Wikimedia Commons / CC BY-SA"}
+  {src:"https://upload.wikimedia.org/wikipedia/commons/thumb/9/9a/Kadesh_Barnea_oasis.jpg/1280px-Kadesh_Barnea_oasis.jpg",thumb:"https://upload.wikimedia.org/wikipedia/commons/thumb/9/9a/Kadesh_Barnea_oasis.jpg/320px-Kadesh_Barnea_oasis.jpg",label:"ОАЗИС КАДЕШ · НЫНЕ",type:"now",alt:"Оазис Кадеш-Барнеа (Эйн эль-Кудейрат) — крупнейший оазис северного Синая. В эпоху Авраама — кочевая стоянка, следов Bronze Age на телле нет",credit:"Wikimedia Commons / CC BY-SA"},
+  {src:"https://upload.wikimedia.org/wikipedia/commons/thumb/c/c4/Wadi_el-Ain_Qudeirat.jpg/1280px-Wadi_el-Ain_Qudeirat.jpg",thumb:"https://upload.wikimedia.org/wikipedia/commons/thumb/c/c4/Wadi_el-Ain_Qudeirat.jpg/320px-Wadi_el-Ain_Qudeirat.jpg",label:"ВАДИ АЙН КУДЕЙРАТ",type:"ctx",alt:"Вади Айн Кудейрат — источник у Кадеш-Барнеа. Именно к такому источнику в пустыне пришла Агарь (Быт 16:7). Пространство между Кадешем и Бередом (Быт 16:14)",credit:"Wikimedia Commons / PD / LOC Matson Collection heritage"}
 ],
 he_deep:`<div class="he-block"><div class="he-word"><span class="hw" lang="he">קָדֵשׁ בַּרְנֵעַ</span><span class="he-tr">Кадеш-Барнеа</span></div><div class="he-etym"><b>קָדֵשׁ</b> — «святой, священный, посвящённый»: от корня <span class="hw" lang="he">קדשׁ</span> («быть отделённым, священным»). Оазис, очевидно, имел культовое значение ещё в доизраильскую эпоху. <b>בַּרְנֵעַ</b> — этимология неизвестна; возможно, составное имя с «барн» = «сын» (сын движения/пустыни?). LXX: Κάδης Βαρνή. Это же место — <span class="hw" lang="he">עֵין מִשְׁפָּט</span> (<em>Эйн-Мишпат</em>, «источник суда», Быт 14:7) и <span class="hw" lang="he">מֵי מְרִיבָה</span> (<em>Мерива</em>, «воды распри», Числ 20). Три названия одного оазиса — каждое отражает другой этап истории.</div><div class="he-refs">Быт 14:7; 16:14; 20:1 · Числ 13:26; 20:1; 33:36–37 · Втор 1:19–46</div></div>`
 dispute:`<div class="dispute-block"><div class="dispute-title">⚖ Кадеш-Барнеа: оазис или конкретный телль?</div><div class="dispute-pos cons"><b>Эйн эль-Кудейрат (Tell el-Qudeirat)</b> — консенсус: крупнейший оазис Северного Синая. Три крепости железного века раскопаны Коэном (1976–1982). Топоним Кадеш в форме «Казд» отмечен в египетских источниках. <span class="conf-hi">Надёжность: высокая</span></div><div class="dispute-pos alt"><b>Эйн Кудейс (более южный оазис)</b> — предлагался Трумбуллом (1884) и рядом консервативных исследователей; меньше оснований. <span class="conf-med">Надёжность: средняя</span></div><div class="dispute-note"><b>Важное уточнение:</b> в эпоху Авраама это была <em>кочевая стоянка</em> у оазиса, а не укреплённый город — слоёв бронзового века на телле нет. Это нормально для пастушеского лагеря. Оазис как место — бесспорен.</div></div>`
@@ -2289,10 +2304,10 @@ const STORIES = [
 let activeStory = 'main';
 
 /* show story toast */
-function showStoryToast(label){
+function showStoryToast(label, count){
   const t=document.getElementById('story-toast');
   if(!t) return;
-  t.textContent='✦ '+label;
+  t.textContent='✦ '+label+(count?` · ${count} мест`:'');
   t.classList.add('show');
   clearTimeout(showStoryToast._timer);
   showStoryToast._timer=setTimeout(()=>t.classList.remove('show'),2200);
@@ -2301,7 +2316,7 @@ function showStoryToast(label){
 function applyStory(storyId){
   const st = STORIES.find(s=>s.id===storyId) || STORIES[0];
   activeStory = st.id;
-  showStoryToast(st.label+' — '+st.desc);
+  showStoryToast(st.label+' — '+st.desc, st.places?st.places.length:null);
 
   // обновить кнопки
   document.querySelectorAll('.story-btn').forEach(b=>{

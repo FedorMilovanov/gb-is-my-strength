@@ -99,6 +99,10 @@ footer.k{padding:22px 0 30px;text-align:center;font-size:11px;color:#5e6570;lett
 footer.k a{color:var(--muted);text-decoration:none}
 footer.k a:hover{color:var(--gold)}
 @media(max-width:560px){.hero{padding:44px 0 30px}.grid{grid-template-columns:1fr}}
+  /* Soon card as link */
+  a.card.soon{text-decoration:none;color:inherit;display:block}
+  a.card.soon:hover .cta{color:var(--gold)}
+  a.card.soon .cta{color:#6c737e}
 </style>
   <link rel="alternate" type="application/rss+xml" title="Господь Бог — Сила Моя — RSS" href="https://gospod-bog.ru/feed.xml">
   <link rel="manifest" href="/manifest.json">
@@ -162,8 +166,8 @@ footer.k a:hover{color:var(--gold)}
     </div>
   </a>
 
-  <!-- EXODUS — soon -->
-  <div class="card soon" aria-disabled="true">
+  <!-- EXODUS — scaffold ready -->
+  <a class="card soon" href="/karty/ishod/" aria-label="Карта Исхода из Египта (в разработке)">
     <span class="badge">В РАЗРАБОТКЕ</span>
     <div class="art" aria-hidden="true">
       <svg viewBox="0 0 360 150" preserveAspectRatio="xMidYMid slice">
@@ -180,10 +184,10 @@ footer.k a:hover{color:var(--gold)}
       <div class="kick">Исход · Числа</div>
       <h2>Исход из Египта</h2>
       <div class="hebr">יְצִיאַת מִצְרַיִם</div>
-      <p>Сорок лет пустыни: от Раамсеса через море, Синай и Кадеш — к равнинам Моава.</p>
-      <div class="cta">СКОРО</div>
+      <p>Сорок лет странствий: от Раамсеса через море, Синай и Кадеш — к равнинам Моава. ~30 мест, Числа 33, споры о переправе.</p>
+      <div class="cta">СКОРО · СМОТРЕТЬ ПРОГРЕСС →</div>
     </div>
-  </div>
+  </a>
 
   <!-- PAUL — soon -->
   <div class="card soon" aria-disabled="true">
