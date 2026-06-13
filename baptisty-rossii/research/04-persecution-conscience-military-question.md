@@ -700,7 +700,7 @@ DHI также даёт ссылки на архивные документы:
 - `История евангельских христиан-баптистов в СССР`, изд. ВСЕХБ, 1989.
 - локально: `/home/user/research/russian_baptism/historyofecb.pdf`
 - локально: `/home/user/research/russian_baptism/historyofecb.txt`
-- исходный URL: http://rusbaptist.stunda.org/zips/historyofecb.pdf
+- исходный URL: https://rusbaptist.stunda.org/zips/historyofecb.pdf
 
 Важно: это не первичный протокол 1926 года, но официальный исторический труд ВСЕХБ с отсылками к протоколам и печати. Для публикации годится как сильный вторичный/церковно-документальный источник; первичный протокол 26-го съезда всё ещё желательно найти.
 

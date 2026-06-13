@@ -1144,7 +1144,7 @@
 - **«Братский Вестник» №1, 1945**, полный текст:  
   https://mbchurch.ru/publications/brotherly_journal/150/
 - ВСЕХБ, *История евангельских христиан-баптистов в СССР*, М., 1989:  
-  http://rusbaptist.stunda.org/zips/historyofecb.pdf
+  https://rusbaptist.stunda.org/zips/historyofecb.pdf
 - Энциклопедия ЕХБ, статья “ВСЕХБ”:  
   http://www.baptistru.info/index.php/Всесоюзный_совет_евангельских_христиан-баптистов
 - Calisphere description of *Bratskiy vestnik*:  

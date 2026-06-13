@@ -119,5 +119,74 @@
         "status": "planned"
       }
     ]
+  },
+  "russian-baptism": {
+    "title": "Баптисты России",
+    "baseUrl": "/baptisty-rossii/",
+    "parts": [
+      {
+        "n": 1,
+        "slug": "noch-na-kure",
+        "title": "Ночь на Куре",
+        "status": "published",
+        "readingTime": 18
+      },
+      {
+        "n": 2,
+        "slug": "yuzhnaya-shtunda",
+        "title": "Южная штунда",
+        "status": "published",
+        "readingTime": 20
+      },
+      {
+        "n": 3,
+        "slug": "dva-sezda-1884",
+        "title": "1884: два съезда",
+        "status": "published",
+        "readingTime": 17
+      },
+      {
+        "n": 4,
+        "slug": "peterburgskaya-liniya",
+        "title": "Петербургская линия",
+        "status": "planned"
+      },
+      {
+        "n": 5,
+        "slug": "goneniya-i-sovest",
+        "title": "Гонения и совесть",
+        "status": "planned"
+      },
+      {
+        "n": 6,
+        "slug": "sovetskaya-noch",
+        "title": "Советская ночь",
+        "status": "planned"
+      },
+      {
+        "n": 7,
+        "slug": "vsehib-1944",
+        "title": "1944: один союз",
+        "status": "planned"
+      },
+      {
+        "n": 8,
+        "slug": "iniciativnaya-gruppa",
+        "title": "Инициативная группа",
+        "status": "planned"
+      },
+      {
+        "n": 9,
+        "slug": "podpolnaya-pechat",
+        "title": "Подпольная печать",
+        "status": "planned"
+      },
+      {
+        "n": 10,
+        "slug": "spravochnik",
+        "title": "Справочник",
+        "status": "planned"
+      }
+    ]
   }
 }

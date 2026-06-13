@@ -392,7 +392,7 @@ Baptist World Alliance, страница members:
 
 1. `sinichkin-kreshchenie-pervogo-russkogo-baptista-2018-real.pdf`  
    А. Синичкин, **«К вопросу о крещении первого русского баптиста»**, *Богомыслие*, №22, 2018.  
-   Страница статьи: http://almanah.bogomysliye.com/article/view/133829  
+   Страница статьи: https://almanah.bogomysliye.com/article/view/133829  
    PDF-файл был доступен через прямой OJS-download: `article/download/133829/130289/288060`.  
    Распознанный текст: `sinichkin-kreshchenie-pervogo-russkogo-baptista-2018-real.txt`.
 
@@ -926,7 +926,7 @@ Baptist World Alliance, страница members:
 
 ### Синичкин
 
-- http://almanah.bogomysliye.com/article/view/133829  
+- https://almanah.bogomysliye.com/article/view/133829  
   А. Синичкин, *К вопросу о крещении первого русского баптиста*, 2018.
 
 ---
@@ -1949,7 +1949,7 @@ Coleman цитирует/пересказывает неопубликованн
 ## 11. Источники для сносок
 
 - ВСЕХБ, *История евангельских христиан-баптистов в СССР*, М., 1989. PDF:  
-  http://rusbaptist.stunda.org/zips/historyofecb.pdf
+  https://rusbaptist.stunda.org/zips/historyofecb.pdf
 - РС ЕХБ, “Выдающиеся личности в истории...” — Мартин Кальвейт:  
   https://baptist.org.ru/news/main/view/article/1419261
 - РС ЕХБ, “Протестанты земли российской”:  
@@ -1960,7 +1960,7 @@ Coleman цитирует/пересказывает неопубликованн
 - А. Синичкин, “Особенности возникновения и формирования российского баптизма”:  
   http://www.rusbaptist.stunda.org/voznikbaptism.htm
 - А. Синичкин, “К вопросу о крещении первого русского баптиста”, *Богомыслие*, №22, 2018:  
-  http://almanah.bogomysliye.com/article/view/133829
+  https://almanah.bogomysliye.com/article/view/133829
 - Н. И. Воронин, письмо А. М. Мазаеву, 15.03.1889 — цит. по: Синичкин 2018 / Валькевич, приложение, с. 27.
 - Я. Д. Деляков, “The Autobiography of Jacob Dilakoff, Independent Missionary in Russia”, *European Harvest Field*, XVI, 1935 — цит. по: Синичкин 2018.
 - Н. Каллистов, “Русская община баптистов в Тифлисе”, *Церковный Вестник*, №49, 08.12.1879, с. 3 — цит. по: Синичкин 2018.
@@ -2191,14 +2191,14 @@ Heather Coleman формулирует этот момент так: 11 июня
 ## 13. Источники для сносок
 
 - ВСЕХБ, *История евангельских христиан-баптистов в СССР*, М., 1989:  
-  http://rusbaptist.stunda.org/zips/historyofecb.pdf
+  https://rusbaptist.stunda.org/zips/historyofecb.pdf
 - В. Г. Павлов, *Правда о баптистах*:  
   https://www.bible-for-you.org/Propovedn/pavlov.php
 - Материалы конференции РС ЕХБ “140 лет российскому баптизму”, 2007, локально распознано: `research/russian_baptism/materials5-rs-ecb-140-let-2007.txt`.
 - А. Синичкин, “Особенности возникновения и формирования российского баптизма”:  
   http://www.rusbaptist.stunda.org/voznikbaptism.htm
 - А. Синичкин, “К вопросу о крещении первого русского баптиста”, 2018:  
-  http://almanah.bogomysliye.com/article/view/133829
+  https://almanah.bogomysliye.com/article/view/133829
 - М. А. Кальнев, *Немцы и штундобаптизм*:  
   https://azbyka.ru/otechnik/Mihail_Kalnev/nemtsy-i-shtundobaptizm/
 - С. Д. Бондарь, *Секта меннонитов в России*, 1916:  
@@ -2500,7 +2500,7 @@ Heather Coleman даёт важные детали:
 ## 14. Источники для сносок
 
 - ВСЕХБ, *История евангельских христиан-баптистов в СССР*, М., 1989:  
-  http://rusbaptist.stunda.org/zips/historyofecb.pdf
+  https://rusbaptist.stunda.org/zips/historyofecb.pdf
 - РС ЕХБ, “История объединения евангельских христиан-баптистов”:  
   https://baptist.org.ru/read/article/117007
 - Heather J. Coleman, “Baptist Beginnings in Russia and Ukraine”, *Baptist History and Heritage*, Winter 2007:  
