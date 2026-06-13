@@ -309,6 +309,79 @@ function getEarthTexture(): THREE.CanvasTexture | null {
   return earthTextureInstance;
 }
 
+
+function TimelineOverlay({ timelineYearRef, bottomBarExpanded }: { timelineYearRef: React.MutableRefObject<number | null>, bottomBarExpanded: boolean }) {
+  const [year, setYear] = useState<number | null>(null);
+  
+  useEffect(() => {
+    const handleReset = () => {
+        setYear(null);
+        timelineYearRef.current = null;
+    };
+    window.addEventListener('reset-timeline', handleReset);
+    return () => window.removeEventListener('reset-timeline', handleReset);
+  }, [timelineYearRef]);
+
+  const handleChange = (e: any) => {
+    const val = parseInt(e.target.value, 10);
+    setYear(val);
+    timelineYearRef.current = val;
+  };
+
+  const handleClear = () => {
+    setYear(null);
+    timelineYearRef.current = null;
+  };
+
+  return (
+    <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0, bottom: bottomBarExpanded ? '11.5rem' : '4.5rem' }} transition={{ duration: 0.3, ease: 'easeOut' }} className="absolute left-1/2 z-40 hidden w-full max-w-[800px] -translate-x-1/2 flex-col px-4 sm:flex pointer-events-none">
+      <div className="pointer-events-auto">
+      {year !== null && year < 2026 && (() => {
+        const activeEvents = timelineEvents.filter((e) => {
+          const match = e.year.match(/\d{4}/);
+          const y = match ? parseInt(match[0], 10) : 0;
+          return y > year - 5 && y <= year;
+        });
+        const recentEvent = activeEvents[activeEvents.length - 1];
+        return recentEvent ? (
+          <div className="mx-auto mb-3 flex max-w-sm items-center gap-3 rounded-2xl border border-white/10 bg-black/60 px-4 py-2.5 backdrop-blur-xl">
+            <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full" style={{ background: `${categoryColors[recentEvent.category]}22`, color: categoryColors[recentEvent.category] }}>
+              <Sparkles size={14} />
+            </div>
+            <div>
+              <div className="text-[10px] font-bold uppercase tracking-widest text-white/50">{recentEvent.year} • {recentEvent.category}</div>
+              <div className="text-[13px] font-bold text-white">{recentEvent.title}</div>
+            </div>
+          </div>
+        ) : null;
+      })()}
+      
+      <div className="relative flex w-full items-center gap-4 rounded-full border border-white/10 bg-black/45 px-6 py-2.5 backdrop-blur-2xl">
+        <span className="text-[10px] font-bold text-[#c4a67e]">1860</span>
+        <div className="relative flex h-6 flex-1 items-center">
+          <div className="absolute inset-x-0 h-1 rounded-full bg-white/10" />
+          {timelineEvents.map((evt, i) => {
+            const match = evt.year.match(/\d{4}/);
+            const y = match ? parseInt(match[0], 10) : 0;
+            if (!y || y < 1860 || y > 2026) return null;
+            const percent = ((y - 1860) / (2026 - 1860)) * 100;
+            return <div key={i} className="pointer-events-none absolute h-2 w-[1px] bg-white/30" style={{ left: `${percent}%`, top: '50%', transform: 'translateY(-50%)' }} />;
+          })}
+          <input type="range" min="1860" max="2026" value={year ?? 2026} onChange={handleChange} className="absolute inset-x-0 z-10 h-6 w-full cursor-pointer appearance-none bg-transparent opacity-0" />
+          <div className="pointer-events-none absolute top-1/2 h-3 w-3 -translate-x-1/2 -translate-y-1/2 rounded-full border-2 border-black bg-[#c4a67e] shadow-[0_0_12px_#c4a67e]" style={{ left: `${((year ?? 2026) - 1860) / (2026 - 1860) * 100}%` }} />
+        </div>
+        <span className="text-[10px] font-bold text-[#c4a67e]">2026</span>
+        <div className="flex items-center w-12 shrink-0">
+          {year !== null && year < 2026 && (
+            <button onClick={handleClear} className="ml-3 rounded-full border border-[#c4a67e]/30 bg-black px-2 py-1 text-[9px] font-bold text-[#c4a67e] hover:bg-[#c4a67e]/10 transition-colors">СБРОС</button>
+          )}
+        </div>
+      </div>
+      </div>
+    </motion.div>
+  );
+}
+
 export default function MindMap3D() {
   const fgRef = useRef<any>(null);
   const lightingRef = useRef<THREE.Group | null>(null);
@@ -336,9 +409,7 @@ export default function MindMap3D() {
   const [showRotatePrompt, setShowRotatePrompt] = useState(false);
   const [bottomBarExpanded, setBottomBarExpanded] = useState(false);
   const [cameraNavEnabled, setCameraNavEnabled] = useState(true);
-  const [timelineYear, setTimelineYear] = useState<number | null>(null);
   const timelineYearRef = useRef<number | null>(null);
-  useEffect(() => { timelineYearRef.current = timelineYear; fgRef.current?.d3ReheatSimulation?.(); }, [timelineYear]);
   const [showIntro, setShowIntro] = useState(true);
   const [showLegend, setShowLegend] = useState(false);
 
@@ -868,7 +939,7 @@ export default function MindMap3D() {
   const handleReset = () => {
     haptic(8);
     setFocusNode(null); setMapSelection(null); setActiveRoute(null); setMapMode(false);
-    setContentExpanded(false); setInspectorMode('closed'); setZenMode(false); setInspectorPinned(false); setTimelineYear(null);
+    setContentExpanded(false); setInspectorMode('closed'); setZenMode(false); setInspectorPinned(false); if (timelineYearRef.current !== null) { timelineYearRef.current = null; window.dispatchEvent(new Event('reset-timeline')); }
     fgRef.current?.d3AlphaDecay?.(0.012);
     fgRef.current?.d3VelocityDecay?.(0.20);
     fgRef.current?.d3ReheatSimulation?.();
@@ -974,6 +1045,7 @@ export default function MindMap3D() {
     group.userData.nodeId = node.id;
     group.userData.focusScale = isFocused ? 1.18 : 1;
     group.userData.nodeKind = kind;
+    group.userData.nodeYear = nodeYear;
     group.userData.nodeYear = nodeYear;
     nodeObjectsRef.current.set(node.id, group);
 
