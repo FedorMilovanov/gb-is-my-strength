@@ -15,6 +15,7 @@ import { useTheme } from './ThemeContext';
 import { createGlowMaterial, createPremiumMaterial } from './mindmap3d/materials';
 import { resolveKind } from './mindmap3d/nodeKind';
 import type { LinkData, MapSelection, NodeData, RoutePreset } from './mindmap3d/types';
+import { timelineEvents, categoryColors } from '../data/timeline';
 import { ANCHORS, CITY_MARKERS, COUNTRY_FOCUS, GROUP_COLORS, GROUP_LABELS, LINKS, MAP_AREAS, NODES, ROUTE_PRESETS } from './mindmap3d/data';
 
 const NIGHT_MAP_DATA_URL: string | null = (() => {
@@ -785,11 +786,14 @@ export default function MindMap3D() {
   const dragReheatRef = useRef(0);
   const handleNodeDrag = useCallback((node: any) => {
     if (!fgRef.current) return;
+    // VERY SMOOTH RUBBER BAND: 
+    // High velocity decay during drag so the dragged node's neighbors don't bounce wildly.
     fgRef.current.d3VelocityDecay?.(0.45);
     const now = performance.now();
+    // Use a gentle alpha target so it constantly pulls neighbors slowly, without triggering a full violent reheat.
     if (now - dragReheatRef.current > 200) {
       dragReheatRef.current = now;
-      fgRef.current.d3AlphaTarget?.(0.3);
+      fgRef.current.d3AlphaTarget?.(0.1); 
       fgRef.current.d3ReheatSimulation?.();
     }
   }, []);
@@ -798,15 +802,18 @@ export default function MindMap3D() {
     if (!fgRef.current) return;
     if (node) {
       node.fx = undefined; node.fy = undefined; node.fz = undefined;
+      // Soft push back to anchor
       const anchor = ANCHORS[node.id as string];
       if (anchor) {
-        node.vx = ((node.vx ?? 0) * 0.4) + (anchor.x - (node.x ?? anchor.x)) * 0.01;
-        node.vy = ((node.vy ?? 0) * 0.4) + (anchor.y - (node.y ?? anchor.y)) * 0.01;
-        node.vz = ((node.vz ?? 0) * 0.4) + (anchor.z - (node.z ?? anchor.z)) * 0.01;
+        node.vx = ((node.vx ?? 0) * 0.2) + (anchor.x - (node.x ?? anchor.x)) * 0.02;
+        node.vy = ((node.vy ?? 0) * 0.2) + (anchor.y - (node.y ?? anchor.y)) * 0.02;
+        node.vz = ((node.vz ?? 0) * 0.2) + (anchor.z - (node.z ?? anchor.z)) * 0.02;
       }
     }
-    fgRef.current.d3VelocityDecay?.(0.20);
+    // Return to normal physics
+    fgRef.current.d3VelocityDecay?.(0.28); // 0.28 is standard d3 safe value, 0.20 is too bouncy
     fgRef.current.d3AlphaTarget?.(0);
+    // Don't fully reheat, just let the residual energy settle it down softly
     fgRef.current.d3ReheatSimulation?.();
   }, []);
 
@@ -891,33 +898,37 @@ export default function MindMap3D() {
     const controls = fgRef.current?.controls?.();
     if (!camera || !controls) return;
 
+    // We want pan-like behavior for arrows, not just orbit, or if orbit, around the center.
+    // If we only change theta/phi, we rotate around the current target.
+    // But user probably wants to PAN the view left/right.
     const target = (controls.target as THREE.Vector3).clone();
-    const offset = camera.position.clone().sub(target);
-    const spherical = new THREE.Spherical().setFromVector3(offset);
+    const panStep = 40;
+    
+    // Calculate camera basis vectors
+    const forward = new THREE.Vector3().subVectors(target, camera.position).normalize();
+    const right = new THREE.Vector3().crossVectors(forward, camera.up).normalize();
+    const up = new THREE.Vector3().crossVectors(right, forward).normalize();
+    
+    const nextTarget = target.clone();
+    const nextPos = camera.position.clone();
 
-    const yawStep = 0.12;
-    const pitchStep = 0.09;
-    const dollyIn = 0.83;
-    const dollyOut = 1.20;
-
-    if (direction === 'left') spherical.theta -= yawStep;
-    if (direction === 'right') spherical.theta += yawStep;
-    if (direction === 'up') spherical.phi -= pitchStep;
-    if (direction === 'down') spherical.phi += pitchStep;
-    if (direction === 'forward') spherical.radius *= dollyIn;
-    if (direction === 'back') spherical.radius *= dollyOut;
-
-    const minPhi = Math.PI * 0.08;
-    const maxPhi = Math.PI * 0.90;
-    spherical.phi = Math.max(minPhi, Math.min(maxPhi, spherical.phi));
-    spherical.radius = Math.max(28, Math.min(860, spherical.radius));
-
-    const nextPos = new THREE.Vector3().setFromSpherical(spherical).add(target);
+    if (direction === 'left') { nextTarget.sub(right.clone().multiplyScalar(panStep)); nextPos.sub(right.clone().multiplyScalar(panStep)); }
+    if (direction === 'right') { nextTarget.add(right.clone().multiplyScalar(panStep)); nextPos.add(right.clone().multiplyScalar(panStep)); }
+    if (direction === 'up') { nextTarget.add(up.clone().multiplyScalar(panStep)); nextPos.add(up.clone().multiplyScalar(panStep)); }
+    if (direction === 'down') { nextTarget.sub(up.clone().multiplyScalar(panStep)); nextPos.sub(up.clone().multiplyScalar(panStep)); }
+    if (direction === 'forward') { 
+       const offset = camera.position.clone().sub(target);
+       if (offset.length() > 40) nextPos.sub(offset.multiplyScalar(0.2)); 
+    }
+    if (direction === 'back') { 
+       const offset = camera.position.clone().sub(target);
+       if (offset.length() < 1000) nextPos.add(offset.multiplyScalar(0.2)); 
+    }
 
     fgRef.current?.cameraPosition?.(
       { x: nextPos.x, y: nextPos.y, z: nextPos.z },
-      { x: target.x, y: target.y, z: target.z },
-      580,
+      { x: nextTarget.x, y: nextTarget.y, z: nextTarget.z },
+      400,
     );
     haptic(3);
   }, []);
@@ -1498,17 +1509,48 @@ export default function MindMap3D() {
           <AnimatePresence>{hoveredNodeId && !focusNode && (() => { const hNode = NODES.find((n) => n.id === hoveredNodeId); if (!hNode) return null; return (<motion.div key={hoveredNodeId} initial={{ opacity: 0, y: 8, scale: 0.95 }} animate={{ opacity: 1, y: 0, scale: 1 }} exit={{ opacity: 0, y: 6, scale: 0.95 }} transition={{ duration: 0.12 }} className="pointer-events-none absolute bottom-28 left-1/2 z-40 -translate-x-1/2 rounded-2xl border backdrop-blur-2xl sm:bottom-32" style={{ color: GROUP_COLORS[hNode.group], borderColor: `${GROUP_COLORS[hNode.group]}35`, background: 'rgba(5,5,12,0.75)', boxShadow: `0 0 24px ${GROUP_COLORS[hNode.group]}18`, padding: '6px 14px 7px' }}><span className="text-[8.5px] uppercase tracking-[0.18em]" style={{ color: GROUP_COLORS[hNode.group], opacity: 0.6 }}>{GROUP_LABELS[hNode.group]}</span><div className="flex items-baseline gap-2"><span className="text-[13px] font-bold leading-tight text-white">{hNode.label}</span>{hNode.year && <span className="font-mono text-[9px]" style={{ color: GROUP_COLORS[hNode.group], opacity: 0.7 }}>{hNode.year}</span>}</div></motion.div>); })()}</AnimatePresence>
           {(focusNode || mapSelection) && (<div className="pointer-events-none absolute bottom-20 right-4 z-30 hidden rounded-2xl border border-white/[0.08] bg-black/40 px-3 py-2.5 text-[10px] text-white/55 backdrop-blur-xl md:block" style={{ boxShadow: '0 4px 20px rgba(0,0,0,0.3)' }}><div className="mb-1.5 flex items-center gap-2"><span className="h-1.5 w-6 rounded-full" style={{ background: 'linear-gradient(90deg, #c4a67e, #d4a857)' }} />прямая связь</div><div className="flex items-center gap-2"><span className="h-px w-6 rounded-full bg-white/30" />вторичная</div></div>)}
 
-          {/* Timeline Slider */}
+          {/* NEW TIMELINE SLIDER (HORIZONTAL, NATIVE) */}
           {!zenMode && (
-            <motion.div initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} className="absolute left-6 top-1/2 z-40 hidden -translate-y-1/2 flex-col items-center gap-4 rounded-full border border-white/10 bg-black/40 py-6 backdrop-blur-md md:flex">
-              <span className="text-[10px] font-bold text-[#c4a67e]">1860</span>
-              <div className="relative flex h-[300px] w-6 justify-center">
-                <input type="range" min="1860" max="2026" value={timelineYear ?? 2026} onChange={(e) => setTimelineYear(parseInt(e.target.value, 10))} className="absolute top-1/2 h-1 w-[300px] -translate-y-1/2 -rotate-90 cursor-pointer appearance-none rounded-full bg-white/10 outline-none [&::-webkit-slider-thumb]:h-4 [&::-webkit-slider-thumb]:w-4 [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-[#c4a67e]" />
+            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="absolute bottom-[4.5rem] left-1/2 z-40 hidden w-full max-w-[800px] -translate-x-1/2 flex-col px-4 sm:flex">
+              {timelineYear !== null && timelineYear < 2026 && (() => {
+                const activeEvents = timelineEvents.filter(e => {
+                  const y = parseInt(e.year.match(/\d{4}/)?.[0] || '0', 10);
+                  return y > timelineYear - 5 && y <= timelineYear;
+                });
+                const recentEvent = activeEvents[activeEvents.length - 1];
+                return recentEvent ? (
+                  <div className="mx-auto mb-3 flex max-w-sm items-center gap-3 rounded-2xl border border-white/10 bg-black/60 px-4 py-2.5 backdrop-blur-xl">
+                    <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full" style={{ background: `${categoryColors[recentEvent.category]}22`, color: categoryColors[recentEvent.category] }}>
+                      <Sparkles size={14} />
+                    </div>
+                    <div>
+                      <div className="text-[10px] font-bold uppercase tracking-widest text-white/50">{recentEvent.year} • {recentEvent.category}</div>
+                      <div className="text-[13px] font-bold text-white">{recentEvent.title}</div>
+                    </div>
+                  </div>
+                ) : null;
+              })()}
+              
+              <div className="relative flex w-full items-center gap-4 rounded-full border border-white/10 bg-black/45 px-6 py-2.5 backdrop-blur-2xl">
+                <span className="text-[10px] font-bold text-[#c4a67e]">1860</span>
+                <div className="relative flex h-6 flex-1 items-center">
+                  <div className="absolute inset-x-0 h-1 rounded-full bg-white/10" />
+                  {timelineEvents.map((evt, i) => {
+                    const y = parseInt(evt.year.match(/\d{4}/)?.[0] || '0', 10);
+                    if (!y || y < 1860 || y > 2026) return null;
+                    const percent = ((y - 1860) / (2026 - 1860)) * 100;
+                    return (
+                      <div key={i} className="pointer-events-none absolute h-2 w-[1px] bg-white/30" style={{ left: `${percent}%`, top: '50%', transform: 'translateY(-50%)' }} />
+                    );
+                  })}
+                  <input type="range" min="1860" max="2026" value={timelineYear ?? 2026} onChange={(e) => setTimelineYear(parseInt(e.target.value, 10))} className="absolute inset-x-0 z-10 h-6 w-full cursor-pointer appearance-none bg-transparent opacity-0" />
+                  <div className="pointer-events-none absolute top-1/2 h-3 w-3 -translate-x-1/2 -translate-y-1/2 rounded-full border-2 border-black bg-[#c4a67e] shadow-[0_0_12px_#c4a67e]" style={{ left: `${((timelineYear ?? 2026) - 1860) / (2026 - 1860) * 100}%` }} />
+                </div>
+                <span className="text-[10px] font-bold text-[#c4a67e]">2026</span>
+                {timelineYear !== null && timelineYear < 2026 && (
+                  <button onClick={() => setTimelineYear(null)} className="absolute -right-2 top-0 -translate-y-1/2 rounded-full border border-[#c4a67e]/30 bg-black px-2 py-0.5 text-[8px] font-bold text-[#c4a67e] hover:bg-[#c4a67e]/10">СБРОС</button>
+                )}
               </div>
-              <span className="text-[10px] font-bold text-[#c4a67e]">2026</span>
-              {timelineYear !== null && timelineYear < 2026 && (
-                <div className="absolute left-full top-1/2 ml-4 -translate-y-1/2 whitespace-nowrap rounded-lg border border-[#c4a67e]/30 bg-black/80 px-3 py-1.5 text-sm font-bold text-white shadow-xl">{timelineYear} год <button onClick={() => setTimelineYear(null)} className="ml-3 text-[10px] text-white/50 hover:text-white">СБРОС</button></div>
-              )}
             </motion.div>
           )}
 
