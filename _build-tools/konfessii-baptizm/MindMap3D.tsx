@@ -244,7 +244,7 @@ function ContextStatusBar({ activeRoute, routeStep, mapSelection, focusLabel }: 
   );
 }
 
-function BottomBar({ left, hidden, expanded, activeRoute, routeStep = 0, mapSelection, onToggle, onRouteSelect, onMapSelect }: any) {
+function BottomBar({ left, hidden, expanded, activeRoute, routeStep = 0, mapSelection, onToggle, onRouteSelect, onRouteStepTo, onMapSelect }: any) {
   const activeLabel = activeRoute?.label ?? mapSelection?.label ?? 'Маршруты и города';
   const activeColor = activeRoute?.color ?? mapSelection?.color ?? '#c4a67e';
   const activeRouteNodes = activeRoute ? activeRoute.nodes.map((id: string) => NODES.find((n) => n.id === id)).filter(Boolean) as NodeData[] : [];
@@ -266,10 +266,10 @@ function BottomBar({ left, hidden, expanded, activeRoute, routeStep = 0, mapSele
                   <span className="text-[9px] font-bold uppercase tracking-[0.16em]" style={{ color: activeRoute.color }}>Активный маршрут</span>
                   <span className="ml-auto font-mono text-[9px] text-white/40">{routeStep + 1}/{activeRoute.nodes.length}</span>
                 </div>
-                <p className="text-[11px] leading-5 text-white/62">{activeRoute.summary}</p>
+                <p className="text-[11px] leading-5 text-white/62">{activeRoute.summary}</p><p className="mt-1 text-[9px] text-white/30">Нажмите этап, чтобы перелететь к соответствующему узлу.</p>
                 <div className="mt-2 flex max-w-full gap-1 overflow-hidden">
                   {activeRouteNodes.slice(0, 7).map((node, idx) => (
-                    <span key={node.id} className="truncate rounded-full border px-2 py-0.5 text-[9px]" style={{ borderColor: idx === routeStep ? `${activeRoute.color}aa` : 'rgba(255,255,255,0.10)', color: idx === routeStep ? activeRoute.color : 'rgba(255,255,255,0.45)', background: idx === routeStep ? `${activeRoute.color}14` : 'rgba(255,255,255,0.03)' }}>{idx + 1}. {node.label}</span>
+                    <button key={node.id} type="button" onClick={() => onRouteStepTo?.(idx)} className="truncate rounded-full border px-2 py-0.5 text-left text-[9px] transition hover:scale-[1.04] active:scale-95" style={{ borderColor: idx === routeStep ? `${activeRoute.color}aa` : 'rgba(255,255,255,0.10)', color: idx === routeStep ? activeRoute.color : 'rgba(255,255,255,0.45)', background: idx === routeStep ? `${activeRoute.color}14` : 'rgba(255,255,255,0.03)' }} title={`Этап ${idx + 1}: ${node.label}`}>{idx + 1}. {node.label}</button>
                   ))}
                 </div>
               </div>
@@ -327,7 +327,7 @@ function getEarthTexture(): THREE.CanvasTexture | null {
 }
 
 
-function TimelineOverlay({ timelineYearRef, bottomBarExpanded }: { timelineYearRef: React.MutableRefObject<number | null>, bottomBarExpanded: boolean }) {
+function TimelineOverlay({ timelineYearRef, bottomBarExpanded, onEventSelect }: { timelineYearRef: React.MutableRefObject<number | null>, bottomBarExpanded: boolean, onEventSelect?: (event: any, year: number) => void }) {
   const [year, setYear] = useState<number | null>(null);
   
   useEffect(() => {
@@ -386,7 +386,7 @@ function TimelineOverlay({ timelineYearRef, bottomBarExpanded }: { timelineYearR
             if (!y || y < 1860 || y > 2026) return null;
             const percent = ((y - 1860) / (2026 - 1860)) * 100;
             const isActive = Math.abs(y - displayYear) <= 2;
-            return <button key={i} type="button" onClick={() => { setYear(y); timelineYearRef.current = y; }} title={`${evt.year}: ${evt.title}`} className="absolute z-20 h-3 w-3 -translate-x-1/2 -translate-y-1/2 rounded-full border transition hover:scale-125" style={{ left: `${percent}%`, top: '50%', borderColor: isActive ? categoryColors[evt.category] : 'rgba(255,255,255,0.22)', background: isActive ? categoryColors[evt.category] : 'rgba(255,255,255,0.16)', boxShadow: isActive ? `0 0 12px ${categoryColors[evt.category]}80` : 'none' }} aria-label={`Перейти к событию ${evt.year}: ${evt.title}`} />;
+            return <button key={i} type="button" onClick={() => { setYear(y); timelineYearRef.current = y; onEventSelect?.(evt, y); }} title={`${evt.year}: ${evt.title}`} className="absolute z-20 h-3 w-3 -translate-x-1/2 -translate-y-1/2 rounded-full border transition hover:scale-125" style={{ left: `${percent}%`, top: '50%', borderColor: isActive ? categoryColors[evt.category] : 'rgba(255,255,255,0.22)', background: isActive ? categoryColors[evt.category] : 'rgba(255,255,255,0.16)', boxShadow: isActive ? `0 0 12px ${categoryColors[evt.category]}80` : 'none' }} aria-label={`Перейти к событию ${evt.year}: ${evt.title}`} />;
           })}
           <input type="range" min="1860" max="2026" value={displayYear} onChange={handleChange} className="absolute inset-x-0 z-10 h-6 w-full cursor-pointer appearance-none bg-transparent opacity-0" />
           <div className="pointer-events-none absolute top-1/2 h-3 w-3 -translate-x-1/2 -translate-y-1/2 rounded-full border-2 border-black bg-[#c4a67e] shadow-[0_0_12px_#c4a67e]" style={{ left: `${((displayYear) - 1860) / (2026 - 1860) * 100}%` }} />
@@ -986,6 +986,50 @@ export default function MindMap3D() {
   };
   const handleRouteSelect = (route: RoutePreset) => { haptic(5); setActiveRoute(route); setRouteStep(0); setMapSelection(null); setMapMode(true); setContentExpanded(false); const rf = NODES.find((n) => n.id === route.focus) ?? null; setFocusNode(rf); const nextMode: InspectorMode = zenMode ? 'closed' : 'peek'; setInspectorMode(nextMode); if (rf) focusCameraToNode(rf, nextMode); };
   const handleRouteStep = (dir: 1 | -1) => { if (!activeRoute) return; haptic(4); const next = Math.max(0, Math.min(activeRoute.nodes.length - 1, routeStep + dir)); setRouteStep(next); const nodeId = activeRoute.nodes[next]; const stepNode = NODES.find((n) => n.id === nodeId); if (stepNode) { setFocusNode(stepNode); setContentExpanded(false); focusCameraToNode(stepNode, inspectorMode); } };
+
+  const handleRouteStepTo = useCallback((index: number) => {
+    if (!activeRoute) return;
+    const next = Math.max(0, Math.min(activeRoute.nodes.length - 1, index));
+    haptic(4);
+    setRouteStep(next);
+    const stepNode = NODES.find((n) => n.id === activeRoute.nodes[next]);
+    if (stepNode) {
+      setFocusNode(stepNode);
+      setContentExpanded(false);
+      focusCameraToNode(stepNode, inspectorMode);
+    }
+  }, [activeRoute, focusCameraToNode, inspectorMode]);
+
+  const handleTimelineEventSelect = useCallback((event: any, year: number) => {
+    const text = `${event?.year ?? ''} ${event?.title ?? ''} ${event?.description ?? ''} ${event?.details ?? ''}`;
+    const hints: Array<[RegExp, string]> = [
+      [/Воронин|Кура|Тифлис/i, 'voronin'],
+      [/Кальвейт/i, 'kalweit'],
+      [/Павлов/i, 'pavlov'],
+      [/Цымбал/i, 'tsymbal'],
+      [/Вилер|Нововасильев|Союз баптистов/i, 'vsb'],
+      [/Редсток/i, 'redstock'],
+      [/Пашков/i, 'pashkov'],
+      [/Каргель/i, 'kargel'],
+      [/Проханов|ВСЕХ(?!Б)/i, 'vseh'],
+      [/ВСЕХБ|Жидков|Карев|1944/i, 'vsehb'],
+      [/СЦ ЕХБ|Совет Церквей|Крючков|Винс|1961|1965/i, 'sc'],
+      [/РС ЕХБ|1992|Современный/i, 'rsehb'],
+      [/Украин|Штунд/i, 'ukr'],
+      [/Петербург/i, 'spb'],
+      [/Закавказ|Тифлис/i, 'trans'],
+    ];
+    const id = hints.find(([rx]) => rx.test(text))?.[1];
+    const node = id ? NODES.find((n) => n.id === id) : null;
+    if (!node) return;
+    setActiveRoute(null);
+    setMapSelection(null);
+    setFocusNode(node);
+    setContentExpanded(false);
+    const nextMode: InspectorMode = zenMode ? 'closed' : 'peek';
+    setInspectorMode(nextMode);
+    focusCameraToNode(node, nextMode);
+  }, [focusCameraToNode, zenMode]);
 
   const handleNeighborStep = useCallback((dir: 1 | -1) => {
     if (activeRoute) { handleRouteStep(dir); return; }
@@ -1645,7 +1689,7 @@ export default function MindMap3D() {
           {(focusNode || mapSelection) && (<div className="pointer-events-none absolute bottom-20 right-4 z-30 hidden rounded-2xl border border-white/[0.08] bg-black/40 px-3 py-2.5 text-[10px] text-white/55 backdrop-blur-xl md:block" style={{ boxShadow: '0 4px 20px rgba(0,0,0,0.3)' }}><div className="mb-1.5 flex items-center gap-2"><span className="h-1.5 w-6 rounded-full" style={{ background: 'linear-gradient(90deg, #c4a67e, #d4a857)' }} />прямая связь</div><div className="flex items-center gap-2"><span className="h-px w-6 rounded-full bg-white/30" />вторичная</div></div>)}
 
           {/* Timeline: ref-based so RAF can dim future nodes without rebuilding graph state. */}
-          {!zenMode && <TimelineOverlay timelineYearRef={timelineYearRef} bottomBarExpanded={bottomBarExpanded} />}
+          {!zenMode && <TimelineOverlay timelineYearRef={timelineYearRef} bottomBarExpanded={bottomBarExpanded} onEventSelect={handleTimelineEventSelect} />}
 
           {focusNode && !zenMode && (
             <>
@@ -1655,7 +1699,7 @@ export default function MindMap3D() {
             </>
           )}
 
-          <BottomBar left={panelSafeLeft} hidden={isSmallViewport && inspectorMode === 'full'} expanded={bottomBarExpanded} activeRoute={activeRoute} routeStep={routeStep} mapSelection={mapSelection} onToggle={() => setBottomBarExpanded((v) => !v)} onRouteSelect={handleRouteSelect} onMapSelect={handleMapSelect} />
+          <BottomBar left={panelSafeLeft} hidden={isSmallViewport && inspectorMode === 'full'} expanded={bottomBarExpanded} activeRoute={activeRoute} routeStep={routeStep} mapSelection={mapSelection} onToggle={() => setBottomBarExpanded((v) => !v)} onRouteSelect={handleRouteSelect} onRouteStepTo={handleRouteStepTo} onMapSelect={handleMapSelect} />
           
           <ForceGraph3D
             ref={fgRef} graphData={graphData} width={dims.w} height={dims.h} backgroundColor="rgba(0,0,0,0)"
