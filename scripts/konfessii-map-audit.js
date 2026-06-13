@@ -94,15 +94,15 @@ if (src) {
   /findMapSelectionForNode/.test(src) && /setMapSelection\(selection\)/.test(src)
     ? ok('I8 source: timeline events synchronize map selection')
     : bad('I8 source: timeline events do not synchronize map selection');
-  /timelineTicks/.test(src) && /visibleTimelineTicks/.test(src) && /hoveredTick/.test(src) && !/title=\{`\$\{evt\.year\}:/.test(src)
-    ? ok('I8 source: timeline ticks are clustered and avoid native title tooltips')
+  /timelineTicks/.test(src) && /visibleTimelineTicks/.test(src) && /hoveredTick/.test(src) && /timelineTicks\.filter\(\(tick\) => tick\.major\)/.test(src) && !/title=\{`\$\{evt\.year\}:/.test(src)
+    ? ok('I8 source: timeline ticks are landmark-only and avoid native title tooltips')
     : bad('I8 source: timeline ticks are noisy or use native title tooltips');
-  /fill=\{exact && focus \? `\$\{focus\.color\}1f`/.test(src) && /opacity=\{exact \? 0\.66/.test(src)
+  /fill=\{exact && focus \? `\$\{focus\.color\}14`/.test(src) && /opacity=\{exact \? 0\.48/.test(src)
     ? ok('I8 source: map highlight intensity is restrained')
     : bad('I8 source: map highlight may overpower 3D scene');
-  /html\.style\.overflow = 'hidden'/.test(src) && /body\.style\.overflow = 'hidden'/.test(src)
-    ? ok('I5 source: 3D fullscreen locks document scroll')
-    : bad('I5 source: 3D fullscreen does not lock document scroll');
+  /html\.style\.overflow = 'hidden'/.test(src) && /body\.style\.overflow = 'hidden'/.test(src) && /onWheelCapture=\{handleSceneWheel\}/.test(src)
+    ? ok('I5 source: 3D fullscreen locks document scroll and captures wheel')
+    : bad('I5 source: 3D fullscreen does not lock document scroll/wheel');
   /interactiveHit/.test(src) && /child\.raycast = \(\) => undefined/.test(src)
     ? ok('I5 source: decorative node geometry does not block raycast clicks')
     : bad('I5 source: decorative geometry may block node clicks');
