@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
   <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://mc.yandex.ru https://*.yandex.ru https://mc.yandex.com https://*.yandex.com https://cdn.jsdelivr.net; img-src 'self' https://mc.yandex.ru https://*.yandex.ru https://mc.yandex.com https://*.yandex.com https://commons.wikimedia.org https://upload.wikimedia.org https://*.nasa.gov https://bibleplaces.photoshelter.com data: blob:; style-src 'self' 'unsafe-inline'; font-src 'self' data:; connect-src 'self' https://mc.yandex.ru https://*.yandex.ru https://mc.yandex.com https://*.yandex.com wss://mc.yandex.ru wss://*.yandex.ru wss://mc.yandex.com wss://*.yandex.com; frame-src 'self' https://mc.yandex.ru https://*.yandex.ru https://mc.yandex.com https://*.yandex.com; object-src 'none'; base-uri 'self';">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no">
 <title>Путь Авраама: интерактивная карта Бытия 11–25 | Господь Бог — Сила Моя</title>
 <meta name="description" content="Интерактивная карта Авраама: от Ура Халдейского до горы Мория. 20 мест, 8 этапов, 5 сюжетов (Лех-леха, Война царей, Акеда), кинотур, археология, иврит, хронология 175 лет.">
 <meta name="robots" content="index, follow">
@@ -39,7 +39,7 @@
     --serif:Georgia,"Times New Roman",serif;
   }
   *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
-  html,body{height:100%;overflow:hidden;background:#070a10;color:var(--txt);font-family:var(--sans)}
+  html,body{height:100%;overflow:hidden;background:#070a10;color:var(--txt);font-family:var(--sans);-webkit-text-size-adjust:100%;text-size-adjust:100%}
   #stage{position:fixed;inset:0}
   svg{width:100%;height:100%;display:block;cursor:grab;touch-action:none}
   svg.dragging{cursor:grabbing}
@@ -127,7 +127,7 @@
   .btn{background:var(--panel);border:1px solid var(--panel-line);color:var(--txt);width:38px;height:38px;border-radius:11px;font-size:17px;cursor:pointer;backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);display:grid;place-items:center;transition:.2s;box-shadow:0 4px 18px rgba(0,0,0,.45);will-change:transform;-webkit-tap-highlight-color:transparent}
   @media(max-width:760px){.btn{width:44px;height:44px;border-radius:13px}}
   .btn:hover{border-color:var(--gold);color:var(--gold);transform:translateY(-1px);box-shadow:0 6px 24px rgba(0,0,0,.5),0 0 12px rgba(232,200,121,.15)}
-  .btn:active{transform:scale(.94);opacity:.85}
+  .btn:active{transform:scale(.94);opacity:.85;cursor:pointer}
   .btn:focus-visible,.stage-chip:focus-visible,.tab:focus-visible{outline:2px solid var(--gold);outline-offset:2px}
   .btn.wide{width:auto;padding:0 14px;font-size:12px;letter-spacing:.1em;height:34px}
   .btn.on{border-color:var(--gold);color:#1a1407;background:var(--gold)}
@@ -229,7 +229,7 @@
   .stage-chip.cur .n{text-shadow:0 0 10px rgba(232,200,121,.6);color:var(--gold)}
   .stage-chip.cur .t{color:#f4ead8}
   #playBtn{flex:0 0 auto;width:46px;height:46px;border-radius:50%;font-size:16px;border:1px solid var(--gold);color:var(--gold);background:rgba(33,28,16,.85);margin-bottom:6px;position:relative}
-  #tourProgress{position:fixed;bottom:0;left:0;height:2px;background:linear-gradient(90deg,var(--gold) 0%,rgba(232,200,121,.8) 50%,var(--gold) 100%);background-size:200% 100%;z-index:25;transition:width .6s ease;pointer-events:none;width:0}
+  #tourProgress{position:fixed;bottom:0;left:0;height:2px;z-index:26;background:linear-gradient(90deg,var(--gold) 0%,rgba(232,200,121,.8) 50%,var(--gold) 100%);background-size:200% 100%;z-index:25;transition:width .6s ease;pointer-events:none;width:0}
   #tourProgress.active{animation:tourProgressShine 2s linear infinite}
   @keyframes tourProgressShine{0%{background-position:200% 0}100%{background-position:-200% 0}}
   #playBtn:hover{background:var(--gold);color:#1a1407}
@@ -410,10 +410,14 @@
   @media(max-width:760px){body.panel-open #tools{right:18px}}
   @media(max-width:760px){
     #panel{
-      top:auto;left:0;right:0;bottom:0;width:100%;height:92svh;max-height:92svh;
+      top:auto;left:0;right:0;bottom:0;width:100%;
+      height:92vh;height:-webkit-fill-available;height:92svh;
+      max-height:92vh;max-height:92svh;
       border-left:none;border-top:1px solid var(--panel-line);border-radius:22px 22px 0 0;
-      transform:translateY(105%);transition:transform .42s cubic-bezier(.16,.84,.24,1);
+      transform:translateY(105%) translateZ(0);
+      transition:transform .42s cubic-bezier(.16,.84,.24,1);
       box-shadow:0 -12px 60px rgba(0,0,0,.65);
+      -webkit-transform:translateY(105%) translateZ(0);
     }
     #panel.open{transform:translateY(0)}
     /* drag handle */
@@ -789,13 +793,9 @@ body{overscroll-behavior:none;-webkit-overscroll-behavior:none}
     #rotate-hint{display:flex}
   }
 
-</style>
-  <link rel="alternate" type="application/rss+xml" title="Господь Бог — Сила Моя — RSS" href="https://gospod-bog.ru/feed.xml">
-  <link rel="manifest" href="/manifest.json">
-<script src="https://cdn.jsdelivr.net/npm/gsap@3.13/dist/gsap.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/gsap@3.13/dist/DrawSVGPlugin.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/gsap@3.13/dist/MotionPathPlugin.min.js"></script>
-<style>
+
+  /* === merged from footer style block === */
+
 .avraam-footer{position:fixed;bottom:0;right:0;padding:6px 14px;font-family:'Source Sans 3',system-ui,sans-serif;font-size:10px;z-index:2}
 .avraam-footer a{color:rgba(205,185,144,.35);text-decoration:none;transition:opacity .2s}
 .avraam-footer a:hover{opacity:1;color:rgba(205,185,144,.7)}
@@ -889,7 +889,14 @@ body{overscroll-behavior:none;-webkit-overscroll-behavior:none}
     #pfoot-arrows button:active{background:rgba(232,200,121,.15);transform:scale(.96)}
   }
 
+
 </style>
+  <link rel="alternate" type="application/rss+xml" title="Господь Бог — Сила Моя — RSS" href="https://gospod-bog.ru/feed.xml">
+  <link rel="manifest" href="/manifest.json">
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.13/dist/gsap.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.13/dist/DrawSVGPlugin.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.13/dist/MotionPathPlugin.min.js"></script>
+
 </head>
 <body>
 <a href="#svg-map" class="avraam-skip">Перейти к карте</a>
@@ -1698,7 +1705,7 @@ body{overscroll-behavior:none;-webkit-overscroll-behavior:none}
 </div>
 
 <!-- ============ PANEL ============ -->
-<aside id="panel" role="dialog" aria-modal="false" aria-label="Информация о месте">
+<aside id="panel" role="dialog" aria-modal="false" aria-hidden="true" aria-label="Информация о месте">
   <header>
     <button id="closeP">✕</button>
     <div class="kicker" id="p-kicker"></div>
@@ -2741,6 +2748,8 @@ function openPlace(id,fly=true){
   const sp2=document.getElementById('sharePl');if(sp2){sp2.classList.remove('new-place');requestAnimationFrame(()=>sp2.classList.add('new-place'));setTimeout(()=>sp2.classList.remove('new-place'),2100);}
   panel.classList.add('open');document.body.classList.add('panel-open');
   panel.setAttribute('aria-label',pl.name+' · '+pl.kick);
+  panel.setAttribute('aria-modal','true');
+  panel.setAttribute('aria-hidden','false');
   // Spotlight на место
   (()=>{
     const sp=document.getElementById('spotlight');
@@ -2817,7 +2826,7 @@ function setTab(t){
 }
 document.querySelectorAll('.tab').forEach(el=>el.onclick=()=>setTab(el.dataset.t));
 document.getElementById('closeP').onclick=closePanel;
-function closePanel(){panel.classList.remove('open');document.body.classList.remove('panel-open');document.querySelectorAll('.marker').forEach(m=>m.classList.remove('active'));curPlace=-1;const sp=document.getElementById('spotlight');if(sp)sp.classList.remove('on');const counter=document.getElementById('place-counter');if(counter)counter.textContent='';}
+function closePanel(){panel.setAttribute('aria-modal','false');panel.setAttribute('aria-hidden','true');panel.classList.remove('open');document.body.classList.remove('panel-open');document.querySelectorAll('.marker').forEach(m=>m.classList.remove('active'));curPlace=-1;const sp=document.getElementById('spotlight');if(sp)sp.classList.remove('on');const counter=document.getElementById('place-counter');if(counter)counter.textContent='';}
 document.getElementById('nextPl').onclick=()=>stepPlace(1);
 document.getElementById('prevPl').onclick=()=>stepPlace(-1);
 function stepPlace(d){
@@ -3588,7 +3597,10 @@ document.getElementById('photoClose').addEventListener('click',()=>{
   document.getElementById('photoModal').classList.remove('open');
 });
 document.addEventListener('keydown',e=>{
-  if(e.key==='Escape') document.getElementById('photoModal').classList.remove('open');
+  if(e.key==='Escape'){
+    const pm=document.getElementById('photoModal');
+    if(pm&&pm.classList.contains('open')){pm.classList.remove('open');return;}
+  }open');
 });
 document.getElementById('photoModal').addEventListener('click',e=>{
   if(e.target.id==='photoModal') document.getElementById('photoModal').classList.remove('open');
