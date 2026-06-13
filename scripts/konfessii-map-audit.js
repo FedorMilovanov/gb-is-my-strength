@@ -34,6 +34,7 @@ process.env.PLAYWRIGHT_BROWSERS_PATH =
 const ROOT = path.join(__dirname, '..');
 const WRAP_REL = path.join('konfessii', 'russkij-baptizm', 'index.html');
 const APP_REL = path.join('konfessii', 'russkij-baptizm', '_app', 'index.html');
+const SRC_REL = path.join('_build-tools', 'konfessii-baptizm', 'MindMap3D.tsx');
 const WRAP = 'file://' + path.join(ROOT, WRAP_REL);
 
 const fails = [];
@@ -44,6 +45,7 @@ const bad = (m) => { fails.push(m); console.log('  ❌ ' + m); };
 console.log('\n🌍 KONFESSII 3D-MAP AUDIT (регресс-защита отдела)\n');
 const wrap = fs.readFileSync(path.join(ROOT, WRAP_REL), 'utf8');
 const app = fs.existsSync(path.join(ROOT, APP_REL)) ? fs.readFileSync(path.join(ROOT, APP_REL), 'utf8') : '';
+const src = fs.existsSync(path.join(ROOT, SRC_REL)) ? fs.readFileSync(path.join(ROOT, SRC_REL), 'utf8') : '';
 
 // I7 wrapper SEO
 /rel="canonical"/.test(wrap) ? ok('I7 обёртка: canonical') : bad('I7 обёртка: нет canonical');
@@ -62,6 +64,20 @@ else {
   /Content-Security-Policy/.test(app) ? ok('I6 _app: CSP') : bad('I6 _app: нет CSP');
   /name="robots"\s+content="noindex"/.test(app) ? ok('I6 _app: robots=noindex') : bad('I6 _app: нет noindex (бандл не должен индексироваться)');
   /id="root"/.test(app) ? ok('I6 _app: React root present') : bad('I6 _app: нет #root');
+}
+
+// source-level guard for the regression fixed in 7850e0f: ref-based TimelineOverlay must
+// not coexist with the removed useState timelineYear/setTimelineYear JSX block.
+if (src) {
+  /function\s+TimelineOverlay/.test(src) && /timelineYearRef/.test(src)
+    ? ok('I8 source: ref-based TimelineOverlay present')
+    : bad('I8 source: TimelineOverlay/timelineYearRef missing');
+  /setTimelineYear\b|\btimelineYear\s*\?\?/.test(src)
+    ? bad('I8 source: stale timelineYear/setTimelineYear references remain (runtime crash risk)')
+    : ok('I8 source: no stale timelineYear state references');
+  (src.match(/<TimelineOverlay\b/g) || []).length === 1
+    ? ok('I8 source: TimelineOverlay mounted exactly once')
+    : bad('I8 source: TimelineOverlay mount count = ' + (src.match(/<TimelineOverlay\b/g) || []).length);
 }
 
 // ---------- live checks (browser, optional) ----------
