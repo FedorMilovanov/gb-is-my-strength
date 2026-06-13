@@ -63,6 +63,8 @@
 - **Timeline → map sync:** событие теперь не только фокусирует узел, но и включает/подсвечивает релевантную географию (`city-Тифлис`, `city-Санкт-Петербург`, `city-Москва`, `country-804` и т.п.) через `findMapSelectionForNode`.
 - **Timeline target table:** вместо разрозненной regex-логики используется единый `TIMELINE_TARGETS` в `MindMap3D.tsx` как промежуточный шаг к полноценным `nodeId/routeId/mapSelectionId` в `timeline.ts`.
 - **Timeline declutter:** ticks сгруппированы по году, minor-события визуально приглушены; native `title` убран, чтобы не появлялись белые браузерные tooltip-плашки поверх премиального UI.
+- **Timeline landmark mode:** рендерятся только major/landmark ticks и ближайшие к выбранному году minor ticks (`visibleTimelineTicks`), а hover/focus обновляет собственную тёмную карточку события (`hoveredTick`) вместо браузерного tooltip.
+- **Map highlight restraint:** заливка выбранной страны снижена (`35`→`1f`, opacity `0.9`→`0.66`), related-страны приглушены; карта должна давать контекст, а не заливать сцену золотым пятном.
 - **Scroll lock:** при открытой 3D-карте `html/body` получают `overflow:hidden`, чтобы колесо мыши не двигало правый document-scrollbar вместо zoom/pan сцены.
 - **Raycast hygiene:** декоративные glows/labels/orbits отключены от raycast, клики ловит компактный `interactiveHit`; это снижает ситуацию, когда близкий огромный glow/кольцо мешает выбрать дальний узел.
 - **Top navigation anti-overlap:** nav-панель 3D-приложения должна оставаться читаемой на 1366–1680px: бренд не перекрывает «Главная», пункты `whitespace-nowrap`, ширина nav расширена до `max-w-[82rem]`. Исходник-фикс хранится в `_build-tools/konfessii-baptizm/Navigation.tsx`.
