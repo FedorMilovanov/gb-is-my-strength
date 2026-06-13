@@ -356,9 +356,11 @@ body{overscroll-behavior:none;-webkit-overscroll-behavior:none}
       overflow-x:auto;flex-wrap:nowrap;padding:8px 12px 6px;
       background:linear-gradient(to bottom,rgba(5,8,13,.95) 80%,transparent);
       scrollbar-width:none;
+      /* Убеждаемся что не перекрывает timeline снизу */
+      max-height:44px;
     }
     #story-nav::-webkit-scrollbar{display:none}
-    #brand{top:40px}
+    #brand{top:44px}
   }
 
   /* ---------- hover preview (desktop only) ---------- */
@@ -385,7 +387,7 @@ body{overscroll-behavior:none;-webkit-overscroll-behavior:none}
   }
 
   /* ---------- marker dim/highlight for stories ---------- */
-  #markers .marker.story-dim,#ctx .ctx-dot.story-dim{opacity:.12;transition:opacity .4s}
+  #markers .marker.story-dim,#ctx .ctx-dot.story-dim{opacity:.1;transition:opacity .4s;pointer-events:none}
   #markers .marker.story-hi,#ctx .ctx-dot.story-hi{opacity:1;transition:opacity .4s}
   .route.story-dim{opacity:.06!important;transition:opacity .4s}
   .route.story-hi{opacity:1!important;transition:opacity .4s}
@@ -607,11 +609,11 @@ body{overscroll-behavior:none;-webkit-overscroll-behavior:none}
   <div class="he" lang="he">אַבְרָהָם אָבִינוּ &#8226; לֶךְ-לְךָ</div>
   <div class="tag">Интерактивная карта странствий по Книге Бытия 11–25 · от Ура Халдейского до горы Мория · с археологическим контекстом</div>
   <nav id="story-nav" role="navigation" aria-label="Выбор сюжета карты">
-    <button class="story-btn active" data-story="main" aria-pressed="true">Весь путь</button>
-    <button class="story-btn" data-story="lekh-lekha" aria-pressed="false">Лех-леха</button>
-    <button class="story-btn" data-story="lot" aria-pressed="false">Линия Лота</button>
-    <button class="story-btn" data-story="war" aria-pressed="false">Война царей</button>
-    <button class="story-btn" data-story="akeda" aria-pressed="false">Акеда</button>
+    <button class="story-btn active" data-story="main" aria-pressed="true" title="Весь путь Авраама · 20 мест · 8 этапов">Весь путь</button>
+    <button class="story-btn" data-story="lekh-lekha" aria-pressed="false" title="Призвание и первый путь в Ханаан · Быт 11–12">Лех-леха</button>
+    <button class="story-btn" data-story="lot" aria-pressed="false" title="Выбор Лота, катастрофа Содома · Быт 13; 18–19">Линия Лота</button>
+    <button class="story-btn" data-story="war" aria-pressed="false" title="318 воинов, ночной рейд, Мелхиседек · Быт 14">Война царей</button>
+    <button class="story-btn" data-story="akeda" aria-pressed="false" title="Три дня к горе Мория · Быт 22">Акеда</button>
   </nav>
 </div>
 
@@ -1036,7 +1038,7 @@ function applyStory(storyId){
     if(!st.places){m.classList.remove('story-dim','story-hi');return;}
     m.classList.add('story-dim');
   });
-  // dim/hi маршруты
+  // dim/hi маршруты (story-dim/hi — поверх обычного .route.dim из setDim())
   document.querySelectorAll('#routes g').forEach(g=>{
     const si = parseInt(g.dataset.stage);
     const inSet = !st.stages || st.stages.includes(si);
@@ -1182,7 +1184,12 @@ function showDebate(){
   flyTo(680,820,420,900);
 }
 document.getElementById('shareBtn').onclick=async()=>{
-  const url=location.origin==='null'||location.protocol==='file:'?location.href:location.href;
+  const url=location.href;
+  const shareData={title:document.title,text:'Карта: Путь Авраама — от Ура до горы Мория',url};
+  if(navigator.share && navigator.canShare?.(shareData)){
+    try{ await navigator.share(shareData); return; }catch(e){}
+  }
+  // fallback: clipboard
   try{await navigator.clipboard.writeText(url);}catch(e){}
   const b=document.getElementById('shareBtn');const t=b.textContent;
   b.textContent='✓';setTimeout(()=>b.textContent=t,1200);
@@ -1448,7 +1455,7 @@ document.addEventListener('keydown',e=>{
 /* ================= TIMELINE & TOUR ================= */
 const tl=document.getElementById('tl-scroll');
 STAGES.forEach((st,i)=>{
-  const c=document.createElement('button');c.className='stage-chip';c.type='button';c.setAttribute('aria-label','Этап '+st.n+': '+st.t);
+  const c=document.createElement('button');c.className='stage-chip';c.type='button';c.dataset.si=i;c.setAttribute('aria-label','Этап '+st.n+': '+st.t);
   c.innerHTML=`<div class="n">ЭТАП ${st.n}</div><div class="t">${st.t}</div><div class="r">${st.r}</div>${st.km?'<div class="km">'+st.km+'</div>':''}`; 
   c.onclick=()=>{stopTour();focusStage(i,true);};
   tl.appendChild(c);
@@ -1481,9 +1488,39 @@ function focusStage(i,withCam){
   chips[i].scrollIntoView({behavior:'smooth',inline:'center',block:'nearest'});
   setDim(i);showCaption(i);
   animateStageRoutes(i);
+  if(typeof spawnCaravan!=="undefined") spawnCaravan(i);
   if(withCam){const cam=STAGES[i].cam;flyTo(cam[0]+cam[2]/2,cam[1]+(cam[2]*H0/W0)/2,cam[2],1100);}
   clearTimeout(focusStage._t);
   if(!touring)focusStage._t=setTimeout(()=>{if(!touring){caption.classList.remove('show');setDim(-1);chips.forEach(c=>c.classList.remove('cur'));}},9000);
+}
+
+/* ================= GSAP CARAVAN DOT ================= */
+function spawnCaravan(stageIdx){
+  if(typeof gsap==='undefined') return;
+  if(typeof MotionPathPlugin==='undefined') return;
+  if(window.matchMedia('(prefers-reduced-motion:reduce)').matches) return;
+  const g=document.querySelectorAll('#routes g')[stageIdx];
+  if(!g) return;
+  const mainPath=g.querySelector('.route:not([stroke-dasharray])');
+  if(!mainPath) return;
+  const NS='http://www.w3.org/2000/svg';
+  // убрать старую
+  const old=document.getElementById('gsap-caravan');
+  if(old) old.remove();
+  const dot=document.createElementNS(NS,'circle');
+  dot.id='gsap-caravan';
+  dot.setAttribute('r','5');
+  dot.setAttribute('fill','#e8c879');
+  dot.setAttribute('opacity','.85');
+  dot.setAttribute('filter','url(#glow)');
+  dot.setAttribute('pointer-events','none');
+  document.getElementById('caravanLayer').appendChild(dot);
+  gsap.to(dot,{
+    motionPath:{path:mainPath,autoRotate:false,start:0,end:1},
+    duration:2.2,
+    ease:'power1.inOut',
+    onComplete:()=>{ setTimeout(()=>dot.remove(),800); }
+  });
 }
 
 /* dash animation + caravan */
@@ -1718,7 +1755,12 @@ function showLife(i){
      <h3>${ev.t}</h3><p>${ev.d}</p><div class="ref">${ev.r}</div>
      <button class="goto" data-goto="${ev.pl}">⤢ НА КАРТЕ</button>`;
 }
-function lifeGo(id){lifeModal.style.display='none';stopTour();openPlace(id);}
+function lifeGo(id){
+  lifeModal.style.display='none';
+  stopTour();
+  if(activeStory!=='main') applyStory('main');
+  openPlace(id);
+}
 document.getElementById('lifeBtn').onclick=()=>{lifeModal.style.display='grid';showLife(lifeIdx);};
 lifeModal.addEventListener('click',e=>{if(e.target.id==='lifeModal')e.target.style.display='none';});
 document.getElementById('lifePrev').onclick=()=>showLife(lifeIdx-1);
@@ -1779,6 +1821,12 @@ document.addEventListener('keydown',e=>{
   if(e.target.closest('input,textarea'))return;
   const n=parseInt(e.key,10);
   if(n>=1&&n<=STAGES.length){stopTour();focusStage(n-1,true);}
+  // S — cycle stories
+  if(e.key==='s'||e.key==='S'){
+    const idx=STORIES.findIndex(s=>s.id===activeStory);
+    const next=STORIES[(idx+1)%STORIES.length];
+    applyStory(next.id);
+  }
 });
 
 /* ================= INTRO ================= */
@@ -1868,7 +1916,10 @@ if(location.hash){
 
 /* ================= GSAP SETUP ================= */
 if(typeof gsap !== 'undefined'){
-  try{ gsap.registerPlugin(DrawSVGPlugin, MotionPathPlugin); }catch(e){}
+  try{
+    if(typeof DrawSVGPlugin !== 'undefined') gsap.registerPlugin(DrawSVGPlugin);
+    if(typeof MotionPathPlugin !== 'undefined') gsap.registerPlugin(MotionPathPlugin);
+  }catch(e){}
 }
 
 /* ================= HOVER PREVIEW (desktop) ================= */
@@ -1931,6 +1982,7 @@ function haptic(ms=12){
 /* ================= GSAP DRAWSVG on stage focus ================= */
 function animateStageRoutes(stageIdx){
   if(typeof gsap==='undefined') return;
+  if(window.matchMedia('(prefers-reduced-motion:reduce)').matches) return;
   const g=document.querySelectorAll('#routes g')[stageIdx];
   if(!g) return;
   g.querySelectorAll('.route').forEach(path=>{
