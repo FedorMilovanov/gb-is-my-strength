@@ -245,8 +245,9 @@
 
   /* ---------- place panel ---------- */
   #panel{position:fixed;top:0;right:0;bottom:0;width:min(420px,92vw);z-index:40;background:linear-gradient(165deg,rgba(18,22,32,.96),rgba(8,11,18,.98));border-left:1px solid var(--panel-line);backdrop-filter:blur(24px);-webkit-backdrop-filter:blur(24px);transform:translateX(105%);transition:transform .48s cubic-bezier(.16,.84,.24,1);display:flex;flex-direction:column;box-shadow:-24px 0 70px rgba(0,0,0,.6);will-change:transform}
-  #panel.open{transform:none}
-  #panel header{padding:24px 24px 0;position:relative}
+  #panel.open{transform:none;opacity:1}
+  #panel{opacity:0.98}
+  #panel header{padding:24px 24px 0;position:relative;background:linear-gradient(180deg,rgba(15,19,28,.98) 0%,transparent 100%)}
   #panel header::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;
     background:linear-gradient(90deg,var(--gold),rgba(232,200,121,.4) 60%,transparent);
     border-radius:0}
@@ -301,7 +302,11 @@
   #pfoot button{background:none;border:none;color:var(--txt-dim);font-size:11px;letter-spacing:.1em;cursor:pointer;padding:8px 6px;transition:.2s;min-height:40px;-webkit-tap-highlight-color:transparent}
   @media(max-width:760px){#pfoot button{padding:12px 8px;font-size:12px;min-height:44px}}
   #pfoot button:hover{color:var(--gold)}
-  #pfoot button:not(#sharePl){letter-spacing:.1em;font-size:10px}
+  #pfoot button:not(#sharePl){letter-spacing:.1em;font-size:10px;position:relative}
+  #prevPl::before{content:'←';margin-right:4px;transition:transform .2s}
+  #prevPl:hover::before{transform:translateX(-3px)}
+  #nextPl::after{content:'→';margin-left:4px;transition:transform .2s}
+  #nextPl:hover::after{transform:translateX(3px)}
   #pfoot #sharePl{color:var(--gold-soft);font-size:10px;border:1px solid rgba(232,200,121,.2);border-radius:8px;padding:5px 9px;transition:.2s}
   #pfoot #sharePl:hover{background:rgba(232,200,121,.08);border-color:var(--gold);color:var(--gold)}
   @keyframes sharePulse{0%,100%{border-color:rgba(232,200,121,.2)}50%{border-color:rgba(232,200,121,.5)}}
@@ -349,7 +354,7 @@
   @media(max-width:760px){#ctxCard{left:12px;right:12px;max-width:none;bottom:128px}}
 
   /* ---------- tooltip ---------- */
-  #tip{position:fixed;z-index:50;pointer-events:none;background:rgba(6,9,16,.96);border:1px solid rgba(232,200,121,.16);border-radius:11px;padding:9px 13px;font-size:12px;opacity:0;transition:opacity .12s,transform .12s;backdrop-filter:blur(12px);box-shadow:0 10px 30px rgba(0,0,0,.6);max-width:240px;transform:translateY(4px)}
+  #tip{position:fixed;z-index:50;pointer-events:none;background:rgba(6,9,16,.96);border:1px solid rgba(232,200,121,.16);border-radius:11px;padding:9px 13px;font-size:12px;opacity:0;transition:opacity .08s,transform .1s;backdrop-filter:blur(12px);box-shadow:0 10px 30px rgba(0,0,0,.6);max-width:240px;transform:translateY(4px)}
   #tip.vis{opacity:1;transform:translateY(0)}
   #tip .h{color:var(--gold);font-size:11px;direction:rtl;text-align:left;margin-top:1px}
   #tip .s{color:var(--txt-dim);font-size:10px;margin-top:3px;letter-spacing:.06em}
@@ -387,7 +392,7 @@
     #searchRes{max-height:55vh}
   }
   #searchModal.open{display:flex}
-  #searchBox{width:min(520px,92vw);background:linear-gradient(165deg,rgba(24,28,38,.98),rgba(12,15,22,.98));border:1px solid var(--panel-line);border-radius:16px;box-shadow:0 30px 80px rgba(0,0,0,.7);overflow:hidden}
+  #searchBox{width:min(520px,92vw);background:linear-gradient(165deg,rgba(18,22,32,.98),rgba(8,11,20,.99));border:1px solid rgba(232,200,121,.15);border-top:1px solid rgba(232,200,121,.25);border-radius:18px;box-shadow:0 32px 90px rgba(0,0,0,.75);overflow:hidden;backdrop-filter:blur(24px)}
   #searchInput{width:100%;background:none;border:none;outline:none;color:#f2ead4;font-size:16px;padding:17px 20px;font-family:var(--sans);border-bottom:1px solid rgba(255,255,255,.08);-webkit-appearance:none}
   #searchInput::placeholder{color:#6c737e;letter-spacing:.04em}
   #searchRes{max-height:46vh;overflow-y:auto;padding:8px;scrollbar-width:thin}
@@ -407,6 +412,10 @@
   #tools,.pop{transition:right .5s cubic-bezier(.2,.85,.25,1)}
   body.panel-open #tools{right:calc(min(420px,92vw) + 16px)}
   body.panel-open .pop{right:calc(min(420px,92vw) + 64px)}
+  @media(max-width:760px){
+    body.panel-open #story-nav{opacity:.4;pointer-events:none}
+    body.panel-open #story-nav:hover{opacity:1;pointer-events:auto}
+  }
   @media(max-width:760px){body.panel-open #tools{right:18px}}
   @media(max-width:760px){
     #panel{
@@ -437,7 +446,7 @@
   /* ---------- life timeline ---------- */
   #lifeModal{position:fixed;inset:0;z-index:60;background:rgba(4,6,10,.74);backdrop-filter:blur(6px);display:none;place-items:center;padding:20px}
   #lifeModal .card{width:min(880px,96vw);max-height:88vh;overflow-y:auto;background:linear-gradient(165deg,rgba(22,26,35,.97),rgba(11,14,21,.98));border:1px solid var(--panel-line);border-radius:20px;padding:26px 30px;box-shadow:0 30px 80px rgba(0,0,0,.65);scrollbar-width:thin}
-  .life-rail{position:relative;margin:26px 0 8px;height:5px;border-radius:3px;background:linear-gradient(90deg,rgba(232,200,121,.12),rgba(232,200,121,.5),rgba(232,200,121,.12))}
+  .life-rail{position:relative;margin:26px 0 8px;height:5px;border-radius:3px;background:linear-gradient(90deg,rgba(232,200,121,.08),rgba(232,200,121,.45) 50%,rgba(232,200,121,.08));box-shadow:0 0 12px rgba(232,200,121,.08) inset}
   .life-tick{position:absolute;top:-6px;width:17px;height:17px;border-radius:50%;background:#0d1117;border:2px solid var(--gold);transform:translateX(-50%);cursor:pointer;transition:.22s;-webkit-tap-highlight-color:transparent;box-shadow:0 2px 8px rgba(0,0,0,.4)}
   .life-tick::after{content:'';position:absolute;inset:3px;border-radius:50%;background:transparent;transition:.2s}
   .life-tick:hover::after,.life-tick.cur::after{background:var(--gold);opacity:.5}
@@ -548,7 +557,9 @@
     .tn-item img{height:160px}
   }
   .tn-item{flex:1 1 140px;min-width:120px;max-width:200px;cursor:pointer;border-radius:10px;overflow:hidden;border:1px solid rgba(255,255,255,.1);transition:.25s;position:relative}
-  .tn-item:hover{border-color:var(--gold);transform:translateY(-2px)}
+  .tn-item:hover{border-color:var(--gold);transform:translateY(-3px) scale(1.02);box-shadow:0 8px 24px rgba(0,0,0,.5),0 0 0 1px rgba(232,200,121,.15)}
+  .tn-item:hover img{transform:scale(1.04);transition:transform .3s ease}
+  .tn-item img{transition:transform .3s ease}
   .tn-item img{width:100%;height:100px;object-fit:cover;display:block;background:linear-gradient(90deg,rgba(20,24,34,.8) 25%,rgba(35,40,55,.8) 50%,rgba(20,24,34,.8) 75%);background-size:200% 100%;animation:shimmer 1.8s infinite}
   @keyframes shimmer{0%{background-position:200% 0}100%{background-position:-200% 0}}
   @media(prefers-reduced-motion:reduce){
@@ -1045,6 +1056,8 @@ body{overscroll-behavior:none;-webkit-overscroll-behavior:none}
 <!-- ============ TERRAIN ============ -->
 <g id="terrain" data-layer="base-geo">
   <rect x="-400" y="-400" width="2700" height="2230" fill="url(#landG)"/>
+  <!-- Terrain texture overlay для глубины рельефа -->
+  <rect x="-400" y="-400" width="2700" height="2230" fill="url(#richLandG)" opacity=".3" filter="url(#terrainTex)"/>
 
   <!-- deserts / fertile tints -->
   <ellipse cx="1240" cy="1010" rx="520" ry="330" fill="url(#desertG)"/>
@@ -1125,8 +1138,9 @@ body{overscroll-behavior:none;-webkit-overscroll-behavior:none}
   <rect x="-400" y="-400" width="2700" height="2230" fill="url(#edgeFog)" pointer-events="none"/>
 
   <!-- Mediterranean -->
-  <!-- Mediterranean с водным эффектом -->
+  <!-- Mediterranean с анимированным водным эффектом (feDisplacementMap) -->
 <path fill="url(#seaG)" stroke="#2e4d6b" stroke-width="1.2" stroke-opacity=".4"
+  filter="url(#waterRipple)"
   d="M-400,254 C-260,258 -120,264 0,268 C120,258 250,244 380,222 C440,212 510,206 560,205 C600,206 640,214 668,224 C690,232 698,248 697,272 C698,302 688,330 679,357 C674,400 681,440 684,482 C687,512 666,530 648,547 C633,574 625,597 620,622 C615,650 608,663 597,675 C586,706 578,734 574,765 C570,790 562,810 550,826 C536,844 518,858 498,866 C448,880 390,872 335,862 C302,856 268,848 240,852 C190,856 140,864 90,872 C30,880 -180,892 -400,902 Z"/>
 <!-- Паттерн волн Средиземного моря -->
 <path fill="url(#seaPattern)" opacity=".45"
@@ -1138,7 +1152,9 @@ body{overscroll-behavior:none;-webkit-overscroll-behavior:none}
   <text x="432" y="408" font-size="4" fill="#8d949f" text-anchor="middle" opacity=".5" class="lbl-z1">כִּתִּים · Κύπρος</text>
 
   <!-- Red Sea -->
-  <path fill="url(#seaG)" stroke="#2e4d6b" stroke-width="1.2" stroke-opacity=".45" d="M424,1012 C418,1024 420,1044 428,1070 C440,1112 462,1170 490,1230 C504,1258 516,1278 526,1292 C548,1340 584,1392 622,1430 C660,1490 692,1560 714,1640 C730,1702 740,1768 744,1830 L1110,1830 C1064,1740 1018,1640 974,1546 C946,1486 920,1456 900,1430 C860,1402 818,1368 762,1318 C740,1298 722,1278 708,1258 C692,1190 678,1110 670,1044 C668,1030 660,1022 652,1028 C644,1100 632,1190 614,1262 C606,1290 596,1300 580,1288 C560,1240 532,1160 506,1090 C494,1056 480,1028 466,1016 C452,1004 432,1000 424,1012 Z"/>
+  <path fill="url(#seaG)" stroke="#2e4d6b" stroke-width="1.2" stroke-opacity=".45"
+  filter="url(#waterRipple)"
+  d="M424,1012 C418,1024 420,1044 428,1070 C440,1112 462,1170 490,1230 C504,1258 516,1278 526,1292 C548,1340 584,1392 622,1430 C660,1490 692,1560 714,1640 C730,1702 740,1768 744,1830 L1110,1830 C1064,1740 1018,1640 974,1546 C946,1486 920,1456 900,1430 C860,1402 818,1368 762,1318 C740,1298 722,1278 708,1258 C692,1190 678,1110 670,1044 C668,1030 660,1022 652,1028 C644,1100 632,1190 614,1262 C606,1290 596,1300 580,1288 C560,1240 532,1160 506,1090 C494,1056 480,1028 466,1016 C452,1004 432,1000 424,1012 Z"/>
 <!-- Паттерн волн на Красном море -->
 <path fill="url(#seaPattern)" opacity=".3" d="M424,1012 C418,1024 420,1044 428,1070 C440,1112 462,1170 490,1230 C504,1258 516,1278 526,1292 C548,1340 584,1392 622,1430 C660,1490 692,1560 714,1640 C730,1702 740,1768 744,1830 L1110,1830 C1064,1740 1018,1640 974,1546 C946,1486 920,1456 900,1430 C860,1402 818,1368 762,1318 C740,1298 722,1278 708,1258 C692,1190 678,1110 670,1044 C668,1030 660,1022 652,1028 C644,1100 632,1190 614,1262 C606,1290 596,1300 580,1288 C560,1240 532,1160 506,1090 C494,1056 480,1028 466,1016 C452,1004 432,1000 424,1012 Z"/>
   <!-- Nile delta hint -->
@@ -1550,7 +1566,7 @@ body{overscroll-behavior:none;-webkit-overscroll-behavior:none}
   <circle cx="1200" cy="1020" r=".9" fill="#e8d4a0" opacity=".4"><animate attributeName="opacity" values=".4;.1;.4" dur="7s" begin="3s" repeatCount="indefinite"/></circle>
   <circle cx="1350" cy="980" r=".7" fill="#fff" opacity=".35"><animate attributeName="opacity" values=".35;.05;.35" dur="8s" begin="1.5s" repeatCount="indefinite"/></circle>
 </g>
-<!-- Античная координатная сетка (очень слабая) -->
+<!-- Античная координатная сетка — с метками широты/долготы -->
 <g id="coordGrid" opacity=".04" pointer-events="none" stroke="#c8a84a" stroke-width=".8">
   <!-- горизонтальные -->
   <line x1="-400" y1="200" x2="2300" y2="200"/>
@@ -1565,6 +1581,19 @@ body{overscroll-behavior:none;-webkit-overscroll-behavior:none}
   <line x1="1100" y1="-400" x2="1100" y2="1830"/>
   <line x1="1400" y1="-400" x2="1400" y2="1830"/>
   <line x1="1700" y1="-400" x2="1700" y2="1830"/>
+</g>
+<!-- Метки широты/долготы -->
+<g class="lbl-z2" opacity=".25" pointer-events="none">
+  <text x="-385" y="205" font-size="5" fill="#c8a84a" font-family="Georgia,serif">36°N</text>
+  <text x="-385" y="455" font-size="5" fill="#c8a84a" font-family="Georgia,serif">33°N</text>
+  <text x="-385" y="705" font-size="5" fill="#c8a84a" font-family="Georgia,serif">30°N</text>
+  <text x="-385" y="955" font-size="5" fill="#c8a84a" font-family="Georgia,serif">27°N</text>
+  <text x="198" y="-370" font-size="5" fill="#c8a84a" font-family="Georgia,serif">31°E</text>
+  <text x="498" y="-370" font-size="5" fill="#c8a84a" font-family="Georgia,serif">34°E</text>
+  <text x="798" y="-370" font-size="5" fill="#c8a84a" font-family="Georgia,serif">37°E</text>
+  <text x="1098" y="-370" font-size="5" fill="#c8a84a" font-family="Georgia,serif">40°E</text>
+  <text x="1398" y="-370" font-size="5" fill="#c8a84a" font-family="Georgia,serif">43°E</text>
+  <text x="1698" y="-370" font-size="5" fill="#c8a84a" font-family="Georgia,serif">46°E</text>
 </g>
 <!-- Fog of war — тёмные зоны за пределами карты Авраама -->
 <g id="fogLayer" pointer-events="none">
@@ -2308,10 +2337,20 @@ function applyStory(storyId){
       mmDots.appendChild(c);
     });
   }
-  // flyTo
+  // flyTo + auto-open first place of story
   if(st.cam){
     const [cx,cy,w] = st.cam;
     flyTo(cx,cy,w,900);
+  }
+  // После flyTo открыть первое место сюжета (через 1.2с)
+  if(st.places && st.places.length && storyId!=='main'){
+    clearTimeout(applyStory._openTimer);
+    applyStory._openTimer=setTimeout(()=>{
+      const firstId=st.places.find(id=>placeIndex[id]!==undefined);
+      if(firstId && curPlace<0){
+        openPlace(firstId);
+      }
+    },1200);
   }
 }
 
@@ -2415,7 +2454,26 @@ svg.addEventListener('pointerenter',e=>{
   let _lpTimer=null;
   g.addEventListener('pointerdown',e=>{
     if(e.pointerType==='touch'){
-      _lpTimer=setTimeout(()=>{haptic(25);showPrev(pl,e.clientX,e.clientY);},500);
+      _lpTimer=setTimeout(()=>{
+        haptic(30);
+        // Если есть фото — показать первое в modal
+        if(pl.photos&&pl.photos.length){
+          const pm=document.getElementById('mPrev');
+          // Показать мини-превью с фото
+          pm.querySelector('.mp-he').textContent=pl.he||'';
+          pm.querySelector('.mp-nm').textContent=pl.name;
+          pm.querySelector('.mp-kk').textContent='📷 '+pl.photos[0].label;
+          pm.querySelector('.mp-hint').textContent='Нажмите для открытия · '+pl.photos[0].credit?.split('/')[0];
+          const pw=260,ph=120;
+          const x=Math.min(e.clientX+10,window.innerWidth-pw-8);
+          const y=Math.min(e.clientY-20,window.innerHeight-ph-8);
+          pm.style.left=x+'px';pm.style.top=y+'px';
+          pm.classList.add('vis');
+          setTimeout(()=>pm.classList.remove('vis'),2500);
+        } else {
+          showPrev(pl,e.clientX,e.clientY);
+        }
+      },500);
     }
   });
   g.addEventListener('pointerup',()=>clearTimeout(_lpTimer));
@@ -2525,6 +2583,12 @@ PLACES.forEach(pl=>{
     inner=`<circle class="halo" r="15" fill="none" stroke="${col}" stroke-opacity=".35" stroke-width="1.2" stroke-dasharray="3.5 3.5"/>
            <circle r="6.5" fill="rgba(10,13,20,.9)" stroke="${col}" stroke-width="1.4" stroke-dasharray="2.4 2.2"/>
            <circle class="core" r="2" fill="${col}"/>`;
+  }else if(pl.type==='lot'){
+    // Lot: ромб — символ выбора Лота
+    inner=`<circle class="pulse" r="11" fill="${col}" opacity=".45"/>
+           <circle class="halo" r="15" fill="none" stroke="${col}" stroke-opacity=".48" stroke-width="1.2"/>
+           <path d="M0,-8.5 L6.5,0 L0,8.5 L-6.5,0 Z" fill="rgba(10,13,20,.9)" stroke="${col}" stroke-width="1.6"/>
+           <circle class="core" r="2.2" fill="${col}"/>`;
   }else{
     inner=`<circle class="pulse" r="11" fill="${col}" opacity=".5"/>
            <circle class="halo" r="14" fill="none" stroke="${col}" stroke-opacity=".55" stroke-width="1.3"/>
@@ -2851,6 +2915,20 @@ svg.addEventListener('click',e=>{
   if(!e.target.closest('.marker')&&!drag?.moved){ /* click on empty map */ }
 });
 document.addEventListener('keydown',e=>{
+  // Tab между маркерами (когда панель не открыта)
+  if(e.key==='Tab'&&!panel.classList.contains('open')&&!document.getElementById('photoModal').classList.contains('open')){
+    e.preventDefault();
+    const visibleMarkers=[...document.querySelectorAll('#markers .marker:not(.story-dim)')];
+    if(!visibleMarkers.length) return;
+    const curIdx=visibleMarkers.findIndex(m=>m.dataset.id===PLACES[curPlace]?.id);
+    const nextIdx=e.shiftKey?(curIdx<=0?visibleMarkers.length-1:curIdx-1):(curIdx+1)%visibleMarkers.length;
+    const nextMarker=visibleMarkers[nextIdx];
+    if(nextMarker){
+      const pl=PLACES[placeIndex[nextMarker.dataset.id]];
+      if(pl) openPlace(pl.id);
+    }
+    return;
+  }
   if(e.key==='Escape'){if(document.getElementById('photoModal').classList.contains('open')){document.getElementById('photoModal').classList.remove('open');return;}if(typeof measuring!=='undefined'&&measuring){mPts=[];drawMeasure();mHud.innerHTML='Точки сброшены — кликайте заново. Клик по ⟍ — выход.';}closePanel();document.getElementById('modal').classList.remove('open');document.getElementById('treeModal').style.display='none';document.getElementById('lifeModal').style.display='none';closeSearch();stopTour();}
   if(e.key==='ArrowRight'&&panel.classList.contains('open'))stepPlace(1);
   if(e.key==='ArrowLeft'&&panel.classList.contains('open'))stepPlace(-1);
