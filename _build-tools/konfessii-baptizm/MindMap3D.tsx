@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import type { ReactNode } from 'react';
+import type { ReactNode, WheelEvent } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { AlertTriangle, BookOpen, ChevronDown, ChevronLeft, ChevronRight, Eye, EyeOff, Focus, Maximize2, Minimize2, MapPin, PanelLeftClose, Pin, PinOff, RotateCcw, Sparkles, X, HelpCircle } from 'lucide-react';
 import { geoMercator, geoPath } from 'd3-geo';
@@ -308,7 +308,7 @@ function BottomBar({ left, hidden, expanded, activeRoute, routeStep = 0, mapSele
   }) : null;
   return (
     <div className={`absolute bottom-0 z-30 flex flex-col items-center gap-2 px-4 pb-4 pt-3 transition-[left,opacity] duration-300 ${hidden ? 'pointer-events-none opacity-0' : 'opacity-100'}`} style={{ left, right: 16, background: 'linear-gradient(to top, rgba(3,3,7,0.88) 0%, rgba(3,3,7,0.55) 42%, transparent 100%)' }}>
-      <button onClick={onToggle} className="inline-flex min-h-[42px] items-center gap-2 rounded-full border bg-black/60 px-5 py-2 text-[11px] font-bold uppercase tracking-[0.12em] backdrop-blur-2xl transition hover:bg-black/75 active:scale-95" style={{ borderColor: `${activeColor}44`, color: activeColor, boxShadow: expanded ? `0 0 24px ${activeColor}24` : undefined }} aria-expanded={expanded} title={activeRoute ? `${activeRoute.summary} (${activeRoute.nodes.length} этапов)` : 'Открыть маршруты, города и исторические точки'}>
+      <button onClick={onToggle} className="inline-flex min-h-[42px] items-center gap-2 rounded-full border bg-black/60 px-5 py-2 text-[11px] font-bold uppercase tracking-[0.12em] backdrop-blur-2xl transition hover:bg-black/75 active:scale-95" style={{ borderColor: `${activeColor}44`, color: activeColor, boxShadow: expanded ? `0 0 24px ${activeColor}24` : undefined }} aria-expanded={expanded} aria-label={activeRoute ? `${activeLabel}: ${activeRoute.summary}` : 'Открыть маршруты, города и исторические точки'}>
         <span className="h-1.5 w-1.5 rounded-full" style={{ background: activeColor, boxShadow: `0 0 8px ${activeColor}` }} />
         {activeLabel}
         {activeRoute && <span className="rounded-full bg-white/10 px-1.5 py-0.5 font-mono text-[8px] text-white/45">{routeStep + 1}/{activeRoute.nodes.length}</span>}
@@ -336,12 +336,12 @@ function BottomBar({ left, hidden, expanded, activeRoute, routeStep = 0, mapSele
                 <p className="mt-1.5 text-[9px] text-white/30">Нажмите этап, чтобы перелететь к соответствующему узлу.</p>
                 <div className="mt-2 flex max-w-full gap-1 overflow-hidden">
                   {activeRouteNodes.slice(0, 7).map((node, idx) => (
-                    <button key={node.id} type="button" onClick={() => onRouteStepTo?.(idx)} className="truncate rounded-full border px-2 py-0.5 text-left text-[9px] transition hover:scale-[1.04] active:scale-95" style={{ borderColor: idx === routeStep ? `${activeRoute.color}aa` : 'rgba(255,255,255,0.10)', color: idx === routeStep ? activeRoute.color : 'rgba(255,255,255,0.45)', background: idx === routeStep ? `${activeRoute.color}14` : 'rgba(255,255,255,0.03)' }} title={`Этап ${idx + 1}: ${node.label}${node.year ? ` · ${node.year}` : ''}. ${node.desc}`}>{idx + 1}. {node.label}</button>
+                    <button key={node.id} type="button" onClick={() => onRouteStepTo?.(idx)} className="truncate rounded-full border px-2 py-0.5 text-left text-[9px] transition hover:scale-[1.04] active:scale-95" style={{ borderColor: idx === routeStep ? `${activeRoute.color}aa` : 'rgba(255,255,255,0.10)', color: idx === routeStep ? activeRoute.color : 'rgba(255,255,255,0.45)', background: idx === routeStep ? `${activeRoute.color}14` : 'rgba(255,255,255,0.03)' }} aria-label={`Этап ${idx + 1}: ${node.label}${node.year ? ` · ${node.year}` : ''}. ${node.desc}`}>{idx + 1}. {node.label}</button>
                   ))}
                 </div>
               </div>
             )}
-            <div className="flex flex-wrap justify-center gap-1.5"><span className="mr-1 self-center text-[8px] font-bold uppercase tracking-[0.2em] text-white/30">Маршруты:</span>{ROUTE_PRESETS.map((route) => (<button key={route.id} onClick={() => onRouteSelect(route)} title={`Маршрут: ${route.label}. ${route.summary}`} className="inline-flex min-h-[34px] items-center gap-1.5 rounded-full border bg-black/50 px-3.5 py-2 text-[10px] font-semibold backdrop-blur-sm transition hover:bg-black/70 active:scale-95" style={{ borderColor: activeRoute?.id === route.id ? `${route.color}cc` : `${route.color}40`, color: route.color, boxShadow: activeRoute?.id === route.id ? `0 0 22px ${route.color}30` : undefined, background: activeRoute?.id === route.id ? `color-mix(in srgb, ${route.color} 12%, black)` : undefined }}><span className="h-1.5 w-1.5 rounded-full" style={{ background: route.color }} /><span>{route.label}</span><span className="rounded-full bg-white/10 px-1.5 py-0.5 font-mono text-[8px] text-white/45">{route.nodes.length}</span></button>))}</div>
+            <div className="flex flex-wrap justify-center gap-1.5"><span className="mr-1 self-center text-[8px] font-bold uppercase tracking-[0.2em] text-white/30">Маршруты:</span>{ROUTE_PRESETS.map((route) => (<button key={route.id} onClick={() => onRouteSelect(route)} aria-label={`Маршрут: ${route.label}. ${route.summary}`} className="inline-flex min-h-[34px] items-center gap-1.5 rounded-full border bg-black/50 px-3.5 py-2 text-[10px] font-semibold backdrop-blur-sm transition hover:bg-black/70 active:scale-95" style={{ borderColor: activeRoute?.id === route.id ? `${route.color}cc` : `${route.color}40`, color: route.color, boxShadow: activeRoute?.id === route.id ? `0 0 22px ${route.color}30` : undefined, background: activeRoute?.id === route.id ? `color-mix(in srgb, ${route.color} 12%, black)` : undefined }}><span className="h-1.5 w-1.5 rounded-full" style={{ background: route.color }} /><span>{route.label}</span><span className="rounded-full bg-white/10 px-1.5 py-0.5 font-mono text-[8px] text-white/45">{route.nodes.length}</span></button>))}</div>
             <div className="flex flex-wrap justify-center gap-1.5"><span className="mr-1 self-center text-[8px] font-bold uppercase tracking-[0.2em] text-white/30">Города:</span>{CITY_MARKERS.map((city) => (<button key={city.id} onClick={() => onMapSelect({ id: city.id, label: city.label, color: city.color, nodes: city.nodes })} className="inline-flex min-h-[32px] items-center gap-1.5 rounded-full border bg-black/40 px-3 py-1.5 text-[9px] backdrop-blur-sm transition hover:bg-black/60 active:scale-95" style={{ borderColor: mapSelection?.id === city.id ? `${city.color}95` : `${city.color}35`, color: city.color, boxShadow: mapSelection?.id === city.id ? `0 0 18px ${city.color}22` : undefined }}><span className="h-1.5 w-1.5 rounded-full" style={{ background: city.color }} />{city.label}</button>))}</div>
           </motion.div>
         )}
@@ -443,12 +443,12 @@ function TimelineOverlay({ timelineYearRef, bottomBarExpanded, onEventSelect }: 
       return { year, event, count: events.length, major: majorYears.has(year) || event.title.includes('★') };
     }).sort((a, b) => a.year - b.year);
   }, []);
-  const visibleTimelineTicks = useMemo(() => timelineTicks.filter((tick) => tick.major || Math.abs(tick.year - displayYear) <= 3), [timelineTicks, displayYear]);
+  const visibleTimelineTicks = useMemo(() => timelineTicks.filter((tick) => tick.major), [timelineTicks]);
   const displayEvent = hoveredTick?.event ?? recentEvent;
   const displayCount = hoveredTick?.count ?? 1;
 
   return (
-    <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0, bottom: bottomBarExpanded ? '11.5rem' : '4.5rem' }} transition={{ duration: 0.3, ease: 'easeOut' }} className="absolute left-1/2 z-40 hidden w-full max-w-[800px] -translate-x-1/2 flex-col px-4 sm:flex pointer-events-none">
+    <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0, bottom: bottomBarExpanded ? '17rem' : '4.5rem' }} transition={{ duration: 0.3, ease: 'easeOut' }} className="absolute left-1/2 z-40 hidden w-full max-w-[800px] -translate-x-1/2 flex-col px-4 sm:flex pointer-events-none">
       <div className="pointer-events-auto">
       {displayEvent && (
           <div className="mx-auto mb-3 flex max-w-md items-center gap-3 rounded-2xl border border-white/10 bg-black/60 px-4 py-2.5 backdrop-blur-xl" style={{ boxShadow: `0 12px 42px rgba(0,0,0,0.38), 0 0 24px ${categoryColors[displayEvent.category]}18` }}>
@@ -1184,6 +1184,30 @@ export default function MindMap3D() {
     haptic(3);
   }, []);
 
+  const handleSceneWheel = useCallback((event: WheelEvent<HTMLDivElement>) => {
+    const target = event.target as HTMLElement | null;
+    const scrollHost = target?.closest?.('.custom-scroll') as HTMLElement | null;
+    if (scrollHost && scrollHost.scrollHeight > scrollHost.clientHeight) {
+      const atTop = scrollHost.scrollTop <= 0;
+      const atBottom = scrollHost.scrollTop + scrollHost.clientHeight >= scrollHost.scrollHeight - 1;
+      if ((event.deltaY < 0 && !atTop) || (event.deltaY > 0 && !atBottom)) return;
+    }
+    event.preventDefault();
+    event.stopPropagation();
+    const camera = fgRef.current?.camera?.() as THREE.PerspectiveCamera | undefined;
+    const controls = fgRef.current?.controls?.();
+    if (!camera || !controls) return;
+    const targetV = (controls.target as THREE.Vector3).clone();
+    const offset = camera.position.clone().sub(targetV);
+    const factor = event.deltaY > 0 ? 1.08 : 0.92;
+    const nextOffset = offset.multiplyScalar(factor);
+    const minD = 28;
+    const maxD = 1050;
+    if (nextOffset.length() < minD || nextOffset.length() > maxD) return;
+    const nextPos = targetV.clone().add(nextOffset);
+    fgRef.current?.cameraPosition?.({ x: nextPos.x, y: nextPos.y, z: nextPos.z }, { x: targetV.x, y: targetV.y, z: targetV.z }, 120);
+  }, []);
+
   const handleNodeHoverThrottled = useMemo(() => {
     let raf = 0;
     return (node: NodeData | null) => {
@@ -1762,7 +1786,7 @@ export default function MindMap3D() {
   return (
     <div className="relative h-[100dvh] w-screen">
       <div className="h-full w-full">
-        <div ref={containerRef} className="relative h-full w-full overflow-hidden" style={{ background: isLight ? '#f5f0eb' : '#06060c', touchAction: 'none', cursor: hoveredNodeId ? 'pointer' : isNavigating ? 'grabbing' : 'grab' }} onContextMenu={(e) => e.preventDefault()} onMouseLeave={() => { hoveredNodeIdRef.current = null; setHoveredNodeId(null); }}>
+        <div ref={containerRef} className="relative h-full w-full overflow-hidden" style={{ background: isLight ? '#f5f0eb' : '#06060c', touchAction: 'none', overscrollBehavior: 'none', cursor: hoveredNodeId ? 'pointer' : isNavigating ? 'grabbing' : 'grab' }} onWheelCapture={handleSceneWheel} onContextMenu={(e) => e.preventDefault()} onMouseLeave={() => { hoveredNodeIdRef.current = null; setHoveredNodeId(null); }}>
           {nightMapUrl && (<div className="pointer-events-none absolute inset-0" style={{ backgroundImage: `url(${nightMapUrl})`, backgroundSize: 'cover', backgroundPosition: 'center', opacity: isLight ? 0.2 : 0.62, filter: isLight ? 'saturate(0.6) contrast(0.85)' : 'saturate(1.2) contrast(1.1) brightness(0.7)' }} />)}
           <div className="pointer-events-none absolute inset-0" style={{ backgroundImage: 'radial-gradient(circle at 20% 16%, rgba(255,255,255,0.06) 0 1px, transparent 1.4px), radial-gradient(circle at 70% 28%, rgba(255,255,255,0.04) 0 1px, transparent 1.3px), radial-gradient(circle at 54% 72%, rgba(255,255,255,0.03) 0 1px, transparent 1.4px)', backgroundSize: '240px 240px, 180px 180px, 220px 220px, 220px 220px', opacity: isLight ? 0.2 : 0.45 }} />
           <svg className="pointer-events-none absolute inset-0 z-[9] h-full w-full" viewBox="0 0 1200 650" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
@@ -1770,7 +1794,7 @@ export default function MindMap3D() {
               <filter id="countryGlowSmart" x="-40%" y="-40%" width="180%" height="180%"><feGaussianBlur stdDeviation="3.5" result="blur" /><feMerge><feMergeNode in="blur" /><feMergeNode in="SourceGraphic" /></feMerge></filter>
               <filter id="countryBorder" x="-20%" y="-20%" width="140%" height="140%"><feGaussianBlur stdDeviation="1.2" result="b" /><feMerge><feMergeNode in="b" /><feMergeNode in="SourceGraphic" /></feMerge></filter>
             </defs>
-            {countries.map((geo) => { const id = String(geo.id).padStart(3, '0'); const focus = COUNTRY_FOCUS[id]; const pathD = geoPathGenerator(geo as any) ?? undefined; if (!pathD) return null; const exact = Boolean(focus && (mapSelection?.id === focus.id || (focusNode && focus.nodes.includes(focusNode.id)))); const related = Boolean(focus && !exact && focus.nodes.some((nid) => connectedIds.has(nid))); return (<path key={id} d={pathD} fill={exact && focus ? `${focus.color}1f` : related && focus ? `${focus.color}10` : 'rgba(255,255,255,0.010)'} stroke={focus ? focus.color : isLight ? 'rgba(0,0,0,0.07)' : 'rgba(255,255,255,0.050)'} strokeWidth={exact ? 1.35 : related ? 0.85 : 0.55} opacity={exact ? 0.66 : related ? 0.38 : focus ? 0.18 : 0.28} filter={exact ? 'url(#countryGlowSmart)' : 'url(#countryBorder)'} className="transition-all duration-500" style={{ pointerEvents: mapMode && focus ? 'auto' : 'none', cursor: mapMode && focus ? 'pointer' : 'default' }} onClick={(ev) => { if (!mapMode || !focus) return; ev.stopPropagation(); handleMapSelect({ id: focus.id, label: focus.label, color: focus.color, nodes: focus.nodes }); }} />); })}
+            {countries.map((geo) => { const id = String(geo.id).padStart(3, '0'); const focus = COUNTRY_FOCUS[id]; const pathD = geoPathGenerator(geo as any) ?? undefined; if (!pathD) return null; const exact = Boolean(focus && (mapSelection?.id === focus.id || (focusNode && focus.nodes.includes(focusNode.id)))); const related = Boolean(focus && !exact && focus.nodes.some((nid) => connectedIds.has(nid))); return (<path key={id} d={pathD} fill={exact && focus ? `${focus.color}14` : related && focus ? `${focus.color}08` : 'rgba(255,255,255,0.010)'} stroke={focus ? focus.color : isLight ? 'rgba(0,0,0,0.07)' : 'rgba(255,255,255,0.050)'} strokeWidth={exact ? 1.1 : related ? 0.7 : 0.55} opacity={exact ? 0.48 : related ? 0.26 : focus ? 0.16 : 0.26} filter={exact ? 'url(#countryGlowSmart)' : 'url(#countryBorder)'} className="transition-all duration-500" style={{ pointerEvents: mapMode && focus ? 'auto' : 'none', cursor: mapMode && focus ? 'pointer' : 'default' }} onClick={(ev) => { if (!mapMode || !focus) return; ev.stopPropagation(); handleMapSelect({ id: focus.id, label: focus.label, color: focus.color, nodes: focus.nodes }); }} />); })}
           </svg>
           {CITY_MARKERS.map((city) => { const projected = projection([city.lon, city.lat]); if (!projected) return null; const exact = Boolean(mapSelection?.id === city.id || (focusNode && city.nodes.includes(focusNode.id))); const related = !exact && city.nodes.some((nid) => connectedIds.has(nid)); const visible = mapMode || exact || related || !focusNode; return (<button key={city.id} type="button" onClick={() => handleMapSelect({ id: city.id, label: city.label, color: city.color, nodes: city.nodes })} className="absolute z-20 -translate-x-1/2 -translate-y-1/2 transition-all duration-500" style={{ left: `${(projected[0] / 1200) * 100}%`, top: `${(projected[1] / 650) * 100}%`, pointerEvents: 'auto', opacity: visible ? (exact ? 1 : related ? 0.7 : 0.28) : 0.08 }}><div className="relative"><div className="absolute -inset-4 rounded-full blur-xl" style={{ background: `${city.color}55`, opacity: exact ? 0.9 : related ? 0.45 : 0.15 }} /><div className="relative rounded-full" style={{ width: exact ? 10 : 7, height: exact ? 10 : 7, background: city.color, boxShadow: `0 0 16px ${city.color}` }} /></div>{(mapMode || exact) && (<span className="pointer-events-none absolute left-full top-1/2 ml-2 -translate-y-1/2 whitespace-nowrap text-[11px] font-semibold" style={{ color: city.color, textShadow: '0 0 12px rgba(0,0,0,0.8)' }}>{city.label}</span>)}</button>); })}
           <div className="pointer-events-none absolute inset-0" style={{ background: isLight ? 'linear-gradient(90deg, rgba(250,248,245,0.45), rgba(250,248,245,0.08) 46%, rgba(250,248,245,0.45))' : 'radial-gradient(circle at 52% 46%, rgba(6,6,12,0.05), rgba(3,3,7,0.45) 80%), linear-gradient(90deg, rgba(3,3,7,0.55), rgba(3,3,7,0.05) 48%, rgba(3,3,7,0.55))' }} />
