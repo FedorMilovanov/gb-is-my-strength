@@ -2,10 +2,10 @@
 <html lang="ru">
 <head>
 <meta charset="UTF-8">
-  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://mc.yandex.ru https://*.yandex.ru https://mc.yandex.com https://*.yandex.com; img-src 'self' https://mc.yandex.ru https://*.yandex.ru https://mc.yandex.com https://*.yandex.com https://commons.wikimedia.org https://upload.wikimedia.org data: blob:; style-src 'self' 'unsafe-inline'; font-src 'self' data:; connect-src 'self' https://mc.yandex.ru https://*.yandex.ru https://mc.yandex.com https://*.yandex.com wss://mc.yandex.ru wss://*.yandex.ru wss://mc.yandex.com wss://*.yandex.com; frame-src 'self' https://mc.yandex.ru https://*.yandex.ru https://mc.yandex.com https://*.yandex.com; object-src 'none'; base-uri 'self';">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://mc.yandex.ru https://*.yandex.ru https://mc.yandex.com https://*.yandex.com https://cdn.jsdelivr.net; img-src 'self' https://mc.yandex.ru https://*.yandex.ru https://mc.yandex.com https://*.yandex.com https://commons.wikimedia.org https://upload.wikimedia.org data: blob:; style-src 'self' 'unsafe-inline'; font-src 'self' data:; connect-src 'self' https://mc.yandex.ru https://*.yandex.ru https://mc.yandex.com https://*.yandex.com wss://mc.yandex.ru wss://*.yandex.ru wss://mc.yandex.com wss://*.yandex.com; frame-src 'self' https://mc.yandex.ru https://*.yandex.ru https://mc.yandex.com https://*.yandex.com; object-src 'none'; base-uri 'self';">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>Путь Авраама — интерактивная карта | Господь Бог — Сила Моя</title>
-<meta name="description" content="Интерактивная карта странствий Авраама по Бытию 11–25: от Ура до горы Мория. Кинотур, 19 мест, археология, иврит, хронология 175 лет.">
+<meta name="description" content="Интерактивная карта Авраама: от Ура Халдейского до горы Мория. 20 мест, 8 этапов, 5 сюжетов (Лех-леха, Война царей, Акеда), кинотур, археология, иврит, хронология 175 лет.">
 <meta name="robots" content="index, follow">
 <link rel="canonical" href="https://gospod-bog.ru/karty/avraam/">
 <meta property="og:title" content="Путь Авраама — интерактивная карта">
@@ -75,7 +75,11 @@
   /* ---------- chrome ---------- */
   .chrome{position:fixed;z-index:30;pointer-events:none}
   .chrome *{pointer-events:auto}
-  #brand{top:18px;left:22px;max-width:430px}
+  #brand{top:18px;left:22px;max-width:430px;view-transition-name:map-brand}
+  #routes{view-transition-name:map-routes}
+  @keyframes vt-fade{from{opacity:0}to{opacity:1}}
+  ::view-transition-new(map-routes){animation:vt-fade .5s ease}
+  ::view-transition-old(map-routes){animation:vt-fade .5s ease reverse}
   #brand h1{font-family:var(--serif);font-size:clamp(19px,2.3vw,27px);font-weight:600;letter-spacing:.04em;color:#f4eedd;text-shadow:0 2px 14px rgba(0,0,0,.8)}
   #brand h1 b{color:var(--gold);font-weight:600}
   #brand .he{font-size:13px;color:var(--gold-soft);letter-spacing:.18em;margin-top:2px}
@@ -319,17 +323,98 @@ body{overscroll-behavior:none;-webkit-overscroll-behavior:none}
 </style>
   <link rel="alternate" type="application/rss+xml" title="Господь Бог — Сила Моя — RSS" href="https://gospod-bog.ru/feed.xml">
   <link rel="manifest" href="/manifest.json">
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.13/dist/gsap.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.13/dist/DrawSVGPlugin.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.13/dist/MotionPathPlugin.min.js"></script>
 <style>
 .avraam-footer{position:fixed;bottom:0;right:0;padding:6px 14px;font-family:'Source Sans 3',system-ui,sans-serif;font-size:10px;z-index:2}
 .avraam-footer a{color:rgba(205,185,144,.35);text-decoration:none;transition:opacity .2s}
 .avraam-footer a:hover{opacity:1;color:rgba(205,185,144,.7)}
 .avraam-skip{position:absolute;left:-9999px;top:auto;width:1px;height:1px;overflow:hidden;z-index:9999;padding:12px;background:var(--bg,#0d1117);color:var(--gold,#cdb990);font-size:14px;text-decoration:none;border-radius:0 0 8px 0}
 .avraam-skip:focus{position:fixed;left:0;top:0;width:auto;height:auto;overflow:visible}
+
+  /* ---------- story switcher ---------- */
+  #story-nav{
+    display:flex;gap:5px;flex-wrap:wrap;margin-top:10px;
+    max-width:min(480px,90vw);
+  }
+  .story-btn{
+    background:var(--panel);border:1px solid rgba(255,255,255,.11);
+    color:var(--txt-dim);font-size:10px;letter-spacing:.13em;
+    padding:5px 11px;border-radius:999px;cursor:pointer;
+    transition:.22s;font-family:var(--sans);white-space:nowrap;
+    backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);
+  }
+  .story-btn:hover{border-color:var(--gold-dim);color:var(--txt);}
+  .story-btn.active{
+    background:rgba(232,200,121,.13);
+    border-color:var(--gold);color:var(--gold);
+  }
+  @media(max-width:760px){
+    #story-nav{
+      position:fixed;top:0;left:0;right:0;z-index:29;
+      overflow-x:auto;flex-wrap:nowrap;padding:8px 12px 6px;
+      background:linear-gradient(to bottom,rgba(5,8,13,.95) 80%,transparent);
+      scrollbar-width:none;
+    }
+    #story-nav::-webkit-scrollbar{display:none}
+    #brand{top:40px}
+  }
+
+  /* ---------- hover preview (desktop only) ---------- */
+  #mPrev{
+    position:fixed;z-index:45;pointer-events:none;
+    background:var(--panel);border:1px solid var(--panel-line);
+    border-radius:13px;padding:10px 14px;max-width:230px;
+    backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);
+    box-shadow:0 8px 28px rgba(0,0,0,.55);
+    opacity:0;transform:translateY(6px);
+    transition:opacity .18s,transform .18s;
+  }
+  #mPrev.vis{opacity:1;transform:none}
+  #mPrev .mp-he{font-size:13px;color:var(--gold);direction:rtl;text-align:left;margin-bottom:3px}
+  #mPrev .mp-nm{font-size:12.5px;color:#f0ead8;font-weight:600}
+  #mPrev .mp-kk{font-size:10px;color:var(--txt-dim);margin-top:3px;letter-spacing:.05em}
+  #mPrev .mp-hint{font-size:9px;color:#6c737e;margin-top:5px;letter-spacing:.08em}
+  @media(max-width:900px){#mPrev{display:none}}
+
+  /* ---------- fullscreen btn (mobile) ---------- */
+  #fsBtn{display:none}
+  @media(max-width:900px){
+    #fsBtn{display:grid;place-items:center}
+  }
+
+  /* ---------- marker dim/highlight for stories ---------- */
+  #markers .marker.story-dim,#ctx .ctx-dot.story-dim{opacity:.12;transition:opacity .4s}
+  #markers .marker.story-hi,#ctx .ctx-dot.story-hi{opacity:1;transition:opacity .4s}
+  .route.story-dim{opacity:.06!important;transition:opacity .4s}
+  .route.story-hi{opacity:1!important;transition:opacity .4s}
+
+  /* ---------- legend in layers pop ---------- */
+  #legend-row{display:flex;gap:10px;padding:8px 6px 4px;flex-wrap:wrap}
+  .leg-item{display:flex;align-items:center;gap:5px;font-size:10px;color:var(--txt-dim);letter-spacing:.06em}
+  .leg-dot{width:8px;height:8px;border-radius:50%;flex:0 0 auto}
+
+  /* ---------- mobile swipe arrows in panel ---------- */
+  #pfoot-arrows{display:none}
+  @media(max-width:760px){
+    #pfoot-arrows{
+      display:flex;gap:8px;padding:0 16px 12px;
+      border-top:1px solid rgba(255,255,255,.06);
+    }
+    #pfoot-arrows button{
+      flex:1;background:rgba(232,200,121,.06);
+      border:1px solid var(--panel-line);border-radius:12px;
+      color:var(--gold);font-size:18px;padding:10px;cursor:pointer;
+    }
+  }
+
 </style>
 </head>
 <body>
 <a href="#svg-map" class="avraam-skip">Перейти к карте</a>
 <div id="stage">
+<div id="mPrev" role="tooltip" aria-hidden="true"><div class="mp-he"></div><div class="mp-nm"></div><div class="mp-kk"></div><div class="mp-hint">Нажмите для подробностей</div></div>
 <svg id="svg" viewBox="0 0 1900 1430" preserveAspectRatio="xMidYMid slice" aria-label="Карта пути Авраама">
 <defs>
   <linearGradient id="landG" x1="0" y1="0" x2="1" y2="1">
@@ -398,7 +483,7 @@ body{overscroll-behavior:none;-webkit-overscroll-behavior:none}
   <!-- Dead Sea -->
   <path fill="#10263a" stroke="#2e4d6b" stroke-width="1.1" d="M646,795 C656,800 661,816 661,836 C661,852 658,862 659,872 C661,886 658,897 650,899 C642,900 637,890 638,876 C639,866 637,854 635,840 C634,820 636,804 640,797 C642,793 644,793 646,795 Z"/>
   <!-- Sea of Galilee -->
-  <path fill="#10263a" stroke="#2e4d6b" stroke-width=".9" d="M654,668 C659,666 663,669 664,675 C665,681 663,686 659,688 C655,690 651,687 650,681 C649,675 650,670 654,668 Z"/>
+  <ellipse cx="658" cy="678" rx="8" ry="14" transform="rotate(-20 658 678)" fill="#10263a" stroke="#2e4d6b" stroke-width=".9"/>
 
   <!-- rivers -->
   <g fill="none" stroke="#2d4a66" stroke-width="3" opacity=".95" stroke-linecap="round">
@@ -421,6 +506,8 @@ body{overscroll-behavior:none;-webkit-overscroll-behavior:none}
     <text class="sea-label" x="300" y="555" font-size="26" transform="rotate(-8 300 555)">ВЕЛИКОЕ&#160;&#160;МОРЕ</text>
     <text class="region-he" x="330" y="588" font-size="15" opacity=".4" fill="#7fa7c4">הַיָּם הַגָּדוֹל</text>
     <text class="sea-label" x="676" y="1330" font-size="15" transform="rotate(38 676 1330)">КРАСНОЕ&#160;МОРЕ</text>
+  <text class="sea-label lbl-z1" x="702" y="1248" font-size="7" transform="rotate(38 702 1248)" letter-spacing=".18em">ЗАЛИВ АКАБА · יָם סוּף</text>
+  <text class="sea-label lbl-z1" x="702" y="1248" font-size="7" transform="rotate(38 702 1248)" letter-spacing=".18em">ЗАЛИВ АКАБА · יָם סוּף</text>
     <text class="sea-label" x="1846" y="1014" font-size="12" transform="rotate(60 1846 1014)" letter-spacing=".25em">ЗАЛИВ</text>
     <text class="sea-label lbl-z1" x="649" y="848" font-size="5.5" letter-spacing=".16em" text-anchor="middle" transform="rotate(86 649 848)">МЁРТВОЕ&#160;МОРЕ</text>
 
@@ -519,6 +606,13 @@ body{overscroll-behavior:none;-webkit-overscroll-behavior:none}
   <h1>Путь <b>Авраама</b></h1>
   <div class="he" lang="he">אַבְרָהָם אָבִינוּ &#8226; לֶךְ-לְךָ</div>
   <div class="tag">Интерактивная карта странствий по Книге Бытия 11–25 · от Ура Халдейского до горы Мория · с археологическим контекстом</div>
+  <nav id="story-nav" role="navigation" aria-label="Выбор сюжета карты">
+    <button class="story-btn active" data-story="main" aria-pressed="true">Весь путь</button>
+    <button class="story-btn" data-story="lekh-lekha" aria-pressed="false">Лех-леха</button>
+    <button class="story-btn" data-story="lot" aria-pressed="false">Линия Лота</button>
+    <button class="story-btn" data-story="war" aria-pressed="false">Война царей</button>
+    <button class="story-btn" data-story="akeda" aria-pressed="false">Акеда</button>
+  </nav>
 </div>
 
 <div class="chrome" id="tools">
@@ -534,10 +628,18 @@ body{overscroll-behavior:none;-webkit-overscroll-behavior:none}
   <button class="btn wide" id="lifeBtn" title="Хронология жизни">175 ЛЕТ</button>
   <button class="btn wide" id="treeBtn" title="Род Тераха">РОД</button>
   <button class="btn wide" id="srcBtn" title="Источники и метод">ИСТОЧНИКИ</button>
+  <button class="btn" id="fsBtn" title="Полный экран" aria-label="Полный экран">⛶</button>
 </div>
 
-<div class="pop" id="layersPop"><div class="ph">СЛОИ КАРТЫ</div><div id="layersList"></div></div>
-<div class="pop" id="placesPop"><div class="ph">ВСЕ МЕСТА · 19</div><input id="plSearch" placeholder="Поиск: Содом, Мория, колодец…" aria-label="Поиск по местам"><div id="placesList"></div></div>
+<div class="pop" id="layersPop"><div class="ph">СЛОИ КАРТЫ</div><div id="layersList"></div>
+  <div id="legend-row">
+    <span class="leg-item"><span class="leg-dot" style="background:#e8c879;box-shadow:0 0 6px #e8c879"></span>Путь Авраама</span>
+    <span class="leg-item"><span class="leg-dot" style="background:#e0813f;box-shadow:0 0 6px #e0813f"></span>Линия Лота</span>
+    <span class="leg-item"><span class="leg-dot" style="background:#cf5b6b;box-shadow:0 0 6px #cf5b6b"></span>Война</span>
+    <span class="leg-item"><span class="leg-dot" style="background:#9b8cf0;box-shadow:0 0 6px #9b8cf0;border:1px dashed #9b8cf0"></span>Кандидат</span>
+  </div>
+</div>
+<div class="pop" id="placesPop"><div class="ph" id="places-ph">ВСЕ МЕСТА · 20</div><input id="plSearch" placeholder="Поиск: Содом, Мория, колодец…" aria-label="Поиск по местам"><div id="placesList"></div></div>
 
 <div id="hud">
   <svg id="compass" viewBox="0 0 46 46">
@@ -569,7 +671,7 @@ body{overscroll-behavior:none;-webkit-overscroll-behavior:none}
     <div class="he">לֶךְ־לְךָ מֵאַרְצְךָ</div>
     <h2>Путь <b>Авраама</b></h2>
     <div class="sub">Четыре тысячи лет назад один человек вышел из великого города —<br>и пошёл в землю, которую ему обещали показать.</div>
-    <div class="sub" style="margin-top:8px;font-size:11px;letter-spacing:.15em;color:#777e89">19 МЕСТ · 8 ЭТАПОВ · 3 ТОРГОВЫХ ПУТИ · 7 КОНТЕКСТНЫХ ТОЧЕК · 59 СТИХОВ</div>
+    <div class="sub" style="margin-top:8px;font-size:11px;letter-spacing:.15em;color:#777e89">20 МЕСТ · 8 ЭТАПОВ · 5 СЮЖЕТОВ · 7 КОНТЕКСТНЫХ ТОЧЕК · 59 СТИХОВ</div>
     <div class="rule"></div>
     <button class="go" id="introGo">НАЧАТЬ КИНОТУР</button>
     <button class="skip" id="introSkip">ИССЛЕДОВАТЬ КАРТУ САМОСТОЯТЕЛЬНО</button>
@@ -599,6 +701,10 @@ body{overscroll-behavior:none;-webkit-overscroll-behavior:none}
     <button id="prevPl">← ПРЕДЫДУЩЕЕ</button>
     <button id="sharePl" title="Скопировать ссылку на место">⧉ ССЫЛКА</button>
     <button id="nextPl">СЛЕДУЮЩЕЕ →</button>
+  </div>
+  <div id="pfoot-arrows">
+    <button id="prevPlMob" aria-label="Предыдущее место">←</button>
+    <button id="nextPlMob" aria-label="Следующее место">→</button>
   </div>
 </aside>
 
@@ -793,8 +899,8 @@ story:`<p>Пустыня «пред Египтом» на караванной �
 bible:`<div class="verse">«И нашёл её Ангел Господень у источника воды в пустыне, у источника на дороге к Суру».<span>БЫТИЕ 16:7</span></div>`,
 arch:`<p>Имя Шур — «стена»: вероятная память о «Стене правителя», линии египетских пограничных крепостей XII династии, известной из «Рассказа Синухе» (XX в. до н. э.), герой которого пересекал её, как и патриархи, в обе стороны.</p>`},
 
-{id:"lahairoi",name:"Беэр-лахай-рои",he:"בְּאֵר לַחַי רֹאִי",tr:"«колодец Живого, видящего меня»",x:492,y:946,type:"main",era:["bronze"],tier:2,stage:5,kick:"Колодец Агари",id1:"локализация неизвестна",id2:"«между Кадешем и Бередом»",ep1:"Быт 16:7–14; 24:62; 25:11",ep2:"явление Ангела Агари",side:"b",
-story:`<p>Безымянный источник в пустыне, получивший имя от потрясённой Агари: здесь Ангел Господень впервые в Библии возвещает рождение сына — Измаила, «дикого осла» пустыни, отца двенадцати князей.</p><p>Колодец остаётся в семье: сюда приходит Исаак перед встречей с Ревеккой, и здесь он поселяется после смерти Авраама — у источника, освящённого слезами наложницы его матери.</p>`,
+{id:"lahairoi",name:"Беэр-лахай-рои",he:"בְּאֵר לַחַי רֹאִי",tr:"«колодец Живого, видящего меня»",x:492,y:946,type:"cand",era:["bronze"],tier:2,stage:5,kick:"Колодец Агари",id1:"локализация неизвестна",id2:"«между Кадешем и Бередом»",ep1:"Быт 16:7–14; 24:62; 25:11",ep2:"явление Ангела Агари",side:"b",
+story:`<p class="note" style="font-size:11px;color:#9aa2ae;border:1px solid rgba(155,140,240,.3);border-radius:8px;padding:7px 10px;margin-bottom:10px;">📍 Точное место неизвестно — маркер приблизительный (Быт 16:14: «между Кадешем и Бередом»)</p><p>Безымянный источник в пустыне, получивший имя от потрясённой Агари: здесь Ангел Господень впервые в Библии возвещает рождение сына — Измаила, «дикого осла» пустыни, отца двенадцати князей.</p><p>Колодец остаётся в семье: сюда приходит Исаак перед встречей с Ревеккой, и здесь он поселяется после смерти Авраама — у источника, освящённого слезами наложницы его матери.</p>`,
 bible:`<div class="verse">«И нарекла Агарь Господа, Который говорил к ней, сим именем: Ты Бог видящий меня… Посему источник тот называется: Беэр-лахай-рои».<span>БЫТИЕ 16:13–14</span></div>`,
 arch:`<p>Точная локализация неизвестна — текст помещает его «между Кадешем и Бередом» на дороге к Суру. Бедуинская традиция связывала с ним источники районов Эйн-Кудейс и Эйн-Мувейлих; археологически подтверждаемых следов культа нет, что естественно для сезонного кочевого источника.</p>`},
 
@@ -838,7 +944,7 @@ const CTX=[
 const STAGES=[
 {n:"I",t:"Из Ура в Харран",km:"~1000 км",r:"Быт 11:27–32",cls:"abr",cam:[420,-30,1640],age:"АВРАМУ ~70 ЛЕТ · ~1000 КМ ВВЕРХ ПО ЕВФРАТУ",
  d:"Терах выводит род из шумерского мегаполиса вверх по Евфрату — 1000 км до Харрана. Здесь умирает отец, и история замирает в ожидании призыва.",
- paths:[{d:"M1710,897 C1620,840 1560,810 1500,778 C1380,705 1330,640 1295,612 C1240,560 1215,505 1189,470 C1120,430 1050,380 1010,330 C1000,290 1000,240 1003,194",c:"gold"}]},
+ paths:[{d:"M1710,897 C1690,872 1658,848 1620,822 C1580,794 1535,770 1495,755 C1472,747 1472,756 1472,756 C1445,720 1412,680 1370,645 C1340,618 1310,605 1295,612 C1260,578 1230,530 1204,495 C1193,481 1189,470 1189,470 C1148,440 1095,400 1048,365 C1022,345 1005,314 1003,194",c:"gold"}]},
 {n:"II",t:"Лех-леха: в Ханаан",km:"~700 км",r:"Быт 12:1–9",cls:"abr",cam:[243,59,1140],age:"АВРАМУ 75 ЛЕТ · ~700 КМ ЧЕРЕЗ ДАМАСК",
  d:"«Иди себе» — в 75 лет Аврам оставляет всё и идёт через Дамаск в Ханаан. Сихем: первое явление и жертвенник. Бет-Эль: призывание Имени.",
  paths:[{d:"M1003,194 C940,230 870,250 816,274 C780,320 760,380 750,430 C742,490 735,545 731,594 C708,608 685,617 665,625 C652,662 638,705 628,748 C625,760 624,770 624,782",c:"gold"}]},
@@ -864,6 +970,104 @@ const STAGES=[
  d:"Три дня пути из Беэр-Шевы. «Бог усмотрит Себе агнца». Нож остановлен; обетование скреплено клятвой. Финал — Махпела: единственный купленный надел становится гробницей Сары и Авраама.",
  paths:[{d:"M584,864 C603,847 615,825 622,805",c:"gold"},{d:"M619,806 C608,824 596,844 588,860",c:"gold",dash:1}]},
 ];
+
+
+/* ================= STORIES (multi-narrative switcher) ================= */
+const STORIES = [
+  {
+    id:'main', label:'Весь путь',
+    places:null, // null = все
+    stages:null, // null = все
+    cam:[1040,660,1900], // вся карта
+    desc:'От Ура Халдейского до горы Мория · весь путь'
+  },
+  {
+    id:'lekh-lekha', label:'Лех-леха',
+    places:['harran','damascus','shechem','bethel','urfa'],
+    stages:[0,1],
+    cam:[680,380,820],
+    desc:'Призвание и первый путь в Ханаан · Быт 11–12'
+  },
+  {
+    id:'lot', label:'Линия Лота',
+    places:['bethel','sodom','hammam','zoar'],
+    stages:[3,5,6],
+    cam:[640,820,360],
+    desc:'Выбор Лота · катастрофа Содома · Быт 13; 18–19'
+  },
+  {
+    id:'war', label:'Война царей',
+    places:['hebron','dan','hovah','salem'],
+    stages:[4],
+    cam:[660,700,500],
+    desc:'318 воинов · ночной рейд · Мелхиседек · Быт 14'
+  },
+  {
+    id:'akeda', label:'Акеда',
+    places:['beersheba','kadesh','lahairoi','salem'],
+    stages:[7],
+    cam:[590,835,310],
+    desc:'Три дня пути к горе Мория · Быт 22'
+  }
+];
+
+let activeStory = 'main';
+
+function applyStory(storyId){
+  const st = STORIES.find(s=>s.id===storyId) || STORIES[0];
+  activeStory = st.id;
+
+  // обновить кнопки
+  document.querySelectorAll('.story-btn').forEach(b=>{
+    const on = b.dataset.story===storyId;
+    b.classList.toggle('active', on);
+    b.setAttribute('aria-pressed', on ? 'true':'false');
+  });
+
+  // dim/hi маркеры
+  document.querySelectorAll('#markers .marker').forEach(m=>{
+    if(!st.places){m.classList.remove('story-dim','story-hi');return;}
+    const inSet = st.places.includes(m.dataset.id);
+    m.classList.toggle('story-dim', !inSet);
+    m.classList.toggle('story-hi', inSet);
+  });
+  // dim/hi ctx
+  document.querySelectorAll('#ctx .ctx-dot').forEach(m=>{
+    if(!st.places){m.classList.remove('story-dim','story-hi');return;}
+    m.classList.add('story-dim');
+  });
+  // dim/hi маршруты
+  document.querySelectorAll('#routes g').forEach(g=>{
+    const si = parseInt(g.dataset.stage);
+    const inSet = !st.stages || st.stages.includes(si);
+    g.querySelectorAll('.route').forEach(r=>{
+      r.classList.toggle('story-dim', !inSet);
+      r.classList.toggle('story-hi', inSet);
+    });
+  });
+
+  // синхронизировать timeline chips
+  document.querySelectorAll('.stage-chip').forEach(ch=>{
+    const si = parseInt(ch.dataset.si);
+    if(st.stages){
+      ch.style.opacity = st.stages.includes(si) ? '1' : '.3';
+    } else {
+      ch.style.opacity = '1';
+    }
+  });
+
+  // deep link
+  const u = new URL(location.href);
+  if(storyId==='main') u.searchParams.delete('story');
+  else u.searchParams.set('story', storyId);
+  history.replaceState(null,'', u.toString().replace(u.origin,''));
+
+  // flyTo
+  if(st.cam){
+    const [cx,cy,w] = st.cam;
+    flyTo(cx,cy,w,900);
+  }
+}
 
 const COLORS={gold:"url(#goldR)",lot:"var(--lot)",war:"var(--war)"};
 const SOLID={gold:"#e8c879",lot:"#e0813f",war:"#cf5b6b"};
@@ -950,7 +1154,19 @@ svg.addEventListener('wheel',e=>{
   applyView();
 },{passive:false});
 svg.addEventListener('dblclick',e=>{const p=toSvg(e.clientX,e.clientY);flyTo(p.x,p.y,view.w*0.5,650);});
-svg.addEventListener('click',e=>{
+svg.addEventListener('pointerenter',e=>{
+    if(pl) showPrev(pl, e.clientX, e.clientY);
+  });
+  g.addEventListener('pointermove',e=>{
+    if(window.innerWidth>900 && pl){
+      const pw=240,ph=90;
+      const x=Math.min(e.clientX+18,window.innerWidth-pw-8);
+      const y=Math.min(e.clientY-10,window.innerHeight-ph-8);
+      mPrev.style.left=x+'px'; mPrev.style.top=y+'px';
+    }
+  });
+  g.addEventListener('pointerleave',()=>hidePrev());
+  g.addEventListener('click',e=>{
   if(typeof measuring!=='undefined'&&measuring&&!lastMoved&&!e.target.closest('.marker')&&!e.target.closest('.ctx-dot')){
     const p=toSvg(e.clientX,e.clientY);measureClick(p.x,p.y);
   }
@@ -1180,6 +1396,7 @@ const panel=document.getElementById('panel');
 let curPlace=-1,curTab='story';
 const MAIN_ORDER=PLACES.map((p,i)=>i).filter(i=>PLACES[i].type!=='cand');
 function openPlace(id,fly=true){
+  haptic(10);
   if(typeof closeCtx==='function')closeCtx();
   const i=placeIndex[id];const pl=PLACES[i];curPlace=i;
   document.querySelectorAll('.marker').forEach(m=>m.classList.toggle('active',m.dataset.id===id));
@@ -1263,6 +1480,7 @@ function focusStage(i,withCam){
   chips.forEach((c,j)=>c.classList.toggle('cur',i===j));
   chips[i].scrollIntoView({behavior:'smooth',inline:'center',block:'nearest'});
   setDim(i);showCaption(i);
+  animateStageRoutes(i);
   if(withCam){const cam=STAGES[i].cam;flyTo(cam[0]+cam[2]/2,cam[1]+(cam[2]*H0/W0)/2,cam[2],1100);}
   clearTimeout(focusStage._t);
   if(!touring)focusStage._t=setTimeout(()=>{if(!touring){caption.classList.remove('show');setDim(-1);chips.forEach(c=>c.classList.remove('cur'));}},9000);
@@ -1582,6 +1800,24 @@ document.getElementById('lifeCard').addEventListener('click',e=>{
 
 /* ================= INIT ================= */
 applyView();updateMinimap();
+
+/* Story buttons + View Transitions API */
+document.querySelectorAll('.story-btn').forEach(btn=>{
+  btn.addEventListener('click',()=>{
+    const sid = btn.dataset.story;
+    if(document.startViewTransition){
+      document.startViewTransition(()=>applyStory(sid));
+    } else {
+      applyStory(sid);
+    }
+  });
+});
+// Restore story from URL
+(function(){
+  const sp=new URLSearchParams(location.search);
+  const s=sp.get('story');
+  if(s&&STORIES.find(x=>x.id===s)) applyStory(s);
+})();
 const _applyView=applyView;
 applyView=function(){_applyView();updateMinimap();};
 (function startCam(){
@@ -1598,18 +1834,114 @@ if(location.hash){
   const id=location.hash.slice(1);
   if(placeIndex[id]!==undefined){dismissIntro();setTimeout(()=>openPlace(id),900);}
 }
-/* swipe-down closes panel on touch devices */
+/* swipe gestures on panel */
 (function(){
-  let sy=null;
+  let sy=null, sx=null;
   const pb=document.getElementById('panel');
-  pb.addEventListener('touchstart',e=>{if(pb.scrollTop<=0)sy=e.touches[0].clientY;},{passive:true});
-  pb.addEventListener('touchmove',e=>{
-    if(sy!==null&&e.touches[0].clientY-sy>90&&document.getElementById('panel-body').scrollTop===0){closePanel();sy=null;}
+  pb.addEventListener('touchstart',e=>{
+    if(pb.scrollTop<=0) sy=e.touches[0].clientY;
+    sx=e.touches[0].clientX;
   },{passive:true});
-  pb.addEventListener('touchend',()=>{sy=null;},{passive:true});
+  pb.addEventListener('touchmove',e=>{
+    const dy=e.touches[0].clientY-(sy||0);
+    const dx=e.touches[0].clientX-(sx||0);
+    // swipe-down = close
+    if(sy!==null&&dy>90&&Math.abs(dy)>Math.abs(dx)*1.5&&document.getElementById('panel-body').scrollTop===0){
+      closePanel();sy=null;sx=null;
+    }
+  },{passive:true});
+  pb.addEventListener('touchend',e=>{
+    if(sx!==null){
+      const dx=e.changedTouches[0].clientX-sx;
+      const dy=e.changedTouches[0].clientY-(sy||0);
+      // swipe-left/right между маркерами (горизонтальнее чем вертикальный)
+      if(Math.abs(dx)>60&&Math.abs(dx)>Math.abs(dy)*1.5){
+        if(dx<0){ haptic(8); document.getElementById('nextPl').click(); }
+        else { haptic(8); document.getElementById('prevPl').click(); }
+      }
+    }
+    sy=null;sx=null;
+  },{passive:true});
 })();
 </script>
 
+
+/* ================= GSAP SETUP ================= */
+if(typeof gsap !== 'undefined'){
+  try{ gsap.registerPlugin(DrawSVGPlugin, MotionPathPlugin); }catch(e){}
+}
+
+/* ================= HOVER PREVIEW (desktop) ================= */
+const mPrev = document.getElementById('mPrev');
+let _prevTimer=null;
+function showPrev(pl, clientX, clientY){
+  if(window.innerWidth<=900) return;
+  clearTimeout(_prevTimer);
+  _prevTimer = setTimeout(()=>{
+    mPrev.querySelector('.mp-he').textContent = pl.he || '';
+    mPrev.querySelector('.mp-nm').textContent = pl.name;
+    mPrev.querySelector('.mp-kk').textContent = pl.kick || '';
+    const pw=240,ph=90;
+    const x=Math.min(clientX+18,window.innerWidth-pw-8);
+    const y=Math.min(clientY-10,window.innerHeight-ph-8);
+    mPrev.style.left=x+'px'; mPrev.style.top=y+'px';
+    mPrev.classList.add('vis');
+    mPrev.setAttribute('aria-hidden','false');
+  },200);
+}
+function hidePrev(){
+  clearTimeout(_prevTimer);
+  mPrev.classList.remove('vis');
+  mPrev.setAttribute('aria-hidden','true');
+}
+
+/* ================= HAPTIC ================= */
+function haptic(ms=12){
+  try{ if(navigator.vibrate) navigator.vibrate(ms); }catch(e){}
+}
+
+/* ================= FULLSCREEN ================= */
+(function(){
+  const fsBtnEl=document.getElementById('fsBtn');
+  if(!fsBtnEl) return;
+  fsBtnEl.addEventListener('click',()=>{
+    if(!document.fullscreenElement){
+      document.documentElement.requestFullscreen?.();
+      fsBtnEl.textContent='✕'; fsBtnEl.title='Выйти из полного экрана';
+    } else {
+      document.exitFullscreen?.();
+      fsBtnEl.textContent='⛶'; fsBtnEl.title='Полный экран';
+    }
+  });
+  document.addEventListener('fullscreenchange',()=>{
+    if(!document.fullscreenElement){
+      fsBtnEl.textContent='⛶'; fsBtnEl.title='Полный экран';
+    }
+  });
+})();
+
+/* ================= MOBILE PANEL ARROWS ================= */
+(function(){
+  const prevMob=document.getElementById('prevPlMob');
+  const nextMob=document.getElementById('nextPlMob');
+  if(prevMob) prevMob.addEventListener('click',()=>{ document.getElementById('prevPl').click(); haptic(); });
+  if(nextMob) nextMob.addEventListener('click',()=>{ document.getElementById('nextPl').click(); haptic(); });
+})();
+
+/* ================= GSAP DRAWSVG on stage focus ================= */
+function animateStageRoutes(stageIdx){
+  if(typeof gsap==='undefined') return;
+  const g=document.querySelectorAll('#routes g')[stageIdx];
+  if(!g) return;
+  g.querySelectorAll('.route').forEach(path=>{
+    gsap.fromTo(path,
+      {drawSVG:'0%'},
+      {drawSVG:'100%',duration:1.6,ease:'power2.inOut',overwrite:true}
+    );
+  });
+}
+</script>
+<script>
 <!-- Yandex.Metrika counter -->
 <script type="text/javascript">
   (function(m,e,t,r,i,k,a){
