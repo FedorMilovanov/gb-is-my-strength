@@ -97,6 +97,9 @@ if (src) {
   /timelineTicks/.test(src) && /visibleTimelineTicks/.test(src) && /hoveredTick/.test(src) && /timelineTicks\.filter\(\(tick\) => tick\.major\)/.test(src) && !/title=\{`\$\{evt\.year\}:/.test(src)
     ? ok('I8 source: timeline ticks are landmark-only and avoid native title tooltips')
     : bad('I8 source: timeline ticks are noisy or use native title tooltips');
+  !/<(?:motion\.)?button[^>]+\s+title=/.test(src) && /displayEvent && !bottomBarExpanded/.test(src)
+    ? ok('I11 source: native button title tooltips removed and timeline card avoids route panel')
+    : bad('I11 source: native button title tooltips or timeline stacking regression');
   /fill=\{exact && focus \? `\$\{focus\.color\}14`/.test(src) && /opacity=\{exact \? 0\.48/.test(src)
     ? ok('I8 source: map highlight intensity is restrained')
     : bad('I8 source: map highlight may overpower 3D scene');
