@@ -90,6 +90,8 @@ header.k{padding:26px 0 0;display:flex;align-items:center;justify-content:space-
 .card .live i{width:6px;height:6px;border-radius:50%;background:var(--gold);animation:liv 2s ease-out infinite}
 @keyframes liv{0%{box-shadow:0 0 0 0 rgba(232,200,121,.5)}70%{box-shadow:0 0 0 7px transparent}100%{box-shadow:0 0 0 0 transparent}}
 @keyframes goldShimmer{0%{box-shadow:0 38px 95px rgba(0,0,0,.72),0 0 0 1px var(--gold),0 0 18px rgba(232,200,121,.18),inset 0 0 0 1px rgba(232,200,121,.035)}50%{box-shadow:0 38px 95px rgba(0,0,0,.72),0 0 0 1px var(--gold-soft),0 0 28px rgba(232,200,121,.3),inset 0 0 0 1px rgba(232,200,121,.06)}100%{box-shadow:0 38px 95px rgba(0,0,0,.72),0 0 0 1px var(--gold),0 0 18px rgba(232,200,121,.18),inset 0 0 0 1px rgba(232,200,121,.035)}}
+.card.live{animation:liveShimmer 4.2s cubic-bezier(.22,1,.36,1) infinite}
+@keyframes liveShimmer{0%,100%{box-shadow:0 12px 38px rgba(0,0,0,.42),inset 0 0 0 1px rgba(232,200,121,.035),0 0 0 1px var(--gold)}50%{box-shadow:0 12px 38px rgba(0,0,0,.42),inset 0 0 0 1px rgba(232,200,121,.06),0 0 14px rgba(232,200,121,.28)}}
 .intro{max-width:760px;margin:0 auto;padding:6px 0 18px;color:var(--muted);font-size:14px;line-height:1.85;text-align:center}
 .intro b{color:var(--txt);font-weight:600}
 footer.k{padding:30px 0 30px;text-align:center;font-size:11px;color:#5e6570;letter-spacing:.08em}
@@ -123,7 +125,7 @@ footer.k a:hover{color:var(--gold)}
 <main class="grid h-reveal">
 
   <!-- РУССКИЙ БАПТИЗМ — доступна -->
-  <a class="card" href="/konfessii/russkij-baptizm/" aria-label="Открыть 3D-карту Русского Баптизма">
+  <a class="card live" href="/konfessii/russkij-baptizm/" aria-label="Открыть 3D-карту Русского Баптизма">
     <span class="live"><i></i>ДОСТУПНА</span>
     <div class="art" aria-hidden="true">
       <svg viewBox="0 0 360 152" preserveAspectRatio="xMidYMid slice">
@@ -263,7 +265,25 @@ cards.forEach(card => {
   card.addEventListener('mouseup', () => {
     card.style.transition = 'transform .62s cubic-bezier(0.22,1,0.36,1)';
   });
+  if (card.classList.contains('live')) {
+    startCardShimmer(card);
+  }
 });
+
+function startCardShimmer(card) {
+  setInterval(() => {
+    if (!card.matches(':hover')) {
+      card.style.transition = 'box-shadow .6s cubic-bezier(.22,1,.36,1)';
+      card.style.boxShadow = '0 12px 38px rgba(0,0,0,.42), inset 0 0 0 1px rgba(232,200,121,.06), 0 0 14px rgba(232,200,121,.28)';
+      setTimeout(() => {
+        if (!card.matches(':hover')) {
+          card.style.boxShadow = '0 12px 38px rgba(0,0,0,.42), inset 0 0 0 1px rgba(232,200,121,.035), 0 0 0 1px var(--gold)';
+          card.style.transition = '';
+        }
+      }, 420);
+    }
+  }, 4200);
+}
 
 const grid = document.querySelector('.grid');
 if (grid) {
