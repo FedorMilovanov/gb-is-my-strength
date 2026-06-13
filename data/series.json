@@ -149,7 +149,8 @@
         "n": 4,
         "slug": "peterburgskaya-liniya",
         "title": "Петербургская линия",
-        "status": "planned"
+        "status": "published",
+        "readingTime": 21
       },
       {
         "n": 5,
