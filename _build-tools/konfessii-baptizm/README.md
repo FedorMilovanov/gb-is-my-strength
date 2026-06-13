@@ -14,7 +14,9 @@
 
 ## Исходники приложения
 Исходный код — отдельный Vite-проект (НЕ в этом репозитории, хранится у владельца:
-Google Drive ZIP «react-vite-tailwind»). Структура: `src/components/MindMap3D.tsx`
+Google Drive ZIP «react-vite-tailwind»):
+https://drive.google.com/file/d/1tSV6l2CVl7MaPBWHNvf0Vt33JKUxDrJQ/view?usp=drive_link
+Структура: `src/components/MindMap3D.tsx`
 (~2500 строк настоящей 3D-сцены), `src/data/history/*`, `vite.config.ts` с
 `vite-plugin-singlefile`.
 
