@@ -2,17 +2,17 @@
 <html lang="ru">
 <head>
 <meta charset="utf-8">
-  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://mc.yandex.ru https://*.yandex.ru https://mc.yandex.com https://*.yandex.com; img-src 'self' https://mc.yandex.ru https://*.yandex.ru https://mc.yandex.com https://*.yandex.com data: blob:; style-src 'self' 'unsafe-inline'; font-src 'self' data:; connect-src 'self' https://mc.yandex.ru https://*.yandex.ru https://mc.yandex.com https://*.yandex.com wss://mc.yandex.ru wss://*.yandex.ru wss://mc.yandex.com wss://*.yandex.com; frame-src 'self' https://mc.yandex.ru https://*.yandex.ru https://mc.yandex.com https://*.yandex.com; object-src 'none'; base-uri 'self';">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://mc.yandex.ru https://*.yandex.ru https://mc.yandex.com https://*.yandex.com; img-src 'self' https://mc.yandex.ru https://*.yandex.ru https://mc.yandex.com https://*.yandex.com data: blob:; style-src 'self' 'unsafe-inline'; font-src 'self' data:; connect-src 'self' https://mc.yandex.ru https://*.yandex.ru https://mc.yandex.com https://*.yandex.com wss://mc.yandex.ru wss://*.yandex.ru wss://*.yandex.com wss://*.yandex.com; frame-src 'self' https://mc.yandex.ru https://*.yandex.ru https://mc.yandex.com https://*.yandex.com; object-src 'none'; base-uri 'self';">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Конфессии и Деноминации | Господь Бог — Сила Моя</title>
-<meta name="description" content="Отдел «Конфессии и Деноминации»: история и устройство протестантских движений России. Первый материал — интерактивная «Карта Русского Баптизма». Раздел пополняется.">
+<meta name="description" content="Отдел «Конфессии и Деноминации»: история протестантских движений России с максимальной опорой на первоисточники. Первый материал — «Карта Русского Баптизма» (23 узла, 27 связей).">
 <meta name="robots" content="index, follow">
 <link rel="canonical" href="https://gospod-bog.ru/konfessii/">
 <meta property="og:title" content="Конфессии и Деноминации | Господь Бог — Сила Моя">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://gospod-bog.ru/konfessii/">
   <meta property="og:locale" content="ru_RU">
-<meta property="og:description" content="История и устройство протестантских движений России. Первый материал — интерактивная «Карта Русского Баптизма». Раздел пополняется.">
+<meta property="og:description" content="История и устройство протестантских движений России с максимальной опорой на первоисточники. Первый материал — интерактивная «Карта Русского Баптизма». Раздел пополняется.">
 <meta property="og:image" content="https://gospod-bog.ru/images/og-konfessii-1200x630.webp">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
@@ -58,23 +58,38 @@ header.k{padding:26px 0 0;display:flex;align-items:center;justify-content:space-
 .hero p{margin:16px auto 0;max-width:600px;color:var(--muted);font-size:14.5px;line-height:1.7}
 .rule{width:90px;height:1px;margin:30px auto 0;background:linear-gradient(90deg,transparent,var(--gold),transparent)}
 .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:20px;padding:36px 0 36px}
-.card{position:relative;display:flex;flex-direction:column;border:1px solid var(--line);border-radius:18px;overflow:hidden;text-decoration:none;color:var(--txt);background:linear-gradient(160deg,rgba(20,24,33,.9),rgba(10,13,20,.95));transition:transform .3s cubic-bezier(.2,.8,.2,1),box-shadow .3s,border-color .3s;min-height:286px}
-.card:hover{transform:translateY(-4px);border-color:var(--gold);box-shadow:0 18px 50px rgba(0,0,0,.55),0 0 0 1px var(--gold-dim)}
+.card{
+  position:relative;display:flex;flex-direction:column;border:1px solid var(--line);
+  border-radius:18px;overflow:hidden;text-decoration:none;color:var(--txt);
+  background:linear-gradient(160deg,rgba(20,24,33,.9),rgba(10,13,20,.95));
+  transition:transform .62s cubic-bezier(.22,1,.36,1), box-shadow .62s cubic-bezier(.22,1,.36,1), border-color .28s;
+  min-height:286px;
+  will-change:transform;
+  transform-style:preserve-3d;
+  perspective:1000px;
+  box-shadow:0 12px 38px rgba(0,0,0,.42), inset 0 0 0 1px rgba(232,200,121,.035);
+  cursor:pointer;
+}
+.card:hover{border-color:var(--gold);box-shadow:0 38px 95px rgba(0,0,0,.72),0 0 0 1px var(--gold),0 0 18px rgba(232,200,121,.18);animation:goldShimmer 2.6s cubic-bezier(.22,1,.36,1) infinite}
 .card .art{height:152px;position:relative;overflow:hidden;background:#0a0e15}
-.card .art svg{width:100%;height:100%;display:block}
+.card .art svg{width:100%;height:100%;display:block;transition:transform .82s cubic-bezier(.22,1,.36,1)}
+.card:hover .art svg{transform:scale(1.068) translateZ(15px) rotate(0.65deg)}
 .card .body{padding:18px 20px 20px;flex:1;display:flex;flex-direction:column}
 .card .kick{font-size:10px;letter-spacing:.26em;color:var(--gold-soft);text-transform:uppercase}
 .card h2{font-family:var(--serif);font-weight:600;font-size:21px;color:#f4eedd;margin:7px 0 4px}
 .card .sub{font-size:12.5px;color:var(--gold-soft);margin-bottom:8px}
 .card p{font-size:12.5px;line-height:1.6;color:var(--muted);flex:1}
-.card .cta{margin-top:14px;font-size:11px;letter-spacing:.2em;color:var(--gold);display:flex;align-items:center;gap:8px}
-.card .cta::after{content:"→";transition:transform .25s}
-.card:hover .cta::after{transform:translateX(5px)}
+.card .cta{margin-top:14px;font-size:11px;letter-spacing:.2em;color:var(--gold);display:flex;align-items:center;gap:8px;font-weight:600;position:relative}
+.card .cta::after{content:"→";transition:transform .3s cubic-bezier(.22,1,.36,1);display:inline-block}
+.card:hover .cta::after{transform:translateX(9px)}
+.card .cta::before{content:"";position:absolute;left:-2px;right:-2px;top:50%;height:1px;background:linear-gradient(90deg,transparent,var(--gold),transparent);opacity:0;transition:opacity .28s cubic-bezier(.22,1,.36,1);transform:translateY(-50%)}
+.card:hover .cta::before{opacity:.42}
 .card.soon{pointer-events:none;opacity:.55}
 .card.soon .badge{position:absolute;top:14px;right:14px;z-index:2;background:rgba(13,17,26,.9);border:1px solid rgba(255,255,255,.18);border-radius:999px;font-size:9.5px;letter-spacing:.2em;color:var(--muted);padding:6px 12px}
 .card .live{position:absolute;top:14px;right:14px;z-index:2;background:rgba(33,28,16,.92);border:1px solid var(--gold);border-radius:999px;font-size:9.5px;letter-spacing:.2em;color:var(--gold);padding:6px 12px;display:flex;align-items:center;gap:6px}
 .card .live i{width:6px;height:6px;border-radius:50%;background:var(--gold);animation:liv 2s ease-out infinite}
 @keyframes liv{0%{box-shadow:0 0 0 0 rgba(232,200,121,.5)}70%{box-shadow:0 0 0 7px transparent}100%{box-shadow:0 0 0 0 transparent}}
+@keyframes goldShimmer{0%{box-shadow:0 38px 95px rgba(0,0,0,.72),0 0 0 1px var(--gold),0 0 18px rgba(232,200,121,.18),inset 0 0 0 1px rgba(232,200,121,.035)}50%{box-shadow:0 38px 95px rgba(0,0,0,.72),0 0 0 1px var(--gold-soft),0 0 28px rgba(232,200,121,.3),inset 0 0 0 1px rgba(232,200,121,.06)}100%{box-shadow:0 38px 95px rgba(0,0,0,.72),0 0 0 1px var(--gold),0 0 18px rgba(232,200,121,.18),inset 0 0 0 1px rgba(232,200,121,.035)}}
 .intro{max-width:760px;margin:0 auto;padding:6px 0 18px;color:var(--muted);font-size:14px;line-height:1.85;text-align:center}
 .intro b{color:var(--txt);font-weight:600}
 footer.k{padding:30px 0 30px;text-align:center;font-size:11px;color:#5e6570;letter-spacing:.08em}
@@ -96,18 +111,19 @@ footer.k a:hover{color:var(--gold)}
 <section class="hero">
   <div class="he">Отдел библиотеки</div>
   <h1>Конфессии и <b>Деноминации</b></h1>
-  <p>История, устройство и наследие христианских конфессий и деноминаций — с опорой на первичные источники и архивы. Раздел живой и пополняется.</p>
+  <p>История, устройство и наследие христианских конфессий и деноминаций — с максимальной опорой на первоисточники, протоколы съездов, личную переписку, официальные исповедания и архивы. Раздел живой и постоянно пополняется.</p>
   <div class="rule"></div>
 </section>
 
 <p class="intro">
-  Здесь собираются интерактивные исследования о происхождении и развитии отдельных церковных движений: откуда они выросли, как складывались союзы и расколы, кто стоял у истоков. Первый материал отдела — <b>«Карта Русского Баптизма»</b>, прослеживающая путь от трёх истоков 1860–1870-х годов до современных РС&nbsp;ЕХБ и МСЦ&nbsp;ЕХБ.
+  Здесь собираются интерактивные исследования о происхождении и развитии отдельных церковных движений: откуда они выросли, как складывались союзы и расколы, кто стоял у истоков. Первый материал отдела — <b>«Карта Русского Баптизма»</b>, прослеживающая путь от трёх истоков 1860–1870-х годов до современных РС&nbsp;ЕХБ и МСЦ&nbsp;ЕХБ. 
+  <b>Методология отдела</b> — строгая работа с первоисточниками без упрощений и романтизации.
 </p>
 
-<main class="grid">
+<main class="grid h-reveal">
 
   <!-- РУССКИЙ БАПТИЗМ — доступна -->
-  <a class="card" href="/konfessii/russkij-baptizm/">
+  <a class="card" href="/konfessii/russkij-baptizm/" aria-label="Открыть 3D-карту Русского Баптизма">
     <span class="live"><i></i>ДОСТУПНА</span>
     <div class="art" aria-hidden="true">
       <svg viewBox="0 0 360 152" preserveAspectRatio="xMidYMid slice">
@@ -149,9 +165,14 @@ footer.k a:hover{color:var(--gold)}
     <div class="body">
       <div class="kick">Россия · 1867 — наши дни</div>
       <h2>Карта Русского Баптизма</h2>
-      <div class="sub">От истоков к современности</div>
-      <p>Интерактивная история евангельско-баптистского движения: три истока (Тифлис, Южная Украина, Петербург), карта связей, хронология, съезды, гонения, ключевые фигуры, глоссарий и викторина.</p>
-      <div class="cta">ОТКРЫТЬ</div>
+      <div class="sub">От истоков к современности — настоящая интерактивная 3D-история</div>
+      <p>Полная история евангельско-баптистского движения: три независимых истока (Тифлис 1867, Южная Украина 1864/69, Петербург 1874), 23 узла, 27 связей, 5 маршрутов, хронология от Амстердама 1609 до наших дней, съезды, гонения, ключевые фигуры, глоссарий и викторина.</p>
+      <div class="stats" style="display:flex;flex-wrap:wrap;gap:6px;margin-top:11px">
+        <span style="font-size:9.5px;letter-spacing:.09em;color:var(--gold-soft);border:1px solid rgba(232,200,121,.24);border-radius:999px;padding:2px 9px;white-space:nowrap;font-weight:500">23 узла</span>
+        <span style="font-size:9.5px;letter-spacing:.09em;color:var(--gold-soft);border:1px solid rgba(232,200,121,.24);border-radius:999px;padding:2px 9px;white-space:nowrap;font-weight:500">27 связей</span>
+        <span style="font-size:9.5px;letter-spacing:.09em;color:var(--gold-soft);border:1px solid rgba(232,200,121,.24);border-radius:999px;padding:2px 9px;white-space:nowrap;font-weight:500">Настоящая 3D-сцена</span>
+      </div>
+      <div class="cta">ОТКРЫТЬ 3D-КАРТУ</div>
     </div>
   </a>
 
@@ -209,6 +230,52 @@ footer.k a:hover{color:var(--gold)}
 </footer>
 
 </div>
+
+<script>
+// Глубокий 3D Tilt + золотое мерцание рамки (только существующие паттерны, RAF)
+const cards = document.querySelectorAll('.card:not(.soon)');
+cards.forEach(card => {
+  let raf = null;
+  card.addEventListener('mousemove', (e) => {
+    if (raf) cancelAnimationFrame(raf);
+    raf = requestAnimationFrame(() => {
+      const rect = card.getBoundingClientRect();
+      const x = ((e.clientX - rect.left) / rect.width) - 0.5;
+      const y = ((e.clientY - rect.top) / rect.height) - 0.5;
+      const rotX = y * -15.8;
+      const rotY = x * 18.2;
+      card.style.transition = 'transform .055s linear';
+      card.style.transform = `perspective(1020px) rotateX(${rotX}deg) rotateY(${rotY}deg) translateY(-11px) scale(1.008)`;
+      if (!card.classList.contains('shimmering')) card.classList.add('shimmering');
+    });
+  });
+  card.addEventListener('mouseleave', () => {
+    if (raf) cancelAnimationFrame(raf);
+    card.classList.remove('shimmering');
+    card.style.transition = 'transform .82s cubic-bezier(0.22,1,0.36,1)';
+    card.style.transform = '';
+    setTimeout(() => { card.style.transition = ''; }, 820);
+  });
+  card.addEventListener('mousedown', () => {
+    card.style.transition = 'transform .085s cubic-bezier(0.22,1,0.36,1)';
+    card.style.transform = (card.style.transform || '') + ' scale(0.975)';
+  });
+  card.addEventListener('mouseup', () => {
+    card.style.transition = 'transform .62s cubic-bezier(0.22,1,0.36,1)';
+  });
+});
+
+const grid = document.querySelector('.grid');
+if (grid) {
+  grid.querySelectorAll('.card').forEach((c, i) => {
+    c.style.transitionDelay = (78 * i) + 'ms';
+    setTimeout(() => {
+      c.style.transition = 'opacity .72s cubic-bezier(.22,1,.36,1), transform .72s cubic-bezier(.22,1,.36,1)';
+      c.style.opacity = '1';
+    }, 125);
+  });
+}
+</script>
 
 <!-- Yandex.Metrika counter -->
 <script type="text/javascript">
