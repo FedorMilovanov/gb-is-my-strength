@@ -24,6 +24,7 @@
  *  I8  3D-режим содержит событийный Timeline (не падает из-за undefined state и не голые годы).
  *  I9  3D-режим содержит нижний роутер «Маршруты и города».
  *  I10 3D-режим содержит тихий learning coach «Как читать карту» для первого входа.
+ *  I11 3D-режим не возвращает нативные белые title-tooltip на Timeline и не даёт document-scrollbar мешать zoom.
  */
 'use strict';
 const path = require('path');
@@ -85,6 +86,15 @@ if (src) {
   /findMapSelectionForNode/.test(src) && /setMapSelection\(selection\)/.test(src)
     ? ok('I8 source: timeline events synchronize map selection')
     : bad('I8 source: timeline events do not synchronize map selection');
+  /timelineTicks/.test(src) && !/title=\{`\$\{evt\.year\}:/.test(src)
+    ? ok('I8 source: timeline ticks are clustered and avoid native title tooltips')
+    : bad('I8 source: timeline ticks are noisy or use native title tooltips');
+  /html\.style\.overflow = 'hidden'/.test(src) && /body\.style\.overflow = 'hidden'/.test(src)
+    ? ok('I5 source: 3D fullscreen locks document scroll')
+    : bad('I5 source: 3D fullscreen does not lock document scroll');
+  /interactiveHit/.test(src) && /child\.raycast = \(\) => undefined/.test(src)
+    ? ok('I5 source: decorative node geometry does not block raycast clicks')
+    : bad('I5 source: decorative geometry may block node clicks');
   /onRouteStepTo=\{handleRouteStepTo\}/.test(src) && /Нажмите этап/.test(src)
     ? ok('I9 source: route step chips are clickable')
     : bad('I9 source: route step chips are not clickable');

@@ -426,6 +426,22 @@ function TimelineOverlay({ timelineYearRef, bottomBarExpanded, onEventSelect }: 
     });
     return activeEvents[activeEvents.length - 1] ?? null;
   }, [displayYear]);
+  const timelineTicks = useMemo(() => {
+    const byYear = new Map<number, typeof timelineEvents>();
+    timelineEvents.forEach((event) => {
+      const match = event.year.match(/\d{4}/);
+      const y = match ? parseInt(match[0], 10) : 0;
+      if (!y || y < 1860 || y > 2026) return;
+      const list = byYear.get(y) ?? [];
+      list.push(event);
+      byYear.set(y, list as typeof timelineEvents);
+    });
+    const majorYears = new Set([1860, 1864, 1867, 1869, 1874, 1884, 1905, 1909, 1929, 1937, 1944, 1961, 1965, 1992, 2000]);
+    return [...byYear.entries()].map(([year, events]) => {
+      const event = events.find((e) => e.title.includes('★')) ?? events[0];
+      return { year, event, count: events.length, major: majorYears.has(year) || event.title.includes('★') };
+    }).sort((a, b) => a.year - b.year);
+  }, []);
 
   return (
     <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0, bottom: bottomBarExpanded ? '11.5rem' : '4.5rem' }} transition={{ duration: 0.3, ease: 'easeOut' }} className="absolute left-1/2 z-40 hidden w-full max-w-[800px] -translate-x-1/2 flex-col px-4 sm:flex pointer-events-none">
@@ -447,13 +463,10 @@ function TimelineOverlay({ timelineYearRef, bottomBarExpanded, onEventSelect }: 
         <span className="text-[10px] font-bold text-[#c4a67e]">1860</span>
         <div className="relative flex h-6 flex-1 items-center">
           <div className="absolute inset-x-0 h-1 rounded-full bg-white/10" />
-          {timelineEvents.map((evt, i) => {
-            const match = evt.year.match(/\d{4}/);
-            const y = match ? parseInt(match[0], 10) : 0;
-            if (!y || y < 1860 || y > 2026) return null;
-            const percent = ((y - 1860) / (2026 - 1860)) * 100;
-            const isActive = Math.abs(y - displayYear) <= 2;
-            return <button key={i} type="button" onClick={() => { setYear(y); timelineYearRef.current = y; onEventSelect?.(evt, y); }} title={`${evt.year}: ${evt.title}`} className="absolute z-20 h-3 w-3 -translate-x-1/2 -translate-y-1/2 rounded-full border transition hover:scale-125" style={{ left: `${percent}%`, top: '50%', borderColor: isActive ? categoryColors[evt.category] : 'rgba(255,255,255,0.22)', background: isActive ? categoryColors[evt.category] : 'rgba(255,255,255,0.16)', boxShadow: isActive ? `0 0 12px ${categoryColors[evt.category]}80` : 'none' }} aria-label={`Перейти к событию ${evt.year}: ${evt.title}`} />;
+          {timelineTicks.map((tick) => {
+            const percent = ((tick.year - 1860) / (2026 - 1860)) * 100;
+            const isActive = Math.abs(tick.year - displayYear) <= 2;
+            return <button key={tick.year} type="button" onClick={() => { setYear(tick.year); timelineYearRef.current = tick.year; onEventSelect?.(tick.event, tick.year); }} className={`absolute z-20 -translate-x-1/2 -translate-y-1/2 rounded-full border transition hover:scale-125 ${tick.major ? 'h-3 w-3' : 'h-1.5 w-1.5'}`} style={{ left: `${percent}%`, top: '50%', borderColor: isActive ? categoryColors[tick.event.category] : tick.major ? 'rgba(255,255,255,0.28)' : 'rgba(255,255,255,0.14)', background: isActive ? categoryColors[tick.event.category] : tick.major ? 'rgba(255,255,255,0.18)' : 'rgba(255,255,255,0.10)', boxShadow: isActive ? `0 0 12px ${categoryColors[tick.event.category]}80` : 'none', opacity: tick.major || isActive ? 1 : 0.42 }} aria-label={`Перейти к событию ${tick.event.year}: ${tick.event.title}${tick.count > 1 ? ` (и ещё ${tick.count - 1})` : ''}`} />;
           })}
           <input type="range" min="1860" max="2026" value={displayYear} onChange={handleChange} className="absolute inset-x-0 z-10 h-6 w-full cursor-pointer appearance-none bg-transparent opacity-0" />
           <div className="pointer-events-none absolute top-1/2 h-3 w-3 -translate-x-1/2 -translate-y-1/2 rounded-full border-2 border-black bg-[#c4a67e] shadow-[0_0_12px_#c4a67e]" style={{ left: `${((displayYear) - 1860) / (2026 - 1860) * 100}%` }} />
@@ -515,9 +528,25 @@ export default function MindMap3D() {
     return () => {
       window.removeEventListener('resize', checkOrientation);
       window.removeEventListener('orientationchange', checkOrientation);
-      if (isFullscreen) document.body.style.overflow = '';
     };
-  }, [focusNode, isFullscreen]);
+  }, [focusNode]);
+
+  useEffect(() => {
+    if (!isFullscreen || typeof document === 'undefined') return;
+    const html = document.documentElement;
+    const body = document.body;
+    const prevHtmlOverflow = html.style.overflow;
+    const prevBodyOverflow = body.style.overflow;
+    const prevBodyOverscroll = body.style.overscrollBehavior;
+    html.style.overflow = 'hidden';
+    body.style.overflow = 'hidden';
+    body.style.overscrollBehavior = 'none';
+    return () => {
+      html.style.overflow = prevHtmlOverflow;
+      body.style.overflow = prevBodyOverflow;
+      body.style.overscrollBehavior = prevBodyOverscroll;
+    };
+  }, [isFullscreen]);
 
   const projection = useMemo(() => geoMercator().center([42, 52]).scale(580).translate([600, 340]), []);
   const geoPathGenerator = useMemo(() => geoPath(projection), [projection]);
@@ -1511,8 +1540,9 @@ export default function MindMap3D() {
       }
     }
 
-    const hitR = kind === 'merger' || kind === 'lineage' ? r * 2.6 : r * 1.6;
+    const hitR = kind === 'merger' || kind === 'lineage' ? r * 1.55 : node.isCenter ? r * 1.08 : r * 1.24;
     const hitTarget = new THREE.Mesh(new THREE.SphereGeometry(hitR, 12, 12), new THREE.MeshBasicMaterial({ transparent: true, opacity: 0, depthWrite: false }));
+    hitTarget.userData = { interactiveHit: true };
     hitTarget.renderOrder = 2; group.add(hitTarget);
 
     const glowHex = kind === 'split' ? '#ff4b6e' : kind === 'revival' ? '#ff6b35' : kind === 'faith' ? '#d4a857' : hex;
@@ -1598,6 +1628,10 @@ export default function MindMap3D() {
       (sub.material as THREE.SpriteMaterial).depthTest = false; (sub.material as THREE.SpriteMaterial).depthWrite = false;
       group.add(sub);
     }
+    group.traverse((child) => {
+      if (child === hitTarget) return;
+      child.raycast = () => undefined;
+    });
     return group;
   }, [directIds, focusNode, isLight, secondaryIds]);
 
