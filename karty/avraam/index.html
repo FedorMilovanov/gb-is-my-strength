@@ -59,8 +59,10 @@
   .marker .halo{opacity:0;transition:opacity .25s}
   .marker:hover .halo,.marker.active .halo{opacity:1}
   .marker.active .core{fill:#fff}
+  .marker.active .halo{opacity:1;animation:pulse 1.8s ease-out infinite}
+  .marker.active{filter:drop-shadow(0 0 8px rgba(232,200,121,.55))}
   .pulse{animation:pulse 2.6s ease-out infinite;transform-origin:center;transform-box:fill-box}
-  @keyframes pulse{0%{opacity:.7;transform:scale(.4)}70%{opacity:0;transform:scale(1.6)}100%{opacity:0;transform:scale(1.6)}}
+  @keyframes pulse{0%{opacity:.75;transform:scale(.35)}60%{opacity:.25;transform:scale(1.4)}100%{opacity:0;transform:scale(1.65)}}
 
   /* candidate / context visibility by zoom */
   .lbl-z1,.lbl-z2{opacity:0;transition:opacity .35s}
@@ -69,7 +71,7 @@
 
   .route{fill:none;stroke-linecap:round;vector-effect:non-scaling-stroke;transition:opacity .4s,stroke-width .3s;pointer-events:none}
   .route.dim{opacity:.13}
-  .route.hot{filter:url(#glow)}
+  .route.hot{filter:url(#glow);stroke-width:3px!important}
   .caravan{filter:url(#glow);pointer-events:none}
 
   /* ---------- chrome ---------- */
@@ -89,7 +91,7 @@
 
   #tools{top:18px;right:18px;display:flex;flex-direction:column;gap:8px;align-items:flex-end}
   .btn{background:var(--panel);border:1px solid var(--panel-line);color:var(--txt);width:38px;height:38px;border-radius:11px;font-size:17px;cursor:pointer;backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);display:grid;place-items:center;transition:.2s;box-shadow:0 4px 18px rgba(0,0,0,.45)}
-  .btn:hover{border-color:var(--gold);color:var(--gold);transform:translateY(-1px)}
+  .btn:hover{border-color:var(--gold);color:var(--gold);transform:translateY(-1px);box-shadow:0 6px 24px rgba(0,0,0,.5),0 0 12px rgba(232,200,121,.15)}
   .btn:focus-visible,.stage-chip:focus-visible,.tab:focus-visible{outline:2px solid var(--gold);outline-offset:2px}
   .btn.wide{width:auto;padding:0 14px;font-size:12px;letter-spacing:.1em;height:34px}
   .btn.on{border-color:var(--gold);color:#1a1407;background:var(--gold)}
@@ -130,7 +132,14 @@
   #intro.gone{opacity:0;pointer-events:none}
   #intro .inner{text-align:center;max-width:560px;padding:0 28px;animation:introUp 1.2s cubic-bezier(.2,.8,.2,1)}
   @keyframes introUp{from{opacity:0;transform:translateY(22px)}to{opacity:1;transform:none}}
-  #intro .he{font-size:21px;color:var(--gold);letter-spacing:.3em;margin-bottom:14px}
+  #intro .he{font-size:21px;color:var(--gold);letter-spacing:.3em;margin-bottom:14px;
+    text-shadow:0 0 40px rgba(232,200,121,.4),0 0 80px rgba(232,200,121,.15)}
+  /* Анимированная звёздная карточка в intro */
+  #intro::before{content:'';position:absolute;inset:0;
+    background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='300'%3E%3Ccircle cx='45' cy='30' r='1' fill='%23e8c879' opacity='.6'/%3E%3Ccircle cx='120' cy='80' r='.7' fill='%23ffffff' opacity='.4'/%3E%3Ccircle cx='200' cy='20' r='1.2' fill='%23e8c879' opacity='.5'/%3E%3Ccircle cx='320' cy='60' r='.8' fill='%23ffffff' opacity='.3'/%3E%3Ccircle cx='380' cy='150' r='1' fill='%23e8c879' opacity='.4'/%3E%3Ccircle cx='60' cy='180' r='.6' fill='%23ffffff' opacity='.35'/%3E%3Ccircle cx='280' cy='200' r='1.1' fill='%23e8c879' opacity='.5'/%3E%3Ccircle cx='150' cy='250' r='.7' fill='%23ffffff' opacity='.3'/%3E%3Ccircle cx='340' cy='270' r='.9' fill='%23e8c879' opacity='.45'/%3E%3C/svg%3E") repeat;
+    opacity:.35;pointer-events:none;z-index:0;animation:starsDrift 60s linear infinite}
+  @keyframes starsDrift{0%{background-position:0 0}100%{background-position:400px 300px}}
+  #intro .inner{position:relative;z-index:1}
   #intro h2{font-family:var(--serif);font-weight:600;font-size:clamp(30px,5vw,46px);color:#f6f0df;letter-spacing:.03em}
   #intro h2 b{color:var(--gold);font-weight:600}
   #intro .sub{margin-top:14px;color:#a8aeb8;font-size:13.5px;line-height:1.7}
@@ -151,7 +160,9 @@
   .stage-chip .km{font-size:8.5px;color:var(--gold-dim);margin-top:2px;letter-spacing:.08em}
   .stage-chip:hover{border-color:var(--gold-dim);transform:translateY(-2px)}
   .stage-chip.cur{border-color:var(--gold);box-shadow:0 0 0 1px var(--gold-dim),0 8px 24px rgba(0,0,0,.5);background:rgba(33,28,16,.9)}
-  #playBtn{flex:0 0 auto;width:46px;height:46px;border-radius:50%;font-size:16px;border:1px solid var(--gold);color:var(--gold);background:rgba(33,28,16,.85);margin-bottom:6px}
+  .stage-chip.cur .n{text-shadow:0 0 8px rgba(232,200,121,.5)}
+  #playBtn{flex:0 0 auto;width:46px;height:46px;border-radius:50%;font-size:16px;border:1px solid var(--gold);color:var(--gold);background:rgba(33,28,16,.85);margin-bottom:6px;position:relative}
+  #tourProgress{position:fixed;bottom:0;left:0;height:2px;background:linear-gradient(90deg,var(--gold),rgba(232,200,121,.4));z-index:25;transition:width .6s ease;pointer-events:none;width:0}
   #playBtn:hover{background:var(--gold);color:#1a1407}
 
   /* ---------- tour caption ---------- */
@@ -164,9 +175,12 @@
   #caption .age{display:inline-block;margin-top:9px;font-size:10px;color:#cdb87a;border:1px solid rgba(232,200,121,.3);border-radius:999px;padding:3px 11px;letter-spacing:.14em}
 
   /* ---------- place panel ---------- */
-  #panel{position:fixed;top:0;right:0;bottom:0;width:min(420px,92vw);z-index:40;background:linear-gradient(160deg,rgba(20,24,33,.94),rgba(10,13,20,.96));border-left:1px solid var(--panel-line);backdrop-filter:blur(22px);-webkit-backdrop-filter:blur(22px);transform:translateX(105%);transition:transform .5s cubic-bezier(.2,.85,.25,1);display:flex;flex-direction:column;box-shadow:-20px 0 60px rgba(0,0,0,.55)}
+  #panel{position:fixed;top:0;right:0;bottom:0;width:min(420px,92vw);z-index:40;background:linear-gradient(165deg,rgba(18,22,32,.96),rgba(8,11,18,.98));border-left:1px solid var(--panel-line);backdrop-filter:blur(24px);-webkit-backdrop-filter:blur(24px);transform:translateX(105%);transition:transform .48s cubic-bezier(.16,.84,.24,1);display:flex;flex-direction:column;box-shadow:-24px 0 70px rgba(0,0,0,.6)}
   #panel.open{transform:none}
   #panel header{padding:24px 24px 0;position:relative}
+  #panel header::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;
+    background:linear-gradient(90deg,var(--gold),rgba(232,200,121,.4) 60%,transparent);
+    border-radius:0}
   #panel .kicker{font-size:10px;letter-spacing:.3em;color:var(--txt-dim);text-transform:uppercase}
   #panel h2{font-family:var(--serif);font-size:26px;font-weight:600;color:#f6f0df;margin-top:7px;line-height:1.15}
   #panel .heb{margin-top:7px;font-size:19px;color:var(--gold);direction:rtl;text-align:left}
@@ -185,14 +199,15 @@
   #panel-body::-webkit-scrollbar{width:5px}
   #panel-body::-webkit-scrollbar-thumb{background:rgba(232,200,121,.25);border-radius:4px}
   #panel-body p{margin-bottom:12px}
-  #panel-body .verse{border-left:2px solid var(--gold);padding:4px 0 4px 14px;margin:14px 0;font-family:var(--serif);font-style:italic;color:#e8e2d0;font-size:13.5px}
+  #panel-body .verse{border-left:3px solid var(--gold);padding:6px 0 6px 16px;margin:14px 0;font-family:var(--serif);font-style:italic;color:#ede6d4;font-size:13px;line-height:1.75;background:rgba(232,200,121,.025);border-radius:0 8px 8px 0}
   #panel-body .verse span{display:block;font-style:normal;font-family:var(--sans);font-size:10.5px;color:var(--gold-soft);margin-top:6px;letter-spacing:.12em}
-  #panel-body .note{background:rgba(232,200,121,.06);border:1px solid rgba(232,200,121,.16);border-radius:11px;padding:11px 13px;font-size:12px;margin:13px 0;color:#cdd2d9}
+  #panel-body .note{background:rgba(232,200,121,.055);border:1px solid rgba(232,200,121,.18);border-left:3px solid var(--gold-dim);border-radius:0 11px 11px 0;padding:11px 13px;font-size:12px;margin:13px 0;color:#cdd2d9}
   #panel-body .note b{color:var(--gold)}
   .act-btn{display:inline-block;margin:4px 0 10px;background:rgba(111,179,168,.08);border:1px solid rgba(111,179,168,.4);color:#8fd0c5;font-size:11px;letter-spacing:.12em;padding:8px 14px;border-radius:999px;cursor:pointer;transition:.2s}
   .act-btn:hover{background:rgba(111,179,168,.18)}
   #panel-body .hw{direction:rtl;display:inline-block;color:var(--gold);unicode-bidi:isolate}
-  #pfoot{padding:11px 24px calc(14px + env(safe-area-inset-bottom));border-top:1px solid rgba(255,255,255,.07);display:flex;justify-content:space-between;align-items:center;gap:8px}
+  #pfoot{padding:11px 24px calc(14px + env(safe-area-inset-bottom));border-top:1px solid rgba(255,255,255,.07);display:flex;justify-content:space-between;align-items:center;gap:8px;position:relative}
+  #place-counter{position:absolute;top:-10px;left:50%;transform:translateX(-50%);background:var(--panel);border:1px solid var(--panel-line);border-radius:999px;padding:2px 10px;font-size:9px;color:#6c737e;letter-spacing:.12em;white-space:nowrap}
   #pfoot button{background:none;border:none;color:var(--txt-dim);font-size:11px;letter-spacing:.1em;cursor:pointer;padding:6px 4px;transition:.2s}
   #pfoot button:hover{color:var(--gold)}
 
@@ -321,7 +336,7 @@
   }
 
   /* ====== ИВРИТ + ЭТИМОЛОГИЯ ====== */
-  .he-block{background:linear-gradient(135deg,rgba(232,200,121,.04),rgba(232,200,121,.02));border:1px solid rgba(232,200,121,.2);border-radius:13px;padding:14px 16px;margin:16px 0;}
+  .he-block{background:linear-gradient(135deg,rgba(232,200,121,.05),rgba(232,200,121,.015));border:1px solid rgba(232,200,121,.22);border-top:2px solid rgba(232,200,121,.35);border-radius:13px;padding:14px 16px;margin:16px 0;box-shadow:0 4px 20px rgba(0,0,0,.25)}
   .he-word{display:flex;align-items:baseline;gap:12px;margin-bottom:8px}
   .he-word .hw{font-size:24px;color:var(--gold);direction:rtl;line-height:1.1}
   .he-tr{font-size:12px;color:#9aa2ae;letter-spacing:.14em}
@@ -332,7 +347,8 @@
   .he-refs{margin-top:8px;font-size:10.5px;color:#6c737e;letter-spacing:.08em;border-top:1px solid rgba(255,255,255,.07);padding-top:7px}
 
   /* ====== БИБЛЕЙСКИЕ ССЫЛКИ (bib-note) ====== */
-  .bib-note{background:rgba(255,255,255,.03);border-left:3px solid var(--gold-dim);border-radius:0 9px 9px 0;padding:10px 13px;margin:14px 0;font-size:12.5px;line-height:1.7;color:#c4c9d2}
+  .bib-note{background:linear-gradient(135deg,rgba(232,200,121,.03),transparent);border-left:3px solid var(--gold-dim);border-radius:0 10px 10px 0;padding:12px 14px;margin:16px 0;font-size:12.5px;line-height:1.72;color:#c8cdd5;position:relative}
+  .bib-note::before{content:'✦';position:absolute;top:10px;right:12px;color:var(--gold-dim);font-size:10px}
   .bib-note b{color:var(--gold)}
   .bib-note .hw{color:var(--gold);direction:rtl;display:inline-block;font-size:14px}
 
@@ -358,7 +374,9 @@
   .tn-row{display:flex;gap:10px;flex-wrap:wrap}
   .tn-item{flex:1 1 140px;min-width:120px;max-width:200px;cursor:pointer;border-radius:10px;overflow:hidden;border:1px solid rgba(255,255,255,.1);transition:.25s;position:relative}
   .tn-item:hover{border-color:var(--gold);transform:translateY(-2px)}
-  .tn-item img{width:100%;height:100px;object-fit:cover;display:block;background:rgba(30,35,50,.8)}
+  .tn-item img{width:100%;height:100px;object-fit:cover;display:block;background:linear-gradient(90deg,rgba(20,24,34,.8) 25%,rgba(35,40,55,.8) 50%,rgba(20,24,34,.8) 75%);background-size:200% 100%;animation:shimmer 1.8s infinite}
+  @keyframes shimmer{0%{background-position:200% 0}100%{background-position:-200% 0}}
+  .tn-item img.loaded{animation:none;background:rgba(20,24,34,.8)}
   .tn-item .tn-cap{font-size:9px;padding:5px 8px;color:#8d949f;letter-spacing:.08em;line-height:1.4;background:rgba(10,13,20,.85)}
   .tn-item .tn-label{position:absolute;top:5px;left:5px;font-size:8px;letter-spacing:.12em;padding:2px 6px;border-radius:4px;background:rgba(10,13,20,.85)}
   .tn-item .tn-label.then{color:#b8d4f0;border:1px solid rgba(184,212,240,.3)}
@@ -419,7 +437,9 @@ body{overscroll-behavior:none;-webkit-overscroll-behavior:none}
   /* ---------- kbd-help update ---------- */
 
   /* ---------- minimap active-story dots ---------- */
-  .mm-story-dot{pointer-events:none}
+  .mm-story-dot{pointer-events:none;transition:opacity .4s}
+  @keyframes mmPulse{0%,100%{opacity:.65}50%{opacity:.35}}
+  .mm-story-dot.active-place{animation:mmPulse 2s ease infinite}
 
   /* ---------- orientation msg ---------- */
   #rotate-hint{
@@ -528,6 +548,7 @@ body{overscroll-behavior:none;-webkit-overscroll-behavior:none}
 </head>
 <body>
 <a href="#svg-map" class="avraam-skip">Перейти к карте</a>
+<div id="tourProgress" aria-hidden="true"></div>
 <div id="stage">
 <div id="mPrev" role="tooltip" aria-hidden="true"><div class="mp-he"></div><div class="mp-nm"></div><div class="mp-kk"></div><div class="mp-hint">Нажмите для подробностей</div></div>
 <svg id="svg" viewBox="0 0 1900 1430" preserveAspectRatio="xMidYMid slice" aria-label="Карта пути Авраама">
@@ -621,12 +642,22 @@ body{overscroll-behavior:none;-webkit-overscroll-behavior:none}
   <!-- Иорданская долина — зелёная полоса (Быт 13:10 — «как сад Господень») -->
   <path fill="url(#jordanG)" opacity=".7"
     d="M658,620 C655,640 652,670 650,700 C648,730 646,760 644,795 C642,760 640,730 640,700 C642,668 646,638 658,620 Z"/>
-  <!-- Аравийская пустыня — штриховка точками -->
-  <g opacity=".07">
-    <circle cx="1100" cy="1050" r="3" fill="#9c7c43"/><circle cx="1140" cy="1090" r="2.5" fill="#9c7c43"/>
-    <circle cx="1180" cy="1020" r="3" fill="#9c7c43"/><circle cx="1220" cy="1070" r="2.5" fill="#9c7c43"/>
-    <circle cx="1260" cy="1030" r="3" fill="#9c7c43"/><circle cx="1300" cy="1080" r="2.5" fill="#9c7c43"/>
-    <circle cx="1060" cy="1090" r="2" fill="#9c7c43"/><circle cx="1340" cy="1040" r="2" fill="#9c7c43"/>
+  <!-- Аравийская пустыня — паттерн дюн -->
+  <g opacity=".09">
+    <!-- ряды дюн -->
+    <path fill="none" stroke="#9c7c43" stroke-width="1.5" stroke-linecap="round"
+      d="M1060,1040 Q1090,1025 1120,1040 Q1150,1055 1180,1040"/>
+    <path fill="none" stroke="#9c7c43" stroke-width="1.5" stroke-linecap="round"
+      d="M1100,1080 Q1130,1065 1160,1080 Q1190,1095 1220,1080"/>
+    <path fill="none" stroke="#9c7c43" stroke-width="1.3" stroke-linecap="round"
+      d="M1200,1040 Q1230,1028 1260,1040 Q1290,1052 1320,1040"/>
+    <path fill="none" stroke="#9c7c43" stroke-width="1.3" stroke-linecap="round"
+      d="M1150,1110 Q1180,1098 1210,1110 Q1240,1122 1270,1110"/>
+    <path fill="none" stroke="#9c7c43" stroke-width="1.2" stroke-linecap="round" opacity=".7"
+      d="M1280,1078 Q1310,1066 1340,1078"/>
+    <!-- точки-акценты -->
+    <circle cx="1100" cy="1050" r="2" fill="#9c7c43"/><circle cx="1250" cy="1060" r="1.8" fill="#9c7c43"/>
+    <circle cx="1320" cy="1100" r="2" fill="#9c7c43"/><circle cx="1060" cy="1090" r="1.5" fill="#9c7c43"/>
   </g>
   <!-- Туман на краях карты (глубина) -->
   <rect x="-400" y="-400" width="2700" height="2230" fill="url(#edgeFog)" pointer-events="none"/>
@@ -639,8 +670,12 @@ body{overscroll-behavior:none;-webkit-overscroll-behavior:none}
   <!-- Red Sea -->
   <path fill="url(#seaG)" stroke="#2e4d6b" stroke-width="1.2" stroke-opacity=".45" d="M424,1012 C418,1024 420,1044 428,1070 C440,1112 462,1170 490,1230 C504,1258 516,1278 526,1292 C548,1340 584,1392 622,1430 C660,1490 692,1560 714,1640 C730,1702 740,1768 744,1830 L1110,1830 C1064,1740 1018,1640 974,1546 C946,1486 920,1456 900,1430 C860,1402 818,1368 762,1318 C740,1298 722,1278 708,1258 C692,1190 678,1110 670,1044 C668,1030 660,1022 652,1028 C644,1100 632,1190 614,1262 C606,1290 596,1300 580,1288 C560,1240 532,1160 506,1090 C494,1056 480,1028 466,1016 C452,1004 432,1000 424,1012 Z"/>
   <!-- Nile delta hint -->
-  <g opacity=".3">
-    <path d="M220,852 C222,870 224,890 226,910 C228,930 230,950 232,970" fill="none" stroke="#2d4a66" stroke-width="2.5" stroke-linecap="round"/>
+  <g opacity=".55">
+    <path d="M220,852 C222,870 224,890 226,910 C228,930 230,950 232,970" fill="none" stroke="#2d4a66" stroke-width="3.5" stroke-linecap="round"/>
+    <!-- Дельта -->
+    <path d="M226,965 C210,980 195,990 178,998" fill="none" stroke="#2d4a66" stroke-width="2" stroke-linecap="round" opacity=".7"/>
+    <path d="M226,965 C240,978 255,988 268,994" fill="none" stroke="#2d4a66" stroke-width="2" stroke-linecap="round" opacity=".7"/>
+    <path d="M226,965 C225,985 224,1000 224,1010" fill="none" stroke="#2d4a66" stroke-width="1.8" stroke-linecap="round" opacity=".6"/>
     <text class="region-label lbl-z1" x="184" y="890" font-size="6" fill="#7fa7c4" opacity=".5" letter-spacing=".15em">ДЕЛЬТА НИЛА</text>
   </g>
   
@@ -749,13 +784,43 @@ body{overscroll-behavior:none;-webkit-overscroll-behavior:none}
 
 </g>
 
+<!-- ============ ДОПОЛНИТЕЛЬНЫЙ РЕЛЬЕФ ============ -->
+<!-- Горный хребет Ханаана (Иудейские горы) — более выразительный -->
+<g opacity=".22" filter="url(#soft)">
+  <!-- Кармил -->
+  <path d="M580,716 L585,706 L590,716 Z" fill="rgba(100,90,60,.5)" stroke="#8b7d5a" stroke-width="1"/>
+  <text x="580" y="702" font-size="3.5" fill="#8b7d5a" text-anchor="middle" opacity=".6" class="lbl-z1">הַכַּרְמֶל</text>
+  <!-- Хребет Самарии -->
+  <path d="M615,735 L618,726 L621,735 Z" fill="rgba(100,90,60,.4)" stroke="#8b7d5a" stroke-width=".8"/>
+  <path d="M622,730 L625,721 L628,730 Z" fill="rgba(100,90,60,.4)" stroke="#8b7d5a" stroke-width=".8"/>
+  <!-- Иудейские горы -->
+  <path d="M610,808 L614,799 L618,808 Z" fill="rgba(100,90,60,.45)" stroke="#8b7d5a" stroke-width=".9"/>
+  <path d="M618,800 L622,791 L626,800 Z" fill="rgba(100,90,60,.4)" stroke="#8b7d5a" stroke-width=".8"/>
+</g>
+<!-- Оронт (Сирия) — река севернее Дамаска -->
+<path fill="none" stroke="#2d4a66" stroke-width="1.4" opacity=".55" stroke-linecap="round"
+  d="M800,120 C790,160 782,200 778,240 C774,280 772,310 775,340 C778,370 782,390 785,410"/>
+<text class="sea-label lbl-z1" x="770" y="270" font-size="4.5" fill="#4a80a0" opacity=".45" letter-spacing=".1em" transform="rotate(-82 770 270)">ОРОНТ</text>
+<!-- Лион-подобный изгиб Средиземного -->
+<!-- Небольшой остров Родос -->
+<ellipse cx="395" cy="368" rx="5" ry="10" transform="rotate(20 395 368)"
+  fill="url(#landG)" stroke="#3a4150" stroke-width=".8" opacity=".7" class="lbl-z1"/>
+<text x="395" y="365" font-size="3.5" fill="#8d949f" text-anchor="middle" opacity=".5" class="lbl-z1">Ρόδος</text>
+<!-- Крит (обозначение) -->
+<ellipse cx="212" cy="462" rx="22" ry="7" transform="rotate(-8 212 462)"
+  fill="url(#landG)" stroke="#3a4150" stroke-width=".8" opacity=".6"/>
+<text x="212" y="460" font-size="4" fill="#8d949f" text-anchor="middle" opacity=".5" class="lbl-z1">КРИТ</text>
+
 <!-- ============ SINAI MOUNTAIN SYMBOL ============ -->
-<g id="sinaiPeak" class="lbl-z1" transform="translate(588,1120)" opacity=".45">
+<g id="sinaiPeak" class="lbl-z1" transform="translate(588,1120)" opacity=".5">
   <!-- силуэт горы Синай -->
-  <path d="M-22,18 L-8,-12 L0,-22 L8,-12 L22,18 Z" fill="rgba(160,112,60,.15)" stroke="#9c7840" stroke-width="1.2" stroke-linejoin="round"/>
-  <path d="M-6,-12 L0,-22 L6,-12 Z" fill="rgba(220,200,160,.12)" stroke="#c4a060" stroke-width=".8" stroke-linejoin="round"/>
-  <text x="0" y="26" text-anchor="middle" font-size="5" fill="#9c7840" letter-spacing=".15em">СИНАЙ</text>
-  <text x="0" y="32" font-size="3.5" fill="#7a6030" text-anchor="middle" opacity=".7">הַר סִינַי · 2285 м</text>
+  <path d="M-24,18 L-9,-10 L0,-24 L9,-10 L24,18 Z" fill="rgba(140,100,50,.18)" stroke="#9c7840" stroke-width="1.2" stroke-linejoin="round"/>
+  <!-- снежная шапка -->
+  <path d="M-5,-13 L0,-24 L5,-13 Z" fill="rgba(240,235,225,.18)" stroke="rgba(240,235,225,.3)" stroke-width=".6"/>
+  <!-- световой блик -->
+  <path d="M-9,-10 L0,-24 L-2,-10 Z" fill="rgba(240,235,225,.06)"/>
+  <text x="0" y="26" text-anchor="middle" font-size="5" fill="#a08040" letter-spacing=".15em">СИНАЙ</text>
+  <text x="0" y="32" font-size="3.8" fill="#8a6838" text-anchor="middle" opacity=".8">הַר סִינַי · 2285 м</text>
 </g>
 <!-- Хермон — гора у Дана -->
 <g class="lbl-z1" transform="translate(668,594)" opacity=".4">
@@ -914,6 +979,7 @@ body{overscroll-behavior:none;-webkit-overscroll-behavior:none}
   </nav>
   <div id="panel-body"></div>
   <div id="pfoot">
+    <div id="place-counter"></div>
     <button id="prevPl">← ПРЕДЫДУЩЕЕ</button>
     <button id="sharePl" title="Скопировать ссылку на место">⧉ ССЫЛКА</button>
     <button id="nextPl">СЛЕДУЮЩЕЕ →</button>
@@ -1067,7 +1133,10 @@ photos:[
 {id:"damascus",name:"Дамаск",he:"דַּמֶּשֶׂק",tr:"Даммесек",x:731,y:594,type:"main",era:["bronze"],stage:1,kick:"Арам · транзит пути",id1:"Дамаск",id2:"Сирия, оазис Гута",ep1:"Быт 14:15; 15:2",ep2:"родина Элиэзера",side:"r",
 story:`<p>Древнейший непрерывно населённый оазис на пути из Харрана в Ханаан. Отсюда — Элиэзер, домоправитель Авраама, его несостоявшийся наследник. До «Ховы, что слева от Дамаска» Авраам гонит царей, пленивших Лота.</p>`,
 bible:`<div class="verse">«Владыка Господи! что Ты дашь мне? я остаюсь бездетным; распорядитель в доме моём этот Элиэзер из Дамаска».<span>БЫТИЕ 15:2</span></div>`,
-arch:`<p>Дамаск упоминается как «Апум» / «Димашка» в текстах Эблы (XXIV в. до н. э.) и Мари (XVIII в. до н. э.), а также в египетских списках городов Тутмоса III (XV в. до н. э.). Слои бронзового века скрыты под непрерывно живым городом — систематические раскопки невозможны; точечные зондажи и находки при строительстве подтверждают обживание с IV тыс. до н. э. Оазис Гута (Бараду/Абана, совр. Барада) обеспечивал водой каждый караван на пути из Месопотамии в Ханаан.</p>`},
+arch:`<p>Дамаск упоминается как «Апум» / «Димашка» в текстах Эблы (XXIV в. до н. э.) и Мари (XVIII в. до н. э.), а также в египетских списках городов Тутмоса III (XV в. до н. э.). Слои бронзового века скрыты под непрерывно живым городом — систематические раскопки невозможны; точечные зондажи и находки при строительстве подтверждают обживание с IV тыс. до н. э. Оазис Гута (Бараду/Абана, совр. Барада) обеспечивал водой каждый караван на пути из Месопотамии в Ханаан.</p>
+photos:[
+  {src:"https://upload.wikimedia.org/wikipedia/commons/thumb/f/f0/Syria_Damascus_panorama.jpg/1280px-Syria_Damascus_panorama.jpg",thumb:"https://upload.wikimedia.org/wikipedia/commons/thumb/f/f0/Syria_Damascus_panorama.jpg/320px-Syria_Damascus_panorama.jpg",label:"ДАМАСК (ОАЗИС ГУТА)",type:"now",alt:"Панорама Дамаска — древнейший непрерывно обитаемый город мира, оазис Гута",credit:"Wikimedia Commons / CC BY-SA"}
+],`},
 
 {id:"shechem",name:"Сихем",he:"שְׁכֶם",tr:"Шхем",x:628,y:748,type:"main",era:["bronze"],stage:1,kick:"Первая остановка в Ханаане",id1:"Телль Балата",id2:"между Гевалом и Гаризимом",ep1:"Быт 12:6–7",ep2:"первый жертвенник; обетование",side:"r",
 story:`<p>Первая стоянка Аврама в Обетованной земле — у дуба Морэ́. Здесь Бог впервые является ему в Ханаане и произносит: «Потомству твоему отдам Я землю сию». Ответ Аврама — первый жертвенник в этой земле.</p>`,
@@ -1152,7 +1221,10 @@ arch:`<p>Зоара устойчиво локализуется в оазисе 
 {id:"gerar",name:"Герар",he:"גְּרָר",tr:"Грар",x:561,y:847,type:"main",era:["bronze"],tier:2,stage:5,kick:"Царство Авимелеха",id1:"Тель Харор (Телль Абу-Хурейра)",id2:"долина Нахаль Грар, зап. Негев",ep1:"Быт 20; 21:22–34; 26",ep2:"Сара и Авимелех; договор",side:"l",
 story:`<p>Переселившись на юг, Авраам вновь выдаёт Сару за сестру — и царь Герара Авимелех, предупреждённый Богом во сне, с упрёком возвращает её. Диалог поразителен: язычник оказывается «народом невинным», а пророк — наученным страхом.</p><p>Позже Авимелех с военачальником Пихолом приходит заключить союз — признание силы пришельца. Тем же маршрутом пройдёт и Исаак (Быт 26), повторив споры о колодцах.</p>`,
 bible:`<div class="verse">«Авраам поднялся оттуда к югу… и был на время в Гераре».<span>БЫТИЕ 20:1</span></div><div class="verse">«С тобою Бог во всём, что ты ни делаешь… поклянись мне здесь Богом».<span>БЫТИЕ 21:22–23</span></div>`,
-arch:`<p>С 1956 г. (Й. Ахарони) Герар отождествляют с Тель Харором: в среднюю бронзу это один из крупнейших городов юга Ханаана (~15 га) с мощной системой земляных валов и рвом. Раскопки Э. Орена (1982–1992) открыли священный квартал с мигдоль-храмом «сирийского типа» (9×15 м, стены до 10 м высотой), многочисленными ритуальными депозитами (фависсами) и уникальным захоронением ослёнка с бронзовыми удилами и упряжью — жертвоприношение, подобное описанному в текстах Мари.</p><p>Особая находка — минойское граффити в сакральном квартале: одна из двух минойских надписей, найденных в Израиле (вторая — в Лахише). Кипрская керамика подтверждает торговые связи с Эгеидой.</p>`},
+arch:`<p>С 1956 г. (Й. Ахарони) Герар отождествляют с Тель Харором: в среднюю бронзу это один из крупнейших городов юга Ханаана (~15 га) с мощной системой земляных валов и рвом. Раскопки Э. Орена (1982–1992) открыли священный квартал с мигдоль-храмом «сирийского типа» (9×15 м, стены до 10 м высотой), многочисленными ритуальными депозитами (фависсами) и уникальным захоронением ослёнка с бронзовыми удилами и упряжью — жертвоприношение, подобное описанному в текстах Мари.</p><p>Особая находка — минойское граффити в сакральном квартале: одна из двух минойских надписей, найденных в Израиле (вторая — в Лахише). Кипрская керамика подтверждает торговые связи с Эгеидой.</p>
+photos:[
+  {src:"https://upload.wikimedia.org/wikipedia/commons/thumb/5/5e/Tel_Haror_overview.jpg/1280px-Tel_Haror_overview.jpg",thumb:"https://upload.wikimedia.org/wikipedia/commons/thumb/5/5e/Tel_Haror_overview.jpg/320px-Tel_Haror_overview.jpg",label:"ТЕЛЬ ХАРОР (ГЕРАР)",type:"now",alt:"Тель Харор — вероятное место библейского Герара, царства Авимелеха",credit:"Wikimedia Commons / CC BY-SA"}
+],`},
 
 {id:"beersheba",name:"Беэр-Шева",he:"בְּאֵר שֶׁבַע",tr:"Беэр-Шева",x:584,y:864,type:"main",era:["bronze"],stage:5,kick:"Колодец клятвы",id1:"Тель Беэр-Шева (Тель Шева)",id2:"ЮНЕСКО, 2005 · север Негева",ep1:"Быт 21:22–34; 22:19",ep2:"союз; тамариск; дом Авраама",side:"b",
 story:`<p>«Колодец семи» и «колодец клятвы» — оба смысла сплетены в имени: семь агниц Авраама как свидетельство, что колодец выкопал он. Здесь заключён договор с Авимелехом, посажен тамариск (<span class="hw">אֵשֶׁל</span>) и призвано имя «Бога Вечного» — Эль Олам.</p><p>Отсюда Авраам выходит к Мории — и сюда возвращается. Здесь же будет жить Исаак.</p>`,
@@ -1167,7 +1239,10 @@ photos:[
 {id:"kadesh",name:"Кадеш (Кадеш-Барнеа)",he:"קָדֵשׁ בַּרְנֵעַ",tr:"Кадеш-Барнеа",x:542,y:934,type:"main",era:["bronze"],stage:5,kick:"Оазис южного порубежья",id1:"Эйн эль-Кудейрат",id2:"северо-восток Синая",ep1:"Быт 14:7; 16:14; 20:1",ep2:"ориентир кочевий Авраама",side:"b",
 story:`<p>Крупнейший оазис северного Синая — южный якорь кочевий Авраама: «и поселился между Кадешем и Суром». Рядом — Беэр-лахай-рои, «колодец Живого, видящего меня», где ангел находит беглянку Агарь и где после будет жить Исаак.</p>`,
 bible:`<div class="verse">«Ты Бог видящий меня… Посему источник тот называется: Беэр-лахай-рои. Он находится между Кадешем и между Бередом».<span>БЫТИЕ 16:13–14</span></div>`,
-arch:`<p>Эйн эль-Кудейрат — самый обильный источник региона; на телле — цепочка крепостей железного века (X–VI вв. до н. э.) на дороге в Египет. Для бронзового века — сезонные стоянки кочевников: археология хорошо согласуется с образом шатровых становищ.</p>`},
+arch:`<p>Эйн эль-Кудейрат — самый обильный источник региона; на телле — цепочка крепостей железного века (X–VI вв. до н. э.) на дороге в Египет. Для бронзового века — сезонные стоянки кочевников: археология хорошо согласуется с образом шатровых становищ.</p>
+photos:[
+  {src:"https://upload.wikimedia.org/wikipedia/commons/thumb/9/9a/Kadesh_Barnea_oasis.jpg/1280px-Kadesh_Barnea_oasis.jpg",thumb:"https://upload.wikimedia.org/wikipedia/commons/thumb/9/9a/Kadesh_Barnea_oasis.jpg/320px-Kadesh_Barnea_oasis.jpg",label:"ОАЗИС КАДЕШ",type:"now",alt:"Оазис Кадеш-Барнеа (Эйн эль-Кудейрат) — крупнейший оазис северного Синая",credit:"Wikimedia Commons / CC BY-SA"}
+],`},
 
 {id:"shur",name:"Пустыня Сур",he:"מִדְבַּר שׁוּר",tr:"мидбар Шур («стена»)",x:400,y:940,type:"main",era:["bronze"],tier:2,stage:5,kick:"Преддверие Египта",id1:"северо-запад Синая",id2:"«дорога Сура»",ep1:"Быт 16:7; 20:1; 25:18",ep2:"бегство Агари",side:"b",
 story:`<p>Пустыня «пред Египтом» на караванной «дороге Сура». Сюда, к источнику, бежит от Сары беременная Агарь — и встречает Ангела Господня: первое в Библии благовещение о сыне, Измаиле, «диком осле» пустыни, отце двенадцати князей.</p>`,
@@ -1726,6 +1801,17 @@ const RELATED={"ur": ["harran", "babylon"], "harran": ["ur", "damascus", "urfa"]
 const panel=document.getElementById('panel');
 let curPlace=-1,curTab='story';
 const MAIN_ORDER=PLACES.map((p,i)=>i).filter(i=>PLACES[i].type!=='cand');
+function updatePlaceCounter(){
+  const counter=document.getElementById('place-counter');
+  if(!counter) return;
+  if(curPlace<0){counter.textContent='';return;}
+  // Story-aware: считаем в текущем сюжете
+  const st=STORIES.find(s=>s.id===activeStory);
+  const order=st&&st.places?PLACES.map((p,i)=>i).filter(i=>st.places.includes(PLACES[i].id)):MAIN_ORDER;
+  const idx=order.indexOf(curPlace);
+  if(idx>=0) counter.textContent=(idx+1)+' из '+order.length;
+  else counter.textContent='';
+}
 function openPlace(id,fly=true){
   haptic(10);
   if(typeof closeCtx==='function')closeCtx();
@@ -1754,6 +1840,7 @@ function openPlace(id,fly=true){
     }
   }
   setTab(curTab);
+  updatePlaceCounter();
   panel.classList.add('open');document.body.classList.add('panel-open');
   if(fly){
     const r=svg.getBoundingClientRect();
@@ -1813,7 +1900,7 @@ function setTab(t){
 }
 document.querySelectorAll('.tab').forEach(el=>el.onclick=()=>setTab(el.dataset.t));
 document.getElementById('closeP').onclick=closePanel;
-function closePanel(){panel.classList.remove('open');document.body.classList.remove('panel-open');document.querySelectorAll('.marker').forEach(m=>m.classList.remove('active'));curPlace=-1;}
+function closePanel(){panel.classList.remove('open');document.body.classList.remove('panel-open');document.querySelectorAll('.marker').forEach(m=>m.classList.remove('active'));curPlace=-1;const counter=document.getElementById('place-counter');if(counter)counter.textContent='';}
 document.getElementById('nextPl').onclick=()=>stepPlace(1);
 document.getElementById('prevPl').onclick=()=>stepPlace(-1);
 function stepPlace(d){
@@ -1872,6 +1959,13 @@ function showCaption(i){
   age.textContent=st.age||'';age.style.display=st.age?'inline-block':'none';
   caption.classList.add('show');
 }
+function updateTourProgress(i){
+  const prog=document.getElementById('tourProgress');
+  if(!prog) return;
+  const pct=STAGES.length>1?Math.round((i+1)/STAGES.length*100):0;
+  prog.style.width=pct+'%';
+  prog.style.opacity=touring||i>=0?'1':'0';
+}
 function focusStage(i,withCam){
   if(typeof closeCtx==='function')closeCtx();
   curStage=i;
@@ -1879,6 +1973,7 @@ function focusStage(i,withCam){
   chips[i].scrollIntoView({behavior:'smooth',inline:'center',block:'nearest'});
   setDim(i);showCaption(i);
   animateStageRoutes(i);
+  updateTourProgress(i);
   if(typeof spawnCaravan!=="undefined") spawnCaravan(i);
   if(withCam){const cam=STAGES[i].cam;flyTo(cam[0]+cam[2]/2,cam[1]+(cam[2]*H0/W0)/2,cam[2],1100);}
   clearTimeout(focusStage._t);
@@ -1974,6 +2069,7 @@ function runStep(){
 function stopTour(){
   if(!touring&&playBtn.textContent==='▶')return;
   touring=false;playBtn.textContent='▶';
+  const prog=document.getElementById('tourProgress');if(prog)prog.style.width='0';
   clearTimeout(tourTimer);caravanLayer.innerHTML='';
   STAGES.forEach((s,i)=>restoreDash(i));
   setDim(-1);caption.classList.remove('show');
@@ -2184,6 +2280,14 @@ const mmSvg=document.getElementById('mmSvg');
 const mmRect=document.getElementById('mmRect');
 function updateMinimap(){
   if(!mmRect)return;
+  // Отметить активное место как pulsing
+  if(typeof curPlace!=='undefined'&&curPlace>=0){
+    const pl=PLACES[curPlace];
+    document.querySelectorAll('.mm-story-dot').forEach(d=>{
+      const isActive=d.getAttribute('cx')==String(pl.x)&&d.getAttribute('cy')==String(pl.y);
+      d.classList.toggle('active-place',isActive);
+    });
+  }
   const r=svg.getBoundingClientRect();
   const scale=Math.max(r.width/view.w,r.height/view.h);
   const vw=r.width/scale,vh=r.height/scale;
@@ -2421,7 +2525,7 @@ function renderPhotos(pl){
     const safeP=JSON.stringify({src:p.src,alt:p.alt||'',label:p.label||'',credit:p.credit||'',type:p.type||'ctx'}).replace(/"/g,'&quot;');
     return `<div class="tn-item" onclick="openPhotoModal(this)" data-photo="${safeP}" role="button" tabindex="0" aria-label="${p.alt||p.label||'Фото'}">
       <span class="tn-label ${p.type||'ctx'}">${p.label||''}</span>
-      <img src="${p.thumb||p.src}" alt="${p.alt||''}" loading="lazy" onerror="this.parentElement.style.display='none'">
+      <img src="${p.thumb||p.src}" alt="${p.alt||''}" loading="lazy" onload="this.classList.add('loaded')" onerror="this.parentElement.style.display='none'">
       <div class="tn-cap">${(p.alt||'').substring(0,80)+(p.alt&&p.alt.length>80?'…':'')}</div>
     </div>`;
   }).join('');
@@ -2438,7 +2542,17 @@ function openPhotoModal(el){
   if(p.type==='dis') cap+=`<span style="display:block;margin-top:6px;font-size:10px;color:#cf8070">⚠ Спорная локализация — дискуссия открыта в науке</span>`;
   document.getElementById('photoCap').innerHTML=cap;
   document.getElementById('photoModal').classList.add('open');
+  setTimeout(()=>document.getElementById('photoClose').focus(),50);
 }
+// Focus trap for photoModal
+document.getElementById('photoModal').addEventListener('keydown',e=>{
+  if(e.key==='Tab'){
+    const focusable=document.getElementById('photoModal').querySelectorAll('button,[tabindex="0"]');
+    const first=focusable[0],last=focusable[focusable.length-1];
+    if(e.shiftKey&&document.activeElement===first){e.preventDefault();last.focus();}
+    else if(!e.shiftKey&&document.activeElement===last){e.preventDefault();first.focus();}
+  }
+});
 document.getElementById('photoClose').addEventListener('click',()=>{
   document.getElementById('photoModal').classList.remove('open');
 });
