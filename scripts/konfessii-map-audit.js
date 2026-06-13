@@ -78,6 +78,12 @@ if (src) {
   (src.match(/<TimelineOverlay\b/g) || []).length === 1
     ? ok('I8 source: TimelineOverlay mounted exactly once')
     : bad('I8 source: TimelineOverlay mount count = ' + (src.match(/<TimelineOverlay\b/g) || []).length);
+  /onEventSelect=\{handleTimelineEventSelect\}/.test(src) && /aria-label=\{`Перейти к событию/.test(src)
+    ? ok('I8 source: timeline ticks are clickable and focus-aware')
+    : bad('I8 source: timeline ticks are not wired to graph focus');
+  /onRouteStepTo=\{handleRouteStepTo\}/.test(src) && /Нажмите этап/.test(src)
+    ? ok('I9 source: route step chips are clickable')
+    : bad('I9 source: route step chips are not clickable');
 }
 
 // ---------- live checks (browser, optional) ----------
