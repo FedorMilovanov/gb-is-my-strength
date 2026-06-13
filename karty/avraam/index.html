@@ -52,7 +52,7 @@
   .region-he{fill:#cdbd95;opacity:.3;letter-spacing:.08em;transition:opacity .5s}
   svg.z2 .region-label,svg.z2 .region-he{opacity:.07}
   svg.z2 .sea-label{opacity:.2}
-  .mk-label{font-family:var(--serif);fill:#f2ead4;paint-order:stroke;stroke:rgba(7,10,16,.85);stroke-width:3px;font-size:15px;letter-spacing:.04em}
+  .mk-label{font-family:var(--serif);fill:#f5f0e4;paint-order:stroke;stroke:rgba(5,8,14,.9);stroke-width:3.5px;font-size:15px;letter-spacing:.04em}
   .mk-he{fill:var(--gold);opacity:.85;font-size:11px;paint-order:stroke;stroke:rgba(7,10,16,.85);stroke-width:2.5px}
   .mk-sub{fill:#9aa2ae;font-size:9.5px;letter-spacing:.12em;paint-order:stroke;stroke:rgba(7,10,16,.8);stroke-width:2px}
   .marker{cursor:pointer;pointer-events:all;will-change:transform;-webkit-tap-highlight-color:transparent}
@@ -171,6 +171,19 @@
   #intro .he{font-size:21px;color:var(--gold);letter-spacing:.3em;margin-bottom:14px;
     text-shadow:0 0 40px rgba(232,200,121,.4),0 0 80px rgba(232,200,121,.15)}
   /* Анимированная звёздная карточка в intro */
+  /* Floating particles в intro (CSS-only) */
+  @keyframes particleFloat{
+    0%{transform:translate(0,0) scale(1);opacity:0}
+    10%{opacity:1}
+    90%{opacity:.6}
+    100%{transform:translate(var(--px,20px),var(--py,-60px)) scale(.5);opacity:0}
+  }
+  .particle{
+    position:absolute;width:3px;height:3px;border-radius:50%;
+    background:var(--gold);pointer-events:none;
+    animation:particleFloat var(--dur,8s) ease var(--del,0s) infinite;
+  }
+
   #intro::before{content:'';position:absolute;inset:0;pointer-events:none;
     background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='300'%3E%3Ccircle cx='45' cy='30' r='1' fill='%23e8c879' opacity='.6'/%3E%3Ccircle cx='120' cy='80' r='.7' fill='%23ffffff' opacity='.4'/%3E%3Ccircle cx='200' cy='20' r='1.2' fill='%23e8c879' opacity='.5'/%3E%3Ccircle cx='320' cy='60' r='.8' fill='%23ffffff' opacity='.3'/%3E%3Ccircle cx='380' cy='150' r='1' fill='%23e8c879' opacity='.4'/%3E%3Ccircle cx='60' cy='180' r='.6' fill='%23ffffff' opacity='.35'/%3E%3Ccircle cx='280' cy='200' r='1.1' fill='%23e8c879' opacity='.5'/%3E%3Ccircle cx='150' cy='250' r='.7' fill='%23ffffff' opacity='.3'/%3E%3Ccircle cx='340' cy='270' r='.9' fill='%23e8c879' opacity='.45'/%3E%3C/svg%3E") repeat;
     opacity:.35;pointer-events:none;z-index:0;animation:starsDrift 60s linear infinite}
@@ -251,9 +264,19 @@
   #tabs::-webkit-scrollbar{display:none}
   .tab{flex:0 0 auto;text-align:center;font-size:10.5px;letter-spacing:.09em;color:var(--txt-dim);padding:9px 10px;border-radius:9px;cursor:pointer;border:1px solid transparent;transition:.2s;white-space:nowrap;-webkit-tap-highlight-color:transparent;min-height:36px;display:flex;align-items:center}
   @media(max-width:760px){.tab{min-height:42px;padding:10px 12px;font-size:11px}}
-  .tab.cur{color:var(--gold);background:rgba(232,200,121,.08);border-color:var(--gold-dim)}
+  .tab.cur{color:var(--gold);background:rgba(232,200,121,.08);border-color:var(--gold-dim);position:relative}
+  .tab.cur::after{
+    content:'';position:absolute;bottom:0;left:20%;right:20%;height:2px;
+    border-radius:1px;background:var(--gold);
+    animation:tabUnderline .3s cubic-bezier(.2,.8,.2,1);
+  }
+  @keyframes tabUnderline{from{transform:scaleX(0);opacity:0}to{transform:scaleX(1);opacity:1}}
   #panel-body{flex:1;overflow-y:auto;padding:16px 24px 26px;font-size:13.5px;line-height:1.75;color:#d5d9df;scrollbar-width:thin;scrollbar-color:rgba(232,200,121,.3) transparent;-webkit-overflow-scrolling:touch}
-  #panel-body::-webkit-scrollbar{width:5px}
+  #panel-body::-webkit-scrollbar{width:4px}
+  ::-webkit-scrollbar{width:4px;height:4px}
+  ::-webkit-scrollbar-track{background:transparent}
+  ::-webkit-scrollbar-thumb{background:rgba(232,200,121,.2);border-radius:2px}
+  ::-webkit-scrollbar-thumb:hover{background:rgba(232,200,121,.4)}
   #panel-body::-webkit-scrollbar-thumb{background:rgba(232,200,121,.25);border-radius:4px}
   #panel-body p{margin-bottom:12px}
   #panel-body .verse{border-left:3px solid var(--gold);padding:6px 0 6px 16px;margin:14px 0;font-family:var(--serif);font-style:italic;color:#ede6d4;font-size:13px;line-height:1.75;background:rgba(232,200,121,.025);border-radius:0 8px 8px 0}
@@ -280,10 +303,11 @@
   .ctx-dot:hover{filter:drop-shadow(0 0 8px rgba(232,200,121,.6))}
 
   /* ---------- context card ---------- */
-  #ctxCard{position:fixed;left:22px;bottom:118px;z-index:29;max-width:400px;background:var(--panel);border:1px solid rgba(160,166,176,.35);border-radius:16px;padding:16px 18px;backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);box-shadow:0 14px 44px rgba(0,0,0,.55);opacity:0;transform:translateY(14px);transition:.4s cubic-bezier(.2,.8,.2,1);pointer-events:none}
+  #ctxCard{position:fixed;left:22px;bottom:118px;z-index:29;max-width:400px;background:linear-gradient(160deg,rgba(18,22,32,.97),rgba(8,12,20,.99));border:1px solid rgba(200,180,120,.2);border-top:1px solid rgba(200,180,120,.3);border-radius:16px;padding:16px 18px;backdrop-filter:blur(22px);-webkit-backdrop-filter:blur(22px);box-shadow:0 16px 50px rgba(0,0,0,.65),0 0 0 1px rgba(200,180,120,.04) inset;opacity:0;transform:translateY(14px);transition:.4s cubic-bezier(.2,.8,.2,1);pointer-events:none}
   #ctxCard.show{opacity:1;transform:none;pointer-events:auto}
   #ctxCard .cc-kick{font-size:9.5px;letter-spacing:.22em;color:var(--txt-dim);text-transform:uppercase}
-  #ctxCard h3{font-family:var(--serif);font-size:18px;margin:5px 0 2px;color:#f4eedd;font-weight:600}
+  #ctxCard h3{font-family:var(--serif);font-size:18px;margin:5px 0 2px;color:#f4eedd;font-weight:600;letter-spacing:.01em}
+  #ctxCard h3::after{content:'';display:block;width:24px;height:1.5px;background:rgba(200,180,120,.4);margin-top:5px;border-radius:1px}
   #ctxCard .cc-he{font-size:13px;color:var(--gold);font-weight:400;margin-left:6px}
   #ctxCard .cc-per{font-size:10px;color:var(--gold-soft);letter-spacing:.1em;margin-bottom:8px}
   #ctxCard .cc-body{font-size:12.5px;line-height:1.6;color:#cfd4db}
@@ -301,14 +325,15 @@
   @media(max-width:760px){#ctxCard{left:12px;right:12px;max-width:none;bottom:128px}}
 
   /* ---------- tooltip ---------- */
-  #tip{position:fixed;z-index:50;pointer-events:none;background:rgba(10,13,20,.94);border:1px solid var(--panel-line);border-radius:10px;padding:8px 12px;font-size:12px;opacity:0;transition:opacity .15s;backdrop-filter:blur(8px);box-shadow:0 8px 24px rgba(0,0,0,.5);max-width:230px}
+  #tip{position:fixed;z-index:50;pointer-events:none;background:rgba(6,9,16,.96);border:1px solid rgba(232,200,121,.16);border-radius:11px;padding:9px 13px;font-size:12px;opacity:0;transition:opacity .12s,transform .12s;backdrop-filter:blur(12px);box-shadow:0 10px 30px rgba(0,0,0,.6);max-width:240px;transform:translateY(4px)}
+  #tip.vis{opacity:1;transform:translateY(0)}
   #tip .h{color:var(--gold);font-size:11px;direction:rtl;text-align:left;margin-top:1px}
   #tip .s{color:var(--txt-dim);font-size:10px;margin-top:3px;letter-spacing:.06em}
 
   /* ---------- modal ---------- */
   #modal{position:fixed;inset:0;z-index:60;background:rgba(4,6,10,.72);backdrop-filter:blur(6px);display:none;place-items:center;padding:20px}
   #modal.open{display:grid}
-  #modal .card{width:min(620px,94vw);max-height:84vh;overflow-y:auto;background:linear-gradient(165deg,rgba(22,26,35,.97),rgba(11,14,21,.98));border:1px solid var(--panel-line);border-radius:20px;padding:28px 30px;box-shadow:0 30px 80px rgba(0,0,0,.65);scrollbar-width:thin}
+  #modal .card{width:min(620px,94vw);max-height:84vh;overflow-y:auto;background:linear-gradient(165deg,rgba(18,22,32,.98),rgba(8,12,20,.99));border:1px solid rgba(232,200,121,.15);border-radius:20px;padding:28px 30px;box-shadow:0 30px 80px rgba(0,0,0,.7),0 0 0 1px rgba(232,200,121,.04) inset;scrollbar-width:thin}
   #modal h2{font-family:var(--serif);color:#f4eedd;font-size:21px;margin-bottom:4px}
   #modal .sub{color:var(--txt-dim);font-size:11.5px;letter-spacing:.08em;margin-bottom:16px}
   #modal li{margin:0 0 11px 18px;font-size:12.5px;line-height:1.65;color:#ccd1d8}
@@ -402,14 +427,19 @@
   .life-nav button:hover{color:var(--gold);border-color:var(--gold-dim)}
 
   /* ---------- HUD bottom-right ---------- */
-  #hud{position:fixed;right:18px;bottom:118px;z-index:25;display:flex;flex-direction:column;align-items:flex-end;gap:8px;pointer-events:none}
+  #hud{position:fixed;right:18px;bottom:118px;z-index:25;display:flex;flex-direction:column;align-items:flex-end;gap:10px;pointer-events:none}
   #scalebar{background:rgba(8,11,18,.82);border:1px solid rgba(232,200,121,.14);border-radius:9px;padding:6px 12px;font-size:10px;color:var(--txt-dim);letter-spacing:.08em;backdrop-filter:blur(12px);box-shadow:0 4px 16px rgba(0,0,0,.4)}
   #scalebar .bar{height:3px;background:linear-gradient(90deg,var(--gold),rgba(232,200,121,.3));border-radius:2px;margin-top:4px}
+  #zoom-badge{
+    font-size:9px;color:#4a5260;letter-spacing:.08em;margin-top:3px;
+    text-align:right;transition:color .3s;
+  }
+  #zoom-badge.close{color:var(--gold-soft)}
 
   #hint{position:fixed;left:50%;top:120px;transform:translateX(-50%);max-width:min(92vw,560px);text-align:center;z-index:26;background:rgba(8,11,18,.9);border:1px solid rgba(232,200,121,.18);padding:9px 20px;border-radius:999px;font-size:12px;color:#d9d2bb;letter-spacing:.05em;backdrop-filter:blur(14px);transition:opacity 1s;box-shadow:0 8px 28px rgba(0,0,0,.5),0 0 0 1px rgba(232,200,121,.04) inset}
   @media(max-width:760px){#hint{top:54px;font-size:11px;padding:7px 14px}}
 
-  .vignette{position:fixed;inset:0;z-index:20;pointer-events:none;background:radial-gradient(ellipse at center,transparent 55%,rgba(3,5,9,.55) 100%)}
+  .vignette{position:fixed;inset:0;z-index:20;pointer-events:none;background:radial-gradient(ellipse at 50% 50%,transparent 42%,rgba(2,4,8,.35) 65%,rgba(2,3,7,.7) 100%)}
 
   .kbd-help{position:fixed;left:22px;bottom:90px;z-index:24;font-size:10px;color:#6c737e;letter-spacing:.1em;pointer-events:none;background:rgba(5,8,13,.6);padding:5px 10px;border-radius:8px;backdrop-filter:blur(6px)}
   .kbd-help b{color:#9aa2ae;border:1px solid rgba(255,255,255,.16);border-radius:4px;padding:1px 5px;font-weight:500;margin:0 2px}
@@ -528,6 +558,10 @@ body{overscroll-behavior:none;-webkit-overscroll-behavior:none}
     50%{stroke-opacity:1;stroke-width:3.2px}
   }
   .route.hot:not(.dim){animation:routePulse 2.2s ease infinite}
+  /* Тонкое дыхание активного маршрута (gold, idle) */
+  @keyframes routeIdle{0%,100%{filter:none;opacity:.85}50%{filter:drop-shadow(0 0 4px rgba(232,200,121,.3));opacity:.95}}
+  .route[data-color="gold"]:not(.dim):not(.story-dim){animation-name:routeIdle;animation-duration:4s;animation-timing-function:ease;animation-iteration-count:infinite}
+  .route[data-color="gold"].hot:not(.dim){animation-name:routePulse,routeIdle;animation-duration:2.2s,4s}
 
   /* Trade route animated dash (движение) */
   @keyframes dashFlow{from{stroke-dashoffset:0}to{stroke-dashoffset:-28}}
@@ -992,7 +1026,9 @@ body{overscroll-behavior:none;-webkit-overscroll-behavior:none}
     <path fill="url(#mtG)" d="M598,780 C606,760 612,740 615,722 C610,730 604,744 599,760 C596,772 595,784 598,780 Z"/>
   </g>
   <!-- Синайский полуостров — тёплый силуэт + хребты -->
-  <ellipse cx="555" cy="1140" rx="180" ry="120" fill="url(#sinaiG)" opacity=".9"/>
+  <!-- Треугольный контур п-ова Синай -->
+  <path fill="url(#sinaiG)" opacity=".9"
+    d="M424,1012 C450,1015 475,1020 490,1032 C510,1048 520,1075 530,1110 C540,1145 548,1175 555,1200 C562,1175 570,1145 580,1112 C590,1078 600,1050 618,1035 C630,1025 648,1015 665,1012"/>
   <!-- Гранитные горы Синая (юг) -->
   <g opacity=".18" filter="url(#soft)">
     <path d="M520,1200 L540,1160 L560,1200 Z" fill="rgba(120,90,50,.4)" stroke="#9a7845" stroke-width="1"/>
@@ -1090,6 +1126,8 @@ body{overscroll-behavior:none;-webkit-overscroll-behavior:none}
     <path d="M1003,194 C1000,250 998,310 1002,362 C1008,404 1040,444 1093,470"/>
     <path d="M1108,140 C1100,230 1110,330 1140,405 C1160,460 1196,530 1238,578"/>
     <path d="M665,625 C660,645 658,656 657,667"/>
+    <!-- Река Кишон (вдоль Изреельской долины к морю) -->
+    <path d="M613,706 C595,712 575,720 555,728 C535,736 510,738 490,735 C468,730 445,720 420,710" fill="none" stroke="#2d4a66" stroke-width="1.4" opacity=".55" stroke-linecap="round"/>
     <path d="M657,689 C650,720 662,755 655,797"/>
     <path d="M232,1830 C226,1690 234,1550 230,1430 C220,1330 232,1200 226,1100 C222,1050 224,1020 226,1004"/>
     <path d="M226,1004 C214,972 198,938 182,908 C172,890 158,872 144,858" stroke-width="1.7"/>
@@ -1118,6 +1156,7 @@ body{overscroll-behavior:none;-webkit-overscroll-behavior:none}
     <text class="sea-label" x="1846" y="1014" font-size="12" transform="rotate(60 1846 1014)" letter-spacing=".25em">ЗАЛИВ</text>
   <text class="sea-label lbl-z1" x="1870" y="1035" font-size="6" transform="rotate(60 1870 1035)" letter-spacing=".12em" opacity=".6">הַיָּם הַמִּזְרָחִי · Вост. море</text>
     <text class="sea-label lbl-z1" x="649" y="848" font-size="5.5" letter-spacing=".16em" text-anchor="middle" transform="rotate(86 649 848)">МЁРТВОЕ&#160;МОРЕ</text>
+    <text class="sea-label lbl-z2" x="650" y="856" font-size="4" letter-spacing=".1em" text-anchor="middle" transform="rotate(86 650 856)" fill="#4a80a0" opacity=".45">−430 м · низшая точка Земли</text>
 
     <text class="sea-label lbl-z2" x="668" y="670" font-size="4" letter-spacing=".14em" transform="rotate(60 668 670)">КИНЕРЕТ</text>
   <!-- Ярмук (приток Иордана) -->
@@ -1160,6 +1199,11 @@ body{overscroll-behavior:none;-webkit-overscroll-behavior:none}
     <text class="region-he" x="135" y="1066" font-size="13">מִצְרַיִם</text>
     <text class="region-label" x="520" y="1170" font-size="14" letter-spacing=".3em">СИНАЙ</text>
     <text class="region-label" x="528" y="910" font-size="11" letter-spacing=".22em">НЕГЕВ</text>
+    <!-- Горы Моава (восток Мёртвого моря) -->
+    <text class="region-label lbl-z1" x="708" y="876" font-size="8" fill="#8b7d5a" opacity=".45" letter-spacing=".2em" transform="rotate(90 708 876)">МОАВ</text>
+    <text class="region-label lbl-z2" x="714" y="876" font-size="4.5" fill="#8b7d5a" opacity=".35" letter-spacing=".1em" transform="rotate(90 714 876)">מוֹאָב</text>
+    <!-- Галаад (север Заиорданья) -->
+    <text class="region-label lbl-z2" x="698" y="740" font-size="6" fill="#8b7d5a" opacity=".35" letter-spacing=".15em" transform="rotate(88 698 740)">ГАЛААД · גִּלְעָד</text>
     <text class="region-he" x="555" y="924" font-size="10">נֶגֶב</text>
     <text class="region-label" x="938" y="262" font-size="12" letter-spacing=".2em">ПАДАН-АРАМ</text> <!-- era: bronze -->
     <!-- Пустыня Аравии — stipple pattern -->
@@ -1169,7 +1213,12 @@ body{overscroll-behavior:none;-webkit-overscroll-behavior:none}
   </g>
 
   <!-- ============ ANCIENT TRADE ROUTES ============ -->
-  <g id="tradeRoutes" opacity=".5">
+  <!-- Горы Заиорданья (Галаад, Едом) — hatch texture -->
+<g class="lbl-z1" opacity=".15">
+  <ellipse cx="710" cy="790" rx="30" ry="50" fill="url(#mountainHatch)" transform="rotate(10 710 790)"/>
+  <ellipse cx="720" cy="900" rx="25" ry="40" fill="url(#mountainHatch)" transform="rotate(5 720 900)"/>
+</g>
+<g id="tradeRoutes" opacity=".5">
     <!-- Via Maris / Дорога моря — Египет → побережье → Мегиддо → Дамаск → Месопотамия -->
     <path id="viaMarisPath" fill="none" stroke="#7fa7c4" stroke-width="2.5" stroke-dasharray="8 6" stroke-linecap="round" opacity=".7"
       d="M210,920 C280,880 340,850 400,830 C460,810 520,780 560,750 C580,730 600,710 613,706 C630,690 645,668 658,648 C680,630 710,610 731,594">
@@ -1378,6 +1427,15 @@ body{overscroll-behavior:none;-webkit-overscroll-behavior:none}
   <line x1="1400" y1="-400" x2="1400" y2="1830"/>
   <line x1="1700" y1="-400" x2="1700" y2="1830"/>
 </g>
+<!-- Fog of war — тёмные зоны за пределами карты Авраама -->
+<g id="fogLayer" pointer-events="none" opacity=".12">
+  <!-- Далёкий восток (Иран, Индия) — terra incognita -->
+  <rect x="1900" y="-400" width="800" height="2230" fill="rgba(3,5,10,.9)"/>
+  <!-- Далёкий запад (Греция, Рим) — вне контекста -->
+  <rect x="-400" y="-400" width="200" height="2230" fill="rgba(3,5,10,.8)"/>
+  <!-- Далёкий юг (Африка за Нилом) -->
+  <rect x="-400" y="1200" width="2700" height="1030" fill="rgba(3,5,10,.7)"/>
+</g>
 <!-- sky atmosphere overlay -->
 <rect x="-400" y="-400" width="2700" height="550" fill="url(#skyG)" pointer-events="none"/>
 <!-- Иорданская долина fertile -->
@@ -1459,7 +1517,7 @@ body{overscroll-behavior:none;-webkit-overscroll-behavior:none}
   <div id="minimap">
     <svg id="mmSvg" viewBox="0 0 1900 1430" preserveAspectRatio="xMidYMid slice"></svg>
   </div>
-  <div id="scalebar"><span id="scaleTxt">≈ 100 км</span><div class="bar" id="scaleBar" style="width:109px"></div></div>
+  <div id="scalebar"><span id="scaleTxt">≈ 100 км</span><div class="bar" id="scaleBar" style="width:109px"></div><div id="zoom-badge">1×</div></div>
 </div>
 
 <div class="kbd-help"><b>▶</b> кинотур &nbsp;<b>1–8</b> этапы &nbsp;<b>←</b><b>→</b> места &nbsp;<b>S</b> сюжет &nbsp;<b>Esc</b> закрыть</div>
@@ -1483,6 +1541,12 @@ body{overscroll-behavior:none;-webkit-overscroll-behavior:none}
 <div id="caption"><div class="n"></div><h3></h3><p></p><div class="age"></div><div id="caption-dots"></div></div>
 
 <div id="intro">
+  <!-- Floating gold particles -->
+  <span class="particle" style="left:15%;top:70%;--px:30px;--py:-80px;--dur:9s;--del:0s;opacity:.5"></span>
+  <span class="particle" style="left:80%;top:60%;--px:-20px;--py:-100px;--dur:12s;--del:2s;opacity:.4;width:2px;height:2px"></span>
+  <span class="particle" style="left:55%;top:80%;--px:10px;--py:-60px;--dur:10s;--del:4s;opacity:.6"></span>
+  <span class="particle" style="left:25%;top:40%;--px:40px;--py:-90px;--dur:11s;--del:1s;opacity:.3;width:2px;height:2px"></span>
+  <span class="particle" style="left:70%;top:75%;--px:-30px;--py:-70px;--dur:8s;--del:3s;opacity:.5"></span>
   <div class="inner">
     <div class="he">לֶךְ־לְךָ מֵאַרְצְךָ</div>
     <h2>Путь <b>Авраама</b></h2>
@@ -1662,7 +1726,8 @@ photos:[
 {id:"urfa",name:"Урфа (Шанлыурфа)",he:"אוּרְהַי",tr:"Урхай / Эдесса",x:979,y:159,type:"cand",era:["bronze"],stage:0,kick:"Альтернативный кандидат",id1:"Шанлыурфа",id2:"Турция, 60 км от Харрана",ep1:"традиция ислама и сир. христиан",ep2:"«северный Ур»",side:"t",
 story:`<p>Город с древнейшей живой традицией: пещера под цитаделью почитается как место рождения Авраама, пруд Балыклыгёль — как место, где огонь Нимрода обратился в воду, а угли — в священных карпов.</p><p>Сторонники «северного Ура» указывают: вся родня Авраама (Нахор, Лаван) живёт у Харрана, и патриархи называют этот край «своей землёй».</p>`,
 bible:`<p>В Библии Урфа не названа; аргумент — косвенный: <span class="hw">אַרְצִי וּמוֹלַדְתִּי</span> («земля моя и родина моя», Быт 24:4) Авраам говорит о регионе Харрана, куда посылает раба за невестой для Исаака.</p>`,
-arch:`<p>Систематических слоёв III–II тыс. до н. э. под современным городом почти не изучено. Рядом — Гёбекли-Тепе (X тыс. до н. э.), показывающий глубочайшую древность сакральной традиции региона. Идентификация с Уром остаётся гипотезой меньшинства.</p>`},
+arch:`<p>Систематических слоёв III–II тыс. до н. э. под современным городом почти не изучено. Рядом — Гёбекли-Тепе (X тыс. до н. э.), показывающий глубочайшую древность сакральной традиции региона. Идентификация с Уром остаётся гипотезой меньшинства.</p>
+he_deep:`<div class="he-block"><div class="he-word"><span class="hw" lang="he">אוּרְהַי · אֶדֶסָּה</span><span class="he-tr">Урхай · Эдесса</span></div><div class="he-etym"><b>אוּרְהַי</b> (<em>Урхай</em>) — арамейское название, от которого происходит греч. <em>Эдесса</em> и совр. арабск. <em>Урфа</em>. Жители города утверждают: пещера под цитаделью — место рождения Авраама, где он был брошен в огонь Нимродом, а водоём Балыклыгёль (пруд с рыбами) — то место, где огонь стал водой. Эта традиция зафиксирована в иудейских таргумах, сирийской христианской письменности, исламе (коранические комментарии). С ивритской стороны: <span class="hw" lang="he">אוּר</span> в имени «Урхай» совпадает с אוּר («огонь» / «Ур»). Это не случайность — традиция намеренно связывает имя города с «огнём Авраама». <b>Ключевой аргумент:</b> расстояние Урфа–Харран = 44 км; библейский текст говорит «пошли в Ханаан, но остановились в Харране» — если исходить из Урфы, это логично: Харран — первая большая остановка на юге.</div><div class="he-refs">Традиция: Берешит Рабба 38:13 (огонь Нимрода) · Юбилеи 12:12–15 · Коран 21:68–70</div></div>``},
 
 {id:"harran",name:"Харран",he:"חָרָן",tr:"Харан",x:1003,y:194,type:"main",era:["bronze"],stage:0,kick:"Перекрёсток караванов · Падан-Арам",id1:"Харран, пров. Шанлыурфа",id2:"Турция, долина р. Балих",ep1:"Быт 11:31–12:5; 24; 27–31",ep2:"смерть Тераха; призвание",side:"r",
 story:`<p>«Перекрёсток дорог» (аккад. harrānu — «путь»). Здесь семья оседает, здесь умирает Терах, и отсюда 75-летний Аврам слышит: «Лех-леха» — «иди себе». Сюда вернётся раб за Ревеккой, сюда бежит Иаков к Лавану.</p><p>Харран и Ур связывал общий культ лунного бога Сина — две «лунные столицы» на концах одного караванного пути.</p>`,
@@ -1680,7 +1745,8 @@ bible:`<div class="verse">«Владыка Господи! что Ты дашь 
 arch:`<p>Дамаск упоминается как «Апум» / «Димашка» в текстах Эблы (XXIV в. до н. э.) и Мари (XVIII в. до н. э.), а также в египетских списках городов Тутмоса III (XV в. до н. э.). Слои бронзового века скрыты под непрерывно живым городом — систематические раскопки невозможны; точечные зондажи и находки при строительстве подтверждают обживание с IV тыс. до н. э. Оазис Гута (Бараду/Абана, совр. Барада) обеспечивал водой каждый караван на пути из Месопотамии в Ханаан.</p>
 photos:[
   {src:"https://upload.wikimedia.org/wikipedia/commons/thumb/f/f0/Syria_Damascus_panorama.jpg/1280px-Syria_Damascus_panorama.jpg",thumb:"https://upload.wikimedia.org/wikipedia/commons/thumb/f/f0/Syria_Damascus_panorama.jpg/320px-Syria_Damascus_panorama.jpg",label:"ДАМАСК (ОАЗИС ГУТА)",type:"now",alt:"Панорама Дамаска — древнейший непрерывно обитаемый город мира, оазис Гута",credit:"Wikimedia Commons / CC BY-SA"}
-],`},
+],
+he_deep:`<div class="he-block"><div class="he-word"><span class="hw" lang="he">דַּמֶּשֶׂק · גּוּתָה</span><span class="he-tr">Даммесек · Гута</span></div><div class="he-etym"><b>דַּמֶּשֶׂק</b> (<em>Даммесек</em>) — одна из старейших непрерывно обитаемых столиц мира. Этимология спорна: (1) аккад. <em>Dimaşqa</em> — возможно, «хорошо орошённая»; (2) арамейск. «быстрый»; (3) возможно, доосемитский субстрат. В Быт 15:2 упомянут <b>Элиэзер</b> (<span class="hw" lang="he">אֱלִיעֶזֶר מִדַּמֶּשֶׂק</span>) — «Бог мой — помощь, из Дамаска»: домоправитель Авраама, несостоявшийся наследник. <b>גּוּתָה</b> (Гута) — арабское название оазиса вокруг Дамаска, питаемого рекой Барада (<span class="hw" lang="he">אַמָּנָה</span>): «хорошо орошённое место». Каждый пастух и купец на пути из Месопотамии в Ханаан делал здесь остановку.</div><div class="he-refs">Быт 14:15; 15:2 · Ис 7:8; 17:1 · 2 Цар 8:5–6 · Деян 9:2–3</div></div>``},
 
 {id:"shechem",name:"Сихем",he:"שְׁכֶם",tr:"Шхем",x:628,y:748,type:"main",era:["bronze"],stage:1,kick:"Первая остановка в Ханаане",id1:"Телль Балата",id2:"между Гевалом и Гаризимом",ep1:"Быт 12:6–7",ep2:"первый жертвенник; обетование",side:"r",
 story:`<p>Первая стоянка Аврама в Обетованной земле — у дуба Морэ́. Здесь Бог впервые является ему в Ханаане и произносит: «Потомству твоему отдам Я землю сию». Ответ Аврама — первый жертвенник в этой земле.</p>`,
@@ -1812,7 +1878,24 @@ he_deep:`<div class="he-block"><div class="he-word"><span class="hw" lang="he">�
 ];
 
 const CTX=[
- {n:"Вавилон",he:"בָּבֶל",sub:"Бавель · аккад. Bāb-ilim — «Врата бога»",x:1472,y:758,icon:"babel",per:"Быт 10:10; 11:1–9",
+ <!-- ============ ШУМЕРСКИЕ ГОРОДА (фон Ура) ============ -->
+<g id="shumerCities" class="lbl-z2" opacity=".38">
+  <!-- Ур Халдейский — уже есть маркер, добавим окружение -->
+  <!-- Ниппур — священный город шумеров -->
+  <circle cx="1610" cy="858" r="3" fill="rgba(180,140,80,.4)" stroke="#9c7c43" stroke-width=".8"/>
+  <text x="1610" y="850" font-size="4.5" fill="#9c7843" text-anchor="middle" opacity=".7">НИППУР</text>
+  <!-- Урук — первый город мира -->
+  <circle cx="1660" cy="915" r="3.5" fill="rgba(180,140,80,.4)" stroke="#9c7c43" stroke-width=".8"/>
+  <text x="1660" y="925" font-size="4.5" fill="#9c7843" text-anchor="middle" opacity=".7">УРУК</text>
+  <!-- Лагаш -->
+  <circle cx="1735" cy="948" r="2.5" fill="rgba(180,140,80,.3)" stroke="#9c7c43" stroke-width=".6"/>
+  <text x="1735" y="958" font-size="4" fill="#9c7843" text-anchor="middle" opacity=".6">ЛАГАШ</text>
+  <!-- Аккад -->
+  <circle cx="1530" cy="795" r="2.5" fill="rgba(180,140,80,.3)" stroke="#9c7c43" stroke-width=".6"/>
+  <text x="1530" y="787" font-size="4" fill="#9c7843" text-anchor="middle" opacity=".6">АККАД</text>
+</g>
+
+{n:"Вавилон",he:"בָּבֶל",sub:"Бавель · аккад. Bāb-ilim — «Врата бога»",x:1472,y:758,icon:"babel",per:"Быт 10:10; 11:1–9",
   s:"Этеменанки — прообраз Вавилонской башни · клик — подробнее",
   d:"«И сказали они: построим себе город и башню высотою до небес» (Быт 11:4). В сердце Вавилона стоял Этеменанки — «Дом основания неба и земли», семиярусный зиккурат Мардука с основанием 91×91 м и высотой около 91 м: главный кандидат на образ Вавилонской башни. Бытие помещает башню «в земле Сеннаар» — в этой же долине начинается история рода Авраама.",
   facts:["Раскопки Р. Кольдевея (1899–1917): фундамент зиккурата, ворота Иштар, Дорога процессий","Геродот описал «восьмиярусную башню» с пандусом и святилищем наверху","Эпоха Хаммурапи (XVIII в. до н. э.) — правовой фон обычаев Бытия","Объект Всемирного наследия ЮНЕСКО с 2019 года"]},
@@ -2028,6 +2111,14 @@ function applyView(){
   while(seg*pxPerSvg>180&&km>12){km/=2;seg=km/0.92;}
   while(seg*pxPerSvg<70&&km<3200){km*=2;seg=km/0.92;}
   document.getElementById('scaleTxt').textContent='≈ '+km+' км';
+  // zoom badge
+  (()=>{
+    const zb=document.getElementById('zoom-badge');
+    if(!zb) return;
+    const zf=Math.round(W0/view.w*10)/10;
+    zb.textContent=zf+'×';
+    zb.classList.toggle('close',zf>3);
+  })();
   if(typeof measuring!=='undefined'&&measuring&&mPts.length)drawMeasure();
   document.getElementById('scaleBar').style.width=(seg*pxPerSvg)+'px';
 }
@@ -2289,7 +2380,7 @@ function showTip(e,n,h,s){
   tip.querySelector('.n').textContent=n;
   tip.querySelector('.h').textContent=h;tip.querySelector('.h').style.display=h?'block':'none';
   tip.querySelector('.s').textContent=s;
-  tip.style.opacity=1;moveTip(e);
+  tip.classList.add('vis');moveTip(e);
 }
 function moveTip(e){
   const pad=16;let x=e.clientX+pad,y=e.clientY+pad;
@@ -3016,7 +3107,16 @@ document.querySelectorAll('.story-btn').forEach(btn=>{
   }
 })();
 const _applyView=applyView;
-applyView=function(){_applyView();updateMinimap();};
+applyView=function(){
+  _applyView();updateMinimap();
+  // North arrow subtle tilt при pan (психологический эффект)
+  const compass=document.getElementById('compass');
+  if(compass){
+    const tiltX=(view.x/W0-0.5)*3;  // -1.5 до +1.5 deg
+    const tiltY=(view.y/H0-0.5)*2;
+    compass.style.transform=`rotate(${tiltX.toFixed(1)}deg)`;
+  }
+};
 (function startCam(){
   const r=svg.getBoundingClientRect();
   if(r.width<1250){flyTo(1010,600,2150,1600);}  // narrow: pull back, lift center
@@ -3034,6 +3134,18 @@ if(location.hash){
   const id=location.hash.slice(1);
   if(placeIndex[id]!==undefined){dismissIntro();setTimeout(()=>openPlace(id),900);}
 }
+/* Panel drag handle click on mobile */
+(function(){
+  const ph=document.getElementById('panel');
+  // При тапе на самый верх (drag handle area 40px) закрываем
+  ph.addEventListener('click',e=>{
+    if(window.innerWidth>760) return;
+    const rect=ph.getBoundingClientRect();
+    if(e.clientY-rect.top<40 && ph.classList.contains('open')){
+      closePanel();
+    }
+  },{passive:true});
+})();
 /* swipe gestures on panel */
 (function(){
   let sy=null, sx=null;
