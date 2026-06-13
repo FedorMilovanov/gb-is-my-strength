@@ -2,7 +2,11 @@
 
 Дата: 2026-06-13
 
-Источник владельца: Google Drive ZIP `react-vite-tailwind` (`1tSV6l2CVl7MaPBWHNvf0Vt33JKUxDrJQ`).
+Источник владельца: Google Drive ZIP `react-vite-tailwind`:
+
+https://drive.google.com/file/d/1tSV6l2CVl7MaPBWHNvf0Vt33JKUxDrJQ/view?usp=drive_link
+
+File ID: `1tSV6l2CVl7MaPBWHNvf0Vt33JKUxDrJQ`.
 
 ## Что внутри Drive-архива
 

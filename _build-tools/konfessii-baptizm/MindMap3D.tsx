@@ -235,7 +235,7 @@ function ContextStatusBar({ activeRoute, routeStep, mapSelection, focusLabel }: 
       <div className="flex items-center gap-2.5">
         <span className="h-1.5 w-1.5 shrink-0 rounded-full" style={{ background: accentColor, boxShadow: `0 0 8px ${accentColor}` }} />
         {activeRoute ? (
-          <span className="text-[11px] text-white/65 sm:text-[12px]"><span className="font-bold" style={{ color: accentColor }}>{activeRoute.label}</span><span className="mx-2 text-white/30">·</span><span className="font-mono text-white/85">{routeStep + 1}/{activeRoute.nodes.length}</span><span className="mx-2 text-white/30">·</span><span className="text-white/50">маршрут активен</span></span>
+          <span className="text-[11px] text-white/65 sm:text-[12px]"><span className="font-bold" style={{ color: accentColor }}>{activeRoute.label}</span><span className="mx-2 text-white/30">·</span><span className="font-mono text-white/85">{routeStep + 1}/{activeRoute.nodes.length}</span>{focusLabel && (<><span className="mx-2 text-white/30">·</span><span className="text-white/78">сейчас: {focusLabel}</span></>)}<span className="mx-2 text-white/30">·</span><span className="text-white/50">←/→ этапы, ↑/↓ камера</span></span>
         ) : mapSelection ? (
           <span className="text-[11px] text-white/65 sm:text-[12px]"><span className="font-bold" style={{ color: accentColor }}>{mapSelection.label}</span><span className="mx-2 text-white/30">·</span><span className="text-white/85">{mapSelection.nodes.length} узлов</span>{focusLabel && (<><span className="mx-2 text-white/30">·</span><span className="text-white/50">фокус: {focusLabel}</span></>)}</span>
         ) : null}
@@ -244,20 +244,37 @@ function ContextStatusBar({ activeRoute, routeStep, mapSelection, focusLabel }: 
   );
 }
 
-function BottomBar({ left, hidden, expanded, activeRoute, mapSelection, onToggle, onRouteSelect, onMapSelect }: any) {
+function BottomBar({ left, hidden, expanded, activeRoute, routeStep = 0, mapSelection, onToggle, onRouteSelect, onMapSelect }: any) {
   const activeLabel = activeRoute?.label ?? mapSelection?.label ?? 'Маршруты и города';
   const activeColor = activeRoute?.color ?? mapSelection?.color ?? '#c4a67e';
+  const activeRouteNodes = activeRoute ? activeRoute.nodes.map((id: string) => NODES.find((n) => n.id === id)).filter(Boolean) as NodeData[] : [];
   return (
     <div className={`absolute bottom-0 z-30 flex flex-col items-center gap-2 px-4 pb-4 pt-3 transition-[left,opacity] duration-300 ${hidden ? 'pointer-events-none opacity-0' : 'opacity-100'}`} style={{ left, right: 16, background: 'linear-gradient(to top, rgba(3,3,7,0.88) 0%, rgba(3,3,7,0.55) 42%, transparent 100%)' }}>
-      <button onClick={onToggle} className="inline-flex min-h-[42px] items-center gap-2 rounded-full border bg-black/60 px-5 py-2 text-[11px] font-bold uppercase tracking-[0.12em] backdrop-blur-2xl transition hover:bg-black/75 active:scale-95" style={{ borderColor: `${activeColor}44`, color: activeColor, boxShadow: expanded ? `0 0 24px ${activeColor}24` : undefined }} aria-expanded={expanded}>
+      <button onClick={onToggle} className="inline-flex min-h-[42px] items-center gap-2 rounded-full border bg-black/60 px-5 py-2 text-[11px] font-bold uppercase tracking-[0.12em] backdrop-blur-2xl transition hover:bg-black/75 active:scale-95" style={{ borderColor: `${activeColor}44`, color: activeColor, boxShadow: expanded ? `0 0 24px ${activeColor}24` : undefined }} aria-expanded={expanded} title={activeRoute ? `${activeRoute.summary} (${activeRoute.nodes.length} этапов)` : 'Открыть маршруты, города и исторические точки'}>
         <span className="h-1.5 w-1.5 rounded-full" style={{ background: activeColor, boxShadow: `0 0 8px ${activeColor}` }} />
         {activeLabel}
+        {activeRoute && <span className="rounded-full bg-white/10 px-1.5 py-0.5 font-mono text-[8px] text-white/45">{routeStep + 1}/{activeRoute.nodes.length}</span>}
         <ChevronDown size={14} className={`transition-transform ${expanded ? 'rotate-180' : ''}`} />
       </button>
       <AnimatePresence initial={false}>
         {expanded && (
-          <motion.div key="bottom-bar-expanded" initial={{ opacity: 0, y: 14, scale: 0.98 }} animate={{ opacity: 1, y: 0, scale: 1 }} exit={{ opacity: 0, y: 10, scale: 0.98 }} transition={{ duration: 0.18 }} className="flex max-w-[min(900px,calc(100vw-2rem))] flex-col gap-1.5 rounded-3xl border border-white/10 bg-black/55 px-4 py-3 backdrop-blur-2xl">
-            <div className="flex flex-wrap justify-center gap-1.5"><span className="mr-1 self-center text-[8px] font-bold uppercase tracking-[0.2em] text-white/30">Маршруты:</span>{ROUTE_PRESETS.map((route) => (<button key={route.id} onClick={() => onRouteSelect(route)} className="inline-flex min-h-[34px] items-center gap-1.5 rounded-full border bg-black/50 px-3.5 py-2 text-[10px] font-semibold backdrop-blur-sm transition hover:bg-black/70 active:scale-95" style={{ borderColor: activeRoute?.id === route.id ? `${route.color}cc` : `${route.color}40`, color: route.color, boxShadow: activeRoute?.id === route.id ? `0 0 22px ${route.color}30` : undefined, background: activeRoute?.id === route.id ? `color-mix(in srgb, ${route.color} 12%, black)` : undefined }}><span className="h-1.5 w-1.5 rounded-full" style={{ background: route.color }} />{route.label}</button>))}</div>
+          <motion.div key="bottom-bar-expanded" initial={{ opacity: 0, y: 14, scale: 0.98 }} animate={{ opacity: 1, y: 0, scale: 1 }} exit={{ opacity: 0, y: 10, scale: 0.98 }} transition={{ duration: 0.18 }} className="flex max-w-[min(940px,calc(100vw-2rem))] flex-col gap-2 rounded-3xl border border-white/10 bg-black/55 px-4 py-3 backdrop-blur-2xl">
+            {activeRoute && (
+              <div className="rounded-2xl border px-3 py-2" style={{ borderColor: `${activeRoute.color}34`, background: `${activeRoute.color}0d` }}>
+                <div className="mb-1 flex items-center gap-2">
+                  <span className="h-1.5 w-1.5 rounded-full" style={{ background: activeRoute.color, boxShadow: `0 0 8px ${activeRoute.color}` }} />
+                  <span className="text-[9px] font-bold uppercase tracking-[0.16em]" style={{ color: activeRoute.color }}>Активный маршрут</span>
+                  <span className="ml-auto font-mono text-[9px] text-white/40">{routeStep + 1}/{activeRoute.nodes.length}</span>
+                </div>
+                <p className="text-[11px] leading-5 text-white/62">{activeRoute.summary}</p>
+                <div className="mt-2 flex max-w-full gap-1 overflow-hidden">
+                  {activeRouteNodes.slice(0, 7).map((node, idx) => (
+                    <span key={node.id} className="truncate rounded-full border px-2 py-0.5 text-[9px]" style={{ borderColor: idx === routeStep ? `${activeRoute.color}aa` : 'rgba(255,255,255,0.10)', color: idx === routeStep ? activeRoute.color : 'rgba(255,255,255,0.45)', background: idx === routeStep ? `${activeRoute.color}14` : 'rgba(255,255,255,0.03)' }}>{idx + 1}. {node.label}</span>
+                  ))}
+                </div>
+              </div>
+            )}
+            <div className="flex flex-wrap justify-center gap-1.5"><span className="mr-1 self-center text-[8px] font-bold uppercase tracking-[0.2em] text-white/30">Маршруты:</span>{ROUTE_PRESETS.map((route) => (<button key={route.id} onClick={() => onRouteSelect(route)} title={`Маршрут: ${route.label}. ${route.summary}`} className="inline-flex min-h-[34px] items-center gap-1.5 rounded-full border bg-black/50 px-3.5 py-2 text-[10px] font-semibold backdrop-blur-sm transition hover:bg-black/70 active:scale-95" style={{ borderColor: activeRoute?.id === route.id ? `${route.color}cc` : `${route.color}40`, color: route.color, boxShadow: activeRoute?.id === route.id ? `0 0 22px ${route.color}30` : undefined, background: activeRoute?.id === route.id ? `color-mix(in srgb, ${route.color} 12%, black)` : undefined }}><span className="h-1.5 w-1.5 rounded-full" style={{ background: route.color }} /><span>{route.label}</span><span className="rounded-full bg-white/10 px-1.5 py-0.5 font-mono text-[8px] text-white/45">{route.nodes.length}</span></button>))}</div>
             <div className="flex flex-wrap justify-center gap-1.5"><span className="mr-1 self-center text-[8px] font-bold uppercase tracking-[0.2em] text-white/30">Города:</span>{CITY_MARKERS.map((city) => (<button key={city.id} onClick={() => onMapSelect({ id: city.id, label: city.label, color: city.color, nodes: city.nodes })} className="inline-flex min-h-[32px] items-center gap-1.5 rounded-full border bg-black/40 px-3 py-1.5 text-[9px] backdrop-blur-sm transition hover:bg-black/60 active:scale-95" style={{ borderColor: mapSelection?.id === city.id ? `${city.color}95` : `${city.color}35`, color: city.color, boxShadow: mapSelection?.id === city.id ? `0 0 18px ${city.color}22` : undefined }}><span className="h-1.5 w-1.5 rounded-full" style={{ background: city.color }} />{city.label}</button>))}</div>
           </motion.div>
         )}
@@ -354,6 +371,7 @@ function TimelineOverlay({ timelineYearRef, bottomBarExpanded }: { timelineYearR
             <div className="min-w-0">
               <div className="text-[10px] font-bold uppercase tracking-widest text-white/50">Хронология событий · {recentEvent.year} • {categoryLabels[recentEvent.category]}</div>
               <div className="truncate text-[13px] font-bold text-white">{recentEvent.title}</div>
+              <div className="line-clamp-1 text-[10.5px] leading-4 text-white/45">{recentEvent.description}</div>
             </div>
           </div>
       )}
@@ -367,7 +385,8 @@ function TimelineOverlay({ timelineYearRef, bottomBarExpanded }: { timelineYearR
             const y = match ? parseInt(match[0], 10) : 0;
             if (!y || y < 1860 || y > 2026) return null;
             const percent = ((y - 1860) / (2026 - 1860)) * 100;
-            return <div key={i} className="pointer-events-none absolute h-2 w-[1px] bg-white/30" style={{ left: `${percent}%`, top: '50%', transform: 'translateY(-50%)' }} />;
+            const isActive = Math.abs(y - displayYear) <= 2;
+            return <button key={i} type="button" onClick={() => { setYear(y); timelineYearRef.current = y; }} title={`${evt.year}: ${evt.title}`} className="absolute z-20 h-3 w-3 -translate-x-1/2 -translate-y-1/2 rounded-full border transition hover:scale-125" style={{ left: `${percent}%`, top: '50%', borderColor: isActive ? categoryColors[evt.category] : 'rgba(255,255,255,0.22)', background: isActive ? categoryColors[evt.category] : 'rgba(255,255,255,0.16)', boxShadow: isActive ? `0 0 12px ${categoryColors[evt.category]}80` : 'none' }} aria-label={`Перейти к событию ${evt.year}: ${evt.title}`} />;
           })}
           <input type="range" min="1860" max="2026" value={displayYear} onChange={handleChange} className="absolute inset-x-0 z-10 h-6 w-full cursor-pointer appearance-none bg-transparent opacity-0" />
           <div className="pointer-events-none absolute top-1/2 h-3 w-3 -translate-x-1/2 -translate-y-1/2 rounded-full border-2 border-black bg-[#c4a67e] shadow-[0_0_12px_#c4a67e]" style={{ left: `${((displayYear) - 1860) / (2026 - 1860) * 100}%` }} />
@@ -1636,7 +1655,7 @@ export default function MindMap3D() {
             </>
           )}
 
-          <BottomBar left={panelSafeLeft} hidden={isSmallViewport && inspectorMode === 'full'} expanded={bottomBarExpanded} activeRoute={activeRoute} mapSelection={mapSelection} onToggle={() => setBottomBarExpanded((v) => !v)} onRouteSelect={handleRouteSelect} onMapSelect={handleMapSelect} />
+          <BottomBar left={panelSafeLeft} hidden={isSmallViewport && inspectorMode === 'full'} expanded={bottomBarExpanded} activeRoute={activeRoute} routeStep={routeStep} mapSelection={mapSelection} onToggle={() => setBottomBarExpanded((v) => !v)} onRouteSelect={handleRouteSelect} onMapSelect={handleMapSelect} />
           
           <ForceGraph3D
             ref={fgRef} graphData={graphData} width={dims.w} height={dims.h} backgroundColor="rgba(0,0,0,0)"
