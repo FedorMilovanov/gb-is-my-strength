@@ -954,12 +954,16 @@ const SITE_CSS_MIN_BYTES = 200_000;
       problems.push(`${key}: has no parts`);
       continue;
     }
-    // check each published part exists on disk
+    // check each published part exists on disk. Prefer explicit baseUrl when present
+    // (GBS series can live outside /articles/, e.g. /baptisty-rossii/), then fall back
+    // to historical locations.
     for (const part of def.parts) {
       if (part.status === 'planned') continue;
+      const explicitBase = typeof def.baseUrl === 'string' ? def.baseUrl.replace(/^\//, '').replace(/\/$/, '') : '';
+      const explicitPath = explicitBase ? path.join(ROOT, explicitBase, part.slug || '', 'index.html') : null;
       const articlePath = path.join(ROOT, 'articles', part.slug || '', 'index.html');
       const nagornayaPath = path.join(ROOT, 'nagornaya', part.slug || '', 'index.html');
-      if (!fs.existsSync(articlePath) && !fs.existsSync(nagornayaPath)) {
+      if (!(explicitPath && fs.existsSync(explicitPath)) && !fs.existsSync(articlePath) && !fs.existsSync(nagornayaPath)) {
         problems.push(`${key} part ${part.n} "${part.slug}": no index.html on disk`);
       }
     }
@@ -4161,7 +4165,8 @@ const JS_SIZE_FLOORS = {
       probs.push('missing data-gbs2-*-min attrs');
     for (const need of ['gbs2-mobile-head', 'class="gbs2-world"', 'class="gbs2-rail"', 'id="gbs2Ring"', 'id="gbs2Toc"', 'id="gbs2Bbar"', 'id="gbs2Sheet"'])
       if (!html.includes(need)) probs.push(`missing ${need}`);
-    if (!/<a\b(?=[^>]*\bclass="[^"]*\bgbs2-part\b)(?=[^>]*aria-current="page")[^>]*>/.test(html))
+    const isSeriesLanding = /"@type"\s*:\s*"CollectionPage"/.test(html) || (/<main[^>]*>/.test(html) && !/<article[^>]*data-gbs2-part/i.test(html));
+    if (!isSeriesLanding && !/<a\b(?=[^>]*\bclass="[^"]*\bgbs2-part\b)(?=[^>]*aria-current="page")[^>]*>/.test(html))
       probs.push('no aria-current part in rail');
     // forbidden legacy leftovers
     for (const bad of ['id="reading-progress"', 'id="bottomBar"', 'id="btocOverlay"', 'id="tocSidebar"', 'id="themeToggle"', 'data-series-strip', 'data-series-nav', 'series-next-cta'])

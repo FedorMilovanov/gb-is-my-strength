@@ -244,4 +244,92 @@
       <image:caption>Карта консервативных позиций по Рим. 7:14–25 и пастырский вывод к Рим. 8:1</image:caption>
     </image:image>
   </url>
+  <url>
+    <loc>https://gospod-bog.ru/baptisty-rossii/</loc>
+    <lastmod>2026-06-13T00:00:00+03:00</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+    <image:image><image:loc>https://gospod-bog.ru/images/baptisty-rossii/cover-landing.svg</image:loc><image:title>Баптисты России</image:title></image:image>
+  </url>
+
+  <url>
+    <loc>https://gospod-bog.ru/baptisty-rossii/noch-na-kure/</loc>
+    <lastmod>2026-06-13T00:00:00+03:00</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+    <image:image><image:loc>https://gospod-bog.ru/images/baptisty-rossii/cover-01-kura.svg</image:loc><image:title>Ночь на Куре</image:title></image:image>
+  </url>
+
+  <url>
+    <loc>https://gospod-bog.ru/baptisty-rossii/yuzhnaya-shtunda/</loc>
+    <lastmod>2026-06-13T00:00:00+03:00</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+    <image:image><image:loc>https://gospod-bog.ru/images/baptisty-rossii/cover-02-shtunda.svg</image:loc><image:title>Южная штунда</image:title></image:image>
+  </url>
+
+  <url>
+    <loc>https://gospod-bog.ru/baptisty-rossii/dva-sezda-1884/</loc>
+    <lastmod>2026-06-13T00:00:00+03:00</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+    <image:image><image:loc>https://gospod-bog.ru/images/baptisty-rossii/cover-03-1884.svg</image:loc><image:title>1884: два съезда</image:title></image:image>
+  </url>
+
+  <url>
+    <loc>https://gospod-bog.ru/baptisty-rossii/peterburgskaya-liniya/</loc>
+    <lastmod>2026-06-13T00:00:00+03:00</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+    <image:image><image:loc>https://gospod-bog.ru/images/baptisty-rossii/cover-04-peterburg.svg</image:loc><image:title>Петербургская линия</image:title></image:image>
+  </url>
+
+  <url>
+    <loc>https://gospod-bog.ru/baptisty-rossii/goneniya-i-sovest/</loc>
+    <lastmod>2026-06-13T00:00:00+03:00</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+    <image:image><image:loc>https://gospod-bog.ru/images/baptisty-rossii/cover-05-conscience.svg</image:loc><image:title>Гонения и совесть</image:title></image:image>
+  </url>
+
+  <url>
+    <loc>https://gospod-bog.ru/baptisty-rossii/sovetskaya-noch/</loc>
+    <lastmod>2026-06-13T00:00:00+03:00</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+    <image:image><image:loc>https://gospod-bog.ru/images/baptisty-rossii/cover-06-soviet-night.svg</image:loc><image:title>Советская ночь</image:title></image:image>
+  </url>
+
+  <url>
+    <loc>https://gospod-bog.ru/baptisty-rossii/vsehib-1944/</loc>
+    <lastmod>2026-06-13T00:00:00+03:00</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+    <image:image><image:loc>https://gospod-bog.ru/images/baptisty-rossii/cover-07-vsehib.svg</image:loc><image:title>1944: один союз</image:title></image:image>
+  </url>
+
+  <url>
+    <loc>https://gospod-bog.ru/baptisty-rossii/iniciativnaya-gruppa/</loc>
+    <lastmod>2026-06-13T00:00:00+03:00</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+    <image:image><image:loc>https://gospod-bog.ru/images/baptisty-rossii/cover-08-initiative.svg</image:loc><image:title>Инициативная группа</image:title></image:image>
+  </url>
+
+  <url>
+    <loc>https://gospod-bog.ru/baptisty-rossii/podpolnaya-pechat/</loc>
+    <lastmod>2026-06-13T00:00:00+03:00</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+    <image:image><image:loc>https://gospod-bog.ru/images/baptisty-rossii/cover-09-samizdat.svg</image:loc><image:title>Подпольная печать</image:title></image:image>
+  </url>
+
+  <url>
+    <loc>https://gospod-bog.ru/baptisty-rossii/spravochnik/</loc>
+    <lastmod>2026-06-13T00:00:00+03:00</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+    <image:image><image:loc>https://gospod-bog.ru/images/baptisty-rossii/cover-10-reference.svg</image:loc><image:title>Справочник</image:title></image:image>
+  </url>
+
 </urlset>

@@ -651,7 +651,7 @@ Research snapshot обновлён. Пуш позже. Готовы к "да, у
 ## ДАЛЬНЕЙШЕЕ УГЛУБЛЕНИЕ 2026-06-13 (прямые embeddable изображения + конкретные пары then/now + Dan gate caveats + финальная верификация)
 
 **Текущие stats (post all appends + searches):**
-- Файл: /home/user/gb-is-my-strength/docs/ABRAHAM-ARCHAEOLOGY-RESEARCH-2026-06-13.md
+- Файл: <repo>/docs/ABRAHAM-ARCHAEOLOGY-RESEARCH-2026-06-13.md
 - Строк: 649+
 - Уникальных прямых https-ссылок: 72+
 - Прямых wikimedia files (commons + upload): 24+ (много категорий + конкретных File: страниц)
@@ -1190,14 +1190,14 @@ name:"Шалем · гора Мория"
 - Max 3/place, lazy, wikimedia CDN.
 
 **Финальные команды верификации (bash verbatim, использованные для stats выше):**
-- wc -l /home/user/gb-is-my-strength/docs/ABRAHAM-ARCHAEOLOGY-RESEARCH-2026-06-13.md
-- grep -o 'https://[^ )"]*' /home/user/gb-is-my-strength/docs/ABRAHAM-ARCHAEOLOGY-RESEARCH-2026-06-13.md | sort | uniq | wc -l
-- grep -c "upload.wikimedia.org\|commons.wikimedia.org/wiki/File" /home/user/gb-is-my-strength/docs/ABRAHAM-ARCHAEOLOGY-RESEARCH-2026-06-13.md
-- grep -o 'name:"[^"]*"' /home/user/gb-is-my-strength/karty/avraam/index.html | sort | uniq | wc -l
-- grep -o 'src=.*\.(jpg|png|webp|jpeg)' /home/user/gb-is-my-strength/karty/avraam/index.html | grep -v og-karty | wc -l
-- ls -lh /home/user/gb-is-my-strength/karty/avraam/index.html /home/user/gb-is-my-strength/docs/ABRAHAM-ARCHAEOLOGY-RESEARCH-2026-06-13.md
-- git -C /home/user/gb-is-my-strength status --porcelain | head -3
-- grep -o 'name:"[^"]*"' /home/user/gb-is-my-strength/karty/avraam/index.html | sort | uniq (verbatim places)
+- wc -l <repo>/docs/ABRAHAM-ARCHAEOLOGY-RESEARCH-2026-06-13.md
+- grep -o 'https://[^ )"]*' <repo>/docs/ABRAHAM-ARCHAEOLOGY-RESEARCH-2026-06-13.md | sort | uniq | wc -l
+- grep -c "upload.wikimedia.org\|commons.wikimedia.org/wiki/File" <repo>/docs/ABRAHAM-ARCHAEOLOGY-RESEARCH-2026-06-13.md
+- grep -o 'name:"[^"]*"' <repo>/karty/avraam/index.html | sort | uniq | wc -l
+- grep -o 'src=.*\.(jpg|png|webp|jpeg)' <repo>/karty/avraam/index.html | grep -v og-karty | wc -l
+- ls -lh <repo>/karty/avraam/index.html <repo>/docs/ABRAHAM-ARCHAEOLOGY-RESEARCH-2026-06-13.md
+- git -C <repo> status --porcelain | head -3
+- grep -o 'name:"[^"]*"' <repo>/karty/avraam/index.html | sort | uniq (verbatim places)
 
 **Заключение (итог всей верификации + пополнения):**
 - 30+ выполнено с большим запасом (95 unique direct links, 41 wikimedia direct File).
@@ -1373,13 +1373,13 @@ name:"Шалем · гора Мория"
 - Credits: "Wikimedia CC / BiblePlaces / Ritmeyer (educational)".
 
 **Финальные команды верификации (bash verbatim):**
-- wc -l /home/user/gb-is-my-strength/docs/ABRAHAM-ARCHAEOLOGY-RESEARCH-2026-06-13.md
+- wc -l <repo>/docs/ABRAHAM-ARCHAEOLOGY-RESEARCH-2026-06-13.md
 - grep -o 'https://[^ )"]*' ... | sort | uniq | wc -l
 - grep -c "upload.wikimedia.org\|commons.wikimedia.org/wiki/File" ...
 - grep -o 'name:"[^"]*"' /.../karty/avraam/index.html | sort | uniq | wc -l
 - grep -o 'src=.*\.(jpg|png|webp|jpeg)' /.../karty/avraam/index.html | grep -v og-karty | wc -l
 - ls -lh /.../karty/avraam/index.html /.../docs/ABRAHAM-ARCHAEOLOGY-RESEARCH-2026-06-13.md
-- git -C /home/user/gb-is-my-strength status --porcelain | head -3
+- git -C <repo> status --porcelain | head -3
 - grep -o 'name:"[^"]*"' /.../karty/avraam/index.html | sort | uniq (verbatim places)
 
 **Заключение (итог всей верификации):**
@@ -1479,14 +1479,14 @@ name:"Шалем · гора Мория"
 - Max 3/place, lazy, wikimedia CDN.
 
 **Финальные команды верификации (bash verbatim, использованные для stats):**
-- wc -l /home/user/gb-is-my-strength/docs/ABRAHAM-ARCHAEOLOGY-RESEARCH-2026-06-13.md
-- grep -o 'https://[^ )"]*' /home/user/gb-is-my-strength/docs/ABRAHAM-ARCHAEOLOGY-RESEARCH-2026-06-13.md | sort | uniq | wc -l
-- grep -c "upload.wikimedia.org\|commons.wikimedia.org/wiki/File" /home/user/gb-is-my-strength/docs/ABRAHAM-ARCHAEOLOGY-RESEARCH-2026-06-13.md
-- grep -o 'name:"[^"]*"' /home/user/gb-is-my-strength/karty/avraam/index.html | sort | uniq | wc -l
-- grep -o 'src=.*\.(jpg|png|webp|jpeg)' /home/user/gb-is-my-strength/karty/avraam/index.html | grep -v og-karty | wc -l
-- ls -lh /home/user/gb-is-my-strength/karty/avraam/index.html /home/user/gb-is-my-strength/docs/ABRAHAM-ARCHAEOLOGY-RESEARCH-2026-06-13.md
-- git -C /home/user/gb-is-my-strength status --porcelain | head -3
-- grep -o 'name:"[^"]*"' /home/user/gb-is-my-strength/karty/avraam/index.html | sort | uniq (verbatim places)
+- wc -l <repo>/docs/ABRAHAM-ARCHAEOLOGY-RESEARCH-2026-06-13.md
+- grep -o 'https://[^ )"]*' <repo>/docs/ABRAHAM-ARCHAEOLOGY-RESEARCH-2026-06-13.md | sort | uniq | wc -l
+- grep -c "upload.wikimedia.org\|commons.wikimedia.org/wiki/File" <repo>/docs/ABRAHAM-ARCHAEOLOGY-RESEARCH-2026-06-13.md
+- grep -o 'name:"[^"]*"' <repo>/karty/avraam/index.html | sort | uniq | wc -l
+- grep -o 'src=.*\.(jpg|png|webp|jpeg)' <repo>/karty/avraam/index.html | grep -v og-karty | wc -l
+- ls -lh <repo>/karty/avraam/index.html <repo>/docs/ABRAHAM-ARCHAEOLOGY-RESEARCH-2026-06-13.md
+- git -C <repo> status --porcelain | head -3
+- grep -o 'name:"[^"]*"' <repo>/karty/avraam/index.html | sort | uniq (verbatim places)
 
 **Заключение (итог всей верификации + пополнения):**
 100+ unique / 49 wikimedia File (и растёт). Все реальные (NASA PD, LOC Matson PD, heritage springs, Ritmeyer, BiblePlaces, NPAPH, Woolley PD, etc.).
@@ -1579,13 +1579,13 @@ name:"Шалем · гора Мория"
 - Max 3/place, lazy, wikimedia CDN.
 
 **Финальные команды верификации (bash verbatim):**
-- wc -l /home/user/gb-is-my-strength/docs/ABRAHAM-ARCHAEOLOGY-RESEARCH-2026-06-13.md
+- wc -l <repo>/docs/ABRAHAM-ARCHAEOLOGY-RESEARCH-2026-06-13.md
 - grep -o 'https://[^ )"]*' ... | sort | uniq | wc -l
 - grep -c "upload.wikimedia.org\|commons.wikimedia.org/wiki/File" ...
 - grep -o 'name:"[^"]*"' /.../karty/avraam/index.html | sort | uniq | wc -l
 - grep -o 'src=.*\.(jpg|png|webp|jpeg)' /.../karty/avraam/index.html | grep -v og-karty | wc -l
 - ls -lh /.../karty/avraam/index.html /.../docs/ABRAHAM-ARCHAEOLOGY-RESEARCH-2026-06-13.md
-- git -C /home/user/gb-is-my-strength status --porcelain | head -3
+- git -C <repo> status --porcelain | head -3
 - grep -o 'name:"[^"]*"' /.../karty/avraam/index.html | sort | uniq (verbatim places)
 
 **Заключение (итог всей верификации):**
@@ -1678,13 +1678,13 @@ name:"Шалем · гора Мория"
 - Max 3/place, lazy, wikimedia CDN.
 
 **Финальные команды верификации (bash verbatim):**
-- wc -l /home/user/gb-is-my-strength/docs/ABRAHAM-ARCHAEOLOGY-RESEARCH-2026-06-13.md
+- wc -l <repo>/docs/ABRAHAM-ARCHAEOLOGY-RESEARCH-2026-06-13.md
 - grep -o 'https://[^ )"]*' ... | sort | uniq | wc -l
 - grep -c "upload.wikimedia.org\|commons.wikimedia.org/wiki/File" ...
 - grep -o 'name:"[^"]*"' /.../karty/avraam/index.html | sort | uniq | wc -l
 - grep -o 'src=.*\.(jpg|png|webp|jpeg)' /.../karty/avraam/index.html | grep -v og-karty | wc -l
 - ls -lh /.../karty/avraam/index.html /.../docs/ABRAHAM-ARCHAEOLOGY-RESEARCH-2026-06-13.md
-- git -C /home/user/gb-is-my-strength status --porcelain | head -3
+- git -C <repo> status --porcelain | head -3
 - grep -o 'name:"[^"]*"' /.../karty/avraam/index.html | sort | uniq (verbatim places)
 
 **Заключение (итог всей верификации):**
@@ -1777,13 +1777,13 @@ name:"Шалем · гора Мория"
 - Max 3/place, lazy, wikimedia CDN.
 
 **Финальные команды верификации (bash verbatim):**
-- wc -l /home/user/gb-is-my-strength/docs/ABRAHAM-ARCHAEOLOGY-RESEARCH-2026-06-13.md
+- wc -l <repo>/docs/ABRAHAM-ARCHAEOLOGY-RESEARCH-2026-06-13.md
 - grep -o 'https://[^ )"]*' ... | sort | uniq | wc -l
 - grep -c "upload.wikimedia.org\|commons.wikimedia.org/wiki/File" ...
 - grep -o 'name:"[^"]*"' /.../karty/avraam/index.html | sort | uniq | wc -l
 - grep -o 'src=.*\.(jpg|png|webp|jpeg)' /.../karty/avraam/index.html | grep -v og-karty | wc -l
 - ls -lh /.../karty/avraam/index.html /.../docs/ABRAHAM-ARCHAEOLOGY-RESEARCH-2026-06-13.md
-- git -C /home/user/gb-is-my-strength status --porcelain | head -3
+- git -C <repo> status --porcelain | head -3
 - grep -o 'name:"[^"]*"' /.../karty/avraam/index.html | sort | uniq (verbatim places)
 
 **Заключение (итог всей верификации):**
@@ -1869,13 +1869,13 @@ name:"Шалем · гора Мория"
 - Max 3/place, lazy, wikimedia CDN.
 
 **Финальные команды верификации (bash verbatim):**
-- wc -l /home/user/gb-is-my-strength/docs/ABRAHAM-ARCHAEOLOGY-RESEARCH-2026-06-13.md
+- wc -l <repo>/docs/ABRAHAM-ARCHAEOLOGY-RESEARCH-2026-06-13.md
 - grep -o 'https://[^ )"]*' ... | sort | uniq | wc -l
 - grep -c "upload.wikimedia.org\|commons.wikimedia.org/wiki/File" ...
 - grep -o 'name:"[^"]*"' /.../karty/avraam/index.html | sort | uniq | wc -l
 - grep -o 'src=.*\.(jpg|png|webp|jpeg)' /.../karty/avraam/index.html | grep -v og-karty | wc -l
 - ls -lh /.../karty/avraam/index.html /.../docs/ABRAHAM-ARCHAEOLOGY-RESEARCH-2026-06-13.md
-- git -C /home/user/gb-is-my-strength status --porcelain | head -3
+- git -C <repo> status --porcelain | head -3
 - grep -o 'name:"[^"]*"' /.../karty/avraam/index.html | sort | uniq (verbatim places)
 
 **Заключение (итог всей верификации):**
@@ -1967,13 +1967,13 @@ name:"Шалем · гора Мория"
 - Max 3/place, lazy, wikimedia CDN.
 
 **Финальные команды верификации (bash verbatim):**
-- wc -l /home/user/gb-is-my-strength/docs/ABRAHAM-ARCHAEOLOGY-RESEARCH-2026-06-13.md
+- wc -l <repo>/docs/ABRAHAM-ARCHAEOLOGY-RESEARCH-2026-06-13.md
 - grep -o 'https://[^ )"]*' ... | sort | uniq | wc -l
 - grep -c "upload.wikimedia.org\|commons.wikimedia.org/wiki/File" ...
 - grep -o 'name:"[^"]*"' /.../karty/avraam/index.html | sort | uniq | wc -l
 - grep -o 'src=.*\.(jpg|png|webp|jpeg)' /.../karty/avraam/index.html | grep -v og-karty | wc -l
 - ls -lh /.../karty/avraam/index.html /.../docs/ABRAHAM-ARCHAEOLOGY-RESEARCH-2026-06-13.md
-- git -C /home/user/gb-is-my-strength status --porcelain | head -3
+- git -C <repo> status --porcelain | head -3
 - grep -o 'name:"[^"]*"' /.../karty/avraam/index.html | sort | uniq (verbatim places)
 
 **Заключение (итог всей верификации):**
@@ -2065,13 +2065,13 @@ name:"Шалем · гора Мория"
 - Max 3/place, lazy, wikimedia CDN.
 
 **Финальные команды верификации (bash verbatim):**
-- wc -l /home/user/gb-is-my-strength/docs/ABRAHAM-ARCHAEOLOGY-RESEARCH-2026-06-13.md
+- wc -l <repo>/docs/ABRAHAM-ARCHAEOLOGY-RESEARCH-2026-06-13.md
 - grep -o 'https://[^ )"]*' ... | sort | uniq | wc -l
 - grep -c "upload.wikimedia.org\|commons.wikimedia.org/wiki/File" ...
 - grep -o 'name:"[^"]*"' /.../karty/avraam/index.html | sort | uniq | wc -l
 - grep -o 'src=.*\.(jpg|png|webp|jpeg)' /.../karty/avraam/index.html | grep -v og-karty | wc -l
 - ls -lh /.../karty/avraam/index.html /.../docs/ABRAHAM-ARCHAEOLOGY-RESEARCH-2026-06-13.md
-- git -C /home/user/gb-is-my-strength status --porcelain | head -3
+- git -C <repo> status --porcelain | head -3
 - grep -o 'name:"[^"]*"' /.../karty/avraam/index.html | sort | uniq (verbatim places)
 
 **Заключение (итог всей верификации):**
@@ -2165,13 +2165,13 @@ name:"Шалем · гора Мория"
 - Max 3/place, lazy, wikimedia CDN.
 
 **Финальные команды верификации (bash verbatim):**
-- wc -l /home/user/gb-is-my-strength/docs/ABRAHAM-ARCHAEOLOGY-RESEARCH-2026-06-13.md
+- wc -l <repo>/docs/ABRAHAM-ARCHAEOLOGY-RESEARCH-2026-06-13.md
 - grep -o 'https://[^ )"]*' ... | sort | uniq | wc -l
 - grep -c "upload.wikimedia.org\|commons.wikimedia.org/wiki/File" ...
 - grep -o 'name:"[^"]*"' /.../karty/avraam/index.html | sort | uniq | wc -l
 - grep -o 'src=.*\.(jpg|png|webp|jpeg)' /.../karty/avraam/index.html | grep -v og-karty | wc -l
 - ls -lh /.../karty/avraam/index.html /.../docs/ABRAHAM-ARCHAEOLOGY-RESEARCH-2026-06-13.md
-- git -C /home/user/gb-is-my-strength status --porcelain | head -3
+- git -C <repo> status --porcelain | head -3
 - grep -o 'name:"[^"]*"' /.../karty/avraam/index.html | sort | uniq (verbatim places)
 
 **Заключение (итог всей верификации):**
@@ -2263,13 +2263,13 @@ name:"Шалем · гора Мория"
 - Max 3/place, lazy, wikimedia CDN.
 
 **Финальные команды верификации (bash verbatim):**
-- wc -l /home/user/gb-is-my-strength/docs/ABRAHAM-ARCHAEOLOGY-RESEARCH-2026-06-13.md
+- wc -l <repo>/docs/ABRAHAM-ARCHAEOLOGY-RESEARCH-2026-06-13.md
 - grep -o 'https://[^ )"]*' ... | sort | uniq | wc -l
 - grep -c "upload.wikimedia.org\|commons.wikimedia.org/wiki/File" ...
 - grep -o 'name:"[^"]*"' /.../karty/avraam/index.html | sort | uniq | wc -l
 - grep -o 'src=.*\.(jpg|png|webp|jpeg)' /.../karty/avraam/index.html | grep -v og-karty | wc -l
 - ls -lh /.../karty/avraam/index.html /.../docs/ABRAHAM-ARCHAEOLOGY-RESEARCH-2026-06-13.md
-- git -C /home/user/gb-is-my-strength status --porcelain | head -3
+- git -C <repo> status --porcelain | head -3
 - grep -o 'name:"[^"]*"' /.../karty/avraam/index.html | sort | uniq (verbatim places)
 
 **Заключение (итог всей верификации + пополнения):**
@@ -2362,13 +2362,13 @@ name:"Шалем · гора Мория"
 - Max 3/place, lazy, wikimedia CDN.
 
 **Финальные команды верификации (bash verbatim):**
-- wc -l /home/user/gb-is-my-strength/docs/ABRAHAM-ARCHAEOLOGY-RESEARCH-2026-06-13.md
+- wc -l <repo>/docs/ABRAHAM-ARCHAEOLOGY-RESEARCH-2026-06-13.md
 - grep -o 'https://[^ )"]*' ... | sort | uniq | wc -l
 - grep -c "upload.wikimedia.org\|commons.wikimedia.org/wiki/File" ...
 - grep -o 'name:"[^"]*"' /.../karty/avraam/index.html | sort | uniq | wc -l
 - grep -o 'src=.*\.(jpg|png|webp|jpeg)' /.../karty/avraam/index.html | grep -v og-karty | wc -l
 - ls -lh /.../karty/avraam/index.html /.../docs/ABRAHAM-ARCHAEOLOGY-RESEARCH-2026-06-13.md
-- git -C /home/user/gb-is-my-strength status --porcelain | head -3
+- git -C <repo> status --porcelain | head -3
 - grep -o 'name:"[^"]*"' /.../karty/avraam/index.html | sort | uniq (verbatim places)
 
 **Заключение (итог всей верификации + пополнения):**
@@ -2464,13 +2464,13 @@ name:"Шалем · гора Мория"
 - Max 3/place, lazy, wikimedia CDN.
 
 **Финальные команды верификации (bash verbatim):**
-- wc -l /home/user/gb-is-my-strength/docs/ABRAHAM-ARCHAEOLOGY-RESEARCH-2026-06-13.md
+- wc -l <repo>/docs/ABRAHAM-ARCHAEOLOGY-RESEARCH-2026-06-13.md
 - grep -o 'https://[^ )"]*' ... | sort | uniq | wc -l
 - grep -c "upload.wikimedia.org\|commons.wikimedia.org/wiki/File" ...
 - grep -o 'name:"[^"]*"' /.../karty/avraam/index.html | sort | uniq | wc -l
 - grep -o 'src=.*\.(jpg|png|webp|jpeg)' /.../karty/avraam/index.html | grep -v og-karty | wc -l
 - ls -lh /.../karty/avraam/index.html /.../docs/ABRAHAM-ARCHAEOLOGY-RESEARCH-2026-06-13.md
-- git -C /home/user/gb-is-my-strength status --porcelain | head -3
+- git -C <repo> status --porcelain | head -3
 - grep -o 'name:"[^"]*"' /.../karty/avraam/index.html | sort | uniq (verbatim places)
 
 **Заключение (итог всей верификации + пополнения):**
@@ -2564,13 +2564,13 @@ name:"Шалем · гора Мория"
 - Max 3/place, lazy, wikimedia CDN.
 
 **Финальные команды верификации (bash verbatim):**
-- wc -l /home/user/gb-is-my-strength/docs/ABRAHAM-ARCHAEOLOGY-RESEARCH-2026-06-13.md
+- wc -l <repo>/docs/ABRAHAM-ARCHAEOLOGY-RESEARCH-2026-06-13.md
 - grep -o 'https://[^ )"]*' ... | sort | uniq | wc -l
 - grep -c "upload.wikimedia.org\|commons.wikimedia.org/wiki/File" ...
 - grep -o 'name:"[^"]*"' /.../karty/avraam/index.html | sort | uniq | wc -l
 - grep -o 'src=.*\.(jpg|png|webp|jpeg)' /.../karty/avraam/index.html | grep -v og-karty | wc -l
 - ls -lh /.../karty/avraam/index.html /.../docs/ABRAHAM-ARCHAEOLOGY-RESEARCH-2026-06-13.md
-- git -C /home/user/gb-is-my-strength status --porcelain | head -3
+- git -C <repo> status --porcelain | head -3
 - grep -o 'name:"[^"]*"' /.../karty/avraam/index.html | sort | uniq (verbatim places)
 
 **Заключение (итог всей верификации + пополнения):**
@@ -2664,13 +2664,13 @@ name:"Шалем · гора Мория"
 - Max 3/place, lazy, wikimedia CDN.
 
 **Финальные команды верификации (bash verbatim):**
-- wc -l /home/user/gb-is-my-strength/docs/ABRAHAM-ARCHAEOLOGY-RESEARCH-2026-06-13.md
+- wc -l <repo>/docs/ABRAHAM-ARCHAEOLOGY-RESEARCH-2026-06-13.md
 - grep -o 'https://[^ )"]*' ... | sort | uniq | wc -l
 - grep -c "upload.wikimedia.org\|commons.wikimedia.org/wiki/File" ...
 - grep -o 'name:"[^"]*"' /.../karty/avraam/index.html | sort | uniq | wc -l
 - grep -o 'src=.*\.(jpg|png|webp|jpeg)' /.../karty/avraam/index.html | grep -v og-karty | wc -l
 - ls -lh /.../karty/avraam/index.html /.../docs/ABRAHAM-ARCHAEOLOGY-RESEARCH-2026-06-13.md
-- git -C /home/user/gb-is-my-strength status --porcelain | head -3
+- git -C <repo> status --porcelain | head -3
 - grep -o 'name:"[^"]*"' /.../karty/avraam/index.html | sort | uniq (verbatim places)
 
 **Заключение (итог всей верификации + пополнения):**
@@ -2800,14 +2800,14 @@ echo "Final verification 14 append complete. MD ~2500+ lines, 127+ links."
 - All: Inline "спорная гипотеза" / "дискуссия открыта" / "реальная фотография (PD/CC)" + credit.
 
 **Verification commands (re-run verbatim before append):**
-- `wc -l /home/user/gb-is-my-strength/docs/ABRAHAM-ARCHAEOLOGY-RESEARCH-2026-06-13.md`
-- `grep -o 'https://[^ )"]*' /home/user/gb-is-my-strength/docs/ABRAHAM-ARCHAEOLOGY-RESEARCH-2026-06-13.md | sort | uniq | wc -l`
-- `grep -c "upload.wikimedia.org\|commons.wikimedia.org/wiki/File" /home/user/gb-is-my-strength/docs/ABRAHAM-ARCHAEOLOGY-RESEARCH-2026-06-13.md`
-- `grep -o 'name:"[^"]*"' /home/user/gb-is-my-strength/karty/avraam/index.html | sort | uniq | wc -l`
-- `grep -o 'src=.*\.(jpg|png|webp|jpeg)' /home/user/gb-is-my-strength/karty/avraam/index.html | grep -v og-karty | wc -l`
-- `ls -lh /home/user/gb-is-my-strength/karty/avraam/index.html /home/user/gb-is-my-strength/docs/ABRAHAM-ARCHAEOLOGY-RESEARCH-2026-06-13.md`
-- `git -C /home/user/gb-is-my-strength status --porcelain`
-- `grep -o 'name:"[^"]*"' /home/user/gb-is-my-strength/karty/avraam/index.html | sort | uniq` (verbatim list)
+- `wc -l <repo>/docs/ABRAHAM-ARCHAEOLOGY-RESEARCH-2026-06-13.md`
+- `grep -o 'https://[^ )"]*' <repo>/docs/ABRAHAM-ARCHAEOLOGY-RESEARCH-2026-06-13.md | sort | uniq | wc -l`
+- `grep -c "upload.wikimedia.org\|commons.wikimedia.org/wiki/File" <repo>/docs/ABRAHAM-ARCHAEOLOGY-RESEARCH-2026-06-13.md`
+- `grep -o 'name:"[^"]*"' <repo>/karty/avraam/index.html | sort | uniq | wc -l`
+- `grep -o 'src=.*\.(jpg|png|webp|jpeg)' <repo>/karty/avraam/index.html | grep -v og-karty | wc -l`
+- `ls -lh <repo>/karty/avraam/index.html <repo>/docs/ABRAHAM-ARCHAEOLOGY-RESEARCH-2026-06-13.md`
+- `git -C <repo> status --porcelain`
+- `grep -o 'name:"[^"]*"' <repo>/karty/avraam/index.html | sort | uniq` (verbatim list)
 
 **New append stats (post this):**
 - Lines: 2685 → ~2950+ (append ~265 lines research + verif)
@@ -3052,14 +3052,14 @@ name:"Шалем · гора Мория"
 - All 19 cross-checked with YEC timeline ~2000 BC; real photos supportive (no conflict).
 
 **Verification commands (re-run verbatim before append):**
-- `wc -l /home/user/gb-is-my-strength/docs/ABRAHAM-ARCHAEOLOGY-RESEARCH-2026-06-13.md`
-- `grep -o 'https://[^ )"]*' /home/user/gb-is-my-strength/docs/ABRAHAM-ARCHAEOLOGY-RESEARCH-2026-06-13.md | sort | uniq | wc -l`
-- `grep -c "upload.wikimedia.org\|commons.wikimedia.org/wiki/File" /home/user/gb-is-my-strength/docs/ABRAHAM-ARCHAEOLOGY-RESEARCH-2026-06-13.md`
-- `grep -o 'name:"[^"]*"' /home/user/gb-is-my-strength/karty/avraam/index.html | sort | uniq | wc -l`
-- `grep -o 'src=.*\.(jpg|png|webp|jpeg)' /home/user/gb-is-my-strength/karty/avraam/index.html | grep -v og-karty | wc -l`
-- `ls -lh /home/user/gb-is-my-strength/karty/avraam/index.html /home/user/gb-is-my-strength/docs/ABRAHAM-ARCHAEOLOGY-RESEARCH-2026-06-13.md`
-- `git -C /home/user/gb-is-my-strength status --porcelain`
-- `grep -o 'name:"[^"]*"' /home/user/gb-is-my-strength/karty/avraam/index.html | sort | uniq` (verbatim list)
+- `wc -l <repo>/docs/ABRAHAM-ARCHAEOLOGY-RESEARCH-2026-06-13.md`
+- `grep -o 'https://[^ )"]*' <repo>/docs/ABRAHAM-ARCHAEOLOGY-RESEARCH-2026-06-13.md | sort | uniq | wc -l`
+- `grep -c "upload.wikimedia.org\|commons.wikimedia.org/wiki/File" <repo>/docs/ABRAHAM-ARCHAEOLOGY-RESEARCH-2026-06-13.md`
+- `grep -o 'name:"[^"]*"' <repo>/karty/avraam/index.html | sort | uniq | wc -l`
+- `grep -o 'src=.*\.(jpg|png|webp|jpeg)' <repo>/karty/avraam/index.html | grep -v og-karty | wc -l`
+- `ls -lh <repo>/karty/avraam/index.html <repo>/docs/ABRAHAM-ARCHAEOLOGY-RESEARCH-2026-06-13.md`
+- `git -C <repo> status --porcelain`
+- `grep -o 'name:"[^"]*"' <repo>/karty/avraam/index.html | sort | uniq` (verbatim list)
 
 **New append stats (post this VERIF21):**
 - Lines: 2844 → ~3400+ (append ~550+ lines research + verif + new links ~35+)
@@ -3222,14 +3222,14 @@ name:"Шалем · гора Мория"
 - All 19 cross-checked with YEC timeline ~2000 BC; real photos (BiblePlaces then/now, NPAPH 1950s heritage, Ritmeyer educational, Wikimedia/LOC/NASA PD) supportive (no conflict; archaeology through Scripture).
 
 **Verification commands (re-run verbatim before append):**
-- `wc -l /home/user/gb-is-my-strength/docs/ABRAHAM-ARCHAEOLOGY-RESEARCH-2026-06-13.md`
-- `grep -o 'https://[^ )"]*' /home/user/gb-is-my-strength/docs/ABRAHAM-ARCHAEOLOGY-RESEARCH-2026-06-13.md | sort | uniq | wc -l`
-- `grep -c "upload.wikimedia.org\|commons.wikimedia.org/wiki/File" /home/user/gb-is-my-strength/docs/ABRAHAM-ARCHAEOLOGY-RESEARCH-2026-06-13.md`
-- `grep -o 'name:"[^"]*"' /home/user/gb-is-my-strength/karty/avraam/index.html | sort | uniq | wc -l`
-- `grep -o 'src=.*\.(jpg|png|webp|jpeg)' /home/user/gb-is-my-strength/karty/avraam/index.html | grep -v og-karty | wc -l`
-- `ls -lh /home/user/gb-is-my-strength/karty/avraam/index.html /home/user/gb-is-my-strength/docs/ABRAHAM-ARCHAEOLOGY-RESEARCH-2026-06-13.md`
-- `git -C /home/user/gb-is-my-strength status --porcelain`
-- `grep -o 'name:"[^"]*"' /home/user/gb-is-my-strength/karty/avraam/index.html | sort | uniq` (verbatim list)
+- `wc -l <repo>/docs/ABRAHAM-ARCHAEOLOGY-RESEARCH-2026-06-13.md`
+- `grep -o 'https://[^ )"]*' <repo>/docs/ABRAHAM-ARCHAEOLOGY-RESEARCH-2026-06-13.md | sort | uniq | wc -l`
+- `grep -c "upload.wikimedia.org\|commons.wikimedia.org/wiki/File" <repo>/docs/ABRAHAM-ARCHAEOLOGY-RESEARCH-2026-06-13.md`
+- `grep -o 'name:"[^"]*"' <repo>/karty/avraam/index.html | sort | uniq | wc -l`
+- `grep -o 'src=.*\.(jpg|png|webp|jpeg)' <repo>/karty/avraam/index.html | grep -v og-karty | wc -l`
+- `ls -lh <repo>/karty/avraam/index.html <repo>/docs/ABRAHAM-ARCHAEOLOGY-RESEARCH-2026-06-13.md`
+- `git -C <repo> status --porcelain`
+- `grep -o 'name:"[^"]*"' <repo>/karty/avraam/index.html | sort | uniq` (verbatim list)
 
 **New append stats (post this VERIF22):**
 - Lines: 3086 → ~3400+ (append ~300+ lines new research + 20+ new links + verif)
@@ -3399,14 +3399,14 @@ name:"Шалем · гора Мория"
 - All 19 cross-checked with YEC timeline ~2000 BC (ARJ v5 redating aligns); real photos (BiblePlaces then/now Matson/LOC PD + NPAPH heritage 1950s, Wikimedia CC, Ritmeyer educational) supportive (no conflict; archaeology through Scripture).
 
 **Verification commands (re-run verbatim before append):**
-- `wc -l /home/user/gb-is-my-strength/docs/ABRAHAM-ARCHAEOLOGY-RESEARCH-2026-06-13.md`
-- `grep -o 'https://[^ )"]*' /home/user/gb-is-my-strength/docs/ABRAHAM-ARCHAEOLOGY-RESEARCH-2026-06-13.md | sort | uniq | wc -l`
-- `grep -c "upload.wikimedia.org\|commons.wikimedia.org/wiki/File" /home/user/gb-is-my-strength/docs/ABRAHAM-ARCHAEOLOGY-RESEARCH-2026-06-13.md`
-- `grep -o 'name:"[^"]*"' /home/user/gb-is-my-strength/karty/avraam/index.html | sort | uniq | wc -l`
-- `grep -o 'src=.*\.(jpg|png|webp|jpeg)' /home/user/gb-is-my-strength/karty/avraam/index.html | grep -v og-karty | wc -l`
-- `ls -lh /home/user/gb-is-my-strength/karty/avraam/index.html /home/user/gb-is-my-strength/docs/ABRAHAM-ARCHAEOLOGY-RESEARCH-2026-06-13.md`
-- `git -C /home/user/gb-is-my-strength status --porcelain`
-- `grep -o 'name:"[^"]*"' /home/user/gb-is-my-strength/karty/avraam/index.html | sort | uniq` (verbatim list)
+- `wc -l <repo>/docs/ABRAHAM-ARCHAEOLOGY-RESEARCH-2026-06-13.md`
+- `grep -o 'https://[^ )"]*' <repo>/docs/ABRAHAM-ARCHAEOLOGY-RESEARCH-2026-06-13.md | sort | uniq | wc -l`
+- `grep -c "upload.wikimedia.org\|commons.wikimedia.org/wiki/File" <repo>/docs/ABRAHAM-ARCHAEOLOGY-RESEARCH-2026-06-13.md`
+- `grep -o 'name:"[^"]*"' <repo>/karty/avraam/index.html | sort | uniq | wc -l`
+- `grep -o 'src=.*\.(jpg|png|webp|jpeg)' <repo>/karty/avraam/index.html | grep -v og-karty | wc -l`
+- `ls -lh <repo>/karty/avraam/index.html <repo>/docs/ABRAHAM-ARCHAEOLOGY-RESEARCH-2026-06-13.md`
+- `git -C <repo> status --porcelain`
+- `grep -o 'name:"[^"]*"' <repo>/karty/avraam/index.html | sort | uniq` (verbatim list)
 
 **New append stats (post this VERIF23):**
 - Lines: 3256 → ~3550+ (append ~290+ lines new research + 15+ new links + verif)
@@ -3527,14 +3527,14 @@ name:"Шалем · гора Мория"
 - All: Inline "спорная гипотеза" / "дискуссия открыта" / "реальная фотография (NPAPH 1954 heritage / BiblePlaces educational + Matson/LOC PD / Wikimedia CC BY-SA 4.0 / AiG 2022)" + credit + YEC (~2000 BC Abraham per ARJ v5 redating/Ussher/AiG, ~6000 лет earth, Bible priority). Max 3/place; progressive (hotspot → layer → CSS toggle).
 
 **Verification commands (re-run verbatim this turn — executed):**
-- `wc -l /home/user/gb-is-my-strength/docs/ABRAHAM-ARCHAEOLOGY-RESEARCH-2026-06-13.md`
-- `grep -o 'https://[^ )"]*' /home/user/gb-is-my-strength/docs/ABRAHAM-ARCHAEOLOGY-RESEARCH-2026-06-13.md | sort | uniq | wc -l`
-- `grep -c "upload.wikimedia.org\|commons.wikimedia.org/wiki/File" /home/user/gb-is-my-strength/docs/ABRAHAM-ARCHAEOLOGY-RESEARCH-2026-06-13.md`
-- `grep -o 'name:"[^"]*"' /home/user/gb-is-my-strength/karty/avraam/index.html | sort | uniq | wc -l`
-- `grep -o 'src=.*\.(jpg|png|webp|jpeg)' /home/user/gb-is-my-strength/karty/avraam/index.html | grep -v og-karty | wc -l`
-- `ls -lh /home/user/gb-is-my-strength/karty/avraam/index.html /home/user/gb-is-my-strength/docs/ABRAHAM-ARCHAEOLOGY-RESEARCH-2026-06-13.md`
-- `git -C /home/user/gb-is-my-strength status --porcelain`
-- `grep -o 'name:"[^"]*"' /home/user/gb-is-my-strength/karty/avraam/index.html | sort | uniq` (verbatim list)
+- `wc -l <repo>/docs/ABRAHAM-ARCHAEOLOGY-RESEARCH-2026-06-13.md`
+- `grep -o 'https://[^ )"]*' <repo>/docs/ABRAHAM-ARCHAEOLOGY-RESEARCH-2026-06-13.md | sort | uniq | wc -l`
+- `grep -c "upload.wikimedia.org\|commons.wikimedia.org/wiki/File" <repo>/docs/ABRAHAM-ARCHAEOLOGY-RESEARCH-2026-06-13.md`
+- `grep -o 'name:"[^"]*"' <repo>/karty/avraam/index.html | sort | uniq | wc -l`
+- `grep -o 'src=.*\.(jpg|png|webp|jpeg)' <repo>/karty/avraam/index.html | grep -v og-karty | wc -l`
+- `ls -lh <repo>/karty/avraam/index.html <repo>/docs/ABRAHAM-ARCHAEOLOGY-RESEARCH-2026-06-13.md`
+- `git -C <repo> status --porcelain`
+- `grep -o 'name:"[^"]*"' <repo>/karty/avraam/index.html | sort | uniq` (verbatim list)
 
 **New append stats (post this VERIF24):**
 - Lines: 3433 → ~3600+ (append ~170+ lines consolidation + snapshot + verif)
@@ -3580,14 +3580,14 @@ Final deep research consolidation: 200+ verified real/heritage-friendly direct e
 **VERIF28 (2026-06-13): Продолжение глубоких исследований (research-only; append-only MD). Fresh fetched sources: BiblePlaces Harran full page + Pictorial Library Eastern Turkey (real on-site/heritage photos beehive houses, citadel, gates, Grand Mosque, modern tell views; Abraham/Jacob context); Ritmeyer Mamre reconstruction (Herodian enclosure detailed drawing + direct image); AiG 2025 "The Destruction of Sodom and the Future Judgment" full key excerpts + exact Ussher dates (~2067 BC long / 1897 BC short sojourn; Abraham 99 at Isaac conception; Solomon 967 BC → Exodus 1446 BC → Sodom ~2067/1897; full "Why Was Sodom Destroyed?" + judgment parallels Luke 17/2Pet 2 + southern location evidence); LOC Matson PD "Wilderness of Shur" direct high-res image + metadata (~1900-1920, LC-DIG-matpc-01946, no restrictions); Wikimedia Commons Harran Rakka Gate (CC0/PD direct); BiblePlaces "Then and Now"/"On Location with Abraham" + Pictorial Library cross for Harran/Shechem/etc. New ~15+ verified direct embeddable real/heritage links (PD/CC/educational; wikimedia + LOC + Ritmeyer + BiblePlaces). All 19 places cross-checked + YEC lens (AiG/ARJ/ICR/CMI priority; new dates for Sodom/Tall rejection; ARJ v5 quotes reinforced). Premium UX patterns updated (BiblePlaces galleries for Harran/Shechem then/now + LOC PD landscape for Shur/Negev weak sites; Ritmeyer recon overlay for Mamre; 3DHOP hotspots model). Prototype-ready expanded with exact new embeds. No code changes to avraam/index.html (still 208K/19 places/0 real photos per re-grep); no push (per "Теперь не пуш и продолжай исследования дальше..."; "Просто исследуй пока"). 30+ exceeded многократно (~220+ unique https).**
 
 **Re-run verification commands verbatim (executed immediately before this append):**
-- `wc -l /home/user/gb-is-my-strength/docs/ABRAHAM-ARCHAEOLOGY-RESEARCH-2026-06-13.md` → 3578
-- `grep -o 'https://[^ )"]*' /home/user/gb-is-my-strength/docs/ABRAHAM-ARCHAEOLOGY-RESEARCH-2026-06-13.md | sort | uniq | wc -l` → 205
-- `grep -c "upload.wikimedia.org\|commons.wikimedia.org/wiki/File" /home/user/gb-is-my-strength/docs/ABRAHAM-ARCHAEOLOGY-RESEARCH-2026-06-13.md` → 165
-- `grep -o 'name:"[^"]*"' /home/user/gb-is-my-strength/karty/avraam/index.html | sort | uniq | wc -l` → 19
-- `grep -o 'src=.*\.(jpg|png|webp|jpeg)' /home/user/gb-is-my-strength/karty/avraam/index.html | grep -v og-karty | wc -l` → 0
-- `ls -lh /home/user/gb-is-my-strength/karty/avraam/index.html /home/user/gb-is-my-strength/docs/ABRAHAM-ARCHAEOLOGY-RESEARCH-2026-06-13.md`
-- `git -C /home/user/gb-is-my-strength status --porcelain` → M docs/ABRAHAM-ARCHAEOLOGY-RESEARCH-2026-06-13.md
-- `grep -o 'name:"[^"]*"' /home/user/gb-is-my-strength/karty/avraam/index.html | sort | uniq` (verbatim 19-place list always)
+- `wc -l <repo>/docs/ABRAHAM-ARCHAEOLOGY-RESEARCH-2026-06-13.md` → 3578
+- `grep -o 'https://[^ )"]*' <repo>/docs/ABRAHAM-ARCHAEOLOGY-RESEARCH-2026-06-13.md | sort | uniq | wc -l` → 205
+- `grep -c "upload.wikimedia.org\|commons.wikimedia.org/wiki/File" <repo>/docs/ABRAHAM-ARCHAEOLOGY-RESEARCH-2026-06-13.md` → 165
+- `grep -o 'name:"[^"]*"' <repo>/karty/avraam/index.html | sort | uniq | wc -l` → 19
+- `grep -o 'src=.*\.(jpg|png|webp|jpeg)' <repo>/karty/avraam/index.html | grep -v og-karty | wc -l` → 0
+- `ls -lh <repo>/karty/avraam/index.html <repo>/docs/ABRAHAM-ARCHAEOLOGY-RESEARCH-2026-06-13.md`
+- `git -C <repo> status --porcelain` → M docs/ABRAHAM-ARCHAEOLOGY-RESEARCH-2026-06-13.md
+- `grep -o 'name:"[^"]*"' <repo>/karty/avraam/index.html | sort | uniq` (verbatim 19-place list always)
 **Verbatim outputs from this turn's pre-append bash (exact):**
 19
 name:"Бет-Эль и Гай"
@@ -3722,14 +3722,14 @@ name:"Шалем · гора Мория"
 - All 19 cross-checked with YEC timeline ~2000 BC (ARJ v5 redating aligns; AiG 2025 Sodom ~2067/1897 BC); real photos (BiblePlaces then/now Matson/LOC PD + galleries + NPAPH heritage 1950s, Wikimedia CC/CC0, Ritmeyer educational) supportive (no conflict; archaeology through Scripture; LOC Shur real 1900s heritage landscape for patriarchal routes).
 
 **Verification commands (re-run verbatim before append):**
-- `wc -l /home/user/gb-is-my-strength/docs/ABRAHAM-ARCHAEOLOGY-RESEARCH-2026-06-13.md`
-- `grep -o 'https://[^ )"]*' /home/user/gb-is-my-strength/docs/ABRAHAM-ARCHAEOLOGY-RESEARCH-2026-06-13.md | sort | uniq | wc -l`
-- `grep -c "upload.wikimedia.org\|commons.wikimedia.org/wiki/File" /home/user/gb-is-my-strength/docs/ABRAHAM-ARCHAEOLOGY-RESEARCH-2026-06-13.md`
-- `grep -o 'name:"[^"]*"' /home/user/gb-is-my-strength/karty/avraam/index.html | sort | uniq | wc -l`
-- `grep -o 'src=.*\.(jpg|png|webp|jpeg)' /home/user/gb-is-my-strength/karty/avraam/index.html | grep -v og-karty | wc -l`
-- `ls -lh /home/user/gb-is-my-strength/karty/avraam/index.html /home/user/gb-is-my-strength/docs/ABRAHAM-ARCHAEOLOGY-RESEARCH-2026-06-13.md`
-- `git -C /home/user/gb-is-my-strength status --porcelain`
-- `grep -o 'name:"[^"]*"' /home/user/gb-is-my-strength/karty/avraam/index.html | sort | uniq` (verbatim)
+- `wc -l <repo>/docs/ABRAHAM-ARCHAEOLOGY-RESEARCH-2026-06-13.md`
+- `grep -o 'https://[^ )"]*' <repo>/docs/ABRAHAM-ARCHAEOLOGY-RESEARCH-2026-06-13.md | sort | uniq | wc -l`
+- `grep -c "upload.wikimedia.org\|commons.wikimedia.org/wiki/File" <repo>/docs/ABRAHAM-ARCHAEOLOGY-RESEARCH-2026-06-13.md`
+- `grep -o 'name:"[^"]*"' <repo>/karty/avraam/index.html | sort | uniq | wc -l`
+- `grep -o 'src=.*\.(jpg|png|webp|jpeg)' <repo>/karty/avraam/index.html | grep -v og-karty | wc -l`
+- `ls -lh <repo>/karty/avraam/index.html <repo>/docs/ABRAHAM-ARCHAEOLOGY-RESEARCH-2026-06-13.md`
+- `git -C <repo> status --porcelain`
+- `grep -o 'name:"[^"]*"' <repo>/karty/avraam/index.html | sort | uniq` (verbatim)
 
 **New append stats:**
 - Lines: 3578 → ~3680+ (append ~100+ lines consolidation + new fetched sources + verif)
@@ -3776,14 +3776,14 @@ echo "VERIF28 append complete. MD ~3685 lines, ~222 links. BiblePlaces Harran/Pi
 **VERIF29 (2026-06-13): Продолжение глубоких исследований (research-only; append-only MD). Fresh fetched sources: BiblePlaces Pictorial Library Egypt (Vol.7: >1000 high-res photos; Kadesh Barnea, Wadi el-Arish, Sinai, Nile Delta/Giza etc. for Египет + Kadesh; direct galleries + PowerPoint annotations); Negev and the Wilderness (Vol.5: >700 photos; Gerar/Tel Haror, Beersheba, Lahai Roi/Negev proxies, Ziklag, Nahal Besor etc.; Gerar https://www.bibleplaces.com/gerar/ with Tel Haror views; then/now applicable); Complete Collection (20k+ photos summary: Vol.2 Samaria for Bethel/Ai/Shechem cross; Vol.3 Jerusalem for Moriah; Vol.4 Judah/Dead Sea for Hebron/Mamre/Zoar/Dead Sea south; Vol.5 Negev; Vol.7 Egypt/Kadesh); Ritmeyer Archaeological Design site (https://www.ritmeyer.com/ + Solomon’s Temple on Mount Moriah rock context: "The Holy of Holies is placed on the Rock, which is actually the top of Mount Moriah and visible inside the Islamic Dome of the Rock"; recon drawings for Moriah continuity from patriarchal times; additional for Shechem/Bethel proxies in image library); LOC Matson / American Colony southern Palestine + Kadesh/Negev (PD heritage photos ~1900-1920; Ain Qideis/Qudeirat for Kadesh Barnea traditional; southern Negev/Beersheba proxies; collection https://www.loc.gov/pictures/ + specific from prior Shur + new southern volumes; no restrictions PD for embed). New ~15+ verified direct embeddable real/heritage links (PD/CC/educational; BiblePlaces galleries + Pictorial refs + LOC Matson PD collections + Ritmeyer Moriah recon context + prior Wikimedia). All 19 places cross-checked + YEC lens (AiG/ARJ/ICR/CMI priority reinforced; new BiblePlaces heritage real landscapes for patriarchal geography ~2000 BC YEC; no new ARJ but prior quotes cross). Premium UX patterns updated (BiblePlaces Pictorial "Then and Now" style + high-res jpgs for Negev/Egypt/Kadesh/Gerar then/now; LOC PD landscapes for Kadesh/Negev/Shur/Lahai Roi weak sites; Ritmeyer Moriah rock recon overlay). Prototype-ready expanded with exact new embeds (Gerar BiblePlaces/Tel Haror, Kadesh Pictorial/LOC Ain Qideis, Egypt Vol7, Bethel Samaria Vol2, Moriah Jerusalem Vol3 + Ritmeyer). No code changes to avraam/index.html (still 208K/19 places/0 real photos per re-grep); no push (per "Теперь не пуш и продолжай исследования дальше..."; "Просто исследуй пока"). 30+ exceeded многократно (~230+ unique https).**
 
 **Re-run verification commands verbatim (executed immediately before this append):**
-- `wc -l /home/user/gb-is-my-strength/docs/ABRAHAM-ARCHAEOLOGY-RESEARCH-2026-06-13.md` → 3774
-- `grep -o 'https://[^ )"]*' /home/user/gb-is-my-strength/docs/ABRAHAM-ARCHAEOLOGY-RESEARCH-2026-06-13.md | sort | uniq | wc -l` → 215
-- `grep -c "upload.wikimedia.org\|commons.wikimedia.org/wiki/File" /home/user/gb-is-my-strength/docs/ABRAHAM-ARCHAEOLOGY-RESEARCH-2026-06-13.md` → 175
-- `grep -o 'name:"[^"]*"' /home/user/gb-is-my-strength/karty/avraam/index.html | sort | uniq | wc -l` → 19
-- `grep -o 'src=.*\.(jpg|png|webp|jpeg)' /home/user/gb-is-my-strength/karty/avraam/index.html | grep -v og-karty | wc -l` → 0
-- `ls -lh /home/user/gb-is-my-strength/karty/avraam/index.html /home/user/gb-is-my-strength/docs/ABRAHAM-ARCHAEOLOGY-RESEARCH-2026-06-13.md`
-- `git -C /home/user/gb-is-my-strength status --porcelain` → M docs/ABRAHAM-ARCHAEOLOGY-RESEARCH-2026-06-13.md
-- `grep -o 'name:"[^"]*"' /home/user/gb-is-my-strength/karty/avraam/index.html | sort | uniq` (verbatim 19-place list always)
+- `wc -l <repo>/docs/ABRAHAM-ARCHAEOLOGY-RESEARCH-2026-06-13.md` → 3774
+- `grep -o 'https://[^ )"]*' <repo>/docs/ABRAHAM-ARCHAEOLOGY-RESEARCH-2026-06-13.md | sort | uniq | wc -l` → 215
+- `grep -c "upload.wikimedia.org\|commons.wikimedia.org/wiki/File" <repo>/docs/ABRAHAM-ARCHAEOLOGY-RESEARCH-2026-06-13.md` → 175
+- `grep -o 'name:"[^"]*"' <repo>/karty/avraam/index.html | sort | uniq | wc -l` → 19
+- `grep -o 'src=.*\.(jpg|png|webp|jpeg)' <repo>/karty/avraam/index.html | grep -v og-karty | wc -l` → 0
+- `ls -lh <repo>/karty/avraam/index.html <repo>/docs/ABRAHAM-ARCHAEOLOGY-RESEARCH-2026-06-13.md`
+- `git -C <repo> status --porcelain` → M docs/ABRAHAM-ARCHAEOLOGY-RESEARCH-2026-06-13.md
+- `grep -o 'name:"[^"]*"' <repo>/karty/avraam/index.html | sort | uniq` (verbatim 19-place list always)
 **Verbatim outputs from this turn's pre-append bash (exact):**
 19
 name:"Бет-Эль и Гай"
@@ -3883,14 +3883,14 @@ name:"Шалем · гора Мория"
 - All 19 cross-checked with YEC timeline ~2000 BC; real photos (BiblePlaces Pictorial high-res heritage + LOC Matson PD landscapes for Egypt/Negev/Kadesh/Gerar + Ritmeyer Moriah rock) supportive (no conflict; archaeology through Scripture; real 1900s/ modern views fit patriarchal geography per Bible).
 
 **Verification commands (re-run verbatim before append):**
-- `wc -l /home/user/gb-is-my-strength/docs/ABRAHAM-ARCHAEOLOGY-RESEARCH-2026-06-13.md`
-- `grep -o 'https://[^ )"]*' /home/user/gb-is-my-strength/docs/ABRAHAM-ARCHAEOLOGY-RESEARCH-2026-06-13.md | sort | uniq | wc -l`
-- `grep -c "upload.wikimedia.org\|commons.wikimedia.org/wiki/File" /home/user/gb-is-my-strength/docs/ABRAHAM-ARCHAEOLOGY-RESEARCH-2026-06-13.md`
-- `grep -o 'name:"[^"]*"' /home/user/gb-is-my-strength/karty/avraam/index.html | sort | uniq | wc -l`
-- `grep -o 'src=.*\.(jpg|png|webp|jpeg)' /home/user/gb-is-my-strength/karty/avraam/index.html | grep -v og-karty | wc -l`
-- `ls -lh /home/user/gb-is-my-strength/karty/avraam/index.html /home/user/gb-is-my-strength/docs/ABRAHAM-ARCHAEOLOGY-RESEARCH-2026-06-13.md`
-- `git -C /home/user/gb-is-my-strength status --porcelain`
-- `grep -o 'name:"[^"]*"' /home/user/gb-is-my-strength/karty/avraam/index.html | sort | uniq` (verbatim)
+- `wc -l <repo>/docs/ABRAHAM-ARCHAEOLOGY-RESEARCH-2026-06-13.md`
+- `grep -o 'https://[^ )"]*' <repo>/docs/ABRAHAM-ARCHAEOLOGY-RESEARCH-2026-06-13.md | sort | uniq | wc -l`
+- `grep -c "upload.wikimedia.org\|commons.wikimedia.org/wiki/File" <repo>/docs/ABRAHAM-ARCHAEOLOGY-RESEARCH-2026-06-13.md`
+- `grep -o 'name:"[^"]*"' <repo>/karty/avraam/index.html | sort | uniq | wc -l`
+- `grep -o 'src=.*\.(jpg|png|webp|jpeg)' <repo>/karty/avraam/index.html | grep -v og-karty | wc -l`
+- `ls -lh <repo>/karty/avraam/index.html <repo>/docs/ABRAHAM-ARCHAEOLOGY-RESEARCH-2026-06-13.md`
+- `git -C <repo> status --porcelain`
+- `grep -o 'name:"[^"]*"' <repo>/karty/avraam/index.html | sort | uniq` (verbatim)
 
 **New append stats:**
 - Lines: 3774 → ~3850+ (append ~80+ lines consolidation + new fetched sources + verif)
