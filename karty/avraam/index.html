@@ -56,8 +56,9 @@
   .mk-he{fill:var(--gold);opacity:.85;font-size:11px;paint-order:stroke;stroke:rgba(7,10,16,.85);stroke-width:2.5px}
   .mk-sub{fill:#9aa2ae;font-size:9.5px;letter-spacing:.12em;paint-order:stroke;stroke:rgba(7,10,16,.8);stroke-width:2px}
   .marker{cursor:pointer;pointer-events:all;will-change:transform;-webkit-tap-highlight-color:transparent}
+  .marker:hover{filter:drop-shadow(0 0 10px rgba(232,200,121,.7))}
+  .marker.active{filter:drop-shadow(0 0 14px rgba(232,200,121,.85))}
   @media(max-width:760px){
-    /* увеличиваем hit area маркеров на мобайле через before */
     .marker .halo{r:18}
   }
   .marker .halo{opacity:0;transition:opacity .25s}
@@ -74,9 +75,14 @@
   .ctx-dot{cursor:pointer;pointer-events:all}
 
   .route{fill:none;stroke-linecap:round;vector-effect:non-scaling-stroke;transition:opacity .4s,stroke-width .3s;pointer-events:none}
+  /* Route reveal animation — только через JS (GSAP DrawSVG), fallback CSS */
+  @keyframes routeReveal{from{stroke-dashoffset:var(--path-len,2000)}to{stroke-dashoffset:0}}
+  .route.gsap-animating{animation:none}  /* GSAP берёт control */
   .route.dim{opacity:.13}
   .route.hot{filter:url(#glow);stroke-width:3px!important}
   .caravan{filter:url(#glow);pointer-events:none}
+  #gsap-caravan{filter:url(#goldGlow)}
+  @keyframes caravanPulse{0%,100%{r:5;opacity:.85}50%{r:7;opacity:.6}}
 
   /* ---------- chrome ---------- */
   .chrome{position:fixed;z-index:30;pointer-events:none}
@@ -466,6 +472,74 @@
 
 body{overscroll-behavior:none;-webkit-overscroll-behavior:none}
 
+  /* ====== PREMIUM КАРТА АНИМАЦИИ ====== */
+  
+  /* Анимация маркеров при появлении (staggered entrance) */
+  @keyframes markerEntrance{
+    0%{opacity:0;transform:translate(var(--mx,0),var(--my,0)) scale(0)}
+    60%{opacity:1;transform:translate(var(--mx,0),var(--my,0)) scale(1.3)}
+    100%{opacity:1;transform:translate(var(--mx,0),var(--my,0)) scale(1)}
+  }
+  .marker.entering{animation:markerEntrance .5s cubic-bezier(.2,.8,.2,1) both}
+
+  /* Sweep анимация gold line в panel header */
+  @keyframes headerSweep{
+    0%{transform:scaleX(0);transform-origin:left}
+    100%{transform:scaleX(1);transform-origin:left}
+  }
+  #panel.open header::before{animation:headerSweep .6s cubic-bezier(.2,.8,.2,1) both .1s}
+
+  /* Fade-in для panel-body контента */
+  @keyframes contentFade{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+  #panel-body{animation:none}
+  #panel-body.fresh{animation:contentFade .35s ease both}
+
+  /* Route pulse при active stage */
+  @keyframes routePulse{
+    0%,100%{stroke-opacity:.85;stroke-width:2.6px}
+    50%{stroke-opacity:1;stroke-width:3.2px}
+  }
+  .route.hot:not(.dim){animation:routePulse 2.2s ease infinite}
+
+  /* Trade route animated dash (движение) */
+  @keyframes dashFlow{from{stroke-dashoffset:0}to{stroke-dashoffset:-28}}
+  #tradeRoutes path:hover{animation:dashFlow 2s linear infinite}
+
+  /* Картуш fade in */
+  @keyframes cartoucheFade{from{opacity:0;transform:translate(1580px,1150px) scale(.85)}to{opacity:.55;transform:translate(1580px,1150px) scale(1)}}
+  #cartouche{animation:cartoucheFade 1.5s cubic-bezier(.2,.8,.2,1) 2s both}
+
+  /* Compass slow rotation */
+  @keyframes compassBob{0%,100%{transform:rotate(0deg)}30%{transform:rotate(2deg)}70%{transform:rotate(-1.5deg)}}
+  #compass{animation:compassBob 8s ease infinite}
+
+  /* Minimap viewport rect pulsing */
+  @keyframes mmRectPulse{0%,100%{stroke-opacity:.8}50%{stroke-opacity:.4}}
+  #mmRect{animation:mmRectPulse 3s ease infinite}
+
+  /* Story toast entrance improved */
+  @keyframes toastIn{from{opacity:0;transform:translateX(-50%) translateY(-16px) scale(.9)}to{opacity:1;transform:translateX(-50%) translateY(0) scale(1)}}
+  #story-toast.show{animation:toastIn .35s cubic-bezier(.2,.8,.2,1) both}
+
+  /* Intro text stagger */
+  @keyframes introFadeUp{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
+  #intro .he{animation:introFadeUp .8s ease .2s both}
+  #intro h2{animation:introFadeUp .8s ease .4s both}
+  #intro .sub{animation:introFadeUp .8s ease .6s both}
+  #intro .rule{animation:introFadeUp .8s ease .8s both}
+  #intro-stories{animation:introFadeUp .8s ease 1s both}
+  #intro .go{animation:introFadeUp .8s ease 1.1s both}
+
+  /* Caption dots animation */
+  .cap-dot{transition:all .4s cubic-bezier(.2,.8,.2,1)}
+  .cap-dot.act{transform:scale(1.4)}
+
+  /* Tour progress bar glow */
+  #tourProgress{box-shadow:0 0 8px rgba(232,200,121,.4)}
+  @keyframes progressGlow{0%,100%{box-shadow:0 0 6px rgba(232,200,121,.3)}50%{box-shadow:0 0 14px rgba(232,200,121,.6)}}
+  #tourProgress[style*="width: 0"]{box-shadow:none}
+  #tourProgress:not([style*="width: 0"]){animation:progressGlow 2.5s ease infinite}
+
   /* ---------- story toast ---------- */
   #story-toast{
     position:fixed;left:50%;top:72px;transform:translateX(-50%) translateY(-8px);
@@ -653,6 +727,82 @@ body{overscroll-behavior:none;-webkit-overscroll-behavior:none}
   <filter id="soft" x="-40%" y="-40%" width="180%" height="180%"><feGaussianBlur stdDeviation="6"/></filter>
   <path id="canaanRidge" fill="none" d="M588,852 C597,800 608,748 624,700 C634,672 646,648 660,628"/>
   <filter id="grain"><feTurbulence type="fractalNoise" baseFrequency=".9" numOctaves="2" stitchTiles="stitch"/><feColorMatrix type="matrix" values="0 0 0 0 1  0 0 0 0 1  0 0 0 0 1  0 0 0 .035 0"/></filter>
+
+  <!-- Вода: анимированный feDisplacementMap для морей -->
+  <filter id="waterRipple" x="-10%" y="-10%" width="120%" height="120%" color-interpolation-filters="linearRGB">
+    <feTurbulence id="waveTurb" type="fractalNoise" baseFrequency="0.018 0.025"
+      numOctaves="3" seed="5" result="noise">
+      <animate attributeName="baseFrequency" 
+        values="0.018 0.025;0.022 0.028;0.018 0.025"
+        dur="14s" repeatCount="indefinite"/>
+    </feTurbulence>
+    <feDisplacementMap in="SourceGraphic" in2="noise" scale="7"
+      xChannelSelector="R" yChannelSelector="G"/>
+  </filter>
+
+  <!-- Рельеф суши: feTurbulence текстура -->
+  <filter id="terrainTex" x="0" y="0" width="100%" height="100%">
+    <feTurbulence type="fractalNoise" baseFrequency=".4 .35" numOctaves="4" seed="12" result="noise"/>
+    <feColorMatrix type="matrix" values="0 0 0 0 .13
+                                         0 0 0 0 .10
+                                         0 0 0 0 .05
+                                         0 0 0 .08 0" result="tinted"/>
+    <feComposite in="SourceGraphic" in2="tinted" operator="over"/>
+  </filter>
+
+  <!-- Виньетка (radial dark border) -->
+  <filter id="vignette" x="-20%" y="-20%" width="140%" height="140%">
+    <feFlood flood-color="#020508" result="bg"/>
+    <feComposite in="bg" in2="SourceGraphic" operator="in"/>
+  </filter>
+
+  <!-- Glow золотой для маршрутов -->
+  <filter id="goldGlow" x="-40%" y="-40%" width="180%" height="180%">
+    <feGaussianBlur stdDeviation="4" result="blur"/>
+    <feColorMatrix in="blur" type="matrix"
+      values="1 0.5 0 0 0.3   0.8 0.6 0 0 0.1   0 0 0 0 0   0 0 0 0.7 0" result="glow"/>
+    <feMerge><feMergeNode in="glow"/><feMergeNode in="SourceGraphic"/></feMerge>
+  </filter>
+
+  <!-- Neon glow для активных маршрутов -->
+  <filter id="neonGlow" x="-60%" y="-60%" width="220%" height="220%">
+    <feGaussianBlur stdDeviation="6" result="b1"/>
+    <feGaussianBlur stdDeviation="2" result="b2"/>
+    <feMerge><feMergeNode in="b1"/><feMergeNode in="b2"/><feMergeNode in="SourceGraphic"/></feMerge>
+  </filter>
+
+  <!-- Горы hatch pattern -->
+  <pattern id="mountainHatch" x="0" y="0" width="6" height="6" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
+    <line x1="0" y1="0" x2="0" y2="6" stroke="#8b7d5a" stroke-width=".6" opacity=".4"/>
+  </pattern>
+
+  <!-- Пустыня stipple pattern -->
+  <pattern id="desertStipple" x="0" y="0" width="12" height="12" patternUnits="userSpaceOnUse">
+    <circle cx="3" cy="3" r=".7" fill="#9c7c43" opacity=".35"/>
+    <circle cx="9" cy="9" r=".5" fill="#9c7c43" opacity=".25"/>
+    <circle cx="6" cy="1" r=".4" fill="#b08050" opacity=".2"/>
+  </pattern>
+
+  <!-- Море crosshatch pattern -->
+  <pattern id="seaPattern" x="0" y="0" width="20" height="20" patternUnits="userSpaceOnUse">
+    <path d="M0,10 Q5,6 10,10 Q15,14 20,10" fill="none" stroke="#3a6080" stroke-width=".6" opacity=".3"/>
+    <path d="M0,20 Q5,16 10,20 Q15,24 20,20" fill="none" stroke="#3a6080" stroke-width=".5" opacity=".2"/>
+  </pattern>
+
+  <!-- Новый градиент landG — более богатый -->
+  <linearGradient id="richLandG" x1="0" y1="0" x2=".5" y2="1">
+    <stop offset="0" stop-color="#1e2018"/>
+    <stop offset=".35" stop-color="#252318"/>
+    <stop offset=".7" stop-color="#1f1d12"/>
+    <stop offset="1" stop-color="#191710"/>
+  </linearGradient>
+
+  <!-- Animated caravan dot gradient -->
+  <radialGradient id="caravanGrad" cx=".5" cy=".5" r=".5">
+    <stop offset="0" stop-color="#fff8e0"/>
+    <stop offset=".4" stop-color="#e8c879"/>
+    <stop offset="1" stop-color="#c4a050" stop-opacity="0"/>
+  </radialGradient>
   <!-- fog at edges -->
   <radialGradient id="edgeFog" cx=".5" cy=".5" r=".5">
     <stop offset="0" stop-color="#070a10" stop-opacity="0"/>
@@ -725,13 +875,22 @@ body{overscroll-behavior:none;-webkit-overscroll-behavior:none}
     <path fill="url(#mtG)" d="M597,690 C608,670 618,650 625,630 C630,618 632,608 630,598 C622,606 614,618 607,632 C600,648 596,668 597,690 Z"/>
     <path fill="url(#mtG)" d="M598,780 C606,760 612,740 615,722 C610,730 604,744 599,760 C596,772 595,784 598,780 Z"/>
   </g>
-  <!-- Синайский полуостров — тёплый силуэт -->
+  <!-- Синайский полуостров — тёплый силуэт + хребты -->
   <ellipse cx="555" cy="1140" rx="180" ry="120" fill="url(#sinaiG)" opacity=".9"/>
+  <!-- Гранитные горы Синая (юг) -->
+  <g opacity=".18" filter="url(#soft)">
+    <path d="M520,1200 L540,1160 L560,1200 Z" fill="rgba(120,90,50,.4)" stroke="#9a7845" stroke-width="1"/>
+    <path d="M555,1195 L575,1155 L595,1195 Z" fill="rgba(130,95,55,.4)" stroke="#9a7845" stroke-width="1"/>
+    <path d="M540,1210 L560,1170 L580,1210 Z" fill="rgba(110,85,45,.3)" stroke="#9a7845" stroke-width=".8"/>
+  </g>
   <!-- Негев / Иудейская пустыня -->
   <ellipse cx="580" cy="920" rx="90" ry="60" fill="url(#negevG)" opacity=".8"/>
   <!-- Иорданская долина — зелёная полоса (Быт 13:10 — «как сад Господень») -->
-  <path fill="url(#jordanG)" opacity=".7"
-    d="M658,620 C655,640 652,670 650,700 C648,730 646,760 644,795 C642,760 640,730 640,700 C642,668 646,638 658,620 Z"/>
+  <path fill="url(#jordanG)" opacity=".8"
+    d="M660,615 C657,640 654,675 652,705 C650,738 648,768 646,798 C640,768 638,738 638,705 C640,675 644,640 648,615 Z"/>
+  <!-- Заливные луга Иордана — более широкие у Мёртвого -->
+  <path fill="url(#jordanG)" opacity=".4"
+    d="M665,740 C660,760 655,780 652,800 C648,820 645,840 643,855 C638,840 636,820 638,800 C640,780 644,760 650,740 Z"/>
   <!-- Аравийская пустыня — паттерн дюн -->
   <g opacity=".09">
     <!-- ряды дюн -->
@@ -753,12 +912,19 @@ body{overscroll-behavior:none;-webkit-overscroll-behavior:none}
   <rect x="-400" y="-400" width="2700" height="2230" fill="url(#edgeFog)" pointer-events="none"/>
 
   <!-- Mediterranean -->
-  <path fill="url(#seaG)" stroke="#2e4d6b" stroke-width="1.2" stroke-opacity=".4" d="M-400,254 C-260,258 -120,264 0,268 C120,258 250,244 380,222 C440,212 510,206 560,205 C600,206 640,214 668,224 C690,232 698,248 697,272 C698,302 688,330 679,357 C674,400 681,440 684,482 C687,512 666,530 648,547 C633,574 625,597 620,622 C615,650 608,663 597,675 C586,706 578,734 574,765 C570,790 562,810 550,826 C536,844 518,858 498,866 C448,880 390,872 335,862 C302,856 268,848 240,852 C190,856 140,864 90,872 C30,880 -180,892 -400,902 Z"/>
+  <!-- Mediterranean с водным эффектом -->
+<path fill="url(#seaG)" stroke="#2e4d6b" stroke-width="1.2" stroke-opacity=".4"
+  d="M-400,254 C-260,258 -120,264 0,268 C120,258 250,244 380,222 C440,212 510,206 560,205 C600,206 640,214 668,224 C690,232 698,248 697,272 C698,302 688,330 679,357 C674,400 681,440 684,482 C687,512 666,530 648,547 C633,574 625,597 620,622 C615,650 608,663 597,675 C586,706 578,734 574,765 C570,790 562,810 550,826 C536,844 518,858 498,866 C448,880 390,872 335,862 C302,856 268,848 240,852 C190,856 140,864 90,872 C30,880 -180,892 -400,902 Z"/>
+<!-- Паттерн волн Средиземного моря -->
+<path fill="url(#seaPattern)" opacity=".45"
+  d="M-400,254 C-260,258 -120,264 0,268 C120,258 250,244 380,222 C440,212 510,206 560,205 C600,206 640,214 668,224 C690,232 698,248 697,272 C698,302 688,330 679,357 C674,400 681,440 684,482 C687,512 666,530 648,547 C633,574 625,597 620,622 C615,650 608,663 597,675 C586,706 578,734 574,765 C570,790 562,810 550,826 C536,844 518,858 498,866 C448,880 390,872 335,862 C302,856 268,848 240,852 C190,856 140,864 90,872 C30,880 -180,892 -400,902 Z"/>
   <!-- Cyprus -->
   <path fill="url(#landG)" stroke="#3a4150" stroke-width="1" d="M352,409 C358,398 374,390 396,387 C420,384 444,387 460,393 C468,396 474,396 482,392 C492,386 502,379 510,374 C513,372 515,375 512,379 C504,389 492,398 480,403 C470,408 458,411 446,413 C424,417 396,417 376,414 C364,412 354,413 352,409 Z"/>
 
   <!-- Red Sea -->
   <path fill="url(#seaG)" stroke="#2e4d6b" stroke-width="1.2" stroke-opacity=".45" d="M424,1012 C418,1024 420,1044 428,1070 C440,1112 462,1170 490,1230 C504,1258 516,1278 526,1292 C548,1340 584,1392 622,1430 C660,1490 692,1560 714,1640 C730,1702 740,1768 744,1830 L1110,1830 C1064,1740 1018,1640 974,1546 C946,1486 920,1456 900,1430 C860,1402 818,1368 762,1318 C740,1298 722,1278 708,1258 C692,1190 678,1110 670,1044 C668,1030 660,1022 652,1028 C644,1100 632,1190 614,1262 C606,1290 596,1300 580,1288 C560,1240 532,1160 506,1090 C494,1056 480,1028 466,1016 C452,1004 432,1000 424,1012 Z"/>
+<!-- Паттерн волн на Красном море -->
+<path fill="url(#seaPattern)" opacity=".3" d="M424,1012 C418,1024 420,1044 428,1070 C440,1112 462,1170 490,1230 C504,1258 516,1278 526,1292 C548,1340 584,1392 622,1430 C660,1490 692,1560 714,1640 C730,1702 740,1768 744,1830 L1110,1830 C1064,1740 1018,1640 974,1546 C946,1486 920,1456 900,1430 C860,1402 818,1368 762,1318 C740,1298 722,1278 708,1258 C692,1190 678,1110 670,1044 C668,1030 660,1022 652,1028 C644,1100 632,1190 614,1262 C606,1290 596,1300 580,1288 C560,1240 532,1160 506,1090 C494,1056 480,1028 466,1016 C452,1004 432,1000 424,1012 Z"/>
   <!-- Nile delta hint -->
   <g opacity=".55">
     <path d="M220,852 C222,870 224,890 226,910 C228,930 230,950 232,970" fill="none" stroke="#2d4a66" stroke-width="3.5" stroke-linecap="round"/>
@@ -787,6 +953,10 @@ body{overscroll-behavior:none;-webkit-overscroll-behavior:none}
 </g>
   <!-- Sea of Galilee -->
   <ellipse cx="658" cy="678" rx="8" ry="14" transform="rotate(-20 658 678)" fill="#10263a" stroke="#2e4d6b" stroke-width=".9"/>
+<!-- отражение на Кинерете -->
+<ellipse cx="658" cy="678" rx="8" ry="14" transform="rotate(-20 658 678)" fill="url(#seaPattern)" opacity=".4"/>
+<!-- блик -->
+<ellipse cx="655" cy="672" rx="3" ry="5" transform="rotate(-20 655 672)" fill="rgba(180,210,240,.08)"/>
 
   <!-- rivers -->
   <g fill="none" stroke="#2d4a66" stroke-width="3" opacity=".95" stroke-linecap="round">
@@ -854,20 +1024,26 @@ body{overscroll-behavior:none;-webkit-overscroll-behavior:none}
     <text class="region-label" x="528" y="910" font-size="11" letter-spacing=".22em">НЕГЕВ</text>
     <text class="region-he" x="555" y="924" font-size="10">נֶגֶב</text>
     <text class="region-label" x="938" y="262" font-size="12" letter-spacing=".2em">ПАДАН-АРАМ</text> <!-- era: bronze -->
-    <text class="region-label" x="1075" y="1000" font-size="16" letter-spacing=".4em" opacity=".3">АРАВИЙСКАЯ ПУСТЫНЯ</text>
+    <!-- Пустыня Аравии — stipple pattern -->
+<ellipse cx="1250" cy="1050" rx="380" ry="280" fill="url(#desertStipple)" opacity=".7"/>
+<text class="region-label" x="1075" y="1000" font-size="16" letter-spacing=".4em" opacity=".3">АРАВИЙСКАЯ ПУСТЫНЯ</text>
     <text class="region-label" x="378" y="412" font-size="10" letter-spacing=".25em" opacity=".35">КИПР</text>
   </g>
 
   <!-- ============ ANCIENT TRADE ROUTES ============ -->
-  <g id="tradeRoutes" opacity=".45">
+  <g id="tradeRoutes" opacity=".5">
     <!-- Via Maris / Дорога моря — Египет → побережье → Мегиддо → Дамаск → Месопотамия -->
-    <path fill="none" stroke="#7fa7c4" stroke-width="2.5" stroke-dasharray="8 6" stroke-linecap="round" opacity=".7"
-      d="M210,920 C280,880 340,850 400,830 C460,810 520,780 560,750 C580,730 600,710 613,706 C630,690 645,668 658,648 C680,630 710,610 731,594"/>
+    <path id="viaMarisPath" fill="none" stroke="#7fa7c4" stroke-width="2.5" stroke-dasharray="8 6" stroke-linecap="round" opacity=".7"
+      d="M210,920 C280,880 340,850 400,830 C460,810 520,780 560,750 C580,730 600,710 613,706 C630,690 645,668 658,648 C680,630 710,610 731,594">
+  <animate attributeName="stroke-dashoffset" values="0;-28" dur="3s" repeatCount="indefinite"/>
+</path>
     <text class="region-label lbl-z1" x="440" y="785" font-size="7" fill="#7fa7c4" opacity=".7" letter-spacing=".22em" transform="rotate(-26 420 790)">VIA MARIS · דֶּרֶךְ הַיָּם</text>
 
     <!-- King's Highway / Царская дорога — Эцион-Гевер → Мёртвое море (вост.) → Дамаск -->
     <path fill="none" stroke="#c4a07f" stroke-width="2.5" stroke-dasharray="8 6" stroke-linecap="round" opacity=".7"
-      d="M730,1060 C720,990 712,940 705,890 C700,860 696,830 694,800 C692,760 694,720 700,680 C710,650 720,620 731,594"/>
+      d="M730,1060 C720,990 712,940 705,890 C700,860 696,830 694,800 C692,760 694,720 700,680 C710,650 720,620 731,594">
+  <animate attributeName="stroke-dashoffset" values="0;28" dur="4s" repeatCount="indefinite"/>
+</path>
     <text class="region-label lbl-z1" x="710" y="870" font-size="7" fill="#c4a07f" opacity=".7" letter-spacing=".18em" transform="rotate(-84 698 890)">ЦАРСКАЯ ДОРОГА · דֶּרֶךְ הַמֶּלֶךְ</text>
 
     <!-- Way of Shur / Дорога Сура — Египет (Дельта) → Беэр-Шева → Ханаан -->
@@ -882,6 +1058,11 @@ body{overscroll-behavior:none;-webkit-overscroll-behavior:none}
   </g>
 
   <!-- ============ MOUNTAINS NEAR SHECHEM ============ -->
+  <!-- Горный hatch texture под Гевалом -->
+  <g class="lbl-z1" opacity=".3">
+    <ellipse cx="628" cy="740" rx="18" ry="10" fill="url(#mountainHatch)"/>
+    <ellipse cx="628" cy="762" rx="18" ry="10" fill="url(#mountainHatch)"/>
+  </g>
   <g id="mountains" opacity=".55">
     <!-- Гевал (Эйвал) — 940 м, к северу от Сихема -->
     <g class="lbl-z1">
@@ -968,9 +1149,88 @@ body{overscroll-behavior:none;-webkit-overscroll-behavior:none}
 
 <!-- ============ MARKERS (заполняется JS) ============ -->
 <g id="ctx"></g>
+
+<!-- ============ ДЕКОРАТИВНАЯ ЗОЛОТАЯ РАМКА КАРТЫ ============ -->
+<g id="mapFrame" pointer-events="none">
+  <!-- Угловые орнаменты -->
+  <g opacity=".18" fill="none" stroke="#c8a84a" stroke-width="1.5">
+    <!-- Верхний левый -->
+    <path d="M-380,-380 L-380,-320 M-380,-380 L-320,-380"/>
+    <path d="M-380,-360 L-360,-360 M-360,-380 L-360,-360"/>
+    <circle cx="-360" cy="-360" r="6" fill="#c8a84a" opacity=".3"/>
+    <!-- Верхний правый -->
+    <path d="M1880,-380 L1880,-320 M1880,-380 L1820,-380"/>
+    <path d="M1880,-360 L1860,-360 M1860,-380 L1860,-360"/>
+    <circle cx="1860" cy="-360" r="6" fill="#c8a84a" opacity=".3"/>
+  </g>
+  <!-- Тонкая рамка по краю viewBox -->
+  <rect x="-380" y="-380" width="2660" height="2190" fill="none" 
+    stroke="url(#goldR)" stroke-width="1.5" stroke-opacity=".12" rx="0"/>
+</g>
+
+<!-- ============ КАРТУШ (ЛЕГЕНДА В УГЛУ) ============ -->
+<g id="cartouche" class="lbl-z1" transform="translate(1580,1150)" opacity=".55">
+  <!-- фон картуша -->
+  <rect x="-5" y="-8" width="220" height="190" rx="8"
+    fill="rgba(10,12,18,.55)" stroke="#8a7040" stroke-width="1" stroke-opacity=".6"/>
+  <rect x="0" y="0" width="210" height="174" rx="6"
+    fill="none" stroke="#c8a84a" stroke-width=".7" stroke-opacity=".4"/>
+  <!-- заголовок картуша -->
+  <text x="105" y="22" text-anchor="middle" font-size="7.5" fill="#c8a84a" 
+    letter-spacing=".22em" font-family="Georgia,serif">LEGENDA</text>
+  <line x1="8" y1="30" x2="202" y2="30" stroke="#c8a84a" stroke-width=".6" stroke-opacity=".4"/>
+  <!-- элементы легенды -->
+  <circle cx="20" cy="48" r="5" fill="rgba(10,13,20,.9)" stroke="#e8c879" stroke-width="1.4"/>
+  <circle cx="20" cy="48" r="2.2" fill="#e8c879"/>
+  <text x="32" y="52" font-size="7" fill="#ccc0a0" letter-spacing=".06em">Место Авраама</text>
+  <circle cx="20" cy="68" r="5" fill="rgba(10,13,20,.9)" stroke="#e0813f" stroke-width="1.4"/>
+  <circle cx="20" cy="68" r="2.2" fill="#e0813f"/>
+  <text x="32" y="72" font-size="7" fill="#ccc0a0" letter-spacing=".06em">Путь Лота</text>
+  <circle cx="20" cy="88" r="5.5" fill="rgba(10,13,20,.9)" stroke="#9b8cf0" stroke-width="1.2" stroke-dasharray="2.4 2.2"/>
+  <circle cx="20" cy="88" r="2" fill="#9b8cf0"/>
+  <text x="32" y="92" font-size="7" fill="#ccc0a0" letter-spacing=".06em">Гипотетическое место</text>
+  <!-- маршрут gold -->
+  <line x1="10" y1="108" x2="40" y2="108" stroke="#e8c879" stroke-width="2.2" stroke-linecap="round"/>
+  <text x="50" y="112" font-size="7" fill="#ccc0a0" letter-spacing=".06em">Маршрут Авраама</text>
+  <!-- маршрут lot -->
+  <line x1="10" y1="126" x2="40" y2="126" stroke="#e0813f" stroke-width="1.8" stroke-dasharray="5 4" stroke-linecap="round"/>
+  <text x="50" y="130" font-size="7" fill="#ccc0a0" letter-spacing=".06em">Путь Лота (предположит.)</text>
+  <!-- маршрут war -->
+  <line x1="10" y1="144" x2="40" y2="144" stroke="#cf5b6b" stroke-width="1.8" stroke-linecap="round"/>
+  <text x="50" y="148" font-size="7" fill="#ccc0a0" letter-spacing=".06em">Война царей</text>
+  <!-- торговые пути -->
+  <line x1="10" y1="162" x2="40" y2="162" stroke="#7fa7c4" stroke-width="1.5" stroke-dasharray="6 4" stroke-linecap="round"/>
+  <text x="50" y="166" font-size="7" fill="#ccc0a0" letter-spacing=".06em">Via Maris · торг. путь</text>
+</g>
+
+<!-- ============ АНИМИРОВАННЫЕ ЗВЁЗДЫ НА НЕБЕ ============ -->
+<g id="nightStars" opacity=".0" pointer-events="none">
+  <!-- 30 звёзд разного размера — активируются ночью (unused сейчас) -->
+  <circle cx="200" cy="-200" r="1" fill="#e8d4a0"><animate attributeName="opacity" values="0;.8;0" dur="4s" begin="0s" repeatCount="indefinite"/></circle>
+  <circle cx="500" cy="-300" r=".7" fill="#fff"><animate attributeName="opacity" values="0;.6;0" dur="5s" begin="1s" repeatCount="indefinite"/></circle>
+  <circle cx="900" cy="-250" r="1.2" fill="#e8d4a0"><animate attributeName="opacity" values="0;.7;0" dur="3.5s" begin="2s" repeatCount="indefinite"/></circle>
+  <circle cx="1300" cy="-200" r=".8" fill="#fff"><animate attributeName="opacity" values="0;.5;0" dur="4.5s" begin=".5s" repeatCount="indefinite"/></circle>
+  <circle cx="1700" cy="-280" r="1" fill="#e8d4a0"><animate attributeName="opacity" values="0;.6;0" dur="6s" begin="1.5s" repeatCount="indefinite"/></circle>
+</g>
 <g id="markers"></g>
 
 <rect x="-400" y="-400" width="2700" height="2230" filter="url(#grain)" pointer-events="none" opacity=".5"/>
+<!-- Античная координатная сетка (очень слабая) -->
+<g id="coordGrid" opacity=".04" pointer-events="none" stroke="#c8a84a" stroke-width=".8">
+  <!-- горизонтальные -->
+  <line x1="-400" y1="200" x2="2300" y2="200"/>
+  <line x1="-400" y1="450" x2="2300" y2="450"/>
+  <line x1="-400" y1="700" x2="2300" y2="700"/>
+  <line x1="-400" y1="950" x2="2300" y2="950"/>
+  <line x1="-400" y1="1200" x2="2300" y2="1200"/>
+  <!-- вертикальные -->
+  <line x1="200" y1="-400" x2="200" y2="1830"/>
+  <line x1="500" y1="-400" x2="500" y2="1830"/>
+  <line x1="800" y1="-400" x2="800" y2="1830"/>
+  <line x1="1100" y1="-400" x2="1100" y2="1830"/>
+  <line x1="1400" y1="-400" x2="1400" y2="1830"/>
+  <line x1="1700" y1="-400" x2="1700" y2="1830"/>
+</g>
 <!-- sky atmosphere overlay -->
 <rect x="-400" y="-400" width="2700" height="550" fill="url(#skyG)" pointer-events="none"/>
 <!-- Иорданская долина fertile -->
@@ -1791,6 +2051,8 @@ PLACES.forEach(pl=>{
     if(g.classList.contains('story-dim')) applyStory('main');
     openPlace(pl.id);
   });
+  // Staggered marker entrance animation
+  (()=>{const d=(placeIndex[pl.id]||0)*35;setTimeout(()=>{g.classList.add('entering');setTimeout(()=>g.classList.remove('entering'),600);},d+400);})();
   g.addEventListener('pointerenter',e=>showTip(e,pl.name,pl.he,pl.kick));
   g.addEventListener('pointermove',moveTip);
   g.addEventListener('pointerleave',hideTip);
@@ -1989,6 +2251,10 @@ function setTab(t){
   const tabContent = t==='story'?'story':t==='bible'?'bible':t==='arch'?'arch':t==='he'?'he_deep':'story';
   document.getElementById('panel-body').innerHTML = pl[tabContent] || (t==='he' ? '<p style="color:#6c737e;font-size:12px;padding:10px 0">Этимологический разбор для этого места ещё готовится.</p>' : '');
   document.getElementById('panel-body').scrollTop=0;
+  // fresh fade
+  const pb=document.getElementById('panel-body');
+  pb.classList.remove('fresh');
+  requestAnimationFrame(()=>requestAnimationFrame(()=>pb.classList.add('fresh')));
   // render related places
   const rels=RELATED[pl.id];
   if(rels&&rels.length){
@@ -2125,23 +2391,41 @@ function spawnCaravan(stageIdx){
   const mainPath=g.querySelector('.route:not([stroke-dasharray])');
   if(!mainPath) return;
   const NS='http://www.w3.org/2000/svg';
-  // убрать старую
-  const old=document.getElementById('gsap-caravan');
-  if(old) old.remove();
+  const caravanG=document.getElementById('caravanLayer');
+  // убрать старый
+  caravanG.querySelectorAll('[data-caravan]').forEach(e=>e.remove());
+  // dot + glow ring
   const dot=document.createElementNS(NS,'circle');
-  dot.id='gsap-caravan';
-  dot.setAttribute('r','5');
-  dot.setAttribute('fill','#e8c879');
-  dot.setAttribute('opacity','.85');
-  dot.setAttribute('filter','url(#glow)');
+  dot.setAttribute('r','5.5');
+  dot.setAttribute('fill','url(#caravanGrad)');
+  dot.setAttribute('opacity','0');
+  dot.setAttribute('filter','url(#goldGlow)');
   dot.setAttribute('pointer-events','none');
-  document.getElementById('caravanLayer').appendChild(dot);
-  gsap.to(dot,{
-    motionPath:{path:mainPath,autoRotate:false,start:0,end:1},
-    duration:2.2,
-    ease:'power1.inOut',
-    onComplete:()=>{ setTimeout(()=>dot.remove(),800); }
+  dot.setAttribute('data-caravan','1');
+  // trailing glow
+  const glow=document.createElementNS(NS,'circle');
+  glow.setAttribute('r','11');
+  glow.setAttribute('fill','rgba(232,200,121,.12)');
+  glow.setAttribute('opacity','0');
+  glow.setAttribute('pointer-events','none');
+  glow.setAttribute('data-caravan','1');
+  caravanG.appendChild(glow);
+  caravanG.appendChild(dot);
+  const tl=gsap.timeline({
+    onComplete:()=>setTimeout(()=>caravanG.querySelectorAll('[data-caravan]').forEach(e=>e.remove()),600)
   });
+  tl.to([dot,glow],{opacity:1,duration:.3})
+    .to([dot,glow],{
+      motionPath:{path:mainPath,autoRotate:false,start:0,end:1},
+      duration:2.4,ease:'power1.inOut',
+      onUpdate:function(){
+        const x=gsap.getProperty(dot,'x');
+        const y=gsap.getProperty(dot,'y');
+        glow.setAttribute('cx',dot.getAttribute('cx')||x);
+        glow.setAttribute('cy',dot.getAttribute('cy')||y);
+      }
+    },'-=.3')
+    .to([dot,glow],{opacity:0,duration:.4});
 }
 
 /* dash animation + caravan */
@@ -2643,10 +2927,18 @@ function animateStageRoutes(stageIdx){
   if(window.matchMedia('(prefers-reduced-motion:reduce)').matches) return;
   const g=document.querySelectorAll('#routes g')[stageIdx];
   if(!g) return;
-  g.querySelectorAll('.route').forEach(path=>{
+  const paths=[...g.querySelectorAll('.route')];
+  paths.forEach((path,i)=>{
+    const isDash=path.getAttribute('stroke-dasharray');
+    const dur=isDash?1.2:1.8;
     gsap.fromTo(path,
-      {drawSVG:'0%'},
-      {drawSVG:'100%',duration:1.6,ease:'power2.inOut',overwrite:true}
+      {drawSVG:'0%',filter:'url(#goldGlow)'},
+      {drawSVG:'100%',duration:dur,ease:'power2.inOut',overwrite:true,
+       onComplete:()=>{
+         // убрать glow после прорисовки
+         gsap.to(path,{filter:'',duration:.8,delay:.3});
+       }
+      }
     );
   });
 }
