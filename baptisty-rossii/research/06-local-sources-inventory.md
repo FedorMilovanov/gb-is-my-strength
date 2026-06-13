@@ -4,12 +4,12 @@
 
 ## Локально скачанные источники, упомянутые в исследованиях
 
-- `/home/user/research/russian_baptism/historyofecb.pdf/txt` — ВСЕХБ 1989, История ЕХБ в СССР. URL: http://rusbaptist.stunda.org/zips/historyofecb.pdf
-- `/home/user/research/russian_baptism/sinichkin-kreshchenie-pervogo-russkogo-baptista-2018-real.pdf/txt` — А. Синичкин, крещение Воронина. URL: http://almanah.bogomysliye.com/article/view/133829
+- `/home/user/research/russian_baptism/historyofecb.pdf/txt` — ВСЕХБ 1989, История ЕХБ в СССР. URL: https://rusbaptist.stunda.org/zips/historyofecb.pdf
+- `/home/user/research/russian_baptism/sinichkin-kreshchenie-pervogo-russkogo-baptista-2018-real.pdf/txt` — А. Синичкин, крещение Воронина. URL: https://almanah.bogomysliye.com/article/view/133829
 - `/home/user/research/russian_baptism/sim_baptist-missionary-magazine_1870-*.txt` — Baptist Missionary Magazine / The Missionary Magazine, 1870. Internet Archive identifiers `sim_baptist-missionary-magazine_1870-01_50_1` ... `1870-12_50_12`.
-- `baptisty-rossii/research/raw-sources/batchenko-nkvd-normative-acts-1929-1930.html/txt` — В. С. Батченко, полные тексты актов НКВД 1929. URL: https://www.sedmitza.ru/lib/text/7697292/
+- `baptisty-rossii/research/raw-sources/batchenko-nkvd-normative-acts-1929-1930.txt` — В. С. Батченко, полные тексты актов НКВД 1929. URL: https://www.sedmitza.ru/lib/text/7697292/
 - `baptisty-rossii/research/raw-sources/bornovolokov-military-question-ru-real.pdf/txt` — О. Борноволоков, военный вопрос. URL: http://almanah.bogomysliye.com/article/view/281176
-- `baptisty-rossii/research/raw-sources/istmat-1919-decree-raw.html` и `istmat-1919-decree.txt` — декрет 4 января 1919. URL: https://istmat.org/node/37823
+- `baptisty-rossii/research/raw-sources/istmat-1919-decree.txt` — декрет 4 января 1919. URL: https://istmat.org/node/37823
 
 ## Принцип хранения
 

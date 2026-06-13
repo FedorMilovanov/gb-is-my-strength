@@ -73,7 +73,7 @@
    Указано: журнал “Баптист” №№ 43–47, 1911. Важно сравнить нумерацию с другими источниками, где бывает №41–47.
 
 4. **[O/S] ВСЕХБ, “История евангельских христиан-баптистов в СССР” PDF, 1989**  
-   http://rusbaptist.stunda.org/zips/historyofecb.pdf  
+   https://rusbaptist.stunda.org/zips/historyofecb.pdf  
    Главный позднесоветский свод братства; нужен для библиографии ранних историков, даты Прицкау/Фризена, 1944, ВСЕХБ, послевоенной истории.
 
 5. **[O/S] Индекс “История” на Русский Баптистъ**  
@@ -1051,7 +1051,7 @@ http://www.baptistru.info/index.php/%D0%92%D1%81%D0%B5%D1%81%D0%BE%D1%8E%D0%B7%D
 - Русский Баптистъ — исторический раздел:  
   http://rusbaptist.stunda.org/03.htm
 - ВСЕХБ 1989:  
-  http://rusbaptist.stunda.org/zips/historyofecb.pdf
+  https://rusbaptist.stunda.org/zips/historyofecb.pdf
 - Павлов, *Правда о баптистах*:  
   http://rusbaptist.stunda.org/pavlov.html  
   https://www.bible-for-you.org/Propovedn/pavlov.php
@@ -1246,7 +1246,7 @@ https://baptistworld.org/members/
 Ключевые добавления:
 
 1. Найдена и распознана статья А. Синичкина **«К вопросу о крещении первого русского баптиста»**, *Богомыслие*, №22, 2018:  
-   http://almanah.bogomysliye.com/article/view/133829
+   https://almanah.bogomysliye.com/article/view/133829
 
 2. Введена в работу цитата из письма Н. И. Воронина А. М. Мазаеву от **15 марта 1889**. Из неё следует:
    - Воронин слышал о необходимости водного крещения уже с 1863 от Северова и Танасова;

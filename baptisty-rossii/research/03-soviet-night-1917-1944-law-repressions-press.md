@@ -776,7 +776,7 @@ URL: http://www.rusbaptist.stunda.org/baptist1941-1944.htm
 - В. С. Батченко, **«Нормативно-правовые акты НКВД в вероисповедном законотворчестве на рубеже 1920–1930-х гг.»**
 - URL: https://www.sedmitza.ru/lib/text/7697292/
 - локально сохранено:
-  - `research/russian_baptism/batchenko-nkvd-normative-acts-1929-1930.html`
+  - `research/russian_baptism/batchenko-nkvd-normative-acts-1929-1930.raw.txt`
   - `research/russian_baptism/batchenko-nkvd-normative-acts-1929-1930.txt`
 
 В публикации даны:
@@ -1643,7 +1643,7 @@ Summary: Постановление НКВД №329 требовало реги�
 - baptistru.info, “Сталинские репрессии (1928–1941) и ЕХБ”:  
   http://baptistru.info/index.php/Сталинские_репрессии_(1928-1941)_и_ЕХБ
 - ВСЕХБ, История ЕХБ в СССР, 1989:  
-  http://rusbaptist.stunda.org/zips/historyofecb.pdf
+  https://rusbaptist.stunda.org/zips/historyofecb.pdf
 - А. И. Савин, “Инфернальный враг. Протестантские церкви в сибирской прессе 1928–1930 гг.”:  
   https://zaimka.ru/savin-protestants/
 - Братский Вестник №1, 1945:  
