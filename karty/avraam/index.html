@@ -2037,6 +2037,28 @@ body{overscroll-behavior:none;-webkit-overscroll-behavior:none}
     <span class="leg-item"><span class="leg-dot" style="background:#cf5b6b;box-shadow:0 0 6px #cf5b6b"></span>Война</span>
     <span class="leg-item"><span class="leg-dot" style="background:#9b8cf0;box-shadow:0 0 6px #9b8cf0;border:1px dashed #9b8cf0"></span>Кандидат</span>
   </div>
+  <!-- Легенда типов маркеров (P6 MAPS-ANALYSIS) -->
+  <div id="marker-legend" style="border-top:1px solid rgba(255,255,255,.06);margin-top:10px;padding-top:9px;font-size:9.5px;letter-spacing:.1em;color:var(--txt-dim)">
+    <div style="margin-bottom:6px;font-size:9px;opacity:.55;letter-spacing:.22em">ТИПЫ МАРКЕРОВ</div>
+    <div style="display:flex;flex-direction:column;gap:5px">
+      <span style="display:flex;align-items:center;gap:8px">
+        <svg width="14" height="14" viewBox="-7 -7 14 14"><circle r="5.5" fill="rgba(10,13,20,.9)" stroke="#e8c879" stroke-width="1.4"/><circle r="2" fill="#e8c879"/></svg>
+        Основные места Авраама
+      </span>
+      <span style="display:flex;align-items:center;gap:8px">
+        <svg width="14" height="14" viewBox="-7 -7 14 14"><path d="M0,-5.5 L4.5,0 L0,5.5 L-4.5,0 Z" fill="rgba(10,13,20,.9)" stroke="#e0813f" stroke-width="1.4"/><circle r="1.5" fill="#e0813f"/></svg>
+        Путь Лота (ромб)
+      </span>
+      <span style="display:flex;align-items:center;gap:8px">
+        <svg width="14" height="14" viewBox="-7 -7 14 14"><circle r="5" fill="rgba(10,13,20,.8)" stroke="#9b8cf0" stroke-width="1" stroke-dasharray="2 2"/><circle r="1.5" fill="#9b8cf0"/></svg>
+        Альтернативные версии
+      </span>
+      <span style="display:flex;align-items:center;gap:8px">
+        <svg width="14" height="14" viewBox="-7 -7 14 14"><circle r="3" fill="#6c737e" opacity=".75"/></svg>
+        Контекст (история эпохи)
+      </span>
+    </div>
+  </div>
 </div>
 <div class="pop" id="placesPop"><div class="ph" id="places-ph">ВСЕ МЕСТА · 20</div><input id="plSearch" placeholder="Поиск: Содом, Мория, колодец…" aria-label="Поиск по местам"><div id="placesList"></div></div>
 
@@ -2586,8 +2608,8 @@ const CTX=[
 
 const STAGES=[
 {n:"I",t:"Из Ура в Харран",km:"~1000 км",r:"Быт 11:27–32",cls:"abr",cam:[420,-30,1640],age:"АВРАМУ ~70 ЛЕТ · ~1000 КМ ВВЕРХ ПО ЕВФРАТУ",
- d:"Терах выводит род из шумерского мегаполиса вверх по Евфрату — 1000 км до Харрана. Здесь умирает отец, и история замирает в ожидании призыва.",
- paths:[{d:"M1710,897 C1690,872 1658,848 1620,822 C1580,794 1535,770 1495,755 C1472,747 1472,756 1472,756 C1440,718 1405,680 1368,644 C1340,618 1310,605 1295,612 C1260,578 1228,530 1200,492 C1190,480 1189,470 1189,470 C1145,438 1090,396 1042,360 C1010,336 900,126 900,126 C916,150 932,165 950,175 C970,186 990,190 1003,194",c:"gold"}]},
+ d:"Терах выводит род из шумерского мегаполиса вверх по Евфрату — 1000 км до Харрана через Ниппур, Мари и Каркемиш. Здесь умирает отец, и история замирает в ожидании призыва.",
+ paths:[{d:"M1710,897 C1695,880 1678,862 1660,848 C1635,828 1610,818 1590,808 C1565,796 1542,789 1518,780 C1498,773 1481,763 1472,755 C1458,742 1446,728 1430,712 C1410,690 1388,668 1368,644 C1350,624 1334,608 1318,596 C1300,582 1278,568 1260,548 C1238,524 1218,498 1200,474 C1192,462 1190,471 1189,470 C1170,448 1148,428 1120,408 C1095,390 1070,374 1048,354 C1028,336 1014,316 1006,292 C1002,278 1000,262 1000,244 C1002,224 1004,210 1003,194",c:"gold"}]},
 {n:"II",t:"Лех-леха: в Ханаан",km:"~700 км",r:"Быт 12:1–9",cls:"abr",cam:[243,59,1140],age:"АВРАМУ 75 ЛЕТ · ~700 КМ ЧЕРЕЗ ДАМАСК",
  d:"«Иди себе» — в 75 лет Аврам оставляет всё и идёт через Дамаск в Ханаан. Сихем: первое явление и жертвенник. Бет-Эль: призывание Имени.",
  paths:[{d:"M1003,194 C940,230 870,250 816,274 C780,320 760,380 750,430 C742,490 735,545 731,594 C708,608 685,617 665,625 C652,662 638,705 628,748 C625,760 624,770 624,782",c:"gold"}]},

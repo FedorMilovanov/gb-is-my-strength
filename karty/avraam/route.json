@@ -1,0 +1,131 @@
+{
+  "meta": {
+    "id": "avraam",
+    "version": "1.0",
+    "generated": "2026-06-13",
+    "title": "Путь Авраама",
+    "title_he": "אַבְרָהָם אָבִינוּ",
+    "subtitle": "Бытие 11–25 · Средняя бронза · ~2166–1991 до н.э.",
+    "era": "bronze",
+    "yec_date": "Авраам ~2166 до н.э. (Ашшер); Исход ~1447 до н.э.",
+    "stats": {
+      "places": 19,
+      "stages": 8,
+      "stories": 5,
+      "ctx_points": 7,
+      "verses": 59,
+      "arch_sources": 26
+    },
+    "viewport_init": { "cx": 1000, "cy": 620, "w": 1950 },
+    "coord_system": "SVG 1900×1430, 1 unit ≈ 0.92 km"
+  },
+
+  "stories": [
+    {
+      "id": "main",
+      "label": "Весь путь",
+      "description": "От Ура Халдейского до горы Мория — 175 лет",
+      "active_by_default": true,
+      "places": null,
+      "stages": null,
+      "cam": [1000, 620, 1950]
+    },
+    {
+      "id": "lekh-lekha",
+      "label": "Лех-леха",
+      "description": "Призвание и первый путь в Ханаан",
+      "places": ["ur","harran","damascus","shechem","bethel"],
+      "stages": [0, 1],
+      "highlight_color": "#e8c879",
+      "cam": [800, 400, 1200]
+    },
+    {
+      "id": "lot",
+      "label": "Линия Лота",
+      "description": "От раздела с Авраамом до Цоара",
+      "places": ["bethel","sodom","hammam","zoar"],
+      "stages": [3, 5],
+      "highlight_color": "#e0813f",
+      "cam": [620, 800, 500]
+    },
+    {
+      "id": "war",
+      "label": "Война царей",
+      "description": "Ночной рейд и Мелхиседек · Быт 14",
+      "places": ["hebron","dan","hovah","salem"],
+      "stages": [4],
+      "highlight_color": "#cf5b6b",
+      "cam": [680, 680, 600]
+    },
+    {
+      "id": "akeda",
+      "label": "Акеда",
+      "description": "Три дня пути к горе Мория · Быт 22",
+      "places": ["beersheba","salem"],
+      "stages": [7],
+      "highlight_color": "#c4a0ff",
+      "cam": [600, 830, 480]
+    }
+  ],
+
+  "places_index": [
+    {"id": "ur",       "x": 1710, "y": 897,  "type": "main",  "stage": 0, "he": "אוּר כַּשְׂדִּים"},
+    {"id": "urfa",     "x": 979,  "y": 159,  "type": "cand",  "stage": 0, "he": "אוּרְהַי"},
+    {"id": "harran",   "x": 1003, "y": 194,  "type": "main",  "stage": 0, "he": "חָרָן"},
+    {"id": "damascus", "x": 731,  "y": 594,  "type": "main",  "stage": 1, "he": "דַּמֶּשֶׂק"},
+    {"id": "shechem",  "x": 628,  "y": 748,  "type": "main",  "stage": 1, "he": "שְׁכֶם"},
+    {"id": "bethel",   "x": 624,  "y": 782,  "type": "main",  "stage": 1, "he": "בֵּית-אֵל"},
+    {"id": "egypt",    "x": 262,  "y": 916,  "type": "main",  "stage": 2, "he": "מִצְרַיִם"},
+    {"id": "hebron",   "x": 610,  "y": 829,  "type": "main",  "stage": 3, "he": "חֶבְרוֹן"},
+    {"id": "salem",    "x": 623,  "y": 800,  "type": "main",  "stage": 6, "he": "שָׁלֵם"},
+    {"id": "dan",      "x": 665,  "y": 625,  "type": "main",  "stage": 4, "he": "דָּן"},
+    {"id": "sodom",    "x": 669,  "y": 880,  "type": "main",  "stage": 5, "he": "סְדֹם"},
+    {"id": "hammam",   "x": 667,  "y": 793,  "type": "lot",   "stage": 5, "he": "טַל אֶל-חַמָּם"},
+    {"id": "zoar",     "x": 660,  "y": 907,  "type": "lot",   "stage": 5, "he": "צֹעַר"},
+    {"id": "gerar",    "x": 561,  "y": 847,  "type": "main",  "stage": 5, "he": "גְּרָר"},
+    {"id": "beersheba","x": 584,  "y": 864,  "type": "main",  "stage": 6, "he": "בְּאֵר שָׁבַע"},
+    {"id": "kadesh",   "x": 542,  "y": 934,  "type": "main",  "stage": 5, "he": "קָדֵשׁ בַּרְנֵעַ"},
+    {"id": "shur",     "x": 400,  "y": 940,  "type": "main",  "stage": 5, "he": "מִדְבַּר שׁוּר"},
+    {"id": "lahairoi", "x": 492,  "y": 946,  "type": "cand",  "stage": 5, "he": "בְּאֵר לַחַי רֹאִי"},
+    {"id": "hovah",    "x": 752,  "y": 556,  "type": "main",  "stage": 4, "he": "חוֹבָה"}
+  ],
+
+  "stages_index": [
+    {"n": "I",    "t": "Из Ура в Харран",           "r": "Быт 11:27–32", "km": "~1000", "cls": "abr"},
+    {"n": "II",   "t": "Лех-леха: в Ханаан",        "r": "Быт 12:1–9",   "km": "~700",  "cls": "abr"},
+    {"n": "III",  "t": "Голод: Египет",              "r": "Быт 12:10–13:4","km": "~800", "cls": "abr"},
+    {"n": "IV",   "t": "Раздел с Лотом · Хеврон",   "r": "Быт 13",       "km": "",      "cls": "abr"},
+    {"n": "V",    "t": "Война царей · Мелхиседек",   "r": "Быт 14",       "km": "~200",  "cls": "war"},
+    {"n": "VI",   "t": "Катастрофа Содома",          "r": "Быт 18–19",    "km": "",      "cls": "lot"},
+    {"n": "VII",  "t": "Герар и Беэр-Шева",          "r": "Быт 20–21",    "km": "",      "cls": "abr"},
+    {"n": "VIII", "t": "Акеда: гора Мория",          "r": "Быт 22–25",    "km": "~75",   "cls": "abr"}
+  ],
+
+  "ctx_index": [
+    {"id": "babylon", "n": "Вавилон",  "x": 1472, "y": 758, "he": "בָּבֶל",     "icon": "babel"},
+    {"id": "mari",    "n": "Мари",     "x": 1189, "y": 470, "he": "מָרִי",      "icon": "tab"},
+    {"id": "ebla",    "n": "Эбла",     "x": 800,  "y": 300, "he": "אֶבְלָה",    "icon": "tab"},
+    {"id": "nineveh", "n": "Ниневия",  "x": 1410, "y": 256, "he": "נִינְוֵה",   "icon": "tab"},
+    {"id": "megiddo", "n": "Мегиддо", "x": 613,  "y": 706, "he": "מְגִדּוֹ",   "icon": "gate"},
+    {"id": "lot_cave","n": "Пещера Лота","x": 660,"y": 930, "he": "מְעָרַת לוֹט","icon": "cave"},
+    {"id": "hazor",   "n": "Хацор",   "x": 670,  "y": 640, "he": "חָצוֹר",     "icon": "gate"}
+  ],
+
+  "yec_position": {
+    "framework": "YEC — младоземельный креационизм",
+    "earth_age": "~6000 лет (Быт 1–11)",
+    "abraham_birth": "~2166 до н.э. (Ашшер)",
+    "sodom_destruction": "~2067 до н.э. (AiG 2025)",
+    "exodus": "~1447 до н.э.",
+    "sodom_location": "ЮВ берег Мёртвого моря (Баб эд-Дра/Нумейра) — AiG/YEC позиция",
+    "tall_hammam": "ОТВЕРГНУТ как Содом (AiG 2025 'Have we found Sodom? No'; ретракция Scientific Reports 24.04.2025)",
+    "ur_location": "Тель эль-Мукайяр (Южный Ирак) — основная идентификация; Урфа — рассматривается",
+    "sources": ["AiG answersingenesis.org", "ARJ v5 McClellan", "ICR", "CMI creation.com", "Ашшер Annals of the World"]
+  },
+
+  "notes": {
+    "route_accuracy": "Маршруты стилизованы; реальные древние пути приближены. Этап I (Ур→Харран) исправлен в r152: огибает Евфрат через Мари — исторически верный путь (подтверждён архивом Мари, торговыми маршрутами СБ).",
+    "disputed": ["sodom/hammam", "ur/urfa", "shur/exact", "lahairoi/exact"],
+    "coord_system_note": "SVG 1900×1430; 1 SVG unit ≈ 0.92 km; охват Египет→Персидский залив"
+  }
+}

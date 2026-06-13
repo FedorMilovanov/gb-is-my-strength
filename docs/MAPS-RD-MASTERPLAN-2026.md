@@ -546,7 +546,7 @@ gsap.to(caravanDot, {
 ### Sprint 3 — Архитектура под вторую карту (В ПРОЦЕССЕ)
 - [x] Вынести движок в `_engine/map-engine.js` (v0.1 API skeleton)
 - [x] Вынести базовую географию в `_engine/base-geo.svg` (34KB extract)
-- [ ] Создать `karty/avraam/route.json` из inline JS (следующий шаг)
+- [x] Создать `karty/avraam/route.json` (meta + places_index + stages_index + stories + ctx_index + yec_position, 131 строка, r152)
 - [x] Создать `karty/ishod/` scaffold + route.json (7 мест, 6 этапов)
 - [x] Хаб: прогресс Исхода + ссылки (карточка теперь <a>)
 
