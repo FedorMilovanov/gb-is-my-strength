@@ -37,6 +37,7 @@ const ROOT = path.join(__dirname, '..');
 const WRAP_REL = path.join('konfessii', 'russkij-baptizm', 'index.html');
 const APP_REL = path.join('konfessii', 'russkij-baptizm', '_app', 'index.html');
 const SRC_REL = path.join('_build-tools', 'konfessii-baptizm', 'MindMap3D.tsx');
+const NAV_SRC_REL = path.join('_build-tools', 'konfessii-baptizm', 'Navigation.tsx');
 const WRAP = 'file://' + path.join(ROOT, WRAP_REL);
 
 const fails = [];
@@ -48,6 +49,7 @@ console.log('\n🌍 KONFESSII 3D-MAP AUDIT (регресс-защита отде
 const wrap = fs.readFileSync(path.join(ROOT, WRAP_REL), 'utf8');
 const app = fs.existsSync(path.join(ROOT, APP_REL)) ? fs.readFileSync(path.join(ROOT, APP_REL), 'utf8') : '';
 const src = fs.existsSync(path.join(ROOT, SRC_REL)) ? fs.readFileSync(path.join(ROOT, SRC_REL), 'utf8') : '';
+const navSrc = fs.existsSync(path.join(ROOT, NAV_SRC_REL)) ? fs.readFileSync(path.join(ROOT, NAV_SRC_REL), 'utf8') : '';
 
 // I7 wrapper SEO
 /rel="canonical"/.test(wrap) ? ok('I7 обёртка: canonical') : bad('I7 обёртка: нет canonical');
@@ -70,6 +72,12 @@ else {
 
 // source-level guard for the regression fixed in 7850e0f: ref-based TimelineOverlay must
 // not coexist with the removed useState timelineYear/setTimelineYear JSX block.
+if (navSrc) {
+  /max-w-\[82rem\]/.test(navSrc) && /whitespace-nowrap/.test(navSrc) && !/max-w-6xl/.test(navSrc)
+    ? ok('I11 source: top navigation anti-overlap sizing present')
+    : bad('I11 source: top navigation may overlap brand/items');
+}
+
 if (src) {
   /function\s+TimelineOverlay/.test(src) && /timelineYearRef/.test(src)
     ? ok('I8 source: ref-based TimelineOverlay present')
