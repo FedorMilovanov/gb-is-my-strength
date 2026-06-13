@@ -2,7 +2,7 @@
 <html lang="ru">
 <head>
 <meta charset="UTF-8">
-  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://mc.yandex.ru https://*.yandex.ru https://mc.yandex.com https://*.yandex.com https://cdn.jsdelivr.net; img-src 'self' https://mc.yandex.ru https://*.yandex.ru https://mc.yandex.com https://*.yandex.com https://commons.wikimedia.org https://upload.wikimedia.org data: blob:; style-src 'self' 'unsafe-inline'; font-src 'self' data:; connect-src 'self' https://mc.yandex.ru https://*.yandex.ru https://mc.yandex.com https://*.yandex.com wss://mc.yandex.ru wss://*.yandex.ru wss://mc.yandex.com wss://*.yandex.com; frame-src 'self' https://mc.yandex.ru https://*.yandex.ru https://mc.yandex.com https://*.yandex.com; object-src 'none'; base-uri 'self';">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://mc.yandex.ru https://*.yandex.ru https://mc.yandex.com https://*.yandex.com https://cdn.jsdelivr.net; img-src 'self' https://mc.yandex.ru https://*.yandex.ru https://mc.yandex.com https://*.yandex.com https://commons.wikimedia.org https://upload.wikimedia.org https://*.nasa.gov https://bibleplaces.photoshelter.com data: blob:; style-src 'self' 'unsafe-inline'; font-src 'self' data:; connect-src 'self' https://mc.yandex.ru https://*.yandex.ru https://mc.yandex.com https://*.yandex.com wss://mc.yandex.ru wss://*.yandex.ru wss://mc.yandex.com wss://*.yandex.com; frame-src 'self' https://mc.yandex.ru https://*.yandex.ru https://mc.yandex.com https://*.yandex.com; object-src 'none'; base-uri 'self';">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>Путь Авраама: интерактивная карта Бытия 11–25 | Господь Бог — Сила Моя</title>
 <meta name="description" content="Интерактивная карта Авраама: от Ура Халдейского до горы Мория. 20 мест, 8 этапов, 5 сюжетов (Лех-леха, Война царей, Акеда), кинотур, археология, иврит, хронология 175 лет.">
@@ -177,8 +177,9 @@
   #closeP{position:absolute;top:18px;right:18px;width:32px;height:32px;border-radius:50%;border:1px solid rgba(255,255,255,.16);background:rgba(255,255,255,.05);color:var(--txt-dim);font-size:14px;cursor:pointer;transition:.2s}
   #closeP:hover{color:var(--gold);border-color:var(--gold)}
   .gold-rule{height:1px;margin:18px 24px 0;background:linear-gradient(90deg,var(--gold),transparent)}
-  #tabs{display:flex;gap:4px;padding:14px 24px 0}
-  .tab{flex:1;text-align:center;font-size:11px;letter-spacing:.1em;color:var(--txt-dim);padding:9px 4px;border-radius:9px;cursor:pointer;border:1px solid transparent;transition:.2s}
+  #tabs{display:flex;gap:4px;padding:14px 24px 0;overflow-x:auto;scrollbar-width:none}
+  #tabs::-webkit-scrollbar{display:none}
+  .tab{flex:0 0 auto;text-align:center;font-size:10.5px;letter-spacing:.09em;color:var(--txt-dim);padding:9px 10px;border-radius:9px;cursor:pointer;border:1px solid transparent;transition:.2s;white-space:nowrap}
   .tab.cur{color:var(--gold);background:rgba(232,200,121,.08);border-color:var(--gold-dim)}
   #panel-body{flex:1;overflow-y:auto;padding:16px 24px 26px;font-size:13.5px;line-height:1.75;color:#d5d9df;scrollbar-width:thin;scrollbar-color:rgba(232,200,121,.3) transparent}
   #panel-body::-webkit-scrollbar{width:5px}
@@ -351,6 +352,31 @@
   /* ====== ВКЛАДКА ИВРИТ ====== */
   #tabs .tab[data-t="he"]{} /* будет добавлена вкладка */
 
+  /* ====== THEN/NOW ГАЛЕРЕЯ ====== */
+  .tn-gallery{margin:16px 0 4px}
+  .tn-title{font-size:9.5px;letter-spacing:.24em;color:#6c737e;margin-bottom:10px}
+  .tn-row{display:flex;gap:10px;flex-wrap:wrap}
+  .tn-item{flex:1 1 140px;min-width:120px;max-width:200px;cursor:pointer;border-radius:10px;overflow:hidden;border:1px solid rgba(255,255,255,.1);transition:.25s;position:relative}
+  .tn-item:hover{border-color:var(--gold);transform:translateY(-2px)}
+  .tn-item img{width:100%;height:100px;object-fit:cover;display:block;background:rgba(30,35,50,.8)}
+  .tn-item .tn-cap{font-size:9px;padding:5px 8px;color:#8d949f;letter-spacing:.08em;line-height:1.4;background:rgba(10,13,20,.85)}
+  .tn-item .tn-label{position:absolute;top:5px;left:5px;font-size:8px;letter-spacing:.12em;padding:2px 6px;border-radius:4px;background:rgba(10,13,20,.85)}
+  .tn-item .tn-label.then{color:#b8d4f0;border:1px solid rgba(184,212,240,.3)}
+  .tn-item .tn-label.now{color:#a0c87a;border:1px solid rgba(160,200,122,.3)}
+  .tn-item .tn-label.ctx{color:#e8c879;border:1px solid rgba(232,200,121,.3)}
+  .tn-item .tn-label.dis{color:#cf8070;border:1px solid rgba(207,128,112,.3)}
+  .tn-credit{font-size:9px;color:#4a5260;margin-top:6px;letter-spacing:.06em}
+  .tn-credit a{color:#5a6270;text-decoration:none}
+  .tn-credit a:hover{color:var(--gold-soft)}
+  /* photo modal */
+  #photoModal{position:fixed;inset:0;z-index:88;background:rgba(2,4,8,.92);backdrop-filter:blur(8px);display:none;place-items:center;padding:16px}
+  #photoModal.open{display:grid}
+  #photoModal .pm-inner{position:relative;max-width:min(900px,96vw);max-height:88vh}
+  #photoModal img{max-width:100%;max-height:80vh;border-radius:10px;display:block;object-fit:contain}
+  #photoModal .pm-cap{margin-top:10px;text-align:center;font-size:11.5px;color:#9aa2ae;line-height:1.6}
+  #photoModal .pm-x{position:absolute;top:-10px;right:-10px;background:rgba(20,24,32,.9);border:1px solid rgba(255,255,255,.2);border-radius:50%;width:32px;height:32px;color:#9aa2ae;font-size:16px;cursor:pointer;display:grid;place-items:center}
+  #photoModal .pm-x:hover{color:var(--gold);border-color:var(--gold)}
+
 body{overscroll-behavior:none;-webkit-overscroll-behavior:none}
 
   /* ---------- story toast ---------- */
@@ -368,9 +394,10 @@ body{overscroll-behavior:none;-webkit-overscroll-behavior:none}
   /* ---------- panel breadcrumb (этап ↔ место) ---------- */
   #p-stage-hint{
     font-size:10px;color:#6c737e;letter-spacing:.1em;
-    padding:0 24px 10px;
+    padding:6px 24px 10px;
     border-bottom:1px solid rgba(255,255,255,.05);
     min-height:0;
+    background:rgba(232,200,121,.02);
   }
   #p-stage-hint:empty{display:none}
   #p-stage-hint b{color:var(--gold-soft)}
@@ -442,11 +469,11 @@ body{overscroll-behavior:none;-webkit-overscroll-behavior:none}
       overflow-x:auto;flex-wrap:nowrap;padding:8px 12px 6px;
       background:linear-gradient(to bottom,rgba(5,8,13,.95) 80%,transparent);
       scrollbar-width:none;
-      /* Убеждаемся что не перекрывает timeline снизу */
       max-height:44px;
     }
     #story-nav::-webkit-scrollbar{display:none}
     #brand{top:44px}
+    #story-toast{top:52px}
   }
 
   /* ---------- hover preview (desktop only) ---------- */
@@ -623,6 +650,12 @@ body{overscroll-behavior:none;-webkit-overscroll-behavior:none}
 
   <!-- Dead Sea -->
   <path fill="#10263a" stroke="#2e4d6b" stroke-width="1.1" d="M646,795 C656,800 661,816 661,836 C661,852 658,862 659,872 C661,886 658,897 650,899 C642,900 637,890 638,876 C639,866 637,854 635,840 C634,820 636,804 640,797 C642,793 644,793 646,795 Z"/>
+<!-- соляная текстура Мёртвого моря -->
+<g opacity=".18" pointer-events="none">
+  <circle cx="648" cy="835" r=".8" fill="#c8d4a0"/><circle cx="652" cy="845" r=".6" fill="#c8d4a0"/>
+  <circle cx="645" cy="855" r=".8" fill="#c8d4a0"/><circle cx="650" cy="865" r=".6" fill="#c8d4a0"/>
+  <circle cx="656" cy="852" r=".7" fill="#c8d4a0"/><circle cx="642" cy="842" r=".6" fill="#c8d4a0"/>
+</g>
   <!-- Sea of Galilee -->
   <ellipse cx="658" cy="678" rx="8" ry="14" transform="rotate(-20 658 678)" fill="#10263a" stroke="#2e4d6b" stroke-width=".9"/>
 
@@ -660,6 +693,8 @@ body{overscroll-behavior:none;-webkit-overscroll-behavior:none}
   <!-- Тигр -->
   <text class="region-label lbl-z1" x="1440" y="310" font-size="7" fill="#4a80a0" opacity=".5" letter-spacing=".15em" transform="rotate(40 1440 310)">ТИГР · חִדֶּקֶל</text>
     <text class="region-label" x="1150" y="395" font-size="25" transform="rotate(22 1150 395)">МЕСОПОТАМИЯ</text>
+  <!-- Плодородный полумесяц (label) -->
+  <text class="region-label lbl-z1" x="870" y="255" font-size="8" fill="#7fa780" opacity=".45" letter-spacing=".2em" transform="rotate(15 870 255)">ПЛОДОРОДНЫЙ ПОЛУМЕСЯЦ</text>
     <text class="region-he" x="1235" y="430" font-size="15" transform="rotate(22 1235 430)">אֲרַם נַהֲרַיִם</text>
     <text class="region-label" font-size="13" letter-spacing=".48em"><textPath href="#canaanRidge" startOffset="6%">Х&#160;А&#160;Н&#160;А&#160;А&#160;Н</textPath></text>
     <text class="region-he" font-size="10"><textPath href="#canaanRidge" startOffset="64%">כְּנַעַן</textPath></text>
@@ -807,6 +842,9 @@ body{overscroll-behavior:none;-webkit-overscroll-behavior:none}
     <circle cx="23" cy="23" r="21" fill="rgba(10,13,20,.7)" stroke="rgba(232,200,121,.35)" stroke-width="1"/>
     <path d="M23 7 L26.5 23 L23 20 L19.5 23 Z" fill="#e8c879"/>
     <path d="M23 39 L26.5 23 L23 26 L19.5 23 Z" fill="#6c737e"/>
+    <path d="M7 23 L23 19.5 L20 23 L23 26.5 Z" fill="#9aa2ae" opacity=".6"/>
+    <path d="M39 23 L23 26.5 L26 23 L23 19.5 Z" fill="#9aa2ae" opacity=".6"/>
+    <circle cx="23" cy="23" r="2.5" fill="#e8c879"/>
     <text x="23" y="6" text-anchor="middle" font-size="6.5" fill="#e8c879" style="letter-spacing:.1em">С</text>
   </svg>
   <div id="minimap">
@@ -886,6 +924,14 @@ body{overscroll-behavior:none;-webkit-overscroll-behavior:none}
   </div>
 </aside>
 
+<!-- ============ PHOTO MODAL ============ -->
+<div id="photoModal" role="dialog" aria-modal="true" aria-label="Фото места">
+  <div class="pm-inner">
+    <button class="pm-x" id="photoClose" aria-label="Закрыть фото">✕</button>
+    <img id="photoImg" src="" alt="" loading="lazy">
+    <div class="pm-cap" id="photoCap"></div>
+  </div>
+</div>
 <div id="treeModal" style="position:fixed;inset:0;z-index:60;background:rgba(4,6,10,.72);backdrop-filter:blur(6px);display:none;place-items:center;padding:20px">
   <div class="card" style="background:linear-gradient(165deg,rgba(22,26,35,.97),rgba(11,14,21,.98));border:1px solid var(--panel-line);border-radius:20px;padding:26px 28px;box-shadow:0 30px 80px rgba(0,0,0,.65);max-height:86vh;overflow-y:auto;width:min(760px,96vw)">
     <button class="x" id="treeClose" style="float:right;background:none;border:none;color:var(--txt-dim);font-size:18px;cursor:pointer">✕</button>
@@ -997,7 +1043,11 @@ story:`<p>Великий шумерский город у тогдашнего �
 bible:`<div class="verse">«И взял Терах Аврама, сына своего… и вышел с ними из Ура Халдейского, чтобы идти в землю Ханаанскую; но, дойдя до Харрана, они остановились там».<span>БЫТИЕ 11:31</span></div><div class="verse">«Я Господь, Который вывел тебя из Ура Халдейского, чтобы дать тебе землю сию во владение».<span>БЫТИЕ 15:7</span></div><p><span class="hw">אוּר כַּשְׂדִּים</span> — «Ур касдим». «Касдим» (халдеи) — анахронизм-ориентир для позднего читателя: халдеи появились в Вавилонии лишь в I тыс. до н. э.</p>`,
 arch:`<p>Леонард Вулли (1922–1934, Британский музей + Penn Museum) раскопал в Телль эль-Мукайяре зиккурат Ур-Намму (~2100 г. до н. э.), «царские гробницы» и кварталы добротных частных домов эпохи Исина–Ларсы — времени, близкого традиционной дате Авраама.</p><p>Раскопки возобновлены в XXI веке (сезоны 2015–2019, новый сезон Пенсильванского университета — 2023 (раскопки E. Stone и P. Zimansky)): найдены архивы клинописных табличек, в т. ч. договор обмена двумя большими частными домами (240 и 423 м²) времён Ибби-Сина — живая картина городской жизни «эпохи Авраама».</p><div class="note"><b>Дискуссия:</b> часть исследователей помещает Ур Авраама на севере — Урфа/Шанлыурфа (древняя традиция, 60 км от Харрана) или Уркеш: север лучше объясняет слова «земля моя и родина моя» о районе Харрана. Южный Ур остаётся основной академической версией.</div>,
 he_deep:`<div class="he-block"><div class="he-word"><span class="hw" lang="he">אוּר כַּשְׂדִּים</span><span class="he-tr">Ур Касдим</span></div><div class="he-etym"><b>אוּר</b> — этимология спорна. Версии: шумер. <em>Urim</em> («город»), аккад. <em>ūru</em> («огонь»), семит. корень <span class="hw" lang="he">אוּר</span> («свет»). <b>כַּשְׂדִּים</b> (Касдим, Халдеи) — народ, появившийся в Южной Вавилонии лишь в X–IX вв. до н. э. В Быт 11 — <em>антиципирующий топоним</em>: Моисей называет место именем, знакомым читателю его эпохи (ср. «Дан» в Быт 14:14). Деян 7:2 уточняет: Бог явился Аврааму «ещё в Месопотамии» — первый призыв прозвучал именно в Уре.</div><div class="he-refs">Быт 11:28,31; 15:7 · Неем 9:7 · Деян 7:2–4 · Ис Нав 24:2–3</div></div>`,
-dispute:`<div class="dispute-block"><div class="dispute-title">⚖ Две традиции: Южный и Северный Ур</div><div class="dispute-pos cons"><b>Тель эль-Мукайяр (Юж. Ирак)</b> — основная академическая идентификация: топоним «Ур» в шумерской клинописи, раскопки Вулли, грандиозный зиккурат Ур-Намму. Деян 7:2 («в Месопотамии»). <span class="conf-hi">Надёжность: высокая</span></div><div class="dispute-pos alt"><b>Урфа/Шанлыурфа (Турция)</b> — 60 км от Харрана. Раввины (Маймонид), сирийские христиане, ислам. Аргумент: вся родня Авраама — у Харрана (Быт 24:4 «земля моя»). <span class="conf-med">Надёжность: средняя</span></div><div class="dispute-note">Позиция сайта: Тель эль-Мукайяр — наиболее обоснованная идентификация, Урфа заслуживает серьёзного внимания.</div></div>``},
+dispute:`<div class="dispute-block"><div class="dispute-title">⚖ Две традиции: Южный и Северный Ур</div><div class="dispute-pos cons"><b>Тель эль-Мукайяр (Юж. Ирак)</b> — основная академическая идентификация: топоним «Ур» в шумерской клинописи, раскопки Вулли, грандиозный зиккурат Ур-Намму. Деян 7:2 («в Месопотамии»). <span class="conf-hi">Надёжность: высокая</span></div><div class="dispute-pos alt"><b>Урфа/Шанлыурфа (Турция)</b> — 60 км от Харрана. Раввины (Маймонид), сирийские христиане, ислам. Аргумент: вся родня Авраама — у Харрана (Быт 24:4 «земля моя»). <span class="conf-med">Надёжность: средняя</span></div><div class="dispute-note">Позиция сайта: Тель эль-Мукайяр — наиболее обоснованная идентификация, Урфа заслуживает серьёзного внимания.</div></div>`
+photos:[
+  {src:"https://upload.wikimedia.org/wikipedia/commons/thumb/9/93/Ancient_ziggurat_at_Ali_Air_Base_Iraq_2005.jpg/1280px-Ancient_ziggurat_at_Ali_Air_Base_Iraq_2005.jpg",thumb:"https://upload.wikimedia.org/wikipedia/commons/thumb/9/93/Ancient_ziggurat_at_Ali_Air_Base_Iraq_2005.jpg/320px-Ancient_ziggurat_at_Ali_Air_Base_Iraq_2005.jpg",label:"СЕЙЧАС",type:"now",alt:"Зиккурат Ура — вид с воздуха",credit:"Wikimedia Commons / USAF, Public Domain"},
+  {src:"https://upload.wikimedia.org/wikipedia/commons/thumb/c/c7/Ur_Excavations_Vol2_plate076.jpg/1280px-Ur_Excavations_Vol2_plate076.jpg",thumb:"https://upload.wikimedia.org/wikipedia/commons/thumb/c/c7/Ur_Excavations_Vol2_plate076.jpg/320px-Ur_Excavations_Vol2_plate076.jpg",label:"РАСКОПКИ (Вулли)",type:"then",alt:"Раскопки Ура — Вулли, 1920-е",credit:"Woolley, Ur Excavations Vol. II (1934), Public Domain"}
+],`},
 
 {id:"urfa",name:"Урфа (Шанлыурфа)",he:"אוּרְהַי",tr:"Урхай / Эдесса",x:979,y:159,type:"cand",era:["bronze"],stage:0,kick:"Альтернативный кандидат",id1:"Шанлыурфа",id2:"Турция, 60 км от Харрана",ep1:"традиция ислама и сир. христиан",ep2:"«северный Ур»",side:"t",
 story:`<p>Город с древнейшей живой традицией: пещера под цитаделью почитается как место рождения Авраама, пруд Балыклыгёль — как место, где огонь Нимрода обратился в воду, а угли — в священных карпов.</p><p>Сторонники «северного Ура» указывают: вся родня Авраама (Нахор, Лаван) живёт у Харрана, и патриархи называют этот край «своей землёй».</p>`,
@@ -1008,7 +1058,11 @@ arch:`<p>Систематических слоёв III–II тыс. до н. э.
 story:`<p>«Перекрёсток дорог» (аккад. harrānu — «путь»). Здесь семья оседает, здесь умирает Терах, и отсюда 75-летний Аврам слышит: «Лех-леха» — «иди себе». Сюда вернётся раб за Ревеккой, сюда бежит Иаков к Лавану.</p><p>Харран и Ур связывал общий культ лунного бога Сина — две «лунные столицы» на концах одного караванного пути.</p>`,
 bible:`<div class="verse">«Иди из земли твоей, от родства твоего и из дома отца твоего, в землю, которую Я укажу тебе… И пошёл Аврам, как сказал ему Господь».<span>БЫТИЕ 12:1,4</span></div><p>Возраст Аврама на выходе — 75 лет (12:4). С ним — Сара, Лот и «души, приобретённые в Харране».</p>`,
 arch:`<p>Телль Харрана обживался с ранней бронзы; город известен из эблаитских и староассирийских табличек как центр торговли и храма Сина (Эхульхуль). Раскопки ведутся постоянно (экспедиция Харранского университета под рук. М. Онала): найдены стелы Набонида, кварталы исламского университета, в последних сезонах — витражное стекло и мозаичные тессеры V в. в руинах базилики; памятник входит в предварительный список ЮНЕСКО. Храм Сина (Эхульхуль) стоял на вершине холма свыше 3000 лет — от ассирийских печатей ~1950 г. до н. э. до реставрации Набонида (VI в. до н. э.).</p><div class="note"><b>Ономастика:</b> имена рода — Серуг, Нахор, Терах — совпадают с топонимами округи (Саруги, Нахур, Тиль-Тураххи) в архивах Мари (XVIII в. до н. э.): род Авраама «вписан» именно в этот ландшафт.</div>,
-he_deep:`<div class="he-block"><div class="he-word"><span class="hw" lang="he">חָרָן · פַּדַּן אֲרָם</span><span class="he-tr">Харан · Падан-Арам</span></div><div class="he-etym"><b>חָרָן</b> — аккад. <em>harrānu</em> («дорога, торговый путь»). Буквально «город-перекрёсток». <b>Важно:</b> имя брата Аврама <span class="hw" lang="he">הָרָן</span> (с <em>hе</em>) — другое слово! Одинаковое в русской транслитерации, но разные слова в иврите. <b>פַּדַּן אֲרָם</b> — «поле/дорога Арама»: аккад. <em>paddanu</em> («поле, путь»). Северная Месопотамия как «Поле Арама» — земля, откуда происходят жёны патриархов.</div><div class="he-refs">Быт 11:31; 12:5; 24:10; 27:43; 28:10; 29:4 · Иез 27:23 · Деян 7:4</div></div>``},
+he_deep:`<div class="he-block"><div class="he-word"><span class="hw" lang="he">חָרָן · פַּדַּן אֲרָם</span><span class="he-tr">Харан · Падан-Арам</span></div><div class="he-etym"><b>חָרָן</b> — аккад. <em>harrānu</em> («дорога, торговый путь»). Буквально «город-перекрёсток». <b>Важно:</b> имя брата Аврама <span class="hw" lang="he">הָרָן</span> (с <em>hе</em>) — другое слово! Одинаковое в русской транслитерации, но разные слова в иврите. <b>פַּדַּן אֲרָם</b> — «поле/дорога Арама»: аккад. <em>paddanu</em> («поле, путь»). Северная Месопотамия как «Поле Арама» — земля, откуда происходят жёны патриархов.</div><div class="he-refs">Быт 11:31; 12:5; 24:10; 27:43; 28:10; 29:4 · Иез 27:23 · Деян 7:4</div></div>`
+photos:[
+  {src:"https://upload.wikimedia.org/wikipedia/commons/thumb/d/d3/Harran_beehive_houses.jpg/1280px-Harran_beehive_houses.jpg",thumb:"https://upload.wikimedia.org/wikipedia/commons/thumb/d/d3/Harran_beehive_houses.jpg/320px-Harran_beehive_houses.jpg",label:"ТРАДИЦИОННЫЕ ДОМА",type:"now",alt:"Традиционные конические дома Харрана",credit:"Wikimedia Commons / CC BY-SA"},
+  {src:"https://upload.wikimedia.org/wikipedia/commons/thumb/1/1b/Harran_ruins_castle.jpg/1280px-Harran_ruins_castle.jpg",thumb:"https://upload.wikimedia.org/wikipedia/commons/thumb/1/1b/Harran_ruins_castle.jpg/320px-Harran_ruins_castle.jpg",label:"РУИНЫ ЗАМКА",type:"now",alt:"Руины средневекового замка Харрана",credit:"Wikimedia Commons / CC BY-SA"}
+],`},
 
 {id:"damascus",name:"Дамаск",he:"דַּמֶּשֶׂק",tr:"Даммесек",x:731,y:594,type:"main",era:["bronze"],stage:1,kick:"Арам · транзит пути",id1:"Дамаск",id2:"Сирия, оазис Гута",ep1:"Быт 14:15; 15:2",ep2:"родина Элиэзера",side:"r",
 story:`<p>Древнейший непрерывно населённый оазис на пути из Харрана в Ханаан. Отсюда — Элиэзер, домоправитель Авраама, его несостоявшийся наследник. До «Ховы, что слева от Дамаска» Авраам гонит царей, пленивших Лота.</p>`,
@@ -1019,7 +1073,11 @@ arch:`<p>Дамаск упоминается как «Апум» / «Димаш�
 story:`<p>Первая стоянка Аврама в Обетованной земле — у дуба Морэ́. Здесь Бог впервые является ему в Ханаане и произносит: «Потомству твоему отдам Я землю сию». Ответ Аврама — первый жертвенник в этой земле.</p>`,
 bible:`<div class="verse">«И прошёл Аврам по земле сей до места Сихема, до дубравы Морэ… И явился Господь Авраму и сказал: потомству твоему отдам Я землю сию».<span>БЫТИЕ 12:6–7</span></div><p><span class="hw">אֵלוֹן מוֹרֶה</span> — «элон Морэ», «дуб Учителя/Указующего».</p>`,
 arch:`<p>Телль Балата — мощный город средней бронзы: циклопические стены, ворота, храм-крепость (мигдаль — 21×26 м, стены основания 5,1 м толщины, крупнейшее ханаанское культовое здание в Израиле). Упомянут в египетских «текстах проклятий» и письме Ху-Себека (XIX в. до н. э.) — город существовал именно в эпоху патриархов.</p>,
-he_deep:`<div class="he-block"><div class="he-word"><span class="hw" lang="he">שְׁכֶם · אֵלוֹן מוֹרֶה</span><span class="he-tr">Шхем · Дуб Морэ</span></div><div class="he-etym"><b>שְׁכֶם</b> — «плечо, хребет горы». Город в «седловине» между Гевалом (940 м) и Гаризимом (881 м) — буквально «на плечах двух гор». Тот же корень: <span class="hw" lang="he">שָׁכַם</span> — «встать рано, взвалить на плечо» (Быт 22:3 — Авраам <em>встал рано</em> в день Акеды). <b>אֵלוֹן מוֹרֶה</b> — «дуб/дубрава Учителя»: <span class="hw" lang="he">מוֹרֶה</span> от <span class="hw" lang="he">ירה</span> (учить, указывать). Дуб как место богоявления и «урока».</div><div class="he-refs">Быт 12:6–7; 33:18–20; 35:4 · Нав 24:25 · Суд 7:1 · Иоан 4:5</div></div>``},
+he_deep:`<div class="he-block"><div class="he-word"><span class="hw" lang="he">שְׁכֶם · אֵלוֹן מוֹרֶה</span><span class="he-tr">Шхем · Дуб Морэ</span></div><div class="he-etym"><b>שְׁכֶם</b> — «плечо, хребет горы». Город в «седловине» между Гевалом (940 м) и Гаризимом (881 м) — буквально «на плечах двух гор». Тот же корень: <span class="hw" lang="he">שָׁכַם</span> — «встать рано, взвалить на плечо» (Быт 22:3 — Авраам <em>встал рано</em> в день Акеды). <b>אֵלוֹן מוֹרֶה</b> — «дуб/дубрава Учителя»: <span class="hw" lang="he">מוֹרֶה</span> от <span class="hw" lang="he">ירה</span> (учить, указывать). Дуб как место богоявления и «урока».</div><div class="he-refs">Быт 12:6–7; 33:18–20; 35:4 · Нав 24:25 · Суд 7:1 · Иоан 4:5</div></div>`
+photos:[
+  {src:"https://upload.wikimedia.org/wikipedia/commons/thumb/4/4a/Tell_Balata_archaeological_park_03.jpg/1280px-Tell_Balata_archaeological_park_03.jpg",thumb:"https://upload.wikimedia.org/wikipedia/commons/thumb/4/4a/Tell_Balata_archaeological_park_03.jpg/320px-Tell_Balata_archaeological_park_03.jpg",label:"ТЕЛЛЬ БАЛАТА",type:"now",alt:"Телль Балата — вид на раскопки",credit:"Wikimedia Commons / CC BY-SA"},
+  {src:"https://upload.wikimedia.org/wikipedia/commons/thumb/6/6d/Shechem_East_Gate_area.jpg/1280px-Shechem_East_Gate_area.jpg",thumb:"https://upload.wikimedia.org/wikipedia/commons/thumb/6/6d/Shechem_East_Gate_area.jpg/320px-Shechem_East_Gate_area.jpg",label:"ВОСТОЧНЫЕ ВОРОТА",type:"then",alt:"Восточные ворота Сихема (раскопки)",credit:"NPAPH / Archaeological excavations"}
+],`},
 
 {id:"bethel",name:"Бет-Эль и Гай",he:"בֵּית-אֵל וְהָעַי",tr:"Бейт-Эль ве-ха-Ай",x:624,y:782,type:"main",era:["bronze"],tier:2,stage:1,kick:"Жертвенник и развилка судеб",id1:"Бейтин / эт-Телль",id2:"водораздел Иудейских гор",ep1:"Быт 12:8; 13:3–13",ep2:"призывание Имени; раздел с Лотом",side:"l",
 story:`<p>Между Бет-Элем («дом Бога») и Гаем Аврам ставит шатёр и второй жертвенник — и «призывает имя Господа». Сюда же он возвращается из Египта, и здесь происходит мирный раздел с Лотом: спор пастухов решается великодушием — «не вся ли земля пред тобою?».</p><p>Лот выбирает глазами — орошённую долину Иордана, «как сад Господень». Аврам остаётся с обетованием.</p>`,
@@ -1031,39 +1089,60 @@ he_deep:`<div class="he-block"><div class="he-word"><span class="hw" lang="he">�
 story:`<p>Голод гонит Аврама «дорогой Сура» в Египет — житницу древнего мира. Эпизод с Сарой в доме фараона оборачивается «казнями» для Египта и удалением семьи с богатыми дарами — миниатюрный прообраз будущего Исхода: та же схема — голод, нисхождение, казни, выход с имуществом.</p>`,
 bible:`<div class="verse">«И был голод в той земле. И сошёл Аврам в Египет, пожить там, потому что усилился голод в земле той».<span>БЫТИЕ 12:10</span></div><div class="verse">«И поднялся Аврам из Египта… и был очень богат скотом, и серебром, и золотом».<span>БЫТИЕ 13:1–2</span></div>`,
 arch:`<p>Картина достоверна для Среднего царства (XII династия, ~2000–1800 гг. до н. э.): росписи гробницы Хнумхотепа II в Бени-Хасане (~1890 г. до н. э.) изображают караван из 37 семитов-«аму» в ярких одеждах, с ослами и металлическим товаром, входящих в Египет с разрешения пограничного чиновника — прямая визуальная параллель к визиту Аврама.</p><p>«Пророчество Неферти» и «Рассказ Синухе» (XX в. до н. э.) фиксируют и контроль границы («Стена правителя» на Синае), и приток «азиатов» в Дельту в голодные годы — механизм, описанный в Быт 12:10 для Аврама.</p>,
-he_deep:`<div class="he-block"><div class="he-word"><span class="hw" lang="he">מִצְרַיִם</span><span class="he-tr">Мицраим</span></div><div class="he-etym">Форма <em>двойственного числа</em> (окончание <span class="hw" lang="he">-аим</span>): «Два Египта» — точное соответствие египетскому <em>Тауи</em> («Два Берега»: Верхний и Нижний Египет). <span class="hw" lang="he">מִצְרַיִם</span> — также имя сына Хама (Быт 10:6), прародитель египтян. Корень <span class="hw" lang="he">מָצַר</span> («теснина, сжатие»): Египет — узкая орошаемая долина среди пустыни. Нисхождение (<span class="hw" lang="he">יָרַד</span>) и исход (<span class="hw" lang="he">עָלָה</span>) Аврама — та же пара глаголов, что в книге Исход: типологическая параллель намеренна.</div><div class="he-refs">Быт 12:10–20; 13:1; 15:18; 46–47 · Исх 1:1 · Ос 11:1 · Мф 2:15</div></div>``},
+he_deep:`<div class="he-block"><div class="he-word"><span class="hw" lang="he">מִצְרַיִם</span><span class="he-tr">Мицраим</span></div><div class="he-etym">Форма <em>двойственного числа</em> (окончание <span class="hw" lang="he">-аим</span>): «Два Египта» — точное соответствие египетскому <em>Тауи</em> («Два Берега»: Верхний и Нижний Египет). <span class="hw" lang="he">מִצְרַיִם</span> — также имя сына Хама (Быт 10:6), прародитель египтян. Корень <span class="hw" lang="he">מָצַר</span> («теснина, сжатие»): Египет — узкая орошаемая долина среди пустыни. Нисхождение (<span class="hw" lang="he">יָרַד</span>) и исход (<span class="hw" lang="he">עָלָה</span>) Аврама — та же пара глаголов, что в книге Исход: типологическая параллель намеренна.</div><div class="he-refs">Быт 12:10–20; 13:1; 15:18; 46–47 · Исх 1:1 · Ос 11:1 · Мф 2:15</div></div>`
+photos:[
+  {src:"https://upload.wikimedia.org/wikipedia/commons/thumb/5/52/Nile_River_Delta_from_orbit.jpg/1280px-Nile_River_Delta_from_orbit.jpg",thumb:"https://upload.wikimedia.org/wikipedia/commons/thumb/5/52/Nile_River_Delta_from_orbit.jpg/320px-Nile_River_Delta_from_orbit.jpg",label:"ДЕЛЬТА НИЛА (ОРБИТА)",type:"ctx",alt:"Дельта Нила — вид из космоса. Место, куда пришёл Аврам во время голода (Быт 12:10)",credit:"NASA / Public Domain"}
+],`},
 
 {id:"hebron",name:"Хеврон · Мамре",he:"חֶבְרוֹן · אֵלֹנֵי מַמְרֵא",tr:"Хеврон, Элоней Мамре",x:610,y:829,type:"main",era:["bronze"],stage:3,kick:"Дом Авраама в Ханаане",id1:"Тель Румейда / Рамат эль-Халиль",id2:"Иудейские горы, 930 м",ep1:"Быт 13:18; 18; 23",ep2:"три гостя; Махпела",side:"l",
 story:`<p>Главная резиденция Авраама: дубрава Мамре, третий жертвенник, союзники-аморреи. Здесь — явление трёх гостей, обещание Исаака, дерзновенный торг за Содом («неужели Судия всей земли поступит несправедливо?»).</p><p>Здесь же — единственная земля, которую Авраам купил: пещера Махпела за 400 шекелей серебра, гробница Сары, его самого, Исаака и Иакова.</p>`,
 bible:`<div class="verse">«И явился ему Господь у дубравы Мамре, когда он сидел при входе в шатёр, во время зноя дневного».<span>БЫТИЕ 18:1</span></div><div class="verse">«И стало поле Ефрона… и пещера, которая на нём, владением Авраама пред очами сынов Хета».<span>БЫТИЕ 23:17–18</span></div>`,
 arch:`<p>На Тель Румейде — стены и ворота средней бронзы (радиоуглерод подтверждает обживание ~1800–700 гг. до н. э.; найдена клинописная табличка XVII–XVI в. до н. э. с именами и списком скота — свидетельство смешанного хурритско-аморрейского общества с дворцовыми писцами); в Рамат эль-Халиле (традиционное Мамре) — ограда времён Ирода и Адриана вокруг древнего священного места.</p><div class="note"><b>Стены средней бронзы — циклопические, из блоков 3×5 м. Махпела:</b> иродианский монумент (I в. до н. э.) из колоссальных квадров — единственное римское здание мира, дошедшее целиком и непрерывно выполняющее исходную функцию. Сама пещера запечатана с поздней античности; раскопки никогда не разрешались.</div>,
-he_deep:`<div class="he-block"><div class="he-word"><span class="hw" lang="he">חֶבְרוֹן · מַכְפֵּלָה · אֵלֹנֵי מַמְרֵא</span><span class="he-tr">Хеврон · Махпела · Мамре</span></div><div class="he-etym"><b>חֶבְרוֹן</b> — от <span class="hw" lang="he">חבר</span> («связывать, дружить»). «Союз, братство» — Авраам живёт в союзе с аморреями Мамре, Эшколом, Анером. <b>קִרְיַת אַרְבַּע</b> — «Город Четырёх» (по имени великана Арбы, Нав 14:15). <b>מַכְפֵּלָה</b> — «двойная пещера» (<span class="hw" lang="he">כפל</span> — «удваивать»): двойная как гробница для супружеских пар. <b>אֵלֹנֵי מַמְרֵא</b> — «дубравы Мамре»; <span class="hw" lang="he">מַמְרֵא</span> — возможно от <span class="hw" lang="he">מרא</span> («сила, непреклонность»). <b>400 шекелей серебра</b> — первый юридически оформленный надел Израиля.</div><div class="he-refs">Быт 13:18; 14:13; 18:1; 23:1–20; 35:27 · Числ 13:22 · Нав 14:14 · 2 Цар 2:11</div></div>``},
+he_deep:`<div class="he-block"><div class="he-word"><span class="hw" lang="he">חֶבְרוֹן · מַכְפֵּלָה · אֵלֹנֵי מַמְרֵא</span><span class="he-tr">Хеврон · Махпела · Мамре</span></div><div class="he-etym"><b>חֶבְרוֹן</b> — от <span class="hw" lang="he">חבר</span> («связывать, дружить»). «Союз, братство» — Авраам живёт в союзе с аморреями Мамре, Эшколом, Анером. <b>קִרְיַת אַרְבַּע</b> — «Город Четырёх» (по имени великана Арбы, Нав 14:15). <b>מַכְפֵּלָה</b> — «двойная пещера» (<span class="hw" lang="he">כפל</span> — «удваивать»): двойная как гробница для супружеских пар. <b>אֵלֹנֵי מַמְרֵא</b> — «дубравы Мамре»; <span class="hw" lang="he">מַמְרֵא</span> — возможно от <span class="hw" lang="he">מרא</span> («сила, непреклонность»). <b>400 шекелей серебра</b> — первый юридически оформленный надел Израиля.</div><div class="he-refs">Быт 13:18; 14:13; 18:1; 23:1–20; 35:27 · Числ 13:22 · Нав 14:14 · 2 Цар 2:11</div></div>`
+photos:[
+  {src:"https://upload.wikimedia.org/wikipedia/commons/thumb/8/82/Hebron_Cave_of_Machpelah.jpg/1280px-Hebron_Cave_of_Machpelah.jpg",thumb:"https://upload.wikimedia.org/wikipedia/commons/thumb/8/82/Hebron_Cave_of_Machpelah.jpg/320px-Hebron_Cave_of_Machpelah.jpg",label:"МАХПЕЛА (ИРОД. КОРПУС)",type:"now",alt:"Иродианский корпус над пещерой Махпела в Хевроне",credit:"Wikimedia Commons / CC BY-SA"},
+  {src:"https://upload.wikimedia.org/wikipedia/commons/thumb/0/0e/Ramat_el-Khalil_2011_04.jpg/1280px-Ramat_el-Khalil_2011_04.jpg",thumb:"https://upload.wikimedia.org/wikipedia/commons/thumb/0/0e/Ramat_el-Khalil_2011_04.jpg/320px-Ramat_el-Khalil_2011_04.jpg",label:"МАМРЕ (РАМАТ ЭЛЬ-ХАЛИЛЬ)",type:"now",alt:"Рамат эль-Халиль — место дубравы Мамре",credit:"Wikimedia Commons / CC BY-SA"}
+],`},
 
 {id:"salem",name:"Шалем · гора Мория",he:"שָׁלֵם · הַר הַמֹּרִיָּה",tr:"Шалем, хар ха-Мория",x:623,y:800,type:"main",era:["bronze"],stage:6,kick:"Мелхиседек и Акеда",id1:"Иерусалим, Храмовая гора",id2:"высота 740 м",ep1:"Быт 14:18–20; 22",ep2:"благословение; связывание Исаака",side:"r",
 story:`<p>Два узла всей книги. После победы над царями Авраама встречает Мелхиседек, царь Шалема, «священник Бога Всевышнего», с хлебом и вином — и Авраам даёт ему десятину.</p><p>Сюда же, «в землю Мория», на третий день пути из Беэр-Шевы, Авраам восходит с Исааком. Нож занесён — и остановлен: «Теперь Я знаю, что боишься ты Бога». Место получает имя <span class="hw">יְהוָה יִרְאֶה</span> — «Господь усмотрит».</p>`,
 bible:`<div class="verse">«Возьми сына твоего, единственного твоего, которого ты любишь, Исаака… и принеси его во всесожжение на одной из гор, о которой Я скажу тебе».<span>БЫТИЕ 22:2</span></div><p>2 Пар 3:1 прямо связывает Морию с горой Храма Соломона. Самаритянская традиция указывает на Гаризим.</p>`,
 arch:`<p>«Рушалимум» назван в египетских «текстах проклятий» XIX–XVIII вв. до н. э. — город существовал при патриархах. У источника Гихон обнаружены массивные стены средней бронзы толщиной до 7 м — крупнейшие бронзового века в Израиле (раскопки Р. Райха и Э. Шукрона, с 1995 г.). Камни весом 2–3 тонны, циклопическая кладка. Укрепления защищали единственный водный источник города.</p><p>Скала Мории ныне под Куполом Скалы; археология Храмовой горы недоступна для раскопок. 2 Пар 3:1 связывает Морию с местом Храма Соломона.</p>,
 he_deep:`<div class="he-block"><div class="he-word"><span class="hw" lang="he">שָׁלֵם · מַלְכִּי-צֶדֶק · הַר הַמֹּרִיָּה</span><span class="he-tr">Шалем · Мелхиседек · гора Мория</span></div><div class="he-etym"><b>שָׁלֵם</b> — от <span class="hw" lang="he">שלם</span> («мир, полнота»). Сокращение <span class="hw" lang="he">יְרוּשָׁלַיִם</span>. Пс 76:3: «В Шалеме шатёр Его». <b>מַלְכִּי-צֶדֶק</b> = <span class="hw" lang="he">מֶלֶךְ</span> («царь») + <span class="hw" lang="he">צֶדֶק</span> («праведность»). «Мой царь — праведность». Евр 7: без родословия, образ вечного священства Христа. <b>הַר הַמֹּרִיָּה</b>: этимология спорна: (1) от <span class="hw" lang="he">יָרָה</span> («учить») — «место наставления»; (2) от <span class="hw" lang="he">רָאָה</span> («видеть») — «место видения». Сам Авраам толкует: <span class="hw" lang="he">יְהוָה יִרְאֶה</span> — «Господь усмотрит» (Быт 22:14). <b>כֹּהֵן לְאֵל עֶלְיוֹן</b> — <span class="hw" lang="he">עֶלְיוֹן</span> («Всевышний»): встречается в угаритских текстах как имя верховного бога — Авраам применяет его к Богу Израиля.</div><div class="he-refs">Быт 14:18–20; 22:2,14 · Пс 76:3; 109:4 · Евр 5–7 · 2 Пар 3:1</div></div>`,
-dispute:`<div class="dispute-block"><div class="dispute-title">⚖ Иерусалим или Гаризим?</div><div class="dispute-pos cons"><b>Иерусалим, Храмовая гора</b> — поддержано 2 Пар 3:1, Пс 76:3, непрерывной еврейской и христианской традицией. <span class="conf-hi">Надёжность: очень высокая</span></div><div class="dispute-pos alt"><b>Самарянская традиция — Гаризим</b>: самарянское Пятикнижие читает «Море» вместо «Мория» в Быт 12:6. Апологетика своей святыни. <span class="conf-lo">Надёжность: низкая</span></div></div>``},
+dispute:`<div class="dispute-block"><div class="dispute-title">⚖ Иерусалим или Гаризим?</div><div class="dispute-pos cons"><b>Иерусалим, Храмовая гора</b> — поддержано 2 Пар 3:1, Пс 76:3, непрерывной еврейской и христианской традицией. <span class="conf-hi">Надёжность: очень высокая</span></div><div class="dispute-pos alt"><b>Самарянская традиция — Гаризим</b>: самарянское Пятикнижие читает «Море» вместо «Мория» в Быт 12:6. Апологетика своей святыни. <span class="conf-lo">Надёжность: низкая</span></div></div>`
+photos:[
+  {src:"https://upload.wikimedia.org/wikipedia/commons/thumb/1/1c/Jerusalem_Dome_of_the_Rock_BW_14.JPG/1280px-Jerusalem_Dome_of_the_Rock_BW_14.JPG",thumb:"https://upload.wikimedia.org/wikipedia/commons/thumb/1/1c/Jerusalem_Dome_of_the_Rock_BW_14.JPG/320px-Jerusalem_Dome_of_the_Rock_BW_14.JPG",label:"ГОРА МОРИЯ (НЫНЕ)",type:"now",alt:"Храмовая гора (гора Мория) с Куполом Скалы — место Акеды и встречи с Мелхиседеком",credit:"Wikimedia Commons / CC BY-SA 3.0"}
+],`},
 
 {id:"dan",name:"Дан (Лаиш)",he:"דָּן (לַיִשׁ)",tr:"Дан, Лаиш",x:665,y:625,type:"main",era:["bronze"],stage:4,kick:"Северный предел погони",id1:"Тель Дан",id2:"исток Иордана, подножие Хермона",ep1:"Быт 14:14–16",ep2:"ночная атака; спасение Лота",side:"r",
 story:`<p>Узнав, что Лот пленён коалицией четырёх восточных царей, Авраам поднимает 318 «воспитанников дома» и союзников и стремительным маршем настигает врага «до Дана», а ночной атакой с разделением отряда гонит его «до Ховы, что слева от Дамаска». Всё — ради племянника.</p>`,
 bible:`<div class="verse">«Аврам… вооружил рабов своих, рождённых в доме его, триста восемнадцать, и преследовал неприятелей до Дана».<span>БЫТИЕ 14:14</span></div><p>Имя «Дан» здесь — позднейшее обновление топонима: при патриархах город звался Лаиш/Лешем.</p>`,
 arch:`<p>На Тель Дане сохранились уникальные сырцово-кирпичные ворота средней бронзы (~1750 г. до н. э.) с тройной аркой — «ворота Авраама»: древнейшая стоящая арка Святой Земли. Открыты А. Бираном в 1979 г.; после реставрации восстановлены на полную высоту ~7 м. Ворота датированы ~1750 г. до н. э. — раскопщик считал вероятным, что царь Лаиша вышел навстречу Аврааму и пригласил через них в городения под защитным навесом. Лаиш упомянут в египетских текстах проклятий и архиве Мари.</p>,
-he_deep:`<div class="he-block"><div class="he-word"><span class="hw" lang="he">דָּן · לַיִשׁ</span><span class="he-tr">Дан · Лаиш</span></div><div class="he-etym"><b>דָּן</b> — «судья» (корень <span class="hw" lang="he">דין</span>). Имя сына Иакова: «Бог рассудил меня» (Быт 30:6). Колено Даново захватит Лаиш позднее (Суд 18). <b>לַיִשׁ</b> — «лев» (аккад. <em>lawisum</em>). «Дан» в Быт 14:14 — <em>антиципирующий топоним</em>: Моисей называет город именем, известным читателю его эпохи. Не ошибка, а пояснительная техника (аналог: говорить «Стамбул» об историческом Константинополе). <b>318</b> воинов: гематрия имени Элиэзера (Недарим 32а) — один верный слуга стоит армии.</div><div class="he-refs">Быт 14:14 · Суд 18:7,27–29 · 3 Цар 12:29–30</div></div>``},
+he_deep:`<div class="he-block"><div class="he-word"><span class="hw" lang="he">דָּן · לַיִשׁ</span><span class="he-tr">Дан · Лаиш</span></div><div class="he-etym"><b>דָּן</b> — «судья» (корень <span class="hw" lang="he">דין</span>). Имя сына Иакова: «Бог рассудил меня» (Быт 30:6). Колено Даново захватит Лаиш позднее (Суд 18). <b>לַיִשׁ</b> — «лев» (аккад. <em>lawisum</em>). «Дан» в Быт 14:14 — <em>антиципирующий топоним</em>: Моисей называет город именем, известным читателю его эпохи. Не ошибка, а пояснительная техника (аналог: говорить «Стамбул» об историческом Константинополе). <b>318</b> воинов: гематрия имени Элиэзера (Недарим 32а) — один верный слуга стоит армии.</div><div class="he-refs">Быт 14:14 · Суд 18:7,27–29 · 3 Цар 12:29–30</div></div>`
+photos:[
+  {src:"https://upload.wikimedia.org/wikipedia/commons/thumb/d/d0/Tel_Dan_Gate_2004.jpg/1280px-Tel_Dan_Gate_2004.jpg",thumb:"https://upload.wikimedia.org/wikipedia/commons/thumb/d/d0/Tel_Dan_Gate_2004.jpg/320px-Tel_Dan_Gate_2004.jpg",label:"ВОРОТА АВРААМА (~1750 до н.э.)",type:"now",alt:"Ворота средней бронзы на Тель Дан (~1750 до н.э.)",credit:"Wikimedia Commons / CC BY 4.0"},
+  {src:"https://upload.wikimedia.org/wikipedia/commons/thumb/7/72/Tel_Dan_springs.jpg/1280px-Tel_Dan_springs.jpg",thumb:"https://upload.wikimedia.org/wikipedia/commons/thumb/7/72/Tel_Dan_springs.jpg/320px-Tel_Dan_springs.jpg",label:"ИСТОЧНИКИ ДАНА",type:"now",alt:"Источники у основания горы Хермон — исток Иордана",credit:"Wikimedia Commons / CC BY-SA"}
+],`},
 
 {id:"sodom",name:"Содом и Гоморра",he:"סְדֹם וַעֲמֹרָה",tr:"Сдом ва-Амора",x:669,y:880,type:"lot",era:["bronze"],stage:3,kick:"Города долины Сиддим",id1:"кандидаты: Баб эд-Дра, Нумейра",id2:"юго-восток Мёртвого моря",ep1:"Быт 13:10–13; 18:16–19:29",ep2:"выбор Лота; катастрофа",side:"b",
 story:`<p>Города «окрестности Иорданской», к которым Лот придвигал шатры, пока не сел в самих воротах Содома. Авраам торгуется за них с Богом — от пятидесяти праведников до десяти. Десяти не нашлось.</p><p>«И пролил Господь… серу и огонь». Наутро Авраам смотрит с высот Хеврона: «вот, дым поднимается с земли, как дым из печи». Жена Лота, оглянувшись, становится соляным столпом.</p>`,
 bible:`<div class="verse">«Может быть, найдётся там десять? Он сказал: не истреблю ради десяти».<span>БЫТИЕ 18:32</span></div><div class="verse">«И пролил Господь на Содом и Гоморру дождём серу и огонь от Господа с неба».<span>БЫТИЕ 19:24</span></div>`,
 arch:`<p>Главные кандидаты — Баб эд-Дра и Нумейра у юго-восточного берега (раскопки У. Раста и Т. Шауба с 1973 г.): укреплённые города ранней бронзы с огромным некрополем, погибшие в пожаре (~2350 г. до н. э.), в зоне разломов, битума и серосодержащих пород долины Сиддим (Быт 14:10 — «смоляные ямы»). Сами раскопщики осторожны: слои старше традиционной даты Авраама, и разрушения двух городов, возможно, не одновременны.</p><button class="act-btn" data-action="debate">⊙ ПОКАЗАТЬ ЛИНИИ ВИДИМОСТИ ИЗ БЕТ-ЭЛЯ</button><div class="note"><b>Актуально:</b> громкая гипотеза «космического взрыва» над северным кандидатом Талл эль-Хаммамом (2021) <b>отозвана журналом Scientific Reports 24 апреля 2025 г.</b> — данные признаны не подтверждающими выводы.</div>,
 he_deep:`<div class="he-block"><div class="he-word"><span class="hw" lang="he">סְדֹם · כִּכַּר הַיַּרְדֵּן · עֵמֶק הַשִּׂדִּים</span><span class="he-tr">Сдом · Круг Иорданский · Долина Сиддим</span></div><div class="he-etym"><b>סְדֹם</b>: этимология неизвестна. Возможно, аккад. <em>sadāmu</em> («жечь») или семит. «твердыня». <b>כִּכַּר הַיַּרְדֵּן</b> — «круг/диск Иордана»: <span class="hw" lang="he">כִּכָּר</span> = «талант» (плоский круглый слиток) + «площадь, круг». Иорданская котловина как плоская округлая равнина, хорошо орошённая. <b>עֵמֶק הַשִּׂדִּים</b> — «долина полей/битума»: <span class="hw" lang="he">שִׂדִּים</span> — hapax legomenon (встречается лишь здесь). Быт 14:10: «смоляные ямы» (<span class="hw" lang="he">בְּאֵרֹת בְּאֵרֹת חֵמָר</span>) — геологически точно для зоны Мёртвого моря с выходами природного битума.</div><div class="he-refs">Быт 13:10–12; 14:1–12; 18:20–19:29 · Ис 1:9; 13:19 · Иез 16:48 · Мф 10:15 · Лк 17:29 · Иуд 7</div></div>`,
-dispute:`<div class="dispute-block"><div class="dispute-title">⚖ Один из самых дискуссионных вопросов</div><div class="dispute-pos cons"><b>ЮВ побережье Мёртвого моря</b> — Баб эд-Дра (Содом?) и Нумейра (Гоморра?): раскопки Раста/Шауба (1973–), пожар, Цоар у Гор эс-Сафи. <span class="conf-med">Надёжность: средняя</span></div><div class="dispute-pos alt"><b>Талл эль-Хаммам (С. Коллинз)</b>: виден из Бет-Эля (Быт 13:10), крупный город средней бронзы. Но статья о «взрыве» 2021 г. <b>отозвана Scientific Reports 24.04.2025</b>. Хронологический разрыв ~300 лет. <span class="conf-lo">Надёжность: ослаблена</span></div><div class="dispute-note"><b>Позиция сайта:</b> катастрофа — историческое событие Божьего суда. Место дискуссионно; мы не претендуем на уверенность там, где её нет у учёных.</div></div>``},
+dispute:`<div class="dispute-block"><div class="dispute-title">⚖ Один из самых дискуссионных вопросов</div><div class="dispute-pos cons"><b>ЮВ побережье Мёртвого моря</b> — Баб эд-Дра (Содом?) и Нумейра (Гоморра?): раскопки Раста/Шауба (1973–), пожар, Цоар у Гор эс-Сафи. <span class="conf-med">Надёжность: средняя</span></div><div class="dispute-pos alt"><b>Талл эль-Хаммам (С. Коллинз)</b>: виден из Бет-Эля (Быт 13:10), крупный город средней бронзы. Но статья о «взрыве» 2021 г. <b>отозвана Scientific Reports 24.04.2025</b>. Хронологический разрыв ~300 лет. <span class="conf-lo">Надёжность: ослаблена</span></div><div class="dispute-note"><b>Позиция сайта:</b> катастрофа — историческое событие Божьего суда. Место дискуссионно; мы не претендуем на уверенность там, где её нет у учёных.</div></div>`
+photos:[
+  {src:"https://upload.wikimedia.org/wikipedia/commons/2/2c/Lot%27s_wife_and_rock_salt_in_mount_Sodom.jpg",thumb:"https://upload.wikimedia.org/wikipedia/commons/thumb/2/2c/Lot%27s_wife_and_rock_salt_in_mount_Sodom.jpg/320px-Lot%27s_wife_and_rock_salt_in_mount_Sodom.jpg",label:"ГОРА СОДОМ",type:"ctx",alt:"Реальная соляная колонна на горе Содом (Мёртвое море). Геологически — обвал пещеры ~4000 л. н. Традиция связывает с женой Лота (Быт 19:26)",credit:"Wikimedia Commons / Shayshal2, CC BY-SA 4.0 (2020)"},
+  {src:"https://upload.wikimedia.org/wikipedia/commons/thumb/4/47/Bab_edh-Dhra_ruins.jpg/1280px-Bab_edh-Dhra_ruins.jpg",thumb:"https://upload.wikimedia.org/wikipedia/commons/thumb/4/47/Bab_edh-Dhra_ruins.jpg/320px-Bab_edh-Dhra_ruins.jpg",label:"БАБ ЭД-ДРА (КАНДИДАТ)",type:"dis",alt:"Руины Баб эд-Дра — один из кандидатов на Содом (ЮВ берег Мёртвого моря)",credit:"Wikimedia Commons / CC BY-SA"}
+],`},
 
 {id:"hammam",name:"Талл эль-Хаммам",he:"כִּכַּר הַיַּרְדֵּן",tr:"киккар ха-Ярден",x:667,y:793,type:"cand",era:["bronze"],stage:3,kick:"Северный кандидат на Содом",id1:"Талл эль-Хаммам",id2:"Иордания, СВ угол Мёртвого моря",ep1:"гипотеза С. Коллинза",ep2:"дискуссия открыта",side:"r",
 story:`<p>Крупнейший городской телль южной долины Иордана (средняя бронза), который экспедиция С. Коллинза предлагает считать Содомом: он лежит в «киккаре» — круге Иордана, видимом из Бет-Эля, и был внезапно покинут на века.</p>`,
 bible:`<p>Аргумент — география Быт 13:10: Лот видит «весь киккар Иорданский» от Бет-Эля; юго-восточные кандидаты оттуда не видны, северная равнина — видна.</p>`,
 arch:`<p>Город погиб в конце средней бронзы и пустовал ~500 лет. Однако статья 2021 г. о разрушении «воздушным взрывом тунгусского типа» после критики физиков и геологов (Бослоу, Джарет и др.) <b>официально ретрагирована Scientific Reports 24.04.2025 (Boslough &amp; Bruno)</b>. Идентификация с Содомом остаётся гипотезой меньшинства — в т. ч. из-за хронологии.</p><button class="act-btn" data-action="debate">⊙ ПОКАЗАТЬ ЛИНИИ ВИДИМОСТИ ИЗ БЕТ-ЭЛЯ</button>,
-dispute:`<div class="dispute-block"><div class="dispute-title">⚖ Талл эль-Хаммам как кандидат на Содом</div><div class="dispute-pos alt"><b>Гипотеза Коллинза (2005–):</b> виден из Бет-Эля, крупнейший бронзовый город долины. Сильный географический аргумент. <span class="conf-med">Надёжность: средняя</span></div><div class="dispute-pos cons"><b>Против:</b> статья 2021 г. о «взрыве» <b>отозвана Scientific Reports 24.04.2025</b>. Хронология ~1650 г. до н. э. vs традиционная дата Авраама ~2100–1900 г. до н. э. — разрыв 250–450 лет. <span class="conf-lo">Надёжность: ослаблена</span></div></div>``},
+dispute:`<div class="dispute-block"><div class="dispute-title">⚖ Талл эль-Хаммам как кандидат на Содом</div><div class="dispute-pos alt"><b>Гипотеза Коллинза (2005–):</b> виден из Бет-Эля, крупнейший бронзовый город долины. Сильный географический аргумент. <span class="conf-med">Надёжность: средняя</span></div><div class="dispute-pos cons"><b>Против:</b> статья 2021 г. о «взрыве» <b>отозвана Scientific Reports 24.04.2025</b>. Хронология ~1650 г. до н. э. vs традиционная дата Авраама ~2100–1900 г. до н. э. — разрыв 250–450 лет. <span class="conf-lo">Надёжность: ослаблена</span></div></div>`
+photos:[
+  {src:"https://upload.wikimedia.org/wikipedia/commons/1/12/Tall_el-Hammam_Excavation-Jordan_Valley.jpg",thumb:"https://upload.wikimedia.org/wikipedia/commons/thumb/1/12/Tall_el-Hammam_Excavation-Jordan_Valley.jpg/320px-Tall_el-Hammam_Excavation-Jordan_Valley.jpg",label:"РАСКОПКИ (С. КОЛЛИНЗ)",type:"dis",alt:"Раскопки Талл эль-Хаммам — предположительный кандидат на Содом по гипотезе Коллинза",credit:"Wikimedia Commons / CC BY-SA — спорная идентификация; Nature paper 2021 retracted 2025"}
+],`},
 
 {id:"zoar",name:"Цоар",he:"צֹעַר",tr:"Цоар («малый»)",x:660,y:907,type:"lot",era:["bronze"],tier:2,stage:3,kick:"Город-убежище Лота",id1:"Гор эс-Сафи (Зоара)",id2:"Иордания, юг Мёртвого моря",ep1:"Быт 19:18–30",ep2:"спасение Лота; Моав и Аммон",side:"b",
 story:`<p>Единственный из пяти городов долины, пощажённый по молитве Лота: «вот, город сей близко… он же мал». Отсюда, не решившись остаться, Лот с дочерьми уходит в пещеру в горах — где рождаются Моав и Бен-Амми, предки моавитян и аммонитян, будущих соседей-родственников Израиля.</p>`,
@@ -1079,7 +1158,11 @@ arch:`<p>С 1956 г. (Й. Ахарони) Герар отождествляют 
 story:`<p>«Колодец семи» и «колодец клятвы» — оба смысла сплетены в имени: семь агниц Авраама как свидетельство, что колодец выкопал он. Здесь заключён договор с Авимелехом, посажен тамариск (<span class="hw">אֵשֶׁל</span>) и призвано имя «Бога Вечного» — Эль Олам.</p><p>Отсюда Авраам выходит к Мории — и сюда возвращается. Здесь же будет жить Исаак.</p>`,
 bible:`<div class="verse">«Потому и назвал он сие место: Беэр-Шева, ибо тут оба они клялись… И насадил Авраам при Беэр-Шеве тамариск, и призвал там имя Господа, Бога Вечного».<span>БЫТИЕ 21:31,33</span></div>`,
 arch:`<p>Тель Беэр-Шева — образцовый город железного века (ЮНЕСКО «Библейские холмы», 2005): ворота, глубокий колодец у ворот, подземная водная система с резервуаром и реконструированный рогатый жертвенник из найденных блоков. Слоёв средней бронзы на телле нет (стратиграфический разрыв) — для эпохи Авраама речь о кочевой стоянке у колодцев, не фиксируемой стандартными раскопками. Колодец у городских ворот датирован XII в. до н. э. — железный век, не бронзовыйодцев.</p><div class="note"><b>«Колодец Авраама»</b> в самом городе (глубина ~12–13 м, у русла Нахаль Беэр-Шева) почитается с древности; на камнях — арабская надпись XII в. С 2013 г. над ним работает международный центр посетителей в форме шатра патриарха.</div>,
-he_deep:`<div class="he-block"><div class="he-word"><span class="hw" lang="he">בְּאֵר שֶׁבַע · אֵל עוֹלָם · אֵשֶׁל</span><span class="he-tr">Беэр-Шева · Эль Олам · Тамариск</span></div><div class="he-etym"><b>בְּאֵר שֶׁבַע</b> — двойной смысл: «колодец семи» И «колодец клятвы». <span class="hw" lang="he">שֶׁבַע</span> = «семь» и «клятва» (клясться по-иврит = «семерить себя»). Авраам ставит <em>семь</em> агниц как знак клятвы — оба значения работают одновременно. <b>אֵל עוֹלָם</b> — «Бог Вечный»: <span class="hw" lang="he">עוֹלָם</span> = «вечность, сокрытое время». Уникальный эпитет — только Быт 21:33. <b>אֵשֶׁל</b> (тамариск) — долгоживущее пустынное дерево, знак постоянства. Авраам сажает его вместо жертвенника — «живой монумент» завета. Беэр-Шева = южная граница Израиля: «от Дана до Беэр-Шевы».</div><div class="he-refs">Быт 21:22–34; 22:19; 26:23–33; 28:10; 46:1–5 · Ам 5:5; 8:14</div></div>``},
+he_deep:`<div class="he-block"><div class="he-word"><span class="hw" lang="he">בְּאֵר שֶׁבַע · אֵל עוֹלָם · אֵשֶׁל</span><span class="he-tr">Беэр-Шева · Эль Олам · Тамариск</span></div><div class="he-etym"><b>בְּאֵר שֶׁבַע</b> — двойной смысл: «колодец семи» И «колодец клятвы». <span class="hw" lang="he">שֶׁבַע</span> = «семь» и «клятва» (клясться по-иврит = «семерить себя»). Авраам ставит <em>семь</em> агниц как знак клятвы — оба значения работают одновременно. <b>אֵל עוֹלָם</b> — «Бог Вечный»: <span class="hw" lang="he">עוֹלָם</span> = «вечность, сокрытое время». Уникальный эпитет — только Быт 21:33. <b>אֵשֶׁל</b> (тамариск) — долгоживущее пустынное дерево, знак постоянства. Авраам сажает его вместо жертвенника — «живой монумент» завета. Беэр-Шева = южная граница Израиля: «от Дана до Беэр-Шевы».</div><div class="he-refs">Быт 21:22–34; 22:19; 26:23–33; 28:10; 46:1–5 · Ам 5:5; 8:14</div></div>`
+photos:[
+  {src:"https://upload.wikimedia.org/wikipedia/commons/thumb/6/62/Tel_Be%27er_Sheva_Overview_2007041.JPG/1280px-Tel_Be%27er_Sheva_Overview_2007041.JPG",thumb:"https://upload.wikimedia.org/wikipedia/commons/thumb/6/62/Tel_Be%27er_Sheva_Overview_2007041.JPG/320px-Tel_Be%27er_Sheva_Overview_2007041.JPG",label:"ТЕЛЬ БЕЭР-ШЕВА (ЮНЕСКО)",type:"now",alt:"Вид на тель Беэр-Шева — объект ЮНЕСКО с 2005 г.",credit:"Wikimedia Commons / CC BY-SA 2.5"},
+  {src:"https://upload.wikimedia.org/wikipedia/commons/thumb/3/3c/Tel_Beer_Sheva_altar.JPG/1280px-Tel_Beer_Sheva_altar.JPG",thumb:"https://upload.wikimedia.org/wikipedia/commons/thumb/3/3c/Tel_Beer_Sheva_altar.JPG/320px-Tel_Beer_Sheva_altar.JPG",label:"РОГАТЫЙ ЖЕРТВЕННИК",type:"now",alt:"Реконструированный рогатый жертвенник из Тель Беэр-Шева (камни найдены в стенах хранилища)",credit:"Wikimedia Commons / CC BY-SA"}
+],`},
 
 {id:"kadesh",name:"Кадеш (Кадеш-Барнеа)",he:"קָדֵשׁ בַּרְנֵעַ",tr:"Кадеш-Барнеа",x:542,y:934,type:"main",era:["bronze"],stage:5,kick:"Оазис южного порубежья",id1:"Эйн эль-Кудейрат",id2:"северо-восток Синая",ep1:"Быт 14:7; 16:14; 20:1",ep2:"ориентир кочевий Авраама",side:"b",
 story:`<p>Крупнейший оазис северного Синая — южный якорь кочевий Авраама: «и поселился между Кадешем и Суром». Рядом — Беэр-лахай-рои, «колодец Живого, видящего меня», где ангел находит беглянку Агарь и где после будет жить Исаак.</p>`,
@@ -1651,6 +1734,11 @@ function openPlace(id,fly=true){
   document.getElementById('p-kicker').textContent=pl.kick;
   document.getElementById('p-name').textContent=pl.name;
   document.getElementById('p-he').textContent=pl.he;
+  // tiny verse reference под именем
+  const pEp1El=document.getElementById('p-ep1');
+  const pEp2El=document.getElementById('p-ep2');
+  if(pEp1El) pEp1El.textContent=pl.ep1;
+  if(pEp2El) pEp2El.textContent=' · '+pl.ep2;
   document.getElementById('p-translit').textContent=pl.tr;
   document.getElementById('p-id1').textContent=pl.id1;document.getElementById('p-id2').textContent=pl.id2;
   document.getElementById('p-ep1').textContent=pl.ep1;document.getElementById('p-ep2').textContent=pl.ep2;
@@ -1703,6 +1791,12 @@ function setTab(t){
     });
     document.getElementById('panel-body').appendChild(relDiv);
   }
+  // photo gallery — добавляем во вкладку СЮЖЕТ и ИВРИТ
+  if((t==='story'||t==='arch') && pl.photos && pl.photos.length){
+    const galDiv=document.createElement('div');
+    galDiv.innerHTML=renderPhotos(pl);
+    document.getElementById('panel-body').appendChild(galDiv);
+  }
   // dispute block — если есть, добавляем в СЮЖЕТ/ПИСАНИЕ/ИВРИТ
   if((t==='story'||t==='bible'||t==='he') && pl.dispute){
     const dispDiv=document.createElement('div');
@@ -1744,7 +1838,7 @@ svg.addEventListener('click',e=>{
   if(!e.target.closest('.marker')&&!drag?.moved){ /* click on empty map */ }
 });
 document.addEventListener('keydown',e=>{
-  if(e.key==='Escape'){if(typeof measuring!=='undefined'&&measuring){mPts=[];drawMeasure();mHud.innerHTML='Точки сброшены — кликайте заново. Клик по ⟍ — выход.';}closePanel();document.getElementById('modal').classList.remove('open');document.getElementById('treeModal').style.display='none';document.getElementById('lifeModal').style.display='none';closeSearch();stopTour();}
+  if(e.key==='Escape'){if(document.getElementById('photoModal').classList.contains('open')){document.getElementById('photoModal').classList.remove('open');return;}if(typeof measuring!=='undefined'&&measuring){mPts=[];drawMeasure();mHud.innerHTML='Точки сброшены — кликайте заново. Клик по ⟍ — выход.';}closePanel();document.getElementById('modal').classList.remove('open');document.getElementById('treeModal').style.display='none';document.getElementById('lifeModal').style.display='none';closeSearch();stopTour();}
   if(e.key==='ArrowRight'&&panel.classList.contains('open'))stepPlace(1);
   if(e.key==='ArrowLeft'&&panel.classList.contains('open'))stepPlace(-1);
 });
@@ -2319,6 +2413,43 @@ function animateStageRoutes(stageIdx){
 }
 </script>
 <script>
+<script>
+/* ================= PHOTO GALLERY ================= */
+function renderPhotos(pl){
+  if(!pl||!pl.photos||!pl.photos.length) return '';
+  const items=pl.photos.map(p=>{
+    const safeP=JSON.stringify({src:p.src,alt:p.alt||'',label:p.label||'',credit:p.credit||'',type:p.type||'ctx'}).replace(/"/g,'&quot;');
+    return `<div class="tn-item" onclick="openPhotoModal(this)" data-photo="${safeP}" role="button" tabindex="0" aria-label="${p.alt||p.label||'Фото'}">
+      <span class="tn-label ${p.type||'ctx'}">${p.label||''}</span>
+      <img src="${p.thumb||p.src}" alt="${p.alt||''}" loading="lazy" onerror="this.parentElement.style.display='none'">
+      <div class="tn-cap">${(p.alt||'').substring(0,80)+(p.alt&&p.alt.length>80?'…':'')}</div>
+    </div>`;
+  }).join('');
+  const credits=[...new Set(pl.photos.map(p=>p.credit).filter(Boolean))].map(c=>`<span>${c}</span>`).join(' · ');
+  return `<div class="tn-gallery"><div class="tn-title">📷 ФОТО И РЕКОНСТРУКЦИИ</div><div class="tn-row">${items}</div>${credits?'<div class="tn-credit">'+credits+'</div>':''}</div>`;
+}
+function openPhotoModal(el){
+  let p;
+  try{ p=JSON.parse(el.dataset.photo.replace(/&quot;/g,'"')); }catch(e){return;}
+  document.getElementById('photoImg').src=p.src;
+  document.getElementById('photoImg').alt=p.alt||'';
+  let cap=p.alt?`<b>${p.alt}</b><br>`:'';
+  if(p.credit) cap+=`<span style="font-size:10px;color:#6c737e">${p.credit}</span>`;
+  if(p.type==='dis') cap+=`<span style="display:block;margin-top:6px;font-size:10px;color:#cf8070">⚠ Спорная локализация — дискуссия открыта в науке</span>`;
+  document.getElementById('photoCap').innerHTML=cap;
+  document.getElementById('photoModal').classList.add('open');
+}
+document.getElementById('photoClose').addEventListener('click',()=>{
+  document.getElementById('photoModal').classList.remove('open');
+});
+document.addEventListener('keydown',e=>{
+  if(e.key==='Escape') document.getElementById('photoModal').classList.remove('open');
+});
+document.getElementById('photoModal').addEventListener('click',e=>{
+  if(e.target.id==='photoModal') document.getElementById('photoModal').classList.remove('open');
+});
+</script>
+
 <!-- Yandex.Metrika counter -->
 <script type="text/javascript">
   (function(m,e,t,r,i,k,a){
