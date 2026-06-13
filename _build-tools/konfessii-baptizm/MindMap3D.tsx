@@ -1652,24 +1652,195 @@ export default function MindMap3D() {
                     </motion.button>
                   </div>
                 ) : (
+                  /* === FULL DOSSIER: глубокая, насыщенная карточка === */
                   <div className="custom-scroll h-full overflow-y-auto">
+                    {/* Sticky header с акцентной полоской */}
                     <div className="sticky top-0 z-10 border-b border-white/6 px-5 py-4 backdrop-blur-xl" style={{ background: isLight ? 'rgba(255,255,255,0.92)' : 'rgba(5,5,11,0.94)' }}>
                        <div className="mb-2 flex items-center gap-2">
                         <Sparkles size={11} style={{ color: GROUP_COLORS[focusNode.group] }} />
                         <span className="text-[9px] font-bold uppercase tracking-[0.18em]" style={{ color: GROUP_COLORS[focusNode.group] }}>{GROUP_LABELS[focusNode.group]}</span>
+                        <span className="ml-auto flex items-center gap-1.5 rounded-full border border-white/10 bg-white/[0.04] px-2 py-0.5 text-[8px] font-bold uppercase tracking-[0.12em] text-white/40">
+                          <span className="h-1 w-1 rounded-full" style={{ background: GROUP_COLORS[focusNode.group] }} />
+                          Досье
+                        </span>
                       </div>
                       <h3 className="text-[1.15rem] font-black leading-tight tracking-tight text-white">{focusNode.label}</h3>
                       {focusNode.year && <p className="mt-1 font-mono text-[11px] font-semibold" style={{ color: GROUP_COLORS[focusNode.group] }}>{focusNode.year}</p>}
+                      {personProfile?.role && (
+                        <p className="mt-2 text-[11px] leading-5 text-white/55">{personProfile.role}</p>
+                      )}
                     </div>
+
                     <div className="space-y-4 p-5">
+                      {/* === Описание === */}
                       <section>
                         <p className="text-[9px] font-bold uppercase tracking-[0.16em] text-white/30 mb-2">Описание</p>
                         <p className="text-[0.8375rem] leading-[1.7] text-white/82">{focusNode.desc}</p>
+                        {personProfile?.contribution && personProfile.contribution !== focusNode.desc && (
+                          <p className="mt-2.5 text-[12px] leading-[1.65] text-white/65">{personProfile.contribution}</p>
+                        )}
                       </section>
+
+                      {/* === Регион (для лидеров) === */}
+                      {personProfile?.region && (
+                        <section className="rounded-xl border border-white/[0.06] bg-white/[0.025] p-3">
+                          <div className="flex items-start gap-2.5">
+                            <MapPin size={13} className="mt-0.5 shrink-0" style={{ color: GROUP_COLORS[focusNode.group] }} />
+                            <div className="min-w-0">
+                              <p className="text-[9px] font-bold uppercase tracking-[0.14em] text-white/35">Регион действия</p>
+                              <p className="mt-0.5 text-[11.5px] leading-5 text-white/75">{personProfile.region}</p>
+                            </div>
+                          </div>
+                        </section>
+                      )}
+
+                      {/* === Stats === */}
+                      {focusNode.stats && (
+                        <section>
+                          <p className="text-[9px] font-bold uppercase tracking-[0.16em] text-white/30 mb-2">Цифры</p>
+                          <div className="grid grid-cols-3 gap-1.5">
+                            {[{ label: 'верующих', value: focusNode.stats.users }, { label: 'год основания', value: focusNode.stats.year }, { label: 'источников', value: focusNode.stats.sources }].map((s) => (
+                              <div key={s.label} className="rounded-xl border border-white/[0.08] bg-white/[0.04] px-2 py-2.5 text-center">
+                                <div className="text-sm font-black text-white truncate" style={{ color: GROUP_COLORS[focusNode.group] }}>{s.value}</div>
+                                <div className="mt-1 text-[8px] uppercase tracking-[0.1em] text-white/35">{s.label}</div>
+                              </div>
+                            ))}
+                          </div>
+                        </section>
+                      )}
+
+                      {/* === Геолокация (если есть выбор по карте) === */}
+                      {mapSelection && mapPlaceRecord && (
+                        <section className="rounded-xl border px-3.5 py-3" style={{ borderColor: `${mapSelection.color}38`, background: `${mapSelection.color}0c` }}>
+                          <div className="mb-1.5 flex items-center gap-2"><MapPin size={11} style={{ color: mapSelection.color }} /><span className="text-[10px] font-bold uppercase tracking-[0.14em]" style={{ color: mapSelection.color }}>{mapSelection.label}</span></div>
+                          <p className="text-[11.5px] leading-[1.65] text-white/70">{mapPlaceRecord.summary}</p>
+                          {mapPlaceRecord.historicalNotes.length > 0 && (
+                            <ul className="mt-2.5 space-y-1.5 border-t border-white/[0.06] pt-2.5">
+                              {mapPlaceRecord.historicalNotes.slice(0, 3).map((note) => (
+                                <li key={note} className="flex gap-2 text-[10.5px] leading-4 text-white/55">
+                                  <span className="mt-1 h-1 w-1 shrink-0 rounded-full" style={{ background: mapSelection.color }} />
+                                  <span>{note}</span>
+                                </li>
+                              ))}
+                            </ul>
+                          )}
+                        </section>
+                      )}
+
+                      {/* === Архивные подробности (highlights) === */}
+                      {personProfile && personProfile.highlights.length > 0 && (
+                        <section>
+                          <div className="mb-2 flex items-center justify-between">
+                            <p className="text-[9px] font-bold uppercase tracking-[0.16em] text-white/30">Архивная карточка</p>
+                            <span className="rounded-full border border-white/10 px-1.5 py-0.5 text-[9px] font-mono text-white/40">{personProfile.highlights.length}</span>
+                          </div>
+                          <div className="space-y-2">
+                            {personProfile.highlights.slice(0, contentExpanded ? personProfile.highlights.length : 4).map((h) => (
+                              <p key={h} className="flex gap-2.5 text-[11.5px] leading-[1.65] text-white/72">
+                                <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full" style={{ background: GROUP_COLORS[focusNode.group] }} />
+                                <span>{h}</span>
+                              </p>
+                            ))}
+                          </div>
+                          {personProfile.highlights.length > 4 && (
+                            <button onClick={() => setContentExpanded((s) => !s)} className="mt-2.5 inline-flex items-center gap-1.5 rounded-full border border-white/10 bg-white/[0.04] px-3 py-1 text-[10px] font-semibold text-white/55 transition hover:bg-white/[0.08] hover:text-white/85">
+                              {contentExpanded ? 'Свернуть' : `Ещё ${personProfile.highlights.length - 4}`}
+                              <ChevronDown size={11} className={`transition-transform ${contentExpanded ? 'rotate-180' : ''}`} />
+                            </button>
+                          )}
+                        </section>
+                      )}
+
+                      {/* === Хронология (chronology) для лидеров === */}
+                      {personProfile && personProfile.chronology.length > 0 && (
+                        <section>
+                          <p className="text-[9px] font-bold uppercase tracking-[0.16em] text-white/30 mb-2">Хронология жизни</p>
+                          <div className="relative space-y-2 pl-3.5">
+                            <div className="absolute left-0 top-1.5 bottom-1.5 w-px" style={{ background: `linear-gradient(to bottom, ${GROUP_COLORS[focusNode.group]}55, ${GROUP_COLORS[focusNode.group]}10, transparent)` }} />
+                            {personProfile.chronology.map((item) => (
+                              <div key={`${item.year}-${item.text}`} className="relative">
+                                <div className="absolute -left-3.5 top-1.5 h-1.5 w-1.5 -translate-x-1/2 rounded-full" style={{ background: GROUP_COLORS[focusNode.group], boxShadow: `0 0 6px ${GROUP_COLORS[focusNode.group]}80` }} />
+                                <div className="text-[11px] leading-[1.55]">
+                                  <span className="font-mono font-bold" style={{ color: GROUP_COLORS[focusNode.group] }}>{item.year}</span>
+                                  <span className="ml-2 text-white/65">{item.text}</span>
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        </section>
+                      )}
+
+                      {/* === Этапы развития (для союзов/регионов) === */}
+                      {focusNode.stages && (
+                        <section>
+                          <p className="text-[9px] font-bold uppercase tracking-[0.16em] text-white/30 mb-2">Ключевые этапы</p>
+                          <div className="relative space-y-2 pl-3.5">
+                            <div className="absolute left-0 top-1.5 bottom-1.5 w-px" style={{ background: `linear-gradient(to bottom, ${GROUP_COLORS[focusNode.group]}55, ${GROUP_COLORS[focusNode.group]}10, transparent)` }} />
+                            {focusNode.stages.map((stage) => (
+                              <div key={stage.year} className="relative">
+                                <div className="absolute -left-3.5 top-1.5 h-1.5 w-1.5 -translate-x-1/2 rounded-full" style={{ background: GROUP_COLORS[focusNode.group], boxShadow: `0 0 6px ${GROUP_COLORS[focusNode.group]}80` }} />
+                                <div className="text-[11px] leading-[1.55]">
+                                  <span className="font-mono font-bold" style={{ color: GROUP_COLORS[focusNode.group] }}>{stage.year}</span>
+                                  <span className="ml-2 text-white/65">{stage.text}</span>
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        </section>
+                      )}
+
+                      {/* === Спорный вопрос === */}
+                      {(() => {
+                        const dispute = biographyDisputes.find((e) => e.person.toLowerCase().includes(focusNode.label.split(' ').slice(-1)[0].toLowerCase()));
+                        if (!dispute) return null;
+                        return (
+                          <section className="rounded-xl border border-amber-500/25 bg-amber-500/[0.06] p-3.5">
+                            <div className="mb-2 flex items-center gap-1.5 text-amber-400">
+                              <AlertTriangle size={12} />
+                              <span className="text-[9px] font-bold uppercase tracking-[0.14em]">Спорный вопрос: {dispute.issue}</span>
+                            </div>
+                            <div className="space-y-2 text-[11px] leading-[1.55]">
+                              <div className="rounded-lg border border-white/[0.06] bg-white/[0.025] p-2.5"><strong className="text-amber-300/90">Версия A:</strong> <span className="text-white/75">{dispute.versionA}</span></div>
+                              <div className="rounded-lg border border-white/[0.06] bg-white/[0.025] p-2.5"><strong className="text-amber-300/90">Версия B:</strong> <span className="text-white/75">{dispute.versionB}</span></div>
+                            </div>
+                            <p className="mt-2 text-[10.5px] leading-4 text-white/55 italic">{dispute.note}</p>
+                          </section>
+                        );
+                      })()}
+
+                      {/* === Судьба === */}
+                      {personProfile?.fate && (
+                        <section className="rounded-xl border border-white/[0.07] bg-white/[0.03] p-3">
+                          <p className="text-[9px] font-bold uppercase tracking-[0.14em] text-white/30 mb-1.5">Судьба</p>
+                          <p className="text-[11.5px] leading-[1.6] text-white/72">{personProfile.fate}</p>
+                        </section>
+                      )}
+
+                      {/* === Активный маршрут === */}
+                      {activeRoute && (
+                        <section className="rounded-xl border px-3.5 py-3" style={{ borderColor: `${activeRoute.color}38`, background: `${activeRoute.color}0e` }}>
+                          <div className="mb-1.5 flex items-center gap-2">
+                            <span className="h-1.5 w-1.5 rounded-full" style={{ background: activeRoute.color }} />
+                            <span className="text-[10px] font-bold uppercase tracking-[0.14em]" style={{ color: activeRoute.color }}>Маршрут: {activeRoute.label}</span>
+                            <span className="ml-auto font-mono text-[10px] text-white/40">{routeStep + 1}/{activeRoute.nodes.length}</span>
+                          </div>
+                          <p className="mb-2.5 text-[11px] leading-[1.6] text-white/60">{activeRoute.summary}</p>
+                          <div className="flex items-center gap-2">
+                            <button onClick={() => { haptic(4); handleRouteStep(-1); }} disabled={routeStep === 0} className="flex-1 rounded-xl border border-white/10 bg-white/[0.04] py-1.5 text-[11px] font-semibold transition hover:bg-white/[0.08] active:scale-95 disabled:opacity-30">← Назад</button>
+                            <button onClick={() => { haptic(4); handleRouteStep(1); }} disabled={routeStep >= activeRoute.nodes.length - 1} className="flex-1 rounded-xl py-1.5 text-[11px] font-semibold transition active:scale-95 disabled:opacity-30" style={{ background: `${activeRoute.color}22`, color: activeRoute.color, border: `1px solid ${activeRoute.color}44` }}>Вперёд →</button>
+                          </div>
+                        </section>
+                      )}
+
+                      {/* === Связи === */}
                       {relatedLinks.length > 0 && (
                         <section>
                           <div className="mb-2 flex items-center justify-between">
-                            <p className="text-[9px] font-bold uppercase tracking-[0.16em] text-white/30">Связанные узлы</p>
+                            <div>
+                              <p className="text-[9px] font-bold uppercase tracking-[0.16em] text-white/30">Связанные узлы</p>
+                              <p className="text-[8px] text-white/22 mt-0.5">Нажмите для перехода к узлу</p>
+                            </div>
+                            <span className="rounded-full border border-white/10 px-1.5 py-0.5 text-[9px] font-mono text-white/40">{relatedLinks.length}</span>
                           </div>
                           <div className="flex flex-wrap gap-1.5">
                             {relatedLinks.map((link) => {
@@ -1688,7 +1859,47 @@ export default function MindMap3D() {
                           </div>
                         </section>
                       )}
-                      <button onClick={() => { haptic(5); setInspectorMode('peek'); focusCameraToNode(focusNode, 'peek'); }} className="group sticky bottom-0 z-10 mx-auto mt-3 mb-1 flex h-8 items-center gap-1.5 rounded-full border px-3.5 text-[9px] font-bold uppercase tracking-[0.12em] transition hover:scale-[1.03] active:scale-95" style={{ borderColor: `${GROUP_COLORS[focusNode.group]}45`, background: `${GROUP_COLORS[focusNode.group]}14`, color: GROUP_COLORS[focusNode.group] }}><ChevronDown size={11} className="rotate-180" />Свернуть</button>
+
+                      {/* === География влияния === */}
+                      {activeMapEntries.length > 0 && (
+                        <section>
+                          <p className="text-[9px] font-bold uppercase tracking-[0.16em] text-white/30 mb-1">География влияния</p>
+                          <p className="text-[10px] leading-4 text-white/40 mb-2">Страны и города, связанные с этим узлом</p>
+                          <div className="flex flex-wrap gap-1.5">
+                            {activeMapEntries.slice(0, 6).map((entry) => (
+                              <button key={entry.id} onClick={() => handleMapSelect({ id: entry.id, label: entry.label, color: entry.color, nodes: entry.nodes })} className="inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-[10.5px] font-semibold transition hover:scale-[1.04] active:scale-95" style={{ borderColor: `${entry.color}50`, color: entry.color, background: `${entry.color}12` }}>
+                                <MapPin size={9} />
+                                {entry.label}
+                              </button>
+                            ))}
+                          </div>
+                        </section>
+                      )}
+
+                      {/* === Источник === */}
+                      {personProfile?.source && (
+                        <section className="rounded-xl border border-brand-gold/20 bg-brand-gold/[0.04] p-3">
+                          <div className="mb-1.5 flex items-center gap-1.5 text-brand-gold/85">
+                            <BookOpen size={11} />
+                            <span className="text-[9px] font-bold uppercase tracking-[0.14em]">Источники</span>
+                          </div>
+                          <p className="text-[10.5px] leading-[1.55] text-white/65">{personProfile.source}</p>
+                        </section>
+                      )}
+
+                      {/* === Кнопка свернуть — компактная, заметная === */}
+                      <button
+                        onClick={() => { haptic(5); setInspectorMode('peek'); focusCameraToNode(focusNode, 'peek'); }}
+                        className="group sticky bottom-0 z-10 mx-auto mt-3 mb-1 flex h-8 items-center gap-1.5 rounded-full border px-3.5 text-[9px] font-bold uppercase tracking-[0.12em] transition hover:scale-[1.03] active:scale-95"
+                        style={{
+                          borderColor: `${GROUP_COLORS[focusNode.group]}45`,
+                          background: `${GROUP_COLORS[focusNode.group]}14`,
+                          color: GROUP_COLORS[focusNode.group],
+                        }}
+                      >
+                        <ChevronDown size={11} className="rotate-180" />
+                        Свернуть
+                      </button>
                     </div>
                   </div>
                 )}
