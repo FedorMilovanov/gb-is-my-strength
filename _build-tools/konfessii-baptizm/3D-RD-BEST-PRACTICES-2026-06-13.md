@@ -64,6 +64,8 @@
 - **Timeline target table:** вместо разрозненной regex-логики используется единый `TIMELINE_TARGETS` в `MindMap3D.tsx` как промежуточный шаг к полноценным `nodeId/routeId/mapSelectionId` в `timeline.ts`.
 - **Timeline declutter:** ticks сгруппированы по году, minor-события визуально приглушены; native `title` убран, чтобы не появлялись белые браузерные tooltip-плашки поверх премиального UI.
 - **Timeline landmark mode:** рендерятся только major/landmark ticks (`visibleTimelineTicks = timelineTicks.filter(tick => tick.major)`), а hover/focus обновляет собственную тёмную карточку события (`hoveredTick`) вместо браузерного tooltip. Minor-события остаются в данных, но не создают шумную россыпь точек.
+- **No native browser tooltips in 3D UI:** прямые `title` на `<button>`/`<motion.button>` запрещены; использовать `aria-label` и/или собственные тёмные карточки. Это убирает белые системные плашки поверх карты.
+- **Timeline stacking rule:** когда нижний route panel раскрыт, event-card Timeline скрывается (`displayEvent && !bottomBarExpanded`), чтобы не лежать поверх маршрутов.
 - **Map highlight restraint:** заливка выбранной страны снижена (`35`→`14`, opacity `0.9`→`0.48`), related-страны приглушены; карта должна давать контекст, а не заливать сцену золотым пятном.
 - **Wheel capture:** внутри fullscreen 3D добавлен `onWheelCapture={handleSceneWheel}` — если колесо не над реально прокручиваемым dossier, оно не скроллит документ, а управляет zoom камеры.
 - **Scroll lock:** при открытой 3D-карте `html/body` получают `overflow:hidden`, чтобы колесо мыши не двигало правый document-scrollbar вместо zoom/pan сцены.

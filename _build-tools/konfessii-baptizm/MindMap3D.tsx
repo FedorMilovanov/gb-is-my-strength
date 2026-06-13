@@ -173,7 +173,7 @@ function PanelButton({ children, onClick, active, danger, title, className = '' 
   return (
     <button
       onClick={(event) => { event.stopPropagation(); haptic(danger ? 10 : 5); onClick(); }}
-      title={title}
+      aria-label={title}
       className={`grid h-8 w-8 place-items-center rounded-full border transition-all hover:scale-105 active:scale-95 ${className}`}
       style={{
         background: active ? 'rgba(196,166,126,0.16)' : danger ? 'rgba(255,75,110,0.1)' : 'rgba(255,255,255,0.06)',
@@ -189,7 +189,7 @@ function PanelButton({ children, onClick, active, danger, title, className = '' 
 function SceneControls({ mapMode, zenMode, hasFocus, cameraNavEnabled, onToggleMap, onToggleZen, onToggleCameraNav, onReset, onOverview, onFocusReturn, onToggleLegend }: any) {
   return (
     <motion.div initial={{ opacity: 0, x: 12 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.3, ease: 'easeOut' }} className="absolute right-4 top-4 z-30 flex flex-col items-end gap-2">
-      <button onClick={() => { haptic(5); onToggleMap(); }} className="group flex items-center gap-2 rounded-full border px-3.5 py-2 text-[10px] font-bold uppercase tracking-[0.14em] backdrop-blur-2xl transition-all active:scale-95" style={{ background: mapMode ? 'rgba(196,166,126,0.14)' : 'rgba(5,5,12,0.62)', borderColor: mapMode ? 'rgba(196,166,126,0.42)' : 'rgba(255,255,255,0.10)', color: mapMode ? '#c4a67e' : 'rgba(255,255,255,0.78)', boxShadow: mapMode ? '0 4px 18px rgba(196,166,126,0.20)' : '0 4px 16px rgba(0,0,0,0.32)' }} title={mapMode ? 'Режим карты — клик по странам/городам' : 'Режим графа — клик по узлам'}>
+      <button onClick={() => { haptic(5); onToggleMap(); }} className="group flex items-center gap-2 rounded-full border px-3.5 py-2 text-[10px] font-bold uppercase tracking-[0.14em] backdrop-blur-2xl transition-all active:scale-95" style={{ background: mapMode ? 'rgba(196,166,126,0.14)' : 'rgba(5,5,12,0.62)', borderColor: mapMode ? 'rgba(196,166,126,0.42)' : 'rgba(255,255,255,0.10)', color: mapMode ? '#c4a67e' : 'rgba(255,255,255,0.78)', boxShadow: mapMode ? '0 4px 18px rgba(196,166,126,0.20)' : '0 4px 16px rgba(0,0,0,0.32)' }} aria-label={mapMode ? 'Режим карты — клик по странам/городам' : 'Режим графа — клик по узлам'}>
         <span className="h-1.5 w-1.5 rounded-full transition-colors" style={{ background: mapMode ? '#c4a67e' : 'rgba(255,255,255,0.45)', boxShadow: mapMode ? '0 0 6px #c4a67e' : 'none' }} />
         {mapMode ? 'Карта' : 'Граф'}
       </button>
@@ -215,12 +215,12 @@ function CameraNavPad({ onMove, onToggle }: { onMove: (direction: CameraMoveDire
     <motion.div initial={{ opacity: 0, x: -10, scale: 0.96 }} animate={{ opacity: 1, x: 0, scale: 1 }} exit={{ opacity: 0, x: -10, scale: 0.96 }} transition={{ duration: 0.18 }} className="absolute bottom-[7.25rem] left-4 z-40 hidden rounded-[1.35rem] border border-white/[0.08] bg-black/50 p-2.5 backdrop-blur-2xl sm:block" style={{ boxShadow: '0 14px 42px rgba(0,0,0,0.42), 0 0 0 1px rgba(196,166,126,0.06)' }} aria-label="Навигация камеры">
       <div className="mb-2 flex items-center justify-between gap-3 px-1">
         <span className="text-[8px] font-black uppercase tracking-[0.2em] text-white/28">Камера</span>
-        <button onClick={onToggle} className="rounded-full px-1.5 py-0.5 text-[9px] text-white/35 transition hover:bg-white/10 hover:text-white/70" title="Скрыть стрелки камеры">Скрыть</button>
+        <button onClick={onToggle} className="rounded-full px-1.5 py-0.5 text-[9px] text-white/35 transition hover:bg-white/10 hover:text-white/70" aria-label="Скрыть стрелки камеры">Скрыть</button>
       </div>
       <div className="grid grid-cols-3 gap-1.5">
-        <span /><button className={buttonClass} onClick={() => onMove('up')} title="Сдвиг вверх"><ChevronDown size={15} className="rotate-180" /></button><button className={buttonClass} onClick={() => onMove('forward')} title="Подъехать ближе"><span className="font-mono text-sm font-black">+</span></button>
-        <button className={buttonClass} onClick={() => onMove('left')} title="Сдвиг влево"><ChevronLeft size={15} /></button><button className={buttonClass} onClick={() => onMove('back')} title="Отъехать назад"><span className="font-mono text-sm font-black">-</span></button><button className={buttonClass} onClick={() => onMove('right')} title="Сдвиг вправо"><ChevronRight size={15} /></button>
-        <span /><button className={buttonClass} onClick={() => onMove('down')} title="Сдвиг вниз"><ChevronDown size={15} /></button><span />
+        <span /><button className={buttonClass} onClick={() => onMove('up')} aria-label="Сдвиг вверх"><ChevronDown size={15} className="rotate-180" /></button><button className={buttonClass} onClick={() => onMove('forward')} aria-label="Подъехать ближе"><span className="font-mono text-sm font-black">+</span></button>
+        <button className={buttonClass} onClick={() => onMove('left')} aria-label="Сдвиг влево"><ChevronLeft size={15} /></button><button className={buttonClass} onClick={() => onMove('back')} aria-label="Отъехать назад"><span className="font-mono text-sm font-black">-</span></button><button className={buttonClass} onClick={() => onMove('right')} aria-label="Сдвиг вправо"><ChevronRight size={15} /></button>
+        <span /><button className={buttonClass} onClick={() => onMove('down')} aria-label="Сдвиг вниз"><ChevronDown size={15} /></button><span />
       </div>
       <p className="mt-2 max-w-[140px] text-center text-[9px] leading-3 text-white/28">Не влияет на маршрутные стрелки</p>
     </motion.div>
@@ -450,7 +450,7 @@ function TimelineOverlay({ timelineYearRef, bottomBarExpanded, onEventSelect }: 
   return (
     <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0, bottom: bottomBarExpanded ? '17rem' : '4.5rem' }} transition={{ duration: 0.3, ease: 'easeOut' }} className="absolute left-1/2 z-40 hidden w-full max-w-[800px] -translate-x-1/2 flex-col px-4 sm:flex pointer-events-none">
       <div className="pointer-events-auto">
-      {displayEvent && (
+      {displayEvent && !bottomBarExpanded && (
           <div className="mx-auto mb-3 flex max-w-md items-center gap-3 rounded-2xl border border-white/10 bg-black/60 px-4 py-2.5 backdrop-blur-xl" style={{ boxShadow: `0 12px 42px rgba(0,0,0,0.38), 0 0 24px ${categoryColors[displayEvent.category]}18` }}>
             <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full" style={{ background: `${categoryColors[displayEvent.category]}22`, color: categoryColors[displayEvent.category] }}>
               <Sparkles size={14} />
@@ -1812,8 +1812,8 @@ export default function MindMap3D() {
 
           {focusNode && !zenMode && (
             <>
-              <motion.button initial={{ opacity: 0, x: -8 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -8 }} onClick={() => handleNeighborStep(-1)} className="group absolute left-4 top-1/2 z-30 hidden h-12 w-12 -translate-y-1/2 items-center justify-center rounded-full border backdrop-blur-2xl transition-all hover:scale-110 active:scale-95 sm:flex" style={{ borderColor: activeRoute ? `${activeRoute.color}50` : 'rgba(196,166,126,0.32)', background: 'rgba(5,5,12,0.72)', color: activeRoute ? activeRoute.color : '#c4a67e', boxShadow: `0 8px 24px rgba(0,0,0,0.42), 0 0 0 1px ${activeRoute ? activeRoute.color + '15' : 'rgba(196,166,126,0.10)'}` }} title={activeRoute ? 'Предыдущий шаг маршрута' : 'Предыдущий связанный узел'}><ChevronLeft size={18} className="transition-transform group-hover:-translate-x-0.5" /></motion.button>
-              <motion.button initial={{ opacity: 0, x: 8 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 8 }} onClick={() => handleNeighborStep(1)} className="group absolute right-4 top-1/2 z-30 hidden h-12 w-12 -translate-y-1/2 items-center justify-center rounded-full border backdrop-blur-2xl transition-all hover:scale-110 active:scale-95 sm:flex" style={{ borderColor: activeRoute ? `${activeRoute.color}50` : 'rgba(196,166,126,0.32)', background: 'rgba(5,5,12,0.72)', color: activeRoute ? activeRoute.color : '#c4a67e', boxShadow: `0 8px 24px rgba(0,0,0,0.42), 0 0 0 1px ${activeRoute ? activeRoute.color + '15' : 'rgba(196,166,126,0.10)'}` }} title={activeRoute ? 'Следующий шаг маршрута' : 'Следующий связанный узел'}><ChevronRight size={18} className="transition-transform group-hover:translate-x-0.5" /></motion.button>
+              <motion.button initial={{ opacity: 0, x: -8 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -8 }} onClick={() => handleNeighborStep(-1)} className="group absolute left-4 top-1/2 z-30 hidden h-12 w-12 -translate-y-1/2 items-center justify-center rounded-full border backdrop-blur-2xl transition-all hover:scale-110 active:scale-95 sm:flex" style={{ borderColor: activeRoute ? `${activeRoute.color}50` : 'rgba(196,166,126,0.32)', background: 'rgba(5,5,12,0.72)', color: activeRoute ? activeRoute.color : '#c4a67e', boxShadow: `0 8px 24px rgba(0,0,0,0.42), 0 0 0 1px ${activeRoute ? activeRoute.color + '15' : 'rgba(196,166,126,0.10)'}` }} aria-label={activeRoute ? 'Предыдущий шаг маршрута' : 'Предыдущий связанный узел'}><ChevronLeft size={18} className="transition-transform group-hover:-translate-x-0.5" /></motion.button>
+              <motion.button initial={{ opacity: 0, x: 8 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 8 }} onClick={() => handleNeighborStep(1)} className="group absolute right-4 top-1/2 z-30 hidden h-12 w-12 -translate-y-1/2 items-center justify-center rounded-full border backdrop-blur-2xl transition-all hover:scale-110 active:scale-95 sm:flex" style={{ borderColor: activeRoute ? `${activeRoute.color}50` : 'rgba(196,166,126,0.32)', background: 'rgba(5,5,12,0.72)', color: activeRoute ? activeRoute.color : '#c4a67e', boxShadow: `0 8px 24px rgba(0,0,0,0.42), 0 0 0 1px ${activeRoute ? activeRoute.color + '15' : 'rgba(196,166,126,0.10)'}` }} aria-label={activeRoute ? 'Следующий шаг маршрута' : 'Следующий связанный узел'}><ChevronRight size={18} className="transition-transform group-hover:translate-x-0.5" /></motion.button>
               {activeRoute && (<motion.div initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} className="pointer-events-none absolute left-1/2 top-[calc(50%+38px)] z-30 hidden -translate-x-1/2 rounded-full border px-3 py-1 text-center backdrop-blur-2xl sm:block" style={{ borderColor: `${activeRoute.color}40`, background: 'rgba(5,5,12,0.72)', boxShadow: `0 4px 16px rgba(0,0,0,0.4)` }}><span className="font-mono text-[10px] font-bold" style={{ color: activeRoute.color }}>{routeStep + 1} / {activeRoute.nodes.length}</span></motion.div>)}
             </>
           )}
@@ -1850,7 +1850,7 @@ export default function MindMap3D() {
                   </div>
                 </div>
                 {inspectorMode === 'rail' ? (
-                  <button title="Открыть инспектор" onClick={() => { haptic(5); setInspectorMode('peek'); focusCameraToNode(focusNode, 'peek'); }} className="group flex w-[72px] cursor-pointer flex-col items-center gap-2.5 px-3 py-4 text-center active:scale-95 transition-transform hover:bg-white/[0.03]">
+                  <button aria-label="Открыть инспектор" onClick={() => { haptic(5); setInspectorMode('peek'); focusCameraToNode(focusNode, 'peek'); }} className="group flex w-[72px] cursor-pointer flex-col items-center gap-2.5 px-3 py-4 text-center active:scale-95 transition-transform hover:bg-white/[0.03]">
                     <motion.span animate={{ scale: [1, 1.18, 1] }} transition={{ duration: 2.2, repeat: Infinity, ease: 'easeInOut' }} className="h-2.5 w-2.5 rounded-full" style={{ background: GROUP_COLORS[focusNode.group], boxShadow: `0 0 12px ${GROUP_COLORS[focusNode.group]}, 0 0 24px ${GROUP_COLORS[focusNode.group]}66` }} />
                     {focusNode.year && <span className="font-mono text-[10px] font-bold" style={{ color: GROUP_COLORS[focusNode.group] }}>{focusNode.year.split('–')[0]}</span>}
                     <span className="line-clamp-3 text-[9px] font-bold leading-[1.25] text-white/70">{focusNode.label}</span>
@@ -1875,7 +1875,7 @@ export default function MindMap3D() {
                         <button onClick={() => { haptic(4); handleRouteStep(1); }} disabled={routeStep >= activeRoute.nodes.length - 1} className="flex-1 rounded-xl py-1.5 text-[11px] font-semibold transition active:scale-95 disabled:opacity-30" style={{ background: `${activeRoute.color}22`, color: activeRoute.color, border: `1px solid ${activeRoute.color}44` }}>→</button>
                       </div>
                     )}
-                    <motion.button onClick={() => { haptic(5); setInspectorMode('full'); focusCameraToNode(focusNode, 'full'); }} whileHover={{ y: 1 }} whileTap={{ scale: 0.95 }} className="group mx-auto mt-2 flex h-8 items-center gap-1.5 rounded-full border px-3 transition-all" style={{ borderColor: `${GROUP_COLORS[focusNode.group]}35`, background: `${GROUP_COLORS[focusNode.group]}0c`, color: GROUP_COLORS[focusNode.group] }} title="Показать полное досье">
+                    <motion.button onClick={() => { haptic(5); setInspectorMode('full'); focusCameraToNode(focusNode, 'full'); }} whileHover={{ y: 1 }} whileTap={{ scale: 0.95 }} className="group mx-auto mt-2 flex h-8 items-center gap-1.5 rounded-full border px-3 transition-all" style={{ borderColor: `${GROUP_COLORS[focusNode.group]}35`, background: `${GROUP_COLORS[focusNode.group]}0c`, color: GROUP_COLORS[focusNode.group] }} aria-label="Показать полное досье">
                       <span className="text-[9px] font-bold uppercase tracking-[0.12em]">Досье</span>
                       <motion.span animate={{ y: [0, 2, 0] }} transition={{ duration: 1.8, repeat: Infinity, ease: 'easeInOut' }}><ChevronDown size={13} /></motion.span>
                     </motion.button>
