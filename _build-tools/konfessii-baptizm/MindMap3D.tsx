@@ -299,6 +299,13 @@ function BottomBar({ left, hidden, expanded, activeRoute, routeStep = 0, mapSele
   const activeLabel = activeRoute?.label ?? mapSelection?.label ?? 'Маршруты и города';
   const activeColor = activeRoute?.color ?? mapSelection?.color ?? '#c4a67e';
   const activeRouteNodes = activeRoute ? activeRoute.nodes.map((id: string) => NODES.find((n) => n.id === id)).filter(Boolean) as NodeData[] : [];
+  const currentRouteNode = activeRouteNodes[routeStep] ?? null;
+  const nextRouteNode = activeRouteNodes[routeStep + 1] ?? null;
+  const transitionLink = currentRouteNode && nextRouteNode ? LINKS.find((link) => {
+    const sid = typeof link.source === 'object' ? link.source.id : link.source;
+    const tid = typeof link.target === 'object' ? link.target.id : link.target;
+    return (sid === currentRouteNode.id && tid === nextRouteNode.id) || (sid === nextRouteNode.id && tid === currentRouteNode.id);
+  }) : null;
   return (
     <div className={`absolute bottom-0 z-30 flex flex-col items-center gap-2 px-4 pb-4 pt-3 transition-[left,opacity] duration-300 ${hidden ? 'pointer-events-none opacity-0' : 'opacity-100'}`} style={{ left, right: 16, background: 'linear-gradient(to top, rgba(3,3,7,0.88) 0%, rgba(3,3,7,0.55) 42%, transparent 100%)' }}>
       <button onClick={onToggle} className="inline-flex min-h-[42px] items-center gap-2 rounded-full border bg-black/60 px-5 py-2 text-[11px] font-bold uppercase tracking-[0.12em] backdrop-blur-2xl transition hover:bg-black/75 active:scale-95" style={{ borderColor: `${activeColor}44`, color: activeColor, boxShadow: expanded ? `0 0 24px ${activeColor}24` : undefined }} aria-expanded={expanded} title={activeRoute ? `${activeRoute.summary} (${activeRoute.nodes.length} этапов)` : 'Открыть маршруты, города и исторические точки'}>
@@ -317,10 +324,19 @@ function BottomBar({ left, hidden, expanded, activeRoute, routeStep = 0, mapSele
                   <span className="text-[9px] font-bold uppercase tracking-[0.16em]" style={{ color: activeRoute.color }}>Активный маршрут</span>
                   <span className="ml-auto font-mono text-[9px] text-white/40">{routeStep + 1}/{activeRoute.nodes.length}</span>
                 </div>
-                <p className="text-[11px] leading-5 text-white/62">{activeRoute.summary}</p><p className="mt-1 text-[9px] text-white/30">Нажмите этап, чтобы перелететь к соответствующему узлу.</p>
+                <p className="text-[11px] leading-5 text-white/62">{activeRoute.summary}</p>
+                {currentRouteNode && (
+                  <div className="mt-2 rounded-xl border border-white/[0.07] bg-white/[0.035] px-3 py-2">
+                    <div className="flex items-baseline gap-2"><span className="text-[8px] font-bold uppercase tracking-[0.16em] text-white/28">Сейчас в маршруте</span>{currentRouteNode.year && <span className="font-mono text-[9px]" style={{ color: activeRoute.color }}>{currentRouteNode.year}</span>}</div>
+                    <p className="mt-0.5 truncate text-[11px] font-bold text-white/78">{currentRouteNode.label}</p>
+                    <p className="mt-0.5 line-clamp-2 text-[10px] leading-4 text-white/42">{currentRouteNode.desc}</p>
+                    {nextRouteNode && <p className="mt-1.5 text-[9.5px] leading-4 text-white/35">Далее: <span className="text-white/58">{nextRouteNode.label}</span>{transitionLink?.label ? <span> · {transitionLink.label}</span> : null}</p>}
+                  </div>
+                )}
+                <p className="mt-1.5 text-[9px] text-white/30">Нажмите этап, чтобы перелететь к соответствующему узлу.</p>
                 <div className="mt-2 flex max-w-full gap-1 overflow-hidden">
                   {activeRouteNodes.slice(0, 7).map((node, idx) => (
-                    <button key={node.id} type="button" onClick={() => onRouteStepTo?.(idx)} className="truncate rounded-full border px-2 py-0.5 text-left text-[9px] transition hover:scale-[1.04] active:scale-95" style={{ borderColor: idx === routeStep ? `${activeRoute.color}aa` : 'rgba(255,255,255,0.10)', color: idx === routeStep ? activeRoute.color : 'rgba(255,255,255,0.45)', background: idx === routeStep ? `${activeRoute.color}14` : 'rgba(255,255,255,0.03)' }} title={`Этап ${idx + 1}: ${node.label}`}>{idx + 1}. {node.label}</button>
+                    <button key={node.id} type="button" onClick={() => onRouteStepTo?.(idx)} className="truncate rounded-full border px-2 py-0.5 text-left text-[9px] transition hover:scale-[1.04] active:scale-95" style={{ borderColor: idx === routeStep ? `${activeRoute.color}aa` : 'rgba(255,255,255,0.10)', color: idx === routeStep ? activeRoute.color : 'rgba(255,255,255,0.45)', background: idx === routeStep ? `${activeRoute.color}14` : 'rgba(255,255,255,0.03)' }} title={`Этап ${idx + 1}: ${node.label}${node.year ? ` · ${node.year}` : ''}. ${node.desc}`}>{idx + 1}. {node.label}</button>
                   ))}
                 </div>
               </div>

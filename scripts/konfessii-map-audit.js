@@ -88,6 +88,9 @@ if (src) {
   /onRouteStepTo=\{handleRouteStepTo\}/.test(src) && /Нажмите этап/.test(src)
     ? ok('I9 source: route step chips are clickable')
     : bad('I9 source: route step chips are not clickable');
+  /Сейчас в маршруте/.test(src) && /transitionLink/.test(src)
+    ? ok('I9 source: active route has storyboard context')
+    : bad('I9 source: active route storyboard context missing');
   /function\s+LearningCoach/.test(src) && /Как читать карту/.test(src) && /showLearningCoach/.test(src)
     ? ok('I10 source: first-run learning coach present')
     : bad('I10 source: learning coach missing (onboarding regression risk)');

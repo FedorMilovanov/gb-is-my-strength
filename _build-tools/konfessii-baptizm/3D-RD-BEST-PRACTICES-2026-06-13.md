@@ -63,6 +63,7 @@
 - **Timeline → map sync:** событие теперь не только фокусирует узел, но и включает/подсвечивает релевантную географию (`city-Тифлис`, `city-Санкт-Петербург`, `city-Москва`, `country-804` и т.п.) через `findMapSelectionForNode`.
 - **Timeline target table:** вместо разрозненной regex-логики используется единый `TIMELINE_TARGETS` в `MindMap3D.tsx` как промежуточный шаг к полноценным `nodeId/routeId/mapSelectionId` в `timeline.ts`.
 - **Route step chips:** этапы маршрута кликабельны и ведут к узлам.
+- **Route storyboard context:** раскрытый маршрут показывает текущий узел (`Сейчас в маршруте`), его год/описание и следующий шаг/связь. Это уменьшает когнитивную нагрузку: пользователь видит не только «цепочку», но и зачем он сейчас на этом этапе.
 - **Context coach:** добавлен тихий обучающий блок «Как читать карту» для первого входа в 3D без фокуса.
 - **Progressive disclosure:** overview → Timeline/route/map → dossier.
 - **Source-level guards:** `konfessii:audit` проверяет, что Timeline не откатился к stale `timelineYear` state и что route/timeline interactions подключены.
