@@ -244,6 +244,35 @@ function ContextStatusBar({ activeRoute, routeStep, mapSelection, focusLabel }: 
   );
 }
 
+type TimelineTarget = { match: RegExp; nodeId: string; routeId?: string; mapId?: string };
+const TIMELINE_TARGETS: TimelineTarget[] = [
+  { match: /Воронин|Кура|20\.08\.1867/i, nodeId: 'voronin', routeId: 'route-tiflis', mapId: 'city-Тифлис (Тбилиси)' },
+  { match: /Кальвейт/i, nodeId: 'kalweit', routeId: 'route-tiflis', mapId: 'city-Тифлис (Тбилиси)' },
+  { match: /Павлов/i, nodeId: 'pavlov', routeId: 'route-tiflis', mapId: 'city-Тифлис (Тбилиси)' },
+  { match: /Цымбал/i, nodeId: 'tsymbal', routeId: 'route-ukraine', mapId: 'city-Ново-Васильевка' },
+  { match: /Вилер|Нововасильев|Союз баптистов/i, nodeId: 'vsb', routeId: 'route-ukraine', mapId: 'city-Ново-Васильевка' },
+  { match: /Редсток/i, nodeId: 'redstock', routeId: 'route-petersburg', mapId: 'city-Санкт-Петербург' },
+  { match: /Пашков/i, nodeId: 'pashkov', routeId: 'route-petersburg', mapId: 'city-Санкт-Петербург' },
+  { match: /Каргель/i, nodeId: 'kargel', routeId: 'route-petersburg', mapId: 'country-643' },
+  { match: /Проханов|ВСЕХ(?!Б)/i, nodeId: 'vseh', routeId: 'route-petersburg', mapId: 'city-Санкт-Петербург' },
+  { match: /ВСЕХБ|Жидков|Карев|26-29\.10\.1944|1944/i, nodeId: 'vsehb', routeId: 'route-soviet', mapId: 'city-Москва' },
+  { match: /СЦ ЕХБ|Совет Церквей|Крючков|Винс|1961|1965/i, nodeId: 'sc', routeId: 'route-soviet', mapId: 'city-Москва' },
+  { match: /РС ЕХБ|1992|Современный/i, nodeId: 'rsehb', routeId: 'route-soviet', mapId: 'city-Москва' },
+  { match: /Украин|Штунд/i, nodeId: 'ukr', routeId: 'route-ukraine', mapId: 'country-804' },
+  { match: /Петербург/i, nodeId: 'spb', routeId: 'route-petersburg', mapId: 'city-Санкт-Петербург' },
+  { match: /Закавказ|Тифлис/i, nodeId: 'trans', routeId: 'route-tiflis', mapId: 'country-268' },
+];
+
+function findMapSelectionForNode(nodeId: string, preferredId?: string): MapSelection | null {
+  const entries = [...Object.values(COUNTRY_FOCUS), ...MAP_AREAS, ...CITY_MARKERS] as Array<MapSelection & { id: string }>;
+  const direct = preferredId ? entries.find((entry) => entry.id === preferredId) : undefined;
+  const city = CITY_MARKERS.find((entry) => entry.nodes.includes(nodeId));
+  const country = Object.values(COUNTRY_FOCUS).find((entry) => entry.nodes.includes(nodeId));
+  const fallback = MAP_AREAS.find((entry) => entry.nodes.includes(nodeId));
+  const entry = direct ?? city ?? country ?? fallback;
+  return entry ? { id: entry.id, label: entry.label, color: entry.color, nodes: entry.nodes } : null;
+}
+
 function LearningCoach({ visible, onOpenRoutes, onOpenMap }: { visible: boolean; onOpenRoutes: () => void; onOpenMap: () => void }) {
   if (!visible) return null;
   return (
@@ -1024,28 +1053,16 @@ export default function MindMap3D() {
 
   const handleTimelineEventSelect = useCallback((event: any, year: number) => {
     const text = `${event?.year ?? ''} ${event?.title ?? ''} ${event?.description ?? ''} ${event?.details ?? ''}`;
-    const hints: Array<[RegExp, string]> = [
-      [/Воронин|Кура|Тифлис/i, 'voronin'],
-      [/Кальвейт/i, 'kalweit'],
-      [/Павлов/i, 'pavlov'],
-      [/Цымбал/i, 'tsymbal'],
-      [/Вилер|Нововасильев|Союз баптистов/i, 'vsb'],
-      [/Редсток/i, 'redstock'],
-      [/Пашков/i, 'pashkov'],
-      [/Каргель/i, 'kargel'],
-      [/Проханов|ВСЕХ(?!Б)/i, 'vseh'],
-      [/ВСЕХБ|Жидков|Карев|1944/i, 'vsehb'],
-      [/СЦ ЕХБ|Совет Церквей|Крючков|Винс|1961|1965/i, 'sc'],
-      [/РС ЕХБ|1992|Современный/i, 'rsehb'],
-      [/Украин|Штунд/i, 'ukr'],
-      [/Петербург/i, 'spb'],
-      [/Закавказ|Тифлис/i, 'trans'],
-    ];
-    const id = hints.find(([rx]) => rx.test(text))?.[1];
-    const node = id ? NODES.find((n) => n.id === id) : null;
+    const target = TIMELINE_TARGETS.find((entry) => entry.match.test(text));
+    const node = target ? NODES.find((n) => n.id === target.nodeId) : null;
     if (!node) return;
-    setActiveRoute(null);
-    setMapSelection(null);
+    const route = target?.routeId ? ROUTE_PRESETS.find((preset) => preset.id === target.routeId) ?? null : null;
+    const routeIndex = route ? Math.max(0, route.nodes.findIndex((id) => id === node.id)) : 0;
+    const selection = findMapSelectionForNode(node.id, target?.mapId);
+    setActiveRoute(route);
+    setRouteStep(route ? routeIndex : 0);
+    setMapMode(Boolean(selection));
+    setMapSelection(selection);
     setFocusNode(node);
     setContentExpanded(false);
     const nextMode: InspectorMode = zenMode ? 'closed' : 'peek';

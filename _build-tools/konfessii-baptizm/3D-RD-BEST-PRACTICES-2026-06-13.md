@@ -60,6 +60,8 @@
 ## Что уже применено в карте
 
 - **Timeline → event → graph focus:** ticks на Timeline кликабельны и могут перелетать к узлу.
+- **Timeline → map sync:** событие теперь не только фокусирует узел, но и включает/подсвечивает релевантную географию (`city-Тифлис`, `city-Санкт-Петербург`, `city-Москва`, `country-804` и т.п.) через `findMapSelectionForNode`.
+- **Timeline target table:** вместо разрозненной regex-логики используется единый `TIMELINE_TARGETS` в `MindMap3D.tsx` как промежуточный шаг к полноценным `nodeId/routeId/mapSelectionId` в `timeline.ts`.
 - **Route step chips:** этапы маршрута кликабельны и ведут к узлам.
 - **Context coach:** добавлен тихий обучающий блок «Как читать карту» для первого входа в 3D без фокуса.
 - **Progressive disclosure:** overview → Timeline/route/map → dossier.
