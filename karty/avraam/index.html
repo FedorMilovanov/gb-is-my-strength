@@ -33,7 +33,7 @@
 <style>
   :root{
     --gold:#e8c879; --gold-soft:rgba(232,200,121,.55); --gold-dim:rgba(232,200,121,.22);
-    --ink:#0b0f16; --panel:rgba(13,17,26,.86); --panel-line:rgba(232,200,121,.28);
+    --panel:rgba(13,17,26,.86); --panel-line:rgba(232,200,121,.28);
     --txt:#e9e4d6; --txt-dim:#9aa2ae; --lot:#e0813f; --war:#cf5b6b; --cand:#9b8cf0;
     --sans:"Segoe UI",system-ui,-apple-system,Roboto,Arial,sans-serif;
     --serif:Georgia,"Times New Roman",serif;
@@ -314,7 +314,7 @@
 
   /* ---------- ctx icons ---------- */
   .ci{fill:rgba(139,143,150,.9);opacity:0;transition:opacity .35s}
-  svg.z1 .ci{opacity:.85}
+  svg.z1 .ci{opacity:.9;transition:opacity .25s}
   svg.z1 .ctx-dot:hover .ci{opacity:1;filter:drop-shadow(0 0 6px rgba(200,180,120,.7))}
   .ci .ci-arch{fill:#0b0f16}
   .ci .ci-ln{fill:none;stroke:#0b0f16;stroke-width:1.1;stroke-linecap:round}
@@ -589,6 +589,20 @@
   #photoModal .pm-x:hover{color:var(--gold);border-color:var(--gold)}
 
 body{overscroll-behavior:none;-webkit-overscroll-behavior:none}
+  /* === QUALITY === */
+  #tl-scroll{scroll-snap-type:x mandatory}
+  .stage-chip{scroll-snap-align:start}
+  .marker:focus{outline:2px solid var(--gold);outline-offset:4px;border-radius:50%}
+  .marker:focus:not(:focus-visible){outline:none}
+  ::selection{background:rgba(232,200,121,.25);color:#f4eedd}
+  ::-moz-selection{background:rgba(232,200,121,.25);color:#f4eedd}
+  #searchRes{contain:content}
+  #caption{contain:layout style}
+  #story-nav{transform:translateZ(0);-webkit-transform:translateZ(0)}
+  @media(max-width:760px){
+    .life-tick,.stage-chip,.story-btn{touch-action:manipulation}
+  }
+
 
   /* ====== PREMIUM КАРТА АНИМАЦИИ ====== */
   
@@ -1139,9 +1153,13 @@ body{overscroll-behavior:none;-webkit-overscroll-behavior:none}
 
   <!-- Mediterranean -->
   <!-- Mediterranean с анимированным водным эффектом (feDisplacementMap) -->
+<g filter="url(#waterRipple)">
 <path fill="url(#seaG)" stroke="#2e4d6b" stroke-width="1.2" stroke-opacity=".4"
-  filter="url(#waterRipple)"
   d="M-400,254 C-260,258 -120,264 0,268 C120,258 250,244 380,222 C440,212 510,206 560,205 C600,206 640,214 668,224 C690,232 698,248 697,272 C698,302 688,330 679,357 C674,400 681,440 684,482 C687,512 666,530 648,547 C633,574 625,597 620,622 C615,650 608,663 597,675 C586,706 578,734 574,765 C570,790 562,810 550,826 C536,844 518,858 498,866 C448,880 390,872 335,862 C302,856 268,848 240,852 C190,856 140,864 90,872 C30,880 -180,892 -400,902 Z"/>
+</g>
+<!-- Прибрежная зона Средиземноморья (мелководье) -->
+<path fill="rgba(13,40,70,.3)" opacity=".5"
+  d="M-400,254 C-260,258 -120,264 0,268 C120,258 250,244 380,222 C440,212 510,206 560,205 C600,206 640,214 668,224 C690,232 698,248 697,272 C698,280 690,295 680,320 C660,280 630,260 590,256 C550,252 510,256 470,262 C420,268 360,272 290,272 C200,272 80,268 -400,270 Z" pointer-events="none"/>
 <!-- Паттерн волн Средиземного моря -->
 <path fill="url(#seaPattern)" opacity=".45"
   d="M-400,254 C-260,258 -120,264 0,268 C120,258 250,244 380,222 C440,212 510,206 560,205 C600,206 640,214 668,224 C690,232 698,248 697,272 C698,302 688,330 679,357 C674,400 681,440 684,482 C687,512 666,530 648,547 C633,574 625,597 620,622 C615,650 608,663 597,675 C586,706 578,734 574,765 C570,790 562,810 550,826 C536,844 518,858 498,866 C448,880 390,872 335,862 C302,856 268,848 240,852 C190,856 140,864 90,872 C30,880 -180,892 -400,902 Z"/>
@@ -1152,9 +1170,10 @@ body{overscroll-behavior:none;-webkit-overscroll-behavior:none}
   <text x="432" y="408" font-size="4" fill="#8d949f" text-anchor="middle" opacity=".5" class="lbl-z1">כִּתִּים · Κύπρος</text>
 
   <!-- Red Sea -->
-  <path fill="url(#seaG)" stroke="#2e4d6b" stroke-width="1.2" stroke-opacity=".45"
-  filter="url(#waterRipple)"
+  <g filter="url(#waterRipple)">
+<path fill="url(#seaG)" stroke="#2e4d6b" stroke-width="1.2" stroke-opacity=".45"
   d="M424,1012 C418,1024 420,1044 428,1070 C440,1112 462,1170 490,1230 C504,1258 516,1278 526,1292 C548,1340 584,1392 622,1430 C660,1490 692,1560 714,1640 C730,1702 740,1768 744,1830 L1110,1830 C1064,1740 1018,1640 974,1546 C946,1486 920,1456 900,1430 C860,1402 818,1368 762,1318 C740,1298 722,1278 708,1258 C692,1190 678,1110 670,1044 C668,1030 660,1022 652,1028 C644,1100 632,1190 614,1262 C606,1290 596,1300 580,1288 C560,1240 532,1160 506,1090 C494,1056 480,1028 466,1016 C452,1004 432,1000 424,1012 Z"/>
+</g>
 <!-- Паттерн волн на Красном море -->
 <path fill="url(#seaPattern)" opacity=".3" d="M424,1012 C418,1024 420,1044 428,1070 C440,1112 462,1170 490,1230 C504,1258 516,1278 526,1292 C548,1340 584,1392 622,1430 C660,1490 692,1560 714,1640 C730,1702 740,1768 744,1830 L1110,1830 C1064,1740 1018,1640 974,1546 C946,1486 920,1456 900,1430 C860,1402 818,1368 762,1318 C740,1298 722,1278 708,1258 C692,1190 678,1110 670,1044 C668,1030 660,1022 652,1028 C644,1100 632,1190 614,1262 C606,1290 596,1300 580,1288 C560,1240 532,1160 506,1090 C494,1056 480,1028 466,1016 C452,1004 432,1000 424,1012 Z"/>
   <!-- Nile delta hint -->
@@ -1179,10 +1198,12 @@ body{overscroll-behavior:none;-webkit-overscroll-behavior:none}
 
   <!-- Dead Sea -->
   <!-- Мёртвое море -->
+<g filter="url(#waterRipple)" opacity=".85">
 <path fill="#10263a" stroke="#2e4d6b" stroke-width="1.1" d="M646,795 C656,800 661,816 661,836 C661,852 658,862 659,872 C661,886 658,897 650,899 C642,900 637,890 638,876 C639,866 637,854 635,840 C634,820 636,804 640,797 C642,793 644,793 646,795 Z"/>
 <!-- соляной берег Мёртвого моря -->
 <path fill="none" stroke="rgba(200,210,180,.22)" stroke-width="2.5" stroke-dasharray="1.5 3" stroke-linecap="round"
   d="M646,795 C656,800 661,816 661,836 C661,852 658,862 659,872 C661,886 658,897 650,899 C642,900 637,890 638,876"/>
+</g>
 <!-- соляная текстура Мёртвого моря -->
 <g opacity=".18" pointer-events="none">
   <circle cx="648" cy="835" r=".8" fill="#c8d4a0"/><circle cx="652" cy="845" r=".6" fill="#c8d4a0"/>
@@ -1190,11 +1211,13 @@ body{overscroll-behavior:none;-webkit-overscroll-behavior:none}
   <circle cx="656" cy="852" r=".7" fill="#c8d4a0"/><circle cx="642" cy="842" r=".6" fill="#c8d4a0"/>
 </g>
   <!-- Sea of Galilee -->
-  <ellipse cx="658" cy="678" rx="8" ry="14" transform="rotate(-20 658 678)" fill="#10263a" stroke="#2e4d6b" stroke-width=".9"/>
+  <g filter="url(#waterRipple)" opacity=".9">
+<ellipse cx="658" cy="678" rx="8" ry="14" transform="rotate(-20 658 678)" fill="#10263a" stroke="#2e4d6b" stroke-width=".9"/>
 <!-- отражение на Кинерете -->
 <ellipse cx="658" cy="678" rx="8" ry="14" transform="rotate(-20 658 678)" fill="url(#seaPattern)" opacity=".4"/>
 <!-- блик -->
 <ellipse cx="655" cy="672" rx="3" ry="5" transform="rotate(-20 655 672)" fill="rgba(180,210,240,.08)"/>
+</g>
 
   <!-- rivers -->
   <!-- Euphrates highlight -->
@@ -1240,6 +1263,10 @@ body{overscroll-behavior:none;-webkit-overscroll-behavior:none}
     <circle r="2.5" fill="rgba(10,13,20,.8)" stroke="#7fa7c4" stroke-width=".8"/>
     <text x="6" y="4" font-size="4" fill="#7fa7c4" letter-spacing=".08em">ЭЦИОН-ГЕВЕР · עֶצְיֹן גֶּבֶר</text>
   </g>
+    <!-- Персидский залив — с водой -->
+    <g filter="url(#waterRipple)">
+    <path fill="url(#seaG)" stroke="#2e4d6b" stroke-width="1.2" stroke-opacity=".45" d="M1846,952 C1862,938 1892,932 1930,940 C2010,958 2105,1000 2190,1056 C2230,1082 2266,1110 2300,1140 L2300,1330 C2240,1280 2170,1228 2096,1182 C2010,1128 1930,1086 1880,1042 C1852,1016 1838,980 1846,952 Z"/>
+    </g>
     <!-- Персидский залив — coastal texture -->
     <path fill="url(#seaPattern)" opacity=".25" d="M1846,952 C1862,938 1892,932 1930,940 C2010,958 2105,1000 2190,1056 C2230,1082 2266,1110 2300,1140 L2300,1330 C2240,1280 2170,1228 2096,1182 C2010,1128 1930,1086 1880,1042 C1852,1016 1838,980 1846,952 Z"/>
     <text class="sea-label" x="1846" y="1014" font-size="12" transform="rotate(60 1846 1014)" letter-spacing=".25em">ЗАЛИВ</text>
@@ -1490,13 +1517,18 @@ body{overscroll-behavior:none;-webkit-overscroll-behavior:none}
 <g id="cartouche" class="lbl-z1" transform="translate(1580,1150)" opacity=".55">
   <!-- фон картуша -->
   <rect x="-5" y="-8" width="220" height="190" rx="8"
-    fill="rgba(10,12,18,.55)" stroke="#8a7040" stroke-width="1" stroke-opacity=".6"/>
+    fill="rgba(8,10,16,.65)" stroke="#a08040" stroke-width="1.2" stroke-opacity=".7"/>
   <rect x="0" y="0" width="210" height="174" rx="6"
-    fill="none" stroke="#c8a84a" stroke-width=".7" stroke-opacity=".4"/>
+    fill="none" stroke="#c8a84a" stroke-width=".8" stroke-opacity=".5"/>
+  <!-- Декоративные угловые орнаменты -->
+  <path d="M3,3 L12,3 M3,3 L3,12" fill="none" stroke="#c8a84a" stroke-width=".8" opacity=".5"/>
+  <path d="M207,3 L198,3 M207,3 L207,12" fill="none" stroke="#c8a84a" stroke-width=".8" opacity=".5"/>
+  <path d="M3,171 L12,171 M3,171 L3,162" fill="none" stroke="#c8a84a" stroke-width=".8" opacity=".5"/>
+  <path d="M207,171 L198,171 M207,171 L207,162" fill="none" stroke="#c8a84a" stroke-width=".8" opacity=".5"/>
   <!-- заголовок картуша -->
-  <text x="105" y="22" text-anchor="middle" font-size="7.5" fill="#c8a84a" 
-    letter-spacing=".22em" font-family="Georgia,serif">LEGENDA</text>
-  <line x1="8" y1="30" x2="202" y2="30" stroke="#c8a84a" stroke-width=".6" stroke-opacity=".4"/>
+  <text x="105" y="22" text-anchor="middle" font-size="7.5" fill="#d4aa50" 
+    letter-spacing=".25em" font-family="Georgia,serif">LEGENDA</text>
+  <line x1="8" y1="30" x2="202" y2="30" stroke="#c8a84a" stroke-width=".8" stroke-opacity=".5"/>
   <!-- элементы легенды -->
   <circle cx="20" cy="48" r="5" fill="rgba(10,13,20,.9)" stroke="#e8c879" stroke-width="1.4"/>
   <circle cx="20" cy="48" r="2.2" fill="#e8c879"/>
@@ -2487,6 +2519,9 @@ svg.addEventListener('pointerenter',e=>{
     }
   });
   g.addEventListener('pointerleave',()=>hidePrev());
+  g.addEventListener('keydown',e=>{
+    if(e.key==='Enter'||e.key===' '){e.preventDefault();g.click();}
+  });
   g.addEventListener('click',e=>{
   if(typeof measuring!=='undefined'&&measuring&&!lastMoved&&!e.target.closest('.marker')&&!e.target.closest('.ctx-dot')){
     const p=toSvg(e.clientX,e.clientY);measureClick(p.x,p.y);
@@ -2577,6 +2612,9 @@ PLACES.forEach(pl=>{
   const g=document.createElementNS(NS,'g');
   g.setAttribute('class','marker'+(pl.type==='cand'?' cand':'')+(pl.type==='lot'?' lot-type':''));
   g.dataset.x=pl.x;g.dataset.y=pl.y;g.dataset.id=pl.id;
+  g.setAttribute('aria-label',pl.name+(pl.kick?' — '+pl.kick:''));
+  g.setAttribute('tabindex','0');
+  g.setAttribute('role','button');
   const col=pl.type==='lot'?'var(--lot)':pl.type==='cand'?'var(--cand)':'#e8c879';
   let inner='';
   if(pl.type==='cand'){
@@ -2780,7 +2818,7 @@ function updatePlaceCounter(){
   } else counter.textContent='';
 }
 function openPlace(id,fly=true){
-  haptic(10);
+  if(navigator.maxTouchPoints>0) haptic(10);
   if(typeof closeCtx==='function')closeCtx();
   const i=placeIndex[id];const pl=PLACES[i];curPlace=i;
   document.querySelectorAll('.marker').forEach(m=>m.classList.toggle('active',m.dataset.id===id));
@@ -3680,9 +3718,19 @@ document.addEventListener('keydown',e=>{
     if(pm&&pm.classList.contains('open')){pm.classList.remove('open');return;}
   }open');
 });
-document.getElementById('photoModal').addEventListener('click',e=>{
-  if(e.target.id==='photoModal') document.getElementById('photoModal').classList.remove('open');
-});
+// Photo modal close: click backdrop + swipe down
+(function(){
+  const pm=document.getElementById('photoModal');
+  pm.addEventListener('click',e=>{if(e.target===pm) pm.classList.remove('open');});
+  let pmTouchY=null;
+  pm.addEventListener('touchstart',e=>{pmTouchY=e.touches[0].clientY;},{passive:true});
+  pm.addEventListener('touchend',e=>{
+    if(pmTouchY!==null&&e.changedTouches[0].clientY-pmTouchY>60){
+      pm.classList.remove('open');haptic(8);
+    }
+    pmTouchY=null;
+  },{passive:true});
+})();
 </script>
 
 <!-- Yandex.Metrika counter -->
