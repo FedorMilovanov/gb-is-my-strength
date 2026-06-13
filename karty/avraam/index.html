@@ -245,9 +245,10 @@
 
   /* ---------- place panel ---------- */
   #panel{position:fixed;top:0;right:0;bottom:0;width:min(420px,92vw);z-index:40;background:linear-gradient(165deg,rgba(18,22,32,.96),rgba(8,11,18,.98));border-left:1px solid var(--panel-line);backdrop-filter:blur(24px);-webkit-backdrop-filter:blur(24px);transform:translateX(105%);display:flex;flex-direction:column;box-shadow:-24px 0 70px rgba(0,0,0,.6);will-change:transform}
-  /* transition только если нет rubber animation */
-  #panel:not(.open){transition:transform .38s cubic-bezier(.4,0,.2,1)}
-  #panel.open{transform:none;opacity:1}
+  /* Panel closed: slide transition */
+  #panel:not(.open){transition:transform .42s cubic-bezier(.16,.84,.24,1)}
+  /* Panel open: JS adds .open class, CSS sets final state */
+  #panel.open{transform:none!important;opacity:1}
   #panel{opacity:0.98}
   #panel header{padding:24px 24px 0;position:relative;background:linear-gradient(180deg,rgba(15,19,28,.98) 0%,transparent 100%)}
   #panel header::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;
@@ -827,7 +828,8 @@ body{overscroll-behavior:none;-webkit-overscroll-behavior:none}
     88%{transform:translateX(-1%)}
     100%{transform:translateX(0)}
   }
-  #panel.open{animation:panelRubberIn .55s cubic-bezier(.22,1,.36,1) both}
+  /* panelRubberIn через JS .panel-opening class, не .open чтобы не конфликтовать с transform:none */
+  #panel.panel-opening{animation:panelRubberIn .55s cubic-bezier(.22,1,.36,1) both}
   @media(max-width:760px){
     @keyframes panelRubberIn{
       0%{transform:translateY(100%)}
@@ -854,8 +856,8 @@ body{overscroll-behavior:none;-webkit-overscroll-behavior:none}
     78%{transform:scale(1.12)}
     100%{transform:scale(1)}
   }
-  .marker.entering{animation:markerBounceActive .55s cubic-bezier(.22,1,.36,1) both}
-  .marker.just-opened{animation:markerBounceActive .45s cubic-bezier(.22,1,.36,1) both}
+  .marker.entering{animation:markerBounceActive .55s cubic-bezier(.22,1,.36,1) forwards}
+  .marker.just-opened{animation:markerBounceActive .45s cubic-bezier(.22,1,.36,1) forwards}
 
   /* Spring-open для caption (этап-подпись) */
   @keyframes captionSpring{
@@ -864,7 +866,7 @@ body{overscroll-behavior:none;-webkit-overscroll-behavior:none}
     78%{transform:translateX(-50%) translateY(1px) scale(.99)}
     100%{transform:translateX(-50%) translateY(0) scale(1)}
   }
-  #caption.show{animation:captionSpring .5s cubic-bezier(.22,1,.36,1) both}
+  #caption.show{animation:captionSpring .5s cubic-bezier(.22,1,.36,1) forwards}
 
   /* Elastic chip pulse при focusStage */
   @keyframes chipElastic{
@@ -915,7 +917,7 @@ body{overscroll-behavior:none;-webkit-overscroll-behavior:none}
     60%{opacity:1;transform:translateY(-3px) scale(1.03)}
     100%{opacity:1;transform:translateY(0) scale(1)}
   }
-  #mPrev.vis{animation:prevSpring .28s cubic-bezier(.22,1,.36,1) both}
+  #mPrev.vis{opacity:1;transform:translateY(0) scale(1);animation:prevSpring .28s cubic-bezier(.22,1,.36,1) both}
 
   /* Story button spring active */
   @keyframes storyBtnSpring{
@@ -3119,6 +3121,12 @@ function openPlace(id,fly=true){
   // share button pulse
   const sp2=document.getElementById('sharePl');if(sp2){sp2.classList.remove('new-place');requestAnimationFrame(()=>sp2.classList.add('new-place'));setTimeout(()=>sp2.classList.remove('new-place'),2100);}
   panel.classList.add('open');document.body.classList.add('panel-open');
+  // Запуск rubber-анимации через отдельный class (не конфликтует с transform:none из .open)
+  panel.classList.remove('panel-opening');
+  requestAnimationFrame(()=>requestAnimationFrame(()=>{
+    panel.classList.add('panel-opening');
+    setTimeout(()=>panel.classList.remove('panel-opening'),600);
+  }));
   panel.setAttribute('aria-label',pl.name+' · '+pl.kick);
   panel.setAttribute('aria-modal','true');
   panel.setAttribute('aria-hidden','false');
