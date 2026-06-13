@@ -100,7 +100,7 @@ if(!art)return;
 var body=art.querySelector(".article-body")||art;
 var paras=Array.from(body.querySelectorAll("p")).filter(function(p){return!p.closest("figcaption,.quiz-wrapper,.author-card,.sources-section,.summary-card,blockquote.pq-scripture,nav,.gbs2-rail")&&p.textContent.trim().length>20});
 if(paras.length<3)return;
-var idx=0,playing=false,resumeTimer=null,rate=parseFloat(localStorage.getItem("gbx-tts-rate"))||1,speeds=[1,1.25,1.5],utt=null,voice=null,hasVoices=false,C=2*Math.PI*17;
+var idx=0,playing=false,resumeTimer=null,rate=parseFloat(localStorage.getItem("gbx-tts-rate"))||1,speeds=[0.75,1,1.25,1.5,1.75,2],utt=null,voice=null,hasVoices=false,C=2*Math.PI*17,_changing=false,_uttGen=0;
 var el=document.createElement("div");el.className="gbx-tts";el.setAttribute("role","region");el.setAttribute("aria-label","Аудиоплеер");el.setAttribute("lang","ru");
 el.innerHTML='<button class="gbx-tts-play" aria-label="Слушать статью" type="button"><svg class="gbx-tts-ring" viewBox="0 0 46 46" aria-hidden="true"><circle cx="23" cy="23" r="17" stroke-dasharray="'+C.toFixed(1)+'" stroke-dashoffset="'+C.toFixed(1)+'"/></svg><svg class="gbx-tts-ico-play" viewBox="0 0 24 24" aria-hidden="true"><polygon points="6,3 20,12 6,21"/></svg><svg class="gbx-tts-ico-pause" viewBox="0 0 24 24" aria-hidden="true" style="display:none"><rect x="5" y="3" width="4" height="18" rx="1"/><rect x="15" y="3" width="4" height="18" rx="1"/></svg></button><div class="gbx-tts-meta"><span class="gbx-tts-label">Слушать</span><span class="gbx-tts-section">Нажмите кнопку воспроизведения</span></div><button class="gbx-tts-speed" type="button" aria-label="Скорость">'+rate+'\u00d7</button><button class="gbx-tts-close" type="button" aria-label="Закрыть"><svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" aria-hidden="true"><path d="M1 1l12 12M13 1L1 13"/></svg></button>';
 var btn=el.querySelector(".gbx-tts-play"),iP=el.querySelector(".gbx-tts-ico-play"),iQ=el.querySelector(".gbx-tts-ico-pause"),ring=el.querySelector(".gbx-tts-ring circle"),mL=el.querySelector(".gbx-tts-label"),mS=el.querySelector(".gbx-tts-section"),sB=el.querySelector(".gbx-tts-speed"),cB=el.querySelector(".gbx-tts-close");
@@ -109,12 +109,78 @@ function uR(){var p=paras.length>1?idx/(paras.length-1):0;ring.style.strokeDasho
 function sI(){iP.style.display=playing?"none":"";iQ.style.display=playing?"":"none";mL.textContent=playing?"Читаю":"Пауза"}
 function cH(){body.querySelectorAll(".gbx-speaking").forEach(function(e){e.classList.remove("gbx-speaking")})}
 function hL(p){cH();p.classList.add("gbx-speaking");p.scrollIntoView({behavior:"smooth",block:"center"})}
-function sP(i){if(i>=paras.length){st();return}idx=i;uR();var t=paras[i].textContent.replace(/\s+/g," ").trim();var sh=t.length>50?t.slice(0,50)+"\u2026":t;mS.textContent=sh;hL(paras[i]);voice||pV();if(hasVoices&&!voice){playing=false;sI();mL.textContent="Нет голоса";mS.textContent="Установите русский голос в настройках системы";cH();return}utt=new SpeechSynthesisUtterance(t);utt.lang="ru-RU";if(voice)try{utt.voice=voice}catch(e){}utt.rate=rate;utt.onend=function(){if(playing)sP(i+1)};utt.onerror=function(e){if(e.error!=="canceled"&&e.error!=="interrupted"&&playing)sP(i+1)};speechSynthesis.speak(utt);if(!/(android)/i.test(navigator.userAgent)){clearInterval(resumeTimer);resumeTimer=setInterval(function(){if(!playing){clearInterval(resumeTimer);return}speechSynthesis.pause();speechSynthesis.resume()},13000)}}
-function pl(){if(playing)return;playing=true;sI();speechSynthesis.cancel();var go=function(){sP(idx)};if(voice)return void setTimeout(go,50);pV();if(voice||hasVoices)return void setTimeout(go,60);var done=false,tries=0,fin=function(){if(!done){done=true;pV();go()}};var vpoll=setInterval(function(){tries++;pV();if(voice||tries>=12){clearInterval(vpoll);fin()}},250);speechSynthesis.addEventListener&&speechSynthesis.addEventListener("voiceschanged",function h(){speechSynthesis.removeEventListener("voiceschanged",h);clearInterval(vpoll);fin()})}
-function pa(){clearInterval(resumeTimer);playing=false;sI();speechSynthesis.cancel();cH();mL.textContent="Пауза"}
-function st(){clearInterval(resumeTimer);playing=false;idx=0;sI();speechSynthesis.cancel();cH();uR();mS.textContent="Нажмите кнопку воспроизведения";mL.textContent="Слушать"}
+function sP(i){
+  if(i>=paras.length){st();return}
+  idx=i;uR();
+  var t=paras[i].textContent.replace(/\s+/g," ").trim();
+  var sh=t.length>50?t.slice(0,50)+"\u2026":t;
+  mS.textContent=sh;hL(paras[i]);
+  voice||pV();
+  if(hasVoices&&!voice){
+    playing=false;sI();
+    mL.textContent="Нет голоса";
+    mS.textContent="Установите русский голос в настройках системы";
+    cH();return;
+  }
+  // Generation guard — ИСПРАВЛЯЕТ RACE CONDITION при смене скорости
+  var myGen=++_uttGen;
+  utt=new SpeechSynthesisUtterance(t);
+  utt.lang="ru-RU";
+  if(voice)try{utt.voice=voice}catch(e){}
+  utt.rate=rate;
+  utt.onend=function(){
+    // GUARD: игнорируем если наш utterance устарел (был отменён cancel())
+    if(myGen!==_uttGen)return;
+    if(playing)sP(i+1);
+  };
+  utt.onerror=function(e){
+    if(myGen!==_uttGen)return;
+    if(e.error!=="canceled"&&e.error!=="interrupted"&&playing)sP(i+1);
+  };
+  speechSynthesis.speak(utt);
+  // Chrome 15s bug workaround
+  if(!/(android)/i.test(navigator.userAgent)){
+    clearInterval(resumeTimer);
+    resumeTimer=setInterval(function(){
+      if(!playing){clearInterval(resumeTimer);return}
+      speechSynthesis.pause();speechSynthesis.resume();
+    },13000);
+  }
+}
+function pl(){if(playing)return;playing=true;sI();_uttGen++;speechSynthesis.cancel();var go=function(){sP(idx)};if(voice)return void setTimeout(go,50);pV();if(voice||hasVoices)return void setTimeout(go,60);var done=false,tries=0,fin=function(){if(!done){done=true;pV();go()}};var vpoll=setInterval(function(){tries++;pV();if(voice||tries>=12){clearInterval(vpoll);fin()}},250);speechSynthesis.addEventListener&&speechSynthesis.addEventListener("voiceschanged",function h(){speechSynthesis.removeEventListener("voiceschanged",h);clearInterval(vpoll);fin()})}
+function pa(){clearInterval(resumeTimer);playing=false;_uttGen++;sI();speechSynthesis.cancel();cH();mL.textContent="Пауза"}
+function st(){clearInterval(resumeTimer);playing=false;idx=0;_uttGen++;sI();speechSynthesis.cancel();cH();uR();mS.textContent="Нажмите кнопку воспроизведения";mL.textContent="Слушать"}
 btn.addEventListener("click",function(){if(el.classList.contains("gbx-tts--mini")){el.classList.remove("gbx-tts--mini");return}playing?pa():pl()});
-sB.addEventListener("click",function(){var si=speeds.indexOf(rate);rate=speeds[(si+1)%speeds.length];localStorage.setItem("gbx-tts-rate",String(rate));sB.textContent=rate+"\u00d7";if(playing){speechSynthesis.cancel();setTimeout(function(){sP(idx)},50)}});
+sB.addEventListener("click",function(){
+  var si=speeds.indexOf(rate);
+  rate=speeds[(si+1)%speeds.length];
+  localStorage.setItem("gbx-tts-rate",String(rate));
+  // Отображаем скорость красиво
+  var rateLabel=rate===1?"1×":(rate<1?""+rate+"×":""+rate+"×");
+  sB.textContent=rateLabel;
+  // Визуальный feedback — краткое мерцание кнопки
+  sB.style.opacity="0.5";
+  setTimeout(function(){sB.style.opacity="";},200);
+  if(playing){
+    // КРИТИЧНО: инвалидируем текущий utterance ДО cancel
+    // чтобы его onend не сдвинул idx
+    _uttGen++;
+    speechSynthesis.cancel();
+    clearInterval(resumeTimer);
+    // Ждём 120ms — Chrome cancel не мгновенный
+    var resumeIdx=idx; // Сохраняем позицию
+    setTimeout(function(){
+      // Дополнительная проверка: убедимся что synthesis готов
+      if(speechSynthesis.speaking){
+        // Если ещё говорит — отменяем снова
+        speechSynthesis.cancel();
+        setTimeout(function(){sP(resumeIdx);},80);
+      } else {
+        sP(resumeIdx);
+      }
+    },120);
+  }
+});
 cB.addEventListener("click",function(){st();el.classList.add("gbx-tts--mini")});
 window.addEventListener("beforeunload",function(){speechSynthesis.cancel()});
 document.addEventListener("visibilitychange",function(){if(!playing)return;document.hidden?speechSynthesis.pause():speechSynthesis.resume()});
