@@ -244,6 +244,28 @@ function ContextStatusBar({ activeRoute, routeStep, mapSelection, focusLabel }: 
   );
 }
 
+function LearningCoach({ visible, onOpenRoutes, onOpenMap }: { visible: boolean; onOpenRoutes: () => void; onOpenMap: () => void }) {
+  if (!visible) return null;
+  return (
+    <motion.div initial={{ opacity: 0, y: 10, scale: 0.98 }} animate={{ opacity: 1, y: 0, scale: 1 }} exit={{ opacity: 0, y: 8, scale: 0.98 }} transition={{ duration: 0.22, ease: 'easeOut' }} className="pointer-events-auto absolute right-4 bottom-[6.6rem] z-30 hidden w-[min(330px,calc(100vw-2rem))] rounded-3xl border border-white/10 bg-black/50 p-4 backdrop-blur-2xl lg:block" style={{ boxShadow: '0 18px 60px rgba(0,0,0,0.42), inset 0 1px 0 rgba(255,255,255,0.04)' }}>
+      <div className="mb-2 flex items-center gap-2 text-brand-gold">
+        <Sparkles size={13} />
+        <span className="text-[9px] font-black uppercase tracking-[0.18em]">Как читать карту</span>
+      </div>
+      <p className="text-[11.5px] leading-5 text-white/62">Не нужно угадывать смысл шаров: начните с маршрута, затем двигайте Timeline и открывайте досье узлов.</p>
+      <div className="mt-3 grid gap-1.5 text-[10.5px] text-white/45">
+        <div><span className="font-mono text-brand-gold">1</span> · Маршрут показывает историческую линию.</div>
+        <div><span className="font-mono text-brand-gold">2</span> · Timeline затемняет будущие узлы.</div>
+        <div><span className="font-mono text-brand-gold">3</span> · Страны и города связывают граф с Евразией.</div>
+      </div>
+      <div className="mt-3 flex gap-2">
+        <button onClick={onOpenRoutes} className="flex-1 rounded-full border border-brand-gold/30 bg-brand-gold/10 px-3 py-2 text-[9px] font-bold uppercase tracking-[0.12em] text-brand-gold transition hover:bg-brand-gold/16 active:scale-95">Маршруты</button>
+        <button onClick={onOpenMap} className="flex-1 rounded-full border border-white/10 bg-white/[0.04] px-3 py-2 text-[9px] font-bold uppercase tracking-[0.12em] text-white/58 transition hover:bg-white/[0.08] hover:text-white/80 active:scale-95">Карта</button>
+      </div>
+    </motion.div>
+  );
+}
+
 function BottomBar({ left, hidden, expanded, activeRoute, routeStep = 0, mapSelection, onToggle, onRouteSelect, onRouteStepTo, onMapSelect }: any) {
   const activeLabel = activeRoute?.label ?? mapSelection?.label ?? 'Маршруты и города';
   const activeColor = activeRoute?.color ?? mapSelection?.color ?? '#c4a67e';
@@ -1644,6 +1666,7 @@ export default function MindMap3D() {
   }, [cameraNavEnabled, focusNode, inspectorMode, closeInspector, handleCameraMove, handleNeighborStep]);
 
   const isSmallViewport = dims.w < 640;
+  const showLearningCoach = !zenMode && !focusNode && !activeRoute && !mapSelection && !bottomBarExpanded;
   const panelSafeLeft = useMemo(() => {
     if (isSmallViewport) return 16;
     if (!focusNode || inspectorMode === 'closed') return 16;
@@ -1685,6 +1708,7 @@ export default function MindMap3D() {
           
           <SceneControls mapMode={mapMode} zenMode={zenMode} hasFocus={Boolean(focusNode)} cameraNavEnabled={cameraNavEnabled} onToggleMap={() => setMapMode((v) => !v)} onToggleZen={() => { setZenMode((v) => !v); if (!zenMode) setInspectorMode('closed'); else if (focusNode) { setInspectorMode('peek'); focusCameraToNode(focusNode, 'peek'); } }} onToggleCameraNav={() => setCameraNavEnabled((v) => !v)} onReset={handleReset} onOverview={() => fgRef.current?.cameraPosition(overviewCamera.camera, overviewCamera.target, 700)} onFocusReturn={focusNode ? () => focusCameraToNode(focusNode, inspectorMode) : undefined} onToggleLegend={() => setShowLegend(!showLegend)} />
           <AnimatePresence>{cameraNavEnabled && !zenMode && (<CameraNavPad onMove={handleCameraMove} onToggle={() => setCameraNavEnabled(false)} />)}</AnimatePresence>
+          <AnimatePresence><LearningCoach visible={showLearningCoach} onOpenRoutes={() => setBottomBarExpanded(true)} onOpenMap={() => setMapMode(true)} /></AnimatePresence>
           <AnimatePresence>{hoveredNodeId && !focusNode && (() => { const hNode = NODES.find((n) => n.id === hoveredNodeId); if (!hNode) return null; return (<motion.div key={hoveredNodeId} initial={{ opacity: 0, y: 8, scale: 0.95 }} animate={{ opacity: 1, y: 0, scale: 1 }} exit={{ opacity: 0, y: 6, scale: 0.95 }} transition={{ duration: 0.12 }} className="pointer-events-none absolute bottom-28 left-1/2 z-40 -translate-x-1/2 rounded-2xl border backdrop-blur-2xl sm:bottom-32" style={{ color: GROUP_COLORS[hNode.group], borderColor: `${GROUP_COLORS[hNode.group]}35`, background: 'rgba(5,5,12,0.75)', boxShadow: `0 0 24px ${GROUP_COLORS[hNode.group]}18`, padding: '6px 14px 7px' }}><span className="text-[8.5px] uppercase tracking-[0.18em]" style={{ color: GROUP_COLORS[hNode.group], opacity: 0.6 }}>{GROUP_LABELS[hNode.group]}</span><div className="flex items-baseline gap-2"><span className="text-[13px] font-bold leading-tight text-white">{hNode.label}</span>{hNode.year && <span className="font-mono text-[9px]" style={{ color: GROUP_COLORS[hNode.group], opacity: 0.7 }}>{hNode.year}</span>}</div></motion.div>); })()}</AnimatePresence>
           {(focusNode || mapSelection) && (<div className="pointer-events-none absolute bottom-20 right-4 z-30 hidden rounded-2xl border border-white/[0.08] bg-black/40 px-3 py-2.5 text-[10px] text-white/55 backdrop-blur-xl md:block" style={{ boxShadow: '0 4px 20px rgba(0,0,0,0.3)' }}><div className="mb-1.5 flex items-center gap-2"><span className="h-1.5 w-6 rounded-full" style={{ background: 'linear-gradient(90deg, #c4a67e, #d4a857)' }} />прямая связь</div><div className="flex items-center gap-2"><span className="h-px w-6 rounded-full bg-white/30" />вторичная</div></div>)}
 

@@ -23,6 +23,7 @@
  *  I7  Обёртка несёт SEO: canonical, og:image, 1×h1 (sr-only), JSON-LD, theme-color.
  *  I8  3D-режим содержит событийный Timeline (не падает из-за undefined state и не голые годы).
  *  I9  3D-режим содержит нижний роутер «Маршруты и города».
+ *  I10 3D-режим содержит тихий learning coach «Как читать карту» для первого входа.
  */
 'use strict';
 const path = require('path');
@@ -84,6 +85,9 @@ if (src) {
   /onRouteStepTo=\{handleRouteStepTo\}/.test(src) && /Нажмите этап/.test(src)
     ? ok('I9 source: route step chips are clickable')
     : bad('I9 source: route step chips are not clickable');
+  /function\s+LearningCoach/.test(src) && /Как читать карту/.test(src) && /showLearningCoach/.test(src)
+    ? ok('I10 source: first-run learning coach present')
+    : bad('I10 source: learning coach missing (onboarding regression risk)');
 }
 
 // ---------- live checks (browser, optional) ----------
@@ -137,6 +141,9 @@ if (chromium) (async () => {
         /МАРШРУТЫ\s+И\s+ГОРОДА/i.test(uiText)
           ? ok(`I9 [${vp.label}] нижний роутер маршрутов видим`)
           : bad(`I9 [${vp.label}] нет понятного роутера «Маршруты и города»`);
+        /Как\s+читать\s+карту/i.test(uiText)
+          ? ok(`I10 [${vp.label}] обучающий coach видим на первом входе`)
+          : bad(`I10 [${vp.label}] нет тихой подсказки «Как читать карту»`);
       }
     }
     errs.length === 0 ? ok(`I1 [${vp.label}] 0 pageerror`) : bad(`I1 [${vp.label}] errors: ${errs.slice(0, 2).join(' | ')}`);
