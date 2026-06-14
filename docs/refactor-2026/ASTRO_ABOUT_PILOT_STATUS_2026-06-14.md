@@ -137,3 +137,11 @@ smoke: pass
 ```
 
 Notes про отсутствующий heading и слишком малое число ссылок закрыты. Перед production ownership всё равно нужен ручной visual review, но content/SEO smoke теперь значительно ближе к legacy.
+
+## Public technical-copy cleanup
+
+Публичный Astro `/about/` больше не выводит технические маркеры scaffold (`Astro scaffold`, `noindex`, `production switch`).
+
+Технический badge/footer note оставлены только для `/dev/astro-test/` через props `technicalBadge` и `footerNote` в `BaseLayout`.
+
+`astro-about-pilot-audit` теперь падает, если публичный `/about/` снова содержит техническую scaffold-копию.
