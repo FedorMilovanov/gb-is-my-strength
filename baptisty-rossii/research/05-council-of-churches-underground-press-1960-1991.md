@@ -1276,9 +1276,12 @@ https://www.pravenc.ru/text/389599.html
 Контрольные PDF в локальных raw-sources:
 
 - `belyakova-collective-practices-ehb-late-ussr-2012.pdf` — Н. Белякова, коллективные практики ЕХБ в позднем СССР;
-
+- `bulletin-council-relatives-009-1972.pdf`;
 - `bulletin-council-relatives-010-1972.pdf`;
-- `bulletin-council-relatives-088-1980.pdf`.
+- `bulletin-council-relatives-044-1977.pdf`;
+- `bulletin-council-relatives-084-1980.pdf`;
+- `bulletin-council-relatives-088-1980.pdf`;
+- каталог: `14-council-relatives-bulletin-pdf-catalog-2026-06-14.md`.
 
 
 - Корпус “История разделения церквей ЕХБ 1961 года”:  
@@ -1535,7 +1538,7 @@ https://www.pravenc.ru/text/389599.html
 
 ## 13. Что проверить перед публикацией
 
-1. PDF/сканы бюллетеней Совета родственников — начато: сохранены №10 (1972) и №88 (1980), нужен полный каталог 141 номера.
+1. PDF/сканы бюллетеней Совета родственников — начато: сохранены №9, №10, №44, №84, №88; создан начальный каталог `14-council-relatives-bulletin-pdf-catalog-2026-06-14.md`; нужен полный каталог 141 номера.
 2. Полный текст обращения издательства “Христианин” к Косыгину.
 3. Документы дела Лигукалнс 1974.
 4. Биографии печатников.
@@ -1553,9 +1556,12 @@ https://www.pravenc.ru/text/389599.html
 Контрольные PDF в локальных raw-sources:
 
 - `belyakova-collective-practices-ehb-late-ussr-2012.pdf` — Н. Белякова, коллективные практики ЕХБ в позднем СССР;
-
+- `bulletin-council-relatives-009-1972.pdf`;
 - `bulletin-council-relatives-010-1972.pdf`;
-- `bulletin-council-relatives-088-1980.pdf`.
+- `bulletin-council-relatives-044-1977.pdf`;
+- `bulletin-council-relatives-084-1980.pdf`;
+- `bulletin-council-relatives-088-1980.pdf`;
+- каталог: `14-council-relatives-bulletin-pdf-catalog-2026-06-14.md`.
 
 
 - Архив “Вестника Истины”:  
@@ -1566,7 +1572,7 @@ https://www.pravenc.ru/text/389599.html
 - РС ЕХБ, “Инициативному движению”:  
   https://baptist.org.ru/read/article/94598
 - baptistru.info, “Христианин, издательство” — требуется стабильный fetch / архивная копия.
-- propovednik.com, PDF-бюллетени Совета родственников — найдены и локально сохранены контрольные №10 (1972) и №88 (1980); требуется полная каталогизация корпуса 1970–1987.
+- propovednik.com, PDF-бюллетени Совета родственников — найдены и локально сохранены контрольные №9/10 (1972), №44 (1977), №84/88 (1980); начата каталогизация корпуса 1970–1987.
 - Н. Белякова, «Коллективные практики типичной общины ЕХБ в позднем СССР» — CyberLeninka/PDF, источник для интерпретации самиздата как коллективной религиозной практики.
 
 ---
