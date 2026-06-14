@@ -543,12 +543,13 @@ gsap.to(caravanDot, {
 - [x] Swipe left/right панели (prev/next маркер)
 - [x] touch-action:none + bottom sheet 92svh + iOS fallbacks
 
-### Sprint 3 — Архитектура под вторую карту (В ПРОЦЕССЕ)
-- [x] Вынести движок в `_engine/map-engine.js` (v0.1 API skeleton)
+### Sprint 3 — Архитектура под вторую карту ✅ CORE ЗАКРЫТ (2026-06-14)
+- [x] Вынести движок в `_engine/map-engine.js` (v0.2 reusable core: loadRoute/normalize/validate + viewport/flyTo/zoom/pan + story/tour/share)
 - [x] Вынести базовую географию в `_engine/base-geo.svg` (34KB extract)
-- [x] Создать `karty/avraam/route.json` (meta + places_index + stages_index + stories + ctx_index + yec_position, 131 строка, r152)
+- [x] Создать `karty/avraam/route.json` v2 full data (PLACES/STAGES/CTX/STORIES + 40 verified photos + 5 verified_waypoints + 47 scientific_variants + yec_position/notes, r157)
 - [x] Создать `karty/ishod/` scaffold + route.json (7 мест, 6 этапов)
 - [x] Хаб: прогресс Исхода + ссылки (карточка теперь <a>)
+- [x] QA: `MapEngine.validateRoute(route.json)` green (19 places / 8 stages / 5 stories / 7 ctx / 40 photos)
 
 ### Sprint 4 — Карта Исхода (Ishod)
 - [ ] Маршрут Раамсес → Суккот → Мара → Синай → Кадеш → Моав
@@ -556,6 +557,38 @@ gsap.to(caravanDot, {
 - [ ] Дебаты о переправе (Суэц vs. Акаба vs. Тростниковое море)
 - [ ] Хронология 40 лет
 - [ ] Базируется на том же движке и base-geo.svg
+
+### Wave-26 (2026-06-14) — Abraham map hardening
+- **Verified media:** 38 Wikimedia assets checked through Commons API and switched to `Special:FilePath` redirects; LOC Matson and Ritmeyer direct assets preserved. This fixes broken thumbnails that previously caused photo cards to disappear.
+- **Runtime stability:** dangling marker-preview code using `g/pl` outside the marker loop was removed; marker hover, long-press, and keyboard activation now live inside the marker builder.
+- **Tour UX:** caravan dot upgraded to a small SVG Abraham figure (cloak, staff, Hebrew label אַבְרָם) with pause halo at each stop; reduced-motion safe.
+- **Engine:** `map-engine.js` is no longer a placeholder; future maps can load JSON and use a shared viewport/story/tour API. Avraam still keeps its inline visual runtime until Ishod migration, to avoid regression.
+
+### Wave-27 (2026-06-14) — Browser QA fixes
+- Playwright desktop/mobile smoke added manually for Avraam: markers/routes/ctx counts, route audit, panel/photos/modal, story switcher, tour walker, search, mobile panel.
+- Fixed `animateStageRoutes is not defined` caused by a script-boundary split before GSAP setup.
+- Fixed `captionSpring` horizontal transform: caption no longer leaves the viewport (`rect.x=22` at 1440px).
+- `startTour()` now hides the intro hint so it cannot cover the Abraham walker.
+- LOC Matson image now uses canonical `tile.loc.gov` URL and CSP allows it; all 40 thumbnails load in Chromium.
+
+### Wave-28 (2026-06-14) — Stage I verified corridor nodes
+- Added `routeWaypoints` SVG layer for the historically correct Euphrates corridor: Uruk → Nippur → Babylon → Mari → Carchemish.
+- Added layer toggle «Опорные узлы» + marker legend item; route.json now has `verified_waypoints[5]`.
+- Waypoint labels avoid CTX duplication: Babylon/Mari use ring-only because their CTX labels already exist.
+- Story-aware opacity: waypoints are bright for main/Лех-леха/stage I and dimmed for Lot/War/Akeda.
+- MapEngine validator now checks waypoint ids/coords/stage and reports stats.waypoints.
+
+### Wave-29 (2026-06-14) — Scientific variants + source recheck
+- MD→code audit: old research-only/photo proposals are now implemented; current Avraam data has 40 photos, 5 waypoints, and 47 scientific variants.
+- Added `SCIENCE_VARIANTS` in HTML and `scientific_variants` in route.json for all 19 places.
+- Rendered panel block: «НАУЧНЫЕ ВАРИАНТЫ И ОГОВОРКИ» on story/arch tabs.
+- Fixed Shechem dispute title (was accidentally Bethel/Ai wording).
+- Rechecked 39 source URLs across BiblePlaces/Wikimedia/LOC/Ritmeyer/AiG/ARJ/CMI/NPAPH; documented in ABRAHAM-ARCHAEOLOGY VERIF30.
+
+### Wave-30 (2026-06-14) — Clean source index
+- Cleaned `ABRAHAM-ARCHAEOLOGY-RESEARCH-2026-06-13.md`: removed repeated research-only/proposal noise and kept a compact source index + implementation audit.
+- Added German scholarly layer (WiBiLex: Bethel/Hebron/Beerscheba) and Jewish tradition/text layer (Jewish Encyclopedia / Sefaria) to the source base.
+- Map source modal mentions WiBiLex + Jewish Encyclopedia/Sefaria without adding dozens of UI links.
 
 ---
 
