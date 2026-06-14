@@ -1275,6 +1275,8 @@ https://www.pravenc.ru/text/389599.html
 
 Контрольные PDF в локальных raw-sources:
 
+- `belyakova-collective-practices-ehb-late-ussr-2012.pdf` — Н. Белякова, коллективные практики ЕХБ в позднем СССР;
+
 - `bulletin-council-relatives-010-1972.pdf`;
 - `bulletin-council-relatives-088-1980.pdf`.
 
@@ -1550,6 +1552,8 @@ https://www.pravenc.ru/text/389599.html
 
 Контрольные PDF в локальных raw-sources:
 
+- `belyakova-collective-practices-ehb-late-ussr-2012.pdf` — Н. Белякова, коллективные практики ЕХБ в позднем СССР;
+
 - `bulletin-council-relatives-010-1972.pdf`;
 - `bulletin-council-relatives-088-1980.pdf`.
 
@@ -1563,6 +1567,7 @@ https://www.pravenc.ru/text/389599.html
   https://baptist.org.ru/read/article/94598
 - baptistru.info, “Христианин, издательство” — требуется стабильный fetch / архивная копия.
 - propovednik.com, PDF-бюллетени Совета родственников — найдены и локально сохранены контрольные №10 (1972) и №88 (1980); требуется полная каталогизация корпуса 1970–1987.
+- Н. Белякова, «Коллективные практики типичной общины ЕХБ в позднем СССР» — CyberLeninka/PDF, источник для интерпретации самиздата как коллективной религиозной практики.
 
 ---
 
