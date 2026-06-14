@@ -77,6 +77,9 @@ else {
   /1963/.test(app) && /Устав ВСЕХБ|Вестник спасения/.test(app) && /майская делегация|ЦК КПСС/.test(app) && /Совет родственников/.test(app) && /Христианин|Косыгин|Вестник истины/.test(app)
     ? ok('I12 _app: initiative/samizdat timeline events present')
     : bad('I12 _app: initiative/samizdat timeline events missing');
+  /Иван Моисеев/.test(app) && /Печатники «Христианина»/.test(app) && /Донченко|психбольницы|отобрание детей/.test(app)
+    ? ok('I12 _app: relatives-bulletin events present')
+    : bad('I12 _app: relatives-bulletin events missing');
   /Связанная статья/.test(app) && /Открыть статью/.test(app) && /baptisty-rossii\//.test(app)
     ? ok('I13 _app: article previews are wired into timeline/dossier')
     : bad('I13 _app: article previews missing from 3D UI');
