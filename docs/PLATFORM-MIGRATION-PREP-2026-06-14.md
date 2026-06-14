@@ -5,22 +5,36 @@
 
 ## 1. Найден ли план «новой платформы»
 
-Проверены текущие файлы и полная git-история (после `git fetch --unshallow`, 972 коммита) по ключам:
+### Первичный проход
+
+Сначала были проверены текущие файлы и полная git-история (после `git fetch --unshallow`, 972 коммита) по ключам:
 `platform`, `migration`, `refactor`, `roadmap`, `Astro`, `Next.js`, `MDX`, `CMS`, `платформа`, `миграция`, `переезд`, `рефактор`.
 
-### Итог
+На тот момент явного site-wide плана Astro/Next/new-platform в дереве не было найдено; были найдены только GBS/map-планы:
 
-Явного site-wide плана «переезд на новую платформу Astro/Next/…» в репозитории не найдено.
-
-Найдены и прочитаны релевантные планы:
-
-1. **Удалённый исторический `_agent-handoff/ROADMAP.md`** — это план Фазы 2 GBS/серий и общесайтового UI, а не новая платформа.
-   - В нём: честный прогресс серии, resume-toast, остаток минут, keyboard nav, edge-swipe, mobile autohide, image fallbacks, next-summary, TTS, sitewide components, анти-фичи.
-   - Большая часть уже перенесена в `AGENTS.md` / `docs/GBS-PATTERN.md` / текущий GBS runtime.
+1. **Удалённый исторический `_agent-handoff/ROADMAP.md`** — план Фазы 2 GBS/серий и общесайтового UI.
 2. **`docs/MAPS-ARCHITECTURE.md`** — архитектура раздела карт: одна базовая карта + маршруты как данные.
 3. **`docs/MAPS-RD-MASTERPLAN-2026.md`** — живой мастер-план карт: `route.json`, `_engine/map-engine.js`, `base-geo.svg`, story-state extraction, будущие карты (`ishod`, `pavel`), ограничения и QA.
 
-Вывод: готовиться нужно не к «переписать всё сейчас», а к **контентно-структурной миграции**: зафиксировать baseline публичных страниц, URL, canonical, word-count, источники, карты/route.json и audit gates. Если позже будет выбран Astro/Next/другая платформа, текущие guards должны стать acceptance tests для её build-output.
+### Обновление после push другого агента
+
+После коммита `8d39ccd docs: add 2026 refactor audit handoff` план найден: новая папка
+
+```text
+docs/refactor-2026/
+```
+
+содержит полноценный набор документов по миграции. Ключевые документы:
+
+- `REFACTOR_RESEARCH_INDEX_2026.md` — индекс всех исследований;
+- `ASTRO_STACK_DECISION_RECORD_2026.md` — ADR: целевой стек **Astro + React islands + MDX/content collections**;
+- `AGENT_HANDOFF_NO_REFACTOR_2026.md` — прямо запрещает runtime-рефакторинг без отдельного решения владельца;
+- `NEXT_ACTIONS_PROFESSIONAL_SEQUENCE.md` — профессиональная последовательность PR;
+- `ASTRO_MIGRATION_PHASE_PLAN_2026.md` — фазы миграции;
+- `TECHNICAL_MIGRATION_RUNBOOK_2026.md` — strangler-style runbook;
+- `QUALITY_GATES_AND_TESTING_2026.md`, `URL_CONTRACT_2026.md`, `MIGRATION_RISK_LEVELS_AND_GATES_2026.md`.
+
+Вывод обновлён: готовиться нужно к **Astro + React islands** миграции, но первый безопасный шаг остаётся не Astro install, а контрактные scripts/baseline. Runtime/deploy/URL/HTML пока не трогать.
 
 ## 2. Что безопасно сделано в этом проходе
 
