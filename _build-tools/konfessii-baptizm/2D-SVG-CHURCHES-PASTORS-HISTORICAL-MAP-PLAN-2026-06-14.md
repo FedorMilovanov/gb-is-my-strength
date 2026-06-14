@@ -500,3 +500,10 @@ id,name,status,tradition,period,region,city,address_public,lat,lon,precision,sou
 ## Update 2026-06-14 — standalone-макет без внешних файлов
 
 Создан полностью автономный HTML-макет: `_build-tools/konfessii-baptizm/MAP-MOCKUPS-2D-3D-ATLAS-STANDALONE-2026-06-14.html`. В нём фото встроены как data URI, CSS и JS inline, поэтому в preview он не зависит от связей между файлами. Можно переключать 2D/SVG, 3D-глобус и сравнение, кликать по узлам и смотреть инспектор события.
+
+
+---
+
+## Update 2026-06-14 — premium 2D/SVG prototype
+
+Создан качественный кликабельный прототип 2D/SVG-атласа: `_build-tools/konfessii-baptizm/2D-SVG-ATLAS-PREMIUM-PROTOTYPE-2026-06-14.html`. В нём: глубокие SVG-фильтры, шум/карта/регионы, animated routes, pulsing nodes, слои, timeline, инспектор события, A/B/C/D, режимы истоки/гонения/самиздат/церкви. Это направление можно брать как основу для будущей 2D-карты.
