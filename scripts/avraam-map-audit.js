@@ -142,8 +142,12 @@ assert('dynamic photo hosts are covered by CSP img-src', photoHosts.every(hostAl
 assert('route.json is preloaded for gradual engine migration', html.includes('<link rel="preload" href="route.json" as="fetch" type="application/json">'));
 assert('runtime route.json drift audit is wired', html.includes('AvraamRouteJsonAudit') && html.includes('MapEngine.compareRouteData(window.AvraamRouteData, route)'));
 assert('MapEngine exports story-state helpers', typeof MapEngine.getStoryState === 'function' && typeof MapEngine.auditStoryDefinitions === 'function' && typeof MapEngine.getPlaceOrder === 'function');
+assert('MapEngine exports layer/visual helpers', ['normalizeLayerState','isLayerOn','getPlaceLayerId','getRouteLayerId','getPlaceVisual'].every(name => typeof MapEngine[name] === 'function'));
+assert('MapEngine layer helpers return canonical ids/colors', MapEngine.getPlaceLayerId({type:'cand'}) === 'cand' && MapEngine.getPlaceLayerId({type:'lot'}) === 'lot' && MapEngine.getPlaceLayerId({type:'main'}) === 'abr' && MapEngine.getRouteLayerId('war') === 'war' && MapEngine.getRouteLayerId({c:'lot'}) === 'lot' && MapEngine.getPlaceVisual({type:'cand'}).color === '#9b8cf0');
 assert('applyStory uses MapEngine.getStoryState shadow extraction', html.includes('MapEngine.getStoryState(window.AvraamRouteData, st.id)') && html.includes('window.AvraamCurrentStoryState = engineStory'));
 assert('place counter and prev/next use MapEngine place order helper', html.includes('function getCurrentPlaceOrder()') && html.includes('MapEngine.getPlaceOrder(window.AvraamRouteData, activeStory'));
+assert('marker builder uses MapEngine visual model', html.includes('MapEngine.getPlaceVisual(pl)') && html.includes('visual.markerClass') && html.includes('visual.cssColor'));
+assert('applyLayers uses MapEngine layer helpers', html.includes('MapEngine.isLayerOn(LAYERS,id)') && html.includes('MapEngine.getRouteLayerId') && html.includes('MapEngine.getPlaceLayerId'));
 assert('applyStory dims waypoint child nodes by attribute', html.includes("routeWp.querySelectorAll('.route-waypoint').forEach(wp=>wp.setAttribute('opacity',wpOpacity))"));
 assert('no dangling SVG pointerenter preview block', !html.includes("svg.addEventListener('pointerenter'"));
 assert('panel rubber animation uses .panel-opening, not #panel.open', html.includes('#panel.panel-opening{animation:panelRubberIn') && !/#panel\.open\s*\{[^}]*panelRubberIn/.test(html));

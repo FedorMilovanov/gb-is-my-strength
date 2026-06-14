@@ -607,6 +607,12 @@ gsap.to(caravanDot, {
 - Waypoint dimming now sets opacity on child waypoint groups too, avoiding SVG computed-opacity inconsistencies.
 - `npm run avraam:audit` expanded to 39 checks and guards story-state + place-order extraction.
 
+### Wave-34 (2026-06-14) — Layer and marker visual extraction
+- Added pure engine helpers: `normalizeLayerState`, `isLayerOn`, `getPlaceLayerId`, `getRouteLayerId`, `getPlaceVisual`.
+- Marker builder now uses `MapEngine.getPlaceVisual()` for marker class/colors.
+- `applyLayers()` now uses engine layer helpers instead of repeated inline ternaries.
+- `npm run avraam:audit` expanded to 45 checks and guards layer/visual extraction.
+
 ---
 
 ## ЧАСТЬ 9: ТЕХНИЧЕСКИЕ ПРАВИЛА
