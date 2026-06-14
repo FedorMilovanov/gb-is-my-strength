@@ -168,3 +168,19 @@
 - пояснение источников A/B/C/D;
 - компактную инструкцию «как читать карту»;
 - отдельные preview-карточки для кейсов: Слесарев, Шилов, Хмара, Моисеев, Донченко, психбольницы, дети.
+
+
+---
+
+## Фото-слой карты
+
+Пользователь просит карту «с фотографиями, мощную». Начат локальный фото-слой:
+
+- `images/konfessii/russkij-baptizm/photos/old-tbilisi-kura-xix.jpg`;
+- `images/konfessii/russkij-baptizm/photos/tiflis-bazar-baron-de-baye-1900.jpg`;
+- `images/konfessii/russkij-baptizm/photos/saint-petersburg-nevsky-1800s.jpg`;
+- metadata: `images/konfessii/russkij-baptizm/photos/README.md`.
+
+В `MindMap3D.tsx` добавлен первый фото-filmstrip в `LearningCoach`: Тифлис/Кура, Тифлис, Петербург. Это изменение вступит в силу после пересборки `_app` из исходников.
+
+Дальше искать только фото с ясным правовым статусом. Для гонений — особенно осторожно: современные фотографии Моисеева/Керчи/мемориалов не тащить без прав; сначала фиксировать источник и разрешение.
