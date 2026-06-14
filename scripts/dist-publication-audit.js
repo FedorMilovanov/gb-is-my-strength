@@ -40,6 +40,27 @@ function parseSwPrecache(sw) {
   if (!m) return [];
   return [...m[1].matchAll(/"([^"]+)"/g)].map(x => x[1]);
 }
+function walk(dir, acc = []) {
+  if (!fs.existsSync(dir)) return acc;
+  for (const ent of fs.readdirSync(dir, { withFileTypes: true })) {
+    const full = path.join(dir, ent.name);
+    if (ent.isDirectory()) walk(full, acc);
+    else if (ent.isFile()) acc.push(full);
+  }
+  return acc;
+}
+function htmlFiles() {
+  return walk(DIST).filter(f => f.endsWith('.html'));
+}
+function isNoindex(html) {
+  return /<meta[^>]+name=["']robots["'][^>]+content=["'][^"']*\bnoindex\b/i.test(html);
+}
+function pagefindBodyPages() {
+  return htmlFiles().filter(file => {
+    const html = fs.readFileSync(file, 'utf8');
+    return /\bdata-pagefind-body\b/.test(html) && !isNoindex(html);
+  }).map(file => rel(file));
+}
 
 function checkRequiredFiles() {
   const required = [
@@ -116,7 +137,28 @@ function checkPagefind() {
   const has = exists('pagefind/pagefind.js');
   if (REQUIRE_PAGEFIND && !has) bad('Pagefind required but dist/pagefind/pagefind.js missing');
   else if (has) ok('Pagefind index present in dist');
-  else note('Pagefind not present in dist (allowed before deploy-switch; use --require-pagefind for deploy-like audit)');
+  else {
+    note('Pagefind not present in dist (allowed before deploy-switch; use --require-pagefind for deploy-like audit)');
+    return;
+  }
+
+  const entryFile = path.join(DIST, 'pagefind/pagefind-entry.json');
+  if (!fs.existsSync(entryFile)) {
+    if (REQUIRE_PAGEFIND) bad('Pagefind entry metadata missing: pagefind/pagefind-entry.json');
+    return;
+  }
+  let entry;
+  try { entry = JSON.parse(fs.readFileSync(entryFile, 'utf8')); }
+  catch (e) { bad(`Pagefind entry metadata invalid JSON: ${e.message}`); return; }
+  const indexedCount = Object.values(entry.languages || {}).reduce((sum, lang) => sum + Number(lang.page_count || 0), 0);
+  const expectedPages = pagefindBodyPages();
+  if (indexedCount !== expectedPages.length) bad(`Pagefind page_count ${indexedCount} != data-pagefind-body pages ${expectedPages.length}`);
+  else ok(`Pagefind page_count matches data-pagefind-body pages (${indexedCount})`);
+  if (!expectedPages.includes('about/index.html')) bad('Pagefind source pages missing Astro /about/ body');
+  else ok('Pagefind source pages include Astro /about/');
+  const devIndexed = expectedPages.filter(p => p.startsWith('dev/'));
+  if (devIndexed.length) devIndexed.forEach(p => bad(`Pagefind source pages include dev route: ${p}`));
+  else ok('Pagefind source pages exclude dev routes');
 }
 
 if (!fs.existsSync(DIST)) {
