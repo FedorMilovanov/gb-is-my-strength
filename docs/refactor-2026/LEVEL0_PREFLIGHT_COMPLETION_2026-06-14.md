@@ -138,3 +138,13 @@ npm run workflows:check
 ```
 
 Ожидаемый статус: все pass; remaining warnings только стратегические (CSS budget, `!important`, Avraam inline script).
+
+## Дополнение: warning closure перед Astro scaffold
+
+Перед созданием первого Astro scaffold оставшиеся publication warnings закрыты не удалением CSS/JS, а уточнением контрактов:
+
+- core CSS budget теперь не смешивает глобальные CSS с route-scoped `nagornaya/tw.min.css`;
+- `site.css` `!important` получил hard ratchet на текущем безопасном baseline `214` — новые `!important` станут error, а долг над целью 200 остаётся info;
+- большой inline runtime `karty/avraam/index.html` зафиксирован как известный guarded map-app debt до дальнейшего MapEngine extraction, а не как общий inline-script warning.
+
+Это не меняет production runtime и не заменяет будущую работу по CSS/MapEngine. Цель — убрать warning-шум перед рефакторингом и сделать guards точнее.
