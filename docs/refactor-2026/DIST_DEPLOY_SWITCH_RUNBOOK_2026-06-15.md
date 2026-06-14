@@ -42,7 +42,7 @@ npm run strangler:deploy-readiness
 - `sw:dist:audit` — статический SW audit для `dist/`, Pagefind optional.
 - `sw:dist:audit:pagefind` — то же, но `/pagefind/pagefind.js` обязан существовать в `dist`.
 - `sw:dist:audit:deploy-switch` — строгий режим для actual deploy-switch commit; сейчас ожидаемо падает, пока `CACHE_VERSION` не bumped.
-- `strangler:deploy-readiness` — локальный dry-run readiness: `/about/` audit, deploy-like `dist` + Pagefind + smoke, затем SW audit в advisory-режиме.
+- `strangler:deploy-readiness` — локальный dry-run readiness: `/about/` audit, production-like `dist` без build-only dev routes, Pagefind + smoke, затем SW audit в advisory-режиме.
 
 ## Pre-switch gates
 
@@ -65,7 +65,7 @@ git diff --check
 
 ```text
 [ ] Static publication gates остаются
-[ ] Build step: npm run strangler:build
+[ ] Build step: npm run strangler:build:production-like
 [ ] Pagefind: npm run pagefind:build:dist
 [ ] Dist publication audit: node scripts/dist-publication-audit.js --require-pagefind
 [ ] SW strict gate: npm run sw:dist:audit:deploy-switch
@@ -86,14 +86,15 @@ scripts/check-workflows.js
 
 ## `/dev/astro-test/`
 
-Сейчас `dist` содержит `/dev/astro-test/` как `noindex` build-only route. Перед реальным deploy switch нужно принять одно из решений:
+Решение для production-like `dist`: **исключать build-only route**.
 
-```text
-A. исключить /dev/astro-test/ из production-like dist;
-B. временно оставить noindex, но не включать в sitemap и не ссылаться публично.
+`/dev/astro-test/` остаётся полезным в обычном shadow/prototype build и защищён `noindex`, но actual deploy-switch path должен использовать:
+
+```bash
+npm run strangler:build:production-like
 ```
 
-Текущий guard уже проверяет, что sitemap не содержит `/dev/astro-test/`, а сама страница остаётся `noindex`.
+Этот режим вызывает `copy-legacy-to-dist.js --omit-build-only` и удаляет Astro routes с `status:"build-only"` из `migration/page-ownership.json`. Дополнительно `dist-publication-audit.js --forbid-dev` падает, если `/dev/astro-test/` всё ещё есть в production-like output.
 
 ## Rollback
 
@@ -120,5 +121,6 @@ git revert <deploy-switch-commit>
 Production deploy: legacy root
 Dist prototype: Astro /about/ + copied legacy pages
 Pagefind-on-dist: локально проверяется
+Build-only /dev/astro-test/: исключается из production-like dist
 SW deploy-switch strict gate: ожидаемо требует будущий CACHE_VERSION bump
 ```

@@ -13,6 +13,7 @@ const path = require('path');
 const ROOT = path.join(__dirname, '..');
 const DIST = path.join(ROOT, 'dist');
 const REQUIRE_PAGEFIND = process.argv.includes('--require-pagefind');
+const FORBID_DEV = process.argv.includes('--forbid-dev') || process.argv.includes('--production-like');
 const SITE = 'https://gospod-bog.ru';
 const problems = [];
 const notes = [];
@@ -83,7 +84,13 @@ function checkAstroAboutOwnership() {
   else ok('/about/ has no technical scaffold copy');
 }
 function checkDevNoindex() {
-  if (!exists('dev/astro-test/index.html')) return note('dev/astro-test not present in dist');
+  const present = exists('dev/astro-test/index.html');
+  if (FORBID_DEV) {
+    if (present) bad('/dev/astro-test/ is present in production-like dist');
+    else ok('/dev/astro-test/ absent from production-like dist');
+    return;
+  }
+  if (!present) return note('dev/astro-test not present in dist');
   const html = read('dev/astro-test/index.html');
   if (!/<meta[^>]+name="robots"[^>]+content="[^"]*noindex/i.test(html)) bad('/dev/astro-test/ is not noindex');
   else ok('/dev/astro-test/ remains noindex');
@@ -116,7 +123,7 @@ if (!fs.existsSync(DIST)) {
   console.error('❌ dist/ missing. Run npm run strangler:build first.');
   process.exit(1);
 }
-console.log(`DIST PUBLICATION AUDIT (${REQUIRE_PAGEFIND ? 'pagefind required' : 'pagefind optional'})`);
+console.log(`DIST PUBLICATION AUDIT (${REQUIRE_PAGEFIND ? 'pagefind required' : 'pagefind optional'}, ${FORBID_DEV ? 'dev forbidden' : 'dev noindex allowed'})`);
 checkRequiredFiles();
 checkNoPrivateDirs();
 checkSitemaps();

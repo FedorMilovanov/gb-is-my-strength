@@ -19,8 +19,9 @@ const PORT = Number(process.env.DIST_SMOKE_PORT || 8146);
 const BASE = `http://127.0.0.1:${PORT}`;
 const WRITE_SHOTS = process.argv.includes('--write-shots');
 const NO_BUILD = process.argv.includes('--no-build');
+const PRODUCTION_LIKE = process.argv.includes('--production-like') || process.argv.includes('--forbid-dev');
 
-const ROUTES = [
+const BASE_ROUTES = [
   { path: '/', kind: 'legacy', canonical: 'https://gospod-bog.ru/', h1: 'Господь Бог — Сила Моя' },
   { path: '/about/', kind: 'astro', canonical: 'https://gospod-bog.ru/about/', h1: 'Фёдор Милованов', forbidText: /Astro scaffold|production switch|Технический прототип/i },
   { path: '/articles/', kind: 'legacy', canonical: 'https://gospod-bog.ru/articles/' },
@@ -31,8 +32,9 @@ const ROUTES = [
   { path: '/konfessii/russkij-baptizm/', kind: 'iframe-app-wrapper', canonical: 'https://gospod-bog.ru/konfessii/russkij-baptizm/' },
   { path: '/map/', kind: 'legacy-map', canonical: 'https://gospod-bog.ru/map/' },
   { path: '/404.html', kind: 'system', canonical: 'https://gospod-bog.ru/404.html', allowNoindex: true },
-  { path: '/dev/astro-test/', kind: 'astro-dev', canonical: 'https://gospod-bog.ru/dev/astro-test/', mustNoindex: true, h1: 'Astro test' },
+  { path: '/dev/astro-test/', kind: 'astro-dev', canonical: 'https://gospod-bog.ru/dev/astro-test/', mustNoindex: true, h1: 'Astro test', buildOnly: true },
 ];
+const ROUTES = PRODUCTION_LIKE ? BASE_ROUTES.filter(route => !route.buildOnly) : BASE_ROUTES;
 
 function run(cmd, args) {
   const res = spawnSync(cmd, args, { cwd: ROOT, stdio: 'inherit', shell: process.platform === 'win32' });
@@ -97,11 +99,15 @@ async function inspect(page, route, viewportName) {
 
 (async () => {
   if (!NO_BUILD) {
-    console.log('▶ Building strangler dist…');
-    run('npm', ['run', 'strangler:build']);
+    console.log(`▶ Building ${PRODUCTION_LIKE ? 'production-like ' : ''}strangler dist…`);
+    run('npm', ['run', PRODUCTION_LIKE ? 'strangler:build:production-like' : 'strangler:build']);
   }
   if (!fs.existsSync(DIST)) {
     console.error('❌ dist/ does not exist. Run npm run strangler:build first.');
+    process.exit(1);
+  }
+  if (PRODUCTION_LIKE && fs.existsSync(path.join(DIST, 'dev/astro-test/index.html'))) {
+    console.error('❌ production-like dist smoke found build-only route: /dev/astro-test/');
     process.exit(1);
   }
   let chromium;
@@ -147,5 +153,5 @@ async function inspect(page, route, viewportName) {
     if (problems.length > 40) console.error(`  …and ${problems.length - 40} more`);
     process.exit(1);
   }
-  console.log('✅ dist smoke passed — representative strangler output is healthy');
+  console.log(`✅ dist smoke passed — representative ${PRODUCTION_LIKE ? 'production-like ' : ''}strangler output is healthy`);
 })().catch(e => { console.error(e); process.exit(1); });
