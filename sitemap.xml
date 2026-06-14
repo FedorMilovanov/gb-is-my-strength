@@ -48,6 +48,13 @@
     <image:image><image:loc>https://gospod-bog.ru/images/og-karty-avraam.webp</image:loc></image:image>
   </url>
   <url>
+    <loc>https://gospod-bog.ru/karty/ishod/</loc>
+    <lastmod>2026-06-14T00:00:00+03:00</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.45</priority>
+    <image:image><image:loc>https://gospod-bog.ru/images/og-karty-1200x630.webp</image:loc><image:title>Исход из Египта — карта в разработке</image:title></image:image>
+  </url>
+  <url>
     <loc>https://gospod-bog.ru/map/</loc>
     <lastmod>2026-06-11T00:00:00+03:00</lastmod>
     <changefreq>monthly</changefreq>

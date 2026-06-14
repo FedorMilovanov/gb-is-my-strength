@@ -90,7 +90,7 @@ const IMPORTANT_GOAL = 200; // AGENTS §4.10 long-term target
 const MIN_DESC = 50;
 const MAX_DESC = 180;
 
-const skipDirs = new Set(['.git', 'node_modules', 'pagefind', 'audit', '_app']);
+const skipDirs = new Set(['.git', 'node_modules', 'pagefind', 'audit', '_app', '_build-tools']);
 const verificationFileRe = /^(google|yandex)[^/]*\.html$/i;
 
 const R = {
@@ -678,6 +678,9 @@ const SITE_CSS_MIN_BYTES = 200_000;
     }
     for (const raw of refs) {
       if (!raw || raw.startsWith('#')) continue;
+      // Template placeholders inside inline JS/HTML strings are not real network refs.
+      // Example: `<img src="${p.thumb||p.src}">` in a runtime template.
+      if (/\$\{[^}]+\}/.test(raw)) continue;
       if (isExternal(raw) && !raw.startsWith(SITE_URL + '/')) continue;
       const clean = stripQuery(raw);
       if (clean.startsWith('/pagefind/')) continue; // generated during deploy

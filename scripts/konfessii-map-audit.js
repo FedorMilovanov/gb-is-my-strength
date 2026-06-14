@@ -25,6 +25,7 @@
  *  I9  3D-режим содержит нижний роутер «Маршруты и города».
  *  I10 3D-режим содержит тихий learning coach «Как читать карту» для первого входа.
  *  I11 3D-режим не возвращает нативные белые title-tooltip на Timeline и не даёт document-scrollbar мешать zoom.
+ *  I14 Физика 3D не откатывается к jitter/tension constants (drag должен быть мягким).
  */
 'use strict';
 const path = require('path');
@@ -89,6 +90,15 @@ else {
   /Связанная статья/.test(app) && /Открыть статью/.test(app) && /baptisty-rossii\//.test(app)
     ? ok('I13 _app: article previews are wired into timeline/dossier')
     : bad('I13 _app: article previews missing from 3D UI');
+  /d3AlphaDecay:\.0165,d3VelocityDecay:\.24,warmupTicks:150,cooldownTicks:220,cooldownTime:7e3/.test(app)
+    ? ok('I14 _app: calm idle physics constants present')
+    : bad('I14 _app: physics constants откатились к jitter values');
+  /strength\*1\.28/.test(app) && /d3AlphaTarget\(\.16\)\.resetCountdown\(\)/.test(app) && /d3AlphaTarget\?\.\(\.1\)/.test(app)
+    ? ok('I14 _app: soft anchor/drag alpha constants present')
+    : bad('I14 _app: drag/anchor constants too aggressive or missing');
+  /d3AlphaDecay:\.0115|warmupTicks:140|cooldownTicks:260|cooldownTime:9e3/.test(app)
+    ? bad('I14 _app: old jitter-prone constants returned')
+    : ok('I14 _app: old jitter-prone constants absent');
 }
 
 // source-level guard for the regression fixed in 7850e0f: ref-based TimelineOverlay must
@@ -145,6 +155,12 @@ if (src) {
   /event\?\.nodeId/.test(src) && /event\?\.routeId/.test(src) && /event\?\.mapSelectionId/.test(src)
     ? ok('I13 source: Timeline prefers data-driven metadata before regex fallback')
     : bad('I13 source: Timeline still lacks data-driven metadata preference');
+  /anchor\.strength \* 1\.28 \* alpha/.test(src) && /d3AlphaDecay=\{0\.0165\} d3VelocityDecay=\{0\.24\}/.test(src) && /warmupTicks=\{150\} cooldownTicks=\{220\} cooldownTime=\{7000\}/.test(src)
+    ? ok('I14 source: calm idle physics constants present')
+    : bad('I14 source: calm physics constants missing');
+  /d3VelocityDecay\?\.\(0\.26\)/.test(src) && /d3AlphaTarget\?\.\(0\.10\)/.test(src) && /\* 0\.006/.test(src)
+    ? ok('I14 source: soft rubber drag/release constants present')
+    : bad('I14 source: rubber drag constants too tense/bouncy or missing');
 }
 
 // ---------- live checks (browser, optional) ----------

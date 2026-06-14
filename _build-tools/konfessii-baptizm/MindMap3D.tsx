@@ -761,7 +761,7 @@ export default function MindMap3D() {
     if (link) { link.distance((edge: any) => { const sid = typeof edge.source === 'object' ? edge.source.id : edge.source; const tid = typeof edge.target === 'object' ? edge.target.id : edge.target; if (sid === 'root' || tid === 'root') return 150; if (sid === 'vsehb' || tid === 'vsehb') return 118; return 92; }); link.strength(0.24); }
     const center = fgRef.current.d3Force('center');
     if (center) center.strength(0.04);
-    fgRef.current.d3Force('composition', (alpha: number) => { NODES.forEach((node) => { const anchor = ANCHORS[node.id]; if (!anchor) return; const live = node as NodeData & { vx?: number; vy?: number; vz?: number; fx?: number; fy?: number; fz?: number }; if (live.fx != null || live.fy != null || live.fz != null) return; const strength = anchor.strength * 1.6 * alpha; live.vx = (live.vx ?? 0) + (anchor.x - (node.x ?? anchor.x)) * strength; live.vy = (live.vy ?? 0) + (anchor.y - (node.y ?? anchor.y)) * strength; live.vz = (live.vz ?? 0) + (anchor.z - (node.z ?? anchor.z)) * strength; }); });
+    fgRef.current.d3Force('composition', (alpha: number) => { NODES.forEach((node) => { const anchor = ANCHORS[node.id]; if (!anchor) return; const live = node as NodeData & { vx?: number; vy?: number; vz?: number; fx?: number; fy?: number; fz?: number }; if (live.fx != null || live.fy != null || live.fz != null) return; const strength = anchor.strength * 1.28 * alpha; live.vx = (live.vx ?? 0) + (anchor.x - (node.x ?? anchor.x)) * strength; live.vy = (live.vy ?? 0) + (anchor.y - (node.y ?? anchor.y)) * strength; live.vz = (live.vz ?? 0) + (anchor.z - (node.z ?? anchor.z)) * strength; }); });
   }, []);
 
   const relatedLinks = useMemo(() => {
@@ -1050,7 +1050,7 @@ export default function MindMap3D() {
     // Viscous rubber band: enough damping to avoid jitter, plus a tiny velocity pull
     // on directly connected nodes so the constellation follows the cursor, not just
     // the single grabbed sphere. Never write neighbor coordinates directly.
-    fgRef.current.d3VelocityDecay?.(0.32);
+    fgRef.current.d3VelocityDecay?.(0.26);
     const draggedId = node.id as string;
     const dragged = new THREE.Vector3(node.x ?? 0, node.y ?? 0, node.z ?? 0);
     LINKS.forEach((link) => {
@@ -1061,18 +1061,18 @@ export default function MindMap3D() {
       const neighbor = graphData.nodes.find((n) => n.id === neighborId) as any;
       if (!neighbor || neighbor.fx !== undefined || neighbor.fy !== undefined || neighbor.fz !== undefined) return;
       const anchor = ANCHORS[neighborId];
-      const towardDrag = dragged.clone().sub(new THREE.Vector3(neighbor.x ?? 0, neighbor.y ?? 0, neighbor.z ?? 0)).multiplyScalar(0.0038);
+      const towardDrag = dragged.clone().sub(new THREE.Vector3(neighbor.x ?? 0, neighbor.y ?? 0, neighbor.z ?? 0)).multiplyScalar(0.0032);
       const towardHome = anchor
-        ? new THREE.Vector3(anchor.x - (neighbor.x ?? anchor.x), anchor.y - (neighbor.y ?? anchor.y), anchor.z - (neighbor.z ?? anchor.z)).multiplyScalar(0.0016)
+        ? new THREE.Vector3(anchor.x - (neighbor.x ?? anchor.x), anchor.y - (neighbor.y ?? anchor.y), anchor.z - (neighbor.z ?? anchor.z)).multiplyScalar(0.0012)
         : new THREE.Vector3();
-      neighbor.vx = ((neighbor.vx ?? 0) * 0.78) + towardDrag.x + towardHome.x;
-      neighbor.vy = ((neighbor.vy ?? 0) * 0.78) + towardDrag.y + towardHome.y;
-      neighbor.vz = ((neighbor.vz ?? 0) * 0.78) + towardDrag.z + towardHome.z;
+      neighbor.vx = ((neighbor.vx ?? 0) * 0.82) + towardDrag.x + towardHome.x;
+      neighbor.vy = ((neighbor.vy ?? 0) * 0.82) + towardDrag.y + towardHome.y;
+      neighbor.vz = ((neighbor.vz ?? 0) * 0.82) + towardDrag.z + towardHome.z;
     });
     const now = performance.now();
-    if (now - dragReheatRef.current > 120) {
+    if (now - dragReheatRef.current > 80) {
       dragReheatRef.current = now;
-      fgRef.current.d3AlphaTarget?.(0.12);
+      fgRef.current.d3AlphaTarget?.(0.10);
       fgRef.current.d3ReheatSimulation?.();
     }
   }, [graphData.nodes]);
@@ -1084,13 +1084,13 @@ export default function MindMap3D() {
       // Soft push back to anchor
       const anchor = ANCHORS[node.id as string];
       if (anchor) {
-        node.vx = ((node.vx ?? 0) * 0.32) + (anchor.x - (node.x ?? anchor.x)) * 0.010;
-        node.vy = ((node.vy ?? 0) * 0.32) + (anchor.y - (node.y ?? anchor.y)) * 0.010;
-        node.vz = ((node.vz ?? 0) * 0.32) + (anchor.z - (node.z ?? anchor.z)) * 0.010;
+        node.vx = ((node.vx ?? 0) * 0.36) + (anchor.x - (node.x ?? anchor.x)) * 0.006;
+        node.vy = ((node.vy ?? 0) * 0.36) + (anchor.y - (node.y ?? anchor.y)) * 0.006;
+        node.vz = ((node.vz ?? 0) * 0.36) + (anchor.z - (node.z ?? anchor.z)) * 0.006;
       }
     }
     // Return to normal physics
-    fgRef.current.d3VelocityDecay?.(0.28); // 0.28 is standard d3 safe value, 0.20 is too bouncy
+    fgRef.current.d3VelocityDecay?.(0.24); // 0.24 keeps idle calm without making drag feel tense
     fgRef.current.d3AlphaTarget?.(0);
     // Don't fully reheat, just let the residual energy settle it down softly
     fgRef.current.d3ReheatSimulation?.();
@@ -1130,7 +1130,7 @@ export default function MindMap3D() {
   const closeInspector = useCallback(() => {
     haptic(10);
     setFocusNode(null); setMapSelection(null); setActiveRoute(null); setInspectorMode('closed'); setContentExpanded(false); setZenMode(false);
-    fgRef.current?.d3AlphaDecay?.(0.012); fgRef.current?.d3VelocityDecay?.(0.20);
+    fgRef.current?.d3AlphaDecay?.(0.0165); fgRef.current?.d3VelocityDecay?.(0.24);
     fgRef.current?.d3ReheatSimulation?.();
     fgRef.current?.cameraPosition(overviewCamera.camera, overviewCamera.target, 900);
   }, [overviewCamera]);
@@ -1139,8 +1139,8 @@ export default function MindMap3D() {
     haptic(8);
     setFocusNode(null); setMapSelection(null); setActiveRoute(null); setMapMode(false);
     setContentExpanded(false); setInspectorMode('closed'); setZenMode(false); setInspectorPinned(false); if (timelineYearRef.current !== null) { timelineYearRef.current = null; window.dispatchEvent(new Event('reset-timeline')); }
-    fgRef.current?.d3AlphaDecay?.(0.012);
-    fgRef.current?.d3VelocityDecay?.(0.20);
+    fgRef.current?.d3AlphaDecay?.(0.0165);
+    fgRef.current?.d3VelocityDecay?.(0.24);
     fgRef.current?.d3ReheatSimulation?.();
     fgRef.current?.cameraPosition(overviewCamera.camera, overviewCamera.target, 900);
   };
@@ -1896,8 +1896,8 @@ export default function MindMap3D() {
             nodeThreeObject={nodeThreeObject as any} nodeThreeObjectExtend={false}
             linkThreeObject={linkThreeObject as any} linkThreeObjectExtend={false}
             linkPositionUpdate={linkPositionUpdate as any} linkWidth={0} linkDirectionalParticles={0} linkDirectionalParticleWidth={0} linkDirectionalParticleSpeed={0}
-            onNodeClick={handleNodeClick as any} nodeLabel="" d3AlphaDecay={0.0115} d3VelocityDecay={0.20}
-            warmupTicks={140} cooldownTicks={260} cooldownTime={9000} enableNodeDrag={true}
+            onNodeClick={handleNodeClick as any} nodeLabel="" d3AlphaDecay={0.0165} d3VelocityDecay={0.24}
+            warmupTicks={150} cooldownTicks={220} cooldownTime={7000} enableNodeDrag={true}
             onNodeDrag={handleNodeDrag as any} onNodeDragEnd={handleNodeDragEnd as any}
             showNavInfo={false} onBackgroundClick={() => { if (!isNavigating) collapseInspector(); }}
             controlType="orbit" onNodeHover={(node: any) => handleNodeHoverThrottled(node ? (node as NodeData) : null)}

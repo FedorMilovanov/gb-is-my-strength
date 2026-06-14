@@ -1,5 +1,7 @@
 # 3D-карта: «резиновое» перетаскивание + анти-джиттер (r119)
 
+> Обновление 2026-06-14 (latest main `69cd8bb`): после расширения data-driven Timeline и article previews резиновость дополнительно смягчена без отката новых research-событий. Актуальные итоговые параметры: `d3AlphaDecay .0165`, `d3VelocityDecay .24`, `warmupTicks 150`, `cooldownTicks 220`, `cooldownTime 7000`, anchor `*1.28`, drag alpha `.10/.16`, release impulse `.006`. Подробности и I14 guard: `3D-PREMIUM-POLISH-2026-06-14.md`.
+
 Патч к React-исходнику оригинального 3D-приложения (`MindMap3D.tsx`,
 react-force-graph-3d / three.js). Бандл `_app/index.html` собирается из этого
 исходника через Vite singlefile. Исходник целиком в репо не хранится (2 МБ,
