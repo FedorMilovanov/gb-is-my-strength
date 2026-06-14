@@ -486,3 +486,10 @@ id,name,status,tradition,period,region,city,address_public,lat,lon,precision,sou
 - `closure-events-draft.csv` — закрытия, рейды, кейсы гонений, отобрание детей, психбольницы.
 
 Это не публичная база, а проверочный черновик. Дальше нужно добавлять `last_verified`, нормализовать координаты, не публиковать чувствительные адреса и отделять современные общины от исторических/закрытых точек.
+
+
+---
+
+## Update 2026-06-14 — визуальные макеты 2D и 3D
+
+Создан HTML-макет для выбора направления: `_build-tools/konfessii-baptizm/MAP-MOCKUPS-2D-3D-ATLAS-2026-06-14.html`. Внутри две крупные визуальные концепции: 2D/SVG-атлас церквей и 3D-фото-глобус истории. Макет использует только inline CSS/SVG и локальные фото из `images/konfessii/russkij-baptizm/photos/`.
