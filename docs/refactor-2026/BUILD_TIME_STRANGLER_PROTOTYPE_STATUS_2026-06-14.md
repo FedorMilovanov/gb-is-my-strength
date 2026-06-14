@@ -160,7 +160,9 @@ npm run pagefind:build:dist
 - `/about/` не содержит technical scaffold copy;
 - `/dev/astro-test/` остаётся `noindex`;
 - `sw.js` precache assets существуют в `dist`;
-- Pagefind присутствует, если audit запущен с `--require-pagefind`.
+- Pagefind присутствует, если audit запущен с `--require-pagefind`;
+- Pagefind `page_count` совпадает с числом indexable `data-pagefind-body` страниц;
+- Pagefind source pages включают Astro `/about/` и не включают dev routes.
 
 Первый audit поймал и закрыл:
 
