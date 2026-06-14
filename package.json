@@ -23,7 +23,7 @@
     "editorial:lint": "node scripts/editorial-lint.js",
     "source:links": "node scripts/source-link-audit.js",
     "validate:external": "npm run source:links",
-    "validate:static-publication": "npm run validate:all && npm run avraam:audit && npm run tokens:check && node scripts/audit-pro.js && npm run readable-audit && npm run editorial:lint && npm run data:consistency && npm run content:guard",
+    "validate:static-publication": "npm run validate:all && npm run maps:validate && npm run avraam:audit && npm run tokens:check && node scripts/audit-pro.js && npm run readable-audit && npm run editorial:lint && npm run data:consistency && npm run content:guard && npm run contract:compare",
     "workflows:check": "node scripts/check-workflows.js",
     "typograf:dry": "node scripts/typograf.js --dry-run",
     "konfessii:audit": "node scripts/konfessii-map-audit.js",
@@ -32,7 +32,10 @@
     "content:baseline": "node scripts/check-public-content-baseline.js --write",
     "contract:extract": "node scripts/extract-url-contract.js",
     "contract:extract:root": "node scripts/extract-url-contract.js --root . --out-json reports/url-contract-root.json --out-md reports/url-contract-root.md",
-    "contract:extract:dist": "node scripts/extract-url-contract.js --root dist --out-json reports/url-contract-dist.json --out-md reports/url-contract-dist.md"
+    "contract:extract:dist": "node scripts/extract-url-contract.js --root dist --out-json reports/url-contract-dist.json --out-md reports/url-contract-dist.md",
+    "contract:compare": "npm run contract:extract && node scripts/compare-url-contract.js",
+    "contract:compare:dist": "node scripts/compare-url-contract.js --baseline data/public-content-baseline.json --current reports/url-contract-dist.json",
+    "maps:validate": "node scripts/validate-map-routes.js"
   },
   "engines": {
     "node": ">=20"
