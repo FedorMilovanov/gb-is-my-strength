@@ -56,7 +56,14 @@ function md5short(relPath) {
 // ── Все HTML-файлы в проекте (рекурсивно, без скрытых папок) ─────────────────
 
 function collectHTML(dir, acc = []) {
-  const SKIP_DIRS = new Set(['node_modules']);
+  // Cache-bust only the legacy/public source tree. Generated dist output and
+  // private/refactor tooling may contain HTML snapshots/prototypes; touching
+  // them makes local checks noisy and can mutate ignored artifacts after a
+  // strangler build.
+  const SKIP_DIRS = new Set([
+    'node_modules', 'dist', 'out', 'build', 'coverage', 'reports', 'audit',
+    '_build-tools', 'src', 'scripts', 'docs', 'migration'
+  ]);
   for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
     if (entry.name.startsWith('.') || SKIP_DIRS.has(entry.name)) continue;
     const full = path.join(dir, entry.name);
