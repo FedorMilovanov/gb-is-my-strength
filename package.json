@@ -48,7 +48,11 @@
     "astro:audit:about": "node scripts/astro-about-pilot-audit.js",
     "astro:audit:about:shots": "node scripts/astro-about-pilot-audit.js --write-shots",
     "strangler:smoke": "node scripts/dist-smoke-audit.js",
-    "strangler:smoke:shots": "node scripts/dist-smoke-audit.js --write-shots"
+    "strangler:smoke:shots": "node scripts/dist-smoke-audit.js --write-shots",
+    "strangler:audit": "npm run strangler:build && node scripts/dist-publication-audit.js",
+    "strangler:audit:pagefind": "npm run strangler:build && npm run pagefind:build:dist && node scripts/dist-publication-audit.js --require-pagefind && npm run contract:extract:dist && npm run contract:compare:dist && node scripts/dist-smoke-audit.js --no-build",
+    "pagefind:build": "node scripts/build-pagefind.js --site . --output-path pagefind",
+    "pagefind:build:dist": "node scripts/build-pagefind.js --site dist --output-path dist/pagefind"
   },
   "engines": {
     "node": ">=22.12.0"

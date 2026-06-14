@@ -130,3 +130,56 @@ npm run strangler:smoke:shots
 ```text
 ✅ dist smoke passed — representative strangler output is healthy
 ```
+
+## Deploy-like Pagefind + SW audit
+
+Добавлен скрипт:
+
+```text
+scripts/dist-publication-audit.js
+scripts/build-pagefind.js
+```
+
+Команды:
+
+```bash
+npm run strangler:audit
+npm run strangler:audit:pagefind
+npm run pagefind:build
+npm run pagefind:build:dist
+```
+
+`dist-publication-audit` проверяет:
+
+- required dist files;
+- отсутствие приватных/build папок в `dist`;
+- отсутствие частичных Astro sitemap files (`sitemap-index.xml`, `sitemap-N.xml`) пока sitemap legacy-owned;
+- все `<loc>` из legacy `sitemap.xml` резолвятся в `dist`;
+- `robots.txt` указывает на canonical `sitemap.xml`;
+- `/about/` в `dist` действительно Astro-owned;
+- `/about/` не содержит technical scaffold copy;
+- `/dev/astro-test/` остаётся `noindex`;
+- `sw.js` precache assets существуют в `dist`;
+- Pagefind присутствует, если audit запущен с `--require-pagefind`.
+
+Первый audit поймал и закрыл:
+
+1. partial Astro sitemap files оставались рядом с legacy `sitemap.xml`;
+2. Pagefind command через `npx -y pagefind@...`/`npm exec --package` в npm scripts вёл себя нестабильно;
+3. нужен явный `sw.js` copy в dist для legacy service worker registration.
+
+Исправлено:
+
+- `copy-legacy-to-dist.js` удаляет partial Astro sitemap files до копирования legacy sitemap;
+- `copy-legacy-to-dist.js` копирует `sw.js`;
+- `build-pagefind.js` вызывает Pagefind через стабильный `npm exec -c` wrapper;
+- `deploy.yml` переведён на `npm run pagefind:build` вместо прямого npx вызова.
+
+Deploy-like локальный результат:
+
+```text
+npm run strangler:audit:pagefind
+✅ dist publication audit passed
+✅ contract:compare:dist 42/42
+✅ dist smoke passed
+```

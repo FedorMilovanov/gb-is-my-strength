@@ -81,6 +81,20 @@ function copyFile(src, dest, stats) {
   stats.files += 1;
   stats.bytes += fs.statSync(src).size;
 }
+
+function removeAstroGeneratedSitemaps(stats) {
+  // Until Astro owns sitemap generation for the full site, keep legacy sitemap.xml
+  // as the only sitemap advertised by robots.txt. Astro's partial sitemap-index.xml
+  // would list only Astro-owned routes and is dangerous in a strangler dist.
+  if (!fs.existsSync(DIST)) return;
+  for (const name of fs.readdirSync(DIST)) {
+    if (/^sitemap-(?:index|\d+)\.xml$/i.test(name)) {
+      fs.rmSync(path.join(DIST, name), { force: true });
+      stats.removedGenerated.push(name);
+    }
+  }
+}
+
 function copyDir(srcDir, destDir, astroRoutes, stats) {
   if (!fs.existsSync(srcDir)) return;
   const base = path.basename(srcDir);
@@ -123,6 +137,7 @@ function verifyRequiredDist(astroRoutes, stats) {
   }
   console.log(`✅ copy-legacy-to-dist: copied ${stats.files} files (${Math.round(stats.bytes / 1024)} KB)`);
   if (stats.skippedAstroOwned.length) console.log(`   Astro-owned legacy pages skipped: ${[...new Set(stats.skippedAstroOwned)].join(', ')}`);
+  if (stats.removedGenerated.length) console.log(`   Removed partial Astro sitemap files: ${stats.removedGenerated.join(', ')}`);
   if (stats.skippedExisting.length) console.log(`   Existing dist files preserved: ${stats.skippedExisting.slice(0, 12).join(', ')}${stats.skippedExisting.length > 12 ? '…' : ''}`);
 }
 function main() {
@@ -131,7 +146,8 @@ function main() {
     process.exit(1);
   }
   const astroRoutes = loadOwnership();
-  const stats = { files: 0, bytes: 0, skippedAstroOwned: [], skippedExisting: [] };
+  const stats = { files: 0, bytes: 0, skippedAstroOwned: [], skippedExisting: [], removedGenerated: [] };
+  removeAstroGeneratedSitemaps(stats);
   for (const file of PUBLIC_ROOT_FILES) {
     const src = path.join(ROOT, file);
     const dest = path.join(DIST, file);

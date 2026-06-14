@@ -94,7 +94,7 @@ jobs:
         # npx скачает pagefind только если его нет в кеше.
         # --site . — корень репозитория = корень сайта.
         # --output-path pagefind — стандартная папка, ожидаемая search.js.
-        run: npx -y pagefind@1.5.2 --site . --output-path pagefind
+        run: npm run pagefind:build
 
       - name: Verify Pagefind index and disable Jekyll filtering
         run: |
