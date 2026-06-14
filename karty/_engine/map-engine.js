@@ -308,6 +308,53 @@ const MapEngine = (function() {
     return {ok: errors.length === 0, errors, states: states.map(s => ({id: s.id, placesAll: s.placesAll, stagesAll: s.stagesAll, counts: s.counts, placeIds: s.placeIds, stageIds: s.stageIds, waypointIds: s.waypointIds}))};
   }
 
+  function getPlaceIndex(data = {}, placeId) {
+    const route = normalizeRouteData(data);
+    return route.places.findIndex(p => p.id === placeId);
+  }
+
+  function getPlaceById(data = {}, placeId) {
+    const route = normalizeRouteData(data);
+    return route.places.find(p => p.id === placeId) || null;
+  }
+
+  function getStageForPlace(data = {}, place) {
+    const route = normalizeRouteData(data);
+    if (!place || !Number.isInteger(place.stage)) return null;
+    return route.stages[place.stage] || null;
+  }
+
+  function getRelatedPlaceIds(data = {}, placeId, relatedMap = null) {
+    const route = normalizeRouteData(data);
+    const rel = relatedMap || route.related || route.related_index || {};
+    const ids = Array.isArray(rel[placeId]) ? rel[placeId] : [];
+    const valid = new Set(route.places.map(p => p.id));
+    return ids.filter(id => valid.has(id));
+  }
+
+  function getTabContentKey(tab = 'story') {
+    if (tab === 'bible') return 'bible';
+    if (tab === 'arch') return 'arch';
+    if (tab === 'he') return 'he_deep';
+    return 'story';
+  }
+
+  function getPanelModel(data = {}, placeId, relatedMap = null) {
+    const route = normalizeRouteData(data);
+    const index = getPlaceIndex(route, placeId);
+    const place = index >= 0 ? route.places[index] : null;
+    const stage = getStageForPlace(route, place);
+    const relatedIds = place ? getRelatedPlaceIds(route, place.id, relatedMap) : [];
+    return {
+      index,
+      place,
+      stage,
+      relatedIds,
+      photoCount: Array.isArray(place?.photos) ? place.photos.length : 0,
+      hasScientificVariants: Boolean(place && (route.scientific_variants || route.variants || {})[place.id])
+    };
+  }
+
   function createEngine(options) {
     const cfg = {...DEFAULTS, ...(options || {})};
     const svg = typeof cfg.svgId === 'string' ? document.getElementById(cfg.svgId) : cfg.svg;
@@ -559,6 +606,12 @@ const MapEngine = (function() {
     getPlaceLayerId,
     getRouteLayerId,
     getPlaceVisual,
+    getPlaceIndex,
+    getPlaceById,
+    getStageForPlace,
+    getRelatedPlaceIds,
+    getTabContentKey,
+    getPanelModel,
     getStoryState,
     getPlaceOrder,
     auditStoryDefinitions,
