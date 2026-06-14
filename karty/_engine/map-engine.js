@@ -142,6 +142,56 @@ const MapEngine = (function() {
 
   function clamp(n, a, b) { return Math.min(Math.max(n, a), b); }
 
+  function countScientificVariants(route = {}) {
+    const variants = route.scientific_variants || route.variants || {};
+    return variants && typeof variants === 'object' && !Array.isArray(variants)
+      ? Object.values(variants).reduce((sum, rows) => sum + (Array.isArray(rows) ? rows.length : 0), 0)
+      : 0;
+  }
+
+  function compareRouteData(left = {}, right = {}) {
+    const a = normalizeRouteData(left);
+    const b = normalizeRouteData(right);
+    const errors = [];
+    const warnings = [];
+    const idsA = a.places.map(p => p.id);
+    const idsB = b.places.map(p => p.id);
+    if (JSON.stringify(idsA) !== JSON.stringify(idsB)) errors.push(`place id drift: ${idsA.join(',')} != ${idsB.join(',')}`);
+    if (a.stages.length !== b.stages.length) errors.push(`stage count drift: ${a.stages.length} != ${b.stages.length}`);
+    if (a.ctx.length !== b.ctx.length) warnings.push(`ctx count drift: ${a.ctx.length} != ${b.ctx.length}`);
+    if (a.stories.length !== b.stories.length) errors.push(`story count drift: ${a.stories.length} != ${b.stories.length}`);
+
+    const wpA = a.verified_waypoints || a.waypoints || [];
+    const wpB = b.verified_waypoints || b.waypoints || [];
+    if (Array.isArray(wpA) || Array.isArray(wpB)) {
+      const wpIdsA = Array.isArray(wpA) ? wpA.map(w => w.id) : [];
+      const wpIdsB = Array.isArray(wpB) ? wpB.map(w => w.id) : [];
+      if (JSON.stringify(wpIdsA) !== JSON.stringify(wpIdsB)) errors.push(`waypoint id drift: ${wpIdsA.join(',')} != ${wpIdsB.join(',')}`);
+    }
+
+    const varA = countScientificVariants(a);
+    const varB = countScientificVariants(b);
+    if (varA !== varB) errors.push(`scientific variants count drift: ${varA} != ${varB}`);
+
+    const photosA = a.places.reduce((sum, p) => sum + (Array.isArray(p.photos) ? p.photos.length : 0), 0);
+    const photosB = b.places.reduce((sum, p) => sum + (Array.isArray(p.photos) ? p.photos.length : 0), 0);
+    if (photosA !== photosB) errors.push(`photo count drift: ${photosA} != ${photosB}`);
+
+    return {ok: errors.length === 0, errors, warnings, stats: {places: idsA.length, stages: a.stages.length, stories: a.stories.length, photos: photosA, waypoints: Array.isArray(wpA) ? wpA.length : 0, scientific_variants: varA}};
+  }
+
+  function collectPhotoHosts(route = {}) {
+    const data = normalizeRouteData(route);
+    const hosts = new Set();
+    data.places.forEach(place => (place.photos || []).forEach(photo => {
+      for (const key of ['src', 'thumb']) {
+        if (!photo[key] || !/^https?:\/\//.test(photo[key])) continue;
+        try { hosts.add(new URL(photo[key]).origin); } catch (_) {}
+      }
+    }));
+    return [...hosts].sort();
+  }
+
   function createEngine(options) {
     const cfg = {...DEFAULTS, ...(options || {})};
     const svg = typeof cfg.svgId === 'string' ? document.getElementById(cfg.svgId) : cfg.svg;
@@ -386,6 +436,8 @@ const MapEngine = (function() {
     loadRoute,
     normalizeRouteData,
     validateRoute,
+    compareRouteData,
+    collectPhotoHosts,
     pathLength,
     pointAt,
     version: '0.2.0',
