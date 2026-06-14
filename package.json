@@ -39,7 +39,9 @@
     "astro:dev": "ASTRO_TELEMETRY_DISABLED=1 astro dev",
     "astro:check": "ASTRO_TELEMETRY_DISABLED=1 astro check",
     "astro:build": "ASTRO_TELEMETRY_DISABLED=1 astro check && ASTRO_TELEMETRY_DISABLED=1 astro build",
-    "astro:preview": "ASTRO_TELEMETRY_DISABLED=1 astro preview"
+    "astro:preview": "ASTRO_TELEMETRY_DISABLED=1 astro preview",
+    "contract:compare:dist:about": "npm run contract:extract:dist && node scripts/compare-url-contract.js --baseline data/public-content-baseline.json --current reports/url-contract-dist.json --only-url https://gospod-bog.ru/about/",
+    "astro:pilot:about": "npm run astro:build && npm run contract:compare:dist:about"
   },
   "engines": {
     "node": ">=22.12.0"

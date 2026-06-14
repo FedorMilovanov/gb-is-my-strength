@@ -24,7 +24,7 @@ function argValue(name, fallback = null) {
 }
 function hasArg(name) { return process.argv.includes(name); }
 function usage() {
-  console.log(`Usage: node scripts/compare-url-contract.js [--baseline FILE] [--current FILE] [--allow-new] [--strict-title]\n\nDefaults:\n  --baseline ${DEFAULT_BASELINE}\n  --current  ${DEFAULT_CURRENT}\n\nRules:\n  - baseline public URLs must exist in current contract\n  - current canonical must remain self-referencing\n  - title/description/h1 must not become empty\n  - public page must not become noindex\n  - word count must not drop below 72% for substantial pages\n  - new current URLs are allowed by default unless --no-new is passed`);
+  console.log(`Usage: node scripts/compare-url-contract.js [--baseline FILE] [--current FILE] [--only-url URL] [--no-new] [--strict-title]\n\nDefaults:\n  --baseline ${DEFAULT_BASELINE}\n  --current  ${DEFAULT_CURRENT}\n\nRules:\n  - baseline public URLs must exist in current contract\n  - current canonical must remain self-referencing\n  - title/description/h1 must not become empty\n  - public page must not become noindex\n  - word count must not drop below 72% for substantial pages\n  - new current URLs are allowed by default unless --no-new is passed\n  - --only-url URL can compare one pilot page, e.g. /about/`);
 }
 if (hasArg('--help') || hasArg('-h')) { usage(); process.exit(0); }
 
@@ -32,6 +32,7 @@ const baselineFile = path.resolve(ROOT, argValue('--baseline', DEFAULT_BASELINE)
 const currentFile = path.resolve(ROOT, argValue('--current', DEFAULT_CURRENT));
 const noNew = hasArg('--no-new');
 const strictTitle = hasArg('--strict-title');
+const onlyUrls = process.argv.flatMap((arg, idx, arr) => arg === '--only-url' && arr[idx + 1] ? [arr[idx + 1]] : []);
 
 function fail(msg) { console.error('❌ ' + msg); process.exit(1); }
 if (!fs.existsSync(baselineFile)) fail(`baseline file not found: ${path.relative(ROOT, baselineFile)}`);
@@ -59,13 +60,20 @@ function normalizePages(contract, role) {
     }));
 }
 
-const baseline = normalizePages(load(baselineFile), 'baseline');
-const current = normalizePages(load(currentFile), 'current');
-const currentByUrl = new Map(current.map((p) => [p.url, p]));
-const baselineByUrl = new Map(baseline.map((p) => [p.url, p]));
+let baseline = normalizePages(load(baselineFile), 'baseline');
+let current = normalizePages(load(currentFile), 'current');
 const errors = [];
 const warnings = [];
-
+if (onlyUrls.length) {
+  const allow = new Set(onlyUrls);
+  baseline = baseline.filter(p => allow.has(p.url));
+  current = current.filter(p => allow.has(p.url));
+  for (const url of allow) {
+    if (!baseline.some(p => p.url === url)) errors.push(`--only-url not found in baseline: ${url}`);
+  }
+}
+const currentByUrl = new Map(current.map((p) => [p.url, p]));
+const baselineByUrl = new Map(baseline.map((p) => [p.url, p]));
 for (const old of baseline) {
   const now = currentByUrl.get(old.url);
   if (!now) {

@@ -65,3 +65,14 @@ a { color: inherit; }
 .astro-main code {
   color: var(--astro-color-gold);
 }
+.astro-about h2 {
+  margin: 2rem 0 .75rem;
+  color: var(--astro-color-text);
+  font-family: var(--astro-font-serif);
+  font-size: clamp(1.35rem, 3vw, 1.8rem);
+}
+.astro-about section + section {
+  border-top: 1px solid rgba(212, 165, 116, .16);
+  margin-top: 1.65rem;
+  padding-top: .4rem;
+}

@@ -22,7 +22,7 @@ const SITE = 'https://gospod-bog.ru';
 const BASELINE_REL = 'data/public-content-baseline.json';
 const BASELINE = path.join(ROOT, BASELINE_REL);
 const WRITE = process.argv.includes('--write');
-const skipDirs = new Set(['.git', 'node_modules', 'pagefind', 'audit', '_app', '_build-tools']);
+const skipDirs = new Set(['.git', 'node_modules', 'pagefind', 'audit', '_app', '_build-tools', 'reports', 'dist', 'out', 'build', '.astro']);
 const verificationFileRe = /^(google|yandex|microsoft)[^/]*\.html$/i;
 
 function walk(dir, out = []) {
