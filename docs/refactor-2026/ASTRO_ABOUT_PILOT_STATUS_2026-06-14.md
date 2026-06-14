@@ -145,3 +145,74 @@ Notes про отсутствующий heading и слишком малое ч�
 Технический badge/footer note оставлены только для `/dev/astro-test/` через props `technicalBadge` и `footerNote` в `BaseLayout`.
 
 `astro-about-pilot-audit` теперь падает, если публичный `/about/` снова содержит техническую scaffold-копию.
+
+## Strengthened parity audit update
+
+2026-06-15 `astro-about-pilot-audit` усилен перед любым rollout `/about/`:
+
+```text
+scripts/astro-about-pilot-audit.js
+src/components/seo/Seo.astro
+src/layouts/BaseLayout.astro
+src/pages/about/index.astro
+```
+
+Что добавлено в audit:
+
+- desktop + mobile сравнение legacy root vs Astro `dist/`;
+- no-JS mobile smoke для Astro `/about/`;
+- exact parity для `title`, `canonical`, `description`, `robots`;
+- exact parity для OG/Twitter полей:
+  - `og:title`
+  - `og:description`
+  - `og:url`
+  - `og:image`
+  - `twitter:card`
+  - `twitter:title`
+  - `twitter:description`
+  - `twitter:image`
+- JSON-LD required types для обеих версий:
+  - `Organization`
+  - `WebSite`
+  - `Person`
+  - `ProfilePage`
+  - `BreadcrumbList`
+- local existence check для social images;
+- `data-pagefind-body` guard;
+- word-count ratio ratchet: минимум `0.85`.
+
+Дополнительно `Seo.astro` и `BaseLayout.astro` получили optional props:
+
+```text
+ogTitle
+ogDescription
+```
+
+Это нужно для точной legacy parity: у `/about/` document title и legacy `og:title` не одинаковые. Defaults остаются безопасными: если props не переданы, OG/Twitter title/description берутся из обычных `title`/`description`.
+
+Текущий результат:
+
+```text
+legacy words: 605
+astro words: 542
+ratio: 0.90 (min 0.85)
+legacy h2 = astro h2
+json-ld: Organization, WebSite, Person, ProfilePage, BreadcrumbList
+about pilot audit passed (desktop/mobile/no-JS SEO + smoke)
+```
+
+`--write-shots` теперь пишет desktop и mobile screenshots:
+
+```text
+reports/about-desktop-legacy.png
+reports/about-desktop-astro.png
+reports/about-mobile-legacy.png
+reports/about-mobile-astro.png
+```
+
+Старые desktop aliases также сохраняются для совместимости с предыдущими notes:
+
+```text
+reports/about-legacy.png
+reports/about-astro.png
+```

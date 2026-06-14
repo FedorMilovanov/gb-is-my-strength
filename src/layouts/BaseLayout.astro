@@ -11,18 +11,29 @@ interface Props {
   canonical: string;
   robots?: string;
   ogImage?: string;
+  ogTitle?: string;
+  ogDescription?: string;
   jsonLd?: unknown;
   technicalBadge?: string;
   footerNote?: string;
 }
-const { title, description, canonical, robots, ogImage, jsonLd, technicalBadge, footerNote } = Astro.props;
+const { title, description, canonical, robots, ogImage, ogTitle, ogDescription, jsonLd, technicalBadge, footerNote } = Astro.props;
 ---
 <!doctype html>
 <html lang="ru">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-    <Seo title={title} description={description} canonical={canonical} robots={robots} ogImage={ogImage} jsonLd={jsonLd} />
+    <Seo
+      title={title}
+      description={description}
+      canonical={canonical}
+      robots={robots}
+      ogImage={ogImage}
+      ogTitle={ogTitle}
+      ogDescription={ogDescription}
+      jsonLd={jsonLd}
+    />
   </head>
   <body>
     <div class="astro-shell">

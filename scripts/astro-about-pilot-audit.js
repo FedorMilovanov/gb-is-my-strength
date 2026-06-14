@@ -3,7 +3,8 @@
  * astro-about-pilot-audit.js — compare legacy /about/ vs Astro dist /about/.
  *
  * This is a Level-2 shadow/pilot guard. It does not switch production.
- * It builds strangler dist, serves both roots locally, and checks the pilot URL.
+ * It builds strangler dist, serves both roots locally, and checks the pilot URL
+ * across desktop, mobile and no-JS modes.
  */
 'use strict';
 
@@ -18,6 +19,25 @@ const WRITE_SHOTS = process.argv.includes('--write-shots');
 const LEGACY_PORT = 8134;
 const DIST_PORT = 8135;
 const URL_PATH = '/about/';
+const SITE = 'https://gospod-bog.ru';
+const MIN_WORD_RATIO = 0.85;
+const REQUIRED_JSON_LD_TYPES = ['Organization', 'WebSite', 'Person', 'ProfilePage', 'BreadcrumbList'];
+const PARITY_META_FIELDS = [
+  'description',
+  'robots',
+  'og:title',
+  'og:description',
+  'og:url',
+  'og:image',
+  'twitter:card',
+  'twitter:title',
+  'twitter:description',
+  'twitter:image',
+];
+const VIEWPORTS = [
+  { name: 'desktop', options: { viewport: { width: 1366, height: 900 } } },
+  { name: 'mobile', options: { viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true } },
+];
 
 function run(cmd, args, opts = {}) {
   const res = spawnSync(cmd, args, { cwd: ROOT, stdio: 'inherit', shell: process.platform === 'win32', ...opts });
@@ -47,7 +67,19 @@ function createServer(root, port) {
   return new Promise(resolve => server.listen(port, '127.0.0.1', () => resolve(server)));
 }
 function words(text) { return (String(text || '').match(/[A-Za-zА-Яа-яЁё0-9]{2,}/g) || []).length; }
-async function inspect(page, url, label) {
+function localFileForSiteUrl(url, rootDir) {
+  if (!url || !url.startsWith(SITE)) return null;
+  const u = new URL(url);
+  const rel = u.pathname.replace(/^\//, '');
+  return path.join(rootDir, rel);
+}
+function assetExists(url, rootDir) {
+  const file = localFileForSiteUrl(url, rootDir);
+  return !file || fs.existsSync(file);
+}
+function unique(arr) { return [...new Set(arr)]; }
+
+async function inspect(page, url, label, viewportName) {
   const errors = [];
   const ignoreLocalLegacyNoise = (text) => {
     // Legacy pages use production-absolute favicon/icon URLs in CSP. When served from
@@ -59,46 +91,110 @@ async function inspect(page, url, label) {
   page.on('pageerror', e => { if (!ignoreLocalLegacyNoise(e.message)) errors.push(e.message); });
   page.on('console', m => {
     const text = m.text();
-    if (m.type() === 'error' && !/favicon|manifest/i.test(text) && !ignoreLocalLegacyNoise(text)) errors.push(text.slice(0, 160));
+    if (m.type() === 'error' && !/favicon|manifest/i.test(text) && !ignoreLocalLegacyNoise(text)) errors.push(text.slice(0, 180));
   });
-  await page.goto(url, { waitUntil: 'load', timeout: 30000 });
+  const response = await page.goto(url, { waitUntil: 'load', timeout: 30000 });
   await page.waitForTimeout(500);
-  const data = await page.evaluate(() => {
+  const data = await page.evaluate((metaFields) => {
+    const getMeta = (key) => {
+      const byName = document.querySelector(`meta[name="${key}"]`)?.getAttribute('content') || '';
+      const byProp = document.querySelector(`meta[property="${key}"]`)?.getAttribute('content') || '';
+      return byName || byProp;
+    };
     const text = document.body.innerText || '';
-    const h1 = [...document.querySelectorAll('h1')].map(x => x.innerText.trim());
-    const h2 = [...document.querySelectorAll('h2')].map(x => x.innerText.trim());
+    const h1 = [...document.querySelectorAll('h1')].map(x => x.innerText.trim()).filter(Boolean);
+    const h2 = [...document.querySelectorAll('h2')].map(x => x.innerText.trim()).filter(Boolean);
+    const meta = Object.fromEntries(metaFields.map(field => [field, getMeta(field)]));
+    const jsonLdTypes = [];
+    let invalidJsonLd = 0;
+    for (const s of document.querySelectorAll('script[type="application/ld+json"]')) {
+      try {
+        const parsed = JSON.parse(s.textContent || '{}');
+        const visit = (node) => {
+          if (!node || typeof node !== 'object') return;
+          if (Array.isArray(node)) { node.forEach(visit); return; }
+          if (node['@type']) jsonLdTypes.push(node['@type']);
+          if (node['@graph']) visit(node['@graph']);
+        };
+        visit(parsed);
+      } catch { invalidJsonLd += 1; }
+    }
     return {
+      status: 0,
       title: document.title,
       canonical: document.querySelector('link[rel="canonical"]')?.href || '',
-      robots: document.querySelector('meta[name="robots"]')?.content || '',
+      meta,
       h1,
       h2,
       text,
       scrollOverflow: document.documentElement.scrollWidth - document.documentElement.clientWidth,
-      links: [...document.querySelectorAll('a[href]')].map(a => a.getAttribute('href')),
-      jsonLdTypes: [...document.querySelectorAll('script[type="application/ld+json"]')].flatMap(s => {
-        try {
-          const parsed = JSON.parse(s.textContent || '{}');
-          const out = [];
-          const visit = (node) => {
-            if (!node || typeof node !== 'object') return;
-            if (Array.isArray(node)) { node.forEach(visit); return; }
-            if (node['@type']) out.push(node['@type']);
-            if (node['@graph']) visit(node['@graph']);
-          };
-          visit(parsed);
-          return out.flat();
-        } catch { return ['INVALID_JSON_LD']; }
-      }),
+      links: [...document.querySelectorAll('a[href]')].map(a => a.getAttribute('href')).filter(Boolean),
+      jsonLdTypes,
+      invalidJsonLd,
+      hasPagefindBody: Boolean(document.querySelector('[data-pagefind-body]')),
     };
-  });
+  }, PARITY_META_FIELDS);
+  data.status = response ? response.status() : 0;
   data.errors = errors;
   data.wordCount = words(data.text);
   if (WRITE_SHOTS) {
     fs.mkdirSync(path.join(ROOT, 'reports'), { recursive: true });
-    await page.screenshot({ path: path.join(ROOT, 'reports', `about-${label}.png`), fullPage: true });
+    const shot = async (name) => page.screenshot({ path: path.join(ROOT, 'reports', name), fullPage: true });
+    await shot(`about-${viewportName}-${label}.png`);
+    // Backward-compatible aliases used by earlier manual-review notes.
+    if (viewportName === 'desktop') await shot(`about-${label}.png`);
   }
   return data;
+}
+function compareExact(problems, field, legacy, astro) {
+  if (legacy !== astro) problems.push(`${field} mismatch: ${JSON.stringify(legacy)} !== ${JSON.stringify(astro)}`);
+}
+function checkOneViewport(problems, notes, viewportName, legacy, astro) {
+  const prefix = `[${viewportName}]`;
+  if (legacy.status !== 200) problems.push(`${prefix} legacy status ${legacy.status}`);
+  if (astro.status !== 200) problems.push(`${prefix} astro status ${astro.status}`);
+  compareExact(problems, `${prefix} title`, legacy.title, astro.title);
+  compareExact(problems, `${prefix} canonical`, legacy.canonical, astro.canonical);
+  for (const field of PARITY_META_FIELDS) compareExact(problems, `${prefix} meta ${field}`, legacy.meta[field], astro.meta[field]);
+  if (legacy.h1[0] !== astro.h1[0] || astro.h1.length !== 1) problems.push(`${prefix} h1 mismatch: legacy=${legacy.h1.join(' | ')} astro=${astro.h1.join(' | ')}`);
+  if (astro.scrollOverflow !== 0) problems.push(`${prefix} astro horizontal overflow: ${astro.scrollOverflow}`);
+  if (legacy.scrollOverflow !== 0) notes.push(`${prefix} legacy horizontal overflow: ${legacy.scrollOverflow}`);
+  if (legacy.errors.length) problems.push(`${prefix} legacy page errors: ${legacy.errors.slice(0, 2).join(' | ')}`);
+  if (astro.errors.length) problems.push(`${prefix} astro page errors: ${astro.errors.slice(0, 2).join(' | ')}`);
+  if (/Astro scaffold|Технический прототип|production switch/i.test(astro.text)) problems.push(`${prefix} astro public /about/ contains technical scaffold copy`);
+  if (/\bnoindex\b/i.test(astro.meta.robots || '')) problems.push(`${prefix} astro /about/ unexpectedly noindex`);
+  if (!astro.hasPagefindBody) problems.push(`${prefix} astro /about/ missing data-pagefind-body`);
+  const ratio = legacy.wordCount ? astro.wordCount / legacy.wordCount : 1;
+  if (ratio < MIN_WORD_RATIO) problems.push(`${prefix} word-count ratio too low: legacy=${legacy.wordCount}, astro=${astro.wordCount}, ratio=${ratio.toFixed(2)} < ${MIN_WORD_RATIO}`);
+  const missingHeadings = legacy.h2.filter(h => h && !astro.h2.includes(h));
+  if (missingHeadings.length) problems.push(`${prefix} h2 missing in Astro: ${missingHeadings.join(', ')}`);
+  if (astro.links.length < Math.min(legacy.links.length, 3)) notes.push(`${prefix} astro has fewer links (${astro.links.length}) than legacy (${legacy.links.length}); review before rollout`);
+}
+function checkJsonLd(problems, label, data) {
+  if (data.invalidJsonLd) problems.push(`${label} has invalid JSON-LD block(s): ${data.invalidJsonLd}`);
+  const types = unique(data.jsonLdTypes.flat());
+  const missing = REQUIRED_JSON_LD_TYPES.filter(t => !types.includes(t));
+  if (missing.length) problems.push(`${label} JSON-LD missing type(s): ${missing.join(', ')}; got ${types.join(', ')}`);
+}
+function checkAssets(problems, label, data, rootDir) {
+  for (const field of ['og:image', 'twitter:image']) {
+    const url = data.meta[field];
+    if (!assetExists(url, rootDir)) problems.push(`${label} ${field} asset missing locally: ${url}`);
+  }
+}
+async function checkNoJsAstro(browser, problems) {
+  const ctx = await browser.newContext({ viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true, javaScriptEnabled: false });
+  const page = await ctx.newPage();
+  try {
+    const astro = await inspect(page, `http://127.0.0.1:${DIST_PORT}${URL_PATH}`, 'astro-nojs', 'mobile-nojs');
+    if (astro.status !== 200) problems.push(`[mobile-nojs] astro status ${astro.status}`);
+    if (!astro.h1.includes('Фёдор Милованов')) problems.push(`[mobile-nojs] expected h1 Фёдор Милованов, got ${JSON.stringify(astro.h1)}`);
+    if (astro.wordCount < 450) problems.push(`[mobile-nojs] visible word count too low: ${astro.wordCount}`);
+    if (astro.scrollOverflow !== 0) problems.push(`[mobile-nojs] horizontal overflow: ${astro.scrollOverflow}`);
+  } finally {
+    await page.close();
+    await ctx.close();
+  }
 }
 
 (async () => {
@@ -111,40 +207,51 @@ async function inspect(page, url, label) {
   const legacyServer = await createServer(ROOT, LEGACY_PORT);
   const distServer = await createServer(DIST, DIST_PORT);
   const browser = await chromium.launch({ args: ['--no-sandbox'] });
-  const ctx = await browser.newContext({ viewport: { width: 1366, height: 900 } });
-  const legacyPage = await ctx.newPage();
-  const astroPage = await ctx.newPage();
+  const problems = [];
+  const notes = [];
+  const results = {};
   try {
-    const legacy = await inspect(legacyPage, `http://127.0.0.1:${LEGACY_PORT}${URL_PATH}`, 'legacy');
-    const astro = await inspect(astroPage, `http://127.0.0.1:${DIST_PORT}${URL_PATH}`, 'astro');
-    const problems = [];
-    const notes = [];
-    if (legacy.title !== astro.title) problems.push(`title mismatch: ${legacy.title} !== ${astro.title}`);
-    if (legacy.canonical !== astro.canonical) problems.push(`canonical mismatch: ${legacy.canonical} !== ${astro.canonical}`);
-    if (legacy.h1[0] !== astro.h1[0] || astro.h1.length !== 1) problems.push(`h1 mismatch: legacy=${legacy.h1.join(' | ')} astro=${astro.h1.join(' | ')}`);
-    if (astro.scrollOverflow !== 0) problems.push(`astro horizontal overflow: ${astro.scrollOverflow}`);
-    if (legacy.errors.length) problems.push(`legacy page errors: ${legacy.errors.slice(0, 2).join(' | ')}`);
-    if (astro.errors.length) problems.push(`astro page errors: ${astro.errors.slice(0, 2).join(' | ')}`);
-    const ratio = legacy.wordCount ? astro.wordCount / legacy.wordCount : 1;
-    if (ratio < 0.72) problems.push(`word-count ratio too low: legacy=${legacy.wordCount}, astro=${astro.wordCount}, ratio=${ratio.toFixed(2)}`);
-    if (!astro.jsonLdTypes.includes('ProfilePage') || !astro.jsonLdTypes.includes('Person')) problems.push(`astro JSON-LD missing ProfilePage/Person: ${astro.jsonLdTypes.join(', ')}`);
-    if (/Astro scaffold|Технический прототип|production switch/i.test(astro.text)) problems.push('astro public /about/ contains technical scaffold copy');
-    const missingHeadings = legacy.h2.filter(h => h && !astro.h2.includes(h));
-    if (missingHeadings.length) notes.push(`headings not yet visually/content-identical: ${missingHeadings.join(', ')}`);
-    if (astro.links.length < Math.min(legacy.links.length, 3)) notes.push(`astro has fewer links (${astro.links.length}) than legacy (${legacy.links.length}); acceptable for shadow pilot but review before rollout`);
+    for (const vp of VIEWPORTS) {
+      const ctx = await browser.newContext(vp.options);
+      const legacyPage = await ctx.newPage();
+      const astroPage = await ctx.newPage();
+      try {
+        const legacy = await inspect(legacyPage, `http://127.0.0.1:${LEGACY_PORT}${URL_PATH}`, 'legacy', vp.name);
+        const astro = await inspect(astroPage, `http://127.0.0.1:${DIST_PORT}${URL_PATH}`, 'astro', vp.name);
+        results[vp.name] = { legacy, astro };
+        checkOneViewport(problems, notes, vp.name, legacy, astro);
+      } finally {
+        await legacyPage.close();
+        await astroPage.close();
+        await ctx.close();
+      }
+    }
+    await checkNoJsAstro(browser, problems);
 
+    const desktop = results.desktop;
+    if (desktop) {
+      checkJsonLd(problems, 'legacy /about/', desktop.legacy);
+      checkJsonLd(problems, 'astro /about/', desktop.astro);
+      checkAssets(problems, 'legacy /about/', desktop.legacy, ROOT);
+      checkAssets(problems, 'astro /about/', desktop.astro, DIST);
+    }
+
+    const ratio = desktop && desktop.legacy.wordCount ? desktop.astro.wordCount / desktop.legacy.wordCount : 1;
     console.log('\nABOUT PILOT COMPARISON');
-    console.log(`legacy words: ${legacy.wordCount}; astro words: ${astro.wordCount}; ratio: ${ratio.toFixed(2)}`);
-    console.log(`legacy h2: ${legacy.h2.join(' | ')}`);
-    console.log(`astro h2:  ${astro.h2.join(' | ')}`);
-    if (WRITE_SHOTS) console.log('screenshots: reports/about-legacy.png, reports/about-astro.png');
+    if (desktop) {
+      console.log(`legacy words: ${desktop.legacy.wordCount}; astro words: ${desktop.astro.wordCount}; ratio: ${ratio.toFixed(2)} (min ${MIN_WORD_RATIO})`);
+      console.log(`legacy h2: ${desktop.legacy.h2.join(' | ')}`);
+      console.log(`astro h2:  ${desktop.astro.h2.join(' | ')}`);
+      console.log(`json-ld: legacy=${unique(desktop.legacy.jsonLdTypes).join(', ')}; astro=${unique(desktop.astro.jsonLdTypes).join(', ')}`);
+    }
+    if (WRITE_SHOTS) console.log('screenshots: reports/about-desktop-legacy.png, reports/about-desktop-astro.png, reports/about-mobile-legacy.png, reports/about-mobile-astro.png');
     notes.forEach(n => console.log('ℹ️ ' + n));
     if (problems.length) {
       console.error('\n❌ about pilot audit failed:');
       problems.forEach(p => console.error('  - ' + p));
       process.exitCode = 1;
     } else {
-      console.log('\n✅ about pilot audit passed (contract + smoke). Manual visual review still required before rollout.');
+      console.log('\n✅ about pilot audit passed (desktop/mobile/no-JS SEO + smoke). Manual visual review still required before rollout.');
     }
   } finally {
     await browser.close();

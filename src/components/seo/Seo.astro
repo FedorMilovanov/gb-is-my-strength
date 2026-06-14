@@ -8,6 +8,8 @@ interface Props {
   canonical: string;
   robots?: string;
   ogImage?: string;
+  ogTitle?: string;
+  ogDescription?: string;
   jsonLd?: unknown;
 }
 const {
@@ -16,6 +18,8 @@ const {
   canonical,
   robots = 'index, follow',
   ogImage = `${SITE.url}/images/og-preview-1200x630.webp`,
+  ogTitle = title,
+  ogDescription = description,
   jsonLd,
 } = Astro.props;
 ---
@@ -23,18 +27,18 @@ const {
 <meta name="description" content={description} />
 <meta name="robots" content={robots} />
 <link rel="canonical" href={canonical} />
-<meta property="og:title" content={title} />
+<meta property="og:title" content={ogTitle} />
 <meta property="og:type" content="website" />
 <meta property="og:url" content={canonical} />
 <meta property="og:locale" content="ru_RU" />
-<meta property="og:description" content={description} />
+<meta property="og:description" content={ogDescription} />
 <meta property="og:image" content={ogImage} />
 <meta property="og:image:width" content="1200" />
 <meta property="og:image:height" content="630" />
 <meta property="og:image:type" content="image/webp" />
 <meta name="twitter:card" content="summary_large_image" />
-<meta name="twitter:title" content={title} />
-<meta name="twitter:description" content={description} />
+<meta name="twitter:title" content={ogTitle} />
+<meta name="twitter:description" content={ogDescription} />
 <meta name="twitter:image" content={ogImage} />
 <meta name="theme-color" content="#0e1116" media="(prefers-color-scheme: dark)" />
 <meta name="theme-color" content="#fdfcf9" media="(prefers-color-scheme: light)" />
