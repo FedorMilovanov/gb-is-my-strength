@@ -74,6 +74,9 @@ else {
   /04\.01\.1919/.test(app) && /Военный вопрос|ОГПУ|Братский Вестник/.test(app)
     ? ok('I12 _app: persecution/conscience timeline events present')
     : bad('I12 _app: new persecution/conscience timeline events missing');
+  /1963/.test(app) && /Устав ВСЕХБ|Вестник спасения/.test(app) && /майская делегация|ЦК КПСС/.test(app) && /Совет родственников/.test(app) && /Христианин|Косыгин|Вестник истины/.test(app)
+    ? ok('I12 _app: initiative/samizdat timeline events present')
+    : bad('I12 _app: initiative/samizdat timeline events missing');
 }
 
 // source-level guard for the regression fixed in 7850e0f: ref-based TimelineOverlay must
