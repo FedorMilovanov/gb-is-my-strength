@@ -602,10 +602,10 @@ gsap.to(caravanDot, {
 - `validate:static-publication` now includes `npm run avraam:audit`, so future CI/manual gates protect the Abraham map.
 
 ### Wave-33 (2026-06-14) — Story-state extraction
-- Added pure engine helpers `getStoryState(route, storyId)` and `auditStoryDefinitions(route)`.
+- Added pure engine helpers `getStoryState(route, storyId)`, `getPlaceOrder(route, storyId)`, and `auditStoryDefinitions(route)`.
 - `applyStory()` now uses `MapEngine.getStoryState()` for story place/stage/waypoint sets, keeping DOM rendering stable while moving logic into the engine.
 - Waypoint dimming now sets opacity on child waypoint groups too, avoiding SVG computed-opacity inconsistencies.
-- `npm run avraam:audit` expanded to 36 checks and guards story-state extraction.
+- `npm run avraam:audit` expanded to 39 checks and guards story-state + place-order extraction.
 
 ---
 
