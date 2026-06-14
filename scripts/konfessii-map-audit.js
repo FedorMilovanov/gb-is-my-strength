@@ -68,6 +68,12 @@ else {
   /Content-Security-Policy/.test(app) ? ok('I6 _app: CSP') : bad('I6 _app: нет CSP');
   /name="robots"\s+content="noindex"/.test(app) ? ok('I6 _app: robots=noindex') : bad('I6 _app: нет noindex (бандл не должен индексироваться)');
   /id="root"/.test(app) ? ok('I6 _app: React root present') : bad('I6 _app: нет #root');
+  /66\.7K|66 732/.test(app) && !/~144K/.test(app)
+    ? ok('I12 _app: modern RSEHB statistic updated from research dossier')
+    : bad('I12 _app: outdated ~144K statistic or missing BWA 66 732 update');
+  /04\.01\.1919/.test(app) && /Военный вопрос|ОГПУ|Братский Вестник/.test(app)
+    ? ok('I12 _app: persecution/conscience timeline events present')
+    : bad('I12 _app: new persecution/conscience timeline events missing');
 }
 
 // source-level guard for the regression fixed in 7850e0f: ref-based TimelineOverlay must
