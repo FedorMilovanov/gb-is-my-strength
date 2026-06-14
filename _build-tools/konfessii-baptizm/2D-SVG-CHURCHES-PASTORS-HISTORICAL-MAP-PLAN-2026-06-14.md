@@ -493,3 +493,10 @@ id,name,status,tradition,period,region,city,address_public,lat,lon,precision,sou
 ## Update 2026-06-14 — визуальные макеты 2D и 3D
 
 Создан HTML-макет для выбора направления: `_build-tools/konfessii-baptizm/MAP-MOCKUPS-2D-3D-ATLAS-2026-06-14.html`. Внутри две крупные визуальные концепции: 2D/SVG-атлас церквей и 3D-фото-глобус истории. Макет использует только inline CSS/SVG и локальные фото из `images/konfessii/russkij-baptizm/photos/`.
+
+
+---
+
+## Update 2026-06-14 — standalone-макет без внешних файлов
+
+Создан полностью автономный HTML-макет: `_build-tools/konfessii-baptizm/MAP-MOCKUPS-2D-3D-ATLAS-STANDALONE-2026-06-14.html`. В нём фото встроены как data URI, CSS и JS inline, поэтому в preview он не зависит от связей между файлами. Можно переключать 2D/SVG, 3D-глобус и сравнение, кликать по узлам и смотреть инспектор события.
