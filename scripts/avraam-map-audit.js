@@ -149,6 +149,22 @@ assert('no dangling SVG pointerenter preview block', !html.includes("svg.addEven
 assert('panel rubber animation uses .panel-opening, not #panel.open', html.includes('#panel.panel-opening{animation:panelRubberIn') && !/#panel\.open\s*\{[^}]*panelRubberIn/.test(html));
 assert('MapEngine has no skeleton console logging', !/console\.log\(['\"]MapEngine\./.test(fs.readFileSync(enginePath, 'utf8')));
 
+// Coordinate consistency: inline PLACES x,y must match route.json
+const coordDrifts = [];
+PLACES.forEach(p => {
+  const rp = route.places.find(r => r.id === p.id);
+  if (rp && (p.x !== rp.x || p.y !== rp.y)) coordDrifts.push(`${p.id}: inline(${p.x},${p.y}) route(${rp.x},${rp.y})`);
+});
+assert("inline place coords match route.json", coordDrifts.length === 0, coordDrifts.join("; "));
+
+// CTX coordinate consistency
+const ctxDrifts = [];
+CTX.forEach(c => {
+  const rc = route.ctx.find(r => r.n === c.n);
+  if (rc && (c.x !== rc.x || c.y !== rc.y)) ctxDrifts.push(`${c.n}: inline(${c.x},${c.y}) route(${rc.x},${rc.y})`);
+});
+assert("inline CTX coords match route.json", ctxDrifts.length === 0, ctxDrifts.join("; "));
+
 const failures = checks.filter(c => !c.ok);
 for (const c of checks) {
   const icon = c.ok ? '✅' : '❌';
