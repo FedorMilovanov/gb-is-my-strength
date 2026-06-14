@@ -192,6 +192,46 @@ const MapEngine = (function() {
     return [...hosts].sort();
   }
 
+  function getStoryState(data = {}, storyId = 'main') {
+    const route = normalizeRouteData(data);
+    const story = route.stories.find(s => s.id === storyId) || route.stories.find(s => s.active_by_default) || route.stories[0] || {id: storyId || 'main'};
+    const rawPlaceIds = story.places || story.place_ids || null;
+    const rawStageIds = story.stages || story.stage_ids || null;
+    const placeIds = rawPlaceIds ? [...rawPlaceIds] : route.places.map(p => p.id);
+    const stageIds = rawStageIds ? [...rawStageIds] : route.stages.map((_, i) => i);
+    const placeSet = new Set(placeIds);
+    const stageSet = new Set(stageIds);
+    const waypoints = route.verified_waypoints || route.waypoints || [];
+    const waypointIds = Array.isArray(waypoints)
+      ? waypoints.filter(w => !rawStageIds || stageSet.has(w.stage)).map(w => w.id)
+      : [];
+    return {
+      id: story.id || storyId || 'main',
+      story,
+      placesAll: !rawPlaceIds,
+      stagesAll: !rawStageIds,
+      placeIds,
+      stageIds,
+      placeSet,
+      stageSet,
+      waypointIds,
+      counts: {places: placeIds.length, stages: stageIds.length, waypoints: waypointIds.length}
+    };
+  }
+
+  function auditStoryDefinitions(data = {}) {
+    const route = normalizeRouteData(data);
+    const errors = [];
+    const states = route.stories.map(story => getStoryState(route, story.id));
+    const main = states.find(st => st.id === 'main') || states[0];
+    if (main && (!main.placesAll || !main.stagesAll)) errors.push('main story should include all places/stages');
+    states.forEach(state => {
+      if (!state.placesAll && !state.placeIds.length) errors.push(`story ${state.id}: empty place set`);
+      if (!state.stagesAll && !state.stageIds.length) errors.push(`story ${state.id}: empty stage set`);
+    });
+    return {ok: errors.length === 0, errors, states: states.map(s => ({id: s.id, placesAll: s.placesAll, stagesAll: s.stagesAll, counts: s.counts, placeIds: s.placeIds, stageIds: s.stageIds, waypointIds: s.waypointIds}))};
+  }
+
   function createEngine(options) {
     const cfg = {...DEFAULTS, ...(options || {})};
     const svg = typeof cfg.svgId === 'string' ? document.getElementById(cfg.svgId) : cfg.svg;
@@ -438,6 +478,8 @@ const MapEngine = (function() {
     validateRoute,
     compareRouteData,
     collectPhotoHosts,
+    getStoryState,
+    auditStoryDefinitions,
     pathLength,
     pointAt,
     version: '0.2.0',

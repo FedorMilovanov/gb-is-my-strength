@@ -601,6 +601,12 @@ gsap.to(caravanDot, {
 - `npm run avraam:audit` expanded to 31 checks: CSP coverage for dynamic photos, route preload, drift audit wiring, no dangling preview block, panel animation safety, no skeleton logs.
 - `validate:static-publication` now includes `npm run avraam:audit`, so future CI/manual gates protect the Abraham map.
 
+### Wave-33 (2026-06-14) — Story-state extraction
+- Added pure engine helpers `getStoryState(route, storyId)` and `auditStoryDefinitions(route)`.
+- `applyStory()` now uses `MapEngine.getStoryState()` for story place/stage/waypoint sets, keeping DOM rendering stable while moving logic into the engine.
+- Waypoint dimming now sets opacity on child waypoint groups too, avoiding SVG computed-opacity inconsistencies.
+- `npm run avraam:audit` expanded to 36 checks and guards story-state extraction.
+
 ---
 
 ## ЧАСТЬ 9: ТЕХНИЧЕСКИЕ ПРАВИЛА
