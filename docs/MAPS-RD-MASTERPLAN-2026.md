@@ -590,6 +590,11 @@ gsap.to(caravanDot, {
 - Added German scholarly layer (WiBiLex: Bethel/Hebron/Beerscheba) and Jewish tradition/text layer (Jewish Encyclopedia / Sefaria) to the source base.
 - Map source modal mentions WiBiLex + Jewish Encyclopedia/Sefaria without adding dozens of UI links.
 
+### Wave-31 (2026-06-14) — Avraam anti-regression audit
+- Added `scripts/avraam-map-audit.js` and `npm run avraam:audit`.
+- Guard covers route stats, inline/JSON data drift, waypoints, scientific variants, source MD cleanup, photo URL policy, CSP, Shechem title, caption animation, and tour hint/walker fixes.
+- Current result: 24/24 passed.
+
 ---
 
 ## ЧАСТЬ 9: ТЕХНИЧЕСКИЕ ПРАВИЛА

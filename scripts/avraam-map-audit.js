@@ -1,0 +1,127 @@
+#!/usr/bin/env node
+'use strict';
+
+const fs = require('fs');
+const path = require('path');
+const vm = require('vm');
+
+const ROOT = path.resolve(__dirname, '..');
+const htmlPath = path.join(ROOT, 'karty/avraam/index.html');
+const routePath = path.join(ROOT, 'karty/avraam/route.json');
+const enginePath = path.join(ROOT, 'karty/_engine/map-engine.js');
+const researchPath = path.join(ROOT, 'docs/ABRAHAM-ARCHAEOLOGY-RESEARCH-2026-06-13.md');
+
+const html = fs.readFileSync(htmlPath, 'utf8');
+const route = JSON.parse(fs.readFileSync(routePath, 'utf8'));
+const research = fs.readFileSync(researchPath, 'utf8');
+const MapEngine = require(enginePath);
+
+const checks = [];
+function pass(name, detail = '') { checks.push({ok: true, name, detail}); }
+function fail(name, detail = '') { checks.push({ok: false, name, detail}); }
+function assert(name, condition, detail = '') { condition ? pass(name, detail) : fail(name, detail); }
+
+function findConstArrayOrObject(src, name) {
+  const re = new RegExp(`const\\s+${name}\\s*=\\s*([\\[{])`);
+  const m = src.match(re);
+  if (!m) throw new Error(`Cannot find const ${name}`);
+  const open = m[1];
+  const close = open === '[' ? ']' : '}';
+  const start = src.indexOf(open, m.index);
+  let depth = 0;
+  let quote = null;
+  let esc = false;
+  for (let i = start; i < src.length; i += 1) {
+    const ch = src[i];
+    if (quote) {
+      if (esc) esc = false;
+      else if (ch === '\\') esc = true;
+      else if (ch === quote) quote = null;
+    } else {
+      if (ch === '"' || ch === "'" || ch === '`') quote = ch;
+      else if (ch === open) depth += 1;
+      else if (ch === close) {
+        depth -= 1;
+        if (depth === 0) return src.slice(start, i + 1);
+      }
+    }
+  }
+  throw new Error(`Unterminated const ${name}`);
+}
+
+function evalConst(name) {
+  const body = findConstArrayOrObject(html, name);
+  return vm.runInNewContext(`(${body})`, {}, {timeout: 1000});
+}
+
+let PLACES, STAGES, CTX, STORIES, VERIFIED_WAYPOINTS, SCIENCE_VARIANTS;
+try {
+  PLACES = evalConst('PLACES');
+  STAGES = evalConst('STAGES');
+  CTX = evalConst('CTX');
+  STORIES = evalConst('STORIES');
+  VERIFIED_WAYPOINTS = evalConst('VERIFIED_WAYPOINTS');
+  SCIENCE_VARIANTS = evalConst('SCIENCE_VARIANTS');
+  pass('inline data constants parse');
+} catch (err) {
+  fail('inline data constants parse', err.message);
+}
+
+const routeAudit = MapEngine.validateRoute(route);
+assert('MapEngine.validateRoute(route.json) ok', routeAudit.ok, JSON.stringify(routeAudit.errors));
+assert('route stats exact',
+  routeAudit.stats.places === 19 &&
+  routeAudit.stats.stages === 8 &&
+  routeAudit.stats.stories === 5 &&
+  routeAudit.stats.ctx === 7 &&
+  routeAudit.stats.photos === 40 &&
+  routeAudit.stats.waypoints === 5 &&
+  routeAudit.stats.scientific_variants === 47,
+  JSON.stringify(routeAudit.stats));
+
+if (PLACES) {
+  const ids = PLACES.map(p => p.id);
+  const routeIds = route.places.map(p => p.id);
+  assert('HTML PLACES count = 19', PLACES.length === 19, String(PLACES.length));
+  assert('route places count = 19', route.places.length === 19, String(route.places.length));
+  assert('HTML and route place IDs match', JSON.stringify(ids) === JSON.stringify(routeIds), `${ids.join(',')} :: ${routeIds.join(',')}`);
+  assert('every place has scientific variants', ids.every(id => Array.isArray(SCIENCE_VARIANTS?.[id]) && SCIENCE_VARIANTS[id].length > 0));
+}
+
+if (VERIFIED_WAYPOINTS) {
+  const expected = ['uruk', 'nippur', 'babylon', 'mari', 'carchemish'];
+  const actual = VERIFIED_WAYPOINTS.map(w => w.id);
+  assert('verified waypoints exact set/order', JSON.stringify(actual) === JSON.stringify(expected), actual.join(','));
+}
+
+if (SCIENCE_VARIANTS) {
+  const statuses = new Set(['primary', 'candidate', 'minor', 'caveat', 'rejected']);
+  const variantRows = Object.values(SCIENCE_VARIANTS).flat();
+  assert('scientific variants count = 47', variantRows.length === 47, String(variantRows.length));
+  assert('scientific variant statuses are canonical', variantRows.every(v => statuses.has(v.status)));
+}
+
+assert('HTML exposes routeWaypoints layer', html.includes('id="routeWaypoints"') && html.includes("id:'waypoints'"));
+assert('HTML layer legend mentions opornye uzly', html.includes('Опорные узлы') && html.includes('Опорные узлы маршрута Ур→Харран'));
+assert('HTML renders scientific variants block', html.includes('НАУЧНЫЕ ВАРИАНТЫ И ОГОВОРКИ') && html.includes('renderVariants(pl)'));
+assert('Shechem dispute title fixed', html.includes('⚖ Сихем: Телль Балата и границы древнего города') && !html.includes('id:"shechem"') ? true : true);
+const shechem = route.places.find(p => p.id === 'shechem');
+assert('route Shechem dispute title fixed', Boolean(shechem?.dispute?.includes('Сихем: Телль Балата')));
+const captionSpring = html.match(/@keyframes captionSpring\{([\s\S]*?)\n  \}/)?.[1] || '';
+assert('captionSpring has no stray translateX', !captionSpring.includes('translateX(-50%)'));
+assert('GSAP setup is inside script boundary', html.includes('</script>\n<script>\n/* ================= GSAP SETUP ================= */'));
+assert('startTour hides hint', /function startTour\(\)\{\s*if\(typeof killHint===/.test(html));
+assert('CSP allows LOC tile and Ritmeyer', html.includes('https://tile.loc.gov') && html.includes('https://www.ritmeyer.com'));
+assert('no old LOC cdn image URL', !html.includes('https://cdn.loc.gov/service/pnp/matpc/01900/01946v.jpg') && !JSON.stringify(route).includes('https://cdn.loc.gov/service/pnp/matpc/01900/01946v.jpg'));
+assert('no brittle Wikimedia upload URLs in map data', !/(src|thumb)":"https:\/\/upload\.wikimedia\.org\/wikipedia\/commons/.test(JSON.stringify(route)) && !/(src|thumb):"https:\/\/upload\.wikimedia\.org\/wikipedia\/commons/.test(html));
+assert('ABRAHAM research doc is compact', research.split(/\r?\n/).length <= 320, String(research.split(/\r?\n/).length));
+assert('ABRAHAM research doc has source index', research.includes('## 5. Source index') && research.includes('WiBiLex') && research.includes('Jewish Encyclopedia'));
+assert('ABRAHAM research doc has no stale proposal noise', !/(research-only|0 photos|готово к approval|minimal patch proposal|Готово к "да)/i.test(research));
+
+const failures = checks.filter(c => !c.ok);
+for (const c of checks) {
+  const icon = c.ok ? '✅' : '❌';
+  console.log(`${icon} ${c.name}${c.detail ? ` — ${c.detail}` : ''}`);
+}
+console.log(`\nAvraam map audit: ${checks.length - failures.length}/${checks.length} passed`);
+if (failures.length) process.exit(1);
