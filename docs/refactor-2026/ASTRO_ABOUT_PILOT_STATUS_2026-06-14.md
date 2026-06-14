@@ -121,3 +121,19 @@ Astro pilot пока не полностью визуально/content-identica
 ```
 
 Это допустимо для shadow pilot, но перед production ownership `/about/` нужен ручной visual/content review.
+
+## Parity polish update
+
+Astro pilot `/about/` дополнен ресурсными ссылками, контактными карточками, блоком «Нашли неточность?» и эпиграфом Авв. 3:19.
+
+Повторный `npm run astro:audit:about`:
+
+```text
+legacy words: 605
+astro words: 550
+ratio: 0.91
+legacy h2 = astro h2, включая «Нашли неточность?»
+smoke: pass
+```
+
+Notes про отсутствующий heading и слишком малое число ссылок закрыты. Перед production ownership всё равно нужен ручной visual review, но content/SEO smoke теперь значительно ближе к legacy.
