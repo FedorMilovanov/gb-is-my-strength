@@ -321,11 +321,11 @@ function LearningCoach({ visible, onOpenRoutes, onOpenMap }: { visible: boolean;
         <Sparkles size={13} />
         <span className="text-[9px] font-black uppercase tracking-[0.18em]">Как читать карту</span>
       </div>
-      <p className="text-[11.5px] leading-5 text-white/62">Не нужно угадывать смысл шаров: начните с маршрута, затем двигайте Timeline и открывайте досье узлов.</p>
+      <p className="text-[11.5px] leading-5 text-white/62">Читайте карту слоями: сначала выберите маршрут, затем год на Timeline, потом откройте досье. Красные/янтарные события — гонения и совесть, A/B/C — уровень источника.</p>
       <div className="mt-3 grid gap-1.5 text-[10.5px] text-white/45">
-        <div><span className="font-mono text-brand-gold">1</span> · Маршрут показывает историческую линию.</div>
-        <div><span className="font-mono text-brand-gold">2</span> · Timeline затемняет будущие узлы.</div>
-        <div><span className="font-mono text-brand-gold">3</span> · Страны и города связывают граф с Евразией.</div>
+        <div><span className="font-mono text-brand-gold">1</span> · Маршрут = сюжет: истоки, союзы, советская ночь, самиздат.</div>
+        <div><span className="font-mono text-brand-gold">2</span> · Timeline = дата и ближайшее событие, с бейджем источника.</div>
+        <div><span className="font-mono text-brand-gold">3</span> · Досье = человек/город/документ + ссылка на статью серии.</div>
       </div>
       <div className="mt-3 flex gap-2">
         <button onClick={onOpenRoutes} className="flex-1 rounded-full border border-brand-gold/30 bg-brand-gold/10 px-3 py-2 text-[9px] font-bold uppercase tracking-[0.12em] text-brand-gold transition hover:bg-brand-gold/16 active:scale-95">Маршруты</button>
@@ -2227,7 +2227,12 @@ export default function MindMap3D() {
           <AnimatePresence>
             {showLegend && (
               <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 20 }} className="absolute right-16 top-20 z-40 w-64 rounded-2xl border border-white/10 bg-black/60 p-4 backdrop-blur-2xl">
-                <h4 className="mb-3 text-[10px] font-bold uppercase tracking-widest text-[#c4a67e]">Легенда фигур</h4>
+                <h4 className="mb-3 text-[10px] font-bold uppercase tracking-widest text-[#c4a67e]">Легенда карты</h4>
+                <div className="mb-3 rounded-xl border border-white/10 bg-white/[0.035] p-3 text-[10px] leading-4 text-white/55">
+                  <div><span className="font-bold text-[#c4a67e]">Цвет</span> = слой истории: истоки, союзы, гонения, самиздат.</div>
+                  <div><span className="font-bold text-[#c4a67e]">A/B/C</span> = уровень источника: документ, исследование, память.</div>
+                  <div><span className="font-bold text-[#c4a67e]">Красный</span> = гонения / совесть / давление государства.</div>
+                </div>
                 <ul className="space-y-2.5 text-[11px] text-white/80">
                   <li className="flex items-center gap-3"><div className="h-2.5 w-2.5 rounded-full bg-white shadow-[0_0_8px_white]" /> Зерно — исток движения</li>
                   <li className="flex items-center gap-3"><div className="h-2.5 w-2.5 border border-white" /> Портал — регион</li>
