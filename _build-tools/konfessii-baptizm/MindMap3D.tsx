@@ -244,31 +244,56 @@ function ContextStatusBar({ activeRoute, routeStep, mapSelection, focusLabel }: 
   );
 }
 
-type TimelineTarget = { match: RegExp; nodeId: string; routeId?: string; mapId?: string };
+type ArticlePreview = { url: string; title: string; kicker: string; desc: string; cover: string };
+const ARTICLE_PREVIEWS: Record<string, ArticlePreview> = {
+  overview: { url: '/baptisty-rossii/', title: 'Баптисты России', kicker: 'Серия · 10 частей', desc: 'Вся исследовательская серия: истоки, союзы, гонения, Совет Церквей и подпольная печать.', cover: '/images/baptisty-rossii/cover-landing.svg' },
+  kura: { url: '/baptisty-rossii/noch-na-kure/', title: 'Ночь на Куре', kicker: 'Часть 1', desc: 'Воронин, Кальвейт, Деляков и первая русская баптистская община.', cover: '/images/baptisty-rossii/cover-01-kura.svg' },
+  shtunda: { url: '/baptisty-rossii/yuzhnaya-shtunda/', title: 'Южная штунда', kicker: 'Часть 2', desc: 'Унгер, Цимбал, Рябошапка, Ратушный, Прицкау, Онкен и Вилер.', cover: '/images/baptisty-rossii/cover-02-shtunda.svg' },
+  congress1884: { url: '/baptisty-rossii/dva-sezda-1884/', title: '1884: два съезда', kicker: 'Часть 3', desc: 'Петербургское совещание и Ново-Васильевский съезд — две разные развилки.', cover: '/images/baptisty-rossii/cover-03-1884.svg' },
+  petersburg: { url: '/baptisty-rossii/peterburgskaya-liniya/', title: 'Петербургская линия', kicker: 'Часть 4', desc: 'Редсток, Пашков, Корф, Каргель и Проханов.', cover: '/images/baptisty-rossii/cover-04-peterburg.svg' },
+  conscience: { url: '/baptisty-rossii/goneniya-i-sovest/', title: 'Гонения и совесть', kicker: 'Часть 5', desc: 'Военный вопрос, право совести и давление государства.', cover: '/images/baptisty-rossii/cover-05-conscience.svg' },
+  sovietNight: { url: '/baptisty-rossii/sovetskaya-noch/', title: 'Советская ночь', kicker: 'Часть 6', desc: 'Закон 1929, Инструкция НКВД, закрытия и репрессии.', cover: '/images/baptisty-rossii/cover-06-soviet-night.svg' },
+  union1944: { url: '/baptisty-rossii/vsehib-1944/', title: '1944: один союз', kicker: 'Часть 7', desc: 'ВСЕХиБ, Братский Вестник, ХВЕ и Прибалтика.', cover: '/images/baptisty-rossii/cover-07-vsehib.svg' },
+  initiative: { url: '/baptisty-rossii/iniciativnaya-gruppa/', title: 'Инициативная группа', kicker: 'Часть 8', desc: '1960–1966: Положение, письмо, Оргкомитет и Совет Церквей.', cover: '/images/baptisty-rossii/cover-08-initiative.svg' },
+  samizdat: { url: '/baptisty-rossii/podpolnaya-pechat/', title: 'Подпольная печать', kicker: 'Часть 9', desc: 'Вестник спасения, Вестник истины, Совет родственников, Христианин.', cover: '/images/baptisty-rossii/cover-09-samizdat.svg' },
+  reference: { url: '/baptisty-rossii/spravochnik/', title: 'Справочник', kicker: 'Часть 10', desc: 'Люди, даты, документы, спорные факты и источниковая оценка.', cover: '/images/baptisty-rossii/cover-10-reference.svg' },
+};
+const NODE_ARTICLE: Record<string, keyof typeof ARTICLE_PREVIEWS> = {
+  root: 'overview', trans: 'kura', voronin: 'kura', kalweit: 'kura', pavlov: 'kura',
+  ukr: 'shtunda', weiler: 'shtunda', tsymbal: 'shtunda', mazaev: 'shtunda', vsb: 'congress1884',
+  spb: 'petersburg', redstock: 'petersburg', pashkov: 'petersburg', prokhanov: 'petersburg', kargel: 'petersburg',
+  vseh: 'conscience', vsehb: 'union1944', zhidkov: 'union1944', karev: 'union1944',
+  sc: 'initiative', kryuchkov: 'initiative', vins: 'initiative', rsehb: 'reference',
+};
+function articleForNode(nodeId?: string | null): ArticlePreview | null {
+  const key = nodeId ? NODE_ARTICLE[nodeId] : undefined;
+  return key ? ARTICLE_PREVIEWS[key] : null;
+}
+type TimelineTarget = { match: RegExp; nodeId: string; routeId?: string; mapId?: string; article?: keyof typeof ARTICLE_PREVIEWS };
 const TIMELINE_TARGETS: TimelineTarget[] = [
-  { match: /Воронин|Кура|20\.08\.1867/i, nodeId: 'voronin', routeId: 'route-tiflis', mapId: 'city-Тифлис (Тбилиси)' },
-  { match: /Кальвейт/i, nodeId: 'kalweit', routeId: 'route-tiflis', mapId: 'city-Тифлис (Тбилиси)' },
-  { match: /Павлов/i, nodeId: 'pavlov', routeId: 'route-tiflis', mapId: 'city-Тифлис (Тбилиси)' },
-  { match: /Цымбал/i, nodeId: 'tsymbal', routeId: 'route-ukraine', mapId: 'city-Ново-Васильевка' },
-  { match: /Вилер|Нововасильев|Союз баптистов/i, nodeId: 'vsb', routeId: 'route-ukraine', mapId: 'city-Ново-Васильевка' },
-  { match: /Редсток/i, nodeId: 'redstock', routeId: 'route-petersburg', mapId: 'city-Санкт-Петербург' },
-  { match: /Пашков/i, nodeId: 'pashkov', routeId: 'route-petersburg', mapId: 'city-Санкт-Петербург' },
-  { match: /Каргель/i, nodeId: 'kargel', routeId: 'route-petersburg', mapId: 'country-643' },
-  { match: /Проханов|ВСЕХ(?!Б)/i, nodeId: 'vseh', routeId: 'route-petersburg', mapId: 'city-Санкт-Петербург' },
-  { match: /воинск|совест|04\.01\.1919|1919/i, nodeId: 'vseh', routeId: 'route-petersburg', mapId: 'city-Москва' },
-  { match: /ОГПУ|Голос с Востока|XXV|1923|1926/i, nodeId: 'vseh', routeId: 'route-petersburg', mapId: 'city-Москва' },
-  { match: /Братский Вестник|1945|послевоенная линия/i, nodeId: 'vsehb', routeId: 'route-soviet', mapId: 'city-Москва' },
-  { match: /ВСЕХБ|Жидков|Карев|26-29\.10\.1944|1944/i, nodeId: 'vsehb', routeId: 'route-soviet', mapId: 'city-Москва' },
-  { match: /Устав ВСЕХБ 1963|съезд ВСЕХБ 1963|15–17 октября 1963|1963/i, nodeId: 'vsehb', routeId: 'route-soviet', mapId: 'city-Москва' },
-  { match: /майск|ЦК КПСС|Винс|Хорев|1966/i, nodeId: 'vins', routeId: 'route-soviet', mapId: 'city-Москва' },
-  { match: /Совет родственников|Бюллетень|Козорезова|1970/i, nodeId: 'vins', routeId: 'route-soviet', mapId: 'city-Москва' },
-  { match: /Христианин|Косыгин|1971/i, nodeId: 'sc', routeId: 'route-soviet', mapId: 'city-Москва' },
-  { match: /Вестник истины|1976/i, nodeId: 'sc', routeId: 'route-soviet', mapId: 'city-Москва' },
-  { match: /СЦ ЕХБ|Совет Церквей|Крючков|Винс|1961|1965/i, nodeId: 'sc', routeId: 'route-soviet', mapId: 'city-Москва' },
-  { match: /РС ЕХБ|1992|Современный/i, nodeId: 'rsehb', routeId: 'route-soviet', mapId: 'city-Москва' },
-  { match: /Украин|Штунд/i, nodeId: 'ukr', routeId: 'route-ukraine', mapId: 'country-804' },
-  { match: /Петербург/i, nodeId: 'spb', routeId: 'route-petersburg', mapId: 'city-Санкт-Петербург' },
-  { match: /Закавказ|Тифлис/i, nodeId: 'trans', routeId: 'route-tiflis', mapId: 'country-268' },
+  { match: /Воронин|Кура|20\.08\.1867/i, nodeId: 'voronin', routeId: 'route-tiflis', mapId: 'city-Тифлис (Тбилиси)', article: 'kura' },
+  { match: /Кальвейт/i, nodeId: 'kalweit', routeId: 'route-tiflis', mapId: 'city-Тифлис (Тбилиси)', article: 'kura' },
+  { match: /Павлов/i, nodeId: 'pavlov', routeId: 'route-tiflis', mapId: 'city-Тифлис (Тбилиси)', article: 'kura' },
+  { match: /Цымбал/i, nodeId: 'tsymbal', routeId: 'route-ukraine', mapId: 'city-Ново-Васильевка', article: 'shtunda' },
+  { match: /Вилер|Нововасильев|Союз баптистов/i, nodeId: 'vsb', routeId: 'route-ukraine', mapId: 'city-Ново-Васильевка', article: 'congress1884' },
+  { match: /Редсток/i, nodeId: 'redstock', routeId: 'route-petersburg', mapId: 'city-Санкт-Петербург', article: 'petersburg' },
+  { match: /Пашков/i, nodeId: 'pashkov', routeId: 'route-petersburg', mapId: 'city-Санкт-Петербург', article: 'petersburg' },
+  { match: /Каргель/i, nodeId: 'kargel', routeId: 'route-petersburg', mapId: 'country-643', article: 'petersburg' },
+  { match: /Проханов|ВСЕХ(?!Б)/i, nodeId: 'vseh', routeId: 'route-petersburg', mapId: 'city-Санкт-Петербург', article: 'petersburg' },
+  { match: /воинск|совест|04\.01\.1919|1919/i, nodeId: 'vseh', routeId: 'route-petersburg', mapId: 'city-Москва', article: 'conscience' },
+  { match: /ОГПУ|Голос с Востока|XXV|1923|1926/i, nodeId: 'vseh', routeId: 'route-petersburg', mapId: 'city-Москва', article: 'conscience' },
+  { match: /Братский Вестник|1945|послевоенная линия/i, nodeId: 'vsehb', routeId: 'route-soviet', mapId: 'city-Москва', article: 'union1944' },
+  { match: /ВСЕХБ|Жидков|Карев|26-29\.10\.1944|1944/i, nodeId: 'vsehb', routeId: 'route-soviet', mapId: 'city-Москва', article: 'union1944' },
+  { match: /Устав ВСЕХБ 1963|съезд ВСЕХБ 1963|15–17 октября 1963|1963/i, nodeId: 'vsehb', routeId: 'route-soviet', mapId: 'city-Москва', article: 'union1944' },
+  { match: /майск|ЦК КПСС|Винс|Хорев|1966/i, nodeId: 'vins', routeId: 'route-soviet', mapId: 'city-Москва', article: 'initiative' },
+  { match: /Совет родственников|Бюллетень|Козорезова|1970/i, nodeId: 'vins', routeId: 'route-soviet', mapId: 'city-Москва', article: 'samizdat' },
+  { match: /Христианин|Косыгин|1971/i, nodeId: 'sc', routeId: 'route-soviet', mapId: 'city-Москва', article: 'samizdat' },
+  { match: /Вестник истины|1976/i, nodeId: 'sc', routeId: 'route-soviet', mapId: 'city-Москва', article: 'samizdat' },
+  { match: /СЦ ЕХБ|Совет Церквей|Крючков|Винс|1961|1965/i, nodeId: 'sc', routeId: 'route-soviet', mapId: 'city-Москва', article: 'initiative' },
+  { match: /РС ЕХБ|1992|Современный/i, nodeId: 'rsehb', routeId: 'route-soviet', mapId: 'city-Москва', article: 'reference' },
+  { match: /Украин|Штунд/i, nodeId: 'ukr', routeId: 'route-ukraine', mapId: 'country-804', article: 'shtunda' },
+  { match: /Петербург/i, nodeId: 'spb', routeId: 'route-petersburg', mapId: 'city-Санкт-Петербург', article: 'petersburg' },
+  { match: /Закавказ|Тифлис/i, nodeId: 'trans', routeId: 'route-tiflis', mapId: 'country-268', article: 'kura' },
 ];
 
 function findMapSelectionForNode(nodeId: string, preferredId?: string): MapSelection | null {
@@ -402,7 +427,7 @@ function getEarthTexture(): THREE.CanvasTexture | null {
 }
 
 
-function TimelineOverlay({ timelineYearRef, bottomBarExpanded, onEventSelect }: { timelineYearRef: React.MutableRefObject<number | null>, bottomBarExpanded: boolean, onEventSelect?: (event: any, year: number) => void }) {
+function TimelineOverlay({ timelineYearRef, bottomBarExpanded, onEventSelect, getArticleForEvent }: { timelineYearRef: React.MutableRefObject<number | null>, bottomBarExpanded: boolean, onEventSelect?: (event: any, year: number) => void, getArticleForEvent?: (event: any) => ArticlePreview | null }) {
   const [year, setYear] = useState<number | null>(null);
   const [hoveredTick, setHoveredTick] = useState<{ year: number; event: (typeof timelineEvents)[number]; count: number } | null>(null);
   
@@ -454,6 +479,7 @@ function TimelineOverlay({ timelineYearRef, bottomBarExpanded, onEventSelect }: 
   const visibleTimelineTicks = useMemo(() => timelineTicks.filter((tick) => tick.major), [timelineTicks]);
   const displayEvent = hoveredTick?.event ?? recentEvent;
   const displayCount = hoveredTick?.count ?? 1;
+  const displayArticle = displayEvent ? getArticleForEvent?.(displayEvent) ?? null : null;
 
   return (
     <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0, bottom: bottomBarExpanded ? '17rem' : '4.5rem' }} transition={{ duration: 0.3, ease: 'easeOut' }} className="absolute left-1/2 z-40 hidden w-full max-w-[800px] -translate-x-1/2 flex-col px-4 sm:flex pointer-events-none">
@@ -467,6 +493,13 @@ function TimelineOverlay({ timelineYearRef, bottomBarExpanded, onEventSelect }: 
               <div className="text-[10px] font-bold uppercase tracking-widest text-white/50">Хронология событий · {displayEvent.year} • {categoryLabels[displayEvent.category]}{displayCount > 1 ? ` · ${displayCount} события` : ''}</div>
               <div className="truncate text-[13px] font-bold text-white">{displayEvent.title}</div>
               <div className="line-clamp-1 text-[10.5px] leading-4 text-white/45">{displayEvent.description}</div>
+              {displayArticle && (
+                <a href={displayArticle.url} target="_top" className="mt-2 flex items-center gap-2 rounded-xl border border-white/[0.08] bg-white/[0.035] p-1.5 transition hover:bg-white/[0.07]" aria-label={`Открыть статью: ${displayArticle.title}`}>
+                  <img src={displayArticle.cover} alt="" width={46} height={24} className="h-6 w-[46px] rounded-md object-cover" loading="lazy" decoding="async" />
+                  <span className="min-w-0 text-left"><span className="block text-[8px] font-bold uppercase tracking-[0.14em] text-white/32">{displayArticle.kicker}</span><span className="block truncate text-[10.5px] font-bold text-white/70">{displayArticle.title}</span></span>
+                  <span className="ml-auto text-[13px] text-white/32">→</span>
+                </a>
+              )}
             </div>
           </div>
       )}
@@ -1226,6 +1259,13 @@ export default function MindMap3D() {
 
   const personProfile = focusNode ? personProfiles.find((p) => p.id === focusNode.id) : undefined;
   const mapPlaceRecord = mapSelection ? getMapPlaceRecord(mapSelection.id) : undefined;
+  const articleForFocus = focusNode ? articleForNode(focusNode.id) : null;
+  const articleForTimelineEvent = useCallback((event: any) => {
+    const text = `${event?.year ?? ''} ${event?.title ?? ''} ${event?.description ?? ''} ${event?.details ?? ''}`;
+    const target = TIMELINE_TARGETS.find((entry) => entry.match.test(text));
+    if (target?.article) return ARTICLE_PREVIEWS[target.article];
+    return target ? articleForNode(target.nodeId) : null;
+  }, []);
 
   const nodeThreeObject = useCallback((node: NodeData) => {
     const hex = GROUP_COLORS[node.group] ?? '#ffffff';
@@ -1816,7 +1856,7 @@ export default function MindMap3D() {
           {(focusNode || mapSelection) && (<div className="pointer-events-none absolute bottom-20 right-4 z-30 hidden rounded-2xl border border-white/[0.08] bg-black/40 px-3 py-2.5 text-[10px] text-white/55 backdrop-blur-xl md:block" style={{ boxShadow: '0 4px 20px rgba(0,0,0,0.3)' }}><div className="mb-1.5 flex items-center gap-2"><span className="h-1.5 w-6 rounded-full" style={{ background: 'linear-gradient(90deg, #c4a67e, #d4a857)' }} />прямая связь</div><div className="flex items-center gap-2"><span className="h-px w-6 rounded-full bg-white/30" />вторичная</div></div>)}
 
           {/* Timeline: ref-based so RAF can dim future nodes without rebuilding graph state. */}
-          {!zenMode && <TimelineOverlay timelineYearRef={timelineYearRef} bottomBarExpanded={bottomBarExpanded} onEventSelect={handleTimelineEventSelect} />}
+          {!zenMode && <TimelineOverlay timelineYearRef={timelineYearRef} bottomBarExpanded={bottomBarExpanded} onEventSelect={handleTimelineEventSelect} getArticleForEvent={articleForTimelineEvent} />}
 
           {focusNode && !zenMode && (
             <>
@@ -2066,6 +2106,15 @@ export default function MindMap3D() {
                             <button onClick={() => { haptic(4); handleRouteStep(-1); }} disabled={routeStep === 0} className="flex-1 rounded-xl border border-white/10 bg-white/[0.04] py-1.5 text-[11px] font-semibold transition hover:bg-white/[0.08] active:scale-95 disabled:opacity-30">← Назад</button>
                             <button onClick={() => { haptic(4); handleRouteStep(1); }} disabled={routeStep >= activeRoute.nodes.length - 1} className="flex-1 rounded-xl py-1.5 text-[11px] font-semibold transition active:scale-95 disabled:opacity-30" style={{ background: `${activeRoute.color}22`, color: activeRoute.color, border: `1px solid ${activeRoute.color}44` }}>Вперёд →</button>
                           </div>
+                        </section>
+                      )}
+
+                      {articleForFocus && (
+                        <section className="overflow-hidden rounded-xl border border-brand-gold/20 bg-brand-gold/[0.045]">
+                          <a href={articleForFocus.url} target="_top" className="group flex gap-3 p-3 text-left transition hover:bg-brand-gold/[0.055]" aria-label={`Открыть статью серии: ${articleForFocus.title}`}>
+                            <img src={articleForFocus.cover} alt="" width={96} height={54} loading="lazy" decoding="async" className="h-[54px] w-24 shrink-0 rounded-lg border border-white/[0.08] object-cover" />
+                            <span className="min-w-0"><span className="block text-[8px] font-bold uppercase tracking-[0.16em] text-brand-gold/80">Связанная статья · {articleForFocus.kicker}</span><span className="mt-1 block text-[12px] font-black leading-tight text-white group-hover:text-brand-gold">{articleForFocus.title}</span><span className="mt-1 line-clamp-2 block text-[10.5px] leading-4 text-white/55">{articleForFocus.desc}</span></span>
+                          </a>
                         </section>
                       )}
 

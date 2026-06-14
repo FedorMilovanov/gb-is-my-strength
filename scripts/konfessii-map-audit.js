@@ -77,6 +77,9 @@ else {
   /1963/.test(app) && /Устав ВСЕХБ|Вестник спасения/.test(app) && /майская делегация|ЦК КПСС/.test(app) && /Совет родственников/.test(app) && /Христианин|Косыгин|Вестник истины/.test(app)
     ? ok('I12 _app: initiative/samizdat timeline events present')
     : bad('I12 _app: initiative/samizdat timeline events missing');
+  /Связанная статья/.test(app) && /Открыть статью/.test(app) && /baptisty-rossii\//.test(app)
+    ? ok('I13 _app: article previews are wired into timeline/dossier')
+    : bad('I13 _app: article previews missing from 3D UI');
 }
 
 // source-level guard for the regression fixed in 7850e0f: ref-based TimelineOverlay must
@@ -127,6 +130,9 @@ if (src) {
   /function\s+LearningCoach/.test(src) && /Как читать карту/.test(src) && /showLearningCoach/.test(src)
     ? ok('I10 source: first-run learning coach present')
     : bad('I10 source: learning coach missing (onboarding regression risk)');
+  /ARTICLE_PREVIEWS/.test(src) && /Связанная статья/.test(src) && /getArticleForEvent/.test(src)
+    ? ok('I13 source: article preview cards wired')
+    : bad('I13 source: article preview cards missing');
 }
 
 // ---------- live checks (browser, optional) ----------
