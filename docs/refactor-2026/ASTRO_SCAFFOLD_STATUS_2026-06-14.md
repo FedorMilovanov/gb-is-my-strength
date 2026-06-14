@@ -136,3 +136,13 @@ Issues: 0
 ```
 
 `contract:compare:dist` пока намеренно не запускается как gate, потому dist ещё не содержит legacy-copied pages. Он станет обязательным только на этапе build-time strangler, когда dist будет содержать полный сайт.
+
+## Dist cleanliness update
+
+`astro build`/Vite can leave previous copied files in `dist` in local strangler experiments. To prevent stale artifacts, `astro:build` now starts with:
+
+```bash
+npm run dist:clean
+```
+
+`dist:clean` removes `dist/` before rebuilding. This is essential before any future `strangler:build` or dist contract compare.

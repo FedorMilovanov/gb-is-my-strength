@@ -1,0 +1,78 @@
+# BUILD_TIME_STRANGLER_PROTOTYPE_STATUS_2026-06-14.md
+
+Дата: 2026-06-14  
+Риск-уровень: **prototype / local dist only**  
+Production status: **deploy всё ещё публикует legacy root, не `dist/`**
+
+## Что сделано
+
+Добавлены:
+
+```text
+migration/page-ownership.json
+scripts/copy-legacy-to-dist.js
+```
+
+Package scripts:
+
+```json
+"strangler:build": "npm run astro:build && node scripts/copy-legacy-to-dist.js",
+"strangler:validate": "npm run strangler:build && npm run contract:extract:dist && npm run contract:compare:dist"
+```
+
+## Ownership manifest
+
+Текущий manifest:
+
+```text
+/about/                → astro shadow-pilot
+/dev/astro-test/       → astro noindex build-only
+/konfessii/.../_app/   → built-app, copy as built asset
+```
+
+## Copy algorithm
+
+После `astro:build`:
+
+1. `dist/` уже содержит Astro-owned pages.
+2. `copy-legacy-to-dist.js` копирует public root files и public dirs.
+3. Legacy pages, которые принадлежат Astro (`/about/`), не копируются.
+4. Существующие files в `dist` не перезаписываются.
+5. Проверяются required files/routes: `/about/`, root index, sitemap/feed/robots/CNAME, css/js/images basics.
+
+## Dist cleanliness
+
+`astro:build` теперь начинается с `dist:clean`, чтобы исключить stale artifacts от прошлых strangler builds.
+
+## Проверка
+
+```bash
+npm run strangler:validate
+```
+
+Результат на момент добавления:
+
+```text
+copy-legacy-to-dist: copied 442 files (~44 MB)
+Astro-owned legacy pages skipped: /about/
+contract:extract:dist: 42 public pages, 0 issues
+contract:compare:dist: 42 baseline pages, 42 current public pages, 0 new URLs
+```
+
+## Что НЕ сделано
+
+- `deploy.yml` не переключён на `dist`;
+- Pagefind build on dist не включён;
+- sitemap/feed ещё legacy-copied;
+- ownership `/about/` в production не включён;
+- legacy files не удалены.
+
+## Следующие условия перед deploy switch
+
+Перед изменением deploy path на `dist` нужно отдельно:
+
+1. visual compare `/about/` legacy vs Astro desktop/mobile;
+2. smoke test `dist/` через local static server;
+3. проверить service worker/cache strategy для dist;
+4. решить Pagefind generation on dist;
+5. подготовить rollback plan.

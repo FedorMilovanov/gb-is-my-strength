@@ -74,3 +74,7 @@ contract:compare:dist:about → OK, 1 baseline page vs 1 dist page
 2. добавить build-time strangler/copy legacy mechanism или отдельный controlled deploy strategy;
 3. прогнать full dist contract, когда dist содержит все legacy pages;
 4. только после этого решать production ownership `/about/`.
+
+## Dist cleanliness update
+
+Before comparing Astro `/about/`, `astro:build` now cleans `dist/` first. This prevents old copied legacy pages from making `contract:extract:dist` look greener than the current build actually is.
