@@ -38,10 +38,13 @@
     "maps:validate": "node scripts/validate-map-routes.js",
     "astro:dev": "ASTRO_TELEMETRY_DISABLED=1 astro dev",
     "astro:check": "ASTRO_TELEMETRY_DISABLED=1 astro check",
-    "astro:build": "ASTRO_TELEMETRY_DISABLED=1 astro check && ASTRO_TELEMETRY_DISABLED=1 astro build",
+    "astro:build": "npm run dist:clean && ASTRO_TELEMETRY_DISABLED=1 astro check && ASTRO_TELEMETRY_DISABLED=1 astro build",
     "astro:preview": "ASTRO_TELEMETRY_DISABLED=1 astro preview",
     "contract:compare:dist:about": "npm run contract:extract:dist && node scripts/compare-url-contract.js --baseline data/public-content-baseline.json --current reports/url-contract-dist.json --only-url https://gospod-bog.ru/about/",
-    "astro:pilot:about": "npm run astro:build && npm run contract:compare:dist:about"
+    "astro:pilot:about": "npm run astro:build && npm run contract:compare:dist:about",
+    "strangler:build": "npm run astro:build && node scripts/copy-legacy-to-dist.js",
+    "strangler:validate": "npm run strangler:build && npm run contract:extract:dist && npm run contract:compare:dist",
+    "dist:clean": "node -e \"require('fs').rmSync('dist',{recursive:true,force:true})\""
   },
   "engines": {
     "node": ">=22.12.0"

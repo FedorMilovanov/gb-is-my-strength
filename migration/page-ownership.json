@@ -1,0 +1,25 @@
+{
+  "version": 1,
+  "updated": "2026-06-14",
+  "description": "Build-time strangler ownership manifest. Production deploy still serves repo root; dist ownership is for local/prototype validation only.",
+  "routes": {
+    "/about/": {
+      "owner": "astro",
+      "source": "src/pages/about/index.astro",
+      "risk": 2,
+      "status": "shadow-pilot"
+    },
+    "/dev/astro-test/": {
+      "owner": "astro-noindex",
+      "source": "src/pages/dev/astro-test.astro",
+      "risk": 1,
+      "status": "build-only"
+    },
+    "/konfessii/russkij-baptizm/_app/": {
+      "owner": "built-app",
+      "source": "konfessii/russkij-baptizm/_app/",
+      "risk": 5,
+      "status": "copy-as-built-asset"
+    }
+  }
+}
