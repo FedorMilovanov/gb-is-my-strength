@@ -57,6 +57,14 @@ npm audit --omit=dev --audit-level=moderate
 git diff --check
 ```
 
+Дополнительно перед actual switch желательно вручную запустить GitHub Actions workflow:
+
+```text
+Dist Strangler Dry Run
+```
+
+Он собирает production-like `dist`, проверяет отсутствие `/dev/astro-test/`, создаёт screenshots для `/about/` и загружает обычный artifact `production-like-dist` без публикации на Pages.
+
 `astro:audit:about:shots` создаёт screenshots в `reports/`; они не коммитятся. Визуальное отличие `/about/` должно быть вручную принято владельцем до rollout.
 
 ## Изменения в deploy.yml в actual switch commit
