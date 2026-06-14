@@ -77,6 +77,9 @@ const mainOrder = MapEngine.getPlaceOrder(route, 'main');
 const lekhOrder = MapEngine.getPlaceOrder(route, 'lekh-lekha');
 assert('MapEngine.getPlaceOrder main excludes candidates', mainOrder.count === 16 && !mainOrder.ids.includes('urfa') && !mainOrder.ids.includes('hammam') && !mainOrder.ids.includes('lahairoi'), JSON.stringify(mainOrder));
 assert('MapEngine.getPlaceOrder story includes candidates', lekhOrder.count === 6 && lekhOrder.ids.includes('urfa'), JSON.stringify(lekhOrder));
+const urModel = MapEngine.getPanelModel(route, 'ur', {ur: ['harran', 'bad-id']});
+assert('MapEngine.getPanelModel returns place/stage/related', urModel.place?.id === 'ur' && urModel.stage?.n === 'I' && urModel.relatedIds.join(',') === 'harran', JSON.stringify(urModel));
+assert('MapEngine tab and related helpers canonical', MapEngine.getTabContentKey('he') === 'he_deep' && MapEngine.getTabContentKey('arch') === 'arch' && MapEngine.getRelatedPlaceIds(route, 'ur', {ur:['harran','bad']}).join(',') === 'harran');
 const compareSelf = MapEngine.compareRouteData(route, route);
 assert('MapEngine.compareRouteData self ok', compareSelf.ok, JSON.stringify(compareSelf.errors));
 
@@ -143,10 +146,12 @@ assert('route.json is preloaded for gradual engine migration', html.includes('<l
 assert('runtime route.json drift audit is wired', html.includes('AvraamRouteJsonAudit') && html.includes('MapEngine.compareRouteData(window.AvraamRouteData, route)'));
 assert('MapEngine exports story-state helpers', typeof MapEngine.getStoryState === 'function' && typeof MapEngine.auditStoryDefinitions === 'function' && typeof MapEngine.getPlaceOrder === 'function');
 assert('MapEngine exports layer/visual helpers', ['normalizeLayerState','isLayerOn','getPlaceLayerId','getRouteLayerId','getPlaceVisual'].every(name => typeof MapEngine[name] === 'function'));
+assert('MapEngine exports panel helpers', ['getPlaceIndex','getPlaceById','getStageForPlace','getRelatedPlaceIds','getTabContentKey','getPanelModel'].every(name => typeof MapEngine[name] === 'function'));
 assert('MapEngine layer helpers return canonical ids/colors', MapEngine.getPlaceLayerId({type:'cand'}) === 'cand' && MapEngine.getPlaceLayerId({type:'lot'}) === 'lot' && MapEngine.getPlaceLayerId({type:'main'}) === 'abr' && MapEngine.getRouteLayerId('war') === 'war' && MapEngine.getRouteLayerId({c:'lot'}) === 'lot' && MapEngine.getPlaceVisual({type:'cand'}).color === '#9b8cf0');
 assert('applyStory uses MapEngine.getStoryState shadow extraction', html.includes('MapEngine.getStoryState(window.AvraamRouteData, st.id)') && html.includes('window.AvraamCurrentStoryState = engineStory'));
 assert('place counter and prev/next use MapEngine place order helper', html.includes('function getCurrentPlaceOrder()') && html.includes('MapEngine.getPlaceOrder(window.AvraamRouteData, activeStory'));
 assert('marker builder uses MapEngine visual model', html.includes('MapEngine.getPlaceVisual(pl)') && html.includes('visual.markerClass') && html.includes('visual.cssColor'));
+assert('openPlace/setTab use MapEngine panel helpers', html.includes('MapEngine.getPanelModel(window.AvraamRouteData,id,RELATED)') && html.includes('window.AvraamCurrentPanelModel=model') && html.includes('MapEngine.getTabContentKey(t)') && html.includes('MapEngine.getRelatedPlaceIds(window.AvraamRouteData,pl.id,RELATED)'));
 assert('applyLayers uses MapEngine layer helpers', html.includes('MapEngine.isLayerOn(LAYERS,id)') && html.includes('MapEngine.getRouteLayerId') && html.includes('MapEngine.getPlaceLayerId'));
 assert('applyStory dims waypoint child nodes by attribute', html.includes("routeWp.querySelectorAll('.route-waypoint').forEach(wp=>wp.setAttribute('opacity',wpOpacity))"));
 assert('no dangling SVG pointerenter preview block', !html.includes("svg.addEventListener('pointerenter'"));

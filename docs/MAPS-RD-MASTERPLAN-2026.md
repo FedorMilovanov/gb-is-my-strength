@@ -613,6 +613,12 @@ gsap.to(caravanDot, {
 - `applyLayers()` now uses engine layer helpers instead of repeated inline ternaries.
 - `npm run avraam:audit` expanded to 45 checks and guards layer/visual extraction.
 
+### Wave-35 (2026-06-14) — Panel-model extraction
+- Added pure engine helpers: `getPlaceIndex`, `getPlaceById`, `getStageForPlace`, `getRelatedPlaceIds`, `getTabContentKey`, `getPanelModel`.
+- `openPlace()` now obtains place/stage/related model from `MapEngine.getPanelModel()` with legacy fallback.
+- `setTab()` now uses `MapEngine.getTabContentKey()` and related-place filtering through `MapEngine.getRelatedPlaceIds()`.
+- `npm run avraam:audit` expanded to 49 checks and guards panel helper extraction.
+
 ---
 
 ## ЧАСТЬ 9: ТЕХНИЧЕСКИЕ ПРАВИЛА

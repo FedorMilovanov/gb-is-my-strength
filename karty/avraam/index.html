@@ -3590,7 +3590,10 @@ function updatePlaceCounter(){
 function openPlace(id,fly=true){
   if(navigator.maxTouchPoints>0) haptic(10);
   if(typeof closeCtx==='function')closeCtx();
-  const i=placeIndex[id];const pl=PLACES[i];curPlace=i;
+  const model=window.MapEngine?.getPanelModel ? window.MapEngine.getPanelModel(window.AvraamRouteData,id,RELATED) : null;
+  const i=(model&&model.index>=0)?model.index:placeIndex[id];const pl=(model&&model.place)||PLACES[i];curPlace=i;
+  if(!pl) return;
+  window.AvraamCurrentPanelModel=model;
   document.querySelectorAll('.marker').forEach(m=>m.classList.toggle('active',m.dataset.id===id));
   document.getElementById('p-kicker').textContent=pl.kick;
   document.getElementById('p-name').textContent=pl.name;
@@ -3607,8 +3610,8 @@ function openPlace(id,fly=true){
   const stageHint=document.getElementById('p-stage-hint');
   if(stageHint){
     const si=pl.stage;
-    if(si>=0&&si<STAGES.length){
-      const st=STAGES[si];
+    const st=(model&&model.stage)||STAGES[si];
+    if(st){
       stageHint.innerHTML=`Этап <b>${st.n}</b> · ${st.t} · <span style="color:#6c737e">${st.r}</span>`;
     } else {
       stageHint.innerHTML='';
@@ -3661,7 +3664,7 @@ function setTab(t){
   curTab=t;
   document.querySelectorAll('.tab').forEach(el=>el.classList.toggle('cur',el.dataset.t===t));
   const pl=PLACES[curPlace];if(!pl)return;
-  const tabContent = t==='story'?'story':t==='bible'?'bible':t==='arch'?'arch':t==='he'?'he_deep':'story';
+  const tabContent = window.MapEngine?.getTabContentKey ? window.MapEngine.getTabContentKey(t) : (t==='story'?'story':t==='bible'?'bible':t==='arch'?'arch':t==='he'?'he_deep':'story');
   document.getElementById('panel-body').innerHTML = pl[tabContent] || (t==='he' ? '<p style="color:#6c737e;font-size:12px;padding:10px 0">Этимологический разбор для этого места ещё готовится.</p>' : '');
   document.getElementById('panel-body').scrollTo({top:0,behavior:'instant'});
   // fresh fade
@@ -3669,7 +3672,7 @@ function setTab(t){
   pb.classList.remove('fresh');
   requestAnimationFrame(()=>requestAnimationFrame(()=>pb.classList.add('fresh')));
   // render related places
-  const rels=RELATED[pl.id];
+  const rels=window.MapEngine?.getRelatedPlaceIds ? window.MapEngine.getRelatedPlaceIds(window.AvraamRouteData,pl.id,RELATED) : RELATED[pl.id];
   if(rels&&rels.length){
     const relDiv=document.createElement('div');
     relDiv.style.cssText='margin-top:18px;padding-top:14px;border-top:1px solid rgba(255,255,255,.07)';
