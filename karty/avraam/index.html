@@ -3664,7 +3664,9 @@ function setTab(t){
   curTab=t;
   document.querySelectorAll('.tab').forEach(el=>el.classList.toggle('cur',el.dataset.t===t));
   const pl=PLACES[curPlace];if(!pl)return;
-  const tabContent = window.MapEngine?.getTabContentKey ? window.MapEngine.getTabContentKey(t) : (t==='story'?'story':t==='bible'?'bible':t==='arch'?'arch':t==='he'?'he_deep':'story');
+  const section=window.MapEngine?.getPanelSections ? window.MapEngine.getPanelSections(window.AvraamRouteData,pl.id,t,RELATED) : null;
+  const tabContent = section?.contentKey || (window.MapEngine?.getTabContentKey ? window.MapEngine.getTabContentKey(t) : (t==='story'?'story':t==='bible'?'bible':t==='arch'?'arch':t==='he'?'he_deep':'story'));
+  window.AvraamCurrentPanelSection=section;
   document.getElementById('panel-body').innerHTML = pl[tabContent] || (t==='he' ? '<p style="color:#6c737e;font-size:12px;padding:10px 0">Этимологический разбор для этого места ещё готовится.</p>' : '');
   document.getElementById('panel-body').scrollTo({top:0,behavior:'instant'});
   // fresh fade
@@ -3672,8 +3674,8 @@ function setTab(t){
   pb.classList.remove('fresh');
   requestAnimationFrame(()=>requestAnimationFrame(()=>pb.classList.add('fresh')));
   // render related places
-  const rels=window.MapEngine?.getRelatedPlaceIds ? window.MapEngine.getRelatedPlaceIds(window.AvraamRouteData,pl.id,RELATED) : RELATED[pl.id];
-  if(rels&&rels.length){
+  const rels=section?.relatedIds || (window.MapEngine?.getRelatedPlaceIds ? window.MapEngine.getRelatedPlaceIds(window.AvraamRouteData,pl.id,RELATED) : RELATED[pl.id]);
+  if((section?section.showRelated:(rels&&rels.length))){
     const relDiv=document.createElement('div');
     relDiv.style.cssText='margin-top:18px;padding-top:14px;border-top:1px solid rgba(255,255,255,.07)';
     relDiv.innerHTML='<div style="font-size:9.5px;letter-spacing:.22em;color:#6c737e;margin-bottom:8px">СВЯЗАННЫЕ МЕСТА</div>';
@@ -3691,25 +3693,25 @@ function setTab(t){
     document.getElementById('panel-body').appendChild(relDiv);
   }
   // photo gallery — добавляем во вкладку СЮЖЕТ и ИВРИТ
-  if((t==='story'||t==='arch') && pl.photos && pl.photos.length){
+  if(section?section.showPhotos:((t==='story'||t==='arch') && pl.photos && pl.photos.length)){
     const galDiv=document.createElement('div');
     galDiv.innerHTML=renderPhotos(pl);
     document.getElementById('panel-body').appendChild(galDiv);
   }
   // dispute block — если есть, добавляем в СЮЖЕТ/ПИСАНИЕ/ИВРИТ
-  if((t==='story'||t==='bible'||t==='he') && pl.dispute){
+  if(section?section.showDispute:((t==='story'||t==='bible'||t==='he') && pl.dispute)){
     const dispDiv=document.createElement('div');
     dispDiv.innerHTML=pl.dispute;
     document.getElementById('panel-body').appendChild(dispDiv);
   }
   // scientific variants — единый структурный блок по локализациям и оговоркам
-  if((t==='story'||t==='arch') && SCIENCE_VARIANTS[pl.id]){
+  if(section?section.showScientificVariants:((t==='story'||t==='arch') && SCIENCE_VARIANTS[pl.id])){
     const varDiv=document.createElement('div');
     varDiv.innerHTML=renderVariants(pl);
     document.getElementById('panel-body').appendChild(varDiv);
   }
   // bible_extra — дополнение к вкладке ПИСАНИЕ (показываем ПОСЛЕ основного)
-  if(t==='bible' && pl.bible_extra){
+  if(section?section.showBibleExtra:(t==='bible' && pl.bible_extra)){
     const bx=document.createElement('div');
     bx.style.marginTop='16px';
     bx.style.paddingTop='14px';

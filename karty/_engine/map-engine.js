@@ -339,6 +339,25 @@ const MapEngine = (function() {
     return 'story';
   }
 
+  function getPanelSections(data = {}, placeId, tab = 'story', relatedMap = null) {
+    const route = normalizeRouteData(data);
+    const model = getPanelModel(route, placeId, relatedMap);
+    const place = model.place;
+    const variants = route.scientific_variants || route.variants || {};
+    const contentKey = getTabContentKey(tab);
+    return {
+      ...model,
+      tab,
+      contentKey,
+      showRelated: model.relatedIds.length > 0,
+      showPhotos: Boolean(place && (tab === 'story' || tab === 'arch') && Array.isArray(place.photos) && place.photos.length > 0),
+      showDispute: Boolean(place && (tab === 'story' || tab === 'bible' || tab === 'he') && place.dispute),
+      showScientificVariants: Boolean(place && (tab === 'story' || tab === 'arch') && variants[place.id]),
+      showBibleExtra: Boolean(place && tab === 'bible' && place.bible_extra),
+      hasContent: Boolean(place && place[contentKey])
+    };
+  }
+
   function getPanelModel(data = {}, placeId, relatedMap = null) {
     const route = normalizeRouteData(data);
     const index = getPlaceIndex(route, placeId);
@@ -612,6 +631,7 @@ const MapEngine = (function() {
     getRelatedPlaceIds,
     getTabContentKey,
     getPanelModel,
+    getPanelSections,
     getStoryState,
     getPlaceOrder,
     auditStoryDefinitions,

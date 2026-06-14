@@ -619,6 +619,11 @@ gsap.to(caravanDot, {
 - `setTab()` now uses `MapEngine.getTabContentKey()` and related-place filtering through `MapEngine.getRelatedPlaceIds()`.
 - `npm run avraam:audit` expanded to 49 checks and guards panel helper extraction.
 
+### Wave-36 (2026-06-14) — Panel-section extraction
+- Added `MapEngine.getPanelSections(route, placeId, tab, relatedMap)` to centralize panel tab keys and conditional section flags.
+- `setTab()` now uses panel-section flags for related/photos/dispute/scientific variants/bible extra while keeping the existing DOM renderer.
+- `npm run avraam:audit` expanded to 51 checks and guards panel-section extraction.
+
 ---
 
 ## ЧАСТЬ 9: ТЕХНИЧЕСКИЕ ПРАВИЛА
