@@ -103,6 +103,7 @@
 - `docs/refactor-2026/CURRENT_REPO_ADAPTATION_2026.md` — адаптация плана под актуальный main: новый отдел konfessii, embedded 3D app, no-refactor rules.
 - `docs/refactor-2026/RESEARCH_SOURCE_AUDIT_POST_PUSH_2026.md` — post-push deep pass: GitHub Pages/Astro deploy, Yandex, Actions security, Playwright, SW, SVG/iframe a11y.
 - `docs/refactor-2026/DIST_DEPLOY_SWITCH_RUNBOOK_2026-06-15.md` — практический runbook будущего root→dist deploy switch, SW cache bump, Pagefind-on-dist, IndexNow key и rollback.
+- `docs/refactor-2026/DIST_DRY_RUN_WORKFLOW_STATUS_2026-06-15.md` — manual-only GitHub Actions dry-run для production-like `dist` artifact без deploy.
 
 ## 5. Черновой baseline
 

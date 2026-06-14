@@ -60,6 +60,23 @@ if (deployUploadsDist) {
   }
 }
 
+const distDryRun = read('.github/workflows/dist-dry-run.yml');
+must('.github/workflows/dist-dry-run.yml', distDryRun, /workflow_dispatch:/, 'dist dry run must be manually runnable only');
+must('.github/workflows/dist-dry-run.yml', distDryRun, /node-version:\s*['"]?22['"]?/, 'dist dry run must use Node 22+ for Astro toolchain compatibility');
+must('.github/workflows/dist-dry-run.yml', distDryRun, /npm ci/, 'dist dry run must install dependencies via npm ci');
+must('.github/workflows/dist-dry-run.yml', distDryRun, /playwright install --with-deps chromium/, 'dist dry run must install Chromium for visual/about audits');
+must('.github/workflows/dist-dry-run.yml', distDryRun, /npm run ci:check/, 'dist dry run must run root publication gates');
+must('.github/workflows/dist-dry-run.yml', distDryRun, /npm run astro:audit:about:shots/, 'dist dry run must generate about visual review screenshots');
+must('.github/workflows/dist-dry-run.yml', distDryRun, /npm run strangler:deploy-readiness/, 'dist dry run must run production-like strangler readiness');
+must('.github/workflows/dist-dry-run.yml', distDryRun, /test ! -e dist\/dev\/astro-test\/index\.html/, 'dist dry run must assert build-only dev route is absent');
+must('.github/workflows/dist-dry-run.yml', distDryRun, /actions\/upload-artifact@v4/, 'dist dry run must upload review artifacts without deploying');
+if (/actions\/deploy-pages|actions\/upload-pages-artifact|pages:\s*write|id-token:\s*write/.test(distDryRun)) {
+  issues.push('.github/workflows/dist-dry-run.yml: dry run must not request Pages deploy permissions or deploy/upload a Pages artifact');
+}
+if (/\bpush:|\bschedule:|workflow_run:/.test(distDryRun)) {
+  issues.push('.github/workflows/dist-dry-run.yml: dry run must stay workflow_dispatch-only');
+}
+
 const indexnow = read('.github/workflows/indexnow.yml');
 must('.github/workflows/indexnow.yml', indexnow, /npm run validate:static-publication/, 'indexnow must run validate:static-publication before metadata commit');
 must('.github/workflows/indexnow.yml', indexnow, /contents:\s*write/, 'indexnow needs contents: write for metadata commit');
