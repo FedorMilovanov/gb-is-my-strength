@@ -68,15 +68,15 @@
 
 | Файл | Статус | Описание |
 |---|---|---|
-| `karty/_engine/map-engine.js` | ✅ v0.1 skeleton | Публичный API движка, готов к наполнению |
+| `karty/_engine/map-engine.js` | ✅ v0.2 reusable core | loadRoute/normalize/validate + SVG viewport/flyTo/zoom/pan + story/tour/share API |
 | `karty/_engine/base-geo.svg` | ✅ создан | Базовая география (34KB), экстракт из avraam |
-| `karty/avraam/route.json` | 🔲 приоритет | Данные avraam ещё inline в index.html |
+| `karty/avraam/route.json` | ✅ v2 full data | Полные PLACES/STAGES/CTX/STORIES + 40 verified photos + 5 verified_waypoints + 47 scientific_variants + yec_position/notes; valid JSON |
 | `karty/ishod/route.json` | ✅ v0.1 | 7 ключевых мест, 6 этапов, все поля |
 | `karty/ishod/index.html` | ✅ scaffold | noindex, preview SVG, JSON-LD |
 
-**Следующий шаг Sprint 3:**
-1. Перенести PLACES/STAGES/CTX из `avraam/index.html` → `avraam/route.json`
-2. Научить движок загружать route.json через `fetch()`
-3. Построить полноценный `ishod/index.html` на базе движка
+**Статус на 2026-06-14 (wave-26):**
+1. ✅ `avraam/route.json` расширен до full data (PLACES/STAGES/CTX/STORIES + verified photos).
+2. ✅ `map-engine.js` умеет `loadRoute(url)`, `normalizeRouteData()`, `validateRoute()`, viewport/flyTo/zoom/pan, story-aware open/next/prev/tour/share.
+3. 🔜 Следующий безопасный шаг — подключить полноценную вторую интерактивную карту (`ishod/index.html`) к engine v0.2, не копируя `avraam/index.html`.
 
 **Триггер полного рефакторинга:** начало второй интерактивной карты (Исход).
