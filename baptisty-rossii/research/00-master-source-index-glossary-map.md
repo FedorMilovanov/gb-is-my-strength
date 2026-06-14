@@ -32,6 +32,7 @@
 - `_build-tools/konfessii-baptizm/2D-SVG-CHURCHES-PASTORS-HISTORICAL-MAP-PLAN-2026-06-14.md`
 - `map-data/church-points-draft.csv`
 - `map-data/closure-events-draft.csv`
+- `18-primary-source-link-register-30plus-2026-06-14.md`
 
 ---
 
