@@ -35,12 +35,25 @@
     "contract:extract:dist": "node scripts/extract-url-contract.js --root dist --out-json reports/url-contract-dist.json --out-md reports/url-contract-dist.md",
     "contract:compare": "npm run contract:extract && node scripts/compare-url-contract.js",
     "contract:compare:dist": "node scripts/compare-url-contract.js --baseline data/public-content-baseline.json --current reports/url-contract-dist.json",
-    "maps:validate": "node scripts/validate-map-routes.js"
+    "maps:validate": "node scripts/validate-map-routes.js",
+    "astro:dev": "ASTRO_TELEMETRY_DISABLED=1 astro dev",
+    "astro:check": "ASTRO_TELEMETRY_DISABLED=1 astro check",
+    "astro:build": "ASTRO_TELEMETRY_DISABLED=1 astro check && ASTRO_TELEMETRY_DISABLED=1 astro build",
+    "astro:preview": "ASTRO_TELEMETRY_DISABLED=1 astro preview"
   },
   "engines": {
-    "node": ">=20"
+    "node": ">=22.12.0"
   },
   "devDependencies": {
-    "playwright": "^1.60.0"
+    "@astrojs/check": "^0.9.9",
+    "@astrojs/mdx": "^6.0.3",
+    "@astrojs/react": "^5.0.7",
+    "@astrojs/rss": "^4.0.18",
+    "@astrojs/sitemap": "^3.7.3",
+    "astro": "^6.4.6",
+    "playwright": "^1.60.0",
+    "react": "^19.2.7",
+    "react-dom": "^19.2.7",
+    "typescript": "^6.0.3"
   }
 }

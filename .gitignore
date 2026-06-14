@@ -25,3 +25,5 @@ Thumbs.db
 uploads/
 _qa/
 reports/
+dist/
+.astro/

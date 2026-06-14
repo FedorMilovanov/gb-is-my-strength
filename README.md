@@ -35,7 +35,7 @@
 - **Поисковая индексация:** `.github/workflows/indexnow.yml` (Яндекс + Bing).
 - **Алерты на падение CI:** `.github/workflows/notify-on-failure.yml` (открывает GitHub Issue).
 - **Service Worker** (`sw.js`) — версионируется автоматически (`scripts/cache-bust.js`).
-- **Node** для build-скриптов: `>=20`.
+- **Node** для build-скриптов и Astro scaffold: `>=22.12.0`.
 - **CNAME:** `gospod-bog.ru`.
 
 ---

@@ -11,7 +11,7 @@ const ROOT = path.resolve(__dirname, '..');
 const issues = [];
 function walk(dir, out = []) {
   for (const ent of fs.readdirSync(dir, { withFileTypes: true })) {
-    if (ent.name.startsWith('.') || ent.name === 'node_modules' || ent.name === '_app') continue;
+    if (ent.name.startsWith('.') || ['node_modules','_app','dist','out','build','coverage','reports'].includes(ent.name)) continue;
     const p = path.join(dir, ent.name);
     if (ent.isDirectory()) walk(p, out);
     else out.push(p);
