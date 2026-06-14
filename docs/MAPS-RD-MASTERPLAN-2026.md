@@ -595,6 +595,12 @@ gsap.to(caravanDot, {
 - Guard covers route stats, inline/JSON data drift, waypoints, scientific variants, source MD cleanup, photo URL policy, CSP, Shechem title, caption animation, and tour hint/walker fixes.
 - Current result: 24/24 passed.
 
+### Wave-32 (2026-06-14) — Engine extraction + history-derived guards
+- `MapEngine` now exports `compareRouteData()` and `collectPhotoHosts()`.
+- Avraam page preloads `route.json` and performs a background HTML↔route.json drift audit via `window.AvraamRouteJsonAudit`.
+- `npm run avraam:audit` expanded to 31 checks: CSP coverage for dynamic photos, route preload, drift audit wiring, no dangling preview block, panel animation safety, no skeleton logs.
+- `validate:static-publication` now includes `npm run avraam:audit`, so future CI/manual gates protect the Abraham map.
+
 ---
 
 ## ЧАСТЬ 9: ТЕХНИЧЕСКИЕ ПРАВИЛА

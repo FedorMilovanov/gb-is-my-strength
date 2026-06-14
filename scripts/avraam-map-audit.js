@@ -69,6 +69,9 @@ try {
 
 const routeAudit = MapEngine.validateRoute(route);
 assert('MapEngine.validateRoute(route.json) ok', routeAudit.ok, JSON.stringify(routeAudit.errors));
+const compareSelf = MapEngine.compareRouteData(route, route);
+assert('MapEngine.compareRouteData self ok', compareSelf.ok, JSON.stringify(compareSelf.errors));
+
 assert('route stats exact',
   routeAudit.stats.places === 19 &&
   routeAudit.stats.stages === 8 &&
@@ -117,6 +120,22 @@ assert('no brittle Wikimedia upload URLs in map data', !/(src|thumb)":"https:\/\
 assert('ABRAHAM research doc is compact', research.split(/\r?\n/).length <= 320, String(research.split(/\r?\n/).length));
 assert('ABRAHAM research doc has source index', research.includes('## 5. Source index') && research.includes('WiBiLex') && research.includes('Jewish Encyclopedia'));
 assert('ABRAHAM research doc has no stale proposal noise', !/(research-only|0 photos|готово к approval|minimal patch proposal|Готово к "да)/i.test(research));
+
+
+function cspImgHosts() {
+  const csp = html.match(/Content-Security-Policy" content="([^"]+)"/)?.[1] || '';
+  const img = csp.match(/(?:^|;)\s*img-src\s+([^;]+)/i)?.[1] || '';
+  return img.split(/\s+/).filter(Boolean);
+}
+const imgHosts = cspImgHosts();
+const photoHosts = MapEngine.collectPhotoHosts(route);
+const hostAllowed = host => imgHosts.includes(host) || imgHosts.includes(host.replace(/^https?:/, '')) || imgHosts.includes('*') || imgHosts.includes('https:');
+assert('dynamic photo hosts are covered by CSP img-src', photoHosts.every(hostAllowed), `hosts=${photoHosts.join(', ')} csp=${imgHosts.join(' ')}`);
+assert('route.json is preloaded for gradual engine migration', html.includes('<link rel="preload" href="route.json" as="fetch" type="application/json">'));
+assert('runtime route.json drift audit is wired', html.includes('AvraamRouteJsonAudit') && html.includes('MapEngine.compareRouteData(window.AvraamRouteData, route)'));
+assert('no dangling SVG pointerenter preview block', !html.includes("svg.addEventListener('pointerenter'"));
+assert('panel rubber animation uses .panel-opening, not #panel.open', html.includes('#panel.panel-opening{animation:panelRubberIn') && !/#panel\.open\s*\{[^}]*panelRubberIn/.test(html));
+assert('MapEngine has no skeleton console logging', !/console\.log\(['\"]MapEngine\./.test(fs.readFileSync(enginePath, 'utf8')));
 
 const failures = checks.filter(c => !c.ok);
 for (const c of checks) {

@@ -8,6 +8,7 @@
 <meta name="description" content="Интерактивная карта Авраама: от Ура Халдейского до горы Мория. 19 мест, 8 этапов, 5 сюжетов (Лех-леха, Война царей, Акеда), кинотур, археология, иврит, хронология 175 лет.">
 <meta name="robots" content="index, follow">
 <link rel="canonical" href="https://gospod-bog.ru/karty/avraam/">
+<link rel="preload" href="route.json" as="fetch" type="application/json">
 <meta property="og:title" content="Путь Авраама — интерактивная карта">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://gospod-bog.ru/karty/avraam/">
@@ -3013,6 +3014,13 @@ const SCIENCE_VARIANTS = {
 let activeStory = 'main';
 window.AvraamRouteData = {meta:{id:'avraam',version:'2026-06-14',coord_system:'SVG 1900×1430'},places:PLACES,stages:STAGES,ctx:CTX,stories:STORIES,verified_waypoints:VERIFIED_WAYPOINTS,scientific_variants:SCIENCE_VARIANTS};
 window.AvraamRouteAudit = window.MapEngine?.validateRoute ? window.MapEngine.validateRoute(window.AvraamRouteData) : null;
+window.AvraamRouteJsonAudit = null;
+(function auditRouteJsonDrift(){
+  if(!window.MapEngine?.loadRoute || !window.MapEngine?.compareRouteData) return;
+  window.MapEngine.loadRoute('route.json')
+    .then(route=>{ window.AvraamRouteJsonAudit = window.MapEngine.compareRouteData(window.AvraamRouteData, route); })
+    .catch(err=>{ window.AvraamRouteJsonAudit = {ok:false, errors:[String(err&&err.message||err)]}; });
+})();
 
 /* show story toast */
 function showStoryToast(label, count){
