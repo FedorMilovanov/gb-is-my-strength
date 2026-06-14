@@ -289,6 +289,10 @@ const TIMELINE_TARGETS: TimelineTarget[] = [
   { match: /Совет родственников|Бюллетень|Козорезова|1970/i, nodeId: 'vins', routeId: 'route-soviet', mapId: 'city-Москва', article: 'samizdat' },
   { match: /Христианин|Косыгин|1971/i, nodeId: 'sc', routeId: 'route-soviet', mapId: 'city-Москва', article: 'samizdat' },
   { match: /Вестник истины|1976/i, nodeId: 'sc', routeId: 'route-soviet', mapId: 'city-Москва', article: 'samizdat' },
+  { match: /Иван Моисеев|Моисеев|1972|военная часть|Керч/i, nodeId: 'vins', routeId: 'route-soviet', mapId: 'city-Москва', article: 'conscience' },
+  { match: /Левен|Кооп|Зайцев|Ивангород|1977/i, nodeId: 'sc', routeId: 'route-soviet', mapId: 'city-Москва', article: 'samizdat' },
+  { match: /Донченко|Олимпиад|психбольниц|отобрание детей|1980/i, nodeId: 'sc', routeId: 'route-soviet', mapId: 'city-Москва', article: 'samizdat' },
+
   { match: /СЦ ЕХБ|Совет Церквей|Крючков|Винс|1961|1965/i, nodeId: 'sc', routeId: 'route-soviet', mapId: 'city-Москва', article: 'initiative' },
   { match: /РС ЕХБ|1992|Современный/i, nodeId: 'rsehb', routeId: 'route-soviet', mapId: 'city-Москва', article: 'reference' },
   { match: /Украин|Штунд/i, nodeId: 'ukr', routeId: 'route-ukraine', mapId: 'country-804', article: 'shtunda' },
