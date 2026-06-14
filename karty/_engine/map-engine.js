@@ -219,6 +219,24 @@ const MapEngine = (function() {
     };
   }
 
+  function getPlaceOrder(data = {}, storyId = 'main', opts = {}) {
+    const route = normalizeRouteData(data);
+    const state = getStoryState(route, storyId);
+    const includeCandidates = opts.includeCandidates ?? !state.placesAll;
+    const places = state.placesAll
+      ? route.places
+      : state.placeIds.map(id => route.places.find(p => p.id === id)).filter(Boolean);
+    const filtered = includeCandidates ? places : places.filter(p => p.type !== 'cand');
+    const ids = filtered.map(p => p.id);
+    return {
+      ids,
+      indexes: ids.map(id => route.places.findIndex(p => p.id === id)).filter(i => i >= 0),
+      includeCandidates,
+      storyId: state.id,
+      count: ids.length
+    };
+  }
+
   function auditStoryDefinitions(data = {}) {
     const route = normalizeRouteData(data);
     const errors = [];
@@ -479,6 +497,7 @@ const MapEngine = (function() {
     compareRouteData,
     collectPhotoHosts,
     getStoryState,
+    getPlaceOrder,
     auditStoryDefinitions,
     pathLength,
     pointAt,

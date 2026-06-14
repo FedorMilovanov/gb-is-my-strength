@@ -3553,13 +3553,23 @@ const RELATED={"ur": ["harran", "babylon"], "harran": ["ur", "damascus", "urfa"]
 const panel=document.getElementById('panel');
 let curPlace=-1,curTab='story';
 const MAIN_ORDER=PLACES.map((p,i)=>i).filter(i=>PLACES[i].type!=='cand');
+function getCurrentPlaceOrder(){
+  const includeCandidates = activeStory !== 'main';
+  const engineOrder = window.MapEngine?.getPlaceOrder ? window.MapEngine.getPlaceOrder(window.AvraamRouteData, activeStory, {includeCandidates}) : null;
+  if(engineOrder&&engineOrder.indexes&&engineOrder.indexes.length) return engineOrder.indexes;
+  const st=STORIES.find(s=>s.id===activeStory);
+  if(st&&st.places){
+    const order=PLACES.map((p,i)=>i).filter(i=>st.places.includes(PLACES[i].id));
+    return order.length?order:MAIN_ORDER;
+  }
+  return MAIN_ORDER;
+}
 function updatePlaceCounter(){
   const counter=document.getElementById('place-counter');
   if(!counter) return;
   if(curPlace<0){counter.textContent='';return;}
-  // Story-aware: считаем в текущем сюжете
-  const st=STORIES.find(s=>s.id===activeStory);
-  const order=st&&st.places?PLACES.map((p,i)=>i).filter(i=>st.places.includes(PLACES[i].id)):MAIN_ORDER;
+  // Story-aware: считаем в текущем сюжете (order теперь считает MapEngine)
+  const order=getCurrentPlaceOrder();
   const idx=order.indexOf(curPlace);
   if(idx>=0){
     counter.textContent=(idx+1)+' из '+order.length;
@@ -3703,18 +3713,8 @@ document.getElementById('nextPl').onclick=()=>stepPlace(1);
 document.getElementById('prevPl').onclick=()=>stepPlace(-1);
 function stepPlace(d){
   if(curPlace<0)return openPlace(PLACES[0].id);
-  // если активен конкретный сюжет — навигируем только по его местам
-  const st=STORIES.find(s=>s.id===activeStory);
-  const storyIds=st&&st.places?st.places:null;
-  let order;
-  if(storyIds){
-    order=PLACES
-      .map((p,i)=>i)
-      .filter(i=>storyIds.includes(PLACES[i].id));
-    if(!order.length) order=MAIN_ORDER;
-  } else {
-    order=MAIN_ORDER;
-  }
+  // если активен конкретный сюжет — навигируем только по его местам (order считает MapEngine)
+  const order=getCurrentPlaceOrder();
   let idx=order.indexOf(curPlace);
   if(idx<0)idx=0;else idx=(idx+d+order.length)%order.length;
   openPlace(PLACES[order[idx]].id);
