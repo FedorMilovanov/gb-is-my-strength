@@ -1,0 +1,6 @@
+{
+  "version": 1,
+  "captured": "2026-06-15",
+  "currentProductionCacheVersion": "gb-v171-r62-maps-archaeology-20260612",
+  "purpose": "Safety baseline for the future root→dist GitHub Pages deploy switch. While production still serves the legacy root this value may stay equal to sw.js CACHE_VERSION. In the actual deploy-switch commit, bump sw.js CACHE_VERSION and run `npm run sw:dist:audit:deploy-switch` so old CACHE_CONTENT HTML (legacy /about/) is evicted."
+}

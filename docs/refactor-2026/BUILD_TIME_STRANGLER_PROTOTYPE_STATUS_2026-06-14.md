@@ -183,3 +183,44 @@ npm run strangler:audit:pagefind
 ✅ contract:compare:dist 42/42
 ✅ dist smoke passed
 ```
+
+## SW/cache deploy-switch readiness guard
+
+2026-06-15 добавлены подготовительные проверки для будущего переключения GitHub Pages artifact на `dist/`:
+
+```text
+scripts/sw-dist-readiness-audit.js
+migration/sw-cache-version-baseline.json
+docs/refactor-2026/DIST_DEPLOY_SWITCH_RUNBOOK_2026-06-15.md
+```
+
+Package scripts:
+
+```json
+"sw:dist:audit": "node scripts/sw-dist-readiness-audit.js",
+"sw:dist:audit:pagefind": "node scripts/sw-dist-readiness-audit.js --require-pagefind",
+"sw:dist:audit:deploy-switch": "node scripts/sw-dist-readiness-audit.js --require-pagefind --require-cache-bump",
+"strangler:deploy-readiness": "npm run astro:audit:about && npm run strangler:audit:pagefind && npm run sw:dist:audit:pagefind"
+```
+
+Что проверяет SW audit:
+
+- `dist/sw.js` существует и пока byte-for-byte совпадает с root `sw.js`;
+- `CACHE_VERSION` парсится;
+- `PRECACHE_ASSETS` не содержит дубликатов;
+- precache assets резолвятся в `dist`;
+- HTML content pages не precache-ятся через SW во время Astro/legacy ownership switch;
+- Pagefind bootstrap существует, если включён `--require-pagefind`;
+- SW содержит `skipWaiting`, `clients.claim`, cleanup старых cache names;
+- HTML/static/images/Pagefind стратегии присутствуют;
+- `js/sw-register.js` регистрирует `/sw.js` с root scope.
+
+Важно: строгий режим
+
+```bash
+npm run sw:dist:audit:deploy-switch
+```
+
+сейчас **ожидаемо падает**, потому что `CACHE_VERSION` равен зафиксированной root-production baseline. Это не ошибка текущего root deploy. Это предохранитель: в actual deploy-switch commit нужно bumped `sw.js CACHE_VERSION`, чтобы старый `CACHE_CONTENT` не отдавал legacy HTML после перехода на `dist`.
+
+Workflow policy guard (`scripts/check-workflows.js`) теперь также защищает от частичного deploy switch: если будущий `.github/workflows/deploy.yml` начнёт загружать `dist`, он обязан в том же commit переключить Pagefind на `dist/pagefind`, писать IndexNow key в `dist/`, создавать `dist/.nojekyll`, запускать dist publication audit и строгий SW cache-bump gate.

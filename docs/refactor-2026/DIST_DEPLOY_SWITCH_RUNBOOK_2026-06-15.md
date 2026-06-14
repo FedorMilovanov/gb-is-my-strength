@@ -1,0 +1,124 @@
+# DIST_DEPLOY_SWITCH_RUNBOOK_2026-06-15.md
+
+Дата: 2026-06-15
+Статус: **подготовительный runbook; production deploy всё ещё публикует legacy root, не `dist/`**
+Риск-уровень будущего шага: **Level 2/6 boundary — one deploy mechanism switch, one rollback**
+
+## Цель
+
+Зафиксировать безопасный порядок будущего переключения GitHub Pages artifact с корня репозитория на `dist/`, когда Astro-owned страницы и legacy-copy output будут достаточно проверены.
+
+Этот документ **не является разрешением на переключение deploy**. Переключение делается отдельным маленьким commit/PR только после явного согласия владельца и зелёных gate-команд ниже.
+
+## Почему нужен отдельный SW/cache gate
+
+Текущий `sw.js` кэширует HTML через `CACHE_CONTENT` и стратегию stale-while-revalidate. Если переключить Pages artifact на `dist/` без bump `CACHE_VERSION`, у части пользователей может остаться старый HTML из legacy root, например legacy `/about/`, хотя новый deploy уже содержит Astro `/about/`.
+
+Поэтому в actual deploy-switch commit обязательно:
+
+```text
+[ ] bump sw.js CACHE_VERSION
+[ ] run npm run sw:dist:audit:deploy-switch
+[ ] убедиться, что CACHE_VERSION отличается от migration/sw-cache-version-baseline.json
+```
+
+Базовая версия текущего root-production SW зафиксирована в:
+
+```text
+migration/sw-cache-version-baseline.json
+```
+
+## Новые guard-команды
+
+```bash
+npm run sw:dist:audit
+npm run sw:dist:audit:pagefind
+npm run sw:dist:audit:deploy-switch
+npm run strangler:deploy-readiness
+```
+
+Назначение:
+
+- `sw:dist:audit` — статический SW audit для `dist/`, Pagefind optional.
+- `sw:dist:audit:pagefind` — то же, но `/pagefind/pagefind.js` обязан существовать в `dist`.
+- `sw:dist:audit:deploy-switch` — строгий режим для actual deploy-switch commit; сейчас ожидаемо падает, пока `CACHE_VERSION` не bumped.
+- `strangler:deploy-readiness` — локальный dry-run readiness: `/about/` audit, deploy-like `dist` + Pagefind + smoke, затем SW audit в advisory-режиме.
+
+## Pre-switch gates
+
+Перед изменением `.github/workflows/deploy.yml`:
+
+```bash
+npm run strangler:deploy-readiness
+npm run astro:audit:about:shots
+npm run ci:check
+npm run konfessii:audit
+npm audit --omit=dev --audit-level=moderate
+git diff --check
+```
+
+`astro:audit:about:shots` создаёт screenshots в `reports/`; они не коммитятся. Визуальное отличие `/about/` должно быть вручную принято владельцем до rollout.
+
+## Изменения в deploy.yml в actual switch commit
+
+В одном атомарном commit:
+
+```text
+[ ] Static publication gates остаются
+[ ] Build step: npm run strangler:build
+[ ] Pagefind: npm run pagefind:build:dist
+[ ] Dist publication audit: node scripts/dist-publication-audit.js --require-pagefind
+[ ] SW strict gate: npm run sw:dist:audit:deploy-switch
+[ ] IndexNow key пишется в dist/${KEY}.txt, не в root
+[ ] touch dist/.nojekyll
+[ ] upload-pages-artifact path: dist
+```
+
+Нельзя делать частичный switch, например `path: dist` без Pagefind-on-dist или без IndexNow key в `dist/`.
+
+Это дополнительно защищено workflow policy guard в:
+
+```text
+scripts/check-workflows.js
+```
+
+Если будущий commit переключит artifact на `dist`, guard потребует все связанные шаги в том же workflow.
+
+## `/dev/astro-test/`
+
+Сейчас `dist` содержит `/dev/astro-test/` как `noindex` build-only route. Перед реальным deploy switch нужно принять одно из решений:
+
+```text
+A. исключить /dev/astro-test/ из production-like dist;
+B. временно оставить noindex, но не включать в sitemap и не ссылаться публично.
+```
+
+Текущий guard уже проверяет, что sitemap не содержит `/dev/astro-test/`, а сама страница остаётся `noindex`.
+
+## Rollback
+
+Rollback должен быть таким же маленьким, как switch:
+
+```bash
+git revert <deploy-switch-commit>
+```
+
+Ожидаемый rollback возвращает:
+
+```text
+- upload-pages-artifact path: .
+- Pagefind build at repository root
+- IndexNow key file at repository root
+- no dist upload requirement
+```
+
+Если после switch был bumped `CACHE_VERSION`, откатывать его необязательно и обычно нежелательно: новая версия SW уже помогла очистить старые HTML caches. Если revert всё же меняет `sw.js`, проверить `sw:dist:audit`/root deploy smoke отдельно.
+
+## Текущее состояние на момент документа
+
+```text
+Production deploy: legacy root
+Dist prototype: Astro /about/ + copied legacy pages
+Pagefind-on-dist: локально проверяется
+SW deploy-switch strict gate: ожидаемо требует будущий CACHE_VERSION bump
+```
