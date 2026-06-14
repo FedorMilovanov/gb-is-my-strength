@@ -36,7 +36,11 @@ cp dist/index.html  <repo>/konfessii/russkij-baptizm/_app/index.html
 4. `viewport-fit=cover` в meta viewport.
 
 ## Регресс-защита
-`npm run konfessii:audit` (scripts/konfessii-map-audit.js) — Playwright-аудит I1–I7:
+`npm run konfessii:audit` (scripts/konfessii-map-audit.js) — Playwright-аудит I1–I14:
 обёртка (SEO/CSP/h1/iframe), бандл (singlefile/CSP/noindex/root), live: загрузка
-приложения в iframe + активация 3D WebGL-canvas (desktop+mobile). Без браузера — SKIP.
-Прогонять после любой пересборки `_app`. См. AGENTS §9.23.
+приложения в iframe + активация 3D WebGL-canvas (desktop+mobile). Последние инварианты
+также защищают data-driven Timeline, article previews, кейсы гонений/самиздата,
+обучающий coach, роутер «Маршруты и города» и **I14 smooth physics constants**
+(`d3AlphaDecay .0165`, `d3VelocityDecay .24`, `warmupTicks 150`, `cooldownTicks 220`,
+`cooldownTime 7000`, anchor `*1.28`). Без браузера — SKIP. Прогонять после любой
+пересборки `_app`. См. AGENTS §9.23 и `3D-PREMIUM-POLISH-2026-06-14.md`.
