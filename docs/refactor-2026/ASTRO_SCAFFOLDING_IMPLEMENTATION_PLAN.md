@@ -18,7 +18,7 @@ npm install @astrojs/react @astrojs/mdx @astrojs/sitemap @astrojs/rss
 npm install react react-dom
 ```
 
-Если Node 22 нужен для Astro 6, сначала проверить локально/CI. Не менять production engines без отдельного PR.
+Astro 6 требует Node >=22.12.0. Production workflows переводить на Node 22 отдельным контролируемым шагом; legacy deploy path при этом не меняется.
 
 ---
 

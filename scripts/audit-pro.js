@@ -90,7 +90,7 @@ const IMPORTANT_GOAL = 200; // AGENTS §4.10 long-term target
 const MIN_DESC = 50;
 const MAX_DESC = 180;
 
-const skipDirs = new Set(['.git', 'node_modules', 'pagefind', 'audit', '_app', '_build-tools', 'reports']);
+const skipDirs = new Set(['.git', 'node_modules', 'pagefind', 'audit', '_app', '_build-tools', 'reports', 'dist', 'out', 'build', '.astro']);
 const verificationFileRe = /^(google|yandex)[^/]*\.html$/i;
 
 const R = {
