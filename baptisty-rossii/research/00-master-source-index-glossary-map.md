@@ -30,6 +30,8 @@
 - `16-persecution-case-index-1930s-1980s-2026-06-14.md`
 - `17-3d-map-clarity-and-persecution-layer-2026-06-14.md`
 - `_build-tools/konfessii-baptizm/2D-SVG-CHURCHES-PASTORS-HISTORICAL-MAP-PLAN-2026-06-14.md`
+- `map-data/church-points-draft.csv`
+- `map-data/closure-events-draft.csv`
 
 ---
 
