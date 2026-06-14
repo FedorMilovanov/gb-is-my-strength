@@ -322,6 +322,18 @@ function LearningCoach({ visible, onOpenRoutes, onOpenMap }: { visible: boolean;
         <span className="text-[9px] font-black uppercase tracking-[0.18em]">Как читать карту</span>
       </div>
       <p className="text-[11.5px] leading-5 text-white/62">Читайте карту слоями: сначала выберите маршрут, затем год на Timeline, потом откройте досье. Красные/янтарные события — гонения и совесть, A/B/C — уровень источника.</p>
+      <div className="mt-3 grid grid-cols-3 gap-1.5 overflow-hidden rounded-2xl border border-white/10 bg-white/[0.035] p-1.5" aria-label="Исторические фото-подсказки карты">
+        {[
+          { src: '/images/konfessii/russkij-baptizm/photos/old-tbilisi-kura-xix.jpg', label: 'Кура / Тифлис' },
+          { src: '/images/konfessii/russkij-baptizm/photos/tiflis-bazar-baron-de-baye-1900.jpg', label: 'Тифлис' },
+          { src: '/images/konfessii/russkij-baptizm/photos/saint-petersburg-nevsky-1800s.jpg', label: 'Петербург' },
+        ].map((photo) => (
+          <div key={photo.src} className="relative h-14 overflow-hidden rounded-xl border border-white/[0.08] bg-black/40">
+            <img src={photo.src} alt="" className="h-full w-full object-cover opacity-75 saturate-[0.75] sepia-[0.18]" loading="lazy" decoding="async" />
+            <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/80 to-transparent px-1.5 pb-1 pt-3 text-[7.5px] font-bold uppercase tracking-[0.12em] text-white/68">{photo.label}</div>
+          </div>
+        ))}
+      </div>
       <div className="mt-3 grid gap-1.5 text-[10.5px] text-white/45">
         <div><span className="font-mono text-brand-gold">1</span> · Маршрут = сюжет: истоки, союзы, советская ночь, самиздат.</div>
         <div><span className="font-mono text-brand-gold">2</span> · Timeline = дата и ближайшее событие, с бейджем источника.</div>
