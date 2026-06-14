@@ -78,3 +78,46 @@ contract:compare:dist:about → OK, 1 baseline page vs 1 dist page
 ## Dist cleanliness update
 
 Before comparing Astro `/about/`, `astro:build` now cleans `dist/` first. This prevents old copied legacy pages from making `contract:extract:dist` look greener than the current build actually is.
+
+## Automated legacy-vs-Astro smoke
+
+Добавлен скрипт:
+
+```text
+scripts/astro-about-pilot-audit.js
+```
+
+Команды:
+
+```bash
+npm run astro:audit:about
+npm run astro:audit:about:shots
+```
+
+Что делает:
+
+1. запускает `strangler:build`;
+2. поднимает локальные static servers для legacy root и `dist/`;
+3. открывает `/about/` в обоих;
+4. сравнивает title/canonical/H1/word-count/JSON-LD basics;
+5. проверяет horizontal overflow и page errors;
+6. опционально пишет screenshots в ignored `reports/`.
+
+Текущий результат:
+
+```text
+legacy words: 605
+astro words: 458
+ratio: 0.76
+contract + smoke: pass
+```
+
+Notes, не blockers:
+
+```text
+Astro pilot пока не полностью визуально/content-identical:
+- нет отдельного H2 «Нашли неточность?»;
+- меньше outbound/contact links, чем в legacy.
+```
+
+Это допустимо для shadow pilot, но перед production ownership `/about/` нужен ручной visual/content review.

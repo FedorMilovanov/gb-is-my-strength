@@ -44,7 +44,9 @@
     "astro:pilot:about": "npm run astro:build && npm run contract:compare:dist:about",
     "strangler:build": "npm run astro:build && node scripts/copy-legacy-to-dist.js",
     "strangler:validate": "npm run strangler:build && npm run contract:extract:dist && npm run contract:compare:dist",
-    "dist:clean": "node -e \"require('fs').rmSync('dist',{recursive:true,force:true})\""
+    "dist:clean": "node -e \"require('fs').rmSync('dist',{recursive:true,force:true})\"",
+    "astro:audit:about": "node scripts/astro-about-pilot-audit.js",
+    "astro:audit:about:shots": "node scripts/astro-about-pilot-audit.js --write-shots"
   },
   "engines": {
     "node": ">=22.12.0"
