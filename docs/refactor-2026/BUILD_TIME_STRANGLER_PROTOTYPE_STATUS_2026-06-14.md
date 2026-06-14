@@ -197,10 +197,12 @@ docs/refactor-2026/DIST_DEPLOY_SWITCH_RUNBOOK_2026-06-15.md
 Package scripts:
 
 ```json
+"strangler:build:production-like": "npm run astro:build && node scripts/copy-legacy-to-dist.js --omit-build-only",
+"strangler:audit:production-like": "npm run strangler:build:production-like && npm run pagefind:build:dist && node scripts/dist-publication-audit.js --require-pagefind --forbid-dev && npm run contract:extract:dist && npm run contract:compare:dist && node scripts/dist-smoke-audit.js --no-build --production-like && npm run sw:dist:audit:pagefind",
 "sw:dist:audit": "node scripts/sw-dist-readiness-audit.js",
 "sw:dist:audit:pagefind": "node scripts/sw-dist-readiness-audit.js --require-pagefind",
 "sw:dist:audit:deploy-switch": "node scripts/sw-dist-readiness-audit.js --require-pagefind --require-cache-bump",
-"strangler:deploy-readiness": "npm run astro:audit:about && npm run strangler:audit:pagefind && npm run sw:dist:audit:pagefind"
+"strangler:deploy-readiness": "npm run astro:audit:about && npm run strangler:audit:production-like"
 ```
 
 Что проверяет SW audit:
@@ -224,3 +226,22 @@ npm run sw:dist:audit:deploy-switch
 сейчас **ожидаемо падает**, потому что `CACHE_VERSION` равен зафиксированной root-production baseline. Это не ошибка текущего root deploy. Это предохранитель: в actual deploy-switch commit нужно bumped `sw.js CACHE_VERSION`, чтобы старый `CACHE_CONTENT` не отдавал legacy HTML после перехода на `dist`.
 
 Workflow policy guard (`scripts/check-workflows.js`) теперь также защищает от частичного deploy switch: если будущий `.github/workflows/deploy.yml` начнёт загружать `dist`, он обязан в том же commit переключить Pagefind на `dist/pagefind`, писать IndexNow key в `dist/`, создавать `dist/.nojekyll`, запускать dist publication audit и строгий SW cache-bump gate.
+
+
+## Production-like dist without build-only dev routes
+
+2026-06-15 добавлен отдельный production-like режим сборки `dist/`:
+
+```bash
+npm run strangler:build:production-like
+npm run strangler:audit:production-like
+```
+
+Отличие от обычного `strangler:build`: Astro route с `status:"build-only"` в `migration/page-ownership.json` удаляется после `astro build`. Сейчас это `/dev/astro-test/`. Обычный shadow/prototype build по-прежнему может держать `/dev/astro-test/` как `noindex`, но deploy-readiness теперь проверяет вариант без dev route.
+
+Связанные guards:
+
+- `copy-legacy-to-dist.js --omit-build-only` удаляет build-only Astro route output и не требует его в dist verification;
+- `dist-publication-audit.js --forbid-dev` падает, если `/dev/astro-test/` остался в production-like dist;
+- `dist-smoke-audit.js --production-like` smoke-тестирует representative URL без build-only route;
+- `strangler:deploy-readiness` теперь использует production-like audit.

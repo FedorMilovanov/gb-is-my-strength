@@ -46,9 +46,9 @@ must('.github/workflows/deploy.yml', deploy, /actions\/upload-pages-artifact@v3/
 // in the same small PR. This prevents a half-switched workflow.
 const deployUploadsDist = /^\s*path:\s*['"]?(?:\.\/)?dist\/?['"]?\s*$/m.test(deploy);
 if (deployUploadsDist) {
-  must('.github/workflows/deploy.yml', deploy, /npm run strangler:build/, 'dist deploy must build strangler dist');
+  must('.github/workflows/deploy.yml', deploy, /npm run strangler:build:production-like/, 'dist deploy must build production-like strangler dist');
   must('.github/workflows/deploy.yml', deploy, /npm run pagefind:build:dist/, 'dist deploy must build Pagefind into dist/pagefind');
-  must('.github/workflows/deploy.yml', deploy, /dist-publication-audit\.js --require-pagefind|npm run strangler:audit:pagefind/, 'dist deploy must run dist publication audit with Pagefind required');
+  must('.github/workflows/deploy.yml', deploy, /dist-publication-audit\.js[^\n]*--require-pagefind[^\n]*--forbid-dev|npm run strangler:audit:production-like/, 'dist deploy must run production-like dist publication audit with Pagefind required and dev route forbidden');
   must('.github/workflows/deploy.yml', deploy, /sw:dist:audit:deploy-switch|sw-dist-readiness-audit\.js[^\n]*--require-cache-bump/, 'dist deploy must enforce service-worker cache-version bump');
   must('.github/workflows/deploy.yml', deploy, />\s*"?dist\/\$\{KEY\}\.txt"?/, 'dist deploy must write IndexNow key file into dist (not repository root)');
   must('.github/workflows/deploy.yml', deploy, /touch\s+dist\/\.nojekyll/, 'dist deploy must create dist/.nojekyll');
