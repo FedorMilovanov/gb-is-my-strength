@@ -46,7 +46,9 @@
     "strangler:validate": "npm run strangler:build && npm run contract:extract:dist && npm run contract:compare:dist",
     "dist:clean": "node -e \"require('fs').rmSync('dist',{recursive:true,force:true})\"",
     "astro:audit:about": "node scripts/astro-about-pilot-audit.js",
-    "astro:audit:about:shots": "node scripts/astro-about-pilot-audit.js --write-shots"
+    "astro:audit:about:shots": "node scripts/astro-about-pilot-audit.js --write-shots",
+    "strangler:smoke": "node scripts/dist-smoke-audit.js",
+    "strangler:smoke:shots": "node scripts/dist-smoke-audit.js --write-shots"
   },
   "engines": {
     "node": ">=22.12.0"

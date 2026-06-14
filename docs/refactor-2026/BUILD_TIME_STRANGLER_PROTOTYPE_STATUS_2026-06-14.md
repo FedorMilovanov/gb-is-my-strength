@@ -76,3 +76,57 @@ contract:compare:dist: 42 baseline pages, 42 current public pages, 0 new URLs
 3. проверить service worker/cache strategy для dist;
 4. решить Pagefind generation on dist;
 5. подготовить rollback plan.
+
+## Representative dist smoke
+
+Добавлен скрипт:
+
+```text
+scripts/dist-smoke-audit.js
+```
+
+Команды:
+
+```bash
+npm run strangler:smoke
+npm run strangler:smoke:shots
+```
+
+Что проверяет:
+
+- `strangler:build` на чистом `dist`;
+- локальный static server из `dist/`;
+- representative URLs desktop + mobile:
+  - `/`
+  - `/about/`
+  - `/articles/`
+  - `/articles/kod-da-vinchi/`
+  - `/karty/`
+  - `/karty/avraam/`
+  - `/konfessii/`
+  - `/konfessii/russkij-baptizm/`
+  - `/map/`
+  - `/404.html`
+  - `/dev/astro-test/`
+- status 200;
+- canonical;
+- H1 basics;
+- horizontal overflow = 0;
+- page/console errors;
+- iframe presence for `/konfessii/russkij-baptizm/`.
+
+Первый запуск поймал реальные проблемы прототипа:
+
+1. `sw.js` не копировался в `dist`, из-за чего legacy pages ловили 404 при service worker registration.
+2. Astro scaffold давал 18px mobile overflow из-за отсутствия global `box-sizing:border-box`.
+
+Исправлено:
+
+- `sw.js` добавлен в root files copy list;
+- `src/styles/global.css` получил global `box-sizing:border-box`.
+
+Повторный результат:
+
+```text
+✅ dist smoke passed — representative strangler output is healthy
+```

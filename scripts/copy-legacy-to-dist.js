@@ -23,6 +23,7 @@ const PUBLIC_ROOT_FILES = [
   'sitemap.xml',
   'feed.xml',
   'manifest.json',
+  'sw.js',
   'llms.txt',
   'favicon.ico',
   'favicon-48.png',
