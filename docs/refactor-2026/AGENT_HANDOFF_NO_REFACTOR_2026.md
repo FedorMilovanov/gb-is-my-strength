@@ -79,11 +79,13 @@ npm run contract:compare
 
 ```text
 docs/refactor-2026/                  — вся стратегия миграции/SEO/карт/тестов
-scripts/extract-url-contract.js      — извлечение URL/meta baseline
-scripts/compare-url-contract.js      — сравнение contracts
-scripts/validate-map-routes.js       — проверка route*.json карт
+scripts/extract-url-contract.js      — извлечение URL/meta baseline (`--root`, `--out-json`, `--out-md`)
+scripts/compare-url-contract.js      — сравнение contracts / legacy root vs future dist
+scripts/validate-map-routes.js       — проверка `karty/*/route.json`
 karty/_shared/route.schema.json      — JSON Schema для карт
-karty/avraam/route.draft.json        — минимальный черновик данных Авраама, production не использует
+karty/avraam/route.json              — production data/full route для Авраама
+karty/ishod/route.json               — scaffold data для будущей карты Исхода (валидируется `maps:validate`)
+data/public-content-baseline.json    — текущий content baseline 42 public pages
 ```
 
 ---

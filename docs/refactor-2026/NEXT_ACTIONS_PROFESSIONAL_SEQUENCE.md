@@ -23,6 +23,8 @@ Done:
 
 ## 2. Next PR 1 — extractor root/out support
 
+Статус: ✅ выполнено 2026-06-14 (`scripts/extract-url-contract.js`).
+
 Цель:
 
 ```text
@@ -32,14 +34,17 @@ Done:
 Tasks:
 
 ```text
-[ ] add --root option
-[ ] add --out-json option
-[ ] add --out-md option
-[ ] keep current default behavior
-[ ] update package scripts maybe:
+[x] add --root option
+[x] add --out-json option
+[x] add --out-md option
+[x] keep current default behavior
+[x] update package scripts:
+    contract:extract
     contract:extract:root
     contract:extract:dist
 ```
+
+Также добавлен `scripts/compare-url-contract.js` и `maps:validate`, чтобы закрыть handoff gaps до Astro scaffold.
 
 Risk: low.
 
