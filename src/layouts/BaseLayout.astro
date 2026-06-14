@@ -12,8 +12,10 @@ interface Props {
   robots?: string;
   ogImage?: string;
   jsonLd?: unknown;
+  technicalBadge?: string;
+  footerNote?: string;
 }
-const { title, description, canonical, robots, ogImage, jsonLd } = Astro.props;
+const { title, description, canonical, robots, ogImage, jsonLd, technicalBadge, footerNote } = Astro.props;
 ---
 <!doctype html>
 <html lang="ru">
@@ -24,11 +26,11 @@ const { title, description, canonical, robots, ogImage, jsonLd } = Astro.props;
   </head>
   <body>
     <div class="astro-shell">
-      <Header />
+      <Header badge={technicalBadge} />
       <main class="astro-main">
         <slot />
       </main>
-      <Footer />
+      <Footer note={footerNote} />
     </div>
   </body>
 </html>

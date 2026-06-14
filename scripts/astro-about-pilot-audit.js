@@ -128,6 +128,7 @@ async function inspect(page, url, label) {
     const ratio = legacy.wordCount ? astro.wordCount / legacy.wordCount : 1;
     if (ratio < 0.72) problems.push(`word-count ratio too low: legacy=${legacy.wordCount}, astro=${astro.wordCount}, ratio=${ratio.toFixed(2)}`);
     if (!astro.jsonLdTypes.includes('ProfilePage') || !astro.jsonLdTypes.includes('Person')) problems.push(`astro JSON-LD missing ProfilePage/Person: ${astro.jsonLdTypes.join(', ')}`);
+    if (/Astro scaffold|Технический прототип|production switch/i.test(astro.text)) problems.push('astro public /about/ contains technical scaffold copy');
     const missingHeadings = legacy.h2.filter(h => h && !astro.h2.includes(h));
     if (missingHeadings.length) notes.push(`headings not yet visually/content-identical: ${missingHeadings.join(', ')}`);
     if (astro.links.length < Math.min(legacy.links.length, 3)) notes.push(`astro has fewer links (${astro.links.length}) than legacy (${legacy.links.length}); acceptable for shadow pilot but review before rollout`);

@@ -1,8 +1,12 @@
 ---
 import { SITE } from '@/data/site';
+
+interface Props {
+  note?: string;
+}
+const { note } = Astro.props;
 ---
 <footer class="astro-footer">
   <a href="/">{SITE.url.replace('https://', '')}</a>
-  <span>·</span>
-  <span>Технический прототип, не production switch</span>
+  {note && <><span>·</span><span>{note}</span></>}
 </footer>

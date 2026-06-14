@@ -1,7 +1,13 @@
 ---
 import { SITE } from '@/data/site';
+
+interface Props {
+  badge?: string;
+  ariaLabel?: string;
+}
+const { badge, ariaLabel = 'Шапка сайта' } = Astro.props;
 ---
-<header class="astro-header" aria-label="Техническая шапка Astro-прототипа">
+<header class="astro-header" aria-label={ariaLabel}>
   <a class="astro-header__brand" href="/">{SITE.name}</a>
-  <span class="astro-header__badge">Astro scaffold · noindex</span>
+  {badge && <span class="astro-header__badge">{badge}</span>}
 </header>
