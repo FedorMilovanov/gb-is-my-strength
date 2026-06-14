@@ -3034,37 +3034,45 @@ function showStoryToast(label, count){
 
 function applyStory(storyId){
   const st = STORIES.find(s=>s.id===storyId) || STORIES[0];
+  const engineStory = window.MapEngine?.getStoryState ? window.MapEngine.getStoryState(window.AvraamRouteData, st.id) : null;
+  const storyPlacesAll = engineStory ? engineStory.placesAll : !st.places;
+  const storyStagesAll = engineStory ? engineStory.stagesAll : !st.stages;
+  const storyPlaceIds = engineStory ? engineStory.placeIds : (st.places || PLACES.map(p=>p.id));
+  const storyStageIds = engineStory ? engineStory.stageIds : (st.stages || STAGES.map((_,i)=>i));
+  const storyPlaceSet = new Set(storyPlaceIds);
+  const storyStageSet = new Set(storyStageIds);
+  window.AvraamCurrentStoryState = engineStory;
   activeStory = st.id;
-  showStoryToast(st.label+' — '+st.desc, st.places?st.places.length:null);
+  showStoryToast(st.label+' — '+st.desc, storyPlacesAll?null:storyPlaceIds.length);
 
   // обновить кнопки
   document.querySelectorAll('.story-btn').forEach(b=>{
-    const on = b.dataset.story===storyId;
+    const on = b.dataset.story===st.id;
     b.classList.toggle('active', on);
     b.setAttribute('aria-pressed', on ? 'true':'false');
     if(on){b.classList.add('just-activated');setTimeout(()=>b.classList.remove('just-activated'),400);}
   });
   // если открыта панель маркера не из этого сюжета — закрыть
-  if(curPlace>=0 && st.places && !st.places.includes(PLACES[curPlace].id)){
+  if(curPlace>=0 && !storyPlacesAll && !storyPlaceSet.has(PLACES[curPlace].id)){
     closePanel();
   }
 
   // dim/hi маркеры
   document.querySelectorAll('#markers .marker').forEach(m=>{
-    if(!st.places){m.classList.remove('story-dim','story-hi');return;}
-    const inSet = st.places.includes(m.dataset.id);
+    if(storyPlacesAll){m.classList.remove('story-dim','story-hi');return;}
+    const inSet = storyPlaceSet.has(m.dataset.id);
     m.classList.toggle('story-dim', !inSet);
     m.classList.toggle('story-hi', inSet);
   });
   // dim/hi ctx
   document.querySelectorAll('#ctx .ctx-dot').forEach(m=>{
-    if(!st.places){m.classList.remove('story-dim','story-hi');return;}
+    if(storyPlacesAll){m.classList.remove('story-dim','story-hi');return;}
     m.classList.add('story-dim');
   });
   // dim/hi маршруты (story-dim/hi — поверх обычного .route.dim из setDim())
   document.querySelectorAll('#routes g').forEach(g=>{
     const si = parseInt(g.dataset.stage);
-    const inSet = !st.stages || st.stages.includes(si);
+    const inSet = storyStagesAll || storyStageSet.has(si);
     g.querySelectorAll('.route').forEach(r=>{
       r.classList.toggle('story-dim', !inSet);
       r.classList.toggle('story-hi', inSet);
@@ -3074,15 +3082,15 @@ function applyStory(storyId){
   // опорные узлы маршрута Ур→Харран актуальны только для stage I / Лех-леха
   const routeWp=document.getElementById('routeWaypoints');
   if(routeWp){
-    const wpRelevant=!st.stages || st.stages.includes(0);
-    routeWp.style.opacity=wpRelevant?'.72':'.08';
+    const wpRelevant=storyStagesAll || storyStageSet.has(0);
+    const wpOpacity=wpRelevant?'.72':'.08'; routeWp.setAttribute('opacity',wpOpacity); routeWp.querySelectorAll('.route-waypoint').forEach(wp=>wp.setAttribute('opacity',wpOpacity));
   }
 
   // синхронизировать timeline chips
   document.querySelectorAll('.stage-chip').forEach(ch=>{
     const si = parseInt(ch.dataset.si);
-    if(st.stages){
-      ch.style.opacity = st.stages.includes(si) ? '1' : '.3';
+    if(!storyStagesAll){
+      ch.style.opacity = storyStageSet.has(si) ? '1' : '.3';
     } else {
       ch.style.opacity = '1';
     }
@@ -3090,8 +3098,8 @@ function applyStory(storyId){
 
   // deep link
   const u = new URL(location.href);
-  if(storyId==='main') u.searchParams.delete('story');
-  else u.searchParams.set('story', storyId);
+  if(st.id==='main') u.searchParams.delete('story');
+  else u.searchParams.set('story', st.id);
   history.replaceState(null,'', u.toString().replace(u.origin,''));
 
   // update minimap dots
@@ -3099,13 +3107,13 @@ function applyStory(storyId){
   if(mmDots){
     mmDots.innerHTML='';
     const NS2='http://www.w3.org/2000/svg';
-    const dotsPlaces=st.places?PLACES.filter(p=>st.places.includes(p.id)):PLACES;
+    const dotsPlaces=storyPlacesAll?PLACES:PLACES.filter(p=>storyPlaceSet.has(p.id));
     dotsPlaces.forEach(p=>{
       const c=document.createElementNS(NS2,'circle');
       const col=p.type==='lot'?'#e0813f':p.type==='cand'?'#9b8cf0':'#e8c879';
       c.setAttribute('cx',p.x);c.setAttribute('cy',p.y);
       c.setAttribute('r','14');c.setAttribute('fill',col);
-      c.setAttribute('opacity',st.places?'.65':'.4');
+      c.setAttribute('opacity',storyPlacesAll?'.4':'.65');
       c.setAttribute('class','mm-story-dot');
       mmDots.appendChild(c);
     });
@@ -3116,10 +3124,10 @@ function applyStory(storyId){
     flyTo(cx,cy,w,900);
   }
   // После flyTo открыть первое место сюжета (через 1.2с)
-  if(st.places && st.places.length && storyId!=='main'){
+  if(!storyPlacesAll && storyPlaceIds.length && st.id!=='main'){
     clearTimeout(applyStory._openTimer);
     applyStory._openTimer=setTimeout(()=>{
-      const firstId=st.places.find(id=>placeIndex[id]!==undefined);
+      const firstId=storyPlaceIds.find(id=>placeIndex[id]!==undefined);
       if(firstId && curPlace<0){
         openPlace(firstId);
       }

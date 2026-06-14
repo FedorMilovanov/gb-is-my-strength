@@ -69,6 +69,10 @@ try {
 
 const routeAudit = MapEngine.validateRoute(route);
 assert('MapEngine.validateRoute(route.json) ok', routeAudit.ok, JSON.stringify(routeAudit.errors));
+const storyAudit = MapEngine.auditStoryDefinitions(route);
+assert('MapEngine.auditStoryDefinitions(route.json) ok', storyAudit.ok, JSON.stringify(storyAudit.errors));
+const expectedStoryCounts = {main: 19, 'lekh-lekha': 6, lot: 4, war: 4, akeda: 4};
+assert('MapEngine story counts exact', storyAudit.states.every(st => expectedStoryCounts[st.id] === st.counts.places), JSON.stringify(storyAudit.states.map(st => [st.id, st.counts.places])));
 const compareSelf = MapEngine.compareRouteData(route, route);
 assert('MapEngine.compareRouteData self ok', compareSelf.ok, JSON.stringify(compareSelf.errors));
 
@@ -133,6 +137,9 @@ const hostAllowed = host => imgHosts.includes(host) || imgHosts.includes(host.re
 assert('dynamic photo hosts are covered by CSP img-src', photoHosts.every(hostAllowed), `hosts=${photoHosts.join(', ')} csp=${imgHosts.join(' ')}`);
 assert('route.json is preloaded for gradual engine migration', html.includes('<link rel="preload" href="route.json" as="fetch" type="application/json">'));
 assert('runtime route.json drift audit is wired', html.includes('AvraamRouteJsonAudit') && html.includes('MapEngine.compareRouteData(window.AvraamRouteData, route)'));
+assert('MapEngine exports story-state helpers', typeof MapEngine.getStoryState === 'function' && typeof MapEngine.auditStoryDefinitions === 'function');
+assert('applyStory uses MapEngine.getStoryState shadow extraction', html.includes('MapEngine.getStoryState(window.AvraamRouteData, st.id)') && html.includes('window.AvraamCurrentStoryState = engineStory'));
+assert('applyStory dims waypoint child nodes by attribute', html.includes("routeWp.querySelectorAll('.route-waypoint').forEach(wp=>wp.setAttribute('opacity',wpOpacity))"));
 assert('no dangling SVG pointerenter preview block', !html.includes("svg.addEventListener('pointerenter'"));
 assert('panel rubber animation uses .panel-opening, not #panel.open', html.includes('#panel.panel-opening{animation:panelRubberIn') && !/#panel\.open\s*\{[^}]*panelRubberIn/.test(html));
 assert('MapEngine has no skeleton console logging', !/console\.log\(['\"]MapEngine\./.test(fs.readFileSync(enginePath, 'utf8')));
