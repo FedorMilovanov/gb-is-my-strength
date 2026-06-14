@@ -200,6 +200,56 @@ const MapEngine = (function() {
     return [...hosts].sort();
   }
 
+  function normalizeLayerState(layers = []) {
+    if (Array.isArray(layers)) {
+      return layers.reduce((acc, layer) => {
+        if (layer && layer.id) acc[layer.id] = layer.on !== false;
+        return acc;
+      }, {});
+    }
+    if (layers && typeof layers === 'object') {
+      return Object.entries(layers).reduce((acc, [id, value]) => {
+        acc[id] = typeof value === 'object' ? value.on !== false : value !== false;
+        return acc;
+      }, {});
+    }
+    return {};
+  }
+
+  function isLayerOn(layers, id) {
+    const state = normalizeLayerState(layers);
+    return state[id] !== false;
+  }
+
+  function getPlaceLayerId(place = {}) {
+    if (place.type === 'cand') return 'cand';
+    if (place.type === 'lot') return 'lot';
+    return 'abr';
+  }
+
+  function getRouteLayerId(input = {}) {
+    const color = typeof input === 'string'
+      ? input
+      : (input.c || input.color || input.dataset?.color || input.cls || input.dataset?.cls || 'gold');
+    if (color === 'war') return 'war';
+    if (color === 'lot') return 'lot';
+    return 'abr';
+  }
+
+  function getPlaceVisual(place = {}) {
+    const layerId = getPlaceLayerId(place);
+    const color = layerId === 'lot' ? '#e0813f' : layerId === 'cand' ? '#9b8cf0' : '#e8c879';
+    const cssColor = layerId === 'lot' ? 'var(--lot)' : layerId === 'cand' ? 'var(--cand)' : '#e8c879';
+    return {
+      layerId,
+      color,
+      cssColor,
+      markerClass: `marker${place.type === 'cand' ? ' cand' : ''}${place.type === 'lot' ? ' lot-type' : ''}`,
+      isCandidate: place.type === 'cand',
+      isLot: place.type === 'lot'
+    };
+  }
+
   function getStoryState(data = {}, storyId = 'main') {
     const route = normalizeRouteData(data);
     const story = route.stories.find(s => s.id === storyId) || route.stories.find(s => s.active_by_default) || route.stories[0] || {id: storyId || 'main'};
@@ -504,6 +554,11 @@ const MapEngine = (function() {
     validateRoute,
     compareRouteData,
     collectPhotoHosts,
+    normalizeLayerState,
+    isLayerOn,
+    getPlaceLayerId,
+    getRouteLayerId,
+    getPlaceVisual,
     getStoryState,
     getPlaceOrder,
     auditStoryDefinitions,

@@ -3346,12 +3346,13 @@ function labelPos(side){
 }
 PLACES.forEach(pl=>{
   const g=document.createElementNS(NS,'g');
-  g.setAttribute('class','marker'+(pl.type==='cand'?' cand':'')+(pl.type==='lot'?' lot-type':''));
+  const visual=window.MapEngine?.getPlaceVisual ? window.MapEngine.getPlaceVisual(pl) : {markerClass:'marker'+(pl.type==='cand'?' cand':'')+(pl.type==='lot'?' lot-type':''),cssColor:pl.type==='lot'?'var(--lot)':pl.type==='cand'?'var(--cand)':'#e8c879',color:pl.type==='lot'?'#e0813f':pl.type==='cand'?'#9b8cf0':'#e8c879'};
+  g.setAttribute('class',visual.markerClass);
   g.dataset.x=pl.x;g.dataset.y=pl.y;g.dataset.id=pl.id;
   g.setAttribute('aria-label',pl.name+(pl.kick?' — '+pl.kick:''));
   g.setAttribute('tabindex','0');
   g.setAttribute('role','button');
-  const col=pl.type==='lot'?'var(--lot)':pl.type==='cand'?'var(--cand)':'#e8c879';
+  const col=visual.cssColor;
   let inner='';
   if(pl.type==='cand'){
     inner=`<circle class="halo" r="15" fill="none" stroke="${col}" stroke-opacity=".35" stroke-width="1.2" stroke-dasharray="3.5 3.5"/>
@@ -3387,7 +3388,7 @@ PLACES.forEach(pl=>{
       rip.setAttribute('cx',pl.x); rip.setAttribute('cy',pl.y);
       rip.setAttribute('r','8');
       rip.setAttribute('fill','none');
-      rip.setAttribute('stroke',pl.type==='lot'?'var(--lot)':pl.type==='cand'?'var(--cand)':'var(--gold)');
+      rip.setAttribute('stroke',visual.cssColor);
       rip.setAttribute('stroke-width','2');
       rip.setAttribute('class','marker-ripple');
       rip.setAttribute('vector-effect','non-scaling-stroke');
@@ -3518,7 +3519,7 @@ document.addEventListener('pointerdown',e=>{
 /* places list */
 const plList=document.getElementById('placesList');
 PLACES.forEach(pl=>{
-  const col=pl.type==='lot'?'#e0813f':pl.type==='cand'?'#9b8cf0':'#e8c879';
+  const col=(window.MapEngine?.getPlaceVisual?window.MapEngine.getPlaceVisual(pl).color:(pl.type==='lot'?'#e0813f':pl.type==='cand'?'#9b8cf0':'#e8c879'));
   const it=document.createElement('div');it.className='pl-item';
   it.innerHTML=`<span class="d" style="background:${col}"></span><span class="nm">${pl.name}</span><span class="hb">${pl.he}</span>`;
   it.onclick=()=>{pops.places.classList.remove('open');stopTour();openPlace(pl.id);};
@@ -3532,24 +3533,19 @@ document.getElementById('plSearch').addEventListener('input',e=>{
 document.getElementById('plSearch').addEventListener('pointerdown',e=>e.stopPropagation());
 function applyLayers(){
   try{localStorage.setItem('gbk_layers',JSON.stringify(LAYERS.map(l=>l.on)));}catch(e){}
-  const on=id=>LAYERS.find(l=>l.id===id).on;
+  const on=id=>window.MapEngine?.isLayerOn ? window.MapEngine.isLayerOn(LAYERS,id) : LAYERS.find(l=>l.id===id).on;
+  const routeLayer=p=>window.MapEngine?.getRouteLayerId ? window.MapEngine.getRouteLayerId(p.dataset.color||p.dataset.cls||'gold') : (p.dataset.color==='war'?'war':p.dataset.color==='lot'?'lot':'abr');
+  const placeLayer=pl=>window.MapEngine?.getPlaceLayerId ? window.MapEngine.getPlaceLayerId(pl) : (pl.type==='cand'?'cand':pl.type==='lot'?'lot':'abr');
   segEls.forEach(g=>{
-    const cls=g.dataset.cls;
-    let vis = cls==='war'?on('war'):cls==='lot'?on('lot'):on('abr');
-    // mixed stages: check each path color too
     g.querySelectorAll('.route').forEach(p=>{
-      const c=p.dataset.color;
-      const v=(c==='war'?on('war'):c==='lot'?on('lot'):on('abr'));
+      const v=on(routeLayer(p));
       p.style.display=v?'':'none';
       if(p._hit)p._hit.style.display=v?'':'none';
     });
   });
   document.querySelectorAll('#markers .marker').forEach(m=>{
     const pl=PLACES[placeIndex[m.dataset.id]];
-    let v=true;
-    if(pl.type==='cand')v=on('cand');
-    else if(pl.type==='lot')v=on('lot');
-    else v=on('abr');
+    const v=on(placeLayer(pl));
     m.style.display=v?'':'none';
   });
   ctxG.style.display=on('ctx')?'':'none';
