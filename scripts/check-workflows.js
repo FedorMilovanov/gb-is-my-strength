@@ -34,8 +34,31 @@ function mustAllWorkflowsHaveBasics() {
 mustAllWorkflowsHaveBasics();
 
 const deploy = read('.github/workflows/deploy.yml');
+must('.github/workflows/deploy.yml', deploy, /node-version:\s*['"]?22['"]?/, 'deploy must use Node 22+ for Astro toolchain compatibility');
+must('.github/workflows/deploy.yml', deploy, /npm ci/, 'deploy must install dependencies via npm ci');
 must('.github/workflows/deploy.yml', deploy, /npm run validate:static-publication/, 'deploy must run validate:static-publication');
 must('.github/workflows/deploy.yml', deploy, /^concurrency:\s*$/m, 'deploy must keep concurrency');
+must('.github/workflows/deploy.yml', deploy, /actions\/upload-pages-artifact@v3/, 'deploy must upload a Pages artifact');
+
+// Strangler safety rail: production currently uploads the legacy repository root.
+// If a future commit switches the Pages artifact to dist, it must also switch
+// Pagefind, IndexNow key placement, .nojekyll placement and deploy-like dist audits
+// in the same small PR. This prevents a half-switched workflow.
+const deployUploadsDist = /^\s*path:\s*['"]?(?:\.\/)?dist\/?['"]?\s*$/m.test(deploy);
+if (deployUploadsDist) {
+  must('.github/workflows/deploy.yml', deploy, /npm run strangler:build/, 'dist deploy must build strangler dist');
+  must('.github/workflows/deploy.yml', deploy, /npm run pagefind:build:dist/, 'dist deploy must build Pagefind into dist/pagefind');
+  must('.github/workflows/deploy.yml', deploy, /dist-publication-audit\.js --require-pagefind|npm run strangler:audit:pagefind/, 'dist deploy must run dist publication audit with Pagefind required');
+  must('.github/workflows/deploy.yml', deploy, /sw:dist:audit:deploy-switch|sw-dist-readiness-audit\.js[^\n]*--require-cache-bump/, 'dist deploy must enforce service-worker cache-version bump');
+  must('.github/workflows/deploy.yml', deploy, />\s*"?dist\/\$\{KEY\}\.txt"?/, 'dist deploy must write IndexNow key file into dist (not repository root)');
+  must('.github/workflows/deploy.yml', deploy, /touch\s+dist\/\.nojekyll/, 'dist deploy must create dist/.nojekyll');
+} else {
+  must('.github/workflows/deploy.yml', deploy, /^\s*path:\s*['"]?\.['"]?\s*$/m, 'root deploy must upload repository root until explicit dist switch');
+  must('.github/workflows/deploy.yml', deploy, /npm run pagefind:build(?!:dist)/, 'root deploy must build Pagefind at repository root');
+  if (/npm run pagefind:build:dist|npm run strangler:build|sw:dist:audit:deploy-switch/.test(deploy)) {
+    issues.push('.github/workflows/deploy.yml: root deploy contains partial dist-deploy commands; switch all deploy steps atomically');
+  }
+}
 
 const indexnow = read('.github/workflows/indexnow.yml');
 must('.github/workflows/indexnow.yml', indexnow, /npm run validate:static-publication/, 'indexnow must run validate:static-publication before metadata commit');

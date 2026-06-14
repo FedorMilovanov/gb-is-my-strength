@@ -222,6 +222,7 @@ Exit criteria:
 [ ] /about/ visible without JS
 [ ] ProfilePage/Person schema correct
 [ ] Search Console/Yandex Webmaster после деплоя без блокеров
+[ ] перед root→dist deploy switch выполнен `docs/refactor-2026/DIST_DEPLOY_SWITCH_RUNBOOK_2026-06-15.md`
 ```
 
 ---
