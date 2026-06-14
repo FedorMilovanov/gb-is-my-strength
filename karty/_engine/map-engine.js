@@ -177,6 +177,14 @@ const MapEngine = (function() {
     const photosB = b.places.reduce((sum, p) => sum + (Array.isArray(p.photos) ? p.photos.length : 0), 0);
     if (photosA !== photosB) errors.push(`photo count drift: ${photosA} != ${photosB}`);
 
+    // Coordinate drift: check that place x,y match between inline and route.json
+    a.places.forEach((pA) => {
+      const pB = b.places.find(p => p.id === pA.id);
+      if (pB && (pA.x !== pB.x || pA.y !== pB.y)) {
+        errors.push(`place coord drift: ${pA.id} inline(${pA.x},${pA.y}) vs route(${pB.x},${pB.y})`);
+      }
+    });
+
     return {ok: errors.length === 0, errors, warnings, stats: {places: idsA.length, stages: a.stages.length, stories: a.stories.length, photos: photosA, waypoints: Array.isArray(wpA) ? wpA.length : 0, scientific_variants: varA}};
   }
 
