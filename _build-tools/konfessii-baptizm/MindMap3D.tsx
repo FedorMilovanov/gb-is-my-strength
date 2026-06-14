@@ -246,17 +246,17 @@ function ContextStatusBar({ activeRoute, routeStep, mapSelection, focusLabel }: 
 
 type ArticlePreview = { url: string; title: string; kicker: string; desc: string; cover: string };
 const ARTICLE_PREVIEWS: Record<string, ArticlePreview> = {
-  overview: { url: '/baptisty-rossii/', title: 'Баптисты России', kicker: 'Серия · 10 частей', desc: 'Вся исследовательская серия: истоки, союзы, гонения, Совет Церквей и подпольная печать.', cover: '/images/baptisty-rossii/cover-landing.svg' },
-  kura: { url: '/baptisty-rossii/noch-na-kure/', title: 'Ночь на Куре', kicker: 'Часть 1', desc: 'Воронин, Кальвейт, Деляков и первая русская баптистская община.', cover: '/images/baptisty-rossii/cover-01-kura.svg' },
-  shtunda: { url: '/baptisty-rossii/yuzhnaya-shtunda/', title: 'Южная штунда', kicker: 'Часть 2', desc: 'Унгер, Цимбал, Рябошапка, Ратушный, Прицкау, Онкен и Вилер.', cover: '/images/baptisty-rossii/cover-02-shtunda.svg' },
-  congress1884: { url: '/baptisty-rossii/dva-sezda-1884/', title: '1884: два съезда', kicker: 'Часть 3', desc: 'Петербургское совещание и Ново-Васильевский съезд — две разные развилки.', cover: '/images/baptisty-rossii/cover-03-1884.svg' },
-  petersburg: { url: '/baptisty-rossii/peterburgskaya-liniya/', title: 'Петербургская линия', kicker: 'Часть 4', desc: 'Редсток, Пашков, Корф, Каргель и Проханов.', cover: '/images/baptisty-rossii/cover-04-peterburg.svg' },
-  conscience: { url: '/baptisty-rossii/goneniya-i-sovest/', title: 'Гонения и совесть', kicker: 'Часть 5', desc: 'Военный вопрос, право совести и давление государства.', cover: '/images/baptisty-rossii/cover-05-conscience.svg' },
-  sovietNight: { url: '/baptisty-rossii/sovetskaya-noch/', title: 'Советская ночь', kicker: 'Часть 6', desc: 'Закон 1929, Инструкция НКВД, закрытия и репрессии.', cover: '/images/baptisty-rossii/cover-06-soviet-night.svg' },
-  union1944: { url: '/baptisty-rossii/vsehib-1944/', title: '1944: один союз', kicker: 'Часть 7', desc: 'ВСЕХиБ, Братский Вестник, ХВЕ и Прибалтика.', cover: '/images/baptisty-rossii/cover-07-vsehib.svg' },
-  initiative: { url: '/baptisty-rossii/iniciativnaya-gruppa/', title: 'Инициативная группа', kicker: 'Часть 8', desc: '1960–1966: Положение, письмо, Оргкомитет и Совет Церквей.', cover: '/images/baptisty-rossii/cover-08-initiative.svg' },
-  samizdat: { url: '/baptisty-rossii/podpolnaya-pechat/', title: 'Подпольная печать', kicker: 'Часть 9', desc: 'Вестник спасения, Вестник истины, Совет родственников, Христианин.', cover: '/images/baptisty-rossii/cover-09-samizdat.svg' },
-  reference: { url: '/baptisty-rossii/spravochnik/', title: 'Справочник', kicker: 'Часть 10', desc: 'Люди, даты, документы, спорные факты и источниковая оценка.', cover: '/images/baptisty-rossii/cover-10-reference.svg' },
+  overview: { url: '/baptisty-rossii/', title: 'Баптисты России', kicker: 'Серия · 10 частей', desc: 'Вся исследовательская серия: истоки, союзы, гонения, Совет Церквей и подпольная печать.', cover: '../../../images/baptisty-rossii/cover-landing.svg' },
+  kura: { url: '/baptisty-rossii/noch-na-kure/', title: 'Ночь на Куре', kicker: 'Часть 1', desc: 'Воронин, Кальвейт, Деляков и первая русская баптистская община.', cover: '../../../images/baptisty-rossii/cover-01-kura.svg' },
+  shtunda: { url: '/baptisty-rossii/yuzhnaya-shtunda/', title: 'Южная штунда', kicker: 'Часть 2', desc: 'Унгер, Цимбал, Рябошапка, Ратушный, Прицкау, Онкен и Вилер.', cover: '../../../images/baptisty-rossii/cover-02-shtunda.svg' },
+  congress1884: { url: '/baptisty-rossii/dva-sezda-1884/', title: '1884: два съезда', kicker: 'Часть 3', desc: 'Петербургское совещание и Ново-Васильевский съезд — две разные развилки.', cover: '../../../images/baptisty-rossii/cover-03-1884.svg' },
+  petersburg: { url: '/baptisty-rossii/peterburgskaya-liniya/', title: 'Петербургская линия', kicker: 'Часть 4', desc: 'Редсток, Пашков, Корф, Каргель и Проханов.', cover: '../../../images/baptisty-rossii/cover-04-peterburg.svg' },
+  conscience: { url: '/baptisty-rossii/goneniya-i-sovest/', title: 'Гонения и совесть', kicker: 'Часть 5', desc: 'Военный вопрос, право совести и давление государства.', cover: '../../../images/baptisty-rossii/cover-05-conscience.svg' },
+  sovietNight: { url: '/baptisty-rossii/sovetskaya-noch/', title: 'Советская ночь', kicker: 'Часть 6', desc: 'Закон 1929, Инструкция НКВД, закрытия и репрессии.', cover: '../../../images/baptisty-rossii/cover-06-soviet-night.svg' },
+  union1944: { url: '/baptisty-rossii/vsehib-1944/', title: '1944: один союз', kicker: 'Часть 7', desc: 'ВСЕХиБ, Братский Вестник, ХВЕ и Прибалтика.', cover: '../../../images/baptisty-rossii/cover-07-vsehib.svg' },
+  initiative: { url: '/baptisty-rossii/iniciativnaya-gruppa/', title: 'Инициативная группа', kicker: 'Часть 8', desc: '1960–1966: Положение, письмо, Оргкомитет и Совет Церквей.', cover: '../../../images/baptisty-rossii/cover-08-initiative.svg' },
+  samizdat: { url: '/baptisty-rossii/podpolnaya-pechat/', title: 'Подпольная печать', kicker: 'Часть 9', desc: 'Вестник спасения, Вестник истины, Совет родственников, Христианин.', cover: '../../../images/baptisty-rossii/cover-09-samizdat.svg' },
+  reference: { url: '/baptisty-rossii/spravochnik/', title: 'Справочник', kicker: 'Часть 10', desc: 'Люди, даты, документы, спорные факты и источниковая оценка.', cover: '../../../images/baptisty-rossii/cover-10-reference.svg' },
 };
 const NODE_ARTICLE: Record<string, keyof typeof ARTICLE_PREVIEWS> = {
   root: 'overview', trans: 'kura', voronin: 'kura', kalweit: 'kura', pavlov: 'kura',
@@ -282,6 +282,9 @@ const TIMELINE_TARGETS: TimelineTarget[] = [
   { match: /Проханов|ВСЕХ(?!Б)/i, nodeId: 'vseh', routeId: 'route-petersburg', mapId: 'city-Санкт-Петербург', article: 'petersburg' },
   { match: /воинск|совест|04\.01\.1919|1919/i, nodeId: 'vseh', routeId: 'route-petersburg', mapId: 'city-Москва', article: 'conscience' },
   { match: /ОГПУ|Голос с Востока|XXV|1923|1926/i, nodeId: 'vseh', routeId: 'route-petersburg', mapId: 'city-Москва', article: 'conscience' },
+  { match: /Слесарев|Сиблаг|Темир-Тау|1935|1938/i, nodeId: 'vsehb', routeId: 'route-soviet', mapId: 'city-Москва', article: 'sovietNight' },
+  { match: /Шилов|Соловки|Карлаг|1937/i, nodeId: 'vseh', routeId: 'route-petersburg', mapId: 'city-Москва', article: 'conscience' },
+  { match: /Хмара|Барнаул|1964/i, nodeId: 'sc', routeId: 'route-soviet', mapId: 'city-Москва', article: 'initiative' },
   { match: /Братский Вестник|1945|послевоенная линия/i, nodeId: 'vsehb', routeId: 'route-soviet', mapId: 'city-Москва', article: 'union1944' },
   { match: /ВСЕХБ|Жидков|Карев|26-29\.10\.1944|1944/i, nodeId: 'vsehb', routeId: 'route-soviet', mapId: 'city-Москва', article: 'union1944' },
   { match: /Устав ВСЕХБ 1963|съезд ВСЕХБ 1963|15–17 октября 1963|1963/i, nodeId: 'vsehb', routeId: 'route-soviet', mapId: 'city-Москва', article: 'union1944' },
@@ -494,7 +497,7 @@ function TimelineOverlay({ timelineYearRef, bottomBarExpanded, onEventSelect, ge
               <Sparkles size={14} />
             </div>
             <div className="min-w-0">
-              <div className="text-[10px] font-bold uppercase tracking-widest text-white/50">Хронология событий · {displayEvent.year} • {categoryLabels[displayEvent.category]}{displayCount > 1 ? ` · ${displayCount} события` : ''}</div>
+              <div className="flex flex-wrap items-center gap-1.5 text-[10px] font-bold uppercase tracking-widest text-white/50"><span>Хронология событий · {displayEvent.year} • {categoryLabels[displayEvent.category]}{displayCount > 1 ? ` · ${displayCount} события` : ''}</span>{displayEvent.sourceLevel && <span className="rounded-full border border-white/10 bg-white/[0.04] px-1.5 py-0.5 font-mono text-[8px] text-white/42">{displayEvent.sourceLevel}</span>}</div>
               <div className="truncate text-[13px] font-bold text-white">{displayEvent.title}</div>
               <div className="line-clamp-1 text-[10.5px] leading-4 text-white/45">{displayEvent.description}</div>
               {displayArticle && (
@@ -1147,12 +1150,15 @@ export default function MindMap3D() {
 
   const handleTimelineEventSelect = useCallback((event: any, year: number) => {
     const text = `${event?.year ?? ''} ${event?.title ?? ''} ${event?.description ?? ''} ${event?.details ?? ''}`;
-    const target = TIMELINE_TARGETS.find((entry) => entry.match.test(text));
-    const node = target ? NODES.find((n) => n.id === target.nodeId) : null;
+    const fallback = TIMELINE_TARGETS.find((entry) => entry.match.test(text));
+    const nodeId = event?.nodeId ?? fallback?.nodeId;
+    const routeId = event?.routeId ?? fallback?.routeId;
+    const mapId = event?.mapSelectionId ?? fallback?.mapId;
+    const node = nodeId ? NODES.find((n) => n.id === nodeId) : null;
     if (!node) return;
-    const route = target?.routeId ? ROUTE_PRESETS.find((preset) => preset.id === target.routeId) ?? null : null;
+    const route = routeId ? ROUTE_PRESETS.find((preset) => preset.id === routeId) ?? null : null;
     const routeIndex = route ? Math.max(0, route.nodes.findIndex((id) => id === node.id)) : 0;
-    const selection = findMapSelectionForNode(node.id, target?.mapId);
+    const selection = findMapSelectionForNode(node.id, mapId);
     setActiveRoute(route);
     setRouteStep(route ? routeIndex : 0);
     setMapMode(Boolean(selection));
@@ -1265,6 +1271,7 @@ export default function MindMap3D() {
   const mapPlaceRecord = mapSelection ? getMapPlaceRecord(mapSelection.id) : undefined;
   const articleForFocus = focusNode ? articleForNode(focusNode.id) : null;
   const articleForTimelineEvent = useCallback((event: any) => {
+    if (event?.articleKey && ARTICLE_PREVIEWS[event.articleKey as keyof typeof ARTICLE_PREVIEWS]) return ARTICLE_PREVIEWS[event.articleKey as keyof typeof ARTICLE_PREVIEWS];
     const text = `${event?.year ?? ''} ${event?.title ?? ''} ${event?.description ?? ''} ${event?.details ?? ''}`;
     const target = TIMELINE_TARGETS.find((entry) => entry.match.test(text));
     if (target?.article) return ARTICLE_PREVIEWS[target.article];

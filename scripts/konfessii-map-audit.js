@@ -80,6 +80,12 @@ else {
   /Иван Моисеев/.test(app) && /Печатники «Христианина»/.test(app) && /Донченко|психбольницы|отобрание детей/.test(app)
     ? ok('I12 _app: relatives-bulletin events present')
     : bad('I12 _app: relatives-bulletin events missing');
+  /Георгий Слесарев/.test(app) && /Иван Шилов/.test(app) && /Николай Хмара/.test(app)
+    ? ok('I12 _app: persecution case-index events present')
+    : bad('I12 _app: persecution case-index events missing');
+  /sourceLevel/.test(app) && /articleKey/.test(app) && /nodeId/.test(app)
+    ? ok('I13 _app: timeline carries data-driven article/node metadata')
+    : bad('I13 _app: timeline metadata fields missing');
   /Связанная статья/.test(app) && /Открыть статью/.test(app) && /baptisty-rossii\//.test(app)
     ? ok('I13 _app: article previews are wired into timeline/dossier')
     : bad('I13 _app: article previews missing from 3D UI');
@@ -136,6 +142,9 @@ if (src) {
   /ARTICLE_PREVIEWS/.test(src) && /Связанная статья/.test(src) && /getArticleForEvent/.test(src)
     ? ok('I13 source: article preview cards wired')
     : bad('I13 source: article preview cards missing');
+  /event\?\.nodeId/.test(src) && /event\?\.routeId/.test(src) && /event\?\.mapSelectionId/.test(src)
+    ? ok('I13 source: Timeline prefers data-driven metadata before regex fallback')
+    : bad('I13 source: Timeline still lacks data-driven metadata preference');
 }
 
 // ---------- live checks (browser, optional) ----------
