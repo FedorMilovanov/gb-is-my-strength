@@ -5,6 +5,8 @@ import { SITE } from '@/data/site';
 const canonical = `${SITE.url}/about/`;
 const title = 'Об авторе — Фёдор Милованов | Господь Бог — Сила Моя';
 const description = 'Фёдор Милованов — автор и редактор богословского проекта «Господь Бог — Сила Моя». О проекте, методологии подготовки материалов и редакционной политике.';
+const ogTitle = 'Об авторе — Фёдор Милованов';
+const ogDescription = 'Фёдор Милованов — автор-редактор богословского проекта «Господь Бог — Сила Моя». Создаёт авторские апологетические разборы и редактирует переводы зарубежных богословов.';
 const jsonLd = {
   '@context': 'https://schema.org',
   '@graph': [
@@ -62,6 +64,8 @@ const jsonLd = {
   canonical={canonical}
   robots="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1"
   ogImage={`${SITE.url}/images/og-about-1200x630.webp`}
+  ogTitle={ogTitle}
+  ogDescription={ogDescription}
   jsonLd={jsonLd}
 >
   <article class="astro-about" data-pagefind-body>
