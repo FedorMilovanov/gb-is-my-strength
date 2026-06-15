@@ -32,6 +32,16 @@
 - расширен series hub `/baptisty-rossii/`
 - `contract:compare:dist` снова проходит
 
+### 6. Добавлены отдельные guards для самых рискованных public shadow routes
+- `scripts/astro-home-pilot-audit.js`
+- `scripts/baptisty-series-shadow-audit.js`
+- npm scripts:
+  - `npm run astro:audit:home`
+  - `npm run astro:audit:home:no-build`
+  - `npm run astro:audit:baptisty-series`
+  - `npm run astro:audit:baptisty-series:no-build`
+- `strangler:deploy-readiness` теперь должен проверять не только `/about/` и article MDX routes, но и shadow home page / baptisty-series layer
+
 ## Проверки после cleanup
 
 Проходит:
