@@ -5,8 +5,8 @@
  * Current contract:
  * - repository root legacy HTML remains production truth until deploy switch;
  * - strangler dist may shadow-own the public article URL with Astro output;
- * - /dev/article-mdx-pilot/ remains build-only/noindex preview;
- * - public/preview Astro output must mirror the legacy SEO/content contract.
+ * - the retired /dev/article-mdx-pilot/ route must stay absent;
+ * - public Astro output must mirror the legacy SEO/content contract.
  */
 'use strict';
 
@@ -19,8 +19,7 @@ const DIST = path.join(ROOT, 'dist');
 const SITE = 'https://gospod-bog.ru';
 const LEGACY_REL = 'articles/dzhon-gill-spravochnik/index.html';
 const PUBLIC_REL = 'articles/dzhon-gill-spravochnik/index.html';
-const PREVIEW_REL = 'dev/article-mdx-pilot/index.html';
-const PREVIEW_CANONICAL = `${SITE}/dev/article-mdx-pilot/`;
+const RETIRED_PREVIEW_REL = 'dev/article-mdx-pilot/index.html';
 const LEGACY_CANONICAL = `${SITE}/articles/dzhon-gill-spravochnik/`;
 const NO_BUILD = process.argv.includes('--no-build');
 const REQUIRE_CONTENT_PARITY = process.argv.includes('--require-content-parity');
@@ -215,20 +214,20 @@ function assertBodyParity(label, html, className, facts) {
 }
 
 function main() {
-  console.log(`ARTICLE MDX SHADOW AUDIT (${NO_BUILD ? 'no-build' : 'build'}, content parity ${REQUIRE_CONTENT_PARITY ? 'required' : 'advisory'})`);
+  console.log(`ARTICLE MDX PUBLIC SHADOW AUDIT (${NO_BUILD ? 'no-build' : 'build'}, content parity ${REQUIRE_CONTENT_PARITY ? 'required' : 'advisory'})`);
   runBuild();
 
   const legacyPath = file(LEGACY_REL);
   const publicPath = distFile(PUBLIC_REL);
-  const previewPath = distFile(PREVIEW_REL);
+  const retiredPreviewPath = distFile(RETIRED_PREVIEW_REL);
   if (!fs.existsSync(legacyPath)) bad(`legacy article missing: ${LEGACY_REL}`);
   if (!fs.existsSync(publicPath)) bad(`dist public article missing: ${PUBLIC_REL}`);
-  if (!fs.existsSync(previewPath)) bad(`MDX preview missing: ${PREVIEW_REL}`);
+  if (fs.existsSync(retiredPreviewPath)) bad(`retired MDX preview route must stay absent: ${RETIRED_PREVIEW_REL}`);
+  else ok('retired MDX preview route absent');
   if (problems.length) return finish();
 
   const legacy = read(legacyPath);
   const publicArticle = read(publicPath);
-  const preview = read(previewPath);
   const facts = legacyFacts(legacy);
 
   mustEqual('legacy canonical baseline', facts.canonical, LEGACY_CANONICAL);
@@ -247,16 +246,6 @@ function main() {
   });
   mustNotContain('public shadow article pilot note', publicArticle, 'Build-only MDX pilot');
   assertBodyParity('public shadow article', publicArticle, 'astro-article', facts);
-
-  assertArticleContract('preview', preview, facts, {
-    expectedCanonical: PREVIEW_CANONICAL,
-    expectNoindex: true,
-    titleMode: 'contains',
-  });
-  mustContain('preview pilot note', preview, 'Build-only MDX pilot');
-  mustContain('preview intended canonical note', preview, LEGACY_CANONICAL);
-  assertBodyParity('preview', preview, 'astro-article', facts);
-
   finish();
 }
 function finish() {
@@ -265,7 +254,7 @@ function finish() {
     console.log(`❌ article MDX shadow audit failed: ${problems.length} issue(s)`);
     process.exit(1);
   }
-  console.log('✅ article MDX shadow audit passed');
+  console.log('✅ article MDX public shadow audit passed');
   if (warnings.length) console.log('ℹ️ Advisory warnings remain until every migrated article is public-shadow reviewed.');
 }
 
