@@ -86,7 +86,7 @@ async function inspect(page, route, viewportName) {
     robots: document.querySelector('meta[name="robots"]')?.content || '',
     h1: [...document.querySelectorAll('h1')].map(h => h.innerText.trim()).filter(Boolean),
     text: document.body.innerText || '',
-    overflow: document.documentElement.scrollWidth - document.documentElement.clientWidth,
+    overflow: Math.max(0, document.documentElement.scrollWidth - document.documentElement.clientWidth),
     iframeCount: document.querySelectorAll('iframe').length,
     canvasCount: document.querySelectorAll('canvas').length,
   }));

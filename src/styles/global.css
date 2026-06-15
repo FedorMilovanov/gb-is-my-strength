@@ -1,7 +1,16 @@
 *, *::before, *::after {
-img { max-width: 100%; height: auto; display: block; }
   box-sizing: border-box;
-html { overflow-x: hidden; scrollbar-gutter: stable; }
+}
+
+img {
+  max-width: 100%;
+  height: auto;
+  display: block;
+}
+
+html {
+  overflow-x: hidden;
+  scrollbar-gutter: stable;
 }
 html {
   color-scheme: dark;
