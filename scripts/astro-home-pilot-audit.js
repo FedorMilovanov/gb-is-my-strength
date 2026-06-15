@@ -101,6 +101,7 @@ function main() {
   if (hasNoindex(astro)) bad(`home unexpectedly noindex: ${meta(astro, 'robots')}`);
   else ok('home is indexable');
   mustContain('home pagefind body', astro, 'data-pagefind-body');
+  mustContain('home mobile hero hub', astro, 'h-mobile-hero-hub');
 
   const legacyWords = wordCount(legacy);
   const astroWords = wordCount(astro);

@@ -210,7 +210,11 @@ Next:
 [x] promoted `/map/` to Astro shadow wrapper ownership
 [x] promoted all five `nagornaya/chast-*` pages via legacy-faithful Astro shadow wrappers
 [ ] manual Dist Strangler Dry Run visual review before any deploy-switch discussion
-[ ] focused mobile-first polish of `/` so shadow home feels like the same beautiful site, not a second UI
+[~] focused mobile-first polish of `/` so shadow home feels like the same beautiful site, not a second UI
+    - done: first-screen library chooser `.h-mobile-hero-hub`
+    - done: resume-first re-entry ordering above dashboard on mobile
+    - done: tighter mobile hero rhythm + stronger quick-action dock hierarchy
+    - next: browser screenshot pack / touch review in full Playwright env
 [ ] representative browser smoke for the newly promoted shadow wrappers/pages in an environment with full Playwright system libs
 [ ] if wrapper-parity strategy stays accepted, add one visual/a11y browser audit pass specifically for `/map/`, `/karty/avraam/`, `nagornaya/chast-*`
 [ ] still no production deploy switch

@@ -139,7 +139,7 @@
 
   <!-- Stylesheets -->
   <link rel="stylesheet" href="css/site.css?v=25ed4218">
-  <link rel="stylesheet" href="css/home.css?v=b5c35a62">
+  <link rel="stylesheet" href="css/home.css?v=559535dd">
   <link rel="stylesheet" href="css/command-palette.css?v=48f8ed38">
     <link rel="stylesheet" href="css/mobile-hotfix.css?v=decfea58">
   <link rel="preload" as="image" type="image/webp" fetchpriority="high" imagesrcset="images/og-nagornaya-propoved-600w.webp 600w, images/og-nagornaya-propoved-900w.webp 900w, images/og-nagornaya-propoved.webp 800w" imagesizes="(max-width: 640px) 600px, (max-width: 1024px) 900px, 800px">
@@ -313,7 +313,48 @@
         </button>
       </div>
 
+      <div class="h-mobile-hero-hub" aria-label="Войти в библиотеку">
+        <div class="h-mobile-hero-hub__meta" role="list" aria-label="Ключевые форматы библиотеки">
+          <span class="h-mobile-hero-hub__stat" role="listitem">Каталог</span>
+          <span class="h-mobile-hero-hub__stat" role="listitem">Серии</span>
+          <span class="h-mobile-hero-hub__stat" role="listitem">3D-карта</span>
+        </div>
+        <div class="h-mobile-hero-hub__card">
+          <span class="h-mobile-hero-hub__kicker">Войти в библиотеку</span>
+          <strong>Выберите способ входа, а не листайте всё подряд</strong>
+          <p class="h-mobile-hero-hub__copy">Каталог — если нужен точный материал, серия — если хотите идти по порядку, 3D-карта — если нужен визуальный вход.</p>
+          <div class="h-mobile-hero-hub__actions" role="list">
+            <a href="/articles/" class="h-mobile-hero-hub__action" role="listitem">Каталог</a>
+            <a href="/nagornaya/" class="h-mobile-hero-hub__action" role="listitem">Серия</a>
+            <a href="/konfessii/russkij-baptizm/" class="h-mobile-hero-hub__action" role="listitem">3D-карта</a>
+          </div>
+        </div>
+      </div>
+
       <hr class="h-rule" aria-hidden="true">
+    </section>
+
+    <!-- ══════════════════════════════════════════════════
+         RESUME / QUICK RE-ENTRY (priority before dashboard)
+    ══════════════════════════════════════════════════ -->
+    <section class="resume-reading-block" id="resumeReadingBlock" hidden>
+      <div class="resume-reading-card">
+        <div class="resume-reading-label">Продолжить чтение</div>
+        <h2 class="resume-reading-title" id="resumeReadingTitle">Статья</h2>
+        <p class="resume-reading-meta" id="resumeReadingMeta">Раздел и прогресс</p>
+        <div class="resume-reading-progress">
+          <div class="resume-reading-progress-fill" id="resumeReadingProgress"></div>
+        </div>
+        <div class="resume-reading-actions">
+          <a href="#" class="resume-reading-btn" id="resumeReadingLink" rel="noopener" data-resume-link>Продолжить</a>
+          <button type="button" class="resume-reading-dismiss" id="resumeReadingDismiss">Скрыть</button>
+        </div>
+      </div>
+    </section>
+
+    <section class="resume-list-block" id="resumeListBlock" hidden>
+      <div class="resume-list-head"><h3>Недочитанные статьи</h3></div>
+      <div class="resume-list" id="resumeList"></div>
     </section>
 
     <section class="h-mobile-dashboard" aria-labelledby="hMobileDashLabel">
@@ -377,28 +418,6 @@
       </div>
     </section>
 
-    <!-- ══════════════════════════════════════════════════
-         RESUME READING (сохраняется из site.js)
-    ══════════════════════════════════════════════════ -->
-    <section class="resume-reading-block" id="resumeReadingBlock" hidden>
-      <div class="resume-reading-card">
-        <div class="resume-reading-label">Продолжить чтение</div>
-        <h2 class="resume-reading-title" id="resumeReadingTitle">Статья</h2>
-        <p class="resume-reading-meta" id="resumeReadingMeta">Раздел и прогресс</p>
-        <div class="resume-reading-progress">
-          <div class="resume-reading-progress-fill" id="resumeReadingProgress"></div>
-        </div>
-        <div class="resume-reading-actions">
-          <a href="#" class="resume-reading-btn" id="resumeReadingLink" rel="noopener" data-resume-link>Продолжить</a>
-          <button type="button" class="resume-reading-dismiss" id="resumeReadingDismiss">Скрыть</button>
-        </div>
-      </div>
-    </section>
-
-    <section class="resume-list-block" id="resumeListBlock" hidden>
-      <div class="resume-list-head"><h3>Недочитанные статьи</h3></div>
-      <div class="resume-list" id="resumeList"></div>
-    </section>
 
     <!-- ══════════════════════════════════════════════════
          DIRECTIONS GRID

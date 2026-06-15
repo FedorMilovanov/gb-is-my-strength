@@ -46,6 +46,7 @@
 - `src/pages/index.astro` переписан ближе к реальной home-information architecture сайта
 - добавлены legacy-styled feature cards, quick-entry article cards, mobile CTA block, start-here layer и app-like entry structure
 - `BaseLayout.astro` получил режимы `hideHeader/hideFooter`, `bodyClass`, `mainClass`, `legacyStylesheets`, чтобы shadow home можно было собирать ближе к старому сайту, а не как отдельное «другое Astro-приложение»
+- следующий premium pass добавил `.h-mobile-hero-hub` как first-screen library chooser, сделал mobile hero компактнее и поднял resume-block выше dashboard, чтобы мобильный вход ощущался как библиотека/приложение, а не длинная лента карточек
 
 ### 8. `/konfessii/russkij-baptizm/` wrapper переведён в Astro shadow route
 - добавлен `src/pages/konfessii/russkij-baptizm/index.astro`
