@@ -300,3 +300,14 @@ body.articles-index-page .h-section{padding-top:40px;padding-bottom:24px}
 @media (min-width:761px){
   .h-mobile-shelf-head{display:none}
 }
+
+@media (max-width:600px){
+  .home-page .h-grid-4{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+  .home-page .h-grid-4 .h-card-glass{padding:16px 14px;gap:10px;border-radius:13px}
+  .home-page .h-grid-4 .h-card-icon{width:18px;height:18px;margin-top:1px}
+  .home-page .h-grid-4 .h-card-title{font-size:13.5px;line-height:1.24;margin-bottom:4px}
+  .home-page .h-grid-4 .h-card-desc{font-size:11.5px;line-height:1.42}
+}
+@media (max-width:380px){
+  .home-page .h-grid-4{grid-template-columns:1fr}
+}
