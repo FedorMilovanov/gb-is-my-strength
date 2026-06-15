@@ -62,6 +62,17 @@
   - `npm run astro:audit:ishod:no-build`
 - route включён в ownership manifest, dist publication audit и Pagefind required-public-pages layer
 
+### 10. Legacy-faithful shadow wrapper pattern started for the hardest pages
+- `src/utils/legacyShadow.ts` позволяет собирать Astro-owned route, который тянет body/head-behaviour из legacy HTML без ручного «упрощения» дизайна
+- это особенно важно там, где owner хочет видеть не «новый другой сайт», а ту же страницу, но уже под контролем strangler ownership layer
+
+### 11. `/map/` and `/karty/avraam/` promoted via shadow wrappers; all `nagornaya/chast-*` routes promoted the same way
+- `src/pages/map/index.astro`
+- `src/pages/karty/avraam/index.astro`
+- `src/pages/nagornaya/chast-1..5/index.astro`
+- result: all 42/42 baseline public pages now resolve as explicit Astro shadow-owned routes in `dist`
+- production root still untouched; deploy switch still forbidden without owner decision
+
 ## Проверки после cleanup
 
 Проходит:
