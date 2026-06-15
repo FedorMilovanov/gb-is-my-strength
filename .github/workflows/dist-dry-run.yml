@@ -45,6 +45,7 @@ jobs:
           test -f dist/index.html
           test -f dist/about/index.html
           test -f dist/articles/index.html
+          test -f dist/biografii/index.html
           test -f dist/hard-texts/index.html
           test -f dist/pastor-series/index.html
           test -f dist/articles/dzhon-gill-spravochnik/index.html
