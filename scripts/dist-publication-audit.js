@@ -77,7 +77,7 @@ function pagefindBodyPages() {
 function checkRequiredFiles() {
   const required = [
     'index.html', 'about/index.html', 'articles/index.html', 'biografii/index.html',
-    'hard-texts/index.html', 'pastor-series/index.html', ...SHADOW_ARTICLES.map(slug => `articles/${slug}/index.html`),
+    'hard-texts/index.html', 'pastor-series/index.html', 'nagornaya/index.html', ...SHADOW_ARTICLES.map(slug => `articles/${slug}/index.html`),
     '404.html', 'CNAME', 'robots.txt', 'sitemap.xml', 'feed.xml',
     'manifest.json', 'sw.js', 'llms.txt', 'css/site.css', 'js/site.js', 'js/sw-register.js',
     'images/og-preview-1200x630.webp', 'konfessii/russkij-baptizm/_app/index.html'
@@ -124,6 +124,7 @@ function checkAstroSeriesLandingOwnership() {
     ['biografii/index.html', '/biografii/', 'https://gospod-bog.ru/biografii/', 'astro-biografii-index'],
     ['hard-texts/index.html', '/hard-texts/', 'https://gospod-bog.ru/hard-texts/', 'astro-series-page'],
     ['pastor-series/index.html', '/pastor-series/', 'https://gospod-bog.ru/pastor-series/', 'astro-series-page'],
+    ['nagornaya/index.html', '/nagornaya/', 'https://gospod-bog.ru/nagornaya/', 'astro-nagornaya-index'],
   ]) {
     if (!exists(file)) continue;
     const html = read(file);
