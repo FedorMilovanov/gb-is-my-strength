@@ -27,6 +27,7 @@ const BASE_ROUTES = [
   { path: '/', kind: 'astro', canonical: 'https://gospod-bog.ru/', h1: 'Господь Бог — Сила Моя' },
   { path: '/articles/', kind: 'legacy', canonical: 'https://gospod-bog.ru/articles/' },
   { path: '/articles/kod-da-vinchi/', kind: 'legacy', canonical: 'https://gospod-bog.ru/articles/kod-da-vinchi/' },
+  { path: '/baptisty-rossii/', kind: 'astro', canonical: 'https://gospod-bog.ru/baptisty-rossii/', h1: 'Баптисты России' },
   { path: '/karty/', kind: 'legacy', canonical: 'https://gospod-bog.ru/karty/' },
   { path: '/karty/avraam/', kind: 'legacy-map', canonical: 'https://gospod-bog.ru/karty/avraam/' },
   { path: '/konfessii/', kind: 'legacy', canonical: 'https://gospod-bog.ru/konfessii/' },
