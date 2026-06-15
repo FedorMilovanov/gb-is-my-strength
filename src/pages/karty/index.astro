@@ -1,0 +1,22 @@
+---
+import BaseLayout from '@/layouts/BaseLayout.astro';
+import { SITE } from '@/data/site';
+const canonical = `${SITE.url}/karty/`;
+const title = 'Карты | Господь Бог — Сила Моя';
+const description = 'Интерактивные библейские карты Писания: маршруты, археология, иврит и источники. Уже открыт «Путь Авраама»; карта Исхода готовится.';
+const cards = [
+ ['Путь Авраама','/karty/avraam/','Интерактивная карта Бытия 11–25: Ур, Харран, Ханаан, Египет, Хеврон, обетование, завет и ключевые археологические вопросы.'],
+ ['Исход из Египта','/karty/ishod/','Маршрут Исхода, переходы, пустыня, Синай, спорные локализации и подготовка расширенного материала.'],
+ ['Путешествия Павла','/karty/','Будущий раздел для миссионерских путешествий апостола Павла, городов, церквей и посланий Нового Завета.'],
+];
+const jsonLd = {'@context':'https://schema.org','@graph':[
+ {'@type':'CollectionPage','@id':`${canonical}#collectionpage`,url:canonical,name:title,description,inLanguage:'ru',isPartOf:{'@id':SITE.websiteId},publisher:{'@id':SITE.orgId},image:`${SITE.url}/images/og-karty-1200x630.webp`},
+ {'@type':'BreadcrumbList','@id':`${canonical}#breadcrumbs`,itemListElement:[{'@type':'ListItem',position:1,name:SITE.name,item:`${SITE.url}/`},{'@type':'ListItem',position:2,name:'Карты',item:canonical}]}
+]};
+---
+<BaseLayout title={title} description={description} canonical={canonical} ogImage={`${SITE.url}/images/og-karty-1200x630.webp`} ogTitle="Карты" ogDescription={description} jsonLd={jsonLd}>
+  <section class="astro-page astro-karty-index" data-pagefind-body>
+    <header class="astro-page__header"><p class="astro-eyebrow">Библейская география</p><h1>Библейские карты</h1><p>{description}</p><p>Карты помогают увидеть библейский текст в пространстве: маршруты, города, реки, пустыни, спорные точки локализации и связь повествования с историей. Это не замена экзегезе, а визуальный слой к изучению Писания.</p><p>Каждая карта должна соединять географию, археологию, иврит, источники и осторожность там, где данные спорны. Поэтому раздел развивается постепенно: сначала маршруты патриархов и Исхода, затем более широкие библейские и исторические связи.</p></header>
+    <div class="astro-card-grid">{cards.map(([cardTitle, href, text]) => <article class="astro-card"><h2><a href={href}>{cardTitle}</a></h2><p>{text}</p></article>)}</div>
+  </section>
+</BaseLayout>
