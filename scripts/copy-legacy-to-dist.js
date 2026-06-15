@@ -10,6 +10,13 @@
  *   --omit-build-only / --production-like
  *     Remove Astro routes marked status:"build-only" after `astro build`.
  *     This gives us a deploy-like dist without exposing /dev/astro-test/.
+ *
+ *   --dry-run
+ *     Do not mutate dist/. Record planned copies/removals and write an ignored
+ *     report to reports/dist-copy-dry-run-manifest.json unless --no-manifest.
+ *
+ *   --no-manifest
+ *     Skip writing the ignored reports/dist-copy-*.json operation manifest.
  */
 'use strict';
 
@@ -20,6 +27,8 @@ const ROOT = path.join(__dirname, '..');
 const DIST = path.join(ROOT, 'dist');
 const OWNERSHIP = path.join(ROOT, 'migration/page-ownership.json');
 const OMIT_BUILD_ONLY = process.argv.includes('--omit-build-only') || process.argv.includes('--production-like');
+const DRY_RUN = process.argv.includes('--dry-run');
+const WRITE_MANIFEST = !process.argv.includes('--no-manifest');
 
 const PUBLIC_ROOT_FILES = [
   '.nojekyll',
@@ -60,6 +69,7 @@ const PUBLIC_DIRS = [
 const NEVER_COPY_DIRS = new Set(['.git', 'node_modules', 'dist', 'out', 'build', 'coverage', 'reports', 'audit', '.astro', '_build-tools', 'src', 'scripts', 'docs', 'migration']);
 
 function rel(abs) { return path.relative(ROOT, abs).replace(/\\/g, '/'); }
+function relDist(abs) { return path.relative(DIST, abs).replace(/\\/g, '/'); }
 function isAstroOwned(meta) { return String(meta.owner || '').startsWith('astro'); }
 function isBuildOnly(meta) { return String(meta.status || '') === 'build-only'; }
 function loadOwnership() {
@@ -90,7 +100,20 @@ function distPathForRoute(route) {
   if (route.endsWith('/')) return path.join(DIST, route.replace(/^\//, '').replace(/\/$/, ''), 'index.html');
   return path.join(DIST, route.replace(/^\//, ''));
 }
+function makeStats() {
+  return {
+    mode: DRY_RUN ? 'dry-run' : 'write',
+    files: 0,
+    bytes: 0,
+    copied: [],
+    skippedAstroOwned: [],
+    skippedExisting: [],
+    removedGenerated: [],
+    omittedBuildOnly: [],
+  };
+}
 function pruneEmptyDirs(startDir) {
+  if (DRY_RUN) return;
   let dir = startDir;
   while (dir && dir.startsWith(DIST) && dir !== DIST) {
     try {
@@ -105,14 +128,14 @@ function removeRouteOutput(route, stats) {
   if (route.endsWith('/')) {
     const dir = path.dirname(file);
     if (fs.existsSync(dir)) {
-      fs.rmSync(dir, { recursive: true, force: true });
+      if (!DRY_RUN) fs.rmSync(dir, { recursive: true, force: true });
       stats.omittedBuildOnly.push(route);
       pruneEmptyDirs(path.dirname(dir));
     }
     return;
   }
   if (fs.existsSync(file)) {
-    fs.rmSync(file, { force: true });
+    if (!DRY_RUN) fs.rmSync(file, { force: true });
     stats.omittedBuildOnly.push(route);
     pruneEmptyDirs(path.dirname(file));
   }
@@ -121,12 +144,16 @@ function shouldSkipLegacyFile(srcAbs, astroRoutes) {
   const route = routeForFile(srcAbs);
   return astroRoutes.has(route);
 }
-function ensureDir(file) { fs.mkdirSync(path.dirname(file), { recursive: true }); }
+function ensureDir(file) {
+  if (!DRY_RUN) fs.mkdirSync(path.dirname(file), { recursive: true });
+}
 function copyFile(src, dest, stats) {
+  const size = fs.statSync(src).size;
   ensureDir(dest);
-  fs.copyFileSync(src, dest);
+  if (!DRY_RUN) fs.copyFileSync(src, dest);
   stats.files += 1;
-  stats.bytes += fs.statSync(src).size;
+  stats.bytes += size;
+  stats.copied.push({ source: rel(src), destination: relDist(dest), bytes: size, route: routeForFile(src) });
 }
 
 function removeAstroGeneratedSitemaps(stats) {
@@ -136,7 +163,7 @@ function removeAstroGeneratedSitemaps(stats) {
   if (!fs.existsSync(DIST)) return;
   for (const name of fs.readdirSync(DIST)) {
     if (/^sitemap-(?:index|\d+)\.xml$/i.test(name)) {
-      fs.rmSync(path.join(DIST, name), { force: true });
+      if (!DRY_RUN) fs.rmSync(path.join(DIST, name), { force: true });
       stats.removedGenerated.push(name);
     }
   }
@@ -167,7 +194,7 @@ function copyDir(srcDir, destDir, astroRoutes, stats) {
     }
   }
 }
-function verifyRequiredDist(astroRoutes, omittedRoutes, stats) {
+function verifyRequiredDist(astroRoutes, omittedRoutes) {
   const missing = [];
   const forbidden = [];
   for (const route of astroRoutes.keys()) {
@@ -191,10 +218,37 @@ function verifyRequiredDist(astroRoutes, omittedRoutes, stats) {
     }
     process.exit(1);
   }
-  console.log(`✅ copy-legacy-to-dist: copied ${stats.files} files (${Math.round(stats.bytes / 1024)} KB)`);
+}
+function writeCopyManifest(stats, astroRoutes, omittedRoutes) {
+  if (!WRITE_MANIFEST) return;
+  const reportsDir = path.join(ROOT, 'reports');
+  fs.mkdirSync(reportsDir, { recursive: true });
+  const file = path.join(reportsDir, DRY_RUN ? 'dist-copy-dry-run-manifest.json' : 'dist-copy-manifest.json');
+  const payload = {
+    version: 1,
+    generatedAt: new Date().toISOString(),
+    mode: stats.mode,
+    omitBuildOnly: OMIT_BUILD_ONLY,
+    dryRunDoesNotMutateDist: DRY_RUN,
+    copiedFileCount: stats.files,
+    copiedBytes: stats.bytes,
+    astroOwnedRoutes: [...astroRoutes.keys()],
+    omittedBuildOnlyRoutes: [...omittedRoutes.keys()],
+    copied: stats.copied,
+    skippedAstroOwned: [...new Set(stats.skippedAstroOwned)],
+    skippedExisting: stats.skippedExisting,
+    removedGenerated: stats.removedGenerated,
+    omittedBuildOnly: stats.omittedBuildOnly,
+  };
+  fs.writeFileSync(file, JSON.stringify(payload, null, 2) + '\n');
+  console.log(`   Copy operation manifest: ${path.relative(ROOT, file).replace(/\\/g, '/')}`);
+}
+function printSummary(stats) {
+  const action = DRY_RUN ? 'would copy' : 'copied';
+  console.log(`✅ copy-legacy-to-dist: ${action} ${stats.files} files (${Math.round(stats.bytes / 1024)} KB)`);
   if (stats.skippedAstroOwned.length) console.log(`   Astro-owned legacy pages skipped: ${[...new Set(stats.skippedAstroOwned)].join(', ')}`);
-  if (stats.omittedBuildOnly.length) console.log(`   Build-only Astro routes omitted: ${stats.omittedBuildOnly.join(', ')}`);
-  if (stats.removedGenerated.length) console.log(`   Removed partial Astro sitemap files: ${stats.removedGenerated.join(', ')}`);
+  if (stats.omittedBuildOnly.length) console.log(`   Build-only Astro routes ${DRY_RUN ? 'would be omitted' : 'omitted'}: ${stats.omittedBuildOnly.join(', ')}`);
+  if (stats.removedGenerated.length) console.log(`   Partial Astro sitemap files ${DRY_RUN ? 'would be removed' : 'removed'}: ${stats.removedGenerated.join(', ')}`);
   if (stats.skippedExisting.length) console.log(`   Existing dist files preserved: ${stats.skippedExisting.slice(0, 12).join(', ')}${stats.skippedExisting.length > 12 ? '…' : ''}`);
 }
 function main() {
@@ -203,7 +257,7 @@ function main() {
     process.exit(1);
   }
   const { astroRoutes, omittedRoutes } = loadOwnership();
-  const stats = { files: 0, bytes: 0, skippedAstroOwned: [], skippedExisting: [], removedGenerated: [], omittedBuildOnly: [] };
+  const stats = makeStats();
   removeAstroGeneratedSitemaps(stats);
   for (const route of omittedRoutes.keys()) removeRouteOutput(route, stats);
   for (const file of PUBLIC_ROOT_FILES) {
@@ -218,7 +272,10 @@ function main() {
   const distIndex = path.join(DIST, 'index.html');
   if (fs.existsSync(rootIndex) && !fs.existsSync(distIndex)) copyFile(rootIndex, distIndex, stats);
   for (const dir of PUBLIC_DIRS) copyDir(path.join(ROOT, dir), path.join(DIST, dir), astroRoutes, stats);
-  verifyRequiredDist(astroRoutes, omittedRoutes, stats);
+  writeCopyManifest(stats, astroRoutes, omittedRoutes);
+  if (!DRY_RUN) verifyRequiredDist(astroRoutes, omittedRoutes);
+  printSummary(stats);
+  if (DRY_RUN) console.log('ℹ️ Dry run completed: dist/ was not mutated; run without --dry-run to copy legacy files.');
 }
 
 main();

@@ -140,7 +140,7 @@ npm run page-ownership:dist:production-like
 ```text
 [ ] если legacy pages начнут явно перечисляться в manifest, потребовать owner для каждого URL
 [ ] добавить per-route migration status report для batches
-[ ] добавить copy manifest/dry-run log для каждого legacy-owned file
+[x] copy manifest/dry-run log для legacy copy operation добавлен в `copy-legacy-to-dist.js`
 ```
 
 Приоритет:
@@ -153,28 +153,41 @@ P0 перед deploy switch to dist — текущий минимальный gu
 
 ## 5. Главный пробел №4 — copy-legacy safety
 
-Будущий:
+Статус на 2026-06-15: **частично закрыто**.
+
+Текущий:
 
 ```text
 scripts/copy-legacy-to-dist.js
 ```
 
-Должен иметь tests/guards:
+Имеет guards:
 
 ```text
-[ ] dry-run mode
-[ ] no-overwrite Astro-owned files
-[ ] logs every copied URL
-[ ] fails on unknown file conflict
-[ ] copies required assets
-[ ] produces manifest of copied files
+[x] dry-run mode: node scripts/copy-legacy-to-dist.js --dry-run
+[x] npm wrapper: npm run strangler:copy:dry-run
+[x] no-overwrite Astro-owned files
+[x] preserves existing dist files instead of overwriting silently
+[x] logs copied file count / bytes / skipped Astro-owned routes
+[x] copies required assets and required system files
+[x] produces ignored operation manifest:
+    reports/dist-copy-manifest.json
+    reports/dist-copy-dry-run-manifest.json
+```
+
+Остаётся на будущие партии:
+
+```text
+[ ] classify unknown file conflicts more strictly when Astro starts emitting shared assets with legacy names
+[ ] add per-route promotion report for batch migrations
 ```
 
 Команды:
 
 ```bash
-node scripts/copy-legacy-to-dist.js --dry-run
-node scripts/copy-legacy-to-dist.js --write
+npm run strangler:copy:dry-run
+node scripts/copy-legacy-to-dist.js
+node scripts/copy-legacy-to-dist.js --omit-build-only
 ```
 
 Приоритет:
