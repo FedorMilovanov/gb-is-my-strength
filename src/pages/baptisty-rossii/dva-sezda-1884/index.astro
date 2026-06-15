@@ -1,0 +1,19 @@
+---
+import { getEntry, render } from 'astro:content';
+import ArticleLayout from '@/layouts/ArticleLayout.astro';
+import { SITE } from '@/data/site';
+
+const entry = await getEntry('articles', 'dva-sezda-1884');
+if (!entry) throw new Error('Article entry not found: articles/dva-sezda-1884');
+const { Content } = await render(entry);
+const canonical = `${SITE.url}/baptisty-rossii/dva-sezda-1884/`;
+---
+<ArticleLayout
+  entry={entry}
+  canonical={canonical}
+  robots="index, follow"
+  pilot={false}
+  intendedCanonical={canonical}
+>
+  <Content />
+</ArticleLayout>
