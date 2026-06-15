@@ -1,0 +1,19 @@
+---
+import { getEntry, render } from 'astro:content';
+import ArticleLayout from '@/layouts/ArticleLayout.astro';
+import { SITE } from '@/data/site';
+
+const entry = await getEntry('articles', 'kod-da-vinchi');
+if (!entry) throw new Error('Article entry not found: articles/kod-da-vinchi');
+const { Content } = await render(entry);
+const canonical = `${SITE.url}/articles/kod-da-vinchi/`;
+---
+<ArticleLayout
+  entry={entry}
+  canonical={canonical}
+  robots="index, follow"
+  pilot={false}
+  intendedCanonical={canonical}
+>
+  <Content />
+</ArticleLayout>

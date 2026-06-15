@@ -37,6 +37,16 @@ const MIGRATED_ARTICLES = [
     rel: 'articles/rimlyanam-7-veruyushchiy-ili-neveruyushchiy/index.html',
     canonical: `${SITE}/articles/rimlyanam-7-veruyushchiy-ili-neveruyushchiy/`,
   },
+  {
+    slug: 'kod-da-vinchi',
+    rel: 'articles/kod-da-vinchi/index.html',
+    canonical: `${SITE}/articles/kod-da-vinchi/`,
+  },
+  {
+    slug: 'dzhon-gill-chast-1-chelovek',
+    rel: 'articles/dzhon-gill-chast-1-chelovek/index.html',
+    canonical: `${SITE}/articles/dzhon-gill-chast-1-chelovek/`,
+  },
 ];
 
 const problems = [];

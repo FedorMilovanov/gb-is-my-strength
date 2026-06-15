@@ -19,6 +19,8 @@ const SHADOW_ARTICLES = [
   'dzhon-gill-spravochnik',
   'dzhon-gill-istoricheskiy-kontekst',
   'rimlyanam-7-veruyushchiy-ili-neveruyushchiy',
+  'kod-da-vinchi',
+  'dzhon-gill-chast-1-chelovek',
 ];
 const problems = [];
 const notes = [];
