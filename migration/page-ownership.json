@@ -93,9 +93,27 @@
       "risk": 2,
       "status": "shadow-pilot"
     },
+    "/karty/": {
+      "owner": "astro",
+      "source": "src/pages/karty/index.astro",
+      "risk": 2,
+      "status": "shadow-pilot"
+    },
+    "/konfessii/": {
+      "owner": "astro",
+      "source": "src/pages/konfessii/index.astro",
+      "risk": 2,
+      "status": "shadow-pilot"
+    },
     "/nagornaya/": {
       "owner": "astro",
       "source": "src/pages/nagornaya/index.astro",
+      "risk": 2,
+      "status": "shadow-pilot"
+    },
+    "/nagornaya/seriya/": {
+      "owner": "astro",
+      "source": "src/pages/nagornaya/seriya/index.astro",
       "risk": 2,
       "status": "shadow-pilot"
     },

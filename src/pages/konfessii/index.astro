@@ -1,0 +1,22 @@
+---
+import BaseLayout from '@/layouts/BaseLayout.astro';
+import { SITE } from '@/data/site';
+const canonical = `${SITE.url}/konfessii/`;
+const title = 'Конфессии и Деноминации | Господь Бог — Сила Моя';
+const description = 'Отдел «Конфессии и Деноминации»: история протестантских движений России с максимальной опорой на первоисточники. Первый материал — «Карта Русского Баптизма» (23 узла, 27 связей).';
+const cards = [
+ ['Карта Русского Баптизма','/konfessii/russkij-baptizm/','Интерактивная 3D-история русского баптизма: узлы, связи, гонения, совесть, подпольная печать и источники.'],
+ ['Пятидесятничество в России','/konfessii/','Будущий материал об истории, источниках, людях, общинах и спорных вопросах пятидесятнического движения в России.'],
+ ['Древо протестантских течений','/konfessii/','Будущий обзор конфессиональных ветвей, богословских различий, исторических связей и терминологической карты.'],
+];
+const jsonLd = {'@context':'https://schema.org','@graph':[
+ {'@type':'CollectionPage','@id':`${canonical}#collectionpage`,url:canonical,name:title,description,inLanguage:'ru',isPartOf:{'@id':SITE.websiteId},publisher:{'@id':SITE.orgId},image:`${SITE.url}/images/og-konfessii-1200x630.webp`},
+ {'@type':'BreadcrumbList','@id':`${canonical}#breadcrumbs`,itemListElement:[{'@type':'ListItem',position:1,name:SITE.name,item:`${SITE.url}/`},{'@type':'ListItem',position:2,name:'Конфессии и Деноминации',item:canonical}]}
+]};
+---
+<BaseLayout title={title} description={description} canonical={canonical} ogImage={`${SITE.url}/images/og-konfessii-1200x630.webp`} ogTitle="Конфессии и Деноминации" ogDescription={description} jsonLd={jsonLd}>
+  <section class="astro-page astro-konfessii-index" data-pagefind-body>
+    <header class="astro-page__header"><p class="astro-eyebrow">История деноминаций</p><h1>Конфессии и Деноминации</h1><p>{description}</p><p>Раздел нужен для аккуратного разговора о церковных движениях: не по слухам и карикатурам, а через первоисточники, карты, документы, биографии, статистику и богословские различия.</p><p>Главная задача отдела — показать историю конфессий как сеть реальных людей, общин, исповеданий, преследований, миссий и внутренних споров. Первый большой материал посвящён русскому баптизму; будущие направления будут расширять картину протестантской истории России и соседних традиций.</p><p>Здесь особенно важно различать конфессиональную идентичность, культурные ярлыки и реальные исторические источники. Поэтому каждый будущий материал должен держать вместе хронологию, богословие, документы, географию, внутренние конфликты и свидетельства верующих общин.</p></header>
+    <div class="astro-card-grid">{cards.map(([cardTitle, href, text]) => <article class="astro-card"><h2><a href={href}>{cardTitle}</a></h2><p>{text}</p></article>)}</div>
+  </section>
+</BaseLayout>
