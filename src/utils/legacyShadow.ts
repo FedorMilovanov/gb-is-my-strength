@@ -32,10 +32,11 @@ export function loadLegacyShadowPage(filePath: string | URL): LegacyShadowPage {
   const ogImageAlt = matchOne(html, /<meta[^>]+property="og:image:alt"[^>]+content="([^"]+)"/i, ogTitle || title);
   const bodyClass = matchOne(html, /<body[^>]+class="([^"]+)"/i);
   const bodyHtml = matchOne(html, /<body[^>]*>([\s\S]*?)<\/body>/i);
+  const headInner = matchOne(html, /<head[^>]*>([\s\S]*?)<\/head>/i);
 
-  const styleLinks = [...html.matchAll(/<link[^>]+rel="stylesheet"[^>]*>/gi)].map((m) => m[0]).join('\n');
-  const preloadLinks = [...html.matchAll(/<link[^>]+rel="preload"[^>]*>/gi)].map((m) => m[0]).join('\n');
-  const scriptBlocks = [...html.matchAll(/<script\b[^>]*>([\s\S]*?)<\/script>/gi)].map((m) => m[0]).join('\n');
+  const styleLinks = [...headInner.matchAll(/<link[^>]+rel="stylesheet"[^>]*>/gi)].map((m) => m[0]).join('\n');
+  const preloadLinks = [...headInner.matchAll(/<link[^>]+rel="preload"[^>]*>/gi)].map((m) => m[0]).join('\n');
+  const scriptBlocks = [...headInner.matchAll(/<script\b[^>]*>([\s\S]*?)<\/script>/gi)].map((m) => m[0]).join('\n');
   const headHtml = [preloadLinks, styleLinks, scriptBlocks].filter(Boolean).join('\n');
 
   return {
