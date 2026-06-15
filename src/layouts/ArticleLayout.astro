@@ -13,6 +13,7 @@ interface Props {
 
 const { entry, canonical, robots, pilot = false, intendedCanonical } = Astro.props;
 const data = entry.data;
+const articleAuthorName = data.author === 'abner-chou' ? 'Абнер Чау' : SITE.authorName;
 const h1 = data.h1 || data.title;
 const published = data.publishedAt instanceof Date ? data.publishedAt : new Date(data.publishedAt);
 const updated = data.updatedAt instanceof Date ? data.updatedAt : data.updatedAt ? new Date(data.updatedAt) : undefined;
@@ -35,7 +36,7 @@ const jsonLd = {
       inLanguage: 'ru-RU',
       datePublished: published.toISOString(),
       dateModified: (updated || published).toISOString(),
-      author: { '@id': `${SITE.url}/about/#person`, '@type': 'Person', name: SITE.authorName, url: `${SITE.url}/about/` },
+      author: { '@id': data.author === 'abner-chou' ? `${SITE.url}/authors/abner-chou/#person` : `${SITE.url}/about/#person`, '@type': 'Person', name: articleAuthorName, url: data.author === 'abner-chou' ? `${SITE.url}/authors/abner-chou/` : `${SITE.url}/about/` },
       publisher: { '@id': SITE.orgId },
       mainEntityOfPage: { '@type': 'WebPage', '@id': articleCanonical },
       image: ogImage ? { '@type': 'ImageObject', url: ogImage, width: 1200, height: 630 } : undefined,
@@ -72,7 +73,7 @@ const jsonLd = {
   ogType="article"
   articlePublishedTime={published.toISOString()}
   articleModifiedTime={(updated || published).toISOString()}
-  articleAuthor={SITE.authorName}
+  articleAuthor={articleAuthorName}
   jsonLd={jsonLd}
   technicalBadge={pilot ? 'MDX content pilot · noindex' : undefined}
   footerNote={pilot ? 'Build-only article pipeline preview' : undefined}
@@ -92,7 +93,7 @@ const jsonLd = {
         <div><dt>Опубликовано</dt><dd><time datetime={published.toISOString()}>{published.toLocaleDateString('ru-RU')}</time></dd></div>
         {updated && <div><dt>Обновлено</dt><dd><time datetime={updated.toISOString()}>{updated.toLocaleDateString('ru-RU')}</time></dd></div>}
         {data.readingTime && <div><dt>Чтение</dt><dd>{data.readingTime} мин.</dd></div>}
-        <div><dt>Автор</dt><dd>{data.author}</dd></div>
+        <div><dt>Автор</dt><dd>{articleAuthorName}</dd></div>
       </dl>
       {data.tags.length > 0 && (
         <ul class="astro-article__tags" aria-label="Теги">

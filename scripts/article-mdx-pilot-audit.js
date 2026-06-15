@@ -57,6 +57,16 @@ const MIGRATED_ARTICLES = [
     rel: 'articles/dzhon-gill-chast-3-nasledie/index.html',
     canonical: `${SITE}/articles/dzhon-gill-chast-3-nasledie/`,
   },
+  {
+    slug: 'krajne-li-isporcheno-serdce',
+    rel: 'articles/krajne-li-isporcheno-serdce/index.html',
+    canonical: `${SITE}/articles/krajne-li-isporcheno-serdce/`,
+  },
+  {
+    slug: 'hermenevticheskaya-otsenka-hristotsentrichnoy-germenevtiki',
+    rel: 'articles/hermenevticheskaya-otsenka-hristotsentrichnoy-germenevtiki/index.html',
+    canonical: `${SITE}/articles/hermenevticheskaya-otsenka-hristotsentrichnoy-germenevtiki/`,
+  },
 ];
 
 const problems = [];
