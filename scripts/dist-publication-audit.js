@@ -15,6 +15,10 @@ const DIST = path.join(ROOT, 'dist');
 const REQUIRE_PAGEFIND = process.argv.includes('--require-pagefind');
 const FORBID_DEV = process.argv.includes('--forbid-dev') || process.argv.includes('--production-like');
 const SITE = 'https://gospod-bog.ru';
+const SHADOW_ARTICLES = [
+  'dzhon-gill-spravochnik',
+  'dzhon-gill-istoricheskiy-kontekst',
+];
 const problems = [];
 const notes = [];
 
@@ -64,7 +68,7 @@ function pagefindBodyPages() {
 
 function checkRequiredFiles() {
   const required = [
-    'index.html', 'about/index.html', 'articles/dzhon-gill-spravochnik/index.html',
+    'index.html', 'about/index.html', ...SHADOW_ARTICLES.map(slug => `articles/${slug}/index.html`),
     '404.html', 'CNAME', 'robots.txt', 'sitemap.xml', 'feed.xml',
     'manifest.json', 'sw.js', 'llms.txt', 'css/site.css', 'js/site.js', 'js/sw-register.js',
     'images/og-preview-1200x630.webp', 'konfessii/russkij-baptizm/_app/index.html'
@@ -107,17 +111,21 @@ function checkAstroAboutOwnership() {
   else ok('/about/ has no technical scaffold copy');
 }
 function checkAstroArticleOwnership() {
-  if (!exists('articles/dzhon-gill-spravochnik/index.html')) return;
-  const html = read('articles/dzhon-gill-spravochnik/index.html');
-  if (!/class="astro-article"/.test(html)) bad('/articles/dzhon-gill-spravochnik/ in dist is not Astro-owned output');
-  else ok('/articles/dzhon-gill-spravochnik/ in dist is Astro-owned');
-  if (/Build-only MDX pilot|MDX content pilot|noindex/i.test(stripTags(html))) bad('/articles/dzhon-gill-spravochnik/ contains pilot/noindex copy');
-  else ok('/articles/dzhon-gill-spravochnik/ has no pilot copy');
-  if (isNoindex(html)) bad('/articles/dzhon-gill-spravochnik/ is noindex in dist');
-  else ok('/articles/dzhon-gill-spravochnik/ is indexable in dist');
-  if (!/<link[^>]+rel=["']canonical["'][^>]+href=["']https:\/\/gospod-bog\.ru\/articles\/dzhon-gill-spravochnik\/["']/i.test(html)) {
-    bad('/articles/dzhon-gill-spravochnik/ canonical mismatch in dist');
-  } else ok('/articles/dzhon-gill-spravochnik/ canonical is public URL');
+  for (const slug of SHADOW_ARTICLES) {
+    const file = `articles/${slug}/index.html`;
+    const route = `/articles/${slug}/`;
+    if (!exists(file)) continue;
+    const html = read(file);
+    if (!/class="astro-article"/.test(html)) bad(`${route} in dist is not Astro-owned output`);
+    else ok(`${route} in dist is Astro-owned`);
+    if (/Build-only MDX pilot|MDX content pilot|noindex/i.test(stripTags(html))) bad(`${route} contains pilot/noindex copy`);
+    else ok(`${route} has no pilot copy`);
+    if (isNoindex(html)) bad(`${route} is noindex in dist`);
+    else ok(`${route} is indexable in dist`);
+    const canonicalRe = new RegExp(`<link[^>]+rel=["']canonical["'][^>]+href=["']https:\/\/gospod-bog\.ru\/articles\/${slug}\/["']`, 'i');
+    if (!canonicalRe.test(html)) bad(`${route} canonical mismatch in dist`);
+    else ok(`${route} canonical is public URL`);
+  }
 }
 function checkDevNoindex() {
   const devRoutes = [
