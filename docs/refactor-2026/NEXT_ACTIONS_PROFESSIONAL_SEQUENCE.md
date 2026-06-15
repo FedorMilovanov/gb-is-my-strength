@@ -151,7 +151,7 @@ Risk: high. Do not rush.
 
 ## 7. Current safe continuation — first article MDX pipeline
 
-Статус: 🟡 начато 2026-06-15 build-only/noindex pilot.
+Статус: 🟢 public shadow ownership green in `dist` 2026-06-15; production root still legacy, no deploy switch.
 
 Done:
 
@@ -163,14 +163,24 @@ Done:
 [x] ownership manifest marks preview as build-only
 [x] production-like dist omits build-only article preview
 [x] article-mdx-pilot audit checks metadata/H1/OG/dates/Article JSON-LD and legacy public path is unchanged
+[x] article-aware SEO meta parity: og:type/article:published_time/article:modified_time/article:author
+[x] BreadcrumbList JSON-LD parity on intended public canonical
+[x] curated MDX body migration: ratio 0.96, H2 parity 12/12
+[x] public Astro shadow route `/articles/dzhon-gill-spravochnik/` in `dist`
+[x] ownership manifest promotes article URL to `astro` / `shadow-pilot`
+[x] article shadow audit passes for public route + noindex dev preview
+[x] production-like dist keeps 42 public pages and omits dev routes
+[x] `npm run astro:audit:article-mdx:strict` passes
 ```
 
 Next:
 
 ```text
-[ ] increase MDX body parity for `dzhon-gill-spravochnik` from advisory ratio 0.12 to strict threshold
-[ ] draft extractor for one simple legacy article / or curated MDX body migration
-[ ] only after strict parity: consider actual /articles/dzhon-gill-spravochnik/ shadow ownership in dist, not production deploy
+[ ] manual visual review of Astro shadow `/articles/dzhon-gill-spravochnik/` from production-like `dist`
+[ ] decide whether to keep or remove `/dev/article-mdx-pilot/` canary
+[ ] factor reusable article route/helper only if the second article proves duplication
+[ ] pick next low-risk article for MDX strict -> shadow sequence
+[ ] still no production deploy switch
 ```
 
 ---

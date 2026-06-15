@@ -18,6 +18,8 @@ const published = data.publishedAt instanceof Date ? data.publishedAt : new Date
 const updated = data.updatedAt instanceof Date ? data.updatedAt : data.updatedAt ? new Date(data.updatedAt) : undefined;
 const ogImage = data.ogImage?.startsWith('http') ? data.ogImage : data.ogImage ? `${SITE.url}${data.ogImage}` : undefined;
 const articleCanonical = intendedCanonical || data.canonicalOverride || `${SITE.url}/${data.section}/${data.slug}/`;
+const articleSectionName = data.series === 'dzhon-gill' ? 'Биографии служителей' : data.section;
+const articleSectionUrl = data.series === 'dzhon-gill' ? `${SITE.url}/biografii/` : `${SITE.url}/${data.section}/`;
 const jsonLd = {
   '@context': 'https://schema.org',
   '@graph': [
@@ -26,21 +28,32 @@ const jsonLd = {
       '@id': `${articleCanonical}#article`,
       headline: data.title,
       description: data.description,
+      url: articleCanonical,
       inLanguage: 'ru-RU',
       datePublished: published.toISOString(),
       dateModified: (updated || published).toISOString(),
-      author: { '@id': `${SITE.url}/about/#person`, '@type': 'Person', name: SITE.authorName },
+      author: { '@id': `${SITE.url}/about/#person`, '@type': 'Person', name: SITE.authorName, url: `${SITE.url}/about/` },
       publisher: { '@id': SITE.orgId },
-      mainEntityOfPage: { '@id': `${articleCanonical}#webpage` },
-      image: ogImage ? [ogImage] : undefined,
+      mainEntityOfPage: { '@type': 'WebPage', '@id': articleCanonical },
+      image: ogImage ? { '@type': 'ImageObject', url: ogImage, width: 1200, height: 630 } : undefined,
+      articleSection: articleSectionName,
     },
     {
       '@type': 'WebPage',
-      '@id': `${articleCanonical}#webpage`,
+      '@id': articleCanonical,
       url: articleCanonical,
       name: data.title,
       description: data.description,
       isPartOf: { '@id': SITE.websiteId },
+    },
+    {
+      '@type': 'BreadcrumbList',
+      '@id': `${articleCanonical}#breadcrumbs`,
+      itemListElement: [
+        { '@type': 'ListItem', position: 1, name: 'Главная', item: `${SITE.url}/` },
+        { '@type': 'ListItem', position: 2, name: articleSectionName, item: articleSectionUrl },
+        { '@type': 'ListItem', position: 3, name: data.title, item: articleCanonical },
+      ],
     },
   ],
 };
@@ -53,6 +66,10 @@ const jsonLd = {
   ogImage={ogImage}
   ogTitle={data.title}
   ogDescription={data.description}
+  ogType="article"
+  articlePublishedTime={published.toISOString()}
+  articleModifiedTime={(updated || published).toISOString()}
+  articleAuthor={SITE.authorName}
   jsonLd={jsonLd}
   technicalBadge={pilot ? 'MDX content pilot · noindex' : undefined}
   footerNote={pilot ? 'Build-only article pipeline preview' : undefined}

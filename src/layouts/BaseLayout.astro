@@ -13,11 +13,30 @@ interface Props {
   ogImage?: string;
   ogTitle?: string;
   ogDescription?: string;
+  ogType?: 'website' | 'article';
+  articlePublishedTime?: string;
+  articleModifiedTime?: string;
+  articleAuthor?: string;
   jsonLd?: unknown;
   technicalBadge?: string;
   footerNote?: string;
 }
-const { title, description, canonical, robots, ogImage, ogTitle, ogDescription, jsonLd, technicalBadge, footerNote } = Astro.props;
+const {
+  title,
+  description,
+  canonical,
+  robots,
+  ogImage,
+  ogTitle,
+  ogDescription,
+  ogType,
+  articlePublishedTime,
+  articleModifiedTime,
+  articleAuthor,
+  jsonLd,
+  technicalBadge,
+  footerNote,
+} = Astro.props;
 ---
 <!doctype html>
 <html lang="ru">
@@ -32,6 +51,10 @@ const { title, description, canonical, robots, ogImage, ogTitle, ogDescription, 
       ogImage={ogImage}
       ogTitle={ogTitle}
       ogDescription={ogDescription}
+      ogType={ogType}
+      articlePublishedTime={articlePublishedTime}
+      articleModifiedTime={articleModifiedTime}
+      articleAuthor={articleAuthor}
       jsonLd={jsonLd}
     />
   </head>
