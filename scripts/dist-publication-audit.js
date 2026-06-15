@@ -78,7 +78,7 @@ function checkRequiredFiles() {
   const required = [
     'index.html', 'about/index.html', 'articles/index.html', 'biografii/index.html',
     'hard-texts/index.html', 'pastor-series/index.html', 'nagornaya/index.html',
-    'nagornaya/seriya/index.html', 'karty/index.html', 'konfessii/index.html', ...SHADOW_ARTICLES.map(slug => `articles/${slug}/index.html`),
+    'nagornaya/seriya/index.html', 'nagornaya/istochniki/index.html', 'nagornaya/nakhodki/index.html', 'karty/index.html', 'konfessii/index.html', ...SHADOW_ARTICLES.map(slug => `articles/${slug}/index.html`),
     '404.html', 'CNAME', 'robots.txt', 'sitemap.xml', 'feed.xml',
     'manifest.json', 'sw.js', 'llms.txt', 'css/site.css', 'js/site.js', 'js/sw-register.js',
     'images/og-preview-1200x630.webp', 'konfessii/russkij-baptizm/_app/index.html'
@@ -127,6 +127,8 @@ function checkAstroSeriesLandingOwnership() {
     ['pastor-series/index.html', '/pastor-series/', 'https://gospod-bog.ru/pastor-series/', 'astro-series-page'],
     ['nagornaya/index.html', '/nagornaya/', 'https://gospod-bog.ru/nagornaya/', 'astro-nagornaya-index'],
     ['nagornaya/seriya/index.html', '/nagornaya/seriya/', 'https://gospod-bog.ru/nagornaya/seriya/', 'astro-series-page'],
+    ['nagornaya/istochniki/index.html', '/nagornaya/istochniki/', 'https://gospod-bog.ru/nagornaya/istochniki/', 'astro-nagornaya-sources'],
+    ['nagornaya/nakhodki/index.html', '/nagornaya/nakhodki/', 'https://gospod-bog.ru/nagornaya/nakhodki/', 'astro-nagornaya-findings'],
     ['karty/index.html', '/karty/', 'https://gospod-bog.ru/karty/', 'astro-karty-index'],
     ['konfessii/index.html', '/konfessii/', 'https://gospod-bog.ru/konfessii/', 'astro-konfessii-index'],
   ]) {
