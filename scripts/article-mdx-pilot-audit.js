@@ -47,6 +47,16 @@ const MIGRATED_ARTICLES = [
     rel: 'articles/dzhon-gill-chast-1-chelovek/index.html',
     canonical: `${SITE}/articles/dzhon-gill-chast-1-chelovek/`,
   },
+  {
+    slug: 'dzhon-gill-chast-2-uchenyi',
+    rel: 'articles/dzhon-gill-chast-2-uchenyi/index.html',
+    canonical: `${SITE}/articles/dzhon-gill-chast-2-uchenyi/`,
+  },
+  {
+    slug: 'dzhon-gill-chast-3-nasledie',
+    rel: 'articles/dzhon-gill-chast-3-nasledie/index.html',
+    canonical: `${SITE}/articles/dzhon-gill-chast-3-nasledie/`,
+  },
 ];
 
 const problems = [];

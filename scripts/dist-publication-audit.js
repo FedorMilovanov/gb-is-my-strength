@@ -21,6 +21,8 @@ const SHADOW_ARTICLES = [
   'rimlyanam-7-veruyushchiy-ili-neveruyushchiy',
   'kod-da-vinchi',
   'dzhon-gill-chast-1-chelovek',
+  'dzhon-gill-chast-2-uchenyi',
+  'dzhon-gill-chast-3-nasledie',
 ];
 const problems = [];
 const notes = [];

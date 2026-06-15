@@ -151,7 +151,7 @@ Risk: high. Do not rush.
 
 ## 7. Current safe continuation — first article MDX pipeline
 
-Статус: 🟢 five article shadow routes green in `dist` 2026-06-15; production root still legacy, no deploy switch.
+Статус: 🟢 seven article shadow routes green in `dist` 2026-06-15; production root still legacy, no deploy switch.
 
 Done:
 
@@ -171,26 +171,28 @@ Done:
 [x] public Astro shadow route `/articles/rimlyanam-7-veruyushchiy-ili-neveruyushchiy/` in `dist`
 [x] public Astro shadow route `/articles/kod-da-vinchi/` in `dist`
 [x] public Astro shadow route `/articles/dzhon-gill-chast-1-chelovek/` in `dist`
-[x] ownership manifest promotes 5 article URLs to `astro` / `shadow-pilot`
-[x] multi-article shadow audit passes for 5 public routes
+[x] public Astro shadow route `/articles/dzhon-gill-chast-2-uchenyi/` in `dist`
+[x] public Astro shadow route `/articles/dzhon-gill-chast-3-nasledie/` in `dist`
+[x] ownership manifest promotes 7 article URLs to `astro` / `shadow-pilot`
+[x] multi-article shadow audit passes for 7 public routes
 [x] production-like dist keeps 42 public pages and omits dev routes
 [x] `npm run astro:audit:article-mdx:strict` passes
 [x] `strangler:deploy-readiness` includes strict article shadow audit
 [x] dist dry-run workflow asserts article shadow route exists and dev article preview is absent
-[x] dist-publication-audit guards 5 article shadow routes and dev routes
+[x] dist-publication-audit guards 7 article shadow routes and dev routes
 [x] retired `/dev/article-mdx-pilot/` canary after public shadow route became guarded
 ```
 
 Progress snapshot:
 
 ```text
-Общий Astro/MDX переход:          ~35%
-Safety/gates слой:                ~88%
-Build-time strangler readiness:   ~80%
+Общий Astro/MDX переход:          ~40%
+Safety/gates слой:                ~89%
+Build-time strangler readiness:   ~82%
 /about/ Astro pilot:              ~85%
-MDX/article pipeline:             ~49%
-Public shadow ownership:          6/42 baseline pages (~14%)
-Articles shadow-owned:            5/10 article pages (50%)
+MDX/article pipeline:             ~68%
+Public shadow ownership:          8/42 baseline pages (~19%)
+Articles shadow-owned:            7/10 article pages (70%)
 Production migration:             ~0–3%, deploy не переключаем
 Осталось до production switch:     ~90% операционного риска intentionally gated
 ```

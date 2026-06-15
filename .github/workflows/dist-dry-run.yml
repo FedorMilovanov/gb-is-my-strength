@@ -49,6 +49,8 @@ jobs:
           test -f dist/articles/rimlyanam-7-veruyushchiy-ili-neveruyushchiy/index.html
           test -f dist/articles/kod-da-vinchi/index.html
           test -f dist/articles/dzhon-gill-chast-1-chelovek/index.html
+          test -f dist/articles/dzhon-gill-chast-2-uchenyi/index.html
+          test -f dist/articles/dzhon-gill-chast-3-nasledie/index.html
           test -f dist/pagefind/pagefind.js
           test -f dist/.nojekyll
           test ! -e dist/dev/astro-test/index.html
