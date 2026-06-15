@@ -56,7 +56,7 @@
     "sw:dist:audit": "node scripts/sw-dist-readiness-audit.js",
     "sw:dist:audit:pagefind": "node scripts/sw-dist-readiness-audit.js --require-pagefind",
     "sw:dist:audit:deploy-switch": "node scripts/sw-dist-readiness-audit.js --require-pagefind --require-cache-bump",
-    "strangler:deploy-readiness": "npm run astro:audit:about && npm run strangler:audit:production-like",
+    "strangler:deploy-readiness": "npm run astro:audit:about && npm run astro:audit:article-mdx:strict && npm run strangler:audit:production-like",
     "pagefind:build": "node scripts/build-pagefind.js --site . --output-path pagefind",
     "pagefind:build:dist": "node scripts/build-pagefind.js --site dist --output-path dist/pagefind",
     "page-ownership:check": "node scripts/check-page-ownership.js",

@@ -50,6 +50,9 @@ mustScript(scripts, 'strangler:validate', /page-ownership:dist/, 'must verify ow
 mustScript(scripts, 'strangler:audit', /page-ownership:dist/, 'must verify ownership before dist publication audit');
 mustScript(scripts, 'strangler:audit:pagefind', /page-ownership:dist/, 'must verify ownership before Pagefind/dist audit');
 mustScript(scripts, 'strangler:audit:production-like', /page-ownership:dist:production-like/, 'must verify production-like ownership before Pagefind/dist audit');
+mustScript(scripts, 'strangler:deploy-readiness', /astro:audit:about/, 'must include about pilot audit');
+mustScript(scripts, 'strangler:deploy-readiness', /astro:audit:article-mdx:strict/, 'must include strict article MDX shadow audit');
+mustScript(scripts, 'strangler:deploy-readiness', /strangler:audit:production-like/, 'must include production-like strangler audit');
 
 const deploy = read('.github/workflows/deploy.yml');
 must('.github/workflows/deploy.yml', deploy, /node-version:\s*['"]?22['"]?/, 'deploy must use Node 22+ for Astro toolchain compatibility');
@@ -87,7 +90,9 @@ must('.github/workflows/dist-dry-run.yml', distDryRun, /playwright install --wit
 must('.github/workflows/dist-dry-run.yml', distDryRun, /npm run ci:check/, 'dist dry run must run root publication gates');
 must('.github/workflows/dist-dry-run.yml', distDryRun, /npm run astro:audit:about:shots/, 'dist dry run must generate about visual review screenshots');
 must('.github/workflows/dist-dry-run.yml', distDryRun, /npm run strangler:deploy-readiness/, 'dist dry run must run production-like strangler readiness');
-must('.github/workflows/dist-dry-run.yml', distDryRun, /test ! -e dist\/dev\/astro-test\/index\.html/, 'dist dry run must assert build-only dev route is absent');
+must('.github/workflows/dist-dry-run.yml', distDryRun, /test -f dist\/articles\/dzhon-gill-spravochnik\/index\.html/, 'dist dry run must assert shadow article route exists');
+must('.github/workflows/dist-dry-run.yml', distDryRun, /test ! -e dist\/dev\/astro-test\/index\.html/, 'dist dry run must assert build-only astro-test route is absent');
+must('.github/workflows/dist-dry-run.yml', distDryRun, /test ! -e dist\/dev\/article-mdx-pilot\/index\.html/, 'dist dry run must assert build-only article MDX preview is absent');
 must('.github/workflows/dist-dry-run.yml', distDryRun, /actions\/upload-artifact@v4/, 'dist dry run must upload review artifacts without deploying');
 if (/actions\/deploy-pages|actions\/upload-pages-artifact|pages:\s*write|id-token:\s*write/.test(distDryRun)) {
   issues.push('.github/workflows/dist-dry-run.yml: dry run must not request Pages deploy permissions or deploy/upload a Pages artifact');
