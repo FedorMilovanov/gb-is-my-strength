@@ -66,6 +66,23 @@ npm run page-ownership:dist:production-like
 ```bash
 test -f dist/index.html
 test -f dist/about/index.html
+test -f dist/articles/index.html
+test -f dist/biografii/index.html
+test -f dist/hard-texts/index.html
+test -f dist/pastor-series/index.html
+test -f dist/nagornaya/index.html
+test -f dist/nagornaya/chast-1/index.html
+...
+test -f dist/nagornaya/chast-5/index.html
+test -f dist/nagornaya/seriya/index.html
+test -f dist/nagornaya/istochniki/index.html
+test -f dist/nagornaya/nakhodki/index.html
+test -f dist/karty/index.html
+test -f dist/karty/avraam/index.html
+test -f dist/karty/ishod/index.html
+test -f dist/konfessii/index.html
+test -f dist/konfessii/russkij-baptizm/index.html
+test -f dist/map/index.html
 test -f dist/pagefind/pagefind.js
 test -f dist/.nojekyll
 test ! -e dist/dev/astro-test/index.html

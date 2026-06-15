@@ -53,7 +53,16 @@ jobs:
           test -f dist/nagornaya/istochniki/index.html
           test -f dist/nagornaya/nakhodki/index.html
           test -f dist/karty/index.html
+          test -f dist/karty/avraam/index.html
+          test -f dist/karty/ishod/index.html
           test -f dist/konfessii/index.html
+          test -f dist/konfessii/russkij-baptizm/index.html
+          test -f dist/map/index.html
+          test -f dist/nagornaya/chast-1/index.html
+          test -f dist/nagornaya/chast-2/index.html
+          test -f dist/nagornaya/chast-3/index.html
+          test -f dist/nagornaya/chast-4/index.html
+          test -f dist/nagornaya/chast-5/index.html
           test -f dist/articles/dzhon-gill-spravochnik/index.html
           test -f dist/articles/dzhon-gill-istoricheskiy-kontekst/index.html
           test -f dist/articles/rimlyanam-7-veruyushchiy-ili-neveruyushchiy/index.html
