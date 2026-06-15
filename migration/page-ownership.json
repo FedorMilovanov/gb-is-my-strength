@@ -218,6 +218,12 @@
       "source": "src/pages/konfessii/russkij-baptizm/index.astro",
       "risk": 2,
       "status": "shadow-pilot"
+    },
+    "/karty/ishod/": {
+      "owner": "astro",
+      "source": "src/pages/karty/ishod/index.astro",
+      "risk": 2,
+      "status": "shadow-pilot"
     }
   }
 }

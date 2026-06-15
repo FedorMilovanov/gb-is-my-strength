@@ -53,6 +53,15 @@
 - route promoted в `migration/page-ownership.json`
 - `dist-publication-audit` и Pagefind теперь знают об этой публичной Astro-owned wrapper page
 
+### 9. `/karty/ishod/` promoted from static placeholder to Astro shadow prelaunch page
+- добавлен `src/pages/karty/ishod/index.astro`
+- страница больше не просто тёмная заглушка: она использует `route.json` (места, этапы, story modes) и работает как честный prelaunch-hub будущей интерактивной карты
+- добавлен `scripts/astro-ishod-pilot-audit.js`
+- npm scripts:
+  - `npm run astro:audit:ishod`
+  - `npm run astro:audit:ishod:no-build`
+- route включён в ownership manifest, dist publication audit и Pagefind required-public-pages layer
+
 ## Проверки после cleanup
 
 Проходит:
