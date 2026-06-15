@@ -76,7 +76,7 @@ function pagefindBodyPages() {
 
 function checkRequiredFiles() {
   const required = [
-    'index.html', 'about/index.html', 'articles/index.html', ...SHADOW_ARTICLES.map(slug => `articles/${slug}/index.html`),
+    'index.html', 'about/index.html', 'articles/index.html', 'hard-texts/index.html', 'pastor-series/index.html', ...SHADOW_ARTICLES.map(slug => `articles/${slug}/index.html`),
     '404.html', 'CNAME', 'robots.txt', 'sitemap.xml', 'feed.xml',
     'manifest.json', 'sw.js', 'llms.txt', 'css/site.css', 'js/site.js', 'js/sw-register.js',
     'images/og-preview-1200x630.webp', 'konfessii/russkij-baptizm/_app/index.html'
@@ -117,6 +117,21 @@ function checkAstroAboutOwnership() {
   else ok('/about/ in dist is Astro-owned');
   if (/Astro scaffold|Технический прототип|production switch/i.test(stripTags(html))) bad('/about/ contains technical scaffold copy');
   else ok('/about/ has no technical scaffold copy');
+}
+function checkAstroSeriesLandingOwnership() {
+  for (const [file, route, expectedCanonical] of [
+    ['hard-texts/index.html', '/hard-texts/', 'https://gospod-bog.ru/hard-texts/'],
+    ['pastor-series/index.html', '/pastor-series/', 'https://gospod-bog.ru/pastor-series/'],
+  ]) {
+    if (!exists(file)) continue;
+    const html = read(file);
+    if (!/class="astro-page[^"]*astro-series-page/.test(html)) bad(`${route} in dist is not Astro-owned series output`);
+    else ok(`${route} in dist is Astro-owned series output`);
+    if (isNoindex(html)) bad(`${route} is noindex in dist`);
+    else ok(`${route} is indexable in dist`);
+    if (!html.includes(`rel="canonical" href="${expectedCanonical}"`) && !html.includes(`rel='canonical' href='${expectedCanonical}'`)) bad(`${route} canonical mismatch in dist`);
+    else ok(`${route} canonical is public URL`);
+  }
 }
 function checkAstroArticlesIndexOwnership() {
   if (!exists('articles/index.html')) return;
@@ -220,6 +235,7 @@ checkSitemaps();
 checkRobots();
 checkAstroAboutOwnership();
 checkAstroArticlesIndexOwnership();
+checkAstroSeriesLandingOwnership();
 checkAstroArticleOwnership();
 checkDevNoindex();
 checkSwPrecache();

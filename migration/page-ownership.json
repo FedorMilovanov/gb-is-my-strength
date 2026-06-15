@@ -75,6 +75,18 @@
       "risk": 2,
       "status": "shadow-pilot"
     },
+    "/hard-texts/": {
+      "owner": "astro",
+      "source": "src/pages/hard-texts/index.astro",
+      "risk": 2,
+      "status": "shadow-pilot"
+    },
+    "/pastor-series/": {
+      "owner": "astro",
+      "source": "src/pages/pastor-series/index.astro",
+      "risk": 2,
+      "status": "shadow-pilot"
+    },
     "/dev/astro-test/": {
       "owner": "astro-noindex",
       "source": "src/pages/dev/astro-test.astro",
