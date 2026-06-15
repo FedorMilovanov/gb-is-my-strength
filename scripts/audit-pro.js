@@ -4263,6 +4263,11 @@ const JS_SIZE_FLOORS = {
   } else {
     R.ok('Home page main content is pagefind-indexable');
   }
+  if (!/class=["'][^"']*h-mobile-hero-hub[^"']*["']/i.test(html)) {
+    R.err('Home page missing h-mobile-hero-hub first-screen library chooser');
+  } else {
+    R.ok('Home page includes h-mobile-hero-hub first-screen library chooser');
+  }
   if (!/class=["'][^"']*h-mobile-dashboard[^"']*["']/i.test(html)) {
     R.err('Home page missing h-mobile-dashboard quick-start block');
   } else {
