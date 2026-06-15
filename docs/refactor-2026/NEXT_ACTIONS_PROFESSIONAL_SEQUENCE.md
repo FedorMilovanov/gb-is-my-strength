@@ -189,12 +189,12 @@ Done:
 Progress snapshot:
 
 ```text
-Общий Astro/MDX переход:          ~48%
-Safety/gates слой:                ~91%
+Общий Astro/MDX переход:          ~50%
+Safety/gates слой:                ~92%
 Build-time strangler readiness:   ~95%
 /about/ Astro pilot:              ~95%
-MDX/article pipeline:             ~95%
-Public shadow ownership:          11/42 baseline pages (~26%)
+MDX/article pipeline:             ~96%
+Public shadow ownership:          12/42 baseline pages (~29%)
 Articles shadow-owned:            10/10 article pages (100%)
 Production migration:             ~0–3%, deploy не переключаем
 Осталось до production switch:     ~91% операционного риска intentionally gated
@@ -206,6 +206,7 @@ Next:
 [ ] manual visual review of Astro shadow `/articles/dzhon-gill-spravochnik/` from production-like `dist`
 [ ] factor reusable article route/helper only if the second article proves duplication
 [x] migrated final article `/articles/20-antisovetov-pastoru/` with extra caution
+[x] shadow-owned `/articles/` catalog after 10/10 article pages
 [ ] manual Dist Strangler Dry Run visual review before any deploy-switch discussion
 [ ] still no production deploy switch
 ```

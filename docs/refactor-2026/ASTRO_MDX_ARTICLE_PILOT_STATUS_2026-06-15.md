@@ -269,18 +269,37 @@ migration route: /dev/article-mdx-pilot/
 [x] /dev/astro-test/ remains the only build-only dev Astro route
 ```
 
+
+## Articles catalog shadow update
+
+После завершения 10/10 article shadow routes добавлен Astro shadow catalog:
+
+```text
+/articles/
+```
+
+Contract:
+
+```text
+[x] legacy title/H1/description/canonical/OG preserved
+[x] CollectionPage + BreadcrumbList JSON-LD
+[x] data-pagefind-body present
+[x] all article cards link to stable public URLs
+[x] dist-publication-audit requires and verifies dist/articles/index.html
+```
+
 ## Progress snapshot
 
 ```text
-Общий Astro/MDX переход:          ~48%
-Safety/gates слой:                ~91%
+Общий Astro/MDX переход:          ~50%
+Safety/gates слой:                ~92%
 Build-time strangler readiness:   ~95%
 /about/ Astro pilot:              ~95%
-MDX/article pipeline:             ~95%
-Public shadow ownership:          11/42 baseline pages (~26%)
+MDX/article pipeline:             ~96%
+Public shadow ownership:          12/42 baseline pages (~29%)
 Articles shadow-owned:            10/10 article pages (100%)
 Production migration:             ~0–3%, deploy не переключаем
-Осталось:                         31/42 baseline pages still legacy-owned in dist
+Осталось:                         30/42 baseline pages still legacy-owned in dist
 ```
 
 ## Следующий профессиональный шаг
