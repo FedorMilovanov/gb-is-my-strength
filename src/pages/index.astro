@@ -1,0 +1,270 @@
+---
+import BaseLayout from '@/layouts/BaseLayout.astro';
+import { SITE } from '@/data/site';
+
+const canonical = SITE.url + '/';
+const title = 'Господь Бог — Сила Моя | Библейские исследования и апологетика';
+const description = 'Библейские исследования, апологетика и переводы серьёзных зарубежных материалов. Авторские разборы, редактура, проверяемые источники.';
+const ogTitle = 'Господь Бог — Сила Моя';
+const ogDescription = 'Библейские исследования, апологетика и переводы серьёзных зарубежных материалов.';
+const jsonLd = {
+  '@context': 'https://schema.org',
+  '@graph': [
+    {
+      '@type': 'WebSite',
+      '@id': SITE.websiteId,
+      name: SITE.name,
+      url: SITE.url,
+      inLanguage: 'ru',
+      publisher: { '@id': SITE.orgId },
+    },
+    {
+      '@type': 'Organization',
+      '@id': SITE.orgId,
+      name: SITE.name,
+      url: SITE.url,
+      logo: { '@type': 'ImageObject', url: `${SITE.url}/icons/icon-512.png`, width: 512, height: 512 },
+    },
+    {
+      '@type': 'WebPage',
+      '@id': `${canonical}#webpage`,
+      url: canonical,
+      name: title,
+      description,
+      isPartOf: { '@id': SITE.websiteId },
+      breadcrumb: { '@id': `${canonical}#breadcrumbs` },
+    },
+    {
+      '@type': 'BreadcrumbList',
+      '@id': `${canonical}#breadcrumbs`,
+      itemListElement: [
+        { '@type': 'ListItem', position: 1, name: 'Господь Бог — Сила Моя', item: canonical },
+      ],
+    },
+  ],
+};
+---
+
+<BaseLayout
+  title={title}
+  description={description}
+  canonical={canonical}
+  robots="index, follow"
+  ogImage={`${SITE.url}/images/og-preview-1200x630.webp`}
+  ogTitle={ogTitle}
+  ogDescription={ogDescription}
+  ogType="website"
+  jsonLd={jsonLd}
+  technicalBadge="Astro shadow-pilot"
+>
+  <h1 class="sr-only">Господь Бог — Сила Моя</h1>
+  <section class="astro-home-hero" aria-label="Главный заголовок">
+    <div class="astro-hero-scripture" aria-hidden="true">
+      <p class="astro-hero-verse">Господь Бог — сила моя:</p>
+      <p class="astro-hero-verse-sub">Он сделает ноги мои как у оленя</p>
+      <p class="astro-hero-ref">Аввакум 3:19</p>
+    </div>
+    <p class="astro-hero-tagline">Для изучения Писания</p>
+  </section>
+
+  <section class="astro-home-series" aria-label="Серии материалов">
+    <h2>Ключевые направления</h2>
+    <div class="astro-series-grid">
+      <a href="/nagornaya/seriya/" class="astro-series-card">
+        <span class="astro-series-card__eyebrow">Авторская серия</span>
+        <strong class="astro-series-card__title">Нагорная проповедь</strong>
+        <span class="astro-series-card__desc">Исследование Мф 5–7 и Лк 6 в 5 частях</span>
+      </a>
+      <a href="/biografii/" class="astro-series-card">
+        <span class="astro-series-card__eyebrow">Исторический проект</span>
+        <strong class="astro-series-card__title">Биографии служителей</strong>
+        <span class="astro-series-card__desc">Джон Гилл и другие классические богословы</span>
+      </a>
+      <a href="/pastor-series/" class="astro-series-card">
+        <span class="astro-series-card__eyebrow">Серия</span>
+        <strong class="astro-series-card__title">Тёмная сторона кафедры</strong>
+        <span class="astro-series-card__desc">20 антисоветов пастору</span>
+      </a>
+      <a href="/hard-texts/" class="astro-series-card">
+        <span class="astro-series-card__eyebrow">Новая серия</span>
+        <strong class="astro-series-card__title">Тайны человеческого сердца</strong>
+        <span class="astro-series-card__desc">Иеремия 17 и Римлянам 7</span>
+      </a>
+    </div>
+  </section>
+
+  <section class="astro-home-articles" aria-label="Все статьи">
+    <h2>Все статьи</h2>
+    <div class="astro-article-grid">
+      <a href="/articles/kod-da-vinchi/" class="astro-article-card">
+        <strong>«Код да Винчи»: блестящий триллер или историческая подмена?</strong>
+        <span>Апологетика · Никея · Канон Библии</span>
+      </a>
+      <a href="/articles/rimlyanam-7-veruyushchiy-ili-neveruyushchiy/" class="astro-article-card">
+        <strong>Римлянам 7: верующий, неверующий или человек под законом?</strong>
+        <span>Богословие · Римлянам</span>
+      </a>
+      <a href="/articles/dzhon-gill-chast-1-chelovek/" class="astro-article-card">
+        <strong>Джон Гилл — человек: от рождения до призвания</strong>
+        <span>Биография · Богословие</span>
+      </a>
+      <a href="/articles/20-antisovetov-pastoru/" class="astro-article-card">
+        <strong>20 антисоветов пастору</strong>
+        <span>Пасторское служение · Сатира</span>
+      </a>
+    </div>
+    <a href="/articles/" class="astro-link-more">Все статьи →</a>
+  </section>
+</BaseLayout>
+
+<style>
+  /* Shadow pilot: uses minimal Astro-specific styles.
+     Legacy visual design is preserved via site.css variables when served from dist.
+     This section adds only what Astro layout doesn't cover. */
+
+  .astro-home-hero {
+    text-align: center;
+    padding: 3rem 1rem 2rem;
+  }
+
+  .astro-hero-scripture {
+    font-family: var(--astro-font-serif);
+    color: var(--astro-color-gold);
+    direction: rtl;
+    margin-bottom: 1rem;
+  }
+
+  .astro-hero-verse {
+    font-size: clamp(1.4rem, 4vw, 2.2rem);
+    line-height: 1.4;
+    margin: 0;
+    letter-spacing: 0.05em;
+  }
+
+  .astro-hero-verse-sub {
+    font-size: clamp(1rem, 3vw, 1.6rem);
+    line-height: 1.4;
+    margin: 0.25rem 0 0;
+    letter-spacing: 0.05em;
+  }
+
+  .astro-hero-ref {
+    font-size: 0.9rem;
+    margin: 0.5rem 0 0;
+    opacity: 0.7;
+    font-style: normal;
+  }
+
+  .astro-hero-tagline {
+    color: var(--astro-color-muted);
+    font-size: 1.1rem;
+    margin: 0;
+  }
+
+  .astro-home-series,
+  .astro-home-articles {
+    margin-top: 2.5rem;
+    padding-top: 2rem;
+    border-top: 1px solid rgba(212, 165, 116, 0.16);
+  }
+
+  .astro-home-series h2,
+  .astro-home-articles h2 {
+    font-family: var(--astro-font-serif);
+    font-size: clamp(1.2rem, 3vw, 1.6rem);
+    color: var(--astro-color-text);
+    margin: 0 0 1.25rem;
+  }
+
+  .astro-series-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 220px), 1fr));
+    gap: 0.75rem;
+  }
+
+  .astro-series-card {
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+    padding: 1rem;
+    border: 1px solid rgba(212, 165, 116, 0.22);
+    border-radius: 1rem;
+    background: rgba(255, 255, 255, 0.03);
+    text-decoration: none;
+    color: var(--astro-color-text);
+    transition: border-color 0.2s, background 0.2s;
+  }
+
+  .astro-series-card:hover {
+    border-color: var(--astro-color-gold);
+    background: rgba(212, 165, 116, 0.06);
+  }
+
+  .astro-series-card__eyebrow {
+    font-size: 0.72rem;
+    color: var(--astro-color-gold);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+  .astro-series-card__title {
+    font-family: var(--astro-font-serif);
+    font-size: 1.05rem;
+    color: var(--astro-color-text);
+    font-weight: 600;
+  }
+
+  .astro-series-card__desc {
+    font-size: 0.85rem;
+    color: var(--astro-color-muted);
+  }
+
+  .astro-article-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 280px), 1fr));
+    gap: 0.75rem;
+    margin-bottom: 1rem;
+  }
+
+  .astro-article-card {
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+    padding: 1rem;
+    border: 1px solid rgba(212, 165, 116, 0.16);
+    border-radius: 1rem;
+    background: rgba(255, 255, 255, 0.02);
+    text-decoration: none;
+    color: var(--astro-color-text);
+    transition: border-color 0.2s;
+  }
+
+  .astro-article-card:hover {
+    border-color: var(--astro-color-gold);
+  }
+
+  .astro-article-card strong {
+    font-family: var(--astro-font-serif);
+    font-size: 0.95rem;
+    font-weight: 600;
+    line-height: 1.4;
+    color: var(--astro-color-text);
+  }
+
+  .astro-article-card span {
+    font-size: 0.8rem;
+    color: var(--astro-color-muted);
+  }
+
+  .astro-link-more {
+    display: inline-block;
+    color: var(--astro-color-gold);
+    font-size: 0.9rem;
+    text-decoration: none;
+    padding: 0.5rem 0;
+  }
+
+  .astro-link-more:hover {
+    text-decoration: underline;
+  }
+</style>
