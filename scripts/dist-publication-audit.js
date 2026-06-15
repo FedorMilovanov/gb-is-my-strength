@@ -76,7 +76,7 @@ function pagefindBodyPages() {
 
 function checkRequiredFiles() {
   const required = [
-    'index.html', 'about/index.html', ...SHADOW_ARTICLES.map(slug => `articles/${slug}/index.html`),
+    'index.html', 'about/index.html', 'articles/index.html', ...SHADOW_ARTICLES.map(slug => `articles/${slug}/index.html`),
     '404.html', 'CNAME', 'robots.txt', 'sitemap.xml', 'feed.xml',
     'manifest.json', 'sw.js', 'llms.txt', 'css/site.css', 'js/site.js', 'js/sw-register.js',
     'images/og-preview-1200x630.webp', 'konfessii/russkij-baptizm/_app/index.html'
@@ -117,6 +117,16 @@ function checkAstroAboutOwnership() {
   else ok('/about/ in dist is Astro-owned');
   if (/Astro scaffold|Технический прототип|production switch/i.test(stripTags(html))) bad('/about/ contains technical scaffold copy');
   else ok('/about/ has no technical scaffold copy');
+}
+function checkAstroArticlesIndexOwnership() {
+  if (!exists('articles/index.html')) return;
+  const html = read('articles/index.html');
+  if (!/class="astro-page[^"]*astro-articles-index/.test(html)) bad('/articles/ in dist is not Astro-owned catalog output');
+  else ok('/articles/ in dist is Astro-owned catalog output');
+  if (isNoindex(html)) bad('/articles/ is noindex in dist');
+  else ok('/articles/ is indexable in dist');
+  if (!/<link[^>]+rel=["']canonical["'][^>]+href=["']https:\/\/gospod-bog\.ru\/articles\/["']/i.test(html)) bad('/articles/ canonical mismatch in dist');
+  else ok('/articles/ canonical is public URL');
 }
 function checkAstroArticleOwnership() {
   for (const slug of SHADOW_ARTICLES) {
@@ -209,6 +219,7 @@ checkNoPrivateDirs();
 checkSitemaps();
 checkRobots();
 checkAstroAboutOwnership();
+checkAstroArticlesIndexOwnership();
 checkAstroArticleOwnership();
 checkDevNoindex();
 checkSwPrecache();

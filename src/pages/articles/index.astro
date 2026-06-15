@@ -1,0 +1,98 @@
+---
+import BaseLayout from '@/layouts/BaseLayout.astro';
+import { SITE } from '@/data/site';
+
+const canonical = `${SITE.url}/articles/`;
+const title = 'Статьи — Господь Бог — Сила Моя';
+const description = 'Все богословские статьи и переводы: экзегеза, апологетика, герменевтика, разбор заблуждений. Реформатское богословие на русском языке.';
+const ogDescription = 'Все богословские статьи и переводы библиотеки «Господь Бог — Сила Моя».';
+const cards = [
+  {
+    title: 'Джон Гилл: исторический контекст — диссентеры, Саутварк, книги',
+    href: '/articles/dzhon-gill-istoricheskiy-kontekst/',
+    text: 'Исторический фон: Кларендонский кодекс, Солтерс-Холл, диссентерские академии, Саутварк и книжная культура.',
+  },
+  {
+    title: 'Джон Гилл: справочник — хронология, труды, источники',
+    href: '/articles/dzhon-gill-spravochnik/',
+    text: 'Короткий справочник к серии: даты, основные труды, структура Body of Divinity, спорные темы и источники.',
+  },
+  {
+    title: 'Тайны человеческого сердца — серия',
+    href: '/hard-texts/',
+    text: 'Серия о трудных текстах, природе падшего и возрождённого сердца, остаточном грехе и надежде Евангелия.',
+  },
+  {
+    title: 'Крайне ли испорчено моё сердце — если я уже верующий?',
+    href: '/articles/krajne-li-isporcheno-serdce/',
+    text: 'Разбор Иеремии 17:9–10: что изменилось в новом сердце и почему самообман всё ещё требует трезвости.',
+  },
+  {
+    title: 'Римлянам 7: верующий, неверующий или человек под законом?',
+    href: '/articles/rimlyanam-7-veruyushchiy-ili-neveruyushchiy/',
+    text: 'Дотошный разбор Рим. 7:14–25, Ллойда-Джонса, TMSJ/Jay Street и связи с Римлянам 6–8.',
+  },
+  {
+    title: '20 антисоветов, как пастору разрушить своё служение',
+    href: '/articles/20-antisovetov-pastoru/',
+    text: 'Пастырская власть, страх, отсутствие подотчётности, манипуляции и путь к здоровой церковной культуре.',
+  },
+  {
+    title: 'Нагорная проповедь — полная серия',
+    href: '/nagornaya/',
+    text: 'Пять частей о Нагорной проповеди: текст, аудитория, закон, Евангелие и доверие к свидетельству Евангелий.',
+  },
+  {
+    title: 'Герменевтическая оценка христоцентричной герменевтики',
+    href: '/articles/hermenevticheskaya-otsenka-hristotsentrichnoy-germenevtiki/',
+    text: 'Абнер Чау о грамматико-историческом подходе, авторском замысле и законном раскрытии Христа в Писании.',
+  },
+  {
+    title: '«Код да Винчи»: блестящий триллер или историческая подмена?',
+    href: '/articles/kod-da-vinchi/',
+    text: 'Апологетический разбор мифов о Марии Магдалине, Никее, каноне Нового Завета и гностических текстах.',
+  },
+  {
+    title: 'Нашли неточность?',
+    href: '/about/',
+    text: 'Если вы заметили фактическую, богословскую или редакционную неточность, напишите редактору проекта.',
+  },
+];
+const jsonLd = {
+  '@context': 'https://schema.org',
+  '@graph': [
+    { '@type': 'CollectionPage', '@id': `${canonical}#collectionpage`, url: canonical, name: title, description, inLanguage: 'ru', isPartOf: { '@id': SITE.websiteId }, publisher: { '@id': SITE.orgId } },
+    { '@type': 'BreadcrumbList', '@id': `${canonical}#breadcrumbs`, itemListElement: [
+      { '@type': 'ListItem', position: 1, name: 'Главная', item: `${SITE.url}/` },
+      { '@type': 'ListItem', position: 2, name: 'Статьи', item: canonical },
+    ] },
+  ],
+};
+---
+<BaseLayout
+  title={title}
+  description={description}
+  canonical={canonical}
+  ogImage={`${SITE.url}/images/og-preview-1200x630.webp`}
+  ogTitle={title}
+  ogDescription={ogDescription}
+  jsonLd={jsonLd}
+>
+  <section class="astro-page astro-articles-index" data-pagefind-body>
+    <header class="astro-page__header">
+      <p class="astro-eyebrow">Библиотека проекта</p>
+      <h1>Все статьи</h1>
+      <p>{description}</p>
+      <p>Здесь собраны материалы проекта: библейская экзегеза, апологетические разборы, исторические исследования, биографии служителей, пастырские предупреждения и переводы. Каталог сохраняет постоянные URL опубликованных статей и помогает перейти от обзорных серий к отдельным подробным исследованиям.</p>
+      <p>Часть материалов объединена в циклы: «Джон Гилл», «Тайны человеческого сердца», «Тёмная сторона кафедры» и «Нагорная проповедь». Остальные статьи можно читать самостоятельно как справочные или полемические материалы, возвращаясь к ним по мере необходимости для проверки источников, аргументов и связанных тем.</p>
+    </header>
+    <div class="astro-card-grid" aria-label="Каталог статей">
+      {cards.map((card) => (
+        <article class="astro-card">
+          <h2><a href={card.href}>{card.title}</a></h2>
+          <p>{card.text}</p>
+        </article>
+      ))}
+    </div>
+  </section>
+</BaseLayout>
