@@ -778,6 +778,7 @@ Precache список — в самом `sw.js`. При добавлении н�
 
 ### 9.1b Home mobile dashboard — быстрый вход вместо «портянки»
 - На главной странице должен существовать mobile-only блок `.h-mobile-dashboard` с 4 quick-start карточками.
+- Под ним должен существовать mobile-only быстрый rail `.h-mobile-rail` для быстрых переходов по главной и в ключевые разделы.
 - Минимальный набор ссылок в quick-start:
   - `/articles/`
   - `/nagornaya/`
