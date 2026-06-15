@@ -205,3 +205,22 @@ body.articles-index-page .h-section{padding-top:40px;padding-bottom:24px}
   .h-mobile-path-card:active{transform:scale(.985)}
 }
 @media (min-width:761px){.h-mobile-paths{display:none}}
+
+@media (max-width:760px){
+  .home-page .home-content{padding-bottom:86px}
+  .home-page .resume-reading-card{border-radius:18px;padding:18px 16px 16px;background:linear-gradient(155deg,rgba(255,255,255,.82),rgba(245,240,232,.94));box-shadow:0 12px 28px -24px rgba(26,23,20,.3)}
+  html.dark .home-page .resume-reading-card{background:linear-gradient(155deg,rgba(39,33,28,.94),rgba(27,23,19,.98));box-shadow:0 16px 32px -24px rgba(0,0,0,.5)}
+  .home-page .resume-reading-title{font-family:var(--f-serif);font-size:18px;line-height:1.2}
+  .home-page .resume-reading-meta{font-size:12px;line-height:1.45}
+  .home-page .resume-reading-actions{display:flex;gap:10px;flex-wrap:wrap}
+  .home-page .resume-reading-btn,.home-page .resume-reading-dismiss{min-height:40px}
+
+  .h-mobile-dock{position:fixed;left:12px;right:12px;bottom:calc(10px + env(safe-area-inset-bottom,0px));z-index:28;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;padding:8px;border:1px solid var(--h-border);border-radius:20px;background:rgba(248,245,240,.84);backdrop-filter:blur(18px) saturate(150%);-webkit-backdrop-filter:blur(18px) saturate(150%);box-shadow:0 18px 40px -24px rgba(26,23,20,.38)}
+  html.dark .h-mobile-dock{background:rgba(23,20,17,.9);box-shadow:0 18px 42px -24px rgba(0,0,0,.58)}
+  .h-mobile-dock__btn{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;min-height:52px;padding:6px 4px;border-radius:14px;border:1px solid transparent;background:none;color:var(--h-ink);text-decoration:none;font-family:var(--f-ui);cursor:pointer}
+  .h-mobile-dock__btn--action{appearance:none;-webkit-appearance:none}
+  .h-mobile-dock__btn:active{transform:scale(.97)}
+  .h-mobile-dock__icon{font-size:13px;line-height:1;color:var(--h-accent)}
+  .h-mobile-dock__label{font-size:10px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--h-muted)}
+}
+@media (min-width:761px){.h-mobile-dock{display:none}}

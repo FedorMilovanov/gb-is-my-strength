@@ -4278,6 +4278,11 @@ const JS_SIZE_FLOORS = {
   } else {
     R.ok('Home page includes h-mobile-paths guided reading section');
   }
+  if (!/class=["'][^"']*h-mobile-dock[^"']*["']/i.test(html)) {
+    R.err('Home page missing h-mobile-dock bottom quick actions');
+  } else {
+    R.ok('Home page includes h-mobile-dock bottom quick actions');
+  }
   const cardCount = (html.match(/class=["'][^"']*h-mobile-dash-card[^"']*["']/gi) || []).length;
   if (cardCount < 4) {
     R.err(`Home mobile dashboard has too few quick-start cards (${cardCount} < 4)`);
@@ -4296,6 +4301,13 @@ const JS_SIZE_FLOORS = {
     R.err(`Home guided reading section has too few path cards (${pathCards} < 3)`);
   } else {
     R.ok(`Home guided reading section has ${pathCards} path cards`);
+  }
+  const dockTargets = ['#publikacii', '/konfessii/russkij-baptizm/', '#about'];
+  const dockMissing = dockTargets.filter((href) => !html.includes(`href="${href}"`) && !html.includes(`href='${href}'`));
+  if (dockMissing.length) {
+    R.err(`Home mobile dock missing core targets: ${dockMissing.join(', ')}`);
+  } else {
+    R.ok('Home mobile dock includes core targets');
   }
 })();
 
