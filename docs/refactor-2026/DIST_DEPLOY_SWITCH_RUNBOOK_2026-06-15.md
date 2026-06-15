@@ -31,6 +31,9 @@ migration/sw-cache-version-baseline.json
 ## Новые guard-команды
 
 ```bash
+npm run page-ownership:check
+npm run page-ownership:dist
+npm run page-ownership:dist:production-like
 npm run sw:dist:audit
 npm run sw:dist:audit:pagefind
 npm run sw:dist:audit:deploy-switch
@@ -39,16 +42,20 @@ npm run strangler:deploy-readiness
 
 Назначение:
 
+- `page-ownership:check` — быстрый manifest/source guard: все `src/pages/*` Astro routes должны быть объявлены в `migration/page-ownership.json`.
+- `page-ownership:dist` — проверка ownership против обычного strangler `dist`.
+- `page-ownership:dist:production-like` — строгий режим: build-only routes, например `/dev/astro-test/`, должны отсутствовать в deploy-like `dist`.
 - `sw:dist:audit` — статический SW audit для `dist/`, Pagefind optional.
 - `sw:dist:audit:pagefind` — то же, но `/pagefind/pagefind.js` обязан существовать в `dist`.
 - `sw:dist:audit:deploy-switch` — строгий режим для actual deploy-switch commit; сейчас ожидаемо падает, пока `CACHE_VERSION` не bumped.
-- `strangler:deploy-readiness` — локальный dry-run readiness: `/about/` audit, production-like `dist` без build-only dev routes, Pagefind + smoke, затем SW audit в advisory-режиме.
+- `strangler:deploy-readiness` — локальный dry-run readiness: `/about/` audit, production-like `dist` без build-only dev routes, ownership guard, Pagefind + smoke, затем SW audit в advisory-режиме.
 
 ## Pre-switch gates
 
 Перед изменением `.github/workflows/deploy.yml`:
 
 ```bash
+npm run page-ownership:check
 npm run strangler:deploy-readiness
 npm run astro:audit:about:shots
 npm run ci:check
@@ -74,8 +81,9 @@ Dist Strangler Dry Run
 ```text
 [ ] Static publication gates остаются
 [ ] Build step: npm run strangler:build:production-like
+[ ] Ownership gate: npm run page-ownership:dist:production-like
 [ ] Pagefind: npm run pagefind:build:dist
-[ ] Dist publication audit: node scripts/dist-publication-audit.js --require-pagefind
+[ ] Dist publication audit: node scripts/dist-publication-audit.js --require-pagefind --forbid-dev
 [ ] SW strict gate: npm run sw:dist:audit:deploy-switch
 [ ] IndexNow key пишется в dist/${KEY}.txt, не в root
 [ ] touch dist/.nojekyll
@@ -102,7 +110,7 @@ scripts/check-workflows.js
 npm run strangler:build:production-like
 ```
 
-Этот режим вызывает `copy-legacy-to-dist.js --omit-build-only` и удаляет Astro routes с `status:"build-only"` из `migration/page-ownership.json`. Дополнительно `dist-publication-audit.js --forbid-dev` падает, если `/dev/astro-test/` всё ещё есть в production-like output.
+Этот режим вызывает `copy-legacy-to-dist.js --omit-build-only` и удаляет Astro routes с `status:"build-only"` из `migration/page-ownership.json`. Дополнительно `page-ownership:dist:production-like` и `dist-publication-audit.js --forbid-dev` падают, если `/dev/astro-test/` всё ещё есть в production-like output.
 
 ## Rollback
 

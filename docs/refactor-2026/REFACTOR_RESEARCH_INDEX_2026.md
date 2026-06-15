@@ -104,16 +104,22 @@
 - `docs/refactor-2026/RESEARCH_SOURCE_AUDIT_POST_PUSH_2026.md` — post-push deep pass: GitHub Pages/Astro deploy, Yandex, Actions security, Playwright, SW, SVG/iframe a11y.
 - `docs/refactor-2026/DIST_DEPLOY_SWITCH_RUNBOOK_2026-06-15.md` — практический runbook будущего root→dist deploy switch, SW cache bump, Pagefind-on-dist, IndexNow key и rollback.
 - `docs/refactor-2026/DIST_DRY_RUN_WORKFLOW_STATUS_2026-06-15.md` — manual-only GitHub Actions dry-run для production-like `dist` artifact без deploy.
+- `docs/refactor-2026/DIST_OWNERSHIP_AUDIT_STATUS_2026-06-15.md` — ownership guard для `migration/page-ownership.json` и production-like `dist`: Astro routes, build-only routes, built-app copy, implicit legacy baseline.
 
 ## 5. Черновой baseline
 
 - `reports/url-contract-draft.json`
 - `reports/url-contract-draft.md`
 
-Сгенерирован текущий черновик URL/meta baseline по 32 HTML-файлам. Это не финальный контракт, а основа для будущего `scripts/extract-url-contract.js`.
+Исторически это был черновик baseline. Текущий machine baseline для gates теперь:
+
+- `data/public-content-baseline.json` — 42 public indexable pages;
+- `scripts/extract-url-contract.js` / `scripts/compare-url-contract.js` — root/dist URL contract extraction and compare;
+- `migration/page-ownership.json` + `scripts/check-page-ownership.js` — ownership guard для Astro/legacy strangler.
 
 ## 6. Рекомендуемый следующий шаг
 
-1. Для сайта: превратить черновой baseline в постоянный `URL_CONTRACT_2026.md` + скрипт проверки.
-2. Для карт: создать `karty/_shared/route.schema.json` и `karty/avraam/route.draft.json`.
-3. Не начинать массовый rewrite до baseline-аудита.
+1. Не переключать production deploy без отдельного explicit deploy-switch решения владельца.
+2. Перед таким решением вручную запустить GitHub Actions **Dist Strangler Dry Run** и принять visual review `/about/`.
+3. Если refactor продолжается без deploy switch — следующий безопасный технический шаг: готовить first-article MDX preview/gates локально, не трогая homepage, карты и production `deploy.yml`.
+4. Для карт продолжать только data/schema work без подключения к production UI, если нет отдельного решения.
