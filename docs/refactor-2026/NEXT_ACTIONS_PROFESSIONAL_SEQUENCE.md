@@ -151,7 +151,7 @@ Risk: high. Do not rush.
 
 ## 7. Current safe continuation — first article MDX pipeline
 
-Статус: 🟢 nine article shadow routes green in `dist` 2026-06-15; production root still legacy, no deploy switch.
+Статус: 🟢 all article shadow routes green in `dist` 2026-06-15; production root still legacy, no deploy switch.
 
 Done:
 
@@ -175,28 +175,29 @@ Done:
 [x] public Astro shadow route `/articles/dzhon-gill-chast-3-nasledie/` in `dist`
 [x] public Astro shadow route `/articles/krajne-li-isporcheno-serdce/` in `dist`
 [x] public Astro shadow route `/articles/hermenevticheskaya-otsenka-hristotsentrichnoy-germenevtiki/` in `dist`
-[x] ownership manifest promotes 9 article URLs to `astro` / `shadow-pilot`
-[x] multi-article shadow audit passes for 9 public routes
+[x] public Astro shadow route `/articles/20-antisovetov-pastoru/` in `dist`
+[x] ownership manifest promotes 10 article URLs to `astro` / `shadow-pilot`
+[x] multi-article shadow audit passes for 10 public routes
 [x] production-like dist keeps 42 public pages and omits dev routes
 [x] `npm run astro:audit:article-mdx:strict` passes
 [x] `strangler:deploy-readiness` includes strict article shadow audit
 [x] dist dry-run workflow asserts article shadow route exists and dev article preview is absent
-[x] dist-publication-audit guards 9 article shadow routes and dev routes
+[x] dist-publication-audit guards 10 article shadow routes and dev routes
 [x] retired `/dev/article-mdx-pilot/` canary after public shadow route became guarded
 ```
 
 Progress snapshot:
 
 ```text
-Общий Astro/MDX переход:          ~45%
-Safety/gates слой:                ~90%
-Build-time strangler readiness:   ~85%
-/about/ Astro pilot:              ~85%
-MDX/article pipeline:             ~87%
-Public shadow ownership:          10/42 baseline pages (~24%)
-Articles shadow-owned:            9/10 article pages (90%)
+Общий Astro/MDX переход:          ~48%
+Safety/gates слой:                ~91%
+Build-time strangler readiness:   ~95%
+/about/ Astro pilot:              ~95%
+MDX/article pipeline:             ~95%
+Public shadow ownership:          11/42 baseline pages (~26%)
+Articles shadow-owned:            10/10 article pages (100%)
 Production migration:             ~0–3%, deploy не переключаем
-Осталось до production switch:     ~90% операционного риска intentionally gated
+Осталось до production switch:     ~91% операционного риска intentionally gated
 ```
 
 Next:
@@ -204,7 +205,8 @@ Next:
 ```text
 [ ] manual visual review of Astro shadow `/articles/dzhon-gill-spravochnik/` from production-like `dist`
 [ ] factor reusable article route/helper only if the second article proves duplication
-[ ] migrate final article `/articles/20-antisovetov-pastoru/` with extra caution
+[x] migrated final article `/articles/20-antisovetov-pastoru/` with extra caution
+[ ] manual Dist Strangler Dry Run visual review before any deploy-switch discussion
 [ ] still no production deploy switch
 ```
 

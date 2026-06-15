@@ -1,7 +1,7 @@
 # ASTRO_MDX_ARTICLE_PILOT_STATUS_2026-06-15.md
 
 Дата: 2026-06-15
-Статус: **nine public article shadow routes in dist; production deploy не меняется**
+Статус: **all ten public article shadow routes in dist; production deploy не меняется**
 Риск-уровень: **Level 2/3 — public Astro shadow route in dist only, root production still legacy**
 
 ## Цель
@@ -23,6 +23,7 @@ src/content/articles/dzhon-gill-chast-2-uchenyi.mdx
 src/content/articles/dzhon-gill-chast-3-nasledie.mdx
 src/content/articles/krajne-li-isporcheno-serdce.mdx
 src/content/articles/hermenevticheskaya-otsenka-hristotsentrichnoy-germenevtiki.mdx
+src/content/articles/20-antisovetov-pastoru.mdx
 src/layouts/ArticleLayout.astro
 src/pages/articles/dzhon-gill-spravochnik/index.astro
 src/pages/articles/dzhon-gill-istoricheskiy-kontekst/index.astro
@@ -33,6 +34,7 @@ src/pages/articles/dzhon-gill-chast-2-uchenyi/index.astro
 src/pages/articles/dzhon-gill-chast-3-nasledie/index.astro
 src/pages/articles/krajne-li-isporcheno-serdce/index.astro
 src/pages/articles/hermenevticheskaya-otsenka-hristotsentrichnoy-germenevtiki/index.astro
+src/pages/articles/20-antisovetov-pastoru/index.astro
 ```
 
 Новые npm-команды:
@@ -70,6 +72,7 @@ npm run page-ownership:dist
 /articles/dzhon-gill-chast-3-nasledie/
 /articles/krajne-li-isporcheno-serdce/
 /articles/hermenevticheskaya-otsenka-hristotsentrichnoy-germenevtiki/
+/articles/20-antisovetov-pastoru/
 ```
 
 - Retired preview route must stay absent:
@@ -144,7 +147,8 @@ dzhon-gill-chast-2-uchenyi: legacy words 6837; public shadow words 6789; ratio 0
 dzhon-gill-chast-3-nasledie: legacy words 9469; public shadow words 9408; ratio 0.99; H2 4/4
 krajne-li-isporcheno-serdce: legacy words 8250; public shadow words 8005; ratio 0.97; H2 19/19
 hermenevticheskaya-otsenka-hristotsentrichnoy-germenevtiki: legacy words 10056; public shadow words 9887; ratio 0.98; H2 7/7
-multi-article strict shadow audit: passed (9 articles)
+20-antisovetov-pastoru: legacy words 13563; public shadow words 13590; ratio 1.00; H2 17/17
+multi-article strict shadow audit: passed (10 articles)
 ```
 
 `astro:audit:article-mdx:strict` теперь проходит. Retired preview route `/dev/article-mdx-pilot/` is now absent. Public article URL в `dist` остаётся Astro shadow output; repository root legacy HTML остаётся production truth.
@@ -168,8 +172,9 @@ multi-article strict shadow audit: passed (9 articles)
 [x] public Astro route `/articles/dzhon-gill-chast-3-nasledie/` в `dist`
 [x] public Astro route `/articles/krajne-li-isporcheno-serdce/` в `dist`
 [x] public Astro route `/articles/hermenevticheskaya-otsenka-hristotsentrichnoy-germenevtiki/` в `dist`
-[x] ownership manifest: 9 article URLs -> `astro` / `shadow-pilot`
-[x] production-like `dist`: 42 public pages, 10 explicit Astro baseline routes, dev routes omitted
+[x] public Astro route `/articles/20-antisovetov-pastoru/` в `dist`
+[x] ownership manifest: 10 article URLs -> `astro` / `shadow-pilot`
+[x] production-like `dist`: 42 public pages, 11 explicit Astro baseline routes, dev routes omitted
 ```
 
 
@@ -201,6 +206,7 @@ Manual **Dist Strangler Dry Run** также проверяет artifact shape:
 [x] dist/articles/dzhon-gill-chast-3-nasledie/index.html exists
 [x] dist/articles/krajne-li-isporcheno-serdce/index.html exists
 [x] dist/articles/hermenevticheskaya-otsenka-hristotsentrichnoy-germenevtiki/index.html exists
+[x] dist/articles/20-antisovetov-pastoru/index.html exists
 [x] dist/dev/astro-test/index.html absent
 [x] dist/dev/article-mdx-pilot/index.html absent
 ```
@@ -222,6 +228,7 @@ General dist publication audit теперь тоже знает о первом 
 [x] required dist file: articles/dzhon-gill-chast-3-nasledie/index.html
 [x] required dist file: articles/krajne-li-isporcheno-serdce/index.html
 [x] required dist file: articles/hermenevticheskaya-otsenka-hristotsentrichnoy-germenevtiki/index.html
+[x] required dist file: articles/20-antisovetov-pastoru/index.html
 [x] /articles/dzhon-gill-spravochnik/ is Astro-owned output
 [x] /articles/dzhon-gill-spravochnik/ is indexable in dist
 [x] /articles/dzhon-gill-spravochnik/ canonical is public URL
@@ -256,6 +263,7 @@ migration route: /dev/article-mdx-pilot/
 [x] /articles/dzhon-gill-chast-3-nasledie/ exists in dist and is Astro shadow-owned
 [x] /articles/krajne-li-isporcheno-serdce/ exists in dist and is Astro shadow-owned
 [x] /articles/hermenevticheskaya-otsenka-hristotsentrichnoy-germenevtiki/ exists in dist and is Astro shadow-owned
+[x] /articles/20-antisovetov-pastoru/ exists in dist and is Astro shadow-owned
 [x] repository root legacy article remains production truth
 [x] /dev/article-mdx-pilot/ is absent
 [x] /dev/astro-test/ remains the only build-only dev Astro route
@@ -264,15 +272,15 @@ migration route: /dev/article-mdx-pilot/
 ## Progress snapshot
 
 ```text
-Общий Astro/MDX переход:          ~45%
-Safety/gates слой:                ~90%
-Build-time strangler readiness:   ~85%
-/about/ Astro pilot:              ~85%
-MDX/article pipeline:             ~87%
-Public shadow ownership:          10/42 baseline pages (~24%)
-Articles shadow-owned:            9/10 article pages (90%)
+Общий Astro/MDX переход:          ~48%
+Safety/gates слой:                ~91%
+Build-time strangler readiness:   ~95%
+/about/ Astro pilot:              ~95%
+MDX/article pipeline:             ~95%
+Public shadow ownership:          11/42 baseline pages (~26%)
+Articles shadow-owned:            10/10 article pages (100%)
 Production migration:             ~0–3%, deploy не переключаем
-Осталось:                         32/42 baseline pages still legacy-owned in dist
+Осталось:                         31/42 baseline pages still legacy-owned in dist
 ```
 
 ## Следующий профессиональный шаг
@@ -283,7 +291,8 @@ Production migration:             ~0–3%, deploy не переключаем
 [ ] manual visual review public shadow article in `dist`
 [x] `/dev/article-mdx-pilot/` canary removed after public shadow route became fully guarded
 [ ] optionally extract reusable article route helper before second article
-[ ] migrate final article `/articles/20-antisovetov-pastoru/` with extra caution
+[x] migrate final article `/articles/20-antisovetov-pastoru/` with extra caution
+[ ] manual Dist Strangler Dry Run visual review before any deploy-switch discussion
 [ ] production deploy всё ещё не переключать
 ```
 

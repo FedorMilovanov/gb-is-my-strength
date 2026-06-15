@@ -63,6 +63,12 @@
       "risk": 2,
       "status": "shadow-pilot"
     },
+    "/articles/20-antisovetov-pastoru/": {
+      "owner": "astro",
+      "source": "src/pages/articles/20-antisovetov-pastoru/index.astro",
+      "risk": 2,
+      "status": "shadow-pilot"
+    },
     "/dev/astro-test/": {
       "owner": "astro-noindex",
       "source": "src/pages/dev/astro-test.astro",
