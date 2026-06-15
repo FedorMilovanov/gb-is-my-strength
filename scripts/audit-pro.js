@@ -4273,6 +4273,11 @@ const JS_SIZE_FLOORS = {
   } else {
     R.ok('Home page includes h-mobile-rail quick-jump navigation');
   }
+  if (!/class=["'][^"']*h-mobile-paths[^"']*["']/i.test(html)) {
+    R.err('Home page missing h-mobile-paths guided reading section');
+  } else {
+    R.ok('Home page includes h-mobile-paths guided reading section');
+  }
   const cardCount = (html.match(/class=["'][^"']*h-mobile-dash-card[^"']*["']/gi) || []).length;
   if (cardCount < 4) {
     R.err(`Home mobile dashboard has too few quick-start cards (${cardCount} < 4)`);
@@ -4285,6 +4290,12 @@ const JS_SIZE_FLOORS = {
     R.err(`Home mobile dashboard missing required quick-start links: ${missing.join(', ')}`);
   } else {
     R.ok('Home mobile dashboard includes required quick-start links');
+  }
+  const pathCards = (html.match(/class=["'][^"']*h-mobile-path-card[^"']*["']/gi) || []).length;
+  if (pathCards < 3) {
+    R.err(`Home guided reading section has too few path cards (${pathCards} < 3)`);
+  } else {
+    R.ok(`Home guided reading section has ${pathCards} path cards`);
   }
 })();
 
