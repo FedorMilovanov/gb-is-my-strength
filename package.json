@@ -61,7 +61,8 @@
     "pagefind:build:dist": "node scripts/build-pagefind.js --site dist --output-path dist/pagefind",
     "page-ownership:check": "node scripts/check-page-ownership.js",
     "page-ownership:dist": "node scripts/check-page-ownership.js --dist",
-    "page-ownership:dist:production-like": "node scripts/check-page-ownership.js --dist --production-like"
+    "page-ownership:dist:production-like": "node scripts/check-page-ownership.js --dist --production-like",
+    "strangler:copy:dry-run": "npm run astro:build && node scripts/copy-legacy-to-dist.js --dry-run"
   },
   "engines": {
     "node": ">=22.12.0"

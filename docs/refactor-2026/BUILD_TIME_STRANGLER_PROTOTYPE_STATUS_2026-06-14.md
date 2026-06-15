@@ -20,7 +20,8 @@ Package scripts:
 "strangler:validate": "npm run strangler:build && npm run page-ownership:dist && npm run contract:extract:dist && npm run contract:compare:dist",
 "page-ownership:check": "node scripts/check-page-ownership.js",
 "page-ownership:dist": "node scripts/check-page-ownership.js --dist",
-"page-ownership:dist:production-like": "node scripts/check-page-ownership.js --dist --production-like"
+"page-ownership:dist:production-like": "node scripts/check-page-ownership.js --dist --production-like",
+"strangler:copy:dry-run": "npm run astro:build && node scripts/copy-legacy-to-dist.js --dry-run"
 ```
 
 ## Ownership manifest
@@ -46,6 +47,27 @@ Package scripts:
 ## Dist cleanliness
 
 `astro:build` теперь начинается с `dist:clean`, чтобы исключить stale artifacts от прошлых strangler builds.
+
+## Copy dry-run и operation manifest
+
+2026-06-15 `copy-legacy-to-dist.js` получил auditability-слой:
+
+```bash
+npm run strangler:copy:dry-run
+node scripts/copy-legacy-to-dist.js
+node scripts/copy-legacy-to-dist.js --omit-build-only
+```
+
+`--dry-run` не мутирует `dist/`, но показывает, какие legacy files были бы скопированы/пропущены/удалены после `astro build`.
+
+Обычный copy и dry-run пишут ignored reports:
+
+```text
+reports/dist-copy-manifest.json
+reports/dist-copy-dry-run-manifest.json
+```
+
+В manifest фиксируются copied files/bytes/routes, skipped Astro-owned pages, preserved existing dist files, removed partial Astro sitemap files и omitted build-only routes. Это нужно, чтобы будущие batch migrations не были «чёрным ящиком».
 
 ## Проверка
 

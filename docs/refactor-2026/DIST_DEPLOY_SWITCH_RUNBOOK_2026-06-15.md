@@ -34,6 +34,7 @@ migration/sw-cache-version-baseline.json
 npm run page-ownership:check
 npm run page-ownership:dist
 npm run page-ownership:dist:production-like
+npm run strangler:copy:dry-run
 npm run sw:dist:audit
 npm run sw:dist:audit:pagefind
 npm run sw:dist:audit:deploy-switch
@@ -45,6 +46,7 @@ npm run strangler:deploy-readiness
 - `page-ownership:check` — быстрый manifest/source guard: все `src/pages/*` Astro routes должны быть объявлены в `migration/page-ownership.json`.
 - `page-ownership:dist` — проверка ownership против обычного strangler `dist`.
 - `page-ownership:dist:production-like` — строгий режим: build-only routes, например `/dev/astro-test/`, должны отсутствовать в deploy-like `dist`.
+- `strangler:copy:dry-run` — preview copy operation без мутации deploy-like copy step; пишет ignored `reports/dist-copy-dry-run-manifest.json` для inspection.
 - `sw:dist:audit` — статический SW audit для `dist/`, Pagefind optional.
 - `sw:dist:audit:pagefind` — то же, но `/pagefind/pagefind.js` обязан существовать в `dist`.
 - `sw:dist:audit:deploy-switch` — строгий режим для actual deploy-switch commit; сейчас ожидаемо падает, пока `CACHE_VERSION` не bumped.
