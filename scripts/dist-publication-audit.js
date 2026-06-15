@@ -64,7 +64,8 @@ function pagefindBodyPages() {
 
 function checkRequiredFiles() {
   const required = [
-    'index.html', 'about/index.html', '404.html', 'CNAME', 'robots.txt', 'sitemap.xml', 'feed.xml',
+    'index.html', 'about/index.html', 'articles/dzhon-gill-spravochnik/index.html',
+    '404.html', 'CNAME', 'robots.txt', 'sitemap.xml', 'feed.xml',
     'manifest.json', 'sw.js', 'llms.txt', 'css/site.css', 'js/site.js', 'js/sw-register.js',
     'images/og-preview-1200x630.webp', 'konfessii/russkij-baptizm/_app/index.html'
   ];
@@ -85,6 +86,7 @@ function checkSitemaps() {
   if (!exists('sitemap.xml')) return;
   const sitemap = read('sitemap.xml');
   if (/\/dev\/astro-test\//.test(sitemap)) bad('sitemap.xml includes dev/astro-test');
+  if (/\/dev\/article-mdx-pilot\//.test(sitemap)) bad('sitemap.xml includes dev/article-mdx-pilot');
   const locs = [...sitemap.matchAll(/<loc>([^<]+)<\/loc>/g)].map(m => m[1]);
   const missing = locs.filter(u => u.startsWith(SITE) && !localTargetExistsFromUrl(u));
   if (missing.length) missing.slice(0, 20).forEach(u => bad(`sitemap loc missing in dist: ${u}`));
@@ -104,17 +106,37 @@ function checkAstroAboutOwnership() {
   if (/Astro scaffold|Технический прототип|production switch/i.test(stripTags(html))) bad('/about/ contains technical scaffold copy');
   else ok('/about/ has no technical scaffold copy');
 }
+function checkAstroArticleOwnership() {
+  if (!exists('articles/dzhon-gill-spravochnik/index.html')) return;
+  const html = read('articles/dzhon-gill-spravochnik/index.html');
+  if (!/class="astro-article"/.test(html)) bad('/articles/dzhon-gill-spravochnik/ in dist is not Astro-owned output');
+  else ok('/articles/dzhon-gill-spravochnik/ in dist is Astro-owned');
+  if (/Build-only MDX pilot|MDX content pilot|noindex/i.test(stripTags(html))) bad('/articles/dzhon-gill-spravochnik/ contains pilot/noindex copy');
+  else ok('/articles/dzhon-gill-spravochnik/ has no pilot copy');
+  if (isNoindex(html)) bad('/articles/dzhon-gill-spravochnik/ is noindex in dist');
+  else ok('/articles/dzhon-gill-spravochnik/ is indexable in dist');
+  if (!/<link[^>]+rel=["']canonical["'][^>]+href=["']https:\/\/gospod-bog\.ru\/articles\/dzhon-gill-spravochnik\/["']/i.test(html)) {
+    bad('/articles/dzhon-gill-spravochnik/ canonical mismatch in dist');
+  } else ok('/articles/dzhon-gill-spravochnik/ canonical is public URL');
+}
 function checkDevNoindex() {
-  const present = exists('dev/astro-test/index.html');
+  const devRoutes = [
+    ['dev/astro-test/index.html', '/dev/astro-test/'],
+    ['dev/article-mdx-pilot/index.html', '/dev/article-mdx-pilot/'],
+  ];
   if (FORBID_DEV) {
-    if (present) bad('/dev/astro-test/ is present in production-like dist');
-    else ok('/dev/astro-test/ absent from production-like dist');
+    for (const [file, route] of devRoutes) {
+      if (exists(file)) bad(`${route} is present in production-like dist`);
+      else ok(`${route} absent from production-like dist`);
+    }
     return;
   }
-  if (!present) return note('dev/astro-test not present in dist');
-  const html = read('dev/astro-test/index.html');
-  if (!/<meta[^>]+name="robots"[^>]+content="[^"]*noindex/i.test(html)) bad('/dev/astro-test/ is not noindex');
-  else ok('/dev/astro-test/ remains noindex');
+  for (const [file, route] of devRoutes) {
+    if (!exists(file)) { note(`${route} not present in dist`); continue; }
+    const html = read(file);
+    if (!/<meta[^>]+name="robots"[^>]+content="[^"]*noindex/i.test(html)) bad(`${route} is not noindex`);
+    else ok(`${route} remains noindex`);
+  }
 }
 function checkSwPrecache() {
   if (!exists('sw.js')) return;
@@ -171,6 +193,7 @@ checkNoPrivateDirs();
 checkSitemaps();
 checkRobots();
 checkAstroAboutOwnership();
+checkAstroArticleOwnership();
 checkDevNoindex();
 checkSwPrecache();
 checkPagefind();
