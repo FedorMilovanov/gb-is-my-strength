@@ -189,25 +189,29 @@ Done:
 Progress snapshot:
 
 ```text
-Общий Astro/MDX переход:          ~59%
-Safety/gates слой:                ~93%
-Build-time strangler readiness:   ~95%
+Общий Astro/MDX переход:          ~82%
+Safety/gates слой:                ~96%
+Build-time strangler readiness:   ~98%
 /about/ Astro pilot:              ~95%
-MDX/article pipeline:             ~96%
-Public shadow ownership:          21/42 baseline pages (50%)
+MDX/article pipeline:             ~97%
+Public shadow ownership:          42/42 baseline pages (100%)
 Articles shadow-owned:            10/10 article pages (100%)
 Production migration:             ~0–3%, deploy не переключаем
-Осталось до production switch:     ~91% операционного риска intentionally gated
+Осталось до production switch:     в основном visual / smoke / operational risk, а не route coverage
 ```
 
 Next:
 
 ```text
-[ ] manual visual review of Astro shadow `/articles/dzhon-gill-spravochnik/` from production-like `dist`
-[ ] factor reusable article route/helper only if the second article proves duplication
-[x] migrated final article `/articles/20-antisovetov-pastoru/` with extra caution
-[x] shadow-owned `/articles/` catalog after 10/10 article pages
+[x] manual-ish guard layer for public shadow `/` via astro:audit:home
+[x] guard layer for baptisty series shadow routes via astro:audit:baptisty-series
+[x] promoted `/konfessii/russkij-baptizm/` wrapper to Astro shadow ownership
+[x] promoted `/karty/ishod/` to Astro shadow prelaunch ownership
+[x] promoted `/map/` to Astro shadow wrapper ownership
+[x] promoted all five `nagornaya/chast-*` pages via legacy-faithful Astro shadow wrappers
 [ ] manual Dist Strangler Dry Run visual review before any deploy-switch discussion
+[ ] focused mobile-first polish of `/` so shadow home feels like the same beautiful site, not a second UI
+[ ] representative browser smoke for the newly promoted shadow wrappers/pages in an environment with full Playwright system libs
 [ ] still no production deploy switch
 ```
 

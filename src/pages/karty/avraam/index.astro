@@ -1,0 +1,30 @@
+---
+import BaseLayout from '@/layouts/BaseLayout.astro';
+import { loadLegacyShadowPage } from '@/utils/legacyShadow';
+
+const legacy = loadLegacyShadowPage('karty/avraam/index.html');
+---
+
+<BaseLayout
+  title={legacy.title}
+  description={legacy.description}
+  canonical={legacy.canonical}
+  robots="index, follow, max-snippet:-1, max-image-preview:large"
+  ogImage={legacy.ogImage}
+  ogImageAlt={legacy.ogImageAlt}
+  ogTitle={legacy.ogTitle}
+  ogDescription={legacy.ogDescription}
+  bodyClass={legacy.bodyClass}
+  mainClass="astro-main astro-main--bare"
+  hideHeader={true}
+  hideFooter={true}
+  headHtml={legacy.headHtml}
+>
+  <div class="astro-avraam-shadow">
+    <div class="sr-only" data-pagefind-body>
+      Путь Авраама. Интерактивная карта Бытия 11–25: Ур, Харран, Ханаан, Египет, Хеврон, Дан, Содом, Мория, этапы,
+      сюжеты, археология, научные варианты, спорные локализации и библейские источники.
+    </div>
+    <Fragment set:html={legacy.bodyHtml} />
+  </div>
+</BaseLayout>

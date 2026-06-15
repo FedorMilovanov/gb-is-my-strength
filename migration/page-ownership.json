@@ -224,6 +224,48 @@
       "source": "src/pages/karty/ishod/index.astro",
       "risk": 2,
       "status": "shadow-pilot"
+    },
+    "/map/": {
+      "owner": "astro",
+      "source": "src/pages/map/index.astro",
+      "risk": 2,
+      "status": "shadow-pilot"
+    },
+    "/nagornaya/chast-1/": {
+      "owner": "astro",
+      "source": "src/pages/nagornaya/chast-1/index.astro",
+      "risk": 2,
+      "status": "shadow-pilot"
+    },
+    "/nagornaya/chast-2/": {
+      "owner": "astro",
+      "source": "src/pages/nagornaya/chast-2/index.astro",
+      "risk": 2,
+      "status": "shadow-pilot"
+    },
+    "/nagornaya/chast-3/": {
+      "owner": "astro",
+      "source": "src/pages/nagornaya/chast-3/index.astro",
+      "risk": 2,
+      "status": "shadow-pilot"
+    },
+    "/nagornaya/chast-4/": {
+      "owner": "astro",
+      "source": "src/pages/nagornaya/chast-4/index.astro",
+      "risk": 2,
+      "status": "shadow-pilot"
+    },
+    "/nagornaya/chast-5/": {
+      "owner": "astro",
+      "source": "src/pages/nagornaya/chast-5/index.astro",
+      "risk": 2,
+      "status": "shadow-pilot"
+    },
+    "/karty/avraam/": {
+      "owner": "astro",
+      "source": "src/pages/karty/avraam/index.astro",
+      "risk": 2,
+      "status": "shadow-pilot"
     }
   }
 }
