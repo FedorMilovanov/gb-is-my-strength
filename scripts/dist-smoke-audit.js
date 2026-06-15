@@ -24,6 +24,7 @@ const PRODUCTION_LIKE = process.argv.includes('--production-like') || process.ar
 const BASE_ROUTES = [
   { path: '/', kind: 'legacy', canonical: 'https://gospod-bog.ru/', h1: 'Господь Бог — Сила Моя' },
   { path: '/about/', kind: 'astro', canonical: 'https://gospod-bog.ru/about/', h1: 'Фёдор Милованов', forbidText: /Astro scaffold|production switch|Технический прототип/i },
+  { path: '/', kind: 'astro', canonical: 'https://gospod-bog.ru/', h1: 'Господь Бог — Сила Моя' },
   { path: '/articles/', kind: 'legacy', canonical: 'https://gospod-bog.ru/articles/' },
   { path: '/articles/kod-da-vinchi/', kind: 'legacy', canonical: 'https://gospod-bog.ru/articles/kod-da-vinchi/' },
   { path: '/karty/', kind: 'legacy', canonical: 'https://gospod-bog.ru/karty/' },
