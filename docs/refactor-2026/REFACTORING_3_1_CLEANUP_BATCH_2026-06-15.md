@@ -42,6 +42,17 @@
   - `npm run astro:audit:baptisty-series:no-build`
 - `strangler:deploy-readiness` теперь должен проверять не только `/about/` и article MDX routes, но и shadow home page / baptisty-series layer
 
+### 7. Shadow home page moved closer to legacy mobile UX
+- `src/pages/index.astro` переписан ближе к реальной home-information architecture сайта
+- добавлены legacy-styled feature cards, quick-entry article cards, mobile CTA block, start-here layer и app-like entry structure
+- `BaseLayout.astro` получил режимы `hideHeader/hideFooter`, `bodyClass`, `mainClass`, `legacyStylesheets`, чтобы shadow home можно было собирать ближе к старому сайту, а не как отдельное «другое Astro-приложение»
+
+### 8. `/konfessii/russkij-baptizm/` wrapper переведён в Astro shadow route
+- добавлен `src/pages/konfessii/russkij-baptizm/index.astro`
+- wrapper сохраняет iframe `_app/index.html`, custom loader, breadcrumbs, canonical/OG/JSON-LD и wheel/pinch guards
+- route promoted в `migration/page-ownership.json`
+- `dist-publication-audit` и Pagefind теперь знают об этой публичной Astro-owned wrapper page
+
 ## Проверки после cleanup
 
 Проходит:

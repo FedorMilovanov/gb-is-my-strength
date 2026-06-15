@@ -212,6 +212,12 @@
       "source": "src/pages/baptisty-rossii/spravochnik/index.astro",
       "risk": 2,
       "status": "shadow-pilot"
+    },
+    "/konfessii/russkij-baptizm/": {
+      "owner": "astro",
+      "source": "src/pages/konfessii/russkij-baptizm/index.astro",
+      "risk": 2,
+      "status": "shadow-pilot"
     }
   }
 }
