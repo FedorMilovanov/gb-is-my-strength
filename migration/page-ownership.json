@@ -146,6 +146,12 @@
       "source": "src/pages/pastor-series/index.astro",
       "risk": 2,
       "status": "shadow-pilot"
+    },
+    "/baptisty-rossii/": {
+      "owner": "astro",
+      "source": "src/pages/baptisty-rossii/index.astro",
+      "risk": 2,
+      "status": "shadow-pilot"
     }
   }
 }

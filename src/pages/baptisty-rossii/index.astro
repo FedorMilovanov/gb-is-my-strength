@@ -1,0 +1,245 @@
+---
+import BaseLayout from '@/layouts/BaseLayout.astro';
+import { SITE } from '@/data/site';
+
+const canonical = `${SITE.url}/baptisty-rossii/`;
+const title = 'Баптисты России — серия исследований по истории русского баптизма';
+const description = 'Живая серия о русском баптизме: Тифлис, южная штунда, Петербург, 1884, советские гонения, ВСЕХБ, Совет Церквей и подпольная печать. С опорой на первоисточники и архивы.';
+
+const parts = [
+  { n: '1', time: '~18 мин', title: 'Ночь на Куре', img: 'cover-01-kura.svg', href: '/baptisty-rossii/noch-na-kure/', abstract: 'Воронин, Кальвейт, Деляков и первая русская баптистская община' },
+  { n: '2', time: '~20 мин', title: 'Южная штунда', img: 'cover-02-shtunda.svg', href: '/baptisty-rossii/yuzhnaya-shtunda/', abstract: 'Унгер, Цимбал, Рябошапка, Ратушный, Прицкау, Онкен и Вилер' },
+  { n: '3', time: '~17 мин', title: '1884: два съезда', img: 'cover-03-1884.svg', href: '/baptisty-rossii/dva-sezda-1884/', abstract: 'Петербургское совещание и Ново-Васильевский съезд — две разные развилки' },
+  { n: '4', time: '~21 мин', title: 'Петербургская линия', img: 'cover-04-peterburg.svg', href: '/baptisty-rossii/peterburgskaya-liniya/', abstract: 'Редсток, Пашков, Корф, Каргель и Проханов' },
+  { n: '5', time: '24 мин', title: 'Гонения и совесть', img: 'cover-05-conscience.svg', href: '/baptisty-rossii/goneniya-i-sovest/', abstract: 'Военный вопрос, право совести и давление государства' },
+  { n: '6', time: '28 мин', title: 'Советская ночь', img: 'cover-06-soviet-night.svg', href: '/baptisty-rossii/sovetskaya-noch/', abstract: 'Закон 1929, Инструкция НКВД, закрытия и репрессии' },
+  { n: '7', time: '26 мин', title: '1944: один союз', img: 'cover-07-vsehib.svg', href: '/baptisty-rossii/vsehib-1944/', abstract: 'ВСЕХиБ, Братский Вестник, ХВЕ и Прибалтика' },
+  { n: '8', time: '25 мин', title: 'Инициативная группа', img: 'cover-08-initiative.svg', href: '/baptisty-rossii/iniciativnaya-gruppa/', abstract: '1960–1966: Положение, письмо, Оргкомитет и Совет Церквей' },
+  { n: '9', time: '23 мин', title: 'Подпольная печать', img: 'cover-09-samizdat.svg', href: '/baptisty-rossii/podpolnaya-pechat/', abstract: 'Вестник спасения, Вестник истины, Совет родственников, Христианин' },
+  { n: '10', time: '27 мин', title: 'Справочник', img: 'cover-10-reference.svg', href: '/baptisty-rossii/spravochnik/', abstract: 'Люди, даты, документы, спорные факты и источниковая оценка' },
+];
+
+const jsonLd = {
+  '@context': 'https://schema.org',
+  '@graph': [
+    { '@type': 'CollectionPage', '@id': `${canonical}#collectionpage`, url: canonical, name: title, description, inLanguage: 'ru', isPartOf: { '@id': SITE.websiteId }, publisher: { '@id': SITE.orgId }, image: `${SITE.url}/images/baptisty-rossii/cover-landing.svg` },
+    { '@type': 'BreadcrumbList', '@id': `${canonical}#breadcrumbs`, itemListElement: [
+      { '@type': 'ListItem', position: 1, name: SITE.name, item: `${SITE.url}/` },
+      { '@type': 'ListItem', position: 2, name: 'Баптисты России', item: canonical },
+    ] },
+  ],
+};
+---
+<BaseLayout
+  title={title}
+  description={description}
+  canonical={canonical}
+  ogImage={`${SITE.url}/images/baptisty-rossii/cover-landing.svg`}
+  ogTitle={title}
+  ogDescription={description}
+  jsonLd={jsonLd}
+>
+  <section class="astro-page" data-pagefind-body>
+    <header class="astro-page__header">
+      <p class="astro-eyebrow">История ЕХБ · Живая исследовательская серия</p>
+      <h1>Баптисты России</h1>
+      <p class="astro-page__desc">{description}</p>
+    </header>
+
+    <section class="summary-card" data-speakable>
+      <h2 class="summary-card__head">Как читать серию</h2>
+      <ol class="summary-card__body">
+        <li class="summary-card__item">
+          <span class="summary-card__num" aria-hidden="true" data-num="01"></span>
+          <p class="summary-card__text">Все десять частей уже оформлены как полноценная стартовая серия: истоки, 1884, Петербург, гонения, советская ночь, объединение, Инициативная группа и подпольная печать.</p>
+        </li>
+        <li class="summary-card__item">
+          <span class="summary-card__num" aria-hidden="true" data-num="02"></span>
+          <p class="summary-card__text">Справочник работает как живой reference-узел: люди, даты, документы, спорные факты, уровни источников и очередь правок карты собраны в одном месте.</p>
+        </li>
+        <li class="summary-card__item">
+          <span class="summary-card__num" aria-hidden="true" data-num="03"></span>
+          <p class="summary-card__text">Исследовательские MD-досье лежат в папке <code>research/</code> и постоянно сверяются с опубликованными статьями.</p>
+        </li>
+      </ol>
+    </section>
+
+    <div class="note-box">
+      <strong>Связь с картой.</strong> Интерактивная 3D-карта — в разделе <a href="/konfessii/russkij-baptizm/">«Конфессии / русский баптизм»</a>. Эта серия — текстовый исследовательский слой, который даёт карте исправления, даты и источники.
+    </div>
+
+    <section>
+      <h2 id="parts">Части серии</h2>
+      <div class="h-article-list">
+        {parts.map((part) => (
+          <a class="h-article-card" href={part.href}>
+            <div class="h-article-thumb">
+              <img
+                src={`/images/baptisty-rossii/${part.img}`}
+                alt=""
+                width="160"
+                height="108"
+                loading="lazy"
+                decoding="async"
+              />
+            </div>
+            <div class="h-article-body">
+              <div class="h-article-kicker">Часть {part.n} · {part.time}</div>
+              <h3 class="h-article-title">{part.title}</h3>
+              <p class="h-article-abstract">{part.abstract}</p>
+            </div>
+          </a>
+        ))}
+      </div>
+    </section>
+
+    <section>
+      <h2 id="research">Исследовательская база</h2>
+      <p>Все материалы объединены в <a href="/baptisty-rossii/research/00-master-source-index-glossary-map.md">исследовательской папке серии</a>: источники, черновики, глоссарий, спорные факты, исправления для карты и локальные копии ключевых документов.</p>
+    </section>
+
+    <footer class="astro-page__footer">
+      <p class="astro-page__sdg">Soli Deo Gloria</p>
+    </footer>
+  </section>
+</BaseLayout>
+
+<style>
+  /* Baptism series page — semantic overrides */
+  .astro-page {
+    padding: var(--s-6, 24px) clamp(16px, 4vw, 48px);
+    max-width: 860px;
+    margin: 0 auto;
+  }
+  .astro-page__header {
+    margin-bottom: var(--s-7, 28px);
+  }
+  .astro-page__desc {
+    font-size: clamp(15px, 2vw, 17px);
+    line-height: 1.65;
+    color: var(--color-text-secondary);
+    margin-top: var(--s-4, 16px);
+  }
+  .astro-page__header h1 {
+    font-family: var(--f-serif, Georgia, serif);
+    font-size: clamp(28px, 5vw, 42px);
+    font-weight: 700;
+    line-height: 1.1;
+    margin: var(--s-3, 12px) 0 0;
+    letter-spacing: -0.02em;
+  }
+  .astro-eyebrow {
+    font-family: var(--f-ui, system-ui, sans-serif);
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--color-accent);
+    margin: 0;
+  }
+  .astro-page__header p:not(.astro-eyebrow):not(.astro-page__desc) {
+    font-size: clamp(15px, 2vw, 17px);
+    line-height: 1.65;
+    color: var(--color-text-secondary);
+    margin: var(--s-3, 12px) 0 0;
+  }
+  .astro-page h2 {
+    font-family: var(--f-serif, Georgia, serif);
+    font-size: clamp(20px, 3vw, 26px);
+    font-weight: 700;
+    line-height: 1.2;
+    margin: var(--s-7, 28px) 0 var(--s-4, 16px);
+    padding-top: var(--s-5, 20px);
+    border-top: 1px solid var(--color-border);
+  }
+  .astro-page .note-box {
+    margin: var(--s-6, 24px) 0;
+  }
+  .astro-page .summary-card {
+    margin: var(--s-5, 20px) 0;
+  }
+  .h-article-list {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 16px;
+    margin: var(--s-5, 20px) 0;
+  }
+  .h-article-card {
+    display: flex;
+    flex-direction: column;
+    text-decoration: none;
+    color: inherit;
+    border: 1px solid var(--color-border);
+    border-radius: 12px;
+    overflow: hidden;
+    background: var(--color-surface);
+    transition: transform 0.22s cubic-bezier(0.2, 0.7, 0.2, 1), border-color 0.2s ease, box-shadow 0.2s ease;
+  }
+  .h-article-card:hover {
+    transform: translateY(-2px);
+    border-color: var(--color-accent);
+    box-shadow: 0 6px 18px -8px rgba(0, 0, 0, 0.18);
+    text-decoration: none;
+  }
+  .h-article-thumb {
+    aspect-ratio: 16 / 9;
+    overflow: hidden;
+    background: var(--color-surface-quote);
+  }
+  .h-article-thumb img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+  }
+  .h-article-body {
+    padding: 14px 16px;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+  }
+  .h-article-kicker {
+    font-family: var(--f-ui, system-ui, sans-serif);
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--color-text-muted);
+    margin-bottom: 6px;
+  }
+  .h-article-title {
+    font-family: var(--f-serif, Georgia, serif);
+    font-size: 17px;
+    font-weight: 700;
+    line-height: 1.25;
+    margin: 0 0 6px;
+    color: var(--color-text-primary);
+  }
+  .h-article-abstract {
+    font-size: 13px;
+    line-height: 1.5;
+    color: var(--color-text-secondary);
+    margin: 0;
+    flex: 1;
+  }
+  .astro-page__footer {
+    margin-top: var(--s-8, 32px);
+    padding-top: var(--s-6, 24px);
+    border-top: 1px solid var(--color-border);
+    text-align: center;
+  }
+  .astro-page__sdg {
+    font-family: var(--f-serif, Georgia, serif);
+    font-style: italic;
+    font-size: 15px;
+    color: var(--color-text-muted);
+    margin: 0;
+  }
+  .astro-page p code {
+    font-family: var(--f-mono, monospace);
+    font-size: 0.9em;
+    background: var(--color-surface-muted);
+    padding: 1px 5px;
+    border-radius: 4px;
+  }
+</style>
