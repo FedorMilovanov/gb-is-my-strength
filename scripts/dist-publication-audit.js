@@ -18,6 +18,7 @@ const SITE = 'https://gospod-bog.ru';
 const SHADOW_ARTICLES = [
   'dzhon-gill-spravochnik',
   'dzhon-gill-istoricheskiy-kontekst',
+  'rimlyanam-7-veruyushchiy-ili-neveruyushchiy',
 ];
 const problems = [];
 const notes = [];

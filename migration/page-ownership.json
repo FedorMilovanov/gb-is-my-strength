@@ -21,6 +21,12 @@
       "risk": 2,
       "status": "shadow-pilot"
     },
+    "/articles/rimlyanam-7-veruyushchiy-ili-neveruyushchiy/": {
+      "owner": "astro",
+      "source": "src/pages/articles/rimlyanam-7-veruyushchiy-ili-neveruyushchiy/index.astro",
+      "risk": 2,
+      "status": "shadow-pilot"
+    },
     "/dev/astro-test/": {
       "owner": "astro-noindex",
       "source": "src/pages/dev/astro-test.astro",
