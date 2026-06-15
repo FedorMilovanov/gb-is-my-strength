@@ -9,6 +9,7 @@
 
 | Версия документа | Дата | Состояние |
 |---|---|---|
+| **AGENTS-r205** | 2026-06-15 | **Tailwind policy formalized + home shelf hierarchy strengthened.** В AGENTS закреплено: Tailwind не является общим курсом проекта; он допустим только в route-scoped / app-scoped / explicitly approved self-contained contexts, тогда как `/`, обычные article pages, shared Astro layouts и legacy-faithful wrappers остаются на handcrafted CSS. Home page получила ещё более явную shelf hierarchy для ключевых и будущих серий на mobile+desktop. Итог: `audit-pro` 164 passed · 0 errors, `validate:static-publication` ✅, `astro-home-pilot-audit` ✅. |
 | **AGENTS-r204** | 2026-06-15 | **Home premium polish continued with subtle 3D tilt and denser lower-half rhythm.** Для home cards/featured/about/quote на pointer-fine добавлен лёгкий interactive tilt/gloss layer без смены mobile parity, а lower-half mobile blocks дополнительно уплотнены. CSS и JS контракты остаются зелёными: `audit-pro` 164 passed · 0 errors, `validate:static-publication` ✅, `astro-home-pilot-audit` ✅. По факту CSS работает стабильно; открытые долги — budget warning и дальнейший visual polish, не runtime-breakage. |
 | **AGENTS-r203** | 2026-06-15 | **Home mobile premium pass continued into the lower half of the page.** На mobile сжаты tertiary shelves (`В планах`), section `О проекте` и scripture-quote block стали компактнее и карточнее; это дополнительно снимает ощущение длинной «портянки» после первых shelf-блоков. Итог: `audit-pro` 164 passed · 0 errors, `validate:static-publication` ✅, `astro-home-pilot-audit` ✅. Production deploy всё ещё legacy root; 42/42 public shadow ownership unchanged. |
 | **AGENTS-r202** | 2026-06-15 | **Home mobile premium pass continued: shelves and library-density reduced the remaining “long article strip” feel.** На мобильной главной section `Форматы библиотеки` стал компактной 2-column quick grid вместо длинной вертикальной пачки карточек; публикации и апологетический rail получили shelf-head framing, чтобы mobile home читался как библиотека с полками, а не как бесконечная лента. Итог: `audit-pro` 164 passed · 0 errors, `validate:static-publication` ✅, `astro-home-pilot-audit` ✅, push to `main` completed. Production deploy всё ещё legacy root; dist ownership/42-page contract unchanged. |
@@ -260,6 +261,23 @@ CSS-фичи, не поддерживаемые в этих версиях (`col
 | Мобильное оглавление Нагорной проповеди | `nagornaya-mobile-toc.css` |
 | @font-face декларации | `fonts/fonts.css` |
 | Tailwind для Нагорной | `nagornaya/tw.min.css` (НЕ ТРОГАТЬ) |
+
+### 2.1 Tailwind policy — локальное исключение, не курс всего проекта
+
+- Tailwind **не является** основной styling-стратегией сайта. Базовый путь проекта: существующий handcrafted CSS (`site.css`, `home.css`, `mobile-hotfix.css` и т.д.) + Astro/build-time ownership layer.
+- Допустимые контексты для Tailwind в будущем:
+  1. уже существующие route-scoped legacy зоны вроде `nagornaya/tw.min.css`;
+  2. изолированные subapps / iframe-apps / built artifacts, где UI живёт как отдельный мини-проект;
+  3. новые большие self-contained interactive sections, если владелец явно согласует именно такой путь.
+- Недопустимо без отдельного решения владельца:
+  - тащить Tailwind в глобальный shell сайта;
+  - переводить `/`, обычные article pages, shared Astro layouts или legacy-faithful wrappers на utility-first слой;
+  - плодить новые глобальные compiled Tailwind CSS в `/css/`.
+- Если Tailwind где-то допускается, он должен быть:
+  - **route-scoped или app-scoped**, а не global;
+  - собран в уже существующий допустимый asset-слой, не увеличивая core-count CSS-файлов в `/css/`;
+  - подчинён visual-parity задаче: не делать «другой сайт» там, где owner хочет 1:1 continuity.
+- Коротко: **Astro — да, Tailwind — только локально и по делу.** Главный курс миграции = сохранить visual language сайта, а не переписать его под новый utility stack.
 
 ### Запрещено создавать новые JS-файлы в `js/`
 
