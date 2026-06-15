@@ -162,14 +162,15 @@ Done:
 [x] /dev/article-mdx-pilot/ noindex preview
 [x] ownership manifest marks preview as build-only
 [x] production-like dist omits build-only article preview
+[x] article-mdx-pilot audit checks metadata/H1/OG/dates/Article JSON-LD and legacy public path is unchanged
 ```
 
 Next:
 
 ```text
-[ ] article-mdx-pilot audit: compare legacy article vs MDX preview metadata/content shape
-[ ] draft extractor for one simple legacy article
-[ ] only after parity: consider actual /articles/dzhon-gill-spravochnik/ shadow ownership in dist, not production deploy
+[ ] increase MDX body parity for `dzhon-gill-spravochnik` from advisory ratio 0.12 to strict threshold
+[ ] draft extractor for one simple legacy article / or curated MDX body migration
+[ ] only after strict parity: consider actual /articles/dzhon-gill-spravochnik/ shadow ownership in dist, not production deploy
 ```
 
 ---

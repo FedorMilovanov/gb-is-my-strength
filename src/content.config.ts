@@ -4,6 +4,7 @@ import { z } from 'astro/zod';
 
 const articleSchema = z.object({
   title: z.string().min(8).max(120),
+  h1: z.string().min(4).max(120).optional(),
   description: z.string().min(70).max(220),
   slug: z.string().regex(/^[a-z0-9-]+$/),
   section: z.enum(['articles', 'biografii', 'hard-texts', 'nagornaya']),
