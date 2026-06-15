@@ -214,6 +214,8 @@ Next:
     - done: first-screen library chooser `.h-mobile-hero-hub`
     - done: resume-first re-entry ordering above dashboard on mobile
     - done: tighter mobile hero rhythm + stronger quick-action dock hierarchy
+    - done: compact 2-column mobile library-formats grid instead of long single-column stack
+    - done: shelf-head framing for publications / apologetics rails
     - next: browser screenshot pack / touch review in full Playwright env
 [ ] representative browser smoke for the newly promoted shadow wrappers/pages in an environment with full Playwright system libs
 [ ] if wrapper-parity strategy stays accepted, add one visual/a11y browser audit pass specifically for `/map/`, `/karty/avraam/`, `nagornaya/chast-*`
