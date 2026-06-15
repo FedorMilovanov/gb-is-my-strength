@@ -127,7 +127,7 @@ async function inspect(page, url, label, viewportName) {
       h1,
       h2,
       text,
-      scrollOverflow: document.documentElement.scrollWidth - document.documentElement.clientWidth,
+      scrollOverflow: Math.max(0, document.documentElement.scrollWidth - document.documentElement.clientWidth),
       links: [...document.querySelectorAll('a[href]')].map(a => a.getAttribute('href')).filter(Boolean),
       jsonLdTypes,
       invalidJsonLd,
