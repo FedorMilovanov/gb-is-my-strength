@@ -48,6 +48,7 @@
 - `BaseLayout.astro` получил режимы `hideHeader/hideFooter`, `bodyClass`, `mainClass`, `legacyStylesheets`, чтобы shadow home можно было собирать ближе к старому сайту, а не как отдельное «другое Astro-приложение»
 - следующий premium pass добавил `.h-mobile-hero-hub` как first-screen library chooser, сделал mobile hero компактнее и поднял resume-block выше dashboard, чтобы мобильный вход ощущался как библиотека/приложение, а не длинная лента карточек
 - ещё один pass уплотнил section `Форматы библиотеки` в компактную 2-column mobile grid и дал publications / razbor shelf-head framing, чтобы home mobile меньше напоминал «портянку статей» и сильнее работал как библиотечная полка
+- следующий pass сжал tertiary mobile shelves, а также lower-half blocks `О проекте` и scripture quote, чтобы хвост главной на телефоне был короче и визуально собраннее
 
 ### 8. `/konfessii/russkij-baptizm/` wrapper переведён в Astro shadow route
 - добавлен `src/pages/konfessii/russkij-baptizm/index.astro`
