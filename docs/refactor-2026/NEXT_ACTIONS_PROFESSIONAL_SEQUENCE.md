@@ -174,13 +174,13 @@ Done:
 [x] `strangler:deploy-readiness` includes strict article shadow audit
 [x] dist dry-run workflow asserts article shadow route exists and dev article preview is absent
 [x] dist-publication-audit guards article shadow route and both dev routes
+[x] retired `/dev/article-mdx-pilot/` canary after public shadow route became guarded
 ```
 
 Next:
 
 ```text
 [ ] manual visual review of Astro shadow `/articles/dzhon-gill-spravochnik/` from production-like `dist`
-[ ] decide whether to keep or remove `/dev/article-mdx-pilot/` canary
 [ ] factor reusable article route/helper only if the second article proves duplication
 [ ] pick next low-risk article for MDX strict -> shadow sequence
 [ ] still no production deploy switch

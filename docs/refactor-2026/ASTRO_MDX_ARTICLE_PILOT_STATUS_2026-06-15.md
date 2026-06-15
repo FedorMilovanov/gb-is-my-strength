@@ -16,7 +16,6 @@
 src/content.config.ts
 src/content/articles/dzhon-gill-spravochnik.mdx
 src/layouts/ArticleLayout.astro
-src/pages/dev/article-mdx-pilot/index.astro
 src/pages/articles/dzhon-gill-spravochnik/index.astro
 ```
 
@@ -49,7 +48,7 @@ npm run page-ownership:dist
 /articles/dzhon-gill-spravochnik/
 ```
 
-- Preview route остаётся build-only/noindex:
+- Retired preview route must stay absent:
 
 ```text
 /dev/article-mdx-pilot/
@@ -61,14 +60,6 @@ npm run page-ownership:dist
 owner: astro
 status: shadow-pilot
 risk: 2
-```
-
-- Preview route остаётся:
-
-```text
-owner: astro-noindex
-status: build-only
-risk: 1
 ```
 
 - Production-like `dist` удаляет этот route через существующий `copy-legacy-to-dist.js --omit-build-only` + ownership guard.
@@ -126,7 +117,7 @@ legacy h2 count: 12; public/preview h2 count: 12
 strict shadow audit: passed
 ```
 
-`astro:audit:article-mdx:strict` теперь проходит. Preview остаётся build-only/noindex. Public article URL в `dist` теперь Astro shadow output; repository root legacy HTML остаётся production truth.
+`astro:audit:article-mdx:strict` теперь проходит. Retired preview route `/dev/article-mdx-pilot/` is now absent. Public article URL в `dist` остаётся Astro shadow output; repository root legacy HTML остаётся production truth.
 
 ## Что дополнительно закрыто
 
@@ -181,11 +172,32 @@ General dist publication audit теперь тоже знает о первом 
 [x] /articles/dzhon-gill-spravochnik/ is indexable in dist
 [x] /articles/dzhon-gill-spravochnik/ canonical is public URL
 [x] /articles/dzhon-gill-spravochnik/ has no pilot/noindex copy
-[x] /dev/article-mdx-pilot/ absent from production-like dist
+[x] /dev/article-mdx-pilot/ absent from all strangler/article-shadow outputs
 [x] sitemap.xml does not include /dev/article-mdx-pilot/
 ```
 
 Это дополняет `astro:audit:article-mdx:strict`: article-specific audit проверяет глубокий SEO/content contract, а `dist-publication-audit` проверяет общий shape будущего Pages artifact.
+
+
+## Dev preview retirement update
+
+После того как public shadow route получил strict content/SEO audit и general dist publication guard, отдельный dev preview больше не нужен.
+
+Удалено:
+
+```text
+src/pages/dev/article-mdx-pilot/index.astro
+migration route: /dev/article-mdx-pilot/
+```
+
+Оставшийся contract:
+
+```text
+[x] /articles/dzhon-gill-spravochnik/ exists in dist and is Astro shadow-owned
+[x] repository root legacy article remains production truth
+[x] /dev/article-mdx-pilot/ is absent
+[x] /dev/astro-test/ remains the only build-only dev Astro route
+```
 
 ## Следующий профессиональный шаг
 
@@ -193,7 +205,7 @@ General dist publication audit теперь тоже знает о первом 
 
 ```text
 [ ] manual visual review public shadow article in `dist`
-[ ] decide whether `/dev/article-mdx-pilot/` stays as canary or is removed after public shadow route is enough
+[x] `/dev/article-mdx-pilot/` canary removed after public shadow route became fully guarded
 [ ] optionally extract reusable article route helper before second article
 [ ] choose next low-risk article and repeat MDX strict -> shadow route sequence
 [ ] production deploy всё ещё не переключать

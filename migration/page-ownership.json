@@ -26,12 +26,6 @@
       "source": "konfessii/russkij-baptizm/_app/",
       "risk": 5,
       "status": "copy-as-built-asset"
-    },
-    "/dev/article-mdx-pilot/": {
-      "owner": "astro-noindex",
-      "source": "src/pages/dev/article-mdx-pilot/index.astro",
-      "risk": 1,
-      "status": "build-only"
     }
   }
 }
