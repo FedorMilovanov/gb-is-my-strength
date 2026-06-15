@@ -81,6 +81,17 @@ a {
   box-shadow: 0 24px 80px rgba(0, 0, 0, .38);
 }
 
+.astro-main--bare {
+  width: 100%;
+  max-width: none;
+  margin: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  padding: 0;
+  box-shadow: none;
+}
+
 .astro-main h1 {
   margin: 0 0 1rem;
   font-family: var(--astro-font-serif);

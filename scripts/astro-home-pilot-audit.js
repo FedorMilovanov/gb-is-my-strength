@@ -109,7 +109,12 @@ function main() {
   if (ratio < MIN_WORD_RATIO) bad(`home word-count ratio too low: ${ratio.toFixed(2)} < ${MIN_WORD_RATIO}`);
   else ok(`home word-count parity within threshold (${ratio.toFixed(2)})`);
 
-  const cardCount = (astro.match(/astro-series-card/g) || []).length + (astro.match(/astro-article-card/g) || []).length;
+  const cardCount =
+    (astro.match(/astro-series-card/g) || []).length +
+    (astro.match(/astro-article-card/g) || []).length +
+    (astro.match(/h-featured-series/g) || []).length +
+    (astro.match(/h-article-card/g) || []).length +
+    (astro.match(/h-card-glass/g) || []).length;
   if (cardCount < 8) note(`home card count looks thin (${cardCount}); mobile-first IA pass still recommended`);
   else ok(`home has substantial card structure (${cardCount} cards)`);
 

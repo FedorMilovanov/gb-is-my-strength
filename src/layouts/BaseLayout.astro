@@ -22,6 +22,11 @@ interface Props {
   jsonLd?: unknown;
   technicalBadge?: string;
   footerNote?: string;
+  bodyClass?: string;
+  mainClass?: string;
+  hideHeader?: boolean;
+  hideFooter?: boolean;
+  legacyStylesheets?: string[];
 }
 const {
   title,
@@ -40,6 +45,11 @@ const {
   jsonLd,
   technicalBadge,
   footerNote,
+  bodyClass = '',
+  mainClass = 'astro-main',
+  hideHeader = false,
+  hideFooter = false,
+  legacyStylesheets = [],
 } = Astro.props;
 ---
 <!doctype html>
@@ -63,14 +73,15 @@ const {
       articleAuthor={articleAuthor}
       jsonLd={jsonLd}
     />
+    {legacyStylesheets.map((href) => <link rel="stylesheet" href={href} />)}
   </head>
-  <body>
+  <body class={bodyClass}>
     <div class="astro-shell">
-      <Header badge={technicalBadge} />
-      <main class="astro-main">
+      {!hideHeader && <Header badge={technicalBadge} />}
+      <main class={mainClass}>
         <slot />
       </main>
-      <Footer note={footerNote} />
+      {!hideFooter && <Footer note={footerNote} />}
     </div>
   </body>
 </html>
