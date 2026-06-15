@@ -10,10 +10,10 @@
       "status": "shadow-pilot"
     },
     "/dev/astro-test/": {
-      "owner": "astro-noindex",
+      "owner": "astro",
       "source": "src/pages/dev/astro-test.astro",
-      "risk": 1,
-      "status": "build-only"
+      "risk": 2,
+      "status": "shadow-pilot"
     },
     "/konfessii/russkij-baptizm/_app/": {
       "owner": "built-app",
@@ -21,11 +21,11 @@
       "risk": 5,
       "status": "copy-as-built-asset"
     },
-    "/dev/article-mdx-pilot/": {
-      "owner": "astro-noindex",
-      "source": "src/pages/dev/article-mdx-pilot/index.astro",
-      "risk": 1,
-      "status": "build-only"
+    "/articles/dzhon-gill-spravochnik/": {
+      "owner": "astro",
+      "source": "src/pages/articles/dzhon-gill-spravochnik.astro",
+      "risk": 2,
+      "status": "shadow-pilot"
     }
   }
 }
