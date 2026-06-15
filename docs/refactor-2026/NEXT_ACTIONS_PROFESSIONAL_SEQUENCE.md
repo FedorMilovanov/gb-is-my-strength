@@ -151,7 +151,7 @@ Risk: high. Do not rush.
 
 ## 7. Current safe continuation — first article MDX pipeline
 
-Статус: 🟢 public shadow ownership green in `dist` 2026-06-15; production root still legacy, no deploy switch.
+Статус: 🟢 two article shadow routes green in `dist` 2026-06-15; production root still legacy, no deploy switch.
 
 Done:
 
@@ -167,13 +167,14 @@ Done:
 [x] BreadcrumbList JSON-LD parity on intended public canonical
 [x] curated MDX body migration: ratio 0.96, H2 parity 12/12
 [x] public Astro shadow route `/articles/dzhon-gill-spravochnik/` in `dist`
-[x] ownership manifest promotes article URL to `astro` / `shadow-pilot`
-[x] article shadow audit passes for public route + noindex dev preview
+[x] public Astro shadow route `/articles/dzhon-gill-istoricheskiy-kontekst/` in `dist`
+[x] ownership manifest promotes 2 article URLs to `astro` / `shadow-pilot`
+[x] multi-article shadow audit passes for 2 public routes
 [x] production-like dist keeps 42 public pages and omits dev routes
 [x] `npm run astro:audit:article-mdx:strict` passes
 [x] `strangler:deploy-readiness` includes strict article shadow audit
 [x] dist dry-run workflow asserts article shadow route exists and dev article preview is absent
-[x] dist-publication-audit guards article shadow route and both dev routes
+[x] dist-publication-audit guards 2 article shadow routes and dev routes
 [x] retired `/dev/article-mdx-pilot/` canary after public shadow route became guarded
 ```
 
@@ -182,7 +183,7 @@ Next:
 ```text
 [ ] manual visual review of Astro shadow `/articles/dzhon-gill-spravochnik/` from production-like `dist`
 [ ] factor reusable article route/helper only if the second article proves duplication
-[ ] pick next low-risk article for MDX strict -> shadow sequence
+[ ] pick third low-risk article for MDX strict -> shadow sequence
 [ ] still no production deploy switch
 ```
 

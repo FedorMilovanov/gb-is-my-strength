@@ -45,6 +45,7 @@ jobs:
           test -f dist/index.html
           test -f dist/about/index.html
           test -f dist/articles/dzhon-gill-spravochnik/index.html
+          test -f dist/articles/dzhon-gill-istoricheskiy-kontekst/index.html
           test -f dist/pagefind/pagefind.js
           test -f dist/.nojekyll
           test ! -e dist/dev/astro-test/index.html

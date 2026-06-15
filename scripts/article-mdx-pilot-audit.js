@@ -1,12 +1,12 @@
 #!/usr/bin/env node
 /*
- * article-mdx-pilot-audit.js — audit the first MDX article migration step.
+ * article-mdx-pilot-audit.js — audit MDX article public shadow routes.
  *
  * Current contract:
  * - repository root legacy HTML remains production truth until deploy switch;
- * - strangler dist may shadow-own the public article URL with Astro output;
- * - the retired /dev/article-mdx-pilot/ route must stay absent;
- * - public Astro output must mirror the legacy SEO/content contract.
+ * - strangler dist may shadow-own selected public article URLs with Astro output;
+ * - retired /dev/article-mdx-pilot/ route must stay absent;
+ * - public Astro output must mirror each legacy article SEO/content contract.
  */
 'use strict';
 
@@ -17,12 +17,22 @@ const { spawnSync } = require('child_process');
 const ROOT = path.join(__dirname, '..');
 const DIST = path.join(ROOT, 'dist');
 const SITE = 'https://gospod-bog.ru';
-const LEGACY_REL = 'articles/dzhon-gill-spravochnik/index.html';
-const PUBLIC_REL = 'articles/dzhon-gill-spravochnik/index.html';
 const RETIRED_PREVIEW_REL = 'dev/article-mdx-pilot/index.html';
-const LEGACY_CANONICAL = `${SITE}/articles/dzhon-gill-spravochnik/`;
 const NO_BUILD = process.argv.includes('--no-build');
 const REQUIRE_CONTENT_PARITY = process.argv.includes('--require-content-parity');
+
+const MIGRATED_ARTICLES = [
+  {
+    slug: 'dzhon-gill-spravochnik',
+    rel: 'articles/dzhon-gill-spravochnik/index.html',
+    canonical: `${SITE}/articles/dzhon-gill-spravochnik/`,
+  },
+  {
+    slug: 'dzhon-gill-istoricheskiy-kontekst',
+    rel: 'articles/dzhon-gill-istoricheskiy-kontekst/index.html',
+    canonical: `${SITE}/articles/dzhon-gill-istoricheskiy-kontekst/`,
+  },
+];
 
 const problems = [];
 const warnings = [];
@@ -150,16 +160,12 @@ function legacyFacts(legacy) {
     h2: headings(legacy),
   };
 }
-function assertArticleContract(label, html, facts, options) {
-  const expectedCanonical = options.expectedCanonical;
-  const titleMode = options.titleMode || 'exact';
-  mustEqual(`${label} canonical`, canonical(html), expectedCanonical);
-  if (options.expectNoindex) mustContain(`${label} robots`, meta(html, 'robots'), 'noindex');
-  else if (hasNoindex(html)) bad(`${label} must be indexable but has robots: ${meta(html, 'robots')}`);
+function assertArticleContract(item, label, html, facts) {
+  mustEqual(`${label} canonical`, canonical(html), item.canonical);
+  if (hasNoindex(html)) bad(`${label} must be indexable but has robots: ${meta(html, 'robots')}`);
   else ok(`${label} is indexable`);
 
-  if (titleMode === 'contains') mustContain(`${label} title`, title(html), facts.title);
-  else mustEqual(`${label} title mirrors legacy`, title(html), facts.title);
+  mustEqual(`${label} title mirrors legacy`, title(html), facts.title);
   mustEqual(`${label} meta description mirrors legacy`, meta(html, 'description'), facts.description);
   mustEqual(`${label} visible h1 mirrors legacy`, h1(html), facts.h1);
   mustEqual(`${label} og:type mirrors legacy article type`, meta(html, 'og:type'), facts.ogType);
@@ -167,7 +173,7 @@ function assertArticleContract(label, html, facts, options) {
   mustEqualInstant(`${label} article:published_time mirrors legacy instant`, meta(html, 'article:published_time'), facts.published);
   mustEqualInstant(`${label} article:modified_time mirrors legacy instant`, meta(html, 'article:modified_time'), facts.modified);
   mustEqual(`${label} article:author mirrors legacy`, meta(html, 'article:author'), facts.author);
-  mustContain(`${label} article slug marker`, html, 'data-article-slug="dzhon-gill-spravochnik"');
+  mustContain(`${label} article slug marker`, html, `data-article-slug="${item.slug}"`);
 
   const nodes = jsonLdNodes(html);
   const article = firstNode(nodes, 'Article');
@@ -177,19 +183,19 @@ function assertArticleContract(label, html, facts, options) {
     ok(`${label} JSON-LD Article node exists`);
     mustEqual(`${label} Article headline mirrors legacy title`, article.headline || '', facts.title);
     mustEqual(`${label} Article description mirrors legacy`, article.description || '', facts.description);
-    mustEqual(`${label} Article @id uses intended public canonical`, article['@id'] || '', `${LEGACY_CANONICAL}#article`);
-    mustEqual(`${label} Article url uses intended public canonical`, article.url || '', LEGACY_CANONICAL);
+    mustEqual(`${label} Article @id uses public canonical`, article['@id'] || '', `${item.canonical}#article`);
+    mustEqual(`${label} Article url uses public canonical`, article.url || '', item.canonical);
     mustEqualInstant(`${label} Article datePublished mirrors legacy instant`, article.datePublished, facts.published);
     mustEqualInstant(`${label} Article dateModified mirrors legacy instant`, article.dateModified, facts.modified);
     mustEqual(`${label} Article author mirrors legacy`, article.author?.name || '', facts.author);
-    mustEqual(`${label} Article mainEntityOfPage uses intended public canonical`, article.mainEntityOfPage?.['@id'] || '', LEGACY_CANONICAL);
+    mustEqual(`${label} Article mainEntityOfPage uses public canonical`, article.mainEntityOfPage?.['@id'] || '', item.canonical);
   }
   if (!breadcrumbs) bad(`${label} JSON-LD missing BreadcrumbList node`);
   else {
     ok(`${label} JSON-LD BreadcrumbList node exists`);
-    mustEqual(`${label} BreadcrumbList @id uses intended public canonical`, breadcrumbs['@id'] || '', `${LEGACY_CANONICAL}#breadcrumbs`);
+    mustEqual(`${label} BreadcrumbList @id uses public canonical`, breadcrumbs['@id'] || '', `${item.canonical}#breadcrumbs`);
     const items = Array.isArray(breadcrumbs.itemListElement) ? breadcrumbs.itemListElement : [];
-    mustEqual(`${label} BreadcrumbList final item uses intended public canonical`, items.at(-1)?.item || '', LEGACY_CANONICAL);
+    mustEqual(`${label} BreadcrumbList final item uses public canonical`, items.at(-1)?.item || '', item.canonical);
     mustEqual(`${label} BreadcrumbList final item title mirrors legacy title`, items.at(-1)?.name || '', facts.title);
   }
 }
@@ -209,52 +215,54 @@ function assertBodyParity(label, html, className, facts) {
   if (ratio < 0.72) {
     const msg = `${label} body is not content-complete yet (${words}/${facts.words} words, ratio ${ratio.toFixed(2)})`;
     if (REQUIRE_CONTENT_PARITY) bad(msg);
-    else warn(`${msg}; acceptable for build-only schema/layout pilot, not acceptable for public URL promotion`);
+    else warn(`${msg}; acceptable for advisory mode, not acceptable for public URL promotion`);
   } else ok(`${label} body word-count parity is within migration threshold`);
+}
+function auditArticle(item) {
+  console.log(`\nARTICLE: ${item.slug}`);
+  const legacyPath = file(item.rel);
+  const publicPath = distFile(item.rel);
+  if (!fs.existsSync(legacyPath)) bad(`${item.slug}: legacy article missing: ${item.rel}`);
+  if (!fs.existsSync(publicPath)) bad(`${item.slug}: dist public article missing: ${item.rel}`);
+  if (problems.length) return;
+
+  const legacy = read(legacyPath);
+  const publicArticle = read(publicPath);
+  const facts = legacyFacts(legacy);
+
+  mustEqual(`${item.slug} legacy canonical baseline`, facts.canonical, item.canonical);
+  if (/class="astro-article"/.test(legacy)) bad(`${item.slug}: repository root legacy article contains Astro article output`);
+  else ok(`${item.slug}: repository root article remains legacy production truth`);
+
+  if (!/class="astro-article"/.test(publicArticle)) bad(`${item.slug}: dist public article path is not Astro shadow output`);
+  else ok(`${item.slug}: dist public article path is Astro shadow-owned`);
+  if (legacy === publicArticle) bad(`${item.slug}: dist public article is still byte-identical legacy copy; shadow ownership did not engage`);
+  else ok(`${item.slug}: dist public article is no longer byte-identical legacy copy`);
+
+  assertArticleContract(item, `${item.slug} public shadow article`, publicArticle, facts);
+  mustNotContain(`${item.slug} public shadow article pilot note`, publicArticle, 'Build-only MDX pilot');
+  assertBodyParity(`${item.slug} public shadow article`, publicArticle, 'astro-article', facts);
 }
 
 function main() {
   console.log(`ARTICLE MDX PUBLIC SHADOW AUDIT (${NO_BUILD ? 'no-build' : 'build'}, content parity ${REQUIRE_CONTENT_PARITY ? 'required' : 'advisory'})`);
   runBuild();
 
-  const legacyPath = file(LEGACY_REL);
-  const publicPath = distFile(PUBLIC_REL);
   const retiredPreviewPath = distFile(RETIRED_PREVIEW_REL);
-  if (!fs.existsSync(legacyPath)) bad(`legacy article missing: ${LEGACY_REL}`);
-  if (!fs.existsSync(publicPath)) bad(`dist public article missing: ${PUBLIC_REL}`);
   if (fs.existsSync(retiredPreviewPath)) bad(`retired MDX preview route must stay absent: ${RETIRED_PREVIEW_REL}`);
   else ok('retired MDX preview route absent');
-  if (problems.length) return finish();
 
-  const legacy = read(legacyPath);
-  const publicArticle = read(publicPath);
-  const facts = legacyFacts(legacy);
+  for (const item of MIGRATED_ARTICLES) auditArticle(item);
 
-  mustEqual('legacy canonical baseline', facts.canonical, LEGACY_CANONICAL);
-  if (/class="astro-article"/.test(legacy)) bad('repository root legacy article contains Astro article output');
-  else ok('repository root article remains legacy production truth');
-
-  if (!/class="astro-article"/.test(publicArticle)) bad('dist public article path is not Astro shadow output');
-  else ok('dist public article path is Astro shadow-owned');
-  if (legacy === publicArticle) bad('dist public article is still byte-identical legacy copy; shadow ownership did not engage');
-  else ok('dist public article is no longer byte-identical legacy copy');
-
-  assertArticleContract('public shadow article', publicArticle, facts, {
-    expectedCanonical: LEGACY_CANONICAL,
-    expectNoindex: false,
-    titleMode: 'exact',
-  });
-  mustNotContain('public shadow article pilot note', publicArticle, 'Build-only MDX pilot');
-  assertBodyParity('public shadow article', publicArticle, 'astro-article', facts);
   finish();
 }
 function finish() {
   console.log('');
   if (problems.length) {
-    console.log(`❌ article MDX shadow audit failed: ${problems.length} issue(s)`);
+    console.log(`❌ article MDX public shadow audit failed: ${problems.length} issue(s)`);
     process.exit(1);
   }
-  console.log('✅ article MDX public shadow audit passed');
+  console.log(`✅ article MDX public shadow audit passed (${MIGRATED_ARTICLES.length} article(s))`);
   if (warnings.length) console.log('ℹ️ Advisory warnings remain until every migrated article is public-shadow reviewed.');
 }
 
