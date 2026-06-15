@@ -46,6 +46,7 @@ jobs:
           test -f dist/about/index.html
           test -f dist/articles/dzhon-gill-spravochnik/index.html
           test -f dist/articles/dzhon-gill-istoricheskiy-kontekst/index.html
+          test -f dist/articles/rimlyanam-7-veruyushchiy-ili-neveruyushchiy/index.html
           test -f dist/pagefind/pagefind.js
           test -f dist/.nojekyll
           test ! -e dist/dev/astro-test/index.html

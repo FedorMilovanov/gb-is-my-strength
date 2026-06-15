@@ -1,7 +1,7 @@
 # ASTRO_MDX_ARTICLE_PILOT_STATUS_2026-06-15.md
 
 Дата: 2026-06-15
-Статус: **two public article shadow routes in dist; production deploy не меняется**
+Статус: **three public article shadow routes in dist; production deploy не меняется**
 Риск-уровень: **Level 2/3 — public Astro shadow route in dist only, root production still legacy**
 
 ## Цель
@@ -16,9 +16,11 @@
 src/content.config.ts
 src/content/articles/dzhon-gill-spravochnik.mdx
 src/content/articles/dzhon-gill-istoricheskiy-kontekst.mdx
+src/content/articles/rimlyanam-7-veruyushchiy-ili-neveruyushchiy.mdx
 src/layouts/ArticleLayout.astro
 src/pages/articles/dzhon-gill-spravochnik/index.astro
 src/pages/articles/dzhon-gill-istoricheskiy-kontekst/index.astro
+src/pages/articles/rimlyanam-7-veruyushchiy-ili-neveruyushchiy/index.astro
 ```
 
 Новые npm-команды:
@@ -49,6 +51,7 @@ npm run page-ownership:dist
 ```text
 /articles/dzhon-gill-spravochnik/
 /articles/dzhon-gill-istoricheskiy-kontekst/
+/articles/rimlyanam-7-veruyushchiy-ili-neveruyushchiy/
 ```
 
 - Retired preview route must stay absent:
@@ -116,7 +119,8 @@ URL contract compare: 42 baseline pages, 42 current public pages
 ```text
 dzhon-gill-spravochnik: legacy words 1694; public shadow words 1611; ratio 0.95; H2 12/12
 dzhon-gill-istoricheskiy-kontekst: legacy words 2969; public shadow words 2954; ratio 0.99; H2 13/13
-multi-article strict shadow audit: passed
+rimlyanam-7-veruyushchiy-ili-neveruyushchiy: legacy words 2600; public shadow words 2419; ratio 0.93; H2 14/14
+multi-article strict shadow audit: passed (3 articles)
 ```
 
 `astro:audit:article-mdx:strict` теперь проходит. Retired preview route `/dev/article-mdx-pilot/` is now absent. Public article URL в `dist` остаётся Astro shadow output; repository root legacy HTML остаётся production truth.
@@ -133,8 +137,9 @@ multi-article strict shadow audit: passed
 [x] BreadcrumbList JSON-LD на intended public canonical
 [x] public Astro route `/articles/dzhon-gill-spravochnik/` в `dist`
 [x] public Astro route `/articles/dzhon-gill-istoricheskiy-kontekst/` в `dist`
-[x] ownership manifest: 2 article URLs -> `astro` / `shadow-pilot`
-[x] production-like `dist`: 42 public pages, 3 explicit Astro baseline routes, dev routes omitted
+[x] public Astro route `/articles/rimlyanam-7-veruyushchiy-ili-neveruyushchiy/` в `dist`
+[x] ownership manifest: 3 article URLs -> `astro` / `shadow-pilot`
+[x] production-like `dist`: 42 public pages, 4 explicit Astro baseline routes, dev routes omitted
 ```
 
 
@@ -159,6 +164,7 @@ Manual **Dist Strangler Dry Run** также проверяет artifact shape:
 ```text
 [x] dist/articles/dzhon-gill-spravochnik/index.html exists
 [x] dist/articles/dzhon-gill-istoricheskiy-kontekst/index.html exists
+[x] dist/articles/rimlyanam-7-veruyushchiy-ili-neveruyushchiy/index.html exists
 [x] dist/dev/astro-test/index.html absent
 [x] dist/dev/article-mdx-pilot/index.html absent
 ```
@@ -173,6 +179,7 @@ General dist publication audit теперь тоже знает о первом 
 ```text
 [x] required dist file: articles/dzhon-gill-spravochnik/index.html
 [x] required dist file: articles/dzhon-gill-istoricheskiy-kontekst/index.html
+[x] required dist file: articles/rimlyanam-7-veruyushchiy-ili-neveruyushchiy/index.html
 [x] /articles/dzhon-gill-spravochnik/ is Astro-owned output
 [x] /articles/dzhon-gill-spravochnik/ is indexable in dist
 [x] /articles/dzhon-gill-spravochnik/ canonical is public URL
@@ -200,9 +207,24 @@ migration route: /dev/article-mdx-pilot/
 ```text
 [x] /articles/dzhon-gill-spravochnik/ exists in dist and is Astro shadow-owned
 [x] /articles/dzhon-gill-istoricheskiy-kontekst/ exists in dist and is Astro shadow-owned
+[x] /articles/rimlyanam-7-veruyushchiy-ili-neveruyushchiy/ exists in dist and is Astro shadow-owned
 [x] repository root legacy article remains production truth
 [x] /dev/article-mdx-pilot/ is absent
 [x] /dev/astro-test/ remains the only build-only dev Astro route
+```
+
+## Progress snapshot
+
+```text
+Общий Astro/MDX переход:          ~31%
+Safety/gates слой:                ~87%
+Build-time strangler readiness:   ~77%
+/about/ Astro pilot:              ~85%
+MDX/article pipeline:             ~37%
+Public shadow ownership:          4/42 baseline pages (~9.5%)
+Articles shadow-owned:            3/10 article pages (30%)
+Production migration:             ~0–3%, deploy не переключаем
+Осталось:                         39/42 baseline pages still legacy-owned in dist
 ```
 
 ## Следующий профессиональный шаг
@@ -213,7 +235,7 @@ migration route: /dev/article-mdx-pilot/
 [ ] manual visual review public shadow article in `dist`
 [x] `/dev/article-mdx-pilot/` canary removed after public shadow route became fully guarded
 [ ] optionally extract reusable article route helper before second article
-[ ] choose third low-risk article and repeat MDX strict -> shadow route sequence
+[ ] choose fourth low-risk article and repeat MDX strict -> shadow route sequence
 [ ] production deploy всё ещё не переключать
 ```
 

@@ -151,7 +151,7 @@ Risk: high. Do not rush.
 
 ## 7. Current safe continuation — first article MDX pipeline
 
-Статус: 🟢 two article shadow routes green in `dist` 2026-06-15; production root still legacy, no deploy switch.
+Статус: 🟢 three article shadow routes green in `dist` 2026-06-15; production root still legacy, no deploy switch.
 
 Done:
 
@@ -168,14 +168,29 @@ Done:
 [x] curated MDX body migration: ratio 0.96, H2 parity 12/12
 [x] public Astro shadow route `/articles/dzhon-gill-spravochnik/` in `dist`
 [x] public Astro shadow route `/articles/dzhon-gill-istoricheskiy-kontekst/` in `dist`
-[x] ownership manifest promotes 2 article URLs to `astro` / `shadow-pilot`
-[x] multi-article shadow audit passes for 2 public routes
+[x] public Astro shadow route `/articles/rimlyanam-7-veruyushchiy-ili-neveruyushchiy/` in `dist`
+[x] ownership manifest promotes 3 article URLs to `astro` / `shadow-pilot`
+[x] multi-article shadow audit passes for 3 public routes
 [x] production-like dist keeps 42 public pages and omits dev routes
 [x] `npm run astro:audit:article-mdx:strict` passes
 [x] `strangler:deploy-readiness` includes strict article shadow audit
 [x] dist dry-run workflow asserts article shadow route exists and dev article preview is absent
-[x] dist-publication-audit guards 2 article shadow routes and dev routes
+[x] dist-publication-audit guards 3 article shadow routes and dev routes
 [x] retired `/dev/article-mdx-pilot/` canary after public shadow route became guarded
+```
+
+Progress snapshot:
+
+```text
+Общий Astro/MDX переход:          ~31%
+Safety/gates слой:                ~87%
+Build-time strangler readiness:   ~77%
+/about/ Astro pilot:              ~85%
+MDX/article pipeline:             ~37%
+Public shadow ownership:          4/42 baseline pages (~9.5%)
+Articles shadow-owned:            3/10 article pages (30%)
+Production migration:             ~0–3%, deploy не переключаем
+Осталось до production switch:     ~90% операционного риска intentionally gated
 ```
 
 Next:
@@ -183,7 +198,7 @@ Next:
 ```text
 [ ] manual visual review of Astro shadow `/articles/dzhon-gill-spravochnik/` from production-like `dist`
 [ ] factor reusable article route/helper only if the second article proves duplication
-[ ] pick third low-risk article for MDX strict -> shadow sequence
+[ ] pick fourth low-risk article for MDX strict -> shadow sequence
 [ ] still no production deploy switch
 ```
 

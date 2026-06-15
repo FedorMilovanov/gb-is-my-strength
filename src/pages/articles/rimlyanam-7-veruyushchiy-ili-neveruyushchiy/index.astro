@@ -1,0 +1,19 @@
+---
+import { getEntry, render } from 'astro:content';
+import ArticleLayout from '@/layouts/ArticleLayout.astro';
+import { SITE } from '@/data/site';
+
+const entry = await getEntry('articles', 'rimlyanam-7-veruyushchiy-ili-neveruyushchiy');
+if (!entry) throw new Error('Article entry not found: articles/rimlyanam-7-veruyushchiy-ili-neveruyushchiy');
+const { Content } = await render(entry);
+const canonical = `${SITE.url}/articles/rimlyanam-7-veruyushchiy-ili-neveruyushchiy/`;
+---
+<ArticleLayout
+  entry={entry}
+  canonical={canonical}
+  robots="index, follow"
+  pilot={false}
+  intendedCanonical={canonical}
+>
+  <Content />
+</ArticleLayout>

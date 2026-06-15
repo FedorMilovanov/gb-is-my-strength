@@ -32,6 +32,11 @@ const MIGRATED_ARTICLES = [
     rel: 'articles/dzhon-gill-istoricheskiy-kontekst/index.html',
     canonical: `${SITE}/articles/dzhon-gill-istoricheskiy-kontekst/`,
   },
+  {
+    slug: 'rimlyanam-7-veruyushchiy-ili-neveruyushchiy',
+    rel: 'articles/rimlyanam-7-veruyushchiy-ili-neveruyushchiy/index.html',
+    canonical: `${SITE}/articles/rimlyanam-7-veruyushchiy-ili-neveruyushchiy/`,
+  },
 ];
 
 const problems = [];
