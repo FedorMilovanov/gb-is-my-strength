@@ -51,6 +51,8 @@ jobs:
           test -f dist/articles/dzhon-gill-chast-1-chelovek/index.html
           test -f dist/articles/dzhon-gill-chast-2-uchenyi/index.html
           test -f dist/articles/dzhon-gill-chast-3-nasledie/index.html
+          test -f dist/articles/krajne-li-isporcheno-serdce/index.html
+          test -f dist/articles/hermenevticheskaya-otsenka-hristotsentrichnoy-germenevtiki/index.html
           test -f dist/pagefind/pagefind.js
           test -f dist/.nojekyll
           test ! -e dist/dev/astro-test/index.html

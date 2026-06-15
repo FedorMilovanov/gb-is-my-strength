@@ -51,6 +51,18 @@
       "risk": 2,
       "status": "shadow-pilot"
     },
+    "/articles/krajne-li-isporcheno-serdce/": {
+      "owner": "astro",
+      "source": "src/pages/articles/krajne-li-isporcheno-serdce/index.astro",
+      "risk": 2,
+      "status": "shadow-pilot"
+    },
+    "/articles/hermenevticheskaya-otsenka-hristotsentrichnoy-germenevtiki/": {
+      "owner": "astro",
+      "source": "src/pages/articles/hermenevticheskaya-otsenka-hristotsentrichnoy-germenevtiki/index.astro",
+      "risk": 2,
+      "status": "shadow-pilot"
+    },
     "/dev/astro-test/": {
       "owner": "astro-noindex",
       "source": "src/pages/dev/astro-test.astro",

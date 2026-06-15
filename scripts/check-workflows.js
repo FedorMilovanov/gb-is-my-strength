@@ -97,6 +97,8 @@ must('.github/workflows/dist-dry-run.yml', distDryRun, /test -f dist\/articles\/
 must('.github/workflows/dist-dry-run.yml', distDryRun, /test -f dist\/articles\/dzhon-gill-chast-1-chelovek\/index\.html/, 'dist dry run must assert Gill part 1 shadow article route exists');
 must('.github/workflows/dist-dry-run.yml', distDryRun, /test -f dist\/articles\/dzhon-gill-chast-2-uchenyi\/index\.html/, 'dist dry run must assert Gill part 2 shadow article route exists');
 must('.github/workflows/dist-dry-run.yml', distDryRun, /test -f dist\/articles\/dzhon-gill-chast-3-nasledie\/index\.html/, 'dist dry run must assert Gill part 3 shadow article route exists');
+must('.github/workflows/dist-dry-run.yml', distDryRun, /test -f dist\/articles\/krajne-li-isporcheno-serdce\/index\.html/, 'dist dry run must assert Jeremiah 17 shadow article route exists');
+must('.github/workflows/dist-dry-run.yml', distDryRun, /test -f dist\/articles\/hermenevticheskaya-otsenka-hristotsentrichnoy-germenevtiki\/index\.html/, 'dist dry run must assert hermeneutics shadow article route exists');
 must('.github/workflows/dist-dry-run.yml', distDryRun, /test ! -e dist\/dev\/astro-test\/index\.html/, 'dist dry run must assert build-only astro-test route is absent');
 must('.github/workflows/dist-dry-run.yml', distDryRun, /test ! -e dist\/dev\/article-mdx-pilot\/index\.html/, 'dist dry run must assert build-only article MDX preview is absent');
 must('.github/workflows/dist-dry-run.yml', distDryRun, /actions\/upload-artifact@v4/, 'dist dry run must upload review artifacts without deploying');

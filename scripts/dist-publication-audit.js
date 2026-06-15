@@ -23,6 +23,8 @@ const SHADOW_ARTICLES = [
   'dzhon-gill-chast-1-chelovek',
   'dzhon-gill-chast-2-uchenyi',
   'dzhon-gill-chast-3-nasledie',
+  'krajne-li-isporcheno-serdce',
+  'hermenevticheskaya-otsenka-hristotsentrichnoy-germenevtiki',
 ];
 const problems = [];
 const notes = [];
