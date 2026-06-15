@@ -11,6 +11,8 @@ interface Props {
   canonical: string;
   robots?: string;
   ogImage?: string;
+  ogImageType?: string;
+  ogImageAlt?: string;
   ogTitle?: string;
   ogDescription?: string;
   ogType?: 'website' | 'article';
@@ -27,6 +29,8 @@ const {
   canonical,
   robots,
   ogImage,
+  ogImageType,
+  ogImageAlt,
   ogTitle,
   ogDescription,
   ogType,
@@ -49,6 +53,8 @@ const {
       canonical={canonical}
       robots={robots}
       ogImage={ogImage}
+      ogImageType={ogImageType}
+      ogImageAlt={ogImageAlt}
       ogTitle={ogTitle}
       ogDescription={ogDescription}
       ogType={ogType}

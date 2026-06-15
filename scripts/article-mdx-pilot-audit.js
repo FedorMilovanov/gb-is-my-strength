@@ -216,11 +216,11 @@ function assertArticleContract(item, label, html, facts) {
   mustContain(`${label} article slug marker`, html, `data-article-slug="${item.slug}"`);
 
   const nodes = jsonLdNodes(html);
-  const article = firstNode(nodes, 'Article');
+  const article = firstNode(nodes, 'Article') || firstNode(nodes, 'ScholarlyArticle');
   const breadcrumbs = firstNode(nodes, 'BreadcrumbList');
-  if (!article) bad(`${label} JSON-LD missing Article node`);
+  if (!article) bad(`${label} JSON-LD missing Article/ScholarlyArticle node`);
   else {
-    ok(`${label} JSON-LD Article node exists`);
+    ok(`${label} JSON-LD Article/ScholarlyArticle node exists`);
     mustEqual(`${label} Article headline mirrors legacy title`, article.headline || '', facts.title);
     mustEqual(`${label} Article description mirrors legacy`, article.description || '', facts.description);
     mustEqual(`${label} Article @id uses public canonical`, article['@id'] || '', `${item.canonical}#article`);

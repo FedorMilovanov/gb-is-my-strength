@@ -27,6 +27,18 @@ const SHADOW_ARTICLES = [
   'hermenevticheskaya-otsenka-hristotsentrichnoy-germenevtiki',
   '20-antisovetov-pastoru',
 ];
+const SHADOW_BAPTISTY_ARTICLES = [
+  'noch-na-kure',
+  'yuzhnaya-shtunda',
+  'dva-sezda-1884',
+  'peterburgskaya-liniya',
+  'goneniya-i-sovest',
+  'sovetskaya-noch',
+  'vsehib-1944',
+  'iniciativnaya-gruppa',
+  'podpolnaya-pechat',
+  'spravochnik',
+];
 const problems = [];
 const notes = [];
 
@@ -226,8 +238,27 @@ function checkPagefind() {
   const expectedPages = pagefindBodyPages();
   if (indexedCount !== expectedPages.length) bad(`Pagefind page_count ${indexedCount} != data-pagefind-body pages ${expectedPages.length}`);
   else ok(`Pagefind page_count matches data-pagefind-body pages (${indexedCount})`);
-  if (!expectedPages.includes('about/index.html')) bad('Pagefind source pages missing Astro /about/ body');
-  else ok('Pagefind source pages include Astro /about/');
+
+  const requiredIndexedPages = [
+    'about/index.html',
+    'articles/index.html',
+    'baptisty-rossii/index.html',
+    'biografii/index.html',
+    'hard-texts/index.html',
+    'karty/index.html',
+    'konfessii/index.html',
+    'nagornaya/index.html',
+    'nagornaya/istochniki/index.html',
+    'nagornaya/nakhodki/index.html',
+    'nagornaya/seriya/index.html',
+    'pastor-series/index.html',
+    ...SHADOW_ARTICLES.map((slug) => `articles/${slug}/index.html`),
+    ...SHADOW_BAPTISTY_ARTICLES.map((slug) => `baptisty-rossii/${slug}/index.html`),
+  ];
+  const missingIndexedPages = requiredIndexedPages.filter((page) => !expectedPages.includes(page));
+  if (missingIndexedPages.length) missingIndexedPages.forEach((page) => bad(`Pagefind source pages missing required public body: ${page}`));
+  else ok(`Pagefind source pages include required Astro public routes (${requiredIndexedPages.length})`);
+
   const devIndexed = expectedPages.filter(p => p.startsWith('dev/'));
   if (devIndexed.length) devIndexed.forEach(p => bad(`Pagefind source pages include dev route: ${p}`));
   else ok('Pagefind source pages exclude dev routes');
