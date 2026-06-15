@@ -240,6 +240,7 @@ function checkPagefind() {
   else ok(`Pagefind page_count matches data-pagefind-body pages (${indexedCount})`);
 
   const requiredIndexedPages = [
+    'index.html',
     'about/index.html',
     'articles/index.html',
     'baptisty-rossii/index.html',
