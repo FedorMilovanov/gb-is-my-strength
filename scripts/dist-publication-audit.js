@@ -25,6 +25,7 @@ const SHADOW_ARTICLES = [
   'dzhon-gill-chast-3-nasledie',
   'krajne-li-isporcheno-serdce',
   'hermenevticheskaya-otsenka-hristotsentrichnoy-germenevtiki',
+  '20-antisovetov-pastoru',
 ];
 const problems = [];
 const notes = [];

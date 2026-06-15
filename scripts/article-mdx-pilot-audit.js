@@ -67,6 +67,11 @@ const MIGRATED_ARTICLES = [
     rel: 'articles/hermenevticheskaya-otsenka-hristotsentrichnoy-germenevtiki/index.html',
     canonical: `${SITE}/articles/hermenevticheskaya-otsenka-hristotsentrichnoy-germenevtiki/`,
   },
+  {
+    slug: '20-antisovetov-pastoru',
+    rel: 'articles/20-antisovetov-pastoru/index.html',
+    canonical: `${SITE}/articles/20-antisovetov-pastoru/`,
+  },
 ];
 
 const problems = [];
