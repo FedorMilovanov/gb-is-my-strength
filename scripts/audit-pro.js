@@ -4250,6 +4250,39 @@ const JS_SIZE_FLOORS = {
   }
 })();
 
+// G113. Home mobile dashboard / app-like entry contract.
+(function homeMobileDashboardContract() {
+  const file = path.join(ROOT, 'index.html');
+  if (!fs.existsSync(file)) {
+    R.err('Home page missing: index.html');
+    return;
+  }
+  const html = fs.readFileSync(file, 'utf8');
+  if (!/<main[^>]+id=["']main-content["'][^>]+data-pagefind-body/i.test(html)) {
+    R.err('Home page missing data-pagefind-body on #main-content');
+  } else {
+    R.ok('Home page main content is pagefind-indexable');
+  }
+  if (!/class=["'][^"']*h-mobile-dashboard[^"']*["']/i.test(html)) {
+    R.err('Home page missing h-mobile-dashboard quick-start block');
+  } else {
+    R.ok('Home page includes mobile dashboard quick-start block');
+  }
+  const cardCount = (html.match(/class=["'][^"']*h-mobile-dash-card[^"']*["']/gi) || []).length;
+  if (cardCount < 4) {
+    R.err(`Home mobile dashboard has too few quick-start cards (${cardCount} < 4)`);
+  } else {
+    R.ok(`Home mobile dashboard has ${cardCount} quick-start cards`);
+  }
+  const requiredLinks = ['/articles/', '/nagornaya/', '/baptisty-rossii/', '/konfessii/russkij-baptizm/'];
+  const missing = requiredLinks.filter((href) => !html.includes(`href="${href}"`) && !html.includes(`href='${href}'`));
+  if (missing.length) {
+    R.err(`Home mobile dashboard missing required quick-start links: ${missing.join(', ')}`);
+  } else {
+    R.ok('Home mobile dashboard includes required quick-start links');
+  }
+})();
+
 const duration = ((Date.now() - R.start) / 1000).toFixed(2);
 const sep = '═'.repeat(78);
 console.log(`\n${sep}\nGB-IS-MY-STRENGTH — PROFESSIONAL AUDIT\n${new Date().toISOString()} · ${duration}s\n${sep}\n`);

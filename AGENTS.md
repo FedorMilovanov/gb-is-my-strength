@@ -776,6 +776,16 @@ Precache список — в самом `sw.js`. При добавлении н�
 - НЕ менять на проверку `.h-phrase--ambient` — элемента в статическом HTML нет
 - При любых правках `js/enhancements.js` — проверить что `document.querySelectorAll('.h-phrase').length >= 35`
 
+### 9.1b Home mobile dashboard — быстрый вход вместо «портянки»
+- На главной странице должен существовать mobile-only блок `.h-mobile-dashboard` с 4 quick-start карточками.
+- Минимальный набор ссылок в quick-start:
+  - `/articles/`
+  - `/nagornaya/`
+  - `/baptisty-rossii/`
+  - `/konfessii/russkij-baptizm/`
+- `#main-content` на `/` обязан оставаться `data-pagefind-body`, чтобы домашняя страница индексировалась поиском как точка входа, а не выпадала из discoverability.
+- Если меняешь мобильную IA главной, цель — app-like библиотека и быстрый вход в большие разделы, а не длинная неструктурированная «портянка» карточек.
+
 ### 9.2 FC-controls (плавающие кнопки тема/поиск)
 - Компактный пилл-контейнер с `backdrop-filter`, `border-radius:24px`, `padding:3px`
 - Кнопки `36x36px`, NO `border-radius:50%`, NO `background-color` на hover
