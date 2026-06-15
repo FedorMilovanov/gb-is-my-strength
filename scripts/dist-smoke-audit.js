@@ -28,6 +28,7 @@ const BASE_ROUTES = [
   { path: '/articles/', kind: 'legacy', canonical: 'https://gospod-bog.ru/articles/' },
   { path: '/articles/kod-da-vinchi/', kind: 'legacy', canonical: 'https://gospod-bog.ru/articles/kod-da-vinchi/' },
   { path: '/baptisty-rossii/', kind: 'astro', canonical: 'https://gospod-bog.ru/baptisty-rossii/', h1: 'Баптисты России' },
+  { path: '/baptisty-rossii/noch-na-kure/', kind: 'astro', canonical: 'https://gospod-bog.ru/baptisty-rossii/noch-na-kure/', h1: 'Ночь на Куре' },
   { path: '/karty/', kind: 'legacy', canonical: 'https://gospod-bog.ru/karty/' },
   { path: '/karty/avraam/', kind: 'legacy-map', canonical: 'https://gospod-bog.ru/karty/avraam/' },
   { path: '/konfessii/', kind: 'legacy', canonical: 'https://gospod-bog.ru/konfessii/' },

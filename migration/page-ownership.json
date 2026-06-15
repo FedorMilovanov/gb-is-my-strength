@@ -152,6 +152,66 @@
       "source": "src/pages/baptisty-rossii/index.astro",
       "risk": 2,
       "status": "shadow-pilot"
+    },
+    "/baptisty-rossii/noch-na-kure/": {
+      "owner": "astro",
+      "source": "src/pages/baptisty-rossii/noch-na-kure/index.astro",
+      "risk": 2,
+      "status": "shadow-pilot"
+    },
+    "/baptisty-rossii/yuzhnaya-shtunda/": {
+      "owner": "astro",
+      "source": "src/pages/baptisty-rossii/yuzhnaya-shtunda/index.astro",
+      "risk": 2,
+      "status": "shadow-pilot"
+    },
+    "/baptisty-rossii/dva-sezda-1884/": {
+      "owner": "astro",
+      "source": "src/pages/baptisty-rossii/dva-sezda-1884/index.astro",
+      "risk": 2,
+      "status": "shadow-pilot"
+    },
+    "/baptisty-rossii/peterburgskaya-liniya/": {
+      "owner": "astro",
+      "source": "src/pages/baptisty-rossii/peterburgskaya-liniya/index.astro",
+      "risk": 2,
+      "status": "shadow-pilot"
+    },
+    "/baptisty-rossii/goneniya-i-sovest/": {
+      "owner": "astro",
+      "source": "src/pages/baptisty-rossii/goneniya-i-sovest/index.astro",
+      "risk": 2,
+      "status": "shadow-pilot"
+    },
+    "/baptisty-rossii/sovetskaya-noch/": {
+      "owner": "astro",
+      "source": "src/pages/baptisty-rossii/sovetskaya-noch/index.astro",
+      "risk": 2,
+      "status": "shadow-pilot"
+    },
+    "/baptisty-rossii/vsehib-1944/": {
+      "owner": "astro",
+      "source": "src/pages/baptisty-rossii/vsehib-1944/index.astro",
+      "risk": 2,
+      "status": "shadow-pilot"
+    },
+    "/baptisty-rossii/iniciativnaya-gruppa/": {
+      "owner": "astro",
+      "source": "src/pages/baptisty-rossii/iniciativnaya-gruppa/index.astro",
+      "risk": 2,
+      "status": "shadow-pilot"
+    },
+    "/baptisty-rossii/podpolnaya-pechat/": {
+      "owner": "astro",
+      "source": "src/pages/baptisty-rossii/podpolnaya-pechat/index.astro",
+      "risk": 2,
+      "status": "shadow-pilot"
+    },
+    "/baptisty-rossii/spravochnik/": {
+      "owner": "astro",
+      "source": "src/pages/baptisty-rossii/spravochnik/index.astro",
+      "risk": 2,
+      "status": "shadow-pilot"
     }
   }
 }

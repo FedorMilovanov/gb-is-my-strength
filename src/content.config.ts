@@ -7,7 +7,7 @@ const articleSchema = z.object({
   h1: z.string().min(4).max(120).optional(),
   description: z.string().min(70).max(220),
   slug: z.string().regex(/^[a-z0-9-]+$/),
-  section: z.enum(['articles', 'biografii', 'hard-texts', 'nagornaya']),
+  section: z.enum(['articles', 'biografii', 'hard-texts', 'nagornaya', 'baptisty-rossii']),
   publishedAt: z.coerce.date(),
   updatedAt: z.coerce.date().optional(),
   author: z.string().default('fedor-milovanov'),
