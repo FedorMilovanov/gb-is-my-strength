@@ -73,6 +73,14 @@
 - result: all 42/42 baseline public pages now resolve as explicit Astro shadow-owned routes in `dist`
 - production root still untouched; deploy switch still forbidden without owner decision
 
+### 12. Added dedicated audit for raw legacy-preserving wrappers
+- `scripts/legacy-shadow-wrapper-audit.js`
+- npm scripts:
+  - `npm run astro:audit:legacy-wrappers`
+  - `npm run astro:audit:legacy-wrappers:no-build`
+- current scope: `/map/`, `/karty/avraam/`, `nagornaya/chast-1..5`
+- audit verifies title/description/H1/canonical parity and body word-count parity against legacy source
+
 ## Проверки после cleanup
 
 Проходит:

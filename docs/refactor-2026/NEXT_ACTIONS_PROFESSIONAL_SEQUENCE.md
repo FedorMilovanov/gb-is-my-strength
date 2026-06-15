@@ -212,6 +212,7 @@ Next:
 [ ] manual Dist Strangler Dry Run visual review before any deploy-switch discussion
 [ ] focused mobile-first polish of `/` so shadow home feels like the same beautiful site, not a second UI
 [ ] representative browser smoke for the newly promoted shadow wrappers/pages in an environment with full Playwright system libs
+[ ] if wrapper-parity strategy stays accepted, add one visual/a11y browser audit pass specifically for `/map/`, `/karty/avraam/`, `nagornaya/chast-*`
 [ ] still no production deploy switch
 ```
 

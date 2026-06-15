@@ -99,7 +99,16 @@ must('.github/workflows/dist-dry-run.yml', distDryRun, /test -f dist\/nagornaya\
 must('.github/workflows/dist-dry-run.yml', distDryRun, /test -f dist\/nagornaya\/istochniki\/index\.html/, 'dist dry run must assert nagornaya sources shadow landing exists');
 must('.github/workflows/dist-dry-run.yml', distDryRun, /test -f dist\/nagornaya\/nakhodki\/index\.html/, 'dist dry run must assert nagornaya findings shadow landing exists');
 must('.github/workflows/dist-dry-run.yml', distDryRun, /test -f dist\/karty\/index\.html/, 'dist dry run must assert karty shadow landing exists');
+must('.github/workflows/dist-dry-run.yml', distDryRun, /test -f dist\/karty\/avraam\/index\.html/, 'dist dry run must assert Avraam shadow route exists');
+must('.github/workflows/dist-dry-run.yml', distDryRun, /test -f dist\/karty\/ishod\/index\.html/, 'dist dry run must assert Ishod shadow route exists');
 must('.github/workflows/dist-dry-run.yml', distDryRun, /test -f dist\/konfessii\/index\.html/, 'dist dry run must assert konfessii shadow landing exists');
+must('.github/workflows/dist-dry-run.yml', distDryRun, /test -f dist\/konfessii\/russkij-baptizm\/index\.html/, 'dist dry run must assert Russian Baptist wrapper shadow route exists');
+must('.github/workflows/dist-dry-run.yml', distDryRun, /test -f dist\/map\/index\.html/, 'dist dry run must assert map shadow route exists');
+must('.github/workflows/dist-dry-run.yml', distDryRun, /test -f dist\/nagornaya\/chast-1\/index\.html/, 'dist dry run must assert nagornaya part 1 shadow route exists');
+must('.github/workflows/dist-dry-run.yml', distDryRun, /test -f dist\/nagornaya\/chast-2\/index\.html/, 'dist dry run must assert nagornaya part 2 shadow route exists');
+must('.github/workflows/dist-dry-run.yml', distDryRun, /test -f dist\/nagornaya\/chast-3\/index\.html/, 'dist dry run must assert nagornaya part 3 shadow route exists');
+must('.github/workflows/dist-dry-run.yml', distDryRun, /test -f dist\/nagornaya\/chast-4\/index\.html/, 'dist dry run must assert nagornaya part 4 shadow route exists');
+must('.github/workflows/dist-dry-run.yml', distDryRun, /test -f dist\/nagornaya\/chast-5\/index\.html/, 'dist dry run must assert nagornaya part 5 shadow route exists');
 must('.github/workflows/dist-dry-run.yml', distDryRun, /test -f dist\/articles\/dzhon-gill-spravochnik\/index\.html/, 'dist dry run must assert Gill reference shadow article route exists');
 must('.github/workflows/dist-dry-run.yml', distDryRun, /test -f dist\/articles\/dzhon-gill-istoricheskiy-kontekst\/index\.html/, 'dist dry run must assert Gill context shadow article route exists');
 must('.github/workflows/dist-dry-run.yml', distDryRun, /test -f dist\/articles\/rimlyanam-7-veruyushchiy-ili-neveruyushchiy\/index\.html/, 'dist dry run must assert Romans 7 shadow article route exists');
