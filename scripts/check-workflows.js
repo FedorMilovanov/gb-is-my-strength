@@ -91,6 +91,7 @@ must('.github/workflows/dist-dry-run.yml', distDryRun, /npm run ci:check/, 'dist
 must('.github/workflows/dist-dry-run.yml', distDryRun, /npm run astro:audit:about:shots/, 'dist dry run must generate about visual review screenshots');
 must('.github/workflows/dist-dry-run.yml', distDryRun, /npm run strangler:deploy-readiness/, 'dist dry run must run production-like strangler readiness');
 must('.github/workflows/dist-dry-run.yml', distDryRun, /test -f dist\/articles\/index\.html/, 'dist dry run must assert articles index shadow route exists');
+must('.github/workflows/dist-dry-run.yml', distDryRun, /test -f dist\/biografii\/index\.html/, 'dist dry run must assert biografii shadow landing exists');
 must('.github/workflows/dist-dry-run.yml', distDryRun, /test -f dist\/hard-texts\/index\.html/, 'dist dry run must assert hard-texts shadow landing exists');
 must('.github/workflows/dist-dry-run.yml', distDryRun, /test -f dist\/pastor-series\/index\.html/, 'dist dry run must assert pastor-series shadow landing exists');
 must('.github/workflows/dist-dry-run.yml', distDryRun, /test -f dist\/articles\/dzhon-gill-spravochnik\/index\.html/, 'dist dry run must assert Gill reference shadow article route exists');

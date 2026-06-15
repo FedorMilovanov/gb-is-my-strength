@@ -9,6 +9,12 @@
       "risk": 2,
       "status": "shadow-pilot"
     },
+    "/biografii/": {
+      "owner": "astro",
+      "source": "src/pages/biografii/index.astro",
+      "risk": 2,
+      "status": "shadow-pilot"
+    },
     "/articles/": {
       "owner": "astro",
       "source": "src/pages/articles/index.astro",
