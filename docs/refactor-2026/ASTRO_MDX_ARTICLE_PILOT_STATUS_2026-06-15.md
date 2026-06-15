@@ -114,9 +114,9 @@ legacy words: 1694; preview words: 208; ratio: 0.12
 Не deploy switch. Следующий безопасный шаг — увеличить body parity для этой же статьи:
 
 ```text
-[ ] scripts/legacy-article-to-mdx-draft.js или ручной curated MDX body draft
-[ ] довести word-count/headings/images/links parity
-[ ] включить `npm run astro:audit:article-mdx:strict`
+[x] ручной curated MDX body draft (extracted)
+[x] довести word-count/headings/images/links parity (1806/1694, 1.07 ratio)
+[x] включить `npm run astro:audit:article-mdx:strict` (сделан по умолчанию в скрипте)
 ```
 
 Только после strict parity можно думать о shadow ownership публичного `/articles/dzhon-gill-spravochnik/` в `dist`, но всё ещё без production deploy switch.

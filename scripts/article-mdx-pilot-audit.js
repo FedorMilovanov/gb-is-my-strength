@@ -22,7 +22,7 @@ const PREVIEW_REL = 'dev/article-mdx-pilot/index.html';
 const PREVIEW_CANONICAL = `${SITE}/dev/article-mdx-pilot/`;
 const LEGACY_CANONICAL = `${SITE}/articles/dzhon-gill-spravochnik/`;
 const NO_BUILD = process.argv.includes('--no-build');
-const REQUIRE_CONTENT_PARITY = process.argv.includes('--require-content-parity');
+const REQUIRE_CONTENT_PARITY = true; // body migrated, now required
 
 const problems = [];
 const warnings = [];
