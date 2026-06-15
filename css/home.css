@@ -311,3 +311,12 @@ body.articles-index-page .h-section{padding-top:40px;padding-bottom:24px}
 @media (max-width:380px){
   .home-page .h-grid-4{grid-template-columns:1fr}
 }
+
+@media (max-width:760px){
+  .h-mobile-rail__chip.is-active{border-color:color-mix(in srgb,var(--h-accent) 34%,var(--h-border));background:linear-gradient(155deg,rgba(255,255,255,.94),rgba(243,237,229,.98));color:var(--h-accent);box-shadow:0 12px 24px -18px rgba(124,45,45,.24)}
+  html.dark .h-mobile-rail__chip.is-active{background:linear-gradient(155deg,rgba(52,42,37,.98),rgba(37,30,26,.98));box-shadow:0 12px 28px -18px rgba(0,0,0,.52)}
+  .h-mobile-dock__btn.is-active{border-color:color-mix(in srgb,var(--h-accent) 20%,var(--h-border));background:linear-gradient(155deg,rgba(255,255,255,.88),rgba(243,237,229,.96))}
+  html.dark .h-mobile-dock__btn.is-active{background:linear-gradient(155deg,rgba(46,39,34,.96),rgba(33,28,24,.98))}
+  .h-mobile-dock__btn.is-active .h-mobile-dock__icon,
+  .h-mobile-dock__btn.is-active .h-mobile-dock__label{color:var(--h-accent)}
+}
