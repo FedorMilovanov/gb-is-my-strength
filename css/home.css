@@ -332,3 +332,22 @@ body.articles-index-page .h-section{padding-top:40px;padding-bottom:24px}
 @media (max-width:420px){
   .home-page .h-planned-header + .h-grid-3{grid-template-columns:1fr}
 }
+
+@media (max-width:760px){
+  .home-page .h-about{margin-top:8px;padding:24px 16px 18px;border:1px solid color-mix(in srgb,var(--h-accent) 12%,var(--h-border));border-radius:18px;background:linear-gradient(155deg,rgba(255,255,255,.76),rgba(243,237,229,.9));box-shadow:0 14px 30px -26px rgba(26,23,20,.32)}
+  html.dark .home-page .h-about{background:linear-gradient(155deg,rgba(37,32,26,.92),rgba(26,22,18,.98));box-shadow:0 16px 34px -26px rgba(0,0,0,.52)}
+  .home-page .h-about-label{margin-bottom:16px}
+  .home-page .h-about-text{margin-bottom:12px}
+  .home-page .h-about-small{font-size:12px;line-height:1.58}
+
+  .home-page .h-quote-section{padding:20px 0 10px}
+  .home-page .h-quote-mirror{gap:20px;padding:16px 14px;border:1px solid color-mix(in srgb,var(--h-accent) 12%,var(--h-border));border-radius:18px;background:linear-gradient(155deg,rgba(255,255,255,.76),rgba(243,237,229,.9));box-shadow:0 14px 30px -26px rgba(26,23,20,.3)}
+  html.dark .home-page .h-quote-mirror{background:linear-gradient(155deg,rgba(37,32,26,.92),rgba(26,22,18,.98));box-shadow:0 16px 34px -26px rgba(0,0,0,.52)}
+  .home-page .h-quote-left{padding-top:20px}
+  .home-page .h-sacred-block--mirror .h-sacred-line--1{font-size:clamp(1.08rem,5vw,1.32rem)}
+  .home-page .h-sacred-block--mirror .h-sacred-line--2{font-size:clamp(.9rem,4vw,1.02rem);line-height:1.5;margin-bottom:10px}
+  .home-page .h-sacred-block--mirror .h-tetra .hb-front,
+  .home-page .h-sacred-block--mirror .h-tetra-back .h-tetra-name{font-size:clamp(1.45rem,7vw,1.9rem)}
+  .home-page .h-quote-section .h-ornament{margin-bottom:14px;padding:0 4px;letter-spacing:8px}
+  .home-page .h-quote-section .h-ornament:last-child{margin-top:16px!important}
+}
