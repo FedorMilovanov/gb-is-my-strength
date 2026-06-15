@@ -50,6 +50,8 @@ jobs:
           test -f dist/pastor-series/index.html
           test -f dist/nagornaya/index.html
           test -f dist/nagornaya/seriya/index.html
+          test -f dist/nagornaya/istochniki/index.html
+          test -f dist/nagornaya/nakhodki/index.html
           test -f dist/karty/index.html
           test -f dist/konfessii/index.html
           test -f dist/articles/dzhon-gill-spravochnik/index.html

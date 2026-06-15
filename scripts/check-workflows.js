@@ -96,6 +96,8 @@ must('.github/workflows/dist-dry-run.yml', distDryRun, /test -f dist\/hard-texts
 must('.github/workflows/dist-dry-run.yml', distDryRun, /test -f dist\/pastor-series\/index\.html/, 'dist dry run must assert pastor-series shadow landing exists');
 must('.github/workflows/dist-dry-run.yml', distDryRun, /test -f dist\/nagornaya\/index\.html/, 'dist dry run must assert nagornaya shadow landing exists');
 must('.github/workflows/dist-dry-run.yml', distDryRun, /test -f dist\/nagornaya\/seriya\/index\.html/, 'dist dry run must assert nagornaya series shadow landing exists');
+must('.github/workflows/dist-dry-run.yml', distDryRun, /test -f dist\/nagornaya\/istochniki\/index\.html/, 'dist dry run must assert nagornaya sources shadow landing exists');
+must('.github/workflows/dist-dry-run.yml', distDryRun, /test -f dist\/nagornaya\/nakhodki\/index\.html/, 'dist dry run must assert nagornaya findings shadow landing exists');
 must('.github/workflows/dist-dry-run.yml', distDryRun, /test -f dist\/karty\/index\.html/, 'dist dry run must assert karty shadow landing exists');
 must('.github/workflows/dist-dry-run.yml', distDryRun, /test -f dist\/konfessii\/index\.html/, 'dist dry run must assert konfessii shadow landing exists');
 must('.github/workflows/dist-dry-run.yml', distDryRun, /test -f dist\/articles\/dzhon-gill-spravochnik\/index\.html/, 'dist dry run must assert Gill reference shadow article route exists');

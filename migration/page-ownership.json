@@ -117,6 +117,18 @@
       "risk": 2,
       "status": "shadow-pilot"
     },
+    "/nagornaya/istochniki/": {
+      "owner": "astro",
+      "source": "src/pages/nagornaya/istochniki/index.astro",
+      "risk": 2,
+      "status": "shadow-pilot"
+    },
+    "/nagornaya/nakhodki/": {
+      "owner": "astro",
+      "source": "src/pages/nagornaya/nakhodki/index.astro",
+      "risk": 2,
+      "status": "shadow-pilot"
+    },
     "/dev/astro-test/": {
       "owner": "astro-noindex",
       "source": "src/pages/dev/astro-test.astro",

@@ -291,12 +291,12 @@ Contract:
 ## Progress snapshot
 
 ```text
-Общий Astro/MDX переход:          ~57%
-Safety/gates слой:                ~92%
+Общий Astro/MDX переход:          ~59%
+Safety/gates слой:                ~93%
 Build-time strangler readiness:   ~95%
 /about/ Astro pilot:              ~95%
 MDX/article pipeline:             ~96%
-Public shadow ownership:          19/42 baseline pages (~45%)
+Public shadow ownership:          21/42 baseline pages (50%)
 Articles shadow-owned:            10/10 article pages (100%)
 Production migration:             ~0–3%, deploy не переключаем
 Осталось:                         30/42 baseline pages still legacy-owned in dist
