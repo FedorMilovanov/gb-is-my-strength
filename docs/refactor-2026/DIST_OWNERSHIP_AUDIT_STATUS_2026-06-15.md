@@ -91,6 +91,7 @@ node scripts/dist-publication-audit.js --require-pagefind --forbid-dev
 ```text
 explicit Astro baseline route(s): /about/
 implicit legacy baseline route(s): 41
+build-only noindex routes: /dev/astro-test/, /dev/article-mdx-pilot/
 ```
 
 Это правильное состояние build-time strangler: только `/about/` промотирован как Astro shadow-pilot; остальные публичные URL пока копируются из legacy root.

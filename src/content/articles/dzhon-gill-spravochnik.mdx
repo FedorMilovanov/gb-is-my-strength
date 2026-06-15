@@ -1,0 +1,47 @@
+---
+title: "Джон Гилл: справочник — хронология, труды, источники"
+description: "MDX-пилот справочной статьи о Джоне Гилле: проверка frontmatter-схемы, ArticleLayout и безопасного build-only rendering без production switch."
+slug: "dzhon-gill-spravochnik"
+section: "articles"
+publishedAt: 2026-06-13
+updatedAt: 2026-06-14
+author: "fedor-milovanov"
+series: "dzhon-gill"
+tags:
+  - "Джон Гилл"
+  - "биография"
+  - "справочник"
+related:
+  - "dzhon-gill-chast-1-chelovek"
+  - "dzhon-gill-chast-2-uchenyi"
+  - "dzhon-gill-chast-3-nasledie"
+ogImage: "/images/og-gill-authentic-study-cover.webp"
+ogImageAlt: "Справочный материал о Джоне Гилле и его богословском наследии"
+draft: true
+noindex: true
+sourcesRequired: true
+canonicalOverride: "https://gospod-bog.ru/articles/dzhon-gill-spravochnik/"
+readingTime: 8
+---
+
+## Назначение пилота
+
+Это **build-only MDX-пилот**, а не новая опубликованная версия статьи. Он проверяет, что будущая статья может жить как content collection entry: с валидируемым frontmatter, типизированным layout, SEO-данными, датами, тегами, серией и связями.
+
+Legacy URL пока остаётся источником production truth. Текущая опубликованная страница по-прежнему берётся из `articles/dzhon-gill-spravochnik/index.html`.
+
+## Почему выбран справочник
+
+Справочная статья о Джоне Гилле достаточно мала для первого content-pipeline прохода и при этом содержит реальные признаки будущей модели: дату, серию, связанные материалы, OG-изображение и требование к источникам.
+
+## Что должно подтвердиться
+
+- frontmatter не проходит build, если нарушена схема;
+- `ArticleLayout.astro` умеет отрисовать content entry без React runtime;
+- dev-preview остаётся `noindex`;
+- production-like `dist` удаляет build-only route через ownership guard;
+- legacy article не удаляется и не заменяется.
+
+## Следующий ручной этап
+
+После стабилизации pipeline можно полуавтоматически извлечь body legacy-статьи, вручную очистить HTML→MDX и только потом сравнивать полный `/articles/dzhon-gill-spravochnik/` против baseline.

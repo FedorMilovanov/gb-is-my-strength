@@ -149,3 +149,73 @@ a { color: inherit; }
   font-style: normal;
   font-size: .9rem;
 }
+.astro-article__eyebrow {
+  margin: 0 0 .65rem;
+  color: var(--astro-color-gold);
+  font-size: .78rem;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+}
+.astro-pilot-note {
+  margin: 0 0 1.25rem;
+  padding: .85rem 1rem;
+  border: 1px solid rgba(212, 165, 116, .28);
+  border-radius: 1rem;
+  background: rgba(212, 165, 116, .08);
+  color: var(--astro-color-muted);
+  line-height: 1.55;
+}
+.astro-pilot-note strong {
+  color: var(--astro-color-gold);
+}
+.astro-article__meta {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(128px, 1fr));
+  gap: .75rem;
+  margin: 1.25rem 0 0;
+}
+.astro-article__meta div {
+  padding: .75rem .85rem;
+  border: 1px solid rgba(212, 165, 116, .16);
+  border-radius: .9rem;
+  background: rgba(255, 255, 255, .03);
+}
+.astro-article__meta dt {
+  color: var(--astro-color-muted);
+  font-size: .75rem;
+}
+.astro-article__meta dd {
+  margin: .2rem 0 0;
+  color: var(--astro-color-text);
+  font-size: .92rem;
+}
+.astro-article__tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: .45rem;
+  margin: 1rem 0 0;
+  padding: 0;
+  list-style: none;
+}
+.astro-article__tags li {
+  border: 1px solid rgba(212, 165, 116, .22);
+  border-radius: 999px;
+  padding: .32rem .62rem;
+  color: var(--astro-color-muted);
+  font-size: .82rem;
+}
+.astro-article__body {
+  margin-top: 2rem;
+  border-top: 1px solid rgba(212, 165, 116, .16);
+  padding-top: 1rem;
+}
+.astro-article__body h2 {
+  margin: 1.75rem 0 .65rem;
+  color: var(--astro-color-text);
+  font-family: var(--astro-font-serif);
+  font-size: clamp(1.3rem, 3vw, 1.75rem);
+}
+.astro-article__body ul {
+  color: var(--astro-color-muted);
+  line-height: 1.75;
+}

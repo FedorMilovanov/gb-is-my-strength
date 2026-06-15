@@ -62,7 +62,8 @@
     "page-ownership:check": "node scripts/check-page-ownership.js",
     "page-ownership:dist": "node scripts/check-page-ownership.js --dist",
     "page-ownership:dist:production-like": "node scripts/check-page-ownership.js --dist --production-like",
-    "strangler:copy:dry-run": "npm run astro:build && node scripts/copy-legacy-to-dist.js --dry-run"
+    "strangler:copy:dry-run": "npm run astro:build && node scripts/copy-legacy-to-dist.js --dry-run",
+    "astro:pilot:article-mdx": "npm run strangler:build && npm run page-ownership:dist"
   },
   "engines": {
     "node": ">=22.12.0"
