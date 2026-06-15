@@ -1,0 +1,19 @@
+---
+import { getEntry, render } from 'astro:content';
+import ArticleLayout from '@/layouts/ArticleLayout.astro';
+import { SITE } from '@/data/site';
+
+const entry = await getEntry('articles', 'dzhon-gill-spravochnik');
+if (!entry) throw new Error('MDX pilot entry not found: articles/dzhon-gill-spravochnik');
+const { Content } = await render(entry);
+const canonical = `${SITE.url}/dev/article-mdx-pilot/`;
+---
+<ArticleLayout
+  entry={entry}
+  canonical={canonical}
+  robots="noindex, follow"
+  pilot={true}
+  intendedCanonical={entry.data.canonicalOverride}
+>
+  <Content />
+</ArticleLayout>

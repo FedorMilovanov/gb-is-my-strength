@@ -149,7 +149,32 @@ Risk: high. Do not rush.
 
 ---
 
-## 7. Parallel maps work
+## 7. Current safe continuation — first article MDX pipeline
+
+Статус: 🟡 начато 2026-06-15 build-only/noindex pilot.
+
+Done:
+
+```text
+[x] src/content.config.ts article collection schema
+[x] src/content/articles/dzhon-gill-spravochnik.mdx draft/noindex entry
+[x] ArticleLayout.astro static article shell
+[x] /dev/article-mdx-pilot/ noindex preview
+[x] ownership manifest marks preview as build-only
+[x] production-like dist omits build-only article preview
+```
+
+Next:
+
+```text
+[ ] article-mdx-pilot audit: compare legacy article vs MDX preview metadata/content shape
+[ ] draft extractor for one simple legacy article
+[ ] only after parity: consider actual /articles/dzhon-gill-spravochnik/ shadow ownership in dist, not production deploy
+```
+
+---
+
+## 8. Parallel maps work
 
 Can continue independently:
 
@@ -162,7 +187,7 @@ Can continue independently:
 
 ---
 
-## 8. Do not do yet
+## 9. Do not do yet
 
 ```text
 ❌ change hosting
@@ -176,7 +201,7 @@ Can continue independently:
 
 ---
 
-## 9. Professional mantra
+## 10. Professional mantra
 
 ```text
 One PR. One risk. One rollback.
