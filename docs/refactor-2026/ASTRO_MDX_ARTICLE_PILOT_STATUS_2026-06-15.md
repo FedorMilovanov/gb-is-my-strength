@@ -143,6 +143,33 @@ strict shadow audit: passed
 [x] production-like `dist`: 42 public pages, 2 explicit Astro baseline routes, dev routes omitted
 ```
 
+
+## Deploy-readiness integration update
+
+После public shadow ownership article audit включён в общий dist readiness слой:
+
+```bash
+npm run strangler:deploy-readiness
+```
+
+теперь выполняет:
+
+```bash
+npm run astro:audit:about
+npm run astro:audit:article-mdx:strict
+npm run strangler:audit:production-like
+```
+
+Manual **Dist Strangler Dry Run** также проверяет artifact shape:
+
+```text
+[x] dist/articles/dzhon-gill-spravochnik/index.html exists
+[x] dist/dev/astro-test/index.html absent
+[x] dist/dev/article-mdx-pilot/index.html absent
+```
+
+`check-workflows.js` теперь падает, если эти safety rails удалить из `package.json` или dry-run workflow.
+
 ## Следующий профессиональный шаг
 
 Не deploy switch. Следующий безопасный шаг — стабилизировать article migration pattern перед второй статьёй:

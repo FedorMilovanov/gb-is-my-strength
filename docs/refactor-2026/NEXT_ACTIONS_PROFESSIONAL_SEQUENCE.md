@@ -171,6 +171,8 @@ Done:
 [x] article shadow audit passes for public route + noindex dev preview
 [x] production-like dist keeps 42 public pages and omits dev routes
 [x] `npm run astro:audit:article-mdx:strict` passes
+[x] `strangler:deploy-readiness` includes strict article shadow audit
+[x] dist dry-run workflow asserts article shadow route exists and dev article preview is absent
 ```
 
 Next:
