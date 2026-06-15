@@ -394,7 +394,11 @@ body.articles-index-page .h-section{padding-top:40px;padding-bottom:24px}
   .home-page .h-mobile-lab-shelf .h-featured-abstract{-webkit-line-clamp:2}
 }
 @media (min-width:761px){
-  .h-mobile-lab-shelf{display:block}
+  .home-page .h-mobile-lab-shelf{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px;align-items:stretch}
+  .home-page .h-mobile-lab-shelf .h-featured-series{margin:0!important;height:100%}
+  .home-page .h-mobile-lab-shelf .h-featured-img-wrap{height:224px}
+  .home-page .h-mobile-lab-shelf .h-featured-body{height:100%;display:flex;flex-direction:column}
+  .home-page .h-mobile-lab-shelf .h-featured-abstract{flex:1 1 auto}
 }
 
 
