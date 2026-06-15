@@ -1,0 +1,19 @@
+---
+import { getEntry, render } from 'astro:content';
+import ArticleLayout from '@/layouts/ArticleLayout.astro';
+import { SITE } from '@/data/site';
+
+const entry = await getEntry('articles', 'dzhon-gill-spravochnik');
+if (!entry) throw new Error('Article entry not found: articles/dzhon-gill-spravochnik');
+const { Content } = await render(entry);
+const canonical = `${SITE.url}/articles/dzhon-gill-spravochnik/`;
+---
+<ArticleLayout
+  entry={entry}
+  canonical={canonical}
+  robots="index, follow"
+  pilot={false}
+  intendedCanonical={canonical}
+>
+  <Content />
+</ArticleLayout>

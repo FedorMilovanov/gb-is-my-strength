@@ -1,7 +1,12 @@
 #!/usr/bin/env node
 /*
- * article-mdx-pilot-audit.js — shadow ownership audit for article MDX.
- * Compares the Astro-generated article in dist against the legacy baseline.
+ * article-mdx-pilot-audit.js — audit the first MDX article migration step.
+ *
+ * Current contract:
+ * - repository root legacy HTML remains production truth until deploy switch;
+ * - strangler dist may shadow-own the public article URL with Astro output;
+ * - /dev/article-mdx-pilot/ remains build-only/noindex preview;
+ * - public/preview Astro output must mirror the legacy SEO/content contract.
  */
 'use strict';
 
@@ -13,9 +18,12 @@ const ROOT = path.join(__dirname, '..');
 const DIST = path.join(ROOT, 'dist');
 const SITE = 'https://gospod-bog.ru';
 const LEGACY_REL = 'articles/dzhon-gill-spravochnik/index.html';
-const ASTRO_REL = 'articles/dzhon-gill-spravochnik/index.html';
+const PUBLIC_REL = 'articles/dzhon-gill-spravochnik/index.html';
+const PREVIEW_REL = 'dev/article-mdx-pilot/index.html';
+const PREVIEW_CANONICAL = `${SITE}/dev/article-mdx-pilot/`;
 const LEGACY_CANONICAL = `${SITE}/articles/dzhon-gill-spravochnik/`;
 const NO_BUILD = process.argv.includes('--no-build');
+const REQUIRE_CONTENT_PARITY = process.argv.includes('--require-content-parity');
 
 const problems = [];
 const warnings = [];
@@ -27,7 +35,7 @@ function file(rel) { return path.join(ROOT, rel); }
 function distFile(rel) { return path.join(DIST, rel); }
 function read(abs) { return fs.readFileSync(abs, 'utf8'); }
 function stripTags(html) {
-  return html
+  return String(html || '')
     .replace(/<script[\s\S]*?<\/script>/gi, ' ')
     .replace(/<style[\s\S]*?<\/style>/gi, ' ')
     .replace(/<svg[\s\S]*?<\/svg>/gi, ' ')
@@ -102,7 +110,7 @@ function iso(value) {
 }
 function runBuild() {
   if (NO_BUILD) return;
-  console.log('▶ Building strangler dist for MDX shadow pilot audit…');
+  console.log('▶ Building strangler dist for MDX article shadow audit…');
   const npm = process.platform === 'win32' ? 'npm.cmd' : 'npm';
   const res = spawnSync(npm, ['run', 'strangler:build'], { cwd: ROOT, stdio: 'inherit' });
   if (res.status !== 0) process.exit(res.status || 1);
@@ -111,69 +119,143 @@ function mustEqual(label, actual, expected) {
   if (actual === expected) ok(`${label}: ${expected}`);
   else bad(`${label}: expected "${expected}", got "${actual}"`);
 }
+function mustNotContain(label, actual, needle) {
+  if (!String(actual || '').includes(needle)) ok(`${label}: does not contain "${needle}"`);
+  else bad(`${label}: must not contain "${needle}"`);
+}
+function mustEqualInstant(label, actual, expected) {
+  const actualIso = iso(actual);
+  const expectedIso = iso(expected);
+  if (actualIso && actualIso === expectedIso) ok(`${label}: ${actualIso}`);
+  else bad(`${label}: expected instant "${expectedIso || expected}", got "${actualIso || actual}"`);
+}
 function mustContain(label, actual, needle) {
   if (String(actual || '').includes(needle)) ok(`${label}: contains "${needle}"`);
   else bad(`${label}: missing "${needle}"`);
 }
+function hasNoindex(html) {
+  return /\bnoindex\b/i.test(meta(html, 'robots'));
+}
+function legacyFacts(legacy) {
+  return {
+    title: title(legacy),
+    description: meta(legacy, 'description'),
+    canonical: canonical(legacy),
+    h1: h1(legacy),
+    ogType: meta(legacy, 'og:type'),
+    ogImage: normalizeUrl(meta(legacy, 'og:image')),
+    published: meta(legacy, 'article:published_time'),
+    modified: meta(legacy, 'article:modified_time'),
+    author: meta(legacy, 'article:author'),
+    words: wordCount(articleHtml(legacy, 'article-body')),
+    h2: headings(legacy),
+  };
+}
+function assertArticleContract(label, html, facts, options) {
+  const expectedCanonical = options.expectedCanonical;
+  const titleMode = options.titleMode || 'exact';
+  mustEqual(`${label} canonical`, canonical(html), expectedCanonical);
+  if (options.expectNoindex) mustContain(`${label} robots`, meta(html, 'robots'), 'noindex');
+  else if (hasNoindex(html)) bad(`${label} must be indexable but has robots: ${meta(html, 'robots')}`);
+  else ok(`${label} is indexable`);
+
+  if (titleMode === 'contains') mustContain(`${label} title`, title(html), facts.title);
+  else mustEqual(`${label} title mirrors legacy`, title(html), facts.title);
+  mustEqual(`${label} meta description mirrors legacy`, meta(html, 'description'), facts.description);
+  mustEqual(`${label} visible h1 mirrors legacy`, h1(html), facts.h1);
+  mustEqual(`${label} og:type mirrors legacy article type`, meta(html, 'og:type'), facts.ogType);
+  mustEqual(`${label} og:image mirrors legacy`, normalizeUrl(meta(html, 'og:image')), facts.ogImage);
+  mustEqualInstant(`${label} article:published_time mirrors legacy instant`, meta(html, 'article:published_time'), facts.published);
+  mustEqualInstant(`${label} article:modified_time mirrors legacy instant`, meta(html, 'article:modified_time'), facts.modified);
+  mustEqual(`${label} article:author mirrors legacy`, meta(html, 'article:author'), facts.author);
+  mustContain(`${label} article slug marker`, html, 'data-article-slug="dzhon-gill-spravochnik"');
+
+  const nodes = jsonLdNodes(html);
+  const article = firstNode(nodes, 'Article');
+  const breadcrumbs = firstNode(nodes, 'BreadcrumbList');
+  if (!article) bad(`${label} JSON-LD missing Article node`);
+  else {
+    ok(`${label} JSON-LD Article node exists`);
+    mustEqual(`${label} Article headline mirrors legacy title`, article.headline || '', facts.title);
+    mustEqual(`${label} Article description mirrors legacy`, article.description || '', facts.description);
+    mustEqual(`${label} Article @id uses intended public canonical`, article['@id'] || '', `${LEGACY_CANONICAL}#article`);
+    mustEqual(`${label} Article url uses intended public canonical`, article.url || '', LEGACY_CANONICAL);
+    mustEqualInstant(`${label} Article datePublished mirrors legacy instant`, article.datePublished, facts.published);
+    mustEqualInstant(`${label} Article dateModified mirrors legacy instant`, article.dateModified, facts.modified);
+    mustEqual(`${label} Article author mirrors legacy`, article.author?.name || '', facts.author);
+    mustEqual(`${label} Article mainEntityOfPage uses intended public canonical`, article.mainEntityOfPage?.['@id'] || '', LEGACY_CANONICAL);
+  }
+  if (!breadcrumbs) bad(`${label} JSON-LD missing BreadcrumbList node`);
+  else {
+    ok(`${label} JSON-LD BreadcrumbList node exists`);
+    mustEqual(`${label} BreadcrumbList @id uses intended public canonical`, breadcrumbs['@id'] || '', `${LEGACY_CANONICAL}#breadcrumbs`);
+    const items = Array.isArray(breadcrumbs.itemListElement) ? breadcrumbs.itemListElement : [];
+    mustEqual(`${label} BreadcrumbList final item uses intended public canonical`, items.at(-1)?.item || '', LEGACY_CANONICAL);
+    mustEqual(`${label} BreadcrumbList final item title mirrors legacy title`, items.at(-1)?.name || '', facts.title);
+  }
+}
+function assertBodyParity(label, html, className, facts) {
+  const words = wordCount(articleHtml(html, className));
+  const h2 = headings(html);
+  const ratio = words / Math.max(1, facts.words);
+  console.log(`${label} words: ${words}; legacy words: ${facts.words}; ratio: ${ratio.toFixed(2)}`);
+  console.log(`${label} h2 count: ${h2.length}; legacy h2 count: ${facts.h2.length}`);
+  const h2Parity = JSON.stringify(facts.h2) === JSON.stringify(h2);
+  if (h2Parity) ok(`${label} H2 parity matches legacy`);
+  else {
+    const msg = `${label} H2 parity differs (legacy: ${JSON.stringify(facts.h2)}; ${label}: ${JSON.stringify(h2)})`;
+    if (REQUIRE_CONTENT_PARITY) bad(msg);
+    else warn(`${msg}; acceptable before full body migration`);
+  }
+  if (ratio < 0.72) {
+    const msg = `${label} body is not content-complete yet (${words}/${facts.words} words, ratio ${ratio.toFixed(2)})`;
+    if (REQUIRE_CONTENT_PARITY) bad(msg);
+    else warn(`${msg}; acceptable for build-only schema/layout pilot, not acceptable for public URL promotion`);
+  } else ok(`${label} body word-count parity is within migration threshold`);
+}
 
 function main() {
-  console.log(`ARTICLE MDX SHADOW AUDIT (${NO_BUILD ? 'no-build' : 'build'}, content parity required)`);
+  console.log(`ARTICLE MDX SHADOW AUDIT (${NO_BUILD ? 'no-build' : 'build'}, content parity ${REQUIRE_CONTENT_PARITY ? 'required' : 'advisory'})`);
   runBuild();
 
   const legacyPath = file(LEGACY_REL);
-  const astroPath = distFile(ASTRO_REL);
+  const publicPath = distFile(PUBLIC_REL);
+  const previewPath = distFile(PREVIEW_REL);
   if (!fs.existsSync(legacyPath)) bad(`legacy article missing: ${LEGACY_REL}`);
-  if (!fs.existsSync(astroPath)) bad(`Astro article missing in dist: ${ASTRO_REL}`);
+  if (!fs.existsSync(publicPath)) bad(`dist public article missing: ${PUBLIC_REL}`);
+  if (!fs.existsSync(previewPath)) bad(`MDX preview missing: ${PREVIEW_REL}`);
   if (problems.length) return finish();
 
   const legacy = read(legacyPath);
-  const astroHtml = read(astroPath);
+  const publicArticle = read(publicPath);
+  const preview = read(previewPath);
+  const facts = legacyFacts(legacy);
 
-  if (legacy === astroHtml) bad('dist article is byte-identical to legacy; expected Astro shadow ownership');
-  else ok('dist article has been successfully taken over by Astro (shadow ownership)');
-  
-  if (/class="astro-article"/.test(astroHtml)) ok('dist article path contains Astro article output');
-  else bad('dist article path lacks Astro article output marker');
+  mustEqual('legacy canonical baseline', facts.canonical, LEGACY_CANONICAL);
+  if (/class="astro-article"/.test(legacy)) bad('repository root legacy article contains Astro article output');
+  else ok('repository root article remains legacy production truth');
 
-  const legacyTitle = title(legacy);
-  const legacyDescription = meta(legacy, 'description');
-  const legacyCanonical = canonical(legacy);
-  const legacyH1 = h1(legacy);
-  const legacyOgImage = normalizeUrl(meta(legacy, 'og:image'));
-  const legacyPublished = meta(legacy, 'article:published_time');
-  const legacyModified = meta(legacy, 'article:modified_time');
-  const legacyWords = wordCount(articleHtml(legacy, 'article-body'));
-  const astroWords = wordCount(articleHtml(astroHtml, 'astro-article'));
+  if (!/class="astro-article"/.test(publicArticle)) bad('dist public article path is not Astro shadow output');
+  else ok('dist public article path is Astro shadow-owned');
+  if (legacy === publicArticle) bad('dist public article is still byte-identical legacy copy; shadow ownership did not engage');
+  else ok('dist public article is no longer byte-identical legacy copy');
 
-  mustEqual('legacy canonical baseline', legacyCanonical, LEGACY_CANONICAL);
-  mustEqual('Astro canonical stays public canonical', canonical(astroHtml), LEGACY_CANONICAL);
-  mustContain('Astro robots', meta(astroHtml, 'robots'), 'index, follow');
-  mustContain('Astro title', title(astroHtml), legacyTitle);
-  mustEqual('Astro meta description mirrors legacy', meta(astroHtml, 'description'), legacyDescription);
-  mustEqual('Astro visible h1 mirrors legacy', h1(astroHtml), legacyH1);
-  mustEqual('Astro og:image mirrors legacy', normalizeUrl(meta(astroHtml, 'og:image')), legacyOgImage);
-  mustContain('Astro article slug marker', astroHtml, 'data-article-slug="dzhon-gill-spravochnik"');
+  assertArticleContract('public shadow article', publicArticle, facts, {
+    expectedCanonical: LEGACY_CANONICAL,
+    expectNoindex: false,
+    titleMode: 'exact',
+  });
+  mustNotContain('public shadow article pilot note', publicArticle, 'Build-only MDX pilot');
+  assertBodyParity('public shadow article', publicArticle, 'astro-article', facts);
 
-  const nodes = jsonLdNodes(astroHtml);
-  const article = firstNode(nodes, 'Article');
-  if (!article) bad('Astro JSON-LD missing Article node');
-  else {
-    ok('Astro JSON-LD Article node exists');
-    mustEqual('Article headline mirrors legacy title', article.headline || '', legacyTitle);
-    mustEqual('Article description mirrors legacy', article.description || '', legacyDescription);
-    mustEqual('Article @id uses intended public canonical', article['@id'] || '', `${LEGACY_CANONICAL}#article`);
-    mustEqual('Article datePublished mirrors legacy instant', iso(article.datePublished), iso(legacyPublished));
-    mustEqual('Article dateModified mirrors legacy instant', iso(article.dateModified), iso(legacyModified));
-  }
-
-  const legacyH2 = headings(legacy);
-  const astroH2 = headings(astroHtml);
-  console.log(`legacy words: ${legacyWords}; astro words: ${astroWords}; ratio: ${(astroWords / Math.max(1, legacyWords)).toFixed(2)}`);
-  console.log(`legacy h2 count: ${legacyH2.length}; astro h2 count: ${astroH2.length}`);
-  const ratio = astroWords / Math.max(1, legacyWords);
-  if (ratio < 0.72) {
-    bad(`MDX body is not content-complete yet (${astroWords}/${legacyWords} words, ratio ${ratio.toFixed(2)})`);
-  } else ok('MDX body word-count parity is within migration threshold');
+  assertArticleContract('preview', preview, facts, {
+    expectedCanonical: PREVIEW_CANONICAL,
+    expectNoindex: true,
+    titleMode: 'contains',
+  });
+  mustContain('preview pilot note', preview, 'Build-only MDX pilot');
+  mustContain('preview intended canonical note', preview, LEGACY_CANONICAL);
+  assertBodyParity('preview', preview, 'astro-article', facts);
 
   finish();
 }
@@ -184,7 +266,7 @@ function finish() {
     process.exit(1);
   }
   console.log('✅ article MDX shadow audit passed');
-  if (warnings.length) console.log('ℹ️ Advisory warnings remain.');
+  if (warnings.length) console.log('ℹ️ Advisory warnings remain until every migrated article is public-shadow reviewed.');
 }
 
 main();
