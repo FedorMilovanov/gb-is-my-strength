@@ -1,6 +1,6 @@
 ---
 import BaseLayout from '@/layouts/BaseLayout.astro';
-import { SITE } from '@/data/site';
+import { SECTION_META, SITE } from '@/data/site';
 import type { CollectionEntry } from 'astro:content';
 
 interface Props {
@@ -13,14 +13,26 @@ interface Props {
 
 const { entry, canonical, robots, pilot = false, intendedCanonical } = Astro.props;
 const data = entry.data;
-const articleAuthorName = data.author === 'abner-chou' ? 'Абнер Чау' : SITE.authorName;
+const isTranslation = data.author === 'abner-chou';
+const articleAuthorName = isTranslation ? 'Абнер Чау' : SITE.authorName;
+const editorialRole = isTranslation ? 'Редактор' : 'Автор-редактор';
+const editorialName = SITE.authorName;
 const h1 = data.h1 || data.title;
 const published = data.publishedAt instanceof Date ? data.publishedAt : new Date(data.publishedAt);
 const updated = data.updatedAt instanceof Date ? data.updatedAt : data.updatedAt ? new Date(data.updatedAt) : undefined;
 const ogImage = data.ogImage?.startsWith('http') ? data.ogImage : data.ogImage ? `${SITE.url}${data.ogImage}` : undefined;
 const articleCanonical = intendedCanonical || data.canonicalOverride || `${SITE.url}/${data.section}/${data.slug}/`;
-const articleSectionName = data.series === 'dzhon-gill' ? 'Биографии служителей' : data.section;
-const articleSectionUrl = data.series === 'dzhon-gill' ? `${SITE.url}/biografii/` : `${SITE.url}/${data.section}/`;
+
+const seriesMeta =
+  data.series === 'dzhon-gill'
+    ? { label: 'Биографии служителей', url: `${SITE.url}/biografii/`, eyebrow: 'Биографии служителей' }
+    : data.series === 'russian-baptism'
+      ? SECTION_META['baptisty-rossii']
+      : undefined;
+const sectionMeta = seriesMeta || SECTION_META[data.section];
+const articleSectionName = sectionMeta?.label || data.section;
+const articleSectionUrl = sectionMeta?.url || `${SITE.url}/${data.section}/`;
+const articleEyebrow = sectionMeta?.eyebrow || articleSectionName;
 const effectiveRobots = robots || (data.noindex ? 'noindex, follow' : 'index, follow');
 const outputNoindex = /\bnoindex\b/i.test(effectiveRobots);
 const outputDraft = pilot && data.draft;
@@ -28,7 +40,7 @@ const jsonLd = {
   '@context': 'https://schema.org',
   '@graph': [
     {
-      '@type': 'Article',
+      '@type': isTranslation ? 'ScholarlyArticle' : 'Article',
       '@id': `${articleCanonical}#article`,
       headline: data.title,
       description: data.description,
@@ -36,7 +48,15 @@ const jsonLd = {
       inLanguage: 'ru-RU',
       datePublished: published.toISOString(),
       dateModified: (updated || published).toISOString(),
-      author: { '@id': data.author === 'abner-chou' ? `${SITE.url}/authors/abner-chou/#person` : `${SITE.url}/about/#person`, '@type': 'Person', name: articleAuthorName, url: data.author === 'abner-chou' ? `${SITE.url}/authors/abner-chou/` : `${SITE.url}/about/` },
+      author: {
+        '@id': isTranslation ? `${SITE.url}/authors/abner-chou/#person` : `${SITE.url}/about/#person`,
+        '@type': 'Person',
+        name: articleAuthorName,
+        url: isTranslation ? `${SITE.url}/authors/abner-chou/` : `${SITE.url}/about/`,
+      },
+      translator: isTranslation
+        ? { '@id': `${SITE.url}/about/#person`, '@type': 'Person', name: SITE.authorName, url: `${SITE.url}/about/` }
+        : undefined,
       publisher: { '@id': SITE.orgId },
       mainEntityOfPage: { '@type': 'WebPage', '@id': articleCanonical },
       image: ogImage ? { '@type': 'ImageObject', url: ogImage, width: 1200, height: 630 } : undefined,
@@ -68,6 +88,7 @@ const jsonLd = {
   canonical={canonical}
   robots={effectiveRobots}
   ogImage={ogImage}
+  ogImageAlt={data.ogImageAlt || data.title}
   ogTitle={data.title}
   ogDescription={data.description}
   ogType="article"
@@ -78,22 +99,48 @@ const jsonLd = {
   technicalBadge={pilot ? 'MDX content pilot · noindex' : undefined}
   footerNote={pilot ? 'Build-only article pipeline preview' : undefined}
 >
-  <article class="astro-article" data-article-slug={data.slug}>
+  <article class="astro-article" data-article-slug={data.slug} data-pagefind-body>
+    <span data-pagefind-meta="author" hidden>{articleAuthorName}</span>
+    {data.readingTime && <span data-pagefind-meta="readTime" hidden>{data.readingTime}</span>}
+    <span data-pagefind-meta="category" hidden>{articleSectionName}</span>
+    {ogImage && <span data-pagefind-meta="image" hidden>{ogImage.replace(SITE.url, '')}</span>}
+
     {pilot && (
       <aside class="astro-pilot-note" aria-label="Статус MDX-пилота">
         <strong>Build-only MDX pilot.</strong>
         <span> Production legacy URL не заменён. Intended canonical: <code>{articleCanonical}</code></span>
       </aside>
     )}
+
     <header class="astro-article__header">
-      <p class="astro-article__eyebrow">{data.section} · {outputDraft ? 'draft' : 'published'} · {outputNoindex ? 'noindex' : 'indexable'}</p>
+      <p class="astro-article__eyebrow">{articleEyebrow}</p>
       <h1>{h1}</h1>
-      <p>{data.description}</p>
+      <p class="astro-article__lead">{data.description}</p>
+      <p class="astro-article__byline">
+        <span class="astro-article__byline-strong">{editorialRole}: {editorialName}</span>
+        {isTranslation && <><span aria-hidden="true">·</span><span>Оригинал: {articleAuthorName}</span></>}
+      </p>
       <dl class="astro-article__meta">
-        <div><dt>Опубликовано</dt><dd><time datetime={published.toISOString()}>{published.toLocaleDateString('ru-RU')}</time></dd></div>
-        {updated && <div><dt>Обновлено</dt><dd><time datetime={updated.toISOString()}>{updated.toLocaleDateString('ru-RU')}</time></dd></div>}
-        {data.readingTime && <div><dt>Чтение</dt><dd>{data.readingTime} мин.</dd></div>}
-        <div><dt>Автор</dt><dd>{articleAuthorName}</dd></div>
+        <div>
+          <dt>Опубликовано</dt>
+          <dd><time datetime={published.toISOString()}>{published.toLocaleDateString('ru-RU')}</time></dd>
+        </div>
+        {updated && (
+          <div>
+            <dt>Обновлено</dt>
+            <dd><time datetime={updated.toISOString()}>{updated.toLocaleDateString('ru-RU')}</time></dd>
+          </div>
+        )}
+        {data.readingTime && (
+          <div>
+            <dt>Чтение</dt>
+            <dd>{data.readingTime} мин.</dd>
+          </div>
+        )}
+        <div>
+          <dt>Статус</dt>
+          <dd>{outputNoindex ? 'noindex' : outputDraft ? 'draft' : 'опубликовано'}</dd>
+        </div>
       </dl>
       {data.tags.length > 0 && (
         <ul class="astro-article__tags" aria-label="Теги">
@@ -101,8 +148,30 @@ const jsonLd = {
         </ul>
       )}
     </header>
+
     <div class="astro-article__body">
       <slot />
     </div>
+
+    {data.series === 'russian-baptism' && (
+      <section class="astro-series-context" aria-label="Контекст серии Баптисты России">
+        <h2>Как эта часть связана со всей серией</h2>
+        <p>
+          Эта публикация входит в цикл <strong>«Баптисты России»</strong>, где одна линия не существует сама по себе:
+          Тифлис, южная штунда, Петербург, союзная организация, гонения, советская перестройка церковной жизни,
+          Инициативная группа и подпольная печать читаются как одна связанная история, а не как разрозненные эпизоды.
+        </p>
+        <p>
+          Поэтому каждую часть лучше держать рядом с общим хабом серии и с 3D-картой русского баптизма: текст даёт даты,
+          нюансы и спорные места, а карта помогает видеть маршруты, узлы, людей и линии влияния. Если вы читаете эту тему
+          впервые, начните с общего обзора серии, а затем возвращайтесь к соседним частям и справочнику.
+        </p>
+        <p class="astro-series-context__links">
+          <a href="/baptisty-rossii/">Открыть весь цикл</a>
+          <span aria-hidden="true">·</span>
+          <a href="/konfessii/russkij-baptizm/">Перейти к 3D-карте</a>
+        </p>
+      </section>
+    )}
   </article>
 </BaseLayout>

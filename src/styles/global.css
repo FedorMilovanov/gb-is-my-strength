@@ -2,36 +2,40 @@
   box-sizing: border-box;
 }
 
+html {
+  overflow-x: hidden;
+  scrollbar-gutter: stable;
+  color-scheme: dark;
+  background: var(--astro-color-bg);
+  color: var(--astro-color-text);
+  font-family: var(--astro-font-sans);
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  overflow-x: hidden;
+  background:
+    radial-gradient(circle at 50% 0%, rgba(212, 165, 116, .12), transparent 34rem),
+    var(--astro-color-bg);
+}
+
 img {
   max-width: 100%;
   height: auto;
   display: block;
 }
 
-html {
-  overflow-x: hidden;
-  scrollbar-gutter: stable;
-body { overflow-x: hidden; }
+a {
+  color: inherit;
 }
-html {
-  color-scheme: dark;
-  background: var(--astro-color-bg);
-  color: var(--astro-color-text);
-  font-family: var(--astro-font-sans);
-}
-body {
-  margin: 0;
-  min-height: 100vh;
-  background:
-    radial-gradient(circle at 50% 0%, rgba(212, 165, 116, .12), transparent 34rem),
-    var(--astro-color-bg);
-}
-a { color: inherit; }
+
 .astro-shell {
   min-height: 100vh;
   display: grid;
   grid-template-rows: auto 1fr auto;
 }
+
 .astro-header,
 .astro-footer {
   width: min(960px, calc(100vw - 32px));
@@ -43,13 +47,22 @@ a { color: inherit; }
   color: var(--astro-color-muted);
   font-size: .875rem;
 }
-.astro-header { padding-block: 1.25rem; }
-.astro-footer { padding-block: 1.5rem; justify-content: center; }
+
+.astro-header {
+  padding-block: 1.25rem;
+}
+
+.astro-footer {
+  padding-block: 1.5rem;
+  justify-content: center;
+}
+
 .astro-header__brand {
   color: var(--astro-color-text);
   text-decoration: none;
   font-family: var(--astro-font-serif);
 }
+
 .astro-header__badge {
   border: 1px solid var(--astro-color-border);
   border-radius: 999px;
@@ -57,6 +70,7 @@ a { color: inherit; }
   color: var(--astro-color-gold);
   font-size: .75rem;
 }
+
 .astro-main {
   width: min(760px, calc(100vw - 32px));
   margin: auto;
@@ -66,31 +80,37 @@ a { color: inherit; }
   padding: clamp(1.5rem, 5vw, 3rem);
   box-shadow: 0 24px 80px rgba(0, 0, 0, .38);
 }
+
 .astro-main h1 {
   margin: 0 0 1rem;
   font-family: var(--astro-font-serif);
   font-size: clamp(2rem, 6vw, 3.25rem);
   line-height: 1.05;
 }
+
 .astro-main p {
   color: var(--astro-color-muted);
   font-size: 1rem;
   line-height: 1.75;
 }
+
 .astro-main code {
   color: var(--astro-color-gold);
 }
+
 .astro-about h2 {
   margin: 2rem 0 .75rem;
   color: var(--astro-color-text);
   font-family: var(--astro-font-serif);
   font-size: clamp(1.35rem, 3vw, 1.8rem);
 }
+
 .astro-about section + section {
   border-top: 1px solid rgba(212, 165, 116, .16);
   margin-top: 1.65rem;
   padding-top: .4rem;
 }
+
 .astro-link-list {
   list-style: none;
   margin: 1rem 0 0;
@@ -98,6 +118,7 @@ a { color: inherit; }
   display: grid;
   gap: .75rem;
 }
+
 .astro-link-list li,
 .astro-contact-grid a,
 .astro-accuracy-block {
@@ -105,18 +126,22 @@ a { color: inherit; }
   border-radius: 1rem;
   background: rgba(255, 255, 255, .035);
 }
+
 .astro-link-list li {
   padding: .85rem 1rem;
 }
+
 .astro-link-list a,
 .astro-contact-grid a {
   color: var(--astro-color-text);
   text-decoration: none;
 }
+
 .astro-link-list a:hover,
 .astro-contact-grid a:hover {
   color: var(--astro-color-gold);
 }
+
 .astro-link-list span,
 .astro-contact-grid span {
   display: block;
@@ -124,23 +149,28 @@ a { color: inherit; }
   color: var(--astro-color-muted);
   font-size: .92rem;
 }
+
 .astro-contact-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
   gap: .75rem;
   margin: 1rem 0;
 }
+
 .astro-contact-grid a {
   display: block;
   padding: .9rem 1rem;
 }
+
 .astro-contact-grid--compact {
   margin-bottom: 0;
 }
+
 .astro-accuracy-block {
   padding: 1rem 1.1rem 1.15rem;
   background: rgba(212, 165, 116, .075);
 }
+
 .astro-epigraph {
   margin: 2rem 0 0;
   padding: 1.25rem 1.5rem;
@@ -148,12 +178,14 @@ a { color: inherit; }
   background: rgba(212, 165, 116, .055);
   border-radius: 0 1rem 1rem 0;
 }
+
 .astro-epigraph p {
   margin: 0;
   color: var(--astro-color-text);
   font-family: var(--astro-font-serif);
   font-size: 1.1rem;
 }
+
 .astro-epigraph cite {
   display: block;
   margin-top: .6rem;
@@ -161,6 +193,7 @@ a { color: inherit; }
   font-style: normal;
   font-size: .9rem;
 }
+
 .astro-article__eyebrow {
   margin: 0 0 .65rem;
   color: var(--astro-color-gold);
@@ -168,6 +201,29 @@ a { color: inherit; }
   letter-spacing: .08em;
   text-transform: uppercase;
 }
+
+.astro-article__lead {
+  margin: 0;
+  color: var(--astro-color-muted);
+  font-size: 1rem;
+  line-height: 1.75;
+}
+
+.astro-article__byline {
+  display: flex;
+  flex-wrap: wrap;
+  gap: .5rem;
+  align-items: center;
+  margin: 1rem 0 0;
+  font-size: .95rem;
+  color: var(--astro-color-muted);
+}
+
+.astro-article__byline-strong {
+  color: var(--astro-color-text);
+  font-weight: 600;
+}
+
 .astro-pilot-note {
   margin: 0 0 1.25rem;
   padding: .85rem 1rem;
@@ -177,30 +233,36 @@ a { color: inherit; }
   color: var(--astro-color-muted);
   line-height: 1.55;
 }
+
 .astro-pilot-note strong {
   color: var(--astro-color-gold);
 }
+
 .astro-article__meta {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(128px, 1fr));
   gap: .75rem;
   margin: 1.25rem 0 0;
 }
+
 .astro-article__meta div {
   padding: .75rem .85rem;
   border: 1px solid rgba(212, 165, 116, .16);
   border-radius: .9rem;
   background: rgba(255, 255, 255, .03);
 }
+
 .astro-article__meta dt {
   color: var(--astro-color-muted);
   font-size: .75rem;
 }
+
 .astro-article__meta dd {
   margin: .2rem 0 0;
   color: var(--astro-color-text);
   font-size: .92rem;
 }
+
 .astro-article__tags {
   display: flex;
   flex-wrap: wrap;
@@ -209,6 +271,7 @@ a { color: inherit; }
   padding: 0;
   list-style: none;
 }
+
 .astro-article__tags li {
   border: 1px solid rgba(212, 165, 116, .22);
   border-radius: 999px;
@@ -216,20 +279,53 @@ a { color: inherit; }
   color: var(--astro-color-muted);
   font-size: .82rem;
 }
+
 .astro-article__body {
   margin-top: 2rem;
   border-top: 1px solid rgba(212, 165, 116, .16);
   padding-top: 1rem;
 }
+
 .astro-article__body h2 {
   margin: 1.75rem 0 .65rem;
   color: var(--astro-color-text);
   font-family: var(--astro-font-serif);
   font-size: clamp(1.3rem, 3vw, 1.75rem);
 }
-.astro-article__body ul {
+
+.astro-article__body ul,
+.astro-article__body ol {
   color: var(--astro-color-muted);
   line-height: 1.75;
+}
+
+.astro-series-context {
+  margin-top: 2rem;
+  padding-top: 1rem;
+  border-top: 1px solid rgba(212, 165, 116, .16);
+}
+
+.astro-series-context h2 {
+  margin: 0 0 .75rem;
+  color: var(--astro-color-text);
+  font-family: var(--astro-font-serif);
+  font-size: clamp(1.2rem, 2.6vw, 1.55rem);
+}
+
+.astro-series-context__links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: .5rem;
+  align-items: center;
+}
+
+.astro-series-context__links a {
+  color: var(--astro-color-gold);
+  text-decoration: none;
+}
+
+.astro-series-context__links a:hover {
+  text-decoration: underline;
 }
 
 .astro-page {
@@ -237,10 +333,12 @@ a { color: inherit; }
   margin: 0 auto;
   padding: clamp(2rem, 5vw, 4rem) 1rem;
 }
+
 .astro-page__header {
   max-width: 780px;
   margin-bottom: clamp(2rem, 4vw, 3rem);
 }
+
 .astro-eyebrow {
   margin: 0 0 .75rem;
   color: var(--color-accent, #8a5a2b);
@@ -249,11 +347,13 @@ a { color: inherit; }
   text-transform: uppercase;
   font-size: .78rem;
 }
+
 .astro-card-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(min(100%, 280px), 1fr));
   gap: 1rem;
 }
+
 .astro-card {
   border: 1px solid var(--color-border, rgba(95, 76, 55, .22));
   border-radius: 18px;
@@ -261,11 +361,24 @@ a { color: inherit; }
   background: var(--color-surface, #fffdf8);
   box-shadow: 0 10px 30px rgba(40, 30, 20, .06);
 }
+
 .astro-card h2 {
   margin-top: 0;
   font-size: clamp(1.05rem, 2vw, 1.25rem);
 }
+
 .astro-card p {
   margin-bottom: 0;
 }
-.sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
