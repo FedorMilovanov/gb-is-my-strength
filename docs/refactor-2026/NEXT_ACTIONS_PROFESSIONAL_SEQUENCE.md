@@ -52,6 +52,8 @@ Risk: low.
 
 ## 3. Next PR 2 — Astro scaffold only
 
+Статус: ✅ выполнено 2026-06-14 (`cc85c843 feat(astro): add build-only scaffold`).
+
 Цель:
 
 ```text
@@ -61,13 +63,13 @@ Astro собирается, production не меняется.
 Tasks:
 
 ```text
-[ ] install Astro deps
-[ ] add astro.config.mjs
-[ ] add tsconfig.json
-[ ] add BaseLayout/Seo
-[ ] add /dev/astro-test/ noindex
-[ ] add astro:* scripts
-[ ] no deploy change
+[x] install Astro deps
+[x] add astro.config.mjs
+[x] add tsconfig.json
+[x] add BaseLayout/Seo
+[x] add /dev/astro-test/ noindex
+[x] add astro:* scripts
+[x] no deploy change
 ```
 
 Risk: low/medium.
@@ -75,6 +77,8 @@ Risk: low/medium.
 ---
 
 ## 4. Next PR 3 — about pilot local only
+
+Статус: ✅ выполнено 2026-06-14 (`3b5cffc4`, усилено `4de814a8`, `fcfe95e9`, `55dcd40f`). Production deploy не переключён.
 
 Цель:
 
@@ -85,12 +89,12 @@ Risk: low/medium.
 Tasks:
 
 ```text
-[ ] create about Astro page
-[ ] build dist
-[ ] extract dist contract
-[ ] compare against legacy for /about/
-[ ] visual screenshot compare
-[ ] do not switch production deploy yet if dist incomplete
+[x] create about Astro page
+[x] build dist
+[x] extract dist contract
+[x] compare against legacy for /about/
+[x] visual screenshot capability via astro:audit:about:shots
+[x] do not switch production deploy yet if dist incomplete / not explicitly approved
 ```
 
 Risk: medium.
@@ -98,6 +102,8 @@ Risk: medium.
 ---
 
 ## 5. Next PR 4 — build-time strangler prototype
+
+Статус: ✅ выполнено и усилено 2026-06-14/15 (`27a16583`, `7b27aa9d`, `0cfc9eee`, `68e30163`, `30e156d4`, ownership guard 2026-06-15). Production deploy не переключён.
 
 Цель:
 
@@ -108,11 +114,13 @@ dist contains full site: Astro-owned pages + copied legacy pages.
 Tasks:
 
 ```text
-[ ] migration/page-ownership.json
-[ ] scripts/copy-legacy-to-dist.js
-[ ] no overwrite Astro-owned pages
-[ ] copy assets/system files
-[ ] dist contract compare
+[x] migration/page-ownership.json
+[x] scripts/copy-legacy-to-dist.js
+[x] no overwrite Astro-owned pages
+[x] copy assets/system files
+[x] dist contract compare
+[x] dist publication/Pagefind/SW/smoke audits
+[x] page ownership guard for manifest + production-like dist
 ```
 
 Risk: medium/high.
@@ -121,15 +129,19 @@ Risk: medium/high.
 
 ## 6. Next PR 5 — deploy pipeline switch to dist
 
-Only after PR 4 is green.
+Статус: ⛔ **не делать автоматически**. Только отдельный маленький commit/PR после явного решения владельца, зелёного manual **Dist Strangler Dry Run**, принятого visual review `/about/` и выполнения `DIST_DEPLOY_SWITCH_RUNBOOK_2026-06-15.md`.
 
 Tasks:
 
 ```text
+[ ] bump sw.js CACHE_VERSION
 [ ] deploy.yml upload path changes from . to dist
+[ ] build production-like strangler dist
+[ ] page-ownership:dist:production-like
 [ ] pagefind builds on dist
 [ ] .nojekyll in dist
-[ ] smoke test
+[ ] IndexNow key goes to dist/${KEY}.txt
+[ ] dist publication audit + smoke + strict SW cache-bump gate
 [ ] rollback plan ready
 ```
 

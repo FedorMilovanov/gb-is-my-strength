@@ -17,7 +17,10 @@ Package scripts:
 
 ```json
 "strangler:build": "npm run astro:build && node scripts/copy-legacy-to-dist.js",
-"strangler:validate": "npm run strangler:build && npm run contract:extract:dist && npm run contract:compare:dist"
+"strangler:validate": "npm run strangler:build && npm run page-ownership:dist && npm run contract:extract:dist && npm run contract:compare:dist",
+"page-ownership:check": "node scripts/check-page-ownership.js",
+"page-ownership:dist": "node scripts/check-page-ownership.js --dist",
+"page-ownership:dist:production-like": "node scripts/check-page-ownership.js --dist --production-like"
 ```
 
 ## Ownership manifest
@@ -59,6 +62,14 @@ contract:extract:dist: 42 public pages, 0 issues
 contract:compare:dist: 42 baseline pages, 42 current public pages, 0 new URLs
 ```
 
+Дополнение 2026-06-15:
+
+```text
+page-ownership:dist: explicit Astro baseline route(s): /about/
+page-ownership:dist: implicit legacy baseline route(s): 41
+page-ownership:dist: /konfessii/russkij-baptizm/_app/ copied and noindex
+```
+
 ## Что НЕ сделано
 
 - `deploy.yml` не переключён на `dist`;
@@ -75,7 +86,8 @@ contract:compare:dist: 42 baseline pages, 42 current public pages, 0 new URLs
 2. smoke test `dist/` через local static server;
 3. проверить service worker/cache strategy для dist;
 4. решить Pagefind generation on dist;
-5. подготовить rollback plan.
+5. проверить ownership manifest против production-like `dist`;
+6. подготовить rollback plan.
 
 ## Representative dist smoke
 
@@ -244,6 +256,7 @@ npm run strangler:audit:production-like
 Связанные guards:
 
 - `copy-legacy-to-dist.js --omit-build-only` удаляет build-only Astro route output и не требует его в dist verification;
+- `check-page-ownership.js --dist --production-like` проверяет manifest/source coverage, Astro-owned `/about/`, отсутствие build-only routes, copied built-app и 42 baseline URLs;
 - `dist-publication-audit.js --forbid-dev` падает, если `/dev/astro-test/` остался в production-like dist;
 - `dist-smoke-audit.js --production-like` smoke-тестирует representative URL без build-only route;
 - `strangler:deploy-readiness` теперь использует production-like audit.

@@ -20,6 +20,14 @@ function read(rel) {
 function must(file, text, rx, msg) {
   if (!rx.test(text)) issues.push(`${file}: ${msg}`);
 }
+function mustScript(scripts, name, rx, msg) {
+  const value = scripts && scripts[name];
+  if (typeof value !== 'string') {
+    issues.push(`package.json scripts.${name}: missing`);
+    return;
+  }
+  if (!rx.test(value)) issues.push(`package.json scripts.${name}: ${msg}`);
+}
 function mustAllWorkflowsHaveBasics() {
   const dir = path.join(ROOT, '.github/workflows');
   for (const name of fs.readdirSync(dir).filter(f => f.endsWith('.yml') || f.endsWith('.yaml'))) {
@@ -32,6 +40,16 @@ function mustAllWorkflowsHaveBasics() {
 }
 
 mustAllWorkflowsHaveBasics();
+
+let pkg = { scripts: {} };
+try { pkg = JSON.parse(read('package.json')); }
+catch (e) { issues.push(`package.json: invalid JSON: ${e.message}`); }
+const scripts = pkg.scripts || {};
+mustScript(scripts, 'validate:static-publication', /page-ownership:check/, 'must include page-ownership manifest/source guard');
+mustScript(scripts, 'strangler:validate', /page-ownership:dist/, 'must verify ownership after building strangler dist');
+mustScript(scripts, 'strangler:audit', /page-ownership:dist/, 'must verify ownership before dist publication audit');
+mustScript(scripts, 'strangler:audit:pagefind', /page-ownership:dist/, 'must verify ownership before Pagefind/dist audit');
+mustScript(scripts, 'strangler:audit:production-like', /page-ownership:dist:production-like/, 'must verify production-like ownership before Pagefind/dist audit');
 
 const deploy = read('.github/workflows/deploy.yml');
 must('.github/workflows/deploy.yml', deploy, /node-version:\s*['"]?22['"]?/, 'deploy must use Node 22+ for Astro toolchain compatibility');
@@ -47,6 +65,7 @@ must('.github/workflows/deploy.yml', deploy, /actions\/upload-pages-artifact@v3/
 const deployUploadsDist = /^\s*path:\s*['"]?(?:\.\/)?dist\/?['"]?\s*$/m.test(deploy);
 if (deployUploadsDist) {
   must('.github/workflows/deploy.yml', deploy, /npm run strangler:build:production-like/, 'dist deploy must build production-like strangler dist');
+  must('.github/workflows/deploy.yml', deploy, /npm run page-ownership:dist:production-like|check-page-ownership\.js[^\n]*--dist[^\n]*--production-like/, 'dist deploy must verify page ownership against production-like dist');
   must('.github/workflows/deploy.yml', deploy, /npm run pagefind:build:dist/, 'dist deploy must build Pagefind into dist/pagefind');
   must('.github/workflows/deploy.yml', deploy, /dist-publication-audit\.js[^\n]*--require-pagefind[^\n]*--forbid-dev|npm run strangler:audit:production-like/, 'dist deploy must run production-like dist publication audit with Pagefind required and dev route forbidden');
   must('.github/workflows/deploy.yml', deploy, /sw:dist:audit:deploy-switch|sw-dist-readiness-audit\.js[^\n]*--require-cache-bump/, 'dist deploy must enforce service-worker cache-version bump');

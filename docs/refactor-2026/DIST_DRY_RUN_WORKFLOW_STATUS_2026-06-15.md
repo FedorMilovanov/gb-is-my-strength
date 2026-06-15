@@ -53,6 +53,14 @@ npm run astro:audit:about:shots
 npm run strangler:deploy-readiness
 ```
 
+Внутри этой команды теперь есть ownership guard:
+
+```bash
+npm run page-ownership:dist:production-like
+```
+
+Он проверяет, что `/about/` остаётся Astro-owned, `/dev/astro-test/` отсутствует в production-like `dist`, built-app `_app/` скопирован, а 42 baseline public URLs resolve в `dist`.
+
 9. Hard artifact shape assertions:
 
 ```bash
