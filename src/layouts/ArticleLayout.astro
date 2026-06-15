@@ -20,6 +20,9 @@ const ogImage = data.ogImage?.startsWith('http') ? data.ogImage : data.ogImage ?
 const articleCanonical = intendedCanonical || data.canonicalOverride || `${SITE.url}/${data.section}/${data.slug}/`;
 const articleSectionName = data.series === 'dzhon-gill' ? 'Биографии служителей' : data.section;
 const articleSectionUrl = data.series === 'dzhon-gill' ? `${SITE.url}/biografii/` : `${SITE.url}/${data.section}/`;
+const effectiveRobots = robots || (data.noindex ? 'noindex, follow' : 'index, follow');
+const outputNoindex = /\bnoindex\b/i.test(effectiveRobots);
+const outputDraft = pilot && data.draft;
 const jsonLd = {
   '@context': 'https://schema.org',
   '@graph': [
@@ -62,7 +65,7 @@ const jsonLd = {
   title={pilot ? `MDX pilot · ${data.title}` : data.title}
   description={data.description}
   canonical={canonical}
-  robots={robots || (data.noindex ? 'noindex, follow' : 'index, follow')}
+  robots={effectiveRobots}
   ogImage={ogImage}
   ogTitle={data.title}
   ogDescription={data.description}
@@ -82,7 +85,7 @@ const jsonLd = {
       </aside>
     )}
     <header class="astro-article__header">
-      <p class="astro-article__eyebrow">{data.section} · {data.draft ? 'draft' : 'published'} · {data.noindex ? 'noindex' : 'indexable'}</p>
+      <p class="astro-article__eyebrow">{data.section} · {outputDraft ? 'draft' : 'published'} · {outputNoindex ? 'noindex' : 'indexable'}</p>
       <h1>{h1}</h1>
       <p>{data.description}</p>
       <dl class="astro-article__meta">

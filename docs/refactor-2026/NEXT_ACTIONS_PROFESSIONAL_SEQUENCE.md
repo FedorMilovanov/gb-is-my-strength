@@ -173,6 +173,7 @@ Done:
 [x] `npm run astro:audit:article-mdx:strict` passes
 [x] `strangler:deploy-readiness` includes strict article shadow audit
 [x] dist dry-run workflow asserts article shadow route exists and dev article preview is absent
+[x] dist-publication-audit guards article shadow route and both dev routes
 ```
 
 Next:

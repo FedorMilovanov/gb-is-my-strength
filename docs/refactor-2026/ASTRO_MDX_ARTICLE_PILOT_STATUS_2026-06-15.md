@@ -170,6 +170,23 @@ Manual **Dist Strangler Dry Run** также проверяет artifact shape:
 
 `check-workflows.js` теперь падает, если эти safety rails удалить из `package.json` или dry-run workflow.
 
+
+## Dist publication audit hardening update
+
+General dist publication audit теперь тоже знает о первом article shadow route:
+
+```text
+[x] required dist file: articles/dzhon-gill-spravochnik/index.html
+[x] /articles/dzhon-gill-spravochnik/ is Astro-owned output
+[x] /articles/dzhon-gill-spravochnik/ is indexable in dist
+[x] /articles/dzhon-gill-spravochnik/ canonical is public URL
+[x] /articles/dzhon-gill-spravochnik/ has no pilot/noindex copy
+[x] /dev/article-mdx-pilot/ absent from production-like dist
+[x] sitemap.xml does not include /dev/article-mdx-pilot/
+```
+
+Это дополняет `astro:audit:article-mdx:strict`: article-specific audit проверяет глубокий SEO/content contract, а `dist-publication-audit` проверяет общий shape будущего Pages artifact.
+
 ## Следующий профессиональный шаг
 
 Не deploy switch. Следующий безопасный шаг — стабилизировать article migration pattern перед второй статьёй:
