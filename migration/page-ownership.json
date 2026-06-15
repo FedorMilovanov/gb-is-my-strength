@@ -27,6 +27,18 @@
       "risk": 2,
       "status": "shadow-pilot"
     },
+    "/articles/kod-da-vinchi/": {
+      "owner": "astro",
+      "source": "src/pages/articles/kod-da-vinchi/index.astro",
+      "risk": 2,
+      "status": "shadow-pilot"
+    },
+    "/articles/dzhon-gill-chast-1-chelovek/": {
+      "owner": "astro",
+      "source": "src/pages/articles/dzhon-gill-chast-1-chelovek/index.astro",
+      "risk": 2,
+      "status": "shadow-pilot"
+    },
     "/dev/astro-test/": {
       "owner": "astro-noindex",
       "source": "src/pages/dev/astro-test.astro",
