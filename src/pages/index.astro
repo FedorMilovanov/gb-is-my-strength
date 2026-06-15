@@ -54,296 +54,401 @@ const jsonLd = {
   ogTitle={ogTitle}
   ogDescription={ogDescription}
   jsonLd={jsonLd}
+  bodyClass="home-page astro-home-page"
+  mainClass="astro-main astro-main--bare"
+  hideHeader={true}
+  hideFooter={true}
+  legacyStylesheets={[
+    '/fonts/fonts.css',
+    '/css/site.css',
+    '/css/home.css',
+    '/css/command-palette.css',
+    '/css/mobile-hotfix.css',
+  ]}
 >
-  <section class="astro-home" data-pagefind-body>
-    <h1 class="sr-only">Господь Бог — Сила Моя</h1>
+  <a href="#main-content" class="skip-link">Перейти к содержимому</a>
 
-    <section class="astro-home-hero" aria-label="Главный заголовок">
-      <div class="astro-hero-scripture" aria-hidden="true">
-        <p class="astro-hero-verse">Господь Бог — сила моя:</p>
-        <p class="astro-hero-verse-sub">Он сделает ноги мои как у оленя</p>
-        <p class="astro-hero-ref">Аввакум 3:19</p>
+  <div class="home-v20 astro-home-v21">
+    <main id="main-content" data-pagefind-body>
+      <div class="home-content">
+        <section class="h-hero astro-home-hero-v21" aria-label="Главный заголовок">
+          <div class="h-sacred-block h-sacred-block--hero" aria-hidden="true">
+            <span class="h-sacred-line h-sacred-line--1">יְהוִה אֲדֹנָי חֵילִי</span>
+            <span class="h-sacred-line h-sacred-line--2">וַיָּשֶׂם רַגְלַי כָּאַיָּלוֹת וְעַל בָּמוֹתַי יַדְרִכֵנִי</span>
+            <span class="h-sacred-ref"><span>Аввакум 3:19</span></span>
+          </div>
+
+          <p class="h-hero-tagline">Для изучения Писания</p>
+          <h1 class="h-hero-title">
+            <span class="h-title-static">Господь Бог</span>
+            <span class="h-title-dash" aria-hidden="true">—</span>
+            <span class="h-title-accent">Сила Моя</span>
+          </h1>
+          <p class="h-hero-desc">
+            Материалы для вдумчивого изучения Писания: экзегеза, богословие, апологетика, переводы, биографии,
+            интерактивные карты и длинные исследовательские серии — в структуре, которая должна быть удобна и на телефоне,
+            и на большом экране.
+          </p>
+
+          <div class="astro-home-cta" aria-label="Быстрые действия">
+            <a href="/articles/" class="astro-home-cta__link">Все статьи</a>
+            <a href="/konfessii/russkij-baptizm/" class="astro-home-cta__link">3D-карта</a>
+            <a href="/about/" class="astro-home-cta__link">О проекте</a>
+          </div>
+
+          <div class="astro-home-mobile-note note-box">
+            <strong>Курс рефакторинга сейчас именно такой:</strong> не просто перенести страницы в Astro, а сделать так,
+            чтобы читатель не увидел «другой сайт». Сначала — parity, shell, поиск, мобильная структура и навигация.
+            Потом — уже richer cards, tilt, app-like mobile flow и визуальные усиления без потери характера проекта.
+          </div>
+
+          <hr class="h-rule" aria-hidden="true" />
+        </section>
+
+        <section class="h-section" aria-labelledby="startHereLabel">
+          <p class="h-section-label" id="startHereLabel">С чего начать</p>
+          <div class="h-section-accent" aria-hidden="true"></div>
+
+          <div class="astro-home-start-grid" role="list">
+            <article class="h-card-glass" role="listitem">
+              <div>
+                <h3 class="h-card-title">Если вы здесь впервые</h3>
+                <p class="h-card-desc">
+                  Начните с обзорных разделов: «Биографии», «Нагорная проповедь», «Баптисты России» и общий каталог статей.
+                  Так сайт читается как библиотека и курс, а не как случайная лента публикаций.
+                </p>
+              </div>
+            </article>
+            <article class="h-card-glass" role="listitem">
+              <div>
+                <h3 class="h-card-title">Если нужен точечный ответ</h3>
+                <p class="h-card-desc">
+                  Идите сразу в статью по теме: Римлянам 7, Иеремия 17, герменевтика, Код да Винчи, Джон Гилл,
+                  пастырские искажения или исторические вопросы русского баптизма.
+                </p>
+              </div>
+            </article>
+            <article class="h-card-glass" role="listitem">
+              <div>
+                <h3 class="h-card-title">Если нужен визуальный слой</h3>
+                <p class="h-card-desc">
+                  Используйте 3D-карту русского баптизма и библейские карты как исследовательский инструмент,
+                  а не как замену текстам: карта показывает связи, текст даёт аргумент и проверяемый контекст.
+                </p>
+              </div>
+            </article>
+          </div>
+        </section>
+
+        <section class="h-section" aria-labelledby="directionsLabel">
+          <p class="h-section-label" id="directionsLabel">Ключевые направления</p>
+          <div class="h-section-accent" aria-hidden="true"></div>
+
+          <div class="h-grid-4" role="list">
+            <div class="h-card-glass" role="listitem">
+              <div>
+                <h3 class="h-card-title">Экзегеза и богословие</h3>
+                <p class="h-card-desc">Разбор библейских текстов с опорой на контекст, аргументацию и проверяемые источники.</p>
+              </div>
+            </div>
+            <div class="h-card-glass" role="listitem">
+              <div>
+                <h3 class="h-card-title">Апологетика</h3>
+                <p class="h-card-desc">Исторические и богословские ответы на популярные мифы, псевдоистории и ложные развилки.</p>
+              </div>
+            </div>
+            <div class="h-card-glass" role="listitem">
+              <div>
+                <h3 class="h-card-title">Биографии служителей</h3>
+                <p class="h-card-desc">Люди, эпохи, споры, библиотечные миры, церковные узлы и богословское наследие.</p>
+              </div>
+            </div>
+            <div class="h-card-glass" role="listitem">
+              <div>
+                <h3 class="h-card-title">Карты и исследовательские серии</h3>
+                <p class="h-card-desc">От библейской географии до истории русского баптизма — с длинной логикой, а не срывками.</p>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section class="h-section" aria-labelledby="seriesLabel">
+          <p class="h-section-label" id="seriesLabel">Большие циклы</p>
+          <div class="h-section-accent" aria-hidden="true"></div>
+
+          <div class="astro-home-featured-stack">
+            <a href="/nagornaya/seriya/" class="h-featured-series" aria-label="Нагорная проповедь — исследование в 5 частях">
+              <div class="h-featured-img-wrap">
+                <img src="/images/og-nagornaya-propoved.webp" alt="Нагорная проповедь — исследование в 5 частях" loading="lazy" decoding="async" width="800" height="420" />
+                <div class="h-featured-overlay" aria-hidden="true"></div>
+              </div>
+              <div class="h-featured-body">
+                <div class="h-featured-eyebrow">
+                  <span class="h-featured-series-badge">Авторская серия</span>
+                  <span class="h-featured-dot" aria-hidden="true">·</span>
+                  <span class="h-featured-parts">5 частей</span>
+                </div>
+                <h3 class="h-featured-title">Нагорная проповедь</h3>
+                <p class="h-featured-abstract">Сравнительное исследование Матфея 5–7 и Луки 6: содержание, аудитория, богодухновенность, Закон и Евангелие.</p>
+              </div>
+            </a>
+
+            <a href="/baptisty-rossii/" class="h-featured-series" aria-label="Баптисты России — живая исследовательская серия">
+              <div class="h-featured-img-wrap">
+                <img src="/images/baptisty-rossii/cover-landing.svg" alt="Баптисты России — живая исследовательская серия" loading="lazy" decoding="async" width="800" height="420" />
+                <div class="h-featured-overlay" aria-hidden="true"></div>
+              </div>
+              <div class="h-featured-body">
+                <div class="h-featured-eyebrow">
+                  <span class="h-featured-series-badge">Историческая серия</span>
+                  <span class="h-featured-dot" aria-hidden="true">·</span>
+                  <span class="h-featured-parts">10 частей</span>
+                </div>
+                <h3 class="h-featured-title">Баптисты России</h3>
+                <p class="h-featured-abstract">Тифлис, штунда, Петербург, гонения, ВСЕХБ, Инициативная группа, самиздат и 3D-карта как единая исследовательская линия.</p>
+              </div>
+            </a>
+
+            <a href="/biografii/" class="h-featured-series" aria-label="Биографии служителей">
+              <div class="h-featured-img-wrap">
+                <img src="/images/og-biografii.webp" alt="Биографии служителей" loading="lazy" decoding="async" width="800" height="420" />
+                <div class="h-featured-overlay" aria-hidden="true"></div>
+              </div>
+              <div class="h-featured-body">
+                <div class="h-featured-eyebrow">
+                  <span class="h-featured-series-badge">Исторический проект</span>
+                  <span class="h-featured-dot" aria-hidden="true">·</span>
+                  <span class="h-featured-parts">Биографии</span>
+                </div>
+                <h3 class="h-featured-title">Биографии служителей</h3>
+                <p class="h-featured-abstract">Жизнь и труд пасторов, богословов и реформаторов — с контекстом, спорами и подлинным историческим фоном.</p>
+              </div>
+            </a>
+          </div>
+        </section>
+
+        <section class="h-section" aria-labelledby="quickReadsLabel">
+          <p class="h-section-label" id="quickReadsLabel">Быстрый вход в материалы</p>
+          <div class="h-section-accent" aria-hidden="true"></div>
+
+          <div class="h-articles-group">
+            <ul class="h-article-list h-article-list--grid">
+              <li>
+                <a href="/articles/kod-da-vinchi/" class="h-article-card h-article-card--debunk">
+                  <div class="h-article-thumb">
+                    <img src="/images/hero-kod-da-vinchi.webp" alt="Код да Винчи — разбор исторических мифов" decoding="async" loading="lazy" width="160" height="108" />
+                  </div>
+                  <div class="h-article-body">
+                    <div class="h-article-kicker h-article-kicker--warn">Апологетика</div>
+                    <h3 class="h-article-title">«Код да Винчи»: блестящий триллер или историческая подмена?</h3>
+                    <p class="h-article-abstract">Мария Магдалина, Никея, канон Нового Завета, Наг-Хаммади и Приорат Сиона — полный разбор с опорой на источники.</p>
+                  </div>
+                </a>
+              </li>
+              <li>
+                <a href="/articles/rimlyanam-7-veruyushchiy-ili-neveruyushchiy/" class="h-article-card">
+                  <div class="h-article-thumb">
+                    <img src="/images/og-rimlyanam-7.webp" alt="Римлянам 7 — разбор" decoding="async" loading="lazy" width="160" height="108" />
+                  </div>
+                  <div class="h-article-body">
+                    <div class="h-article-kicker">Экзегеза</div>
+                    <h3 class="h-article-title">Римлянам 7: верующий, неверующий или человек под законом?</h3>
+                    <p class="h-article-abstract">Подробный разбор Рим. 7:14–25, аргументов за разные позиции и связи с Римлянам 6–8.</p>
+                  </div>
+                </a>
+              </li>
+              <li>
+                <a href="/articles/dzhon-gill-chast-1-chelovek/" class="h-article-card h-article-card--biography">
+                  <div class="h-article-thumb">
+                    <img src="/images/gill-authentic-study-cover.webp" alt="Джон Гилл — часть I" decoding="async" loading="lazy" width="160" height="108" />
+                  </div>
+                  <div class="h-article-body">
+                    <div class="h-article-kicker">Биография · Часть I</div>
+                    <h3 class="h-article-title">Джон Гилл — человек: детство, призвание, семья</h3>
+                    <p class="h-article-abstract">Первая часть большого биографического цикла о Джоне Гилле — с контекстом, эпохой и личной линией.</p>
+                  </div>
+                </a>
+              </li>
+              <li>
+                <a href="/articles/20-antisovetov-pastoru/" class="h-article-card h-article-card--debunk">
+                  <div class="h-article-thumb">
+                    <img src="/images/pastor-series/mirror.webp" alt="20 антисоветов пастору" decoding="async" loading="lazy" width="160" height="108" />
+                  </div>
+                  <div class="h-article-body">
+                    <div class="h-article-kicker h-article-kicker--warn">Пастырская практика</div>
+                    <h3 class="h-article-title">20 антисоветов, как пастору разрушить своё служение</h3>
+                    <p class="h-article-abstract">О страхе, власти без подотчётности, манипуляции Писанием и пути к здоровой церковной культуре.</p>
+                  </div>
+                </a>
+              </li>
+            </ul>
+          </div>
+        </section>
+
+        <section class="h-section" aria-labelledby="toolsLabel">
+          <p class="h-section-label" id="toolsLabel">Карты и инструменты</p>
+          <div class="h-section-accent" aria-hidden="true"></div>
+
+          <div class="h-grid-3" role="list">
+            <a href="/konfessii/russkij-baptizm/" class="h-card-glass astro-home-tool" role="listitem">
+              <div>
+                <h3 class="h-card-title">3D-карта русского баптизма</h3>
+                <p class="h-card-desc">Маршруты, узлы, Timeline, dossier, страны, организации и связанные статьи серии «Баптисты России».</p>
+              </div>
+            </a>
+            <a href="/karty/" class="h-card-glass astro-home-tool" role="listitem">
+              <div>
+                <h3 class="h-card-title">Библейские карты</h3>
+                <p class="h-card-desc">Авраам, Исход и будущие карты — как исследовательский слой поверх текста, а не развлекательный виджет.</p>
+              </div>
+            </a>
+            <a href="/about/" class="h-card-glass astro-home-tool" role="listitem">
+              <div>
+                <h3 class="h-card-title">О проекте и методологии</h3>
+                <p class="h-card-desc">Как подготавливаются материалы, где используется ИИ, как сверяются источники и куда писать о неточностях.</p>
+              </div>
+            </a>
+          </div>
+        </section>
+
+        <section class="h-about" id="about" aria-labelledby="aboutLabel">
+          <p class="h-about-label" id="aboutLabel">О проекте</p>
+          <p class="h-about-text h-drop-cap">
+            <span class="h-drop-cap__letter" aria-hidden="true">Э</span>то не лента быстрых заметок и не каталог удобных цитат. Здесь собраны материалы для медленного чтения:
+            авторские статьи, переводы, экзегетические разборы, исторические серии и инструменты, которые должны помогать
+            думать по Писанию глубже. Следующий шаг рефакторинга — не просто ещё один перенос, а именно мобильная витрина,
+            в которой всё это будет ощущаться цельно, структурно и красиво.
+          </p>
+          <p class="h-about-small">
+            Проект ведёт <a href="/about/">Фёдор Милованов</a>. Старый сайт остаётся эталоном, новый слой подгоняется так,
+            чтобы не потерять характер, глубину и визуальную узнаваемость оригинала.
+          </p>
+        </section>
+
+        <aside class="gb-accuracy-block" aria-label="Обратная связь">
+          <div class="gb-accuracy-inner">
+            <h2 class="gb-accuracy-title">Нашли неточность?</h2>
+            <p class="gb-accuracy-desc">Богословскую или техническую — напишите, исправим.</p>
+            <div class="gb-accuracy-actions" role="list">
+              <a href="mailto:viktorcoy2012@gmail.com?subject=Неточность%20в%20материале" class="gb-accuracy-btn gb-accuracy-btn--email" role="listitem" aria-label="Написать на Email">
+                <span class="gb-accuracy-btn__label">Email</span>
+              </a>
+              <a href="https://t.me/fedormilovanov" class="gb-accuracy-btn gb-accuracy-btn--tg" role="listitem" target="_blank" rel="noopener noreferrer" aria-label="Написать в Telegram">
+                <span class="gb-accuracy-btn__label">Telegram</span>
+              </a>
+            </div>
+          </div>
+        </aside>
+
+        <footer class="h-footer" role="contentinfo">
+          <span class="h-footer-copy">© 2026 Господь Бог — <span>Сила Моя</span></span>
+          <a href="/about/">Об авторе</a>
+        </footer>
       </div>
-      <p class="astro-hero-tagline">Для вдумчивого изучения Писания</p>
-      <p class="astro-home-intro">
-        Это не лента случайных публикаций и не каталог ради количества. Сайт собирает авторские богословские разборы,
-        переводы, исторические исследования, серии по трудным текстам и материалы, которые удобно читать не только с
-        рабочего стола, но и с телефона — как цельную библиотеку, а не как бесконечную портянку.
-      </p>
-      <p class="astro-home-intro">
-        В ближайшем cleanup-этапе задача именно такая: не просто «перенести страницы в Astro», а довести их до состояния,
-        где читатель не увидит другой, чужой сайт. Сначала — parity, поиск, shell, навигация и мобильная логика. Потом —
-        уже более сильный mobile-first polish, tilt, richer cards, app-like navigation и визуальные усиления без потери лица проекта.
-      </p>
-      <p class="astro-home-intro">
-        Здесь уже сейчас удобно разделять чтение на три режима. Первый — обзорный: зайти в серию и читать её как цельный курс.
-        Второй — точечный: открыть одну статью по теме, например по Римлянам 7, герменевтике или апологетике. Третий —
-        исследовательский: перейти к карте, биографиям, справочникам и связанным материалам. Именно такую структуру мы и будем
-        усиливать дальше, чтобы на мобильном устройстве сайт чувствовался как собранное приложение-библиотека, а не как список страниц.
-        В этом и состоит текущий приоритет: сперва вернуть глубину, удобство и узнаваемый характер сайта, а уже потом наращивать
-        эффекты, анимации и более агрессивный visual polish. Для читателя это должно ощущаться не как смена платформы, а как
-        тот же красивый сайт, просто собранный чище, быстрее и умнее. Это базовое условие всего дальнейшего рефакторинга,
-        без которого никакой новый слой не имеет смысла.
-      </p>
-    </section>
-
-    <section class="astro-home-summary summary-card" aria-label="Как устроен сайт" data-speakable>
-      <h2 class="summary-card__head">Как лучше читать сайт</h2>
-      <ol class="summary-card__body">
-        <li class="summary-card__item">
-          <span class="summary-card__num" aria-hidden="true" data-num="01"></span>
-          <p class="summary-card__text">Если нужен вход в длинные циклы, начинайте с обзорных хабов: Нагорная проповедь, Баптисты России, биографии и серии пастырских текстов.</p>
-        </li>
-        <li class="summary-card__item">
-          <span class="summary-card__num" aria-hidden="true" data-num="02"></span>
-          <p class="summary-card__text">Если нужен точечный материал, переходите сразу в каталог статей: там собраны экзегеза, апологетика, герменевтика и пастырские разборы.</p>
-        </li>
-        <li class="summary-card__item">
-          <span class="summary-card__num" aria-hidden="true" data-num="03"></span>
-          <p class="summary-card__text">Если нужен визуальный слой, используйте 3D-карту русского баптизма и библейские карты как дополнение к текстам, а не вместо них.</p>
-        </li>
-      </ol>
-    </section>
-
-    <section class="astro-home-series" aria-label="Серии материалов">
-      <h2>Ключевые направления</h2>
-      <div class="astro-series-grid">
-        <a href="/nagornaya/seriya/" class="astro-series-card">
-          <span class="astro-series-card__eyebrow">Авторская серия</span>
-          <strong class="astro-series-card__title">Нагорная проповедь</strong>
-          <span class="astro-series-card__desc">Исследование Мф 5–7 и Лк 6 в 5 частях</span>
-        </a>
-        <a href="/biografii/" class="astro-series-card">
-          <span class="astro-series-card__eyebrow">Исторический проект</span>
-          <strong class="astro-series-card__title">Биографии служителей</strong>
-          <span class="astro-series-card__desc">Джон Гилл и другие классические богословы</span>
-        </a>
-        <a href="/pastor-series/" class="astro-series-card">
-          <span class="astro-series-card__eyebrow">Серия</span>
-          <strong class="astro-series-card__title">Тёмная сторона кафедры</strong>
-          <span class="astro-series-card__desc">20 антисоветов пастору</span>
-        </a>
-        <a href="/hard-texts/" class="astro-series-card">
-          <span class="astro-series-card__eyebrow">Новая серия</span>
-          <strong class="astro-series-card__title">Тайны человеческого сердца</strong>
-          <span class="astro-series-card__desc">Иеремия 17 и Римлянам 7</span>
-        </a>
-      </div>
-    </section>
-
-    <section class="astro-home-articles" aria-label="Все статьи">
-      <h2>Быстрый вход в материалы</h2>
-      <p class="astro-home-section-copy">
-        Ниже — не весь каталог, а удобные точки входа: одна апологетическая статья, один экзегетический разбор, один
-        биографический материал и одна пастырская серия. Это тот слой, который дальше надо превращать в действительно
-        удобную мобильную витрину, а не в бесконечный список ссылок.
-      </p>
-      <div class="astro-article-grid">
-        <a href="/articles/kod-da-vinchi/" class="astro-article-card">
-          <strong>«Код да Винчи»: блестящий триллер или историческая подмена?</strong>
-          <span>Апологетика · Никея · Канон Библии</span>
-        </a>
-        <a href="/articles/rimlyanam-7-veruyushchiy-ili-neveruyushchiy/" class="astro-article-card">
-          <strong>Римлянам 7: верующий, неверующий или человек под законом?</strong>
-          <span>Богословие · Римлянам</span>
-        </a>
-        <a href="/articles/dzhon-gill-chast-1-chelovek/" class="astro-article-card">
-          <strong>Джон Гилл — человек: от рождения до призвания</strong>
-          <span>Биография · Богословие</span>
-        </a>
-        <a href="/articles/20-antisovetov-pastoru/" class="astro-article-card">
-          <strong>20 антисоветов пастору</strong>
-          <span>Пасторское служение · Сатира</span>
-        </a>
-      </div>
-      <a href="/articles/" class="astro-link-more">Все статьи →</a>
-    </section>
-
-    <section class="astro-home-maps" aria-label="Карты и исследовательские инструменты">
-      <h2>Карты и исследовательские инструменты</h2>
-      <div class="astro-card-grid">
-        <article class="astro-card">
-          <h2><a href="/konfessii/russkij-baptizm/">3D-карта русского баптизма</a></h2>
-          <p>Интерактивный слой для связей, маршрутов, событий, организаций и статей серии «Баптисты России».</p>
-        </article>
-        <article class="astro-card">
-          <h2><a href="/karty/">Библейские карты</a></h2>
-          <p>Отдельный раздел с картами Авраама, Исхода и будущими маршрутными исследованиями по библейской географии.</p>
-        </article>
-        <article class="astro-card">
-          <h2><a href="/about/">О проекте и методологии</a></h2>
-          <p>Как готовятся материалы, как используется ИИ, как проходит проверка источников и где сообщать о неточностях.</p>
-        </article>
-      </div>
-    </section>
-  </section>
+    </main>
+  </div>
 </BaseLayout>
 
 <style>
-  .astro-home {
+  .astro-home-v21 .home-content {
     max-width: 1120px;
-    margin: 0 auto;
-    padding: clamp(1.25rem, 4vw, 2.25rem) 0;
   }
 
-  .astro-home-hero {
-    text-align: center;
-    padding: 1rem 1rem 2rem;
+  .astro-home-hero-v21 {
+    padding-top: 88px;
   }
 
-  .astro-hero-scripture {
-    font-family: var(--astro-font-serif);
-    color: var(--astro-color-gold);
-    direction: rtl;
-    margin-bottom: 1rem;
-  }
-
-  .astro-hero-verse {
-    font-size: clamp(1.4rem, 4vw, 2.2rem);
-    line-height: 1.4;
-    margin: 0;
-    letter-spacing: 0.05em;
-  }
-
-  .astro-hero-verse-sub {
-    font-size: clamp(1rem, 3vw, 1.6rem);
-    line-height: 1.4;
-    margin: 0.25rem 0 0;
-    letter-spacing: 0.05em;
-  }
-
-  .astro-hero-ref {
-    font-size: 0.9rem;
-    margin: 0.5rem 0 0;
-    opacity: 0.7;
-    font-style: normal;
-  }
-
-  .astro-hero-tagline {
-    color: var(--astro-color-muted);
-    font-size: 1.1rem;
-    margin: 0 0 1rem;
-  }
-
-  .astro-home-intro,
-  .astro-home-section-copy {
-    max-width: 760px;
-    margin: 0.9rem auto 0;
-    color: var(--astro-color-muted);
-    line-height: 1.75;
-  }
-
-  .astro-home-summary {
-    margin: 0 auto 2.5rem;
-    max-width: 880px;
-  }
-
-  .astro-home-series,
-  .astro-home-articles,
-  .astro-home-maps {
-    margin-top: 2.5rem;
-    padding-top: 2rem;
-    border-top: 1px solid rgba(212, 165, 116, 0.16);
-  }
-
-  .astro-home-series h2,
-  .astro-home-articles h2,
-  .astro-home-maps h2 {
-    font-family: var(--astro-font-serif);
-    font-size: clamp(1.2rem, 3vw, 1.6rem);
-    color: var(--astro-color-text);
-    margin: 0 0 1.25rem;
-  }
-
-  .astro-series-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(min(100%, 220px), 1fr));
-    gap: 0.75rem;
-  }
-
-  .astro-series-card {
+  .astro-home-cta {
     display: flex;
-    flex-direction: column;
-    gap: 0.4rem;
-    padding: 1rem;
-    border: 1px solid rgba(212, 165, 116, 0.22);
-    border-radius: 1rem;
-    background: rgba(255, 255, 255, 0.03);
+    flex-wrap: wrap;
+    gap: 10px;
+    margin: 28px 0 0;
+  }
+
+  .astro-home-cta__link {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 42px;
+    padding: 0 14px;
+    border-radius: 999px;
+    border: 1px solid var(--h-border);
+    background: color-mix(in srgb, var(--h-surface) 74%, transparent);
+    color: var(--h-ink);
     text-decoration: none;
-    color: var(--astro-color-text);
-    transition: border-color 0.2s, background 0.2s;
-  }
-
-  .astro-series-card:hover {
-    border-color: var(--astro-color-gold);
-    background: rgba(212, 165, 116, 0.06);
-  }
-
-  .astro-series-card__eyebrow {
-    font-size: 0.72rem;
-    color: var(--astro-color-gold);
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
-  }
-
-  .astro-series-card__title {
-    font-family: var(--astro-font-serif);
-    font-size: 1.05rem;
-    color: var(--astro-color-text);
+    font-family: var(--f-ui);
+    font-size: 13px;
     font-weight: 600;
+    letter-spacing: .02em;
+    transition: transform .2s ease, border-color .2s ease, color .2s ease;
   }
 
-  .astro-series-card__desc {
-    font-size: 0.85rem;
-    color: var(--astro-color-muted);
+  .astro-home-cta__link:hover {
+    transform: translateY(-1px);
+    border-color: color-mix(in srgb, var(--h-accent) 30%, var(--h-border));
+    color: var(--h-accent);
   }
 
-  .astro-article-grid {
+  .astro-home-mobile-note {
+    margin-top: 24px;
+  }
+
+  .astro-home-start-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(min(100%, 280px), 1fr));
-    gap: 0.75rem;
-    margin-bottom: 1rem;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 14px;
   }
 
-  .astro-article-card {
-    display: flex;
-    flex-direction: column;
-    gap: 0.35rem;
-    padding: 1rem;
-    border: 1px solid rgba(212, 165, 116, 0.16);
-    border-radius: 1rem;
-    background: rgba(255, 255, 255, 0.02);
+  .astro-home-featured-stack {
+    display: grid;
+    gap: 24px;
+  }
+
+  .astro-home-tool {
     text-decoration: none;
-    color: var(--astro-color-text);
-    transition: border-color 0.2s;
+    color: inherit;
   }
 
-  .astro-article-card:hover {
-    border-color: var(--astro-color-gold);
+  .astro-home-tool:hover .h-card-title {
+    color: var(--h-accent);
   }
 
-  .astro-article-card strong {
-    font-family: var(--astro-font-serif);
-    font-size: 0.95rem;
-    font-weight: 600;
-    line-height: 1.4;
-    color: var(--astro-color-text);
+  @media (max-width: 900px) {
+    .astro-home-start-grid {
+      grid-template-columns: 1fr;
+    }
   }
 
-  .astro-article-card span {
-    font-size: 0.8rem;
-    color: var(--astro-color-muted);
+  @media (max-width: 760px) {
+    .astro-home-v21 .home-content {
+      padding-inline: 16px;
+    }
+
+    .astro-home-hero-v21 {
+      padding-top: 74px;
+    }
+
+    .astro-home-cta {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+
+    .astro-home-cta__link {
+      min-height: 46px;
+      padding-inline: 10px;
+      font-size: 12px;
+      text-align: center;
+    }
   }
 
-  .astro-link-more {
-    display: inline-block;
-    color: var(--astro-color-gold);
-    font-size: 0.9rem;
-    text-decoration: none;
-    padding: 0.5rem 0;
-  }
+  @media (max-width: 520px) {
+    .astro-home-cta {
+      grid-template-columns: 1fr;
+    }
 
-  .astro-link-more:hover {
-    text-decoration: underline;
+    .astro-home-mobile-note {
+      font-size: 14px;
+      line-height: 1.7;
+    }
   }
 </style>
