@@ -4268,6 +4268,11 @@ const JS_SIZE_FLOORS = {
   } else {
     R.ok('Home page includes mobile dashboard quick-start block');
   }
+  if (!/class=["'][^"']*h-mobile-rail[^"']*["']/i.test(html)) {
+    R.err('Home page missing h-mobile-rail quick-jump navigation');
+  } else {
+    R.ok('Home page includes h-mobile-rail quick-jump navigation');
+  }
   const cardCount = (html.match(/class=["'][^"']*h-mobile-dash-card[^"']*["']/gi) || []).length;
   if (cardCount < 4) {
     R.err(`Home mobile dashboard has too few quick-start cards (${cardCount} < 4)`);

@@ -102,3 +102,12 @@ body.articles-index-page .h-section{padding-top:40px;padding-bottom:24px}
   .home-page .h-featured-title{font-size:18px}
   .home-page .h-featured-abstract{font-size:12.5px;-webkit-line-clamp:3}
 }
+
+@media (max-width:760px){
+  .h-mobile-rail{display:flex;gap:8px;overflow-x:auto;overscroll-behavior-x:contain;scroll-snap-type:x proximity;padding:4px 0 18px;margin:0 -2px;scrollbar-width:none}
+  .h-mobile-rail::-webkit-scrollbar{display:none}
+  .h-mobile-rail__chip{scroll-snap-align:start;display:inline-flex;align-items:center;justify-content:center;min-height:38px;padding:0 14px;border-radius:999px;border:1px solid var(--h-border);background:rgba(255,255,255,.72);color:var(--h-ink);text-decoration:none;font-family:var(--f-ui);font-size:12px;font-weight:600;letter-spacing:.01em;white-space:nowrap;box-shadow:0 8px 20px -18px rgba(26,23,20,.26);transition:transform .18s ease,border-color .18s ease,color .18s ease}
+  html.dark .h-mobile-rail__chip{background:rgba(37,32,26,.92);box-shadow:0 8px 24px -18px rgba(0,0,0,.45)}
+  .h-mobile-rail__chip:active{transform:scale(.98)}
+}
+@media (min-width:761px){.h-mobile-rail{display:none}}
