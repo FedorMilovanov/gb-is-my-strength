@@ -420,3 +420,13 @@ body.articles-index-page .h-section{padding-top:40px;padding-bottom:24px}
 @media (min-width:761px){
   .h-rail-dots{display:none}
 }
+
+.home-page .h-featured-shelf{display:grid;grid-template-columns:1fr;gap:14px;margin:0 0 18px}
+.home-page .h-featured-shelf .h-featured-series{margin:0!important}
+@media (min-width:761px){
+  .home-page .h-featured-shelf{grid-template-columns:repeat(2,minmax(0,1fr));gap:22px;align-items:stretch;margin-bottom:26px}
+  .home-page .h-featured-shelf .h-featured-series{height:100%}
+  .home-page .h-featured-shelf .h-featured-img-wrap{height:240px}
+  .home-page .h-featured-shelf .h-featured-body{display:flex;flex-direction:column;height:100%}
+  .home-page .h-featured-shelf .h-featured-abstract{flex:1 1 auto}
+}
