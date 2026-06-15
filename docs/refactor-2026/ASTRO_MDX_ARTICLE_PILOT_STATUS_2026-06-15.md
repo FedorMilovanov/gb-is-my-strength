@@ -19,23 +19,28 @@ src/layouts/ArticleLayout.astro
 src/pages/dev/article-mdx-pilot/index.astro
 ```
 
-Новая npm-команда:
+Новые npm-команды:
 
 ```bash
 npm run astro:pilot:article-mdx
+npm run astro:audit:article-mdx
+npm run astro:audit:article-mdx:no-build
+npm run astro:audit:article-mdx:strict
 ```
 
-Она выполняет:
+`astro:pilot:article-mdx` выполняет:
 
 ```bash
 npm run strangler:build
 npm run page-ownership:dist
 ```
 
+`astro:audit:article-mdx` строит обычный strangler `dist` и сравнивает legacy article с noindex MDX preview.
+
 ## Что проверяет pilot
 
 - Astro content collection `articles` через build-time `glob()` loader.
-- Zod schema для article frontmatter: title, description, slug, section, dates, author, series, tags, related, OG image, draft/noindex, canonicalOverride, readingTime.
+- Zod schema для article frontmatter: title, h1, description, slug, section, dates, author, series, tags, related, OG image, draft/noindex, canonicalOverride, readingTime.
 - `ArticleLayout.astro` может отрисовать content entry без React runtime.
 - Preview route остаётся build-only/noindex:
 
@@ -79,6 +84,7 @@ Legacy article:
 
 ```bash
 npm run astro:pilot:article-mdx
+npm run astro:audit:article-mdx
 npm run strangler:deploy-readiness
 npm run ci:check
 ```
@@ -89,15 +95,28 @@ npm run ci:check
 Astro check/build: 0 errors, 0 warnings, 0 hints
 /dev/article-mdx-pilot/: Astro noindex route present and guarded
 production-like dist: build-only route absent
+legacy public article remains byte-identical in dist
+preview canonical stays /dev/article-mdx-pilot/
+preview title/description/H1/OG/date/Article JSON-LD mirror legacy
 URL contract compare: 42 baseline pages, 42 current public pages
 ```
 
-## Следующий профессиональный шаг
-
-Не deploy switch. Следующий безопасный шаг — добавить draft extractor/compare для одной статьи:
+Текущий audit результат:
 
 ```text
-scripts/legacy-article-to-mdx-draft.js или более узкий article-mdx-pilot-audit.js
+legacy words: 1694; preview words: 208; ratio: 0.12
 ```
 
-Он должен сравнивать legacy article и MDX preview по title/description/canonical/intended canonical/H1/word-count/headings/links/images перед actual URL promotion.
+Это advisory, а не blocker, пока route остаётся build-only/noindex. `astro:audit:article-mdx:strict` должен использоваться только после полного переноса body MDX.
+
+## Следующий профессиональный шаг
+
+Не deploy switch. Следующий безопасный шаг — увеличить body parity для этой же статьи:
+
+```text
+[ ] scripts/legacy-article-to-mdx-draft.js или ручной curated MDX body draft
+[ ] довести word-count/headings/images/links parity
+[ ] включить `npm run astro:audit:article-mdx:strict`
+```
+
+Только после strict parity можно думать о shadow ownership публичного `/articles/dzhon-gill-spravochnik/` в `dist`, но всё ещё без production deploy switch.

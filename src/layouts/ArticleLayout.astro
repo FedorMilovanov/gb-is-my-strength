@@ -13,6 +13,7 @@ interface Props {
 
 const { entry, canonical, robots, pilot = false, intendedCanonical } = Astro.props;
 const data = entry.data;
+const h1 = data.h1 || data.title;
 const published = data.publishedAt instanceof Date ? data.publishedAt : new Date(data.publishedAt);
 const updated = data.updatedAt instanceof Date ? data.updatedAt : data.updatedAt ? new Date(data.updatedAt) : undefined;
 const ogImage = data.ogImage?.startsWith('http') ? data.ogImage : data.ogImage ? `${SITE.url}${data.ogImage}` : undefined;
@@ -65,7 +66,7 @@ const jsonLd = {
     )}
     <header class="astro-article__header">
       <p class="astro-article__eyebrow">{data.section} · {data.draft ? 'draft' : 'published'} · {data.noindex ? 'noindex' : 'indexable'}</p>
-      <h1>{data.title}</h1>
+      <h1>{h1}</h1>
       <p>{data.description}</p>
       <dl class="astro-article__meta">
         <div><dt>Опубликовано</dt><dd><time datetime={published.toISOString()}>{published.toLocaleDateString('ru-RU')}</time></dd></div>

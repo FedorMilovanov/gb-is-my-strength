@@ -63,7 +63,10 @@
     "page-ownership:dist": "node scripts/check-page-ownership.js --dist",
     "page-ownership:dist:production-like": "node scripts/check-page-ownership.js --dist --production-like",
     "strangler:copy:dry-run": "npm run astro:build && node scripts/copy-legacy-to-dist.js --dry-run",
-    "astro:pilot:article-mdx": "npm run strangler:build && npm run page-ownership:dist"
+    "astro:pilot:article-mdx": "npm run strangler:build && npm run page-ownership:dist",
+    "astro:audit:article-mdx": "node scripts/article-mdx-pilot-audit.js",
+    "astro:audit:article-mdx:no-build": "node scripts/article-mdx-pilot-audit.js --no-build",
+    "astro:audit:article-mdx:strict": "node scripts/article-mdx-pilot-audit.js --require-content-parity"
   },
   "engines": {
     "node": ">=22.12.0"
