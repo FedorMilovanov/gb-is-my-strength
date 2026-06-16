@@ -1,0 +1,58 @@
+{
+  "meta": {
+    "id": "melachim",
+    "title": "Царства Израиля и Иуды",
+    "title_he": "מַמְלֶכֶת יִשְׂרָאֵל וִיהוּדָה",
+    "subtitle": "1-2 Царств · 1-2 Паралипоменон · ~1050–586 гг. до н.э.",
+    "era": "iron",
+    "stats": {
+      "places": 1,
+      "stages": 1,
+      "verses": 3000,
+      "years": 464
+    },
+    "viewport_init": {
+      "cx": 950,
+      "cy": 715,
+      "w": 1900
+    }
+  },
+  "stories": [
+    {
+      "id": "main",
+      "label": "Объединённое царство",
+      "active_by_default": true,
+      "place_ids": null,
+      "stage_ids": null
+    },
+    {
+      "id": "divided",
+      "label": "Разделённое царство",
+      "place_ids": null,
+      "stage_ids": null
+    }
+  ],
+  "places": [
+    {
+      "id": "jerusalem_king",
+      "name": "Иерусалим",
+      "he": "יְרוּשָׁלַיִם",
+      "x": 623,
+      "y": 800,
+      "type": "main",
+      "stage": 0,
+      "kick": "Столица Давида · Храм",
+      "id2": "Иудея",
+      "ep1": "2Цар 5:6-9"
+    }
+  ],
+  "stages": [
+    {
+      "n": "I",
+      "t": "Объединённое царство",
+      "r": "1-2 Царств",
+      "age": "~1050–930 гг."
+    }
+  ],
+  "verified_waypoints": []
+}

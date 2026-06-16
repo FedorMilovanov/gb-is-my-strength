@@ -1,0 +1,76 @@
+{
+  "meta": {
+    "id": "yeshua",
+    "title": "Жизнь Иисуса Христа",
+    "title_he": "יֵשׁוּעַ הַמָּשִׁיחַ",
+    "subtitle": "Евангелия · ~4 г. до н.э. – 33 г. н.э.",
+    "era": "roman",
+    "stats": {
+      "places": 1,
+      "stages": 1,
+      "verses": 3779,
+      "years": 33
+    },
+    "viewport_init": {
+      "cx": 740,
+      "cy": 700,
+      "w": 900
+    }
+  },
+  "stories": [
+    {
+      "id": "main",
+      "label": "Вся жизнь",
+      "active_by_default": true,
+      "place_ids": null,
+      "stage_ids": null
+    },
+    {
+      "id": "birth",
+      "label": "Рождество и детство",
+      "place_ids": null,
+      "stage_ids": null
+    },
+    {
+      "id": "galilee",
+      "label": "Галилейское служение",
+      "place_ids": null,
+      "stage_ids": null
+    },
+    {
+      "id": "jerusalem",
+      "label": "Страстная неделя",
+      "place_ids": null,
+      "stage_ids": null
+    },
+    {
+      "id": "resurrection",
+      "label": "Воскресение и Вознесение",
+      "place_ids": null,
+      "stage_ids": null
+    }
+  ],
+  "places": [
+    {
+      "id": "bethlehem",
+      "name": "Вифлеем",
+      "he": "בֵּית לֶחֶם",
+      "x": 630,
+      "y": 815,
+      "type": "main",
+      "stage": 0,
+      "kick": "Рождение Христа",
+      "id2": "Иудея",
+      "ep1": "Мф 2:1; Лк 2:4-7"
+    }
+  ],
+  "stages": [
+    {
+      "n": "I",
+      "t": "Рождество",
+      "r": "Мф 1–2; Лк 1–2",
+      "age": "~4 г. до н.э."
+    }
+  ],
+  "verified_waypoints": []
+}

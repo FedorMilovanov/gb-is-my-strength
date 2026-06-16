@@ -1,0 +1,29 @@
+---
+import BaseLayout from '@/layouts/BaseLayout.astro';
+import { loadLegacyShadowPage } from '@/utils/legacyShadow';
+
+const legacy = loadLegacyShadowPage('karty/melachim/index.html');
+---
+
+<BaseLayout
+  title={legacy.title}
+  description={legacy.description}
+  canonical={legacy.canonical}
+  robots="noindex, follow"
+  ogImage={legacy.ogImage}
+  ogImageAlt={legacy.ogImageAlt}
+  ogTitle={legacy.ogTitle}
+  ogDescription={legacy.ogDescription}
+  bodyClass={legacy.bodyClass}
+  mainClass="astro-main astro-main--bare"
+  hideHeader={true}
+  hideFooter={true}
+  headHtml={legacy.headHtml}
+>
+  <div class="astro-melachim-shadow">
+    <div class="sr-only" data-pagefind-body>
+      Царства Израиля и Иуды. Интерактивная карта в разработке. Библейская география: археология, иврит, источники.
+    </div>
+    <Fragment set:html={legacy.bodyHtml} />
+  </div>
+</BaseLayout>

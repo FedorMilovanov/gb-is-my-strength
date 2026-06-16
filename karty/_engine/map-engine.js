@@ -229,6 +229,11 @@ const MapEngine = (function() {
 .me-nav__dots{flex:1;display:flex;justify-content:center;gap:4px}
 .me-nav__dot{width:6px;height:6px;border-radius:50%;background:rgba(255,255,255,.15);transition:all .2s}
 .me-nav__dot--active{background:#e8c879;transform:scale(1.4)}
+.me-marker-pulse{animation:mePulse 2s ease-in-out infinite}
+@keyframes mePulse{0%,100%{r:5;opacity:1}50%{r:8;opacity:.6}}
+.me-panel__backdrop{position:fixed;inset:0;background:rgba(0,0,0,.3);z-index:19;opacity:0;pointer-events:none;transition:opacity .3s}
+.me-panel__backdrop--active{opacity:1;pointer-events:auto}
+
 @media(min-width:640px){
   .me-title{font-size:28px}
   .me-panel{left:12px;right:auto;bottom:12px;width:420px;border-radius:14px;border:1px solid rgba(232,200,121,.2);transform:translateX(-120%)}
@@ -444,6 +449,9 @@ const MapEngine = (function() {
       panel.classList.add('me-panel--open');
       renderMarkers();
       renderPanel();
+      // Scroll panel content to top
+      const content = panel.querySelector('.me-content');
+      if (content) content.scrollTop = 0;
       if(place.x!==undefined&&place.y!==undefined)flyTo(place.x,place.y,Math.min(view.w,800));
     }
 
@@ -463,6 +471,7 @@ const MapEngine = (function() {
       renderStories();
       renderMarkers();
       renderStages();
+      setTimeout(animateMarkersIn, 150);
       if(story.viewport&&Array.isArray(story.viewport))flyTo(story.viewport[0],story.viewport[1],story.viewport[2]);
     }
 
@@ -547,6 +556,15 @@ const MapEngine = (function() {
     }
 
     // ── Keyboard ──
+    // Show keyboard shortcut hint
+    if (opts.showHints !== false) {
+      const hint = document.createElement('div');
+      hint.className = 'me-hint';
+      hint.style.cssText = 'position:absolute;bottom:60px;left:50%;transform:translateX(-50%);z-index:15;padding:6px 14px;border-radius:999px;background:rgba(0,0,0,.7);color:#9aa2ae;font-size:10px;backdrop-filter:blur(8px);border:1px solid rgba(255,255,255,.08);pointer-events:none;opacity:0;transition:opacity .5s';
+      hint.textContent = '← → навигация · Esc закрыть · колёсико масштаб';
+      container.appendChild(hint);
+      setTimeout(() => { hint.style.opacity = '1'; setTimeout(() => { hint.style.opacity = '0'; }, 4000); }, 2000);
+    }
     document.addEventListener('keydown',function kh(e){
       if(!container.contains(document.activeElement)&&document.activeElement!==document.body)return;
       if(e.key==='Escape'){close();return}
@@ -555,6 +573,21 @@ const MapEngine = (function() {
       if(e.key==='ArrowRight'&&idx<vis.length-1)open(vis[idx+1].id);
       if(e.key==='ArrowLeft'&&idx>0)open(vis[idx-1].id);
     });
+
+    // ── Marker entrance animation ──
+    function animateMarkersIn() {
+      const allMarkers = markersG.querySelectorAll('g[transform]');
+      allMarkers.forEach((g, i) => {
+        g.style.opacity = '0';
+        g.style.transform = g.getAttribute('transform') + ' scale(0.3)';
+        g.style.transition = `opacity .4s ${i * 50}ms ease-out, transform .5s ${i * 60}ms cubic-bezier(.34,1.56,.64,1)`;
+        requestAnimationFrame(() => {
+          g.style.opacity = '1';
+          const orig = g.getAttribute('transform');
+          g.style.transform = orig;
+        });
+      });
+    }
 
     // ── Init ──
     applyViewBox();

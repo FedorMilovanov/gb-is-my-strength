@@ -1,0 +1,70 @@
+{
+  "meta": {
+    "id": "shvatim",
+    "title": "12 Колен Израиля",
+    "title_he": "שִׁבְטֵי יִשְׂרָאֵל",
+    "subtitle": "Наследие колен · Иисус Навин 13–21",
+    "era": "bronze_late",
+    "stats": {
+      "places": 1,
+      "stages": 1,
+      "verses": 400,
+      "years": -1
+    },
+    "viewport_init": {
+      "cx": 950,
+      "cy": 715,
+      "w": 1900
+    }
+  },
+  "stories": [
+    {
+      "id": "main",
+      "label": "Все колена",
+      "active_by_default": true,
+      "place_ids": null,
+      "stage_ids": null
+    },
+    {
+      "id": "north",
+      "label": "Северные колена",
+      "place_ids": null,
+      "stage_ids": null
+    },
+    {
+      "id": "south",
+      "label": "Южные колена",
+      "place_ids": null,
+      "stage_ids": null
+    },
+    {
+      "id": "transjordan",
+      "label": "Заиорданские",
+      "place_ids": null,
+      "stage_ids": null
+    }
+  ],
+  "places": [
+    {
+      "id": "shiloh_tribes",
+      "name": "Силом",
+      "he": "שִׁילֹה",
+      "x": 660,
+      "y": 740,
+      "type": "main",
+      "stage": 0,
+      "kick": "Раздел земли",
+      "id2": "Ефрем",
+      "ep1": "Нав 18:1-10"
+    }
+  ],
+  "stages": [
+    {
+      "n": "I",
+      "t": "Наследие колен",
+      "r": "Нав 13–21",
+      "age": "~1400 г. до н.э."
+    }
+  ],
+  "verified_waypoints": []
+}
