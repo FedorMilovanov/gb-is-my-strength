@@ -1,0 +1,52 @@
+{
+  "meta": {
+    "id": "shoftim",
+    "title": "Эпоха Судей",
+    "title_he": "שֹׁפְטִים",
+    "subtitle": "Книга Судей · ~1380–1050 гг. до н.э.",
+    "era": "iron",
+    "stats": {
+      "places": 1,
+      "stages": 1,
+      "verses": 618,
+      "years": 330
+    },
+    "viewport_init": {
+      "cx": 950,
+      "cy": 715,
+      "w": 1900
+    }
+  },
+  "stories": [
+    {
+      "id": "main",
+      "label": "Все судьи",
+      "active_by_default": true,
+      "place_ids": null,
+      "stage_ids": null
+    }
+  ],
+  "places": [
+    {
+      "id": "shiloh",
+      "name": "Силом",
+      "he": "שִׁילֹה",
+      "x": 660,
+      "y": 740,
+      "type": "main",
+      "stage": 0,
+      "kick": "Скиния · центр поклонения",
+      "id2": "Самария",
+      "ep1": "Суд 21:19"
+    }
+  ],
+  "stages": [
+    {
+      "n": "I",
+      "t": "Судьи Израиля",
+      "r": "Суд 2:16–19",
+      "age": "~1380–1050 гг."
+    }
+  ],
+  "verified_waypoints": []
+}

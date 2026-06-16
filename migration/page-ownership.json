@@ -272,6 +272,30 @@
       "source": "src/pages/karty/pavel/index.astro",
       "risk": 2,
       "status": "shadow-pilot"
+    },
+    "/karty/shoftim/": {
+      "owner": "astro-noindex",
+      "source": "src/pages/karty/shoftim/index.astro",
+      "risk": 1,
+      "status": "build-only"
+    },
+    "/karty/melachim/": {
+      "owner": "astro-noindex",
+      "source": "src/pages/karty/melachim/index.astro",
+      "risk": 1,
+      "status": "build-only"
+    },
+    "/karty/shvatim/": {
+      "owner": "astro-noindex",
+      "source": "src/pages/karty/shvatim/index.astro",
+      "risk": 1,
+      "status": "build-only"
+    },
+    "/karty/yeshua/": {
+      "owner": "astro-noindex",
+      "source": "src/pages/karty/yeshua/index.astro",
+      "risk": 1,
+      "status": "build-only"
     }
   }
 }
