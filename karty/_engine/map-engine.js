@@ -1,646 +1,592 @@
 /**
- * map-engine.js — общий движок библейских карт gospod-bog.ru
+ * map-engine.js v0.3 — reusable biblical map rendering engine.
  *
- * Public API (MAPS-RD-MASTERPLAN §1.3):
- *   MapEngine.loadRoute(url) -> Promise<normalizedRoute>
+ * PUBLIC API:
+ *   // Data layer (v0.2):
+ *   MapEngine.loadRoute(url) -> Promise<NormalizedRoute>
  *   MapEngine.validateRoute(route) -> {ok, errors, warnings, stats}
- *   MapEngine.init({svgId, routeData, onPlaceOpen, onStageChange, onStoryChange})
- *   engine.flyTo(cx, cy, w, duration)
- *   engine.openPlace(id)
- *   engine.setStory(storyId)
- *   engine.nextPlace() / engine.prevPlace()
- *   engine.startTour() / engine.stopTour()
- *   engine.setZoom(factor)
- *   engine.getState() -> {place, story, stage, zoom, view}
- *   engine.shareURL()
+ *   MapEngine.compareRouteData(a, b) -> {ok, errors, warnings}
+ *   MapEngine.normalizeRouteData(data) -> NormalizedRoute
+ *   MapEngine.collectPhotoHosts(route) -> string[]
  *
- * v0.2 (2026-06-14): реальный reusable core вместо skeleton:
- * - route.json loader + normalizer (places/places_index, stages/stages_index, ctx/ctx_index)
- * - route validator для QA и будущих карт
- * - независимый SVG viewport/flyTo/zoom/pan engine без Leaflet/MapLibre
- * - story-aware next/prev/tour/share state
+ *   // Rendering layer (v0.3 — NEW):
+ *   MapEngine.createMap(container, routeData, opts) -> MapInstance
  *
- * Важно: карта Авраама пока сохраняет legacy inline runtime для визуальной стабильности,
- * но уже подключает этот файл и экспортирует AvraamRouteData для валидации/следующей миграции.
+ *   MapInstance:
+ *     .openPlace(id)           — open detail panel for a place
+ *     .closePanel()            — close detail panel
+ *     .setStory(storyId)       — filter places by story
+ *     .startTour() / .stopTour() — auto-advance through stages
+ *     .flyTo(cx, cy, zoom)     — animate viewport
+ *     .destroy()               — cleanup
+ *
+ * DESIGN:
+ *   - Self-contained: creates all DOM elements internally
+ *   - Styleable via CSS custom properties and class names
+ *   - No framework dependency
+ *   - Works with any route.json conforming to route.schema.json
  */
-
 'use strict';
 
 const MapEngine = (function() {
-  'use strict';
+  const DEFAULTS = { W0: 1900, H0: 1430, minW: 300, maxW: 2600, padX: 450, padY: 380, tourDelay: 2500 };
+  const EASE = { outCubic: p => 1 - Math.pow(1 - p, 3) };
+  const STAGE_COLORS = ['#e8c879','#e0813f','#4a9e6e','#cf5b6b','#8b6b4a','#4a80b4'];
+  const TAB_LABELS = {story:'Сюжет',bible:'Писание',arch:'Археология',he:'Иврит',dispute:'Дискуссия',photos:'Фото',extra:'Библ.контекст'};
+  const TAB_KEYS = ['story','bible','arch','he','dispute','photos','extra'];
 
-  const DEFAULTS = {
-    W0: 1900,
-    H0: 1430,
-    minW: 240,
-    maxW: 2600,
-    padX: 450,
-    padY: 380,
-    tourDelay: 1600
-  };
+  function clamp(n,a,b){return Math.min(Math.max(n,a),b)}
+  function esc(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;')}
 
-  const EASE = {
-    outCubic: p => 1 - Math.pow(1 - p, 3),
-    inOutQuart: p => (p < 0.5 ? 8 * p * p * p * p : 1 - Math.pow(-2 * p + 2, 4) / 2)
-  };
+  // ── v0.2 DATA LAYER (preserved) ──
 
-  function normalizeRouteData(data = {}) {
-    const places = Array.isArray(data.places) ? data.places : (data.places_index || []);
-    const stages = Array.isArray(data.stages) ? data.stages : (data.stages_index || []);
-    const ctx = Array.isArray(data.ctx) ? data.ctx : (data.ctx_index || []);
-    const stories = Array.isArray(data.stories) ? data.stories : [];
-    return {...data, places, stages, ctx, stories};
+  function normalizeRouteData(data={}){
+    const places=Array.isArray(data.places)?data.places:(data.places_index||[]);
+    const stages=Array.isArray(data.stages)?data.stages:(data.stages_index||[]);
+    const ctx=Array.isArray(data.ctx)?data.ctx:(data.ctx_index||[]);
+    const stories=Array.isArray(data.stories)?data.stories:[];
+    return {...data,places,stages,ctx,stories};
   }
 
-  async function loadRoute(url, opts = {}) {
-    const res = await fetch(url, {
-      credentials: opts.credentials || 'same-origin',
-      headers: {Accept: 'application/json', ...(opts.headers || {})}
-    });
-    if (!res.ok) throw new Error(`MapEngine.loadRoute: ${res.status} ${res.statusText} (${url})`);
-    const json = await res.json();
-    return normalizeRouteData(json);
+  async function loadRoute(url,opts={}){
+    const res=await fetch(url,{credentials:opts.credentials||'same-origin',headers:{Accept:'application/json',...(opts.headers||{})}});
+    if(!res.ok)throw new Error(`MapEngine.loadRoute: ${res.status} ${url}`);
+    return normalizeRouteData(await res.json());
   }
 
-  function validateRoute(data = {}) {
-    const route = normalizeRouteData(data);
-    const errors = [];
-    const warnings = [];
-    const ids = new Set();
-
-    route.places.forEach((p, i) => {
-      if (!p || !p.id) errors.push(`places[${i}] has no id`);
-      if (p && p.id) {
-        if (ids.has(p.id)) errors.push(`duplicate place id: ${p.id}`);
-        ids.add(p.id);
-      }
-      if (typeof p?.x !== 'number' || typeof p?.y !== 'number') warnings.push(`place ${p?.id || i}: x/y should be numbers`);
-      if (!p?.type) warnings.push(`place ${p?.id || i}: missing type`);
+  function validateRoute(data={}){
+    const route=normalizeRouteData(data),errors=[],warnings=[],ids=new Set();
+    route.places.forEach((p,i)=>{
+      if(!p||!p.id)errors.push(`places[${i}] has no id`);
+      if(p&&p.id){if(ids.has(p.id))errors.push(`duplicate place id: ${p.id}`);ids.add(p.id);}
+      if(typeof p?.x!=='number'||typeof p?.y!=='number')warnings.push(`place ${p?.id||i}: x/y should be numbers`);
     });
-
-    route.stories.forEach(st => {
-      const placeList = st.places || st.place_ids;
-      if (Array.isArray(placeList)) {
-        placeList.forEach(id => { if (!ids.has(id)) errors.push(`story ${st.id}: unknown place ${id}`); });
-      }
-      const stageList = st.stages || st.stage_ids;
-      if (Array.isArray(stageList)) {
-        stageList.forEach(si => { if (si < 0 || si >= route.stages.length) errors.push(`story ${st.id}: unknown stage ${si}`); });
-      }
+    route.stories.forEach(st=>{
+      (st.places||st.place_ids||[]).forEach(pid=>{if(!ids.has(pid))errors.push(`story ${st.id}: unknown place ${pid}`);});
+      (st.stages||st.stage_ids||[]).forEach(si=>{if(si<0||si>=route.stages.length)errors.push(`story ${st.id}: unknown stage ${si}`);});
     });
-
-    route.stages.forEach((st, i) => {
-      const paths = st.paths || [];
-      if (Array.isArray(paths)) {
-        paths.forEach((p, j) => { if (!p.d) warnings.push(`stage ${i} path ${j}: missing SVG d`); });
-      }
-    });
-
-    const waypoints = route.verified_waypoints || route.waypoints || [];
-    if (Array.isArray(waypoints)) {
-      const wpIds = new Set();
-      waypoints.forEach((wp, i) => {
-        if (!wp?.id) errors.push(`waypoints[${i}] has no id`);
-        if (wp?.id && wpIds.has(wp.id)) errors.push(`duplicate waypoint id: ${wp.id}`);
-        if (wp?.id) wpIds.add(wp.id);
-        if (typeof wp?.x !== 'number' || typeof wp?.y !== 'number') warnings.push(`waypoint ${wp?.id || i}: x/y should be numbers`);
-        if (Number.isInteger(wp?.stage) && (wp.stage < 0 || wp.stage >= route.stages.length)) errors.push(`waypoint ${wp.id}: unknown stage ${wp.stage}`);
-      });
-    }
-
-    const variants = route.scientific_variants || route.variants || {};
-    if (variants && typeof variants === 'object' && !Array.isArray(variants)) {
-      Object.entries(variants).forEach(([placeId, rows]) => {
-        if (!ids.has(placeId)) errors.push(`scientific_variants: unknown place ${placeId}`);
-        if (!Array.isArray(rows)) errors.push(`scientific_variants.${placeId} should be an array`);
-        else rows.forEach((row, i) => {
-          if (!row?.status) warnings.push(`scientific_variants.${placeId}[${i}]: missing status`);
-          if (!row?.title) warnings.push(`scientific_variants.${placeId}[${i}]: missing title`);
-        });
-      });
-    }
-
-    const metaStats = route.meta?.stats || {};
-    if (metaStats.places && metaStats.places !== route.places.length) warnings.push(`meta.stats.places=${metaStats.places}, actual=${route.places.length}`);
-    if (metaStats.stages && metaStats.stages !== route.stages.length) warnings.push(`meta.stats.stages=${metaStats.stages}, actual=${route.stages.length}`);
-
-    return {
-      ok: errors.length === 0,
-      errors,
-      warnings,
-      stats: {
-        places: route.places.length,
-        stages: route.stages.length,
-        stories: route.stories.length,
-        ctx: route.ctx.length,
-        photos: route.places.reduce((sum, p) => sum + (Array.isArray(p.photos) ? p.photos.length : 0), 0),
-        waypoints: Array.isArray(route.verified_waypoints || route.waypoints) ? (route.verified_waypoints || route.waypoints).length : 0,
-        scientific_variants: variants && typeof variants === 'object' && !Array.isArray(variants) ? Object.values(variants).reduce((sum, rows) => sum + (Array.isArray(rows) ? rows.length : 0), 0) : 0
-      }
-    };
+    const metaStats=route.meta?.stats||{};
+    if(metaStats.places&&metaStats.places!==route.places.length)warnings.push(`meta.stats.places mismatch`);
+    if(metaStats.stages&&metaStats.stages!==route.stages.length)warnings.push(`meta.stats.stages mismatch`);
+    return {ok:errors.length===0,errors,warnings,stats:{places:route.places.length,stages:route.stages.length,stories:route.stories.length,ctx:route.ctx.length}};
   }
 
-  function clamp(n, a, b) { return Math.min(Math.max(n, a), b); }
-
-  function countScientificVariants(route = {}) {
-    const variants = route.scientific_variants || route.variants || {};
-    return variants && typeof variants === 'object' && !Array.isArray(variants)
-      ? Object.values(variants).reduce((sum, rows) => sum + (Array.isArray(rows) ? rows.length : 0), 0)
-      : 0;
-  }
-
-  function compareRouteData(left = {}, right = {}) {
-    const a = normalizeRouteData(left);
-    const b = normalizeRouteData(right);
-    const errors = [];
-    const warnings = [];
-    const idsA = a.places.map(p => p.id);
-    const idsB = b.places.map(p => p.id);
-    if (JSON.stringify(idsA) !== JSON.stringify(idsB)) errors.push(`place id drift: ${idsA.join(',')} != ${idsB.join(',')}`);
-    if (a.stages.length !== b.stages.length) errors.push(`stage count drift: ${a.stages.length} != ${b.stages.length}`);
-    if (a.ctx.length !== b.ctx.length) warnings.push(`ctx count drift: ${a.ctx.length} != ${b.ctx.length}`);
-    if (a.stories.length !== b.stories.length) errors.push(`story count drift: ${a.stories.length} != ${b.stories.length}`);
-
-    const wpA = a.verified_waypoints || a.waypoints || [];
-    const wpB = b.verified_waypoints || b.waypoints || [];
-    if (Array.isArray(wpA) || Array.isArray(wpB)) {
-      const wpIdsA = Array.isArray(wpA) ? wpA.map(w => w.id) : [];
-      const wpIdsB = Array.isArray(wpB) ? wpB.map(w => w.id) : [];
-      if (JSON.stringify(wpIdsA) !== JSON.stringify(wpIdsB)) errors.push(`waypoint id drift: ${wpIdsA.join(',')} != ${wpIdsB.join(',')}`);
-    }
-
-    const varA = countScientificVariants(a);
-    const varB = countScientificVariants(b);
-    if (varA !== varB) errors.push(`scientific variants count drift: ${varA} != ${varB}`);
-
-    const photosA = a.places.reduce((sum, p) => sum + (Array.isArray(p.photos) ? p.photos.length : 0), 0);
-    const photosB = b.places.reduce((sum, p) => sum + (Array.isArray(p.photos) ? p.photos.length : 0), 0);
-    if (photosA !== photosB) errors.push(`photo count drift: ${photosA} != ${photosB}`);
-
-    // Coordinate drift: check that place x,y match between inline and route.json
-    a.places.forEach((pA) => {
-      const pB = b.places.find(p => p.id === pA.id);
-      if (pB && (pA.x !== pB.x || pA.y !== pB.y)) {
-        errors.push(`place coord drift: ${pA.id} inline(${pA.x},${pA.y}) vs route(${pB.x},${pB.y})`);
-      }
+  function compareRouteData(left={},right={}){
+    const a=normalizeRouteData(left),b=normalizeRouteData(right),errors=[],warnings=[];
+    const idsA=a.places.map(p=>p.id),idsB=b.places.map(p=>p.id);
+    if(JSON.stringify(idsA)!==JSON.stringify(idsB))errors.push(`place id drift`);
+    if(a.stages.length!==b.stages.length)errors.push(`stage count drift`);
+    if(a.stories.length!==b.stories.length)errors.push(`story count drift`);
+    a.places.forEach(pA=>{
+      const pB=b.places.find(p=>p.id===pA.id);
+      if(pB&&(pA.x!==pB.x||pA.y!==pB.y))errors.push(`place coord drift: ${pA.id}`);
     });
-
-    return {ok: errors.length === 0, errors, warnings, stats: {places: idsA.length, stages: a.stages.length, stories: a.stories.length, photos: photosA, waypoints: Array.isArray(wpA) ? wpA.length : 0, scientific_variants: varA}};
+    return {ok:errors.length===0,errors,warnings,stats:{places:idsA.length,stages:a.stages.length,stories:a.stories.length}};
   }
 
-  function collectPhotoHosts(route = {}) {
-    const data = normalizeRouteData(route);
-    const hosts = new Set();
-    data.places.forEach(place => (place.photos || []).forEach(photo => {
-      for (const key of ['src', 'thumb']) {
-        if (!photo[key] || !/^https?:\/\//.test(photo[key])) continue;
-        try { hosts.add(new URL(photo[key]).origin); } catch (_) {}
-      }
+  function collectPhotoHosts(route={}){
+    const data=normalizeRouteData(route),hosts=new Set();
+    data.places.forEach(p=>(p.photos||[]).forEach(ph=>{
+      for(const key of['src','thumb']){if(!ph[key]||!/^https?:\/\//.test(ph[key]))continue;try{hosts.add(new URL(ph[key]).origin)}catch(_){}}
     }));
     return [...hosts].sort();
   }
 
-  function normalizeLayerState(layers = []) {
-    if (Array.isArray(layers)) {
-      return layers.reduce((acc, layer) => {
-        if (layer && layer.id) acc[layer.id] = layer.on !== false;
-        return acc;
-      }, {});
-    }
-    if (layers && typeof layers === 'object') {
-      return Object.entries(layers).reduce((acc, [id, value]) => {
-        acc[id] = typeof value === 'object' ? value.on !== false : value !== false;
-        return acc;
-      }, {});
-    }
-    return {};
+  // Panel model helpers
+  function getPlaceIndex(route,placeId){return (route.places||[]).findIndex(p=>p.id===placeId)}
+  function getPlaceById(route,placeId){return (route.places||[]).find(p=>p.id===placeId)}
+  function getStageForPlace(route,place){const st=route.stages||[];return place&&typeof place.stage==='number'?st[place.stage]||null:null}
+  function getRelatedPlaceIds(route,placeId){
+    const related=[];
+    for(const p of(route.places||[])){if(p.related&&p.related.includes(placeId))related.push(p.id)}
+    return related;
+  }
+  function getTabContentKey(place,tab){return place&&place[tab]?tab:null}
+
+  function getPanelModel(route,placeId){
+    const idx=getPlaceIndex(route,placeId);
+    const place=idx>=0?route.places[idx]:null;
+    return {index:idx,place,stage:getStageForPlace(route,place),relatedIds:place?getRelatedPlaceIds(route,place.id):[],photoCount:Array.isArray(place?.photos)?place.photos.length:0};
   }
 
-  function isLayerOn(layers, id) {
-    const state = normalizeLayerState(layers);
-    return state[id] !== false;
-  }
-
-  function getPlaceLayerId(place = {}) {
-    if (place.type === 'cand') return 'cand';
-    if (place.type === 'lot') return 'lot';
-    return 'abr';
-  }
-
-  function getRouteLayerId(input = {}) {
-    const color = typeof input === 'string'
-      ? input
-      : (input.c || input.color || input.dataset?.color || input.cls || input.dataset?.cls || 'gold');
-    if (color === 'war') return 'war';
-    if (color === 'lot') return 'lot';
-    return 'abr';
-  }
-
-  function getPlaceVisual(place = {}) {
-    const layerId = getPlaceLayerId(place);
-    const color = layerId === 'lot' ? '#e0813f' : layerId === 'cand' ? '#9b8cf0' : '#e8c879';
-    const cssColor = layerId === 'lot' ? 'var(--lot)' : layerId === 'cand' ? 'var(--cand)' : '#e8c879';
+  function getPanelSections(route,placeId,tab,relatedMap){
+    const model=getPanelModel(route,placeId),place=model.place;
     return {
-      layerId,
-      color,
-      cssColor,
-      markerClass: `marker${place.type === 'cand' ? ' cand' : ''}${place.type === 'lot' ? ' lot-type' : ''}`,
-      isCandidate: place.type === 'cand',
-      isLot: place.type === 'lot'
+      hasStory:!!(place&&place.story),hasBible:!!(place&&place.bible),hasArch:!!(place&&place.arch),
+      hasHe:!!(place&&place.he_deep),hasDispute:!!(place&&place.dispute),hasPhotos:!!(place&&Array.isArray(place.photos)&&place.photos.length),
+      hasExtra:!!(place&&place.bible_extra),hasRelated:model.relatedIds.length>0,contentKey:place&&place[tab]?tab:null
     };
   }
 
-  function getStoryState(data = {}, storyId = 'main') {
-    const route = normalizeRouteData(data);
-    const story = route.stories.find(s => s.id === storyId) || route.stories.find(s => s.active_by_default) || route.stories[0] || {id: storyId || 'main'};
-    const rawPlaceIds = story.places || story.place_ids || null;
-    const rawStageIds = story.stages || story.stage_ids || null;
-    const placeIds = rawPlaceIds ? [...rawPlaceIds] : route.places.map(p => p.id);
-    const stageIds = rawStageIds ? [...rawStageIds] : route.stages.map((_, i) => i);
-    const placeSet = new Set(placeIds);
-    const stageSet = new Set(stageIds);
-    const waypoints = route.verified_waypoints || route.waypoints || [];
-    const waypointIds = Array.isArray(waypoints)
-      ? waypoints.filter(w => !rawStageIds || stageSet.has(w.stage)).map(w => w.id)
-      : [];
-    return {
-      id: story.id || storyId || 'main',
-      story,
-      placesAll: !rawPlaceIds,
-      stagesAll: !rawStageIds,
-      placeIds,
-      stageIds,
-      placeSet,
-      stageSet,
-      waypointIds,
-      counts: {places: placeIds.length, stages: stageIds.length, waypoints: waypointIds.length}
-    };
+  function getStoryState(route,storyId){
+    const story=(route.stories||[]).find(s=>s.id===storyId);
+    return story?{story,placeIds:story.places||story.place_ids||null,stageIds:story.stages||story.stage_ids||null}:null;
   }
 
-  function getPlaceOrder(data = {}, storyId = 'main', opts = {}) {
-    const route = normalizeRouteData(data);
-    const state = getStoryState(route, storyId);
-    const includeCandidates = opts.includeCandidates ?? !state.placesAll;
-    const places = state.placesAll
-      ? route.places
-      : state.placeIds.map(id => route.places.find(p => p.id === id)).filter(Boolean);
-    const filtered = includeCandidates ? places : places.filter(p => p.type !== 'cand');
-    const ids = filtered.map(p => p.id);
-    return {
-      ids,
-      indexes: ids.map(id => route.places.findIndex(p => p.id === id)).filter(i => i >= 0),
-      includeCandidates,
-      storyId: state.id,
-      count: ids.length
-    };
+  function getPlaceOrder(route,storyId,includeCandidates=true){
+    const state=getStoryState(route,storyId);
+    const places=route.places||[];
+    let filtered=places;
+    if(state&&state.placeIds){const ids=new Set(state.placeIds);filtered=places.filter(p=>ids.has(p.id))}
+    if(!includeCandidates)filtered=filtered.filter(p=>p.type!=='cand');
+    return {ids:filtered.map(p=>p.id),indexes:filtered.map(p=>places.indexOf(p)),includeCandidates,storyId,count:filtered.length};
   }
 
-  function auditStoryDefinitions(data = {}) {
-    const route = normalizeRouteData(data);
-    const errors = [];
-    const states = route.stories.map(story => getStoryState(route, story.id));
-    const main = states.find(st => st.id === 'main') || states[0];
-    if (main && (!main.placesAll || !main.stagesAll)) errors.push('main story should include all places/stages');
-    states.forEach(state => {
-      if (!state.placesAll && !state.placeIds.length) errors.push(`story ${state.id}: empty place set`);
-      if (!state.stagesAll && !state.stageIds.length) errors.push(`story ${state.id}: empty stage set`);
+  function auditStoryDefinitions(route){
+    const errors=[];
+    (route.stories||[]).forEach(st=>{
+      const ids=st.places||st.place_ids||[];
+      ids.forEach(id=>{if(!(route.places||[]).find(p=>p.id===id))errors.push(`story ${st.id}: place ${id} not found`)});
     });
-    return {ok: errors.length === 0, errors, states: states.map(s => ({id: s.id, placesAll: s.placesAll, stagesAll: s.stagesAll, counts: s.counts, placeIds: s.placeIds, stageIds: s.stageIds, waypointIds: s.waypointIds}))};
+    return {ok:errors.length===0,errors};
   }
 
-  function getPlaceIndex(data = {}, placeId) {
-    const route = normalizeRouteData(data);
-    return route.places.findIndex(p => p.id === placeId);
-  }
+  // ── v0.3 RENDERING LAYER ──
 
-  function getPlaceById(data = {}, placeId) {
-    const route = normalizeRouteData(data);
-    return route.places.find(p => p.id === placeId) || null;
-  }
-
-  function getStageForPlace(data = {}, place) {
-    const route = normalizeRouteData(data);
-    if (!place || !Number.isInteger(place.stage)) return null;
-    return route.stages[place.stage] || null;
-  }
-
-  function getRelatedPlaceIds(data = {}, placeId, relatedMap = null) {
-    const route = normalizeRouteData(data);
-    const rel = relatedMap || route.related || route.related_index || {};
-    const ids = Array.isArray(rel[placeId]) ? rel[placeId] : [];
-    const valid = new Set(route.places.map(p => p.id));
-    return ids.filter(id => valid.has(id));
-  }
-
-  function getTabContentKey(tab = 'story') {
-    if (tab === 'bible') return 'bible';
-    if (tab === 'arch') return 'arch';
-    if (tab === 'he') return 'he_deep';
-    return 'story';
-  }
-
-  function getPanelSections(data = {}, placeId, tab = 'story', relatedMap = null) {
-    const route = normalizeRouteData(data);
-    const model = getPanelModel(route, placeId, relatedMap);
-    const place = model.place;
-    const variants = route.scientific_variants || route.variants || {};
-    const contentKey = getTabContentKey(tab);
-    return {
-      ...model,
-      tab,
-      contentKey,
-      showRelated: model.relatedIds.length > 0,
-      showPhotos: Boolean(place && (tab === 'story' || tab === 'arch') && Array.isArray(place.photos) && place.photos.length > 0),
-      showDispute: Boolean(place && (tab === 'story' || tab === 'bible' || tab === 'he') && place.dispute),
-      showScientificVariants: Boolean(place && (tab === 'story' || tab === 'arch') && variants[place.id]),
-      showBibleExtra: Boolean(place && tab === 'bible' && place.bible_extra),
-      hasContent: Boolean(place && place[contentKey])
-    };
-  }
-
-  function getPanelModel(data = {}, placeId, relatedMap = null) {
-    const route = normalizeRouteData(data);
-    const index = getPlaceIndex(route, placeId);
-    const place = index >= 0 ? route.places[index] : null;
-    const stage = getStageForPlace(route, place);
-    const relatedIds = place ? getRelatedPlaceIds(route, place.id, relatedMap) : [];
-    return {
-      index,
-      place,
-      stage,
-      relatedIds,
-      photoCount: Array.isArray(place?.photos) ? place.photos.length : 0,
-      hasScientificVariants: Boolean(place && (route.scientific_variants || route.variants || {})[place.id])
-    };
-  }
-
-  function createEngine(options) {
-    const cfg = {...DEFAULTS, ...(options || {})};
-    const svg = typeof cfg.svgId === 'string' ? document.getElementById(cfg.svgId) : cfg.svg;
-    const routeData = normalizeRouteData(cfg.routeData || {});
-    const callbacks = {
-      onPlaceOpen: cfg.onPlaceOpen,
-      onStageChange: cfg.onStageChange,
-      onStoryChange: cfg.onStoryChange,
-      onViewChange: cfg.onViewChange
-    };
-
-    if (!svg) throw new Error(`MapEngine.init: SVG element not found (${cfg.svgId || 'svg'})`);
-
-    const initVp = routeData.meta?.viewport_init || cfg.viewport || {cx: cfg.W0 / 2, cy: cfg.H0 / 2, w: cfg.W0};
-    let view = viewFromCenter(initVp.cx ?? cfg.W0 / 2, initVp.cy ?? cfg.H0 / 2, initVp.w ?? cfg.W0);
+  function createMap(container, routeData, opts={}) {
+    const route = normalizeRouteData(routeData);
+    const cfg = {...DEFAULTS, ...opts};
+    
+    // State
+    let activePlaceId = null;
+    let activeStoryId = (route.stories||[]).find(s=>s.active_by_default)?.id || ((route.stories||[])[0]?.id) || 'main';
+    let touring = false;
+    let tourStepIdx = 0;
     let rafId = null;
-    let tourTimer = null;
-    let drag = null;
-    let state = {place: null, story: 'main', stage: -1, touring: false};
+    let dragState = null;
+    let view = {x:0, y:0, w:cfg.W0, h:cfg.H0};
+    const initVp = route.meta?.viewport_init || {cx:cfg.W0/2, cy:cfg.H0/2, w:cfg.W0};
+    view = {x:initVp.cx-initVp.w/2, y:initVp.cy-(initVp.w*cfg.H0/cfg.W0)/2, w:initVp.w, h:initVp.w*cfg.H0/cfg.W0};
+    if(view.w<cfg.minW)view.w=cfg.minW;
+    if(view.w>cfg.maxW)view.w=cfg.maxW;
 
-    function viewFromCenter(cx, cy, w) {
-      const h = w * cfg.H0 / cfg.W0;
-      return clampView({x: cx - w / 2, y: cy - h / 2, w, h});
+    // ── DOM construction ──
+
+    // Inject base CSS
+    if(!document.getElementById('me-base-css')){
+      const css=document.createElement('style');
+      css.id='me-base-css';
+      css.textContent=`
+.me-map{position:relative;width:100%;height:100%;overflow:hidden;background:#070a10;user-select:none;font-family:Georgia,'Times New Roman',serif}
+.me-map *{box-sizing:border-box}
+.me-canvas{position:absolute;inset:0;cursor:grab}
+.me-canvas:active{cursor:grabbing}
+.me-canvas svg{width:100%;height:100%;display:block}
+.me-header{position:absolute;top:0;left:0;right:0;padding:12px 16px;z-index:10;pointer-events:none;display:flex;justify-content:space-between;align-items:flex-start;gap:8px;flex-wrap:wrap}
+.me-header>*{pointer-events:auto}
+.me-back{display:inline-flex;align-items:center;gap:6px;color:#9aa2ae;font-size:10px;letter-spacing:.15em;text-transform:uppercase;text-decoration:none;padding:6px 14px;border-radius:999px;background:rgba(0,0,0,.5);border:1px solid rgba(255,255,255,.1);backdrop-filter:blur(8px);transition:color .2s}
+.me-back:hover{color:#e8c879}
+.me-title{color:#fff;font-size:22px;line-height:1.2;text-shadow:0 2px 8px rgba(0,0,0,.6)}
+.me-title-he{color:#e8c879;font-size:15px;letter-spacing:.2em;margin-top:2px;direction:rtl;text-shadow:0 2px 6px rgba(0,0,0,.5)}
+.me-subtitle{color:#9aa2ae;font-size:11px;margin-top:2px}
+.me-stories{display:flex;gap:6px;flex-wrap:wrap}
+.me-story-chip{padding:6px 12px;border-radius:999px;border:1px solid rgba(255,255,255,.1);background:rgba(0,0,0,.5);color:#9aa2ae;font-size:11px;cursor:pointer;backdrop-filter:blur(8px);transition:all .2s;font-family:inherit;white-space:nowrap}
+.me-story-chip:hover{border-color:rgba(255,255,255,.3);color:#e9e4d6}
+.me-story-chip--active{background:rgba(232,200,121,.2);color:#e8c879;border-color:rgba(232,200,121,.4)}
+.me-stages{position:absolute;bottom:8px;right:8px;z-index:10;display:flex;gap:8px;padding:6px 14px;border-radius:999px;background:rgba(0,0,0,.6);border:1px solid rgba(255,255,255,.1);backdrop-filter:blur(8px)}
+.me-stage-dot{display:flex;align-items:center;gap:4px;font-size:10px;color:#9aa2ae;white-space:nowrap}
+.me-stage-dot::before{content:'';width:6px;height:6px;border-radius:50%;background:currentColor}
+.me-panel{position:absolute;bottom:0;left:0;right:0;background:rgba(13,17,26,.95);backdrop-filter:blur(16px);border-top:1px solid rgba(232,200,121,.2);z-index:20;transition:transform .35s ease;transform:translateY(105%);display:flex;flex-direction:column;border-radius:16px 16px 0 0;box-shadow:0 -8px 32px rgba(0,0,0,.4)}
+.me-panel--open{transform:translateY(0)}
+.me-panel__close{position:absolute;top:10px;right:12px;z-index:5;background:none;border:none;font-size:20px;color:#9aa2ae;cursor:pointer;padding:4px 8px;border-radius:6px;line-height:1}
+.me-panel__close:hover{color:#fff;background:rgba(255,255,255,.05)}
+.me-panel__head{padding:14px 16px 8px;border-bottom:1px solid rgba(255,255,255,.08)}
+.me-panel__stage{font-size:9px;letter-spacing:.2em;text-transform:uppercase;color:#e8c879;margin-bottom:4px}
+.me-panel__name{font-size:20px;color:#fff;font-weight:700;margin-bottom:2px;padding-right:32px}
+.me-panel__he{font-size:14px;color:#e8c879;margin-bottom:4px;direction:rtl}
+.me-panel__kick{font-size:12px;color:#9aa2ae;font-weight:700}
+.me-panel__meta{display:flex;flex-wrap:wrap;gap:4px;margin-top:6px}
+.me-panel__meta span{font-size:9px;color:#9aa2ae;padding:2px 8px;border:1px solid rgba(255,255,255,.08);border-radius:4px}
+.me-tabs{display:flex;gap:2px;padding:4px 12px 0;border-bottom:1px solid rgba(255,255,255,.05);overflow-x:auto}
+.me-tab{padding:6px 12px;font-size:11px;border:none;background:none;color:#9aa2ae;cursor:pointer;border-bottom:2px solid transparent;transition:all .15s;font-family:inherit;white-space:nowrap}
+.me-tab:hover{color:#e9e4d6}
+.me-tab--active{color:#e8c879;border-bottom-color:#e8c879}
+.me-content{padding:12px 16px;overflow-y:auto;flex:1;font-size:13px;line-height:1.65;color:#9aa2ae}
+.me-content p{margin-bottom:8px;color:#e9e4d6}
+.me-content .verse{font-style:italic;border-left:2px solid rgba(232,200,121,.5);padding-left:10px;margin:10px 0;color:#9aa2ae;font-size:12px}
+.me-content .verse span{display:block;font-size:9px;color:#e8c879;margin-top:4px}
+.me-content .note{background:rgba(255,255,255,.04);padding:10px 12px;border-radius:8px;font-size:11px;margin:8px 0}
+.me-content .he-block{background:rgba(255,255,255,.04);padding:12px;border-radius:8px;margin:8px 0}
+.me-content .hw{color:#e8c879;font-size:18px}
+.me-content .he-tr{color:#9aa2ae;font-size:11px;margin-left:8px}
+.me-content .he-etym{font-size:11px;margin-top:4px;color:#e9e4d6}
+.me-content .he-refs{font-size:9px;color:rgba(154,162,174,.6);margin-top:4px}
+.me-content .dispute-block{background:rgba(255,255,255,.04);padding:12px;border-radius:8px;margin:8px 0}
+.me-content .dispute-title{font-weight:700;color:#e8c879;margin-bottom:6px}
+.me-content .dispute-pos{padding-left:8px;margin:4px 0;border-left:2px solid rgba(255,255,255,.1)}
+.me-content .dispute-note{font-size:10px;color:rgba(154,162,174,.6);font-style:italic;margin-top:6px}
+.me-content .conf-hi{color:#4ade80;font-size:9px}
+.me-content .conf-med{color:#facc15;font-size:9px}
+.me-content .conf-lo{color:#f87171;font-size:9px}
+.me-content .bib-note{background:rgba(255,255,255,.04);padding:10px 12px;border-radius:8px;font-size:11px;margin:8px 0}
+.me-content .bib-note b{color:#e8c879}
+.me-content img{max-width:100%;border-radius:6px;margin:6px 0}
+.me-photo-label{font-size:9px;color:rgba(154,162,174,.5);margin-top:2px}
+.me-nav{display:flex;align-items:center;padding:10px 16px;border-top:1px solid rgba(255,255,255,.08);gap:8px}
+.me-nav button{flex:0;padding:6px 14px;border-radius:6px;border:1px solid rgba(255,255,255,.1);background:rgba(255,255,255,.03);color:#9aa2ae;font-size:11px;cursor:pointer;font-family:inherit;transition:all .15s}
+.me-nav button:hover:not(:disabled){border-color:#e8c879;color:#e8c879}
+.me-nav button:disabled{opacity:.3;cursor:default}
+.me-nav__dots{flex:1;display:flex;justify-content:center;gap:4px}
+.me-nav__dot{width:6px;height:6px;border-radius:50%;background:rgba(255,255,255,.15);transition:all .2s}
+.me-nav__dot--active{background:#e8c879;transform:scale(1.4)}
+@media(min-width:640px){
+  .me-title{font-size:28px}
+  .me-panel{left:12px;right:auto;bottom:12px;width:420px;border-radius:14px;border:1px solid rgba(232,200,121,.2);transform:translateX(-120%)}
+  .me-panel--open{transform:translateX(0)}
+  .me-header{padding:16px 20px}
+}
+      `;
+      document.head.appendChild(css);
     }
 
-    function clampView(v) {
-      v.w = clamp(v.w, cfg.minW, cfg.maxW);
-      v.h = v.w * cfg.H0 / cfg.W0;
-      v.x = clamp(v.x, -cfg.padX, cfg.W0 + cfg.padX - v.w);
-      v.y = clamp(v.y, -cfg.padY, cfg.H0 + cfg.padY - v.h);
-      return v;
+    // Build DOM
+    container.innerHTML='';
+    container.className='me-map';
+    
+    const canvas=document.createElement('div');canvas.className='me-canvas';
+    const svg=document.createElementNS('http://www.w3.org/2000/svg','svg');
+    svg.setAttribute('viewBox',`${view.x} ${view.y} ${view.w} ${view.h}`);
+    svg.setAttribute('preserveAspectRatio','xMidYMid meet');
+    
+    // SVG layers
+    const bgRect=document.createElementNS('http://www.w3.org/2000/svg','rect');
+    bgRect.setAttribute('x','-400');bgRect.setAttribute('y','-400');bgRect.setAttribute('width','2700');bgRect.setAttribute('height','2230');
+    bgRect.setAttribute('fill','#0d1d2e');bgRect.setAttribute('opacity','0.4');
+    svg.appendChild(bgRect);
+    
+    const pathsG=document.createElementNS('http://www.w3.org/2000/svg','g');pathsG.id='me-paths';svg.appendChild(pathsG);
+    const waypointsG=document.createElementNS('http://www.w3.org/2000/svg','g');waypointsG.id='me-waypoints';svg.appendChild(waypointsG);
+    const markersG=document.createElementNS('http://www.w3.org/2000/svg','g');markersG.id='me-markers';svg.appendChild(markersG);
+    canvas.appendChild(svg);
+    container.appendChild(canvas);
+
+    // Header
+    const header=document.createElement('div');header.className='me-header';
+    const headerLeft=document.createElement('div');
+    const backLink=document.createElement('a');backLink.className='me-back';backLink.href=opts.backUrl||'/karty/';backLink.textContent='← Карты';
+    const titleEl=document.createElement('div');titleEl.className='me-title';titleEl.textContent=route.meta?.title||'';
+    headerLeft.appendChild(backLink);headerLeft.appendChild(titleEl);
+    if(route.meta?.title_he){const he=document.createElement('div');he.className='me-title-he';he.textContent=route.meta.title_he;headerLeft.appendChild(he)}
+    if(route.meta?.subtitle){const sub=document.createElement('div');sub.className='me-subtitle';sub.textContent=route.meta.subtitle;headerLeft.appendChild(sub)}
+    header.appendChild(headerLeft);
+    
+    const storiesBar=document.createElement('div');storiesBar.className='me-stories';
+    header.appendChild(storiesBar);
+    container.appendChild(header);
+
+    // Stage dots
+    const stagesBar=document.createElement('div');stagesBar.className='me-stages';
+    container.appendChild(stagesBar);
+
+    // Panel
+    const panel=document.createElement('div');panel.className='me-panel';
+    panel.innerHTML='<button class="me-panel__close">×</button><div class="me-panel__head"></div><div class="me-tabs"></div><div class="me-content"></div><div class="me-nav"></div>';
+    container.appendChild(panel);
+
+    // ── State helpers ──
+    function visiblePlaces(){
+      const story=(route.stories||[]).find(s=>s.id===activeStoryId);
+      if(!story||!(story.places||story.place_ids))return route.places||[];
+      const ids=new Set(story.places||story.place_ids||[]);
+      return (route.places||[]).filter(p=>ids.has(p.id));
+    }
+    function getActivePlace(){return activePlaceId?(route.places||[]).find(p=>p.id===activePlaceId)||null:null}
+    function placeIndexInStory(){
+      const v=visiblePlaces();
+      return activePlaceId?v.findIndex(p=>p.id===activePlaceId):-1;
     }
 
-    function applyView() {
-      if (cfg.applyView !== false) svg.setAttribute('viewBox', `${view.x} ${view.y} ${view.w} ${view.h}`);
-      callbacks.onViewChange?.({...view});
-      return {...view};
+    // ── SVG rendering ──
+    function applyViewBox(){
+      svg.setAttribute('viewBox',`${view.x} ${view.y} ${view.w} ${view.h}`);
     }
 
-    function flyTo(cx, cy, w, duration = 900) {
-      if (typeof cfg.flyTo === 'function') return cfg.flyTo(cx, cy, w, duration);
-      const from = {...view};
-      const to = viewFromCenter(cx, cy, w);
-      const t0 = performance.now();
-      cancelAnimationFrame(rafId);
-      return new Promise(resolve => {
-        function step(t) {
-          let p = clamp((t - t0) / Math.max(1, duration), 0, 1);
-          p = EASE.outCubic(p);
-          view = {
-            x: from.x + (to.x - from.x) * p,
-            y: from.y + (to.y - from.y) * p,
-            w: from.w + (to.w - from.w) * p,
-            h: from.h + (to.h - from.h) * p
-          };
-          applyView();
-          if (p < 1) rafId = requestAnimationFrame(step);
-          else resolve({...view});
-        }
-        rafId = requestAnimationFrame(step);
+    function renderMarkers(){
+      markersG.innerHTML='';
+      waypointsG.innerHTML='';
+      pathsG.innerHTML='';
+      const vis=visiblePlaces();
+      const visIds=new Set(vis.map(p=>p.id));
+      const allPlaces=route.places||[];
+
+      // Stage paths
+      const stagePaths=Array.from({length:(route.stages||[]).length},()=>[]);
+      allPlaces.forEach(p=>{if(typeof p.stage==='number')stagePaths[p.stage]=stagePaths[p.stage]||[];stagePaths[p.stage].push(p)});
+      stagePaths.forEach((places,i)=>{
+        if(places.length<2)return;
+        const d=places.map((p,j)=>`${j===0?'M':'L'}${p.x},${p.y}`).join(' ');
+        const path=document.createElementNS('http://www.w3.org/2000/svg','path');
+        path.setAttribute('d',d);path.setAttribute('fill','none');path.setAttribute('stroke',STAGE_COLORS[i]||STAGE_COLORS[0]);
+        path.setAttribute('stroke-width','3');path.setAttribute('stroke-linecap','round');path.setAttribute('opacity','0.5');
+        pathsG.appendChild(path);
+      });
+
+      // Waypoints
+      (route.verified_waypoints||[]).forEach(wp=>{
+        const g=document.createElementNS('http://www.w3.org/2000/svg','g');
+        g.setAttribute('transform',`translate(${wp.x},${wp.y})`);g.setAttribute('opacity','0.4');
+        const c=document.createElementNS('http://www.w3.org/2000/svg','circle');c.setAttribute('r','3');c.setAttribute('fill','#e8c879');
+        g.appendChild(c);
+        const t=document.createElementNS('http://www.w3.org/2000/svg','text');t.setAttribute('x','8');t.setAttribute('y','3');
+        t.setAttribute('fill','#9aa2ae');t.setAttribute('font-size','7');t.textContent=wp.name||'';
+        g.appendChild(t);
+        waypointsG.appendChild(g);
+      });
+
+      // Place markers
+      allPlaces.forEach(place=>{
+        const inStory=visIds.has(place.id);
+        const isActive=place.id===activePlaceId;
+        const color=STAGE_COLORS[place.stage]||STAGE_COLORS[0];
+        const g=document.createElementNS('http://www.w3.org/2000/svg','g');
+        g.setAttribute('transform',`translate(${place.x},${place.y})`);
+        g.style.cursor=inStory?'pointer':'default';
+        g.style.opacity=inStory?'1':'.15';
+        if(inStory)g.addEventListener('click',()=>open(place.id));
+        
+        const hit=document.createElementNS('http://www.w3.org/2000/svg','circle');hit.setAttribute('r','16');hit.setAttribute('fill','transparent');
+        g.appendChild(hit);
+        const dot=document.createElementNS('http://www.w3.org/2000/svg','circle');
+        dot.setAttribute('r',isActive?'8':'5');dot.setAttribute('fill',isActive?'#fff':color);
+        dot.setAttribute('stroke',isActive?color:'#0b0f16');dot.setAttribute('stroke-width','2');
+        g.appendChild(dot);
+        
+        const side=place.side||'r';
+        const label=document.createElementNS('http://www.w3.org/2000/svg','text');
+        label.setAttribute('x',side==='l'?'-14':'14');label.setAttribute('y','4');
+        label.setAttribute('text-anchor',side==='l'?'end':'start');
+        label.setAttribute('fill',inStory?'#f4eedd':'#555');label.setAttribute('font-size','10');
+        label.textContent=place.name||'';
+        g.appendChild(label);
+        markersG.appendChild(g);
       });
     }
 
-    function toSvg(clientX, clientY) {
-      const r = svg.getBoundingClientRect();
-      const scale = Math.max(r.width / view.w, r.height / view.h);
-      const vw = r.width / scale;
-      const vh = r.height / scale;
-      const ox = view.x + (view.w - vw) / 2;
-      const oy = view.y + (view.h - vh) / 2;
-      return {x: ox + (clientX - r.left) / scale, y: oy + (clientY - r.top) / scale, scale};
-    }
+    // ── Panel rendering ──
+    function renderPanel(){
+      const place=getActivePlace();
+      if(!place)return;
+      const head=panel.querySelector('.me-panel__head');
+      const tabsEl=panel.querySelector('.me-tabs');
+      const content=panel.querySelector('.me-content');
+      const nav=panel.querySelector('.me-nav');
+      const vis=visiblePlaces();
+      const idx=placeIndexInStory();
+      const stage=route.stages&&place.stage>=0?route.stages[place.stage]:null;
 
-    function bindPanZoom() {
-      svg.addEventListener('pointerdown', e => {
-        if (e.target.closest?.('.marker,.ctx-dot,#routes')) return;
-        svg.setPointerCapture?.(e.pointerId);
-        drag = {id: e.pointerId, sx: e.clientX, sy: e.clientY, vx: view.x, vy: view.y};
-        cancelAnimationFrame(rafId);
+      // Check available tabs
+      const availTabs=TAB_KEYS.filter(k=>{
+        if(k==='bible')return!!place.bible;
+        if(k==='arch')return!!place.arch;
+        if(k==='he')return!!place.he_deep;
+        if(k==='dispute')return!!place.dispute;
+        if(k==='photos')return!!(place.photos&&place.photos.length);
+        if(k==='extra')return!!place.bible_extra;
+        return k==='story';
       });
-      svg.addEventListener('pointermove', e => {
-        if (!drag || e.pointerId !== drag.id) return;
-        const r = svg.getBoundingClientRect();
-        const scale = Math.max(r.width / view.w, r.height / view.h);
-        view = clampView({x: drag.vx - (e.clientX - drag.sx) / scale, y: drag.vy - (e.clientY - drag.sy) / scale, w: view.w, h: view.h});
-        applyView();
+      const activeTab=availTabs[0]; // default to first available
+
+      // Head
+      head.innerHTML=`
+        <div class="me-panel__stage">Этап ${(place.stage||0)+1} · ${esc(place.id2||'')}</div>
+        <div class="me-panel__name">${esc(place.name)}</div>
+        ${place.he?`<div class="me-panel__he">${esc(place.he)}</div>`:''}
+        ${place.kick?`<div class="me-panel__kick">${esc(place.kick)}</div>`:''}
+        <div class="me-panel__meta">
+          ${place.id1?`<span>${esc(place.id1)}</span>`:''}
+          ${place.ep1?`<span>${esc(place.ep1)}</span>`:''}
+          ${stage?`<span>${esc(stage.t||'')}</span>`:''}
+        </div>`;
+
+      // Tabs
+      tabsEl.innerHTML=availTabs.map(k=>`<button class="me-tab${k===activeTab?' me-tab--active':''}" data-tab="${k}">${TAB_LABELS[k]||k}</button>`).join('');
+      tabsEl.querySelectorAll('.me-tab').forEach(btn=>{
+        btn.addEventListener('click',()=>{
+          tabsEl.querySelectorAll('.me-tab').forEach(b=>b.classList.remove('me-tab--active'));
+          btn.classList.add('me-tab--active');
+          renderTabContent(btn.dataset.tab||'story',place);
+        });
       });
-      ['pointerup', 'pointercancel'].forEach(ev => svg.addEventListener(ev, () => { drag = null; }));
-      svg.addEventListener('wheel', e => {
-        e.preventDefault();
-        const p = toSvg(e.clientX, e.clientY);
-        const factor = Math.exp(e.deltaY * 0.0014);
-        const w = clamp(view.w * factor, cfg.minW, cfg.maxW);
-        const k = w / view.w;
-        view = clampView({x: p.x - (p.x - view.x) * k, y: p.y - (p.y - view.y) * k, w, h: w * cfg.H0 / cfg.W0});
-        applyView();
-      }, {passive: false});
+
+      // Content
+      renderTabContent(activeTab,place);
+
+      // Nav
+      nav.innerHTML=`
+        <button ${idx<=0?'disabled':''} id="me-prev">← ${idx>0?esc(vis[idx-1].name):''}</button>
+        <div class="me-nav__dots">${vis.map((p,i)=>`<div class="me-nav__dot${i===idx?' me-nav__dot--active':''}"></div>`).join('')}</div>
+        <button ${idx>=vis.length-1?'disabled':''} id="me-next">${idx<vis.length-1?esc(vis[idx+1].name):''} →</button>
+      `;
+      nav.querySelector('#me-prev')?.addEventListener('click',()=>{if(idx>0)open(vis[idx-1].id)});
+      nav.querySelector('#me-next')?.addEventListener('click',()=>{if(idx<vis.length-1)open(vis[idx+1].id)});
     }
 
-    function currentStory() {
-      return routeData.stories.find(s => s.id === state.story) || routeData.stories.find(s => s.active_by_default) || routeData.stories[0] || null;
-    }
-
-    function storyPlaceIds(st = currentStory()) {
-      return st ? (st.places || st.place_ids || null) : null;
-    }
-
-    function visiblePlaces() {
-      const ids = storyPlaceIds();
-      if (!ids) return routeData.places;
-      const set = new Set(ids);
-      return routeData.places.filter(p => set.has(p.id));
-    }
-
-    function openPlace(id, opts = {}) {
-      const place = routeData.places.find(p => p.id === id);
-      if (!place) return null;
-      state.place = id;
-      callbacks.onPlaceOpen?.(place, {...state});
-      if (opts.fly !== false && typeof place.x === 'number' && typeof place.y === 'number') {
-        flyTo(place.x, place.y, opts.w || Math.min(view.w, 560), opts.duration || 850);
+    function renderTabContent(tab,place){
+      const content=panel.querySelector('.me-content');
+      const map={story:place.story,bible:place.bible,arch:place.arch,he:place.he_deep,dispute:place.dispute,extra:place.bible_extra};
+      if(tab==='photos'&&place.photos){
+        content.innerHTML=place.photos.map(ph=>`
+          <div><img src="${esc(ph.thumb||ph.src)}" alt="${esc(ph.alt||ph.label||'')}" loading="lazy">
+          <div class="me-photo-label">${esc(ph.label||'')} · ${esc(ph.credit||'')}</div></div>
+        `).join('');
+      }else if(map[tab]){
+        content.innerHTML=map[tab];
+      }else{
+        content.innerHTML='';
       }
-      return place;
     }
 
-    function setStory(storyId, opts = {}) {
-      const story = routeData.stories.find(s => s.id === storyId) || routeData.stories[0];
-      if (!story) return null;
-      state.story = story.id;
-      callbacks.onStoryChange?.(story, {...state});
-      const cam = story.cam || story.viewport;
-      if (opts.fly !== false && Array.isArray(cam)) flyTo(cam[0], cam[1], cam[2], opts.duration || 900);
-      return story;
+    // ── Public API ──
+    function open(id){
+      const place=(route.places||[]).find(p=>p.id===id);
+      if(!place)return;
+      activePlaceId=id;
+      panel.classList.add('me-panel--open');
+      renderMarkers();
+      renderPanel();
+      if(place.x!==undefined&&place.y!==undefined)flyTo(place.x,place.y,Math.min(view.w,800));
     }
 
-    function nextPlace() {
-      const places = visiblePlaces();
-      if (!places.length) return null;
-      const i = Math.max(0, places.findIndex(p => p.id === state.place));
-      return openPlace(places[(i + 1) % places.length].id);
+    function close(){
+      activePlaceId=null;
+      panel.classList.remove('me-panel--open');
+      renderMarkers();
     }
 
-    function prevPlace() {
-      const places = visiblePlaces();
-      if (!places.length) return null;
-      const i = places.findIndex(p => p.id === state.place);
-      return openPlace(places[(i - 1 + places.length) % places.length].id);
+    panel.querySelector('.me-panel__close')?.addEventListener('click',close);
+
+    function setStory(storyId){
+      const story=(route.stories||[]).find(s=>s.id===storyId);
+      if(!story)return;
+      activeStoryId=storyId;
+      close();
+      renderStories();
+      renderMarkers();
+      renderStages();
+      if(story.viewport&&Array.isArray(story.viewport))flyTo(story.viewport[0],story.viewport[1],story.viewport[2]);
     }
 
-    function startTour(opts = {}) {
-      stopTour(false);
-      state.touring = true;
-      state.stage = Number.isInteger(opts.startAt) ? opts.startAt : 0;
-      runTourStep(opts);
+    function renderStories(){
+      storiesBar.innerHTML=(route.stories||[]).map(s=>`
+        <button class="me-story-chip${s.id===activeStoryId?' me-story-chip--active':''}" data-story="${s.id}">${esc(s.label)}</button>
+      `).join('');
+      storiesBar.querySelectorAll('.me-story-chip').forEach(chip=>{
+        chip.addEventListener('click',()=>setStory(chip.dataset.story||'main'));
+      });
     }
 
-    function runTourStep(opts) {
-      if (!state.touring) return;
-      if (state.stage >= routeData.stages.length) { stopTour(); return; }
-      const stage = routeData.stages[state.stage];
-      callbacks.onStageChange?.(stage, state.stage, {...state});
-      const cam = stage.cam;
-      if (Array.isArray(cam)) flyTo(cam[0] + cam[2] / 2, cam[1] + (cam[2] * cfg.H0 / cfg.W0) / 2, cam[2], opts.flyDuration || 900);
-      tourTimer = setTimeout(() => { state.stage += 1; runTourStep(opts); }, opts.delay || cfg.tourDelay);
+    function renderStages(){
+      stagesBar.innerHTML=(route.stages||[]).map((st,i)=>`
+        <div class="me-stage-dot" style="color:${STAGE_COLORS[i]}">${esc(st.n||'')}</div>
+      `).join('');
     }
 
-    function stopTour(resetStage = true) {
-      state.touring = false;
-      clearTimeout(tourTimer);
-      if (resetStage) state.stage = -1;
-    }
-
-    function setZoom(factor, cx = view.x + view.w / 2, cy = view.y + view.h / 2) {
-      return flyTo(cx, cy, view.w * factor, 450);
-    }
-
-    function getState() {
-      return {
-        place: state.place,
-        story: state.story,
-        stage: state.stage,
-        touring: state.touring,
-        zoom: Math.round(cfg.W0 / view.w * 10) / 10,
-        view: {...view}
-      };
-    }
-
-    function shareURL(extra = {}) {
-      const st = {...getState(), ...extra};
-      const params = new URLSearchParams(location.search);
-      if (st.story && st.story !== 'main') params.set('story', st.story); else params.delete('story');
-      if (st.place) params.set('place', st.place); else params.delete('place');
-      const url = location.origin + location.pathname + (params.toString() ? '?' + params : '');
-      const data = {title: document.title, url};
-      if (navigator.share) navigator.share(data).catch(() => navigator.clipboard?.writeText(url));
-      else navigator.clipboard?.writeText(url);
-      return url;
-    }
-
-    function destroy() {
-      stopTour();
+    function flyTo(cx,cy,w,duration=700){
+      const from={...view};
+      const h=w*cfg.H0/cfg.W0;
+      const to={x:clamp(cx-w/2,-cfg.padX,cfg.W0+cfg.padX-w),y:clamp(cy-h/2,-cfg.padY,cfg.H0+cfg.padY-h),w,h};
       cancelAnimationFrame(rafId);
-      // DOM listeners intentionally not auto-removed: init is one-shot per page shell.
+      const t0=performance.now();
+      function step(t){
+        let p=clamp((t-t0)/Math.max(1,duration),0,1);p=EASE.outCubic(p);
+        view.x=from.x+(to.x-from.x)*p;view.y=from.y+(to.y-from.y)*p;
+        view.w=from.w+(to.w-from.w)*p;view.h=from.h+(to.h-from.h)*p;
+        applyViewBox();
+        if(p<1)rafId=requestAnimationFrame(step);
+      }
+      rafId=requestAnimationFrame(step);
     }
 
-    applyView();
-    if (cfg.bindPanZoom) bindPanZoom();
+    // ── Pan/Zoom ──
+    canvas.addEventListener('pointerdown',e=>{
+      if(e.target.closest('button,a,.me-story-chip'))return;
+      canvas.setPointerCapture(e.pointerId);
+      dragState={sx:e.clientX,sy:e.clientY,vx:view.x,vy:view.y};
+    });
+    canvas.addEventListener('pointermove',e=>{
+      if(!dragState)return;
+      const r=canvas.getBoundingClientRect();
+      const sc=r.width/view.w;
+      view.x=clamp(dragState.vx-(e.clientX-dragState.sx)/sc,-cfg.padX,cfg.W0+cfg.padX-view.w);
+      view.y=clamp(dragState.vy-(e.clientY-dragState.sy)/sc,-cfg.padY,cfg.H0+cfg.padY-view.h);
+      applyViewBox();
+    });
+    canvas.addEventListener('pointerup',()=>{dragState=null});
+    canvas.addEventListener('wheel',e=>{
+      e.preventDefault();
+      const r=canvas.getBoundingClientRect();
+      const sc=r.width/view.w;
+      const mx=view.x+(e.clientX-r.left)/sc;
+      const my=view.y+(e.clientY-r.top)/sc;
+      const nw=clamp(view.w*Math.exp(e.deltaY*.0014),cfg.minW,cfg.maxW);
+      const k=nw/view.w;
+      view.x=clamp(mx-(mx-view.x)*k,-cfg.padX,cfg.W0+cfg.padX-nw);
+      view.y=clamp(my-(my-view.y)*k,-cfg.padY,cfg.H0+cfg.padY-nw*cfg.H0/cfg.W0);
+      view.w=nw;view.h=nw*cfg.H0/cfg.W0;
+      applyViewBox();
+    },{passive:false});
 
-    return {
-      routeData,
-      flyTo,
-      toSvg,
-      openPlace,
-      setStory,
-      nextPlace,
-      prevPlace,
-      startTour,
-      stopTour,
-      setZoom,
-      getState,
-      shareURL,
-      validate: () => validateRoute(routeData),
-      destroy
+    // ── Tour ──
+    let tourTimer=null;
+    function startTour(){
+      touring=true;tourStepIdx=0;close();runTourStep();
+    }
+    function stopTour(){
+      touring=false;clearTimeout(tourTimer);
+    }
+    function runTourStep(){
+      if(!touring)return;
+      const story=(route.stories||[]).find(s=>s.id===activeStoryId);
+      const stageIds=story?.stage_ids||Array.from({length:(route.stages||[]).length},(_,i)=>i);
+      if(tourStepIdx>=stageIds.length){stopTour();return;}
+      const sid=stageIds[tourStepIdx];
+      const place=(route.places||[]).find(p=>p.stage===sid&&visiblePlaces().some(v=>v.id===p.id));
+      if(place)open(place.id);
+      tourStepIdx++;
+      tourTimer=setTimeout(runTourStep,cfg.tourDelay);
+    }
+
+    // ── Keyboard ──
+    document.addEventListener('keydown',function kh(e){
+      if(!container.contains(document.activeElement)&&document.activeElement!==document.body)return;
+      if(e.key==='Escape'){close();return}
+      if(!activePlaceId)return;
+      const vis=visiblePlaces();const idx=placeIndexInStory();
+      if(e.key==='ArrowRight'&&idx<vis.length-1)open(vis[idx+1].id);
+      if(e.key==='ArrowLeft'&&idx>0)open(vis[idx-1].id);
+    });
+
+    // ── Init ──
+    applyViewBox();
+    renderMarkers();
+    renderStories();
+    renderStages();
+    const first=(route.places||[])[0];
+    if(first)setTimeout(()=>flyTo(first.x,first.y,Math.min(view.w,900)),200);
+
+    // ── Instance ──
+    const instance={
+      open,close,setStory,startTour,stopTour,flyTo,
+      get routeData(){return route},
+      destroy(){
+        stopTour();cancelAnimationFrame(rafId);
+        container.innerHTML='';container.className='';
+      }
     };
+    return instance;
   }
 
-  function init(options) { return createEngine(options || {}); }
-
-  function pathLength(path) {
-    try { const n = path.getTotalLength(); return Number.isFinite(n) && n > 0 ? n : 0; }
-    catch (_) { return 0; }
-  }
-
-  function pointAt(path, t) {
-    const len = pathLength(path);
-    if (!len) return {x: 0, y: 0};
-    return path.getPointAtLength(clamp(t, 0, 1) * len);
-  }
-
+  // ── Public exports ──
   return {
-    init,
-    loadRoute,
-    normalizeRouteData,
-    validateRoute,
-    compareRouteData,
-    collectPhotoHosts,
-    normalizeLayerState,
-    isLayerOn,
-    getPlaceLayerId,
-    getRouteLayerId,
-    getPlaceVisual,
-    getPlaceIndex,
-    getPlaceById,
-    getStageForPlace,
-    getRelatedPlaceIds,
-    getTabContentKey,
-    getPanelModel,
-    getPanelSections,
-    getStoryState,
-    getPlaceOrder,
-    auditStoryDefinitions,
-    pathLength,
-    pointAt,
-    version: '0.2.0',
-    buildDate: '2026-06-14'
+    // v0.2 data layer
+    loadRoute,validateRoute,compareRouteData,normalizeRouteData,collectPhotoHosts,
+    getPlaceIndex,getPlaceById,getStageForPlace,getRelatedPlaceIds,getTabContentKey,
+    getPanelModel,getPanelSections,getStoryState,getPlaceOrder,auditStoryDefinitions,
+    // v0.3 rendering
+    createMap,
+    version:'0.3.0',buildDate:'2026-06-16'
   };
 })();
 
-if (typeof window !== 'undefined') window.MapEngine = MapEngine;
-if (typeof module !== 'undefined') module.exports = MapEngine;
+if(typeof window!=='undefined')window.MapEngine=MapEngine;
+if(typeof module!=='undefined')module.exports=MapEngine;
