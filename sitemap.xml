@@ -35,10 +35,7 @@
   </url>
   <url>
     <loc>https://gospod-bog.ru/karty/</loc>
-    <lastmod>2026-06-12T00:00:00+03:00</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.7</priority>
-    <image:image><image:loc>https://gospod-bog.ru/images/og-karty-1200x630.webp</image:loc></image:image>
+    <image:image><image:loc>https://gospod-bog.ru/images/og-karty-1200x630.webp</image:loc><image:title>Библейские карты — интерактивные карты Писания</image:title></image:image>
   </url>
   <url>
     <loc>https://gospod-bog.ru/karty/avraam/</loc>
@@ -49,10 +46,7 @@
   </url>
   <url>
     <loc>https://gospod-bog.ru/karty/ishod/</loc>
-    <lastmod>2026-06-14T00:00:00+03:00</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.45</priority>
-    <image:image><image:loc>https://gospod-bog.ru/images/og-karty-1200x630.webp</image:loc><image:title>Исход из Египта — карта в разработке</image:title></image:image>
+    <image:image><image:loc>https://gospod-bog.ru/images/og-karty-1200x630.webp</image:loc><image:title>Исход из Египта — интерактивная карта</image:title></image:image>
   </url>
   <url>
     <loc>https://gospod-bog.ru/map/</loc>
@@ -339,4 +333,10 @@
     <image:image><image:loc>https://gospod-bog.ru/images/baptisty-rossii/cover-10-reference.svg</image:loc><image:title>Справочник</image:title></image:image>
   </url>
 
+  <url><loc>https://gospod-bog.ru/karty/pavel/</loc>
+    <lastmod>2026-06-16</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+    <image:image><image:loc>https://gospod-bog.ru/images/og-karty-1200x630.webp</image:loc><image:title>Путешествия Павла — интерактивная карта</image:title></image:image>
+  </url>
 </urlset>
