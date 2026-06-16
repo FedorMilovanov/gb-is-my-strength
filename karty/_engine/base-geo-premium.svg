@@ -1,81 +1,90 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="1900" height="1430" viewBox="0 0 1900 1430">
   <defs>
-    <!-- Более богатые градиенты -->
-    <linearGradient id="seaGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" stop-color="#0a1629"/>
-      <stop offset="50%" stop-color="#0f2138"/>
-      <stop offset="100%" stop-color="#08141f"/>
+    <!-- Богатые градиенты -->
+    <linearGradient id="seaDeep" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#08141f"/>
+      <stop offset="40%" stop-color="#0a1a2e"/>
+      <stop offset="100%" stop-color="#0f2138"/>
     </linearGradient>
     
-    <linearGradient id="desertGrad" x1="0%" y1="0%" x2="0%" y2="100%">
-      <stop offset="0%" stop-color="#2a2418"/>
+    <linearGradient id="landBase" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#2c261b"/>
       <stop offset="100%" stop-color="#1f1a12"/>
     </linearGradient>
     
-    <linearGradient id="landGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" stop-color="#2c261b"/>
-      <stop offset="100%" stop-color="#221d15"/>
-    </linearGradient>
-    
-    <!-- Текстура пустыни -->
-    <pattern id="desertTexture" patternUnits="userSpaceOnUse" width="80" height="80">
-      <rect width="80" height="80" fill="#2a2418"/>
-      <circle cx="20" cy="25" r="0.8" fill="#3a3224" opacity="0.4"/>
-      <circle cx="55" cy="60" r="1.1" fill="#3a3224" opacity="0.35"/>
-      <circle cx="38" cy="12" r="0.7" fill="#3a3224" opacity="0.45"/>
+    <!-- Текстура пустыни (более детальная) -->
+    <pattern id="sandTexture" patternUnits="userSpaceOnUse" width="120" height="120">
+      <rect width="120" height="120" fill="#2a2418"/>
+      <circle cx="18" cy="22" r="1.2" fill="#3a3224" opacity="0.5"/>
+      <circle cx="72" cy="45" r="0.9" fill="#3a3224" opacity="0.45"/>
+      <circle cx="38" cy="88" r="1.4" fill="#3a3224" opacity="0.55"/>
+      <circle cx="95" cy="65" r="0.8" fill="#3a3224" opacity="0.4"/>
     </pattern>
+    
+    <!-- Лёгкий рельеф -->
+    <linearGradient id="hillGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#322b20"/>
+      <stop offset="100%" stop-color="#252016"/>
+    </linearGradient>
   </defs>
 
-  <!-- Фон моря (Средиземное + Красное + Персидский залив) -->
-  <rect width="1900" height="1430" fill="#0a1629"/>
-  
+  <!-- Фон -->
+  <rect width="1900" height="1430" fill="#070a10"/>
+
   <!-- Средиземное море -->
-  <path d="M0,0 Q480,180 920,120 Q1380,90 1900,210 L1900,0 Z" fill="url(#seaGrad)"/>
+  <path d="M0,0 Q520,140 980,95 Q1480,70 1900,185 L1900,0 Z" fill="url(#seaDeep)"/>
   
-  <!-- Красное море + Акаба -->
-  <path d="M820,620 Q920,780 1020,920 Q1080,1050 980,1180 Q860,1280 720,1190 Q680,980 820,620" fill="#0f2138"/>
+  <!-- Красное море (включая Акабу) -->
+  <path d="M780,580 Q920,750 1040,920 Q1100,1100 960,1240 Q820,1320 700,1210 Q660,980 780,580" fill="#0a1a2e"/>
   
   <!-- Основная суша -->
-  <path d="M200,180 Q480,220 820,280 Q1120,320 1380,260 Q1620,310 1900,240 L1900,1430 L0,1430 L0,180 Z" fill="url(#landGrad)"/>
+  <path d="M180,160 Q520,210 880,270 Q1200,310 1480,245 Q1720,295 1900,220 L1900,1430 L0,1430 L0,160 Z" fill="url(#landBase)"/>
   
-  <!-- Пустыня Синай + Негев -->
-  <path d="M820,620 Q920,780 1020,920 Q980,1180 720,1190 Q680,980 820,620" fill="url(#desertTexture)"/>
+  <!-- Пустыня Синай + Негев (с текстурой) -->
+  <path d="M780,580 Q920,750 1040,920 Q960,1240 700,1210 Q660,980 780,580" fill="url(#sandTexture)"/>
   
-  <!-- Горы (более детализированные) -->
-  <!-- Синайские горы -->
-  <path d="M920,820 L980,740 L1040,810 L1080,760 L1120,830" fill="none" stroke="#3a3224" stroke-width="18" stroke-opacity="0.6"/>
-  <path d="M920,820 L980,740 L1040,810 L1080,760 L1120,830" fill="none" stroke="#2a2418" stroke-width="8"/>
+  <!-- Горы Синай (детализированные хребты) -->
+  <g opacity="0.7">
+    <path d="M920,780 L960,710 L1000,770 L1040,720 L1080,790" fill="none" stroke="#3a3224" stroke-width="22"/>
+    <path d="M920,780 L960,710 L1000,770 L1040,720 L1080,790" fill="none" stroke="#2a2418" stroke-width="9"/>
+    <path d="M980,820 L1020,760 L1060,810 L1100,750" fill="none" stroke="#3a3224" stroke-width="16"/>
+  </g>
   
   <!-- Горы Иудеи -->
-  <path d="M680,680 L720,620 L760,690 L800,640 L840,710" fill="none" stroke="#3a3224" stroke-width="14" stroke-opacity="0.5"/>
+  <g opacity="0.6">
+    <path d="M640,640 L680,580 L720,650 L760,590 L800,660" fill="none" stroke="#3a3224" stroke-width="18"/>
+    <path d="M640,640 L680,580 L720,650 L760,590 L800,660" fill="none" stroke="#2a2418" stroke-width="7"/>
+  </g>
   
-  <!-- Горы Заиорданья -->
-  <path d="M1180,580 L1240,520 L1300,590 L1360,530 L1420,600" fill="none" stroke="#3a3224" stroke-width="16" stroke-opacity="0.55"/>
+  <!-- Горы Заиорданья (более высокие) -->
+  <g opacity="0.65">
+    <path d="M1160,520 L1220,450 L1280,530 L1340,470 L1400,550" fill="none" stroke="#3a3224" stroke-width="24"/>
+    <path d="M1160,520 L1220,450 L1280,530 L1340,470 L1400,550" fill="none" stroke="#2a2418" stroke-width="10"/>
+  </g>
   
-  <!-- Реки (более тонкие и естественные) -->
   <!-- Нил -->
-  <path d="M280,1430 Q320,1180 340,920 Q360,720 380,480" fill="none" stroke="#0f2138" stroke-width="22" stroke-opacity="0.7"/>
-  <path d="M280,1430 Q320,1180 340,920 Q360,720 380,480" fill="none" stroke="#162a44" stroke-width="9"/>
+  <path d="M260,1430 Q310,1120 340,880 Q370,620 400,380" fill="none" stroke="#0a1a2e" stroke-width="26" opacity="0.75"/>
+  <path d="M260,1430 Q310,1120 340,880 Q370,620 400,380" fill="none" stroke="#162a44" stroke-width="11"/>
   
   <!-- Евфрат -->
-  <path d="M1420,280 Q1520,420 1620,580 Q1680,780 1720,980" fill="none" stroke="#0f2138" stroke-width="18" stroke-opacity="0.6"/>
+  <path d="M1380,240 Q1500,400 1620,580 Q1700,820 1740,1020" fill="none" stroke="#0a1a2e" stroke-width="22" opacity="0.65"/>
   
   <!-- Иордан -->
-  <path d="M780,620 Q820,720 860,860 Q880,1020 840,1180" fill="none" stroke="#0f2138" stroke-width="7" stroke-opacity="0.8"/>
+  <path d="M760,580 Q800,720 840,880 Q860,1040 820,1200" fill="none" stroke="#0a1a2e" stroke-width="8" opacity="0.85"/>
   
-  <!-- Береговая линия (более детальная) -->
-  <path d="M200,180 Q480,220 820,280 Q1120,320 1380,260 Q1620,310 1900,240" 
-        fill="none" stroke="#1a2a3f" stroke-width="3" stroke-opacity="0.6"/>
-  
-  <!-- Тонкие линии берега -->
-  <path d="M200,180 Q480,220 820,280 Q1120,320 1380,260 Q1620,310 1900,240" 
-        fill="none" stroke="#0a1629" stroke-width="1" stroke-opacity="0.9"/>
+  <!-- Береговая линия (более живая) -->
+  <path d="M180,160 Q520,210 880,270 Q1200,310 1480,245 Q1720,295 1900,220" 
+        fill="none" stroke="#1a2a3f" stroke-width="4" opacity="0.5"/>
+  <path d="M180,160 Q520,210 880,270 Q1200,310 1480,245 Q1720,295 1900,220" 
+        fill="none" stroke="#0a1629" stroke-width="1.5" opacity="0.9"/>
 
-  <!-- Дополнительные детали для телевизора -->
-  <!-- Лёгкая текстура суши -->
-  <g opacity="0.08">
-    <circle cx="420" cy="480" r="180" fill="#3a3224"/>
-    <circle cx="980" cy="620" r="240" fill="#3a3224"/>
-    <circle cx="1340" cy="440" r="160" fill="#3a3224"/>
+  <!-- Лёгкая атмосферная дымка на горизонте -->
+  <rect x="0" y="0" width="1900" height="280" fill="#0a1629" opacity="0.25"/>
+  
+  <!-- Тонкие детали рельефа -->
+  <g opacity="0.12">
+    <circle cx="480" cy="520" r="220" fill="#3a3224"/>
+    <circle cx="1120" cy="680" r="280" fill="#3a3224"/>
+    <circle cx="1480" cy="420" r="190" fill="#3a3224"/>
   </g>
 </svg>
