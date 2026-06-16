@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updated": "2026-06-15",
+  "updated": "2026-06-16",
   "description": "Build-time strangler ownership manifest. Production deploy still serves repo root; dist ownership is for local/prototype validation only. Public baseline pages not listed here are implicitly legacy-owned until individually promoted.",
   "routes": {
     "/": {
@@ -264,6 +264,12 @@
     "/karty/avraam/": {
       "owner": "astro",
       "source": "src/pages/karty/avraam/index.astro",
+      "risk": 2,
+      "status": "shadow-pilot"
+    },
+    "/karty/pavel/": {
+      "owner": "astro",
+      "source": "src/pages/karty/pavel/index.astro",
       "risk": 2,
       "status": "shadow-pilot"
     }

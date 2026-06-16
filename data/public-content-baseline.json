@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updated": "2026-06-14T15:10:14.743Z",
+  "updated": "2026-06-16T00:00:00.000Z",
   "note": "Migration baseline: public indexable HTML pages. Update intentionally before a platform migration only after review.",
   "pages": [
     {
