@@ -5,55 +5,88 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <link rel="canonical" href="https://gospod-bog.ru/karty/avraam/">
 <title>Путь Авраама — интерактивная карта | Господь Бог — Сила Моя</title>
-<meta name="description" content="19 мест, 8 этапов, 5 сюжетов. 230+ археологических источников.">
-<link rel="stylesheet" href="../_engine/map-engine.css">
+<meta name="description" content="19 мест, 8 этапов, 5 сюжетов. 230+ археологических источников. Премиум детализация.">
 <style>
+  :root { --gold:#e8c879; }
   body { margin:0; background:#070a10; color:#e9e4d6; font-family:system-ui; overflow:hidden; }
   #stage { position:fixed; inset:0; }
-  #timeline { position:fixed; bottom:20px; left:50%; transform:translateX(-50%); z-index:100; }
-  .back { position:fixed; top:18px; left:18px; color:#9aa2ae; text-decoration:none; font-size:13px; z-index:120; }
+  .back { position:fixed; top:22px; left:22px; color:#9aa2ae; text-decoration:none; font-size:13px; z-index:300; }
   .back:hover { color:#e8c879; }
+  .map-timeline-integrated button {
+    background: none;
+    border: 1px solid rgba(232,200,121,0.25);
+    color: #c9b8a0;
+    padding: 8px 16px;
+    border-radius: 9999px;
+    font-size: 12.5px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .map-timeline-integrated button:hover {
+    border-color: #e8c879;
+    color: #e8c879;
+  }
+  .map-timeline-integrated button.active {
+    background: #e8c879;
+    color: #111;
+    border-color: #e8c879;
+  }
+  .map-timeline-integrated .num {
+    font-weight: 700;
+    font-size: 11px;
+    opacity: 0.85;
+  }
 </style>
 </head>
 <body>
 <h1 class="sr-only">Карта</h1>
 <a href="../" class="back">← Назад к картам</a>
 <div id="stage"></div>
-<div id="timeline"></div>
 
 <script src="../_engine/map-engine.js"></script>
-<script src="../_engine/modules/timeline.js"></script>
+<script src="../_engine/modules/timeline-integrated.js"></script>
 <script>
 (async () => {
   const route = await MapEngine.loadRoute('./route.json');
   const container = document.getElementById('stage');
 
   const map = MapEngine.createMap(container, route, {
-    baseGeoUrl: '../_engine/base-geo.svg',
+    baseGeoUrl: '../_engine/base-geo-premium.svg',
     onPlaceOpen: (place) => {
-      alert(`${place.name}\n\n${place.arch || ''}`);
+      const msg = document.createElement('div');
+      msg.style.cssText = 'position:fixed;bottom:80px;left:50%;transform:translateX(-50%);background:rgba(13,17,26,0.95);padding:16px 24px;border-radius:12px;border:1px solid #e8c879;max-width:420px;text-align:center;z-index:400';
+      msg.innerHTML = `<strong>${place.name}</strong><br><span style="font-size:13px;opacity:0.85">${place.arch || ''}</span>`;
+      document.body.appendChild(msg);
+      setTimeout(() => msg.remove(), 4200);
     }
   });
 
-  const timelineContainer = document.getElementById('timeline');
-  const timeline = MapTimeline.createTimeline(timelineContainer, route.stages, {
+  // Глубоко интегрированный Timeline
+  const timeline = MapTimelineIntegrated.createIntegratedTimeline(container, route.stages, {
+    route: route,
     onStageClick: (stage, index) => {
-      const place = route.places.find(p => p.stage === index);
-      if (place) {
-        map.flyTo(place.x, place.y, 0.82, 700);
-        map.highlightPlace(place.id);
-      }
+      console.log('Stage clicked:', stage);
     }
   });
 
+  // Keyboard
   document.addEventListener('keydown', e => {
     if (e.key === 'Escape') map.resetView();
     if (e.key.toLowerCase() === 'r') map.resetView();
+    if (e.key === 'ArrowRight') {
+      // Следующий этап
+      const active = document.querySelector('.timeline-chip-premium.active');
+      if (active && active.nextSibling) active.nextSibling.click();
+    }
   });
 
+  // Красивый стартовый зум
   setTimeout(() => {
-    map.flyTo(1000, 620, 0.72, 1000);
-  }, 600);
+    map.flyTo(960, 680, 0.68, 1400);
+  }, 800);
 })();
 </script>
 </body>
