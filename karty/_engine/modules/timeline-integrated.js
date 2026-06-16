@@ -1,31 +1,27 @@
 /**
- * timeline-integrated.js v0.7 — Deeply integrated beautiful timeline
- * Встроен в карту как премиум-элемент
+ * timeline-integrated.js v0.8 — Deep premium timeline
  */
 'use strict';
 
 const MapTimelineIntegrated = (function() {
 
-  function createIntegratedTimeline(mapInstance, stages, opts = {}) {
-    // Создаём оверлей внутри контейнера карты
-    const container = mapInstance.container || document.body;
-    
+  function createIntegratedTimeline(container, stages, opts = {}) {
     const timelineWrap = document.createElement('div');
     timelineWrap.className = 'map-timeline-integrated';
     timelineWrap.style.cssText = `
       position: absolute;
-      bottom: 24px;
+      bottom: 28px;
       left: 50%;
       transform: translateX(-50%);
-      z-index: 200;
+      z-index: 250;
       display: flex;
-      gap: 8px;
-      padding: 10px 18px;
-      background: rgba(13, 17, 26, 0.92);
-      border: 1px solid rgba(232, 200, 121, 0.18);
+      gap: 6px;
+      padding: 9px 20px;
+      background: rgba(13, 17, 26, 0.94);
+      border: 1px solid rgba(232, 200, 121, 0.22);
       border-radius: 9999px;
-      box-shadow: 0 8px 32px rgba(0,0,0,0.6);
-      backdrop-filter: blur(12px);
+      box-shadow: 0 10px 40px rgba(0,0,0,0.65);
+      backdrop-filter: blur(16px);
     `;
 
     stages.forEach((stage, index) => {
@@ -37,19 +33,15 @@ const MapTimelineIntegrated = (function() {
       `;
       
       chip.onclick = () => {
-        // Деактивируем все
-        timelineWrap.querySelectorAll('.timeline-chip-premium').forEach(c => 
-          c.classList.remove('active')
-        );
+        timelineWrap.querySelectorAll('.timeline-chip-premium').forEach(c => c.classList.remove('active'));
         chip.classList.add('active');
 
         if (opts.onStageClick) opts.onStageClick(stage, index);
-        
-        // Автоматически летим к первому месту этапа
+
         const place = opts.route?.places?.find(p => p.stage === index);
-        if (place && mapInstance.flyTo) {
-          mapInstance.flyTo(place.x, place.y, 0.82, 650);
-          if (mapInstance.highlightPlace) mapInstance.highlightPlace(place.id);
+        if (place && opts.map) {
+          opts.map.flyTo(place.x, place.y, 0.85, 680);
+          if (opts.map.highlightPlace) opts.map.highlightPlace(place.id);
         }
       };
 
