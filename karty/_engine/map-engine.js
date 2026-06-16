@@ -243,7 +243,7 @@ const MapEngine = (function() {
 .me-tour-progress__fill{height:100%;background:linear-gradient(90deg,#e8c879,#e0813f);transition:width .3s ease;width:0%}
 .me-share-btn{position:absolute;top:10px;right:10px;z-index:15;width:28px;height:28px;border-radius:6px;border:1px solid rgba(255,255,255,.1);background:rgba(0,0,0,.5);color:#9aa2ae;font-size:14px;cursor:pointer;display:flex;align-items:center;justify-content:center;backdrop-filter:blur(8px);transition:all .15s}
 .me-share-btn:hover{color:#e8c879;border-color:rgba(232,200,121,.3)}
-.me-legend{position:absolute;bottom:40px;left:8px;z-index:10;padding:8px 12px;border-radius:10px;background:rgba(0,0,0,.6);border:1px solid rgba(255,255,255,.1);backdrop-filter:blur(8px);font-size:10px;display:none}
+.me-legend{position:absolute;bottom:40px;left:8px;z-index:10;padding:8px 12px;border-radius:10px;background:rgba(0,0,0,.6);border:1px solid rgba(255,255,255,.1);backdrop-filter:blur(8px);font-size:10px;display:none;cursor:pointer;max-width:180px;transition:all .2s}
 .me-legend__title{color:#e8c879;font-weight:700;margin-bottom:4px;font-size:9px;letter-spacing:.08em;text-transform:uppercase}
 .me-legend__item{display:flex;align-items:center;gap:6px;color:#9aa2ae;margin:2px 0}
 .me-legend__dot{width:6px;height:6px;border-radius:50%;flex-shrink:0}
@@ -361,6 +361,12 @@ const legendItems=(route.stages||[]).map((st,i)=>`<div class="me-legend__item"><
 legend.innerHTML=`<div class="me-legend__title">Этапы</div>${legendItems}`;
 container.appendChild(legend);
 container.appendChild(panel);
+
+    // Toggle legend on click
+    legend.addEventListener('click', () => {
+      legend.classList.toggle('me-legend--expanded');
+    });
+
 
     // ── State helpers ──
     function visiblePlaces(){
@@ -523,6 +529,7 @@ container.appendChild(panel);
       if(!place)return;
       activePlaceId=id;
       panel.classList.add('me-panel--open');
+      updateHash();
       renderMarkers();
       renderPanel();
       // Scroll panel content to top
@@ -534,6 +541,7 @@ container.appendChild(panel);
     function close(){
       activePlaceId=null;
       panel.classList.remove('me-panel--open');
+      updateHash();
       renderMarkers();
     }
 
@@ -544,6 +552,7 @@ container.appendChild(panel);
       if(!story)return;
       activeStoryId=storyId;
       close();
+      updateHash();
       renderStories();
       renderMarkers();
       renderStages();
@@ -646,6 +655,19 @@ container.appendChild(panel);
       container.appendChild(hint);
       setTimeout(() => { hint.style.opacity = '1'; setTimeout(() => { hint.style.opacity = '0'; }, 4000); }, 2000);
     }
+    
+    // Touch swipe-to-close on mobile
+    let touchStartY = 0;
+    panel.addEventListener('touchstart', (e) => {
+      touchStartY = e.touches[0].clientY;
+    }, {passive: true});
+    panel.addEventListener('touchmove', (e) => {
+      const dy = e.touches[0].clientY - touchStartY;
+      if (dy > 40 && panel.querySelector('.me-content')?.scrollTop <= 5) {
+        close();
+      }
+    }, {passive: true});
+
     document.addEventListener('keydown',function kh(e){
       if(!container.contains(document.activeElement)&&document.activeElement!==document.body)return;
       if(e.key==='Escape'){close();return}
@@ -668,6 +690,30 @@ container.appendChild(panel);
           g.style.transform = orig;
         });
       });
+    }
+
+    // ── Hash-based deep linking ──
+    function loadFromHash() {
+      const hash = location.hash.replace('#','');
+      if (!hash) return;
+      const parts = hash.split('&');
+      for (const part of parts) {
+        const [key, val] = part.split('=');
+        if (key === 'story') { activeStoryId = val; }
+        if (key === 'place') {
+          const p = (route.places||[]).find(pl => pl.id === val);
+          if (p) setTimeout(() => open(p.id), 800);
+        }
+      }
+    }
+    function updateHash() {
+      const parts = [];
+      if (activeStoryId && activeStoryId !== 'main') parts.push('story=' + activeStoryId);
+      if (activePlaceId) parts.push('place=' + activePlaceId);
+      const newHash = parts.length ? '#' + parts.join('&') : '';
+      if (location.hash !== newHash) {
+        history.replaceState(null, '', location.pathname + (newHash || ''));
+      }
     }
 
     // ── Loading state ──
@@ -700,6 +746,7 @@ container.appendChild(panel);
     renderStages();
     const first=(route.places||[])[0];
     if(first)setTimeout(()=>flyTo(first.x,first.y,Math.min(view.w,900)),200);
+    loadFromHash();
 
     // ── Instance ──
     const instance={
@@ -721,7 +768,7 @@ container.appendChild(panel);
     getPanelModel,getPanelSections,getStoryState,getPlaceOrder,auditStoryDefinitions,
     // v0.3 rendering
     createMap,
-    version:'0.4.0',buildDate:'2026-06-16'
+    version:'0.5.0',buildDate:'2026-06-16'
   };
 })();
 
