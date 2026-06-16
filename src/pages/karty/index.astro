@@ -1,26 +1,386 @@
 ---
 import BaseLayout from '@/layouts/BaseLayout.astro';
-import { loadLegacyShadowPage } from '@/utils/legacyShadow';
+import { SITE } from '@/data/site';
 
-const legacy = loadLegacyShadowPage('karty/index.html');
+const canonical = `${SITE.url}/karty/`;
+const title = 'Библейские карты | Господь Бог — Сила Моя';
+const description = 'Интерактивные кинематографические карты Писания: маршруты патриархов, Исход, путешествия Павла, эпоха Судей, Царства, колена Израилевы и жизнь Христа. Археология, иврит, источники.';
+
+const jsonLd = {
+  '@context': 'https://schema.org',
+  '@graph': [
+    {
+      '@type': 'CollectionPage',
+      '@id': `${canonical}#collectionpage`,
+      url: canonical,
+      name: title,
+      description,
+      inLanguage: 'ru',
+      isPartOf: { '@id': SITE.websiteId },
+      publisher: { '@id': SITE.orgId },
+      image: `${SITE.url}/images/og-karty-1200x630.webp`
+    },
+    {
+      '@type': 'BreadcrumbList',
+      '@id': `${canonical}#breadcrumbs`,
+      itemListElement: [
+        { '@type': 'ListItem', position: 1, name: SITE.name, item: `${SITE.url}/` },
+        { '@type': 'ListItem', position: 2, name: 'Карты', item: canonical }
+      ]
+    }
+  ]
+};
 ---
 
 <BaseLayout
-  title={legacy.title}
-  description={legacy.description}
-  canonical={legacy.canonical}
-  robots="index, follow, max-snippet:-1, max-image-preview:large"
-  ogImage={legacy.ogImage}
-  ogImageAlt={legacy.ogImageAlt}
-  ogTitle={legacy.ogTitle}
-  ogDescription={legacy.ogDescription}
-  bodyClass={legacy.bodyClass}
-  mainClass="astro-main astro-main--bare"
-  hideHeader={true}
-  hideFooter={true}
-  headHtml={legacy.headHtml}
+  title={title}
+  description={description}
+  canonical={canonical}
+  ogImage={`${SITE.url}/images/og-karty-1200x630.webp`}
+  ogTitle="Библейские карты"
+  ogDescription={description}
+  jsonLd={jsonLd}
 >
-  <div class="astro-karty-shadow">
-    <Fragment set:html={legacy.bodyHtml} />
-  </div>
+  <section class="astro-page astro-karty-index" data-pagefind-body>
+    <header class="astro-page__header">
+      <p class="astro-eyebrow">Библейская география</p>
+      <h1>Библейские карты</h1>
+      <p class="astro-lead">Интерактивные кинематографические карты Писания: маршруты, археология, иврит и источники. Раздел развивается.</p>
+    </header>
+
+    <div class="karty-premium-grid">
+      <!-- Abraham -->
+      <a href="/karty/avraam/" class="karty-premium-card live">
+        <div class="karty-card-art">
+          <svg viewBox="0 0 360 168" preserveAspectRatio="xMidYMid slice">
+            <defs>
+              <linearGradient id="aL" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#22241f"/><stop offset="1" stop-color="#1d1c14"/></linearGradient>
+              <linearGradient id="aS" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#0d1d2e"/><stop offset="1" stop-color="#0a1522"/></linearGradient>
+              <linearGradient id="aG" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#caa84f"/><stop offset="1" stop-color="#f0d896"/></linearGradient>
+            </defs>
+            <rect width="360" height="168" fill="url(#aL)"/>
+            <path fill="url(#aS)" d="M0,42 C68,36 122,31 168,34 C188,35 196,44 195,58 C198,74 186,92 178,110 C170,132 158,148 138,156 L0,168 Z"/>
+            <path fill="none" stroke="url(#aG)" stroke-width="2.4" stroke-linecap="round" d="M340,132 C305,106 272,78 242,64 C218,52 198,44 186,38 C172,46 164,60 158,76 C148,96 142,114 132,128"/>
+            <circle cx="340" cy="132" r="4.5" fill="#0d1117" stroke="#e8c879" stroke-width="1.8"/>
+            <circle cx="186" cy="38" r="4.5" fill="#0d1117" stroke="#e8c879" stroke-width="1.8"/>
+            <circle cx="132" cy="128" r="4.5" fill="#0d1117" stroke="#e8c879" stroke-width="1.8"/>
+          </svg>
+        </div>
+        <div class="karty-card-body">
+          <div class="karty-kick">Быт. 11–25 · Средняя бронза</div>
+          <h2>Путь Авраама <span class="hebr">אַבְרָהָם אָבִינוּ</span></h2>
+          <p>19 мест, 8 этапов, 5 сюжетных режимов. Ур → Харран → Ханаан → Египет → Содом → Мория. 230+ археологических источников.</p>
+          <div class="karty-meta">
+            <span>19 мест</span>
+            <span>8 этапов</span>
+            <span>5 историй</span>
+            <span>230+ источников</span>
+          </div>
+          <div class="karty-cta">Открыть карту →</div>
+        </div>
+      </a>
+
+      <!-- Ishod -->
+      <a href="/karty/ishod/" class="karty-premium-card live">
+        <div class="karty-card-art">
+          <svg viewBox="0 0 360 168" preserveAspectRatio="xMidYMid slice">
+            <defs>
+              <linearGradient id="iL" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#1a252f"/><stop offset="1" stop-color="#111a24"/></linearGradient>
+              <linearGradient id="iS" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#0f1f2e"/><stop offset="1" stop-color="#0c1826"/></linearGradient>
+              <linearGradient id="iG" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#8fb8d9"/><stop offset="1" stop-color="#c5e0f5"/></linearGradient>
+            </defs>
+            <rect width="360" height="168" fill="url(#iL)"/>
+            <path fill="url(#iS)" d="M0,48 C80,40 140,36 190,40 C215,42 228,54 225,70 C230,88 212,108 198,126 C182,148 162,160 140,162 L0,168 Z"/>
+            <path fill="none" stroke="url(#iG)" stroke-width="2.3" stroke-linecap="round" d="M320,118 C282,92 242,72 208,62 C178,54 152,50 138,48 C122,58 112,74 108,92 C102,114 98,132 92,144"/>
+            <circle cx="320" cy="118" r="4.2" fill="#0d1117" stroke="#8fb8d9" stroke-width="1.7"/>
+            <circle cx="138" cy="48" r="4.2" fill="#0d1117" stroke="#8fb8d9" stroke-width="1.7"/>
+            <circle cx="92" cy="144" r="4.2" fill="#0d1117" stroke="#8fb8d9" stroke-width="1.7"/>
+          </svg>
+        </div>
+        <div class="karty-card-body">
+          <div class="karty-kick">Исход · Числа 33 · Пустыня Синай</div>
+          <h2>Исход из Египта <span class="hebr">יְצִיאַת מִצְרַיִם</span></h2>
+          <p>11 мест, 6 этапов, 4 сюжетных режима. Раамсес → море → Синай → Кадеш → равнины Моава. 40 лет странствий.</p>
+          <div class="karty-meta">
+            <span>11 мест</span>
+            <span>6 этапов</span>
+            <span>4 истории</span>
+            <span>80+ стихов</span>
+          </div>
+          <div class="karty-cta">Открыть карту →</div>
+        </div>
+      </a>
+
+      <!-- Pavel -->
+      <a href="/karty/pavel/" class="karty-premium-card soon">
+        <div class="karty-card-art">
+          <svg viewBox="0 0 360 168" preserveAspectRatio="xMidYMid slice">
+            <rect width="360" height="168" fill="#1f2a22"/>
+            <path fill="#16211c" d="M0,52 C90,44 160,40 210,46 C240,50 255,64 248,82 C255,102 232,122 208,138 C180,156 152,162 128,160 L0,168 Z"/>
+          </svg>
+        </div>
+        <div class="karty-card-body">
+          <div class="karty-kick">Деян. 13–28 · 1 век н.э.</div>
+          <h2>Путешествия Павла <span class="hebr">Παῦλος</span></h2>
+          <p>10 городов, 3 путешествия, 15 лет миссии. Антиохия → Кипр → Македония → Афины → Коринф → Эфес → Рим.</p>
+          <div class="karty-meta">
+            <span>10 городов</span>
+            <span>3 путешествия</span>
+            <span>15 лет</span>
+          </div>
+          <div class="karty-cta">Скоро</div>
+        </div>
+      </a>
+
+      <!-- Shoftim -->
+      <a href="/karty/shoftim/" class="karty-premium-card soon">
+        <div class="karty-card-art">
+          <svg viewBox="0 0 360 168" preserveAspectRatio="xMidYMid slice">
+            <rect width="360" height="168" fill="#1a211c"/>
+            <path fill="#121a16" d="M0,58 C95,48 165,44 215,52 C245,58 262,74 255,94 C265,116 238,138 210,152 C178,164 148,166 120,162 L0,168 Z"/>
+          </svg>
+        </div>
+        <div class="karty-card-body">
+          <div class="karty-kick">Суд. 1–21 · ~1200–1050 до н.э.</div>
+          <h2>Эпоха Судей <span class="hebr">שֹׁפְטִים</span></h2>
+          <p>12 судей, 330 лет. Гофониил, Аод, Девора, Гедеон, Иеффай, Самсон. Ханаанские города-государства и филистимское пятиградие.</p>
+          <div class="karty-meta">
+            <span>12 судей</span>
+            <span>330 лет</span>
+          </div>
+          <div class="karty-cta">Скоро</div>
+        </div>
+      </a>
+
+      <!-- Melachim -->
+      <a href="/karty/melachim/" class="karty-premium-card soon">
+        <div class="karty-card-art">
+          <svg viewBox="0 0 360 168" preserveAspectRatio="xMidYMid slice">
+            <rect width="360" height="168" fill="#1f1a24"/>
+            <path fill="#16121c" d="M0,54 C88,46 158,42 208,50 C238,56 255,72 248,92 C258,114 230,136 202,150 C170,162 140,164 112,160 L0,168 Z"/>
+          </svg>
+        </div>
+        <div class="karty-card-body">
+          <div class="karty-kick">1–2 Царств · ~1050–586 до н.э.</div>
+          <h2>Царства <span class="hebr">מַמְלֶכֶת</span></h2>
+          <p>Саул, Давид, Соломон. 42 царя, 464 года. От объединённого царства до падения Иерусалима.</p>
+          <div class="karty-meta">
+            <span>42 царя</span>
+            <span>464 года</span>
+          </div>
+          <div class="karty-cta">Скоро</div>
+        </div>
+      </a>
+
+      <!-- Shvatim -->
+      <a href="/karty/shvatim/" class="karty-premium-card soon">
+        <div class="karty-card-art">
+          <svg viewBox="0 0 360 168" preserveAspectRatio="xMidYMid slice">
+            <rect width="360" height="168" fill="#1c221f"/>
+            <path fill="#121a17" d="M0,56 C92,46 162,42 212,50 C242,56 260,72 252,92 C262,114 234,136 206,150 C174,162 144,164 116,160 L0,168 Z"/>
+          </svg>
+        </div>
+        <div class="karty-card-body">
+          <div class="karty-kick">Нав. 13–22 · ~1400–1050 до н.э.</div>
+          <h2>12 Колен <span class="hebr">שִׁבְטֵי</span></h2>
+          <p>Наследие колен Израилевых по Иисусу Навину. Территории, города-убежища, левитские города.</p>
+          <div class="karty-meta">
+            <span>12 колен</span>
+            <span>48 городов-убежищ</span>
+          </div>
+          <div class="karty-cta">Скоро</div>
+        </div>
+      </a>
+
+      <!-- Yeshua -->
+      <a href="/karty/yeshua/" class="karty-premium-card soon">
+        <div class="karty-card-art">
+          <svg viewBox="0 0 360 168" preserveAspectRatio="xMidYMid slice">
+            <rect width="360" height="168" fill="#1e1f2a"/>
+            <path fill="#14151f" d="M0,52 C90,44 160,40 210,46 C240,50 258,66 250,86 C260,108 232,130 204,144 C172,156 142,158 114,154 L0,168 Z"/>
+          </svg>
+        </div>
+        <div class="karty-card-body">
+          <div class="karty-kick">Евангелия · 1 век н.э.</div>
+          <h2>Жизнь Христа <span class="hebr">יֵשׁוּעַ</span></h2>
+          <p>33 года земной жизни по четырём Евангелиям. Вифлеем, Назарет, Галилея, Иерусалим, Голгофа, Воскресение.</p>
+          <div class="karty-meta">
+            <span>33 года</span>
+            <span>4 Евангелия</span>
+          </div>
+          <div class="karty-cta">Скоро</div>
+        </div>
+      </a>
+    </div>
+
+    <p class="karty-footer-note">
+      Каждая карта соединяет географию, археологию, иврит, источники и осторожность там, где данные спорны.<br>
+      Раздел развивается постепенно: сначала маршруты патриархов и Исхода, затем более широкие библейские и исторические связи.
+    </p>
+  </section>
 </BaseLayout>
+
+<style>
+  .astro-karty-index {
+    max-width: 1180px;
+    margin: 0 auto;
+    padding: 2rem 1rem 4rem;
+  }
+
+  .karty-premium-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+    gap: 22px;
+    margin-top: 2.5rem;
+  }
+
+  .karty-premium-card {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    border: 1px solid var(--line, rgba(232, 200, 121, .28));
+    border-radius: 20px;
+    overflow: hidden;
+    text-decoration: none;
+    color: var(--txt, #e9e4d6);
+    background: linear-gradient(160deg, rgba(20,24,33,.92), rgba(10,13,20,.96));
+    transition: transform .65s cubic-bezier(.22,1,.36,1),
+                box-shadow .65s cubic-bezier(.22,1,.36,1),
+                border-color .3s;
+    min-height: 310px;
+    box-shadow: 0 14px 42px rgba(0,0,0,.46), inset 0 0 0 1px rgba(232,200,121,.04);
+  }
+
+  .karty-premium-card:hover {
+    border-color: var(--gold, #e8c879);
+    box-shadow: 0 42px 110px rgba(0,0,0,.74), 0 0 0 1px var(--gold, #e8c879), 0 0 24px rgba(232,200,121,.22);
+  }
+
+  .karty-card-art {
+    height: 168px;
+    position: relative;
+    overflow: hidden;
+    background: #0a0e15;
+  }
+
+  .karty-card-art svg {
+    width: 100%;
+    height: 100%;
+    display: block;
+    transition: transform .9s cubic-bezier(.22,1,.36,1);
+  }
+
+  .karty-premium-card:hover .karty-card-art svg {
+    transform: scale(1.075) translateZ(18px) rotate(0.7deg);
+  }
+
+  .karty-card-body {
+    padding: 20px 22px 24px;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .karty-kick {
+    font-size: 10px;
+    letter-spacing: .27em;
+    color: var(--gold-soft, rgba(232,200,121,.55));
+    text-transform: uppercase;
+    margin-bottom: 6px;
+  }
+
+  .karty-card-body h2 {
+    font-family: Georgia, "Times New Roman", serif;
+    font-weight: 600;
+    font-size: 22px;
+    color: #f4eedd;
+    margin: 4px 0 8px;
+    line-height: 1.15;
+  }
+
+  .hebr {
+    font-size: 13px;
+    color: var(--gold-soft, rgba(232,200,121,.55));
+    margin-bottom: 10px;
+    letter-spacing: .02em;
+  }
+
+  .karty-card-body p {
+    font-size: 13.5px;
+    line-height: 1.58;
+    color: var(--muted, #9aa2ae);
+    flex: 1;
+  }
+
+  .karty-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-top: 14px;
+  }
+
+  .karty-meta span {
+    font-size: 10px;
+    letter-spacing: .09em;
+    color: var(--gold-soft, rgba(232,200,121,.55));
+    border: 1px solid rgba(232,200,121,.22);
+    border-radius: 999px;
+    padding: 3px 10px;
+    white-space: nowrap;
+  }
+
+  .karty-cta {
+    margin-top: 18px;
+    font-size: 12px;
+    letter-spacing: .22em;
+    color: var(--gold, #e8c879);
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    font-weight: 600;
+  }
+
+  .karty-premium-card.soon {
+    pointer-events: none;
+    opacity: .58;
+  }
+
+  .karty-footer-note {
+    margin-top: 3rem;
+    font-size: 13px;
+    color: var(--muted, #9aa2ae);
+    text-align: center;
+    line-height: 1.6;
+  }
+
+  .live {
+    position: absolute;
+    top: 16px;
+    right: 16px;
+    z-index: 2;
+    background: rgba(33,28,16,.94);
+    border: 1px solid var(--gold, #e8c879);
+    border-radius: 999px;
+    font-size: 9.5px;
+    letter-spacing: .2em;
+    color: var(--gold, #e8c879);
+    padding: 5px 13px;
+    display: flex;
+    align-items: center;
+    gap: 7px;
+  }
+
+  .live i {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--gold, #e8c879);
+    animation: liv 2.1s ease-out infinite;
+  }
+
+  @keyframes liv {
+    0% { box-shadow: 0 0 0 0 rgba(232,200,121,.55); }
+    70% { box-shadow: 0 0 0 8px transparent; }
+    100% { box-shadow: 0 0 0 0 transparent; }
+  }
+</style>
