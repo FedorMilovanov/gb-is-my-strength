@@ -234,6 +234,28 @@ const MapEngine = (function() {
 .me-panel__backdrop{position:fixed;inset:0;background:rgba(0,0,0,.3);z-index:19;opacity:0;pointer-events:none;transition:opacity .3s}
 .me-panel__backdrop--active{opacity:1;pointer-events:auto}
 
+
+.me-zoom{position:absolute;top:50%;right:8px;transform:translateY(-50%);z-index:10;display:flex;flex-direction:column;gap:4px}
+.me-zoom-btn{width:32px;height:32px;border-radius:8px;border:1px solid rgba(255,255,255,.1);background:rgba(0,0,0,.6);color:#9aa2ae;font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center;backdrop-filter:blur(8px);transition:all .15s;font-family:inherit;line-height:1}
+.me-zoom-btn:hover{color:#e8c879;border-color:rgba(232,200,121,.4);background:rgba(0,0,0,.8)}
+.me-nav__counter{font-size:10px;color:#9aa2ae;min-width:50px;text-align:center}
+.me-tour-progress{position:absolute;top:0;left:0;right:0;height:2px;z-index:30;display:none}
+.me-tour-progress__fill{height:100%;background:linear-gradient(90deg,#e8c879,#e0813f);transition:width .3s ease;width:0%}
+.me-share-btn{position:absolute;top:10px;right:10px;z-index:15;width:28px;height:28px;border-radius:6px;border:1px solid rgba(255,255,255,.1);background:rgba(0,0,0,.5);color:#9aa2ae;font-size:14px;cursor:pointer;display:flex;align-items:center;justify-content:center;backdrop-filter:blur(8px);transition:all .15s}
+.me-share-btn:hover{color:#e8c879;border-color:rgba(232,200,121,.3)}
+.me-legend{position:absolute;bottom:40px;left:8px;z-index:10;padding:8px 12px;border-radius:10px;background:rgba(0,0,0,.6);border:1px solid rgba(255,255,255,.1);backdrop-filter:blur(8px);font-size:10px;display:none}
+.me-legend__title{color:#e8c879;font-weight:700;margin-bottom:4px;font-size:9px;letter-spacing:.08em;text-transform:uppercase}
+.me-legend__item{display:flex;align-items:center;gap:6px;color:#9aa2ae;margin:2px 0}
+.me-legend__dot{width:6px;height:6px;border-radius:50%;flex-shrink:0}
+@media(min-width:640px){.me-legend{display:block}}
+.me-search{position:absolute;top:8px;right:48px;z-index:15;width:160px;padding:5px 10px;border-radius:8px;border:1px solid rgba(255,255,255,.1);background:rgba(0,0,0,.5);color:#e9e4d6;font-size:11px;font-family:inherit;backdrop-filter:blur(8px);outline:none;transition:border-color .2s}
+.me-search:focus{border-color:rgba(232,200,121,.4);width:200px}
+.me-search::placeholder{color:rgba(154,162,174,.5)}
+.me-loading{position:absolute;inset:0;z-index:50;display:flex;flex-direction:column;align-items:center;justify-content:center;background:rgba(7,10,16,.9);transition:opacity .3s;gap:12px}
+.me-loading__spinner{width:24px;height:24px;border:2px solid rgba(255,255,255,.1);border-top-color:#e8c879;border-radius:50%;animation:meSpin .8s linear infinite}
+@keyframes meSpin{to{transform:rotate(360deg)}}
+.me-loading__text{color:#9aa2ae;font-size:11px}
+
 @media(min-width:640px){
   .me-title{font-size:28px}
   .me-panel{left:12px;right:auto;bottom:12px;width:420px;border-radius:14px;border:1px solid rgba(232,200,121,.2);transform:translateX(-120%)}
@@ -277,16 +299,68 @@ const MapEngine = (function() {
     
     const storiesBar=document.createElement('div');storiesBar.className='me-stories';
     header.appendChild(storiesBar);
-    container.appendChild(header);
+    // Search input
+const searchInput=document.createElement('input');searchInput.className='me-search';searchInput.type='text';searchInput.placeholder='Поиск места…';
+searchInput.addEventListener('input',()=>{
+  const q=searchInput.value.toLowerCase();
+  const allG=markersG.querySelectorAll('g[transform]');
+  allG.forEach(g=>{
+    const text=g.querySelector('text');
+    if(text&&text.textContent){
+      g.style.opacity=text.textContent.toLowerCase().includes(q)?'1':'.08';
+    }
+  });
+});
+header.appendChild(searchInput);
+container.appendChild(header);
+
+// Share button
+const shareBtn=document.createElement('button');shareBtn.className='me-share-btn';shareBtn.title='Поделиться';shareBtn.textContent='↗';
+shareBtn.addEventListener('click',()=>{
+  const st=getState();
+  const params=new URLSearchParams();
+  if(st.place)params.set('place',st.place);
+  if(st.story&&st.story!=='main')params.set('story',st.story);
+  const url=location.origin+location.pathname+(params.toString()?'?'+params:'');
+  if(navigator.share)navigator.share({title:document.title,url}).catch(()=>navigator.clipboard?.writeText(url));
+  else navigator.clipboard?.writeText(url).then(()=>{
+    shareBtn.textContent='✓';setTimeout(()=>shareBtn.textContent='↗',1500);
+  });
+});
+header.appendChild(shareBtn);
 
     // Stage dots
     const stagesBar=document.createElement('div');stagesBar.className='me-stages';
     container.appendChild(stagesBar);
 
+    // Zoom controls
+    const zoomControls=document.createElement('div');zoomControls.className='me-zoom';
+    zoomControls.innerHTML='<button class="me-zoom-btn" data-zoom="in" title="Приблизить">+</button><button class="me-zoom-btn" data-zoom="out" title="Отдалить">−</button><button class="me-zoom-btn" data-zoom="reset" title="Сбросить">⌂</button>';
+    container.appendChild(zoomControls);
+    zoomControls.querySelector('[data-zoom=in]').addEventListener('click',()=>{
+      const cx=view.x+view.w/2,cy=view.y+view.h/2;
+      const nw=Math.max(cfg.minW,view.w*0.7);
+      flyTo(cx,cy,nw,300);
+    });
+    zoomControls.querySelector('[data-zoom=out]').addEventListener('click',()=>{
+      const cx=view.x+view.w/2,cy=view.y+view.h/2;
+      const nw=Math.min(cfg.maxW,view.w*1.4);
+      flyTo(cx,cy,nw,300);
+    });
+    zoomControls.querySelector('[data-zoom=reset]').addEventListener('click',()=>{
+      const initVp=route.meta?.viewport_init||{cx:cfg.W0/2,cy:cfg.H0/2,w:cfg.W0};
+      flyTo(initVp.cx,initVp.cy,initVp.w,500);
+    });
+
     // Panel
     const panel=document.createElement('div');panel.className='me-panel';
-    panel.innerHTML='<button class="me-panel__close">×</button><div class="me-panel__head"></div><div class="me-tabs"></div><div class="me-content"></div><div class="me-nav"></div>';
-    container.appendChild(panel);
+    panel.innerHTML='<button class="me-panel__close">×</button><div class="me-tour-progress" id="me-tour-bar"><div class="me-tour-progress__fill"></div></div><div class="me-panel__head"></div><div class="me-tabs"></div><div class="me-content"></div><div class="me-nav"></div>';
+    // Legend
+const legend=document.createElement('div');legend.className='me-legend';
+const legendItems=(route.stages||[]).map((st,i)=>`<div class="me-legend__item"><span class="me-legend__dot" style="background:${STAGE_COLORS[i]}"></span>${st.t||''}</div>`).join('');
+legend.innerHTML=`<div class="me-legend__title">Этапы</div>${legendItems}`;
+container.appendChild(legend);
+container.appendChild(panel);
 
     // ── State helpers ──
     function visiblePlaces(){
@@ -417,7 +491,9 @@ const MapEngine = (function() {
       renderTabContent(activeTab,place);
 
       // Nav
-      nav.innerHTML=`
+      const totalInStory=vis.length;
+    const counterText=idx>=0?`${idx+1} / ${totalInStory}`:'';
+    nav.innerHTML=`
         <button ${idx<=0?'disabled':''} id="me-prev">← ${idx>0?esc(vis[idx-1].name):''}</button>
         <div class="me-nav__dots">${vis.map((p,i)=>`<div class="me-nav__dot${i===idx?' me-nav__dot--active':''}"></div>`).join('')}</div>
         <button ${idx>=vis.length-1?'disabled':''} id="me-next">${idx<vis.length-1?esc(vis[idx+1].name):''} →</button>
@@ -542,6 +618,8 @@ const MapEngine = (function() {
     }
     function stopTour(){
       touring=false;clearTimeout(tourTimer);
+    const bar=document.getElementById('me-tour-bar');
+    if(bar){bar.style.display='none';bar.querySelector('.me-tour-progress__fill').style.width='0%';}
     }
     function runTourStep(){
       if(!touring)return;
@@ -552,6 +630,9 @@ const MapEngine = (function() {
       const place=(route.places||[]).find(p=>p.stage===sid&&visiblePlaces().some(v=>v.id===p.id));
       if(place)open(place.id);
       tourStepIdx++;
+      const pct=Math.round((tourStepIdx/stageIds.length)*100);
+      const bar=document.getElementById('me-tour-bar');
+      if(bar){bar.style.display='block';bar.querySelector('.me-tour-progress__fill').style.width=pct+'%';}
       tourTimer=setTimeout(runTourStep,cfg.tourDelay);
     }
 
@@ -588,6 +669,12 @@ const MapEngine = (function() {
         });
       });
     }
+
+    // ── Loading state ──
+    const loadingEl=document.createElement('div');loadingEl.className='me-loading';
+    loadingEl.innerHTML='<div class="me-loading__spinner"></div><div class="me-loading__text">Загрузка карты…</div>';
+    container.appendChild(loadingEl);
+    setTimeout(()=>{loadingEl.style.opacity='0';setTimeout(()=>loadingEl.remove(),400);},600);
 
     // ── Init ──
     applyViewBox();
@@ -634,7 +721,7 @@ const MapEngine = (function() {
     getPanelModel,getPanelSections,getStoryState,getPlaceOrder,auditStoryDefinitions,
     // v0.3 rendering
     createMap,
-    version:'0.3.0',buildDate:'2026-06-16'
+    version:'0.4.0',buildDate:'2026-06-16'
   };
 })();
 
