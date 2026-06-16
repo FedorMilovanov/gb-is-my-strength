@@ -559,6 +559,23 @@ const MapEngine = (function() {
     // ── Init ──
     applyViewBox();
     renderMarkers();
+    
+    // Load base-geo.svg if provided
+    if (opts.baseGeoUrl) {
+      fetch(opts.baseGeoUrl).then(r => r.text()).then(svgText => {
+        const parser = new DOMParser();
+        const geoDoc = parser.parseFromString(svgText, 'image/svg+xml');
+        const geoRoot = geoDoc.querySelector('svg');
+        if (geoRoot) {
+          // Insert base-geo as first child of SVG (behind paths/markers)
+          const baseGeoG = document.createElementNS('http://www.w3.org/2000/svg','g');
+          baseGeoG.id = 'me-base-geo';
+          baseGeoG.setAttribute('opacity','0.5');
+          while (geoRoot.firstChild) baseGeoG.appendChild(geoRoot.firstChild);
+          svg.insertBefore(baseGeoG, svg.firstChild);
+        }
+      }).catch(e => console.warn('Base geo load failed:', e));
+    }
     renderStories();
     renderStages();
     const first=(route.places||[])[0];
