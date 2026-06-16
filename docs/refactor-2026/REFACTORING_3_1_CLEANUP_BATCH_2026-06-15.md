@@ -50,6 +50,7 @@
 - ещё один pass уплотнил section `Форматы библиотеки` в компактную 2-column mobile grid и дал publications / razbor shelf-head framing, чтобы home mobile меньше напоминал «портянку статей» и сильнее работал как библиотечная полка
 - следующий pass сжал tertiary mobile shelves, а также lower-half blocks `О проекте` и scripture quote, чтобы хвост главной на телефоне был короче и визуально собраннее
 - добавлен лёгкий pointer-fine 3D tilt/gloss layer для ключевых home cards/featured/about/quote blocks: это premium-эффект, но без изменения touch/mobile contract и без визуального ухода в «другой сайт»
+- ключевые series-entry blocks (`Биографии` + `Нагорная`) собраны в одну явную paired shelf hierarchy, а mobile rails получили progress dots и tighter shelf pacing
 
 ### 8. `/konfessii/russkij-baptizm/` wrapper переведён в Astro shadow route
 - добавлен `src/pages/konfessii/russkij-baptizm/index.astro`

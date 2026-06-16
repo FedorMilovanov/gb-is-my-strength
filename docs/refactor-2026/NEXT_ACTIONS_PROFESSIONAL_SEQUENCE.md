@@ -218,6 +218,7 @@ Next:
     - done: shelf-head framing for publications / apologetics rails
     - done: compressed tertiary mobile shelves + tighter about/quote tail on home
     - done: subtle pointer-fine 3D tilt / gloss layer for key home cards
+    - done: paired key-series shelf + rail progress dots / tighter shelf pacing
     - next: browser screenshot pack / touch review in full Playwright env
 [ ] representative browser smoke for the newly promoted shadow wrappers/pages in an environment with full Playwright system libs
 [ ] if wrapper-parity strategy stays accepted, add one visual/a11y browser audit pass specifically for `/map/`, `/karty/avraam/`, `nagornaya/chast-*`
