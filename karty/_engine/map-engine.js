@@ -1,5 +1,6 @@
 /**
- * map-engine.js v0.5 — Professional Modular Biblical Map Engine
+ * map-engine.js v0.6 — Professional Modular Biblical Map Engine
+ * С Timeline, Keyboard, URL state
  */
 'use strict';
 
@@ -7,30 +8,18 @@ const MapEngine = (function() {
 
   const MapData = {
     normalizeRouteData(data = {}) {
-      const places = Array.isArray(data.places) ? data.places : [];
-      const stages = Array.isArray(data.stages) ? data.stages : [];
-      const stories = Array.isArray(data.stories) ? data.stories : [];
-      return { ...data, places, stages, stories };
+      return {
+        ...data,
+        places: Array.isArray(data.places) ? data.places : [],
+        stages: Array.isArray(data.stages) ? data.stages : [],
+        stories: Array.isArray(data.stories) ? data.stories : []
+      };
     },
 
-    async loadRoute(url, opts = {}) {
-      const res = await fetch(url, { credentials: opts.credentials || 'same-origin' });
+    async loadRoute(url) {
+      const res = await fetch(url);
       if (!res.ok) throw new Error(`MapData.loadRoute: ${res.status}`);
       return this.normalizeRouteData(await res.json());
-    },
-
-    validateRoute(data = {}) {
-      const route = this.normalizeRouteData(data);
-      const errors = [];
-      const ids = new Set();
-      route.places.forEach((p, i) => {
-        if (!p?.id) errors.push(`places[${i}] missing id`);
-        if (p?.id) {
-          if (ids.has(p.id)) errors.push(`duplicate id: ${p.id}`);
-          ids.add(p.id);
-        }
-      });
-      return { ok: errors.length === 0, errors, stats: { places: route.places.length, stages: route.stages.length } };
     },
 
     getPlaceById(route, id) {
@@ -51,11 +40,11 @@ const MapEngine = (function() {
       svg.style.background = '#070a10';
       container.appendChild(svg);
 
-      // Background
       if (opts.baseGeoUrl) {
         const img = document.createElementNS('http://www.w3.org/2000/svg', 'image');
         img.setAttribute('href', opts.baseGeoUrl);
-        img.setAttribute('width', W); img.setAttribute('height', H);
+        img.setAttribute('width', W);
+        img.setAttribute('height', H);
         img.setAttribute('opacity', '0.3');
         svg.appendChild(img);
       }
@@ -67,11 +56,8 @@ const MapEngine = (function() {
       svg.appendChild(nodesG);
 
       const nodeEls = {};
-      const placeIndex = {};
 
-      route.places.forEach((place, idx) => {
-        placeIndex[place.id] = idx;
-
+      route.places.forEach(place => {
         const g = document.createElementNS('http://www.w3.org/2000/svg', 'g');
         g.setAttribute('class', 'node');
         g.setAttribute('data-id', place.id);
@@ -104,9 +90,7 @@ const MapEngine = (function() {
 
         nodeEls[place.id] = { g, halo, core, label };
 
-        g.addEventListener('click', () => {
-          if (opts.onPlaceOpen) opts.onPlaceOpen(place);
-        });
+        g.addEventListener('click', () => opts.onPlaceOpen && opts.onPlaceOpen(place));
       });
 
       // Viewport
@@ -145,7 +129,7 @@ const MapEngine = (function() {
 
       applyView();
 
-      // === PUBLIC API v0.5 ===
+      // === PUBLIC API v0.6 ===
       const api = {
         flyTo(cx, cy, zoom = view.k, duration = 420) {
           const sx = view.x, sy = view.y, sk = view.k;
@@ -204,8 +188,7 @@ const MapEngine = (function() {
     MapData,
     MapRender,
     createMap: MapRender.createMap,
-    loadRoute: MapData.loadRoute,
-    validateRoute: MapData.validateRoute
+    loadRoute: MapData.loadRoute
   };
 
 })();

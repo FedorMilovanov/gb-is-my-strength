@@ -1,5 +1,5 @@
 /**
- * timeline.js — Stage Timeline component for biblical maps (v0.5)
+ * timeline.js v0.6 — Professional Stage Timeline
  */
 'use strict';
 
@@ -10,29 +10,38 @@ const MapTimeline = (function() {
     container.className = 'map-timeline';
 
     const wrapper = document.createElement('div');
-    wrapper.style.cssText = 'display:flex;gap:6px;flex-wrap:wrap;padding:8px 0;';
+    wrapper.style.cssText = `
+      display:flex; gap:8px; flex-wrap:wrap; 
+      padding:10px 12px; background:rgba(13,17,26,.85);
+      border:1px solid rgba(232,200,121,.18); border-radius:12px;
+    `;
 
-    stages.forEach((stage, idx) => {
+    const chips = [];
+
+    stages.forEach((stage, index) => {
       const chip = document.createElement('button');
       chip.className = 'timeline-chip';
       chip.innerHTML = `
-        <span class="n">${stage.n || (idx+1)}</span>
-        <span class="t">${stage.t}</span>
+        <span class="num">${stage.n || (index + 1)}</span>
+        <span class="title">${stage.t}</span>
       `;
+      
       chip.onclick = () => {
-        if (opts.onStageClick) opts.onStageClick(stage, idx);
-        document.querySelectorAll('.timeline-chip').forEach(c => c.classList.remove('active'));
+        chips.forEach(c => c.classList.remove('active'));
         chip.classList.add('active');
+        if (opts.onStageClick) opts.onStageClick(stage, index);
       };
+
       wrapper.appendChild(chip);
+      chips.push(chip);
     });
 
     container.appendChild(wrapper);
 
     return {
       setActive(index) {
-        document.querySelectorAll('.timeline-chip').forEach((c, i) => {
-          c.classList.toggle('active', i === index);
+        chips.forEach((chip, i) => {
+          chip.classList.toggle('active', i === index);
         });
       },
       destroy() {
