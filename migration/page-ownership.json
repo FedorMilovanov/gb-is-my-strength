@@ -274,28 +274,28 @@
       "status": "shadow-pilot"
     },
     "/karty/shoftim/": {
-      "owner": "astro-noindex",
+      "owner": "astro",
       "source": "src/pages/karty/shoftim/index.astro",
       "risk": 1,
-      "status": "build-only"
+      "status": "shadow-pilot"
     },
     "/karty/melachim/": {
-      "owner": "astro-noindex",
+      "owner": "astro",
       "source": "src/pages/karty/melachim/index.astro",
       "risk": 1,
-      "status": "build-only"
+      "status": "shadow-pilot"
     },
     "/karty/shvatim/": {
-      "owner": "astro-noindex",
+      "owner": "astro",
       "source": "src/pages/karty/shvatim/index.astro",
       "risk": 1,
-      "status": "build-only"
+      "status": "shadow-pilot"
     },
     "/karty/yeshua/": {
-      "owner": "astro-noindex",
+      "owner": "astro",
       "source": "src/pages/karty/yeshua/index.astro",
       "risk": 1,
-      "status": "build-only"
+      "status": "shadow-pilot"
     }
   }
 }
