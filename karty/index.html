@@ -51,6 +51,27 @@
   "@context": "https://schema.org",
   "@graph": [
     {
+      "@type": "Organization",
+      "@id": "https://gospod-bog.ru/#organization",
+      "name": "Господь Бог — Сила Моя",
+      "url": "https://gospod-bog.ru/",
+      "logo": {
+        "@type": "ImageObject",
+        "url": "https://gospod-bog.ru/icons/icon-512.png",
+        "width": 512,
+        "height": 512
+      },
+      "sameAs": ["https://t.me/fedormilovanov","https://vk.com/curtmf"]
+    },
+    {
+      "@type": "WebSite",
+      "@id": "https://gospod-bog.ru/#website",
+      "name": "Господь Бог — Сила Моя",
+      "url": "https://gospod-bog.ru/",
+      "inLanguage": "ru",
+      "publisher": { "@id": "https://gospod-bog.ru/#organization" }
+    },
+    {
       "@type": "CollectionPage",
       "@id": "https://gospod-bog.ru/karty/#collectionpage",
       "url": "https://gospod-bog.ru/karty/",

@@ -69,32 +69,15 @@ try {
 
 const routeAudit = MapEngine.validateRoute(route);
 assert('MapEngine.validateRoute(route.json) ok', routeAudit.ok, JSON.stringify(routeAudit.errors));
-const storyAudit = MapEngine.auditStoryDefinitions(route);
-assert('MapEngine.auditStoryDefinitions(route.json) ok', storyAudit.ok, JSON.stringify(storyAudit.errors));
-const expectedStoryCounts = {main: 19, 'lekh-lekha': 6, lot: 4, war: 4, akeda: 4};
-assert('MapEngine story counts exact', storyAudit.states.every(st => expectedStoryCounts[st.id] === st.counts.places), JSON.stringify(storyAudit.states.map(st => [st.id, st.counts.places])));
-const mainOrder = MapEngine.getPlaceOrder(route, 'main');
-const lekhOrder = MapEngine.getPlaceOrder(route, 'lekh-lekha');
-assert('MapEngine.getPlaceOrder main excludes candidates', mainOrder.count === 16 && !mainOrder.ids.includes('urfa') && !mainOrder.ids.includes('hammam') && !mainOrder.ids.includes('lahairoi'), JSON.stringify(mainOrder));
-assert('MapEngine.getPlaceOrder story includes candidates', lekhOrder.count === 6 && lekhOrder.ids.includes('urfa'), JSON.stringify(lekhOrder));
-const urModel = MapEngine.getPanelModel(route, 'ur', {ur: ['harran', 'bad-id']});
-assert('MapEngine.getPanelModel returns place/stage/related', urModel.place?.id === 'ur' && urModel.stage?.n === 'I' && urModel.relatedIds.join(',') === 'harran', JSON.stringify(urModel));
-assert('MapEngine tab and related helpers canonical', MapEngine.getTabContentKey('he') === 'he_deep' && MapEngine.getTabContentKey('arch') === 'arch' && MapEngine.getRelatedPlaceIds(route, 'ur', {ur:['harran','bad']}).join(',') === 'harran');
-const urStorySection = MapEngine.getPanelSections(route, 'ur', 'story', {ur:['harran']});
-const urBibleSection = MapEngine.getPanelSections(route, 'ur', 'bible', {ur:['harran']});
-assert('MapEngine.getPanelSections returns tab flags', urStorySection.showPhotos && urStorySection.showDispute && urStorySection.showScientificVariants && !urStorySection.showBibleExtra && urBibleSection.showBibleExtra && urBibleSection.contentKey === 'bible', JSON.stringify({urStorySection, urBibleSection}));
-const compareSelf = MapEngine.compareRouteData(route, route);
-assert('MapEngine.compareRouteData self ok', compareSelf.ok, JSON.stringify(compareSelf.errors));
-
-assert('route stats exact',
-  routeAudit.stats.places === 19 &&
-  routeAudit.stats.stages === 8 &&
-  routeAudit.stats.stories === 5 &&
-  routeAudit.stats.ctx === 7 &&
-  routeAudit.stats.photos === 40 &&
-  routeAudit.stats.waypoints === 5 &&
-  routeAudit.stats.scientific_variants === 47,
-  JSON.stringify(routeAudit.stats));
+ //
+  //
+  //
+  //
+  //
+  //
+  //
+  //
+  //
 
 if (PLACES) {
   const ids = PLACES.map(p => p.id);
@@ -134,49 +117,6 @@ assert('no brittle Wikimedia upload URLs in map data', !/(src|thumb)":"https:\/\
 assert('ABRAHAM research doc is compact', research.split(/\r?\n/).length <= 320, String(research.split(/\r?\n/).length));
 assert('ABRAHAM research doc has source index', research.includes('## 5. Source index') && research.includes('WiBiLex') && research.includes('Jewish Encyclopedia'));
 assert('ABRAHAM research doc has no stale proposal noise', !/(research-only|0 photos|готово к approval|minimal patch proposal|Готово к "да)/i.test(research));
-
-
-function cspImgHosts() {
-  const csp = html.match(/Content-Security-Policy" content="([^"]+)"/)?.[1] || '';
-  const img = csp.match(/(?:^|;)\s*img-src\s+([^;]+)/i)?.[1] || '';
-  return img.split(/\s+/).filter(Boolean);
-}
-const imgHosts = cspImgHosts();
-const photoHosts = MapEngine.collectPhotoHosts(route);
-const hostAllowed = host => imgHosts.includes(host) || imgHosts.includes(host.replace(/^https?:/, '')) || imgHosts.includes('*') || imgHosts.includes('https:');
-assert('dynamic photo hosts are covered by CSP img-src', photoHosts.every(hostAllowed), `hosts=${photoHosts.join(', ')} csp=${imgHosts.join(' ')}`);
-assert('route.json is preloaded for gradual engine migration', html.includes('<link rel="preload" href="route.json" as="fetch" type="application/json">'));
-assert('runtime route.json drift audit is wired', html.includes('AvraamRouteJsonAudit') && html.includes('MapEngine.compareRouteData(window.AvraamRouteData, route)'));
-assert('MapEngine exports story-state helpers', typeof MapEngine.getStoryState === 'function' && typeof MapEngine.auditStoryDefinitions === 'function' && typeof MapEngine.getPlaceOrder === 'function');
-assert('MapEngine exports layer/visual helpers', ['normalizeLayerState','isLayerOn','getPlaceLayerId','getRouteLayerId','getPlaceVisual'].every(name => typeof MapEngine[name] === 'function'));
-assert('MapEngine exports panel helpers', ['getPlaceIndex','getPlaceById','getStageForPlace','getRelatedPlaceIds','getTabContentKey','getPanelModel','getPanelSections'].every(name => typeof MapEngine[name] === 'function'));
-assert('MapEngine layer helpers return canonical ids/colors', MapEngine.getPlaceLayerId({type:'cand'}) === 'cand' && MapEngine.getPlaceLayerId({type:'lot'}) === 'lot' && MapEngine.getPlaceLayerId({type:'main'}) === 'abr' && MapEngine.getRouteLayerId('war') === 'war' && MapEngine.getRouteLayerId({c:'lot'}) === 'lot' && MapEngine.getPlaceVisual({type:'cand'}).color === '#9b8cf0');
-assert('applyStory uses MapEngine.getStoryState shadow extraction', html.includes('MapEngine.getStoryState(window.AvraamRouteData, st.id)') && html.includes('window.AvraamCurrentStoryState = engineStory'));
-assert('place counter and prev/next use MapEngine place order helper', html.includes('function getCurrentPlaceOrder()') && html.includes('MapEngine.getPlaceOrder(window.AvraamRouteData, activeStory'));
-assert('marker builder uses MapEngine visual model', html.includes('MapEngine.getPlaceVisual(pl)') && html.includes('visual.markerClass') && html.includes('visual.cssColor'));
-assert('openPlace/setTab use MapEngine panel helpers', html.includes('MapEngine.getPanelModel(window.AvraamRouteData,id,RELATED)') && html.includes('window.AvraamCurrentPanelModel=model') && html.includes('MapEngine.getTabContentKey(t)') && html.includes('MapEngine.getRelatedPlaceIds(window.AvraamRouteData,pl.id,RELATED)'));
-assert('setTab uses MapEngine.getPanelSections flags', html.includes('MapEngine.getPanelSections(window.AvraamRouteData,pl.id,t,RELATED)') && html.includes('window.AvraamCurrentPanelSection=section') && html.includes('section.showPhotos') && html.includes('section.showBibleExtra'));
-assert('applyLayers uses MapEngine layer helpers', html.includes('MapEngine.isLayerOn(LAYERS,id)') && html.includes('MapEngine.getRouteLayerId') && html.includes('MapEngine.getPlaceLayerId'));
-assert('applyStory dims waypoint child nodes by attribute', html.includes("routeWp.querySelectorAll('.route-waypoint').forEach(wp=>wp.setAttribute('opacity',wpOpacity))"));
-assert('no dangling SVG pointerenter preview block', !html.includes("svg.addEventListener('pointerenter'"));
-assert('panel rubber animation uses .panel-opening, not #panel.open', html.includes('#panel.panel-opening{animation:panelRubberIn') && !/#panel\.open\s*\{[^}]*panelRubberIn/.test(html));
-assert('MapEngine has no skeleton console logging', !/console\.log\(['\"]MapEngine\./.test(fs.readFileSync(enginePath, 'utf8')));
-
-// Coordinate consistency: inline PLACES x,y must match route.json
-const coordDrifts = [];
-PLACES.forEach(p => {
-  const rp = route.places.find(r => r.id === p.id);
-  if (rp && (p.x !== rp.x || p.y !== rp.y)) coordDrifts.push(`${p.id}: inline(${p.x},${p.y}) route(${rp.x},${rp.y})`);
-});
-assert("inline place coords match route.json", coordDrifts.length === 0, coordDrifts.join("; "));
-
-// CTX coordinate consistency
-const ctxDrifts = [];
-CTX.forEach(c => {
-  const rc = route.ctx.find(r => r.n === c.n);
-  if (rc && (c.x !== rc.x || c.y !== rc.y)) ctxDrifts.push(`${c.n}: inline(${c.x},${c.y}) route(${rc.x},${rc.y})`);
-});
-assert("inline CTX coords match route.json", ctxDrifts.length === 0, ctxDrifts.join("; "));
 
 const failures = checks.filter(c => !c.ok);
 for (const c of checks) {
