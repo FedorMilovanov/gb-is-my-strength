@@ -300,6 +300,7 @@ checkAstroArticleOwnership();
 checkDevNoindex();
 checkSwPrecache();
 checkPagefind();
+checkMdxWordParity();
 console.log('');
 if (problems.length) {
   console.log(`❌ dist publication audit failed: ${problems.length} issue(s)`);
