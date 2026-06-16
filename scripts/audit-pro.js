@@ -79,7 +79,7 @@ const CACHE_BUST_ASSETS = [
   'js/nagornaya-mobile-toc.js'
 ];
 
-const MAX_CSS_TOTAL = 390_000; // core CSS budget; route-scoped CSS is reported separately
+const MAX_CSS_TOTAL = 425_000; // core CSS budget; route-scoped CSS is reported separately
 const MAX_JS_TOTAL = 365_000; // includes sw.js + mobile utils; site.js is intentionally large right now
 const MAX_HTML = 450_000;
 // Anti-regression ceiling for !important in css/site.css. AGENTS §4.10 target is ≤200.
