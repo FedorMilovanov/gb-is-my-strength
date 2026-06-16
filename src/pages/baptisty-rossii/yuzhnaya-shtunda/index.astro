@@ -1,6 +1,6 @@
 ---
 import { getEntry, render } from 'astro:content';
-import ArticleLayout from '@/layouts/ArticleLayout.astro';
+import SeriesArticleLayout from '@/layouts/SeriesArticleLayout.astro';
 import { SITE } from '@/data/site';
 
 const entry = await getEntry('articles', 'yuzhnaya-shtunda');
@@ -8,12 +8,23 @@ if (!entry) throw new Error('Article entry not found: articles/yuzhnaya-shtunda'
 const { Content } = await render(entry);
 const canonical = `${SITE.url}/baptisty-rossii/yuzhnaya-shtunda/`;
 ---
-<ArticleLayout
+
+<SeriesArticleLayout
   entry={entry}
   canonical={canonical}
-  robots="index, follow"
-  pilot={false}
-  intendedCanonical={canonical}
+  seriesSlug="russian-baptism"
+  seriesTitle="Баптисты России"
+  seriesSubtitle="живая исследовательская серия"
+  seriesKicker="Серия · История ЕХБ"
+  seriesEraRange="1867 → 1991"
+  seriesEras={[
+    { era: "1867", label: "Тифлис" },
+    { era: "1884", label: "Съезды" },
+    { era: "1929", label: "Закон" },
+    { era: "1944", label: "ВСЕХиБ" },
+    { era: "1961", label: "СЦ ЕХБ" },
+  ]}
+  series3dLink="/konfessii/russkij-baptizm/"
 >
   <Content />
-</ArticleLayout>
+</SeriesArticleLayout>

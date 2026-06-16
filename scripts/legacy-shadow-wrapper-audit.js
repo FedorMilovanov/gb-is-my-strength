@@ -22,6 +22,10 @@ const ROUTES = [
   { rel: 'nagornaya/chast-3/index.html', url: 'https://gospod-bog.ru/nagornaya/chast-3/', marker: 'astro-nagornaya-shadow', ratio: 0.97 },
   { rel: 'nagornaya/chast-4/index.html', url: 'https://gospod-bog.ru/nagornaya/chast-4/', marker: 'astro-nagornaya-shadow', ratio: 0.97 },
   { rel: 'nagornaya/chast-5/index.html', url: 'https://gospod-bog.ru/nagornaya/chast-5/', marker: 'astro-nagornaya-shadow', ratio: 0.97 },
+  { rel: 'nagornaya/index.html', url: 'https://gospod-bog.ru/nagornaya/', marker: 'astro-karty-shadow', ratio: 0.90 },
+  { rel: 'nagornaya/istochniki/index.html', url: 'https://gospod-bog.ru/nagornaya/istochniki/', marker: 'astro-nagornaya-shadow', ratio: 0.95 },
+  { rel: 'nagornaya/nakhodki/index.html', url: 'https://gospod-bog.ru/nagornaya/nakhodki/', marker: 'astro-nagornaya-shadow', ratio: 0.95 },
+  { rel: 'nagornaya/seriya/index.html', url: 'https://gospod-bog.ru/nagornaya/seriya/', marker: 'astro-karty-shadow', ratio: 0.90 },
 ];
 
 const problems = [];
