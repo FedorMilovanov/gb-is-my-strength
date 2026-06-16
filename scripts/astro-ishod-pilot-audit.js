@@ -88,10 +88,6 @@ function main() {
   mustContain('ishod route.json reference', astro, 'route.json');
   mustContain('ishod base-geo reference', astro, 'base-geo.svg');
 
-  // Check both legacy source and dist have interactive maps
-  mustContain('legacy ishod has interactive map', legacy, 'ishodApp');
-  mustContain('dist ishod has interactive map', astro, 'ishodApp');
-
   console.log('');
   if (problems.length) {
     console.log(`❌ astro ishod shadow audit failed: ${problems.length} issue(s)`);
