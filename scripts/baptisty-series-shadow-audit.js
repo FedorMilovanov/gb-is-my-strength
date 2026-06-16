@@ -103,8 +103,8 @@ function auditSlug(slug) {
   const astro = read(publicPath);
   const url = `${SITE}/baptisty-rossii/${slug}/`;
 
-  if (!/class="astro-article"/.test(astro)) bad(`${slug}: dist route is not Astro article output`);
-  else ok(`${slug}: dist route is Astro article output`);
+  if (!/class="gbs2-world"/.test(astro)) bad(`${slug}: dist route is not SeriesArticleLayout output`);
+  else ok(`${slug}: dist route is SeriesArticleLayout output`);
 
   mustEqual(`${slug} canonical`, canonical(astro), url);
   mustEqual(`${slug} title mirrors legacy`, title(astro), title(legacy));
@@ -115,9 +115,16 @@ function auditSlug(slug) {
   else ok(`${slug}: page is indexable`);
 
   mustContain(`${slug} pagefind body`, astro, 'data-pagefind-body');
-  mustContain(`${slug} series context block`, astro, 'astro-series-context');
+  mustContain(`${slug} series sidebar rail`, astro, 'gbs2-rail');
   mustContain(`${slug} cycle link`, astro, '/baptisty-rossii/');
   mustContain(`${slug} map link`, astro, '/konfessii/russkij-baptizm/');
+  mustContain(`${slug} series parts nav`, astro, 'gbs2-parts');
+  mustContain(`${slug} series next nav`, astro, 'gbs2-next');
+  mustContain(`${slug} series timeline`, astro, 'gbs2-timeline');
+  mustContain(`${slug} author card`, astro, 'author-card');
+  mustContain(`${slug} progress ring`, astro, 'gbs2-ring');
+  mustContain(`${slug} mobile header`, astro, 'gbs2-mobile-head');
+  mustContain(`${slug} mobile sheet`, astro, 'gbs2-sheet');
 
   const legacyWords = wordCount(legacy);
   const astroWords = wordCount(astro);
