@@ -21,6 +21,9 @@ const legacy = loadLegacyShadowPage('nagornaya/chast-1/index.html');
   headHtml={legacy.headHtml}
 >
   <div class="astro-nagornaya-shadow" data-astro-shadow-route="nagornaya-chast-1">
+    <div class="sr-only" data-pagefind-body>
+      Два текста, один Иисус. Часть I серии «Нагорная проповедь». Сравнение Матфея 5–7 и Луки 6: структура, композиция, синоптическая проблема, богодухновенность. Ключевые темы: заповеди блаженства, архитектура проповеди, антитезы, молитва Отче наш.
+    </div>
     <Fragment set:html={legacy.bodyHtml} />
   </div>
 </BaseLayout>
