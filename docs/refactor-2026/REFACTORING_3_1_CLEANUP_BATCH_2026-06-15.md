@@ -51,6 +51,7 @@
 - следующий pass сжал tertiary mobile shelves, а также lower-half blocks `О проекте` и scripture quote, чтобы хвост главной на телефоне был короче и визуально собраннее
 - добавлен лёгкий pointer-fine 3D tilt/gloss layer для ключевых home cards/featured/about/quote blocks: это premium-эффект, но без изменения touch/mobile contract и без визуального ухода в «другой сайт»
 - ключевые series-entry blocks (`Биографии` + `Нагорная`) собраны в одну явную paired shelf hierarchy, а mobile rails получили progress dots и tighter shelf pacing
+- добавлен desktop entry strip под hero-search для основных входов в библиотеку: каталог, Нагорная серия, Баптисты России, 3D-карта
 
 ### 8. `/konfessii/russkij-baptizm/` wrapper переведён в Astro shadow route
 - добавлен `src/pages/konfessii/russkij-baptizm/index.astro`
