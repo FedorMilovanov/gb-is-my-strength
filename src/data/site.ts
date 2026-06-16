@@ -34,3 +34,30 @@ export const SECTION_META = {
     eyebrow: 'История ЕХБ · Живая исследовательская серия',
   },
 } as const;
+
+/** Explicit ordering of articles within series (by slug). */
+export const SERIES_ORDER: Record<string, string[]> = {
+  'dzhon-gill': [
+    'dzhon-gill-istoricheskiy-kontekst',
+    'dzhon-gill-chast-1-chelovek',
+    'dzhon-gill-chast-2-uchenyi',
+    'dzhon-gill-chast-3-nasledie',
+    'dzhon-gill-spravochnik',
+  ],
+  'russian-baptism': [
+    'noch-na-kure',
+    'yuzhnaya-shtunda',
+    'dva-sezda-1884',
+    'peterburgskaya-liniya',
+    'goneniya-i-sovest',
+    'sovetskaya-noch',
+    'vsehib-1944',
+    'iniciativnaya-gruppa',
+    'podpolnaya-pechat',
+    'spravochnik',
+  ],
+  'hard-texts': [
+    'krajne-li-isporcheno-serdce',
+    'rimlyanam-7-veruyushchiy-ili-neveruyushchiy',
+  ],
+};

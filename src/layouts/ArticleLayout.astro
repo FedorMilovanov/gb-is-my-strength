@@ -1,6 +1,7 @@
 ---
 import BaseLayout from '@/layouts/BaseLayout.astro';
-import { SECTION_META, SITE } from '@/data/site';
+import { SECTION_META, SITE, SERIES_ORDER } from '@/data/site';
+import { getCollection } from 'astro:content';
 import type { CollectionEntry } from 'astro:content';
 
 interface Props {
@@ -23,19 +24,44 @@ const updated = data.updatedAt instanceof Date ? data.updatedAt : data.updatedAt
 const ogImage = data.ogImage?.startsWith('http') ? data.ogImage : data.ogImage ? `${SITE.url}${data.ogImage}` : undefined;
 const articleCanonical = intendedCanonical || data.canonicalOverride || `${SITE.url}/${data.section}/${data.slug}/`;
 
-const seriesMeta =
-  data.series === 'dzhon-gill'
-    ? { label: 'Биографии служителей', url: `${SITE.url}/biografii/`, eyebrow: 'Биографии служителей' }
-    : data.series === 'russian-baptism'
-      ? SECTION_META['baptisty-rossii']
-      : undefined;
-const sectionMeta = seriesMeta || SECTION_META[data.section];
+const sectionMeta = SECTION_META[data.section];
 const articleSectionName = sectionMeta?.label || data.section;
 const articleSectionUrl = sectionMeta?.url || `${SITE.url}/${data.section}/`;
 const articleEyebrow = sectionMeta?.eyebrow || articleSectionName;
 const effectiveRobots = robots || (data.noindex ? 'noindex, follow' : 'index, follow');
 const outputNoindex = /\bnoindex\b/i.test(effectiveRobots);
-const outputDraft = pilot && data.draft;
+
+// --- Series navigation ---
+let seriesPrev: CollectionEntry<'articles'> | null = null;
+let seriesNext: CollectionEntry<'articles'> | null = null;
+let seriesPos = 0;
+let seriesTotal = 0;
+let seriesLabel = '';
+
+if (data.series && SERIES_ORDER[data.series]) {
+  const order = SERIES_ORDER[data.series];
+  const allArticles = await getCollection('articles', ({ data: d }) => d.series === data.series);
+  const sorted = order
+    .map(slug => allArticles.find(a => a.data.slug === slug))
+    .filter(Boolean) as CollectionEntry<'articles'>[];
+  
+  const idx = sorted.findIndex(a => a.data.slug === data.slug);
+  if (idx >= 0) {
+    seriesPos = idx + 1;
+    seriesTotal = sorted.length;
+    seriesPrev = idx > 0 ? sorted[idx - 1] : null;
+    seriesNext = idx < sorted.length - 1 ? sorted[idx + 1] : null;
+  }
+
+  const seriesNames: Record<string, string> = {
+    'dzhon-gill': 'Джон Гилл',
+    'russian-baptism': 'Баптисты России',
+    'hard-texts': 'Тайны человеческого сердца',
+    'pastor-series': 'Тёмная сторона кафедры',
+  };
+  seriesLabel = seriesNames[data.series] || data.series;
+}
+
 const jsonLd = {
   '@context': 'https://schema.org',
   '@graph': [
@@ -137,10 +163,6 @@ const jsonLd = {
             <dd>{data.readingTime} мин.</dd>
           </div>
         )}
-        <div>
-          <dt>Статус</dt>
-          <dd>{outputNoindex ? 'noindex' : outputDraft ? 'draft' : 'опубликовано'}</dd>
-        </div>
       </dl>
       {data.tags.length > 0 && (
         <ul class="astro-article__tags" aria-label="Теги">
@@ -153,6 +175,42 @@ const jsonLd = {
       <slot />
     </div>
 
+    <!-- Series navigation -->
+    {seriesTotal > 1 && (
+      <nav class="astro-series-nav" aria-label={`Серия «${seriesLabel}»`}>
+        <div class="astro-series-nav__head">
+          <span class="astro-series-nav__label">{seriesLabel}</span>
+          <span class="astro-series-nav__pos">{seriesPos} из {seriesTotal}</span>
+        </div>
+        <div class="astro-series-nav__track">
+          {Array.from({ length: seriesTotal }, (_, i) => (
+            <span class={`astro-series-nav__dot${i + 1 === seriesPos ? ' astro-series-nav__dot--current' : ''}${i + 1 < seriesPos ? ' astro-series-nav__dot--past' : ''}`}></span>
+          ))}
+        </div>
+        <div class="astro-series-nav__links">
+          {seriesPrev ? (
+            <a href={`/${data.section}/${seriesPrev.data.slug}/`} class="astro-series-nav__link astro-series-nav__link--prev">
+              <span class="astro-series-nav__arrow">←</span>
+              <span class="astro-series-nav__text">
+                <span class="astro-series-nav__hint">Предыдущая</span>
+                <span class="astro-series-nav__title">{seriesPrev.data.h1 || seriesPrev.data.title}</span>
+              </span>
+            </a>
+          ) : <div></div>}
+          {seriesNext ? (
+            <a href={`/${data.section}/${seriesNext.data.slug}/`} class="astro-series-nav__link astro-series-nav__link--next">
+              <span class="astro-series-nav__text">
+                <span class="astro-series-nav__hint">Следующая</span>
+                <span class="astro-series-nav__title">{seriesNext.data.h1 || seriesNext.data.title}</span>
+              </span>
+              <span class="astro-series-nav__arrow">→</span>
+            </a>
+          ) : <div></div>}
+        </div>
+      </nav>
+    )}
+
+    <!-- Baptisty-rossii context -->
     {data.series === 'russian-baptism' && (
       <section class="astro-series-context" aria-label="Контекст серии Баптисты России">
         <h2>Как эта часть связана со всей серией</h2>
@@ -173,5 +231,20 @@ const jsonLd = {
         </p>
       </section>
     )}
+
+    <!-- Author card -->
+    <aside class="astro-author-card" aria-label="Об авторе-редакторе">
+      <div class="astro-author-card__icon" aria-hidden="true">ФМ</div>
+      <div class="astro-author-card__body">
+        <div class="astro-author-card__label">{editorialRole}</div>
+        <div class="astro-author-card__name">{editorialName}</div>
+        <p class="astro-author-card__desc">
+          {isTranslation
+            ? 'Перевод выполнен в рамках проекта «Господь Бог — Сила Моя». Оригинальный автор указан в байлайне.'
+            : 'Материал подготовлен в рамках проекта «Господь Бог — Сила Моя» — христианского богословского сайта со статьями, биографиями, серией «Нагорная проповедь» и интерактивными картами. Проект существует на личные средства автора-редактора и не собирает пожертвований.'}
+          <a href="/about/">Об авторе →</a>
+        </p>
+      </div>
+    </aside>
   </article>
 </BaseLayout>
