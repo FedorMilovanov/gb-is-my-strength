@@ -3,22 +3,26 @@ import BaseLayout from '@/layouts/BaseLayout.astro';
 import MapApp from '@/components/map/MapApp.tsx';
 
 const title = "Исход из Египта — интерактивная карта | Господь Бог — Сила Моя";
-const description = "Интерактивная карта Исхода: от Раамсеса через море, Синай и Кадеш к равнинам Моава. В разработке.";
+const description = "Интерактивная карта Исхода: 11 ключевых мест, 6 этапов, 4 сюжетных режима. От Раамсеса через море, Синай и Кадеш-Барнеа к равнинам Моава.";
 const canonical = "https://gospod-bog.ru/karty/ishod/";
 ---
+
 <BaseLayout
   title={title}
   description={description}
   canonical={canonical}
   robots="index, follow, max-snippet:-1, max-image-preview:large"
-  ogTitle="Исход из Египта — карта в разработке"
+  ogTitle="Исход из Египта — интерактивная карта"
   ogDescription={description}
   ogImage="https://gospod-bog.ru/images/og-karty-1200x630.webp"
   hideHeader={true}
   hideFooter={true}
   mainClass="astro-main astro-main--bare"
 >
-  <!-- Tailwind is configured locally, MapApp uses React and Tailwind utilities -->
+  <div class="sr-only" data-pagefind-body>
+    Исход из Египта. Интерактивная карта: 11 ключевых мест, 6 этапов, 4 сюжетных режима, иврит, археология и источники.
+    От Раамсеса через море, Синай и Кадеш-Барнеа к равнинам Моава. 40 лет странствий Израиля.
+  </div>
   <MapApp 
     client:load 
     routeUrl="/karty/ishod/route.json" 
