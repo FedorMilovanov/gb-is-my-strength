@@ -1,31 +1,31 @@
 ---
 import BaseLayout from '@/layouts/BaseLayout.astro';
-import MapApp from '@/components/map/MapApp.tsx';
+import { loadLegacyShadowPage } from '@/utils/legacyShadow';
 
-const title = "Исход из Египта — интерактивная карта | Господь Бог — Сила Моя";
-const description = "Интерактивная карта Исхода: 11 ключевых мест, 6 этапов, 4 сюжетных режима. От Раамсеса через море, Синай и Кадеш-Барнеа к равнинам Моава.";
-const canonical = "https://gospod-bog.ru/karty/ishod/";
+const legacy = loadLegacyShadowPage('karty/ishod/index.html');
 ---
 
 <BaseLayout
-  title={title}
-  description={description}
-  canonical={canonical}
+  title={legacy.title}
+  description={legacy.description}
+  canonical={legacy.canonical}
   robots="index, follow, max-snippet:-1, max-image-preview:large"
-  ogTitle="Исход из Египта — интерактивная карта"
-  ogDescription={description}
-  ogImage="https://gospod-bog.ru/images/og-karty-1200x630.webp"
+  ogImage={legacy.ogImage}
+  ogImageAlt={legacy.ogImageAlt}
+  ogTitle={legacy.ogTitle}
+  ogDescription={legacy.ogDescription}
+  bodyClass={legacy.bodyClass}
+  mainClass="astro-main astro-main--bare"
   hideHeader={true}
   hideFooter={true}
-  mainClass="astro-main astro-main--bare"
+  headHtml={legacy.headHtml}
 >
-  <div class="sr-only" data-pagefind-body>
-    Исход из Египта. Интерактивная карта: 11 ключевых мест, 6 этапов, 4 сюжетных режима, иврит, археология и источники.
-    От Раамсеса через море, Синай и Кадеш-Барнеа к равнинам Моава. 40 лет странствий Израиля.
+  <div class="astro-ishod-shadow" data-astro-shadow-route="karty-ishod">
+    <h1 class="sr-only">Исход из Египта — интерактивная карта</h1>
+    <div class="sr-only" data-pagefind-body>
+      Исход из Египта. Интерактивная карта: 11 ключевых мест, 6 этапов, 4 сюжетных режима, иврит, археология и источники.
+      От Раамсеса через море, Синай и Кадеш-Барнеа к равнинам Моава. 40 лет странствий Израиля.
+    </div>
+    <Fragment set:html={legacy.bodyHtml} />
   </div>
-  <MapApp 
-    client:load 
-    routeUrl="/karty/ishod/route.json" 
-    baseGeoUrl="/karty/_engine/base-geo.svg" 
-  />
 </BaseLayout>
