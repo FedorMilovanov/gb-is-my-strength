@@ -57,6 +57,12 @@
       "risk": 2,
       "status": "shadow-pilot"
     },
+    "/karty/ishod/": {
+      "owner": "astro",
+      "source": "src/pages/karty/ishod/index.astro",
+      "risk": 2,
+      "status": "shadow-pilot"
+    },
     "/articles/hermenevticheskaya-otsenka-hristotsentrichnoy-germenevtiki/": {
       "owner": "astro",
       "source": "src/pages/articles/hermenevticheskaya-otsenka-hristotsentrichnoy-germenevtiki/index.astro",
@@ -216,12 +222,6 @@
     "/konfessii/russkij-baptizm/": {
       "owner": "astro",
       "source": "src/pages/konfessii/russkij-baptizm/index.astro",
-      "risk": 2,
-      "status": "shadow-pilot"
-    },
-    "/karty/ishod/": {
-      "owner": "astro",
-      "source": "src/pages/karty/ishod/index.astro",
       "risk": 2,
       "status": "shadow-pilot"
     },
