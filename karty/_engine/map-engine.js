@@ -169,6 +169,12 @@ const MapEngine = (function() {
     }
 
   function createMap(container, routeData, opts={}) {
+    // Validate input
+    if (!container) { console.error('MapEngine.createMap: container is required'); return null; }
+    if (!routeData || !routeData.places || !routeData.places.length) {
+      container.innerHTML = '<div class="me-error" style="display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;color:#9aa2ae;font-family:Georgia,serif"><div style="font-size:48px;margin-bottom:12px">⚠</div><div style="font-size:16px;color:#e9e4d6;margin-bottom:4px">Карта пуста</div><div style="font-size:12px">route.json не содержит мест для отображения</div></div>';
+      return null;
+    }
     const route = normalizeRouteData(routeData);
     const cfg = {...DEFAULTS, ...opts};
     
@@ -394,6 +400,7 @@ const MapEngine = (function() {
 .me-progress__fill{height:100%;background:linear-gradient(90deg,#e8c879,#e0813f,#e8c879);background-size:200% 100%;animation:meProgressFlow 1.5s linear infinite;width:0%;transition:width .3s}
 @keyframes meProgressFlow{0%{background-position:200% 0}100%{background-position:-200% 0}}
 
+.me-error{position:absolute;inset:0;z-index:100;display:flex;flex-direction:column;align-items:center;justify-content:center;background:rgba(7,10,16,.95);color:#9aa2ae;font-family:Georgia,serif;gap:8px}.me-error__icon{font-size:48px}.me-error__title{font-size:16px;color:#e9e4d6}.me-error__msg{font-size:12px}
 @media(min-width:640px){.me-life{display:block}}
 
 
@@ -409,6 +416,7 @@ const MapEngine = (function() {
 .me-progress__fill{height:100%;background:linear-gradient(90deg,#e8c879,#e0813f,#e8c879);background-size:200% 100%;animation:meProgressFlow 1.5s linear infinite;width:0%;transition:width .3s}
 @keyframes meProgressFlow{0%{background-position:200% 0}100%{background-position:-200% 0}}
 
+.me-error{position:absolute;inset:0;z-index:100;display:flex;flex-direction:column;align-items:center;justify-content:center;background:rgba(7,10,16,.95);color:#9aa2ae;font-family:Georgia,serif;gap:8px}.me-error__icon{font-size:48px}.me-error__title{font-size:16px;color:#e9e4d6}.me-error__msg{font-size:12px}
 @media(min-width:640px){.me-panel__resize{display:block}}
 
 
@@ -434,6 +442,7 @@ const MapEngine = (function() {
 .me-progress__fill{height:100%;background:linear-gradient(90deg,#e8c879,#e0813f,#e8c879);background-size:200% 100%;animation:meProgressFlow 1.5s linear infinite;width:0%;transition:width .3s}
 @keyframes meProgressFlow{0%{background-position:200% 0}100%{background-position:-200% 0}}
 
+.me-error{position:absolute;inset:0;z-index:100;display:flex;flex-direction:column;align-items:center;justify-content:center;background:rgba(7,10,16,.95);color:#9aa2ae;font-family:Georgia,serif;gap:8px}.me-error__icon{font-size:48px}.me-error__title{font-size:16px;color:#e9e4d6}.me-error__msg{font-size:12px}
 @media(min-width:640px){.me-life{display:block}}
 
 
@@ -449,6 +458,7 @@ const MapEngine = (function() {
 .me-progress__fill{height:100%;background:linear-gradient(90deg,#e8c879,#e0813f,#e8c879);background-size:200% 100%;animation:meProgressFlow 1.5s linear infinite;width:0%;transition:width .3s}
 @keyframes meProgressFlow{0%{background-position:200% 0}100%{background-position:-200% 0}}
 
+.me-error{position:absolute;inset:0;z-index:100;display:flex;flex-direction:column;align-items:center;justify-content:center;background:rgba(7,10,16,.95);color:#9aa2ae;font-family:Georgia,serif;gap:8px}.me-error__icon{font-size:48px}.me-error__title{font-size:16px;color:#e9e4d6}.me-error__msg{font-size:12px}
 @media(min-width:640px){.me-minimap{width:170px;height:128px;bottom:12px;right:60px}}
 
 
@@ -489,6 +499,7 @@ const MapEngine = (function() {
 .me-progress__fill{height:100%;background:linear-gradient(90deg,#e8c879,#e0813f,#e8c879);background-size:200% 100%;animation:meProgressFlow 1.5s linear infinite;width:0%;transition:width .3s}
 @keyframes meProgressFlow{0%{background-position:200% 0}100%{background-position:-200% 0}}
 
+.me-error{position:absolute;inset:0;z-index:100;display:flex;flex-direction:column;align-items:center;justify-content:center;background:rgba(7,10,16,.95);color:#9aa2ae;font-family:Georgia,serif;gap:8px}.me-error__icon{font-size:48px}.me-error__title{font-size:16px;color:#e9e4d6}.me-error__msg{font-size:12px}
 @media(min-width:640px){.me-life{display:block}}
 
 
@@ -504,6 +515,7 @@ const MapEngine = (function() {
 .me-progress__fill{height:100%;background:linear-gradient(90deg,#e8c879,#e0813f,#e8c879);background-size:200% 100%;animation:meProgressFlow 1.5s linear infinite;width:0%;transition:width .3s}
 @keyframes meProgressFlow{0%{background-position:200% 0}100%{background-position:-200% 0}}
 
+.me-error{position:absolute;inset:0;z-index:100;display:flex;flex-direction:column;align-items:center;justify-content:center;background:rgba(7,10,16,.95);color:#9aa2ae;font-family:Georgia,serif;gap:8px}.me-error__icon{font-size:48px}.me-error__title{font-size:16px;color:#e9e4d6}.me-error__msg{font-size:12px}
 @media(min-width:640px){.me-panel__resize{display:block}}
 
 
@@ -529,6 +541,7 @@ const MapEngine = (function() {
 .me-progress__fill{height:100%;background:linear-gradient(90deg,#e8c879,#e0813f,#e8c879);background-size:200% 100%;animation:meProgressFlow 1.5s linear infinite;width:0%;transition:width .3s}
 @keyframes meProgressFlow{0%{background-position:200% 0}100%{background-position:-200% 0}}
 
+.me-error{position:absolute;inset:0;z-index:100;display:flex;flex-direction:column;align-items:center;justify-content:center;background:rgba(7,10,16,.95);color:#9aa2ae;font-family:Georgia,serif;gap:8px}.me-error__icon{font-size:48px}.me-error__title{font-size:16px;color:#e9e4d6}.me-error__msg{font-size:12px}
 @media(min-width:640px){.me-life{display:block}}
 
 
@@ -544,6 +557,7 @@ const MapEngine = (function() {
 .me-progress__fill{height:100%;background:linear-gradient(90deg,#e8c879,#e0813f,#e8c879);background-size:200% 100%;animation:meProgressFlow 1.5s linear infinite;width:0%;transition:width .3s}
 @keyframes meProgressFlow{0%{background-position:200% 0}100%{background-position:-200% 0}}
 
+.me-error{position:absolute;inset:0;z-index:100;display:flex;flex-direction:column;align-items:center;justify-content:center;background:rgba(7,10,16,.95);color:#9aa2ae;font-family:Georgia,serif;gap:8px}.me-error__icon{font-size:48px}.me-error__title{font-size:16px;color:#e9e4d6}.me-error__msg{font-size:12px}
 @media(min-width:640px){.me-intro__title{font-size:38px}.me-intro__he{font-size:20px}}
 
 
@@ -620,6 +634,7 @@ const MapEngine = (function() {
 .me-progress__fill{height:100%;background:linear-gradient(90deg,#e8c879,#e0813f,#e8c879);background-size:200% 100%;animation:meProgressFlow 1.5s linear infinite;width:0%;transition:width .3s}
 @keyframes meProgressFlow{0%{background-position:200% 0}100%{background-position:-200% 0}}
 
+.me-error{position:absolute;inset:0;z-index:100;display:flex;flex-direction:column;align-items:center;justify-content:center;background:rgba(7,10,16,.95);color:#9aa2ae;font-family:Georgia,serif;gap:8px}.me-error__icon{font-size:48px}.me-error__title{font-size:16px;color:#e9e4d6}.me-error__msg{font-size:12px}
 @media(min-width:640px){.me-life{display:block}}
 
 
@@ -635,6 +650,7 @@ const MapEngine = (function() {
 .me-progress__fill{height:100%;background:linear-gradient(90deg,#e8c879,#e0813f,#e8c879);background-size:200% 100%;animation:meProgressFlow 1.5s linear infinite;width:0%;transition:width .3s}
 @keyframes meProgressFlow{0%{background-position:200% 0}100%{background-position:-200% 0}}
 
+.me-error{position:absolute;inset:0;z-index:100;display:flex;flex-direction:column;align-items:center;justify-content:center;background:rgba(7,10,16,.95);color:#9aa2ae;font-family:Georgia,serif;gap:8px}.me-error__icon{font-size:48px}.me-error__title{font-size:16px;color:#e9e4d6}.me-error__msg{font-size:12px}
 @media(min-width:640px){.me-panel__resize{display:block}}
 
 
@@ -660,6 +676,7 @@ const MapEngine = (function() {
 .me-progress__fill{height:100%;background:linear-gradient(90deg,#e8c879,#e0813f,#e8c879);background-size:200% 100%;animation:meProgressFlow 1.5s linear infinite;width:0%;transition:width .3s}
 @keyframes meProgressFlow{0%{background-position:200% 0}100%{background-position:-200% 0}}
 
+.me-error{position:absolute;inset:0;z-index:100;display:flex;flex-direction:column;align-items:center;justify-content:center;background:rgba(7,10,16,.95);color:#9aa2ae;font-family:Georgia,serif;gap:8px}.me-error__icon{font-size:48px}.me-error__title{font-size:16px;color:#e9e4d6}.me-error__msg{font-size:12px}
 @media(min-width:640px){.me-life{display:block}}
 
 
@@ -675,6 +692,7 @@ const MapEngine = (function() {
 .me-progress__fill{height:100%;background:linear-gradient(90deg,#e8c879,#e0813f,#e8c879);background-size:200% 100%;animation:meProgressFlow 1.5s linear infinite;width:0%;transition:width .3s}
 @keyframes meProgressFlow{0%{background-position:200% 0}100%{background-position:-200% 0}}
 
+.me-error{position:absolute;inset:0;z-index:100;display:flex;flex-direction:column;align-items:center;justify-content:center;background:rgba(7,10,16,.95);color:#9aa2ae;font-family:Georgia,serif;gap:8px}.me-error__icon{font-size:48px}.me-error__title{font-size:16px;color:#e9e4d6}.me-error__msg{font-size:12px}
 @media(min-width:640px){.me-minimap{width:170px;height:128px;bottom:12px;right:60px}}
 
 
@@ -715,6 +733,7 @@ const MapEngine = (function() {
 .me-progress__fill{height:100%;background:linear-gradient(90deg,#e8c879,#e0813f,#e8c879);background-size:200% 100%;animation:meProgressFlow 1.5s linear infinite;width:0%;transition:width .3s}
 @keyframes meProgressFlow{0%{background-position:200% 0}100%{background-position:-200% 0}}
 
+.me-error{position:absolute;inset:0;z-index:100;display:flex;flex-direction:column;align-items:center;justify-content:center;background:rgba(7,10,16,.95);color:#9aa2ae;font-family:Georgia,serif;gap:8px}.me-error__icon{font-size:48px}.me-error__title{font-size:16px;color:#e9e4d6}.me-error__msg{font-size:12px}
 @media(min-width:640px){.me-life{display:block}}
 
 
@@ -730,6 +749,7 @@ const MapEngine = (function() {
 .me-progress__fill{height:100%;background:linear-gradient(90deg,#e8c879,#e0813f,#e8c879);background-size:200% 100%;animation:meProgressFlow 1.5s linear infinite;width:0%;transition:width .3s}
 @keyframes meProgressFlow{0%{background-position:200% 0}100%{background-position:-200% 0}}
 
+.me-error{position:absolute;inset:0;z-index:100;display:flex;flex-direction:column;align-items:center;justify-content:center;background:rgba(7,10,16,.95);color:#9aa2ae;font-family:Georgia,serif;gap:8px}.me-error__icon{font-size:48px}.me-error__title{font-size:16px;color:#e9e4d6}.me-error__msg{font-size:12px}
 @media(min-width:640px){.me-panel__resize{display:block}}
 
 
@@ -755,6 +775,7 @@ const MapEngine = (function() {
 .me-progress__fill{height:100%;background:linear-gradient(90deg,#e8c879,#e0813f,#e8c879);background-size:200% 100%;animation:meProgressFlow 1.5s linear infinite;width:0%;transition:width .3s}
 @keyframes meProgressFlow{0%{background-position:200% 0}100%{background-position:-200% 0}}
 
+.me-error{position:absolute;inset:0;z-index:100;display:flex;flex-direction:column;align-items:center;justify-content:center;background:rgba(7,10,16,.95);color:#9aa2ae;font-family:Georgia,serif;gap:8px}.me-error__icon{font-size:48px}.me-error__title{font-size:16px;color:#e9e4d6}.me-error__msg{font-size:12px}
 @media(min-width:640px){.me-life{display:block}}
 
 
@@ -770,6 +791,7 @@ const MapEngine = (function() {
 .me-progress__fill{height:100%;background:linear-gradient(90deg,#e8c879,#e0813f,#e8c879);background-size:200% 100%;animation:meProgressFlow 1.5s linear infinite;width:0%;transition:width .3s}
 @keyframes meProgressFlow{0%{background-position:200% 0}100%{background-position:-200% 0}}
 
+.me-error{position:absolute;inset:0;z-index:100;display:flex;flex-direction:column;align-items:center;justify-content:center;background:rgba(7,10,16,.95);color:#9aa2ae;font-family:Georgia,serif;gap:8px}.me-error__icon{font-size:48px}.me-error__title{font-size:16px;color:#e9e4d6}.me-error__msg{font-size:12px}
 @media(min-width:640px){.me-legend{display:block}}
 .me-search{position:absolute;top:8px;right:48px;z-index:15;width:160px;padding:5px 10px;border-radius:8px;border:1px solid rgba(255,255,255,.1);background:rgba(0,0,0,.5);color:#e9e4d6;font-size:11px;font-family:inherit;backdrop-filter:blur(8px);outline:none;transition:border-color .2s}
 .me-search:focus{border-color:rgba(232,200,121,.4);width:200px}
@@ -874,6 +896,7 @@ const MapEngine = (function() {
 .me-progress__fill{height:100%;background:linear-gradient(90deg,#e8c879,#e0813f,#e8c879);background-size:200% 100%;animation:meProgressFlow 1.5s linear infinite;width:0%;transition:width .3s}
 @keyframes meProgressFlow{0%{background-position:200% 0}100%{background-position:-200% 0}}
 
+.me-error{position:absolute;inset:0;z-index:100;display:flex;flex-direction:column;align-items:center;justify-content:center;background:rgba(7,10,16,.95);color:#9aa2ae;font-family:Georgia,serif;gap:8px}.me-error__icon{font-size:48px}.me-error__title{font-size:16px;color:#e9e4d6}.me-error__msg{font-size:12px}
 @media(min-width:640px){.me-life{display:block}}
 
 
@@ -889,6 +912,7 @@ const MapEngine = (function() {
 .me-progress__fill{height:100%;background:linear-gradient(90deg,#e8c879,#e0813f,#e8c879);background-size:200% 100%;animation:meProgressFlow 1.5s linear infinite;width:0%;transition:width .3s}
 @keyframes meProgressFlow{0%{background-position:200% 0}100%{background-position:-200% 0}}
 
+.me-error{position:absolute;inset:0;z-index:100;display:flex;flex-direction:column;align-items:center;justify-content:center;background:rgba(7,10,16,.95);color:#9aa2ae;font-family:Georgia,serif;gap:8px}.me-error__icon{font-size:48px}.me-error__title{font-size:16px;color:#e9e4d6}.me-error__msg{font-size:12px}
 @media(min-width:640px){.me-panel__resize{display:block}}
 
 
@@ -914,6 +938,7 @@ const MapEngine = (function() {
 .me-progress__fill{height:100%;background:linear-gradient(90deg,#e8c879,#e0813f,#e8c879);background-size:200% 100%;animation:meProgressFlow 1.5s linear infinite;width:0%;transition:width .3s}
 @keyframes meProgressFlow{0%{background-position:200% 0}100%{background-position:-200% 0}}
 
+.me-error{position:absolute;inset:0;z-index:100;display:flex;flex-direction:column;align-items:center;justify-content:center;background:rgba(7,10,16,.95);color:#9aa2ae;font-family:Georgia,serif;gap:8px}.me-error__icon{font-size:48px}.me-error__title{font-size:16px;color:#e9e4d6}.me-error__msg{font-size:12px}
 @media(min-width:640px){.me-life{display:block}}
 
 
@@ -929,6 +954,7 @@ const MapEngine = (function() {
 .me-progress__fill{height:100%;background:linear-gradient(90deg,#e8c879,#e0813f,#e8c879);background-size:200% 100%;animation:meProgressFlow 1.5s linear infinite;width:0%;transition:width .3s}
 @keyframes meProgressFlow{0%{background-position:200% 0}100%{background-position:-200% 0}}
 
+.me-error{position:absolute;inset:0;z-index:100;display:flex;flex-direction:column;align-items:center;justify-content:center;background:rgba(7,10,16,.95);color:#9aa2ae;font-family:Georgia,serif;gap:8px}.me-error__icon{font-size:48px}.me-error__title{font-size:16px;color:#e9e4d6}.me-error__msg{font-size:12px}
 @media(min-width:640px){.me-minimap{width:170px;height:128px;bottom:12px;right:60px}}
 
 
@@ -969,6 +995,7 @@ const MapEngine = (function() {
 .me-progress__fill{height:100%;background:linear-gradient(90deg,#e8c879,#e0813f,#e8c879);background-size:200% 100%;animation:meProgressFlow 1.5s linear infinite;width:0%;transition:width .3s}
 @keyframes meProgressFlow{0%{background-position:200% 0}100%{background-position:-200% 0}}
 
+.me-error{position:absolute;inset:0;z-index:100;display:flex;flex-direction:column;align-items:center;justify-content:center;background:rgba(7,10,16,.95);color:#9aa2ae;font-family:Georgia,serif;gap:8px}.me-error__icon{font-size:48px}.me-error__title{font-size:16px;color:#e9e4d6}.me-error__msg{font-size:12px}
 @media(min-width:640px){.me-life{display:block}}
 
 
@@ -984,6 +1011,7 @@ const MapEngine = (function() {
 .me-progress__fill{height:100%;background:linear-gradient(90deg,#e8c879,#e0813f,#e8c879);background-size:200% 100%;animation:meProgressFlow 1.5s linear infinite;width:0%;transition:width .3s}
 @keyframes meProgressFlow{0%{background-position:200% 0}100%{background-position:-200% 0}}
 
+.me-error{position:absolute;inset:0;z-index:100;display:flex;flex-direction:column;align-items:center;justify-content:center;background:rgba(7,10,16,.95);color:#9aa2ae;font-family:Georgia,serif;gap:8px}.me-error__icon{font-size:48px}.me-error__title{font-size:16px;color:#e9e4d6}.me-error__msg{font-size:12px}
 @media(min-width:640px){.me-panel__resize{display:block}}
 
 
@@ -1009,6 +1037,7 @@ const MapEngine = (function() {
 .me-progress__fill{height:100%;background:linear-gradient(90deg,#e8c879,#e0813f,#e8c879);background-size:200% 100%;animation:meProgressFlow 1.5s linear infinite;width:0%;transition:width .3s}
 @keyframes meProgressFlow{0%{background-position:200% 0}100%{background-position:-200% 0}}
 
+.me-error{position:absolute;inset:0;z-index:100;display:flex;flex-direction:column;align-items:center;justify-content:center;background:rgba(7,10,16,.95);color:#9aa2ae;font-family:Georgia,serif;gap:8px}.me-error__icon{font-size:48px}.me-error__title{font-size:16px;color:#e9e4d6}.me-error__msg{font-size:12px}
 @media(min-width:640px){.me-life{display:block}}
 
 
@@ -1024,6 +1053,7 @@ const MapEngine = (function() {
 .me-progress__fill{height:100%;background:linear-gradient(90deg,#e8c879,#e0813f,#e8c879);background-size:200% 100%;animation:meProgressFlow 1.5s linear infinite;width:0%;transition:width .3s}
 @keyframes meProgressFlow{0%{background-position:200% 0}100%{background-position:-200% 0}}
 
+.me-error{position:absolute;inset:0;z-index:100;display:flex;flex-direction:column;align-items:center;justify-content:center;background:rgba(7,10,16,.95);color:#9aa2ae;font-family:Georgia,serif;gap:8px}.me-error__icon{font-size:48px}.me-error__title{font-size:16px;color:#e9e4d6}.me-error__msg{font-size:12px}
 @media(min-width:640px){.me-intro__title{font-size:38px}.me-intro__he{font-size:20px}}
 
 
@@ -1100,6 +1130,7 @@ const MapEngine = (function() {
 .me-progress__fill{height:100%;background:linear-gradient(90deg,#e8c879,#e0813f,#e8c879);background-size:200% 100%;animation:meProgressFlow 1.5s linear infinite;width:0%;transition:width .3s}
 @keyframes meProgressFlow{0%{background-position:200% 0}100%{background-position:-200% 0}}
 
+.me-error{position:absolute;inset:0;z-index:100;display:flex;flex-direction:column;align-items:center;justify-content:center;background:rgba(7,10,16,.95);color:#9aa2ae;font-family:Georgia,serif;gap:8px}.me-error__icon{font-size:48px}.me-error__title{font-size:16px;color:#e9e4d6}.me-error__msg{font-size:12px}
 @media(min-width:640px){.me-life{display:block}}
 
 
@@ -1115,6 +1146,7 @@ const MapEngine = (function() {
 .me-progress__fill{height:100%;background:linear-gradient(90deg,#e8c879,#e0813f,#e8c879);background-size:200% 100%;animation:meProgressFlow 1.5s linear infinite;width:0%;transition:width .3s}
 @keyframes meProgressFlow{0%{background-position:200% 0}100%{background-position:-200% 0}}
 
+.me-error{position:absolute;inset:0;z-index:100;display:flex;flex-direction:column;align-items:center;justify-content:center;background:rgba(7,10,16,.95);color:#9aa2ae;font-family:Georgia,serif;gap:8px}.me-error__icon{font-size:48px}.me-error__title{font-size:16px;color:#e9e4d6}.me-error__msg{font-size:12px}
 @media(min-width:640px){.me-panel__resize{display:block}}
 
 
@@ -1140,6 +1172,7 @@ const MapEngine = (function() {
 .me-progress__fill{height:100%;background:linear-gradient(90deg,#e8c879,#e0813f,#e8c879);background-size:200% 100%;animation:meProgressFlow 1.5s linear infinite;width:0%;transition:width .3s}
 @keyframes meProgressFlow{0%{background-position:200% 0}100%{background-position:-200% 0}}
 
+.me-error{position:absolute;inset:0;z-index:100;display:flex;flex-direction:column;align-items:center;justify-content:center;background:rgba(7,10,16,.95);color:#9aa2ae;font-family:Georgia,serif;gap:8px}.me-error__icon{font-size:48px}.me-error__title{font-size:16px;color:#e9e4d6}.me-error__msg{font-size:12px}
 @media(min-width:640px){.me-life{display:block}}
 
 
@@ -1155,6 +1188,7 @@ const MapEngine = (function() {
 .me-progress__fill{height:100%;background:linear-gradient(90deg,#e8c879,#e0813f,#e8c879);background-size:200% 100%;animation:meProgressFlow 1.5s linear infinite;width:0%;transition:width .3s}
 @keyframes meProgressFlow{0%{background-position:200% 0}100%{background-position:-200% 0}}
 
+.me-error{position:absolute;inset:0;z-index:100;display:flex;flex-direction:column;align-items:center;justify-content:center;background:rgba(7,10,16,.95);color:#9aa2ae;font-family:Georgia,serif;gap:8px}.me-error__icon{font-size:48px}.me-error__title{font-size:16px;color:#e9e4d6}.me-error__msg{font-size:12px}
 @media(min-width:640px){.me-minimap{width:170px;height:128px;bottom:12px;right:60px}}
 
 
@@ -1195,6 +1229,7 @@ const MapEngine = (function() {
 .me-progress__fill{height:100%;background:linear-gradient(90deg,#e8c879,#e0813f,#e8c879);background-size:200% 100%;animation:meProgressFlow 1.5s linear infinite;width:0%;transition:width .3s}
 @keyframes meProgressFlow{0%{background-position:200% 0}100%{background-position:-200% 0}}
 
+.me-error{position:absolute;inset:0;z-index:100;display:flex;flex-direction:column;align-items:center;justify-content:center;background:rgba(7,10,16,.95);color:#9aa2ae;font-family:Georgia,serif;gap:8px}.me-error__icon{font-size:48px}.me-error__title{font-size:16px;color:#e9e4d6}.me-error__msg{font-size:12px}
 @media(min-width:640px){.me-life{display:block}}
 
 
@@ -1210,6 +1245,7 @@ const MapEngine = (function() {
 .me-progress__fill{height:100%;background:linear-gradient(90deg,#e8c879,#e0813f,#e8c879);background-size:200% 100%;animation:meProgressFlow 1.5s linear infinite;width:0%;transition:width .3s}
 @keyframes meProgressFlow{0%{background-position:200% 0}100%{background-position:-200% 0}}
 
+.me-error{position:absolute;inset:0;z-index:100;display:flex;flex-direction:column;align-items:center;justify-content:center;background:rgba(7,10,16,.95);color:#9aa2ae;font-family:Georgia,serif;gap:8px}.me-error__icon{font-size:48px}.me-error__title{font-size:16px;color:#e9e4d6}.me-error__msg{font-size:12px}
 @media(min-width:640px){.me-panel__resize{display:block}}
 
 
@@ -1235,6 +1271,7 @@ const MapEngine = (function() {
 .me-progress__fill{height:100%;background:linear-gradient(90deg,#e8c879,#e0813f,#e8c879);background-size:200% 100%;animation:meProgressFlow 1.5s linear infinite;width:0%;transition:width .3s}
 @keyframes meProgressFlow{0%{background-position:200% 0}100%{background-position:-200% 0}}
 
+.me-error{position:absolute;inset:0;z-index:100;display:flex;flex-direction:column;align-items:center;justify-content:center;background:rgba(7,10,16,.95);color:#9aa2ae;font-family:Georgia,serif;gap:8px}.me-error__icon{font-size:48px}.me-error__title{font-size:16px;color:#e9e4d6}.me-error__msg{font-size:12px}
 @media(min-width:640px){.me-life{display:block}}
 
 
@@ -1250,6 +1287,7 @@ const MapEngine = (function() {
 .me-progress__fill{height:100%;background:linear-gradient(90deg,#e8c879,#e0813f,#e8c879);background-size:200% 100%;animation:meProgressFlow 1.5s linear infinite;width:0%;transition:width .3s}
 @keyframes meProgressFlow{0%{background-position:200% 0}100%{background-position:-200% 0}}
 
+.me-error{position:absolute;inset:0;z-index:100;display:flex;flex-direction:column;align-items:center;justify-content:center;background:rgba(7,10,16,.95);color:#9aa2ae;font-family:Georgia,serif;gap:8px}.me-error__icon{font-size:48px}.me-error__title{font-size:16px;color:#e9e4d6}.me-error__msg{font-size:12px}
 @media(min-width:640px){
   .me-title{font-size:28px}
   .me-panel{left:12px;right:auto;bottom:12px;width:420px;border-radius:14px;border:1px solid rgba(232,200,121,.2);transform:translateX(-120%)}
@@ -1318,29 +1356,30 @@ const MapEngine = (function() {
     header.appendChild(storiesBar);
     // Search input
 const searchInput=document.createElement('input');searchInput.className='me-search';searchInput.type='text';searchInput.placeholder='Поиск места…';
+let searchTimer = null;
 _on(searchInput,'input',()=>{
-  const q=searchInput.value.toLowerCase();
-  const allG=markersG.querySelectorAll('g[transform]');
-  allG.forEach(g=>{
-    const text=g.querySelector('text');
-    if(text&&text.textContent){
-      g.style.opacity=text.textContent.toLowerCase().includes(q)?'1':'.08';
-            // Also search in route data
-            if (!q) { g.style.opacity = ''; return; }
-            let match = text.textContent.toLowerCase().includes(q);
-            if (!match) {
-              const placeId = g.getAttribute('data-place-id');
-              if (placeId) {
-                const place = (route.places||[]).find(p => p.id === placeId);
-                if (place) {
-                  const haystack = [place.story, place.bible, place.arch, place.kick, place.id1, place.id2].join(' ').toLowerCase();
-                  if (haystack.includes(q)) match = true;
-                }
-              }
-            }
-            g.style.opacity = match ? '1' : '.08';
-    }
-  });
+  if (searchTimer) clearTimeout(searchTimer);
+  searchTimer = setTimeout(() => {
+    const q = searchInput.value.toLowerCase().trim();
+    const allG = markersG.querySelectorAll('g[transform]');
+    if (!q) { allG.forEach(g => { g.style.opacity = ''; }); return; }
+    allG.forEach(g => {
+      const text = g.querySelector('text');
+      let match = false;
+      if (text && text.textContent && text.textContent.toLowerCase().includes(q)) match = true;
+      if (!match) {
+        const placeId = g.getAttribute('data-place-id');
+        if (placeId) {
+          const place = (route.places||[]).find(p => p.id === placeId);
+          if (place) {
+            const haystack = [place.story, place.bible, place.arch, place.kick, place.id1, place.id2].join(' ').toLowerCase();
+            if (haystack.includes(q)) match = true;
+          }
+        }
+      }
+      g.style.opacity = match ? '1' : '.08';
+    });
+  }, 200);
 });
 header.appendChild(searchInput);
 container.appendChild(header);
@@ -1792,7 +1831,7 @@ container.appendChild(panel);
       view.y=clamp(my-(my-view.y)*k,-cfg.padY,cfg.H0+cfg.padY-nw*cfg.H0/cfg.W0);
       view.w=nw;view.h=nw*cfg.H0/cfg.W0;
       applyViewBox();
-    },{passive:false});
+      },{passive:false});
 
     // ── Tour ──
     
@@ -1970,6 +2009,18 @@ container.appendChild(panel);
       if (e.target.closest('button,a,.me-tab')) return;
       swipeStartX = e.touches[0].clientX;
     }, {passive: true});
+    
+    // Focus trap in panel
+    panel.addEventListener('keydown', e => {
+      if (e.key !== 'Tab' || !panel.classList.contains('me-panel--open')) return;
+      const focusable = panel.querySelectorAll('button:not([disabled]), [tabindex]:not([tabindex="-1"])');
+      if (!focusable.length) return;
+      const first = focusable[0];
+      const last = focusable[focusable.length - 1];
+      if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); }
+      else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
+    });
+
     panel.addEventListener('touchend', e => {
       if (!activePlaceId) return;
       const dx = (e.changedTouches[0]?.clientX || 0) - swipeStartX;
@@ -2176,7 +2227,7 @@ container.appendChild(panel);
     getPanelModel,getPanelSections,getStoryState,getPlaceOrder,auditStoryDefinitions,
     // v0.3 rendering
     createMap,
-    version:'0.22.0',buildDate:'2026-06-16'
+    version:'0.24.0',buildDate:'2026-06-16'
   };
 })();
 
