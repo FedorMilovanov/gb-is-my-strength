@@ -1,5 +1,5 @@
 /**
- * map-engine.js v0.35 — reusable biblical map rendering engine. SVG filters + animation polish.
+ * map-engine.js v0.36 — reusable biblical map rendering engine. SVG filters + animation polish.
  *
  * PUBLIC API:
  *   // Data layer (v0.2):
@@ -770,7 +770,18 @@ header.appendChild(shareBtn);
     
     // Panel
     const panel=document.createElement('div');panel.className='me-panel';
-    panel.innerHTML='<button class="me-panel__close">×</button><div class="me-panel__resize"></div><div class="me-tour-progress" id="me-tour-bar"><div class="me-tour-progress__fill"></div></div><div class="me-panel__head"></div><div class="me-tabs"></div><div class="me-content"></div><div class="me-nav"></div>';
+    panel.innerHTML='<button class="me-panel__close">×</button><button class="me-panel__scroll-top" style="display:none;position:absolute;top:10px;right:44px;z-index:5;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);border-radius:6px;color:#9aa2ae;font-size:14px;cursor:pointer;padding:3px 7px;line-height:1">↑</button><div class="me-panel__resize"></div><div class="me-tour-progress" id="me-tour-bar"><div class="me-tour-progress__fill"></div></div><div class="me-panel__head"></div><div class="me-tabs"></div><div class="me-content"></div><div class="me-nav"></div>';
+    // Scroll-to-top button logic
+    const scrollTopBtn = panel.querySelector('.me-panel__scroll-top');
+    const contentEl = panel.querySelector('.me-content');
+    if (scrollTopBtn && contentEl) {
+      scrollTopBtn.addEventListener('click', () => { contentEl.scrollTo({top:0, behavior:'smooth'}); });
+      const origShowScroll = () => {
+        if (contentEl.scrollTop > 200) { scrollTopBtn.style.display = 'block'; }
+        else { scrollTopBtn.style.display = 'none'; }
+      };
+      contentEl.addEventListener('scroll', origShowScroll);
+    }
     // Panel resize (desktop sidebar)
     const resizeHandle = panel.querySelector('.me-panel__resize');
     let resizing = false;
@@ -882,8 +893,12 @@ container.appendChild(panel);
           const selector = layer.selector || `[data-layer="${layer.id}"]`;
           try {
             const elements = svg.querySelectorAll(selector);
-            elements.forEach(el => { el.style.opacity = isOn ? '1' : '0.15'; });
+            elements.forEach(el => {
+              el.style.transition = 'opacity .35s ease';
+              el.style.opacity = isOn ? '1' : '0.15';
+            });
           } catch(e) {}
+          showToast((layer.label||layer.id) + (isOn ? ' показан' : ' скрыт'), 1200);
           // Also toggle path visibility
           if (layer.pathSelector) {
             try {
@@ -1138,6 +1153,30 @@ container.appendChild(panel);
         <div class="me-nav__info"><span class="me-nav__counter">${idx+1} / ${vis.length}</span><div class="me-nav__dots">${vis.map((p,i)=>`<div class="me-nav__dot${i===idx?' me-nav__dot--active':''}"></div>`).join('')}</div></div>
         <button ${idx>=vis.length-1?'disabled':''} id="me-next" title="${idx<vis.length-1?esc(vis[idx+1].name):''}">→</button>
       `;
+      // Related places
+      const relatedIds = place.related||[];
+      if (relatedIds.length > 0) {
+        const relatedPlaces = relatedIds.map(rid => (route.places||[]).find(p => p.id === rid)).filter(Boolean);
+        if (relatedPlaces.length > 0) {
+          const relatedHtml = relatedPlaces.map(rp => {
+            const rc = STAGE_COLORS[rp.stage||0]||STAGE_COLORS[0];
+            return `<span class="me-related-chip" data-pid="${esc(rp.id)}" style="display:inline-block;padding:3px 10px;margin:2px 4px;border-radius:999px;border:1px solid ${rc};color:${rc};font-size:10px;cursor:pointer;transition:all .15s">${esc(rp.name)}</span>`;
+          }).join('');
+          const relatedSection = document.createElement('div');
+          relatedSection.style.cssText = 'padding:8px 16px;border-top:1px solid rgba(255,255,255,.06)';
+          relatedSection.innerHTML = '<div style="font-size:9px;color:rgba(154,162,174,.5);margin-bottom:4px">Связанные места</div>' + relatedHtml;
+          nav.parentNode.insertBefore(relatedSection, nav);
+          // Wire up clicks
+          relatedSection.querySelectorAll('.me-related-chip').forEach(chip => {
+            chip.addEventListener('mouseenter', function(){this.style.background='rgba(255,255,255,.05)';});
+            chip.addEventListener('mouseleave', function(){this.style.background='';});
+            chip.addEventListener('click', () => {
+              const pid = chip.dataset.pid;
+              if (pid && pid !== activePlaceId) open(pid);
+            });
+          });
+        }
+      }
       nav.querySelector('#me-prev')?.addEventListener('click',()=>{if(idx>0)open(vis[idx-1].id)});
       nav.querySelector('#me-next')?.addEventListener('click',()=>{if(idx<vis.length-1)open(vis[idx+1].id)});
       // Clickable nav dots
@@ -1324,8 +1363,16 @@ container.appendChild(panel);
 
     function renderStages(){
       stagesBar.innerHTML=(route.stages||[]).map((st,i)=>`
-        <div class="me-stage-dot" style="color:${STAGE_COLORS[i]}">${esc(st.n||'')}</div>
+        <div class="me-stage-dot" style="color:${STAGE_COLORS[i]};cursor:pointer" data-stage="${i}">${esc(st.n||'')}</div>
       `).join('');
+      // Click stage dot → open first place of that stage
+      stagesBar.querySelectorAll('.me-stage-dot').forEach(dot => {
+        dot.addEventListener('click', () => {
+          const si = parseInt(dot.dataset.stage);
+          const place = (route.places||[]).find(p => p.stage === si && visiblePlaces().some(v => v.id === p.id));
+          if (place) open(place.id);
+        });
+      });
     }
 
     function flyTo(cx,cy,w,duration=700){
@@ -1655,6 +1702,32 @@ container.appendChild(panel);
       if(e.key===' '||e.key==='Spacebar'){e.preventDefault();if(touring){stopTour();hideCaption()}else{startTour()};return}
       if(e.key==='?'||(e.key==='/'&&e.shiftKey)){e.preventDefault();toggleShortcutsHelp();return}
       if(!activePlaceId)return;
+      // Number keys 1-7 for tab switching
+      if(e.key>='1'&&e.key<='7'){
+        e.preventDefault();
+        const availTabs = TAB_KEYS.filter(k => {
+          const place = getActivePlace();
+          if (!place) return false;
+          if (k==='bible') return !!place.bible;
+          if (k==='arch') return !!place.arch;
+          if (k==='he') return !!place.he_deep;
+          if (k==='dispute') return !!place.dispute;
+          if (k==='photos') return !!(place.photos&&place.photos.length);
+          if (k==='extra') return !!place.bible_extra;
+          return k==='story';
+        });
+        const ti = parseInt(e.key)-1;
+        if (ti < availTabs.length) {
+          const tabKey = availTabs[ti];
+          const tabsEl = panel.querySelector('.me-tabs');
+          if (tabsEl) {
+            tabsEl.querySelectorAll('.me-tab').forEach(b => b.classList.remove('me-tab--active'));
+            const targetTab = tabsEl.querySelector('[data-tab="'+tabKey+'"]');
+            if (targetTab) { targetTab.classList.add('me-tab--active'); renderTabContent(tabKey, getActivePlace()); }
+          }
+        }
+        return;
+      }
       const vis=visiblePlaces();const idx=placeIndexInStory();
       if(e.key==='ArrowRight'&&idx<vis.length-1)open(vis[idx+1].id);
       if(e.key==='ArrowLeft'&&idx>0)open(vis[idx-1].id);
@@ -1768,7 +1841,7 @@ container.appendChild(panel);
     // Keyboard shortcuts overlay with slide-up entrance
     const shortcutsEl = document.createElement('div');
     shortcutsEl.className = 'me-shortcuts';
-    shortcutsEl.innerHTML = '<kbd>← →</kbd> навигация · <kbd>Esc</kbd> закрыть · <kbd>Space</kbd> тур · <kbd>Колёсико</kbd> масштаб · <kbd>Двойной клик</kbd> зум';
+    shortcutsEl.innerHTML = '<kbd>← →</kbd> навигация · <kbd>Esc</kbd> закрыть · <kbd>Space</kbd> тур · <kbd>1-7</kbd> вкладки · <kbd>?</kbd> помощь · <kbd>Колёсико</kbd> масштаб';
     shortcutsEl.style.transform = 'translate(-50%, 12px)';
     shortcutsEl.style.transition = 'opacity .5s ease, transform .5s cubic-bezier(.34,1.56,.64,1)';
     container.appendChild(shortcutsEl);
@@ -1848,7 +1921,7 @@ container.appendChild(panel);
     getPanelModel,getPanelSections,getStoryState,getPlaceOrder,auditStoryDefinitions,
     // v0.3 rendering
     createMap,
-    version:'0.35.0',buildDate:'2026-06-17'
+    version:'0.36.0',buildDate:'2026-06-17'
   };
 })();
 
