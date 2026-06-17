@@ -102,6 +102,9 @@ jobs:
       - name: Dist publication audit
         run: node scripts/dist-publication-audit.js --require-pagefind --forbid-dev
 
+      - name: CSS parity audit (every page must carry styles)
+        run: npm run dist:css-parity
+
       - name: Service Worker switch gate
         run: npm run sw:dist:audit:deploy-switch
 
