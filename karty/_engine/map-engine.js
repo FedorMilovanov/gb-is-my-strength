@@ -452,6 +452,20 @@ _on(searchInput,'input',()=>{
     const text=g.querySelector('text');
     if(text&&text.textContent){
       g.style.opacity=text.textContent.toLowerCase().includes(q)?'1':'.08';
+            // Also search in route data
+            if (!q) { g.style.opacity = ''; return; }
+            let match = text.textContent.toLowerCase().includes(q);
+            if (!match) {
+              const placeId = g.getAttribute('data-place-id');
+              if (placeId) {
+                const place = (route.places||[]).find(p => p.id === placeId);
+                if (place) {
+                  const haystack = [place.story, place.bible, place.arch, place.kick, place.id1, place.id2].join(' ').toLowerCase();
+                  if (haystack.includes(q)) match = true;
+                }
+              }
+            }
+            g.style.opacity = match ? '1' : '.08';
     }
   });
 });
@@ -615,7 +629,7 @@ container.appendChild(panel);
       // Waypoints
       (route.verified_waypoints||[]).forEach(wp=>{
         const g=document.createElementNS('http://www.w3.org/2000/svg','g');
-        g.setAttribute('transform',`translate(${wp.x},${wp.y})`);g.setAttribute('opacity','0.4');
+        g.setAttribute('transform',`translate(${wp.x},${wp.y})`);g.setAttribute('data-layer','wp');g.setAttribute('opacity','0.4');
         const c=document.createElementNS('http://www.w3.org/2000/svg','circle');c.setAttribute('r','3');c.setAttribute('fill','#e8c879');
         g.appendChild(c);
         const t=document.createElementNS('http://www.w3.org/2000/svg','text');t.setAttribute('x','8');t.setAttribute('y','3');
@@ -631,6 +645,10 @@ container.appendChild(panel);
         const color=STAGE_COLORS[place.stage]||STAGE_COLORS[0];
         const g=document.createElementNS('http://www.w3.org/2000/svg','g');
         g.setAttribute('transform',`translate(${place.x},${place.y})`);
+        g.setAttribute('data-place-id', place.id);
+        g.setAttribute('data-layer', `stage-${place.stage||0}`);
+        g.setAttribute('data-layer-main', '');
+        if (place.type) g.setAttribute('data-layer', `${g.getAttribute('data-layer')} ${place.type}`);
         g.style.cursor=inStory?'pointer':'default';
         g.style.opacity=inStory?'1':'.15';
         if(inStory)g.addEventListener('click',()=>open(place.id));
@@ -1030,7 +1048,7 @@ container.appendChild(panel);
     getPanelModel,getPanelSections,getStoryState,getPlaceOrder,auditStoryDefinitions,
     // v0.3 rendering
     createMap,
-    version:'0.9.0',buildDate:'2026-06-16'
+    version:'0.10.0',buildDate:'2026-06-16'
   };
 })();
 
