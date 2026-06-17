@@ -1,5 +1,5 @@
 /**
- * map-engine.js v0.25 — reusable biblical map rendering engine. SVG filters + animation polish.
+ * map-engine.js v0.26 — reusable biblical map rendering engine. SVG filters + animation polish.
  *
  * PUBLIC API:
  *   // Data layer (v0.2):
@@ -524,6 +524,16 @@ const MapEngine = (function() {
         <stop offset="100%" stop-color="#e8c879" stop-opacity="0"/>
       </radialGradient>
     `;
+    // Arrowhead markers for stage paths
+    STAGE_COLORS.forEach((clr,i) => {
+      const marker = document.createElementNS('http://www.w3.org/2000/svg','marker');
+      marker.setAttribute('id','me-arrow-'+i);
+      marker.setAttribute('markerWidth','10');marker.setAttribute('markerHeight','8');
+      marker.setAttribute('refX','9');marker.setAttribute('refY','4');
+      marker.setAttribute('orient','auto');
+      marker.innerHTML = `<path d="M0,0 L10,4 L0,8 L3,4 Z" fill="${clr}" opacity="0.7"/>`;
+      defs.appendChild(marker);
+    });
     svg.appendChild(defs);
 
     const pathsG=document.createElementNS('http://www.w3.org/2000/svg','g');pathsG.id='me-paths';svg.appendChild(pathsG);
@@ -551,6 +561,8 @@ const MapEngine = (function() {
         <polygon points="0,-14 -3,-6 3,-6" fill="#e8c879" opacity="0.8"/>
         <polygon points="0,14 -3,6 3,6" fill="rgba(255,255,255,.2)"/>
       `;
+      compass.setAttribute('id','me-compass');
+      compass.style.transition = 'transform .3s ease-out';
       svg.appendChild(compass);
     }
 
@@ -754,6 +766,12 @@ container.appendChild(panel);
     // ── SVG rendering ──
     function applyViewBox(){
       svg.setAttribute('viewBox',`${view.x} ${view.y} ${view.w} ${view.h}`);
+      // Parallax compass tilt
+      const compass = document.getElementById('me-compass');
+      if (compass) {
+        const tiltX = (view.x / cfg.W0 - 0.5) * 3;
+        compass.style.transform = `rotate(${tiltX.toFixed(1)}deg)`;
+      }
     }
 
     function renderMarkers(){
@@ -797,7 +815,7 @@ container.appendChild(panel);
         const d=places.map((p,j)=>`${j===0?'M':'L'}${p.x},${p.y}`).join(' ');
         const path=document.createElementNS('http://www.w3.org/2000/svg','path');
         path.setAttribute('d',d);path.setAttribute('fill','none');path.setAttribute('stroke',STAGE_COLORS[i]||STAGE_COLORS[0]);
-        path.setAttribute('stroke-width','3');path.setAttribute('stroke-linecap','round');path.setAttribute('opacity','0.5');
+        path.setAttribute('stroke-width','3');path.setAttribute('stroke-linecap','round');path.setAttribute('stroke-linejoin','round');path.setAttribute('opacity','0.5');path.setAttribute('marker-end','url(#me-arrow-'+i+')');
         path.setAttribute('stroke-dasharray',path.getTotalLength());path.setAttribute('stroke-dashoffset',path.getTotalLength());
         path.style.transition = 'stroke-dashoffset 1.5s '+(i*0.3)+'s cubic-bezier(.4,0,.2,1)';
         pathsG.appendChild(path);
@@ -828,19 +846,27 @@ container.appendChild(panel);
         g.setAttribute('data-layer-main', '');
         if (place.type) g.setAttribute('data-layer', `${g.getAttribute('data-layer')} ${place.type}`);
         g.style.cursor=inStory?'pointer':'default';
-        g.addEventListener('mouseenter',()=>{if(inStory){const d=g.querySelector('circle:nth-child(2)');if(d){d.setAttribute('r','7');d.setAttribute('filter','url(#me-gold-glow)');}}});
-        g.addEventListener('mouseleave',()=>{const d=g.querySelector('circle:nth-child(2)');if(d){d.setAttribute('r',(place.id===activePlaceId)?'8':'5');d.setAttribute('filter',(place.id===activePlaceId)?'url(#me-glow-strong)':'url(#me-shadow)');}});
+        g.addEventListener('mouseenter',()=>{if(inStory){const d=g.querySelector('circle:nth-child(3)');if(d){d.setAttribute('r','6');d.setAttribute('filter','url(#me-gold-glow)');}const r2=g.querySelector('circle:nth-child(2)');if(r2){r2.setAttribute('opacity','0.6');r2.setAttribute('r','14');}}});
+        g.addEventListener('mouseleave',()=>{const d=g.querySelector('circle:nth-child(3)');if(d){d.setAttribute('r',(place.id===activePlaceId)?'7':'4.5');d.setAttribute('filter',(place.id===activePlaceId)?'url(#me-glow-strong)':'url(#me-shadow)');}const r2=g.querySelector('circle:nth-child(2)');if(r2){r2.setAttribute('opacity',(place.id===activePlaceId)?'0.5':'0');r2.setAttribute('r','12');}});
         g.style.opacity=inStory?'1':'.15';
         if(inStory){
-        g.addEventListener('click',()=>{haptic();addRipple(place.x,place.y,STAGE_COLORS[place.stage]);const d2=g.querySelector('circle:nth-child(2)');if(d2){d2.style.transition='transform .15s cubic-bezier(.34,1.56,.64,1)';d2.style.transform='scale(1.4)';_tm(()=>{d2.style.transform='scale(1)';_tm(()=>{d2.style.transition='r .2s ease, fill .2s ease, filter .2s ease';},160);},160);}open(place.id);});
+        g.addEventListener('click',()=>{haptic();addRipple(place.x,place.y,STAGE_COLORS[place.stage]);const d2=g.querySelector('circle:nth-child(3)');if(d2){d2.style.transition='transform .15s cubic-bezier(.34,1.56,.64,1)';d2.style.transform='scale(1.4)';_tm(()=>{d2.style.transform='scale(1)';_tm(()=>{d2.style.transition='r .2s ease, fill .2s ease, filter .2s ease';},160);},160);}open(place.id);});
         g.addEventListener('dblclick',(e)=>{e.preventDefault();e.stopPropagation();flyTo(place.x,place.y,Math.min(view.w,450),600);});
       }
         
         const hit=document.createElementNS('http://www.w3.org/2000/svg','circle');hit.setAttribute('r','20');hit.setAttribute('fill','transparent');hit.setAttribute('stroke','transparent');hit.setAttribute('stroke-width','8');
         g.appendChild(hit);
+        // Outer ring for active state
+        const ring=document.createElementNS('http://www.w3.org/2000/svg','circle');
+        ring.setAttribute('r','12');ring.setAttribute('fill','none');
+        ring.setAttribute('stroke',color);ring.setAttribute('stroke-width','1.5');
+        ring.setAttribute('opacity',isActive?'0.5':'0');
+        ring.setAttribute('filter','url(#me-glow)');
+        ring.style.transition = 'opacity .3s ease, r .3s ease';
+        g.appendChild(ring);
         const dot=document.createElementNS('http://www.w3.org/2000/svg','circle');
-        dot.setAttribute('r',isActive?'8':'5');dot.setAttribute('fill',isActive?'#fff':color);
-        dot.setAttribute('stroke',isActive?color:'#0b0f16');dot.setAttribute('stroke-width','2');
+        dot.setAttribute('r',isActive?'7':'4.5');dot.setAttribute('fill',isActive?'#fff':color);
+        dot.setAttribute('stroke',isActive?color:'#0b0f16');dot.setAttribute('stroke-width','2.5');
         dot.setAttribute('filter',isActive?'url(#me-glow-strong)':'url(#me-shadow)');
         dot.classList.add('me-marker-spring');
         dot.style.transition = 'r .2s ease, fill .2s ease, filter .2s ease';
@@ -1283,7 +1309,7 @@ container.appendChild(panel);
           g.style.transform = orig;
         });
         // Add spring animation to marker dots
-        const dot = g.querySelector('circle:nth-child(2)');
+        const dot = g.querySelector('circle:nth-child(3)');
         if (dot) {
           dot.style.animation = `meSpringIn .5s ${i * 60 + 50}ms cubic-bezier(.34,1.56,.64,1) both`;
           dot.addEventListener('animationend', function() { this.style.animation = ''; }, {once: true});
@@ -1451,7 +1477,7 @@ container.appendChild(panel);
     getPanelModel,getPanelSections,getStoryState,getPlaceOrder,auditStoryDefinitions,
     // v0.3 rendering
     createMap,
-    version:'0.25.0',buildDate:'2026-06-17'
+    version:'0.26.0',buildDate:'2026-06-17'
   };
 })();
 
