@@ -154,7 +154,25 @@ const MapEngine = (function() {
     let tourStepIdx = 0;
     let rafId = null;
     let dragState = null;
+    let tourTimer = null;
     let view = {x:0, y:0, w:cfg.W0, h:cfg.H0};
+    
+    // Cleanup tracking
+    const _listeners = [];
+    const _timers = [];
+    function _on(el, ev, fn, opts) { el.addEventListener(ev, fn, opts); _listeners.push({el, ev, fn, opts}); }
+    function _tm(fn, ms) { const t = setTimeout(fn, ms); _timers.push(t); return t; }
+    function _cleanupAll() {
+      _listeners.forEach(l => { try { l.el.removeEventListener(l.ev, l.fn, l.opts); } catch(e) {} });
+      _listeners.length = 0;
+      _timers.forEach(t => clearTimeout(t));
+      _timers.length = 0;
+      cancelAnimationFrame(rafId);
+      if (tourTimer) clearTimeout(tourTimer);
+      // Remove injected CSS
+      const css = document.getElementById('me-base-css');
+      if (css) css.remove();
+    }
     const initVp = route.meta?.viewport_init || {cx:cfg.W0/2, cy:cfg.H0/2, w:cfg.W0};
     view = {x:initVp.cx-initVp.w/2, y:initVp.cy-(initVp.w*cfg.H0/cfg.W0)/2, w:initVp.w, h:initVp.w*cfg.H0/cfg.W0};
     if(view.w<cfg.minW)view.w=cfg.minW;
@@ -305,7 +323,7 @@ const MapEngine = (function() {
     header.appendChild(storiesBar);
     // Search input
 const searchInput=document.createElement('input');searchInput.className='me-search';searchInput.type='text';searchInput.placeholder='Поиск места…';
-searchInput.addEventListener('input',()=>{
+_on(searchInput,'input',()=>{
   const q=searchInput.value.toLowerCase();
   const allG=markersG.querySelectorAll('g[transform]');
   allG.forEach(g=>{
@@ -320,7 +338,7 @@ container.appendChild(header);
 
 // Share button
 const shareBtn=document.createElement('button');shareBtn.className='me-share-btn';shareBtn.title='Поделиться';shareBtn.textContent='↗';
-shareBtn.addEventListener('click',()=>{
+_on(shareBtn,'click',()=>{
   const st=getState();
   const params=new URLSearchParams();
   if(st.place)params.set('place',st.place);
@@ -341,17 +359,17 @@ header.appendChild(shareBtn);
     const zoomControls=document.createElement('div');zoomControls.className='me-zoom';
     zoomControls.innerHTML='<button class="me-zoom-btn" data-zoom="in" title="Приблизить">+</button><button class="me-zoom-btn" data-zoom="out" title="Отдалить">−</button><button class="me-zoom-btn" data-zoom="reset" title="Сбросить">⌂</button>';
     container.appendChild(zoomControls);
-    zoomControls.querySelector('[data-zoom=in]').addEventListener('click',()=>{
+    _on(zoomControls.querySelector('[data-zoom=in]'),'click',()=>{
       const cx=view.x+view.w/2,cy=view.y+view.h/2;
       const nw=Math.max(cfg.minW,view.w*0.7);
       flyTo(cx,cy,nw,300);
     });
-    zoomControls.querySelector('[data-zoom=out]').addEventListener('click',()=>{
+    _on(zoomControls.querySelector('[data-zoom=out]'),'click',()=>{
       const cx=view.x+view.w/2,cy=view.y+view.h/2;
       const nw=Math.min(cfg.maxW,view.w*1.4);
       flyTo(cx,cy,nw,300);
     });
-    zoomControls.querySelector('[data-zoom=reset]').addEventListener('click',()=>{
+    _on(zoomControls.querySelector('[data-zoom=reset]'),'click',()=>{
       const initVp=route.meta?.viewport_init||{cx:cfg.W0/2,cy:cfg.H0/2,w:cfg.W0};
       flyTo(initVp.cx,initVp.cy,initVp.w,500);
     });
@@ -367,7 +385,7 @@ container.appendChild(legend);
 container.appendChild(panel);
 
     // Toggle legend on click
-    legend.addEventListener('click', () => {
+    _on(legend,'click', () => {
       legend.classList.toggle('me-legend--expanded');
     });
 
@@ -549,7 +567,7 @@ container.appendChild(panel);
       renderMarkers();
     }
 
-    panel.querySelector('.me-panel__close')?.addEventListener('click',close);
+    _on(panel.querySelector('.me-panel__close'),'click',close);
 
     function setStory(storyId){
       const story=(route.stories||[]).find(s=>s.id===storyId);
@@ -560,7 +578,7 @@ container.appendChild(panel);
       renderStories();
       renderMarkers();
       renderStages();
-      setTimeout(animateMarkersIn, 150);
+      _tm(animateMarkersIn, 150);
       if(story.viewport&&Array.isArray(story.viewport))flyTo(story.viewport[0],story.viewport[1],story.viewport[2]);
     }
 
@@ -596,12 +614,12 @@ container.appendChild(panel);
     }
 
     // ── Pan/Zoom ──
-    canvas.addEventListener('pointerdown',e=>{
+    _on(canvas,'pointerdown',e=>{
       if(e.target.closest('button,a,.me-story-chip'))return;
       canvas.setPointerCapture(e.pointerId);
       dragState={sx:e.clientX,sy:e.clientY,vx:view.x,vy:view.y};
     });
-    canvas.addEventListener('pointermove',e=>{
+    _on(canvas,'pointermove',e=>{
       if(!dragState)return;
       const r=canvas.getBoundingClientRect();
       const sc=r.width/view.w;
@@ -625,7 +643,7 @@ container.appendChild(panel);
     },{passive:false});
 
     // ── Tour ──
-    let tourTimer=null;
+    
     function startTour(){
       touring=true;tourStepIdx=0;close();runTourStep();
     }
@@ -646,7 +664,7 @@ container.appendChild(panel);
       const pct=Math.round((tourStepIdx/stageIds.length)*100);
       const bar=document.getElementById('me-tour-bar');
       if(bar){bar.style.display='block';bar.querySelector('.me-tour-progress__fill').style.width=pct+'%';}
-      tourTimer=setTimeout(runTourStep,cfg.tourDelay);
+      tourTimer=_tm(runTourStep,cfg.tourDelay);
     }
 
     // ── Keyboard ──
@@ -657,22 +675,22 @@ container.appendChild(panel);
       hint.style.cssText = 'position:absolute;bottom:60px;left:50%;transform:translateX(-50%);z-index:15;padding:6px 14px;border-radius:999px;background:rgba(0,0,0,.7);color:#9aa2ae;font-size:10px;backdrop-filter:blur(8px);border:1px solid rgba(255,255,255,.08);pointer-events:none;opacity:0;transition:opacity .5s';
       hint.textContent = '← → навигация · Esc закрыть · колёсико масштаб';
       container.appendChild(hint);
-      setTimeout(() => { hint.style.opacity = '1'; setTimeout(() => { hint.style.opacity = '0'; }, 4000); }, 2000);
+      _tm(() => { hint.style.opacity = '1'; _tm(() => { hint.style.opacity = '0'; }, 4000); }, 2000);
     }
     
     // Touch swipe-to-close on mobile
     let touchStartY = 0;
-    panel.addEventListener('touchstart', (e) => {
+    _on(panel,'touchstart', (e) => {
       touchStartY = e.touches[0].clientY;
     }, {passive: true});
-    panel.addEventListener('touchmove', (e) => {
+    _on(panel,'touchmove', (e) => {
       const dy = e.touches[0].clientY - touchStartY;
       if (dy > 40 && panel.querySelector('.me-content')?.scrollTop <= 5) {
         close();
       }
     }, {passive: true});
 
-    document.addEventListener('keydown',function kh(e){
+    _on(document,'keydown',function kh(e){
       if(!container.contains(document.activeElement)&&document.activeElement!==document.body)return;
       if(e.key==='Escape'){close();return}
       if(!activePlaceId)return;
@@ -706,7 +724,7 @@ container.appendChild(panel);
         if (key === 'story') { activeStoryId = val; }
         if (key === 'place') {
           const p = (route.places||[]).find(pl => pl.id === val);
-          if (p) setTimeout(() => open(p.id), 800);
+          if (p) _tm(() => open(p.id), 800);
         }
       }
     }
@@ -724,7 +742,7 @@ container.appendChild(panel);
     const loadingEl=document.createElement('div');loadingEl.className='me-loading';
     loadingEl.innerHTML='<div class="me-loading__spinner"></div><div class="me-loading__text">Загрузка карты…</div>';
     container.appendChild(loadingEl);
-    setTimeout(()=>{loadingEl.style.opacity='0';setTimeout(()=>loadingEl.remove(),400);},600);
+    _tm(()=>{loadingEl.style.opacity='0';_tm(()=>loadingEl.remove(),400);},600);
 
     // ── Init ──
     applyViewBox();
@@ -749,7 +767,7 @@ container.appendChild(panel);
     renderStories();
     renderStages();
     const first=(route.places||[])[0];
-    if(first)setTimeout(()=>flyTo(first.x,first.y,Math.min(view.w,900)),200);
+    if(first)_tm(()=>flyTo(first.x,first.y,Math.min(view.w,900)),200);
     loadFromHash();
 
     // ── Instance ──
@@ -757,7 +775,8 @@ container.appendChild(panel);
       open,close,setStory,startTour,stopTour,flyTo,
       get routeData(){return route},
       destroy(){
-        stopTour();cancelAnimationFrame(rafId);
+        stopTour();
+        _cleanupAll();
         container.innerHTML='';container.className='';
       }
     };
@@ -772,7 +791,7 @@ container.appendChild(panel);
     getPanelModel,getPanelSections,getStoryState,getPlaceOrder,auditStoryDefinitions,
     // v0.3 rendering
     createMap,
-    version:'0.6.0',buildDate:'2026-06-16'
+    version:'0.7.0',buildDate:'2026-06-16'
   };
 })();
 

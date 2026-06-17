@@ -9,6 +9,7 @@
 
 | Версия документа | Дата | Состояние |
 |---|---|---|
+| **AGENTS-r212** | 2026-06-17 | **MapEngine architecture documentation + regression protection.** Добавлен §12.5 в AGENTS.md с полной документацией: структура файлов, история критических регрессий (модульный рефакторинг сломал Авраама и Исход — данные были выпотрошены, карта восстановлена как монолит), текущая архитектура (780 строк, 0 module references, 19 event listeners без removeEventListener), таблица использования движка картами (avraam=DATA only, остальные=createMap), правила создания новой карты, правила правки движка (НИКОГДА не удалять функции, всегда проверять avraam:audit), список известных долгов. Цель: предотвратить повторение регрессий `c94a3298`–`22abf658`. |
 | **AGENTS-r208** | 2026-06-16 | **Map Engine Astro/React/Tailwind extraction pilot (`/karty/ishod/`).** По явному разрешению владельца в Tailwind policy (п. 3, self-contained interactive sections) к проекту подключён Tailwind CSS (через `@astrojs/tailwind` с `applyBaseStyles: false` для защиты глобального CSS) и React. Создан пилотный интерактивный UI для карты Исхода (`src/components/map/MapApp.tsx`), который парсит `route.json` и рендерит UI/UX через Tailwind+React, оставляя SVG-подложку легковесной. Роут `src/pages/karty/ishod/index.astro` переведён на новый React-компонент, добавлен в `page-ownership.json` как `shadow-pilot`. Итог: `audit-pro` passed · 0 errors, `validate:static-publication` ✅, `ci:check` ✅. Архитектура готова к лёгкому добавлению десятков новых карт без Vanilla JS-костылей. |
 | **AGENTS-r211** | 2026-06-16 | **MapEngine v0.3: полный рендеринг-движок + карта Павла (3 файла).** Движок дописан до создания полноценного map-app через `MapEngine.createMap()`: автосборка DOM (SVG-холст, маркеры, waypoints, этапные пути), хедер с заголовком/ивритом/подзаголовком, чипы фильтрации по сюжетам, панель с 7 табами, навигация prev/next, pan/zoom, keyboard, тур-движок, 1KB встроенного CSS. Исход переписан на движок (652→50 строк). Создана карта Павла: `karty/pavel/route.json` (10 городов, 3 путешествия, 4 сюжета) + `index.html` + Astro shadow route — всего 3 файла. Хаб `/karty/` обновлён: Павел помечен как Интерактивная. Рецепт новой карты: route.json → `MapEngine.createMap()` → готово. Все gates: contract 42/42 ✅, maps:validate 3/3 ✅, page-ownership 45 routes ✅. |
 | **AGENTS-r210** | 2026-06-16 | **Baptisty-Rossii GBS2 shell ported to Astro + Nagornaya shadow guard strengthened.** Создан `SeriesArticleLayout.astro` (292 строки): полноценный GBS2 shell для серии «Баптисты России» — desktop sidebar rail с 10 частями (обложки + reading times + прогресс-ринг), gbs2-next/prev навигация с обложками, gbs2-timeline (5 эпох: 1867→1991), mobile header/sheet/bbar, авторская карточка с редакционным принципом. Все 10 `src/pages/baptisty-rossii/*/index.astro` обновлены на новый layout. `legacy-shadow-wrapper-audit.js` расширен: добавлены nagornaya/index, istochniki, nakhodki, seriya в ROUTES, включён guard на `tw.min.css` (проверка наличия и размера). Nagornaya (9 страниц, 16K слов, Tailwind) оставлена как shadow wrappers согласно AGENTS policy. Итог: page-ownership ✅, contract:compare 42/42 ✅, maps:validate 2/2 ✅. |
@@ -795,6 +796,95 @@ Precache список — в самом `sw.js`. При добавлении н�
 
 
 ---
+
+## 12.5. MapEngine — архитектура движка (КРИТИЧНО: читать перед любой правкой)
+
+### 12.5.1 Структура файлов
+
+```
+karty/_engine/
+├── map-engine.js          (780 строк) — ОСНОВНОЙ ФАЙЛ. Все карты грузят его.
+├── modules/
+│   ├── map-data.js        (84 строки) — валидация, нормализация, загрузка route.json
+│   ├── map-render.js      (208 строк) — альтернативный рендерер (НЕ интегрирован)
+│   ├── timeline.js        (54 строки) — компонент таймлайна
+│   └── timeline-integrated.js (67 строк) — интеграция таймлайна
+├── base-geo.svg           (38KB) — базовая география для всех карт
+└── base-geo-premium.svg   (5KB) — расширенная версия
+```
+
+### 12.5.2 ИСТОРИЯ РЕГРЕССИЙ (ЗАПРЕЩЕНО ПОВТОРЯТЬ)
+
+**Критический инцидент (2026-06-16):**
+При попытке «модульной» реорганизации движка (`9315a510`, `8f1e172c`) были
+СЛОМАНЫ карты Авраама и Исхода:
+- `route.json` данные были «выпотрошены» (gutted)
+- Авраам перестал работать и был восстановлен как монолит (`2dfa1b3e`)
+- Аудит Авраама сломался (`22abf658`, `72807e3d`)
+- Модули `map-render.js`, `map-data.js` были созданы, но НЕ интегрированы
+  в `map-engine.js` — они существуют мёртвым кодом
+
+**УРОК:**
+- ❌ НЕЛЬЗЯ рефакторить `map-engine.js` без предварительного полного понимания
+  как он используется во ВСЕХ 10 картах
+- ❌ НЕЛЬЗЯ удалять функции из `map-engine.js` — только добавлять новые
+- ❌ НЕЛЬЗЯ трогать Авраама (`karty/avraam/index.html`, 4776 строк) — 
+  это отдельное приложение, которое использует движок только для ДАННЫХ
+- ✅ Перед ЛЮБОЙ правкой движка: запустить `npm run maps:validate` и 
+  `npm run avraam:audit` (23/23 проверок)
+- ✅ После правки: все 10 карт должны проходить maps:validate
+
+### 12.5.3 Как работает движок СЕЙЧАС
+
+**map-engine.js (780 строк) — самодостаточный:**
+- Не импортирует модули (0 references to modules/)
+- Содержит ВСЮ логику: данные, рендеринг, CSS, события
+- `MapEngine.createMap(container, route, opts)` — главная точка входа
+- 19 addEventListener, 0 removeEventListener (известный долг)
+- Встроенный CSS (~103 строки) через `me-base-css` style element
+
+**Какие карты как используют движок:**
+
+| Карта | Способ | Примечание |
+|---|---|---|
+| avraam | `MapEngine.loadRoute()` + `MapEngine.validateRoute()` + `MapEngine.compareRouteData()` | Только DATA API. Весь рендеринг свой (68 функций). |
+| ishod | `MapEngine.createMap()` | Полностью на движке |
+| pavel | `MapEngine.createMap()` | Полностью на движке + timeline-integrated |
+| shoftim...revelation | `MapEngine.createMap()` | Полностью на движке |
+
+### 12.5.4 ПРАВИЛА создания новой карты
+
+```bash
+# 1. Создать route.json
+# 2. Создать index.html (шаблон ниже)
+# 3. Создать src/pages/karty/{slug}/index.astro
+# 4. Обновить migration/page-ownership.json
+# 5. Обновить data/public-content-baseline.json
+# 6. Обновить karty/index.html (карточка в хабе)
+# 7. npm run maps:validate
+# 8. npm run contract:compare
+```
+
+### 12.5.5 ПРАВИЛА правки движка
+
+1. **Никогда не удалять функции из map-engine.js** — только добавлять
+2. **Перед правкой:** `npm run maps:validate && npm run avraam:audit`
+3. **После правки:** то же самое + `node --check karty/_engine/map-engine.js`
+4. **Avraam НЕ трогать** — он использует движок только для validate/compare
+5. **Новые фичи добавлять в конец файла** — не переставлять существующий код
+6. **Модули в modules/ использовать ТОЛЬКО если они уже интегрированы в engine.js**
+   (сейчас они НЕ интегрированы — не импортировать их)
+
+### 12.5.6 Известные долги движка
+
+| Долг | Приоритет | Статус |
+|---|---|---|
+| 19 event listeners без removeEventListener | HIGH | Не исправлено |
+| Нет destroy() метода | HIGH | Не исправлено |
+| Модули не интегрированы | MEDIUM | Созданы но не подключены |
+| Авраам не на движке (свой рендеринг) | LOW | Намеренно, не трогать |
+| CSS встроен в JS | LOW | Работает, не ломать |
+
 
 ## 9. Железобетонные UI-правила (НИКОГДА не нарушать)
 
