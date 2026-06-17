@@ -344,5 +344,25 @@
       "stage": 2,
       "type": "arch"
     }
+  ],
+  "layers": [
+    {
+      "id": "journey1",
+      "label": "Первое путешествие",
+      "color": "#e8c879",
+      "on": true
+    },
+    {
+      "id": "journey2",
+      "label": "Второе путешествие",
+      "color": "#e0813f",
+      "on": true
+    },
+    {
+      "id": "journey3",
+      "label": "Третье + Рим",
+      "color": "#4a9e6e",
+      "on": true
+    }
   ]
 }
