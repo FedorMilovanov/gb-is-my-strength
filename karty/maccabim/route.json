@@ -398,5 +398,28 @@
       "color": "#e8c879",
       "on": true
     }
+  ],
+  "ctx": [
+    {
+      "id": "ctx-greece",
+      "name": "Греция",
+      "x": 600,
+      "y": 400,
+      "type": "geo"
+    },
+    {
+      "id": "ctx-persia",
+      "name": "Персия",
+      "x": 1600,
+      "y": 600,
+      "type": "geo"
+    },
+    {
+      "id": "ctx-egypt_macc",
+      "name": "Египет Птолемеев",
+      "x": 250,
+      "y": 950,
+      "type": "geo"
+    }
   ]
 }

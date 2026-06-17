@@ -512,5 +512,28 @@
       "color": "#e8c879",
       "on": true
     }
+  ],
+  "ctx": [
+    {
+      "id": "ctx-lebanon",
+      "name": "Ливан",
+      "x": 700,
+      "y": 520,
+      "type": "geo"
+    },
+    {
+      "id": "ctx-syria",
+      "name": "Сирия",
+      "x": 800,
+      "y": 500,
+      "type": "geo"
+    },
+    {
+      "id": "ctx-med_shv",
+      "name": "Великое море",
+      "x": 500,
+      "y": 700,
+      "type": "geo"
+    }
   ]
 }
