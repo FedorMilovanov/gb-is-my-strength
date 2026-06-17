@@ -25,7 +25,10 @@
 <script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"Organization","@id":"https://gospod-bog.ru/#organization","name":"Господь Бог — Сила Моя","url":"https://gospod-bog.ru/","logo":{"@type":"ImageObject","url":"https://gospod-bog.ru/icons/icon-512.png","width":512,"height":512},"sameAs":["https://t.me/fedormilovanov","https://vk.com/curtmf"]},{"@type":"WebSite","@id":"https://gospod-bog.ru/#website","name":"Господь Бог — Сила Моя","url":"https://gospod-bog.ru/","inLanguage":"ru","publisher":{"@id":"https://gospod-bog.ru/#organization"}},{"@type":"WebPage","@id":"https://gospod-bog.ru/karty/pavel/#webpage","url":"https://gospod-bog.ru/karty/pavel/","name":"Путешествия Павла — интерактивная карта","description":"Интерактивная карта миссионерских путешествий апостола Павла: 3 путешествия, 12 городов, 15 лет служения.","inLanguage":"ru","isPartOf":{"@id":"https://gospod-bog.ru/#website"},"breadcrumb":{"@id":"https://gospod-bog.ru/karty/pavel/#breadcrumb"}},{"@type":"BreadcrumbList","@id":"https://gospod-bog.ru/karty/pavel/#breadcrumb","itemListElement":[{"@type":"ListItem","position":1,"name":"Главная","item":"https://gospod-bog.ru/"},{"@type":"ListItem","position":2,"name":"Карты","item":"https://gospod-bog.ru/karty/"},{"@type":"ListItem","position":3,"name":"Путешествия Павла","item":"https://gospod-bog.ru/karty/pavel/"}]}]}</script>
 <style>
   body { margin:0; background:#070a10; color:#e9e4d6; font-family:system-ui; overflow:hidden; }
-  #stage { position:fixed; inset:0; }
+  /* height:100dvh is explicit so #stage keeps full viewport height even if a
+     module (timeline-integrated.js) sets inline position:relative, which would
+     otherwise neutralise position:fixed+inset:0 and collapse the map to 0px. */
+  #stage { position:fixed; inset:0; width:100vw; height:100dvh; }
   .back { position:fixed; top:24px; left:24px; color:#9aa2ae; text-decoration:none; font-size:13px; z-index:300; }
   .back:hover { color:#e8c879; }
   .map-timeline-integrated button {
