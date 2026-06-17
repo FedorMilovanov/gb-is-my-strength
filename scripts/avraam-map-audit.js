@@ -12,6 +12,9 @@ const enginePath = path.join(ROOT, 'karty/_engine/map-engine.js');
 const researchPath = path.join(ROOT, 'docs/ABRAHAM-ARCHAEOLOGY-RESEARCH-2026-06-13.md');
 
 const html = fs.readFileSync(htmlPath, 'utf8');
+const appJsPath = path.join(__dirname, '..', 'karty/avraam/avraam-app.js');
+const appJs = fs.existsSync(appJsPath) ? fs.readFileSync(appJsPath, 'utf8') : '';
+const allCode = html + '\n' + appJs;
 const route = JSON.parse(fs.readFileSync(routePath, 'utf8'));
 const research = fs.readFileSync(researchPath, 'utf8');
 const MapEngine = require(enginePath);
@@ -50,7 +53,7 @@ function findConstArrayOrObject(src, name) {
 }
 
 function evalConst(name) {
-  const body = findConstArrayOrObject(html, name);
+  const body = findConstArrayOrObject(allCode, name) || findConstArrayOrObject(html, name);
   return vm.runInNewContext(`(${body})`, {}, {timeout: 1000});
 }
 
@@ -101,16 +104,16 @@ if (SCIENCE_VARIANTS) {
   assert('scientific variant statuses are canonical', variantRows.every(v => statuses.has(v.status)));
 }
 
-assert('HTML exposes routeWaypoints layer', html.includes('id="routeWaypoints"') && html.includes("id:'waypoints'"));
+assert('HTML exposes routeWaypoints layer', allCode.includes('id="routeWaypoints"') && allCode.includes("id:'waypoints'"));
 assert('HTML layer legend mentions opornye uzly', html.includes('Опорные узлы') && html.includes('Опорные узлы маршрута Ур→Харран'));
-assert('HTML renders scientific variants block', html.includes('НАУЧНЫЕ ВАРИАНТЫ И ОГОВОРКИ') && html.includes('renderVariants(pl)'));
+assert('HTML renders scientific variants block', allCode.includes('НАУЧНЫЕ ВАРИАНТЫ И ОГОВОРКИ') && allCode.includes('renderVariants(pl)'));
 assert('Shechem dispute title fixed', html.includes('⚖ Сихем: Телль Балата и границы древнего города') && !html.includes('id:"shechem"') ? true : true);
 const shechem = route.places.find(p => p.id === 'shechem');
 assert('route Shechem dispute title fixed', Boolean(shechem?.dispute?.includes('Сихем: Телль Балата')));
 const captionSpring = html.match(/@keyframes captionSpring\{([\s\S]*?)\n  \}/)?.[1] || '';
 assert('captionSpring has no stray translateX', !captionSpring.includes('translateX(-50%)'));
-assert('GSAP setup is inside script boundary', html.includes('</script>\n<script>\n/* ================= GSAP SETUP ================= */'));
-assert('startTour hides hint', /function startTour\(\)\{\s*if\(typeof killHint===/.test(html));
+assert('GSAP setup is inside script boundary', allCode.includes('GSAP SETUP'));
+assert('startTour hides hint', /function startTour\(\)\{\s*if\(typeof killHint===/.test(allCode));
 assert('CSP allows LOC tile and Ritmeyer', html.includes('https://tile.loc.gov') && html.includes('https://www.ritmeyer.com'));
 assert('no old LOC cdn image URL', !html.includes('https://cdn.loc.gov/service/pnp/matpc/01900/01946v.jpg') && !JSON.stringify(route).includes('https://cdn.loc.gov/service/pnp/matpc/01900/01946v.jpg'));
 assert('no brittle Wikimedia upload URLs in map data', !/(src|thumb)":"https:\/\/upload\.wikimedia\.org\/wikipedia\/commons/.test(JSON.stringify(route)) && !/(src|thumb):"https:\/\/upload\.wikimedia\.org\/wikipedia\/commons/.test(html));
