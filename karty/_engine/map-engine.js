@@ -1547,6 +1547,7 @@ container.appendChild(panel);
     _on(document,'keydown',function kh(e){
       if(!container.contains(document.activeElement)&&document.activeElement!==document.body)return;
       if(e.key==='Escape'){close();return}
+      if(e.key===' '||e.key==='Spacebar'){e.preventDefault();if(touring){stopTour();hideCaption()}else{startTour()};return}
       if(!activePlaceId)return;
       const vis=visiblePlaces();const idx=placeIndexInStory();
       if(e.key==='ArrowRight'&&idx<vis.length-1)open(vis[idx+1].id);
