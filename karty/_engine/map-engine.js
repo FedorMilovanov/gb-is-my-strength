@@ -1,5 +1,5 @@
 /**
- * map-engine.js v0.38 — reusable biblical map rendering engine. SVG filters + animation polish.
+ * map-engine.js v0.39 — reusable biblical map rendering engine. SVG filters + animation polish.
  *
  * PUBLIC API:
  *   // Data layer (v0.2):
@@ -593,7 +593,7 @@ const MapEngine = (function() {
     const storiesBar=document.createElement('div');storiesBar.className='me-stories';
     header.appendChild(storiesBar);
     // Search input
-const searchInput=document.createElement('input');searchInput.className='me-search';searchInput.type='text';searchInput.placeholder='Поиск места…';
+const searchInput=document.createElement('input');searchInput.className='me-search';searchInput.type='text';searchInput.placeholder='Поиск места…';searchInput.setAttribute('aria-label','Поиск места на карте');searchInput.setAttribute('role','searchbox');
 let searchTimer = null;
 _on(searchInput,'input',()=>{
   if (searchTimer) clearTimeout(searchTimer);
@@ -1289,6 +1289,11 @@ container.appendChild(panel);
       activePlaceId=id;
       panel.classList.add('me-panel--open');
       panelBackdrop.classList.add('me-panel__backdrop--active');
+      // Auto-focus first tab for keyboard navigation
+      _tm(() => {
+        const firstTab = panel.querySelector('.me-tab');
+        if (firstTab) firstTab.focus();
+      }, 400);
       document.body.style.overflow = 'hidden';
       updateHash();
       renderMarkers();
@@ -1342,6 +1347,8 @@ container.appendChild(panel);
       });
       panelBackdrop.classList.remove('me-panel__backdrop--active');
       document.body.style.overflow = '';
+      // Return focus to search input
+      _tm(() => { if (searchInput) searchInput.focus(); }, 100);
       hideCaption();
       updateHash();
       renderMarkers();
@@ -1796,6 +1803,10 @@ container.appendChild(panel);
       const vis=visiblePlaces();const idx=placeIndexInStory();
       if(e.key==='ArrowRight'&&idx<vis.length-1)open(vis[idx+1].id);
       if(e.key==='ArrowLeft'&&idx>0)open(vis[idx-1].id);
+      if(e.key==='PageDown'&&idx<vis.length-1){e.preventDefault();open(vis[Math.min(idx+3,vis.length-1)].id);}
+      if(e.key==='PageUp'&&idx>0){e.preventDefault();open(vis[Math.max(idx-3,0)].id);}
+      if(e.key==='Home'&&idx>0){e.preventDefault();open(vis[0].id);}
+      if(e.key==='End'&&idx<vis.length-1){e.preventDefault();open(vis[vis.length-1].id);}
     });
 
     // ── Marker entrance animation ──
@@ -1897,7 +1908,8 @@ container.appendChild(panel);
 
     // ── Loading state ──
     const loadingEl=document.createElement('div');loadingEl.className='me-loading';
-    loadingEl.innerHTML='<div class="me-loading__spinner"></div><div class="me-loading__text">Загрузка карты…</div>';
+    const placeCount = (route.places||[]).length;
+    loadingEl.innerHTML='<div class="me-loading__spinner"></div><div class="me-loading__text">Загрузка карты…</div><div style="font-size:10px;color:rgba(154,162,174,.4);margin-top:4px">'+placeCount+' мест · '+(route.stages||[]).length+' этапов</div>';
     container.appendChild(loadingEl);
     _tm(()=>{loadingEl.style.opacity='0';_tm(()=>loadingEl.remove(),400);},600);
 
@@ -1986,7 +1998,7 @@ container.appendChild(panel);
     getPanelModel,getPanelSections,getStoryState,getPlaceOrder,auditStoryDefinitions,
     // v0.3 rendering
     createMap,
-    version:'0.38.0',buildDate:'2026-06-17'
+    version:'0.39.0',buildDate:'2026-06-17'
   };
 })();
 
