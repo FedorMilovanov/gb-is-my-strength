@@ -88,6 +88,19 @@ if (PLACES) {
   assert('HTML PLACES count = 19', PLACES.length === 19, String(PLACES.length));
   assert('route places count = 19', route.places.length === 19, String(route.places.length));
   assert('HTML and route place IDs match', JSON.stringify(ids) === JSON.stringify(routeIds), `${ids.join(',')} :: ${routeIds.join(',')}`);
+  // Coordinate drift: every shared place must have identical x,y in inline data and route.json.
+  // Closes the last data-sync gap (compareRouteData checks this at runtime; now enforced in CI).
+  if (ids.join(',') === routeIds.join(',')) {
+    const drift = PLACES
+      .map(p => {
+        const r = route.places.find(q => q.id === p.id);
+        if (!r) return null;
+        if (p.x !== r.x || p.y !== r.y) return `${p.id} html(${p.x},${p.y}) route(${r.x},${r.y})`;
+        return null;
+      })
+      .filter(Boolean);
+    assert('inline and route place coordinates match', drift.length === 0, drift.join('; '));
+  }
   assert('every place has scientific variants', ids.every(id => Array.isArray(SCIENCE_VARIANTS?.[id]) && SCIENCE_VARIANTS[id].length > 0));
 }
 
