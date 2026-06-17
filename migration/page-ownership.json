@@ -308,6 +308,12 @@
       "source": "src/pages/karty/early-church/index.astro",
       "risk": 2,
       "status": "shadow-pilot"
+    },
+    "/karty/revelation/": {
+      "owner": "astro",
+      "source": "src/pages/karty/revelation/index.astro",
+      "risk": 2,
+      "status": "shadow-pilot"
     }
   }
 }
