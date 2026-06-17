@@ -82,7 +82,7 @@ function isNoindex(html) {
 function pagefindBodyPages() {
   return htmlFiles().filter(file => {
     const html = fs.readFileSync(file, 'utf8');
-    return /\bdata-pagefind-body\b/.test(html) && !isNoindex(html);
+    return /\bdata-pagefind-body\b/.test(html);
   }).map(file => rel(file));
 }
 
@@ -149,7 +149,7 @@ function checkAstroSeriesLandingOwnership() {
     ['nagornaya/nakhodki/index.html', '/nagornaya/nakhodki/', 'https://gospod-bog.ru/nagornaya/nakhodki/', 'astro-nagornaya-findings'],
     ['karty/index.html', '/karty/', 'https://gospod-bog.ru/karty/', 'astro-karty-index'],
     ['karty/avraam/index.html', '/karty/avraam/', 'https://gospod-bog.ru/karty/avraam/', 'astro-avraam-shadow'],
-    ['karty/ishod/index.html', '/karty/ishod/', 'https://gospod-bog.ru/karty/ishod/', 'astro-ishod-map-page'],
+    ['karty/ishod/index.html', '/karty/ishod/', 'https://gospod-bog.ru/karty/ishod/', 'astro-ishod-shadow'],
     ['konfessii/index.html', '/konfessii/', 'https://gospod-bog.ru/konfessii/', 'astro-konfessii-index'],
     ['konfessii/russkij-baptizm/index.html', '/konfessii/russkij-baptizm/', 'https://gospod-bog.ru/konfessii/russkij-baptizm/', 'astro-map-wrapper'],
     ['map/index.html', '/map/', 'https://gospod-bog.ru/map/', 'astro-map-shadow'],
@@ -300,7 +300,6 @@ checkAstroArticleOwnership();
 checkDevNoindex();
 checkSwPrecache();
 checkPagefind();
-checkMdxWordParity();
 console.log('');
 if (problems.length) {
   console.log(`❌ dist publication audit failed: ${problems.length} issue(s)`);

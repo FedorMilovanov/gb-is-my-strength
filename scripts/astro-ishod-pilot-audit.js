@@ -37,13 +37,13 @@ function meta(html, name) {
   const escaped = name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
   const re = new RegExp(`<meta\\b([^>]*\\b(?:name|property)=["']${escaped}["'][^>]*)>`, 'i');
   const m = html.match(re);
-  return m?.[1]?.match(/\\bcontent=["']([^"']*)["']/i)?.[1]?.trim() || '';
+  return m?.[1]?.match(new RegExp(`\\bcontent=["']([^"']*)["']`, 'i'))?.[1]?.trim() || '';
 }
 function canonical(html) {
   const links = [...html.matchAll(/<link\b([^>]+)>/gi)];
   for (const link of links) {
-    if (!/\\brel=["']canonical["']/i.test(link[1])) continue;
-    return link[1].match(/\\bhref=["']([^"']+)["']/i)?.[1]?.trim() || '';
+    if (!/\brel=["']canonical["']/i.test(link[1])) continue;
+    return link[1].match(/\bhref=["']([^"']+)["']/i)?.[1]?.trim() || '';
   }
   return '';
 }
@@ -84,17 +84,18 @@ function main() {
 
   mustContain('ishod pagefind body', astro, 'data-pagefind-body');
   mustContain('ishod sr-only SEO text', astro, 'Исход из Египта');
-  mustContain('ishod MapApp React component', astro, 'MapApp');
-  mustContain('ishod route.json reference', astro, 'route.json');
-  mustContain('ishod base-geo reference', astro, 'base-geo.svg');
-
+  
+  // Cinematic map tests
+  mustContain('ishod route data fetch', astro, 'route.json');
+  mustContain('ishod map engine import', astro, 'map-engine.js');
+  mustContain('ishod interactive stage', astro, 'id="stage"');
+  
   console.log('');
   if (problems.length) {
     console.log(`❌ astro ishod shadow audit failed: ${problems.length} issue(s)`);
     process.exit(1);
   }
   console.log('✅ astro ishod shadow audit passed');
-  if (notes.length) console.log('ℹ️ Notes remain for future full map-app pass.');
 }
 
 main();
