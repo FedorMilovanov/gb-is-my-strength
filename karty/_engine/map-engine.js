@@ -1,5 +1,5 @@
 /**
- * map-engine.js v0.43 — reusable biblical map rendering engine. SVG filters + animation polish.
+ * map-engine.js v0.44 — reusable biblical map rendering engine. SVG filters + animation polish.
  *
  * PUBLIC API:
  *   // Data layer (v0.2):
@@ -132,6 +132,35 @@ const MapEngine = (function() {
         {ref:"Museum of the Bible exhibition (2025-2026)", text:"Выставка в Музее Библии: Бытие, Иов, Псалмы, Храмовый свиток. 200+ артефактов IAA. 75-летие открытия свитков.", src:"Museum of the Bible; IAA"},
         {ref:"Cave of Horror fragments (2021)", text:"Новые фрагменты Захарии и Наума (греческий) из Пещеры ужаса. Радиоуглерод: II в. н.э. — время Бар-Кохбы.", src:"IAA"},
         {ref:"Qumran Cave 12 (2017)", text:"12-я пещера Кумрана: найдены jar-фрагменты, кожаные ремни, ткань. Операция 'Свиток'.", src:"Hebrew University; IAA"},
+      ]
+    },
+    babylonian_exile: {
+      title: "Вавилонский плен: археология",
+      items: [
+        {ref:"Babylonian Chronicle (BM 21946)", text:"Вавилонская хроника: «В седьмой год [Навуходоносора] он захватил город Иуды и назначил царя по своему выбору» — 597 г. до н.э. Точное соответствие 4Цар 24:10-17.", src:"British Museum"},
+        {ref:"Jehoiachin ration tablets", text:"4 клинописные таблички из хранилищ Навуходоносора: «Яу-кину, царь земли Яхуд», получал масляный паёк с 5 сыновьями. 561-560 гг. до н.э. — 4Цар 25:27-30.", src:"British Museum BM 115338"},
+        {ref:"Lachish Letters (ostraca)", text:"21 остракон из сторожки ворот Лахиса. Письмо IV: «Мы не видим сигналов Азеки» — последние дни перед падением (588 г.). Иер 34:7: только Лахис и Азека оставались.", src:"Israel Museum; British Museum"},
+        {ref:"Jerusalem destruction layer", text:"Метровый слой пепла в Городе Давида. Карбонизированные балки, наконечники стрел вавилонского типа. 51 булла, закалённая огнём: «Гемарьяху сын Шафана» (Иер 36:10-12). 50 лет археологической тишины = плен.", src:"Yigal Shiloh 1978-82; Hebrew University"},
+        {ref:"Kish cylinders of Nebuchadnezzar (2025)", text:"Два цилиндра из Киша (Ирак) с 50+ строками клинописи. Навуходоносор: «Я восстановил обрушившиеся части... украсил внешний вид». Опубликовано в IRAQ (декабрь 2025). Соответствует Дан 4:27.", src:"Iraq Museum; Cambridge University Press 2025"},
+        {ref:"Al-Yahudu tablets", text:"100+ экономических текстов из центрального Ирака: иудейские семьи с еврейскими именами (Гедальягу сын Пашхура). Доказывают сохранение идентичности в плену.", src:"Multiple collections"},
+      ]
+    },
+    persian_return: {
+      title: "Возвращение из плена: археология",
+      items: [
+        {ref:"Cyrus Cylinder (539 BC)", text:"Цилиндр Кира (Британский музей BM 90920): политика возвращения изгнанников и восстановления храмов. Хотя конкретно иудеи не названы, общая политика точно соответствует Езд 1:1-4. Копия — в штаб-квартире ООН.", src:"British Museum"},
+        {ref:"Tattenai tablet (502 BC)", text:"Клинописная табличка VAS 4 152: свидетель сделки — слуга 'Таттанну, правителя Заречья'. Тот самый Таттенай, который спрашивал у иудеев: «Кто дал вам разрешение строить этот дом?» (Езд 5:3).", src:"Vorderasiatisches Museum, Berlin"},
+        {ref:"Elephantine papyri (5th c. BC)", text:"Арамейская переписка иудейского гарнизона на о. Элефантина (Египет). Письмо к Багохию, правителю Иудеи, и Иехоханану, первосвященнику в Иерусалиме. Упоминает 'сыновей Санаваллата' (Неем 2:10).", src:"Multiple museums"},
+        {ref:"Nehemiah's wall", text:"Сегменты стены Неемии с персидской керамикой под и внутри кладки — археологическое свидетельство масштабной восстановительной программы, описанной в Неем 2-6.", src:"IAA; City of David"},
+        {ref:"Yehud stamp impressions", text:"Сотни ручек сосудов с оттисками 'Yehud' (Иудея) персидского периода — административная система провинции Йехуд после возвращения из плена.", src:"IAA; multiple excavations"},
+      ]
+    },
+    jericho_ai: {
+      title: "Иерихон и Гай: дискуссия о завоевании",
+      items: [
+        {ref:"Jericho wall collapse", text:"Гарстанг (1930-е): стены рухнули НАРУЖУ — создав рампу для восхождения (Ис Нав 6:20). Кеньон (1950-е): «разрушение было полным», но датировала 1550 г. Б. Вуд (1990): Кеньон игнорировала кипрскую бихромную керамику. 3-футовый слой пепла. Запасы зерна = короткая осада.", src:"Garstang; Kenyon; Wood BAR 1990"},
+        {ref:"Jericho City V (2025-2026)", text:"Bryan Windle: 572 артефакта LB, включая 174 сосуда. Город V был укреплён: mudbrick стена на циклопической основе. Нигро (Sapienza): LB I-II mudbrick стена подтверждена. Новая книга: 'Joshua's Jericho' (Trowel Press, декабрь 2025).", src:"Bryan Windle; Lorenzo Nigro"},
+        {ref:"Ai debate: et-Tell vs Khirbet el-Maqatir", text:"Традиционно Гай = эт-Телль, но нет следов LB заселения. ABR раскопала Хирбет эль-Макатир: пережжённая керамика, пепел, византийский монастырь. Иоиль Крамер (2025): эт-Телль всё же может быть Гаем — нашёл LB I керамику и разрушение огнём.", src:"ABR; Joel Kramer Expedition Bible 2025"},
       ]
     }
   };
@@ -1464,6 +1493,15 @@ container.appendChild(panel);
       // Dead Sea Scrolls
       const dssIds = ['qumran','masada','jericho'];
       if (dssIds.includes(place.id)) cat = 'dead_sea_scrolls';
+      // Babylonian exile
+      const exileIds = ['babylon','jerusalem','lachish','azekah'];
+      if (exileIds.includes(place.id) && !cat) cat = 'babylonian_exile';
+      // Persian return
+      const persianIds = ['jerusalem','babylon','elephantine'];
+      if (persianIds.includes(place.id) && !cat) cat = 'persian_return';
+      // Jericho/Ai
+      const conquestIds = ['jericho','ai','gai','hazor','gilgal'];
+      if (conquestIds.includes(place.id) && !cat) cat = 'jericho_ai';
       // Davidic
       const davidIds = ['jerusalem','hebron','bethlehem'];
       if (davidIds.includes(place.id) && !cat) cat = 'davidic_kingdom';
@@ -2230,7 +2268,7 @@ container.appendChild(panel);
     getPanelModel,getPanelSections,getStoryState,getPlaceOrder,auditStoryDefinitions,
     // v0.3 rendering
     createMap,
-    version:'0.43.0',buildDate:'2026-06-17'
+    version:'0.44.0',buildDate:'2026-06-17'
   };
 })();
 
