@@ -162,6 +162,12 @@ const MapEngine = (function() {
     const _timers = [];
     function _on(el, ev, fn, opts) { el.addEventListener(ev, fn, opts); _listeners.push({el, ev, fn, opts}); }
     function _tm(fn, ms) { const t = setTimeout(fn, ms); _timers.push(t); return t; }
+    
+    // Haptic feedback
+    function haptic(ms = 15) {
+      try { if (navigator.vibrate) navigator.vibrate(ms); } catch(e) {}
+    }
+
     function _cleanupAll() {
       _listeners.forEach(l => { try { l.el.removeEventListener(l.ev, l.fn, l.opts); } catch(e) {} });
       _listeners.length = 0;
@@ -316,6 +322,14 @@ const MapEngine = (function() {
 .me-caption__dot--active{background:#e8c879;transform:scale(1.3)}
 .me-caption__dot--past{background:rgba(232,200,121,.5)}
 
+
+.me-toast{position:absolute;top:60px;left:50%;transform:translateX(-50%);z-index:25;padding:6px 16px;border-radius:999px;background:rgba(232,200,121,.15);border:1px solid rgba(232,200,121,.3);color:#e8c879;font-size:12px;backdrop-filter:blur(8px);opacity:0;pointer-events:none;transition:opacity .3s;white-space:nowrap}
+.me-toast--visible{opacity:1}
+.me-minimap{position:absolute;bottom:8px;right:48px;z-index:10;width:140px;height:105px;border-radius:8px;overflow:hidden;border:1px solid rgba(255,255,255,.1);background:rgba(7,10,16,.8);backdrop-filter:blur(8px);cursor:pointer;opacity:.7;transition:opacity .2s}
+.me-minimap:hover{opacity:1}
+.me-minimap svg{width:100%;height:100%}
+@media(min-width:640px){.me-minimap{width:170px;height:128px;bottom:12px;right:60px}}
+
 @media(min-width:640px){.me-intro__title{font-size:38px}.me-intro__he{font-size:20px}}
 
 
@@ -347,6 +361,14 @@ const MapEngine = (function() {
 .me-caption__dot{width:6px;height:6px;border-radius:50%;background:rgba(255,255,255,.2);transition:all .3s}
 .me-caption__dot--active{background:#e8c879;transform:scale(1.3)}
 .me-caption__dot--past{background:rgba(232,200,121,.5)}
+
+
+.me-toast{position:absolute;top:60px;left:50%;transform:translateX(-50%);z-index:25;padding:6px 16px;border-radius:999px;background:rgba(232,200,121,.15);border:1px solid rgba(232,200,121,.3);color:#e8c879;font-size:12px;backdrop-filter:blur(8px);opacity:0;pointer-events:none;transition:opacity .3s;white-space:nowrap}
+.me-toast--visible{opacity:1}
+.me-minimap{position:absolute;bottom:8px;right:48px;z-index:10;width:140px;height:105px;border-radius:8px;overflow:hidden;border:1px solid rgba(255,255,255,.1);background:rgba(7,10,16,.8);backdrop-filter:blur(8px);cursor:pointer;opacity:.7;transition:opacity .2s}
+.me-minimap:hover{opacity:1}
+.me-minimap svg{width:100%;height:100%}
+@media(min-width:640px){.me-minimap{width:170px;height:128px;bottom:12px;right:60px}}
 
 @media(min-width:640px){.me-legend{display:block}}
 .me-search{position:absolute;top:8px;right:48px;z-index:15;width:160px;padding:5px 10px;border-radius:8px;border:1px solid rgba(255,255,255,.1);background:rgba(0,0,0,.5);color:#e9e4d6;font-size:11px;font-family:inherit;backdrop-filter:blur(8px);outline:none;transition:border-color .2s}
@@ -408,6 +430,14 @@ const MapEngine = (function() {
 .me-caption__dot--active{background:#e8c879;transform:scale(1.3)}
 .me-caption__dot--past{background:rgba(232,200,121,.5)}
 
+
+.me-toast{position:absolute;top:60px;left:50%;transform:translateX(-50%);z-index:25;padding:6px 16px;border-radius:999px;background:rgba(232,200,121,.15);border:1px solid rgba(232,200,121,.3);color:#e8c879;font-size:12px;backdrop-filter:blur(8px);opacity:0;pointer-events:none;transition:opacity .3s;white-space:nowrap}
+.me-toast--visible{opacity:1}
+.me-minimap{position:absolute;bottom:8px;right:48px;z-index:10;width:140px;height:105px;border-radius:8px;overflow:hidden;border:1px solid rgba(255,255,255,.1);background:rgba(7,10,16,.8);backdrop-filter:blur(8px);cursor:pointer;opacity:.7;transition:opacity .2s}
+.me-minimap:hover{opacity:1}
+.me-minimap svg{width:100%;height:100%}
+@media(min-width:640px){.me-minimap{width:170px;height:128px;bottom:12px;right:60px}}
+
 @media(min-width:640px){.me-intro__title{font-size:38px}.me-intro__he{font-size:20px}}
 
 
@@ -439,6 +469,14 @@ const MapEngine = (function() {
 .me-caption__dot{width:6px;height:6px;border-radius:50%;background:rgba(255,255,255,.2);transition:all .3s}
 .me-caption__dot--active{background:#e8c879;transform:scale(1.3)}
 .me-caption__dot--past{background:rgba(232,200,121,.5)}
+
+
+.me-toast{position:absolute;top:60px;left:50%;transform:translateX(-50%);z-index:25;padding:6px 16px;border-radius:999px;background:rgba(232,200,121,.15);border:1px solid rgba(232,200,121,.3);color:#e8c879;font-size:12px;backdrop-filter:blur(8px);opacity:0;pointer-events:none;transition:opacity .3s;white-space:nowrap}
+.me-toast--visible{opacity:1}
+.me-minimap{position:absolute;bottom:8px;right:48px;z-index:10;width:140px;height:105px;border-radius:8px;overflow:hidden;border:1px solid rgba(255,255,255,.1);background:rgba(7,10,16,.8);backdrop-filter:blur(8px);cursor:pointer;opacity:.7;transition:opacity .2s}
+.me-minimap:hover{opacity:1}
+.me-minimap svg{width:100%;height:100%}
+@media(min-width:640px){.me-minimap{width:170px;height:128px;bottom:12px;right:60px}}
 
 @media(min-width:640px){
   .me-title{font-size:28px}
@@ -608,6 +646,31 @@ legend.innerHTML=`<div class="me-legend__title">Этапы</div>${legendItems}`;
 container.appendChild(legend);
 container.appendChild(panel);
 
+    // Minimap (if opts.showMinimap)
+    if (opts.showMinimap) {
+      const mm = document.createElement('div');
+      mm.className = 'me-minimap';
+      mm.innerHTML = '<svg viewBox="0 0 1900 1430" preserveAspectRatio="xMidYMid meet"><rect x="0" y="0" width="1900" height="1430" fill="transparent" stroke="rgba(255,255,255,.15)" stroke-width="2"/><rect id="me-mm-rect" fill="rgba(232,200,121,.08)" stroke="rgba(232,200,121,.4)" stroke-width="1" rx="4"/></svg>';
+      container.appendChild(mm);
+      
+      function updateMinimap() {
+        const mmRect = mm.querySelector('#me-mm-rect');
+        if (!mmRect) return;
+        mmRect.setAttribute('x', view.x);
+        mmRect.setAttribute('y', view.y);
+        mmRect.setAttribute('width', view.w);
+        mmRect.setAttribute('height', view.h);
+      }
+      
+      // Update minimap on view change (call after flyTo/pan/zoom)
+      const origFlyTo = flyTo;
+      flyTo = function(cx, cy, w, duration) {
+        const result = origFlyTo(cx, cy, w, duration);
+        updateMinimap();
+        return result;
+      };
+    }
+
     // Layer toggles
     if (opts.layers || route.layers) {
       const layerData = opts.layers || route.layers || [];
@@ -739,7 +802,7 @@ container.appendChild(panel);
         if (place.type) g.setAttribute('data-layer', `${g.getAttribute('data-layer')} ${place.type}`);
         g.style.cursor=inStory?'pointer':'default';
         g.style.opacity=inStory?'1':'.15';
-        if(inStory)g.addEventListener('click',()=>open(place.id));
+        if(inStory)g.addEventListener('click',()=>{haptic();open(place.id);});
         
         const hit=document.createElementNS('http://www.w3.org/2000/svg','circle');hit.setAttribute('r','16');hit.setAttribute('fill','transparent');
         g.appendChild(hit);
@@ -865,6 +928,7 @@ container.appendChild(panel);
       if(!story)return;
       activeStoryId=storyId;
       close();
+      showStoryToast(story);
       updateHash();
       renderStories();
       renderMarkers();

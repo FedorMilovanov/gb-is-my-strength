@@ -276,5 +276,21 @@
       "color": "#e8c879",
       "on": true
     }
+  ],
+  "ctx": [
+    {
+      "id": "ctx-aegean",
+      "name": "Эгейское море",
+      "x": 750,
+      "y": 350,
+      "type": "geo"
+    },
+    {
+      "id": "ctx-pamphylia",
+      "name": "Памфилия",
+      "x": 850,
+      "y": 420,
+      "type": "geo"
+    }
   ]
 }

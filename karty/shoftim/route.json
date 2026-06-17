@@ -511,5 +511,35 @@
       "color": "#4a9e6e",
       "on": true
     }
+  ],
+  "ctx": [
+    {
+      "id": "ctx-philistia",
+      "name": "Филистия",
+      "x": 550,
+      "y": 830,
+      "type": "geo"
+    },
+    {
+      "id": "ctx-moab",
+      "name": "Моав",
+      "x": 700,
+      "y": 850,
+      "type": "geo"
+    },
+    {
+      "id": "ctx-ammon",
+      "name": "Аммон",
+      "x": 730,
+      "y": 750,
+      "type": "geo"
+    },
+    {
+      "id": "ctx-midian",
+      "name": "Мадиан",
+      "x": 600,
+      "y": 1000,
+      "type": "geo"
+    }
   ]
 }

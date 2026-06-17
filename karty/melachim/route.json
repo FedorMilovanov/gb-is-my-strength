@@ -619,5 +619,35 @@
       "color": "#4a9e6e",
       "on": true
     }
+  ],
+  "ctx": [
+    {
+      "id": "ctx-assyria",
+      "name": "Ассирия",
+      "x": 1400,
+      "y": 400,
+      "type": "geo"
+    },
+    {
+      "id": "ctx-babylon_ctx",
+      "name": "Вавилония",
+      "x": 1500,
+      "y": 750,
+      "type": "geo"
+    },
+    {
+      "id": "ctx-egypt_kings",
+      "name": "Египет",
+      "x": 300,
+      "y": 950,
+      "type": "geo"
+    },
+    {
+      "id": "ctx-philistia_kings",
+      "name": "Филистия",
+      "x": 550,
+      "y": 830,
+      "type": "geo"
+    }
   ]
 }
