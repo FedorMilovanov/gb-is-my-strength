@@ -1,5 +1,5 @@
 /**
- * map-engine.js v0.37 — reusable biblical map rendering engine. SVG filters + animation polish.
+ * map-engine.js v0.38 — reusable biblical map rendering engine. SVG filters + animation polish.
  *
  * PUBLIC API:
  *   // Data layer (v0.2):
@@ -29,7 +29,7 @@
 'use strict';
 
 const MapEngine = (function() {
-  const DEFAULTS = { W0: 1900, H0: 1430, minW: 300, maxW: 2600, padX: 450, padY: 380, tourDelay: 2500 };
+  const DEFAULTS = { W0: 1900, H0: 1430, minW: 300, maxW: 2600, padX: 450, padY: 380, tourDelay: 2500, kmPerUnit: 0.92, kmPerDay: 30 };
   const EASE = { outCubic: p => 1 - Math.pow(1 - p, 3) };
   const STAGE_COLORS = ['#e8c879','#e0813f','#4a9e6e','#cf5b6b','#8b6b4a','#4a80b4'];
   const TAB_LABELS = {story:'Сюжет',bible:'Писание',arch:'Археология',he:'Иврит',dispute:'Дискуссия',photos:'Фото',extra:'Библ.контекст'};
@@ -733,7 +733,7 @@ header.appendChild(shareBtn);
 
     // Zoom controls
     const zoomControls=document.createElement('div');zoomControls.className='me-zoom';
-    zoomControls.innerHTML='<button class="me-zoom-btn" data-zoom="in" title="Приблизить">+</button><button class="me-zoom-btn" data-zoom="out" title="Отдалить">−</button><button class="me-zoom-btn" data-zoom="reset" title="Сбросить">⌂</button>';
+    zoomControls.innerHTML='<button class="me-zoom-btn" data-zoom="in" title="Приблизить">+</button><button class="me-zoom-btn" data-zoom="out" title="Отдалить">−</button><button class="me-zoom-btn" data-zoom="reset" title="Сбросить">⌂</button><button class="me-zoom-btn" id="me-ruler-btn" title="Измерить расстояние" style="font-size:12px">⟍</button>';
     container.appendChild(zoomControls);
     // Zoom with hold-to-repeat
     let zoomRepeatTimer = null;
@@ -762,6 +762,24 @@ header.appendChild(shareBtn);
       const initVp=route.meta?.viewport_init||{cx:cfg.W0/2,cy:cfg.H0/2,w:cfg.W0};
       flyTo(initVp.cx,initVp.cy,initVp.w,500);
     });
+
+    // Scale bar
+    const scaleBar2 = document.createElement('div');
+    scaleBar2.style.cssText = 'position:absolute;bottom:22px;right:60px;z-index:10;display:flex;align-items:center;gap:6px;pointer-events:none';
+    scaleBar2.innerHTML = '<div id="me-scale-line" style="height:4px;background:rgba(255,255,255,.3);border-radius:2px;transition:width .3s ease;min-width:40px"></div><span id="me-scale-label" style="font-size:9px;color:rgba(255,255,255,.4);white-space:nowrap"></span>';
+    container.appendChild(scaleBar2);
+    function updateScaleBar() {
+      const pxPerKm = 1 / cfg.kmPerUnit;
+      const screenPxPerKm = (cfg.W0 / view.w) * pxPerKm;
+      let km = 200;
+      while (km * screenPxPerKm > 180 && km > 3) { km /= 2; }
+      while (km * screenPxPerKm < 40 && km < 3200) { km *= 2; }
+      const barW = Math.round(km * screenPxPerKm);
+      const lineEl = document.getElementById('me-scale-line');
+      const labelEl = document.getElementById('me-scale-label');
+      if (lineEl) lineEl.style.width = barW + 'px';
+      if (labelEl) labelEl.textContent = km + ' km';
+    }
 
     // Panel backdrop
     const panelBackdrop=document.createElement('div');panelBackdrop.className='me-panel__backdrop';
@@ -951,6 +969,8 @@ container.appendChild(panel);
         const tiltX = (view.x / cfg.W0 - 0.5) * 3;
         compass.style.transform = `rotate(${tiltX.toFixed(1)}deg)`;
       }
+      // Update scale bar
+      if (typeof updateScaleBar === 'function') updateScaleBar();
       // Update minimap viewport rect (if minimap exists)
       const mmRect = document.getElementById('me-mm-rect');
       if (mmRect) {
@@ -1491,6 +1511,13 @@ container.appendChild(panel);
       const place=(route.places||[]).find(p=>p.stage===sid&&visiblePlaces().some(v=>v.id===p.id));
       if(place)open(place.id);
       showCaption(route.stages&&route.stages[tourStepIdx], tourStepIdx, (route.stages||[]).length);
+      // Elastic animation on current stage dot
+      const stageDots = stagesBar.querySelectorAll('.me-stage-dot');
+      if (stageDots[tourStepIdx]) {
+        stageDots[tourStepIdx].style.transition = 'transform .2s cubic-bezier(.34,1.56,.64,1)';
+        stageDots[tourStepIdx].style.transform = 'scale(1.4)';
+        _tm(() => { stageDots[tourStepIdx].style.transform = 'scale(1)'; }, 300);
+      }
       tourStepIdx++;
       const pct=Math.round((tourStepIdx/stageIds.length)*100);
       const bar=document.getElementById('me-tour-bar');
@@ -1959,7 +1986,7 @@ container.appendChild(panel);
     getPanelModel,getPanelSections,getStoryState,getPlaceOrder,auditStoryDefinitions,
     // v0.3 rendering
     createMap,
-    version:'0.37.0',buildDate:'2026-06-17'
+    version:'0.38.0',buildDate:'2026-06-17'
   };
 })();
 
