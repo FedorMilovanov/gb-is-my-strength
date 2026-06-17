@@ -1,5 +1,5 @@
 /**
- * map-engine.js v0.33 — reusable biblical map rendering engine. SVG filters + animation polish.
+ * map-engine.js v0.34 — reusable biblical map rendering engine. SVG filters + animation polish.
  *
  * PUBLIC API:
  *   // Data layer (v0.2):
@@ -471,7 +471,7 @@ const MapEngine = (function() {
 
 /* Loading */
 .me-loading{position:absolute;inset:0;z-index:50;display:flex;flex-direction:column;align-items:center;justify-content:center;background:rgba(7,10,16,.9);transition:opacity .3s;gap:12px}
-.me-loading__spinner{width:24px;height:24px;border:2px solid rgba(255,255,255,.1);border-top-color:#e8c879;border-radius:50%;animation:meSpin .8s linear infinite}
+.me-loading__spinner{width:24px;height:24px;border:2px solid rgba(255,255,255,.08);border-top-color:#e8c879;border-right-color:rgba(232,200,121,.3);border-radius:50%;animation:meSpin .8s linear infinite, meSpinnerPulse 2s ease-in-out infinite}@keyframes meSpinnerPulse{0%,100%{box-shadow:0 0 0 0 rgba(232,200,121,0)}50%{box-shadow:0 0 12px 2px rgba(232,200,121,.15)}}
 @keyframes meSpin{to{transform:rotate(360deg)}}
 .me-loading__text{color:#9aa2ae;font-size:11px}
 
@@ -1658,10 +1658,11 @@ container.appendChild(panel);
     container.appendChild(progressBar);
     let loadProgress = 0;
     const progressInterval = setInterval(() => {
-      loadProgress += Math.random() * 30;
-      if (loadProgress > 90) loadProgress = 90;
+      const remaining = 95 - loadProgress;
+      loadProgress += remaining * (0.1 + Math.random() * 0.15);
+      if (loadProgress > 95) loadProgress = 95;
       progressBar.querySelector('.me-progress__fill').style.width = loadProgress + '%';
-    }, 200);
+    }, 150);
     // Complete on markers rendered
     setTimeout(() => {
       clearInterval(progressInterval);
@@ -1677,11 +1678,15 @@ container.appendChild(panel);
 
     
     // Keyboard shortcuts overlay
+    // Keyboard shortcuts overlay with slide-up entrance
     const shortcutsEl = document.createElement('div');
     shortcutsEl.className = 'me-shortcuts';
     shortcutsEl.innerHTML = '<kbd>← →</kbd> навигация · <kbd>Esc</kbd> закрыть · <kbd>Space</kbd> тур · <kbd>Колёсико</kbd> масштаб · <kbd>Двойной клик</kbd> зум';
+    shortcutsEl.style.transform = 'translate(-50%, 12px)';
+    shortcutsEl.style.transition = 'opacity .5s ease, transform .5s cubic-bezier(.34,1.56,.64,1)';
     container.appendChild(shortcutsEl);
-    _tm(() => { shortcutsEl.style.opacity = '0'; _tm(() => shortcutsEl.remove(), 600); }, 5000);
+    _tm(() => { shortcutsEl.style.opacity = '1'; shortcutsEl.style.transform = 'translate(-50%, 0)'; }, 1500);
+    _tm(() => { shortcutsEl.style.opacity = '0'; shortcutsEl.style.transform = 'translate(-50%, -6px)'; _tm(() => shortcutsEl.remove(), 600); }, 6000);
     
     // ── Init ──
     applyViewBox();
@@ -1756,7 +1761,7 @@ container.appendChild(panel);
     getPanelModel,getPanelSections,getStoryState,getPlaceOrder,auditStoryDefinitions,
     // v0.3 rendering
     createMap,
-    version:'0.33.0',buildDate:'2026-06-17'
+    version:'0.34.0',buildDate:'2026-06-17'
   };
 })();
 
