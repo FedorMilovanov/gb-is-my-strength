@@ -278,6 +278,9 @@ const MapEngine = (function() {
 .me-nav__dots{flex:1;display:flex;justify-content:center;gap:4px}
 .me-nav__dot{width:6px;height:6px;border-radius:50%;background:rgba(255,255,255,.15);transition:all .2s}
 .me-nav__dot--active{background:#e8c879;transform:scale(1.4)}
+.me-nav__info{display:flex;flex-direction:column;align-items:center;gap:4px;flex:1}
+.me-nav__counter{font-size:10px;color:#e8c879;font-weight:700;letter-spacing:.04em}
+
 .me-marker-pulse{animation:mePulse 2s ease-in-out infinite}
 @keyframes mePulse{0%,100%{r:5;opacity:1}50%{r:8;opacity:.6}}
 .me-panel__backdrop{position:fixed;inset:0;background:rgba(0,0,0,.3);z-index:19;opacity:0;pointer-events:none;transition:opacity .3s}
@@ -1430,7 +1433,10 @@ container.appendChild(panel);
         const label=document.createElementNS('http://www.w3.org/2000/svg','text');
         label.setAttribute('x',side==='l'?'-14':'14');label.setAttribute('y','4');
         label.setAttribute('text-anchor',side==='l'?'end':'start');
-        label.setAttribute('fill',inStory?'#f4eedd':'#555');label.setAttribute('font-size','10');
+        label.setAttribute('fill',inStory?'#f4eedd':'#555');
+        label.setAttribute('font-size','10');
+        label.setAttribute('opacity','0.9');
+        label.style.transition = 'opacity .3s';
         label.textContent=place.name||'';
         g.appendChild(label);
         markersG.appendChild(g);
@@ -1490,9 +1496,9 @@ container.appendChild(panel);
       const totalInStory=vis.length;
     const counterText=idx>=0?`${idx+1} / ${totalInStory}`:'';
     nav.innerHTML=`
-        <button ${idx<=0?'disabled':''} id="me-prev">← ${idx>0?esc(vis[idx-1].name):''}</button>
-        <div class="me-nav__dots">${vis.map((p,i)=>`<div class="me-nav__dot${i===idx?' me-nav__dot--active':''}"></div>`).join('')}</div>
-        <button ${idx>=vis.length-1?'disabled':''} id="me-next">${idx<vis.length-1?esc(vis[idx+1].name):''} →</button>
+        <button ${idx<=0?'disabled':''} id="me-prev" title="${idx>0?esc(vis[idx-1].name):''}">←</button>
+        <div class="me-nav__info"><span class="me-nav__counter">${idx+1} / ${vis.length}</span><div class="me-nav__dots">${vis.map((p,i)=>`<div class="me-nav__dot${i===idx?' me-nav__dot--active':''}"></div>`).join('')}</div></div>
+        <button ${idx>=vis.length-1?'disabled':''} id="me-next" title="${idx<vis.length-1?esc(vis[idx+1].name):''}">→</button>
       `;
       nav.querySelector('#me-prev')?.addEventListener('click',()=>{if(idx>0)open(vis[idx-1].id)});
       nav.querySelector('#me-next')?.addEventListener('click',()=>{if(idx<vis.length-1)open(vis[idx+1].id)});
@@ -1500,6 +1506,8 @@ container.appendChild(panel);
 
     function renderTabContent(tab,place){
       const content=panel.querySelector('.me-content');
+      content.style.opacity='0';content.style.transition='opacity .15s';
+      setTimeout(()=>{content.style.opacity='1';},50);
       const map={story:place.story,bible:place.bible,arch:place.arch,he:place.he_deep,dispute:place.dispute,extra:place.bible_extra};
       if(tab==='sci'){
         const variants = route.scientific_variants||route.variants||{};
@@ -1651,6 +1659,10 @@ container.appendChild(panel);
       const bar=document.getElementById('me-tour-bar');
       if(bar){bar.style.display='block';bar.querySelector('.me-tour-progress__fill').style.width=pct+'%';}
       tourTimer=_tm(runTourStep,cfg.tourDelay);
+      // Pre-fly to next stage's first place for smoother transition
+      const nextSid=stageIds[tourStepIdx];
+      const nextPlace=(route.places||[]).find(p=>p.stage===nextSid&&visiblePlaces().some(v=>v.id===p.id));
+      if(nextPlace)flyTo(nextPlace.x,nextPlace.y,Math.min(view.w,800),1200);
     }
 
     
@@ -1943,7 +1955,7 @@ container.appendChild(panel);
     getPanelModel,getPanelSections,getStoryState,getPlaceOrder,auditStoryDefinitions,
     // v0.3 rendering
     createMap,
-    version:'0.20.0',buildDate:'2026-06-16'
+    version:'0.22.0',buildDate:'2026-06-16'
   };
 })();
 
