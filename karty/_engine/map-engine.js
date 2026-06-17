@@ -1,5 +1,5 @@
 /**
- * map-engine.js v0.26 — reusable biblical map rendering engine. SVG filters + animation polish.
+ * map-engine.js v0.27 — reusable biblical map rendering engine. SVG filters + animation polish.
  *
  * PUBLIC API:
  *   // Data layer (v0.2):
@@ -213,6 +213,8 @@ const MapEngine = (function() {
       // Remove injected CSS
       const css = document.getElementById('me-base-css');
       if (css) css.remove();
+      // Restore body overflow
+      document.body.style.overflow = '';
     }
     const initVp = route.meta?.viewport_init || {cx:cfg.W0/2, cy:cfg.H0/2, w:cfg.W0};
     view = {x:initVp.cx-initVp.w/2, y:initVp.cy-(initVp.w*cfg.H0/cfg.W0)/2, w:initVp.w, h:initVp.w*cfg.H0/cfg.W0};
@@ -588,6 +590,7 @@ _on(searchInput,'input',()=>{
     const q = searchInput.value.toLowerCase().trim();
     const allG = markersG.querySelectorAll('g[transform]');
     if (!q) { allG.forEach(g => { g.style.opacity = ''; }); return; }
+    let matchCount = 0;
     allG.forEach(g => {
       const text = g.querySelector('text');
       let match = false;
@@ -603,6 +606,14 @@ _on(searchInput,'input',()=>{
         }
       }
       g.style.opacity = match ? '1' : '.08';
+      if (match) matchCount++;
+      // Pulse the dot of matching marker
+      const dot = g.querySelector('circle:nth-child(3)');
+      if (dot && match) {
+        dot.style.transition = 'r .15s cubic-bezier(.34,1.56,.64,1)';
+        dot.setAttribute('r', '7');
+        setTimeout(() => { if(dot) { dot.setAttribute('r','4.5'); dot.style.transition = 'r .2s ease, fill .2s ease, filter .2s ease'; } }, 400);
+      }
     });
   }, 200);
 });
@@ -672,6 +683,11 @@ header.appendChild(shareBtn);
       flyTo(initVp.cx,initVp.cy,initVp.w,500);
     });
 
+    // Panel backdrop
+    const panelBackdrop=document.createElement('div');panelBackdrop.className='me-panel__backdrop';
+    panelBackdrop.addEventListener('click', ()=>{ close(); });
+    container.appendChild(panelBackdrop);
+    
     // Panel
     const panel=document.createElement('div');panel.className='me-panel';
     panel.innerHTML='<button class="me-panel__close">×</button><div class="me-tour-progress" id="me-tour-bar"><div class="me-tour-progress__fill"></div></div><div class="me-panel__head"></div><div class="me-tabs"></div><div class="me-content"></div><div class="me-nav"></div>';
@@ -984,18 +1000,31 @@ container.appendChild(panel);
       if(!place)return;
       activePlaceId=id;
       panel.classList.add('me-panel--open');
+      panelBackdrop.classList.add('me-panel__backdrop--active');
+      document.body.style.overflow = 'hidden';
       updateHash();
       renderMarkers();
       renderPanel();
-      // Scroll panel content to top
+      // Animate content entrance
       const content = panel.querySelector('.me-content');
-      if (content) content.scrollTop = 0;
+      if (content) {
+        content.scrollTop = 0;
+        content.style.opacity = '0';
+        content.style.transform = 'translateY(8px)';
+        content.style.transition = 'opacity .25s ease, transform .3s cubic-bezier(.34,1.56,.64,1)';
+        requestAnimationFrame(() => {
+          content.style.opacity = '1';
+          content.style.transform = 'translateY(0)';
+        });
+      }
       if(place.x!==undefined&&place.y!==undefined)flyTo(place.x,place.y,Math.min(view.w,800));
     }
 
     function close(){
       activePlaceId=null;
       panel.classList.remove('me-panel--open');
+      panelBackdrop.classList.remove('me-panel__backdrop--active');
+      document.body.style.overflow = '';
       hideCaption();
       updateHash();
       renderMarkers();
@@ -1137,17 +1166,20 @@ container.appendChild(panel);
     // Stage caption bar
     const captionBar = document.createElement('div');
     captionBar.className = 'me-caption';
+    captionBar.style.transition = 'opacity .4s, transform .35s cubic-bezier(.34,1.56,.64,1)';
     captionBar.innerHTML = '<div class="me-caption__stage"></div><div class="me-caption__title"></div><div class="me-caption__dots"></div>';
     container.appendChild(captionBar);
     
     function showCaption(stage, idx, total) {
       if (!stage) { captionBar.classList.remove('me-caption--visible'); return; }
+      captionBar.style.transform = 'translate(-50%, calc(50% + 10px))';
       captionBar.querySelector('.me-caption__stage').textContent = 'ЭТАП ' + (stage.n || '') + ' · ' + (stage.r || '');
       captionBar.querySelector('.me-caption__title').textContent = stage.t || '';
       captionBar.querySelector('.me-caption__dots').innerHTML = (route.stages||[]).map((_, i) => 
         `<span class="me-caption__dot${i === idx ? ' me-caption__dot--active' : ''}${i < idx ? ' me-caption__dot--past' : ''}"></span>`
       ).join('');
       captionBar.classList.add('me-caption--visible');
+      requestAnimationFrame(() => { captionBar.style.transform = 'translate(-50%, 50%)'; });
     }
     function hideCaption() { captionBar.classList.remove('me-caption--visible'); }
 
@@ -1477,7 +1509,7 @@ container.appendChild(panel);
     getPanelModel,getPanelSections,getStoryState,getPlaceOrder,auditStoryDefinitions,
     // v0.3 rendering
     createMap,
-    version:'0.26.0',buildDate:'2026-06-17'
+    version:'0.27.0',buildDate:'2026-06-17'
   };
 })();
 
