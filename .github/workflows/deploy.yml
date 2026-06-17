@@ -81,31 +81,37 @@ jobs:
       - name: Static publication gates
         run: npm run validate:static-publication
 
+      - name: Build production-like dist
+        run: npm run strangler:build:production-like
+
+      - name: Verify page ownership against dist
+        run: npm run page-ownership:dist:production-like
+
+      - name: Build Pagefind index into dist
+        run: npm run pagefind:build:dist
+
       - name: Publish IndexNow key file from secret
         run: |
           KEY="${{ secrets.INDEXNOW_KEY }}"
           if [ -n "$KEY" ]; then
-            printf '%s' "$KEY" > "${KEY}.txt"
+            printf '%s' "$KEY" > "dist/${KEY}.txt"
           else
             echo "INDEXNOW_KEY secret is empty — key file was not generated"
           fi
 
-      - name: Build Pagefind index
-        # npx скачает pagefind только если его нет в кеше.
-        # --site . — корень репозитория = корень сайта.
-        # --output-path pagefind — стандартная папка, ожидаемая search.js.
-        run: npm run pagefind:build
+      - name: Dist publication audit
+        run: node scripts/dist-publication-audit.js --require-pagefind --forbid-dev
 
-      - name: Verify Pagefind index and disable Jekyll filtering
-        run: |
-          test -f pagefind/pagefind.js
-          touch .nojekyll
+      - name: Service Worker switch gate
+        run: npm run sw:dist:audit:deploy-switch
+
+      - name: Disable Jekyll filtering
+        run: touch dist/.nojekyll
 
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          # Загружаем весь корень; папка pagefind/ уже есть внутри
-          path: .
+          path: dist
 
       - name: Deploy to GitHub Pages
         id: deploy
