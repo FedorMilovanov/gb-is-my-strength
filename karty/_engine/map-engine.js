@@ -247,6 +247,8 @@ const MapEngine = (function() {
 .me-legend__title{color:#e8c879;font-weight:700;margin-bottom:4px;font-size:9px;letter-spacing:.08em;text-transform:uppercase}
 .me-legend__item{display:flex;align-items:center;gap:6px;color:#9aa2ae;margin:2px 0}
 .me-legend__dot{width:6px;height:6px;border-radius:50%;flex-shrink:0}
+.me-panel--open{transform:translateY(0)}
+.me-panel__stage-dot{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:6px;vertical-align:middle}
 @media(min-width:640px){.me-legend{display:block}}
 .me-search{position:absolute;top:8px;right:48px;z-index:15;width:160px;padding:5px 10px;border-radius:8px;border:1px solid rgba(255,255,255,.1);background:rgba(0,0,0,.5);color:#e9e4d6;font-size:11px;font-family:inherit;backdrop-filter:blur(8px);outline:none;transition:border-color .2s}
 .me-search:focus{border-color:rgba(232,200,121,.4);width:200px}
@@ -256,6 +258,8 @@ const MapEngine = (function() {
 @keyframes meSpin{to{transform:rotate(360deg)}}
 .me-loading__text{color:#9aa2ae;font-size:11px}
 
+.me-panel--open{transform:translateY(0)}
+.me-panel__stage-dot{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:6px;vertical-align:middle}
 @media(min-width:640px){
   .me-title{font-size:28px}
   .me-panel{left:12px;right:auto;bottom:12px;width:420px;border-radius:14px;border:1px solid rgba(232,200,121,.2);transform:translateX(-120%)}
@@ -473,7 +477,7 @@ container.appendChild(panel);
 
       // Head
       head.innerHTML=`
-        <div class="me-panel__stage">Этап ${(place.stage||0)+1} · ${esc(place.id2||'')}</div>
+        <div class="me-panel__stage"><span class="me-panel__stage-dot" style="background:${STAGE_COLORS[place.stage]||STAGE_COLORS[0]}"></span>Этап ${(place.stage||0)+1} · ${esc(place.id2||'')}</div>
         <div class="me-panel__name">${esc(place.name)}</div>
         ${place.he?`<div class="me-panel__he">${esc(place.he)}</div>`:''}
         ${place.kick?`<div class="me-panel__kick">${esc(place.kick)}</div>`:''}
@@ -768,7 +772,7 @@ container.appendChild(panel);
     getPanelModel,getPanelSections,getStoryState,getPlaceOrder,auditStoryDefinitions,
     // v0.3 rendering
     createMap,
-    version:'0.5.0',buildDate:'2026-06-16'
+    version:'0.6.0',buildDate:'2026-06-16'
   };
 })();
 
