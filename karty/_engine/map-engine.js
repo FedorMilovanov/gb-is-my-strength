@@ -286,7 +286,47 @@ const MapEngine = (function() {
 .me-intro__stats span{font-size:11px;color:rgba(154,162,174,.6);padding:4px 12px;border:1px solid rgba(255,255,255,.08);border-radius:999px}
 .me-intro__btn{padding:10px 28px;border-radius:999px;border:1px solid #e8c879;background:rgba(232,200,121,.1);color:#e8c879;font-size:14px;cursor:pointer;font-family:inherit;transition:all .2s}
 .me-intro__btn:hover{background:rgba(232,200,121,.25)}
+
+.me-timeline{position:absolute;top:0;left:0;right:0;z-index:5;padding:4px 8px;overflow-x:auto;-webkit-overflow-scrolling:touch;background:linear-gradient(to bottom,rgba(7,10,16,.9),rgba(7,10,16,.3));pointer-events:none}
+.me-timeline__track{display:flex;gap:2px;align-items:flex-start;min-width:max-content;position:relative;padding:2px 0}
+.me-timeline__line{position:absolute;top:14px;left:0;right:0;height:1px;background:rgba(255,255,255,.1)}
+.me-timeline__item{display:flex;flex-direction:column;align-items:center;gap:2px;padding:4px 10px;cursor:pointer;pointer-events:auto;transition:opacity .2s;min-width:60px}
+.me-timeline__item:hover{opacity:1}
+.me-timeline__item--active .me-timeline__dot{transform:scale(1.5);box-shadow:0 0 8px currentColor}
+.me-timeline__dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;transition:transform .2s}
+.me-timeline__era{font-size:10px;font-weight:700;color:#e9e4d6;white-space:nowrap}
+.me-timeline__label{font-size:8px;color:#9aa2ae;text-align:center;line-height:1.2;max-width:80px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.me-layers{position:absolute;bottom:40px;right:8px;z-index:10;padding:6px 10px;border-radius:10px;background:rgba(0,0,0,.6);border:1px solid rgba(255,255,255,.1);backdrop-filter:blur(8px);font-size:10px}
+.me-layers__title{color:#e8c879;font-weight:700;font-size:9px;letter-spacing:.08em;text-transform:uppercase;margin-bottom:4px}
+.me-layers__row{display:flex;align-items:center;gap:6px;margin:3px 0}
+.me-layers__dot{width:6px;height:6px;border-radius:50%;flex-shrink:0}
+.me-layers__name{flex:1;color:#9aa2ae;white-space:nowrap}
+.me-layers__toggle{width:28px;height:14px;border-radius:7px;border:none;background:rgba(255,255,255,.15);cursor:pointer;position:relative;transition:background .2s;flex-shrink:0}
+.me-layers__toggle::after{content:'';position:absolute;top:2px;left:2px;width:10px;height:10px;border-radius:50%;background:#fff;transition:transform .2s}
+.me-layers__toggle--on{background:rgba(232,200,121,.4)}
+.me-layers__toggle--on::after{transform:translateX(14px)}
+
 @media(min-width:640px){.me-intro__title{font-size:38px}.me-intro__he{font-size:20px}}
+
+
+.me-timeline{position:absolute;top:0;left:0;right:0;z-index:5;padding:4px 8px;overflow-x:auto;-webkit-overflow-scrolling:touch;background:linear-gradient(to bottom,rgba(7,10,16,.9),rgba(7,10,16,.3));pointer-events:none}
+.me-timeline__track{display:flex;gap:2px;align-items:flex-start;min-width:max-content;position:relative;padding:2px 0}
+.me-timeline__line{position:absolute;top:14px;left:0;right:0;height:1px;background:rgba(255,255,255,.1)}
+.me-timeline__item{display:flex;flex-direction:column;align-items:center;gap:2px;padding:4px 10px;cursor:pointer;pointer-events:auto;transition:opacity .2s;min-width:60px}
+.me-timeline__item:hover{opacity:1}
+.me-timeline__item--active .me-timeline__dot{transform:scale(1.5);box-shadow:0 0 8px currentColor}
+.me-timeline__dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;transition:transform .2s}
+.me-timeline__era{font-size:10px;font-weight:700;color:#e9e4d6;white-space:nowrap}
+.me-timeline__label{font-size:8px;color:#9aa2ae;text-align:center;line-height:1.2;max-width:80px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.me-layers{position:absolute;bottom:40px;right:8px;z-index:10;padding:6px 10px;border-radius:10px;background:rgba(0,0,0,.6);border:1px solid rgba(255,255,255,.1);backdrop-filter:blur(8px);font-size:10px}
+.me-layers__title{color:#e8c879;font-weight:700;font-size:9px;letter-spacing:.08em;text-transform:uppercase;margin-bottom:4px}
+.me-layers__row{display:flex;align-items:center;gap:6px;margin:3px 0}
+.me-layers__dot{width:6px;height:6px;border-radius:50%;flex-shrink:0}
+.me-layers__name{flex:1;color:#9aa2ae;white-space:nowrap}
+.me-layers__toggle{width:28px;height:14px;border-radius:7px;border:none;background:rgba(255,255,255,.15);cursor:pointer;position:relative;transition:background .2s;flex-shrink:0}
+.me-layers__toggle::after{content:'';position:absolute;top:2px;left:2px;width:10px;height:10px;border-radius:50%;background:#fff;transition:transform .2s}
+.me-layers__toggle--on{background:rgba(232,200,121,.4)}
+.me-layers__toggle--on::after{transform:translateX(14px)}
 
 @media(min-width:640px){.me-legend{display:block}}
 .me-search{position:absolute;top:8px;right:48px;z-index:15;width:160px;padding:5px 10px;border-radius:8px;border:1px solid rgba(255,255,255,.1);background:rgba(0,0,0,.5);color:#e9e4d6;font-size:11px;font-family:inherit;backdrop-filter:blur(8px);outline:none;transition:border-color .2s}
@@ -318,7 +358,47 @@ const MapEngine = (function() {
 .me-intro__stats span{font-size:11px;color:rgba(154,162,174,.6);padding:4px 12px;border:1px solid rgba(255,255,255,.08);border-radius:999px}
 .me-intro__btn{padding:10px 28px;border-radius:999px;border:1px solid #e8c879;background:rgba(232,200,121,.1);color:#e8c879;font-size:14px;cursor:pointer;font-family:inherit;transition:all .2s}
 .me-intro__btn:hover{background:rgba(232,200,121,.25)}
+
+.me-timeline{position:absolute;top:0;left:0;right:0;z-index:5;padding:4px 8px;overflow-x:auto;-webkit-overflow-scrolling:touch;background:linear-gradient(to bottom,rgba(7,10,16,.9),rgba(7,10,16,.3));pointer-events:none}
+.me-timeline__track{display:flex;gap:2px;align-items:flex-start;min-width:max-content;position:relative;padding:2px 0}
+.me-timeline__line{position:absolute;top:14px;left:0;right:0;height:1px;background:rgba(255,255,255,.1)}
+.me-timeline__item{display:flex;flex-direction:column;align-items:center;gap:2px;padding:4px 10px;cursor:pointer;pointer-events:auto;transition:opacity .2s;min-width:60px}
+.me-timeline__item:hover{opacity:1}
+.me-timeline__item--active .me-timeline__dot{transform:scale(1.5);box-shadow:0 0 8px currentColor}
+.me-timeline__dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;transition:transform .2s}
+.me-timeline__era{font-size:10px;font-weight:700;color:#e9e4d6;white-space:nowrap}
+.me-timeline__label{font-size:8px;color:#9aa2ae;text-align:center;line-height:1.2;max-width:80px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.me-layers{position:absolute;bottom:40px;right:8px;z-index:10;padding:6px 10px;border-radius:10px;background:rgba(0,0,0,.6);border:1px solid rgba(255,255,255,.1);backdrop-filter:blur(8px);font-size:10px}
+.me-layers__title{color:#e8c879;font-weight:700;font-size:9px;letter-spacing:.08em;text-transform:uppercase;margin-bottom:4px}
+.me-layers__row{display:flex;align-items:center;gap:6px;margin:3px 0}
+.me-layers__dot{width:6px;height:6px;border-radius:50%;flex-shrink:0}
+.me-layers__name{flex:1;color:#9aa2ae;white-space:nowrap}
+.me-layers__toggle{width:28px;height:14px;border-radius:7px;border:none;background:rgba(255,255,255,.15);cursor:pointer;position:relative;transition:background .2s;flex-shrink:0}
+.me-layers__toggle::after{content:'';position:absolute;top:2px;left:2px;width:10px;height:10px;border-radius:50%;background:#fff;transition:transform .2s}
+.me-layers__toggle--on{background:rgba(232,200,121,.4)}
+.me-layers__toggle--on::after{transform:translateX(14px)}
+
 @media(min-width:640px){.me-intro__title{font-size:38px}.me-intro__he{font-size:20px}}
+
+
+.me-timeline{position:absolute;top:0;left:0;right:0;z-index:5;padding:4px 8px;overflow-x:auto;-webkit-overflow-scrolling:touch;background:linear-gradient(to bottom,rgba(7,10,16,.9),rgba(7,10,16,.3));pointer-events:none}
+.me-timeline__track{display:flex;gap:2px;align-items:flex-start;min-width:max-content;position:relative;padding:2px 0}
+.me-timeline__line{position:absolute;top:14px;left:0;right:0;height:1px;background:rgba(255,255,255,.1)}
+.me-timeline__item{display:flex;flex-direction:column;align-items:center;gap:2px;padding:4px 10px;cursor:pointer;pointer-events:auto;transition:opacity .2s;min-width:60px}
+.me-timeline__item:hover{opacity:1}
+.me-timeline__item--active .me-timeline__dot{transform:scale(1.5);box-shadow:0 0 8px currentColor}
+.me-timeline__dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;transition:transform .2s}
+.me-timeline__era{font-size:10px;font-weight:700;color:#e9e4d6;white-space:nowrap}
+.me-timeline__label{font-size:8px;color:#9aa2ae;text-align:center;line-height:1.2;max-width:80px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.me-layers{position:absolute;bottom:40px;right:8px;z-index:10;padding:6px 10px;border-radius:10px;background:rgba(0,0,0,.6);border:1px solid rgba(255,255,255,.1);backdrop-filter:blur(8px);font-size:10px}
+.me-layers__title{color:#e8c879;font-weight:700;font-size:9px;letter-spacing:.08em;text-transform:uppercase;margin-bottom:4px}
+.me-layers__row{display:flex;align-items:center;gap:6px;margin:3px 0}
+.me-layers__dot{width:6px;height:6px;border-radius:50%;flex-shrink:0}
+.me-layers__name{flex:1;color:#9aa2ae;white-space:nowrap}
+.me-layers__toggle{width:28px;height:14px;border-radius:7px;border:none;background:rgba(255,255,255,.15);cursor:pointer;position:relative;transition:background .2s;flex-shrink:0}
+.me-layers__toggle::after{content:'';position:absolute;top:2px;left:2px;width:10px;height:10px;border-radius:50%;background:#fff;transition:transform .2s}
+.me-layers__toggle--on{background:rgba(232,200,121,.4)}
+.me-layers__toggle--on::after{transform:translateX(14px)}
 
 @media(min-width:640px){
   .me-title{font-size:28px}
@@ -397,6 +477,31 @@ header.appendChild(shareBtn);
     const stagesBar=document.createElement('div');stagesBar.className='me-stages';
     container.appendChild(stagesBar);
 
+
+    // Timeline bar
+    if ((route.stages||[]).length > 1) {
+      const timelineWrap = document.createElement('div');
+      timelineWrap.className = 'me-timeline';
+      const timelineTrack = document.createElement('div');
+      timelineTrack.className = 'me-timeline__track';
+      timelineTrack.innerHTML = '<span class="me-timeline__line"></span>';
+      (route.stages||[]).forEach((st, i) => {
+        const item = document.createElement('div');
+        item.className = 'me-timeline__item';
+        item.innerHTML = `<span class="me-timeline__dot" style="background:${STAGE_COLORS[i]}"></span><span class="me-timeline__era">${esc(st.n)}</span><span class="me-timeline__label">${esc(st.age||st.t||'')}</span>`;
+        item.addEventListener('click', () => {
+          const place = (route.places||[]).find(p => p.stage === i && visiblePlaces().some(v => v.id === p.id));
+          if (place) open(place.id);
+          // Highlight clicked
+          timelineTrack.querySelectorAll('.me-timeline__item').forEach(el => el.classList.remove('me-timeline__item--active'));
+          item.classList.add('me-timeline__item--active');
+        });
+        timelineTrack.appendChild(item);
+      });
+      timelineWrap.appendChild(timelineTrack);
+      container.appendChild(timelineWrap);
+    }
+
     // Zoom controls
     const zoomControls=document.createElement('div');zoomControls.className='me-zoom';
     zoomControls.innerHTML='<button class="me-zoom-btn" data-zoom="in" title="Приблизить">+</button><button class="me-zoom-btn" data-zoom="out" title="Отдалить">−</button><button class="me-zoom-btn" data-zoom="reset" title="Сбросить">⌂</button>';
@@ -425,6 +530,43 @@ const legendItems=(route.stages||[]).map((st,i)=>`<div class="me-legend__item"><
 legend.innerHTML=`<div class="me-legend__title">Этапы</div>${legendItems}`;
 container.appendChild(legend);
 container.appendChild(panel);
+
+    // Layer toggles
+    if (opts.layers || route.layers) {
+      const layerData = opts.layers || route.layers || [];
+      const layerPanel = document.createElement('div');
+      layerPanel.className = 'me-layers';
+      layerPanel.innerHTML = '<div class="me-layers__title">Слои</div>';
+      layerData.forEach((layer, i) => {
+        const row = document.createElement('div');
+        row.className = 'me-layers__row';
+        const color = layer.color || STAGE_COLORS[i] || '#888';
+        row.innerHTML = `<span class="me-layers__dot" style="background:${color}"></span><span class="me-layers__name">${esc(layer.label||layer.id||'')}</span>`;
+        const toggle = document.createElement('button');
+        toggle.className = `me-layers__toggle${layer.on !== false ? ' me-layers__toggle--on' : ''}`;
+        toggle.setAttribute('aria-label', `Переключить слой ${layer.label||layer.id}`);
+        toggle.addEventListener('click', () => {
+          const isOn = toggle.classList.toggle('me-layers__toggle--on');
+          // Apply opacity to all markers with matching layer
+          const selector = layer.selector || `[data-layer="${layer.id}"]`;
+          try {
+            const elements = svg.querySelectorAll(selector);
+            elements.forEach(el => { el.style.opacity = isOn ? '1' : '0.15'; });
+          } catch(e) {}
+          // Also toggle path visibility
+          if (layer.pathSelector) {
+            try {
+              const paths = svg.querySelectorAll(layer.pathSelector);
+              paths.forEach(p => { p.style.display = isOn ? '' : 'none'; });
+            } catch(e) {}
+          }
+        });
+        row.appendChild(toggle);
+        layerPanel.appendChild(row);
+      });
+      container.appendChild(layerPanel);
+    }
+
 
     // Toggle legend on click
     _on(legend,'click', () => {
@@ -888,7 +1030,7 @@ container.appendChild(panel);
     getPanelModel,getPanelSections,getStoryState,getPlaceOrder,auditStoryDefinitions,
     // v0.3 rendering
     createMap,
-    version:'0.8.0',buildDate:'2026-06-16'
+    version:'0.9.0',buildDate:'2026-06-16'
   };
 })();
 

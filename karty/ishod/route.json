@@ -530,5 +530,20 @@
       "stage": 5,
       "type": "arch"
     }
+  ],
+  "layers": [
+    {
+      "id": "main",
+      "label": "Основные места",
+      "color": "#e8c879",
+      "on": true
+    },
+    {
+      "id": "waypoints",
+      "label": "Археология",
+      "color": "#4a9e6e",
+      "on": true,
+      "selector": "[data-layer=\"wp\"]"
+    }
   ]
 }
