@@ -363,11 +363,11 @@ const MapEngine = (function() {
       css.textContent=`
 /* === MAP ENGINE v0.25 CSS === */
 /* Base */
-.me-map{position:relative;width:100%;height:100%;overflow:hidden;background:#070a10;user-select:none;font-family:Georgia,'Times New Roman',serif}
+.me-map{position:relative;width:100%;height:100%;overflow:hidden;overscroll-behavior:contain;background:#070a10;user-select:none;font-family:Georgia,'Times New Roman',serif}
 .me-map *{box-sizing:border-box}
-.me-canvas{position:absolute;inset:0;cursor:grab;will-change:transform}.me-canvas svg{will-change:transform}
+.me-canvas{position:absolute;inset:0;cursor:grab;will-change:transform;touch-action:none}.me-canvas svg{will-change:transform}
 .me-canvas:active{cursor:grabbing}
-.me-canvas svg{width:100%;height:100%;display:block}
+.me-canvas svg{width:100%;height:100%;display:block;touch-action:none}
 
 /* Header */
 .me-header{position:absolute;top:0;left:0;right:0;padding:12px 16px;z-index:10;pointer-events:none;display:flex;justify-content:space-between;align-items:flex-start;gap:8px;flex-wrap:wrap}
@@ -620,6 +620,19 @@ const MapEngine = (function() {
   .me-intro__title{font-size:38px}
   .me-intro__he{font-size:20px}
   .me-legend{display:block}
+}
+/* Respect reduced-motion preference (a11y): disable decorative animations
+   so the map stays fully usable without vestibular triggers. Pan/zoom and
+   all interactive behaviour remain functional — only transitions/animations
+   are neutralised. */
+@media(prefers-reduced-motion:reduce){
+  .me-map *,.me-map *::before,.me-map *::after{
+    animation-duration:.001ms !important;
+    animation-iteration-count:1 !important;
+    transition-duration:.001ms !important;
+    scroll-behavior:auto !important;
+  }
+  .me-canvas,.me-canvas svg{will-change:auto}
 }
 
       `;
