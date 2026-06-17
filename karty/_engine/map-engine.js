@@ -1,5 +1,5 @@
 /**
- * map-engine.js v0.34 — reusable biblical map rendering engine. SVG filters + animation polish.
+ * map-engine.js v0.35 — reusable biblical map rendering engine. SVG filters + animation polish.
  *
  * PUBLIC API:
  *   // Data layer (v0.2):
@@ -617,6 +617,15 @@ _on(searchInput,'input',()=>{
         }
       }
       g.style.opacity = match ? '1' : '.08';
+      // Highlight matching text in label
+      if (match && q.length >= 2) {
+        const labelEl = g.querySelector('text');
+        if (labelEl) {
+          labelEl.setAttribute('fill', '#e8c879');
+          labelEl.setAttribute('font-weight', '700');
+          _tm(() => { labelEl.setAttribute('fill', inStory?'#f4eedd':'#555'); labelEl.setAttribute('font-weight',''); }, 3000);
+        }
+      }
       if (match) matchCount++;
       // Pulse the dot of matching marker
       const dot = g.querySelector('circle:nth-child(3)');
@@ -641,6 +650,31 @@ _on(searchInput,'input',()=>{
 });
 header.appendChild(searchInput);
 container.appendChild(header);
+
+    // Theme toggle
+    const themeBtn = document.createElement('button');
+    themeBtn.className = 'me-theme-btn';
+    themeBtn.title = 'Сменить тему';
+    themeBtn.textContent = '🌙';
+    themeBtn.setAttribute('aria-label', 'Переключить тему');
+    let isDark = true;
+    themeBtn.addEventListener('click', () => {
+      isDark = !isDark;
+      themeBtn.textContent = isDark ? '🌙' : '☀️';
+      if (isDark) {
+        container.style.setProperty('--me-bg','#070a10');
+        container.style.setProperty('--me-panel-bg','rgba(13,17,26,.95)');
+        container.style.setProperty('--me-text','#e9e4d6');
+        container.style.setProperty('--me-gold','#e8c879');
+      } else {
+        container.style.setProperty('--me-bg','#f5f0e8');
+        container.style.setProperty('--me-panel-bg','rgba(255,252,245,.97)');
+        container.style.setProperty('--me-text','#3a2f1f');
+        container.style.setProperty('--me-gold','#b8860b');
+      }
+      showToast(isDark ? 'Тёмная тема' : 'Светлая тема', 1200);
+    });
+    header.appendChild(themeBtn);
 
 // Share button
 const shareBtn=document.createElement('button');shareBtn.className='me-share-btn';shareBtn.title='Поделиться';shareBtn.textContent='↗';
@@ -1045,6 +1079,8 @@ container.appendChild(panel);
       });
     }
 
+
+
     // ── Panel rendering ──
     function renderPanel(){
       const place=getActivePlace();
@@ -1175,8 +1211,11 @@ container.appendChild(panel);
       }
     }
 
+
+
     // ── Public API ──
     function open(id){
+      try {
       const place=(route.places||[]).find(p=>p.id===id);
       if(!place)return;
       activePlaceId=id;
@@ -1217,6 +1256,10 @@ container.appendChild(panel);
         p.setAttribute('stroke-width', i === activeStage ? '4' : '2.5');
         p.style.transition = 'opacity .4s ease, stroke-width .4s ease';
       });
+    } catch(e) {
+      console.error('MapEngine open error:', e);
+      showToast('⚠ Ошибка открытия', 2500);
+    }
     }
 
     function close(){
@@ -1238,6 +1281,16 @@ container.appendChild(panel);
 
     _on(panel.querySelector('.me-panel__close'),'click',close);
 
+    // Story toast for richer notification
+    function showStoryToast(story) {
+      const toastEl2 = document.createElement('div');
+      toastEl2.style.cssText = 'position:absolute;top:50%;left:50%;transform:translate(-50%,-50%) scale(.9);z-index:26;padding:10px 20px;border-radius:12px;background:rgba(7,10,16,.92);border:1px solid rgba(232,200,121,.3);color:#e8c879;font-size:14px;backdrop-filter:blur(12px);opacity:0;pointer-events:none;transition:all .4s cubic-bezier(.34,1.56,.64,1);text-align:center;white-space:nowrap';
+      toastEl2.innerHTML = '<div style="font-size:22px;margin-bottom:4px">📖</div>' + esc(story.t || story.label || story.id);
+      container.appendChild(toastEl2);
+      requestAnimationFrame(() => { toastEl2.style.opacity='1';toastEl2.style.transform='translate(-50%,-50%) scale(1)'; });
+      _tm(() => { toastEl2.style.opacity='0';toastEl2.style.transform='translate(-50%,-50%) scale(.9)';_tm(()=>toastEl2.remove(),400); }, 1500);
+    }
+
     function setStory(storyId){
       const story=(route.stories||[]).find(s=>s.id===storyId);
       if(!story)return;
@@ -1245,7 +1298,6 @@ container.appendChild(panel);
       const allMarkers = markersG.querySelectorAll('g[transform]');
       allMarkers.forEach(g => { g.style.opacity = '0'; g.style.transition = 'opacity .2s ease'; });
       activeStoryId=storyId;
-      showToast('Сюжет: ' + (story.t || story.id || storyId), 1500);
       close();
       showStoryToast(story);
       updateHash();
@@ -1254,6 +1306,11 @@ container.appendChild(panel);
       renderStages();
       _tm(animateMarkersIn, 150);
       if(story.viewport&&Array.isArray(story.viewport))flyTo(story.viewport[0],story.viewport[1],story.viewport[2]);
+      // Auto-open first place in story after animation
+      _tm(() => {
+        const firstPlace = (route.places||[]).find(p => visiblePlaces().some(v => v.id === p.id));
+        if (firstPlace && !activePlaceId) open(firstPlace.id);
+      }, 600);
     }
 
     function renderStories(){
@@ -1563,10 +1620,40 @@ container.appendChild(panel);
       }
     }, {passive: true});
 
+    // Toggle shortcuts help overlay
+    let shortcutsVisible = false;
+    function toggleShortcutsHelp() {
+      if (shortcutsEl.parentNode) {
+        shortcutsVisible = !shortcutsVisible;
+        shortcutsEl.style.opacity = shortcutsVisible ? '1' : '0';
+        shortcutsEl.style.transform = shortcutsVisible ? 'translate(-50%, 0)' : 'translate(-50%, 12px)';
+        if (!shortcutsVisible) _tm(() => { if (!shortcutsVisible) shortcutsEl.style.transform='translate(-50%, 12px)'; }, 50);
+        else _tm(() => {
+          shortcutsVisible = false;
+          shortcutsEl.style.opacity = '0';
+          shortcutsEl.style.transform = 'translate(-50%, -6px)';
+        }, 8000);
+      }
+    }
+    // Content search (Ctrl+F when panel open)
+    function searchInContent(query) {
+      if (!activePlaceId) return 0;
+      const c = panel.querySelector('.me-content');
+      if (!c) return 0;
+      const text = c.innerText.toLowerCase();
+      const idx = text.indexOf(query);
+      if (idx === -1) return 0;
+      // Count occurrences
+      let count = 0, pos = 0;
+      while ((pos = text.indexOf(query, pos)) !== -1) { count++; pos++; }
+      return count;
+    }
+
     _on(document,'keydown',function kh(e){
       if(!container.contains(document.activeElement)&&document.activeElement!==document.body)return;
       if(e.key==='Escape'){close();return}
       if(e.key===' '||e.key==='Spacebar'){e.preventDefault();if(touring){stopTour();hideCaption()}else{startTour()};return}
+      if(e.key==='?'||(e.key==='/'&&e.shiftKey)){e.preventDefault();toggleShortcutsHelp();return}
       if(!activePlaceId)return;
       const vis=visiblePlaces();const idx=placeIndexInStory();
       if(e.key==='ArrowRight'&&idx<vis.length-1)open(vis[idx+1].id);
@@ -1761,7 +1848,7 @@ container.appendChild(panel);
     getPanelModel,getPanelSections,getStoryState,getPlaceOrder,auditStoryDefinitions,
     // v0.3 rendering
     createMap,
-    version:'0.34.0',buildDate:'2026-06-17'
+    version:'0.35.0',buildDate:'2026-06-17'
   };
 })();
 
