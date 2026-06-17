@@ -1,5 +1,5 @@
 /**
- * map-engine.js v0.28 — reusable biblical map rendering engine. SVG filters + animation polish.
+ * map-engine.js v0.29 — reusable biblical map rendering engine. SVG filters + animation polish.
  *
  * PUBLIC API:
  *   // Data layer (v0.2):
@@ -552,16 +552,19 @@ const MapEngine = (function() {
       compass.style.opacity = '0.5';
       compass.style.pointerEvents = 'none';
       compass.innerHTML = `
-        <circle cx="0" cy="0" r="22" fill="none" stroke="rgba(255,255,255,.15)" stroke-width="1"/>
-        <circle cx="0" cy="0" r="18" fill="none" stroke="rgba(255,255,255,.08)" stroke-width="0.5"/>
-        <text x="0" y="-8" text-anchor="middle" fill="#e8c879" font-size="9" font-weight="700">N</text>
-        <text x="0" y="18" text-anchor="middle" fill="rgba(255,255,255,.3)" font-size="7">S</text>
-        <text x="12" y="4" text-anchor="middle" fill="rgba(255,255,255,.3)" font-size="7">E</text>
-        <text x="-12" y="4" text-anchor="middle" fill="rgba(255,255,255,.3)" font-size="7">W</text>
-        <line x1="0" y1="-6" x2="0" y2="6" stroke="#e8c879" stroke-width="0.8"/>
-        <line x1="-6" y1="0" x2="6" y2="0" stroke="rgba(255,255,255,.3)" stroke-width="0.5"/>
-        <polygon points="0,-14 -3,-6 3,-6" fill="#e8c879" opacity="0.8"/>
-        <polygon points="0,14 -3,6 3,6" fill="rgba(255,255,255,.2)"/>
+        <circle cx="0" cy="0" r="24" fill="rgba(7,10,16,.6)" stroke="rgba(255,255,255,.1)" stroke-width="0.8"/>
+        <circle cx="0" cy="0" r="20" fill="none" stroke="rgba(255,255,255,.12)" stroke-width="0.5"/>
+        <circle cx="0" cy="0" r="16" fill="none" stroke="rgba(255,255,255,.06)" stroke-width="0.3"/>
+        <!-- Tick marks every 30 degrees -->
+        ${Array.from({length:12},(_,i)=>`<line x1="${Math.sin(i*Math.PI/6)*18}" y1="${-Math.cos(i*Math.PI/6)*18}" x2="${Math.sin(i*Math.PI/6)*20}" y2="${-Math.cos(i*Math.PI/6)*20}" stroke="${i%3===0?'rgba(232,200,121,.4)':'rgba(255,255,255,.1)'}" stroke-width="${i%3===0?'1':'0.4'}"/>`).join('')}
+        <text x="0" y="-10" text-anchor="middle" fill="#e8c879" font-size="10" font-weight="700">N</text>
+        <text x="0" y="20" text-anchor="middle" fill="rgba(255,255,255,.25)" font-size="7">S</text>
+        <text x="14" y="4" text-anchor="middle" fill="rgba(255,255,255,.25)" font-size="7">E</text>
+        <text x="-14" y="4" text-anchor="middle" fill="rgba(255,255,255,.25)" font-size="7">W</text>
+        <line x1="0" y1="-7" x2="0" y2="7" stroke="#e8c879" stroke-width="1"/>
+        <line x1="-7" y1="0" x2="7" y2="0" stroke="rgba(255,255,255,.25)" stroke-width="0.5"/>
+        <polygon points="0,-16 -3.5,-7 0,-8 3.5,-7" fill="#e8c879" opacity="0.85"/>
+        <polygon points="0,16 -3.5,7 0,8 3.5,7" fill="rgba(255,255,255,.15)"/>
       `;
       compass.setAttribute('id','me-compass');
       compass.style.transition = 'transform .3s ease-out';
@@ -702,8 +705,31 @@ container.appendChild(panel);
     if (opts.showMinimap) {
       const mm = document.createElement('div');
       mm.className = 'me-minimap';
-      mm.innerHTML = '<svg viewBox="0 0 1900 1430" preserveAspectRatio="xMidYMid meet"><rect x="0" y="0" width="1900" height="1430" fill="transparent" stroke="rgba(255,255,255,.15)" stroke-width="2"/><rect id="me-mm-rect" fill="rgba(232,200,121,.08)" stroke="rgba(232,200,121,.4)" stroke-width="1" rx="4"/></svg>';
+      mm.innerHTML = '<svg viewBox="0 0 1900 1430" preserveAspectRatio="xMidYMid meet"><rect x="0" y="0" width="1900" height="1430" fill="rgba(7,10,16,.6)" stroke="rgba(255,255,255,.15)" stroke-width="2"/><g id="me-mm-dots"></g><rect id="me-mm-rect" fill="rgba(232,200,121,.08)" stroke="rgba(232,200,121,.4)" stroke-width="1" rx="4" style="transition: all .2s ease"/></svg>';
+      // Add place dots to minimap
+      const mmDots = mm.querySelector('#me-mm-dots');
+      (route.places||[]).forEach(place => {
+        const dot = document.createElementNS('http://www.w3.org/2000/svg','circle');
+        dot.setAttribute('cx', place.x);
+        dot.setAttribute('cy', place.y);
+        dot.setAttribute('r', '2.5');
+        dot.setAttribute('fill', STAGE_COLORS[place.stage||0]||'#888');
+        dot.setAttribute('opacity', '0.7');
+        mmDots.appendChild(dot);
+      });
       container.appendChild(mm);
+      // Click minimap to navigate
+      mm.addEventListener('click', (e) => {
+        const svgEl = mm.querySelector('svg');
+        if (!svgEl) return;
+        const rect = svgEl.getBoundingClientRect();
+        const scX = 1900 / rect.width;
+        const scY = 1430 / rect.height;
+        const mx = (e.clientX - rect.left) * scX;
+        const my = (e.clientY - rect.top) * scY;
+        flyTo(mx, my, view.w);
+        haptic();
+      });
       
       function updateMinimap() {
         const mmRect = mm.querySelector('#me-mm-rect');
@@ -787,6 +813,14 @@ container.appendChild(panel);
       if (compass) {
         const tiltX = (view.x / cfg.W0 - 0.5) * 3;
         compass.style.transform = `rotate(${tiltX.toFixed(1)}deg)`;
+      }
+      // Update minimap viewport rect (if minimap exists)
+      const mmRect = document.getElementById('me-mm-rect');
+      if (mmRect) {
+        mmRect.setAttribute('x', view.x);
+        mmRect.setAttribute('y', view.y);
+        mmRect.setAttribute('width', view.w);
+        mmRect.setAttribute('height', view.h);
       }
     }
 
@@ -1067,6 +1101,9 @@ container.appendChild(panel);
     function setStory(storyId){
       const story=(route.stories||[]).find(s=>s.id===storyId);
       if(!story)return;
+      // Fade out all markers
+      const allMarkers = markersG.querySelectorAll('g[transform]');
+      allMarkers.forEach(g => { g.style.opacity = '0'; g.style.transition = 'opacity .2s ease'; });
       activeStoryId=storyId;
       close();
       showStoryToast(story);
@@ -1541,7 +1578,7 @@ container.appendChild(panel);
     getPanelModel,getPanelSections,getStoryState,getPlaceOrder,auditStoryDefinitions,
     // v0.3 rendering
     createMap,
-    version:'0.28.0',buildDate:'2026-06-17'
+    version:'0.29.0',buildDate:'2026-06-17'
   };
 })();
 
