@@ -1,7 +1,7 @@
 {
   "version": 1,
   "updated": "2026-06-17",
-  "description": "Build-time strangler ownership manifest. Production deploy still serves repo root; dist ownership is for local/prototype validation only. Public baseline pages not listed here are implicitly legacy-owned until individually promoted.",
+  "description": "Build-time strangler ownership manifest. As of 2026-06-18 production deploy serves the Astro/strangler `dist` output (deploy.yml path: dist). Astro-owned routes are built by Astro; all other public pages are copied from the legacy root into dist by copy-legacy-to-dist.js. Public baseline pages not listed here are implicitly legacy-owned until individually promoted.",
   "routes": {
     "/": {
       "owner": "astro",
