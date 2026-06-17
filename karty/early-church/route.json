@@ -9,7 +9,8 @@
       "places": 11,
       "stages": 4,
       "verses": 350,
-      "years": 17
+      "years": 17,
+      "photos": 6
     },
     "viewport_init": {
       "cx": 680,
@@ -91,7 +92,17 @@
       "ep1": "Деян 1:12-14; 2:1-4",
       "side": "l",
       "story": "<p>В горнице на горе Сион 120 учеников ожидали обещанного Утешителя. В день Пятидесятницы «внезапно сделался шум с неба» — и Дух Святой сошёл на них. Пётр произнёс проповедь, и 3000 душ присоединились к Церкви. Здесь началась история христианства.</p>",
-      "bible": "<div class=\"verse\">«И внезапно сделался шум с неба… И явились им разделяющиеся языки, как бы огненные, и почили по одному на каждом из них».<span>ДЕЯНИЯ 2:2-3</span></div>"
+      "bible": "<div class=\"verse\">«И внезапно сделался шум с неба… И явились им разделяющиеся языки, как бы огненные, и почили по одному на каждом из них».<span>ДЕЯНИЯ 2:2-3</span></div>",
+      "photos": [
+        {
+          "src": "https://upload.wikimedia.org/wikipedia/commons/thumb/d/d2/Last_Supper_Room_Mount_Zion.jpg/640px-Last_Supper_Room_Mount_Zion.jpg",
+          "thumb": "https://upload.wikimedia.org/wikipedia/commons/thumb/d/d2/Last_Supper_Room_Mount_Zion.jpg/200px-Last_Supper_Room_Mount_Zion.jpg",
+          "label": "Горница — гора Сион",
+          "credit": "Wikimedia Commons",
+          "type": "arch",
+          "alt": "Горница — место Пятидесятницы"
+        }
+      ]
     },
     {
       "id": "temple_early",
@@ -181,7 +192,17 @@
       "ep1": "Деян 9:36-43; 10:9-16",
       "side": "l",
       "story": "<p>В Иоппии Пётр воскресил Тавифу (Серну), ученицу, которая «была исполнена добрых дел». Здесь же, на кровле дома Симона-кожевника, Пётр увидел видение о полотне с нечистыми животными: «Что Бог очистил, того ты не почитай нечистым». Это открыло путь к проповеди язычникам.</p>",
-      "bible": "<div class=\"verse\">«И слышу глас: что Бог очистил, того ты не почитай нечистым».<span>ДЕЯНИЯ 10:15</span></div>"
+      "bible": "<div class=\"verse\">«И слышу глас: что Бог очистил, того ты не почитай нечистым».<span>ДЕЯНИЯ 10:15</span></div>",
+      "photos": [
+        {
+          "src": "https://upload.wikimedia.org/wikipedia/commons/thumb/1/17/Jaffa_Old_City_panoramic.jpg/640px-Jaffa_Old_City_panoramic.jpg",
+          "thumb": "https://upload.wikimedia.org/wikipedia/commons/thumb/1/17/Jaffa_Old_City_panoramic.jpg/200px-Jaffa_Old_City_panoramic.jpg",
+          "label": "Яффо (Иоппия) — старый город",
+          "credit": "Wikimedia Commons",
+          "type": "geo",
+          "alt": "Яффо"
+        }
+      ]
     },
     {
       "id": "caesarea_cornelius",
@@ -197,7 +218,17 @@
       "side": "r",
       "story": "<p>Корнилий, римский сотник из Италийского полка — первый язычник, принявший крещение. Когда Пётр проповедовал в его доме, Дух Святой сошёл на всех слушавших. «Кто может запретить креститься водою тем, которые, как и мы, получили Святого Духа?»</p>",
       "bible": "<div class=\"verse\">«Итак и язычникам дал Бог покаяние в жизнь».<span>ДЕЯНИЯ 11:18</span></div>",
-      "arch": "<p>Кесария Приморская построена Иродом Великим (22–10 гг. до н.э.). Раскопан порт, театр, дворец прокуратора (здесь Павел провёл 2 года в узах). Надпись Пилата найдена в театре: «Tiberieum… Pontius Pilatus… Praefectus Iudaeae».</p>"
+      "arch": "<p>Кесария Приморская построена Иродом Великим (22–10 гг. до н.э.). Раскопан порт, театр, дворец прокуратора (здесь Павел провёл 2 года в узах). Надпись Пилата найдена в театре: «Tiberieum… Pontius Pilatus… Praefectus Iudaeae».</p>",
+      "photos": [
+        {
+          "src": "https://upload.wikimedia.org/wikipedia/commons/thumb/c/c1/Caesarea_Maritima_aqueduct.jpg/640px-Caesarea_Maritima_aqueduct.jpg",
+          "thumb": "https://upload.wikimedia.org/wikipedia/commons/thumb/c/c1/Caesarea_Maritima_aqueduct.jpg/200px-Caesarea_Maritima_aqueduct.jpg",
+          "label": "Акведук Кесарии Приморской",
+          "credit": "Wikimedia Commons",
+          "type": "arch",
+          "alt": "Кесария Приморская"
+        }
+      ]
     },
     {
       "id": "damascus",
@@ -213,7 +244,17 @@
       "side": "t",
       "story": "<p>На пути в Дамаск Савл, «ещё дыша угрозами и убийством на учеников Господа», встретил Воскресшего Христа. «Савл, Савл! что ты гонишь Меня?» — ослепший, он был приведён в Дамаск, где Анания вернул ему зрение. Савл крестился и немедленно начал проповедовать Христа.</p>",
       "bible": "<div class=\"verse\">«Савл, Савл! что ты гонишь Меня? Трудно тебе идти против рожна».<span>ДЕЯНИЯ 9:4-5</span></div>",
-      "arch": "<p>Прямая улица (Via Recta) Дамаска существует до сих пор. Традиционный дом Анании — подземная церковь в старом городе. Дамаск — один из древнейших непрерывно населённых городов мира.</p>"
+      "arch": "<p>Прямая улица (Via Recta) Дамаска существует до сих пор. Традиционный дом Анании — подземная церковь в старом городе. Дамаск — один из древнейших непрерывно населённых городов мира.</p>",
+      "photos": [
+        {
+          "src": "https://upload.wikimedia.org/wikipedia/commons/thumb/a/a8/Umayyad_Mosque_%28night%29.jpg/640px-Umayyad_Mosque_%28night%29.jpg",
+          "thumb": "https://upload.wikimedia.org/wikipedia/commons/thumb/a/a8/Umayyad_Mosque_%28night%29.jpg/200px-Umayyad_Mosque_%28night%29.jpg",
+          "label": "Мечеть Омейядов — Дамаск",
+          "credit": "Wikimedia Commons",
+          "type": "arch",
+          "alt": "Дамаск"
+        }
+      ]
     },
     {
       "id": "tarsus",
@@ -228,7 +269,17 @@
       "ep1": "Деян 21:39; 22:3",
       "side": "r",
       "story": "<p>«Я Иудеянин, родившийся в Тарсе Киликийском» (Деян 21:39). После обращения Савл вернулся в родной город на несколько лет. Варнава позже нашёл его здесь и привёл в Антиохию для совместного служения (Деян 11:25-26).</p>",
-      "bible": "<div class=\"verse\">«Потом Варнава пошёл в Тарс искать Савла и, найдя его, привёл в Антиохию».<span>ДЕЯНИЯ 11:25-26</span></div>"
+      "bible": "<div class=\"verse\">«Потом Варнава пошёл в Тарс искать Савла и, найдя его, привёл в Антиохию».<span>ДЕЯНИЯ 11:25-26</span></div>",
+      "photos": [
+        {
+          "src": "https://upload.wikimedia.org/wikipedia/commons/thumb/5/5f/Tarsus_St_Paul_church.jpg/640px-Tarsus_St_Paul_church.jpg",
+          "thumb": "https://upload.wikimedia.org/wikipedia/commons/thumb/5/5f/Tarsus_St_Paul_church.jpg/200px-Tarsus_St_Paul_church.jpg",
+          "label": "Церковь Св. Павла — Тарс",
+          "credit": "Wikimedia Commons",
+          "type": "arch",
+          "alt": "Церковь Св. Павла в Тарсе"
+        }
+      ]
     },
     {
       "id": "antioch_church",
@@ -243,7 +294,17 @@
       "ep1": "Деян 11:19-26",
       "side": "r",
       "story": "<p>После гонений на Стефана ученики рассеялись до Финикии, Кипра и Антиохии. Здесь Евангелие впервые систематически проповедовалось язычникам. Варнава и Савл учили целый год. «И ученики в Антиохии в первый раз стали называться Христианами» (Деян 11:26).</p>",
-      "bible": "<div class=\"verse\">«…И ученики в Антиохии в первый раз стали называться Христианами».<span>ДЕЯНИЯ 11:26</span></div>"
+      "bible": "<div class=\"verse\">«…И ученики в Антиохии в первый раз стали называться Христианами».<span>ДЕЯНИЯ 11:26</span></div>",
+      "photos": [
+        {
+          "src": "https://upload.wikimedia.org/wikipedia/commons/thumb/c/cb/Saint_Pierre_Church%2C_Antakya_01.jpg/640px-Saint_Pierre_Church%2C_Antakya_01.jpg",
+          "thumb": "https://upload.wikimedia.org/wikipedia/commons/thumb/c/cb/Saint_Pierre_Church%2C_Antakya_01.jpg/200px-Saint_Pierre_Church%2C_Antakya_01.jpg",
+          "label": "Церковь Св. Петра — Антакья (Антиохия)",
+          "credit": "Wikimedia Commons",
+          "type": "arch",
+          "alt": "Церковь в Антиохии"
+        }
+      ]
     }
   ],
   "stages": [

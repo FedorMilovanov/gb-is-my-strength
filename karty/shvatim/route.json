@@ -10,7 +10,8 @@
       "stages": 3,
       "verses": 400,
       "years": -1,
-      "stories": 5
+      "stories": 5,
+      "photos": 13
     },
     "viewport_init": {
       "cx": 700,
@@ -94,7 +95,18 @@
       "ep1": "Нав 15:1-63",
       "side": "r",
       "story": "<p>Иуда — колено, из которого вышел Давид и Мессия. Получил обширную территорию от Мёртвого моря до Средиземного: Хеврон, Вифлеем, Иерусалим. Благословение Иакова: «Не отойдёт скипетр от Иуды» (Быт 49:10).</p>",
-      "bible": "<div class=\"verse\">«Не отойдёт скипетр от Иуды и законодатель от чресл его, доколе не придёт Примиритель».<span>БЫТИЕ 49:10</span></div>"
+      "bible": "<div class=\"verse\">«Не отойдёт скипетр от Иуды и законодатель от чресл его, доколе не придёт Примиритель».<span>БЫТИЕ 49:10</span></div>",
+      "photos": [
+        {
+          "src": "https://upload.wikimedia.org/wikipedia/commons/thumb/9/9e/Hebron_Cave_of_the_Patriarchs.jpg/640px-Hebron_Cave_of_the_Patriarchs.jpg",
+          "thumb": "https://upload.wikimedia.org/wikipedia/commons/thumb/9/9e/Hebron_Cave_of_the_Patriarchs.jpg/200px-Hebron_Cave_of_the_Patriarchs.jpg",
+          "label": "Хеврон — пещера Махпела",
+          "credit": "Wikimedia Commons",
+          "type": "arch",
+          "alt": "Пещера Патриархов"
+        }
+      ],
+      "he_deep": "<div class=\"he-block\"><div class=\"he-word\"><span class=\"hw\" lang=\"he\">יְהוּדָה</span><span class=\"he-tr\">Йехуда</span></div><div class=\"he-etym\">От <span class=\"hw\" lang=\"he\">ידה</span> — «хвалить, благодарить». При рождении Лия сказала: «Теперь-то я восхвалю Господа» (Быт 29:35). Имя стало названием колена, царства, народа. Еврей = יְהוּדִי.</div></div>"
     },
     {
       "id": "ephraim",
@@ -109,7 +121,18 @@
       "ep1": "Нав 16:1-10",
       "side": "r",
       "story": "<p>Ефрем — ведущее колено Северного царства. Здесь находились Силом (Скиния 369 лет) и Сихем (первая столица Израиля). Иеровоам I был ефремлянином. Пророки часто называли Северное царство «Ефремом».</p>",
-      "bible": "<div class=\"verse\">«И собралось всё общество сынов Израилевых в Силом, и поставили там скинию собрания».<span>ИИСУС НАВИН 18:1</span></div>"
+      "bible": "<div class=\"verse\">«И собралось всё общество сынов Израилевых в Силом, и поставили там скинию собрания».<span>ИИСУС НАВИН 18:1</span></div>",
+      "photos": [
+        {
+          "src": "https://upload.wikimedia.org/wikipedia/commons/thumb/a/a8/Tel_Shiloh_%28Khirbet_Seilun%29_-_panoramio.jpg/640px-Tel_Shiloh_%28Khirbet_Seilun%29_-_panoramio.jpg",
+          "thumb": "https://upload.wikimedia.org/wikipedia/commons/thumb/a/a8/Tel_Shiloh_%28Khirbet_Seilun%29_-_panoramio.jpg/200px-Tel_Shiloh_%28Khirbet_Seilun%29_-_panoramio.jpg",
+          "label": "Силом — центр Ефрема",
+          "credit": "Wikimedia Commons",
+          "type": "arch",
+          "alt": "Тель Шило"
+        }
+      ],
+      "he_deep": "<div class=\"he-block\"><div class=\"he-word\"><span class=\"hw\" lang=\"he\">אֶפְרָיִם</span><span class=\"he-tr\">Эфраим</span></div><div class=\"he-etym\">От <span class=\"hw\" lang=\"he\">פרה</span> — «плодиться». Иосиф: «Бог сделал меня плодовитым в земле страдания моего» (Быт 41:52).</div></div>"
     },
     {
       "id": "manasseh_n",
@@ -153,7 +176,8 @@
       "ep1": "Нав 18:11-28",
       "side": "l",
       "story": "<p>Вениамин — самое маленькое колено, но стратегически расположенное между Ефремом и Иудой. Включало Иерихон, Гиву (столица Саула), Вефиль и часть Иерусалима. Саул и Павел были вениамитянами.</p>",
-      "bible": "<div class=\"verse\">«Вениамин, хищный волк, утром будет есть ловитву и вечером делить добычу».<span>БЫТИЕ 49:27</span></div>"
+      "bible": "<div class=\"verse\">«Вениамин, хищный волк, утром будет есть ловитву и вечером делить добычу».<span>БЫТИЕ 49:27</span></div>",
+      "he_deep": "<div class=\"he-block\"><div class=\"he-word\"><span class=\"hw\" lang=\"he\">בִּנְיָמִין</span><span class=\"he-tr\">Биньямин</span></div><div class=\"he-etym\">«Сын правой руки» — или «сын юга» (правая сторона = юг в семитской ориентации). Рахиль назвала его «Бен-Они» (сын скорби моей), но Иаков переименовал (Быт 35:18).</div></div>"
     },
     {
       "id": "dan",
@@ -167,7 +191,18 @@
       "id2": "Переселился на север",
       "ep1": "Нав 19:40-48; Суд 18",
       "side": "r",
-      "story": "<p>Изначально Дан получил удел в Шфеле, но не смог завоевать его. Колено переселилось на север и захватило Лаис (позже Дан). «От Дана до Вирсавии» — северная и южная границы Израиля.</p>"
+      "story": "<p>Изначально Дан получил удел в Шфеле, но не смог завоевать его. Колено переселилось на север и захватило Лаис (позже Дан). «От Дана до Вирсавии» — северная и южная границы Израиля.</p>",
+      "photos": [
+        {
+          "src": "https://upload.wikimedia.org/wikipedia/commons/thumb/f/f2/Dan_Gate.jpg/640px-Dan_Gate.jpg",
+          "thumb": "https://upload.wikimedia.org/wikipedia/commons/thumb/f/f2/Dan_Gate.jpg/200px-Dan_Gate.jpg",
+          "label": "Ворота Тель Дана",
+          "credit": "Wikimedia Commons",
+          "type": "arch",
+          "alt": "Тель Дан"
+        }
+      ],
+      "he_deep": "<div class=\"he-block\"><div class=\"he-word\"><span class=\"hw\" lang=\"he\">דָּן</span><span class=\"he-tr\">Дан</span></div><div class=\"he-etym\">От <span class=\"hw\" lang=\"he\">דין</span> — «судить». Рахиль при рождении через Валлу: «Судил мне Бог» (Быт 30:6).</div></div>"
     },
     {
       "id": "simeon",
@@ -182,7 +217,17 @@
       "ep1": "Нав 19:1-9",
       "side": "b",
       "story": "<p>Симеон получил удел внутри территории Иуды — 17 городов разбросанных по Негеву. Со временем колено было полностью поглощено Иудой. Благословение Иакова предсказало рассеяние Симеона и Левия.</p>",
-      "bible": "<div class=\"verse\">«Разделю их в Иакове и рассею их в Израиле».<span>БЫТИЕ 49:7</span></div>"
+      "bible": "<div class=\"verse\">«Разделю их в Иакове и рассею их в Израиле».<span>БЫТИЕ 49:7</span></div>",
+      "photos": [
+        {
+          "src": "https://upload.wikimedia.org/wikipedia/commons/thumb/9/94/Negev_desert_panorama.jpg/640px-Negev_desert_panorama.jpg",
+          "thumb": "https://upload.wikimedia.org/wikipedia/commons/thumb/9/94/Negev_desert_panorama.jpg/200px-Negev_desert_panorama.jpg",
+          "label": "Пустыня Негев — Симеон",
+          "credit": "Wikimedia Commons",
+          "type": "geo",
+          "alt": "Негев"
+        }
+      ]
     },
     {
       "id": "issachar",
@@ -196,7 +241,17 @@
       "id2": "Плодородная долина",
       "ep1": "Нав 19:17-23",
       "side": "l",
-      "story": "<p>Иссахар получил плодородную Изреельскую долину с городами Изреель, Сунем, Ен-Ганним. «Осёл крепкий, лежащий между протоками вод» (Быт 49:14) — земледельческое колено, снабжавшее Израиль продовольствием.</p>"
+      "story": "<p>Иссахар получил плодородную Изреельскую долину с городами Изреель, Сунем, Ен-Ганним. «Осёл крепкий, лежащий между протоками вод» (Быт 49:14) — земледельческое колено, снабжавшее Израиль продовольствием.</p>",
+      "photos": [
+        {
+          "src": "https://upload.wikimedia.org/wikipedia/commons/thumb/f/f6/Jezreel_Valley.jpg/640px-Jezreel_Valley.jpg",
+          "thumb": "https://upload.wikimedia.org/wikipedia/commons/thumb/f/f6/Jezreel_Valley.jpg/200px-Jezreel_Valley.jpg",
+          "label": "Изреельская долина",
+          "credit": "Wikimedia Commons",
+          "type": "geo",
+          "alt": "Изреельская долина"
+        }
+      ]
     },
     {
       "id": "zebulun",
@@ -225,7 +280,17 @@
       "ep1": "Нав 19:32-39",
       "side": "t",
       "story": "<p>Неффалим — северное колено, Галилея языческая. Здесь позже жил и проповедовал Иисус в Капернауме, на горе Блаженств, в Вифсаиде. Пророчество Исайи: «Народ, ходящий во тьме, увидит свет» (Ис 9:1-2).</p>",
-      "bible": "<div class=\"verse\">«Земля Завулонова и земля Неффалимова… народ, сидящий во тьме, увидел свет великий».<span>МАТФЕЯ 4:15-16</span></div>"
+      "bible": "<div class=\"verse\">«Земля Завулонова и земля Неффалимова… народ, сидящий во тьме, увидел свет великий».<span>МАТФЕЯ 4:15-16</span></div>",
+      "photos": [
+        {
+          "src": "https://upload.wikimedia.org/wikipedia/commons/thumb/5/5f/Sea_of_Galilee_%28panoramic%29.jpg/640px-Sea_of_Galilee_%28panoramic%29.jpg",
+          "thumb": "https://upload.wikimedia.org/wikipedia/commons/thumb/5/5f/Sea_of_Galilee_%28panoramic%29.jpg/200px-Sea_of_Galilee_%28panoramic%29.jpg",
+          "label": "Галилейское море — Неффалим",
+          "credit": "Wikimedia Commons",
+          "type": "geo",
+          "alt": "Галилейское море"
+        }
+      ]
     },
     {
       "id": "asher",
@@ -239,7 +304,17 @@
       "id2": "Финикийское побережье",
       "ep1": "Нав 19:24-31",
       "side": "t",
-      "story": "<p>Асир получил северное побережье Средиземного моря с городами Акко, Тир, Сидон. Благословение Моисея: «Асир благословен между сынами… окунёт в масло ногу свою» (Втор 33:24) — регион славился оливковым маслом.</p>"
+      "story": "<p>Асир получил северное побережье Средиземного моря с городами Акко, Тир, Сидон. Благословение Моисея: «Асир благословен между сынами… окунёт в масло ногу свою» (Втор 33:24) — регион славился оливковым маслом.</p>",
+      "photos": [
+        {
+          "src": "https://upload.wikimedia.org/wikipedia/commons/thumb/2/2c/Akko_Crusader_walls.jpg/640px-Akko_Crusader_walls.jpg",
+          "thumb": "https://upload.wikimedia.org/wikipedia/commons/thumb/2/2c/Akko_Crusader_walls.jpg/200px-Akko_Crusader_walls.jpg",
+          "label": "Акко — побережье Асира",
+          "credit": "Wikimedia Commons",
+          "type": "geo",
+          "alt": "Акко"
+        }
+      ]
     },
     {
       "id": "gad",
@@ -253,7 +328,17 @@
       "id2": "Галаад · южнее Манассии",
       "ep1": "Нав 13:24-28",
       "side": "r",
-      "story": "<p>Гад получил удел к югу от восточного Манассии и к северу от Рувима — территорию от Галаада до равнин Моава. Гадитяне славились как храбрые воины. Благословение Моисея: «Гад расположился как лев» (Втор 33:20).</p>"
+      "story": "<p>Гад получил удел к югу от восточного Манассии и к северу от Рувима — территорию от Галаада до равнин Моава. Гадитяне славились как храбрые воины. Благословение Моисея: «Гад расположился как лев» (Втор 33:20).</p>",
+      "photos": [
+        {
+          "src": "https://upload.wikimedia.org/wikipedia/commons/thumb/4/42/Gilead_region_Jordan.jpg/640px-Gilead_region_Jordan.jpg",
+          "thumb": "https://upload.wikimedia.org/wikipedia/commons/thumb/4/42/Gilead_region_Jordan.jpg/200px-Gilead_region_Jordan.jpg",
+          "label": "Галаадские горы — Гад",
+          "credit": "Wikimedia Commons",
+          "type": "geo",
+          "alt": "Галаад"
+        }
+      ]
     },
     {
       "id": "reuben",
@@ -267,7 +352,17 @@
       "id2": "Равнины Моава",
       "ep1": "Нав 13:15-23",
       "side": "r",
-      "story": "<p>Рувим — первенец Иакова, но потерял первородство из-за греха с Валлой. Получил южное Заиорданье от Арнона до Есевона. Племя постепенно растворилось среди моавитян. Благословение: «Рувим, ты — первенец мой… но ты бушевал как вода» (Быт 49:3-4).</p>"
+      "story": "<p>Рувим — первенец Иакова, но потерял первородство из-за греха с Валлой. Получил южное Заиорданье от Арнона до Есевона. Племя постепенно растворилось среди моавитян. Благословение: «Рувим, ты — первенец мой… но ты бушевал как вода» (Быт 49:3-4).</p>",
+      "photos": [
+        {
+          "src": "https://upload.wikimedia.org/wikipedia/commons/thumb/6/6b/Machareus_view.jpg/640px-Machareus_view.jpg",
+          "thumb": "https://upload.wikimedia.org/wikipedia/commons/thumb/6/6b/Machareus_view.jpg/200px-Machareus_view.jpg",
+          "label": "Заиорданье — регион Рувима",
+          "credit": "Wikimedia Commons",
+          "type": "geo",
+          "alt": "Заиорданье"
+        }
+      ]
     },
     {
       "id": "jericho",
@@ -282,7 +377,17 @@
       "ep1": "Нав 6:1-27",
       "side": "b",
       "story": "<p>Первый город, взятый Израилем в Ханаане. 7 дней обхождения, 7 труб, крик народа — и «обрушилась стена города до своего основания». Только Раав и её семья были пощажены. Археологически: Тель эс-Султан, рухнувшие стены бронзового века.</p>",
-      "bible": "<div class=\"verse\">«И обрушилась стена города до своего основания, и народ пошёл в город, каждый с своей стороны, и взяли город».<span>ИИСУС НАВИН 6:20</span></div>"
+      "bible": "<div class=\"verse\">«И обрушилась стена города до своего основания, и народ пошёл в город, каждый с своей стороны, и взяли город».<span>ИИСУС НАВИН 6:20</span></div>",
+      "photos": [
+        {
+          "src": "https://upload.wikimedia.org/wikipedia/commons/thumb/5/5a/Tell_es-Sultan_%28Jericho%29.jpg/640px-Tell_es-Sultan_%28Jericho%29.jpg",
+          "thumb": "https://upload.wikimedia.org/wikipedia/commons/thumb/5/5a/Tell_es-Sultan_%28Jericho%29.jpg/200px-Tell_es-Sultan_%28Jericho%29.jpg",
+          "label": "Тель эс-Султан — Иерихон",
+          "credit": "Wikimedia Commons",
+          "type": "arch",
+          "alt": "Древний Иерихон"
+        }
+      ]
     },
     {
       "id": "ai",
@@ -312,7 +417,17 @@
       "ep1": "Нав 9–10",
       "side": "r",
       "story": "<p>Жители Гаваона хитростью заключили союз с Израилем. Пять аморрейских царей напали на Гаваон. Иисус Навин вышел на помощь — и Бог бросал на врагов «камни града с небес». «Стой, солнце, над Гаваоном!» — и Бог продлил день для победы.</p>",
-      "bible": "<div class=\"verse\">«Стой, солнце, над Гаваоном, и луна, над долиною Аиалонскою! И остановилось солнце… доколе народ мстил врагам своим».<span>ИИСУС НАВИН 10:12-13</span></div>"
+      "bible": "<div class=\"verse\">«Стой, солнце, над Гаваоном, и луна, над долиною Аиалонскою! И остановилось солнце… доколе народ мстил врагам своим».<span>ИИСУС НАВИН 10:12-13</span></div>",
+      "photos": [
+        {
+          "src": "https://upload.wikimedia.org/wikipedia/commons/thumb/0/06/Gibeon_pool.jpg/640px-Gibeon_pool.jpg",
+          "thumb": "https://upload.wikimedia.org/wikipedia/commons/thumb/0/06/Gibeon_pool.jpg/200px-Gibeon_pool.jpg",
+          "label": "Пруд в Гаваоне (Эль-Джиб)",
+          "credit": "Wikimedia Commons",
+          "type": "arch",
+          "alt": "Пруд в Гаваоне"
+        }
+      ]
     },
     {
       "id": "hazor_conquest",
@@ -327,7 +442,17 @@
       "ep1": "Нав 11:1-15",
       "side": "t",
       "story": "<p>Иавин, царь Асора, собрал коалицию северных царей «многочисленных, как песок на берегу моря». Иисус Навин разбил их у вод Меромских и сжёг Асор. «Не было ни одного города, который заключил бы мир с сынами Израилевыми».</p>",
-      "bible": "<div class=\"verse\">«И поразили они их… и не оставили ни одной души. А Асор сожёг он огнём».<span>ИИСУС НАВИН 11:11</span></div>"
+      "bible": "<div class=\"verse\">«И поразили они их… и не оставили ни одной души. А Асор сожёг он огнём».<span>ИИСУС НАВИН 11:11</span></div>",
+      "photos": [
+        {
+          "src": "https://upload.wikimedia.org/wikipedia/commons/thumb/4/4b/Hatzor-Israelite-4.jpg/640px-Hatzor-Israelite-4.jpg",
+          "thumb": "https://upload.wikimedia.org/wikipedia/commons/thumb/4/4b/Hatzor-Israelite-4.jpg/200px-Hatzor-Israelite-4.jpg",
+          "label": "Тель Хацор",
+          "credit": "Wikimedia Commons",
+          "type": "arch",
+          "alt": "Тель Хацор"
+        }
+      ]
     },
     {
       "id": "mount_ebal",
@@ -343,7 +468,17 @@
       "side": "l",
       "story": "<p>На горе Гевал Иисус Навин построил жертвенник Господу из цельных камней и написал на камнях список с закона Моисеева. Половина колен стояла на Гаризиме для благословения, половина на Гевале для проклятия. Археологически: Адам Зерталь (1980) обнаружил массивный каменный жертвенник на Гевале — возможно, тот самый.</p>",
       "bible": "<div class=\"verse\">«Тогда Иисус устроил жертвенник Господу Богу Израилеву на горе Гевал».<span>ИИСУС НАВИН 8:30</span></div>",
-      "arch": "<p>Адам Зерталь (1980-е) обнаружил на Гевале массивную каменную структуру (9×7 м) с пандусом, датируемую железным веком I (~1250 г.). В засыпи найдены кости только кошерных животных. Идентифицирован как жертвенник Иисуса Навина.</p>"
+      "arch": "<p>Адам Зерталь (1980-е) обнаружил на Гевале массивную каменную структуру (9×7 м) с пандусом, датируемую железным веком I (~1250 г.). В засыпи найдены кости только кошерных животных. Идентифицирован как жертвенник Иисуса Навина.</p>",
+      "photos": [
+        {
+          "src": "https://upload.wikimedia.org/wikipedia/commons/thumb/7/72/Mount_Ebal_from_Mount_Gerizim.jpg/640px-Mount_Ebal_from_Mount_Gerizim.jpg",
+          "thumb": "https://upload.wikimedia.org/wikipedia/commons/thumb/7/72/Mount_Ebal_from_Mount_Gerizim.jpg/200px-Mount_Ebal_from_Mount_Gerizim.jpg",
+          "label": "Гора Гевал",
+          "credit": "Wikimedia Commons",
+          "type": "geo",
+          "alt": "Гора Гевал"
+        }
+      ]
     }
   ],
   "stages": [

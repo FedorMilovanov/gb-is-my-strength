@@ -9,7 +9,8 @@
       "places": 12,
       "stages": 5,
       "verses": 150,
-      "years": 295
+      "years": 295,
+      "photos": 8
     },
     "viewport_init": {
       "cx": 950,
@@ -104,7 +105,17 @@
       "ep1": "Зах 9:2-4; Иез 26–28",
       "side": "t",
       "story": "<p>Александр Македонский осаждал Тир 7 месяцев (332 г. до н.э.). Город пал после строительства дамбы от берега к острову. Пророчество Иезекииля (гл. 26) о разрушении Тира частично исполнилось: «И разобьют стены Тира и разрушат башни его».</p>",
-      "bible": "<div class=\"verse\">«И сделаю тебя голою скалою, будешь местом для расстилания сетей».<span>ИЕЗЕКИИЛЬ 26:14</span></div>"
+      "bible": "<div class=\"verse\">«И сделаю тебя голою скалою, будешь местом для расстилания сетей».<span>ИЕЗЕКИИЛЬ 26:14</span></div>",
+      "photos": [
+        {
+          "src": "https://upload.wikimedia.org/wikipedia/commons/thumb/3/37/Tyre_Al_Mina_Excavations_-_The_Roman_City_2.jpg/640px-Tyre_Al_Mina_Excavations_-_The_Roman_City_2.jpg",
+          "thumb": "https://upload.wikimedia.org/wikipedia/commons/thumb/3/37/Tyre_Al_Mina_Excavations_-_The_Roman_City_2.jpg/200px-Tyre_Al_Mina_Excavations_-_The_Roman_City_2.jpg",
+          "label": "Тир — римские руины Аль-Мина",
+          "credit": "Wikimedia Commons",
+          "type": "arch",
+          "alt": "Древний Тир"
+        }
+      ]
     },
     {
       "id": "jerusalem_meet",
@@ -119,7 +130,17 @@
       "ep1": "Дан 11:1-35; 1Макк 1:20-24",
       "side": "l",
       "story": "<p>По свидетельству Иосифа Флавия, Александр Великий посетил Иерусалим и почтил первосвященника, признав в нём фигуру из своего сна. Здесь же Антиох IV Епифан осквернил Храм в 167 г. до н.э., установив «мерзость запустения» (Дан 11:31). Именно это событие спровоцировало Маккавейское восстание.</p>",
-      "bible": "<div class=\"verse\">«И поставят мерзость запустения».<span>ДАНИИЛ 11:31</span></div>"
+      "bible": "<div class=\"verse\">«И поставят мерзость запустения».<span>ДАНИИЛ 11:31</span></div>",
+      "photos": [
+        {
+          "src": "https://upload.wikimedia.org/wikipedia/commons/thumb/0/0f/Jerusalem-2013-Temple_Mount-Dome_of_the_Rock_%28SE_exposure%29.jpg/640px-Jerusalem-2013-Temple_Mount-Dome_of_the_Rock_%28SE_exposure%29.jpg",
+          "thumb": "https://upload.wikimedia.org/wikipedia/commons/thumb/0/0f/Jerusalem-2013-Temple_Mount-Dome_of_the_Rock_%28SE_exposure%29.jpg/200px-Jerusalem-2013-Temple_Mount-Dome_of_the_Rock_%28SE_exposure%29.jpg",
+          "label": "Храмовая гора — Иерусалим",
+          "credit": "Wikimedia Commons",
+          "type": "arch",
+          "alt": "Храмовая гора"
+        }
+      ]
     },
     {
       "id": "alexandria",
@@ -134,7 +155,17 @@
       "ep1": "Письмо Аристея; Филон",
       "side": "t",
       "story": "<p>Александрия Египетская — величайший центр еврейской диаспоры. Здесь при Птолемее II Филадельфе (285–246) был выполнен перевод Ветхого Завета на греческий — Септуагинта (LXX). Филон Александрийский, крупнейший еврейский философ, жил и писал здесь.</p>",
-      "bible": "<div class=\"verse\">Перевод 70 толковников (Септуагинта) стал Библией ранней Церкви — именно её цитируют апостолы в Новом Завете.</div>"
+      "bible": "<div class=\"verse\">Перевод 70 толковников (Септуагинта) стал Библией ранней Церкви — именно её цитируют апостолы в Новом Завете.</div>",
+      "photos": [
+        {
+          "src": "https://upload.wikimedia.org/wikipedia/commons/thumb/6/6a/Alexandria_12-9-2005_3.JPG/640px-Alexandria_12-9-2005_3.JPG",
+          "thumb": "https://upload.wikimedia.org/wikipedia/commons/thumb/6/6a/Alexandria_12-9-2005_3.JPG/200px-Alexandria_12-9-2005_3.JPG",
+          "label": "Александрия — гавань и крепость Кайтбей",
+          "credit": "Wikimedia Commons",
+          "type": "geo",
+          "alt": "Александрия"
+        }
+      ]
     },
     {
       "id": "modiin",
@@ -149,7 +180,17 @@
       "ep1": "1Макк 2:1-28",
       "side": "r",
       "story": "<p>Модиин — родной город священника Маттафии Хасмонея и его пяти сыновей. В 167 г. до н.э. Маттафия отказался принести языческую жертву и убил царского посланника. С этого началось Маккавейское восстание: «Всякий ревнитель закона — за мной!» (1Макк 2:27).</p>",
-      "bible": "<div class=\"verse\">«И возревновал Маттафия о законе… и воскликнул громким голосом: всякий, кто ревнует о законе, выходи за мною!»<span>1МАККАВЕЙСКАЯ 2:27</span></div>"
+      "bible": "<div class=\"verse\">«И возревновал Маттафия о законе… и воскликнул громким голосом: всякий, кто ревнует о законе, выходи за мною!»<span>1МАККАВЕЙСКАЯ 2:27</span></div>",
+      "photos": [
+        {
+          "src": "https://upload.wikimedia.org/wikipedia/commons/thumb/4/4e/Modiin_Illit.jpg/640px-Modiin_Illit.jpg",
+          "thumb": "https://upload.wikimedia.org/wikipedia/commons/thumb/4/4e/Modiin_Illit.jpg/200px-Modiin_Illit.jpg",
+          "label": "Модиин — родина Маккавейского восстания",
+          "credit": "Wikimedia Commons",
+          "type": "geo",
+          "alt": "Модиин"
+        }
+      ]
     },
     {
       "id": "antioch_syria",
@@ -164,7 +205,17 @@
       "ep1": "Дан 11:29-31",
       "side": "r",
       "story": "<p>Антиохия на Оронте — столица Селевкидской империи, один из четырёх великих городов эллинистического мира. Отсюда Антиох IV Епифан издавал указы против иудейской религии: запрет субботы, обрезания, свитки Торы сжигались.</p>",
-      "bible": "<div class=\"verse\">«И возвратившись, вознегодует на святой завет… и войдёт в соглашение с отступниками от святого завета».<span>ДАНИИЛ 11:30</span></div>"
+      "bible": "<div class=\"verse\">«И возвратившись, вознегодует на святой завет… и войдёт в соглашение с отступниками от святого завета».<span>ДАНИИЛ 11:30</span></div>",
+      "photos": [
+        {
+          "src": "https://upload.wikimedia.org/wikipedia/commons/thumb/1/1e/Hatay_Archaeology_Museum_Antioch_mosaic.jpg/640px-Hatay_Archaeology_Museum_Antioch_mosaic.jpg",
+          "thumb": "https://upload.wikimedia.org/wikipedia/commons/thumb/1/1e/Hatay_Archaeology_Museum_Antioch_mosaic.jpg/200px-Hatay_Archaeology_Museum_Antioch_mosaic.jpg",
+          "label": "Мозаика Антиохии Сирийской",
+          "credit": "Wikimedia Commons",
+          "type": "arch",
+          "alt": "Антиохийская мозаика"
+        }
+      ]
     },
     {
       "id": "beth_horon",
@@ -236,7 +287,17 @@
       "id2": "Самария",
       "ep1": "Иосиф Флавий, Иудейские древности 13.10",
       "side": "l",
-      "story": "<p>Иоанн Гиркан I (134–104 до н.э.), внук Маттафии, расширил Хасмонейское царство и разрушил Самарию и храм на горе Гаризим (~107 г.). Это углубило раскол между иудеями и самарянами, сохранившийся до новозаветных времён.</p>"
+      "story": "<p>Иоанн Гиркан I (134–104 до н.э.), внук Маттафии, расширил Хасмонейское царство и разрушил Самарию и храм на горе Гаризим (~107 г.). Это углубило раскол между иудеями и самарянами, сохранившийся до новозаветных времён.</p>",
+      "photos": [
+        {
+          "src": "https://upload.wikimedia.org/wikipedia/commons/thumb/c/cf/Sebastia-313.jpg/640px-Sebastia-313.jpg",
+          "thumb": "https://upload.wikimedia.org/wikipedia/commons/thumb/c/cf/Sebastia-313.jpg/200px-Sebastia-313.jpg",
+          "label": "Руины Самарии",
+          "credit": "Wikimedia Commons",
+          "type": "arch",
+          "alt": "Самария"
+        }
+      ]
     },
     {
       "id": "gerasa",
@@ -251,7 +312,17 @@
       "ep1": "Мк 5:1-20; Иосиф Флавий, Иуд. война",
       "side": "r",
       "story": "<p>Гераса (Джераш, Иордания) — один из десяти городов Декаполиса, эллинистический центр в Заиорданье. Александр Яннай (103–76 до н.э.) завоевал город, расширив Хасмонейское царство до максимальных границ. В НЗ — возможное место исцеления гадаринского бесноватого.</p>",
-      "bible": "<div class=\"verse\">«И вышел из гробов человек, одержимый нечистым духом».<span>МАРКА 5:2</span></div>"
+      "bible": "<div class=\"verse\">«И вышел из гробов человек, одержимый нечистым духом».<span>МАРКА 5:2</span></div>",
+      "photos": [
+        {
+          "src": "https://upload.wikimedia.org/wikipedia/commons/thumb/8/89/Jerash_Forum.jpg/640px-Jerash_Forum.jpg",
+          "thumb": "https://upload.wikimedia.org/wikipedia/commons/thumb/8/89/Jerash_Forum.jpg/200px-Jerash_Forum.jpg",
+          "label": "Джераш (Гераса) — форум",
+          "credit": "Wikimedia Commons",
+          "type": "arch",
+          "alt": "Гераса — форум"
+        }
+      ]
     },
     {
       "id": "masada",
@@ -265,7 +336,17 @@
       "id2": "Иудейская пустыня",
       "ep1": "Иосиф Флавий, Иудейская война",
       "side": "b",
-      "story": "<p>Масада — крепость на вершине скалы над Мёртвым морем, построенная Хасмонеями. Позже Ирод Великий превратил её в роскошный дворец-убежище. В 73 г. н.э., уже после разрушения Храма, стала последним оплотом еврейских повстанцев.</p>"
+      "story": "<p>Масада — крепость на вершине скалы над Мёртвым морем, построенная Хасмонеями. Позже Ирод Великий превратил её в роскошный дворец-убежище. В 73 г. н.э., уже после разрушения Храма, стала последним оплотом еврейских повстанцев.</p>",
+      "photos": [
+        {
+          "src": "https://upload.wikimedia.org/wikipedia/commons/thumb/0/0e/Masada_Sunset.jpg/640px-Masada_Sunset.jpg",
+          "thumb": "https://upload.wikimedia.org/wikipedia/commons/thumb/0/0e/Masada_Sunset.jpg/200px-Masada_Sunset.jpg",
+          "label": "Масада — крепость на закате",
+          "credit": "Wikimedia Commons",
+          "type": "arch",
+          "alt": "Масада"
+        }
+      ]
     }
   ],
   "stages": [
