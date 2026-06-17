@@ -339,6 +339,12 @@ const MapEngine = (function() {
 .me-sci-title{font-weight:700;color:#e9e4d6;margin-bottom:2px}
 .me-sci-detail{font-size:11px;color:#9aa2ae;line-height:1.45}
 
+
+.me-panel__resize{position:absolute;left:-6px;top:50%;transform:translateY(-50%);width:12px;height:60px;cursor:ew-resize;z-index:25;display:none}
+.me-panel__resize::after{content:'';position:absolute;left:4px;top:10px;bottom:10px;width:3px;border-radius:2px;background:rgba(255,255,255,.15);transition:background .2s}
+.me-panel__resize:hover::after{background:rgba(232,200,121,.4)}
+@media(min-width:640px){.me-panel__resize{display:block}}
+
 @media(min-width:640px){.me-minimap{width:170px;height:128px;bottom:12px;right:60px}}
 
 
@@ -351,6 +357,12 @@ const MapEngine = (function() {
 .me-sci--alternative .me-sci-status{color:rgba(250,204,21,.7)}
 .me-sci-title{font-weight:700;color:#e9e4d6;margin-bottom:2px}
 .me-sci-detail{font-size:11px;color:#9aa2ae;line-height:1.45}
+
+
+.me-panel__resize{position:absolute;left:-6px;top:50%;transform:translateY(-50%);width:12px;height:60px;cursor:ew-resize;z-index:25;display:none}
+.me-panel__resize::after{content:'';position:absolute;left:4px;top:10px;bottom:10px;width:3px;border-radius:2px;background:rgba(255,255,255,.15);transition:background .2s}
+.me-panel__resize:hover::after{background:rgba(232,200,121,.4)}
+@media(min-width:640px){.me-panel__resize{display:block}}
 
 @media(min-width:640px){.me-intro__title{font-size:38px}.me-intro__he{font-size:20px}}
 
@@ -401,6 +413,12 @@ const MapEngine = (function() {
 .me-sci-title{font-weight:700;color:#e9e4d6;margin-bottom:2px}
 .me-sci-detail{font-size:11px;color:#9aa2ae;line-height:1.45}
 
+
+.me-panel__resize{position:absolute;left:-6px;top:50%;transform:translateY(-50%);width:12px;height:60px;cursor:ew-resize;z-index:25;display:none}
+.me-panel__resize::after{content:'';position:absolute;left:4px;top:10px;bottom:10px;width:3px;border-radius:2px;background:rgba(255,255,255,.15);transition:background .2s}
+.me-panel__resize:hover::after{background:rgba(232,200,121,.4)}
+@media(min-width:640px){.me-panel__resize{display:block}}
+
 @media(min-width:640px){.me-minimap{width:170px;height:128px;bottom:12px;right:60px}}
 
 
@@ -413,6 +431,12 @@ const MapEngine = (function() {
 .me-sci--alternative .me-sci-status{color:rgba(250,204,21,.7)}
 .me-sci-title{font-weight:700;color:#e9e4d6;margin-bottom:2px}
 .me-sci-detail{font-size:11px;color:#9aa2ae;line-height:1.45}
+
+
+.me-panel__resize{position:absolute;left:-6px;top:50%;transform:translateY(-50%);width:12px;height:60px;cursor:ew-resize;z-index:25;display:none}
+.me-panel__resize::after{content:'';position:absolute;left:4px;top:10px;bottom:10px;width:3px;border-radius:2px;background:rgba(255,255,255,.15);transition:background .2s}
+.me-panel__resize:hover::after{background:rgba(232,200,121,.4)}
+@media(min-width:640px){.me-panel__resize{display:block}}
 
 @media(min-width:640px){.me-legend{display:block}}
 .me-search{position:absolute;top:8px;right:48px;z-index:15;width:160px;padding:5px 10px;border-radius:8px;border:1px solid rgba(255,255,255,.1);background:rgba(0,0,0,.5);color:#e9e4d6;font-size:11px;font-family:inherit;backdrop-filter:blur(8px);outline:none;transition:border-color .2s}
@@ -491,6 +515,12 @@ const MapEngine = (function() {
 .me-sci-title{font-weight:700;color:#e9e4d6;margin-bottom:2px}
 .me-sci-detail{font-size:11px;color:#9aa2ae;line-height:1.45}
 
+
+.me-panel__resize{position:absolute;left:-6px;top:50%;transform:translateY(-50%);width:12px;height:60px;cursor:ew-resize;z-index:25;display:none}
+.me-panel__resize::after{content:'';position:absolute;left:4px;top:10px;bottom:10px;width:3px;border-radius:2px;background:rgba(255,255,255,.15);transition:background .2s}
+.me-panel__resize:hover::after{background:rgba(232,200,121,.4)}
+@media(min-width:640px){.me-panel__resize{display:block}}
+
 @media(min-width:640px){.me-minimap{width:170px;height:128px;bottom:12px;right:60px}}
 
 
@@ -503,6 +533,12 @@ const MapEngine = (function() {
 .me-sci--alternative .me-sci-status{color:rgba(250,204,21,.7)}
 .me-sci-title{font-weight:700;color:#e9e4d6;margin-bottom:2px}
 .me-sci-detail{font-size:11px;color:#9aa2ae;line-height:1.45}
+
+
+.me-panel__resize{position:absolute;left:-6px;top:50%;transform:translateY(-50%);width:12px;height:60px;cursor:ew-resize;z-index:25;display:none}
+.me-panel__resize::after{content:'';position:absolute;left:4px;top:10px;bottom:10px;width:3px;border-radius:2px;background:rgba(255,255,255,.15);transition:background .2s}
+.me-panel__resize:hover::after{background:rgba(232,200,121,.4)}
+@media(min-width:640px){.me-panel__resize{display:block}}
 
 @media(min-width:640px){.me-intro__title{font-size:38px}.me-intro__he{font-size:20px}}
 
@@ -553,6 +589,12 @@ const MapEngine = (function() {
 .me-sci-title{font-weight:700;color:#e9e4d6;margin-bottom:2px}
 .me-sci-detail{font-size:11px;color:#9aa2ae;line-height:1.45}
 
+
+.me-panel__resize{position:absolute;left:-6px;top:50%;transform:translateY(-50%);width:12px;height:60px;cursor:ew-resize;z-index:25;display:none}
+.me-panel__resize::after{content:'';position:absolute;left:4px;top:10px;bottom:10px;width:3px;border-radius:2px;background:rgba(255,255,255,.15);transition:background .2s}
+.me-panel__resize:hover::after{background:rgba(232,200,121,.4)}
+@media(min-width:640px){.me-panel__resize{display:block}}
+
 @media(min-width:640px){.me-minimap{width:170px;height:128px;bottom:12px;right:60px}}
 
 
@@ -565,6 +607,12 @@ const MapEngine = (function() {
 .me-sci--alternative .me-sci-status{color:rgba(250,204,21,.7)}
 .me-sci-title{font-weight:700;color:#e9e4d6;margin-bottom:2px}
 .me-sci-detail{font-size:11px;color:#9aa2ae;line-height:1.45}
+
+
+.me-panel__resize{position:absolute;left:-6px;top:50%;transform:translateY(-50%);width:12px;height:60px;cursor:ew-resize;z-index:25;display:none}
+.me-panel__resize::after{content:'';position:absolute;left:4px;top:10px;bottom:10px;width:3px;border-radius:2px;background:rgba(255,255,255,.15);transition:background .2s}
+.me-panel__resize:hover::after{background:rgba(232,200,121,.4)}
+@media(min-width:640px){.me-panel__resize{display:block}}
 
 @media(min-width:640px){
   .me-title{font-size:28px}
@@ -1169,6 +1217,90 @@ container.appendChild(panel);
     }
     function hideCaption() { captionBar.classList.remove('me-caption--visible'); }
 
+    
+    // Measure tool
+    let measuring = false;
+    let measureStart = null;
+    const measureLine = document.createElementNS('http://www.w3.org/2000/svg','line');
+    measureLine.setAttribute('stroke','rgba(232,200,121,.6)');
+    measureLine.setAttribute('stroke-width','2');
+    measureLine.setAttribute('stroke-dasharray','6 4');
+    measureLine.setAttribute('display','none');
+    measureLine.setAttribute('pointer-events','none');
+    svg.appendChild(measureLine);
+    
+    const measureLabel = document.createElementNS('http://www.w3.org/2000/svg','text');
+    measureLabel.setAttribute('fill','#e8c879');
+    measureLabel.setAttribute('font-size','10');
+    measureLabel.setAttribute('text-anchor','middle');
+    measureLabel.setAttribute('display','none');
+    measureLabel.setAttribute('pointer-events','none');
+    svg.appendChild(measureLabel);
+    
+    function toggleMeasure() {
+      measuring = !measuring;
+      canvas.style.cursor = measuring ? 'crosshair' : '';
+      if (!measuring) {
+        measureStart = null;
+        measureLine.setAttribute('display','none');
+        measureLabel.setAttribute('display','none');
+      }
+    }
+    
+    function svgPoint(e) {
+      const rect = canvas.getBoundingClientRect();
+      const sc = rect.width / view.w;
+      return {
+        x: view.x + (e.clientX - rect.left) / sc,
+        y: view.y + (e.clientY - rect.top) / sc
+      };
+    }
+    
+    function kmBetween(p1, p2) {
+      const dx = p2.x - p1.x;
+      const dy = p2.y - p1.y;
+      const svgDist = Math.sqrt(dx*dx + dy*dy);
+      return (svgDist * 0.92).toFixed(0); // 1 SVG unit ≈ 0.92 km
+    }
+    
+    canvas.addEventListener('click', e => {
+      if (!measuring) return;
+      if (e.target.closest('.me-zoom-btn,.me-share-btn,button,a')) return;
+      const pt = svgPoint(e);
+      if (!measureStart) {
+        measureStart = pt;
+        measureLine.setAttribute('x1', pt.x);
+        measureLine.setAttribute('y1', pt.y);
+        measureLine.setAttribute('display','');
+      } else {
+        measureLine.setAttribute('x2', pt.x);
+        measureLine.setAttribute('y2', pt.y);
+        const km = kmBetween(measureStart, pt);
+        measureLabel.setAttribute('x', (measureStart.x + pt.x) / 2);
+        measureLabel.setAttribute('y', (measureStart.y + pt.y) / 2 - 8);
+        measureLabel.textContent = km + ' км';
+        measureLabel.setAttribute('display','');
+        measureStart = null;
+      }
+    });
+    
+    canvas.addEventListener('mousemove', e => {
+      if (!measuring || !measureStart) return;
+      const pt = svgPoint(e);
+      measureLine.setAttribute('x2', pt.x);
+      measureLine.setAttribute('y2', pt.y);
+    });
+    
+    // Add measure button to zoom controls
+    if (zoomControls) {
+      const measureBtn = document.createElement('button');
+      measureBtn.className = 'me-zoom-btn';
+      measureBtn.title = 'Измерить расстояние';
+      measureBtn.textContent = '↔';
+      measureBtn.addEventListener('click', toggleMeasure);
+      zoomControls.appendChild(measureBtn);
+    }
+
     // ── Keyboard ──
     // Show keyboard shortcut hint
     if (opts.showHints !== false) {
@@ -1323,7 +1455,7 @@ container.appendChild(panel);
     getPanelModel,getPanelSections,getStoryState,getPlaceOrder,auditStoryDefinitions,
     // v0.3 rendering
     createMap,
-    version:'0.14.0',buildDate:'2026-06-16'
+    version:'0.16.0',buildDate:'2026-06-16'
   };
 })();
 
