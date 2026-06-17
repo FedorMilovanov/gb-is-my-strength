@@ -1,5 +1,5 @@
 /**
- * map-engine.js v0.42 — reusable biblical map rendering engine. SVG filters + animation polish.
+ * map-engine.js v0.43 — reusable biblical map rendering engine. SVG filters + animation polish.
  *
  * PUBLIC API:
  *   // Data layer (v0.2):
@@ -95,6 +95,43 @@ const MapEngine = (function() {
         {ref:"Hezekiah's Tunnel inscription", text:"Силоамская надпись (VIII в. до н.э.) — древнейшая еврейская монументальная надпись, описывающая прокладку тоннеля Езекии (4Цар 20:20)", src:"Istanbul Archaeological Museum"},
         {ref:"Gallio inscription Delphi", text:"Надпись Галлиона в Дельфах (52 г. н.э.) — упоминает проконсула Ахайи Галлиона, перед которым судили Павла (Деян 18:12) — одна из точнейших датировок НЗ", src:"Delphi Museum"},
         {ref:"Pilate stone Caesarea", text:"Камень с надписью «Понтий Пилат, префект Иудеи» — единственное археологическое подтверждение историчности Пилата", src:"Israel Museum, Jerusalem"},
+      ]
+    },
+    judges_period: {
+      title: "Эпоха Судей: археология",
+      items: [
+        {ref:"Shiloh gate complex (2025-2026)", text:"Раскопки воротного комплекса Силома — места, где священник Илий упал и умер (1Цар 4:18). ABR продолжает раскопки в 2026.", src:"ABR Shiloh Excavation 2025-2026"},
+        {ref:"Timnah (Tel Batash)", text:"Тель-Баташ = Фимнафа Самсона. Поселение железного века I (XII-XI вв. до н.э.) — период Судей. Место загадки Самсона о льве и мёде (Суд 14).", src:"Kelm & Mazar"},
+        {ref:"Philistine Pentapolis", text:"Газа, Аскалон, Ашдод, Екрон и Геф — пять городов филистимской конфедерации. Керамика с эгейскими мотивами XII-XI вв. до н.э.", src:"Multiple excavations"},
+      ]
+    },
+    kings_period: {
+      title: "Эпоха Царей: археология",
+      items: [
+        {ref:"Samaria ivories (500+ pieces)", text:"Дворец Амврия/Ахава: 500+ фрагментов резной слоновой кости. Сосуд Осоркона (874-850 гг. до н.э.) — современник Ахава. 'Дом украшенный слоновой костью' (3Цар 22:39).", src:"Harvard Semitic Museum"},
+        {ref:"Megiddo water tunnel", text:"65-метровый тоннель к источнику — инженерное чудо IX-VIII вв. до н.э. Армагеддон = Хар-Мегиддо (Откр 16:16).", src:"University of Chicago; Tel Aviv University"},
+        {ref:"Jezreel fortress (1990-1996)", text:"Крепость IX в. до н.э.: 5-метровые стены, шестикамерные ворота, ров 6 м. Виноградник Навуфея? (3Цар 21:1). Летний дворец Ахава и Иезавели.", src:"Ussishkin & Woodhead"},
+        {ref:"Lachish letters", text:"21 остракон с перепиской коменданта перед падением (588 г. до н.э.). Рельефы Сеннахирима (701 г. до н.э.) в Ниневии изображают осаду.", src:"British Museum; IAA"},
+        {ref:"Beersheba horned altar", text:"Четырёхрогий жертвенник, разобранный и заложенный в стену — реформа Езекии (4Цар 18:4). (Aharoni 1969-1976).", src:"Tel Aviv University"},
+        {ref:"Hezekiah bulla (Ophel 2015)", text:"Первая царская печать из научных раскопок: 'Езекии, сыну Ахаза, царю Иудеи'. В 3 м — возможная печать пророка Исайи.", src:"Eilat Mazar; Hebrew University"},
+      ]
+    },
+    jesus_ministry: {
+      title: "Служение Иисуса: археология",
+      items: [
+        {ref:"Magdala Stone (2009)", text:"Камень из синагоги I в. с Менорой и Храмом. Одна из 7 синагог I в. Экспонируется в Музее Библии (2025).", src:"IAA; Museum of the Bible"},
+        {ref:"Nazareth house (2009)", text:"Дом I в. н.э. в Назарете. Надпись из Кесарии (1962) о священническом курсе в Назарете. Население ~400 в I в.", src:"IAA"},
+        {ref:"Capernaum synagogue & Peter's house", text:"Синагога IV в. на основании синагоги I в. — где проповедовал Иисус (Мк 1:21). Дом Петра — октагональная церковь V в.", src:"Franciscan excavations"},
+        {ref:"Jesus Boat (1986)", text:"Лодка I в. (8.2×2.3 м) из Галилейского моря. Радиоуглерод: 40 г. до н.э. — 70 г. н.э.", src:"Yigal Allon Museum"},
+        {ref:"Pool of Bethesda (John 5:2)", text:"Двойной бассейн с пятью колоннадами. Точное соответствие Ин 5:2: 'купальня у Овечьих ворот... пять крытых ходов'.", src:"White Fathers; IAA"},
+      ]
+    },
+    dead_sea_scrolls: {
+      title: "Свитки Мёртвого моря",
+      items: [
+        {ref:"Museum of the Bible exhibition (2025-2026)", text:"Выставка в Музее Библии: Бытие, Иов, Псалмы, Храмовый свиток. 200+ артефактов IAA. 75-летие открытия свитков.", src:"Museum of the Bible; IAA"},
+        {ref:"Cave of Horror fragments (2021)", text:"Новые фрагменты Захарии и Наума (греческий) из Пещеры ужаса. Радиоуглерод: II в. н.э. — время Бар-Кохбы.", src:"IAA"},
+        {ref:"Qumran Cave 12 (2017)", text:"12-я пещера Кумрана: найдены jar-фрагменты, кожаные ремни, ткань. Операция 'Свиток'.", src:"Hebrew University; IAA"},
       ]
     }
   };
@@ -1406,8 +1443,8 @@ container.appendChild(panel);
       // Exodus places
       const exodusIds = ['rameses','succoth','etham','pihahiroth','migdol','marah','elim','rephidim','sinai','kadesh','eziongeber'];
       if (exodusIds.includes(place.id)) cat = 'exodus_route';
-      // Jerusalem/Temple
-      const jerusalemIds = ['jerusalem','cityofdavid','temple','hebron','lachish'];
+      // Jerusalem/Temple/David
+      const jerusalemIds = ['jerusalem','cityofdavid','temple','hebron','lachish','beersheba'];
       if (jerusalemIds.includes(place.id)) cat = 'jerusalem_first_temple';
       // Maccabees
       const maccabeeIds = ['modiin','betzecharia','bethzur','emmaus','elasa'];
@@ -1415,6 +1452,21 @@ container.appendChild(panel);
       // Early Church
       const churchIds = ['ephesus','laodicea','philadelphia','sardis','thyatira','smyrna','pergamos','philippi','corinth','athens','thessaloniki','capernaum','bethsaida'];
       if (churchIds.includes(place.id)) cat = 'early_church';
+      // Judges
+      const judgesIds = ['shiloh','timnath','gaza','ashkelon','ashdod','ekron','gath','hazor','bethel','shechem'];
+      if (judgesIds.includes(place.id)) cat = 'judges_period';
+      // Kings
+      const kingsIds = ['samaria','megiddo','jezreel','dan','beersheba','hazor','lachish'];
+      if (kingsIds.includes(place.id)) cat = 'kings_period';
+      // Jesus ministry
+      const jesusIds = ['nazareth','capernaum','magdala','bethlehem','jericho','jerusalem','bethany','cana','tabgha','bethebara'];
+      if (jesusIds.includes(place.id)) cat = 'jesus_ministry';
+      // Dead Sea Scrolls
+      const dssIds = ['qumran','masada','jericho'];
+      if (dssIds.includes(place.id)) cat = 'dead_sea_scrolls';
+      // Davidic
+      const davidIds = ['jerusalem','hebron','bethlehem'];
+      if (davidIds.includes(place.id) && !cat) cat = 'davidic_kingdom';
       
       if (cat && ARCHAEOLOGY_REFERENCES[cat]) {
         const refs = ARCHAEOLOGY_REFERENCES[cat];
@@ -2178,7 +2230,7 @@ container.appendChild(panel);
     getPanelModel,getPanelSections,getStoryState,getPlaceOrder,auditStoryDefinitions,
     // v0.3 rendering
     createMap,
-    version:'0.42.0',buildDate:'2026-06-17'
+    version:'0.43.0',buildDate:'2026-06-17'
   };
 })();
 
