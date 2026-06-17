@@ -1,5 +1,5 @@
 /**
- * map-engine.js v0.27 — reusable biblical map rendering engine. SVG filters + animation polish.
+ * map-engine.js v0.28 — reusable biblical map rendering engine. SVG filters + animation polish.
  *
  * PUBLIC API:
  *   // Data layer (v0.2):
@@ -889,14 +889,31 @@ container.appendChild(panel);
         g.appendChild(dot);
         
         const side=place.side||'r';
+        // Label background for readability
+        const labelBg=document.createElementNS('http://www.w3.org/2000/svg','rect');
+        const labelText = place.name||'';
+        const fontSize=10;
+        const textWidth=labelText.length*fontSize*0.6;
+        labelBg.setAttribute('x',side==='l'?(-14-textWidth):'14');
+        labelBg.setAttribute('y','-7');
+        labelBg.setAttribute('width',textWidth+6);
+        labelBg.setAttribute('height','14');
+        labelBg.setAttribute('rx','3');
+        labelBg.setAttribute('fill','rgba(7,10,16,.75)');
+        labelBg.setAttribute('stroke','rgba(255,255,255,.06)');
+        labelBg.setAttribute('stroke-width','0.5');
+        labelBg.setAttribute('opacity',inStory?'0.85':'0');
+        labelBg.style.transition = 'opacity .3s';
+        labelBg.style.pointerEvents = 'none';
+        g.appendChild(labelBg);
         const label=document.createElementNS('http://www.w3.org/2000/svg','text');
         label.setAttribute('x',side==='l'?'-14':'14');label.setAttribute('y','4');
         label.setAttribute('text-anchor',side==='l'?'end':'start');
         label.setAttribute('fill',inStory?'#f4eedd':'#555');
-        label.setAttribute('font-size','10');
+        label.setAttribute('font-size',String(fontSize));
         label.setAttribute('opacity','0.9');
         label.style.transition = 'opacity .3s';
-        label.textContent=place.name||'';
+        label.textContent=labelText;
         g.appendChild(label);
         markersG.appendChild(g);
       });
@@ -1018,11 +1035,26 @@ container.appendChild(panel);
         });
       }
       if(place.x!==undefined&&place.y!==undefined)flyTo(place.x,place.y,Math.min(view.w,800));
+      // Highlight stage path for active place
+      const activeStage = place.stage;
+      const allPaths = pathsG.querySelectorAll('path');
+      allPaths.forEach((p,i) => {
+        p.setAttribute('opacity', i === activeStage ? '0.8' : '0.3');
+        p.setAttribute('stroke-width', i === activeStage ? '4' : '2.5');
+        p.style.transition = 'opacity .4s ease, stroke-width .4s ease';
+      });
     }
 
     function close(){
       activePlaceId=null;
       panel.classList.remove('me-panel--open');
+      // Reset all stage paths to equal opacity
+      const allPaths = pathsG.querySelectorAll('path');
+      allPaths.forEach(p => {
+        p.setAttribute('opacity','0.5');
+        p.setAttribute('stroke-width','3');
+        p.style.transition = 'opacity .4s ease, stroke-width .4s ease';
+      });
       panelBackdrop.classList.remove('me-panel__backdrop--active');
       document.body.style.overflow = '';
       hideCaption();
@@ -1509,7 +1541,7 @@ container.appendChild(panel);
     getPanelModel,getPanelSections,getStoryState,getPlaceOrder,auditStoryDefinitions,
     // v0.3 rendering
     createMap,
-    version:'0.27.0',buildDate:'2026-06-17'
+    version:'0.28.0',buildDate:'2026-06-17'
   };
 })();
 
