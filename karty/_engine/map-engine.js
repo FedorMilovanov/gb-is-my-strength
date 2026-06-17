@@ -1,5 +1,5 @@
 /**
- * map-engine.js v0.3 — reusable biblical map rendering engine.
+ * map-engine.js v0.5.2 — reusable biblical map rendering engine (modularized).
  *
  * PUBLIC API:
  *   // Data layer (v0.2):
