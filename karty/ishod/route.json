@@ -10,7 +10,7 @@
       "stages": 6,
       "verses": 80,
       "years": 40,
-      "photos": 9,
+      "photos": 10,
       "scientific_variants": 9,
       "waypoints": 6
     },
@@ -191,7 +191,17 @@
       "bible": "<div class=\"verse\">«И двинулись из Сокхофа, и расположились станом в Ефаме, в конце пустыни».<span>ИСХОД 13:20</span></div>",
       "arch": "<p>Точная локализация Ефама неизвестна. В карте это маршрутный узел между Вади Тумилат и зоной переправы; он отмечен как ориентир библейской последовательности, а не как археологически доказанный телль.</p>",
       "he_deep": "<div class=\"he-block\"><div class=\"he-word\"><span class=\"hw\" lang=\"he\">אֵתָם</span><span class=\"he-tr\">Этам</span></div><div class=\"he-etym\">Возможно от егип. <em>ḫtm</em> — «крепость, погранпункт». Контекст: «край пустыни».</div><div class=\"he-refs\">Исх 13:20 · Числ 33:6-7</div></div>",
-      "bible_extra": "<p class=\"bib-note\"><b>Столп:</b> Исх 13:21-22 — первое явление Шехины, ведущей Израиль. Присутствие Бога продолжится в Скинии.</p>"
+      "bible_extra": "<p class=\"bib-note\"><b>Столп:</b> Исх 13:21-22 — первое явление Шехины, ведущей Израиль. Присутствие Бога продолжится в Скинии.</p>",
+      "photos": [
+        {
+          "src": "https://upload.wikimedia.org/wikipedia/commons/thumb/0/0c/Sinai_desert_wide.jpg/640px-Sinai_desert_wide.jpg",
+          "thumb": "https://upload.wikimedia.org/wikipedia/commons/thumb/0/0c/Sinai_desert_wide.jpg/200px-Sinai_desert_wide.jpg",
+          "label": "Синайская пустыня — край Ефама",
+          "credit": "Wikimedia Commons",
+          "type": "geo",
+          "alt": "Синайская пустыня"
+        }
+      ]
     },
     {
       "id": "marah",
