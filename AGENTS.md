@@ -850,7 +850,7 @@ karty/_engine/
 - Не импортирует модули (0 references to modules/)
 - Содержит ВСЮ логику: данные, рендеринг, CSS, события
 - `MapEngine.createMap(container, route, opts)` — главная точка входа
-- 19 addEventListener, 0 removeEventListener (известный долг)
+- 43 addEventListener (большинство через `_on()` с трекингом), `destroy()` вызывает `_cleanupAll()` для освобождения. Часть сырых addEventListener на element-scoped слушателях (маркеры) собирается GC вместе с элементом.
 - Встроенный CSS (~103 строки) через `me-base-css` style element
 
 **Какие карты как используют движок:**
