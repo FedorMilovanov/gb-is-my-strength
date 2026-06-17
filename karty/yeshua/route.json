@@ -9,7 +9,8 @@
       "places": 15,
       "stages": 5,
       "verses": 3779,
-      "years": 33
+      "years": 33,
+      "photos": 12
     },
     "viewport_init": {
       "cx": 690,
@@ -93,7 +94,17 @@
       "side": "b",
       "story": "<p>Вифлеем — «дом хлеба» (בֵּית לֶחֶם), город Давида и место рождения Мессии. Пророк Михей (5:2): «И ты, Вифлеем-Ефрафа, мал ли ты между тысячами Иудиными? из тебя произойдёт Мне Тот, Который должен быть Владыкою в Израиле». Иисус родился здесь в пещере, положен в ясли, посещён пастухами и волхвами.</p>",
       "bible": "<div class=\"verse\">«И родила Сына своего Первенца, и спеленала Его, и положила Его в ясли, потому что не было им места в гостинице».<span>ЛУКИ 2:7</span></div>",
-      "arch": "<p>Базилика Рождества (IV в., Юстиниан VI в.) — одна из старейших непрерывно действующих церквей. Под базиликой — пещера с серебряной звездой, отмечающая традиционное место рождения.</p>"
+      "arch": "<p>Базилика Рождества (IV в., Юстиниан VI в.) — одна из старейших непрерывно действующих церквей. Под базиликой — пещера с серебряной звездой, отмечающая традиционное место рождения.</p>",
+      "photos": [
+        {
+          "src": "https://upload.wikimedia.org/wikipedia/commons/thumb/4/41/Church_of_the_Nativity_%28Bethlehem%2C_2008%29.jpg/640px-Church_of_the_Nativity_%28Bethlehem%2C_2008%29.jpg",
+          "thumb": "https://upload.wikimedia.org/wikipedia/commons/thumb/4/41/Church_of_the_Nativity_%28Bethlehem%2C_2008%29.jpg/200px-Church_of_the_Nativity_%28Bethlehem%2C_2008%29.jpg",
+          "label": "Базилика Рождества — Вифлеем",
+          "credit": "Wikimedia Commons",
+          "type": "arch",
+          "alt": "Базилика Рождества"
+        }
+      ]
     },
     {
       "id": "nazareth",
@@ -109,7 +120,17 @@
       "side": "r",
       "story": "<p>Назарет — «Назарет! из Назарета может ли быть что доброе?» (Ин 1:46). Здесь Иисус провёл 30 лет — детство, отрочество, работа плотником. В синагоге Назарета Он прочитал Исайю 61 и объявил: «Ныне исполнилось писание сие» — и был изгнан из города.</p>",
       "bible": "<div class=\"verse\">«И, встав, выгнали Его вон из города и повели на вершину горы… чтобы свергнуть Его; но Он, пройдя посреди них, удалился».<span>ЛУКИ 4:29-30</span></div>",
-      "arch": "<p>Деревня римского периода: дома, прессы для масла, гробницы. Церковь Благовещения (современная) — над традиционным домом Марии. Синагогальная церковь — на месте синагоги I в.</p>"
+      "arch": "<p>Деревня римского периода: дома, прессы для масла, гробницы. Церковь Благовещения (современная) — над традиционным домом Марии. Синагогальная церковь — на месте синагоги I в.</p>",
+      "photos": [
+        {
+          "src": "https://upload.wikimedia.org/wikipedia/commons/thumb/d/d0/Nazareth_Basilica_of_the_Annunciation.jpg/640px-Nazareth_Basilica_of_the_Annunciation.jpg",
+          "thumb": "https://upload.wikimedia.org/wikipedia/commons/thumb/d/d0/Nazareth_Basilica_of_the_Annunciation.jpg/200px-Nazareth_Basilica_of_the_Annunciation.jpg",
+          "label": "Базилика Благовещения — Назарет",
+          "credit": "Wikimedia Commons",
+          "type": "arch",
+          "alt": "Базилика Благовещения в Назарете"
+        }
+      ]
     },
     {
       "id": "jerusalem_temple",
@@ -124,7 +145,17 @@
       "ep1": "Лк 2:41-52",
       "side": "l",
       "story": "<p>В 12 лет Иисус пришёл в Храм с родителями на Пасху. Он остался в Храме, «сидящего посреди учителей, слушающего их и спрашивающего их». Марии: «Зачем было вам искать Меня? или вы не знали, что Мне должно быть в том, что принадлежит Отцу Моему?»</p>",
-      "bible": "<div class=\"verse\">«Иисус же преуспевал в премудрости и возрасте и в любви у Бога и человеков».<span>ЛУКИ 2:52</span></div>"
+      "bible": "<div class=\"verse\">«Иисус же преуспевал в премудрости и возрасте и в любви у Бога и человеков».<span>ЛУКИ 2:52</span></div>",
+      "photos": [
+        {
+          "src": "https://upload.wikimedia.org/wikipedia/commons/thumb/f/f1/Western_Wall_at_night.jpg/640px-Western_Wall_at_night.jpg",
+          "thumb": "https://upload.wikimedia.org/wikipedia/commons/thumb/f/f1/Western_Wall_at_night.jpg/200px-Western_Wall_at_night.jpg",
+          "label": "Стена Плача — Храмовая гора",
+          "credit": "Wikimedia Commons",
+          "type": "arch",
+          "alt": "Стена Плача"
+        }
+      ]
     },
     {
       "id": "jordan_baptism",
@@ -139,7 +170,17 @@
       "ep1": "Мф 3:13-17; Мк 1:9-11; Ин 1:28-34",
       "side": "r",
       "story": "<p>Иоанн Креститель крестил Иисуса в водах Иордана у Вифавары. Когда Иисус вышел из воды, «отверзлись Ему небеса, и увидел Духа Божия, Который сходил как голубь… И голос с небес: Сей есть Сын Мой Возлюбленный». Откровение Троицы: Отец, Сын и Дух Святой. Здесь Иисус начал публичное служение.</p>",
-      "bible": "<div class=\"verse\">«Сей есть Сын Мой Возлюбленный, в Котором Моё благоволение».<span>МАТФЕЯ 3:17</span></div>"
+      "bible": "<div class=\"verse\">«Сей есть Сын Мой Возлюбленный, в Котором Моё благоволение».<span>МАТФЕЯ 3:17</span></div>",
+      "photos": [
+        {
+          "src": "https://upload.wikimedia.org/wikipedia/commons/thumb/e/e2/Jordan_river_baptism_site.jpg/640px-Jordan_river_baptism_site.jpg",
+          "thumb": "https://upload.wikimedia.org/wikipedia/commons/thumb/e/e2/Jordan_river_baptism_site.jpg/200px-Jordan_river_baptism_site.jpg",
+          "label": "Место крещения на реке Иордан",
+          "credit": "Wikimedia Commons",
+          "type": "arch",
+          "alt": "Река Иордан — место крещения"
+        }
+      ]
     },
     {
       "id": "capernaum",
@@ -155,7 +196,17 @@
       "side": "r",
       "story": "<p>«Свой город» Иисуса (Мф 9:1). Здесь Он жил в доме Петра, учил в синагоге, исцелил тёщу Петра, слугу сотника, расслабленного через крышу. Здесь призвал Матфея-мытаря. «И ты, Капернаум, до неба вознёсшийся, до ада низвергнешься» (Мф 11:23).</p>",
       "bible": "<div class=\"verse\">«И, оставив Назарет, пришёл и поселился в Капернауме приморском».<span>МАТФЕЯ 4:13</span></div>",
-      "arch": "<p>Раскопан дом Петра (октагональная церковь V в. над ним). Синагога из белого известняка (IV–V вв.) стоит на базальтовом фундаменте I в. — той самой синагоги, где проповедовал Иисус. Улицы и дома рыбацкой деревни.</p>"
+      "arch": "<p>Раскопан дом Петра (октагональная церковь V в. над ним). Синагога из белого известняка (IV–V вв.) стоит на базальтовом фундаменте I в. — той самой синагоги, где проповедовал Иисус. Улицы и дома рыбацкой деревни.</p>",
+      "photos": [
+        {
+          "src": "https://upload.wikimedia.org/wikipedia/commons/thumb/3/34/Capernaum_synagogue.jpg/640px-Capernaum_synagogue.jpg",
+          "thumb": "https://upload.wikimedia.org/wikipedia/commons/thumb/3/34/Capernaum_synagogue.jpg/200px-Capernaum_synagogue.jpg",
+          "label": "Синагога в Капернауме",
+          "credit": "Wikimedia Commons",
+          "type": "arch",
+          "alt": "Синагога в Капернауме"
+        }
+      ]
     },
     {
       "id": "sea_galilee",
@@ -170,7 +221,17 @@
       "ep1": "Мк 4:35-41; 6:45-52; Ин 21",
       "side": "r",
       "story": "<p>Озеро, где Иисус усмирил бурю, ходил по водам, умножал хлебы и рыбу, учил из лодки, призвал рыбаков — Петра, Андрея, Иакова и Иоанна. После Воскресения здесь приготовил завтрак ученикам и трижды спросил Петра: «Любишь ли ты Меня?»</p>",
-      "bible": "<div class=\"verse\">«И Он, встав, запретил ветру и сказал морю: умолкни, перестань. И ветер утих, и сделалась великая тишина».<span>МАРКА 4:39</span></div>"
+      "bible": "<div class=\"verse\">«И Он, встав, запретил ветру и сказал морю: умолкни, перестань. И ветер утих, и сделалась великая тишина».<span>МАРКА 4:39</span></div>",
+      "photos": [
+        {
+          "src": "https://upload.wikimedia.org/wikipedia/commons/thumb/5/5f/Sea_of_Galilee_%28panoramic%29.jpg/640px-Sea_of_Galilee_%28panoramic%29.jpg",
+          "thumb": "https://upload.wikimedia.org/wikipedia/commons/thumb/5/5f/Sea_of_Galilee_%28panoramic%29.jpg/200px-Sea_of_Galilee_%28panoramic%29.jpg",
+          "label": "Галилейское море (Кинерет)",
+          "credit": "Wikimedia Commons",
+          "type": "geo",
+          "alt": "Галилейское море"
+        }
+      ]
     },
     {
       "id": "mount_beatitudes",
@@ -185,7 +246,17 @@
       "ep1": "Мф 5–7; Лк 6:20-49",
       "side": "t",
       "story": "<p>На склонах над Галилейским морем Иисус произнёс Нагорную проповедь — «конституцию Царства». «Блаженны нищие духом… Блаженны чистые сердцем… Вы — соль земли… Вы — свет мира». Молитва «Отче наш». Правило: «Во всём как хотите чтобы с вами поступали люди, так поступайте и вы с ними».</p>",
-      "bible": "<div class=\"verse\">«Увидев народ, Он взошёл на гору; и, когда сел, приступили к Нему ученики Его. И Он, отверзши уста Свои, учил их».<span>МАТФЕЯ 5:1-2</span></div>"
+      "bible": "<div class=\"verse\">«Увидев народ, Он взошёл на гору; и, когда сел, приступили к Нему ученики Его. И Он, отверзши уста Свои, учил их».<span>МАТФЕЯ 5:1-2</span></div>",
+      "photos": [
+        {
+          "src": "https://upload.wikimedia.org/wikipedia/commons/thumb/4/4d/Mount_of_Beatitudes_Church.jpg/640px-Mount_of_Beatitudes_Church.jpg",
+          "thumb": "https://upload.wikimedia.org/wikipedia/commons/thumb/4/4d/Mount_of_Beatitudes_Church.jpg/200px-Mount_of_Beatitudes_Church.jpg",
+          "label": "Церковь на горе Блаженств",
+          "credit": "Wikimedia Commons",
+          "type": "arch",
+          "alt": "Гора Блаженств"
+        }
+      ]
     },
     {
       "id": "nain",
@@ -230,7 +301,17 @@
       "ep1": "Лк 18:35-19:10",
       "side": "b",
       "story": "<p>Последний город перед Иерусалимом на пути Иисуса. Здесь Он исцелил слепого Вартимея, а Закхей-мытарь залез на смоковницу, чтобы увидеть Его. «Закхей! сойди скорее, ибо сегодня надобно Мне быть у тебя в доме» — и Закхей раздал половину имения нищим.</p>",
-      "bible": "<div class=\"verse\">«Ныне пришло спасение дому сему, потому что и он сын Авраама, ибо Сын Человеческий пришёл взыскать и спасти погибшее».<span>ЛУКИ 19:9-10</span></div>"
+      "bible": "<div class=\"verse\">«Ныне пришло спасение дому сему, потому что и он сын Авраама, ибо Сын Человеческий пришёл взыскать и спасти погибшее».<span>ЛУКИ 19:9-10</span></div>",
+      "photos": [
+        {
+          "src": "https://upload.wikimedia.org/wikipedia/commons/thumb/5/5a/Tell_es-Sultan_%28Jericho%29.jpg/640px-Tell_es-Sultan_%28Jericho%29.jpg",
+          "thumb": "https://upload.wikimedia.org/wikipedia/commons/thumb/5/5a/Tell_es-Sultan_%28Jericho%29.jpg/200px-Tell_es-Sultan_%28Jericho%29.jpg",
+          "label": "Тель эс-Султан — древний Иерихон",
+          "credit": "Wikimedia Commons",
+          "type": "arch",
+          "alt": "Древний Иерихон"
+        }
+      ]
     },
     {
       "id": "bethany",
@@ -260,7 +341,17 @@
       "ep1": "Мф 26–27; Ин 13–19",
       "side": "l",
       "story": "<p>В горнице Иисус установил Вечерю Господню: «Сие есть Тело Моё… Сие есть Кровь Моя». Умыл ноги ученикам. Затем Гефсимания, предательство Иуды, суд у Анны и Каиафы, отречение Петра, суд у Пилата, бичевание, терновый венец.</p>",
-      "bible": "<div class=\"verse\">«Сие творите в Моё воспоминание».<span>ЛУКИ 22:19</span></div>"
+      "bible": "<div class=\"verse\">«Сие творите в Моё воспоминание».<span>ЛУКИ 22:19</span></div>",
+      "photos": [
+        {
+          "src": "https://upload.wikimedia.org/wikipedia/commons/thumb/d/d2/Last_Supper_Room_Mount_Zion.jpg/640px-Last_Supper_Room_Mount_Zion.jpg",
+          "thumb": "https://upload.wikimedia.org/wikipedia/commons/thumb/d/d2/Last_Supper_Room_Mount_Zion.jpg/200px-Last_Supper_Room_Mount_Zion.jpg",
+          "label": "Горница Тайной Вечери — гора Сион",
+          "credit": "Wikimedia Commons",
+          "type": "arch",
+          "alt": "Горница Тайной Вечери"
+        }
+      ]
     },
     {
       "id": "gethsemane",
@@ -276,7 +367,17 @@
       "side": "r",
       "story": "<p>«Душа Моя скорбит смертельно». Здесь Иисус молился: «Отче Мой! если возможно, да минует Меня чаша сия; впрочем, не как Я хочу, но как Ты». Пот Его был как капли крови. Иуда предал Его поцелуем. Пётр отсёк ухо Малху.</p>",
       "bible": "<div class=\"verse\">«Отче Мой! если возможно, да минует Меня чаша сия; впрочем, не как Я хочу, но как Ты».<span>МАТФЕЯ 26:39</span></div>",
-      "arch": "<p>Древние оливковые деревья в Гефсиманском саду — некоторые возрастом до 900 лет. Церковь Всех Наций (1924) на скале, традиционно связываемой с местом моления.</p>"
+      "arch": "<p>Древние оливковые деревья в Гефсиманском саду — некоторые возрастом до 900 лет. Церковь Всех Наций (1924) на скале, традиционно связываемой с местом моления.</p>",
+      "photos": [
+        {
+          "src": "https://upload.wikimedia.org/wikipedia/commons/thumb/5/53/Garden_of_Gethsemane_Jerusalem.jpg/640px-Garden_of_Gethsemane_Jerusalem.jpg",
+          "thumb": "https://upload.wikimedia.org/wikipedia/commons/thumb/5/53/Garden_of_Gethsemane_Jerusalem.jpg/200px-Garden_of_Gethsemane_Jerusalem.jpg",
+          "label": "Гефсиманский сад",
+          "credit": "Wikimedia Commons",
+          "type": "arch",
+          "alt": "Гефсиманский сад"
+        }
+      ]
     },
     {
       "id": "golgotha",
@@ -292,7 +393,17 @@
       "side": "l",
       "story": "<p>«Лобное место». Иисус распят между двумя разбойниками. «Отче! прости им, ибо не знают, что делают». Тьма с шестого до девятого часа. «Боже Мой! для чего Ты Меня оставил?» — «Совершилось!» — «Отче! в руки Твои предаю дух Мой». Завеса в храме разодралась надвое.</p>",
       "bible": "<div class=\"verse\">«Ибо так возлюбил Бог мир, что отдал Сына Своего Единородного, дабы всякий, верующий в Него, не погиб, но имел жизнь вечную».<span>ИОАННА 3:16</span></div>",
-      "arch": "<p>Храм Гроба Господня (IV в., крестоносцы XII в.) — общепринятое место Голгофы и гробницы. Альтернатива: «Садовая гробница» (Гордон, 1883) — популярна у протестантов.</p>"
+      "arch": "<p>Храм Гроба Господня (IV в., крестоносцы XII в.) — общепринятое место Голгофы и гробницы. Альтернатива: «Садовая гробница» (Гордон, 1883) — популярна у протестантов.</p>",
+      "photos": [
+        {
+          "src": "https://upload.wikimedia.org/wikipedia/commons/thumb/7/72/Church_of_the_Holy_Sepulchre.jpg/640px-Church_of_the_Holy_Sepulchre.jpg",
+          "thumb": "https://upload.wikimedia.org/wikipedia/commons/thumb/7/72/Church_of_the_Holy_Sepulchre.jpg/200px-Church_of_the_Holy_Sepulchre.jpg",
+          "label": "Храм Гроба Господня — Голгофа",
+          "credit": "Wikimedia Commons",
+          "type": "arch",
+          "alt": "Храм Гроба Господня"
+        }
+      ]
     },
     {
       "id": "tomb",
@@ -307,7 +418,17 @@
       "ep1": "Мф 28:1-10; Ин 20:1-18",
       "side": "r",
       "story": "<p>На третий день женщины пришли ко гробу и нашли камень отваленным. Ангел: «Его нет здесь — Он воскрес!» Мария Магдалина встретила Воскресшего в саду. Вечером Иисус явился ученикам в горнице. Фома: «Если не увижу… не поверю». Иисус: «Блаженны не видевшие и уверовавшие». 40 дней явлений, Вознесение с Елеонской горы.</p>",
-      "bible": "<div class=\"verse\">«Что вы ищете живого между мёртвыми? Его нет здесь: Он воскрес!»<span>ЛУКИ 24:5-6</span></div>"
+      "bible": "<div class=\"verse\">«Что вы ищете живого между мёртвыми? Его нет здесь: Он воскрес!»<span>ЛУКИ 24:5-6</span></div>",
+      "photos": [
+        {
+          "src": "https://upload.wikimedia.org/wikipedia/commons/thumb/0/00/Garden_Tomb_Jerusalem.jpg/640px-Garden_Tomb_Jerusalem.jpg",
+          "thumb": "https://upload.wikimedia.org/wikipedia/commons/thumb/0/00/Garden_Tomb_Jerusalem.jpg/200px-Garden_Tomb_Jerusalem.jpg",
+          "label": "Садовая гробница — Иерусалим",
+          "credit": "Wikimedia Commons",
+          "type": "arch",
+          "alt": "Садовая гробница"
+        }
+      ]
     }
   ],
   "stages": [
