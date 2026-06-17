@@ -10,7 +10,7 @@
       "stages": 3,
       "verses": 200,
       "years": 15,
-      "photos": 5
+      "photos": 9
     },
     "viewport_init": {
       "cx": 950,
@@ -113,7 +113,17 @@
       "id2": "Кипр",
       "ep1": "Деян 13:4–12",
       "story": "<p>Первая остановка первого путешествия. Павел и Варнава проходят остров от Саламина до Пафоса. В Пафосе проконсул Сергий Павел обращается, а Елима-волхв поражается слепотой — первое чудо Павла в миссии.</p>",
-      "bible": "<div class=\"verse\">«Тогда проконсул, увидев происшедшее, уверовал, дивясь учению Господню».<span>ДЕЯНИЯ 13:12</span></div>"
+      "bible": "<div class=\"verse\">«Тогда проконсул, увидев происшедшее, уверовал, дивясь учению Господню».<span>ДЕЯНИЯ 13:12</span></div>",
+      "photos": [
+        {
+          "src": "https://upload.wikimedia.org/wikipedia/commons/thumb/1/16/Paphos_Archaeological_Site.jpg/640px-Paphos_Archaeological_Site.jpg",
+          "thumb": "https://upload.wikimedia.org/wikipedia/commons/thumb/1/16/Paphos_Archaeological_Site.jpg/200px-Paphos_Archaeological_Site.jpg",
+          "label": "Пафос — археологический парк",
+          "credit": "Wikimedia Commons",
+          "type": "arch",
+          "alt": "Пафос"
+        }
+      ]
     },
     {
       "id": "iconium",
@@ -128,7 +138,17 @@
       "id2": "Галатия",
       "ep1": "Деян 13:51–14:5",
       "story": "<p>После изгнания из Антиохии Писидийской Павел и Варнава идут в Иконию. Проповедуют в синагоге. Город разделяется: одни за апостолов, другие против. Попытка побить камнями вынуждает бежать в Листру.</p>",
-      "bible": "<div class=\"verse\">«В Иконии они вошли вместе в Иудейскую синагогу и говорили так, что уверовало великое множество Иудеев и Еллинов».<span>ДЕЯНИЯ 14:1</span></div>"
+      "bible": "<div class=\"verse\">«В Иконии они вошли вместе в Иудейскую синагогу и говорили так, что уверовало великое множество Иудеев и Еллинов».<span>ДЕЯНИЯ 14:1</span></div>",
+      "photos": [
+        {
+          "src": "https://upload.wikimedia.org/wikipedia/commons/thumb/0/0d/Konya_Alaeddin_Mosque.jpg/640px-Konya_Alaeddin_Mosque.jpg",
+          "thumb": "https://upload.wikimedia.org/wikipedia/commons/thumb/0/0d/Konya_Alaeddin_Mosque.jpg/200px-Konya_Alaeddin_Mosque.jpg",
+          "label": "Конья — древняя Икония",
+          "credit": "Wikimedia Commons",
+          "type": "geo",
+          "alt": "Конья"
+        }
+      ]
     },
     {
       "id": "philippi",
@@ -170,7 +190,17 @@
       "id2": "Македония",
       "ep1": "Деян 17:1–9",
       "story": "<p>Павел проповедует три субботы в синагоге. Обращаются иудеи, множество прозелитов и знатные женщины. Противники поднимают городской бунт и тащат Иасона к градоначальникам.</p>",
-      "bible": "<div class=\"verse\">«И Павел, по своему обыкновению, вошёл к ним и три субботы говорил с ними из Писаний».<span>ДЕЯНИЯ 17:2</span></div>"
+      "bible": "<div class=\"verse\">«И Павел, по своему обыкновению, вошёл к ним и три субботы говорил с ними из Писаний».<span>ДЕЯНИЯ 17:2</span></div>",
+      "photos": [
+        {
+          "src": "https://upload.wikimedia.org/wikipedia/commons/thumb/9/99/Thessaloniki_White_Tower.jpg/640px-Thessaloniki_White_Tower.jpg",
+          "thumb": "https://upload.wikimedia.org/wikipedia/commons/thumb/9/99/Thessaloniki_White_Tower.jpg/200px-Thessaloniki_White_Tower.jpg",
+          "label": "Салоники — древняя Фессалоника",
+          "credit": "Wikimedia Commons",
+          "type": "geo",
+          "alt": "Салоники"
+        }
+      ]
     },
     {
       "id": "athens",
@@ -187,7 +217,17 @@
       "story": "<p>Павел в Афинах — единственная проповедь апостола к чисто языческой аудитории в Деяниях. На Ареопаге он цитирует греческих поэтов и провозглашает «неведомого Бога». Реакция смешанная: одни насмехаются, другие уверовали (Дионисий, Дамарь).</p>",
       "bible": "<div class=\"verse\">«Ибо, проходя и осматривая ваши святыни, я нашёл и жертвенник, на котором написано: неведомому Богу. Сего-то, Которого вы, не зная, чтите, я проповедую вам».<span>ДЕЯНИЯ 17:23</span></div>",
       "arch": "<p>Ареопаг (Марсов холм) — скалистый холм ниже Акрополя, место заседания совета. Памятная бронзовая табличка с текстом Деян 17:22–23 установлена у подножия. Рядом — древняя Агора с остатками стои.</p>",
-      "bible_extra": "<p class=\"bib-note\"><b>Проповедь философам:</b> Афины — единственная чисто языческая аудитория Павла в Деяниях. Апостол цитирует Эпименида («в Нём мы живём и движемся и существуем») и Арата («мы Его и род»). Результат скромный: несколько уверовавших (Дионисий Ареопагит, Дамарь). Но метод — образец контекстуализации Евангелия.</p>"
+      "bible_extra": "<p class=\"bib-note\"><b>Проповедь философам:</b> Афины — единственная чисто языческая аудитория Павла в Деяниях. Апостол цитирует Эпименида («в Нём мы живём и движемся и существуем») и Арата («мы Его и род»). Результат скромный: несколько уверовавших (Дионисий Ареопагит, Дамарь). Но метод — образец контекстуализации Евангелия.</p>",
+      "photos": [
+        {
+          "src": "https://upload.wikimedia.org/wikipedia/commons/thumb/6/6c/Areopagus_from_Acropolis.jpg/640px-Areopagus_from_Acropolis.jpg",
+          "thumb": "https://upload.wikimedia.org/wikipedia/commons/thumb/6/6c/Areopagus_from_Acropolis.jpg/200px-Areopagus_from_Acropolis.jpg",
+          "label": "Ареопаг — Афины",
+          "credit": "Wikimedia Commons",
+          "type": "arch",
+          "alt": "Ареопаг в Афинах"
+        }
+      ]
     },
     {
       "id": "corinth",
