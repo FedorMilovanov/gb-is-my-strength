@@ -1,5 +1,5 @@
 /**
- * map-engine.js v0.36 — reusable biblical map rendering engine. SVG filters + animation polish.
+ * map-engine.js v0.37 — reusable biblical map rendering engine. SVG filters + animation polish.
  *
  * PUBLIC API:
  *   // Data layer (v0.2):
@@ -232,7 +232,7 @@ const MapEngine = (function() {
 /* Base */
 .me-map{position:relative;width:100%;height:100%;overflow:hidden;background:#070a10;user-select:none;font-family:Georgia,'Times New Roman',serif}
 .me-map *{box-sizing:border-box}
-.me-canvas{position:absolute;inset:0;cursor:grab}
+.me-canvas{position:absolute;inset:0;cursor:grab;will-change:transform}.me-canvas svg{will-change:transform}
 .me-canvas:active{cursor:grabbing}
 .me-canvas svg{width:100%;height:100%;display:block}
 
@@ -284,7 +284,7 @@ const MapEngine = (function() {
 .me-tab--active{color:#e8c879;border-bottom-color:#e8c879}
 
 /* Content */
-.me-content{padding:12px 16px;overflow-y:auto;flex:1;font-size:13px;line-height:1.65;color:#9aa2ae;scroll-behavior:smooth}
+.me-content{padding:12px 16px;overflow-y:auto;flex:1;font-size:13px;line-height:1.65;color:#9aa2ae;scroll-behavior:smooth;-webkit-overflow-scrolling:touch}.me-content *{will-change:auto}
 .me-content::-webkit-scrollbar{width:4px}
 .me-content::-webkit-scrollbar-thumb{background:rgba(255,255,255,.1);border-radius:2px}
 .me-content::-webkit-scrollbar-track{background:transparent}
@@ -806,8 +806,17 @@ header.appendChild(shareBtn);
         if (resizing) {
           resizing = false;
           document.body.style.userSelect = '';
+          // Save panel width
+          try {
+            localStorage.setItem('me-panel-width-' + (route.meta?.id || 'map'), panel.style.width);
+          } catch(e) {}
         }
       });
+      // Restore saved panel width
+      try {
+        const saved = localStorage.getItem('me-panel-width-' + (route.meta?.id || 'map'));
+        if (saved) panel.style.width = saved;
+      } catch(e) {}
     }
     // Legend
 const legend=document.createElement('div');legend.className='me-legend';
@@ -1462,6 +1471,13 @@ container.appendChild(panel);
     }
     function stopTour(){
       touring=false;clearTimeout(tourTimer);
+      // Show pause indicator
+      const pauseEl = document.createElement('div');
+      pauseEl.style.cssText = 'position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);z-index:31;padding:12px 24px;border-radius:12px;background:rgba(7,10,16,.85);border:1px solid rgba(232,200,121,.3);color:#e8c879;font-size:16px;backdrop-filter:blur(12px);pointer-events:none;opacity:0;transition:opacity .3s';
+      pauseEl.textContent = '⏸ Пауза';
+      container.appendChild(pauseEl);
+      requestAnimationFrame(() => { pauseEl.style.opacity = '1'; });
+      _tm(() => { pauseEl.style.opacity = '0'; _tm(() => pauseEl.remove(), 400); }, 1500);
     hideCaption();
     const bar=document.getElementById('me-tour-bar');
     if(bar){bar.style.display='none';bar.querySelector('.me-tour-progress__fill').style.width='0%';}
@@ -1492,11 +1508,33 @@ container.appendChild(panel);
     photoModal.className = 'me-photo-modal';
     photoModal.innerHTML = '<div class="me-photo-modal__backdrop"></div><button class="me-photo-modal__close" aria-label="Закрыть">×</button><img class="me-photo-modal__img" alt=""><div class="me-photo-modal__caption"></div>';
     container.appendChild(photoModal);
+    // Photo swipe
+    let photoSwipeStartX = 0;
+    let photoCurrentIdx = 0;
+    let photoCurrentPlace = null;
+    _on(photoModal, 'touchstart', (e) => {
+      photoSwipeStartX = e.touches[0].clientX;
+    }, {passive: true});
+    _on(photoModal, 'touchend', (e) => {
+      if (!photoCurrentPlace || !photoCurrentPlace.photos) return;
+      const dx = e.changedTouches[0].clientX - photoSwipeStartX;
+      if (Math.abs(dx) < 50) return;
+      const photos = photoCurrentPlace.photos;
+      const newIdx = dx > 0 ? Math.max(0, photoCurrentIdx - 1) : Math.min(photos.length - 1, photoCurrentIdx + 1);
+      if (newIdx !== photoCurrentIdx) {
+        photoCurrentIdx = newIdx;
+        const ph = photos[newIdx];
+        photoModal.querySelector('.me-photo-modal__img').src = ph.src || ph.thumb || '';
+        photoModal.querySelector('.me-photo-modal__caption').innerHTML = (ph.label||'') + (ph.credit ? ' · <span class="me-photo-modal__credit">' + ph.credit + '</span>' : '');
+        haptic(10);
+      }
+    }, {passive: true});
     _on(photoModal.querySelector('.me-photo-modal__backdrop'), 'click', () => photoModal.classList.remove('me-photo-modal--open'));
     _on(photoModal.querySelector('.me-photo-modal__close'), 'click', () => photoModal.classList.remove('me-photo-modal--open'));
     document.addEventListener('keydown', e => { if (e.key === 'Escape') photoModal.classList.remove('me-photo-modal--open'); });
 
-    function openPhoto(src, caption, credit) {
+    function openPhoto(src, caption, credit, place, idx) {
+      if (place) { photoCurrentPlace = place; photoCurrentIdx = idx || 0; }
       photoModal.querySelector('.me-photo-modal__img').src = src;
       photoModal.querySelector('.me-photo-modal__caption').innerHTML = caption ? caption + (credit ? ' · <span class="me-photo-modal__credit">' + credit + '</span>' : '') : '';
       photoModal.classList.add('me-photo-modal--open');
@@ -1921,7 +1959,7 @@ container.appendChild(panel);
     getPanelModel,getPanelSections,getStoryState,getPlaceOrder,auditStoryDefinitions,
     // v0.3 rendering
     createMap,
-    version:'0.36.0',buildDate:'2026-06-17'
+    version:'0.37.0',buildDate:'2026-06-17'
   };
 })();
 
