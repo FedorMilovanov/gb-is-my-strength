@@ -497,5 +497,19 @@
       "stage": 4,
       "type": "arch"
     }
+  ],
+  "layers": [
+    {
+      "id": "main",
+      "label": "Места Судей",
+      "color": "#e8c879",
+      "on": true
+    },
+    {
+      "id": "wp",
+      "label": "Археология",
+      "color": "#4a9e6e",
+      "on": true
+    }
   ]
 }
