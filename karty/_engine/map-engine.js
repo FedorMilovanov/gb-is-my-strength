@@ -267,6 +267,27 @@ const MapEngine = (function() {
 .me-legend__dot{width:6px;height:6px;border-radius:50%;flex-shrink:0}
 .me-panel--open{transform:translateY(0)}
 .me-panel__stage-dot{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:6px;vertical-align:middle}
+
+.me-photo-modal{position:fixed;inset:0;z-index:100;display:flex;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:opacity .3s}
+.me-photo-modal--open{opacity:1;pointer-events:auto}
+.me-photo-modal__backdrop{position:absolute;inset:0;background:rgba(0,0,0,.92);cursor:pointer}
+.me-photo-modal__close{position:absolute;top:12px;right:16px;z-index:2;background:none;border:none;color:#fff;font-size:28px;cursor:pointer;padding:8px 12px;line-height:1}
+.me-photo-modal__close:hover{color:#e8c879}
+.me-photo-modal__img{position:relative;z-index:1;max-width:90vw;max-height:85vh;object-fit:contain;border-radius:6px}
+.me-photo-modal__caption{position:absolute;bottom:16px;left:50%;transform:translateX(-50%);z-index:2;color:#9aa2ae;font-size:12px;text-align:center;max-width:80vw;background:rgba(0,0,0,.7);padding:6px 16px;border-radius:999px}
+.me-photo-modal__credit{color:rgba(232,200,121,.7);font-size:10px}
+.me-intro{position:absolute;inset:0;z-index:50;display:flex;align-items:center;justify-content:center;transition:opacity .5s}
+.me-intro__bg{position:absolute;inset:0;background:rgba(7,10,16,.95);cursor:pointer}
+.me-intro__content{position:relative;z-index:1;text-align:center;padding:2rem;max-width:500px}
+.me-intro__title{font-family:Georgia,serif;font-size:32px;color:#fff;margin-bottom:.5rem;line-height:1.2}
+.me-intro__he{font-size:18px;color:#e8c879;letter-spacing:.15em;margin-bottom:.75rem}
+.me-intro__sub{font-size:13px;color:#9aa2ae;margin-bottom:1rem}
+.me-intro__stats{display:flex;gap:12px;justify-content:center;margin-bottom:1.5rem}
+.me-intro__stats span{font-size:11px;color:rgba(154,162,174,.6);padding:4px 12px;border:1px solid rgba(255,255,255,.08);border-radius:999px}
+.me-intro__btn{padding:10px 28px;border-radius:999px;border:1px solid #e8c879;background:rgba(232,200,121,.1);color:#e8c879;font-size:14px;cursor:pointer;font-family:inherit;transition:all .2s}
+.me-intro__btn:hover{background:rgba(232,200,121,.25)}
+@media(min-width:640px){.me-intro__title{font-size:38px}.me-intro__he{font-size:20px}}
+
 @media(min-width:640px){.me-legend{display:block}}
 .me-search{position:absolute;top:8px;right:48px;z-index:15;width:160px;padding:5px 10px;border-radius:8px;border:1px solid rgba(255,255,255,.1);background:rgba(0,0,0,.5);color:#e9e4d6;font-size:11px;font-family:inherit;backdrop-filter:blur(8px);outline:none;transition:border-color .2s}
 .me-search:focus{border-color:rgba(232,200,121,.4);width:200px}
@@ -278,6 +299,27 @@ const MapEngine = (function() {
 
 .me-panel--open{transform:translateY(0)}
 .me-panel__stage-dot{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:6px;vertical-align:middle}
+
+.me-photo-modal{position:fixed;inset:0;z-index:100;display:flex;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:opacity .3s}
+.me-photo-modal--open{opacity:1;pointer-events:auto}
+.me-photo-modal__backdrop{position:absolute;inset:0;background:rgba(0,0,0,.92);cursor:pointer}
+.me-photo-modal__close{position:absolute;top:12px;right:16px;z-index:2;background:none;border:none;color:#fff;font-size:28px;cursor:pointer;padding:8px 12px;line-height:1}
+.me-photo-modal__close:hover{color:#e8c879}
+.me-photo-modal__img{position:relative;z-index:1;max-width:90vw;max-height:85vh;object-fit:contain;border-radius:6px}
+.me-photo-modal__caption{position:absolute;bottom:16px;left:50%;transform:translateX(-50%);z-index:2;color:#9aa2ae;font-size:12px;text-align:center;max-width:80vw;background:rgba(0,0,0,.7);padding:6px 16px;border-radius:999px}
+.me-photo-modal__credit{color:rgba(232,200,121,.7);font-size:10px}
+.me-intro{position:absolute;inset:0;z-index:50;display:flex;align-items:center;justify-content:center;transition:opacity .5s}
+.me-intro__bg{position:absolute;inset:0;background:rgba(7,10,16,.95);cursor:pointer}
+.me-intro__content{position:relative;z-index:1;text-align:center;padding:2rem;max-width:500px}
+.me-intro__title{font-family:Georgia,serif;font-size:32px;color:#fff;margin-bottom:.5rem;line-height:1.2}
+.me-intro__he{font-size:18px;color:#e8c879;letter-spacing:.15em;margin-bottom:.75rem}
+.me-intro__sub{font-size:13px;color:#9aa2ae;margin-bottom:1rem}
+.me-intro__stats{display:flex;gap:12px;justify-content:center;margin-bottom:1.5rem}
+.me-intro__stats span{font-size:11px;color:rgba(154,162,174,.6);padding:4px 12px;border:1px solid rgba(255,255,255,.08);border-radius:999px}
+.me-intro__btn{padding:10px 28px;border-radius:999px;border:1px solid #e8c879;background:rgba(232,200,121,.1);color:#e8c879;font-size:14px;cursor:pointer;font-family:inherit;transition:all .2s}
+.me-intro__btn:hover{background:rgba(232,200,121,.25)}
+@media(min-width:640px){.me-intro__title{font-size:38px}.me-intro__he{font-size:20px}}
+
 @media(min-width:640px){
   .me-title{font-size:28px}
   .me-panel{left:12px;right:auto;bottom:12px;width:420px;border-radius:14px;border:1px solid rgba(232,200,121,.2);transform:translateX(-120%)}
@@ -667,6 +709,31 @@ container.appendChild(panel);
       tourTimer=_tm(runTourStep,cfg.tourDelay);
     }
 
+    
+    // Photo modal
+    const photoModal = document.createElement('div');
+    photoModal.className = 'me-photo-modal';
+    photoModal.innerHTML = '<div class="me-photo-modal__backdrop"></div><button class="me-photo-modal__close" aria-label="Закрыть">×</button><img class="me-photo-modal__img" alt=""><div class="me-photo-modal__caption"></div>';
+    container.appendChild(photoModal);
+    _on(photoModal.querySelector('.me-photo-modal__backdrop'), 'click', () => photoModal.classList.remove('me-photo-modal--open'));
+    _on(photoModal.querySelector('.me-photo-modal__close'), 'click', () => photoModal.classList.remove('me-photo-modal--open'));
+    document.addEventListener('keydown', e => { if (e.key === 'Escape') photoModal.classList.remove('me-photo-modal--open'); });
+
+    function openPhoto(src, caption, credit) {
+      photoModal.querySelector('.me-photo-modal__img').src = src;
+      photoModal.querySelector('.me-photo-modal__caption').innerHTML = caption ? caption + (credit ? ' · <span class="me-photo-modal__credit">' + credit + '</span>' : '') : '';
+      photoModal.classList.add('me-photo-modal--open');
+    }
+    
+    // Make photos in panel clickable via delegation
+    panel.addEventListener('click', e => {
+      const img = e.target.closest('img');
+      if (!img || !img.src || !panel.contains(img)) return;
+      const container = img.closest('div');
+      const label = container?.querySelector('.me-photo-label');
+      openPhoto(img.src, label?.textContent || '', '');
+    });
+
     // ── Keyboard ──
     // Show keyboard shortcut hint
     if (opts.showHints !== false) {
@@ -738,6 +805,36 @@ container.appendChild(panel);
       }
     }
 
+    // ── Intro screen ──
+
+    // Intro screen
+    if (opts.showIntro !== false) {
+      const intro = document.createElement('div');
+      intro.className = 'me-intro';
+      intro.innerHTML = `
+        <div class="me-intro__bg"></div>
+        <div class="me-intro__content">
+          <h1 class="me-intro__title">${esc(route.meta?.title || '')}</h1>
+          ${route.meta?.title_he ? `<p class="me-intro__he" dir="rtl">${esc(route.meta.title_he)}</p>` : ''}
+          ${route.meta?.subtitle ? `<p class="me-intro__sub">${esc(route.meta.subtitle)}</p>` : ''}
+          <div class="me-intro__stats">
+            ${(route.places||[]).length ? `<span>${route.places.length} мест</span>` : ''}
+            ${(route.stories||[]).length ? `<span>${route.stories.length} сюжетов</span>` : ''}
+          </div>
+          <button class="me-intro__btn">Начать изучение</button>
+        </div>`;
+      container.appendChild(intro);
+      _on(intro.querySelector('.me-intro__btn'), 'click', () => {
+        intro.style.opacity = '0';
+        intro.style.pointerEvents = 'none';
+        _timer(() => intro.remove(), 500);
+      });
+      // Also dismiss on clicking background
+      _on(intro.querySelector('.me-intro__bg'), 'click', () => {
+        intro.querySelector('.me-intro__btn').click();
+      });
+    }
+
     // ── Loading state ──
     const loadingEl=document.createElement('div');loadingEl.className='me-loading';
     loadingEl.innerHTML='<div class="me-loading__spinner"></div><div class="me-loading__text">Загрузка карты…</div>';
@@ -791,7 +888,7 @@ container.appendChild(panel);
     getPanelModel,getPanelSections,getStoryState,getPlaceOrder,auditStoryDefinitions,
     // v0.3 rendering
     createMap,
-    version:'0.7.0',buildDate:'2026-06-16'
+    version:'0.8.0',buildDate:'2026-06-16'
   };
 })();
 
