@@ -428,8 +428,31 @@ const MapEngine = (function() {
     const pathsG=document.createElementNS('http://www.w3.org/2000/svg','g');pathsG.id='me-paths';svg.appendChild(pathsG);
     const waypointsG=document.createElementNS('http://www.w3.org/2000/svg','g');waypointsG.id='me-waypoints';svg.appendChild(waypointsG);
     const markersG=document.createElementNS('http://www.w3.org/2000/svg','g');markersG.id='me-markers';svg.appendChild(markersG);
+    const ctxG=document.createElementNS('http://www.w3.org/2000/svg','g');ctxG.id='me-ctx';svg.appendChild(ctxG);
     canvas.appendChild(svg);
     container.appendChild(canvas);
+
+    // Compass rose
+    if (opts.showCompass !== false) {
+      const compass = document.createElementNS('http://www.w3.org/2000/svg','g');
+      compass.setAttribute('transform', 'translate(50, 80)');
+      compass.style.opacity = '0.5';
+      compass.style.pointerEvents = 'none';
+      compass.innerHTML = `
+        <circle cx="0" cy="0" r="22" fill="none" stroke="rgba(255,255,255,.15)" stroke-width="1"/>
+        <circle cx="0" cy="0" r="18" fill="none" stroke="rgba(255,255,255,.08)" stroke-width="0.5"/>
+        <text x="0" y="-8" text-anchor="middle" fill="#e8c879" font-size="9" font-weight="700">N</text>
+        <text x="0" y="18" text-anchor="middle" fill="rgba(255,255,255,.3)" font-size="7">S</text>
+        <text x="12" y="4" text-anchor="middle" fill="rgba(255,255,255,.3)" font-size="7">E</text>
+        <text x="-12" y="4" text-anchor="middle" fill="rgba(255,255,255,.3)" font-size="7">W</text>
+        <line x1="0" y1="-6" x2="0" y2="6" stroke="#e8c879" stroke-width="0.8"/>
+        <line x1="-6" y1="0" x2="6" y2="0" stroke="rgba(255,255,255,.3)" stroke-width="0.5"/>
+        <polygon points="0,-14 -3,-6 3,-6" fill="#e8c879" opacity="0.8"/>
+        <polygon points="0,14 -3,6 3,6" fill="rgba(255,255,255,.2)"/>
+      `;
+      svg.appendChild(compass);
+    }
+
 
     // Header
     const header=document.createElement('div');header.className='me-header';
@@ -610,6 +633,31 @@ container.appendChild(panel);
       markersG.innerHTML='';
       waypointsG.innerHTML='';
       pathsG.innerHTML='';
+      // CTX (context) markers
+      const ctxG = document.getElementById('me-ctx');
+      if (ctxG) ctxG.innerHTML = '';
+      (route.ctx||[]).forEach(ctx => {
+        if (!ctxG) return;
+        const g = document.createElementNS('http://www.w3.org/2000/svg','g');
+        g.setAttribute('transform', `translate(${ctx.x},${ctx.y})`);
+        g.setAttribute('data-layer', 'ctx');
+        g.setAttribute('opacity', '0.4');
+        const circle = document.createElementNS('http://www.w3.org/2000/svg','circle');
+        circle.setAttribute('r', '2.5');
+        circle.setAttribute('fill', '#9aa2ae');
+        circle.setAttribute('stroke', 'transparent');
+        g.appendChild(circle);
+        if (ctx.name || ctx.label) {
+          const text = document.createElementNS('http://www.w3.org/2000/svg','text');
+          text.setAttribute('x', '6'); text.setAttribute('y', '2.5');
+          text.setAttribute('fill', '#9aa2ae'); text.setAttribute('font-size', '7');
+          text.setAttribute('font-style', 'italic');
+          text.textContent = ctx.name || ctx.label || '';
+          g.appendChild(text);
+        }
+        ctxG.appendChild(g);
+      });
+
       const vis=visiblePlaces();
       const visIds=new Set(vis.map(p=>p.id));
       const allPlaces=route.places||[];
