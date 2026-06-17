@@ -862,6 +862,35 @@ karty/_engine/
 | pavel | `MapEngine.createMap()` | Полностью на движке + timeline-integrated |
 | shoftim...revelation | `MapEngine.createMap()` | Полностью на движке |
 
+#### ⚠️ HAZARD: ДВОЙНОЙ ПУТЬ РЕНДЕРИНГА (читать перед любой правкой движка)
+
+В проекте **ДВЕ независимые реализации** визуального слоя карт:
+
+1. **MapEngine (`karty/_engine/map-engine.js`)** — рендерит 9 карт (ishod, pavel, shoftim,
+   melachim, shvatim, yeshua, maccabim, early-church, revelation) через `createMap()`.
+   Здесь живут `renderMarkers`, `renderPanel`, `open`, `setTab`, `flyTo`, `openPhoto`,
+   `startTour`, `updateMinimap` и т.д.
+2. **Авраам (`karty/avraam/avraam-app.js`, 2404 строки + index.html 2385 строк)** —
+   флагман-карта со своим собственным рендерингом: `openPlace`, `setTab`, `renderPhotos`,
+   `renderVariants`, `startTour`, `flyTo`, `updateMinimap`, ночные звёзды, караван, GSAP,
+   ambient-аккорды. Использует MapEngine ТОЛЬКО для data-хелперов (`getPlaceVisual`,
+   `getStoryState`, `getPanelModel`, `validateRoute`, `compareRouteData`).
+
+**Это значит:**
+- ❌ Правка `renderPanel`/`flyTo`/`open`/`setTab` в MapEngine **НЕ влияет на Авраам**.
+  Авраам останется как был. И наоборот: правка `avraam-app.js` **НЕ влияет** на 9 других карт.
+- ✅ Если нужно изменить визуал **везде** — править надо в ДВУХ местах (engine + avraam-app)
+  и проверять оба: `npm run maps:validate` (10 карт) + `npm run avraam:audit` (23/23).
+- ✅ Это намеренная архитектура (см. §12.5.6): Авраам = эталон, фичи ИЗВЛЕКАЮТСЯ из него
+  в движок, а не наоборот. Портить Авраам ради «унификации» — повторение катастрофы
+  `c94a3298`–`22abf658` (см. §12.5.2). Когда движок накопит ≥80% фич Авраама — можно
+  портировать; до тех пор два пути сосуществуют.
+
+**Перед правкой движка ВСЕГДА отвечай:** «Эта правка должна затронуть и Авраам?»
+Если да — редактируй и `map-engine.js`, и `avraam-app.js`. Если правишь только движок —
+проверь, что Авраам не сломался (`avraam:audit 23/23`), и задокументируй рассинхрон в
+AGENTS changelog.
+
 ### 12.5.4 ПРАВИЛА создания новой карты
 
 ```bash
