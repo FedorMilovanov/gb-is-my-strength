@@ -1,5 +1,5 @@
 /**
- * map-engine.js v0.32 — reusable biblical map rendering engine. SVG filters + animation polish.
+ * map-engine.js v0.33 — reusable biblical map rendering engine. SVG filters + animation polish.
  *
  * PUBLIC API:
  *   // Data layer (v0.2):
@@ -736,7 +736,34 @@ header.appendChild(shareBtn);
     
     // Panel
     const panel=document.createElement('div');panel.className='me-panel';
-    panel.innerHTML='<button class="me-panel__close">×</button><div class="me-tour-progress" id="me-tour-bar"><div class="me-tour-progress__fill"></div></div><div class="me-panel__head"></div><div class="me-tabs"></div><div class="me-content"></div><div class="me-nav"></div>';
+    panel.innerHTML='<button class="me-panel__close">×</button><div class="me-panel__resize"></div><div class="me-tour-progress" id="me-tour-bar"><div class="me-tour-progress__fill"></div></div><div class="me-panel__head"></div><div class="me-tabs"></div><div class="me-content"></div><div class="me-nav"></div>';
+    // Panel resize (desktop sidebar)
+    const resizeHandle = panel.querySelector('.me-panel__resize');
+    let resizing = false;
+    let resizeStartX = 0;
+    let panelStartWidth = 0;
+    if (resizeHandle) {
+      resizeHandle.addEventListener('pointerdown', e => {
+        e.preventDefault();
+        resizeHandle.setPointerCapture(e.pointerId);
+        resizing = true;
+        resizeStartX = e.clientX;
+        panelStartWidth = panel.offsetWidth;
+        document.body.style.userSelect = 'none';
+      });
+      document.addEventListener('pointermove', e => {
+        if (!resizing) return;
+        const dx = resizeStartX - e.clientX;
+        const newWidth = clamp(panelStartWidth + dx, 280, 700);
+        panel.style.width = newWidth + 'px';
+      });
+      document.addEventListener('pointerup', () => {
+        if (resizing) {
+          resizing = false;
+          document.body.style.userSelect = '';
+        }
+      });
+    }
     // Legend
 const legend=document.createElement('div');legend.className='me-legend';
 const legendItems=(route.stages||[]).map((st,i)=>`<div class="me-legend__item"><span class="me-legend__dot" style="background:${STAGE_COLORS[i]}"></span>${st.t||''}</div>`).join('');
@@ -1086,8 +1113,8 @@ container.appendChild(panel);
 
     function renderTabContent(tab,place){
       const content=panel.querySelector('.me-content');
-      content.style.opacity='0';content.style.transition='opacity .15s';
-      setTimeout(()=>{content.style.opacity='1';},50);
+      content.style.opacity='0';content.style.transform='translateX(4px)';content.style.transition='opacity .18s ease, transform .22s cubic-bezier(.4,0,.2,1)';
+      requestAnimationFrame(() => { content.style.opacity='1';content.style.transform='translateX(0)'; });
       const map={story:place.story,bible:place.bible,arch:place.arch,he:place.he_deep,dispute:place.dispute,extra:place.bible_extra};
       if(tab==='sci'){
         const variants = route.scientific_variants||route.variants||{};
@@ -1273,6 +1300,41 @@ container.appendChild(panel);
       view.x=clamp(dragState.vx-(e.clientX-dragState.sx)/sc,-cfg.padX,cfg.W0+cfg.padX-view.w);
       view.y=clamp(dragState.vy-(e.clientY-dragState.sy)/sc,-cfg.padY,cfg.H0+cfg.padY-view.h);
       applyViewBox();
+    });
+    // Pinch-to-zoom on mobile
+    let pinchDist0 = 0;
+    let pinchView0 = null;
+    canvas.addEventListener('touchstart', e => {
+      if (e.touches.length === 2) {
+        e.preventDefault();
+        pinchDist0 = Math.hypot(
+          e.touches[0].clientX - e.touches[1].clientX,
+          e.touches[0].clientY - e.touches[1].clientY
+        );
+        pinchView0 = { ...view };
+        dragState = null; // Cancel any ongoing drag
+      }
+    }, { passive: false });
+    canvas.addEventListener('touchmove', e => {
+      if (e.touches.length === 2 && pinchView0) {
+        e.preventDefault();
+        const dist = Math.hypot(
+          e.touches[0].clientX - e.touches[1].clientX,
+          e.touches[0].clientY - e.touches[1].clientY
+        );
+        const scale = pinchDist0 / Math.max(1, dist);
+        const nw = clamp(pinchView0.w * scale, cfg.minW, cfg.maxW);
+        const cx = pinchView0.x + pinchView0.w / 2;
+        const cy = pinchView0.y + pinchView0.h / 2;
+        view.w = nw;
+        view.h = nw * cfg.H0 / cfg.W0;
+        view.x = clamp(cx - view.w / 2, -cfg.padX, cfg.W0 + cfg.padX - view.w);
+        view.y = clamp(cy - view.h / 2, -cfg.padY, cfg.H0 + cfg.padY - view.h);
+        applyViewBox();
+      }
+    }, { passive: false });
+    canvas.addEventListener('touchend', e => {
+      if (e.touches.length < 2) { pinchView0 = null; }
     });
     canvas.addEventListener('pointerup',()=>{dragState=null});
     canvas.addEventListener('wheel',e=>{
@@ -1577,8 +1639,10 @@ container.appendChild(panel);
       container.appendChild(intro);
       _on(intro.querySelector('.me-intro__btn'), 'click', () => {
         intro.style.opacity = '0';
+        intro.style.transform = 'scale(0.95)';
+        intro.style.transition = 'opacity .4s ease, transform .4s cubic-bezier(.4,0,.2,1)';
         intro.style.pointerEvents = 'none';
-        _tm(() => intro.remove(), 500);
+        _tm(() => intro.remove(), 450);
       });
       // Also dismiss on clicking background
       _on(intro.querySelector('.me-intro__bg'), 'click', () => {
@@ -1692,7 +1756,7 @@ container.appendChild(panel);
     getPanelModel,getPanelSections,getStoryState,getPlaceOrder,auditStoryDefinitions,
     // v0.3 rendering
     createMap,
-    version:'0.32.0',buildDate:'2026-06-17'
+    version:'0.33.0',buildDate:'2026-06-17'
   };
 })();
 
