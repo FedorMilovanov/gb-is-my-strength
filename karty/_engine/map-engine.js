@@ -1,5 +1,5 @@
 /**
- * map-engine.js v0.31 — reusable biblical map rendering engine. SVG filters + animation polish.
+ * map-engine.js v0.32 — reusable biblical map rendering engine. SVG filters + animation polish.
  *
  * PUBLIC API:
  *   // Data layer (v0.2):
@@ -415,8 +415,8 @@ const MapEngine = (function() {
 .me-caption__dot--past{background:rgba(232,200,121,.5)}
 
 /* Toast */
-.me-toast{position:absolute;top:60px;left:50%;transform:translateX(-50%);z-index:25;padding:6px 16px;border-radius:999px;background:rgba(232,200,121,.15);border:1px solid rgba(232,200,121,.3);color:#e8c879;font-size:12px;backdrop-filter:blur(8px);opacity:0;pointer-events:none;transition:opacity .3s;white-space:nowrap}
-.me-toast--visible{opacity:1}
+.me-toast{position:absolute;top:60px;left:50%;transform:translate(-50%,-8px);z-index:25;padding:6px 16px;border-radius:999px;background:rgba(232,200,121,.15);border:1px solid rgba(232,200,121,.3);color:#e8c879;font-size:12px;backdrop-filter:blur(8px);opacity:0;pointer-events:none;transition:opacity .3s ease,transform .3s cubic-bezier(.34,1.56,.64,1);white-space:nowrap}
+.me-toast--visible{opacity:1;transform:translate(-50%,0)}
 
 /* Minimap */
 .me-minimap{position:absolute;bottom:8px;right:48px;z-index:10;width:140px;height:105px;border-radius:8px;overflow:hidden;border:1px solid rgba(255,255,255,.1);background:rgba(7,10,16,.8);backdrop-filter:blur(8px);cursor:pointer;opacity:.7;transition:opacity .2s}
@@ -627,6 +627,17 @@ _on(searchInput,'input',()=>{
       }
     });
   }, 200);
+  // Show match count
+  if (q) {
+    const mc = markersG.querySelectorAll('g[transform]').length;
+    let visibleCount = 0;
+    markersG.querySelectorAll('g[transform]').forEach(g => {
+      if (g.style.opacity !== '0.08' && g.style.opacity !== '.08') visibleCount++;
+    });
+    if (visibleCount > 0 && visibleCount < mc) {
+      showToast('Найдено: ' + visibleCount, 1500);
+    }
+  }
 });
 header.appendChild(searchInput);
 container.appendChild(header);
@@ -641,10 +652,21 @@ _on(shareBtn,'click',()=>{
   const url=location.origin+location.pathname+(params.toString()?'?'+params:'');
   if(navigator.share)navigator.share({title:document.title,url}).catch(()=>navigator.clipboard?.writeText(url));
   else navigator.clipboard?.writeText(url).then(()=>{
-    shareBtn.textContent='✓';setTimeout(()=>shareBtn.textContent='↗',1500);
+    showToast('Ссылка скопирована');shareBtn.textContent='✓';setTimeout(()=>shareBtn.textContent='↗',1500);
   });
 });
 header.appendChild(shareBtn);
+
+    // Toast notification
+    const toastEl = document.createElement('div');
+    toastEl.className = 'me-toast';
+    container.appendChild(toastEl);
+    function showToast(msg, duration = 2000) {
+      toastEl.textContent = msg;
+      toastEl.classList.add('me-toast--visible');
+      clearTimeout(toastEl._timeout);
+      toastEl._timeout = setTimeout(() => toastEl.classList.remove('me-toast--visible'), duration);
+    }
 
     // Stage dots
     const stagesBar=document.createElement('div');stagesBar.className='me-stages';
@@ -913,6 +935,19 @@ container.appendChild(panel);
         g.appendChild(t);
         waypointsG.appendChild(g);
       });
+      // Dashed connection lines between waypoints
+      const wps = route.verified_waypoints||[];
+      if (wps.length >= 2) {
+        const wpD = wps.map((wp,j) => `${j===0?'M':'L'}${wp.x},${wp.y}`).join(' ');
+        const wpLine = document.createElementNS('http://www.w3.org/2000/svg','path');
+        wpLine.setAttribute('d', wpD);
+        wpLine.setAttribute('fill', 'none');
+        wpLine.setAttribute('stroke', 'rgba(232,200,121,.25)');
+        wpLine.setAttribute('stroke-dasharray', '4 6');
+        wpLine.setAttribute('stroke-width', '1.2');
+        wpLine.setAttribute('opacity', '0.5');
+        waypointsG.appendChild(wpLine);
+      }
 
       // Place markers
       allPlaces.forEach(place=>{
@@ -1183,6 +1218,7 @@ container.appendChild(panel);
       const allMarkers = markersG.querySelectorAll('g[transform]');
       allMarkers.forEach(g => { g.style.opacity = '0'; g.style.transition = 'opacity .2s ease'; });
       activeStoryId=storyId;
+      showToast('Сюжет: ' + (story.t || story.id || storyId), 1500);
       close();
       showStoryToast(story);
       updateHash();
@@ -1656,7 +1692,7 @@ container.appendChild(panel);
     getPanelModel,getPanelSections,getStoryState,getPlaceOrder,auditStoryDefinitions,
     // v0.3 rendering
     createMap,
-    version:'0.31.0',buildDate:'2026-06-17'
+    version:'0.32.0',buildDate:'2026-06-17'
   };
 })();
 
