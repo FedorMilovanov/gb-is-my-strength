@@ -10,7 +10,7 @@
       "stages": 5,
       "verses": 3779,
       "years": 33,
-      "photos": 12
+      "photos": 14
     },
     "viewport_init": {
       "cx": 690,
@@ -295,7 +295,17 @@
       "ep1": "Мф 16:13-20; Мк 8:27-30",
       "side": "t",
       "story": "<p>У подножия горы Ермон, в языческом городе с храмом Пана, Иисус спросил учеников: «За кого люди почитают Меня?» Пётр ответил: «Ты — Христос, Сын Бога Живого». Здесь Иисус впервые объявил о создании Церкви и Своей грядущей смерти.</p>",
-      "bible": "<div class=\"verse\">«Ты — Пётр, и на сем камне Я создам Церковь Мою, и врата ада не одолеют её».<span>МАТФЕЯ 16:18</span></div>"
+      "bible": "<div class=\"verse\">«Ты — Пётр, и на сем камне Я создам Церковь Мою, и врата ада не одолеют её».<span>МАТФЕЯ 16:18</span></div>",
+      "photos": [
+        {
+          "src": "https://upload.wikimedia.org/wikipedia/commons/thumb/6/63/Banias_-_Pan_Grotto.jpg/640px-Banias_-_Pan_Grotto.jpg",
+          "thumb": "https://upload.wikimedia.org/wikipedia/commons/thumb/6/63/Banias_-_Pan_Grotto.jpg/200px-Banias_-_Pan_Grotto.jpg",
+          "label": "Кесария Филиппова — грот Пана",
+          "credit": "Wikimedia Commons",
+          "type": "arch",
+          "alt": "Кесария Филиппова"
+        }
+      ]
     },
     {
       "id": "jericho",
@@ -335,7 +345,17 @@
       "ep1": "Ин 11:1-44; 12:1-8",
       "side": "r",
       "story": "<p>Дом Марфы, Марии и Лазаря — место, где Иисус часто останавливался. Здесь Он воскресил Лазаря: «Лазарь! иди вон». Мария помазала Иисуса миром и отёрла ноги волосами. Сюда Иисус возвращался каждый вечер Страстной недели.</p>",
-      "bible": "<div class=\"verse\">«Я есмь воскресение и жизнь; верующий в Меня, если и умрёт, оживёт».<span>ИОАННА 11:25</span></div>"
+      "bible": "<div class=\"verse\">«Я есмь воскресение и жизнь; верующий в Меня, если и умрёт, оживёт».<span>ИОАННА 11:25</span></div>",
+      "photos": [
+        {
+          "src": "https://upload.wikimedia.org/wikipedia/commons/thumb/1/1f/Lazarus_tomb_Bethany.jpg/640px-Lazarus_tomb_Bethany.jpg",
+          "thumb": "https://upload.wikimedia.org/wikipedia/commons/thumb/1/1f/Lazarus_tomb_Bethany.jpg/200px-Lazarus_tomb_Bethany.jpg",
+          "label": "Гробница Лазаря — Вифания",
+          "credit": "Wikimedia Commons",
+          "type": "arch",
+          "alt": "Гробница Лазаря в Вифании"
+        }
+      ]
     },
     {
       "id": "jerusalem_passion",

@@ -10,7 +10,7 @@
       "stages": 5,
       "verses": 150,
       "years": 295,
-      "photos": 8
+      "photos": 12
     },
     "viewport_init": {
       "cx": 950,
@@ -240,7 +240,17 @@
       "side": "l",
       "story": "<p>У перевала Беф-Орон Иуда Маккавей одержал первую крупную победу над армией Селевкидов под командованием Аполлония. С небольшим отрядом он разбил превосходящие силы — и с тех пор имя Маккавея стало символом сопротивления.</p>",
       "bible": "<div class=\"verse\">«И напал на них Иуда, и убито было много, а остальные разбежались».<span>1МАККАВЕЙСКАЯ 3:24</span></div>",
-      "bible_extra": "<p class=\"bib-note\"><b>Беф-Орон — место, где Бог сражается за Свой народ:</b> Этот перевал был местом не одной победы. Здесь Иисус Навин разбил аморреев (Нав 10:10-11). Здесь Иуда Маккавей разбил Аполлония. Один и тот же Бог, одна и та же география, та же верность.</p>"
+      "bible_extra": "<p class=\"bib-note\"><b>Беф-Орон — место, где Бог сражается за Свой народ:</b> Этот перевал был местом не одной победы. Здесь Иисус Навин разбил аморреев (Нав 10:10-11). Здесь Иуда Маккавей разбил Аполлония. Один и тот же Бог, одна и та же география, та же верность.</p>",
+      "photos": [
+        {
+          "src": "https://upload.wikimedia.org/wikipedia/commons/thumb/5/5e/Beit_Horon.jpg/640px-Beit_Horon.jpg",
+          "thumb": "https://upload.wikimedia.org/wikipedia/commons/thumb/5/5e/Beit_Horon.jpg/200px-Beit_Horon.jpg",
+          "label": "Беф-Орон — вид на перевал",
+          "credit": "Wikimedia Commons",
+          "type": "geo",
+          "alt": "Беф-Орон"
+        }
+      ]
     },
     {
       "id": "emmaus",
@@ -255,7 +265,17 @@
       "ep1": "1Макк 4:1-25",
       "side": "b",
       "story": "<p>Битва при Еммаусе — ключевое сражение Маккавейской войны. Армия Горгия и Никанора была разбита Иудой Маккавеем. После этой победы Иуда смог войти в Иерусалим и очистить Храм — событие, отмечаемое как Ханука.</p>",
-      "bible": "<div class=\"verse\">«И обратились в бегство язычники… Иуда же сказал: не желайте добычи, ибо война ещё предстоит нам».<span>1МАККАВЕЙСКАЯ 4:16-17</span></div>"
+      "bible": "<div class=\"verse\">«И обратились в бегство язычники… Иуда же сказал: не желайте добычи, ибо война ещё предстоит нам».<span>1МАККАВЕЙСКАЯ 4:16-17</span></div>",
+      "photos": [
+        {
+          "src": "https://upload.wikimedia.org/wikipedia/commons/thumb/8/8f/Emmaus_Nicopolis_basilica.jpg/640px-Emmaus_Nicopolis_basilica.jpg",
+          "thumb": "https://upload.wikimedia.org/wikipedia/commons/thumb/8/8f/Emmaus_Nicopolis_basilica.jpg/200px-Emmaus_Nicopolis_basilica.jpg",
+          "label": "Еммаус Никополь — базилика",
+          "credit": "Wikimedia Commons",
+          "type": "arch",
+          "alt": "Еммаус"
+        }
+      ]
     },
     {
       "id": "beth_zur",
@@ -269,7 +289,17 @@
       "id2": "Иудея · южнее Иерусалима",
       "ep1": "1Макк 4:61; 6:7,31",
       "side": "b",
-      "story": "<p>Беф-Цур — стратегическая крепость на южной границе Иудеи, которую Иуда Маккавей укрепил для защиты от идумеев. Здесь произошло несколько сражений с селевкидскими войсками Лисия.</p>"
+      "story": "<p>Беф-Цур — стратегическая крепость на южной границе Иудеи, которую Иуда Маккавей укрепил для защиты от идумеев. Здесь произошло несколько сражений с селевкидскими войсками Лисия.</p>",
+      "photos": [
+        {
+          "src": "https://upload.wikimedia.org/wikipedia/commons/thumb/9/96/Hebron_Hills.jpg/640px-Hebron_Hills.jpg",
+          "thumb": "https://upload.wikimedia.org/wikipedia/commons/thumb/9/96/Hebron_Hills.jpg/200px-Hebron_Hills.jpg",
+          "label": "Хевронское нагорье — регион Беф-Цур",
+          "credit": "Wikimedia Commons",
+          "type": "geo",
+          "alt": "Хевронское нагорье"
+        }
+      ]
     },
     {
       "id": "beit_shean",
@@ -283,7 +313,17 @@
       "id2": "Изреельская долина",
       "ep1": "1Цар 31:10-12; 2Макк 12:29",
       "side": "t",
-      "story": "<p>Беф-Сан (эллинистический Скифополь) — город, где филистимляне повесили тело Саула на стене. В эллинистический период стал одним из городов Декаполиса. Упоминается в Маккавейских войнах как укреплённый пункт.</p>"
+      "story": "<p>Беф-Сан (эллинистический Скифополь) — город, где филистимляне повесили тело Саула на стене. В эллинистический период стал одним из городов Декаполиса. Упоминается в Маккавейских войнах как укреплённый пункт.</p>",
+      "photos": [
+        {
+          "src": "https://upload.wikimedia.org/wikipedia/commons/thumb/5/5a/Beit_Shean_roman_theatre.jpg/640px-Beit_Shean_roman_theatre.jpg",
+          "thumb": "https://upload.wikimedia.org/wikipedia/commons/thumb/5/5a/Beit_Shean_roman_theatre.jpg/200px-Beit_Shean_roman_theatre.jpg",
+          "label": "Беф-Сан (Скифополь) — римский театр",
+          "credit": "Wikimedia Commons",
+          "type": "arch",
+          "alt": "Беф-Сан"
+        }
+      ]
     },
     {
       "id": "samaria_hasm",
