@@ -1,5 +1,5 @@
 /**
- * map-engine.js v0.39 — reusable biblical map rendering engine. SVG filters + animation polish.
+ * map-engine.js v0.40 — reusable biblical map rendering engine. SVG filters + animation polish.
  *
  * PUBLIC API:
  *   // Data layer (v0.2):
@@ -348,7 +348,7 @@ const MapEngine = (function() {
 
 /* Tour */
 .me-tour-progress{position:absolute;top:0;left:0;right:0;height:2px;z-index:30;display:none}
-.me-tour-progress__fill{height:100%;background:linear-gradient(90deg,#e8c879,#e0813f);transition:width .3s ease;width:0%}
+.me-tour-progress__fill{height:100%;background:linear-gradient(90deg,#e8c879,#e0813f,#e8c879);background-size:200% 100%;animation:meProgressFlow 1.5s linear infinite;transition:width .3s ease;width:0%;border-radius:0 2px 2px 0}
 
 /* Share */
 .me-share-btn{position:absolute;top:10px;right:10px;z-index:15;width:28px;height:28px;border-radius:6px;border:1px solid rgba(255,255,255,.1);background:rgba(0,0,0,.5);color:#9aa2ae;font-size:14px;cursor:pointer;display:flex;align-items:center;justify-content:center;backdrop-filter:blur(8px);transition:all .15s}
@@ -788,7 +788,7 @@ header.appendChild(shareBtn);
     
     // Panel
     const panel=document.createElement('div');panel.className='me-panel';
-    panel.innerHTML='<button class="me-panel__close">×</button><button class="me-panel__scroll-top" style="display:none;position:absolute;top:10px;right:44px;z-index:5;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);border-radius:6px;color:#9aa2ae;font-size:14px;cursor:pointer;padding:3px 7px;line-height:1">↑</button><div class="me-panel__resize"></div><div class="me-tour-progress" id="me-tour-bar"><div class="me-tour-progress__fill"></div></div><div class="me-panel__head"></div><div class="me-tabs"></div><div class="me-content"></div><div class="me-nav"></div>';
+    panel.innerHTML='<button class="me-panel__close">×</button><button class="me-panel__scroll-top" style="display:none;position:absolute;top:10px;right:44px;z-index:5;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);border-radius:6px;color:#9aa2ae;font-size:14px;cursor:pointer;padding:3px 7px;line-height:1">↑</button><div class="me-panel__resize"></div><div class="me-tour-progress" id="me-tour-bar"><div class="me-tour-progress__fill"></div><div id="me-tour-speed" style="display:none;position:absolute;top:4px;right:8px;display:none;gap:4px"><button id="me-tour-faster" style="background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.15);border-radius:4px;color:#9aa2ae;font-size:10px;cursor:pointer;padding:1px 6px">▶▶</button><button id="me-tour-slower" style="background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.15);border-radius:4px;color:#9aa2ae;font-size:10px;cursor:pointer;padding:1px 6px">▶</button></div></div><div class="me-panel__head"></div><div class="me-tabs"></div><div class="me-content"></div><div class="me-nav"></div>';
     // Scroll-to-top button logic
     const scrollTopBtn = panel.querySelector('.me-panel__scroll-top');
     const contentEl = panel.querySelector('.me-content');
@@ -1084,8 +1084,23 @@ container.appendChild(panel);
         ring.setAttribute('filter','url(#me-glow)');
         ring.style.transition = 'opacity .3s ease, r .3s ease';
         g.appendChild(ring);
+        // Stage number badge
+        if (typeof place.stage === 'number' && inStory) {
+          const badge = document.createElementNS('http://www.w3.org/2000/svg','circle');
+          badge.setAttribute('r','8');badge.setAttribute('fill','none');
+          badge.setAttribute('stroke',color);badge.setAttribute('stroke-width','1');
+          badge.setAttribute('opacity','0.4');badge.setAttribute('stroke-dasharray','2 3');
+          badge.style.pointerEvents = 'none';
+          g.appendChild(badge);
+        }
         const dot=document.createElementNS('http://www.w3.org/2000/svg','circle');
+        const isCand = place.type === 'cand';
         dot.setAttribute('r',isActive?'7':'4.5');dot.setAttribute('fill',isActive?'#fff':color);
+        if (isCand) {
+          dot.setAttribute('stroke-dasharray','3 2');
+          dot.setAttribute('fill',isActive?'#fff':'none');
+          dot.setAttribute('stroke-width','2');
+        }
         dot.setAttribute('stroke',isActive?color:'#0b0f16');dot.setAttribute('stroke-width','2.5');
         dot.setAttribute('filter',isActive?'url(#me-glow-strong)':'url(#me-shadow)');
         dot.classList.add('me-marker-spring');
@@ -1093,12 +1108,20 @@ container.appendChild(panel);
         g.appendChild(dot);
         
         const side=place.side||'r';
+        // Collision check: offset if another label is too close
+        const nearbyLabels = allPlaces.filter(op =>
+          op.id !== place.id &&
+          Math.abs(op.x - place.x) < 100 &&
+          Math.abs(op.y - place.y) < 16 &&
+          (op.side||'r') === side
+        );
+        const labelOffset = nearbyLabels.length > 0 ? 12 : 0;
         // Label background for readability
         const labelBg=document.createElementNS('http://www.w3.org/2000/svg','rect');
         const labelText = place.name||'';
         const fontSize=10;
         const textWidth=labelText.length*fontSize*0.6;
-        labelBg.setAttribute('x',side==='l'?(-14-textWidth):'14');
+        labelBg.setAttribute('x',side==='l'?(-14-textWidth):'14');labelBg.setAttribute('y',String(-7+labelOffset));
         labelBg.setAttribute('y','-7');
         labelBg.setAttribute('width',textWidth+6);
         labelBg.setAttribute('height','14');
@@ -1111,7 +1134,7 @@ container.appendChild(panel);
         labelBg.style.pointerEvents = 'none';
         g.appendChild(labelBg);
         const label=document.createElementNS('http://www.w3.org/2000/svg','text');
-        label.setAttribute('x',side==='l'?'-14':'14');label.setAttribute('y','4');
+        label.setAttribute('x',side==='l'?'-14':'14');label.setAttribute('y',String(4+labelOffset));
         label.setAttribute('text-anchor',side==='l'?'end':'start');
         label.setAttribute('fill',inStory?'#f4eedd':'#555');
         label.setAttribute('font-size',String(fontSize));
@@ -1495,9 +1518,19 @@ container.appendChild(panel);
     
     function startTour(){
       touring=true;tourStepIdx=0;close();runTourStep();
+      // Show speed controls
+      const speedDiv = document.getElementById('me-tour-speed');
+      if (speedDiv) speedDiv.style.display = 'flex';
+    }
+    // Adjust tour speed
+    function adjTourSpeed(delta) {
+      cfg.tourDelay = clamp(cfg.tourDelay + delta, 800, 8000);
+      showToast('Тур: ' + (cfg.tourDelay/1000).toFixed(1) + 'с', 1000);
     }
     function stopTour(){
       touring=false;clearTimeout(tourTimer);
+      const speedDiv = document.getElementById('me-tour-speed');
+      if (speedDiv) speedDiv.style.display = 'none';
       // Show pause indicator
       const pauseEl = document.createElement('div');
       pauseEl.style.cssText = 'position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);z-index:31;padding:12px 24px;border-radius:12px;background:rgba(7,10,16,.85);border:1px solid rgba(232,200,121,.3);color:#e8c879;font-size:16px;backdrop-filter:blur(12px);pointer-events:none;opacity:0;transition:opacity .3s';
@@ -1768,6 +1801,14 @@ container.appendChild(panel);
       return count;
     }
 
+    // Tour speed buttons
+    _tm(() => {
+      const fasterBtn = document.getElementById('me-tour-faster');
+      const slowerBtn = document.getElementById('me-tour-slower');
+      if (fasterBtn) _on(fasterBtn, 'click', (e) => { e.stopPropagation(); adjTourSpeed(-500); });
+      if (slowerBtn) _on(slowerBtn, 'click', (e) => { e.stopPropagation(); adjTourSpeed(500); });
+    }, 100);
+
     _on(document,'keydown',function kh(e){
       if(!container.contains(document.activeElement)&&document.activeElement!==document.body)return;
       if(e.key==='Escape'){close();return}
@@ -1998,7 +2039,7 @@ container.appendChild(panel);
     getPanelModel,getPanelSections,getStoryState,getPlaceOrder,auditStoryDefinitions,
     // v0.3 rendering
     createMap,
-    version:'0.39.0',buildDate:'2026-06-17'
+    version:'0.40.0',buildDate:'2026-06-17'
   };
 })();
 
