@@ -389,6 +389,11 @@ const MapEngine = (function() {
 .me-theme-btn{position:absolute;top:10px;right:42px;z-index:15;width:28px;height:28px;border-radius:6px;border:1px solid rgba(255,255,255,.1);background:rgba(0,0,0,.5);color:#9aa2ae;font-size:14px;cursor:pointer;display:flex;align-items:center;justify-content:center;backdrop-filter:blur(8px);transition:all .15s}
 .me-theme-btn:hover{color:#e8c879;border-color:rgba(232,200,121,.3)}
 
+
+.me-progress{position:absolute;top:0;left:0;right:0;height:2px;z-index:60;transition:opacity .4s}
+.me-progress__fill{height:100%;background:linear-gradient(90deg,#e8c879,#e0813f,#e8c879);background-size:200% 100%;animation:meProgressFlow 1.5s linear infinite;width:0%;transition:width .3s}
+@keyframes meProgressFlow{0%{background-position:200% 0}100%{background-position:-200% 0}}
+
 @media(min-width:640px){.me-life{display:block}}
 
 
@@ -398,6 +403,11 @@ const MapEngine = (function() {
 
 .me-theme-btn{position:absolute;top:10px;right:42px;z-index:15;width:28px;height:28px;border-radius:6px;border:1px solid rgba(255,255,255,.1);background:rgba(0,0,0,.5);color:#9aa2ae;font-size:14px;cursor:pointer;display:flex;align-items:center;justify-content:center;backdrop-filter:blur(8px);transition:all .15s}
 .me-theme-btn:hover{color:#e8c879;border-color:rgba(232,200,121,.3)}
+
+
+.me-progress{position:absolute;top:0;left:0;right:0;height:2px;z-index:60;transition:opacity .4s}
+.me-progress__fill{height:100%;background:linear-gradient(90deg,#e8c879,#e0813f,#e8c879);background-size:200% 100%;animation:meProgressFlow 1.5s linear infinite;width:0%;transition:width .3s}
+@keyframes meProgressFlow{0%{background-position:200% 0}100%{background-position:-200% 0}}
 
 @media(min-width:640px){.me-panel__resize{display:block}}
 
@@ -419,6 +429,11 @@ const MapEngine = (function() {
 .me-theme-btn{position:absolute;top:10px;right:42px;z-index:15;width:28px;height:28px;border-radius:6px;border:1px solid rgba(255,255,255,.1);background:rgba(0,0,0,.5);color:#9aa2ae;font-size:14px;cursor:pointer;display:flex;align-items:center;justify-content:center;backdrop-filter:blur(8px);transition:all .15s}
 .me-theme-btn:hover{color:#e8c879;border-color:rgba(232,200,121,.3)}
 
+
+.me-progress{position:absolute;top:0;left:0;right:0;height:2px;z-index:60;transition:opacity .4s}
+.me-progress__fill{height:100%;background:linear-gradient(90deg,#e8c879,#e0813f,#e8c879);background-size:200% 100%;animation:meProgressFlow 1.5s linear infinite;width:0%;transition:width .3s}
+@keyframes meProgressFlow{0%{background-position:200% 0}100%{background-position:-200% 0}}
+
 @media(min-width:640px){.me-life{display:block}}
 
 
@@ -428,6 +443,11 @@ const MapEngine = (function() {
 
 .me-theme-btn{position:absolute;top:10px;right:42px;z-index:15;width:28px;height:28px;border-radius:6px;border:1px solid rgba(255,255,255,.1);background:rgba(0,0,0,.5);color:#9aa2ae;font-size:14px;cursor:pointer;display:flex;align-items:center;justify-content:center;backdrop-filter:blur(8px);transition:all .15s}
 .me-theme-btn:hover{color:#e8c879;border-color:rgba(232,200,121,.3)}
+
+
+.me-progress{position:absolute;top:0;left:0;right:0;height:2px;z-index:60;transition:opacity .4s}
+.me-progress__fill{height:100%;background:linear-gradient(90deg,#e8c879,#e0813f,#e8c879);background-size:200% 100%;animation:meProgressFlow 1.5s linear infinite;width:0%;transition:width .3s}
+@keyframes meProgressFlow{0%{background-position:200% 0}100%{background-position:-200% 0}}
 
 @media(min-width:640px){.me-minimap{width:170px;height:128px;bottom:12px;right:60px}}
 
@@ -464,6 +484,11 @@ const MapEngine = (function() {
 .me-theme-btn{position:absolute;top:10px;right:42px;z-index:15;width:28px;height:28px;border-radius:6px;border:1px solid rgba(255,255,255,.1);background:rgba(0,0,0,.5);color:#9aa2ae;font-size:14px;cursor:pointer;display:flex;align-items:center;justify-content:center;backdrop-filter:blur(8px);transition:all .15s}
 .me-theme-btn:hover{color:#e8c879;border-color:rgba(232,200,121,.3)}
 
+
+.me-progress{position:absolute;top:0;left:0;right:0;height:2px;z-index:60;transition:opacity .4s}
+.me-progress__fill{height:100%;background:linear-gradient(90deg,#e8c879,#e0813f,#e8c879);background-size:200% 100%;animation:meProgressFlow 1.5s linear infinite;width:0%;transition:width .3s}
+@keyframes meProgressFlow{0%{background-position:200% 0}100%{background-position:-200% 0}}
+
 @media(min-width:640px){.me-life{display:block}}
 
 
@@ -473,6 +498,11 @@ const MapEngine = (function() {
 
 .me-theme-btn{position:absolute;top:10px;right:42px;z-index:15;width:28px;height:28px;border-radius:6px;border:1px solid rgba(255,255,255,.1);background:rgba(0,0,0,.5);color:#9aa2ae;font-size:14px;cursor:pointer;display:flex;align-items:center;justify-content:center;backdrop-filter:blur(8px);transition:all .15s}
 .me-theme-btn:hover{color:#e8c879;border-color:rgba(232,200,121,.3)}
+
+
+.me-progress{position:absolute;top:0;left:0;right:0;height:2px;z-index:60;transition:opacity .4s}
+.me-progress__fill{height:100%;background:linear-gradient(90deg,#e8c879,#e0813f,#e8c879);background-size:200% 100%;animation:meProgressFlow 1.5s linear infinite;width:0%;transition:width .3s}
+@keyframes meProgressFlow{0%{background-position:200% 0}100%{background-position:-200% 0}}
 
 @media(min-width:640px){.me-panel__resize{display:block}}
 
@@ -494,6 +524,11 @@ const MapEngine = (function() {
 .me-theme-btn{position:absolute;top:10px;right:42px;z-index:15;width:28px;height:28px;border-radius:6px;border:1px solid rgba(255,255,255,.1);background:rgba(0,0,0,.5);color:#9aa2ae;font-size:14px;cursor:pointer;display:flex;align-items:center;justify-content:center;backdrop-filter:blur(8px);transition:all .15s}
 .me-theme-btn:hover{color:#e8c879;border-color:rgba(232,200,121,.3)}
 
+
+.me-progress{position:absolute;top:0;left:0;right:0;height:2px;z-index:60;transition:opacity .4s}
+.me-progress__fill{height:100%;background:linear-gradient(90deg,#e8c879,#e0813f,#e8c879);background-size:200% 100%;animation:meProgressFlow 1.5s linear infinite;width:0%;transition:width .3s}
+@keyframes meProgressFlow{0%{background-position:200% 0}100%{background-position:-200% 0}}
+
 @media(min-width:640px){.me-life{display:block}}
 
 
@@ -503,6 +538,11 @@ const MapEngine = (function() {
 
 .me-theme-btn{position:absolute;top:10px;right:42px;z-index:15;width:28px;height:28px;border-radius:6px;border:1px solid rgba(255,255,255,.1);background:rgba(0,0,0,.5);color:#9aa2ae;font-size:14px;cursor:pointer;display:flex;align-items:center;justify-content:center;backdrop-filter:blur(8px);transition:all .15s}
 .me-theme-btn:hover{color:#e8c879;border-color:rgba(232,200,121,.3)}
+
+
+.me-progress{position:absolute;top:0;left:0;right:0;height:2px;z-index:60;transition:opacity .4s}
+.me-progress__fill{height:100%;background:linear-gradient(90deg,#e8c879,#e0813f,#e8c879);background-size:200% 100%;animation:meProgressFlow 1.5s linear infinite;width:0%;transition:width .3s}
+@keyframes meProgressFlow{0%{background-position:200% 0}100%{background-position:-200% 0}}
 
 @media(min-width:640px){.me-intro__title{font-size:38px}.me-intro__he{font-size:20px}}
 
@@ -575,6 +615,11 @@ const MapEngine = (function() {
 .me-theme-btn{position:absolute;top:10px;right:42px;z-index:15;width:28px;height:28px;border-radius:6px;border:1px solid rgba(255,255,255,.1);background:rgba(0,0,0,.5);color:#9aa2ae;font-size:14px;cursor:pointer;display:flex;align-items:center;justify-content:center;backdrop-filter:blur(8px);transition:all .15s}
 .me-theme-btn:hover{color:#e8c879;border-color:rgba(232,200,121,.3)}
 
+
+.me-progress{position:absolute;top:0;left:0;right:0;height:2px;z-index:60;transition:opacity .4s}
+.me-progress__fill{height:100%;background:linear-gradient(90deg,#e8c879,#e0813f,#e8c879);background-size:200% 100%;animation:meProgressFlow 1.5s linear infinite;width:0%;transition:width .3s}
+@keyframes meProgressFlow{0%{background-position:200% 0}100%{background-position:-200% 0}}
+
 @media(min-width:640px){.me-life{display:block}}
 
 
@@ -584,6 +629,11 @@ const MapEngine = (function() {
 
 .me-theme-btn{position:absolute;top:10px;right:42px;z-index:15;width:28px;height:28px;border-radius:6px;border:1px solid rgba(255,255,255,.1);background:rgba(0,0,0,.5);color:#9aa2ae;font-size:14px;cursor:pointer;display:flex;align-items:center;justify-content:center;backdrop-filter:blur(8px);transition:all .15s}
 .me-theme-btn:hover{color:#e8c879;border-color:rgba(232,200,121,.3)}
+
+
+.me-progress{position:absolute;top:0;left:0;right:0;height:2px;z-index:60;transition:opacity .4s}
+.me-progress__fill{height:100%;background:linear-gradient(90deg,#e8c879,#e0813f,#e8c879);background-size:200% 100%;animation:meProgressFlow 1.5s linear infinite;width:0%;transition:width .3s}
+@keyframes meProgressFlow{0%{background-position:200% 0}100%{background-position:-200% 0}}
 
 @media(min-width:640px){.me-panel__resize{display:block}}
 
@@ -605,6 +655,11 @@ const MapEngine = (function() {
 .me-theme-btn{position:absolute;top:10px;right:42px;z-index:15;width:28px;height:28px;border-radius:6px;border:1px solid rgba(255,255,255,.1);background:rgba(0,0,0,.5);color:#9aa2ae;font-size:14px;cursor:pointer;display:flex;align-items:center;justify-content:center;backdrop-filter:blur(8px);transition:all .15s}
 .me-theme-btn:hover{color:#e8c879;border-color:rgba(232,200,121,.3)}
 
+
+.me-progress{position:absolute;top:0;left:0;right:0;height:2px;z-index:60;transition:opacity .4s}
+.me-progress__fill{height:100%;background:linear-gradient(90deg,#e8c879,#e0813f,#e8c879);background-size:200% 100%;animation:meProgressFlow 1.5s linear infinite;width:0%;transition:width .3s}
+@keyframes meProgressFlow{0%{background-position:200% 0}100%{background-position:-200% 0}}
+
 @media(min-width:640px){.me-life{display:block}}
 
 
@@ -614,6 +669,11 @@ const MapEngine = (function() {
 
 .me-theme-btn{position:absolute;top:10px;right:42px;z-index:15;width:28px;height:28px;border-radius:6px;border:1px solid rgba(255,255,255,.1);background:rgba(0,0,0,.5);color:#9aa2ae;font-size:14px;cursor:pointer;display:flex;align-items:center;justify-content:center;backdrop-filter:blur(8px);transition:all .15s}
 .me-theme-btn:hover{color:#e8c879;border-color:rgba(232,200,121,.3)}
+
+
+.me-progress{position:absolute;top:0;left:0;right:0;height:2px;z-index:60;transition:opacity .4s}
+.me-progress__fill{height:100%;background:linear-gradient(90deg,#e8c879,#e0813f,#e8c879);background-size:200% 100%;animation:meProgressFlow 1.5s linear infinite;width:0%;transition:width .3s}
+@keyframes meProgressFlow{0%{background-position:200% 0}100%{background-position:-200% 0}}
 
 @media(min-width:640px){.me-minimap{width:170px;height:128px;bottom:12px;right:60px}}
 
@@ -650,6 +710,11 @@ const MapEngine = (function() {
 .me-theme-btn{position:absolute;top:10px;right:42px;z-index:15;width:28px;height:28px;border-radius:6px;border:1px solid rgba(255,255,255,.1);background:rgba(0,0,0,.5);color:#9aa2ae;font-size:14px;cursor:pointer;display:flex;align-items:center;justify-content:center;backdrop-filter:blur(8px);transition:all .15s}
 .me-theme-btn:hover{color:#e8c879;border-color:rgba(232,200,121,.3)}
 
+
+.me-progress{position:absolute;top:0;left:0;right:0;height:2px;z-index:60;transition:opacity .4s}
+.me-progress__fill{height:100%;background:linear-gradient(90deg,#e8c879,#e0813f,#e8c879);background-size:200% 100%;animation:meProgressFlow 1.5s linear infinite;width:0%;transition:width .3s}
+@keyframes meProgressFlow{0%{background-position:200% 0}100%{background-position:-200% 0}}
+
 @media(min-width:640px){.me-life{display:block}}
 
 
@@ -659,6 +724,11 @@ const MapEngine = (function() {
 
 .me-theme-btn{position:absolute;top:10px;right:42px;z-index:15;width:28px;height:28px;border-radius:6px;border:1px solid rgba(255,255,255,.1);background:rgba(0,0,0,.5);color:#9aa2ae;font-size:14px;cursor:pointer;display:flex;align-items:center;justify-content:center;backdrop-filter:blur(8px);transition:all .15s}
 .me-theme-btn:hover{color:#e8c879;border-color:rgba(232,200,121,.3)}
+
+
+.me-progress{position:absolute;top:0;left:0;right:0;height:2px;z-index:60;transition:opacity .4s}
+.me-progress__fill{height:100%;background:linear-gradient(90deg,#e8c879,#e0813f,#e8c879);background-size:200% 100%;animation:meProgressFlow 1.5s linear infinite;width:0%;transition:width .3s}
+@keyframes meProgressFlow{0%{background-position:200% 0}100%{background-position:-200% 0}}
 
 @media(min-width:640px){.me-panel__resize{display:block}}
 
@@ -680,6 +750,11 @@ const MapEngine = (function() {
 .me-theme-btn{position:absolute;top:10px;right:42px;z-index:15;width:28px;height:28px;border-radius:6px;border:1px solid rgba(255,255,255,.1);background:rgba(0,0,0,.5);color:#9aa2ae;font-size:14px;cursor:pointer;display:flex;align-items:center;justify-content:center;backdrop-filter:blur(8px);transition:all .15s}
 .me-theme-btn:hover{color:#e8c879;border-color:rgba(232,200,121,.3)}
 
+
+.me-progress{position:absolute;top:0;left:0;right:0;height:2px;z-index:60;transition:opacity .4s}
+.me-progress__fill{height:100%;background:linear-gradient(90deg,#e8c879,#e0813f,#e8c879);background-size:200% 100%;animation:meProgressFlow 1.5s linear infinite;width:0%;transition:width .3s}
+@keyframes meProgressFlow{0%{background-position:200% 0}100%{background-position:-200% 0}}
+
 @media(min-width:640px){.me-life{display:block}}
 
 
@@ -689,6 +764,11 @@ const MapEngine = (function() {
 
 .me-theme-btn{position:absolute;top:10px;right:42px;z-index:15;width:28px;height:28px;border-radius:6px;border:1px solid rgba(255,255,255,.1);background:rgba(0,0,0,.5);color:#9aa2ae;font-size:14px;cursor:pointer;display:flex;align-items:center;justify-content:center;backdrop-filter:blur(8px);transition:all .15s}
 .me-theme-btn:hover{color:#e8c879;border-color:rgba(232,200,121,.3)}
+
+
+.me-progress{position:absolute;top:0;left:0;right:0;height:2px;z-index:60;transition:opacity .4s}
+.me-progress__fill{height:100%;background:linear-gradient(90deg,#e8c879,#e0813f,#e8c879);background-size:200% 100%;animation:meProgressFlow 1.5s linear infinite;width:0%;transition:width .3s}
+@keyframes meProgressFlow{0%{background-position:200% 0}100%{background-position:-200% 0}}
 
 @media(min-width:640px){.me-legend{display:block}}
 .me-search{position:absolute;top:8px;right:48px;z-index:15;width:160px;padding:5px 10px;border-radius:8px;border:1px solid rgba(255,255,255,.1);background:rgba(0,0,0,.5);color:#e9e4d6;font-size:11px;font-family:inherit;backdrop-filter:blur(8px);outline:none;transition:border-color .2s}
@@ -789,6 +869,11 @@ const MapEngine = (function() {
 .me-theme-btn{position:absolute;top:10px;right:42px;z-index:15;width:28px;height:28px;border-radius:6px;border:1px solid rgba(255,255,255,.1);background:rgba(0,0,0,.5);color:#9aa2ae;font-size:14px;cursor:pointer;display:flex;align-items:center;justify-content:center;backdrop-filter:blur(8px);transition:all .15s}
 .me-theme-btn:hover{color:#e8c879;border-color:rgba(232,200,121,.3)}
 
+
+.me-progress{position:absolute;top:0;left:0;right:0;height:2px;z-index:60;transition:opacity .4s}
+.me-progress__fill{height:100%;background:linear-gradient(90deg,#e8c879,#e0813f,#e8c879);background-size:200% 100%;animation:meProgressFlow 1.5s linear infinite;width:0%;transition:width .3s}
+@keyframes meProgressFlow{0%{background-position:200% 0}100%{background-position:-200% 0}}
+
 @media(min-width:640px){.me-life{display:block}}
 
 
@@ -798,6 +883,11 @@ const MapEngine = (function() {
 
 .me-theme-btn{position:absolute;top:10px;right:42px;z-index:15;width:28px;height:28px;border-radius:6px;border:1px solid rgba(255,255,255,.1);background:rgba(0,0,0,.5);color:#9aa2ae;font-size:14px;cursor:pointer;display:flex;align-items:center;justify-content:center;backdrop-filter:blur(8px);transition:all .15s}
 .me-theme-btn:hover{color:#e8c879;border-color:rgba(232,200,121,.3)}
+
+
+.me-progress{position:absolute;top:0;left:0;right:0;height:2px;z-index:60;transition:opacity .4s}
+.me-progress__fill{height:100%;background:linear-gradient(90deg,#e8c879,#e0813f,#e8c879);background-size:200% 100%;animation:meProgressFlow 1.5s linear infinite;width:0%;transition:width .3s}
+@keyframes meProgressFlow{0%{background-position:200% 0}100%{background-position:-200% 0}}
 
 @media(min-width:640px){.me-panel__resize{display:block}}
 
@@ -819,6 +909,11 @@ const MapEngine = (function() {
 .me-theme-btn{position:absolute;top:10px;right:42px;z-index:15;width:28px;height:28px;border-radius:6px;border:1px solid rgba(255,255,255,.1);background:rgba(0,0,0,.5);color:#9aa2ae;font-size:14px;cursor:pointer;display:flex;align-items:center;justify-content:center;backdrop-filter:blur(8px);transition:all .15s}
 .me-theme-btn:hover{color:#e8c879;border-color:rgba(232,200,121,.3)}
 
+
+.me-progress{position:absolute;top:0;left:0;right:0;height:2px;z-index:60;transition:opacity .4s}
+.me-progress__fill{height:100%;background:linear-gradient(90deg,#e8c879,#e0813f,#e8c879);background-size:200% 100%;animation:meProgressFlow 1.5s linear infinite;width:0%;transition:width .3s}
+@keyframes meProgressFlow{0%{background-position:200% 0}100%{background-position:-200% 0}}
+
 @media(min-width:640px){.me-life{display:block}}
 
 
@@ -828,6 +923,11 @@ const MapEngine = (function() {
 
 .me-theme-btn{position:absolute;top:10px;right:42px;z-index:15;width:28px;height:28px;border-radius:6px;border:1px solid rgba(255,255,255,.1);background:rgba(0,0,0,.5);color:#9aa2ae;font-size:14px;cursor:pointer;display:flex;align-items:center;justify-content:center;backdrop-filter:blur(8px);transition:all .15s}
 .me-theme-btn:hover{color:#e8c879;border-color:rgba(232,200,121,.3)}
+
+
+.me-progress{position:absolute;top:0;left:0;right:0;height:2px;z-index:60;transition:opacity .4s}
+.me-progress__fill{height:100%;background:linear-gradient(90deg,#e8c879,#e0813f,#e8c879);background-size:200% 100%;animation:meProgressFlow 1.5s linear infinite;width:0%;transition:width .3s}
+@keyframes meProgressFlow{0%{background-position:200% 0}100%{background-position:-200% 0}}
 
 @media(min-width:640px){.me-minimap{width:170px;height:128px;bottom:12px;right:60px}}
 
@@ -864,6 +964,11 @@ const MapEngine = (function() {
 .me-theme-btn{position:absolute;top:10px;right:42px;z-index:15;width:28px;height:28px;border-radius:6px;border:1px solid rgba(255,255,255,.1);background:rgba(0,0,0,.5);color:#9aa2ae;font-size:14px;cursor:pointer;display:flex;align-items:center;justify-content:center;backdrop-filter:blur(8px);transition:all .15s}
 .me-theme-btn:hover{color:#e8c879;border-color:rgba(232,200,121,.3)}
 
+
+.me-progress{position:absolute;top:0;left:0;right:0;height:2px;z-index:60;transition:opacity .4s}
+.me-progress__fill{height:100%;background:linear-gradient(90deg,#e8c879,#e0813f,#e8c879);background-size:200% 100%;animation:meProgressFlow 1.5s linear infinite;width:0%;transition:width .3s}
+@keyframes meProgressFlow{0%{background-position:200% 0}100%{background-position:-200% 0}}
+
 @media(min-width:640px){.me-life{display:block}}
 
 
@@ -873,6 +978,11 @@ const MapEngine = (function() {
 
 .me-theme-btn{position:absolute;top:10px;right:42px;z-index:15;width:28px;height:28px;border-radius:6px;border:1px solid rgba(255,255,255,.1);background:rgba(0,0,0,.5);color:#9aa2ae;font-size:14px;cursor:pointer;display:flex;align-items:center;justify-content:center;backdrop-filter:blur(8px);transition:all .15s}
 .me-theme-btn:hover{color:#e8c879;border-color:rgba(232,200,121,.3)}
+
+
+.me-progress{position:absolute;top:0;left:0;right:0;height:2px;z-index:60;transition:opacity .4s}
+.me-progress__fill{height:100%;background:linear-gradient(90deg,#e8c879,#e0813f,#e8c879);background-size:200% 100%;animation:meProgressFlow 1.5s linear infinite;width:0%;transition:width .3s}
+@keyframes meProgressFlow{0%{background-position:200% 0}100%{background-position:-200% 0}}
 
 @media(min-width:640px){.me-panel__resize{display:block}}
 
@@ -894,6 +1004,11 @@ const MapEngine = (function() {
 .me-theme-btn{position:absolute;top:10px;right:42px;z-index:15;width:28px;height:28px;border-radius:6px;border:1px solid rgba(255,255,255,.1);background:rgba(0,0,0,.5);color:#9aa2ae;font-size:14px;cursor:pointer;display:flex;align-items:center;justify-content:center;backdrop-filter:blur(8px);transition:all .15s}
 .me-theme-btn:hover{color:#e8c879;border-color:rgba(232,200,121,.3)}
 
+
+.me-progress{position:absolute;top:0;left:0;right:0;height:2px;z-index:60;transition:opacity .4s}
+.me-progress__fill{height:100%;background:linear-gradient(90deg,#e8c879,#e0813f,#e8c879);background-size:200% 100%;animation:meProgressFlow 1.5s linear infinite;width:0%;transition:width .3s}
+@keyframes meProgressFlow{0%{background-position:200% 0}100%{background-position:-200% 0}}
+
 @media(min-width:640px){.me-life{display:block}}
 
 
@@ -903,6 +1018,11 @@ const MapEngine = (function() {
 
 .me-theme-btn{position:absolute;top:10px;right:42px;z-index:15;width:28px;height:28px;border-radius:6px;border:1px solid rgba(255,255,255,.1);background:rgba(0,0,0,.5);color:#9aa2ae;font-size:14px;cursor:pointer;display:flex;align-items:center;justify-content:center;backdrop-filter:blur(8px);transition:all .15s}
 .me-theme-btn:hover{color:#e8c879;border-color:rgba(232,200,121,.3)}
+
+
+.me-progress{position:absolute;top:0;left:0;right:0;height:2px;z-index:60;transition:opacity .4s}
+.me-progress__fill{height:100%;background:linear-gradient(90deg,#e8c879,#e0813f,#e8c879);background-size:200% 100%;animation:meProgressFlow 1.5s linear infinite;width:0%;transition:width .3s}
+@keyframes meProgressFlow{0%{background-position:200% 0}100%{background-position:-200% 0}}
 
 @media(min-width:640px){.me-intro__title{font-size:38px}.me-intro__he{font-size:20px}}
 
@@ -975,6 +1095,11 @@ const MapEngine = (function() {
 .me-theme-btn{position:absolute;top:10px;right:42px;z-index:15;width:28px;height:28px;border-radius:6px;border:1px solid rgba(255,255,255,.1);background:rgba(0,0,0,.5);color:#9aa2ae;font-size:14px;cursor:pointer;display:flex;align-items:center;justify-content:center;backdrop-filter:blur(8px);transition:all .15s}
 .me-theme-btn:hover{color:#e8c879;border-color:rgba(232,200,121,.3)}
 
+
+.me-progress{position:absolute;top:0;left:0;right:0;height:2px;z-index:60;transition:opacity .4s}
+.me-progress__fill{height:100%;background:linear-gradient(90deg,#e8c879,#e0813f,#e8c879);background-size:200% 100%;animation:meProgressFlow 1.5s linear infinite;width:0%;transition:width .3s}
+@keyframes meProgressFlow{0%{background-position:200% 0}100%{background-position:-200% 0}}
+
 @media(min-width:640px){.me-life{display:block}}
 
 
@@ -984,6 +1109,11 @@ const MapEngine = (function() {
 
 .me-theme-btn{position:absolute;top:10px;right:42px;z-index:15;width:28px;height:28px;border-radius:6px;border:1px solid rgba(255,255,255,.1);background:rgba(0,0,0,.5);color:#9aa2ae;font-size:14px;cursor:pointer;display:flex;align-items:center;justify-content:center;backdrop-filter:blur(8px);transition:all .15s}
 .me-theme-btn:hover{color:#e8c879;border-color:rgba(232,200,121,.3)}
+
+
+.me-progress{position:absolute;top:0;left:0;right:0;height:2px;z-index:60;transition:opacity .4s}
+.me-progress__fill{height:100%;background:linear-gradient(90deg,#e8c879,#e0813f,#e8c879);background-size:200% 100%;animation:meProgressFlow 1.5s linear infinite;width:0%;transition:width .3s}
+@keyframes meProgressFlow{0%{background-position:200% 0}100%{background-position:-200% 0}}
 
 @media(min-width:640px){.me-panel__resize{display:block}}
 
@@ -1005,6 +1135,11 @@ const MapEngine = (function() {
 .me-theme-btn{position:absolute;top:10px;right:42px;z-index:15;width:28px;height:28px;border-radius:6px;border:1px solid rgba(255,255,255,.1);background:rgba(0,0,0,.5);color:#9aa2ae;font-size:14px;cursor:pointer;display:flex;align-items:center;justify-content:center;backdrop-filter:blur(8px);transition:all .15s}
 .me-theme-btn:hover{color:#e8c879;border-color:rgba(232,200,121,.3)}
 
+
+.me-progress{position:absolute;top:0;left:0;right:0;height:2px;z-index:60;transition:opacity .4s}
+.me-progress__fill{height:100%;background:linear-gradient(90deg,#e8c879,#e0813f,#e8c879);background-size:200% 100%;animation:meProgressFlow 1.5s linear infinite;width:0%;transition:width .3s}
+@keyframes meProgressFlow{0%{background-position:200% 0}100%{background-position:-200% 0}}
+
 @media(min-width:640px){.me-life{display:block}}
 
 
@@ -1014,6 +1149,11 @@ const MapEngine = (function() {
 
 .me-theme-btn{position:absolute;top:10px;right:42px;z-index:15;width:28px;height:28px;border-radius:6px;border:1px solid rgba(255,255,255,.1);background:rgba(0,0,0,.5);color:#9aa2ae;font-size:14px;cursor:pointer;display:flex;align-items:center;justify-content:center;backdrop-filter:blur(8px);transition:all .15s}
 .me-theme-btn:hover{color:#e8c879;border-color:rgba(232,200,121,.3)}
+
+
+.me-progress{position:absolute;top:0;left:0;right:0;height:2px;z-index:60;transition:opacity .4s}
+.me-progress__fill{height:100%;background:linear-gradient(90deg,#e8c879,#e0813f,#e8c879);background-size:200% 100%;animation:meProgressFlow 1.5s linear infinite;width:0%;transition:width .3s}
+@keyframes meProgressFlow{0%{background-position:200% 0}100%{background-position:-200% 0}}
 
 @media(min-width:640px){.me-minimap{width:170px;height:128px;bottom:12px;right:60px}}
 
@@ -1050,6 +1190,11 @@ const MapEngine = (function() {
 .me-theme-btn{position:absolute;top:10px;right:42px;z-index:15;width:28px;height:28px;border-radius:6px;border:1px solid rgba(255,255,255,.1);background:rgba(0,0,0,.5);color:#9aa2ae;font-size:14px;cursor:pointer;display:flex;align-items:center;justify-content:center;backdrop-filter:blur(8px);transition:all .15s}
 .me-theme-btn:hover{color:#e8c879;border-color:rgba(232,200,121,.3)}
 
+
+.me-progress{position:absolute;top:0;left:0;right:0;height:2px;z-index:60;transition:opacity .4s}
+.me-progress__fill{height:100%;background:linear-gradient(90deg,#e8c879,#e0813f,#e8c879);background-size:200% 100%;animation:meProgressFlow 1.5s linear infinite;width:0%;transition:width .3s}
+@keyframes meProgressFlow{0%{background-position:200% 0}100%{background-position:-200% 0}}
+
 @media(min-width:640px){.me-life{display:block}}
 
 
@@ -1059,6 +1204,11 @@ const MapEngine = (function() {
 
 .me-theme-btn{position:absolute;top:10px;right:42px;z-index:15;width:28px;height:28px;border-radius:6px;border:1px solid rgba(255,255,255,.1);background:rgba(0,0,0,.5);color:#9aa2ae;font-size:14px;cursor:pointer;display:flex;align-items:center;justify-content:center;backdrop-filter:blur(8px);transition:all .15s}
 .me-theme-btn:hover{color:#e8c879;border-color:rgba(232,200,121,.3)}
+
+
+.me-progress{position:absolute;top:0;left:0;right:0;height:2px;z-index:60;transition:opacity .4s}
+.me-progress__fill{height:100%;background:linear-gradient(90deg,#e8c879,#e0813f,#e8c879);background-size:200% 100%;animation:meProgressFlow 1.5s linear infinite;width:0%;transition:width .3s}
+@keyframes meProgressFlow{0%{background-position:200% 0}100%{background-position:-200% 0}}
 
 @media(min-width:640px){.me-panel__resize{display:block}}
 
@@ -1080,6 +1230,11 @@ const MapEngine = (function() {
 .me-theme-btn{position:absolute;top:10px;right:42px;z-index:15;width:28px;height:28px;border-radius:6px;border:1px solid rgba(255,255,255,.1);background:rgba(0,0,0,.5);color:#9aa2ae;font-size:14px;cursor:pointer;display:flex;align-items:center;justify-content:center;backdrop-filter:blur(8px);transition:all .15s}
 .me-theme-btn:hover{color:#e8c879;border-color:rgba(232,200,121,.3)}
 
+
+.me-progress{position:absolute;top:0;left:0;right:0;height:2px;z-index:60;transition:opacity .4s}
+.me-progress__fill{height:100%;background:linear-gradient(90deg,#e8c879,#e0813f,#e8c879);background-size:200% 100%;animation:meProgressFlow 1.5s linear infinite;width:0%;transition:width .3s}
+@keyframes meProgressFlow{0%{background-position:200% 0}100%{background-position:-200% 0}}
+
 @media(min-width:640px){.me-life{display:block}}
 
 
@@ -1089,6 +1244,11 @@ const MapEngine = (function() {
 
 .me-theme-btn{position:absolute;top:10px;right:42px;z-index:15;width:28px;height:28px;border-radius:6px;border:1px solid rgba(255,255,255,.1);background:rgba(0,0,0,.5);color:#9aa2ae;font-size:14px;cursor:pointer;display:flex;align-items:center;justify-content:center;backdrop-filter:blur(8px);transition:all .15s}
 .me-theme-btn:hover{color:#e8c879;border-color:rgba(232,200,121,.3)}
+
+
+.me-progress{position:absolute;top:0;left:0;right:0;height:2px;z-index:60;transition:opacity .4s}
+.me-progress__fill{height:100%;background:linear-gradient(90deg,#e8c879,#e0813f,#e8c879);background-size:200% 100%;animation:meProgressFlow 1.5s linear infinite;width:0%;transition:width .3s}
+@keyframes meProgressFlow{0%{background-position:200% 0}100%{background-position:-200% 0}}
 
 @media(min-width:640px){
   .me-title{font-size:28px}
@@ -1421,7 +1581,7 @@ container.appendChild(panel);
         g.addEventListener('dblclick',(e)=>{e.preventDefault();e.stopPropagation();flyTo(place.x,place.y,Math.min(view.w,450),600);});
       }
         
-        const hit=document.createElementNS('http://www.w3.org/2000/svg','circle');hit.setAttribute('r','16');hit.setAttribute('fill','transparent');
+        const hit=document.createElementNS('http://www.w3.org/2000/svg','circle');hit.setAttribute('r','20');hit.setAttribute('fill','transparent');hit.setAttribute('stroke','transparent');hit.setAttribute('stroke-width','8');
         g.appendChild(hit);
         const dot=document.createElementNS('http://www.w3.org/2000/svg','circle');
         dot.setAttribute('r',isActive?'8':'5');dot.setAttribute('fill',isActive?'#fff':color);
@@ -1803,6 +1963,22 @@ container.appendChild(panel);
       _tm(() => { hint.style.opacity = '1'; _tm(() => { hint.style.opacity = '0'; }, 4000); }, 2000);
     }
     
+    
+    // Swipe between places (mobile)
+    let swipeStartX = 0;
+    panel.addEventListener('touchstart', e => {
+      if (e.target.closest('button,a,.me-tab')) return;
+      swipeStartX = e.touches[0].clientX;
+    }, {passive: true});
+    panel.addEventListener('touchend', e => {
+      if (!activePlaceId) return;
+      const dx = (e.changedTouches[0]?.clientX || 0) - swipeStartX;
+      if (Math.abs(dx) < 60) return;
+      const vis = visiblePlaces(); const idx = placeIndexInStory();
+      if (dx < -60 && idx < vis.length - 1) open(vis[idx+1].id);
+      if (dx > 60 && idx > 0) open(vis[idx-1].id);
+    }, {passive: true});
+
     // Touch swipe-to-close on mobile
     let touchStartY = 0;
     _on(panel,'touchstart', (e) => {
@@ -1894,6 +2070,25 @@ container.appendChild(panel);
       });
     }
 
+    
+    // Loading progress
+    const progressBar = document.createElement('div');
+    progressBar.className = 'me-progress';
+    progressBar.innerHTML = '<div class="me-progress__fill"></div>';
+    container.appendChild(progressBar);
+    let loadProgress = 0;
+    const progressInterval = setInterval(() => {
+      loadProgress += Math.random() * 30;
+      if (loadProgress > 90) loadProgress = 90;
+      progressBar.querySelector('.me-progress__fill').style.width = loadProgress + '%';
+    }, 200);
+    // Complete on markers rendered
+    setTimeout(() => {
+      clearInterval(progressInterval);
+      progressBar.querySelector('.me-progress__fill').style.width = '100%';
+      setTimeout(() => { progressBar.style.opacity = '0'; setTimeout(() => progressBar.remove(), 400); }, 300);
+    }, 800);
+
     // ── Loading state ──
     const loadingEl=document.createElement('div');loadingEl.className='me-loading';
     loadingEl.innerHTML='<div class="me-loading__spinner"></div><div class="me-loading__text">Загрузка карты…</div>';
@@ -1933,6 +2128,32 @@ container.appendChild(panel);
     const first=(route.places||[])[0];
     if(first)_tm(()=>flyTo(first.x,first.y,Math.min(view.w,900)),200);
     loadFromHash();
+
+    // Auto-save last place to localStorage
+    function saveState() {
+      try {
+        const st = { place: activePlaceId, story: activeStoryId };
+        localStorage.setItem('me-map-state-' + (route.meta?.id || 'map'), JSON.stringify(st));
+      } catch(e) {}
+    }
+    function loadSavedState() {
+      try {
+        const saved = localStorage.getItem('me-map-state-' + (route.meta?.id || 'map'));
+        if (saved) {
+          const st = JSON.parse(saved);
+          if (st.story) { activeStoryId = st.story; updateHash(); }
+          if (st.place) {
+            const p = (route.places||[]).find(pl => pl.id === st.place);
+            if (p) setTimeout(() => open(p.id), 900);
+          }
+        }
+      } catch(e) {}
+    }
+    // Save on every place open
+    const origOpen = open;
+    open = function(id) { origOpen(id); saveState(); return (route.places||[]).find(p => p.id === id); };
+    // Load saved state after init
+    setTimeout(loadSavedState, 1000);
 
     // ── Instance ──
     const instance={
