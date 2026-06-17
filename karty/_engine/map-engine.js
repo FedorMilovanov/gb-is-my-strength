@@ -1,5 +1,5 @@
 /**
- * map-engine.js v0.30 — reusable biblical map rendering engine. SVG filters + animation polish.
+ * map-engine.js v0.31 — reusable biblical map rendering engine. SVG filters + animation polish.
  *
  * PUBLIC API:
  *   // Data layer (v0.2):
@@ -343,7 +343,7 @@ const MapEngine = (function() {
 
 /* Zoom */
 .me-zoom{position:absolute;top:50%;right:8px;transform:translateY(-50%);z-index:10;display:flex;flex-direction:column;gap:4px}
-.me-zoom-btn{width:32px;height:32px;border-radius:8px;border:1px solid rgba(255,255,255,.1);background:rgba(0,0,0,.6);color:#9aa2ae;font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center;backdrop-filter:blur(8px);transition:all .15s;font-family:inherit;line-height:1}
+.me-zoom-btn{width:32px;height:32px;border-radius:8px;border:1px solid rgba(255,255,255,.1);background:rgba(0,0,0,.6);color:#9aa2ae;font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center;backdrop-filter:blur(8px);transition:all .15s;font-family:inherit;line-height:1;user-select:none;-webkit-user-select:none}.me-zoom-btn:active{background:rgba(232,200,121,.2);border-color:rgba(232,200,121,.5);color:#e8c879;transform:scale(.92)}
 .me-zoom-btn:hover{color:#e8c879;border-color:rgba(232,200,121,.4);background:rgba(0,0,0,.8)}
 
 /* Tour */
@@ -355,8 +355,8 @@ const MapEngine = (function() {
 .me-share-btn:hover{color:#e8c879;border-color:rgba(232,200,121,.3)}
 
 /* Legend */
-.me-legend{position:absolute;bottom:40px;left:8px;z-index:10;padding:8px 12px;border-radius:10px;background:rgba(0,0,0,.6);border:1px solid rgba(255,255,255,.1);backdrop-filter:blur(8px);font-size:10px;display:none;cursor:pointer;max-width:180px;transition:all .2s}
-.me-legend__title{color:#e8c879;font-weight:700;margin-bottom:4px;font-size:9px;letter-spacing:.08em;text-transform:uppercase}
+.me-legend{position:absolute;bottom:40px;left:8px;z-index:10;padding:8px 12px;border-radius:10px;background:rgba(0,0,0,.6);border:1px solid rgba(255,255,255,.1);backdrop-filter:blur(8px);font-size:10px;display:none;cursor:pointer;max-width:180px;transition:all .25s cubic-bezier(.4,0,.2,1);overflow:hidden;max-height:32px}.me-legend--expanded{max-height:300px;background:rgba(0,0,0,.8)}
+.me-legend__title{color:#e8c879;font-weight:700;margin-bottom:4px;font-size:9px;letter-spacing:.08em;text-transform:uppercase;display:flex;justify-content:space-between;align-items:center}.me-legend__arrow{display:inline-block;font-size:7px;transition:transform .25s ease}
 .me-legend__item{display:flex;align-items:center;gap:6px;color:#9aa2ae;margin:2px 0}
 .me-legend__dot{width:6px;height:6px;border-radius:50%;flex-shrink:0}
 
@@ -679,15 +679,28 @@ header.appendChild(shareBtn);
     const zoomControls=document.createElement('div');zoomControls.className='me-zoom';
     zoomControls.innerHTML='<button class="me-zoom-btn" data-zoom="in" title="Приблизить">+</button><button class="me-zoom-btn" data-zoom="out" title="Отдалить">−</button><button class="me-zoom-btn" data-zoom="reset" title="Сбросить">⌂</button>';
     container.appendChild(zoomControls);
-    _on(zoomControls.querySelector('[data-zoom=in]'),'click',()=>{
-      const cx=view.x+view.w/2,cy=view.y+view.h/2;
-      const nw=Math.max(cfg.minW,view.w*0.7);
-      flyTo(cx,cy,nw,300);
-    });
-    _on(zoomControls.querySelector('[data-zoom=out]'),'click',()=>{
-      const cx=view.x+view.w/2,cy=view.y+view.h/2;
-      const nw=Math.min(cfg.maxW,view.w*1.4);
-      flyTo(cx,cy,nw,300);
+    // Zoom with hold-to-repeat
+    let zoomRepeatTimer = null;
+    function startZoomRepeat(dir) {
+      const doZoom = () => {
+        if (zoomRepeatTimer === null) return;
+        const cx=view.x+view.w/2,cy=view.y+view.h/2;
+        const nw=dir==='in'?Math.max(cfg.minW,view.w*0.85):Math.min(cfg.maxW,view.w*1.15);
+        flyTo(cx,cy,nw,150);
+      };
+      doZoom();
+      zoomRepeatTimer = setInterval(doZoom, 120);
+    }
+    function stopZoomRepeat() { if (zoomRepeatTimer) { clearInterval(zoomRepeatTimer); zoomRepeatTimer = null; } }
+    ['in','out'].forEach(dir => {
+      const btn = zoomControls.querySelector('[data-zoom='+dir+']');
+      if (!btn) return;
+      _on(btn, 'mousedown', (e) => { e.preventDefault(); startZoomRepeat(dir); });
+      _on(btn, 'mouseup', stopZoomRepeat);
+      _on(btn, 'mouseleave', stopZoomRepeat);
+      _on(btn, 'touchstart', (e) => { e.preventDefault(); startZoomRepeat(dir); });
+      _on(btn, 'touchend', stopZoomRepeat);
+      _on(btn, 'click', (e) => { e.preventDefault(); }); // Prevent double-fire
     });
     _on(zoomControls.querySelector('[data-zoom=reset]'),'click',()=>{
       const initVp=route.meta?.viewport_init||{cx:cfg.W0/2,cy:cfg.H0/2,w:cfg.W0};
@@ -705,7 +718,16 @@ header.appendChild(shareBtn);
     // Legend
 const legend=document.createElement('div');legend.className='me-legend';
 const legendItems=(route.stages||[]).map((st,i)=>`<div class="me-legend__item"><span class="me-legend__dot" style="background:${STAGE_COLORS[i]}"></span>${st.t||''}</div>`).join('');
-legend.innerHTML=`<div class="me-legend__title">Этапы</div>${legendItems}`;
+legend.innerHTML=`<div class="me-legend__title">Этапы <span class="me-legend__arrow">▾</span></div>${legendItems}`;
+// Legend arrow rotation on expand
+const legendArrow = legend.querySelector('.me-legend__arrow');
+const legendObserver = new MutationObserver(() => {
+  if (legendArrow) {
+    legendArrow.style.transform = legend.classList.contains('me-legend--expanded') ? 'rotate(180deg)' : 'rotate(0deg)';
+    legendArrow.style.transition = 'transform .25s ease';
+  }
+});
+legendObserver.observe(legend, { attributes: true, attributeFilter: ['class'] });
 container.appendChild(legend);
 container.appendChild(panel);
 
@@ -1115,6 +1137,16 @@ container.appendChild(panel);
         });
       }
       if(place.x!==undefined&&place.y!==undefined)flyTo(place.x,place.y,Math.min(view.w,800));
+      // Auto-scroll timeline to active stage
+      const timelineTrack = document.querySelector('.me-timeline__track');
+      if (timelineTrack && typeof place.stage === 'number') {
+        const items = timelineTrack.querySelectorAll('.me-timeline__item');
+        items.forEach((el,i) => el.classList.toggle('me-timeline__item--active', i === place.stage));
+        const activeItem = items[place.stage];
+        if (activeItem) {
+          activeItem.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+        }
+      }
       // Highlight stage path for active place
       const activeStage = place.stage;
       const allPaths = pathsG.querySelectorAll('path');
@@ -1624,7 +1656,7 @@ container.appendChild(panel);
     getPanelModel,getPanelSections,getStoryState,getPlaceOrder,auditStoryDefinitions,
     // v0.3 rendering
     createMap,
-    version:'0.30.0',buildDate:'2026-06-17'
+    version:'0.31.0',buildDate:'2026-06-17'
   };
 })();
 
