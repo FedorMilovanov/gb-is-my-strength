@@ -37,7 +37,17 @@ export function loadLegacyShadowPage(filePath: string | URL): LegacyShadowPage {
   const styleLinks = [...headInner.matchAll(/<link[^>]+rel="stylesheet"[^>]*>/gi)].map((m) => m[0]).join('\n');
   const preloadLinks = [...headInner.matchAll(/<link[^>]+rel="preload"[^>]*>/gi)].map((m) => m[0]).join('\n');
   const scriptBlocks = [...headInner.matchAll(/<script\b[^>]*>([\s\S]*?)<\/script>/gi)].map((m) => m[0]).join('\n');
-  const headHtml = [preloadLinks, styleLinks, scriptBlocks].filter(Boolean).join('\n');
+  // Inline <style> blocks from <head> (critical for map pages whose entire
+  // CSS lives in <head> as a <style> element — without this, shadow-wrapped
+  // maps like /karty/avraam/ render completely unstyled).
+  const styleBlocks = [...headInner.matchAll(/<style\b[^>]*>[\s\S]*?<\/style>/gi)].map((m) => m[0]).join('\n');
+  // CSP <meta http-equiv="Content-Security-Policy"> — defense-in-depth must
+  // survive the shadow wrapper, otherwise whitelists for external map tiles /
+  // Wikimedia images / GSAP are silently dropped.
+  const cspMeta = [...headInner.matchAll(/<meta[^>]+http-equiv=["']Content-Security-Policy["'][^>]*>/gi)].map((m) => m[0]).join('\n');
+  // theme-color meta (some pages set dark/light variants differently).
+  const themeColorMetas = [...headInner.matchAll(/<meta[^>]+name=["']theme-color["'][^>]*>/gi)].map((m) => m[0]).join('\n');
+  const headHtml = [cspMeta, preloadLinks, styleLinks, styleBlocks, scriptBlocks, themeColorMetas].filter(Boolean).join('\n');
 
   return {
     title,

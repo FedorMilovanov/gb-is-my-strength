@@ -75,6 +75,14 @@ const {
       articleAuthor={articleAuthor}
       jsonLd={jsonLd}
     />
+    <!-- Core project CSS — loaded on every page so Astro-owned routes match
+         the legacy visual contract. Shadow-wrapped pages also receive their
+         legacy-extracted CSS (links + inline <style>) via headHtml below; any
+         overlap is the same file and is harmlessly deduped by the browser. -->
+    <link rel="stylesheet" href="/fonts/fonts.css" />
+    <link rel="stylesheet" href="/css/site.css" />
+    <link rel="stylesheet" href="/css/command-palette.css" />
+    <link rel="stylesheet" href="/css/mobile-hotfix.css" />
     {legacyStylesheets.map((href) => <link rel="stylesheet" href={href} />)}
     {headHtml && <Fragment set:html={headHtml} />}
   </head>
