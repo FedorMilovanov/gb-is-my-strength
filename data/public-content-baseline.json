@@ -338,6 +338,22 @@
       "h1": "Жизнь Иисуса Христа",
       "words": 5,
       "note": "JS-rendered"
+    },
+    {
+      "file": "karty/maccabim/index.html",
+      "url": "https://gospod-bog.ru/karty/maccabim/",
+      "title": "Межзаветный период · Маккавеи — интерактивная карта | Господь Бог — Сила Моя",
+      "h1": "Межзаветный период",
+      "words": 5,
+      "note": "JS-rendered"
+    },
+    {
+      "file": "karty/early-church/index.html",
+      "url": "https://gospod-bog.ru/karty/early-church/",
+      "title": "Ранняя Церковь · Деяния 1–12 — интерактивная карта | Господь Бог — Сила Моя",
+      "h1": "Ранняя Церковь",
+      "words": 5,
+      "note": "JS-rendered"
     }
   ]
 }
