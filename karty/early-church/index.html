@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover"/>
+<meta name="color-scheme" content="light dark"/>
+<title>Ранняя Церковь · Деяния 1–12 — интерактивная карта | Господь Бог — Сила Моя</title>
+<meta name="description" content="Ранняя Церковь: 11 мест, 4 этапа, 5 сюжетов. Пятидесятница, Пётр, Стефан, обращение Савла."/>
+<meta name="robots" content="index, follow, max-snippet:-1, max-image-preview:large"/>
+<meta name="author" content="Фёдор Милованов"/>
+<meta property="article:author" content="Фёдор Милованов"/>
+<link rel="canonical" href="https://gospod-bog.ru/karty/early-church/"/>
+<meta property="og:type" content="article"/>
+<meta property="og:title" content="Ранняя Церковь — интерактивная карта"/>
+<meta property="og:description" content="От Пятидесятницы до Антиохии: рождение Церкви, Пётр и Иоанн, Стефан, обращение Савла."/>
+<meta property="og:url" content="https://gospod-bog.ru/karty/early-church/"/>
+<meta property="og:image" content="https://gospod-bog.ru/images/og-karty-1200x630.webp"/>
+<meta property="og:image:width" content="1200"/><meta property="og:image:height" content="630"/>
+<meta property="og:image:type" content="image/webp"/>
+<meta property="og:site_name" content="Господь Бог — Сила Моя"/>
+<meta name="twitter:card" content="summary_large_image"/>
+<meta name="twitter:title" content="Ранняя Церковь — интерактивная карта"/>
+<meta name="twitter:image" content="https://gospod-bog.ru/images/og-karty-1200x630.webp"/>
+<script src="../_engine/map-engine.js"></script>
+<script type="application/ld+json">
+{"@context":"https://schema.org","@graph":[
+  {"@type":"WebPage","@id":"https://gospod-bog.ru/karty/early-church/#webpage","url":"https://gospod-bog.ru/karty/early-church/","name":"Ранняя Церковь — интерактивная карта","description":"От Пятидесятницы до Антиохии: рождение Церкви, Пётр и Иоанн, Стефан, обращение Савла.","inLanguage":"ru","isPartOf":{"@id":"https://gospod-bog.ru/#website"},"breadcrumb":{"@id":"https://gospod-bog.ru/karty/early-church/#breadcrumb"}},
+  {"@type":"BreadcrumbList","@id":"https://gospod-bog.ru/karty/early-church/#breadcrumb","itemListElement":[{"@type":"ListItem","position":1,"name":"Главная","item":"https://gospod-bog.ru/"},{"@type":"ListItem","position":2,"name":"Карты","item":"https://gospod-bog.ru/karty/"},{"@type":"ListItem","position":3,"name":"Ранняя Церковь","item":"https://gospod-bog.ru/karty/early-church/"}]}
+]}
+</script>
+</head>
+<body style="margin:0;background:#070a10">
+<h1 class="sr-only">Ранняя Церковь</h1>
+<div id="mapRoot" style="width:100vw;height:100dvh"></div>
+<script>
+(async function(){
+  const route = await (await fetch('./route.json')).json();
+  const map = MapEngine.createMap(document.getElementById('mapRoot'), route, {
+    backUrl: '../',
+    baseGeoUrl: '../_engine/base-geo.svg',
+    tourDelay: 3000
+  });
+})();
+</script>
+</body>
+</html>
