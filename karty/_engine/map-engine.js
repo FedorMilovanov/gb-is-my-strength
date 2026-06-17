@@ -1,5 +1,5 @@
 /**
- * map-engine.js v0.29 — reusable biblical map rendering engine. SVG filters + animation polish.
+ * map-engine.js v0.30 — reusable biblical map rendering engine. SVG filters + animation polish.
  *
  * PUBLIC API:
  *   // Data layer (v0.2):
@@ -311,6 +311,14 @@ const MapEngine = (function() {
 
 /* Photo */
 .me-photo-label{font-size:9px;color:rgba(154,162,174,.5);margin-top:3px;text-align:center}
+.me-photo-gallery{position:relative}
+.me-photo-slide{animation:mePhotoFadeIn .3s ease}
+.me-photo-slide img{max-width:100%;border-radius:6px;margin:0}
+@keyframes mePhotoFadeIn{from{opacity:0;transform:translateX(5px)}to{opacity:1;transform:translateX(0)}}
+.me-photo-nav{display:flex;justify-content:center;gap:6px;margin-top:8px;padding:4px 0}
+.me-photo-dot{width:7px;height:7px;border-radius:50%;background:rgba(255,255,255,.15);cursor:pointer;transition:all .2s}
+.me-photo-dot:hover{background:rgba(255,255,255,.3)}
+.me-photo-dot--active{background:#e8c879;transform:scale(1.3)}
 
 /* Nav */
 .me-nav{display:flex;align-items:center;padding:10px 16px;border-top:1px solid rgba(255,255,255,.08);gap:8px}
@@ -1012,6 +1020,11 @@ container.appendChild(panel);
       `;
       nav.querySelector('#me-prev')?.addEventListener('click',()=>{if(idx>0)open(vis[idx-1].id)});
       nav.querySelector('#me-next')?.addEventListener('click',()=>{if(idx<vis.length-1)open(vis[idx+1].id)});
+      // Clickable nav dots
+      nav.querySelectorAll('.me-nav__dot').forEach((dot,i) => {
+        dot.style.cursor = 'pointer';
+        dot.addEventListener('click', () => { if (i !== idx) open(vis[i].id); });
+      });
     }
 
     function renderTabContent(tab,place){
@@ -1034,10 +1047,43 @@ container.appendChild(panel);
           }).join('');
         }
       }else if(tab==='photos'&&place.photos){
-        content.innerHTML=place.photos.map(ph=>`
-          <div><img src="${esc(ph.thumb||ph.src)}" alt="${esc(ph.alt||ph.label||'')}" loading="lazy">
-          <div class="me-photo-label">${esc(ph.label||'')} · ${esc(ph.credit||'')}</div></div>
-        `).join('');
+        const photos = place.photos;
+        if (photos.length <= 1) {
+          content.innerHTML = photos.map(ph=>`
+            <div><img src="${esc(ph.thumb||ph.src)}" alt="${esc(ph.alt||ph.label||'')}" loading="lazy" class="me-clickable-photo" data-src="${esc(ph.src||'')}" data-label="${esc(ph.label||'')}" data-credit="${esc(ph.credit||'')}">
+            <div class="me-photo-label">${esc(ph.label||'')} · ${esc(ph.credit||'')}</div></div>
+          `).join('');
+          // Wire up click-to-enlarge
+          content.querySelectorAll('.me-clickable-photo').forEach(img => {
+            img.style.cursor = 'pointer';
+            img.addEventListener('click', () => {
+              const src = img.dataset.src;
+              const label = img.dataset.label;
+              const credit = img.dataset.credit;
+              if (src) openPhoto(src, label, credit);
+            });
+          });
+        } else {
+          // Multi-photo gallery with dots
+          const photosHtml = photos.map((ph,i) => `
+            <div class="me-photo-slide" style="display:${i===0?'block':'none'}">
+              <img src="${esc(ph.thumb||ph.src)}" alt="${esc(ph.alt||ph.label||'')}" loading="lazy">
+              <div class="me-photo-label">${esc(ph.label||'')} · ${esc(ph.credit||'')}</div>
+            </div>`).join('');
+          const dotsHtml = photos.map((_,i) => `
+            <span class="me-photo-dot${i===0?' me-photo-dot--active':''}" data-idx="${i}"></span>`).join('');
+          content.innerHTML = `
+            <div class="me-photo-gallery">${photosHtml}</div>
+            <div class="me-photo-nav">${dotsHtml}</div>`;
+          // Wire up dot clicks
+          content.querySelectorAll('.me-photo-dot').forEach(dot => {
+            dot.addEventListener('click', () => {
+              const idx = parseInt(dot.dataset.idx);
+              content.querySelectorAll('.me-photo-slide').forEach((s,i) => s.style.display = i===idx?'block':'none');
+              content.querySelectorAll('.me-photo-dot').forEach((d,i) => d.classList.toggle('me-photo-dot--active', i===idx));
+            });
+          });
+        }
       }else if(map[tab]){
         content.innerHTML=map[tab];
       }else{
@@ -1578,7 +1624,7 @@ container.appendChild(panel);
     getPanelModel,getPanelSections,getStoryState,getPlaceOrder,auditStoryDefinitions,
     // v0.3 rendering
     createMap,
-    version:'0.29.0',buildDate:'2026-06-17'
+    version:'0.30.0',buildDate:'2026-06-17'
   };
 })();
 
