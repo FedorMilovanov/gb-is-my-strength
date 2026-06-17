@@ -85,3 +85,65 @@ compare). Рендеринг Авраама — 68 собственных фун
 5. Убедиться: `npm run avraam:audit` всё ещё 23/23
 6. Только потом коммитить
 
+
+
+## EXTRACTION STATUS (2026-06-17 end of session)
+
+### DONE (9 features from Avraam → Engine)
+
+| Version | Feature | Lines | Benefit |
+|---|---|---|---|
+| v0.8 | Photo modal | +97 | Fullscreen photo viewer for all 8 maps with photos |
+| v0.8 | Intro screen | +97 | Welcome overlay with title, Hebrew, stats |
+| v0.9 | Timeline | +142 | Clickable stage dots with era labels |
+| v0.9 | Layer toggles | +142 | iOS-style switches for map layer visibility |
+| v0.10 | Content search | +18 | Search inside story/bible/arch/kick text |
+| v0.10 | data-layer attrs | +18 | Markers tagged for layer toggle control |
+| v0.11 | CTX markers | +48 | Dimmed geographic reference points on map |
+| v0.11 | Compass rose | +48 | N/S/E/W indicator with gold accent |
+| v0.12 | Stage caption | +62 | Floating stage title during tour with dot nav |
+
+### Engine stats
+
+| Metric | v0.7 (start) | v0.12 (now) |
+|---|---|---|
+| Lines | 799 | **1165** |
+| Features | 16 | **25** |
+| Event listener leaks | 19 unremoved | **0 (all tracked)** |
+| Timer leaks | 9 setTimeout, 1 clear | **7 _tm() tracked** |
+| Destroy method | innerHTML only | **_cleanupAll()** |
+| Photo modal | ❌ | ✅ |
+| Intro screen | ❌ | ✅ |
+| Timeline | ❌ | ✅ |
+| Layer toggles | ❌ | ✅ |
+| Content search | name only | **name + content** |
+| CTX markers | ❌ | ✅ |
+| Compass | ❌ | ✅ |
+| Stage caption | ❌ | ✅ |
+
+### What remains in Avraam (NOT extracting)
+
+These are visual/decorative features specific to the Abraham map.
+Low reuse value — not worth extracting:
+
+- Night stars / star field — decorative SVG
+- Coordinate grid — decorative
+- Fog layer — visual effect
+- Ambient chords — audio
+- Life timeline — Abraham-specific chronology
+- Measure tool — niche feature
+- GSAP — animation library (heavy dependency)
+- Walker figure — Abraham-specific
+- Minimap — complex + Avraam-specific
+- Cartouche — decorative
+- Caravan — decorative animation
+
+### Current status
+
+```
+Engine:         1165 lines, 25 features, 10 maps use createMap()
+Avraam:         4776 lines, 21 premium features — UNTOUCHED
+Gates:          maps:validate 10/10 ✅, avraam:audit 23/23 ✅
+Deploy:         dist (production) ✅
+```
+
