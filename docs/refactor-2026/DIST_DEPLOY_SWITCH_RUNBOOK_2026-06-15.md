@@ -130,10 +130,10 @@ GitHub Pages имеет два режима публикации:
 
 ```bash
 # проверить
-gh api repos/FedorMilovanov/gb-is-my-strength/pages --jq '.build_type'
+gh api repos/<owner>/<repo>/pages --jq '.build_type'
 
 # переключить на workflow (отключить нативный legacy builder)
-gh api -X PUT repos/FedorMilovanov/gb-is-my-strength/pages \
+gh api -X PUT repos/<owner>/<repo>/pages \
   -f build_type=workflow
 # или через curl: PUT .../pages -d '{"build_type":"workflow"}'
 ```
