@@ -80,7 +80,8 @@
     "astro:audit:article-mdx": "node scripts/article-mdx-pilot-audit.js",
     "astro:audit:article-mdx:no-build": "node scripts/article-mdx-pilot-audit.js --no-build",
     "astro:audit:article-mdx:strict": "node scripts/article-mdx-pilot-audit.js --require-content-parity",
-    "source:links:dist": "npm run strangler:build:production-like && node scripts/source-link-audit.js --root dist"
+    "source:links:dist": "npm run strangler:build:production-like && node scripts/source-link-audit.js --root dist",
+    "visual:parity:production": "node scripts/visual-parity-contract.js"
   },
   "engines": {
     "node": ">=22.12.0"

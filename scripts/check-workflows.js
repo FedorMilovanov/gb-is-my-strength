@@ -70,6 +70,7 @@ if (deployUploadsDist) {
   must('.github/workflows/deploy.yml', deploy, /npm run strangler:build:production-like/, 'dist deploy must build production-like strangler dist');
   must('.github/workflows/deploy.yml', deploy, /npm run page-ownership:dist:production-like|check-page-ownership\.js[^\n]*--dist[^\n]*--production-like/, 'dist deploy must verify page ownership against production-like dist');
   must('.github/workflows/deploy.yml', deploy, /npm run pagefind:build:dist/, 'dist deploy must build Pagefind into dist/pagefind');
+  must('.github/workflows/deploy.yml', deploy, /npm run visual:parity:production|visual-parity-contract\.js/, 'dist deploy must run route-specific visual parity contract, not only SEO/text parity');
   must('.github/workflows/deploy.yml', deploy, /dist-publication-audit\.js[^\n]*--require-pagefind[^\n]*--forbid-dev|npm run strangler:audit:production-like/, 'dist deploy must run production-like dist publication audit with Pagefind required and dev route forbidden');
   must('.github/workflows/deploy.yml', deploy, /sw:dist:audit:deploy-switch|sw-dist-readiness-audit\.js[^\n]*--require-cache-bump/, 'dist deploy must enforce service-worker cache-version bump');
   must('.github/workflows/deploy.yml', deploy, />\s*"?dist\/\$\{KEY\}\.txt"?/, 'dist deploy must write IndexNow key file into dist (not repository root)');
