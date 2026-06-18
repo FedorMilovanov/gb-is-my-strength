@@ -48,3 +48,12 @@
 - `signature.type = "lampstands"` renders seven glowing lampstands (used by Revelation).
 - `signature.type = "gospel-waves"` renders expanding gospel waves from an origin place (used by Early Church).
 - `smoke:maps` now verifies signature DOM when `route.signature` exists.
+
+## Update 2026-06-18 — v0.50 expanded signature overlays
+
+- `signature.type = "water-split"` renders parted-water walls and a golden lane (used by Exodus / `ishod`).
+- `signature.type = "sea-voyage"` renders ship icons/wakes along selected route points (used by Paul / `pavel`).
+- `signature.type = "hanukkah-lights"` renders a Hanukkah menorah with animated flames (used by Maccabees / `maccabim`).
+- Current signature maps: `ishod`, `pavel`, `maccabim`, `early-church`, `revelation`.
+- Backward compatibility restored for old wrappers/modules that call `flyTo(cx, cy, zoomFactor)` with values like `0.72` / `0.85`; small positive values are converted to viewBox width to prevent collapsed 1px viewBoxes.
+- `smoke:maps` and `smoke:maps:mobile` now print/check viewBox width (`viewW`) to catch future collapse regressions.

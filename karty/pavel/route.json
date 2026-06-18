@@ -488,5 +488,16 @@
       "label": "Рим · домашний арест",
       "stage": 2
     }
-  ]
+  ],
+  "signature": {
+    "type": "sea-voyage",
+    "label": "Морские пути Павла",
+    "place_ids": [
+      "antioch",
+      "cyprus",
+      "ephesus",
+      "jerusalem",
+      "rome"
+    ]
+  }
 }

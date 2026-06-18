@@ -1,5 +1,5 @@
 /**
- * map-engine.js v0.49 — reusable biblical map rendering engine. Signature overlays.
+ * map-engine.js v0.50 — reusable biblical map rendering engine. More signature overlays.
  *
  * PUBLIC API:
  *   // Data layer (v0.2):
@@ -533,6 +533,12 @@ const MapEngine = (function() {
 .me-sig-wave{fill:none;stroke:rgba(232,200,121,.35);stroke-width:2;vector-effect:non-scaling-stroke;animation:meSigWave 3.6s ease-out infinite;transform-box:fill-box;transform-origin:center}
 .me-sig-wave:nth-child(2){animation-delay:.8s}.me-sig-wave:nth-child(3){animation-delay:1.6s}
 @keyframes meSigWave{0%{opacity:.55;transform:scale(.45)}100%{opacity:0;transform:scale(1.45)}}
+.me-sig-water-wall{fill:rgba(74,128,168,.13);stroke:rgba(127,198,232,.42);stroke-width:2.2;vector-effect:non-scaling-stroke;filter:url(#me-glow);animation:meWaterBreathe 4.2s ease-in-out infinite}
+.me-sig-water-lane{stroke:rgba(232,200,121,.55);stroke-width:2;stroke-dasharray:7 8;vector-effect:non-scaling-stroke;filter:url(#me-gold-glow);animation:meDashFlow 5s linear infinite}
+@keyframes meWaterBreathe{0%,100%{opacity:.38;transform:translateX(0)}50%{opacity:.72;transform:translateX(2px)}}
+@keyframes meDashFlow{to{stroke-dashoffset:-60}}
+.me-sig-ship path,.me-sig-ship line{vector-effect:non-scaling-stroke}.me-sig-ship{filter:url(#me-gold-glow);opacity:.78}.me-sig-ship .sail{fill:rgba(232,200,121,.18);stroke:#e8c879;stroke-width:1.2}.me-sig-ship .hull{fill:rgba(10,13,20,.88);stroke:#e8c879;stroke-width:1.2}.me-sig-ship .wake{fill:none;stroke:rgba(127,198,232,.45);stroke-width:1.1;stroke-linecap:round}
+.me-sig-menorah{filter:url(#me-gold-glow);opacity:.88}.me-sig-menorah path,.me-sig-menorah line{vector-effect:non-scaling-stroke}.me-sig-menorah .stem{stroke:#e8c879;stroke-width:1.35;fill:none;stroke-linecap:round}.me-sig-menorah .flame{fill:#ffd36a;animation:meSigPulse 2.1s ease-in-out infinite;transform-box:fill-box;transform-origin:center}
 .me-source-badges{display:flex;gap:5px;flex-wrap:wrap;margin-bottom:8px}
 .me-source-badge{font-size:8px;letter-spacing:.08em;text-transform:uppercase;border:1px solid rgba(255,255,255,.1);border-radius:999px;padding:2px 7px;background:rgba(255,255,255,.035);color:#9aa2ae}
 .me-source-badge--primary{color:#9ee7ad;border-color:rgba(74,222,128,.28);background:rgba(74,222,128,.07)}
@@ -1306,6 +1312,43 @@ container.appendChild(panel);
             g.appendChild(flame);
             signatureG.appendChild(g);
           });
+        } else if (sig.type === 'water-split') {
+          const origin = placesById.get(sig.origin || sig.origin_id || 'pihahiroth') || (route.places || [])[0];
+          if (!origin) return;
+          const g = document.createElementNS('http://www.w3.org/2000/svg','g');
+          g.setAttribute('class','me-signature'); g.setAttribute('data-signature','water-split');
+          const left = document.createElementNS('http://www.w3.org/2000/svg','path');
+          left.setAttribute('class','me-sig-water-wall'); left.setAttribute('d',`M${origin.x-74},${origin.y-86} C${origin.x-118},${origin.y-45} ${origin.x-104},${origin.y+42} ${origin.x-64},${origin.y+88} C${origin.x-38},${origin.y+46} ${origin.x-42},${origin.y-40} ${origin.x-74},${origin.y-86} Z`);
+          g.appendChild(left);
+          const right = document.createElementNS('http://www.w3.org/2000/svg','path');
+          right.setAttribute('class','me-sig-water-wall'); right.setAttribute('d',`M${origin.x+74},${origin.y-86} C${origin.x+118},${origin.y-45} ${origin.x+104},${origin.y+42} ${origin.x+64},${origin.y+88} C${origin.x+38},${origin.y+46} ${origin.x+42},${origin.y-40} ${origin.x+74},${origin.y-86} Z`);
+          g.appendChild(right);
+          const lane = document.createElementNS('http://www.w3.org/2000/svg','path');
+          lane.setAttribute('class','me-sig-water-lane'); lane.setAttribute('d',`M${origin.x},${origin.y-92} C${origin.x-12},${origin.y-36} ${origin.x+10},${origin.y+34} ${origin.x},${origin.y+96}`); lane.setAttribute('fill','none');
+          g.appendChild(lane);
+          signatureG.appendChild(g);
+        } else if (sig.type === 'sea-voyage') {
+          const ids = sig.place_ids || [];
+          const pts = ids.map(id => placesById.get(id)).filter(Boolean);
+          pts.slice(0,-1).forEach((a,idx) => {
+            const b = pts[idx+1];
+            const x = (a.x + b.x) / 2, y = (a.y + b.y) / 2;
+            const g = document.createElementNS('http://www.w3.org/2000/svg','g');
+            g.setAttribute('class','me-signature me-sig-ship'); g.setAttribute('transform',`translate(${x},${y-12})`); g.setAttribute('data-signature','sea-voyage');
+            const wake = document.createElementNS('http://www.w3.org/2000/svg','path'); wake.setAttribute('class','wake'); wake.setAttribute('d','M-18,12 C-8,7 8,17 18,12'); g.appendChild(wake);
+            const hull = document.createElementNS('http://www.w3.org/2000/svg','path'); hull.setAttribute('class','hull'); hull.setAttribute('d','M-14,6 L14,6 L8,14 L-8,14 Z'); g.appendChild(hull);
+            const mast = document.createElementNS('http://www.w3.org/2000/svg','line'); mast.setAttribute('x1','0'); mast.setAttribute('y1','6'); mast.setAttribute('x2','0'); mast.setAttribute('y2','-16'); mast.setAttribute('stroke','#e8c879'); mast.setAttribute('stroke-width','1.2'); g.appendChild(mast);
+            const sail = document.createElementNS('http://www.w3.org/2000/svg','path'); sail.setAttribute('class','sail'); sail.setAttribute('d','M0,-15 L0,4 L12,2 Z M0,-13 L0,3 L-10,1 Z'); g.appendChild(sail);
+            signatureG.appendChild(g);
+          });
+        } else if (sig.type === 'hanukkah-lights') {
+          const origin = placesById.get(sig.origin || sig.origin_id || 'jerusalem_meet') || (route.places || [])[0];
+          if (!origin) return;
+          const g = document.createElementNS('http://www.w3.org/2000/svg','g');
+          g.setAttribute('class','me-signature me-sig-menorah'); g.setAttribute('transform',`translate(${origin.x},${origin.y-38})`); g.setAttribute('data-signature','hanukkah-lights');
+          const base = document.createElementNS('http://www.w3.org/2000/svg','path'); base.setAttribute('class','stem'); base.setAttribute('d','M-30,32 H30 M-18,38 H18 M0,32 V2'); g.appendChild(base);
+          [-28,-21,-14,-7,0,7,14,21,28].forEach((x,i)=>{ const arm=document.createElementNS('http://www.w3.org/2000/svg','path'); arm.setAttribute('class','stem'); const top=i===4?-12:0; arm.setAttribute('d',`M0,12 C${x/2},12 ${x},${top+8} ${x},${top}`); g.appendChild(arm); const fl=document.createElementNS('http://www.w3.org/2000/svg','path'); fl.setAttribute('class','flame'); fl.setAttribute('d',`M${x},${top-12} C${x+5},${top-6} ${x+3},${top-2} ${x},${top} C${x-3},${top-2} ${x-5},${top-6} ${x},${top-12} Z`); fl.style.animationDelay=(i*.18)+'s'; g.appendChild(fl); });
+          signatureG.appendChild(g);
         } else if (sig.type === 'gospel-waves') {
           const origin = placesById.get(sig.origin || sig.origin_id || 'jerusalem_upper') || (route.places || [])[0];
           if (!origin) return;
@@ -1845,6 +1888,11 @@ container.appendChild(panel);
     }
 
     function flyTo(cx,cy,w,duration=700){
+      // Backward compatibility: older wrappers/modules passed a zoom factor
+      // (e.g. 0.72 or 0.85) while newer engine internals pass a viewBox width.
+      // Treat small positive values as zoom factors to avoid collapsed 1px viewBoxes.
+      if (typeof w === 'number' && w > 0 && w <= 10) w = cfg.W0 / w;
+      w = clamp(w || cfg.W0, cfg.minW, cfg.maxW);
       const from={...view};
       const h=w*cfg.H0/cfg.W0;
       const to={x:clamp(cx-w/2,-cfg.padX,cfg.W0+cfg.padX-w),y:clamp(cy-h/2,-cfg.padY,cfg.H0+cfg.padY-h),w,h};
@@ -1923,6 +1971,11 @@ container.appendChild(panel);
       view.w=nw;view.h=nw*cfg.H0/cfg.W0;
       applyViewBox();
       },{passive:false});
+
+    function resetView(duration=800){
+      const init=route.meta?.viewport_init||{cx:cfg.W0/2,cy:cfg.H0/2,w:cfg.W0};
+      flyTo(init.cx,init.cy,init.w,duration);
+    }
 
     // ── Tour ──
     
@@ -2430,7 +2483,7 @@ container.appendChild(panel);
 
     // ── Instance ──
     const instance={
-      open,close,setStory,startTour,stopTour,flyTo,
+      open,close,setStory,startTour,stopTour,flyTo,resetView,
       get routeData(){return route},
       destroy(){
         stopTour();
@@ -2449,7 +2502,7 @@ container.appendChild(panel);
     getPanelModel,getPanelSections,getStoryViewport,getStoryState,getPlaceOrder,auditStoryDefinitions,
     // v0.3 rendering
     createMap,
-    version:'0.49.0',buildDate:'2026-06-18'
+    version:'0.50.0',buildDate:'2026-06-18'
   };
 })();
 

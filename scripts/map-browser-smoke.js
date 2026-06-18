@@ -16,11 +16,16 @@ const MAPS = ['ishod','pavel','melachim','shoftim','shvatim','yeshua','maccabim'
       const svgCircles = await page.locator('svg circle').count().catch(()=>0);
       const mapW = await page.evaluate(()=>{const el=document.querySelector('.me-map,#mapRoot');return el?el.getBoundingClientRect().width:0;}).catch(()=>0);
       const overflow = await page.evaluate(()=>document.documentElement.scrollWidth-document.documentElement.clientWidth).catch(()=>0);
-      const routeViz = await page.evaluate(()=>({
-        underlays: document.querySelectorAll('.me-route-underlay').length,
-        routeLabels: document.querySelectorAll('.me-route-label').length,
-        mainRoutes: document.querySelectorAll('.me-route-main').length,
-      })).catch(()=>({underlays:0,routeLabels:0,mainRoutes:0}));
+      const routeViz = await page.evaluate(()=>{
+        const vb = (document.querySelector('.me-canvas svg')?.getAttribute('viewBox') || '').split(/\s+/).map(Number);
+        return {
+          underlays: document.querySelectorAll('.me-route-underlay').length,
+          routeLabels: document.querySelectorAll('.me-route-label').length,
+          mainRoutes: document.querySelectorAll('.me-route-main').length,
+          viewW: vb[2] || 0,
+          viewH: vb[3] || 0,
+        };
+      }).catch(()=>({underlays:0,routeLabels:0,mainRoutes:0,viewW:0,viewH:0}));
       const signature = await page.evaluate(async () => {
         try {
           const route = await fetch('./route.json').then(r => r.json());
@@ -64,12 +69,12 @@ const MAPS = ['ishod','pavel','melachim','shoftim','shvatim','yeshua','maccabim'
           return {tested:true, ok:items>0 && statuses.length>0 && archFooter && sourceBadges>0, place:place.id, items, statuses:statuses.slice(0,3), archFooter, sourceBadges, moreButton};
         } catch (e) { return {tested:true, ok:false, reason:String(e && e.message || e)}; }
       }).catch(e=>({tested:true,ok:false,reason:String(e)}));
-      const routeVizOk = routeViz.underlays > 0 && routeViz.mainRoutes > 0;
+      const routeVizOk = routeViz.underlays > 0 && routeViz.mainRoutes > 0 && routeViz.viewW > 50 && routeViz.viewH > 35;
       const sciOk = !sci.tested || sci.ok;
       const storyOk = !storyFocus.tested || storyFocus.ok;
       const signatureOk = signature.ok !== false;
       const status = errors.length===0 && mapW>0 && routeVizOk && sciOk && storyOk && signatureOk ? '✅' : '❌';
-      console.log(`${status} ${m}: svgCircles=${svgCircles}, routes=${routeViz.mainRoutes}/${routeViz.underlays}, labels=${routeViz.routeLabels}, signature=${signature.expected?(signature.ok?'ok':'BAD'):'none'}, storyFly=${storyFocus.tested?(storyFocus.ok?'ok':'BAD'):'skip'}, sci=${sci.tested?(sci.ok?'ok':'BAD'):'skip'}, mapW=${Math.round(mapW)}px, overflow=${overflow}px, errors=${errors.length}`);
+      console.log(`${status} ${m}: svgCircles=${svgCircles}, routes=${routeViz.mainRoutes}/${routeViz.underlays}, labels=${routeViz.routeLabels}, viewW=${Math.round(routeViz.viewW)}, signature=${signature.expected?(signature.ok?'ok':'BAD'):'none'}, storyFly=${storyFocus.tested?(storyFocus.ok?'ok':'BAD'):'skip'}, sci=${sci.tested?(sci.ok?'ok':'BAD'):'skip'}, mapW=${Math.round(mapW)}px, overflow=${overflow}px, errors=${errors.length}`);
       if(errors.length) errors.slice(0,3).forEach(e=>console.log(`     ${e.slice(0,150)}`));
       if(!routeVizOk) console.log(`     route visual missing: ${JSON.stringify(routeViz)}`);
       if(!signatureOk) console.log(`     signature problem: ${JSON.stringify(signature)}`);
