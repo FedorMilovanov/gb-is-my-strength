@@ -57,7 +57,7 @@
       "description": "Серия из 5 материалов о Джоне Гилле: исторический контекст, биография в трёх частях и справочник. По первичным источникам.",
       "section": "Биографии служителей",
       "editor": "Фёдор Милованов",
-      "readTime": 149,
+      "readTime": 133,
       "image": "/images/gill-authentic-study-cover.webp",
       "tags": [
         "серия",
@@ -166,7 +166,7 @@
       "description": "Защитник Троицы против унитарианства, самостоятельно освоивший иврит, девятитомный комментарий на всю Библию. Биография по первичным источникам.",
       "section": "Биографии служителей",
       "editor": "Фёдор Милованов",
-      "readTime": 32,
+      "readTime": 28,
       "image": "/images/gill-authentic-study-cover.webp",
       "tags": [
         "биографии",
@@ -179,7 +179,7 @@
       "priority": 92,
       "modifiedTime": "2026-06-10T00:00:00+03:00",
       "publishedTime": "2026-05-26T00:00:00+03:00",
-      "readingTime": 32
+      "readingTime": 28
     },
     {
       "id": "dzhon-gill-chast-2-uchenyi",
@@ -189,7 +189,7 @@
       "description": "Экзегеза, систематика, иврит и раввинистика. Девятитомный комментарий на всю Библию и «Свод богословия» — первая баптистская систематика на английском.",
       "section": "Биографии служителей",
       "editor": "Фёдор Милованов",
-      "readTime": 39,
+      "readTime": 34,
       "image": "/images/gill-talmud-study-authentic.webp",
       "tags": [
         "биографии",
@@ -204,7 +204,7 @@
       "priority": 91,
       "publishedTime": "2026-05-26T00:00:00+03:00",
       "modifiedTime": "2026-06-10T00:00:00+03:00",
-      "readingTime": 39
+      "readingTime": 34
     },
     {
       "id": "rimlyanam-7-veruyushchiy-ili-neveruyushchiy",
@@ -262,7 +262,7 @@
       "description": "Полемика с арминианством и Римом, влияние на Сперджена, спор о гиперкальвинизме, англо-американская преемственность и память о Гилле в XX–XXI веках.",
       "section": "Биографии служителей",
       "editor": "Фёдор Милованов",
-      "readTime": 54,
+      "readTime": 47,
       "image": "/images/og-dzhon-gill-chast-3-nasledie.webp",
       "tags": [
         "биографии",
@@ -276,7 +276,7 @@
       "priority": 90,
       "publishedTime": "2026-05-26T00:00:00+03:00",
       "modifiedTime": "2026-06-10T00:00:00+03:00",
-      "readingTime": 54
+      "readingTime": 47
     },
     {
       "id": "krajne-isporcheno",
