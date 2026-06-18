@@ -1,5 +1,5 @@
 /**
- * map-engine.js v0.50 — reusable biblical map rendering engine. More signature overlays.
+ * map-engine.js v0.51 — reusable biblical map rendering engine. All-map signatures.
  *
  * PUBLIC API:
  *   // Data layer (v0.2):
@@ -539,6 +539,10 @@ const MapEngine = (function() {
 @keyframes meDashFlow{to{stroke-dashoffset:-60}}
 .me-sig-ship path,.me-sig-ship line{vector-effect:non-scaling-stroke}.me-sig-ship{filter:url(#me-gold-glow);opacity:.78}.me-sig-ship .sail{fill:rgba(232,200,121,.18);stroke:#e8c879;stroke-width:1.2}.me-sig-ship .hull{fill:rgba(10,13,20,.88);stroke:#e8c879;stroke-width:1.2}.me-sig-ship .wake{fill:none;stroke:rgba(127,198,232,.45);stroke-width:1.1;stroke-linecap:round}
 .me-sig-menorah{filter:url(#me-gold-glow);opacity:.88}.me-sig-menorah path,.me-sig-menorah line{vector-effect:non-scaling-stroke}.me-sig-menorah .stem{stroke:#e8c879;stroke-width:1.35;fill:none;stroke-linecap:round}.me-sig-menorah .flame{fill:#ffd36a;animation:meSigPulse 2.1s ease-in-out infinite;transform-box:fill-box;transform-origin:center}
+.me-sig-kingdom path{vector-effect:non-scaling-stroke}.me-sig-kingdom .north{fill:rgba(74,128,168,.08);stroke:rgba(127,198,232,.34);stroke-width:2;filter:url(#me-glow)}.me-sig-kingdom .south{fill:rgba(232,200,121,.075);stroke:rgba(232,200,121,.34);stroke-width:2;filter:url(#me-gold-glow)}.me-sig-kingdom .divide{fill:none;stroke:rgba(255,255,255,.24);stroke-width:1.5;stroke-dasharray:6 7}.me-sig-kingdom text{font-size:9px;letter-spacing:.16em;stroke:#070a10;stroke-width:2.2;paint-order:stroke}
+.me-sig-cycle-ring{fill:none;stroke:rgba(232,200,121,.32);stroke-width:1.6;stroke-dasharray:5 7;vector-effect:non-scaling-stroke;animation:meSigRotate 9s linear infinite;transform-box:fill-box;transform-origin:center}.me-sig-cycle-dot{fill:#e8c879;filter:url(#me-gold-glow);animation:meSigPulse 2.4s ease-in-out infinite}@keyframes meSigRotate{to{transform:rotate(360deg)}}
+.me-sig-tribe-star{fill:rgba(232,200,121,.84);stroke:#070a10;stroke-width:.8;filter:url(#me-gold-glow);animation:meSigPulse 3.4s ease-in-out infinite}.me-sig-tribe-line{stroke:rgba(232,200,121,.16);stroke-width:1;stroke-dasharray:3 6;vector-effect:non-scaling-stroke}
+.me-sig-light-trail{fill:none;stroke:rgba(232,200,121,.46);stroke-width:2.4;stroke-dasharray:9 9;filter:url(#me-gold-glow);vector-effect:non-scaling-stroke;animation:meDashFlow 5s linear infinite}.me-sig-light-node{fill:rgba(232,200,121,.18);stroke:#e8c879;stroke-width:1.2;filter:url(#me-gold-glow);animation:meSigPulse 2.6s ease-in-out infinite;vector-effect:non-scaling-stroke}
 .me-source-badges{display:flex;gap:5px;flex-wrap:wrap;margin-bottom:8px}
 .me-source-badge{font-size:8px;letter-spacing:.08em;text-transform:uppercase;border:1px solid rgba(255,255,255,.1);border-radius:999px;padding:2px 7px;background:rgba(255,255,255,.035);color:#9aa2ae}
 .me-source-badge--primary{color:#9ee7ad;border-color:rgba(74,222,128,.28);background:rgba(74,222,128,.07)}
@@ -765,7 +769,7 @@ const MapEngine = (function() {
 
     const pathsG=document.createElementNS('http://www.w3.org/2000/svg','g');pathsG.id='me-paths';svg.appendChild(pathsG);
     const waypointsG=document.createElementNS('http://www.w3.org/2000/svg','g');waypointsG.id='me-waypoints';svg.appendChild(waypointsG);
-    const signatureG=document.createElementNS('http://www.w3.org/2000/svg','g');signatureG.id='me-signature';svg.appendChild(signatureG);
+    let signatureG=document.createElementNS('http://www.w3.org/2000/svg','g');signatureG.id='me-signature';svg.appendChild(signatureG);
     const markersG=document.createElementNS('http://www.w3.org/2000/svg','g');markersG.id='me-markers';svg.appendChild(markersG);
     const ctxG=document.createElementNS('http://www.w3.org/2000/svg','g');ctxG.id='me-ctx';svg.appendChild(ctxG);
     canvas.appendChild(svg);
@@ -1349,6 +1353,40 @@ container.appendChild(panel);
           const base = document.createElementNS('http://www.w3.org/2000/svg','path'); base.setAttribute('class','stem'); base.setAttribute('d','M-30,32 H30 M-18,38 H18 M0,32 V2'); g.appendChild(base);
           [-28,-21,-14,-7,0,7,14,21,28].forEach((x,i)=>{ const arm=document.createElementNS('http://www.w3.org/2000/svg','path'); arm.setAttribute('class','stem'); const top=i===4?-12:0; arm.setAttribute('d',`M0,12 C${x/2},12 ${x},${top+8} ${x},${top}`); g.appendChild(arm); const fl=document.createElementNS('http://www.w3.org/2000/svg','path'); fl.setAttribute('class','flame'); fl.setAttribute('d',`M${x},${top-12} C${x+5},${top-6} ${x+3},${top-2} ${x},${top} C${x-3},${top-2} ${x-5},${top-6} ${x},${top-12} Z`); fl.style.animationDelay=(i*.18)+'s'; g.appendChild(fl); });
           signatureG.appendChild(g);
+        } else if (sig.type === 'split-kingdom') {
+          const north = (sig.north_ids || []).map(id => placesById.get(id)).filter(Boolean);
+          const south = (sig.south_ids || []).map(id => placesById.get(id)).filter(Boolean);
+          const hull = (pts, cls) => {
+            if (!pts.length) return;
+            let minX=Math.min(...pts.map(p=>p.x))-38, maxX=Math.max(...pts.map(p=>p.x))+38, minY=Math.min(...pts.map(p=>p.y))-34, maxY=Math.max(...pts.map(p=>p.y))+34;
+            const path=document.createElementNS('http://www.w3.org/2000/svg','path'); path.setAttribute('class',cls); path.setAttribute('d',`M${minX},${minY} C${(minX+maxX)/2},${minY-22} ${maxX},${minY+8} ${maxX},${(minY+maxY)/2} C${maxX},${maxY+20} ${minX},${maxY+14} ${minX},${(minY+maxY)/2} Z`); signatureG.appendChild(path);
+          };
+          const g=document.createElementNS('http://www.w3.org/2000/svg','g'); g.setAttribute('class','me-signature me-sig-kingdom'); g.setAttribute('data-signature','split-kingdom'); signatureG.appendChild(g); const oldSig=signatureG; signatureG=g;
+          hull(north,'north'); hull(south,'south');
+          const div=document.createElementNS('http://www.w3.org/2000/svg','path'); div.setAttribute('class','divide'); div.setAttribute('d',sig.divide || 'M628,650 C646,715 626,760 638,830'); g.appendChild(div);
+          const tn=document.createElementNS('http://www.w3.org/2000/svg','text'); tn.setAttribute('x','668'); tn.setAttribute('y','705'); tn.setAttribute('fill','#7fc6e8'); tn.textContent='יִשְׂרָאֵל'; g.appendChild(tn);
+          const ts=document.createElementNS('http://www.w3.org/2000/svg','text'); ts.setAttribute('x','586'); ts.setAttribute('y','828'); ts.setAttribute('fill','#e8c879'); ts.textContent='יְהוּדָה'; g.appendChild(ts);
+          signatureG=oldSig;
+        } else if (sig.type === 'judge-cycles') {
+          const ids = sig.place_ids || [];
+          ids.map(id => placesById.get(id)).filter(Boolean).forEach((place,idx)=>{
+            const g=document.createElementNS('http://www.w3.org/2000/svg','g'); g.setAttribute('class','me-signature'); g.setAttribute('transform',`translate(${place.x},${place.y})`); g.setAttribute('data-signature','judge-cycles');
+            const r=document.createElementNS('http://www.w3.org/2000/svg','circle'); r.setAttribute('class','me-sig-cycle-ring'); r.setAttribute('r','24'); r.style.animationDelay=(idx*.35)+'s'; g.appendChild(r);
+            const d=document.createElementNS('http://www.w3.org/2000/svg','circle'); d.setAttribute('class','me-sig-cycle-dot'); d.setAttribute('cx','0'); d.setAttribute('cy','-24'); d.setAttribute('r','3'); d.style.animationDelay=(idx*.2)+'s'; g.appendChild(d);
+            signatureG.appendChild(g);
+          });
+        } else if (sig.type === 'tribe-stars') {
+          const ids = sig.place_ids || (route.places||[]).map(p=>p.id);
+          const pts = ids.map(id => placesById.get(id)).filter(Boolean);
+          if (pts.length>1) {
+            const line=document.createElementNS('http://www.w3.org/2000/svg','path'); line.setAttribute('class','me-sig-tribe-line'); line.setAttribute('fill','none'); line.setAttribute('d',pts.map((p,i)=>`${i?'L':'M'}${p.x},${p.y}`).join(' ')); signatureG.appendChild(line);
+          }
+          pts.forEach((p,idx)=>{ const star=document.createElementNS('http://www.w3.org/2000/svg','path'); star.setAttribute('class','me-signature me-sig-tribe-star'); star.setAttribute('data-signature','tribe-stars'); star.setAttribute('d',`M${p.x},${p.y-8} L${p.x+2.2},${p.y-2.2} L${p.x+8},${p.y} L${p.x+2.2},${p.y+2.2} L${p.x},${p.y+8} L${p.x-2.2},${p.y+2.2} L${p.x-8},${p.y} L${p.x-2.2},${p.y-2.2} Z`); star.style.animationDelay=(idx*.12)+'s'; signatureG.appendChild(star); });
+        } else if (sig.type === 'ministry-light') {
+          const ids = sig.place_ids || [];
+          const pts = ids.map(id => placesById.get(id)).filter(Boolean);
+          if (pts.length>1) { const line=document.createElementNS('http://www.w3.org/2000/svg','path'); line.setAttribute('class','me-signature me-sig-light-trail'); line.setAttribute('data-signature','ministry-light'); line.setAttribute('d',pts.map((p,i)=>`${i?'L':'M'}${p.x},${p.y}`).join(' ')); signatureG.appendChild(line); }
+          pts.forEach((p,idx)=>{ const node=document.createElementNS('http://www.w3.org/2000/svg','circle'); node.setAttribute('class','me-signature me-sig-light-node'); node.setAttribute('data-signature','ministry-light'); node.setAttribute('cx',p.x); node.setAttribute('cy',p.y); node.setAttribute('r',idx===0||idx===pts.length-1?'16':'11'); node.style.animationDelay=(idx*.22)+'s'; signatureG.appendChild(node); });
         } else if (sig.type === 'gospel-waves') {
           const origin = placesById.get(sig.origin || sig.origin_id || 'jerusalem_upper') || (route.places || [])[0];
           if (!origin) return;
@@ -2502,7 +2540,7 @@ container.appendChild(panel);
     getPanelModel,getPanelSections,getStoryViewport,getStoryState,getPlaceOrder,auditStoryDefinitions,
     // v0.3 rendering
     createMap,
-    version:'0.50.0',buildDate:'2026-06-18'
+    version:'0.51.0',buildDate:'2026-06-18'
   };
 })();
 

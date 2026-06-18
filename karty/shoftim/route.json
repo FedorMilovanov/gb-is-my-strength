@@ -691,5 +691,18 @@
       "label": "Самуил",
       "stage": 5
     }
-  ]
+  ],
+  "signature": {
+    "type": "judge-cycles",
+    "label": "Циклы Судей",
+    "place_ids": [
+      "shiloh",
+      "tabor",
+      "ophrah",
+      "harod",
+      "mizpah_gilead",
+      "timnah",
+      "gaza"
+    ]
+  }
 }
