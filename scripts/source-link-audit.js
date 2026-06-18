@@ -9,21 +9,37 @@ const fs = require('fs');
 const path = require('path');
 const http = require('http');
 const https = require('https');
-const ROOT = path.resolve(__dirname, '..');
+const REPO_ROOT = path.resolve(__dirname, '..');
+function argValue(name, fallback = '') {
+  const idx = process.argv.indexOf(name);
+  return idx >= 0 && process.argv[idx + 1] ? process.argv[idx + 1] : fallback;
+}
+const AUDIT_ROOT = path.resolve(REPO_ROOT, argValue('--root', '.'));
+if (AUDIT_ROOT !== REPO_ROOT && !AUDIT_ROOT.startsWith(REPO_ROOT + path.sep)) {
+  console.error('source-link-audit --root must stay inside repository');
+  process.exit(2);
+}
 const TIMEOUT_MS = Number(process.env.SOURCE_LINK_TIMEOUT_MS || 10000);
 const CONCURRENCY = Number(process.env.SOURCE_LINK_CONCURRENCY || 6);
 
 const hard = [];
 const warn = [];
+const SKIP_DIRS = new Set(['.git', 'node_modules', 'reports', '.astro', 'pagefind']);
 function walk(dir, out=[]) {
   for (const ent of fs.readdirSync(dir,{withFileTypes:true})) {
-    if (ent.name.startsWith('.') || ent.name === 'node_modules') continue;
-    const p = path.join(dir, ent.name);
-    if (ent.isDirectory()) walk(p,out); else out.push(p);
+    if (ent.isDirectory()) {
+      if (SKIP_DIRS.has(ent.name)) continue;
+      // When auditing the repository root, do not accidentally scan a local
+      // generated dist/ artifact. Production-dist audits opt in with --root dist.
+      if (ent.name === 'dist' && path.resolve(dir) === REPO_ROOT && AUDIT_ROOT === REPO_ROOT) continue;
+      walk(path.join(dir, ent.name), out);
+      continue;
+    }
+    if (ent.isFile()) out.push(path.join(dir, ent.name));
   }
   return out;
 }
-function rel(p){ return path.relative(ROOT,p).replace(/\\/g,'/'); }
+function rel(p){ return path.relative(REPO_ROOT,p).replace(/\\/g,'/'); }
 const BAD_HOSTS = new Set(['arthistoryresources.net']);
 const HTTP_ALLOW = [/^http:\/\/www\.w3\.org\//i, /^http:\/\/web\.archive\.org\//i, /^http:\/\/viaf\.org\//i];
 const IGNORE_HOSTS = [/^gospod-bog\.ru$/i, /(^|\.)yandex\./i, /^mc\.yandex\./i, /^localhost$/i, /^127\.0\.0\.1$/];
@@ -78,7 +94,7 @@ async function checkUrl(url) {
   return { error: Object.assign(new Error('too many redirects'), { code:'REDIRECTS' }) };
 }
 function extractLinks() {
-  const files = walk(ROOT).filter(f => f.endsWith('.html'));
+  const files = walk(AUDIT_ROOT).filter(f => f.endsWith('.html'));
   const map = new Map();
   const hrefRe = /<a\b[^>]*\bhref=["']([^"']+)["'][^>]*>/gi;
   for (const f of files) {
@@ -131,6 +147,7 @@ async function runPool(items, worker) {
     else if (st >= 400) warn.push({ url:item.url, files:item.files, reason:`HTTP ${st}` });
   });
   console.log('\nGB SOURCE LINK AUDIT');
+  console.log(`Audit root: ${rel(AUDIT_ROOT) || '.'}`);
   console.log(`Checked external links: ${links.length}`);
   if (warn.length) {
     console.log(`⚠️ Warnings (${warn.length}) — bot blocks/rate limits/timeouts, review if persistent:`);

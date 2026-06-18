@@ -34,6 +34,7 @@ const BASE_ROUTES = [
   { path: '/konfessii/', kind: 'legacy', canonical: 'https://gospod-bog.ru/konfessii/' },
   { path: '/konfessii/russkij-baptizm/', kind: 'iframe-app-wrapper', canonical: 'https://gospod-bog.ru/konfessii/russkij-baptizm/' },
   { path: '/map/', kind: 'legacy-map', canonical: 'https://gospod-bog.ru/map/' },
+  { path: '/rodosloviye/', kind: 'astro-interactive', canonical: 'https://gospod-bog.ru/rodosloviye/', h1: 'Родословие от Адама до Христа — интерактивное генеалогическое древо' },
   { path: '/404.html', kind: 'system', canonical: 'https://gospod-bog.ru/404.html', allowNoindex: true },
   { path: '/dev/astro-test/', kind: 'astro-dev', canonical: 'https://gospod-bog.ru/dev/astro-test/', mustNoindex: true, h1: 'Astro test', buildOnly: true },
 ];

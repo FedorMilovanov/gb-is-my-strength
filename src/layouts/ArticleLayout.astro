@@ -29,7 +29,6 @@ const articleSectionName = sectionMeta?.label || data.section;
 const articleSectionUrl = sectionMeta?.url || `${SITE.url}/${data.section}/`;
 const articleEyebrow = sectionMeta?.eyebrow || articleSectionName;
 const effectiveRobots = robots || (data.noindex ? 'noindex, follow' : 'index, follow');
-const outputNoindex = /\bnoindex\b/i.test(effectiveRobots);
 
 // --- Series navigation ---
 let seriesPrev: CollectionEntry<'articles'> | null = null;

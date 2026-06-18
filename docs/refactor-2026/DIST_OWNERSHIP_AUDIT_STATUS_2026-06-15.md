@@ -1,8 +1,8 @@
 # DIST_OWNERSHIP_AUDIT_STATUS_2026-06-15.md
 
 Дата: 2026-06-15  
-Статус: **ownership guard for build-time strangler; production deploy не меняется**  
-Риск-уровень: **Level 0/1 — scripts + CI guard, no deploy switch**
+Статус: **исторический pre-switch status; superseded 2026-06-18.** Ownership guard остаётся актуален, но production deploy уже публикует `dist/`, а baseline вырос с 42 до 51 public pages. Текущий статус см. `REFACTORING_4_5_PRODUCTION_CUTOVER_AUDIT_2026-06-18.md`.
+Риск-уровень на момент создания: **Level 0/1 — scripts + CI guard, no deploy switch**
 
 ## Цель
 
@@ -14,7 +14,7 @@
 scripts/check-page-ownership.js
 ```
 
-Он не деплоит сайт и не меняет production. Production `deploy.yml` всё ещё публикует repository root.
+Он сам не деплоит сайт; после 2026-06-18 production `deploy.yml` публикует `dist`, поэтому guard защищает уже боевой artifact.
 
 ## Новые npm-команды
 
@@ -53,7 +53,7 @@ Dist-level:
 [ ] Astro-owned /about/ существует в dist и не является byte-identical legacy root copy;
 [ ] build-only /dev/astro-test/ отсутствует в production-like dist;
 [ ] built app /konfessii/russkij-baptizm/_app/ скопирован и остаётся noindex;
-[ ] все 42 baseline public URLs resolve в dist;
+[ ] все 51 baseline public URL resolve в dist;
 [ ] остальные baseline pages считаются implicit legacy until promoted.
 ```
 
@@ -86,23 +86,23 @@ node scripts/dist-publication-audit.js --require-pagefind --forbid-dev
 
 ## Текущий результат
 
-На текущем main guard ожидаемо классифицирует:
+Исторически guard начинался с `/about/` как единственного Astro route. На 2026-06-18 ожидаемая картина иная:
 
 ```text
-explicit Astro baseline route(s): /about/
-implicit legacy baseline route(s): 41
-build-only noindex routes: /dev/astro-test/, /dev/article-mdx-pilot/
+public baseline: 51 pages
+Astro production-dist routes: declared in migration/page-ownership.json
+build-only route: /dev/astro-test/ absent from production-like dist
+remaining implicit legacy pages: copied into dist until individually promoted
 ```
 
-Это правильное состояние build-time strangler: только `/about/` промотирован как Astro shadow-pilot; остальные публичные URL пока копируются из legacy root.
 
 ## Что это НЕ делает
 
 ```text
-❌ не переключает Pages artifact на dist;
+❌ сам по себе не переключает Pages artifact;
 ❌ не bump-ает sw.js CACHE_VERSION;
 ❌ не удаляет legacy HTML;
-❌ не подключает новые Astro страницы к production;
+❌ сам по себе не подключает новые Astro страницы к production;
 ❌ не заменяет contract/dist publication/SW audits, а дополняет их.
 ```
 
@@ -117,4 +117,4 @@ npm run strangler:deploy-readiness
 npm run ci:check
 ```
 
-Ключевой смысл: если будущий агент добавит Astro route в `src/pages`, забудет объявить ownership, случайно оставит build-only route в production-like `dist` или перетрёт Astro-owned страницу legacy copy — gate упадёт до deploy-switch.
+Ключевой смысл: если агент добавит Astro route в `src/pages`, забудет объявить ownership, случайно оставит build-only route в production-like `dist` или перетрёт Astro-owned страницу legacy copy — gate упадёт до deploy.

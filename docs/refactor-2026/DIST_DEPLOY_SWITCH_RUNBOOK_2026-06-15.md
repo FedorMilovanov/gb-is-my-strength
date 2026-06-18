@@ -6,23 +6,23 @@
 
 ## Цель
 
-Зафиксировать безопасный порядок будущего переключения GitHub Pages artifact с корня репозитория на `dist/`, когда Astro-owned страницы и legacy-copy output будут достаточно проверены.
+Исторически документ фиксировал безопасный порядок будущего переключения GitHub Pages artifact с корня репозитория на `dist/`. На 2026-06-18 переключение выполнено; теперь документ служит **runbook для поддержания dist-as-production и rollback/re-switch**.
 
-Этот документ **не является разрешением на переключение deploy**. Переключение делается отдельным маленьким commit/PR только после явного согласия владельца и зелёных gate-команд ниже.
+Текущее правило: не делать частичный rollback на root и не ослаблять dist gates. Любое изменение deploy-механизма — отдельный маленький commit/PR с зелёными gate-командами ниже.
 
 ## Почему нужен отдельный SW/cache gate
 
 Текущий `sw.js` кэширует HTML через `CACHE_CONTENT` и стратегию stale-while-revalidate. Если переключить Pages artifact на `dist/` без bump `CACHE_VERSION`, у части пользователей может остаться старый HTML из legacy root, например legacy `/about/`, хотя новый deploy уже содержит Astro `/about/`.
 
-Поэтому в actual deploy-switch commit обязательно:
+Поэтому в deploy-switch commit было обязательно, а при rollback/re-switch остаётся обязательно:
 
 ```text
-[ ] bump sw.js CACHE_VERSION
-[ ] run npm run sw:dist:audit:deploy-switch
-[ ] убедиться, что CACHE_VERSION отличается от migration/sw-cache-version-baseline.json
+[x] bump sw.js CACHE_VERSION относительно pre-switch root baseline
+[x] run npm run sw:dist:audit:deploy-switch
+[x] убедиться, что CACHE_VERSION отличается от migration/sw-cache-version-baseline.json preSwitchProductionCacheVersion
 ```
 
-Базовая версия текущего root-production SW зафиксирована в:
+Базовая версия pre-switch root-production SW зафиксирована в:
 
 ```text
 migration/sw-cache-version-baseline.json
@@ -49,12 +49,12 @@ npm run strangler:deploy-readiness
 - `strangler:copy:dry-run` — preview copy operation без мутации deploy-like copy step; пишет ignored `reports/dist-copy-dry-run-manifest.json` для inspection.
 - `sw:dist:audit` — статический SW audit для `dist/`, Pagefind optional.
 - `sw:dist:audit:pagefind` — то же, но `/pagefind/pagefind.js` обязан существовать в `dist`.
-- `sw:dist:audit:deploy-switch` — строгий режим для actual deploy-switch commit; сейчас ожидаемо падает, пока `CACHE_VERSION` не bumped.
+- `sw:dist:audit:deploy-switch` — строгий режим для dist deploy/rollback safety; после выполненного switch должен проходить, если `CACHE_VERSION` отличается от pre-switch root baseline.
 - `strangler:deploy-readiness` — локальный dry-run readiness: `/about/` audit, production-like `dist` без build-only dev routes, ownership guard, Pagefind + smoke, затем SW audit в advisory-режиме.
 
-## Pre-switch gates
+## Pre-switch / re-switch gates
 
-Перед изменением `.github/workflows/deploy.yml`:
+Перед любым изменением `.github/workflows/deploy.yml`:
 
 ```bash
 npm run page-ownership:check
@@ -66,7 +66,7 @@ npm audit --omit=dev --audit-level=moderate
 git diff --check
 ```
 
-Дополнительно перед actual switch желательно вручную запустить GitHub Actions workflow:
+Дополнительно перед rollback/re-switch желательно вручную запустить GitHub Actions workflow:
 
 ```text
 Dist Strangler Dry Run
@@ -76,9 +76,9 @@ Dist Strangler Dry Run
 
 `astro:audit:about:shots` создаёт screenshots в `reports/`; они не коммитятся. Визуальное отличие `/about/` должно быть вручную принято владельцем до rollout.
 
-## Изменения в deploy.yml в actual switch commit
+## Инварианты deploy.yml после actual switch
 
-В одном атомарном commit:
+В одном атомарном состоянии workflow обязаны сохраняться:
 
 ```text
 [ ] Static publication gates остаются
@@ -100,7 +100,7 @@ Dist Strangler Dry Run
 scripts/check-workflows.js
 ```
 
-Если будущий commit переключит artifact на `dist`, guard потребует все связанные шаги в том же workflow.
+Пока artifact = `dist`, guard требует все связанные шаги. Если будет rollback на root, guard также потребует внутренне согласованный root workflow.
 
 ## `/dev/astro-test/`
 
@@ -144,11 +144,13 @@ gh api -X PUT repos/<owner>/<repo>/pages \
 ## paths-фильтры — КРИТИЧНО для автодеплоя после миграции
 
 После миграции **публичные страницы живут в `src/**`** (`src/pages/**/*.astro`,
-`src/content/**/*.mdx`, `src/layouts/**`). Workflow-фильтры обязаны это отражовать:
+`src/content/**/*.mdx`, `src/layouts/**`). Workflow-фильтры обязаны это отражать:
 `deploy.yml` и `indexnow.yml` обязаны включать `src/**` в `paths`. Иначе коммиты,
 правящие только Astro-источник, **не деплоятся и не индексируются** (именно так
 прод «застрял» на старом коммите 2026-06-18). Защищено assertion'ами в
-`scripts/check-workflows.js`.
+`scripts/check-workflows.js`. IndexNow payload дополнительно мапится через
+`scripts/build-indexnow-urls.js`, чтобы `src/content/*.mdx` отправлял реальный URL,
+а не только homepage.
 
 ## Rollback
 
@@ -169,12 +171,14 @@ git revert <deploy-switch-commit>
 
 Если после switch был bumped `CACHE_VERSION`, откатывать его необязательно и обычно нежелательно: новая версия SW уже помогла очистить старые HTML caches. Если revert всё же меняет `sw.js`, проверить `sw:dist:audit`/root deploy smoke отдельно.
 
-## Текущее состояние на момент документа
+## Текущее состояние на 2026-06-18
 
 ```text
-Production deploy: legacy root
-Dist prototype: Astro /about/ + copied legacy pages
-Pagefind-on-dist: локально проверяется
+Production deploy: Astro/strangler dist
+Public baseline: 51 pages
+Pagefind-on-dist: required in deploy
 Build-only /dev/astro-test/: исключается из production-like dist
-SW deploy-switch strict gate: ожидаемо требует будущий CACHE_VERSION bump
+SW deploy-switch strict gate: должен проходить; CACHE_VERSION отличается от pre-switch root baseline
+Source links: weekly workflow строит production-like dist и проверяет --root dist
+IndexNow: changed files мапятся через scripts/build-indexnow-urls.js
 ```

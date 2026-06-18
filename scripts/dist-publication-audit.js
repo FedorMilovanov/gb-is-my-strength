@@ -89,7 +89,7 @@ function pagefindBodyPages() {
 function checkRequiredFiles() {
   const required = [
     'index.html', 'about/index.html', 'articles/index.html', 'biografii/index.html',
-    'hard-texts/index.html', 'pastor-series/index.html', 'nagornaya/index.html',
+    'hard-texts/index.html', 'pastor-series/index.html', 'rodosloviye/index.html', 'nagornaya/index.html',
     'nagornaya/chast-1/index.html', 'nagornaya/chast-2/index.html', 'nagornaya/chast-3/index.html', 'nagornaya/chast-4/index.html', 'nagornaya/chast-5/index.html',
     'nagornaya/seriya/index.html', 'nagornaya/istochniki/index.html', 'nagornaya/nakhodki/index.html', 'karty/index.html', 'karty/avraam/index.html', 'karty/ishod/index.html', 'konfessii/index.html', 'konfessii/russkij-baptizm/index.html', 'map/index.html', ...SHADOW_ARTICLES.map(slug => `articles/${slug}/index.html`),
     '404.html', 'CNAME', 'robots.txt', 'sitemap.xml', 'feed.xml',
@@ -262,6 +262,7 @@ function checkPagefind() {
     'konfessii/index.html',
     'konfessii/russkij-baptizm/index.html',
     'map/index.html',
+    'rodosloviye/index.html',
     'nagornaya/index.html',
     'nagornaya/chast-1/index.html',
     'nagornaya/chast-2/index.html',

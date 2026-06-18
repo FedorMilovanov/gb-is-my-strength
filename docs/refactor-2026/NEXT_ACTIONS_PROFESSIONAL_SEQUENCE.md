@@ -1,6 +1,22 @@
 # NEXT_ACTIONS_PROFESSIONAL_SEQUENCE.md — следующий профессиональный порядок действий
 
 Дата: 2026-06-12
+Статус: **историческая pre-switch последовательность; superseded 2026-06-18.** Production уже работает из Astro/strangler `dist`. Актуальные следующие шаги — post-switch hardening в `docs/refactor-2026/REFACTORING_4_5_PRODUCTION_CUTOVER_AUDIT_2026-06-18.md`.
+
+---
+
+## 0. Current post-switch next actions (2026-06-18)
+
+```text
+[✅] root→dist deploy switch выполнен
+[✅] public URL baseline: 51 pages
+[✅] CSS parity gate добавлен
+[✅] source-links workflow переведён на production-like dist
+[✅] IndexNow src/MDX URL mapper добавлен
+[ ] 1–2 цикла post-switch наблюдения: strangler:deploy-readiness + source:links:dist + map smoke
+[ ] representative manual visual review для сложных страниц и карт
+[ ] продолжать MapEngine малыми PR, не повторяя Avraam/Ishod data-loss regression
+```
 
 ---
 
@@ -241,17 +257,18 @@ Can continue independently:
 
 ---
 
-## 9. Do not do yet
+## 9. Do not do yet / still valid after 4.5
 
 ```text
-❌ change hosting
-❌ switch to Cloudflare
-❌ add CMS
-❌ add Algolia
-❌ rewrite maps UI
-❌ migrate homepage
-❌ migrate Nagornaya
+❌ change hosting без отдельного решения
+❌ switch to Cloudflare без отдельного решения
+❌ add CMS без отдельного решения
+❌ add Algolia без отдельного решения
+❌ rewrite maps UI большим PR
+❌ rollback на root частично/неатомарно
 ```
+
+Исторические пункты `migrate homepage` и `migrate Nagornaya` уже не являются pre-switch запретом: homepage/Nagornaya представлены в `dist`, но дальнейшие изменения всё равно только через gates.
 
 ---
 
