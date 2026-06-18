@@ -21,8 +21,20 @@ const MAPS = ['ishod','pavel','melachim','shoftim','shvatim','yeshua','maccabim'
         routeLabels: document.querySelectorAll('.me-route-label').length,
         mainRoutes: document.querySelectorAll('.me-route-main').length,
       })).catch(()=>({underlays:0,routeLabels:0,mainRoutes:0}));
+      const storyFocus = await page.evaluate(async () => {
+        const chips = [...document.querySelectorAll('.me-story-chip')];
+        if (chips.length < 2) return {tested:false, reason:'not-enough-stories'};
+        const svg = document.querySelector('.me-canvas svg');
+        const before = svg?.getAttribute('viewBox') || '';
+        chips[1].click();
+        await new Promise(r => setTimeout(r, 950));
+        const after = svg?.getAttribute('viewBox') || '';
+        return {tested:true, ok:before !== after, before, after, story:chips[1].textContent.trim()};
+      }).catch(e=>({tested:true,ok:false,reason:String(e)}));
       const sci = await page.evaluate(async () => {
         try {
+          const chips = [...document.querySelectorAll('.me-story-chip')];
+          if (chips[0]) { chips[0].click(); await new Promise(r => setTimeout(r, 350)); }
           const route = await fetch('./route.json').then(r => r.json());
           const variants = route.scientific_variants || route.variants || {};
           const place = (route.places || []).find(p => variants[p.id] && document.querySelector(`[data-place-id="${p.id}"]`));
@@ -44,12 +56,14 @@ const MAPS = ['ishod','pavel','melachim','shoftim','shvatim','yeshua','maccabim'
       }).catch(e=>({tested:true,ok:false,reason:String(e)}));
       const routeVizOk = routeViz.underlays > 0 && routeViz.mainRoutes > 0;
       const sciOk = !sci.tested || sci.ok;
-      const status = errors.length===0 && mapW>0 && routeVizOk && sciOk ? '✅' : '❌';
-      console.log(`${status} ${m}: svgCircles=${svgCircles}, routes=${routeViz.mainRoutes}/${routeViz.underlays}, labels=${routeViz.routeLabels}, sci=${sci.tested?(sci.ok?'ok':'BAD'):'skip'}, mapW=${Math.round(mapW)}px, overflow=${overflow}px, errors=${errors.length}`);
+      const storyOk = !storyFocus.tested || storyFocus.ok;
+      const status = errors.length===0 && mapW>0 && routeVizOk && sciOk && storyOk ? '✅' : '❌';
+      console.log(`${status} ${m}: svgCircles=${svgCircles}, routes=${routeViz.mainRoutes}/${routeViz.underlays}, labels=${routeViz.routeLabels}, storyFly=${storyFocus.tested?(storyFocus.ok?'ok':'BAD'):'skip'}, sci=${sci.tested?(sci.ok?'ok':'BAD'):'skip'}, mapW=${Math.round(mapW)}px, overflow=${overflow}px, errors=${errors.length}`);
       if(errors.length) errors.slice(0,3).forEach(e=>console.log(`     ${e.slice(0,150)}`));
       if(!routeVizOk) console.log(`     route visual missing: ${JSON.stringify(routeViz)}`);
+      if(!storyOk) console.log(`     story flyTo problem: ${JSON.stringify(storyFocus)}`);
       if(!sciOk) console.log(`     sci tab problem: ${JSON.stringify(sci)}`);
-      if(errors.length||mapW===0||!routeVizOk||!sciOk) problems.push(m);
+      if(errors.length||mapW===0||!routeVizOk||!sciOk||!storyOk) problems.push(m);
     } catch(e){ console.log(`❌ ${m}: ${e.message.slice(0,100)}`); problems.push(m); }
     await ctx.close();
   }

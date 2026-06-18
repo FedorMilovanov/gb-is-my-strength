@@ -35,3 +35,9 @@
 
 - Collapsible evidence footer: first two archaeology items visible by default; remaining items expand with a button.
 - Smoke guard opens scientific tab and verifies sci items, source badges, and archaeology footer for every engine-rendered map.
+
+## Update 2026-06-18 — v0.48 automatic story viewport
+
+- Added `getStoryViewport(route, storyId)`: explicit `story.viewport/cam` wins, main uses `meta.viewport_init`, other stories use a padded bbox of their places.
+- `setStory()` now always flies the map to the story focus area, even when route JSON lacks a manual viewport.
+- `smoke:maps` clicks a secondary story chip and verifies that the SVG viewBox changes.

@@ -1,5 +1,5 @@
 /**
- * map-engine.js v0.47 — reusable biblical map rendering engine. Collapsible evidence footer.
+ * map-engine.js v0.48 — reusable biblical map rendering engine. Auto story viewport.
  *
  * PUBLIC API:
  *   // Data layer (v0.2):
@@ -249,6 +249,37 @@ const MapEngine = (function() {
       hasHe:!!(place&&place.he_deep),hasDispute:!!(place&&place.dispute),hasPhotos:!!(place&&Array.isArray(place.photos)&&place.photos.length),
       hasExtra:!!(place&&place.bible_extra),hasRelated:model.relatedIds.length>0,contentKey:place&&place[tab]?tab:null
     };
+  }
+
+  function getStoryViewport(data = {}, storyId = 'main', opts = {}) {
+    const route = normalizeRouteData(data);
+    const story = (route.stories || []).find(s => s.id === storyId) || (route.stories || [])[0] || null;
+    const explicit = story && (story.viewport || story.cam);
+    if (Array.isArray(explicit) && explicit.length >= 3) return explicit;
+    if ((!story || story.id === 'main') && route.meta?.viewport_init) {
+      const v = route.meta.viewport_init;
+      return [v.cx, v.cy, v.w];
+    }
+    const state = getStoryState(route, storyId);
+    const ids = new Set(state?.placeIds || []);
+    const places = (route.places || []).filter(p => ids.has(p.id) && typeof p.x === 'number' && typeof p.y === 'number');
+    if (!places.length && route.meta?.viewport_init) {
+      const v = route.meta.viewport_init;
+      return [v.cx, v.cy, v.w];
+    }
+    if (!places.length) return [DEFAULTS.W0 / 2, DEFAULTS.H0 / 2, DEFAULTS.W0];
+    let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
+    places.forEach(p => {
+      minX = Math.min(minX, p.x); maxX = Math.max(maxX, p.x);
+      minY = Math.min(minY, p.y); maxY = Math.max(maxY, p.y);
+    });
+    const pad = opts.padding ?? 1.75;
+    const minW = opts.minW ?? 420;
+    const maxW = opts.maxW ?? (route.meta?.viewport_init?.w || DEFAULTS.W0);
+    const widthByX = Math.max(minW, (maxX - minX) * pad + 160);
+    const widthByY = Math.max(minW, (maxY - minY) * pad * DEFAULTS.W0 / DEFAULTS.H0 + 160);
+    const w = clamp(Math.max(widthByX, widthByY), minW, maxW);
+    return [(minX + maxX) / 2, (minY + maxY) / 2, w];
   }
 
   function getStoryState(route,storyId){
@@ -1732,7 +1763,8 @@ container.appendChild(panel);
       renderMarkers();
       renderStages();
       _tm(animateMarkersIn, 150);
-      if(story.viewport&&Array.isArray(story.viewport))flyTo(story.viewport[0],story.viewport[1],story.viewport[2]);
+      const storyViewport = getStoryViewport(route, storyId);
+      if(Array.isArray(storyViewport)) flyTo(storyViewport[0], storyViewport[1], storyViewport[2]);
       // Auto-open first place in story after animation
       _tm(() => {
         const firstPlace = (route.places||[]).find(p => visiblePlaces().some(v => v.id === p.id));
@@ -2365,10 +2397,10 @@ container.appendChild(panel);
     // v0.2 data layer
     loadRoute,validateRoute,compareRouteData,normalizeRouteData,collectPhotoHosts,
     getPlaceIndex,getPlaceById,getStageForPlace,getRelatedPlaceIds,getTabContentKey,
-    getPanelModel,getPanelSections,getStoryState,getPlaceOrder,auditStoryDefinitions,
+    getPanelModel,getPanelSections,getStoryViewport,getStoryState,getPlaceOrder,auditStoryDefinitions,
     // v0.3 rendering
     createMap,
-    version:'0.47.0',buildDate:'2026-06-18'
+    version:'0.48.0',buildDate:'2026-06-18'
   };
 })();
 
