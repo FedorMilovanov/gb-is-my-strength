@@ -32,3 +32,6 @@
 - `maps:validate` validates variant statuses across all route files.
 - `smoke:maps` now opens a marker and clicks the `sci` tab for each engine-rendered map with scientific variants.
 - The new smoke caught and fixed a real regression: marker click crashed with `svg is not defined` because ripple code referenced a top-level `svg`; `addRipple(svg, ...)` now receives the SVG explicitly.
+
+- Collapsible evidence footer: first two archaeology items visible by default; remaining items expand with a button.
+- Smoke guard opens scientific tab and verifies sci items, source badges, and archaeology footer for every engine-rendered map.

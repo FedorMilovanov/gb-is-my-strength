@@ -1,5 +1,5 @@
 /**
- * map-engine.js v0.46 — reusable biblical map rendering engine. Variant status polish.
+ * map-engine.js v0.47 — reusable biblical map rendering engine. Collapsible evidence footer.
  *
  * PUBLIC API:
  *   // Data layer (v0.2):
@@ -502,6 +502,14 @@ const MapEngine = (function() {
 .me-source-badge--academic{color:#9fc0dd;border-color:rgba(127,167,196,.28);background:rgba(127,167,196,.07)}
 .me-source-badge--conservative{color:#d7b86b;border-color:rgba(215,184,107,.28);background:rgba(215,184,107,.07)}
 .me-source-badge--heritage{color:#c7a5ff;border-color:rgba(199,165,255,.28);background:rgba(199,165,255,.06)}
+.me-arch-footer{margin-top:16px;padding:12px 0;border-top:1px solid rgba(255,255,255,.06)}
+.me-arch-eyebrow{font-size:10px;color:rgba(74,222,128,.7);letter-spacing:.08em;text-transform:uppercase;margin-bottom:10px;display:flex;align-items:center;gap:6px}
+.me-arch-eyebrow-dot{display:inline-block;width:6px;height:6px;border-radius:50%;background:rgba(74,222,128,.5)}
+.me-arch-title{font-size:13px;color:#4ade80;font-weight:700;margin-bottom:6px}
+.me-arch-item{margin-bottom:8px;padding:7px 10px;border-left:2px solid rgba(74,222,128,.15);font-size:11px;line-height:1.5;background:rgba(255,255,255,.018);border-radius:0 7px 7px 0}
+.me-arch-item--extra{display:none}.me-arch-footer--expanded .me-arch-item--extra{display:block}
+.me-arch-text{color:#e9e4d6;margin-bottom:2px}.me-arch-meta{font-size:9px;color:rgba(154,162,174,.4);display:flex;gap:8px;flex-wrap:wrap}.me-arch-meta-mark{color:rgba(74,222,128,.5)}
+.me-arch-more{margin:4px 0 0;padding:7px 12px;min-height:32px;border-radius:999px;border:1px solid rgba(74,222,128,.22);background:rgba(74,222,128,.055);color:#9ee7ad;font-size:10px;letter-spacing:.08em;text-transform:uppercase;cursor:pointer;font-family:inherit;transition:all .18s}.me-arch-more:hover{background:rgba(74,222,128,.11);border-color:rgba(74,222,128,.38)}
 
 /* Photo modal */
 .me-photo-modal{position:fixed;inset:0;z-index:100;display:flex;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:opacity .3s}
@@ -1555,13 +1563,13 @@ container.appendChild(panel);
       const exodusIds = ['rameses','succoth','etham','pihahiroth','migdol','marah','elim','rephidim','sinai','kadesh','eziongeber'];
       if (exodusIds.includes(place.id)) cat = 'exodus_route';
       // Jerusalem/Temple/David
-      const jerusalemIds = ['jerusalem','cityofdavid','temple','hebron','lachish','beersheba'];
+      const jerusalemIds = ['jerusalem','jerusalem_kings','cityofdavid','temple','hebron','lachish','beersheba'];
       if (jerusalemIds.includes(place.id)) cat = 'jerusalem_first_temple';
       // Maccabees
-      const maccabeeIds = ['modiin','betzecharia','bethzur','emmaus','elasa'];
+      const maccabeeIds = ['modiin','jerusalem_meet','antioch_syria','betzecharia','bethzur','emmaus','elasa'];
       if (maccabeeIds.includes(place.id)) cat = 'maccabees';
       // Early Church
-      const churchIds = ['ephesus','laodicea','philadelphia','sardis','thyatira','smyrna','pergamos','philippi','corinth','athens','thessaloniki','capernaum','bethsaida'];
+      const churchIds = ['jerusalem_upper','temple_early','damascus','antioch','ephesus','laodicea','philadelphia','sardis','thyatira','smyrna','pergamos','philippi','corinth','athens','thessaloniki','capernaum','bethsaida'];
       if (churchIds.includes(place.id)) cat = 'early_church';
       // Judges
       const judgesIds = ['shiloh','timnath','gaza','ashkelon','ashdod','ekron','gath','hazor','bethel','shechem'];
@@ -1593,25 +1601,27 @@ container.appendChild(panel);
         const content = panel.querySelector('.me-content');
         if (!content) return;
         const footer = document.createElement('div');
-        footer.style.cssText = 'margin-top:16px;padding:12px 0;border-top:1px solid rgba(255,255,255,.06)';
+        const items = refs.items || [];
+        const hiddenCount = Math.max(0, items.length - 2);
+        footer.className = 'me-arch-footer';
         footer.innerHTML = `
-          <div style="font-size:10px;color:rgba(74,222,128,.7);letter-spacing:.08em;text-transform:uppercase;margin-bottom:10px;display:flex;align-items:center;gap:6px">
-            <span style="display:inline-block;width:6px;height:6px;border-radius:50%;background:rgba(74,222,128,.5)"></span>
-            Археологические открытия 2024–2026
-          </div>
-          <div style="font-size:13px;color:#4ade80;font-weight:700;margin-bottom:6px">${refs.title}</div>
-          <div class="me-source-badges">${_sourceBadges(refs.items)}</div>
-          ${refs.items.map(item => `
-            <div style="margin-bottom:8px;padding:6px 10px;border-left:2px solid rgba(74,222,128,.15);font-size:11px;line-height:1.5">
-              <div style="color:#e9e4d6;margin-bottom:2px">${item.text}</div>
-              <div style="font-size:9px;color:rgba(154,162,174,.4);display:flex;gap:8px">
-                <span style="color:rgba(74,222,128,.5)">◆</span>
-                <span>${item.ref}</span>
-                <span style="color:rgba(154,162,174,.3)">${item.src}</span>
-              </div>
+          <div class="me-arch-eyebrow"><span class="me-arch-eyebrow-dot"></span>Археологические открытия 2024–2026</div>
+          <div class="me-arch-title">${esc(refs.title)}</div>
+          <div class="me-source-badges">${_sourceBadges(items)}</div>
+          ${items.map((item,idx) => `
+            <div class="me-arch-item${idx>=2?' me-arch-item--extra':''}">
+              <div class="me-arch-text">${esc(item.text)}</div>
+              <div class="me-arch-meta"><span class="me-arch-meta-mark">◆</span><span>${esc(item.ref)}</span><span>${esc(item.src)}</span></div>
             </div>
           `).join('')}
+          ${hiddenCount?`<button class="me-arch-more" type="button" aria-expanded="false">Ещё ${hiddenCount} свидетельств</button>`:''}
         `;
+        const more = footer.querySelector('.me-arch-more');
+        if (more) more.addEventListener('click', () => {
+          const open = footer.classList.toggle('me-arch-footer--expanded');
+          more.setAttribute('aria-expanded', open ? 'true' : 'false');
+          more.textContent = open ? 'Скрыть свидетельства' : `Ещё ${hiddenCount} свидетельств`;
+        });
         content.appendChild(footer);
       }
     }
@@ -2358,7 +2368,7 @@ container.appendChild(panel);
     getPanelModel,getPanelSections,getStoryState,getPlaceOrder,auditStoryDefinitions,
     // v0.3 rendering
     createMap,
-    version:'0.46.0',buildDate:'2026-06-18'
+    version:'0.47.0',buildDate:'2026-06-18'
   };
 })();
 
