@@ -1,6 +1,6 @@
 const { chromium } = require('playwright');
 const BASE = process.env.AUDIT_BASE || 'http://127.0.0.1:8090';
-const MAPS = ['revelation','yeshua','maccabim','early-church','shvatim','pavel'];
+const MAPS = ['ishod','pavel','melachim','shoftim','shvatim','yeshua','maccabim','early-church','revelation'];
 (async () => {
   const browser = await chromium.launch();
   const problems = [];

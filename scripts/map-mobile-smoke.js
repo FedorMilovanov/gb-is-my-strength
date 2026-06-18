@@ -1,7 +1,7 @@
 // map-mobile-smoke.js — mobile (iPhone 12) render check for engine maps.
 const { chromium, devices } = require('playwright');
 const BASE = process.env.AUDIT_BASE || 'http://127.0.0.1:8090';
-const MAPS = ['revelation','yeshua','maccabim','early-church','shvatim','pavel'];
+const MAPS = ['ishod','pavel','melachim','shoftim','shvatim','yeshua','maccabim','early-church','revelation'];
 (async () => {
   const browser = await chromium.launch();
   const problems = [];
@@ -20,12 +20,22 @@ const MAPS = ['revelation','yeshua','maccabim','early-church','shvatim','pavel']
         return {
           mapW: map ? Math.round(map.getBoundingClientRect().width) : 0,
           touchAction: cs.touchAction || 'n/a',
-          overflow: document.documentElement.scrollWidth - window.innerWidth
+          overflow: document.documentElement.scrollWidth - window.innerWidth,
+          smallControls: [...document.querySelectorAll('button')].filter(el => {
+            const box = el.getBoundingClientRect();
+            const inViewport = box.right > 0 && box.bottom > 0 && box.left < window.innerWidth && box.top < window.innerHeight;
+            return inViewport && box.width > 0 && box.height > 0 && box.width < 44 && box.height < 44;
+          }).slice(0, 8).map(el => {
+            const box = el.getBoundingClientRect();
+            return `${el.className || el.id || el.tagName}:${Math.round(box.width)}x${Math.round(box.height)}`;
+          })
         };
       }).catch(()=>({}));
       const status = errors.length===0 && r.mapW>0 ? '✅' : '❌';
-      console.log(`${status} ${m}: mapW=${r.mapW}px, touch-action=${r.touchAction}, overflow=${r.overflow}px, errors=${errors.length}`);
-      if(errors.length||r.mapW===0||(r.overflow>2)) problems.push(m);
+      const small = Array.isArray(r.smallControls) ? r.smallControls : [];
+      console.log(`${status} ${m}: mapW=${r.mapW}px, touch-action=${r.touchAction}, overflow=${r.overflow}px, errors=${errors.length}, smallControls=${small.length}`);
+      if (small.length) small.forEach(x => console.log(`     small ${x}`));
+      if(errors.length||r.mapW===0||(r.overflow>2)||small.length) problems.push(m);
     } catch(e){ console.log(`❌ ${m}: ${e.message.slice(0,90)}`); problems.push(m); }
     await ctx.close();
   }
