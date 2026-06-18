@@ -36,7 +36,10 @@ const MAPS = ['ishod','pavel','melachim','shoftim','shvatim','yeshua','maccabim'
           await new Promise(r => setTimeout(r, 120));
           const items = document.querySelectorAll('.me-sci-item').length;
           const statuses = [...document.querySelectorAll('.me-sci-status')].map(el => el.textContent.trim()).filter(Boolean);
-          return {tested:true, ok:items>0 && statuses.length>0, place:place.id, items, statuses:statuses.slice(0,3)};
+          const archFooter = !!document.querySelector('.me-arch-footer');
+          const sourceBadges = document.querySelectorAll('.me-source-badge').length;
+          const moreButton = !!document.querySelector('.me-arch-more');
+          return {tested:true, ok:items>0 && statuses.length>0 && archFooter && sourceBadges>0, place:place.id, items, statuses:statuses.slice(0,3), archFooter, sourceBadges, moreButton};
         } catch (e) { return {tested:true, ok:false, reason:String(e && e.message || e)}; }
       }).catch(e=>({tested:true,ok:false,reason:String(e)}));
       const routeVizOk = routeViz.underlays > 0 && routeViz.mainRoutes > 0;
