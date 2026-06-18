@@ -180,6 +180,25 @@ function validateRoute(file) {
   ok(`${label}: ${places.length} places · ${stages.length} stages · ${stories.length} stories`);
 }
 
+function checkAstroHub(files) {
+  const hub = path.join(ROOT, 'src/pages/karty/index.astro');
+  if (!fs.existsSync(hub)) return bad('src/pages/karty/index.astro missing');
+  const src = fs.readFileSync(hub, 'utf8');
+  const routeIds = files.map(f => path.basename(path.dirname(f))).sort();
+  const missing = routeIds.filter(id => !src.includes(`/karty/${id}/`) && !new RegExp(`slug:\\s*['\"]${id}['\"]`).test(src));
+  if (missing.length) missing.forEach(id => bad(`karty hub missing clickable route card for /karty/${id}/`));
+  else ok(`karty hub links all live route.json maps (${routeIds.length})`);
+
+  const staleSoon = routeIds.filter(id => {
+    const idx = src.indexOf(`/karty/${id}/`);
+    if (idx < 0) return false;
+    const chunk = src.slice(Math.max(0, idx - 180), Math.min(src.length, idx + 420));
+    return /\bsoon\b|Скоро|pointer-events\s*:\s*none/i.test(chunk);
+  });
+  if (staleSoon.length) staleSoon.forEach(id => bad(`karty hub marks live map as soon/disabled: /karty/${id}/`));
+  else ok('karty hub has no disabled/soon cards for live maps');
+}
+
 function main() {
   if (!fs.existsSync(schemaPath)) bad('karty/_shared/route.schema.json missing');
   else ok('route schema present');
@@ -191,6 +210,7 @@ function main() {
   }
   if (!files.length) bad('No karty/*/route.json files found');
   files.sort().forEach(validateRoute);
+  checkAstroHub(files);
   if (errors.length) {
     console.log(`\n❌ Map route validation failed: ${errors.length} issue(s)`);
     process.exit(1);

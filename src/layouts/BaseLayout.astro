@@ -2,6 +2,10 @@
 import Seo from '@/components/seo/Seo.astro';
 import Header from '@/components/ui/Header.astro';
 import Footer from '@/components/ui/Footer.astro';
+import { SITE } from '@/data/site';
+import { readFileSync, existsSync } from 'node:fs';
+import path from 'node:path';
+import { createHash } from 'node:crypto';
 import '@/styles/tokens.css';
 import '@/styles/global.css';
 
@@ -28,6 +32,8 @@ interface Props {
   hideFooter?: boolean;
   legacyStylesheets?: string[];
   headHtml?: string;
+  bodyEndHtml?: string;
+  includeLegacyRuntime?: boolean;
 }
 const {
   title,
@@ -52,7 +58,120 @@ const {
   hideFooter = false,
   legacyStylesheets = [],
   headHtml = '',
+  bodyEndHtml = '',
+  includeLegacyRuntime = true,
 } = Astro.props;
+
+function firstMatch(source: string, pattern: RegExp) {
+  return source.match(pattern)?.[0] || '';
+}
+
+function section(source: string, tag: 'head' | 'body') {
+  return source.match(new RegExp(`<${tag}[^>]*>([\\s\\S]*?)<\\/${tag}>`, 'i'))?.[1] || '';
+}
+
+function uniqueTags(tags: string[]) {
+  const seen = new Set<string>();
+  return tags.filter((tag) => {
+    const key = tag.replace(/\s+/g, ' ').trim();
+    if (!key || seen.has(key)) return false;
+    seen.add(key);
+    return true;
+  });
+}
+
+function routeToLegacyFile(canonicalUrl: string) {
+  try {
+    const url = new URL(canonicalUrl);
+    let route = decodeURIComponent(url.pathname || '/');
+    if (route === '/') return 'index.html';
+    route = route.replace(/^\/+/, '').replace(/\/+$/, '');
+    if (!route) return 'index.html';
+    return `${route}/index.html`;
+  } catch {
+    return '';
+  }
+}
+
+function extractLegacyRuntimeFromHtml(html: string) {
+  const head = section(html, 'head');
+  const body = section(html, 'body');
+  const headAndBody = `${head}\n${body}`;
+
+  // Keep the old runtime contract available on Astro-owned pages: SITE_CONFIG
+  // before scripts, Yandex.Metrika where legacy page had it, then the canonical
+  // public JS bundle script tags. Shadow-wrapped pages already carry their body
+  // scripts inside legacy.bodyHtml, so auto-runtime is disabled when headHtml is
+  // supplied unless a page explicitly opts in.
+  const config = firstMatch(headAndBody, /<script\b[^>]*>\s*window\.SITE_CONFIG\s*=\s*[\s\S]*?<\/script>/i);
+  const metrikaScripts = [...headAndBody.matchAll(/<script\b[^>]*>[\s\S]*?<\/script>/gi)]
+    .map((m) => m[0])
+    .filter((tag) => /ym\(|mc\.yandex|metrika/i.test(tag) && !/window\.SITE_CONFIG/i.test(tag));
+  const metrikaNoscript = [...headAndBody.matchAll(/<noscript\b[^>]*>[\s\S]*?mc\.yandex\.ru\/watch[\s\S]*?<\/noscript>/gi)].map((m) => m[0]);
+  const bodyScripts = [...body.matchAll(/<script\b[^>]*\bsrc=["'][^"']+\.js(?:\?v=[^"']+)?["'][^>]*><\/script>/gi)].map((m) => m[0]);
+  return uniqueTags([...metrikaScripts, ...metrikaNoscript, config, ...bodyScripts]).join('\n');
+}
+
+function loadLegacyRuntime(canonicalUrl: string) {
+  const rel = routeToLegacyFile(canonicalUrl);
+  if (!rel) return '';
+  const abs = path.join(process.cwd(), rel);
+  if (!existsSync(abs)) return '';
+  return extractLegacyRuntimeFromHtml(readFileSync(abs, 'utf8'));
+}
+
+function md5short(rel: string) {
+  const abs = path.join(process.cwd(), rel);
+  if (!existsSync(abs)) return '';
+  return createHash('md5').update(readFileSync(abs)).digest('hex').slice(0, 8);
+}
+
+function scriptTag(rel: string, attrs = 'defer') {
+  const hash = md5short(rel);
+  const src = `/${rel}${hash ? `?v=${hash}` : ''}`;
+  return `<script ${attrs} src="${src}"></script>`;
+}
+
+function makeGenericRuntime(includeMetrika = true) {
+  const pageId = routeToLegacyFile(canonical).replace(/\/index\.html$/, '').replace(/\//g, '-') || 'home';
+  const config = {
+    site: {
+      name: SITE.name,
+      baseUrl: SITE.url,
+      locale: SITE.locale,
+    },
+    page: {
+      id: pageId,
+      type: ogType === 'article' ? 'article' : 'page',
+      title,
+      description,
+      url: canonical,
+    },
+    features: {
+      themeToggle: { enabled: true },
+      search: { enabled: true },
+      bookmarks: { enabled: false },
+      quiz: { enabled: false },
+    },
+  };
+  const metrika = `<script>\n(function(m,e,t,r,i,k,a){m[i]=m[i]||function(){(m[i].a=m[i].a||[]).push(arguments)};m[i].l=1*new Date();k=e.createElement(t),a=e.getElementsByTagName(t)[0],k.async=1,k.src=r,a.parentNode.insertBefore(k,a)})(window,document,'script','https://mc.yandex.ru/metrika/tag.js','ym');\nym(108353327,'init',{ssr:false,webvisor:true,clickmap:true,accurateTrackBounce:true,trackLinks:true});\n</script>\n<noscript><div><img alt="" decoding="async" src="https://mc.yandex.ru/watch/108353327" style="position:absolute;left:-9999px;"></div></noscript>`;
+  const cfg = `<script>window.SITE_CONFIG=${JSON.stringify(config)};</script>`;
+  return [
+    includeMetrika ? metrika : '',
+    cfg,
+    scriptTag('js/site-utils.js', ''),
+    scriptTag('js/scroll-perf.js', ''),
+    scriptTag('js/site.js'),
+    scriptTag('js/sw-register.js'),
+    scriptTag('js/search.js'),
+  ].join('\n');
+}
+
+const autoLegacyRuntime = includeLegacyRuntime && !headHtml ? loadLegacyRuntime(canonical) : '';
+const hasCoreRuntime = /window\.SITE_CONFIG|site\.js|search\.js/.test(autoLegacyRuntime);
+const hasMetrika = /ym\(|mc\.yandex\.ru\/watch/.test(autoLegacyRuntime);
+const genericRuntime = includeLegacyRuntime && !headHtml && !hasCoreRuntime ? makeGenericRuntime(!hasMetrika) : '';
+const effectiveBodyEndHtml = [autoLegacyRuntime, genericRuntime, bodyEndHtml].filter(Boolean).join('\n');
 ---
 <!doctype html>
 <html lang="ru">
@@ -94,5 +213,6 @@ const {
       </main>
       {!hideFooter && <Footer note={footerNote} />}
     </div>
+    {effectiveBodyEndHtml && <Fragment set:html={effectiveBodyEndHtml} />}
   </body>
 </html>

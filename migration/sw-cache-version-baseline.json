@@ -2,6 +2,6 @@
   "version": 2,
   "captured": "2026-06-18",
   "preSwitchProductionCacheVersion": "gb-v171-r62-maps-archaeology-20260612",
-  "currentDistProductionCacheVersion": "gb-v172-r63-dist-deploy-switch-20260617",
-  "purpose": "Historical safety baseline for the completed root→dist GitHub Pages deploy switch. The pre-switch value records the legacy-root Service Worker cache that had to be superseded; the current dist-production value records the cache version that evicted stale root HTML during the switch. Keep this file for sw:dist:audit:deploy-switch, rollback analysis, and future cache bump comparisons."
+  "currentDistProductionCacheVersion": "gb-v173-r64-astro-runtime-hub-20260618",
+  "purpose": "Historical safety baseline for the completed root→dist GitHub Pages deploy switch. The pre-switch value records the legacy-root Service Worker cache that had to be superseded; the current dist-production value records the latest cache version used to evict stale root/dist static assets after runtime and map-hub fixes. Keep this file for sw:dist:audit:deploy-switch, rollback analysis, and future cache bump comparisons."
 }
