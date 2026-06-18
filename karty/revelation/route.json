@@ -402,5 +402,18 @@
         "status": "consensus"
       }
     ]
+  },
+  "signature": {
+    "type": "lampstands",
+    "label": "Семь светильников",
+    "place_ids": [
+      "ephesus_rev",
+      "smyrna",
+      "pergamon",
+      "thyatira",
+      "sardis",
+      "philadelphia",
+      "laodicea"
+    ]
   }
 }
