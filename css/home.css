@@ -440,3 +440,6 @@ body.articles-index-page .h-section{padding-top:40px;padding-bottom:24px}
   .h-home-entry-strip__link{display:inline-flex;align-items:center;justify-content:center;min-height:38px;padding:0 14px;border-radius:999px;border:1px solid color-mix(in srgb,var(--h-accent) 14%,var(--h-border));background:rgba(255,255,255,.72);font-family:var(--f-ui);font-size:12px;font-weight:700;letter-spacing:.01em;text-decoration:none;color:var(--h-ink);box-shadow:0 8px 20px -22px rgba(26,23,20,.28)}
   html.dark .h-home-entry-strip__link{background:rgba(49,40,34,.9)}
 }
+
+/* Emergency 2026-06-19: owner rejected the extra "Основные входы" strip. */
+.h-home-entry-strip{display:none!important}
