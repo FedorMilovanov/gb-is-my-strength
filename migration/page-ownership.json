@@ -314,6 +314,12 @@
       "source": "src/pages/karty/revelation/index.astro",
       "risk": 2,
       "status": "shadow-pilot"
+    },
+    "/rodosloviye/": {
+      "owner": "astro",
+      "source": "src/pages/rodosloviye/index.astro",
+      "risk": 2,
+      "status": "shadow-pilot"
     }
   }
 }
