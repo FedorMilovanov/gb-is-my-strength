@@ -1,5 +1,5 @@
 /**
- * map-engine.js v0.44 — reusable biblical map rendering engine. SVG filters + animation polish.
+ * map-engine.js v0.45 — reusable biblical map rendering engine. Route glow + evidence badges.
  *
  * PUBLIC API:
  *   // Data layer (v0.2):
@@ -492,6 +492,16 @@ const MapEngine = (function() {
 .me-legend__title{color:#e8c879;font-weight:700;margin-bottom:4px;font-size:9px;letter-spacing:.08em;text-transform:uppercase;display:flex;justify-content:space-between;align-items:center}.me-legend__arrow{display:inline-block;font-size:7px;transition:transform .25s ease}
 .me-legend__item{display:flex;align-items:center;gap:6px;color:#9aa2ae;margin:2px 0}
 .me-legend__dot{width:6px;height:6px;border-radius:50%;flex-shrink:0}
+.me-route-underlay{filter:url(#me-gold-glow);pointer-events:none;mix-blend-mode:screen}
+.me-route-main{filter:url(#me-shadow);transition:opacity .4s ease,stroke-width .4s ease,filter .4s ease}
+.me-route-label{font-size:8px;letter-spacing:.12em;fill:rgba(232,200,121,.72);stroke:#070a10;stroke-width:2.4;paint-order:stroke;pointer-events:none;text-transform:uppercase}
+.me-source-badges{display:flex;gap:5px;flex-wrap:wrap;margin-bottom:8px}
+.me-source-badge{font-size:8px;letter-spacing:.08em;text-transform:uppercase;border:1px solid rgba(255,255,255,.1);border-radius:999px;padding:2px 7px;background:rgba(255,255,255,.035);color:#9aa2ae}
+.me-source-badge--primary{color:#9ee7ad;border-color:rgba(74,222,128,.28);background:rgba(74,222,128,.07)}
+.me-source-badge--field{color:#e8c879;border-color:rgba(232,200,121,.28);background:rgba(232,200,121,.07)}
+.me-source-badge--academic{color:#9fc0dd;border-color:rgba(127,167,196,.28);background:rgba(127,167,196,.07)}
+.me-source-badge--conservative{color:#d7b86b;border-color:rgba(215,184,107,.28);background:rgba(215,184,107,.07)}
+.me-source-badge--heritage{color:#c7a5ff;border-color:rgba(199,165,255,.28);background:rgba(199,165,255,.06)}
 
 /* Photo modal */
 .me-photo-modal{position:fixed;inset:0;z-index:100;display:flex;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:opacity .3s}
@@ -1166,12 +1176,23 @@ container.appendChild(panel);
       stagePaths.forEach((places,i)=>{
         if(places.length<2)return;
         const d=places.map((p,j)=>`${j===0?'M':'L'}${p.x},${p.y}`).join(' ');
+        const color=STAGE_COLORS[i]||STAGE_COLORS[0];
+        const under=document.createElementNS('http://www.w3.org/2000/svg','path');
+        under.setAttribute('d',d);under.setAttribute('fill','none');under.setAttribute('stroke',color);
+        under.setAttribute('stroke-width','9');under.setAttribute('stroke-linecap','round');under.setAttribute('stroke-linejoin','round');under.setAttribute('opacity','0.11');under.setAttribute('data-stage',String(i));under.setAttribute('data-route-kind','underlay');under.setAttribute('class','me-route-underlay');
+        pathsG.appendChild(under);
         const path=document.createElementNS('http://www.w3.org/2000/svg','path');
-        path.setAttribute('d',d);path.setAttribute('fill','none');path.setAttribute('stroke',STAGE_COLORS[i]||STAGE_COLORS[0]);
-        path.setAttribute('stroke-width','3');path.setAttribute('stroke-linecap','round');path.setAttribute('stroke-linejoin','round');path.setAttribute('opacity','0.5');path.setAttribute('marker-end','url(#me-arrow-'+i+')');
+        path.setAttribute('d',d);path.setAttribute('fill','none');path.setAttribute('stroke',color);
+        path.setAttribute('stroke-width','3');path.setAttribute('stroke-linecap','round');path.setAttribute('stroke-linejoin','round');path.setAttribute('opacity','0.5');path.setAttribute('marker-end','url(#me-arrow-'+i+')');path.setAttribute('data-stage',String(i));path.setAttribute('data-route-kind','main');path.setAttribute('class','me-route-main');
         path.setAttribute('stroke-dasharray',path.getTotalLength());path.setAttribute('stroke-dashoffset',path.getTotalLength());
-        path.style.transition = 'stroke-dashoffset 1.5s '+(i*0.3)+'s cubic-bezier(.4,0,.2,1)';
+        path.style.transition = 'stroke-dashoffset 1.5s '+(i*0.3)+'s cubic-bezier(.4,0,.2,1), opacity .4s ease, stroke-width .4s ease, filter .4s ease';
         pathsG.appendChild(path);
+        if(places.length>=2){
+          const mid=places[Math.floor(places.length/2)];
+          const label=document.createElementNS('http://www.w3.org/2000/svg','text');
+          label.setAttribute('x',String(mid.x+10));label.setAttribute('y',String(mid.y-10));label.setAttribute('class','me-route-label');label.setAttribute('data-stage',String(i));label.textContent=(route.stages?.[i]?.n||(''+(i+1)));
+          pathsG.appendChild(label);
+        }
         requestAnimationFrame(() => { path.style.strokeDashoffset = '0'; });
       });
 
@@ -1479,6 +1500,24 @@ container.appendChild(panel);
       _renderArchaeologyFooter(place);
     }
 
+    function _classifySource(item) {
+      const hay = `${item.ref || ''} ${item.src || ''}`.toLowerCase();
+      if (/papyrus|inscription|stele|bulla|tablet|cylinder|ostraca|coin|scroll|siloam|pilate stone|tel dan/.test(hay)) return {kind:'primary',label:'первичный'};
+      if (/excavation|dig|mission|iaa|survey|field|shiloh|pool|gate|tunnel|stratigraphy/.test(hay)) return {kind:'field',label:'раскопки'};
+      if (/university|journal|pnas|bar |bas |biblical archaeology society|atiqot|hebrew university|tel aviv/.test(hay)) return {kind:'academic',label:'научн.'};
+      if (/abr|associates for biblical research|aig|answers|creation|bible archaeology report|bibleplaces|base institute/.test(hay)) return {kind:'conservative',label:'консерв.'};
+      return {kind:'heritage',label:'heritage'};
+    }
+
+    function _sourceBadges(items) {
+      const seen = new Map();
+      (items || []).forEach(item => {
+        const cls = _classifySource(item);
+        if (!seen.has(cls.kind)) seen.set(cls.kind, cls.label);
+      });
+      return [...seen.entries()].slice(0,4).map(([kind,label]) => `<span class="me-source-badge me-source-badge--${kind}">${label}</span>`).join('');
+    }
+
     function _renderArchaeologyFooter(place) {
       // Determine which archaeology category this place belongs to
       let cat = null;
@@ -1530,7 +1569,8 @@ container.appendChild(panel);
             <span style="display:inline-block;width:6px;height:6px;border-radius:50%;background:rgba(74,222,128,.5)"></span>
             Археологические открытия 2024–2026
           </div>
-          <div style="font-size:13px;color:#4ade80;font-weight:700;margin-bottom:10px">${refs.title}</div>
+          <div style="font-size:13px;color:#4ade80;font-weight:700;margin-bottom:6px">${refs.title}</div>
+          <div class="me-source-badges">${_sourceBadges(refs.items)}</div>
           ${refs.items.map(item => `
             <div style="margin-bottom:8px;padding:6px 10px;border-left:2px solid rgba(74,222,128,.15);font-size:11px;line-height:1.5">
               <div style="color:#e9e4d6;margin-bottom:2px">${item.text}</div>
@@ -1588,12 +1628,16 @@ container.appendChild(panel);
       }
       // Highlight stage path for active place
       const activeStage = place.stage;
-      const allPaths = pathsG.querySelectorAll('path');
-      allPaths.forEach((p,i) => {
-        p.setAttribute('opacity', i === activeStage ? '0.8' : '0.3');
-        p.setAttribute('stroke-width', i === activeStage ? '4' : '2.5');
-        p.style.transition = 'opacity .4s ease, stroke-width .4s ease';
+      const allPaths = pathsG.querySelectorAll('path[data-stage]');
+      allPaths.forEach(p => {
+        const isActive = Number(p.dataset.stage) === activeStage;
+        const isUnder = p.dataset.routeKind === 'underlay';
+        p.setAttribute('opacity', isActive ? (isUnder ? '0.26' : '0.88') : (isUnder ? '0.07' : '0.26'));
+        p.setAttribute('stroke-width', isActive ? (isUnder ? '12' : '4') : (isUnder ? '8' : '2.4'));
+        p.style.filter = isActive && !isUnder ? 'url(#me-gold-glow)' : '';
+        p.style.transition = 'opacity .4s ease, stroke-width .4s ease, filter .4s ease';
       });
+      pathsG.querySelectorAll('.me-route-label').forEach(lbl => lbl.setAttribute('opacity', Number(lbl.dataset.stage) === activeStage ? '0.95' : '0.38'));
     } catch(e) {
       console.error('MapEngine open error:', e);
       showToast('⚠ Ошибка открытия', 2500);
@@ -1604,12 +1648,15 @@ container.appendChild(panel);
       activePlaceId=null;
       panel.classList.remove('me-panel--open');
       // Reset all stage paths to equal opacity
-      const allPaths = pathsG.querySelectorAll('path');
+      const allPaths = pathsG.querySelectorAll('path[data-stage]');
       allPaths.forEach(p => {
-        p.setAttribute('opacity','0.5');
-        p.setAttribute('stroke-width','3');
-        p.style.transition = 'opacity .4s ease, stroke-width .4s ease';
+        const isUnder = p.dataset.routeKind === 'underlay';
+        p.setAttribute('opacity', isUnder ? '0.11' : '0.5');
+        p.setAttribute('stroke-width', isUnder ? '9' : '3');
+        p.style.filter = '';
+        p.style.transition = 'opacity .4s ease, stroke-width .4s ease, filter .4s ease';
       });
+      pathsG.querySelectorAll('.me-route-label').forEach(lbl => lbl.setAttribute('opacity','0.72'));
       panelBackdrop.classList.remove('me-panel__backdrop--active');
       document.body.style.overflow = '';
       // Return focus to search input
@@ -2281,7 +2328,7 @@ container.appendChild(panel);
     getPanelModel,getPanelSections,getStoryState,getPlaceOrder,auditStoryDefinitions,
     // v0.3 rendering
     createMap,
-    version:'0.44.0',buildDate:'2026-06-17'
+    version:'0.45.0',buildDate:'2026-06-18'
   };
 })();
 
