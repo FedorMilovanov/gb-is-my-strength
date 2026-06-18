@@ -21,12 +21,32 @@ const MAPS = ['ishod','pavel','melachim','shoftim','shvatim','yeshua','maccabim'
         routeLabels: document.querySelectorAll('.me-route-label').length,
         mainRoutes: document.querySelectorAll('.me-route-main').length,
       })).catch(()=>({underlays:0,routeLabels:0,mainRoutes:0}));
+      const sci = await page.evaluate(async () => {
+        try {
+          const route = await fetch('./route.json').then(r => r.json());
+          const variants = route.scientific_variants || route.variants || {};
+          const place = (route.places || []).find(p => variants[p.id] && document.querySelector(`[data-place-id="${p.id}"]`));
+          if (!place) return {tested:false, reason:'no-place-with-variants'};
+          const marker = document.querySelector(`[data-place-id="${place.id}"]`);
+          marker.dispatchEvent(new MouseEvent('click', {bubbles:true, cancelable:true}));
+          await new Promise(r => setTimeout(r, 180));
+          const sciTab = document.querySelector('.me-tab[data-tab="sci"]');
+          if (!sciTab) return {tested:true, ok:false, reason:'no-sci-tab', place:place.id};
+          sciTab.click();
+          await new Promise(r => setTimeout(r, 120));
+          const items = document.querySelectorAll('.me-sci-item').length;
+          const statuses = [...document.querySelectorAll('.me-sci-status')].map(el => el.textContent.trim()).filter(Boolean);
+          return {tested:true, ok:items>0 && statuses.length>0, place:place.id, items, statuses:statuses.slice(0,3)};
+        } catch (e) { return {tested:true, ok:false, reason:String(e && e.message || e)}; }
+      }).catch(e=>({tested:true,ok:false,reason:String(e)}));
       const routeVizOk = routeViz.underlays > 0 && routeViz.mainRoutes > 0;
-      const status = errors.length===0 && mapW>0 && routeVizOk ? '✅' : '❌';
-      console.log(`${status} ${m}: svgCircles=${svgCircles}, routes=${routeViz.mainRoutes}/${routeViz.underlays}, labels=${routeViz.routeLabels}, mapW=${Math.round(mapW)}px, overflow=${overflow}px, errors=${errors.length}`);
+      const sciOk = !sci.tested || sci.ok;
+      const status = errors.length===0 && mapW>0 && routeVizOk && sciOk ? '✅' : '❌';
+      console.log(`${status} ${m}: svgCircles=${svgCircles}, routes=${routeViz.mainRoutes}/${routeViz.underlays}, labels=${routeViz.routeLabels}, sci=${sci.tested?(sci.ok?'ok':'BAD'):'skip'}, mapW=${Math.round(mapW)}px, overflow=${overflow}px, errors=${errors.length}`);
       if(errors.length) errors.slice(0,3).forEach(e=>console.log(`     ${e.slice(0,150)}`));
       if(!routeVizOk) console.log(`     route visual missing: ${JSON.stringify(routeViz)}`);
-      if(errors.length||mapW===0||!routeVizOk) problems.push(m);
+      if(!sciOk) console.log(`     sci tab problem: ${JSON.stringify(sci)}`);
+      if(errors.length||mapW===0||!routeVizOk||!sciOk) problems.push(m);
     } catch(e){ console.log(`❌ ${m}: ${e.message.slice(0,100)}`); problems.push(m); }
     await ctx.close();
   }

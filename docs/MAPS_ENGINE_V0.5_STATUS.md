@@ -24,3 +24,11 @@
 - Active-place route highlighting uses `data-stage`/`data-route-kind`, not fragile DOM indexes.
 - Archaeology/evidence footer now adds compact source badges (primary / field / academic / conservative / heritage) derived from reference metadata.
 - `smoke:maps` checks underlay/main route presence and route labels for all 9 engine-rendered maps.
+
+## Update 2026-06-18 — v0.46 scientific variants + click regression guard
+
+- Scientific variants tab supports canonical statuses: `consensus`, `primary`, `candidate`, `alternative`, `caveat`, `minor`, `rejected`.
+- Variant rows now show cleaner labels, status colors, and optional source chips from `sources/source/src`.
+- `maps:validate` validates variant statuses across all route files.
+- `smoke:maps` now opens a marker and clicks the `sci` tab for each engine-rendered map with scientific variants.
+- The new smoke caught and fixed a real regression: marker click crashed with `svg is not defined` because ripple code referenced a top-level `svg`; `addRipple(svg, ...)` now receives the SVG explicitly.
