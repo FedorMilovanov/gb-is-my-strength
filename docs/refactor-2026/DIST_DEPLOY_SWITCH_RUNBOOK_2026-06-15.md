@@ -1,7 +1,7 @@
 # DIST_DEPLOY_SWITCH_RUNBOOK_2026-06-15.md
 
 Дата: 2026-06-15
-Статус: **подготовительный runbook; production deploy всё ещё публикует legacy root, не `dist/`**
+Статус: **deploy-switch ВЫПОЛНЕН 2026-06-18.** Production GitHub Pages публикуется из Astro/strangler `dist/` через `deploy.yml` (path: dist). Чтобы это работало детерминированно, репозиторий Pages должен быть в `build_type: workflow` (см. §«Pages build_type» ниже) — иначе нативный legacy-билдер из root конкурирует с actions-деплоем и прод «прыгает» между dist и root.
 Риск-уровень будущего шага: **Level 2/6 boundary — one deploy mechanism switch, one rollback**
 
 ## Цель
@@ -113,6 +113,42 @@ npm run strangler:build:production-like
 ```
 
 Этот режим вызывает `copy-legacy-to-dist.js --omit-build-only` и удаляет Astro routes с `status:"build-only"` из `migration/page-ownership.json`. Дополнительно `page-ownership:dist:production-like` и `dist-publication-audit.js --forbid-dev` падают, если `/dev/astro-test/` всё ещё есть в production-like output.
+
+## Pages build_type — КРИТИЧНО для детерминированного деплоя
+
+GitHub Pages имеет два режима публикации:
+
+- **`legacy`** — нативный билдер берёт `<branch>/<path>` (например `main /`) и публикует сам.
+- **`workflow`** — публикация только через GitHub Actions `actions/deploy-pages` (наш `deploy.yml`).
+
+**Репозиторий ДОЛЖЕН стоять на `build_type: workflow`.** Иначе (legacy) нативный
+билдер публикует root, а `deploy.yml` (path: dist) публикует dist — они **конкурируют**
+за один Pages-таргет, и прод недетерминированно «прыгает» между legacy root и dist.
+Именно это вызывало «instability» в первые дни после switch (2026-06-17/18).
+
+Проверить / переключить через API (нужен PAT с `admin:repo_hook` / Pages rights):
+
+```bash
+# проверить
+gh api repos/FedorMilovanov/gb-is-my-strength/pages --jq '.build_type'
+
+# переключить на workflow (отключить нативный legacy builder)
+gh api -X PUT repos/FedorMilovanov/gb-is-my-strength/pages \
+  -f build_type=workflow
+# или через curl: PUT .../pages -d '{"build_type":"workflow"}'
+```
+
+Если вернуть на `legacy` — `deploy.yml` перестанет быть источником правды, и прод
+вернётся к root (с потерей всех Astro/dist-страниц и стилей).
+
+## paths-фильтры — КРИТИЧНО для автодеплоя после миграции
+
+После миграции **публичные страницы живут в `src/**`** (`src/pages/**/*.astro`,
+`src/content/**/*.mdx`, `src/layouts/**`). Workflow-фильтры обязаны это отражовать:
+`deploy.yml` и `indexnow.yml` обязаны включать `src/**` в `paths`. Иначе коммиты,
+правящие только Astro-источник, **не деплоятся и не индексируются** (именно так
+прод «застрял» на старом коммите 2026-06-18). Защищено assertion'ами в
+`scripts/check-workflows.js`.
 
 ## Rollback
 
