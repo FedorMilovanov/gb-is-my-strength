@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "generatedAt": "2026-06-18T12:00:00+03:00",
+  "generatedAt": "2026-06-18T21:00:00+03:00",
   "project": {
     "name": "Господь Бог — Сила Моя",
     "url": "https://gospod-bog.ru/",
@@ -10,27 +10,23 @@
   },
   "items": [
     {
-      "id": "rodosloviye-adam-hristos",
-      "type": "tool",
-      "url": "/rodosloviye/",
-      "title": "Родословие от Адама до Христа — интерактивное древо",
-      "description": "Интерактивное генеалогическое древо от Адама до Христа: библейские родословия, хронология, возрасты патриархов и мессианская линия.",
-      "section": "Библейские инструменты",
+      "id": "home",
+      "type": "landing",
+      "url": "/",
+      "title": "Господь Бог — Сила Моя",
+      "description": "Материалы для изучения Писания и переводов на русском языке. Реформатское богословие, экзегеза Писания, апологетика — для серьёзного изучения Слова Божьего.",
+      "section": "Главная",
       "editor": "Фёдор Милованов",
-      "readTime": 12,
-      "image": "/images/og-karty-1200x630.webp",
+      "image": "/images/og-preview-1200x630.webp",
       "tags": [
-        "родословие",
-        "Адам",
-        "Авраам",
-        "Давид",
-        "Иисус Христос",
-        "генеалогия"
+        "главная",
+        "библиотека",
+        "навигация"
       ],
       "featured": true,
-      "priority": 94,
+      "priority": 100,
       "publishedTime": "2026-06-18T00:00:00+03:00",
-      "modifiedTime": "2026-06-18T00:00:00+03:00"
+      "modifiedTime": "2026-06-18T21:00:00+03:00"
     },
     {
       "id": "nagornaya-seriya",
@@ -120,6 +116,49 @@
       "modifiedTime": "2026-05-13T00:00:00+03:00"
     },
     {
+      "id": "rodosloviye-adam-hristos",
+      "type": "tool",
+      "url": "/rodosloviye/",
+      "title": "Родословие от Адама до Христа — интерактивное древо",
+      "description": "Интерактивное генеалогическое древо от Адама до Христа: библейские родословия, хронология, возрасты патриархов и мессианская линия.",
+      "section": "Библейские инструменты",
+      "editor": "Фёдор Милованов",
+      "readTime": 12,
+      "image": "/images/og-karty-1200x630.webp",
+      "tags": [
+        "родословие",
+        "Адам",
+        "Авраам",
+        "Давид",
+        "Иисус Христос",
+        "генеалогия"
+      ],
+      "featured": true,
+      "priority": 94,
+      "publishedTime": "2026-06-18T00:00:00+03:00",
+      "modifiedTime": "2026-06-18T00:00:00+03:00"
+    },
+    {
+      "id": "baptisty-rossii-series",
+      "type": "series",
+      "url": "/baptisty-rossii/",
+      "title": "Баптисты России",
+      "description": "Живая серия о русском баптизме: Тифлис, южная штунда, Петербург, 1884, советские гонения, ВСЕХБ, Совет Церквей и подпольная печать.",
+      "section": "Баптисты России",
+      "editor": "Фёдор Милованов",
+      "image": "/images/baptisty-rossii/cover-landing.svg",
+      "tags": [
+        "баптисты",
+        "история ЕХБ",
+        "Россия",
+        "первоисточники"
+      ],
+      "featured": true,
+      "priority": 93,
+      "publishedTime": "2026-06-18T00:00:00+03:00",
+      "modifiedTime": "2026-06-18T21:00:00+03:00"
+    },
+    {
       "id": "dzhon-gill-chast-1-chelovek",
       "type": "article",
       "url": "/articles/dzhon-gill-chast-1-chelovek/",
@@ -191,28 +230,6 @@
       "modifiedTime": "2026-06-04T00:00:00+03:00"
     },
     {
-      "id": "krajne-isporcheno",
-      "type": "article",
-      "url": "/articles/krajne-li-isporcheno-serdce/",
-      "title": "Крайне ли испорчено сердце верующего?",
-      "description": "Разбор Иеремии 17:9–10: сердце, самообман, новое сердце, остаточный грех и мост к Римлянам 7–8.",
-      "section": "Богословие",
-      "editor": "Фёдор Милованов",
-      "readTime": 41,
-      "image": "/images/og-krajne-isporcheno.webp",
-      "tags": [
-        "Иеремия",
-        "сердце",
-        "остаточный грех",
-        "Римлянам 7",
-        "освящение"
-      ],
-      "featured": true,
-      "priority": 90,
-      "modifiedTime": "2026-06-04T00:00:00+03:00",
-      "publishedTime": "2026-04-01T00:00:00+03:00"
-    },
-    {
       "id": "20-antisovetov-pastoru",
       "type": "article",
       "url": "/articles/20-antisovetov-pastoru/",
@@ -262,6 +279,28 @@
       "readingTime": 54
     },
     {
+      "id": "krajne-isporcheno",
+      "type": "article",
+      "url": "/articles/krajne-li-isporcheno-serdce/",
+      "title": "Крайне ли испорчено сердце верующего?",
+      "description": "Разбор Иеремии 17:9–10: сердце, самообман, новое сердце, остаточный грех и мост к Римлянам 7–8.",
+      "section": "Богословие",
+      "editor": "Фёдор Милованов",
+      "readTime": 41,
+      "image": "/images/og-krajne-isporcheno.webp",
+      "tags": [
+        "Иеремия",
+        "сердце",
+        "остаточный грех",
+        "Римлянам 7",
+        "освящение"
+      ],
+      "featured": true,
+      "priority": 90,
+      "modifiedTime": "2026-06-04T00:00:00+03:00",
+      "publishedTime": "2026-04-01T00:00:00+03:00"
+    },
+    {
       "id": "dzhon-gill-spravochnik",
       "type": "article",
       "url": "/articles/dzhon-gill-spravochnik/",
@@ -306,24 +345,41 @@
       "publishedTime": "2016-09-01"
     },
     {
-      "id": "biografii",
-      "type": "series",
-      "url": "/biografii/",
-      "title": "Биографии служителей",
-      "description": "Новый отдел: биографии пасторов, богословов, реформаторов и миссионеров — от Ранней Церкви до XXI века.",
-      "section": "Биографии служителей",
+      "id": "konfessii-russkij-baptizm",
+      "type": "tool",
+      "url": "/konfessii/russkij-baptizm/",
+      "title": "Карта Русского Баптизма — интерактивная 3D-история движения от истоков к современности",
+      "description": "Интерактивная 3D-карта истории русского баптизма: три истока (Тифлис, Украина, Петербург), узлы-планеты с орбитами, карта стран, маршруты, хронология, фигуры.",
+      "section": "Конфессии и Деноминации",
       "editor": "Фёдор Милованов",
-      "readTime": 5,
-      "image": "/images/og-biografii.webp",
+      "image": "/images/og-konfessii-russkij-baptizm-1200x630.webp",
       "tags": [
-        "биографии",
-        "христианское наследие",
-        "история церкви"
+        "русский баптизм",
+        "ЕХБ",
+        "3D карта"
       ],
       "featured": true,
-      "priority": 85,
-      "modifiedTime": "2026-05-28T00:00:00+03:00",
-      "publishedTime": "2026-05-28T00:00:00+03:00"
+      "priority": 88,
+      "publishedTime": "2026-06-18T00:00:00+03:00",
+      "modifiedTime": "2026-06-18T21:00:00+03:00"
+    },
+    {
+      "id": "articles-catalog",
+      "type": "landing",
+      "url": "/articles/",
+      "title": "Все статьи",
+      "description": "Все богословские статьи и переводы: экзегеза, апологетика, герменевтика, разбор заблуждений. Реформатское богословие на русском языке.",
+      "section": "Каталоги",
+      "editor": "Фёдор Милованов",
+      "image": "/images/og-preview-1200x630.webp",
+      "tags": [
+        "статьи",
+        "каталог"
+      ],
+      "featured": false,
+      "priority": 86,
+      "publishedTime": "2026-06-18T00:00:00+03:00",
+      "modifiedTime": "2026-06-18T21:00:00+03:00"
     },
     {
       "id": "kod-da-vinchi",
@@ -347,6 +403,45 @@
       "publishedTime": "2026-04-01T00:00:00+03:00"
     },
     {
+      "id": "biografii",
+      "type": "series",
+      "url": "/biografii/",
+      "title": "Биографии служителей",
+      "description": "Новый отдел: биографии пасторов, богословов, реформаторов и миссионеров — от Ранней Церкви до XXI века.",
+      "section": "Биографии служителей",
+      "editor": "Фёдор Милованов",
+      "readTime": 5,
+      "image": "/images/og-biografii.webp",
+      "tags": [
+        "биографии",
+        "христианское наследие",
+        "история церкви"
+      ],
+      "featured": true,
+      "priority": 85,
+      "modifiedTime": "2026-05-28T00:00:00+03:00",
+      "publishedTime": "2026-05-28T00:00:00+03:00"
+    },
+    {
+      "id": "nagornaya-hub",
+      "type": "series",
+      "url": "/nagornaya/",
+      "title": "Нагорная проповедь",
+      "description": "Исследование Матфея 5–7 и Луки 6: архитектура, синоптическая проблема, адресат, богодухновенность, Закон и Евангелие. 5 частей, 120+ источников.",
+      "section": "Нагорная проповедь",
+      "editor": "Фёдор Милованов",
+      "image": "/images/og-nagornaya-propoved.webp",
+      "tags": [
+        "Нагорная проповедь",
+        "Матфей 5",
+        "Лука 6"
+      ],
+      "featured": false,
+      "priority": 82,
+      "publishedTime": "2026-06-18T00:00:00+03:00",
+      "modifiedTime": "2026-06-18T21:00:00+03:00"
+    },
+    {
       "id": "nagornaya-ch1",
       "type": "article",
       "url": "/nagornaya/chast-1/",
@@ -365,6 +460,177 @@
       "priority": 80,
       "modifiedTime": "2026-05-22T00:46:34+03:00",
       "publishedTime": "2026-05-01T00:00:00+03:00"
+    },
+    {
+      "id": "karty-early-church",
+      "type": "tool",
+      "url": "/karty/early-church/",
+      "title": "Ранняя Церковь — интерактивная карта",
+      "description": "Ранняя Церковь: 11 мест, 4 этапа, 5 сюжетов. Пятидесятница, Пётр, Стефан, обращение Савла.",
+      "section": "Библейские карты",
+      "editor": "Фёдор Милованов",
+      "image": "/images/og-karty-1200x630.webp",
+      "tags": [
+        "карты",
+        "география",
+        "археология"
+      ],
+      "featured": false,
+      "priority": 78,
+      "publishedTime": "2026-06-18T00:00:00+03:00",
+      "modifiedTime": "2026-06-18T21:00:00+03:00"
+    },
+    {
+      "id": "karty-ishod",
+      "type": "tool",
+      "url": "/karty/ishod/",
+      "title": "Исход из Египта — интерактивная карта",
+      "description": "Интерактивная кинематографическая карта Исхода: 11 мест, 6 этапов, 4 сюжетных режима, иврит, археология, источники. От Раамсеса до равнин Моава. 40 лет странствий.",
+      "section": "Библейские карты",
+      "editor": "Фёдор Милованов",
+      "image": "/images/og-karty-1200x630.webp",
+      "tags": [
+        "карты",
+        "география",
+        "археология"
+      ],
+      "featured": false,
+      "priority": 78,
+      "publishedTime": "2026-06-18T00:00:00+03:00",
+      "modifiedTime": "2026-06-18T21:00:00+03:00"
+    },
+    {
+      "id": "karty-maccabim",
+      "type": "tool",
+      "url": "/karty/maccabim/",
+      "title": "Маккавеи — интерактивная карта",
+      "description": "Межзаветный период: 12 мест, 5 этапов, 6 сюжетов. Александр Македонский, Селевкиды, Маккавейское восстание, Хасмонеи.",
+      "section": "Библейские карты",
+      "editor": "Фёдор Милованов",
+      "image": "/images/og-karty-1200x630.webp",
+      "tags": [
+        "карты",
+        "география",
+        "археология"
+      ],
+      "featured": false,
+      "priority": 78,
+      "publishedTime": "2026-06-18T00:00:00+03:00",
+      "modifiedTime": "2026-06-18T21:00:00+03:00"
+    },
+    {
+      "id": "karty-melachim",
+      "type": "tool",
+      "url": "/karty/melachim/",
+      "title": "Царства Израиля и Иуды — интерактивная карта",
+      "description": "Карта объединённого и разделённого царства: 14 ключевых мест, 6 этапов, 5 сюжетов. Саул, Давид, Соломон, пленение.",
+      "section": "Библейские карты",
+      "editor": "Фёдор Милованов",
+      "image": "/images/og-karty-1200x630.webp",
+      "tags": [
+        "карты",
+        "география",
+        "археология"
+      ],
+      "featured": false,
+      "priority": 78,
+      "publishedTime": "2026-06-18T00:00:00+03:00",
+      "modifiedTime": "2026-06-18T21:00:00+03:00"
+    },
+    {
+      "id": "karty-pavel",
+      "type": "tool",
+      "url": "/karty/pavel/",
+      "title": "Путешествия Павла — интерактивная карта",
+      "description": "Интерактивная карта путешествий апостола Павла: 3 миссии, 12 городов, 15 лет служения. Антиохия, Кипр, Галатия, Греция, Эфес, Рим.",
+      "section": "Библейские карты",
+      "editor": "Фёдор Милованов",
+      "image": "/images/og-karty-1200x630.webp",
+      "tags": [
+        "карты",
+        "география",
+        "археология"
+      ],
+      "featured": false,
+      "priority": 78,
+      "publishedTime": "2026-06-18T00:00:00+03:00",
+      "modifiedTime": "2026-06-18T21:00:00+03:00"
+    },
+    {
+      "id": "karty-revelation",
+      "type": "tool",
+      "url": "/karty/revelation/",
+      "title": "Семь церквей Откровения — интерактивная карта",
+      "description": "7 церквей Апокалипсиса: Эфес, Смирна, Пергам, Фиатира, Сардис, Филадельфия, Лаодикия. Послания Христа из Откровения 2–3.",
+      "section": "Библейские карты",
+      "editor": "Фёдор Милованов",
+      "image": "/images/og-karty-1200x630.webp",
+      "tags": [
+        "карты",
+        "география",
+        "археология"
+      ],
+      "featured": false,
+      "priority": 78,
+      "publishedTime": "2026-06-18T00:00:00+03:00",
+      "modifiedTime": "2026-06-18T21:00:00+03:00"
+    },
+    {
+      "id": "karty-shoftim",
+      "type": "tool",
+      "url": "/karty/shoftim/",
+      "title": "Эпоха Судей — интерактивная карта",
+      "description": "Карта эпохи Судей: 12 мест, 6 этапов, 6 сюжетных режимов. От Гофониила до Самсона. Силом, Асор, Мегиддо, Фавор, Газа.",
+      "section": "Библейские карты",
+      "editor": "Фёдор Милованов",
+      "image": "/images/og-karty-1200x630.webp",
+      "tags": [
+        "карты",
+        "география",
+        "археология"
+      ],
+      "featured": false,
+      "priority": 78,
+      "publishedTime": "2026-06-18T00:00:00+03:00",
+      "modifiedTime": "2026-06-18T21:00:00+03:00"
+    },
+    {
+      "id": "karty-shvatim",
+      "type": "tool",
+      "url": "/karty/shvatim/",
+      "title": "12 колен Израиля — интерактивная карта",
+      "description": "Карта 12 колен Израилевых по книге Иисуса Навина: территории, города-убежища, левитские города. 13 ключевых локаций.",
+      "section": "Библейские карты",
+      "editor": "Фёдор Милованов",
+      "image": "/images/og-karty-1200x630.webp",
+      "tags": [
+        "карты",
+        "география",
+        "археология"
+      ],
+      "featured": false,
+      "priority": 78,
+      "publishedTime": "2026-06-18T00:00:00+03:00",
+      "modifiedTime": "2026-06-18T21:00:00+03:00"
+    },
+    {
+      "id": "karty-yeshua",
+      "type": "tool",
+      "url": "/karty/yeshua/",
+      "title": "Жизнь Христа — интерактивная карта",
+      "description": "Карта жизни Христа по четырём Евангелиям: 14 ключевых мест, 5 этапов, 5 сюжетных режимов. От Вифлеема до Воскресения.",
+      "section": "Библейские карты",
+      "editor": "Фёдор Милованов",
+      "image": "/images/og-karty-1200x630.webp",
+      "tags": [
+        "карты",
+        "география",
+        "археология"
+      ],
+      "featured": false,
+      "priority": 78,
+      "publishedTime": "2026-06-18T00:00:00+03:00",
+      "modifiedTime": "2026-06-18T21:00:00+03:00"
     },
     {
       "id": "nagornaya-ch2",
@@ -406,6 +672,196 @@
       "publishedTime": "2026-05-01T00:00:00+03:00"
     },
     {
+      "id": "baptisty-dva-sezda-1884",
+      "type": "article",
+      "url": "/baptisty-rossii/dva-sezda-1884/",
+      "title": "1884: два съезда",
+      "description": "Петербургское совещание и Ново-Васильевский съезд — две разные развилки",
+      "section": "Баптисты России",
+      "editor": "Фёдор Милованов",
+      "image": "/images/baptisty-rossii/cover-03-1884.svg",
+      "tags": [
+        "баптисты",
+        "ЕХБ",
+        "история"
+      ],
+      "featured": false,
+      "priority": 74,
+      "publishedTime": "2026-06-18T00:00:00+03:00",
+      "modifiedTime": "2026-06-18T21:00:00+03:00"
+    },
+    {
+      "id": "baptisty-goneniya-i-sovest",
+      "type": "article",
+      "url": "/baptisty-rossii/goneniya-i-sovest/",
+      "title": "Гонения и совесть",
+      "description": "Военный вопрос, право совести и давление государства",
+      "section": "Баптисты России",
+      "editor": "Фёдор Милованов",
+      "image": "/images/baptisty-rossii/cover-05-conscience.svg",
+      "tags": [
+        "баптисты",
+        "ЕХБ",
+        "история"
+      ],
+      "featured": false,
+      "priority": 74,
+      "publishedTime": "2026-06-18T00:00:00+03:00",
+      "modifiedTime": "2026-06-18T21:00:00+03:00"
+    },
+    {
+      "id": "baptisty-iniciativnaya-gruppa",
+      "type": "article",
+      "url": "/baptisty-rossii/iniciativnaya-gruppa/",
+      "title": "Инициативная группа",
+      "description": "1960–1966: Положение, письмо, Оргкомитет и Совет Церквей",
+      "section": "Баптисты России",
+      "editor": "Фёдор Милованов",
+      "image": "/images/baptisty-rossii/cover-08-initiative.svg",
+      "tags": [
+        "баптисты",
+        "ЕХБ",
+        "история"
+      ],
+      "featured": false,
+      "priority": 74,
+      "publishedTime": "2026-06-18T00:00:00+03:00",
+      "modifiedTime": "2026-06-18T21:00:00+03:00"
+    },
+    {
+      "id": "baptisty-noch-na-kure",
+      "type": "article",
+      "url": "/baptisty-rossii/noch-na-kure/",
+      "title": "Ночь на Куре",
+      "description": "Воронин, Кальвейт, Деляков и первая русская баптистская община",
+      "section": "Баптисты России",
+      "editor": "Фёдор Милованов",
+      "image": "/images/baptisty-rossii/cover-01-kura.svg",
+      "tags": [
+        "баптисты",
+        "ЕХБ",
+        "история"
+      ],
+      "featured": false,
+      "priority": 74,
+      "publishedTime": "2026-06-18T00:00:00+03:00",
+      "modifiedTime": "2026-06-18T21:00:00+03:00"
+    },
+    {
+      "id": "baptisty-peterburgskaya-liniya",
+      "type": "article",
+      "url": "/baptisty-rossii/peterburgskaya-liniya/",
+      "title": "Петербургская линия",
+      "description": "Петербургская линия русского евангелизма: Редсток, Пашков, Корф, Каргель и Проханов как северный поток будущей истории ЕХБ.",
+      "section": "Баптисты России",
+      "editor": "Фёдор Милованов",
+      "image": "/images/baptisty-rossii/cover-04-peterburg.svg",
+      "tags": [
+        "баптисты",
+        "ЕХБ",
+        "история"
+      ],
+      "featured": false,
+      "priority": 74,
+      "publishedTime": "2026-06-18T00:00:00+03:00",
+      "modifiedTime": "2026-06-18T21:00:00+03:00"
+    },
+    {
+      "id": "baptisty-podpolnaya-pechat",
+      "type": "article",
+      "url": "/baptisty-rossii/podpolnaya-pechat/",
+      "title": "Подпольная печать",
+      "description": "Вестник спасения, Вестник истины, Совет родственников, Христианин",
+      "section": "Баптисты России",
+      "editor": "Фёдор Милованов",
+      "image": "/images/baptisty-rossii/cover-09-samizdat.svg",
+      "tags": [
+        "баптисты",
+        "ЕХБ",
+        "история"
+      ],
+      "featured": false,
+      "priority": 74,
+      "publishedTime": "2026-06-18T00:00:00+03:00",
+      "modifiedTime": "2026-06-18T21:00:00+03:00"
+    },
+    {
+      "id": "baptisty-sovetskaya-noch",
+      "type": "article",
+      "url": "/baptisty-rossii/sovetskaya-noch/",
+      "title": "Советская ночь",
+      "description": "Советская ночь русского баптизма: закон 1929 года, Инструкция НКВД, закрытия общин, репрессии и путь к Временному совету.",
+      "section": "Баптисты России",
+      "editor": "Фёдор Милованов",
+      "image": "/images/baptisty-rossii/cover-06-soviet-night.svg",
+      "tags": [
+        "баптисты",
+        "ЕХБ",
+        "история"
+      ],
+      "featured": false,
+      "priority": 74,
+      "publishedTime": "2026-06-18T00:00:00+03:00",
+      "modifiedTime": "2026-06-18T21:00:00+03:00"
+    },
+    {
+      "id": "baptisty-spravochnik",
+      "type": "article",
+      "url": "/baptisty-rossii/spravochnik/",
+      "title": "Справочник",
+      "description": "Живой справочник серии: люди, даты, документы, спорные факты, уровни источников и очередь правок карты",
+      "section": "Баптисты России",
+      "editor": "Фёдор Милованов",
+      "image": "/images/baptisty-rossii/cover-10-reference.svg",
+      "tags": [
+        "баптисты",
+        "ЕХБ",
+        "история"
+      ],
+      "featured": false,
+      "priority": 74,
+      "publishedTime": "2026-06-18T00:00:00+03:00",
+      "modifiedTime": "2026-06-18T21:00:00+03:00"
+    },
+    {
+      "id": "baptisty-vsehib-1944",
+      "type": "article",
+      "url": "/baptisty-rossii/vsehib-1944/",
+      "title": "1944: один союз",
+      "description": "1944 год и создание ВСЕХиБ: как евангельские христиане и баптисты вошли в один советский союз после разрушения прежних структур.",
+      "section": "Баптисты России",
+      "editor": "Фёдор Милованов",
+      "image": "/images/baptisty-rossii/cover-07-vsehib.svg",
+      "tags": [
+        "баптисты",
+        "ЕХБ",
+        "история"
+      ],
+      "featured": false,
+      "priority": 74,
+      "publishedTime": "2026-06-18T00:00:00+03:00",
+      "modifiedTime": "2026-06-18T21:00:00+03:00"
+    },
+    {
+      "id": "baptisty-yuzhnaya-shtunda",
+      "type": "article",
+      "url": "/baptisty-rossii/yuzhnaya-shtunda/",
+      "title": "Южная штунда",
+      "description": "Унгер, Цимбал, Рябошапка, Ратушный, Прицкау, Онкен и Вилер",
+      "section": "Баптисты России",
+      "editor": "Фёдор Милованов",
+      "image": "/images/baptisty-rossii/cover-02-shtunda.svg",
+      "tags": [
+        "баптисты",
+        "ЕХБ",
+        "история"
+      ],
+      "featured": false,
+      "priority": 74,
+      "publishedTime": "2026-06-18T00:00:00+03:00",
+      "modifiedTime": "2026-06-18T21:00:00+03:00"
+    },
+    {
       "id": "nagornaya-ch4",
       "type": "article",
       "url": "/nagornaya/chast-4/",
@@ -445,6 +901,63 @@
       "publishedTime": "2026-05-01T00:00:00+03:00"
     },
     {
+      "id": "konfessii",
+      "type": "landing",
+      "url": "/konfessii/",
+      "title": "Конфессии и Деноминации",
+      "description": "Отдел «Конфессии и Деноминации»: история протестантских движений России с максимальной опорой на первоисточники. Первый материал — «Карта Русского Баптизма» (23 узла, 27 связей).",
+      "section": "Конфессии и Деноминации",
+      "editor": "Фёдор Милованов",
+      "image": "/images/og-konfessii-1200x630.webp",
+      "tags": [
+        "конфессии",
+        "деноминации",
+        "история"
+      ],
+      "featured": false,
+      "priority": 70,
+      "publishedTime": "2026-06-18T00:00:00+03:00",
+      "modifiedTime": "2026-06-18T21:00:00+03:00"
+    },
+    {
+      "id": "nagornaya-istochniki",
+      "type": "reference",
+      "url": "/nagornaya/istochniki/",
+      "title": "Источники серии",
+      "description": "Полная библиография: 66+ позиций. TMSJ, MacArthur GTY, Chicago Statement, реформатские исповедания, отцы Церкви.",
+      "section": "Нагорная проповедь",
+      "editor": "Фёдор Милованов",
+      "image": "/images/og-nagornaya-propoved.webp",
+      "tags": [
+        "источники",
+        "библиография"
+      ],
+      "featured": false,
+      "priority": 52,
+      "publishedTime": "2026-06-18T00:00:00+03:00",
+      "modifiedTime": "2026-06-18T21:00:00+03:00",
+      "readTime": 7
+    },
+    {
+      "id": "nagornaya-nakhodki",
+      "type": "reference",
+      "url": "/nagornaya/nakhodki/",
+      "title": "Верифицированные находки",
+      "description": "21 верифицированная позиция: подтверждённые факты, исправления источников и открытые вопросы исследования.",
+      "section": "Нагорная проповедь",
+      "editor": "Фёдор Милованов",
+      "image": "/images/og-nagornaya-propoved.webp",
+      "tags": [
+        "находки",
+        "исследования"
+      ],
+      "featured": false,
+      "priority": 51,
+      "publishedTime": "2026-06-18T00:00:00+03:00",
+      "modifiedTime": "2026-06-18T21:00:00+03:00",
+      "readTime": 4
+    },
+    {
       "id": "about",
       "type": "page",
       "url": "/about/",
@@ -461,6 +974,20 @@
       "priority": 50,
       "modifiedTime": "2026-04-18T00:00:00+03:00",
       "image": "/images/og-about.webp"
+    },
+    {
+      "id": "hard-texts-landing",
+      "url": "/hard-texts/",
+      "title": "Тайны человеческого сердца",
+      "description": "Серия экзегетических разборов о природе падшего и возрождённого сердца",
+      "type": "series",
+      "tags": [
+        "Иеремия 17",
+        "Римлянам 7",
+        "экзегеза",
+        "сердце"
+      ],
+      "readTime": 2
     },
     {
       "id": "karty",
@@ -501,20 +1028,6 @@
         "карта"
       ],
       "readTime": 1
-    },
-    {
-      "id": "hard-texts-landing",
-      "url": "/hard-texts/",
-      "title": "Тайны человеческого сердца",
-      "description": "Серия экзегетических разборов о природе падшего и возрождённого сердца",
-      "type": "series",
-      "tags": [
-        "Иеремия 17",
-        "Римлянам 7",
-        "экзегеза",
-        "сердце"
-      ],
-      "readTime": 2
     }
   ]
 }
