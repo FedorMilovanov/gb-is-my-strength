@@ -46,8 +46,8 @@
 | 24 | https://lexikon.befg.de/doku.php?id=august_liebig | B | BEFG August Liebig: points to Missionsblatt 1869/1870, Pritzkau pages, Oncken South Russia route. |
 | 25 | https://lexikon.befg.de/doku.php?id=oncken | B | BEFG Oncken: mission trips to South Russia and Missionsblatt context. |
 | 26 | https://gameo.org/index.php?title=Alt-Evangelische_Mennonitische_Br%C3%BCderschaft_in_Russland_%281789-1910%29 | B | GAMEO on Friesen 1911 and Mennonite Brethren source value. |
-| 27 | http://chor.square7.ch/pmfries1.pdf | A/B lead | Friesen 1911 PDF part 1 lead; must extract pages, not dump blindly. |
-| 28 | https://media.chortitza.org/pdf/pdf/pmfries3.pdf | A/B lead | Friesen 1911 PDF part 3 lead. |
+| 27 | http://chor.square7.ch/pmfries1.pdf | A/B lead | Friesen 1911 PDF part 1 lead; bash check 2026-06-18 returned an HTML wrapper, not a PDF payload. Need viewer/manual extraction. |
+| 28 | https://media.chortitza.org/pdf/pdf/pmfries3.pdf | A/B lead | Friesen 1911 PDF part 3 lead; bash check 2026-06-18 returned an HTML wrapper, not a PDF payload. Need viewer/manual extraction. |
 | 29 | https://archive.org/details/TheMennoniteBrotherhoodInRussia17891910 | B | English translation of Friesen; useful secondary/translation access. |
 | 30 | https://gameo.org/index.php?title=Friesen%2C_Peter_Martin_%281849-1914%29 | B | Friesen biography; source book context and Russian Stundists. |
 
