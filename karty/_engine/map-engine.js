@@ -1,5 +1,5 @@
 /**
- * map-engine.js v0.51 — reusable biblical map rendering engine. All-map signatures.
+ * map-engine.js v0.52 — reusable biblical map rendering engine. Signature controls + story focus halo.
  *
  * PUBLIC API:
  *   // Data layer (v0.2):
@@ -522,11 +522,15 @@ const MapEngine = (function() {
 .me-legend{position:absolute;bottom:40px;left:8px;z-index:10;padding:8px 12px;border-radius:10px;background:rgba(0,0,0,.6);border:1px solid rgba(255,255,255,.1);backdrop-filter:blur(8px);font-size:10px;display:none;cursor:pointer;max-width:180px;transition:all .25s cubic-bezier(.4,0,.2,1);overflow:hidden;max-height:32px}.me-legend--expanded{max-height:300px;background:rgba(0,0,0,.8)}
 .me-legend__title{color:#e8c879;font-weight:700;margin-bottom:4px;font-size:9px;letter-spacing:.08em;text-transform:uppercase;display:flex;justify-content:space-between;align-items:center}.me-legend__arrow{display:inline-block;font-size:7px;transition:transform .25s ease}
 .me-legend__item{display:flex;align-items:center;gap:6px;color:#9aa2ae;margin:2px 0}
+.me-legend__item--signature{margin-top:7px;padding-top:7px;border-top:1px solid rgba(232,200,121,.14);align-items:flex-start}
 .me-legend__dot{width:6px;height:6px;border-radius:50%;flex-shrink:0}
+.me-legend__sig-body{min-width:0}.me-legend__sig-label{display:block;color:#e8c879;font-weight:700;font-size:10px;line-height:1.25}.me-legend__sig-desc{display:block;margin-top:3px;color:rgba(233,228,214,.72);font-size:9px;line-height:1.35}
 .me-route-underlay{filter:url(#me-gold-glow);pointer-events:none;mix-blend-mode:screen}
 .me-route-main{filter:url(#me-shadow);transition:opacity .4s ease,stroke-width .4s ease,filter .4s ease}
 .me-route-label{font-size:8px;letter-spacing:.12em;fill:rgba(232,200,121,.72);stroke:#070a10;stroke-width:2.4;paint-order:stroke;pointer-events:none;text-transform:uppercase}
 .me-signature{pointer-events:none;mix-blend-mode:screen}
+.me-story-focus{fill:rgba(232,200,121,.035);stroke:rgba(232,200,121,.46);stroke-width:1.4;stroke-dasharray:9 9;vector-effect:non-scaling-stroke;filter:url(#me-gold-glow);pointer-events:none;animation:meStoryFocus 1.7s ease-out both}
+@keyframes meStoryFocus{0%{opacity:0;stroke-dashoffset:42}35%{opacity:.78}100%{opacity:.38;stroke-dashoffset:0}}
 .me-sig-pulse{animation:meSigPulse 2.8s ease-in-out infinite;transform-box:fill-box;transform-origin:center}
 @keyframes meSigPulse{0%,100%{opacity:.32;transform:scale(.94)}50%{opacity:.72;transform:scale(1.08)}}
 .me-sig-lamp path,.me-sig-lamp line{vector-effect:non-scaling-stroke}
@@ -770,6 +774,7 @@ const MapEngine = (function() {
     const pathsG=document.createElementNS('http://www.w3.org/2000/svg','g');pathsG.id='me-paths';svg.appendChild(pathsG);
     const waypointsG=document.createElementNS('http://www.w3.org/2000/svg','g');waypointsG.id='me-waypoints';svg.appendChild(waypointsG);
     let signatureG=document.createElementNS('http://www.w3.org/2000/svg','g');signatureG.id='me-signature';svg.appendChild(signatureG);
+    const storyFocusG=document.createElementNS('http://www.w3.org/2000/svg','g');storyFocusG.id='me-story-focus';svg.appendChild(storyFocusG);
     const markersG=document.createElementNS('http://www.w3.org/2000/svg','g');markersG.id='me-markers';svg.appendChild(markersG);
     const ctxG=document.createElementNS('http://www.w3.org/2000/svg','g');ctxG.id='me-ctx';svg.appendChild(ctxG);
     canvas.appendChild(svg);
@@ -1061,7 +1066,8 @@ header.appendChild(shareBtn);
     // Legend
 const legend=document.createElement('div');legend.className='me-legend';
 const legendItems=(route.stages||[]).map((st,i)=>`<div class="me-legend__item"><span class="me-legend__dot" style="background:${STAGE_COLORS[i]}"></span>${st.t||''}</div>`).join('');
-legend.innerHTML=`<div class="me-legend__title">Этапы <span class="me-legend__arrow">▾</span></div>${legendItems}`;
+const sigLegend=route.signature?`<div class="me-legend__item me-legend__item--signature me-signature-note" data-signature-note="${esc(route.signature.type||'')}"><span class="me-legend__dot" style="background:#e8c879;box-shadow:0 0 8px rgba(232,200,121,.55)"></span><span class="me-legend__sig-body"><span class="me-legend__sig-label">${esc(route.signature.label||'Сигнатура карты')}</span>${route.signature.description?`<span class="me-legend__sig-desc">${esc(route.signature.description)}</span>`:''}</span></div>`:'';
+legend.innerHTML=`<div class="me-legend__title">Этапы <span class="me-legend__arrow">▾</span></div>${legendItems}${sigLegend}`;
 // Legend arrow rotation on expand
 const legendArrow = legend.querySelector('.me-legend__arrow');
 const legendObserver = new MutationObserver(() => {
@@ -1123,14 +1129,19 @@ container.appendChild(panel);
     }
 
     // Layer toggles
-    if (opts.layers || route.layers) {
-      const layerData = opts.layers || route.layers || [];
+    {
+      const layerData = [...(opts.layers || route.layers || [])];
+      if (route.signature && route.signature.type) {
+        layerData.push({ id:'signature', label: route.signature.label || 'Сигнатура', color:'#e8c879', on:true, selector:'#me-signature', pathSelector:'#me-signature' });
+      }
+      if (layerData.length) {
       const layerPanel = document.createElement('div');
       layerPanel.className = 'me-layers';
       layerPanel.innerHTML = '<div class="me-layers__title">Слои</div>';
       layerData.forEach((layer, i) => {
         const row = document.createElement('div');
         row.className = 'me-layers__row';
+        row.setAttribute('data-layer-id', layer.id || '');
         const color = layer.color || STAGE_COLORS[i] || '#888';
         row.innerHTML = `<span class="me-layers__dot" style="background:${color}"></span><span class="me-layers__name">${esc(layer.label||layer.id||'')}</span>`;
         const toggle = document.createElement('button');
@@ -1160,6 +1171,7 @@ container.appendChild(panel);
         layerPanel.appendChild(row);
       });
       container.appendChild(layerPanel);
+      }
     }
 
 
@@ -1207,6 +1219,7 @@ container.appendChild(panel);
       markersG.innerHTML='';
       waypointsG.innerHTML='';
       signatureG.innerHTML='';
+      storyFocusG.innerHTML='';
       pathsG.innerHTML='';
       // CTX (context) markers
       const ctxG = document.getElementById('me-ctx');
@@ -1290,7 +1303,13 @@ container.appendChild(panel);
 
       function renderSignatureOverlay() {
         const sig = route.signature;
-        if (!sig || !sig.type) return;
+        if (!sig || !sig.type) {
+          signatureG.removeAttribute('data-signature-kind');
+          signatureG.removeAttribute('aria-label');
+          return;
+        }
+        signatureG.setAttribute('data-signature-kind', sig.type);
+        signatureG.setAttribute('aria-label', sig.label || sig.type);
         const placesById = new Map((route.places || []).map(p => [p.id, p]));
         if (sig.type === 'lampstands') {
           const ids = sig.place_ids || (route.places || []).map(p => p.id);
@@ -1397,7 +1416,28 @@ container.appendChild(panel);
           signatureG.appendChild(g);
         }
       }
+      function renderStoryFocus() {
+        const story = (route.stories || []).find(s => s.id === activeStoryId);
+        if (!story || story.id === 'main') return;
+        const pts = visiblePlaces().filter(p => isFinite(p.x) && isFinite(p.y));
+        if (!pts.length) return;
+        const pad = pts.length > 1 ? 54 : 72;
+        const minX = Math.min(...pts.map(p => p.x)) - pad;
+        const maxX = Math.max(...pts.map(p => p.x)) + pad;
+        const minY = Math.min(...pts.map(p => p.y)) - pad;
+        const maxY = Math.max(...pts.map(p => p.y)) + pad;
+        const halo = document.createElementNS('http://www.w3.org/2000/svg','rect');
+        halo.setAttribute('class','me-story-focus');
+        halo.setAttribute('data-story-focus', story.id);
+        halo.setAttribute('x', String(minX));
+        halo.setAttribute('y', String(minY));
+        halo.setAttribute('width', String(Math.max(36, maxX - minX)));
+        halo.setAttribute('height', String(Math.max(36, maxY - minY)));
+        halo.setAttribute('rx', '28');
+        storyFocusG.appendChild(halo);
+      }
       renderSignatureOverlay();
+      renderStoryFocus();
 
       // Place markers
       allPlaces.forEach(place=>{
@@ -2540,7 +2580,7 @@ container.appendChild(panel);
     getPanelModel,getPanelSections,getStoryViewport,getStoryState,getPlaceOrder,auditStoryDefinitions,
     // v0.3 rendering
     createMap,
-    version:'0.51.0',buildDate:'2026-06-18'
+    version:'0.52.0',buildDate:'2026-06-18'
   };
 })();
 

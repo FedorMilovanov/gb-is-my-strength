@@ -30,9 +30,24 @@ const MAPS = ['ishod','pavel','melachim','shoftim','shvatim','yeshua','maccabim'
         try {
           const route = await fetch('./route.json').then(r => r.json());
           if (!route.signature) return {expected:false, ok:true, nodes:0};
+          const root = document.querySelector('#me-signature');
           const nodes = document.querySelectorAll('#me-signature .me-signature').length;
           const kind = route.signature.type;
-          return {expected:true, ok:nodes>0, nodes, kind};
+          const note = document.querySelector('.me-signature-note');
+          const noteOk = !!note && note.getAttribute('data-signature-note') === kind && note.textContent.includes(route.signature.label || '');
+          const layerRow = document.querySelector('.me-layers__row[data-layer-id="signature"]');
+          const toggle = layerRow?.querySelector('.me-layers__toggle');
+          let toggleOk = false;
+          if (toggle && root) {
+            toggle.click();
+            await new Promise(r => setTimeout(r, 80));
+            const off = getComputedStyle(root).display === 'none' || Number(getComputedStyle(root).opacity || 1) < 0.3;
+            toggle.click();
+            await new Promise(r => setTimeout(r, 80));
+            const on = getComputedStyle(root).display !== 'none' && Number(getComputedStyle(root).opacity || 1) >= 0.3;
+            toggleOk = off && on;
+          }
+          return {expected:true, ok:nodes>0 && root?.getAttribute('data-signature-kind')===kind && noteOk && toggleOk, nodes, kind, noteOk, toggleOk};
         } catch (e) { return {expected:true, ok:false, reason:String(e && e.message || e)}; }
       }).catch(e=>({expected:true,ok:false,reason:String(e)}));
       const storyFocus = await page.evaluate(async () => {
@@ -44,7 +59,9 @@ const MAPS = ['ishod','pavel','melachim','shoftim','shvatim','yeshua','maccabim'
         target.click();
         await new Promise(r => setTimeout(r, 950));
         const after = svg?.getAttribute('viewBox') || '';
-        return {tested:true, ok:before !== after, before, after, story:target.textContent.trim()};
+        const halo = document.querySelector('.me-story-focus');
+        const haloBox = halo ? {w:Number(halo.getAttribute('width')||0), h:Number(halo.getAttribute('height')||0), story:halo.getAttribute('data-story-focus')} : null;
+        return {tested:true, ok:before !== after && !!halo && haloBox.w >= 36 && haloBox.h >= 36, before, after, story:target.textContent.trim(), haloBox};
       }).catch(e=>({tested:true,ok:false,reason:String(e)}));
       const sci = await page.evaluate(async () => {
         try {
@@ -74,7 +91,7 @@ const MAPS = ['ishod','pavel','melachim','shoftim','shvatim','yeshua','maccabim'
       const storyOk = !storyFocus.tested || storyFocus.ok;
       const signatureOk = signature.ok !== false;
       const status = errors.length===0 && mapW>0 && routeVizOk && sciOk && storyOk && signatureOk ? '✅' : '❌';
-      console.log(`${status} ${m}: svgCircles=${svgCircles}, routes=${routeViz.mainRoutes}/${routeViz.underlays}, labels=${routeViz.routeLabels}, viewW=${Math.round(routeViz.viewW)}, signature=${signature.expected?(signature.ok?'ok':'BAD'):'none'}, storyFly=${storyFocus.tested?(storyFocus.ok?'ok':'BAD'):'skip'}, sci=${sci.tested?(sci.ok?'ok':'BAD'):'skip'}, mapW=${Math.round(mapW)}px, overflow=${overflow}px, errors=${errors.length}`);
+      console.log(`${status} ${m}: svgCircles=${svgCircles}, routes=${routeViz.mainRoutes}/${routeViz.underlays}, labels=${routeViz.routeLabels}, viewW=${Math.round(routeViz.viewW)}, signature=${signature.expected?(signature.ok?'ok':'BAD'):'none'}, sigToggle=${signature.expected?(signature.toggleOk?'ok':'BAD'):'skip'}, storyFly=${storyFocus.tested?(storyFocus.ok?'ok':'BAD'):'skip'}, sci=${sci.tested?(sci.ok?'ok':'BAD'):'skip'}, mapW=${Math.round(mapW)}px, overflow=${overflow}px, errors=${errors.length}`);
       if(errors.length) errors.slice(0,3).forEach(e=>console.log(`     ${e.slice(0,150)}`));
       if(!routeVizOk) console.log(`     route visual missing: ${JSON.stringify(routeViz)}`);
       if(!signatureOk) console.log(`     signature problem: ${JSON.stringify(signature)}`);

@@ -612,6 +612,7 @@
   "signature": {
     "type": "hanukkah-lights",
     "label": "Ханука · очищение Храма",
-    "origin": "jerusalem_meet"
+    "origin": "jerusalem_meet",
+    "description": "Ханукальные огни отмечают очищение Храма и возвращение богослужения после восстания Маккавеев."
   }
 }
