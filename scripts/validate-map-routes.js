@@ -30,6 +30,7 @@ function countScientificVariants(route) {
   if (!sv || typeof sv !== 'object') return 0;
   return Object.values(sv).reduce((sum, arr) => sum + (Array.isArray(arr) ? arr.length : 0), 0);
 }
+const ALLOWED_VARIANT_STATUSES = new Set(['consensus','primary','candidate','alternative','caveat','minor','rejected']);
 function storyPlaces(story) { return story.place_ids ?? story.places ?? null; }
 function storyStages(story) { return story.stage_ids ?? story.stages ?? null; }
 function validateRoute(file) {
@@ -94,6 +95,22 @@ function validateRoute(file) {
       else sids.forEach(n => { if (!Number.isInteger(n) || n < 0 || n >= stages.length) bad(`${where}: unknown stage index ${n}`); });
     }
   });
+
+  const scientificVariants = route.scientific_variants || {};
+  if (scientificVariants && typeof scientificVariants === 'object' && !Array.isArray(scientificVariants)) {
+    Object.entries(scientificVariants).forEach(([pid, rows]) => {
+      const where = `${label}: scientific_variants.${pid}`;
+      // scientific_variants may include contextual keys that are not rendered as places; keep non-blocking.
+      if (!Array.isArray(rows)) bad(`${where}: must be array`);
+      else rows.forEach((row, i) => {
+        if (!row || typeof row !== 'object') return bad(`${where}[${i}]: not object`);
+        if (!row.title) bad(`${where}[${i}]: missing title`);
+        if (!row.status) bad(`${where}[${i}]: missing status`);
+        else if (!ALLOWED_VARIANT_STATUSES.has(row.status)) bad(`${where}[${i}]: non-canonical status ${row.status}`);
+        if (!row.detail && !row.note && !row.text) bad(`${where}[${i}]: missing detail/note/text`);
+      });
+    });
+  }
 
   const stats = route.meta?.stats || {};
   if (Number.isFinite(stats.places) && stats.places !== places.length) bad(`${label}: meta.stats.places ${stats.places} != places.length ${places.length}`);

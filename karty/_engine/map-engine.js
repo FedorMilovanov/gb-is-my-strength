@@ -1,5 +1,5 @@
 /**
- * map-engine.js v0.45 — reusable biblical map rendering engine. Route glow + evidence badges.
+ * map-engine.js v0.46 — reusable biblical map rendering engine. Variant status polish.
  *
  * PUBLIC API:
  *   // Data layer (v0.2):
@@ -278,7 +278,7 @@ const MapEngine = (function() {
 
   
     // Marker ripple effect
-    function addRipple(cx, cy, color) {
+    function addRipple(parentSvg, cx, cy, color) {
       const ripple = document.createElementNS('http://www.w3.org/2000/svg','circle');
       ripple.setAttribute('cx', cx);
       ripple.setAttribute('cy', cy);
@@ -289,7 +289,7 @@ const MapEngine = (function() {
       ripple.setAttribute('opacity', '0.8');
       ripple.setAttribute('filter', 'url(#me-glow)');
       ripple.style.pointerEvents = 'none';
-      svg.appendChild(ripple);
+      (parentSvg || document.querySelector('.me-canvas svg'))?.appendChild(ripple);
       
       let r = 6;
       function animate() {
@@ -572,10 +572,19 @@ const MapEngine = (function() {
 .me-sci--consensus{border-left:3px solid rgba(74,222,128,.4)}
 .me-sci--alternative{border-left:3px solid rgba(250,204,21,.3)}
 .me-sci-status{font-size:9px;text-transform:uppercase;letter-spacing:.08em;margin-bottom:3px}
-.me-sci--consensus .me-sci-status{color:rgba(74,222,128,.8)}
-.me-sci--alternative .me-sci-status{color:rgba(250,204,21,.7)}
+.me-sci--consensus .me-sci-status,.me-sci--primary .me-sci-status{color:rgba(74,222,128,.86)}
+.me-sci--alternative .me-sci-status,.me-sci--candidate .me-sci-status{color:rgba(250,204,21,.78)}
+.me-sci--caveat .me-sci-status,.me-sci--minor .me-sci-status{color:rgba(159,192,221,.78)}
+.me-sci--rejected .me-sci-status{color:rgba(248,113,113,.82)}
+.me-sci--primary{border-left:3px solid rgba(74,222,128,.45)}
+.me-sci--candidate{border-left:3px solid rgba(250,204,21,.35)}
+.me-sci--caveat{border-left:3px solid rgba(127,167,196,.35)}
+.me-sci--minor{border-left:3px solid rgba(199,165,255,.3)}
+.me-sci--rejected{border-left:3px solid rgba(248,113,113,.35)}
 .me-sci-title{font-weight:700;color:#e9e4d6;margin-bottom:2px}
 .me-sci-detail{font-size:11px;color:#9aa2ae;line-height:1.45}
+.me-sci-sources{margin-top:5px;display:flex;gap:4px;flex-wrap:wrap}
+.me-sci-source{font-size:8px;color:rgba(232,200,121,.65);border:1px solid rgba(232,200,121,.16);border-radius:999px;padding:1px 6px;background:rgba(232,200,121,.04)}
 
 /* Life timeline */
 .me-life{position:absolute;bottom:0;left:0;right:0;z-index:6;padding:4px 8px 6px;overflow-x:auto;-webkit-overflow-scrolling:touch;background:linear-gradient(to top,rgba(7,10,16,.95),rgba(7,10,16,.4));pointer-events:none;display:none}
@@ -1263,7 +1272,7 @@ container.appendChild(panel);
       });
       g.addEventListener('pointerup', () => { if (longPressTimer) { clearTimeout(longPressTimer); longPressTimer = null; } });
       g.addEventListener('pointerleave', () => { if (longPressTimer) { clearTimeout(longPressTimer); longPressTimer = null; } });
-      g.addEventListener('click',()=>{if(longPressFired){longPressFired=false;return;}haptic();addRipple(place.x,place.y,STAGE_COLORS[place.stage]);const d2=g.querySelector('circle:nth-child(3)');if(d2){d2.style.transition='transform .15s cubic-bezier(.34,1.56,.64,1)';d2.style.transform='scale(1.4)';_tm(()=>{d2.style.transform='scale(1)';_tm(()=>{d2.style.transition='r .2s ease, fill .2s ease, filter .2s ease';},160);},160);}open(place.id);});
+      g.addEventListener('click',()=>{if(longPressFired){longPressFired=false;return;}haptic();addRipple(svg,place.x,place.y,STAGE_COLORS[place.stage]);const d2=g.querySelector('circle:nth-child(3)');if(d2){d2.style.transition='transform .15s cubic-bezier(.34,1.56,.64,1)';d2.style.transform='scale(1.4)';_tm(()=>{d2.style.transform='scale(1)';_tm(()=>{d2.style.transition='r .2s ease, fill .2s ease, filter .2s ease';},160);},160);}open(place.id);});
         g.addEventListener('dblclick',(e)=>{e.preventDefault();e.stopPropagation();flyTo(place.x,place.y,Math.min(view.w,450),600);});
       }
         
@@ -1434,6 +1443,26 @@ container.appendChild(panel);
       });
     }
 
+    function _variantMeta(status='') {
+      const map = {
+        consensus: {cls:'me-sci--consensus', label:'Основная версия'},
+        primary: {cls:'me-sci--primary', label:'Основная'},
+        candidate: {cls:'me-sci--candidate', label:'Кандидат'},
+        alternative: {cls:'me-sci--alternative', label:'Альтернатива'},
+        caveat: {cls:'me-sci--caveat', label:'Оговорка'},
+        minor: {cls:'me-sci--minor', label:'Меньшинств.'},
+        rejected: {cls:'me-sci--rejected', label:'Отвергнуто'}
+      };
+      return map[status] || {cls:'', label: status || 'вариант'};
+    }
+
+    function _variantSources(v) {
+      const raw = v.sources || v.source || v.src || '';
+      if (!raw) return '';
+      const parts = Array.isArray(raw) ? raw : String(raw).split(/[;·]/).map(x => x.trim()).filter(Boolean);
+      return `<div class="me-sci-sources">${parts.slice(0,4).map(x => `<span class="me-sci-source">${esc(x)}</span>`).join('')}</div>`;
+    }
+
     function renderTabContent(tab,place){
       const content=panel.querySelector('.me-content');
       content.style.opacity='0';content.style.transform='translateX(4px)';content.style.transition='opacity .18s ease, transform .22s cubic-bezier(.4,0,.2,1)';
@@ -1444,12 +1473,13 @@ container.appendChild(panel);
         const rows = variants[place.id];
         if (rows) {
           content.innerHTML = rows.map(v => {
-            const statusClass = v.status==='consensus'?'me-sci--consensus':v.status==='alternative'?'me-sci--alternative':'';
-            const statusLabel = v.status==='consensus'?'Основная версия':v.status==='alternative'?'Альтернатива':v.status||'';
-            return `<div class="me-sci-item ${statusClass}">
-              <div class="me-sci-status">${statusLabel}</div>
+            const meta = _variantMeta(v.status);
+            const detail = v.detail || v.note || v.text || '';
+            return `<div class="me-sci-item ${meta.cls}">
+              <div class="me-sci-status">${esc(meta.label)}</div>
               <div class="me-sci-title">${esc(v.title)}</div>
-              ${v.detail?`<div class="me-sci-detail">${esc(v.detail)}</div>`:''}
+              ${detail?`<div class="me-sci-detail">${esc(detail)}</div>`:''}
+              ${_variantSources(v)}
             </div>`;
           }).join('');
         }
@@ -2328,7 +2358,7 @@ container.appendChild(panel);
     getPanelModel,getPanelSections,getStoryState,getPlaceOrder,auditStoryDefinitions,
     // v0.3 rendering
     createMap,
-    version:'0.45.0',buildDate:'2026-06-18'
+    version:'0.46.0',buildDate:'2026-06-18'
   };
 })();
 
