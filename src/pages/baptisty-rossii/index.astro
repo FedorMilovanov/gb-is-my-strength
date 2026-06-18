@@ -3,20 +3,20 @@ import BaseLayout from '@/layouts/BaseLayout.astro';
 import { SITE } from '@/data/site';
 
 const canonical = `${SITE.url}/baptisty-rossii/`;
-const title = 'Баптисты России — серия исследований по истории русского баптизма';
-const description = 'Живая серия о русском баптизме: Тифлис, южная штунда, Петербург, 1884, советские гонения, ВСЕХБ, Совет Церквей и подпольная печать. С опорой на первоисточники и архивы.';
+const title = 'Баптисты России: история веры и совести — исследовательская серия';
+const description = 'Исследовательская серия о русском баптизме и ЕХБ: от молоканского поиска и первых крещений к свободе совести, советским гонениям, Совету Церквей и подпольной печати.';
 
 const parts = [
-  { n: '1', time: '~18 мин', title: 'Ночь на Куре', img: 'cover-01-kura.svg', href: '/baptisty-rossii/noch-na-kure/', abstract: 'Воронин, Кальвейт, Деляков и первая русская баптистская община' },
-  { n: '2', time: '~20 мин', title: 'Южная штунда', img: 'cover-02-shtunda.svg', href: '/baptisty-rossii/yuzhnaya-shtunda/', abstract: 'Унгер, Цимбал, Рябошапка, Ратушный, Прицкау, Онкен и Вилер' },
-  { n: '3', time: '~17 мин', title: '1884: два съезда', img: 'cover-03-1884.svg', href: '/baptisty-rossii/dva-sezda-1884/', abstract: 'Петербургское совещание и Ново-Васильевский съезд — две разные развилки' },
-  { n: '4', time: '~21 мин', title: 'Петербургская линия', img: 'cover-04-peterburg.svg', href: '/baptisty-rossii/peterburgskaya-liniya/', abstract: 'Редсток, Пашков, Корф, Каргель и Проханов' },
-  { n: '5', time: '24 мин', title: 'Гонения и совесть', img: 'cover-05-conscience.svg', href: '/baptisty-rossii/goneniya-i-sovest/', abstract: 'Военный вопрос, право совести и давление государства' },
-  { n: '6', time: '28 мин', title: 'Советская ночь', img: 'cover-06-soviet-night.svg', href: '/baptisty-rossii/sovetskaya-noch/', abstract: 'Закон 1929, Инструкция НКВД, закрытия и репрессии' },
-  { n: '7', time: '26 мин', title: '1944: один союз', img: 'cover-07-vsehib.svg', href: '/baptisty-rossii/vsehib-1944/', abstract: 'ВСЕХиБ, Братский Вестник, ХВЕ и Прибалтика' },
-  { n: '8', time: '25 мин', title: 'Инициативная группа', img: 'cover-08-initiative.svg', href: '/baptisty-rossii/iniciativnaya-gruppa/', abstract: '1960–1966: Положение, письмо, Оргкомитет и Совет Церквей' },
-  { n: '9', time: '23 мин', title: 'Подпольная печать', img: 'cover-09-samizdat.svg', href: '/baptisty-rossii/podpolnaya-pechat/', abstract: 'Вестник спасения, Вестник истины, Совет родственников, Христианин' },
-  { n: '10', time: '27 мин', title: 'Справочник', img: 'cover-10-reference.svg', href: '/baptisty-rossii/spravochnik/', abstract: 'Люди, даты, документы, спорные факты и источниковая оценка' },
+  { n: '1', time: '~18 мин', title: 'Воронин и ночь на Куре', img: 'cover-01-kura.svg', href: '/baptisty-rossii/noch-na-kure/', abstract: 'Кальвейт, Деляков, водные молокане и первая русская баптистская община' },
+  { n: '2', time: '~20 мин', title: 'Южная штунда и первые крещения', img: 'cover-02-shtunda.svg', href: '/baptisty-rossii/yuzhnaya-shtunda/', abstract: 'Деревни, крещения, Mennonite Brethren network и баптистская форма' },
+  { n: '3', time: '~17 мин', title: 'Петербург и Ново-Васильевка: две развилки 1884 года', img: 'cover-03-1884.svg', href: '/baptisty-rossii/dva-sezda-1884/', abstract: 'Петербургское совещание и Ново-Васильевский съезд — не одно событие' },
+  { n: '4', time: '~21 мин', title: 'Петербургское пробуждение: Редсток, Пашков и Проханов', img: 'cover-04-peterburg.svg', href: '/baptisty-rossii/peterburgskaya-liniya/', abstract: 'Редсток, Пашков, Корф, Каргель и Проханов как северный поток ЕХБ' },
+  { n: '5', time: '24 мин', title: 'Свобода совести и военный вопрос', img: 'cover-05-conscience.svg', href: '/baptisty-rossii/goneniya-i-sovest/', abstract: 'Военный вопрос, отказ от насилия, государственное давление и право совести' },
+  { n: '6', time: '28 мин', title: 'Советская ночь: закон 1929 года и репрессии', img: 'cover-06-soviet-night.svg', href: '/baptisty-rossii/sovetskaya-noch/', abstract: 'Закон 1929, Инструкция НКВД, закрытия, репрессии и путь к Временному совету' },
+  { n: '7', time: '26 мин', title: 'ВСЕХБ 1944: один союз под надзором', img: 'cover-07-vsehib.svg', href: '/baptisty-rossii/vsehib-1944/', abstract: 'Единство, компромисс и советский надзор после разрушения прежних союзов' },
+  { n: '8', time: '25 мин', title: 'Инициативная группа: путь к Совету Церквей', img: 'cover-08-initiative.svg', href: '/baptisty-rossii/iniciativnaya-gruppa/', abstract: '1960–1966: Положение, Инструктивное письмо, Оргкомитет и Совет Церквей' },
+  { n: '9', time: '23 мин', title: 'Подпольная печать: Вестники, «Христианин» и память узников', img: 'cover-09-samizdat.svg', href: '/baptisty-rossii/podpolnaya-pechat/', abstract: 'Самиздат СЦ ЕХБ, Совет родственников, журналы и издательство «Христианин»' },
+  { n: '10', time: '27 мин', title: 'Справочник источников', img: 'cover-10-reference.svg', href: '/baptisty-rossii/spravochnik/', abstract: 'Люди, даты, документы, уровни источников, research-досье и спорные места' },
 ];
 
 const jsonLd = {
@@ -42,7 +42,7 @@ const jsonLd = {
   <section class="astro-page" data-pagefind-body>
     <header class="astro-page__header">
       <p class="astro-eyebrow">История ЕХБ · Живая исследовательская серия</p>
-      <h1>Баптисты России</h1>
+      <h1>Баптисты России: история веры и совести</h1>
       <p class="astro-page__desc">{description}</p>
     </header>
 
