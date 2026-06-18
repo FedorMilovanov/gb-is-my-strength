@@ -16,10 +16,17 @@ const MAPS = ['ishod','pavel','melachim','shoftim','shvatim','yeshua','maccabim'
       const svgCircles = await page.locator('svg circle').count().catch(()=>0);
       const mapW = await page.evaluate(()=>{const el=document.querySelector('.me-map,#mapRoot');return el?el.getBoundingClientRect().width:0;}).catch(()=>0);
       const overflow = await page.evaluate(()=>document.documentElement.scrollWidth-document.documentElement.clientWidth).catch(()=>0);
-      const status = errors.length===0 && mapW>0 ? '✅' : '❌';
-      console.log(`${status} ${m}: svgCircles=${svgCircles}, mapW=${Math.round(mapW)}px, overflow=${overflow}px, errors=${errors.length}`);
+      const routeViz = await page.evaluate(()=>({
+        underlays: document.querySelectorAll('.me-route-underlay').length,
+        routeLabels: document.querySelectorAll('.me-route-label').length,
+        mainRoutes: document.querySelectorAll('.me-route-main').length,
+      })).catch(()=>({underlays:0,routeLabels:0,mainRoutes:0}));
+      const routeVizOk = routeViz.underlays > 0 && routeViz.mainRoutes > 0;
+      const status = errors.length===0 && mapW>0 && routeVizOk ? '✅' : '❌';
+      console.log(`${status} ${m}: svgCircles=${svgCircles}, routes=${routeViz.mainRoutes}/${routeViz.underlays}, labels=${routeViz.routeLabels}, mapW=${Math.round(mapW)}px, overflow=${overflow}px, errors=${errors.length}`);
       if(errors.length) errors.slice(0,3).forEach(e=>console.log(`     ${e.slice(0,150)}`));
-      if(errors.length||mapW===0) problems.push(m);
+      if(!routeVizOk) console.log(`     route visual missing: ${JSON.stringify(routeViz)}`);
+      if(errors.length||mapW===0||!routeVizOk) problems.push(m);
     } catch(e){ console.log(`❌ ${m}: ${e.message.slice(0,100)}`); problems.push(m); }
     await ctx.close();
   }
