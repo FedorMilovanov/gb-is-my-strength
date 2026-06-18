@@ -678,5 +678,20 @@
       "label": "Воскресение",
       "stage": 4
     }
-  ]
+  ],
+  "signature": {
+    "type": "ministry-light",
+    "label": "Свет служения Христа",
+    "place_ids": [
+      "bethlehem",
+      "nazareth",
+      "jordan_baptism",
+      "capernaum",
+      "mount_beatitudes",
+      "jericho",
+      "jerusalem_passion",
+      "golgotha",
+      "tomb"
+    ]
+  }
 }

@@ -714,5 +714,24 @@
       "label": "Смерть Иисуса Навина",
       "stage": 1
     }
-  ]
+  ],
+  "signature": {
+    "type": "tribe-stars",
+    "label": "Уделы колен",
+    "place_ids": [
+      "judah",
+      "simeon",
+      "benjamin",
+      "dan",
+      "ephraim",
+      "manasseh_n",
+      "issachar",
+      "zebulun",
+      "asher",
+      "naphtali",
+      "gad",
+      "reuben",
+      "manasseh_e"
+    ]
+  }
 }

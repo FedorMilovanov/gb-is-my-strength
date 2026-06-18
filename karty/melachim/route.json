@@ -888,5 +888,23 @@
       "label": "Второй Храм",
       "stage": 5
     }
-  ]
+  ],
+  "signature": {
+    "type": "split-kingdom",
+    "label": "Разделённое царство",
+    "north_ids": [
+      "shechem_kings",
+      "samaria",
+      "carmel",
+      "dan_kings",
+      "bethel_kings",
+      "jezreel"
+    ],
+    "south_ids": [
+      "jerusalem_kings",
+      "hebron_kings",
+      "lachish",
+      "mizpah_judah"
+    ]
+  }
 }

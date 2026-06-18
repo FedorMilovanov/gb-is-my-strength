@@ -57,3 +57,11 @@
 - Current signature maps: `ishod`, `pavel`, `maccabim`, `early-church`, `revelation`.
 - Backward compatibility restored for old wrappers/modules that call `flyTo(cx, cy, zoomFactor)` with values like `0.72` / `0.85`; small positive values are converted to viewBox width to prevent collapsed 1px viewBoxes.
 - `smoke:maps` and `smoke:maps:mobile` now print/check viewBox width (`viewW`) to catch future collapse regressions.
+
+## Update 2026-06-18 — v0.51 signatures completed
+
+- `signature.type = "split-kingdom"` renders North/South kingdom regions and a dividing line (used by Kings / `melachim`).
+- `signature.type = "judge-cycles"` renders cyclical rings around key Judge-era places (used by Judges / `shoftim`).
+- `signature.type = "tribe-stars"` renders a star network for tribal inheritances (used by Tribes / `shvatim`).
+- `signature.type = "ministry-light"` renders a light trail through the Gospel chronology (used by Jesus / `yeshua`).
+- All 9 engine-rendered maps now have a `route.signature`; Avraam remains its own protected flagship renderer.
