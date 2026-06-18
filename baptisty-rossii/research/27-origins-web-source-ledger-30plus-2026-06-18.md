@@ -70,6 +70,8 @@
 | 38 | https://mbchurch.ru/publications/brotherly_journal/150/ | B | Brotherly Herald 1945 no.1; later union context. |
 | 39 | https://mbchurch.ru/publications/brotherly_journal/152/ | B | Brotherly Herald 1945 no.3; later union context. |
 | 40 | https://mbchurch.ru/publications/brotherly_journal/2317/ | B | Brotherly Herald 1963 no.6; Soviet-era series context. |
+| 41 | https://www.mbchurch.ru/publications/brotherly_journal/1628/ | B | `Братский Вестник` №5, 1947; raw snapshot saved as `mbchurch-brotherly-vestnik-1947-05.txt`; useful for anti-foreign-import thesis and late memory of origins. |
+| 42 | https://mbchurch.ru/publications/brotherly_journal/2515/ | B | `Братский Вестник` №4, 1967; raw snapshot saved as `mbchurch-brotherly-vestnik-1967-04.txt`; useful for “three cradles” model and jubilee memory. |
 
 ---
 
