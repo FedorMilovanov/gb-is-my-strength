@@ -121,76 +121,76 @@
     ]
   },
   "russian-baptism": {
-    "title": "Баптисты России",
+    "title": "Баптисты России: история веры и совести",
     "baseUrl": "/baptisty-rossii/",
     "parts": [
       {
         "n": 1,
         "slug": "noch-na-kure",
-        "title": "Ночь на Куре",
+        "title": "Воронин и ночь на Куре",
         "status": "published",
         "readingTime": 18
       },
       {
         "n": 2,
         "slug": "yuzhnaya-shtunda",
-        "title": "Южная штунда",
+        "title": "Южная штунда и первые крещения",
         "status": "published",
         "readingTime": 20
       },
       {
         "n": 3,
         "slug": "dva-sezda-1884",
-        "title": "1884: два съезда",
+        "title": "Петербург и Ново-Васильевка: две развилки 1884 года",
         "status": "published",
         "readingTime": 17
       },
       {
         "n": 4,
         "slug": "peterburgskaya-liniya",
-        "title": "Петербургская линия",
+        "title": "Петербургское пробуждение: Редсток, Пашков и Проханов",
         "status": "published",
         "readingTime": 21
       },
       {
         "n": 5,
         "slug": "goneniya-i-sovest",
-        "title": "Гонения и совесть",
+        "title": "Свобода совести и военный вопрос",
         "status": "published",
         "readingTime": 24
       },
       {
         "n": 6,
         "slug": "sovetskaya-noch",
-        "title": "Советская ночь",
+        "title": "Советская ночь: закон 1929 года и репрессии",
         "status": "published",
         "readingTime": 28
       },
       {
         "n": 7,
         "slug": "vsehib-1944",
-        "title": "1944: один союз",
+        "title": "ВСЕХБ 1944: один союз под надзором",
         "status": "published",
         "readingTime": 26
       },
       {
         "n": 8,
         "slug": "iniciativnaya-gruppa",
-        "title": "Инициативная группа",
+        "title": "Инициативная группа: путь к Совету Церквей",
         "status": "published",
         "readingTime": 25
       },
       {
         "n": 9,
         "slug": "podpolnaya-pechat",
-        "title": "Подпольная печать",
+        "title": "Подпольная печать: Вестники, «Христианин» и память узников",
         "status": "published",
         "readingTime": 23
       },
       {
         "n": 10,
         "slug": "spravochnik",
-        "title": "Справочник",
+        "title": "Справочник источников",
         "status": "published",
         "readingTime": 27
       }
