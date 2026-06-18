@@ -560,5 +560,10 @@
       "label": "Миссии Павла",
       "stage": 3
     }
-  ]
+  ],
+  "signature": {
+    "type": "gospel-waves",
+    "label": "Деян 1:8",
+    "origin": "jerusalem_upper"
+  }
 }

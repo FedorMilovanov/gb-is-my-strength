@@ -21,15 +21,25 @@ const MAPS = ['ishod','pavel','melachim','shoftim','shvatim','yeshua','maccabim'
         routeLabels: document.querySelectorAll('.me-route-label').length,
         mainRoutes: document.querySelectorAll('.me-route-main').length,
       })).catch(()=>({underlays:0,routeLabels:0,mainRoutes:0}));
+      const signature = await page.evaluate(async () => {
+        try {
+          const route = await fetch('./route.json').then(r => r.json());
+          if (!route.signature) return {expected:false, ok:true, nodes:0};
+          const nodes = document.querySelectorAll('#me-signature .me-signature').length;
+          const kind = route.signature.type;
+          return {expected:true, ok:nodes>0, nodes, kind};
+        } catch (e) { return {expected:true, ok:false, reason:String(e && e.message || e)}; }
+      }).catch(e=>({expected:true,ok:false,reason:String(e)}));
       const storyFocus = await page.evaluate(async () => {
         const chips = [...document.querySelectorAll('.me-story-chip')];
-        if (chips.length < 2) return {tested:false, reason:'not-enough-stories'};
+        const target = chips.find(ch => !ch.classList.contains('me-story-chip--active'));
+        if (!target) return {tested:false, reason:'no-inactive-story'};
         const svg = document.querySelector('.me-canvas svg');
         const before = svg?.getAttribute('viewBox') || '';
-        chips[1].click();
+        target.click();
         await new Promise(r => setTimeout(r, 950));
         const after = svg?.getAttribute('viewBox') || '';
-        return {tested:true, ok:before !== after, before, after, story:chips[1].textContent.trim()};
+        return {tested:true, ok:before !== after, before, after, story:target.textContent.trim()};
       }).catch(e=>({tested:true,ok:false,reason:String(e)}));
       const sci = await page.evaluate(async () => {
         try {
@@ -57,13 +67,15 @@ const MAPS = ['ishod','pavel','melachim','shoftim','shvatim','yeshua','maccabim'
       const routeVizOk = routeViz.underlays > 0 && routeViz.mainRoutes > 0;
       const sciOk = !sci.tested || sci.ok;
       const storyOk = !storyFocus.tested || storyFocus.ok;
-      const status = errors.length===0 && mapW>0 && routeVizOk && sciOk && storyOk ? '✅' : '❌';
-      console.log(`${status} ${m}: svgCircles=${svgCircles}, routes=${routeViz.mainRoutes}/${routeViz.underlays}, labels=${routeViz.routeLabels}, storyFly=${storyFocus.tested?(storyFocus.ok?'ok':'BAD'):'skip'}, sci=${sci.tested?(sci.ok?'ok':'BAD'):'skip'}, mapW=${Math.round(mapW)}px, overflow=${overflow}px, errors=${errors.length}`);
+      const signatureOk = signature.ok !== false;
+      const status = errors.length===0 && mapW>0 && routeVizOk && sciOk && storyOk && signatureOk ? '✅' : '❌';
+      console.log(`${status} ${m}: svgCircles=${svgCircles}, routes=${routeViz.mainRoutes}/${routeViz.underlays}, labels=${routeViz.routeLabels}, signature=${signature.expected?(signature.ok?'ok':'BAD'):'none'}, storyFly=${storyFocus.tested?(storyFocus.ok?'ok':'BAD'):'skip'}, sci=${sci.tested?(sci.ok?'ok':'BAD'):'skip'}, mapW=${Math.round(mapW)}px, overflow=${overflow}px, errors=${errors.length}`);
       if(errors.length) errors.slice(0,3).forEach(e=>console.log(`     ${e.slice(0,150)}`));
       if(!routeVizOk) console.log(`     route visual missing: ${JSON.stringify(routeViz)}`);
+      if(!signatureOk) console.log(`     signature problem: ${JSON.stringify(signature)}`);
       if(!storyOk) console.log(`     story flyTo problem: ${JSON.stringify(storyFocus)}`);
       if(!sciOk) console.log(`     sci tab problem: ${JSON.stringify(sci)}`);
-      if(errors.length||mapW===0||!routeVizOk||!sciOk||!storyOk) problems.push(m);
+      if(errors.length||mapW===0||!routeVizOk||!sciOk||!storyOk||!signatureOk) problems.push(m);
     } catch(e){ console.log(`❌ ${m}: ${e.message.slice(0,100)}`); problems.push(m); }
     await ctx.close();
   }

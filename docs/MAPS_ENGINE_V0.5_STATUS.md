@@ -41,3 +41,10 @@
 - Added `getStoryViewport(route, storyId)`: explicit `story.viewport/cam` wins, main uses `meta.viewport_init`, other stories use a padded bbox of their places.
 - `setStory()` now always flies the map to the story focus area, even when route JSON lacks a manual viewport.
 - `smoke:maps` clicks a secondary story chip and verifies that the SVG viewBox changes.
+
+## Update 2026-06-18 — v0.49 data-driven signature overlays
+
+- Added `route.signature` rendering for per-map character without copying renderers.
+- `signature.type = "lampstands"` renders seven glowing lampstands (used by Revelation).
+- `signature.type = "gospel-waves"` renders expanding gospel waves from an origin place (used by Early Church).
+- `smoke:maps` now verifies signature DOM when `route.signature` exists.

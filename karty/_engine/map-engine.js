@@ -1,5 +1,5 @@
 /**
- * map-engine.js v0.48 — reusable biblical map rendering engine. Auto story viewport.
+ * map-engine.js v0.49 — reusable biblical map rendering engine. Signature overlays.
  *
  * PUBLIC API:
  *   // Data layer (v0.2):
@@ -526,6 +526,13 @@ const MapEngine = (function() {
 .me-route-underlay{filter:url(#me-gold-glow);pointer-events:none;mix-blend-mode:screen}
 .me-route-main{filter:url(#me-shadow);transition:opacity .4s ease,stroke-width .4s ease,filter .4s ease}
 .me-route-label{font-size:8px;letter-spacing:.12em;fill:rgba(232,200,121,.72);stroke:#070a10;stroke-width:2.4;paint-order:stroke;pointer-events:none;text-transform:uppercase}
+.me-signature{pointer-events:none;mix-blend-mode:screen}
+.me-sig-pulse{animation:meSigPulse 2.8s ease-in-out infinite;transform-box:fill-box;transform-origin:center}
+@keyframes meSigPulse{0%,100%{opacity:.32;transform:scale(.94)}50%{opacity:.72;transform:scale(1.08)}}
+.me-sig-lamp path,.me-sig-lamp line{vector-effect:non-scaling-stroke}
+.me-sig-wave{fill:none;stroke:rgba(232,200,121,.35);stroke-width:2;vector-effect:non-scaling-stroke;animation:meSigWave 3.6s ease-out infinite;transform-box:fill-box;transform-origin:center}
+.me-sig-wave:nth-child(2){animation-delay:.8s}.me-sig-wave:nth-child(3){animation-delay:1.6s}
+@keyframes meSigWave{0%{opacity:.55;transform:scale(.45)}100%{opacity:0;transform:scale(1.45)}}
 .me-source-badges{display:flex;gap:5px;flex-wrap:wrap;margin-bottom:8px}
 .me-source-badge{font-size:8px;letter-spacing:.08em;text-transform:uppercase;border:1px solid rgba(255,255,255,.1);border-radius:999px;padding:2px 7px;background:rgba(255,255,255,.035);color:#9aa2ae}
 .me-source-badge--primary{color:#9ee7ad;border-color:rgba(74,222,128,.28);background:rgba(74,222,128,.07)}
@@ -752,6 +759,7 @@ const MapEngine = (function() {
 
     const pathsG=document.createElementNS('http://www.w3.org/2000/svg','g');pathsG.id='me-paths';svg.appendChild(pathsG);
     const waypointsG=document.createElementNS('http://www.w3.org/2000/svg','g');waypointsG.id='me-waypoints';svg.appendChild(waypointsG);
+    const signatureG=document.createElementNS('http://www.w3.org/2000/svg','g');signatureG.id='me-signature';svg.appendChild(signatureG);
     const markersG=document.createElementNS('http://www.w3.org/2000/svg','g');markersG.id='me-markers';svg.appendChild(markersG);
     const ctxG=document.createElementNS('http://www.w3.org/2000/svg','g');ctxG.id='me-ctx';svg.appendChild(ctxG);
     canvas.appendChild(svg);
@@ -1188,6 +1196,7 @@ container.appendChild(panel);
     function renderMarkers(){
       markersG.innerHTML='';
       waypointsG.innerHTML='';
+      signatureG.innerHTML='';
       pathsG.innerHTML='';
       // CTX (context) markers
       const ctxG = document.getElementById('me-ctx');
@@ -1268,6 +1277,46 @@ container.appendChild(panel);
         wpLine.setAttribute('opacity', '0.5');
         waypointsG.appendChild(wpLine);
       }
+
+      function renderSignatureOverlay() {
+        const sig = route.signature;
+        if (!sig || !sig.type) return;
+        const placesById = new Map((route.places || []).map(p => [p.id, p]));
+        if (sig.type === 'lampstands') {
+          const ids = sig.place_ids || (route.places || []).map(p => p.id);
+          ids.map(id => placesById.get(id)).filter(Boolean).forEach((place) => {
+            const g = document.createElementNS('http://www.w3.org/2000/svg','g');
+            g.setAttribute('class','me-signature me-sig-lamp');
+            g.setAttribute('transform',`translate(${place.x},${place.y - 18})`);
+            g.setAttribute('data-signature','lampstands');
+            const glow = document.createElementNS('http://www.w3.org/2000/svg','circle');
+            glow.setAttribute('class','me-sig-pulse'); glow.setAttribute('r','22'); glow.setAttribute('fill','rgba(232,200,121,.11)'); glow.setAttribute('stroke','rgba(232,200,121,.18)'); glow.setAttribute('stroke-width','1');
+            g.appendChild(glow);
+            const stem = document.createElementNS('http://www.w3.org/2000/svg','line');
+            stem.setAttribute('x1','0'); stem.setAttribute('y1','-11'); stem.setAttribute('x2','0'); stem.setAttribute('y2','10'); stem.setAttribute('stroke','#e8c879'); stem.setAttribute('stroke-width','1.4'); stem.setAttribute('stroke-linecap','round');
+            g.appendChild(stem);
+            const base = document.createElementNS('http://www.w3.org/2000/svg','path');
+            base.setAttribute('d','M-8,10 H8 M-5,14 H5'); base.setAttribute('stroke','#e8c879'); base.setAttribute('stroke-width','1.2'); base.setAttribute('stroke-linecap','round'); base.setAttribute('fill','none');
+            g.appendChild(base);
+            const cup = document.createElementNS('http://www.w3.org/2000/svg','path');
+            cup.setAttribute('d','M-8,-4 C-5,-12 5,-12 8,-4 M-8,-4 C-4,0 4,0 8,-4'); cup.setAttribute('stroke','#f6d98a'); cup.setAttribute('stroke-width','1.1'); cup.setAttribute('fill','none'); cup.setAttribute('stroke-linecap','round');
+            g.appendChild(cup);
+            const flame = document.createElementNS('http://www.w3.org/2000/svg','path');
+            flame.setAttribute('class','me-sig-pulse'); flame.setAttribute('d','M0,-19 C5,-13 3,-8 0,-6 C-3,-8 -5,-13 0,-19 Z'); flame.setAttribute('fill','#ffd36a'); flame.setAttribute('opacity','.85');
+            g.appendChild(flame);
+            signatureG.appendChild(g);
+          });
+        } else if (sig.type === 'gospel-waves') {
+          const origin = placesById.get(sig.origin || sig.origin_id || 'jerusalem_upper') || (route.places || [])[0];
+          if (!origin) return;
+          const g = document.createElementNS('http://www.w3.org/2000/svg','g');
+          g.setAttribute('class','me-signature'); g.setAttribute('transform',`translate(${origin.x},${origin.y})`); g.setAttribute('data-signature','gospel-waves');
+          [38,76,114].forEach(r => { const c=document.createElementNS('http://www.w3.org/2000/svg','circle'); c.setAttribute('class','me-sig-wave'); c.setAttribute('r',String(r)); g.appendChild(c); });
+          const dot=document.createElementNS('http://www.w3.org/2000/svg','circle'); dot.setAttribute('r','5'); dot.setAttribute('fill','#e8c879'); dot.setAttribute('filter','url(#me-gold-glow)'); g.appendChild(dot);
+          signatureG.appendChild(g);
+        }
+      }
+      renderSignatureOverlay();
 
       // Place markers
       allPlaces.forEach(place=>{
@@ -2400,7 +2449,7 @@ container.appendChild(panel);
     getPanelModel,getPanelSections,getStoryViewport,getStoryState,getPlaceOrder,auditStoryDefinitions,
     // v0.3 rendering
     createMap,
-    version:'0.48.0',buildDate:'2026-06-18'
+    version:'0.49.0',buildDate:'2026-06-18'
   };
 })();
 
