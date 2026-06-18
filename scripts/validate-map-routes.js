@@ -31,8 +31,58 @@ function countScientificVariants(route) {
   return Object.values(sv).reduce((sum, arr) => sum + (Array.isArray(arr) ? arr.length : 0), 0);
 }
 const ALLOWED_VARIANT_STATUSES = new Set(['consensus','primary','candidate','alternative','caveat','minor','rejected']);
+const ALLOWED_SIGNATURE_TYPES = new Set([
+  'water-split','sea-voyage','hanukkah-lights','split-kingdom','judge-cycles',
+  'tribe-stars','ministry-light','gospel-waves','lampstands'
+]);
 function storyPlaces(story) { return story.place_ids ?? story.places ?? null; }
 function storyStages(story) { return story.stage_ids ?? story.stages ?? null; }
+function validateKnownIdList({ label, sig, key, placeIds, min = 1 }) {
+  const rows = sig[key];
+  const where = `${label}: signature.${key}`;
+  if (!Array.isArray(rows)) return bad(`${where}: must be array`);
+  if (rows.length < min) bad(`${where}: must contain at least ${min} id(s)`);
+  const seen = new Set();
+  rows.forEach((id) => {
+    if (typeof id !== 'string' || !id) bad(`${where}: invalid id ${id}`);
+    else if (!placeIds.has(id)) bad(`${where}: unknown place id ${id}`);
+    if (seen.has(id)) bad(`${where}: duplicate id ${id}`);
+    seen.add(id);
+  });
+  return rows;
+}
+function validateSignature(route, label, placeIds) {
+  const sig = route.signature;
+  if (sig === undefined || sig === null) return;
+  if (!sig || typeof sig !== 'object' || Array.isArray(sig)) return bad(`${label}: signature must be object`);
+  if (!sig.type || typeof sig.type !== 'string') bad(`${label}: signature.type missing/invalid`);
+  else if (!ALLOWED_SIGNATURE_TYPES.has(sig.type)) bad(`${label}: signature.type ${sig.type} is not allowed`);
+  if (!sig.label || typeof sig.label !== 'string') bad(`${label}: signature.label missing/invalid`);
+  if (!sig.description || typeof sig.description !== 'string') bad(`${label}: signature.description missing/invalid`);
+  else if (sig.description.length > 260) bad(`${label}: signature.description too long (${sig.description.length} > 260)`);
+
+  const origin = sig.origin || sig.origin_id;
+  const requireOrigin = (fallback) => {
+    if (!origin || typeof origin !== 'string') bad(`${label}: signature.${fallback} origin missing/invalid`);
+    else if (!placeIds.has(origin)) bad(`${label}: signature origin unknown place id ${origin}`);
+  };
+
+  if (sig.type === 'water-split') requireOrigin('water-split');
+  else if (sig.type === 'hanukkah-lights') requireOrigin('hanukkah-lights');
+  else if (sig.type === 'gospel-waves') requireOrigin('gospel-waves');
+  else if (sig.type === 'lampstands') validateKnownIdList({ label, sig, key: 'place_ids', placeIds, min: 7 });
+  else if (sig.type === 'sea-voyage') validateKnownIdList({ label, sig, key: 'place_ids', placeIds, min: 2 });
+  else if (sig.type === 'judge-cycles') validateKnownIdList({ label, sig, key: 'place_ids', placeIds, min: 2 });
+  else if (sig.type === 'tribe-stars') validateKnownIdList({ label, sig, key: 'place_ids', placeIds, min: 3 });
+  else if (sig.type === 'ministry-light') validateKnownIdList({ label, sig, key: 'place_ids', placeIds, min: 2 });
+  else if (sig.type === 'split-kingdom') {
+    const north = validateKnownIdList({ label, sig, key: 'north_ids', placeIds, min: 1 }) || [];
+    const south = validateKnownIdList({ label, sig, key: 'south_ids', placeIds, min: 1 }) || [];
+    const southSet = new Set(south);
+    north.forEach(id => { if (southSet.has(id)) bad(`${label}: signature split-kingdom id appears in both north_ids and south_ids: ${id}`); });
+    if (sig.divide !== undefined && typeof sig.divide !== 'string') bad(`${label}: signature.divide must be SVG path string when present`);
+  }
+}
 function validateRoute(file) {
   const route = readJson(file);
   if (!route) return;
@@ -95,6 +145,8 @@ function validateRoute(file) {
       else sids.forEach(n => { if (!Number.isInteger(n) || n < 0 || n >= stages.length) bad(`${where}: unknown stage index ${n}`); });
     }
   });
+
+  validateSignature(route, label, placeIds);
 
   const scientificVariants = route.scientific_variants || {};
   if (scientificVariants && typeof scientificVariants === 'object' && !Array.isArray(scientificVariants)) {

@@ -17,6 +17,14 @@
 **Стратегия:** `docs/MAPENGINE_PROFESSIONAL_STRATEGY_2026-06-17.md`.
 
 
+## Update 2026-06-18 — v0.52 signature controls + story focus halo
+
+- `route.signature.description` is now part of the data contract for all 9 engine-rendered maps; the legend shows the signature label/description so decorative overlays are explainable, not mysterious.
+- The layer panel auto-adds a `signature` toggle (`#me-signature`) for every signature map.
+- `setStory()`/story chips now get a subtle SVG focus halo (`.me-story-focus`) around the active story bbox, on top of the v0.48 auto-flyTo camera.
+- `maps:validate` now validates allowed signature types and required known place IDs (`origin`, `place_ids`, `north_ids`, `south_ids`) to prevent silent broken overlays.
+- `smoke:maps` now verifies signature legend notes, the signature layer toggle, and story-focus halo dimensions.
+
 ## Update 2026-06-18 — v0.45 visual/evidence polish
 
 - Stage routes now render with a soft underlay glow (`.me-route-underlay`) plus main route (`.me-route-main`).
