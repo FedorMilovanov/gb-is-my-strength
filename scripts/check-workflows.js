@@ -154,6 +154,13 @@ must('.github/workflows/notify-on-failure.yml', notify, /Runtime Interactive Aud
 must('.github/workflows/notify-on-failure.yml', notify, /source-link|Source Link|hard-broken/i, 'notify issue body must explain source link failures');
 must('.github/workflows/notify-on-failure.yml', notify, /interactive|Runtime Interactive/i, 'notify issue body must explain runtime audit failures');
 
+// Astro migration safety: after the root→dist deploy switch, public pages live
+// in src/** (Astro pages, MDX content, layouts). If a workflow drops src/** from
+// its paths filter, src-only commits silently stop deploying/indexing — exactly
+// the regression that left the live site stuck on a stale commit (2026-06-18).
+must('.github/workflows/deploy.yml', deploy, /-\s*['"]src\/\*\*['"]/, 'deploy paths must include src/** so Astro page/content changes deploy (migration: pages now live in src/)');
+must('.github/workflows/indexnow.yml', indexnow, /-\s*['"]src\/\*\*['"]/, 'indexnow paths must include src/** so Astro page/content changes notify search engines');
+
 console.log('\nGB WORKFLOW POLICY CHECK');
 if (issues.length) {
   console.log(`❌ ${issues.length} issue(s):`);

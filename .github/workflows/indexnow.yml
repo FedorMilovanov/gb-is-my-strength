@@ -25,6 +25,9 @@ on:
       - 'robots.txt'
       - 'sitemap.xml'
       - 'feed.xml'
+      # Astro migration: source pages/content/layouts must also trigger indexing.
+      - 'src/**'
+      - 'astro.config.mjs'
 
 permissions:
   contents: write

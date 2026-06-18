@@ -17,12 +17,19 @@ on:
       - 'map/**'
       - 'biografii/**'
       - 'hard-texts/**'
+      # Astro migration: public pages now live in src/ — deploy must fire on
+      # any change to Astro pages, MDX content, layouts, or the strangler manifest.
+      - 'src/**'
+      - 'astro.config.mjs'
+      - 'tsconfig.json'
+      - 'migration/**'
+      - 'scripts/**'
+      - 'package.json'
+      - 'package-lock.json'
       - '.nojekyll'
       - 'favicon*'
       - 'apple-touch-icon.png'
       - 'CNAME'
-      - 'package.json'
-      - 'package-lock.json'
       - '.github/workflows/deploy.yml'
 
   workflow_run:
