@@ -72,6 +72,8 @@
 | 40 | https://mbchurch.ru/publications/brotherly_journal/2317/ | B | Brotherly Herald 1963 no.6; Soviet-era series context. |
 | 41 | https://www.mbchurch.ru/publications/brotherly_journal/1628/ | B | `Братский Вестник` №5, 1947; raw snapshot saved as `mbchurch-brotherly-vestnik-1947-05.txt`; useful for anti-foreign-import thesis and late memory of origins. |
 | 42 | https://mbchurch.ru/publications/brotherly_journal/2515/ | B | `Братский Вестник` №4, 1967; raw snapshot saved as `mbchurch-brotherly-vestnik-1967-04.txt`; useful for “three cradles” model and jubilee memory. |
+| 43 | https://mbchurch.ru/publications/articles/15/15181/ | B/C | Open web text about Voronin; raw snapshot saved as `mbchurch-voronin-article-2017.txt`; key lead for Ivanov manuscript and 1889 Voronin letter. |
+| 44 | https://baptist.org.ru/news/main/view/article/1419261 | lead-only | Kalweit article visible in search snippets but live fetch returned 404 on 2026-06-18; recorded as `baptist-org-kalweit-article-1419261-lead-404.txt`. Need archive/mirror. |
 
 ---
 
