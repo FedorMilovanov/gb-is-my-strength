@@ -17,8 +17,10 @@ const MAPS = ['ishod','pavel','melachim','shoftim','shvatim','yeshua','maccabim'
         const canvas = document.querySelector('.me-canvas');
         const map = document.querySelector('.me-map,#mapRoot');
         const cs = canvas ? getComputedStyle(canvas) : {};
+        const vb = (document.querySelector('.me-canvas svg')?.getAttribute('viewBox') || '').split(/\s+/).map(Number);
         return {
           mapW: map ? Math.round(map.getBoundingClientRect().width) : 0,
+          viewW: vb[2] || 0,
           touchAction: cs.touchAction || 'n/a',
           overflow: document.documentElement.scrollWidth - window.innerWidth,
           smallControls: [...document.querySelectorAll('button')].filter(el => {
@@ -33,9 +35,9 @@ const MAPS = ['ishod','pavel','melachim','shoftim','shvatim','yeshua','maccabim'
       }).catch(()=>({}));
       const status = errors.length===0 && r.mapW>0 ? '✅' : '❌';
       const small = Array.isArray(r.smallControls) ? r.smallControls : [];
-      console.log(`${status} ${m}: mapW=${r.mapW}px, touch-action=${r.touchAction}, overflow=${r.overflow}px, errors=${errors.length}, smallControls=${small.length}`);
+      console.log(`${status} ${m}: mapW=${r.mapW}px, viewW=${Math.round(r.viewW||0)}, touch-action=${r.touchAction}, overflow=${r.overflow}px, errors=${errors.length}, smallControls=${small.length}`);
       if (small.length) small.forEach(x => console.log(`     small ${x}`));
-      if(errors.length||r.mapW===0||(r.overflow>2)||small.length) problems.push(m);
+      if(errors.length||r.mapW===0||(r.viewW||0)<=50||(r.overflow>2)||small.length) problems.push(m);
     } catch(e){ console.log(`❌ ${m}: ${e.message.slice(0,90)}`); problems.push(m); }
     await ctx.close();
   }

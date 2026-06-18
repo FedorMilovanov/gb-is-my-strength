@@ -608,5 +608,10 @@
       "label": "Ирод Великий",
       "stage": 4
     }
-  ]
+  ],
+  "signature": {
+    "type": "hanukkah-lights",
+    "label": "Ханука · очищение Храма",
+    "origin": "jerusalem_meet"
+  }
 }

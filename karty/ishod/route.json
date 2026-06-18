@@ -686,5 +686,10 @@
       "label": "Равнины Моава",
       "stage": 5
     }
-  ]
+  ],
+  "signature": {
+    "type": "water-split",
+    "label": "Переход через море",
+    "origin": "pihahiroth"
+  }
 }
