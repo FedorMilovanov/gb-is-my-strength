@@ -88,40 +88,32 @@ jobs:
       - name: Static publication gates
         run: npm run validate:static-publication
 
-      - name: Build production-like dist
-        run: npm run strangler:build:production-like
-
-      - name: Verify page ownership against dist
-        run: npm run page-ownership:dist:production-like
-
-      - name: Build Pagefind index into dist
-        run: npm run pagefind:build:dist
-
+      # EMERGENCY 2026-06-19:
+      # Dist deploy exposed non-visual-parity Astro shadow pages as production.
+      # Until every promoted route passes visual parity, publish the legacy root
+      # artifact again. This restores premium legacy pages for articles,
+      # biographies, About, Nagornaya, Gill series, etc.
       - name: Publish IndexNow key file from secret
         run: |
           KEY="${{ secrets.INDEXNOW_KEY }}"
           if [ -n "$KEY" ]; then
-            printf '%s' "$KEY" > "dist/${KEY}.txt"
+            printf '%s' "$KEY" > "${KEY}.txt"
           else
             echo "INDEXNOW_KEY secret is empty — key file was not generated"
           fi
 
-      - name: Dist publication audit
-        run: node scripts/dist-publication-audit.js --require-pagefind --forbid-dev
+      - name: Build Pagefind index
+        run: npm run pagefind:build
 
-      - name: CSS parity audit (every page must carry styles)
-        run: npm run dist:css-parity
-
-      - name: Service Worker switch gate
-        run: npm run sw:dist:audit:deploy-switch
-
-      - name: Disable Jekyll filtering
-        run: touch dist/.nojekyll
+      - name: Verify Pagefind index and disable Jekyll filtering
+        run: |
+          test -f pagefind/pagefind.js
+          touch .nojekyll
 
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          path: dist
+          path: .
 
       - name: Deploy to GitHub Pages
         id: deploy
