@@ -52,6 +52,7 @@ const seriesNext = currentIdx < sortedParts.length - 1 ? sortedParts[currentIdx 
 const seriesPrev = currentIdx > 0 ? sortedParts[currentIdx - 1] : null;
 const h1 = data.h1 || data.title;
 const published = data.publishedAt instanceof Date ? data.publishedAt : new Date(data.publishedAt);
+const updated = data.updatedAt instanceof Date ? data.updatedAt : data.updatedAt ? new Date(data.updatedAt) : published;
 
 const ogImage = data.ogImage?.startsWith('http') ? data.ogImage : data.ogImage ? `${SITE.url}${data.ogImage}` : undefined;
 const articleCanonical = canonical;
@@ -67,6 +68,7 @@ const jsonLd = {
       url: canonical,
       inLanguage: 'ru-RU',
       datePublished: published.toISOString(),
+      dateModified: updated.toISOString(),
       author: { '@id': `${SITE.url}/about/#person`, '@type': 'Person', name: SITE.authorName, url: `${SITE.url}/about/` },
       publisher: { '@id': SITE.orgId },
       mainEntityOfPage: { '@type': 'WebPage', '@id': articleCanonical },
@@ -106,7 +108,7 @@ const editorialName = SITE.authorName;
   ogDescription={data.description}
   ogType="article"
   articlePublishedTime={published.toISOString()}
-  articleModifiedTime={published.toISOString()}
+  articleModifiedTime={updated.toISOString()}
   articleAuthor={SITE.authorName}
   jsonLd={jsonLd}
   bodyClass="gbs-world"
@@ -116,8 +118,8 @@ const editorialName = SITE.authorName;
     <img src={coverImg(data.slug)} alt="" width="600" height="315" />
     <div class="gbs2-mobile-title"><span>{seriesTitle}</span><b>{currentPos} · {h1}</b></div>
     <div class="gbs2-mobile-actions">
-      <button class="gbs2-mctl" type="button" aria-label="Переключить тему">◐</button>
-      <button class="gbs2-mctl" type="button" aria-label="Поиск">⌕</button>
+      <button class="gbs2-mctl" type="button" data-gbs2-theme aria-label="Переключить тему">◐</button>
+      <button class="gbs2-mctl" type="button" data-gbs2-search aria-label="Поиск">⌕</button>
     </div>
   </div>
 
@@ -160,10 +162,10 @@ const editorialName = SITE.authorName;
       </div>
 
       <div class="gbs2-rfoot">
-        <button class="gbs2-ctl" type="button" aria-label="Переключить тему">◐</button>
-        <button class="gbs2-ctl" type="button" aria-label="Уменьшить шрифт">A−</button>
-        <button class="gbs2-ctl" type="button" aria-label="Увеличить шрифт">A+</button>
-        <button class="gbs2-ctl" type="button" aria-label="Поделиться">↗</button>
+        <button class="gbs2-ctl" type="button" data-gbs2-theme aria-label="Переключить тему">◐</button>
+        <button class="gbs2-ctl" type="button" data-gbs2-font="down" aria-label="Уменьшить шрифт">A−</button>
+        <button class="gbs2-ctl" type="button" data-gbs2-font="up" aria-label="Увеличить шрифт">A+</button>
+        <button class="gbs2-ctl" type="button" data-gbs2-share aria-label="Поделиться">↗</button>
         {series3dLink && <a class="gbs2-home" href={series3dLink}>3D-карта</a>}
       </div>
     </aside>
@@ -260,21 +262,26 @@ const editorialName = SITE.authorName;
   </div>
 
   <!-- Mobile bottom bar -->
-  <button class="gbs2-bbar" type="button" aria-haspopup="dialog">
-    <b>{Math.round(100 * currentPos / totalParts)}%</b><span>Серия</span>
+  <button class="gbs2-bbar" id="gbs2Bbar" type="button" aria-haspopup="dialog" aria-controls="gbs2Sheet">
+    <b id="gbs2MobPct">{Math.round(100 * currentPos / totalParts)}%</b><span id="gbs2MobSec">Серия</span>
   </button>
 
   <!-- Mobile sheet (simplified) -->
-  <div class="gbs2-sheet" aria-hidden="true">
-    <div class="gbs2-sheet-backdrop"></div>
+  <div class="gbs2-sheet" id="gbs2Sheet" aria-hidden="true">
+    <div class="gbs2-sheet-backdrop" data-gbs2-close></div>
     <section class="gbs2-sheet-panel" role="dialog" aria-modal="true" aria-label={`Серия ${seriesTitle}`}>
       <div class="gbs2-sheet-grab" aria-hidden="true"></div>
       <header class="gbs2-sheet-head">
         <div><span>Серия</span><b>{seriesTitle}</b></div>
-        <button type="button" class="gbs2-sheet-close" aria-label="Закрыть">×</button>
+        <button type="button" class="gbs2-sheet-close" data-gbs2-close aria-label="Закрыть">×</button>
       </header>
+      <div class="gbs2-sheet-tabs" role="tablist">
+        <button type="button" class="gbs2-sheet-tab gbs2-on" data-gbs2-tab="parts">Части</button>
+        <button type="button" class="gbs2-sheet-tab" data-gbs2-tab="toc">Оглавление</button>
+      </div>
       <div class="gbs2-sheet-body">
-        <div class="gbs2-sheet-parts">
+        <div class="gbs2-sheet-pane gbs2-on" data-gbs2-pane="parts">
+          <div class="gbs2-sheet-parts">
           {sortedParts.map((part) => (
             <a class={`gbs2-sheet-part${part.data.slug === data.slug ? ' gbs2-sheet-part--current' : ''}`}
                href={`/baptisty-rossii/${part.data.slug}/`}
@@ -283,7 +290,9 @@ const editorialName = SITE.authorName;
               <span><b>{sortedParts.indexOf(part) + 1}. {part.data.h1 || part.data.title}</b><small>{part.data.readingTime || 18} мин</small></span>
             </a>
           ))}
+          </div>
         </div>
+        <nav class="gbs2-sheet-pane" data-gbs2-pane="toc" aria-label="Оглавление части"></nav>
       </div>
     </section>
   </div>

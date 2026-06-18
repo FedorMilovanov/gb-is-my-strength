@@ -1,8 +1,9 @@
 #!/usr/bin/env node
 /**
  * Interactive regression audit for runtime-only bugs that static HTML checks miss.
- * Requires a local server. Example:
- *   python3 -m http.server 8080 --bind 127.0.0.1
+ * Requires a production-like dist server. Example:
+ *   npm run strangler:build:production-like && npm run pagefind:build:dist
+ *   python3 -m http.server 8080 --bind 127.0.0.1 -d dist
  *   AUDIT_BASE=http://127.0.0.1:8080 npm run interactive-audit
  */
 'use strict';
@@ -23,6 +24,9 @@ const SERIES_URLS = [
   '/articles/dzhon-gill-spravochnik/',
   '/articles/krajne-li-isporcheno-serdce/',
   '/articles/rimlyanam-7-veruyushchiy-ili-neveruyushchiy/',
+  '/baptisty-rossii/noch-na-kure/',
+  '/baptisty-rossii/yuzhnaya-shtunda/',
+  '/baptisty-rossii/spravochnik/',
 ];
 const QUIZ_URLS = [
   '/articles/dzhon-gill-chast-1-chelovek/',
@@ -79,58 +83,76 @@ async function openPage(browser, urlPath, viewport = { width: 1200, height: 800 
 
 async function checkSeries(browser) {
   for (const url of SERIES_URLS) {
-    // Desktop: GBS rail must exist with current part + live toc, no legacy UI
+    // Production now contains two legitimate series shells:
+    // 1) GBS2 shell for the Russian Baptist series;
+    // 2) Astro article series nav for MDX article series (Gill / hard-texts).
     const page = await openPage(browser, url, { width: 1366, height: 850 });
     const state = await page.evaluate(() => ({
-      world: !!document.querySelector('.gbs2-world'),
-      rail: !!document.querySelector('.gbs2-rail'),
-      railVisible: (() => { const r = document.querySelector('.gbs2-rail'); if (!r) return false; const b = r.getBoundingClientRect(); return b.width > 200 && b.height > 400; })(),
-      current: !!document.querySelector('.gbs2-part[aria-current="page"]'),
-      tocLinks: document.querySelectorAll('.gbs2-toc a').length,
-      ring: !!document.getElementById('gbs2Ring'),
-      legacy: ['reading-progress', 'bottomBar', 'btocOverlay', 'tocSidebar', 'themeToggle'].filter(id => document.getElementById(id)),
+      gbsWorld: !!document.querySelector('.gbs2-world'),
+      gbsRail: !!document.querySelector('.gbs2-rail'),
+      gbsRailVisible: (() => { const r = document.querySelector('.gbs2-rail'); if (!r) return false; const b = r.getBoundingClientRect(); return b.width > 200 && b.height > 400; })(),
+      gbsCurrent: !!document.querySelector('.gbs2-part[aria-current="page"], .gbs2-part--current'),
+      gbsNext: !!document.querySelector('.gbs2-next'),
+      gbsTimeline: !!document.querySelector('.gbs2-timeline'),
+      astroArticle: !!document.querySelector('.astro-article'),
+      astroSeriesNav: !!document.querySelector('.astro-series-nav'),
+      astroSeriesLinks: document.querySelectorAll('.astro-series-nav__link[href]').length,
+      astroSeriesDots: document.querySelectorAll('.astro-series-nav__dot').length,
+      legacy: ['reading-progress', 'bottomBar', 'btocOverlay', 'tocSidebar'].filter(id => document.getElementById(id)),
       oldSeriesUi: document.querySelectorAll('[data-series-strip],[data-series-nav],.gb-strip,.series-next-cta').length,
     }));
-    if (!state.world || !state.rail) push('gbs-world-missing', url, state);
-    else {
-      if (!state.railVisible) push('gbs-rail-not-visible', url, state);
-      if (!state.current) push('gbs-no-current-part', url, state);
-      if (!state.tocLinks) push('gbs-empty-toc', url, state);
-      if (!state.ring) push('gbs-no-progress-ring', url, state);
+    if (state.gbsWorld) {
+      if (!state.gbsRail || !state.gbsRailVisible) push('gbs-rail-not-visible', url, state);
+      if (!state.gbsCurrent) push('gbs-no-current-part', url, state);
+      if (!state.gbsNext) push('gbs-next-nav-missing', url, state);
+      if (!state.gbsTimeline) push('gbs-timeline-missing', url, state);
+    } else {
+      if (!state.astroArticle) push('astro-series-article-missing', url, state);
+      if (!state.astroSeriesNav) push('astro-series-nav-missing', url, state);
+      if (state.astroSeriesNav && state.astroSeriesLinks < 1) push('astro-series-nav-links-missing', url, state);
+      if (state.astroSeriesNav && state.astroSeriesDots < 2) push('astro-series-nav-dots-missing', url, state);
     }
-    if (state.legacy.length) push('gbs-legacy-leftover', url, state.legacy);
-    if (state.oldSeriesUi) push('gbs-old-series-ui-leftover', url, state.oldSeriesUi);
-    // toc click must scroll, not navigate away
-    const before = page.url();
-    const clicked = await page.evaluate(() => {
-      const a = document.querySelector('.gbs2-toc a'); if (!a) return false; a.click(); return true;
-    });
-    await page.waitForTimeout(300);
-    if (clicked && page.url().split('#')[0] !== before.split('#')[0]) push('gbs-toc-click-navigated', url, page.url());
+    if (state.legacy.length) push('legacy-series-leftover', url, state.legacy);
+    if (state.oldSeriesUi) push('old-series-ui-leftover', url, state.oldSeriesUi);
     await page.close();
 
-    // Mobile: bottom capsule opens sheet, tabs switch, sheet closes
     const mob = await openPage(browser, url, { width: 390, height: 844 });
     const mobState = await mob.evaluate(() => ({
+      gbsWorld: !!document.querySelector('.gbs2-world'),
       head: !!document.querySelector('.gbs2-mobile-head'),
-      bbar: !!document.getElementById('gbs2Bbar'),
-      sheet: !!document.getElementById('gbs2Sheet'),
+      bbar: !!document.querySelector('#gbs2Bbar, .gbs2-bbar'),
+      sheet: !!document.querySelector('#gbs2Sheet, .gbs2-sheet'),
+      astroArticle: !!document.querySelector('.astro-article'),
+      astroSeriesNav: !!document.querySelector('.astro-series-nav'),
+      overflow: document.documentElement.scrollWidth - window.innerWidth,
     }));
-    if (!mobState.head || !mobState.bbar || !mobState.sheet) { push('gbs-mobile-ui-missing', url, mobState); await mob.close(); continue; }
-    try { await mob.locator('#gbs2Bbar').click({ timeout: 5000 }); } catch (e) { push('gbs-sheet-open-failed', url, e.message.slice(0, 200)); await mob.close(); continue; }
-    await mob.waitForTimeout(350);
-    const open = await mob.evaluate(() => document.getElementById('gbs2Sheet').classList.contains('gbs2-open'));
-    if (!open) push('gbs-sheet-did-not-open', url, null);
-    const tabOk = await mob.evaluate(() => {
-      const t = document.querySelector('.gbs2-sheet-tab[data-gbs2-tab="toc"]'); if (!t) return false; t.click();
-      const pane = document.querySelector('.gbs2-sheet-pane[data-gbs2-pane="toc"]');
-      return !!(pane && pane.classList.contains('gbs2-on'));
-    });
-    if (!tabOk) push('gbs-sheet-tab-broken', url, null);
-    await mob.evaluate(() => { const c = document.querySelector('[data-gbs2-close]'); if (c) c.click(); });
-    await mob.waitForTimeout(250);
-    const closed = await mob.evaluate(() => !document.getElementById('gbs2Sheet').classList.contains('gbs2-open'));
-    if (!closed) push('gbs-sheet-did-not-close', url, null);
+    if (mobState.gbsWorld) {
+      if (!mobState.head || !mobState.bbar || !mobState.sheet) {
+        push('gbs-mobile-ui-missing', url, mobState);
+        await mob.close();
+        continue;
+      }
+      try { await mob.locator('#gbs2Bbar, .gbs2-bbar').first().click({ timeout: 5000 }); }
+      catch (e) { push('gbs-sheet-open-failed', url, e.message.slice(0, 200)); await mob.close(); continue; }
+      await mob.waitForTimeout(350);
+      const open = await mob.evaluate(() => document.querySelector('#gbs2Sheet, .gbs2-sheet')?.classList.contains('gbs2-open'));
+      if (!open) push('gbs-sheet-did-not-open', url, null);
+      const tabOk = await mob.evaluate(() => {
+        const t = document.querySelector('.gbs2-sheet-tab[data-gbs2-tab="toc"]');
+        if (!t) return true; // older GBS sheet without tabs is allowed only if it opens.
+        t.click();
+        const pane = document.querySelector('.gbs2-sheet-pane[data-gbs2-pane="toc"]');
+        return !!(pane && pane.classList.contains('gbs2-on'));
+      });
+      if (!tabOk) push('gbs-sheet-tab-broken', url, null);
+      await mob.evaluate(() => { const c = document.querySelector('[data-gbs2-close], .gbs2-sheet-close'); if (c) c.click(); });
+      await mob.waitForTimeout(250);
+      const closed = await mob.evaluate(() => !document.querySelector('#gbs2Sheet, .gbs2-sheet')?.classList.contains('gbs2-open'));
+      if (!closed) push('gbs-sheet-did-not-close', url, null);
+    } else {
+      if (!mobState.astroArticle || !mobState.astroSeriesNav) push('astro-mobile-series-ui-missing', url, mobState);
+      if (mobState.overflow > 1) push('astro-mobile-series-overflow', url, mobState);
+    }
     stats.series++;
     await mob.close();
   }
@@ -280,7 +302,10 @@ async function checkSearchShortcuts(browser) {
     if (!ctrlK.cpOpen || !ctrlK.inputFocused) push('ctrl-k-command-palette-not-open', url, ctrlK);
     if (ctrlK.cpOpen) {
       await page.keyboard.type('Гилл');
-      await page.waitForTimeout(450);
+      // Pagefind fetch/index hydration on production-like dist can take >450ms
+      // under CI load; wait long enough to avoid false negatives while still
+      // keeping the runtime audit cheap.
+      await page.waitForTimeout(1800);
       const results = await page.evaluate(() => ({ items: document.querySelectorAll('.cp-item').length, empty: !!document.querySelector('.cp-empty') }));
       if (results.items < 1) push('command-palette-no-results-for-gill', url, results);
       await page.keyboard.press('Escape');

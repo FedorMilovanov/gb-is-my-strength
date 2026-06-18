@@ -369,15 +369,44 @@ export default function GenealogyTree({ persons, eras }: { persons: any[]; eras?
   const [showLineage, setShowLineage] = useState('all');
   const [showGolden, setShowGolden] = useState(true);
   const [selected, setSelected] = useState<any>(null);
+  const [zoomLevel, setZoomLevel] = useState(1);
   const [nodes, setNodes, onNodesChange] = useNodesState<Node<Node['data']>>([]);
   const [edges, setEdges, onEdgesChange] = useEdgesState<Edge>([]);
 
-  const { nodes: laidNodes, edges: laidEdges } = useMemo(
+  const { nodes: laidNodes, edges: laidEdges, goldenPath } = useMemo(
     () => buildLayout(persons, { showGolden, showLineage }),
     [persons, showGolden, showLineage]
   );
 
   useEffect(() => { setNodes(laidNodes); setEdges(laidEdges); }, [laidNodes, laidEdges, setNodes, setEdges]);
+
+  // Semantic zoom: the tree starts as a salvation-history skeleton and reveals
+  // more people as the reader moves closer. This keeps 156 persons readable on
+  // mobile/desktop instead of throwing the whole dataset at every zoom level.
+  const detailLevel = zoomLevel < 0.3 ? 0 : zoomLevel < 0.7 ? 1 : 2;
+  const keyRoles = useMemo(() => new Set(['patriarch', 'king', 'messiah', 'prophet', 'matriarch', 'priest', 'governor', 'foster-father']), []);
+
+  useEffect(() => {
+    if (detailLevel === 2) {
+      setNodes(ns => ns.map(n => ({ ...n, hidden: false })));
+      setEdges(es => es.map(e => ({ ...e, hidden: false })));
+      return;
+    }
+    const visibleIds = new Set<string>();
+    persons.forEach(p => {
+      const id = String(p.id);
+      const isGolden = goldenPath.has(id);
+      const isKey = keyRoles.has(p.role);
+      const isAnchor = ['adam', 'noah', 'abram', 'isaac', 'jacob', 'judah', 'david', 'jesus', 'mary'].includes(id);
+      if (detailLevel === 0) {
+        if (isGolden || isAnchor || p.role === 'messiah') visibleIds.add(id);
+      } else if (isGolden || isKey || p.disputed || isAnchor) {
+        visibleIds.add(id);
+      }
+    });
+    setNodes(ns => ns.map(n => ({ ...n, hidden: !visibleIds.has(n.id) })));
+    setEdges(es => es.map(e => ({ ...e, hidden: !(visibleIds.has(e.source) && visibleIds.has(e.target)) })));
+  }, [detailLevel, persons, goldenPath, keyRoles, setNodes, setEdges]);
 
   // search → highlight + center
   useEffect(() => {
@@ -493,11 +522,31 @@ export default function GenealogyTree({ persons, eras }: { persons: any[]; eras?
         </div>
       )}
 
+
+      {/* Semantic zoom indicator */}
+      <div style={{
+        position: 'absolute', bottom: '12px', right: '14px', zIndex: 11,
+        background: 'rgba(13,10,6,0.82)', backdropFilter: 'blur(10px)',
+        borderRadius: '10px', padding: '8px 12px',
+        border: '1px solid rgba(212,168,87,0.12)',
+        display: 'flex', flexDirection: 'column', gap: '2px',
+        alignItems: 'center', pointerEvents: 'none',
+      }}>
+        <div style={{ fontSize: '9px', textTransform: 'uppercase', letterSpacing: '0.1em', color: 'rgba(200,184,154,0.35)' }}>Уровень</div>
+        <div style={{ color: detailLevel === 0 ? '#d4a857' : detailLevel === 1 ? '#e8c87a' : '#ffd700', fontSize: '12px', fontWeight: 700 }}>
+          {detailLevel === 0 ? 'Обзор' : detailLevel === 1 ? 'Ключевые' : 'Все детали'}
+        </div>
+        <div style={{ color: 'rgba(200,184,154,0.3)', fontSize: '8.5px' }}>
+          {detailLevel === 0 ? 'приблизьте для деталей' : detailLevel === 1 ? 'ещё ближе — все имена' : `${nodes.filter(n => !n.hidden).length} из ${persons.length}`}
+        </div>
+      </div>
+
       <ReactFlow
         nodes={nodes} edges={edges}
         onNodesChange={onNodesChange} onEdgesChange={onEdgesChange}
         onNodeClick={onNodeClick}
         nodeTypes={nodeTypes}
+        onViewportChange={(viewport: { zoom: number }) => setZoomLevel(viewport.zoom)}
         fitView fitViewOptions={{ padding: 0.12 }}
         minZoom={0.04} maxZoom={3}
         connectionLineType={ConnectionLineType.SmoothStep}
