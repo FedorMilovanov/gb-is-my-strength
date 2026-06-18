@@ -203,6 +203,7 @@ export default function GenealogyTree({ persons }: { persons: any[] }) {
         zIndex: 10, display: 'flex', gap: '8px', alignItems: 'center',
         background: 'rgba(13,10,6,0.85)', backdropFilter: 'blur(12px)',
         borderRadius: '999px', padding: '8px 16px', border: '1px solid rgba(212,168,87,0.2)',
+        maxWidth: 'calc(100vw - 24px)', flexWrap: 'wrap', justifyContent: 'center',
         boxShadow: '0 4px 20px rgba(0,0,0,0.4)',
       }}>
         <input
@@ -213,7 +214,7 @@ export default function GenealogyTree({ persons }: { persons: any[] }) {
           style={{
             background: 'transparent', border: 'none', color: '#e8d5b0',
             fontFamily: '"Lora", Georgia, serif', fontSize: '13px',
-            outline: 'none', width: '180px',
+            outline: 'none', width: '180px', minHeight: '44px',
           }}
         />
         <span style={{ color: 'rgba(200,184,154,0.4)', fontSize: '12px' }}>|</span>
@@ -224,7 +225,7 @@ export default function GenealogyTree({ persons }: { persons: any[] }) {
             style={{
               background: showLineage === l ? 'rgba(212,168,87,0.2)' : 'transparent',
               border: showLineage === l ? '1px solid rgba(212,168,87,0.4)' : '1px solid transparent',
-              borderRadius: '999px', padding: '4px 10px', cursor: 'pointer',
+              borderRadius: '999px', padding: '10px 14px', cursor: 'pointer', minHeight: '44px',
               color: showLineage === l ? '#d4a857' : 'rgba(200,184,154,0.5)',
               fontFamily: 'inherit', fontSize: '11px', transition: 'all .2s',
             }}
@@ -271,6 +272,8 @@ export default function GenealogyTree({ persons }: { persons: any[] }) {
           50% { box-shadow: 0 0 32px rgba(255,215,0,0.6); }
         }
         .react-flow__attribution { display: none !important; }
+        .react-flow__controls-button { width: 44px !important; height: 44px !important; min-width: 44px !important; min-height: 44px !important; }
+        .react-flow__controls { overflow: hidden; }
         .genealogy-node:hover {
           transform: scale(1.05) !important;
           box-shadow: 0 0 24px rgba(212,168,87,0.3) !important;

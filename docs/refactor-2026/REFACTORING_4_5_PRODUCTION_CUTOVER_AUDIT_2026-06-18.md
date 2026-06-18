@@ -25,7 +25,7 @@
    - `npm run contract:extract:root` и `npm run contract:extract:dist` — 51 public pages, 0 issues;
    - `npm run source:links` — выявил hard external-link debt; часть исправлена в этом batch, см. §5.
 4. Проверена история критических регрессий по `git log --since=2026-06-14` и `git log --grep='fix|regress|critical|deploy|noindex|CSS|paths'`.
-5. После hardening batch повторно запущены: `validate:static-publication` ✅ (`audit-pro` 165 passed · 0 warnings · 0 errors), `workflows:check` ✅, `source:links:dist` ✅, `strangler:deploy-readiness` ✅, final `strangler:audit:production-like` ✅, `smoke:maps` ✅, `smoke:maps:mobile` ✅, `smoke:content:mobile` ✅, `npm audit --omit=dev` ✅ (0 vulns).
+5. После hardening batch повторно запущены: `validate:static-publication` ✅ (`audit-pro` 164 passed · 0 warnings · 0 errors), `workflows:check` ✅, `source:links:dist` ✅, `strangler:deploy-readiness` ✅, final `strangler:audit:production-like` ✅, `smoke:maps` ✅, `smoke:maps:mobile` ✅ (smallControls=0 across 9 engine maps), `smoke:content:mobile` ✅, `npm audit --omit=dev` ✅ (0 vulns).
 
 Локальное примечание: рабочая среда по умолчанию имела Node 20, но проект требует Node `>=22.12.0`; gates запускались через Node 22. В CI уже стоит Node 22.
 
@@ -137,6 +137,15 @@
 - `migration/sw-cache-version-baseline.json` превращён из future-switch baseline в historical completed-switch baseline.
 - `scripts/check-page-ownership.js` и `scripts/sw-dist-readiness-audit.js` сообщения синхронизированы с dist-as-production.
 - Astro check hints убраны из `ArticleLayout.astro` / `SeriesArticleLayout.astro`.
+
+### 5.5 Deep UI parity pass after genealogy route
+
+После появления `/rodosloviye/` выполнен дополнительный legacy↔dist проход:
+
+- semantic compare по ключевым public routes: canonical/H1/H2/word-count/CSS/Pagefind;
+- Playwright desktop/mobile compare для обычных статей, серии «Баптисты России», Нагорной, карт, `/map/`, 3D-баптизма и `/rodosloviye/`;
+- закрыты touch-target долги: MapEngine controls/theme/share/layer toggles/photo close, `/map/` card close, breadcrumbs wrapper 3D-баптизма;
+- `smoke:maps` расширен до всех 9 engine maps; `smoke:maps:mobile` теперь проверяет small map controls `<44px` и падает при регрессии.
 
 ---
 
