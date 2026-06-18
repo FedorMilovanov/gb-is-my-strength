@@ -86,19 +86,11 @@ jobs:
             exit 0
           fi
 
-          # Collect changed URLs from pushed commits — includes catalog pages.
-          # GitHub runs bash with -o pipefail; grep with no matches must not fail deploy.
+          # Collect changed files from the pushed commits and map them to public URLs.
+          # Important after the Astro/dist switch: public pages may change through
+          # src/pages/**/*.astro or src/content/**/*.mdx, not just legacy HTML files.
           CHANGED=$(git diff --name-only ${{ github.event.before }} ${{ github.event.after }} 2>/dev/null || true)
-          URLS=$(printf '%s\n' "$CHANGED" \
-            | grep -E '^(index\.html|about/index\.html|articles/index\.html|pastor-series/index\.html|nagornaya/index\.html|(articles|nagornaya)/[^/]+/index\.html)$' || true)
-          URLS=$(printf '%s\n' "$URLS" \
-            | sed 's|^index\.html$||' \
-            | sed 's|/index\.html$|/|' \
-            | sed "/^\$/!s|^|${BASE}/|" \
-            | jq -R 'select(length > 0)' | jq -sc .)
-
-          # Always include homepage so IndexNow gets at least one canonical URL.
-          URLS=$(echo "$URLS" | jq -c --arg home "${BASE}/" '. + [$home] | unique')
+          URLS=$(printf '%s\n' "$CHANGED" | node scripts/build-indexnow-urls.js --base "$BASE")
 
           echo "urls=$URLS"             >> $GITHUB_OUTPUT
           echo "key=$KEY"               >> $GITHUB_OUTPUT

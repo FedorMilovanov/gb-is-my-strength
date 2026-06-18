@@ -3,8 +3,8 @@
 Архитектурная и редакционная документация сайта с материалами для серьёзного изучения Писания:
 экзегеза, богословие, апологетика, переводы.
 
-**Версия документа:** v6 · 2026-06-06 · редакционно-источниковая политика
-**Прод:** https://gospod-bog.ru · GitHub Pages из ветки `main`
+**Версия документа:** v7 · 2026-06-18 · refactoring 4.5 / dist-as-production
+**Прод:** https://gospod-bog.ru · GitHub Pages из `main`, artifact: Astro/strangler `dist/`
 
 > Этот README — для **владельца, редакторов и контент-менеджеров.**
 > Если ты — ИИ-агент, твой первый документ — [`AGENTS.md`](AGENTS.md).
@@ -16,6 +16,7 @@
 ## Содержание
 
 1. [Стек и хостинг](#1-стек-и-хостинг)
+1.1. [Рефакторинг 4.5: текущий production-режим](#11-рефакторинг-45-текущий-production-режим)
 2. [SEO-инфраструктура (IndexNow + sitemap + feed + JSON-LD)](#2-seo-инфраструктура)
 3. [Правила атрибуции авторства](#3-правила-атрибуции-авторства)
 4. [Добавление новой статьи — полный чеклист](#4-добавление-новой-статьи)
@@ -30,13 +31,31 @@
 
 ## 1. Стек и хостинг
 
-- **HTML + CSS + JS, vanilla**, без bundler'а, без TypeScript, без React.
-- **Хостинг:** GitHub Pages, автодеплой через `.github/workflows/deploy.yml`.
-- **Поисковая индексация:** `.github/workflows/indexnow.yml` (Яндекс + Bing).
+- **Production output:** GitHub Pages публикует **Astro/strangler `dist/`**, а не корень репозитория. Источник истины по деплою — `.github/workflows/deploy.yml` (`upload-pages-artifact path: dist`).
+- **Build stack:** Astro 6 + MDX/content collections + build-time strangler. Astro генерирует уже мигрированные страницы; `scripts/copy-legacy-to-dist.js` докладывает оставшиеся legacy-страницы/ассеты в `dist/` без перезаписи Astro-owned routes.
+- **Runtime stack:** статический HTML + handcrafted CSS + vanilla JS. React не является runtime-стеком сайта; Tailwind допускается только в уже изолированных/route-scoped местах (см. `AGENTS.md`).
+- **Legacy root:** старые HTML/CSS/JS в корне сохраняются как rollback/source layer и как источник для ещё не переписанных страниц. `dist/` не коммитится.
+- **Поисковая индексация:** `.github/workflows/indexnow.yml` (Яндекс + Bing) теперь мапит изменения `src/**`/MDX в реальные публичные URL.
 - **Алерты на падение CI:** `.github/workflows/notify-on-failure.yml` (открывает GitHub Issue).
-- **Service Worker** (`sw.js`) — версионируется автоматически (`scripts/cache-bust.js`).
-- **Node** для build-скриптов и Astro scaffold: `>=22.12.0`.
+- **Service Worker** (`sw.js`) — версионируется автоматически (`scripts/cache-bust.js`); deploy-switch cache baseline хранится в `migration/sw-cache-version-baseline.json`.
+- **Node:** `>=22.12.0`.
 - **CNAME:** `gospod-bog.ru`.
+
+### 1.1. Рефакторинг 4.5: текущий production-режим
+
+Состояние на 2026-06-18:
+
+| Направление | Статус |
+|---|---|
+| Root→dist deploy switch | **Выполнен.** Pages artifact = `dist/`; Pages должен быть в режиме `build_type: workflow`. |
+| Публичный URL-контракт | **51 public pages**, root/dist contract compare green. |
+| Astro ownership | Все публичные baseline routes объявлены в `migration/page-ownership.json`; статус Astro routes — `production-dist`. |
+| Pagefind | Строится в `dist/pagefind` перед деплоем. |
+| CSS parity | Blocking gate: `npm run dist:css-parity` — 51/51 страниц должны нести project CSS. |
+| Source links | Weekly/manual workflow строит production-like `dist` и проверяет именно его, не stale legacy root. |
+| Rollback | Малый rollback: вернуть Pages artifact на root только атомарно вместе с Pagefind/IndexNow/.nojekyll/SW-проверками. |
+
+**Можно ли переходить на новый рефакторинг-сайт?** Технически production уже перешёл на `dist`. Но это не означает «байт-в-байт тот же сайт»: часть страниц — полноценные Astro/MDX версии, часть — legacy-copy внутри `dist`, а карты активно развиваются на MapEngine. Перед крупными визуальными/контентными изменениями обязательно прогонять `npm run strangler:deploy-readiness`.
 
 ---
 
@@ -118,16 +137,16 @@
 
 ### Чеклист (короткий)
 
-1. Создать папку `articles/<slug>/index.html` по шаблону из §5.
+1. Для новых production-страниц предпочитать Astro/MDX: `src/content/articles/<slug>.mdx` + route в `src/pages/<section>/<slug>/index.astro` по существующим шаблонам. Legacy HTML в корне править/создавать только если он остаётся fallback/source layer для конкретного URL.
 2. Подготовить OG-изображение **1200 × 630 px** (`.webp` или `.jpg`), положить в `/images/`.
-3. Обновить `sitemap.xml` (добавить `<url>` с ISO8601 `lastmod`).
-4. Обновить `feed.xml` (добавить `<item>` в начало `<channel>` + обновить `<lastBuildDate>`).
-5. (Если статья — часть серии) обновить `data/series.json`.
-6. Обновить `data/search-manifest.json` для Ctrl+K поиска.
-7. Добавить карточку на `/articles/index.html` (и при необходимости — на `/index.html`).
-8. `npm run cache-bust` (хеши + SW CACHE_VERSION).
-9. `npm run validate:all` + `node scripts/audit-pro.js` — оба должны быть PASS, включая проверку языка цитат.
-10. `git commit && git push main` — IndexNow сам уведомит Яндекс/Bing.
+3. Обновить `sitemap.xml` и `feed.xml`, если URL должен быть публичным и индексируемым.
+4. Обновить `data/search-manifest.json`, `data/series.json` и связанные hub-карточки.
+5. Объявить новый Astro route в `migration/page-ownership.json`; если меняется public baseline — обновить `data/public-content-baseline.json` осознанно.
+6. `npm run cache-bust` после правок CSS/JS/SW-visible assets.
+7. Минимальные gates: `npm run validate:static-publication` + `npm run workflows:check`.
+8. Для refactor/deploy-impact правок: `npm run strangler:deploy-readiness`.
+9. Для внешних источников: `npm run source:links:dist` (network audit; 403/timeout обычно warnings, TLS/404 — hard errors).
+10. `git commit && git push main` — IndexNow сам уведомит Яндекс/Bing по изменённым production URL.
 
 ### Slug
 
@@ -521,13 +540,22 @@ npm run seo-audit
 # Полная валидация (strict + SEO)
 npm run validate:all
 
+# Главный production/static gate: root contracts + maps + Astro ownership + content guards
+npm run validate:static-publication
+
+# Полный deploy-readiness для refactor-impact правок (builds production-like dist + Playwright smoke)
+npm run strangler:deploy-readiness
+
+# Production source-link audit (builds dist, checks dist external links)
+npm run source:links:dist
+
 # Дизайн-токены
 npm run tokens:check
 
-# Главный аудит (36 проверок)
+# Главный аудит
 node scripts/audit-pro.js
 
-# CI-чек (cache-bust + tokens + validate:all)
+# CI-чек (cache-bust + static-publication + workflow policy)
 npm run ci:check
 
 # Visual QA (Playwright + chromium, опционально)
@@ -549,12 +577,12 @@ npm run editorial:lint
 # Data consistency: reading time in HTML / search-manifest / series.json
 npm run data:consistency
 
-# External source links (network audit; 403/429/timeouts are warnings, 404/TLS/bad hosts are errors)
-npm run source:links
+# External source links in production-like dist (403/429/timeouts are warnings, 404/TLS/bad hosts are errors)
+npm run source:links:dist
 
 # CI/workflows:
 # - indexnow.yml and deploy.yml run validate:static-publication as blocking gates.
-# - source-links.yml runs npm run source:links weekly/manual.
+# - source-links.yml builds production-like dist and runs source-link-audit --root dist weekly/manual.
 # - interactive-audit.yml runs npm run interactive-audit weekly/manual.
 # - workflows:check protects these workflow contracts from accidental weakening.
 npm run workflows:check
@@ -578,9 +606,20 @@ npm run avif:build
 
 **Перед коммитом, как минимум:**
 ```bash
-npm run cache-bust
-npm run validate:all
+npm run cache-bust            # если были CSS/JS/SW-visible asset правки
+npm run validate:static-publication
+npm run workflows:check
 node scripts/audit-pro.js     # должно: ✅ PASSED
+```
+
+**Если правка затрагивает Astro/layout/deploy/maps/search/SW:**
+```bash
+npm run strangler:deploy-readiness
+```
+
+**Если правка затрагивает внешние источники/ссылки:**
+```bash
+npm run source:links:dist
 ```
 
 ---
@@ -589,12 +628,20 @@ node scripts/audit-pro.js     # должно: ✅ PASSED
 
 ```
 /
-├── index.html                              ← главная
-├── 404.html                                ← страница ошибки
-├── about/index.html                        ← о проекте
+├── src/                                    ← Astro/MDX production sources
+│   ├── pages/                              ← Astro routes (production-dist ownership)
+│   ├── content/articles/*.mdx              ← MDX content collections
+│   ├── layouts/, components/, styles/      ← shared Astro shell/SEO/layouts
+│   └── utils/legacyShadow.ts               ← wrapper для legacy-faithful routes
+├── migration/page-ownership.json           ← route ownership manifest для dist
+├── dist/                                   ← generated Pages artifact (НЕ коммитить)
+│
+├── index.html                              ← legacy root/fallback source главной
+├── 404.html                                ← legacy/system page
+├── about/index.html                        ← legacy source for /about/
 ├── articles/
-│   ├── index.html                          ← каталог всех статей
-│   └── {slug}/index.html                   ← каждая статья
+│   ├── index.html                          ← legacy source каталога
+│   └── {slug}/index.html                   ← legacy source статьи
 ├── biografii/index.html                    ← каталог биографий
 ├── pastor-series/index.html                ← серия «Тёмная сторона кафедры»
 ├── nagornaya/                              ← серия «Нагорная проповедь»
@@ -658,7 +705,7 @@ node scripts/audit-pro.js     # должно: ✅ PASSED
 │   ├── deep-check.js, _audit-deep.js       ← внутренние
 │   └── resize_og.py                        ← Pillow для OG-картинок
 │
-├── package.json                            ← scripts только, без runtime deps
+├── package.json                            ← scripts + Astro/tooling devDependencies
 └── .github/workflows/
     ├── deploy.yml                          ← деплой на GitHub Pages
     ├── indexnow.yml                        ← Яндекс + Bing уведомления
@@ -676,6 +723,7 @@ node scripts/audit-pro.js     # должно: ✅ PASSED
 
 | Версия | Дата | Что изменилось |
 |---|---|---|
+| **v7** | 2026-06-18 | README приведён к refactoring 4.5: production теперь Astro/strangler `dist`, добавлены deploy-readiness/source-links-dist/ownership notes и обновлён authoring checklist. |
 | **v6** | 2026-06-06 | Добавлен документ `docs/EDITORIAL-SOURCE-POLICY.md`; README связан с редакционно-источниковой политикой, а число проверок `audit-pro` обновлено до 36. |
 | v5 | 2026-06-06 | Правило раздела 4.1 подкреплено автоматической проверкой в `validate.js` и `audit-pro.js`; английские прямые цитаты в русских статьях теперь блокируются проверками. |
 | v4 | 2026-06-06 | Добавлен раздел 4.1: русские статьи не должны содержать английские прямые цитаты в читательском тексте; английские названия источников, URL, DOI и библиографические данные допустимы. |

@@ -3,7 +3,7 @@ const BASE = process.env.AUDIT_BASE || 'http://127.0.0.1:8090';
 const PAGES = [
   '/', '/articles/kod-da-vinchi/', '/articles/dzhon-gill-chast-1-chelovek/',
   '/baptisty-rossii/goneniya-i-sovest/', '/baptisty-rossii/noch-na-kure/',
-  '/about/', '/articles/', '/biografii/', '/hard-texts/', '/nagornaya/chast-1/'
+  '/about/', '/articles/', '/biografii/', '/hard-texts/', '/rodosloviye/', '/nagornaya/chast-1/'
 ];
 (async () => {
   const browser = await chromium.launch();

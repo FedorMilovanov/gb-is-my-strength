@@ -61,10 +61,10 @@ must('.github/workflows/deploy.yml', deploy, /npm run validate:static-publicatio
 must('.github/workflows/deploy.yml', deploy, /^concurrency:\s*$/m, 'deploy must keep concurrency');
 must('.github/workflows/deploy.yml', deploy, /actions\/upload-pages-artifact@v3/, 'deploy must upload a Pages artifact');
 
-// Strangler safety rail: production currently uploads the legacy repository root.
-// If a future commit switches the Pages artifact to dist, it must also switch
-// Pagefind, IndexNow key placement, .nojekyll placement and deploy-like dist audits
-// in the same small PR. This prevents a half-switched workflow.
+// Strangler safety rail: production now uploads the Astro/strangler dist artifact.
+// If anyone rolls back to root, the workflow must be internally consistent;
+// if it stays on dist, Pagefind, IndexNow key placement, .nojekyll placement
+// and deploy-like dist audits must remain coupled.
 const deployUploadsDist = /^\s*path:\s*['"]?(?:\.\/)?dist\/?['"]?\s*$/m.test(deploy);
 if (deployUploadsDist) {
   must('.github/workflows/deploy.yml', deploy, /npm run strangler:build:production-like/, 'dist deploy must build production-like strangler dist');
@@ -94,6 +94,7 @@ must('.github/workflows/dist-dry-run.yml', distDryRun, /test -f dist\/articles\/
 must('.github/workflows/dist-dry-run.yml', distDryRun, /test -f dist\/biografii\/index\.html/, 'dist dry run must assert biografii shadow landing exists');
 must('.github/workflows/dist-dry-run.yml', distDryRun, /test -f dist\/hard-texts\/index\.html/, 'dist dry run must assert hard-texts shadow landing exists');
 must('.github/workflows/dist-dry-run.yml', distDryRun, /test -f dist\/pastor-series\/index\.html/, 'dist dry run must assert pastor-series shadow landing exists');
+must('.github/workflows/dist-dry-run.yml', distDryRun, /test -f dist\/rodosloviye\/index\.html/, 'dist dry run must assert genealogy interactive route exists');
 must('.github/workflows/dist-dry-run.yml', distDryRun, /test -f dist\/nagornaya\/index\.html/, 'dist dry run must assert nagornaya shadow landing exists');
 must('.github/workflows/dist-dry-run.yml', distDryRun, /test -f dist\/nagornaya\/seriya\/index\.html/, 'dist dry run must assert nagornaya series shadow landing exists');
 must('.github/workflows/dist-dry-run.yml', distDryRun, /test -f dist\/nagornaya\/istochniki\/index\.html/, 'dist dry run must assert nagornaya sources shadow landing exists');
@@ -132,11 +133,13 @@ if (/\bpush:|\bschedule:|workflow_run:/.test(distDryRun)) {
 const indexnow = read('.github/workflows/indexnow.yml');
 must('.github/workflows/indexnow.yml', indexnow, /npm run validate:static-publication/, 'indexnow must run validate:static-publication before metadata commit');
 must('.github/workflows/indexnow.yml', indexnow, /contents:\s*write/, 'indexnow needs contents: write for metadata commit');
+must('.github/workflows/indexnow.yml', indexnow, /build-indexnow-urls\.js[^\n]*--base/, 'indexnow must map src/MDX changes through scripts/build-indexnow-urls.js');
 
 const sourceLinks = read('.github/workflows/source-links.yml');
 must('.github/workflows/source-links.yml', sourceLinks, /workflow_dispatch:/, 'source link audit must be manually runnable');
 must('.github/workflows/source-links.yml', sourceLinks, /schedule:/, 'source link audit must be scheduled');
-must('.github/workflows/source-links.yml', sourceLinks, /npm run source:links/, 'source link audit must run npm run source:links');
+must('.github/workflows/source-links.yml', sourceLinks, /npm run strangler:build:production-like/, 'source link audit must build the production-like dist artifact first');
+must('.github/workflows/source-links.yml', sourceLinks, /source-link-audit\.js[^\n]*--root\s+dist/, 'source link audit must check production-like dist, not stale legacy root');
 must('.github/workflows/source-links.yml', sourceLinks, /^concurrency:\s*$/m, 'source link audit must keep concurrency');
 
 const interactive = read('.github/workflows/interactive-audit.yml');

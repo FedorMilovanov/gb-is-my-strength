@@ -4,8 +4,8 @@
  * build-time strangler dist artifact.
  *
  * This script does not deploy or mutate files. It is intentionally static and
- * deterministic: use it before any future `upload-pages-artifact: dist` switch
- * to catch stale-cache and offline/search regressions early.
+ * deterministic: use it for the current `upload-pages-artifact: dist` pipeline and any
+ * future rollback/re-switch to catch stale-cache and offline/search regressions early.
  */
 'use strict';
 
@@ -73,17 +73,20 @@ function checkCacheVersion(rootSw) {
   let baseline;
   try { baseline = JSON.parse(fs.readFileSync(BASELINE, 'utf8')); }
   catch (e) { bad(`cache-version baseline JSON invalid: ${e.message}`); return version; }
-  const previous = baseline.currentProductionCacheVersion || baseline.cacheVersion || '';
+  const previous = baseline.preSwitchProductionCacheVersion || baseline.currentProductionCacheVersion || baseline.cacheVersion || '';
   if (!previous) {
-    bad('cache-version baseline does not declare currentProductionCacheVersion');
+    bad('cache-version baseline does not declare preSwitchProductionCacheVersion/currentProductionCacheVersion');
     return version;
   }
   if (version === previous) {
-    const msg = `CACHE_VERSION still equals recorded root-production baseline (${previous})`;
-    if (REQUIRE_CACHE_BUMP) bad(`${msg}; bump it in the actual dist deploy-switch commit to evict stale HTML caches`);
-    else note(`${msg}; this is OK while deploy still serves root, but must change before switching artifact to dist`);
+    const msg = `CACHE_VERSION still equals recorded pre-switch root baseline (${previous})`;
+    if (REQUIRE_CACHE_BUMP) bad(`${msg}; bump it before serving dist to evict stale legacy-root HTML caches`);
+    else note(`${msg}; this is only acceptable before a root→dist switch, not in dist production`);
   } else {
-    ok(`CACHE_VERSION differs from recorded baseline (${previous})`);
+    ok(`CACHE_VERSION differs from recorded pre-switch baseline (${previous})`);
+  }
+  if (baseline.currentDistProductionCacheVersion && version !== baseline.currentDistProductionCacheVersion) {
+    note(`CACHE_VERSION differs from recorded current dist-production value (${baseline.currentDistProductionCacheVersion}); verify this was an intentional cache bump`);
   }
   return version;
 }

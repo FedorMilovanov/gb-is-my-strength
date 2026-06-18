@@ -48,6 +48,7 @@ jobs:
           test -f dist/biografii/index.html
           test -f dist/hard-texts/index.html
           test -f dist/pastor-series/index.html
+          test -f dist/rodosloviye/index.html
           test -f dist/nagornaya/index.html
           test -f dist/nagornaya/seriya/index.html
           test -f dist/nagornaya/istochniki/index.html

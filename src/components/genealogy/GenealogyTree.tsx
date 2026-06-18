@@ -42,7 +42,7 @@ const PersonNode = ({ data }: { data: any }) => {
   const style = getLineStyle(data.lineage);
   const lifespan = data.chronology?.mt?.lifespan;
   const birthAM = data.chronology?.mt?.birthAM;
-  const disputed = data.disputed;
+  const disputed = Boolean(data.disputed);
 
   return (
     <div
@@ -63,7 +63,7 @@ const PersonNode = ({ data }: { data: any }) => {
       }}
       className="genealogy-node"
     >
-      {data.disputed && (
+      {disputed && (
         <div style={{
           position: 'absolute', top: '-6px', right: '-6px',
           background: '#c44', color: '#fff', borderRadius: '50%',

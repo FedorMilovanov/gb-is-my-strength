@@ -1,6 +1,5 @@
 ---
 import BaseLayout from '@/layouts/BaseLayout.astro';
-import ArticleLayout from '@/layouts/ArticleLayout.astro';
 import { SECTION_META, SITE, SERIES_ORDER } from '@/data/site';
 import { getCollection } from 'astro:content';
 import type { CollectionEntry } from 'astro:content';
@@ -53,7 +52,6 @@ const seriesNext = currentIdx < sortedParts.length - 1 ? sortedParts[currentIdx 
 const seriesPrev = currentIdx > 0 ? sortedParts[currentIdx - 1] : null;
 const h1 = data.h1 || data.title;
 const published = data.publishedAt instanceof Date ? data.publishedAt : new Date(data.publishedAt);
-const readingTime = data.readingTime || 18;
 
 const ogImage = data.ogImage?.startsWith('http') ? data.ogImage : data.ogImage ? `${SITE.url}${data.ogImage}` : undefined;
 const articleCanonical = canonical;

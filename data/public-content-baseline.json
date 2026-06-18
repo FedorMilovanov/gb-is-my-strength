@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updated": "2026-06-17T00:00:00.000Z",
+  "updated": "2026-06-18T11:58:35.228Z",
   "note": "Migration baseline: public indexable HTML pages. Update intentionally before a platform migration only after review.",
   "pages": [
     {
@@ -8,7 +8,7 @@
       "url": "https://gospod-bog.ru/",
       "title": "Господь Бог — Сила Моя — Материалы для изучения Писания",
       "h1": "Господь Бог — Сила Моя",
-      "words": 597
+      "words": 792
     },
     {
       "file": "about/index.html",
@@ -190,23 +190,77 @@
       "url": "https://gospod-bog.ru/karty/",
       "title": "Карты | Господь Бог — Сила Моя",
       "h1": "Библейские карты",
-      "words": 135
+      "words": 218
     },
     {
       "file": "karty/avraam/index.html",
       "url": "https://gospod-bog.ru/karty/avraam/",
       "title": "Путь Авраама: интерактивная карта Бытия 11–25 | Господь Бог — Сила Моя",
       "h1": "Путь Авраама",
-      "words": 5,
-      "note": "JS-rendered interactive map; word count reflects HTML shell only"
+      "words": 594
+    },
+    {
+      "file": "karty/early-church/index.html",
+      "url": "https://gospod-bog.ru/karty/early-church/",
+      "title": "Ранняя Церковь · Деяния 1–12 — интерактивная карта | Господь Бог — Сила Моя",
+      "h1": "Ранняя Церковь",
+      "words": 2
     },
     {
       "file": "karty/ishod/index.html",
       "url": "https://gospod-bog.ru/karty/ishod/",
       "title": "Исход из Египта — интерактивная карта | Господь Бог — Сила Моя",
-      "h1": "Исход из Египта",
-      "words": 5,
-      "note": "JS-rendered interactive map; word count reflects HTML shell only"
+      "h1": "Исход из Египта — интерактивная карта",
+      "words": 20
+    },
+    {
+      "file": "karty/maccabim/index.html",
+      "url": "https://gospod-bog.ru/karty/maccabim/",
+      "title": "Межзаветный период · Маккавеи — интерактивная карта | Господь Бог — Сила Моя",
+      "h1": "Межзаветный период · Маккавеи",
+      "words": 3
+    },
+    {
+      "file": "karty/melachim/index.html",
+      "url": "https://gospod-bog.ru/karty/melachim/",
+      "title": "Царства Израиля и Иуды — интерактивная карта | Господь Бог — Сила Моя",
+      "h1": "Царства Израиля и Иуды",
+      "words": 3
+    },
+    {
+      "file": "karty/pavel/index.html",
+      "url": "https://gospod-bog.ru/karty/pavel/",
+      "title": "Путешествия Павла — интерактивная карта | Господь Бог — Сила Моя",
+      "h1": "Карта",
+      "words": 3
+    },
+    {
+      "file": "karty/revelation/index.html",
+      "url": "https://gospod-bog.ru/karty/revelation/",
+      "title": "7 Церквей Откровения — интерактивная карта | Господь Бог — Сила Моя",
+      "h1": "7 Церквей Откровения",
+      "words": 2
+    },
+    {
+      "file": "karty/shoftim/index.html",
+      "url": "https://gospod-bog.ru/karty/shoftim/",
+      "title": "Эпоха Судей — интерактивная карта | Господь Бог — Сила Моя",
+      "h1": "Эпоха Судей",
+      "words": 2
+    },
+    {
+      "file": "karty/shvatim/index.html",
+      "url": "https://gospod-bog.ru/karty/shvatim/",
+      "title": "12 Колен Израиля — интерактивная карта | Господь Бог — Сила Моя",
+      "h1": "12 Колен Израиля",
+      "words": 3
+    },
+    {
+      "file": "karty/yeshua/index.html",
+      "url": "https://gospod-bog.ru/karty/yeshua/",
+      "title": "Жизнь Иисуса Христа — интерактивная карта | Господь Бог — Сила Моя",
+      "h1": "Жизнь Иисуса Христа",
+      "words": 3
     },
     {
       "file": "konfessii/index.html",
@@ -227,7 +281,7 @@
       "url": "https://gospod-bog.ru/map/",
       "title": "Карта связей | Господь Бог — Сила Моя",
       "h1": "Карта связей",
-      "words": 51
+      "words": 36
     },
     {
       "file": "nagornaya/index.html",
@@ -300,68 +354,11 @@
       "words": 314
     },
     {
-      "file": "karty/pavel/index.html",
-      "url": "https://gospod-bog.ru/karty/pavel/",
-      "title": "Путешествия Павла — интерактивная карта | Господь Бог — Сила Моя",
-      "h1": "Миссионерские путешествия Павла",
-      "words": 5,
-      "note": "JS-rendered interactive map; word count reflects HTML shell only"
-    },
-    {
-      "file": "karty/shoftim/index.html",
-      "url": "https://gospod-bog.ru/karty/shoftim/",
-      "title": "Эпоха Судей — интерактивная карта | Господь Бог — Сила Моя",
-      "h1": "Эпоха Судей",
-      "words": 5,
-      "note": "JS-rendered interactive map; word count reflects HTML shell only"
-    },
-    {
-      "file": "karty/melachim/index.html",
-      "url": "https://gospod-bog.ru/karty/melachim/",
-      "title": "Царства Израиля и Иуды — интерактивная карта | Господь Бог — Сила Моя",
-      "h1": "Царства Израиля и Иуды",
-      "words": 5,
-      "note": "JS-rendered interactive map; word count reflects HTML shell only"
-    },
-    {
-      "file": "karty/shvatim/index.html",
-      "url": "https://gospod-bog.ru/karty/shvatim/",
-      "title": "12 Колен Израиля — интерактивная карта | Господь Бог — Сила Моя",
-      "h1": "12 Колен Израиля",
-      "words": 5,
-      "note": "JS-rendered"
-    },
-    {
-      "file": "karty/yeshua/index.html",
-      "url": "https://gospod-bog.ru/karty/yeshua/",
-      "title": "Жизнь Иисуса Христа — интерактивная карта | Господь Бог — Сила Моя",
-      "h1": "Жизнь Иисуса Христа",
-      "words": 5,
-      "note": "JS-rendered"
-    },
-    {
-      "file": "karty/maccabim/index.html",
-      "url": "https://gospod-bog.ru/karty/maccabim/",
-      "title": "Межзаветный период · Маккавеи — интерактивная карта | Господь Бог — Сила Моя",
-      "h1": "Межзаветный период",
-      "words": 5,
-      "note": "JS-rendered"
-    },
-    {
-      "file": "karty/early-church/index.html",
-      "url": "https://gospod-bog.ru/karty/early-church/",
-      "title": "Ранняя Церковь · Деяния 1–12 — интерактивная карта | Господь Бог — Сила Моя",
-      "h1": "Ранняя Церковь",
-      "words": 5,
-      "note": "JS-rendered"
-    },
-    {
-      "file": "karty/revelation/index.html",
-      "url": "https://gospod-bog.ru/karty/revelation/",
-      "title": "7 Церквей Откровения — интерактивная карта | Господь Бог — Сила Моя",
-      "h1": "7 Церквей Откровения",
-      "words": 5,
-      "note": "JS-rendered"
+      "file": "rodosloviye/index.html",
+      "url": "https://gospod-bog.ru/rodosloviye/",
+      "title": "Родословие от Адама до Христа | Господь Бог — Сила Моя",
+      "h1": "Родословие от Адама до Христа",
+      "words": 78
     }
   ]
 }

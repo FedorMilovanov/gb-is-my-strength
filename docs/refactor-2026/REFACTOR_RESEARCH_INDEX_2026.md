@@ -1,12 +1,17 @@
 # REFACTOR_RESEARCH_INDEX_2026.md — индекс исследований по будущему рефакторингу
 
 Дата: 2026-06-12
+Обновлено: 2026-06-18 — refactoring 4.5 / dist-as-production
 
 Этот файл разводит два направления, чтобы не смешивать архитектуру сайта и архитектуру карт.
 
 ## 1. Общий движок сайта / Astro / SEO / контент
 
-Основной документ:
+Текущий post-switch документ:
+
+- `docs/refactor-2026/REFACTORING_4_5_PRODUCTION_CUTOVER_AUDIT_2026-06-18.md` — фактическое состояние после root→dist switch, найденные gaps, go/no-go.
+
+Исторический research baseline:
 
 - `docs/refactor-2026/ASTRO_SITE_REFACTOR_RESEARCH_2026.md`
 
@@ -102,10 +107,11 @@
 - `docs/refactor-2026/AGENT_HANDOFF_NO_REFACTOR_2026.md` — handoff для следующих агентов: пока без рефакторинга, только контент/безопасные проверки.
 - `docs/refactor-2026/CURRENT_REPO_ADAPTATION_2026.md` — адаптация плана под актуальный main: новый отдел konfessii, embedded 3D app, no-refactor rules.
 - `docs/refactor-2026/RESEARCH_SOURCE_AUDIT_POST_PUSH_2026.md` — post-push deep pass: GitHub Pages/Astro deploy, Yandex, Actions security, Playwright, SW, SVG/iframe a11y.
-- `docs/refactor-2026/DIST_DEPLOY_SWITCH_RUNBOOK_2026-06-15.md` — практический runbook будущего root→dist deploy switch, SW cache bump, Pagefind-on-dist, IndexNow key и rollback.
+- `docs/refactor-2026/DIST_DEPLOY_SWITCH_RUNBOOK_2026-06-15.md` — практический runbook выполненного root→dist deploy switch и rollback/re-switch, SW cache bump, Pagefind-on-dist, IndexNow key и rollback.
 - `docs/refactor-2026/DIST_DRY_RUN_WORKFLOW_STATUS_2026-06-15.md` — manual-only GitHub Actions dry-run для production-like `dist` artifact без deploy.
 - `docs/refactor-2026/DIST_OWNERSHIP_AUDIT_STATUS_2026-06-15.md` — ownership guard для `migration/page-ownership.json` и production-like `dist`: Astro routes, build-only routes, built-app copy, implicit legacy baseline.
 - `docs/refactor-2026/ASTRO_MDX_ARTICLE_PILOT_STATUS_2026-06-15.md` — build-only Content Collections/MDX pilot для будущей миграции статей: schema, `ArticleLayout.astro`, noindex preview `/dev/article-mdx-pilot/`.
+- `docs/refactor-2026/REFACTORING_4_5_PRODUCTION_CUTOVER_AUDIT_2026-06-18.md` — текущий post-switch audit: dist-as-production, IndexNow mapper, source-links-dist, remaining risks.
 
 ## 5. Черновой baseline
 
@@ -114,13 +120,13 @@
 
 Исторически это был черновик baseline. Текущий machine baseline для gates теперь:
 
-- `data/public-content-baseline.json` — 42 public indexable pages;
+- `data/public-content-baseline.json` — 51 public indexable pages;
 - `scripts/extract-url-contract.js` / `scripts/compare-url-contract.js` — root/dist URL contract extraction and compare;
 - `migration/page-ownership.json` + `scripts/check-page-ownership.js` — ownership guard для Astro/legacy strangler.
 
-## 6. Рекомендуемый следующий шаг
+## 6. Рекомендуемый следующий шаг после refactoring 4.5
 
-1. Не переключать production deploy без отдельного explicit deploy-switch решения владельца.
-2. Перед таким решением вручную запустить GitHub Actions **Dist Strangler Dry Run** и принять visual review `/about/`.
-3. Если refactor продолжается без deploy switch — следующий безопасный технический шаг: готовить first-article MDX preview/gates локально, не трогая homepage, карты и production `deploy.yml`.
-4. Для карт продолжать только data/schema work без подключения к production UI, если нет отдельного решения.
+1. Production deploy **уже переключён на `dist/`**. Не возвращать root без атомарного rollback по runbook.
+2. Ближайший безопасный шаг — post-switch hardening, а не новый большой refactor: `npm run strangler:deploy-readiness`, `npm run source:links:dist`, map smoke, representative visual screenshots.
+3. Новые public pages вести через `src/**` + `migration/page-ownership.json`; legacy root обновлять только как fallback/source layer, если это нужно.
+4. Для карт продолжать MapEngine evolution малыми PR: data/schema + `maps:validate` + `avraam:audit`; не повторять Avraam/Ishod modular data-loss regression.

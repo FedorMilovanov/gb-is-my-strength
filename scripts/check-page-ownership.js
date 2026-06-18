@@ -2,11 +2,10 @@
 /*
  * check-page-ownership.js — build-time strangler ownership guard.
  *
- * The manifest in migration/page-ownership.json is intentionally small while
- * legacy remains the production source of truth: it declares non-implicit
- * ownership exceptions (Astro routes, build-only routes, built app assets).
- * Public baseline pages not listed there are treated as implicitly legacy-owned
- * during the transition.
+ * The manifest in migration/page-ownership.json declares production-dist Astro
+ * routes, build-only routes, built app assets, and any remaining implicit
+ * legacy-copy pages inside the dist artifact. Production deploy now serves dist,
+ * not the repository root.
  *
  * Usage:
  *   node scripts/check-page-ownership.js
@@ -238,7 +237,7 @@ function main() {
     process.exit(1);
   }
   console.log('✅ page ownership check passed');
-  if (notes.length) console.log('ℹ️ Ownership notes are expected while the legacy root remains production truth.');
+  if (notes.length) console.log('ℹ️ Ownership notes are expected while some baseline pages are still copied from legacy root into dist.');
 }
 
 main();
