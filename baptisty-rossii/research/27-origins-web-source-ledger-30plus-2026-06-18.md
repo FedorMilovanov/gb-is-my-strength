@@ -74,6 +74,7 @@
 | 42 | https://mbchurch.ru/publications/brotherly_journal/2515/ | B | `Братский Вестник` №4, 1967; raw snapshot saved as `mbchurch-brotherly-vestnik-1967-04.txt`; useful for “three cradles” model and jubilee memory. |
 | 43 | https://mbchurch.ru/publications/articles/15/15181/ | B/C | Open web text about Voronin; raw snapshot saved as `mbchurch-voronin-article-2017.txt`; key lead for Ivanov manuscript and 1889 Voronin letter. |
 | 44 | https://baptist.org.ru/news/main/view/article/1419261 | lead-only | Kalweit article visible in search snippets but live fetch returned 404 on 2026-06-18; recorded as `baptist-org-kalweit-article-1419261-lead-404.txt`. Need archive/mirror. |
+| 45 | https://www.denis-samarin.ru/%d0%b5%d1%85%d0%b1-%d0%b2-%d0%b4%d0%be%d1%80%d0%b5%d0%b2%d0%be%d0%bb%d1%8e%d1%86%d0%b8%d0%be%d0%bd%d0%bd%d0%be%d0%b9-%d1%80%d0%be%d1%81%d1%81%d0%b8%d0%b8-%d0%b8%d1%81%d1%81%d0%bb%d0%b5%d0%b4%d0%be/ | A-/B+ | Samarin page with Google Drive archives for Valkewich book+appendix. Appendix archive downloaded locally; Appendix №5 pages 27–28 visually verified for Voronin letter. See research file 30. |
 
 ---
 
