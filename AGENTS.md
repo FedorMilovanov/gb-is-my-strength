@@ -1329,3 +1329,26 @@ Guard:
 - каждое изображение должно иметь запись в media ledger: source URL, лицензия, автор/архив, attribution, дата проверки;
 - AI-картинку нельзя выдавать за историческое фото;
 - visual polish серии не должен заменять работу по глубине текста.
+
+### 9.27 «Баптисты России» — 2D SVG visual atlas (2026-06-19)
+
+В серии могут появляться 2D SVG-схемы: маршруты, сети влияния, split-timeline, source-confidence matrix, publication-flow. Это не заменяет 3D-карту и не является декоративной заглушкой; это редакционный слой внутри статей.
+
+Канонические файлы:
+
+- `data/baptisty-rossii-visual-atlas.json`
+- `baptisty-rossii/research/32-2d-svg-visual-atlas-plan-2026-06-19.md`
+
+Guard:
+
+- `npm run baptisty:visual-atlas:audit`
+
+Правила:
+
+- SVG локальный или inline; remote SVG/hotlink запрещён;
+- внутри SVG не тянуть внешние raster images;
+- обязательны title/desc или figure+figcaption;
+- схема должна читаться на 375px;
+- каждый узел связан с источником или source-confidence уровнем;
+- если SVG повторяет узлы 3D-карты, обновлять mapSync;
+- не рисовать псевдоточность для спорных данных.
