@@ -1352,3 +1352,27 @@ Guard:
 - каждый узел связан с источником или source-confidence уровнем;
 - если SVG повторяет узлы 3D-карты, обновлять mapSync;
 - не рисовать псевдоточность для спорных данных.
+
+### 9.28 `/about/` — first visual-first Astro migration route (2026-06-19)
+
+`/about/` is the first route selected for near-100% visual parity migration. Current rule: Astro route must shadow-wrap `about/index.html` through `loadLegacyShadowPage('about/index.html')` and preserve legacy DOM/classes until a hand-built Astro version passes screenshot parity.
+
+Guard:
+
+- `npm run about:visual-parity:audit`
+- `npm run astro:audit:about` (Node 22+ / CI)
+
+Forbidden regressions for `/about/`:
+
+- `class="astro-about"` generic article;
+- `astro-contact-grid` generic contacts;
+- `astro-accuracy-block` generic feedback card;
+- adding BaseLayout generic header/footer around the legacy page;
+- claiming visual parity from SEO/H1/H2 only.
+
+Required legacy visual markers:
+
+- `about-page`
+- `about-contacts`
+- `about-contact-card`
+- `gb-accuracy-block`
