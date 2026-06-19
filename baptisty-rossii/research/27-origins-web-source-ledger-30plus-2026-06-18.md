@@ -76,6 +76,18 @@
 | 44 | https://baptist.org.ru/news/main/view/article/1419261 | lead-only | Kalweit article visible in search snippets but live fetch returned 404 on 2026-06-18; recorded as `baptist-org-kalweit-article-1419261-lead-404.txt`. Need archive/mirror. |
 | 45 | https://www.denis-samarin.ru/%d0%b5%d1%85%d0%b1-%d0%b2-%d0%b4%d0%be%d1%80%d0%b5%d0%b2%d0%be%d0%bb%d1%8e%d1%86%d0%b8%d0%be%d0%bd%d0%bd%d0%be%d0%b9-%d1%80%d0%be%d1%81%d1%81%d0%b8%d0%b8-%d0%b8%d1%81%d1%81%d0%bb%d0%b5%d0%b4%d0%be/ | A-/B+ | Samarin page with Google Drive archives for Valkewich book+appendix. Appendix archive downloaded locally; Appendix №5 pages 27–28 visually verified for Voronin letter. See research file 30. |
 
+## F. Проверенные источники прохода 2026-06-19 (deepening pass)
+
+| # | URL | Уровень | Зачем |
+|---:|---|---|---|
+| 46 | https://cyberleninka.ru/article/n/how-indigenous-was-the-baptist-movement-in-the-russian-empire | A-open | **Wardin 2009, JEBS IX/2 — первоисточник статьи** «How Indigenous…». Открытый полный текст + PDF. Опорная формула «не имплантация, но и не самозарождение; немцы — facilitators, не initiators». Прямо цитирует Петрова 1887 и Дородницына 1903 как «импортную» полемику. См. файл 36. |
+| 47 | https://directionjournal.org/44/2/german-baptists-in-south-russia.html | A-open (рецензия) | Рецензия Andrew Dyck на **английский перевод Pritzkau 1914** (Regehr, Kindred/CMBS, 2013, 185 с.). Вюст/пиетизм, MB→немецкие баптисты (погружение), правовая привилегия, военный вопрос, разделение нем./рус. линий. См. файл 37. |
+| 48 | https://www.kindredproductions.com/product/german-baptists-south-russia/ | A-open (издание) | Издание перевода Pritzkau (Kindred Productions, ~20 CAD). Подтверждает доступность для постраничных цитат. |
+| 49 | https://mbherald.com/19098/ | B | MB Herald: анонс перевода Pritzkau; контекст CMBS, Wardin, Regehr. |
+| 50 | http://e-heritage.ru/Book/10071267 | A-open scan/viewer | **Дородницын 1908 «Материалы…», открытый image-viewer.** Doc. 301 «Правила» Ратушного 1871 (с.477–482), Doc. 307 катихизис Онкена 1872 (с.495+), Doc. 323 протокол Ново-Васильевки 1884, рапорты по Ратушному/Цимбалу/Унгеру. Закрывает долг файла 24. См. файл 38. |
+| 51 | https://vdoc.pub/documents/russian-baptists-and-spiritual-revolution-1905-1929-indiana-michigan-series-in-russian-and-east-european-studies-br5cnsnssvo0 | A-open/B+ | **Coleman 2005** (полный текст): прямое подтверждение «двух событий 1884» — Петербург (Пашков/Корф, высылка) ≠ Ново-Васильевка (Союз). См. файл 39. Рус. изд. 2024 (Academic Studies Press). |
+| 52 | https://ru.wikipedia.org/wiki/%D0%A0%D0%B0%D1%82%D1%83%D1%88%D0%BD%D1%8B%D0%B9,_%D0%9C%D0%B8%D1%85%D0%B0%D0%B8%D0%BB_%D0%A2%D0%B8%D0%BC%D0%BE%D1%84%D0%B5%D0%B5%D0%B2%D0%B8%D1%87 | B (со ссылкой на Дородницына 1908) | Ратушный участвовал в **обоих** съездах 1884 (Петербург + Ново-Васильевка), просопографическая сверка «двух событий». |
+
 ---
 
 ## Что делать с этим ledger
