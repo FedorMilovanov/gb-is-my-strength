@@ -249,6 +249,15 @@
 | 137 | https://baptist.org.ru/news/main/view/article/1599996 | A-/B+ | «75 лет Русскому Христианскому Радио»: Н. Пейсти из круга кн. Ливен (редстоковское пробуждение), детали радиослужения. См. файл 67. |
 | 138 | https://www.tmai.org/schools/ | A-open | **Официальный список школ TMAI**: центры в России (Самара), Украине (Grace Bible Seminary), США (рус.); **Грузии/Казахстана НЕТ** — проверенный отрицательный факт. См. файл 67. |
 
+## V. МакАртур: Москва 2004 + Q&A о поездках (проход 2026-06-19)
+
+| # | URL | Уровень | Зачем |
+|---:|---|---|---|
+| 139 | https://www.youtube.com/playlist?list=PLu2Bhoh2caiV-Bph6odQ7kGtpxYYWb4YY | A-open (первичное видео) | **Московская пасторская конференция 2004 — Джон МакАртур** (канал Fedor Milovanov). Подтверждает участие МакАртура в Москве. См. файл 68. |
+| 140 | https://www.youtube.com/watch?v=ExJaAgmI1Po | A-open | Q&A МакАртура «так вы кальвинист или нет?» (из Московской конф. 2004) — для разворота о кальвинизме/синергии (файл 59). |
+| 141 | https://www.gty.org/sermons/GTY173/fighting-the-good-fight-fiftieth-anniversary-interview-with-john-macarthur | A-/B+ | Юбилейное интервью GTY: МакАртур о масштабе поездок (Восточная Европа и др.), Псалом 19. См. файл 68. |
+| 142 | https://www.thegospelcoalition.org/article/what-soviets-intended-for-siberia-god-intended-for-good/ | A-/B+ | TGC (Бахмутский): «ряд пасторских конференций»; Новосибирская семинария (2000) + Самара (2000) при SGA/TMAI. См. файл 68. |
+
 ---
 
 ## Что делать с этим ledger
