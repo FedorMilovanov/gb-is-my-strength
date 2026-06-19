@@ -192,6 +192,18 @@
 | 105 | http://www.bible.com.ua/news/r/53372 | B+ | Портал-Кредо 2009: смерть Крючкова 15.07.2007, новый председатель МСЦ ЕХБ Н. Антонюк. |
 | 106 | https://ru.baptist.org.md/post?id=8410 | B | Различие МСЦ ЕХБ / СЦ ЕХБ; «Вестник спасения» 1963 → «Вестник истины» 1976; преследования. |
 
+## Q. Зарубежные рычаги + кальвинизм/арминианство (проход 2026-06-19)
+
+| # | URL | Уровень | Зачем |
+|---:|---|---|---|
+| 107 | https://www.jmacarthurtrust.org/the-masters-academy-international | A-/B+ | TMAI: корни 1992 (запрос Баптистского союза Украины к МакАртуру), сеть центров TMS. См. файл 58. |
+| 108 | https://www.tmai.org/update/tmai-professors-honored-by-ukrainian-leadership/ | A-/B+ | Ирпенская семинария (Киев): первый центр TMAI, миссионеры TMS 1991–92. |
+| 109 | https://www.tmai.org/schools/scbt | A-open | Самарский центр библейской подготовки: основан 2000, форматы Level 1/2, Преображенская церковь. См. файл 58. |
+| 110 | https://www.tmai.org/update/good-news-from-russia/ | A-open | Алексей Прокопенко (PhD TMS, пастор Самары, проф. SCBT); русские комментарии. |
+| 111 | https://www.gty.org/translations | A-open | Grace to You / GRO: перевод ~600 проповедей МакАртура на русский; MacArthur Study Bible на русском. |
+| 112 | https://wgbc.org/history-detailed | B+ | Word of Grace Bible Institute (Ванкувер, WA): TMS-сессии для русскоязычных служителей, янв. 2001. |
+| 113 | http://reflections.eeit-edu.info/article/view/70469 | A-open | **Прохоров 2013, «Why the Russian Baptists Are Neither Arminians nor Calvinists»** — русские баптисты синергийны, не кальвинисты/арминиане; ось известна с перестройки. См. файл 59. |
+
 ---
 
 ## Что делать с этим ledger
