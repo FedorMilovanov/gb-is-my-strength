@@ -1376,3 +1376,17 @@ Required legacy visual markers:
 - `about-contacts`
 - `about-contact-card`
 - `gb-accuracy-block`
+
+### 9.29 Concurrent GitHub agents — sync protocol (2026-06-19)
+
+Multiple agents may work on this repository at the same time. Before every edit/push:
+
+1. `git fetch origin main` and `git pull --rebase origin main`.
+2. If local mode-only changes appear after tooling (`100755 => 100644`), restore executable bits instead of committing chmod noise.
+3. Never force-push to `main`.
+4. Keep commits small and route-scoped.
+5. Re-run route-specific guards for touched areas.
+6. If another agent lands research files while you work, rebase and preserve their files; do not delete new research `.md`/raw-source files unless explicitly asked.
+7. If a push is followed by an auto `update-meta/cache-bust [skip ci]` commit, pull again before the next change.
+
+This matters especially for `/baptisty-rossii/research/**`, where other agents continuously add source dossiers.
