@@ -108,6 +108,15 @@
 | 61 | https://archiveshub.jisc.ac.uk/data/GB-150 | A-open (каталог) | **Pashkov Papers**, University of Birmingham, Cadbury Research Library, GB 150 — архив Редстока/пашковцев. Доступ по записи. |
 | 62 | https://qr.urfu.ru/ojs/index.php/qr/article/view/qr.631 | B+ | Рецензия (Quaestio Rossica) на монографию Ф. Никитина о Пашкове (2024) с ранее не публиковавшимися документами — современный академический ориентир. |
 
+## I. Проханов / Союз евангельских христиан (проход 2026-06-19)
+
+| # | URL | Уровень | Зачем |
+|---:|---|---|---|
+| 63 | https://en.wikipedia.org/wiki/Ivan_Prokhanov | B+ | Детальная хронология Проханова: Союз ЕХ 1909, устав 1910–1911, города союза, «Христианин» 1906–1928, «В котле России». См. файл 44. |
+| 64 | https://www.storylinemissions.org/slavic-missions-hero-live-for-christ/ | B | Биографический очерк: возвращение 1901, Westinghouse, Союз 1909, 10 съездов до запрета 1928. |
+| 65 | https://christianstandard.com/2013/11/just-one-just-one-life-in-russia/ | B | Параллельный очерк: даты, «Утренняя звезда» 1910, автобиография. |
+| 66 | https://www.researchgate.net/publication/324297872_Sparks_of_Truth_I_S_Prokhanov_and_the_Bohemian_Reformation | B+ | Акад. статья: ВП BWA с 1911; BWA 1923 — «строго баптисты», но имя «баптист» отвергали как нерусское. Ключ к «два союза → 1944». См. файл 44. |
+
 ---
 
 ## Что делать с этим ledger
