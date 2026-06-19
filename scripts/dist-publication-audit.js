@@ -144,7 +144,9 @@ function checkAstroAboutOwnership() {
 }
 function checkAstroSeriesLandingOwnership() {
   for (const [file, route, expectedCanonical, classNeedle] of [
-    ['biografii/index.html', '/biografii/', 'https://gospod-bog.ru/biografii/', 'astro-biografii-index'],
+    // /biografii/ is Astro-owned through a visual-parity shadow wrapper; the
+    // previous `astro-biografii-index` generic page was a regression.
+    ['biografii/index.html', '/biografii/', 'https://gospod-bog.ru/biografii/', 'astro-biografii-index-shadow'],
     ['hard-texts/index.html', '/hard-texts/', 'https://gospod-bog.ru/hard-texts/', 'astro-series-page'],
     ['pastor-series/index.html', '/pastor-series/', 'https://gospod-bog.ru/pastor-series/', 'astro-series-page'],
     ['nagornaya/index.html', '/nagornaya/', 'https://gospod-bog.ru/nagornaya/', 'astro-nagornaya-index'],
