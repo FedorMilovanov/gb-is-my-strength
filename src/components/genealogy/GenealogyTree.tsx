@@ -3,10 +3,11 @@ import {
   ReactFlow, Background, Controls, MiniMap,
   type Node, type Edge, ConnectionLineType, type ReactFlowInstance,
 } from '@xyflow/react';
+import { MarkerType } from '@xyflow/react';
 import '@xyflow/react/dist/style.css';
 import type { Person, Era, LineageFilter, DetailLevel } from './types';
-import { getLineStyle, KEY_ROLES, COSMIC_ANCHORS, ERA_META, NODE_W, MAX_LIFESPAN } from './theme';
-import { buildLayout } from './layout';
+import { getLineStyle, KEY_ROLES, COSMIC_ANCHORS } from './theme';
+import { buildLayout, computeFocusLineage } from './layout';
 import { PersonCardContent } from './PersonNode';
 import { DetailPanel } from './DetailPanel';
 import { TimelineAxis } from './TimelineAxis';
@@ -30,10 +31,12 @@ export default function GenealogyTree({ persons, eras }: { persons: Person[]; er
   const [activeId, setActiveId] = useState<string | null>(null);
   const [tourIndex, setTourIndex] = useState(-1);
 
+  // ── Layout (source of truth) ──
   const { nodes: laidNodes, edges: laidEdges, goldenPath } = useMemo(
     () => buildLayout(persons, { showGolden, showLineage }), [persons, showGolden, showLineage],
   );
 
+  // ── AM range for timeline ──
   const { amMin, amMax } = useMemo(() => {
     const withAM = persons.filter(p => p.chronology?.mt?.birthAM != null);
     let mn = Infinity, mx = -Infinity;
@@ -41,6 +44,7 @@ export default function GenealogyTree({ persons, eras }: { persons: Person[]; er
     return { amMin: isFinite(mn) ? mn : 0, amMax: isFinite(mx) ? mx : 4000 };
   }, [persons]);
 
+  // ── Semantic zoom ──
   const detailLevel: DetailLevel = zoomLevel < 0.3 ? 0 : zoomLevel < 0.7 ? 1 : 2;
   const visibleNodeIds = useMemo(() => {
     if (detailLevel === 2) return null;
@@ -55,10 +59,22 @@ export default function GenealogyTree({ persons, eras }: { persons: Person[]; er
     return ids;
   }, [detailLevel, persons, goldenPath]);
 
+  // ── Focus lineage: when activeId is set, compute ancestor+descendant set ──
+  const focusLineageIds = useMemo(() => {
+    if (!activeId) return null;
+    return computeFocusLineage(persons, activeId);
+  }, [activeId, persons]);
+
+  // ── Search match ──
   const searchMatch = useMemo(() => {
     if (!search.trim()) return null;
     const q = search.toLowerCase().trim();
-    return persons.find(p => p.name.ru.toLowerCase().includes(q) || (p.name.he?.includes(search.trim()) ?? false) || (p.name.altName?.toLowerCase().includes(q) ?? false) || p.id.toLowerCase().includes(q)) ?? null;
+    return persons.find(p =>
+      p.name.ru.toLowerCase().includes(q) ||
+      (p.name.he?.includes(search.trim()) ?? false) ||
+      (p.name.altName?.toLowerCase().includes(q) ?? false) ||
+      p.id.toLowerCase().includes(q),
+    ) ?? null;
   }, [search, persons]);
 
   useEffect(() => {
@@ -67,37 +83,81 @@ export default function GenealogyTree({ persons, eras }: { persons: Person[]; er
     if (n) rfInstance.current.setCenter(n.position.x + 86, n.position.y + 36, { zoom: 1.2, duration: 600 });
   }, [searchMatch, laidNodes]);
 
-  // Compute final nodes — use default type, pass content via data.label
+  // ── Compute display nodes with dimming/focus ──
   const displayNodes: Node[] = useMemo(() => {
     return laidNodes.map(n => {
       const d = n.data as any;
-      const isHighlighted = n.id === searchMatch?.id || n.id === activeId;
+      const isHighlighted = n.id === searchMatch?.id;
+      const isInFocus = focusLineageIds?.has(n.id) ?? false;
+      const isDimmed = focusLineageIds ? !isInFocus : false;
       return {
         ...n,
-        type: undefined, // use React Flow default node
         hidden: visibleNodeIds ? !visibleNodeIds.has(n.id) : false,
-        data: { ...d, label: <PersonCardContent data={{ ...d, highlighted: isHighlighted }} /> },
+        data: {
+          ...d,
+          highlighted: isHighlighted,
+          dimmed: isDimmed,
+          focused: focusLineageIds ? isInFocus : false,
+          label: <PersonCardContent data={{ ...d, highlighted: isHighlighted, dimmed: isDimmed, focused: focusLineageIds ? isInFocus : false }} />,
+        },
       };
     });
-  }, [laidNodes, visibleNodeIds, searchMatch, activeId]);
+  }, [laidNodes, visibleNodeIds, searchMatch, activeId, focusLineageIds]);
 
+  // ── Compute display edges with focus highlighting ──
   const displayEdges: Edge[] = useMemo(() => {
-    if (!visibleNodeIds) return laidEdges;
-    return laidEdges.filter(e => visibleNodeIds.has(e.source) && visibleNodeIds.has(e.target));
-  }, [laidEdges, visibleNodeIds]);
+    let result = visibleNodeIds
+      ? laidEdges.filter(e => visibleNodeIds.has(e.source) && visibleNodeIds.has(e.target))
+      : laidEdges;
 
+    // If focus lineage is active, dim non-focus edges and highlight focus edges
+    if (focusLineageIds) {
+      result = result.map(e => {
+        const inFocus = focusLineageIds.has(e.source) && focusLineageIds.has(e.target);
+        if (inFocus) {
+          return {
+            ...e,
+            animated: true,
+            style: { stroke: '#ffd700', strokeWidth: 4, opacity: 1 },
+            markerEnd: { type: MarkerType.ArrowClosed, color: '#ffd700', width: 16 },
+          };
+        }
+        return {
+          ...e,
+          animated: false,
+          style: { stroke: (e.style?.stroke as string) || '#555', strokeWidth: 1, opacity: 0.05 },
+        };
+      });
+    }
+    return result;
+  }, [laidEdges, visibleNodeIds, focusLineageIds, goldenPath]);
+
+  // ── Helpers ──
   const focusPerson = useCallback((id: string, zoom?: number) => {
     const n = laidNodes.find(n => n.id === id);
-    if (n && rfInstance.current) rfInstance.current.setCenter(n.position.x + 86, n.position.y + 36, { zoom: zoom ?? 1.2, duration: 500 });
+    if (n && rfInstance.current) rfInstance.current.setCenter(n.position.x + 86, n.position.y + 36, { zoom: zoom ?? 1.0, duration: 500 });
     setActiveId(id);
   }, [laidNodes]);
 
   const onNodeClick = useCallback((_evt: React.MouseEvent, node: Node) => {
+    // Toggle: if clicking same node, deactivate focus
+    if (activeId === node.id) {
+      setActiveId(null);
+      setSelected(null);
+      return;
+    }
     setActiveId(node.id);
     const p = persons.find(pp => pp.id === node.id);
     if (p) setSelected(p);
-  }, [persons]);
+  }, [persons, activeId]);
 
+  // Click on empty canvas → clear focus
+  const onPaneClick = useCallback(() => {
+    setActiveId(null);
+    setSelected(null);
+  }, []);
+
+  // ── Keyboard nav ──
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
       if (showSplit || !activeId) return;
@@ -120,13 +180,14 @@ export default function GenealogyTree({ persons, eras }: { persons: Person[]; er
           break;
         }
         case 'Enter': case ' ': { e.preventDefault(); const p = persons.find(pp => pp.id === activeId); if (p) setSelected(p); break; }
-        case 'Escape': setActiveId(null); break;
+        case 'Escape': setActiveId(null); setSelected(null); break;
       }
     };
     window.addEventListener('keydown', handler);
     return () => window.removeEventListener('keydown', handler);
   }, [activeId, persons, showSplit, focusPerson]);
 
+  // ── Golden path tour ──
   const goldenArray = useMemo(() => {
     const arr: string[] = [];
     const byId = new Map(persons.map(p => [p.id, p]));
@@ -141,6 +202,7 @@ export default function GenealogyTree({ persons, eras }: { persons: Person[]; er
   const startTour = useCallback(() => { setTourIndex(0); if (goldenArray[0]) focusPerson(goldenArray[0], 1.0); }, [goldenArray, focusPerson]);
   const tourNext = useCallback(() => setTourIndex(i => { const n = Math.min(i + 1, goldenArray.length - 1); if (goldenArray[n]) focusPerson(goldenArray[n], 1.0); return n; }), [goldenArray, focusPerson]);
   const tourPrev = useCallback(() => setTourIndex(i => { const n = Math.max(i - 1, 0); if (goldenArray[n]) focusPerson(goldenArray[n], 1.0); return n; }), [goldenArray, focusPerson]);
+
   const visibleCount = displayNodes.filter(n => !n.hidden).length;
   const detailLabel = detailLevel === 0 ? 'Обзор' : detailLevel === 1 ? 'Ключевые' : 'Все детали';
   const detailHint = detailLevel === 0 ? 'приблизьте для деталей' : detailLevel === 1 ? 'ещё ближе — все имена' : `${visibleCount} из ${persons.length}`;
@@ -151,9 +213,11 @@ export default function GenealogyTree({ persons, eras }: { persons: Person[]; er
         <filter id="parchment-noise"><feTurbulence baseFrequency="0.9" numOctaves="2" seed="42" /><feColorMatrix values="0 0 0 0 0.8  0 0 0 0 0.7  0 0 0 0 0.5  0 0 0 0.5 0" /></filter>
         <rect width="100%" height="100%" filter="url(#parchment-noise)" />
       </svg>
+
       <div style={{ position: 'absolute', top: '10px', left: '14px', zIndex: 11 }}>
         <a href="/" style={{ color: 'rgba(200,184,154,0.5)', fontSize: '11px', textDecoration: 'none', padding: '8px 12px', background: 'rgba(13,10,6,0.8)', backdropFilter: 'blur(10px)', borderRadius: '999px', border: '1px solid rgba(212,168,87,0.15)', minHeight: '36px', display: 'flex', alignItems: 'center' }}>← Главная</a>
       </div>
+
       <div role="toolbar" aria-label="Управление древом" style={{ position: 'absolute', top: '10px', left: '50%', transform: 'translateX(-50%)', zIndex: 11, display: 'flex', gap: '6px', alignItems: 'center', background: 'rgba(13,10,6,0.88)', backdropFilter: 'blur(14px)', borderRadius: '999px', padding: '6px 8px', border: '1px solid rgba(212,168,87,0.2)', maxWidth: 'calc(100vw - 28px)', flexWrap: 'wrap', justifyContent: 'center', boxShadow: '0 4px 24px rgba(0,0,0,0.5)' }}>
         <input type="text" placeholder="🔍 Поиск имени..." value={search} onChange={e => setSearch(e.target.value)} aria-label="Поиск по имени" style={{ background: 'transparent', border: 'none', color: '#e8d5b0', fontFamily: '"Lora", Georgia, serif', fontSize: '13px', outline: 'none', width: '150px', minHeight: '40px' }} />
         <span style={{ color: 'rgba(200,184,154,0.3)', fontSize: '11px' }}>|</span>
@@ -165,37 +229,81 @@ export default function GenealogyTree({ persons, eras }: { persons: Person[]; er
         <span style={{ color: 'rgba(200,184,154,0.3)', fontSize: '11px' }}>|</span>
         <button onClick={startTour} title="Тур" style={{ background: 'transparent', border: '1px solid rgba(212,168,87,0.2)', borderRadius: '999px', padding: '9px 12px', cursor: 'pointer', minHeight: '40px', color: 'rgba(200,184,154,0.5)', fontFamily: 'inherit', fontSize: '11px', transition: 'all .2s' }}>🎬 Тур</button>
       </div>
-      {eras && <div style={{ position: 'absolute', bottom: '12px', left: '14px', zIndex: 11, background: 'rgba(13,10,6,0.82)', backdropFilter: 'blur(10px)', borderRadius: '10px', padding: '10px 12px', border: '1px solid rgba(212,168,87,0.12)', display: 'flex', flexDirection: 'column', gap: '4px', maxWidth: '180px' }}><div style={{ fontSize: '9px', textTransform: 'uppercase', letterSpacing: '0.1em', color: 'rgba(200,184,154,0.35)', marginBottom: '2px' }}>Эпохи</div>{eras.map(e => <div key={e.id} style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><span style={{ width: '8px', height: '8px', borderRadius: '2px', background: e.color, flexShrink: 0 }} /><span style={{ color: 'rgba(200,184,154,0.55)', fontSize: '10.5px' }}>{e.name}</span></div>)}</div>}
-      <div style={{ position: 'absolute', bottom: '12px', right: '14px', zIndex: 11, background: 'rgba(13,10,6,0.82)', backdropFilter: 'blur(10px)', borderRadius: '10px', padding: '8px 12px', border: '1px solid rgba(212,168,87,0.12)', display: 'flex', flexDirection: 'column', gap: '2px', alignItems: 'center', pointerEvents: 'none' }}><div style={{ fontSize: '9px', textTransform: 'uppercase', letterSpacing: '0.1em', color: 'rgba(200,184,154,0.35)' }}>Уровень</div><div style={{ color: detailLevel === 0 ? '#d4a857' : detailLevel === 1 ? '#e8c87a' : '#ffd700', fontSize: '12px', fontWeight: 700 }}>{detailLabel}</div><div style={{ color: 'rgba(200,184,154,0.3)', fontSize: '8.5px' }}>{detailHint}</div></div>
+
+      {eras && (
+        <div style={{ position: 'absolute', bottom: '12px', left: '14px', zIndex: 11, background: 'rgba(13,10,6,0.82)', backdropFilter: 'blur(10px)', borderRadius: '10px', padding: '10px 12px', border: '1px solid rgba(212,168,87,0.12)', display: 'flex', flexDirection: 'column', gap: '4px', maxWidth: '180px' }}>
+          <div style={{ fontSize: '9px', textTransform: 'uppercase', letterSpacing: '0.1em', color: 'rgba(200,184,154,0.35)', marginBottom: '2px' }}>Эпохи</div>
+          {eras.map(e => <div key={e.id} style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><span style={{ width: '8px', height: '8px', borderRadius: '2px', background: e.color, flexShrink: 0 }} /><span style={{ color: 'rgba(200,184,154,0.55)', fontSize: '10.5px' }}>{e.name}</span></div>)}
+        </div>
+      )}
+
+      <div style={{ position: 'absolute', bottom: '12px', right: '14px', zIndex: 11, background: 'rgba(13,10,6,0.82)', backdropFilter: 'blur(10px)', borderRadius: '10px', padding: '8px 12px', border: '1px solid rgba(212,168,87,0.12)', display: 'flex', flexDirection: 'column', gap: '2px', alignItems: 'center', pointerEvents: 'none' }}>
+        <div style={{ fontSize: '9px', textTransform: 'uppercase', letterSpacing: '0.1em', color: 'rgba(200,184,154,0.35)' }}>Уровень</div>
+        <div style={{ color: detailLevel === 0 ? '#d4a857' : detailLevel === 1 ? '#e8c87a' : '#ffd700', fontSize: '12px', fontWeight: 700 }}>{detailLabel}</div>
+        <div style={{ color: 'rgba(200,184,154,0.3)', fontSize: '8.5px' }}>{detailHint}</div>
+      </div>
+
+      {activeId && (
+        <div style={{ position: 'absolute', top: '60px', right: '14px', zIndex: 11, background: 'rgba(13,10,6,0.82)', backdropFilter: 'blur(10px)', borderRadius: '10px', padding: '6px 12px', border: '1px solid rgba(255,215,0,0.2)', display: 'flex', gap: '8px', alignItems: 'center' }}>
+          <span style={{ color: '#ffd700', fontSize: '11px' }}>✦ Фокус: {focusLineageIds?.size ?? 0} в ветви</span>
+          <button onClick={() => { setActiveId(null); setSelected(null); }} style={{ background: 'none', border: 'none', color: 'rgba(200,184,154,0.5)', fontSize: '14px', cursor: 'pointer', padding: '0 4px' }}>×</button>
+        </div>
+      )}
+
       {eras && amMax > amMin && <TimelineAxis eras={eras} amMin={amMin} amMax={amMax} height={4200} />}
-      <ReactFlow nodes={displayNodes} edges={displayEdges} onNodeClick={onNodeClick} onInit={(inst) => { rfInstance.current = inst; }} onViewportChange={(vp: { zoom: number }) => setZoomLevel(vp.zoom)} fitView fitViewOptions={{ padding: 0.12 }} minZoom={0.04} maxZoom={3} nodesDraggable={false} nodesConnectable={false} connectionLineType={ConnectionLineType.SmoothStep} proOptions={{ hideAttribution: true }} style={{ background: 'transparent' }}>
+
+      <ReactFlow
+        nodes={displayNodes}
+        edges={displayEdges}
+        onNodeClick={onNodeClick}
+        onPaneClick={onPaneClick}
+        onInit={(inst) => { rfInstance.current = inst; }}
+        onViewportChange={(vp: { zoom: number }) => setZoomLevel(vp.zoom)}
+        fitView
+        fitViewOptions={{ padding: 0.15, minZoom: 0.15, maxZoom: 1.5 }}
+        minZoom={0.04}
+        maxZoom={3}
+        nodesDraggable={false}
+        nodesConnectable={false}
+        connectionLineType={ConnectionLineType.SmoothStep}
+        proOptions={{ hideAttribution: true }}
+        style={{ background: 'transparent' }}
+      >
         <Background color="rgba(212,168,87,0.05)" gap={36} size={1} />
         <Controls style={{ background: 'rgba(13,10,6,0.85)', borderColor: 'rgba(212,168,87,0.2)', borderRadius: '8px' }} showInteractive={false} />
         <MiniMap style={{ background: 'rgba(13,10,6,0.85)', border: '1px solid rgba(212,168,87,0.15)', borderRadius: '8px' }} nodeColor={(n: Node) => getLineStyle((n.data as Record<string, string>)?.lineage ?? 'neutral').fill} nodeStrokeWidth={3} maskColor="rgba(0,0,0,0.65)" pannable zoomable />
       </ReactFlow>
+
       <DetailPanel person={selected} onClose={() => setSelected(null)} />
       {showSplit && <SplitView persons={persons} onClose={() => setShowSplit(false)} />}
+
       {tourActive && tourPerson && (
         <div style={{ position: 'absolute', bottom: '70px', left: '50%', transform: 'translateX(-50%)', zIndex: 40, display: 'flex', alignItems: 'center', gap: '10px', background: 'rgba(13,10,6,0.92)', backdropFilter: 'blur(16px)', borderRadius: '12px', padding: '10px 16px', border: '1px solid rgba(255,215,0,0.25)', boxShadow: '0 4px 24px rgba(0,0,0,0.6)', maxWidth: 'calc(100vw - 40px)' }}>
-          <button onClick={tourPrev} disabled={tourIndex === 0} aria-label="Предыдущий" style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(212,168,87,0.2)', borderRadius: '8px', color: tourIndex === 0 ? 'rgba(100,100,100,0.3)' : '#c8b89a', fontSize: '14px', cursor: tourIndex === 0 ? 'default' : 'pointer', width: '32px', height: '32px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>←</button>
+          <button onClick={tourPrev} disabled={tourIndex === 0} aria-label="Предыдущий" style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(212,168,87,0.2)', borderRadius: '8px', color: tourIndex === 0 ? 'rgba(100,100,100,0.3)' : '#c8b89a', fontSize: '14px', cursor: tourIndex === 0 ? 'default' : 'pointer', width: '36px', height: '36px', minHeight: '36px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>←</button>
           <div style={{ textAlign: 'center', minWidth: '120px' }}><div style={{ color: '#ffd700', fontSize: '14px', fontWeight: 700 }}>{tourPerson.name.ru}</div>{tourPerson.chronology?.mt?.birthAM != null && <div style={{ color: 'rgba(200,184,154,0.4)', fontSize: '9px' }}>AM {tourPerson.chronology.mt.birthAM} · шаг {tourIndex + 1} из {goldenArray.length}</div>}</div>
-          <button onClick={tourNext} disabled={tourIndex >= goldenArray.length - 1} aria-label="Следующий" style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(212,168,87,0.2)', borderRadius: '8px', color: tourIndex >= goldenArray.length - 1 ? 'rgba(100,100,100,0.3)' : '#c8b89a', fontSize: '14px', cursor: tourIndex >= goldenArray.length - 1 ? 'default' : 'pointer', width: '32px', height: '32px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>→</button>
+          <button onClick={tourNext} disabled={tourIndex >= goldenArray.length - 1} aria-label="Следующий" style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(212,168,87,0.2)', borderRadius: '8px', color: tourIndex >= goldenArray.length - 1 ? 'rgba(100,100,100,0.3)' : '#c8b89a', fontSize: '14px', cursor: tourIndex >= goldenArray.length - 1 ? 'default' : 'pointer', width: '36px', height: '36px', minHeight: '36px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>→</button>
           <button onClick={() => { setTourIndex(-1); setSelected(tourPerson); }} style={{ background: 'transparent', border: 'none', color: 'rgba(200,184,154,0.5)', fontSize: '10px', cursor: 'pointer', fontFamily: 'inherit' }}>Подробнее</button>
           <button onClick={() => setTourIndex(-1)} aria-label="Закрыть тур" style={{ background: 'transparent', border: 'none', color: 'rgba(200,184,154,0.4)', fontSize: '16px', cursor: 'pointer' }}>×</button>
         </div>
       )}
+
       <style>{`
         @keyframes genealogy-pulse-gold { 0%,100% { box-shadow: 0 0 16px rgba(255,215,0,0.25); } 50% { box-shadow: 0 0 32px rgba(255,215,0,0.55); } }
+        @keyframes genealogy-slide-in-right { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+        @keyframes genealogy-fade-in { from { opacity: 0; } to { opacity: 1; } }
         .react-flow__attribution { display: none !important; }
         .react-flow__node { padding: 0 !important; border: none !important; background: transparent !important; }
         .react-flow__node-default { padding: 0 !important; border: none !important; background: transparent !important; }
+        .react-flow__controls { box-shadow: 0 2px 12px rgba(0,0,0,0.4) !important; }
         .react-flow__controls-button { width: 40px !important; height: 40px !important; min-width: 40px !important; min-height: 40px !important; color: #c8b89a !important; }
         .react-flow__controls-button:hover { background: rgba(212,168,87,0.12) !important; }
         .react-flow__controls-button svg { fill: #c8b89a !important; }
         .react-flow__minimap { border-radius: 8px !important; }
-        .react-flow__edge-path { transition: stroke-width .15s; }
+        .react-flow__edge-path { transition: stroke-width .2s ease, opacity .3s ease; }
+        .react-flow__edge.animated path { stroke-dasharray: 8; animation: genealogy-dash 1s linear infinite; }
+        @keyframes genealogy-dash { to { stroke-dashoffset: -16; } }
         .genealogy-node:hover { transform: scale(1.06) !important; z-index: 1000 !important; box-shadow: 0 0 28px rgba(212,168,87,0.35) !important; border-color: #ffd700 !important; }
-        .genealogy-node { transition: transform .15s ease, box-shadow .15s ease, border-color .15s ease; }
+        .genealogy-node { transition: transform .15s ease, box-shadow .2s ease, border-color .2s ease, opacity .3s ease, filter .3s ease; }
         @media (hover: none) { .genealogy-node:hover { transform: none !important; } }
       `}</style>
     </div>
