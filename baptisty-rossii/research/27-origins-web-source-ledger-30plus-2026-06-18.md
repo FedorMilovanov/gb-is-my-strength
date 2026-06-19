@@ -258,6 +258,12 @@
 | 141 | https://www.gty.org/sermons/GTY173/fighting-the-good-fight-fiftieth-anniversary-interview-with-john-macarthur | A-/B+ | Юбилейное интервью GTY: МакАртур о масштабе поездок (Восточная Европа и др.), Псалом 19. См. файл 68. |
 | 142 | https://www.thegospelcoalition.org/article/what-soviets-intended-for-siberia-god-intended-for-good/ | A-/B+ | TGC (Бахмутский): «ряд пасторских конференций»; Новосибирская семинария (2000) + Самара (2000) при SGA/TMAI. См. файл 68. |
 
+## W. МакАртур своими словами: Киев/Россия (англоязычный транскрипт, проход 2026-06-19)
+
+| # | URL | Уровень | Зачем |
+|---:|---|---|---|
+| 143 | https://www.youtube.com/watch?v=HiC1FInn6ds | A-open (транскрипт) | **TMS podcast «MacArthur and the Russians»**: прямая речь МакАртура — «первый визит — Киев», «был там, когда рухнул СССР», ~10 конференций; радио в СССР с 1970-х; Провост/Омельченко; Study Bible 5 тиражей, ~370 тыс. книг. См. файл 69. |
+
 ---
 
 ## Что делать с этим ledger
