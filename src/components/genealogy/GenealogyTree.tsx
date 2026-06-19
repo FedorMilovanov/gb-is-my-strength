@@ -60,6 +60,7 @@ export default function GenealogyTree({ persons, eras }: GenealogyTreeProps) {
   const [selected, setSelected] = useState<Person | null>(null);
   const [showSplit, setShowSplit] = useState(false);
   const [zoomLevel, setZoomLevel] = useState(1);
+  const [activeId, setActiveId] = useState<string | null>(null);
   const [nodes, setNodes, onNodesChange] = useNodesState<Node>([]);
   const [edges, setEdges, onEdgesChange] = useEdgesState<Edge>([]);
 
@@ -140,13 +141,136 @@ export default function GenealogyTree({ persons, eras }: GenealogyTreeProps) {
     }
   }, [search, persons, setNodes, laidNodes]);
 
+  // ── Center viewport on a person by ID ──
+  const focusPerson = useCallback((id: string, zoom?: number) => {
+    const matchNode = laidNodes.find(n => n.id === id);
+    if (matchNode && rfInstance.current) {
+      const x = matchNode.position.x + 86;
+      const y = matchNode.position.y + 36;
+      rfInstance.current.setCenter(x, y, { zoom: zoom ?? 1.2, duration: 500 });
+    }
+    setActiveId(id);
+    setNodes(ns => ns.map(n => ({ ...n, data: { ...n.data, highlighted: n.id === id } })));
+  }, [laidNodes, setNodes]);
+
+  // ── Keyboard navigation ──
+  useEffect(() => {
+    const handler = (e: KeyboardEvent) => {
+      if (showSplit || !activeId) return;
+      // Don't interfere with search input
+      const tag = (e.target as HTMLElement)?.tagName;
+      if (tag === 'INPUT' || tag === 'TEXTAREA') return;
+
+      const person = persons.find(p => p.id === activeId);
+      if (!person) return;
+      const byId = new Map(persons.map(p => [p.id, p]));
+
+      switch (e.key) {
+        case 'ArrowUp': {
+          // Navigate to parent (father or mother)
+          const parentId = person.father ?? person.mother;
+          if (parentId && byId.has(parentId)) {
+            e.preventDefault();
+            focusPerson(parentId);
+          }
+          break;
+        }
+        case 'ArrowDown': {
+          // Navigate to first child
+          const children = person.children?.filter(c => byId.has(c));
+          if (children && children.length > 0) {
+            e.preventDefault();
+            focusPerson(children[0]);
+          }
+          break;
+        }
+        case 'ArrowLeft':
+        case 'ArrowRight': {
+          // Navigate to sibling (same parent)
+          const parentId = person.father ?? person.mother;
+          if (!parentId) break;
+          const parent = byId.get(parentId);
+          const siblings = parent?.children?.filter(c => c !== activeId && byId.has(c)) ?? [];
+          if (siblings.length === 0) break;
+          e.preventDefault();
+          // Left = previous sibling, Right = next sibling
+          const idx = (parent?.children?.indexOf(activeId) ?? 0);
+          const sibIdx = e.key === 'ArrowLeft'
+            ? Math.max(0, idx - 1)
+            : Math.min(siblings.length, idx + 1);
+          const target = siblings[Math.min(sibIdx, siblings.length - 1)];
+          if (target) focusPerson(target);
+          break;
+        }
+        case 'Enter':
+        case ' ': {
+          e.preventDefault();
+          const p = persons.find(pp => pp.id === activeId);
+          if (p) setSelected(p);
+          break;
+        }
+        case 'Escape': {
+          setActiveId(null);
+          setNodes(ns => ns.map(n => ({ ...n, data: { ...n.data, highlighted: false } })));
+          break;
+        }
+      }
+    };
+    window.addEventListener('keydown', handler);
+    return () => window.removeEventListener('keydown', handler);
+  }, [activeId, persons, showSplit, focusPerson, setNodes]);
+
   // ── Handlers ──
   const onNodeClick = useCallback((_evt: React.MouseEvent, node: Node) => {
+    setActiveId(node.id);
     const p = persons.find(pp => pp.id === node.id);
     if (p) setSelected(p);
   }, [persons]);
 
   const onClosePanel = useCallback(() => setSelected(null), []);
+
+  // ── Guided tour: follow golden path ──
+  const goldenArray = useMemo(() => {
+    const arr: string[] = [];
+    const byId = new Map(persons.map(p => [p.id, p]));
+    let cur = byId.get('jesus');
+    const guard = new Set<string>();
+    while (cur && !guard.has(cur.id)) {
+      arr.push(cur.id);
+      guard.add(cur.id);
+      if (cur.id === 'jesus' && cur.mother) cur = byId.get(cur.mother);
+      else cur = cur.father ? byId.get(cur.father) : undefined;
+    }
+    return arr.reverse(); // Adam → Christ
+  }, [persons]);
+
+  const [tourIndex, setTourIndex] = useState(-1);
+  const tourActive = tourIndex >= 0;
+
+  const startTour = useCallback(() => {
+    setTourIndex(0);
+    if (goldenArray[0]) focusPerson(goldenArray[0], 1.0);
+  }, [goldenArray, focusPerson]);
+
+  const tourNext = useCallback(() => {
+    setTourIndex(i => {
+      const next = Math.min(i + 1, goldenArray.length - 1);
+      if (goldenArray[next]) focusPerson(goldenArray[next], 1.0);
+      return next;
+    });
+  }, [goldenArray, focusPerson]);
+
+  const tourPrev = useCallback(() => {
+    setTourIndex(i => {
+      const prev = Math.max(i - 1, 0);
+      if (goldenArray[prev]) focusPerson(goldenArray[prev], 1.0);
+      return prev;
+    });
+  }, [goldenArray, focusPerson]);
+
+  const stopTour = useCallback(() => setTourIndex(-1), []);
+
+  const tourPerson = tourActive ? persons.find(p => p.id === goldenArray[tourIndex]) : null;
 
   const visibleCount = useMemo(() => nodes.filter(n => !n.hidden).length, [nodes]);
 
@@ -248,6 +372,18 @@ export default function GenealogyTree({ persons, eras }: GenealogyTreeProps) {
             fontFamily: 'inherit', fontSize: '11px', transition: 'all .2s',
           }}
         >⇆ Мф/Лк</button>
+        <span style={{ color: 'rgba(200,184,154,0.3)', fontSize: '11px' }}>|</span>
+        <button
+          onClick={startTour}
+          title="Путешествие по золотой нити: от Адама до Христа"
+          style={{
+            background: 'transparent',
+            border: '1px solid rgba(212,168,87,0.2)',
+            borderRadius: '999px', padding: '9px 12px', cursor: 'pointer', minHeight: '40px',
+            color: 'rgba(200,184,154,0.5)',
+            fontFamily: 'inherit', fontSize: '11px', transition: 'all .2s',
+          }}
+        >🎬 Тур</button>
       </div>
 
       {/* Era legend */}
@@ -332,6 +468,53 @@ export default function GenealogyTree({ persons, eras }: GenealogyTreeProps) {
 
       {/* Split view (Mt vs Lk) */}
       {showSplit && <SplitView persons={persons} onClose={() => setShowSplit(false)} />}
+
+      {/* Guided tour bar */}
+      {tourActive && tourPerson && (
+        <div
+          style={{
+            position: 'absolute', bottom: '70px', left: '50%', transform: 'translateX(-50%)',
+            zIndex: 40, display: 'flex', alignItems: 'center', gap: '10px',
+            background: 'rgba(13,10,6,0.92)', backdropFilter: 'blur(16px)',
+            borderRadius: '12px', padding: '10px 16px',
+            border: '1px solid rgba(255,215,0,0.25)',
+            boxShadow: '0 4px 24px rgba(0,0,0,0.6)',
+            maxWidth: 'calc(100vw - 40px)',
+          }}
+        >
+          <button onClick={tourPrev} disabled={tourIndex === 0} aria-label="Предыдущий" style={{
+            background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(212,168,87,0.2)',
+            borderRadius: '8px', color: tourIndex === 0 ? 'rgba(100,100,100,0.3)' : '#c8b89a',
+            fontSize: '14px', cursor: tourIndex === 0 ? 'default' : 'pointer',
+            width: '32px', height: '32px', display: 'flex', alignItems: 'center', justifyContent: 'center',
+          }}>←</button>
+          <div style={{ textAlign: 'center', minWidth: '120px' }}>
+            <div style={{ color: '#ffd700', fontSize: '14px', fontWeight: 700 }}>
+              {tourPerson.name.ru}
+            </div>
+            {tourPerson.chronology?.mt?.birthAM != null && (
+              <div style={{ color: 'rgba(200,184,154,0.4)', fontSize: '9px' }}>
+                AM {tourPerson.chronology.mt.birthAM} · шаг {tourIndex + 1} из {goldenArray.length}
+              </div>
+            )}
+          </div>
+          <button onClick={tourNext} disabled={tourIndex >= goldenArray.length - 1} aria-label="Следующий" style={{
+            background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(212,168,87,0.2)',
+            borderRadius: '8px', color: tourIndex >= goldenArray.length - 1 ? 'rgba(100,100,100,0.3)' : '#c8b89a',
+            fontSize: '14px', cursor: tourIndex >= goldenArray.length - 1 ? 'default' : 'pointer',
+            width: '32px', height: '32px', display: 'flex', alignItems: 'center', justifyContent: 'center',
+          }}>→</button>
+          <span style={{ color: 'rgba(200,184,154,0.2)' }}>|</span>
+          <button onClick={() => { stopTour(); setSelected(tourPerson); }} style={{
+            background: 'transparent', border: 'none', color: 'rgba(200,184,154,0.5)',
+            fontSize: '10px', cursor: 'pointer', fontFamily: 'inherit',
+          }}>Подробнее</button>
+          <button onClick={stopTour} aria-label="Закрыть тур" style={{
+            background: 'transparent', border: 'none', color: 'rgba(200,184,154,0.4)',
+            fontSize: '16px', cursor: 'pointer',
+          }}>×</button>
+        </div>
+      )}
 
       {/* Scoped CSS (no global pollution) */}
       <style>{`
