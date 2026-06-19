@@ -1,40 +1,18 @@
 ---
-import BaseLayout from '@/layouts/BaseLayout.astro';
-import { SITE } from '@/data/site';
+import { loadLegacyFullDocument } from '@/utils/legacyFullDocument';
 
-const canonical = `${SITE.url}/hard-texts/`;
-const title = 'Тайны человеческого сердца — Серия материалов | Господь Бог — Сила Моя';
-const description = 'Цикл экзегетических разборов о природе падшего и возрождённого сердца. Разбор Иеремии 17:9–10 и Римлянам 7.';
-const cards = [
-  { title: 'Коротко', href: '/hard-texts/', text: 'Серия помогает читать трудные тексты о сердце не в отрыве от Евангелия, а в свете нового сердца, остаточного греха и жизни Духом.' },
-  { title: 'Крайне ли испорчено сердце верующего?', href: '/articles/krajne-li-isporcheno-serdce/', text: 'Иеремия 17: исторический фон, диагноз сердца, новое сердце, остаточный грех и пастырское применение.' },
-  { title: 'Римлянам 7: верующий, неверующий или человек под законом?', href: '/articles/rimlyanam-7-veruyushchiy-ili-neveruyushchiy/', text: 'Павел, закон, плоть, Дух, Ллойд-Джонс, TMSJ/Jay Street и связь Римлянам 6–8.' },
-  { title: 'Нашли неточность?', href: '/about/', text: 'Если вы заметили фактическую, богословскую или редакционную неточность, сообщите редактору проекта.' },
-];
-const jsonLd = {
-  '@context': 'https://schema.org',
-  '@graph': [
-    { '@type': 'CollectionPage', '@id': `${canonical}#collectionpage`, name: 'Тайны человеческого сердца — серия материалов', url: canonical, description, inLanguage: 'ru', isPartOf: { '@id': SITE.websiteId }, publisher: { '@id': SITE.orgId }, image: `${SITE.url}/images/og-series-heart.webp` },
-    { '@type': 'BreadcrumbList', '@id': `${canonical}#breadcrumbs`, itemListElement: [
-      { '@type': 'ListItem', position: 1, name: SITE.name, item: `${SITE.url}/` },
-      { '@type': 'ListItem', position: 2, name: 'Тайны человеческого сердца', item: canonical },
-    ] },
-  ],
-};
+// Visual-first migration: /hard-texts/ must preserve the legacy premium page
+// before any component refactor. The previous generic astro-card grid was a
+// production-quality regression; keep this full-document shadow until screenshot
+// parity and owner review approve a hand-built Astro version.
+const { headHtml, bodyHtml, bodyAttributes } = loadLegacyFullDocument('hard-texts/index.html');
 ---
-<BaseLayout title={title} description={description} canonical={canonical} ogImage={`${SITE.url}/images/og-series-heart.webp`} ogTitle="Тайны человеческого сердца — серия материалов" ogDescription={description} jsonLd={jsonLd}>
-  <section class="astro-page astro-series-page" data-pagefind-body>
-    <header class="astro-page__header">
-      <p class="astro-eyebrow">Серия материалов</p>
-      <h1>Тайны человеческого сердца</h1>
-      <p>{description}</p>
-      <p>Эта серия соединяет экзегезу трудных текстов, богословие освящения и пастырское применение. Главная цель — не усилить отчаяние, а честно назвать глубину греха и показать надежду Нового Завета.</p>
-      <p>Первая часть разбирает Иеремию 17:9–10 и вопрос о том, относится ли диагноз «сердце лукаво более всего» к возрождённому человеку. Вторая часть переносит разговор в Римлянам 7 и показывает, как Павел описывает войну с остаточным грехом, не отрывая её от победы Римлянам 8.</p>
-      <p>Серия нужна для трезвого самопознания: новое сердце реально, но самообман не исчезает автоматически; благодать снимает осуждение, но не отменяет ежедневную борьбу, исповедание, подотчётность и надежду на Христа.</p>
-      <p>Поэтому материалы серии не предлагают быстрых лозунгов. Они ведут читателя через контекст, аргумент текста, разные богословские позиции и практические выводы для молитвы, покаяния, церковной жизни и утешения совести.</p>
-    </header>
-    <div class="astro-card-grid" aria-label="Материалы серии">
-      {cards.map((card) => <article class="astro-card"><h2><a href={card.href}>{card.title}</a></h2><p>{card.text}</p></article>)}
-    </div>
-  </section>
-</BaseLayout>
+<!DOCTYPE html>
+<html lang="ru">
+  <head>
+    <Fragment set:html={headHtml} />
+  </head>
+  <body {...bodyAttributes}>
+    <Fragment set:html={bodyHtml} />
+  </body>
+</html>

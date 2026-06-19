@@ -88,12 +88,16 @@ jobs:
       - name: Static publication gates
         run: npm run validate:static-publication
 
-      # EMERGENCY 2026-06-19:
-      # Dist deploy exposed non-visual-parity Astro shadow pages as production.
-      # Until every promoted route passes visual parity, publish the legacy root
-      # artifact again. This restores premium legacy pages for articles,
-      # biographies, About, Nagornaya, Gill series, etc.
-      - name: Publish IndexNow key file from secret
+    # РЕФАКТОРИНГ 5.0 (AGENTS-r245, 2026-06-20):
+    # Dist deploy is being hardened via full-document shadow-wrap for all
+    # landing/series pages to restore 100% visual parity. Legacy root artifact
+    # remains production until Phase 2 (dist build verification) passes.
+    # See docs/refactor-2026/REFACTORING_5_0_PLAN.md for checklist.
+    #
+    # EMERGENCY 2026-06-19 (superseded by r245 planning):
+    # Dist deploy previously exposed generic Astro card-grid placeholders.
+    # Root deploy preserves premium legacy pages while dist is rebuilt.
+    - name: Publish IndexNow key file from secret
         run: |
           KEY="${{ secrets.INDEXNOW_KEY }}"
           if [ -n "$KEY" ]; then

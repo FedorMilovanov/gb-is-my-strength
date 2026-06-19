@@ -1,56 +1,18 @@
 ---
-import BaseLayout from '@/layouts/BaseLayout.astro';
-import { SITE } from '@/data/site';
+import { loadLegacyFullDocument } from '@/utils/legacyFullDocument';
 
-const canonical = `${SITE.url}/nagornaya/`;
-const title = 'Нагорная проповедь — серия из 5 статей | Господь Бог';
-const description = 'Исследование Матфея 5–7 и Луки 6: архитектура, синоптическая проблема, адресат, богодухновенность, Закон и Евангелие. 5 частей, 120+ источников.';
-const parts = [
-  { n: 'I', title: 'Два текста, один Иисус', href: '/nagornaya/chast-1/', text: 'Матфей 5–7 и Лука 6: одна проповедь, две формы записи, разные акценты и единый голос Христа.' },
-  { n: 'II', title: 'Как это записывалось', href: '/nagornaya/chast-2/', text: 'Апостольская память, богодухновенность, устная культура, композиция Евангелий и доверие к тексту.' },
-  { n: 'III', title: 'Кому это сказано?', href: '/nagornaya/chast-3/', text: 'Адресаты Нагорной проповеди: ученики, толпа, Израиль, Церковь и вопрос применения сегодня.' },
-  { n: 'IV', title: 'Можно ли доверять Евангелиям?', href: '/nagornaya/chast-4/', text: 'Историческая достоверность, свидетельства, синоптические различия и вера, которая не боится фактов.' },
-  { n: 'V', title: 'Закон, Евангелие и Нагорная проповедь', href: '/nagornaya/chast-5/', text: 'Как Нагорная проповедь соотносится с Законом, благодатью, праведностью и жизнью ученика.' },
-];
-const jsonLd = {
-  '@context': 'https://schema.org',
-  '@graph': [
-    { '@type': 'CollectionPage', '@id': `${canonical}#collectionpage`, url: canonical, name: title, description, inLanguage: 'ru', isPartOf: { '@id': SITE.websiteId }, publisher: { '@id': SITE.orgId }, image: `${SITE.url}/images/og-nagornaya-propoved.webp` },
-    { '@type': 'BreadcrumbList', '@id': `${canonical}#breadcrumbs`, itemListElement: [
-      { '@type': 'ListItem', position: 1, name: SITE.name, item: `${SITE.url}/` },
-      { '@type': 'ListItem', position: 2, name: 'Нагорная проповедь', item: canonical },
-    ] },
-  ],
-};
+// Visual-first migration: /nagornaya/ must preserve the legacy premium page
+// before any component refactor. The previous generic astro-card grid was a
+// production-quality regression; keep this full-document shadow until screenshot
+// parity and owner review approve a hand-built Astro version.
+const { headHtml, bodyHtml, bodyAttributes } = loadLegacyFullDocument('nagornaya/index.html');
 ---
-<BaseLayout title={title} description={description} canonical={canonical} ogImage={`${SITE.url}/images/og-nagornaya-propoved.webp`} ogTitle="Нагорная проповедь — серия из 5 статей" ogDescription={description} jsonLd={jsonLd}>
-  <section class="astro-page astro-nagornaya-index" data-pagefind-body>
-    <header class="astro-page__header">
-      <p class="astro-eyebrow">Матфей 5–7 · Лука 6</p>
-      <h1>Нагорная проповедь</h1>
-      <p>{description}</p>
-      <p>Эта серия исследует не только отдельные заповеди Христа, но и всю архитектуру Нагорной проповеди: кому она сказана, как записана, почему Матфей и Лука различаются, как проповедь связана с Законом и Евангелием, и почему она требует не поверхностной морали, а жизни ученика перед Царём.</p>
-      <p>Материалы можно читать последовательно как один курс. Первая часть вводит в проблему двух евангельских форм, вторая объясняет передачу и запись слов Иисуса, третья разбирает адресатов, четвёртая отвечает на вопрос доверия к Евангелиям, а пятая собирает богословский итог о праведности, благодати и послушании.</p>
-      <p>Серия также помогает избежать двух крайностей: читать Нагорную проповедь как отвлечённый нравственный идеал, недостижимый для обычного христианина, или превращать её в новый закон спасения делами. В центре остаётся Христос, Царство Божье, реальная праведность ученика и необходимость слышать слова Господа в их библейском контексте.</p>
-      <p>Отдельные части можно использовать как справочник: для проповеди, домашней группы, личного чтения Евангелий или проверки популярных упрощений о Матфее, Луке, Законе и Евангелии, особенно когда нужно увидеть не фрагмент, а весь маршрут аргумента, переходов, выводов и пастырского применения для веры, покаяния, ученичества, проповеди и церковного наставления сегодня в поместной общине и семье.</p>
-    </header>
-
-    <section class="astro-card">
-      <h2>Пять частей серии</h2>
-      <div class="astro-card-grid">
-        {parts.map((part) => (
-          <article class="astro-card">
-            <p class="astro-eyebrow">Часть {part.n}</p>
-            <h3><a href={part.href}>{part.title}</a></h3>
-            <p>{part.text}</p>
-          </article>
-        ))}
-      </div>
-    </section>
-
-    <section class="astro-card">
-      <h2>Нашли неточность?</h2>
-      <p>Если вы заметили фактическую, богословскую или редакционную неточность в серии о Нагорной проповеди, сообщите редактору проекта. Исправления особенно важны там, где речь идёт о доверии к Евангелиям и словах Самого Христа.</p>
-    </section>
-  </section>
-</BaseLayout>
+<!DOCTYPE html>
+<html lang="ru">
+  <head>
+    <Fragment set:html={headHtml} />
+  </head>
+  <body {...bodyAttributes}>
+    <Fragment set:html={bodyHtml} />
+  </body>
+</html>
