@@ -1,0 +1,68 @@
+#!/usr/bin/env node
+/*
+ * owner-ui-regression-guard.js — owner-facing UI contract for root production.
+ *
+ * This is not an SEO/content parity test. It protects the visible premium
+ * legacy experience while Astro is not yet visually approved for production.
+ */
+'use strict';
+
+const fs = require('fs');
+const path = require('path');
+const ROOT = path.join(__dirname, '..');
+const problems = [];
+function read(rel) { return fs.readFileSync(path.join(ROOT, rel), 'utf8'); }
+function ok(msg) { console.log('✅ ' + msg); }
+function bad(msg) { problems.push(msg); console.log('❌ ' + msg); }
+function mustContain(rel, marker, label = marker) {
+  const html = read(rel);
+  if (html.includes(marker)) ok(`${rel}: ${label}`);
+  else bad(`${rel}: missing owner UI marker: ${label}`);
+}
+function mustNotContain(rel, marker, label = marker) {
+  const html = read(rel);
+  if (!html.includes(marker)) ok(`${rel}: no ${label}`);
+  else bad(`${rel}: forbidden owner UI regression marker present: ${label}`);
+}
+
+// Home: owner rejected the extra entry strip and homepage TTS prompt.
+mustContain('index.html', 'home-v20', 'legacy premium home shell');
+mustContain('index.html', 'h-hero-title', 'legacy home hero');
+mustNotContain('index.html', 'h-home-entry-strip', 'rejected “Основные входы” strip');
+const siteJs = read('js/site.js');
+if (/path===['"]\/['"]/.test(siteJs) && /home-v20/.test(siteJs) && /gbx-tts/.test(siteJs)) ok('js/site.js: TTS has homepage guard');
+else bad('js/site.js: TTS homepage guard missing or not obvious');
+
+// Production root must remain legacy/premium until Astro visual parity is approved.
+for (const [rel, markers] of Object.entries({
+  'articles/index.html': ['articles-index-page', 'home-v20', 'h-hero-title', 'h-article-card'],
+  'biografii/index.html': ['home-v20', 'h-hero-title', 'h-article-card'],
+  'nagornaya/seriya/index.html': ['nagornaya-page nagornaya-series-page', 'home-v20', 'h-hero-title', 'h-article-card'],
+  'articles/dzhon-gill-chast-1-chelovek/index.html': ['gbs-world', 'data-gbs2-series="dzhon-gill"', 'gbs2-rail', 'gbs2-hero'],
+  'articles/dzhon-gill-chast-2-uchenyi/index.html': ['gbs-world', 'data-gbs2-series="dzhon-gill"', 'gbs2-rail', 'gbs2-hero'],
+  'articles/dzhon-gill-chast-3-nasledie/index.html': ['gbs-world', 'data-gbs2-series="dzhon-gill"', 'gbs2-rail', 'gbs2-hero'],
+})) {
+  for (const marker of markers) mustContain(rel, marker);
+  mustNotContain(rel, 'astro-page', 'generic Astro page shell');
+  mustNotContain(rel, 'astro-card-grid', 'generic Astro card grid');
+}
+
+// Maps: unfinished maps must not be presented as finished interactive maps.
+mustContain('karty/index.html', 'Путь Авраама', 'Avraam remains on map shelf');
+mustContain('karty/index.html', 'Остальные карты временно не на витрине', 'unfinished map shelf warning');
+for (const slug of ['ishod','pavel','shoftim','melachim','shvatim','yeshua','maccabim','early-church','revelation']) {
+  mustContain(`karty/${slug}/index.html`, 'Визуальный аудит карт', `${slug} holding page`);
+  mustNotContain(`karty/${slug}/index.html`, 'id="mapRoot"', `${slug} unfinished live MapEngine root`);
+}
+
+// Doctrine: future agents must see the owner rule.
+mustContain('docs/OWNER-REQUIREMENTS.md', '95%+ визуального совпадения', 'Astro 95% visual parity doctrine');
+mustContain('docs/OWNER-REQUIREMENTS.md', 'H1/H2/SEO/word-count не считаются визуальным переносом', 'SEO is not visual parity doctrine');
+mustContain('AGENTS.md', '95%+ визуальном совпадении legacy→Astro', 'AGENTS visual parity doctrine');
+
+console.log('\nOWNER UI REGRESSION GUARD');
+if (problems.length) {
+  console.log(`❌ ${problems.length} issue(s). Do not deploy.`);
+  process.exit(1);
+}
+console.log('✅ Owner UI regression guard passed');
