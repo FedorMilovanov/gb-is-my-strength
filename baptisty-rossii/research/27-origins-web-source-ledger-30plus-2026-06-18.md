@@ -99,6 +99,15 @@
 | 57 | https://www.grhs.org/villages/bessarabia/AltDanzig.html | A- | GRHS: Alt Danzig, 15 вёрст ЮЗ Елисаветграда, основан 1787 — независимая гео-сверка. См. файл 41. |
 | 58 | https://odessasem.academia.edu/OleksandrGeychenko | B+ | Гейченко, «[Post]-Reformation Influences… 1858–1911» (JEBS/Theological Reflections): вслед за Wardin — против упрощений «только импорт / только самобытность». |
 
+## H. Петербургская линия (проход 2026-06-19)
+
+| # | URL | Уровень | Зачем |
+|---:|---|---|---|
+| 59 | https://www.thebhhs.org/wp-content/uploads/2025/03/Ukraine.pdf | A-open | **Coleman**, открытая глава: Петербургское совещание 1884 (~70 делегатов, арест, высылка Пашкова/Корфа), поимённый круг обращённых, связь с Ново-Васильевкой. См. файл 43. |
+| 60 | https://www.eastwestreport.org/articles/ew08410.html | A-open | **Corrado 2000** (East-West Church & Ministry Report): даты Пашкова (1831–1902, обращение 1874, лидерство с 1878, высылка 1884), Победоносцев 1880, цитата Павлова о братстве 1884, 200+ брошюр, оговорка о «западности». См. файл 43. |
+| 61 | https://archiveshub.jisc.ac.uk/data/GB-150 | A-open (каталог) | **Pashkov Papers**, University of Birmingham, Cadbury Research Library, GB 150 — архив Редстока/пашковцев. Доступ по записи. |
+| 62 | https://qr.urfu.ru/ojs/index.php/qr/article/view/qr.631 | B+ | Рецензия (Quaestio Rossica) на монографию Ф. Никитина о Пашкове (2024) с ранее не публиковавшимися документами — современный академический ориентир. |
+
 ---
 
 ## Что делать с этим ledger
