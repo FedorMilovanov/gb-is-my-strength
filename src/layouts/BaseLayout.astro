@@ -19,10 +19,14 @@ interface Props {
   ogImageAlt?: string;
   ogTitle?: string;
   ogDescription?: string;
-  ogType?: 'website' | 'article';
+  ogType?: 'website' | 'article' | 'profile';
+  profileFirstName?: string;
+  profileLastName?: string;
   articlePublishedTime?: string;
   articleModifiedTime?: string;
   articleAuthor?: string;
+  profileFirstName?: string;
+  profileLastName?: string;
   jsonLd?: unknown;
   technicalBadge?: string;
   footerNote?: string;
@@ -49,6 +53,8 @@ const {
   articlePublishedTime,
   articleModifiedTime,
   articleAuthor,
+  profileFirstName,
+  profileLastName,
   jsonLd,
   technicalBadge,
   footerNote,
@@ -192,6 +198,8 @@ const effectiveBodyEndHtml = [autoLegacyRuntime, genericRuntime, bodyEndHtml].fi
       articlePublishedTime={articlePublishedTime}
       articleModifiedTime={articleModifiedTime}
       articleAuthor={articleAuthor}
+      profileFirstName={profileFirstName}
+      profileLastName={profileLastName}
       jsonLd={jsonLd}
     />
     <!-- Core project CSS — loaded on every page so Astro-owned routes match
