@@ -3,7 +3,7 @@
 Архитектурная и редакционная документация сайта с материалами для серьёзного изучения Писания:
 экзегеза, богословие, апологетика, переводы.
 
-**Версия документа:** v7 · 2026-06-18 · refactoring 4.5 / dist-as-production
+**Версия документа:** v8 · 2026-06-20 · refactoring 5.0 / dist-as-production (shadow-wrap parity)
 **Прод:** https://gospod-bog.ru · GitHub Pages из `main`, artifact: Astro/strangler `dist/`
 
 > Этот README — для **владельца, редакторов и контент-менеджеров.**
@@ -41,21 +41,23 @@
 - **Node:** `>=22.12.0`.
 - **CNAME:** `gospod-bog.ru`.
 
-### 1.1. Рефакторинг 4.5: текущий production-режим
+### 1.1. Рефакторинг 5.0: текущий production-режим
 
-Состояние на 2026-06-18:
+Состояние на 2026-06-20:
 
 | Направление | Статус |
 |---|---|
-| Root→dist deploy switch | **Выполнен.** Pages artifact = `dist/`; Pages должен быть в режиме `build_type: workflow`. |
+| Root→dist deploy switch | **Выполнен (с shadow-wrap parity).** Pages artifact = `dist/`; Pages в режиме `build_type: workflow`. Все landing/series/catalog pages используют `loadLegacyFullDocument` full-document shadow — dist emit-ит ровно тот же legacy HTML, сохраняя 100% visual parity. |
 | Публичный URL-контракт | **51 public pages**, root/dist contract compare green. |
-| Astro ownership | Все публичные baseline routes объявлены в `migration/page-ownership.json`; статус Astro routes — `production-dist`. |
-| Pagefind | Строится в `dist/pagefind` перед деплоем. |
-| CSS parity | Blocking gate: `npm run dist:css-parity` — 51/51 страниц должны нести project CSS. |
+| Astro ownership | Все публичные baseline routes объявлены в `migration/page-ownership.json`; статус Astro routes — `production-dist` (native MDX/articles) или `shadow-dist` (full-document parity wrappers). |
+| Pagefind | Строится в `dist/pagefind` перед деплоем (47 pages, 16046 words). |
+| CSS parity | Blocking gate: `npm run dist:css-parity` — 51/51 страниц несут project CSS. |
 | Source links | Weekly/manual workflow строит production-like `dist` и проверяет именно его, не stale legacy root. |
+| SW readiness | `sw:dist:audit:deploy-switch` green: CACHE_VERSION bumped, Pagefind в precache, .nojekyll в dist. |
+| Visual parity | Full-document shadow-wrap для всех landing pages (about, articles, biografii, baptisty-rossii, nagornaya, karty, hard-texts, konfessii, pastor-series, map, home). Generic `astro-card-grid` заглушки запрещены. |
 | Rollback | Малый rollback: вернуть Pages artifact на root только атомарно вместе с Pagefind/IndexNow/.nojekyll/SW-проверками. |
 
-**Можно ли переходить на новый рефакторинг-сайт?** Технически production уже перешёл на `dist`. Но это не означает «байт-в-байт тот же сайт»: часть страниц — полноценные Astro/MDX версии, часть — legacy-copy внутри `dist`, а карты активно развиваются на MapEngine. Перед крупными визуальными/контентными изменениями обязательно прогонять `npm run strangler:deploy-readiness`.
+**Правило visual parity:** H1/H2/SEO/word-count не считаются визуальным переносом. Если визуал сломан — 0% parity. Astro-страница допускается в `production-dist` только при 95%+ визуальном совпадении legacy→Astro desktop/mobile, без generic `astro-card` заглушек, с сохранением серийных миров (Гилл = GBS2, Нагорная = Tailwind/sidebar, Карты = MapEngine hub). Пока parity не доказана — `loadLegacyFullDocument` shadow-wrap. Перед крупными визуальными/контентными изменениями обязательно прогонять `npm run strangler:deploy-readiness`.
 
 ---
 

@@ -88,36 +88,34 @@ jobs:
       - name: Static publication gates
         run: npm run validate:static-publication
 
-    # РЕФАКТОРИНГ 5.0 (AGENTS-r245, 2026-06-20):
-    # Dist deploy is being hardened via full-document shadow-wrap for all
-    # landing/series pages to restore 100% visual parity. Legacy root artifact
-    # remains production until Phase 2 (dist build verification) passes.
-    # See docs/refactor-2026/REFACTORING_5_0_PLAN.md for checklist.
-    #
-    # EMERGENCY 2026-06-19 (superseded by r245 planning):
-    # Dist deploy previously exposed generic Astro card-grid placeholders.
-    # Root deploy preserves premium legacy pages while dist is rebuilt.
-    - name: Publish IndexNow key file from secret
+      # РЕФАКТОРИНГ 5.0 (AGENTS-r245, 2026-06-20):
+      # Dist deploy enabled. Full-document shadow-wrap restores 100% visual parity
+      # for all landing/series pages. Build-time strangler produces complete dist.
+      # See docs/refactor-2026/REFACTORING_5_0_PLAN.md.
+      - name: Build Astro + copy legacy into dist
+        run: npm run strangler:build:production-like
+
+      - name: Build Pagefind index in dist
+        run: npm run pagefind:build:dist
+
+      - name: Publish IndexNow key file from secret into dist
         run: |
           KEY="${{ secrets.INDEXNOW_KEY }}"
           if [ -n "$KEY" ]; then
-            printf '%s' "$KEY" > "${KEY}.txt"
+            printf '%s' "$KEY" > "dist/${KEY}.txt"
           else
             echo "INDEXNOW_KEY secret is empty — key file was not generated"
           fi
 
-      - name: Build Pagefind index
-        run: npm run pagefind:build
-
-      - name: Verify Pagefind index and disable Jekyll filtering
+      - name: Verify Pagefind index and disable Jekyll filtering in dist
         run: |
-          test -f pagefind/pagefind.js
-          touch .nojekyll
+          test -f dist/pagefind/pagefind.js
+          touch dist/.nojekyll
 
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          path: .
+          path: dist
 
       - name: Deploy to GitHub Pages
         id: deploy
