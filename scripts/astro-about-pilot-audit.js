@@ -20,7 +20,7 @@ const LEGACY_PORT = 8134;
 const DIST_PORT = 8135;
 const URL_PATH = '/about/';
 const SITE = 'https://gospod-bog.ru';
-const MIN_WORD_RATIO = 0.85;
+const MIN_WORD_RATIO = 0.98;
 const REQUIRED_JSON_LD_TYPES = ['Organization', 'WebSite', 'Person', 'ProfilePage', 'BreadcrumbList'];
 const PARITY_META_FIELDS = [
   'description',
@@ -127,6 +127,7 @@ async function inspect(page, url, label, viewportName) {
       h1,
       h2,
       text,
+      html: document.documentElement.outerHTML,
       scrollOverflow: Math.max(0, document.documentElement.scrollWidth - document.documentElement.clientWidth),
       links: [...document.querySelectorAll('a[href]')].map(a => a.getAttribute('href')).filter(Boolean),
       jsonLdTypes,
@@ -164,6 +165,12 @@ function checkOneViewport(problems, notes, viewportName, legacy, astro) {
   if (/Astro scaffold|Технический прототип|production switch/i.test(astro.text)) problems.push(`${prefix} astro public /about/ contains technical scaffold copy`);
   if (/\bnoindex\b/i.test(astro.meta.robots || '')) problems.push(`${prefix} astro /about/ unexpectedly noindex`);
   if (!astro.hasPagefindBody) problems.push(`${prefix} astro /about/ missing data-pagefind-body`);
+  for (const marker of ['about-page', 'about-contacts', 'about-contact-card', 'gb-accuracy-block']) {
+    if (!astro.html.includes(marker)) problems.push(`${prefix} astro missing legacy visual marker: ${marker}`);
+  }
+  for (const marker of ['class="astro-about"', 'astro-contact-grid', 'astro-accuracy-block']) {
+    if (astro.html.includes(marker)) problems.push(`${prefix} astro contains old generic marker: ${marker}`);
+  }
   const ratio = legacy.wordCount ? astro.wordCount / legacy.wordCount : 1;
   if (ratio < MIN_WORD_RATIO) problems.push(`${prefix} word-count ratio too low: legacy=${legacy.wordCount}, astro=${astro.wordCount}, ratio=${ratio.toFixed(2)} < ${MIN_WORD_RATIO}`);
   const missingHeadings = legacy.h2.filter(h => h && !astro.h2.includes(h));
