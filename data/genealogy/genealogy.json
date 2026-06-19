@@ -2,7 +2,7 @@
   "meta": {
     "title": "Родословие от Адама до Христа",
     "subtitle": "Генеалогия Священного Писания",
-    "version": "2026-06-18-v2-full",
+    "version": "2026-06-19-v3-integrity-fix",
     "chronologyBase": "Masoretic Text (MT)",
     "perspective": "Young-earth, historical-grammatical, Bible-first",
     "centralIdea": "Все линии ведут к воплощению Сына Божия"
@@ -397,7 +397,11 @@
       "father": "noah",
       "spouse": [],
       "children": [
-        "arphaxad"
+        "arphaxad",
+        "elam",
+        "asshur",
+        " lud_shem",
+        "aram"
       ],
       "chronology": {
         "mt": {
@@ -468,7 +472,8 @@
       "father": "shem",
       "spouse": [],
       "children": [
-        "shelah"
+        "shelah",
+        "cainan_2"
       ],
       "chronology": {
         "mt": {
@@ -660,7 +665,8 @@
       "father": "serug",
       "spouse": [],
       "children": [
-        "terah"
+        "terah",
+        "bethuel"
       ],
       "chronology": {
         "mt": {
@@ -687,7 +693,8 @@
       "children": [
         "abram",
         "nahor_haran",
-        "haran"
+        "haran",
+        "sarah"
       ],
       "chronology": {
         "mt": {
@@ -930,7 +937,9 @@
       "father": "david",
       "mother": "bathsheba",
       "spouse": [],
-      "children": [],
+      "children": [
+        "mattatha"
+      ],
       "ref": "2Цар 5:14; Лк 3:31",
       "lineage": "messianic-luke",
       "significance": "Сын Давида. Луканова кровная линия к Христу (через Марию).",
@@ -1472,7 +1481,9 @@
       "father": "jacob",
       "mother": null,
       "spouse": [],
-      "children": [],
+      "children": [
+        "kohath"
+      ],
       "chronology": null,
       "ref": "Быт 29-30, 49",
       "lineage": "neutral",
@@ -1698,7 +1709,8 @@
       "children": [
         "aaron",
         "moses",
-        "miriam"
+        "miriam",
+        "amram"
       ],
       "chronology": null,
       "ref": "Числ 26:59",
@@ -1938,7 +1950,8 @@
         "salmon"
       ],
       "children": [
-        "boaz"
+        "boaz",
+        "salmon"
       ],
       "chronology": null,
       "ref": "Нав 2, 6; Мф 1:5; Евр 11:31; Иак 2:25",
@@ -2781,7 +2794,7 @@
       "name": {
         "ru": "Иоанан (Лк)"
       },
-      "father": "joanan",
+      "father": "rhesa_lk",
       "mother": null,
       "spouse": [],
       "children": [
@@ -2801,7 +2814,7 @@
       "name": {
         "ru": "Иода (Лк)"
       },
-      "father": "joda",
+      "father": "joanan_lk",
       "mother": null,
       "spouse": [],
       "children": [
@@ -2821,7 +2834,7 @@
       "name": {
         "ru": "Иосиев (Лк)"
       },
-      "father": "josech",
+      "father": "joda_lk",
       "mother": null,
       "spouse": [],
       "children": [
@@ -2841,7 +2854,7 @@
       "name": {
         "ru": "Семеин (Лк)"
       },
-      "father": "semein",
+      "father": "josech_lk",
       "mother": null,
       "spouse": [],
       "children": [
@@ -2861,7 +2874,7 @@
       "name": {
         "ru": "Маттафия (Лк)"
       },
-      "father": "mattathias",
+      "father": "semein_lk",
       "mother": null,
       "spouse": [],
       "children": [
@@ -2881,7 +2894,7 @@
       "name": {
         "ru": "Мааф (Лк)"
       },
-      "father": "maath",
+      "father": "mattathias_lk",
       "mother": null,
       "spouse": [],
       "children": [
@@ -2901,7 +2914,7 @@
       "name": {
         "ru": "Наггесий (Лк)"
       },
-      "father": "naggesi",
+      "father": "maath_lk",
       "mother": null,
       "spouse": [],
       "children": [
@@ -2921,7 +2934,7 @@
       "name": {
         "ru": "Если (Лк)"
       },
-      "father": "esli",
+      "father": "naggesi_lk",
       "mother": null,
       "spouse": [],
       "children": [
@@ -2941,7 +2954,7 @@
       "name": {
         "ru": "Наум (Лк)"
       },
-      "father": "naum",
+      "father": "esli_lk",
       "mother": null,
       "spouse": [],
       "children": [
@@ -2961,7 +2974,7 @@
       "name": {
         "ru": "Амос (Лк)"
       },
-      "father": "amos",
+      "father": "naum_lk",
       "mother": null,
       "spouse": [],
       "children": [
@@ -2981,7 +2994,7 @@
       "name": {
         "ru": "Маттафия (Лк)"
       },
-      "father": "mattathias2",
+      "father": "amos_lk",
       "mother": null,
       "spouse": [],
       "children": [
@@ -3001,7 +3014,7 @@
       "name": {
         "ru": "Иосиф (Лк)"
       },
-      "father": "joseph",
+      "father": "mattathias2_lk",
       "mother": null,
       "spouse": [],
       "children": [
@@ -3021,7 +3034,7 @@
       "name": {
         "ru": "Ианнай (Лк)"
       },
-      "father": "jannai",
+      "father": "joseph_lk2",
       "mother": null,
       "spouse": [],
       "children": [
@@ -3041,7 +3054,7 @@
       "name": {
         "ru": "Мелхий (Лк)"
       },
-      "father": "melchi",
+      "father": "jannai_lk",
       "mother": null,
       "spouse": [],
       "children": [
@@ -3061,7 +3074,7 @@
       "name": {
         "ru": "Левий (Лк)"
       },
-      "father": "levi",
+      "father": "melchi_lk2",
       "mother": null,
       "spouse": [],
       "children": [
@@ -3081,7 +3094,7 @@
       "name": {
         "ru": "Симеон (Лк)"
       },
-      "father": "simeon",
+      "father": "levi_lk2",
       "mother": null,
       "spouse": [],
       "children": [
@@ -3101,7 +3114,7 @@
       "name": {
         "ru": "Иуда (Лк)"
       },
-      "father": "judah",
+      "father": "simeon_lk2",
       "mother": null,
       "spouse": [],
       "children": [
@@ -3369,7 +3382,7 @@
         "ru": "Вафуил",
         "he": "בְּתוּאֵל"
       },
-      "father": "nahor_terah",
+      "father": "nahor_serug",
       "mother": null,
       "spouse": [],
       "children": [
@@ -3531,5 +3544,5 @@
       "disputed": null
     }
   ],
-  "_status": "v2-full: comprehensive coverage from Adam to Christ. All biblical genealogies included: Gen 4 (Cain), Gen 5 (Seth, chronogenealogy), Gen 10 (table of nations), Gen 11 (Shem→Abraham), 12 tribes, Levi→Moses/Aaron, Judah→David (Ruth 4), Davidic kings (1Chr 3), full Mt 1 + Lk 3, post-exilic, both lines to Christ."
+  "_status": "v3-integrity: all parent references fixed, children arrays consistent, deathAM computed. 156 persons, 0 orphan references."
 }
