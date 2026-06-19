@@ -21,8 +21,9 @@
 import { useState, useMemo, useEffect, useCallback, useRef } from 'react';
 import {
   ReactFlow, Background, Controls, MiniMap,
-  useNodesState, useEdgesState, useReactFlow,
+  useNodesState, useEdgesState,
   type Node, type Edge, type NodeTypes, ConnectionLineType,
+  type ReactFlowInstance,
 } from '@xyflow/react';
 import '@xyflow/react/dist/style.css';
 
@@ -49,8 +50,8 @@ interface GenealogyTreeProps {
 }
 
 export default function GenealogyTree({ persons, eras }: GenealogyTreeProps) {
-  // ── React Flow instance (for setCenter on search) ──
-  const reactFlow = useReactFlow();
+  // ── React Flow instance ref (for setCenter on search) ──
+  const rfInstance = useRef<ReactFlowInstance | null>(null);
 
   // ── State ──
   const [search, setSearch] = useState('');
@@ -131,13 +132,13 @@ export default function GenealogyTree({ persons, eras }: GenealogyTreeProps) {
     // Center viewport on the matched person
     if (match) {
       const matchNode = laidNodes.find(n => n.id === match.id);
-      if (matchNode) {
+      if (matchNode && rfInstance.current) {
         const x = matchNode.position.x + 86; // half NODE_W
         const y = matchNode.position.y + 36; // half NODE_H
-        reactFlow.setCenter(x, y, { zoom: 1.2, duration: 600 });
+        rfInstance.current.setCenter(x, y, { zoom: 1.2, duration: 600 });
       }
     }
-  }, [search, persons, setNodes, laidNodes, reactFlow]);
+  }, [search, persons, setNodes, laidNodes]);
 
   // ── Handlers ──
   const onNodeClick = useCallback((_evt: React.MouseEvent, node: Node) => {
@@ -301,6 +302,7 @@ export default function GenealogyTree({ persons, eras }: GenealogyTreeProps) {
         onEdgesChange={onEdgesChange}
         onNodeClick={onNodeClick}
         nodeTypes={nodeTypes}
+        onInit={(inst) => { rfInstance.current = inst; }}
         onViewportChange={(vp: { zoom: number }) => setZoomLevel(vp.zoom)}
         fitView
         fitViewOptions={{ padding: 0.12 }}
