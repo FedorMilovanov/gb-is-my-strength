@@ -138,7 +138,7 @@ html.dark .summary-card{border-top-color:rgba(245,213,166,.16)}
 html.dark .summary-card__head{color:rgba(245,226,198,.72)}
 .summary-card__body{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:6px}
 .summary-card__item{display:flex;align-items:flex-start;gap:9px;width:100%;padding:0;margin:0;background:0 0;border:0;border-bottom:none;box-shadow:none;color:#4b4036;font-size:13px;line-height:1.48;position:relative}
-.summary-card__item::before{content:none!important;display:none!important}
+.summary-card__item::before{content:none;display:none}
 .summary-card__item:hover{background:0 0}
 html.dark .summary-card__item{color:rgba(250,243,232,.78)}
 .summary-card__check{display:none}
@@ -150,9 +150,9 @@ html.dark .summary-card__num::before{color:#8ed08a}
 .summary-card__text strong{color:var(--color-accent);font-weight:700}
 html.dark .summary-card__text{color:rgba(250,243,232,.84)}
 html.dark .summary-card__text strong{color:var(--color-accent-strong)}
-.summary-card__text::first-letter{font-size:inherit!important;float:none!important;margin:0!important;color:inherit!important;font-family:inherit!important;font-weight:inherit!important;line-height:inherit!important}
+.summary-card__text::first-letter{font-size:inherit;float:none;margin:0;color:inherit;font-family:inherit;font-weight:inherit;line-height:inherit}
 @media (max-width:560px){.summary-card__item{gap:7px}.summary-card__num{flex:0 0 16px;width:16px;height:16px;min-width:16px}.summary-card__num::before{font-size:11px}.summary-card__text{font-size:13px}}
-@media (prefers-reduced-motion:reduce){.summary-card,.summary-card__item{transition:none!important}}
+@media (prefers-reduced-motion:reduce){.summary-card,.summary-card__item{transition:none}}
 
 /* Ordinary article summary-card premium polish.
    Nagornaya keeps its own minimalist reading rhythm; regular articles get
