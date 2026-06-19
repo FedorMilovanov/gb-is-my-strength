@@ -1290,3 +1290,19 @@ era-timeline. Живые эталоны: 5 страниц Гилла + 2 hard-te
     (исходники приложения — отдельный Vite-проект у владельца; `base:'./'`,
     `vite-plugin-singlefile`, после сборки вернуть CSP/noindex/favicon в `<head>`).
 
+
+### 9.25 Astro migration — premium visual parity only (2026-06-19)
+
+Главная цель миграции: перейти на Astro **премиально, без заглушек и без потери визуала**. Подробный план: `docs/ASTRO-PREMIUM-MIGRATION-ROADMAP.md`.
+
+Жёсткое правило владельца: H1/H2/SEO/word-count не считаются визуальным переносом. Если визуал сломан, страница получает 0% visual parity, даже если текст и мета совпали.
+
+До production допускается только Astro-страница, которая прошла:
+
+- desktop screenshot legacy vs Astro;
+- mobile screenshot legacy vs Astro;
+- route-specific DOM/CSS markers;
+- отсутствие generic `astro-card`/`astro-page` вместо авторского layout;
+- owner visual review первого экрана.
+
+Нельзя повторять ошибку `shadow-pilot → production-dist` без визуального gate. Production остаётся legacy root, пока конкретный URL не доказал 95%+ визуального совпадения.

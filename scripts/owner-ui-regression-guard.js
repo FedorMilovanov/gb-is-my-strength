@@ -49,7 +49,15 @@ for (const [rel, markers] of Object.entries({
 
 // Maps: unfinished maps must not be presented as finished interactive maps.
 mustContain('karty/index.html', 'Путь Авраама', 'Avraam remains on map shelf');
+mustContain('karty/index.html', 'Премиальная витрина карт', 'premium map shelf hero');
 mustContain('karty/index.html', 'Остальные карты временно не на витрине', 'unfinished map shelf warning');
+mustContain('karty/index.html', '0</b><span>черновиков на витрине', 'no unfinished demos on map shelf');
+
+// Russian Baptists: owner called out incomplete/ugly series presentation.
+mustContain('baptisty-rossii/index.html', 'data-gbs2-series="russian-baptism"', 'Russian Baptists GBS2 series shell');
+mustContain('baptisty-rossii/index.html', '10 частей · живая исследовательская серия', 'Russian Baptists complete series count');
+mustContain('css/site.css', 'Russian Baptists series landing', 'Russian Baptists premium landing CSS guard');
+mustContain('css/site.css', 'grid-template-columns:repeat(3,minmax(0,1fr))', 'Russian Baptists desktop compact card grid');
 for (const slug of ['ishod','pavel','shoftim','melachim','shvatim','yeshua','maccabim','early-church','revelation']) {
   mustContain(`karty/${slug}/index.html`, 'Визуальный аудит карт', `${slug} holding page`);
   mustNotContain(`karty/${slug}/index.html`, 'id="mapRoot"', `${slug} unfinished live MapEngine root`);
@@ -58,7 +66,9 @@ for (const slug of ['ishod','pavel','shoftim','melachim','shvatim','yeshua','mac
 // Doctrine: future agents must see the owner rule.
 mustContain('docs/OWNER-REQUIREMENTS.md', '95%+ визуального совпадения', 'Astro 95% visual parity doctrine');
 mustContain('docs/OWNER-REQUIREMENTS.md', 'H1/H2/SEO/word-count не считаются визуальным переносом', 'SEO is not visual parity doctrine');
-mustContain('AGENTS.md', '95%+ визуальном совпадении legacy→Astro', 'AGENTS visual parity doctrine');
+mustContain('docs/ASTRO-PREMIUM-MIGRATION-ROADMAP.md', 'Astro — не самоцель', 'premium Astro roadmap exists');
+mustContain('docs/ASTRO-PREMIUM-MIGRATION-ROADMAP.md', '95%+ визуального совпадения legacy → Astro', 'roadmap visual parity target');
+mustContain('AGENTS.md', 'Astro migration — premium visual parity only', 'AGENTS visual parity doctrine');
 
 console.log('\nOWNER UI REGRESSION GUARD');
 if (problems.length) {
