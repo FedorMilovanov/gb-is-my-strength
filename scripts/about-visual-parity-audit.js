@@ -2,9 +2,10 @@
 /*
  * about-visual-parity-audit.js
  *
- * First real visual-first Astro migration guard. /about/ must not regress into
- * a generic Astro content page again. Until a hand-built Astro version passes
- * screenshot parity, it must shadow-wrap the legacy premium page.
+ * /about/ is the first near-100% visual-first Astro migration route. In this
+ * phase Astro emits the legacy document directly: no BaseLayout, no astro-shell,
+ * no generic Astro CSS/layout. Later component extraction must prove screenshot
+ * parity before replacing this full-document shadow.
  */
 'use strict';
 const fs = require('fs');
@@ -32,21 +33,34 @@ for (const marker of ['about-page', 'about-contacts', 'about-contact-card', 'gb-
   must(legacy, marker, `legacy /about/ marker: ${marker}`);
 }
 
-must(astro, "loadLegacyShadowPage('about/index.html')", 'Astro /about/ uses legacy shadow source');
-must(astro, 'astro-about-shadow', 'Astro /about/ has explicit shadow wrapper marker');
-must(astro, 'hideHeader={true}', 'Astro /about/ does not add generic Astro header');
-must(astro, 'hideFooter={true}', 'Astro /about/ does not add generic Astro footer');
-must(astro, 'headHtml={legacy.headHtml}', 'Astro /about/ preserves legacy head runtime/styles');
-mustNot(astro, 'class="astro-about"', 'old generic astro-about article');
-mustNot(astro, 'astro-contact-grid', 'old generic contact grid');
-mustNot(astro, 'astro-accuracy-block', 'old generic accuracy block');
+must(astro, "readFileSync(path.join(process.cwd(), 'about/index.html')", 'Astro /about/ reads legacy full document');
+must(astro, 'const headHtml = legacyHtml.match', 'Astro /about/ extracts legacy head');
+must(astro, 'const bodyHtml = bodyMatch', 'Astro /about/ extracts legacy body');
+must(astro, '<!DOCTYPE html>', 'Astro /about/ emits full document');
+must(astro, '<Fragment set:html={headHtml}', 'Astro /about/ preserves exact legacy head inner HTML');
+must(astro, '<Fragment set:html={bodyHtml}', 'Astro /about/ preserves exact legacy body inner HTML');
+
+for (const marker of [
+  "import BaseLayout",
+  '<BaseLayout',
+  'astro-about-shadow',
+  'astro-shell',
+  'mainClass=',
+  'hideHeader=',
+  'class="astro-about"',
+  'astro-contact-grid',
+  'astro-accuracy-block',
+]) {
+  mustNot(astro, marker, `old/generic about wrapper marker: ${marker}`);
+}
 
 must(owner, '95%+ визуального совпадения', 'owner visual parity doctrine');
 must(agents, 'Astro migration — premium visual parity only', 'AGENTS premium Astro doctrine');
+must(agents, '`/about/` — first visual-first Astro migration route', 'AGENTS about route doctrine');
 
 console.log('\nABOUT VISUAL PARITY AUDIT');
 if (problems.length) {
-  console.log(`❌ ${problems.length} problem(s). /about/ is not ready for Astro visual parity work.`);
+  console.log(`❌ ${problems.length} problem(s). /about/ is not ready for 100% visual parity work.`);
   process.exit(1);
 }
-ok('/about/ Astro migration is shadow-visual-parity guarded');
+ok('/about/ Astro migration is full-document visual-parity guarded');

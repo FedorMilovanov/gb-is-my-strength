@@ -1355,7 +1355,7 @@ Guard:
 
 ### 9.28 `/about/` — first visual-first Astro migration route (2026-06-19)
 
-`/about/` is the first route selected for near-100% visual parity migration. Current rule: Astro route must shadow-wrap `about/index.html` through `loadLegacyShadowPage('about/index.html')` and preserve legacy DOM/classes until a hand-built Astro version passes screenshot parity.
+`/about/` is the first route selected for near-100% visual parity migration. Current rule: Astro emits the legacy document directly from `about/index.html` (full-document shadow: legacy head + legacy body, no BaseLayout and no extra global Astro CSS) until a hand-built Astro version passes screenshot parity.
 
 Guard:
 
