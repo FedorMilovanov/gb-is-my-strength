@@ -1,7 +1,7 @@
 {
   "version": 1,
   "updated": "2026-06-18",
-  "description": "Build-time strangler ownership manifest. Production GitHub Pages serves the Astro/strangler `dist` output (deploy.yml path: dist). Routes with owner `astro` are generated from `src/pages/**`; public baseline pages not listed as Astro-owned are copied from the legacy root into dist by copy-legacy-to-dist.js until promoted. `status:\"production-dist\"` means this Astro route is now part of the production dist artifact, not merely a pre-switch shadow pilot.",
+  "description": "Build-time strangler ownership manifest. Production GitHub Pages CURRENTLY serves the legacy root artifact (deploy.yml path: .) per AGENTS-r244 emergency rollback. Dist is being hardened via Рефакторинг 5.0 full-document shadow-wrap for 100% visual parity. Routes with owner `astro` are generated from `src/pages/**`; public baseline pages not listed as Astro-owned are copied from the legacy root into dist by copy-legacy-to-dist.js until promoted. `status:\"production-dist\"` means this Astro route is part of the production-ready dist artifact (full-document shadow or native parity). `status:\"shadow-dist\"` means full-document shadow-wrap (100% parity) awaiting final owner review before dist switch. `status:\"shadow-pilot\"` means partial parity or native Astro without owner visual review.",
   "routes": {
     "/": {
       "owner": "astro",

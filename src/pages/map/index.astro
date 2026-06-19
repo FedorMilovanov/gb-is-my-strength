@@ -1,88 +1,18 @@
 ---
-import BaseLayout from '@/layouts/BaseLayout.astro';
-import { SITE } from '@/data/site';
-import { readFileSync } from 'node:fs';
-import { fileURLToPath } from 'node:url';
-import path from 'node:path';
+import { loadLegacyFullDocument } from '@/utils/legacyFullDocument';
 
-const currentDir = path.dirname(fileURLToPath(import.meta.url));
-const legacyPath = path.resolve(currentDir, '../../../map/index.html');
-const legacyHtml = readFileSync(legacyPath, 'utf8');
-
-function extractFirst(pattern: RegExp, fallback = '') {
-  return legacyHtml.match(pattern)?.[1] || fallback;
-}
-
-const legacyTitle = extractFirst(/<title>([\s\S]*?)<\/title>/i, 'Карта связей | Господь Бог — Сила Моя').trim();
-const legacyDescription = extractFirst(/<meta[^>]+name="description"[^>]+content="([^"]+)"/i, 'Интерактивная карта связей между всеми статьями сайта gospod-bog.ru — созвездие тем: серии, биографии, экзегеза и внутренние нити между ними').trim();
-const legacyOgDescription = extractFirst(/<meta[^>]+property="og:description"[^>]+content="([^"]+)"/i, 'Созвездие статей: как материалы сайта связаны между собой').trim();
-const styleBlocks = [...legacyHtml.matchAll(/<style>([\s\S]*?)<\/style>/gi)].map((m) => `<style>${m[1]}</style>`).join('\n');
-const bodyInner = extractFirst(/<body[^>]*>([\s\S]*?)<\/body>/i, '').trim();
-
-const canonical = `${SITE.url}/map/`;
-const jsonLd = {
-  '@context': 'https://schema.org',
-  '@graph': [
-    {
-      '@type': 'Organization',
-      '@id': SITE.orgId,
-      name: SITE.name,
-      url: `${SITE.url}/`,
-      logo: { '@type': 'ImageObject', url: `${SITE.url}/icons/icon-512.png`, width: 512, height: 512 },
-      sameAs: ['https://t.me/fedormilovanov', 'https://vk.com/curtmf'],
-    },
-    {
-      '@type': 'WebSite',
-      '@id': SITE.websiteId,
-      name: SITE.name,
-      url: `${SITE.url}/`,
-      inLanguage: 'ru',
-      publisher: { '@id': SITE.orgId },
-    },
-    {
-      '@type': 'WebPage',
-      '@id': `${canonical}#webpage`,
-      url: canonical,
-      name: legacyTitle,
-      description: 'Интерактивная визуализация связей между статьями сайта gospod-bog.ru',
-      inLanguage: 'ru',
-      isPartOf: { '@id': SITE.websiteId },
-      breadcrumb: { '@id': `${canonical}#breadcrumb` },
-    },
-    {
-      '@type': 'BreadcrumbList',
-      '@id': `${canonical}#breadcrumb`,
-      itemListElement: [
-        { '@type': 'ListItem', position: 1, name: 'Главная', item: `${SITE.url}/` },
-        { '@type': 'ListItem', position: 2, name: 'Карта связей', item: canonical },
-      ],
-    },
-  ],
-};
+// Visual-first migration: /map/ must preserve the legacy premium page
+// before any component refactor. The previous generic astro-card grid was a
+// production-quality regression; keep this full-document shadow until screenshot
+// parity and owner review approve a hand-built Astro version.
+const { headHtml, bodyHtml, bodyAttributes } = loadLegacyFullDocument('map/index.html');
 ---
-
-<BaseLayout
-  title={legacyTitle}
-  description={legacyDescription}
-  canonical={canonical}
-  robots="index, follow"
-  ogImage={`${SITE.url}/images/og-map-connections.webp`}
-  ogImageAlt="Созвездие статей проекта: связи между сериями, биографиями, картами и экзегетическими материалами"
-  ogTitle={legacyTitle}
-  ogDescription={legacyOgDescription}
-  jsonLd={jsonLd}
-  bodyClass="astro-map-page"
-  mainClass="astro-main astro-main--bare"
-  hideHeader={true}
-  hideFooter={true}
-  headHtml={`<link rel="preload" href="/fonts/PlayfairDisplay/playfairdisplay-cyrillic-700.woff2" as="font" type="font/woff2" crossorigin>\n<link rel="stylesheet" href="/fonts/fonts.css">\n${styleBlocks}`}
->
-  <div class="astro-map-shadow" data-pagefind-body>
-    <div class="astro-map-shadow__index sr-only">
-      Карта связей. Интерактивная визуализация связей между статьями сайта: серии, биографии, экзегеза, апологетика,
-      карты, разделы и термины глоссария. Здесь можно увидеть, как материалы проекта образуют одно созвездие и
-      переходят друг в друга через внутренние ссылки.
-    </div>
-    <Fragment set:html={bodyInner} />
-  </div>
-</BaseLayout>
+<!DOCTYPE html>
+<html lang="ru">
+  <head>
+    <Fragment set:html={headHtml} />
+  </head>
+  <body {...bodyAttributes}>
+    <Fragment set:html={bodyHtml} />
+  </body>
+</html>
