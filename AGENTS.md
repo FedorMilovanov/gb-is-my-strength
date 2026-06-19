@@ -1397,9 +1397,9 @@ This matters especially for `/baptisty-rossii/research/**`, where other agents c
 
 Guard:
 
-- `npm run articles:index:visual-parity:audit`
+- `npm run catalogs:visual-parity:audit`
 
-Current rule: `src/pages/articles/index.astro` shadow-wraps `articles/index.html` through `loadLegacyShadowPage('articles/index.html')` and keeps legacy markers:
+Current rule: `src/pages/articles/index.astro` emits `articles/index.html` through `loadLegacyFullDocument('articles/index.html')` and keeps legacy markers:
 
 - `articles-index-page`
 - `home-v20`
@@ -1416,7 +1416,7 @@ Guard:
 
 - `npm run catalogs:visual-parity:audit`
 
-Current rule: `src/pages/biografii/index.astro` shadow-wraps `biografii/index.html` through `loadLegacyShadowPage('biografii/index.html')` and keeps legacy markers:
+Current rule: `src/pages/biografii/index.astro` emits `biografii/index.html` through `loadLegacyFullDocument('biografii/index.html')` and keeps legacy markers:
 
 - `home-v20`
 - `h-hero-title`
