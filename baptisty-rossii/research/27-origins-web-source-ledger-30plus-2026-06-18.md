@@ -217,6 +217,18 @@
 | 120 | https://baptist.org.ru/read/article/94414 | A-open | Современная позиция ЕХБ об алкоголе (полное воздержание; 1 Фес. 5:23; Рим. 14). См. файл 62. |
 | 121 | https://baptist.org.ru/read/article/1182201 | B+ | ПМВ: ЕХ и баптисты служили с оружием; резолюции 1926 (повтор). См. файлы 51, 61. |
 
+## S. Зарубежные каналы XX века: SGA / радио / контрабанда Библий (проход 2026-06-19)
+
+| # | URL | Уровень | Зачем |
+|---:|---|---|---|
+| 122 | https://www.sga.org/our-history/ | A-/B+ | Slavic Gospel Association: основана 1934 (Дейнека), радио/Библии за «занавес», связь с UECB. См. файл 64. |
+| 123 | https://archives.wheaton.edu/repositories/4/resources/1222 | A-open (архив) | Wheaton College, SGA Records: история, методы, радио (HCJB/TWR/FEBC), семинарии диаспоры. |
+| 124 | https://sonsetsolutions.org/history/ | A-/B+ | HCJB: передатчик HC500 500 кВт (Элкхарт→Эквадор, 1980) против советского глушения. См. файл 64. |
+| 125 | https://en.wikipedia.org/wiki/Trans_World_Radio | A-/B+ | TWR: станция Монте-Карло 16.10.1960 (бывший нацистский передатчик, гора Ажель), вещание в советский блок. |
+| 126 | https://hungarianreview.com/article/20150514_bibles_for_communist_europe_a_cold_war_story_part_1/ | B+ | Контрабанда Библий: Брат Андрей/Open Doors, Вурмбранд, Keston College; КГБ-инфильтрация. См. файл 64. |
+| 127 | https://www.latimes.com/archives/la-xpm-1988-12-17-vw-168-story.html | A-/B+ | 1988: СССР принял ~2 млн Новых Заветов (Open Doors, Door of Hope) — символ конца эпохи. |
+| 128 | https://emerging-europe.com/opinion/carrying-the-torch-how-a-ukrainian-baptist-convention-upholds-a-legacy-of-activism/ | B+ | Turek «To Bring the Good News…»: SGA-радио в СССР, «Голос Евангелия в Украину» (Харбузюк 1966–93). |
+
 ---
 
 ## Что делать с этим ledger
