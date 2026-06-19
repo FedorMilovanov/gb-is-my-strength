@@ -16,32 +16,33 @@ const routes = [
     name: '/articles/',
     legacy: 'articles/index.html',
     astro: 'src/pages/articles/index.astro',
-    sourceCall: "loadLegacyShadowPage('articles/index.html')",
-    wrapper: 'astro-articles-index-shadow',
+    sourceCall: "loadLegacyFullDocument('articles/index.html')",
     requiredLegacy: ['articles-index-page', 'home-v20', 'h-hero-title', 'h-article-card', 'h-article-list'],
   },
   {
     name: '/biografii/',
     legacy: 'biografii/index.html',
     astro: 'src/pages/biografii/index.astro',
-    sourceCall: "loadLegacyShadowPage('biografii/index.html')",
-    wrapper: 'astro-biografii-index-shadow',
+    sourceCall: "loadLegacyFullDocument('biografii/index.html')",
     requiredLegacy: ['home-v20', 'h-hero-title', 'h-article-card', 'Биографии служителей', 'Джон Гилл'],
   },
 ];
 
+must(read('src/utils/legacyFullDocument.ts'), 'loadLegacyFullDocument', 'shared full-document loader exists');
 for (const route of routes) {
   const legacy = read(route.legacy);
   const astro = read(route.astro);
   console.log(`\n${route.name}`);
   for (const marker of route.requiredLegacy) must(legacy, marker, `legacy marker: ${marker}`);
-  must(astro, route.sourceCall, `${route.name} Astro uses legacy shadow source`);
-  must(astro, route.wrapper, `${route.name} explicit shadow wrapper marker`);
-  must(astro, 'hideHeader={true}', `${route.name} no generic Astro header`);
-  must(astro, 'hideFooter={true}', `${route.name} no generic Astro footer`);
-  must(astro, 'headHtml={legacy.headHtml}', `${route.name} preserves legacy head runtime/styles`);
-  for (const marker of ['class="astro-page', 'astro-card-grid', 'class="astro-card', 'const cards = [', 'const eras = [', 'const gillCards = [']) {
-    mustNot(astro, marker, `${route.name} old generic catalog marker: ${marker}`);
+  must(astro, route.sourceCall, `${route.name} Astro uses legacy full-document source`);
+  must(astro, '<!DOCTYPE html>', `${route.name} emits full document`);
+  must(astro, '<Fragment set:html={headHtml}', `${route.name} preserves legacy head`);
+  must(astro, '<Fragment set:html={bodyHtml}', `${route.name} preserves legacy body`);
+  for (const marker of [
+    'import BaseLayout', '<BaseLayout', 'astro-shell', 'mainClass=', 'hideHeader=', 'hideFooter=',
+    'class="astro-page', 'astro-card-grid', 'class="astro-card', 'const cards = [', 'const eras = [', 'const gillCards = [',
+  ]) {
+    mustNot(astro, marker, `${route.name} old/generic catalog marker: ${marker}`);
   }
 }
 
@@ -50,4 +51,4 @@ if (problems.length) {
   console.log(`❌ ${problems.length} problem(s). Catalog routes are not visual-parity guarded.`);
   process.exit(1);
 }
-ok('Catalog Astro migrations are shadow-visual-parity guarded');
+ok('Catalog Astro migrations are full-document visual-parity guarded');
