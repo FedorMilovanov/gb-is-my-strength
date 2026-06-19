@@ -18,10 +18,10 @@
  *   GenealogyTree.tsx — this orchestrator
  */
 
-import { useState, useMemo, useEffect, useCallback } from 'react';
+import { useState, useMemo, useEffect, useCallback, useRef } from 'react';
 import {
   ReactFlow, Background, Controls, MiniMap,
-  useNodesState, useEdgesState,
+  useNodesState, useEdgesState, useReactFlow,
   type Node, type Edge, type NodeTypes, ConnectionLineType,
 } from '@xyflow/react';
 import '@xyflow/react/dist/style.css';
@@ -49,6 +49,9 @@ interface GenealogyTreeProps {
 }
 
 export default function GenealogyTree({ persons, eras }: GenealogyTreeProps) {
+  // ── React Flow instance (for setCenter on search) ──
+  const reactFlow = useReactFlow();
+
   // ── State ──
   const [search, setSearch] = useState('');
   const [showLineage, setShowLineage] = useState<LineageFilter>('all');
@@ -124,7 +127,17 @@ export default function GenealogyTree({ persons, eras }: GenealogyTreeProps) {
       ...n,
       data: { ...n.data, highlighted: n.id === match?.id },
     })));
-  }, [search, persons, setNodes]);
+
+    // Center viewport on the matched person
+    if (match) {
+      const matchNode = laidNodes.find(n => n.id === match.id);
+      if (matchNode) {
+        const x = matchNode.position.x + 86; // half NODE_W
+        const y = matchNode.position.y + 36; // half NODE_H
+        reactFlow.setCenter(x, y, { zoom: 1.2, duration: 600 });
+      }
+    }
+  }, [search, persons, setNodes, laidNodes, reactFlow]);
 
   // ── Handlers ──
   const onNodeClick = useCallback((_evt: React.MouseEvent, node: Node) => {
