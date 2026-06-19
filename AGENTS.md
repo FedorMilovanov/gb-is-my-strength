@@ -1306,3 +1306,26 @@ era-timeline. Живые эталоны: 5 страниц Гилла + 2 hard-te
 - owner visual review первого экрана.
 
 Нельзя повторять ошибку `shadow-pilot → production-dist` без визуального gate. Production остаётся legacy root, пока конкретный URL не доказал 95%+ визуального совпадения.
+
+### 9.26 «Баптисты России» — long-term deepening pipeline (2026-06-19)
+
+Серия будет постоянно пополняться research `.md`-файлами другими агентами. Нельзя относиться к текущим HTML как к финалу или закрывать задачу косметическими костылями.
+
+Канонический roadmap:
+
+- `data/baptisty-rossii-expansion-roadmap.json`
+- `baptisty-rossii/research/31-editorial-expansion-roadmap-2026-06-19.md`
+- `baptisty-rossii/research/media-ledger.md`
+
+Guard:
+
+- `npm run baptisty:roadmap:audit`
+
+Правила:
+
+- статьи серии должны углубляться по структуре, источникам, тексту, изображениям и связи с 3D-картой;
+- реальные фото/портреты/факсимиле добавлять только после проверки прав;
+- production не hotlink-ит чужие изображения;
+- каждое изображение должно иметь запись в media ledger: source URL, лицензия, автор/архив, attribution, дата проверки;
+- AI-картинку нельзя выдавать за историческое фото;
+- visual polish серии не должен заменять работу по глубине текста.

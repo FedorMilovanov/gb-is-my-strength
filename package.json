@@ -23,7 +23,7 @@
     "editorial:lint": "node scripts/editorial-lint.js",
     "source:links": "node scripts/source-link-audit.js",
     "validate:external": "npm run source:links:dist",
-    "validate:static-publication": "npm run validate:all && npm run owner:ui-guard && npm run maps:validate && npm run page-ownership:check && npm run avraam:audit && npm run tokens:check && node scripts/audit-pro.js && npm run readable-audit && npm run editorial:lint && npm run data:consistency && npm run content:guard && npm run astro:audit:article-mdx:strict && npm run astro:audit:baptisty-series && npm run contract:compare",
+    "validate:static-publication": "npm run validate:all && npm run owner:ui-guard && npm run baptisty:roadmap:audit && npm run maps:validate && npm run page-ownership:check && npm run avraam:audit && npm run tokens:check && node scripts/audit-pro.js && npm run readable-audit && npm run editorial:lint && npm run data:consistency && npm run content:guard && npm run astro:audit:article-mdx:strict && npm run astro:audit:baptisty-series && npm run contract:compare",
     "workflows:check": "node scripts/check-workflows.js",
     "typograf:dry": "node scripts/typograf.js --dry-run",
     "konfessii:audit": "node scripts/konfessii-map-audit.js",
@@ -82,7 +82,8 @@
     "astro:audit:article-mdx:strict": "node scripts/article-mdx-pilot-audit.js --require-content-parity",
     "source:links:dist": "npm run strangler:build:production-like && node scripts/source-link-audit.js --root dist",
     "visual:parity:production": "node scripts/visual-parity-contract.js",
-    "owner:ui-guard": "node scripts/owner-ui-regression-guard.js"
+    "owner:ui-guard": "node scripts/owner-ui-regression-guard.js",
+    "baptisty:roadmap:audit": "node scripts/baptisty-roadmap-audit.js"
   },
   "engines": {
     "node": ">=22.12.0"
