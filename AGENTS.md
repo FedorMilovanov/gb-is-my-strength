@@ -1407,3 +1407,21 @@ Current rule: `src/pages/articles/index.astro` shadow-wraps `articles/index.html
 - `h-article-card`
 
 A hand-built Astro catalog is allowed only after desktop+mobile screenshot parity and owner approval.
+
+### 9.31 `/biografii/` — visual-first Astro migration route (2026-06-19)
+
+`/biografii/` follows the same practical rule as `/articles/`: protect the main legacy visual first, do not reintroduce generic `astro-card-grid` landings. Gill must remain visually strong as a series entry, not flattened into loose technical cards.
+
+Guard:
+
+- `npm run catalogs:visual-parity:audit`
+
+Current rule: `src/pages/biografii/index.astro` shadow-wraps `biografii/index.html` through `loadLegacyShadowPage('biografii/index.html')` and keeps legacy markers:
+
+- `home-v20`
+- `h-hero-title`
+- `h-article-card`
+- `Биографии служителей`
+- `Джон Гилл`
+
+A hand-built Astro biography catalog is allowed only after desktop+mobile screenshot parity and owner approval. Avoid accumulating throwaway generic code; once a shared visual migration guard covers a route, remove route-specific duplicate guards.
