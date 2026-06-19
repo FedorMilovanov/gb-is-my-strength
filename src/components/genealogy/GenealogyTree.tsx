@@ -31,6 +31,7 @@ import { getLineStyle, KEY_ROLES, COSMIC_ANCHORS } from './theme';
 import { buildLayout } from './layout';
 import { PersonNode } from './PersonNode';
 import { DetailPanel } from './DetailPanel';
+import { TimelineAxis } from './TimelineAxis';
 
 const nodeTypes: NodeTypes = { person: PersonNode };
 
@@ -61,6 +62,18 @@ export default function GenealogyTree({ persons, eras }: GenealogyTreeProps) {
     () => buildLayout(persons, { showGolden, showLineage }),
     [persons, showGolden, showLineage],
   );
+
+  // ── AM range for timeline axis ──
+  const { amMin, amMax } = useMemo(() => {
+    const withAM = persons.filter(p => p.chronology?.mt?.birthAM != null);
+    let mn = Infinity, mx = -Infinity;
+    for (const p of withAM) {
+      const am = p.chronology!.mt!.birthAM!;
+      if (am < mn) mn = am;
+      if (am > mx) mx = am;
+    }
+    return { amMin: isFinite(mn) ? mn : 0, amMax: isFinite(mx) ? mx : 4000 };
+  }, [persons]);
 
   useEffect(() => {
     setNodes(laidNodes);
@@ -247,6 +260,11 @@ export default function GenealogyTree({ persons, eras }: GenealogyTreeProps) {
         </div>
         <div style={{ color: 'rgba(200,184,154,0.3)', fontSize: '8.5px' }}>{detailHint}</div>
       </div>
+
+      {/* Timeline axis */}
+      {eras && amMax > amMin && (
+        <TimelineAxis eras={eras} amMin={amMin} amMax={amMax} height={4200} />
+      )}
 
       {/* React Flow canvas */}
       <ReactFlow
