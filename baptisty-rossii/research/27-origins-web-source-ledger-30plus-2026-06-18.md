@@ -171,6 +171,17 @@
 | 94 | https://en.wikisource.org/wiki/The_Stundists/Chapter_1 | B+ | «The Stundists»: Бонекемпер, Stunden, русские НЗ из Петербурга, **1858 — год рождения штундизма**. См. файл 54. |
 | 95 | https://www.biblicaltraining.org/library/stundists | B | Отец/сын Бонекемпер; штундизм «около 1862», штундо-баптисты. |
 
+## O. Международное измерение гонений (Винс / Сибирская семёрка, проход 2026-06-19)
+
+| # | URL | Уровень | Зачем |
+|---:|---|---|---|
+| 96 | https://en.wikipedia.org/wiki/Georgi_Vins | A-open | Винс: суд 1975, высылка-обмен 26–27.04.1979 на 2 шпионов + 4 диссидента (Брежнев–Картер). См. файл 56. |
+| 97 | https://www.independent.co.uk/news/obituaries/obituary-pastor-georgi-vins-1139170.html | A-/B+ | Некролог Винса (Independent): детали высылки, JFK, Элкхарт. |
+| 98 | https://www.baptistpress.com/resource-library/news/russian-exile-georgi-vins-dies-of-brain-tumor-at-69/ | A-/B+ | Baptist Press: генсек Совета Церквей (2000 общин), стояние против закона 1929, возвращение 1990. |
+| 99 | https://en.wikipedia.org/wiki/Siberian_Seven | A-open | «Сибирская семёрка»: Ващенко/Чмыхаловы, посольство США 27.06.1978 → визы 1983. См. файл 56. |
+| 100 | https://archives.wheaton.edu/repositories/5/resources/901 | A-open (архив) | Wheaton College, коллекция «Siberian Seven» (SC 052) — первичные документы/переписка/фото. |
+| 101 | https://www.upi.com/Archives/1983/07/30/Siberian-Seven-family-members-reunited-in-America/1182428385600/ | A-/B+ | UPI 1983: голодовка Лидии Ващенко, освобождение, Кент Хилл, исход через Израиль. |
+
 ---
 
 ## Что делать с этим ledger
