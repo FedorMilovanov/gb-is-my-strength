@@ -1390,3 +1390,20 @@ Multiple agents may work on this repository at the same time. Before every edit/
 7. If a push is followed by an auto `update-meta/cache-bust [skip ci]` commit, pull again before the next change.
 
 This matters especially for `/baptisty-rossii/research/**`, where other agents continuously add source dossiers.
+
+### 9.30 `/articles/` — visual-first Astro migration route (2026-06-19)
+
+`/articles/` must preserve the legacy premium catalog before any component refactor. The old generic Astro catalog (`astro-card`, `astro-card-grid`, manually recreated `const cards`) is forbidden because it produced a non-premium replacement instead of visual parity.
+
+Guard:
+
+- `npm run articles:index:visual-parity:audit`
+
+Current rule: `src/pages/articles/index.astro` shadow-wraps `articles/index.html` through `loadLegacyShadowPage('articles/index.html')` and keeps legacy markers:
+
+- `articles-index-page`
+- `home-v20`
+- `h-hero-title`
+- `h-article-card`
+
+A hand-built Astro catalog is allowed only after desktop+mobile screenshot parity and owner approval.
