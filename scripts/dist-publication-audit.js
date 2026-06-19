@@ -128,17 +128,18 @@ function checkRobots() {
 function checkAstroAboutOwnership() {
   if (!exists('about/index.html')) return;
   const html = read('about/index.html');
-  // /about/ is the first visual-first migration route. It is Astro-owned, but
-  // intentionally shadow-wraps legacy DOM until a hand-built Astro version passes
-  // screenshot parity. Generic class="astro-about" is now a regression.
-  if (!/astro-about-shadow/.test(html)) bad('/about/ in dist is not the visual-parity Astro shadow wrapper');
-  else ok('/about/ in dist is Astro-owned via visual-parity shadow wrapper');
+  // /about/ is the first near-100% visual-first migration route. It is
+  // Astro-owned, but intentionally emits the legacy document directly until a
+  // hand-built Astro version passes screenshot parity. Generic class="astro-about"
+  // and astro-shell wrappers are regressions.
+  if (!/<article class="about-page"/.test(html)) bad('/about/ in dist is not the legacy about visual document');
+  else ok('/about/ in dist is Astro-owned via full-document visual parity');
   for (const marker of ['about-page', 'about-contacts', 'about-contact-card', 'gb-accuracy-block']) {
     if (!html.includes(marker)) bad(`/about/ dist missing legacy visual marker: ${marker}`);
     else ok(`/about/ dist keeps legacy marker: ${marker}`);
   }
-  if (/class="astro-about"|astro-contact-grid|astro-accuracy-block/.test(html)) bad('/about/ contains old generic Astro about markers');
-  else ok('/about/ has no old generic Astro about markers');
+  if (/class="astro-about"|astro-contact-grid|astro-accuracy-block|astro-shell|astro-about-shadow/.test(html)) bad('/about/ contains old generic/shadow-wrapper Astro about markers');
+  else ok('/about/ has no old generic/shadow-wrapper Astro about markers');
   if (/Astro scaffold|Технический прототип|production switch/i.test(stripTags(html))) bad('/about/ contains technical scaffold copy');
   else ok('/about/ has no technical scaffold copy');
 }

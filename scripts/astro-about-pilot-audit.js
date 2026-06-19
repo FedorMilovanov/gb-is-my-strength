@@ -84,6 +84,20 @@ function assetExists(url, rootDir) {
   return !file || fs.existsSync(file);
 }
 function unique(arr) { return [...new Set(arr)]; }
+function normalizeHtmlForFullDocumentParity(html) {
+  return String(html || '').trim().replace(/\r\n?/g, '\n').replace(/>\s+</g, '><');
+}
+function checkFullDocumentParity(problems) {
+  const legacyFile = path.join(ROOT, 'about/index.html');
+  const distFile = path.join(DIST, 'about/index.html');
+  if (!fs.existsSync(legacyFile) || !fs.existsSync(distFile)) {
+    problems.push('full-document parity files missing for /about/');
+    return;
+  }
+  const legacy = normalizeHtmlForFullDocumentParity(fs.readFileSync(legacyFile, 'utf8'));
+  const astro = normalizeHtmlForFullDocumentParity(fs.readFileSync(distFile, 'utf8'));
+  if (legacy !== astro) problems.push('/about/ normalized full-document HTML differs from legacy; visual parity is not 100% shadow output');
+}
 
 async function inspect(page, url, label, viewportName) {
   const errors = [];
@@ -213,6 +227,14 @@ async function checkNoJsAstro(browser, problems) {
 (async () => {
   console.log('▶ Building strangler dist…');
   run('npm', ['run', 'strangler:build']);
+  const earlyProblems = [];
+  checkFullDocumentParity(earlyProblems);
+  if (earlyProblems.length) {
+    console.error('\n❌ about full-document parity failed:');
+    earlyProblems.forEach(p => console.error('  - ' + p));
+    process.exit(1);
+  }
+  console.log('✅ /about/ normalized full-document HTML matches legacy');
   let chromium;
   try { ({ chromium } = require('playwright')); }
   catch (e) { console.log('⏭ Playwright not installed; run npm install first.'); process.exit(0); }

@@ -1,33 +1,26 @@
 ---
-import BaseLayout from '@/layouts/BaseLayout.astro';
-import { loadLegacyShadowPage } from '@/utils/legacyShadow';
+import { readFileSync } from 'node:fs';
+import path from 'node:path';
 
-// Visual-first migration: /about/ is now an Astro shadow wrapper around the
-// production legacy page. The goal is near-100% visual parity before any future
-// refactor. Do not replace this with generic Astro cards/layout unless the new
-// version passes desktop+mobile screenshot parity and owner review.
-const legacy = loadLegacyShadowPage('about/index.html');
+// 100% visual-parity phase for /about/:
+// Astro emits the legacy document structure directly. No BaseLayout and no
+// extra global Astro CSS. Future component extraction must prove screenshot parity
+// before replacing this full-document shadow.
+const legacyHtml = readFileSync(path.join(process.cwd(), 'about/index.html'), 'utf8');
+const headHtml = legacyHtml.match(/<head[^>]*>([\s\S]*?)<\/head>/i)?.[1] || '';
+const bodyMatch = legacyHtml.match(/<body([^>]*)>([\s\S]*?)<\/body>/i);
+const bodyAttrs = bodyMatch?.[1] || '';
+const bodyHtml = bodyMatch?.[2] || '';
+const bodyAttributes = Object.fromEntries(
+  [...bodyAttrs.matchAll(/([\w:-]+)(?:="([^"]*)")?/g)].map((m) => [m[1], m[2] ?? ''])
+);
 ---
-
-<BaseLayout
-  title={legacy.title}
-  description={legacy.description}
-  canonical={legacy.canonical}
-  robots="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1"
-  ogImage={legacy.ogImage}
-  ogImageAlt={legacy.ogImageAlt}
-  ogTitle={legacy.ogTitle}
-  ogDescription={legacy.ogDescription}
-  ogType="profile"
-  profileFirstName="Фёдор"
-  profileLastName="Милованов"
-  bodyClass={legacy.bodyClass}
-  mainClass="astro-main astro-main--bare"
-  hideHeader={true}
-  hideFooter={true}
-  headHtml={legacy.headHtml}
->
-  <div class="astro-about-shadow" data-astro-shadow-route="about">
-    <Fragment set:html={legacy.bodyHtml} />
-  </div>
-</BaseLayout>
+<!DOCTYPE html>
+<html lang="ru">
+  <head>
+    <Fragment set:html={headHtml} />
+  </head>
+  <body {...bodyAttributes}>
+    <Fragment set:html={bodyHtml} />
+  </body>
+</html>
