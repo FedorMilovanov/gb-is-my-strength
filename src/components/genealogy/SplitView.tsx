@@ -18,10 +18,7 @@ interface SplitViewProps {
   onClose: () => void;
 }
 
-interface SplitViewProps {
-  persons: Person[];
-  onClose: () => void;
-}
+function traceLine(persons: Person[], fromId: string, toId: string): Person[] {
   const chain: Person[] = [];
   const byId = new Map(persons.map(p => [p.id, p]));
   let cur = byId.get(fromId);
