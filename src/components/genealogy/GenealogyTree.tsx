@@ -32,6 +32,7 @@ import { buildLayout } from './layout';
 import { PersonNode } from './PersonNode';
 import { DetailPanel } from './DetailPanel';
 import { TimelineAxis } from './TimelineAxis';
+import { SplitView } from './SplitView';
 
 const nodeTypes: NodeTypes = { person: PersonNode };
 
@@ -53,6 +54,7 @@ export default function GenealogyTree({ persons, eras }: GenealogyTreeProps) {
   const [showLineage, setShowLineage] = useState<LineageFilter>('all');
   const [showGolden, setShowGolden] = useState(true);
   const [selected, setSelected] = useState<Person | null>(null);
+  const [showSplit, setShowSplit] = useState(false);
   const [zoomLevel, setZoomLevel] = useState(1);
   const [nodes, setNodes, onNodesChange] = useNodesState<Node>([]);
   const [edges, setEdges, onEdgesChange] = useEdgesState<Edge>([]);
@@ -220,6 +222,18 @@ export default function GenealogyTree({ persons, eras }: GenealogyTreeProps) {
             fontFamily: 'inherit', fontSize: '11px', transition: 'all .2s',
           }}
         >✦ Нить</button>
+        <span style={{ color: 'rgba(200,184,154,0.3)', fontSize: '11px' }}>|</span>
+        <button
+          onClick={() => setShowSplit(true)}
+          title="Сравнить родословия Матфея и Луки"
+          style={{
+            background: 'transparent',
+            border: '1px solid rgba(212,168,87,0.2)',
+            borderRadius: '999px', padding: '9px 12px', cursor: 'pointer', minHeight: '40px',
+            color: 'rgba(200,184,154,0.5)',
+            fontFamily: 'inherit', fontSize: '11px', transition: 'all .2s',
+          }}
+        >⇆ Мф/Лк</button>
       </div>
 
       {/* Era legend */}
@@ -300,6 +314,9 @@ export default function GenealogyTree({ persons, eras }: GenealogyTreeProps) {
 
       {/* Detail panel */}
       <DetailPanel person={selected} onClose={onClosePanel} />
+
+      {/* Split view (Mt vs Lk) */}
+      {showSplit && <SplitView persons={persons} onClose={() => setShowSplit(false)} />}
 
       {/* Scoped CSS (no global pollution) */}
       <style>{`
