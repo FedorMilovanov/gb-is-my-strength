@@ -160,6 +160,17 @@
 | 88 | https://enc.rusdeutsch.ru/articles/1219 | B+ | RusDeutsch «Баптизм»: немецкие баптисты/меннониты во ВСЕХБ; меннониты 1963; Новый Данциг/Старый Данциг 1864. |
 | 89 | https://www.mbchurch.ru/publications/articles/15/7644/ | B+ | mbchurch «История объединения ЕХ и баптистов»: **«Правила» датируются началом 1870, автор — И. И. Вилер** (нюанс к файлу 38). См. файл 53 §6. |
 
+## N. Ранние пиетистские корни юга (Вюст / Бонекемпер / штунда, проход 2026-06-19)
+
+| # | URL | Уровень | Зачем |
+|---:|---|---|---|
+| 90 | https://gameo.org/index.php?title=Stundism | A-/B+ | GAMEO «Stundism»: происхождение слова «штунда»; Бонекемпер/Рорбах; Ратушный/Онищенко из Основы; Вюст ~1845 у Бердянска; Мелвилл/Каша Ягоб. См. файл 54. |
+| 91 | https://gameo.org/index.php?title=Mennonite_Brethren_Church | A-/B+ | GAMEO: Вюст 1845–1859, Нойхоффнунг; пробуждение с 1845; «Братья». См. файл 54. |
+| 92 | https://gameo.org/index.php?title=Gnadenfeld_%28Molotschna_Mennonite_settlement%2C_Zaporizhia_Oblast%2C_Ukraine%29 | B+ | GAMEO «Gnadenfeld»: моравское влияние, Вюст на миссионерских праздниках → отделение MB 1860. |
+| 93 | https://www.anabaptistwitness.org/journal_entry/the-spirit-says-go/ | B+ | Вюст как «второй реформатор» MB; пиетисты (Хиллер/Терстеген/Хофакер/Круммахер); Stunden. См. файл 54. |
+| 94 | https://en.wikisource.org/wiki/The_Stundists/Chapter_1 | B+ | «The Stundists»: Бонекемпер, Stunden, русские НЗ из Петербурга, **1858 — год рождения штундизма**. См. файл 54. |
+| 95 | https://www.biblicaltraining.org/library/stundists | B | Отец/сын Бонекемпер; штундизм «около 1862», штундо-баптисты. |
+
 ---
 
 ## Что делать с этим ledger
