@@ -459,3 +459,63 @@ node scripts/extract-native-pilot.js \
 | `/baptisty-rossii/` | full-shadow | HIGH risk, GBS2 world |
 | `/nagornaya/` | full-shadow | HIGH risk, Tailwind/sidebar мир |
 | `/` (home) | full-shadow | HIGH risk, самые жёсткие требования |
+
+---
+
+## 10. Phase 6 wave 3 — `/articles/`, `/konfessii/` ✅ DONE (r251)
+
+Расширили native-shadow на 2 MED-risk landings. `/map/` сознательно оставлен в shadow-wrap.
+
+### 10.1 `/articles/` — catalog с h-article-list
+
+Стандартный pilot:
+
+- `src/components/articles/_legacy/{main,body-segment-{0,1}}.html`;
+- `ArticlesMain.astro` промоутит `<main id="main-content">`;
+- per-route audit `scripts/articles-visual-parity-audit.js`.
+
+`catalogs-visual-parity-audit.js` обновлён — `/articles/` теперь `bodyContract: 'native-shadow'`.
+
+### 10.2 `/konfessii/` — standalone landing с inline `<style>`
+
+`<main class="grid h-reveal">` (не стандартный `id="main-content"`). Главная особенность — страница **не подключает `css/site.css`**, поэтому Pagefind sr-only div ОБЯЗАН содержать inline visually-hidden style (этот фикс из r247).
+
+`scripts/konfessii-visual-parity-audit.js` явно требует наличия `position:absolute;left:-9999px` в Astro page, чтобы будущий агент не убрал inline style и не вернул r247 регрессию.
+
+### 10.3 `/map/` — почему НЕ pilot
+
+`/map/` это interactive SVG visualization без `<main>` секции: вся страница это один `app` (граф связей всех материалов сайта, click-handlers, filters, keyboard controls). Разбивать на named компонент через `?raw` не приносит value (нечего редактировать как блок), а риск сломать SVG/JS высокий. Page остаётся в shadow-wrap — pixel diff = 0.000% уже подтверждён.
+
+### 10.4 Результат
+
+```
+✅ /            desktop 0.000% / mobile 0.000%   (shadow-wrap)
+✅ /about/      desktop 0.000% / mobile 0.000%   (native-shadow, r249)
+✅ /articles/   desktop 0.000% / mobile 0.002%   (native-shadow, r251)
+✅ /biografii/  desktop 0.000% / mobile 0.000%   (native-shadow, r250)
+✅ /karty/      desktop 0.000% / mobile 0.000%   (shadow-wrap)
+✅ /baptisty-rossii/ desktop 0.000% / mobile 0.000% (shadow-wrap)
+✅ /nagornaya/  desktop 0.000% / mobile 0.000%   (shadow-wrap)
+✅ /hard-texts/ desktop 0.000% / mobile 0.000%   (native-shadow, r250)
+✅ /konfessii/  desktop 0.000% / mobile 0.000%   (native-shadow, r251)
+✅ /pastor-series/ desktop 0.000% / mobile 0.000% (native-shadow, r250)
+✅ /map/        desktop 0.000% / mobile 0.000%   (shadow-wrap, intentional)
+```
+
+### 10.5 Phase 6 финальная матрица landing'ов
+
+| Route | Status | Реализация |
+|---|---|---|
+| `/about/` | ✅ native-shadow (r249) | AboutArticle + AboutAccuracyBlock |
+| `/articles/` | ✅ native-shadow (r251) | ArticlesMain |
+| `/biografii/` | ✅ native-shadow (r250) | BiografiiMain |
+| `/hard-texts/` | ✅ native-shadow (r250) | HardTextsMain |
+| `/konfessii/` | ✅ native-shadow (r251) | KonfessiiMain |
+| `/pastor-series/` | ✅ native-shadow (r250) | PastorSeriesMain |
+| `/map/` | shadow-wrap | SVG visualization, разбивать смысла нет |
+| `/karty/` | shadow-wrap | HIGH risk pilot (MapEngine hub + owner UX claims) |
+| `/baptisty-rossii/` | shadow-wrap | HIGH risk pilot (GBS2 world, mobile sheet, timeline) |
+| `/nagornaya/` | shadow-wrap | HIGH risk pilot (Tailwind/sidebar мир) |
+| `/` (home) | shadow-wrap | HIGH risk pilot (owner UX claims about home entries) |
+
+**Готово:** 6 из 11 landing'ов native, 4 из 5 оставшихся — это HIGH-risk страницы, требующие отдельных планов с владельцем (особенности из OWNER-REQUIREMENTS). `/map/` сознательно оставлен в shadow-wrap.
