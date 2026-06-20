@@ -23,7 +23,7 @@
     "editorial:lint": "node scripts/editorial-lint.js",
     "source:links": "node scripts/source-link-audit.js",
     "validate:external": "npm run source:links:dist",
-    "validate:static-publication": "npm run validate:all && npm run owner:ui-guard && npm run about:visual-parity:audit && npm run catalogs:visual-parity:audit && npm run baptisty:roadmap:audit && npm run baptisty:visual-atlas:audit && npm run maps:validate && npm run page-ownership:check && npm run avraam:audit && npm run tokens:check && node scripts/audit-pro.js && npm run readable-audit && npm run editorial:lint && npm run data:consistency && npm run content:guard && npm run astro:audit:article-mdx:strict && npm run astro:audit:baptisty-series && npm run contract:compare",
+    "validate:static-publication": "npm run validate:all && npm run owner:ui-guard && npm run about:visual-parity:audit && npm run biografii:visual-parity:audit && npm run hard-texts:visual-parity:audit && npm run pastor-series:visual-parity:audit && npm run catalogs:visual-parity:audit && npm run baptisty:roadmap:audit && npm run baptisty:visual-atlas:audit && npm run maps:validate && npm run page-ownership:check && npm run avraam:audit && npm run tokens:check && node scripts/audit-pro.js && npm run readable-audit && npm run editorial:lint && npm run data:consistency && npm run content:guard && npm run astro:audit:article-mdx:strict && npm run astro:audit:baptisty-series && npm run contract:compare",
     "workflows:check": "node scripts/check-workflows.js",
     "typograf:dry": "node scripts/typograf.js --dry-run",
     "konfessii:audit": "node scripts/konfessii-map-audit.js",
@@ -91,6 +91,9 @@
     "baptisty:roadmap:audit": "node scripts/baptisty-roadmap-audit.js",
     "baptisty:visual-atlas:audit": "node scripts/baptisty-visual-atlas-audit.js",
     "about:visual-parity:audit": "node scripts/about-visual-parity-audit.js",
+    "biografii:visual-parity:audit": "node scripts/biografii-visual-parity-audit.js",
+    "hard-texts:visual-parity:audit": "node scripts/hard-texts-visual-parity-audit.js",
+    "pastor-series:visual-parity:audit": "node scripts/pastor-series-visual-parity-audit.js",
     "catalogs:visual-parity:audit": "node scripts/catalogs-visual-parity-audit.js"
   },
   "engines": {

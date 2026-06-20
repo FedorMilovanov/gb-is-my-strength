@@ -11,6 +11,15 @@ function bad(msg){ problems.push(msg); console.log('❌ ' + msg); }
 function must(h, n, label){ h.includes(n) ? ok(label || n) : bad(`missing: ${label || n}`); }
 function mustNot(h, n, label){ !h.includes(n) ? ok(`no ${label || n}`) : bad(`forbidden present: ${label || n}`); }
 
+// Two acceptable native-shadow contracts for catalog routes:
+//   - "full-shadow"   — body wrapped via <Fragment set:html={bodyHtml}> from
+//     loadLegacyFullDocument. Still used by routes that haven't started their
+//     shadow→native pilot (e.g. /articles/).
+//   - "native-shadow" — Phase 6 pilot: head still from loadLegacyFullDocument,
+//     body composed from body-segment-*.html chrome + named main component
+//     (e.g. /biografii/ → BiografiiMain).
+// Both must keep the legacy premium DOM markers, both must avoid the generic
+// astro-card / BaseLayout class.
 const routes = [
   {
     name: '/articles/',
@@ -18,6 +27,7 @@ const routes = [
     astro: 'src/pages/articles/index.astro',
     sourceCall: "loadLegacyFullDocument('articles/index.html')",
     requiredLegacy: ['articles-index-page', 'home-v20', 'h-hero-title', 'h-article-card', 'h-article-list'],
+    bodyContract: 'full-shadow',
   },
   {
     name: '/biografii/',
@@ -25,6 +35,8 @@ const routes = [
     astro: 'src/pages/biografii/index.astro',
     sourceCall: "loadLegacyFullDocument('biografii/index.html')",
     requiredLegacy: ['home-v20', 'h-hero-title', 'h-article-card', 'Биографии служителей', 'Джон Гилл'],
+    bodyContract: 'native-shadow',
+    nativeMainComponent: 'BiografiiMain',
   },
 ];
 
@@ -37,7 +49,13 @@ for (const route of routes) {
   must(astro, route.sourceCall, `${route.name} Astro uses legacy full-document source`);
   must(astro, '<!DOCTYPE html>', `${route.name} emits full document`);
   must(astro, '<Fragment set:html={headHtml}', `${route.name} preserves legacy head`);
-  must(astro, '<Fragment set:html={bodyHtml}', `${route.name} preserves legacy body`);
+  if (route.bodyContract === 'native-shadow') {
+    must(astro, route.nativeMainComponent, `${route.name} uses extracted ${route.nativeMainComponent} component`);
+    must(astro, 'body-segment-0.html', `${route.name} preserves verbatim body chrome before <main>`);
+    must(astro, 'body-segment-1.html', `${route.name} preserves verbatim body chrome after <main>`);
+  } else {
+    must(astro, '<Fragment set:html={bodyHtml}', `${route.name} preserves legacy body`);
+  }
   for (const marker of [
     'import BaseLayout', '<BaseLayout', 'astro-shell', 'mainClass=', 'hideHeader=', 'hideFooter=',
     'class="astro-page', 'astro-card-grid', 'class="astro-card', 'const cards = [', 'const eras = [', 'const gillCards = [',

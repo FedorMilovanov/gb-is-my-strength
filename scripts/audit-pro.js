@@ -90,7 +90,12 @@ const IMPORTANT_GOAL = 200; // AGENTS §4.10 long-term target
 const MIN_DESC = 50;
 const MAX_DESC = 180;
 
-const skipDirs = new Set(['.git', 'node_modules', 'pagefind', 'audit', '_app', '_build-tools', 'reports', 'dist', 'out', 'build', '.astro']);
+// `_legacy` directories under src/components/** carry raw HTML fragments that
+// are inlined into Astro components for byte-identical native-shadow pilots
+// (РЕФАКТОРИНГ 5.0 Phase 6). They are not standalone publishable pages, so
+// audit-pro skips them — pixel parity for the rendered route is guarded by
+// scripts/visual-parity-screenshots.js instead.
+const skipDirs = new Set(['.git', 'node_modules', 'pagefind', 'audit', '_app', '_build-tools', 'reports', 'dist', 'out', 'build', '.astro', '_legacy']);
 const verificationFileRe = /^(google|yandex)[^/]*\.html$/i;
 
 const R = {
