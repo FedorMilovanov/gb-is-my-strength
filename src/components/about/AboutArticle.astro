@@ -1,0 +1,13 @@
+---
+/**
+ * AboutArticle.astro — extracted /about/ <article class="about-page"> block.
+ *
+ * Phase 6 native-shadow pilot (AGENTS-r249): the legacy /about/ body markup
+ * is preserved verbatim from about/index.html (via raw-load) and emitted from
+ * an Astro component. This makes the section discoverable as a named module
+ * while pixel-diff vs legacy stays at 0%. Future iterations can replace the
+ * raw-html block with hand-authored Astro/MDX once owner approves the diff.
+ */
+import legacyHtml from './_legacy/article.html?raw';
+---
+<Fragment set:html={legacyHtml} />
