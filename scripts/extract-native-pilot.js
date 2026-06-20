@@ -20,6 +20,16 @@
  *
  * Multiple --block flags split sequential blocks. Order matters — blocks
  * must appear in the source in the same order they are passed.
+ *
+ * DEPTH-AWARE end-marker matching (since r252): for nested structures
+ * (e.g. <div class="karty-hub"><div>...</div></div>), the simple
+ * `body.indexOf(endMarker)` finds the FIRST `</div>` after the start, which
+ * is a nested close. This script now walks the markup counting opening and
+ * closing tags of the same type and only matches when the depth returns to
+ * the same level as at the start. Supports `<div>`, `<section>`, `<aside>`,
+ * `<article>`, `<main>`, `<nav>`, `<header>`, `<footer>`, `<form>`,
+ * `<figure>`. For other tag types (e.g. `<p>`, `<span>`), the legacy
+ * `indexOf` matching is used.
  */
 'use strict';
 
@@ -58,6 +68,54 @@ const html = fs.readFileSync(legacyAbs, 'utf8');
 const body = html.match(/<body[^>]*>([\s\S]*?)<\/body>/i)?.[1] || '';
 if (!body) { console.error('No <body> in', legacyRel); process.exit(1); }
 
+// Block tags whose depth we track for nested matching.
+const BLOCK_TAGS = ['div', 'section', 'aside', 'article', 'main', 'nav', 'header', 'footer', 'form', 'figure'];
+
+/**
+ * Find the matching close tag for a start marker by walking the markup and
+ * tracking the depth of the same tag type. Returns the index immediately
+ * AFTER the matched end marker.
+ */
+function findMatchingEnd(body, startMarker, endMarker) {
+  const startIdx = body.indexOf(startMarker);
+  if (startIdx === -1) return -1;
+
+  // Determine the tag name from the start marker (e.g. <div class="..."> → 'div')
+  const tagMatch = startMarker.match(/^<([a-z][a-z0-9]*)/i);
+  if (!tagMatch) {
+    // Non-block tag (rare) — fall back to plain indexOf.
+    const endIdx = body.indexOf(endMarker, startIdx + startMarker.length);
+    return endIdx === -1 ? -1 : endIdx + endMarker.length;
+  }
+  const tag = tagMatch[1].toLowerCase();
+  if (!BLOCK_TAGS.includes(tag)) {
+    const endIdx = body.indexOf(endMarker, startIdx + startMarker.length);
+    return endIdx === -1 ? -1 : endIdx + endMarker.length;
+  }
+
+  // Depth-aware: walk from end of start marker until depth returns to 0.
+  const openTag = new RegExp('<' + tag + '(?:\\s[^>]*?)?(?<!/)>', 'gi');
+  const closeTag = new RegExp('</' + tag + '\\s*>', 'gi');
+  let depth = 1;
+  let pos = startIdx + startMarker.length;
+  while (depth > 0 && pos < body.length) {
+    openTag.lastIndex = pos;
+    closeTag.lastIndex = pos;
+    const openMatch = openTag.exec(body);
+    const closeMatch = closeTag.exec(body);
+    if (!closeMatch) return -1;
+    if (openMatch && openMatch.index < closeMatch.index) {
+      depth++;
+      pos = openMatch.index + openMatch[0].length;
+    } else {
+      depth--;
+      pos = closeMatch.index + closeMatch[0].length;
+      if (depth === 0) return pos;
+    }
+  }
+  return -1;
+}
+
 const blocks = blockSpecs.map((spec) => {
   const [name, markers] = spec.split(':');
   if (!name || !markers) throw new Error(`Bad --block spec: ${spec}`);
@@ -65,9 +123,8 @@ const blocks = blockSpecs.map((spec) => {
   if (!startMarker || !endMarker) throw new Error(`Bad --block spec markers: ${spec}`);
   const startIdx = body.indexOf(startMarker);
   if (startIdx === -1) throw new Error(`Start marker not found in body: ${startMarker}`);
-  const endStart = body.indexOf(endMarker, startIdx + startMarker.length);
-  if (endStart === -1) throw new Error(`End marker not found after start: ${endMarker}`);
-  const endIdx = endStart + endMarker.length;
+  const endIdx = findMatchingEnd(body, startMarker, endMarker);
+  if (endIdx === -1) throw new Error(`End marker not found after start (depth-aware search): ${endMarker}`);
   return { name, startIdx, endIdx };
 });
 
