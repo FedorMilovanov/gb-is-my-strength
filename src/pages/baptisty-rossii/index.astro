@@ -13,6 +13,10 @@ const { headHtml, bodyHtml, bodyAttributes } = loadLegacyFullDocument('baptisty-
     <Fragment set:html={headHtml} />
   </head>
   <body {...bodyAttributes}>
+    <!-- Pagefind search data: full-document visual shadow keeps legacy markup, so search text is explicit. -->
+    <div class="sr-only" data-pagefind-body>
+      Баптисты России. Живая исследовательская серия из 10 частей: Воронин, ночь на Куре, южная штунда, два съезда 1884 года, Петербургская линия, гонения, советская ночь, ВСЕХБ, Инициативная группа, подпольная печать, справочник источников.
+    </div>
     <Fragment set:html={bodyHtml} />
   </body>
 </html>

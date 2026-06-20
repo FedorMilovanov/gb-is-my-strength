@@ -13,6 +13,10 @@ const { headHtml, bodyHtml, bodyAttributes } = loadLegacyFullDocument('articles/
     <Fragment set:html={headHtml} />
   </head>
   <body {...bodyAttributes}>
+    <!-- Pagefind search data: full-document visual shadow keeps legacy markup, so search text is explicit. -->
+    <div class="sr-only" data-pagefind-body>
+      Каталог статей Господь Бог — Сила Моя. Все статьи: Джон Гилл, Нагорная проповедь, апологетика, экзегетика, богословие, пасторская серия, трудные тексты и библейские исследования.
+    </div>
     <Fragment set:html={bodyHtml} />
   </body>
 </html>

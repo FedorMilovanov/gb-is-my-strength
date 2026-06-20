@@ -53,6 +53,7 @@ mustScript(scripts, 'strangler:audit:production-like', /page-ownership:dist:prod
 mustScript(scripts, 'strangler:deploy-readiness', /astro:audit:about/, 'must include about pilot audit');
 mustScript(scripts, 'strangler:deploy-readiness', /astro:audit:article-mdx:strict/, 'must include strict article MDX shadow audit');
 mustScript(scripts, 'strangler:deploy-readiness', /strangler:audit:production-like/, 'must include production-like strangler audit');
+mustScript(scripts, 'strangler:deploy-readiness', /visual:parity:production|visual-parity-contract\.js/, 'must include route-specific visual parity contract');
 
 const deploy = read('.github/workflows/deploy.yml');
 must('.github/workflows/deploy.yml', deploy, /node-version:\s*['"]?22['"]?/, 'deploy must use Node 22+ for Astro toolchain compatibility');

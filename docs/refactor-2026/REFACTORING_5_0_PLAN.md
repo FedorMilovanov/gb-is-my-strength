@@ -127,3 +127,49 @@ MDX article pages (`ArticleLayout.astro`) — considered parity-safe because the
 8. Проверить поиск (Ctrl+K) — Pagefind индекс работает.
 9. Проверить тему — переключение dark/light.
 10. Если любой из пунктов fails — immediate rollback: revert `deploy.yml` path to `.`, push, verify.
+
+---
+
+## 9. Phase 4 — hardening after crash (2026-06-20) ✅ DONE
+
+После восстановления оборванной сессии агент синхронизировался с актуальным `origin/main` и не стал накатывать устаревший локальный diff поверх новых коммитов. Повторная проверка показала реальные gaps, которые Phase 2/3 ещё не закрывали:
+
+1. `npm run workflows:check` падал: `deploy.yml` с `path: dist` не запускал обязательные dist gates:
+   - `page-ownership:dist:production-like`;
+   - `visual:parity:production`;
+   - `dist-publication-audit --require-pagefind --forbid-dev`;
+   - `sw:dist:audit:deploy-switch`.
+2. `npm run visual:parity:production` падал на:
+   - `/nagornaya/seriya/` — всё ещё generic `astro-series-page` / `astro-card-grid`;
+   - 5 Gill/GBS pages — всё ещё generic `ArticleLayout` / `astro-article`, без `gbs-world`, `gbs2-rail`, `gbs2-hero`.
+3. `astro:audit:ishod` устарел: Refactoring 5.0 deliberately keeps unfinished engine maps behind holding pages, so the audit must not require live `map-engine.js` UI there.
+4. `legacy-shadow-wrapper-audit` and `dist-publication-audit` still expected old Astro wrapper markers where Refactoring 5.0 now uses full-document visual shadows.
+
+Исправлено:
+
+- `deploy.yml`: добавлены blocking steps перед upload Pages artifact:
+  - `npm run page-ownership:dist:production-like`;
+  - `npm run visual:parity:production`;
+  - `node scripts/dist-publication-audit.js --require-pagefind --forbid-dev`;
+  - `npm run sw:dist:audit:deploy-switch`.
+- `src/pages/nagornaya/seriya/index.astro`, `src/pages/nagornaya/istochniki/index.astro`, `src/pages/nagornaya/nakhodki/index.astro` переведены на `loadLegacyFullDocument`.
+- 5 Gill pages переведены на `loadLegacyFullDocument`, чтобы сохранить GBS2 world до настоящего component rewrite.
+- `article-mdx-pilot-audit.js` различает MDX Astro articles и Gill visual-first full-document shadows.
+- `dist-publication-audit.js` принимает visual-first shadows и flexible canonical attr order, но Pagefind completeness сохранён через явные sr-only `data-pagefind-body` блоки на full-document shadow routes без legacy Pagefind marker.
+- `legacyFullDocument.ts` исправлен профессионально: сохраняет legacy `<head>` verbatim для true visual parity и корректно парсит quoted/single-quoted/unquoted body attributes, чтобы не терялись `gbs-world`/`nagornaya-page` классы.
+- `astro-ishod-pilot-audit.js` теперь проверяет holding page contract, а не live engine UI.
+- `legacy-shadow-wrapper-audit.js` обновлён для `/map/` full-document shadow.
+- `strangler:deploy-readiness` теперь заканчивается `visual:parity:production`; `check-workflows.js` защищает это.
+
+Проверки:
+
+```bash
+npm run validate:static-publication              # ✅
+npm run strangler:deploy-readiness               # ✅
+npm run visual:parity:production                 # ✅
+node scripts/dist-publication-audit.js --require-pagefind --forbid-dev  # ✅
+npm run sw:dist:audit:deploy-switch              # ✅
+npm run workflows:check                          # ✅
+```
+
+Примечание: Playwright deps пришлось установить в sandbox через `npx playwright install chromium` + `npx playwright install-deps chromium`, после чего browser smoke в `strangler:deploy-readiness` прошёл.

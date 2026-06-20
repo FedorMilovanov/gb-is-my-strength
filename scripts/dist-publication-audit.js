@@ -148,23 +148,23 @@ function checkAstroSeriesLandingOwnership() {
     // /biografii/ is Astro-owned through full-document visual parity; the
     // previous `astro-biografii-index` generic page was a regression.
     ['biografii/index.html', '/biografii/', 'https://gospod-bog.ru/biografii/', 'home-v20'],
-    ['hard-texts/index.html', '/hard-texts/', 'https://gospod-bog.ru/hard-texts/', 'astro-series-page'],
-    ['pastor-series/index.html', '/pastor-series/', 'https://gospod-bog.ru/pastor-series/', 'astro-series-page'],
-    ['nagornaya/index.html', '/nagornaya/', 'https://gospod-bog.ru/nagornaya/', 'astro-nagornaya-index'],
+    ['hard-texts/index.html', '/hard-texts/', 'https://gospod-bog.ru/hard-texts/', 'home-v20'],
+    ['pastor-series/index.html', '/pastor-series/', 'https://gospod-bog.ru/pastor-series/', 'home-v20'],
+    ['nagornaya/index.html', '/nagornaya/', 'https://gospod-bog.ru/nagornaya/', 'nagornaya-page'],
     ['nagornaya/chast-1/index.html', '/nagornaya/chast-1/', 'https://gospod-bog.ru/nagornaya/chast-1/', 'astro-nagornaya-shadow'],
     ['nagornaya/chast-2/index.html', '/nagornaya/chast-2/', 'https://gospod-bog.ru/nagornaya/chast-2/', 'astro-nagornaya-shadow'],
     ['nagornaya/chast-3/index.html', '/nagornaya/chast-3/', 'https://gospod-bog.ru/nagornaya/chast-3/', 'astro-nagornaya-shadow'],
     ['nagornaya/chast-4/index.html', '/nagornaya/chast-4/', 'https://gospod-bog.ru/nagornaya/chast-4/', 'astro-nagornaya-shadow'],
     ['nagornaya/chast-5/index.html', '/nagornaya/chast-5/', 'https://gospod-bog.ru/nagornaya/chast-5/', 'astro-nagornaya-shadow'],
-    ['nagornaya/seriya/index.html', '/nagornaya/seriya/', 'https://gospod-bog.ru/nagornaya/seriya/', 'astro-series-page'],
-    ['nagornaya/istochniki/index.html', '/nagornaya/istochniki/', 'https://gospod-bog.ru/nagornaya/istochniki/', 'astro-nagornaya-sources'],
-    ['nagornaya/nakhodki/index.html', '/nagornaya/nakhodki/', 'https://gospod-bog.ru/nagornaya/nakhodki/', 'astro-nagornaya-findings'],
-    ['karty/index.html', '/karty/', 'https://gospod-bog.ru/karty/', 'astro-karty-index'],
+    ['nagornaya/seriya/index.html', '/nagornaya/seriya/', 'https://gospod-bog.ru/nagornaya/seriya/', 'nagornaya-series-page'],
+    ['nagornaya/istochniki/index.html', '/nagornaya/istochniki/', 'https://gospod-bog.ru/nagornaya/istochniki/', 'nagornaya-page'],
+    ['nagornaya/nakhodki/index.html', '/nagornaya/nakhodki/', 'https://gospod-bog.ru/nagornaya/nakhodki/', 'nagornaya-page'],
+    ['karty/index.html', '/karty/', 'https://gospod-bog.ru/karty/', 'karty-hub'],
     ['karty/avraam/index.html', '/karty/avraam/', 'https://gospod-bog.ru/karty/avraam/', 'astro-avraam-shadow'],
     ['karty/ishod/index.html', '/karty/ishod/', 'https://gospod-bog.ru/karty/ishod/', 'astro-ishod-shadow'],
-    ['konfessii/index.html', '/konfessii/', 'https://gospod-bog.ru/konfessii/', 'astro-konfessii-index'],
+    ['konfessii/index.html', '/konfessii/', 'https://gospod-bog.ru/konfessii/', 'Конфессии и Деноминации'],
     ['konfessii/russkij-baptizm/index.html', '/konfessii/russkij-baptizm/', 'https://gospod-bog.ru/konfessii/russkij-baptizm/', 'astro-map-wrapper'],
-    ['map/index.html', '/map/', 'https://gospod-bog.ru/map/', 'astro-map-shadow'],
+    ['map/index.html', '/map/', 'https://gospod-bog.ru/map/', 'class="hdr'],
   ]) {
     if (!exists(file)) continue;
     const html = read(file);
@@ -179,27 +179,44 @@ function checkAstroSeriesLandingOwnership() {
 function checkAstroArticlesIndexOwnership() {
   if (!exists('articles/index.html')) return;
   const html = read('articles/index.html');
-  if (!/class="astro-page[^"]*astro-articles-index/.test(html)) bad('/articles/ in dist is not Astro-owned catalog output');
-  else ok('/articles/ in dist is Astro-owned catalog output');
+  if (!html.includes('articles-index-page') || !html.includes('home-v20') || !html.includes('h-article-card')) bad('/articles/ in dist is not full-document visual-parity catalog output');
+  else ok('/articles/ in dist is full-document visual-parity catalog output');
+  if (/astro-card-grid|class="astro-page/.test(html)) bad('/articles/ contains forbidden generic Astro catalog markers');
+  else ok('/articles/ has no generic Astro catalog markers');
   if (isNoindex(html)) bad('/articles/ is noindex in dist');
   else ok('/articles/ is indexable in dist');
   if (!/<link[^>]+rel=["']canonical["'][^>]+href=["']https:\/\/gospod-bog\.ru\/articles\/["']/i.test(html)) bad('/articles/ canonical mismatch in dist');
   else ok('/articles/ canonical is public URL');
 }
 function checkAstroArticleOwnership() {
+  const visualShadowArticles = new Set([
+    'dzhon-gill-spravochnik',
+    'dzhon-gill-istoricheskiy-kontekst',
+    'dzhon-gill-chast-1-chelovek',
+    'dzhon-gill-chast-2-uchenyi',
+    'dzhon-gill-chast-3-nasledie',
+  ]);
   for (const slug of SHADOW_ARTICLES) {
     const file = `articles/${slug}/index.html`;
     const route = `/articles/${slug}/`;
     if (!exists(file)) continue;
     const html = read(file);
-    if (!/class="astro-article"/.test(html)) bad(`${route} in dist is not Astro-owned output`);
-    else ok(`${route} in dist is Astro-owned`);
+    if (visualShadowArticles.has(slug)) {
+      if (html.includes('gbs-world') && html.includes('data-gbs2-series="dzhon-gill"') && html.includes('gbs2-rail')) ok(`${route} in dist is Gill full-document visual shadow`);
+      else bad(`${route} in dist is missing Gill visual-shadow markers`);
+      if (/class="astro-article"|astro-series-nav/.test(html)) bad(`${route} contains forbidden generic Astro article markers`);
+      else ok(`${route} has no generic Astro article markers`);
+    } else {
+      if (!/class="astro-article"/.test(html)) bad(`${route} in dist is not Astro-owned output`);
+      else ok(`${route} in dist is Astro-owned`);
+    }
     if (/Build-only MDX pilot|MDX content pilot|noindex/i.test(stripTags(html))) bad(`${route} contains pilot/noindex copy`);
     else ok(`${route} has no pilot copy`);
     if (isNoindex(html)) bad(`${route} is noindex in dist`);
     else ok(`${route} is indexable in dist`);
-    const canonicalRe = new RegExp(`<link[^>]+rel=["']canonical["'][^>]+href=["']https:\/\/gospod-bog\.ru\/articles\/${slug}\/["']`, 'i');
-    if (!canonicalRe.test(html)) bad(`${route} canonical mismatch in dist`);
+    const canonicalUrl = `https://gospod-bog.ru/articles/${slug}/`;
+    const canonicalTagRe = /<link\b(?=[^>]*rel=["']canonical["'])(?=[^>]*href=["'][^"']+["'])[^>]*>/i;
+    if (!canonicalTagRe.test(html) || !html.includes(`href="${canonicalUrl}"`)) bad(`${route} canonical mismatch in dist`);
     else ok(`${route} canonical is public URL`);
   }
 }
@@ -291,6 +308,7 @@ function checkPagefind() {
   const missingIndexedPages = requiredIndexedPages.filter((page) => !expectedPages.includes(page));
   if (missingIndexedPages.length) missingIndexedPages.forEach((page) => bad(`Pagefind source pages missing required public body: ${page}`));
   else ok(`Pagefind source pages include required Astro public routes (${requiredIndexedPages.length})`);
+
 
   const devIndexed = expectedPages.filter(p => p.startsWith('dev/'));
   if (devIndexed.length) devIndexed.forEach(p => bad(`Pagefind source pages include dev route: ${p}`));
