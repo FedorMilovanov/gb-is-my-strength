@@ -1,0 +1,19 @@
+---
+/**
+ * KartyMain.astro — <div class="karty-hub" data-pagefind-body>...</div> of /karty/.
+ *
+ * РЕФАКТОРИНГ 5.0 Phase 6 wave 4 native pilot (AGENTS-r252). The karty hub
+ * is a premium standalone landing whose entire body content lives inside
+ * one root <div>. Pixel-parity guarded via:
+ *   npm run visual:parity:screenshots -- --routes /karty/ --threshold 0.5
+ *
+ * Note: the legacy <div class="karty-hub" data-pagefind-body> is rendered
+ * verbatim via Vite ?raw to guarantee byte-identical output for the
+ * shadow→native promotion. Subsequent iterations may split into semantic
+ * sub-components (KartyHero, KartyFeature, KartyBody, KartyPrinciples) under
+ * the same pixel-diff guard.
+ */
+import legacyHtml from './_legacy/hub.html?raw';
+---
+
+<Fragment set:html={legacyHtml} />
