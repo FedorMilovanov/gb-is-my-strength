@@ -1,0 +1,10 @@
+---
+/**
+ * HardTextsMain.astro — <main id="main-content"> of /hard-texts/.
+ *
+ * Phase 6 native-shadow pilot. Pixel-parity guarded via
+ *   npm run visual:parity:screenshots -- --routes /hard-texts/
+ */
+import legacyHtml from './_legacy/main.html?raw';
+---
+<Fragment set:html={legacyHtml} />

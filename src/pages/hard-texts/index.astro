@@ -1,18 +1,27 @@
 ---
+/**
+ * /hard-texts/ — РЕФАКТОРИНГ 5.0 Phase 6 native pilot (AGENTS-r250).
+ *
+ * native-shadow recipe (see REFACTORING_5_0_PIXEL_DIFF_GUARD_2026-06-20.md §8):
+ *   - <head> loaded verbatim via loadLegacyFullDocument => SEO byte-identical;
+ *   - body chrome (navbar, mobile menu, footer, runtime scripts) preserved
+ *     verbatim through body-segment-{0,1}.html fragments;
+ *   - <main id="main-content"> promoted to HardTextsMain.astro component.
+ *
+ * Pixel parity proof:
+ *   npm run visual:parity:screenshots -- --routes /hard-texts/
+ */
 import { loadLegacyFullDocument } from '@/utils/legacyFullDocument';
+import HardTextsMain from '@/components/hard-texts/HardTextsMain.astro';
+import segBefore from '@/components/hard-texts/_legacy/body-segment-0.html?raw';
+import segAfter from '@/components/hard-texts/_legacy/body-segment-1.html?raw';
 
-// Visual-first migration: /hard-texts/ must preserve the legacy premium page
-// before any component refactor. The previous generic astro-card grid was a
-// production-quality regression; keep this full-document shadow until screenshot
-// parity and owner review approve a hand-built Astro version.
-const { headHtml, bodyHtml, bodyAttributes } = loadLegacyFullDocument('hard-texts/index.html');
+const { headHtml, bodyAttributes } = loadLegacyFullDocument('hard-texts/index.html');
 ---
 <!DOCTYPE html>
 <html lang="ru">
   <head>
     <Fragment set:html={headHtml} />
   </head>
-  <body {...bodyAttributes}>
-    <Fragment set:html={bodyHtml} />
-  </body>
+  <body {...bodyAttributes}><Fragment set:html={segBefore} /><HardTextsMain /><Fragment set:html={segAfter} /></body>
 </html>

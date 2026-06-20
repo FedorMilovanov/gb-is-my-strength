@@ -1,18 +1,28 @@
 ---
+/**
+ * /biografii/ — РЕФАКТОРИНГ 5.0 Phase 6 native pilot (AGENTS-r249/r250).
+ *
+ * native-shadow recipe (see REFACTORING_5_0_PIXEL_DIFF_GUARD_2026-06-20.md §8):
+ *   - <head> loaded verbatim via loadLegacyFullDocument => SEO byte-identical;
+ *   - body chrome (navbar, mobile menu, footer, runtime scripts) preserved
+ *     verbatim through body-segment-{0,1}.html fragments;
+ *   - <main id="main-content"> promoted to BiografiiMain.astro component
+ *     (currently re-emits its _legacy/main.html source verbatim).
+ *
+ * Pixel parity proof:
+ *   npm run visual:parity:screenshots -- --routes /biografii/
+ */
 import { loadLegacyFullDocument } from '@/utils/legacyFullDocument';
+import BiografiiMain from '@/components/biografii/BiografiiMain.astro';
+import segBefore from '@/components/biografii/_legacy/body-segment-0.html?raw';
+import segAfter from '@/components/biografii/_legacy/body-segment-1.html?raw';
 
-// Visual-first migration: /biografii/ must preserve the legacy premium landing
-// before any component refactor. The previous generic astro-card grid was a
-// visual regression, especially because Gill must remain presented as a strong
-// series entry rather than loose cards.
-const { headHtml, bodyHtml, bodyAttributes } = loadLegacyFullDocument('biografii/index.html');
+const { headHtml, bodyAttributes } = loadLegacyFullDocument('biografii/index.html');
 ---
 <!DOCTYPE html>
 <html lang="ru">
   <head>
     <Fragment set:html={headHtml} />
   </head>
-  <body {...bodyAttributes}>
-    <Fragment set:html={bodyHtml} />
-  </body>
+  <body {...bodyAttributes}><Fragment set:html={segBefore} /><BiografiiMain /><Fragment set:html={segAfter} /></body>
 </html>
