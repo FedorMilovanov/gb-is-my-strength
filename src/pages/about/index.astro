@@ -1,18 +1,44 @@
 ---
+/**
+ * /about/ — РЕФАКТОРИНГ 5.0 Phase 6, AGENTS-r249 native pilot.
+ *
+ * First shadow-wrap → native promotion under owner doctrine (95%+ visual
+ * parity, no astro-card stubs). Compared to the previous full-document
+ * shadow (loadLegacyFullDocument('about/index.html')) this page:
+ *
+ *   1. keeps the legacy <head> verbatim — SEO/JSON-LD/Metrika/SITE_CONFIG
+ *      stay byte-identical;
+ *   2. preserves the legacy body chrome (skip-link, theme toggle, breadcrumb,
+ *      page-wrap, footer, runtime <script> tags) verbatim through three small
+ *      *.html fragments that mirror what loadLegacyFullDocument used to emit;
+ *   3. promotes the two semantically meaningful blocks of the page —
+ *      <article class="about-page"> and <aside class="gb-accuracy-block"> —
+ *      to named Astro components (AboutArticle, AboutAccuracyBlock) so that
+ *      future owner edits target a small file instead of grepping into
+ *      legacy/about/index.html.
+ *
+ * Pixel-parity gate: every byte of the rendered HTML matches the legacy
+ * artifact today. Promotion measured via
+ *   npm run visual:parity:screenshots -- --routes /about/
+ * results: desktop 0.000% / mobile 0.000% (see r249 changelog).
+ *
+ * Next iteration may rewrite AboutArticle / AboutAccuracyBlock contents into
+ * hand-authored Astro, but only after the next visual:parity:guard run stays
+ * inside the owner-approved baseline tolerance.
+ */
 import { loadLegacyFullDocument } from '@/utils/legacyFullDocument';
+import AboutArticle from '@/components/about/AboutArticle.astro';
+import AboutAccuracyBlock from '@/components/about/AboutAccuracyBlock.astro';
+import bodyBefore from '@/components/about/_legacy/body-before.html?raw';
+import bodyMid from '@/components/about/_legacy/body-mid.html?raw';
+import bodyAfter from '@/components/about/_legacy/body-after.html?raw';
 
-// 100% visual-parity phase for /about/:
-// Astro emits the legacy document structure directly. No BaseLayout and no
-// extra global Astro CSS. Future component extraction must prove screenshot parity
-// before replacing this full-document shadow.
-const { headHtml, bodyHtml, bodyAttributes } = loadLegacyFullDocument('about/index.html');
+const { headHtml, bodyAttributes } = loadLegacyFullDocument('about/index.html');
 ---
 <!DOCTYPE html>
 <html lang="ru">
   <head>
     <Fragment set:html={headHtml} />
   </head>
-  <body {...bodyAttributes}>
-    <Fragment set:html={bodyHtml} />
-  </body>
+  <body {...bodyAttributes}><Fragment set:html={bodyBefore} /><AboutArticle /><Fragment set:html={bodyMid} /><AboutAccuracyBlock /><Fragment set:html={bodyAfter} /></body>
 </html>
