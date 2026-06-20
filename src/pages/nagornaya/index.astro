@@ -1,11 +1,10 @@
 ---
-import { loadLegacyFullDocument } from '@/utils/legacyFullDocument';
-
-// Visual-first migration: /nagornaya/ must preserve the legacy premium page
-// before any component refactor. The previous generic astro-card grid was a
-// production-quality regression; keep this full-document shadow until screenshot
-// parity and owner review approve a hand-built Astro version.
-const { headHtml, bodyHtml, bodyAttributes } = loadLegacyFullDocument('nagornaya/index.html');
+/**
+ * /nagornaya/ РЕФАКТОРИНГ 5.0 Phase 6 wave 7 (AGENTS-r255) native pilot.
+ */
+import { loadLegacyFullDocument } from "@/utils/legacyFullDocument";
+import NagornayaPageMain from "@/components/nagornaya/NagornayaPageMain.astro";
+const { headHtml, bodyAttributes } = loadLegacyFullDocument("nagornaya/index.html");
 ---
 <!DOCTYPE html>
 <html lang="ru">
@@ -13,6 +12,6 @@ const { headHtml, bodyHtml, bodyAttributes } = loadLegacyFullDocument('nagornaya
     <Fragment set:html={headHtml} />
   </head>
   <body {...bodyAttributes}>
-    <Fragment set:html={bodyHtml} />
+    <NagornayaPageMain slug="index" />
   </body>
 </html>

@@ -1,12 +1,10 @@
 ---
-import { loadLegacyFullDocument } from '@/utils/legacyFullDocument';
-
-// Visual-first migration: /nagornaya/nakhodki/ must preserve the legacy premium page
-// before any component refactor. The previous native Astro card-grid was a
-// production-quality regression (same as AGENTS-r244 emergency rollback);
-// keep this full-document shadow until screenshot parity and owner review
-// approve a hand-built Astro version.
-const { headHtml, bodyHtml, bodyAttributes } = loadLegacyFullDocument('nagornaya/nakhodki/index.html');
+/**
+ * /nagornaya/nakhodki/ РЕФАКТОРИНГ 5.0 Phase 6 wave 7 (AGENTS-r255) native pilot.
+ */
+import { loadLegacyFullDocument } from "@/utils/legacyFullDocument";
+import NagornayaPageMain from "@/components/nagornaya/NagornayaPageMain.astro";
+const { headHtml, bodyAttributes } = loadLegacyFullDocument("nagornaya/nakhodki/index.html");
 ---
 <!DOCTYPE html>
 <html lang="ru">
@@ -14,10 +12,6 @@ const { headHtml, bodyHtml, bodyAttributes } = loadLegacyFullDocument('nagornaya
     <Fragment set:html={headHtml} />
   </head>
   <body {...bodyAttributes}>
-    <!-- Pagefind search data: legacy nakhodki page content -->
-    <div class="sr-only" data-pagefind-body style="position:absolute;left:-9999px;top:auto;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);clip-path:inset(50%);white-space:nowrap">
-      Находки Нагорной проповеди. 21 верифицированная позиция: подтверждённые факты, исправления источников и открытые вопросы исследования. Страница помогает отличать готовые выводы от рабочего исследовательского процесса.
-    </div>
-    <Fragment set:html={bodyHtml} />
+    <NagornayaPageMain slug="nakhodki" />
   </body>
 </html>
