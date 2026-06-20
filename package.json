@@ -23,7 +23,7 @@
     "editorial:lint": "node scripts/editorial-lint.js",
     "source:links": "node scripts/source-link-audit.js",
     "validate:external": "npm run source:links:dist",
-    "validate:static-publication": "npm run validate:all && npm run owner:ui-guard && npm run about:visual-parity:audit && npm run biografii:visual-parity:audit && npm run hard-texts:visual-parity:audit && npm run pastor-series:visual-parity:audit && npm run articles:visual-parity:audit && npm run konfessii:visual-parity:audit && npm run karty:visual-parity:audit && npm run baptisty-rossii:visual-parity:audit && npm run catalogs:visual-parity:audit && npm run baptisty:roadmap:audit && npm run baptisty:visual-atlas:audit && npm run maps:validate && npm run page-ownership:check && npm run avraam:audit && npm run tokens:check && node scripts/audit-pro.js && npm run readable-audit && npm run editorial:lint && npm run data:consistency && npm run content:guard && npm run astro:audit:article-mdx:strict && npm run astro:audit:baptisty-series && npm run contract:compare",
+    "validate:static-publication": "npm run validate:all && npm run owner:ui-guard && npm run about:visual-parity:audit && npm run biografii:visual-parity:audit && npm run hard-texts:visual-parity:audit && npm run pastor-series:visual-parity:audit && npm run articles:visual-parity:audit && npm run konfessii:visual-parity:audit && npm run karty:visual-parity:audit && npm run baptisty-rossii:visual-parity:audit && npm run home:visual-parity:audit && npm run catalogs:visual-parity:audit && npm run baptisty:roadmap:audit && npm run baptisty:visual-atlas:audit && npm run maps:validate && npm run page-ownership:check && npm run avraam:audit && npm run tokens:check && node scripts/audit-pro.js && npm run readable-audit && npm run editorial:lint && npm run data:consistency && npm run content:guard && npm run astro:audit:article-mdx:strict && npm run astro:audit:baptisty-series && npm run contract:compare",
     "workflows:check": "node scripts/check-workflows.js",
     "typograf:dry": "node scripts/typograf.js --dry-run",
     "konfessii:audit": "node scripts/konfessii-map-audit.js",
@@ -98,6 +98,7 @@
     "konfessii:visual-parity:audit": "node scripts/konfessii-visual-parity-audit.js",
     "karty:visual-parity:audit": "node scripts/karty-visual-parity-audit.js",
     "baptisty-rossii:visual-parity:audit": "node scripts/baptisty-rossii-visual-parity-audit.js",
+    "home:visual-parity:audit": "node scripts/home-visual-parity-audit.js",
     "catalogs:visual-parity:audit": "node scripts/catalogs-visual-parity-audit.js"
   },
   "engines": {
