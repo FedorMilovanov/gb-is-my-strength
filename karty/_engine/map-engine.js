@@ -1041,13 +1041,15 @@ header.appendChild(shareBtn);
         panelStartWidth = panel.offsetWidth;
         document.body.style.userSelect = 'none';
       });
-      document.addEventListener('pointermove', e => {
+      // Use _on() so document-level listeners are tracked and cleaned up by _cleanupAll()
+      // (avoids the only real listener leak: document.pointermove/pointerup during panel resize)
+      _on(document, 'pointermove', e => {
         if (!resizing) return;
         const dx = resizeStartX - e.clientX;
         const newWidth = clamp(panelStartWidth + dx, 280, 700);
         panel.style.width = newWidth + 'px';
       });
-      document.addEventListener('pointerup', () => {
+      _on(document, 'pointerup', () => {
         if (resizing) {
           resizing = false;
           document.body.style.userSelect = '';

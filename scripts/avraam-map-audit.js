@@ -134,6 +134,16 @@ assert('ABRAHAM research doc is compact', research.split(/\r?\n/).length <= 320,
 assert('ABRAHAM research doc has source index', research.includes('## 5. Source index') && research.includes('WiBiLex') && research.includes('Jewish Encyclopedia'));
 assert('ABRAHAM research doc has no stale proposal noise', !/(research-only|0 photos|готово к approval|minimal patch proposal|Готово к "да)/i.test(research));
 
+// ── MapEngine lifecycle checks (РЕФАКТОРИНГ 5.0 closing hole #2) ──
+const engineSrc = fs.readFileSync(enginePath, 'utf8');
+assert('MapEngine exposes destroy() method', /\bdestroy\s*:\s*\{[^}]*_cleanupAll/.test(engineSrc) || /destroy\(\)\{[\s\S]*?_cleanupAll/.test(engineSrc));
+assert('MapEngine tracks listeners via _on() helper', /function _on\s*\([^)]*\)\s*\{[^}]*_listeners\.push/.test(engineSrc));
+assert('MapEngine has _cleanupAll() that removes listeners', /function _cleanupAll\s*\(\s*\)\s*\{[\s\S]*?_listeners\.forEach\s*\(\s*l\s*=>\s*\{[^}]*removeEventListener/.test(engineSrc));
+// The only known real leak was document-level pointermove/pointerup during panel resize.
+// After fix, both should be routed through _on(document, ...) so they are tracked.
+const docListenersAreTracked = !/document\.addEventListener\(\s*['"]pointer(move|up)['"]/.test(engineSrc);
+assert('document.pointermove/pointerup use _on() (no raw addEventListener)', docListenersAreTracked);
+
 const failures = checks.filter(c => !c.ok);
 for (const c of checks) {
   const icon = c.ok ? '✅' : '❌';
