@@ -180,6 +180,21 @@ function validateRoute(file) {
   ok(`${label}: ${places.length} places · ${stages.length} stages · ${stories.length} stories`);
 }
 
+function hasAuditPendingDesign(htmlSrc, missingCount) {
+  if (!htmlSrc) return false;
+  if (missingCount <= 0) return false;
+  // 1) An explicit explanation that some maps are pending visual audit.
+  const hasExplicitMessage = /на\s+аудите|временно\s+не\s+на\s+витрине|только\s+после\s+визуального\s+аудита/i.test(htmlSrc);
+  if (!hasExplicitMessage) return false;
+  // 2) A numeric stat that matches the missing count. Patterns observed:
+  //      <div class="karty-stat"><b>9</b><span>на аудите</span></div>
+  //      <b>9</b><span>на аудите</span>
+  // We tolerate whitespace inside the stat markup.
+  const numericMatches = [...htmlSrc.matchAll(/<b[^>]*>\s*(\d+)\s*<\/b>\s*<span[^>]*>\s*на\s+аудите\s*<\/span>/gi)];
+  if (!numericMatches.length) return false;
+  return numericMatches.some(m => parseInt(m[1], 10) === missingCount);
+}
+
 function checkAstroHub(files) {
   const routeIds = files.map(f => path.basename(path.dirname(f))).sort();
 
@@ -193,7 +208,10 @@ function checkAstroHub(files) {
 
   const missingFromHtml = routeIds.filter(id => {
     const hasAbsolute = htmlSrc.includes(`/karty/${id}/`);
-    const hasRelative = /href=["']\.\/[^"']*\b${id}\b[^"']*["']/.test(htmlSrc);
+    // NB: regex literals do NOT interpolate ${id}; we use new RegExp(string) instead.
+    // The previous literal /href=["']\.\/[^"']*\b${id}\b[^"']*["']/ silently searched
+    // for the literal substring "${id}" and therefore reported every route as missing.
+    const hasRelative = new RegExp(`href=["']\\.\\/[^"']*\\b${id}\\b[^"']*["']`).test(htmlSrc);
     return !hasAbsolute && !hasRelative;
   });
 
@@ -210,11 +228,17 @@ function checkAstroHub(files) {
 
   // If all links exist in HTML → full parity, ok.
   // If some missing in HTML but Astro source is shadow-wrap AND declares slugs → warn, not fail (legacy hub may intentionally show subset).
-  // If some missing in HTML and Astro source is native → fail.
+  // If some missing in HTML and Astro source is native → fail UNLESS the hub carries
+  //   an explicit "на аудите" / "временно не на витрине" message AND the count of missing
+  //   routes matches the figure mentioned in that message. This preserves the owner design
+  //   intent (e.g. AGENTS-r252 native pilot for /karty/ keeps Avraam as the only featured map
+  //   while 9 others are explicitly listed as pending visual audit).
   if (missingFromHtml.length === 0) {
     ok(`karty hub links all live route.json maps (${routeIds.length})`);
   } else if (isShadowWrap && missingFromAstro.length === 0) {
     ok(`karty hub is shadow-wrap; legacy HTML shows subset, Astro source declares all ${routeIds.length} slugs`);
+  } else if (hasAuditPendingDesign(htmlSrc, missingFromHtml.length)) {
+    ok(`karty hub uses audit-pending design: ${missingFromHtml.length} map(s) explicitly listed as 'на аудите' / 'временно не на витрине'`);
   } else {
     missingFromHtml.forEach(id => bad(`karty hub missing clickable route card for /karty/${id}/`));
   }
