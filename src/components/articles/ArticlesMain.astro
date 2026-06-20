@@ -1,0 +1,10 @@
+---
+/**
+ * ArticlesMain.astro — <main id="main-content"> of /articles/.
+ *
+ * Phase 6 native-shadow pilot (AGENTS-r251). Pixel-parity guarded via
+ *   npm run visual:parity:screenshots -- --routes /articles/
+ */
+import legacyHtml from './_legacy/main.html?raw';
+---
+<Fragment set:html={legacyHtml} />
