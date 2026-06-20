@@ -260,8 +260,8 @@ export default function GenealogyTree({ persons, eras }: { persons: Person[]; er
         onInit={(inst) => { rfInstance.current = inst; }}
         onViewportChange={(vp: { zoom: number }) => setZoomLevel(vp.zoom)}
         fitView
-        fitViewOptions={{ padding: 0.15, minZoom: 0.15, maxZoom: 1.5 }}
-        minZoom={0.04}
+        fitViewOptions={{ padding: 0.15, minZoom: 0.55, maxZoom: 1.5 }}
+        minZoom={0.5}
         maxZoom={3}
         nodesDraggable={false}
         nodesConnectable={false}
