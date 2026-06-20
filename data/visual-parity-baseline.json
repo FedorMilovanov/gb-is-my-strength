@@ -1,0 +1,51 @@
+{
+  "note": "Owner-approved pixel-diff baseline per Astro route. Higher diff% than baseline+tolerance fails CI. Update only after owner visual review.",
+  "tolerancePct": 0.5,
+  "updatedAt": "2026-06-20",
+  "routes": {
+    "/": {
+      "desktop": 0,
+      "mobile": 0
+    },
+    "/about/": {
+      "desktop": 0,
+      "mobile": 0
+    },
+    "/articles/": {
+      "desktop": 0,
+      "mobile": 0.0023
+    },
+    "/biografii/": {
+      "desktop": 0,
+      "mobile": 0
+    },
+    "/karty/": {
+      "desktop": 0,
+      "mobile": 0
+    },
+    "/baptisty-rossii/": {
+      "desktop": 0,
+      "mobile": 0
+    },
+    "/nagornaya/": {
+      "desktop": 0,
+      "mobile": 0.0037
+    },
+    "/hard-texts/": {
+      "desktop": 0,
+      "mobile": 0
+    },
+    "/konfessii/": {
+      "desktop": 0,
+      "mobile": 0
+    },
+    "/pastor-series/": {
+      "desktop": 0,
+      "mobile": 0
+    },
+    "/map/": {
+      "desktop": 0,
+      "mobile": 0
+    }
+  }
+}
