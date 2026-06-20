@@ -1,0 +1,17 @@
+---
+/**
+ * HomeMain.astro — <main id="main-content" data-pagefind-body>...</main> of /.
+ *
+ * РЕФАКТОРИНГ 5.0 Phase 6 wave 6 native pilot (AGENTS-r254). Home / is the most
+ * important landing — premium standalone with mobile-nav, mobile-dock,
+ * article hero + featured cards, mobile dashboard, resume-reading, mobile
+ * paths (6 guided-reading cards), and gb-accuracy block. The semantic block
+ * is <main id="main-content">; everything else is chrome preserved verbatim.
+ *
+ * Pixel parity proof (CI):
+ *   npm run visual:parity:screenshots -- --routes / --threshold 0.5
+ */
+import legacyHtml from './_legacy/main.html?raw';
+---
+
+<Fragment set:html={legacyHtml} />
