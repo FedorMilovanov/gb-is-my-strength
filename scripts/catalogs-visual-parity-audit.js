@@ -27,7 +27,8 @@ const routes = [
     astro: 'src/pages/articles/index.astro',
     sourceCall: "loadLegacyFullDocument('articles/index.html')",
     requiredLegacy: ['articles-index-page', 'home-v20', 'h-hero-title', 'h-article-card', 'h-article-list'],
-    bodyContract: 'full-shadow',
+    bodyContract: 'native-shadow',
+    nativeMainComponent: 'ArticlesMain',
   },
   {
     name: '/biografii/',
