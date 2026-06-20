@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updated": "2026-06-18T11:58:35.228Z",
+  "updated": "2026-06-20T08:17:50.065Z",
   "note": "Migration baseline: public indexable HTML pages. Update intentionally before a platform migration only after review.",
   "pages": [
     {
@@ -8,7 +8,7 @@
       "url": "https://gospod-bog.ru/",
       "title": "Господь Бог — Сила Моя — Материалы для изучения Писания",
       "h1": "Господь Бог — Сила Моя",
-      "words": 792
+      "words": 782
     },
     {
       "file": "about/index.html",
@@ -104,72 +104,72 @@
     {
       "file": "baptisty-rossii/dva-sezda-1884/index.html",
       "url": "https://gospod-bog.ru/baptisty-rossii/dva-sezda-1884/",
-      "title": "1884: два съезда — Баптисты России",
-      "h1": "1884: два съезда",
-      "words": 657
+      "title": "Петербург и Ново-Васильевка: две развилки 1884 года — Баптисты России",
+      "h1": "Петербург и Ново-Васильевка: две развилки 1884 года",
+      "words": 848
     },
     {
       "file": "baptisty-rossii/goneniya-i-sovest/index.html",
       "url": "https://gospod-bog.ru/baptisty-rossii/goneniya-i-sovest/",
-      "title": "Гонения и совесть — Баптисты России",
-      "h1": "Гонения и совесть",
-      "words": 2036
+      "title": "Свобода совести и военный вопрос — Баптисты России",
+      "h1": "Свобода совести и военный вопрос",
+      "words": 2055
     },
     {
       "file": "baptisty-rossii/iniciativnaya-gruppa/index.html",
       "url": "https://gospod-bog.ru/baptisty-rossii/iniciativnaya-gruppa/",
-      "title": "Инициативная группа — Баптисты России",
-      "h1": "Инициативная группа",
-      "words": 2057
+      "title": "Инициативная группа: путь к Совету Церквей — Баптисты России",
+      "h1": "Инициативная группа: путь к Совету Церквей",
+      "words": 2093
     },
     {
       "file": "baptisty-rossii/noch-na-kure/index.html",
       "url": "https://gospod-bog.ru/baptisty-rossii/noch-na-kure/",
-      "title": "Ночь на Куре — Баптисты России",
-      "h1": "Ночь на Куре",
-      "words": 858
+      "title": "Воронин и ночь на Куре — Баптисты России",
+      "h1": "Воронин и ночь на Куре",
+      "words": 1105
     },
     {
       "file": "baptisty-rossii/peterburgskaya-liniya/index.html",
       "url": "https://gospod-bog.ru/baptisty-rossii/peterburgskaya-liniya/",
-      "title": "Петербургская линия — Баптисты России",
-      "h1": "Петербургская линия",
-      "words": 1374
+      "title": "Петербургское пробуждение: Редсток, Пашков и Проханов — Баптисты России",
+      "h1": "Петербургское пробуждение: Редсток, Пашков и Проханов",
+      "words": 1410
     },
     {
       "file": "baptisty-rossii/podpolnaya-pechat/index.html",
       "url": "https://gospod-bog.ru/baptisty-rossii/podpolnaya-pechat/",
-      "title": "Подпольная печать — Баптисты России",
-      "h1": "Подпольная печать",
-      "words": 1963
+      "title": "Подпольная печать: Вестники, «Христианин» и память узников — Баптисты России",
+      "h1": "Подпольная печать: Вестники, «Христианин» и память узников",
+      "words": 1995
     },
     {
       "file": "baptisty-rossii/sovetskaya-noch/index.html",
       "url": "https://gospod-bog.ru/baptisty-rossii/sovetskaya-noch/",
-      "title": "Советская ночь — Баптисты России",
-      "h1": "Советская ночь",
-      "words": 1933
+      "title": "Советская ночь: закон 1929 года и репрессии — Баптисты России",
+      "h1": "Советская ночь: закон 1929 года и репрессии",
+      "words": 1957
     },
     {
       "file": "baptisty-rossii/spravochnik/index.html",
       "url": "https://gospod-bog.ru/baptisty-rossii/spravochnik/",
-      "title": "Справочник — Баптисты России",
-      "h1": "Справочник",
-      "words": 2349
+      "title": "Справочник источников — Баптисты России",
+      "h1": "Справочник источников",
+      "words": 2493
     },
     {
       "file": "baptisty-rossii/vsehib-1944/index.html",
       "url": "https://gospod-bog.ru/baptisty-rossii/vsehib-1944/",
-      "title": "1944: один союз — Баптисты России",
-      "h1": "1944: один союз",
-      "words": 1776
+      "title": "ВСЕХБ 1944: один союз под надзором — Баптисты России",
+      "h1": "ВСЕХБ 1944: один союз под надзором",
+      "words": 1794
     },
     {
       "file": "baptisty-rossii/yuzhnaya-shtunda/index.html",
       "url": "https://gospod-bog.ru/baptisty-rossii/yuzhnaya-shtunda/",
-      "title": "Южная штунда — Баптисты России",
-      "h1": "Южная штунда",
-      "words": 709
+      "title": "Южная штунда и первые крещения — Баптисты России",
+      "h1": "Южная штунда и первые крещения",
+      "words": 1039
     },
     {
       "file": "biografii/index.html",
@@ -188,9 +188,9 @@
     {
       "file": "karty/index.html",
       "url": "https://gospod-bog.ru/karty/",
-      "title": "Карты | Господь Бог — Сила Моя",
+      "title": "Библейские карты | Господь Бог — Сила Моя",
       "h1": "Библейские карты",
-      "words": 218
+      "words": 164
     },
     {
       "file": "karty/avraam/index.html",
@@ -202,65 +202,65 @@
     {
       "file": "karty/early-church/index.html",
       "url": "https://gospod-bog.ru/karty/early-church/",
-      "title": "Ранняя Церковь · Деяния 1–12 — интерактивная карта | Господь Бог — Сила Моя",
+      "title": "Ранняя Церковь — временно на визуальном аудите | Господь Бог — Сила Моя",
       "h1": "Ранняя Церковь",
-      "words": 2
+      "words": 57
     },
     {
       "file": "karty/ishod/index.html",
       "url": "https://gospod-bog.ru/karty/ishod/",
-      "title": "Исход из Египта — интерактивная карта | Господь Бог — Сила Моя",
-      "h1": "Исход из Египта — интерактивная карта",
-      "words": 20
+      "title": "Исход из Египта — временно на визуальном аудите | Господь Бог — Сила Моя",
+      "h1": "Исход из Египта",
+      "words": 58
     },
     {
       "file": "karty/maccabim/index.html",
       "url": "https://gospod-bog.ru/karty/maccabim/",
-      "title": "Межзаветный период · Маккавеи — интерактивная карта | Господь Бог — Сила Моя",
-      "h1": "Межзаветный период · Маккавеи",
-      "words": 3
+      "title": "Межзаветный период — временно на визуальном аудите | Господь Бог — Сила Моя",
+      "h1": "Межзаветный период",
+      "words": 57
     },
     {
       "file": "karty/melachim/index.html",
       "url": "https://gospod-bog.ru/karty/melachim/",
-      "title": "Царства Израиля и Иуды — интерактивная карта | Господь Бог — Сила Моя",
+      "title": "Царства Израиля и Иуды — временно на визуальном аудите | Господь Бог — Сила Моя",
       "h1": "Царства Израиля и Иуды",
-      "words": 3
+      "words": 58
     },
     {
       "file": "karty/pavel/index.html",
       "url": "https://gospod-bog.ru/karty/pavel/",
-      "title": "Путешествия Павла — интерактивная карта | Господь Бог — Сила Моя",
-      "h1": "Карта",
-      "words": 3
+      "title": "Путешествия Павла — временно на визуальном аудите | Господь Бог — Сила Моя",
+      "h1": "Путешествия Павла",
+      "words": 57
     },
     {
       "file": "karty/revelation/index.html",
       "url": "https://gospod-bog.ru/karty/revelation/",
-      "title": "7 Церквей Откровения — интерактивная карта | Господь Бог — Сила Моя",
-      "h1": "7 Церквей Откровения",
-      "words": 2
+      "title": "7 церквей Откровения — временно на визуальном аудите | Господь Бог — Сила Моя",
+      "h1": "7 церквей Откровения",
+      "words": 57
     },
     {
       "file": "karty/shoftim/index.html",
       "url": "https://gospod-bog.ru/karty/shoftim/",
-      "title": "Эпоха Судей — интерактивная карта | Господь Бог — Сила Моя",
+      "title": "Эпоха Судей — временно на визуальном аудите | Господь Бог — Сила Моя",
       "h1": "Эпоха Судей",
-      "words": 2
+      "words": 57
     },
     {
       "file": "karty/shvatim/index.html",
       "url": "https://gospod-bog.ru/karty/shvatim/",
-      "title": "12 Колен Израиля — интерактивная карта | Господь Бог — Сила Моя",
-      "h1": "12 Колен Израиля",
-      "words": 3
+      "title": "12 колен Израиля — временно на визуальном аудите | Господь Бог — Сила Моя",
+      "h1": "12 колен Израиля",
+      "words": 58
     },
     {
       "file": "karty/yeshua/index.html",
       "url": "https://gospod-bog.ru/karty/yeshua/",
-      "title": "Жизнь Иисуса Христа — интерактивная карта | Господь Бог — Сила Моя",
-      "h1": "Жизнь Иисуса Христа",
-      "words": 3
+      "title": "Жизнь Христа — временно на визуальном аудите | Господь Бог — Сила Моя",
+      "h1": "Жизнь Христа",
+      "words": 57
     },
     {
       "file": "konfessii/index.html",
