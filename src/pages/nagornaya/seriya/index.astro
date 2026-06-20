@@ -15,7 +15,7 @@ const { headHtml, bodyHtml, bodyAttributes } = loadLegacyFullDocument('nagornaya
   </head>
   <body {...bodyAttributes}>
     <!-- Pagefind search data: legacy seriya page content -->
-    <div class="sr-only" data-pagefind-body>
+    <div class="sr-only" data-pagefind-body style="position:absolute;left:-9999px;top:auto;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);clip-path:inset(50%);white-space:nowrap">
       Нагорная проповедь: серия в 5 частях. Содержание Нагорной проповеди, методология записи Евангелий, адресат, богодухновенность, применение. Матфей 5–7 и Лука 6.
     </div>
     <Fragment set:html={bodyHtml} />

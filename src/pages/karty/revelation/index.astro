@@ -21,7 +21,7 @@ const legacy = loadLegacyShadowPage('karty/revelation/index.html');
   headHtml={legacy.headHtml}
 >
   <div class="astro-revelation-shadow">
-    <div class="sr-only" data-pagefind-body>
+    <div class="sr-only" data-pagefind-body style="position:absolute;left:-9999px;top:auto;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);clip-path:inset(50%);white-space:nowrap">
       7 Церквей Откровения. Послания Христа семи церквам Асии.
     </div>
     <Fragment set:html={legacy.bodyHtml} />

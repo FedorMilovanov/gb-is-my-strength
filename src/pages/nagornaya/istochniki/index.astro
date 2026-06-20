@@ -15,7 +15,7 @@ const { headHtml, bodyHtml, bodyAttributes } = loadLegacyFullDocument('nagornaya
   </head>
   <body {...bodyAttributes}>
     <!-- Pagefind search data: legacy istochniki page content -->
-    <div class="sr-only" data-pagefind-body>
+    <div class="sr-only" data-pagefind-body style="position:absolute;left:-9999px;top:auto;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);clip-path:inset(50%);white-space:nowrap">
       Источники Нагорной проповеди. Полная библиография: 66+ позиций. TMSJ, MacArthur GTY, Chicago Statement, реформатские исповедания, отцы Церкви. Страница служит проверяемой картой источников для всей серии о Нагорной проповеди.
     </div>
     <Fragment set:html={bodyHtml} />
