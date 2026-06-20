@@ -13,6 +13,10 @@ const { headHtml, bodyHtml, bodyAttributes } = loadLegacyFullDocument('konfessii
     <Fragment set:html={headHtml} />
   </head>
   <body {...bodyAttributes}>
+    <!-- Pagefind search data: full-document visual shadow keeps legacy markup, so search text is explicit. -->
+    <div class="sr-only" data-pagefind-body>
+      Конфессии и Деноминации. История церковных движений, русский баптизм, первоисточники, карты, документы, биографии, статистика и богословские различия.
+    </div>
     <Fragment set:html={bodyHtml} />
   </body>
 </html>

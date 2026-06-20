@@ -95,6 +95,9 @@ jobs:
       - name: Build Astro + copy legacy into dist
         run: npm run strangler:build:production-like
 
+      - name: Verify page ownership in production-like dist
+        run: npm run page-ownership:dist:production-like
+
       - name: Build Pagefind index in dist
         run: npm run pagefind:build:dist
 
@@ -111,6 +114,15 @@ jobs:
         run: |
           test -f dist/pagefind/pagefind.js
           touch dist/.nojekyll
+
+      - name: Route-specific visual parity contract
+        run: npm run visual:parity:production
+
+      - name: Production-like dist publication audit
+        run: node scripts/dist-publication-audit.js --require-pagefind --forbid-dev
+
+      - name: Service Worker deploy-switch readiness
+        run: npm run sw:dist:audit:deploy-switch
 
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v3

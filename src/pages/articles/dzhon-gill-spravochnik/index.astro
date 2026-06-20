@@ -1,19 +1,21 @@
 ---
-import { getEntry, render } from 'astro:content';
-import ArticleLayout from '@/layouts/ArticleLayout.astro';
-import { SITE } from '@/data/site';
+import { loadLegacyFullDocument } from '@/utils/legacyFullDocument';
 
-const entry = await getEntry('articles', 'dzhon-gill-spravochnik');
-if (!entry) throw new Error('Article entry not found: articles/dzhon-gill-spravochnik');
-const { Content } = await render(entry);
-const canonical = `${SITE.url}/articles/dzhon-gill-spravochnik/`;
+// Refactoring 5.0 visual-first migration: /articles/dzhon-gill-spravochnik/ must preserve the legacy
+// premium visual world until screenshot parity and owner review approve a
+// componentized Astro replacement.
+const { headHtml, bodyHtml, bodyAttributes } = loadLegacyFullDocument('articles/dzhon-gill-spravochnik/index.html');
 ---
-<ArticleLayout
-  entry={entry}
-  canonical={canonical}
-  robots="index, follow"
-  pilot={false}
-  intendedCanonical={canonical}
->
-  <Content />
-</ArticleLayout>
+<!DOCTYPE html>
+<html lang="ru">
+  <head>
+    <Fragment set:html={headHtml} />
+  </head>
+  <body {...bodyAttributes}>
+    <!-- Pagefind search data: full-document visual shadow keeps legacy markup, so search text is explicit. -->
+    <div class="sr-only" data-pagefind-body>
+      Джон Гилл: справочник. Хронология, труды, источники, издания, ссылки, навигация по серии и проверяемые материалы о жизни и наследии Гилла.
+    </div>
+    <Fragment set:html={bodyHtml} />
+  </body>
+</html>

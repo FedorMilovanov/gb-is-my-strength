@@ -85,10 +85,11 @@ function main() {
   mustContain('ishod pagefind body', astro, 'data-pagefind-body');
   mustContain('ishod sr-only SEO text', astro, 'Исход из Египта');
   
-  // Cinematic map tests
-  mustContain('ishod route data fetch', astro, 'route.json');
-  mustContain('ishod map engine import', astro, 'map-engine.js');
-  mustContain('ishod interactive stage', astro, 'id="stage"');
+  // Refactoring 5.0: unfinished engine maps are intentionally hidden behind
+  // visual-audit holding pages until they pass route-specific screenshots.
+  mustContain('ishod holding page marker', astro, 'Визуальный аудит карт');
+  if (/id="mapRoot"|map-engine\.js|route\.json/.test(astro)) bad('ishod holding page must not expose unfinished live MapEngine UI');
+  else ok('ishod unfinished live MapEngine UI is not exposed');
   
   console.log('');
   if (problems.length) {

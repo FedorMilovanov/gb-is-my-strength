@@ -1,19 +1,21 @@
 ---
-import { getEntry, render } from 'astro:content';
-import ArticleLayout from '@/layouts/ArticleLayout.astro';
-import { SITE } from '@/data/site';
+import { loadLegacyFullDocument } from '@/utils/legacyFullDocument';
 
-const entry = await getEntry('articles', 'dzhon-gill-chast-3-nasledie');
-if (!entry) throw new Error('Article entry not found: articles/dzhon-gill-chast-3-nasledie');
-const { Content } = await render(entry);
-const canonical = `${SITE.url}/articles/dzhon-gill-chast-3-nasledie/`;
+// Refactoring 5.0 visual-first migration: /articles/dzhon-gill-chast-3-nasledie/ must preserve the legacy
+// premium visual world until screenshot parity and owner review approve a
+// componentized Astro replacement.
+const { headHtml, bodyHtml, bodyAttributes } = loadLegacyFullDocument('articles/dzhon-gill-chast-3-nasledie/index.html');
 ---
-<ArticleLayout
-  entry={entry}
-  canonical={canonical}
-  robots="index, follow"
-  pilot={false}
-  intendedCanonical={canonical}
->
-  <Content />
-</ArticleLayout>
+<!DOCTYPE html>
+<html lang="ru">
+  <head>
+    <Fragment set:html={headHtml} />
+  </head>
+  <body {...bodyAttributes}>
+    <!-- Pagefind search data: full-document visual shadow keeps legacy markup, so search text is explicit. -->
+    <div class="sr-only" data-pagefind-body>
+      Джон Гилл часть III: Наследие. Полемика, память, влияние, баптистская традиция, Сперджен, научная оценка и значение трудов Гилла.
+    </div>
+    <Fragment set:html={bodyHtml} />
+  </body>
+</html>

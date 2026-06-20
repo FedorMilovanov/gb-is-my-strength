@@ -15,7 +15,7 @@ const ROOT = path.join(__dirname, '..');
 const DIST = path.join(ROOT, 'dist');
 const NO_BUILD = process.argv.includes('--no-build');
 const ROUTES = [
-  { rel: 'map/index.html', url: 'https://gospod-bog.ru/map/', marker: 'astro-map-shadow', ratio: 0.95 },
+  { rel: 'map/index.html', url: 'https://gospod-bog.ru/map/', marker: 'class="hdr', ratio: 0.95 },
   { rel: 'karty/avraam/index.html', url: 'https://gospod-bog.ru/karty/avraam/', marker: 'astro-avraam-shadow', ratio: 0.95 },
   { rel: 'nagornaya/chast-1/index.html', url: 'https://gospod-bog.ru/nagornaya/chast-1/', marker: 'astro-nagornaya-shadow', ratio: 0.97 },
   { rel: 'nagornaya/chast-2/index.html', url: 'https://gospod-bog.ru/nagornaya/chast-2/', marker: 'astro-nagornaya-shadow', ratio: 0.97 },

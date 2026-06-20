@@ -13,6 +13,10 @@ const { headHtml, bodyHtml, bodyAttributes } = loadLegacyFullDocument('map/index
     <Fragment set:html={headHtml} />
   </head>
   <body {...bodyAttributes}>
+    <!-- Pagefind search data: full-document visual shadow keeps legacy markup, so search text is explicit. -->
+    <div class="sr-only" data-pagefind-body>
+      Карта связей сайта Господь Бог — Сила Моя. Интерактивная карта связей между статьями и сериями: библейские карты, баптисты России, Нагорная проповедь, Джон Гилл, экзегетика и богословие.
+    </div>
     <Fragment set:html={bodyHtml} />
   </body>
 </html>
