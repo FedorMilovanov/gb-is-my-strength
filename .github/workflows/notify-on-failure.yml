@@ -17,6 +17,7 @@ on:
       - "IndexNow — Notify Search Engines"
       - "Source Link Audit"
       - "Runtime Interactive Audit"
+      - "Visual Parity Guard — pixel-diff"
     types:
       - completed
 
