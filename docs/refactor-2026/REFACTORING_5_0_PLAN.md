@@ -1,8 +1,8 @@
-# РЕФАКТОРИНГ 5.0 — Восстановление visual parity через full-document shadow
+# РЕФАКТОРИНГ 5.0 — Восстановление visual parity через full-document shadow + pixel-diff guard
 
 Дата: 2026-06-20  
-Статус: **Phase 1+2+3 выполнены, deploy switch готов**  
-Связано: `AGENTS.md` r245-r246, `migration/page-ownership.json`, `.github/workflows/deploy.yml`
+Статус: **Phase 1+2+3 задеплоены (r245-r246), Phase 4 hardening done (r247), Phase 5 pixel-diff guard инфраструктура done (r248).**  
+Связано: `AGENTS.md` r244-r248, `migration/page-ownership.json`, `.github/workflows/deploy.yml`, `REFACTORING_5_0_PIXEL_DIFF_GUARD_2026-06-20.md`
 
 ---
 
@@ -173,3 +173,34 @@ npm run workflows:check                          # ✅
 ```
 
 Примечание: Playwright deps пришлось установить в sandbox через `npx playwright install chromium` + `npx playwright install-deps chromium`, после чего browser smoke в `strangler:deploy-readiness` прошёл.
+
+---
+
+## 10. Phase 5 — pixel-diff visual parity guard (2026-06-20, r248) ✅ DONE
+
+Phases 1–4 опирались на DOM-marker / structural / contract checks. Они закрыли «generic astro-card» регрессию r244, но **не доказывают** что shadow-wrap действительно byte-identical визуально и не ловят будущие микро-регрессии при правке legacy/CSS/JS, которые сохраняют DOM-маркеры.
+
+Добавлены (zero risk — никаких изменений production HTML/CSS/JS):
+
+- `scripts/visual-parity-screenshots.js` — Playwright + pixelmatch. Поднимает два HTTP-сервера (legacy root + dist), full-page screenshots desktop 1280×900 + mobile 390×844 для каждой указанной route, pixel diff. Защита от lazy-load false-positives (eager + decode + bottom→top scroll), отключение animations/transitions.
+- `scripts/visual-parity-baseline.js` — owner-approved baseline в `data/visual-parity-baseline.json`. Валит CI при росте diff% > baseline + tolerance (default 0.5%).
+- npm scripts: `visual:parity:screenshots(:landings)`, `visual:parity:baseline:{check,update}`, `visual:parity:guard`.
+- devDependencies: `pixelmatch@^5.3.0`, `pngjs@^7.0.0`.
+- Документация и pilot план: `REFACTORING_5_0_PIXEL_DIFF_GUARD_2026-06-20.md`.
+
+**Результат на текущем main:** 11 landing routes × 2 viewports = 21×0.000% + 1×0.004%. Подтверждено: shadow-wrap r245+r247 **действительно** byte-identical legacy↔dist.
+
+**Правило промоушна** (anti-regression contract): любая будущая `shadow-wrap → native Astro` промоция URL ОБЯЗАНА:
+
+1. Пройти `npm run visual:parity:guard` ≤ baseline + tolerance.
+2. Приложить `reports/visual-parity/<route>/diff-*.png` в PR для owner review.
+3. Обновить `data/visual-parity-baseline.json` через `--update` только с commit message формата:
+   ```
+   visual-baseline(<route>): owner-approved diff X% desktop / Y% mobile — <reason>
+   ```
+
+**CI integration TODO:** добавить `visual:parity:guard` в `strangler:deploy-readiness` после стабилизации Playwright в Actions runner. Сейчас доступно как локальная команда + manual workflow_dispatch.
+
+**Pilot план первой shadow→native миграции** (`/about/`) — `REFACTORING_5_0_PIXEL_DIFF_GUARD_2026-06-20.md` §3-5.
+
+Phase 5 завершает Рефакторинг 5.0 как **инфраструктурный** контур. Дальнейшие native pilots — отдельные PR, отдельные owner approvals, отдельные baseline updates.

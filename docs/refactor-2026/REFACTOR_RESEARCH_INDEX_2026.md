@@ -1,15 +1,17 @@
 # REFACTOR_RESEARCH_INDEX_2026.md — индекс исследований по будущему рефакторингу
 
 Дата: 2026-06-12
-Обновлено: 2026-06-18 — refactoring 4.5 / dist-as-production
+Обновлено: 2026-06-20 — РЕФАКТОРИНГ 5.0 Phase 5 (pixel-diff guard) и pilot план
 
 Этот файл разводит два направления, чтобы не смешивать архитектуру сайта и архитектуру карт.
 
 ## 1. Общий движок сайта / Astro / SEO / контент
 
-Текущий post-switch документ:
+Текущие актуальные документы (читать в порядке):
 
-- `docs/refactor-2026/REFACTORING_4_5_PRODUCTION_CUTOVER_AUDIT_2026-06-18.md` — фактическое состояние после root→dist switch, найденные gaps, go/no-go.
+1. `docs/refactor-2026/REFACTORING_5_0_PLAN.md` — единый план Рефакторинга 5.0 (Phase 1-3 deployed, Phase 4 hardening done, Phase 5 pixel-diff guard infrastructure done).
+2. `docs/refactor-2026/REFACTORING_5_0_PIXEL_DIFF_GUARD_2026-06-20.md` — pixel-diff guard инфраструктура + pilot план первой shadow→native миграции (`/about/`) + anti-regression contract + CI integration TODO.
+3. `docs/refactor-2026/REFACTORING_4_5_PRODUCTION_CUTOVER_AUDIT_2026-06-18.md` — фактическое состояние после root→dist switch, найденные gaps, go/no-go (исторический контекст для понимания, почему пришлось делать r244 rollback и Рефакторинг 5.0).
 
 Исторический research baseline:
 
