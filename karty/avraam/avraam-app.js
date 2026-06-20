@@ -784,8 +784,10 @@ function applyStory(storyId){
     const [cx,cy,w] = st.cam;
     flyTo(cx,cy,w,900);
   }
-  // После flyTo открыть первое место сюжета (через 1.2с)
-  if(!storyPlacesAll && storyPlaceIds.length && st.id!=='main'){
+  // НЕ auto-open первой точки при выборе истории.
+  // Пользователь жаловался: «карта превратилась не в карту, а в маршруты».
+  // Теперь пользователь сам кликает маркеры, чтобы открыть детали.
+  if(false && !storyPlacesAll && storyPlaceIds.length && st.id!=='main'){
     clearTimeout(applyStory._openTimer);
     applyStory._openTimer=setTimeout(()=>{
       const firstId=storyPlaceIds.find(id=>placeIndex[id]!==undefined);
@@ -1674,10 +1676,11 @@ function runStep(){
     requestAnimationFrame(()=>requestAnimationFrame(()=>chips[tourStep].classList.add('elastic')));
     setTimeout(()=>chips[tourStep]&&chips[tourStep].classList.remove('elastic'),600);
   }
-  // Задержка 1050ms даём flyTo начаться, потом анимируем маршрут
+  // Задержка 4500ms даём flyTo начаться + время прочитать этап
+  // (пользователь жаловался: «слишком быстро перемещается по маршруту»)
   setTimeout(()=>{
     if(touring)animateStage(tourStep,()=>{tourStep++;runStep();});
-  },1050);
+  },4500);
 }
 function stopTour(){
   if(!touring&&playBtn.textContent==='▶')return;
