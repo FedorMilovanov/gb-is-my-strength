@@ -14,7 +14,7 @@ const { headHtml, bodyHtml, bodyAttributes } = loadLegacyFullDocument('baptisty-
   </head>
   <body {...bodyAttributes}>
     <!-- Pagefind search data: full-document visual shadow keeps legacy markup, so search text is explicit. -->
-    <div class="sr-only" data-pagefind-body>
+    <div class="sr-only" data-pagefind-body style="position:absolute;left:-9999px;top:auto;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);clip-path:inset(50%);white-space:nowrap">
       Баптисты России. Живая исследовательская серия из 10 частей: Воронин, ночь на Куре, южная штунда, два съезда 1884 года, Петербургская линия, гонения, советская ночь, ВСЕХБ, Инициативная группа, подпольная печать, справочник источников.
     </div>
     <Fragment set:html={bodyHtml} />

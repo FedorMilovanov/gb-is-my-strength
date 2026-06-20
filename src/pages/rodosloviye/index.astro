@@ -49,7 +49,7 @@ const jsonLd = {
   hideFooter={true}
 >
   <h1 class="sr-only">Родословие от Адама до Христа — интерактивное генеалогическое древо</h1>
-  <div class="sr-only" data-pagefind-body>
+  <div class="sr-only" data-pagefind-body style="position:absolute;left:-9999px;top:auto;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);clip-path:inset(50%);white-space:nowrap">
     Родословие от Адама до Христа. Интерактивное генеалогическое древо по библейским родословиям: Адам, Ной, Авраам, Иуда, Давид, плен, возвращение и мессианская линия к Иисусу Христу. Включает хронологию, возрасты патриархов, линии завета и справочный режим для изучения Писания.
   </div>
       <GenealogyTree client:load persons={genealogyData.persons} eras={genealogyData.eras} />
