@@ -1,14 +1,30 @@
 ---
-import { loadLegacyFullDocument } from '@/utils/legacyFullDocument';
+import { getEntry, render } from 'astro:content';
+import SeriesArticleLayout from '@/layouts/SeriesArticleLayout.astro';
+import { SITE } from '@/data/site';
 
-const { headHtml, bodyHtml, bodyAttributes } = loadLegacyFullDocument('baptisty-rossii/goneniya-i-sovest/index.html');
+const entry = await getEntry('articles', 'goneniya-i-sovest');
+if (!entry) throw new Error('Article entry not found: articles/goneniya-i-sovest');
+const { Content } = await render(entry);
+const canonical = `${SITE.url}/baptisty-rossii/goneniya-i-sovest/`;
 ---
-<!DOCTYPE html>
-<html lang="ru">
-  <head>
-    <Fragment set:html={headHtml} />
-  </head>
-  <body {...bodyAttributes}>
-    <Fragment set:html={bodyHtml} />
-  </body>
-</html>
+
+<SeriesArticleLayout
+  entry={entry}
+  canonical={canonical}
+  seriesSlug="russian-baptism"
+  seriesTitle="Баптисты России"
+  seriesSubtitle="живая исследовательская серия"
+  seriesKicker="Серия · История ЕХБ"
+  seriesEraRange="1867 → 1991"
+  seriesEras={[
+    { era: "1867", label: "Тифлис" },
+    { era: "1884", label: "Съезды" },
+    { era: "1929", label: "Закон" },
+    { era: "1944", label: "ВСЕХиБ" },
+    { era: "1961", label: "СЦ ЕХБ" },
+  ]}
+  series3dLink="/konfessii/russkij-baptizm/"
+>
+  <Content />
+</SeriesArticleLayout>
