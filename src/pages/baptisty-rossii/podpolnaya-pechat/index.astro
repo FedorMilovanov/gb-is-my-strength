@@ -1,30 +1,21 @@
 ---
-import { getEntry, render } from 'astro:content';
-import SeriesArticleLayout from '@/layouts/SeriesArticleLayout.astro';
-import { SITE } from '@/data/site';
+import { loadLegacyFullDocument } from '@/utils/legacyFullDocument';
 
-const entry = await getEntry('articles', 'podpolnaya-pechat');
-if (!entry) throw new Error('Article entry not found: articles/podpolnaya-pechat');
-const { Content } = await render(entry);
-const canonical = `${SITE.url}/baptisty-rossii/podpolnaya-pechat/`;
+// Shadow-wrap: preserve legacy premium visual design until native Astro
+// proves visual parity (see REFACTORING_6_0_REALITY_PLAN.md Phase 1).
+// Previously used BaseLayout/ArticleLayout which produced different HTML
+// structure (astro-shell, astro-header, astro-article) — content regression.
+const { headHtml, bodyHtml, bodyAttributes } = loadLegacyFullDocument('baptisty-rossii/podpolnaya-pechat/index.html');
 ---
-
-<SeriesArticleLayout
-  entry={entry}
-  canonical={canonical}
-  seriesSlug="russian-baptism"
-  seriesTitle="Баптисты России"
-  seriesSubtitle="живая исследовательская серия"
-  seriesKicker="Серия · История ЕХБ"
-  seriesEraRange="1867 → 1991"
-  seriesEras={[
-    { era: "1867", label: "Тифлис" },
-    { era: "1884", label: "Съезды" },
-    { era: "1929", label: "Закон" },
-    { era: "1944", label: "ВСЕХиБ" },
-    { era: "1961", label: "СЦ ЕХБ" },
-  ]}
-  series3dLink="/konfessii/russkij-baptizm/"
->
-  <Content />
-</SeriesArticleLayout>
+<!DOCTYPE html>
+<html lang="ru">
+  <head>
+    <Fragment set:html={headHtml} />
+  </head>
+  <body {...bodyAttributes}>
+    <div class="sr-only" data-pagefind-body style="position:absolute;left:-9999px;top:auto;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);clip-path:inset(50%);white-space:nowrap">
+      Страница проекта Господь Бог — Сила Моя. Раздел: baptisty-rossii.
+    </div>
+    <Fragment set:html={bodyHtml} />
+  </body>
+</html>
