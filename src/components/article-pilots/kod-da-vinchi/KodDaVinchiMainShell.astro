@@ -1,0 +1,17 @@
+---
+/**
+ * KodDaVinchiMainShell — Phase 1 shadow-breakout pilot.
+ *
+ * Intentionally boring: renders verbatim legacy <main> markup.
+ * This proves that extract-native-pilot output is wired correctly,
+ * the route survives as componentized shadow, and parity can be
+ * verified before MDX activation (Phase 2+).
+ *
+ * Phase 2 will split this into:
+ *   KodDaVinchiArticleHeaderHero.astro
+ *   KodDaVinchiArticleBody.astro
+ *   KodDaVinchiPostArticle.astro
+ */
+import legacyMain from './_legacy/main.html?raw';
+---
+<Fragment set:html={legacyMain} />
