@@ -4,6 +4,10 @@
 
 ### REGRESSION FOUND: MDX improvements NOT reflected in production HTML
 
+**NOTE:** MDX/HTML word counts below use v1 methodology (article body text extraction).
+Verified v2 counts (strip HTML + strip frontmatter + strip markdown formatting, 8% tolerance)
+are in the UPDATE section at the end. Numbers differ by methodology, not by data error.
+
 The Refactoring 5.0 full-document shadow-wrap (commits e116bec6, 87fcc7b2) 
 reverted ALL Astro article pages to emit legacy HTML verbatim via 
 `loadLegacyFullDocument`. However, the MDX files (`src/content/articles/*.mdx`)
