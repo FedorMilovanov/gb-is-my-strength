@@ -37,6 +37,7 @@ const ALLOWED_CSS = new Set([
   'css/home.css',
   'css/command-palette.css',
   'css/mobile-hotfix.css',
+  'css/site-layered.css',
   'css/nagornaya-mobile-toc.css'
 ]);
 
@@ -65,6 +66,7 @@ const CACHE_BUST_ASSETS = [
   'css/home.css',
   'css/command-palette.css',
   'css/mobile-hotfix.css',
+  'css/site-layered.css',
   'css/nagornaya-mobile-toc.css',
   'fonts/fonts.css',
   'nagornaya/tw.min.css',
@@ -290,7 +292,8 @@ const SITE_CSS_MIN_BYTES = 200_000;
 // nesting, which buries rules at huge depth and forces !important everywhere. Must be 0.
 (function braceBalance() {
   for (const f of ['css/site.css', 'css/home.css', 'css/command-palette.css',
-                   'css/mobile-hotfix.css', 'css/nagornaya-mobile-toc.css', 'fonts/fonts.css']) {
+                   'css/mobile-hotfix.css',
+  'css/site-layered.css', 'css/nagornaya-mobile-toc.css', 'fonts/fonts.css']) {
     const p = path.join(ROOT, f);
     if (!fs.existsSync(p)) continue;
     const s = fs.readFileSync(p, 'utf8');
@@ -1366,7 +1369,8 @@ const SITE_CSS_MIN_BYTES = 200_000;
 //   An empty/malformed @keyframes silently breaks subsequent animations.
 (function keyframesIntegrityGuard() {
   const cssFiles = ['css/site.css', 'css/home.css', 'css/command-palette.css',
-                    'css/mobile-hotfix.css', 'css/nagornaya-mobile-toc.css'];
+                    'css/mobile-hotfix.css',
+  'css/site-layered.css', 'css/nagornaya-mobile-toc.css'];
   const offenders = [];
   for (const f of cssFiles) {
     const p = path.join(ROOT, f);
@@ -1649,7 +1653,8 @@ const SITE_CSS_MIN_BYTES = 200_000;
 //   from JS) need to be on the EXTERNAL whitelist OR have a fallback.
 (function cssVariableHygieneGuard() {
   const cssFiles = ['css/site.css', 'css/home.css', 'css/command-palette.css',
-                    'css/mobile-hotfix.css', 'css/nagornaya-mobile-toc.css', 'fonts/fonts.css',
+                    'css/mobile-hotfix.css',
+  'css/site-layered.css', 'css/nagornaya-mobile-toc.css', 'fonts/fonts.css',
                     'nagornaya/tw.min.css'];
   const defined = new Set();
   // Externals = vars set dynamically (JS / inline style at runtime) or by browser
@@ -2105,7 +2110,8 @@ const JS_SIZE_FLOORS = {
 //   them as INFO so periodically someone can prune, but don't block deploy.
 (function cssDeadVarsInfo() {
   const cssFiles = ['css/site.css', 'css/home.css', 'css/command-palette.css',
-                    'css/mobile-hotfix.css', 'css/nagornaya-mobile-toc.css'];
+                    'css/mobile-hotfix.css',
+  'css/site-layered.css', 'css/nagornaya-mobile-toc.css'];
   let css = '';
   for (const f of cssFiles) {
     const p = path.join(ROOT, f);
@@ -2277,7 +2283,8 @@ const JS_SIZE_FLOORS = {
 //   AGENTS-r48b had a vendor prefix cleanup. We protect from re-introduction.
 (function deprecatedVendorPrefixGuard() {
   const cssFiles = ['css/site.css', 'css/home.css', 'css/command-palette.css',
-                    'css/mobile-hotfix.css', 'css/nagornaya-mobile-toc.css', 'fonts/fonts.css'];
+                    'css/mobile-hotfix.css',
+  'css/site-layered.css', 'css/nagornaya-mobile-toc.css', 'fonts/fonts.css'];
   const BAD = [
     /-webkit-border-radius\s*:/g,
     /-moz-border-radius\s*:/g,
@@ -2594,7 +2601,8 @@ const JS_SIZE_FLOORS = {
 //   and create a render-blocking serial waterfall.
 (function noCssImportGuard() {
   const cssFiles = ['css/site.css', 'css/home.css', 'css/command-palette.css',
-                    'css/mobile-hotfix.css', 'css/nagornaya-mobile-toc.css'];
+                    'css/mobile-hotfix.css',
+  'css/site-layered.css', 'css/nagornaya-mobile-toc.css'];
   const offenders = [];
   for (const f of cssFiles) {
     const p = path.join(ROOT, f);
@@ -2717,7 +2725,8 @@ const JS_SIZE_FLOORS = {
 //   these always indicate a sloppy quick-fix.
 (function namedColorAntiPatternGuard() {
   const cssFiles = ['css/site.css', 'css/home.css', 'css/command-palette.css',
-                    'css/mobile-hotfix.css', 'css/nagornaya-mobile-toc.css'];
+                    'css/mobile-hotfix.css',
+  'css/site-layered.css', 'css/nagornaya-mobile-toc.css'];
   const NAMED = ['red','blue','green','yellow','purple','pink','cyan','magenta','orange','brown','gray','grey'];
   const offenders = [];
   for (const f of cssFiles) {
@@ -2767,7 +2776,8 @@ const JS_SIZE_FLOORS = {
 //   Tolerate trivial 0/1/2 layering on small components; flag bigger numbers.
 (function zIndexTokenGuard() {
   const cssFiles = ['css/site.css', 'css/home.css', 'css/command-palette.css',
-                    'css/mobile-hotfix.css', 'css/nagornaya-mobile-toc.css'];
+                    'css/mobile-hotfix.css',
+  'css/site-layered.css', 'css/nagornaya-mobile-toc.css'];
   const offenders = [];
   for (const f of cssFiles) {
     const p = path.join(ROOT, f);
@@ -3144,7 +3154,8 @@ const JS_SIZE_FLOORS = {
 //   risk is high (motion-sensitive users see all motion).
 (function reducedMotionCoverageGuard() {
   const cssFiles = ['css/site.css', 'css/home.css', 'css/command-palette.css',
-                    'css/mobile-hotfix.css', 'css/nagornaya-mobile-toc.css'];
+                    'css/mobile-hotfix.css',
+  'css/site-layered.css', 'css/nagornaya-mobile-toc.css'];
   const offenders = [];
   for (const f of cssFiles) {
     const p = path.join(ROOT, f);
@@ -3232,7 +3243,8 @@ const JS_SIZE_FLOORS = {
 (function colorMixFallbackInfo() {
   let total = 0;
   for (const f of ['css/site.css', 'css/home.css', 'css/command-palette.css',
-                   'css/mobile-hotfix.css', 'css/nagornaya-mobile-toc.css']) {
+                   'css/mobile-hotfix.css',
+  'css/site-layered.css', 'css/nagornaya-mobile-toc.css']) {
     const p = path.join(ROOT, f);
     if (!fs.existsSync(p)) continue;
     const css = fs.readFileSync(p, 'utf8');
@@ -3327,7 +3339,8 @@ const JS_SIZE_FLOORS = {
 //   in any HTML / JS. We sample only top-level non-pseudo selectors.
 (function unusedCssClassesInfo() {
   const cssFiles = ['css/site.css', 'css/home.css', 'css/command-palette.css',
-                    'css/mobile-hotfix.css', 'css/nagornaya-mobile-toc.css'];
+                    'css/mobile-hotfix.css',
+  'css/site-layered.css', 'css/nagornaya-mobile-toc.css'];
   let allCss = '';
   for (const f of cssFiles) {
     const p = path.join(ROOT, f);

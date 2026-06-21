@@ -1,21 +1,23 @@
 ---
 /**
- * /articles/kod-da-vinchi/ — РЕФАКТОРИНГ 6.0 Phase 1 pilot.
+ * /articles/kod-da-vinchi/ — РЕФАКТОРИНГ 6.0 Phase 1+2 pilot.
  *
- * Shadow-breakout: route leaves pure bodyHtml transport.
- * Head + body attrs preserved via loadLegacyFullDocument.
- * Before-main and after-main chrome preserved as raw fragments.
- * <main> boundary extracted into KodDaVinchiMainShell component.
- *
- * This is the FIRST production route to use componentized shadow.
- * Visual parity must be verified before merge.
+ * Shadow-breakout + CSS @layer pilot.
+ * Uses site-layered.css instead of site.css to test @layer architecture.
+ * Head is loaded from legacy, but CSS link is swapped to layered version.
  */
 import { loadLegacyFullDocument } from '@/utils/legacyFullDocument';
 import KodDaVinchiMainShell from '@/components/article-pilots/kod-da-vinchi/KodDaVinchiMainShell.astro';
 import segBefore from '@/components/article-pilots/kod-da-vinchi/_legacy/body-segment-0.html?raw';
 import segAfter from '@/components/article-pilots/kod-da-vinchi/_legacy/body-segment-1.html?raw';
 
-const { headHtml, bodyAttributes } = loadLegacyFullDocument('articles/kod-da-vinchi/index.html');
+let { headHtml, bodyAttributes } = loadLegacyFullDocument('articles/kod-da-vinchi/index.html');
+
+// Phase 2 CSS pilot: replace site.css → site-layered.css on this route only
+headHtml = headHtml.replace(
+  /css\/site\.css\?v=[\w]+/,
+  'css/site-layered.css?v=layered-pilot'
+);
 ---
 <!DOCTYPE html>
 <html lang="ru">
