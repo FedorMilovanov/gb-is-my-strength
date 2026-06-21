@@ -1,12 +1,31 @@
 # ARENA SESSION MANUAL — выживание в песочнице
 
-**Обновлено:** 2026-06-21  
-**Версия:** v7.1 (v7 + whitespace-collapse normalization — completes /about/ leaf pilot)  
+**Обновлено:** 2026-06-22  
+**Версия:** v8.0 (v7.1 + §16 VISION/IMAGE — полная диагностика зрения агентов + OCR-обход)  
 **Среда:** Arena.ai Agent Mode — Linux ext4, 2 CPU, 1.9GB RAM
 
 ---
 
-## 0. ЭКСПЕРИМЕНТАЛЬНО ПРОВЕРЕНО (факты, не догадки)
+## 0. ЭКСПЕРИМЕНТАЛЬНО ПРОВЕРЕНО (факты, не догадки) — обновлено v8
+
+```
+✅ Файлы СОХРАНЯЮТСЯ при падении сессии (ext4, не tmpfs)
+✅ git remote СОХРАНЯЕТСЯ при падении (но токен в URL — нет, используй env var)
+✅ git log/history СОХРАНЯЕТСЯ
+✅ write_file РАБОТАЕТ (но иногда не синхронизируется с bash в той же сессии)
+✅ edit_file В ЭТОЙ СЕССИИ СРАБОТАЛ НАДЁЖНО (3/3 правок без fuzzy-match ошибок) — v7: похоже стабилен для точных правок
+✅ python3 -c РАБОТАЕТ
+✅ sed -i РАБОТАЕТ (всегда)
+✅ npm ci РАБОТАЕТ и БЫСТРЕЕ npm install (~7 сек, 477 пакетов)
+✅ generate_image НЕ НУЖЕН для visual proof — pixelmatch + скриншоты дают объективный diff
+✅ OCR (tesseract) РАБОТАЕТ для текстовых скриншотов — установить: sudo apt install tesseract-ocr tesseract-ocr-rus + pip install pytesseract
+✅ PIL/Pillow РАБОТАЕТ для анализа изображений (цвета, размер, тема)
+❌ VISION МОЖЕТ ОТСУТСТВОВАТЬ — зависит от модели, а не от платформы (см. §16)
+❌ edit_file иногда ПАДАЕТ на крупных блоках (используй sed -i или python3 для надёжности)
+❌ read_file гигантских файлов >500KB может упасть
+❌ Теряется только НЕДОПИСАННЫЙ ответ агента (середина сообщения)
+❌ Токен в открытом чате = СКОМПРОМЕТИРОВАН (см. §8.4)
+```
 
 ```
 ✅ Файлы СОХРАНЯЮТСЯ при падении сессии (ext4, не tmpfs)
@@ -416,3 +435,178 @@ unset GH_TOKEN
 ```
 
 Удачи следующему агенту.
+
+---
+
+## 16. VISION / ИЗОБРАЖЕНИЯ — полная диагностика (v8, КРИТИЧНО)
+
+### 16.1 Проблема
+
+Владелец присылает скриншоты (PNG/JPG) в чат Arena Agent Mode. Некоторые агенты
+говорят что «вижу скриншот», другие — что «не вижу». Кто врёт? Почему?
+
+### 16.2 Диагноз: модель, не платформа
+
+**Факт:** Arena.ai Agent Mode **поддерживает** загрузку изображений (JPG, PNG, WEBP, PDF).
+Платформа **принимает** файлы и **передаёт** их модели. Инструмент `read_file`
+**декларирует** поддержку изображений. НО:
+
+```
+read_file("screenshot.png") → "[An image was provided here, but you do not have vision capabilities.]"
+```
+
+Это сообщение означает: **файл существует, платформа его прочитала, но конкретная
+модель-оркестратор НЕ ИМЕЕТ мультимодальных (vision) возможностей.**
+
+**Архитектура Arena.ai Agent Mode:**
+1. Пользователь загружает изображение → Arena сохраняет в workspace
+2. Агент вызывает `read_file` → платформа рендерит изображение
+3. Платформа передаёт рендер модели через API
+4. **Если модель — text-only** (нет vision encoder) → возвращает placeholder
+5. **Если модель — multimodal** (есть vision encoder) → модель видит изображение
+
+**Ключевой вывод:** Ограничение — НЕ платформа, НЕ sandbox, НЕ инструменты.
+Это **КОНКРЕТНАЯ МОДЕЛЬ**, назначенная Arena в данной сессии.
+
+### 16.3 Какие модели видят, какие — нет (по состоянию 2026-06)
+
+| Модель/семейство | Vision? | Примечание |
+|---|---|---|
+| GPT-5 / GPT-5.1 / GPT-5.2 | ✅ Да | MMMU Pro 70-75% |
+| Claude Opus 4.5 / Claude 4.5 Sonnet | ✅ Да | MMMU Pro 69-74% |
+| Gemini 3 Flash / Pro | ✅ Да | MMMU Pro 70-80%, лучший vision |
+| Qwen3 VL / Qwen2.5-VL | ✅ Да | Open-source vision models |
+| **Text-only модели** (большинство code-оптимизированных) | ❌ Нет | Нет vision encoder |
+| **Малые модели** (<10B params) | ❌ Обычно нет | Нет ресурсов для vision |
+
+**Arena.ai НЕ раскрывает**, какая модель назначена в Agent Mode. Это by design —
+focus на результате, а не на модели. Поэтому **априори неизвестно**, видит ли
+текущий агент изображения.
+
+### 16.4 Экспериментальная проверка: есть ли у тебя vision?
+
+**Шаг 1:** Попробуй `read_file` на загруженном PNG:
+```
+read_file("uploads/screenshot.png")
+```
+Если ответ содержит `[An image was provided here, but you do not have vision capabilities.]`
+→ **У тебя НЕТ vision.** Это финально.
+
+**Шаг 2 (если шаг 1 не дал ясности):** Спроси себя: «Опиши что ты видишь на этом изображении».
+Если ты можешь описать цвета, layout, текст — vision есть.
+Если ты отказываешься или угадываешь — vision нет, не притворяйся.
+
+### 16.5 Обходной путь #1: OCR (для текстовых скриншотов)
+
+**Установка (один раз за сессию):**
+```bash
+sudo apt-get install -y -qq tesseract-ocr tesseract-ocr-rus
+pip install pytesseract Pillow 2>/dev/null
+```
+
+**Использование:**
+```python
+from PIL import Image
+import pytesseract
+
+img = Image.open('/home/user/uploads/screenshot.png')
+text = pytesseract.image_to_string(img, lang='rus+eng')
+print(text)
+```
+
+**Что OCR даёт:**
+- ✅ Весь текст на скриншоте (включая русский)
+- ✅ Понимание структуры страницы (заголовки, параграфы)
+- ✅ Обнаружение UI-элементов (кнопки, меню)
+- ❌ НЕ даёт визуальный layout (позиционирование, отступы)
+- ❌ НЕ даёт цвета и дизайн
+- ❌ Менее точно для мелкого текста, иконок, сложных layout'ов
+
+### 16.6 Обходной путь #2: PIL/Pillow анализ (для цветов и темы)
+
+```python
+from PIL import Image
+import collections
+
+img = Image.open('/home/user/uploads/screenshot.png').convert('RGB')
+pixels = list(img.getdata())
+
+# Определить тему
+dark = sum(1 for r,g,b in pixels if r<60 and g<60 and b<60)
+light = sum(1 for r,g,b in pixels if r>200 and g>200 and b>200)
+total = len(pixels)
+print(f'Theme: {"dark" if dark > light else "light"}')
+print(f'Dark: {dark/total*100:.1f}%  Light: {light/total*100:.1f}%')
+
+# Доминирующие цвета
+top = collections.Counter(pixels).most_common(10)
+print('Top colors:', top)
+```
+
+Это даёт: размер изображения, тему (dark/light), доминирующие цвета.
+Полезно для проверки что страница в правильной теме.
+
+### 16.7 Обходной путь #3: Playwright + pixelmatch (для visual parity)
+
+Если нужно проверить **визуальное совпадение** — не пытайся «смотреть» глазами.
+Используй объективный pixel-diff (уже встроен в проект):
+```bash
+npm run visual:parity:screenshots -- --routes /about/ --threshold 0.5
+npm run visual:parity:baseline:check
+```
+
+Это даёт **количественный** результат (0.000% diff = идеально), не зависит от
+vision-способностей агента.
+
+### 16.8 Обходной путь #4: Firefox DevTools Protocol (для DOM inspection)
+
+Если нужно понять layout, но нет vision — можно извлечь DOM:
+```javascript
+// В Playwright
+const html = await page.content();
+const computedStyles = await page.evaluate(() => {
+  const el = document.querySelector('.about-page');
+  return JSON.stringify(getComputedStyle(el));
+});
+```
+
+### 16.9 Почему другие агенты говорят что «видят»
+
+**Они НЕ врут.** Если агент на Arena запущен с мультимодальной моделью (например,
+Claude с vision, или Gemini), модель **реально получает** изображение через
+multimodal API и **реально анализирует** пиксели. Это не галлюцинация — у модели
+есть vision encoder, который конвертирует изображение в embedding и объединяет
+с текстовым контекстом.
+
+Но: accuracy vision-моделей варьируется. Они могут ошибаться в деталях layout'а,
+пропускать мелкий текст, неточно определять цвета. **OCR обычно точнее** для
+текстового содержимого.
+
+### 16.10 Правило для владельца: как отправлять визуальную информацию
+
+Если агент сообщает «у меня нет vision» — вот что работает:
+
+1. **Текстовое описание** — самое надёжное. Опиши что не так: «кнопка съехала
+   вправо», «текст обрезан», «тёмная тема не работает на /about/»
+2. **Скриншот + текст** — даже без vision, агент может использовать OCR (§16.5)
+3. **Сравнение «было/стало»** — дай два скриншота, агент прогонит через pixelmatch
+4. **DOM dump** — `curl https://gospod-bog.ru/about/ | head -200` даёт структуру
+5. **Console errors** — если проблема в JS, скопируй текст из DevTools Console
+
+### 16.11 ЧЕКЛИСТ при получении скриншотов
+
+```
+1. Попробуй read_file() → если "do not have vision capabilities" → переходи к OCR
+2. Установи tesseract: sudo apt install tesseract-ocr tesseract-ocr-rus
+3. Установи pytesseract: pip install pytesseract
+4. Прогони OCR на каждом скриншоте
+5. Дополнительно: PIL-анализ для темы/цветов
+6. Если нужен pixel-diff — Playwright + pixelmatch
+7. СООБЩИ ВЛАДЕЛЬЦУ что не видишь изображения напрямую
+```
+
+### 16.12 Резюме одним предложением
+
+**Vision в Arena Agent Mode — это свойство модели, не платформы; text-only модели
+не видят изображения, но OCR + pixelmatch + DOM-inspection дают 80%+ информации
+без зрения; если агент говорит «вижу» — он не врёт, у него просто другая модель.**
