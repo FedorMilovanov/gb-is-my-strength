@@ -54,7 +54,7 @@
 | site.css | 265KB | **202** | 0 (исправлено) |
 | home.css | 51KB | 20 | 0 |
 | command-palette.css | 38KB | 7 | 0 |
-| mobile-hotfix.css | ~5KB | 74 | 0 |
+| mobile-hotfix.css | ~5KB | 85 | 0 |
 | nagornaya-mobile-toc.css | ~3KB | 122 | 0 |
 
 #### JS (11 файлов)
@@ -223,8 +223,8 @@
 
 | # | Долг | Где | Решение |
 |---|------|-----|---------|
-| H1 | **CSS 122 !important в nagornaya-mobile-toc.css** | Нагорная Tailwind override | @layer nagornaya |
-| H2 | **74 !important в mobile-hotfix.css** | touch overrides | @layer overrides |
+| H1 | **CSS 133 !important в nagornaya-mobile-toc.css** | Нагорная Tailwind override | @layer nagornaya |
+| H2 | **85 !important в mobile-hotfix.css** | touch overrides | @layer overrides |
 | H3 | **5 Gill страниц в full shadow** | articles/dzhon-gill-* | Фаза 4 (GSB2 native) |
 | H4 | **Nagornaya Tailwind отдельная сборка** | nagornaya/tw.min.css | Интеграция в Astro build |
 | H5 | **Inline style 12KB в 20-antisovetov** | единственный inline island | Вынести в CSS |
@@ -307,7 +307,7 @@
 | 2.4 | Wrap map styles in `@layer components` | ~15 | MapEngine inline CSS → сюда |
 | 2.5 | Wrap home page styles in `@layer components` | ~10 | `.h-*` selectors |
 | 2.6 | Wrap summary-card, note-box styles in `@layer components` | ~20 | Editorial blocks |
-| 2.7 | Move `!important` mobile hotfixes to `@layer overrides` | 74 | mobile-hotfix.css → @layer |
+| 2.7 | Move `!important` mobile hotfixes to `@layer overrides` | 85 | mobile-hotfix.css → @layer |
 | 2.8 | Move Nagornaya TOC overrides to `@layer nagornaya` | 122 | nagornaya-mobile-toc.css → @layer |
 | 2.9 | Audit remaining !important (expected ~50-70) | ~50 | Per-rule specificity check |
 | 2.10 | Brace balance check | 0 | `python3 -c "..." ` |
