@@ -1,30 +1,14 @@
 ---
-import BaseLayout from '@/layouts/BaseLayout.astro';
-import { loadLegacyShadowPage } from '@/utils/legacyShadow';
+import { loadLegacyFullDocument } from '@/utils/legacyFullDocument';
 
-const legacy = loadLegacyShadowPage('karty/pavel/index.html');
+const { headHtml, bodyHtml, bodyAttributes } = loadLegacyFullDocument('karty/pavel/index.html');
 ---
-
-<BaseLayout
-  title={legacy.title}
-  description={legacy.description}
-  canonical={legacy.canonical}
-  robots="index, follow, max-snippet:-1, max-image-preview:large"
-  ogImage={legacy.ogImage}
-  ogImageAlt={legacy.ogImageAlt}
-  ogTitle={legacy.ogTitle}
-  ogDescription={legacy.ogDescription}
-  bodyClass={legacy.bodyClass}
-  mainClass="astro-main astro-main--bare"
-  hideHeader={true}
-  hideFooter={true}
-  headHtml={legacy.headHtml}
->
-  <div class="astro-pavel-shadow">
-    <div class="sr-only" data-pagefind-body style="position:absolute;left:-9999px;top:auto;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);clip-path:inset(50%);white-space:nowrap">
-      Миссионерские путешествия апостола Павла. Интерактивная карта: 10 ключевых городов, 3 путешествия (45–60 гг. н.э.).
-      Антиохия, Кипр, Галатия, Македония, Афины, Коринф, Эфес, Иерусалим, Кесария, Рим.
-    </div>
-    <Fragment set:html={legacy.bodyHtml} />
-  </div>
-</BaseLayout>
+<!DOCTYPE html>
+<html lang="ru">
+  <head>
+    <Fragment set:html={headHtml} />
+  </head>
+  <body {...bodyAttributes}>
+    <Fragment set:html={bodyHtml} />
+  </body>
+</html>

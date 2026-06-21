@@ -1,56 +1,14 @@
 ---
-import BaseLayout from '@/layouts/BaseLayout.astro';
-import GenealogyTree from '@/components/genealogy/GenealogyTree.tsx';
-import { readFileSync } from 'node:fs';
-import { resolve } from 'node:path';
+import { loadLegacyFullDocument } from '@/utils/legacyFullDocument';
 
-const genealogyData = JSON.parse(readFileSync(resolve(process.cwd(), 'data/genealogy/genealogy.json'), 'utf8'));
-
-const canonical = 'https://gospod-bog.ru/rodosloviye/';
-const title = 'Родословие от Адама до Христа | Господь Бог — Сила Моя';
-const description = 'Интерактивное генеалогическое древо от Адама до Христа: все библейские родословия, хронология, возрасты патриархов, мессианская линия от Бытия до Евангелия.';
-
-const jsonLd = {
-  '@context': 'https://schema.org',
-  '@graph': [
-    {
-      '@type': 'WebPage',
-      '@id': canonical + '#webpage',
-      url: canonical,
-      name: 'Родословие от Адама до Христа',
-      description,
-      inLanguage: 'ru',
-      isPartOf: { '@id': 'https://gospod-bog.ru/#website' },
-      breadcrumb: { '@id': canonical + '#breadcrumb' },
-    },
-    {
-      '@type': 'BreadcrumbList',
-      '@id': canonical + '#breadcrumb',
-      itemListElement: [
-        { '@type': 'ListItem', position: 1, name: 'Главная', item: 'https://gospod-bog.ru/' },
-        { '@type': 'ListItem', position: 2, name: 'Родословие', item: canonical },
-      ],
-    },
-  ],
-};
+const { headHtml, bodyHtml, bodyAttributes } = loadLegacyFullDocument('rodosloviye/index.html');
 ---
-
-<BaseLayout
-  title={title}
-  description={description}
-  canonical={canonical}
-  robots="index, follow, max-snippet:-1, max-image-preview:large"
-  ogImage="https://gospod-bog.ru/images/og-karty-1200x630.webp"
-  ogTitle="Родословие от Адама до Христа"
-  ogDescription={description}
-  jsonLd={jsonLd}
-  mainClass="astro-main astro-main--bare"
-  hideHeader={true}
-  hideFooter={true}
->
-  <h1 class="sr-only">Родословие от Адама до Христа — интерактивное генеалогическое древо</h1>
-  <div class="sr-only" data-pagefind-body style="position:absolute;left:-9999px;top:auto;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);clip-path:inset(50%);white-space:nowrap">
-    Родословие от Адама до Христа. Интерактивное генеалогическое древо по библейским родословиям: Адам, Ной, Авраам, Иуда, Давид, плен, возвращение и мессианская линия к Иисусу Христу. Включает хронологию, возрасты патриархов, линии завета и справочный режим для изучения Писания.
-  </div>
-      <GenealogyTree client:load persons={genealogyData.persons} eras={genealogyData.eras} />
-</BaseLayout>
+<!DOCTYPE html>
+<html lang="ru">
+  <head>
+    <Fragment set:html={headHtml} />
+  </head>
+  <body {...bodyAttributes}>
+    <Fragment set:html={bodyHtml} />
+  </body>
+</html>
