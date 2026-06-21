@@ -1,6 +1,9 @@
 ---
 import { loadLegacyFullDocument } from '@/utils/legacyFullDocument';
 
+// Refactoring 5.0 visual-first migration: /articles/dzhon-gill-chast-2-uchenyi/ must preserve the legacy
+// premium visual world until screenshot parity and owner review approve a
+// componentized Astro replacement.
 const { headHtml, bodyHtml, bodyAttributes } = loadLegacyFullDocument('articles/dzhon-gill-chast-2-uchenyi/index.html');
 ---
 <!DOCTYPE html>
@@ -9,6 +12,10 @@ const { headHtml, bodyHtml, bodyAttributes } = loadLegacyFullDocument('articles/
     <Fragment set:html={headHtml} />
   </head>
   <body {...bodyAttributes}>
+    <!-- Pagefind search data: full-document visual shadow keeps legacy markup, so search text is explicit. -->
+    <div class="sr-only" data-pagefind-body style="position:absolute;left:-9999px;top:auto;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);clip-path:inset(50%);white-space:nowrap">
+      Джон Гилл часть II: Учёный. Экзегеза, иврит, Талмуд, комментарии, Body of Divinity, богословская система и работа с источниками.
+    </div>
     <Fragment set:html={bodyHtml} />
   </body>
 </html>
