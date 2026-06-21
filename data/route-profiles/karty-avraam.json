@@ -1,0 +1,19 @@
+{
+  "route": "/karty/avraam/",
+  "profiledAt": "2026-06-22",
+  "migrationLane": "special",
+  "routeType": "map",
+  "section": "karty",
+  "slug": "avraam",
+  "currentStatus": "production-dist",
+  "source": "src/pages/karty/avraam/index.astro",
+  "risk": 2,
+  "hasMDX": false,
+  "mdxPath": null,
+  "legacyPath": "karty/avraam/index.html",
+  "visualParity": {
+    "desktop": 0,
+    "mobile": 0
+  },
+  "cssPilot": null
+}

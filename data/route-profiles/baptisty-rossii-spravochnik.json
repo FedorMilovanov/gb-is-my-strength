@@ -1,0 +1,19 @@
+{
+  "route": "/baptisty-rossii/spravochnik/",
+  "profiledAt": "2026-06-22",
+  "migrationLane": "content",
+  "routeType": "series-article",
+  "section": "baptisty-rossii",
+  "slug": "spravochnik",
+  "currentStatus": "production-dist",
+  "source": "src/pages/baptisty-rossii/spravochnik/index.astro",
+  "risk": 2,
+  "hasMDX": true,
+  "mdxPath": "src/content/articles/spravochnik.mdx",
+  "legacyPath": "baptisty-rossii/spravochnik/index.html",
+  "visualParity": {
+    "desktop": 0,
+    "mobile": 0
+  },
+  "cssPilot": null
+}

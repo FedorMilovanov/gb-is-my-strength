@@ -1,0 +1,19 @@
+{
+  "route": "/baptisty-rossii/yuzhnaya-shtunda/",
+  "profiledAt": "2026-06-22",
+  "migrationLane": "content",
+  "routeType": "series-article",
+  "section": "baptisty-rossii",
+  "slug": "yuzhnaya-shtunda",
+  "currentStatus": "production-dist",
+  "source": "src/pages/baptisty-rossii/yuzhnaya-shtunda/index.astro",
+  "risk": 2,
+  "hasMDX": true,
+  "mdxPath": "src/content/articles/yuzhnaya-shtunda.mdx",
+  "legacyPath": "baptisty-rossii/yuzhnaya-shtunda/index.html",
+  "visualParity": {
+    "desktop": 0,
+    "mobile": 0
+  },
+  "cssPilot": null
+}

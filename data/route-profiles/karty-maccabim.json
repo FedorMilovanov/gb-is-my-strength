@@ -1,0 +1,19 @@
+{
+  "route": "/karty/maccabim/",
+  "profiledAt": "2026-06-22",
+  "migrationLane": "special",
+  "routeType": "map",
+  "section": "karty",
+  "slug": "maccabim",
+  "currentStatus": "production-dist",
+  "source": "src/pages/karty/maccabim/index.astro",
+  "risk": 2,
+  "hasMDX": false,
+  "mdxPath": null,
+  "legacyPath": "karty/maccabim/index.html",
+  "visualParity": {
+    "desktop": 0,
+    "mobile": 0
+  },
+  "cssPilot": null
+}

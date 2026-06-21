@@ -1,0 +1,19 @@
+{
+  "route": "/articles/dzhon-gill-chast-2-uchenyi/",
+  "profiledAt": "2026-06-22",
+  "migrationLane": "content",
+  "routeType": "article",
+  "section": "articles",
+  "slug": "dzhon-gill-chast-2-uchenyi",
+  "currentStatus": "production-dist",
+  "source": "src/pages/articles/dzhon-gill-chast-2-uchenyi/index.astro",
+  "risk": 2,
+  "hasMDX": true,
+  "mdxPath": "src/content/articles/dzhon-gill-chast-2-uchenyi.mdx",
+  "legacyPath": "articles/dzhon-gill-chast-2-uchenyi/index.html",
+  "visualParity": {
+    "desktop": 0,
+    "mobile": 0
+  },
+  "cssPilot": null
+}

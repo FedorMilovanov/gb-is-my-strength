@@ -1,0 +1,19 @@
+{
+  "route": "/karty/pavel/",
+  "profiledAt": "2026-06-22",
+  "migrationLane": "special",
+  "routeType": "map",
+  "section": "karty",
+  "slug": "pavel",
+  "currentStatus": "production-dist",
+  "source": "src/pages/karty/pavel/index.astro",
+  "risk": 2,
+  "hasMDX": false,
+  "mdxPath": null,
+  "legacyPath": "karty/pavel/index.html",
+  "visualParity": {
+    "desktop": 0,
+    "mobile": 0
+  },
+  "cssPilot": null
+}

@@ -1,0 +1,19 @@
+{
+  "route": "/hard-texts/",
+  "profiledAt": "2026-06-22",
+  "migrationLane": "landing",
+  "routeType": "hard-texts-index",
+  "section": "hard-texts",
+  "slug": null,
+  "currentStatus": "production-dist",
+  "source": "src/pages/hard-texts/index.astro",
+  "risk": 2,
+  "hasMDX": false,
+  "mdxPath": null,
+  "legacyPath": "hard-texts/index.html",
+  "visualParity": {
+    "desktop": 0,
+    "mobile": 0
+  },
+  "cssPilot": null
+}

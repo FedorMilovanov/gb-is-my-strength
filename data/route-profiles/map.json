@@ -1,0 +1,19 @@
+{
+  "route": "/map/",
+  "profiledAt": "2026-06-22",
+  "migrationLane": "landing",
+  "routeType": "map-landing",
+  "section": "map",
+  "slug": null,
+  "currentStatus": "production-dist",
+  "source": "src/pages/map/index.astro",
+  "risk": 2,
+  "hasMDX": false,
+  "mdxPath": null,
+  "legacyPath": "map/index.html",
+  "visualParity": {
+    "desktop": 0,
+    "mobile": 0
+  },
+  "cssPilot": null
+}

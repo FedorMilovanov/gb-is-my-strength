@@ -1,0 +1,19 @@
+{
+  "route": "/baptisty-rossii/vsehib-1944/",
+  "profiledAt": "2026-06-22",
+  "migrationLane": "content",
+  "routeType": "series-article",
+  "section": "baptisty-rossii",
+  "slug": "vsehib-1944",
+  "currentStatus": "production-dist",
+  "source": "src/pages/baptisty-rossii/vsehib-1944/index.astro",
+  "risk": 2,
+  "hasMDX": true,
+  "mdxPath": "src/content/articles/vsehib-1944.mdx",
+  "legacyPath": "baptisty-rossii/vsehib-1944/index.html",
+  "visualParity": {
+    "desktop": 0,
+    "mobile": 0
+  },
+  "cssPilot": null
+}

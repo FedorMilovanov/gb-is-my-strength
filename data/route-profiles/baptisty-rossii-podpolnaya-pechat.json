@@ -1,0 +1,19 @@
+{
+  "route": "/baptisty-rossii/podpolnaya-pechat/",
+  "profiledAt": "2026-06-22",
+  "migrationLane": "content",
+  "routeType": "series-article",
+  "section": "baptisty-rossii",
+  "slug": "podpolnaya-pechat",
+  "currentStatus": "production-dist",
+  "source": "src/pages/baptisty-rossii/podpolnaya-pechat/index.astro",
+  "risk": 2,
+  "hasMDX": true,
+  "mdxPath": "src/content/articles/podpolnaya-pechat.mdx",
+  "legacyPath": "baptisty-rossii/podpolnaya-pechat/index.html",
+  "visualParity": {
+    "desktop": 0,
+    "mobile": 0
+  },
+  "cssPilot": null
+}

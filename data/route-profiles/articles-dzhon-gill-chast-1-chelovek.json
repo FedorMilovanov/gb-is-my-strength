@@ -1,0 +1,19 @@
+{
+  "route": "/articles/dzhon-gill-chast-1-chelovek/",
+  "profiledAt": "2026-06-22",
+  "migrationLane": "content",
+  "routeType": "article",
+  "section": "articles",
+  "slug": "dzhon-gill-chast-1-chelovek",
+  "currentStatus": "production-dist",
+  "source": "src/pages/articles/dzhon-gill-chast-1-chelovek/index.astro",
+  "risk": 2,
+  "hasMDX": true,
+  "mdxPath": "src/content/articles/dzhon-gill-chast-1-chelovek.mdx",
+  "legacyPath": "articles/dzhon-gill-chast-1-chelovek/index.html",
+  "visualParity": {
+    "desktop": 0,
+    "mobile": 0
+  },
+  "cssPilot": null
+}

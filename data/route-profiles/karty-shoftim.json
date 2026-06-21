@@ -1,0 +1,19 @@
+{
+  "route": "/karty/shoftim/",
+  "profiledAt": "2026-06-22",
+  "migrationLane": "special",
+  "routeType": "map",
+  "section": "karty",
+  "slug": "shoftim",
+  "currentStatus": "production-dist",
+  "source": "src/pages/karty/shoftim/index.astro",
+  "risk": 1,
+  "hasMDX": false,
+  "mdxPath": null,
+  "legacyPath": "karty/shoftim/index.html",
+  "visualParity": {
+    "desktop": 0,
+    "mobile": 0
+  },
+  "cssPilot": null
+}

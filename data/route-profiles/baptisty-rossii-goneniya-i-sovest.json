@@ -1,0 +1,19 @@
+{
+  "route": "/baptisty-rossii/goneniya-i-sovest/",
+  "profiledAt": "2026-06-22",
+  "migrationLane": "content",
+  "routeType": "series-article",
+  "section": "baptisty-rossii",
+  "slug": "goneniya-i-sovest",
+  "currentStatus": "production-dist",
+  "source": "src/pages/baptisty-rossii/goneniya-i-sovest/index.astro",
+  "risk": 2,
+  "hasMDX": true,
+  "mdxPath": "src/content/articles/goneniya-i-sovest.mdx",
+  "legacyPath": "baptisty-rossii/goneniya-i-sovest/index.html",
+  "visualParity": {
+    "desktop": 0,
+    "mobile": 0
+  },
+  "cssPilot": null
+}

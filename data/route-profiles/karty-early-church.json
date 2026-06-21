@@ -1,0 +1,19 @@
+{
+  "route": "/karty/early-church/",
+  "profiledAt": "2026-06-22",
+  "migrationLane": "special",
+  "routeType": "map",
+  "section": "karty",
+  "slug": "early-church",
+  "currentStatus": "production-dist",
+  "source": "src/pages/karty/early-church/index.astro",
+  "risk": 2,
+  "hasMDX": false,
+  "mdxPath": null,
+  "legacyPath": "karty/early-church/index.html",
+  "visualParity": {
+    "desktop": 0,
+    "mobile": 0
+  },
+  "cssPilot": null
+}

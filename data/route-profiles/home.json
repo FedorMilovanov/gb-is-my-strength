@@ -1,0 +1,19 @@
+{
+  "route": "/",
+  "profiledAt": "2026-06-22",
+  "migrationLane": "landing",
+  "routeType": "home",
+  "section": "home",
+  "slug": null,
+  "currentStatus": "production-dist",
+  "source": "src/pages/index.astro",
+  "risk": 2,
+  "hasMDX": false,
+  "mdxPath": null,
+  "legacyPath": "/index.html",
+  "visualParity": {
+    "desktop": 0,
+    "mobile": 0
+  },
+  "cssPilot": null
+}
