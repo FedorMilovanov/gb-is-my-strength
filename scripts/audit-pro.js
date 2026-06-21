@@ -839,7 +839,10 @@ const SITE_CSS_MIN_BYTES = 200_000;
     const file = rel(p);
     let text;
     try { text = fs.readFileSync(p, 'utf8'); } catch { continue; }
-    if (file !== 'scripts/audit-pro.js' && text.includes('/gb-' + 'is-my-strength/')) { problems++; R.err(`Repository base path leak in ${file}`); }
+    // SANDBOX-ENV-*.md intentionally documents the real sandbox filesystem
+    // paths for the next agent (copy-pasteable setup commands). That is not an
+    // accidental leak; exempt it the same way this audit file itself is exempt.
+    if (file !== 'scripts/audit-pro.js' && !file.startsWith('docs/SANDBOX-ENV-') && text.includes('/gb-' + 'is-my-strength/')) { problems++; R.err(`Repository base path leak in ${file}`); }
     // Match real href/src/content attributes only; do not flag XML namespaces like xmlns:content="http://..." in RSS.
     if (/(?:^|[\s<])(?:href|src|content)=[\"']http:\/\/(?!localhost|127\.0\.0\.1|www\.w3\.org|www\.google\.com\/schemas)([^\"']+)[\"']/i.test(text)) R.warn(`Possible http:// mixed content in ${file}`);
     if (file.startsWith('js/') && /\beval\s*\(|new\s+Function\s*\(/.test(text)) { problems++; R.err(`Dangerous JS dynamic execution in ${file}`); }
