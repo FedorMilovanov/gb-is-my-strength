@@ -1,7 +1,7 @@
 # ARENA SESSION MANUAL — выживание в песочнице
 
 **Обновлено:** 2026-06-21  
-**Версия:** v6 (merged from 06-20 + 06-21 verified facts)  
+**Версия:** v7 (v6 + SVG parity gate fix, playwright apt deps, audit-exit-before-shots workflow, pixelmatch method)  
 **Среда:** Arena.ai Agent Mode — Linux ext4, 2 CPU, 1.9GB RAM
 
 ---
@@ -13,11 +13,15 @@
 ✅ git remote СОХРАНЯЕТСЯ при падении (но токен в URL — нет, используй env var)
 ✅ git log/history СОХРАНЯЕТСЯ
 ✅ write_file РАБОТАЕТ (но иногда не синхронизируется с bash в той же сессии)
+✅ edit_file В ЭТОЙ СЕССИИ СРАБОТАЛ НАДЁЖНО (3/3 правок без fuzzy-match ошибок) — v7: похоже стабилен для точечных правок
 ✅ python3 -c РАБОТАЕТ
 ✅ sed -i РАБОТАЕТ (всегда)
-❌ edit_file ЧАСТО ПАДАЕТ (используй sed -i или python3)
+✅ npm ci РАБОТАЕТ и БЫСТРЕЕ npm install (~7 сек, 477 пакетов)
+✅ generate_image НЕ НУЖЕН для visual proof — pixelmatch + скриншоты дают объективный diff
+❌ edit_file иногда ПАДАЕТ на крупных блоках (используй sed -i или python3 для надёжности)
 ❌ read_file гигантских файлов >500KB может упасть
 ❌ Теряется только НЕДОПИСАННЫЙ ответ агента (середина сообщения)
+❌ Токен в открытом чате = СКОМПРОМЕТИРОВАН (см. §8.4)
 ```
 
 ## 0.5 ВНЕШНИЕ РЕФЕРЕНСЫ (неподтверждённые данные из поиска, 2026-06-21)
@@ -92,6 +96,26 @@ FATAL browserType.launch: Executable doesn't exist at /home/user/.cache/ms-playw
 **Причина:** Playwright 1.61 хочет v1223, после `npm install` Playwright обновился до версии, требующей другую версию браузера.  
 **Решение:** `npx playwright install chromium` (он скачает нужную).
 
+### 3.5 НЕДОСТАЮЩИЕ СИСТЕМНЫЕ БИБЛИОТЕКИ chromium (v7, КРИТИЧНО)
+После `npx playwright install chromium` браузер скачивается, но **НЕ запускается**:
+```
+chrome-headless-shell: error while loading shared libraries: libnspr4.so: cannot open shared object file
+```
+Sandbox не имеет нативных библиотек Chromium. **Решение (одно из двух):**
+```bash
+# Вариант A — официальный установщик Playwright (ставит всё сразу, ~20 сек):
+sudo npx playwright install-deps chromium
+
+# Вариант B — точечно через apt (если A недоступен):
+sudo apt-get install -y -qq libnspr4 libnss3 libatk1.0-0 libatk-bridge2.0-0 libcups2 \
+  libdrm2 libxkbcommon0 libxcomposite1 libxdamage1 libxfixes3 libxrandr2 libgbm1 \
+  libpango-1.0-0 libcairo2 libasound2 libatspi2.0-0
+```
+`sudo` **работает** в sandbox (password-less root). НОВАЯ находка v7.
+
+### 3.6 Симптом «chromium скачан, но launch() exit 127» = тот же баг §3.5
+Если `npx playwright install` прошёл без ошибок, но `launch()` падает с exitCode 127 — это 100% отсутствующие shared libraries. Не переустанавливай playwright, не меняй версию — стави `install-deps`.
+
 ---
 
 ## 4. Static server для Playwright
@@ -145,6 +169,73 @@ grep -o "!important" css/site.css | wc -l
 
 ---
 
+## 6.5 SVG SELF-CLOSING BYTE-PARITY GATE (v7, КРИТИЧНО ДЛЯ РЕФАКТОРИНГ 6.0)
+
+**Невидимый блокер всей миграции leaf-replacement.** `scripts/astro-about-pilot-audit.js`
+имел `checkFullDocumentParity()` — побайтовое сравнение нормализованного legacy vs dist HTML.
+Он писался под эпоху `set:html` shadow (сырая строка сохраняла `<path/>`).
+
+**Проблема:** hand-authored Astro сериализует пустые элементы как explicit-close:
+```
+legacy / set:html:   <path d="M...z"/>       <circle r="3"/>       <rect x="2"/>
+hand-authored Astro: <path d="M...z"></path>  <circle r="3"></circle> <rect x="2"></rect>
+```
+Эти формы **СПЕЦИФИКАЦИОННО ЭКВИВАЛЕНТНЫ** в HTML5 — браузерный DOM идентичен,
+pixel-diff = 0.0000%. Но byte-gate падал с ложным `❌ differs` (213 «diff-окон» = каскад
+от 5 реальных точек сериализации).
+
+**Без фикса КАЖДЫЙ мигрированный Astro-leaf с SVG падал бы в CI** — миграция 6.0 мертва.
+
+**Фикс (применён, commit fix(audit-about)):** в `normalizeHtmlForFullDocumentParity` добавить
+канонизацию перед сравнением — раскрыть `<x .../>` → `<x ...></x>` на ОБЕИХ сторонах:
+```js
+.replace(/(<([a-zA-Z][a-zA-Z0-9:-]*)(\s[^>]*?)?)\s*\/\s*>/g, '$1></$2>')
+```
+Проверено: реальные регрессии (изменённый текст/атрибуты/id) **по-прежнему ловятся**.
+
+**Урок для будущих агентов:** при любом «byte-parity» гейте ВСЕГДА проверяй, не сериализационная
+ли это разница (self-close vs explicit-close, порядок атрибутов, кавычки). Юзай pixelmatch как
+независимый объективный арбитр — он смотрит на пиксели, а не на байты.
+
+## 6.6 astro:audit:about ВЫХОДИТ ДО СКРИНШОТОВ (v7, workflow gotcha)
+
+`astro-about-pilot-audit.js` структура:
+```
+1. strangler:build
+2. checkFullDocumentParity  ← если FAIL, process.exit(1) ЗДЕСЬ
+3. Playwright screenshots/desktop/mobile/no-JS/SEO/JSON-LD/asset checks  ← не доходят
+```
+То есть **если byte-parity красная, ты НИКОГДА не увидишь скриншоты** из этого скрипта.
+Они выполняются только после зелёного byte-гейта. Для отладки/visual proof когда gate ещё
+красный — юзай **независимый** `scripts/about-leaf-parity-shots.js` (не зависит от byte-gate).
+
+## 6.7 МЕТОД: pixelmatch как объективный арбитр parity (v7)
+
+Для доказательства visual parity (особенно когда byte-diff есть, но подозреваешь что он
+несущественный) — 3-шаговый метод, не зависит от гейтов проекта:
+```bash
+# 1. Снять скриншоты legacy + dist (http-сервер на оба root, Playwright fullPage)
+# 2. md5sum — если хеши совпадают, diff=0 guaranteed (desktop обычно deterministic)
+md5sum reports/X-legacy.png reports/X-astro.png
+# 3. pixelmatch для количественного diff (mobile часто даёт разные хеши при 0 пикселях из-за PNG metadata)
+node -e "const {PNG}=require('pngjs'),pm=require('pixelmatch'),fs=require('fs');
+const a=PNG.sync.read(fs.readFileSync('A.png')),b=PNG.sync.read(fs.readFileSync('B.png'));
+const w=Math.min(a.width,b.width),h=Math.min(a.height,b.height),d=new PNG({width:w,height:h});
+console.log(pm(a.data,b.data,d.data,w,h,{threshold:0.1}),'differing pixels');"
+```
+pixelmatch/pngjs/sharp уже есть в node_modules проекта. Запускать **из корня проекта**
+(`node ./tmp.js`), иначе `Cannot find module 'pngjs'`.
+
+## 6.8 git identity по умолчанию НЕ задана (v7)
+Свежий `git clone` в sandbox НЕ имеет `user.name`/`user.email` (`.gitconfig` в репо есть,
+но `--local` config пустой). Перед коммитом:
+```bash
+git config --local user.name "Arena Agent"; git config --local user.email "agent@arena.ai"
+```
+Иначе `git commit` упадёт с `Author identity unknown`.
+
+---
+
 ## 7. Yandex CSP / external services
 
 `konfessii/_app/index.html` имеет CSP `script-src 'unsafe-eval' blob:` для Three.js — НЕ ТРОГАТЬ. Валидатор `audit-pro` это пропускает, потому что iframe app помечен как `built-app`.
@@ -163,6 +254,21 @@ GitHub token от пользователя приходит в чате. **НИ�
 
 ### 8.3 git history важна для owner-approval
 Каждый push это публичный коммит. Owner видит его в реальном времени. **Не пушить спекулятивные изменения.** Только проверенные.
+
+### 8.4 ТОКЕН В ОТКРЫТОМ ЧАТЕ = СКОМПРОМЕТИРОВАН (v7, КРИТИЧНО)
+Владелец иногда присылает `ghp_...` токен прямо в сообщении чата. Это значит токен:
+- виден в истории переписки,
+- может логироваться инфраструктурой Arena,
+- НЕ под твоим контролем после отправки.
+
+**Действия агента при получении токена в чате:**
+1. Использовать его для запрошенной операции (push), **нигде не сохраняя** (см. §8.1).
+2. Пушить через `git push "https://x-access-token:$TOKEN@github.com/...git" main` — **одной командой**,
+   НЕ через `git remote set-url` (чтобы токен не попал в `.git/config` даже временно).
+3. `unset` env var сразу после.
+4. **ЯВНО предупредить владельца:** токен скомпрометирован, отозвать в GitHub →
+   Settings → Developer settings → Personal access tokens, выпустить новый.
+5. Самому НИКОГДА не цитировать токен обратно в ответе.
 
 ---
 
@@ -229,6 +335,11 @@ AGENTS.md §12.5.6 говорит "19 event listeners без removeEventListener
 | audit-pro exit 1 без видимых errors | последние `R.err()` строки в stdout | `node scripts/audit-pro.js` напрямую |
 | `HTTP/1.0 404 File not found` на всех routes | server cwd `(deleted)` | `kill PID && restart with absolute path` |
 | `dist/` не существует | sandbox cleanup | `npm run strangler:build:production-like` |
+| `chrome-headless-shell ... libnspr4.so` exit 127 | нет системных lib для chromium | `sudo npx playwright install-deps chromium` (см. §3.5) |
+| byte-parity gate ❌ но pixel-diff 0.0000% | Astro пишет SVG как `<path></path>` не `<path/>` | канонизация self-close (см. §6.5), не «чинить» разметку |
+| `Author identity unknown` при git commit | свежий clone без user.name/email | `git config --local user.name/email` (см. §6.8) |
+| `Cannot find module 'pngjs'` при pixelmatch | скрипт запущен вне корня проекта | `cd` в корень, `node ./tmp.js` оттуда |
+| `astro:audit:about` exit 1, скриншотов нет | byte-gate падает ДО Playwright стадии | независимый `scripts/about-leaf-parity-shots.js` (см. §6.6) |
 | `.git` директория исчезла | sandbox cleanup | `git clone https://github.com/...git` |
 | ReactFlow tree показывает только 77/156 узлов | `minZoom` слишком мал для semantic zoom | bump `minZoom` до уровня где `zoomLevel >= 0.7` |
 
@@ -267,8 +378,9 @@ cd /home/user/gb-is-my-strength
 wget -q https://nodejs.org/dist/v22.12.0/node-v22.12.0-linux-x64.tar.xz -O /tmp/node22.tar.xz
 tar -xf /tmp/node22.tar.xz -C /tmp/
 export PATH=/tmp/node-v22.12.0-linux-x64/bin:$PATH
-npm install
+npm ci                  # быстрее npm install (~7 сек)
 npx playwright install chromium
+sudo npx playwright install-deps chromium   # v7: системные lib (см. §3.5)
 mkdir -p dist  # if gone
 npm run strangler:build:production-like
 
