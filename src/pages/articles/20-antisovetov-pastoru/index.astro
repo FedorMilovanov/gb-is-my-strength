@@ -1,14 +1,19 @@
 ---
-import { loadLegacyFullDocument } from '@/utils/legacyFullDocument';
+import { getEntry, render } from 'astro:content';
+import ArticleLayout from '@/layouts/ArticleLayout.astro';
+import { SITE } from '@/data/site';
 
-const { headHtml, bodyHtml, bodyAttributes } = loadLegacyFullDocument('articles/20-antisovetov-pastoru/index.html');
+const entry = await getEntry('articles', '20-antisovetov-pastoru');
+if (!entry) throw new Error('Article entry not found: articles/20-antisovetov-pastoru');
+const { Content } = await render(entry);
+const canonical = `${SITE.url}/articles/20-antisovetov-pastoru/`;
 ---
-<!DOCTYPE html>
-<html lang="ru">
-  <head>
-    <Fragment set:html={headHtml} />
-  </head>
-  <body {...bodyAttributes}>
-    <Fragment set:html={bodyHtml} />
-  </body>
-</html>
+<ArticleLayout
+  entry={entry}
+  canonical={canonical}
+  robots="index, follow"
+  pilot={false}
+  intendedCanonical={canonical}
+>
+  <Content />
+</ArticleLayout>

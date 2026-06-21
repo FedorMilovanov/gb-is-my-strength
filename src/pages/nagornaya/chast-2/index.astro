@@ -1,17 +1,29 @@
 ---
-/**
- * /nagornaya/chast-2/ РЕФАКТОРИНГ 5.0 Phase 6 wave 7 (AGENTS-r255) native pilot.
- */
-import { loadLegacyFullDocument } from "@/utils/legacyFullDocument";
-import NagornayaPageMain from "@/components/nagornaya/NagornayaPageMain.astro";
-const { headHtml, bodyAttributes } = loadLegacyFullDocument("nagornaya/chast-2/index.html");
+import BaseLayout from '@/layouts/BaseLayout.astro';
+import { loadLegacyShadowPage } from '@/utils/legacyShadow';
+
+const legacy = loadLegacyShadowPage('nagornaya/chast-2/index.html');
 ---
-<!DOCTYPE html>
-<html lang="ru">
-  <head>
-    <Fragment set:html={headHtml} />
-  </head>
-  <body {...bodyAttributes}>
-    <NagornayaPageMain slug="chast-2" />
-  </body>
-</html>
+
+<BaseLayout
+  title={legacy.title}
+  description={legacy.description}
+  canonical={legacy.canonical}
+  robots="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1"
+  ogImage={legacy.ogImage}
+  ogImageAlt={legacy.ogImageAlt}
+  ogTitle={legacy.ogTitle}
+  ogDescription={legacy.ogDescription}
+  bodyClass={legacy.bodyClass}
+  mainClass="astro-main astro-main--bare"
+  hideHeader={true}
+  hideFooter={true}
+  headHtml={legacy.headHtml}
+>
+  <div class="astro-nagornaya-shadow" data-astro-shadow-route="nagornaya-chast-2">
+    <div class="sr-only">
+      Как это записывалось. Часть II серии «Нагорная проповедь». Синоптическая проблема: почему Матфей и Лука записали одну проповедь по-разному. Апостольская память, богодухновенность, устная культура, литературная композиция Евангелий.
+    </div>
+    <Fragment set:html={legacy.bodyHtml} />
+  </div>
+</BaseLayout>
