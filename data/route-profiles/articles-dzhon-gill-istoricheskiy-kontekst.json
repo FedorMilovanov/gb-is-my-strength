@@ -1,0 +1,19 @@
+{
+  "route": "/articles/dzhon-gill-istoricheskiy-kontekst/",
+  "profiledAt": "2026-06-22",
+  "migrationLane": "content",
+  "routeType": "article",
+  "section": "articles",
+  "slug": "dzhon-gill-istoricheskiy-kontekst",
+  "currentStatus": "production-dist",
+  "source": "src/pages/articles/dzhon-gill-istoricheskiy-kontekst/index.astro",
+  "risk": 2,
+  "hasMDX": true,
+  "mdxPath": "src/content/articles/dzhon-gill-istoricheskiy-kontekst.mdx",
+  "legacyPath": "articles/dzhon-gill-istoricheskiy-kontekst/index.html",
+  "visualParity": {
+    "desktop": 0,
+    "mobile": 0
+  },
+  "cssPilot": null
+}

@@ -1,0 +1,19 @@
+{
+  "route": "/nagornaya/seriya/",
+  "profiledAt": "2026-06-22",
+  "migrationLane": "content",
+  "routeType": "series-chapter",
+  "section": "nagornaya",
+  "slug": "seriya",
+  "currentStatus": "production-dist",
+  "source": "src/pages/nagornaya/seriya/index.astro",
+  "risk": 2,
+  "hasMDX": false,
+  "mdxPath": null,
+  "legacyPath": "nagornaya/seriya/index.html",
+  "visualParity": {
+    "desktop": 0,
+    "mobile": 0
+  },
+  "cssPilot": null
+}

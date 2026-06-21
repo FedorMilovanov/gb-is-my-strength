@@ -1,0 +1,19 @@
+{
+  "route": "/articles/rimlyanam-7-veruyushchiy-ili-neveruyushchiy/",
+  "profiledAt": "2026-06-22",
+  "migrationLane": "content",
+  "routeType": "article",
+  "section": "articles",
+  "slug": "rimlyanam-7-veruyushchiy-ili-neveruyushchiy",
+  "currentStatus": "production-dist",
+  "source": "src/pages/articles/rimlyanam-7-veruyushchiy-ili-neveruyushchiy/index.astro",
+  "risk": 2,
+  "hasMDX": true,
+  "mdxPath": "src/content/articles/rimlyanam-7-veruyushchiy-ili-neveruyushchiy.mdx",
+  "legacyPath": "articles/rimlyanam-7-veruyushchiy-ili-neveruyushchiy/index.html",
+  "visualParity": {
+    "desktop": 0,
+    "mobile": 0
+  },
+  "cssPilot": null
+}

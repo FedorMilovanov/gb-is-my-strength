@@ -1,0 +1,19 @@
+{
+  "route": "/baptisty-rossii/iniciativnaya-gruppa/",
+  "profiledAt": "2026-06-22",
+  "migrationLane": "content",
+  "routeType": "series-article",
+  "section": "baptisty-rossii",
+  "slug": "iniciativnaya-gruppa",
+  "currentStatus": "production-dist",
+  "source": "src/pages/baptisty-rossii/iniciativnaya-gruppa/index.astro",
+  "risk": 2,
+  "hasMDX": true,
+  "mdxPath": "src/content/articles/iniciativnaya-gruppa.mdx",
+  "legacyPath": "baptisty-rossii/iniciativnaya-gruppa/index.html",
+  "visualParity": {
+    "desktop": 0,
+    "mobile": 0
+  },
+  "cssPilot": null
+}

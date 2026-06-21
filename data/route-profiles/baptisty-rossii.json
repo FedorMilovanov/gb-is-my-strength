@@ -1,0 +1,19 @@
+{
+  "route": "/baptisty-rossii/",
+  "profiledAt": "2026-06-22",
+  "migrationLane": "unknown",
+  "routeType": "unknown",
+  "section": "unknown",
+  "slug": null,
+  "currentStatus": "production-dist",
+  "source": "src/pages/baptisty-rossii/index.astro",
+  "risk": 2,
+  "hasMDX": false,
+  "mdxPath": null,
+  "legacyPath": "baptisty-rossii/index.html",
+  "visualParity": {
+    "desktop": 0,
+    "mobile": 0
+  },
+  "cssPilot": null
+}

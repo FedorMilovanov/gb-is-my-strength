@@ -1,0 +1,19 @@
+{
+  "route": "/karty/yeshua/",
+  "profiledAt": "2026-06-22",
+  "migrationLane": "special",
+  "routeType": "map",
+  "section": "karty",
+  "slug": "yeshua",
+  "currentStatus": "production-dist",
+  "source": "src/pages/karty/yeshua/index.astro",
+  "risk": 1,
+  "hasMDX": false,
+  "mdxPath": null,
+  "legacyPath": "karty/yeshua/index.html",
+  "visualParity": {
+    "desktop": 0,
+    "mobile": 0
+  },
+  "cssPilot": null
+}

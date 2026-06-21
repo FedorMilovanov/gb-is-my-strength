@@ -1,0 +1,19 @@
+{
+  "route": "/articles/krajne-li-isporcheno-serdce/",
+  "profiledAt": "2026-06-22",
+  "migrationLane": "content",
+  "routeType": "article",
+  "section": "articles",
+  "slug": "krajne-li-isporcheno-serdce",
+  "currentStatus": "production-dist",
+  "source": "src/pages/articles/krajne-li-isporcheno-serdce/index.astro",
+  "risk": 2,
+  "hasMDX": true,
+  "mdxPath": "src/content/articles/krajne-li-isporcheno-serdce.mdx",
+  "legacyPath": "articles/krajne-li-isporcheno-serdce/index.html",
+  "visualParity": {
+    "desktop": 0,
+    "mobile": 0
+  },
+  "cssPilot": null
+}

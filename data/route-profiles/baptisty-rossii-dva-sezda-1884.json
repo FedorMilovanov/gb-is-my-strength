@@ -1,0 +1,19 @@
+{
+  "route": "/baptisty-rossii/dva-sezda-1884/",
+  "profiledAt": "2026-06-22",
+  "migrationLane": "content",
+  "routeType": "series-article",
+  "section": "baptisty-rossii",
+  "slug": "dva-sezda-1884",
+  "currentStatus": "production-dist",
+  "source": "src/pages/baptisty-rossii/dva-sezda-1884/index.astro",
+  "risk": 2,
+  "hasMDX": true,
+  "mdxPath": "src/content/articles/dva-sezda-1884.mdx",
+  "legacyPath": "baptisty-rossii/dva-sezda-1884/index.html",
+  "visualParity": {
+    "desktop": 0,
+    "mobile": 0
+  },
+  "cssPilot": null
+}

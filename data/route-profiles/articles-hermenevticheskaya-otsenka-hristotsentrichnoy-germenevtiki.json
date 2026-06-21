@@ -1,0 +1,19 @@
+{
+  "route": "/articles/hermenevticheskaya-otsenka-hristotsentrichnoy-germenevtiki/",
+  "profiledAt": "2026-06-22",
+  "migrationLane": "content",
+  "routeType": "article",
+  "section": "articles",
+  "slug": "hermenevticheskaya-otsenka-hristotsentrichnoy-germenevtiki",
+  "currentStatus": "production-dist",
+  "source": "src/pages/articles/hermenevticheskaya-otsenka-hristotsentrichnoy-germenevtiki/index.astro",
+  "risk": 2,
+  "hasMDX": true,
+  "mdxPath": "src/content/articles/hermenevticheskaya-otsenka-hristotsentrichnoy-germenevtiki.mdx",
+  "legacyPath": "articles/hermenevticheskaya-otsenka-hristotsentrichnoy-germenevtiki/index.html",
+  "visualParity": {
+    "desktop": 0,
+    "mobile": 0
+  },
+  "cssPilot": null
+}

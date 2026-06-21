@@ -1,0 +1,19 @@
+{
+  "route": "/baptisty-rossii/peterburgskaya-liniya/",
+  "profiledAt": "2026-06-22",
+  "migrationLane": "content",
+  "routeType": "series-article",
+  "section": "baptisty-rossii",
+  "slug": "peterburgskaya-liniya",
+  "currentStatus": "production-dist",
+  "source": "src/pages/baptisty-rossii/peterburgskaya-liniya/index.astro",
+  "risk": 2,
+  "hasMDX": true,
+  "mdxPath": "src/content/articles/peterburgskaya-liniya.mdx",
+  "legacyPath": "baptisty-rossii/peterburgskaya-liniya/index.html",
+  "visualParity": {
+    "desktop": 0,
+    "mobile": 0
+  },
+  "cssPilot": null
+}
