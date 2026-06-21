@@ -1,7 +1,7 @@
 {
-  "note": "Owner-approved pixel-diff baseline per Astro route. Higher diff% than baseline+tolerance fails CI. Update only after owner visual review.",
+  "note": "Owner-approved pixel-diff baseline per Astro route. All 51 public routes now covered with full-document shadow-wrap (0% expected). Higher diff% than baseline+tolerance fails CI. Update only after owner visual review.",
   "tolerancePct": 0.5,
-  "updatedAt": "2026-06-20",
+  "updatedAt": "2026-06-21",
   "routes": {
     "/": {
       "desktop": 0,
@@ -52,6 +52,158 @@
       "mobile": 0
     },
     "/map/": {
+      "desktop": 0,
+      "mobile": 0
+    },
+    "/articles/20-antisovetov-pastoru/": {
+      "desktop": 0,
+      "mobile": 0
+    },
+    "/articles/dzhon-gill-chast-1-chelovek/": {
+      "desktop": 0,
+      "mobile": 0
+    },
+    "/articles/dzhon-gill-chast-2-uchenyi/": {
+      "desktop": 0,
+      "mobile": 0
+    },
+    "/articles/dzhon-gill-chast-3-nasledie/": {
+      "desktop": 0,
+      "mobile": 0
+    },
+    "/articles/dzhon-gill-istoricheskiy-kontekst/": {
+      "desktop": 0,
+      "mobile": 0
+    },
+    "/articles/dzhon-gill-spravochnik/": {
+      "desktop": 0,
+      "mobile": 0
+    },
+    "/articles/hermenevticheskaya-otsenka-hristotsentrichnoy-germenevtiki/": {
+      "desktop": 0,
+      "mobile": 0
+    },
+    "/articles/kod-da-vinchi/": {
+      "desktop": 0,
+      "mobile": 0
+    },
+    "/articles/krajne-li-isporcheno-serdce/": {
+      "desktop": 0,
+      "mobile": 0
+    },
+    "/articles/rimlyanam-7-veruyushchiy-ili-neveruyushchiy/": {
+      "desktop": 0,
+      "mobile": 0
+    },
+    "/baptisty-rossii/dva-sezda-1884/": {
+      "desktop": 0,
+      "mobile": 0
+    },
+    "/baptisty-rossii/goneniya-i-sovest/": {
+      "desktop": 0,
+      "mobile": 0
+    },
+    "/baptisty-rossii/iniciativnaya-gruppa/": {
+      "desktop": 0,
+      "mobile": 0
+    },
+    "/baptisty-rossii/noch-na-kure/": {
+      "desktop": 0,
+      "mobile": 0
+    },
+    "/baptisty-rossii/peterburgskaya-liniya/": {
+      "desktop": 0,
+      "mobile": 0
+    },
+    "/baptisty-rossii/podpolnaya-pechat/": {
+      "desktop": 0,
+      "mobile": 0
+    },
+    "/baptisty-rossii/sovetskaya-noch/": {
+      "desktop": 0,
+      "mobile": 0
+    },
+    "/baptisty-rossii/spravochnik/": {
+      "desktop": 0,
+      "mobile": 0
+    },
+    "/baptisty-rossii/vsehib-1944/": {
+      "desktop": 0,
+      "mobile": 0
+    },
+    "/baptisty-rossii/yuzhnaya-shtunda/": {
+      "desktop": 0,
+      "mobile": 0
+    },
+    "/karty/avraam/": {
+      "desktop": 0,
+      "mobile": 0
+    },
+    "/karty/early-church/": {
+      "desktop": 0,
+      "mobile": 0
+    },
+    "/karty/ishod/": {
+      "desktop": 0,
+      "mobile": 0
+    },
+    "/karty/maccabim/": {
+      "desktop": 0,
+      "mobile": 0
+    },
+    "/karty/melachim/": {
+      "desktop": 0,
+      "mobile": 0
+    },
+    "/karty/pavel/": {
+      "desktop": 0,
+      "mobile": 0
+    },
+    "/karty/revelation/": {
+      "desktop": 0,
+      "mobile": 0
+    },
+    "/karty/shoftim/": {
+      "desktop": 0,
+      "mobile": 0
+    },
+    "/karty/shvatim/": {
+      "desktop": 0,
+      "mobile": 0
+    },
+    "/karty/yeshua/": {
+      "desktop": 0,
+      "mobile": 0
+    },
+    "/konfessii/russkij-baptizm/": {
+      "desktop": 0,
+      "mobile": 0
+    },
+    "/nagornaya/chast-2/": {
+      "desktop": 0,
+      "mobile": 0
+    },
+    "/nagornaya/chast-3/": {
+      "desktop": 0,
+      "mobile": 0
+    },
+    "/nagornaya/chast-4/": {
+      "desktop": 0,
+      "mobile": 0
+    },
+    "/nagornaya/istochniki/": {
+      "desktop": 0,
+      "mobile": 0
+    },
+    "/nagornaya/nakhodki/": {
+      "desktop": 0,
+      "mobile": 0
+    },
+    "/nagornaya/seriya/": {
+      "desktop": 0,
+      "mobile": 0
+    },
+    "/rodosloviye/": {
       "desktop": 0,
       "mobile": 0
     }
