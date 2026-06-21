@@ -2,7 +2,7 @@
   "name": "gb-is-my-strength",
   "version": "1.6.3",
   "private": true,
-  "description": "Build scripts for gospod-bog.ru \u2014 AUDIT V2 + AUDIT_10_OF_10 patches applied.",
+  "description": "Build scripts for gospod-bog.ru — AUDIT V2 + AUDIT_10_OF_10 patches applied.",
   "scripts": {
     "update-meta": "node scripts/update-meta.js",
     "cache-bust": "node scripts/cache-bust.js",
@@ -101,7 +101,9 @@
     "home:visual-parity:audit": "node scripts/home-visual-parity-audit.js",
     "nagornaya:visual-parity:audit": "node scripts/nagornaya-visual-parity-audit.js",
     "catalogs:visual-parity:audit": "node scripts/catalogs-visual-parity-audit.js",
-    "content:parity": "node scripts/check-mdx-html-parity.js"
+    "content:parity": "node scripts/check-mdx-html-parity.js",
+    "content:parity-v2": "node scripts/check-mdx-html-parity-v2.js",
+    "css:layer:validate": "node scripts/css-layer-validator.js"
   },
   "engines": {
     "node": ">=22.12.0"
