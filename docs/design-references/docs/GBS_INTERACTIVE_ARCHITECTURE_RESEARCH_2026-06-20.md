@@ -46,7 +46,7 @@ README проекта фиксирует текущий production-подход:
 `AGENTS.md` прямо задаёт дисциплину: агент обязан читать этот файл до правок, а нарушения трактуются как регресс. Для будущего рефакторинга это критично: никакой агент не должен “быстро поправить CSS” в интерактивной карте без понимания контракта сайта.
 
 Источник:  
-`https://raw.githubusercontent.com/FedorMilovanov/gb-is-my-strength/main/AGENTS.md`
+`https://raw.githubusercontent.com/FedorMilovanov/gospod-bog/main/AGENTS.md`
 
 ### 1.3. Раздел `/karty/`
 
@@ -61,74 +61,74 @@ README проекта фиксирует текущий production-подход:
 Это надо сохранить как принцип “премиальной витрины”, а не откатывать к “всё показываем, что технически собирается”.
 
 Источник:  
-`https://raw.githubusercontent.com/FedorMilovanov/gb-is-my-strength/main/karty/index.html`
+`https://raw.githubusercontent.com/FedorMilovanov/gospod-bog/main/karty/index.html`
 
 ### 1.4. `route.json`-контракт карт
 
 `karty/_shared/README.md` фиксирует базовый контракт карт: `meta`, `stories`, `places`, `stages`, optional `ctx`, `verified_waypoints`, `scientific_variants`, а также API `MapEngine.loadRoute`, `validateRoute`, `createMap`, `flyTo`, `openPlace`, `setStory`, `startTour`, `shareURL`, `destroy`.
 
 Источник:  
-`https://raw.githubusercontent.com/FedorMilovanov/gb-is-my-strength/main/karty/_shared/README.md`
+`https://raw.githubusercontent.com/FedorMilovanov/gospod-bog/main/karty/_shared/README.md`
 
 ### 1.5. Схема route.json
 
 `route.schema.json` использует JSON Schema draft 2020-12 и требует `meta`, `stories`, `places`, `stages`. В `places` сейчас обязательны `id`, `name`, `x`, `y`, `type`, `stage`. Это подтверждает, что текущие карты в основном редакционно-планарные, а не настоящие lat/lng GIS-карты.
 
 Источник:  
-`https://raw.githubusercontent.com/FedorMilovanov/gb-is-my-strength/main/karty/_shared/route.schema.json`
+`https://raw.githubusercontent.com/FedorMilovanov/gospod-bog/main/karty/_shared/route.schema.json`
 
 ### 1.6. Карта Авраама
 
 `karty/avraam/route.json` — богатый источник истины: meta version 2.0, 19 мест, 8 этапов, 5 историй, 7 context points, 40 фото, 59 стихов, 5 verified waypoints, 45 scientific variants. Это не надо выбрасывать.
 
 Источник:  
-`https://raw.githubusercontent.com/FedorMilovanov/gb-is-my-strength/main/karty/avraam/route.json`
+`https://raw.githubusercontent.com/FedorMilovanov/gospod-bog/main/karty/avraam/route.json`
 
 ### 1.7. Остальные карты
 
 Например, `karty/ishod/index.html` и `karty/pavel/index.html` сейчас являются страницами визуального аудита: “карта временно снята с публичного просмотра”. Это правильно: данные могут существовать, но публичный статус должен быть заблокирован до визуального уровня Авраама.
 
 Источники:  
-`https://raw.githubusercontent.com/FedorMilovanov/gb-is-my-strength/main/karty/ishod/index.html`  
-`https://raw.githubusercontent.com/FedorMilovanov/gb-is-my-strength/main/karty/pavel/index.html`
+`https://raw.githubusercontent.com/FedorMilovanov/gospod-bog/main/karty/ishod/index.html`  
+`https://raw.githubusercontent.com/FedorMilovanov/gospod-bog/main/karty/pavel/index.html`
 
 ### 1.8. Старый MapEngine
 
 `karty/_engine/map-engine.js` — самодостаточный MapEngine, без framework dependency, с API load/validate/createMap/openPlace/setStory/tour/flyTo/destroy. Но он уже крупный и смешивает всё: data layer, rendering, styles, events, panels, tour, archaeology references, story focus, DOM creation. Это опасная зона монолита.
 
 Источник:  
-`https://raw.githubusercontent.com/FedorMilovanov/gb-is-my-strength/main/karty/_engine/map-engine.js`
+`https://raw.githubusercontent.com/FedorMilovanov/gospod-bog/main/karty/_engine/map-engine.js`
 
 Дополнительно `karty/_engine/modules/README.md` прямо говорит, что прежняя модульная реорганизация сломала Авраама и потребовала восстановительных коммитов, а `map-engine.js` был оставлен самодостаточным. Это важное предупреждение: новый рефакторинг нельзя делать как хаотичное “распилить ради распила”. Нужен shadow-mode, тесты и постепенная миграция.
 
 Источник:  
-`https://github.com/FedorMilovanov/gb-is-my-strength/tree/main/karty/_engine/modules`
+`https://github.com/FedorMilovanov/gospod-bog/tree/main/karty/_engine/modules`
 
 ### 1.9. Валидаторы карт
 
 `validate-map-routes.js` уже проверяет meta, viewport, places, stages, stories, duplicate ids, координаты, photos, scientific_variants, signature, stats и логику витрины. Это хороший базовый guard, его надо не удалять, а расширять.
 
 Источник:  
-`https://raw.githubusercontent.com/FedorMilovanov/gb-is-my-strength/main/scripts/validate-map-routes.js`
+`https://raw.githubusercontent.com/FedorMilovanov/gospod-bog/main/scripts/validate-map-routes.js`
 
 ### 1.10. Родословие
 
 `GenealogyTree.tsx` уже содержит сильные идеи: React Flow canvas, поиск, фильтры, золотая нить, SplitView, semantic zoom, focus lineage, keyboard nav, tour. Но это всё смешано в одном компоненте и окрашено в тёмно-золотую inline-стилистику. Это не надо чинить “поверх” — нужен модульный refactor.
 
 Источник:  
-`https://raw.githubusercontent.com/FedorMilovanov/gb-is-my-strength/main/src/components/genealogy/GenealogyTree.tsx`
+`https://raw.githubusercontent.com/FedorMilovanov/gospod-bog/main/src/components/genealogy/GenealogyTree.tsx`
 
 `layout.ts` использует `@dagrejs/dagre`, строит golden path, AM positioning и focus lineage. Dagre подходит как быстрый tree layout, но для твоей богословской карты с группами, эпохами, боковыми ветвями, Матфеем/Лукой и спорными узлами лучше ELK-first.
 
 Источник:  
-`https://raw.githubusercontent.com/FedorMilovanov/gb-is-my-strength/main/src/components/genealogy/layout.ts`
+`https://raw.githubusercontent.com/FedorMilovanov/gospod-bog/main/src/components/genealogy/layout.ts`
 
 ### 1.11. Карта связей сайта `/map/`
 
 `map/index.html` заявляет “42 страницы · 180+ связей · 7 тематических кластеров”, но raw-файл сейчас выглядит как очень короткий документ/заглушка. Такой раздел нельзя наращивать вручную: нужен data-driven graph JSON и отдельный графовый движок.
 
 Источник:  
-`https://raw.githubusercontent.com/FedorMilovanov/gb-is-my-strength/main/map/index.html`
+`https://raw.githubusercontent.com/FedorMilovanov/gospod-bog/main/map/index.html`
 
 ---
 
@@ -874,19 +874,19 @@ MapEngine v2 должен иметь:
 
 - GitHub repo: `https://github.com/FedorMilovanov/gb-is-my-strength`
 - README: `https://github.com/FedorMilovanov/gb-is-my-strength`
-- AGENTS.md: `https://raw.githubusercontent.com/FedorMilovanov/gb-is-my-strength/main/AGENTS.md`
-- karty index: `https://raw.githubusercontent.com/FedorMilovanov/gb-is-my-strength/main/karty/index.html`
-- route shared README: `https://raw.githubusercontent.com/FedorMilovanov/gb-is-my-strength/main/karty/_shared/README.md`
-- route schema: `https://raw.githubusercontent.com/FedorMilovanov/gb-is-my-strength/main/karty/_shared/route.schema.json`
-- MapEngine: `https://raw.githubusercontent.com/FedorMilovanov/gb-is-my-strength/main/karty/_engine/map-engine.js`
-- MapEngine modules README: `https://github.com/FedorMilovanov/gb-is-my-strength/tree/main/karty/_engine/modules`
-- Abraham route: `https://raw.githubusercontent.com/FedorMilovanov/gb-is-my-strength/main/karty/avraam/route.json`
-- Ishod placeholder: `https://raw.githubusercontent.com/FedorMilovanov/gb-is-my-strength/main/karty/ishod/index.html`
-- Pavel placeholder: `https://raw.githubusercontent.com/FedorMilovanov/gb-is-my-strength/main/karty/pavel/index.html`
-- map index: `https://raw.githubusercontent.com/FedorMilovanov/gb-is-my-strength/main/map/index.html`
-- GenealogyTree: `https://raw.githubusercontent.com/FedorMilovanov/gb-is-my-strength/main/src/components/genealogy/GenealogyTree.tsx`
-- genealogy layout: `https://raw.githubusercontent.com/FedorMilovanov/gb-is-my-strength/main/src/components/genealogy/layout.ts`
-- validate maps: `https://raw.githubusercontent.com/FedorMilovanov/gb-is-my-strength/main/scripts/validate-map-routes.js`
+- AGENTS.md: `https://raw.githubusercontent.com/FedorMilovanov/gospod-bog/main/AGENTS.md`
+- karty index: `https://raw.githubusercontent.com/FedorMilovanov/gospod-bog/main/karty/index.html`
+- route shared README: `https://raw.githubusercontent.com/FedorMilovanov/gospod-bog/main/karty/_shared/README.md`
+- route schema: `https://raw.githubusercontent.com/FedorMilovanov/gospod-bog/main/karty/_shared/route.schema.json`
+- MapEngine: `https://raw.githubusercontent.com/FedorMilovanov/gospod-bog/main/karty/_engine/map-engine.js`
+- MapEngine modules README: `https://github.com/FedorMilovanov/gospod-bog/tree/main/karty/_engine/modules`
+- Abraham route: `https://raw.githubusercontent.com/FedorMilovanov/gospod-bog/main/karty/avraam/route.json`
+- Ishod placeholder: `https://raw.githubusercontent.com/FedorMilovanov/gospod-bog/main/karty/ishod/index.html`
+- Pavel placeholder: `https://raw.githubusercontent.com/FedorMilovanov/gospod-bog/main/karty/pavel/index.html`
+- map index: `https://raw.githubusercontent.com/FedorMilovanov/gospod-bog/main/map/index.html`
+- GenealogyTree: `https://raw.githubusercontent.com/FedorMilovanov/gospod-bog/main/src/components/genealogy/GenealogyTree.tsx`
+- genealogy layout: `https://raw.githubusercontent.com/FedorMilovanov/gospod-bog/main/src/components/genealogy/layout.ts`
+- validate maps: `https://raw.githubusercontent.com/FedorMilovanov/gospod-bog/main/scripts/validate-map-routes.js`
 
 ### Технологии
 
