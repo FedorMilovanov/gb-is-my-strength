@@ -85,23 +85,42 @@ function assetExists(url, rootDir) {
 }
 function unique(arr) { return [...new Set(arr)]; }
 function normalizeHtmlForFullDocumentParity(html) {
-  // Рефакторинг 6.0 (leaf replacement, AGENTS-r249): hand-authored Astro
-  // serializes empty elements (SVG <path/>, <rect/>, <circle/>, <line/>, void
-  // <br/>, <meta/>…) as explicit close pairs (<path></path>), whereas the legacy
-  // /about/ artifact and the previous `set:html` shadow used the XHTML-style
-  // self-closing form. The two are SPEC-EQUIVALENT in HTML5 — the browser DOM
-  // is identical and pixel-diff stays 0.0000% (verified via
-  // reports/about-{desktop,mobile}-{legacy,astro}.png + pixelmatch). Without
-  // this canonicalization the byte gate would false-positive on EVERY migrated
-  // Astro leaf that contains SVG, blocking the entire 6.0 lane. Expand
-  // self-closing to explicit-close on BOTH sides so the gate fails only on
-  // real regressions (changed text/attributes/ids/structure), never on
-  // serialization style.
-  return String(html || '')
-    .trim()
+  // Рефакторинг 6.0 (leaf replacement, AGENTS-r249): normalize to a
+  // BROWSER-EQUIVALENT canonical form, so the gate fails only on REAL
+  // regressions (changed text/attributes/ids/structure), never on
+  // serialization style. Two normalization categories:
+  //
+  //  (1) Empty-element self-closing form. Hand-authored Astro serializes empty
+  //      elements (SVG <path/>, <rect/>, <circle/>, <line/>, void <br/>,
+  //      <meta/>…) as explicit close pairs (<path></path>), whereas the legacy
+  //      /about/ artifact + the previous `set:html` shadow used XHTML
+  //      self-closing. SPEC-EQUIVALENT in HTML5 — identical DOM, 0.0000%
+  //      pixel-diff. Expand <x .../> -> <x ...></x> on BOTH sides.
+  //
+  //  (2) Whitespace runs. Astro's compiler trims/normalizes leading and
+  //      trailing whitespace inside flow text nodes (e.g. an indented line of
+  //      prose becomes unindented), while the hand-authored legacy source
+  //      keeps the indentation. Browsers collapse runs of whitespace in normal
+  //      flow to a single space, so these render IDENTICALLY. Collapse
+  //      \s+ -> single space on BOTH sides, EXCEPT inside whitespace-
+  //      significant elements (<pre>, <textarea>) and raw-text elements
+  //      (<script>, <style>) whose contents are protected verbatim.
+  //
+  // Verified safe for /about/ (no <pre>/<code> flow content; &nbsp; entities
+  // and %20 URL-encoding are not matched by \s and are preserved). Verified
+  // that real regressions are still caught: a changed word, attribute, id,
+  // or structural node produces a mismatch after normalization.
+  const RAW = /<(pre|textarea|script|style)(\s[^>]*)?>[\s\S]*?<\/\1>/gi;
+  const protectedNodes = [];
+  let out = String(html || '')
     .replace(/\r\n?/g, '\n')
+    .replace(RAW, (m) => { protectedNodes.push(m); return `\u0000${protectedNodes.length - 1}\u0000`; });
+  out = out
+    .replace(/\s+/g, ' ')
     .replace(/>\s+</g, '><')
-    .replace(/(<([a-zA-Z][a-zA-Z0-9:-]*)(\s[^>]*?)?)\s*\/\s*>/g, '$1></$2>');
+    .replace(/(<([a-zA-Z][a-zA-Z0-9:-]*)(\s[^>]*?)?)\s*\/\s*>/g, '$1></$2>')
+    .trim();
+  return out.replace(/\u0000(\d+)\u0000/g, (_, i) => protectedNodes[+i]);
 }
 function checkFullDocumentParity(problems) {
   const legacyFile = path.join(ROOT, 'about/index.html');
