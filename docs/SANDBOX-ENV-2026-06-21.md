@@ -43,7 +43,7 @@ Please upgrade Node.js to a supported version: ">=22.12.0"
 
 **Решение (3 команды):**
 ```bash
-cd /home/user/repo
+cd /home/user/gb-is-my-strength
 export PATH=/tmp/node-v22.12.0-linux-x64/bin:$PATH
 npm run astro:build  # или npm run strangler:build:production-like
 ```
@@ -88,7 +88,7 @@ FATAL browserType.launch: Executable doesn't exist at /home/user/.cache/ms-playw
 `python3 -m http.server 8091 --bind 127.0.0.1 --directory dist &` — НО:
 
 ### 4.1 Cwd проблема (#1 причина 404)
-Если запустить БЕЗ `--directory`, сервер стартует от `/home/user/repo` (cwd). Нужно **явно**:
+Если запустить БЕЗ `--directory`, сервер стартует от `/home/user/gb-is-my-strength` (cwd). Нужно **явно**:
 ```bash
 nohup python3 -m http.server 8091 --bind 127.0.0.1 --directory dist > /tmp/server.log 2>&1 &
 ```
@@ -98,11 +98,11 @@ nohup python3 -m http.server 8091 --bind 127.0.0.1 --directory dist > /tmp/serve
 В этом sandbox сервер Python сохраняет cwd через `/proc/$PID/cwd`. Если файл/директория cwd **была пересоздана** (например, sandbox cleanup), то `/proc/$PID/cwd` указывает на `(deleted)`. Сервер тогда отдаёт 404 на все пути, **даже если файл существует**.
 
 **Симптом:** `curl -sI http://127.0.0.1:8091/` возвращает `HTTP/1.0 404 File not found`.  
-**Решение:** `kill PID && nohup python3 -m http.server 8091 --bind 127.0.0.1 --directory /home/user/repo/dist &` (перезапуск с АБСОЛЮТНЫМ путём).
+**Решение:** `kill PID && nohup python3 -m http.server 8091 --bind 127.0.0.1 --directory /home/user/gb-is-my-strength/dist &` (перезапуск с АБСОЛЮТНЫМ путём).
 
 ### 4.3 Two servers на разных портах
-- `:8090` = legacy root `/home/user/repo` (там обычные `index.html` файлы)
-- `:8091` = dist `/home/user/repo/dist` (там собрано Astro)
+- `:8090` = legacy root `/home/user/gb-is-my-strength` (там обычные `index.html` файлы)
+- `:8091` = dist `/home/user/gb-is-my-strength/dist` (там собрано Astro)
 
 **КРИТИЧНО:** dist НЕ содержит css/ напрямую — CSS лежит в `dist/_astro/*.css`. Поэтому `<link rel="stylesheet" href="/css/site.css">` будет 404 на dist-сервере. Реальные страницы Astro-роуты собирают CSS бандл в `/_astro/*.css` через `<link rel="stylesheet" href="/_astro/...">`. Но **shadow-wrapped legacy** страницы (Astro-owned типа `/about/`, `/articles/`) используют `loadLegacyFullDocument` который добавляет original `<link rel="stylesheet" href="/css/site.css">` — а этого файла в dist нет!
 
@@ -230,8 +230,8 @@ AGENTS.md §12.5.6 говорит "19 event listeners без removeEventListener
 3. `wget https://nodejs.org/dist/v22.12.0/...` + extract (~10 сек)
 4. `export PATH=/tmp/node-v22.12.0-linux-x64/bin:$PATH`
 5. `npm run strangler:build:production-like` (~15 сек)
-6. `nohup python3 -m http.server 8090 --bind 127.0.0.1 --directory /home/user/repo &` (legacy)
-7. `nohup python3 -m http.server 8091 --bind 127.0.0.1 --directory /home/user/repo/dist &` (dist)
+6. `nohup python3 -m http.server 8090 --bind 127.0.0.1 --directory /home/user/gb-is-my-strength &` (legacy)
+7. `nohup python3 -m http.server 8091 --bind 127.0.0.1 --directory /home/user/gb-is-my-strength/dist &` (dist)
 
 Итого ~60 сек setup. Затем можно делать screenshots / audit / push.
 
@@ -252,7 +252,7 @@ AGENTS.md §12.5.6 говорит "19 event listeners без removeEventListener
 
 ```bash
 # Setup
-cd /home/user/repo
+cd /home/user/gb-is-my-strength
 wget -q https://nodejs.org/dist/v22.12.0/node-v22.12.0-linux-x64.tar.xz -O /tmp/node22.tar.xz
 tar -xf /tmp/node22.tar.xz -C /tmp/
 export PATH=/tmp/node-v22.12.0-linux-x64/bin:$PATH
@@ -262,8 +262,8 @@ mkdir -p dist  # if gone
 npm run strangler:build:production-like
 
 # Servers
-nohup python3 -m http.server 8090 --bind 127.0.0.1 --directory /home/user/repo > /tmp/server.log 2>&1 &
-nohup python3 -m http.server 8091 --bind 127.0.0.1 --directory /home/user/repo/dist > /tmp/server.log 2>&1 &
+nohup python3 -m http.server 8090 --bind 127.0.0.1 --directory /home/user/gb-is-my-strength > /tmp/server.log 2>&1 &
+nohup python3 -m http.server 8091 --bind 127.0.0.1 --directory /home/user/gb-is-my-strength/dist > /tmp/server.log 2>&1 &
 
 # Visual parity
 node scripts/visual-parity-screenshots.js --routes "/,/about/,..."
