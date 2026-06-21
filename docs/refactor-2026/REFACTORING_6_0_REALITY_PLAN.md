@@ -15,6 +15,7 @@
 - `research/EXTERNAL_MIGRATION_CONSTRAINTS_2026-06-21.md`
 - `docs/refactor-2026/PILOT_DOSSIER_ABOUT_2026-06-21.md`
 - `docs/refactor-2026/PILOT_DOSSIER_KOD_DA_VINCHI_2026-06-21.md`
+- `docs/refactor-2026/PILOT_IMPLEMENTATION_KOD_DA_VINCHI_2026-06-21.md`
 
 ### 0.1 Архитектурный deadlock
 

@@ -111,6 +111,15 @@
 - per-request feature flags;
 - true branch-by-abstraction routing on the page layer.
 
+### Но важно: static hosting НЕ блокирует build-time MDX activation
+
+Отдельно верифицировано, что Astro content collections можно рендерить в **prerendered static pages** через `getEntry()` + `render(entry)` на этапе build. То есть текущий GitHub Pages хостинг блокирует **request-time routing**, но не блокирует **build-time content breakout**.
+
+Это значит:
+- `/about/` shell-first pilot возможен уже сейчас;
+- `/articles/kod-da-vinchi/` content/layout-first pilot возможен уже сейчас;
+- но rollout-гейтинг по cookie/header — нет.
+
 ## 6. Итоговое правило для roadmap
 
 ### Нельзя больше писать
