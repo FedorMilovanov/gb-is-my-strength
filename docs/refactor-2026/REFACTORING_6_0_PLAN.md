@@ -18,6 +18,8 @@
 - `docs/refactor-2026/PILOT_IMPLEMENTATION_KOD_DA_VINCHI_2026-06-21.md`
 - `docs/refactor-2026/PATCH_SPEC_KOD_DA_VINCHI_2026-06-21.md`
 - `docs/refactor-2026/PATCH_SPEC_ARTICLE_MDX_AUDIT_2026-06-21.md`
+- `docs/refactor-2026/PATCH_SPEC_ABOUT_2026-06-21.md`
+- `docs/refactor-2026/PATCH_SPEC_VISUAL_PARITY_PROFILES_2026-06-21.md`
 - `docs/refactor-2026/PLAYWRIGHT_VISUAL_GATE_ENHANCEMENT_2026-06-21.md`
 
 Проанализировав 1335 коммитов, 237KB AGENTS.md, историю AUDIT_HISTORY.md и все рефакторинг-документы, выявлены 5 коренных причин откатов:
