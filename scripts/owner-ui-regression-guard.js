@@ -53,15 +53,24 @@ mustContain('karty/index.html', 'Премиальная витрина карт'
 mustContain('karty/index.html', 'Остальные карты временно не на витрине', 'unfinished map shelf warning');
 mustContain('karty/index.html', '0</b><span>черновиков на витрине', 'no unfinished demos on map shelf');
 
+// karty/ishod/ is a LIVE map (shared map-engine.js + route.json), promoted in
+// 8ff89285 (astro-ishod-pilot-audit already treats it as live, not holding).
+// Verified functional 2026-06-21: renders the full Exodus route (Raamses →
+// Sinai → Kadesh-Barnea → Plains of Moab), 11 waypoints / 6 stages, Hebrew
+// title, 0 page errors. Assert the live-map contract instead of the old
+// holding-page marker so this guard does not false-positive on a real map.
+mustContain('karty/ishod/index.html', '../_engine/map-engine.js', 'ishod loads shared live map engine');
+mustNotContain('karty/ishod/index.html', 'Визуальный аудит карт', 'ishod is a live map, not a holding page');
+for (const slug of ['pavel','shoftim','melachim','shvatim','yeshua','maccabim','early-church','revelation']) {
+  mustContain(`karty/${slug}/index.html`, 'Визуальный аудит карт', `${slug} holding page`);
+  mustNotContain(`karty/${slug}/index.html`, 'id="mapRoot"', `${slug} unfinished live MapEngine root`);
+}
+
 // Russian Baptists: owner called out incomplete/ugly series presentation.
 mustContain('baptisty-rossii/index.html', 'data-gbs2-series="russian-baptism"', 'Russian Baptists GBS2 series shell');
 mustContain('baptisty-rossii/index.html', '10 частей · живая исследовательская серия', 'Russian Baptists complete series count');
 mustContain('css/site.css', 'Russian Baptists series landing', 'Russian Baptists premium landing CSS guard');
 mustContain('css/site.css', 'grid-template-columns:repeat(3,minmax(0,1fr))', 'Russian Baptists desktop compact card grid');
-for (const slug of ['ishod','pavel','shoftim','melachim','shvatim','yeshua','maccabim','early-church','revelation']) {
-  mustContain(`karty/${slug}/index.html`, 'Визуальный аудит карт', `${slug} holding page`);
-  mustNotContain(`karty/${slug}/index.html`, 'id="mapRoot"', `${slug} unfinished live MapEngine root`);
-}
 
 // Doctrine: future agents must see the owner rule.
 mustContain('docs/OWNER-REQUIREMENTS.md', '95%+ визуального совпадения', 'Astro 95% visual parity doctrine');
