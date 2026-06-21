@@ -214,7 +214,7 @@
 | C2 | **Двойной рендеринг карт** | Avraam vs MapEngine vs v2 | 3 paths, 3x maintenance, 3x risk | Фаза 6 |
 | C3 | **202 !important в site.css** | css/site.css | Блокирует рефакторинг, вынуждает костыли | Фаза 2 |
 | C4 | **194 addEventListener, 13 removeEventListener** | js/site.js | Memory leak (ratio ~15:1) | Фаза 7 |
-| C5 | **Avraam монолит 4776 строк** | karty/avraam/ | Нельзя править без риска сломать | Фаза 6 (последний) |
+| C5 | **Avraam extracted 4792 строк (2385+2407)** | karty/avraam/ | JS вынесен в avraam-app.js, но всё ещё high-risk | Фаза 6 (последний) |
 | C6 | **Visual parity guard не в deploy.yml** | visual-parity-screenshots.js | Только manual, не защищает | Фаза 1 |
 | C7 | **Site.js 5129 строк** | js/site.js | Нельзя рефакторить без риска | Фаза 7 |
 | C8 | **Dead modules/ в engine** | karty/_engine/modules/ | Мёртвый код от провального рефакторинга | Фаза 8 |
@@ -605,7 +605,7 @@ git commit -m "visual-baseline(<route>): owner-approved diff X% — reason"
 1. **Фаза 1** (CI visual gate) — защита от повторения r244
 2. **Фаза 2** (CSS @layer) — конец эпохи !important
 3. **Фазы 3-6** (Native promotion) — 52/52 страниц становятся настоящими
-4. **Фаза 7** (Site.js decomposition) — конец монолита 5129 строк
+4. **Фаза 7** (Site.js decomposition) — конец монолита 569 строк (165 KB minified)
 5. **Фаза 9** (TypeScript) — safety net для будущих агентов
 6. **Фаза 10** (Performance) — реальные цифры, а не догадки
 7. **Фаза 12** (Avraam) — самая рискованная, самая последняя
