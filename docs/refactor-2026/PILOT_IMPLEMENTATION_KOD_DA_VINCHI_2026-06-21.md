@@ -338,6 +338,9 @@ That gives a much safer rollback than whole-route layout replacement.
 
 ---
 
+См. также детальный file-by-file spec:
+- `docs/refactor-2026/PATCH_SPEC_KOD_DA_VINCHI_2026-06-21.md`
+
 ## 9. Final verdict
 
 The first practical coding move for real Refactoring 6.0 is now clear:
