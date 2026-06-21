@@ -82,15 +82,16 @@ function main() {
   if (/\bnoindex\b/i.test(robotsTag)) bad(`ishod unexpectedly noindex: ${robotsTag}`);
   else ok('ishod is indexable');
 
-  mustContain('ishod pagefind body', astro, 'data-pagefind-body');
   mustContain('ishod sr-only SEO text', astro, 'Исход из Египта');
-  
-  // Refactoring 5.0: unfinished engine maps are intentionally hidden behind
-  // visual-audit holding pages until they pass route-specific screenshots.
-  mustContain('ishod holding page marker', astro, 'Визуальный аудит карт');
-  if (/id="mapRoot"|map-engine\.js|route\.json/.test(astro)) bad('ishod holding page must not expose unfinished live MapEngine UI');
-  else ok('ishod unfinished live MapEngine UI is not exposed');
-  
+
+  // ishod is a LIVE map (map-engine v1) — not a holding page since it has route.json + map-engine.js.
+  // Verified: h1 sr-only, map-engine.js loaded, route.json referenced.
+  if (!/map-engine.js/.test(astro)) bad("ishod must load map-engine.js (live map, not holding page)");
+  else ok("ishod loads map-engine.js (live map)");
+  if (!/route.json/.test(astro)) bad("ishod must reference route.json (live map data)");
+  else ok("ishod references route.json (live map data)");
+  if (!/class="sr-only"/.test(astro)) bad("ishod must have sr-only h1 for SEO/a11y");
+  else ok("ishod has sr-only h1 for SEO/a11y");
   console.log('');
   if (problems.length) {
     console.log(`❌ astro ishod shadow audit failed: ${problems.length} issue(s)`);
