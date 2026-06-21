@@ -1,10 +1,10 @@
 ---
 /**
- * /articles/kod-da-vinchi/ — РЕФАКТОРИНГ 6.0 Phase 1+2 pilot.
+ * /articles/kod-da-vinchi/ — РЕФАКТОРИНГ 6.0 Phase 1+2+3 pilot.
  *
- * Shadow-breakout + CSS @layer pilot.
- * Uses site-layered.css instead of site.css to test @layer architecture.
- * Head is loaded from legacy, but CSS link is swapped to layered version.
+ * Shadow-breakout + CSS @layer + JS modules pilot.
+ * Uses site-layered.css instead of site.css.
+ * Loads site-modules.js alongside site.js for extracted module testing.
  */
 import { loadLegacyFullDocument } from '@/utils/legacyFullDocument';
 import KodDaVinchiMainShell from '@/components/article-pilots/kod-da-vinchi/KodDaVinchiMainShell.astro';
@@ -31,5 +31,7 @@ headHtml = headHtml.replace(
     <Fragment set:html={segBefore} />
     <KodDaVinchiMainShell />
     <Fragment set:html={segAfter} />
+    <!-- Phase 3 JS pilot: extracted modules with AbortController cleanup -->
+    <script src="../../js/site-modules.js?v=modules-pilot" defer></script>
   </body>
 </html>

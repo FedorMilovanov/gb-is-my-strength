@@ -57,7 +57,12 @@ const ALLOWED_JS = new Set([
   'js/bookmark-engine.js',
   'js/series-cards.js',
   'js/nagornaya-mobile-toc.js',
-  'js/sw-register.js'
+  'js/sw-register.js',
+  'js/site-modules.js',
+  'js/modules/back-to-top.js',
+  'js/modules/faq-accordion.js',
+  'js/modules/img-loaded.js',
+  'js/modules/theme.js'
 ]);
 
 // Same list as scripts/cache-bust.js. If cache-bust.js changes, update this list too.
@@ -78,6 +83,11 @@ const CACHE_BUST_ASSETS = [
   'js/highlights.js',
   'js/search.js',
   'js/sw-register.js',
+  'js/site-modules.js',
+  'js/modules/back-to-top.js',
+  'js/modules/faq-accordion.js',
+  'js/modules/img-loaded.js',
+  'js/modules/theme.js',
   'js/nagornaya-mobile-toc.js'
 ];
 
