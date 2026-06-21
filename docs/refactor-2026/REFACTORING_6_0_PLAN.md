@@ -141,7 +141,7 @@ MapEngine v0.x (shared engine, 9 карт) vs Avraam (monolith, 1 карта) vs
 
 | # | Задача | Костыль | Метод |
 |---|--------|---------|-------|
-| 1.1 | Аудит всех 202 !important: specificity расчёт для каждого | G270 audit | `grep -n '!important' site.css` → per-rule analysis |
+| 1.1 | Аудит всех 202 !important: specificity расчёт для каждого | G202 audit | `grep -n '!important' site.css` → per-rule analysis |
 | 1.2 | `@layer reset, base, components, utilities` — перевести site.css в слои | ~100 !important | CSS @layer — unlayered rules бьют любой @layer |
 | 1.3 | Вынести GBS2 стили в отдельный @layer | ~30 !important | `@layer gbs2 { ... }` |
 | 1.4 | Вынести Nagornaya стили в @layer | ~25 !important | `@layer nagornaya { ... }` |
