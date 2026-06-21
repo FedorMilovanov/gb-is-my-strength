@@ -86,7 +86,32 @@
 
 ---
 
-## 5. Итоговое правило для roadmap
+## 5. Static hosting constraint: current GitHub Pages deploy cannot do server-side pilot gating
+
+Внешняя верификация показала сразу два ограничения:
+
+1. **GitHub Pages — это static hosting only**; он не исполняет backend / server-side code и не даёт route-level request handling.
+2. В **Astro static output** request-time `Astro.request` / `Astro.cookies` / query-aware URL semantics недоступны так же, как в SSR/server mode.
+
+### Практический вывод для репозитория
+
+На текущем production-хостинге **невозможны как настоящие server-side механизмы**:
+- cookie-based opt-in для pilot routes;
+- header-based routing;
+- middleware-gated rollout;
+- request-time switch между legacy и native output.
+
+### Что реально возможно сейчас
+- build-only preview routes;
+- отдельный dist artifact и manual smoke review;
+- client-side toggles (query/localStorage) только как UX-эксперимент, но не как архитектурный rollout control.
+
+### Что станет возможно только после смены hosting model
+- SSR / server output;
+- per-request feature flags;
+- true branch-by-abstraction routing on the page layer.
+
+## 6. Итоговое правило для roadmap
 
 ### Нельзя больше писать
 > «переводим все shadow-routes одинаково»

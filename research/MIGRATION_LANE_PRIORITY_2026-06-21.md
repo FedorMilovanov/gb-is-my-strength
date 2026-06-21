@@ -96,11 +96,13 @@ Nagornaya нельзя мигрировать page-by-page без предвар
 
 ## 4.1 Лучшие первые breakout-candidates
 
+После дополнительной локальной проверки выяснилось, что ранее выбранный `rimlyanam-7` — **не low-risk standard article**, а GBS2 / hard-texts series page (`body.gbs-world`, `gbs2-rail`, mobile sheet, progress ring, TOC runtime). Поэтому как первый content pilot он переоценён.
+
 | Priority | Route | Legacy HTML | Why first |
 |---|---|---:|---|
-| 1 | `/articles/rimlyanam-7-veruyushchiy-ili-neveruyushchiy/` | 66.6 KB | Низкая интерактивность, MDX есть, низкий traffic risk, уже выбранный best pilot |
+| 1 | `/articles/kod-da-vinchi/` | 190.8 KB | Первый non-series pure article: `body.gbs-paper`, без GBS2 rail и series chrome; лучший кандидат для standard-article breakout |
 | 2 | `/baptisty-rossii/dva-sezda-1884/` | 30.7 KB | Очень компактный pure route, хороший series-layout pilot |
-| 3 | `/baptisty-rossii/noch-na-kure/` | 33.1 KB | Небольшой и low-risk |
+| 3 | `/baptisty-rossii/noch-na-kure/` | 33.1 KB | Небольшой и low-risk внутри series lane |
 | 4 | `/baptisty-rossii/yuzhnaya-shtunda/` | 33.5 KB | Небольшой и low-risk |
 | 5 | `/baptisty-rossii/peterburgskaya-liniya/` | 39.4 KB | Всё ещё компактный |
 | 6 | `/baptisty-rossii/vsehib-1944/` | 45.3 KB | Умеренный размер |
@@ -119,14 +121,15 @@ Nagornaya нельзя мигрировать page-by-page без предвар
 
 ### Вывод по content lane
 
-Правильный порядок не должен начинаться с самых длинных статей.
+Правильный порядок не должен начинаться ни с самых длинных статей, ни с routes, у которых под `articles/` скрыт series-specific chrome.
 
 **Оптимальная цепочка доказательства:**
-1. `rimlyanam-7`
+1. `kod-da-vinchi`
 2. один короткий `baptisty-rossii/*` route
 3. ещё 2–3 коротких series routes
 4. затем `gill-spravochnik` / `gill-kontekst`
-5. только потом большие article bodies
+5. затем `rimlyanam-7` уже как hard-texts / GBS2-style sublane
+6. только потом самые большие article bodies
 
 ---
 
@@ -160,7 +163,7 @@ Nagornaya нельзя мигрировать page-by-page без предвар
 3. `/konfessii/`
 
 ### Wave 2 — доказать content/layout-first lane
-4. `/articles/rimlyanam-7-veruyushchiy-ili-neveruyushchiy/`
+4. `/articles/kod-da-vinchi/`
 5. `/baptisty-rossii/dva-sezda-1884/`
 6. `/baptisty-rossii/noch-na-kure/`
 

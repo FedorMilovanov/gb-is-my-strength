@@ -13,6 +13,8 @@
 - `research/PRODUCTION_ROUTE_TAXONOMY_2026-06-21.md`
 - `research/MIGRATION_LANE_PRIORITY_2026-06-21.md`
 - `research/EXTERNAL_MIGRATION_CONSTRAINTS_2026-06-21.md`
+- `docs/refactor-2026/PILOT_DOSSIER_ABOUT_2026-06-21.md`
+- `docs/refactor-2026/PILOT_DOSSIER_KOD_DA_VINCHI_2026-06-21.md`
 
 ### 0.1 Архитектурный deadlock
 
@@ -52,17 +54,17 @@
 | Страница | MDX | Live route class | Interactive JS | Карты | Трафик | Score |
 |----------|-----|------------------|----------------|-------|--------|-------|
 | `/about/` | ❌ | hybrid page-segment shadow | Низкий | Нет | Средний | ⭐⭐⭐⭐ (shell-first lane) |
-| `/articles/20-antisovetov-pastoru/` | ✅ | pure full-body shadow | Средний (footnotes) | Нет | Высокий | ⭐⭐⭐⭐ |
-| `/articles/rimlyanam-7/` | ✅ | pure full-body shadow | Низкий | Нет | Низкий | ⭐⭐⭐⭐⭐ **WINNER** |
-| `/articles/hermenevticheskaya/` | ✅ | pure full-body shadow | Средний | Нет | Средний | ⭐⭐⭐⭐ |
-| `/baptisty-rossii/spravochnik/` | ✅ | pure full-body shadow | Низкий | Нет | Низкий | ⭐⭐⭐⭐ |
+| `/articles/kod-da-vinchi/` | ✅ | pure full-body shadow (`body.gbs-paper`) | Средний | Нет | Средний | ⭐⭐⭐⭐⭐ **WINNER (content-lane)** |
+| `/articles/20-antisovetov-pastoru/` | ✅ | pure full-body shadow (`pastor-series`) | Высокий | Нет | Высокий | ⭐⭐⭐ |
+| `/articles/rimlyanam-7/` | ✅ | pure full-body shadow (`hard-texts` / GBS2 chrome) | Средний–высокий | Нет | Низкий | ⭐⭐⭐ |
+| `/baptisty-rossii/spravochnik/` | ✅ | pure full-body shadow (`russian-baptism`) | Средний | Нет | Низкий | ⭐⭐⭐⭐ |
 
-**Pilot content-lane:** `/articles/rimlyanam-7-veruyushchiy-ili-neveruyushchiy/`
-- MDX: `src/content/articles/rimlyanam-7-veruyushchiy-ili-neveruyushchiy.mdx` ✅
+**Pilot content-lane:** `/articles/kod-da-vinchi/`
+- MDX: `src/content/articles/kod-da-vinchi.mdx` ✅
 - Route class: pure full-body shadow ✅
-- Layout target: `ArticleLayout.astro` ✅ (orphaned, но рабочий)
-- Interactive: только footnotes/tooltips (site.js) — минимум
-- Трафик: низкий (техническая статья)
+- Legacy shell: standard `gbs-paper`, не GBS2 series chrome ✅
+- Нет `gbs2-rail`, mobile sheet и series progress runtime ✅
+- Лучше подходит для first standard-article breakout, чем `rimlyanam-7`
 - Visual parity baseline: есть
 
 **Pilot shell-lane:** `/about/`
@@ -81,9 +83,9 @@
 | # | Задача | Результат | Гейт |
 |---|--------|-----------|------|
 | 0.1 | **Проверить `ArticleLayout.astro`** — работает ли он с Astro 6, собирается ли с MDX | Build без ошибок | `npm run strangler:build:production-like` exit 0 |
-| 0.2 | **Восстановить `astro-test.astro`** → создать `/dev/pilot-rimlyanam.astro` | Dev-страница с MDX рендером | localhost visual check |
-| 0.3 | **Добавить `rimlyanam-7` в MDX content config** | `src/content.config.ts` знает про rimlyanam | `npx astro sync` без ошибок |
-| 0.4 | **Проверить `site.js` в native-контексте** | Footnotes/tooltips работают в Astro-bundled странице | Interactive-audit PASS |
+| 0.2 | **Создать `/dev/pilot-kod-da-vinchi.astro`** | Dev-страница с MDX рендером для standard article path | localhost visual check |
+| 0.3 | **Подтвердить content route wiring** | `src/content.config.ts` уже знает про `kod-da-vinchi`; проверить `getEntry()+render()` path | `npx astro sync` без ошибок |
+| 0.4 | **Проверить `site.js` в native-контексте** | Footnotes/tooltips/highlights работают в Astro-bundled странице | Interactive-audit PASS |
 
 **Rollback:** удалить `/dev/pilot-rimlyanam.astro`.
 
@@ -95,11 +97,11 @@
 
 | # | Задача | Детали | Риск |
 |---|--------|--------|------|
-| 1.1 | **Реверт `src/pages/articles/rimlyanam-7/index.astro`** | Удалить `loadLegacyFullDocument`, вернуть `getEntry('articles', 'rimlyanam-7')` + `ArticleLayout` | Medium — был e116bec |
-| 1.2 | **Обновить `ArticleLayout.astro`** | Убедиться, что все meta-tags (canonical, OG, JSON-LD) генерируются из MDX frontmatter | Low |
-| 1.3 | **Проверить CSS-инъекцию** | `ArticleLayout` должен подключать `site.css` + page-specific CSS через `<link>` (не Astro-bundled, пока нет @layer) | Low |
-| 1.4 | **Проверить JS-инъекцию** | `site.js` должен загружаться как `<script src>` (не Astro-bundled), чтобы event listeners не дублировались | Medium |
-| 1.5 | **Visual parity screenshot** | Сравнить `/articles/rimlyanam-7/` (native) vs `/articles/rimlyanam-7/` (legacy root) | Medium |
+| 1.1 | **Реверт `src/pages/articles/kod-da-vinchi/index.astro` в pilot branch** | Удалить pure `bodyHtml` transport и собрать standard article breakout | Medium |
+| 1.2 | **Не использовать `ArticleLayout` как есть без доказательства parity** | Сначала проверить разницу между legacy `gbs-paper` shell и current `ArticleLayout`/`BaseLayout` output | Medium |
+| 1.3 | **Сделать first breakout через extracted shell** | Использовать `extract-native-pilot.js`: legacy head + body-segments + MDX `Content` inside standard article shell | Low |
+| 1.4 | **Проверить CSS/JS contract** | `site.css`, `command-palette.css`, `mobile-hotfix.css`, `site.js`, `search.js` должны остаться через legacy-compatible includes | Medium |
+| 1.5 | **Visual parity screenshot** | Сравнить `/articles/kod-da-vinchi/` (pilot) vs legacy root | Medium |
 | 1.6 | **audit-pro** | Проверить single-h1, meta-tags, canonical, OG | Low |
 | 1.7 | **Interactive-audit** | Footnotes, tooltips, theme toggle, mobile nav | Low |
 
@@ -126,7 +128,7 @@ build: exit 0
 | 2.1 | Создать `css/site-layered.css` | `@layer reset, base, gbs2, nagornaya, components, utilities, overrides;` |
 | 2.2 | Мигрировать `site.css` → `site-layered.css` по частям | Сначала base + utilities (безопасно), потом components, потом gbs2/nagornaya |
 | 2.3 | Создать `scripts/css-layer-validator.js` | Проверяет: нет unclosed braces, layer order правильный, !important count |
-| 2.4 | Pilot-страница `rimlyanam-7` подключает `site-layered.css` вместо `site.css` | `<link rel="stylesheet" href="/css/site-layered.css">` в `ArticleLayout` |
+| 2.4 | Pilot-страница `kod-da-vinchi` подключает `site-layered.css` вместо `site.css` | Только после parity-proof для extracted standard-article shell |
 | 2.5 | Visual parity для pilot | ≤0.5% diff |
 
 **Гейт:** `node scripts/css-layer-validator.js` + visual parity pilot.
@@ -181,7 +183,7 @@ build: exit 0
 | 5.1 | **Улучшить `check-mdx-html-parity.js`** | Добавить semantic check: `<h2>` count, `<img alt>` count, `<figure>` count, `<a>` count. Не только word count. |
 | 5.2 | **Исправить shallow-clone trap** | Записать `data/content-versions.json` с timestamp последнего редактирования MDX и HTML. Или использовать `git log --follow --diff-filter=M`. |
 | 5.3 | **Port MDX improvements back to HTML** | Для страниц, где MDX richer, но страница ещё в shadow-wrap: скрипт `scripts/sync-mdx-to-html.js` — извлекает MDX body, конвертирует в HTML, вставляет в legacy `index.html`. |
-| 5.4 | **Проверить на pilot-страницах** | rimlyanam-7 и другие native-страницы должны показывать MDX content verbatim. |
+| 5.4 | **Проверить на pilot-страницах** | `kod-da-vinchi` и другие pilot routes должны показывать MDX content verbatim внутри legacy-compatible shell. |
 
 **Гейт:** `node scripts/check-mdx-html-parity.js` — 0 errors, 0 warnings. Semantic check: 0 mismatches.
 
@@ -251,7 +253,7 @@ node scripts/check-mdx-html-parity.js
 # ✅ 0 errors, 0 warnings
 
 # 4. Visual parity (если трогал pilot)
-node scripts/visual-parity-screenshots.js --routes /articles/rimlyanam-7-veruyushchiy-ili-neveruyushchiy/
+node scripts/visual-parity-screenshots.js --routes /articles/kod-da-vinchi/
 # ≤0.5%
 
 # 5. CSS validator (если трогал CSS)
@@ -338,14 +340,17 @@ node scripts/interactive-audit.js
 Шаг 4: Когда все страницы на site-layered.css — удалить site.css.
 ```
 
-### 5.4 Feature flag для pilot
-```javascript
-// Внутри Astro page или middleware
-const useNative = Astro.cookies.get('native-pilot')?.value === 'rimlyanam' ||
-                  import.meta.env.FORCE_NATIVE === 'true';
-if (!useNative) {
-  return Astro.redirect('/articles/rimlyanam-7-veruyushchiy-ili-neveruyushchiy/index.html');
-}
-```
-Или проще: **cookie-based opt-in** для владельца, чтобы проверить pilot до rollout.
+### 5.4 Pilot gating на текущем хостинге
+
+**Важно:** текущий production — это `output: 'static'` + GitHub Pages. Поэтому server-side gating через `Astro.cookies`, request headers или middleware **на текущем хостинге не работает**.
+
+Что реально возможно сейчас:
+- отдельный `dev/` preview route;
+- отдельный production-dist artifact для ручного smoke review;
+- client-side query/localStorage toggle только как UX-эксперимент, но не как настоящий server-side rollout gate.
+
+Что станет возможно только после смены hosting model:
+- SSR / on-demand route gating;
+- cookie-based opt-in;
+- header-based shadow routing.
 
