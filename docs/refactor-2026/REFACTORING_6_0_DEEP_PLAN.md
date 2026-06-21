@@ -40,9 +40,9 @@
 
 | Тип | Количество | Пример |
 |-----|:----------:|--------|
-| **Full-document shadow** (loadLegacyFullDocument) | **30+** | all karty/*, all articles/*, all baptisty-rossii/* |
-| **Native-shadow** (body chrome + named components) | **6** | /about/, /articles/, /biografii/, /hard-texts/, /konfessii/, /pastor-series/ |
-| **Native Astro** (hand-authored) | **~5** | /rodosloviye/ (GenealogyTree), /map/ (SVG graph) |
+| **Full-document shadow** (loadLegacyFullDocument) | **51/52** | all production pages; only dev/astro-test.astro is native |
+| **Native-shadow** (body chrome + named components) | **0** | all pages reverted to full-document shadow Jun 20, 2026 |
+| **Native Astro** (hand-authored) | **1** | /dev/astro-test.astro only (noindex) |
 | **Full shadow — landing pages** | **11** | /, /baptisty-rossii/, /nagornaya/, /karty/, /map/ |
 
 **Итого:** 52 Astro pages, из них **только 6** имеют named editable components. Остальные 46 — это legacy HTML, пропущенный через Astro как через трубу.
@@ -61,7 +61,7 @@
 
 | Файл | Строки | addEventListener | `remove` |
 |------|:------:|:---------------:|:--------:|
-| site.js | **5129** | 130+ | **0 явных** |
+| site.js | **569 lines (165 KB minified)** | 194 | **13** |
 | search.js | ~1500 | 20+ | 0 |
 | enhancements.js | ~900 | 15+ | 0 |
 | Остальные 8 | ~4000 | ~40 | 0 |
@@ -70,8 +70,8 @@
 
 | Компонент | Строки | Статус |
 |-----------|:------:|--------|
-| Avraam (`index.html` + `avraam-app.js`) | 4776 | monolith, protected |
-| MapEngine v1 (`map-engine.js`) | 2276 | 9 карт |
+| Avraam (extracted: `index.html` 2385 + `avraam-app.js` 2407) | 4792 | extracted (9115253), protected |
+| MapEngine v1 (`map-engine.js`) | 2590 | 9 карт |
 | Dead modules (`modules/`) | ~413 | мёртвый код |
 | MapEngine v2 | 0 | только в MAPS-ADR |
 
@@ -212,8 +212,8 @@
 |---|------|-----|-----------------|---------|
 | C1 | **30+ страниц в shadow-wrap** | 46 из 52 Astro pages | Не native, не редактируются, любой фикс требует изменения legacy HTML | Фаза 4-5 |
 | C2 | **Двойной рендеринг карт** | Avraam vs MapEngine vs v2 | 3 paths, 3x maintenance, 3x risk | Фаза 6 |
-| C3 | **270 !important в site.css** | css/site.css | Блокирует рефакторинг, вынуждает костыли | Фаза 2 |
-| C4 | **130+ addEventListener без remove** | js/site.js | Memory leak при navigation | Фаза 7 |
+| C3 | **202 !important в site.css** | css/site.css | Блокирует рефакторинг, вынуждает костыли | Фаза 2 |
+| C4 | **194 addEventListener, 13 removeEventListener** | js/site.js | Memory leak (ratio ~15:1) | Фаза 7 |
 | C5 | **Avraam монолит 4776 строк** | karty/avraam/ | Нельзя править без риска сломать | Фаза 6 (последний) |
 | C6 | **Visual parity guard не в deploy.yml** | visual-parity-screenshots.js | Только manual, не защищает | Фаза 1 |
 | C7 | **Site.js 5129 строк** | js/site.js | Нельзя рефакторить без риска | Фаза 7 |
@@ -267,7 +267,7 @@
 | # | Задача | Долг | Оценка |
 |---|--------|------|:------:|
 | 0.1 | `check-workflows.js` — добавить guard на visual-parity.yml | C6 | 30min |
-| 0.2 | Dead modules/ — удалить | C8 | 10min |
+| 0.2 | ~~Dead modules/ — удалить~~ | ~~C8~~ | ~~FIXED 83ae4a8~~ |
 | 0.3 | Orphan images — удалить (6MB) | H6 | 20min |
 | 0.4 | `_build-tools/preview-archive/` — проверить, можно ли удалить | M13 | 15min |
 | 0.5 | `audit/` — старые > 1 недели — в архив | M14 | 10min |
@@ -395,7 +395,7 @@
 
 ### Фаза 7: SITE.JS DECOMPOSITION (дни 10-16)
 
-**Цель:** site.js 5129 строк → 8 отдельных модулей с clean API и cleanup.
+**Цель:** site.js 569 lines (165 KB minified) → reverse-engineer → 8 отдельных модулей с clean API и cleanup.
 
 | # | Задача | Новый файл | Из site.js строк |
 |---|--------|------------|:---------------:|
@@ -407,7 +407,7 @@
 | 7.6 | Series/interactive | `js/interactive.js` | ~400 |
 | 7.7 | GBS2 runtime | `js/gbs2.js` | ~600 |
 | 7.8 | Share/utilities | `js/share.js` | ~300 |
-| 7.9 | Site.js → import + delegate | `js/site.js` | 5129 → ~200 |
+| 7.9 | Site.js → import + delegate | `js/site.js` | 569 → ~200 (bundled from modules) |
 | 7.10 | Каждый модуль: AbortController cleanup | All | Cleanup function exported |
 
 **Gate:** `npm run visual:audit` — ✅ 0 console errors, 0 network errors. Interactive-audit — ✅.
@@ -588,7 +588,7 @@ git commit -m "visual-baseline(<route>): owner-approved diff X% — reason"
 | site.css !important | 270 | **≤100** |
 | Всего !important (5 files) | 493 | **≤200** |
 | MapEngine paths | 3 (Avraam/v1/v2) | **1 (v2)** |
-| site.js строк | 5129 | **~200** (остальное в модулях) |
+| site.js строк | 569 (165 KB minified) | **~200** (bundled from modules) |
 | JS файлов runtime | 11 | **18** (через Astro build) |
 | TypeScript мигрирован | 0% | **70%** (критические модули) |
 | CI visual gate | Нет | **Есть** |

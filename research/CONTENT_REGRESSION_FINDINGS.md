@@ -36,3 +36,35 @@ hermenevticheskaya: MDX=10532 HTML=11144 diff=-612 — HTML richer (footnotes in
 ### FIX NEEDED:
 Option A: Port MDX changes back to legacy HTML (workaround)
 Option B: Switch to native MDX rendering (proper fix — planned in Refactoring 6.0 Phase 5)
+
+
+---
+
+## UPDATE (2026-06-21 — verified via local clone + parity scripts)
+
+### Verified metrics (check-mdx-html-parity-v2.js methodology: strip HTML tags, strip frontmatter, strip markdown formatting, 8% tolerance):
+
+| Article | MDX words | HTML words | Diff | Status |
+|---------|-----------|------------|------|--------|
+| 20-antisovetov-pastoru | 15,332 | 15,224 | +108 | ⚠️ MDX richer (0.7%) |
+| dzhon-gill-istoricheskiy-kontekst | 3,514 | 3,385 | +129 | ⚠️ MDX richer (3.7%) |
+| dzhon-gill-spravochnik | 1,857 | 1,877 | -20 | ✅ within tolerance |
+| kod-da-vinchi | 6,809 | 6,835 | -26 | ✅ within tolerance |
+| rimlyanam-7 | 2,978 | 2,853 | +125 | ⚠️ MDX richer (4.2%) |
+| hermenevticheskaya | 10,444 | 10,576 | -132 | ✅ HTML richer (footnotes) |
+
+**Critical finding:** All 20 MDX files in `src/content/articles/` are completely orphaned.
+Zero production pages reference `getEntry()` or `render()` from `astro:content`.
+Only `dev/astro-test.astro` uses native Astro components. Every production page
+emits verbatim legacy HTML via `loadLegacyFullDocument`.
+
+**Semantic parity check:** MDX files contain markdown headings (`##`), images with `![]()`
+syntax, and blockquotes (`>`) that are not present in the legacy HTML article bodies.
+These structural improvements are invisible to word-count parity checks. A full
+semantic parity guard (h2/h3/img/figure/a/table counts) is needed — see
+`scripts/check-mdx-html-parity-v2.js`.
+
+**Shallow-clone trap:** The original parity check used `git log -1 --format="%ci"` to
+detect which file was newer. In a shallow clone (`--depth 50`), this produces identical
+dates for MDX and HTML, causing the "MDX is newer" warning to fail silently.
+Workaround: use `mtime` or commit a `data/content-versions.json` with explicit timestamps.
