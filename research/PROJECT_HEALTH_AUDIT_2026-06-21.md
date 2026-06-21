@@ -41,7 +41,7 @@
 Articles: 78,264 + Nagornaya: 20,530 + Baptisty-core: ~14,500 ≈ 113,294 words
 
 ## 4. AUDIT SYSTEM HEALTH
-- audit-pro.js: 4,383 lines, 95+ guards (G1-G164 active, 0 errors)
+- audit-pro.js: 4,383 lines, 95+ guards (G1-G113 active, 0 errors)
 - visual-parity-screenshots.js: 323 lines (Playwright + pixelmatch)
 - visual-parity-baseline.js: 105 lines
 - check-mdx-html-parity.js: 157 lines (new, 20 article pairs)
