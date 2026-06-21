@@ -85,7 +85,7 @@ const MAX_HTML = 450_000;
 // Anti-regression ceiling for !important in css/site.css. AGENTS §4.10 target is ≤200.
 // Ratchet: this number must only ever go DOWN. Current value reflects the safe post-dove state.
 // Hard-fail above CEIL; warn when above the long-term GOAL so we keep paying down the debt.
-const IMPORTANT_CEIL = 214; // hard ratchet at current safe baseline; raising this is a regression
+const IMPORTANT_CEIL = 202; // hard ratchet at current safe baseline (202 after 40c80dc); raising this is a regression
 const IMPORTANT_GOAL = 200; // AGENTS §4.10 long-term target
 const MIN_DESC = 50;
 const MAX_DESC = 180;
