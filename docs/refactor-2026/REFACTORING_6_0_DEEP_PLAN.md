@@ -36,32 +36,34 @@
 
 ### 0.3 Текущее состояние (точная инвентаризация)
 
-#### Routes (52 production)
+#### Routes (52 `.astro` page files total, 51 production)
 
 | Тип | Количество | Пример |
 |-----|:----------:|--------|
-| **Full-document shadow** (loadLegacyFullDocument) | **51/52** | all production pages; only dev/astro-test.astro is native |
-| **Native-shadow** (body chrome + named components) | **0** | all pages reverted to full-document shadow Jun 20, 2026 |
-| **Native Astro** (hand-authored) | **1** | /dev/astro-test.astro only (noindex) |
-| **Full shadow — landing pages** | **11** | /, /baptisty-rossii/, /nagornaya/, /karty/, /map/ |
+| **Production routes on `loadLegacyFullDocument`** | **51** | все live routes |
+| **Pure full-body shadow** | **33** | articles/*, baptisty-rossii/*, karty/*, `/map/`, `/rodosloviye/` |
+| **Hybrid page-segment shadow** | **9** | `/about/`, `/articles/`, `/`, `/karty/` |
+| **Hybrid delegated-component shadow** | **9** | весь `/nagornaya/*` через `NagornayaPageMain` |
+| **True native production routes** | **0** | отсутствуют |
+| **Native Astro (dev-only)** | **1** | `/dev/astro-test.astro` |
 
-**Итого:** 52 Astro pages, из них **только 6** имеют named editable components. Остальные 46 — это legacy HTML, пропущенный через Astro как через трубу.
+**Итого:** 52 Astro pages total = 51 production + 1 dev-only. Production не является однородным «verbatim классом»: 33 route — pure full-body shadow, 18 route — componentized/hybrid shadow. Кроме того, production реально использует 11 page-imported components (`AboutArticle`, `HomeMain`, `NagornayaPageMain` и др.), хотя большинство из них пока рендерят raw legacy fragments.
 
 #### CSS (5 файлов)
 
 | Файл | Размер | !important | Скобки |
 |------|:------:|:----------:|:------:|
 | site.css | 265KB | **202** | 0 (исправлено) |
-| home.css | 51KB | 20 | 0 |
+| home.css | 51KB | 36 | 0 |
 | command-palette.css | 38KB | 7 | 0 |
 | mobile-hotfix.css | ~5KB | 85 | 0 |
-| nagornaya-mobile-toc.css | ~3KB | 122 | 0 |
+| nagornaya-mobile-toc.css | ~3KB | 133 | 0 |
 
 #### JS (11 файлов)
 
 | Файл | Строки | addEventListener | `remove` |
 |------|:------:|:---------------:|:--------:|
-| site.js | **569 lines (165 KB minified)** | 194 | **13** |
+| site.js | **569 lines (165 KB minified)** | **45** | **3** |
 | search.js | ~1500 | 20+ | 0 |
 | enhancements.js | ~900 | 15+ | 0 |
 | Остальные 8 | ~4000 | ~40 | 0 |
@@ -72,12 +74,12 @@
 |-----------|:------:|--------|
 | Avraam (extracted: `index.html` 2385 + `avraam-app.js` 2407) | 4792 | extracted (9115253), protected |
 | MapEngine v1 (`map-engine.js`) | 2590 | 9 карт |
-| Dead modules (`modules/`) | ~413 | мёртвый код |
+| Dead modules (`modules/`) | 0 | удалены в `83ae4a8` |
 | MapEngine v2 | 0 | только в MAPS-ADR |
 
 #### Audit system
 
-- **audit-pro.js**: 4384 строки, **95+** guards (G1-G113)
+- **audit-pro.js**: 4383 строки, **164 passed guards / G1-G113+ family**
 - **visual-parity-screenshots.js**: 323 строки, pixelmatch + Playwright
 - **visual-parity-baseline.js**: 105 строк, baseline check
 - **validate.js**: ~500 строк
@@ -210,14 +212,14 @@
 
 | # | Долг | Где | Почему критично | Решение |
 |---|------|-----|-----------------|---------|
-| C1 | **30+ страниц в shadow-wrap** | 46 из 52 Astro pages | Не native, не редактируются, любой фикс требует изменения legacy HTML | Фаза 4-5 |
+| C1 | **51 production routes живут на shadow transport** | 33 pure + 18 hybrid | Нет true native production path; migration strategy должна быть split-lane | Фаза 3-5 |
 | C2 | **Двойной рендеринг карт** | Avraam vs MapEngine vs v2 | 3 paths, 3x maintenance, 3x risk | Фаза 6 |
 | C3 | **202 !important в site.css** | css/site.css | Блокирует рефакторинг, вынуждает костыли | Фаза 2 |
-| C4 | **194 addEventListener, 13 removeEventListener** | js/site.js | Memory leak (ratio ~15:1) | Фаза 7 |
+| C4 | **site.js = 45 addEventListener / 3 removeEventListener** | js/site.js | Cleanup-асимметрия + minified runtime = high-risk support cost | Фаза 7 |
 | C5 | **Avraam extracted 4792 строк (2385+2407)** | karty/avraam/ | JS вынесен в avraam-app.js, но всё ещё high-risk | Фаза 6 (последний) |
-| C6 | **Visual parity guard не в deploy.yml** | visual-parity-screenshots.js | Только manual, не защищает | Фаза 1 |
+| C6 | **Visual parity guard не в deploy.yml** | visual-parity-screenshots.js | Only weekly/manual, не защищает deploy path | Фаза 1 |
 | C7 | **Site.js 569 lines (165 KB minified)** | js/site.js | Нельзя рефакторить без риска | Фаза 7 |
-| C8 | **Dead modules/ в engine** | karty/_engine/modules/ | Мёртвый код от провального рефакторинга | Фаза 8 |
+| C8 | **Taxonomy drift в аналитике** | docs/research/audit | Грубая формула «все 51 одинаково verbatim» искажает roadmap | Фаза 0 |
 
 ### 2.2 🔴 HIGH (12 проблем)
 
@@ -267,7 +269,7 @@
 | # | Задача | Долг | Оценка |
 |---|--------|------|:------:|
 | 0.1 | `check-workflows.js` — добавить guard на visual-parity.yml | C6 | 30min |
-| 0.2 | ~~Dead modules/ — удалить~~ | ~~C8~~ | ~~FIXED 83ae4a8~~ |
+| 0.2 | Route taxonomy — зафиксировать 33 pure / 18 hybrid / 0 native-prod | C8 | 20min |
 | 0.3 | Orphan images — удалить (6MB) | H6 | 20min |
 | 0.4 | `_build-tools/preview-archive/` — проверить, можно ли удалить | M13 | 15min |
 | 0.5 | `audit/` — старые > 1 недели — в архив | M14 | 10min |
@@ -308,7 +310,7 @@
 | 2.5 | Wrap home page styles in `@layer components` | ~10 | `.h-*` selectors |
 | 2.6 | Wrap summary-card, note-box styles in `@layer components` | ~20 | Editorial blocks |
 | 2.7 | Move `!important` mobile hotfixes to `@layer overrides` | 85 | mobile-hotfix.css → @layer |
-| 2.8 | Move Nagornaya TOC overrides to `@layer nagornaya` | 122 | nagornaya-mobile-toc.css → @layer |
+| 2.8 | Move Nagornaya TOC overrides to `@layer nagornaya` | 133 | nagornaya-mobile-toc.css → @layer |
 | 2.9 | Audit remaining !important (expected ~50-70) | ~50 | Per-rule specificity check |
 | 2.10 | Brace balance check | 0 | `python3 -c "..." ` |
 

@@ -3,14 +3,14 @@
 # VERIFIED: 2026-06-21 (sandbox clone, local checks)
 
 ## 1. REPOSITORY OVERVIEW
-- Total commits: 1,335
-- Active branch: main
+- Total commits: 1,335+
+- Active branch: `main`
 - Production: https://gospod-bog.ru (GitHub Pages, dist artifact)
-- Stack: Astro 6 + MDX + Vanilla JS + Handcrafted CSS
+- Stack: Astro 6 + MDX + Vanilla JS + handcrafted CSS
 
 ## 2. ARTICLE CONTENT HEALTH (words)
 
-### Main Articles (10):
+### Main Articles (10)
 - 20-antisovetov-pastoru: 15,292 ✅
 - dzhon-gill-chast-1-chelovek: 6,880 ✅
 - dzhon-gill-chast-2-uchenyi: 8,141 ✅
@@ -23,81 +23,105 @@
 - rimlyanam-7: 3,026 ✅
 **Subtotal: 78,264 words**
 
-### Nagornaya Series (8 pages):
+### Nagornaya Series (8 pages)
 - chast-1: 3,714 | chast-2: 2,589 | chast-3: 2,840
 - chast-4: 5,664 | chast-5: 5,723
 - istochniki: 1,640 | nakhodki: 989 | seriya: 353
 **Subtotal: 20,530 words**
 
-### Baptisty-rossii Series (10 articles):
+### Baptisty-rossii Series (10 articles)
 - noch-na-kure: 1,296 | yuzhnaya-shtunda: 1,183
 - dva-sezda-1884: 969 | peterburgskaya-liniya: 1,655
 - goneniya-i-sovest: 2,365 | sovetskaya-noch: 2,293
 - vsehib-1944: 2,150 | iniciativnaya-gruppa: 2,432
 - podpolnaya-pechat: 2,234 | spravochnik: 2,902
-**Subtotal: 19,479 words (incl GBS2 chrome)**
+**Subtotal: 19,479 words (incl. GBS2 chrome)**
 
-## 3. ALL WORDS ON SITE (excl. GBS2 extra)
-Articles: 78,264 + Nagornaya: 20,530 + Baptisty-core: ~14,500 ≈ 113,294 words
+## 3. ARCHITECTURE SNAPSHOT
+
+### Production routes
+- `src/pages/**/*.astro`: **52** files total
+- production routes: **51**
+- dev-only route: **1** (`src/pages/dev/astro-test.astro`)
+
+### Verified taxonomy
+- **33** pure full-body shadow routes
+  (`loadLegacyFullDocument` + `bodyHtml` verbatim)
+- **18** componentized / hybrid shadow routes
+  (`loadLegacyFullDocument` + raw fragments and/or Astro wrappers)
+- **0** true native production pages
+- **1** dev-only native page
+
+See also:
+- `research/PRODUCTION_ROUTE_TAXONOMY_2026-06-21.md`
+- `scripts/route-shadow-taxonomy.js`
 
 ## 4. AUDIT SYSTEM HEALTH
-- audit-pro.js: 4,383 lines, 95+ guards (G1-G113 active, 0 errors)
-- visual-parity-screenshots.js: 323 lines (Playwright + pixelmatch)
-- visual-parity-baseline.js: 105 lines
-- check-mdx-html-parity.js: 157 lines (new, 20 article pairs)
-- css-layer-validator.js: new (brace balance, @layer detection, !important count)
+- `audit-pro.js`: 4,383 lines, guards G1-G113+, 0 errors baseline
+- `visual-parity-screenshots.js`: 323 lines (Playwright + pixelmatch)
+- `visual-parity-baseline.js`: 105 lines
+- `check-mdx-html-parity.js`: 157 lines
+- `css-layer-validator.js`: present
 - 17 per-route audit scripts
 
 ## 5. CI/CD HEALTH
-- deploy.yml: ✅ GitHub Pages, path:dist, strangler build
-- visual-parity.yml: ✅ Weekly + manual trigger (NOT blocking deploy — gap)
-- indexnow.yml: ✅ Yandex + Bing notification
-- interactive-audit.yml: ✅ Weekly + manual
-- source-links.yml: ✅ Weekly + manual
-- notify-on-failure.yml: ✅ GitHub Issue on failure
-- **GAP:** deploy.yml does NOT block on visual parity or Lighthouse — only DOM-marker gate
+- `deploy.yml`: ✅ GitHub Pages, `dist` artifact
+- `visual-parity.yml`: ✅ weekly + manual trigger
+- `indexnow.yml`: ✅ Yandex + Bing notification
+- `interactive-audit.yml`: ✅ weekly + manual
+- `source-links.yml`: ✅ weekly + manual
+- `notify-on-failure.yml`: ✅ GitHub Issue on failure
+- **Gap:** deploy pipeline still does not block directly on full visual parity regression
 
 ## 6. CRITICAL ISSUES FOUND
 
-### CRITICAL-1: MDX content improvements siloed
-20 MDX files in src/content/articles/ exist. ZERO are referenced by production pages.
-All 52 production pages emit verbatim legacy HTML via loadLegacyFullDocument.
-MDX improvements (headings, alt text, figures) are orphaned from production.
-See CONTENT_REGRESSION_FINDINGS.md and check-mdx-html-parity.js for details.
-Fix: Refactoring 6.0 Phase 5 — native MDX rendering, starting with pilot page.
+### CRITICAL-1: MDX content improvements are siloed from production
+20 MDX files exist in `src/content/articles/`, but production routes do not render MDX natively.
+Article and series production pages now emit legacy-body transport via `loadLegacyFullDocument`.
+Result: MDX improvements remain editorially valuable, but architecturally orphaned from live rendering.
 
-### CRITICAL-2: 51/52 pages in full shadow-wrap
-After commits e116bec (Jun 20, 21:00 UTC) and 87fcc7b (Jun 20, 22:00 UTC), all 51
-production Astro pages emit verbatim legacy HTML. Only dev/astro-test.astro is native.
-All native layouts (ArticleLayout, SeriesArticleLayout, GenealogyTree) are orphaned.
-Fix: Refactoring 6.0 Phase 1 — shadow-breakout pilot (rimlyanam-7 chosen).
+### CRITICAL-2: Production is 100% shadow-driven, but not 100% one-class shadow
+After `e116bec6` and `87fcc7b2`, all 51 production routes use `loadLegacyFullDocument`.
+However, they split into:
+- **33 pure full-body shadow routes**
+- **18 componentized/hybrid shadow routes**
+
+This matters because the second group already has extraction seams and should be planned differently from the first.
 
 ### CRITICAL-3: CSS !important overload (463 total)
-463 total !important across CSS files:
-- site.css: 202 (was 270 pre-40c80dc)
-- nagornaya-mobile-toc.css: 133
-- mobile-hotfix.css: 85
-- home.css: 36
-- command-palette.css: 7
-Fix: Refactoring 6.0 Phase 2 — @layer migration. Blocked by shadow-wrap (no Astro CSS bundling).
+Verified total across CSS stack:
+- `site.css`: 202
+- `nagornaya-mobile-toc.css`: 133
+- `mobile-hotfix.css`: 85
+- `home.css`: 36
+- `command-palette.css`: 7
 
-### CRITICAL-4: site.js 569 lines (165 KB minified) with event listener leak
-site.js: 569 lines, 165 KB, 194 addEventListener occurrences, 13 removeEventListener.
-Ratio ~15:1. Memory leak on navigation. Minified bundle prevents decomposition.
-Fix: Refactoring 6.0 Phase 3 — js-beautify → modular extraction → AbortController cleanup.
+### CRITICAL-4: `site.js` remains a high-risk monolith
+Verified current fact pattern:
+- `site.js`: 569 lines / 165 KB minified
+- `addEventListener`: 45 occurrences
+- `removeEventListener`: 3 occurrences
 
-### CRITICAL-5: Orphaned native Astro components
-All src/components/*Main.astro components are only referenced by dev/astro-test.astro
-or shadow-wrapped pages that do NOT render them. ~30 _legacy/ HTML segments also unused.
-GenealogyTree.tsx and 4 other TSX components are completely orphaned.
-Fix: Refactoring 6.0 Phase 7 — mass migration activates these components.
+This is materially better than the earlier mistaken 194/13 estimate, but still indicates asymmetry and hard-to-maintain runtime coupling.
+
+### CRITICAL-5: Native layer is present but not active in production
+The repo contains a non-trivial native layer:
+- `BaseLayout.astro`
+- `ArticleLayout.astro`
+- `SeriesArticleLayout.astro`
+- `GenealogyTree.tsx`
+- 20 MDX entries
+
+But production routes do not currently depend on that layer for live page rendering.
 
 ## 7. VISUAL PARITY BASELINE
-51 routes × 2 viewports in baseline.
-All landing routes at 0.000% desktop, 0.000-0.126% mobile.
-/nagornaya/chast-5/ has highest diff: 0.126% mobile (noise floor).
+- 51 routes × 2 viewports in baseline
+- landings remain near-zero diff
+- full coverage file should now be interpreted as **visual equivalence evidence**, not proof of homogeneous implementation
 
 ## 8. AUDIT-PRO FLOORS
-All 10 articles with word-count floors are ✅ ABOVE FLOOR.
-Lowest margin: dzhon-gill-spravochnik at 145% of floor.
-Highest margin: rimlyanam-7 at 138% of floor.
+All 10 article word-count floors remain above threshold.
+
+## 9. CORRECT ONE-LINE STATE DESCRIPTION
+
+> 51 production routes = 33 pure full-body shadow + 18 componentized/hybrid shadow + 0 true native production pages.
