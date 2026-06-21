@@ -9,6 +9,11 @@
 
 ## 0. КОНТЕКСТ: почему откатывали прошлые рефакторинги
 
+Доп. верификация для этой версии плана:
+- `research/PRODUCTION_ROUTE_TAXONOMY_2026-06-21.md`
+- `research/MIGRATION_LANE_PRIORITY_2026-06-21.md`
+- `research/EXTERNAL_MIGRATION_CONSTRAINTS_2026-06-21.md`
+
 Проанализировав 1335 коммитов, 237KB AGENTS.md, историю AUDIT_HISTORY.md и все рефакторинг-документы, выявлены 5 коренных причин откатов:
 
 | # | Причина | Проявление | Сколько раз |

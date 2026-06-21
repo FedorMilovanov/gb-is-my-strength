@@ -9,6 +9,11 @@
 
 ## 0. ПОЛНАЯ ДИАГНОСТИКА: почему падали предыдущие рефакторинги
 
+Сопутствующие verified artifacts:
+- `research/PRODUCTION_ROUTE_TAXONOMY_2026-06-21.md`
+- `research/MIGRATION_LANE_PRIORITY_2026-06-21.md`
+- `research/EXTERNAL_MIGRATION_CONSTRAINTS_2026-06-21.md`
+
 ### 0.1 Классификация 12 критических инцидентов
 
 | # | Инцидент | SHA / AGENTS-r | Причина | Цена |
