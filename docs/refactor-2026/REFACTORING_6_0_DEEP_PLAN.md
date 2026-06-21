@@ -13,6 +13,8 @@
 - `research/PRODUCTION_ROUTE_TAXONOMY_2026-06-21.md`
 - `research/MIGRATION_LANE_PRIORITY_2026-06-21.md`
 - `research/EXTERNAL_MIGRATION_CONSTRAINTS_2026-06-21.md`
+- `docs/refactor-2026/PILOT_DOSSIER_ABOUT_2026-06-21.md`
+- `docs/refactor-2026/PILOT_DOSSIER_KOD_DA_VINCHI_2026-06-21.md`
 
 ### 0.1 Классификация 12 критических инцидентов
 

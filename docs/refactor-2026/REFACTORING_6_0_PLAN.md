@@ -13,6 +13,8 @@
 - `research/PRODUCTION_ROUTE_TAXONOMY_2026-06-21.md`
 - `research/MIGRATION_LANE_PRIORITY_2026-06-21.md`
 - `research/EXTERNAL_MIGRATION_CONSTRAINTS_2026-06-21.md`
+- `docs/refactor-2026/PILOT_DOSSIER_ABOUT_2026-06-21.md`
+- `docs/refactor-2026/PILOT_DOSSIER_KOD_DA_VINCHI_2026-06-21.md`
 
 Проанализировав 1335 коммитов, 237KB AGENTS.md, историю AUDIT_HISTORY.md и все рефакторинг-документы, выявлены 5 коренных причин откатов:
 
@@ -225,7 +227,7 @@ MapEngine v0.x (shared engine, 9 карт) vs Avraam (monolith, 1 карта) vs
 | 5.5 | `/nagornaya/` | hybrid delegated shadow | split `NagornayaPageMain` into sub-components |
 | 5.6 | `/nagornaya/chast-1..5/` | hybrid delegated shadow | page family promotion after landing |
 | 5.7 | `/nagornaya/seriya|istochniki|nakhodki/` | hybrid delegated shadow | same lane, same component family |
-| 5.8 | `/articles/rimlyanam-7.../` | pure full-body shadow | first content-lane breakout via MDX + `ArticleLayout` |
+| 5.8 | `/articles/kod-da-vinchi/` | pure full-body shadow (`gbs-paper`) | first standard-article content-lane breakout via extracted shell + MDX |
 
 **Gate:** `npm run visual:parity:guard` — все 52 routes green, каждый с individual baseline update.
 
