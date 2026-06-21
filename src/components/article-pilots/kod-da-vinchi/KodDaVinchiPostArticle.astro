@@ -1,0 +1,12 @@
+---
+/**
+ * KodDaVinchiPostArticle — Phase 2 semantic split.
+ *
+ * Contains everything after </article> but before </main>:
+ *   - gb-accuracy-block
+ *   - author-card
+ *   - article-end-sdg-wrap
+ */
+import postArticleHtml from './_legacy/post-article.html?raw';
+---
+<Fragment set:html={postArticleHtml} />
