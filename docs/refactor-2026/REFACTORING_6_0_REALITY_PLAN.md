@@ -1,0 +1,340 @@
+# РЕФАКТОРИНГ 6.0 — ПЛАН РАБОТЫ С РЕАЛЬНОСТЬЮ (REALITY PLAN)
+
+**Дата:** 2026-06-21  
+**Версия:** 1.0 (post-verification)  
+**Статус:** 51/52 страниц в full-document shadow-wrap. MDX orphaned. Native layouts orphaned.  
+**Принцип:** Не мечтать о том, что было до 20 июня. Строить из того, что есть.
+
+---
+
+## 0. ДИАГНОСТИКА: ПОЧЕМУ ПРЕДЫДУЩИЙ ПЛАН НЕРАБОТОСПОСОБЕН
+
+### 0.1 Архитектурный deadlock
+
+| Предположение старого плана | Реальность |
+|----------------------------|------------|
+| "6 native-shadow pages" | 0. Все 51 production-страниц в full shadow. |
+| "CSS @layer через Astro bundling" | Astro не бандлит CSS для shadow-страниц. Они подгружают `/css/site.css` напрямую. |
+| "MDX migration в Phase 5" | MDX-код orphaned; рендерится только через Astro native, но все страницы emit legacy HTML. |
+| "TypeScript migration Phase 9" | Нет entry point для TS-компонентов, кроме `dev/astro-test.astro`. |
+
+### 0.2 Единственный путь: Shadow-breakout pilot
+
+Нельзя мигрировать 51 страницу одновременно. Нужно:
+1. Выбрать **1 pilot-страницу** с минимальным риском.
+2. Вывести её из shadow-wrap → native Astro + MDX/content.
+3. Пройти через **все гейты** (visual parity, audit-pro, interactive-audit).
+4. Повторить для 2-3 страниц.
+5. Только потом — массовый rollout.
+
+---
+
+## 1. ВЫБОР PILOT-СТРАНИЦЫ
+
+### 1.1 Критерии (по убыванию приоритета)
+
+| # | Критерий | Почему |
+|---|----------|--------|
+| 1 | **Минимум interactive JS** | Меньше site.js зависимостей = меньше риск regression |
+| 2 | **Есть MDX-файл** | Чтобы не создавать контент с нуля |
+| 3 | **Есть working native layout** | `ArticleLayout.astro` или `SeriesArticleLayout.astro` уже существуют (orphaned) |
+| 4 | **Нет карт / genealogy / complex JS** | Исключить специальные рендереры |
+| 5 | **Низкий трафик** | Если что-то пойдёт не так — минимум пользователей пострадает |
+| 6 | **Есть visual parity baseline** | Можно сравнить до/после |
+
+### 1.2 Рейтинг кандидатов
+
+| Страница | MDX | Layout | Interactive JS | Карты | Трафик | Score |
+|----------|-----|--------|----------------|-------|--------|-------|
+| `/about/` | ❌ | Native (orphaned) | Низкий | Нет | Средний | ⭐⭐⭐ |
+| `/articles/20-antisovetov-pastoru/` | ✅ | `ArticleLayout` (orphaned) | Средний (footnotes) | Нет | Высокий | ⭐⭐⭐⭐ |
+| `/articles/rimlyanam-7/` | ✅ | `ArticleLayout` | Низкий | Нет | Низкий | ⭐⭐⭐⭐⭐ **WINNER** |
+| `/articles/hermenevticheskaya/` | ✅ | `ArticleLayout` | Средний | Нет | Средний | ⭐⭐⭐⭐ |
+| `/baptisty-rossii/spravochnik/` | ✅ | `SeriesArticleLayout` | Низкий | Нет | Низкий | ⭐⭐⭐⭐ |
+
+**Pilot: `/articles/rimlyanam-7-veruyushchiy-ili-neveruyushchiy/`**
+- MDX: `src/content/articles/rimlyanam-7-veruyushchiy-ili-neveruyushchiy.mdx` ✅
+- Layout: `ArticleLayout.astro` ✅ (orphaned, но рабочий)
+- Interactive: только footnotes/tooltips (site.js) — минимум
+- Трафик: низкий (техническая статья)
+- Visual parity baseline: есть
+
+---
+
+## 2. ФАЗЫ: РЕАЛИСТИЧНАЯ ПОСЛЕДОВАТЕЛЬНОСТЬ
+
+### ФАЗА 0: FOUNDATION (день 1, 2-4 часа)
+
+**Цель:** Подготовить инфраструктуру, чтобы breakout был возможен.
+
+| # | Задача | Результат | Гейт |
+|---|--------|-----------|------|
+| 0.1 | **Проверить `ArticleLayout.astro`** — работает ли он с Astro 6, собирается ли с MDX | Build без ошибок | `npm run strangler:build:production-like` exit 0 |
+| 0.2 | **Восстановить `astro-test.astro`** → создать `/dev/pilot-rimlyanam.astro` | Dev-страница с MDX рендером | localhost visual check |
+| 0.3 | **Добавить `rimlyanam-7` в MDX content config** | `src/content.config.ts` знает про rimlyanam | `npx astro sync` без ошибок |
+| 0.4 | **Проверить `site.js` в native-контексте** | Footnotes/tooltips работают в Astro-bundled странице | Interactive-audit PASS |
+
+**Rollback:** удалить `/dev/pilot-rimlyanam.astro`.
+
+---
+
+### ФАЗА 1: SHADOW-BREAKOUT PILOT (дни 1-3)
+
+**Цель:** Первая production-страница выходит из shadow-wrap. Остальные 50 — не трогаем.
+
+| # | Задача | Детали | Риск |
+|---|--------|--------|------|
+| 1.1 | **Реверт `src/pages/articles/rimlyanam-7/index.astro`** | Удалить `loadLegacyFullDocument`, вернуть `getEntry('articles', 'rimlyanam-7')` + `ArticleLayout` | Medium — был e116bec |
+| 1.2 | **Обновить `ArticleLayout.astro`** | Убедиться, что все meta-tags (canonical, OG, JSON-LD) генерируются из MDX frontmatter | Low |
+| 1.3 | **Проверить CSS-инъекцию** | `ArticleLayout` должен подключать `site.css` + page-specific CSS через `<link>` (не Astro-bundled, пока нет @layer) | Low |
+| 1.4 | **Проверить JS-инъекцию** | `site.js` должен загружаться как `<script src>` (не Astro-bundled), чтобы event listeners не дублировались | Medium |
+| 1.5 | **Visual parity screenshot** | Сравнить `/articles/rimlyanam-7/` (native) vs `/articles/rimlyanam-7/` (legacy root) | Medium |
+| 1.6 | **audit-pro** | Проверить single-h1, meta-tags, canonical, OG | Low |
+| 1.7 | **Interactive-audit** | Footnotes, tooltips, theme toggle, mobile nav | Low |
+
+**Гейты:**
+```
+visual parity: ≤0.5% diff desktop + mobile
+audit-pro: 0 errors
+interactive-audit: 0 console errors
+build: exit 0
+```
+
+**Rollback:** `git revert` одним коммитом. Все 50 shadow-страниц не тронуты.
+
+---
+
+### ФАЗА 2: CSS @layer — НЕЗАВИСИМО ОТ ASTRO (дни 2-5, параллельно с 1)
+
+**Цель:** Создать `css/site-layered.css` — новый CSS-файл с @layer архитектурой. Не трогать `site.css`.
+
+**Почему независимо от Astro:** shadow-wrap страницы подгружают `/css/site.css` напрямую. Мы не можем заменить его, пока не уверены, что @layer-версия работает. Решение: **двойная загрузка**.
+
+| # | Задача | Детали |
+|---|--------|--------|
+| 2.1 | Создать `css/site-layered.css` | `@layer reset, base, gbs2, nagornaya, components, utilities, overrides;` |
+| 2.2 | Мигрировать `site.css` → `site-layered.css` по частям | Сначала base + utilities (безопасно), потом components, потом gbs2/nagornaya |
+| 2.3 | Создать `scripts/css-layer-validator.js` | Проверяет: нет unclosed braces, layer order правильный, !important count |
+| 2.4 | Pilot-страница `rimlyanam-7` подключает `site-layered.css` вместо `site.css` | `<link rel="stylesheet" href="/css/site-layered.css">` в `ArticleLayout` |
+| 2.5 | Visual parity для pilot | ≤0.5% diff |
+
+**Гейт:** `node scripts/css-layer-validator.js` + visual parity pilot.
+
+**Rollback:** вернуть `site.css` в `<link>`.
+
+---
+
+### ФАЗА 3: SITE.JS DECOMPOSITION (дни 3-7, параллельно)
+
+**Цель:** Разбить `site.js` (569 строк / 165 KB минимизированного) на модули с `AbortController` cleanup.
+
+**Проблема:** site.js — минимизированный бандл. Нет source map. Нужен reverse-engineering.
+
+| # | Задача | Метод | Гейт |
+|---|--------|-------|------|
+| 3.1 | **Препарировать site.js** | `js-beautify` или Prettier → readable формат. Сохранить в `js/site.prettified.js` (не в git) | Читаемость |
+| 3.2 | **Идентифицировать модули** | Поискать паттерны: `function t(e){...}` (theme?), `function n(e){...}` (nav?), tooltip controller | Список модулей |
+| 3.3 | **Извлечь Theme модуль** | `js/modules/theme.js` — dark/light toggle, `localStorage`, `matchMedia` | `node --check` |
+| 3.4 | **Извлечь Tooltip/Popover модуль** | `js/modules/tooltip.js` — всё, что связано с `gb-floating-tip`, `data-tooltip` | `node --check` |
+| 3.5 | **Извлечь Footnote/Reader модуль** | `js/modules/footnotes.js` — hover footnotes, sidenotes | `node --check` |
+| 3.6 | **Извлечь Navigation модуль** | `js/modules/nav.js` — mobile nav, scroll spy, TOC | `node --check` |
+| 3.7 | **Создать `js/site-v2.js` (бандл)** | `esbuild` или `rollup` — собирает модули в один файл, но с source map | build OK |
+| 3.8 | **Пилотная страница подключает `site-v2.js`** | Проверяем, что все интерактивные элементы работают | interactive-audit PASS |
+
+**Гейт:** interactive-audit pilot = 0 errors. memory leak check: Chrome DevTools Performance → listener count до/после 5 переходов.
+
+---
+
+### ФАЗА 4: PILOT EXPANSION (дни 5-10)
+
+**Цель:** 3-5 страниц в native Astro. Проверить масштабируемость.
+
+| # | Страница | Почему | Phase |
+|---|----------|--------|-------|
+| 4.1 | `/about/` | Нет MDX, но простейший контент. Проверяет native layout без MDX. | 4.1 |
+| 4.2 | `/articles/20-antisovetov-pastoru/` | Самый большой MDX. Проверяет performance и memory. | 4.2 |
+| 4.3 | `/articles/dzhon-gill-istoricheskiy-kontekst/` | MDX richer than HTML (+129 words). Проверяет, что MDX-улучшения доходят до production. | 4.3 |
+| 4.4 | `/baptisty-rossii/spravochnik/` | Series layout. Проверяет `SeriesArticleLayout`. | 4.4 |
+| 4.5 | `/articles/hermenevticheskaya-otsenka-hristotsentrichnoy-germenevtiki/` | HTML richer than MDX (footnotes). Проверяет edge case. | 4.5 |
+
+**Гейт для каждой:** visual parity ≤0.5%, audit-pro 0 errors, interactive-audit 0 errors.
+
+---
+
+### ФАЗА 5: MDX NATIVE RENDERING + CONTENT PARITY (дни 7-14)
+
+**Цель:** Убедиться, что MDX-улучшения (новые заголовки, alt, figure) отображаются в production.
+
+| # | Задача | Метод |
+|---|--------|-------|
+| 5.1 | **Улучшить `check-mdx-html-parity.js`** | Добавить semantic check: `<h2>` count, `<img alt>` count, `<figure>` count, `<a>` count. Не только word count. |
+| 5.2 | **Исправить shallow-clone trap** | Записать `data/content-versions.json` с timestamp последнего редактирования MDX и HTML. Или использовать `git log --follow --diff-filter=M`. |
+| 5.3 | **Port MDX improvements back to HTML** | Для страниц, где MDX richer, но страница ещё в shadow-wrap: скрипт `scripts/sync-mdx-to-html.js` — извлекает MDX body, конвертирует в HTML, вставляет в legacy `index.html`. |
+| 5.4 | **Проверить на pilot-страницах** | rimlyanam-7 и другие native-страницы должны показывать MDX content verbatim. |
+
+**Гейт:** `node scripts/check-mdx-html-parity.js` — 0 errors, 0 warnings. Semantic check: 0 mismatches.
+
+---
+
+### ФАЗА 6: CI/CD BLOCKING GUARD (дни 10-14)
+
+**Цель:** Visual parity + audit-pro становятся **blocking** в `deploy.yml`.
+
+| # | Задача | Детали | Риск |
+|---|--------|--------|------|
+| 6.1 | **Добавить `visual-parity:guard` в `deploy.yml`** | Перед `upload-pages-artifact`. Если diff > 0.5% — CI red, deploy blocked. | Medium — может быть flake |
+| 6.2 | **Настроить threshold profiles** | `critical` (0.1%), `standard` (0.5%), `lenient` (1.0%) per route. `/about/` = critical, `/articles/` = standard. | Low |
+| 6.3 | **Добавить `mask` для dynamic content** | Yandex Metrika, random phrases, date/time. | Low |
+| 6.4 | **Lighthouse CI gate** | Performance ≥95, Accessibility ≥95, Best Practices ≥95. | Medium |
+| 6.5 | **CSP report-uri endpoint** | Для будущего strict-dynamic. Сейчас — мониторинг. | Low |
+
+**Гейт:** `deploy.yml` в PR должен проходить parity + Lighthouse + audit-pro. Если red — нет merge.
+
+---
+
+### ФАЗА 7: MASS MIGRATION (дни 14-30)
+
+**Цель:** 20 статей + 5 landings → native Astro. Остальные 25 (карты, родословие, специальные) — остаются в shadow.
+
+| # | Группа | Страницы | Метод |
+|---|--------|----------|-------|
+| 7.1 | Articles (main) | 10 | `ArticleLayout` + MDX |
+| 7.2 | Articles (baptisty) | 10 | `SeriesArticleLayout` + MDX |
+| 7.3 | Landings | `/`, `/about/`, `/articles/`, `/biografii/`, `/hard-texts/`, `/konfessii/`, `/pastor-series/` | Native Astro layouts |
+| 7.4 | Nagornaya | 8 страниц | Special handling — Tailwind + custom TOC |
+
+**Гейт:** каждая страница — visual parity ≤0.5%, audit-pro 0 errors.
+**Rollback:** per-page `git revert`.
+
+---
+
+### ФАЗА 8: MAPENGINE + SPECIAL PAGES (дни 21-60)
+
+**Цель:** Карты, родословие, интерактивные приложения — последние выходят из shadow.
+
+| # | Страница | Почему последняя | Риск |
+|---|----------|------------------|------|
+| 8.1 | `/karty/ishod/` | MapEngine v2 pilot. Feature flag. | Medium |
+| 8.2 | `/karty/avraam/` | Avraam — самый сложный, 4789 строк. Последний. | High |
+| 8.3 | `/rodosloviye/` | GenealogyTree — React Flow, 156 persons. | High |
+| 8.4 | `/konfessii/russkij-baptizm/` | Three.js app — iframe, CSP `unsafe-eval`. | Medium |
+
+**Гейт:** `maps:validate` 10/10, `avraam:audit` 28/28, interactive-audit 0 errors.
+
+---
+
+## 3. ЕЖЕДНЕВНЫЙ ЧЕКЛИСТ (перед каждым коммитом)
+
+```bash
+# 1. Build
+export PATH=/tmp/node-v22.12.0-linux-x64/bin:$PATH
+npm run strangler:build:production-like
+# exit 0?
+
+# 2. Audit (всегда)
+node scripts/audit-pro.js | tail -3
+# ✅ 0 errors
+
+# 3. Parity (если трогал MDX или HTML)
+node scripts/check-mdx-html-parity.js
+# ✅ 0 errors, 0 warnings
+
+# 4. Visual parity (если трогал pilot)
+node scripts/visual-parity-screenshots.js --routes /articles/rimlyanam-7-veruyushchiy-ili-neveruyushchiy/
+# ≤0.5%
+
+# 5. CSS validator (если трогал CSS)
+node scripts/css-layer-validator.js
+# brace balance OK, !important ≤ target
+
+# 6. Interactive (если трогал JS)
+python3 -m http.server 8090 --directory dist &
+node scripts/interactive-audit.js
+# 0 console errors
+
+# 7. Только теперь git add + commit + push
+```
+
+---
+
+## 4. КЛЮЧЕВЫЕ ИНСАЙТЫ ИЗ ПОИСКА (2026)
+
+### 4.1 Strangler Fig + Feature Flags [1](https://findskill.ai/skills/claude-code/legacy-code-modernizer/)
+- **Branch by Abstraction:** Создать proxy layer, который выбирает между legacy и modern handler по feature flag.
+- **Kill switch:** Не toggle для включения, а toggle для мгновенного отключения.
+- **Применение:** Pilot-страницы могут иметь `?native=1` query param или cookie для forced legacy mode.
+
+### 4.2 Zero-Downtime Refactoring [2](https://www.in-com.com/blog/zero-downtime-refactoring-how-to-refactor-systems-without-taking-them-offline/)
+- **Read parity → Write parity → Migrate reads → Migrate writes → Decommission.**
+- Для контента: убедиться, что MDX содержит всё, что HTML (read parity), потом писать только в MDX (write parity), потом переключить рендеринг.
+
+### 4.3 CSS @layer Practical [3](https://www.smashingmagazine.com/2025/09/integrating-css-cascade-layers-existing-project/)
+- **Unlayered styles beat any @layer.** Это позволяет инкрементальную миграцию: wrap старый CSS в `@layer legacy`, а новый CSS — unlayered (высший приоритет).
+- **!important инвертирует порядок слоёв.** Если в `legacy` слое есть `!important`, он будет сильнее, чем `!important` в новых слоях. Нужно избавляться от `!important` ДО миграции.
+
+### 4.4 Playwright Visual Regression [4](https://testquality.com/playwright-visual-regression-guide/)
+- **Cross-OS rendering breaks pixel diffs.** Решение: Docker container (`mcr.microsoft.com/playwright`) для CI.
+- **Component snapshots > full-page.** Меньше scope = меньше flake.
+- **Git cannot diff images inline.** Нужен dashboard или PR comment с diff images.
+- **Threshold profiles:** critical (0.1%), standard (0.5%), lenient (1.0%) per page type.
+
+### 4.5 Astro 6 Content Layer [5](https://inhaq.com/blog/getting-started-with-astro-content-collections)
+- **Astro 6 требует `loader` для каждой коллекции.** Нельзя использовать `type: 'content'` (deprecated).
+- **MDX в content collections:** `import { render } from 'astro:content'; const { Content } = await render(entry);`.
+- **Zero JS by default:** Astro не ship-ит клиентский JS, если не запросить `client:load`/`client:idle`.
+
+### 4.6 TypeScript Migration [6](https://dev.to/oluwatosinolamilekan/migrating-a-legacy-codebase-across-15-modules-without-downtime-an-engineering-transformation-story-776)
+- **`allowJs: true` + `checkJs: false` → постепенно.**
+- **JSDoc аннотации перед полной миграцией.**
+- **`npx tsc --noEmit` в CI gate.**
+
+---
+
+## 5. ОСОБЕННОСТИ И ЛАЙФХАКИ (SANDBOX + PROJECT)
+
+### 5.1 Sandbox survival (verified)
+- `bash` + `cat > file` надёжнее `write_file` для больших файлов.
+- `edit_file` часто падает — использовать `sed -i`.
+- `read_file` на файлах >500 KB может упасть — использовать `head -100`/`grep`.
+- `web_search depth=2` достаточно; `depth=3` → 50-100 KB, переполняет context.
+- **>3 tool calls за ответ = риск сброса сессии.**
+
+### 5.2 Project quirks
+- `site.js` — минимизированный бандл. Для декомпозиции нужен `js-beautify` или reverse-engineering.
+- `karty/_engine/modules/` — удалён (83ae4a8). Не искать.
+- Avraam JS вынесен в `avraam-app.js` (9115253). Не трогать без owner-approval.
+- `nagornaya/tw.min.css` — Tailwind, но не интегрирован в Astro build. Подключается через `<link>`.
+- `konfessii/_app/index.html` — CSP `unsafe-eval` для Three.js. НЕ ТРОГАТЬ.
+
+### 5.3 CSS @layer migration path
+```
+Текущий: site.css (270 KB, 202 !important, unlayered, highest priority)
+
+Шаг 1: Создать site-layered.css:
+  @layer reset, base, gbs2, nagornaya, components, utilities, overrides;
+  @layer base { /* все base styles из site.css */ }
+  @layer components { /* все .h-*, .card, .tooltip */ }
+  @layer gbs2 { /* body.gbs-world */ }
+  @layer nagornaya { /* nagornaya-specific */ }
+  @layer utilities { /* .text-center, .hidden */ }
+  @layer overrides { /* !important mobile hotfixes */ }
+
+Шаг 2: Pilot-страница подключает site-layered.css вместо site.css.
+
+Шаг 3: Если в site-layered.css что-то сломано — unlayered styles в конце файла
+        (или отдельный site-fix.css) fix-ят без !important.
+
+Шаг 4: Когда все страницы на site-layered.css — удалить site.css.
+```
+
+### 5.4 Feature flag для pilot
+```javascript
+// Внутри Astro page или middleware
+const useNative = Astro.cookies.get('native-pilot')?.value === 'rimlyanam' ||
+                  import.meta.env.FORCE_NATIVE === 'true';
+if (!useNative) {
+  return Astro.redirect('/articles/rimlyanam-7-veruyushchiy-ili-neveruyushchiy/index.html');
+}
+```
+Или проще: **cookie-based opt-in** для владельца, чтобы проверить pilot до rollout.
+
