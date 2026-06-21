@@ -1,79 +1,103 @@
-# ARENA SESSION MANUAL — полное выживание в песочнице
+# ARENA SESSION MANUAL — выживание в песочнице
 
 **Обновлено:** 2026-06-21  
-**Среда:** Arena Agent Mode (Qwen Code) — изолированный git worktree  
-**Характеристики:** maxRoundsPerAgent=50, timeoutSeconds=600
+**Версия:** v5 (verified experimentally)  
+**Среда:** Arena.ai Agent Mode — Linux ext4, 2 CPU, 1.9GB RAM
 
 ---
 
-## 0. ГЛАВНОЕ (чтобы не повторять моих ошибок)
+## 0. ЭКСПЕРИМЕНТАЛЬНО ПРОВЕРЕНО (факты, не догадки)
 
 ```
-1. Файлы СОХРАНЯЮТСЯ между сообщениями в одной сессии.
-   write_file и bash cat >> оба работают. Не надо пересоздавать.
-
-2. git remote с токеном СОХРАНЯЕТСЯ между сообщениями.
-   .git/config не сбрасывается пока сессия жива.
-   Достаточно 1 раз установить remote и пушить.
-
-3. Новая сессия = ВСЁ новое. Определяется по git log --oneline -1.
-   Если последний коммит НЕ тот что вы ожидаете — remote пропал,
-   node_modules нет, dist нет.
-
-4. Я падаю потому что делаю 5-10 tool calls за раз.
-   Надо 1-2 команды на ответ. Это превышает лимит шагов.
+✅ Файлы СОХРАНЯЮТСЯ при падении сессии
+✅ git remote СОХРАНЯЕТСЯ при падении
+✅ git log/history СОХРАНЯЕТСЯ
+✅ write_file РАБОТАЕТ (но иногда не синхронизируется с bash)
+✅ python3 -c РАБОТАЕТ
+✅ sed -i РАБОТАЕТ (всегда)
+❌ edit_file ЧАСТО ПАДАЕТ (используй sed -i вместо него)
+❌ read_file гигантских файлов >500KB может упасть
+❌ Теряется только НЕДОПИСАННЫЙ ответ агента (середина сообщения)
 ```
 
-## 1. ДИАГНОСТИКА СЕССИИ
+## 1. ОКРУЖЕНИЕ
+
+| Параметр | Значение |
+|---------|---------|
+| Файловая система | **ext4** (не tmpfs — файлы живут!) |
+| CPU | 2 cores |
+| RAM | 1.9 GB (1.4 GB available) |
+| Node.js | 20.20.2 (требуется 22 для Astro) |
+| Git worktree | Нормальный branch (не detached) |
+| Домашняя папка | /home/user |
+| Рабочая папка | /home/user/repo |
+| uploads/ | Живёт между сессиями |
+
+## 2. ДИАГНОСТИКА (первые 2 команды)
 
 ```bash
 cd /home/user/repo
-
-# Та же сессия или новая?
-git log --oneline -1
-# Если коммит совпадает с ожидаемым — remote жив, всё на месте
-# Если нет — remote нужно переустановить, npm install, build
-
-# Что сохранилось?
-git remote -v                    # remote URL? (всегда жив в сессии)
-ls node_modules/.package-lock.json 2>/dev/null || echo "NO node_modules"
-ls dist/index.html 2>/dev/null || echo "NO dist"
+echo "Remote: $(git remote -v 2>/dev/null | grep push | head -1)"
+echo "Commit: $(git log --oneline -1)"
 ```
 
-## 2. PUSH (только 1 раз на сессию)
+Если remote есть — всё работает, remote НЕ ТЕРЯЕТСЯ при падении.
+Если remote пропал — **новый диалог** (только тогда).
+
+## 3. СТАРТ (только если новый диалог)
 
 ```bash
-# Установка remote — ОДИН РАЗ в начале сессии
 git remote set-url origin "https://FedorMilovanov:${GH_TOKEN}@github.com/FedorMilovanov/gb-is-my-strength.git"
-
-# Все последующие push в этой сессии работают без повторения
-git push origin main
-```
-
-## 3. СБОРКА (1 раз в начале сессии)
-
-```bash
 export PATH=/tmp/node-v22.12.0-linux-x64/bin:$PATH
 npm install --no-audit --no-fund
 npm run strangler:build:production-like
+node scripts/audit-pro.js | grep PASSED
 ```
 
-## 4. ПОЧЕМУ Я ПАДАЮ
+## 4. ПОЧЕМУ Я ПАДАЮ (реальные причины)
 
-**Причина:** >3 tool calls за раз. Arena имеет лимит 600 секунд на сессию. 
-Каждый bash-вызов жрёт время. 5+ команд = превышение.
+```
+1. СЛИШКОМ МНОГО TOOL CALLS (>3 за ответ)
+   → Arena обрывает сессию. Делать 1-2 команды.
 
-**Решение:** 1-2 команды на ответ. Никогда не делать 5+ tool calls в одном сообщении.
+2. СЛИШКОМ ДЛИННЫЙ ОТВЕТ (>20KB текста + код)
+   → Context window переполняется. Писать коротко.
 
-## 5. СКРИНШОТЫ
+3. ЧТЕНИЕ ГИГАНТСКИХ ФАЙЛОВ
+   → AGENTS.md 237KB, audit-pro.js 208KB
+   → Использовать head/grep, не cat всего файла.
 
-Я НЕ вижу изображения — нет vision API. 
-Но могу проанализировать: размер, цвета, яркость, текстовые зоны.
-Опиши словами что там если нужно точное понимание.
+4. web_search depth=3
+   → depth=3 качает 50-100KB контента. Использовать depth=2.
+```
 
-## 6. ЧТО НЕЛЬЗЯ
+## 5. ИНСТРУМЕНТЫ
 
-- ❌ Пушить без audit-pro
-- ❌ Менять visual baseline без owner approval
-- ❌ Править Avraam (protected audit 28/28)
-- ❌ Плодить CSS/JS без проверки AGENTS.md
+| Инструмент | Надёжность | Альтернатива |
+|-----------|-----------|-------------|
+| bash | ✅ Всегда работает | — |
+| read_file | ⚠️ Падает на больших файлах (>500KB) | `head -100 file`, `grep pattern file` |
+| write_file | ⚠️ Иногда не синхронизируется | `cat > file << 'EOF'` |
+| edit_file | ❌ Часто падает | `sed -i 's/old/new/' file` |
+| web_search | ✅ depth=2 норм, depth=3 тяжёлый | depth=2 |
+| fetch_page | ✅ Работает | — |
+| image_search | ✅ Работает | — |
+
+## 6. ПРОЕКТ (быстрый старт)
+
+| Что | Команда |
+|-----|---------|
+| Аудит | `node scripts/audit-pro.js` |
+| MDX parity | `npm run content:parity` |
+| Сборка | `npm run strangler:build:production-like` |
+| Карты | `npm run maps:validate && npm run avraam:audit` |
+| Push | `git push origin main` (remote уже есть) |
+
+## 7. ЗАПРЕТЫ
+
+- Пушить без audit-pro
+- Менять visual baseline без owner
+- Править Avraam (protected audit 28/28)
+- Создавать CSS/JS без AGENTS.md
+- Использовать edit_file (он сломан)
+- depth=3 в web_search (слишком тяжёлый)
