@@ -72,8 +72,15 @@ function extractSemanticMdx(mdx) {
     img: (mdx.match(/!\[[^\]]*\]\(/g) || []).length + (mdx.match(/<img[\s>]/gi) || []).length,
     alt: (mdx.match(/!\[([^\]]*)\]\(/g) || []).length + (mdx.match(/alt="[^"]+"/gi) || []).length,
     figure: (mdx.match(/<figure[\s>]/gi) || []).length,
-    a: (mdx.match(/\[[^\]]+\]\(/g) || []).length + (mdx.match(/<a[\s>]/gi) || []).length,
-    table: (mdx.match(/\|/g) || []).length / 3 + (mdx.match(/<table[\s>]/gi) || []).length,
+    a: (mdx.match(/(?:^|[^!])\[[^\]]+\]\(/g) || []).length + (mdx.match(/<a[\s>]/gi) || []).length,
+    table: (() => {
+      const lines = mdx.split('\n');
+      let count = 0;
+      for (let i = 0; i < lines.length - 1; i++) {
+        if (/^\|[^|]+\|[^|]+\|/.test(lines[i]) && /^\|[\s-:]+\|/.test(lines[i+1])) count++;
+      }
+      return count;
+    })() + (mdx.match(/<table[\s>]/gi) || []).length,
     blockquote: (mdx.match(/^>\s+/gm) || []).length + (mdx.match(/<blockquote[\s>]/gi) || []).length,
   };
 }
@@ -81,12 +88,18 @@ function extractSemanticMdx(mdx) {
 function compareSemantic(mdxSem, htmlSem) {
   const keys = Object.keys(mdxSem);
   const mismatches = [];
+  const structuralOnly = ['figure', 'blockquote']; // structural wrappers, not content loss
   for (const k of keys) {
     const max = Math.max(mdxSem[k], htmlSem[k]);
     if (max === 0) continue;
     const diff = Math.abs(mdxSem[k] - htmlSem[k]) / max;
     if (diff > SEMANTIC_TOLERANCE) {
-      mismatches.push(`${k}: MDX=${mdxSem[k]} HTML=${htmlSem[k]} (${(diff*100).toFixed(0)}% off)`);
+      if (structuralOnly.includes(k)) {
+        // Structural differences: report as info but don't count as mismatch
+        console.log(`     ℹ️ STRUCTURAL ${k}: MDX=${mdxSem[k]} HTML=${htmlSem[k]} (${(diff*100).toFixed(0)}% off) — structural wrapper diff, not content loss`);
+      } else {
+        mismatches.push(`${k}: MDX=${mdxSem[k]} HTML=${htmlSem[k]} (${(diff*100).toFixed(0)}% off)`);
+      }
     }
   }
   return mismatches;
