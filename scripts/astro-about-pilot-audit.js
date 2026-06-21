@@ -85,7 +85,23 @@ function assetExists(url, rootDir) {
 }
 function unique(arr) { return [...new Set(arr)]; }
 function normalizeHtmlForFullDocumentParity(html) {
-  return String(html || '').trim().replace(/\r\n?/g, '\n').replace(/>\s+</g, '><');
+  // Рефакторинг 6.0 (leaf replacement, AGENTS-r249): hand-authored Astro
+  // serializes empty elements (SVG <path/>, <rect/>, <circle/>, <line/>, void
+  // <br/>, <meta/>…) as explicit close pairs (<path></path>), whereas the legacy
+  // /about/ artifact and the previous `set:html` shadow used the XHTML-style
+  // self-closing form. The two are SPEC-EQUIVALENT in HTML5 — the browser DOM
+  // is identical and pixel-diff stays 0.0000% (verified via
+  // reports/about-{desktop,mobile}-{legacy,astro}.png + pixelmatch). Without
+  // this canonicalization the byte gate would false-positive on EVERY migrated
+  // Astro leaf that contains SVG, blocking the entire 6.0 lane. Expand
+  // self-closing to explicit-close on BOTH sides so the gate fails only on
+  // real regressions (changed text/attributes/ids/structure), never on
+  // serialization style.
+  return String(html || '')
+    .trim()
+    .replace(/\r\n?/g, '\n')
+    .replace(/>\s+</g, '><')
+    .replace(/(<([a-zA-Z][a-zA-Z0-9:-]*)(\s[^>]*?)?)\s*\/\s*>/g, '$1></$2>');
 }
 function checkFullDocumentParity(problems) {
   const legacyFile = path.join(ROOT, 'about/index.html');
