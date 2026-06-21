@@ -30,8 +30,8 @@
 
 1. ❌ **НЕТ CI GATE НА VISUAL PARITY** (причина #1 всех откатов)
 2. ❌ **ДВОЙНАЯ/ТРОЙНАЯ АРХИТЕКТУРА** (Avraam + engine v1 + engine v2 planned)
-3. ❌ **CSS БЕЗ СТРУКТУРЫ** (270 !important, unclosed скобки, дубликаты)
-4. ❌ **JS БЕЗ ТИПОВ** (11 файлов, 5129 строк site.js — никакой защиты)
+3. ❌ **CSS БЕЗ СТРУКТУРЫ** (202 !important, unclosed скобки, дубликаты)
+4. ❌ **JS БЕЗ ТИПОВ** (11 файлов, 569 lines (165 KB minified) site.js — никакой защиты)
 5. ❌ **НЕТ «УБОРКИ» ПОСЛЕ МИГРАЦИЙ** (мёртвые модули, orphan images, stale preload)
 
 ### 0.3 Текущее состояние (точная инвентаризация)
@@ -51,7 +51,7 @@
 
 | Файл | Размер | !important | Скобки |
 |------|:------:|:----------:|:------:|
-| site.css | 265KB | **270** | 0 (исправлено) |
+| site.css | 265KB | **202** | 0 (исправлено) |
 | home.css | 51KB | 20 | 0 |
 | command-palette.css | 38KB | 7 | 0 |
 | mobile-hotfix.css | ~5KB | 74 | 0 |
@@ -216,7 +216,7 @@
 | C4 | **194 addEventListener, 13 removeEventListener** | js/site.js | Memory leak (ratio ~15:1) | Фаза 7 |
 | C5 | **Avraam extracted 4792 строк (2385+2407)** | karty/avraam/ | JS вынесен в avraam-app.js, но всё ещё high-risk | Фаза 6 (последний) |
 | C6 | **Visual parity guard не в deploy.yml** | visual-parity-screenshots.js | Только manual, не защищает | Фаза 1 |
-| C7 | **Site.js 5129 строк** | js/site.js | Нельзя рефакторить без риска | Фаза 7 |
+| C7 | **Site.js 569 lines (165 KB minified)** | js/site.js | Нельзя рефакторить без риска | Фаза 7 |
 | C8 | **Dead modules/ в engine** | karty/_engine/modules/ | Мёртвый код от провального рефакторинга | Фаза 8 |
 
 ### 2.2 🔴 HIGH (12 проблем)
@@ -312,7 +312,7 @@
 | 2.9 | Audit remaining !important (expected ~50-70) | ~50 | Per-rule specificity check |
 | 2.10 | Brace balance check | 0 | `python3 -c "..." ` |
 
-**Gate:** `node scripts/audit-pro.js` — ✅ !important ≤ 100 (from 270+74+122 = 466 total today).
+**Gate:** `node scripts/audit-pro.js` — ✅ !important ≤ 100 (from 202+36+85+133+7 = 463 total today).
 
 **Rule:** После этой фазы adding !important требует ОТДЕЛЬНОГО одобрения владельца.
 
@@ -520,7 +520,7 @@
 │ Фаза 2:        │                │                  │ Фаза 10:           │
 │ CSS @layer     │                │ Фаза 7:          │ Perf + CSP         │
 │ !important     │                │ Site.js          ├────────────────────┤
-│ 270→100        │                │ decomposition    │ Фаза 11:           │
+│ 202→100        │                │ decomposition    │ Фаза 11:           │
 │                │                │                  │ Monitoring + gaps  │
 │                │                │                  ├────────────────────┤
 │                │                │                  │ Фаза 12:           │
@@ -585,7 +585,7 @@ git commit -m "visual-baseline(<route>): owner-approved diff X% — reason"
 | Метрика | Сегодня | Цель 6.0 |
 |---------|:-------:|:--------:|
 | Native Astro pages | 6/52 | **52/52** |
-| site.css !important | 270 | **≤100** |
+| site.css !important | 202 | **≤100** |
 | Всего !important (5 files) | 493 | **≤200** |
 | MapEngine paths | 3 (Avraam/v1/v2) | **1 (v2)** |
 | site.js строк | 569 (165 KB minified) | **~200** (bundled from modules) |
