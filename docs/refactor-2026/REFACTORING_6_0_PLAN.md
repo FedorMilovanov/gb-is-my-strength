@@ -33,7 +33,7 @@ MapEngine v0.x (shared engine, 9 карт) vs Avraam (monolith, 1 карта) vs
 
 ### 1.3 «Правильная цена абстракции»
 
-У вас 5 CSS-файлов, 11 JS-файлов — это хорошо (бюджет). Но `site.js` = 5129 строк, `site.css` = история с 151 unclosed скобкой. Абстракция «единый файл» перешла в «монолит». 6.0 — расщепить, не увеличивая HTTP-запросы (через Astro bundling).
+У вас 5 CSS-файлов, 11 JS-файлов — это хорошо (бюджет). Но `site.js` = 569 строк (165 KB minified), `site.css` = 202 !important (после 40c80dc). Абстракция «единый файл» перешла в «монолит». 6.0 — расщепить, не увеличивая HTTP-запросы (через Astro bundling).
 
 ### 1.4 «Костыль = архитектурная дыра»
 
@@ -86,7 +86,7 @@ MapEngine v0.x (shared engine, 9 карт) vs Avraam (monolith, 1 карта) vs
 
 | Костыль | Где | Почему это костыль | Цена |
 |---------|-----|-------------------|:----:|
-| **Двойной рендеринг карт** | Avraam (monolith) vs MapEngine (9 карт) vs v2 (planned) | 3 пути = тройная поддержка, тройной риск регресса | 4776 строк avraam + 2276 engine + dead modules |
+| **Двойной рендеринг карт** | Avraam (monolith) vs MapEngine (9 карт) vs v2 (planned) | 3 пути = тройная поддержка, тройной риск регресса | 4792 строк avraam (extracted) + 2590 engine + dead modules (FIXED) |
 | **Shadow-wrap 30+ страниц** | 30 из 52 production routes | Не native, не редактируются, не используют Astro преимущества | 30 `loadLegacyFullDocument` вызовов |
 | **CSS `!important` 270** | site.css | Блокирует рефакторинг, затрудняет вынос компонентов | 270 костылей в одном файле |
 | **JS 130+ addEventListener без remove** | site.js | Memory leak при SPA-like navigation (если появится) | 130 potential leaks |
@@ -96,7 +96,7 @@ MapEngine v0.x (shared engine, 9 карт) vs Avraam (monolith, 1 карта) vs
 
 | Костыль | Где | Почему | Цена |
 |---------|-----|--------|:----:|
-| **Avraam монолит 4776 строк** | karty/avraam/index.html + avraam-app.js | Нельзя править без риска сломать 28/28 audit | 4776 строк |
+| **Avraam extracted 4792 строк** | karty/avraam/index.html + avraam-app.js | JS extracted (9115253), но всё ещё high-risk | 4792 строк |
 | **5 Gill страниц в shadow** | articles/dzhon-gill-* | GBS2 world не перенесён в Astro native | 5 routes в limbo |
 | **Nagornaya Tailwind отдельно** | nagornaya/tw.min.css + nagornaya-mobile-toc.css | Дополнительный слой технологий, отдельная сборка | 2 CSS файла + отдельный build step |
 | **Dead code modules/** | karty/_engine/modules/ | Мёртвый код от провального рефакторинга | 3 файла, ~413 строк |
@@ -107,8 +107,8 @@ MapEngine v0.x (shared engine, 9 карт) vs Avraam (monolith, 1 карта) vs
 
 | Костыль | Где | Почему | Цена |
 |---------|-----|--------|:----:|
-| **site.js 5129 строк монолит** | js/site.js | Невозможно рефакторить без риска | 29 модулей в одном файле |
-| **site.css 270 !important** | css/site.css | Barrier to component extraction | 270 overrides |
+| **site.js 569 lines (165 KB minified)** | js/site.js | Reverse-engineer required | 29 модулей в одном бандле |
+| **site.css 202 !important** | css/site.css | Barrier to component extraction | 202 overrides |
 | **Inline style 20-antisovetov** | articles/20-antisovetov-pastoru/ | 12KB inline CSS — единственный оставшийся inline island | ~12KB |
 | **Multiple agents sync** | baptisty-rossii/research/** | Конкурирующие агенты могут конфликтовать | ~70 research .md файлов |
 | **Нет production observability** | нет мониторинга реальных пользователей | Не знаем реальный CWV, ошибки | Слепое пятно |
@@ -141,7 +141,7 @@ MapEngine v0.x (shared engine, 9 карт) vs Avraam (monolith, 1 карта) vs
 
 | # | Задача | Костыль | Метод |
 |---|--------|---------|-------|
-| 1.1 | Аудит всех 270 !important: specificity расчёт для каждого | G270 audit | `grep -n '!important' site.css` → per-rule analysis |
+| 1.1 | Аудит всех 202 !important: specificity расчёт для каждого | G270 audit | `grep -n '!important' site.css` → per-rule analysis |
 | 1.2 | `@layer reset, base, components, utilities` — перевести site.css в слои | ~100 !important | CSS @layer — unlayered rules бьют любой @layer |
 | 1.3 | Вынести GBS2 стили в отдельный @layer | ~30 !important | `@layer gbs2 { ... }` |
 | 1.4 | Вынести Nagornaya стили в @layer | ~25 !important | `@layer nagornaya { ... }` |

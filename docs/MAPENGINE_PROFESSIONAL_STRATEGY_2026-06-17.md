@@ -1,7 +1,7 @@
 # MAPENGINE — ПРОФЕССИОНАЛЬНАЯ СТРАТЕГИЯ РАЗВИТИЯ
 
 > **Дата:** 2026-06-17
-> **Контекст:** Движок v0.7.0 (799 строк). Авраам (4776 строк) — свой рендеринг.
+> **Контекст:** Движок v0.7.0 (799 строк). Авраам (4792 строк, extracted) — свой рендеринг.
 > Модули в `modules/` — мёртвый код. 9 карт используют `createMap()`.
 
 ## КОРНЕВАЯ ПРОБЛЕМА
@@ -30,7 +30,7 @@ compare). Рендеринг Авраама — 68 собственных фун
           новые карты используют движок
                          
           ┌──────────────────────────────────┐
-          │     AVRAAM (4776 строк)           │
+          │     AVRAAM (4792 строк, extracted)           │
           │   Свой рендеринг — НЕ ТРОГАТЬ     │
           │   Использует engine: DATA only    │
           │   Защищён: avraam:audit 23/23    │
@@ -142,7 +142,7 @@ Low reuse value — not worth extracting:
 
 ```
 Engine:         1165 lines, 25 features, 10 maps use createMap()
-Avraam:         4776 lines, 21 premium features — UNTOUCHED
+Avraam:         4792 lines (extracted), 21 premium features — UNTOUCHED
 Gates:          maps:validate 10/10 ✅, avraam:audit 23/23 ✅
 Deploy:         dist (production) ✅
 ```
