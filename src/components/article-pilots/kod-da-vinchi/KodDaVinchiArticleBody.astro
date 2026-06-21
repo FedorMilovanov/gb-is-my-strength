@@ -1,0 +1,14 @@
+---
+/**
+ * KodDaVinchiArticleBody — Phase 2 semantic split.
+ *
+ * Contains: <article class="article-body" data-pagefind-body>
+ * The main longform content — 80K+ of article text.
+ *
+ * Phase 3 will replace this raw legacy HTML with MDX render:
+ *   const entry = await getEntry('articles', 'kod-da-vinchi');
+ *   const { Content } = await render(entry);
+ */
+import articleBodyHtml from './_legacy/article-body.html?raw';
+---
+<Fragment set:html={articleBodyHtml} />
