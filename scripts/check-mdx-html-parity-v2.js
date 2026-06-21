@@ -185,9 +185,10 @@ for (const [mdxRel, htmlRel] of PAIRS) {
   try {
     const mdxStat = fs.statSync(mdxPath);
     const htmlStat = fs.statSync(htmlPath);
-    if (mdxStat.mtime > htmlStat.mtime && ratio > 0.02) {
+    const mtimeDiffMs = Math.abs(mdxStat.mtime - htmlStat.mtime);
+    if (mtimeDiffMs > 1000 && mdxStat.mtime > htmlStat.mtime && ratio > 0.02) {
       warnings++;
-      console.log(`     ⚠️ MDX is newer by mtime (${mdxStat.mtime.toISOString().slice(0,10)} vs ${htmlStat.mtime.toISOString().slice(0,10)})`);
+      console.log(`     ⚠️ MDX is newer by mtime (${mdxStat.mtime.toISOString().slice(0,10)} vs ${htmlStat.mtime.toISOString().slice(0,10)}, diff ${mtimeDiffMs}ms)`);
     }
   } catch(e) {}
 }
