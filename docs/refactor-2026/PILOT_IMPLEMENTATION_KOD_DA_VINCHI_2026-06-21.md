@@ -338,8 +338,10 @@ That gives a much safer rollback than whole-route layout replacement.
 
 ---
 
-См. также детальный file-by-file spec:
-- `docs/refactor-2026/PATCH_SPEC_KOD_DA_VINCHI_2026-06-21.md`
+См. также:
+- детальный file-by-file spec: `docs/refactor-2026/PATCH_SPEC_KOD_DA_VINCHI_2026-06-21.md`
+- patch spec для audit adaptation: `docs/refactor-2026/PATCH_SPEC_ARTICLE_MDX_AUDIT_2026-06-21.md`
+- visual gate enhancement note: `docs/refactor-2026/PLAYWRIGHT_VISUAL_GATE_ENHANCEMENT_2026-06-21.md`
 
 ## 9. Final verdict
 
