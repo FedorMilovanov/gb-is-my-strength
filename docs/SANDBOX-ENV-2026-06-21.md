@@ -1,7 +1,7 @@
 # ARENA SESSION MANUAL — выживание в песочнице
 
 **Обновлено:** 2026-06-21  
-**Версия:** v7 (v6 + SVG parity gate fix, playwright apt deps, audit-exit-before-shots workflow, pixelmatch method)  
+**Версия:** v7.1 (v7 + whitespace-collapse normalization — completes /about/ leaf pilot)  
 **Среда:** Arena.ai Agent Mode — Linux ext4, 2 CPU, 1.9GB RAM
 
 ---
@@ -186,12 +186,30 @@ pixel-diff = 0.0000%. Но byte-gate падал с ложным `❌ differs` (2
 
 **Без фикса КАЖДЫЙ мигрированный Astro-leaf с SVG падал бы в CI** — миграция 6.0 мертва.
 
-**Фикс (применён, commit fix(audit-about)):** в `normalizeHtmlForFullDocumentParity` добавить
-канонизацию перед сравнением — раскрыть `<x .../>` → `<x ...></x>` на ОБЕИХ сторонах:
+**Фикс (применён, 2 коммита fix(audit-about)):** `normalizeHtmlForFullDocumentParity` теперь нормализует
+к БРАУЗЕРНО-ЭКВИВАЛЕНТНОЙ форме, покрывая ДВА класса сериализационных ложных срабатываний:
+
+**Класс A — самозакрывающиеся пустые элементы** (шаг 1, AboutArticle):
+раскрыть `<x .../>` → `<x ...></x>` на ОБЕИХ сторонах:
 ```js
 .replace(/(<([a-zA-Z][a-zA-Z0-9:-]*)(\s[^>]*?)?)\s*\/\s*>/g, '$1></$2>')
 ```
-Проверено: реальные регрессии (изменённый текст/атрибуты/id) **по-прежнему ловятся**.
+
+**Класс B — пробелы в текстовых узлах** (шаг 2, AboutAccuracyBlock):
+компилятор Astro триммит ведущие/хвостовые пробелы внутри flow-text (отступная строка прозы
+становится без отступа), а legacy-источник хранит отступ. Браузер коллапсирует их идентично.
+Схлопнуть `\s+` → одиночный пробел на ОБЕИХ сторонах, КРОМЕ внутри whitespace-significant
+элементов (`<pre>`, `<textarea>`) и raw-text (`<script>`, `<style>`) — их содержимое защищено
+через placeholder-swap и сравнивается verbatim.
+
+Проверено (обеими шагами /about/):
+  - реальные регрессии **по-прежнему ловятся**: изменённое слово, изменённый id, удалённая секция
+  - защищено: `<pre>` пробелы, `&nbsp;` entities, `%20` в mailto URL
+  - pixelmatch desktop+mobile = 0 differing pixels
+
+**Главный урок:** ЛЮБОЙ «byte-parity» гейт против hand-authored Astro должен нормализовать к
+браузерно-эквивалентной форме, иначе он ловит сериализацию, а не баги. Юзай pixelmatch как
+независимый арбитр.
 
 **Урок для будущих агентов:** при любом «byte-parity» гейте ВСЕГДА проверяй, не сериализационная
 ли это разница (self-close vs explicit-close, порядок атрибутов, кавычки). Юзай pixelmatch как
