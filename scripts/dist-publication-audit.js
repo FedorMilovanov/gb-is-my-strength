@@ -134,7 +134,7 @@ function checkAstroAboutOwnership() {
   // and astro-shell wrappers are regressions.
   if (!/<article class="about-page"/.test(html)) bad('/about/ in dist is not the legacy about visual document');
   else ok('/about/ in dist is Astro-owned via full-document visual parity');
-  for (const marker of ['about-page', 'about-contacts', 'about-contact-card', 'gb-accuracy-block']) {
+  for (const marker of ['about-page', 'about-resources', 'about-contact-card', 'gb-accuracy-block']) {
     if (!html.includes(marker)) bad(`/about/ dist missing legacy visual marker: ${marker}`);
     else ok(`/about/ dist keeps legacy marker: ${marker}`);
   }

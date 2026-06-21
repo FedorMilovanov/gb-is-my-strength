@@ -98,6 +98,13 @@ if(!("speechSynthesis" in window))return;
 /* Emergency 2026-06-19: TTS is article-only. Do not show an audio prompt on the homepage/landing pages. */
 var path=(location.pathname||"/").replace(/\/+$/, "/");
 if(path==="/"||document.body.classList.contains("home-page")||document.querySelector(".home-v20"))return;
+// TTS is only useful on long-form reading articles. Suppress on /about/ and on
+// every catalog / landing / interactive section: these contain enough <p>
+// nodes to pass the paragraph heuristic below but are NOT reading articles.
+// (owner 2026-06-21: «кнопка аудио озвучивания там ни в тему в таких отделах».)
+// Whole prefixes below hold no individual articles; the three series hubs are
+// suppressed at their index only — their /<slug>/ subpages stay narratable.
+if(/^(?:\/(?:about|biografii|hard-texts|pastor-series|karty|konfessii|map|rodosloviye)(?:\/.*)?|\/(?:articles|baptisty-rossii|nagornaya)\/?)$/.test(path))return;
 var art=document.querySelector("article")||document.querySelector("main[data-pagefind-body]");
 if(!art)return;
 var body=art.querySelector(".article-body")||art;

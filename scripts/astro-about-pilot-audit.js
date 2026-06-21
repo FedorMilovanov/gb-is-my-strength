@@ -220,7 +220,7 @@ function checkOneViewport(problems, notes, viewportName, legacy, astro) {
   if (/Astro scaffold|Технический прототип|production switch/i.test(astro.text)) problems.push(`${prefix} astro public /about/ contains technical scaffold copy`);
   if (/\bnoindex\b/i.test(astro.meta.robots || '')) problems.push(`${prefix} astro /about/ unexpectedly noindex`);
   if (!astro.hasPagefindBody) problems.push(`${prefix} astro /about/ missing data-pagefind-body`);
-  for (const marker of ['about-page', 'about-contacts', 'about-contact-card', 'gb-accuracy-block']) {
+  for (const marker of ['about-page', 'about-resources', 'about-contact-card', 'gb-accuracy-block']) {
     if (!astro.html.includes(marker)) problems.push(`${prefix} astro missing legacy visual marker: ${marker}`);
   }
   for (const marker of ['class="astro-about"', 'astro-contact-grid', 'astro-accuracy-block']) {

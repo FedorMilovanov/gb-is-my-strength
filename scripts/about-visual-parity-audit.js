@@ -35,7 +35,11 @@ const astro = read('src/pages/about/index.astro');
 const owner = read('docs/OWNER-REQUIREMENTS.md');
 const agents = read('AGENTS.md');
 
-for (const marker of ['about-page', 'about-contacts', 'about-contact-card', 'gb-accuracy-block', 'Фёдор Милованов']) {
+// Legacy about/index.html is now only a historical baseline: the live /about/
+// is Astro-rendered and has been intentionally redesigned beyond legacy parity
+// (about-resources premium icon grid). Check legacy for the markers it still
+// carries; check dist for the new design markers.
+for (const marker of ['about-page', 'about-contact-card', 'gb-accuracy-block', 'Фёдор Милованов']) {
   must(legacy, marker, `legacy /about/ marker: ${marker}`);
 }
 
@@ -70,7 +74,7 @@ for (const marker of [
 // local check during component edits).
 const distAbout = exists('dist/about/index.html') ? read('dist/about/index.html') : '';
 if (distAbout) {
-  for (const marker of ['about-page', 'about-contacts', 'about-contact-card', 'gb-accuracy-block', 'Фёдор Милованов']) {
+  for (const marker of ['about-page', 'about-resources', 'about-contact-card', 'gb-accuracy-block', 'Фёдор Милованов']) {
     must(distAbout, marker, `dist /about/ marker: ${marker}`);
   }
   mustNot(distAbout, 'astro-card-grid', 'dist /about/ generic regression marker absent');

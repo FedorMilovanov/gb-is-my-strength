@@ -40,7 +40,7 @@ const CONTRACTS = [
   },
   {
     rel: 'about/index.html',
-    require: ['about-page', 'about-contacts', 'about-contact-card', 'Фёдор Милованов'],
+    require: ['about-page', 'about-resources', 'about-contact-card', 'Фёдор Милованов'],
     forbid: ['astro-page__header', 'astro-card-grid'],
   },
   {
