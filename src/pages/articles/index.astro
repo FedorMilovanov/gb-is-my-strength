@@ -1,22 +1,31 @@
 ---
+/**
+ * /articles/ — РЕФАКТОРИНГ 5.0 Phase 6 wave 3 (AGENTS-r251).
+ *
+ * native-shadow recipe (see REFACTORING_5_0_PIXEL_DIFF_GUARD_2026-06-20.md §8-9):
+ *   - <head> via loadLegacyFullDocument => SEO byte-identical;
+ *   - body chrome (navbar, mobile menu, hero/footer breadcrumbs, runtime
+ *     scripts) preserved verbatim through body-segment-{0,1}.html;
+ *   - <main id="main-content"> promoted to ArticlesMain.astro component.
+ *
+ * Pixel parity proof:
+ *   npm run visual:parity:screenshots -- --routes /articles/
+ */
 import { loadLegacyFullDocument } from '@/utils/legacyFullDocument';
+import ArticlesMain from '@/components/articles/ArticlesMain.astro';
+import segBefore from '@/components/articles/_legacy/body-segment-0.html?raw';
+import segAfter from '@/components/articles/_legacy/body-segment-1.html?raw';
 
-// Visual-first migration: /articles/ must preserve the legacy premium catalog
-// before any component refactor. The previous generic astro-card grid was a
-// production-quality regression; keep this full-document shadow until screenshot
-// parity and owner review approve a hand-built Astro version.
-const { headHtml, bodyHtml, bodyAttributes } = loadLegacyFullDocument('articles/index.html');
+const { headHtml, bodyAttributes } = loadLegacyFullDocument('articles/index.html');
 ---
 <!DOCTYPE html>
 <html lang="ru">
   <head>
     <Fragment set:html={headHtml} />
   </head>
-  <body {...bodyAttributes}>
-    <!-- Pagefind search data: full-document visual shadow keeps legacy markup, so search text is explicit. -->
+  <body {...bodyAttributes}><Fragment set:html={segBefore} /><ArticlesMain /><Fragment set:html={segAfter} />
     <div class="sr-only" data-pagefind-body style="position:absolute;left:-9999px;top:auto;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);clip-path:inset(50%);white-space:nowrap">
       Каталог статей Господь Бог — Сила Моя. Все статьи: Джон Гилл, Нагорная проповедь, апологетика, экзегетика, богословие, пасторская серия, трудные тексты и библейские исследования.
     </div>
-    <Fragment set:html={bodyHtml} />
   </body>
 </html>
