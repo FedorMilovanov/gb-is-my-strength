@@ -9,6 +9,11 @@
 
 ## 0. ДИАГНОСТИКА: ПОЧЕМУ ПРЕДЫДУЩИЙ ПЛАН НЕРАБОТОСПОСОБЕН
 
+См. также:
+- `research/PRODUCTION_ROUTE_TAXONOMY_2026-06-21.md`
+- `research/MIGRATION_LANE_PRIORITY_2026-06-21.md`
+- `research/EXTERNAL_MIGRATION_CONSTRAINTS_2026-06-21.md`
+
 ### 0.1 Архитектурный deadlock
 
 | Предположение старого плана | Реальность |
