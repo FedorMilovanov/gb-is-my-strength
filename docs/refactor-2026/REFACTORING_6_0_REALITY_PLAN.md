@@ -2,8 +2,8 @@
 
 **Дата:** 2026-06-21  
 **Версия:** 1.0 (post-verification)  
-**Статус:** 51/52 страниц в full-document shadow-wrap. MDX orphaned. Native layouts orphaned.  
-**Принцип:** Не мечтать о том, что было до 20 июня. Строить из того, что есть.
+**Статус:** все 51 production route сидят на `loadLegacyFullDocument`, но это не один implementation-класс: 33 pure full-body shadow + 18 componentized/hybrid shadow. MDX orphaned from production. Native layouts orphaned from live rendering.
+**Принцип:** Не мечтать о том, что было до 20 июня. Строить из того, что есть, и различать pure-shadow и hybrid-shadow lanes.
 
 ---
 
@@ -13,18 +13,18 @@
 
 | Предположение старого плана | Реальность |
 |----------------------------|------------|
-| "6 native-shadow pages" | 0. Все 51 production-страниц в full shadow. |
-| "CSS @layer через Astro bundling" | Astro не бандлит CSS для shadow-страниц. Они подгружают `/css/site.css` напрямую. |
-| "MDX migration в Phase 5" | MDX-код orphaned; рендерится только через Astro native, но все страницы emit legacy HTML. |
-| "TypeScript migration Phase 9" | Нет entry point для TS-компонентов, кроме `dev/astro-test.astro`. |
+| "6 native-shadow pages" | 0 true native production pages. Но есть 18 componentized/hybrid shadow routes, их нельзя смешивать с 33 pure routes. |
+| "CSS @layer через Astro bundling" | Astro не бандлит CSS для production shadow-страниц; они подгружают `/css/site.css` напрямую из legacy head. |
+| "MDX migration в Phase 5" | MDX-код orphaned от production; рендерится только через native Astro path, который сейчас не live. |
+| "TypeScript migration Phase 9" | Нет production entry point для TS-компонентов, кроме build/dev scaffolding. |
 
-### 0.2 Единственный путь: Shadow-breakout pilot
+### 0.2 Единственный путь: Shadow-breakout pilot + split lanes
 
-Нельзя мигрировать 51 страницу одновременно. Нужно:
-1. Выбрать **1 pilot-страницу** с минимальным риском.
-2. Вывести её из shadow-wrap → native Astro + MDX/content.
-3. Пройти через **все гейты** (visual parity, audit-pro, interactive-audit).
-4. Повторить для 2-3 страниц.
+Нельзя мигрировать 51 route одновременно и нельзя планировать их как один класс. Нужно:
+1. Разделить production на **2 migration lanes**: 18 hybrid/componentized routes и 33 pure full-body routes.
+2. Выбрать **1 pilot-страницу** с минимальным риском в pure/content lane.
+3. Отдельно выбрать **1 shell-first candidate** в hybrid lane.
+4. Пройти через **все гейты** (visual parity, audit-pro, interactive-audit).
 5. Только потом — массовый rollout.
 
 ---
@@ -44,20 +44,26 @@
 
 ### 1.2 Рейтинг кандидатов
 
-| Страница | MDX | Layout | Interactive JS | Карты | Трафик | Score |
-|----------|-----|--------|----------------|-------|--------|-------|
-| `/about/` | ❌ | Native (orphaned) | Низкий | Нет | Средний | ⭐⭐⭐ |
-| `/articles/20-antisovetov-pastoru/` | ✅ | `ArticleLayout` (orphaned) | Средний (footnotes) | Нет | Высокий | ⭐⭐⭐⭐ |
-| `/articles/rimlyanam-7/` | ✅ | `ArticleLayout` | Низкий | Нет | Низкий | ⭐⭐⭐⭐⭐ **WINNER** |
-| `/articles/hermenevticheskaya/` | ✅ | `ArticleLayout` | Средний | Нет | Средний | ⭐⭐⭐⭐ |
-| `/baptisty-rossii/spravochnik/` | ✅ | `SeriesArticleLayout` | Низкий | Нет | Низкий | ⭐⭐⭐⭐ |
+| Страница | MDX | Live route class | Interactive JS | Карты | Трафик | Score |
+|----------|-----|------------------|----------------|-------|--------|-------|
+| `/about/` | ❌ | hybrid page-segment shadow | Низкий | Нет | Средний | ⭐⭐⭐⭐ (shell-first lane) |
+| `/articles/20-antisovetov-pastoru/` | ✅ | pure full-body shadow | Средний (footnotes) | Нет | Высокий | ⭐⭐⭐⭐ |
+| `/articles/rimlyanam-7/` | ✅ | pure full-body shadow | Низкий | Нет | Низкий | ⭐⭐⭐⭐⭐ **WINNER** |
+| `/articles/hermenevticheskaya/` | ✅ | pure full-body shadow | Средний | Нет | Средний | ⭐⭐⭐⭐ |
+| `/baptisty-rossii/spravochnik/` | ✅ | pure full-body shadow | Низкий | Нет | Низкий | ⭐⭐⭐⭐ |
 
-**Pilot: `/articles/rimlyanam-7-veruyushchiy-ili-neveruyushchiy/`**
+**Pilot content-lane:** `/articles/rimlyanam-7-veruyushchiy-ili-neveruyushchiy/`
 - MDX: `src/content/articles/rimlyanam-7-veruyushchiy-ili-neveruyushchiy.mdx` ✅
-- Layout: `ArticleLayout.astro` ✅ (orphaned, но рабочий)
+- Route class: pure full-body shadow ✅
+- Layout target: `ArticleLayout.astro` ✅ (orphaned, но рабочий)
 - Interactive: только footnotes/tooltips (site.js) — минимум
 - Трафик: низкий (техническая статья)
 - Visual parity baseline: есть
+
+**Pilot shell-lane:** `/about/`
+- Route class: hybrid page-segment shadow ✅
+- Уже имеет extraction seams: `body-before`, `body-mid`, `body-after`, `AboutArticle`, `AboutAccuracyBlock`
+- Не имеет MDX, зато идеально подходит для доказательства постепенной замены raw fragments на real Astro markup
 
 ---
 

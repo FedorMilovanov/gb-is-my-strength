@@ -153,9 +153,9 @@ MapEngine v0.x (shared engine, 9 карт) vs Avraam (monolith, 1 карта) vs
 
 ---
 
-### Фаза 2: Shadow-wrap → Native-shadow для HIGH-risk (неделя 2-3) — 4 задачи
+### Фаза 2: Hybrid-shadow → true Astro shell для HIGH-risk hub pages (неделя 2-3) — 4 задачи
 
-**Цель:** Авраам, Карты, Баптисты, Нагорная, Главная — перевести с full-document shadow на native-shadow (как `/about/` в r249).
+**Цель:** не «повторить `/about/` как будто он уже native», а перевести 4 существующих hybrid-hub route из raw-fragment shadow в реальные Astro shells с сохранением visual parity.
 
 | # | Задача | Route | Метод |
 |---|--------|-------|-------|
@@ -205,22 +205,22 @@ MapEngine v0.x (shared engine, 9 карт) vs Avraam (monolith, 1 карта) vs
 
 ---
 
-### Фаза 5: Native page promotion (неделя 3-5) — 8 задач
+### Фаза 5: Promotion by route class (неделя 3-5) — 8 задач
 
-**Цель:** Все 30+ shadow-wrap routes → native-shadow (готовят почву для полного native).
+**Цель:** не валить все shadow routes в один backlog. Сначала продвигать 18 componentized/hybrid routes, затем отдельно открывать pure full-body routes. Это две разные дорожки.
 
-По приоритету (см. REFACTORING_5_0_PIXEL_DIFF_GUARD.md roadmap):
+По приоритету (см. `research/PRODUCTION_ROUTE_TAXONOMY_2026-06-21.md`):
 
 | # | Route | Текущий статус | Целевой статус |
 |---|-------|---------------|----------------|
-| 5.1 | `/karty/` | full-shadow | native-shadow ✅ |
-| 5.2 | `/baptisty-rossii/` | full-shadow | native-shadow ✅ |
-| 5.3 | `/nagornaya/` | full-shadow | native-shadow ✅ |
-| 5.4 | `/` (home) | full-shadow | native-shadow ✅ |
-| 5.5 | `/nagornaya/chast-1..5/` | full-shadow | native-shadow ✅ |
-| 5.6 | `/nagornaya/seriya/` | full-shadow | native-shadow ✅ |
-| 5.7 | `/nagornaya/istochniki/` | full-shadow | native-shadow ✅ |
-| 5.8 | `/nagornaya/nakhodki/` | full-shadow | native-shadow ✅ |
+| 5.1 | `/about/` | hybrid page-segment shadow | true Astro shell + semantic content |
+| 5.2 | `/karty/` | hybrid page-segment shadow | true Astro shell + extracted hub blocks |
+| 5.3 | `/baptisty-rossii/` | hybrid page-segment shadow | true Astro shell + extracted GBS2 landing |
+| 5.4 | `/` (home) | hybrid page-segment shadow | true Astro shell + split home sections |
+| 5.5 | `/nagornaya/` | hybrid delegated shadow | split `NagornayaPageMain` into sub-components |
+| 5.6 | `/nagornaya/chast-1..5/` | hybrid delegated shadow | page family promotion after landing |
+| 5.7 | `/nagornaya/seriya|istochniki|nakhodki/` | hybrid delegated shadow | same lane, same component family |
+| 5.8 | `/articles/rimlyanam-7.../` | pure full-body shadow | first content-lane breakout via MDX + `ArticleLayout` |
 
 **Gate:** `npm run visual:parity:guard` — все 52 routes green, каждый с individual baseline update.
 

@@ -103,7 +103,8 @@
     "catalogs:visual-parity:audit": "node scripts/catalogs-visual-parity-audit.js",
     "content:parity": "node scripts/check-mdx-html-parity.js",
     "content:parity-v2": "node scripts/check-mdx-html-parity-v2.js",
-    "css:layer:validate": "node scripts/css-layer-validator.js"
+    "css:layer:validate": "node scripts/css-layer-validator.js",
+    "route:taxonomy": "node scripts/route-shadow-taxonomy.js"
   },
   "engines": {
     "node": ">=22.12.0"
