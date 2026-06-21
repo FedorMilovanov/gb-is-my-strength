@@ -1,32 +1,22 @@
 ---
-/**
- * /baptisty-rossii/ — РЕФАКТОРИНГ 5.0 Phase 6 wave 5 (AGENTS-r253) native pilot.
- *
- * native-shadow recipe (see REFACTORING_5_0_PIXEL_DIFF_GUARD_2026-06-20.md §10):
- *   - <head> via loadLegacyFullDocument => SEO byte-identical;
- *   - body chrome (skip-link, mobile-head, gbs2-world wrapper, gbs2-rail
- *     sidebar with all 10 parts + progress ring, breadcrumb, gbs2-bbar,
- *     gbs2-sheet mobile sheet, runtime scripts) preserved verbatim through
- *     body-segment-{0,1}.html;
- *   - <main id="main-content"> promoted to BaptistyRossiiMain.astro
- *     component (gbs2-hero + article-header + article-body with all 10 part
- *     cards + research link + gbs2-vignette + author-card + article-end-block).
- *
- * Pixel parity proof:
- *   npm run visual:parity:screenshots -- --routes /baptisty-rossii/
- */
 import { loadLegacyFullDocument } from '@/utils/legacyFullDocument';
-import BaptistyRossiiMain from '@/components/baptisty-rossii/BaptistyRossiiMain.astro';
-import segBefore from '@/components/baptisty-rossii/_legacy/body-segment-0.html?raw';
-import segAfter from '@/components/baptisty-rossii/_legacy/body-segment-1.html?raw';
 
-const { headHtml, bodyAttributes } = loadLegacyFullDocument('baptisty-rossii/index.html');
+// Visual-first migration: /baptisty-rossii/ must preserve the legacy premium page
+// before any component refactor. The previous generic astro-card grid was a
+// production-quality regression; keep this full-document shadow until screenshot
+// parity and owner review approve a hand-built Astro version.
+const { headHtml, bodyHtml, bodyAttributes } = loadLegacyFullDocument('baptisty-rossii/index.html');
 ---
-
 <!DOCTYPE html>
 <html lang="ru">
   <head>
     <Fragment set:html={headHtml} />
   </head>
-  <body {...bodyAttributes}><Fragment set:html={segBefore} /><BaptistyRossiiMain /><Fragment set:html={segAfter} /></body>
+  <body {...bodyAttributes}>
+    <!-- Pagefind search data: full-document visual shadow keeps legacy markup, so search text is explicit. -->
+    <div class="sr-only" data-pagefind-body style="position:absolute;left:-9999px;top:auto;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);clip-path:inset(50%);white-space:nowrap">
+      Баптисты России. Живая исследовательская серия из 10 частей: Воронин, ночь на Куре, южная штунда, два съезда 1884 года, Петербургская линия, гонения, советская ночь, ВСЕХБ, Инициативная группа, подпольная печать, справочник источников.
+    </div>
+    <Fragment set:html={bodyHtml} />
+  </body>
 </html>
