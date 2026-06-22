@@ -13,7 +13,7 @@
     "validate:all": "npm run validate:strict && npm run seo-audit",
     "fonts:download": "node scripts/download-fonts.js",
     "avif:build": "bash scripts/build-avif.sh",
-    "ci:check": "npm run validate:static-publication && npm run cache-bust && npm run workflows:check",
+    "ci:check": "npm run cache-bust && npm run validate:static-publication && npm run workflows:check",
     "tokens:check": "node scripts/check-design-tokens.js",
     "visual-audit": "node scripts/visual-audit.js",
     "interactive-audit": "node scripts/interactive-audit.js",
