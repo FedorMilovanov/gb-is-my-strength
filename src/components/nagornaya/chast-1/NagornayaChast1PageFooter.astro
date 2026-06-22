@@ -1,0 +1,35 @@
+---
+/**
+ * NagornayaChast1PageFooter — Phase 1: body-segment-1 Astro component.
+ *
+ * Replaces raw ?raw import for /nagornaya/chast-1/.
+ * Contains: footnote tooltip comments, script tags (site.js, glossary,
+ *           highlights, nagornaya-mobile-toc, enhancements, bookmark-engine),
+ *           read-progress bar, font-size controls.
+ *
+ * All <script> tags use is:inline so Astro does not attempt Rollup resolution.
+ */
+---
+
+
+<!-- footnote tooltips handled by js/nagornaya-mobile-toc.js?v=f25219b0 module E -->
+<!-- tooltip-trigger handled by js/site.js?v=fed3ec3b module 33 -->
+
+<!-- mobile menu handled by js/nagornaya-mobile-toc.js?v=f25219b0 module B -->
+
+<script is:inline src="/js/site-utils.js?v=897afa55"></script>
+    <script is:inline src="/js/scroll-perf.js?v=454d6f7b"></script>
+    <script is:inline src="../../js/site.js?v=fed3ec3b" defer></script>
+    <script is:inline src="../../js/glossary.js?v=2100cf4f" defer></script>
+<script is:inline src="../../js/sw-register.js?v=8a077d35" defer></script>
+<script is:inline src="../../js/search.js?v=c9d65577" defer></script>
+<script is:inline src="../../js/highlights.js?v=a1706b06" defer></script>
+<script is:inline src="../../js/nagornaya-mobile-toc.js?v=f25219b0" defer></script>
+<script is:inline src="../../js/enhancements.js?v=b3b77aa6" defer></script>
+<script is:inline src="../../js/bookmark-engine.js?v=c5e0bf10" defer></script>
+<div id="read-progress" role="progressbar" aria-label="Прогресс чтения" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"></div>
+<!-- read-progress handled by js/nagornaya-mobile-toc.js?v=f25219b0 module C -->
+
+
+<!-- font-size handled by js/nagornaya-mobile-toc.js?v=f25219b0 module D -->
+
