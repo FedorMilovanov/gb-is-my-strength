@@ -1,7 +1,7 @@
 # Gill spravochnik pilot implementation — 2026-06-22
 
 **Route:** `/articles/dzhon-gill-spravochnik/`
-**Status:** Phase GS2 complete in source layer — componentized shadow-breakout + article-body section seams, no content/visual change intended.
+**Status:** Phase GS3 complete in source layer — componentized shadow-breakout + article-body section seams + first promoted Astro section, no content/visual change intended.
 **Gill route progress:** 2 of 5 Gill pages have a componentized Astro shell (`40%`); 1 of 5 Gill pages is fully componentized (`20%`).
 
 ---
@@ -51,6 +51,12 @@ Phase GS2 retired the article-body monolith:
   - `08-sec-links.html`
   - `09-sec-sources.html`
   - `10-sec-quiz-tail.html`
+
+Phase GS3 promoted the first compact body section:
+
+- removed `src/components/article-pilots/gill-spravochnik/_legacy/article-sections/08-sec-links.html`;
+- added `src/components/article-pilots/gill-spravochnik/GillSpravochnikSectionLinks.astro`;
+- `GillSpravochnikArticleBody.astro` now renders 10 raw fragments + 1 Astro section in the original order.
 
 This preserves the existing GBS2 visual world and article content. It is intentionally **not** an MDX activation.
 

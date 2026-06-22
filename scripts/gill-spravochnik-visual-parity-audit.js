@@ -14,7 +14,8 @@ const PAGE_REL = 'src/pages/articles/dzhon-gill-spravochnik/index.astro';
 const BASE_REL = 'src/components/article-pilots/gill-spravochnik';
 const LEGACY_DIR_REL = `${BASE_REL}/_legacy`;
 const SECTION_DIR_REL = `${LEGACY_DIR_REL}/article-sections`;
-const TOTAL_SECTIONS = 11;
+const TOTAL_RAW_SECTIONS = 10;
+const TOTAL_ASTRO_SECTIONS = 1;
 const files = {
   seg0: `${LEGACY_DIR_REL}/body-segment-0.html`,
   seg1: `${LEGACY_DIR_REL}/body-segment-1.html`,
@@ -83,10 +84,12 @@ for (const [label, rel] of Object.entries(files)) mustExist(label, rel);
 mustExist('Gill spravochnik article section directory', SECTION_DIR_REL);
 if (fs.existsSync(abs(SECTION_DIR_REL))) {
   const count = fs.readdirSync(abs(SECTION_DIR_REL)).filter((name) => name.endsWith('.html')).length;
-  if (count === TOTAL_SECTIONS) ok(`Gill spravochnik raw article section count: ${TOTAL_SECTIONS}`);
-  else bad(`Gill spravochnik section count drift: expected ${TOTAL_SECTIONS}, got ${count}`);
+  if (count === TOTAL_RAW_SECTIONS) ok(`Gill spravochnik raw article section count: ${TOTAL_RAW_SECTIONS} (+${TOTAL_ASTRO_SECTIONS} Astro section = 11)`);
+  else bad(`Gill spravochnik section count drift: expected ${TOTAL_RAW_SECTIONS}, got ${count}`);
 }
 mustNotExist('Gill spravochnik article-body monolith retired', `${LEGACY_DIR_REL}/article-body.html`);
+mustNotExist('Gill spravochnik links raw fragment promoted', `${SECTION_DIR_REL}/08-sec-links.html`);
+mustExist('Gill spravochnik promoted Links section', `${BASE_REL}/GillSpravochnikSectionLinks.astro`);
 
 if (!problems.length) {
   const legacy = read(LEGACY_REL);
@@ -98,8 +101,12 @@ if (!problems.length) {
   const seg0 = read(files.seg0);
   const seg1 = read(files.seg1);
   const header = read(files.header);
-  const sections = fs.readdirSync(abs(SECTION_DIR_REL)).filter((name) => name.endsWith('.html')).sort().map((name) => read(`${SECTION_DIR_REL}/${name}`));
-  const article = `<article class="article-body">${sections.join('')}</article>`;
+  const rawSectionNames = fs.readdirSync(abs(SECTION_DIR_REL)).filter((name) => name.endsWith('.html')).sort();
+  const rawSections = rawSectionNames.map((name) => read(`${SECTION_DIR_REL}/${name}`));
+  const linksSection = read(`${BASE_REL}/GillSpravochnikSectionLinks.astro`);
+  const beforeLinks = rawSectionNames.filter((name) => name < '08-sec-links.html').map((name) => read(`${SECTION_DIR_REL}/${name}`));
+  const afterLinks = rawSectionNames.filter((name) => name > '08-sec-links.html').map((name) => read(`${SECTION_DIR_REL}/${name}`));
+  const article = `<article class="article-body">${beforeLinks.join('')}${linksSection}${afterLinks.join('')}</article>`;
   const post = read(files.post);
 
   for (const marker of [
@@ -135,12 +142,14 @@ if (!problems.length) {
   mustContain('HeaderHero component raw import', headerComp, '_legacy/header-hero.html?raw');
   mustContain('ArticleBody component owns article wrapper', bodyComp, '<article class="article-body">');
   mustContain('ArticleBody component uses ordered section glob', bodyComp, 'article-sections/*.html');
+  mustContain('ArticleBody component imports promoted Links section', bodyComp, 'GillSpravochnikSectionLinks');
   mustNotContain('ArticleBody component no longer imports monolith', bodyComp, 'article-body.html?raw');
   mustContain('PostArticle component raw import', postComp, '_legacy/post-article.html?raw');
 
   mustContain('header fragment keeps GBS2 hero', header, 'class="gbs2-hero"');
   mustContain('header fragment keeps Gill reference H1', header, 'Джон Гилл: справочник');
   mustContain('article sections keep summary card', article, 'summary-card');
+  mustContain('article sections keep links section', article, 'id="sec-links"');
   mustContain('article sections keep sources section', article, 'sec-sources');
   mustContain('article sections keep quiz', article, 'quizPlaceholder');
   mustContain('article sections keep Gill next navigation', article, 'gbs2-next');
