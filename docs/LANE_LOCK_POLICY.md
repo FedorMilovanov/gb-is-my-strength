@@ -1,6 +1,8 @@
 # Lane Lock Policy — координация параллельных агентов
 
-**Версия:** 1.0 · 2026-06-22  
+**Версия:** 1.1 · 2026-06-23 (risk-based lane lock + out-of-lane rule)
+
+**См. также:** [docs/WORK_MODES.md](docs/WORK_MODES.md) — Work Mode Decision Tree и краткий справочник.  
 **Цель:** не допустить одновременной работы двух агентов в одном route/lane.  
 **Без lane lock — регресс.** Агенты перезаписывают друг другу файлы → данные теряются, CI падает, читатели видят сломанный сайт.
 
@@ -13,7 +15,13 @@
 - Агент A может менять `NagornayaChast1PageChrome.astro` в то же время, что агент B меняет `NagornayaChast1MainShell.astro`. Оба думают что владеют route, но пересекаются через _legacy fragments и data/series.json.
 - Без lane lock: дублирующие коммиты, race conditions в CI, рассинхрон данных.
 
-**Правило:** lane lock **обязателен** для любой работы длиннее 3 минут или затрагивающей более 1 файла.
+**Правило:** lane lock **обязателен** по риску, не по времени.
+См. [docs/WORK_MODES.md](docs/WORK_MODES.md) — Work Mode Decision Tree.
+
+Lane обязателен когда: MULTI-AGENT режим, production route refactor, >3 файлов,
+shared/high-risk файл, задача refactor/migration/stabilization.
+
+Lane НЕ обязателен: SOLO + docs-only, один агент + одна правка, без shared файлов.
 
 ---
 
@@ -61,7 +69,9 @@ main  ────────────── (стабильный, толь
 1. Агент создаёт branch от актуального `main`
 2. Объявляет lane в описании branch или в первом commit message
 3. Другой агент проверяет существующие branches перед созданием своего
-4. После завершения lane — PR в `main` с review от другого агента
+4. После завершения lane — PR в `main`.
+Lane report пишется в docs/refactor-2026/lanes/<lane-name>.md.
+AGENTS.md НЕ редактируется каждым агентом — только интегратор после волны.
 
 ### 2.2 Branch naming convention
 
@@ -77,6 +87,21 @@ lane/<route-or-feature>-<phase>
 - `lane/antisovetov-readtime` — 20-antisovetov readTime sync
 
 **Запрещённые имена:** `agent-1`, `work`, `fix`, `refactor`, `update`
+
+
+### Out-of-lane findings — правило
+
+Если агент видит проблему вне своего lane — **НЕ исправлять**, а записать:
+
+```markdown
+## Out-of-lane findings
+- data/series.json: Gill I readTime устарел (21 вместо 28)
+  Suggested lane: lane/shared-readtime-sync
+  Not fixed in this lane (gill-spravochnik-gs7)
+```
+
+Обоснование: "увидел рядом — сразу исправил" при параллельных агентах
+создаёт race conditions и рассинхрон. Сначала lane report → потом отдельный lane.
 
 ### 2.3 Кто какой lane выбирает
 
