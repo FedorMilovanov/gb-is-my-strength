@@ -15,6 +15,7 @@
 |---|---|---|
 | **AGENTS-r260** | 2026-06-22 | **CRITICAL CONTENT REGRESSION FIX: 19 native Astro routes switched back to legacy shadow-wrap.** These routes were rendering via `BaseLayout`/`ArticleLayout` (native Astro) instead of `loadLegacyFullDocument`, producing different HTML structure (`astro-shell`/`astro-header`/`astro-article`) than the premium legacy design (`gbs-paper`/GBS2 chrome). Affected: 5 article routes (kod-da-vinchi, 20-antisovetov, rimlyanam-7, krajne-li-isporcheno, hermenevticheskaya-otsenka), 10 baptisty-rossii series routes, karty/avraam, karty/ishod, konfessii/russkij-baptizm, rodosloviye. All converted to `loadLegacyFullDocument` shadow-wrap with sr-only `data-pagefind-body` for search. Gates: audit-pro 164/0 ✅, URL contract 51/51 ✅, page-ownership ✅, build 52 pages ✅. **Also:** SANDBOX-ENV v8.0 with §16 VISION/IMAGE full diagnosis + OCR workaround; `/about/` route profile (`data/route-profiles/about.json`). |
 | **AGENTS-r261** | 2026-06-22 | **РЕФАКТОРИНГ 6.0 Phase 1+2 pilot progress.** (1) Shadow-breakout pilot: `/articles/kod-da-vinchi/` transitions from pure-full-body-shadow to componentized shadow — `<main>` extracted into `KodDaVinchiMainShell.astro`, then split into 3 semantic components (`HeaderHero`/`ArticleBody`/`PostArticle`). DOM markers: 12/12 preserved, h2 count 22/22, article body EXACT PARITY. MDX activation BLOCKED pending enrichment (MDX has 0/103 CSS classes from legacy HTML — documented in `MDX_ENRICHMENT_GAP_2026-06-22.md`). (2) CSS @layer: `css/site-layered.css` created with 8-layer architecture (`reset, base, legacy, gbs2, nagornaya, components, utilities, overrides`); previously-unlayered CSS wrapped in `@layer legacy`; layered ratio: 91% (was 22.2%); pilot page uses layered CSS. (3) Route profiles: 52 profiles generated in `data/route-profiles/`. (4) `scripts/css-layer-validator.js` + `scripts/generate-route-profiles.js` created. Gates: audit-pro PASSED, URL contract 51/51, build 52 pages. |
+| **AGENTS-r263** | 2026-06-22 | **Post-audit hardening after current-main recheck.** Fixed `/articles/kod-da-vinchi/` double theme toggle, fake pilot cache-bust labels, Gill III readable defects, stale root read-time text, map placeholder indexing/search governance, `css:layer:validate`, visual-audit false-green, `/about/` stale full-document parity requirement, workflow notification gaps. Added map publication-status guard, search fallback drift guard, dist-readable fatal patterns and stricter visual-audit exit behavior. See `docs/CURRENT_RECHECK_2026-06-22_FIXES.md`. |
 | **AGENTS-r262** | 2026-06-22 | **РЕФАКТОРИНГ 6.0 Phase 3 JS decomposition pilot.** 4 modules extracted from site.js into `js/modules/`: `faq-accordion.js` (1.5KB, zero deps), `theme.js` (3.9KB, dark/light toggle), `img-loaded.js` (1.1KB, shimmer stop), `back-to-top.js` (1.3KB, scroll-to-top). All use AbortController for cleanup. Bundled as `js/site-modules.js` (8.1KB), loaded on pilot page after site.js. CSS: `site-layered.css` cleaned (!important=202, matches site.css). Gates: audit-pro PASSED, URL contract 51/51. |
 | **AGENTS-r259** | 2026-06-20 | **DALL-E visual references для `/karty/*` библейских карт загружены в `docs/dalle-refs/v3-biblical-maps/`.** 13 PNG: царства Израиля/Иудеи (01), 3 путешествия Павла (02-03), Библейский атлас с эрами (04, 12), Авраам с хронологией (05), Исход (06), 12 колен Израилевых (07), Израиль/Иудея с табами эр (08), Земля Иисуса с sidebar (09), Апостолы с кораблями (10), Иерусалим со стеной Неемии (11), техническая карта со слоями (13). **⚠️ ЭТО DALL-E:** координаты приблизительные, названия упрощены, хронология может быть неверной, маршруты не реалистичны. **НЕ копировать буквально.** Цель — visual layout pattern + sidebar patterns + era timeline tabs + multi-journey overlays + detail panels. **Топ-уровень по стилю**, но реальные данные берём из `route.json` + канонических источников. Подробная карта реализации (файлы для создания, паттерны, что НЕ делать) — `docs/dalle-refs/v3-biblical-maps/README.md` (236 строк). Обновлён главный README: `docs/dalle-refs/README.md`. |
 | **AGENTS-r258** | 2026-06-20 | **DALL-E visual reference documentation загружена в `docs/dalle-refs/`.** Владелец приложил 16 PNG (9 новых + 7 ранних) с DALL-E референсами для `/rodosloviye/` genealogy tree. **Важно прочитать `docs/dalle-refs/README.md` перед любой работой над древо!** Главное предупреждение: **это DALL-E, не библия** — связи часто нарисованы неправильно, имена могут быть выдуманные (например, на `v2/06-unnamed-wife-7-kids-detail.png` показана "безымянная жена" с 7 детьми), хронология может быть неверной. **Скрин `v2/03-bug-overlay-visual-errors.png` — ОБРАЗЕЦ ОШИБОК:** красные подсветки показывают что НЕ делать (наложения, обрезанный текст, broken layout). **Не копировать буквально.** Цель референсов — visual layout pattern + цветовая палитра (cream/beige + gold #d4a857/#c4a04a + teal для Луки + purple для Матфея). Данные проверять против `data/genealogy/genealogy.json` (156 персон) и канонических источников (Быт 5/10/11/22/25/36/46, 1 Пар 1-9, Мф 1, Лк 3). **Архитектурный план:** `docs/dalle-refs/GBS_INTERACTIVE_ARCHITECTURE_RESEARCH_2_0_2026-06-20.md` (1478 строк) — полное ТЗ 2.0 для следующих агентов. **Дополнительно:** сделаны UX-фиксы — Avraam tour step 1050ms→4500ms (пользователь жаловался: «слишком быстро»), убран auto-open первой точки при выборе истории (пользователь: «карта превратилась не в карту, а в маршруты»), genealogy `minZoom` 0.04→0.5 (77→143 видимых узлов при initial fitView). |
@@ -190,7 +191,7 @@ CSS-фичи, не поддерживаемые в этих версиях (`col
 | `audit-pro` | ✅ PASSED, errors = 0 |
 | `validate:all` | ✅ 0 errors, 0 warnings |
 | `tokens:check` | ✅ 0 / 0 |
-| `visual-audit` (Playwright) | 0 console-errors, 0 network-errors |
+| `visual-audit` (Playwright) | server required; 0 console-errors, 0 network-errors, 0 unsuppressed HIGH/CRITICAL bugs |
 | CSS `!important` в `site.css` | цель **≤ 200**; авто-потолок в `audit-pro.js` (сейчас 202, ratchet вниз) |
 
 ---
@@ -531,7 +532,7 @@ CSS-фичи, не поддерживаемые в этих версиях (`col
    `display:inline-flex`; незакрытый `<span>` «проглатывает» следующие `<p>/<h4>`, делая их
    flex-детьми → горизонтальный overflow. То же с «eyebrow»-лейблами `<span style="display:inline-flex">`.
    После правок контента/CSS прогоняй **visual-audit** (Playwright) — он ловит overflow и контраст:
-   `python3 -m http.server 8080 & ; sudo npx playwright install-deps chromium ; AUDIT_BASE=http://127.0.0.1:8080 npm run visual-audit` → должно быть `0 raw bugs`.
+   `python3 -m http.server 8080 --bind 127.0.0.1 -d dist & ; npx playwright install-deps chromium ; AUDIT_BASE=http://127.0.0.1:8080 npm run visual-audit` → сервер обязателен; отсутствие сервера и любые unsuppressed HIGH/CRITICAL теперь дают exit 1. Массовые low/medium false positives могут быть suppressed, но crash не suppress-ится.
 
 8. **CSS-переменные — не объявлять «про запас».** Объявленная в `:root` переменная без `var(--...)` нигде = мёртвый код, удалить.
 
@@ -613,7 +614,7 @@ npx playwright install chromium
 AUDIT_BASE=http://127.0.0.1:8080 npm run visual-audit
 ```
 
-Должно: `0 console errors, 0 network errors, 0 raw bugs` (или все подавлены).
+Должно: `0 console errors, 0 network errors` и `0` unsuppressed HIGH/CRITICAL bugs. Скрипт fail-fast падает без HTTP-сервера; `crash` не suppress-ится.
 
 ---
 
@@ -1073,7 +1074,7 @@ karty/
 `scripts/visual-audit.js` содержит автоматические проверки:
 - `ambientPhrases === 0` на `/` → CRITICAL bug
 - `fcControlsH > 110` → HIGH bug  
-- `.bio-cover` отсутствует на gill chast-1 → HIGH bug
+- отсутствует текущий Gill Part I cover marker (`.bio-cover` или GBS2 cover/header) → HIGH bug
 
 Запуск перед каждым коммитом: `npm run validate:all && node scripts/audit-pro.js`
 
@@ -1091,6 +1092,11 @@ karty/
 **Search keyboard contract:** `Ctrl/⌘+F` — всегда нативный поиск браузера; сайт не должен делать `preventDefault()` и не должен открывать command palette. Command Palette открывается только `Ctrl/⌘+K` (case-insensitive: Chromium/Playwright может дать `key="K"`). `Escape` внутри palette должен закрывать palette, а не только чистить строку. Это защищено `audit-pro` G112 и `npm run interactive-audit`.
 
 **Media/share runtime contract:** image viewer должен открываться по клику на article image, ставить scroll-lock (`html.style.overflow='hidden'`) и закрываться по Escape с восстановлением overflow. Share dialog должен открываться через `#articleEndShareBtn`, иметь `aria-hidden="false"`, закрываться по Escape и опираться на canonical URL, не на preview/local URL. Это проверяет `npm run interactive-audit`.
+
+
+**Map publication status contract:** temporary map placeholders are allowed to be reachable, but never indexable/search-promoted. If `route.json` has `publication.status=temporary-placeholder`, the page must be `noindex, follow`, excluded from sitemap/llms/search-manifest/public baseline, and must not carry `data-pagefind-body`. This is guarded by `npm run maps:publication-status` and included in `npm run maps:validate`.
+
+**Search fallback contract:** hardcoded command-palette fallback recommendations in `js/search.js` must match `data/search-manifest.json` read times. `npm run data:consistency` blocks drift.
 
 **Readable/publication contract:** декоративные номера summary (`.summary-card__num`) не должны быть читательским текстом: span пустой, `aria-hidden="true"`, номер хранится в `data-num` и рисуется CSS `content:attr(data-num)`. Главный H1 на `/` в `innerText` обязан читаться как `Господь Бог — Сила Моя`. В публичном тексте не должно быть внутренних enum labels (`Book`, `Confession`, `ChicagoDoc`, `Warning`, `Father`, `Academic`) и overclaim-бейджа `Проверено историками`. Это защищает `npm run readable-audit`.
 

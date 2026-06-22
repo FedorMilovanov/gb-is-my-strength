@@ -504,5 +504,12 @@
       "rome"
     ],
     "description": "Корабли и следы волн визуально отделяют морские переходы миссионерских путешествий Павла."
+  },
+  "publication": {
+    "status": "temporary-placeholder",
+    "indexable": false,
+    "sitemap": false,
+    "llms": false,
+    "pagefind": false
   }
 }

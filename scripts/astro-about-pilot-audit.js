@@ -123,15 +123,21 @@ function normalizeHtmlForFullDocumentParity(html) {
   return out.replace(/\u0000(\d+)\u0000/g, (_, i) => protectedNodes[+i]);
 }
 function checkFullDocumentParity(problems) {
-  const legacyFile = path.join(ROOT, 'about/index.html');
   const distFile = path.join(DIST, 'about/index.html');
-  if (!fs.existsSync(legacyFile) || !fs.existsSync(distFile)) {
-    problems.push('full-document parity files missing for /about/');
+  if (!fs.existsSync(distFile)) {
+    problems.push('approved /about/ dist file missing');
     return;
   }
-  const legacy = normalizeHtmlForFullDocumentParity(fs.readFileSync(legacyFile, 'utf8'));
-  const astro = normalizeHtmlForFullDocumentParity(fs.readFileSync(distFile, 'utf8'));
-  if (legacy !== astro) problems.push('/about/ normalized full-document HTML differs from legacy; visual parity is not 100% shadow output');
+  // /about/ has intentionally graduated from byte-for-byte legacy shadow parity:
+  // the approved Astro source owns the premium resource grid. Guard the explicit
+  // public design markers instead of comparing against stale root legacy HTML.
+  const astro = fs.readFileSync(distFile, 'utf8');
+  for (const marker of ['about-page', 'about-resources', 'about-contact-card', 'gb-accuracy-block', 'data-pagefind-body']) {
+    if (!astro.includes(marker)) problems.push(`/about/ approved design marker missing: ${marker}`);
+  }
+  if (astro.includes('about-contacts') && !astro.includes('about-resources')) {
+    problems.push('/about/ appears to have regressed to the old contacts-only legacy block');
+  }
 }
 
 async function inspect(page, url, label, viewportName) {
@@ -269,7 +275,7 @@ async function checkNoJsAstro(browser, problems) {
     earlyProblems.forEach(p => console.error('  - ' + p));
     process.exit(1);
   }
-  console.log('✅ /about/ normalized full-document HTML matches legacy');
+  console.log('✅ /about/ approved design markers present');
   let chromium;
   try { ({ chromium } = require('playwright')); }
   catch (e) { console.log('⏭ Playwright not installed; run npm install first.'); process.exit(0); }

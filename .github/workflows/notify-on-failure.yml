@@ -18,6 +18,7 @@ on:
       - "Source Link Audit"
       - "Runtime Interactive Audit"
       - "Visual Parity Guard — pixel-diff"
+      - "Dist Strangler Dry Run"
     types:
       - completed
 
@@ -56,6 +57,7 @@ jobs:
               `Если упал \`IndexNow\` — поисковики (Яндекс, Bing) не узнали про изменения.`,
               `Если упал \`Source Link Audit\` — появился hard-broken внешний источник (TLS/404/bad host).`,
               `Если упал \`Runtime Interactive Audit\` — сломался пользовательский сценарий (series/quiz/search/theme/media).`,
+              `Если упал \`Dist Strangler Dry Run\` — production-like dist artifact не собирается или нарушил URL/publication contract.`,
               ``,
               `Это сообщение создано автоматически workflow'ом \`notify-on-failure.yml\`.`,
               `Закрой это issue, когда проблема устранена; следующее падение откроет новое.`

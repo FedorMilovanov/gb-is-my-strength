@@ -694,5 +694,12 @@
       "tomb"
     ],
     "description": "Световая линия ведёт по ключевым точкам земного служения Христа от рождения к воскресению."
+  },
+  "publication": {
+    "status": "temporary-placeholder",
+    "indexable": false,
+    "sitemap": false,
+    "llms": false,
+    "pagefind": false
   }
 }

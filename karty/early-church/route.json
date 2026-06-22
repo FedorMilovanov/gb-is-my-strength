@@ -566,5 +566,12 @@
     "label": "Деян 1:8",
     "origin": "jerusalem_upper",
     "description": "Волны показывают расширение свидетельства от Иерусалима к народам по логике Деян 1:8."
+  },
+  "publication": {
+    "status": "temporary-placeholder",
+    "indexable": false,
+    "sitemap": false,
+    "llms": false,
+    "pagefind": false
   }
 }

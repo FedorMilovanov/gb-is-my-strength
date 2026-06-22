@@ -916,5 +916,12 @@
       "mizpah_judah"
     ],
     "description": "Две подсвеченные области помогают читать разрыв между Северным царством Израиля и Южным царством Иуды."
+  },
+  "publication": {
+    "status": "temporary-placeholder",
+    "indexable": false,
+    "sitemap": false,
+    "llms": false,
+    "pagefind": false
   }
 }

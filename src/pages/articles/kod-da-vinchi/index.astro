@@ -7,16 +7,28 @@
  * Loads site-modules.js alongside site.js for extracted module testing.
  */
 import { loadLegacyFullDocument } from '@/utils/legacyFullDocument';
+import { readFileSync, existsSync } from 'node:fs';
+import path from 'node:path';
+import { createHash } from 'node:crypto';
 import KodDaVinchiMainShell from '@/components/article-pilots/kod-da-vinchi/KodDaVinchiMainShell.astro';
 import segBefore from '@/components/article-pilots/kod-da-vinchi/_legacy/body-segment-0.html?raw';
 import segAfter from '@/components/article-pilots/kod-da-vinchi/_legacy/body-segment-1.html?raw';
+
+function md5short(rel: string) {
+  const abs = path.join(process.cwd(), rel);
+  if (!existsSync(abs)) return '';
+  return createHash('md5').update(readFileSync(abs)).digest('hex').slice(0, 8);
+}
+
+const layeredCssHash = md5short('css/site-layered.css');
+const siteModulesHash = md5short('js/site-modules.js');
 
 let { headHtml, bodyAttributes } = loadLegacyFullDocument('articles/kod-da-vinchi/index.html');
 
 // Phase 2 CSS pilot: replace site.css → site-layered.css on this route only
 headHtml = headHtml.replace(
   /css\/site\.css\?v=[\w]+/,
-  'css/site-layered.css?v=layered-pilot'
+  `css/site-layered.css?v=${layeredCssHash}`
 );
 ---
 <!DOCTYPE html>
@@ -32,6 +44,6 @@ headHtml = headHtml.replace(
     <KodDaVinchiMainShell />
     <Fragment set:html={segAfter} />
     <!-- Phase 3 JS pilot: extracted modules with AbortController cleanup -->
-    <script is:inline src="../../js/site-modules.js?v=modules-pilot" defer></script>
+    <script is:inline src={`../../js/site-modules.js?v=${siteModulesHash}`} defer></script>
   </body>
 </html>

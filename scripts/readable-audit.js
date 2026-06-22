@@ -7,7 +7,12 @@
 'use strict';
 const fs = require('fs');
 const path = require('path');
-const ROOT = path.resolve(__dirname, '..');
+const REPO_ROOT = path.resolve(__dirname, '..');
+function argValue(name, fallback) {
+  const idx = process.argv.indexOf(name);
+  return idx >= 0 ? (process.argv[idx + 1] || fallback) : fallback;
+}
+const ROOT = path.resolve(REPO_ROOT, argValue('--root', '.'));
 const issues = [];
 function walk(dir, out = []) {
   for (const ent of fs.readdirSync(dir, { withFileTypes: true })) {
@@ -131,6 +136,36 @@ for (const f of htmlFiles) {
   }
   if (!/\.h-sacred-block \.hb-w\{[^}]*overflow:visible/.test(siteCss)) {
     fail('home-hebrew-hover-clipping-risk', 'css/site.css', 'Hebrew hover translation wrappers must not clip long Russian translations');
+  }
+}
+
+function readableText(html) {
+  return String(html || '')
+    .replace(/<script[\s\S]*?<\/script>/gi, ' ')
+    .replace(/<style[\s\S]*?<\/style>/gi, ' ')
+    .replace(/<svg[\s\S]*?<\/svg>/gi, ' ')
+    .replace(/<[^>]*(?:aria-hidden=["']true["']|data-pagefind-ignore)[^>]*>[\s\S]*?<\/[^>]+>/gi, ' ')
+    .replace(/<[^>]+>/g, ' ')
+    .replace(/&nbsp;|&#160;/g, ' ')
+    .replace(/&[a-z0-9#]+;/gi, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
+// R8. Fatal readable/publication text defects (visible snippets, reader-mode, search).
+const fatalPatterns = [
+  ['fatal-typo-truzhenika-nister', /труженикаnister/],
+  ['fatal-gillism-duplication', /Gillism\s+Gillism/],
+  ['fatal-ukrainian-readtime-min', /\bмін\b/],
+  ['fatal-application-salvation-glue', /Применение\s+спасение/i],
+  ['fatal-abbreviated-research-finding', /исследоват\.\s*находк/i],
+  ['fatal-cyrillic-latin-glue', /[А-Яа-яЁё][A-Za-z]{3,}|[A-Za-z]{3,}[А-Яа-яЁё]/],
+];
+for (const f of htmlFiles) {
+  const text = readableText(fs.readFileSync(f, 'utf8'));
+  for (const [kind, rx] of fatalPatterns) {
+    const m = text.match(rx);
+    if (m) fail(kind, rel(f), m[0]);
   }
 }
 

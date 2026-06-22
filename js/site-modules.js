@@ -173,6 +173,12 @@
 (function () {
   'use strict';
 
+  // Do not double-mount when the legacy monolith (site.js) already owns theme controls.
+  if (window.__gbLegacyThemeMounted) {
+    window.__gbTheme = window.__gbTheme || { destroy: function () {}, toggle: function () {} };
+    return;
+  }
+
   var THEME_KEY = 'gb-theme';
   var controller = new AbortController();
   var signal = controller.signal;

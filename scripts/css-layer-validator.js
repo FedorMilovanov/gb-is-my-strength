@@ -126,22 +126,27 @@ if (parseFloat(layeredPct) < 50) {
 const mediaCount = (css.match(/@media/g) || []).length;
 info.push(`@media queries: ${mediaCount}`);
 
-// 8. Check for duplicate selectors (heuristic)
-const selectorRegex = /(?:^|\})\s*([.#\w][\w-]*(?:\s*[.#\w][\w-]*)*)\s*\{/gm;
-const selectors = {};
-let sm;
-while ((sm = selectorRegex.exec(css)) !== null) {
-  const sel = sm[1].trim();
-  if (sel.length > 2 && sel.length < 80) {
-    selectors[sel] = (selectors[sel] || 0) + 1;
+// 8. Check for duplicate selectors (cheap heuristic).
+// Keep this deliberately linear: site-layered.css is large, and broad regexes
+// over minified CSS can become a CI timeout. Architecture validation above is
+// the blocking part; duplicate selector reporting is informational only.
+if (css.length < 250000) {
+  const selectorRegex = /(^|})\s*([^{}@][^{}]{1,120})\{/g;
+  const selectors = {};
+  let sm;
+  while ((sm = selectorRegex.exec(css)) !== null) {
+    const sel = sm[2].trim();
+    if (sel.length > 2 && sel.length < 80 && !/[;}]/.test(sel)) {
+      selectors[sel] = (selectors[sel] || 0) + 1;
+    }
   }
-}
-const dupes = Object.entries(selectors).filter(([, c]) => c > 2).sort((a, b) => b[1] - a[1]);
-if (dupes.length > 0) {
-  info.push(`Selectors defined >2 times: ${dupes.length}`);
-  for (const [sel, count] of dupes.slice(0, 5)) {
-    info.push(`  ${sel}: ${count}x`);
+  const dupes = Object.entries(selectors).filter(([, c]) => c > 2).sort((a, b) => b[1] - a[1]);
+  if (dupes.length > 0) {
+    info.push(`Selectors defined >2 times: ${dupes.length}`);
+    for (const [sel, count] of dupes.slice(0, 5)) info.push(`  ${sel}: ${count}x`);
   }
+} else {
+  info.push('Duplicate selector heuristic skipped for large CSS file (non-blocking)');
 }
 
 // Output

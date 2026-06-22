@@ -69,6 +69,7 @@
 
 /* GB late theme bridge v2026-06-10: bottom-bar theme may be created after the core theme module cached barThemeBtn. */
 (function(){
+  window.__gbLegacyThemeMounted=true;
   var preClickDark = null;
   function setTheme(dark){
     document.documentElement.classList.toggle('dark', dark);

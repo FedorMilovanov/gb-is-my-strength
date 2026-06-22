@@ -158,8 +158,10 @@ must('.github/workflows/interactive-audit.yml', interactive, /^concurrency:\s*$/
 const notify = read('.github/workflows/notify-on-failure.yml');
 must('.github/workflows/notify-on-failure.yml', notify, /Source Link Audit/, 'notify workflow must listen for Source Link Audit');
 must('.github/workflows/notify-on-failure.yml', notify, /Runtime Interactive Audit/, 'notify workflow must listen for Runtime Interactive Audit');
+must('.github/workflows/notify-on-failure.yml', notify, /Dist Strangler Dry Run/, 'notify workflow must listen for Dist Strangler Dry Run');
 must('.github/workflows/notify-on-failure.yml', notify, /source-link|Source Link|hard-broken/i, 'notify issue body must explain source link failures');
 must('.github/workflows/notify-on-failure.yml', notify, /interactive|Runtime Interactive/i, 'notify issue body must explain runtime audit failures');
+must('.github/workflows/notify-on-failure.yml', notify, /dist strangler|production-like dist|Dist Strangler/i, 'notify issue body must explain dist dry run failures');
 
 // Astro migration safety: after the root→dist deploy switch, public pages live
 // in src/** (Astro pages, MDX content, layouts). If a workflow drops src/** from

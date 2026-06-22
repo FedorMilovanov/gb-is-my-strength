@@ -614,5 +614,12 @@
     "label": "Ханука · очищение Храма",
     "origin": "jerusalem_meet",
     "description": "Ханукальные огни отмечают очищение Храма и возвращение богослужения после восстания Маккавеев."
+  },
+  "publication": {
+    "status": "temporary-placeholder",
+    "indexable": false,
+    "sitemap": false,
+    "llms": false,
+    "pagefind": false
   }
 }

@@ -1218,3 +1218,11 @@ AGENTS.md §4.2 обновлён с актуальными цифрами и и�
 Текущие предупреждения `audit-pro` — это **CSS budget** (433KB vs 375KB target)
 и **JS budget** (452KB vs 365KB target). Эти бюджеты — пороги в `scripts/audit-pro.js`,
 без архитектурного обоснования; качество выше размера (см. PLAN-04 §1.2 контракт).
+
+## 2026-06-22 — Current-main audit fixes and guard hardening
+
+Follow-up patch after rechecking `main` at `affc61e2` and the supplied MD audits.
+
+Fixed: `/articles/kod-da-vinchi/` theme double-toggle, fake `?v=layered-pilot/modules-pilot`, Gill III readable defects (`труженикаnister`, `Gillism Gillism`, `Санhedрин`), stale root read-time text, temporary map placeholder indexing/search promotion, `css:layer:validate`, `visual-audit` false-green, `/about/` stale full-document parity requirement, visual parity summary workflow, and notify workflow coverage for Dist Dry Run.
+
+Added guards: `maps:publication-status`, search fallback read-time drift check in `data:consistency`, `readable-audit --root dist` fatal patterns, stricter `visual-audit` exit behavior, and workflow-policy enforcement. See `docs/CURRENT_RECHECK_2026-06-22_FIXES.md`.
