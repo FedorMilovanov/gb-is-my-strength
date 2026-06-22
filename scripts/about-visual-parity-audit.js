@@ -49,24 +49,36 @@ must(astro, '<!DOCTYPE html>', 'Astro /about/ emits full document');
 must(astro, '<Fragment set:html={headHtml}', 'Astro /about/ preserves exact legacy head inner HTML');
 must(astro, "AboutArticle", 'Astro /about/ uses extracted AboutArticle component');
 must(astro, "AboutAccuracyBlock", 'Astro /about/ uses extracted AboutAccuracyBlock component');
-must(astro, '_legacy/body-before.html', 'Astro /about/ preserves verbatim legacy body chrome before article');
-must(astro, '_legacy/body-after.html', 'Astro /about/ preserves verbatim legacy body chrome after accuracy block');
+must(astro, "AboutFrameBefore", 'Astro /about/ uses extracted AboutFrameBefore component');
+must(astro, "AboutFrameAfter", 'Astro /about/ uses extracted AboutFrameAfter component');
 must(read('src/utils/legacyFullDocument.ts'), 'loadLegacyFullDocument', 'shared full-document loader exists');
 
 mustExist('src/components/about/AboutArticle.astro', 'AboutArticle.astro component file');
 mustExist('src/components/about/AboutAccuracyBlock.astro', 'AboutAccuracyBlock.astro component file');
+mustExist('src/components/about/AboutFrameBefore.astro', 'AboutFrameBefore.astro component file');
+mustExist('src/components/about/AboutFrameAfter.astro', 'AboutFrameAfter.astro component file');
 mustExist('src/components/about/_legacy/article.html', 'about article.html legacy fragment');
 mustExist('src/components/about/_legacy/accuracy-block.html', 'about accuracy-block.html legacy fragment');
-mustExist('src/components/about/_legacy/body-before.html', 'about body-before.html frame fragment');
-mustExist('src/components/about/_legacy/body-after.html', 'about body-after.html frame fragment');
+mustExist('src/components/about/_legacy/body-before.html', 'about body-before.html legacy baseline fragment');
+mustExist('src/components/about/_legacy/body-after.html', 'about body-after.html legacy baseline fragment');
 
 // Forbid the old generic astro-about-shadow regression class and forbid the
 // BaseLayout/Header/Footer global chrome that the legacy /about/ does not use.
 for (const marker of [
   'import BaseLayout', '<BaseLayout', 'astro-about-shadow', 'astro-shell',
   'class="astro-about"', 'astro-contact-grid', 'astro-accuracy-block',
+  '_legacy/body-before.html?raw', '_legacy/body-after.html?raw', '_legacy/body-mid.html?raw',
 ]) {
   mustNot(astro, marker, `old/generic about wrapper marker: ${marker}`);
+}
+
+const frameBefore = read('src/components/about/AboutFrameBefore.astro');
+for (const marker of ['skip-link', 'themeToggle', 'breadcrumb__current', '<main id="main-content">']) {
+  must(frameBefore, marker, `AboutFrameBefore marker: ${marker}`);
+}
+const frameAfter = read('src/components/about/AboutFrameAfter.astro');
+for (const marker of ['article-end-block', '<footer>', 'site-utils.js', 'search.js']) {
+  must(frameAfter, marker, `AboutFrameAfter marker: ${marker}`);
 }
 
 // Dist must still carry the premium DOM markers (visual:parity:production
