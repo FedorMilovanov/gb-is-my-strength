@@ -14,7 +14,7 @@
   </url>
   <url>
     <loc>https://gospod-bog.ru/</loc>
-    <lastmod>2026-06-22T16:21:02+03:00</lastmod>
+    <lastmod>2026-06-22T16:43:02+03:00</lastmod>
     <changefreq>weekly</changefreq>
     <priority>1.0</priority>
     <image:image><image:loc>https://gospod-bog.ru/images/og-preview-1200x630.webp</image:loc></image:image>
@@ -206,7 +206,7 @@
   <!-- Отдельные статьи -->
   <url>
     <loc>https://gospod-bog.ru/articles/krajne-li-isporcheno-serdce/</loc>
-    <lastmod>2026-06-22T16:21:02+03:00</lastmod>
+    <lastmod>2026-06-22T16:43:02+03:00</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.85</priority>
     <image:image><image:loc>https://gospod-bog.ru/images/og-krajne-isporcheno.webp</image:loc></image:image>
@@ -214,7 +214,7 @@
 
   <url>
     <loc>https://gospod-bog.ru/articles/kod-da-vinchi/</loc>
-    <lastmod>2026-06-22T16:21:02+03:00</lastmod>
+    <lastmod>2026-06-22T16:43:02+03:00</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.85</priority>
     <image:image><image:loc>https://gospod-bog.ru/images/og-kod-da-vinchi.webp</image:loc></image:image>
@@ -230,7 +230,7 @@
 
   <url>
     <loc>https://gospod-bog.ru/articles/hermenevticheskaya-otsenka-hristotsentrichnoy-germenevtiki/</loc>
-    <lastmod>2026-06-22T16:21:02+03:00</lastmod>
+    <lastmod>2026-06-22T16:43:02+03:00</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.85</priority>
     <image:image><image:loc>https://gospod-bog.ru/images/og-hermenevtika-hristotsentrichnaya-otsenka.webp</image:loc></image:image>
