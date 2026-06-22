@@ -1,6 +1,6 @@
 ---
 /**
- * GillContextArticleBody — Phase G2–G10 article-body section seams.
+ * GillContextArticleBody — Phase G2–G11 article-body section seams.
  *
  * The legacy article-body monolith has been split into ordered fragments while
  * this component owns the <article class="article-body"> wrapper. Promoted
@@ -8,6 +8,7 @@
  * Do not replace the whole body with MDX; promote one section at a time after
  * parity proof and Gill-specific guard updates.
  */
+import GillContextSectionFromPuritansToBaptists from './GillContextSectionFromPuritansToBaptists.astro';
 import GillContextSectionParticularVsGeneral from './GillContextSectionParticularVsGeneral.astro';
 import GillContextSectionGreatEjection from './GillContextSectionGreatEjection.astro';
 import GillContextSectionAcademies from './GillContextSectionAcademies.astro';
@@ -24,8 +25,14 @@ const sectionModules = import.meta.glob('./_legacy/article-sections/*.html', {
 }) as Record<string, string>;
 const sectionEntries = Object.entries(sectionModules).sort(([a], [b]) => a.localeCompare(b));
 const sectionName = (file: string) => file.split('/').pop() || file;
-const sectionsBeforeParticular = sectionEntries
-  .filter(([file]) => sectionName(file) < '02-sec-particular-vs-general.html')
+const sectionsBeforeFromPuritans = sectionEntries
+  .filter(([file]) => sectionName(file) < '01-sec-from-puritans-to-baptists.html')
+  .map(([, html]) => html);
+const sectionsBetweenFromPuritansAndParticular = sectionEntries
+  .filter(([file]) => {
+    const name = sectionName(file);
+    return name > '01-sec-from-puritans-to-baptists.html' && name < '02-sec-particular-vs-general.html';
+  })
   .map(([, html]) => html);
 const sectionsBetweenParticularAndGreatEjection = sectionEntries
   .filter(([file]) => {
@@ -73,4 +80,4 @@ const sectionsAfterConclusion = sectionEntries
   .filter(([file]) => sectionName(file) > '10-sec-conclusion.html')
   .map(([, html]) => html);
 ---
-<article class="article-body">{sectionsBeforeParticular.map((html) => <Fragment set:html={html} />)}<GillContextSectionParticularVsGeneral />{sectionsBetweenParticularAndGreatEjection.map((html) => <Fragment set:html={html} />)}<GillContextSectionGreatEjection />{sectionsBetweenGreatEjectionAndAcademies.map((html) => <Fragment set:html={html} />)}<GillContextSectionAcademies />{sectionsBetweenAcademiesAndSalters.map((html) => <Fragment set:html={html} />)}<GillContextSectionSaltersHall />{sectionsBetweenSaltersAndCoffee.map((html) => <Fragment set:html={html} />)}<GillContextSectionCoffeeHouse />{sectionsBetweenCoffeeAndSouthwark.map((html) => <Fragment set:html={html} />)}<GillContextSectionSouthwark />{sectionsBetweenSouthwarkAndBooks.map((html) => <Fragment set:html={html} />)}<GillContextSectionBooks />{sectionsBetweenBooksAndConclusion.map((html) => <Fragment set:html={html} />)}<GillContextSectionConclusion />{sectionsAfterConclusion.map((html) => <Fragment set:html={html} />)}</article>
+<article class="article-body">{sectionsBeforeFromPuritans.map((html) => <Fragment set:html={html} />)}<GillContextSectionFromPuritansToBaptists />{sectionsBetweenFromPuritansAndParticular.map((html) => <Fragment set:html={html} />)}<GillContextSectionParticularVsGeneral />{sectionsBetweenParticularAndGreatEjection.map((html) => <Fragment set:html={html} />)}<GillContextSectionGreatEjection />{sectionsBetweenGreatEjectionAndAcademies.map((html) => <Fragment set:html={html} />)}<GillContextSectionAcademies />{sectionsBetweenAcademiesAndSalters.map((html) => <Fragment set:html={html} />)}<GillContextSectionSaltersHall />{sectionsBetweenSaltersAndCoffee.map((html) => <Fragment set:html={html} />)}<GillContextSectionCoffeeHouse />{sectionsBetweenCoffeeAndSouthwark.map((html) => <Fragment set:html={html} />)}<GillContextSectionSouthwark />{sectionsBetweenSouthwarkAndBooks.map((html) => <Fragment set:html={html} />)}<GillContextSectionBooks />{sectionsBetweenBooksAndConclusion.map((html) => <Fragment set:html={html} />)}<GillContextSectionConclusion />{sectionsAfterConclusion.map((html) => <Fragment set:html={html} />)}</article>
