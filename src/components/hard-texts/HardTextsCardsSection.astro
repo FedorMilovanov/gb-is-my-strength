@@ -1,0 +1,79 @@
+---
+/**
+ * HardTextsCardsSection.astro — visible article-card shelf for /hard-texts/.
+ *
+ * Refactoring 6.0 parallel pilot: hand-authored Astro replacement for the
+ * first semantic block previously kept inside `_legacy/main.html?raw`.
+ * Rule: preserve legacy text, classes, attributes, URLs and inline SVGs.
+ */
+---
+<section class="h-section h-reveal" aria-labelledby="seriesLabel">
+  <p class="h-section-label" id="seriesLabel">Материалы серии</p>
+  <div class="h-section-accent" aria-hidden="true"></div>
+
+  <div class="h-articles-group">
+    <ul class="h-article-list">
+      <li>
+        <a href="../articles/krajne-li-isporcheno-serdce/" class="h-article-card">
+          <div class="h-article-thumb">
+            <picture>
+              <source srcset="../images/og-krajne-isporcheno-600w.webp" type="image/webp" />
+              <img src="../images/og-krajne-isporcheno.jpg" alt="Крайне ли испорчено сердце верующего?" decoding="async" loading="lazy" width="160" height="108" />
+            </picture>
+          </div>
+          <div class="h-article-body">
+            <div class="h-article-kicker">Часть 1</div>
+            <h3 class="h-article-title">Крайне ли испорчено моё сердце — если я уже верующий?</h3>
+            <div class="h-article-meta">
+              <span class="h-meta-author">Редактор: Фёдор Милованов</span>
+              <span class="h-meta-sep" aria-hidden="true">·</span>
+              <span class="h-meta-time">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+                41 мин
+              </span>
+            </div>
+            <p class="h-article-abstract">Разбор Иеремии 17:9–10: что значит «сердце обманчиво более всего» — и относится ли это к верующему? Экзегеза, богословский синтез и пастырское применение.</p>
+          </div>
+        </a>
+      </li>
+
+      <li>
+        <a href="../articles/rimlyanam-7-veruyushchiy-ili-neveruyushchiy/" class="h-article-card">
+          <div class="h-article-thumb">
+            <picture>
+              <source srcset="../images/og-rimlyanam-7-600w.webp" type="image/webp" />
+              <img src="../images/og-rimlyanam-7.jpg" alt="Римлянам 7" decoding="async" loading="lazy" width="160" height="108" />
+            </picture>
+          </div>
+          <div class="h-article-body">
+            <div class="h-article-kicker">Часть 2</div>
+            <h3 class="h-article-title">Римлянам 7: верующий, неверующий или человек под законом?</h3>
+            <div class="h-article-meta">
+              <span class="h-meta-author">Редактор: Фёдор Милованов</span>
+              <span class="h-meta-sep" aria-hidden="true">·</span>
+              <span class="h-meta-time">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+                12 мин
+              </span>
+            </div>
+            <p class="h-article-abstract">Кто такой человек из Римлянам 7:14–25? Разбор ключевых экзегетических подходов и почему конфликт «внутреннего человека» и «плоти» так важен для понимания освящения.</p>
+          </div>
+        </a>
+      </li>
+
+      <li>
+        <div class="h-article-card" style="opacity:0.6;cursor:default;pointer-events:none;" aria-disabled="true" data-pagefind-ignore>
+          <div class="h-article-thumb h-article-thumb--planned" data-part="III" aria-hidden="true"></div>
+          <div class="h-article-body">
+            <div class="h-article-kicker">Часть 3</div>
+            <h3 class="h-article-title">Закон духа жизни: Римлянам 8 и свобода во Христе</h3>
+            <div class="h-article-meta">
+              <span class="h-meta-tag" style="background:var(--accent-soft);color:var(--accent);opacity:.7;">Планируется</span>
+            </div>
+            <p class="h-article-abstract">Разрешение конфликта плоти и духа, описанного в седьмой главе послания к Римлянам, через призму работы Духа Святого.</p>
+          </div>
+        </div>
+      </li>
+    </ul>
+  </div>
+</section>
