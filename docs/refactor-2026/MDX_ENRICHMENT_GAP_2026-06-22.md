@@ -1,13 +1,28 @@
 # MDX Enrichment Gap — kod-da-vinchi pilot
 
 **Дата:** 2026-06-22
-**Статус:** BLOCKED — MDX activation on hold until enrichment completes
+**Статус:** PARTIALLY UNBLOCKED — monolithic legacy body split into per-section seams; MDX activation still on hold until section enrichment proves parity
 
 ## Проблема
 
-MDX-файл `src/content/articles/kod-da-vinchi.mdx` (335 lines, 52K chars) содержит текстовый контент в markdown-формате, но **0 из 103 CSS-классов**, присутствующих в legacy HTML (`article-body.html`, 80.8K chars).
+MDX-файл `src/content/articles/kod-da-vinchi.mdx` (335 lines, 52K chars) содержит текстовый контент в markdown-формате, но **0 из 103 CSS-классов**, присутствующих в legacy HTML (`article-sections/*.html`, formerly monolithic `article-body.html`, ~80.8K chars total).
 
-Это означает, что прямая замена `<Fragment set:html={articleBodyHtml}/>` на `<Content/>` произведёт **фундаментально другой HTML** с визуальной регрессией.
+Это означает, что прямая замена ordered section fragments на `<Content/>` произведёт **фундаментально другой HTML** с визуальной регрессией. Но после Phase 3a можно заменять не всю статью сразу, а один `article-sections/NN-*.html` fragment за раз.
+
+
+## Phase 3a update — 2026-06-22
+
+Сделан безопасный shadow-breakout шаг без визуального риска:
+
+- `KodDaVinchiArticleBody.astro` больше не импортирует один 80K monolith.
+- `_legacy/article-body.html` удалён.
+- Тело статьи разрезано на 21 ordered fragment:
+  - `00-pagefind-meta.html`;
+  - `01-sec-intro.html` … `20-summary-title-auto.html`.
+- Компонент сам собирает `<article class="article-body" data-pagefind-body>` и рендерит fragments через `import.meta.glob(..., eager: true)`.
+- `article-mdx-pilot-audit` теперь закрепляет этот seam: monolith не должен вернуться, fragment count = 21, pagefind meta first.
+
+Проверка normalized article body legacy root vs dist после split: exact equality. Это значит, что следующий refactor step может заменить **одну секцию** на enriched MDX/Astro и сравнить именно её, а не рисковать всей статьёй.
 
 ## Количественный разрыв
 
@@ -54,8 +69,7 @@ MDX-файл `src/content/articles/kod-da-vinchi.mdx` (335 lines, 52K chars) с�
 Плюсы: нулевой риск регрессии.
 Минусы: MDX остаётся orphaned.
 
-**Текущий выбор:** Вариант C — MDX-активация отложена до завершения CSS @layer и JS decomposition.
-MDX-обогащение (Вариант A) можно делать параллельно как content-задачу.
+**Текущий выбор:** Вариант C→A по секциям. Полная MDX-активация всё ещё отложена, но Phase 3a подготовил section-level seams. MDX-обогащение теперь надо делать по одному fragment/section с parity gate на каждом шаге.
 
 ## Скрипт для автоматического обогащения
 

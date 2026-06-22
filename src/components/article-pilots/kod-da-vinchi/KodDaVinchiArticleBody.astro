@@ -1,14 +1,22 @@
 ---
 /**
- * KodDaVinchiArticleBody — Phase 2 semantic split.
+ * KodDaVinchiArticleBody — Phase 3a semantic article-body breakout.
  *
- * Contains: <article class="article-body" data-pagefind-body>
- * The main longform content — 80K+ of article text.
- *
- * Phase 3 will replace this raw legacy HTML with MDX render:
- *   const entry = await getEntry('articles', 'kod-da-vinchi');
- *   const { Content } = await render(entry);
+ * The legacy <article class="article-body" data-pagefind-body> shell now owns
+ * small ordered section fragments instead of one 80K monolith. This is still
+ * visual-safe legacy HTML, but the seam is ready for per-section MDX/Astro
+ * activation: one section can be replaced and parity-tested independently.
  */
-import articleBodyHtml from './_legacy/article-body.html?raw';
+const sectionModules = import.meta.glob('./_legacy/article-sections/*.html', {
+  query: '?raw',
+  import: 'default',
+  eager: true,
+}) as Record<string, string>;
+
+const sections = Object.entries(sectionModules)
+  .sort(([a], [b]) => a.localeCompare(b))
+  .map(([, html]) => html);
 ---
-<Fragment set:html={articleBodyHtml} />
+<article class="article-body" data-pagefind-body>
+  {sections.map((html) => <Fragment set:html={html} />)}
+</article>
