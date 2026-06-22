@@ -1,10 +1,12 @@
 ---
 import { loadLegacyFullDocument } from '@/utils/legacyFullDocument';
+import GillSpravochnikMainShell from '@/components/article-pilots/gill-spravochnik/GillSpravochnikMainShell.astro';
+import segBefore from '@/components/article-pilots/gill-spravochnik/_legacy/body-segment-0.html?raw';
+import segAfter from '@/components/article-pilots/gill-spravochnik/_legacy/body-segment-1.html?raw';
 
-// Refactoring 5.0 visual-first migration: /articles/dzhon-gill-spravochnik/ must preserve the legacy
-// premium visual world until screenshot parity and owner review approve a
-// componentized Astro replacement.
-const { headHtml, bodyHtml, bodyAttributes } = loadLegacyFullDocument('articles/dzhon-gill-spravochnik/index.html');
+// Refactoring 6.0 Gill: componentized shadow-breakout for the reference route.
+// Preserve the legacy GBS2 visual world while exposing safe Astro seams.
+const { headHtml, bodyAttributes } = loadLegacyFullDocument('articles/dzhon-gill-spravochnik/index.html');
 ---
 <!DOCTYPE html>
 <html lang="ru">
@@ -12,10 +14,12 @@ const { headHtml, bodyHtml, bodyAttributes } = loadLegacyFullDocument('articles/
     <Fragment set:html={headHtml} />
   </head>
   <body {...bodyAttributes}>
-    <!-- Pagefind search data: full-document visual shadow keeps legacy markup, so search text is explicit. -->
+    <!-- Pagefind search data: visual shadow keeps legacy markup without data-pagefind-body, so search text is explicit. -->
     <div class="sr-only" data-pagefind-body style="position:absolute;left:-9999px;top:auto;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);clip-path:inset(50%);white-space:nowrap">
       Джон Гилл: справочник. Хронология, труды, источники, издания, ссылки, навигация по серии и проверяемые материалы о жизни и наследии Гилла.
     </div>
-    <Fragment set:html={bodyHtml} />
+    <Fragment set:html={segBefore} />
+    <GillSpravochnikMainShell />
+    <Fragment set:html={segAfter} />
   </body>
 </html>
