@@ -1370,3 +1370,7 @@ Pagefind metadata for `/articles/kod-da-vinchi/` moved from raw fragment `00-pag
 ## 2026-06-22 — Refactoring 6.0 parallel pilot: `/` home main split
 
 `/` was advanced on the same independent lane: `HomeMain.astro` no longer imports one monolithic `_legacy/main.html?raw` fragment. The premium home main is now assembled from named legacy-faithful fragments — `hero.html`, `resume-mobile.html`, `directions.html`, `planned.html`, `publications.html`, `refutations.html`, `about.html`, `quote.html`, and `post-article.html` — while preserving the standalone home DOM/classes/text/copy. `scripts/home-visual-parity-audit.js` was upgraded to guard this new contract and forbid regression back to the raw main import.
+
+## 2026-06-22 — Refactoring 6.0 parallel pilot: `/articles/` catalog raw fragments retired
+
+`/articles/` was advanced one step further on the same independent lane: after the first split into `hero.html` / `publications.html` / `refutations.html` / `post-article.html`, `ArticlesMain.astro` no longer imports those raw fragments either. The catalog main is now assembled from hand-authored Astro components — `ArticlesHeroSection.astro`, `ArticlesPublicationsSection.astro`, `ArticlesRefutationsSection.astro`, and `ArticlesArticleEndBlock.astro` — while preserving the premium catalog DOM/classes/text/copy. `scripts/articles-visual-parity-audit.js` was upgraded to guard this new componentized-main contract and forbid regression back to raw section imports.

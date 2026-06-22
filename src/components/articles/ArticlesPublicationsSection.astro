@@ -1,0 +1,192 @@
+---
+/**
+ * ArticlesPublicationsSection.astro — publications grid for /articles/.
+ *
+ * Refactoring 6.0 parallel pilot: hand-authored Astro replacement for the
+ * main publications section while preserving legacy DOM/classes/URLs/copy.
+ */
+---
+<section class="h-section h-reveal" id="publikacii" aria-labelledby="hPublicationsLabel">
+  <p class="h-section-label" id="hPublicationsLabel">Публикации</p>
+  <div class="h-section-accent" aria-hidden="true"></div>
+
+  <div class="h-articles-group">
+    <ul class="h-article-list h-article-list--grid">
+      <li>
+        <a href="dzhon-gill-istoricheskiy-kontekst/" class="h-article-card">
+          <div class="h-article-thumb">
+            <picture>
+              <source srcset="../images/og-dzhon-gill-istoricheskiy-kontekst-600w.webp" type="image/webp" />
+              <img src="../images/og-dzhon-gill-istoricheskiy-kontekst.jpg" alt="Джон Гилл: исторический контекст" decoding="async" loading="lazy" width="160" height="108" />
+            </picture>
+          </div>
+          <div class="h-article-body">
+            <h2 class="h-article-title">Джон Гилл: исторический контекст — диссентеры, Саутварк, книги</h2>
+            <div class="h-article-meta">
+              <span class="h-meta-author">Автор-редактор: Фёдор Милованов</span>
+              <span class="h-meta-sep" aria-hidden="true">·</span>
+              <span class="h-meta-time">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+                16 мин
+              </span>
+              <span class="h-meta-tag h-meta-tag--neutral">Биография</span>
+            </div>
+            <p class="h-article-abstract">Акт о единообразии, правовое положение диссентеров, Хорслидаун, Goat’s Yard, Картер-Лейн и книжная культура — исторический фон, без которого биография Гилла теряет объём и напряжение.</p>
+          </div>
+        </a>
+      </li>
+
+      <li>
+        <a href="dzhon-gill-spravochnik/" class="h-article-card">
+          <div class="h-article-thumb"><picture><source srcset="../images/gill-library-shelf-600w.webp" type="image/webp" /><img src="../images/gill-library-shelf.webp" alt="Джон Гилл: справочник — обложка" decoding="async" loading="lazy" width="160" height="108" /></picture></div>
+          <div class="h-article-body">
+            <h2 class="h-article-title">Джон Гилл: справочник — хронология, труды, источники</h2>
+            <div class="h-article-meta"><span class="h-meta-author">Автор-редактор: Фёдор Милованов</span><span class="h-meta-sep" aria-hidden="true">·</span><span class="h-meta-time">8 мин</span><span class="h-meta-tag h-meta-tag--neutral">Биография</span></div>
+            <p class="h-article-abstract">Справочное приложение: даты, труды, Body of Divinity, PRDL, сеть влияний и спорные темы наследия Гилла.</p>
+          </div>
+        </a>
+      </li>
+
+      <li class="h-article-li--full">
+        <a href="/hard-texts/" class="h-article-card" style="border:2px solid #7c2d2d;border-radius:14px;overflow:hidden;background:linear-gradient(135deg,#f6ece8,#fff);">
+          <div class="h-article-thumb" style="position:relative;">
+            <picture>
+              <source srcset="../images/og-series-heart-600w.webp 600w, ../images/og-series-heart-900w.webp 900w" sizes="(max-width:640px) 600px, 900px" type="image/webp" />
+              <img src="../images/og-series-heart.webp" alt="Тайны человеческого сердца — серия экзегетических разборов" decoding="async" loading="lazy" width="160" height="108" />
+            </picture>
+            <span style="position:absolute;top:6px;right:6px;background:#7c2d2d;color:#fff;font-size:10px;font-weight:700;padding:2px 7px;border-radius:99px;text-transform:uppercase;letter-spacing:.05em;">Серия</span>
+          </div>
+          <div class="h-article-body">
+            <h2 class="h-article-title" style="color:#5f2323;">Тайны человеческого сердца — серия</h2>
+            <div class="h-article-meta">
+              <span class="h-meta-author">Автор-редактор: Фёдор Милованов</span>
+              <span class="h-meta-sep" aria-hidden="true">·</span>
+              <span class="h-meta-tag h-meta-tag--neutral">3 части (2 опубликованы)</span>
+              <span class="h-meta-tag">Иеремия 17 · Римлянам 7–8</span>
+              <span class="h-meta-tag">Экзегеза</span>
+            </div>
+            <p class="h-article-abstract">Цикл экзегетических разборов о природе падшего и возрождённого сердца. Иеремия 17:9–10, Римлянам 7 и Римлянам 8 — три ключевых текста, через которые Писание раскрывает тайну внутреннего человека.</p>
+            <div style="margin-top:8px;display:inline-flex;align-items:center;gap:5px;font-size:11px;font-weight:700;color:#7c2d2d;">
+              Открыть серию
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
+            </div>
+          </div>
+        </a>
+      </li>
+
+      <li>
+        <a href="krajne-li-isporcheno-serdce/" class="h-article-card">
+          <div class="h-article-thumb">
+            <picture>
+              <source srcset="../images/og-krajne-isporcheno-600w.webp" type="image/webp" />
+              <img src="../images/og-krajne-isporcheno.jpg" alt="Крайне ли испорчено сердце верующего?" decoding="async" loading="lazy" width="160" height="108" />
+            </picture>
+          </div>
+          <div class="h-article-body">
+            <h2 class="h-article-title">Крайне ли испорчено моё сердце — если я уже верующий?</h2>
+            <div class="h-article-meta">
+              <span class="h-meta-author">Редактор: Фёдор Милованов</span>
+              <span class="h-meta-sep" aria-hidden="true">·</span>
+              <span class="h-meta-time"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>41 мин</span>
+              <span class="h-meta-tag h-meta-tag--neutral">Авторская статья</span>
+              <span class="h-meta-tag">Экзегеза</span>
+            </div>
+            <p class="h-article-abstract">Разбор Иеремии 17:9–10: что значит «сердце обманчиво более всего» — и относится ли это к верующему? Экзегеза, богословский синтез и пастырское применение.</p>
+          </div>
+        </a>
+      </li>
+
+      <li>
+        <a href="rimlyanam-7-veruyushchiy-ili-neveruyushchiy/" class="h-article-card">
+          <div class="h-article-thumb">
+            <picture>
+              <source srcset="../images/og-rimlyanam-7-600w.webp" type="image/webp" />
+              <img src="../images/og-rimlyanam-7.jpg" alt="Римлянам 7: верующий или неверующий?" decoding="async" loading="lazy" width="160" height="108" />
+            </picture>
+          </div>
+          <div class="h-article-body">
+            <h2 class="h-article-title">Римлянам 7: верующий, неверующий или человек под законом?</h2>
+            <div class="h-article-meta">
+              <span class="h-meta-author">Редактор: Фёдор Милованов</span>
+              <span class="h-meta-sep" aria-hidden="true">·</span>
+              <span class="h-meta-time"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>12 мин</span>
+              <span class="h-meta-tag h-meta-tag--neutral">Экзегеза</span>
+            </div>
+            <p class="h-article-abstract">Кто такой человек из Римлянам 7:14–25? Павел как верующий, неверующий или человек под законом — подробный разбор контекста, грамматики и богословских позиций.</p>
+          </div>
+        </a>
+      </li>
+
+      <li>
+        <a href="20-antisovetov-pastoru/" class="h-article-card">
+          <div class="h-article-thumb">
+            <picture>
+              <source srcset="../images/pastor-series/hero-main.webp" type="image/webp" />
+              <img src="../images/pastor-series/hero.webp" alt="20 антисоветов, как пастору разрушить своё служение" decoding="async" loading="lazy" width="160" height="108" />
+            </picture>
+          </div>
+          <div class="h-article-body">
+            <h2 class="h-article-title">20 антисоветов, как пастору разрушить своё служение</h2>
+            <div class="h-article-meta">
+              <span class="h-meta-author">Автор-редактор: Фёдор Милованов</span>
+              <span class="h-meta-sep" aria-hidden="true">·</span>
+              <span class="h-meta-time"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>67 мин</span>
+              <span class="h-meta-tag h-meta-tag--neutral">Авторская статья</span>
+              <span class="h-meta-tag">Пасторство</span>
+            </div>
+            <p class="h-article-abstract">20 искажений пастырской власти, которые разрушают доверие, калечат церковную атмосферу и подменяют библейское пастырство контролем, страхом и культовостью.</p>
+          </div>
+        </a>
+      </li>
+
+      <li class="h-article-li--full">
+        <a href="/nagornaya/seriya/" class="h-article-card" style="border:2px solid #92400e;border-radius:14px;overflow:hidden;background:linear-gradient(135deg,#fff7ed,#fff);">
+          <div class="h-article-thumb" style="position:relative;">
+            <picture>
+              <source srcset="../images/og-nagornaya-seriya-600w.webp 600w, ../images/og-nagornaya-seriya-900w.webp 900w" sizes="(max-width:640px) 600px, 900px" type="image/webp" />
+              <img src="../images/og-nagornaya-seriya.webp" alt="Нагорная проповедь — серия из 5 частей" decoding="async" loading="lazy" width="160" height="108" />
+            </picture>
+            <span style="position:absolute;top:6px;right:6px;background:#92400e;color:#fff;font-size:10px;font-weight:700;padding:2px 7px;border-radius:99px;text-transform:uppercase;letter-spacing:.05em;">Серия</span>
+          </div>
+          <div class="h-article-body">
+            <h2 class="h-article-title" style="color:#92400e;">Нагорная проповедь — полная серия</h2>
+            <div class="h-article-meta">
+              <span class="h-meta-author">Редактор: Фёдор Милованов</span>
+              <span class="h-meta-sep" aria-hidden="true">·</span>
+              <span class="h-meta-tag h-meta-tag--neutral">5 частей</span>
+              <span class="h-meta-tag">Матфея 5–7 · Луки 6</span>
+              <span class="h-meta-tag">Герменевтика</span>
+            </div>
+            <p class="h-article-abstract">Исследование Нагорной проповеди в 5 частях: Матфей 5–7 и Лука 6, синоптическая проблема, адресат, богодухновенность, Закон и Евангелие.</p>
+            <div style="margin-top:8px;display:inline-flex;align-items:center;gap:5px;font-size:11px;font-weight:700;color:#92400e;">
+              Открыть серию
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
+            </div>
+          </div>
+        </a>
+      </li>
+
+      <li>
+        <a href="hermenevticheskaya-otsenka-hristotsentrichnoy-germenevtiki/" class="h-article-card">
+          <div class="h-article-thumb">
+            <picture>
+              <source srcset="../images/og-hermenevtika-hristotsentrichnaya-otsenka-600w.webp" type="image/webp" />
+              <img src="../images/og-hermenevtika-hristotsentrichnaya-otsenka.webp" alt="Герменевтическая оценка христоцентричной герменевтики" decoding="async" loading="lazy" width="160" height="108" />
+            </picture>
+          </div>
+          <div class="h-article-body">
+            <h2 class="h-article-title">Герменевтическая оценка христоцентричной герменевтики</h2>
+            <div class="h-article-meta">
+              <span class="h-meta-author">Редактор: Фёдор Милованов</span>
+              <span class="h-meta-sep" aria-hidden="true">·</span>
+              <span class="h-meta-time"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>50 мин</span>
+              <span class="h-meta-tag h-meta-tag--neutral">Перевод</span>
+              <span class="h-meta-tag">Герменевтика</span>
+            </div>
+            <p class="h-article-abstract">Разбор методологических вопросов христоцентричного чтения Писания: авторский замысел, историко-грамматический подход, типология, sensus plenior и богословские риски переинтерпретации текста.</p>
+          </div>
+        </a>
+      </li>
+    </ul>
+  </div>
+</section>
