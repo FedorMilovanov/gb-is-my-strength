@@ -1,13 +1,14 @@
 ---
 /**
- * GillContextArticleBody — Phase G2/G3 article-body section seams.
+ * GillContextArticleBody — Phase G2/G3/G4 article-body section seams.
  *
  * The legacy article-body monolith has been split into ordered fragments while
- * this component owns the <article class="article-body"> wrapper. Phase G3
- * promotes the first low-risk visible section (conclusion) to Astro markup.
+ * this component owns the <article class="article-body"> wrapper. Promoted
+ * sections stay hand-authored Astro markup in the original reading order.
  * Do not replace the whole body with MDX; promote one section at a time after
  * parity proof and Gill-specific guard updates.
  */
+import GillContextSectionAcademies from './GillContextSectionAcademies.astro';
 import GillContextSectionConclusion from './GillContextSectionConclusion.astro';
 
 const sectionModules = import.meta.glob('./_legacy/article-sections/*.html', {
@@ -16,15 +17,18 @@ const sectionModules = import.meta.glob('./_legacy/article-sections/*.html', {
   eager: true,
 }) as Record<string, string>;
 const sectionEntries = Object.entries(sectionModules).sort(([a], [b]) => a.localeCompare(b));
-const sectionsBeforeConclusion = sectionEntries
-  .filter(([file]) => !file.includes('/11-sec-sources-and-series-tail.html'))
+const sectionName = (file: string) => file.split('/').pop() || file;
+const sectionsBeforeAcademies = sectionEntries
+  .filter(([file]) => sectionName(file) < '05-sec-academies.html')
+  .map(([, html]) => html);
+const sectionsBetweenAcademiesAndConclusion = sectionEntries
+  .filter(([file]) => {
+    const name = sectionName(file);
+    return name > '05-sec-academies.html' && name < '10-sec-conclusion.html';
+  })
   .map(([, html]) => html);
 const sectionsAfterConclusion = sectionEntries
-  .filter(([file]) => file.includes('/11-sec-sources-and-series-tail.html'))
+  .filter(([file]) => sectionName(file) > '10-sec-conclusion.html')
   .map(([, html]) => html);
 ---
-<article class="article-body">
-  {sectionsBeforeConclusion.map((html) => <Fragment set:html={html} />)}
-  <GillContextSectionConclusion />
-  {sectionsAfterConclusion.map((html) => <Fragment set:html={html} />)}
-</article>
+<article class="article-body">{sectionsBeforeAcademies.map((html) => <Fragment set:html={html} />)}<GillContextSectionAcademies />{sectionsBetweenAcademiesAndConclusion.map((html) => <Fragment set:html={html} />)}<GillContextSectionConclusion />{sectionsAfterConclusion.map((html) => <Fragment set:html={html} />)}</article>
