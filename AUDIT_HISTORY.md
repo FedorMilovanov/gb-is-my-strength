@@ -1330,3 +1330,7 @@ Rows AGENTS-r140..AGENTS-r243 were moved out of AGENTS.md to keep the live agent
 ## 2026-06-22 — Refactoring 6.0 Phase 3a: Kod Da Vinci section seams
 
 `/articles/kod-da-vinchi/` article body was split from one `_legacy/article-body.html` monolith into 21 ordered fragments under `src/components/article-pilots/kod-da-vinchi/_legacy/article-sections/`. `KodDaVinchiArticleBody.astro` now owns the article wrapper and loads fragments via eager `import.meta.glob`. `article-mdx-pilot-audit` enforces the seam (no monolith, 21 fragments, pagefind meta first). Normalized legacy article body equals dist article body after the split. This enables one-section-at-a-time MDX/Astro replacement in the next refactor step.
+
+## 2026-06-22 — Refactoring 6.0 Phase 3b: Kod Da Vinci Pagefind meta island
+
+Pagefind metadata for `/articles/kod-da-vinchi/` moved from raw fragment `00-pagefind-meta.html` into `KodDaVinchiPagefindMeta.astro`, the first real Astro-owned island inside the legacy-compatible article body. The visible body now remains as 20 ordered section fragments. Related-card read times were synced to `data/search-manifest.json`, and `scripts/check-data-consistency.js` now blocks related-card read-time drift.

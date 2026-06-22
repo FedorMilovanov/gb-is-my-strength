@@ -24,6 +24,15 @@ MDX-файл `src/content/articles/kod-da-vinchi.mdx` (335 lines, 52K chars) с�
 
 Проверка normalized article body legacy root vs dist после split: exact equality. Это значит, что следующий refactor step может заменить **одну секцию** на enriched MDX/Astro и сравнить именно её, а не рисковать всей статьёй.
 
+## Phase 3b update — 2026-06-22
+
+The former `00-pagefind-meta.html` fragment has been promoted into a real Astro component: `KodDaVinchiPagefindMeta.astro`. The article body now has:
+
+- one Astro-owned metadata island;
+- 20 visible legacy section fragments.
+
+This proves the smallest safe replacement unit: non-visible metadata first, visible sections next. The next safe step is one visible low-risk section/component, with comment-insensitive article parity and visual gates.
+
 ## Количественный разрыв
 
 | Метрика | Legacy HTML | MDX | Дельта |
