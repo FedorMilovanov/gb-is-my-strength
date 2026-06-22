@@ -3,23 +3,10 @@
  * baptisty-rossii-visual-parity-audit.js — guard /baptisty-rossii/ native-shadow
  * Astro contract.
  *
- * РЕФАКТОРИНГ 5.0 Phase 6 wave 5 (AGENTS-r253). /baptisty-rossii/ is the series
- * overview landing for "Баптисты России" — premium GBS2 world with mobile head,
- * rail (10 parts nav), bottom bar, and mobile sheet. The semantic block is
- * <main id="main-content">; everything else is chrome preserved verbatim.
- *
- * Native-shadow contract:
- *   - <head> via loadLegacyFullDocument => SEO byte-identical;
- *   - body-segment-{0,1}.html contain the full GBS2 chrome;
- *   - <main id="main-content"> promoted to BaptistyRossiiMain.astro component,
- *     main HTML byte-identical via Vite ?raw.
- *
- * Pixel parity proof (CI):
- *   npm run visual:parity:screenshots -- --routes /baptisty-rossii/ --threshold 0.5
- *
- * Source-only guard (no dist build required): runs on Astro source files
- * and the legacy HTML. Fails fast if a future agent accidentally reverts
- * /baptisty-rossii/ to a generic astro-card grid or to full-document shadow.
+ * Refactoring 5.0 promoted /baptisty-rossii/ to a native-shadow landing.
+ * Refactoring 6.0 parallel pilot now replaces the monolithic
+ * `_legacy/main.html?raw` import with named legacy-faithful fragments for the
+ * hero/header, article body and post-article block.
  */
 'use strict';
 
@@ -45,10 +32,6 @@ function mustExist(rel, label) {
   exists(rel) ? ok(label || rel) : bad(`missing file: ${label || rel}`);
 }
 
-// --- Legacy /baptisty-rossii/ premium markers ---
-// Note: gbs2-timeline, gbs2-next, author-card are in SeriesArticleLayout.astro
-// for INDIVIDUAL articles (baptisty-rossii/noch-na-kure/, etc.), not the
-// /baptisty-rossii/ series index landing.
 const legacy = read('baptisty-rossii/index.html');
 for (const marker of [
   'class="gbs-world"', 'data-gbs2-series="russian-baptism"',
@@ -59,66 +42,82 @@ for (const marker of [
   must(legacy, marker, `legacy /baptisty-rossii/ marker: ${marker}`);
 }
 
-// --- Astro native-shadow contract ---
-const astro = read('src/pages/baptisty-rossii/index.astro');
-must(astro, "loadLegacyFullDocument('baptisty-rossii/index.html')",
+const page = read('src/pages/baptisty-rossii/index.astro');
+must(page, "loadLegacyFullDocument('baptisty-rossii/index.html')",
      'Astro /baptisty-rossii/ uses shared full-document loader for head');
-must(astro, '<!DOCTYPE html>', 'Astro /baptisty-rossii/ emits full document');
-must(astro, '<Fragment set:html={headHtml}',
+must(page, '<!DOCTYPE html>', 'Astro /baptisty-rossii/ emits full document');
+must(page, '<Fragment set:html={headHtml}',
      'Astro /baptisty-rossii/ preserves exact legacy head inner HTML');
-must(astro, 'BaptistyRossiiMain',
+must(page, 'BaptistyRossiiMain',
      'Astro /baptisty-rossii/ uses extracted BaptistyRossiiMain component');
-must(astro, '_legacy/body-segment-0.html',
+must(page, '_legacy/body-segment-0.html',
      'Astro /baptisty-rossii/ preserves verbatim legacy body chrome before <main>');
-must(astro, '_legacy/body-segment-1.html',
+must(page, '_legacy/body-segment-1.html',
      'Astro /baptisty-rossii/ preserves verbatim legacy body chrome after <main>');
 
-// --- BaptistyRossiiMain.astro + _legacy/ contract ---
 mustExist('src/components/baptisty-rossii/BaptistyRossiiMain.astro',
           'BaptistyRossiiMain.astro component file');
 mustExist('src/components/baptisty-rossii/_legacy/main.html',
-          'baptisty-rossii main.html legacy fragment');
+          'baptisty-rossii main.html legacy baseline');
+mustExist('src/components/baptisty-rossii/_legacy/header-hero.html',
+          'baptisty-rossii header-hero.html fragment');
+mustExist('src/components/baptisty-rossii/_legacy/article-body.html',
+          'baptisty-rossii article-body.html fragment');
+mustExist('src/components/baptisty-rossii/_legacy/post-article.html',
+          'baptisty-rossii post-article.html fragment');
 mustExist('src/components/baptisty-rossii/_legacy/body-segment-0.html',
           'baptisty-rossii body-segment-0.html frame fragment');
 mustExist('src/components/baptisty-rossii/_legacy/body-segment-1.html',
           'baptisty-rossii body-segment-1.html frame fragment');
 
-const brMain = read('src/components/baptisty-rossii/BaptistyRossiiMain.astro');
-must(brMain, "_legacy/main.html?raw",
-     'BaptistyRossiiMain imports main.html verbatim via Vite ?raw');
+const main = read('src/components/baptisty-rossii/BaptistyRossiiMain.astro');
+must(main, '<main id="main-content">', 'BaptistyRossiiMain preserves semantic main wrapper');
+must(main, 'header-hero.html?raw', 'BaptistyRossiiMain uses headerHero fragment');
+must(main, 'article-body.html?raw', 'BaptistyRossiiMain uses articleBody fragment');
+must(main, 'post-article.html?raw', 'BaptistyRossiiMain uses postArticle fragment');
+mustNot(main, "import legacyHtml from './_legacy/main.html?raw'",
+        'raw monolithic main import removed');
 
-// main.html should contain the gbs2-hero + article-header + article-body + h-article-list + research link + article-end-block
-// (Note: gbs2-timeline and author-card are in SeriesArticleLayout.astro for
-// INDIVIDUAL articles — /baptisty-rossii/ index is the series landing, not
-// an article, so those markers are absent by design.)
-const mainFragment = read('src/components/baptisty-rossii/_legacy/main.html');
+const mainBaseline = read('src/components/baptisty-rossii/_legacy/main.html');
 for (const marker of ['main-content', 'gbs2-hero', 'article-header', 'article-body',
                       'h-article-list', 'h-article-card', 'article-end-block']) {
-  must(mainFragment, marker, `main.html preserves ${marker}`);
+  must(mainBaseline, marker, `main.html baseline preserves ${marker}`);
 }
 
-// body-segment-0 should contain GBS2 chrome BEFORE main (mobile-head, rail, page-wrap open)
+const headerHero = read('src/components/baptisty-rossii/_legacy/header-hero.html');
+for (const marker of ['gbs2-hero', 'article-header', 'Баптисты России']) {
+  must(headerHero, marker, `header-hero.html preserves ${marker}`);
+}
+
+const articleBody = read('src/components/baptisty-rossii/_legacy/article-body.html');
+for (const marker of ['<article class="article-body">', 'summary-card', 'h-article-list', 'Исследовательская база']) {
+  must(articleBody, marker, `article-body.html preserves ${marker}`);
+}
+
+const postArticle = read('src/components/baptisty-rossii/_legacy/post-article.html');
+for (const marker of ['article-end-block', 'Soli Deo Gloria']) {
+  must(postArticle, marker, `post-article.html preserves ${marker}`);
+}
+
 const segBefore = read('src/components/baptisty-rossii/_legacy/body-segment-0.html');
 for (const marker of ['gbs2-mobile-head', 'gbs2-rail', 'gbs2-rtitle', 'breadcrumb']) {
   must(segBefore, marker, `body-segment-0.html preserves ${marker}`);
 }
 
-// body-segment-1 should contain GBS2 chrome AFTER main (bbar, sheet, scripts)
 const segAfter = read('src/components/baptisty-rossii/_legacy/body-segment-1.html');
 for (const marker of ['gbs2-bbar', 'gbs2-sheet', 'site.js']) {
   must(segAfter, marker, `body-segment-1.html preserves ${marker}`);
 }
 
-// --- Anti-regression: forbid generic Astro card grid + BaseLayout ---
 for (const marker of [
   'import BaseLayout', '<BaseLayout', 'astro-card-grid',
   'class="astro-page"', 'class="astro-baptisty-shadow"',
   'astro-shell', 'astro-baptisty-rail',
 ]) {
-  mustNot(astro, marker, `old/generic baptisty-rossii wrapper marker: ${marker}`);
+  mustNot(page, marker, `old/generic baptisty-rossii wrapper marker: ${marker}`);
+  mustNot(main, marker, `old/generic baptisty-rossii main marker: ${marker}`);
 }
 
-// --- Dist (if available) — premium DOM markers ---
 const dist = exists('dist/baptisty-rossii/index.html') ? read('dist/baptisty-rossii/index.html') : '';
 if (dist) {
   for (const marker of ['gbs-world', 'gbs2-rail', 'gbs2-bbar', 'gbs2-sheet', 'main-content']) {
@@ -135,5 +134,5 @@ if (problems.length) {
   console.log(`❌ ${problems.length} problem(s). /baptisty-rossii/ native-shadow contract violated.`);
   process.exit(1);
 }
-console.log(`✅ /baptisty-rossii/ Astro migration is native-shadow guarded (Phase 6 wave 5)`);
+console.log('✅ /baptisty-rossii/ Astro migration is native-shadow guarded (componentized landing main)');
 if (warnings.length) console.log(`ℹ️ ${warnings.length} advisory warning(s) remain.`);

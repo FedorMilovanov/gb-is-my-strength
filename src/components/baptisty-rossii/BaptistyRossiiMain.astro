@@ -2,15 +2,18 @@
 /**
  * BaptistyRossiiMain.astro — <main id="main-content">...</main> of /baptisty-rossii/.
  *
- * РЕФАКТОРИНГ 5.0 Phase 6 wave 5 native pilot (AGENTS-r253). The baptisty-rossii
- * landing carries the full GBS2 chrome (mobile-head, rail, bbar, sheet) AROUND
- * <main>; extracting just <main> as semantic block keeps the page byte-identical
- * while letting the article body be promoted to a named Astro component.
+ * Refactoring 6.0 parallel pilot: the route no longer proxies one monolithic
+ * `_legacy/main.html?raw` block. Instead, the GBS2 landing main shell is
+ * assembled from named legacy-faithful fragments while preserving exact DOM,
+ * copy and premium series layout.
  *
- * Pixel parity proof (CI):
+ * Pixel-parity contract remains guarded via
  *   npm run visual:parity:screenshots -- --routes /baptisty-rossii/ --threshold 0.5
+ * and source-contract audit in scripts/baptisty-rossii-visual-parity-audit.js.
  */
-import legacyHtml from './_legacy/main.html?raw';
+import headerHero from './_legacy/header-hero.html?raw';
+import articleBody from './_legacy/article-body.html?raw';
+import postArticle from './_legacy/post-article.html?raw';
 ---
 
-<Fragment set:html={legacyHtml} />
+<main id="main-content"><Fragment set:html={headerHero} /><Fragment set:html={articleBody} /><Fragment set:html={postArticle} /></main>
