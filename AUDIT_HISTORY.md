@@ -1366,3 +1366,7 @@ Pagefind metadata for `/articles/kod-da-vinchi/` moved from raw fragment `00-pag
 ## 2026-06-22 — Refactoring 6.0 parallel pilot: `/biografii/` landing main split
 
 `/biografii/` was advanced on the same independent lane: `BiografiiMain.astro` no longer imports one monolithic `_legacy/main.html?raw` fragment. The landing main is now assembled from named legacy-faithful fragments — `recent.html`, `focus.html`, the six era-section fragments, `epigraph.html`, and `post-article.html` — while preserving the premium biography landing DOM/classes/text/copy. `scripts/biografii-visual-parity-audit.js` was upgraded to guard this new contract and forbid regression back to the raw main import.
+
+## 2026-06-22 — Refactoring 6.0 parallel pilot: `/` home main split
+
+`/` was advanced on the same independent lane: `HomeMain.astro` no longer imports one monolithic `_legacy/main.html?raw` fragment. The premium home main is now assembled from named legacy-faithful fragments — `hero.html`, `resume-mobile.html`, `directions.html`, `planned.html`, `publications.html`, `refutations.html`, `about.html`, `quote.html`, and `post-article.html` — while preserving the standalone home DOM/classes/text/copy. `scripts/home-visual-parity-audit.js` was upgraded to guard this new contract and forbid regression back to the raw main import.

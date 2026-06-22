@@ -2,22 +2,10 @@
 /*
  * home-visual-parity-audit.js — guard / (home) native-shadow Astro contract.
  *
- * РЕФАКТОРИНГ 5.0 Phase 6 wave 6 (AGENTS-r254). / is the most critical landing
- * — premium standalone with mobile-nav, mobile-dock, h-hero, h-featured shelves,
- * h-mobile-dashboard (4 quick-start cards), h-mobile-paths (6 guided-reading
- * cards), resume-reading block, h-article-list, h-about, h-quote-section.
- *
- * Native-shadow contract:
- *   - <head> via loadLegacyFullDocument => SEO byte-identical;
- *   - body-segment-{0,1}.html contain full chrome (mobile-nav, mobile-dock,
- *     gb-accuracy, scripts);
- *   - <main id="main-content" data-pagefind-body> promoted to HomeMain.astro
- *     component, main HTML byte-identical via Vite ?raw.
- *
- * Pixel parity proof (CI):
- *   npm run visual:parity:screenshots -- --routes / --threshold 0.5
- *
- * Source-only guard (no dist build required).
+ * Refactoring 5.0 promoted / to a native-shadow landing route. Refactoring 6.0
+ * parallel pilot now replaces the monolithic `_legacy/main.html?raw` import
+ * with named legacy-faithful fragments for hero, resume/mobile shell, guided
+ * sections, catalog sections, about block and quote/post block.
  */
 'use strict';
 
@@ -43,9 +31,6 @@ function mustExist(rel, label) {
   exists(rel) ? ok(label || rel) : bad(`missing file: ${label || rel}`);
 }
 
-// --- Legacy / premium markers ---
-// Note: h-related-articles is on article pages (single article), not on /
-// home — /home does not have a related-articles section.
 const legacy = read('index.html');
 for (const marker of [
   '<main id="main-content" data-pagefind-body', 'class="home-v20"',
@@ -58,60 +43,73 @@ for (const marker of [
   must(legacy, marker, `legacy / marker: ${marker}`);
 }
 
-// --- Astro native-shadow contract ---
-const astro = read('src/pages/index.astro');
-must(astro, "loadLegacyFullDocument('index.html')",
+const page = read('src/pages/index.astro');
+must(page, "loadLegacyFullDocument('index.html')",
      'Astro / uses shared full-document loader for head');
-must(astro, '<!DOCTYPE html>', 'Astro / emits full document');
-must(astro, '<Fragment set:html={headHtml}',
+must(page, '<!DOCTYPE html>', 'Astro / emits full document');
+must(page, '<Fragment set:html={headHtml}',
      'Astro / preserves exact legacy head inner HTML');
-must(astro, 'HomeMain', 'Astro / uses extracted HomeMain component');
-must(astro, '_legacy/body-segment-0.html',
+must(page, 'HomeMain', 'Astro / uses extracted HomeMain component');
+must(page, '_legacy/body-segment-0.html',
      'Astro / preserves verbatim legacy body chrome before <main>');
-must(astro, '_legacy/body-segment-1.html',
+must(page, '_legacy/body-segment-1.html',
      'Astro / preserves verbatim legacy body chrome after <main>');
 
-// --- HomeMain.astro + _legacy/ contract ---
 mustExist('src/components/home/HomeMain.astro', 'HomeMain.astro component file');
-mustExist('src/components/home/_legacy/main.html', 'home main.html legacy fragment');
+mustExist('src/components/home/_legacy/main.html', 'home main.html legacy baseline');
+for (const rel of ['hero.html','resume-mobile.html','directions.html','planned.html','publications.html','refutations.html','about.html','quote.html','post-article.html']) {
+  mustExist(`src/components/home/_legacy/${rel}`, rel);
+}
 mustExist('src/components/home/_legacy/body-segment-0.html', 'home body-segment-0.html frame fragment');
 mustExist('src/components/home/_legacy/body-segment-1.html', 'home body-segment-1.html frame fragment');
 
-const homeMain = read('src/components/home/HomeMain.astro');
-must(homeMain, "_legacy/main.html?raw",
-     'HomeMain imports main.html verbatim via Vite ?raw');
+const main = read('src/components/home/HomeMain.astro');
+must(main, '<main id="main-content" data-pagefind-body>', 'HomeMain preserves semantic main wrapper');
+must(main, '<div class="home-content">', 'HomeMain preserves home-content wrapper');
+for (const frag of ['hero.html?raw','resume-mobile.html?raw','directions.html?raw','planned.html?raw','publications.html?raw','refutations.html?raw','about.html?raw','quote.html?raw','post-article.html?raw']) {
+  must(main, frag, `HomeMain uses ${frag}`);
+}
+mustNot(main, "import legacyHtml from './_legacy/main.html?raw'", 'raw monolithic main import removed');
 
-// main.html should contain all home premium sections
-// (gb-accuracy-block lives INSIDE <main>, not in body-segment-1)
 const mainFragment = read('src/components/home/_legacy/main.html');
 for (const marker of ['main-content', 'h-hero', 'h-mobile-dashboard', 'h-featured',
                       'h-article-list', 'h-about', 'h-quote-section',
                       'gb-accuracy-block']) {
-  must(mainFragment, marker, `main.html preserves ${marker}`);
+  must(mainFragment, marker, `main baseline preserves ${marker}`);
+}
+for (const [file, marker] of [
+  ['hero.html','h-hero'],
+  ['resume-mobile.html','resume-reading-block'],
+  ['directions.html','hDirectionsLabel'],
+  ['planned.html','hPlannedLabel'],
+  ['publications.html','id="publikacii"'],
+  ['refutations.html','id="razbor"'],
+  ['about.html','id="about"'],
+  ['quote.html','h-quote-section'],
+  ['post-article.html','Soli Deo Gloria'],
+]) {
+  must(read(`src/components/home/_legacy/${file}`), marker, `${file} marker: ${marker}`);
 }
 
-// body-segment-0 should contain chrome BEFORE main (skip-link, mobile-nav, home-v20 open)
 const segBefore = read('src/components/home/_legacy/body-segment-0.html');
 for (const marker of ['skip-link', 'h-mobile-nav', 'h-navbar', 'home-v20']) {
   must(segBefore, marker, `body-segment-0.html preserves ${marker}`);
 }
 
-// body-segment-1 should contain chrome AFTER main (mobile-dock, runtime scripts)
 const segAfter = read('src/components/home/_legacy/body-segment-1.html');
 for (const marker of ['h-mobile-dock', 'site.js', 'sw-register']) {
   must(segAfter, marker, `body-segment-1.html preserves ${marker}`);
 }
 
-// --- Anti-regression: forbid generic Astro card grid + BaseLayout ---
 for (const marker of [
   'import BaseLayout', '<BaseLayout', 'astro-card-grid',
   'class="astro-home"', 'class="astro-page"',
   'astro-shell',
 ]) {
-  mustNot(astro, marker, `old/generic home wrapper marker: ${marker}`);
+  mustNot(page, marker, `old/generic home wrapper marker: ${marker}`);
+  mustNot(main, marker, `old/generic home main marker: ${marker}`);
 }
 
-// --- Dist (if available) — premium DOM markers ---
 const dist = exists('dist/index.html') ? read('dist/index.html') : '';
 if (dist) {
   for (const marker of ['home-v20', 'h-hero', 'h-mobile-dashboard', 'main-content']) {
@@ -128,5 +126,5 @@ if (problems.length) {
   console.log(`❌ ${problems.length} problem(s). / native-shadow contract violated.`);
   process.exit(1);
 }
-console.log(`✅ / Astro migration is native-shadow guarded (Phase 6 wave 6)`);
+console.log('✅ / Astro migration is native-shadow guarded (componentized home main)');
 if (warnings.length) console.log(`ℹ️ ${warnings.length} advisory warning(s) remain.`);
