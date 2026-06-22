@@ -189,21 +189,30 @@ function checkKodDaVinchiBreakoutSource() {
   mustContain('kod-da-vinchi ArticleBody uses section glob', src, 'article-sections/*.html');
   mustContain('kod-da-vinchi ArticleBody imports Astro Pagefind meta component', src, 'KodDaVinchiPagefindMeta');
   mustContain('kod-da-vinchi ArticleBody imports Astro intro section component', src, 'KodDaVinchiSectionIntro');
+  mustContain('kod-da-vinchi ArticleBody imports Astro phenomenon section component', src, 'KodDaVinchiSectionPhenomenon');
   mustContain('kod-da-vinchi ArticleBody preserves article-body wrapper', src, '<article class="article-body" data-pagefind-body>');
   if (fs.existsSync(path.join(base, '_legacy/article-body.html'))) bad('kod-da-vinchi monolithic _legacy/article-body.html still exists; keep section seams authoritative');
   else ok('kod-da-vinchi monolithic article-body.html removed after section breakout');
   if (!fs.existsSync(sectionDir)) return bad('kod-da-vinchi article-sections directory missing');
   const fragments = fs.readdirSync(sectionDir).filter((f) => f.endsWith('.html')).sort();
-  if (fragments.length !== 19) bad(`kod-da-vinchi section fragment count drift: expected 19 remaining legacy visible section fragments, got ${fragments.length}`);
-  else ok('kod-da-vinchi remaining legacy visible section fragment count: 19');
-  if (fragments[0] !== '02-sec-phenomenon.html') bad(`kod-da-vinchi first remaining legacy fragment must be phenomenon, got ${fragments[0]}`);
-  else ok('kod-da-vinchi first remaining legacy section fragment: phenomenon');
+  if (fragments.length !== 18) bad(`kod-da-vinchi section fragment count drift: expected 18 remaining legacy visible section fragments, got ${fragments.length}`);
+  else ok('kod-da-vinchi remaining legacy visible section fragment count: 18');
+  if (fragments[0] !== '03-sec-dates.html') bad(`kod-da-vinchi first remaining legacy fragment must be dates, got ${fragments[0]}`);
+  else ok('kod-da-vinchi first remaining legacy section fragment: dates');
   const introComponent = path.join(base, 'KodDaVinchiSectionIntro.astro');
   if (!fs.existsSync(introComponent)) bad('kod-da-vinchi Astro intro section component missing');
   else {
     const introSrc = read(introComponent);
     for (const marker of ['id="sec-intro"', 'class="drop-cap"', 'class="fn-marker"', 'class="quote-box"']) {
       mustContain(`kod-da-vinchi intro component ${marker}`, introSrc, marker);
+    }
+  }
+  const phenomenonComponent = path.join(base, 'KodDaVinchiSectionPhenomenon.astro');
+  if (!fs.existsSync(phenomenonComponent)) bad('kod-da-vinchi Astro phenomenon section component missing');
+  else {
+    const phenomenonSrc = read(phenomenonComponent);
+    for (const marker of ['id="sec-phenomenon"', 'class="stat-grid"', 'class="stat-card"', 'class="info-box"', 'class="fn-marker"']) {
+      mustContain(`kod-da-vinchi phenomenon component ${marker}`, phenomenonSrc, marker);
     }
   }
   const metaComponent = path.join(base, 'KodDaVinchiPagefindMeta.astro');
