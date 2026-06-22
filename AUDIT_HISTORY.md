@@ -1350,3 +1350,7 @@ Pagefind metadata for `/articles/kod-da-vinchi/` moved from raw fragment `00-pag
 ## 2026-06-22 — Refactoring 6.0 parallel pilot: `/konfessii/` standalone grid split
 
 `/konfessii/` was advanced on the same independent lane: `KonfessiiMain.astro` no longer imports one monolithic `_legacy/main.html?raw` fragment. The standalone confessions grid is now assembled from named Astro leaf components — `KonfessiiRusskijBaptizmCard.astro`, `KonfessiiPentecostalCard.astro`, and `KonfessiiOverviewCard.astro` — while preserving the legacy DOM/classes/text/SVG/copy. `scripts/konfessii-visual-parity-audit.js` was upgraded to guard this new contract, keep the required inline Pagefind sr-only style, and forbid regression back to the raw main import.
+
+## 2026-06-22 — Refactoring 6.0 parallel pilot: `/karty/` standalone hub split
+
+`/karty/` was advanced on the same independent lane: `KartyMain.astro` no longer imports one monolithic `_legacy/hub.html?raw` fragment. The premium standalone hub is now assembled from named Astro leaf components — `KartyBackLink.astro`, `KartyHeroSection.astro`, `KartyBodySection.astro`, and `KartyNote.astro` — while preserving the legacy DOM/classes/text/copy. `scripts/karty-visual-parity-audit.js` was upgraded to guard this new contract and forbid regression back to the raw hub import.
