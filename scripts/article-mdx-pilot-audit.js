@@ -213,14 +213,14 @@ function checkKodDaVinchiBreakoutSource() {
   const totalSections = 20;
   if (!fs.existsSync(sectionDir)) {
     // Terminal state: every section promoted → no raw fragments left.
-    if (promotedComponents.length < totalSections) return bad('kod-da-vinchi article-sections directory missing before full promotion');
-    ok(`kod-da-vinchi ALL ${totalSections} sections promoted to Astro (no raw fragments remain)`);
-    return;
+    if (promotedComponents.length < totalSections) bad('kod-da-vinchi article-sections directory missing before full promotion');
+    else ok(`kod-da-vinchi ALL ${totalSections} sections promoted to Astro (no raw fragments remain)`);
+  } else {
+    const fragments = fs.readdirSync(sectionDir).filter((f) => f.endsWith('.html')).sort();
+    const expectedRemaining = totalSections - promotedComponents.length;
+    if (fragments.length !== expectedRemaining) bad(`kod-da-vinchi section fragment count drift: expected ${expectedRemaining} remaining legacy visible section fragments (${promotedComponents.length} promoted), got ${fragments.length}`);
+    else ok(`kod-da-vinchi remaining legacy visible section fragment count: ${expectedRemaining} (${promotedComponents.length} promoted)`);
   }
-  const fragments = fs.readdirSync(sectionDir).filter((f) => f.endsWith('.html')).sort();
-  const expectedRemaining = totalSections - promotedComponents.length;
-  if (fragments.length !== expectedRemaining) bad(`kod-da-vinchi section fragment count drift: expected ${expectedRemaining} remaining legacy visible section fragments (${promotedComponents.length} promoted), got ${fragments.length}`);
-  else ok(`kod-da-vinchi remaining legacy visible section fragment count: ${expectedRemaining} (${promotedComponents.length} promoted)`);
   // Verify each promoted section component exists and carries its legacy h2 anchor.
   // The anchor id is derived from the section slug (e.g. KodDaVinchiSectionIntro → sec-intro).
   const anchorMap = { Gnostic: 'sec-gnostic', Qumran: 'sec-qumran', Lie3: 'sec-lie3', Lie4: 'sec-lie4', Lie5: 'sec-lie5', Lie6: 'sec-lie6', Dates: 'sec-dates', Errors: 'sec-errors', Lie1: 'sec-lie1', Feminine: 'sec-feminine', Lie2: 'sec-lie2', Canon: 'sec-canon', Intro: 'sec-intro', Phenomenon: 'sec-phenomenon', Church: 'sec-church', Why: 'sec-why', Quiz: 'sec-quiz', Faq: 'sec-faq', Conclusion: 'sec-conclusion', SummaryTitleAuto: null };
@@ -239,6 +239,18 @@ function checkKodDaVinchiBreakoutSource() {
       mustContain(`kod-da-vinchi Pagefind meta component ${marker}`, metaSrc, marker);
     }
   }
+  // Phase 5: body-segment chrome promotion — zero remaining raw ?raw imports.
+  const pageSrc = read(path.join(ROOT, 'src/pages/articles/kod-da-vinchi/index.astro'));
+  if (pageSrc.includes('body-segment-0.html?raw')) bad('kod-da-vinchi index.astro still imports raw body-segment-0.html');
+  else ok('kod-da-vinchi index.astro no longer imports raw body-segment-0.html');
+  if (pageSrc.includes('body-segment-1.html?raw')) bad('kod-da-vinchi index.astro still imports raw body-segment-1.html');
+  else ok('kod-da-vinchi index.astro no longer imports raw body-segment-1.html');
+  mustContain('kod-da-vinchi index.astro imports PageChrome component', pageSrc, 'KodDaVinchiPageChrome');
+  mustContain('kod-da-vinchi index.astro imports PageFooter component', pageSrc, 'KodDaVinchiPageFooter');
+  const seg0 = path.join(base, '_legacy/body-segment-0.html');
+  const seg1 = path.join(base, '_legacy/body-segment-1.html');
+  if (fs.existsSync(seg0)) warn('kod-da-vinchi _legacy/body-segment-0.html still present (unused but harmless)');
+  if (fs.existsSync(seg1)) warn('kod-da-vinchi _legacy/body-segment-1.html still present (unused but harmless)');
 }
 
 function runBuild() {
