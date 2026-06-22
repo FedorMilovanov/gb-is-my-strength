@@ -2,9 +2,20 @@
 /**
  * KonfessiiMain.astro — <main class="grid h-reveal"> of /konfessii/.
  *
- * Phase 6 native-shadow pilot (AGENTS-r251). Pixel-parity guarded via
+ * Refactoring 6.0 parallel pilot: the route no longer proxies one monolithic
+ * `_legacy/main.html?raw` block. Instead, the standalone grid is composed from
+ * named Astro leaf components while preserving legacy DOM/classes/text.
+ *
+ * Pixel-parity contract remains guarded via
  *   npm run visual:parity:screenshots -- --routes /konfessii/
+ * and source-contract audit in scripts/konfessii-visual-parity-audit.js.
  */
-import legacyHtml from './_legacy/main.html?raw';
+import KonfessiiRusskijBaptizmCard from './KonfessiiRusskijBaptizmCard.astro';
+import KonfessiiPentecostalCard from './KonfessiiPentecostalCard.astro';
+import KonfessiiOverviewCard from './KonfessiiOverviewCard.astro';
 ---
-<Fragment set:html={legacyHtml} />
+<main class="grid h-reveal">
+  <KonfessiiRusskijBaptizmCard />
+  <KonfessiiPentecostalCard />
+  <KonfessiiOverviewCard />
+</main>
