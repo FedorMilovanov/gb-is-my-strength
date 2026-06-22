@@ -29,9 +29,8 @@
 import { loadLegacyFullDocument } from '@/utils/legacyFullDocument';
 import AboutArticle from '@/components/about/AboutArticle.astro';
 import AboutAccuracyBlock from '@/components/about/AboutAccuracyBlock.astro';
-import bodyBefore from '@/components/about/_legacy/body-before.html?raw';
-import bodyMid from '@/components/about/_legacy/body-mid.html?raw';
-import bodyAfter from '@/components/about/_legacy/body-after.html?raw';
+import AboutFrameBefore from '@/components/about/AboutFrameBefore.astro';
+import AboutFrameAfter from '@/components/about/AboutFrameAfter.astro';
 
 const { headHtml, bodyAttributes } = loadLegacyFullDocument('about/index.html');
 ---
@@ -40,5 +39,5 @@ const { headHtml, bodyAttributes } = loadLegacyFullDocument('about/index.html');
   <head>
     <Fragment set:html={headHtml} />
   </head>
-  <body {...bodyAttributes}><Fragment set:html={bodyBefore} /><AboutArticle /><Fragment set:html={bodyMid} /><AboutAccuracyBlock /><Fragment set:html={bodyAfter} /></body>
+  <body {...bodyAttributes}><AboutFrameBefore /><AboutArticle /><AboutAccuracyBlock /><AboutFrameAfter /></body>
 </html>
