@@ -14,8 +14,23 @@ const PAGE_REL = 'src/pages/articles/dzhon-gill-spravochnik/index.astro';
 const BASE_REL = 'src/components/article-pilots/gill-spravochnik';
 const LEGACY_DIR_REL = `${BASE_REL}/_legacy`;
 const SECTION_DIR_REL = `${LEGACY_DIR_REL}/article-sections`;
-const TOTAL_RAW_SECTIONS = 9;
-const TOTAL_ASTRO_SECTIONS = 2;
+
+const SECTION_ORDER = [
+  ['00-summary.html', null],
+  ['01-sec-prdl.html', 'GillSpravochnikSectionPrdl.astro'],
+  ['02-sec-timeline.html', null],
+  ['03-sec-works.html', null],
+  ['04-sec-body-structure.html', 'GillSpravochnikSectionBodyStructure.astro'],
+  ['05-sec-network.html', 'GillSpravochnikSectionNetwork.astro'],
+  ['06-sec-disputes.html', 'GillSpravochnikSectionDisputes.astro'],
+  ['07-sec-terms.html', null],
+  ['08-sec-links.html', 'GillSpravochnikSectionLinks.astro'],
+  ['09-sec-sources.html', null],
+  ['10-sec-quiz-tail.html', null],
+];
+const PROMOTED = SECTION_ORDER.filter(([, comp]) => comp);
+const RAW = SECTION_ORDER.filter(([, comp]) => !comp);
+
 const files = {
   seg0: `${LEGACY_DIR_REL}/body-segment-0.html`,
   seg1: `${LEGACY_DIR_REL}/body-segment-1.html`,
@@ -83,15 +98,16 @@ mustExist('Astro Gill spravochnik page', PAGE_REL);
 for (const [label, rel] of Object.entries(files)) mustExist(label, rel);
 mustExist('Gill spravochnik article section directory', SECTION_DIR_REL);
 if (fs.existsSync(abs(SECTION_DIR_REL))) {
-  const count = fs.readdirSync(abs(SECTION_DIR_REL)).filter((name) => name.endsWith('.html')).length;
-  if (count === TOTAL_RAW_SECTIONS) ok(`Gill spravochnik raw article section count: ${TOTAL_RAW_SECTIONS} (+${TOTAL_ASTRO_SECTIONS} Astro section = 11)`);
-  else bad(`Gill spravochnik section count drift: expected ${TOTAL_RAW_SECTIONS}, got ${count}`);
+  const rawFiles = fs.readdirSync(abs(SECTION_DIR_REL)).filter((name) => name.endsWith('.html')).sort();
+  if (rawFiles.length === RAW.length) ok(`Gill spravochnik raw article section count: ${RAW.length} (+${PROMOTED.length} Astro sections = ${SECTION_ORDER.length})`);
+  else bad(`Gill spravochnik section count drift: expected ${RAW.length}, got ${rawFiles.length}`);
+  for (const [rawName] of RAW) mustExist(`Gill spravochnik raw section ${rawName}`, `${SECTION_DIR_REL}/${rawName}`);
 }
 mustNotExist('Gill spravochnik article-body monolith retired', `${LEGACY_DIR_REL}/article-body.html`);
-mustNotExist('Gill spravochnik PRDL raw fragment promoted', `${SECTION_DIR_REL}/01-sec-prdl.html`);
-mustNotExist('Gill spravochnik links raw fragment promoted', `${SECTION_DIR_REL}/08-sec-links.html`);
-mustExist('Gill spravochnik promoted PRDL section', `${BASE_REL}/GillSpravochnikSectionPrdl.astro`);
-mustExist('Gill spravochnik promoted Links section', `${BASE_REL}/GillSpravochnikSectionLinks.astro`);
+for (const [rawName, comp] of PROMOTED) {
+  mustNotExist(`Gill spravochnik promoted raw fragment ${rawName}`, `${SECTION_DIR_REL}/${rawName}`);
+  mustExist(`Gill spravochnik promoted section ${comp}`, `${BASE_REL}/${comp}`);
+}
 
 if (!problems.length) {
   const legacy = read(LEGACY_REL);
@@ -103,13 +119,11 @@ if (!problems.length) {
   const seg0 = read(files.seg0);
   const seg1 = read(files.seg1);
   const header = read(files.header);
-  const rawSectionNames = fs.readdirSync(abs(SECTION_DIR_REL)).filter((name) => name.endsWith('.html')).sort();
-  const prdlSection = read(`${BASE_REL}/GillSpravochnikSectionPrdl.astro`);
-  const linksSection = read(`${BASE_REL}/GillSpravochnikSectionLinks.astro`);
-  const beforePrdl = rawSectionNames.filter((name) => name < '01-sec-prdl.html').map((name) => read(`${SECTION_DIR_REL}/${name}`));
-  const betweenPrdlAndLinks = rawSectionNames.filter((name) => name > '01-sec-prdl.html' && name < '08-sec-links.html').map((name) => read(`${SECTION_DIR_REL}/${name}`));
-  const afterLinks = rawSectionNames.filter((name) => name > '08-sec-links.html').map((name) => read(`${SECTION_DIR_REL}/${name}`));
-  const article = `<article class="article-body">${beforePrdl.join('')}${prdlSection}${betweenPrdlAndLinks.join('')}${linksSection}${afterLinks.join('')}</article>`;
+  const sectionHtml = SECTION_ORDER.map(([rawName, comp]) => comp
+    ? read(`${BASE_REL}/${comp}`)
+    : read(`${SECTION_DIR_REL}/${rawName}`)
+  ).join('');
+  const article = `<article class="article-body">${sectionHtml}</article>`;
   const post = read(files.post);
 
   for (const marker of [
@@ -145,8 +159,7 @@ if (!problems.length) {
   mustContain('HeaderHero component raw import', headerComp, '_legacy/header-hero.html?raw');
   mustContain('ArticleBody component owns article wrapper', bodyComp, '<article class="article-body">');
   mustContain('ArticleBody component uses ordered section glob', bodyComp, 'article-sections/*.html');
-  mustContain('ArticleBody component imports promoted PRDL section', bodyComp, 'GillSpravochnikSectionPrdl');
-  mustContain('ArticleBody component imports promoted Links section', bodyComp, 'GillSpravochnikSectionLinks');
+  for (const [, comp] of PROMOTED) mustContain(`ArticleBody component imports promoted ${comp}`, bodyComp, comp.replace(/\.astro$/, ''));
   mustNotContain('ArticleBody component no longer imports monolith', bodyComp, 'article-body.html?raw');
   mustContain('PostArticle component raw import', postComp, '_legacy/post-article.html?raw');
 
@@ -154,6 +167,9 @@ if (!problems.length) {
   mustContain('header fragment keeps Gill reference H1', header, 'Джон Гилл: справочник');
   mustContain('article sections keep summary card', article, 'summary-card');
   mustContain('article sections keep PRDL section', article, 'id="sec-prdl"');
+  mustContain('article sections keep body structure section', article, 'id="sec-body-structure"');
+  mustContain('article sections keep network section', article, 'id="sec-network"');
+  mustContain('article sections keep disputes section', article, 'id="sec-disputes"');
   mustContain('article sections keep links section', article, 'id="sec-links"');
   mustContain('article sections keep sources section', article, 'sec-sources');
   mustContain('article sections keep quiz', article, 'quizPlaceholder');
