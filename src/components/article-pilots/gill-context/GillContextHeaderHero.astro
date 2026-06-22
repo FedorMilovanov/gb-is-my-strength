@@ -1,0 +1,11 @@
+---
+/**
+ * GillContextHeaderHero — visual-safe GBS2 header/hero seam for
+ * /articles/dzhon-gill-istoricheskiy-kontekst/.
+ *
+ * Phase G1 keeps legacy markup verbatim via a raw fragment. Later phases may
+ * promote this to hand-authored Astro only under Gill visual parity gates.
+ */
+import headerHeroHtml from './_legacy/header-hero.html?raw';
+---
+<Fragment set:html={headerHeroHtml} />
