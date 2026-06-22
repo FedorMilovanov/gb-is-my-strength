@@ -17,8 +17,8 @@ const BASE_REL = 'src/components/article-pilots/gill-context';
 const LEGACY_DIR_REL = `${BASE_REL}/_legacy`;
 const SECTION_DIR_REL = `${LEGACY_DIR_REL}/article-sections`;
 const TOTAL_SECTIONS = 12;
-const TOTAL_RAW_SECTIONS = 4;
-const TOTAL_ASTRO_SECTIONS = 8;
+const TOTAL_RAW_SECTIONS = 3;
+const TOTAL_ASTRO_SECTIONS = 9;
 const files = {
   seg0: `${LEGACY_DIR_REL}/body-segment-0.html`,
   seg1: `${LEGACY_DIR_REL}/body-segment-1.html`,
@@ -27,6 +27,7 @@ const files = {
   shell: `${BASE_REL}/GillContextMainShell.astro`,
   headerComp: `${BASE_REL}/GillContextHeaderHero.astro`,
   bodyComp: `${BASE_REL}/GillContextArticleBody.astro`,
+  fromPuritansComp: `${BASE_REL}/GillContextSectionFromPuritansToBaptists.astro`,
   particularComp: `${BASE_REL}/GillContextSectionParticularVsGeneral.astro`,
   academiesComp: `${BASE_REL}/GillContextSectionAcademies.astro`,
   greatEjectionComp: `${BASE_REL}/GillContextSectionGreatEjection.astro`,
@@ -104,6 +105,7 @@ mustExist('Astro Gill context page', PAGE_REL);
 for (const [label, rel] of Object.entries(files)) mustExist(label, rel);
 mustExist('Gill context article section directory', SECTION_DIR_REL);
 mustNotExist('Gill context article-body monolith retired', `${LEGACY_DIR_REL}/article-body.html`);
+mustNotExist('Gill context puritans-to-baptists raw fragment promoted', `${SECTION_DIR_REL}/01-sec-from-puritans-to-baptists.html`);
 mustNotExist('Gill context particular-vs-general raw fragment promoted', `${SECTION_DIR_REL}/02-sec-particular-vs-general.html`);
 mustNotExist('Gill context academies raw fragment promoted', `${SECTION_DIR_REL}/05-sec-academies.html`);
 mustNotExist('Gill context Great Ejection raw fragment promoted', `${SECTION_DIR_REL}/03-sec-great-ejection.html`);
@@ -120,6 +122,7 @@ if (!problems.length) {
   const headerComp = read(files.headerComp);
   const bodyComp = read(files.bodyComp);
   const postComp = read(files.postComp);
+  const fromPuritansComp = read(files.fromPuritansComp);
   const particularComp = read(files.particularComp);
   const academiesComp = read(files.academiesComp);
   const greatEjectionComp = read(files.greatEjectionComp);
@@ -133,7 +136,11 @@ if (!problems.length) {
   const header = read(files.header);
   const sections = sectionFiles();
   const sectionName = (rel) => rel.split('/').pop() || rel;
-  const sectionsBeforeParticular = sections.filter((rel) => sectionName(rel) < '02-sec-particular-vs-general.html');
+  const sectionsBeforeFromPuritans = sections.filter((rel) => sectionName(rel) < '01-sec-from-puritans-to-baptists.html');
+  const sectionsBetweenFromPuritansAndParticular = sections.filter((rel) => {
+    const name = sectionName(rel);
+    return name > '01-sec-from-puritans-to-baptists.html' && name < '02-sec-particular-vs-general.html';
+  });
   const sectionsBetweenParticularAndGreatEjection = sections.filter((rel) => {
     const name = sectionName(rel);
     return name > '02-sec-particular-vs-general.html' && name < '03-sec-great-ejection.html';
@@ -163,7 +170,7 @@ if (!problems.length) {
     return name > '09-sec-books.html' && name < '10-sec-conclusion.html';
   });
   const sectionsAfterConclusion = sections.filter((rel) => sectionName(rel) > '10-sec-conclusion.html');
-  const articleInner = `${sectionsBeforeParticular.map(read).join('')}${particularComp}${sectionsBetweenParticularAndGreatEjection.map(read).join('')}${greatEjectionComp}${sectionsBetweenGreatEjectionAndAcademies.map(read).join('')}${academiesComp}${sectionsBetweenAcademiesAndSalters.map(read).join('')}${saltersComp}${sectionsBetweenSaltersAndCoffee.map(read).join('')}${coffeeComp}${sectionsBetweenCoffeeAndSouthwark.map(read).join('')}${southwarkComp}${sectionsBetweenSouthwarkAndBooks.map(read).join('')}${booksComp}${sectionsBetweenBooksAndConclusion.map(read).join('')}${conclusionComp}${sectionsAfterConclusion.map(read).join('')}`;
+  const articleInner = `${sectionsBeforeFromPuritans.map(read).join('')}${fromPuritansComp}${sectionsBetweenFromPuritansAndParticular.map(read).join('')}${particularComp}${sectionsBetweenParticularAndGreatEjection.map(read).join('')}${greatEjectionComp}${sectionsBetweenGreatEjectionAndAcademies.map(read).join('')}${academiesComp}${sectionsBetweenAcademiesAndSalters.map(read).join('')}${saltersComp}${sectionsBetweenSaltersAndCoffee.map(read).join('')}${coffeeComp}${sectionsBetweenCoffeeAndSouthwark.map(read).join('')}${southwarkComp}${sectionsBetweenSouthwarkAndBooks.map(read).join('')}${booksComp}${sectionsBetweenBooksAndConclusion.map(read).join('')}${conclusionComp}${sectionsAfterConclusion.map(read).join('')}`;
   const article = `<article class="article-body">${articleInner}</article>`;
   const post = read(files.post);
 
@@ -207,6 +214,7 @@ if (!problems.length) {
   mustContain('HeaderHero component raw import', headerComp, '_legacy/header-hero.html?raw');
   mustContain('ArticleBody component owns article wrapper', bodyComp, '<article class="article-body">');
   mustContain('ArticleBody component uses ordered section glob', bodyComp, 'article-sections/*.html');
+  mustContain('ArticleBody component imports promoted puritans-to-baptists', bodyComp, 'GillContextSectionFromPuritansToBaptists');
   mustContain('ArticleBody component imports promoted particular-vs-general', bodyComp, 'GillContextSectionParticularVsGeneral');
   mustContain('ArticleBody component imports promoted academies', bodyComp, 'GillContextSectionAcademies');
   mustContain('ArticleBody component imports promoted Great Ejection', bodyComp, 'GillContextSectionGreatEjection');
@@ -220,6 +228,8 @@ if (!problems.length) {
 
   mustContain('header fragment keeps GBS2 hero', header, 'class="gbs2-hero"');
   mustContain('header fragment keeps Gill H1', header, 'Джон Гилл: исторический контекст');
+  mustContain('puritans-to-baptists component keeps H2', fromPuritansComp, 'id="sec-from-puritans-to-baptists"');
+  mustContain('puritans-to-baptists component keeps timeline table', fromPuritansComp, 'compare-table');
   mustContain('particular-vs-general component keeps H2', particularComp, 'id="sec-particular-vs-general"');
   mustContain('particular-vs-general component keeps table', particularComp, 'compare-table');
   mustContain('academies component keeps academies H2', academiesComp, 'id="sec-academies"');
