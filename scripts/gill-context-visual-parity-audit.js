@@ -33,7 +33,6 @@ const SECTION_COMPONENTS = [
 const files = {
   seg0: `${LEGACY_DIR_REL}/body-segment-0.html`,
   seg1: `${LEGACY_DIR_REL}/body-segment-1.html`,
-  header: `${LEGACY_DIR_REL}/header-hero.html`,
   post: `${LEGACY_DIR_REL}/post-article.html`,
   shell: `${BASE_REL}/GillContextMainShell.astro`,
   headerComp: `${BASE_REL}/GillContextHeaderHero.astro`,
@@ -95,6 +94,7 @@ console.log('GILL CONTEXT VISUAL-PARITY SOURCE AUDIT');
 mustExist('legacy Gill context route', LEGACY_REL);
 mustExist('Astro Gill context page', PAGE_REL);
 for (const [label, rel] of Object.entries(files)) mustExist(label, rel);
+mustNotExist('Gill context header-hero raw fragment retired', `${LEGACY_DIR_REL}/header-hero.html`);
 mustNotExist('Gill context article-body monolith retired', `${LEGACY_DIR_REL}/article-body.html`);
 mustNotExist('Gill context raw section directory retired after full promotion', SECTION_DIR_REL);
 for (const comp of SECTION_COMPONENTS) mustExist(`Gill context promoted section ${comp}`, `${BASE_REL}/${comp}`);
@@ -108,7 +108,7 @@ if (!problems.length) {
   const postComp = read(files.postComp);
   const seg0 = read(files.seg0);
   const seg1 = read(files.seg1);
-  const header = read(files.header);
+  const header = headerComp;
   const sectionHtml = SECTION_COMPONENTS.map((comp) => read(`${BASE_REL}/${comp}`)).join('');
   const article = `<article class="article-body">${sectionHtml}</article>`;
   const post = read(files.post);
@@ -143,7 +143,7 @@ if (!problems.length) {
   mustContain('Main shell uses header hero component', shell, 'GillContextHeaderHero');
   mustContain('Main shell uses article body component', shell, 'GillContextArticleBody');
   mustContain('Main shell uses post article component', shell, 'GillContextPostArticle');
-  mustContain('HeaderHero component raw import', headerComp, '_legacy/header-hero.html?raw');
+  mustNotContain('HeaderHero component no longer imports raw fragment', headerComp, 'header-hero.html?raw');
   mustContain('ArticleBody component owns article wrapper', bodyComp, '<article class="article-body">');
   mustNotContain('ArticleBody component no longer uses raw section glob after full promotion', bodyComp, 'article-sections/*.html');
   for (const comp of SECTION_COMPONENTS) {
@@ -151,8 +151,8 @@ if (!problems.length) {
   }
   mustContain('PostArticle component raw import', postComp, '_legacy/post-article.html?raw');
 
-  mustContain('header fragment keeps GBS2 hero', header, 'class="gbs2-hero"');
-  mustContain('header fragment keeps Gill H1', header, 'Джон Гилл: исторический контекст');
+  mustContain('HeaderHero component keeps GBS2 hero', header, 'class="gbs2-hero"');
+  mustContain('HeaderHero component keeps Gill H1', header, 'Джон Гилл: исторический контекст');
   mustContain('summary/intro section keeps summary card', sectionHtml, 'summary-card');
   mustContain('from-puritans section keeps H2', sectionHtml, 'id="sec-from-puritans-to-baptists"');
   mustContain('particular-vs-general section keeps H2', sectionHtml, 'id="sec-particular-vs-general"');
