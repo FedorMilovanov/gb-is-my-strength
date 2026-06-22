@@ -16,9 +16,20 @@ const PAGE_REL = 'src/pages/articles/dzhon-gill-istoricheskiy-kontekst/index.ast
 const BASE_REL = 'src/components/article-pilots/gill-context';
 const LEGACY_DIR_REL = `${BASE_REL}/_legacy`;
 const SECTION_DIR_REL = `${LEGACY_DIR_REL}/article-sections`;
-const TOTAL_SECTIONS = 12;
-const TOTAL_RAW_SECTIONS = 1;
-const TOTAL_ASTRO_SECTIONS = 11;
+const SECTION_COMPONENTS = [
+  'GillContextSectionSummaryIntro.astro',
+  'GillContextSectionFromPuritansToBaptists.astro',
+  'GillContextSectionParticularVsGeneral.astro',
+  'GillContextSectionGreatEjection.astro',
+  'GillContextSectionClarendon.astro',
+  'GillContextSectionAcademies.astro',
+  'GillContextSectionSaltersHall.astro',
+  'GillContextSectionCoffeeHouse.astro',
+  'GillContextSectionSouthwark.astro',
+  'GillContextSectionBooks.astro',
+  'GillContextSectionConclusion.astro',
+  'GillContextSectionSourcesAndSeriesTail.astro',
+];
 const files = {
   seg0: `${LEGACY_DIR_REL}/body-segment-0.html`,
   seg1: `${LEGACY_DIR_REL}/body-segment-1.html`,
@@ -27,17 +38,6 @@ const files = {
   shell: `${BASE_REL}/GillContextMainShell.astro`,
   headerComp: `${BASE_REL}/GillContextHeaderHero.astro`,
   bodyComp: `${BASE_REL}/GillContextArticleBody.astro`,
-  summaryIntroComp: `${BASE_REL}/GillContextSectionSummaryIntro.astro`,
-  fromPuritansComp: `${BASE_REL}/GillContextSectionFromPuritansToBaptists.astro`,
-  particularComp: `${BASE_REL}/GillContextSectionParticularVsGeneral.astro`,
-  clarendonComp: `${BASE_REL}/GillContextSectionClarendon.astro`,
-  academiesComp: `${BASE_REL}/GillContextSectionAcademies.astro`,
-  greatEjectionComp: `${BASE_REL}/GillContextSectionGreatEjection.astro`,
-  saltersComp: `${BASE_REL}/GillContextSectionSaltersHall.astro`,
-  coffeeComp: `${BASE_REL}/GillContextSectionCoffeeHouse.astro`,
-  southwarkComp: `${BASE_REL}/GillContextSectionSouthwark.astro`,
-  booksComp: `${BASE_REL}/GillContextSectionBooks.astro`,
-  conclusionComp: `${BASE_REL}/GillContextSectionConclusion.astro`,
   postComp: `${BASE_REL}/GillContextPostArticle.astro`,
 };
 
@@ -68,8 +68,6 @@ function bodyInner(html) {
 function normalize(html) {
   return String(html || '')
     .replace(/<!-- Pagefind search data:[\s\S]*?<\/div>\s*/i, '')
-    // Component seams may add or remove formatting whitespace between tags;
-    // visual/DOM parity is unaffected, so canonicalize inter-tag whitespace.
     .replace(/>\s+</g, '><')
     .replace(/\s+/g, ' ')
     .trim();
@@ -91,33 +89,15 @@ function wordCount(html) {
 function h2Count(html) {
   return (String(html || '').match(/<h2\b/gi) || []).length;
 }
-function sectionFiles() {
-  const dir = abs(SECTION_DIR_REL);
-  if (!fs.existsSync(dir)) return [];
-  return fs.readdirSync(dir)
-    .filter((name) => name.endsWith('.html'))
-    .sort()
-    .map((name) => `${SECTION_DIR_REL}/${name}`);
-}
 
 console.log('GILL CONTEXT VISUAL-PARITY SOURCE AUDIT');
 
 mustExist('legacy Gill context route', LEGACY_REL);
 mustExist('Astro Gill context page', PAGE_REL);
 for (const [label, rel] of Object.entries(files)) mustExist(label, rel);
-mustExist('Gill context article section directory', SECTION_DIR_REL);
 mustNotExist('Gill context article-body monolith retired', `${LEGACY_DIR_REL}/article-body.html`);
-mustNotExist('Gill context summary/intro raw fragment promoted', `${SECTION_DIR_REL}/00-summary-and-intro.html`);
-mustNotExist('Gill context puritans-to-baptists raw fragment promoted', `${SECTION_DIR_REL}/01-sec-from-puritans-to-baptists.html`);
-mustNotExist('Gill context particular-vs-general raw fragment promoted', `${SECTION_DIR_REL}/02-sec-particular-vs-general.html`);
-mustNotExist('Gill context Clarendon raw fragment promoted', `${SECTION_DIR_REL}/04-sec-clarendon.html`);
-mustNotExist('Gill context academies raw fragment promoted', `${SECTION_DIR_REL}/05-sec-academies.html`);
-mustNotExist('Gill context Great Ejection raw fragment promoted', `${SECTION_DIR_REL}/03-sec-great-ejection.html`);
-mustNotExist('Gill context Salters Hall raw fragment promoted', `${SECTION_DIR_REL}/06-sec-salters-hall.html`);
-mustNotExist('Gill context coffee-house raw fragment promoted', `${SECTION_DIR_REL}/07-sec-coffee-house.html`);
-mustNotExist('Gill context Southwark raw fragment promoted', `${SECTION_DIR_REL}/08-sec-southwark.html`);
-mustNotExist('Gill context books raw fragment promoted', `${SECTION_DIR_REL}/09-sec-books.html`);
-mustNotExist('Gill context conclusion raw fragment promoted', `${SECTION_DIR_REL}/10-sec-conclusion.html`);
+mustNotExist('Gill context raw section directory retired after full promotion', SECTION_DIR_REL);
+for (const comp of SECTION_COMPONENTS) mustExist(`Gill context promoted section ${comp}`, `${BASE_REL}/${comp}`);
 
 if (!problems.length) {
   const legacy = read(LEGACY_REL);
@@ -126,73 +106,12 @@ if (!problems.length) {
   const headerComp = read(files.headerComp);
   const bodyComp = read(files.bodyComp);
   const postComp = read(files.postComp);
-  const summaryIntroComp = read(files.summaryIntroComp);
-  const fromPuritansComp = read(files.fromPuritansComp);
-  const particularComp = read(files.particularComp);
-  const clarendonComp = read(files.clarendonComp);
-  const academiesComp = read(files.academiesComp);
-  const greatEjectionComp = read(files.greatEjectionComp);
-  const saltersComp = read(files.saltersComp);
-  const coffeeComp = read(files.coffeeComp);
-  const southwarkComp = read(files.southwarkComp);
-  const booksComp = read(files.booksComp);
-  const conclusionComp = read(files.conclusionComp);
   const seg0 = read(files.seg0);
   const seg1 = read(files.seg1);
   const header = read(files.header);
-  const sections = sectionFiles();
-  const sectionName = (rel) => rel.split('/').pop() || rel;
-  const sectionsBetweenSummaryAndFromPuritans = sections.filter((rel) => {
-    const name = sectionName(rel);
-    return name > '00-summary-and-intro.html' && name < '01-sec-from-puritans-to-baptists.html';
-  });
-  const sectionsBetweenFromPuritansAndParticular = sections.filter((rel) => {
-    const name = sectionName(rel);
-    return name > '01-sec-from-puritans-to-baptists.html' && name < '02-sec-particular-vs-general.html';
-  });
-  const sectionsBetweenParticularAndGreatEjection = sections.filter((rel) => {
-    const name = sectionName(rel);
-    return name > '02-sec-particular-vs-general.html' && name < '03-sec-great-ejection.html';
-  });
-  const sectionsBetweenGreatEjectionAndClarendon = sections.filter((rel) => {
-    const name = sectionName(rel);
-    return name > '03-sec-great-ejection.html' && name < '04-sec-clarendon.html';
-  });
-  const sectionsBetweenClarendonAndAcademies = sections.filter((rel) => {
-    const name = sectionName(rel);
-    return name > '04-sec-clarendon.html' && name < '05-sec-academies.html';
-  });
-  const sectionsBetweenAcademiesAndSalters = sections.filter((rel) => {
-    const name = sectionName(rel);
-    return name > '05-sec-academies.html' && name < '06-sec-salters-hall.html';
-  });
-  const sectionsBetweenSaltersAndCoffee = sections.filter((rel) => {
-    const name = sectionName(rel);
-    return name > '06-sec-salters-hall.html' && name < '07-sec-coffee-house.html';
-  });
-  const sectionsBetweenCoffeeAndSouthwark = sections.filter((rel) => {
-    const name = sectionName(rel);
-    return name > '07-sec-coffee-house.html' && name < '08-sec-southwark.html';
-  });
-  const sectionsBetweenSouthwarkAndBooks = sections.filter((rel) => {
-    const name = sectionName(rel);
-    return name > '08-sec-southwark.html' && name < '09-sec-books.html';
-  });
-  const sectionsBetweenBooksAndConclusion = sections.filter((rel) => {
-    const name = sectionName(rel);
-    return name > '09-sec-books.html' && name < '10-sec-conclusion.html';
-  });
-  const sectionsAfterConclusion = sections.filter((rel) => sectionName(rel) > '10-sec-conclusion.html');
-  const articleInner = `${summaryIntroComp}${sectionsBetweenSummaryAndFromPuritans.map(read).join('')}${fromPuritansComp}${sectionsBetweenFromPuritansAndParticular.map(read).join('')}${particularComp}${sectionsBetweenParticularAndGreatEjection.map(read).join('')}${greatEjectionComp}${sectionsBetweenGreatEjectionAndClarendon.map(read).join('')}${clarendonComp}${sectionsBetweenClarendonAndAcademies.map(read).join('')}${academiesComp}${sectionsBetweenAcademiesAndSalters.map(read).join('')}${saltersComp}${sectionsBetweenSaltersAndCoffee.map(read).join('')}${coffeeComp}${sectionsBetweenCoffeeAndSouthwark.map(read).join('')}${southwarkComp}${sectionsBetweenSouthwarkAndBooks.map(read).join('')}${booksComp}${sectionsBetweenBooksAndConclusion.map(read).join('')}${conclusionComp}${sectionsAfterConclusion.map(read).join('')}`;
-  const article = `<article class="article-body">${articleInner}</article>`;
+  const sectionHtml = SECTION_COMPONENTS.map((comp) => read(`${BASE_REL}/${comp}`)).join('');
+  const article = `<article class="article-body">${sectionHtml}</article>`;
   const post = read(files.post);
-
-  if (sections.length === TOTAL_RAW_SECTIONS) ok(`Gill context raw article section count: ${TOTAL_RAW_SECTIONS} (+${TOTAL_ASTRO_SECTIONS} Astro sections = ${TOTAL_SECTIONS})`);
-  else bad(`Gill context raw article section count drift: expected ${TOTAL_RAW_SECTIONS}, got ${sections.length}`);
-  if (sections[0]?.endsWith('/11-sec-sources-and-series-tail.html')) ok('Gill context first/last remaining raw section is sources + series tail');
-  else bad(`Gill context remaining raw section order drift: ${sections[0] || 'none'}`);
-  if (sections.at(-1)?.endsWith('/11-sec-sources-and-series-tail.html')) ok('Gill context last raw section is sources + series tail');
-  else bad(`Gill context last raw section order drift: ${sections.at(-1) || 'none'}`);
 
   for (const marker of [
     'class="gbs-world"',
@@ -226,48 +145,28 @@ if (!problems.length) {
   mustContain('Main shell uses post article component', shell, 'GillContextPostArticle');
   mustContain('HeaderHero component raw import', headerComp, '_legacy/header-hero.html?raw');
   mustContain('ArticleBody component owns article wrapper', bodyComp, '<article class="article-body">');
-  mustContain('ArticleBody component uses ordered section glob', bodyComp, 'article-sections/*.html');
-  mustContain('ArticleBody component imports promoted summary/intro', bodyComp, 'GillContextSectionSummaryIntro');
-  mustContain('ArticleBody component imports promoted puritans-to-baptists', bodyComp, 'GillContextSectionFromPuritansToBaptists');
-  mustContain('ArticleBody component imports promoted particular-vs-general', bodyComp, 'GillContextSectionParticularVsGeneral');
-  mustContain('ArticleBody component imports promoted Clarendon', bodyComp, 'GillContextSectionClarendon');
-  mustContain('ArticleBody component imports promoted academies', bodyComp, 'GillContextSectionAcademies');
-  mustContain('ArticleBody component imports promoted Great Ejection', bodyComp, 'GillContextSectionGreatEjection');
-  mustContain('ArticleBody component imports promoted Salters Hall', bodyComp, 'GillContextSectionSaltersHall');
-  mustContain('ArticleBody component imports promoted coffee-house', bodyComp, 'GillContextSectionCoffeeHouse');
-  mustContain('ArticleBody component imports promoted Southwark', bodyComp, 'GillContextSectionSouthwark');
-  mustContain('ArticleBody component imports promoted books', bodyComp, 'GillContextSectionBooks');
-  mustContain('ArticleBody component imports promoted conclusion', bodyComp, 'GillContextSectionConclusion');
-  mustNotContain('ArticleBody component no longer imports monolith', bodyComp, 'article-body.html?raw');
+  mustNotContain('ArticleBody component no longer uses raw section glob after full promotion', bodyComp, 'article-sections/*.html');
+  for (const comp of SECTION_COMPONENTS) {
+    mustContain(`ArticleBody imports ${comp}`, bodyComp, comp.replace(/\.astro$/, ''));
+  }
   mustContain('PostArticle component raw import', postComp, '_legacy/post-article.html?raw');
 
   mustContain('header fragment keeps GBS2 hero', header, 'class="gbs2-hero"');
   mustContain('header fragment keeps Gill H1', header, 'Джон Гилл: исторический контекст');
-  mustContain('summary/intro component keeps summary', summaryIntroComp, 'summary-card');
-  mustContain('summary/intro component keeps Whitefield field image', summaryIntroComp, 'whitefield-field');
-  mustContain('puritans-to-baptists component keeps H2', fromPuritansComp, 'id="sec-from-puritans-to-baptists"');
-  mustContain('puritans-to-baptists component keeps timeline table', fromPuritansComp, 'compare-table');
-  mustContain('particular-vs-general component keeps H2', particularComp, 'id="sec-particular-vs-general"');
-  mustContain('particular-vs-general component keeps table', particularComp, 'compare-table');
-  mustContain('Clarendon component keeps H2', clarendonComp, 'id="sec-clarendon"');
-  mustContain('Clarendon component keeps acts image', clarendonComp, 'gill-clarendon-code-acts');
-  mustContain('academies component keeps academies H2', academiesComp, 'id="sec-academies"');
-  mustContain('academies component keeps academy term', academiesComp, 'диссентерских академий');
-  mustContain('Great Ejection component keeps H2', greatEjectionComp, 'id="sec-great-ejection"');
-  mustContain('Great Ejection component keeps figure', greatEjectionComp, 'underground-puritan-meeting');
-  mustContain('Salters Hall component keeps H2', saltersComp, 'id="sec-salters-hall"');
-  mustContain('Salters Hall component keeps table', saltersComp, 'compare-table');
-  mustContain('coffee-house component keeps H2', coffeeComp, 'id="sec-coffee-house"');
-  mustContain('coffee-house component keeps float figure', coffeeComp, 'article-img--vertical float-right');
-  mustContain('Southwark component keeps H2', southwarkComp, 'id="sec-southwark"');
-  mustContain('Southwark component keeps Whitefield image', southwarkComp, 'whitefield-preaching');
-  mustContain('books component keeps books H2', booksComp, 'id="sec-books"');
-  mustContain('books component keeps bookshop image', booksComp, 'gill-bookshop-strip.webp');
-  mustContain('conclusion component keeps conclusion H2', conclusionComp, 'id="sec-conclusion"');
-  mustContain('conclusion component keeps note box', conclusionComp, 'note-box reveal');
-  mustContain('article sections keep summary card', article, 'summary-card');
-  mustContain('article sections keep source section', article, 'sec-sources-context');
-  mustContain('article sections keep Gill next navigation', article, 'gbs2-next');
+  mustContain('summary/intro section keeps summary card', sectionHtml, 'summary-card');
+  mustContain('from-puritans section keeps H2', sectionHtml, 'id="sec-from-puritans-to-baptists"');
+  mustContain('particular-vs-general section keeps H2', sectionHtml, 'id="sec-particular-vs-general"');
+  mustContain('great-ejection section keeps figure', sectionHtml, 'underground-puritan-meeting');
+  mustContain('clarendon section keeps acts image', sectionHtml, 'gill-clarendon-code-acts');
+  mustContain('academies section keeps H2', sectionHtml, 'id="sec-academies"');
+  mustContain('salters section keeps table', sectionHtml, 'id="sec-salters-hall"');
+  mustContain('coffee-house section keeps float figure', sectionHtml, 'article-img--vertical float-right');
+  mustContain('southwark section keeps Whitefield image', sectionHtml, 'whitefield-preaching');
+  mustContain('books section keeps bookshop image', sectionHtml, 'gill-bookshop-strip.webp');
+  mustContain('conclusion section keeps note box', sectionHtml, 'note-box reveal');
+  mustContain('sources/tail section keeps source section', sectionHtml, 'sec-sources-context');
+  mustContain('sources/tail section keeps Gill next navigation', sectionHtml, 'gbs2-next');
+  mustContain('sources/tail section keeps Gill timeline', sectionHtml, 'gbs2-timeline');
   mustContain('post fragment keeps SDG end block', post, 'article-end-sdg-wrap');
   mustContain('body before segment keeps rail', seg0, 'class="gbs2-rail"');
   mustContain('body after segment keeps mobile sheet', seg1, 'class="gbs2-sheet"');
