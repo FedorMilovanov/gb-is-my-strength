@@ -14,6 +14,8 @@
     "fonts:download": "node scripts/download-fonts.js",
     "avif:build": "bash scripts/build-avif.sh",
     "ci:check": "npm run cache-bust && npm run validate:static-publication && npm run workflows:check",
+    "guard:shared-files": "node scripts/guard-shared-files.js",
+    "route:profiles:check": "node scripts/check-route-profiles.js",
     "tokens:check": "node scripts/check-design-tokens.js",
     "visual-audit": "node scripts/visual-audit.js",
     "interactive-audit": "node scripts/interactive-audit.js",

@@ -16,41 +16,87 @@
 
 ---
 
-## Lane Lock Policy — координация параллельных агентов
+## Work Modes — определи режим перед работой
 
-**⚠️ КРИТИЧЕСКИ ВАЖНО: lane lock обязателен для любой работы длиннее 3 минут.**
+Подробная политика: [docs/WORK_MODES.md](docs/WORK_MODES.md) · [docs/LANE_LOCK_POLICY.md](docs/LANE_LOCK_POLICY.md)
 
-Подробная политика: [docs/LANE_LOCK_POLICY.md](docs/LANE_LOCK_POLICY.md)
-
-### Кратко — как работать вдвоём:
+### Work Mode Decision Tree
 
 ```
-1. Перед работой: git fetch && git branch -a | grep lane/
-   Проверить AGENTS.md на активные lanes.
-   Создать branch: git checkout -b lane/my-lane-name
+1. Сколько агентов?
+   → Один → SOLO (main разрешён для Risk 0–1 без shared файлов)
+   → Несколько → MULTI-AGENT (только lane branches, main запрещён)
 
-2. Во время работы: [LANE lane/my-lane-name] в каждом commit message.
-   НЕ трогать shared files без отдельного lane:
-   - data/series.json, data/search-manifest.json
-   - package.json, AGENTS.md, .github/workflows/
-   - src/components/home/**
+2. Что затрагивается?
+   → Docs / контент → Risk 0–1 (легко)
+   → Route components, Astro shells → Risk 2 (нужен lane)
+   → AGENTS.md, package.json, workflows, data, layouts → Risk 3 / HIGH-RISK
 
-3. После завершения: npm run data:consistency && npm run validate:static-publication
-   Merge в main, обновить AGENTS.md, удалить branch.
+3. Lane обязателен если:
+   → MULTI-AGENT режим
+   → Production route refactor
+   → Более 3 файлов
+   → Shared/high-risk файл
+   → Задача называется refactor/migration/stabilization
+   → Есть риск пересечения с другим агентом
+
+Lane НЕ обязателен:
+   → SOLO + docs-only
+   → Один агент + одна текстовая правка
+   → Нет shared/high-risk файлов
 ```
+
+### Режимы работы
+
+| Mode | Когда | main | Lane |
+|------|-------|------|------|
+| **SOLO** | Один агент | ✅ Risk 0–1 | ✅ для Risk 2–3 |
+| **MULTI-AGENT** | >1 агент | ❌ | ✅ всегда |
+| **HIGH-RISK** | Shared/system файлы | ❌ | ✅ обязательно |
+| **EMERGENCY** | Owner hotfix | ✅ | Ретроспектива |
+
+### Кратко — работа в lane:
+
+```
+Перед работой:  git fetch && git branch -a | grep lane/
+Создать branch: git checkout -b lane/my-lane-name
+
+Во время работы: [LANE lane/my-lane-name] в каждом commit message.
+Перед push:     npm run guard:shared-files
+Перед merge:    npm run data:consistency && npm run validate:static-publication
+После:          Merge в main, записать результат в docs/refactor-2026/lanes/<lane>.md
+                НЕ редактировать AGENTS.md после каждого lane (только интегратор)
+                Удалить branch: git branch -d lane/my-lane-name
+```
+
+### Shared / High-Risk файлы (без lane — ❌)
+
+```
+AGENTS.md, README.md, package.json, package-lock.json
+.github/workflows/** (любой)
+data/series.json, data/search-manifest.json, data/public-content-baseline.json
+src/layouts/**, css/site.css, js/site.js, js/search.js, sw.js
+scripts/guard-shared-files.js, scripts/cache-bust.js, scripts/copy-legacy-to-dist.js
+scripts/check-data-consistency.js, scripts/audit-pro.js, scripts/visual-parity-screenshots.js
+scripts/check-workflows.js
+karty/_engine/**, karty/ishod/**, karty/avraam/**
+```
+
+**Всегда разрешено:** docs/, reports/, audit/, sitemap.xml, robots.txt, CNAME
 
 ### Что нельзя делать:
 
 - ❌ Работать в одном route без lane declaration
 - ❌ Одновременно менять data/series.json двум агентам
-- ❌ Перезаписывать _legacy файлы чужого route
-- ❌ Игнорировать活跃ный аудит документ (`docs/refactor-2026/REFRACTOR_AUDIT_LIVING.md`)
-- ❌ Пушить без проверки `npm run data:consistency`
+- ❌ Перезаписывать _legacy файлы чужого route без координации
+- ❌ Игнорировать активный аудит документ (`docs/refactor-2026/REFRACTOR_AUDIT_LIVING.md`)
+- ❌ Пушить без `npm run guard:shared-files` и `npm run data:consistency`
+- ❌ Обычному агенту редактировать AGENTS.md после своего lane
 
 ### Если два агента хотят один route:
 
-Тот кто начал позже — либо берёт под-lane, либо ждёт завершения первого.
-Пример: Agent A → `lane/gill-spravochnik`, Agent B → `lane/gill-spravochnik-body` (sub-lane).
+Тот кто начал позже — либо берёт sub-lane, либо ждёт завершения первого.
+Пример: Agent A → `lane/gill-spravochnik`, Agent B → `lane/gill-spravochnik-body`
 
 | **AGENTS-r294** | 2026-06-22 | **AUDIT COMPLETE: all P0/P2 items closed, CI fully recovered.** 20-antisovetov readTime canonical=67 мин (40→67 fixed in article and root index). ci:check order synced to deploy workflow (cache-bust→validate). P2-29 Dist Strangler Dry Run already present in notify-on-failure.yml (verified in check-workflows.js). Living audit registry `docs/refactor-2026/REFRACTOR_AUDIT_LIVING.md` now marks all session items as closed. See lane lock policy below before starting any new refactor work. |
 
