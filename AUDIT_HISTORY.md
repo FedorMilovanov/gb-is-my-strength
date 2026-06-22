@@ -1,7 +1,30 @@
 # Audit History — gospod-bog.ru
 
 > All audit changelogs consolidated into one file.
-> Last updated: 2026-06-10
+> Last updated: 2026-06-22
+
+---
+
+## v71 — Home stale readtimes fixed + CI gate hardening (2026-06-22)
+
+### What was improved:
+
+- **Home source-of-truth hotfix:** `src/components/home/_legacy/publications.html` updated — Gill I 21→28 мин, Герменевтика 35→50 мин. `src/components/home/_legacy/refutations.html` updated — Код да Винчи 22→30 мин. These were the Astro build source that was overwriting the correct root `index.html` values via `copy-legacy-to-dist.js` skip-on-existing behavior.
+- **Data consistency guard:** `scripts/check-data-consistency.js` extended with section 0c — `readTime` vs `readingTime` alias-conflict guard. Catches entries (like karty-avraam) where both fields exist with different values.
+- **karty-avraam conflict resolved:** `data/search-manifest.json` — removed `readingTime: 15`, kept `readTime: 5` as canonical (interactive map, not long article).
+- **Visual Parity Guard CI fix:** `scripts/visual-parity-screenshots.js` — `reports/visual-parity/` directory now created BEFORE async body (critical fix for chromium launch failure scenarios). Added `writeSummary()` helper for always-writing `summary.json`. Added Chromium launch try/catch with diagnostic logging and sentinel `failed=-1`. Retry loop now defensive on mkdirSync.
+- **CI issues closed:** Issues #10, #9, #7, #8, #6 all closed with recovery comments.
+- **Live audit doc created:** `docs/refactor-2026/REFRACTOR_AUDIT_LIVING.md` — single-source audit registry replacing parallel audit documents.
+
+### What remains open:
+
+- P0: "20 антисоветов" article — 40 мин (frontmatter) vs 67 мин (series.json) — canonical choice needed.
+
+### Verified:
+
+- `grep -n "21 мин\|35 мин\|22 мин" src/components/home/_legacy/` → ✅ no stale hits
+- `grep -n "readTime.*readingTime\|readingTime.*readTime" data/search-manifest.json` → ✅ no conflicts
+- `scripts/visual-parity-screenshots.js` — has `writeSummary()` and `OUT_DIR` before async body
 
 ---
 
