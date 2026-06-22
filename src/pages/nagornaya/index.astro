@@ -1,10 +1,16 @@
 ---
 /**
- * /nagornaya/ РЕФАКТОРИНГ 5.0 Phase 6 wave 7 (AGENTS-r255) native pilot.
+ * /nagornaya/ — РЕФАКТОРИНГ 6.0 Phase 1: native pilot landing page.
+ *
+ * 100% Astro-owned page structure for index landing.
+ * Uses shared Nagornaya components for chrome, main content, and footer.
  */
-import { loadLegacyFullDocument } from "@/utils/legacyFullDocument";
-import NagornayaPageMain from "@/components/nagornaya/NagornayaPageMain.astro";
-const { headHtml, bodyAttributes } = loadLegacyFullDocument("nagornaya/index.html");
+import { loadLegacyFullDocument } from '@/utils/legacyFullDocument';
+import NagornayaIndexPageChrome from '@/components/nagornaya/index/NagornayaIndexPageChrome.astro';
+import NagornayaIndexMain from '@/components/nagornaya/index/NagornayaIndexMain.astro';
+import NagornayaIndexPageFooter from '@/components/nagornaya/index/NagornayaIndexPageFooter.astro';
+
+const { headHtml, bodyAttributes } = loadLegacyFullDocument('nagornaya/index.html');
 ---
 <!DOCTYPE html>
 <html lang="ru">
@@ -12,6 +18,11 @@ const { headHtml, bodyAttributes } = loadLegacyFullDocument("nagornaya/index.htm
     <Fragment set:html={headHtml} />
   </head>
   <body {...bodyAttributes}>
-    <NagornayaPageMain slug="index" />
+    <div class="sr-only" data-pagefind-body style="position:absolute;left:-9999px;top:auto;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);clip-path:inset(50%);white-space:nowrap">
+      Страница проекта Господь Бог — Сила Моя. Раздел: nagornaya.
+    </div>
+    <NagornayaIndexPageChrome />
+    <NagornayaIndexMain />
+    <NagornayaIndexPageFooter />
   </body>
 </html>

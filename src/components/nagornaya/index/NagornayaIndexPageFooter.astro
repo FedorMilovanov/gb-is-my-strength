@@ -1,0 +1,33 @@
+---
+/**
+ * NagornayaIndexPageFooter — Phase 1: body-segment-1 Astro component.
+ * Replaces raw ?raw import for /nagornaya/ index landing.
+ * DOM/classes/IDs are byte-identical to the legacy HTML so site.js
+ * selectors and CSS rules continue to match.
+ */
+---
+
+
+<!-- .tt tooltips handled by js/nagornaya-mobile-toc.js?v=f25219b0 -->
+
+
+<!-- mobile menu handled by js/nagornaya-mobile-toc.js?v=f25219b0 module B -->
+
+<script is:inline src="../js/nagornaya-mobile-toc.js?v=f25219b0" defer></script>
+<script is:inline>
+window.SITE_CONFIG = {
+  version: 1778943682,
+  site: { id: 'gb-strength', name: 'Господь Бог — Сила Моя', baseUrl: 'https://gospod-bog.ru', locale: 'ru-RU', themeStorageKey: 'theme', debug: false },
+  page: { type: 'series', id: 'nagornaya', title: 'Нагорная проповедь — полная серия' },
+  features: { themeToggle: { enabled: true }, bookmarks: { enabled: false }, homepageResume: { enabled: false } }
+};
+</script>
+<script is:inline src="/js/site-utils.js?v=897afa55"></script>
+    <script is:inline src="/js/scroll-perf.js?v=454d6f7b"></script>
+    <script is:inline src="../js/site.js?v=fed3ec3b" defer></script>
+<script is:inline src="../js/sw-register.js?v=8a077d35" defer></script>
+<script is:inline src="../js/search.js?v=c9d65577" defer></script>
+<script is:inline src="../js/bookmark-engine.js?v=c5e0bf10" defer></script>
+
+<!-- font-size handled by nagornaya-mobile-toc.js module D -->
+
