@@ -2065,6 +2065,15 @@ const NOINDEX_ALLOWLIST = new Set([
   'google7e02f9855e02b89a.html',
   'yandex_42bc0d54a1ca4952.html',
   'yandex_d8876d66da1b4592.html',
+  // Temporary map placeholders: intentionally public URL, but not indexable/search-promoted until visual QA.
+  'karty/early-church/index.html',
+  'karty/maccabim/index.html',
+  'karty/melachim/index.html',
+  'karty/pavel/index.html',
+  'karty/revelation/index.html',
+  'karty/shoftim/index.html',
+  'karty/shvatim/index.html',
+  'karty/yeshua/index.html',
 ]);
 (function noindexAllowlistGuard() {
   const files = walk(ROOT).filter(f => f.endsWith('.html'));

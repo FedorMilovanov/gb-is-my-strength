@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updated": "2026-06-20T08:17:50.065Z",
+  "updated": "2026-06-22T00:00:00.000Z",
   "note": "Migration baseline: public indexable HTML pages. Update intentionally before a platform migration only after review.",
   "pages": [
     {
@@ -200,67 +200,11 @@
       "words": 594
     },
     {
-      "file": "karty/early-church/index.html",
-      "url": "https://gospod-bog.ru/karty/early-church/",
-      "title": "Ранняя Церковь — временно на визуальном аудите | Господь Бог — Сила Моя",
-      "h1": "Ранняя Церковь",
-      "words": 57
-    },
-    {
       "file": "karty/ishod/index.html",
       "url": "https://gospod-bog.ru/karty/ishod/",
       "title": "Исход из Египта — временно на визуальном аудите | Господь Бог — Сила Моя",
       "h1": "Исход из Египта",
       "words": 58
-    },
-    {
-      "file": "karty/maccabim/index.html",
-      "url": "https://gospod-bog.ru/karty/maccabim/",
-      "title": "Межзаветный период — временно на визуальном аудите | Господь Бог — Сила Моя",
-      "h1": "Межзаветный период",
-      "words": 57
-    },
-    {
-      "file": "karty/melachim/index.html",
-      "url": "https://gospod-bog.ru/karty/melachim/",
-      "title": "Царства Израиля и Иуды — временно на визуальном аудите | Господь Бог — Сила Моя",
-      "h1": "Царства Израиля и Иуды",
-      "words": 58
-    },
-    {
-      "file": "karty/pavel/index.html",
-      "url": "https://gospod-bog.ru/karty/pavel/",
-      "title": "Путешествия Павла — временно на визуальном аудите | Господь Бог — Сила Моя",
-      "h1": "Путешествия Павла",
-      "words": 57
-    },
-    {
-      "file": "karty/revelation/index.html",
-      "url": "https://gospod-bog.ru/karty/revelation/",
-      "title": "7 церквей Откровения — временно на визуальном аудите | Господь Бог — Сила Моя",
-      "h1": "7 церквей Откровения",
-      "words": 57
-    },
-    {
-      "file": "karty/shoftim/index.html",
-      "url": "https://gospod-bog.ru/karty/shoftim/",
-      "title": "Эпоха Судей — временно на визуальном аудите | Господь Бог — Сила Моя",
-      "h1": "Эпоха Судей",
-      "words": 57
-    },
-    {
-      "file": "karty/shvatim/index.html",
-      "url": "https://gospod-bog.ru/karty/shvatim/",
-      "title": "12 колен Израиля — временно на визуальном аудите | Господь Бог — Сила Моя",
-      "h1": "12 колен Израиля",
-      "words": 58
-    },
-    {
-      "file": "karty/yeshua/index.html",
-      "url": "https://gospod-bog.ru/karty/yeshua/",
-      "title": "Жизнь Христа — временно на визуальном аудите | Господь Бог — Сила Моя",
-      "h1": "Жизнь Христа",
-      "words": 57
     },
     {
       "file": "konfessii/index.html",

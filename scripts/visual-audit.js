@@ -274,7 +274,7 @@ async function auditPage(browser, urlPath, vp) {
       
       // 3. bio-cover on gill chast-1 (only check if on that page)
       if (location.pathname.includes('dzhon-gill-chast-1')) {
-        out.bioCoverMissing = !document.querySelector('.bio-cover');
+        out.bioCoverMissing = !document.querySelector('.bio-cover, .gbs2-current-cover, .gbs2-mobile-head img');
       }
 
       return out;
@@ -379,6 +379,20 @@ async function auditPage(browser, urlPath, vp) {
 
 (async () => {
   console.log(`Launching browser for ${URLS.length} pages × ${VIEWPORTS.length} viewports`);
+  try {
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), 3000);
+    const resp = await fetch(BASE + '/', { signal: controller.signal });
+    clearTimeout(timer);
+    if (!resp || !resp.ok) {
+      console.error(`❌ Visual audit base is not serving OK: ${BASE}/ → ${resp && resp.status}`);
+      process.exit(1);
+    }
+  } catch (e) {
+    console.error(`❌ Visual audit server is not reachable at ${BASE}. Start a static server first (for example: python3 -m http.server 8080 --bind 127.0.0.1 -d dist).`);
+    console.error(`   ${e && e.message ? e.message : e}`);
+    process.exit(1);
+  }
   const browser = await chromium.launch({
     args: ['--no-sandbox', '--disable-gpu', '--disable-dev-shm-usage'],
   });
@@ -402,7 +416,7 @@ async function auditPage(browser, urlPath, vp) {
   });
   const suppressed = {};
   Object.entries(byKind).forEach(([k, n]) => {
-    if (n / totalCombos > 0.6) suppressed[k] = n;
+    if (k !== 'crash' && n / totalCombos > 0.6) suppressed[k] = n;
   });
   const filtered = bugs.filter((b) => !suppressed[b.kind]);
 
@@ -411,7 +425,7 @@ async function auditPage(browser, urlPath, vp) {
     stats,
     totals: { rawBugs: bugs.length, filteredBugs: filtered.length, suppressedKinds: suppressed },
     bugs: filtered.sort((a, b) => {
-      const sev = { HIGH: 0, MEDIUM: 1, LOW: 2 };
+      const sev = { CRITICAL: 0, HIGH: 1, MEDIUM: 2, LOW: 3 };
       return sev[a.severity] - sev[b.severity] || a.page.localeCompare(b.page);
     }),
   };
@@ -432,6 +446,11 @@ async function auditPage(browser, urlPath, vp) {
   console.log('Suppressed kinds: ', JSON.stringify(suppressed));
   console.log('Report:           visual-audit-report.json');
   console.log('Screenshots dir:  shots/');
+  const blocking = filtered.filter((b) => b.severity === 'CRITICAL' || b.severity === 'HIGH');
+  if (blocking.length) {
+    console.error(`❌ Visual audit found ${blocking.length} blocking HIGH/CRITICAL bug(s).`);
+    process.exitCode = 1;
+  }
 })().catch((e) => {
   console.error('FATAL', e);
   process.exit(1);

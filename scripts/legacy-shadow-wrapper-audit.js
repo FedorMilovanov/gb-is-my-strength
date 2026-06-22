@@ -16,12 +16,12 @@ const DIST = path.join(ROOT, 'dist');
 const NO_BUILD = process.argv.includes('--no-build');
 const ROUTES = [
   { rel: 'map/index.html', url: 'https://gospod-bog.ru/map/', marker: 'class="hdr', ratio: 0.95 },
-  { rel: 'karty/avraam/index.html', url: 'https://gospod-bog.ru/karty/avraam/', marker: 'astro-avraam-shadow', ratio: 0.95 },
-  { rel: 'nagornaya/chast-1/index.html', url: 'https://gospod-bog.ru/nagornaya/chast-1/', marker: 'astro-nagornaya-shadow', ratio: 0.97 },
-  { rel: 'nagornaya/chast-2/index.html', url: 'https://gospod-bog.ru/nagornaya/chast-2/', marker: 'astro-nagornaya-shadow', ratio: 0.97 },
-  { rel: 'nagornaya/chast-3/index.html', url: 'https://gospod-bog.ru/nagornaya/chast-3/', marker: 'astro-nagornaya-shadow', ratio: 0.97 },
-  { rel: 'nagornaya/chast-4/index.html', url: 'https://gospod-bog.ru/nagornaya/chast-4/', marker: 'astro-nagornaya-shadow', ratio: 0.97 },
-  { rel: 'nagornaya/chast-5/index.html', url: 'https://gospod-bog.ru/nagornaya/chast-5/', marker: 'astro-nagornaya-shadow', ratio: 0.97 },
+  { rel: 'karty/avraam/index.html', url: 'https://gospod-bog.ru/karty/avraam/', marker: 'id="stage"', ratio: 0.95 },
+  { rel: 'nagornaya/chast-1/index.html', url: 'https://gospod-bog.ru/nagornaya/chast-1/', marker: 'nagornaya-page', ratio: 0.97 },
+  { rel: 'nagornaya/chast-2/index.html', url: 'https://gospod-bog.ru/nagornaya/chast-2/', marker: 'nagornaya-page', ratio: 0.97 },
+  { rel: 'nagornaya/chast-3/index.html', url: 'https://gospod-bog.ru/nagornaya/chast-3/', marker: 'nagornaya-page', ratio: 0.97 },
+  { rel: 'nagornaya/chast-4/index.html', url: 'https://gospod-bog.ru/nagornaya/chast-4/', marker: 'nagornaya-page', ratio: 0.97 },
+  { rel: 'nagornaya/chast-5/index.html', url: 'https://gospod-bog.ru/nagornaya/chast-5/', marker: 'nagornaya-page', ratio: 0.97 },
 ];
 
 const problems = [];

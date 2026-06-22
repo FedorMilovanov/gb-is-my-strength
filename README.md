@@ -3,7 +3,7 @@
 Архитектурная и редакционная документация сайта с материалами для серьёзного изучения Писания:
 экзегеза, богословие, апологетика, переводы.
 
-**Версия документа:** v8 · 2026-06-20 · refactoring 5.0 / dist-as-production (shadow-wrap parity)
+**Версия документа:** v9 · 2026-06-22 · refactoring 6.0 hardening / dist-as-production
 **Прод:** https://gospod-bog.ru · GitHub Pages из `main`, artifact: Astro/strangler `dist/`
 
 > Этот README — для **владельца, редакторов и контент-менеджеров.**
@@ -48,9 +48,9 @@
 | Направление | Статус |
 |---|---|
 | Root→dist deploy switch | **Выполнен (с shadow-wrap parity).** Pages artifact = `dist/`; Pages в режиме `build_type: workflow`. Все landing/series/catalog pages используют `loadLegacyFullDocument` full-document shadow — dist emit-ит ровно тот же legacy HTML, сохраняя 100% visual parity. |
-| Публичный URL-контракт | **51 public pages**, root/dist contract compare green. |
+| Публичный URL-контракт | **43 indexable public baseline pages** after removing temporary map placeholders from public search/indexing surfaces; root/dist contract compare green. |
 | Astro ownership | Все публичные baseline routes объявлены в `migration/page-ownership.json`; статус Astro routes — `production-dist` (native MDX/articles) или `shadow-dist` (full-document parity wrappers). |
-| Pagefind | Строится в `dist/pagefind` перед деплоем (47 pages, 16046 words). |
+| Pagefind | Строится в `dist/pagefind` перед деплоем. Temporary map placeholders are excluded by `data-pagefind-ignore` / lack of `data-pagefind-body`. |
 | CSS parity | Blocking gate: `npm run dist:css-parity` — 51/51 страниц несут project CSS. |
 | Source links | Weekly/manual workflow строит production-like `dist` и проверяет именно его, не stale legacy root. |
 | SW readiness | `sw:dist:audit:deploy-switch` green: CACHE_VERSION bumped, Pagefind в precache, .nojekyll в dist. |
@@ -68,7 +68,7 @@
 | Файл / место | Назначение |
 |---|---|
 | `.github/workflows/indexnow.yml` | При каждом push в `main` уведомляет Яндекс и Bing об изменённых страницах |
-| `.github/workflows/notify-on-failure.yml` | При падении `deploy.yml` или `indexnow.yml` открывает GitHub Issue с тегом `ci-failure` |
+| `.github/workflows/notify-on-failure.yml` | При падении deploy/indexnow/source-links/interactive/visual-parity/Dist Dry Run открывает GitHub Issue с тегом `ci-failure` |
 | `sitemap.xml` | Все страницы. `lastmod` — только ISO8601 с `+03:00` (МСК). |
 | `feed.xml` | RSS-лента. Новые статьи — в начало `<channel>`, плюс обновить `<lastBuildDate>`. |
 | `robots.txt` | Управление ботами, включая AI-боты (GPTBot, ClaudeBot, Google-Extended). |

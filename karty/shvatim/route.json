@@ -751,5 +751,12 @@
       "manasseh_e"
     ],
     "description": "Звёздная сеть соединяет уделы колен, подчёркивая, что это богословская схема наследия, а не современная политическая карта."
+  },
+  "publication": {
+    "status": "temporary-placeholder",
+    "indexable": false,
+    "sitemap": false,
+    "llms": false,
+    "pagefind": false
   }
 }

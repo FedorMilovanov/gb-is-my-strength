@@ -141,6 +141,26 @@ for (const item of searchItems) {
   }
 }
 
+
+
+// 1b. Command-palette hardcoded fallback recommendations must not drift from
+// search-manifest. They are used only when manifest loading fails, but stale
+// values still leak into UI during outages/offline states.
+{
+  const searchJs = exists('js/search.js') ? read('js/search.js') : '';
+  const fallbackRe = /url:"([^"]+)"[\s\S]{0,700}?readTime:(\d+)/g;
+  let m;
+  while ((m = fallbackRe.exec(searchJs)) !== null) {
+    const url = m[1];
+    const readTime = Number(m[2]);
+    const item = searchByUrl.get(url);
+    if (!item) continue;
+    if (Number.isFinite(item.readTime) && readTime !== item.readTime) {
+      fail('search-js-fallback-read-time-drift', `${url}: js=${readTime}, manifest=${item.readTime}`);
+    }
+  }
+}
+
 // 2. Series part consistency against matching HTML/search item.
 for (const [key, info] of Object.entries(series)) {
   const base = info.baseUrl || '/';

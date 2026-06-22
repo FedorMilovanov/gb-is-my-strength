@@ -122,6 +122,8 @@ jobs:
           echo "## Pixel-diff summary" >> "$GITHUB_STEP_SUMMARY"
           echo "" >> "$GITHUB_STEP_SUMMARY"
           if [ -f reports/visual-parity/summary.json ]; then
+            echo "| Route | Desktop diff | Mobile diff |" >> "$GITHUB_STEP_SUMMARY"
+            echo "|---|---:|---:|" >> "$GITHUB_STEP_SUMMARY"
             node -e "
               const fs = require('fs');
               const s = JSON.parse(fs.readFileSync('reports/visual-parity/summary.json', 'utf8'));
@@ -129,10 +131,9 @@ jobs:
                 const d = r.viewports.desktop;
                 const m = r.viewports.mobile;
                 const pct = (n) => n === 0 ? '0.000' : n.toFixed(3);
-                console.log(\`| \${r.route} | desktop \${pct(d?.diffPct ?? 0)}% | mobile \${pct(m?.diffPct ?? 0)}% |\`);
-                console.log(\`| \${r.route} | desktop \${pct(d?.diffPct ?? 0)}% | mobile \${pct(m?.diffPct ?? 0)}% | >> $GITHUB_STEP_SUMMARY);
+                console.log(\`| \${r.route} | \${pct(d?.diffPct ?? 0)}% | \${pct(m?.diffPct ?? 0)}% |\`);
               });
-            "
+            " >> "$GITHUB_STEP_SUMMARY"
           else
             echo "(no summary.json produced — check logs above)" >> "$GITHUB_STEP_SUMMARY"
           fi
