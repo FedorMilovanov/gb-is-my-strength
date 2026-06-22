@@ -121,6 +121,15 @@ const series = JSON.parse(read('data/series.json'));
 
 // 0b. Series data must be reviewable and free of embedded newlines in labels.
 for (const [key, info] of Object.entries(series)) {
+// 0c. Guard against readTime vs readingTime alias conflict in search-manifest.
+// Both field names exist in codebase. Different values = publication defect.
+{
+  for (const item of searchItems) {
+    if (Number.isFinite(item.readTime) && Number.isFinite(item.readingTime) && item.readTime !== item.readingTime) {
+      fail('search-item-readtime-alias-drift', `${item.id || item.url}: readTime=${item.readTime}, readingTime=${item.readingTime}`);
+    }
+  }
+}
   if (!info.title) fail('series-missing-title', key);
   if (/[\r\n\t]/.test(info.title || '')) fail('series-title-control-char', key);
   for (const part of info.parts || []) {

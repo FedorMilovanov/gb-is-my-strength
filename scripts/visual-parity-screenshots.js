@@ -9,14 +9,14 @@
  *   the route MUST pass real screenshot diff at desktop + mobile.
  *
  * What it does:
- *   1. Spawns two static HTTP servers — one for the legacy artifact (default `.`)
- *      and one for the dist artifact (default `dist/`).
- *   2. For every requested route renders desktop (1280×900) + mobile (390×844)
- *      screenshots in both servers using Playwright.
- *   3. Diffs each pair via pixelmatch with a configurable diffPct threshold
- *      (default 1%). Above threshold => hard fail.
- *   4. Writes screenshots + diff PNGs to `reports/visual-parity/<route>/...`.
- *   5. Emits `reports/visual-parity/summary.json` for downstream tools.
+ *  1. Spawns two static HTTP servers — one for the legacy artifact (default `.`)
+ *     and one for the dist artifact (default `dist/`).
+ *  2. For every requested route renders desktop (1280×900) + mobile (390×844)
+ *     screenshots in both servers using Playwright.
+ *  3. Diffs each pair via pixelmatch with a configurable diffPct threshold
+ *     (default 1%). Above threshold => hard fail.
+ *  4. Writes screenshots + diff PNGs to `reports/visual-parity/<route>/...`.
+ *  5. Emits `reports/visual-parity/summary.json` for downstream tools.
  *
  * Usage:
  *   node scripts/visual-parity-screenshots.js                  # all baseline routes
@@ -161,14 +161,10 @@ async function screenshot(page, baseUrl, route, viewport, outFile) {
       .lazyload, [data-lazy], img[loading="lazy"] { animation: none !important; }
     `,
   }).catch(() => {});
-  // Force eager loading for ALL images and decode them — otherwise lazy-loaded
-  // article thumbnails produce false-positive diffs (картинка успела
-  // догрузиться в одном serve и не успела в другом).
+  // Force eager loading for ALL images and decode them
   await page.evaluate(async () => {
     const imgs = Array.from(document.querySelectorAll('img'));
     imgs.forEach((img) => { try { img.loading = 'eager'; } catch {} });
-    // trigger any data-src style lazy loaders (project does not use them, but
-    // belt-and-suspenders).
     imgs.forEach((img) => {
       const ds = img.getAttribute('data-src');
       if (ds && !img.src) img.src = ds;
@@ -185,8 +181,6 @@ async function screenshot(page, baseUrl, route, viewport, outFile) {
           })),
     );
   }).catch(() => {});
-  // Scroll bottom→top to force any IntersectionObserver based lazy hydration,
-  // then settle.
   await page.evaluate(async () => {
     const h = document.documentElement.scrollHeight;
     for (let y = 0; y <= h; y += 600) { window.scrollTo(0, y); await new Promise((r) => setTimeout(r, 30)); }
@@ -194,15 +188,13 @@ async function screenshot(page, baseUrl, route, viewport, outFile) {
     await new Promise((r) => setTimeout(r, 200));
   }).catch(() => {});
   await page.waitForLoadState('networkidle', { timeout: 10_000 }).catch(() => {});
-  // Hard wait until every <img> reports complete + naturalWidth > 0. Without
-  // this guard /biografii/ desktop occasionally flaked at 5% because the big
-  // <picture class="bio-cover"> sometimes did not finish decoding before the
-  // screenshot fired even though networkidle had resolved.
   await page.waitForFunction(() => {
     const imgs = Array.from(document.querySelectorAll('img'));
     return imgs.every((img) => img.complete && (img.naturalWidth > 0 || img.dataset.brokenOk === '1'));
   }, { timeout: 15_000 }).catch(() => {});
   await page.waitForTimeout(400);
+  // Always ensure outFile dir exists (defensive for retry)
+  fs.mkdirSync(path.dirname(outFile), { recursive: true });
   await page.screenshot({ path: outFile, fullPage: FULL_PAGE });
 }
 
@@ -211,7 +203,6 @@ function diffPng(aFile, bFile, diffFile) {
   const b = PNG.sync.read(fs.readFileSync(bFile));
   const width = Math.min(a.width, b.width);
   const height = Math.min(a.height, b.height);
-  // pad / crop to common size
   function crop(img) {
     if (img.width === width && img.height === height) return img;
     const out = new PNG({ width, height });
@@ -236,9 +227,34 @@ function diffPng(aFile, bFile, diffFile) {
   };
 }
 
+// ---------- ensure summary written even on fatal ----------
+function writeSummary(OUT_DIR, summary) {
+  try {
+    fs.mkdirSync(OUT_DIR, { recursive: true });
+    fs.writeFileSync(path.join(OUT_DIR, 'summary.json'), JSON.stringify(summary, null, 2));
+  } catch (_) {}
+}
+
+// ---------- main ----------
 (async () => {
-  if (!fs.existsSync(LEGACY_DIR)) { console.error(`❌ legacy dir missing: ${LEGACY_DIR}`); process.exit(2); }
-  if (!fs.existsSync(DIST_DIR)) { console.error(`❌ dist dir missing: ${DIST_DIR}`); process.exit(2); }
+  console.log(`[visual-parity] Starting at ${new Date().toISOString()}`);
+  console.log(`[visual-parity] Node ${process.version}, cwd ${process.cwd()}`);
+  console.log(`[visual-parity] PLAYWRIGHT_BROWSERS_PATH=${process.env.PLAYWRIGHT_BROWSERS_PATH}`);
+
+  if (!fs.existsSync(LEGACY_DIR)) {
+    const msg = `❌ legacy dir missing: ${LEGACY_DIR}`;
+    console.error(msg);
+    writeSummary(OUT_DIR, { error: msg, startedAt: new Date().toISOString(), routes: [] });
+    process.exit(2);
+  }
+  if (!fs.existsSync(DIST_DIR)) {
+    const msg = `❌ dist dir missing: ${DIST_DIR}`;
+    console.error(msg);
+    writeSummary(OUT_DIR, { error: msg, startedAt: new Date().toISOString(), routes: [] });
+    process.exit(2);
+  }
+
+  // CRITICAL: create out dir BEFORE anything else so CI upload always finds it
   fs.mkdirSync(OUT_DIR, { recursive: true });
 
   if (!QUIET) {
@@ -249,17 +265,44 @@ function diffPng(aFile, bFile, diffFile) {
     console.log(`threshold: ${THRESHOLD_PCT}% diff per viewport`);
   }
 
-  const legacyServer = await createServer(LEGACY_DIR);
-  const distServer = await createServer(DIST_DIR);
-  const legacyUrl = `http://127.0.0.1:${port(legacyServer)}`;
-  const distUrl = `http://127.0.0.1:${port(distServer)}`;
+  let legacyServer, distServer, browser;
+  let chromiumFailed = false;
+  let chromiumError = '';
 
-  const browser = await chromium.launch({ headless: !HEAD });
-  const context = await browser.newContext({ ignoreHTTPSErrors: true });
-  const page = await context.newPage();
+  try {
+    legacyServer = await createServer(LEGACY_DIR);
+    distServer = await createServer(DIST_DIR);
+    const legacyUrl = `http://127.0.0.1:${port(legacyServer)}`;
+    const distUrl = `http://127.0.0.1:${port(distServer)}`;
+
+    console.log('[visual-parity] Launching Chromium...');
+    browser = await chromium.launch({ headless: !HEAD });
+    console.log('[visual-parity] Chromium launched OK');
+  } catch (e) {
+    chromiumFailed = true;
+    chromiumError = e.message || String(e);
+    console.error(`❌ Chromium launch failed: ${chromiumError}`);
+    console.error('[visual-parity] HINT: Run `npx playwright install --with-deps chromium` first.');
+  }
 
   const summary = { startedAt: new Date().toISOString(), threshold: THRESHOLD_PCT, routes: [] };
   let failed = 0;
+
+  if (chromiumFailed) {
+    summary.error = `chromium-launch-failed: ${chromiumError}`;
+    summary.finishedAt = new Date().toISOString();
+    summary.failed = -1; // sentinel: chromium failure, not visual diff
+    writeSummary(OUT_DIR, summary);
+    console.error('❌ Cannot continue without Chromium. Summary written to reports/visual-parity/.');
+    process.exit(2);
+  }
+
+  const context = await browser.newContext({ ignoreHTTPSErrors: true });
+  const page = await context.newPage();
+  const legacyServer2 = legacyServer;
+  const distServer2 = distServer;
+  const legacyUrl = `http://127.0.0.1:${port(legacyServer2)}`;
+  const distUrl = `http://127.0.0.1:${port(distServer2)}`;
 
   for (const route of ROUTES) {
     const slug = routeSlug(route);
@@ -270,12 +313,6 @@ function diffPng(aFile, bFile, diffFile) {
       const legacyFile = path.join(routeDir, `legacy-${vp.name}.png`);
       const distFile = path.join(routeDir, `dist-${vp.name}.png`);
       const diffFile = path.join(routeDir, `diff-${vp.name}.png`);
-      // Retry loop — large eager <img> assets (e.g. /biografii/ bio-cover) can
-      // occasionally fail to decode before the screenshot fires even after
-      // networkidle + img-complete wait. Take up to MAX_ATTEMPTS captures and
-      // record the smallest diff. The retry is what real CI/local owner
-      // workflow needs; it does NOT mask real regressions because a real CSS
-      // bug stays >threshold in all attempts.
       const MAX_ATTEMPTS = 3;
       let best = null; let lastError = null;
       for (let attempt = 1; attempt <= MAX_ATTEMPTS; attempt++) {
@@ -289,8 +326,9 @@ function diffPng(aFile, bFile, diffFile) {
       }
       if (!best) {
         failed++;
-        if (!QUIET) console.log(`❌ ${route} ${vp.name}: ${lastError?.message || 'screenshot failed'}`);
-        routeResult.viewports[vp.name] = { pass: false, error: lastError?.message || 'screenshot failed' };
+        const errMsg = lastError ? `ERROR: ${lastError.message}` : 'screenshot failed';
+        if (!QUIET) console.log(`❌ ${route} ${vp.name}: ${errMsg}`);
+        routeResult.viewports[vp.name] = { pass: false, error: errMsg };
         continue;
       }
       const pass = best.diffPct <= THRESHOLD_PCT;
@@ -305,12 +343,12 @@ function diffPng(aFile, bFile, diffFile) {
     summary.routes.push(routeResult);
   }
 
-  await browser.close();
-  legacyServer.close(); distServer.close();
+  await browser.close().catch(() => {});
+  legacyServer2.close(); distServer2.close();
 
   summary.finishedAt = new Date().toISOString();
   summary.failed = failed;
-  fs.writeFileSync(path.join(OUT_DIR, 'summary.json'), JSON.stringify(summary, null, 2));
+  writeSummary(OUT_DIR, summary);
 
   if (!QUIET) {
     console.log('');
@@ -319,4 +357,8 @@ function diffPng(aFile, bFile, diffFile) {
   }
 
   if (failed > 0 && !WARN_ONLY) process.exit(1);
-})().catch((e) => { console.error('FATAL', e); process.exit(2); });
+})().catch((e) => {
+  console.error('FATAL', e);
+  try { writeSummary(OUT_DIR, { error: String(e), startedAt: new Date().toISOString(), routes: [] }); } catch (_) {}
+  process.exit(2);
+});
