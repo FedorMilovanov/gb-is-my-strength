@@ -13,6 +13,47 @@
 
 | Версия документа | Дата | Состояние |
 |---|---|---|
+
+---
+
+## Lane Lock Policy — координация параллельных агентов
+
+**⚠️ КРИТИЧЕСКИ ВАЖНО: lane lock обязателен для любой работы длиннее 3 минут.**
+
+Подробная политика: [docs/LANE_LOCK_POLICY.md](docs/LANE_LOCK_POLICY.md)
+
+### Кратко — как работать вдвоём:
+
+```
+1. Перед работой: git fetch && git branch -a | grep lane/
+   Проверить AGENTS.md на активные lanes.
+   Создать branch: git checkout -b lane/my-lane-name
+
+2. Во время работы: [LANE lane/my-lane-name] в каждом commit message.
+   НЕ трогать shared files без отдельного lane:
+   - data/series.json, data/search-manifest.json
+   - package.json, AGENTS.md, .github/workflows/
+   - src/components/home/**
+
+3. После завершения: npm run data:consistency && npm run validate:static-publication
+   Merge в main, обновить AGENTS.md, удалить branch.
+```
+
+### Что нельзя делать:
+
+- ❌ Работать в одном route без lane declaration
+- ❌ Одновременно менять data/series.json двум агентам
+- ❌ Перезаписывать _legacy файлы чужого route
+- ❌ Игнорировать活跃ный аудит документ (`docs/refactor-2026/REFRACTOR_AUDIT_LIVING.md`)
+- ❌ Пушить без проверки `npm run data:consistency`
+
+### Если два агента хотят один route:
+
+Тот кто начал позже — либо берёт под-lane, либо ждёт завершения первого.
+Пример: Agent A → `lane/gill-spravochnik`, Agent B → `lane/gill-spravochnik-body` (sub-lane).
+
+| **AGENTS-r294** | 2026-06-22 | **AUDIT COMPLETE: all P0/P2 items closed, CI fully recovered.** 20-antisovetov readTime canonical=67 мин (40→67 fixed in article and root index). ci:check order synced to deploy workflow (cache-bust→validate). P2-29 Dist Strangler Dry Run already present in notify-on-failure.yml (verified in check-workflows.js). Living audit registry `docs/refactor-2026/REFRACTOR_AUDIT_LIVING.md` now marks all session items as closed. See lane lock policy below before starting any new refactor work. |
+
 | **AGENTS-r293** | 2026-06-22 | **AUDIT RECOVERY: home stale readtimes fixed, guards hardened, 5 CI issues closed.** Home `_legacy` fragments synced to canonical values (Gill I 21→28, Hermenevtika 35→50, Kod da Vinci 22→30). `check-data-consistency.js` extended with alias-conflict guard (0c section) + karty-avraam conflict resolved (readingTime=15 removed). `visual-parity-screenshots.js` hardened: OUT_DIR created before async body, writeSummary() helper, Chromium try/catch with sentinel failed=-1. CI issues #10/#9/#7/#8/#6 closed. See `docs/refactor-2026/REFRACTOR_AUDIT_LIVING.md` for active P0 list. Lane lock policy now enforced: declare lane before work, no parallel agents on same route. |
 
 | **AGENTS-r282** | 2026-06-22 | **РЕФАКТОРИНГ 6.0 parallel pilot deepened `/` home again without touching Kod/Gill article lanes.** `HomeMain.astro` no longer depends on raw `about.html` / `quote.html` imports either. The premium home shell now uses hand-authored Astro components `HomeAboutSection`, `HomeQuoteSection`, `HomeAccuracyBlock`, and `HomeFooter`, while only the middle operational sections remain legacy-faithful raw fragments. `home-visual-parity-audit` now guards this richer hybrid componentized-main contract and forbids regression back to those raw imports. |
