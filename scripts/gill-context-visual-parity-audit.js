@@ -15,11 +15,12 @@ const LEGACY_REL = 'articles/dzhon-gill-istoricheskiy-kontekst/index.html';
 const PAGE_REL = 'src/pages/articles/dzhon-gill-istoricheskiy-kontekst/index.astro';
 const BASE_REL = 'src/components/article-pilots/gill-context';
 const LEGACY_DIR_REL = `${BASE_REL}/_legacy`;
+const SECTION_DIR_REL = `${LEGACY_DIR_REL}/article-sections`;
+const TOTAL_SECTIONS = 12;
 const files = {
   seg0: `${LEGACY_DIR_REL}/body-segment-0.html`,
   seg1: `${LEGACY_DIR_REL}/body-segment-1.html`,
   header: `${LEGACY_DIR_REL}/header-hero.html`,
-  body: `${LEGACY_DIR_REL}/article-body.html`,
   post: `${LEGACY_DIR_REL}/post-article.html`,
   shell: `${BASE_REL}/GillContextMainShell.astro`,
   headerComp: `${BASE_REL}/GillContextHeaderHero.astro`,
@@ -35,6 +36,10 @@ function read(rel) { return fs.readFileSync(abs(rel), 'utf8'); }
 function mustExist(label, rel) {
   if (fs.existsSync(abs(rel))) ok(`${label}: ${rel}`);
   else bad(`${label} missing: ${rel}`);
+}
+function mustNotExist(label, rel) {
+  if (!fs.existsSync(abs(rel))) ok(`${label}: ${rel} absent`);
+  else bad(`${label}: ${rel} must be absent`);
 }
 function mustContain(label, text, needle) {
   if (String(text || '').includes(needle)) ok(`${label}: contains ${needle}`);
@@ -73,12 +78,22 @@ function wordCount(html) {
 function h2Count(html) {
   return (String(html || '').match(/<h2\b/gi) || []).length;
 }
+function sectionFiles() {
+  const dir = abs(SECTION_DIR_REL);
+  if (!fs.existsSync(dir)) return [];
+  return fs.readdirSync(dir)
+    .filter((name) => name.endsWith('.html'))
+    .sort()
+    .map((name) => `${SECTION_DIR_REL}/${name}`);
+}
 
 console.log('GILL CONTEXT VISUAL-PARITY SOURCE AUDIT');
 
 mustExist('legacy Gill context route', LEGACY_REL);
 mustExist('Astro Gill context page', PAGE_REL);
 for (const [label, rel] of Object.entries(files)) mustExist(label, rel);
+mustExist('Gill context article section directory', SECTION_DIR_REL);
+mustNotExist('Gill context article-body monolith retired', `${LEGACY_DIR_REL}/article-body.html`);
 
 if (!problems.length) {
   const legacy = read(LEGACY_REL);
@@ -90,8 +105,17 @@ if (!problems.length) {
   const seg0 = read(files.seg0);
   const seg1 = read(files.seg1);
   const header = read(files.header);
-  const article = read(files.body);
+  const sections = sectionFiles();
+  const articleInner = sections.map(read).join('');
+  const article = `<article class="article-body">${articleInner}</article>`;
   const post = read(files.post);
+
+  if (sections.length === TOTAL_SECTIONS) ok(`Gill context article section count: ${TOTAL_SECTIONS}`);
+  else bad(`Gill context article section count drift: expected ${TOTAL_SECTIONS}, got ${sections.length}`);
+  if (sections[0]?.endsWith('/00-summary-and-intro.html')) ok('Gill context first section is summary/intro prelude');
+  else bad(`Gill context first section order drift: ${sections[0] || 'none'}`);
+  if (sections.at(-1)?.endsWith('/11-sec-sources-and-series-tail.html')) ok('Gill context last section is sources + series tail');
+  else bad(`Gill context last section order drift: ${sections.at(-1) || 'none'}`);
 
   for (const marker of [
     'class="gbs-world"',
@@ -124,14 +148,16 @@ if (!problems.length) {
   mustContain('Main shell uses article body component', shell, 'GillContextArticleBody');
   mustContain('Main shell uses post article component', shell, 'GillContextPostArticle');
   mustContain('HeaderHero component raw import', headerComp, '_legacy/header-hero.html?raw');
-  mustContain('ArticleBody component raw import', bodyComp, '_legacy/article-body.html?raw');
+  mustContain('ArticleBody component owns article wrapper', bodyComp, '<article class="article-body">');
+  mustContain('ArticleBody component uses ordered section glob', bodyComp, 'article-sections/*.html');
+  mustNotContain('ArticleBody component no longer imports monolith', bodyComp, 'article-body.html?raw');
   mustContain('PostArticle component raw import', postComp, '_legacy/post-article.html?raw');
 
   mustContain('header fragment keeps GBS2 hero', header, 'class="gbs2-hero"');
   mustContain('header fragment keeps Gill H1', header, 'Джон Гилл: исторический контекст');
-  mustContain('article fragment keeps summary card', article, 'summary-card');
-  mustContain('article fragment keeps source section', article, 'sec-sources-context');
-  mustContain('article fragment keeps Gill next navigation', article, 'gbs2-next');
+  mustContain('article sections keep summary card', article, 'summary-card');
+  mustContain('article sections keep source section', article, 'sec-sources-context');
+  mustContain('article sections keep Gill next navigation', article, 'gbs2-next');
   mustContain('post fragment keeps SDG end block', post, 'article-end-sdg-wrap');
   mustContain('body before segment keeps rail', seg0, 'class="gbs2-rail"');
   mustContain('body after segment keeps mobile sheet', seg1, 'class="gbs2-sheet"');
