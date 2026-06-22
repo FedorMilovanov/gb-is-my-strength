@@ -88,7 +88,8 @@ async function checkSeries(browser) {
     // 2) Astro article series nav for MDX article series (Gill / hard-texts).
     const page = await openPage(browser, url, { width: 1366, height: 850 });
     const state = await page.evaluate(() => ({
-      gbsWorld: !!document.querySelector('.gbs2-world'),
+      gbsWorld: !!document.querySelector('.gbs2-world, .gbs-world') || document.body?.classList.contains('gbs-world'),
+      gbsSeries: document.body?.getAttribute('data-gbs2-series') || '',
       gbsRail: !!document.querySelector('.gbs2-rail'),
       gbsRailVisible: (() => { const r = document.querySelector('.gbs2-rail'); if (!r) return false; const b = r.getBoundingClientRect(); return b.width > 200 && b.height > 400; })(),
       gbsCurrent: !!document.querySelector('.gbs2-part[aria-current="page"], .gbs2-part--current'),
@@ -105,7 +106,9 @@ async function checkSeries(browser) {
       if (!state.gbsRail || !state.gbsRailVisible) push('gbs-rail-not-visible', url, state);
       if (!state.gbsCurrent) push('gbs-no-current-part', url, state);
       if (!state.gbsNext) push('gbs-next-nav-missing', url, state);
-      if (!state.gbsTimeline) push('gbs-timeline-missing', url, state);
+      // Hard-texts GBS pages intentionally use the compact rail without the
+      // chronological timeline used by Gill/Baptisty series.
+      if (!state.gbsTimeline && state.gbsSeries !== 'hard-texts') push('gbs-timeline-missing', url, state);
     } else {
       if (!state.astroArticle) push('astro-series-article-missing', url, state);
       if (!state.astroSeriesNav) push('astro-series-nav-missing', url, state);
@@ -118,7 +121,7 @@ async function checkSeries(browser) {
 
     const mob = await openPage(browser, url, { width: 390, height: 844 });
     const mobState = await mob.evaluate(() => ({
-      gbsWorld: !!document.querySelector('.gbs2-world'),
+      gbsWorld: !!document.querySelector('.gbs2-world, .gbs-world') || document.body?.classList.contains('gbs-world'),
       head: !!document.querySelector('.gbs2-mobile-head'),
       bbar: !!document.querySelector('#gbs2Bbar, .gbs2-bbar'),
       sheet: !!document.querySelector('#gbs2Sheet, .gbs2-sheet'),

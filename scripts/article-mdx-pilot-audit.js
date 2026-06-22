@@ -38,11 +38,17 @@ const MIGRATED_ARTICLES = [
     slug: 'rimlyanam-7-veruyushchiy-ili-neveruyushchiy',
     rel: 'articles/rimlyanam-7-veruyushchiy-ili-neveruyushchiy/index.html',
     canonical: `${SITE}/articles/rimlyanam-7-veruyushchiy-ili-neveruyushchiy/`,
+    visualShadow: true,
+    visualMarkers: ['gbs-world', 'data-gbs2-series="hard-texts"', 'gbs2-rail'],
+    bodyClass: 'article-body',
   },
   {
     slug: 'kod-da-vinchi',
     rel: 'articles/kod-da-vinchi/index.html',
     canonical: `${SITE}/articles/kod-da-vinchi/`,
+    visualShadow: true,
+    visualMarkers: ['article-body', 'data-pagefind-body'],
+    bodyClass: 'article-body',
   },
   {
     slug: 'dzhon-gill-chast-1-chelovek',
@@ -66,16 +72,25 @@ const MIGRATED_ARTICLES = [
     slug: 'krajne-li-isporcheno-serdce',
     rel: 'articles/krajne-li-isporcheno-serdce/index.html',
     canonical: `${SITE}/articles/krajne-li-isporcheno-serdce/`,
+    visualShadow: true,
+    visualMarkers: ['gbs-world', 'data-gbs2-series="hard-texts"', 'gbs2-rail'],
+    bodyClass: 'article-body',
   },
   {
     slug: 'hermenevticheskaya-otsenka-hristotsentrichnoy-germenevtiki',
     rel: 'articles/hermenevticheskaya-otsenka-hristotsentrichnoy-germenevtiki/index.html',
     canonical: `${SITE}/articles/hermenevticheskaya-otsenka-hristotsentrichnoy-germenevtiki/`,
+    visualShadow: true,
+    visualMarkers: ['article-body', 'data-pagefind-body'],
+    bodyClass: 'article-body',
   },
   {
     slug: '20-antisovetov-pastoru',
     rel: 'articles/20-antisovetov-pastoru/index.html',
     canonical: `${SITE}/articles/20-antisovetov-pastoru/`,
+    visualShadow: true,
+    visualMarkers: ['article-body', 'data-pagefind-body'],
+    bodyClass: 'article-body',
   },
 ];
 
@@ -191,6 +206,9 @@ function hasNoindex(html) {
   return /\bnoindex\b/i.test(meta(html, 'robots'));
 }
 function legacyFacts(legacy) {
+  const nodes = jsonLdNodes(legacy);
+  const breadcrumbs = firstNode(nodes, 'BreadcrumbList');
+  const breadcrumbItems = Array.isArray(breadcrumbs?.itemListElement) ? breadcrumbs.itemListElement : [];
   return {
     title: title(legacy),
     description: meta(legacy, 'description'),
@@ -203,6 +221,7 @@ function legacyFacts(legacy) {
     author: meta(legacy, 'article:author'),
     words: wordCount(articleHtml(legacy, 'article-body')),
     h2: headings(legacy),
+    breadcrumbFinalName: breadcrumbItems.at(-1)?.name || title(legacy),
   };
 }
 function assertArticleContract(item, label, html, facts) {
@@ -253,7 +272,7 @@ function assertArticleContract(item, label, html, facts) {
     else ok(`${label} legacy BreadcrumbList id shape preserved without Astro normalization`);
     const items = Array.isArray(breadcrumbs.itemListElement) ? breadcrumbs.itemListElement : [];
     mustEqual(`${label} BreadcrumbList final item uses public canonical`, items.at(-1)?.item || '', item.canonical);
-    mustEqual(`${label} BreadcrumbList final item title mirrors legacy title`, items.at(-1)?.name || '', facts.title);
+    mustEqual(`${label} BreadcrumbList final item title mirrors legacy JSON-LD`, items.at(-1)?.name || '', item.visualShadow ? facts.breadcrumbFinalName : facts.title);
   }
 }
 function assertBodyParity(label, html, className, facts) {
@@ -292,13 +311,14 @@ function auditArticle(item) {
   else ok(`${item.slug}: repository root article remains legacy production truth`);
 
   if (item.visualShadow) {
-    if (/class="astro-article"/.test(publicArticle)) bad(`${item.slug}: visual-first Gill route unexpectedly uses generic astro-article output`);
-    else ok(`${item.slug}: dist route is visual-first full-document shadow, not generic astro-article`);
-    for (const marker of ['gbs-world', 'data-gbs2-series="dzhon-gill"', 'gbs2-rail', 'gbs2-hero']) {
-      mustContain(`${item.slug} Gill visual marker`, publicArticle, marker);
+    if (/class="astro-article"/.test(publicArticle)) bad(`${item.slug}: visual-first route unexpectedly uses generic astro-article output`);
+    else ok(`${item.slug}: dist route is visual-first full-document/shadow-breakout output, not generic astro-article`);
+    const markers = item.visualMarkers || ['gbs-world', 'data-gbs2-series="dzhon-gill"', 'gbs2-rail', 'gbs2-hero'];
+    for (const marker of markers) {
+      mustContain(`${item.slug} visual marker`, publicArticle, marker);
     }
-    mustNotContain(`${item.slug} Gill visual shadow generic marker`, publicArticle, 'astro-series-nav');
-    mustNotContain(`${item.slug} Gill visual shadow generic marker`, publicArticle, 'class="astro-article"');
+    mustNotContain(`${item.slug} visual shadow generic marker`, publicArticle, 'astro-series-nav');
+    mustNotContain(`${item.slug} visual shadow generic marker`, publicArticle, 'class="astro-article"');
   } else {
     if (!/class="astro-article"/.test(publicArticle)) bad(`${item.slug}: dist public article path is not Astro shadow output`);
     else ok(`${item.slug}: dist public article path is Astro shadow-owned`);
@@ -308,7 +328,7 @@ function auditArticle(item) {
 
   assertArticleContract(item, `${item.slug} public shadow article`, publicArticle, facts);
   mustNotContain(`${item.slug} public shadow article pilot note`, publicArticle, 'Build-only MDX pilot');
-  assertBodyParity(`${item.slug} public shadow article`, publicArticle, item.visualShadow ? 'article-body' : 'astro-article', facts);
+  assertBodyParity(`${item.slug} public shadow article`, publicArticle, item.bodyClass || (item.visualShadow ? 'article-body' : 'astro-article'), facts);
 }
 
 function main() {
