@@ -69,6 +69,7 @@ function bodyInner(html) {
 function normalize(html) {
   return String(html || '')
     .replace(/<!-- Pagefind search data:[\s\S]*?<\/div>\s*/i, '')
+    .replace(/\s+data-pagefind-body(?=\s|>)/g, '')
     .replace(/>\s+</g, '><')
     .replace(/\s+/g, ' ')
     .trim();
@@ -123,7 +124,7 @@ if (!problems.length) {
     ? read(`${BASE_REL}/${comp}`)
     : read(`${SECTION_DIR_REL}/${rawName}`)
   ).join('');
-  const article = `<article class="article-body">${sectionHtml}</article>`;
+  const article = `<article class="article-body" data-pagefind-body>${sectionHtml}</article>`;
   const post = read(files.post);
 
   for (const marker of [
@@ -157,7 +158,7 @@ if (!problems.length) {
   mustContain('Main shell uses article body component', shell, 'GillSpravochnikArticleBody');
   mustContain('Main shell uses post article component', shell, 'GillSpravochnikPostArticle');
   mustContain('HeaderHero component raw import', headerComp, '_legacy/header-hero.html?raw');
-  mustContain('ArticleBody component owns article wrapper', bodyComp, '<article class="article-body">');
+  mustContain('ArticleBody component owns article wrapper', bodyComp, '<article class="article-body" data-pagefind-body>');
   mustContain('ArticleBody component uses ordered section glob', bodyComp, 'article-sections/*.html');
   for (const [, comp] of PROMOTED) mustContain(`ArticleBody component imports promoted ${comp}`, bodyComp, comp.replace(/\.astro$/, ''));
   mustNotContain('ArticleBody component no longer imports monolith', bodyComp, 'article-body.html?raw');

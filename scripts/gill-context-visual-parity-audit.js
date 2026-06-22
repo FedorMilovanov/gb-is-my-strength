@@ -67,6 +67,7 @@ function normalize(html) {
     .replace(/<!-- Pagefind search data:[\s\S]*?<\/div>\s*/i, '')
     // Astro-only directive for preserving external script tags; not rendered.
     .replace(/\s+is:inline(?=\s|>)/g, '')
+    .replace(/\s+data-pagefind-body(?=\s|>)/g, '')
     .replace(/>\s+</g, '><')
     .replace(/\s+/g, ' ')
     .trim();
@@ -112,7 +113,7 @@ if (!problems.length) {
   const postComp = read(files.postComp);
   const header = headerComp;
   const sectionHtml = SECTION_COMPONENTS.map((comp) => read(`${BASE_REL}/${comp}`)).join('');
-  const article = `<article class="article-body">${sectionHtml}</article>`;
+  const article = `<article class="article-body" data-pagefind-body>${sectionHtml}</article>`;
   const post = postComp;
 
   for (const marker of [
@@ -151,7 +152,7 @@ if (!problems.length) {
   mustContain('PageChrome component keeps mobile sheet', pageChromeComp, 'class="gbs2-sheet"');
   mustContain('PageChrome component keeps runtime script', pageChromeComp, 'site.js');
   mustNotContain('HeaderHero component no longer imports raw fragment', headerComp, 'header-hero.html?raw');
-  mustContain('ArticleBody component owns article wrapper', bodyComp, '<article class="article-body">');
+  mustContain('ArticleBody component owns article wrapper', bodyComp, '<article class="article-body" data-pagefind-body>');
   mustNotContain('ArticleBody component no longer uses raw section glob after full promotion', bodyComp, 'article-sections/*.html');
   for (const comp of SECTION_COMPONENTS) {
     mustContain(`ArticleBody imports ${comp}`, bodyComp, comp.replace(/\.astro$/, ''));
