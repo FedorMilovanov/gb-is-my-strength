@@ -17,6 +17,7 @@ const BASE_REL = 'src/components/article-pilots/gill-context';
 const LEGACY_DIR_REL = `${BASE_REL}/_legacy`;
 const SECTION_DIR_REL = `${LEGACY_DIR_REL}/article-sections`;
 const TOTAL_SECTIONS = 12;
+const TOTAL_RAW_SECTIONS = 11;
 const files = {
   seg0: `${LEGACY_DIR_REL}/body-segment-0.html`,
   seg1: `${LEGACY_DIR_REL}/body-segment-1.html`,
@@ -25,6 +26,7 @@ const files = {
   shell: `${BASE_REL}/GillContextMainShell.astro`,
   headerComp: `${BASE_REL}/GillContextHeaderHero.astro`,
   bodyComp: `${BASE_REL}/GillContextArticleBody.astro`,
+  conclusionComp: `${BASE_REL}/GillContextSectionConclusion.astro`,
   postComp: `${BASE_REL}/GillContextPostArticle.astro`,
 };
 
@@ -94,6 +96,7 @@ mustExist('Astro Gill context page', PAGE_REL);
 for (const [label, rel] of Object.entries(files)) mustExist(label, rel);
 mustExist('Gill context article section directory', SECTION_DIR_REL);
 mustNotExist('Gill context article-body monolith retired', `${LEGACY_DIR_REL}/article-body.html`);
+mustNotExist('Gill context conclusion raw fragment promoted', `${SECTION_DIR_REL}/10-sec-conclusion.html`);
 
 if (!problems.length) {
   const legacy = read(LEGACY_REL);
@@ -102,20 +105,23 @@ if (!problems.length) {
   const headerComp = read(files.headerComp);
   const bodyComp = read(files.bodyComp);
   const postComp = read(files.postComp);
+  const conclusionComp = read(files.conclusionComp);
   const seg0 = read(files.seg0);
   const seg1 = read(files.seg1);
   const header = read(files.header);
   const sections = sectionFiles();
-  const articleInner = sections.map(read).join('');
+  const sectionsBeforeConclusion = sections.filter((rel) => !rel.endsWith('/11-sec-sources-and-series-tail.html'));
+  const sectionsAfterConclusion = sections.filter((rel) => rel.endsWith('/11-sec-sources-and-series-tail.html'));
+  const articleInner = `${sectionsBeforeConclusion.map(read).join('')}${conclusionComp}${sectionsAfterConclusion.map(read).join('')}`;
   const article = `<article class="article-body">${articleInner}</article>`;
   const post = read(files.post);
 
-  if (sections.length === TOTAL_SECTIONS) ok(`Gill context article section count: ${TOTAL_SECTIONS}`);
-  else bad(`Gill context article section count drift: expected ${TOTAL_SECTIONS}, got ${sections.length}`);
-  if (sections[0]?.endsWith('/00-summary-and-intro.html')) ok('Gill context first section is summary/intro prelude');
-  else bad(`Gill context first section order drift: ${sections[0] || 'none'}`);
-  if (sections.at(-1)?.endsWith('/11-sec-sources-and-series-tail.html')) ok('Gill context last section is sources + series tail');
-  else bad(`Gill context last section order drift: ${sections.at(-1) || 'none'}`);
+  if (sections.length === TOTAL_RAW_SECTIONS) ok(`Gill context raw article section count: ${TOTAL_RAW_SECTIONS} (+1 Astro section = ${TOTAL_SECTIONS})`);
+  else bad(`Gill context raw article section count drift: expected ${TOTAL_RAW_SECTIONS}, got ${sections.length}`);
+  if (sections[0]?.endsWith('/00-summary-and-intro.html')) ok('Gill context first raw section is summary/intro prelude');
+  else bad(`Gill context first raw section order drift: ${sections[0] || 'none'}`);
+  if (sections.at(-1)?.endsWith('/11-sec-sources-and-series-tail.html')) ok('Gill context last raw section is sources + series tail');
+  else bad(`Gill context last raw section order drift: ${sections.at(-1) || 'none'}`);
 
   for (const marker of [
     'class="gbs-world"',
@@ -150,11 +156,14 @@ if (!problems.length) {
   mustContain('HeaderHero component raw import', headerComp, '_legacy/header-hero.html?raw');
   mustContain('ArticleBody component owns article wrapper', bodyComp, '<article class="article-body">');
   mustContain('ArticleBody component uses ordered section glob', bodyComp, 'article-sections/*.html');
+  mustContain('ArticleBody component imports promoted conclusion', bodyComp, 'GillContextSectionConclusion');
   mustNotContain('ArticleBody component no longer imports monolith', bodyComp, 'article-body.html?raw');
   mustContain('PostArticle component raw import', postComp, '_legacy/post-article.html?raw');
 
   mustContain('header fragment keeps GBS2 hero', header, 'class="gbs2-hero"');
   mustContain('header fragment keeps Gill H1', header, 'Джон Гилл: исторический контекст');
+  mustContain('conclusion component keeps conclusion H2', conclusionComp, 'id="sec-conclusion"');
+  mustContain('conclusion component keeps note box', conclusionComp, 'note-box reveal');
   mustContain('article sections keep summary card', article, 'summary-card');
   mustContain('article sections keep source section', article, 'sec-sources-context');
   mustContain('article sections keep Gill next navigation', article, 'gbs2-next');
