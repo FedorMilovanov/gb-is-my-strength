@@ -17,8 +17,8 @@ const BASE_REL = 'src/components/article-pilots/gill-context';
 const LEGACY_DIR_REL = `${BASE_REL}/_legacy`;
 const SECTION_DIR_REL = `${LEGACY_DIR_REL}/article-sections`;
 const TOTAL_SECTIONS = 12;
-const TOTAL_RAW_SECTIONS = 7;
-const TOTAL_ASTRO_SECTIONS = 5;
+const TOTAL_RAW_SECTIONS = 6;
+const TOTAL_ASTRO_SECTIONS = 6;
 const files = {
   seg0: `${LEGACY_DIR_REL}/body-segment-0.html`,
   seg1: `${LEGACY_DIR_REL}/body-segment-1.html`,
@@ -29,6 +29,7 @@ const files = {
   bodyComp: `${BASE_REL}/GillContextArticleBody.astro`,
   particularComp: `${BASE_REL}/GillContextSectionParticularVsGeneral.astro`,
   academiesComp: `${BASE_REL}/GillContextSectionAcademies.astro`,
+  saltersComp: `${BASE_REL}/GillContextSectionSaltersHall.astro`,
   coffeeComp: `${BASE_REL}/GillContextSectionCoffeeHouse.astro`,
   booksComp: `${BASE_REL}/GillContextSectionBooks.astro`,
   conclusionComp: `${BASE_REL}/GillContextSectionConclusion.astro`,
@@ -103,6 +104,7 @@ mustExist('Gill context article section directory', SECTION_DIR_REL);
 mustNotExist('Gill context article-body monolith retired', `${LEGACY_DIR_REL}/article-body.html`);
 mustNotExist('Gill context particular-vs-general raw fragment promoted', `${SECTION_DIR_REL}/02-sec-particular-vs-general.html`);
 mustNotExist('Gill context academies raw fragment promoted', `${SECTION_DIR_REL}/05-sec-academies.html`);
+mustNotExist('Gill context Salters Hall raw fragment promoted', `${SECTION_DIR_REL}/06-sec-salters-hall.html`);
 mustNotExist('Gill context coffee-house raw fragment promoted', `${SECTION_DIR_REL}/07-sec-coffee-house.html`);
 mustNotExist('Gill context books raw fragment promoted', `${SECTION_DIR_REL}/09-sec-books.html`);
 mustNotExist('Gill context conclusion raw fragment promoted', `${SECTION_DIR_REL}/10-sec-conclusion.html`);
@@ -116,6 +118,7 @@ if (!problems.length) {
   const postComp = read(files.postComp);
   const particularComp = read(files.particularComp);
   const academiesComp = read(files.academiesComp);
+  const saltersComp = read(files.saltersComp);
   const coffeeComp = read(files.coffeeComp);
   const booksComp = read(files.booksComp);
   const conclusionComp = read(files.conclusionComp);
@@ -129,9 +132,13 @@ if (!problems.length) {
     const name = sectionName(rel);
     return name > '02-sec-particular-vs-general.html' && name < '05-sec-academies.html';
   });
-  const sectionsBetweenAcademiesAndCoffee = sections.filter((rel) => {
+  const sectionsBetweenAcademiesAndSalters = sections.filter((rel) => {
     const name = sectionName(rel);
-    return name > '05-sec-academies.html' && name < '07-sec-coffee-house.html';
+    return name > '05-sec-academies.html' && name < '06-sec-salters-hall.html';
+  });
+  const sectionsBetweenSaltersAndCoffee = sections.filter((rel) => {
+    const name = sectionName(rel);
+    return name > '06-sec-salters-hall.html' && name < '07-sec-coffee-house.html';
   });
   const sectionsBetweenCoffeeAndBooks = sections.filter((rel) => {
     const name = sectionName(rel);
@@ -142,7 +149,7 @@ if (!problems.length) {
     return name > '09-sec-books.html' && name < '10-sec-conclusion.html';
   });
   const sectionsAfterConclusion = sections.filter((rel) => sectionName(rel) > '10-sec-conclusion.html');
-  const articleInner = `${sectionsBeforeParticular.map(read).join('')}${particularComp}${sectionsBetweenParticularAndAcademies.map(read).join('')}${academiesComp}${sectionsBetweenAcademiesAndCoffee.map(read).join('')}${coffeeComp}${sectionsBetweenCoffeeAndBooks.map(read).join('')}${booksComp}${sectionsBetweenBooksAndConclusion.map(read).join('')}${conclusionComp}${sectionsAfterConclusion.map(read).join('')}`;
+  const articleInner = `${sectionsBeforeParticular.map(read).join('')}${particularComp}${sectionsBetweenParticularAndAcademies.map(read).join('')}${academiesComp}${sectionsBetweenAcademiesAndSalters.map(read).join('')}${saltersComp}${sectionsBetweenSaltersAndCoffee.map(read).join('')}${coffeeComp}${sectionsBetweenCoffeeAndBooks.map(read).join('')}${booksComp}${sectionsBetweenBooksAndConclusion.map(read).join('')}${conclusionComp}${sectionsAfterConclusion.map(read).join('')}`;
   const article = `<article class="article-body">${articleInner}</article>`;
   const post = read(files.post);
 
@@ -188,6 +195,7 @@ if (!problems.length) {
   mustContain('ArticleBody component uses ordered section glob', bodyComp, 'article-sections/*.html');
   mustContain('ArticleBody component imports promoted particular-vs-general', bodyComp, 'GillContextSectionParticularVsGeneral');
   mustContain('ArticleBody component imports promoted academies', bodyComp, 'GillContextSectionAcademies');
+  mustContain('ArticleBody component imports promoted Salters Hall', bodyComp, 'GillContextSectionSaltersHall');
   mustContain('ArticleBody component imports promoted coffee-house', bodyComp, 'GillContextSectionCoffeeHouse');
   mustContain('ArticleBody component imports promoted books', bodyComp, 'GillContextSectionBooks');
   mustContain('ArticleBody component imports promoted conclusion', bodyComp, 'GillContextSectionConclusion');
@@ -200,6 +208,8 @@ if (!problems.length) {
   mustContain('particular-vs-general component keeps table', particularComp, 'compare-table');
   mustContain('academies component keeps academies H2', academiesComp, 'id="sec-academies"');
   mustContain('academies component keeps academy term', academiesComp, 'диссентерских академий');
+  mustContain('Salters Hall component keeps H2', saltersComp, 'id="sec-salters-hall"');
+  mustContain('Salters Hall component keeps table', saltersComp, 'compare-table');
   mustContain('coffee-house component keeps H2', coffeeComp, 'id="sec-coffee-house"');
   mustContain('coffee-house component keeps float figure', coffeeComp, 'article-img--vertical float-right');
   mustContain('books component keeps books H2', booksComp, 'id="sec-books"');
