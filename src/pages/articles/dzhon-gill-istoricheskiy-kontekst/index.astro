@@ -1,10 +1,9 @@
 ---
 import { loadLegacyFullDocument } from '@/utils/legacyFullDocument';
 import GillContextMainShell from '@/components/article-pilots/gill-context/GillContextMainShell.astro';
-import segBefore from '@/components/article-pilots/gill-context/_legacy/body-segment-0.html?raw';
-import segAfter from '@/components/article-pilots/gill-context/_legacy/body-segment-1.html?raw';
+import GillContextPageChrome from '@/components/article-pilots/gill-context/GillContextPageChrome.astro';
 
-// Refactoring 6.0 Gill Phase G1: componentized shadow-breakout for the
+// Refactoring 6.0 Gill: componentized shadow-breakout for the
 // historical-context route. Preserve the legacy GBS2 visual world while
 // giving the page Astro seams that can be promoted section-by-section.
 const { headHtml, bodyAttributes } = loadLegacyFullDocument('articles/dzhon-gill-istoricheskiy-kontekst/index.html');
@@ -19,8 +18,8 @@ const { headHtml, bodyAttributes } = loadLegacyFullDocument('articles/dzhon-gill
     <div class="sr-only" data-pagefind-body style="position:absolute;left:-9999px;top:auto;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);clip-path:inset(50%);white-space:nowrap">
       Джон Гилл: исторический контекст. Мир пуритан и баптистов XVIII века, Лондон, диссентеры, баптисты, Уайтфилд, Уэсли, кальвинизм и история служения.
     </div>
-    <Fragment set:html={segBefore} />
-    <GillContextMainShell />
-    <Fragment set:html={segAfter} />
+    <GillContextPageChrome>
+      <GillContextMainShell />
+    </GillContextPageChrome>
   </body>
 </html>
