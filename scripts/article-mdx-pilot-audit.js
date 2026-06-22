@@ -190,15 +190,21 @@ function checkKodDaVinchiBreakoutSource() {
   mustContain('kod-da-vinchi ArticleBody imports Astro Pagefind meta component', src, 'KodDaVinchiPagefindMeta');
   mustContain('kod-da-vinchi ArticleBody imports Astro intro section component', src, 'KodDaVinchiSectionIntro');
   mustContain('kod-da-vinchi ArticleBody imports Astro phenomenon section component', src, 'KodDaVinchiSectionPhenomenon');
+  mustContain('kod-da-vinchi ArticleBody imports Astro dates section component', src, 'KodDaVinchiSectionDates');
+  mustContain('kod-da-vinchi ArticleBody imports Astro errors section component', src, 'KodDaVinchiSectionErrors');
+  mustContain('kod-da-vinchi ArticleBody imports Astro lie1 section component', src, 'KodDaVinchiSectionLie1');
+  mustContain('kod-da-vinchi ArticleBody imports Astro feminine section component', src, 'KodDaVinchiSectionFeminine');
+  mustContain('kod-da-vinchi ArticleBody imports Astro lie2 section component', src, 'KodDaVinchiSectionLie2');
+  mustContain('kod-da-vinchi ArticleBody imports Astro canon section component', src, 'KodDaVinchiSectionCanon');
   mustContain('kod-da-vinchi ArticleBody preserves article-body wrapper', src, '<article class="article-body" data-pagefind-body>');
   if (fs.existsSync(path.join(base, '_legacy/article-body.html'))) bad('kod-da-vinchi monolithic _legacy/article-body.html still exists; keep section seams authoritative');
   else ok('kod-da-vinchi monolithic article-body.html removed after section breakout');
   if (!fs.existsSync(sectionDir)) return bad('kod-da-vinchi article-sections directory missing');
   const fragments = fs.readdirSync(sectionDir).filter((f) => f.endsWith('.html')).sort();
-  if (fragments.length !== 18) bad(`kod-da-vinchi section fragment count drift: expected 18 remaining legacy visible section fragments, got ${fragments.length}`);
-  else ok('kod-da-vinchi remaining legacy visible section fragment count: 18');
-  if (fragments[0] !== '03-sec-dates.html') bad(`kod-da-vinchi first remaining legacy fragment must be dates, got ${fragments[0]}`);
-  else ok('kod-da-vinchi first remaining legacy section fragment: dates');
+  if (fragments.length !== 12) bad(`kod-da-vinchi section fragment count drift: expected 12 remaining legacy visible section fragments, got ${fragments.length}`);
+  else ok('kod-da-vinchi remaining legacy visible section fragment count: 12');
+  if (fragments[0] !== '09-sec-qumran.html') bad(`kod-da-vinchi first remaining legacy fragment must be qumran, got ${fragments[0]}`);
+  else ok('kod-da-vinchi first remaining legacy section fragment: qumran');
   const introComponent = path.join(base, 'KodDaVinchiSectionIntro.astro');
   if (!fs.existsSync(introComponent)) bad('kod-da-vinchi Astro intro section component missing');
   else {
@@ -214,6 +220,19 @@ function checkKodDaVinchiBreakoutSource() {
     for (const marker of ['id="sec-phenomenon"', 'class="stat-grid"', 'class="stat-card"', 'class="info-box"', 'class="fn-marker"']) {
       mustContain(`kod-da-vinchi phenomenon component ${marker}`, phenomenonSrc, marker);
     }
+  }
+  // Phase 3e batch: 6 promoted sections — verify each exists and carries its h2 anchor.
+  for (const [comp, anchor] of [
+    ['Dates', 'id="sec-dates"'],
+    ['Errors', 'id="sec-errors"'],
+    ['Lie1', 'id="sec-lie1"'],
+    ['Feminine', 'id="sec-feminine"'],
+    ['Lie2', 'id="sec-lie2"'],
+    ['Canon', 'id="sec-canon"'],
+  ]) {
+    const compFile = path.join(base, `KodDaVinchiSection${comp}.astro`);
+    if (!fs.existsSync(compFile)) bad(`kod-da-vinchi Astro ${comp} section component missing`);
+    else mustContain(`kod-da-vinchi ${comp} component h2 anchor`, read(compFile), anchor);
   }
   const metaComponent = path.join(base, 'KodDaVinchiPagefindMeta.astro');
   if (!fs.existsSync(metaComponent)) bad('kod-da-vinchi Astro Pagefind meta component missing');
