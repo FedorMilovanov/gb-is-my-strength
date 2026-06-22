@@ -56,8 +56,9 @@ must(page, '_legacy/body-segment-1.html',
      'Astro / preserves verbatim legacy body chrome after <main>');
 
 mustExist('src/components/home/HomeMain.astro', 'HomeMain.astro component file');
-mustExist('src/components/home/HomeHeroSection.astro', 'HomeHeroSection.astro');
-mustExist('src/components/home/HomeArticleEndBlock.astro', 'HomeArticleEndBlock.astro');
+for (const rel of ['HomeHeroSection.astro','HomeAboutSection.astro','HomeQuoteSection.astro','HomeAccuracyBlock.astro','HomeFooter.astro','HomeArticleEndBlock.astro']) {
+  mustExist(`src/components/home/${rel}`, rel);
+}
 mustExist('src/components/home/_legacy/main.html', 'home main.html legacy baseline');
 for (const rel of ['hero.html','resume-mobile.html','directions.html','planned.html','publications.html','refutations.html','about.html','quote.html','post-article.html']) {
   mustExist(`src/components/home/_legacy/${rel}`, rel);
@@ -68,12 +69,13 @@ mustExist('src/components/home/_legacy/body-segment-1.html', 'home body-segment-
 const main = read('src/components/home/HomeMain.astro');
 must(main, '<main id="main-content" data-pagefind-body>', 'HomeMain preserves semantic main wrapper');
 must(main, '<div class="home-content">', 'HomeMain preserves home-content wrapper');
-must(main, 'HomeHeroSection', 'HomeMain uses HomeHeroSection');
-must(main, 'HomeArticleEndBlock', 'HomeMain uses HomeArticleEndBlock');
-for (const frag of ['resume-mobile.html?raw','directions.html?raw','planned.html?raw','publications.html?raw','refutations.html?raw','about.html?raw','quote.html?raw']) {
+for (const comp of ['HomeHeroSection','HomeAboutSection','HomeQuoteSection','HomeAccuracyBlock','HomeFooter','HomeArticleEndBlock']) {
+  must(main, comp, `HomeMain uses ${comp}`);
+}
+for (const frag of ['resume-mobile.html?raw','directions.html?raw','planned.html?raw','publications.html?raw','refutations.html?raw']) {
   must(main, frag, `HomeMain uses ${frag}`);
 }
-for (const banned of ['hero.html?raw','post-article.html?raw']) {
+for (const banned of ['hero.html?raw','about.html?raw','quote.html?raw','post-article.html?raw']) {
   mustNot(main, banned, `removed raw import: ${banned}`);
 }
 mustNot(main, "import legacyHtml from './_legacy/main.html?raw'", 'raw monolithic main import removed');
@@ -93,11 +95,13 @@ for (const [file, marker] of [
   ['planned.html','hPlannedLabel'],
   ['publications.html','id="publikacii"'],
   ['refutations.html','id="razbor"'],
-  ['about.html','id="about"'],
-  ['quote.html','h-quote-section'],
 ]) {
   must(read(`src/components/home/_legacy/${file}`), marker, `${file} marker: ${marker}`);
 }
+must(read('src/components/home/HomeAboutSection.astro'), 'id="about"', 'HomeAboutSection marker: id="about"');
+must(read('src/components/home/HomeQuoteSection.astro'), 'h-quote-section', 'HomeQuoteSection marker: h-quote-section');
+must(read('src/components/home/HomeAccuracyBlock.astro'), 'gb-accuracy-block', 'HomeAccuracyBlock marker: gb-accuracy-block');
+must(read('src/components/home/HomeFooter.astro'), 'h-footer', 'HomeFooter marker: h-footer');
 must(read('src/components/home/HomeArticleEndBlock.astro'), 'Soli Deo Gloria', 'HomeArticleEndBlock marker: Soli Deo Gloria');
 
 const segBefore = read('src/components/home/_legacy/body-segment-0.html');

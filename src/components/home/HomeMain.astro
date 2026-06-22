@@ -17,8 +17,10 @@ import directions from './_legacy/directions.html?raw';
 import planned from './_legacy/planned.html?raw';
 import publications from './_legacy/publications.html?raw';
 import refutations from './_legacy/refutations.html?raw';
-import about from './_legacy/about.html?raw';
-import quote from './_legacy/quote.html?raw';
+import HomeAboutSection from './HomeAboutSection.astro';
+import HomeQuoteSection from './HomeQuoteSection.astro';
+import HomeAccuracyBlock from './HomeAccuracyBlock.astro';
+import HomeFooter from './HomeFooter.astro';
 import HomeArticleEndBlock from './HomeArticleEndBlock.astro';
 ---
 
@@ -30,8 +32,10 @@ import HomeArticleEndBlock from './HomeArticleEndBlock.astro';
     <Fragment set:html={planned} />
     <Fragment set:html={publications} />
     <Fragment set:html={refutations} />
-    <Fragment set:html={about} />
-    <Fragment set:html={quote} />
+    <HomeAboutSection />
+    <HomeQuoteSection />
+    <HomeAccuracyBlock />
+    <HomeFooter />
   </div><!-- /.home-content -->
   <HomeArticleEndBlock />
 </main>
