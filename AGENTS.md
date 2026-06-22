@@ -1,14 +1,60 @@
 # AGENTS.md — gb-is-my-strength (gospod-bog.ru)
 
-> **Обязательно к прочтению ДО любой правки кода**, если ты — ИИ-агент
-> (Cursor / Arena Agent / Copilot Workspace / Kilo / любой).
->
+> **Этот файл — договор между владельцем (Фёдор Милованов) и любым ИИ-агентом.**
+> **Обязательно к прочтению ДО любой правки.** Нарушение = регрессия на проде.
+
+---
+
+## 🚦 Читать перед работой — порядок обязательных документов
+
+**Каждый агент (Arena Agent / Cursor / Copilot Workspace / Kilo / любой) должен прочитать документы в этом порядке:**
+
+```
+1. docs/WORK_MODES.md   ← ⭐ ГЛАВНЫЙ SANDBOX-контекст
+   Режимы работы (SOLO/MULTI-AGENT/HIGH-RISK/EMERGENCY),
+   Risk levels, lane policy, shared files, когда lane обязателен.
+   Это документ-песочница для любой задачи. Прочитай ПОСЛЕ AGENTS.md.
+
+2. AGENTS.md (этот файл) ← обязательный контракт с владельцем
+   Архитектура, CSS/JS правила, protected-блоки, UI-инварианты,
+   когда нельзя менять, проверки перед push.
+
+3. docs/LANE_LOCK_POLICY.md ← подробная lane-политика
+   Когда lane обязателен по риску, когда нет, merge-порядок,
+   out-of-lane findings, shared data batch lanes.
+
+4. migration/route-migration-matrix.json ← официальный migration contract
+   Какой режим миграции у каждого route (native/legacy-shadow/mdx-native).
+   Проверяй СВОЙ route против матрицы до начала работы.
+
+5. docs/SANDBOX-ENV-2026-06-21.md   ← только Arena Agent Mode (если работаешь в Arena.ai)
+   Как не потерять файлы в Arena sandbox, как пушить, почему агенты падают
+   и как не повторять ошибок. Обязателен для Arena-сессий.
+```
+
+**Почему этот порядок:**
+
+```
+WORK_MODES.md → какой режим и дисциплина
+    ↓
+AGENTS.md     → что можно/нельзя менять в коде
+    ↓
+LANE_LOCK     → как организовать работу (lane/branches)
+    ↓
+matrix.json   → какой migration mode у моего route
+    ↓
+SANDBOX-ENV   → как выжить в конкретной среде (Arena)
+```
+
+**Если ты не прочитал WORK_MODES.md — не начинай работу.**  
+Это особенно важно при параллельных агентах и lane-работе.
+
+---
+
 > **⚠️ Если ты работаешь в Arena Agent Mode (Qwen Code / Arena.ai):**
-> Сначала прочитай `docs/SANDBOX-ENV-2026-06-21.md` — инструкция по выживанию
+> Также прочитай `docs/SANDBOX-ENV-2026-06-21.md` — инструкция по выживанию
 > в этой среде. Там описано: как не потерять файлы, как пушить, почему
-> агенты падают и как не повторять моих ошибок. **Этот файл обязателен.**
-> Этот файл — **договор** между владельцем (Фёдор Милованов) и любым агентом.
-> Нарушение = регресс, который видят сотни читателей сайта.
+> агенты падают и как не повторять моих ошибок. **Этот файл обязателен для Arena.**
 > Если правило кажется глупым — **спроси, ПОЧЕМУ оно появилось**.
 
 | Версия документа | Дата | Состояние |
@@ -18,7 +64,14 @@
 
 ## Work Modes — определи режим перед работой
 
-Подробная политика: [docs/WORK_MODES.md](docs/WORK_MODES.md) · [docs/LANE_LOCK_POLICY.md](docs/LANE_LOCK_POLICY.md)
+**Полная политика:**
+
+- [docs/WORK_MODES.md](docs/WORK_MODES.md) — SOLO/MULTI-AGENT/HIGH-RISK/EMERGENCY, Risk levels, shared files, когда lane обязателен
+- [docs/LANE_LOCK_POLICY.md](docs/LANE_LOCK_POLICY.md) — подробная lane-политика, out-of-lane reporting, merge-порядок
+- [migration/route-migration-matrix.json](migration/route-migration-matrix.json) — официальный migration contract: какой режим миграции у каждого route
+
+**⚠️ Перед любой работой проверь свой route в `migration/route-migration-matrix.json`.**  
+Неправильный migration mode = регрессия (как blanket shadow-wrap в r260).
 
 ### Work Mode Decision Tree
 

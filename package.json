@@ -4,6 +4,9 @@
   "private": true,
   "description": "Build scripts for gospod-bog.ru — AUDIT V2 + AUDIT_10_OF_10 patches applied.",
   "scripts": {
+    "migration:matrix:check": "node scripts/check-route-migration-matrix.js",
+    "content:sources:check": "node scripts/check-content-source-coverage.js",
+    "migration:metadata:check": "npm run route:profiles:check && npm run migration:matrix:check && npm run content:sources:check",
     "update-meta": "node scripts/update-meta.js",
     "cache-bust": "node scripts/cache-bust.js",
     "validate": "node scripts/validate.js",
