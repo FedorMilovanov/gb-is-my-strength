@@ -1,8 +1,16 @@
 // map-mobile-smoke.js — mobile (iPhone 12) render check for engine maps.
 const { chromium, devices } = require('playwright');
 const BASE = process.env.AUDIT_BASE || 'http://127.0.0.1:8090';
-const MAPS = ['ishod','pavel','melachim','shoftim','shvatim','yeshua','maccabim','early-church','revelation'];
+const DEFAULT_LIVE_MAPS = ['ishod'];
+const HOLDING_MAPS = ['pavel','melachim','shoftim','shvatim','yeshua','maccabim','early-church','revelation'];
+const MAPS = (process.env.MAP_SMOKE_ROUTES || DEFAULT_LIVE_MAPS.join(','))
+  .split(',')
+  .map(s => s.trim())
+  .filter(Boolean);
 (async () => {
+  if (!process.env.MAP_SMOKE_ROUTES && HOLDING_MAPS.length) {
+    console.log(`ℹ️ Skipping holding map routes until owner-approved live MapEngine launch: ${HOLDING_MAPS.join(', ')}`);
+  }
   const browser = await chromium.launch();
   const problems = [];
   for (const m of MAPS) {

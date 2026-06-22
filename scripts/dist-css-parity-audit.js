@@ -8,7 +8,7 @@
  * gate caught it (all checked URL/title/word-count/SEO, never CSS linkage).
  *
  * Rule: every dist HTML page (excluding built-asset _app/) must have at least
- * one of: a <link> to site.css/home.css, OR an inline <style> block. If a page
+ * one of: a <link> to site.css/site-layered.css/home.css, OR an inline <style> block. If a page
  * has NEITHER, it is unstyled → FAIL.
  *
  * Run: node scripts/dist-css-parity-audit.js  (after strangler:build)
@@ -45,7 +45,7 @@ function collectHtml(dir, acc = []) {
 }
 
 function checkCss(html) {
-  const hasSiteCss = /css\/(site|home)\.css/.test(html);
+  const hasSiteCss = /css\/(site|site-layered|home)\.css/.test(html);
   const hasInlineStyle = /<style\b/i.test(html);
   return hasSiteCss || hasInlineStyle;
 }
@@ -66,7 +66,7 @@ for (const page of pages) {
     okCount++;
   } else {
     problems.push(rel);
-    console.log(`❌ ${rel}: NO project CSS (no site.css/home.css link and no inline <style>)`);
+    console.log(`❌ ${rel}: NO project CSS (no site.css/site-layered.css/home.css link and no inline <style>)`);
   }
 }
 
