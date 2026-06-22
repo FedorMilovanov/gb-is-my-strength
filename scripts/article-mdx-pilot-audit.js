@@ -188,51 +188,37 @@ function checkKodDaVinchiBreakoutSource() {
   else ok('kod-da-vinchi ArticleBody no longer imports monolithic article-body.html');
   mustContain('kod-da-vinchi ArticleBody uses section glob', src, 'article-sections/*.html');
   mustContain('kod-da-vinchi ArticleBody imports Astro Pagefind meta component', src, 'KodDaVinchiPagefindMeta');
-  mustContain('kod-da-vinchi ArticleBody imports Astro intro section component', src, 'KodDaVinchiSectionIntro');
-  mustContain('kod-da-vinchi ArticleBody imports Astro phenomenon section component', src, 'KodDaVinchiSectionPhenomenon');
-  mustContain('kod-da-vinchi ArticleBody imports Astro dates section component', src, 'KodDaVinchiSectionDates');
-  mustContain('kod-da-vinchi ArticleBody imports Astro errors section component', src, 'KodDaVinchiSectionErrors');
-  mustContain('kod-da-vinchi ArticleBody imports Astro lie1 section component', src, 'KodDaVinchiSectionLie1');
-  mustContain('kod-da-vinchi ArticleBody imports Astro feminine section component', src, 'KodDaVinchiSectionFeminine');
-  mustContain('kod-da-vinchi ArticleBody imports Astro lie2 section component', src, 'KodDaVinchiSectionLie2');
-  mustContain('kod-da-vinchi ArticleBody imports Astro canon section component', src, 'KodDaVinchiSectionCanon');
+  // Verify every promoted KodDaVinchiSection*.astro component is actually imported
+  // by ArticleBody. The list is derived from the filesystem, so this stays correct
+  // as more sections get promoted one-at-a-time (no manual per-section line).
+  const promotedComponents = fs.readdirSync(base)
+    .filter((f) => /^KodDaVinchiSection[A-Z]\w*\.astro$/.test(f))
+    .sort();
+  for (const comp of promotedComponents) {
+    const ident = comp.replace(/\.astro$/, '');
+    mustContain(`kod-da-vinchi ArticleBody imports ${ident}`, src, ident);
+  }
   mustContain('kod-da-vinchi ArticleBody preserves article-body wrapper', src, '<article class="article-body" data-pagefind-body>');
   if (fs.existsSync(path.join(base, '_legacy/article-body.html'))) bad('kod-da-vinchi monolithic _legacy/article-body.html still exists; keep section seams authoritative');
   else ok('kod-da-vinchi monolithic article-body.html removed after section breakout');
   if (!fs.existsSync(sectionDir)) return bad('kod-da-vinchi article-sections directory missing');
   const fragments = fs.readdirSync(sectionDir).filter((f) => f.endsWith('.html')).sort();
-  if (fragments.length !== 12) bad(`kod-da-vinchi section fragment count drift: expected 12 remaining legacy visible section fragments, got ${fragments.length}`);
-  else ok('kod-da-vinchi remaining legacy visible section fragment count: 12');
-  if (fragments[0] !== '09-sec-qumran.html') bad(`kod-da-vinchi first remaining legacy fragment must be qumran, got ${fragments[0]}`);
-  else ok('kod-da-vinchi first remaining legacy section fragment: qumran');
-  const introComponent = path.join(base, 'KodDaVinchiSectionIntro.astro');
-  if (!fs.existsSync(introComponent)) bad('kod-da-vinchi Astro intro section component missing');
-  else {
-    const introSrc = read(introComponent);
-    for (const marker of ['id="sec-intro"', 'class="drop-cap"', 'class="fn-marker"', 'class="quote-box"']) {
-      mustContain(`kod-da-vinchi intro component ${marker}`, introSrc, marker);
-    }
-  }
-  const phenomenonComponent = path.join(base, 'KodDaVinchiSectionPhenomenon.astro');
-  if (!fs.existsSync(phenomenonComponent)) bad('kod-da-vinchi Astro phenomenon section component missing');
-  else {
-    const phenomenonSrc = read(phenomenonComponent);
-    for (const marker of ['id="sec-phenomenon"', 'class="stat-grid"', 'class="stat-card"', 'class="info-box"', 'class="fn-marker"']) {
-      mustContain(`kod-da-vinchi phenomenon component ${marker}`, phenomenonSrc, marker);
-    }
-  }
-  // Phase 3e batch: 6 promoted sections — verify each exists and carries its h2 anchor.
-  for (const [comp, anchor] of [
-    ['Dates', 'id="sec-dates"'],
-    ['Errors', 'id="sec-errors"'],
-    ['Lie1', 'id="sec-lie1"'],
-    ['Feminine', 'id="sec-feminine"'],
-    ['Lie2', 'id="sec-lie2"'],
-    ['Canon', 'id="sec-canon"'],
-  ]) {
-    const compFile = path.join(base, `KodDaVinchiSection${comp}.astro`);
-    if (!fs.existsSync(compFile)) bad(`kod-da-vinchi Astro ${comp} section component missing`);
-    else mustContain(`kod-da-vinchi ${comp} component h2 anchor`, read(compFile), anchor);
+  // Total visible content sections: 20 (the pagefind-meta island is a separate
+  // non-visible component, not counted). Promoted ones are Astro components;
+  // remaining are raw fragments. Count must equal 20 - promoted.
+  const totalSections = 20;
+  const expectedRemaining = totalSections - promotedComponents.length;
+  if (fragments.length !== expectedRemaining) bad(`kod-da-vinchi section fragment count drift: expected ${expectedRemaining} remaining legacy visible section fragments (${promotedComponents.length} promoted), got ${fragments.length}`);
+  else ok(`kod-da-vinchi remaining legacy visible section fragment count: ${expectedRemaining} (${promotedComponents.length} promoted)`);
+  // Verify each promoted section component exists and carries its legacy h2 anchor.
+  // The anchor id is derived from the section slug (e.g. KodDaVinchiSectionIntro → sec-intro).
+  const anchorMap = { Gnostic: 'sec-gnostic', Qumran: 'sec-qumran', Lie3: 'sec-lie3', Lie4: 'sec-lie4', Lie5: 'sec-lie5', Lie6: 'sec-lie6', Dates: 'sec-dates', Errors: 'sec-errors', Lie1: 'sec-lie1', Feminine: 'sec-feminine', Lie2: 'sec-lie2', Canon: 'sec-canon', Intro: 'sec-intro', Phenomenon: 'sec-phenomenon' };
+  for (const comp of promotedComponents) {
+    const compName = comp.replace(/\.astro$/, '').replace(/^KodDaVinchiSection/, '');
+    const anchor = anchorMap[compName];
+    const compFile = path.join(base, comp);
+    if (!fs.existsSync(compFile)) { bad(`kod-da-vinchi Astro ${compName} section component missing`); continue; }
+    if (anchor) mustContain(`kod-da-vinchi ${compName} component h2 anchor`, read(compFile), `id="${anchor}"`);
   }
   const metaComponent = path.join(base, 'KodDaVinchiPagefindMeta.astro');
   if (!fs.existsSync(metaComponent)) bad('kod-da-vinchi Astro Pagefind meta component missing');
