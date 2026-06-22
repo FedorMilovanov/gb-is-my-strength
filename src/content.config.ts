@@ -19,7 +19,7 @@ const articleSchema = z.object({
   draft: z.boolean().default(false),
   noindex: z.boolean().default(false),
   sourcesRequired: z.boolean().default(true),
-  canonicalOverride: z.string().url().optional(),
+  canonicalOverride: z.url().optional(),
   readingTime: z.number().int().positive().optional(),
 }).superRefine((data, ctx) => {
   if (data.ogImage && !data.ogImageAlt) {
