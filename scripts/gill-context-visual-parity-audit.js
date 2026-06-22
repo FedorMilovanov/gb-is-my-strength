@@ -17,8 +17,8 @@ const BASE_REL = 'src/components/article-pilots/gill-context';
 const LEGACY_DIR_REL = `${BASE_REL}/_legacy`;
 const SECTION_DIR_REL = `${LEGACY_DIR_REL}/article-sections`;
 const TOTAL_SECTIONS = 12;
-const TOTAL_RAW_SECTIONS = 10;
-const TOTAL_ASTRO_SECTIONS = 2;
+const TOTAL_RAW_SECTIONS = 9;
+const TOTAL_ASTRO_SECTIONS = 3;
 const files = {
   seg0: `${LEGACY_DIR_REL}/body-segment-0.html`,
   seg1: `${LEGACY_DIR_REL}/body-segment-1.html`,
@@ -27,6 +27,7 @@ const files = {
   shell: `${BASE_REL}/GillContextMainShell.astro`,
   headerComp: `${BASE_REL}/GillContextHeaderHero.astro`,
   bodyComp: `${BASE_REL}/GillContextArticleBody.astro`,
+  particularComp: `${BASE_REL}/GillContextSectionParticularVsGeneral.astro`,
   academiesComp: `${BASE_REL}/GillContextSectionAcademies.astro`,
   conclusionComp: `${BASE_REL}/GillContextSectionConclusion.astro`,
   postComp: `${BASE_REL}/GillContextPostArticle.astro`,
@@ -98,6 +99,7 @@ mustExist('Astro Gill context page', PAGE_REL);
 for (const [label, rel] of Object.entries(files)) mustExist(label, rel);
 mustExist('Gill context article section directory', SECTION_DIR_REL);
 mustNotExist('Gill context article-body monolith retired', `${LEGACY_DIR_REL}/article-body.html`);
+mustNotExist('Gill context particular-vs-general raw fragment promoted', `${SECTION_DIR_REL}/02-sec-particular-vs-general.html`);
 mustNotExist('Gill context academies raw fragment promoted', `${SECTION_DIR_REL}/05-sec-academies.html`);
 mustNotExist('Gill context conclusion raw fragment promoted', `${SECTION_DIR_REL}/10-sec-conclusion.html`);
 
@@ -108,6 +110,7 @@ if (!problems.length) {
   const headerComp = read(files.headerComp);
   const bodyComp = read(files.bodyComp);
   const postComp = read(files.postComp);
+  const particularComp = read(files.particularComp);
   const academiesComp = read(files.academiesComp);
   const conclusionComp = read(files.conclusionComp);
   const seg0 = read(files.seg0);
@@ -115,13 +118,17 @@ if (!problems.length) {
   const header = read(files.header);
   const sections = sectionFiles();
   const sectionName = (rel) => rel.split('/').pop() || rel;
-  const sectionsBeforeAcademies = sections.filter((rel) => sectionName(rel) < '05-sec-academies.html');
+  const sectionsBeforeParticular = sections.filter((rel) => sectionName(rel) < '02-sec-particular-vs-general.html');
+  const sectionsBetweenParticularAndAcademies = sections.filter((rel) => {
+    const name = sectionName(rel);
+    return name > '02-sec-particular-vs-general.html' && name < '05-sec-academies.html';
+  });
   const sectionsBetweenAcademiesAndConclusion = sections.filter((rel) => {
     const name = sectionName(rel);
     return name > '05-sec-academies.html' && name < '10-sec-conclusion.html';
   });
   const sectionsAfterConclusion = sections.filter((rel) => sectionName(rel) > '10-sec-conclusion.html');
-  const articleInner = `${sectionsBeforeAcademies.map(read).join('')}${academiesComp}${sectionsBetweenAcademiesAndConclusion.map(read).join('')}${conclusionComp}${sectionsAfterConclusion.map(read).join('')}`;
+  const articleInner = `${sectionsBeforeParticular.map(read).join('')}${particularComp}${sectionsBetweenParticularAndAcademies.map(read).join('')}${academiesComp}${sectionsBetweenAcademiesAndConclusion.map(read).join('')}${conclusionComp}${sectionsAfterConclusion.map(read).join('')}`;
   const article = `<article class="article-body">${articleInner}</article>`;
   const post = read(files.post);
 
@@ -165,6 +172,7 @@ if (!problems.length) {
   mustContain('HeaderHero component raw import', headerComp, '_legacy/header-hero.html?raw');
   mustContain('ArticleBody component owns article wrapper', bodyComp, '<article class="article-body">');
   mustContain('ArticleBody component uses ordered section glob', bodyComp, 'article-sections/*.html');
+  mustContain('ArticleBody component imports promoted particular-vs-general', bodyComp, 'GillContextSectionParticularVsGeneral');
   mustContain('ArticleBody component imports promoted academies', bodyComp, 'GillContextSectionAcademies');
   mustContain('ArticleBody component imports promoted conclusion', bodyComp, 'GillContextSectionConclusion');
   mustNotContain('ArticleBody component no longer imports monolith', bodyComp, 'article-body.html?raw');
@@ -172,6 +180,8 @@ if (!problems.length) {
 
   mustContain('header fragment keeps GBS2 hero', header, 'class="gbs2-hero"');
   mustContain('header fragment keeps Gill H1', header, 'Джон Гилл: исторический контекст');
+  mustContain('particular-vs-general component keeps H2', particularComp, 'id="sec-particular-vs-general"');
+  mustContain('particular-vs-general component keeps table', particularComp, 'compare-table');
   mustContain('academies component keeps academies H2', academiesComp, 'id="sec-academies"');
   mustContain('academies component keeps academy term', academiesComp, 'диссентерских академий');
   mustContain('conclusion component keeps conclusion H2', conclusionComp, 'id="sec-conclusion"');
