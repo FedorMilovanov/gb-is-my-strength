@@ -1,8 +1,8 @@
 # Gill spravochnik pilot implementation — 2026-06-22
 
-**Route:** `/articles/dzhon-gill-spravochnik/`  
-**Status:** Phase GS1 complete in source layer — componentized shadow-breakout, no content/visual change intended.  
-**Gill route progress:** 2 of 5 Gill pages have a componentized Astro shell (`40%`).
+**Route:** `/articles/dzhon-gill-spravochnik/`
+**Status:** Phase GS2 complete in source layer — componentized shadow-breakout + article-body section seams, no content/visual change intended.
+**Gill route progress:** 2 of 5 Gill pages have a componentized Astro shell (`40%`); 1 of 5 Gill pages is fully componentized (`20%`).
 
 ---
 
@@ -35,6 +35,23 @@ New source seams:
 - `src/components/article-pilots/gill-spravochnik/_legacy/article-body.html`
 - `src/components/article-pilots/gill-spravochnik/_legacy/post-article.html`
 
+Phase GS2 retired the article-body monolith:
+
+- removed `src/components/article-pilots/gill-spravochnik/_legacy/article-body.html`;
+- `GillSpravochnikArticleBody.astro` now owns `<article class="article-body">`;
+- body content is rendered from 11 ordered fragments under `src/components/article-pilots/gill-spravochnik/_legacy/article-sections/`:
+  - `00-summary.html`
+  - `01-sec-prdl.html`
+  - `02-sec-timeline.html`
+  - `03-sec-works.html`
+  - `04-sec-body-structure.html`
+  - `05-sec-network.html`
+  - `06-sec-disputes.html`
+  - `07-sec-terms.html`
+  - `08-sec-links.html`
+  - `09-sec-sources.html`
+  - `10-sec-quiz-tail.html`
+
 This preserves the existing GBS2 visual world and article content. It is intentionally **not** an MDX activation.
 
 ---
@@ -53,6 +70,8 @@ It verifies:
 - the page uses Gill-specific Astro seams;
 - generic `BaseLayout` / `ArticleLayout` / `SeriesArticleLayout` are not used;
 - GBS2 markers remain present (`gbs2-rail`, `gbs2-hero`, `gbs2-sheet`, etc.);
+- the article-body monolith is absent;
+- exactly 11 ordered article section fragments remain;
 - reconstructed body matches legacy body after whitespace normalization;
 - word count and H2 count are unchanged;
 - forbidden generic/legacy-regression markers are absent.

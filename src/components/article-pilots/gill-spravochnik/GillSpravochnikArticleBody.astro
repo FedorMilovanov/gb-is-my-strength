@@ -1,10 +1,18 @@
 ---
 /**
- * GillSpravochnikArticleBody — visual-safe article-body seam.
+ * GillSpravochnikArticleBody — Phase GS2 article-body section seams.
  *
- * Do not replace this with MDX directly; promote one section at a time after
- * parity proof and Gill-specific guard updates.
+ * The legacy article-body monolith has been split into ordered fragments while
+ * this component owns the <article class="article-body"> wrapper. Promote one
+ * section at a time after parity proof and Gill-specific guard updates.
  */
-import articleBodyHtml from './_legacy/article-body.html?raw';
+const sectionModules = import.meta.glob('./_legacy/article-sections/*.html', {
+  query: '?raw',
+  import: 'default',
+  eager: true,
+}) as Record<string, string>;
+const sections = Object.entries(sectionModules)
+  .sort(([a], [b]) => a.localeCompare(b))
+  .map(([, html]) => html);
 ---
-<Fragment set:html={articleBodyHtml} />
+<article class="article-body">{sections.map((html) => <Fragment set:html={html} />)}</article>
