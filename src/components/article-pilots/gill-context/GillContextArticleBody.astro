@@ -1,6 +1,6 @@
 ---
 /**
- * GillContextArticleBody — Phase G2–G9 article-body section seams.
+ * GillContextArticleBody — Phase G2–G10 article-body section seams.
  *
  * The legacy article-body monolith has been split into ordered fragments while
  * this component owns the <article class="article-body"> wrapper. Promoted
@@ -13,6 +13,7 @@ import GillContextSectionGreatEjection from './GillContextSectionGreatEjection.a
 import GillContextSectionAcademies from './GillContextSectionAcademies.astro';
 import GillContextSectionSaltersHall from './GillContextSectionSaltersHall.astro';
 import GillContextSectionCoffeeHouse from './GillContextSectionCoffeeHouse.astro';
+import GillContextSectionSouthwark from './GillContextSectionSouthwark.astro';
 import GillContextSectionBooks from './GillContextSectionBooks.astro';
 import GillContextSectionConclusion from './GillContextSectionConclusion.astro';
 
@@ -50,10 +51,16 @@ const sectionsBetweenSaltersAndCoffee = sectionEntries
     return name > '06-sec-salters-hall.html' && name < '07-sec-coffee-house.html';
   })
   .map(([, html]) => html);
-const sectionsBetweenCoffeeAndBooks = sectionEntries
+const sectionsBetweenCoffeeAndSouthwark = sectionEntries
   .filter(([file]) => {
     const name = sectionName(file);
-    return name > '07-sec-coffee-house.html' && name < '09-sec-books.html';
+    return name > '07-sec-coffee-house.html' && name < '08-sec-southwark.html';
+  })
+  .map(([, html]) => html);
+const sectionsBetweenSouthwarkAndBooks = sectionEntries
+  .filter(([file]) => {
+    const name = sectionName(file);
+    return name > '08-sec-southwark.html' && name < '09-sec-books.html';
   })
   .map(([, html]) => html);
 const sectionsBetweenBooksAndConclusion = sectionEntries
@@ -66,4 +73,4 @@ const sectionsAfterConclusion = sectionEntries
   .filter(([file]) => sectionName(file) > '10-sec-conclusion.html')
   .map(([, html]) => html);
 ---
-<article class="article-body">{sectionsBeforeParticular.map((html) => <Fragment set:html={html} />)}<GillContextSectionParticularVsGeneral />{sectionsBetweenParticularAndGreatEjection.map((html) => <Fragment set:html={html} />)}<GillContextSectionGreatEjection />{sectionsBetweenGreatEjectionAndAcademies.map((html) => <Fragment set:html={html} />)}<GillContextSectionAcademies />{sectionsBetweenAcademiesAndSalters.map((html) => <Fragment set:html={html} />)}<GillContextSectionSaltersHall />{sectionsBetweenSaltersAndCoffee.map((html) => <Fragment set:html={html} />)}<GillContextSectionCoffeeHouse />{sectionsBetweenCoffeeAndBooks.map((html) => <Fragment set:html={html} />)}<GillContextSectionBooks />{sectionsBetweenBooksAndConclusion.map((html) => <Fragment set:html={html} />)}<GillContextSectionConclusion />{sectionsAfterConclusion.map((html) => <Fragment set:html={html} />)}</article>
+<article class="article-body">{sectionsBeforeParticular.map((html) => <Fragment set:html={html} />)}<GillContextSectionParticularVsGeneral />{sectionsBetweenParticularAndGreatEjection.map((html) => <Fragment set:html={html} />)}<GillContextSectionGreatEjection />{sectionsBetweenGreatEjectionAndAcademies.map((html) => <Fragment set:html={html} />)}<GillContextSectionAcademies />{sectionsBetweenAcademiesAndSalters.map((html) => <Fragment set:html={html} />)}<GillContextSectionSaltersHall />{sectionsBetweenSaltersAndCoffee.map((html) => <Fragment set:html={html} />)}<GillContextSectionCoffeeHouse />{sectionsBetweenCoffeeAndSouthwark.map((html) => <Fragment set:html={html} />)}<GillContextSectionSouthwark />{sectionsBetweenSouthwarkAndBooks.map((html) => <Fragment set:html={html} />)}<GillContextSectionBooks />{sectionsBetweenBooksAndConclusion.map((html) => <Fragment set:html={html} />)}<GillContextSectionConclusion />{sectionsAfterConclusion.map((html) => <Fragment set:html={html} />)}</article>
