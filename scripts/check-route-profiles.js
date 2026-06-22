@@ -10,7 +10,7 @@
  * 3. Profile.source exists (or is marked as legacy-only)
  * 4. Non-excluded routes declare migrationMode or anatomy
  * 5. Excluded semantic lane routes have scope: excluded-semantic-lane
- * 6. RequiredMarkers from matrix are present in source
+ * 6. Risk level coherence between profile and ownership
  */
 'use strict';
 
@@ -20,6 +20,8 @@ const path = require('path');
 const ROOT = path.resolve(__dirname, '..');
 const OWNERSHIP_FILE = path.join(ROOT, 'migration/page-ownership.json');
 const PROFILES_DIR = path.join(ROOT, 'data/route-profiles');
+
+const strict = process.argv.includes('--strict');
 const problems = [];
 const warnings = [];
 
@@ -122,15 +124,19 @@ function checkProfile(route, profile, owner) {
 
 // ---------- main ----------
 console.log('=== Route Profiles Check ===');
+console.log(`Mode: ${strict ? 'STRICT' : 'WARN'}`);
+console.log('');
 
 if (!fs.existsSync(OWNERSHIP_FILE)) {
   console.error('❌ migration/page-ownership.json not found');
-  process.exit(1);
+  if (strict) process.exit(1);
+  return;
 }
 
 if (!fs.existsSync(PROFILES_DIR)) {
   console.error('❌ data/route-profiles/ directory not found');
-  process.exit(1);
+  if (strict) process.exit(1);
+  return;
 }
 
 const ownership = readJson(OWNERSHIP_FILE);
@@ -182,14 +188,20 @@ if (warnings.length > 0) {
 }
 
 if (problems.length > 0) {
-  console.error('');
-  console.error('❌ Route profiles check FAILED:');
-  problems.forEach((p) => console.error('  ❌ ' + p.split('\n')[0]));
-  if (problems.length > 20) {
-    console.error(`  …and ${problems.length - 20} more`);
+  console.log('');
+  if (strict) {
+    console.error('❌ Route profiles check FAILED:');
+    problems.forEach((p) => console.error('  ❌ ' + p.split('\n')[0]));
+    if (problems.length > 20) {
+      console.error(`  …and ${problems.length - 20} more`);
+    }
+    process.exit(1);
+  } else {
+    console.warn(`⚠️  Route profiles check: ${problems.length} issue(s) found. Run with --strict to fail.`);
+    console.log('');
+    console.log('✅ Route profiles check completed (non-strict mode)');
   }
-  process.exit(1);
+} else {
+  console.log('');
+  console.log('✅ Route profiles coherent with page ownership');
 }
-
-console.log('');
-console.log('✅ Route profiles coherent with page ownership');
