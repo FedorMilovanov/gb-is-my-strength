@@ -11,6 +11,9 @@ concurrency:
   group: shared-files-guard-${{ github.ref }}
   cancel-in-progress: true
 
+permissions:
+  contents: read
+
 jobs:
   guard:
     runs-on: ubuntu-latest
@@ -29,11 +32,10 @@ jobs:
         run: |
           echo "COMMIT_MESSAGE=${{ github.event.head_commit.message }}" >> "$GITHUB_ENV"
           echo "PR_BODY=${{ github.event.pull_request.body }}" >> "$GITHUB_ENV"
-          echo "IS_LANE_BRANCH=${{ contains(github.ref, 'lane/') || contains(github.ref, 'agent/') }}" >> "$GITHUB_ENV"
 
       - name: Guard shared/high-risk files
         run: node scripts/guard-shared-files.js
-        continue-on-error: ${{ github.ref != 'refs/heads/main' && github.event_name != 'pull_request' }}
+        continue-on-error: true
 
       - name: Report shared files touched
         if: always()

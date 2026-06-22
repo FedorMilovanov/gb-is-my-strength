@@ -177,3 +177,7 @@ if (issues.length) {
   process.exit(1);
 }
 console.log('✅ Workflow policy passed');
+console.log('\nNOTE: For GitHub Actions YAML syntax/expression validation,');
+console.log('also run: npx actionlint (or install via: brew install actionlint)');
+console.log('actionlint catches expression syntax, missing inputs, shell errors in run commands.');
+console.log('Add to CI: workflows:check && npx actionlint');
