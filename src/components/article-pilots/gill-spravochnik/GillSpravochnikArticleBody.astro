@@ -1,11 +1,12 @@
 ---
 /**
- * GillSpravochnikArticleBody — Phase GS3 article-body section seams.
+ * GillSpravochnikArticleBody — Phase GS4 article-body section seams.
  *
  * The legacy article-body monolith has been split into ordered fragments while
  * this component owns the <article class="article-body"> wrapper. Promoted
  * sections stay hand-authored Astro markup in the original reading order.
  */
+import GillSpravochnikSectionPrdl from './GillSpravochnikSectionPrdl.astro';
 import GillSpravochnikSectionLinks from './GillSpravochnikSectionLinks.astro';
 
 const sectionModules = import.meta.glob('./_legacy/article-sections/*.html', {
@@ -15,11 +16,17 @@ const sectionModules = import.meta.glob('./_legacy/article-sections/*.html', {
 }) as Record<string, string>;
 const sectionEntries = Object.entries(sectionModules).sort(([a], [b]) => a.localeCompare(b));
 const sectionName = (file: string) => file.split('/').pop() || file;
-const sectionsBeforeLinks = sectionEntries
-  .filter(([file]) => sectionName(file) < '08-sec-links.html')
+const sectionsBeforePrdl = sectionEntries
+  .filter(([file]) => sectionName(file) < '01-sec-prdl.html')
+  .map(([, html]) => html);
+const sectionsBetweenPrdlAndLinks = sectionEntries
+  .filter(([file]) => {
+    const name = sectionName(file);
+    return name > '01-sec-prdl.html' && name < '08-sec-links.html';
+  })
   .map(([, html]) => html);
 const sectionsAfterLinks = sectionEntries
   .filter(([file]) => sectionName(file) > '08-sec-links.html')
   .map(([, html]) => html);
 ---
-<article class="article-body">{sectionsBeforeLinks.map((html) => <Fragment set:html={html} />)}<GillSpravochnikSectionLinks />{sectionsAfterLinks.map((html) => <Fragment set:html={html} />)}</article>
+<article class="article-body">{sectionsBeforePrdl.map((html) => <Fragment set:html={html} />)}<GillSpravochnikSectionPrdl />{sectionsBetweenPrdlAndLinks.map((html) => <Fragment set:html={html} />)}<GillSpravochnikSectionLinks />{sectionsAfterLinks.map((html) => <Fragment set:html={html} />)}</article>
