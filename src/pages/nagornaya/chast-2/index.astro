@@ -1,10 +1,16 @@
 ---
 /**
- * /nagornaya/chast-2/ РЕФАКТОРИНГ 5.0 Phase 6 wave 7 (AGENTS-r255) native pilot.
+ * /nagornaya/chast-2/ — РЕФАКТОРИНГ 6.0 Phase 1: native pilot chast-2.
+ *
+ * 100% Astro-owned page structure for chast-2. Zero raw ?raw imports.
+ * Uses NagornayaChast2PageChrome, MainShell, and PageFooter components.
  */
-import { loadLegacyFullDocument } from "@/utils/legacyFullDocument";
-import NagornayaPageMain from "@/components/nagornaya/NagornayaPageMain.astro";
-const { headHtml, bodyAttributes } = loadLegacyFullDocument("nagornaya/chast-2/index.html");
+import { loadLegacyFullDocument } from '@/utils/legacyFullDocument';
+import NagornayaChast2PageChrome from '@/components/nagornaya/chast-2/NagornayaChast2PageChrome.astro';
+import NagornayaChast2MainShell from '@/components/nagornaya/chast-2/NagornayaChast2MainShell.astro';
+import NagornayaChast2PageFooter from '@/components/nagornaya/chast-2/NagornayaChast2PageFooter.astro';
+
+const { headHtml, bodyAttributes } = loadLegacyFullDocument('nagornaya/chast-2/index.html');
 ---
 <!DOCTYPE html>
 <html lang="ru">
@@ -12,6 +18,11 @@ const { headHtml, bodyAttributes } = loadLegacyFullDocument("nagornaya/chast-2/i
     <Fragment set:html={headHtml} />
   </head>
   <body {...bodyAttributes}>
-    <NagornayaPageMain slug="chast-2" />
+    <div class="sr-only" data-pagefind-body style="position:absolute;left:-9999px;top:auto;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);clip-path:inset(50%);white-space:nowrap">
+      Страница проекта Господь Бог — Сила Моя. Раздел: nagornaya/chast-2.
+    </div>
+    <NagornayaChast2PageChrome />
+    <NagornayaChast2MainShell />
+    <NagornayaChast2PageFooter />
   </body>
 </html>
