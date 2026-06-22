@@ -1,7 +1,7 @@
 # Gill context pilot implementation — 2026-06-22
 
 **Route:** `/articles/dzhon-gill-istoricheskiy-kontekst/`
-**Status:** Phase G16 complete in source layer — componentized shadow-breakout + header/hero, all 12 article-body sections, and post-article SDG block promoted to Astro, no content/visual change intended.
+**Status:** Phase G17 complete in source layer — componentized shadow-breakout + outer GBS2 page chrome, header/hero, all 12 article-body sections, and post-article SDG block promoted to Astro, no content/visual change intended.
 **Reason:** `/articles/kod-da-vinchi/` is being handled by another agent; Gill is the next high-risk, not-currently-active GBS2 route family.
 
 ---
@@ -123,6 +123,13 @@ Phase G16 promoted the post-article seam:
 
 - removed `src/components/article-pilots/gill-context/_legacy/post-article.html`;
 - `GillContextPostArticle.astro` now directly owns the `article-end-sdg-wrap` markup.
+
+Phase G17 promoted the outer GBS2 page chrome:
+
+- removed `src/components/article-pilots/gill-context/_legacy/body-segment-0.html`;
+- removed `src/components/article-pilots/gill-context/_legacy/body-segment-1.html`;
+- added `src/components/article-pilots/gill-context/GillContextPageChrome.astro`;
+- the page now renders `<GillContextPageChrome><GillContextMainShell /></GillContextPageChrome>`.
 
 The components preserve the existing GBS2 visual world and article content. This is intentionally **not** an MDX activation.
 

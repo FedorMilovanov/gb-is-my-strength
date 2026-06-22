@@ -31,9 +31,8 @@ const SECTION_COMPONENTS = [
   'GillContextSectionSourcesAndSeriesTail.astro',
 ];
 const files = {
-  seg0: `${LEGACY_DIR_REL}/body-segment-0.html`,
-  seg1: `${LEGACY_DIR_REL}/body-segment-1.html`,
   shell: `${BASE_REL}/GillContextMainShell.astro`,
+  pageChromeComp: `${BASE_REL}/GillContextPageChrome.astro`,
   headerComp: `${BASE_REL}/GillContextHeaderHero.astro`,
   bodyComp: `${BASE_REL}/GillContextArticleBody.astro`,
   postComp: `${BASE_REL}/GillContextPostArticle.astro`,
@@ -66,6 +65,8 @@ function bodyInner(html) {
 function normalize(html) {
   return String(html || '')
     .replace(/<!-- Pagefind search data:[\s\S]*?<\/div>\s*/i, '')
+    // Astro-only directive for preserving external script tags; not rendered.
+    .replace(/\s+is:inline(?=\s|>)/g, '')
     .replace(/>\s+</g, '><')
     .replace(/\s+/g, ' ')
     .trim();
@@ -93,6 +94,8 @@ console.log('GILL CONTEXT VISUAL-PARITY SOURCE AUDIT');
 mustExist('legacy Gill context route', LEGACY_REL);
 mustExist('Astro Gill context page', PAGE_REL);
 for (const [label, rel] of Object.entries(files)) mustExist(label, rel);
+mustNotExist('Gill context body-segment-0 raw fragment retired', `${LEGACY_DIR_REL}/body-segment-0.html`);
+mustNotExist('Gill context body-segment-1 raw fragment retired', `${LEGACY_DIR_REL}/body-segment-1.html`);
 mustNotExist('Gill context header-hero raw fragment retired', `${LEGACY_DIR_REL}/header-hero.html`);
 mustNotExist('Gill context post-article raw fragment retired', `${LEGACY_DIR_REL}/post-article.html`);
 mustNotExist('Gill context article-body monolith retired', `${LEGACY_DIR_REL}/article-body.html`);
@@ -103,11 +106,10 @@ if (!problems.length) {
   const legacy = read(LEGACY_REL);
   const page = read(PAGE_REL);
   const shell = read(files.shell);
+  const pageChromeComp = read(files.pageChromeComp);
   const headerComp = read(files.headerComp);
   const bodyComp = read(files.bodyComp);
   const postComp = read(files.postComp);
-  const seg0 = read(files.seg0);
-  const seg1 = read(files.seg1);
   const header = headerComp;
   const sectionHtml = SECTION_COMPONENTS.map((comp) => read(`${BASE_REL}/${comp}`)).join('');
   const article = `<article class="article-body">${sectionHtml}</article>`;
@@ -132,8 +134,9 @@ if (!problems.length) {
 
   mustContain('Astro page uses shared full-document loader', page, "loadLegacyFullDocument('articles/dzhon-gill-istoricheskiy-kontekst/index.html')");
   mustContain('Astro page imports GillContextMainShell', page, 'GillContextMainShell');
-  mustContain('Astro page imports body segment before main', page, 'body-segment-0.html?raw');
-  mustContain('Astro page imports body segment after main', page, 'body-segment-1.html?raw');
+  mustContain('Astro page imports GillContextPageChrome', page, 'GillContextPageChrome');
+  mustNotContain('Astro page no longer imports body segment before main', page, 'body-segment-0.html?raw');
+  mustNotContain('Astro page no longer imports body segment after main', page, 'body-segment-1.html?raw');
   mustNotContain('Astro page must not transport full bodyHtml', page, 'bodyHtml');
   mustNotContain('Astro page must not use generic BaseLayout', page, '<BaseLayout');
   mustNotContain('Astro page must not use generic ArticleLayout', page, 'ArticleLayout');
@@ -143,6 +146,10 @@ if (!problems.length) {
   mustContain('Main shell uses header hero component', shell, 'GillContextHeaderHero');
   mustContain('Main shell uses article body component', shell, 'GillContextArticleBody');
   mustContain('Main shell uses post article component', shell, 'GillContextPostArticle');
+  mustContain('PageChrome component exposes slot', pageChromeComp, '<slot />');
+  mustContain('PageChrome component keeps rail', pageChromeComp, 'class="gbs2-rail"');
+  mustContain('PageChrome component keeps mobile sheet', pageChromeComp, 'class="gbs2-sheet"');
+  mustContain('PageChrome component keeps runtime script', pageChromeComp, 'site.js');
   mustNotContain('HeaderHero component no longer imports raw fragment', headerComp, 'header-hero.html?raw');
   mustContain('ArticleBody component owns article wrapper', bodyComp, '<article class="article-body">');
   mustNotContain('ArticleBody component no longer uses raw section glob after full promotion', bodyComp, 'article-sections/*.html');
@@ -168,10 +175,9 @@ if (!problems.length) {
   mustContain('sources/tail section keeps Gill next navigation', sectionHtml, 'gbs2-next');
   mustContain('sources/tail section keeps Gill timeline', sectionHtml, 'gbs2-timeline');
   mustContain('PostArticle component keeps SDG end block', post, 'article-end-sdg-wrap');
-  mustContain('body before segment keeps rail', seg0, 'class="gbs2-rail"');
-  mustContain('body after segment keeps mobile sheet', seg1, 'class="gbs2-sheet"');
 
-  const reconstructed = `${seg0}<main id="main-content">${header}${article}${post}</main>${seg1}`;
+  const main = `<main id="main-content">${header}${article}${post}</main>`;
+  const reconstructed = pageChromeComp.replace('<slot />', main);
   const legacyBody = bodyInner(legacy);
   if (normalize(reconstructed) === normalize(legacyBody)) ok('reconstructed body matches legacy body after whitespace normalization');
   else bad('reconstructed body differs from legacy body after whitespace normalization');
