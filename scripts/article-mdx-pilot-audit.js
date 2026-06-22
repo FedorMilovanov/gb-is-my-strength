@@ -186,7 +186,13 @@ function checkKodDaVinchiBreakoutSource() {
   const src = read(component);
   if (src.includes("article-body.html?raw")) bad('kod-da-vinchi ArticleBody still imports the monolithic article-body.html');
   else ok('kod-da-vinchi ArticleBody no longer imports monolithic article-body.html');
-  mustContain('kod-da-vinchi ArticleBody uses section glob', src, 'article-sections/*.html');
+  // The section glob is required only while raw fragments remain. In the
+  // terminal state (all sections promoted to Astro components) the glob is
+  // retired, so skip this check once promotion is complete.
+  const _sectionDir = path.join(base, '_legacy/article-sections');
+  const _hasRawFragments = fs.existsSync(_sectionDir) && fs.readdirSync(_sectionDir).some((f) => f.endsWith('.html'));
+  if (_hasRawFragments) mustContain('kod-da-vinchi ArticleBody uses section glob', src, 'article-sections/*.html');
+  else ok('kod-da-vinchi all sections promoted — section glob retired (no raw fragments remain)');
   mustContain('kod-da-vinchi ArticleBody imports Astro Pagefind meta component', src, 'KodDaVinchiPagefindMeta');
   // Verify every promoted KodDaVinchiSection*.astro component is actually imported
   // by ArticleBody. The list is derived from the filesystem, so this stays correct
@@ -201,18 +207,23 @@ function checkKodDaVinchiBreakoutSource() {
   mustContain('kod-da-vinchi ArticleBody preserves article-body wrapper', src, '<article class="article-body" data-pagefind-body>');
   if (fs.existsSync(path.join(base, '_legacy/article-body.html'))) bad('kod-da-vinchi monolithic _legacy/article-body.html still exists; keep section seams authoritative');
   else ok('kod-da-vinchi monolithic article-body.html removed after section breakout');
-  if (!fs.existsSync(sectionDir)) return bad('kod-da-vinchi article-sections directory missing');
-  const fragments = fs.readdirSync(sectionDir).filter((f) => f.endsWith('.html')).sort();
   // Total visible content sections: 20 (the pagefind-meta island is a separate
   // non-visible component, not counted). Promoted ones are Astro components;
   // remaining are raw fragments. Count must equal 20 - promoted.
   const totalSections = 20;
+  if (!fs.existsSync(sectionDir)) {
+    // Terminal state: every section promoted → no raw fragments left.
+    if (promotedComponents.length < totalSections) return bad('kod-da-vinchi article-sections directory missing before full promotion');
+    ok(`kod-da-vinchi ALL ${totalSections} sections promoted to Astro (no raw fragments remain)`);
+    return;
+  }
+  const fragments = fs.readdirSync(sectionDir).filter((f) => f.endsWith('.html')).sort();
   const expectedRemaining = totalSections - promotedComponents.length;
   if (fragments.length !== expectedRemaining) bad(`kod-da-vinchi section fragment count drift: expected ${expectedRemaining} remaining legacy visible section fragments (${promotedComponents.length} promoted), got ${fragments.length}`);
   else ok(`kod-da-vinchi remaining legacy visible section fragment count: ${expectedRemaining} (${promotedComponents.length} promoted)`);
   // Verify each promoted section component exists and carries its legacy h2 anchor.
   // The anchor id is derived from the section slug (e.g. KodDaVinchiSectionIntro → sec-intro).
-  const anchorMap = { Gnostic: 'sec-gnostic', Qumran: 'sec-qumran', Lie3: 'sec-lie3', Lie4: 'sec-lie4', Lie5: 'sec-lie5', Lie6: 'sec-lie6', Dates: 'sec-dates', Errors: 'sec-errors', Lie1: 'sec-lie1', Feminine: 'sec-feminine', Lie2: 'sec-lie2', Canon: 'sec-canon', Intro: 'sec-intro', Phenomenon: 'sec-phenomenon' };
+  const anchorMap = { Gnostic: 'sec-gnostic', Qumran: 'sec-qumran', Lie3: 'sec-lie3', Lie4: 'sec-lie4', Lie5: 'sec-lie5', Lie6: 'sec-lie6', Dates: 'sec-dates', Errors: 'sec-errors', Lie1: 'sec-lie1', Feminine: 'sec-feminine', Lie2: 'sec-lie2', Canon: 'sec-canon', Intro: 'sec-intro', Phenomenon: 'sec-phenomenon', Church: 'sec-church', Why: 'sec-why', Quiz: 'sec-quiz', Faq: 'sec-faq', Conclusion: 'sec-conclusion', SummaryTitleAuto: null };
   for (const comp of promotedComponents) {
     const compName = comp.replace(/\.astro$/, '').replace(/^KodDaVinchiSection/, '');
     const anchor = anchorMap[compName];

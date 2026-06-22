@@ -22,19 +22,17 @@ import KodDaVinchiSectionLie4 from './KodDaVinchiSectionLie4.astro';
 import KodDaVinchiSectionLie5 from './KodDaVinchiSectionLie5.astro';
 import KodDaVinchiSectionLie6 from './KodDaVinchiSectionLie6.astro';
 import KodDaVinchiSectionGnostic from './KodDaVinchiSectionGnostic.astro';
+import KodDaVinchiSectionChurch from './KodDaVinchiSectionChurch.astro';
+import KodDaVinchiSectionWhy from './KodDaVinchiSectionWhy.astro';
+import KodDaVinchiSectionQuiz from './KodDaVinchiSectionQuiz.astro';
+import KodDaVinchiSectionFaq from './KodDaVinchiSectionFaq.astro';
+import KodDaVinchiSectionConclusion from './KodDaVinchiSectionConclusion.astro';
+import KodDaVinchiSectionSummaryTitleAuto from './KodDaVinchiSectionSummaryTitleAuto.astro';
 
-// Promoted sections are rendered as named Astro components above (in order).
-// The glob below only matches the remaining raw fragments — promoted .html
-// files are deleted, so no filtering is needed (no double-emission risk).
-const sectionModules = import.meta.glob('./_legacy/article-sections/*.html', {
-  query: '?raw',
-  import: 'default',
-  eager: true,
-}) as Record<string, string>;
-
-const sections = Object.entries(sectionModules)
-  .sort(([a], [b]) => a.localeCompare(b))
-  .map(([, html]) => html);
+// Рефакторинг 6.0 Phase 3g: ALL 20 content sections are now hand-authored Astro
+// components. The legacy raw-fragment glob is retired — no _legacy/article-sections/
+// fragments remain. The article body is fully componentized while preserving
+// byte-for-byte rendered parity with the legacy HTML.
 ---
 <article class="article-body" data-pagefind-body>
   <KodDaVinchiPagefindMeta />
@@ -52,5 +50,10 @@ const sections = Object.entries(sectionModules)
   <KodDaVinchiSectionLie5 />
   <KodDaVinchiSectionLie6 />
   <KodDaVinchiSectionGnostic />
-  {sections.map((html) => <Fragment set:html={html} />)}
+  <KodDaVinchiSectionChurch />
+  <KodDaVinchiSectionWhy />
+  <KodDaVinchiSectionQuiz />
+  <KodDaVinchiSectionFaq />
+  <KodDaVinchiSectionConclusion />
+  <KodDaVinchiSectionSummaryTitleAuto />
 </article>
