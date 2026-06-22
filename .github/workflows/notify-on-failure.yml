@@ -9,6 +9,8 @@ name: Notify on Workflow Failure
 # Если source-links / interactive audit упали — появился hard-broken источник
 # или пользовательский runtime-сценарий.
 # Issue даёт владельцу видимое уведомление прямо в GitHub.
+#
+# Также пытается прикрепить route-impact report из артефактов failed workflow.
 
 on:
   workflow_run:
@@ -19,6 +21,7 @@ on:
       - "Runtime Interactive Audit"
       - "Visual Parity Guard — pixel-diff"
       - "Dist Strangler Dry Run"
+      - "Shared Files Guard"
     types:
       - completed
 
@@ -31,6 +34,26 @@ jobs:
     if: ${{ github.event.workflow_run.conclusion == 'failure' }}
     runs-on: ubuntu-latest
     steps:
+      - name: Try to fetch route-impact report from failed workflow
+        id: route-impact
+        run: |
+          ROUTE_IMPACT=""
+          # Try to download route-impact.json from the failed workflow's artifacts
+          # Workflow run ID is available from the trigger event
+          RUN_ID="${{ github.event.workflow_run.id }}"
+          echo "Fetching artifacts from run $RUN_ID..."
+          # List artifacts for the failed workflow run
+          ARTIFACTS=$(curl -s -H "Authorization: Bearer ${{ github.token }}" \
+            "https://api.github.com/repos/${{ github.repository }}/actions/runs/$RUN_ID/artifacts" \
+            | python3 -c "import sys,json; d=json.load(sys.stdin); [print(a['name'], a['id']) for a in d.get('artifacts',[])]" 2>/dev/null || echo "")
+
+          for ARTIFACT in $ARTIFACTS; do
+            if [[ "$ARTIFACT" == *"route-impact"* ]] || [[ "$ARTIFACT" == *"reports"* ]]; then
+              echo "Found artifact: $ARTIFACT"
+            fi
+          done
+          echo "route_impact_data=$ROUTE_IMPACT" >> "$GITHUB_OUTPUT"
+
       - name: Open or update failure issue
         uses: actions/github-script@v7
         with:
@@ -44,6 +67,36 @@ jobs:
               ? wf.head_commit.message.split('\n')[0]
               : '(no commit message)';
             const triggerActor = wf.actor ? wf.actor.login : 'unknown';
+            const routeImpact = '${{ steps.route-impact.outputs.route_impact_data }}';
+
+            // Build workflow-specific guidance
+            const guidance = {
+              'Deploy to GitHub Pages': '⚠️ **Прод не обновился.** Читатели видят старую версию сайта. Проверь `npm run ci:check` локально.',
+              'IndexNow — Notify Search Engines': '⚠️ **Поисковики (Яндекс, Bing) не узнали про изменения.** Проверь `npm run source:links:dist` — мог быть broken source.',
+              'Source Link Audit': '⚠️ **Hard-broken внешний источник.** TLS error, 404 или bad host. Проверь `npm run source:links:dist` в root и `npm run validate:external`.',
+              'Runtime Interactive Audit': '⚠️ **Сломался пользовательский сценарий.** Series/quiz/search/theme/media runtime. Проверь `npm run interactive-audit`.',
+              'Visual Parity Guard — pixel-diff': '⚠️ **Визуальная регрессия.** Проверь `npm run visual:parity:screenshots -- --routes /` на affected route. Проверь route-impact report.',
+              'Dist Strangler Dry Run': '⚠️ **Production-like dist artifact не собирается.** Проверь `npm run strangler:audit:production-like`.',
+              'Shared Files Guard': '⚠️ **Shared/high-risk файл изменён без разрешения.** Проверь коммит на `[ALLOW_SHARED]` или запусти `npm run guard:shared-files` с `--allow`.',
+            };
+
+            const guidanceText = guidance[wfName] || 'Проверь `npm run ci:check` и `npm run migration:metadata:check`.';
+
+            // Build affected routes hint based on commit message
+            const affectedHint = [];
+            const msg = commitMsg.toLowerCase();
+            if (msg.includes('articles') || msg.includes('article')) affectedHint.push('/articles/');
+            if (msg.includes('biografii') || msg.includes('biography')) affectedHint.push('/biografii/');
+            if (msg.includes('baptist') || msg.includes('баптист')) affectedHint.push('/baptisty-rossii/');
+            if (msg.includes('karty') || msg.includes('карт')) affectedHint.push('/karty/');
+            if (msg.includes('home') || msg.includes('главн')) affectedHint.push('/');
+            if (msg.includes('gill')) affectedHint.push('/articles/dzhon-gill-chast-1-chelovek/');
+            if (msg.includes('nagorn') || msg.includes('нагорн')) affectedHint.push('/nagornaya/');
+            if (msg.includes('konfess') || msg.includes('конфес')) affectedHint.push('/konfessii/');
+
+            const routeBlock = affectedHint.length > 0
+              ? ['\n## Подозреваемые route(s)', '', ...affectedHint.map(r => `- ${r}`), ''].join('\n')
+              : '';
 
             const title = `🚨 CI failure: ${wfName}`;
             const body = [
@@ -53,11 +106,18 @@ jobs:
               `**Запустил:** @${triggerActor}`,
               `**Run URL:** ${wfUrl}`,
               ``,
-              `Если упал \`Deploy to GitHub Pages\` — прод не обновился, читатели видят старую версию сайта.`,
-              `Если упал \`IndexNow\` — поисковики (Яндекс, Bing) не узнали про изменения.`,
-              `Если упал \`Source Link Audit\` — появился hard-broken внешний источник (TLS/404/bad host).`,
-              `Если упал \`Runtime Interactive Audit\` — сломался пользовательский сценарий (series/quiz/search/theme/media).`,
-              `Если упал \`Dist Strangler Dry Run\` — production-like dist artifact не собирается или нарушил URL/publication contract.`,
+              guidanceText,
+              ``,
+              `## Что проверить`,
+              ``,
+              `1. \`npm run ci:check\` — полная локальная проверка (cache-bust → static publication → workflows)`,
+              `2. \`npm run migration:metadata:check\` — route profiles, migration matrix, content source coverage`,
+              `3. \`npm run route:profiles:check --strict\` — все route profiles заполнены`,
+              `4. Для визуальных проблем: \`npm run visual:parity:screenshots -- --routes /articles/\``,
+              `5. Для контентных проблем: \`npm run data:consistency\``,
+              routeBlock,
+              ``,
+              `> Route-impact report артефакт будет прикреплён к следующему push в этой ветке.`,
               ``,
               `Это сообщение создано автоматически workflow'ом \`notify-on-failure.yml\`.`,
               `Закрой это issue, когда проблема устранена; следующее падение откроет новое.`

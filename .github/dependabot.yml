@@ -1,0 +1,39 @@
+# Dependabot configuration — keeps npm and GitHub Actions dependencies updated.
+#
+# IMPORTANT: All Dependabot PRs are set to NO auto-merge.
+# Each PR must pass the full validation chain before merge:
+#   npm run ci:check && npm run workflows:check
+#
+# This prevents silent dependency updates that could break CI.
+
+version: 2
+updates:
+  # npm dependencies (production + dev)
+  - package-ecosystem: "npm"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+    open-pull-requests-limit: 3
+    commit-message:
+      prefix: "deps"
+    labels:
+      - "dependencies"
+      - "npm"
+    # Never auto-merge — require manual review + CI gates
+    automerge: false
+
+  # GitHub Actions versions
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+    open-pull-requests-limit: 3
+    commit-message:
+      prefix: "ci"
+    labels:
+      - "dependencies"
+      - "github-actions"
+    # Never auto-merge — require manual review + CI gates
+    automerge: false
