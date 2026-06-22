@@ -1,10 +1,13 @@
 ---
 import { loadLegacyFullDocument } from '@/utils/legacyFullDocument';
+import GillContextMainShell from '@/components/article-pilots/gill-context/GillContextMainShell.astro';
+import segBefore from '@/components/article-pilots/gill-context/_legacy/body-segment-0.html?raw';
+import segAfter from '@/components/article-pilots/gill-context/_legacy/body-segment-1.html?raw';
 
-// Refactoring 5.0 visual-first migration: /articles/dzhon-gill-istoricheskiy-kontekst/ must preserve the legacy
-// premium visual world until screenshot parity and owner review approve a
-// componentized Astro replacement.
-const { headHtml, bodyHtml, bodyAttributes } = loadLegacyFullDocument('articles/dzhon-gill-istoricheskiy-kontekst/index.html');
+// Refactoring 6.0 Gill Phase G1: componentized shadow-breakout for the
+// historical-context route. Preserve the legacy GBS2 visual world while
+// giving the page Astro seams that can be promoted section-by-section.
+const { headHtml, bodyAttributes } = loadLegacyFullDocument('articles/dzhon-gill-istoricheskiy-kontekst/index.html');
 ---
 <!DOCTYPE html>
 <html lang="ru">
@@ -12,10 +15,12 @@ const { headHtml, bodyHtml, bodyAttributes } = loadLegacyFullDocument('articles/
     <Fragment set:html={headHtml} />
   </head>
   <body {...bodyAttributes}>
-    <!-- Pagefind search data: full-document visual shadow keeps legacy markup, so search text is explicit. -->
+    <!-- Pagefind search data: visual shadow keeps legacy markup without data-pagefind-body, so search text is explicit. -->
     <div class="sr-only" data-pagefind-body style="position:absolute;left:-9999px;top:auto;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);clip-path:inset(50%);white-space:nowrap">
       Джон Гилл: исторический контекст. Мир пуритан и баптистов XVIII века, Лондон, диссентеры, баптисты, Уайтфилд, Уэсли, кальвинизм и история служения.
     </div>
-    <Fragment set:html={bodyHtml} />
+    <Fragment set:html={segBefore} />
+    <GillContextMainShell />
+    <Fragment set:html={segAfter} />
   </body>
 </html>
