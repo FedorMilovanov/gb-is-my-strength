@@ -1,11 +1,21 @@
 ---
 /**
- * GillContextArticleBody — visual-safe article body seam for the Gill context page.
+ * GillContextArticleBody — Phase G2 article-body section seams.
  *
- * Do not replace this with MDX directly: the GBS2/article-body markup carries
- * summary cards, figures, tables, source blocks, and Gill-specific typography.
- * Promote one section at a time after parity proof.
+ * The legacy article-body monolith has been split into ordered fragments while
+ * this component owns the <article class="article-body"> wrapper. Do not
+ * replace the whole body with MDX; promote one section at a time after parity
+ * proof and Gill-specific guard updates.
  */
-import articleBodyHtml from './_legacy/article-body.html?raw';
+const sectionModules = import.meta.glob('./_legacy/article-sections/*.html', {
+  query: '?raw',
+  import: 'default',
+  eager: true,
+}) as Record<string, string>;
+const sections = Object.entries(sectionModules)
+  .sort(([a], [b]) => a.localeCompare(b))
+  .map(([, html]) => html);
 ---
-<Fragment set:html={articleBodyHtml} />
+<article class="article-body">
+  {sections.map((html) => <Fragment set:html={html} />)}
+</article>
