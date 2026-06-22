@@ -13,11 +13,12 @@ const LEGACY_REL = 'articles/dzhon-gill-spravochnik/index.html';
 const PAGE_REL = 'src/pages/articles/dzhon-gill-spravochnik/index.astro';
 const BASE_REL = 'src/components/article-pilots/gill-spravochnik';
 const LEGACY_DIR_REL = `${BASE_REL}/_legacy`;
+const SECTION_DIR_REL = `${LEGACY_DIR_REL}/article-sections`;
+const TOTAL_SECTIONS = 11;
 const files = {
   seg0: `${LEGACY_DIR_REL}/body-segment-0.html`,
   seg1: `${LEGACY_DIR_REL}/body-segment-1.html`,
   header: `${LEGACY_DIR_REL}/header-hero.html`,
-  body: `${LEGACY_DIR_REL}/article-body.html`,
   post: `${LEGACY_DIR_REL}/post-article.html`,
   shell: `${BASE_REL}/GillSpravochnikMainShell.astro`,
   headerComp: `${BASE_REL}/GillSpravochnikHeaderHero.astro`,
@@ -33,6 +34,10 @@ function read(rel) { return fs.readFileSync(abs(rel), 'utf8'); }
 function mustExist(label, rel) {
   if (fs.existsSync(abs(rel))) ok(`${label}: ${rel}`);
   else bad(`${label} missing: ${rel}`);
+}
+function mustNotExist(label, rel) {
+  if (!fs.existsSync(abs(rel))) ok(`${label}: ${rel} absent`);
+  else bad(`${label}: ${rel} must be absent`);
 }
 function mustContain(label, text, needle) {
   if (String(text || '').includes(needle)) ok(`${label}: contains ${needle}`);
@@ -75,6 +80,13 @@ console.log('GILL SPRAVOCHNIK VISUAL-PARITY SOURCE AUDIT');
 mustExist('legacy Gill spravochnik route', LEGACY_REL);
 mustExist('Astro Gill spravochnik page', PAGE_REL);
 for (const [label, rel] of Object.entries(files)) mustExist(label, rel);
+mustExist('Gill spravochnik article section directory', SECTION_DIR_REL);
+if (fs.existsSync(abs(SECTION_DIR_REL))) {
+  const count = fs.readdirSync(abs(SECTION_DIR_REL)).filter((name) => name.endsWith('.html')).length;
+  if (count === TOTAL_SECTIONS) ok(`Gill spravochnik raw article section count: ${TOTAL_SECTIONS}`);
+  else bad(`Gill spravochnik section count drift: expected ${TOTAL_SECTIONS}, got ${count}`);
+}
+mustNotExist('Gill spravochnik article-body monolith retired', `${LEGACY_DIR_REL}/article-body.html`);
 
 if (!problems.length) {
   const legacy = read(LEGACY_REL);
@@ -86,7 +98,8 @@ if (!problems.length) {
   const seg0 = read(files.seg0);
   const seg1 = read(files.seg1);
   const header = read(files.header);
-  const article = read(files.body);
+  const sections = fs.readdirSync(abs(SECTION_DIR_REL)).filter((name) => name.endsWith('.html')).sort().map((name) => read(`${SECTION_DIR_REL}/${name}`));
+  const article = `<article class="article-body">${sections.join('')}</article>`;
   const post = read(files.post);
 
   for (const marker of [
@@ -120,15 +133,17 @@ if (!problems.length) {
   mustContain('Main shell uses article body component', shell, 'GillSpravochnikArticleBody');
   mustContain('Main shell uses post article component', shell, 'GillSpravochnikPostArticle');
   mustContain('HeaderHero component raw import', headerComp, '_legacy/header-hero.html?raw');
-  mustContain('ArticleBody component raw import', bodyComp, '_legacy/article-body.html?raw');
+  mustContain('ArticleBody component owns article wrapper', bodyComp, '<article class="article-body">');
+  mustContain('ArticleBody component uses ordered section glob', bodyComp, 'article-sections/*.html');
+  mustNotContain('ArticleBody component no longer imports monolith', bodyComp, 'article-body.html?raw');
   mustContain('PostArticle component raw import', postComp, '_legacy/post-article.html?raw');
 
   mustContain('header fragment keeps GBS2 hero', header, 'class="gbs2-hero"');
   mustContain('header fragment keeps Gill reference H1', header, 'Джон Гилл: справочник');
-  mustContain('article fragment keeps summary card', article, 'summary-card');
-  mustContain('article fragment keeps sources section', article, 'sec-sources');
-  mustContain('article fragment keeps quiz', article, 'quizPlaceholder');
-  mustContain('article fragment keeps Gill next navigation', article, 'gbs2-next');
+  mustContain('article sections keep summary card', article, 'summary-card');
+  mustContain('article sections keep sources section', article, 'sec-sources');
+  mustContain('article sections keep quiz', article, 'quizPlaceholder');
+  mustContain('article sections keep Gill next navigation', article, 'gbs2-next');
   mustContain('post fragment keeps SDG end block', post, 'article-end-sdg-wrap');
   mustContain('body before segment keeps rail', seg0, 'class="gbs2-rail"');
   mustContain('body after segment keeps mobile sheet', seg1, 'class="gbs2-sheet"');
