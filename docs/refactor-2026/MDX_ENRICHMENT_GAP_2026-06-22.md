@@ -33,6 +33,17 @@ The former `00-pagefind-meta.html` fragment has been promoted into a real Astro 
 
 This proves the smallest safe replacement unit: non-visible metadata first, visible sections next. The next safe step is one visible low-risk section/component, with comment-insensitive article parity and visual gates.
 
+## Phase 3c update — 2026-06-22
+
+First visible section promoted to Astro without MDX yet:
+
+- `01-sec-intro.html` removed from legacy fragments.
+- `KodDaVinchiSectionIntro.astro` now owns the intro section (`sec-intro`, `drop-cap`, first `fn-marker`, `quote-box`).
+- Remaining visible raw fragments: 19, starting at `02-sec-phenomenon.html`.
+- Comment-insensitive article-body parity with legacy root remains exact after production-like build.
+
+This proves visible-section replacement can be done safely when DOM hooks/classes are preserved. Next safe target: a small self-contained visual component section such as stats/phenomenon or a summary/list block, followed by pixel/DOM parity.
+
 ## Количественный разрыв
 
 | Метрика | Legacy HTML | MDX | Дельта |
