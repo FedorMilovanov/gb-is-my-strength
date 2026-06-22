@@ -10,6 +10,12 @@
 import KodDaVinchiPagefindMeta from './KodDaVinchiPagefindMeta.astro';
 import KodDaVinchiSectionIntro from './KodDaVinchiSectionIntro.astro';
 import KodDaVinchiSectionPhenomenon from './KodDaVinchiSectionPhenomenon.astro';
+import KodDaVinchiSectionDates from './KodDaVinchiSectionDates.astro';
+import KodDaVinchiSectionErrors from './KodDaVinchiSectionErrors.astro';
+import KodDaVinchiSectionLie1 from './KodDaVinchiSectionLie1.astro';
+import KodDaVinchiSectionFeminine from './KodDaVinchiSectionFeminine.astro';
+import KodDaVinchiSectionLie2 from './KodDaVinchiSectionLie2.astro';
+import KodDaVinchiSectionCanon from './KodDaVinchiSectionCanon.astro';
 
 const sectionModules = import.meta.glob('./_legacy/article-sections/*.html', {
   query: '?raw',
@@ -18,7 +24,7 @@ const sectionModules = import.meta.glob('./_legacy/article-sections/*.html', {
 }) as Record<string, string>;
 
 const sections = Object.entries(sectionModules)
-  .filter(([file]) => !file.includes('/01-sec-intro.html') && !file.includes('/02-sec-phenomenon.html'))
+  .filter(([file]) => ![/01-sec-intro/, /02-sec-phenomenon/, /03-sec-dates/, /04-sec-errors/, /05-sec-lie1/, /06-sec-feminine/, /07-sec-lie2/, /08-sec-canon/].some((re) => re.test(file)))
   .sort(([a], [b]) => a.localeCompare(b))
   .map(([, html]) => html);
 ---
@@ -26,5 +32,11 @@ const sections = Object.entries(sectionModules)
   <KodDaVinchiPagefindMeta />
   <KodDaVinchiSectionIntro />
   <KodDaVinchiSectionPhenomenon />
+  <KodDaVinchiSectionDates />
+  <KodDaVinchiSectionErrors />
+  <KodDaVinchiSectionLie1 />
+  <KodDaVinchiSectionFeminine />
+  <KodDaVinchiSectionLie2 />
+  <KodDaVinchiSectionCanon />
   {sections.map((html) => <Fragment set:html={html} />)}
 </article>
