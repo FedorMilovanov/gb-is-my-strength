@@ -1382,3 +1382,7 @@ Pagefind metadata for `/articles/kod-da-vinchi/` moved from raw fragment `00-pag
 ## 2026-06-22 — Refactoring 6.0 parallel pilot: `/` hero and SDG block promoted to Astro
 
 `/` was advanced one step further on the same independent lane: after the first split into `hero.html` / `resume-mobile.html` / `directions.html` / `planned.html` / `publications.html` / `refutations.html` / `about.html` / `quote.html` / `post-article.html`, `HomeMain.astro` no longer imports `hero.html` or `post-article.html`. The premium home shell now uses hand-authored Astro components — `HomeHeroSection.astro` and `HomeArticleEndBlock.astro` — while the middle sections remain legacy-faithful raw fragments. `scripts/home-visual-parity-audit.js` was upgraded to guard this hybrid componentized-main contract and forbid regression back to those raw imports.
+
+## 2026-06-22 — Refactoring 6.0 parallel pilot: `/` about/quote/footer layer promoted to Astro
+
+`/` was advanced one step further on the same independent lane: `HomeMain.astro` no longer imports `about.html` or `quote.html`. The premium home shell now uses hand-authored Astro components — `HomeAboutSection.astro`, `HomeQuoteSection.astro`, `HomeAccuracyBlock.astro`, and `HomeFooter.astro` — while the middle operational sections (`resume-mobile`, `directions`, `planned`, `publications`, `refutations`) remain legacy-faithful raw fragments. `scripts/home-visual-parity-audit.js` was upgraded to guard this richer hybrid componentized-main contract and forbid regression back to those raw imports.
