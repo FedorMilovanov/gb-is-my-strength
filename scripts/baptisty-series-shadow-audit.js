@@ -14,7 +14,18 @@ const DIST = path.join(ROOT, 'dist');
 const SITE = 'https://gospod-bog.ru';
 const NO_BUILD = process.argv.includes('--no-build');
 const MIN_WORD_RATIO = 0.8;
-const NATIVE_SHADOW_ROUTES = ['dva-sezda-1884', 'noch-na-kure'];
+const NATIVE_SHADOW_ROUTES = [
+  'noch-na-kure',
+  'yuzhnaya-shtunda',
+  'dva-sezda-1884',
+  'peterburgskaya-liniya',
+  'goneniya-i-sovest',
+  'sovetskaya-noch',
+  'vsehib-1944',
+  'iniciativnaya-gruppa',
+  'podpolnaya-pechat',
+  'spravochnik',
+];
 const ROUTES = [
   'noch-na-kure',
   'yuzhnaya-shtunda',
