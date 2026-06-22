@@ -39,6 +39,28 @@
 
 ---
 
+
+
+### P0-X — "20 антисоветов" 40 vs 67 мин ✅ ЗАКРЫТ
+
+**Статус:** закрыт в 1e378efd. Canonical = 67 мин (series.json, pagefind meta).
+- `articles/20-antisovetov-pastoru/index.html`: byline 40→67 мин
+- `index.html`: planned-series card 40+→67 мин
+- Все три источника (series.json, pagefind, visible) теперь согласованы.
+
+### P2-30 — ci:check порядок ✅ ЗАКРЫТ
+
+**Статус:** закрыт в 1e378efd.
+- `ci:check`: был validate→cache-bust, стал cache-bust→validate.
+- Теперь порядок идентичен deploy.yml и indexnow.yml.
+- Предотвращает ложную зелень когда cache-bust меняет файлы после validation.
+
+### P2-29 — Dist Strangler Dry Run в notify ✅ УЖЕ ЕСТЬ
+
+**Статус:** подтверждено — проверка в `scripts/check-workflows.js` строке 161.
+`notify-on-failure.yml` уже содержит 'Dist Strangler Dry Run' в workflows list (c56f213).
+
+---
 ## 1. Сессия 2026-06-22 — восстановление направления
 
 ### Контекст
