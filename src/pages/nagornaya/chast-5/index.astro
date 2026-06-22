@@ -1,10 +1,15 @@
 ---
 /**
- * /nagornaya/chast-5/ РЕФАКТОРИНГ 5.0 Phase 6 wave 7 (AGENTS-r255) native pilot.
+ * /nagornaya/chast-5/ — РЕФАКТОРИНГ 6.0 Phase 1: native pilot chast-5.
+ *
+ * 100% Astro-owned page structure. Zero raw ?raw imports.
  */
-import { loadLegacyFullDocument } from "@/utils/legacyFullDocument";
-import NagornayaPageMain from "@/components/nagornaya/NagornayaPageMain.astro";
-const { headHtml, bodyAttributes } = loadLegacyFullDocument("nagornaya/chast-5/index.html");
+import { loadLegacyFullDocument } from '@/utils/legacyFullDocument';
+import NagornayaChast5PageChrome from '@/components/nagornaya/chast-5/NagornayaChast5PageChrome.astro';
+import NagornayaChast5MainShell from '@/components/nagornaya/chast-5/NagornayaChast5MainShell.astro';
+import NagornayaChast5PageFooter from '@/components/nagornaya/chast-5/NagornayaChast5PageFooter.astro';
+
+const { headHtml, bodyAttributes } = loadLegacyFullDocument('nagornaya/chast-5/index.html');
 ---
 <!DOCTYPE html>
 <html lang="ru">
@@ -12,6 +17,11 @@ const { headHtml, bodyAttributes } = loadLegacyFullDocument("nagornaya/chast-5/i
     <Fragment set:html={headHtml} />
   </head>
   <body {...bodyAttributes}>
-    <NagornayaPageMain slug="chast-5" />
+    <div class="sr-only" data-pagefind-body style="position:absolute;left:-9999px;top:auto;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);clip-path:inset(50%);white-space:nowrap">
+      Страница проекта Господь Бог — Сила Моя. Раздел: nagornaya/chast-5.
+    </div>
+    <NagornayaChast5PageChrome />
+    <NagornayaChast5MainShell />
+    <NagornayaChast5PageFooter />
   </body>
 </html>
