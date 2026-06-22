@@ -6,8 +6,11 @@
  *   - <head> loaded verbatim via loadLegacyFullDocument => SEO byte-identical;
  *   - body chrome (navbar, mobile menu, footer, runtime scripts) preserved
  *     verbatim through body-segment-{0,1}.html fragments;
- *   - <main id="main-content"> promoted to BiografiiMain.astro component
- *     (currently re-emits its _legacy/main.html source verbatim).
+ *   - <main id="main-content"> promoted to BiografiiMain.astro component;
+ *     BiografiiMain assembles hand-authored Astro leaf sections
+ *     (BiografiiRecentSection, BiografiiFocusSection, BiografiiEraStubSection,
+ *     BiografiiAwakeningSection, BiografiiEpigraphSection, BiografiiArticleEndBlock)
+ *     while preserving legacy DOM/copy/classes. Body chrome remains legacy-segmented.
  *
  * Pixel parity proof:
  *   npm run visual:parity:screenshots -- --routes /biografii/
