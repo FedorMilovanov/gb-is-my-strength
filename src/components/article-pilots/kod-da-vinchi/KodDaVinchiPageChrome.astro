@@ -1,0 +1,51 @@
+---
+/**
+ * KodDaVinchiPageChrome — Phase 5a: body-segment-0 Astro component.
+ *
+ * Replaces the last raw ?raw import before <main>.
+ * Contains: skip-link, reading-progress, section-label, theme-toggle,
+ *           toc-sidebar, breadcrumb.
+ *
+ * DOM/classes/IDs are byte-identical to the legacy HTML so site.js
+ * selectors and CSS rules continue to match.
+ */
+---
+<a class="skip-link" href="#content">Перейти к содержанию</a>
+<div id="reading-progress"></div>
+<div aria-hidden="true" id="section-label"></div>
+<!-- ВНИМАНИЕ: inline style="top:..." на этой кнопке ЗАПРЕЩЁН — позиция задана в site.css (.theme-toggle) и выровнена по хлебным крошкам -->
+<button aria-label="Переключить тему" class="theme-toggle" id="themeToggle">
+  <svg class="icon-moon" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24" aria-hidden="true" focusable="false">
+    <path d="M21 12.8A9 9 0 1111.2 3 7 7 0 0021 12.8z"></path>
+  </svg>
+  <svg class="icon-sun" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24" aria-hidden="true" focusable="false">
+    <circle cx="12" cy="12" r="5"></circle>
+    <line x1="12" x2="12" y1="1" y2="4"></line>
+    <line x1="12" x2="12" y1="20" y2="23"></line>
+    <line x1="1" x2="4" y1="12" y2="12"></line>
+    <line x1="20" x2="23" y1="12" y2="12"></line>
+    <line x1="4.2" x2="6.3" y1="4.2" y2="6.3"></line>
+    <line x1="17.7" x2="19.8" y1="17.7" y2="19.8"></line>
+    <line x1="4.2" x2="6.3" y1="19.8" y2="17.7"></line>
+    <line x1="17.7" x2="19.8" y1="6.3" y2="4.2"></line>
+  </svg>
+</button>
+<div class="toc-sidebar" id="tocSidebar">
+  <nav aria-label="Содержание">
+    <div class="toc-label">Содержание</div>
+  </nav>
+</div>
+<div class="page-wrap" id="content">
+  <nav aria-label="Хлебные крошки" class="breadcrumb">
+    <ol class="breadcrumb__list">
+      <li class="breadcrumb__item">
+        <a class="breadcrumb__link" href="../../">Главная</a>
+      </li>
+      <li class="breadcrumb__item">
+        <a class="breadcrumb__link" href="../../#razbor">Разбор заблуждений</a>
+      </li>
+      <li aria-current="page" class="breadcrumb__item">
+        <span class="breadcrumb__current">«Код да Винчи»: мифы о Марии Магдалине и Никее</span>
+      </li>
+    </ol>
+  </nav>
