@@ -16,7 +16,16 @@ import KodDaVinchiSectionLie1 from './KodDaVinchiSectionLie1.astro';
 import KodDaVinchiSectionFeminine from './KodDaVinchiSectionFeminine.astro';
 import KodDaVinchiSectionLie2 from './KodDaVinchiSectionLie2.astro';
 import KodDaVinchiSectionCanon from './KodDaVinchiSectionCanon.astro';
+import KodDaVinchiSectionQumran from './KodDaVinchiSectionQumran.astro';
+import KodDaVinchiSectionLie3 from './KodDaVinchiSectionLie3.astro';
+import KodDaVinchiSectionLie4 from './KodDaVinchiSectionLie4.astro';
+import KodDaVinchiSectionLie5 from './KodDaVinchiSectionLie5.astro';
+import KodDaVinchiSectionLie6 from './KodDaVinchiSectionLie6.astro';
+import KodDaVinchiSectionGnostic from './KodDaVinchiSectionGnostic.astro';
 
+// Promoted sections are rendered as named Astro components above (in order).
+// The glob below only matches the remaining raw fragments — promoted .html
+// files are deleted, so no filtering is needed (no double-emission risk).
 const sectionModules = import.meta.glob('./_legacy/article-sections/*.html', {
   query: '?raw',
   import: 'default',
@@ -24,7 +33,6 @@ const sectionModules = import.meta.glob('./_legacy/article-sections/*.html', {
 }) as Record<string, string>;
 
 const sections = Object.entries(sectionModules)
-  .filter(([file]) => ![/01-sec-intro/, /02-sec-phenomenon/, /03-sec-dates/, /04-sec-errors/, /05-sec-lie1/, /06-sec-feminine/, /07-sec-lie2/, /08-sec-canon/].some((re) => re.test(file)))
   .sort(([a], [b]) => a.localeCompare(b))
   .map(([, html]) => html);
 ---
@@ -38,5 +46,11 @@ const sections = Object.entries(sectionModules)
   <KodDaVinchiSectionFeminine />
   <KodDaVinchiSectionLie2 />
   <KodDaVinchiSectionCanon />
+  <KodDaVinchiSectionQumran />
+  <KodDaVinchiSectionLie3 />
+  <KodDaVinchiSectionLie4 />
+  <KodDaVinchiSectionLie5 />
+  <KodDaVinchiSectionLie6 />
+  <KodDaVinchiSectionGnostic />
   {sections.map((html) => <Fragment set:html={html} />)}
 </article>
