@@ -1,0 +1,30 @@
+---
+/**
+ * GillContextArticleBody — Phase G2/G3 article-body section seams.
+ *
+ * The legacy article-body monolith has been split into ordered fragments while
+ * this component owns the <article class="article-body"> wrapper. Phase G3
+ * promotes the first low-risk visible section (conclusion) to Astro markup.
+ * Do not replace the whole body with MDX; promote one section at a time after
+ * parity proof and Gill-specific guard updates.
+ */
+import GillContextSectionConclusion from './GillContextSectionConclusion.astro';
+
+const sectionModules = import.meta.glob('./_legacy/article-sections/*.html', {
+  query: '?raw',
+  import: 'default',
+  eager: true,
+}) as Record<string, string>;
+const sectionEntries = Object.entries(sectionModules).sort(([a], [b]) => a.localeCompare(b));
+const sectionsBeforeConclusion = sectionEntries
+  .filter(([file]) => !file.includes('/11-sec-sources-and-series-tail.html'))
+  .map(([, html]) => html);
+const sectionsAfterConclusion = sectionEntries
+  .filter(([file]) => file.includes('/11-sec-sources-and-series-tail.html'))
+  .map(([, html]) => html);
+---
+<article class="article-body">
+  {sectionsBeforeConclusion.map((html) => <Fragment set:html={html} />)}
+  <GillContextSectionConclusion />
+  {sectionsAfterConclusion.map((html) => <Fragment set:html={html} />)}
+</article>
