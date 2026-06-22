@@ -9,6 +9,7 @@
  */
 import KodDaVinchiPagefindMeta from './KodDaVinchiPagefindMeta.astro';
 import KodDaVinchiSectionIntro from './KodDaVinchiSectionIntro.astro';
+import KodDaVinchiSectionPhenomenon from './KodDaVinchiSectionPhenomenon.astro';
 
 const sectionModules = import.meta.glob('./_legacy/article-sections/*.html', {
   query: '?raw',
@@ -17,12 +18,13 @@ const sectionModules = import.meta.glob('./_legacy/article-sections/*.html', {
 }) as Record<string, string>;
 
 const sections = Object.entries(sectionModules)
-  .filter(([file]) => !file.includes('/01-sec-intro.html'))
+  .filter(([file]) => !file.includes('/01-sec-intro.html') && !file.includes('/02-sec-phenomenon.html'))
   .sort(([a], [b]) => a.localeCompare(b))
   .map(([, html]) => html);
 ---
 <article class="article-body" data-pagefind-body>
   <KodDaVinchiPagefindMeta />
   <KodDaVinchiSectionIntro />
+  <KodDaVinchiSectionPhenomenon />
   {sections.map((html) => <Fragment set:html={html} />)}
 </article>
