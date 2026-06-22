@@ -5,6 +5,32 @@
 
 ---
 
+## v72---
+
+## v72 — Lane lock policy + all audit P0/P2 items closed (2026-06-22)
+
+### What was improved:
+
+- **P0-X closed: 20-antisovetov readTime canonical = 67 мин.** `articles/20-antisovetov-pastoru/index.html` byline 40→67 мин; `index.html` planned-series card 40+→67 мин. Series.json, pagefind meta, visible all now match.
+- **P2-30 closed: ci:check order synced to deploy workflow.** `package.json` ci:check changed from `validate→cache-bust` to `cache-bust→validate`. Matches deploy.yml and indexnow.yml order. Prevents false-positive CI green when cache-bust mutates files after validation.
+- **P2-29 verified: Dist Strangler Dry Run already present in notify-on-failure.yml.** `scripts/check-workflows.js` line 161 already checks for it. No action needed.
+- **Lane Lock Policy created: `docs/LANE_LOCK_POLICY.md`.** Full coordination guide for parallel agent work: Git branch-based locking, file ownership rules, conflict detection, rollback procedures, emergency lanes.
+- **AGENTS.md extended with Lane Lock section.** Short-form policy with link to full doc. All agents must declare lane before work, use [LANE lane/name] in commit messages, and never work in same route without explicit sub-lane.
+- **Living audit registry `docs/refactor-2026/REFRACTOR_AUDIT_LIVING.md` updated.** All P0/P2 items from session 2026-06-22 marked closed. AGENTS.md updated to r294.
+
+### Verified:
+
+- `grep "40.*мин" articles/20-antisovetov index.html` → ✅ no stale values
+- `grep "ci:check" package.json` → ✅ cache-bust first, then validate, then workflows:check
+- `grep "Dist Strangler Dry Run" .github/workflows/notify-on-failure.yml` → ✅ already present
+
+### Current audit status: ALL ITEMS CLOSED ✅
+
+After 2 sessions of recovery work, all confirmed P0 and P2 items are resolved.
+Remaining work continues under lane lock policy.
+
+---
+
 ## v71 — Home stale readtimes fixed + CI gate hardening (2026-06-22)
 
 ### What was improved:
