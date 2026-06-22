@@ -1,0 +1,43 @@
+name: Shared Files Guard
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+    branches: [main]
+  push:
+    branches: [main, "lane/**", "agent/**"]
+
+concurrency:
+  group: shared-files-guard-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  guard:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: "npm"
+
+      - name: Read commit/PR context
+        run: |
+          echo "COMMIT_MESSAGE=${{ github.event.head_commit.message }}" >> "$GITHUB_ENV"
+          echo "PR_BODY=${{ github.event.pull_request.body }}" >> "$GITHUB_ENV"
+          echo "IS_LANE_BRANCH=${{ contains(github.ref, 'lane/') || contains(github.ref, 'agent/') }}" >> "$GITHUB_ENV"
+
+      - name: Guard shared/high-risk files
+        run: node scripts/guard-shared-files.js
+        continue-on-error: ${{ github.ref != 'refs/heads/main' && github.event_name != 'pull_request' }}
+
+      - name: Report shared files touched
+        if: always()
+        run: |
+          echo "Branch: ${{ github.ref_name }}"
+          echo "Event: ${{ github.event_name }}"
+          echo "Shared files guard result: ${{ job.status }}"
