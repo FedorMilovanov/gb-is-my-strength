@@ -1358,3 +1358,7 @@ Pagefind metadata for `/articles/kod-da-vinchi/` moved from raw fragment `00-pag
 ## 2026-06-22 — Refactoring 6.0 parallel pilot: `/baptisty-rossii/` landing main split
 
 `/baptisty-rossii/` was advanced on the same independent lane: `BaptistyRossiiMain.astro` no longer imports one monolithic `_legacy/main.html?raw` fragment. The GBS2 landing main is now assembled from named legacy-faithful fragments — `header-hero.html`, `article-body.html`, and `post-article.html` — while preserving the premium series DOM/classes/text/copy. `scripts/baptisty-rossii-visual-parity-audit.js` was upgraded to guard this new contract and forbid regression back to the raw main import.
+
+## 2026-06-22 — Refactoring 6.0 parallel pilot: `/articles/` catalog main split
+
+`/articles/` was advanced on the same independent lane: `ArticlesMain.astro` no longer imports one monolithic `_legacy/main.html?raw` fragment. The catalog main is now assembled from named legacy-faithful fragments — `hero.html`, `publications.html`, `refutations.html`, and `post-article.html` — while preserving the premium catalog DOM/classes/text/copy. `scripts/articles-visual-parity-audit.js` was upgraded to guard this new contract and forbid regression back to the raw main import.

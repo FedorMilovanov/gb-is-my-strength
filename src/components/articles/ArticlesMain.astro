@@ -2,9 +2,17 @@
 /**
  * ArticlesMain.astro — <main id="main-content"> of /articles/.
  *
- * Phase 6 native-shadow pilot (AGENTS-r251). Pixel-parity guarded via
+ * Refactoring 6.0 parallel pilot: the route no longer proxies one monolithic
+ * `_legacy/main.html?raw` block. Instead, the catalog main shell is assembled
+ * from named legacy-faithful fragments while preserving exact DOM/copy.
+ *
+ * Pixel-parity contract remains guarded via
  *   npm run visual:parity:screenshots -- --routes /articles/
+ * and source-contract audit in scripts/articles-visual-parity-audit.js.
  */
-import legacyHtml from './_legacy/main.html?raw';
+import hero from './_legacy/hero.html?raw';
+import publications from './_legacy/publications.html?raw';
+import refutations from './_legacy/refutations.html?raw';
+import postArticle from './_legacy/post-article.html?raw';
 ---
-<Fragment set:html={legacyHtml} />
+<main id="main-content"><Fragment set:html={hero} /><Fragment set:html={publications} /><Fragment set:html={refutations} /><Fragment set:html={postArticle} /></main>
