@@ -11,7 +11,7 @@
  *   npm run visual:parity:screenshots -- --routes / --threshold 0.5
  * and source-contract audit in scripts/home-visual-parity-audit.js.
  */
-import hero from './_legacy/hero.html?raw';
+import HomeHeroSection from './HomeHeroSection.astro';
 import resumeMobile from './_legacy/resume-mobile.html?raw';
 import directions from './_legacy/directions.html?raw';
 import planned from './_legacy/planned.html?raw';
@@ -19,12 +19,12 @@ import publications from './_legacy/publications.html?raw';
 import refutations from './_legacy/refutations.html?raw';
 import about from './_legacy/about.html?raw';
 import quote from './_legacy/quote.html?raw';
-import postArticle from './_legacy/post-article.html?raw';
+import HomeArticleEndBlock from './HomeArticleEndBlock.astro';
 ---
 
 <main id="main-content" data-pagefind-body>
   <div class="home-content">
-    <Fragment set:html={hero} />
+    <HomeHeroSection />
     <Fragment set:html={resumeMobile} />
     <Fragment set:html={directions} />
     <Fragment set:html={planned} />
@@ -33,5 +33,5 @@ import postArticle from './_legacy/post-article.html?raw';
     <Fragment set:html={about} />
     <Fragment set:html={quote} />
   </div><!-- /.home-content -->
-  <Fragment set:html={postArticle} />
+  <HomeArticleEndBlock />
 </main>

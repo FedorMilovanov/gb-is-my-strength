@@ -56,6 +56,8 @@ must(page, '_legacy/body-segment-1.html',
      'Astro / preserves verbatim legacy body chrome after <main>');
 
 mustExist('src/components/home/HomeMain.astro', 'HomeMain.astro component file');
+mustExist('src/components/home/HomeHeroSection.astro', 'HomeHeroSection.astro');
+mustExist('src/components/home/HomeArticleEndBlock.astro', 'HomeArticleEndBlock.astro');
 mustExist('src/components/home/_legacy/main.html', 'home main.html legacy baseline');
 for (const rel of ['hero.html','resume-mobile.html','directions.html','planned.html','publications.html','refutations.html','about.html','quote.html','post-article.html']) {
   mustExist(`src/components/home/_legacy/${rel}`, rel);
@@ -66,8 +68,13 @@ mustExist('src/components/home/_legacy/body-segment-1.html', 'home body-segment-
 const main = read('src/components/home/HomeMain.astro');
 must(main, '<main id="main-content" data-pagefind-body>', 'HomeMain preserves semantic main wrapper');
 must(main, '<div class="home-content">', 'HomeMain preserves home-content wrapper');
-for (const frag of ['hero.html?raw','resume-mobile.html?raw','directions.html?raw','planned.html?raw','publications.html?raw','refutations.html?raw','about.html?raw','quote.html?raw','post-article.html?raw']) {
+must(main, 'HomeHeroSection', 'HomeMain uses HomeHeroSection');
+must(main, 'HomeArticleEndBlock', 'HomeMain uses HomeArticleEndBlock');
+for (const frag of ['resume-mobile.html?raw','directions.html?raw','planned.html?raw','publications.html?raw','refutations.html?raw','about.html?raw','quote.html?raw']) {
   must(main, frag, `HomeMain uses ${frag}`);
+}
+for (const banned of ['hero.html?raw','post-article.html?raw']) {
+  mustNot(main, banned, `removed raw import: ${banned}`);
 }
 mustNot(main, "import legacyHtml from './_legacy/main.html?raw'", 'raw monolithic main import removed');
 
@@ -77,8 +84,10 @@ for (const marker of ['main-content', 'h-hero', 'h-mobile-dashboard', 'h-feature
                       'gb-accuracy-block']) {
   must(mainFragment, marker, `main baseline preserves ${marker}`);
 }
+must(read('src/components/home/HomeHeroSection.astro'), 'h-hero-title', 'HomeHeroSection marker: h-hero-title');
+must(read('src/components/home/HomeHeroSection.astro'), 'heroSearchBar', 'HomeHeroSection marker: heroSearchBar');
+must(read('src/components/home/HomeHeroSection.astro'), 'h-mobile-hero-hub', 'HomeHeroSection marker: h-mobile-hero-hub');
 for (const [file, marker] of [
-  ['hero.html','h-hero'],
   ['resume-mobile.html','resume-reading-block'],
   ['directions.html','hDirectionsLabel'],
   ['planned.html','hPlannedLabel'],
@@ -86,10 +95,10 @@ for (const [file, marker] of [
   ['refutations.html','id="razbor"'],
   ['about.html','id="about"'],
   ['quote.html','h-quote-section'],
-  ['post-article.html','Soli Deo Gloria'],
 ]) {
   must(read(`src/components/home/_legacy/${file}`), marker, `${file} marker: ${marker}`);
 }
+must(read('src/components/home/HomeArticleEndBlock.astro'), 'Soli Deo Gloria', 'HomeArticleEndBlock marker: Soli Deo Gloria');
 
 const segBefore = read('src/components/home/_legacy/body-segment-0.html');
 for (const marker of ['skip-link', 'h-mobile-nav', 'h-navbar', 'home-v20']) {
