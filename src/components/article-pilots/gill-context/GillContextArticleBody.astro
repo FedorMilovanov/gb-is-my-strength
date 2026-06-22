@@ -1,0 +1,11 @@
+---
+/**
+ * GillContextArticleBody — visual-safe article body seam for the Gill context page.
+ *
+ * Do not replace this with MDX directly: the GBS2/article-body markup carries
+ * summary cards, figures, tables, source blocks, and Gill-specific typography.
+ * Promote one section at a time after parity proof.
+ */
+import articleBodyHtml from './_legacy/article-body.html?raw';
+---
+<Fragment set:html={articleBodyHtml} />
