@@ -1,7 +1,7 @@
 # Gill context pilot implementation — 2026-06-22
 
 **Route:** `/articles/dzhon-gill-istoricheskiy-kontekst/`
-**Status:** Phase G15 complete in source layer — componentized shadow-breakout + header/hero and all 12 article-body sections promoted to Astro, no content/visual change intended.
+**Status:** Phase G16 complete in source layer — componentized shadow-breakout + header/hero, all 12 article-body sections, and post-article SDG block promoted to Astro, no content/visual change intended.
 **Reason:** `/articles/kod-da-vinchi/` is being handled by another agent; Gill is the next high-risk, not-currently-active GBS2 route family.
 
 ---
@@ -118,6 +118,11 @@ Phase G15 promoted the header/hero seam:
 
 - removed `src/components/article-pilots/gill-context/_legacy/header-hero.html`;
 - `GillContextHeaderHero.astro` now directly owns the GBS2 hero figure and article header markup.
+
+Phase G16 promoted the post-article seam:
+
+- removed `src/components/article-pilots/gill-context/_legacy/post-article.html`;
+- `GillContextPostArticle.astro` now directly owns the `article-end-sdg-wrap` markup.
 
 The components preserve the existing GBS2 visual world and article content. This is intentionally **not** an MDX activation.
 

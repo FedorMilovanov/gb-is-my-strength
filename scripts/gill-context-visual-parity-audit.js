@@ -33,7 +33,6 @@ const SECTION_COMPONENTS = [
 const files = {
   seg0: `${LEGACY_DIR_REL}/body-segment-0.html`,
   seg1: `${LEGACY_DIR_REL}/body-segment-1.html`,
-  post: `${LEGACY_DIR_REL}/post-article.html`,
   shell: `${BASE_REL}/GillContextMainShell.astro`,
   headerComp: `${BASE_REL}/GillContextHeaderHero.astro`,
   bodyComp: `${BASE_REL}/GillContextArticleBody.astro`,
@@ -95,6 +94,7 @@ mustExist('legacy Gill context route', LEGACY_REL);
 mustExist('Astro Gill context page', PAGE_REL);
 for (const [label, rel] of Object.entries(files)) mustExist(label, rel);
 mustNotExist('Gill context header-hero raw fragment retired', `${LEGACY_DIR_REL}/header-hero.html`);
+mustNotExist('Gill context post-article raw fragment retired', `${LEGACY_DIR_REL}/post-article.html`);
 mustNotExist('Gill context article-body monolith retired', `${LEGACY_DIR_REL}/article-body.html`);
 mustNotExist('Gill context raw section directory retired after full promotion', SECTION_DIR_REL);
 for (const comp of SECTION_COMPONENTS) mustExist(`Gill context promoted section ${comp}`, `${BASE_REL}/${comp}`);
@@ -111,7 +111,7 @@ if (!problems.length) {
   const header = headerComp;
   const sectionHtml = SECTION_COMPONENTS.map((comp) => read(`${BASE_REL}/${comp}`)).join('');
   const article = `<article class="article-body">${sectionHtml}</article>`;
-  const post = read(files.post);
+  const post = postComp;
 
   for (const marker of [
     'class="gbs-world"',
@@ -149,7 +149,7 @@ if (!problems.length) {
   for (const comp of SECTION_COMPONENTS) {
     mustContain(`ArticleBody imports ${comp}`, bodyComp, comp.replace(/\.astro$/, ''));
   }
-  mustContain('PostArticle component raw import', postComp, '_legacy/post-article.html?raw');
+  mustNotContain('PostArticle component no longer imports raw fragment', postComp, 'post-article.html?raw');
 
   mustContain('HeaderHero component keeps GBS2 hero', header, 'class="gbs2-hero"');
   mustContain('HeaderHero component keeps Gill H1', header, 'Джон Гилл: исторический контекст');
@@ -167,7 +167,7 @@ if (!problems.length) {
   mustContain('sources/tail section keeps source section', sectionHtml, 'sec-sources-context');
   mustContain('sources/tail section keeps Gill next navigation', sectionHtml, 'gbs2-next');
   mustContain('sources/tail section keeps Gill timeline', sectionHtml, 'gbs2-timeline');
-  mustContain('post fragment keeps SDG end block', post, 'article-end-sdg-wrap');
+  mustContain('PostArticle component keeps SDG end block', post, 'article-end-sdg-wrap');
   mustContain('body before segment keeps rail', seg0, 'class="gbs2-rail"');
   mustContain('body after segment keeps mobile sheet', seg1, 'class="gbs2-sheet"');
 
