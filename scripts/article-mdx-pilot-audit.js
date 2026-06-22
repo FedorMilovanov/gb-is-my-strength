@@ -177,6 +177,27 @@ function iso(value) {
   const d = new Date(value);
   return Number.isFinite(d.valueOf()) ? d.toISOString() : '';
 }
+
+function checkKodDaVinchiBreakoutSource() {
+  const base = path.join(ROOT, 'src/components/article-pilots/kod-da-vinchi');
+  const component = path.join(base, 'KodDaVinchiArticleBody.astro');
+  const sectionDir = path.join(base, '_legacy/article-sections');
+  if (!fs.existsSync(component)) return bad('kod-da-vinchi ArticleBody component missing');
+  const src = read(component);
+  if (src.includes("article-body.html?raw")) bad('kod-da-vinchi ArticleBody still imports the monolithic article-body.html');
+  else ok('kod-da-vinchi ArticleBody no longer imports monolithic article-body.html');
+  mustContain('kod-da-vinchi ArticleBody uses section glob', src, 'article-sections/*.html');
+  mustContain('kod-da-vinchi ArticleBody preserves article-body wrapper', src, '<article class="article-body" data-pagefind-body>');
+  if (fs.existsSync(path.join(base, '_legacy/article-body.html'))) bad('kod-da-vinchi monolithic _legacy/article-body.html still exists; keep section seams authoritative');
+  else ok('kod-da-vinchi monolithic article-body.html removed after section breakout');
+  if (!fs.existsSync(sectionDir)) return bad('kod-da-vinchi article-sections directory missing');
+  const fragments = fs.readdirSync(sectionDir).filter((f) => f.endsWith('.html')).sort();
+  if (fragments.length !== 21) bad(`kod-da-vinchi section fragment count drift: expected 21, got ${fragments.length}`);
+  else ok('kod-da-vinchi section fragment count: 21');
+  if (fragments[0] !== '00-pagefind-meta.html') bad(`kod-da-vinchi first fragment must be pagefind meta, got ${fragments[0]}`);
+  else ok('kod-da-vinchi pagefind meta fragment first');
+}
+
 function runBuild() {
   if (NO_BUILD) return;
   console.log('▶ Building strangler dist for MDX article shadow audit…');
@@ -333,6 +354,7 @@ function auditArticle(item) {
 
 function main() {
   console.log(`ARTICLE MDX PUBLIC SHADOW AUDIT (${NO_BUILD ? 'no-build' : 'build'}, content parity ${REQUIRE_CONTENT_PARITY ? 'required' : 'advisory'})`);
+  checkKodDaVinchiBreakoutSource();
   runBuild();
 
   const retiredPreviewPath = distFile(RETIRED_PREVIEW_REL);
