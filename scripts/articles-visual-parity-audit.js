@@ -2,10 +2,8 @@
 /*
  * Guard /articles/ native-shadow Astro contract.
  *
- * Refactoring 5.0 promoted /articles/ to a native-shadow catalog route.
- * Refactoring 6.0 parallel pilot now replaces the monolithic
- * `_legacy/main.html?raw` import with named legacy-faithful fragments for the
- * hero, publications list, refutations list and terminal SDG block.
+ * Refactoring 6.0 parallel pilot now replaces raw catalog fragment imports with
+ * hand-authored Astro components that preserve the premium legacy DOM/copy.
  */
 'use strict';
 const fs = require('fs');
@@ -35,35 +33,35 @@ must(page, '_legacy/body-segment-0.html', 'preserves verbatim body chrome before
 must(page, '_legacy/body-segment-1.html', 'preserves verbatim body chrome after <main>');
 
 mustExist('src/components/articles/ArticlesMain.astro', 'ArticlesMain.astro');
+mustExist('src/components/articles/ArticlesHeroSection.astro', 'ArticlesHeroSection.astro');
+mustExist('src/components/articles/ArticlesPublicationsSection.astro', 'ArticlesPublicationsSection.astro');
+mustExist('src/components/articles/ArticlesRefutationsSection.astro', 'ArticlesRefutationsSection.astro');
+mustExist('src/components/articles/ArticlesArticleEndBlock.astro', 'ArticlesArticleEndBlock.astro');
 mustExist('src/components/articles/_legacy/main.html', 'main.html legacy baseline');
-mustExist('src/components/articles/_legacy/hero.html', 'hero.html fragment');
-mustExist('src/components/articles/_legacy/publications.html', 'publications.html fragment');
-mustExist('src/components/articles/_legacy/refutations.html', 'refutations.html fragment');
-mustExist('src/components/articles/_legacy/post-article.html', 'post-article.html fragment');
 mustExist('src/components/articles/_legacy/body-segment-0.html', 'body-segment-0.html');
 mustExist('src/components/articles/_legacy/body-segment-1.html', 'body-segment-1.html');
 
 must(main, '<main id="main-content">', 'ArticlesMain preserves semantic main wrapper');
-must(main, 'hero.html?raw', 'ArticlesMain uses hero fragment');
-must(main, 'publications.html?raw', 'ArticlesMain uses publications fragment');
-must(main, 'refutations.html?raw', 'ArticlesMain uses refutations fragment');
-must(main, 'post-article.html?raw', 'ArticlesMain uses postArticle fragment');
+for (const comp of ['ArticlesHeroSection','ArticlesPublicationsSection','ArticlesRefutationsSection','ArticlesArticleEndBlock']) {
+  must(main, comp, `ArticlesMain uses ${comp}`);
+}
+for (const banned of ['hero.html?raw','publications.html?raw','refutations.html?raw','post-article.html?raw']) {
+  mustNot(main, banned, `removed raw import: ${banned}`);
+}
 mustNot(main, "import legacyHtml from './_legacy/main.html?raw'", 'raw monolithic main import removed');
 
 for (const marker of ['Каталог статей', 'Публикации', 'Разбор заблуждений', 'Soli Deo Gloria']) {
   must(baseline, marker, `main baseline marker: ${marker}`);
 }
-for (const marker of ['h-hero-title', 'Все</span><span class="h-title-dash"', 'h-hero-desc']) {
-  must(read('src/components/articles/_legacy/hero.html'), marker, `hero fragment marker: ${marker}`);
-}
-for (const marker of ['id="publikacii"', 'Тайны человеческого сердца — серия', 'Нагорная проповедь — полная серия']) {
-  must(read('src/components/articles/_legacy/publications.html'), marker, `publications fragment marker: ${marker}`);
-}
-for (const marker of ['id="razbor"', 'Код да Винчи', 'историческая подмена']) {
-  must(read('src/components/articles/_legacy/refutations.html'), marker, `refutations fragment marker: ${marker}`);
-}
-for (const marker of ['article-end-block', 'Soli Deo Gloria']) {
-  must(read('src/components/articles/_legacy/post-article.html'), marker, `post fragment marker: ${marker}`);
+for (const [file, marker] of [
+  ['src/components/articles/ArticlesHeroSection.astro','h-hero-title'],
+  ['src/components/articles/ArticlesPublicationsSection.astro','id="publikacii"'],
+  ['src/components/articles/ArticlesPublicationsSection.astro','Нагорная проповедь — полная серия'],
+  ['src/components/articles/ArticlesRefutationsSection.astro','id="razbor"'],
+  ['src/components/articles/ArticlesRefutationsSection.astro','историческая подмена'],
+  ['src/components/articles/ArticlesArticleEndBlock.astro','Soli Deo Gloria'],
+]) {
+  must(read(file), marker, `${path.basename(file)} marker: ${marker}`);
 }
 
 for (const marker of ['import BaseLayout', '<BaseLayout', 'astro-card-grid', 'astro-shell']) {
