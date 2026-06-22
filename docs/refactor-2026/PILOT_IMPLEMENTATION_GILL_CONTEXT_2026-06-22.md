@@ -1,7 +1,7 @@
 # Gill context pilot implementation — 2026-06-22
 
 **Route:** `/articles/dzhon-gill-istoricheskiy-kontekst/`
-**Status:** Phase G12 complete in source layer — componentized shadow-breakout + article-body section seams + ten visible Astro sections, no content/visual change intended.
+**Status:** Phase G13 complete in source layer — componentized shadow-breakout + article-body section seams + summary/intro plus ten visible Astro sections, no content/visual change intended.
 **Reason:** `/articles/kod-da-vinchi/` is being handled by another agent; Gill is the next high-risk, not-currently-active GBS2 route family.
 
 ---
@@ -100,8 +100,13 @@ Phase G11 promoted the ninth visible section:
 Phase G12 promoted the tenth visible section:
 
 - removed `src/components/article-pilots/gill-context/_legacy/article-sections/04-sec-clarendon.html`;
-- added `src/components/article-pilots/gill-context/GillContextSectionClarendon.astro`;
-- `GillContextArticleBody.astro` now renders 2 raw fragments + 10 Astro sections in the original order.
+- added `src/components/article-pilots/gill-context/GillContextSectionClarendon.astro`.
+
+Phase G13 promoted the summary/intro block:
+
+- removed `src/components/article-pilots/gill-context/_legacy/article-sections/00-summary-and-intro.html`;
+- added `src/components/article-pilots/gill-context/GillContextSectionSummaryIntro.astro`;
+- `GillContextArticleBody.astro` now renders 1 raw fragment + 11 Astro sections in the original order.
 
 The fragments/components preserve the existing GBS2 visual world and article content. This is intentionally **not** an MDX activation.
 
@@ -122,8 +127,8 @@ It verifies:
 - generic `BaseLayout` / `ArticleLayout` / `SeriesArticleLayout` are not used;
 - GBS2 markers remain present (`gbs2-rail`, `gbs2-hero`, `gbs2-sheet`, etc.);
 - the article-body monolith is absent;
-- there are exactly 2 raw article section fragments plus 10 promoted Astro sections;
-- the old `01-sec-from-puritans-to-baptists.html`, `02-sec-particular-vs-general.html`, `03-sec-great-ejection.html`, `04-sec-clarendon.html`, `05-sec-academies.html`, `06-sec-salters-hall.html`, `07-sec-coffee-house.html`, `08-sec-southwark.html`, `09-sec-books.html`, and `10-sec-conclusion.html` raw fragments are absent;
+- there is exactly 1 raw article section fragment plus 11 promoted Astro sections;
+- the old `00-summary-and-intro.html`, `01-sec-from-puritans-to-baptists.html`, `02-sec-particular-vs-general.html`, `03-sec-great-ejection.html`, `04-sec-clarendon.html`, `05-sec-academies.html`, `06-sec-salters-hall.html`, `07-sec-coffee-house.html`, `08-sec-southwark.html`, `09-sec-books.html`, and `10-sec-conclusion.html` raw fragments are absent;
 - reconstructed body matches legacy body after whitespace normalization;
 - word count and H2 count are unchanged;
 - forbidden generic/legacy-regression markers are absent.

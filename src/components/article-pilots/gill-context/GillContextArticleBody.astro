@@ -1,6 +1,6 @@
 ---
 /**
- * GillContextArticleBody — Phase G2–G12 article-body section seams.
+ * GillContextArticleBody — Phase G2–G13 article-body section seams.
  *
  * The legacy article-body monolith has been split into ordered fragments while
  * this component owns the <article class="article-body"> wrapper. Promoted
@@ -8,6 +8,7 @@
  * Do not replace the whole body with MDX; promote one section at a time after
  * parity proof and Gill-specific guard updates.
  */
+import GillContextSectionSummaryIntro from './GillContextSectionSummaryIntro.astro';
 import GillContextSectionFromPuritansToBaptists from './GillContextSectionFromPuritansToBaptists.astro';
 import GillContextSectionParticularVsGeneral from './GillContextSectionParticularVsGeneral.astro';
 import GillContextSectionGreatEjection from './GillContextSectionGreatEjection.astro';
@@ -26,8 +27,11 @@ const sectionModules = import.meta.glob('./_legacy/article-sections/*.html', {
 }) as Record<string, string>;
 const sectionEntries = Object.entries(sectionModules).sort(([a], [b]) => a.localeCompare(b));
 const sectionName = (file: string) => file.split('/').pop() || file;
-const sectionsBeforeFromPuritans = sectionEntries
-  .filter(([file]) => sectionName(file) < '01-sec-from-puritans-to-baptists.html')
+const sectionsBetweenSummaryAndFromPuritans = sectionEntries
+  .filter(([file]) => {
+    const name = sectionName(file);
+    return name > '00-summary-and-intro.html' && name < '01-sec-from-puritans-to-baptists.html';
+  })
   .map(([, html]) => html);
 const sectionsBetweenFromPuritansAndParticular = sectionEntries
   .filter(([file]) => {
@@ -87,4 +91,4 @@ const sectionsAfterConclusion = sectionEntries
   .filter(([file]) => sectionName(file) > '10-sec-conclusion.html')
   .map(([, html]) => html);
 ---
-<article class="article-body">{sectionsBeforeFromPuritans.map((html) => <Fragment set:html={html} />)}<GillContextSectionFromPuritansToBaptists />{sectionsBetweenFromPuritansAndParticular.map((html) => <Fragment set:html={html} />)}<GillContextSectionParticularVsGeneral />{sectionsBetweenParticularAndGreatEjection.map((html) => <Fragment set:html={html} />)}<GillContextSectionGreatEjection />{sectionsBetweenGreatEjectionAndClarendon.map((html) => <Fragment set:html={html} />)}<GillContextSectionClarendon />{sectionsBetweenClarendonAndAcademies.map((html) => <Fragment set:html={html} />)}<GillContextSectionAcademies />{sectionsBetweenAcademiesAndSalters.map((html) => <Fragment set:html={html} />)}<GillContextSectionSaltersHall />{sectionsBetweenSaltersAndCoffee.map((html) => <Fragment set:html={html} />)}<GillContextSectionCoffeeHouse />{sectionsBetweenCoffeeAndSouthwark.map((html) => <Fragment set:html={html} />)}<GillContextSectionSouthwark />{sectionsBetweenSouthwarkAndBooks.map((html) => <Fragment set:html={html} />)}<GillContextSectionBooks />{sectionsBetweenBooksAndConclusion.map((html) => <Fragment set:html={html} />)}<GillContextSectionConclusion />{sectionsAfterConclusion.map((html) => <Fragment set:html={html} />)}</article>
+<article class="article-body"><GillContextSectionSummaryIntro />{sectionsBetweenSummaryAndFromPuritans.map((html) => <Fragment set:html={html} />)}<GillContextSectionFromPuritansToBaptists />{sectionsBetweenFromPuritansAndParticular.map((html) => <Fragment set:html={html} />)}<GillContextSectionParticularVsGeneral />{sectionsBetweenParticularAndGreatEjection.map((html) => <Fragment set:html={html} />)}<GillContextSectionGreatEjection />{sectionsBetweenGreatEjectionAndClarendon.map((html) => <Fragment set:html={html} />)}<GillContextSectionClarendon />{sectionsBetweenClarendonAndAcademies.map((html) => <Fragment set:html={html} />)}<GillContextSectionAcademies />{sectionsBetweenAcademiesAndSalters.map((html) => <Fragment set:html={html} />)}<GillContextSectionSaltersHall />{sectionsBetweenSaltersAndCoffee.map((html) => <Fragment set:html={html} />)}<GillContextSectionCoffeeHouse />{sectionsBetweenCoffeeAndSouthwark.map((html) => <Fragment set:html={html} />)}<GillContextSectionSouthwark />{sectionsBetweenSouthwarkAndBooks.map((html) => <Fragment set:html={html} />)}<GillContextSectionBooks />{sectionsBetweenBooksAndConclusion.map((html) => <Fragment set:html={html} />)}<GillContextSectionConclusion />{sectionsAfterConclusion.map((html) => <Fragment set:html={html} />)}</article>
