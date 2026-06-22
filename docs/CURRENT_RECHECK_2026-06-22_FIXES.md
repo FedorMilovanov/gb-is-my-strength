@@ -81,3 +81,17 @@ Runtime browser check on production-like `dist` confirmed `/articles/kod-da-vinc
 
 - `audit-pro` still warns about total CSS budget and long AGENTS changelog size.
 - URL contract compare reports an informational title drift for `/karty/ishod/`, because this route is now a ready interactive map instead of an old holding page.
+
+## Follow-up cleanup before refactor continuation
+
+Additional cleanup removed the last non-blocking audit noise:
+
+- AGENTS changelog compacted to the latest 20 rows; older AGENTS-r140..r243 rows were preserved in `AUDIT_HISTORY.md`.
+- `audit-pro` CSS budget now treats `css/site-layered.css` as route-scoped/pilot CSS rather than global core CSS, so the global CSS budget measures the real always-loaded surface.
+- `data/public-content-baseline.json` was aligned with the ready `/karty/ishod/` title/H1 to remove the stale contract warning.
+
+Current `audit-pro` summary after this cleanup:
+
+```txt
+165 passed · 0 warnings · 0 errors
+```

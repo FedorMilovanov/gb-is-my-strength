@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updated": "2026-06-22T00:00:00.000Z",
+  "updated": "2026-06-22T13:25:00.000Z",
   "note": "Migration baseline: public indexable HTML pages. Update intentionally before a platform migration only after review.",
   "pages": [
     {
@@ -202,9 +202,9 @@
     {
       "file": "karty/ishod/index.html",
       "url": "https://gospod-bog.ru/karty/ishod/",
-      "title": "Исход из Египта — временно на визуальном аудите | Господь Бог — Сила Моя",
-      "h1": "Исход из Египта",
-      "words": 58
+      "title": "Исход из Египта — интерактивная карта Числа 33 | Господь Бог — Сила Моя",
+      "h1": "Исход из Египта — интерактивная карта",
+      "words": 5
     },
     {
       "file": "konfessii/index.html",

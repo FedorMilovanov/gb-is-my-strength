@@ -91,7 +91,7 @@ const CACHE_BUST_ASSETS = [
   'js/nagornaya-mobile-toc.js'
 ];
 
-const MAX_CSS_TOTAL = 425_000; // core CSS budget; route-scoped CSS is reported separately
+const MAX_CSS_TOTAL = 425_000; // global core CSS budget; route-scoped/pilot CSS is reported separately
 const MAX_JS_TOTAL = 365_000; // includes sw.js + mobile utils; site.js is intentionally large right now
 const MAX_HTML = 450_000;
 // Anti-regression ceiling for !important in css/site.css. AGENTS §4.10 target is ≤200.
@@ -240,9 +240,10 @@ function extractSiteConfig(html, fileLabel) {
 
 // 2. Size budget
 (function sizeBudget() {
-  // Core budget excludes route-scoped generated CSS such as nagornaya/tw.min.css.
-  // That file is required and cache-busted, but it is not a global stylesheet for every page.
-  const routeScopedCss = new Set(['nagornaya/tw.min.css']);
+  // Core budget excludes route-scoped/pilot CSS: nagornaya/tw.min.css is
+  // Tailwind-route scoped; site-layered.css is a one-route refactor pilot
+  // duplicate of site.css and must not make the global budget look 2× larger.
+  const routeScopedCss = new Set(['nagornaya/tw.min.css', 'css/site-layered.css']);
   const cssAssetsAll = [...ALLOWED_CSS, ...REQUIRED_EXTRA_CSS].filter(exists);
   const cssAssetsCore = cssAssetsAll.filter(f => !routeScopedCss.has(f));
   const cssAssetsRoute = cssAssetsAll.filter(f => routeScopedCss.has(f));
