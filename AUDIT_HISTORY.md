@@ -1334,3 +1334,7 @@ Rows AGENTS-r140..AGENTS-r243 were moved out of AGENTS.md to keep the live agent
 ## 2026-06-22 — Refactoring 6.0 Phase 3b: Kod Da Vinci Pagefind meta island
 
 Pagefind metadata for `/articles/kod-da-vinchi/` moved from raw fragment `00-pagefind-meta.html` into `KodDaVinchiPagefindMeta.astro`, the first real Astro-owned island inside the legacy-compatible article body. The visible body now remains as 20 ordered section fragments. Related-card read times were synced to `data/search-manifest.json`, and `scripts/check-data-consistency.js` now blocks related-card read-time drift.
+
+## 2026-06-22 — Refactoring 6.0 Phase 3c: first visible Kod Da Vinci section component
+
+`01-sec-intro.html` was promoted to `KodDaVinchiSectionIntro.astro`, the first visible Astro-owned section inside `/articles/kod-da-vinchi/` article body. The component preserves the legacy DOM hooks/classes (`sec-intro`, `drop-cap`, `fn-marker`, `quote-box`) while remaining visible sections stay as 19 ordered fragments. `article-mdx-pilot-audit` now enforces the intro component markers. Comment-insensitive legacy article body parity remains exact after build.

@@ -8,6 +8,7 @@
  * activation: one section can be replaced and parity-tested independently.
  */
 import KodDaVinchiPagefindMeta from './KodDaVinchiPagefindMeta.astro';
+import KodDaVinchiSectionIntro from './KodDaVinchiSectionIntro.astro';
 
 const sectionModules = import.meta.glob('./_legacy/article-sections/*.html', {
   query: '?raw',
@@ -16,10 +17,12 @@ const sectionModules = import.meta.glob('./_legacy/article-sections/*.html', {
 }) as Record<string, string>;
 
 const sections = Object.entries(sectionModules)
+  .filter(([file]) => !file.includes('/01-sec-intro.html'))
   .sort(([a], [b]) => a.localeCompare(b))
   .map(([, html]) => html);
 ---
 <article class="article-body" data-pagefind-body>
   <KodDaVinchiPagefindMeta />
+  <KodDaVinchiSectionIntro />
   {sections.map((html) => <Fragment set:html={html} />)}
 </article>
