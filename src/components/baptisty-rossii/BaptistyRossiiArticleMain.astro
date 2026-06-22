@@ -1,0 +1,23 @@
+---
+/**
+ * BaptistyRossiiArticleMain.astro — semantic <main id="main-content"> for
+ * individual /baptisty-rossii/* article routes.
+ *
+ * РЕФАКТОРИНГ 6.0: native-shadow breakout for series article routes.
+ * The GBS2 chrome (mobile-head, rail, bbar, sheet) is preserved in the page
+ * body-segment-{0,1} fragments; only the semantic <main> block is promoted to
+ * this named component so the route can be owned by Astro while keeping 100%
+ * visual parity.
+ *
+ * The component accepts the verbatim legacy <main> markup as a prop. This keeps
+ * the first breakout safe and pixel-identical; later iterations can replace the
+ * raw HTML with hand-authored Astro/MDX section components under the same
+ * GBS2 chrome.
+ */
+interface Props {
+  legacyHtml: string;
+}
+const { legacyHtml } = Astro.props;
+---
+
+<Fragment set:html={legacyHtml} />

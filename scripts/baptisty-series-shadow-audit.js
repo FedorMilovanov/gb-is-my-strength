@@ -14,6 +14,7 @@ const DIST = path.join(ROOT, 'dist');
 const SITE = 'https://gospod-bog.ru';
 const NO_BUILD = process.argv.includes('--no-build');
 const MIN_WORD_RATIO = 0.8;
+const NATIVE_SHADOW_ROUTES = ['dva-sezda-1884', 'noch-na-kure'];
 const ROUTES = [
   'noch-na-kure',
   'yuzhnaya-shtunda',
@@ -91,6 +92,32 @@ function mustContain(label, html, needle) {
   else bad(`${label}: missing ${needle}`);
 }
 
+function auditNativeShadowSource(slug) {
+  if (!NATIVE_SHADOW_ROUTES.includes(slug)) return;
+  const pagePath = file(`src/pages/baptisty-rossii/${slug}/index.astro`);
+  if (!fs.existsSync(pagePath)) return bad(`${slug}: native-shadow Astro page missing`);
+  const src = read(pagePath);
+
+  const legacyDir = file(`src/components/baptisty-rossii/_legacy/${slug}`);
+  if (!fs.existsSync(legacyDir)) return bad(`${slug}: native-shadow _legacy directory missing`);
+  for (const f of ['body-segment-0.html', 'body-segment-1.html', 'main.html']) {
+    if (!fs.existsSync(path.join(legacyDir, f))) bad(`${slug}: native-shadow _legacy/${f} missing`);
+    else ok(`${slug}: native-shadow _legacy/${f} present`);
+  }
+
+  if (src.includes('BaptistyRossiiArticleMain')) ok(`${slug}: uses BaptistyRossiiArticleMain component`);
+  else bad(`${slug}: native-shadow page must use BaptistyRossiiArticleMain`);
+
+  if (src.includes('_legacy/' + slug + '/body-segment-0.html')) ok(`${slug}: imports body-segment-0.html`);
+  else bad(`${slug}: native-shadow page must import body-segment-0.html`);
+
+  if (src.includes('_legacy/' + slug + '/body-segment-1.html')) ok(`${slug}: imports body-segment-1.html`);
+  else bad(`${slug}: native-shadow page must import body-segment-1.html`);
+
+  if (!src.includes('bodyHtml')) ok(`${slug}: no full-body shadow bodyHtml (native-shadow recipe)`);
+  else bad(`${slug}: native-shadow page must NOT import bodyHtml from loadLegacyFullDocument`);
+}
+
 function auditSlug(slug) {
   console.log(`\nBAPTISTY: ${slug}`);
   const rel = `baptisty-rossii/${slug}/index.html`;
@@ -134,6 +161,8 @@ function auditSlug(slug) {
   else ok(`${slug}: word-count parity within threshold`);
 
   if (!/og:image:type/.test(astro)) note(`${slug}: og:image:type not found as plain text; verify via head parser if needed`);
+
+  auditNativeShadowSource(slug);
 }
 
 function main() {
