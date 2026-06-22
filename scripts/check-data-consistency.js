@@ -11,6 +11,19 @@ const issues = [];
 function fail(kind, detail) { issues.push({ kind, detail }); }
 function read(rel) { return fs.readFileSync(path.join(ROOT, rel), 'utf8'); }
 function exists(rel) { return fs.existsSync(path.join(ROOT, rel)); }
+
+function routePathForHtmlFile(file) {
+  const clean = String(file || '').replace(/\\/g, '/').replace(/\/index\.html$/, '/');
+  return clean === 'index.html' ? '/' : '/' + clean;
+}
+function normalizeInternalHref(baseRoute, href) {
+  if (!href || /^(https?:|mailto:|tel:|#)/i.test(href)) return '';
+  if (href.startsWith('/')) return href.endsWith('/') || /\.[a-z0-9]+$/i.test(href) ? href : href + '/';
+  const joined = path.posix.normalize(path.posix.join(baseRoute, href));
+  const out = joined.startsWith('/') ? joined : '/' + joined;
+  return out.endsWith('/') || /\.[a-z0-9]+$/i.test(out) ? out : out + '/';
+}
+
 function routeToFile(url) {
   const clean = String(url || '').split('#')[0].replace(/^\//, '').replace(/\/$/, '');
   if (!clean) return 'index.html';
@@ -157,6 +170,41 @@ for (const item of searchItems) {
     if (!item) continue;
     if (Number.isFinite(item.readTime) && readTime !== item.readTime) {
       fail('search-js-fallback-read-time-drift', `${url}: js=${readTime}, manifest=${item.readTime}`);
+    }
+  }
+}
+
+
+
+// 1c. Related-article cards must not display stale read times when the linked
+// target has a canonical search-manifest readTime. These cards are visible UI,
+// unlike command-palette fallbacks, so drift is a publication defect.
+{
+  const htmlFiles = [];
+  function walkHtml(dir) {
+    for (const ent of fs.readdirSync(path.join(ROOT, dir), { withFileTypes: true })) {
+      if (ent.name.startsWith('.') || ['node_modules','dist','reports','audit','pagefind'].includes(ent.name)) continue;
+      const rel = path.posix.join(dir, ent.name);
+      const abs = path.join(ROOT, rel);
+      if (ent.isDirectory()) walkHtml(rel);
+      else if (ent.isFile() && rel.endsWith('.html')) htmlFiles.push(rel);
+    }
+  }
+  for (const top of ['articles', 'nagornaya', 'src/components']) if (exists(top)) walkHtml(top);
+  const itemRe = /<li\b[^>]*class=["'][^"']*related-articles__item[^"']*["'][^>]*>[\s\S]*?<\/li>/gi;
+  for (const file of htmlFiles) {
+    const html = read(file);
+    const baseRoute = routePathForHtmlFile(file.startsWith('src/components/') ? file.replace(/^src\/components\//, '') : file);
+    let m;
+    while ((m = itemRe.exec(html)) !== null) {
+      const block = m[0];
+      const href = block.match(/<a\b[^>]*href=["']([^"']+)["']/i)?.[1] || '';
+      const shown = block.match(/related-articles__tag[^>]*>[^<]*?(\d+)\s*мин/i)?.[1];
+      const url = normalizeInternalHref(baseRoute, href);
+      const target = searchByUrl.get(url);
+      if (target && Number.isFinite(target.readTime) && shown && Number(shown) !== target.readTime) {
+        fail('related-card-read-time-drift', `${file} → ${url}: card=${shown}, manifest=${target.readTime}`);
+      }
     }
   }
 }

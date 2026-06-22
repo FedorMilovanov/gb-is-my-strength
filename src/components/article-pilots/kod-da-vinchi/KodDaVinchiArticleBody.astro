@@ -7,6 +7,8 @@
  * visual-safe legacy HTML, but the seam is ready for per-section MDX/Astro
  * activation: one section can be replaced and parity-tested independently.
  */
+import KodDaVinchiPagefindMeta from './KodDaVinchiPagefindMeta.astro';
+
 const sectionModules = import.meta.glob('./_legacy/article-sections/*.html', {
   query: '?raw',
   import: 'default',
@@ -18,5 +20,6 @@ const sections = Object.entries(sectionModules)
   .map(([, html]) => html);
 ---
 <article class="article-body" data-pagefind-body>
+  <KodDaVinchiPagefindMeta />
   {sections.map((html) => <Fragment set:html={html} />)}
 </article>
