@@ -1,7 +1,7 @@
 # Gill spravochnik pilot implementation — 2026-06-22
 
 **Route:** `/articles/dzhon-gill-spravochnik/`
-**Status:** Phase GS5 complete in source layer — componentized shadow-breakout + article-body section seams + five promoted Astro sections, no content/visual change intended.
+**Status:** Phase GS6 complete in source layer — componentized shadow-breakout + article-body section seams + six promoted Astro sections, no content/visual change intended.
 **Gill route progress:** 2 of 5 Gill pages have a componentized Astro shell (`40%`); 1 of 5 Gill pages is fully componentized (`20%`).
 
 ---
@@ -67,8 +67,13 @@ Phase GS5 promoted three compact reference-table sections:
 - removed `src/components/article-pilots/gill-spravochnik/_legacy/article-sections/04-sec-body-structure.html`;
 - removed `src/components/article-pilots/gill-spravochnik/_legacy/article-sections/05-sec-network.html`;
 - removed `src/components/article-pilots/gill-spravochnik/_legacy/article-sections/06-sec-disputes.html`;
-- added `GillSpravochnikSectionBodyStructure.astro`, `GillSpravochnikSectionNetwork.astro`, `GillSpravochnikSectionDisputes.astro`;
-- `GillSpravochnikArticleBody.astro` now renders 6 raw fragments + 5 Astro sections in the original order.
+- added `GillSpravochnikSectionBodyStructure.astro`, `GillSpravochnikSectionNetwork.astro`, `GillSpravochnikSectionDisputes.astro`.
+
+Phase GS6 promoted the theological terms section:
+
+- removed `src/components/article-pilots/gill-spravochnik/_legacy/article-sections/07-sec-terms.html`;
+- added `src/components/article-pilots/gill-spravochnik/GillSpravochnikSectionTerms.astro`;
+- `GillSpravochnikArticleBody.astro` now renders 5 raw fragments + 6 Astro sections in the original order.
 
 This preserves the existing GBS2 visual world and article content. It is intentionally **not** an MDX activation.
 

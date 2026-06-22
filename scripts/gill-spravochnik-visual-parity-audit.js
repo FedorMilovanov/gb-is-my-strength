@@ -23,7 +23,7 @@ const SECTION_ORDER = [
   ['04-sec-body-structure.html', 'GillSpravochnikSectionBodyStructure.astro'],
   ['05-sec-network.html', 'GillSpravochnikSectionNetwork.astro'],
   ['06-sec-disputes.html', 'GillSpravochnikSectionDisputes.astro'],
-  ['07-sec-terms.html', null],
+  ['07-sec-terms.html', 'GillSpravochnikSectionTerms.astro'],
   ['08-sec-links.html', 'GillSpravochnikSectionLinks.astro'],
   ['09-sec-sources.html', null],
   ['10-sec-quiz-tail.html', null],
@@ -170,6 +170,7 @@ if (!problems.length) {
   mustContain('article sections keep body structure section', article, 'id="sec-body-structure"');
   mustContain('article sections keep network section', article, 'id="sec-network"');
   mustContain('article sections keep disputes section', article, 'id="sec-disputes"');
+  mustContain('article sections keep terms section', article, 'id="sec-terms"');
   mustContain('article sections keep links section', article, 'id="sec-links"');
   mustContain('article sections keep sources section', article, 'sec-sources');
   mustContain('article sections keep quiz', article, 'quizPlaceholder');

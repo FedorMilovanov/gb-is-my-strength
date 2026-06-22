@@ -1,6 +1,6 @@
 ---
 /**
- * GillSpravochnikArticleBody — Phase GS5 article-body section seams.
+ * GillSpravochnikArticleBody — Phase GS6 article-body section seams.
  *
  * The legacy article-body monolith has been split into ordered fragments while
  * this component owns the <article class="article-body"> wrapper. Promoted
@@ -10,6 +10,7 @@ import GillSpravochnikSectionPrdl from './GillSpravochnikSectionPrdl.astro';
 import GillSpravochnikSectionBodyStructure from './GillSpravochnikSectionBodyStructure.astro';
 import GillSpravochnikSectionNetwork from './GillSpravochnikSectionNetwork.astro';
 import GillSpravochnikSectionDisputes from './GillSpravochnikSectionDisputes.astro';
+import GillSpravochnikSectionTerms from './GillSpravochnikSectionTerms.astro';
 import GillSpravochnikSectionLinks from './GillSpravochnikSectionLinks.astro';
 
 const sectionModules = import.meta.glob('./_legacy/article-sections/*.html', {
@@ -21,4 +22,4 @@ const sectionEntries = Object.entries(sectionModules).sort(([a], [b]) => a.local
 const sectionName = (file: string) => file.split('/').pop() || file;
 const rawSection = (name: string) => sectionEntries.find(([file]) => sectionName(file) === name)?.[1] || '';
 ---
-<article class="article-body"><Fragment set:html={rawSection('00-summary.html')} /><GillSpravochnikSectionPrdl /><Fragment set:html={rawSection('02-sec-timeline.html')} /><Fragment set:html={rawSection('03-sec-works.html')} /><GillSpravochnikSectionBodyStructure /><GillSpravochnikSectionNetwork /><GillSpravochnikSectionDisputes /><Fragment set:html={rawSection('07-sec-terms.html')} /><GillSpravochnikSectionLinks /><Fragment set:html={rawSection('09-sec-sources.html')} /><Fragment set:html={rawSection('10-sec-quiz-tail.html')} /></article>
+<article class="article-body"><Fragment set:html={rawSection('00-summary.html')} /><GillSpravochnikSectionPrdl /><Fragment set:html={rawSection('02-sec-timeline.html')} /><Fragment set:html={rawSection('03-sec-works.html')} /><GillSpravochnikSectionBodyStructure /><GillSpravochnikSectionNetwork /><GillSpravochnikSectionDisputes /><GillSpravochnikSectionTerms /><GillSpravochnikSectionLinks /><Fragment set:html={rawSection('09-sec-sources.html')} /><Fragment set:html={rawSection('10-sec-quiz-tail.html')} /></article>
