@@ -2,10 +2,8 @@
 /*
  * Guard /biografii/ native-shadow Astro contract.
  *
- * Refactoring 5.0 promoted /biografii/ to a native-shadow landing route.
- * Refactoring 6.0 parallel pilot now replaces the monolithic
- * `_legacy/main.html?raw` import with named legacy-faithful fragments for the
- * Gill shelf, editorial focus, era sections and epigraph/post block.
+ * Refactoring 6.0 parallel pilot now replaces raw landing fragment imports with
+ * hand-authored Astro components that preserve the premium biography DOM/copy.
  */
 'use strict';
 const fs = require('fs');
@@ -37,16 +35,22 @@ must(page, '_legacy/body-segment-0.html', 'Astro /biografii/ preserves verbatim 
 must(page, '_legacy/body-segment-1.html', 'Astro /biografii/ preserves verbatim legacy body chrome after <main>');
 
 mustExist('src/components/biografii/BiografiiMain.astro', 'BiografiiMain.astro component file');
-mustExist('src/components/biografii/_legacy/main.html', 'biografii main.html legacy baseline');
-for (const rel of ['recent.html','focus.html','ancient.html','medieval.html','reformation.html','awakening.html','modern.html','contemporary.html','epigraph.html','post-article.html']) {
-  mustExist(`src/components/biografii/_legacy/${rel}`, rel);
+for (const rel of [
+  'BiografiiRecentSection.astro','BiografiiFocusSection.astro','BiografiiEraStubSection.astro',
+  'BiografiiAwakeningSection.astro','BiografiiEpigraphSection.astro','BiografiiArticleEndBlock.astro'
+]) {
+  mustExist(`src/components/biografii/${rel}`, rel);
 }
+mustExist('src/components/biografii/_legacy/main.html', 'biografii main.html legacy baseline');
 mustExist('src/components/biografii/_legacy/body-segment-0.html', 'biografii body-segment-0.html frame fragment');
 mustExist('src/components/biografii/_legacy/body-segment-1.html', 'biografii body-segment-1.html frame fragment');
 
 must(main, '<main id="main-content">', 'BiografiiMain preserves semantic main wrapper');
-for (const frag of ['recent.html?raw','focus.html?raw','ancient.html?raw','medieval.html?raw','reformation.html?raw','awakening.html?raw','modern.html?raw','contemporary.html?raw','epigraph.html?raw','post-article.html?raw']) {
-  must(main, frag, `BiografiiMain uses ${frag}`);
+for (const comp of ['BiografiiRecentSection','BiografiiFocusSection','BiografiiEraStubSection','BiografiiAwakeningSection','BiografiiEpigraphSection','BiografiiArticleEndBlock']) {
+  must(main, comp, `BiografiiMain uses ${comp}`);
+}
+for (const banned of ['recent.html?raw','focus.html?raw','ancient.html?raw','medieval.html?raw','reformation.html?raw','awakening.html?raw','modern.html?raw','contemporary.html?raw','epigraph.html?raw','post-article.html?raw']) {
+  mustNot(main, banned, `removed raw import: ${banned}`);
 }
 mustNot(main, "import legacyHtml from './_legacy/main.html?raw'", 'raw monolithic main import removed');
 
@@ -54,18 +58,17 @@ for (const marker of ['dzhon-gill-series', 'Редакционный фокус'
   must(baseline, marker, `main baseline marker: ${marker}`);
 }
 for (const [file, marker] of [
-  ['recent.html','dzhon-gill-series'],
-  ['focus.html','Редакционный фокус'],
-  ['ancient.html','era-ancient'],
-  ['medieval.html','era-medieval'],
-  ['reformation.html','era-reformation'],
-  ['awakening.html','era-awakening'],
-  ['modern.html','era-modern'],
-  ['contemporary.html','era-contemporary'],
-  ['epigraph.html','Эпиграф раздела'],
-  ['post-article.html','Soli Deo Gloria'],
+  ['src/components/biografii/BiografiiRecentSection.astro','dzhon-gill-series'],
+  ['src/components/biografii/BiografiiFocusSection.astro','Редакционный фокус'],
+  ['src/components/biografii/BiografiiAwakeningSection.astro','era-awakening'],
+  ['src/components/biografii/BiografiiEpigraphSection.astro','Эпиграф раздела'],
+  ['src/components/biografii/BiografiiArticleEndBlock.astro','Soli Deo Gloria'],
 ]) {
-  must(read(`src/components/biografii/_legacy/${file}`), marker, `${file} marker: ${marker}`);
+  must(read(file), marker, `${path.basename(file)} marker: ${marker}`);
+}
+must(read('src/components/biografii/BiografiiEraStubSection.astro'), 'Архив эпохи', 'BiografiiEraStubSection marker: Архив эпохи');
+for (const marker of ['I–V вв.','VI–XIV вв.','XV–XVII вв.','XIX в.','XX–XXI вв.','Ранняя Церковь','Средние века','Реформация','XIX век','XX–XXI вв.']) {
+  must(main, marker, `BiografiiMain era config marker: ${marker}`);
 }
 
 for (const marker of [
