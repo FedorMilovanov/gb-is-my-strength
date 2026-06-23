@@ -245,8 +245,12 @@ function checkKodDaVinchiBreakoutSource() {
   else ok('kod-da-vinchi index.astro no longer imports raw body-segment-0.html');
   if (pageSrc.includes('body-segment-1.html?raw')) bad('kod-da-vinchi index.astro still imports raw body-segment-1.html');
   else ok('kod-da-vinchi index.astro no longer imports raw body-segment-1.html');
+  mustContain('kod-da-vinchi index.astro imports PageHead component', pageSrc, 'KodDaVinchiPageHead');
   mustContain('kod-da-vinchi index.astro imports PageChrome component', pageSrc, 'KodDaVinchiPageChrome');
   mustContain('kod-da-vinchi index.astro imports PageFooter component', pageSrc, 'KodDaVinchiPageFooter');
+  mustNotContain('kod-da-vinchi index.astro no legacy document loader', pageSrc, 'loadLegacyFullDocument');
+  mustNotContain('kod-da-vinchi index.astro no headHtml transport', pageSrc, 'headHtml');
+  mustNotContain('kod-da-vinchi index.astro no bodyAttributes transport', pageSrc, 'bodyAttributes');
   const seg0 = path.join(base, '_legacy/body-segment-0.html');
   const seg1 = path.join(base, '_legacy/body-segment-1.html');
   if (fs.existsSync(seg0)) warn('kod-da-vinchi _legacy/body-segment-0.html still present (unused but harmless)');

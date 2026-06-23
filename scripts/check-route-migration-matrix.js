@@ -43,6 +43,59 @@ function readSource(route, sourcePath) {
   return fs.readFileSync(fullPath, 'utf8');
 }
 
+function findImports(source) {
+  const imports = [];
+  const re = /import\s+(?:type\s+)?(?:[^'";]+?\s+from\s+)?['"]([^'"]+)['"]/g;
+  let m;
+  while ((m = re.exec(source))) imports.push(m[1]);
+  return imports;
+}
+
+function resolveImport(fromFile, spec) {
+  if (!spec || spec.startsWith('node:') || /^[a-zA-Z@][^/:]*$/.test(spec)) return null;
+  if (spec.startsWith('@astrojs/') || spec.startsWith('astro:')) return null;
+  let clean = spec.replace(/\?raw$/, '');
+  let base;
+  if (clean.startsWith('@/')) base = path.join(ROOT, 'src', clean.slice(2));
+  else if (clean.startsWith('./') || clean.startsWith('../')) base = path.resolve(path.dirname(fromFile), clean);
+  else return null;
+  const candidates = [base];
+  for (const ext of ['.astro','.mdx','.js','.mjs','.ts','.tsx','.jsx','.json','.html']) candidates.push(base + ext);
+  for (const idx of ['index.astro','index.mdx','index.js','index.ts']) candidates.push(path.join(base, idx));
+  for (const candidate of candidates) {
+    if (fs.existsSync(candidate) && fs.statSync(candidate).isFile()) return candidate;
+  }
+  return null;
+}
+
+function collectClosure(sourcePath) {
+  if (!sourcePath) return [];
+  const entry = path.join(ROOT, sourcePath);
+  if (!fs.existsSync(entry)) return [];
+  const files = [];
+  const seen = new Set();
+  const stack = [entry];
+  while (stack.length) {
+    const file = stack.pop();
+    if (!file || seen.has(file) || !fs.existsSync(file)) continue;
+    seen.add(file);
+    files.push(file);
+    const src = fs.readFileSync(file, 'utf8');
+    for (const spec of findImports(src)) {
+      const resolved = resolveImport(file, spec);
+      if (!resolved) continue;
+      const rel = path.relative(ROOT, resolved).replace(/\\/g, '/');
+      if (rel.startsWith('src/components/') || rel.startsWith('src/layouts/') || rel.startsWith('src/pages/') || rel.startsWith('src/content/')) stack.push(resolved);
+    }
+  }
+  return files;
+}
+
+function readSourceClosure(route, sourcePath) {
+  const files = collectClosure(sourcePath);
+  return files.map((file) => fs.readFileSync(file, 'utf8')).join('\n');
+}
+
 // Routes that are in active refactor exclusion
 const EXCLUDED_PATTERNS = [
   'nagornaya/**',
@@ -68,6 +121,14 @@ function checkRouteMigration(route, contract, ownership) {
   if (!source) return;
 
   const sourceContent = readSource(route, source);
+  const sourceClosureContent = readSourceClosure(route, source);
+
+  // Check 0: strict-native should not retain loader/raw legacy transport
+  if (contract.mode === 'strict-native') {
+    if (sourceClosureContent.includes('loadLegacyFullDocument') || sourceClosureContent.includes('bodyHtml') || sourceClosureContent.includes('headHtml') || sourceClosureContent.includes('bodyAttributes') || sourceClosureContent.includes('?raw') || sourceClosureContent.includes('set:html') || sourceClosureContent.includes('_legacy/')) {
+      problems.push(`${route}: strict-native route still retains legacy transport in its source closure.\n  Remove loadLegacyFullDocument/headHtml/bodyAttributes/?raw/set:html/_legacy from ${source}.`);
+    }
+  }
 
   // Check 1: mdx-native-article should NOT have loadLegacyFullDocument
   if (contract.mode === 'mdx-native-article') {
@@ -139,7 +200,7 @@ function checkRouteMigration(route, contract, ownership) {
   const markers = contract.requiredMarkers || [];
   for (const marker of markers) {
     // Simple string check — marker should appear in source
-    if (!sourceContent.includes(marker) && !sourceContent.includes(`'${marker}'`) && !sourceContent.includes(`"${marker}"`)) {
+    if (!sourceClosureContent.includes(marker) && !sourceClosureContent.includes(`'${marker}'`) && !sourceClosureContent.includes(`\"${marker}\"`)) {
       warnings.push(
         `${route}: required marker "${marker}" not found in source ${source}.\n` +
         `  After build, verify dist contains this marker.`

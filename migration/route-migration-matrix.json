@@ -15,7 +15,8 @@
     "full-body-shadow": "Astro page loads entire legacy HTML document via loadLegacyFullDocument(). Semantic block NOT promoted to separate component — full body is shadow-wrapped. Used for article subroutes in series where chrome + body are tightly coupled.",
     "mdx-native-article": "Astro page uses MDX content file + ArticleLayout/SeriesArticleLayout. Body is hand-authored MDX. Chrome from layout. This is the target mode for standalone articles.",
     "legacy-shadow-app": "Astro page wraps a legacy app/island (WebGL, Three.js, interactive SVG) via loadLegacyFullDocument() or iframe. NOT simplified to plain content route. Required: runtime smoke + SVG/interactive checks.",
-    "excluded-semantic-lane": "Route is in active semantic refactor exclusion. Do not change as part of non-excluded migration work. Profile must declare this scope. Production consistency checks still run, but migration progress is not required."
+    "excluded-semantic-lane": "Route is in active semantic refactor exclusion. Do not change as part of non-excluded migration work. Profile must declare this scope. Production consistency checks still run, but migration progress is not required.",
+    "strict-native": "Astro route is fully native at runtime: no loadLegacyFullDocument, no headHtml/bodyHtml/bodyAttributes transport, no ?raw/_legacy fragment transport, no set:html legacy body injection. Route closure may still include normal native components, JSON-LD, and inline runtime scripts."
   },
   "forbid": {
     "plain-loadLegacyFullDocument-only": "Route already has named Astro components or MDX. Do NOT replace componentized structure with full-document loadLegacyFullDocument() monolith. This was the regression that broke 19 routes in r260.",
@@ -26,233 +27,442 @@
     "/": {
       "mode": "native-main-with-legacy-chrome",
       "source": "src/pages/index.astro",
-      "requiredMarkers": ["home-v20", "h-mobile-hero-hub"],
-      "forbid": ["plain-loadLegacyFullDocument-only"],
-      "audits": ["visual-parity", "seo-parity", "contract-compare-dist", "home-visual-parity-audit"]
+      "requiredMarkers": [
+        "home-v20",
+        "h-mobile-hero-hub"
+      ],
+      "forbid": [
+        "plain-loadLegacyFullDocument-only"
+      ],
+      "audits": [
+        "visual-parity",
+        "seo-parity",
+        "contract-compare-dist",
+        "home-visual-parity-audit"
+      ]
     },
     "/about/": {
-      "mode": "native-main-with-legacy-chrome",
+      "mode": "strict-native",
       "source": "src/pages/about/index.astro",
-      "requiredMarkers": ["about-page", "about-contacts", "gb-accuracy-block"],
-      "forbid": ["plain-loadLegacyFullDocument-only", "astro-generic-article"],
-      "audits": ["about-visual-parity-audit", "astro-about-pilot-audit"]
+      "requiredMarkers": [
+        "about-page",
+        "about-contact-card",
+        "gb-accuracy-block"
+      ],
+      "forbid": [
+        "plain-loadLegacyFullDocument-only",
+        "astro-generic-article"
+      ],
+      "audits": [
+        "about-visual-parity-audit",
+        "astro-about-pilot-audit"
+      ],
+      "reason": "Balanced native AboutPageChrome + AboutMain landed; legacy head/body transport retired."
     },
     "/articles/": {
       "mode": "native-main-with-legacy-chrome",
       "source": "src/pages/articles/index.astro",
-      "requiredMarkers": ["articles-index-page", "home-v20", "h-article-card"],
-      "forbid": ["plain-loadLegacyFullDocument-only", "astro-card-grid"],
-      "audits": ["articles-visual-parity-audit", "catalogs-visual-parity-audit"]
+      "requiredMarkers": [
+        "articles-index-page",
+        "home-v20",
+        "h-article-card"
+      ],
+      "forbid": [
+        "plain-loadLegacyFullDocument-only",
+        "astro-card-grid"
+      ],
+      "audits": [
+        "articles-visual-parity-audit",
+        "catalogs-visual-parity-audit"
+      ]
     },
     "/articles/20-antisovetov-pastoru/": {
       "mode": "full-body-shadow",
       "source": "src/pages/articles/20-antisovetov-pastoru/index.astro",
       "reason": "Current production route intentionally preserves legacy premium article body via loadLegacyFullDocument until an MDX/native lane proves visual parity.",
       "targetMode": "mdx-native-article",
-      "requiredMarkers": ["data-pagefind-body"],
-      "audits": ["article-mdx-pilot-audit", "content-parity", "seo-parity", "native-runtime-taxonomy"]
+      "requiredMarkers": [
+        "data-pagefind-body"
+      ],
+      "audits": [
+        "article-mdx-pilot-audit",
+        "content-parity",
+        "seo-parity",
+        "native-runtime-taxonomy"
+      ]
     },
     "/articles/hermenevticheskaya-otsenka-hristotsentrichnoy-germenevtiki/": {
       "mode": "full-body-shadow",
       "source": "src/pages/articles/hermenevticheskaya-otsenka-hristotsentrichnoy-germenevtiki/index.astro",
       "reason": "Current production route intentionally preserves legacy premium article body via loadLegacyFullDocument until an MDX/native lane proves visual parity.",
       "targetMode": "mdx-native-article",
-      "requiredMarkers": ["data-pagefind-body"],
-      "audits": ["article-mdx-pilot-audit", "content-parity", "seo-parity", "native-runtime-taxonomy"]
+      "requiredMarkers": [
+        "data-pagefind-body"
+      ],
+      "audits": [
+        "article-mdx-pilot-audit",
+        "content-parity",
+        "seo-parity",
+        "native-runtime-taxonomy"
+      ]
     },
     "/articles/kod-da-vinchi/": {
-      "mode": "native-main-with-legacy-chrome",
+      "mode": "strict-native",
       "source": "src/pages/articles/kod-da-vinchi/index.astro",
-      "requiredMarkers": ["data-pagefind-body", "KodDaVinchiMainShell"],
-      "forbid": ["plain-loadLegacyFullDocument-only", "astro-generic-article"],
+      "requiredMarkers": [
+        "data-pagefind-body",
+        "KodDaVinchiMainShell"
+      ],
+      "forbid": [
+        "plain-loadLegacyFullDocument-only",
+        "astro-generic-article"
+      ],
       "targetMode": "mdx-native-article",
-      "audits": ["article-mdx-pilot-audit", "content-parity", "seo-parity", "native-runtime-taxonomy"]
+      "audits": [
+        "article-mdx-pilot-audit",
+        "content-parity",
+        "seo-parity",
+        "native-runtime-taxonomy"
+      ],
+      "reason": "Route shell now uses native PageHead + explicit body class; final trailing raw section promoted to Astro."
     },
     "/baptisty-rossii/": {
       "mode": "native-main-with-legacy-chrome",
       "source": "src/pages/baptisty-rossii/index.astro",
-      "requiredMarkers": ["home-v20", "baptisty-rossii-landing"],
-      "forbid": ["plain-loadLegacyFullDocument-only"],
-      "audits": ["baptisty-rossii-visual-parity-audit"]
+      "requiredMarkers": [
+        "home-v20",
+        "baptisty-rossii-landing"
+      ],
+      "forbid": [
+        "plain-loadLegacyFullDocument-only"
+      ],
+      "audits": [
+        "baptisty-rossii-visual-parity-audit"
+      ]
     },
     "/baptisty-rossii/dva-sezda-1884/": {
       "mode": "full-body-shadow",
       "source": "src/pages/baptisty-rossii/dva-sezda-1884/index.astro",
-      "requiredMarkers": ["data-pagefind-body"],
-      "audits": ["series-article-parity", "baptisty-series-shadow-audit"]
+      "requiredMarkers": [
+        "data-pagefind-body"
+      ],
+      "audits": [
+        "series-article-parity",
+        "baptisty-series-shadow-audit"
+      ]
     },
     "/baptisty-rossii/goneniya-i-sovest/": {
       "mode": "full-body-shadow",
       "source": "src/pages/baptisty-rossii/goneniya-i-sovest/index.astro",
-      "requiredMarkers": ["data-pagefind-body"],
-      "audits": ["series-article-parity", "baptisty-series-shadow-audit"]
+      "requiredMarkers": [
+        "data-pagefind-body"
+      ],
+      "audits": [
+        "series-article-parity",
+        "baptisty-series-shadow-audit"
+      ]
     },
     "/baptisty-rossii/iniciativnaya-gruppa/": {
       "mode": "full-body-shadow",
       "source": "src/pages/baptisty-rossii/iniciativnaya-gruppa/index.astro",
-      "requiredMarkers": ["data-pagefind-body"],
-      "audits": ["series-article-parity", "baptisty-series-shadow-audit"]
+      "requiredMarkers": [
+        "data-pagefind-body"
+      ],
+      "audits": [
+        "series-article-parity",
+        "baptisty-series-shadow-audit"
+      ]
     },
     "/baptisty-rossii/noch-na-kure/": {
       "mode": "full-body-shadow",
       "source": "src/pages/baptisty-rossii/noch-na-kure/index.astro",
-      "requiredMarkers": ["data-pagefind-body"],
-      "audits": ["series-article-parity", "baptisty-series-shadow-audit"]
+      "requiredMarkers": [
+        "data-pagefind-body"
+      ],
+      "audits": [
+        "series-article-parity",
+        "baptisty-series-shadow-audit"
+      ]
     },
     "/baptisty-rossii/peterburgskaya-liniya/": {
       "mode": "full-body-shadow",
       "source": "src/pages/baptisty-rossii/peterburgskaya-liniya/index.astro",
-      "requiredMarkers": ["data-pagefind-body"],
-      "audits": ["series-article-parity", "baptisty-series-shadow-audit"]
+      "requiredMarkers": [
+        "data-pagefind-body"
+      ],
+      "audits": [
+        "series-article-parity",
+        "baptisty-series-shadow-audit"
+      ]
     },
     "/baptisty-rossii/podpolnaya-pechat/": {
       "mode": "full-body-shadow",
       "source": "src/pages/baptisty-rossii/podpolnaya-pechat/index.astro",
-      "requiredMarkers": ["data-pagefind-body"],
-      "audits": ["series-article-parity", "baptisty-series-shadow-audit"]
+      "requiredMarkers": [
+        "data-pagefind-body"
+      ],
+      "audits": [
+        "series-article-parity",
+        "baptisty-series-shadow-audit"
+      ]
     },
     "/baptisty-rossii/sovetskaya-noch/": {
       "mode": "full-body-shadow",
       "source": "src/pages/baptisty-rossii/sovetskaya-noch/index.astro",
-      "requiredMarkers": ["data-pagefind-body"],
-      "audits": ["series-article-parity", "baptisty-series-shadow-audit"]
+      "requiredMarkers": [
+        "data-pagefind-body"
+      ],
+      "audits": [
+        "series-article-parity",
+        "baptisty-series-shadow-audit"
+      ]
     },
     "/baptisty-rossii/spravochnik/": {
       "mode": "full-body-shadow",
       "source": "src/pages/baptisty-rossii/spravochnik/index.astro",
-      "requiredMarkers": ["data-pagefind-body"],
-      "audits": ["series-article-parity", "baptisty-series-shadow-audit"]
+      "requiredMarkers": [
+        "data-pagefind-body"
+      ],
+      "audits": [
+        "series-article-parity",
+        "baptisty-series-shadow-audit"
+      ]
     },
     "/baptisty-rossii/vsehib-1944/": {
       "mode": "full-body-shadow",
       "source": "src/pages/baptisty-rossii/vsehib-1944/index.astro",
-      "requiredMarkers": ["data-pagefind-body"],
-      "audits": ["series-article-parity", "baptisty-series-shadow-audit"]
+      "requiredMarkers": [
+        "data-pagefind-body"
+      ],
+      "audits": [
+        "series-article-parity",
+        "baptisty-series-shadow-audit"
+      ]
     },
     "/baptisty-rossii/yuzhnaya-shtunda/": {
       "mode": "full-body-shadow",
       "source": "src/pages/baptisty-rossii/yuzhnaya-shtunda/index.astro",
-      "requiredMarkers": ["data-pagefind-body"],
-      "audits": ["series-article-parity", "baptisty-series-shadow-audit"]
+      "requiredMarkers": [
+        "data-pagefind-body"
+      ],
+      "audits": [
+        "series-article-parity",
+        "baptisty-series-shadow-audit"
+      ]
     },
     "/biografii/": {
       "mode": "native-main-with-legacy-chrome",
       "source": "src/pages/biografii/index.astro",
-      "requiredMarkers": ["home-v20", "biografii-landing"],
-      "forbid": ["plain-loadLegacyFullDocument-only"],
-      "audits": ["biografii-visual-parity-audit", "catalogs-visual-parity-audit"]
+      "requiredMarkers": [
+        "home-v20",
+        "biografii-landing"
+      ],
+      "forbid": [
+        "plain-loadLegacyFullDocument-only"
+      ],
+      "audits": [
+        "biografii-visual-parity-audit",
+        "catalogs-visual-parity-audit"
+      ]
     },
     "/karty/": {
       "mode": "native-main-with-legacy-chrome",
       "source": "src/pages/karty/index.astro",
-      "requiredMarkers": ["karty-hub"],
-      "forbid": ["plain-loadLegacyFullDocument-only"],
-      "audits": ["karty-visual-parity-audit"]
+      "requiredMarkers": [
+        "karty-hub"
+      ],
+      "forbid": [
+        "plain-loadLegacyFullDocument-only"
+      ],
+      "audits": [
+        "karty-visual-parity-audit"
+      ]
     },
     "/karty/avraam/": {
       "mode": "legacy-shadow-app",
       "source": "src/pages/karty/avraam/index.astro",
-      "requiredMarkers": ["data-pagefind-body"],
-      "forbid": ["astro-native-article-layout", "blanket-shadow-wrap"],
-      "audits": ["avraam-map-audit", "maps:validate"]
+      "requiredMarkers": [
+        "data-pagefind-body"
+      ],
+      "forbid": [
+        "astro-native-article-layout",
+        "blanket-shadow-wrap"
+      ],
+      "audits": [
+        "avraam-map-audit",
+        "maps:validate"
+      ]
     },
     "/karty/early-church/": {
       "mode": "legacy-shadow-app",
       "source": "src/pages/karty/early-church/index.astro",
       "requiredMarkers": [],
-      "forbid": ["astro-native-article-layout"],
-      "audits": ["maps:validate"]
+      "forbid": [
+        "astro-native-article-layout"
+      ],
+      "audits": [
+        "maps:validate"
+      ]
     },
     "/karty/ishod/": {
       "mode": "legacy-shadow-app",
       "source": "src/pages/karty/ishod/index.astro",
-      "requiredMarkers": ["data-pagefind-body"],
-      "forbid": ["astro-native-article-layout"],
-      "audits": ["maps:validate"]
+      "requiredMarkers": [
+        "data-pagefind-body"
+      ],
+      "forbid": [
+        "astro-native-article-layout"
+      ],
+      "audits": [
+        "maps:validate"
+      ]
     },
     "/karty/maccabim/": {
       "mode": "legacy-shadow-app",
       "source": "src/pages/karty/maccabim/index.astro",
       "requiredMarkers": [],
-      "forbid": ["astro-native-article-layout"],
-      "audits": ["maps:validate"]
+      "forbid": [
+        "astro-native-article-layout"
+      ],
+      "audits": [
+        "maps:validate"
+      ]
     },
     "/karty/melachim/": {
       "mode": "legacy-shadow-app",
       "source": "src/pages/karty/melachim/index.astro",
       "requiredMarkers": [],
-      "forbid": ["astro-native-article-layout"],
-      "audits": ["maps:validate"]
+      "forbid": [
+        "astro-native-article-layout"
+      ],
+      "audits": [
+        "maps:validate"
+      ]
     },
     "/karty/pavel/": {
       "mode": "legacy-shadow-app",
       "source": "src/pages/karty/pavel/index.astro",
-      "requiredMarkers": ["data-pagefind-body"],
-      "forbid": ["astro-native-article-layout"],
-      "audits": ["maps:validate"]
+      "requiredMarkers": [
+        "data-pagefind-body"
+      ],
+      "forbid": [
+        "astro-native-article-layout"
+      ],
+      "audits": [
+        "maps:validate"
+      ]
     },
     "/karty/revelation/": {
       "mode": "legacy-shadow-app",
       "source": "src/pages/karty/revelation/index.astro",
       "requiredMarkers": [],
-      "forbid": ["astro-native-article-layout"],
-      "audits": ["maps:validate"]
+      "forbid": [
+        "astro-native-article-layout"
+      ],
+      "audits": [
+        "maps:validate"
+      ]
     },
     "/karty/shoftim/": {
       "mode": "legacy-shadow-app",
       "source": "src/pages/karty/shoftim/index.astro",
       "requiredMarkers": [],
-      "forbid": ["astro-native-article-layout"],
-      "audits": ["maps:validate"]
+      "forbid": [
+        "astro-native-article-layout"
+      ],
+      "audits": [
+        "maps:validate"
+      ]
     },
     "/karty/shvatim/": {
       "mode": "legacy-shadow-app",
       "source": "src/pages/karty/shvatim/index.astro",
       "requiredMarkers": [],
-      "forbid": ["astro-native-article-layout"],
-      "audits": ["maps:validate"]
+      "forbid": [
+        "astro-native-article-layout"
+      ],
+      "audits": [
+        "maps:validate"
+      ]
     },
     "/karty/yeshua/": {
       "mode": "legacy-shadow-app",
       "source": "src/pages/karty/yeshua/index.astro",
       "requiredMarkers": [],
-      "forbid": ["astro-native-article-layout"],
-      "audits": ["maps:validate"]
+      "forbid": [
+        "astro-native-article-layout"
+      ],
+      "audits": [
+        "maps:validate"
+      ]
     },
     "/konfessii/": {
       "mode": "native-main-with-legacy-chrome",
       "source": "src/pages/konfessii/index.astro",
-      "requiredMarkers": ["konfessii-grid"],
-      "forbid": ["plain-loadLegacyFullDocument-only"],
-      "audits": ["konfessii-visual-parity-audit", "catalogs-visual-parity-audit"]
+      "requiredMarkers": [
+        "konfessii-grid"
+      ],
+      "forbid": [
+        "plain-loadLegacyFullDocument-only"
+      ],
+      "audits": [
+        "konfessii-visual-parity-audit",
+        "catalogs-visual-parity-audit"
+      ]
     },
     "/konfessii/russkij-baptizm/": {
       "mode": "legacy-shadow-app",
       "source": "src/pages/konfessii/russkij-baptizm/index.astro",
-      "requiredMarkers": ["data-pagefind-body"],
-      "forbid": ["astro-native-article-layout"],
-      "audits": ["konfessii-map-audit", "maps:validate"]
+      "requiredMarkers": [
+        "data-pagefind-body"
+      ],
+      "forbid": [
+        "astro-native-article-layout"
+      ],
+      "audits": [
+        "konfessii-map-audit",
+        "maps:validate"
+      ]
     },
     "/map/": {
       "mode": "legacy-shadow-app",
       "source": "src/pages/map/index.astro",
       "requiredMarkers": [],
-      "forbid": ["astro-native-article-layout"],
-      "audits": ["maps:validate"]
+      "forbid": [
+        "astro-native-article-layout"
+      ],
+      "audits": [
+        "maps:validate"
+      ]
     },
     "/pastor-series/": {
       "mode": "native-main-with-legacy-chrome",
       "source": "src/pages/pastor-series/index.astro",
-      "requiredMarkers": ["home-v20", "pastor-series-landing"],
-      "forbid": ["plain-loadLegacyFullDocument-only"],
-      "audits": ["pastor-series-visual-parity-audit", "catalogs-visual-parity-audit"]
+      "requiredMarkers": [
+        "home-v20",
+        "pastor-series-landing"
+      ],
+      "forbid": [
+        "plain-loadLegacyFullDocument-only"
+      ],
+      "audits": [
+        "pastor-series-visual-parity-audit",
+        "catalogs-visual-parity-audit"
+      ]
     },
     "/rodosloviye/": {
       "mode": "legacy-shadow-app",
       "source": "src/pages/rodosloviye/index.astro",
-      "requiredMarkers": ["data-pagefind-body"],
-      "forbid": ["astro-native-article-layout"],
-      "audits": ["runtime-smoke", "interactive-audit"]
+      "requiredMarkers": [
+        "data-pagefind-body"
+      ],
+      "forbid": [
+        "astro-native-article-layout"
+      ],
+      "audits": [
+        "runtime-smoke",
+        "interactive-audit"
+      ]
     }
   }
 }
