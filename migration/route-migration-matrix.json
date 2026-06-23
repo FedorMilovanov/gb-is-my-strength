@@ -45,25 +45,28 @@
       "audits": ["articles-visual-parity-audit", "catalogs-visual-parity-audit"]
     },
     "/articles/20-antisovetov-pastoru/": {
-      "mode": "mdx-native-article",
-      "source": "src/content/articles/20-antisovetov-pastoru.mdx",
-      "layout": "src/layouts/ArticleLayout.astro",
-      "requiredMarkers": ["data-pagefind-body", "gbx-tts"],
-      "audits": ["content-parity", "seo-parity"]
+      "mode": "full-body-shadow",
+      "source": "src/pages/articles/20-antisovetov-pastoru/index.astro",
+      "reason": "Current production route intentionally preserves legacy premium article body via loadLegacyFullDocument until an MDX/native lane proves visual parity.",
+      "targetMode": "mdx-native-article",
+      "requiredMarkers": ["data-pagefind-body"],
+      "audits": ["article-mdx-pilot-audit", "content-parity", "seo-parity", "native-runtime-taxonomy"]
     },
     "/articles/hermenevticheskaya-otsenka-hristotsentrichnoy-germenevtiki/": {
-      "mode": "mdx-native-article",
-      "source": "src/content/articles/hermenevticheskaya-otsenka-hristotsentrichnoy-germenevtiki.mdx",
-      "layout": "src/layouts/ArticleLayout.astro",
-      "requiredMarkers": ["data-pagefind-body", "gbx-tts"],
-      "audits": ["content-parity", "seo-parity"]
+      "mode": "full-body-shadow",
+      "source": "src/pages/articles/hermenevticheskaya-otsenka-hristotsentrichnoy-germenevtiki/index.astro",
+      "reason": "Current production route intentionally preserves legacy premium article body via loadLegacyFullDocument until an MDX/native lane proves visual parity.",
+      "targetMode": "mdx-native-article",
+      "requiredMarkers": ["data-pagefind-body"],
+      "audits": ["article-mdx-pilot-audit", "content-parity", "seo-parity", "native-runtime-taxonomy"]
     },
     "/articles/kod-da-vinchi/": {
-      "mode": "mdx-native-article",
-      "source": "src/content/articles/kod-da-vinchi.mdx",
-      "layout": "src/layouts/ArticleLayout.astro",
-      "requiredMarkers": ["data-pagefind-body", "gbx-tts", "KodDaVinchiMainShell"],
-      "audits": ["article-mdx-pilot-audit", "content-parity", "seo-parity"]
+      "mode": "native-main-with-legacy-chrome",
+      "source": "src/pages/articles/kod-da-vinchi/index.astro",
+      "requiredMarkers": ["data-pagefind-body", "KodDaVinchiMainShell"],
+      "forbid": ["plain-loadLegacyFullDocument-only", "astro-generic-article"],
+      "targetMode": "mdx-native-article",
+      "audits": ["article-mdx-pilot-audit", "content-parity", "seo-parity", "native-runtime-taxonomy"]
     },
     "/baptisty-rossii/": {
       "mode": "native-main-with-legacy-chrome",
