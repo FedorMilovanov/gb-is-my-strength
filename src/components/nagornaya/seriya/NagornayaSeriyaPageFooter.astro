@@ -1,15 +1,10 @@
 ---
 /**
- * NagornayaSeriyaPageFooter — Phase 1: body-segment-1 Astro component.
- *
- * Replaces raw ?raw import for /nagornaya/seriya/.
- * Contains: h-footer, h-scroll-top, script tags (all is:inline).
- *
- * All <script> tags use is:inline so Astro does not attempt Rollup resolution.
+ * NagornayaSeriyaPageFooter — native body tail after </main> for /nagornaya/seriya//.
+ * Extracted as Astro markup from approved legacy HTML; no raw imports.
  */
 ---
-
-    <!-- FOOTER -->
+<!-- FOOTER -->
     <footer class="h-footer" role="contentinfo">
       <span class="h-footer-copy">© 2026 Господь Бог — <span>Сила Моя</span></span>
       <a href="../../about/">Об авторе</a>
@@ -29,14 +24,13 @@
 
 
 
-<script is:inline src="../../js/site-utils.js?v=897afa55"></script>
-    <script is:inline src="../../js/scroll-perf.js?v=454d6f7b"></script>
-    <script is:inline src="../../js/site.js?v=fed3ec3b" defer></script>
+<script src="../../js/site-utils.js?v=897afa55" is:inline></script>
+    <script src="../../js/scroll-perf.js?v=454d6f7b" is:inline></script>
+    <script src="../../js/site.js?v=fed3ec3b" defer is:inline></script>
 <!-- home infrastructure handled by js/site.js?v=fed3ec3b module 35 -->
 
-<script is:inline src="../../js/sw-register.js?v=8a077d35" defer></script>
-<script is:inline src="../../js/search.js?v=c9d65577" defer></script>
-<script is:inline src="../../js/highlights.js?v=a1706b06" defer></script>
-<script is:inline src="../../js/enhancements.js?v=b3b77aa6" defer></script>
-<script is:inline src="../../js/bookmark-engine.js?v=c5e0bf10" defer></script>
-
+<script src="../../js/sw-register.js?v=8a077d35" defer is:inline></script>
+<script src="../../js/search.js?v=c9d65577" defer is:inline></script>
+<script src="../../js/highlights.js?v=a1706b06" defer is:inline></script>
+<script src="../../js/enhancements.js?v=b3b77aa6" defer is:inline></script>
+<script src="../../js/bookmark-engine.js?v=c5e0bf10" defer is:inline></script>

@@ -1,12 +1,65 @@
 ---
 /**
- * NagornayaSeriyaMainShell — balanced native <main> for /nagornaya/seriya//.
+ * NagornayaSeriyaBody — balanced native body for /nagornaya/seriya/.
  *
- * V8/V9 hardening: avoid unbalanced tags across Astro component boundaries.
- * The markup is first-class Astro HTML (no raw imports), extracted from the
- * approved legacy main so Playwright/pixelmatch can verify exact parity.
+ * The series hub uses the home-v20 wrapper around main + footer. Keeping the
+ * wrapper and its closing tags in one component prevents Astro from auto-closing
+ * the wrapper before <main>, which was the source of the visual height diff.
  */
 ---
+<a href="#main-content" class="skip-link">Перейти к содержимому</a>
+
+<div class="h-reading-progress" id="hReadingProgress" aria-hidden="true"></div>
+
+<nav class="h-navbar" id="hNavbar" role="navigation" aria-label="Основная навигация">
+  <div class="h-navbar__inner">
+    <a href="../../" class="h-nav-logo" aria-label="Господь Бог — Сила Моя — на главную">
+      <span class="h-nav-logo-main">Господь Бог</span>
+      <span class="h-nav-logo-dash" aria-hidden="true">&nbsp;—&nbsp;</span>
+      <span class="h-nav-logo-accent">Сила Моя</span>
+    </a>
+    <!-- Desktop nav links -->
+    <ul class="h-nav-links" role="list">
+      <li><a href="../../#publikacii">Публикации</a></li>
+      <li><a href="../../#razbor">Разбор заблуждений</a></li>
+      <li><a href="../../biografii/">Биографии</a></li>
+      <li><a href="../../articles/">Все статьи</a></li>
+      <li><a href="../../about/">О проекте</a></li>
+    </ul>
+
+    <!-- Controls: тема + бургер. Единая кнопка темы (унифицировано с index.html). -->
+    <div class="mobile-controls">
+      <button class="theme-toggle" id="themeToggle" aria-label="Переключить тему">
+        <svg class="icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12.8A9 9 0 1111.2 3 7 7 0 0021 12.8z"/></svg>
+        <svg class="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
+      </button>
+      <button class="h-mobile-menu-btn" id="hMobileMenuBtn" aria-label="Открыть меню" aria-expanded="false">
+        <svg class="h-burger-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
+          <line class="burger-top"    x1="3" y1="6"  x2="21" y2="6"/>
+          <line class="burger-mid"    x1="3" y1="12" x2="21" y2="12"/>
+          <line class="burger-bottom" x1="3" y1="18" x2="21" y2="18"/>
+        </svg>
+      </button>
+    </div>
+  </div>
+</nav>
+
+<!-- Mobile nav backdrop -->
+<div id="hMobileBackdrop" class="h-mobile-backdrop" aria-hidden="true"></div>
+
+<div class="h-mobile-nav" id="hMobileNav" aria-hidden="true">
+  <a href="../../#publikacii" data-close-nav>Публикации</a>
+  <a href="../../#razbor" data-close-nav>Разбор заблуждений</a>
+  <a href="../../biografii/" data-close-nav>Биографии</a>
+  <a href="../../articles/" data-close-nav>Все статьи</a>
+  <a href="../../about/" data-close-nav>О проекте</a>
+</div>
+
+<div class="home-v20">
+  <div class="home-content">
+
+    <!-- BREADCRUMB + HERO -->
+    <section class="h-hero" data-pagefind-body aria-label="Серия статей">
 <main id="main-content">
       <nav aria-label="Хлебные крошки" style="margin-bottom:8px;">
         <a href="../../" class="gb-text-link" style="font-size:13px;color:var(--h-muted,#8a7968);">← Главная</a>
@@ -221,3 +274,33 @@
   </div>
 </aside><div class="article-end-block article-end-sdg-wrap"><div class="article-end-sdg" itemscope="" itemtype="https://schema.org/CreativeWork"><meta itemprop="about" content="Soli Deo Gloria"><span class="sdg" itemprop="name">Soli Deo Gloria</span><svg width="52" height="70" viewBox="0 0 52 70" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><line x1="26" y1="3" x2="26" y2="67" stroke="currentColor" stroke-width="5" stroke-linecap="round"></line><line x1="6" y1="19" x2="46" y2="19" stroke="currentColor" stroke-width="5" stroke-linecap="round"></line></svg></div></div>
 </main>
+    <!-- FOOTER -->
+    <footer class="h-footer" role="contentinfo">
+      <span class="h-footer-copy">© 2026 Господь Бог — <span>Сила Моя</span></span>
+      <a href="../../about/">Об авторе</a>
+    </footer>
+
+  </div>
+</div>
+
+<button class="h-scroll-top" id="hScrollTop" type="button" aria-label="Наверх">
+  <svg class="h-progress-ring" width="50" height="50" viewBox="0 0 50 50" aria-hidden="true">
+    <circle class="h-progress-ring-circle" id="hProgressCircle" cx="25" cy="25" r="22" style="stroke-dasharray: 138.23; stroke-dashoffset: 138.23;"/>
+  </svg>
+  <span class="h-scroll-top-arrow" aria-hidden="true">
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><polyline points="18 15 12 9 6 15"/></svg>
+  </span>
+</button>
+
+
+
+<script src="../../js/site-utils.js?v=897afa55" is:inline></script>
+    <script src="../../js/scroll-perf.js?v=454d6f7b" is:inline></script>
+    <script src="../../js/site.js?v=fed3ec3b" defer is:inline></script>
+<!-- home infrastructure handled by js/site.js?v=fed3ec3b module 35 -->
+
+<script src="../../js/sw-register.js?v=8a077d35" defer is:inline></script>
+<script src="../../js/search.js?v=c9d65577" defer is:inline></script>
+<script src="../../js/highlights.js?v=a1706b06" defer is:inline></script>
+<script src="../../js/enhancements.js?v=b3b77aa6" defer is:inline></script>
+<script src="../../js/bookmark-engine.js?v=c5e0bf10" defer is:inline></script>

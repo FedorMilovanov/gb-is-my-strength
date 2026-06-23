@@ -1,19 +1,15 @@
 ---
 /**
- * NagornayaIndexPageFooter — Phase 1: body-segment-1 Astro component.
- * Replaces raw ?raw import for /nagornaya/ index landing.
- * DOM/classes/IDs are byte-identical to the legacy HTML so site.js
- * selectors and CSS rules continue to match.
+ * NagornayaIndexPageFooter — native body tail after </main> for /nagornaya//.
+ * Extracted as Astro markup from approved legacy HTML; no raw imports.
  */
 ---
-
-
 <!-- .tt tooltips handled by js/nagornaya-mobile-toc.js?v=f25219b0 -->
 
 
 <!-- mobile menu handled by js/nagornaya-mobile-toc.js?v=f25219b0 module B -->
 
-<script is:inline src="../js/nagornaya-mobile-toc.js?v=f25219b0" defer></script>
+<script src="../js/nagornaya-mobile-toc.js?v=f25219b0" defer is:inline></script>
 <script is:inline>
 window.SITE_CONFIG = {
   version: 1778943682,
@@ -22,12 +18,11 @@ window.SITE_CONFIG = {
   features: { themeToggle: { enabled: true }, bookmarks: { enabled: false }, homepageResume: { enabled: false } }
 };
 </script>
-<script is:inline src="/js/site-utils.js?v=897afa55"></script>
-    <script is:inline src="/js/scroll-perf.js?v=454d6f7b"></script>
-    <script is:inline src="../js/site.js?v=fed3ec3b" defer></script>
-<script is:inline src="../js/sw-register.js?v=8a077d35" defer></script>
-<script is:inline src="../js/search.js?v=c9d65577" defer></script>
-<script is:inline src="../js/bookmark-engine.js?v=c5e0bf10" defer></script>
+<script src="/js/site-utils.js?v=897afa55" is:inline></script>
+    <script src="/js/scroll-perf.js?v=454d6f7b" is:inline></script>
+    <script src="../js/site.js?v=fed3ec3b" defer is:inline></script>
+<script src="../js/sw-register.js?v=8a077d35" defer is:inline></script>
+<script src="../js/search.js?v=c9d65577" defer is:inline></script>
+<script src="../js/bookmark-engine.js?v=c5e0bf10" defer is:inline></script>
 
 <!-- font-size handled by nagornaya-mobile-toc.js module D -->
-

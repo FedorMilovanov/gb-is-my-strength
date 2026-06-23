@@ -1,25 +1,22 @@
 ---
 /**
- * /nagornaya/nakhodki/ — РЕФАКТОРИНГ 6.0 Phase 1: native pilot nakhodki.
+ * /nagornaya/nakhodki// — 100% native Nagornaya route (2026-06-23).
  *
- * 100% Astro-owned page structure. Zero raw ?raw imports.
+ * Native <head>, chrome, balanced <main>, and footer. No legacy document loader,
+ * no raw HTML fragment imports, no legacy fragment transport. Scope: Nagornaya visual native
+ * hardening lane.
  */
-import { loadLegacyFullDocument } from '@/utils/legacyFullDocument';
+import NagornayaNakhodkiPageHead from '@/components/nagornaya/nakhodki/NagornayaNakhodkiPageHead.astro';
 import NagornayaNakhodkiPageChrome from '@/components/nagornaya/nakhodki/NagornayaNakhodkiPageChrome.astro';
 import NagornayaNakhodkiMainShell from '@/components/nagornaya/nakhodki/NagornayaNakhodkiMainShell.astro';
 import NagornayaNakhodkiPageFooter from '@/components/nagornaya/nakhodki/NagornayaNakhodkiPageFooter.astro';
-
-const { headHtml, bodyAttributes } = loadLegacyFullDocument('nagornaya/nakhodki/index.html');
 ---
 <!DOCTYPE html>
 <html lang="ru">
   <head>
-    <Fragment set:html={headHtml} />
+    <NagornayaNakhodkiPageHead />
   </head>
-  <body {...bodyAttributes}>
-    <div class="sr-only" data-pagefind-body style="position:absolute;left:-9999px;top:auto;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);clip-path:inset(50%);white-space:nowrap">
-      Страница проекта Господь Бог — Сила Моя. Раздел: nagornaya/nakhodki.
-    </div>
+  <body class="nagornaya-page bg-stone-100 text-stone-900 antialiased">
     <NagornayaNakhodkiPageChrome />
     <NagornayaNakhodkiMainShell />
     <NagornayaNakhodkiPageFooter />

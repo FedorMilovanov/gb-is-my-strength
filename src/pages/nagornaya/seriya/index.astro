@@ -1,28 +1,17 @@
 ---
 /**
- * /nagornaya/seriya/ — РЕФАКТОРИНГ 6.0 Phase 1: native pilot seriya.
- *
- * 100% Astro-owned page structure for seriya. Zero raw ?raw imports.
- * Uses NagornayaSeriyaPageChrome, MainShell, and PageFooter components.
+ * /nagornaya/seriya/ — 100% native balanced Nagornaya series hub.
+ * Native head + balanced body component. No legacy loader or raw imports.
  */
-import { loadLegacyFullDocument } from '@/utils/legacyFullDocument';
-import NagornayaSeriyaPageChrome from '@/components/nagornaya/seriya/NagornayaSeriyaPageChrome.astro';
-import NagornayaSeriyaMainShell from '@/components/nagornaya/seriya/NagornayaSeriyaMainShell.astro';
-import NagornayaSeriyaPageFooter from '@/components/nagornaya/seriya/NagornayaSeriyaPageFooter.astro';
-
-const { headHtml, bodyAttributes } = loadLegacyFullDocument('nagornaya/seriya/index.html');
+import NagornayaSeriyaPageHead from '@/components/nagornaya/seriya/NagornayaSeriyaPageHead.astro';
+import NagornayaSeriyaBody from '@/components/nagornaya/seriya/NagornayaSeriyaBody.astro';
 ---
 <!DOCTYPE html>
 <html lang="ru">
   <head>
-    <Fragment set:html={headHtml} />
+    <NagornayaSeriyaPageHead />
   </head>
-  <body {...bodyAttributes}>
-    <div class="sr-only" data-pagefind-body style="position:absolute;left:-9999px;top:auto;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);clip-path:inset(50%);white-space:nowrap">
-      Страница проекта Господь Бог — Сила Моя. Раздел: nagornaya/seriya.
-    </div>
-    <NagornayaSeriyaPageChrome />
-    <NagornayaSeriyaMainShell />
-    <NagornayaSeriyaPageFooter />
+  <body class="nagornaya-page nagornaya-series-page">
+    <NagornayaSeriyaBody />
   </body>
 </html>

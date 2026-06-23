@@ -1,32 +1,24 @@
 ---
 /**
- * /nagornaya/chast-4/ — РЕФАКТОРИНГ 6.0 Phase 1: native pilot chast-4.
+ * /nagornaya/chast-4// — 100% native Nagornaya route (2026-06-23).
  *
- * 100% Astro-owned page structure for chast-4. Zero raw ?raw imports.
- * All content sections promoted to named Astro components.
+ * Native <head>, chrome, balanced <main>, and footer. No legacy document loader,
+ * no raw HTML fragment imports, no legacy fragment transport. Scope: Nagornaya visual native
+ * hardening lane.
  */
-import { loadLegacyFullDocument } from '@/utils/legacyFullDocument';
+import NagornayaChast4PageHead from '@/components/nagornaya/chast-4/NagornayaChast4PageHead.astro';
 import NagornayaChast4PageChrome from '@/components/nagornaya/chast-4/NagornayaChast4PageChrome.astro';
-import NagornayaChast4HeaderHero from '@/components/nagornaya/chast-4/NagornayaChast4HeaderHero.astro';
-import NagornayaChast4ArticleBody from '@/components/nagornaya/chast-4/NagornayaChast4ArticleBody.astro';
-import NagornayaChast4PostContent from '@/components/nagornaya/chast-4/NagornayaChast4PostContent.astro';
+import NagornayaChast4MainShell from '@/components/nagornaya/chast-4/NagornayaChast4MainShell.astro';
 import NagornayaChast4PageFooter from '@/components/nagornaya/chast-4/NagornayaChast4PageFooter.astro';
-
-const { headHtml, bodyAttributes } = loadLegacyFullDocument('nagornaya/chast-4/index.html');
 ---
 <!DOCTYPE html>
 <html lang="ru">
   <head>
-    <Fragment set:html={headHtml} />
+    <NagornayaChast4PageHead />
   </head>
-  <body {...bodyAttributes}>
-    <div class="sr-only" data-pagefind-body style="position:absolute;left:-9999px;top:auto;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);clip-path:inset(50%);white-space:nowrap">
-      Страница проекта Господь Бог — Сила Моя. Раздел: nagornaya/chast-4.
-    </div>
+  <body class="nagornaya-page bg-stone-100 text-stone-900 antialiased">
     <NagornayaChast4PageChrome />
-    <NagornayaChast4HeaderHero />
-    <NagornayaChast4ArticleBody />
-    <NagornayaChast4PostContent />
+    <NagornayaChast4MainShell />
     <NagornayaChast4PageFooter />
   </body>
 </html>
