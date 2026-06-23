@@ -2,20 +2,15 @@
 /**
  * KodDaVinchiMainShell — Phase 2: semantic split of <main>.
  *
- * Three component boundaries:
- *   1. HeaderHero — <header> + hero <figure>
- *   2. ArticleBody — <article class="article-body">
- *   3. PostArticle — gb-accuracy-block, author-card, sdg-wrap
- *
- * Each still renders verbatim legacy HTML via ?raw imports.
- * Phase 3 will activate MDX in ArticleBody.
+ * NOTE: <main> tag is included here. The .page-wrap is opened/closed
+ * in index.astro so that <main> stays INSIDE .page-wrap for CSS selectors.
  */
 import KodDaVinchiArticleHeaderHero from './KodDaVinchiArticleHeaderHero.astro';
 import KodDaVinchiArticleBody from './KodDaVinchiArticleBody.astro';
 import KodDaVinchiPostArticle from './KodDaVinchiPostArticle.astro';
 ---
-<main id="main-content">
+  <main id="main-content">
   <KodDaVinchiArticleHeaderHero />
   <KodDaVinchiArticleBody />
   <KodDaVinchiPostArticle />
-</main>
+  </main>
