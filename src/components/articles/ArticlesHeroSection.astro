@@ -1,21 +1,22 @@
 ---
 /**
- * ArticlesHeroSection.astro — hero block for /articles/.
+ * ArticlesHeroSection.astro — native hero block for /articles/.
  *
- * Refactoring 6.0 parallel pilot: hand-authored Astro replacement for the
- * first catalog fragment while preserving legacy classes, copy and structure.
+ * First-class Astro markup; no raw legacy fragment imports.
  */
 ---
-<section class="h-hero" aria-label="Каталог статей">
-  <p class="h-hero-tagline">Библиотека</p>
+<!-- HERO -->
+    <section class="h-hero" aria-label="Каталог статей">
 
-  <h1 class="h-hero-title" tabindex="-1">
-    <span class="h-title-static">Все</span><span class="h-title-dash" aria-hidden="true">&nbsp;</span><span class="h-title-accent">статьи</span>
-  </h1>
+      <p class="h-hero-tagline">Библиотека</p>
 
-  <p class="h-hero-desc">
-    Каталог богословских разборов, переводов и апологетических материалов, выстроенных вокруг текста Писания, серьёзной экзегезы и исторически ответственного чтения христианской традиции.
-  </p>
+      <h1 class="h-hero-title" tabindex="-1">
+        <span class="h-title-static">Все</span><span class="h-title-dash" aria-hidden="true">&nbsp;</span><span class="h-title-accent">статьи</span>
+      </h1>
 
-  <hr class="h-rule" aria-hidden="true" />
-</section>
+      <p class="h-hero-desc">
+        Каталог богословских разборов, переводов и апологетических материалов, выстроенных вокруг текста Писания, серьёзной экзегезы и исторически ответственного чтения христианской традиции.
+      </p>
+
+      <hr class="h-rule" aria-hidden="true">
+    </section>

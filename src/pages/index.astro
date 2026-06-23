@@ -1,36 +1,17 @@
 ---
-/**
- * / (home) — РЕФАКТОРИНГ 5.0 Phase 6 wave 6 (AGENTS-r254) native pilot.
- *
- * native-shadow recipe (see REFACTORING_5_0_PIXEL_DIFF_GUARD_2026-06-20.md §10):
- *   - <head> via loadLegacyFullDocument => SEO byte-identical;
- *   - body chrome (skip-link, hMobileBackdrop, h-mobile-nav, h-navbar,
- *     home-v20 open/close wrapper, gb-accuracy-block, gbFloatingControls,
- *     h-mobile-dock, Yandex.Metrika noscript, sw-register/search scripts)
- *     preserved verbatim through body-segment-{0,1}.html;
- *   - <main id="main-content"> promoted to HomeMain.astro component —
- *     includes: h-hero (tagline, h1, hebrew, desc, stats), h-mobile-hero-hub,
- *     resume-reading block, h-mobile-dashboard (4 quick-start cards),
- *     h-mobile-rail, h-mobile-paths (6 guided-reading cards), h-mobile-dock,
- *     h-featured (Бп/НП shelves), h-card-glass (Публикации / Статьи),
- *     h-card-planned (В планах), h-article-list (статьи), h-about,
- *     h-quote-section, h-related-articles, sdg-footer.
- *
- * Pixel parity proof:
- *   npm run visual:parity:screenshots -- --routes /
- */
-import { loadLegacyFullDocument } from '@/utils/legacyFullDocument';
+import HomePageHead from '@/components/home/HomePageHead.astro';
+import HomePageChrome from '@/components/home/HomePageChrome.astro';
 import HomeMain from '@/components/home/HomeMain.astro';
-import segBefore from '@/components/home/_legacy/body-segment-0.html?raw';
-import segAfter from '@/components/home/_legacy/body-segment-1.html?raw';
-
-const { headHtml, bodyAttributes } = loadLegacyFullDocument('index.html');
 ---
 
 <!DOCTYPE html>
 <html lang="ru">
   <head>
-    <Fragment set:html={headHtml} />
+    <HomePageHead />
   </head>
-  <body {...bodyAttributes}><Fragment set:html={segBefore} /><HomeMain /><Fragment set:html={segAfter} /></body>
+  <body class="home-page">
+    <HomePageChrome>
+      <HomeMain />
+    </HomePageChrome>
+  </body>
 </html>

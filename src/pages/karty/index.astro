@@ -1,29 +1,13 @@
 ---
-/**
- * /karty/ — РЕФАКТОРИНГ 5.0 Phase 6 wave 4 (AGENTS-r252) native pilot.
- *
- * native-shadow recipe (see REFACTORING_5_0_PIXEL_DIFF_GUARD_2026-06-20.md §10):
- *   - <head> via loadLegacyFullDocument => SEO byte-identical;
- *   - body chrome (skip-link, theme toggle, breadcrumb, footer, runtime
- *     scripts) is empty for /karty/ — the page IS the hub;
- *   - <div class="karty-hub" data-pagefind-body> promoted to KartyMain.astro
- *     component. Hub HTML is byte-identical via Vite ?raw import.
- *
- * Pixel parity proof:
- *   npm run visual:parity:screenshots -- --routes /karty/
- */
-import { loadLegacyFullDocument } from '@/utils/legacyFullDocument';
+import KartyPageHead from '@/components/karty/KartyPageHead.astro';
 import KartyMain from '@/components/karty/KartyMain.astro';
-import segBefore from '@/components/karty/_legacy/body-segment-0.html?raw';
-import segAfter from '@/components/karty/_legacy/body-segment-1.html?raw';
-
-const { headHtml, bodyAttributes } = loadLegacyFullDocument('karty/index.html');
 ---
-
 <!DOCTYPE html>
 <html lang="ru">
   <head>
-    <Fragment set:html={headHtml} />
+    <KartyPageHead />
   </head>
-  <body {...bodyAttributes}><Fragment set:html={segBefore} /><KartyMain /><Fragment set:html={segAfter} /></body>
+  <body>
+    <KartyMain />
+  </body>
 </html>

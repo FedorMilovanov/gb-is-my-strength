@@ -1,41 +1,32 @@
 ---
 /**
- * HomeMain.astro — <main id="main-content" data-pagefind-body>...</main> of /.
- *
- * Refactoring 6.0 parallel pilot: the route no longer proxies one monolithic
- * `_legacy/main.html?raw` block. Instead, the premium standalone home main is
- * assembled from named legacy-faithful fragments while preserving exact DOM,
- * copy and section order.
- *
- * Pixel-parity contract remains guarded via
- *   npm run visual:parity:screenshots -- --routes / --threshold 0.5
- * and source-contract audit in scripts/home-visual-parity-audit.js.
+ * HomeMain.astro — native semantic main for /.
  */
-import HomeHeroSection from './HomeHeroSection.astro';
-import resumeMobile from './_legacy/resume-mobile.html?raw';
-import directions from './_legacy/directions.html?raw';
-import planned from './_legacy/planned.html?raw';
-import publications from './_legacy/publications.html?raw';
-import refutations from './_legacy/refutations.html?raw';
-import HomeAboutSection from './HomeAboutSection.astro';
-import HomeQuoteSection from './HomeQuoteSection.astro';
-import HomeAccuracyBlock from './HomeAccuracyBlock.astro';
-import HomeFooter from './HomeFooter.astro';
+import HomeHero from './HomeHero.astro';
+import ResumeMobile from './HomeSections/ResumeMobile.astro';
+import Directions from './HomeSections/Directions.astro';
+import Planned from './HomeSections/Planned.astro';
+import Publications from './HomeSections/Publications.astro';
+import Refutations from './HomeSections/Refutations.astro';
+import About from './HomeSections/About.astro';
+import Quote from './HomeSections/Quote.astro';
+import Accuracy from './HomeSections/Accuracy.astro';
+import HomePageFooter from './HomePageFooter.astro';
 import HomeArticleEndBlock from './HomeArticleEndBlock.astro';
 ---
 
 <main id="main-content" data-pagefind-body>
   <div class="home-content">
-    <HomeHeroSection />
-    <Fragment set:html={resumeMobile} />
-    <Fragment set:html={directions} />
-    <Fragment set:html={planned} />
-    <Fragment set:html={publications} />
-    <Fragment set:html={refutations} />
-    <HomeAboutSection />
-    <HomeQuoteSection />
-    <HomeAccuracyBlock />
-    <HomeFooter />
+    <HomeHero />
+    <ResumeMobile />
+    <Directions />
+    <Planned />
+    <Publications />
+    <Refutations />
+    <About />
+    <Quote />
+    <Accuracy />
+    <HomePageFooter />
   </div><!-- /.home-content -->
   <HomeArticleEndBlock />
 </main>
