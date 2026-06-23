@@ -1,0 +1,146 @@
+---
+/**
+ * HomePageChrome.astro — native body chrome + runtime shell for /.
+ */
+---
+<a href="#main-content" class="skip-link">Перейти к содержимому</a>
+
+<!-- ══════════════════════════════════════════════════════
+     READING PROGRESS BAR
+══════════════════════════════════════════════════════ -->
+<div class="h-reading-progress" id="hReadingProgress" aria-hidden="true"></div>
+
+<!-- ══════════════════════════════════════════════════════
+     SMART NAVBAR
+══════════════════════════════════════════════════════ -->
+<nav class="h-navbar" id="hNavbar" role="navigation" aria-label="Основная навигация">
+  <div class="h-navbar__inner">
+    <a href="/" class="h-nav-logo" aria-label="Господь Бог — Сила Моя — на главную">
+      <span class="h-nav-logo-main">Господь Бог</span>
+      <span class="h-nav-logo-dash" aria-hidden="true">&nbsp;—&nbsp;</span>
+      <span class="h-nav-logo-accent">Сила Моя</span>
+    </a>
+
+    <ul class="h-nav-links" role="list">
+      <li><a href="#publikacii" class="h-scroll-target">Публикации</a></li>
+      <li><a href="#razbor" class="h-scroll-target">Разбор заблуждений</a></li>
+      <li><a href="/biografii/">Биографии</a></li>
+      <li><a href="/articles/">Все статьи</a></li>
+      <li><a href="/karty/">Карты</a></li>
+      <li><a href="/konfessii/">Конфессии</a></li>
+      <li><a href="#about" class="h-scroll-target">О проекте</a></li>
+    </ul>
+
+    <div class="mobile-controls">
+      <button class="theme-toggle" id="themeToggle" type="button" aria-label="Переключить тему">
+        <svg class="icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12.8A9 9 0 1111.2 3 7 7 0 0021 12.8z"></path></svg>
+        <svg class="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line></svg>
+      </button>
+      <button class="h-mobile-menu-btn" id="hMobileMenuBtn" type="button" aria-label="Открыть меню" aria-expanded="false">
+        <svg class="h-burger-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
+          <line class="burger-top" x1="3" y1="6" x2="21" y2="6"></line>
+          <line class="burger-mid" x1="3" y1="12" x2="21" y2="12"></line>
+          <line class="burger-bottom" x1="3" y1="18" x2="21" y2="18"></line>
+        </svg>
+      </button>
+    </div>
+  </div>
+</nav>
+
+<div class="h-mobile-nav" id="hMobileNav" aria-hidden="true">
+  <a href="#publikacii" data-close-nav>Публикации</a>
+  <a href="#razbor" data-close-nav>Разбор заблуждений</a>
+  <a href="/biografii/" data-close-nav>Биографии</a>
+  <a href="/articles/" data-close-nav>Все статьи</a>
+  <a href="/karty/" data-close-nav>Карты</a>
+  <a href="/konfessii/" data-close-nav>Конфессии</a>
+  <a href="#about" data-close-nav>О проекте</a>
+</div>
+
+<div id="hMobileBackdrop" class="h-mobile-backdrop" aria-hidden="true"></div>
+
+<div class="home-v20">
+  <div class="h-scripture-bg" aria-hidden="true" id="hScriptureBg">
+    <!-- Phrases injected by JS -->
+  </div>
+
+  <slot />
+
+  <nav class="h-mobile-dock" aria-label="Быстрые действия на главной">
+    <a href="#publikacii" class="h-mobile-dock__btn" aria-label="Перейти к публикациям">
+      <span class="h-mobile-dock__icon">◫</span>
+      <span class="h-mobile-dock__label">Читать</span>
+    </a>
+    <button type="button" class="h-mobile-dock__btn h-mobile-dock__btn--action" data-action="open-search" aria-label="Открыть поиск по материалам сайта">
+      <span class="h-mobile-dock__icon">⌕</span>
+      <span class="h-mobile-dock__label">Поиск</span>
+    </button>
+    <a href="/konfessii/russkij-baptizm/" class="h-mobile-dock__btn" aria-label="Открыть 3D-карту русского баптизма">
+      <span class="h-mobile-dock__icon">◎</span>
+      <span class="h-mobile-dock__label">3D</span>
+    </a>
+    <a href="#about" class="h-mobile-dock__btn" aria-label="Перейти к разделу о проекте">
+      <span class="h-mobile-dock__icon">✦</span>
+      <span class="h-mobile-dock__label">О проекте</span>
+    </a>
+  </nav>
+</div><!-- /.home-v20 -->
+
+<button class="h-scroll-top" id="hScrollTop" type="button" aria-label="Наверх">
+  <svg class="h-progress-ring" width="50" height="50" viewBox="0 0 50 50" aria-hidden="true">
+    <circle class="h-progress-ring-circle" id="hProgressCircle" cx="25" cy="25" r="22" style="stroke-dasharray: 138.23; stroke-dashoffset: 138.23;"></circle>
+  </svg>
+  <span class="h-scroll-top-arrow" aria-hidden="true">
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><polyline points="18 15 12 9 6 15"></polyline></svg>
+  </span>
+</button>
+
+<script is:inline>
+window.SITE_CONFIG = {
+  version: 1778943682,
+  site: {
+    id: 'gb-strength',
+    name: 'Господь Бог — Сила Моя',
+    baseUrl: 'https://gospod-bog.ru',
+    locale: 'ru-RU',
+    themeStorageKey: 'theme',
+    debug: false
+  },
+  page: {
+    type: 'home',
+    id: 'home',
+    title: 'Господь Бог — Сила Моя'
+  },
+  features: {
+    themeToggle: { enabled: true },
+    share: { enabled: false },
+    backToTop: { enabled: false },
+    readingProgress: { enabled: false },
+    toc: { enabled: false },
+    footnotes: { enabled: false },
+    timeline: { enabled: false },
+    flipCards: { enabled: false },
+    quiz: { enabled: false },
+    bookmarks: { enabled: false },
+    homepageResume: { enabled: true, maxItems: 5 }
+  }
+};
+</script>
+<script src="js/site-utils.js?v=897afa55" defer></script>
+<script src="js/scroll-perf.js?v=454d6f7b" defer></script>
+<script src="js/site.js?v=fed3ec3b" defer></script>
+<script src="js/enhancements.js?v=b3b77aa6" defer></script>
+
+<script type="text/javascript" is:inline>
+  (function(m,e,t,r,i,k,a){
+    m[i]=m[i]||function(){(m[i].a=m[i].a||[]).push(arguments)};
+    m[i].l=1*new Date();
+    for(var j=0;j<document.scripts.length;j++){if(document.scripts[j].src===r){return;}}
+    k=e.createElement(t),a=e.getElementsByTagName(t)[0],k.async=1,k.src=r,a.parentNode.insertBefore(k,a)
+  })(window,document,'script','https://mc.yandex.ru/metrika/tag.js?id=108353327','ym');
+  window.dataLayer = window.dataLayer || [];
+  ym(108353327,'init',{ssr:false,webvisor:true,clickmap:true,ecommerce:"dataLayer",referrer:document.referrer,url:location.href,accurateTrackBounce:true,trackLinks:true});
+</script>
+<noscript><div><img decoding="async" src="https://mc.yandex.ru/watch/108353327" style="position:absolute;left:-9999px;" alt=""></div></noscript>
+<script src="./js/sw-register.js?v=8a077d35" defer></script>
+<script src="./js/search.js?v=c9d65577" defer></script>

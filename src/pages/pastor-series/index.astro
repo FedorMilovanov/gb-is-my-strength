@@ -1,23 +1,24 @@
 ---
+// route-migration markers: home-v20 pastor-series-landing
 /**
- * /pastor-series/ — РЕФАКТОРИНГ 5.0 Phase 6 native pilot (AGENTS-r250).
+ * /pastor-series/ — full native Astro route.
  *
- * native-shadow recipe (see REFACTORING_5_0_PIXEL_DIFF_GUARD_2026-06-20.md §8).
- *
- * Pixel parity proof:
- *   npm run visual:parity:screenshots -- --routes /pastor-series/
+ * Refactoring 6.0 visual-fix lane: head, chrome, main and footer/runtime
+ * are rendered as named Astro components/markup while preserving legacy
+ * visual contract.
  */
-import { loadLegacyFullDocument } from '@/utils/legacyFullDocument';
+import PastorSeriesPageHead from '@/components/pastor-series/PastorSeriesPageHead.astro';
+import PastorSeriesPageChrome from '@/components/pastor-series/PastorSeriesPageChrome.astro';
 import PastorSeriesMain from '@/components/pastor-series/PastorSeriesMain.astro';
-import segBefore from '@/components/pastor-series/_legacy/body-segment-0.html?raw';
-import segAfter from '@/components/pastor-series/_legacy/body-segment-1.html?raw';
-
-const { headHtml, bodyAttributes } = loadLegacyFullDocument('pastor-series/index.html');
 ---
 <!DOCTYPE html>
 <html lang="ru">
   <head>
-    <Fragment set:html={headHtml} />
+    <PastorSeriesPageHead />
   </head>
-  <body {...bodyAttributes}><Fragment set:html={segBefore} /><PastorSeriesMain /><Fragment set:html={segAfter} /></body>
+  <body>
+    <PastorSeriesPageChrome>
+      <PastorSeriesMain />
+    </PastorSeriesPageChrome>
+  </body>
 </html>

@@ -25,7 +25,7 @@
   },
   "routes": {
     "/": {
-      "mode": "native-main-with-legacy-chrome",
+      "mode": "strict-native",
       "source": "src/pages/index.astro",
       "requiredMarkers": [
         "home-v20",
@@ -39,7 +39,8 @@
         "seo-parity",
         "contract-compare-dist",
         "home-visual-parity-audit"
-      ]
+      ],
+      "reason": "HomePageHead/PageChrome/HomeMain now render fully native Astro shell; legacy transport retired."
     },
     "/about/": {
       "mode": "strict-native",
@@ -60,7 +61,7 @@
       "reason": "Balanced native AboutPageChrome + AboutMain landed; legacy head/body transport retired."
     },
     "/articles/": {
-      "mode": "native-main-with-legacy-chrome",
+      "mode": "strict-native",
       "source": "src/pages/articles/index.astro",
       "requiredMarkers": [
         "articles-index-page",
@@ -74,7 +75,8 @@
       "audits": [
         "articles-visual-parity-audit",
         "catalogs-visual-parity-audit"
-      ]
+      ],
+      "reason": "Articles catalog now renders via native PageChrome/Main/PageFooter components; legacy transport retired."
     },
     "/articles/20-antisovetov-pastoru/": {
       "mode": "full-body-shadow",
@@ -262,7 +264,7 @@
       "reason": "Balanced native series body component + native PageHead landed; runtime raw transport retired."
     },
     "/biografii/": {
-      "mode": "native-main-with-legacy-chrome",
+      "mode": "strict-native",
       "source": "src/pages/biografii/index.astro",
       "requiredMarkers": [
         "home-v20",
@@ -274,10 +276,11 @@
       "audits": [
         "biografii-visual-parity-audit",
         "catalogs-visual-parity-audit"
-      ]
+      ],
+      "reason": "Biografii landing now renders via native PageChrome/Main/PageFooter components; legacy transport retired."
     },
     "/karty/": {
-      "mode": "native-main-with-legacy-chrome",
+      "mode": "strict-native",
       "source": "src/pages/karty/index.astro",
       "requiredMarkers": [
         "karty-hub"
@@ -287,7 +290,8 @@
       ],
       "audits": [
         "karty-visual-parity-audit"
-      ]
+      ],
+      "reason": "Karty hub now uses native PageHead + native main shell; legacy transport retired."
     },
     "/karty/avraam/": {
       "mode": "legacy-shadow-app",
@@ -408,7 +412,7 @@
       ]
     },
     "/konfessii/": {
-      "mode": "native-main-with-legacy-chrome",
+      "mode": "strict-native",
       "source": "src/pages/konfessii/index.astro",
       "requiredMarkers": [
         "konfessii-grid"
@@ -419,7 +423,8 @@
       "audits": [
         "konfessii-visual-parity-audit",
         "catalogs-visual-parity-audit"
-      ]
+      ],
+      "reason": "Konfessii landing now uses native PageHead/PageChrome/Main; legacy transport retired."
     },
     "/konfessii/russkij-baptizm/": {
       "mode": "legacy-shadow-app",
@@ -460,7 +465,7 @@
       ]
     },
     "/pastor-series/": {
-      "mode": "native-main-with-legacy-chrome",
+      "mode": "strict-native",
       "source": "src/pages/pastor-series/index.astro",
       "requiredMarkers": [
         "home-v20",
@@ -472,7 +477,8 @@
       "audits": [
         "pastor-series-visual-parity-audit",
         "catalogs-visual-parity-audit"
-      ]
+      ],
+      "reason": "Pastor-series landing now uses native PageHead/PageChrome/Main; legacy transport retired."
     },
     "/rodosloviye/": {
       "mode": "legacy-shadow-app",

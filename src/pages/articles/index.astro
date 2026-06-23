@@ -1,31 +1,24 @@
 ---
 /**
- * /articles/ — РЕФАКТОРИНГ 5.0 Phase 6 wave 3 (AGENTS-r251).
+ * /articles/ — 100% native catalog page (LANE visual-fix-articles-index-2026-06-23).
  *
- * native-shadow recipe (see REFACTORING_5_0_PIXEL_DIFF_GUARD_2026-06-20.md §8-9):
- *   - <head> via loadLegacyFullDocument => SEO byte-identical;
- *   - body chrome (navbar, mobile menu, hero/footer breadcrumbs, runtime
- *     scripts) preserved verbatim through body-segment-{0,1}.html;
- *   - <main id="main-content"> promoted to ArticlesMain.astro component.
+ * Scope: catalog index only, not /articles/<slug>/ MDX article pages.
+ * Replaces the previous native-shadow recipe with named Astro components:
+ *   - ArticlesPageChrome: document head + body chrome;
+ *   - ArticlesMain: catalog semantic content, backed by data/series.json;
+ *   - ArticlesPageFooter: feedback/footer/runtime tail.
  *
- * Pixel parity proof:
- *   npm run visual:parity:screenshots -- --routes /articles/
+ * No legacy full-document loader, raw HTML imports or legacy fragment directory.
  */
-import { loadLegacyFullDocument } from '@/utils/legacyFullDocument';
+import ArticlesPageChrome from '@/components/articles/ArticlesPageChrome.astro';
 import ArticlesMain from '@/components/articles/ArticlesMain.astro';
-import segBefore from '@/components/articles/_legacy/body-segment-0.html?raw';
-import segAfter from '@/components/articles/_legacy/body-segment-1.html?raw';
-
-const { headHtml, bodyAttributes } = loadLegacyFullDocument('articles/index.html');
+import ArticlesPageFooter from '@/components/articles/ArticlesPageFooter.astro';
 ---
 <!DOCTYPE html>
-<html lang="ru">
-  <head>
-    <Fragment set:html={headHtml} />
-  </head>
-  <body {...bodyAttributes}><Fragment set:html={segBefore} /><ArticlesMain /><Fragment set:html={segAfter} />
-    <div class="sr-only" data-pagefind-body style="position:absolute;left:-9999px;top:auto;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);clip-path:inset(50%);white-space:nowrap">
-      Каталог статей Господь Бог — Сила Моя. Все статьи: Джон Гилл, Нагорная проповедь, апологетика, экзегетика, богословие, пасторская серия, трудные тексты и библейские исследования.
-    </div>
-  </body>
-</html>
+<ArticlesPageChrome>
+  <ArticlesMain />
+  <ArticlesPageFooter />
+  <div class="sr-only" data-pagefind-body style="position:absolute;left:-9999px;top:auto;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);clip-path:inset(50%);white-space:nowrap">
+    Каталог статей Господь Бог — Сила Моя. Все статьи: Джон Гилл, Нагорная проповедь, апологетика, экзегетика, богословие, пасторская серия, трудные тексты и библейские исследования.
+  </div>
+</ArticlesPageChrome>

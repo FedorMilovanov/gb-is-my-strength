@@ -43,6 +43,12 @@ function readSource(route, sourcePath) {
   return fs.readFileSync(fullPath, 'utf8');
 }
 
+function stripComments(source) {
+  return String(source || '')
+    .replace(/\/\*[\s\S]*?\*\//g, '')
+    .replace(/^\s*\/\/.*$/gm, '');
+}
+
 function findImports(source) {
   const imports = [];
   const re = /import\s+(?:type\s+)?(?:[^'";]+?\s+from\s+)?['"]([^'"]+)['"]/g;
@@ -120,8 +126,8 @@ function checkRouteMigration(route, contract, ownership) {
   const source = contract.source;
   if (!source) return;
 
-  const sourceContent = readSource(route, source);
-  const sourceClosureContent = readSourceClosure(route, source);
+  const sourceContent = stripComments(readSource(route, source));
+  const sourceClosureContent = stripComments(readSourceClosure(route, source));
 
   // Check 0: strict-native should not retain loader/raw legacy transport
   if (contract.mode === 'strict-native') {
