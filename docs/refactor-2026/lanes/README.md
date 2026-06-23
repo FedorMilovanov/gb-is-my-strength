@@ -24,7 +24,7 @@ abandoned  — отменён
 | `lane/system-native-runtime-taxonomy-audit-2026-06-23` | Native runtime taxonomy audit + Nagornaya branch verification | SYSTEM | review | ✅ | Arena Agent |
 | `lane/system-native-head-closeout-2026-06-23` | Remove last legacy-head routes (`/about/`, `kod-da-vinchi`) | SYSTEM | review | ✅ | Arena Agent |
 | `lane/baptisty-total-closeout-2026-06-23` | Strict-native closeout for the full baptisty-rossii route family | LANE | review | ✅ | Arena Agent |
-| `lane/system-final-hybrid-closeout-2026-06-23` | Close the remaining non-app hybrid landing/catalog routes | SYSTEM | active | ⏳ | Arena Agent |
+| `lane/system-final-hybrid-closeout-2026-06-23` | Close the remaining non-app hybrid landing/catalog/article routes | SYSTEM | review | ✅ | Arena Agent |
 
 ## Recently merged
 

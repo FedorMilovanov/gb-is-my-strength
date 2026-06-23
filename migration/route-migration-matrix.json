@@ -79,9 +79,9 @@
       "reason": "Articles catalog now renders via native PageChrome/Main/PageFooter components; legacy transport retired."
     },
     "/articles/20-antisovetov-pastoru/": {
-      "mode": "full-body-shadow",
+      "mode": "strict-native",
       "source": "src/pages/articles/20-antisovetov-pastoru/index.astro",
-      "reason": "Current production route intentionally preserves legacy premium article body via loadLegacyFullDocument until an MDX/native lane proves visual parity.",
+      "reason": "Legacy full-body shadow retired; route now uses native PageHead + native body component while preserving public article output.",
       "targetMode": "mdx-native-article",
       "requiredMarkers": [
         "data-pagefind-body"
@@ -94,9 +94,9 @@
       ]
     },
     "/articles/hermenevticheskaya-otsenka-hristotsentrichnoy-germenevtiki/": {
-      "mode": "full-body-shadow",
+      "mode": "strict-native",
       "source": "src/pages/articles/hermenevticheskaya-otsenka-hristotsentrichnoy-germenevtiki/index.astro",
-      "reason": "Current production route intentionally preserves legacy premium article body via loadLegacyFullDocument until an MDX/native lane proves visual parity.",
+      "reason": "Legacy full-body shadow retired; route now uses native PageHead + native body component while preserving public article output.",
       "targetMode": "mdx-native-article",
       "requiredMarkers": [
         "data-pagefind-body"
