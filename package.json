@@ -110,6 +110,8 @@
     "content:parity-v2": "node scripts/check-mdx-html-parity-v2.js",
     "css:layer:validate": "node scripts/css-layer-validator.js css/site-layered.css --ceiling=202",
     "route:taxonomy": "node scripts/route-shadow-taxonomy.js",
+    "native:runtime:audit": "node scripts/native-runtime-taxonomy-audit.js",
+    "native:runtime:audit:strict": "node scripts/native-runtime-taxonomy-audit.js --strict",
     "mdx:structure:audit": "node scripts/mdx-structure-audit.js",
     "maps:publication-status": "node scripts/check-map-publication-status.js",
     "gill:context:visual-parity:audit": "node scripts/gill-context-visual-parity-audit.js",

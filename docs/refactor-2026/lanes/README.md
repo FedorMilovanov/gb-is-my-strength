@@ -21,6 +21,7 @@ abandoned  — отменён
 | `lane/nagornaya-componentization` | Componentize chast-2..5 | LANE | merged | ✅ | Arena Agent |
 | `lane/gill-full-native-closeout-2026-06-23` | Strict-native closeout for Gill cluster | LANE | active | ⏳ | Arena Agent |
 | `lane/kod-da-vinchi-final-section-native-2026-06-23` | Kod Da Vinci: promote final raw article section to Astro | LANE | review | ✅ | Arena Agent |
+| `lane/system-native-runtime-taxonomy-audit-2026-06-23` | Native runtime taxonomy audit + Nagornaya branch verification | SYSTEM | review | ✅ | Arena Agent |
 
 ## Recently merged
 
