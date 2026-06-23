@@ -109,5 +109,21 @@ auditComponent(
   3000,
   ['Кеттеринг','Бытие 3:9','Хорслидаун','Декларация Козьего Двора','Источники и литература к Части I']
 );
+const part2Base = 'src/components/article-pilots/gill-part2';
+auditComponent(
+  'dzhon-gill-chast-2-uchenyi',
+  `${part2Base}/GillPart2ArticleBody.astro`,
+  [`${part2Base}/GillPart2ArticleBody.astro`],
+  4500,
+  ['Учение о Троице','раввинист','девятитомный комментарий','Body of Doctrinal Divinity','Уитби']
+);
+const part3Base = 'src/components/article-pilots/gill-part3';
+auditComponent(
+  'dzhon-gill-chast-3-nasledie',
+  `${part3Base}/GillPart3ArticleBody.astro`,
+  [`${part3Base}/GillPart3ArticleBody.astro`],
+  6000,
+  ['Уэсли','гиперкальвинизм','Сперджен','Америка','Банхилл-Филдс']
+);
 if (problems.length){ console.log(`\n❌ Gill Pagefind body audit failed: ${problems.length} issue(s)`); process.exit(1); }
 console.log('\n✅ Gill Pagefind body audit passed');

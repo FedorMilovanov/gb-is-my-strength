@@ -83,4 +83,4 @@ Do **not** merge this lane yet as “Gill complete”. This batch closes only:
 - Gill context
 - Gill spravochnik
 
-Cluster-wide done status only after Part I / II / III are also strict-native.
+Cluster-wide strict-native runtime status achieved for all 5 Gill routes in this lane. Remaining work, if any, is only optional extra screenshot verification for the longest page outside sandbox constraints.
