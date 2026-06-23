@@ -425,15 +425,28 @@
       "mode": "legacy-shadow-app",
       "source": "src/pages/konfessii/russkij-baptizm/index.astro",
       "requiredMarkers": [
-        "data-pagefind-body"
+        "data-pagefind-body",
+        "iframe",
+        "appframe",
+        "./_app/index.html"
       ],
       "forbid": [
-        "astro-native-article-layout"
+        "astro-native-article-layout",
+        "mdx-native-article",
+        "static-image-replacement",
+        "delete-built-app",
+        "manual-bundle-edit"
       ],
       "audits": [
         "konfessii-map-audit",
-        "maps:validate"
-      ]
+        "maps:validate",
+        "smoke:konfessii",
+        "native-runtime-taxonomy"
+      ],
+      "protectedStatus": "PROTECTED-POLISHED-INTERACTIVE",
+      "targetMode": "native-wrapper-iframe-app",
+      "appAsset": "konfessii/russkij-baptizm/_app/",
+      "reason": "Owner-approved polished 3D iframe/WebGL app route. Wrapper may become native Astro later, but the built _app bundle and finished UX are protected."
     },
     "/map/": {
       "mode": "legacy-shadow-app",
