@@ -1,34 +1,16 @@
 ---
-/**
- * /baptisty-rossii/dva-sezda-1884/ — РЕФАКТОРИНГ 6.0 native-shadow breakout.
- *
- * native-shadow recipe: GBS2 chrome preserved verbatim through
- * body-segment-{0,1}.html fragments; semantic <main id="main-content">
- * promoted to BaptistyRossiiArticleMain.astro.
- *
- * Visual parity must be proven before this route is considered production-ready:
- *   npm run visual:parity:screenshots -- --routes /baptisty-rossii/dva-sezda-1884/ --threshold 0.5
- */
-import { loadLegacyFullDocument } from '@/utils/legacyFullDocument';
-import BaptistyRossiiArticleMain from '@/components/baptisty-rossii/BaptistyRossiiArticleMain.astro';
-import segBefore from '@/components/baptisty-rossii/_legacy/dva-sezda-1884/body-segment-0.html?raw';
-import segAfter from '@/components/baptisty-rossii/_legacy/dva-sezda-1884/body-segment-1.html?raw';
-import mainHtml from '@/components/baptisty-rossii/_legacy/dva-sezda-1884/main.html?raw';
-
-const { headHtml, bodyAttributes } = loadLegacyFullDocument('baptisty-rossii/dva-sezda-1884/index.html');
+import BaptistyRossiiDvaSezda1884PageHead from '@/components/baptisty-rossii/BaptistyRossiiDvaSezda1884PageHead.astro';
+import BaptistyRossiiDvaSezda1884Body from '@/components/baptisty-rossii/BaptistyRossiiDvaSezda1884Body.astro';
 ---
-
 <!DOCTYPE html>
 <html lang="ru">
   <head>
-    <Fragment set:html={headHtml} />
+    <BaptistyRossiiDvaSezda1884PageHead />
   </head>
-  <body {...bodyAttributes}>
-    <Fragment set:html={segBefore} />
-    <BaptistyRossiiArticleMain legacyHtml={mainHtml} />
-    <Fragment set:html={segAfter} />
+  <body class="gbs-world" data-gbs2-series="russian-baptism" data-gbs2-done-min="38" data-gbs2-part-min="17" data-gbs2-total-min="229">
+    <BaptistyRossiiDvaSezda1884Body />
     <div class="sr-only" data-pagefind-body style="position:absolute;left:-9999px;top:auto;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);clip-path:inset(50%);white-space:nowrap">
-      Баптисты России. Часть 3: Петербург и Ново-Васильевка — две развилки 1884 года.
+      Баптисты России. Часть 3: 1884: два съезда.
     </div>
   </body>
 </html>
