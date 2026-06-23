@@ -127,7 +127,7 @@
       "reason": "Route shell now uses native PageHead + explicit body class; final trailing raw section promoted to Astro."
     },
     "/baptisty-rossii/": {
-      "mode": "native-main-with-legacy-chrome",
+      "mode": "strict-native",
       "source": "src/pages/baptisty-rossii/index.astro",
       "requiredMarkers": [
         "home-v20",
@@ -138,10 +138,11 @@
       ],
       "audits": [
         "baptisty-rossii-visual-parity-audit"
-      ]
+      ],
+      "reason": "Balanced native BaptistyRossiiBody + native PageHead landed; runtime raw transport retired."
     },
     "/baptisty-rossii/dva-sezda-1884/": {
-      "mode": "full-body-shadow",
+      "mode": "strict-native",
       "source": "src/pages/baptisty-rossii/dva-sezda-1884/index.astro",
       "requiredMarkers": [
         "data-pagefind-body"
@@ -149,10 +150,11 @@
       "audits": [
         "series-article-parity",
         "baptisty-series-shadow-audit"
-      ]
+      ],
+      "reason": "Balanced native series body component + native PageHead landed; runtime raw transport retired."
     },
     "/baptisty-rossii/goneniya-i-sovest/": {
-      "mode": "full-body-shadow",
+      "mode": "strict-native",
       "source": "src/pages/baptisty-rossii/goneniya-i-sovest/index.astro",
       "requiredMarkers": [
         "data-pagefind-body"
@@ -160,10 +162,11 @@
       "audits": [
         "series-article-parity",
         "baptisty-series-shadow-audit"
-      ]
+      ],
+      "reason": "Balanced native series body component + native PageHead landed; runtime raw transport retired."
     },
     "/baptisty-rossii/iniciativnaya-gruppa/": {
-      "mode": "full-body-shadow",
+      "mode": "strict-native",
       "source": "src/pages/baptisty-rossii/iniciativnaya-gruppa/index.astro",
       "requiredMarkers": [
         "data-pagefind-body"
@@ -171,10 +174,11 @@
       "audits": [
         "series-article-parity",
         "baptisty-series-shadow-audit"
-      ]
+      ],
+      "reason": "Balanced native series body component + native PageHead landed; runtime raw transport retired."
     },
     "/baptisty-rossii/noch-na-kure/": {
-      "mode": "full-body-shadow",
+      "mode": "strict-native",
       "source": "src/pages/baptisty-rossii/noch-na-kure/index.astro",
       "requiredMarkers": [
         "data-pagefind-body"
@@ -182,10 +186,11 @@
       "audits": [
         "series-article-parity",
         "baptisty-series-shadow-audit"
-      ]
+      ],
+      "reason": "Balanced native series body component + native PageHead landed; runtime raw transport retired."
     },
     "/baptisty-rossii/peterburgskaya-liniya/": {
-      "mode": "full-body-shadow",
+      "mode": "strict-native",
       "source": "src/pages/baptisty-rossii/peterburgskaya-liniya/index.astro",
       "requiredMarkers": [
         "data-pagefind-body"
@@ -193,10 +198,11 @@
       "audits": [
         "series-article-parity",
         "baptisty-series-shadow-audit"
-      ]
+      ],
+      "reason": "Balanced native series body component + native PageHead landed; runtime raw transport retired."
     },
     "/baptisty-rossii/podpolnaya-pechat/": {
-      "mode": "full-body-shadow",
+      "mode": "strict-native",
       "source": "src/pages/baptisty-rossii/podpolnaya-pechat/index.astro",
       "requiredMarkers": [
         "data-pagefind-body"
@@ -204,10 +210,11 @@
       "audits": [
         "series-article-parity",
         "baptisty-series-shadow-audit"
-      ]
+      ],
+      "reason": "Balanced native series body component + native PageHead landed; runtime raw transport retired."
     },
     "/baptisty-rossii/sovetskaya-noch/": {
-      "mode": "full-body-shadow",
+      "mode": "strict-native",
       "source": "src/pages/baptisty-rossii/sovetskaya-noch/index.astro",
       "requiredMarkers": [
         "data-pagefind-body"
@@ -215,10 +222,11 @@
       "audits": [
         "series-article-parity",
         "baptisty-series-shadow-audit"
-      ]
+      ],
+      "reason": "Balanced native series body component + native PageHead landed; runtime raw transport retired."
     },
     "/baptisty-rossii/spravochnik/": {
-      "mode": "full-body-shadow",
+      "mode": "strict-native",
       "source": "src/pages/baptisty-rossii/spravochnik/index.astro",
       "requiredMarkers": [
         "data-pagefind-body"
@@ -226,10 +234,11 @@
       "audits": [
         "series-article-parity",
         "baptisty-series-shadow-audit"
-      ]
+      ],
+      "reason": "Balanced native series body component + native PageHead landed; runtime raw transport retired."
     },
     "/baptisty-rossii/vsehib-1944/": {
-      "mode": "full-body-shadow",
+      "mode": "strict-native",
       "source": "src/pages/baptisty-rossii/vsehib-1944/index.astro",
       "requiredMarkers": [
         "data-pagefind-body"
@@ -237,10 +246,11 @@
       "audits": [
         "series-article-parity",
         "baptisty-series-shadow-audit"
-      ]
+      ],
+      "reason": "Balanced native series body component + native PageHead landed; runtime raw transport retired."
     },
     "/baptisty-rossii/yuzhnaya-shtunda/": {
-      "mode": "full-body-shadow",
+      "mode": "strict-native",
       "source": "src/pages/baptisty-rossii/yuzhnaya-shtunda/index.astro",
       "requiredMarkers": [
         "data-pagefind-body"
@@ -248,7 +258,8 @@
       "audits": [
         "series-article-parity",
         "baptisty-series-shadow-audit"
-      ]
+      ],
+      "reason": "Balanced native series body component + native PageHead landed; runtime raw transport retired."
     },
     "/biografii/": {
       "mode": "native-main-with-legacy-chrome",
