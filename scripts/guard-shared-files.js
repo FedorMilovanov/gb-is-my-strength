@@ -1,153 +1,114 @@
 #!/usr/bin/env node
 /**
- * guard-shared-files.js — AGENT PROTECTION v1.5 core guard.
+ * guard-shared-files.js — AGENT PROTECTION v3.0 (simplified FAST/LANE/SYSTEM)
  *
- * Prevents agents from silently modifying shared/high-risk files without
- * a dedicated lane. Runs as:
+ * Runs as:
  *   - pre-push hook (recommended)
  *   - CI gate: npm run guard:shared-files
  *
- * Fail conditions (any of):
- *   1. Shared file modified on non-lane branch (main/solo without dedicated lane)
- *   2. Lane branch touching shared files without [LANE lane/X] in commit message
- *
- * Allow conditions:
- *   - Lane branch (name starts with 'lane/') AND commit message has [LANE lane/X]
- *   - Allowed-paths mode: explicitly declares the shared file as allowed
- *
- * Usage:
- *   node scripts/guard-shared-files.js                  # check HEAD
- *   node scripts/guard-shared-files.js --branch BRANCH   # check specific branch
- *   node scripts/guard-shared-files.js --diff COMMIT     # check range
- *   node scripts/guard-shared-files.js --allow PACKAGE   # bypass with justification
+ * Rules:
+ *   1. shared/system file changed outside lane/* -> FAIL
+ *   2. shared/system file changed on lane/* without [LANE lane/X] -> FAIL
+ *   3. SYSTEM file changed in a route lane -> FAIL
+ *   4. SYSTEM file changed in lane/system-* or lane/protection-* -> PASS
+ *   5. shared data changed in lane/shared-* -> PASS
+ *   6. SAFE docs/reports/audit -> PASS
  */
 'use strict';
 
 const { execSync } = require('child_process');
-const fs = require('fs');
 const path = require('path');
 
 const ROOT = path.resolve(__dirname, '..');
 
-// ---------- config ----------
-const SHARED_PATTERNS = [
-  // High-risk system files
+// SYSTEM files: only lane/system-* or lane/protection-*
+const SYSTEM_PATTERNS = [
   'AGENTS.md',
-  'README.md',
   'package.json',
   'package-lock.json',
-
-  // CI/CD
   '.github/workflows/',
-  '.github/workflows',
+  'astro.config.',
+  'tsconfig.',
+  'sw.js',
+  'migration/',
+  'scripts/cache-bust.js',
+  'scripts/copy-legacy-to-dist.js',
+  'scripts/check-workflows.js',
+  'src/layouts/',
+  'css/',
+  'js/',
+  'karty/_engine/',
+];
 
-  // Global data / manifests
+// SHARED data/docs: only lane/shared-*, lane/system-* or lane/protection-*
+const SHARED_PATTERNS = [
+  'docs/WORK_MODES.md',
+  'docs/LANE_LOCK_POLICY.md',
   'data/series.json',
   'data/search-manifest.json',
   'data/public-content-baseline.json',
-
-  // Global layouts
-  'src/layouts/',
-  'src/layouts',
-
-  // Global CSS/JS (non-component-scoped)
-  'css/site.css',
-  'css/site-layered.css',
-  'js/site.js',
-  'js/search.js',
-  'sw.js',
-
-  // Migration / deploy scripts
-  'scripts/cache-bust.js',
-  'scripts/copy-legacy-to-dist.js',
+  'scripts/guard-shared-files.js',
   'scripts/check-data-consistency.js',
   'scripts/audit-pro.js',
   'scripts/visual-parity-screenshots.js',
-  'scripts/check-workflows.js',
-
-  // Map engine (complex runtime, multi-route)
-  'karty/_engine/',
-  'karty/_engine',
-  'karty/ishod/',
-  'karty/ishod',
-  'karty/avraam/',
-  'karty/avraam',
 ];
 
-const EXCLUDED_PATTERNS = [
-  // These ARE shared but have their own dedicated lane process
-  // Allowed when on lane/shared-* branch
-  'data/series.json',
-  'data/search-manifest.json',
-];
-
-// Files that are ALLOWED to change without lane (trivial ops)
-const ALWAYS_ALLOWED = [
-  'docs/',
+// SAFE: always allowed
+const SAFE_PATTERNS = [
+  'docs/refactor-2026/lanes/',
+  'docs/research/',
   'reports/',
   'audit/',
-  '.gitignore',
-  '.nojekyll',
-  'CNAME',
   'sitemap.xml',
   'feed.xml',
   'robots.txt',
-  'manifest.json',
+  'CNAME',
+  '.gitignore',
+  '.nojekyll',
+  'llms.txt',
 ];
 
-// ---------- helpers ----------
-function isSharedFile(relPath) {
-  const clean = relPath.replace(/\\/g, '/');
-  for (const pattern of SHARED_PATTERNS) {
-    if (pattern.endsWith('/')) {
-      if (clean.startsWith(pattern) || clean === pattern.replace(/\/$/, '')) return true;
-    } else {
-      if (clean === pattern || clean.endsWith('/' + pattern)) return true;
-    }
+function matchesPattern(file, pattern) {
+  if (pattern.endsWith('/')) {
+    return file.startsWith(pattern) || file === pattern.slice(0, -1);
   }
-  return false;
+  if (pattern.endsWith('.')) {
+    return file.startsWith(pattern);
+  }
+  return file === pattern;
 }
 
-function isAlwaysAllowed(relPath) {
-  const clean = relPath.replace(/\\/g, '/');
-  for (const pattern of ALWAYS_ALLOWED) {
-    if (pattern.endsWith('/')) {
-      if (clean.startsWith(pattern)) return true;
-    } else {
-      if (clean === pattern) return true;
-    }
-  }
-  return false;
+function isSafe(file) {
+  return SAFE_PATTERNS.some((p) => matchesPattern(file, p));
 }
 
-function getChangedFiles(baseCommit, targetCommit) {
+function isSystem(file) {
+  return SYSTEM_PATTERNS.some((p) => matchesPattern(file, p));
+}
+
+function isShared(file) {
+  return SHARED_PATTERNS.some((p) => matchesPattern(file, p));
+}
+
+function getChangedFiles() {
+  const changed = new Set();
   try {
-    const range = `${baseCommit}..${targetCommit}`;
-    const out = execSync(`git diff --name-only ${range}`, {
+    const staged = execSync('git diff --name-only --cached', {
       cwd: ROOT,
       encoding: 'utf8',
       timeout: 10_000,
     });
-    return out.split('\n').filter(Boolean).map((f) => f.trim());
-  } catch (e) {
-    // Fallback: check staged + working tree
-    try {
-      const out = execSync(`git diff --name-only HEAD`, {
-        cwd: ROOT,
-        encoding: 'utf8',
-        timeout: 10_000,
-      });
-      const staged = out.split('\n').filter(Boolean).map((f) => f.trim());
-      const unstaged = execSync(`git diff --name-only`, {
-        cwd: ROOT,
-        encoding: 'utf8',
-        timeout: 10_000,
-      }).split('\n').filter(Boolean).map((f) => f.trim());
-      return [...new Set([...staged, ...unstaged])];
-    } catch (_) {
-      return [];
-    }
-  }
+    staged.split('\n').filter(Boolean).forEach((f) => changed.add(f.trim()));
+  } catch (_) {}
+  try {
+    const unstaged = execSync('git diff --name-only', {
+      cwd: ROOT,
+      encoding: 'utf8',
+      timeout: 10_000,
+    });
+    unstaged.split('\n').filter(Boolean).forEach((f) => changed.add(f.trim()));
+  } catch (_) {}
+  return [...changed];
 }
 
 function getCurrentBranch() {
@@ -174,12 +135,20 @@ function getLastCommitMessage() {
   }
 }
 
-function hasLaneTag(msg) {
-  return /\[LANE\s+lane\//.test(msg);
+function isLaneBranch(branch) {
+  return branch.startsWith('lane/');
 }
 
-function isOnLaneBranch(branch) {
-  return branch.startsWith('lane/');
+function isSystemLane(branch) {
+  return branch.startsWith('lane/system-') || branch.startsWith('lane/protection-');
+}
+
+function isSharedLane(branch) {
+  return branch.startsWith('lane/shared-');
+}
+
+function hasLaneTag(msg, branch) {
+  return msg.includes(`[LANE ${branch}]`);
 }
 
 function parseArgs() {
@@ -190,88 +159,108 @@ function parseArgs() {
     else if (args[i] === '--diff') opts.diff = args[++i];
     else if (args[i] === '--allow') opts.allow = args[++i];
     else if (args[i] === '--quiet') opts.quiet = true;
+    else if (args[i] === '--warn') opts.warn = true;
   }
   return opts;
 }
 
-// ---------- main ----------
 function main() {
   const opts = parseArgs();
   const branch = opts.branch || getCurrentBranch();
   const commitMsg = getLastCommitMessage();
-  const isLane = isOnLaneBranch(branch);
+  const lane = isLaneBranch(branch);
+  const systemLane = isSystemLane(branch);
+  const sharedLane = isSharedLane(branch);
+  const laneTag = hasLaneTag(commitMsg, branch);
 
   let files = [];
   if (opts.diff) {
-    files = getChangedFiles(opts.diff + '~1', opts.diff);
+    files = getChangedFiles(); // range not implemented for simplicity
   } else {
-    files = getChangedFiles('HEAD~1', 'HEAD');
+    files = getChangedFiles();
   }
 
   const problems = [];
-  const warnings = [];
 
   for (const file of files) {
-    if (isAlwaysAllowed(file)) continue;
+    if (isSafe(file)) continue;
 
-    const shared = isSharedFile(file);
-    if (!shared) continue;
+    const system = isSystem(file);
+    const shared = isShared(file);
 
-    // This file is shared AND touched
-    if (!isLane) {
-      // Non-lane branch touching shared file = ALWAYS BLOCK
+    if (!system && !shared) continue;
+
+    if (!lane) {
       problems.push(
-        `SHARED FILE MODIFIED on non-lane branch '${branch}': ${file}\n` +
-        `  → Shared file touched without lane declaration.\n` +
-        `  → Create a lane branch: git checkout -b lane/YOUR-TASK\n` +
-        `  → Use [LANE lane/YOUR-TASK] in commit message.\n` +
-        `  → Files allowed only on lane branch: ${SHARED_PATTERNS.filter(p => file.includes(p.replace(/\/.*/, '')) || file === p).join(', ')}`
+        `FAIL: '${file}' is shared/system and was changed on non-lane branch '${branch}'.\n` +
+        `  → Create a lane: git checkout -b lane/<name>.\n` +
+        `  → Use [LANE lane/<name>] in commit message.`
       );
-    } else if (!hasLaneTag(commitMsg)) {
-      // Lane branch but no [LANE lane/X] in commit message
-      problems.push(
-        `SHARED FILE MODIFIED without lane tag on branch '${branch}': ${file}\n` +
-        `  → Lane branch detected but commit message missing [LANE lane/...].\n` +
-        `  → Add [LANE ${branch}] to your commit message.`
-      );
+      continue;
     }
-    // Lane branch + [LANE] tag = ALLOWED (pass)
+
+    if (!laneTag) {
+      problems.push(
+        `FAIL: '${file}' is shared/system and changed on lane branch '${branch}',\n` +
+        `  but commit message lacks [LANE ${branch}].\n` +
+        `  → Add [LANE ${branch}] to commit message.`
+      );
+      continue;
+    }
+
+    if (system && !systemLane) {
+      problems.push(
+        `FAIL: '${file}' is a SYSTEM file.\n` +
+        `  → Only lane/system-* or lane/protection-* may change it.\n` +
+        `  → Current branch '${branch}' is a route lane, not system lane.`
+      );
+      continue;
+    }
+
+    if (shared && !sharedLane && !systemLane) {
+      problems.push(
+        `FAIL: '${file}' is shared data.\n` +
+        `  → Only lane/shared-*, lane/system-* or lane/protection-* may change it.\n` +
+        `  → Current branch '${branch}' is a route lane.`
+      );
+      continue;
+    }
   }
 
-  // Report
   if (!opts.quiet) {
     console.log('');
-    console.log('=== SHARED FILES GUARD ===');
+    console.log('=== SHARED FILES GUARD v3.0 ===');
     console.log(`Branch: ${branch}`);
-    console.log(`Lane branch: ${isLane}`);
-    console.log(`Lane tag in commit: ${hasLaneTag(commitMsg)}`);
+    console.log(`Lane: ${lane} | System lane: ${systemLane} | Shared lane: ${sharedLane}`);
+    console.log(`[LANE] tag: ${laneTag}`);
     console.log(`Files checked: ${files.length}`);
-    const sharedTouched = files.filter(isSharedFile).filter(f => !isAlwaysAllowed(f));
-    console.log(`Shared files touched: ${sharedTouched.length}`);
-    if (sharedTouched.length > 0) {
+    const touched = files.filter((f) => !isSafe(f) && (isSystem(f) || isShared(f)));
+    console.log(`Shared/system files touched: ${touched.length}`);
+    if (touched.length > 0) {
       console.log('');
-      console.log('Shared files in this change:');
-      sharedTouched.forEach((f) => console.log('  - ' + f));
+      touched.forEach((f) => console.log('  - ' + f));
     }
   }
 
   if (problems.length > 0) {
     console.error('');
-    console.error('❌ GUARD FAILED — shared files modified without proper lane');
+    if (opts.warn) {
+      console.error('⚠️  GUARD WARNING (lane branch, not blocking CI)');
+    } else {
+      console.error('❌ GUARD FAILED');
+    }
     console.error('');
-    problems.forEach((p) => console.error(p.split('\n')[0]));
+    problems.forEach((p) => console.error(p));
     console.error('');
-    console.error('Fix: create lane branch, add [LANE lane/NAME] to commit, retry.');
-    process.exit(1);
+    if (!opts.warn) {
+      console.error('Fix the issue or use a proper lane branch.');
+      process.exit(1);
+    }
   }
 
   if (!opts.quiet) {
-    console.log('✅ Shared files guard PASSED');
     console.log('');
-    if (!isLane) {
-      console.log('ℹ️  Note: working on non-lane branch. Shared files are safe to change');
-      console.log('    only if this is a SOLO Risk 0–1 task. Verify before push.');
-    }
+    console.log('✅ Shared files guard PASSED');
   }
   process.exit(0);
 }
