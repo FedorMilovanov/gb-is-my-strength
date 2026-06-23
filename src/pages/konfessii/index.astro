@@ -1,36 +1,19 @@
 ---
-/**
- * /konfessii/ — РЕФАКТОРИНГ 5.0 Phase 6 wave 3 (AGENTS-r251).
- *
- * Standalone landing page (own inline <style>, no css/site.css).
- * Phase 5 fix (r247 sr-only Pagefind) lives inside body-segment-0.html now.
- *
- * native-shadow recipe (see REFACTORING_5_0_PIXEL_DIFF_GUARD_2026-06-20.md §8-9):
- *   - <head> via loadLegacyFullDocument => SEO byte-identical;
- *   - body chrome (Pagefind sr-only, header back, footer) preserved verbatim
- *     through body-segment-{0,1}.html;
- *   - <main class="grid h-reveal"> promoted to KonfessiiMain.astro component.
- *
- * Pixel parity proof:
- *   npm run visual:parity:screenshots -- --routes /konfessii/
- */
-import { loadLegacyFullDocument } from '@/utils/legacyFullDocument';
+import KonfessiiPageHead from '@/components/konfessii/KonfessiiPageHead.astro';
+import KonfessiiPageChrome from '@/components/konfessii/KonfessiiPageChrome.astro';
 import KonfessiiMain from '@/components/konfessii/KonfessiiMain.astro';
-import segBefore from '@/components/konfessii/_legacy/body-segment-0.html?raw';
-import segAfter from '@/components/konfessii/_legacy/body-segment-1.html?raw';
-
-const { headHtml, bodyAttributes } = loadLegacyFullDocument('konfessii/index.html');
 ---
 <!DOCTYPE html>
 <html lang="ru">
   <head>
-    <Fragment set:html={headHtml} />
+    <KonfessiiPageHead />
   </head>
-  <body {...bodyAttributes}>
-    <!-- Pagefind search data: full-document visual shadow keeps legacy markup, so search text is explicit. -->
+  <body>
     <div class="sr-only" data-pagefind-body style="position:absolute;left:-9999px;top:auto;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);clip-path:inset(50%);white-space:nowrap">
       Конфессии и Деноминации. История церковных движений, русский баптизм, первоисточники, карты, документы, биографии, статистика и богословские различия.
     </div>
-    <Fragment set:html={segBefore} /><KonfessiiMain /><Fragment set:html={segAfter} />
+    <KonfessiiPageChrome>
+      <KonfessiiMain />
+    </KonfessiiPageChrome>
   </body>
 </html>
