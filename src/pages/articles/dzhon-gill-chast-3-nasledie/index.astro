@@ -1,21 +1,16 @@
 ---
-import { loadLegacyFullDocument } from '@/utils/legacyFullDocument';
-
-// Refactoring 5.0 visual-first migration: /articles/dzhon-gill-chast-3-nasledie/ must preserve the legacy
-// premium visual world until screenshot parity and owner review approve a
-// componentized Astro replacement.
-const { headHtml, bodyHtml, bodyAttributes } = loadLegacyFullDocument('articles/dzhon-gill-chast-3-nasledie/index.html');
+import GillPart3PageHead from '@/components/article-pilots/gill-part3/GillPart3PageHead.astro';
+import GillPart3PageChrome from '@/components/article-pilots/gill-part3/GillPart3PageChrome.astro';
+import GillPart3MainShell from '@/components/article-pilots/gill-part3/GillPart3MainShell.astro';
 ---
 <!DOCTYPE html>
 <html lang="ru">
   <head>
-    <Fragment set:html={headHtml} />
+    <GillPart3PageHead />
   </head>
-  <body {...bodyAttributes}>
-    <!-- Pagefind search data: full-document visual shadow keeps legacy markup, so search text is explicit. -->
-    <div class="sr-only" data-pagefind-body style="position:absolute;left:-9999px;top:auto;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);clip-path:inset(50%);white-space:nowrap">
-      Джон Гилл часть III: Наследие. Полемика, память, влияние, баптистская традиция, Сперджен, научная оценка и значение трудов Гилла.
-    </div>
-    <Fragment set:html={bodyHtml} />
+  <body class="gbs-world" data-gbs2-series="dzhon-gill" data-gbs2-done-min="87" data-gbs2-part-min="54" data-gbs2-total-min="149">
+    <GillPart3PageChrome>
+      <GillPart3MainShell />
+    </GillPart3PageChrome>
   </body>
 </html>
