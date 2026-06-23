@@ -1,138 +1,46 @@
 #!/usr/bin/env node
-/*
- * baptisty-rossii-visual-parity-audit.js — guard /baptisty-rossii/ native-shadow
- * Astro contract.
- *
- * Refactoring 5.0 promoted /baptisty-rossii/ to a native-shadow landing.
- * Refactoring 6.0 parallel pilot now replaces the monolithic
- * `_legacy/main.html?raw` import with named legacy-faithful fragments for the
- * hero/header, article body and post-article block.
- */
 'use strict';
-
 const fs = require('fs');
 const path = require('path');
-
 const ROOT = path.join(__dirname, '..');
+const LEGACY_REL = 'baptisty-rossii/index.html';
+const PAGE_REL = 'src/pages/baptisty-rossii/index.astro';
+const BASE_REL = 'src/components/baptisty-rossii';
+const BODY_REL = `${BASE_REL}/BaptistyRossiiBody.astro`;
+const HEAD_REL = `${BASE_REL}/BaptistyRossiiPageHead.astro`;
+const FORBIDDEN = ['loadLegacyFullDocument', 'headHtml', 'bodyHtml', 'bodyAttributes', '?raw', 'set:html', '_legacy'];
+const MIN_RATIO = 0.95;
+const MAX_RATIO = 1.10;
 const problems = [];
-const warnings = [];
-
-function read(rel) { return fs.readFileSync(path.join(ROOT, rel), 'utf8'); }
-function exists(rel) { return fs.existsSync(path.join(ROOT, rel)); }
-function ok(msg) { console.log('✅ ' + msg); }
-function warn(msg) { warnings.push(msg); console.log('ℹ️ ' + msg); }
-function bad(msg) { problems.push(msg); console.log('❌ ' + msg); }
-function must(haystack, needle, label) {
-  haystack.includes(needle) ? ok(label || needle) : bad(`missing: ${label || needle}`);
-}
-function mustNot(haystack, needle, label) {
-  !haystack.includes(needle) ? ok(`no ${label || needle}`) : bad(`forbidden present: ${label || needle}`);
-}
-function mustExist(rel, label) {
-  exists(rel) ? ok(label || rel) : bad(`missing file: ${label || rel}`);
-}
-
-const legacy = read('baptisty-rossii/index.html');
-for (const marker of [
-  'class="gbs-world"', 'data-gbs2-series="russian-baptism"',
-  'gbs2-mobile-head', 'gbs2-rail', 'gbs2-rtitle', 'gbs2-parts', 'gbs2-bbar',
-  'gbs2-sheet', 'gbs2-hero', 'h-article-list', 'main-content',
-  'Баптисты России',
-]) {
-  must(legacy, marker, `legacy /baptisty-rossii/ marker: ${marker}`);
-}
-
-const page = read('src/pages/baptisty-rossii/index.astro');
-must(page, "loadLegacyFullDocument('baptisty-rossii/index.html')",
-     'Astro /baptisty-rossii/ uses shared full-document loader for head');
-must(page, '<!DOCTYPE html>', 'Astro /baptisty-rossii/ emits full document');
-must(page, '<Fragment set:html={headHtml}',
-     'Astro /baptisty-rossii/ preserves exact legacy head inner HTML');
-must(page, 'BaptistyRossiiMain',
-     'Astro /baptisty-rossii/ uses extracted BaptistyRossiiMain component');
-must(page, '_legacy/body-segment-0.html',
-     'Astro /baptisty-rossii/ preserves verbatim legacy body chrome before <main>');
-must(page, '_legacy/body-segment-1.html',
-     'Astro /baptisty-rossii/ preserves verbatim legacy body chrome after <main>');
-
-mustExist('src/components/baptisty-rossii/BaptistyRossiiMain.astro',
-          'BaptistyRossiiMain.astro component file');
-mustExist('src/components/baptisty-rossii/_legacy/main.html',
-          'baptisty-rossii main.html legacy baseline');
-mustExist('src/components/baptisty-rossii/_legacy/header-hero.html',
-          'baptisty-rossii header-hero.html fragment');
-mustExist('src/components/baptisty-rossii/_legacy/article-body.html',
-          'baptisty-rossii article-body.html fragment');
-mustExist('src/components/baptisty-rossii/_legacy/post-article.html',
-          'baptisty-rossii post-article.html fragment');
-mustExist('src/components/baptisty-rossii/_legacy/body-segment-0.html',
-          'baptisty-rossii body-segment-0.html frame fragment');
-mustExist('src/components/baptisty-rossii/_legacy/body-segment-1.html',
-          'baptisty-rossii body-segment-1.html frame fragment');
-
-const main = read('src/components/baptisty-rossii/BaptistyRossiiMain.astro');
-must(main, '<main id="main-content">', 'BaptistyRossiiMain preserves semantic main wrapper');
-must(main, 'header-hero.html?raw', 'BaptistyRossiiMain uses headerHero fragment');
-must(main, 'article-body.html?raw', 'BaptistyRossiiMain uses articleBody fragment');
-must(main, 'post-article.html?raw', 'BaptistyRossiiMain uses postArticle fragment');
-mustNot(main, "import legacyHtml from './_legacy/main.html?raw'",
-        'raw monolithic main import removed');
-
-const mainBaseline = read('src/components/baptisty-rossii/_legacy/main.html');
-for (const marker of ['main-content', 'gbs2-hero', 'article-header', 'article-body',
-                      'h-article-list', 'h-article-card', 'article-end-block']) {
-  must(mainBaseline, marker, `main.html baseline preserves ${marker}`);
-}
-
-const headerHero = read('src/components/baptisty-rossii/_legacy/header-hero.html');
-for (const marker of ['gbs2-hero', 'article-header', 'Баптисты России']) {
-  must(headerHero, marker, `header-hero.html preserves ${marker}`);
-}
-
-const articleBody = read('src/components/baptisty-rossii/_legacy/article-body.html');
-for (const marker of ['<article class="article-body">', 'summary-card', 'h-article-list', 'Исследовательская база']) {
-  must(articleBody, marker, `article-body.html preserves ${marker}`);
-}
-
-const postArticle = read('src/components/baptisty-rossii/_legacy/post-article.html');
-for (const marker of ['article-end-block', 'Soli Deo Gloria']) {
-  must(postArticle, marker, `post-article.html preserves ${marker}`);
-}
-
-const segBefore = read('src/components/baptisty-rossii/_legacy/body-segment-0.html');
-for (const marker of ['gbs2-mobile-head', 'gbs2-rail', 'gbs2-rtitle', 'breadcrumb']) {
-  must(segBefore, marker, `body-segment-0.html preserves ${marker}`);
-}
-
-const segAfter = read('src/components/baptisty-rossii/_legacy/body-segment-1.html');
-for (const marker of ['gbs2-bbar', 'gbs2-sheet', 'site.js']) {
-  must(segAfter, marker, `body-segment-1.html preserves ${marker}`);
-}
-
-for (const marker of [
-  'import BaseLayout', '<BaseLayout', 'astro-card-grid',
-  'class="astro-page"', 'class="astro-baptisty-shadow"',
-  'astro-shell', 'astro-baptisty-rail',
-]) {
-  mustNot(page, marker, `old/generic baptisty-rossii wrapper marker: ${marker}`);
-  mustNot(main, marker, `old/generic baptisty-rossii main marker: ${marker}`);
-}
-
-const dist = exists('dist/baptisty-rossii/index.html') ? read('dist/baptisty-rossii/index.html') : '';
-if (dist) {
-  for (const marker of ['gbs-world', 'gbs2-rail', 'gbs2-bbar', 'gbs2-sheet', 'main-content']) {
-    must(dist, marker, `dist /baptisty-rossii/ marker: ${marker}`);
-  }
-  mustNot(dist, 'class="astro-shell"',
-          'dist /baptisty-rossii/ has no astro-shell chrome (native-shadow)');
-} else {
-  warn('dist/baptisty-rossii/index.html not found — run npm run strangler:build before push');
-}
-
+function ok(msg){ console.log(`✅ ${msg}`); }
+function bad(msg){ problems.push(msg); console.log(`❌ ${msg}`); }
+function read(rel){ return fs.readFileSync(path.join(ROOT, rel), 'utf8'); }
+function exists(rel){ return fs.existsSync(path.join(ROOT, rel)); }
+function mustContain(label, text, needle){ String(text).includes(needle) ? ok(`${label}: contains ${needle}`) : bad(`${label}: missing ${needle}`); }
+function mustNotContain(label, text, needle){ !String(text).includes(needle) ? ok(`${label}: no ${needle}`) : bad(`${label}: forbidden ${needle}`); }
+function mustExist(rel, label){ exists(rel) ? ok(label || rel) : bad(`missing file: ${label || rel}`); }
+function bodyInner(html){ return html.match(/<body\b[^>]*>([\s\S]*?)<\/body>/i)?.[1] || ''; }
+function stripTags(html){ return String(html||'').replace(/<script[\s\S]*?<\/script>/gi,' ').replace(/<style[\s\S]*?<\/style>/gi,' ').replace(/<svg[\s\S]*?<\/svg>/gi,' ').replace(/<[^>]+>/g,' ').replace(/&nbsp;|&#160;/g,' ').replace(/&[a-z0-9#]+;/gi,' ').replace(/\s+/g,' ').trim(); }
+function wordCount(html){ return (stripTags(html).match(/[A-Za-zА-Яа-яЁё0-9]{2,}/g)||[]).length; }
+console.log('BAPTISTY-ROSSII STRICT-NATIVE AUDIT');
+const legacy = read(LEGACY_REL);
+const page = read(PAGE_REL);
+const body = read(BODY_REL);
+const head = read(HEAD_REL);
+mustExist(BODY_REL, 'BaptistyRossiiBody.astro');
+mustExist(HEAD_REL, 'BaptistyRossiiPageHead.astro');
+if (exists(`${BASE_REL}/_legacy`)) bad('landing _legacy directory must be retired'); else ok('landing _legacy directory retired');
+for (const token of FORBIDDEN) mustNotContain('landing route/body/head scope', [page,body,head].join('\n'), token);
+mustContain('route imports native head', page, 'BaptistyRossiiPageHead');
+mustContain('route imports native body', page, 'BaptistyRossiiBody');
+mustContain('route explicit body class', page, 'class="gbs-world"');
+mustContain('route explicit total minutes', page, 'data-gbs2-total-min="229"');
+mustContain('route pagefind body marker', page, 'data-pagefind-body');
+for (const marker of ['rel="canonical"','window.SITE_CONFIG','application/ld+json','mc.yandex.ru']) mustContain('head contract', head, marker);
+for (const marker of ['gbs2-mobile-head','gbs2-rail','gbs2-hero','article-body','gbs2-bbar','gbs2-sheet','Баптисты России']) mustContain('landing body marker', body, marker);
+const lw=wordCount(bodyInner(legacy)), rw=wordCount(body), ratio=rw/Math.max(1,lw);
+console.log(`landing words: legacy=${lw}; body=${rw}; ratio=${ratio.toFixed(2)}`);
+if (ratio >= MIN_RATIO && ratio <= MAX_RATIO) ok(`landing word-count parity within threshold (${ratio.toFixed(2)})`); else bad(`landing word-count ratio out of threshold (${ratio.toFixed(2)})`);
 console.log('\nBAPTISTY-ROSSII VISUAL PARITY AUDIT');
-if (problems.length) {
-  console.log(`❌ ${problems.length} problem(s). /baptisty-rossii/ native-shadow contract violated.`);
-  process.exit(1);
-}
-console.log('✅ /baptisty-rossii/ Astro migration is native-shadow guarded (componentized landing main)');
-if (warnings.length) console.log(`ℹ️ ${warnings.length} advisory warning(s) remain.`);
+if (problems.length){ console.log(`❌ ${problems.length} problem(s). /baptisty-rossii/ strict-native contract violated.`); process.exit(1); }
+console.log('✅ /baptisty-rossii/ is strict-native and guarded');

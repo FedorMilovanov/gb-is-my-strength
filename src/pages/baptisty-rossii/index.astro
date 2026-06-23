@@ -1,34 +1,14 @@
 ---
-/**
- * /baptisty-rossii/ — РЕФАКТОРИНГ 5.0 Phase 6 wave 5 (AGENTS-r253) native pilot.
- *
- * native-shadow recipe (see REFACTORING_5_0_PIXEL_DIFF_GUARD_2026-06-20.md §10):
- *   - <head> via loadLegacyFullDocument => SEO byte-identical;
- *   - body chrome (skip-link, mobile-head, gbs2-world wrapper, gbs2-rail
- *     sidebar with all 10 parts + progress ring, breadcrumb, gbs2-bbar,
- *     gbs2-sheet mobile sheet, runtime scripts) preserved verbatim through
- *     body-segment-{0,1}.html;
- *   - <main id="main-content"> promoted to BaptistyRossiiMain.astro
- *     component (gbs2-hero + article-header + article-body with all 10 part
- *     cards + research link + gbs2-vignette + author-card + article-end-block).
- *
- * Pixel parity proof:
- *   npm run visual:parity:screenshots -- --routes /baptisty-rossii/
- */
-import { loadLegacyFullDocument } from '@/utils/legacyFullDocument';
-import BaptistyRossiiMain from '@/components/baptisty-rossii/BaptistyRossiiMain.astro';
-import segBefore from '@/components/baptisty-rossii/_legacy/body-segment-0.html?raw';
-import segAfter from '@/components/baptisty-rossii/_legacy/body-segment-1.html?raw';
-
-const { headHtml, bodyAttributes } = loadLegacyFullDocument('baptisty-rossii/index.html');
+import BaptistyRossiiPageHead from '@/components/baptisty-rossii/BaptistyRossiiPageHead.astro';
+import BaptistyRossiiBody from '@/components/baptisty-rossii/BaptistyRossiiBody.astro';
 ---
-
 <!DOCTYPE html>
 <html lang="ru">
   <head>
-    <Fragment set:html={headHtml} />
+    <BaptistyRossiiPageHead />
   </head>
-  <body {...bodyAttributes}><Fragment set:html={segBefore} /><BaptistyRossiiMain /><Fragment set:html={segAfter} />
+  <body class="gbs-world" data-gbs2-series="russian-baptism" data-gbs2-done-min="0" data-gbs2-part-min="0" data-gbs2-total-min="229">
+    <BaptistyRossiiBody />
     <div class="sr-only" data-pagefind-body style="position:absolute;left:-9999px;top:auto;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);clip-path:inset(50%);white-space:nowrap">
       Баптисты России. Живая исследовательская серия из 10 частей: Воронин, ночь на Куре, южная штунда, два съезда 1884 года, Петербургская линия, гонения, советская ночь, ВСЕХБ, Инициативная группа, подпольная печать, справочник источников.
     </div>

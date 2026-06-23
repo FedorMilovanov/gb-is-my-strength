@@ -23,6 +23,7 @@ abandoned  — отменён
 | `lane/kod-da-vinchi-final-section-native-2026-06-23` | Kod Da Vinci: promote final raw article section to Astro | LANE | review | ✅ | Arena Agent |
 | `lane/system-native-runtime-taxonomy-audit-2026-06-23` | Native runtime taxonomy audit + Nagornaya branch verification | SYSTEM | review | ✅ | Arena Agent |
 | `lane/system-native-head-closeout-2026-06-23` | Remove last legacy-head routes (`/about/`, `kod-da-vinchi`) | SYSTEM | review | ✅ | Arena Agent |
+| `lane/baptisty-total-closeout-2026-06-23` | Strict-native closeout for the full baptisty-rossii route family | LANE | review | ✅ | Arena Agent |
 
 ## Recently merged
 
