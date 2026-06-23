@@ -1,10 +1,10 @@
 ---
 /**
- * KodDaVinchiArticleBody — Phase 3a semantic article-body breakout.
+ * KodDaVinchiArticleBody — fully promoted article body.
  *
- * All content sections are hand-authored Astro components except the
- * trailing summary-card/sources/author-card block, which must be rendered
- * as raw HTML to preserve the exact legacy DOM structure.
+ * All 20 visible content sections are now hand-authored Astro components.
+ * The trailing summary-card/sources/author-card block was the final raw
+ * fragment and is now KodDaVinchiSectionSummaryTitleAuto.
  */
 import KodDaVinchiPagefindMeta from './KodDaVinchiPagefindMeta.astro';
 import KodDaVinchiSectionIntro from './KodDaVinchiSectionIntro.astro';
@@ -26,7 +26,7 @@ import KodDaVinchiSectionWhy from './KodDaVinchiSectionWhy.astro';
 import KodDaVinchiSectionQuiz from './KodDaVinchiSectionQuiz.astro';
 import KodDaVinchiSectionFaq from './KodDaVinchiSectionFaq.astro';
 import KodDaVinchiSectionConclusion from './KodDaVinchiSectionConclusion.astro';
-import summaryHtml from './_legacy/20-summary-title-auto.html?raw';
+import KodDaVinchiSectionSummaryTitleAuto from './KodDaVinchiSectionSummaryTitleAuto.astro';
 ---
 <article class="article-body" data-pagefind-body>
   <KodDaVinchiPagefindMeta />
@@ -49,5 +49,5 @@ import summaryHtml from './_legacy/20-summary-title-auto.html?raw';
   <KodDaVinchiSectionQuiz />
   <KodDaVinchiSectionFaq />
   <KodDaVinchiSectionConclusion />
-  <Fragment set:html={summaryHtml} is:inline />
+  <KodDaVinchiSectionSummaryTitleAuto />
 </article>
