@@ -304,8 +304,11 @@ for (const [rawRoute, info] of Object.entries(ownership.routes)) {
   categories[category].push(row);
 
   if (STRICT && contract) {
-    if (contract.mode === 'mdx-native-article' && ['full-body-shadow', 'hybrid-raw-segments', 'native-main-with-legacy-chrome'].includes(category)) {
+    if (contract.mode === 'mdx-native-article' && ['full-body-shadow', 'hybrid-raw-segments', 'native-main-with-legacy-chrome', 'native-with-legacy-head'].includes(category)) {
       problems.push(`${route}: matrix says mdx-native-article, taxonomy=${category}`);
+    }
+    if (contract.mode === 'strict-native' && category !== 'strict-native') {
+      problems.push(`${route}: matrix says strict-native, taxonomy=${category}`);
     }
     if (contract.mode === 'native-main-with-legacy-chrome' && category === 'full-body-shadow') {
       problems.push(`${route}: matrix says native-main-with-legacy-chrome, but route is full-body-shadow`);
