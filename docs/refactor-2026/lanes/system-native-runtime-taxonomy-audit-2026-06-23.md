@@ -14,6 +14,7 @@
 
 - `scripts/native-runtime-taxonomy-audit.js` — new global taxonomy script.
 - `package.json` — added `native:runtime:audit` and `native:runtime:audit:strict` npm scripts.
+- `migration/route-migration-matrix.json` — aligned non-Gill/non-Nagornaya article contracts with current runtime reality.
 - `docs/refactor-2026/lanes/system-native-runtime-taxonomy-audit-2026-06-23.md` — this report.
 
 ---
@@ -96,16 +97,43 @@ This confirms the audit catches the drift identified in the owner audit without 
 
 ---
 
+## 3. Migration matrix drift fix (non-Gill / non-Nagornaya)
+
+After confirming another agent is working on Gill + Nagornaya, this lane only adjusted non-Gill/non-Nagornaya contracts:
+
+| Route | Before | Now | Why |
+|---|---|---|---|
+| `/articles/20-antisovetov-pastoru/` | `mdx-native-article` | `full-body-shadow` | Current production source uses `loadLegacyFullDocument(... bodyHtml ...)`; MDX remains the target, not current state. |
+| `/articles/hermenevticheskaya-otsenka-hristotsentrichnoy-germenevtiki/` | `mdx-native-article` | `full-body-shadow` | Current production source uses full body shadow; native MDX promotion needs its own visual lane. |
+| `/articles/kod-da-vinchi/` | `mdx-native-article` | `native-main-with-legacy-chrome` | Current source is V7 hybrid/componentized route with legacy head/chrome and `KodDaVinchiMainShell`, not strict MDX-native yet. |
+
+After this update:
+
+```bash
+npm run native:runtime:audit:strict
+# ✅ passed
+
+node scripts/check-route-migration-matrix.js --strict
+# ✅ passed (warnings only; no problems)
+```
+
+This keeps the matrix honest: it now records what is actually deployed, while `targetMode: "mdx-native-article"` preserves the intended future direction.
+
+---
+
 ## Checks
 
 - [x] `npm run native:runtime:audit` — passed, exits 0.
-- [x] `npm run native:runtime:audit:strict` — intentionally fails with 3 known matrix drift problems.
+- [x] `npm run native:runtime:audit:strict` — passed after matrix drift alignment.
 - [x] Nagornaya branch grep clean for strict-native forbidden transport.
 - [x] Nagornaya branch `npm run nagornaya:visual-parity:audit` — passed.
 - [x] Nagornaya branch `npm run validate:static-publication` — passed.
 - [x] Nagornaya branch visual screenshots — 18/18 at 0.000% with `--threshold 0`.
 - [x] `npm run guard:shared-files` — passed after commit with `[LANE lane/system-native-runtime-taxonomy-audit-2026-06-23]` message.
 - [x] `npm run workflows:check` — passed.
+- [x] `npm run migration:matrix:check` — passed (warnings only).
+- [x] `node scripts/check-route-migration-matrix.js --strict` — passed (warnings only, no problems).
+- [x] `npm run migration:metadata:check` — passed (warnings only).
 - [ ] Current-branch `npm run validate:static-publication` — attempted, blocked by pre-existing `astro:audit:article-mdx:strict` issue: `kod-da-vinchi article-sections directory missing before full promotion` (not caused by this lane; rollup branch contains a compatibility restore).
 
 ---
@@ -113,7 +141,7 @@ This confirms the audit catches the drift identified in the owner audit without 
 ## Out-of-lane findings
 
 - `origin/lane/visual-fix-nagornaya-native-2026-06-23` is verified clean, but should preferably be consumed through `origin/lane/rollup-v1-v11-final-2026-06-23`, not direct-merged in isolation.
-- Current `main` has 3 strict migration-matrix drifts caught by the new audit. Suggested future lanes:
+- The 3 non-Gill/non-Nagornaya strict matrix drifts identified by this lane are now aligned in `migration/route-migration-matrix.json` to current runtime reality. Future actual promotion still needs dedicated visual lanes:
   - `lane/mdx-article-promotion-antisovetov-hermenevtika`
   - `lane/visual-fix-kod-da-vinchi-followup` or rollup consumption, depending on owner merge plan.
 - Current `main` / this audit lane has a pre-existing blocking audit issue outside this lane: `astro:audit:article-mdx:strict` reports `kod-da-vinchi article-sections directory missing before full promotion`. The final rollup branch contains a compatibility restore for this class of issue.
