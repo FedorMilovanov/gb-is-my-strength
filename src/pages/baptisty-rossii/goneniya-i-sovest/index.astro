@@ -1,31 +1,16 @@
 ---
-/**
- * /baptisty-rossii/goneniya-i-sovest/ — РЕФАКТОРИНГ 6.0 native-shadow breakout.
- *
- * native-shadow recipe: GBS2 chrome preserved verbatim through
- * body-segment-{0,1}.html fragments; semantic <main id="main-content">
- * promoted to BaptistyRossiiArticleMain.astro.
- */
-import { loadLegacyFullDocument } from '@/utils/legacyFullDocument';
-import BaptistyRossiiArticleMain from '@/components/baptisty-rossii/BaptistyRossiiArticleMain.astro';
-import segBefore from '@/components/baptisty-rossii/_legacy/goneniya-i-sovest/body-segment-0.html?raw';
-import segAfter from '@/components/baptisty-rossii/_legacy/goneniya-i-sovest/body-segment-1.html?raw';
-import mainHtml from '@/components/baptisty-rossii/_legacy/goneniya-i-sovest/main.html?raw';
-
-const { headHtml, bodyAttributes } = loadLegacyFullDocument('baptisty-rossii/goneniya-i-sovest/index.html');
+import BaptistyRossiiGoneniyaISovestPageHead from '@/components/baptisty-rossii/BaptistyRossiiGoneniyaISovestPageHead.astro';
+import BaptistyRossiiGoneniyaISovestBody from '@/components/baptisty-rossii/BaptistyRossiiGoneniyaISovestBody.astro';
 ---
-
 <!DOCTYPE html>
 <html lang="ru">
   <head>
-    <Fragment set:html={headHtml} />
+    <BaptistyRossiiGoneniyaISovestPageHead />
   </head>
-  <body {...bodyAttributes}>
-    <Fragment set:html={segBefore} />
-    <BaptistyRossiiArticleMain legacyHtml={mainHtml} />
-    <Fragment set:html={segAfter} />
+  <body class="gbs-world" data-gbs2-series="russian-baptism" data-gbs2-done-min="76" data-gbs2-part-min="24" data-gbs2-total-min="229">
+    <BaptistyRossiiGoneniyaISovestBody />
     <div class="sr-only" data-pagefind-body style="position:absolute;left:-9999px;top:auto;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);clip-path:inset(50%);white-space:nowrap">
-      Баптисты России. Свобода совести и военный вопрос
+      Баптисты России. Часть 5: Гонения и совесть.
     </div>
   </body>
 </html>

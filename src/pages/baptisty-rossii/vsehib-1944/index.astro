@@ -1,31 +1,16 @@
 ---
-/**
- * /baptisty-rossii/vsehib-1944/ — РЕФАКТОРИНГ 6.0 native-shadow breakout.
- *
- * native-shadow recipe: GBS2 chrome preserved verbatim through
- * body-segment-{0,1}.html fragments; semantic <main id="main-content">
- * promoted to BaptistyRossiiArticleMain.astro.
- */
-import { loadLegacyFullDocument } from '@/utils/legacyFullDocument';
-import BaptistyRossiiArticleMain from '@/components/baptisty-rossii/BaptistyRossiiArticleMain.astro';
-import segBefore from '@/components/baptisty-rossii/_legacy/vsehib-1944/body-segment-0.html?raw';
-import segAfter from '@/components/baptisty-rossii/_legacy/vsehib-1944/body-segment-1.html?raw';
-import mainHtml from '@/components/baptisty-rossii/_legacy/vsehib-1944/main.html?raw';
-
-const { headHtml, bodyAttributes } = loadLegacyFullDocument('baptisty-rossii/vsehib-1944/index.html');
+import BaptistyRossiiVsehib1944PageHead from '@/components/baptisty-rossii/BaptistyRossiiVsehib1944PageHead.astro';
+import BaptistyRossiiVsehib1944Body from '@/components/baptisty-rossii/BaptistyRossiiVsehib1944Body.astro';
 ---
-
 <!DOCTYPE html>
 <html lang="ru">
   <head>
-    <Fragment set:html={headHtml} />
+    <BaptistyRossiiVsehib1944PageHead />
   </head>
-  <body {...bodyAttributes}>
-    <Fragment set:html={segBefore} />
-    <BaptistyRossiiArticleMain legacyHtml={mainHtml} />
-    <Fragment set:html={segAfter} />
+  <body class="gbs-world" data-gbs2-series="russian-baptism" data-gbs2-done-min="128" data-gbs2-part-min="26" data-gbs2-total-min="229">
+    <BaptistyRossiiVsehib1944Body />
     <div class="sr-only" data-pagefind-body style="position:absolute;left:-9999px;top:auto;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);clip-path:inset(50%);white-space:nowrap">
-      Баптисты России. ВСЕХБ 1944: один союз под надзором
+      Баптисты России. Часть 7: 1944: один союз.
     </div>
   </body>
 </html>
