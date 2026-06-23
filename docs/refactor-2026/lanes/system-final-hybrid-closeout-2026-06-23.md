@@ -20,6 +20,10 @@
 - `/karty/`
 - `/konfessii/`
 - `/pastor-series/`
+- `/articles/20-antisovetov-pastoru/`
+- `/articles/hermenevticheskaya-otsenka-hristotsentrichnoy-germenevtiki/`
+- `/articles/krajne-li-isporcheno-serdce/`
+- `/articles/rimlyanam-7-veruyushchiy-ili-neveruyushchiy/`
 
 ### Protection kept
 - `/konfessii/russkij-baptizm/` remains protected as polished interactive iframe/WebGL app route.
@@ -29,7 +33,8 @@
 - `hybrid-raw-segments`: 0
 - `native-with-legacy-head`: 0
 - `native-main-with-legacy-chrome`: 0
-- remaining non-app debt is only 4 full-body-shadow article routes
+- `full-body-shadow`: 0
+- remaining runtime debt is limited to intentionally protected app-shadow routes
 
 ---
 
@@ -55,10 +60,8 @@ All green in this session.
 
 ## Remaining work in lane
 
-Potential final closeout if owner wants "all possible except protected app routes":
-- `/articles/20-antisovetov-pastoru/`
-- `/articles/hermenevticheskaya-otsenka-hristotsentrichnoy-germenevtiki/`
-- `/articles/krajne-li-isporcheno-serdce/`
-- `/articles/rimlyanam-7-veruyushchiy-ili-neveruyushchiy/`
+No further non-app runtime debt is required inside this lane.
 
-These are still `full-body-shadow`.
+After this batch:
+- all non-app content/landing/article routes are strict-native at runtime;
+- all remaining non-native routes are intentionally protected app-shadow routes.
