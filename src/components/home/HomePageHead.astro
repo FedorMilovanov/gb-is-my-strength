@@ -1,0 +1,147 @@
+---
+/**
+ * HomePageHead.astro — exact legacy head translated into native Astro markup for /.
+ */
+---
+<meta charset="UTF-8">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://mc.yandex.ru https://*.yandex.ru https://mc.yandex.com https://*.yandex.com; img-src 'self' https://mc.yandex.ru https://*.yandex.ru https://mc.yandex.com https://*.yandex.com https://commons.wikimedia.org https://upload.wikimedia.org data: blob:; style-src 'self' 'unsafe-inline'; font-src 'self' data:; connect-src 'self' https://mc.yandex.ru https://*.yandex.ru https://mc.yandex.com https://*.yandex.com wss://mc.yandex.ru wss://*.yandex.ru wss://mc.yandex.com wss://*.yandex.com; frame-src 'self' https://mc.yandex.ru https://*.yandex.ru https://mc.yandex.com https://*.yandex.com; object-src 'none'; base-uri 'self';">
+<meta http-equiv="X-Content-Type-Options" content="nosniff">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, interactive-widget=resizes-content">
+<meta name="theme-color" content="#fdfcf9" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#171411" media="(prefers-color-scheme: dark)">
+<meta name="color-scheme" content="light dark">
+<meta name="yandex-verification" content="42bc0d54a1ca4952">
+
+<!-- SEO -->
+<title>Господь Бог — Сила Моя — Материалы для изучения Писания</title>
+<meta name="author" content="Фёдор Милованов">
+<meta name="description" content="Материалы для изучения Писания и переводов на русском языке. Реформатское богословие, экзегеза Писания, апологетика — для серьёзного изучения Слова Божьего.">
+<meta name="keywords" content="богословие, реформатское богословие, библейские статьи, экзегеза, толкование Библии, Иеремия, Код да Винчи, герменевтика">
+<meta name="robots" content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1">
+<link rel="canonical" href="https://gospod-bog.ru/">
+<link rel="alternate" type="application/rss+xml" title="Господь Бог — Сила Моя — RSS" href="https://gospod-bog.ru/feed.xml">
+
+<!-- Open Graph -->
+<meta property="og:type" content="website">
+<meta property="og:title" content="Господь Бог — Сила Моя — Материалы для изучения Писания">
+<meta property="og:description" content="Материалы для изучения Писания и переводов на русском языке.">
+<meta property="og:url" content="https://gospod-bog.ru/">
+<meta property="og:site_name" content="Господь Бог — Сила Моя">
+<meta property="og:locale" content="ru_RU">
+<meta property="og:image" content="https://gospod-bog.ru/images/og-preview-1200x630.webp">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:type" content="image/webp">
+<meta property="og:image:alt" content="Проект «Господь Бог — Сила Моя»: материалы для изучения Писания">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:site" content="@FedorMilovanov">
+<meta name="twitter:creator" content="@FedorMilovanov">
+<meta name="twitter:title" content="Господь Бог — Сила Моя">
+<meta name="twitter:description" content="Материалы для изучения Писания и переводов на русском языке.">
+<meta name="twitter:image" content="https://gospod-bog.ru/images/og-preview-1200x630.webp">
+<meta name="twitter:image:alt" content="Проект «Господь Бог — Сила Моя»: материалы для изучения Писания">
+
+<!-- JSON-LD -->
+<script type="application/ld+json" is:inline>{
+      "@context": "https://schema.org",
+      "@graph": [
+            {
+                  "@type": "Organization",
+                  "@id": "https://gospod-bog.ru/#organization",
+                  "name": "Господь Бог — Сила Моя",
+                  "url": "https://gospod-bog.ru/",
+                  "logo": {
+                        "@type": "ImageObject",
+                        "url": "https://gospod-bog.ru/icons/icon-512.png",
+                        "width": 512,
+                        "height": 512
+                  },
+                  "sameAs": [
+                        "https://t.me/fedormilovanov",
+                        "https://vk.com/curtmf"
+                  ]
+            },
+            {
+                  "@type": "WebSite",
+                  "@id": "https://gospod-bog.ru/#website",
+                  "name": "Господь Бог — Сила Моя",
+                  "url": "https://gospod-bog.ru/",
+                  "inLanguage": "ru",
+                  "publisher": {
+                        "@id": "https://gospod-bog.ru/#organization"
+                  },
+                  "description": "Библиотека богословских материалов на русском языке: авторские статьи, переводы зарубежных богословов, подборки источников."
+            },
+            {
+                  "@type": "CollectionPage",
+                  "name": "Господь Бог — Сила Моя",
+                  "url": "https://gospod-bog.ru/",
+                  "inLanguage": "ru",
+                  "publisher": {
+                        "@id": "https://gospod-bog.ru/#organization"
+                  }
+            },
+            {
+                  "@type": "Person",
+                  "@id": "https://gospod-bog.ru/about/#person",
+                  "name": "Фёдор Милованов",
+                  "url": "https://gospod-bog.ru/about/",
+                  "sameAs": [
+                        "https://t.me/fedormilovanov",
+                        "https://vk.com/curtmf"
+                  ],
+                  "jobTitle": "Редактор-составитель",
+                  "knowsAbout": [
+                        "Богословие",
+                        "Библеистика",
+                        "Герменевтика",
+                        "Апологетика",
+                        "Реформатское богословие"
+                  ]
+            },
+            {
+                  "@context": "https://schema.org/",
+                  "@type": "ImageObject",
+                  "contentUrl": "https://gospod-bog.ru/images/og-preview-1200x630.webp",
+                  "name": "Господь Бог — Сила Моя",
+                  "description": "Материалы для изучения Писания: разборы, переводы, апологетика",
+                  "creditText": "gospod-bog.ru",
+                  "creator": {
+                        "@type": "Organization",
+                        "name": "Господь Бог — Сила Моя",
+                        "url": "https://gospod-bog.ru"
+                  },
+                  "copyrightNotice": "© gospod-bog.ru",
+                  "acquireLicensePage": "https://gospod-bog.ru/about/"
+            }
+      ]
+}</script>
+
+<!-- Favicons & manifest -->
+<link rel="icon" type="image/x-icon" href="https://gospod-bog.ru/favicon.ico">
+<link rel="apple-touch-icon" sizes="180x180" href="https://gospod-bog.ru/apple-touch-icon.png">
+<link rel="icon" type="image/png" sizes="48x48" href="https://gospod-bog.ru/favicon-48.png">
+<link rel="icon" type="image/png" sizes="120x120" href="https://gospod-bog.ru/favicon-120.png">
+<link rel="icon" type="image/png" sizes="192x192" href="https://gospod-bog.ru/icons/icon-192.png">
+<link rel="manifest" href="/manifest.json">
+
+<!-- Fonts -->
+<link rel="preload" as="style" href="fonts/fonts.css?v=4504f3cb">
+<link rel="preload" as="font" type="font/woff2" href="/fonts/Lora/lora-cyrillic-400.woff2" crossorigin>
+<link rel="preload" as="font" type="font/woff2" href="/fonts/Inter/inter-cyrillic-600.woff2" crossorigin>
+<link rel="preload" as="font" type="font/woff2" href="/fonts/PlayfairDisplay/playfairdisplay-cyrillic-700.woff2" crossorigin>
+<link rel="stylesheet" href="fonts/fonts.css?v=4504f3cb">
+
+<!-- Anti-FOUC: применяем тему до рендера CSS -->
+<script is:inline>(function(){try{var t=localStorage.getItem('theme');if(t==='dark'||(!t&&window.matchMedia('(prefers-color-scheme: dark)').matches)){document.documentElement.classList.add('dark');}}catch(e){}})();</script>
+
+<!-- Geo -->
+<meta name="geo.region" content="RU-SPE">
+<meta name="geo.placename" content="Санкт-Петербург">
+
+<!-- Stylesheets -->
+<link rel="stylesheet" href="css/site.css?v=202876c3">
+<link rel="stylesheet" href="css/home.css?v=f5b561ee">
+<link rel="stylesheet" href="css/command-palette.css?v=48f8ed38">
+<link rel="stylesheet" href="css/mobile-hotfix.css?v=decfea58">
+<link rel="preload" as="image" type="image/webp" fetchpriority="high" imagesrcset="images/og-nagornaya-propoved-600w.webp 600w, images/og-nagornaya-propoved-900w.webp 900w, images/og-nagornaya-propoved.webp 800w" imagesizes="(max-width: 640px) 600px, (max-width: 1024px) 900px, 800px">

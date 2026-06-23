@@ -1,11 +1,11 @@
 #!/usr/bin/env node
 /*
- * home-visual-parity-audit.js — guard / (home) native-shadow Astro contract.
+ * home-visual-parity-audit.js — guard / (home) fully native Astro contract.
  *
- * Refactoring 5.0 promoted / to a native-shadow landing route. Refactoring 6.0
- * parallel pilot now replaces the monolithic `_legacy/main.html?raw` import
- * with named legacy-faithful fragments for hero, resume/mobile shell, guided
- * sections, catalog sections, about block and quote/post block.
+ * 2026-06-23 visual-fix-home lane removes loadLegacyFullDocument(), ?raw
+ * imports and src/components/home/_legacy/*.html. The home page must now be
+ * composed from named Astro components only while preserving legacy SEO/body
+ * markers for visual parity.
  */
 'use strict';
 
@@ -30,6 +30,9 @@ function mustNot(haystack, needle, label) {
 function mustExist(rel, label) {
   exists(rel) ? ok(label || rel) : bad(`missing file: ${label || rel}`);
 }
+function mustNotExist(rel, label) {
+  !exists(rel) ? ok(`deleted ${label || rel}`) : bad(`forbidden file still exists: ${label || rel}`);
+}
 
 const legacy = read('index.html');
 for (const marker of [
@@ -44,80 +47,96 @@ for (const marker of [
 }
 
 const page = read('src/pages/index.astro');
-must(page, "loadLegacyFullDocument('index.html')",
-     'Astro / uses shared full-document loader for head');
-must(page, '<!DOCTYPE html>', 'Astro / emits full document');
-must(page, '<Fragment set:html={headHtml}',
-     'Astro / preserves exact legacy head inner HTML');
-must(page, 'HomeMain', 'Astro / uses extracted HomeMain component');
-must(page, '_legacy/body-segment-0.html',
-     'Astro / preserves verbatim legacy body chrome before <main>');
-must(page, '_legacy/body-segment-1.html',
-     'Astro / preserves verbatim legacy body chrome after <main>');
+must(page, 'HomePageHead', 'Astro / uses HomePageHead component');
+must(page, 'HomePageChrome', 'Astro / uses HomePageChrome component');
+must(page, 'HomeMain', 'Astro / uses HomeMain component');
+must(page, '<body class="home-page">', 'Astro / preserves body class');
+mustNot(page, 'loadLegacyFullDocument', 'loadLegacyFullDocument');
+mustNot(page, 'set:html', 'set:html transport');
+mustNot(page, '?raw', '?raw import transport');
+mustNot(page, '_legacy/', '_legacy imports');
 
-mustExist('src/components/home/HomeMain.astro', 'HomeMain.astro component file');
-for (const rel of ['HomeHeroSection.astro','HomeAboutSection.astro','HomeQuoteSection.astro','HomeAccuracyBlock.astro','HomeFooter.astro','HomeArticleEndBlock.astro']) {
-  mustExist(`src/components/home/${rel}`, rel);
+for (const rel of [
+  'src/components/home/HomePageHead.astro',
+  'src/components/home/HomePageChrome.astro',
+  'src/components/home/HomeMain.astro',
+  'src/components/home/HomeHero.astro',
+  'src/components/home/HomePageFooter.astro',
+  'src/components/home/HomeArticleEndBlock.astro',
+  'src/components/home/HomeSections/ResumeMobile.astro',
+  'src/components/home/HomeSections/Directions.astro',
+  'src/components/home/HomeSections/Planned.astro',
+  'src/components/home/HomeSections/Publications.astro',
+  'src/components/home/HomeSections/Refutations.astro',
+  'src/components/home/HomeSections/About.astro',
+  'src/components/home/HomeSections/Quote.astro',
+  'src/components/home/HomeSections/Accuracy.astro',
+]) {
+  mustExist(rel);
 }
-mustExist('src/components/home/_legacy/main.html', 'home main.html legacy baseline');
-for (const rel of ['hero.html','resume-mobile.html','directions.html','planned.html','publications.html','refutations.html','about.html','quote.html','post-article.html']) {
-  mustExist(`src/components/home/_legacy/${rel}`, rel);
+mustNotExist('src/components/home/_legacy', 'src/components/home/_legacy directory');
+
+const head = read('src/components/home/HomePageHead.astro');
+for (const marker of [
+  '<title>Господь Бог — Сила Моя — Материалы для изучения Писания</title>',
+  'rel="canonical" href="https://gospod-bog.ru/"',
+  'property="og:image" content="https://gospod-bog.ru/images/og-preview-1200x630.webp"',
+  'name="twitter:card" content="summary_large_image"',
+  'application/ld+json',
+  'fonts/fonts.css',
+  'css/home.css',
+  'theme-color',
+]) {
+  must(head, marker, `HomePageHead marker: ${marker}`);
 }
-mustExist('src/components/home/_legacy/body-segment-0.html', 'home body-segment-0.html frame fragment');
-mustExist('src/components/home/_legacy/body-segment-1.html', 'home body-segment-1.html frame fragment');
+
+const chrome = read('src/components/home/HomePageChrome.astro');
+for (const marker of [
+  'class="skip-link"', 'class="h-navbar"', 'id="hMobileNav"',
+  'class="home-v20"', 'id="hScriptureBg"', 'class="h-mobile-dock"',
+  'id="hScrollTop"', 'window.SITE_CONFIG', 'js/site.js', 'js/search.js',
+  'mc.yandex.ru/metrika/tag.js',
+]) {
+  must(chrome, marker, `HomePageChrome marker: ${marker}`);
+}
+mustNot(chrome, 'set:html', 'HomePageChrome set:html');
+mustNot(chrome, '?raw', 'HomePageChrome raw imports');
 
 const main = read('src/components/home/HomeMain.astro');
-must(main, '<main id="main-content" data-pagefind-body>', 'HomeMain preserves semantic main wrapper');
-must(main, '<div class="home-content">', 'HomeMain preserves home-content wrapper');
-for (const comp of ['HomeHeroSection','HomeAboutSection','HomeQuoteSection','HomeAccuracyBlock','HomeFooter','HomeArticleEndBlock']) {
+must(main, '<main id="main-content" data-pagefind-body>', 'HomeMain semantic wrapper');
+must(main, '<div class="home-content">', 'HomeMain home-content wrapper');
+for (const comp of [
+  'HomeHero', 'ResumeMobile', 'Directions', 'Planned', 'Publications',
+  'Refutations', 'About', 'Quote', 'Accuracy', 'HomePageFooter',
+  'HomeArticleEndBlock',
+]) {
   must(main, comp, `HomeMain uses ${comp}`);
 }
-for (const frag of ['resume-mobile.html?raw','directions.html?raw','planned.html?raw','publications.html?raw','refutations.html?raw']) {
-  must(main, frag, `HomeMain uses ${frag}`);
-}
-for (const banned of ['hero.html?raw','about.html?raw','quote.html?raw','post-article.html?raw']) {
-  mustNot(main, banned, `removed raw import: ${banned}`);
-}
-mustNot(main, "import legacyHtml from './_legacy/main.html?raw'", 'raw monolithic main import removed');
+mustNot(main, 'set:html', 'HomeMain set:html transport');
+mustNot(main, '?raw', 'HomeMain raw imports');
 
-const mainFragment = read('src/components/home/_legacy/main.html');
-for (const marker of ['main-content', 'h-hero', 'h-mobile-dashboard', 'h-featured',
-                      'h-article-list', 'h-about', 'h-quote-section',
-                      'gb-accuracy-block']) {
-  must(mainFragment, marker, `main baseline preserves ${marker}`);
-}
-must(read('src/components/home/HomeHeroSection.astro'), 'h-hero-title', 'HomeHeroSection marker: h-hero-title');
-must(read('src/components/home/HomeHeroSection.astro'), 'heroSearchBar', 'HomeHeroSection marker: heroSearchBar');
-must(read('src/components/home/HomeHeroSection.astro'), 'h-mobile-hero-hub', 'HomeHeroSection marker: h-mobile-hero-hub');
-for (const [file, marker] of [
-  ['resume-mobile.html','resume-reading-block'],
-  ['directions.html','hDirectionsLabel'],
-  ['planned.html','hPlannedLabel'],
-  ['publications.html','id="publikacii"'],
-  ['refutations.html','id="razbor"'],
-]) {
-  must(read(`src/components/home/_legacy/${file}`), marker, `${file} marker: ${marker}`);
-}
-must(read('src/components/home/HomeAboutSection.astro'), 'id="about"', 'HomeAboutSection marker: id="about"');
-must(read('src/components/home/HomeQuoteSection.astro'), 'h-quote-section', 'HomeQuoteSection marker: h-quote-section');
-must(read('src/components/home/HomeAccuracyBlock.astro'), 'gb-accuracy-block', 'HomeAccuracyBlock marker: gb-accuracy-block');
-must(read('src/components/home/HomeFooter.astro'), 'h-footer', 'HomeFooter marker: h-footer');
-must(read('src/components/home/HomeArticleEndBlock.astro'), 'Soli Deo Gloria', 'HomeArticleEndBlock marker: Soli Deo Gloria');
-
-const segBefore = read('src/components/home/_legacy/body-segment-0.html');
-for (const marker of ['skip-link', 'h-mobile-nav', 'h-navbar', 'home-v20']) {
-  must(segBefore, marker, `body-segment-0.html preserves ${marker}`);
-}
-
-const segAfter = read('src/components/home/_legacy/body-segment-1.html');
-for (const marker of ['h-mobile-dock', 'site.js', 'sw-register']) {
-  must(segAfter, marker, `body-segment-1.html preserves ${marker}`);
+for (const [rel, markers] of Object.entries({
+  'src/components/home/HomeHero.astro': ['h-hero-title', 'heroSearchBar', 'h-mobile-hero-hub'],
+  'src/components/home/HomeSections/ResumeMobile.astro': ['resume-reading-block', 'h-mobile-dashboard', 'h-mobile-rail', 'h-mobile-paths'],
+  'src/components/home/HomeSections/Directions.astro': ['hDirectionsLabel', 'h-grid-4'],
+  'src/components/home/HomeSections/Planned.astro': ['hPlannedLabel', 'h-grid-3'],
+  'src/components/home/HomeSections/Publications.astro': ['id="publikacii"', 'h-featured-series', 'h-article-list'],
+  'src/components/home/HomeSections/Refutations.astro': ['id="razbor"', 'h-article-list--grid'],
+  'src/components/home/HomeSections/About.astro': ['id="about"', 'h-drop-cap__letter'],
+  'src/components/home/HomeSections/Quote.astro': ['h-quote-section', 'Аввакум 3:19'],
+  'src/components/home/HomeSections/Accuracy.astro': ['gb-accuracy-block', 'fedormilovanov'],
+  'src/components/home/HomePageFooter.astro': ['h-footer', 'Об авторе'],
+  'src/components/home/HomeArticleEndBlock.astro': ['Soli Deo Gloria'],
+})) {
+  const file = read(rel);
+  for (const marker of markers) must(file, marker, `${path.basename(rel)} marker: ${marker}`);
+  mustNot(file, 'set:html', `${path.basename(rel)} set:html`);
+  mustNot(file, '?raw', `${path.basename(rel)} raw import`);
 }
 
 for (const marker of [
   'import BaseLayout', '<BaseLayout', 'astro-card-grid',
-  'class="astro-home"', 'class="astro-page"',
-  'astro-shell',
+  'class="astro-home"', 'class="astro-page"', 'astro-shell',
 ]) {
   mustNot(page, marker, `old/generic home wrapper marker: ${marker}`);
   mustNot(main, marker, `old/generic home main marker: ${marker}`);
@@ -125,19 +144,19 @@ for (const marker of [
 
 const dist = exists('dist/index.html') ? read('dist/index.html') : '';
 if (dist) {
-  for (const marker of ['home-v20', 'h-hero', 'h-mobile-dashboard', 'main-content']) {
+  for (const marker of ['home-v20', 'h-hero', 'h-mobile-dashboard', 'main-content', 'gb-accuracy-block']) {
     must(dist, marker, `dist / marker: ${marker}`);
   }
-  mustNot(dist, 'class="astro-shell"',
-          'dist / has no astro-shell chrome (native-shadow)');
+  mustNot(dist, 'class="astro-shell"', 'dist / has no astro-shell chrome');
+  mustNot(dist, '_legacy/', 'dist / no legacy path leaks');
 } else {
-  warn('dist/index.html not found — run npm run strangler:build before push');
+  warn('dist/index.html not found — run npm run astro:build before push');
 }
 
 console.log('\nHOME VISUAL PARITY AUDIT');
 if (problems.length) {
-  console.log(`❌ ${problems.length} problem(s). / native-shadow contract violated.`);
+  console.log(`❌ ${problems.length} problem(s). / fully-native contract violated.`);
   process.exit(1);
 }
-console.log('✅ / Astro migration is native-shadow guarded (componentized home main)');
+console.log('✅ / Astro migration is fully-native guarded (no legacy loader, no raw imports, no _legacy HTML)');
 if (warnings.length) console.log(`ℹ️ ${warnings.length} advisory warning(s) remain.`);
