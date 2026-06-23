@@ -1,21 +1,16 @@
 ---
-import { loadLegacyFullDocument } from '@/utils/legacyFullDocument';
-
-// Refactoring 5.0 visual-first migration: /articles/dzhon-gill-chast-2-uchenyi/ must preserve the legacy
-// premium visual world until screenshot parity and owner review approve a
-// componentized Astro replacement.
-const { headHtml, bodyHtml, bodyAttributes } = loadLegacyFullDocument('articles/dzhon-gill-chast-2-uchenyi/index.html');
+import GillPart2PageHead from '@/components/article-pilots/gill-part2/GillPart2PageHead.astro';
+import GillPart2PageChrome from '@/components/article-pilots/gill-part2/GillPart2PageChrome.astro';
+import GillPart2MainShell from '@/components/article-pilots/gill-part2/GillPart2MainShell.astro';
 ---
 <!DOCTYPE html>
 <html lang="ru">
   <head>
-    <Fragment set:html={headHtml} />
+    <GillPart2PageHead />
   </head>
-  <body {...bodyAttributes}>
-    <!-- Pagefind search data: full-document visual shadow keeps legacy markup, so search text is explicit. -->
-    <div class="sr-only" data-pagefind-body style="position:absolute;left:-9999px;top:auto;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);clip-path:inset(50%);white-space:nowrap">
-      Джон Гилл часть II: Учёный. Экзегеза, иврит, Талмуд, комментарии, Body of Divinity, богословская система и работа с источниками.
-    </div>
-    <Fragment set:html={bodyHtml} />
+  <body class="gbs-world" data-gbs2-series="dzhon-gill" data-gbs2-done-min="48" data-gbs2-part-min="39" data-gbs2-total-min="149">
+    <GillPart2PageChrome>
+      <GillPart2MainShell />
+    </GillPart2PageChrome>
   </body>
 </html>

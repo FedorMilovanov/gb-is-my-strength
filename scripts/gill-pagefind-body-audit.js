@@ -60,17 +60,17 @@ auditComponent(
 );
 const sprBase = 'src/components/article-pilots/gill-spravochnik';
 const sprSections = [
-  `${sprBase}/_legacy/article-sections/00-summary.html`,
+  `${sprBase}/GillSpravochnikSectionSummary.astro`,
   `${sprBase}/GillSpravochnikSectionPrdl.astro`,
-  `${sprBase}/_legacy/article-sections/02-sec-timeline.html`,
-  `${sprBase}/_legacy/article-sections/03-sec-works.html`,
+  `${sprBase}/GillSpravochnikSectionTimeline.astro`,
+  `${sprBase}/GillSpravochnikSectionWorks.astro`,
   `${sprBase}/GillSpravochnikSectionBodyStructure.astro`,
   `${sprBase}/GillSpravochnikSectionNetwork.astro`,
   `${sprBase}/GillSpravochnikSectionDisputes.astro`,
   `${sprBase}/GillSpravochnikSectionTerms.astro`,
   `${sprBase}/GillSpravochnikSectionLinks.astro`,
-  `${sprBase}/_legacy/article-sections/09-sec-sources.html`,
-  `${sprBase}/_legacy/article-sections/10-sec-quiz-tail.html`,
+  `${sprBase}/GillSpravochnikSectionSources.astro`,
+  `${sprBase}/GillSpravochnikSectionQuizTail.astro`,
 ];
 auditComponent(
   'dzhon-gill-spravochnik',
@@ -78,6 +78,52 @@ auditComponent(
   sprSections,
   900,
   ['Масштаб корпуса','Хронология жизни','Body of Divinity','Богословский словарь','Источники справочника']
+);
+const part1Base = 'src/components/article-pilots/gill-part1';
+const part1Sections = [
+  `${part1Base}/GillPart1SectionSeriesAndHero.astro`,
+  `${part1Base}/GillPart1SectionCallingHeading.astro`,
+  `${part1Base}/GillPart1SectionIntro.astro`,
+  `${part1Base}/GillPart1SectionBirthProphecy.astro`,
+  `${part1Base}/GillPart1SectionEducation.astro`,
+  `${part1Base}/GillPart1SectionConversion.astro`,
+  `${part1Base}/GillPart1SectionPastorHeading.astro`,
+  `${part1Base}/GillPart1SectionPastor.astro`,
+  `${part1Base}/GillPart1SectionIllnessFamily.astro`,
+  `${part1Base}/GillPart1SectionEvangelism.astro`,
+  `${part1Base}/GillPart1SectionGoatyardDecl.astro`,
+  `${part1Base}/GillPart1SectionDaughterSermon.astro`,
+  `${part1Base}/GillPart1SectionFamilyDeep.astro`,
+  `${part1Base}/GillPart1SectionOrdination1720.astro`,
+  `${part1Base}/GillPart1SectionPersonalCredo.astro`,
+  `${part1Base}/GillPart1SectionContextSouthwark.astro`,
+  `${part1Base}/GillPart1SectionLastWordsWife.astro`,
+  `${part1Base}/GillPart1SectionSkeppDetail.astro`,
+  `${part1Base}/GillPart1SectionSourcesPart1.astro`,
+  `${part1Base}/GillPart1SectionQuizTail.astro`,
+];
+auditComponent(
+  'dzhon-gill-chast-1-chelovek',
+  `${part1Base}/GillPart1ArticleBody.astro`,
+  part1Sections,
+  3000,
+  ['Кеттеринг','Бытие 3:9','Хорслидаун','Декларация Козьего Двора','Источники и литература к Части I']
+);
+const part2Base = 'src/components/article-pilots/gill-part2';
+auditComponent(
+  'dzhon-gill-chast-2-uchenyi',
+  `${part2Base}/GillPart2ArticleBody.astro`,
+  [`${part2Base}/GillPart2ArticleBody.astro`],
+  4500,
+  ['Учение о Троице','раввинист','девятитомный комментарий','Body of Doctrinal Divinity','Уитби']
+);
+const part3Base = 'src/components/article-pilots/gill-part3';
+auditComponent(
+  'dzhon-gill-chast-3-nasledie',
+  `${part3Base}/GillPart3ArticleBody.astro`,
+  [`${part3Base}/GillPart3ArticleBody.astro`],
+  6000,
+  ['Уэсли','гиперкальвинизм','Сперджен','Америка','Банхилл-Филдс']
 );
 if (problems.length){ console.log(`\n❌ Gill Pagefind body audit failed: ${problems.length} issue(s)`); process.exit(1); }
 console.log('\n✅ Gill Pagefind body audit passed');

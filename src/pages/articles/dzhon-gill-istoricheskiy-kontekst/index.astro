@@ -1,19 +1,14 @@
 ---
-import { loadLegacyFullDocument } from '@/utils/legacyFullDocument';
+import GillContextPageHead from '@/components/article-pilots/gill-context/GillContextPageHead.astro';
 import GillContextMainShell from '@/components/article-pilots/gill-context/GillContextMainShell.astro';
 import GillContextPageChrome from '@/components/article-pilots/gill-context/GillContextPageChrome.astro';
-
-// Refactoring 6.0 Gill: componentized shadow-breakout for the
-// historical-context route. Preserve the legacy GBS2 visual world while
-// giving the page Astro seams that can be promoted section-by-section.
-const { headHtml, bodyAttributes } = loadLegacyFullDocument('articles/dzhon-gill-istoricheskiy-kontekst/index.html');
 ---
 <!DOCTYPE html>
 <html lang="ru">
   <head>
-    <Fragment set:html={headHtml} />
+    <GillContextPageHead />
   </head>
-  <body {...bodyAttributes}>
+  <body class="gbs-world" data-gbs2-series="dzhon-gill" data-gbs2-done-min="0" data-gbs2-part-min="16" data-gbs2-total-min="149">
     <GillContextPageChrome>
       <GillContextMainShell />
     </GillContextPageChrome>

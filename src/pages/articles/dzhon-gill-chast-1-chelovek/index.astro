@@ -1,21 +1,16 @@
 ---
-import { loadLegacyFullDocument } from '@/utils/legacyFullDocument';
-
-// Refactoring 5.0 visual-first migration: /articles/dzhon-gill-chast-1-chelovek/ must preserve the legacy
-// premium visual world until screenshot parity and owner review approve a
-// componentized Astro replacement.
-const { headHtml, bodyHtml, bodyAttributes } = loadLegacyFullDocument('articles/dzhon-gill-chast-1-chelovek/index.html');
+import GillPart1PageHead from '@/components/article-pilots/gill-part1/GillPart1PageHead.astro';
+import GillPart1PageChrome from '@/components/article-pilots/gill-part1/GillPart1PageChrome.astro';
+import GillPart1MainShell from '@/components/article-pilots/gill-part1/GillPart1MainShell.astro';
 ---
 <!DOCTYPE html>
 <html lang="ru">
   <head>
-    <Fragment set:html={headHtml} />
+    <GillPart1PageHead />
   </head>
-  <body {...bodyAttributes}>
-    <!-- Pagefind search data: full-document visual shadow keeps legacy markup, so search text is explicit. -->
-    <div class="sr-only" data-pagefind-body style="position:absolute;left:-9999px;top:auto;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);clip-path:inset(50%);white-space:nowrap">
-      Джон Гилл часть I: Человек. Детство, обращение, крещение, семья, пастырское призвание, скорби и личная жизнь богослова.
-    </div>
-    <Fragment set:html={bodyHtml} />
+  <body class="gbs-world" data-gbs2-series="dzhon-gill" data-gbs2-done-min="16" data-gbs2-part-min="32" data-gbs2-total-min="149">
+    <GillPart1PageChrome>
+      <GillPart1MainShell />
+    </GillPart1PageChrome>
   </body>
 </html>
