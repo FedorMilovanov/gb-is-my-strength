@@ -18,7 +18,7 @@ abandoned  — отменён
 | Branch | Scope | Mode | Status | Merge? | Owner |
 |---|---|---|---|---|---|
 | `lane/system-protection-simple-v3-0` | Упрощение защиты агентов | SYSTEM | merged | ✅ | Arena Agent |
-| `lane/nagornaya-componentization` | Componentize chast-2..5 | LANE | review | pending CI | Arena Agent |
+| `lane/nagornaya-componentization` | Componentize chast-2..5 | LANE | merged | ✅ | Arena Agent |
 
 ## Recently merged
 
