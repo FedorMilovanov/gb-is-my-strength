@@ -2,10 +2,9 @@
 /**
  * KodDaVinchiArticleBody — Phase 3a semantic article-body breakout.
  *
- * The legacy <article class="article-body" data-pagefind-body> shell now owns
- * small ordered section fragments instead of one 80K monolith. This is still
- * visual-safe legacy HTML, but the seam is ready for per-section MDX/Astro
- * activation: one section can be replaced and parity-tested independently.
+ * All content sections are hand-authored Astro components except the
+ * trailing summary-card/sources/author-card block, which must be rendered
+ * as raw HTML to preserve the exact legacy DOM structure.
  */
 import KodDaVinchiPagefindMeta from './KodDaVinchiPagefindMeta.astro';
 import KodDaVinchiSectionIntro from './KodDaVinchiSectionIntro.astro';
@@ -27,12 +26,7 @@ import KodDaVinchiSectionWhy from './KodDaVinchiSectionWhy.astro';
 import KodDaVinchiSectionQuiz from './KodDaVinchiSectionQuiz.astro';
 import KodDaVinchiSectionFaq from './KodDaVinchiSectionFaq.astro';
 import KodDaVinchiSectionConclusion from './KodDaVinchiSectionConclusion.astro';
-import KodDaVinchiSectionSummaryTitleAuto from './KodDaVinchiSectionSummaryTitleAuto.astro';
-
-// Рефакторинг 6.0 Phase 3g: ALL 20 content sections are now hand-authored Astro
-// components. The legacy raw-fragment glob is retired — no _legacy/article-sections/
-// fragments remain. The article body is fully componentized while preserving
-// byte-for-byte rendered parity with the legacy HTML.
+import summaryHtml from './_legacy/20-summary-title-auto.html?raw';
 ---
 <article class="article-body" data-pagefind-body>
   <KodDaVinchiPagefindMeta />
@@ -55,5 +49,5 @@ import KodDaVinchiSectionSummaryTitleAuto from './KodDaVinchiSectionSummaryTitle
   <KodDaVinchiSectionQuiz />
   <KodDaVinchiSectionFaq />
   <KodDaVinchiSectionConclusion />
-  <KodDaVinchiSectionSummaryTitleAuto />
+  <Fragment set:html={summaryHtml} is:inline />
 </article>
