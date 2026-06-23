@@ -1,10 +1,10 @@
 ---
 /**
- * NagornayaSeriyaMainShell — Phase 1: main content wrapper (temporary).
+ * NagornayaSeriyaMainShell — balanced native <main> for /nagornaya/seriya//.
  *
- * Renders legacy main.html verbatim. Will be split into section components
- * in Phase 2: HeaderHero, SectionSummary, SectionCards, SectionAccuracy,
- * PostContent (author + SDG).
+ * V8/V9 hardening: avoid unbalanced tags across Astro component boundaries.
+ * The markup is first-class Astro HTML (no raw imports), extracted from the
+ * approved legacy main so Playwright/pixelmatch can verify exact parity.
  */
 ---
 <main id="main-content">
