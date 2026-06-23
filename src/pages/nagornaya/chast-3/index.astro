@@ -2,11 +2,14 @@
 /**
  * /nagornaya/chast-3/ — РЕФАКТОРИНГ 6.0 Phase 1: native pilot chast-3.
  *
- * 100% Astro-owned page structure. Zero raw ?raw imports.
+ * 100% Astro-owned page structure for chast-3. Zero raw ?raw imports.
+ * All content sections promoted to named Astro components.
  */
 import { loadLegacyFullDocument } from '@/utils/legacyFullDocument';
 import NagornayaChast3PageChrome from '@/components/nagornaya/chast-3/NagornayaChast3PageChrome.astro';
-import NagornayaChast3MainShell from '@/components/nagornaya/chast-3/NagornayaChast3MainShell.astro';
+import NagornayaChast3HeaderHero from '@/components/nagornaya/chast-3/NagornayaChast3HeaderHero.astro';
+import NagornayaChast3ArticleBody from '@/components/nagornaya/chast-3/NagornayaChast3ArticleBody.astro';
+import NagornayaChast3PostContent from '@/components/nagornaya/chast-3/NagornayaChast3PostContent.astro';
 import NagornayaChast3PageFooter from '@/components/nagornaya/chast-3/NagornayaChast3PageFooter.astro';
 
 const { headHtml, bodyAttributes } = loadLegacyFullDocument('nagornaya/chast-3/index.html');
@@ -21,7 +24,9 @@ const { headHtml, bodyAttributes } = loadLegacyFullDocument('nagornaya/chast-3/i
       Страница проекта Господь Бог — Сила Моя. Раздел: nagornaya/chast-3.
     </div>
     <NagornayaChast3PageChrome />
-    <NagornayaChast3MainShell />
+    <NagornayaChast3HeaderHero />
+    <NagornayaChast3ArticleBody />
+    <NagornayaChast3PostContent />
     <NagornayaChast3PageFooter />
   </body>
 </html>
