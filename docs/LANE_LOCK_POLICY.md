@@ -1,357 +1,145 @@
-# Lane Lock Policy — координация параллельных агентов
+# Lane Lock Policy — FAST / LANE / SYSTEM
 
-**Версия:** 1.1 · 2026-06-23 (risk-based lane lock + out-of-lane rule)
+**Дата:** 2026-06-23  
+**Версия:** 2.0 (упрощено по `AGENT_PROTECTION_SIMPLE_v3_0`)
 
-**См. также:** [docs/WORK_MODES.md](docs/WORK_MODES.md) — Work Mode Decision Tree и краткий справочник.  
-**Цель:** не допустить одновременной работы двух агентов в одном route/lane.  
-**Без lane lock — регресс.** Агенты перезаписывают друг другу файлы → данные теряются, CI падает, читатели видят сломанный сайт.
-
----
-
-## 0. Почему lane lock критичен
-
-В этом проекте:
-- Один route (например `/nagornaya/chast-1/`) состоит из **15+ файлов**: page.astro, PageChrome.astro, MainShell.astro, PageFooter.astro, _legacy/*.html, guard.js, visual-parity-audit.js, pagefind body, CSS, JS, data/*.json, и т.д.
-- Агент A может менять `NagornayaChast1PageChrome.astro` в то же время, что агент B меняет `NagornayaChast1MainShell.astro`. Оба думают что владеют route, но пересекаются через _legacy fragments и data/series.json.
-- Без lane lock: дублирующие коммиты, race conditions в CI, рассинхрон данных.
-
-**Правило:** lane lock **обязателен** по риску, не по времени.
-См. [docs/WORK_MODES.md](docs/WORK_MODES.md) — Work Mode Decision Tree.
-
-Lane обязателен когда: MULTI-AGENT режим, production route refactor, >3 файлов,
-shared/high-risk файл, задача refactor/migration/stabilization.
-
-Lane НЕ обязателен: SOLO + docs-only, один агент + одна правка, без shared файлов.
+См. также: [docs/WORK_MODES.md](docs/WORK_MODES.md)
 
 ---
 
-## 1. Формат lane declaration
+## 0. Зачем lane lock
 
-Перед началом работы агент **объявляет lane в комментарии коммита или PR**:
-
-```
-Lane: lane/nagornaya-chast-4-phase2
-Routes: /nagornaya/chast-4/
-Files allowed:
-  - src/pages/nagornaya/chast-4/index.astro
-  - src/components/nagornaya/chast-4/NagornayaChast4MainShell.astro
-  - src/components/nagornaya/chast-4/_legacy/body-segment-1.html
-Files forbidden:
-  - data/series.json
-  - src/components/home/**
-  - src/pages/biografii/**
-Source of truth:
-  - data/series.json (readTime values)
-  - src/pages/nagornaya/chast-4/index.astro (page ownership)
-Required checks before commit:
-  - npm run nagornaya:visual-parity:audit
-  - npm run data:consistency
-  - rg "21 мин|35 мин|40+ мин|100+ мин" src/components/nagornaya
-Rollback point: b8d0ac60
-```
+Без lane lock параллельные агенты перезаписывают друг друга в shared/route файлах → регрессия, CI падает, сайт ломается.
 
 ---
 
-## 2. Git branch — основной механизм lane lock
+## 1. Три режима
 
-### 2.1 Один агент = один branch = один lane
+- **FAST** — один агент, маленькая правка, без shared/system файлов. Можно в main.
+- **LANE** — route/refactor/много файлов. Ветка `lane/<name>`.
+- **SYSTEM** — shared/global/high-risk. Ветка `lane/system-<name>` или `lane/protection-*`.
 
-```
-main  ────────────── (стабильный, только merge)
-  │
-  ├── lane/gill-spravochnik-sections   ← Agent A
-  ├── lane/nagornaya-chast-4-phase2   ← Agent B
-  └── lane/home-readtime-hotfix       ← Agent C
-```
+---
 
-**Как работает:**
+## 2. Branch naming
 
-1. Агент создаёт branch от актуального `main`
-2. Объявляет lane в описании branch или в первом commit message
-3. Другой агент проверяет существующие branches перед созданием своего
-4. После завершения lane — PR в `main`.
-Lane report пишется в docs/refactor-2026/lanes/<lane-name>.md.
-AGENTS.md НЕ редактируется каждым агентом — только интегратор после волны.
-
-### 2.2 Branch naming convention
-
-```
+```text
 lane/<route-or-feature>-<phase>
+lane/system-<task>
+lane/shared-<data-fix>
+lane/protection-<version>
 ```
 
 Примеры:
-- `lane/gill-spravochnik-sections` — Gill Spravochnik section promotion
-- `lane/nagornaya-chast-4-phase2` — Nagornaya chast-4 body sections
-- `lane/home-source-of-truth-hotfix` — Home readTime fix
-- `lane/visual-parity-guard-fix` — Visual parity CI hardening
-- `lane/antisovetov-readtime` — 20-antisovetov readTime sync
 
-**Запрещённые имена:** `agent-1`, `work`, `fix`, `refactor`, `update`
-
-
-### Out-of-lane findings — правило
-
-Если агент видит проблему вне своего lane — **НЕ исправлять**, а записать:
-
-```markdown
-## Out-of-lane findings
-- data/series.json: Gill I readTime устарел (21 вместо 28)
-  Suggested lane: lane/shared-readtime-sync
-  Not fixed in this lane (gill-spravochnik-gs7)
-```
-
-Обоснование: "увидел рядом — сразу исправил" при параллельных агентах
-создаёт race conditions и рассинхрон. Сначала lane report → потом отдельный lane.
-
-### 2.3 Кто какой lane выбирает
-
-**Правило:** первый агент, объявивший lane в Git, владеет им.
-
-Агенты координируются через:
-1. **GitHub branch list** — посмотреть существующие branches перед работой
-2. **AGENTS.md header** — проверить текущие записи rNNN на активные lanes
-3. **docs/refactor-2026/REFRACTOR_AUDIT_LIVING.md** — живой аудит документ
-
-Если два агента одновременно объявили один lane — **стейкается меньший**. Тот кто начал позже — выбирает новый lane или ждёт завершения первого.
-
----
-
-## 3. File ownership — кому что можно менять
-
-### 3.1 Route-owned files (только владелец lane)
-
-Для route `/nagornaya/chast-4/` владелец lane может менять:
-
-```
-src/pages/nagornaya/chast-4/index.astro          — page shell
-src/components/nagornaya/chast-4/*.astro          — Astro components этого route
-src/components/nagornaya/chast-4/_legacy/*.html   — _legacy fragments этого route
-scripts/nagornaya-chast-4-visual-parity-audit.js — guard этого route
-```
-
-### 3.2 Shared files (требуют отдельного lane или согласия владельца)
-
-**Запрещено** менять без отдельного lane:
-
-```
-data/series.json           — readTime для всех серий
-data/search-manifest.json  — search index
-data/public-content-baseline.json — URL contract
-src/components/home/**     — home page components
-src/components/article-pilots/gill-context/** — Gill shared chrome
-scripts/check-data-consistency.js  — глобальный guard
-scripts/audit-pro.js              — глобальный audit
-scripts/visual-parity-screenshots.js — Visual parity gate
-AGENTS.md                        — журнал агентов
-package.json                     — npm scripts
-.github/workflows/*.yml          — CI/CD
-```
-
-### 3.3 Read-only для всех (если не объявлен专门的 lane)
-
-```
-docs/EDITORIAL-SOURCE-POLICY.md
-docs/QUALITY_GATES_AND_TESTING_QUALITY.md
-migration/page-ownership.json    — только через lane/migration
+```text
+lane/nagornaya-componentization
+lane/system-astro-head-native
+lane/shared-readtime-sync
+lane/protection-simple-v3-0
 ```
 
 ---
 
-## 4. Сценарии параллельной работы
+## 3. Lane declaration
 
-### Scenario A: 2 агента, разные routes — OK
+Перед работой объявить в первом commit message или в PR:
 
-```
-Agent A: lane/gill-spravochnik-sections     (/articles/dzhon-gill-spravochnik/)
-Agent B: lane/nagornaya-chast-4-phase2      (/nagornaya/chast-4/)
-
-→ Нет конфликта. Оба работают параллельно.
-→ Обязательно: проверить что routes не пересекаются через shared data.
-```
-
-### Scenario B: 2 агента, один route — стейк
-
-```
-Agent A: lane/gill-spravochnik-sections     (route: Gill Spravochnik)
-Agent B: lane/gill-spravochnik-body-sections (route: Gill Spravochnik)
-
-→ КОНФЛИКТ. Второй агент должен либо:
-   1. Взять подlane (e.g. lane/gill-spravochnik-body-sections)
-   2. Ждать завершения Agent A
-   3. Договориться о разделении: A делает chrome, B делает body
+```text
+Lane: lane/<name>
+Routes: <list>
+Files allowed: <list>
+Files forbidden: <list>
+Source of truth: <file>
+Required checks before commit: <list>
+Rollback point: <commit>
 ```
 
-### Scenario C: 2 агента, разные routes, но общий shared файл
+Каждый commit в lane должен содержать:
 
-```
-Agent A: lane/gill-spravochnik-sections    (меняет data/series.json)
-Agent B: lane/nagornaya-chast-4-phase2     (тоже хочет менять data/series.json)
-
-→ КОНФЛИКТ. Один из них должен:
-   1. Взять lane/shared-data (отдельный lane для data/ изменений)
-   2. Договориться о порядке: A фиксирует данные → коммитит → B мержит → продолжает
-   3. Использовать PR review: A создаёт PR → B-reviewer → merge → B продолжает
+```text
+[LANE lane/<name>] <type>(<scope>): <message>
 ```
 
 ---
 
-## 5. Как 2 агента координируются через GitHub
+## 4. Правила lane
 
-### 5.1 Перед началом работы
+1. Один route — один владелец lane.
+2. Если два агента хотят один route — второй берёт под-lane или ждёт.
+3. Route lane не трогает SYSTEM files.
+4. SYSTEM lane не трогает production routes/content.
+5. Shared data — только через `lane/shared-*` или `lane/system-*`.
+6. Out-of-lane проблемы записываем, не исправляем сразу.
 
-Каждый агент **всегда** делает:
+---
+
+## 5. Out-of-lane finding
+
+```md
+## Out-of-lane finding
+
+Lane: lane/my-lane
+
+Нашёл:
+- data/series.json: возможно устарел readTime.
+
+Не исправлял:
+- это shared data.
+
+Предложение:
+- lane/shared-readtime-sync
+```
+
+---
+
+## 6. Lane index
+
+Активные lanes ведутся в:
+
+```text
+docs/refactor-2026/lanes/README.md
+```
+
+Шаблон отчёта:
+
+```text
+docs/refactor-2026/lanes/TEMPLATE.md
+```
+
+---
+
+## 7. Чеклист перед началом
+
+```text
+□ Проверить существующие branches: git branch -a | grep lane/
+□ Проверить lane index: docs/refactor-2026/lanes/README.md
+□ Проверить живой аудит: docs/refactor-2026/REFRACTOR_AUDIT_LIVING.md
+□ Выбрать свободный lane name
+□ Определить files allowed / forbidden
+□ Знать source of truth и rollback point
+□ [LANE lane/<name>] в каждом commit message
+```
+
+---
+
+## 8. Merge и cleanup
 
 ```bash
-# 1. Fetch latest
-git fetch origin
+# 1. Checks зелёные
+npm run data:consistency
+npm run validate:static-publication
 
-# 2. Проверить существующие branches
-git branch -a | grep lane/
-
-# 3. Проверить AGENTS.md на активные lanes
-rg "AGENTS-r[0-9]+" AGENTS.md | head -5
-
-# 4. Проверить живой аудит
-cat docs/refactor-2026/REFRACTOR_AUDIT_LIVING.md | grep "^Lane:"
-
-# 5. Если lane свободен — создать branch и объявить
-git checkout -b lane/my-lane-name
-git push -u origin lane/my-lane-name
-```
-
-### 5.2 После завершения lane
-
-```bash
-# 1. Все checks зелёные?
-npm run data:consistency && npm run validate:static-publication
-
-# 2. Squash в один commit с lane declaration
-git rebase -i HEAD~10  # squash into 1-2 commits
-
-# 3. Merge в main (через PR или direct push если разрешено)
+# 2. Merge в main
 git checkout main
-git merge lane/my-lane-name --no-ff -m "Lane: lane/my-lane-name completed"
+git merge lane/<name> --no-ff
+
+# 3. Lane report (не AGENTS.md!)
+# docs/refactor-2026/lanes/<lane-name>.md
 
 # 4. Удалить branch
-git branch -d lane/my-lane-name
-git push origin --delete lane/my-lane-name
-
-# 5. Обновить AGENTS.md с результатом
-# (добавить запись rNNN о выполненном lane)
+git branch -d lane/<name>
+git push origin --delete lane/<name>
 ```
 
----
-
-## 6. Lane declaration в commit messages
-
-Каждый коммит в lane **должен** содержать lane reference:
-
-```
-[LANE lane/gill-spravochnik-sections] refactor(gill): promote section 3 to Astro
-[LANE lane/nagornaya-chast-4-phase2] fix(gill-reading-time): correct mobile sheet times
-[LANE lane/home-readtime-hotfix]    fix(home): sync Gill I readTime to 28 мин
-```
-
-Это позволяет:
-- Быстро понять какой lane делает какую работу
-- Найти связанные коммиты через `git log --grep="LANE lane/"`
-- Откатить целый lane через `git log --grep="LANE lane/X" | git revert`
-
----
-
-## 7. Conflict detection — как понять что lane пересекается
-
-### Автоматически (перед коммитом)
-
-```bash
-# Проверить что не меняешь shared files других lanes
-rg "data/series.json|data/search-manifest.json|package.json" --files-with-matches | \
-  xargs git diff --name-only | head -5
-
-# Если вывод не пустой — ты трогаешь shared files, нужен отдельный lane
-```
-
-### Визуально (перед созданием branch)
-
-```bash
-# Показать все recent lane branches
-git for-each-ref --sort=-committerdate refs/heads/lane/ --format='%(committerdate:short) %(refname:short) %(subject)'
-
-# Проверить что твой route не в чужих files allowed
-# (если чужой lane меняет _legacy файлы твоего route — конфликт)
-```
-
----
-
-## 8. Rollback — как откатить lane
-
-Если lane сломал production:
-
-```bash
-# Найти все коммиты lane
-git log --grep="LANE lane/broken-lane" --oneline
-
-# Откатить весь lane одним revert
-git revert $(git log --grep="LANE lane/broken-lane" --format=%H | head -1)
-
-# Или через squash-merge
-git checkout main
-git merge --squash lane/broken-lane
-git reset --hard HEAD~1
-```
-
----
-
-## 9. Emergency lane для срочных hotfix
-
-Если нужен срочный fix (например, опечатка на production):
-
-```
-Lane: lane/emergency-hotfix
-Scope: только исправление критической ошибки
-Files allowed: только конкретные файлы ошибки
-Duration: максимум 2 коммита
-Review: после merge в main, уведомить всех агентов в Slack/Chat
-```
-
-Emergency lanes **не блокируют** другие lanes, но должны быть merge в main как можно быстрее.
-
----
-
-## 10. Чеклист перед началом работы агента
-
-```bash
-□ Я проверил существующие branches: git branch -a | grep lane/
-□ Я проверил AGENTS.md на активные lanes
-□ Я проверил docs/refactor-2026/REFRACTOR_AUDIT_LIVING.md
-□ Я выбрал свободный lane name и объявил его в первом commit message
-□ Я определил files allowed / files forbidden
-□ Я выбрал source of truth file(s)
-□ Я знаю rollback point (последний стабильный коммит)
-□ Я проверил что НЕ трогаю shared files без отдельного lane
-□ Я напишу [LANE lane/X] в каждом commit message
-□ После завершения: npm run data:consistency && npm run validate:static-publication
-□ После завершения: обновить AGENTS.md с результатом
-□ После завершения: удалить branch и push в main
-```
-
----
-
-## Краткая шпаргалка: Lane Lock в 3 шага
-
-```
-Шаг 1. Перед работой:
-  → git fetch && git branch -a | grep lane/
-  → Выбрать lane name → git checkout -b lane/name
-
-Шаг 2. Во время работы:
-  → [LANE lane/name] в каждом commit message
-  → Не трогать shared files без отдельного lane
-  → Перед push: npm run data:consistency
-
-Шаг 3. После завершения:
-  → npm run validate:static-publication
-  → git merge --no-ff lane/name в main
-  → Обновить AGENTS.md
-  → git branch -d lane/name
-```
+`AGENTS.md` обновляет только интегратор после волны lanes.

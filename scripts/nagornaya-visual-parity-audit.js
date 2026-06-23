@@ -2,10 +2,10 @@
 /*
  * nagornaya-visual-parity-audit.js — guard /nagornaya/* native-shadow Astro contract.
  *
- * РЕФАКТОРИНГ 5.0 Phase 6 wave 7 (AGENTS-r255). 9 Nagornaya pages (landing +
- * chast-1..5 + seriya + istochniki + nakhodki) use shared NagornayaPageMain
- * component with Vite import.meta.glob for per-page _legacy resolution.
- * Each page has unique Tailwind sidebar world + chrome preserved verbatim.
+ * Refactoring 6.0 update: Nagornaya pages are in transition from the shared
+ * NagornayaPageMain loader to named per-page components. This guard accepts
+ * either pattern, as long as the page uses Nagornaya-specific components and
+ * preserves the Tailwind sidebar world.
  *
  * Pixel parity proof (CI):
  *   npm run visual:parity:screenshots -- --routes /nagornaya/,/nagornaya/chast-N/ --threshold 0.5
@@ -46,17 +46,17 @@ for (const marker of [
   must(legacy, marker, `legacy /nagornaya/ marker: ${marker}`);
 }
 
-// --- All 9 Nagornaya Astro pages use NagornayaPageMain + loadLegacyFullDocument ---
+// --- All 9 Nagornaya Astro pages use Nagornaya-specific components ---
 const NAGORNAYA_PAGES = [
-  { slug: 'index', page: 'src/pages/nagornaya/index.astro', file: 'nagornaya/index.html' },
-  { slug: 'chast-1', page: 'src/pages/nagornaya/chast-1/index.astro', file: 'nagornaya/chast-1/index.html' },
-  { slug: 'chast-2', page: 'src/pages/nagornaya/chast-2/index.astro', file: 'nagornaya/chast-2/index.html' },
-  { slug: 'chast-3', page: 'src/pages/nagornaya/chast-3/index.astro', file: 'nagornaya/chast-3/index.html' },
-  { slug: 'chast-4', page: 'src/pages/nagornaya/chast-4/index.astro', file: 'nagornaya/chast-4/index.html' },
-  { slug: 'chast-5', page: 'src/pages/nagornaya/chast-5/index.astro', file: 'nagornaya/chast-5/index.html' },
-  { slug: 'seriya', page: 'src/pages/nagornaya/seriya/index.astro', file: 'nagornaya/seriya/index.html' },
-  { slug: 'istochniki', page: 'src/pages/nagornaya/istochniki/index.astro', file: 'nagornaya/istochniki/index.html' },
-  { slug: 'nakhodki', page: 'src/pages/nagornaya/nakhodki/index.astro', file: 'nagornaya/nakhodki/index.html' },
+  { slug: 'index', page: 'src/pages/nagornaya/index.astro', file: 'nagornaya/index.html', components: ['NagornayaIndex'] },
+  { slug: 'chast-1', page: 'src/pages/nagornaya/chast-1/index.astro', file: 'nagornaya/chast-1/index.html', components: ['NagornayaChast1'] },
+  { slug: 'chast-2', page: 'src/pages/nagornaya/chast-2/index.astro', file: 'nagornaya/chast-2/index.html', components: ['NagornayaChast2'] },
+  { slug: 'chast-3', page: 'src/pages/nagornaya/chast-3/index.astro', file: 'nagornaya/chast-3/index.html', components: ['NagornayaChast3'] },
+  { slug: 'chast-4', page: 'src/pages/nagornaya/chast-4/index.astro', file: 'nagornaya/chast-4/index.html', components: ['NagornayaChast4'] },
+  { slug: 'chast-5', page: 'src/pages/nagornaya/chast-5/index.astro', file: 'nagornaya/chast-5/index.html', components: ['NagornayaChast5'] },
+  { slug: 'seriya', page: 'src/pages/nagornaya/seriya/index.astro', file: 'nagornaya/seriya/index.html', components: ['NagornayaSeriya'] },
+  { slug: 'istochniki', page: 'src/pages/nagornaya/istochniki/index.astro', file: 'nagornaya/istochniki/index.html', components: ['NagornayaIstochniki'] },
+  { slug: 'nakhodki', page: 'src/pages/nagornaya/nakhodki/index.astro', file: 'nagornaya/nakhodki/index.html', components: ['NagornayaNakhodki'] },
 ];
 
 for (const p of NAGORNAYA_PAGES) {
@@ -65,42 +65,53 @@ for (const p of NAGORNAYA_PAGES) {
     continue;
   }
   const src = read(p.page);
-  if (!src.includes('NagornayaPageMain')) {
-    bad(`${p.slug}: must use <NagornayaPageMain>`);
+
+  // Accept either the legacy NagornayaPageMain loader or named per-page components.
+  const hasNagornayaMain = src.includes('NagornayaPageMain');
+  const hasNamedComponents = p.components.some((prefix) => src.includes(`<${prefix}`));
+  if (!hasNagornayaMain && !hasNamedComponents) {
+    bad(`${p.slug}: must use NagornayaPageMain or named Nagornaya components (${p.components.join(', ')})`);
     continue;
   }
-  // Accept either single or double quotes around the legacy file path.
-  const usesLoader = src.includes("loadLegacyFullDocument('" + p.file + "')") ||
-                     src.includes('loadLegacyFullDocument("' + p.file + '")');
-  if (!usesLoader) {
-    bad(`${p.slug}: must use loadLegacyFullDocument('${p.file}')`);
-    continue;
+
+  // If using the legacy loader, ensure it points to the correct legacy file.
+  if (hasNagornayaMain) {
+    const usesLoader = src.includes("loadLegacyFullDocument('" + p.file + "')") ||
+                       src.includes('loadLegacyFullDocument("' + p.file + '")');
+    if (!usesLoader) {
+      bad(`${p.slug}: NagornayaPageMain must use loadLegacyFullDocument('${p.file}')`);
+      continue;
+    }
   }
+
   if (!src.includes('<!DOCTYPE html>')) {
     bad(`${p.slug}: must emit full document`);
     continue;
   }
-  ok(`${p.slug}: NagornayaPageMain + loadLegacyFullDocument`);
+  ok(`${p.slug}: Nagornaya-specific Astro shell (${hasNagornayaMain ? 'NagornayaPageMain' : 'named components'})`);
 }
 
-// --- NagornayaPageMain.astro + _legacy/ contract ---
-mustExist('src/components/nagornaya/NagornayaPageMain.astro',
-          'NagornayaPageMain.astro shared component file');
+// --- Shared NagornayaPageMain component must still exist for pages that use it ---
+if (exists('src/components/nagornaya/NagornayaPageMain.astro')) {
+  mustExist('src/components/nagornaya/NagornayaPageMain.astro',
+            'NagornayaPageMain.astro shared component file');
+  const nagComponent = read('src/components/nagornaya/NagornayaPageMain.astro');
+  must(nagComponent, 'import.meta.glob',
+       'NagornayaPageMain uses Vite import.meta.glob for per-page _legacy resolution');
+  must(nagComponent, "?raw",
+       'NagornayaPageMain loads fragments via Vite ?raw');
+  must(nagComponent, '_legacy/main.html',
+       'NagornayaPageMain loads main.html via Vite ?raw glob');
+  must(nagComponent, '_legacy/body-segment-0.html',
+       'NagornayaPageMain loads body-segment-0.html via Vite ?raw glob');
+  must(nagComponent, '_legacy/body-segment-1.html',
+       'NagornayaPageMain loads body-segment-1.html via Vite ?raw glob');
+}
 
-const nagComponent = read('src/components/nagornaya/NagornayaPageMain.astro');
-must(nagComponent, 'import.meta.glob',
-     'NagornayaPageMain uses Vite import.meta.glob for per-page _legacy resolution');
-must(nagComponent, "?raw",
-     'NagornayaPageMain loads fragments via Vite ?raw');
-must(nagComponent, '_legacy/main.html',
-     'NagornayaPageMain loads main.html via Vite ?raw glob');
-must(nagComponent, '_legacy/body-segment-0.html',
-     'NagornayaPageMain loads body-segment-0.html via Vite ?raw glob');
-must(nagComponent, '_legacy/body-segment-1.html',
-     'NagornayaPageMain loads body-segment-1.html via Vite ?raw glob');
-
-// --- All 9 _legacy/ fragment dirs exist ---
+// --- _legacy/ fragment dirs for pages that still use NagornayaPageMain ---
 for (const p of NAGORNAYA_PAGES) {
+  const src = read(p.page);
+  if (!src.includes('NagornayaPageMain')) continue;
   for (const file of ['main.html', 'body-segment-0.html', 'body-segment-1.html']) {
     mustExist(`src/components/nagornaya/${p.slug}/_legacy/${file}`,
               `nagornaya ${p.slug} _legacy/${file}`);
@@ -132,8 +143,7 @@ for (const p of NAGORNAYA_PAGES) {
 
 // --- Dist (if available) — premium DOM markers ---
 for (const p of NAGORNAYA_PAGES) {
-  const distRel = p.file.replace(/^nagornaya\//, 'nagornaya/');
-  const distFile = `dist/${distRel}`;
+  const distFile = `dist/${p.file}`;
   if (exists(distFile)) {
     const dist = read(distFile);
     if (!dist.includes('nagornaya-page')) {
@@ -152,5 +162,5 @@ if (problems.length) {
   console.log(`❌ ${problems.length} problem(s). /nagornaya/ native-shadow contract violated.`);
   process.exit(1);
 }
-console.log(`✅ /nagornaya/* Astro migration is native-shadow guarded (Phase 6 wave 7) — all 9 pages`);
+console.log(`✅ /nagornaya/* Astro migration is native-shadow guarded — all 9 pages`);
 if (warnings.length) console.log(`ℹ️ ${warnings.length} advisory warning(s) remain.`);

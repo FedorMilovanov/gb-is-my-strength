@@ -1,207 +1,300 @@
-# Work Modes for Agents — AGENT PROTECTION v1.5
+# Work Modes — FAST / LANE / SYSTEM
 
-**Версия:** 1.0 · 2026-06-23  
-**Цель:** определить режим работы перед началом любой задачи.
+**Дата:** 2026-06-23  
+**Версия:** 2.0 (упрощено по `AGENT_PROTECTION_SIMPLE_v3_0`)
 
----
+Цель:
 
-## Work Mode Decision Tree
-
-```
-Перед началом работы — ответь на 3 вопроса:
-
-1. Сколько агентов работает одновременно?
-   → Один → SOLO
-   → Несколько → MULTI-AGENT
-
-2. Какие файлы затрагиваются?
-   → Только docs, текст статьи, контент
-   → Route components, Astro shells, _legacy fragments
-   → AGENTS.md, package.json, workflows, data/series.json, layouts, global CSS/JS
-
-3. Какой риск?
-   → Docs / мелкий контент-фикс → Risk 0–1
-   → Route refactor / componentization → Risk 2
-   → Shared/system/global файлы → Risk 3 / HIGH-RISK
+```text
+не утонуть в защите,
+но не дать агентам ломать проект shared-файлами, main и параллельной работой.
 ```
 
 ---
 
-## Mode 1: SOLO
+## 0. Три режима
 
-Один агент, один человек. Работает быстро.
+### FAST
 
-**Разрешено на main:**
-- Docs-only (Risk 0)
-- Content-only без shared файлов (Risk 1)
-- Один текстовый фикс
-- Мелкий typo/grammar fix
+Один агент. Маленькая правка. Нет shared/system файлов.
 
-**Требует lane branch:**
-- Route refactor (Risk 2)
-- Любой shared/high-risk файл
-- Всё что меняет более 3 файлов
-- Любая задача с названием refactor/migration/stabilization
+Примеры:
 
-**Проверки:**
+```text
+опечатка
+один docs-файл
+небольшая правка текста
+route-local report
+```
+
+Проверки:
+
 ```bash
-npm run guard:shared-files    # перед push — блокирует небезопасные shared-изменения
-npm run data:consistency       # если менялся контент
+git diff --check
+npm run data:consistency # если менялся контент
 ```
-
-**НЕ ДЕЛАЙ на SOLO без lane:**
-- AGENTS.md
-- package.json
-- .github/workflows/**
-- data/series.json / data/search-manifest.json
-- global CSS/JS
-- layouts
 
 ---
 
-## Mode 2: MULTI-AGENT
+### LANE
 
-Несколько агентов одновременно. Координация обязательна.
+Route/refactor/много файлов/параллельная работа.
 
-**Правила:**
+Примеры:
+
+```text
+Gill route
+Nagornaya route
+Heart series
+Pagefind audit route
+Astro shell
+_legacy split
 ```
-✓ main — НЕ трогать напрямую
-✓ Каждый агент — в lane/<name>
-✓ Один route — один владелец lane
-✓ Shared файлы — отдельный lane (lane/shared-xyz)
-✓ [LANE lane/NAME] в каждом commit message
-✓ Out-of-lane проблемы — записывать, НЕ исправлять сразу
-```
 
-**В конце lane — merge в main + обновить AGENTS.md rNNN**
+Ветка:
 
-**Проверки:**
 ```bash
-npm run guard:shared-files    # блокирует тихое изменение shared files
-npm run data:consistency       # перед merge в main
-npm run validate:static-publication  # перед merge в main
+git checkout -b lane/<task>
 ```
 
----
+Проверки:
 
-## Mode 3: HIGH-RISK
-
-Любая работа с shared/system/global файлами.
-
-**Разрешено:**
-- lane/system-protection-v1-5
-- lane/shared-data-fix
-- lane/workflow-hardening
-
-**Запрещено:**
-- Совмещать с route content refactor в одном lane
-- Менять production routes в том же коммите
-
-**Проверки:**
 ```bash
-npm run guard:shared-files    # MUST PASS
-npm run workflows:check        # после изменения workflows
-npm run validate:static-publication  # после изменения build/deploy
+npm run guard:shared-files
+npm run data:consistency
+```
+
+Перед merge:
+
+```bash
+npm run validate:static-publication
 ```
 
 ---
 
-## Mode 4: EMERGENCY
+### SYSTEM
 
-Только владелец / интегратор. Быстрый hotfix.
+Shared/global/high-risk.
 
-**После hotfix — обязательно:**
-```markdown
-1. Причина emergency:
-2. Touched files:
-3. Risk gates run:
-4. Если production затронут — full gates
-```
+Примеры:
 
----
-
-## Risk Levels
-
-| Risk | Что | Проверки |
-|------|-----|----------|
-| **0** | Docs-only | `git diff --check` |
-| **1** | Content-only, без shared | `npm run data:consistency` |
-| **2** | Route refactor | `npm run data:consistency && npm run <route>:visual-parity:audit && npm run validate:static-publication` |
-| **3** | Shared/system/global | `npm run guard:shared-files && npm run workflows:check && npm run validate:static-publication` |
-
----
-
-## Shared / High-Risk Files (запрещено без lane)
-
-```
-AGENTS.md, README.md, package.json, package-lock.json
+```text
+AGENTS.md
+package.json
+package-lock.json
 .github/workflows/**
-data/series.json, data/search-manifest.json, data/public-content-baseline.json
-src/layouts/**, css/site.css, js/site.js, js/search.js, sw.js
-scripts/guard-shared-files.js, scripts/cache-bust.js, scripts/copy-legacy-to-dist.js
-scripts/check-data-consistency.js, scripts/audit-pro.js, scripts/visual-parity-screenshots.js
+astro.config.*
+tsconfig.*
+sw.js
+migration/**
+scripts/cache-bust.js
+scripts/copy-legacy-to-dist.js
 scripts/check-workflows.js
-karty/_engine/**, karty/ishod/**, karty/avraam/**
+src/layouts/**
+css/**
+js/**
+karty/_engine/**
 ```
 
-**Исключение:** docs, reports, sitemap.xml, robots.txt, CNAME — всегда разрешено.
+Ветка:
+
+```bash
+git checkout -b lane/system-<task>
+# или lane/protection-*
+```
+
+Проверки:
+
+```bash
+npm run guard:shared-files
+npm run workflows:check
+npm run validate:static-publication
+```
+
+SYSTEM нельзя совмещать с route/content refactor.
 
 ---
 
-## Lane Reports (вместо прямого AGENTS.md редактирования)
+## 1. Два запрета
 
-Обычные агенты пишут отчёты сюда:
-```
-docs/refactor-2026/lanes/<lane-name>-YYYY-MM-DD.md
-```
+### Запрет 1
 
-Шаблон:
-```md
-# Lane Report
-
-Lane: lane/my-task
-Mode: MULTI-AGENT / SOLO
-Risk: 2 / content-only
-Agent: Arena Agent
-Date: 2026-06-23
-
-## Changed files
-- ...
-
-## Shared/high-risk files touched
-No / Yes → ...
-
-## Checks run
-- npm run guard:shared-files ✅
-- npm run data:consistency ✅
-
-## Out-of-lane findings
-- ... (записываем, НЕ исправляем)
-
-## Merge recommendation
-Merge / Do not merge yet
-
-## Rollback point
-<commit hash>
+```text
+Route lane не трогает SYSTEM files.
 ```
 
-**AGENTS.md обновляет только интегратор** после волны, не каждый агент после своего lane.
+То есть `lane/gill-*` не должен менять:
+
+```text
+package.json
+package-lock.json
+.github/workflows/**
+AGENTS.md
+src/layouts/**
+css/**
+js/**
+karty/_engine/**
+sw.js
+migration/**
+```
+
+Даже если commit message содержит `[LANE lane/gill-*]`.
 
 ---
 
-## Out-of-Lane Findings — правило
+### Запрет 2
 
+```text
+Обычный агент не обновляет AGENTS.md.
 ```
-Если проблема вне твоего lane:
-  → НЕ исправляй
-  → Запиши в lane report: "Suggested lane: lane/XYZ"
-  → Продолжай свою задачу
+
+Он пишет:
+
+```text
+docs/refactor-2026/lanes/<lane-name>.md
+```
+
+`AGENTS.md` обновляет только интегратор/system lane.
+
+---
+
+## 2. Группы файлов
+
+### SYSTEM files
+
+```text
+AGENTS.md
+package.json
+package-lock.json
+.github/workflows/**
+astro.config.*
+tsconfig.*
+sw.js
+migration/**
+scripts/cache-bust.js
+scripts/copy-legacy-to-dist.js
+scripts/check-workflows.js
+src/layouts/**
+css/**
+js/**
+karty/_engine/**
+```
+
+Только:
+
+```text
+lane/system-*
+lane/protection-*
+```
+
+---
+
+### SHARED data / shared docs
+
+```text
+docs/WORK_MODES.md
+docs/LANE_LOCK_POLICY.md
+data/series.json
+data/search-manifest.json
+data/public-content-baseline.json
+scripts/guard-shared-files.js
+scripts/check-data-consistency.js
+scripts/audit-pro.js
+scripts/visual-parity-screenshots.js
+```
+
+Только:
+
+```text
+lane/shared-*
+lane/system-*
+lane/protection-*
+```
+
+---
+
+### SAFE
+
+```text
+docs/refactor-2026/lanes/**
+docs/research/**
+reports/**
+audit/**
+sitemap.xml
+robots.txt
+CNAME
+```
+
+Всегда можно.
+
+---
+
+## 3. Главное правило поведения
+
+```text
+Если нашёл проблему вне своей зоны — не исправляй.
+Запиши Out-of-lane finding.
 ```
 
 Пример:
-```markdown
-## Out-of-lane findings
-- data/series.json: Gill I readTime устарел (21 вместо 28)
-  Suggested lane: lane/shared-readtime-sync
-  Not fixed in this lane (gill-spravochnik-gs7)
+
+```md
+## Out-of-lane finding
+
+Lane: lane/gill-spravochnik-gs7
+
+Нашёл:
+- data/series.json, возможно устарел readTime.
+
+Не исправлял:
+- это shared data.
+
+Предложение:
+- lane/shared-readtime-sync
+```
+
+---
+
+## 4. Lane index
+
+Активные lanes фиксируются в:
+
+```text
+docs/refactor-2026/lanes/README.md
+```
+
+---
+
+## 5. Lane report
+
+Шаблон:
+
+```text
+docs/refactor-2026/lanes/TEMPLATE.md
+```
+
+---
+
+## 6. Команды для агента
+
+### FAST
+
+```bash
+git diff --check
+npm run data:consistency
+```
+
+### LANE
+
+```bash
+npm run guard:shared-files
+npm run data:consistency
+```
+
+### SYSTEM
+
+```bash
+npm run guard:shared-files
+npm run workflows:check
+npm run validate:static-publication
 ```

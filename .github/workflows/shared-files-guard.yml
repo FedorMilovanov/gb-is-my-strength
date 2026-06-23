@@ -28,13 +28,13 @@ jobs:
           node-version: "22"
           cache: "npm"
 
-      - name: Read commit/PR context
-        run: |
-          echo "COMMIT_MESSAGE=${{ github.event.head_commit.message }}" >> "$GITHUB_ENV"
-          echo "PR_BODY=${{ github.event.pull_request.body }}" >> "$GITHUB_ENV"
-
-      - name: Guard shared/high-risk files
+      - name: Guard shared/system files (strict on main/PR)
+        if: github.ref == 'refs/heads/main' || github.event_name == 'pull_request'
         run: node scripts/guard-shared-files.js
+
+      - name: Guard shared/system files (warn on lane branches)
+        if: startsWith(github.ref, 'refs/heads/lane/') || startsWith(github.ref, 'refs/heads/agent/')
+        run: node scripts/guard-shared-files.js --warn
         continue-on-error: true
 
       - name: Report shared files touched
@@ -42,4 +42,4 @@ jobs:
         run: |
           echo "Branch: ${{ github.ref_name }}"
           echo "Event: ${{ github.event_name }}"
-          echo "Shared files guard result: ${{ job.status }}"
+          echo "Shared files guard completed"
