@@ -1,21 +1,16 @@
 ---
-import { loadLegacyFullDocument } from '@/utils/legacyFullDocument';
+import GillSpravochnikPageHead from '@/components/article-pilots/gill-spravochnik/GillSpravochnikPageHead.astro';
 import GillSpravochnikMainShell from '@/components/article-pilots/gill-spravochnik/GillSpravochnikMainShell.astro';
-import segBefore from '@/components/article-pilots/gill-spravochnik/_legacy/body-segment-0.html?raw';
-import segAfter from '@/components/article-pilots/gill-spravochnik/_legacy/body-segment-1.html?raw';
-
-// Refactoring 6.0 Gill: componentized shadow-breakout for the reference route.
-// Preserve the legacy GBS2 visual world while exposing safe Astro seams.
-const { headHtml, bodyAttributes } = loadLegacyFullDocument('articles/dzhon-gill-spravochnik/index.html');
+import GillSpravochnikPageChrome from '@/components/article-pilots/gill-spravochnik/GillSpravochnikPageChrome.astro';
 ---
 <!DOCTYPE html>
 <html lang="ru">
   <head>
-    <Fragment set:html={headHtml} />
+    <GillSpravochnikPageHead />
   </head>
-  <body {...bodyAttributes}>
-    <Fragment set:html={segBefore} />
-    <GillSpravochnikMainShell />
-    <Fragment set:html={segAfter} />
+  <body class="gbs-world" data-gbs2-series="dzhon-gill" data-gbs2-done-min="141" data-gbs2-part-min="8" data-gbs2-total-min="149">
+    <GillSpravochnikPageChrome>
+      <GillSpravochnikMainShell />
+    </GillSpravochnikPageChrome>
   </body>
 </html>

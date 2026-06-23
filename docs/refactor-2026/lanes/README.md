@@ -19,6 +19,7 @@ abandoned  — отменён
 |---|---|---|---|---|---|
 | `lane/system-protection-simple-v3-0` | Упрощение защиты агентов | SYSTEM | merged | ✅ | Arena Agent |
 | `lane/nagornaya-componentization` | Componentize chast-2..5 | LANE | merged | ✅ | Arena Agent |
+| `lane/gill-full-native-closeout-2026-06-23` | Strict-native closeout for Gill cluster | LANE | active | ⏳ | Arena Agent |
 
 ## Recently merged
 

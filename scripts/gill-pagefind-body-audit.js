@@ -60,17 +60,17 @@ auditComponent(
 );
 const sprBase = 'src/components/article-pilots/gill-spravochnik';
 const sprSections = [
-  `${sprBase}/_legacy/article-sections/00-summary.html`,
+  `${sprBase}/GillSpravochnikSectionSummary.astro`,
   `${sprBase}/GillSpravochnikSectionPrdl.astro`,
-  `${sprBase}/_legacy/article-sections/02-sec-timeline.html`,
-  `${sprBase}/_legacy/article-sections/03-sec-works.html`,
+  `${sprBase}/GillSpravochnikSectionTimeline.astro`,
+  `${sprBase}/GillSpravochnikSectionWorks.astro`,
   `${sprBase}/GillSpravochnikSectionBodyStructure.astro`,
   `${sprBase}/GillSpravochnikSectionNetwork.astro`,
   `${sprBase}/GillSpravochnikSectionDisputes.astro`,
   `${sprBase}/GillSpravochnikSectionTerms.astro`,
   `${sprBase}/GillSpravochnikSectionLinks.astro`,
-  `${sprBase}/_legacy/article-sections/09-sec-sources.html`,
-  `${sprBase}/_legacy/article-sections/10-sec-quiz-tail.html`,
+  `${sprBase}/GillSpravochnikSectionSources.astro`,
+  `${sprBase}/GillSpravochnikSectionQuizTail.astro`,
 ];
 auditComponent(
   'dzhon-gill-spravochnik',
