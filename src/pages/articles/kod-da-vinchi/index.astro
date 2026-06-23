@@ -1,46 +1,34 @@
 ---
 /**
- * /articles/kod-da-vinchi/ — V7 VISUAL FIX.
+ * /articles/kod-da-vinchi/ — strict-native route shell.
  *
- * FIXED DOM STRUCTURE to match legacy HTML exactly:
- * - skip-link, reading-progress, section-label, theme-toggle, toc-sidebar
- *   are direct <body> children (OUTSIDE .page-wrap), matching legacy.
- * - breadcrumb, <main>, <footer> are INSIDE .page-wrap, matching legacy.
- * - bottom-bar, btoc-overlay, bookmark-toast, scripts, back-to-top
- *   are OUTSIDE .page-wrap (in KodDaVinchiPageFooter).
- *
- * CSS @layer pilot REMOVED — using canonical site.css.
- * JS modules pilot REMOVED — modules already in site.js.
+ * Header/body transport from legacy loader is retired. Native page head,
+ * native body class, native chrome, native main shell, and native footer.
  */
-import { loadLegacyFullDocument } from '@/utils/legacyFullDocument';
+import KodDaVinchiPageHead from '@/components/article-pilots/kod-da-vinchi/KodDaVinchiPageHead.astro';
 import KodDaVinchiPageChrome from '@/components/article-pilots/kod-da-vinchi/KodDaVinchiPageChrome.astro';
 import KodDaVinchiBreadcrumb from '@/components/article-pilots/kod-da-vinchi/KodDaVinchiBreadcrumb.astro';
 import KodDaVinchiMainShell from '@/components/article-pilots/kod-da-vinchi/KodDaVinchiMainShell.astro';
 import KodDaVinchiPageFooter from '@/components/article-pilots/kod-da-vinchi/KodDaVinchiPageFooter.astro';
-
-const { headHtml, bodyAttributes } = loadLegacyFullDocument('articles/kod-da-vinchi/index.html');
 ---
 <!DOCTYPE html>
 <html lang="ru">
   <head>
-    <Fragment set:html={headHtml} />
+    <KodDaVinchiPageHead />
   </head>
-  <body {...bodyAttributes}>
+  <body class="gbs-paper">
     <div class="sr-only" data-pagefind-body style="position:absolute;left:-9999px;top:auto;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);clip-path:inset(50%);white-space:nowrap">
       Страница проекта Господь Бог — Сила Моя. Раздел: articles.
     </div>
-    <!-- Elements OUTSIDE .page-wrap (matching legacy body children) -->
     <KodDaVinchiPageChrome />
-    <!-- .page-wrap contains: breadcrumb + main + footer -->
     <div class="page-wrap" id="content">
-    <KodDaVinchiBreadcrumb />
-    <KodDaVinchiMainShell />
-    <footer>
-      <a href="../../">← Господь Бог — Сила Моя</a>
-      <span>© 2026</span>
-    </footer>
+      <KodDaVinchiBreadcrumb />
+      <KodDaVinchiMainShell />
+      <footer>
+        <a href="../../">← Господь Бог — Сила Моя</a>
+        <span>© 2026</span>
+      </footer>
     </div>
-    <!-- Elements after .page-wrap (bottom-bar, btoc-overlay, scripts) -->
     <KodDaVinchiPageFooter />
   </body>
 </html>
