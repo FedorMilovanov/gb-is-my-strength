@@ -79,5 +79,35 @@ auditComponent(
   900,
   ['Масштаб корпуса','Хронология жизни','Body of Divinity','Богословский словарь','Источники справочника']
 );
+const part1Base = 'src/components/article-pilots/gill-part1';
+const part1Sections = [
+  `${part1Base}/GillPart1SectionSeriesAndHero.astro`,
+  `${part1Base}/GillPart1SectionCallingHeading.astro`,
+  `${part1Base}/GillPart1SectionIntro.astro`,
+  `${part1Base}/GillPart1SectionBirthProphecy.astro`,
+  `${part1Base}/GillPart1SectionEducation.astro`,
+  `${part1Base}/GillPart1SectionConversion.astro`,
+  `${part1Base}/GillPart1SectionPastorHeading.astro`,
+  `${part1Base}/GillPart1SectionPastor.astro`,
+  `${part1Base}/GillPart1SectionIllnessFamily.astro`,
+  `${part1Base}/GillPart1SectionEvangelism.astro`,
+  `${part1Base}/GillPart1SectionGoatyardDecl.astro`,
+  `${part1Base}/GillPart1SectionDaughterSermon.astro`,
+  `${part1Base}/GillPart1SectionFamilyDeep.astro`,
+  `${part1Base}/GillPart1SectionOrdination1720.astro`,
+  `${part1Base}/GillPart1SectionPersonalCredo.astro`,
+  `${part1Base}/GillPart1SectionContextSouthwark.astro`,
+  `${part1Base}/GillPart1SectionLastWordsWife.astro`,
+  `${part1Base}/GillPart1SectionSkeppDetail.astro`,
+  `${part1Base}/GillPart1SectionSourcesPart1.astro`,
+  `${part1Base}/GillPart1SectionQuizTail.astro`,
+];
+auditComponent(
+  'dzhon-gill-chast-1-chelovek',
+  `${part1Base}/GillPart1ArticleBody.astro`,
+  part1Sections,
+  3000,
+  ['Кеттеринг','Бытие 3:9','Хорслидаун','Декларация Козьего Двора','Источники и литература к Части I']
+);
 if (problems.length){ console.log(`\n❌ Gill Pagefind body audit failed: ${problems.length} issue(s)`); process.exit(1); }
 console.log('\n✅ Gill Pagefind body audit passed');

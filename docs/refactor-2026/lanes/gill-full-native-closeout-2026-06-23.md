@@ -30,7 +30,8 @@
 ### 3. Audits hardened to strict-native
 - `scripts/gill-context-visual-parity-audit.js` переписан как strict-native audit.
 - `scripts/gill-spravochnik-visual-parity-audit.js` переписан как strict-native audit.
-- `scripts/gill-pagefind-body-audit.js` обновлён под full-native Spravochnik body.
+- `scripts/gill-part1-visual-parity-audit.js` добавлен как strict-native audit для Part I.
+- `scripts/gill-pagefind-body-audit.js` обновлён под full-native Spravochnik body и full-native Part I body.
 
 ---
 
@@ -53,11 +54,12 @@ All green in current sandbox session.
 
 ## Remaining work in lane
 
-### Part I — `/articles/dzhon-gill-chast-1-chelovek/`
-- Use `origin/lane/gill-part1-shell` only as foundation.
-- Finish native page head.
-- Replace raw section seams with true Astro sections.
-- Remove route-level full-body shadow.
+### Part I — `/articles/dzhon-gill-chast-1-chelovek/` ✅ DONE in this lane
+- Native page head created.
+- Native page chrome created.
+- All raw section seams promoted to Astro section components.
+- `_legacy/` transport removed from runtime path.
+- Route-level full-body shadow removed.
 
 ### Part II — `/articles/dzhon-gill-chast-2-uchenyi/`
 - Full strict-native migration from scratch.
