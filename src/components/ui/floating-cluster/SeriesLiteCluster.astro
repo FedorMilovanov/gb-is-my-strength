@@ -1,0 +1,202 @@
+---
+import ClusterButton from './ClusterButton.astro';
+import PlayEmber from './PlayEmber.astro';
+import SaveButton from './SaveButton.astro';
+import { getSeriesLiteMeta, type SeriesKey } from '@/data/floating-cluster-ui';
+
+interface Props {
+  variant: 'pastor' | 'heart';
+  seriesKey: SeriesKey;
+  currentSlug: string;
+  hubHref?: string;
+  audioState?: 'none' | 'available' | 'loading' | 'playing' | 'paused';
+}
+
+const {
+  variant,
+  seriesKey,
+  currentSlug,
+  hubHref,
+  audioState = 'none',
+} = Astro.props;
+
+const meta = getSeriesLiteMeta(seriesKey, currentSlug);
+const currentNumber = meta.currentNumber;
+const currentLabel = currentNumber ? String(currentNumber).toUpperCase() : 'I';
+const resolvedHubHref = hubHref || meta.baseUrl || '/';
+const seriesTitle = meta.title || 'Серия';
+---
+<div
+  id="gbFloatingControls"
+  class={`gb-floating-controls fc-root fc-series-lite fc-series-lite--${variant}`}
+  data-fc-root
+  data-fc-mode="series-lite"
+  data-fc-variant={variant}
+  data-fc-series={seriesKey}
+  data-fc-audio-state={audioState}
+  role="group"
+  aria-label={`Быстрые действия серии «${seriesTitle}»`}
+>
+  <a class="fc-series-chip" href={resolvedHubHref} aria-label={`Открыть серию «${seriesTitle}»`}>
+    <span class="fc-series-chip__eyebrow">Серия</span>
+    <span class="fc-series-chip__title">{seriesTitle}</span>
+  </a>
+
+  <div class="fc-series-lite__controls">
+    <span aria-hidden="true" class="fc-series-index">{currentLabel}</span>
+
+    <ClusterButton
+      label="Переключить тему"
+      title="Светлая / тёмная тема"
+      className="gb-fc-btn gb-fc-theme fc-theme-toggle"
+      action="theme"
+      pressed="false"
+    >
+      <span aria-hidden="true" class="fc-theme-toggle__sun">
+        <svg viewBox="0 0 24 24">
+          <circle cx="12" cy="12" r="4.5"></circle>
+          <path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"></path>
+        </svg>
+      </span>
+      <span aria-hidden="true" class="fc-theme-toggle__moon">
+        <svg viewBox="0 0 24 24">
+          <path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"></path>
+        </svg>
+      </span>
+    </ClusterButton>
+
+    <ClusterButton
+      label="Поиск"
+      title="Поиск по сайту"
+      className="gb-fc-btn gb-fc-search"
+      action="search"
+    >
+      <svg aria-hidden="true" viewBox="0 0 24 24">
+        <circle cx="11" cy="11" r="7"></circle>
+        <path d="M21 21l-4.3-4.3"></path>
+      </svg>
+    </ClusterButton>
+
+    <PlayEmber audioState={audioState} />
+    <SaveButton />
+  </div>
+</div>
+
+<style is:global>
+@layer components {
+  .fc-series-lite {
+    --fc-series-surface: color-mix(in srgb, var(--color-surface) 94%, transparent);
+    --fc-series-border: color-mix(in srgb, var(--color-border) 88%, transparent);
+    --fc-series-text: var(--color-text);
+    --fc-series-muted: var(--color-text-muted);
+    --fc-series-accent: var(--color-accent);
+    --fc-series-accent-strong: var(--color-accent-strong);
+    pointer-events: none;
+    gap: 8px;
+  }
+
+  .fc-series-lite--pastor {
+    --fc-series-accent: color-mix(in srgb, var(--color-accent) 82%, #5b2b20 18%);
+    --fc-series-accent-strong: color-mix(in srgb, var(--color-accent-strong) 74%, #b77b54 26%);
+  }
+
+  .fc-series-lite .fc-series-chip,
+  .fc-series-lite .fc-series-lite__controls {
+    pointer-events: auto;
+  }
+
+  .fc-series-lite .fc-series-chip {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    min-width: 0;
+    padding: 8px 12px;
+    border: 1px solid var(--fc-series-border);
+    border-radius: 14px;
+    background: var(--fc-series-surface);
+    color: var(--fc-series-text);
+    text-decoration: none;
+    box-shadow: 0 14px 36px -26px rgba(22, 15, 10, 0.28);
+    -webkit-backdrop-filter: blur(16px) saturate(150%);
+    backdrop-filter: blur(16px) saturate(150%);
+  }
+
+  .fc-series-lite .fc-series-chip__eyebrow {
+    font-family: var(--f-ui, 'Source Sans 3', system-ui, sans-serif);
+    font-size: 10px;
+    font-weight: 800;
+    letter-spacing: .14em;
+    text-transform: uppercase;
+    color: var(--fc-series-accent);
+  }
+
+  .fc-series-lite .fc-series-chip__title {
+    font-family: var(--f-body, Lora, Georgia, serif);
+    font-size: 14px;
+    font-weight: 700;
+    line-height: 1.2;
+  }
+
+  .fc-series-lite .fc-series-lite__controls {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    padding: 3px;
+    border: 1px solid var(--fc-series-border);
+    border-radius: 24px;
+    background: var(--fc-series-surface);
+    box-shadow: 0 16px 38px -28px rgba(22, 15, 10, 0.24);
+    -webkit-backdrop-filter: blur(16px) saturate(150%);
+    backdrop-filter: blur(16px) saturate(150%);
+  }
+
+  .fc-series-lite .fc-series-index {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 28px;
+    padding: 0 6px;
+    font-family: var(--f-body, Lora, Georgia, serif);
+    font-size: 14px;
+    font-weight: 700;
+    letter-spacing: .08em;
+    color: var(--fc-series-accent);
+  }
+
+  @media (max-width: 899px) {
+    .gb-floating-controls.fc-series-lite {
+      top: auto;
+      left: 50%;
+      right: auto;
+      bottom: calc(12px + env(safe-area-inset-bottom, 0px));
+      transform: translateX(-50%);
+      width: min(94vw, 420px);
+      flex-direction: row;
+      align-items: stretch;
+      justify-content: center;
+      gap: 8px;
+      z-index: var(--z-bottom-bar);
+    }
+
+    .gb-floating-controls.fc-series-lite .fc-series-chip {
+      flex: 1 1 auto;
+      min-width: 0;
+      justify-content: center;
+    }
+
+    body.fc-series-lite-pilot .article-main {
+      padding-bottom: 96px;
+    }
+  }
+
+  body.fc-series-lite-pilot #reading-progress,
+  body.fc-series-lite-pilot #section-label,
+  body.fc-series-lite-pilot #back-to-top,
+  body.fc-series-lite-pilot #themeToggle,
+  body.fc-series-lite-pilot #tocSidebar,
+  body.fc-series-lite-pilot #bottomBar,
+  body.fc-series-lite-pilot #btocOverlay {
+    display: none !important;
+  }
+}
+</style>

@@ -1,0 +1,34 @@
+---
+import SingleArticleCluster from './SingleArticleCluster.astro';
+import SeriesLiteCluster from './SeriesLiteCluster.astro';
+import type { SeriesKey } from '@/data/floating-cluster-ui';
+
+interface Props {
+  mode: 'single' | 'series-lite';
+  variant: string;
+  audioState?: 'none' | 'available' | 'loading' | 'playing' | 'paused';
+  seriesKey?: SeriesKey;
+  currentSlug?: string;
+  hubHref?: string;
+}
+
+const {
+  mode,
+  variant,
+  audioState = 'none',
+  seriesKey,
+  currentSlug,
+  hubHref,
+} = Astro.props;
+---
+{mode === 'single' ? (
+  <SingleArticleCluster variant={variant as 'hermeneutics' | 'article'} audioState={audioState} />
+) : mode === 'series-lite' && seriesKey && currentSlug ? (
+  <SeriesLiteCluster
+    variant={variant as 'pastor' | 'heart'}
+    seriesKey={seriesKey}
+    currentSlug={currentSlug}
+    hubHref={hubHref}
+    audioState={audioState}
+  />
+) : null}
