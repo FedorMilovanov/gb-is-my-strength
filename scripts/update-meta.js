@@ -32,6 +32,18 @@ const NAGORNAYA  = path.resolve(__dirname, '../nagornaya');
 const TZ_OFFSET  = '+03:00';
 const WPM        = 200;
 
+// Canonical reading-time overrides (minutes). When a slug is listed here we use
+// the pinned editorial value instead of the words/WPM estimate, so update-meta
+// never drifts from the contract enforced by `gill:reading-time:audit`
+// (AGENTS-r295: Gill series 16/32/39/54/8 = 149) and data:consistency.
+const CANONICAL_READTIME = {
+  'dzhon-gill-istoricheskiy-kontekst': 16,
+  'dzhon-gill-chast-1-chelovek':       32,
+  'dzhon-gill-chast-2-uchenyi':        39,
+  'dzhon-gill-chast-3-nasledie':       54,
+  'dzhon-gill-spravochnik':            8,
+};
+
 const DRY_RUN   = process.argv.includes('--dry-run');
 const FORCE_ALL = process.argv.includes('--all');
 
@@ -379,7 +391,9 @@ function main() {
 
     const html     = fs.readFileSync(file, 'utf8');
     const words    = countWords(html);
-    const readTime = Math.max(1, Math.round(words / WPM));
+    const readTime = CANONICAL_READTIME[slug] != null
+      ? CANONICAL_READTIME[slug]
+      : Math.max(1, Math.round(words / WPM));
 
     console.log(`\n  📄  ${slug}`);
     console.log(`      pub: ${pubISO?.slice(0,10)}  mod: ${modISO.slice(0,10)}  ${words} сл. → ${readTime} мин`);
