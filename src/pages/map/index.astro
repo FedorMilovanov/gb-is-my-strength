@@ -1,22 +1,26 @@
 ---
-import { loadLegacyFullDocument } from '@/utils/legacyFullDocument';
-
-// Visual-first migration: /map/ must preserve the legacy premium page
-// before any component refactor. The previous generic astro-card grid was a
-// production-quality regression; keep this full-document shadow until screenshot
-// parity and owner review approve a hand-built Astro version.
-const { headHtml, bodyHtml, bodyAttributes } = loadLegacyFullDocument('map/index.html');
+/**
+ * /map/ — strict-native route (Protected App Routes Native Astro Phase).
+ *
+ * Interactive graph map of site connections.
+ * Native MapPageHead (SEO/JSON-LD/meta) + Native MapBody.
+ * Does NOT use global site.css/site.js to avoid breaking custom canvas.
+ */
+import MapPageHead from '@/components/map/MapPageHead.astro';
+import MapStyles from '@/components/map/MapStyles.astro';
+import MapBody from '@/components/map/MapBody.astro';
 ---
 <!DOCTYPE html>
 <html lang="ru">
   <head>
-    <Fragment set:html={headHtml} />
+    <MapPageHead />
+    <MapStyles />
   </head>
-  <body {...bodyAttributes}>
-    <!-- Pagefind search data: full-document visual shadow keeps legacy markup, so search text is explicit. -->
+  <body>
+    <!-- sr-only marker for local search index inclusion -->
     <div class="sr-only" data-pagefind-body style="position:absolute;left:-9999px;top:auto;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);clip-path:inset(50%);white-space:nowrap">
       Карта связей сайта Господь Бог — Сила Моя. Интерактивная карта связей между статьями и сериями: библейские карты, баптисты России, Нагорная проповедь, Джон Гилл, экзегетика и богословие.
     </div>
-    <Fragment set:html={bodyHtml} />
+    <MapBody />
   </body>
 </html>
