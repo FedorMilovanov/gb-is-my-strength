@@ -12,8 +12,8 @@
 ---
 # ARENA SESSION MANUAL — выживание в песочнице
 
-**Обновлено:** 2026-06-22  
-**Версия:** v8.0 (v7.1 + §16 VISION/IMAGE — полная диагностика зрения агентов + OCR-обход)  
+**Обновлено:** 2026-06-22
+**Версия:** v8.0 (v7.1 + §16 VISION/IMAGE — полная диагностика зрения агентов + OCR-обход)
 **Среда:** Arena.ai Agent Mode — Linux ext4, 2 CPU, 1.9GB RAM
 
 ---
@@ -79,6 +79,62 @@
 
 ---
 
+## 1.5 Speed/quality gate discipline for Arena
+
+Arena Agent Mode is fast for file edits and static Node scripts, but expensive for full Astro gates:
+
+```text
+fast static guards: usually seconds
+validate:static-publication: often ~2–3 minutes in this sandbox
+fresh worktree + npm ci + Astro check/build: can hit 2 GB RAM / timeout and be killed
+```
+
+**Do not run the full gate after every tiny edit.** Use this loop:
+
+```bash
+# one-time per fresh session
+cd /home/user/gb-is-my-strength
+if [ ! -x /tmp/node-v22.12.0-linux-x64/bin/node ]; then
+  wget -q https://nodejs.org/dist/v22.12.0/node-v22.12.0-linux-x64.tar.xz -O /tmp/node22.tar.xz
+  tar -xf /tmp/node22.tar.xz -C /tmp/
+fi
+export PATH=/tmp/node-v22.12.0-linux-x64/bin:$PATH
+npm ci
+
+# fast loop after small edits
+git diff --check
+npm run migration:metadata:check
+npm run native:runtime:audit:strict
+npm run data:consistency
+npm run content:parity
+npm run guard:shared-files
+
+# final release barrier before commit/merge/push of production/system/refactor lanes
+npm run validate:static-publication
+npm run guard:shared-files
+```
+
+Pick only relevant fast checks for the files changed. Examples:
+
+| Changed area | Fast checks |
+|---|---|
+| docs only | `git diff --check` |
+| content/MDX/search/series | `git diff --check`, `npm run data:consistency`, `npm run content:parity`, `npm run mdx:structure:audit` |
+| route/migration metadata | `npm run migration:metadata:check`, `npm run native:runtime:audit:strict` |
+| package/workflows/scripts/shared | `npm run guard:shared-files`, `npm run workflows:check`, relevant direct script |
+
+**Quality rule:** fast checks are iteration tools, not a replacement for the final full gate. If `validate:static-publication` cannot run because of sandbox limits, document the exact blocker in the lane report and let CI/owner decide.
+
+**Performance rules that actually help:**
+
+- reuse one working copy; avoid fresh `git worktree + npm ci` unless conflict isolation is required;
+- keep Node 22 in `PATH` for every bash call (`PATH=/tmp/node-v22.12.0-linux-x64/bin:$PATH ...` if export is not persistent);
+- use `npm ci`, not `npm install`, in fresh sessions;
+- do not run multiple Astro builds in parallel on this 2 CPU / ~2 GB RAM sandbox;
+- use parallel tool calls only for independent static checks, not build-heavy commands.
+
+---
+
 ## 2. Astro build — почему падает и как чинить
 
 Astro 6 REFUSES запускаться на Node 20:
@@ -124,7 +180,7 @@ npm run astro:build  # или npm run strangler:build:production-like
 ```
 FATAL browserType.launch: Executable doesn't exist at /home/user/.cache/ms-playwright/chromium_headless_shell-1223/chrome-headless-shell-linux64/chrome-headless-shell
 ```
-**Причина:** Playwright 1.61 хочет v1223, после `npm install` Playwright обновился до версии, требующей другую версию браузера.  
+**Причина:** Playwright 1.61 хочет v1223, после `npm install` Playwright обновился до версии, требующей другую версию браузера.
 **Решение:** `npx playwright install chromium` (он скачает нужную).
 
 ### 3.5 НЕДОСТАЮЩИЕ СИСТЕМНЫЕ БИБЛИОТЕКИ chromium (v7, КРИТИЧНО)
@@ -163,7 +219,7 @@ nohup python3 -m http.server 8091 --bind 127.0.0.1 --directory dist > /tmp/serve
 ### 4.2 Cwd "deleted" проблема (#2 причина 404)
 В этом sandbox сервер Python сохраняет cwd через `/proc/$PID/cwd`. Если файл/директория cwd **была пересоздана** (например, sandbox cleanup), то `/proc/$PID/cwd` указывает на `(deleted)`. Сервер тогда отдаёт 404 на все пути, **даже если файл существует**.
 
-**Симптом:** `curl -sI http://127.0.0.1:8091/` возвращает `HTTP/1.0 404 File not found`.  
+**Симптом:** `curl -sI http://127.0.0.1:8091/` возвращает `HTTP/1.0 404 File not found`.
 **Решение:** `kill PID && nohup python3 -m http.server 8091 --bind 127.0.0.1 --directory /home/user/gb-is-my-strength/dist &` (перезапуск с АБСОЛЮТНЫМ путём).
 
 ### 4.3 Two servers на разных портах

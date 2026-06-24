@@ -1,6 +1,6 @@
 # Lane Lock Policy — FAST / LANE / SYSTEM
 
-**Дата:** 2026-06-23  
+**Дата:** 2026-06-23
 **Версия:** 2.0 (упрощено по `AGENT_PROTECTION_SIMPLE_v3_0`)
 
 См. также: [docs/WORK_MODES.md](docs/WORK_MODES.md)
@@ -63,6 +63,38 @@ Rollback point: <commit>
 
 ---
 
+## 3.5 Checks discipline: FAST loop and FULL barrier
+
+Lane work uses two layers of verification:
+
+```text
+FAST loop     — quick relevant checks while iterating
+FULL barrier  — validate:static-publication before final commit/merge/push of production/system/refactor lanes
+```
+
+Recommended FAST loop:
+
+```bash
+git diff --check
+npm run guard:shared-files
+npm run data:consistency
+npm run migration:metadata:check
+npm run native:runtime:audit:strict
+```
+
+Add targeted checks for the touched area (`content:parity`, `mdx:structure:audit`, `workflows:check`, route visual audit, etc.).
+
+Required FULL barrier for production/system/refactor lanes:
+
+```bash
+npm run validate:static-publication
+npm run guard:shared-files
+```
+
+Arena note: do not run the full gate after every tiny edit; it includes Astro check/build and is expensive in 2 CPU / ~2 GB RAM sandbox. But the lane report must record the final full gate result, or the exact blocker if sandbox limits made it impossible.
+
+---
+
 ## 4. Правила lane
 
 1. Один route — один владелец lane.
@@ -119,6 +151,8 @@ docs/refactor-2026/lanes/TEMPLATE.md
 □ Определить files allowed / forbidden
 □ Знать source of truth и rollback point
 □ [LANE lane/<name>] в каждом commit message
+□ Выбрать FAST checks по зоне риска
+□ Запланировать FULL barrier перед commit/merge/push
 ```
 
 ---
@@ -129,6 +163,7 @@ docs/refactor-2026/lanes/TEMPLATE.md
 # 1. Checks зелёные
 npm run data:consistency
 npm run validate:static-publication
+npm run guard:shared-files
 
 # 2. Merge в main
 git checkout main

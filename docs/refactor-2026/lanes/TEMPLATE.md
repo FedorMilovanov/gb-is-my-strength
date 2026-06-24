@@ -6,12 +6,12 @@
 
 # Lane Report: `<lane-name>`
 
-**Branch:** `lane/<name>`  
-**Mode:** FAST / LANE / SYSTEM  
-**Scope:** `<route или task>`  
-**Status:** active / review / blocked / stale / merged / abandoned  
-**Owner:** `<agent>`  
-**Started:** `YYYY-MM-DD`  
+**Branch:** `lane/<name>`
+**Mode:** FAST / LANE / SYSTEM
+**Scope:** `<route или task>`
+**Status:** active / review / blocked / stale / merged / abandoned
+**Owner:** `<agent>`
+**Started:** `YYYY-MM-DD`
 **Updated:** `YYYY-MM-DD`
 
 ---
@@ -26,11 +26,22 @@
 
 ## Checks
 
+### FAST loop during iteration
+
+- [ ] `git diff --check`
 - [ ] `npm run guard:shared-files`
-- [ ] `npm run data:consistency` (если менялся контент)
-- [ ] `npm run validate:static-publication` (если перед merge)
-- [ ] route visual audit, если есть
-- [ ] `npm run workflows:check` (если SYSTEM lane)
+- [ ] `npm run data:consistency` (если менялся контент/search/series)
+- [ ] `npm run migration:metadata:check` (если менялись route/profile/matrix contracts)
+- [ ] `npm run native:runtime:audit:strict` (если refactor/runtime mode)
+- [ ] targeted route/content audit: `<command>`
+- [ ] `npm run workflows:check` (если SYSTEM/workflows/package scripts)
+
+### FULL barrier before commit/merge/push
+
+- [ ] `npm run validate:static-publication`
+- [ ] `npm run guard:shared-files`
+
+If FULL barrier cannot run in sandbox, record the exact blocker and whether CI/owner must verify.
 
 ---
 
@@ -50,5 +61,5 @@
 
 ## Rollback
 
-Commit: `<hash>`  
+Commit: `<hash>`
 Branch: `<branch>`
