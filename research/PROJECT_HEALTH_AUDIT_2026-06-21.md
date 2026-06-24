@@ -54,7 +54,7 @@
 
 See also:
 - `research/PRODUCTION_ROUTE_TAXONOMY_2026-06-21.md`
-- `scripts/route-shadow-taxonomy.js`
+- `scripts/native-runtime-taxonomy-audit.js`
 
 ## 4. AUDIT SYSTEM HEALTH
 - `audit-pro.js`: 4,383 lines, guards G1-G113+, 0 errors baseline

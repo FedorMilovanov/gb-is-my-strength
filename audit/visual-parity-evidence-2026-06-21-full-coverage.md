@@ -31,7 +31,7 @@ Production split'ится на два класса:
 
 Подробная таксономия вынесена в:
 - `research/PRODUCTION_ROUTE_TAXONOMY_2026-06-21.md`
-- `scripts/route-shadow-taxonomy.js`
+- `scripts/native-runtime-taxonomy-audit.js`
 
 ## Что реально произошло в rollback-wave
 

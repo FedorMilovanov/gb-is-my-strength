@@ -1,7 +1,7 @@
 # Production Route Taxonomy — Verified 2026-06-21
 
 **Дата:** 2026-06-21  
-**Источник истины:** `src/pages/**/*.astro` + `src/components/**/*_legacy/*.html` + `scripts/route-shadow-taxonomy.js`  
+**Источник истины:** `src/pages/**/*.astro` + `src/components/**/*_legacy/*.html` + `scripts/native-runtime-taxonomy-audit.js`  
 **Команда:** `npm run route:taxonomy`
 
 ---

@@ -60,3 +60,31 @@ PATH=/tmp/node-v22.12.0-linux-x64/bin:$PATH npm run guard:shared-files
 
 - `origin/lane/system-script-cleanup-2026-06-24` exists and removes obsolete scripts, but it is a separate system lane and was not merged here.
 - This lane intentionally does not change `AGENTS.md`, production route components, CSS, JS runtime, or public content.
+
+## Addendum — obsolete script cleanup integrated
+
+Reviewed `origin/lane/system-script-cleanup-2026-06-24`:
+
+- no textual merge conflict with this lane;
+- no overlapping files with the route-profile closeout commit;
+- package JSON parses;
+- targeted checks for the cleanup branch passed after dependency install;
+- standalone cleanup branch still showed old metadata warnings that this lane already closes.
+
+The cleanup changes were integrated into this system lane as a squash-style working-tree application (not as an untagged merge commit), then committed with the current lane tag.
+
+Additional cleanup:
+
+- removed obsolete script files from the active npm surface;
+- consolidated `content:parity` on `scripts/check-mdx-html-parity.js`;
+- `route:taxonomy` now delegates to `native:runtime:audit`;
+- removed stale references to deleted script names from active docs/research notes.
+
+Additional verification:
+
+```bash
+PATH=/tmp/node-v22.12.0-linux-x64/bin:$PATH npm run content:parity
+PATH=/tmp/node-v22.12.0-linux-x64/bin:$PATH npm run route:taxonomy
+PATH=/tmp/node-v22.12.0-linux-x64/bin:$PATH npm run native:runtime:audit:strict
+PATH=/tmp/node-v22.12.0-linux-x64/bin:$PATH npm run migration:metadata:check
+```
