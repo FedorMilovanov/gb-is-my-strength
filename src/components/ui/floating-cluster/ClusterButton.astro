@@ -1,0 +1,32 @@
+---
+interface Props {
+  label: string;
+  className?: string;
+  title?: string;
+  action?: string;
+  attrs?: Record<string, string | boolean | number | undefined | null>;
+  pressed?: 'true' | 'false';
+}
+
+const {
+  label,
+  className = '',
+  title = label,
+  action,
+  attrs = {},
+  pressed,
+} = Astro.props;
+
+const actionAttrs = action ? { 'data-fc-action': action } : {};
+---
+<button
+  type="button"
+  class={`fc-button ${className}`.trim()}
+  aria-label={label}
+  title={title}
+  aria-pressed={pressed}
+  {...actionAttrs}
+  {...attrs}
+>
+  <slot />
+</button>

@@ -1,0 +1,9 @@
+---
+interface Props {
+  value: string;
+  className?: string;
+}
+
+const { value, className = '' } = Astro.props;
+---
+<span aria-hidden="true" class={`fc-roman ${className}`.trim()}>{value}</span>

@@ -88,7 +88,8 @@ const CACHE_BUST_ASSETS = [
   'js/modules/faq-accordion.js',
   'js/modules/img-loaded.js',
   'js/modules/theme.js',
-  'js/nagornaya-mobile-toc.js'
+  'js/nagornaya-mobile-toc.js',
+  'js/floating-cluster-controller.js'
 ];
 
 const MAX_CSS_TOTAL = 425_000; // global core CSS budget; route-scoped/pilot CSS is reported separately

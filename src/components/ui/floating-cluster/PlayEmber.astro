@@ -1,0 +1,46 @@
+---
+interface Props {
+  audioState?: 'none' | 'available' | 'loading' | 'playing' | 'paused';
+  className?: string;
+  attrs?: Record<string, string | boolean | number | undefined | null>;
+}
+
+const {
+  audioState = 'none',
+  className = '',
+  attrs = {},
+} = Astro.props;
+
+const isDisabled = audioState === 'none';
+const label = audioState === 'playing'
+  ? 'Пауза'
+  : audioState === 'paused'
+    ? 'Продолжить озвучку'
+    : audioState === 'loading'
+      ? 'Подключение озвучки'
+      : 'Озвучка';
+---
+<button
+  type="button"
+  class={`fc-button fc-play-ember ${className}`.trim()}
+  data-fc-action="play"
+  data-audio-state={audioState}
+  aria-label={label}
+  aria-disabled={isDisabled ? 'true' : undefined}
+  {...attrs}
+>
+  <span aria-hidden="true" class="fc-play-ember__ring"></span>
+  <svg aria-hidden="true" class="fc-play-ember__icon fc-play-ember__icon--play" viewBox="0 0 24 24">
+    <path d="M8 5.5v13l10-6.5z"></path>
+  </svg>
+  <svg aria-hidden="true" class="fc-play-ember__icon fc-play-ember__icon--pause" viewBox="0 0 24 24">
+    <path d="M9 6v12"></path>
+    <path d="M15 6v12"></path>
+  </svg>
+  <svg aria-hidden="true" class="fc-play-ember__icon fc-play-ember__icon--spark" viewBox="0 0 24 24">
+    <path d="M12 5.5v3"></path>
+    <path d="M12 15.5v3"></path>
+    <path d="M5.5 12h3"></path>
+    <path d="M15.5 12h3"></path>
+  </svg>
+</button>
