@@ -1,21 +1,27 @@
 ---
-import { loadLegacyFullDocument } from '@/utils/legacyFullDocument';
-
-// Shadow-wrap: preserve legacy premium visual design until native Astro
-// proves visual parity (see REFACTORING_6_0_REALITY_PLAN.md Phase 1).
-// Previously used BaseLayout/ArticleLayout which produced different HTML
-// structure (astro-shell, astro-header, astro-article) — content regression.
-const { headHtml, bodyHtml, bodyAttributes } = loadLegacyFullDocument('konfessii/russkij-baptizm/index.html');
+/**
+ * /konfessii/russkij-baptizm/ — strict-native route (Protected App Routes Native Astro Phase).
+ *
+ * Interactive 3D visualization. Very fragile runtime.
+ * Native Baptizm3DPageHead (SEO/JSON-LD/meta) + Native Baptizm3DBody.
+ * Uses iframe to embed the complex Three.js application safely.
+ * Does NOT use global site.css/site.js.
+ */
+import Baptizm3DPageHead from '@/components/konfessii/russkij-baptizm/Baptizm3DPageHead.astro';
+import Baptizm3DStyles from '@/components/konfessii/russkij-baptizm/Baptizm3DStyles.astro';
+import Baptizm3DBody from '@/components/konfessii/russkij-baptizm/Baptizm3DBody.astro';
 ---
 <!DOCTYPE html>
 <html lang="ru">
   <head>
-    <Fragment set:html={headHtml} />
+    <Baptizm3DPageHead />
+    <Baptizm3DStyles />
   </head>
-  <body {...bodyAttributes}>
+  <body>
+    <!-- sr-only marker for local search index inclusion -->
     <div class="sr-only" data-pagefind-body style="position:absolute;left:-9999px;top:auto;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);clip-path:inset(50%);white-space:nowrap">
-      Страница проекта Господь Бог — Сила Моя. Раздел: konfessii.
+      Страница проекта Господь Бог — Сила Моя. Раздел: konfessii. История русского баптизма: три истока (Тифлис, Украина, Петербург), узлы-планеты, маршруты, хронология, фигуры.
     </div>
-    <Fragment set:html={bodyHtml} />
+    <Baptizm3DBody />
   </body>
 </html>
