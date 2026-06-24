@@ -2,7 +2,7 @@
 
 **Branch:** `lane/system-floating-cluster-v16-pilot-gill-hermeneutics-2026-06-25`
 **Mode:** SYSTEM
-**Scope:** `Floating cluster v16 pilot for Hermeneutics + Gill Part 1`
+**Scope:** `Floating cluster v16 rollout for Hermeneutics + all Gill routes`
 **Status:** review
 **Owner:** `Arena Agent`
 **Started:** `2026-06-25`
@@ -13,7 +13,11 @@
 ## Changed files
 
 - `src/components/article-pilots/hermenevtika/HermenevtikaBody.astro`
+- `src/components/article-pilots/gill-context/GillContextPageChrome.astro`
 - `src/components/article-pilots/gill-part1/GillPart1PageChrome.astro`
+- `src/components/article-pilots/gill-part2/GillPart2PageChrome.astro`
+- `src/components/article-pilots/gill-part3/GillPart3PageChrome.astro`
+- `src/components/article-pilots/gill-spravochnik/GillSpravochnikPageChrome.astro`
 - `src/components/ui/floating-cluster/ClusterButton.astro`
 - `src/components/ui/floating-cluster/PlayEmber.astro`
 - `src/components/ui/floating-cluster/SaveButton.astro`
@@ -23,7 +27,14 @@
 - `js/floating-cluster-controller.js`
 - `scripts/cache-bust.js`
 - `scripts/audit-pro.js`
+- `scripts/gill-context-visual-parity-audit.js`
+- `scripts/gill-spravochnik-visual-parity-audit.js`
 - `sw.js`
+- `articles/dzhon-gill-istoricheskiy-kontekst/index.html`
+- `articles/dzhon-gill-chast-1-chelovek/index.html`
+- `articles/dzhon-gill-chast-2-uchenyi/index.html`
+- `articles/dzhon-gill-chast-3-nasledie/index.html`
+- `articles/dzhon-gill-spravochnik/index.html`
 - `docs/refactor-2026/lanes/system-floating-cluster-v16-pilot-gill-hermeneutics-2026-06-25.md`
 
 ---
