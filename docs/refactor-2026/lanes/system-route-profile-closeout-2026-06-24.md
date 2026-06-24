@@ -107,3 +107,28 @@ Rationale:
 - FAST loop catches local errors in seconds;
 - FULL `validate:static-publication` remains required before production/system/refactor lane release;
 - Arena sandbox constraints (2 CPU / ~2 GB RAM, non-persistent `/tmp`, `node_modules`, `dist`) are now documented as operational facts, not tribal knowledge.
+
+## Addendum — external sandbox research and measured speed
+
+Owner requested another sandbox-practice pass with external references and timing proof.
+
+Updated `docs/SANDBOX-ENV-2026-06-21.md` with:
+
+- 40 external reference links covering Arena/Qwen limits, E2B sandbox lifecycle, npm/Node/Astro, Playwright caching, and git worktree hygiene;
+- practical conclusions for this repo;
+- local timing proof from this Arena session.
+
+Measured locally:
+
+```text
+FAST system loop:
+  guard:shared-files + data:consistency + migration:metadata:check
+  + native:runtime:audit:strict + workflows:check
+  => real=1.374 sec
+
+FULL gate:
+  validate:static-publication
+  => about 152 sec in this session
+```
+
+Conclusion: the FAST loop is appropriate for iteration feedback; the FULL gate remains mandatory before release/merge/push.

@@ -135,6 +135,95 @@ Pick only relevant fast checks for the files changed. Examples:
 
 ---
 
+## 1.6 External reference pass (2026-06-24, 30+ links)
+
+These links were checked to validate/improve the Arena operating rules. Treat them as external references; local project contracts (`AGENTS.md`, `WORK_MODES.md`, lane policy, migration matrix) remain authoritative.
+
+### Agent/Arena/session limits
+
+1. Qwen Code Agent Arena — worktree base dir, `maxRoundsPerAgent=50`, `timeoutSeconds=600`, independent agents, stale worktree advice: https://qwenlm.github.io/qwen-code-docs/en/users/features/arena/
+2. Qwen Code settings — session/tool/wall-time controls and context compression settings: https://qwenlm.github.io/qwen-code-docs/en/users/configuration/settings/
+3. Qwen Code model providers — provider generation timeout examples: https://qwenlm.github.io/qwen-code-docs/en/users/configuration/model-providers/
+4. OpenCode agents — `steps` limit for agentic iterations: https://opencode.ai/docs/agents/
+
+### E2B / sandbox lifecycle and isolation
+
+5. E2B sandbox docs — timeout, `setTimeout`, sandbox info, pause/resume: https://e2b.dev/docs/sandbox
+6. E2B Python SDK sandbox reference — timeout defaults, connect/kill/files/commands/PTY: https://e2b.dev/docs/sdk-reference/python-sdk/v1.3.2/sandbox_sync
+7. E2B JS SDK sandbox reference — timeout/envs/connect/upload APIs: https://e2b.dev/docs/sdk-reference/js-sdk/v1.0.2/sandbox
+8. CrewAI E2B sandbox tools — persistent vs ephemeral mode, per-command timeout, avoid long-lived secrets: https://docs.crewai.com/en/tools/ai-ml/e2bsandboxtools
+9. Docker E2B sandboxes/MCP — explicit cleanup with `kill()`, secrets via env: https://docs.docker.com/ai/mcp-catalog-and-toolkit/e2b-sandboxes/
+10. Vercel Sandbox vs E2B — Firecracker isolation, persistence/runtime comparison: https://vercel.com/kb/guide/vercel-sandbox-vs-e2b
+11. Vercel Sandbox agent guide — microVM resources/timeout options: https://vercel.com/kb/guide/building-an-agent-with-openai-agents-sdk-and-vercel-sandbox
+12. ZenML E2B vs Daytona — timeout-first lifecycle, pause/resume, auto-pause: https://www.zenml.io/blog/e2b-vs-daytona
+13. Northflank E2B vs Modal — session scope, persistence, runtime comparison: https://northflank.com/blog/e2b-vs-modal
+14. Firecrawl AI agent sandbox — Firecracker microVM isolation and timeout levels: https://www.firecrawl.dev/blog/ai-agent-sandbox
+15. SoftwareSeni sandboxing problem — microVM vs containers/gVisor, defense in depth: https://www.softwareseni.com/ai-agents-in-production-the-sandboxing-problem-no-one-has-solved/
+16. Spheron E2B/Daytona/Firecracker overview — persistent multi-turn state and pause/resume: https://www.spheron.network/blog/ai-agent-code-execution-sandbox-e2b-daytona-firecracker/
+17. Novita E2B persistence — pause/resume preserves filesystem and memory: https://novita.ai/docs/guides/sandbox-e2b-sandbox-persistence
+18. LogRocket E2B agent article — filesystem workflow and cleanup pattern: https://blog.logrocket.com/building-deploying-ai-agents-e2b/
+19. Smithery E2B sandbox skill — absolute paths, timeouts, metadata, monitor usage: https://smithery.ai/skills/padak/e2b-sandbox
+
+### npm / Node / Astro
+
+20. npm ci vs install — deterministic CI behavior and cache `~/.npm`: https://michalsniezko.github.io/devops-infrastructure-cicd/npm-install-vs-ci.html
+21. Baeldung npm install vs npm ci — clean install, lockfile mismatch behavior: https://www.baeldung.com/ops/npm-install-vs-npm-ci
+22. Oracle npm-ci manpage — `npm ci` can be faster, removes `node_modules`, never writes lockfiles: https://docs.oracle.com/cd/E88353_01/html/E37839/npm-ci-1.html
+23. actions/setup-node advanced usage — built-in npm cache keyed by lockfile: https://github.com/actions/setup-node/blob/main/docs/advanced-usage.md
+24. actions/setup-node caching ADR — cache input design for npm/yarn: https://github.com/actions/setup-node/blob/main/docs/adrs/0000-caching-dependencies.md
+25. Astro v6 upgrade guide — Node `22.12.0+` required: https://docs.astro.build/en/guides/upgrade-to/v6/
+26. Astro 6 release blog — Node 22+, Vite 7, build/runtime changes: https://astro.build/blog/astro-6/
+27. Astro 6 beta blog — Node 22+ support change: https://astro.build/blog/astro-6-beta/
+
+### Playwright / CI acceleration
+
+28. Argos Playwright speed guide — cache browser binaries, install only Chromium, Docker option: https://argos-ci.com/blog/speed-up-playwright
+29. GitHub Community npm+Playwright cache discussion — cache `~/.npm` and `~/.cache/ms-playwright`: https://github.com/orgs/community/discussions/187290
+30. Foosel Playwright GitHub Actions — cache keyed by Playwright version, install deps on cache hit: https://foosel.net/til/how-to-run-playwright-on-github-actions/
+31. TestDino Playwright actions guide — cache browsers, conditional install-deps, savings: https://testdino.com/blog/playwright-in-github-actions
+32. Qaskills Playwright CI guide — cache, sharding, artifact strategy: https://qaskills.sh/blog/playwright-ci-github-actions-complete-guide-2026
+33. DevActivity Chromium issue — `playwright install --with-deps chromium` fixes missing binary/libs: https://devactivity.com/posts/development-integrations/boost-your-seo-fixing-playwright-chromium-issues-in-github-actions/
+34. Grafana plugin-ci issue — verify cache-hit and expected seconds saved: https://github.com/grafana/plugin-ci-workflows/issues/405
+35. dotCMS Playwright caching issue — cache browser binaries keyed on Playwright package version: https://github.com/dotCMS/core/issues/34753
+
+### Git worktree / multi-agent hygiene
+
+36. Termdock worktree multi-agent setup — do not share a branch, prune stale worktrees, symlink `node_modules` only if deps unchanged: https://www.termdock.com/en/blog/git-worktree-multi-agent-setup
+37. DXRF worktrees — remove/prune, parallel AI agents, one branch per worktree: https://dxrf.com/blog/2026/06/12/git-worktrees-work-on-multiple-branches/
+38. Yasin Miran on agents/worktrees — `git worktree list`, avoid `rm -rf`, use `prune`: https://yasint.dev/agents-and-git-worktrees/
+39. Augment guide — cleanup lifecycle, dependency ordering, merge queue risks: https://www.augmentcode.com/guides/git-worktrees-parallel-ai-agent-execution
+40. gitworktree.org prune tutorial — dry-run/verbose prune and best practices: https://www.gitworktree.org/tutorial/prune
+
+### Practical conclusions for this repo
+
+- Keep the existing FAST/FULL gate split. External sources support the same pattern: cheap local checks during iteration; expensive build/browser gates at release boundary.
+- Use `npm ci` in fresh sessions and avoid `npm install` unless intentionally changing dependencies.
+- In GitHub Actions, if we later optimize workflows, cache npm via `setup-node cache: npm` and cache Playwright browsers by Playwright version / lockfile; still run `install-deps` on cache hit.
+- In Arena, avoid multiple fresh worktrees with separate `npm ci`; use worktrees only for conflict isolation and remove with `git worktree remove`, then `git worktree prune`.
+- Never store tokens in git remote URLs or long-lived sandbox files. Use temporary askpass/env and delete it.
+
+## 1.7 Local timing proof (2026-06-24)
+
+Measured in this Arena sandbox with Node `v22.12.0`, npm `10.9.0`, 2 CPU, ~1.9 GB RAM:
+
+```text
+FAST system loop:
+  npm run guard:shared-files
+  npm run data:consistency
+  npm run migration:metadata:check
+  npm run native:runtime:audit:strict
+  npm run workflows:check
+  => real=1.374 sec
+
+FULL gate:
+  npm run validate:static-publication
+  => about 152 sec in tool runtime on this session
+```
+
+So the FAST loop is roughly two orders of magnitude faster for iteration feedback, while the FULL gate remains the required final release barrier.
+
+---
+
 ## 2. Astro build — почему падает и как чинить
 
 Astro 6 REFUSES запускаться на Node 20:
