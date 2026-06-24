@@ -148,3 +148,13 @@ Conclusion recorded in docs:
 - failures are usually a combined result of model/runtime quality and operating discipline;
 - common failures: context rot, compaction loss, zombie tool calls, subagent black holes, OOM/resource kills, stale worktrees, and unbounded output/context bloat;
 - robust agents survive because they externalize state to files/commits/reports, use bounded checks and timeouts, avoid over-parallel heavy builds, and verify artifacts rather than trusting status text.
+
+## Addendum — Arena coding polish checklist
+
+Added another practical Arena coding pass to `docs/SANDBOX-ENV-2026-06-21.md`:
+
+- 30 concrete operational rules for long-session coding in Arena;
+- 30 additional links focused on Claude/Codex hooks, long-running coding agents, sandbox/runtime limits, worktree isolation, and artifact verification;
+- added `AGENTS-r299` so future agents see the new checklist from the mandatory contract.
+
+The intent is to make “large session, not lollipop steps” safe: durable checkpoints, bounded checks, targeted reads, explicit timeouts, no parallel heavy builds, and artifact verification.
