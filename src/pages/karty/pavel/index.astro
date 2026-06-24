@@ -1,14 +1,4 @@
 ---
-import { loadLegacyFullDocument } from '@/utils/legacyFullDocument';
-
-const { headHtml, bodyHtml, bodyAttributes } = loadLegacyFullDocument('karty/pavel/index.html');
+import KartyHoldingPage from '@/components/karty/KartyHoldingPage.astro';
 ---
-<!DOCTYPE html>
-<html lang="ru">
-  <head>
-    <Fragment set:html={headHtml} />
-  </head>
-  <body {...bodyAttributes}>
-    <Fragment set:html={bodyHtml} />
-  </body>
-</html>
+<KartyHoldingPage slug="pavel" title="Путешествия Павла — временно на визуальном аудите | Господь Бог — Сила Моя" h1="Путешествия Павла" canonical="https://gospod-bog.ru/karty/pavel/" ogTitle="Путешествия Павла — визуальный аудит" />

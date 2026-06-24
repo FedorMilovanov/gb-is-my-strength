@@ -1,14 +1,4 @@
 ---
-import { loadLegacyFullDocument } from '@/utils/legacyFullDocument';
-
-const { headHtml, bodyHtml, bodyAttributes } = loadLegacyFullDocument('karty/melachim/index.html');
+import KartyHoldingPage from '@/components/karty/KartyHoldingPage.astro';
 ---
-<!DOCTYPE html>
-<html lang="ru">
-  <head>
-    <Fragment set:html={headHtml} />
-  </head>
-  <body {...bodyAttributes}>
-    <Fragment set:html={bodyHtml} />
-  </body>
-</html>
+<KartyHoldingPage slug="melachim" title="Царства Израиля и Иуды — временно на визуальном аудите | Господь Бог — Сила Моя" h1="Царства Израиля и Иуды" canonical="https://gospod-bog.ru/karty/melachim/" ogTitle="Царства Израиля и Иуды — визуальный аудит" />
