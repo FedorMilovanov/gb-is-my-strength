@@ -59,6 +59,7 @@ const ALLOWED_JS = new Set([
   'js/nagornaya-mobile-toc.js',
   'js/sw-register.js',
   'js/site-modules.js',
+  'js/floating-cluster-controller.js',
   'js/modules/back-to-top.js',
   'js/modules/faq-accordion.js',
   'js/modules/img-loaded.js',
