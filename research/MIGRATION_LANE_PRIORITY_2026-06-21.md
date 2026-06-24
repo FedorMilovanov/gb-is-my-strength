@@ -2,7 +2,7 @@
 
 **Дата:** 2026-06-21  
 **Основа:** локальная route taxonomy + внешняя верификация практик Astro / Playwright / CSS layers / strangler migration  
-**Входные данные:** `scripts/route-shadow-taxonomy.js`, `research/PRODUCTION_ROUTE_TAXONOMY_2026-06-21.md`
+**Входные данные:** `scripts/native-runtime-taxonomy-audit.js`, `research/PRODUCTION_ROUTE_TAXONOMY_2026-06-21.md`
 
 ---
 

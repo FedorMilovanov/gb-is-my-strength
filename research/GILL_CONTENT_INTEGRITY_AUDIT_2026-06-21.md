@@ -4,7 +4,7 @@
 
 **Метод:**
 - `data/public-content-baseline.json`
-- `scripts/check-mdx-html-parity-v2.js`
+- `scripts/check-mdx-html-parity.js`
 - прямой подсчёт paragraphs / headings / figures по текущим HTML-файлам
 - проверка current legacy root и текущего rollback-safe rendering path
 
@@ -49,7 +49,7 @@
 
 ## 3. Current parity snapshot — есть ли текстовая усушка
 
-Источник: `scripts/check-mdx-html-parity-v2.js`
+Источник: `scripts/check-mdx-html-parity.js`
 
 | Статья | MDX words | HTML words | Diff | Статус |
 |---|---:|---:|---:|---|

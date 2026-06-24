@@ -276,7 +276,7 @@ MODE: LANE
 - npm run nagornaya:visual-parity:audit
 - npm run validate:static-publication
 - node scripts/audit-pro.js
-- npm run content:parity-v2
+- npm run content:parity
 ```
 
 ### Агент 5 — Nagornaya CSS unification
@@ -336,13 +336,13 @@ MODE: LANE
 
 Что НЕЛЬЗЯ:
 - Не менять landings, карты, baptisty, Нагорную.
-- Не публиковать MDX без content parity (check-mdx-html-parity-v2).
+- Не публиковать MDX без content parity (check-mdx-html-parity).
 - Не менять URL/ slug.
 
 Проверки:
 - npm run guard:shared-files
 - npm run article-mdx-pilot-audit -- --require-content-parity
-- npm run content:parity-v2
+- npm run content:parity
 - npm run gill:reading-time:audit (для Gill)
 - npm run validate:static-publication
 - node scripts/audit-pro.js
@@ -382,7 +382,7 @@ Routes:
 - npm run guard:shared-files
 - npm run baptisty-series-shadow-audit
 - npm run baptisty-rossii:visual-parity:audit
-- npm run content:parity-v2
+- npm run content:parity
 - npm run validate:static-publication
 ```
 
@@ -507,7 +507,7 @@ npm run nagornaya:visual-parity:audit
 
 git merge lane/mdx-article-promotion
 npm run article-mdx-pilot-audit -- --require-content-parity
-npm run content:parity-v2
+npm run content:parity
 npm run validate:static-publication
 
 git merge lane/baptisty-series-native
@@ -547,7 +547,7 @@ git push origin main
 |---|---|---|
 | Visual parity regression | Generic card grid или сломанный layout | `visual:parity:guard` до merge, baseline update |
 | SEO regression | Пропал canonical, OG, JSON-LD | `seo-audit` + сравнение legacy head |
-| Content drift | MDX не содержит всех классов/атрибутов | `content:parity-v2` |
+| Content drift | MDX не содержит всех классов/атрибутов | `content:parity` |
 | CSS cascade break | Сломался layout после @layer | `css:layer:validate` + visual parity |
 | Runtime JS break | TOC, quiz, bookmarks не работают | `interactive-audit` |
 | Data inconsistency | readTime/readingTime конфликт | `npm run data:consistency` |

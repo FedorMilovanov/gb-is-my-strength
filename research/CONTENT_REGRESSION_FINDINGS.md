@@ -46,7 +46,7 @@ Option B: Switch to native MDX rendering (proper fix — planned in Refactoring 
 
 ## UPDATE (2026-06-21 — verified via local clone + parity scripts)
 
-### Verified metrics (check-mdx-html-parity-v2.js methodology: strip HTML tags, strip frontmatter, strip markdown formatting, 8% tolerance):
+### Verified metrics (check-mdx-html-parity.js methodology: strip HTML tags, strip frontmatter, strip markdown formatting, 8% tolerance):
 
 | Article | MDX words | HTML words | Diff | Status |
 |---------|-----------|------------|------|--------|
@@ -66,7 +66,7 @@ emits verbatim legacy HTML via `loadLegacyFullDocument`.
 syntax, and blockquotes (`>`) that are not present in the legacy HTML article bodies.
 These structural improvements are invisible to word-count parity checks. A full
 semantic parity guard (h2/h3/img/figure/a/table counts) is needed — see
-`scripts/check-mdx-html-parity-v2.js`.
+`scripts/check-mdx-html-parity.js`.
 
 **Shallow-clone trap:** The original parity check used `git log -1 --format="%ci"` to
 detect which file was newer. In a shallow clone (`--depth 50`), this produces identical

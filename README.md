@@ -145,7 +145,7 @@
 4. Обновить `data/search-manifest.json`, `data/series.json` и связанные hub-карточки.
 5. Объявить новый Astro route в `migration/page-ownership.json`; если меняется public baseline — обновить `data/public-content-baseline.json` осознанно.
 6. `npm run cache-bust` после правок CSS/JS/SW-visible assets.
-7. Минимальные gates: `npm run validate:static-publication` + `npm run workflows:check`.
+7. Gates: во время итераций гонять быстрый релевантный набор из `docs/WORK_MODES.md`; перед commit/merge/push production-impact правок обязательно `npm run validate:static-publication` + `npm run guard:shared-files` (+ `npm run workflows:check`, если менялись workflows/package/system scripts).
 8. Для refactor/deploy-impact правок: `npm run strangler:deploy-readiness`.
 9. Для внешних источников: `npm run source:links:dist` (network audit; 403/timeout обычно warnings, TLS/404 — hard errors).
 10. `git commit && git push main` — IndexNow сам уведомит Яндекс/Bing по изменённым production URL.

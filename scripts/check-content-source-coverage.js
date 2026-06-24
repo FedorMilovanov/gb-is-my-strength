@@ -40,6 +40,21 @@ function isExcludedRoute(route) {
   return false;
 }
 
+
+function isNoindexOrIgnoredRoute(route) {
+  const candidates = [];
+  const clean = route.replace(/^\//, '').replace(/\/$/, '');
+  candidates.push(path.join(ROOT, clean || '', 'index.html'));
+  if (!route.endsWith('/')) candidates.push(path.join(ROOT, clean));
+  for (const file of candidates) {
+    if (!file || !fs.existsSync(file) || !fs.statSync(file).isFile()) continue;
+    const html = fs.readFileSync(file, 'utf8');
+    if (/name=["']robots["'][^>]+content=["'][^"']*noindex/i.test(html)) return true;
+    if (/data-pagefind-ignore|data-content-status=["']temporary-placeholder["']/i.test(html)) return true;
+  }
+  return false;
+}
+
 // ---------- main ----------
 console.log('=== Content Source Coverage Check ===');
 console.log(`Mode: ${strict ? 'STRICT' : 'WARN'}`);
@@ -125,7 +140,7 @@ for (const [route, info] of Object.entries(routes)) {
   }
 
   // Search item exists for searchable routes?
-  if (info.owner === 'astro' && !searchUrls.has(route) && !isExcludedRoute(route)) {
+  if (info.owner === 'astro' && !searchUrls.has(route) && !isExcludedRoute(route) && !isNoindexOrIgnoredRoute(route)) {
     warnings.push(
       `route ${route}: production-dist route without search-manifest entry`
     );
