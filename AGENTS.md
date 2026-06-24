@@ -46,7 +46,7 @@ matrix.json   → какой migration mode у моего route
 SANDBOX-ENV   → как выжить в конкретной среде (Arena)
 ```
 
-**Если ты не прочитал WORK_MODES.md — не начинай работу.**  
+**Если ты не прочитал WORK_MODES.md — не начинай работу.**
 Это особенно важно при параллельных агентах и lane-работе.
 
 ---
@@ -56,9 +56,16 @@ SANDBOX-ENV   → как выжить в конкретной среде (Arena)
 > в этой среде. Там описано: как не потерять файлы, как пушить, почему
 > агенты падают и как не повторять моих ошибок. **Этот файл обязателен для Arena.**
 > Если правило кажется глупым — **спроси, ПОЧЕМУ оно появилось**.
+>
+> **Arena speed/quality rule:** работай через FAST loop из `docs/WORK_MODES.md`,
+> но перед финальным commit/merge/push production-impact lane обязательно прогони
+> `npm run validate:static-publication` + `npm run guard:shared-files`.
+> В Arena полный gate дорогой из-за Astro build и 2 CPU/~2 GB RAM; частые full-gates
+> после каждой мелкой правки не нужны, но финальный full gate обязателен.
 
 | Версия документа | Дата | Состояние |
 |---|---|---|
+| **AGENTS-r297** | 2026-06-24 | **Arena gate discipline clarified.** Agents must read `docs/SANDBOX-ENV-2026-06-21.md` in Arena, use FAST loop checks during small iterations, and reserve `validate:static-publication` + `guard:shared-files` as the required final release barrier for production/system/refactor lanes. |
 
 ---
 
@@ -70,7 +77,7 @@ SANDBOX-ENV   → как выжить в конкретной среде (Arena)
 - [docs/LANE_LOCK_POLICY.md](docs/LANE_LOCK_POLICY.md) — подробная lane-политика, out-of-lane reporting, merge-порядок
 - [migration/route-migration-matrix.json](migration/route-migration-matrix.json) — официальный migration contract: какой режим миграции у каждого route
 
-**⚠️ Перед любой работой проверь свой route в `migration/route-migration-matrix.json`.**  
+**⚠️ Перед любой работой проверь свой route в `migration/route-migration-matrix.json`.**
 Неправильный migration mode = регрессия (как blanket shadow-wrap в r260).
 
 ### Work Mode Decision Tree
@@ -115,6 +122,8 @@ Lane НЕ обязателен:
 Создать branch: git checkout -b lane/my-lane-name
 
 Во время работы: [LANE lane/my-lane-name] в каждом commit message.
+FAST loop:      git diff --check && релевантные быстрые gates из docs/WORK_MODES.md
+Перед commit:   npm run validate:static-publication  # если production/system/refactor impact
 Перед push:     npm run guard:shared-files
 Перед merge:    npm run data:consistency && npm run validate:static-publication
 После:          Merge в main, записать результат в docs/refactor-2026/lanes/<lane>.md
@@ -953,9 +962,9 @@ karty/_engine/
 - ❌ НЕЛЬЗЯ рефакторить `map-engine.js` без предварительного полного понимания
   как он используется во ВСЕХ 10 картах
 - ❌ НЕЛЬЗЯ удалять функции из `map-engine.js` — только добавлять новые
-- ❌ НЕЛЬЗЯ трогать Авраама (`karty/avraam/index.html`, 4792 строк extracted (2385+2407)) — 
+- ❌ НЕЛЬЗЯ трогать Авраама (`karty/avraam/index.html`, 4792 строк extracted (2385+2407)) —
   это отдельное приложение, которое использует движок только для ДАННЫХ
-- ✅ Перед ЛЮБОЙ правкой движка: запустить `npm run maps:validate` и 
+- ✅ Перед ЛЮБОЙ правкой движка: запустить `npm run maps:validate` и
   `npm run avraam:audit` (23/23 проверок)
 - ✅ После правки: все 10 карт должны проходить maps:validate
 
@@ -1028,7 +1037,7 @@ AGENTS changelog.
 Авраам структурно очищен: JS вынесен в `karty/avraam/avraam-app.js` (2404 строки),
 `index.html` сокращён с 4792 до 2385 строк (extracted). Движок остаётся чистым и универсальным.
 
-Оставшиеся 12 визуально-декоративных фич (ночные звёзды, караван, GSAP, 
+Оставшиеся 12 визуально-декоративных фич (ночные звёзды, караван, GSAP,
 ambient-аккорды и др.) являются дизайн-специфичными и НЕ извлекаются.
 
 **Структура карт после реструктуризации:**
@@ -1083,7 +1092,7 @@ karty/
 Авраам структурно очищен: JS вынесен в `karty/avraam/avraam-app.js` (2404 строки),
 `index.html` сокращён с 4792 до 2385 строк (extracted). Движок остаётся чистым и универсальным.
 
-Оставшиеся 12 визуально-декоративных фич (ночные звёзды, караван, GSAP, 
+Оставшиеся 12 визуально-декоративных фич (ночные звёзды, караван, GSAP,
 ambient-аккорды и др.) являются дизайн-специфичными и НЕ извлекаются.
 
 **Структура карт после реструктуризации:**
@@ -1116,7 +1125,7 @@ karty/
 
 ### 9.1 Имена Бога на главной странице
 - `js/enhancements.js` содержит блок ambient-фраз (42 фразы: иврит/греческий/латинский (35 боковых + 7 центральных))
-- **Страж запуска**: `if (!document.getElementById('hScriptureBg')) return;`  
+- **Страж запуска**: `if (!document.getElementById('hScriptureBg')) return;`
 - НЕ менять на проверку `.h-phrase--ambient` — элемента в статическом HTML нет
 - При любых правках `js/enhancements.js` — проверить что `document.querySelectorAll('.h-phrase').length >= 35`
 
@@ -1160,7 +1169,7 @@ karty/
 ### 9.6 Playwright-регрессионные проверки
 `scripts/visual-audit.js` содержит автоматические проверки:
 - `ambientPhrases === 0` на `/` → CRITICAL bug
-- `fcControlsH > 110` → HIGH bug  
+- `fcControlsH > 110` → HIGH bug
 - отсутствует текущий Gill Part I cover marker (`.bio-cover` или GBS2 cover/header) → HIGH bug
 
 Запуск перед каждым коммитом: `npm run validate:all && node scripts/audit-pro.js`

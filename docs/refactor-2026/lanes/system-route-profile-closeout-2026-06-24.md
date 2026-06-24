@@ -88,3 +88,22 @@ PATH=/tmp/node-v22.12.0-linux-x64/bin:$PATH npm run route:taxonomy
 PATH=/tmp/node-v22.12.0-linux-x64/bin:$PATH npm run native:runtime:audit:strict
 PATH=/tmp/node-v22.12.0-linux-x64/bin:$PATH npm run migration:metadata:check
 ```
+
+## Addendum — Arena FAST/FULL gate documentation
+
+Owner requested that future agents do not waste Arena time by running full Astro gates after every tiny edit, but still keep professional release quality.
+
+Updated:
+
+- `docs/WORK_MODES.md` — added FAST loop vs FULL gate policy and per-mode check strategy;
+- `AGENTS.md` — made Arena speed/quality rule visible in the mandatory pre-work contract;
+- `docs/SANDBOX-ENV-2026-06-21.md` — added concrete Arena Node 22 / npm ci / fast checks / full barrier workflow;
+- `docs/LANE_LOCK_POLICY.md` — added lane-level FAST/FULL discipline;
+- `docs/refactor-2026/lanes/TEMPLATE.md` — lane reports now separate FAST iteration checks from FULL barrier checks;
+- `README.md` — article checklist now points to the fast relevant gate set during iteration and full barrier before production-impact commit/merge/push.
+
+Rationale:
+
+- FAST loop catches local errors in seconds;
+- FULL `validate:static-publication` remains required before production/system/refactor lane release;
+- Arena sandbox constraints (2 CPU / ~2 GB RAM, non-persistent `/tmp`, `node_modules`, `dist`) are now documented as operational facts, not tribal knowledge.

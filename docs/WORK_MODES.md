@@ -1,6 +1,6 @@
 # Work Modes — FAST / LANE / SYSTEM
 
-**Дата:** 2026-06-23  
+**Дата:** 2026-06-23
 **Версия:** 2.0 (упрощено по `AGENT_PROTECTION_SIMPLE_v3_0`)
 
 Цель:
@@ -12,7 +12,64 @@
 
 ---
 
-## 0. Три режима
+## 0. Проверки: FAST loop vs FULL gate
+
+**Не гоняй полный `validate:static-publication` после каждой мелкой правки в Arena.**
+Это не повышает качество, а сжигает лимит времени/контекста: полный gate включает Astro check/build и десятки route/content audits.
+
+### FAST loop — после маленькой правки / перед следующим шагом
+
+Используй быстрые, точные проверки по зоне риска:
+
+```bash
+# всегда, если есть diff
+git diff --check
+
+# metadata / refactor / route contracts
+npm run migration:metadata:check
+npm run native:runtime:audit:strict
+
+# контент / MDX / search / series
+npm run data:consistency
+npm run content:parity
+npm run mdx:structure:audit
+
+# shared/system/workflows
+npm run guard:shared-files
+npm run workflows:check
+```
+
+Выбирай не всё подряд, а релевантный набор. Для system/refactor lanes минимум обычно:
+
+```bash
+git diff --check
+npm run guard:shared-files
+npm run data:consistency
+npm run migration:metadata:check
+npm run native:runtime:audit:strict
+```
+
+### FULL gate — перед commit / merge / push production-impact lane
+
+Перед финальным commit/merge/push, если менялись production route, migration matrix, scripts, package/workflows, shared data или refactor contracts:
+
+```bash
+npm run validate:static-publication
+npm run guard:shared-files
+```
+
+Docs-only typo FAST может не требовать full gate. Но **любой refactor/system/shared lane** должен иметь full gate в lane report или явное объяснение, почему он невозможен.
+
+### Почему так
+
+- быстрые проверки дают feedback за секунды и ловят локальные ошибки;
+- полный gate остаётся обязательным release-barrier;
+- в Arena sandbox 2 CPU / ~2 GB RAM, поэтому частые Astro build/full gates тормозят работу и иногда провоцируют OOM в fresh worktree;
+- качество не теряется, если full gate обязательно проходит перед финальным commit/merge/push.
+
+---
+
+## 1. Три режима
 
 ### FAST
 
@@ -27,11 +84,18 @@
 route-local report
 ```
 
-Проверки:
+Проверки FAST:
 
 ```bash
 git diff --check
-npm run data:consistency # если менялся контент
+npm run data:consistency # если менялся контент/search/series
+```
+
+Если правка затрагивает route metadata/contracts, добавь:
+
+```bash
+npm run migration:metadata:check
+npm run native:runtime:audit:strict
 ```
 
 ---
@@ -57,17 +121,21 @@ _legacy split
 git checkout -b lane/<task>
 ```
 
-Проверки:
+FAST loop во время работы:
 
 ```bash
+git diff --check
 npm run guard:shared-files
 npm run data:consistency
+npm run migration:metadata:check
+npm run native:runtime:audit:strict
 ```
 
-Перед merge:
+Перед commit/merge/push:
 
 ```bash
 npm run validate:static-publication
+npm run guard:shared-files
 ```
 
 ---
@@ -103,19 +171,28 @@ git checkout -b lane/system-<task>
 # или lane/protection-*
 ```
 
-Проверки:
+FAST loop во время работы:
 
 ```bash
+git diff --check
 npm run guard:shared-files
 npm run workflows:check
+npm run migration:metadata:check
+npm run native:runtime:audit:strict
+```
+
+Перед commit/merge/push:
+
+```bash
 npm run validate:static-publication
+npm run guard:shared-files
 ```
 
 SYSTEM нельзя совмещать с route/content refactor.
 
 ---
 
-## 1. Два запрета
+## 2. Два запрета
 
 ### Запрет 1
 
@@ -158,7 +235,7 @@ docs/refactor-2026/lanes/<lane-name>.md
 
 ---
 
-## 2. Группы файлов
+## 3. Группы файлов
 
 ### SYSTEM files
 
@@ -229,7 +306,7 @@ CNAME
 
 ---
 
-## 3. Главное правило поведения
+## 4. Главное правило поведения
 
 ```text
 Если нашёл проблему вне своей зоны — не исправляй.
@@ -239,7 +316,7 @@ CNAME
 Пример:
 
 ```md
-## Out-of-lane finding
+## 4.1 Out-of-lane finding
 
 Lane: lane/gill-spravochnik-gs7
 
@@ -255,7 +332,7 @@ Lane: lane/gill-spravochnik-gs7
 
 ---
 
-## 4. Lane index
+## 5. Lane index
 
 Активные lanes фиксируются в:
 
@@ -265,7 +342,7 @@ docs/refactor-2026/lanes/README.md
 
 ---
 
-## 5. Lane report
+## 6. Lane report
 
 Шаблон:
 
@@ -275,7 +352,7 @@ docs/refactor-2026/lanes/TEMPLATE.md
 
 ---
 
-## 6. Команды для агента
+## 7. Команды для агента
 
 ### FAST
 
