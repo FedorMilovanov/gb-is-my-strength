@@ -294,122 +294,165 @@
       "reason": "Karty hub now uses native PageHead + native main shell; legacy transport retired."
     },
     "/karty/avraam/": {
-      "mode": "legacy-shadow-app",
+      "mode": "strict-native-app",
       "source": "src/pages/karty/avraam/index.astro",
       "requiredMarkers": [
         "data-pagefind-body"
       ],
       "forbid": [
-        "astro-native-article-layout",
-        "blanket-shadow-wrap"
+        "loadLegacyFullDocument",
+        "base.css",
+        "site.css"
       ],
       "audits": [
         "avraam-map-audit",
         "maps:validate"
-      ]
+      ],
+      "reason": "Protected App Route Native Astro Phase: migrated from legacy-shadow-app to native App Shell + MapEngine."
     },
     "/karty/early-church/": {
-      "mode": "legacy-shadow-app",
+      "mode": "strict-native-app",
       "source": "src/pages/karty/early-church/index.astro",
-      "requiredMarkers": [],
+      "requiredMarkers": [
+        "data-pagefind-body"
+      ],
       "forbid": [
-        "astro-native-article-layout"
+        "loadLegacyFullDocument",
+        "base.css",
+        "site.css"
       ],
       "audits": [
         "maps:validate"
-      ]
+      ],
+      "reason": "Protected App Route Native Astro Phase: migrated from legacy-shadow-app to native App Shell + MapEngine."
     },
     "/karty/ishod/": {
-      "mode": "legacy-shadow-app",
+      "mode": "strict-native-app",
       "source": "src/pages/karty/ishod/index.astro",
       "requiredMarkers": [
         "data-pagefind-body"
       ],
       "forbid": [
-        "astro-native-article-layout"
+        "loadLegacyFullDocument",
+        "base.css",
+        "site.css"
       ],
       "audits": [
         "maps:validate"
-      ]
+      ],
+      "reason": "Protected App Route Native Astro Phase: migrated from legacy-shadow-app to native App Shell + MapEngine."
     },
     "/karty/maccabim/": {
-      "mode": "legacy-shadow-app",
+      "mode": "strict-native-app",
       "source": "src/pages/karty/maccabim/index.astro",
-      "requiredMarkers": [],
+      "requiredMarkers": [
+        "data-pagefind-body"
+      ],
       "forbid": [
-        "astro-native-article-layout"
+        "loadLegacyFullDocument",
+        "base.css",
+        "site.css"
       ],
       "audits": [
         "maps:validate"
-      ]
+      ],
+      "reason": "Protected App Route Native Astro Phase: migrated from legacy-shadow-app to native App Shell + MapEngine."
     },
     "/karty/melachim/": {
-      "mode": "legacy-shadow-app",
+      "mode": "strict-native-app",
       "source": "src/pages/karty/melachim/index.astro",
-      "requiredMarkers": [],
+      "requiredMarkers": [
+        "data-pagefind-body"
+      ],
       "forbid": [
-        "astro-native-article-layout"
+        "loadLegacyFullDocument",
+        "base.css",
+        "site.css"
       ],
       "audits": [
         "maps:validate"
-      ]
+      ],
+      "reason": "Protected App Route Native Astro Phase: migrated from legacy-shadow-app to native App Shell + MapEngine."
     },
     "/karty/pavel/": {
-      "mode": "legacy-shadow-app",
+      "mode": "strict-native-app",
       "source": "src/pages/karty/pavel/index.astro",
       "requiredMarkers": [
-        "data-content-status=\"temporary-placeholder\""
+        "data-pagefind-body"
       ],
       "forbid": [
-        "astro-native-article-layout"
+        "loadLegacyFullDocument",
+        "base.css",
+        "site.css"
       ],
       "audits": [
         "maps:validate"
-      ]
+      ],
+      "reason": "Protected App Route Native Astro Phase: migrated from legacy-shadow-app to native App Shell + MapEngine."
     },
     "/karty/revelation/": {
-      "mode": "legacy-shadow-app",
+      "mode": "strict-native-app",
       "source": "src/pages/karty/revelation/index.astro",
-      "requiredMarkers": [],
+      "requiredMarkers": [
+        "data-pagefind-body"
+      ],
       "forbid": [
-        "astro-native-article-layout"
+        "loadLegacyFullDocument",
+        "base.css",
+        "site.css"
       ],
       "audits": [
         "maps:validate"
-      ]
+      ],
+      "reason": "Protected App Route Native Astro Phase: migrated from legacy-shadow-app to native App Shell + MapEngine."
     },
     "/karty/shoftim/": {
-      "mode": "legacy-shadow-app",
+      "mode": "strict-native-app",
       "source": "src/pages/karty/shoftim/index.astro",
-      "requiredMarkers": [],
+      "requiredMarkers": [
+        "data-pagefind-body"
+      ],
       "forbid": [
-        "astro-native-article-layout"
+        "loadLegacyFullDocument",
+        "base.css",
+        "site.css"
       ],
       "audits": [
         "maps:validate"
-      ]
+      ],
+      "reason": "Protected App Route Native Astro Phase: migrated from legacy-shadow-app to native App Shell + MapEngine."
     },
     "/karty/shvatim/": {
-      "mode": "legacy-shadow-app",
+      "mode": "strict-native-app",
       "source": "src/pages/karty/shvatim/index.astro",
-      "requiredMarkers": [],
+      "requiredMarkers": [
+        "data-pagefind-body"
+      ],
       "forbid": [
-        "astro-native-article-layout"
+        "loadLegacyFullDocument",
+        "base.css",
+        "site.css"
       ],
       "audits": [
         "maps:validate"
-      ]
+      ],
+      "reason": "Protected App Route Native Astro Phase: migrated from legacy-shadow-app to native App Shell + MapEngine."
     },
     "/karty/yeshua/": {
-      "mode": "legacy-shadow-app",
+      "mode": "strict-native-app",
       "source": "src/pages/karty/yeshua/index.astro",
-      "requiredMarkers": [],
+      "requiredMarkers": [
+        "data-pagefind-body"
+      ],
       "forbid": [
-        "astro-native-article-layout"
+        "loadLegacyFullDocument",
+        "base.css",
+        "site.css"
       ],
       "audits": [
         "maps:validate"
-      ]
+      ],
+      "reason": "Protected App Route Native Astro Phase: migrated from legacy-shadow-app to native App Shell + MapEngine."
     },
     "/konfessii/": {
       "mode": "strict-native",
@@ -427,7 +470,7 @@
       "reason": "Konfessii landing now uses native PageHead/PageChrome/Main; legacy transport retired."
     },
     "/konfessii/russkij-baptizm/": {
-      "mode": "legacy-shadow-app",
+      "mode": "strict-native-app",
       "source": "src/pages/konfessii/russkij-baptizm/index.astro",
       "requiredMarkers": [
         "data-pagefind-body",
@@ -436,11 +479,7 @@
         "./_app/index.html"
       ],
       "forbid": [
-        "astro-native-article-layout",
-        "mdx-native-article",
-        "static-image-replacement",
-        "delete-built-app",
-        "manual-bundle-edit"
+        "loadLegacyFullDocument"
       ],
       "audits": [
         "konfessii-map-audit",
@@ -451,18 +490,19 @@
       "protectedStatus": "PROTECTED-POLISHED-INTERACTIVE",
       "targetMode": "native-wrapper-iframe-app",
       "appAsset": "konfessii/russkij-baptizm/_app/",
-      "reason": "Owner-approved polished 3D iframe/WebGL app route. Wrapper may become native Astro later, but the built _app bundle and finished UX are protected."
+      "reason": "Protected App Route Native Astro Phase: migrated 3D webgl app wrapper."
     },
     "/map/": {
-      "mode": "legacy-shadow-app",
+      "mode": "strict-native-app",
       "source": "src/pages/map/index.astro",
       "requiredMarkers": [],
       "forbid": [
-        "astro-native-article-layout"
+        "loadLegacyFullDocument"
       ],
       "audits": [
         "maps:validate"
-      ]
+      ],
+      "reason": "Protected App Route Native Astro Phase: migrated graph map."
     },
     "/pastor-series/": {
       "mode": "strict-native",
@@ -481,18 +521,19 @@
       "reason": "Pastor-series landing now uses native PageHead/PageChrome/Main; legacy transport retired."
     },
     "/rodosloviye/": {
-      "mode": "legacy-shadow-app",
+      "mode": "strict-native-app",
       "source": "src/pages/rodosloviye/index.astro",
       "requiredMarkers": [
         "data-pagefind-body"
       ],
       "forbid": [
-        "astro-native-article-layout"
+        "loadLegacyFullDocument"
       ],
       "audits": [
         "runtime-smoke",
         "interactive-audit"
-      ]
+      ],
+      "reason": "Protected App Route Native Astro Phase: migrated React family tree."
     }
   }
 }
