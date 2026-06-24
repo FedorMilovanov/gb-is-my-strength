@@ -224,6 +224,101 @@ So the FAST loop is roughly two orders of magnitude faster for iteration feedbac
 
 ---
 
+## 1.8 Why some agents survive huge sessions and others fail early (2026-06-24)
+
+Short answer:
+
+```text
+It is both model/agent-runtime quality AND operating discipline.
+The Arena/E2B sandbox can support long work, but bad context hygiene, missing timeouts,
+over-parallelization, giant tool outputs, uncheckpointed work, stale worktrees, and weak
+compaction/handoff behavior can make an agent fail even on a small task.
+```
+
+### Failure taxonomy for Arena-style coding agents
+
+| Failure mode | What it looks like | Likely cause | Mitigation in this repo |
+|---|---|---|---|
+| Context rot / drift | Agent forgets constraints, repeats failed approach, changes direction | Long noisy transcript, too many raw tool outputs, weak compaction | write decisions to lane report/docs; use FAST loop; summarize with file paths/checks; start fresh after major phase if quality drops |
+| Compaction loss | After summary, agent forgets active branch/lane/rules/subagents | compaction summary omitted exact state | keep `AGENTS.md`, `WORK_MODES.md`, lane report, git commits as durable memory; update lane report before long breaks |
+| Zombie/stalled tool call | Spinner/turn continues, no useful output | missing stream/tool timeout or hung subprocess | bash timeouts, avoid long background jobs, verify output files instead of trusting status text |
+| Subagent black hole | parent waits forever or loses child state | subagent runtime/lifecycle bug, no output contract | prefer sequential work in this repo unless independent; require output files/reports; do not spawn many background agents at once |
+| Resource/OOM kill | process killed during Astro/build/browser install | 2 CPU / ~2 GB RAM, multiple builds, fresh worktree npm install | do not parallelize Astro builds; reuse main working copy; use FAST loop before FULL gate |
+| Tool-output bloat | context fills with huge logs/file dumps | reading giant files or verbose commands into chat | grep/sed targeted slices; write reports to files; use summaries, not raw logs |
+| Environment reset | Node 20 used again, `dist` missing, browser missing | PATH/export not persistent, sandbox directories are ephemeral | prefix commands with `PATH=/tmp/node-v22...:$PATH`; run `npm ci`; document in SANDBOX |
+| Git/worktree confusion | agent edits wrong branch or stale worktree | missing `git status`, stale worktrees, same branch checked out elsewhere | start with `git fetch`, `git status --short --branch`, `git worktree list`; remove/prune worktrees properly |
+| Over-broad prompt | agent tries to “fix everything” and trips shared files | no lane scope, no allowed/forbidden files | `WORK_MODES`, `LANE_LOCK_POLICY`, migration matrix, out-of-lane reporting |
+| Model/runtime variance | one model works for hours; another fails quickly | different context handling, tool-call reliability, compaction, rate limits, reasoning defaults | treat “agent” as a runtime+model+prompt system; keep state/checks in files so weaker agents recover |
+
+### Deep reference pass — agent failure / long-session management (30+ links)
+
+1. Codex config reference — per-tool MCP timeout, memory/consolidation knobs: https://developers.openai.com/codex/config-reference
+2. Codex sample config — context window, auto-compact limit, tool output token limit, multi-agent runtime limits: https://developers.openai.com/codex/config-sample
+3. Codex + Agents SDK workflow — `client_session_timeout_seconds`, gated multi-agent handoffs: https://developers.openai.com/cookbook/examples/codex/codex_mcp_agents_sdk/building_consistent_workflows_codex_cli_agents_sdk
+4. Codex Agents SDK guide — MCP server kept alive across turns with long timeout: https://developers.openai.com/codex/guides/agents-sdk
+5. Codex MCP docs — tool timeout defaults and per-server controls: https://developers.openai.com/codex/mcp
+6. Codex prompting guide — shell tool should set workdir/timeout; plan hygiene: https://developers.openai.com/cookbook/examples/gpt-5/codex_prompting_guide
+7. Codex slow performance article — reduce context, faster models for routine tasks, ignore files: https://inventivehq.com/knowledge-base/openai/how-to-fix-slow-performance
+8. Codex compaction architecture — compaction can lose fidelity; preserve user messages and summaries: https://codex.danielvaughan.com/2026/03/31/codex-cli-context-compaction-architecture/
+9. Codex issue — remote compaction timeout / misleading timeout errors: https://github.com/openai/codex/issues/14860
+10. Codex discussion — better handoff-oriented compaction summary prompt: https://github.com/openai/codex/discussions/17330
+11. Claude Code context loss article — session spec files, decision comments, checkpoint summaries, commits as anchors: https://dev.to/whoffagents/why-your-claude-code-sessions-keep-losing-context-and-how-to-fix-it-nia
+12. Claude session limits article — proactive compaction and explicit preservation: https://www.mindstudio.ai/blog/how-to-manage-claude-session-limits
+13. Claude Code error reference — context/entitlement errors and auto-compaction behavior: https://code.claude.com/docs/en/errors
+14. Claude context Reddit thread — project files/PLAN.md as memory, subagents as context saver: https://www.reddit.com/r/ClaudeAI/comments/1rrkv0h/how_are_you_guys_managing_context_in_claude_code/
+15. Claude Code session management guide — compact/clear/handoff and CLAUDE.md continuity: https://www.sitepoint.com/claude-code-context-management/
+16. Claude Code memory best practices — memory protocol, progress file, git logs: https://orchestrator.dev/blog/2026-04-06--claude-code-agent-memory-2026/
+17. Claude Code compaction explained — what survives, custom compact prompt, keep critical rules in files: https://okhlopkov.com/claude-code-compaction-explained/
+18. Claude cookbook context engineering — clear tool uses, compaction, file-backed memory: https://platform.claude.com/cookbook/tool-use-context-engineering-context-engineering-tools
+19. Claude cookbook session memory compaction — structured summary format and preserve rules: https://platform.claude.com/cookbook/misc-session-memory-compaction
+20. Dive into Claude Code paper — CLAUDE.md hierarchy, hooks, sidechain transcripts, subagent isolation: https://arxiv.org/html/2604.14228v1
+21. Dive into Claude Code repo summary — memory/context/subagent architecture comparison: https://github.com/VILA-Lab/Dive-into-Claude-Code
+22. Inside Claude Code article — subagents/worktrees as context and blast-radius boundaries: https://www.penligent.ai/hackinglabs/inside-claude-code-the-architecture-behind-tools-memory-hooks-and-mcp/
+23. Claude agent team issue — team state lost after compaction in long session: https://github.com/anthropics/claude-code/issues/23620
+24. Claude Code compaction timeout issue — session-destroying compaction failures: https://github.com/anthropics/claude-code/issues/2423
+25. Claude Code background subagent zombie issue — stale running subagents and infinite stop loop: https://github.com/anthropics/claude-code/issues/58637
+26. Claude Code Task timeout issue — subagent hang with completed files on disk: https://github.com/anthropics/claude-code/issues/49150
+27. OpenCode subagent hang issue — stream idle timeout and subagent-level timeout recommendations: https://github.com/anomalyco/opencode/issues/13841
+28. OpenClaw agent loop — run timeout, wait timeout, compaction events, stale child session prevention: https://docs.openclaw.ai/concepts/agent-loop
+29. AI agents stalled tasks article — wall-clock timeouts, checkpoint heartbeats, output verification: https://dev.to/bobrenze/how-ai-agents-handle-stalled-tasks-and-timeouts-lessons-from-my-production-failure-1jj9
+30. AWS agent failure modes — context overflow, MCP timeouts, reasoning loops, memory pointer pattern: https://dev.to/aws/why-ai-agents-fail-3-failure-modes-that-cost-you-tokens-and-time-1flb
+31. Google ADK long-running agents — durable state, checkpoint/resume, persistent session storage: https://developers.googleblog.com/build-long-running-ai-agents-that-pause-resume-and-never-lose-context-with-adk/
+32. Microsoft swarm diaries — contracts, zero-tool guards, verify actual files not reports: https://techcommunity.microsoft.com/blog/appsonazureblog/the-swarm-diaries-what-happens-when-you-let-ai-agents-loose-on-a-codebase/4501393
+33. Bob Renze subagent orchestration — synchronous timeout, polling, output validation: https://dev.to/bobrenze/ai-agent-subagent-orchestration-when-to-spawn-vs-when-to-do-it-yourself-4opg
+34. Agentic patterns snippets — file checkpoints and state directories for resumability: https://esc5221.github.io/awesome-agentic-patterns/
+35. Code as Agent Harness paper — filesystem-backed plans and state as harness objects: https://arxiv.org/html/2605.18747v1
+36. Context engineering article — subagents get scoped context, progress files survive compaction: https://www.morphllm.com/context-engineering
+37. Augment context constraints — reset architecture with filesystem/git durable storage: https://www.augmentcode.com/guides/ai-agent-loop-token-cost-context-constraints
+38. DigitalApplied context reliability playbook — four context failure modes and levers: https://www.digitalapplied.com/blog/context-engineering-agent-reliability-playbook-2026
+39. Lushbinary context engineering guide — write/select/compress/isolate strategies: https://lushbinary.com/blog/context-engineering-ai-agents-production-guide/
+40. MindStudio context rot article — larger context delays but does not prevent rot: https://www.mindstudio.ai/blog/context-rot-ai-coding-agents-explained
+41. MindStudio context rot explanation — fresh sessions need grounding docs, decisions files: https://www.mindstudio.ai/blog/what-is-context-rot-ai-coding
+42. Zylos context compression strategies — trigger compaction at 70%, tool output verbosity as token killer: https://zylos.ai/research/2026-02-28-ai-agent-context-compression-strategies/
+43. O-mega long-running coding agents guide — context overflow/drift/cost failure modes: https://o-mega.ai/articles/long-running-coding-agents-the-2026-guide
+44. Mem0 Hermes vs Claude compression — compression drops exact constraints; persistent memory closes gap: https://mem0.ai/blog/how-hermes-and-claude-handle-context-compression-in-real-production-agents-(and-what-you-should-extract)
+45. Microsoft agent failure taxonomy — session context contamination and memory poisoning: https://www.microsoft.com/en-us/security/blog/2026/06/04/updating-taxonomy-failure-modes-agentic-ai-systems-year-red-teaming-taught-us/
+46. MCP in production — limit tool count/description size, manage state and context bleed: https://bytebridge.medium.com/what-it-takes-to-run-mcp-model-context-protocol-in-production-3bbf19413f69
+47. Subagents for codebase analysis — chunk large files and consolidate summaries: https://www.mindstudio.ai/blog/sub-agents-codebase-analysis-context-limits
+48. Hindsight subagent shared memory — subagents solve context bloat but need shared learning layer: https://hindsight.vectorize.io/blog/2026/05/06/claude-code-subagents-shared-memory
+49. Agent context windows guide — memory-first platform discussion and failure modes: https://sparkco.ai/blog/agent-context-windows-in-2026-how-to-stop-your-ai-from-forgetting-everything
+50. Agent Context Engineering 2026 — production agents break before nominal context limit: https://agentmarketcap.ai/blog/2026/04/11/agent-context-engineering-sliding-windows-memory-2026
+
+### Practical answer for Arena agents
+
+Some agents fail in tiny tasks because they carry too much irrelevant context, use fragile tool loops, miss timeouts, or lose state at compaction. Some agents can run huge tasks because they:
+
+- keep stable rules in files (`AGENTS.md`, `WORK_MODES.md`, lane reports), not only chat;
+- write checkpoints/progress to disk before context gets noisy;
+- use targeted reads and do not paste giant outputs into context;
+- enforce timeouts and verify output artifacts;
+- use git commits as durable state markers;
+- run fast checks often and full gates at release boundaries;
+- avoid parallel heavy builds and unbounded background subagents in a small sandbox.
+
+So the environment is capable of long sessions, but long sessions are reliable only when the agent works like an engineer with a runbook, not like a chat model improvising from a growing transcript.
+
+---
+
 ## 2. Astro build — почему падает и как чинить
 
 Astro 6 REFUSES запускаться на Node 20:
