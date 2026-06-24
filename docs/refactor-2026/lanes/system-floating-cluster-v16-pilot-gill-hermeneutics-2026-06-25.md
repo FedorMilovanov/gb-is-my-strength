@@ -2,7 +2,7 @@
 
 **Branch:** `lane/system-floating-cluster-v16-pilot-gill-hermeneutics-2026-06-25`
 **Mode:** SYSTEM
-**Scope:** `Floating cluster v16 rollout for Hermeneutics + all Gill routes`
+**Scope:** `Floating cluster v16 rollout for Hermeneutics + all Gill routes + standalone article wave`
 **Status:** review
 **Owner:** `Arena Agent`
 **Started:** `2026-06-25`
@@ -13,6 +13,9 @@
 ## Changed files
 
 - `src/components/article-pilots/hermenevtika/HermenevtikaBody.astro`
+- `src/components/article-pilots/antisovetov/AntisovetovBody.astro`
+- `src/components/article-pilots/kod-da-vinchi/KodDaVinchiPageChrome.astro`
+- `src/components/article-pilots/kod-da-vinchi/KodDaVinchiPageFooter.astro`
 - `src/components/article-pilots/gill-context/GillContextPageChrome.astro`
 - `src/components/article-pilots/gill-part1/GillPart1PageChrome.astro`
 - `src/components/article-pilots/gill-part2/GillPart2PageChrome.astro`
@@ -30,6 +33,8 @@
 - `scripts/gill-context-visual-parity-audit.js`
 - `scripts/gill-spravochnik-visual-parity-audit.js`
 - `sw.js`
+- `articles/20-antisovetov-pastoru/index.html`
+- `articles/kod-da-vinchi/index.html`
 - `articles/dzhon-gill-istoricheskiy-kontekst/index.html`
 - `articles/dzhon-gill-chast-1-chelovek/index.html`
 - `articles/dzhon-gill-chast-2-uchenyi/index.html`
