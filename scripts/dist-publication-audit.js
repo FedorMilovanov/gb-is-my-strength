@@ -171,7 +171,12 @@ function checkAstroSeriesLandingOwnership() {
     // Refactoring 6.0 reality: live premium maps are intentionally emitted as
     // full-document visual shadows, so old wrapper classes are not canonical.
     // Assert stable legacy/live-map markers instead.
-    ['karty/avraam/index.html', '/karty/avraam/', 'https://gospod-bog.ru/karty/avraam/', ['id="stage"', 'id="tourProgress"', 'Путь Авраама']],
+    // /karty/avraam/ is now strict-native (AvraamPageHead + AvraamMap, commit
+    // 698a582) per PROTECTED_APP_ROUTES_NATIVE_ASTRO_PHASE.md — engine root is
+    // #stage; the tour-progress UI is built at runtime by map-engine.js
+    // (getElementById('tourProgress')), so it is intentionally NOT in static
+    // HTML. Markers mirror the proven /karty/ishod/ native contract.
+    ['karty/avraam/index.html', '/karty/avraam/', 'https://gospod-bog.ru/karty/avraam/', ['id="stage"', 'Путь Авраама', 'map-engine.js']],
     ['karty/ishod/index.html', '/karty/ishod/', 'https://gospod-bog.ru/karty/ishod/', ['id="stage"', 'Исход из Египта', 'map-engine.js']],
     ['konfessii/index.html', '/konfessii/', 'https://gospod-bog.ru/konfessii/', ['Конфессии и Деноминации']],
     ['konfessii/russkij-baptizm/index.html', '/konfessii/russkij-baptizm/', 'https://gospod-bog.ru/konfessii/russkij-baptizm/', ['id="appframe"', 'Карта Русского Баптизма']],
