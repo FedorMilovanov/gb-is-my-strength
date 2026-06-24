@@ -132,3 +132,19 @@ FULL gate:
 ```
 
 Conclusion: the FAST loop is appropriate for iteration feedback; the FULL gate remains mandatory before release/merge/push.
+
+## Addendum — why some agents fail early vs long-session survivors
+
+Owner asked for a deeper investigation into why some agents crash or stall even on small sessions while others can work for a long time in Arena.
+
+Updated:
+
+- `docs/SANDBOX-ENV-2026-06-21.md` with a focused failure taxonomy and 50-link deep reference pass;
+- `AGENTS.md` with `AGENTS-r298` so future agents see that long-session reliability depends on durable file/git state, not transcript-only memory.
+
+Conclusion recorded in docs:
+
+- Arena/E2B can support long sessions;
+- failures are usually a combined result of model/runtime quality and operating discipline;
+- common failures: context rot, compaction loss, zombie tool calls, subagent black holes, OOM/resource kills, stale worktrees, and unbounded output/context bloat;
+- robust agents survive because they externalize state to files/commits/reports, use bounded checks and timeouts, avoid over-parallel heavy builds, and verify artifacts rather than trusting status text.

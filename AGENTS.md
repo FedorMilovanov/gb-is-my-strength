@@ -66,6 +66,7 @@ SANDBOX-ENV   → как выжить в конкретной среде (Arena)
 | Версия документа | Дата | Состояние |
 |---|---|---|
 | **AGENTS-r297** | 2026-06-24 | **Arena gate discipline clarified.** Agents must read `docs/SANDBOX-ENV-2026-06-21.md` in Arena, use FAST loop checks during small iterations, and reserve `validate:static-publication` + `guard:shared-files` as the required final release barrier for production/system/refactor lanes. |
+| **AGENTS-r298** | 2026-06-24 | **Arena long-session failure modes documented.** `docs/SANDBOX-ENV-2026-06-21.md` now includes a focused 50-link deep pass on why some agents fail early and others survive long sessions: context rot, compaction loss, zombie tool calls, subagent black holes, OOM/resource kills, stale worktrees, and bad state externalization. Rule: durable file/git state + FAST loop + final FULL barrier, not transcript-only memory. |
 
 ---
 
