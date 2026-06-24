@@ -208,20 +208,27 @@ function main() {
       continue;
     }
 
-    if (system && !systemLane) {
+    // NEW RULES (P1 Fix):
+    // 1. system lanes (lane/system-*, lane/protection-*) CAN modify SYSTEM and SHARED files automatically.
+    // 2. shared lanes (lane/shared-*) CAN modify SHARED files automatically.
+    // 3. route lanes CANNOT modify SYSTEM or SHARED files without explicit [ALLOW_SHARED].
+
+    if (system && !systemLane && !commitMsg.includes('[ALLOW_SHARED]')) {
       problems.push(
         `FAIL: '${file}' is a SYSTEM file.\n` +
-        `  → Only lane/system-* or lane/protection-* may change it.\n` +
-        `  → Current branch '${branch}' is a route lane, not system lane.`
+        `  → Only lane/system-* or lane/protection-* can modify this automatically.\n` +
+        `  → Current branch '${branch}' is a route lane, not system lane.\n` +
+        `  → Use [ALLOW_SHARED] in commit message if absolutely critical.`
       );
       continue;
     }
 
-    if (shared && !sharedLane && !systemLane) {
+    if (shared && !sharedLane && !systemLane && !commitMsg.includes('[ALLOW_SHARED]')) {
       problems.push(
         `FAIL: '${file}' is shared data.\n` +
-        `  → Only lane/shared-*, lane/system-* or lane/protection-* may change it.\n` +
-        `  → Current branch '${branch}' is a route lane.`
+        `  → Only lane/shared-*, lane/system-* or lane/protection-* can modify this automatically.\n` +
+        `  → Current branch '${branch}' is a route lane.\n` +
+        `  → Use [ALLOW_SHARED] in commit message if absolutely critical.`
       );
       continue;
     }

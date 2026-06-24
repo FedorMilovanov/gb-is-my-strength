@@ -69,18 +69,37 @@ jobs:
             const triggerActor = wf.actor ? wf.actor.login : 'unknown';
             const routeImpact = '${{ steps.route-impact.outputs.route_impact_data }}';
 
-            // Build workflow-specific guidance
-            const guidance = {
-              'Deploy to GitHub Pages': '⚠️ **Прод не обновился.** Читатели видят старую версию сайта. Проверь `npm run ci:check` локально.',
-              'IndexNow — Notify Search Engines': '⚠️ **Поисковики (Яндекс, Bing) не узнали про изменения.** Проверь `npm run source:links:dist` — мог быть broken source.',
-              'Source Link Audit': '⚠️ **Hard-broken внешний источник.** TLS error, 404 или bad host. Проверь `npm run source:links:dist` в root и `npm run validate:external`.',
-              'Runtime Interactive Audit': '⚠️ **Сломался пользовательский сценарий.** Series/quiz/search/theme/media runtime. Проверь `npm run interactive-audit`.',
-              'Visual Parity Guard — pixel-diff': '⚠️ **Визуальная регрессия.** Проверь `npm run visual:parity:screenshots -- --routes /` на affected route. Проверь route-impact report.',
-              'Dist Strangler Dry Run': '⚠️ **Production-like dist artifact не собирается.** Проверь `npm run strangler:audit:production-like`.',
-              'Shared Files Guard': '⚠️ **Shared/high-risk файл изменён без разрешения.** Проверь коммит на `[ALLOW_SHARED]` или запусти `npm run guard:shared-files` с `--allow`.',
-            };
-
-            const guidanceText = guidance[wfName] || 'Проверь `npm run ci:check` и `npm run migration:metadata:check`.';
+            // Build workflow-specific guidance based on actual rules (P0/P1 fix)
+            let guidanceText = '';
+            if (wfName === 'Shared Files Guard') {
+              guidanceText = [
+                '⚠️ **Shared/high-risk файл изменён.**',
+                '- **Подозреваемая ветка:** `' + branch + '`',
+                '- **Диагноз:** Вероятно, route-специфичный lane затронул файлы `package.json`, скрипты CI или глобальные стили.',
+                '- **Как исправить:** Запусти `npm run guard:shared-files`, чтобы увидеть какие файлы сломали guard. SYSTEM-файлы должны правиться в `lane/system-*`.'
+              ].join('\n');
+            } else if (wfName === 'Visual Parity Guard — pixel-diff') {
+              guidanceText = [
+                '⚠️ **Визуальная регрессия.**',
+                '- **Диагноз:** DOM-структура или стили Astro не совпадают с Legacy-оригиналом.',
+                '- **Что проверить:** Affected routes в артефакте CI. Запусти локально `npm run visual:parity:screenshots -- --routes /<твой-route>/`.',
+                '- **Артефакт:** Скачай `diff.png` из логов CI.'
+              ].join('\n');
+            } else if (wfName === 'IndexNow — Notify Search Engines') {
+              guidanceText = [
+                '⚠️ **Поисковики (Яндекс, Bing) не узнали про изменения.**',
+                '- **Возможная причина:** Неверный HTTP Status Code, упал endpoint API Яндекса, неправильный payload или сломанный Deploy-шаг до этого.',
+                '- **Как исправить:** Проверь логи шага `curl` в GitHub Actions.'
+              ].join('\n');
+            } else if (wfName === 'Deploy to GitHub Pages') {
+              guidanceText = [
+                '⚠️ **Прод не обновился.** Читатели видят старую версию сайта.',
+                '- **Диагноз:** Ошибка в финальной сборке Astro или копировании легаси (`copy-legacy-to-dist.js`).',
+                '- **Как исправить:** Посмотри точный упавший шаг в логах.'
+              ].join('\n');
+            } else {
+              guidanceText = 'Проверь `npm run ci:check` и логи GitHub Actions.';
+            }
 
             // Build affected routes hint based on commit message
             const affectedHint = [];
@@ -108,16 +127,9 @@ jobs:
               ``,
               guidanceText,
               ``,
-              `## Что проверить`,
-              ``,
-              `1. \`npm run ci:check\` — полная локальная проверка (cache-bust → static publication → workflows)`,
-              `2. \`npm run migration:metadata:check\` — route profiles, migration matrix, content source coverage`,
-              `3. \`npm run route:profiles:check --strict\` — все route profiles заполнены`,
-              `4. Для визуальных проблем: \`npm run visual:parity:screenshots -- --routes /articles/\``,
-              `5. Для контентных проблем: \`npm run data:consistency\``,
               routeBlock,
               ``,
-              `> Route-impact report артефакт будет прикреплён к следующему push в этой ветке.`,
+              `> Подробности падения (ошибки, diff-файлы) лежат в артефактах этого CI-run.`,
               ``,
               `Это сообщение создано автоматически workflow'ом \`notify-on-failure.yml\`.`,
               `Закрой это issue, когда проблема устранена; следующее падение откроет новое.`

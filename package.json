@@ -7,6 +7,7 @@
     "migration:matrix:check": "node scripts/check-route-migration-matrix.js",
     "content:sources:check": "node scripts/check-content-source-coverage.js",
     "migration:metadata:check": "npm run route:profiles:check && npm run migration:matrix:check && npm run content:sources:check",
+    "migration:metadata:check:strict": "npm run route:profiles:check -- --strict && npm run migration:matrix:check -- --strict && npm run content:sources:check -- --strict",
     "update-meta": "node scripts/update-meta.js",
     "cache-bust": "node scripts/cache-bust.js",
     "validate": "node scripts/validate.js",
