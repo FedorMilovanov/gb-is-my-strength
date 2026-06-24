@@ -132,8 +132,8 @@
       "mode": "strict-native",
       "source": "src/pages/baptisty-rossii/index.astro",
       "requiredMarkers": [
-        "home-v20",
-        "baptisty-rossii-landing"
+        "gbs2-world",
+        "data-gbs2-series=\"russian-baptism\""
       ],
       "forbid": [
         "plain-loadLegacyFullDocument-only"
@@ -358,7 +358,7 @@
       "mode": "legacy-shadow-app",
       "source": "src/pages/karty/pavel/index.astro",
       "requiredMarkers": [
-        "data-pagefind-body"
+        "data-content-status=\"temporary-placeholder\""
       ],
       "forbid": [
         "astro-native-article-layout"
@@ -415,7 +415,7 @@
       "mode": "strict-native",
       "source": "src/pages/konfessii/index.astro",
       "requiredMarkers": [
-        "konfessii-grid"
+        "grid h-reveal"
       ],
       "forbid": [
         "plain-loadLegacyFullDocument-only"

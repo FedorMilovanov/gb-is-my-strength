@@ -15,5 +15,6 @@
     "desktop": 0,
     "mobile": 0
   },
-  "cssPilot": "site-layered.css"
+  "cssPilot": "site-layered.css",
+  "migrationMode": "strict-native"
 }
