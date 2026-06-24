@@ -12,8 +12,8 @@
 ---
 # ARENA SESSION MANUAL — выживание в песочнице
 
-**Обновлено:** 2026-06-22  
-**Версия:** v8.0 (v7.1 + §16 VISION/IMAGE — полная диагностика зрения агентов + OCR-обход)  
+**Обновлено:** 2026-06-22
+**Версия:** v8.0 (v7.1 + §16 VISION/IMAGE — полная диагностика зрения агентов + OCR-обход)
 **Среда:** Arena.ai Agent Mode — Linux ext4, 2 CPU, 1.9GB RAM
 
 ---
@@ -79,6 +79,327 @@
 
 ---
 
+## 1.5 Speed/quality gate discipline for Arena
+
+Arena Agent Mode is fast for file edits and static Node scripts, but expensive for full Astro gates:
+
+```text
+fast static guards: usually seconds
+validate:static-publication: often ~2–3 minutes in this sandbox
+fresh worktree + npm ci + Astro check/build: can hit 2 GB RAM / timeout and be killed
+```
+
+**Do not run the full gate after every tiny edit.** Use this loop:
+
+```bash
+# one-time per fresh session
+cd /home/user/gb-is-my-strength
+if [ ! -x /tmp/node-v22.12.0-linux-x64/bin/node ]; then
+  wget -q https://nodejs.org/dist/v22.12.0/node-v22.12.0-linux-x64.tar.xz -O /tmp/node22.tar.xz
+  tar -xf /tmp/node22.tar.xz -C /tmp/
+fi
+export PATH=/tmp/node-v22.12.0-linux-x64/bin:$PATH
+npm ci
+
+# fast loop after small edits
+git diff --check
+npm run migration:metadata:check
+npm run native:runtime:audit:strict
+npm run data:consistency
+npm run content:parity
+npm run guard:shared-files
+
+# final release barrier before commit/merge/push of production/system/refactor lanes
+npm run validate:static-publication
+npm run guard:shared-files
+```
+
+Pick only relevant fast checks for the files changed. Examples:
+
+| Changed area | Fast checks |
+|---|---|
+| docs only | `git diff --check` |
+| content/MDX/search/series | `git diff --check`, `npm run data:consistency`, `npm run content:parity`, `npm run mdx:structure:audit` |
+| route/migration metadata | `npm run migration:metadata:check`, `npm run native:runtime:audit:strict` |
+| package/workflows/scripts/shared | `npm run guard:shared-files`, `npm run workflows:check`, relevant direct script |
+
+**Quality rule:** fast checks are iteration tools, not a replacement for the final full gate. If `validate:static-publication` cannot run because of sandbox limits, document the exact blocker in the lane report and let CI/owner decide.
+
+**Performance rules that actually help:**
+
+- reuse one working copy; avoid fresh `git worktree + npm ci` unless conflict isolation is required;
+- keep Node 22 in `PATH` for every bash call (`PATH=/tmp/node-v22.12.0-linux-x64/bin:$PATH ...` if export is not persistent);
+- use `npm ci`, not `npm install`, in fresh sessions;
+- do not run multiple Astro builds in parallel on this 2 CPU / ~2 GB RAM sandbox;
+- use parallel tool calls only for independent static checks, not build-heavy commands.
+
+---
+
+## 1.6 External reference pass (2026-06-24, 30+ links)
+
+These links were checked to validate/improve the Arena operating rules. Treat them as external references; local project contracts (`AGENTS.md`, `WORK_MODES.md`, lane policy, migration matrix) remain authoritative.
+
+### Agent/Arena/session limits
+
+1. Qwen Code Agent Arena — worktree base dir, `maxRoundsPerAgent=50`, `timeoutSeconds=600`, independent agents, stale worktree advice: https://qwenlm.github.io/qwen-code-docs/en/users/features/arena/
+2. Qwen Code settings — session/tool/wall-time controls and context compression settings: https://qwenlm.github.io/qwen-code-docs/en/users/configuration/settings/
+3. Qwen Code model providers — provider generation timeout examples: https://qwenlm.github.io/qwen-code-docs/en/users/configuration/model-providers/
+4. OpenCode agents — `steps` limit for agentic iterations: https://opencode.ai/docs/agents/
+
+### E2B / sandbox lifecycle and isolation
+
+5. E2B sandbox docs — timeout, `setTimeout`, sandbox info, pause/resume: https://e2b.dev/docs/sandbox
+6. E2B Python SDK sandbox reference — timeout defaults, connect/kill/files/commands/PTY: https://e2b.dev/docs/sdk-reference/python-sdk/v1.3.2/sandbox_sync
+7. E2B JS SDK sandbox reference — timeout/envs/connect/upload APIs: https://e2b.dev/docs/sdk-reference/js-sdk/v1.0.2/sandbox
+8. CrewAI E2B sandbox tools — persistent vs ephemeral mode, per-command timeout, avoid long-lived secrets: https://docs.crewai.com/en/tools/ai-ml/e2bsandboxtools
+9. Docker E2B sandboxes/MCP — explicit cleanup with `kill()`, secrets via env: https://docs.docker.com/ai/mcp-catalog-and-toolkit/e2b-sandboxes/
+10. Vercel Sandbox vs E2B — Firecracker isolation, persistence/runtime comparison: https://vercel.com/kb/guide/vercel-sandbox-vs-e2b
+11. Vercel Sandbox agent guide — microVM resources/timeout options: https://vercel.com/kb/guide/building-an-agent-with-openai-agents-sdk-and-vercel-sandbox
+12. ZenML E2B vs Daytona — timeout-first lifecycle, pause/resume, auto-pause: https://www.zenml.io/blog/e2b-vs-daytona
+13. Northflank E2B vs Modal — session scope, persistence, runtime comparison: https://northflank.com/blog/e2b-vs-modal
+14. Firecrawl AI agent sandbox — Firecracker microVM isolation and timeout levels: https://www.firecrawl.dev/blog/ai-agent-sandbox
+15. SoftwareSeni sandboxing problem — microVM vs containers/gVisor, defense in depth: https://www.softwareseni.com/ai-agents-in-production-the-sandboxing-problem-no-one-has-solved/
+16. Spheron E2B/Daytona/Firecracker overview — persistent multi-turn state and pause/resume: https://www.spheron.network/blog/ai-agent-code-execution-sandbox-e2b-daytona-firecracker/
+17. Novita E2B persistence — pause/resume preserves filesystem and memory: https://novita.ai/docs/guides/sandbox-e2b-sandbox-persistence
+18. LogRocket E2B agent article — filesystem workflow and cleanup pattern: https://blog.logrocket.com/building-deploying-ai-agents-e2b/
+19. Smithery E2B sandbox skill — absolute paths, timeouts, metadata, monitor usage: https://smithery.ai/skills/padak/e2b-sandbox
+
+### npm / Node / Astro
+
+20. npm ci vs install — deterministic CI behavior and cache `~/.npm`: https://michalsniezko.github.io/devops-infrastructure-cicd/npm-install-vs-ci.html
+21. Baeldung npm install vs npm ci — clean install, lockfile mismatch behavior: https://www.baeldung.com/ops/npm-install-vs-npm-ci
+22. Oracle npm-ci manpage — `npm ci` can be faster, removes `node_modules`, never writes lockfiles: https://docs.oracle.com/cd/E88353_01/html/E37839/npm-ci-1.html
+23. actions/setup-node advanced usage — built-in npm cache keyed by lockfile: https://github.com/actions/setup-node/blob/main/docs/advanced-usage.md
+24. actions/setup-node caching ADR — cache input design for npm/yarn: https://github.com/actions/setup-node/blob/main/docs/adrs/0000-caching-dependencies.md
+25. Astro v6 upgrade guide — Node `22.12.0+` required: https://docs.astro.build/en/guides/upgrade-to/v6/
+26. Astro 6 release blog — Node 22+, Vite 7, build/runtime changes: https://astro.build/blog/astro-6/
+27. Astro 6 beta blog — Node 22+ support change: https://astro.build/blog/astro-6-beta/
+
+### Playwright / CI acceleration
+
+28. Argos Playwright speed guide — cache browser binaries, install only Chromium, Docker option: https://argos-ci.com/blog/speed-up-playwright
+29. GitHub Community npm+Playwright cache discussion — cache `~/.npm` and `~/.cache/ms-playwright`: https://github.com/orgs/community/discussions/187290
+30. Foosel Playwright GitHub Actions — cache keyed by Playwright version, install deps on cache hit: https://foosel.net/til/how-to-run-playwright-on-github-actions/
+31. TestDino Playwright actions guide — cache browsers, conditional install-deps, savings: https://testdino.com/blog/playwright-in-github-actions
+32. Qaskills Playwright CI guide — cache, sharding, artifact strategy: https://qaskills.sh/blog/playwright-ci-github-actions-complete-guide-2026
+33. DevActivity Chromium issue — `playwright install --with-deps chromium` fixes missing binary/libs: https://devactivity.com/posts/development-integrations/boost-your-seo-fixing-playwright-chromium-issues-in-github-actions/
+34. Grafana plugin-ci issue — verify cache-hit and expected seconds saved: https://github.com/grafana/plugin-ci-workflows/issues/405
+35. dotCMS Playwright caching issue — cache browser binaries keyed on Playwright package version: https://github.com/dotCMS/core/issues/34753
+
+### Git worktree / multi-agent hygiene
+
+36. Termdock worktree multi-agent setup — do not share a branch, prune stale worktrees, symlink `node_modules` only if deps unchanged: https://www.termdock.com/en/blog/git-worktree-multi-agent-setup
+37. DXRF worktrees — remove/prune, parallel AI agents, one branch per worktree: https://dxrf.com/blog/2026/06/12/git-worktrees-work-on-multiple-branches/
+38. Yasin Miran on agents/worktrees — `git worktree list`, avoid `rm -rf`, use `prune`: https://yasint.dev/agents-and-git-worktrees/
+39. Augment guide — cleanup lifecycle, dependency ordering, merge queue risks: https://www.augmentcode.com/guides/git-worktrees-parallel-ai-agent-execution
+40. gitworktree.org prune tutorial — dry-run/verbose prune and best practices: https://www.gitworktree.org/tutorial/prune
+
+### Practical conclusions for this repo
+
+- Keep the existing FAST/FULL gate split. External sources support the same pattern: cheap local checks during iteration; expensive build/browser gates at release boundary.
+- Use `npm ci` in fresh sessions and avoid `npm install` unless intentionally changing dependencies.
+- In GitHub Actions, if we later optimize workflows, cache npm via `setup-node cache: npm` and cache Playwright browsers by Playwright version / lockfile; still run `install-deps` on cache hit.
+- In Arena, avoid multiple fresh worktrees with separate `npm ci`; use worktrees only for conflict isolation and remove with `git worktree remove`, then `git worktree prune`.
+- Never store tokens in git remote URLs or long-lived sandbox files. Use temporary askpass/env and delete it.
+
+## 1.7 Local timing proof (2026-06-24)
+
+Measured in this Arena sandbox with Node `v22.12.0`, npm `10.9.0`, 2 CPU, ~1.9 GB RAM:
+
+```text
+FAST system loop:
+  npm run guard:shared-files
+  npm run data:consistency
+  npm run migration:metadata:check
+  npm run native:runtime:audit:strict
+  npm run workflows:check
+  => real=1.374 sec
+
+FULL gate:
+  npm run validate:static-publication
+  => about 152 sec in tool runtime on this session
+```
+
+So the FAST loop is roughly two orders of magnitude faster for iteration feedback, while the FULL gate remains the required final release barrier.
+
+---
+
+## 1.8 Why some agents survive huge sessions and others fail early (2026-06-24)
+
+Short answer:
+
+```text
+It is both model/agent-runtime quality AND operating discipline.
+The Arena/E2B sandbox can support long work, but bad context hygiene, missing timeouts,
+over-parallelization, giant tool outputs, uncheckpointed work, stale worktrees, and weak
+compaction/handoff behavior can make an agent fail even on a small task.
+```
+
+### Failure taxonomy for Arena-style coding agents
+
+| Failure mode | What it looks like | Likely cause | Mitigation in this repo |
+|---|---|---|---|
+| Context rot / drift | Agent forgets constraints, repeats failed approach, changes direction | Long noisy transcript, too many raw tool outputs, weak compaction | write decisions to lane report/docs; use FAST loop; summarize with file paths/checks; start fresh after major phase if quality drops |
+| Compaction loss | After summary, agent forgets active branch/lane/rules/subagents | compaction summary omitted exact state | keep `AGENTS.md`, `WORK_MODES.md`, lane report, git commits as durable memory; update lane report before long breaks |
+| Zombie/stalled tool call | Spinner/turn continues, no useful output | missing stream/tool timeout or hung subprocess | bash timeouts, avoid long background jobs, verify output files instead of trusting status text |
+| Subagent black hole | parent waits forever or loses child state | subagent runtime/lifecycle bug, no output contract | prefer sequential work in this repo unless independent; require output files/reports; do not spawn many background agents at once |
+| Resource/OOM kill | process killed during Astro/build/browser install | 2 CPU / ~2 GB RAM, multiple builds, fresh worktree npm install | do not parallelize Astro builds; reuse main working copy; use FAST loop before FULL gate |
+| Tool-output bloat | context fills with huge logs/file dumps | reading giant files or verbose commands into chat | grep/sed targeted slices; write reports to files; use summaries, not raw logs |
+| Environment reset | Node 20 used again, `dist` missing, browser missing | PATH/export not persistent, sandbox directories are ephemeral | prefix commands with `PATH=/tmp/node-v22...:$PATH`; run `npm ci`; document in SANDBOX |
+| Git/worktree confusion | agent edits wrong branch or stale worktree | missing `git status`, stale worktrees, same branch checked out elsewhere | start with `git fetch`, `git status --short --branch`, `git worktree list`; remove/prune worktrees properly |
+| Over-broad prompt | agent tries to “fix everything” and trips shared files | no lane scope, no allowed/forbidden files | `WORK_MODES`, `LANE_LOCK_POLICY`, migration matrix, out-of-lane reporting |
+| Model/runtime variance | one model works for hours; another fails quickly | different context handling, tool-call reliability, compaction, rate limits, reasoning defaults | treat “agent” as a runtime+model+prompt system; keep state/checks in files so weaker agents recover |
+
+### Deep reference pass — agent failure / long-session management (30+ links)
+
+1. Codex config reference — per-tool MCP timeout, memory/consolidation knobs: https://developers.openai.com/codex/config-reference
+2. Codex sample config — context window, auto-compact limit, tool output token limit, multi-agent runtime limits: https://developers.openai.com/codex/config-sample
+3. Codex + Agents SDK workflow — `client_session_timeout_seconds`, gated multi-agent handoffs: https://developers.openai.com/cookbook/examples/codex/codex_mcp_agents_sdk/building_consistent_workflows_codex_cli_agents_sdk
+4. Codex Agents SDK guide — MCP server kept alive across turns with long timeout: https://developers.openai.com/codex/guides/agents-sdk
+5. Codex MCP docs — tool timeout defaults and per-server controls: https://developers.openai.com/codex/mcp
+6. Codex prompting guide — shell tool should set workdir/timeout; plan hygiene: https://developers.openai.com/cookbook/examples/gpt-5/codex_prompting_guide
+7. Codex slow performance article — reduce context, faster models for routine tasks, ignore files: https://inventivehq.com/knowledge-base/openai/how-to-fix-slow-performance
+8. Codex compaction architecture — compaction can lose fidelity; preserve user messages and summaries: https://codex.danielvaughan.com/2026/03/31/codex-cli-context-compaction-architecture/
+9. Codex issue — remote compaction timeout / misleading timeout errors: https://github.com/openai/codex/issues/14860
+10. Codex discussion — better handoff-oriented compaction summary prompt: https://github.com/openai/codex/discussions/17330
+11. Claude Code context loss article — session spec files, decision comments, checkpoint summaries, commits as anchors: https://dev.to/whoffagents/why-your-claude-code-sessions-keep-losing-context-and-how-to-fix-it-nia
+12. Claude session limits article — proactive compaction and explicit preservation: https://www.mindstudio.ai/blog/how-to-manage-claude-session-limits
+13. Claude Code error reference — context/entitlement errors and auto-compaction behavior: https://code.claude.com/docs/en/errors
+14. Claude context Reddit thread — project files/PLAN.md as memory, subagents as context saver: https://www.reddit.com/r/ClaudeAI/comments/1rrkv0h/how_are_you_guys_managing_context_in_claude_code/
+15. Claude Code session management guide — compact/clear/handoff and CLAUDE.md continuity: https://www.sitepoint.com/claude-code-context-management/
+16. Claude Code memory best practices — memory protocol, progress file, git logs: https://orchestrator.dev/blog/2026-04-06--claude-code-agent-memory-2026/
+17. Claude Code compaction explained — what survives, custom compact prompt, keep critical rules in files: https://okhlopkov.com/claude-code-compaction-explained/
+18. Claude cookbook context engineering — clear tool uses, compaction, file-backed memory: https://platform.claude.com/cookbook/tool-use-context-engineering-context-engineering-tools
+19. Claude cookbook session memory compaction — structured summary format and preserve rules: https://platform.claude.com/cookbook/misc-session-memory-compaction
+20. Dive into Claude Code paper — CLAUDE.md hierarchy, hooks, sidechain transcripts, subagent isolation: https://arxiv.org/html/2604.14228v1
+21. Dive into Claude Code repo summary — memory/context/subagent architecture comparison: https://github.com/VILA-Lab/Dive-into-Claude-Code
+22. Inside Claude Code article — subagents/worktrees as context and blast-radius boundaries: https://www.penligent.ai/hackinglabs/inside-claude-code-the-architecture-behind-tools-memory-hooks-and-mcp/
+23. Claude agent team issue — team state lost after compaction in long session: https://github.com/anthropics/claude-code/issues/23620
+24. Claude Code compaction timeout issue — session-destroying compaction failures: https://github.com/anthropics/claude-code/issues/2423
+25. Claude Code background subagent zombie issue — stale running subagents and infinite stop loop: https://github.com/anthropics/claude-code/issues/58637
+26. Claude Code Task timeout issue — subagent hang with completed files on disk: https://github.com/anthropics/claude-code/issues/49150
+27. OpenCode subagent hang issue — stream idle timeout and subagent-level timeout recommendations: https://github.com/anomalyco/opencode/issues/13841
+28. OpenClaw agent loop — run timeout, wait timeout, compaction events, stale child session prevention: https://docs.openclaw.ai/concepts/agent-loop
+29. AI agents stalled tasks article — wall-clock timeouts, checkpoint heartbeats, output verification: https://dev.to/bobrenze/how-ai-agents-handle-stalled-tasks-and-timeouts-lessons-from-my-production-failure-1jj9
+30. AWS agent failure modes — context overflow, MCP timeouts, reasoning loops, memory pointer pattern: https://dev.to/aws/why-ai-agents-fail-3-failure-modes-that-cost-you-tokens-and-time-1flb
+31. Google ADK long-running agents — durable state, checkpoint/resume, persistent session storage: https://developers.googleblog.com/build-long-running-ai-agents-that-pause-resume-and-never-lose-context-with-adk/
+32. Microsoft swarm diaries — contracts, zero-tool guards, verify actual files not reports: https://techcommunity.microsoft.com/blog/appsonazureblog/the-swarm-diaries-what-happens-when-you-let-ai-agents-loose-on-a-codebase/4501393
+33. Bob Renze subagent orchestration — synchronous timeout, polling, output validation: https://dev.to/bobrenze/ai-agent-subagent-orchestration-when-to-spawn-vs-when-to-do-it-yourself-4opg
+34. Agentic patterns snippets — file checkpoints and state directories for resumability: https://esc5221.github.io/awesome-agentic-patterns/
+35. Code as Agent Harness paper — filesystem-backed plans and state as harness objects: https://arxiv.org/html/2605.18747v1
+36. Context engineering article — subagents get scoped context, progress files survive compaction: https://www.morphllm.com/context-engineering
+37. Augment context constraints — reset architecture with filesystem/git durable storage: https://www.augmentcode.com/guides/ai-agent-loop-token-cost-context-constraints
+38. DigitalApplied context reliability playbook — four context failure modes and levers: https://www.digitalapplied.com/blog/context-engineering-agent-reliability-playbook-2026
+39. Lushbinary context engineering guide — write/select/compress/isolate strategies: https://lushbinary.com/blog/context-engineering-ai-agents-production-guide/
+40. MindStudio context rot article — larger context delays but does not prevent rot: https://www.mindstudio.ai/blog/context-rot-ai-coding-agents-explained
+41. MindStudio context rot explanation — fresh sessions need grounding docs, decisions files: https://www.mindstudio.ai/blog/what-is-context-rot-ai-coding
+42. Zylos context compression strategies — trigger compaction at 70%, tool output verbosity as token killer: https://zylos.ai/research/2026-02-28-ai-agent-context-compression-strategies/
+43. O-mega long-running coding agents guide — context overflow/drift/cost failure modes: https://o-mega.ai/articles/long-running-coding-agents-the-2026-guide
+44. Mem0 Hermes vs Claude compression — compression drops exact constraints; persistent memory closes gap: https://mem0.ai/blog/how-hermes-and-claude-handle-context-compression-in-real-production-agents-(and-what-you-should-extract)
+45. Microsoft agent failure taxonomy — session context contamination and memory poisoning: https://www.microsoft.com/en-us/security/blog/2026/06/04/updating-taxonomy-failure-modes-agentic-ai-systems-year-red-teaming-taught-us/
+46. MCP in production — limit tool count/description size, manage state and context bleed: https://bytebridge.medium.com/what-it-takes-to-run-mcp-model-context-protocol-in-production-3bbf19413f69
+47. Subagents for codebase analysis — chunk large files and consolidate summaries: https://www.mindstudio.ai/blog/sub-agents-codebase-analysis-context-limits
+48. Hindsight subagent shared memory — subagents solve context bloat but need shared learning layer: https://hindsight.vectorize.io/blog/2026/05/06/claude-code-subagents-shared-memory
+49. Agent context windows guide — memory-first platform discussion and failure modes: https://sparkco.ai/blog/agent-context-windows-in-2026-how-to-stop-your-ai-from-forgetting-everything
+50. Agent Context Engineering 2026 — production agents break before nominal context limit: https://agentmarketcap.ai/blog/2026/04/11/agent-context-engineering-sliding-windows-memory-2026
+
+### Practical answer for Arena agents
+
+Some agents fail in tiny tasks because they carry too much irrelevant context, use fragile tool loops, miss timeouts, or lose state at compaction. Some agents can run huge tasks because they:
+
+- keep stable rules in files (`AGENTS.md`, `WORK_MODES.md`, lane reports), not only chat;
+- write checkpoints/progress to disk before context gets noisy;
+- use targeted reads and do not paste giant outputs into context;
+- enforce timeouts and verify output artifacts;
+- use git commits as durable state markers;
+- run fast checks often and full gates at release boundaries;
+- avoid parallel heavy builds and unbounded background subagents in a small sandbox.
+
+So the environment is capable of long sessions, but long sessions are reliable only when the agent works like an engineer with a runbook, not like a chat model improvising from a growing transcript.
+
+---
+
+## 1.9 Arena coding polish — practical long-session rules (2026-06-24)
+
+This is the practical checklist distilled from the reference passes above. It is intentionally repetitive: future agents should not need to rediscover these under pressure.
+
+### 30 operational rules for Arena coding
+
+1. Start every turn with `git status --short --branch` when changes may exist.
+2. Run `git fetch --all --prune` before lane/merge/conflict decisions.
+3. Confirm branch and latest commit before editing shared/system files.
+4. Keep one active working copy for normal work; use extra worktrees only for conflict isolation.
+5. Remove diagnostic worktrees with `git worktree remove --force <path>` and then `git worktree prune`.
+6. Never rely on shell `export` persisting across tool calls; prefix Node commands with `PATH=/tmp/node-v22.12.0-linux-x64/bin:$PATH`.
+7. Use `npm ci` in fresh sessions; use `npm install` only when intentionally changing dependencies/lockfile.
+8. Use FAST loop during iteration; reserve `validate:static-publication` for release barrier.
+9. Do not run two Astro builds/full gates in parallel in 2 CPU / ~2 GB RAM sandbox.
+10. Use targeted file reads (`sed -n`, `grep`, `rg`) instead of dumping large files into chat.
+11. Write long analysis into repo docs/lane reports, not only the conversation.
+12. Treat lane reports as durable memory before compaction, interruption, or handoff.
+13. Use git commits as state checkpoints after meaningful, verified changes.
+14. If an agent claims completion, verify artifacts: files, diff, commands, exit codes.
+15. Do not trust subagent/status text without output files or concrete evidence.
+16. Avoid unbounded background jobs; if needed, record PID/log path and poll explicitly.
+17. Avoid spawning many background subagents in one turn; prefer sequenced lanes unless work is independent.
+18. For multi-agent work, assign disjoint file scopes and one branch/worktree per agent.
+19. For route work, check `migration/route-migration-matrix.json` before editing.
+20. For app/interactive routes, do not “simplify” to article/native layout without runtime smoke.
+21. For docs-only edits, use `git diff --check`; do not waste 2–3 minutes on full gate every sentence.
+22. For shared/system docs, still run `guard:shared-files` and record lane tag in commit.
+23. For workflow/package/script changes, run `workflows:check`, package script reference checks, and relevant direct script.
+24. For Playwright/browser checks, install only Chromium and dependencies when needed; avoid browser downloads during non-visual docs work.
+25. Keep tokens/secrets out of git remotes, docs, shell history, and long-lived files; use temporary askpass/env and delete.
+26. If context feels noisy, write a compact checkpoint to a file and continue from that file, not from memory.
+27. If the agent repeats failed attempts twice, stop, summarize facts, reread source-of-truth files, and change approach.
+28. If a command may be long, set an explicit timeout and redirect verbose output to a file.
+29. If full gate fails, record exact failing command and first actionable error, not the whole log dump.
+30. Before push: clean status, final guard, remote URL clean, and token string absent from workspace/tmp.
+
+### Additional Arena/coding references (30 links)
+
+These focus on hands-on coding-agent operation: hooks, compaction, worktrees, long-running tasks, sandbox runtime, and verification.
+
+1. Long-running coding agents and subagent/worktree isolation: https://o-mega.ai/articles/long-running-coding-agents-the-2026-guide
+2. Addy Osmani on long-running agents, hooks, plan files, worktrees, commits: https://addyo.substack.com/p/long-running-agents
+3. Real-world coding LLM selection and workflow harness importance: https://dev.to/danishashko/the-best-llms-for-agentic-coding-in-2026-real-world-not-just-benchmarks-96n
+4. Codex best practices — threads, worktrees, `/compact`, `/agent`, sandbox/approval knobs: https://developers.openai.com/codex/learn/best-practices
+5. Top code sandboxes for AI agents and why isolation matters: https://dev.to/thedailyagent/top-5-code-sandboxes-for-ai-agents-in-2026-58id
+6. Code sandbox options and long-lived workspace tradeoffs: https://www.sashido.io/en/blog/code-sandbox-options-for-ai-agents
+7. Google ADK long-running agents, checkpoint/resume, durable session state: https://developers.googleblog.com/build-long-running-ai-agents-that-pause-resume-and-never-lose-context-with-adk/
+8. Agent runtime infrastructure: per-agent quotas, loop limits, tool timeouts: https://www.augmentcode.com/guides/agent-runtime-infrastructure-layer
+9. Parallel worktrees and clear instructions for agents: https://laurentkempe.com/2026/03/31/from-3-worktrees-to-n-ai-powered-parallel-development-on-windows/
+10. Builder Claude Code tips — hooks, compact reminders, loops, notifications: https://www.builder.io/blog/claude-code-tips-best-practices
+11. Claude Code hooks guide — block dangerous commands, reinject context after compact: https://israynotarray.com/en/ai/2026/05/31/claude-code-hooks-complete-guide/
+12. Claude Code hooks examples — SessionStart, PreToolUse, Stop hooks: https://aiorg.dev/blog/claude-code-hooks
+13. Claude hooks for hardened workflows and Stop verification hooks: https://thomas-wiegold.com/blog/claude-code-hooks/
+14. Long-running Claude sessions and mobile/notification monitoring discussion: https://www.reddit.com/r/ClaudeAI/comments/1qkqd8m/longrunning_claude_code_sessions_have_a/
+15. Claude Code advanced hook/monitoring usage: https://dev.to/holasoymalva/the-ultimate-claude-code-guide-every-hidden-trick-hack-and-power-feature-you-need-to-know-2l45
+16. Advanced Claude Code best practices and `/clear` after repeated failure: https://smartscope.blog/en/generative-ai/claude/claude-code-best-practices-advanced-2026/
+17. Inside Claude Code — memory, hooks, MCP, subagents, worktrees: https://www.penligent.ai/hackinglabs/inside-claude-code-the-architecture-behind-tools-memory-hooks-and-mcp/
+18. Claude Code hooks production reference and debugging/exit-code details: https://thepromptshelf.dev/blog/claude-code-hooks-complete-reference-2026/
+19. VibeCoding hooks guide — notifications, auto-tests, auto-commits caveat: https://www.vibecodingacademy.ai/blog/claude-code-hooks-complete-guide
+20. Agent task stalls and zombie task detection: https://dev.to/bobrenze/how-ai-agents-handle-stalled-tasks-and-timeouts-lessons-from-my-production-failure-1jj9
+21. AWS agent failure modes — context overflow, MCP timeouts, reasoning loops: https://dev.to/aws/why-ai-agents-fail-3-failure-modes-that-cost-you-tokens-and-time-1flb
+22. Microsoft Swarm Diaries — contracts, zero-tool guards, verify actual files: https://techcommunity.microsoft.com/blog/appsonazureblog/the-swarm-diaries-what-happens-when-you-let-ai-agents-loose-on-a-codebase/4501393
+23. OpenCode subagent hangs and stream idle timeout discussion: https://github.com/anomalyco/opencode/issues/13841
+24. Claude background subagent zombie issue: https://github.com/anthropics/claude-code/issues/58637
+25. Claude Task timeout issue with completed work on disk: https://github.com/anthropics/claude-code/issues/49150
+26. Context engineering reliability playbook: https://www.digitalapplied.com/blog/context-engineering-agent-reliability-playbook-2026
+27. Context engineering production guide — write/select/compress/isolate: https://lushbinary.com/blog/context-engineering-ai-agents-production-guide/
+28. Agentic patterns — checkpoint files and resumability: https://esc5221.github.io/awesome-agentic-patterns/
+29. Code as Agent Harness — filesystem-backed plans and verifiable state: https://arxiv.org/html/2605.18747v1
+30. Context engineering: subagents with exact context and progress files: https://www.morphllm.com/context-engineering
+
+### Extra polish conclusions for this repo
+
+- We do not need more “read everything every time”; we need source-of-truth docs plus targeted rereads.
+- The fastest reliable loop is not “small task only”; it is **large task with durable checkpoints and bounded checks**.
+- A capable Arena agent can close large work in one session if it treats filesystem/git as memory and avoids unbounded transcript growth.
+- Agents that fail early usually fail because they keep state in chat, over-read/over-output, lack timeouts, or trust status text instead of artifacts.
+
+---
+
 ## 2. Astro build — почему падает и как чинить
 
 Astro 6 REFUSES запускаться на Node 20:
@@ -124,7 +445,7 @@ npm run astro:build  # или npm run strangler:build:production-like
 ```
 FATAL browserType.launch: Executable doesn't exist at /home/user/.cache/ms-playwright/chromium_headless_shell-1223/chrome-headless-shell-linux64/chrome-headless-shell
 ```
-**Причина:** Playwright 1.61 хочет v1223, после `npm install` Playwright обновился до версии, требующей другую версию браузера.  
+**Причина:** Playwright 1.61 хочет v1223, после `npm install` Playwright обновился до версии, требующей другую версию браузера.
 **Решение:** `npx playwright install chromium` (он скачает нужную).
 
 ### 3.5 НЕДОСТАЮЩИЕ СИСТЕМНЫЕ БИБЛИОТЕКИ chromium (v7, КРИТИЧНО)
@@ -163,7 +484,7 @@ nohup python3 -m http.server 8091 --bind 127.0.0.1 --directory dist > /tmp/serve
 ### 4.2 Cwd "deleted" проблема (#2 причина 404)
 В этом sandbox сервер Python сохраняет cwd через `/proc/$PID/cwd`. Если файл/директория cwd **была пересоздана** (например, sandbox cleanup), то `/proc/$PID/cwd` указывает на `(deleted)`. Сервер тогда отдаёт 404 на все пути, **даже если файл существует**.
 
-**Симптом:** `curl -sI http://127.0.0.1:8091/` возвращает `HTTP/1.0 404 File not found`.  
+**Симптом:** `curl -sI http://127.0.0.1:8091/` возвращает `HTTP/1.0 404 File not found`.
 **Решение:** `kill PID && nohup python3 -m http.server 8091 --bind 127.0.0.1 --directory /home/user/gb-is-my-strength/dist &` (перезапуск с АБСОЛЮТНЫМ путём).
 
 ### 4.3 Two servers на разных портах

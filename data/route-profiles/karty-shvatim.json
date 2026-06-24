@@ -15,5 +15,6 @@
     "desktop": 0,
     "mobile": 0
   },
-  "cssPilot": null
+  "cssPilot": null,
+  "migrationMode": "legacy-shadow-app"
 }

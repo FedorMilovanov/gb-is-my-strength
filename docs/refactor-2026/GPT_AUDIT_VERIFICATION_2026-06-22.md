@@ -15,8 +15,8 @@
 | P0-1 | `readingTime` имеет 7 разных источников | ✅ Подтверждено | MDX=32/39/54, series.json=28/34/47, home=39мін/54мін — РЕАЛЬНЫЙ DRIFT | **FIX NOW**: унифицировать источник → series.json / content collection |
 | P0-2 | Главная и каталог — raw legacy с stale данными | ✅ Подтверждено | `dist/index.html` содержит `39 мін`, `54 мін` | **FIX NOW**: исправить мін→мин, обновить числа |
 | P0-3 | MDX-файлы структурно повреждены | ✅ Подтверждено | `kod-da-vinchi.mdx`: `.1CNN`, `2016Франциск`, `left=3.5%` layout leak | **FIX NOW**: добавить `mdx-structure-audit`, карантин MDX |
-| P0-4 | `content:parity-v2` не в основном gate | ✅ Подтверждено | `validate:static-publication` вызывает `content:parity`, не v2 | **FIX NOW**: переключить на v2 |
-| P1-5 | Route taxonomy — отчёт, не guard | ✅ Подтверждено | `route-shadow-taxonomy.js` печатает JSON, нет fail-правил | **DEFER**: добавить после создания publication registry |
+| P0-4 | `content:parity` не в основном gate | ✅ Подтверждено | `validate:static-publication` вызывает `content:parity`, не v2 | **FIX NOW**: переключить на v2 |
+| P1-5 | Route taxonomy — отчёт, не guard | ✅ Подтверждено | `native-runtime-taxonomy-audit.js` печатает JSON, нет fail-правил | **DEFER**: добавить после создания publication registry |
 | P1-6 | Временные карты индексируются | ✅ Подтверждено | `early-church`: `robots: index, follow`, в sitemap, в llms.txt | **FIX NOW**: noindex + убрать из sitemap/llms |
 | P1-7 | llms.txt несогласован с картами | ✅ Частично | llms.txt перечисляет 2 карты как полноценные, но 9 на аудите | **FIX NOW**: перегенерировать llms.txt |
 | P1-8 | Baseline закрепляет заглушки | ⚠️ Частично | baseline не содержит отдельного status-поля для temporary | **DEFER**: добавить publicationStatus в registry |
@@ -46,7 +46,7 @@
 2. **Nagornaya `~96` → `89`** + `исследоват. находка` → `исследовательская находка`
 3. **`Спердген` → `Сперджен`** в Gill III legacy HTML
 4. **SeriesArticleLayout `|| 18`** → убрать fallback
-5. **content:parity-v2** в validate:static-publication
+5. **content:parity** в validate:static-publication
 6. **Temporary maps noindex** + убрать из sitemap/llms
 7. **SW cache version bump**
 8. **Visual parity workflow**: убрать continue-on-error, добавить push trigger

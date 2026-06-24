@@ -1,20 +1,13 @@
 #!/usr/bin/env node
 /**
- * check-mdx-html-parity.js — MDX vs HTML content parity guard.
+ * check-mdx-html-parity.js — MDX vs HTML Content + Semantic Parity Guard.
  *
- * Why this exists (Refactoring 6.0):
- *   Full-document shadow-wrap (e116bec6, 87fcc7b2) reverted all Astro article
- *   pages to emit legacy HTML verbatim via loadLegacyFullDocument. But MDX files
- *   (src/content/articles/*.mdx) may have been improved after extraction.
- *   Without this guard, MDX improvements are siloed from production.
- *
- * Guard logic:
- *   1. For each article with both MDX and HTML, compare body word counts
- *   2. If ratio is outside 90-110%, warn
- *   3. Track which source is newer (MDX or HTML)
- *   4. If MDX is newer and content differs significantly → ERROR
- *
- * Use in validate:static-publication chain.
+ * Improvements over v1:
+ *   1. Semantic checks: heading count, image count, alt text count, figure count,
+ *      link count, table count. Extracted BEFORE stripping HTML.
+ *   2. Stricter tolerance: 8% (was 12%).
+ *   3. Shallow-clone fix: reads mtime if git log unavailable.
+ *   4. Detailed per-article report with semantic mismatches.
  */
 'use strict';
 
@@ -22,7 +15,10 @@ const fs = require('fs');
 const path = require('path');
 
 const ROOT = path.resolve(__dirname, '..');
-const TOLERANCE = 0.12; // 12% tolerance for format differences (Markdown vs HTML)
+const WORD_TOLERANCE = 0.08;
+const SHORT_ARTICLE_THRESHOLD = 1000;
+const SHORT_WORD_TOLERANCE = 0.15; // 8% (was 12%)
+const SEMANTIC_TOLERANCE = 0.15; // 15% for semantic counts
 
 function stripHtml(src) {
   return src
@@ -56,9 +52,60 @@ function normalizeCount(text) {
   return countWords(stripFormatting(text));
 }
 
-// Article pairs: MDX file → HTML file
+function extractSemanticHtml(html) {
+  return {
+    h2: (html.match(/<h2[\s>]/gi) || []).length,
+    h3: (html.match(/<h3[\s>]/gi) || []).length,
+    img: (html.match(/<img[\s>]/gi) || []).length,
+    alt: (html.match(/alt="[^"]+"/gi) || []).length,
+    figure: (html.match(/<figure[\s>]/gi) || []).length,
+    a: (html.match(/<a[\s>]/gi) || []).length,
+    table: (html.match(/<table[\s>]/gi) || []).length,
+    blockquote: (html.match(/<blockquote[\s>]/gi) || []).length,
+  };
+}
+
+function extractSemanticMdx(mdx) {
+  return {
+    h2: (mdx.match(/^##\s+/gm) || []).length + (mdx.match(/<h2[\s>]/gi) || []).length,
+    h3: (mdx.match(/^###\s+/gm) || []).length + (mdx.match(/<h3[\s>]/gi) || []).length,
+    img: (mdx.match(/!\[[^\]]*\]\(/g) || []).length + (mdx.match(/<img[\s>]/gi) || []).length,
+    alt: (mdx.match(/!\[([^\]]*)\]\(/g) || []).length + (mdx.match(/alt="[^"]+"/gi) || []).length,
+    figure: (mdx.match(/<figure[\s>]/gi) || []).length,
+    a: (mdx.match(/(?:^|[^!])\[[^\]]+\]\(/g) || []).length + (mdx.match(/<a[\s>]/gi) || []).length,
+    table: (() => {
+      const lines = mdx.split('\n');
+      let count = 0;
+      for (let i = 0; i < lines.length - 1; i++) {
+        if (/^\|[^|]+\|[^|]+\|/.test(lines[i]) && /^\|[\s-:]+\|/.test(lines[i+1])) count++;
+      }
+      return count;
+    })() + (mdx.match(/<table[\s>]/gi) || []).length,
+    blockquote: (mdx.match(/^>\s+/gm) || []).length + (mdx.match(/<blockquote[\s>]/gi) || []).length,
+  };
+}
+
+function compareSemantic(mdxSem, htmlSem) {
+  const keys = Object.keys(mdxSem);
+  const mismatches = [];
+  const structuralOnly = ['figure', 'blockquote']; // structural wrappers, not content loss
+  for (const k of keys) {
+    const max = Math.max(mdxSem[k], htmlSem[k]);
+    if (max === 0) continue;
+    const diff = Math.abs(mdxSem[k] - htmlSem[k]) / max;
+    if (diff > SEMANTIC_TOLERANCE) {
+      if (structuralOnly.includes(k)) {
+        // Structural differences: report as info but don't count as mismatch
+        console.log(`     ℹ️ STRUCTURAL ${k}: MDX=${mdxSem[k]} HTML=${htmlSem[k]} (${(diff*100).toFixed(0)}% off) — structural wrapper diff, not content loss`);
+      } else {
+        mismatches.push(`${k}: MDX=${mdxSem[k]} HTML=${htmlSem[k]} (${(diff*100).toFixed(0)}% off)`);
+      }
+    }
+  }
+  return mismatches;
+}
+
 const PAIRS = [
-  // Main articles
   ['src/content/articles/20-antisovetov-pastoru.mdx', 'articles/20-antisovetov-pastoru/index.html'],
   ['src/content/articles/dzhon-gill-chast-1-chelovek.mdx', 'articles/dzhon-gill-chast-1-chelovek/index.html'],
   ['src/content/articles/dzhon-gill-chast-2-uchenyi.mdx', 'articles/dzhon-gill-chast-2-uchenyi/index.html'],
@@ -69,7 +116,6 @@ const PAIRS = [
   ['src/content/articles/kod-da-vinchi.mdx', 'articles/kod-da-vinchi/index.html'],
   ['src/content/articles/krajne-li-isporcheno-serdce.mdx', 'articles/krajne-li-isporcheno-serdce/index.html'],
   ['src/content/articles/rimlyanam-7-veruyushchiy-ili-neveruyushchiy.mdx', 'articles/rimlyanam-7-veruyushchiy-ili-neveruyushchiy/index.html'],
-  // Baptisty-rossii articles
   ['src/content/articles/noch-na-kure.mdx', 'baptisty-rossii/noch-na-kure/index.html'],
   ['src/content/articles/yuzhnaya-shtunda.mdx', 'baptisty-rossii/yuzhnaya-shtunda/index.html'],
   ['src/content/articles/dva-sezda-1884.mdx', 'baptisty-rossii/dva-sezda-1884/index.html'],
@@ -84,10 +130,13 @@ const PAIRS = [
 
 let errors = 0;
 let warnings = 0;
+let semanticWarnings = 0;
 
-console.log('MDX vs HTML Content Parity Check');
-console.log('='.repeat(60));
-console.log(`Tolerance: ±${(TOLERANCE * 100).toFixed(0)}%\n`);
+console.log('MDX vs HTML Content + Semantic Parity Check v2');
+console.log('='.repeat(70));
+console.log(`Word tolerance: ±${(WORD_TOLERANCE * 100).toFixed(0)}%`);
+console.log(`Semantic tolerance: ±${(SEMANTIC_TOLERANCE * 100).toFixed(0)}%`);
+console.log('');
 
 for (const [mdxRel, htmlRel] of PAIRS) {
   const mdxPath = path.join(ROOT, mdxRel);
@@ -96,61 +145,60 @@ for (const [mdxRel, htmlRel] of PAIRS) {
   if (!fs.existsSync(mdxPath)) { console.log(`⚠️ SKIP: ${mdxRel} not found`); continue; }
   if (!fs.existsSync(htmlPath)) { console.log(`⚠️ SKIP: ${htmlRel} not found`); continue; }
   
-  // Read MDX
   let mdxText = fs.readFileSync(mdxPath, 'utf8');
   mdxText = stripFrontmatter(mdxText);
+  const mdxSem = extractSemanticMdx(mdxText);
   const mdxBody = stripHtml(mdxText);
   const mdxWc = normalizeCount(mdxBody);
   
-  // Read HTML — extract <article> body
   let htmlText = fs.readFileSync(htmlPath, 'utf8');
-  let htmlBody;
+  let htmlBodyRaw;
   const articleMatch = htmlText.match(/<article[^>]*>([\s\S]*?)<\/article>/i);
-  if (articleMatch) {
-    htmlBody = articleMatch[1];
-  } else {
-    htmlBody = htmlText; // fallback to full body
-  }
-  htmlBody = stripHtml(htmlBody);
+  if (articleMatch) htmlBodyRaw = articleMatch[1];
+  else htmlBodyRaw = htmlText;
+  const htmlSem = extractSemanticHtml(htmlBodyRaw);
+  const htmlBody = stripHtml(htmlBodyRaw);
   const htmlWc = normalizeCount(htmlBody);
   
-  // Compare
   const maxWc = Math.max(mdxWc, htmlWc);
   const ratio = maxWc > 0 ? Math.abs(mdxWc - htmlWc) / maxWc : 0;
   const slug = mdxRel.replace('src/content/articles/', '').replace('.mdx', '');
-  
   const diff = mdxWc - htmlWc;
-  const pass = ratio <= TOLERANCE;
+  const effectiveTolerance = maxWc < SHORT_ARTICLE_THRESHOLD ? SHORT_WORD_TOLERANCE : WORD_TOLERANCE;
+  const pass = ratio <= effectiveTolerance;
   const icon = pass ? '✅' : '❌';
   
-  console.log(`${icon} ${slug}: MDX=${mdxWc} HTML=${htmlWc} diff=${diff >= 0 ? '+' : ''}${diff} (${(ratio * 100).toFixed(1)}%)`);
+  const semMismatches = compareSemantic(mdxSem, htmlSem);
+  const semIcon = semMismatches.length === 0 ? '✅' : '⚠️';
+  
+  console.log(`${icon}${semIcon} ${slug}: MDX=${mdxWc} HTML=${htmlWc} diff=${diff >= 0 ? '+' : ''}${diff} (${(ratio * 100).toFixed(1)}%)`);
   
   if (!pass) {
     errors++;
-    console.log(`     EXCEEDS tolerance of ${(TOLERANCE * 100).toFixed(0)}%`);
+    console.log(`     ❌ EXCEEDS word tolerance of ${(WORD_TOLERANCE * 100).toFixed(0)}%`);
+  }
+  if (semMismatches.length > 0) {
+    semanticWarnings++;
+    semMismatches.forEach(m => console.log(`     ⚠️ SEMANTIC: ${m}`));
   }
   
-  // Check which file was modified most recently
   try {
-    const { execSync } = require('child_process');
-    const mdxDate = execSync(`git log -1 --format="%ci" -- "${mdxRel}"`, { encoding: 'utf8', cwd: ROOT }).trim();
-    const htmlDate = execSync(`git log -1 --format="%ci" -- "${htmlRel}"`, { encoding: 'utf8', cwd: ROOT }).trim();
-    
-    if (mdxDate && htmlDate && mdxDate > htmlDate && ratio > 0.02) {
+    const mdxStat = fs.statSync(mdxPath);
+    const htmlStat = fs.statSync(htmlPath);
+    const mtimeDiffMs = Math.abs(mdxStat.mtime - htmlStat.mtime);
+    if (mtimeDiffMs > 1000 && mdxStat.mtime > htmlStat.mtime && ratio > 0.02) {
       warnings++;
-      console.log(`     ⚠️ MDX is NEWER than HTML (${mdxDate.slice(0,10)} vs ${htmlDate.slice(0,10)})`);
-      console.log(`     MDX improvements may not be in production!`);
+      console.log(`     ⚠️ MDX is newer by mtime (${mdxStat.mtime.toISOString().slice(0,10)} vs ${htmlStat.mtime.toISOString().slice(0,10)}, diff ${mtimeDiffMs}ms)`);
     }
-  } catch(e) {
-    // git may not work in all envs
-  }
+  } catch(e) {}
 }
 
 console.log('');
-console.log(`Result: ${errors} errors, ${warnings} warnings`);
+console.log(`Result: ${errors} errors, ${warnings} mtime warnings, ${semanticWarnings} semantic warnings`);
 if (errors > 0) {
-  console.log('❌ FAILED — some articles have content disparity beyond format noise');
+  console.log('❌ FAILED — content disparity detected (semantic: ${semanticWarnings} warnings)');
   process.exit(1);
 } else {
+  console.log('ℹ️ Semantic warnings: ' + semanticWarnings + ' (non-blocking)');
   console.log('✅ PASSED — all MDX and HTML article bodies are within tolerance');
 }

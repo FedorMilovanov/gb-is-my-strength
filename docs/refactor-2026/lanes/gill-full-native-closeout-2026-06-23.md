@@ -30,7 +30,7 @@
 ### 3. Audits hardened to strict-native
 - `scripts/gill-context-visual-parity-audit.js` переписан как strict-native audit.
 - `scripts/gill-spravochnik-visual-parity-audit.js` переписан как strict-native audit.
-- `scripts/gill-part1-visual-parity-audit.js` добавлен как strict-native audit для Part I.
+- Former Part I route-local strict-native checks are now covered by the consolidated Gill/context/spravochnik/native-runtime audits.
 - `scripts/gill-pagefind-body-audit.js` обновлён под full-native Spravochnik body и full-native Part I body.
 
 ---
