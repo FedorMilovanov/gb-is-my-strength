@@ -655,10 +655,10 @@ window.SITE_CONFIG = {
 </head>
 <body class="gbs-paper">
 <a class="skip-link" href="#content">Перейти к содержанию</a>
-<div id="reading-progress"></div>
-<div aria-hidden="true" id="section-label"></div>
+<div hidden="" id="reading-progress"></div>
+<div aria-hidden="true" hidden="" id="section-label"></div>
 <!-- ВНИМАНИЕ: inline style="top:..." на этой кнопке ЗАПРЕЩЁН — позиция задана в site.css (.theme-toggle) и выровнена по хлебным крошкам -->
-<button aria-label="Переключить тему" class="theme-toggle" id="themeToggle">
+<button aria-label="Переключить тему" class="theme-toggle" hidden="" id="themeToggle">
 <svg class="icon-moon" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24" aria-hidden="true" focusable="false">
 <path d="M21 12.8A9 9 0 1111.2 3 7 7 0 0021 12.8z"></path>
 </svg>
@@ -674,7 +674,8 @@ window.SITE_CONFIG = {
 <line x1="17.7" x2="19.8" y1="6.3" y2="4.2"></line>
 </svg>
 </button>
-<div class="toc-sidebar" id="tocSidebar">
+<div id="gbFloatingControls" class="gb-floating-controls fc-root fc-single fc-single--article" data-fc-root data-fc-variant="article" data-fc-audio-state="none" role="group" aria-label="Быстрые действия статьи"><button type="button" class="fc-button gb-fc-btn gb-fc-theme fc-theme-toggle" aria-label="Переключить тему" title="Светлая / тёмная тема" aria-pressed="false" data-fc-action="theme"><span aria-hidden="true" class="fc-theme-toggle__sun"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="4.5"></circle><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"></path></svg></span><span aria-hidden="true" class="fc-theme-toggle__moon"><svg viewBox="0 0 24 24"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"></path></svg></span></button><button type="button" class="fc-button gb-fc-btn gb-fc-search" aria-label="Поиск" title="Поиск по сайту" data-fc-action="search"><svg aria-hidden="true" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"></circle><path d="M21 21l-4.3-4.3"></path></svg></button><button type="button" class="fc-button fc-play-ember" data-fc-action="play" data-audio-state="none" aria-label="Озвучка" aria-disabled="true"><span aria-hidden="true" class="fc-play-ember__ring"></span><svg aria-hidden="true" class="fc-play-ember__icon fc-play-ember__icon--play" viewBox="0 0 24 24"><path d="M8 5.5v13l10-6.5z"></path></svg><svg aria-hidden="true" class="fc-play-ember__icon fc-play-ember__icon--pause" viewBox="0 0 24 24"><path d="M9 6v12"></path><path d="M15 6v12"></path></svg><svg aria-hidden="true" class="fc-play-ember__icon fc-play-ember__icon--spark" viewBox="0 0 24 24"><path d="M12 5.5v3"></path><path d="M12 15.5v3"></path><path d="M5.5 12h3"></path><path d="M15.5 12h3"></path></svg></button><button type="button" class="fc-button fc-save" data-fc-action="save" aria-label="Сохранить" aria-pressed="false"><svg aria-hidden="true" viewBox="0 0 24 24"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"></path></svg></button></div>
+<div class="toc-sidebar" hidden="" id="tocSidebar">
 <nav aria-label="Содержание">
 <div class="toc-label">Содержание</div>
 </nav>
@@ -1556,7 +1557,7 @@ window.SITE_CONFIG = {
 </span></footer>
 </div><!-- /page-wrap -->
 <!-- ===== BOTTOM APP BAR ===== -->
-<div class="bottom-bar" id="bottomBar">
+<div class="bottom-bar" hidden="" id="bottomBar">
 <div class="bottom-bar-inner">
 <div class="bar-progress" id="barProgress">
 <svg viewbox="0 0 36 36" aria-hidden="true" focusable="false">
@@ -1596,7 +1597,7 @@ window.SITE_CONFIG = {
 </div>
 </div>
 <!-- ===== BOTTOM TOC OVERLAY ===== -->
-<div class="btoc-overlay" id="btocOverlay">
+<div class="btoc-overlay" hidden="" id="btocOverlay">
 <div class="btoc-panel" id="btocPanel">
 <div class="btoc-handle"></div>
 <div class="btoc-header">
@@ -1664,10 +1665,11 @@ window.SITE_CONFIG = {
     <script src="../../js/glossary.js?v=2100cf4f" defer></script>
 <script src="../../js/sw-register.js?v=8a077d35" defer></script>
 <script src="../../js/search.js?v=c9d65577" defer></script>
+<script src="../../js/floating-cluster-controller.js?v=676e7365" defer></script>
 <script src="../../js/highlights.js?v=a1706b06" defer></script>
 <script src="../../js/enhancements.js?v=b3b77aa6" defer></script>
 
-<button id="back-to-top" aria-label="Наверх" type="button">
+<button id="back-to-top" aria-label="Наверх" hidden="" type="button">
   <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
     <path d="M12 19V5M5 12l7-7 7 7"/>
   </svg>
