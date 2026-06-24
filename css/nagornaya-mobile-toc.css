@@ -6,3 +6,47 @@ body.nagornaya-page .from-indigo-700 .summary-card__head,body.nagornaya-page .fr
 body.nagornaya-page .from-indigo-700 .summary-card__text,body.nagornaya-page .from-teal-700 .summary-card__text{color:rgba(250,245,232,.95)!important}
 body.nagornaya-page .from-indigo-700 .summary-card__num,body.nagornaya-page .from-teal-700 .summary-card__num{background:rgba(255,255,255,.14)!important;border-color:rgba(255,255,255,.28)!important}
 body.nagornaya-page .from-indigo-700 .summary-card__num::before,body.nagornaya-page .from-teal-700 .summary-card__num::before{color:#9ad59a!important}
+
+/* v16 MOB TOC OVERRIDES (Puritan Antique Brass Luxury & Silky Smoothness) */
+body.nagornaya-page .btoc-link-num, .btoc-link-num {
+  font-family: Georgia, "Times New Roman", serif;
+  font-weight: 800;
+  color: #8a6538;
+  font-size: 13px;
+  text-shadow: 0 1px 0 rgba(255,255,255,1), 0 2px 4px rgba(138,101,56,.2);
+}
+html.dark body.nagornaya-page .btoc-link-num, html.dark .btoc-link-num {
+  color: #d8b068;
+  text-shadow: 0 1px 2px rgba(0,0,0,.9), 0 0 10px rgba(216, 176, 104, 0.3);
+}
+body.nagornaya-page .btoc-link.active .btoc-link-num, .btoc-link.active .btoc-link-num {
+  color: #6a4720;
+}
+html.dark body.nagornaya-page .btoc-link.active .btoc-link-num, html.dark .btoc-link.active .btoc-link-num {
+  color: #eed093;
+  text-shadow: 0 1px 2px rgba(0,0,0,.9), 0 0 14px rgba(216, 176, 104, 0.5);
+}
+
+body.nagornaya-page .bar-progress-fill {
+  stroke: #b8936a;
+}
+html.dark body.nagornaya-page .bar-progress-fill {
+  stroke: #eed093;
+  filter: drop-shadow(0 0 6px rgba(216,176,104,.5));
+}
+body.nagornaya-page .btoc-progress-bar-fill {
+  background: linear-gradient(90deg, #d8aa6d, #b8936a);
+}
+html.dark body.nagornaya-page .btoc-progress-bar-fill {
+  background: linear-gradient(90deg, #eed093, #c59b58);
+  box-shadow: 0 0 8px rgba(216,176,104,.35);
+}
+
+body.nagornaya-page .btoc-link {
+  transition: background .25s cubic-bezier(.2,.7,.2,1), color .25s cubic-bezier(.2,.7,.2,1);
+  transform: none;
+}
+body.nagornaya-page .btoc-link:hover {
+  transform: none;
+  background: var(--ng-toc-surface-2);
+}
