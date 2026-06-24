@@ -1,21 +1,21 @@
 ---
-import { loadLegacyFullDocument } from '@/utils/legacyFullDocument';
-
-// Shadow-wrap: preserve legacy premium visual design until native Astro
-// proves visual parity (see REFACTORING_6_0_REALITY_PLAN.md Phase 1).
-// Previously used BaseLayout/ArticleLayout which produced different HTML
-// structure (astro-shell, astro-header, astro-article) — content regression.
-const { headHtml, bodyHtml, bodyAttributes } = loadLegacyFullDocument('karty/ishod/index.html');
+/**
+ * /karty/ishod/ — strict-native route (Рефакторинг 6.0).
+ *
+ * Legacy-head transport retired. The Exodus map is a self-contained
+ * full-screen interactive page: native PageHead (SEO/JSON-LD/meta) +
+ * native IshodMap body (map-engine.js + route.json). Does NOT use
+ * site.css/site.js — the dark map renders its own UI.
+ */
+import IshodPageHead from '@/components/karty/ishod/IshodPageHead.astro';
+import IshodMap from '@/components/karty/ishod/IshodMap.astro';
 ---
 <!DOCTYPE html>
 <html lang="ru">
   <head>
-    <Fragment set:html={headHtml} />
+    <IshodPageHead />
   </head>
-  <body {...bodyAttributes}>
-    <div class="sr-only" data-pagefind-body style="position:absolute;left:-9999px;top:auto;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);clip-path:inset(50%);white-space:nowrap">
-      Страница проекта Господь Бог — Сила Моя. Раздел: karty.
-    </div>
-    <Fragment set:html={bodyHtml} />
+  <body>
+    <IshodMap />
   </body>
 </html>

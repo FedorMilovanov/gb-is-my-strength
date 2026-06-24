@@ -1,0 +1,32 @@
+---
+/**
+ * IshodMap — native body for /karty/ishod/.
+ *
+ * Self-contained full-screen interactive Exodus map. Loads the shared
+ * map-engine.js, fetches route.json, and initializes MapEngine.createMap().
+ *
+ * The sr-only h1 is for SEO/a11y — the map renders its own visual header.
+ * data-pagefind-body on the h1 span gives Pagefind a search snippet.
+ */
+---
+<h1 class="sr-only" data-pagefind-body>Исход из Египта — интерактивная карта. Маршрут странствий народа Израиля от Раамсеса до Ханаана: 11 мест, 6 этапов, 40 лет, Синайский завет, Числа 33.</h1>
+<div id="stage" style="position:fixed;inset:0;background:#070a10"></div>
+<script is:inline src="../_engine/map-engine.js"></script>
+<script is:inline>
+(function(){
+  function init() {
+    var container = document.getElementById('stage');
+    if (!container) return;
+    fetch('route.json')
+      .then(function(r){ if(!r.ok) throw new Error('HTTP '+r.status); return r.json(); })
+      .then(function(route){
+        var inst = MapEngine.createMap(container, route, {});
+        if (!inst) console.error('MapEngine.createMap returned null');
+      })
+      .catch(function(e){ console.error('[ishod] MapEngine init failed:', e); });
+  }
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', init);
+  } else { init(); }
+})();
+</script>
