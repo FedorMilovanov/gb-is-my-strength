@@ -1,0 +1,56 @@
+---
+/**
+ * AvraamMap — native body for /karty/avraam/.
+ *
+ * Self-contained full-screen interactive Abraham map. Loads the shared
+ * map-engine.js, fetches route.json, and initializes MapEngine.createMap().
+ * Replaces the old cinematic-only avraam-app.js with free exploration engine.
+ */
+---
+<h1 class="sr-only" data-pagefind-body>Путь Авраама — интерактивная карта. От Ура Халдейского до горы Мория: 19 мест, 8 этапов, 5 сюжетов (Лех-леха, Война царей, Акеда), археология, хронология 175 лет.</h1>
+<div id="stage" style="position:fixed;inset:0;background:#070a10"></div>
+<script is:inline src="../_engine/map-engine.js"></script>
+<script is:inline>
+(function(){
+  function init() {
+    var container = document.getElementById('stage');
+    if (!container) return;
+    
+    // Inject Avraam-specific visual overrides (from legacy avraam-app.js style block)
+    var style = document.createElement('style');
+    style.textContent = `
+      :root {
+        --lot:#e0813f;
+        --cand:#9b8cf0;
+      }
+      .me-sig-light-node { fill: rgba(232,200,121,0.2) }
+    `;
+    document.head.appendChild(style);
+
+    // Provide custom visual callback to map engine to color specific place types (Lot, candidates)
+    window.MapEngine = window.MapEngine || {};
+    window.MapEngine.getPlaceVisual = function(pl) {
+      if (pl.type === 'lot') {
+        return { markerClass: 'me-place me-place-lot', cssColor: 'var(--lot)', color: '#e0813f' };
+      }
+      if (pl.type === 'cand') {
+        return { markerClass: 'me-place me-place-cand', cssColor: 'var(--cand)', color: '#9b8cf0' };
+      }
+      return null;
+    };
+
+    fetch('route.json')
+      .then(function(r){ if(!r.ok) throw new Error('HTTP '+r.status); return r.json(); })
+      .then(function(route){
+        var inst = MapEngine.createMap(container, route, {
+          baseGeoUrl: 'base.svg'
+        });
+        if (!inst) console.error('MapEngine.createMap returned null');
+      })
+      .catch(function(e){ console.error('[avraam] MapEngine init failed:', e); });
+  }
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', init);
+  } else { init(); }
+})();
+</script>

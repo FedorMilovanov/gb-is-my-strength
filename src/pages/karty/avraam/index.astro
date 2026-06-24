@@ -1,21 +1,20 @@
 ---
-import { loadLegacyFullDocument } from '@/utils/legacyFullDocument';
-
-// Shadow-wrap: preserve legacy premium visual design until native Astro
-// proves visual parity (see REFACTORING_6_0_REALITY_PLAN.md Phase 1).
-// Previously used BaseLayout/ArticleLayout which produced different HTML
-// structure (astro-shell, astro-header, astro-article) — content regression.
-const { headHtml, bodyHtml, bodyAttributes } = loadLegacyFullDocument('karty/avraam/index.html');
+/**
+ * /karty/avraam/ — strict-native route (Protected App Routes Native Astro Phase).
+ *
+ * Replaces the buggy legacy cinematic-only map with the unified MapEngine.
+ * Native PageHead (SEO/JSON-LD/meta) + Native AvraamMap body.
+ * Does NOT use site.css/site.js.
+ */
+import AvraamPageHead from '@/components/karty/avraam/AvraamPageHead.astro';
+import AvraamMap from '@/components/karty/avraam/AvraamMap.astro';
 ---
 <!DOCTYPE html>
 <html lang="ru">
   <head>
-    <Fragment set:html={headHtml} />
+    <AvraamPageHead />
   </head>
-  <body {...bodyAttributes}>
-    <div class="sr-only" data-pagefind-body style="position:absolute;left:-9999px;top:auto;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);clip-path:inset(50%);white-space:nowrap">
-      Страница проекта Господь Бог — Сила Моя. Раздел: karty.
-    </div>
-    <Fragment set:html={bodyHtml} />
+  <body>
+    <AvraamMap />
   </body>
 </html>
