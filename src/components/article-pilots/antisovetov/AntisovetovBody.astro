@@ -1,13 +1,10 @@
----
-import SingleArticleCluster from '@/components/ui/floating-cluster/SingleArticleCluster.astro';
----
 
 <a href="#content" class="skip-link">Перейти к содержанию</a>
 
-<div hidden="" id="reading-progress"></div>
-<div aria-hidden="true" hidden="" id="section-label"></div>
+<div id="reading-progress"></div>
+<div aria-hidden="true" id="section-label"></div>
 <!-- ВНИМАНИЕ: inline style="top:..." на этой кнопке ЗАПРЕЩЁН — позиция задана в site.css (.theme-toggle) и выровнена по хлебным крошкам -->
-<button aria-label="Переключить тему" class="theme-toggle" hidden="" id="themeToggle">
+<button aria-label="Переключить тему" class="theme-toggle" id="themeToggle">
   <svg class="icon-moon" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
     <path d="M21 12.8A9 9 0 1111.2 3 7 7 0 0021 12.8z"></path>
   </svg>
@@ -19,8 +16,7 @@ import SingleArticleCluster from '@/components/ui/floating-cluster/SingleArticle
     <line x1="4.2" x2="6.3" y1="19.8" y2="17.7"></line><line x1="17.7" x2="19.8" y1="6.3" y2="4.2"></line>
   </svg>
 </button>
-<SingleArticleCluster variant="article" audioState="none" />
-<div class="toc-sidebar" hidden="" id="tocSidebar">
+<div class="toc-sidebar" id="tocSidebar">
   <nav aria-label="Содержание">
     <div class="toc-label">Содержание</div>
   </nav>
@@ -516,7 +512,7 @@ import SingleArticleCluster from '@/components/ui/floating-cluster/SingleArticle
 <p><strong>Механизм:</strong> Создание иллюзорной реальности. Окрашивание фасада (фарисейские «окрашенные гробы») скрывает внутренний распад. Сюда же относится несовпадение пастора на сцене и за кулисами: на сцене он мягкий и плачущий, за закрытой дверью — резкий и нетерпимый к вопросам. Человек, столкнувшийся с этим, начинает сомневаться не в лидере, а в своей адекватности.</p>
 </div>
 <h3 class="text-3xl heading-serif font-semibold mb-4" id="point-11">11. Управляй страхом, стыдом и доступом к благоволению</h3>
-<p class="mb-6">Контроль не всегда строится на крике. Гораздо чаще пастор использует эмоциональные качели. Сегодня он осыпает тебя теплом и вниманием, а завтра — проходит мимо, демонстративно не глядя в г�, демонстративно не глядя в глаза. Это старая техника «приближения и опалы»: человек впадает в состояние постоянной тревоги, пытаясь угадать, чем он провинился, и удваивает усилия, чтобы вернуть благоволение лидера. В Писании родственный распад внутренней цельности назван двоедушием (Иак. 1:8 — о неустойчивости человека во всех путях своих). У Иакова речь о нестабильности веры в молитве; пасторская тактика «приближения и опалы» использует ту же двойственность, только применяет её к другому человеку, а не к Богу. <span class="fn-marker fn-marker--dove map-trigger" data-tip="17" role="button" tabindex="0"></span></p>
+<p class="mb-6">Контроль не всегда строится на крике. Гораздо чаще пастор использует эмоциональные качели. Сегодня он осыпает тебя теплом и вниманием, а завтра — проходит мимо, демонстративно не глядя в глаза. Это старая техника «приближения и опалы»: человек впадает в состояние постоянной тревоги, пытаясь угадать, чем он провинился, и удваивает усилия, чтобы вернуть благоволение лидера. В Писании родственный распад внутренней цельности назван двоедушием (Иак. 1:8 — о неустойчивости человека во всех путях своих). У Иакова речь о нестабильности веры в молитве; пасторская тактика «приближения и опалы» использует ту же двойственность, только применяет её к другому человеку, а не к Богу. <span class="fn-marker fn-marker--dove map-trigger" data-tip="17" role="button" tabindex="0"></span></p>
 <div class="note-box" style="border-left:4px solid var(--color-amber,#d97706)">
 <strong>Психологический капкан системы тепло/холод:</strong><br/>Непредсказуемое чередование одобрения и демонстративного холода может постепенно расшатывать внутренние опоры человека и привязывать его к настроению лидера. Он начинает подавлять критические сигналы совести не потому, что слаб, а потому что хочет удержаться в безопасном поле принятия. Страх человеческий ставит сеть (Притч. 29:25).
       </div>
@@ -1198,7 +1194,7 @@ import SingleArticleCluster from '@/components/ui/floating-cluster/SingleArticle
 </div>
 </aside><div class="article-end-block article-end-sdg-wrap"><div class="article-end-sdg" itemscope="" itemtype="https://schema.org/CreativeWork"><meta itemprop="about" content="Soli Deo Gloria"><span class="sdg" itemprop="name">Soli Deo Gloria</span><svg width="52" height="70" viewBox="0 0 52 70" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><line x1="26" y1="3" x2="26" y2="67" stroke="currentColor" stroke-width="5" stroke-linecap="round"></line><line x1="6" y1="19" x2="46" y2="19" stroke="currentColor" stroke-width="5" stroke-linecap="round"></line></svg></div></div>
 </main>
-<div class="bottom-bar" hidden="" id="bottomBar">
+<div class="bottom-bar" id="bottomBar">
 <div class="bottom-bar-inner">
 <div class="bar-progress" id="barProgress">
 <svg aria-hidden="true" focusable="false" viewBox="0 0 36 36">
@@ -1230,7 +1226,7 @@ import SingleArticleCluster from '@/components/ui/floating-cluster/SingleArticle
 </a>
 </div>
 </div>
-<div class="btoc-overlay" hidden="" id="btocOverlay">
+<div class="btoc-overlay" id="btocOverlay">
 <div class="btoc-panel" id="btocPanel">
 <div class="btoc-header">
 <div class="btoc-header-left">
@@ -1698,10 +1694,9 @@ import SingleArticleCluster from '@/components/ui/floating-cluster/SingleArticle
 <script is:inline src="../../js/enhancements.js?v=b3b77aa6" defer></script>
 <script is:inline src="../../js/sw-register.js?v=8a077d35" defer></script>
 <script is:inline src="../../js/search.js?v=c9d65577" defer></script>
-<script is:inline src="../../js/floating-cluster-controller.js?v=676e7365" defer></script>
 <!-- .reveal IO handled by CSS SDA + site.js -->
 
-<button id="back-to-top" aria-label="Наверх" hidden="" type="button">
+<button id="back-to-top" aria-label="Наверх" type="button">
   <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
     <path d="M12 19V5M5 12l7-7 7 7"/>
   </svg>
