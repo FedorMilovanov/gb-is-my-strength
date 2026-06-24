@@ -1,17 +1,16 @@
-
-
+---
+import GillRailControls from '@/components/ui/floating-cluster/GillRailControls.astro';
+import RomanNumeral from '@/components/ui/floating-cluster/RomanNumeral.astro';
+---
 
 <a class="skip-link" href="#main-content">Перейти к содержимому</a>
 <div class="gbs2-mobile-head">
   <img src="../../images/og-dzhon-gill-istoricheskiy-kontekst-600w.webp" alt="" width="600" height="315">
   <div class="gbs2-mobile-title"><span>Джон Гилл (1697–1771)</span><b>I · Исторический контекст</b></div>
-  <div class="gbs2-mobile-actions">
-    <button class="gbs2-mctl" type="button" data-gbs2-theme aria-label="Переключить тему"><svg class="gbs2-ico-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"></path></svg><svg class="gbs2-ico-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="4.5"></circle><path d="M12 2v2.5M12 19.5V22M4.9 4.9l1.8 1.8M17.3 17.3l1.8 1.8M2 12h2.5M19.5 12H22M4.9 19.1l1.8-1.8M17.3 6.7l1.8-1.8"></path></svg></button>
-    <button class="gbs2-mctl" type="button" data-gbs2-search aria-label="Поиск"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="7"></circle><path d="m16.2 16.2 4 4"></path></svg></button>
-  </div>
+  <GillRailControls context="mobile" audioState="none" includeStyles={true} />
 </div>
 <div class="gbs2-world">
-<aside class="gbs2-rail" aria-label="Серия «Джон Гилл»">
+<aside class="gbs2-rail fc-rail fc-series" data-fc-variant="gill" aria-label="Серия «Джон Гилл»">
   <div class="gbs2-rhead">
     <div class="gbs2-kicker"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path></svg>Серия · Биографии</div>
     <h2 class="gbs2-rtitle">Джон Гилл (1697–1771)</h2>
@@ -69,24 +68,14 @@
       </div>
     </section>
   </div>
-  <div class="gbs2-rfoot">
-  <button class="gbs2-ctl" type="button" data-gbs2-theme aria-label="Переключить тему" title="Тема">
-    <svg class="gbs2-ico-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"></path></svg>
-    <svg class="gbs2-ico-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="4.5"></circle><path d="M12 2v2.5M12 19.5V22M4.9 4.9l1.8 1.8M17.3 17.3l1.8 1.8M2 12h2.5M19.5 12H22M4.9 19.1l1.8-1.8M17.3 6.7l1.8-1.8"></path></svg>
-  </button>
-  <button class="gbs2-ctl" type="button" data-gbs2-font="down" aria-label="Уменьшить шрифт">A−</button>
-  <button class="gbs2-ctl" type="button" data-gbs2-font="up" aria-label="Увеличить шрифт">A+</button>
-  <button class="gbs2-ctl" type="button" data-gbs2-share aria-label="Поделиться"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="18" cy="5" r="3"></circle><circle cx="6" cy="12" r="3"></circle><circle cx="18" cy="19" r="3"></circle><path d="m8.6 13.5 6.8 4M15.4 6.5l-6.8 4"></path></svg></button>
-  <button class="gbs2-ctl" type="button" data-gbs2-search aria-label="Поиск"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="7"></circle><path d="m16.2 16.2 4 4"></path></svg></button>
-  <button class="gbs2-ctl" data-gbs2-offline type="button" aria-label="Сохранить серию офлайн" title="Офлайн">↓</button><a class="gbs2-home" href="../../biografii/">← Назад</a>
-</div>
+  <GillRailControls context="rail" audioState="none" homeHref="../../biografii/" />
 </aside>
 <div class="page-wrap" id="content">
 <nav aria-label="Хлебные крошки" class="breadcrumb"><ol class="breadcrumb__list"><li class="breadcrumb__item"><a class="breadcrumb__link" href="../../">Главная</a></li><li class="breadcrumb__item"><a class="breadcrumb__link" href="../../biografii/">Биографии служителей</a></li><li aria-current="page" class="breadcrumb__item"><span class="breadcrumb__current">Исторический контекст</span></li></ol></nav>
 <slot />
 </div>
 </div>
-<button class="gbs2-bbar" id="gbs2Bbar" type="button" aria-haspopup="dialog" aria-controls="gbs2Sheet"><b id="gbs2MobPct">0%</b><span id="gbs2MobSec">Оглавление части</span></button>
+<button class="gbs2-bbar fc-bbar" id="gbs2Bbar" type="button" aria-haspopup="dialog" aria-controls="gbs2Sheet"><RomanNumeral value="I" /><b id="gbs2MobPct">0%</b><span id="gbs2MobSec">Оглавление части</span></button>
 <div class="gbs2-sheet" id="gbs2Sheet" aria-hidden="true">
   <div class="gbs2-sheet-backdrop" data-gbs2-close></div>
   <section class="gbs2-sheet-panel" role="dialog" aria-modal="true" aria-label="Мир серии Джон Гилл">
@@ -123,4 +112,5 @@
 <script is:inline defer src="../../js/search.js?v=c9d65577"></script>
 <script is:inline defer src="../../js/highlights.js?v=a1706b06"></script>
 <script is:inline defer src="../../js/enhancements.js?v=b3b77aa6"></script>
+<script is:inline defer="" src="../../js/floating-cluster-controller.js?v=676e7365"></script>
 <!-- .reveal IO handled by CSS SDA + site.js -->
