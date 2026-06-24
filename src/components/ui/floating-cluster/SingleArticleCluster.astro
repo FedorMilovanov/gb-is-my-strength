@@ -1,0 +1,294 @@
+---
+import ClusterButton from './ClusterButton.astro';
+import PlayEmber from './PlayEmber.astro';
+import SaveButton from './SaveButton.astro';
+
+interface Props {
+  variant?: 'hermeneutics' | 'article';
+  audioState?: 'none' | 'available' | 'loading' | 'playing' | 'paused';
+}
+
+const {
+  variant = 'article',
+  audioState = 'none',
+} = Astro.props;
+---
+<div
+  id="gbFloatingControls"
+  class={`gb-floating-controls fc-root fc-single fc-single--${variant}`}
+  data-fc-root
+  data-fc-variant={variant}
+  data-fc-audio-state={audioState}
+  role="group"
+  aria-label="Быстрые действия статьи"
+>
+  <ClusterButton
+    label="Переключить тему"
+    title="Светлая / тёмная тема"
+    className="gb-fc-btn gb-fc-theme fc-theme-toggle"
+    action="theme"
+    pressed="false"
+  >
+    <span aria-hidden="true" class="fc-theme-toggle__sun">
+      <svg viewBox="0 0 24 24">
+        <circle cx="12" cy="12" r="4.5"></circle>
+        <path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"></path>
+      </svg>
+    </span>
+    <span aria-hidden="true" class="fc-theme-toggle__moon">
+      <svg viewBox="0 0 24 24">
+        <path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"></path>
+      </svg>
+    </span>
+  </ClusterButton>
+
+  <ClusterButton
+    label="Поиск"
+    title="Поиск по сайту"
+    className="gb-fc-btn gb-fc-search"
+    action="search"
+  >
+    <svg aria-hidden="true" viewBox="0 0 24 24">
+      <circle cx="11" cy="11" r="7"></circle>
+      <path d="M21 21l-4.3-4.3"></path>
+    </svg>
+  </ClusterButton>
+
+  <PlayEmber audioState={audioState} />
+  <SaveButton />
+</div>
+
+<style is:global>
+@layer components {
+  .fc-single {
+    --fc-text: var(--color-text);
+    --fc-muted: var(--color-text-muted);
+    --fc-border: color-mix(in srgb, var(--color-border) 86%, transparent);
+    --fc-accent: var(--color-accent);
+    --fc-accent-strong: var(--color-accent-strong);
+    pointer-events: none;
+    gap: 4px;
+  }
+
+  .fc-single .fc-button,
+  .fc-single .gb-fc-btn {
+    pointer-events: auto;
+    position: relative;
+    width: 36px;
+    height: 36px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    margin: 0;
+    border: none;
+    border-radius: 0;
+    background: transparent;
+    box-shadow: none;
+    color: var(--fc-muted);
+    cursor: pointer;
+    transition: color .2s ease, transform .2s cubic-bezier(.22, 1, .36, 1);
+  }
+
+  .fc-single .fc-button svg,
+  .fc-single .gb-fc-btn svg {
+    width: 20px;
+    height: 20px;
+    stroke: currentColor;
+    fill: none;
+    stroke-width: 1.8;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+
+  .fc-single .gb-fc-theme {
+    color: var(--fc-accent);
+  }
+
+  .fc-single .gb-fc-search {
+    color: var(--fc-text);
+  }
+
+  .fc-single .fc-theme-toggle {
+    overflow: hidden;
+  }
+
+  .fc-single .fc-theme-toggle__sun,
+  .fc-single .fc-theme-toggle__moon {
+    position: absolute;
+    inset: 0;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    transition: opacity .24s ease, transform .28s cubic-bezier(.22, 1, .36, 1);
+  }
+
+  .fc-single .fc-theme-toggle__sun {
+    opacity: 1;
+    transform: rotate(0deg) scale(1);
+  }
+
+  .fc-single .fc-theme-toggle__moon {
+    opacity: 0;
+    transform: rotate(-90deg) scale(.6);
+  }
+
+  .fc-single .fc-play-ember,
+  .fc-single .fc-save {
+    color: var(--fc-text);
+  }
+
+  .fc-single .fc-play-ember__ring {
+    position: absolute;
+    inset: 8px;
+    border-radius: 999px;
+    border: 1px solid currentColor;
+    opacity: 0.44;
+    transition: opacity .2s ease;
+  }
+
+  .fc-single .fc-play-ember[data-audio-state='none'] {
+    color: var(--fc-muted);
+  }
+
+  .fc-single .fc-play-ember[data-audio-state='none'] .fc-play-ember__ring {
+    opacity: 0.22;
+  }
+
+  .fc-single .fc-play-ember__icon--pause,
+  .fc-single .fc-play-ember__icon--spark {
+    display: none;
+  }
+
+  .fc-single .fc-play-ember[data-audio-state='playing'] .fc-play-ember__icon--play,
+  .fc-single .fc-play-ember[data-audio-state='paused'] .fc-play-ember__icon--play,
+  .fc-single .fc-play-ember[data-audio-state='loading'] .fc-play-ember__icon--play {
+    display: none;
+  }
+
+  .fc-single .fc-play-ember[data-audio-state='playing'] .fc-play-ember__icon--pause,
+  .fc-single .fc-play-ember[data-audio-state='paused'] .fc-play-ember__icon--pause {
+    display: block;
+  }
+
+  .fc-single .fc-play-ember[data-audio-state='loading'] .fc-play-ember__icon--spark {
+    display: block;
+  }
+
+  .fc-single .fc-save.is-saved {
+    color: var(--fc-accent-strong);
+  }
+
+  .fc-single .fc-save.is-saved svg {
+    fill: currentColor;
+    stroke: currentColor;
+  }
+
+  html.dark .fc-single .gb-fc-theme,
+  html.dark .fc-single .fc-save.is-saved,
+  html.dark .fc-single .fc-play-ember[data-audio-state='playing'],
+  html.dark .fc-single .fc-play-ember[data-audio-state='paused'] {
+    color: var(--fc-accent-strong);
+  }
+
+  html.dark .fc-single .fc-theme-toggle__sun {
+    opacity: 0;
+    transform: rotate(90deg) scale(.6);
+  }
+
+  html.dark .fc-single .fc-theme-toggle__moon {
+    opacity: 1;
+    transform: rotate(0deg) scale(1);
+  }
+
+  @media (hover: hover) and (pointer: fine) {
+    .fc-single .fc-button:hover,
+    .fc-single .gb-fc-btn:hover {
+      background: transparent;
+      color: var(--fc-text);
+      transform: translateY(-2px) scale(1.08);
+    }
+
+    html.dark .fc-single .fc-button:hover,
+    html.dark .fc-single .gb-fc-btn:hover {
+      color: var(--fc-accent-strong);
+    }
+  }
+
+  .fc-single .fc-button:focus-visible,
+  .fc-single .gb-fc-btn:focus-visible {
+    outline: 2px solid var(--fc-accent);
+    outline-offset: 2px;
+  }
+
+  .fc-single .fc-button[aria-disabled='true'] {
+    cursor: not-allowed;
+  }
+
+  .fc-toast {
+    position: fixed;
+    left: 50%;
+    bottom: max(24px, calc(env(safe-area-inset-bottom, 0px) + 24px));
+    transform: translateX(-50%) translateY(20px);
+    z-index: var(--z-toast);
+    padding: 10px 16px;
+    border-radius: 999px;
+    background: color-mix(in srgb, var(--color-text) 94%, transparent);
+    color: var(--color-surface);
+    font-family: var(--f-ui, 'Source Sans 3', system-ui, sans-serif);
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: .01em;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity .22s ease, transform .22s ease;
+  }
+
+  .fc-toast.is-visible {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+  }
+
+  body.fc-single-pilot #reading-progress,
+  body.fc-single-pilot #section-label,
+  body.fc-single-pilot #back-to-top,
+  body.fc-single-pilot #themeToggle,
+  body.fc-single-pilot #tocSidebar,
+  body.fc-single-pilot #bottomBar,
+  body.fc-single-pilot #btocOverlay {
+    display: none !important;
+  }
+
+  @media (max-width: 899px) {
+    .gb-floating-controls.fc-single {
+      top: auto;
+      left: 50%;
+      right: auto;
+      bottom: calc(12px + env(safe-area-inset-bottom, 0px));
+      transform: translateX(-50%);
+      flex-direction: row;
+      gap: 2px;
+      padding: 3px;
+      border: 1px solid var(--fc-border);
+      border-radius: 24px;
+      background: color-mix(in srgb, var(--color-surface) 94%, transparent);
+      -webkit-backdrop-filter: blur(16px) saturate(160%);
+      backdrop-filter: blur(16px) saturate(160%);
+      z-index: var(--z-bottom-bar);
+    }
+
+    body.fc-single-pilot .article-main {
+      padding-bottom: 88px;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .fc-single,
+    .fc-single *,
+    .fc-toast {
+      animation: none !important;
+      transition-duration: 0.01ms !important;
+    }
+  }
+}
+</style>
