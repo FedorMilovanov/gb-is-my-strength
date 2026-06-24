@@ -567,3 +567,30 @@ body[data-gbs2-series="russian-baptism"] .note-box{border-radius:18px;border-col
 
 }
 /* end @layer legacy */
+
+/* v16 PURITAN BRASS LUXURY & GLOBAL CLUSTER ENHANCEMENTS */
+.gb-icon[data-tip]::after, .gbs-rail-foot__btn[data-tip]::after, [data-tip]::after {
+  display: none;
+  content: none;
+}
+.gb-icon:hover {
+  transform: scale(1.04);
+}
+.gb-icon:hover svg {
+  transform: scale(1.02);
+}
+.dark .gb-floating-controls .gb-ember, .dark .gbs2-rfoot .gb-ember {
+  color: #d8b068;
+  box-shadow: 0 0 14px rgba(216, 176, 104, 0.25);
+}
+.dark .gb-floating-controls .gb-icon:hover, .dark .gbs2-ctl:hover, .dark .gbs2-mctl:hover {
+  color: #eed093;
+  border-color: rgba(216, 176, 104, 0.4);
+  box-shadow: 0 0 16px rgba(216, 176, 104, 0.2);
+}
+.gbs2-next-card {
+  transition: transform .3s cubic-bezier(.2,.7,.2,1), box-shadow .3s cubic-bezier(.2,.7,.2,1);
+}
+.gbs2-next-card:hover {
+  transform: translateY(-3px);
+}
