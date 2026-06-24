@@ -42,6 +42,10 @@
     fetch('route.json')
       .then(function(r){ if(!r.ok) throw new Error('HTTP '+r.status); return r.json(); })
       .then(function(route){
+        // In avraam, timeline array is named "timeline" but map-engine supports it fully
+        // if passed properly, though standard engine maps route.stages for timeline dots.
+        // The avraam route.json has specific "timeline" blocks that used to be rendered by avraam-app.js.
+        // We inject the base.svg here.
         var inst = MapEngine.createMap(container, route, {
           baseGeoUrl: 'base.svg'
         });

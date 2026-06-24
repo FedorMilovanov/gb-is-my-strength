@@ -958,6 +958,33 @@ header.appendChild(shareBtn);
       container.appendChild(timelineWrap);
     }
 
+
+    // Life Timeline (bottom)
+    if (route.timeline && route.timeline.length > 0) {
+      const lifeWrap = document.createElement('div');
+      lifeWrap.className = 'me-life';
+      const lifeTrack = document.createElement('div');
+      lifeTrack.className = 'me-life__track';
+      lifeTrack.innerHTML = '<span class="me-life__line"></span>';
+      
+      route.timeline.forEach((item, i) => {
+        const div = document.createElement('div');
+        div.className = 'me-life__item';
+        const clr = item.color || STAGE_COLORS[item.stage||0] || STAGE_COLORS[0];
+        div.style.setProperty('--me-life-clr', clr);
+        div.innerHTML = `<span class="me-life__dot" style="background:${clr}"></span><span class="me-life__era">${esc(item.era||'')}</span><span class="me-life__label">${esc(item.label||'')}</span>`;
+        div.addEventListener('click', () => {
+          const place = (route.places||[]).find(p => p.stage === item.stage && visiblePlaces().some(v => v.id === p.id));
+          if (place) open(place.id);
+          lifeTrack.querySelectorAll('.me-life__item').forEach(el => el.classList.remove('me-life__item--active'));
+          div.classList.add('me-life__item--active');
+        });
+        lifeTrack.appendChild(div);
+      });
+      lifeWrap.appendChild(lifeTrack);
+      container.appendChild(lifeWrap);
+    }
+  
     // Zoom controls
     const zoomControls=document.createElement('div');zoomControls.className='me-zoom';
     zoomControls.innerHTML='<button class="me-zoom-btn" data-zoom="in" title="Приблизить">+</button><button class="me-zoom-btn" data-zoom="out" title="Отдалить">−</button><button class="me-zoom-btn" data-zoom="reset" title="Сбросить">⌂</button><button class="me-zoom-btn" id="me-ruler-btn" title="Измерить расстояние" style="font-size:12px">⟍</button>';
@@ -1869,6 +1896,23 @@ container.appendChild(panel);
           activeItem.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
         }
       }
+
+      const lifeTrack = document.querySelector('.me-life__track');
+      if (lifeTrack && typeof place.stage === 'number') {
+        const items = lifeTrack.querySelectorAll('.me-life__item');
+        // Simple heuristic: activate first life item matching stage
+        let found = false;
+        items.forEach((el,i) => {
+          const itemData = route.timeline[i];
+          const match = itemData && itemData.stage === place.stage;
+          el.classList.toggle('me-life__item--active', match);
+          if (match && !found) {
+            found = true;
+            el.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+          }
+        });
+      }
+
       // Highlight stage path for active place
       const activeStage = place.stage;
       const allPaths = pathsG.querySelectorAll('path[data-stage]');
