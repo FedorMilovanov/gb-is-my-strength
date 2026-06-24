@@ -526,3 +526,63 @@ body[data-gbs2-series="russian-baptism"] .article-body > .h-article-list .h-arti
 body[data-gbs2-series="russian-baptism"] .note-box{border-radius:18px;border-color:color-mix(in srgb,var(--gbs2-accent,#7a2e2e) 18%,var(--color-border));background:color-mix(in srgb,var(--color-surface) 88%,var(--gbs2-accent2,#e8b878) 8%)}
 @media (min-width:1180px){body[data-gbs2-series="russian-baptism"] .article-body > .h-article-list{grid-template-columns:repeat(3,minmax(0,1fr))}body[data-gbs2-series="russian-baptism"] .article-body > .h-article-list .h-article-card{flex-direction:column;gap:12px}body[data-gbs2-series="russian-baptism"] .article-body > .h-article-list .h-article-thumb{width:100%;height:132px}}
 @media (max-width:760px){body[data-gbs2-series="russian-baptism"] .article-body > .h-article-list{grid-template-columns:1fr;gap:12px}body[data-gbs2-series="russian-baptism"] .article-body > .h-article-list .h-article-card{padding:12px}body[data-gbs2-series="russian-baptism"] .article-body > .h-article-list .h-article-thumb{flex:0 0 104px;width:104px;height:76px}body[data-gbs2-series="russian-baptism"] #parts::after{display:block;margin-top:6px}}
+
+/* v16 SITE-WIDE DESIGN PARITY (Standalone Articles, Home, Secondary & Series Landings) */
+
+/* 1. Одиночные статьи и главная: верхнее правое меню и вертикальный плавающий кластер .gb-floating-controls / .mobile-controls */
+.gb-floating-controls button, .mobile-controls button, .gbs2-ctl, .gbs2-mctl, .nag-fontsize-btn, .nag-sidebar-theme-btn {
+  border-radius: 12px;
+  transition: all .3s cubic-bezier(.2,.7,.2,1);
+}
+.gb-floating-controls button:hover, .mobile-controls button:hover, .gbs2-ctl:hover, .gbs2-mctl:hover, .nag-fontsize-btn:hover, .nag-sidebar-theme-btn:hover {
+  background: rgba(0,0,0,.06);
+  transform: scale(1.04);
+}
+html.dark .gb-floating-controls button:hover, html.dark .mobile-controls button:hover, html.dark .gbs2-ctl:hover, html.dark .gbs2-mctl:hover, html.dark .nag-fontsize-btn:hover, html.dark .nag-sidebar-theme-btn:hover {
+  background: rgba(255,255,255,.08);
+  color: #eed093;
+  box-shadow: 0 0 14px rgba(216, 176, 104, 0.28);
+}
+
+/* 2. Отключение текстовых тултипов при наведении на всем сайте */
+[data-tip]::after, [title]::after, .gb-icon[data-tip]::after, .gbs-rail-foot__btn[data-tip]::after {
+  display: none;
+  content: none;
+}
+
+/* 3. Усмирённая Лупа на всем сайте (увеличение не до границы кружка) */
+.gb-floating-controls button:hover svg, .gb-icon:hover svg, .gbs2-ctl:hover svg, .mobile-controls button:hover svg {
+  transform: scale(1.02);
+}
+
+/* 4. Сияющий PLAY (.gb-ember) в ночной теме на всем сайте */
+html.dark .gb-ember, html.dark .gb-floating-controls .gb-ember, html.dark .gbs2-rfoot .gb-ember {
+  color: #d8b068;
+  box-shadow: 0 0 16px rgba(216, 176, 104, 0.3);
+}
+
+/* 5. Античная чеканная бронза в мобильном TOC на одиночных статьях и всем сайте */
+.btoc-link-num, .toc-item__num, .toc-part-item__num {
+  font-family: Georgia, "Times New Roman", serif;
+  font-weight: 800;
+  color: #8a6538;
+}
+html.dark .btoc-link-num, html.dark .toc-item__num, html.dark .toc-part-item__num {
+  color: #d8b068;
+  text-shadow: 0 0 12px rgba(216, 176, 104, 0.35);
+}
+.btoc-link.active .btoc-link-num, .toc-item.is-current .toc-item__num {
+  color: #6a4720;
+}
+html.dark .btoc-link.active .btoc-link-num, html.dark .toc-item.is-current .toc-item__num {
+  color: #eed093;
+  text-shadow: 0 0 16px rgba(216, 176, 104, 0.6);
+}
+
+/* На Нагорной проповеди сохраняем янтарную библейскую гамму в содержании */
+body.nagornaya-page .btoc-link-num { color: #b45309; }
+html.dark body.nagornaya-page .btoc-link-num { color: #f59e0b; }
+
+/* Устранение дрожания карточек на одиночных статьях и всем сайте */
+.btoc-link, .toc-item, .toc-part-item, .gbs2-next-card { transform: none; }
+.btoc-link:hover, .toc-item:hover, .toc-part-item:hover { transform: none; }
