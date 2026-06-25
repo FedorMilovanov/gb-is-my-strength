@@ -32,6 +32,10 @@ on:
 permissions:
   contents: write
 
+concurrency:
+  group: indexnow-meta-push
+  cancel-in-progress: false
+
 jobs:
   notify:
     runs-on: ubuntu-latest
@@ -70,7 +74,9 @@ jobs:
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git diff --quiet && git diff --staged --quiet || \
             (git add -A && git commit -m "chore: auto-update meta, cache-bust [skip ci]")
-          git push
+          for i in 1 2 3; do
+            git push && break || sleep 5
+          done
 
       - name: Build IndexNow payload
         id: payload
