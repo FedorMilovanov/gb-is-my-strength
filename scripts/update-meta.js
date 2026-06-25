@@ -44,6 +44,23 @@ const CANONICAL_READTIME = {
   'dzhon-gill-spravochnik':            8,
 };
 
+// Map: root HTML slug → Astro PageHead component.
+// update-meta syncs modified_time into both root HTML and the Astro PageHead
+// so that the next Astro build produces dist/ with identical dates and the
+// article MDX parity audit stays green.  Single source of truth = git log.
+const ASTRO_PAGE_HEAD_MAP = {
+  '20-antisovetov-pastoru': 'src/components/article-pilots/antisovetov/AntisovetovPageHead.astro',
+  'dzhon-gill-istoricheskiy-kontekst': 'src/components/article-pilots/gill-context/GillContextPageHead.astro',
+  'dzhon-gill-chast-1-chelovek': 'src/components/article-pilots/gill-part1/GillPart1PageHead.astro',
+  'dzhon-gill-chast-2-uchenyi': 'src/components/article-pilots/gill-part2/GillPart2PageHead.astro',
+  'dzhon-gill-chast-3-nasledie': 'src/components/article-pilots/gill-part3/GillPart3PageHead.astro',
+  'dzhon-gill-spravochnik': 'src/components/article-pilots/gill-spravochnik/GillSpravochnikPageHead.astro',
+  'hermenevticheskaya-otsenka-hristotsentrichnoy-germenevtiki': 'src/components/article-pilots/hermenevtika/HermenevtikaPageHead.astro',
+  'kod-da-vinchi': 'src/components/article-pilots/kod-da-vinchi/KodDaVinchiPageHead.astro',
+  'krajne-li-isporcheno-serdce': 'src/components/article-pilots/krajne/KrajnePageHead.astro',
+  'rimlyanam-7-veruyushchiy-ili-neveruyushchiy': 'src/components/article-pilots/rimlyanam7/Rimlyanam7PageHead.astro',
+};
+
 const DRY_RUN   = process.argv.includes('--dry-run');
 const FORCE_ALL = process.argv.includes('--all');
 
@@ -369,6 +386,27 @@ function updateFeed(changes) {
 function reEsc(s) { return s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); }
 function xe(s)    { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
 
+// ── 1c. Sync Astro PageHead components ────────────────────────────────────────
+
+function syncAstroPageHead(slug, newMod) {
+  const rel = ASTRO_PAGE_HEAD_MAP[slug];
+  if (!rel) return;
+  const file = path.resolve(__dirname, '..', rel);
+  if (!fs.existsSync(file)) return;
+  let astro = fs.readFileSync(file, 'utf8');
+
+  // article:modified_time meta tag
+  astro = astro.replace(
+    /(<meta\s+property="article:modified_time"\s+content=")[^"]*(")/,
+    `$1${newMod}$2`
+  );
+
+  // dateModified in JSON-LD
+  astro = astro.replace(/("dateModified"\s*:\s*")[^"]*(")/g, `$1${newMod}$2`);
+
+  writeIfChanged(file, astro, `${rel} (synced modified_time)`);
+}
+
 // ── Main ──────────────────────────────────────────────────────────────────────
 
 function main() {
@@ -400,6 +438,7 @@ function main() {
 
     changes[slug] = { pubISO, modISO };
     updateHTML(slug, { pubISO, modISO, words, readTime });
+    syncAstroPageHead(slug, toMoscowISO(modISO));
   }
 
   // ── Нагорная проповедь ──────────────────────────────────────────
