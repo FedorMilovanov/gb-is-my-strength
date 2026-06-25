@@ -202,7 +202,7 @@ window.SITE_CONFIG = {
     </script>
 
     {/* Structured Data */}
-    <script is:inline type="application/ld+json">{jsonLd}</script>
+    <script is:inline type="application/ld+json" set:html={jsonLd} />
 
     <link rel="stylesheet" href={`../css/command-palette.css?v=${commandPaletteCss}`} />
     <link rel="stylesheet" href={`../css/mobile-hotfix.css?v=${mobileHotfixCss}`} />
