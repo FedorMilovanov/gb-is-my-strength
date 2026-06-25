@@ -66,7 +66,7 @@ const CONTRACTS = [
     'dzhon-gill-spravochnik',
   ].map((slug) => ({
     rel: `articles/${slug}/index.html`,
-    require: ['gbs-world', 'data-gbs2-series="dzhon-gill"', 'gbs2-rail', 'gbs2-hero'],
+    require: ['gbs-world', 'data-gbs2-series="dzhon-gill"', 'gbs2-hero'],
     forbid: ['astro-article', 'astro-series-nav'],
   })),
 ];

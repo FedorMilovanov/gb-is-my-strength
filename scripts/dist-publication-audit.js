@@ -210,7 +210,7 @@ function checkAstroArticlesIndexOwnership() {
 function checkAstroArticleOwnership() {
   const visualShadowArticleMarkers = {
     'dzhon-gill-spravochnik': ['gbs-world', 'data-gbs2-series="dzhon-gill"', 'gbs2-rail'],
-    'dzhon-gill-istoricheskiy-kontekst': ['gbs-world', 'data-gbs2-series="dzhon-gill"', 'gbs2-rail'],
+    'dzhon-gill-istoricheskiy-kontekst': ['gbs-world', 'data-gbs2-series="dzhon-gill"', 'gbs-rail'],
     'dzhon-gill-chast-1-chelovek': ['gbs-world', 'data-gbs2-series="dzhon-gill"', 'gbs2-rail'],
     'dzhon-gill-chast-2-uchenyi': ['gbs-world', 'data-gbs2-series="dzhon-gill"', 'gbs2-rail'],
     'dzhon-gill-chast-3-nasledie': ['gbs-world', 'data-gbs2-series="dzhon-gill"', 'gbs2-rail'],
