@@ -68,38 +68,42 @@ function normalize(html) {
 function wordCount(html) { return (stripTags(html).match(/[A-Za-zА-Яа-яЁё0-9]{2,}/g) || []).length; }
 function h2Count(html) { return (String(html || '').match(/<h2\b/gi) || []).length; }
 function themeBtn(cls) {
-  return `<button type="button" class="${cls} fc-button fc-theme-toggle" aria-label="Переключить тему" title="Тема" aria-pressed="false" data-gbs2-theme=""><span aria-hidden="true" class="fc-theme-toggle__sun"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="4.5"></circle><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"></path></svg></span><span aria-hidden="true" class="fc-theme-toggle__moon"><svg viewBox="0 0 24 24"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"></path></svg></span></button>`;
+  const c = [cls, 'gbs-rail-foot__btn', 'gb-theme-toggle'].filter(Boolean).join(' ');
+  return `<button type="button" class="${c}" data-fc-action="theme" aria-label="Тема" aria-pressed="false" data-tip="Тема"><span class="theme-icon-sun" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4.5"></circle><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"></path></svg></span><span class="theme-icon-moon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"></path></svg></span></button>`;
 }
 function searchBtn(cls) {
-  return `<button type="button" class="${cls} fc-button" aria-label="Поиск" title="Поиск" data-gbs2-search=""><svg aria-hidden="true" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"></circle><path d="M21 21l-4.3-4.3"></path></svg></button>`;
+  const c = [cls, 'gbs-rail-foot__btn'].filter(Boolean).join(' ');
+  return `<button type="button" class="${c}" data-fc-action="search" aria-label="Поиск" data-tip="Поиск"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="7"></circle><path d="M21 21l-4.3-4.3"></path></svg></button>`;
 }
-function shareBtn(cls) {
-  return `<button type="button" class="${cls} fc-button" aria-label="Поделиться" title="Поделиться" data-gbs2-share=""><svg aria-hidden="true" viewBox="0 0 24 24"><circle cx="18" cy="5" r="3"></circle><circle cx="6" cy="12" r="3"></circle><circle cx="18" cy="19" r="3"></circle><path d="M8.59 13.51l6.83 3.98"></path><path d="M15.41 6.51L8.59 10.49"></path></svg></button>`;
+function shareBtn(_cls) {
+  return '';
 }
 function fontBtn(cls, kind, label, text) {
-  return `<button type="button" class="${cls} fc-button fc-font" aria-label="${label}" title="${label}" data-gbs2-font="${kind}">${text}</button>`;
+  const c = [cls, 'gbs-rail-foot__btn', 'gbs-rail-foot__btn--text'].filter(Boolean).join(' ');
+  return `<button type="button" class="${c}" data-fc-action="font-${kind}" aria-label="${label}" data-tip="${text}">${text}</button>`;
 }
 function playBtn(cls) {
-  return `<button type="button" class="fc-button fc-play-ember ${cls}" data-fc-action="play" data-audio-state="none" aria-label="Озвучка" aria-disabled="true"><span aria-hidden="true" class="fc-play-ember__ring"></span><svg aria-hidden="true" class="fc-play-ember__icon fc-play-ember__icon--play" viewBox="0 0 24 24"><path d="M8 5.5v13l10-6.5z"></path></svg><svg aria-hidden="true" class="fc-play-ember__icon fc-play-ember__icon--pause" viewBox="0 0 24 24"><path d="M9 6v12"></path><path d="M15 6v12"></path></svg><svg aria-hidden="true" class="fc-play-ember__icon fc-play-ember__icon--spark" viewBox="0 0 24 24"><path d="M12 5.5v3"></path><path d="M12 15.5v3"></path><path d="M5.5 12h3"></path><path d="M15.5 12h3"></path></svg></button>`;
+  const c = ['gb-ember', cls, 'gbs-rail-ember'].filter(Boolean).join(' ');
+  return `<button type="button" class="${c}" data-state="idle" data-fc-action="play" style="--p:0" aria-label="Озвучка" aria-disabled="true" data-tip="Озвучка"><svg class="gb-ember__ring-svg" viewBox="0 0 100 100" aria-hidden="true"><circle class="gb-ember__ring-track" cx="50" cy="50" r="45"></circle><circle class="gb-ember__ring-progress" cx="50" cy="50" r="45"></circle></svg><svg class="gb-ember__glyph" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 4.8v14.4L18.5 12 7 4.8z"></path></svg><svg class="gb-ember__pause" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 6v12M15 6v12"></path></svg><svg class="gb-ember__check" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.2 4.1L19 7"></path></svg></button>`;
 }
 function saveBtn(cls) {
-  return `<button type="button" class="fc-button fc-save ${cls}" data-fc-action="save" aria-label="Сохранить" aria-pressed="false"><svg aria-hidden="true" viewBox="0 0 24 24"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"></path></svg></button>`;
+  const c = ['gb-save', cls, 'gbs-rail-foot__btn'].filter(Boolean).join(' ');
+  return `<button type="button" class="${c}" data-fc-action="save" aria-label="Сохранить" aria-pressed="false" data-tip="Сохранить"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"></path></svg></button>`;
 }
-function offlineBtn(cls) {
-  return `<button type="button" class="${cls} fc-button fc-offline" aria-label="Сохранить серию офлайн" title="Офлайн" data-gbs2-offline="">↓</button>`;
+function offlineBtn(_cls) {
+  return '';
 }
 function mobileControlsMarkup() {
-  return `<div class="gbs2-mobile-actions fc-mobile-actions" data-fc-root data-fc-variant="gill" role="group" aria-label="Быстрые действия серии">${themeBtn('gbs2-mctl')}${searchBtn('gbs2-mctl')}${playBtn('gbs2-mctl')}${saveBtn('gbs2-mctl')}</div>`;
+  return `<div class="gbs-rail-foot gb-rail-foot" data-fc-controls="gill-rail">${themeBtn('')}${searchBtn('')}${fontBtn('', 'down', 'Уменьшить шрифт', 'A−')}${fontBtn('', 'up', 'Увеличить шрифт', 'A+')}${playBtn('')}${saveBtn('')}</div>`;
 }
 function railControlsMarkup() {
-  const cls = 'gbs2-ctl';
-  return `<div class="gbs2-rfoot fc-rfoot" data-fc-root data-fc-variant="gill" role="group" aria-label="Управление серией">${themeBtn(cls)}${searchBtn(cls)}${shareBtn(cls)}${fontBtn(cls, 'down', 'Шрифт меньше', 'A−')}${fontBtn(cls, 'up', 'Шрифт больше', 'A+')}${playBtn(cls)}${saveBtn(cls)}${offlineBtn(cls)}<a class="gbs2-home fc-home" href="../../biografii/">← Назад</a></div>`;
+  return `<div class="gbs-rail-foot gb-rail-foot" data-fc-controls="gill-rail">${themeBtn('')}${searchBtn('')}${fontBtn('', 'down', 'Уменьшить шрифт', 'A−')}${fontBtn('', 'up', 'Увеличить шрифт', 'A+')}${playBtn('')}${saveBtn('')}</div>`;
 }
 function expandChromeHelpers(html, roman) {
   return String(html || '')
     .replace(/<GillRailControls\s+context="mobile"\s+audioState="none"\s+includeStyles=\{true\}\s*\/>/g, mobileControlsMarkup())
     .replace(/<GillRailControls\s+context="rail"\s+audioState="none"\s+homeHref="\.\.\/\.\.\/biografii\/"\s*\/>/g, railControlsMarkup())
-    .replace(new RegExp(`<RomanNumeral\\s+value="${roman}"\\s*\\/>`, 'g'), `<span aria-hidden="true" class="fc-roman">${roman}</span>`);
+    .replace(new RegExp(`<RomanNumeral\\s+value="${roman}"\\s*\\/>`, 'g'), `<span aria-hidden="true" class="gb-roman">${roman}</span>`);
 }
 
 console.log('GILL SPRAVOCHNIK STRICT-NATIVE AUDIT');
