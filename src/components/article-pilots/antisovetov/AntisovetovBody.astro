@@ -1,10 +1,13 @@
+---
+import FloatingCluster from '@/components/ui/floating-cluster/FloatingCluster.astro';
+---
 
 <a href="#content" class="skip-link">Перейти к содержанию</a>
 
-<div id="reading-progress"></div>
-<div aria-hidden="true" id="section-label"></div>
+<div hidden="" id="reading-progress"></div>
+<div aria-hidden="true" hidden="" id="section-label"></div>
 <!-- ВНИМАНИЕ: inline style="top:..." на этой кнопке ЗАПРЕЩЁН — позиция задана в site.css (.theme-toggle) и выровнена по хлебным крошкам -->
-<button aria-label="Переключить тему" class="theme-toggle" id="themeToggle">
+<button aria-label="Переключить тему" class="theme-toggle" hidden="" id="themeToggle">
   <svg class="icon-moon" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
     <path d="M21 12.8A9 9 0 1111.2 3 7 7 0 0021 12.8z"></path>
   </svg>
@@ -16,7 +19,8 @@
     <line x1="4.2" x2="6.3" y1="19.8" y2="17.7"></line><line x1="17.7" x2="19.8" y1="6.3" y2="4.2"></line>
   </svg>
 </button>
-<div class="toc-sidebar" id="tocSidebar">
+<FloatingCluster mode="series-lite" variant="pastor" seriesKey="pastor-series" currentSlug="20-antisovetov-pastoru" hubHref="/pastor-series/" audioState="none" />
+<div class="toc-sidebar" hidden="" id="tocSidebar">
   <nav aria-label="Содержание">
     <div class="toc-label">Содержание</div>
   </nav>
@@ -707,10 +711,7 @@
 </div>
 </div>
 </div>
-<p class="mb-6">Безопасное извинение звучит общо: «если кого-то ранил», «мы все несовершенны». В нём нет имени конкретного греха и пострадавших душ. Это не покаяние — это мягкая смена освещения на сцене. Если обвинения слишком доказаны — стань «мучеником»: «На служителей всегда идут атаки дьявола». Ответственность превращается в гонение, а проверка фактов — в нападение на дело Божье. Настоящая сломленность не просит сохранить трон.</p>
-<div class="note-box">
-<div class="anti-kicker" style="margin-bottom:12px">Как это выглядит на практике</div>
-<p><strong>Ритуальное извинение:</strong> Пастора ловят на систематическом искажении фактов перед общиной. Он выходит на кафедру, пускает слезу и произносит: «Братья, я признаю, что вкралась досадная неточность в коммуникации из-за моей усталости. Прошу прощения, если это кого-то смутило». Зал аплодирует его смирению. Никаких кадровых изменений не происходит, пострадавшие остаются виноватыми, через время ложь повторяется.</p>
+<p class="mb-6">Безопасное извинение звучит общо: «если кого-то ранил», «мы все несовершенны». В нём нет имени конкретного греха и пострадавших душ. Это не покаяние — это мягкая смена освещения на сцене. Если обвинения слишком доказаны — стань «мучеником»: «На служителей всегда идут атаки дьявола». Ответственность превращается в гонение, а проверка фактов — в нападение на дело Божье. Настоящая сломленность не прос�тематическом искажении фактов перед общиной. Он выходит на кафедру, пускает слезу и произносит: «Братья, я признаю, что вкралась досадная неточность в коммуникации из-за моей усталости. Прошу прощения, если это кого-то смутило». Зал аплодирует его смирению. Никаких кадровых изменений не происходит, пострадавшие остаются виноватыми, через время ложь повторяется.</p>
 </div>
 <div class="note-box">
 <span style="display:inline-flex;font-size:0.7rem;text-transform:uppercase;letter-spacing:0.12em;color:var(--muted);font-weight:700;margin-bottom:12px;">Ложные наветы на верных пастырей</span>
@@ -1226,7 +1227,7 @@
 </a>
 </div>
 </div>
-<div class="btoc-overlay" id="btocOverlay">
+<div class="btoc-overlay" hidden="" id="btocOverlay">
 <div class="btoc-panel" id="btocPanel">
 <div class="btoc-header">
 <div class="btoc-header-left">
@@ -1694,9 +1695,10 @@
 <script is:inline src="../../js/enhancements.js?v=b3b77aa6" defer></script>
 <script is:inline src="../../js/sw-register.js?v=8a077d35" defer></script>
 <script is:inline src="../../js/search.js?v=c9d65577" defer></script>
+<script is:inline src="../../js/floating-cluster-controller.js?v=c78a4236" defer></script>
 <!-- .reveal IO handled by CSS SDA + site.js -->
 
-<button id="back-to-top" aria-label="Наверх" type="button">
+<button id="back-to-top" aria-label="Наверх" hidden="" type="button">
   <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
     <path d="M12 19V5M5 12l7-7 7 7"/>
   </svg>

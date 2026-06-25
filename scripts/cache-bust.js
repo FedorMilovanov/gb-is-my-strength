@@ -43,6 +43,7 @@ const ASSETS = [
   'js/nagornaya-mobile-toc.js',
   'js/glossary.js',
   'js/series-cards.js',
+  'js/floating-cluster-controller.js',
 ];
 
 // ── Хеш файла ────────────────────────────────────────────────────────────────
