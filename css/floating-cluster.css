@@ -1997,3 +1997,101 @@ html.dark .gb-ember-expand__btn.is-active {
     transition: opacity .15s ease !important;
   }
 }
+
+/* =========================================================
+   Favorites Block — homepage "Ваше избранное" section
+   Rendered from localStorage gb-favorites by inline script.
+   ========================================================= */
+.favorites-block {
+  margin: 28px 0 40px;
+}
+.favorites-block__heading {
+  margin: 0 0 6px;
+  font-family: var(--f-body, Lora, Georgia, serif);
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--color-text, #1a1a1a);
+}
+.favorites-block__sub {
+  margin: 0 0 16px;
+  font-family: var(--f-ui, 'Source Sans 3', system-ui, sans-serif);
+  font-size: 13px;
+  color: var(--color-text-muted, #6a6a6a);
+}
+.favorites-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 14px;
+}
+.favorites-card {
+  display: flex;
+  flex-direction: column;
+  text-decoration: none;
+  background: var(--color-surface, #fff);
+  border: 1px solid var(--color-border, #e5e2dc);
+  border-radius: 14px;
+  overflow: hidden;
+  transition:
+    border-color .25s ease,
+    box-shadow .35s cubic-bezier(.2,.7,.2,1),
+    transform .35s cubic-bezier(.2,.7,.2,1);
+}
+.favorites-card:hover {
+  border-color: var(--color-accent, #7a2e2e);
+  box-shadow: 0 8px 24px rgba(0,0,0,.08);
+  transform: translateY(-3px);
+  text-decoration: none;
+}
+html.dark .favorites-card {
+  background: var(--color-surface, #161a21);
+  border-color: var(--color-border, #232830);
+}
+html.dark .favorites-card:hover {
+  border-color: var(--color-accent, #d4a574);
+  box-shadow: 0 12px 32px rgba(0,0,0,.3);
+}
+.favorites-card__img {
+  height: 140px;
+  background-size: cover;
+  background-position: center;
+  background-color: var(--color-surface-muted, #f4f2ed);
+}
+.favorites-card__body {
+  padding: 14px 16px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.favorites-card__section {
+  font-family: var(--f-ui, 'Source Sans 3', system-ui, sans-serif);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  color: var(--color-accent, #7a2e2e);
+}
+.favorites-card__title {
+  font-family: var(--f-body, Lora, Georgia, serif);
+  font-size: 15px;
+  font-weight: 700;
+  line-height: 1.3;
+  color: var(--color-text, #1a1a1a);
+}
+.favorites-card__desc {
+  font-family: var(--f-ui, 'Source Sans 3', system-ui, sans-serif);
+  font-size: 12px;
+  line-height: 1.5;
+  color: var(--color-text-muted, #6a6a6a);
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+@media (max-width: 600px) {
+  .favorites-list {
+    grid-template-columns: 1fr;
+  }
+  .favorites-card__img {
+    height: 100px;
+  }
+}
