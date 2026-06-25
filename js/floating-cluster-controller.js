@@ -464,10 +464,7 @@
      ===================================================== */
   function initPlayExpand() {
     qsa('.gb-ember').forEach(function(ember) {
-      // Only standalone floater embers, not rail/mobile
       if (!ember.closest('.gb-floater')) return;
-
-      // Create expand panel if not exists
       if (ember.parentNode.querySelector('.gb-ember-expand')) return;
 
       var speeds = [0.75, 1, 1.25, 1.5, 1.75, 2];
@@ -476,60 +473,71 @@
 
       var panel = document.createElement('div');
       panel.className = 'gb-ember-expand';
+      panel.setAttribute('role', 'group');
+      panel.setAttribute('aria-label', 'Скорость воспроизведения');
       panel.innerHTML = speeds.map(function(s) {
         var active = s === currentRate ? ' is-active' : '';
-        return '<button class="gb-ember-expand__btn' + active + '" data-speed="' + s + '">' + s + '×</button>';
+        return '<button class="gb-ember-expand__btn' + active + '" data-speed="' + s + '" aria-label="Скорость ' + s + 'x">' + s + '\u00d7</button>';
       }).join('') +
       '<button class="gb-ember-expand__close" aria-label="Закрыть"><svg viewBox="0 0 24 24"><path d="M18 6L6 18M6 6l12 12"/></svg></button>';
 
-      // Insert after ember, wrap parent in relative if needed
       var parent = ember.parentNode;
       if (getComputedStyle(parent).position === 'static') {
         parent.style.position = 'relative';
       }
       parent.insertBefore(panel, ember.nextSibling);
 
-      // Toggle panel on ember click
+      function openPanel() {
+        panel.classList.add('is-open');
+        ember.classList.add('gb-ember--panel-open');
+      }
+      function closePanel() {
+        panel.classList.remove('is-open');
+        ember.classList.remove('gb-ember--panel-open');
+      }
+
       ember.addEventListener('click', function(e) {
         e.preventDefault();
         e.stopPropagation();
-        var open = panel.classList.contains('is-open');
-        if (open) {
-          panel.classList.remove('is-open');
-        } else {
-          panel.classList.add('is-open');
-        }
+        panel.classList.contains('is-open') ? closePanel() : openPanel();
       });
 
-      // Speed selection
       panel.addEventListener('click', function(e) {
         var btn = e.target.closest('[data-speed]');
         if (btn) {
           var speed = parseFloat(btn.getAttribute('data-speed'));
           try { localStorage.setItem('gbx-tts-rate', speed); } catch(_){}
-          // Update active state
+
+          // Update active + pulse animation
           panel.querySelectorAll('.gb-ember-expand__btn').forEach(function(b) {
-            b.classList.toggle('is-active', parseFloat(b.getAttribute('data-speed')) === speed);
+            var isThis = parseFloat(b.getAttribute('data-speed')) === speed;
+            b.classList.toggle('is-active', isThis);
+            b.classList.remove('is-pulsing');
           });
-          // If speechSynthesis is speaking, update rate
-          if (window.speechSynthesis && window.speechSynthesis.speaking) {
-            // Rate will apply on next utterance
-          }
-          // Close panel smoothly after selection
-          setTimeout(function() { panel.classList.remove('is-open'); }, 280);
+          // Trigger pulse on selected
+          btn.classList.add('is-pulsing');
+          btn.addEventListener('animationend', function() {
+            btn.classList.remove('is-pulsing');
+          }, { once: true });
+
+          // Close smoothly after pulse
+          setTimeout(closePanel, 380);
           return;
         }
-        // Close button
-        var close = e.target.closest('.gb-ember-expand__close');
-        if (close) {
-          panel.classList.remove('is-open');
+        if (e.target.closest('.gb-ember-expand__close')) {
+          closePanel();
         }
       });
 
-      // Close on outside click
       document.addEventListener('click', function(e) {
         if (!panel.contains(e.target) && e.target !== ember && !ember.contains(e.target)) {
-          panel.classList.remove('is-open');
+          closePanel();
+        }
+      });
+
+      document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape' && panel.classList.contains('is-open')) {
+          closePanel();
         }
       });
     });
