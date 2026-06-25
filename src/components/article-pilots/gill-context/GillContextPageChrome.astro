@@ -10,7 +10,7 @@ import RomanNumeral from '@/components/ui/floating-cluster/RomanNumeral.astro';
   <GillRailControls context="mobile" audioState="none" includeStyles={true} />
 </div>
 <div class="gbs2-world">
-<aside class="gbs2-rail fc-rail fc-series" data-fc-variant="gill" aria-label="Серия «Джон Гилл»">
+<aside class="gbs2-rail" data-fc-variant="gill" aria-label="Серия «Джон Гилл»">
   <div class="gbs2-rhead">
     <div class="gbs2-kicker"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path></svg>Серия · Биографии</div>
     <h2 class="gbs2-rtitle">Джон Гилл (1697–1771)</h2>
@@ -75,7 +75,7 @@ import RomanNumeral from '@/components/ui/floating-cluster/RomanNumeral.astro';
 <slot />
 </div>
 </div>
-<button class="gbs2-bbar fc-bbar" id="gbs2Bbar" type="button" aria-haspopup="dialog" aria-controls="gbs2Sheet"><RomanNumeral value="I" /><b id="gbs2MobPct">0%</b><span id="gbs2MobSec">Оглавление части</span></button>
+<button class="gbs2-bbar" id="gbs2Bbar" type="button" aria-haspopup="dialog" aria-controls="gbs2Sheet"><RomanNumeral value="I" /><b id="gbs2MobPct">0%</b><span id="gbs2MobSec">Оглавление части</span></button>
 <div class="gbs2-sheet" id="gbs2Sheet" aria-hidden="true">
   <div class="gbs2-sheet-backdrop" data-gbs2-close></div>
   <section class="gbs2-sheet-panel" role="dialog" aria-modal="true" aria-label="Мир серии Джон Гилл">

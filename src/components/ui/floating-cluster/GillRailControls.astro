@@ -34,7 +34,7 @@ const {
   includeStyles: _unused,
 } = Astro.props;
 ---
-<div class="gbs-rail-foot fc-rail-foot" data-fc-controls="gill-rail">
+<div class="gbs-rail-foot gb-rail-foot" data-fc-controls="gill-rail">
 
   <!-- Theme toggle -->
   <button
@@ -114,7 +114,7 @@ const {
      gbs-rail-foot — footer controls strip
      Точная реализация из референса (6 кнопок в строку)
      ========================================================= */
-  .gbs-rail-foot.fc-rail-foot {
+  .gbs-rail-foot.gb-rail-foot {
     margin-top: auto;
     display: flex;
     flex-direction: row;
@@ -196,31 +196,31 @@ const {
   html.dark .gbs-rail-foot__btn.gb-theme-toggle .theme-icon-moon { opacity: 1; transform: rotate(0) scale(1); }
 
   /* Ember в rail — 32px и gold ring */
-  .fc-rail-foot .gb-ember,
-  .fc-rail-foot .gbs-rail-ember {
+  .gb-rail-foot .gb-ember,
+  .gb-rail-foot .gbs-rail-ember {
     --ember-size: 32px;
     --ring-color: var(--color-accent-gold-bright, #d8aa6d);
   }
-  .fc-rail-foot .gb-ember__ring-track {
+  .gb-rail-foot .gb-ember__ring-track {
     stroke: rgba(232, 184, 120, .22);
   }
-  .fc-rail-foot .gb-ember__ring-progress {
+  .gb-rail-foot .gb-ember__ring-progress {
     stroke-width: 1.5;
   }
 
   /* Save в rail — те же классы gb-save, без halo */
-  .fc-rail-foot .gb-save {
+  .gb-rail-foot .gb-save {
     width: 32px;
     height: 32px;
   }
-  .fc-rail-foot .gb-save svg {
+  .gb-rail-foot .gb-save svg {
     width: 17px;
     height: 17px;
   }
 
   /* Tooltips для rail foot (появляются вверх, не вниз) */
   .gbs-rail-foot__btn[data-tip]::after,
-  .fc-rail-foot .gb-ember[data-tip]::after {
+  .gb-rail-foot .gb-ember[data-tip]::after {
     content: attr(data-tip);
     position: absolute;
     bottom: calc(100% + 10px);
