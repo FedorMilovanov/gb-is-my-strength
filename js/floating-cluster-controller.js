@@ -246,8 +246,28 @@
 
   /* =====================================================
      KEYBOARD SHORTCUTS (аналог референса)
+     Opt-in: активируется только если на <body> или любом [data-fc-root]
+     есть data-fc-shortcuts="true" (или data-gb-shortcuts="true" — legacy alias).
+     Без opt-in — глобальные D/S/T/B НЕ перехватываются.
      ===================================================== */
+  function shortcutsEnabled() {
+    if (document.body && (document.body.getAttribute('data-fc-shortcuts') === 'true' ||
+                          document.body.getAttribute('data-gb-shortcuts') === 'true')) {
+      return true;
+    }
+    var roots = qsa('[data-fc-root]');
+    for (var i = 0; i < roots.length; i++) {
+      var r = roots[i];
+      if (r.getAttribute('data-fc-shortcuts') === 'true' ||
+          r.getAttribute('data-gb-shortcuts') === 'true') {
+        return true;
+      }
+    }
+    return false;
+  }
+
   function initKeyboard() {
+    if (!shortcutsEnabled()) return;
     document.addEventListener('keydown', function (e) {
       var isInput = e.target.matches('input, textarea, select, [contenteditable]');
       if (isInput) return;
