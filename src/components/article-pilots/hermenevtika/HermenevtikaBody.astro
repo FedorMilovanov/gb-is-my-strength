@@ -1,14 +1,11 @@
----
-import FloatingCluster from '@/components/ui/floating-cluster/FloatingCluster.astro';
----
 
-<div hidden="" id="reading-progress"></div>
-<div aria-hidden="true" hidden="" id="section-label"></div>
-<button aria-label="Наверх" hidden="" id="back-to-top" type="button">
+<div id="reading-progress"></div>
+<div aria-hidden="true" id="section-label"></div>
+<button aria-label="Наверх" id="back-to-top" type="button">
 <svg aria-hidden="true" focusable="false" viewBox="0 0 24 24"><polyline points="18 15 12 9 6 15"></polyline></svg>
 </button>
 <!-- ВНИМАНИЕ: inline style="top:..." на этой кнопке ЗАПРЕЩЁН — позиция задана в site.css (.theme-toggle) и выровнена по хлебным крошкам -->
-<button aria-label="Переключить тему" class="theme-toggle" hidden="" id="themeToggle">
+<button aria-label="Переключить тему" class="theme-toggle" id="themeToggle">
 <svg aria-hidden="true" class="icon-moon" fill="none" focusable="false" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewBox="0 0 24 24">
 <path d="M21 12.8A9 9 0 1111.2 3 7 7 0 0021 12.8z"></path>
 </svg>
@@ -24,8 +21,7 @@ import FloatingCluster from '@/components/ui/floating-cluster/FloatingCluster.as
 <line x1="17.7" x2="19.8" y1="6.3" y2="4.2"></line>
 </svg>
 </button>
-<FloatingCluster mode="single" variant="hermeneutics" audioState="none" />
-<div class="toc-sidebar" hidden="" id="tocSidebar">
+<div class="toc-sidebar" id="tocSidebar">
 <nav aria-label="Содержание">
 <div class="toc-label">Содержание</div>
 </nav>
@@ -46,7 +42,7 @@ import FloatingCluster from '@/components/ui/floating-cluster/FloatingCluster.as
 </ol>
 </nav>
 <aside aria-label="Правовая информация и источник" class="notice">
-<p><strong>Права:</strong> © The Master’s Seminary Journal (TMSJ). Переведенный материал размещён в ознакомительных целях для назидания тех, кто не знает английский. По запросу правообладателя будет удалён.</p>
+<p><strong>Права:</strong> © The Master’s Seminary Journal (TMSJ). Переведённый материал размещён в ознакомительных целях и для назидания читателей, не владеющих английским языком. По запросу правообладателя будет удалён.</p>
 <p><strong>Источник:</strong> Abner Chou, “A Hermeneutical Evaluation of Christocentric Hermeneutics,” The Master’s Seminary Journal 27, no. 2 (Fall 2016): 113–139.</p>
 <p><strong>Оригинал на английском (PDF):</strong>
 <a href="https://tms.edu/wp-content/uploads/2021/09/TMSJ-Volume-27-Number-2.pdf" rel="noopener noreferrer" target="_blank">открыть PDF на сайте TMS</a> </p>
@@ -56,7 +52,7 @@ import FloatingCluster from '@/components/ui/floating-cluster/FloatingCluster.as
 <article class="article-body" data-pagefind-body="">
 <span data-pagefind-meta="image" hidden="">/images/hermenevtika-preview.webp</span>
 <span data-pagefind-meta="author" hidden="">Абнер Чау</span>
-<span data-pagefind-meta="readTime" hidden="">35</span>
+<span data-pagefind-meta="readTime" hidden="">50</span>
 <span data-pagefind-meta="category" hidden="">Герменевтика</span>
 <span data-pagefind-meta="scripture" hidden="">2 Тим 3:16</span>
 <header class="article-header">
@@ -74,7 +70,7 @@ import FloatingCluster from '@/components/ui/floating-cluster/FloatingCluster.as
 <span aria-hidden="true" class="article-byline__sep">·</span>
 <span>⏱ 50 мин</span>
 </p>
-<p><i>То, как изучать и преподавать Библию, имеет первостепенное значение для пастора. Христоцентричная герменевтика предложила модификацию грамматико-исторического герменевтического подхода. Данная статья утверждает, что такое изменение не обосновано Писанием и что грамматико-исторический метод не только оправдан Писанием, но и более чем достаточен для раскрытия славы Христа, как она совершенно представлена в Божьем Слове. Соответственно, христоцентричное служение чтит Христа не только за кафедрой, провозглашая Его, но и в кабинете, обращаясь с Его Словом так, как Он того требует.</i></p>
+<p><i>То, как изучать и преподавать Библию, имеет первостепенное значение для пастора. Христоцентричная герменевтика предложила модификацию грамматико-исторического герменевтического подхода. В статье утверждается, что такое изменение не обосновано Писанием и что грамматико-исторический метод не только оправдан Писанием, но и более чем достаточен для раскрытия славы Христа, как она совершенно представлена в Божьем Слове. Соответственно, христоцентричное служение чтит Христа не только за кафедрой, провозглашая Его, но и в кабинете, обращаясь с Его Словом так, как Он того требует.</i></p>
 <div class="divider">* * *</div>
 </header>
 <section aria-labelledby="summary-title-auto" class="summary-card" data-speakable="">
@@ -525,7 +521,7 @@ import FloatingCluster from '@/components/ui/floating-cluster/FloatingCluster.as
 }
 </script>
 <!-- ===== BOTTOM APP BAR ===== -->
-<div class="bottom-bar" hidden="" id="bottomBar">
+<div class="bottom-bar" id="bottomBar">
 <div class="bottom-bar-inner">
 <div class="bar-progress" id="barProgress">
 <svg aria-hidden="true" focusable="false" viewBox="0 0 36 36">
@@ -565,7 +561,7 @@ import FloatingCluster from '@/components/ui/floating-cluster/FloatingCluster.as
 </div>
 </div>
 <!-- ===== BOTTOM TOC OVERLAY ===== -->
-<div class="btoc-overlay" hidden="" id="btocOverlay">
+<div class="btoc-overlay" id="btocOverlay">
 <div class="btoc-panel" id="btocPanel">
 <div class="btoc-handle"></div>
 <div class="btoc-header">
@@ -632,5 +628,3 @@ import FloatingCluster from '@/components/ui/floating-cluster/FloatingCluster.as
 <script is:inline defer="" src="../../js/search.js?v=c9d65577"></script>
 <script is:inline defer="" src="../../js/highlights.js?v=a1706b06"></script>
 <script is:inline defer="" src="../../js/enhancements.js?v=b3b77aa6"></script>
-<script is:inline defer="" src="../../js/floating-cluster-controller.js?v=2d1230a4"></script>
-76e7365"></script>

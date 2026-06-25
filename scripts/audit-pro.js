@@ -59,7 +59,6 @@ const ALLOWED_JS = new Set([
   'js/nagornaya-mobile-toc.js',
   'js/sw-register.js',
   'js/site-modules.js',
-  'js/floating-cluster-controller.js',
   'js/modules/back-to-top.js',
   'js/modules/faq-accordion.js',
   'js/modules/img-loaded.js',
@@ -89,8 +88,7 @@ const CACHE_BUST_ASSETS = [
   'js/modules/faq-accordion.js',
   'js/modules/img-loaded.js',
   'js/modules/theme.js',
-  'js/nagornaya-mobile-toc.js',
-  'js/floating-cluster-controller.js'
+  'js/nagornaya-mobile-toc.js'
 ];
 
 const MAX_CSS_TOTAL = 425_000; // global core CSS budget; route-scoped/pilot CSS is reported separately
@@ -4221,10 +4219,8 @@ const JS_SIZE_FLOORS = {
     // required kit
     if (!/data-gbs2-done-min="\d+"/.test(html) || !/data-gbs2-part-min="\d+"/.test(html) || !/data-gbs2-total-min="\d+"/.test(html))
       probs.push('missing data-gbs2-*-min attrs');
-    const literalNeeds = ['gbs2-mobile-head', 'class="gbs2-world"', 'id="gbs2Ring"', 'id="gbs2Toc"', 'id="gbs2Bbar"', 'id="gbs2Sheet"'];
-    for (const need of literalNeeds)
+    for (const need of ['gbs2-mobile-head', 'class="gbs2-world"', 'class="gbs2-rail"', 'id="gbs2Ring"', 'id="gbs2Toc"', 'id="gbs2Bbar"', 'id="gbs2Sheet"'])
       if (!html.includes(need)) probs.push(`missing ${need}`);
-    if (!/class="[^"]*\bgbs2-rail\b/.test(html)) probs.push('missing class token gbs2-rail');
     const isSeriesLanding = /"@type"\s*:\s*"CollectionPage"/.test(html) || (/<main[^>]*>/.test(html) && !/<article[^>]*data-gbs2-part/i.test(html));
     if (!isSeriesLanding && !/<a\b(?=[^>]*\bclass="[^"]*\bgbs2-part\b)(?=[^>]*aria-current="page")[^>]*>/.test(html))
       probs.push('no aria-current part in rail');

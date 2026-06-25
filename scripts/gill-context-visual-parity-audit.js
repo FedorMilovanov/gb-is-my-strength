@@ -54,9 +54,6 @@ function stripTags(html) {
     .trim();
 }
 function bodyInner(html) { return html.match(/<body\b[^>]*>([\s\S]*?)<\/body>/i)?.[1] || ''; }
-function stripFrontmatter(source) {
-  return String(source || '').replace(/^---[\s\S]*?---\s*/, '');
-}
 function normalize(html) {
   return String(html || '')
     .replace(/\s+is:inline(?=\s|>)/g, '')
@@ -68,40 +65,6 @@ function normalize(html) {
 }
 function wordCount(html) { return (stripTags(html).match(/[A-Za-zА-Яа-яЁё0-9]{2,}/g) || []).length; }
 function h2Count(html) { return (String(html || '').match(/<h2\b/gi) || []).length; }
-function themeBtn(cls) {
-  return `<button type="button" class="${cls} fc-button fc-theme-toggle" aria-label="Переключить тему" title="Тема" aria-pressed="false" data-gbs2-theme=""><span aria-hidden="true" class="fc-theme-toggle__sun"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="4.5"></circle><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"></path></svg></span><span aria-hidden="true" class="fc-theme-toggle__moon"><svg viewBox="0 0 24 24"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"></path></svg></span></button>`;
-}
-function searchBtn(cls) {
-  return `<button type="button" class="${cls} fc-button" aria-label="Поиск" title="Поиск" data-gbs2-search=""><svg aria-hidden="true" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"></circle><path d="M21 21l-4.3-4.3"></path></svg></button>`;
-}
-function shareBtn(cls) {
-  return `<button type="button" class="${cls} fc-button" aria-label="Поделиться" title="Поделиться" data-gbs2-share=""><svg aria-hidden="true" viewBox="0 0 24 24"><circle cx="18" cy="5" r="3"></circle><circle cx="6" cy="12" r="3"></circle><circle cx="18" cy="19" r="3"></circle><path d="M8.59 13.51l6.83 3.98"></path><path d="M15.41 6.51L8.59 10.49"></path></svg></button>`;
-}
-function fontBtn(cls, kind, label, text) {
-  return `<button type="button" class="${cls} fc-button fc-font" aria-label="${label}" title="${label}" data-gbs2-font="${kind}">${text}</button>`;
-}
-function playBtn(cls) {
-  return `<button type="button" class="fc-button fc-play-ember ${cls}" data-fc-action="play" data-audio-state="none" aria-label="Озвучка" aria-disabled="true"><span aria-hidden="true" class="fc-play-ember__ring"></span><svg aria-hidden="true" class="fc-play-ember__icon fc-play-ember__icon--play" viewBox="0 0 24 24"><path d="M8 5.5v13l10-6.5z"></path></svg><svg aria-hidden="true" class="fc-play-ember__icon fc-play-ember__icon--pause" viewBox="0 0 24 24"><path d="M9 6v12"></path><path d="M15 6v12"></path></svg><svg aria-hidden="true" class="fc-play-ember__icon fc-play-ember__icon--spark" viewBox="0 0 24 24"><path d="M12 5.5v3"></path><path d="M12 15.5v3"></path><path d="M5.5 12h3"></path><path d="M15.5 12h3"></path></svg></button>`;
-}
-function saveBtn(cls) {
-  return `<button type="button" class="fc-button fc-save ${cls}" data-fc-action="save" aria-label="Сохранить" aria-pressed="false"><svg aria-hidden="true" viewBox="0 0 24 24"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"></path></svg></button>`;
-}
-function offlineBtn(cls) {
-  return `<button type="button" class="${cls} fc-button fc-offline" aria-label="Сохранить серию офлайн" title="Офлайн" data-gbs2-offline="">↓</button>`;
-}
-function mobileControlsMarkup() {
-  return `<div class="gbs2-mobile-actions fc-mobile-actions" data-fc-root data-fc-variant="gill" role="group" aria-label="Быстрые действия серии">${themeBtn('gbs2-mctl')}${searchBtn('gbs2-mctl')}${playBtn('gbs2-mctl')}${saveBtn('gbs2-mctl')}</div>`;
-}
-function railControlsMarkup() {
-  const cls = 'gbs2-ctl';
-  return `<div class="gbs2-rfoot fc-rfoot" data-fc-root data-fc-variant="gill" role="group" aria-label="Управление серией">${themeBtn(cls)}${searchBtn(cls)}${shareBtn(cls)}${fontBtn(cls, 'down', 'Шрифт меньше', 'A−')}${fontBtn(cls, 'up', 'Шрифт больше', 'A+')}${playBtn(cls)}${saveBtn(cls)}${offlineBtn(cls)}<a class="gbs2-home fc-home" href="../../biografii/">← Назад</a></div>`;
-}
-function expandChromeHelpers(html, roman) {
-  return String(html || '')
-    .replace(/<GillRailControls\s+context="mobile"\s+audioState="none"\s+includeStyles=\{true\}\s*\/>/g, mobileControlsMarkup())
-    .replace(/<GillRailControls\s+context="rail"\s+audioState="none"\s+homeHref="\.\.\/\.\.\/biografii\/"\s*\/>/g, railControlsMarkup())
-    .replace(new RegExp(`<RomanNumeral\\s+value="${roman}"\\s*\\/>`, 'g'), `<span aria-hidden="true" class="fc-roman">${roman}</span>`);
-}
 
 console.log('GILL CONTEXT STRICT-NATIVE AUDIT');
 mustExist('legacy route', LEGACY_REL);
@@ -123,7 +86,7 @@ if (!problems.length) {
   const sectionHtml = SECTION_COMPONENTS.map((name) => read(`${BASE_REL}/${name}`)).join('');
   const article = `<article class="article-body" data-pagefind-body>${sectionHtml}</article>`;
   const main = `<main id="main-content">${header}${article}${post}</main>`;
-  const reconstructed = expandChromeHelpers(stripFrontmatter(pageChrome).replace('<slot />', main), 'I');
+  const reconstructed = pageChrome.replace('<slot />', main);
   const scopeText = [page, pageHead, pageChrome, shell, header, body, post, ...SECTION_COMPONENTS.map((name) => read(`${BASE_REL}/${name}`))].join('\n');
 
   for (const token of FORBIDDEN) mustNotContain('strict-native source scope', scopeText, token);
