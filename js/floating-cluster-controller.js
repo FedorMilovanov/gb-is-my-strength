@@ -115,7 +115,13 @@
 
     if (engine && typeof engine.saveNow === 'function') {
       engine.saveNow();
-      showToast('Сохранено', true);
+      var bm = engine.getCurrent && engine.getCurrent();
+      var pct = bm && bm.progress ? bm.progress + '%' : '';
+      var sec = bm && bm.sectionTitle ? bm.sectionTitle : '';
+      var msg = 'Закладка сохранена';
+      if (pct && sec) msg = 'Закладка · ' + sec + ' · ' + pct;
+      else if (pct) msg = 'Закладка · ' + pct;
+      showToast(msg, true);
       setSaved(true);
       return;
     }
@@ -130,7 +136,7 @@
       else localStorage.removeItem(key);
     } catch (_) {}
     setSaved(nowSaved);
-    showToast(nowSaved ? 'Сохранено' : 'Сохранение отменено', nowSaved);
+    showToast(nowSaved ? 'Закладка сохранена' : 'Закладка удалена', nowSaved);
   }
 
   function setSaved(saved) {
