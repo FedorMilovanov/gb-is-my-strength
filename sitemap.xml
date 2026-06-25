@@ -4,7 +4,7 @@
 
   <url>
     <loc>https://gospod-bog.ru/hard-texts/</loc>
-    <lastmod>2026-06-09T00:00:00+03:00</lastmod>
+    <lastmod>2026-06-25T19:00:00+03:00</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
     <image:image>
@@ -21,39 +21,42 @@
   </url>
   <url>
     <loc>https://gospod-bog.ru/konfessii/</loc>
-    <lastmod>2026-06-12T00:00:00+03:00</lastmod>
+    <lastmod>2026-06-25T19:00:00+03:00</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
     <image:image><image:loc>https://gospod-bog.ru/images/og-konfessii-1200x630.webp</image:loc></image:image>
   </url>
   <url>
     <loc>https://gospod-bog.ru/konfessii/russkij-baptizm/</loc>
-    <lastmod>2026-06-12T00:00:00+03:00</lastmod>
+    <lastmod>2026-06-25T19:00:00+03:00</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
     <image:image><image:loc>https://gospod-bog.ru/images/og-konfessii-russkij-baptizm-1200x630.webp</image:loc></image:image>
   </url>
   <url>
     <loc>https://gospod-bog.ru/karty/</loc>
+    <lastmod>2026-06-25T00:00:00+03:00</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
     <image:image><image:loc>https://gospod-bog.ru/images/og-karty-1200x630.webp</image:loc><image:title>Библейские карты — интерактивные карты Писания</image:title></image:image>
   </url>
   <url>
     <loc>https://gospod-bog.ru/karty/avraam/</loc>
-    <lastmod>2026-06-12T00:00:00+03:00</lastmod>
+    <lastmod>2026-06-25T19:00:00+03:00</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
     <image:image><image:loc>https://gospod-bog.ru/images/og-karty-avraam.webp</image:loc></image:image>
   </url>
   <url>
     <loc>https://gospod-bog.ru/karty/ishod/</loc>
-    <lastmod>2026-06-13T00:00:00+03:00</lastmod>
+    <lastmod>2026-06-25T19:00:00+03:00</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
     <image:image><image:loc>https://gospod-bog.ru/images/og-karty-1200x630.webp</image:loc></image:image>
   </url>
   <url>
     <loc>https://gospod-bog.ru/map/</loc>
-    <lastmod>2026-06-11T00:00:00+03:00</lastmod>
+    <lastmod>2026-06-25T19:00:00+03:00</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
     <image:image><image:loc>https://gospod-bog.ru/images/og-map-connections.webp</image:loc></image:image>
@@ -62,7 +65,7 @@
 
   <url>
     <loc>https://gospod-bog.ru/about/</loc>
-    <lastmod>2026-06-08T00:00:00+03:00</lastmod>
+    <lastmod>2026-06-25T19:00:00+03:00</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
     <image:image><image:loc>https://gospod-bog.ru/images/og-about-1200x630.webp</image:loc></image:image>
@@ -70,7 +73,7 @@
 
   <url>
     <loc>https://gospod-bog.ru/articles/</loc>
-    <lastmod>2026-06-08T00:00:00+03:00</lastmod>
+    <lastmod>2026-06-25T19:00:00+03:00</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.9</priority>
     <image:image><image:loc>https://gospod-bog.ru/images/og-preview-1200x630.webp</image:loc></image:image>
@@ -78,7 +81,7 @@
 
   <url>
     <loc>https://gospod-bog.ru/biografii/</loc>
-    <lastmod>2026-06-08T00:00:00+03:00</lastmod>
+    <lastmod>2026-06-25T19:00:00+03:00</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.9</priority>
     <image:image><image:loc>https://gospod-bog.ru/images/og-biografii.webp</image:loc></image:image>
@@ -87,16 +90,16 @@
   <!-- Серия «Тёмная сторона кафедры» -->
   <url>
     <loc>https://gospod-bog.ru/pastor-series/</loc>
-    <lastmod>2026-06-08T00:00:00+03:00</lastmod>
+    <lastmod>2026-06-25T19:00:00+03:00</lastmod>
     <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
+    <priority>0.6</priority>
     <image:image><image:loc>https://gospod-bog.ru/images/pastor-series/hero-main.webp</image:loc></image:image>
   </url>
 
   <!-- Серия «Нагорная проповедь» -->
   <url>
     <loc>https://gospod-bog.ru/nagornaya/</loc>
-    <lastmod>2026-06-08T00:00:00+03:00</lastmod>
+    <lastmod>2026-06-25T19:00:00+03:00</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
     <image:image><image:loc>https://gospod-bog.ru/images/og-nagornaya-propoved.webp</image:loc></image:image>
@@ -104,45 +107,55 @@
 
   <url>
     <loc>https://gospod-bog.ru/nagornaya/seriya/</loc>
-    <lastmod>2026-06-25T15:39:56+03:00</lastmod>
+    <lastmod>2026-06-25T19:00:00+03:00</lastmod>
     <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
+    <priority>0.6</priority>
     <image:image><image:loc>https://gospod-bog.ru/images/og-nagornaya-propoved.webp</image:loc></image:image>
   </url>
 
   <url>
     <loc>https://gospod-bog.ru/nagornaya/chast-1/</loc>
     <lastmod>2026-06-25T21:51:26+03:00</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.9</priority>
     <image:image><image:loc>https://gospod-bog.ru/images/og-nagornaya-propoved-chast-1.webp</image:loc></image:image>
   </url>
 
   <url>
     <loc>https://gospod-bog.ru/nagornaya/chast-2/</loc>
     <lastmod>2026-06-25T21:51:26+03:00</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.9</priority>
     <image:image><image:loc>https://gospod-bog.ru/images/og-nagornaya-propoved-chast-2.webp</image:loc></image:image>
   </url>
 
   <url>
     <loc>https://gospod-bog.ru/nagornaya/chast-3/</loc>
     <lastmod>2026-06-25T21:51:26+03:00</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.9</priority>
     <image:image><image:loc>https://gospod-bog.ru/images/og-nagornaya-propoved-chast-3.webp</image:loc></image:image>
   </url>
 
   <url>
     <loc>https://gospod-bog.ru/nagornaya/chast-4/</loc>
     <lastmod>2026-06-25T21:51:26+03:00</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.9</priority>
     <image:image><image:loc>https://gospod-bog.ru/images/og-nagornaya-propoved-chast-4.webp</image:loc></image:image>
   </url>
 
   <url>
     <loc>https://gospod-bog.ru/nagornaya/chast-5/</loc>
     <lastmod>2026-06-25T21:51:26+03:00</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.9</priority>
     <image:image><image:loc>https://gospod-bog.ru/images/og-nagornaya-propoved-chast-5.webp</image:loc></image:image>
   </url>
 
   <url>
     <loc>https://gospod-bog.ru/nagornaya/istochniki/</loc>
-    <lastmod>2026-06-25T15:39:56+03:00</lastmod>
+    <lastmod>2026-06-25T19:00:00+03:00</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
     <image:image>
@@ -153,7 +166,7 @@
 
   <url>
     <loc>https://gospod-bog.ru/nagornaya/nakhodki/</loc>
-    <lastmod>2026-06-25T15:39:56+03:00</lastmod>
+    <lastmod>2026-06-25T19:00:00+03:00</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
     <image:image>
@@ -173,7 +186,7 @@
 
   <url>
     <loc>https://gospod-bog.ru/articles/dzhon-gill-chast-1-chelovek/</loc>
-    <lastmod>2026-06-25T21:51:26+03:00</lastmod>
+    <lastmod>2026-06-25T19:00:00+03:00</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.9</priority>
     <image:image><image:loc>https://gospod-bog.ru/images/gill-authentic-study-cover.webp</image:loc></image:image>
@@ -181,7 +194,7 @@
 
   <url>
     <loc>https://gospod-bog.ru/articles/dzhon-gill-chast-2-uchenyi/</loc>
-    <lastmod>2026-06-25T21:51:26+03:00</lastmod>
+    <lastmod>2026-06-25T19:00:00+03:00</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.9</priority>
     <image:image><image:loc>https://gospod-bog.ru/images/gill-talmud-study-authentic.webp</image:loc></image:image>
@@ -189,7 +202,7 @@
 
   <url>
     <loc>https://gospod-bog.ru/articles/dzhon-gill-chast-3-nasledie/</loc>
-    <lastmod>2026-06-25T21:51:26+03:00</lastmod>
+    <lastmod>2026-06-25T19:00:00+03:00</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.9</priority>
     <image:image><image:loc>https://gospod-bog.ru/images/og-dzhon-gill-chast-3-nasledie.webp</image:loc></image:image>
@@ -214,7 +227,7 @@
 
   <url>
     <loc>https://gospod-bog.ru/articles/kod-da-vinchi/</loc>
-    <lastmod>2026-06-25T21:51:26+03:00</lastmod>
+    <lastmod>2026-06-25T19:00:00+03:00</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.85</priority>
     <image:image><image:loc>https://gospod-bog.ru/images/og-kod-da-vinchi.webp</image:loc></image:image>
@@ -222,7 +235,7 @@
 
   <url>
     <loc>https://gospod-bog.ru/articles/20-antisovetov-pastoru/</loc>
-    <lastmod>2026-06-25T21:51:26+03:00</lastmod>
+    <lastmod>2026-06-25T19:00:00+03:00</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.85</priority>
     <image:image><image:loc>https://gospod-bog.ru/images/pastor-series/hero-main.webp</image:loc></image:image>
@@ -239,7 +252,7 @@
 
   <url>
     <loc>https://gospod-bog.ru/articles/rimlyanam-7-veruyushchiy-ili-neveruyushchiy/</loc>
-    <lastmod>2026-06-25T21:51:26+03:00</lastmod>
+    <lastmod>2026-06-25T19:00:00+03:00</lastmod>
     <changefreq>yearly</changefreq>
     <priority>0.9</priority>
     <image:image>
@@ -250,7 +263,7 @@
   </url>
   <url>
     <loc>https://gospod-bog.ru/baptisty-rossii/</loc>
-    <lastmod>2026-06-13T00:00:00+03:00</lastmod>
+    <lastmod>2026-06-25T19:00:00+03:00</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
     <image:image><image:loc>https://gospod-bog.ru/images/baptisty-rossii/cover-landing.svg</image:loc><image:title>Баптисты России</image:title></image:image>
@@ -258,7 +271,7 @@
 
   <url>
     <loc>https://gospod-bog.ru/baptisty-rossii/noch-na-kure/</loc>
-    <lastmod>2026-06-13T00:00:00+03:00</lastmod>
+    <lastmod>2026-06-25T19:00:00+03:00</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
     <image:image><image:loc>https://gospod-bog.ru/images/baptisty-rossii/cover-01-kura.svg</image:loc><image:title>Ночь на Куре</image:title></image:image>
@@ -266,7 +279,7 @@
 
   <url>
     <loc>https://gospod-bog.ru/baptisty-rossii/yuzhnaya-shtunda/</loc>
-    <lastmod>2026-06-13T00:00:00+03:00</lastmod>
+    <lastmod>2026-06-25T19:00:00+03:00</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
     <image:image><image:loc>https://gospod-bog.ru/images/baptisty-rossii/cover-02-shtunda.svg</image:loc><image:title>Южная штунда</image:title></image:image>
@@ -274,7 +287,7 @@
 
   <url>
     <loc>https://gospod-bog.ru/baptisty-rossii/dva-sezda-1884/</loc>
-    <lastmod>2026-06-13T00:00:00+03:00</lastmod>
+    <lastmod>2026-06-25T19:00:00+03:00</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
     <image:image><image:loc>https://gospod-bog.ru/images/baptisty-rossii/cover-03-1884.svg</image:loc><image:title>1884: два съезда</image:title></image:image>
@@ -282,7 +295,7 @@
 
   <url>
     <loc>https://gospod-bog.ru/baptisty-rossii/peterburgskaya-liniya/</loc>
-    <lastmod>2026-06-13T00:00:00+03:00</lastmod>
+    <lastmod>2026-06-25T19:00:00+03:00</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
     <image:image><image:loc>https://gospod-bog.ru/images/baptisty-rossii/cover-04-peterburg.svg</image:loc><image:title>Петербургская линия</image:title></image:image>
@@ -290,7 +303,7 @@
 
   <url>
     <loc>https://gospod-bog.ru/baptisty-rossii/goneniya-i-sovest/</loc>
-    <lastmod>2026-06-13T00:00:00+03:00</lastmod>
+    <lastmod>2026-06-25T19:00:00+03:00</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
     <image:image><image:loc>https://gospod-bog.ru/images/baptisty-rossii/cover-05-conscience.svg</image:loc><image:title>Гонения и совесть</image:title></image:image>
@@ -298,7 +311,7 @@
 
   <url>
     <loc>https://gospod-bog.ru/baptisty-rossii/sovetskaya-noch/</loc>
-    <lastmod>2026-06-13T00:00:00+03:00</lastmod>
+    <lastmod>2026-06-25T19:00:00+03:00</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
     <image:image><image:loc>https://gospod-bog.ru/images/baptisty-rossii/cover-06-soviet-night.svg</image:loc><image:title>Советская ночь</image:title></image:image>
@@ -306,7 +319,7 @@
 
   <url>
     <loc>https://gospod-bog.ru/baptisty-rossii/vsehib-1944/</loc>
-    <lastmod>2026-06-13T00:00:00+03:00</lastmod>
+    <lastmod>2026-06-25T19:00:00+03:00</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.6</priority>
     <image:image><image:loc>https://gospod-bog.ru/images/baptisty-rossii/cover-07-vsehib.svg</image:loc><image:title>1944: один союз</image:title></image:image>
@@ -314,7 +327,7 @@
 
   <url>
     <loc>https://gospod-bog.ru/baptisty-rossii/iniciativnaya-gruppa/</loc>
-    <lastmod>2026-06-13T00:00:00+03:00</lastmod>
+    <lastmod>2026-06-25T19:00:00+03:00</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.6</priority>
     <image:image><image:loc>https://gospod-bog.ru/images/baptisty-rossii/cover-08-initiative.svg</image:loc><image:title>Инициативная группа</image:title></image:image>
@@ -322,7 +335,7 @@
 
   <url>
     <loc>https://gospod-bog.ru/baptisty-rossii/podpolnaya-pechat/</loc>
-    <lastmod>2026-06-13T00:00:00+03:00</lastmod>
+    <lastmod>2026-06-25T19:00:00+03:00</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.6</priority>
     <image:image><image:loc>https://gospod-bog.ru/images/baptisty-rossii/cover-09-samizdat.svg</image:loc><image:title>Подпольная печать</image:title></image:image>
@@ -330,7 +343,7 @@
 
   <url>
     <loc>https://gospod-bog.ru/baptisty-rossii/spravochnik/</loc>
-    <lastmod>2026-06-13T00:00:00+03:00</lastmod>
+    <lastmod>2026-06-25T19:00:00+03:00</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.6</priority>
     <image:image><image:loc>https://gospod-bog.ru/images/baptisty-rossii/cover-10-reference.svg</image:loc><image:title>Справочник</image:title></image:image>
