@@ -1619,3 +1619,124 @@ html.dark [data-gill-v16] .toc-part-item__progress {
     right: max(4.5vw, env(safe-area-inset-right, 0px));
   }
 }
+
+/* =========================================================
+   Standalone floater — top aligned with breadcrumb
+   .page-wrap padding-top = clamp(48px, 7vw, 100px)
+   Floater top matches that + small offset for optical center
+   ========================================================= */
+.page-wrap ~ .gb-floater,
+.page-wrap + .gb-floater,
+#content ~ .gb-floater {
+  top: clamp(48px, 7vw, 100px);
+}
+
+/* =========================================================
+   Play Ember — speed expand panel
+   On click: ember widens into a pill with speed buttons,
+   after selection it collapses back smoothly.
+   ========================================================= */
+.gb-ember-expand {
+  position: absolute;
+  right: 0;
+  top: 50%;
+  transform: translateY(-50%) translateX(4px) scale(0.9);
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  padding: 3px 4px;
+  border-radius: 20px;
+  background: color-mix(in srgb, var(--color-surface, #fff) 96%, transparent);
+  border: 1px solid color-mix(in srgb, var(--color-border, #e5e2dc) 80%, transparent);
+  box-shadow: 0 8px 24px rgba(0,0,0,.10);
+  -webkit-backdrop-filter: blur(16px) saturate(160%);
+  backdrop-filter: blur(16px) saturate(160%);
+  opacity: 0;
+  pointer-events: none;
+  transition:
+    opacity .25s var(--gb-ease-out, cubic-bezier(.2,.7,.2,1)),
+    transform .32s var(--gb-ease-spring, cubic-bezier(.34,1.56,.64,1));
+  z-index: 1;
+  white-space: nowrap;
+}
+html.dark .gb-ember-expand {
+  background: color-mix(in srgb, var(--color-surface, #161a21) 96%, transparent);
+  border-color: rgba(255,255,255,.08);
+  box-shadow: 0 12px 32px rgba(0,0,0,.45);
+}
+.gb-ember-expand.is-open {
+  opacity: 1;
+  pointer-events: auto;
+  transform: translateY(-50%) translateX(4px) scale(1);
+}
+.gb-ember-expand__btn {
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 28px;
+  border: 0;
+  border-radius: 14px;
+  background: transparent;
+  font-family: var(--f-ui, 'Source Sans 3', system-ui, sans-serif);
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--color-text-muted, #6a6a6a);
+  cursor: pointer;
+  transition:
+    background .18s ease,
+    color .18s ease,
+    transform .25s var(--gb-ease-spring, cubic-bezier(.34,1.56,.64,1));
+}
+.gb-ember-expand__btn:hover {
+  background: var(--color-accent-soft, #f6ece8);
+  color: var(--color-accent, #7a2e2e);
+}
+html.dark .gb-ember-expand__btn:hover {
+  background: rgba(255,255,255,.08);
+  color: var(--color-accent-strong, #e8b878);
+}
+.gb-ember-expand__btn.is-active {
+  background: var(--color-accent, #7a2e2e);
+  color: #fff;
+}
+html.dark .gb-ember-expand__btn.is-active {
+  background: var(--color-accent-gold, #b8936a);
+  color: #0e1116;
+}
+.gb-ember-expand__btn:active {
+  transform: scale(0.9);
+}
+.gb-ember-expand__close {
+  display: grid;
+  place-items: center;
+  width: 24px;
+  height: 24px;
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
+  color: var(--color-text-faint, #888);
+  cursor: pointer;
+  margin-left: 2px;
+  transition: color .18s ease, transform .2s var(--gb-ease-spring);
+}
+.gb-ember-expand__close:hover {
+  color: var(--color-text, #1a1a1a);
+  transform: scale(1.15);
+}
+html.dark .gb-ember-expand__close:hover {
+  color: var(--color-text, #e6e1d7);
+}
+.gb-ember-expand__close svg {
+  width: 12px;
+  height: 12px;
+  stroke: currentColor;
+  fill: none;
+  stroke-width: 2;
+  stroke-linecap: round;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .gb-ember-expand, .gb-ember-expand__btn {
+    transition-duration: 0.01ms !important;
+  }
+}
