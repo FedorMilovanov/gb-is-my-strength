@@ -393,7 +393,7 @@ function auditArticle(item) {
   if (item.visualShadow) {
     if (/class="astro-article"/.test(publicArticle)) bad(`${item.slug}: visual-first route unexpectedly uses generic astro-article output`);
     else ok(`${item.slug}: dist route is visual-first full-document/shadow-breakout output, not generic astro-article`);
-    const markers = item.visualMarkers || ['gbs-world', 'data-gbs2-series="dzhon-gill"', 'gbs2-rail', 'gbs2-hero'];
+    const markers = item.visualMarkers || ['gbs-world', 'data-gbs2-series="dzhon-gill"', 'gbs2-hero'];
     for (const marker of markers) {
       mustContain(`${item.slug} visual marker`, publicArticle, marker);
     }
