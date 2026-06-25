@@ -603,23 +603,7 @@ body.gb-cluster-series-active #btocOverlay {
 
 } /* @layer components */
 
-/* =========================================================
-   Desktop: floater pinned to content edge (not viewport edge)
-   Content width: min(820px, 92vw) + 24px padding = ~868px
-   ========================================================= */
-@media (min-width: 900px) {
-  .gb-floater {
-    right: max(20px, calc((100vw - 820px) / 2 - 28px));
-  }
-}
 
-/* =========================================================
-   Gill rail: hide thumbnail images in parts navigation
-   Owner: thumbnails cluttered, only roman numerals + text
-   ========================================================= */
-.gbs2-rail .gbs2-parts .gbs2-thumb {
-  display: none;
-}
 
 /* ===================================================================
    Gill v16 Series Rail, Mobile Bar, TOC Popups
@@ -1616,4 +1600,22 @@ html.dark [data-gill-v16] .toc-part-item__progress {
 }
 [data-gill-v16] .toc-item, .toc-part-item, .toc-action-btn, .gb-icon, .gb-ember, .gb-save {
   transition: all .3s cubic-bezier(.2, .7, .2, 1) !important;
+}
+
+/* =========================================================
+   Standalone article floater — position matching legacy .theme-toggle
+   Legacy: position:absolute, right:max(8.5vw, safe-area), top: near breadcrumb
+   Override fixed viewport positioning for content-aligned placement.
+   ========================================================= */
+.page-wrap ~ .gb-floater,
+.page-wrap + .gb-floater,
+#content ~ .gb-floater {
+  right: max(8.5vw, env(safe-area-inset-right, 0px));
+}
+@media (max-width: 899px) {
+  .page-wrap ~ .gb-floater,
+  .page-wrap + .gb-floater,
+  #content ~ .gb-floater {
+    right: max(4.5vw, env(safe-area-inset-right, 0px));
+  }
 }
