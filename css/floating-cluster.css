@@ -602,3 +602,21 @@ body.gb-cluster-series-active #btocOverlay {
 }
 
 } /* @layer components */
+
+/* =========================================================
+   Desktop: floater pinned to content edge (not viewport edge)
+   Content width: min(820px, 92vw) + 24px padding = ~868px
+   ========================================================= */
+@media (min-width: 900px) {
+  .gb-floater {
+    right: max(20px, calc((100vw - 820px) / 2 - 28px));
+  }
+}
+
+/* =========================================================
+   Gill rail: hide thumbnail images in parts navigation
+   Owner: thumbnails cluttered, only roman numerals + text
+   ========================================================= */
+.gbs2-rail .gbs2-parts .gbs2-thumb {
+  display: none;
+}
