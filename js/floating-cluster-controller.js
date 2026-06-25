@@ -327,18 +327,16 @@
     initActionHandlers();
     initPlayExpand();
 
-    // 2. Найти корень кластера
-    var root = qs('[data-fc-root]');
-    if (!root) return;
+    // 2. Инициализировать ВСЕ корни кластеров
+    var roots = qsa('[data-fc-root]');
+    if (!roots.length) return;
 
-    var mode = root.getAttribute('data-fc-mode') || 'single';
-
-    // 3. Активировать класс на body для скрытия дублей
-    if (mode === 'single') activateSinglePilot();
-    if (mode === 'series-lite') activateSeriesPilot();
-
-    // 4. Делегирование кликов
-    initCluster(root);
+    roots.forEach(function(root) {
+      var mode = root.getAttribute('data-fc-mode') || 'single';
+      if (mode === 'single') activateSinglePilot();
+      if (mode === 'series-lite') activateSeriesPilot();
+      initCluster(root);
+    });
 
     // 5. Gill rail controls
     initGillRail();
