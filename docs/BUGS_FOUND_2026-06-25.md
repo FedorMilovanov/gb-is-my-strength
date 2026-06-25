@@ -461,3 +461,91 @@ Baptisty-статьи отсутствуют в RSS-ленте. Возможно
 *Итого после раунда 2: +3 новых бага (BUG-026..028), +4 единицы мусора (TRASH-008..011), 6 замечаний.*
 *Общий счёт: 28 багов, 11 категорий мусора, 9 замечаний.*
 *Дата: 2026-06-25. Состояние main: коммит 216bc1a.*
+
+---
+
+## 🔴 НОВЫЕ БАГИ — раунд 3
+
+---
+
+### BUG-029 · `RomanNumeral.astro` рендерит класс `fc-roman` — CSS не существует ни в одном файле
+
+**Файлы:** `src/components/ui/floating-cluster/RomanNumeral.astro`, `GillPart1-3PageChrome.astro`, `GillSpravochnikPageChrome.astro`
+
+`RomanNumeral.astro` рендерит `<span class="fc-roman">`. Root HTML Gill-статей содержит `<span class="gb-roman">`. Ни `fc-roman`, ни `gb-roman` не определены ни в одном CSS файле. Компонент отображается как unstyled text — визуально пока работает за счёт контекста (`gbs2-bbar`), но класс бессмысленный. Дополнительное несоответствие: root HTML (legacy) = `gb-roman`, Astro dist = `fc-roman` → разные классы между parity-парами.
+
+**Проверка:** `grep -r "fc-roman\|gb-roman" css/` → только в `floating-cluster.css` как `roman-cell` (другой компонент), но не сам `fc-roman` / `gb-roman`.
+
+---
+
+### BUG-030 · `css/site-layered.css` (282KB) в `sw.js` precache — пользователи кэшируют файл зря
+
+**Файлы:** `sw.js`, `css/site-layered.css`
+
+`site-layered.css` — это CSS с `@layer`-архитектурой для audit/validation скриптов (`css:layer:validate`). В production HTML (ни в одном из 72 страниц) он **не подключён**. Тем не менее попал в `PRECACHE_ASSETS` в `sw.js`. При каждом первом визите браузер скачивает лишние ~282KB. Это чистый overhead.
+
+**Проверка:** `grep "site-layered" **/*.html` → 0. `grep "site-layered" sw.js` → есть в precache.
+
+---
+
+### BUG-031 · `audit/` содержит 10 дублированных файлов (211KB) — те же файлы что в `audit/archive/`
+
+**Файлы:** `audit/*.md` (10 файлов), `audit/archive/*.md` (10 тех же)
+
+Файлы `audit-full-2026-06-04.md`, `content-source-audit-2026-06-06.md`, 8 других — присутствуют и в корне `audit/` и в `audit/archive/`. Это 211KB полного дублирования. Очевидно, при создании `archive/` поддиректории файлы переместили, но оригиналы не удалили.
+
+---
+
+## 🗑️ НОВЫЙ МУСОР — раунд 3
+
+---
+
+### TRASH-012 · `_build-tools/konfessii-baptizm/MAP-MOCKUPS-2D-3D-ATLAS-STANDALONE-2026-06-14.html` — 10MB в репо
+
+**Статус: СОМНИТЕЛЬНЫЙ — уточнить у владельца**
+
+Один HTML файл весит **10.1MB** (standalone mockup с inline данными). Вся папка `_build-tools/` = 10.4MB. Папка явно исключена из production pipeline (в exclude-lists всех скриптов), не в `.gitignore`, но хранится в git. Содержит R&D материалы для 3D-карты ЕХБ (`MindMap3D.tsx`, `source-snapshot/`, планы). Предназначен для разработчиков как reference. Вопрос: нужно ли хранить 10MB в git-истории навсегда? Альтернатива — перенести в GitHub Wiki или внешнее хранилище.
+
+---
+
+### TRASH-013 · `audit/` дубли 10 файлов (211KB)
+
+**Статус: МУСОР (безопасно удалить дубли из корня `audit/`)**
+
+10 файлов существуют и в `audit/` и в `audit/archive/`. Архивные копии в `archive/` — это источник истины. Дубли в корне `audit/` — лишние. Безопасно: `rm audit/audit-full-2026-06-04.md audit/content-source-audit-2026-06-06.md ...` (10 файлов) оставив только в `archive/`.
+
+---
+
+### TRASH-014 · `site-layered.css` в `sw.js` precache — лишний трафик 282KB
+
+**Статус: ИСПРАВИТЬ (убрать из precache)**
+
+Удалить `/css/site-layered.css` из `PRECACHE_ASSETS` в `sw.js` и обновить `CACHE_VERSION`. Файл нужен только для локальных аудитов (`npm run css:layer:validate`), не для пользователей.
+
+---
+
+## ⚠️ ЗАМЕЧАНИЯ — раунд 3
+
+---
+
+### NOTE-007 · `src/layouts/ArticleLayout.astro` и `SeriesArticleLayout.astro` — заготовки без использования
+
+Оба импортируют `astro:content` (getCollection) и предназначены для MDX content-collection routing через `getStaticPaths + [slug].astro`. Однако в проекте нет динамических `[slug].astro` страниц — каждая статья имеет свой отдельный `index.astro`. Layouts готовы, но не подключены ни к одному production route. Это архитектурный debt — либо реализовать dynamic routing, либо задокументировать как «заготовки будущей архитектуры».
+
+### NOTE-008 · `_build-tools/` не в `.gitignore` — 10.4MB в git-истории навсегда
+
+Папка правильно исключена из production pipeline, но не из `.gitignore`. Каждый `git clone` тянет 10.4MB дополнительных данных. Рассмотреть добавление в `.gitignore` или использование Git LFS для больших файлов.
+
+### NOTE-009 · `fc-roman` vs `gb-roman` — несоответствие классов между Astro dist и root HTML
+
+Технически не ломает визуал (unstyled span), но нарушает принцип parity. При CSS audit или добавлении стилей нужно знать какой класс использовать. Рекомендация: унифицировать в одно имя и добавить CSS стили (`font-family: serif; font-style: italic; font-weight: 700; letter-spacing: .06em;`).
+
+### NOTE-010 · `data/term-links.json` и `data/strategic-map-antisovetov.json` — нет документации назначения
+
+Оба файла не используются и не упомянуты в README/AGENTS как планируемые фичи. Если это заготовки — они должны быть задокументированы (`# TODO:` комментарий в файле или запись в AGENTS.md). Иначе любой агент может их удалить как мусор.
+
+---
+
+*Итого раунд 3: +3 бага (BUG-029..031), +3 мусора (TRASH-012..014), 4 замечания.*
+*Суммарный итог по всем раундам: 31 баг · 14 категорий мусора · 10 замечаний.*
+*Дата: 2026-06-25. Состояние main: 7f554dd.*
