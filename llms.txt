@@ -1,6 +1,6 @@
 # gospod-bog.ru — llms.txt
 # AI-readable content index for LLM search engines (Perplexity, ChatGPT Search, Claude, Grok)
-# Format: https://llmstxt.org/ | Updated: 2026-06-18
+# Format: https://llmstxt.org/ | Updated: 2026-06-25
 
 # About
 > gospod-bog.ru — христианский богословский проект на русском языке.
