@@ -247,3 +247,117 @@ PlayEmber и SaveButton добавлены в `nag-sidebar-controls`, но бе�
 
 *Всего найдено: 25 багов (7 критических, 8 важных, 10 замечаний).*
 *Дата аудита: 2026-06-25. Состояние: актуальный main, последний коммит `fb8e492`.*
+
+---
+
+## 🗑️ МУСОР — КАНДИДАТЫ НА УДАЛЕНИЕ
+
+> Каждый пункт проверен: либо явный мусор (не используется нигде), либо **помечен как сомнительный** с объяснением почему НЕ удалять немедленно.
+
+---
+
+### TRASH-001 · `js/site-modules.js` — пилот Phase 3, нигде не подключён
+
+**Статус: МУСОР (безопасно удалить)**
+
+Файл 8.7KB, создан `bundle-modules.js` как эксперимент Рефакторинга 6.0 Phase 3. Не подключён ни в одном HTML файле (72 проверено). Не в `package.json`. Попал в `sw.js` precache ошибочно — SW кэширует файл который никогда не запрашивается браузером. Содержит захардкоженные Arena-пути в комментариях.
+
+**Проверка:** `grep -rl "site-modules.js" . | grep -v "sw.js\|bundle-modules"` → пусто.
+
+---
+
+### TRASH-002 · `js/modules/` (4 файла, 6.9KB) — только для `site-modules.js`
+
+**Статус: МУСОР (удалить вместе с TRASH-001)**
+
+`js/modules/back-to-top.js`, `js/modules/faq-accordion.js`, `js/modules/img-loaded.js`, `js/modules/theme.js` — импортируются только в `site-modules.js`. Если `site-modules.js` удалить, эти файлы становятся полностью orphaned. Не в package.json, не в workflows, не в sw.js precache.
+
+---
+
+### TRASH-003 · `scripts/bundle-modules.js` — создаёт `site-modules.js`
+
+**Статус: МУСОР (удалить вместе с TRASH-001/002)**
+
+Скрипт 2.1KB, не в package.json, не в workflows. Единственное назначение — генерировать `js/site-modules.js`. Если `site-modules.js` удалён — скрипт бесполезен.
+
+---
+
+### TRASH-004 · `_check-fonts.mjs`, `_check-styles.mjs`, `_diag-kod.mjs` в корне
+
+**Статус: МУСОР (безопасно удалить)**
+
+Три диагностических скрипта от сессии отладки V7 Kod da Vinci (2026-06-23). Используют `import {chromium} from 'playwright'` и захардкоженный путь `/home/user/gb-is-my-strength` (Arena-специфичный, не работает на CI или локально у другого разработчика). Не в package.json, не в workflows. Принципиально: они **не нужны для production** — это одноразовые диагностические скрипты сессии.
+
+---
+
+### TRASH-005 · `docs/refactor-2026/lanes/visual-fix-nagornaya-native-2026-06-23/visual/` — 30.1MB PNG скриншотов
+
+**Статус: МУСОР (безопасно удалить)**
+
+18 PNG файлов с pixel-diff скриншотами от сессии 23 июня 2026. Самый тяжёлый: `nagornaya-chast-4-desktop-diff.png` — 4.7MB. Итого 30.1MB в git-репозитории. Эти скриншоты были временными доказательствами parity для той сессии. Lane завершена, parity достигнута. Хранить их в git бессмысленно — они занимают место в истории коммитов навсегда.
+
+**Осторожность:** перед удалением убедиться что lane `visual-fix-nagornaya-native-2026-06-23` полностью закрыта и её результаты отражены в AUDIT_HISTORY.md.
+
+---
+
+### TRASH-006 · `.state-grid` CSS в `css/floating-cluster.css`
+
+**Статус: МУСОР (маленький, безопасно удалить)**
+
+Правило `@media(max-width:680px){.state-grid{grid-template-columns:repeat(2,1fr)}}` — остаток от probe HTML (`gb-floating-cluster-probe-v16.html`). Класс `.state-grid` использовался только в демо-секции скриншотов состояний. В production страницах не применяется.
+
+---
+
+### TRASH-007 · `js/site-modules.js` в `sw.js` precache
+
+**Статус: связан с TRASH-001, исправить после удаления**
+
+`sw.js` содержит `/js/site-modules.js` в `PRECACHE_ASSETS`. Файл SW кэширует его, но браузер никогда не запрашивает — пустой расход сетевого трафика при первой загрузке. После удаления `site-modules.js` (TRASH-001) нужно убрать запись из precache и обновить `CACHE_VERSION`.
+
+---
+
+### ⚠️ СОМНИТЕЛЬНЫЕ — ПРОВЕРИТЬ ПЕРЕД УДАЛЕНИЕМ
+
+---
+
+### MAYBE-001 · `js/series-cards.js` — нигде не подключён, но в официальном контракте
+
+**Статус: НЕ удалять без решения владельца**
+
+Файл v2 от 2026-06-08, 10.2KB. Не подключён ни в одном из 72 HTML-файлов и ни в одном Astro-компоненте. Не использует `data-series-cards` атрибут ни одна страница. НО: файл явно перечислен в `README.md` (§9 Структура файлов) и `AGENTS.md` как один из официальных JS-файлов (`ровно 11 файлов` в архитектурном контракте). Также в `sw.js` precache.
+
+**Риск удаления:** нарушение контракта AGENTS.md §5.1. Возможно, файл готовится к использованию в будущих catalog pages. Решение должен принять владелец.
+
+---
+
+### MAYBE-002 · `scripts/` (10 файлов) без записи в package.json и workflows
+
+**Статус: СОМНИТЕЛЬНЫЕ, требуют ручного ревью**
+
+| Файл | Описание | Риск |
+|---|---|---|
+| `scripts/_audit-deep.js` | deep-audit (post patch-v2) | Возможно нужен для ручных проверок |
+| `scripts/about-leaf-parity-shots.js` | Visual proof for /about/ pilot | Пилот завершён, скорее всего не нужен |
+| `scripts/deep-check.js` | Playwright deep check | Может использоваться вручную |
+| `scripts/extract-native-pilot.js` | Рефакторинг 5.0 Phase 6 | Старый пилот |
+| `scripts/genealogy-e2e-v2.js` | E2E тест /rodosloviye/ | Нужен для ручного QA |
+| `scripts/generate-route-profiles.js` | Генерация route-profiles | Есть ли скрипт-замена? |
+| `scripts/ishod-qa.js` | QA для karty/ishod | Нужен для ручного QA |
+| `scripts/map-visual-qa.js` | Visual QA для карт | Нужен для ручного QA |
+| `scripts/route-impact-report.js` | Отчёт об impact | Аналитический инструмент |
+
+Скрипты QA (genealogy, ishod, map-visual-qa) **не удалять** — они нужны для ручного тестирования интерактивных страниц которые не покрываются автоматическими CI-тестами. Остальные — на усмотрение владельца.
+
+---
+
+### MAYBE-003 · `docs/image-archive/` — старое OG-изображение Гилла
+
+**Статус: НЕ критично, проверить**
+
+`docs/image-archive/og-replaced-2026-06/old-og-gill-library-shelf.webp` — 183KB. Старое OG-изображение, заменённое в июне 2026. Хранится как backup. Если замена признана окончательной — можно удалить. Не влияет на production.
+
+---
+
+*Итого мусора: 6 категорий (TRASH-001..007), ~30MB в PNG + ~18KB в JS + ~11KB в scripts.*
+*Сомнительных: 3 категории (MAYBE-001..003) — решение за владельцем.*
+*Дата: 2026-06-25. Аудит выполнен агентом по main (fb8e492).*
