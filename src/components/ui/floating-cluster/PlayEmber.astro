@@ -54,7 +54,8 @@ const classes = ['gb-ember', isLoading ? 'is-loading' : '', className].filter(Bo
   data-fc-action="play"
   style={`--p:${progress}`}
   aria-label={ariaLabel}
-  aria-disabled={audioState === 'none' ? 'true' : undefined}
+  aria-haspopup="true"
+  aria-expanded="false"
   data-tip={tip}
 >
   <!-- SVG progress ring (injected by controller, but also here for SSR/no-JS) -->
