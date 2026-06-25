@@ -325,6 +325,7 @@
     initEmbers();
     initTocPopups();
     initActionHandlers();
+    initPlayExpand();
 
     // 2. Найти корень кластера
     var root = qs('[data-fc-root]');
@@ -453,5 +454,83 @@
     // Print button
     qsa('[data-action="print"]').forEach(function(btn) {
       btn.addEventListener('click', function() { window.print(); });
+    });
+  }
+
+  /* =====================================================
+     PLAY EMBER — Speed Expand Panel
+     Click ember → expand speed selector beside it.
+     Pick speed → close panel smoothly.
+     ===================================================== */
+  function initPlayExpand() {
+    qsa('.gb-ember').forEach(function(ember) {
+      // Only standalone floater embers, not rail/mobile
+      if (!ember.closest('.gb-floater')) return;
+
+      // Create expand panel if not exists
+      if (ember.parentNode.querySelector('.gb-ember-expand')) return;
+
+      var speeds = [0.75, 1, 1.25, 1.5, 1.75, 2];
+      var currentRate = 1;
+      try { currentRate = parseFloat(localStorage.getItem('gbx-tts-rate')) || 1; } catch(_){}
+
+      var panel = document.createElement('div');
+      panel.className = 'gb-ember-expand';
+      panel.innerHTML = speeds.map(function(s) {
+        var active = s === currentRate ? ' is-active' : '';
+        return '<button class="gb-ember-expand__btn' + active + '" data-speed="' + s + '">' + s + '×</button>';
+      }).join('') +
+      '<button class="gb-ember-expand__close" aria-label="Закрыть"><svg viewBox="0 0 24 24"><path d="M18 6L6 18M6 6l12 12"/></svg></button>';
+
+      // Insert after ember, wrap parent in relative if needed
+      var parent = ember.parentNode;
+      if (getComputedStyle(parent).position === 'static') {
+        parent.style.position = 'relative';
+      }
+      parent.insertBefore(panel, ember.nextSibling);
+
+      // Toggle panel on ember click
+      ember.addEventListener('click', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        var open = panel.classList.contains('is-open');
+        if (open) {
+          panel.classList.remove('is-open');
+        } else {
+          panel.classList.add('is-open');
+        }
+      });
+
+      // Speed selection
+      panel.addEventListener('click', function(e) {
+        var btn = e.target.closest('[data-speed]');
+        if (btn) {
+          var speed = parseFloat(btn.getAttribute('data-speed'));
+          try { localStorage.setItem('gbx-tts-rate', speed); } catch(_){}
+          // Update active state
+          panel.querySelectorAll('.gb-ember-expand__btn').forEach(function(b) {
+            b.classList.toggle('is-active', parseFloat(b.getAttribute('data-speed')) === speed);
+          });
+          // If speechSynthesis is speaking, update rate
+          if (window.speechSynthesis && window.speechSynthesis.speaking) {
+            // Rate will apply on next utterance
+          }
+          // Close panel smoothly after selection
+          setTimeout(function() { panel.classList.remove('is-open'); }, 280);
+          return;
+        }
+        // Close button
+        var close = e.target.closest('.gb-ember-expand__close');
+        if (close) {
+          panel.classList.remove('is-open');
+        }
+      });
+
+      // Close on outside click
+      document.addEventListener('click', function(e) {
+        if (!panel.contains(e.target) && e.target !== ember && !ember.contains(e.target)) {
+          panel.classList.remove('is-open');
+        }
+      });
     });
   }
