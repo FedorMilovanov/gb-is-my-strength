@@ -260,14 +260,14 @@
   }
 
   /* =====================================================
-     BODY CLASS — fc-single-active для скрытия дублей
+     BODY CLASS — gb-cluster-single-active для скрытия дублей
      ===================================================== */
   function activateSinglePilot() {
-    document.body.classList.add('fc-single-active');
+    document.body.classList.add('gb-cluster-single-active');
   }
 
   function activateSeriesPilot() {
-    document.body.classList.add('fc-series-active');
+    document.body.classList.add('gb-cluster-series-active');
   }
 
   /* =====================================================
@@ -292,7 +292,7 @@
 
   /* =====================================================
      GILL RAIL CONTROLS
-     Инициализирует fc-controls в gbs2-rail
+     Инициализирует floating-cluster controls в gbs2-rail
      ===================================================== */
   function initGillRail() {
     var railControls = qs('[data-fc-controls="gill-rail"]');
