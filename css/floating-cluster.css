@@ -1642,7 +1642,21 @@ html.dark [data-gill-v16] .toc-part-item__progress {
    selection triggers a pulse + collapse.
    ========================================================= */
 
-/* --- Container: morphs from circle to pill --- */
+/* =========================================================
+   Speed Pill — horizontal morph from Play circle
+   Design: pill expands LEFT from ember, Play stays right.
+   Standalone: pill beside ember in .gb-floater
+   GBS rail: pill expands UP with blur (no horizontal space)
+   ========================================================= */
+
+/* Wrapper: positions pill relative to ember */
+.gb-ember-wrap {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+}
+
+/* Pill container — expands LEFT from ember circle */
 .gb-ember-expand {
   position: absolute;
   right: 0;
@@ -1650,351 +1664,172 @@ html.dark [data-gill-v16] .toc-part-item__progress {
   transform: translateY(-50%);
   display: flex;
   align-items: center;
-  gap: 0;
-  padding: 4px 6px 4px 42px; /* left padding = ember width overlap */
-  border-radius: 24px;
-  background: color-mix(in srgb, var(--color-surface, #fff) 92%, transparent);
-  border: 1px solid color-mix(in srgb, var(--color-accent-gold, #b8936a) 25%, var(--color-border, #e5e2dc));
+  gap: 3px;
+  padding: 5px 48px 5px 8px; /* right padding = ember overlap */
+  border-radius: 26px;
+  background: color-mix(in srgb, var(--color-surface, #fff) 96%, transparent);
+  border: 1.5px solid color-mix(in srgb, var(--color-accent-gold, #b8936a) 30%, var(--color-border, #e5e2dc));
   box-shadow:
-    0 4px 16px rgba(184, 147, 106, .08),
-    0 12px 40px rgba(0, 0, 0, .06),
-    inset 0 1px 0 rgba(255, 255, 255, .7);
+    0 4px 20px rgba(184, 147, 106, .10),
+    0 8px 32px rgba(0, 0, 0, .06),
+    inset 0 1px 0 rgba(255, 255, 255, .8);
   -webkit-backdrop-filter: blur(20px) saturate(180%);
   backdrop-filter: blur(20px) saturate(180%);
   opacity: 0;
   pointer-events: none;
-  clip-path: circle(18px at 20px 50%);
+  /* Morph: start as circle at right edge, expand left */
+  clip-path: circle(20px at calc(100% - 24px) 50%);
   transition:
-    clip-path .42s cubic-bezier(.16, 1, .3, 1),
-    opacity .28s cubic-bezier(.2, .7, .2, 1),
-    box-shadow .35s ease;
+    clip-path .38s cubic-bezier(.16, 1, .3, 1),
+    opacity .22s ease,
+    box-shadow .3s ease;
   z-index: -1;
   white-space: nowrap;
 }
 html.dark .gb-ember-expand {
-  background: color-mix(in srgb, var(--color-surface, #161a21) 92%, transparent);
-  border-color: color-mix(in srgb, var(--color-accent-gold, #b8936a) 20%, rgba(255,255,255,.06));
+  background: color-mix(in srgb, var(--color-surface, #161a21) 94%, transparent);
+  border-color: color-mix(in srgb, var(--color-accent-gold, #b8936a) 22%, rgba(255,255,255,.08));
   box-shadow:
-    0 4px 20px rgba(216, 176, 104, .06),
-    0 16px 48px rgba(0, 0, 0, .35),
-    inset 0 1px 0 rgba(255, 255, 255, .04);
+    0 4px 24px rgba(216, 176, 104, .08),
+    0 12px 40px rgba(0, 0, 0, .35),
+    inset 0 1px 0 rgba(255, 255, 255, .05);
 }
+
+/* Open state — full pill revealed */
 .gb-ember-expand.is-open {
   opacity: 1;
   pointer-events: auto;
-  clip-path: inset(0 0 0 0 round 24px);
+  clip-path: inset(0 0 0 0 round 26px);
   z-index: 1;
   box-shadow:
-    0 6px 24px rgba(184, 147, 106, .14),
-    0 16px 48px rgba(0, 0, 0, .08),
-    inset 0 1px 0 rgba(255, 255, 255, .7);
+    0 6px 28px rgba(184, 147, 106, .14),
+    0 12px 40px rgba(0, 0, 0, .07),
+    inset 0 1px 0 rgba(255, 255, 255, .8);
 }
 html.dark .gb-ember-expand.is-open {
   box-shadow:
     0 6px 28px rgba(216, 176, 104, .12),
-    0 20px 56px rgba(0, 0, 0, .45),
-    0 0 24px rgba(216, 176, 104, .06),
-    inset 0 1px 0 rgba(255, 255, 255, .04);
+    0 16px 48px rgba(0, 0, 0, .4),
+    inset 0 1px 0 rgba(255, 255, 255, .05);
 }
 
-/* Subtle shimmer line across top */
+/* Shimmer line */
 .gb-ember-expand::before {
   content: '';
   position: absolute;
-  top: 0;
-  left: 10%;
-  right: 10%;
+  top: 0; left: 8%; right: 8%;
   height: 1px;
-  background: linear-gradient(90deg, transparent, rgba(184, 147, 106, .25), transparent);
+  background: linear-gradient(90deg, transparent, rgba(184, 147, 106, .2), transparent);
   opacity: 0;
-  transition: opacity .3s ease .15s;
+  transition: opacity .25s ease .12s;
 }
+.gb-ember-expand.is-open::before { opacity: 1; }
 html.dark .gb-ember-expand::before {
-  background: linear-gradient(90deg, transparent, rgba(216, 176, 104, .2), transparent);
-}
-.gb-ember-expand.is-open::before {
-  opacity: 1;
+  background: linear-gradient(90deg, transparent, rgba(216, 176, 104, .15), transparent);
 }
 
-/* --- Speed buttons: staggered cascade entry --- */
+/* Speed buttons — staggered cascade from left */
 .gb-ember-expand__btn {
   display: grid;
   place-items: center;
-  min-width: 36px;
-  height: 30px;
-  padding: 0 6px;
-  border: 0;
-  border-radius: 15px;
+  min-width: 40px;
+  height: 32px;
+  padding: 0 8px;
+  border: 1.5px solid color-mix(in srgb, var(--color-border, #e5e2dc) 70%, transparent);
+  border-radius: 12px;
   background: transparent;
   font-family: var(--f-ui, 'Source Sans 3', system-ui, sans-serif);
-  font-size: 12px;
+  font-size: 12.5px;
   font-weight: 700;
-  letter-spacing: -.01em;
   color: var(--color-text-muted, #6a6a6a);
   cursor: pointer;
-  position: relative;
-  overflow: hidden;
-  /* Staggered entry */
   opacity: 0;
-  transform: translateX(-8px) scale(0.85);
+  transform: translateX(12px) scale(.85);
   transition:
-    opacity .25s cubic-bezier(.2, .7, .2, 1),
-    transform .32s cubic-bezier(.34, 1.56, .64, 1),
-    background .2s ease,
-    color .2s ease,
-    box-shadow .2s ease;
+    opacity .2s ease,
+    transform .28s cubic-bezier(.34, 1.56, .64, 1),
+    background .18s ease,
+    color .18s ease,
+    border-color .18s ease;
+  -webkit-tap-highlight-color: transparent;
 }
-/* Cascade delays — each button enters slightly later */
-.gb-ember-expand.is-open .gb-ember-expand__btn:nth-child(1) { opacity: 1; transform: none; transition-delay: .06s, .06s, 0s, 0s, 0s; }
-.gb-ember-expand.is-open .gb-ember-expand__btn:nth-child(2) { opacity: 1; transform: none; transition-delay: .10s, .10s, 0s, 0s, 0s; }
-.gb-ember-expand.is-open .gb-ember-expand__btn:nth-child(3) { opacity: 1; transform: none; transition-delay: .14s, .14s, 0s, 0s, 0s; }
-.gb-ember-expand.is-open .gb-ember-expand__btn:nth-child(4) { opacity: 1; transform: none; transition-delay: .18s, .18s, 0s, 0s, 0s; }
-.gb-ember-expand.is-open .gb-ember-expand__btn:nth-child(5) { opacity: 1; transform: none; transition-delay: .22s, .22s, 0s, 0s, 0s; }
-.gb-ember-expand.is-open .gb-ember-expand__btn:nth-child(6) { opacity: 1; transform: none; transition-delay: .26s, .26s, 0s, 0s, 0s; }
+/* Cascade: each button slides in from right, staggered */
+.gb-ember-expand.is-open .gb-ember-expand__btn:nth-child(1) { opacity:1; transform:none; transition-delay:.05s,.05s,0s,0s,0s; }
+.gb-ember-expand.is-open .gb-ember-expand__btn:nth-child(2) { opacity:1; transform:none; transition-delay:.08s,.08s,0s,0s,0s; }
+.gb-ember-expand.is-open .gb-ember-expand__btn:nth-child(3) { opacity:1; transform:none; transition-delay:.11s,.11s,0s,0s,0s; }
+.gb-ember-expand.is-open .gb-ember-expand__btn:nth-child(4) { opacity:1; transform:none; transition-delay:.14s,.14s,0s,0s,0s; }
+.gb-ember-expand.is-open .gb-ember-expand__btn:nth-child(5) { opacity:1; transform:none; transition-delay:.17s,.17s,0s,0s,0s; }
+.gb-ember-expand.is-open .gb-ember-expand__btn:nth-child(6) { opacity:1; transform:none; transition-delay:.20s,.20s,0s,0s,0s; }
 
-/* Hover: gentle lift + warm glow */
+/* Hover */
 @media (hover: hover) and (pointer: fine) {
   .gb-ember-expand__btn:hover {
-    background: color-mix(in srgb, var(--color-accent-gold, #b8936a) 12%, transparent);
-    color: var(--color-accent, #7a2e2e);
-    transform: scale(1.08);
-    box-shadow: 0 2px 8px rgba(184, 147, 106, .15);
+    background: color-mix(in srgb, var(--color-accent-gold, #b8936a) 10%, transparent);
+    border-color: color-mix(in srgb, var(--color-accent-gold, #b8936a) 40%, transparent);
+    color: var(--color-text, #1a1a1a);
   }
   html.dark .gb-ember-expand__btn:hover {
-    background: rgba(216, 176, 104, .1);
+    background: rgba(216, 176, 104, .08);
+    border-color: rgba(216, 176, 104, .25);
     color: var(--color-accent-gold-bright, #f0c896);
-    box-shadow: 0 2px 12px rgba(216, 176, 104, .12);
   }
 }
-.gb-ember-expand__btn:active {
-  transform: scale(0.92);
-  transition-duration: .08s;
-}
+.gb-ember-expand__btn:active { transform: scale(.92); transition-duration: .06s; }
 
-/* Active speed — warm gold pill */
+/* Active speed — gold fill */
 .gb-ember-expand__btn.is-active {
-  background: linear-gradient(135deg, var(--color-accent, #7a2e2e), #8b4545);
+  background: linear-gradient(135deg, var(--color-accent-gold, #b8936a), var(--color-accent-gold-bright, #d8aa6d));
+  border-color: transparent;
   color: #fff;
-  box-shadow:
-    0 2px 8px rgba(122, 46, 46, .2),
-    inset 0 1px 0 rgba(255, 255, 255, .15);
   font-weight: 800;
+  box-shadow: 0 2px 8px rgba(184, 147, 106, .2);
 }
 html.dark .gb-ember-expand__btn.is-active {
-  background: linear-gradient(135deg, var(--color-accent-gold, #b8936a), var(--color-accent-gold-bright, #f0c896));
+  background: linear-gradient(135deg, var(--color-accent-gold, #b8936a), #eed093);
   color: #0e1116;
-  box-shadow:
-    0 2px 12px rgba(216, 176, 104, .25),
-    0 0 20px rgba(216, 176, 104, .08),
-    inset 0 1px 0 rgba(255, 255, 255, .2);
+  box-shadow: 0 2px 12px rgba(216, 176, 104, .2);
 }
 
-/* Selection pulse — brief ring flash on chosen speed */
-@keyframes gb-speed-pulse {
-  0%   { box-shadow: 0 0 0 0 rgba(184, 147, 106, .4); }
-  50%  { box-shadow: 0 0 0 8px rgba(184, 147, 106, 0); }
-  100% { box-shadow: 0 0 0 0 rgba(184, 147, 106, 0); }
-}
-.gb-ember-expand__btn.is-pulsing {
-  animation: gb-speed-pulse .45s cubic-bezier(.2, .7, .2, 1);
+/* Ember glow when panel open */
+.gb-ember-wrap .gb-ember[aria-expanded="true"] {
+  z-index: 2;
 }
 
-/* --- Close button: minimal × --- */
-.gb-ember-expand__close {
-  display: grid;
-  place-items: center;
-  width: 26px;
-  height: 26px;
-  border: 0;
-  border-radius: 50%;
-  background: transparent;
-  color: var(--color-text-faint, #888);
-  cursor: pointer;
-  margin-left: 4px;
-  flex-shrink: 0;
-  opacity: 0;
-  transform: rotate(-90deg) scale(0.5);
-  transition:
-    opacity .25s ease .28s,
-    transform .35s cubic-bezier(.34, 1.56, .64, 1) .28s,
-    color .18s ease,
-    background .18s ease;
-}
-.gb-ember-expand.is-open .gb-ember-expand__close {
-  opacity: 1;
-  transform: rotate(0) scale(1);
-}
-@media (hover: hover) and (pointer: fine) {
-  .gb-ember-expand__close:hover {
-    color: var(--color-text, #1a1a1a);
-    background: color-mix(in srgb, var(--color-border, #e5e2dc) 50%, transparent);
-    transform: rotate(90deg) scale(1.1);
-  }
-  html.dark .gb-ember-expand__close:hover {
-    color: var(--color-text, #e6e1d7);
-    background: rgba(255, 255, 255, .06);
-  }
-}
-.gb-ember-expand__close:active {
-  transform: scale(0.85);
-  transition-duration: .06s;
-}
-.gb-ember-expand__close svg {
-  width: 11px;
-  height: 11px;
-  stroke: currentColor;
-  fill: none;
-  stroke-width: 2.2;
-  stroke-linecap: round;
-}
-
-/* Ember glow boost when panel is open */
-.gb-floater .gb-ember.gb-ember--panel-open {
-  color: var(--color-accent-gold, #b8936a);
-  transform: scale(1.08);
-}
-html.dark .gb-floater .gb-ember.gb-ember--panel-open {
-  color: var(--color-accent-gold-bright, #f0c896);
-  box-shadow: 0 0 18px rgba(216, 176, 104, .2);
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .gb-ember-expand,
-  .gb-ember-expand__btn,
-  .gb-ember-expand__close,
-  .gb-ember-expand::before {
-    transition-duration: 0.01ms !important;
-    animation-duration: 0.01ms !important;
-  }
-}
-
-/* ============================================================
-   gb-ember speed popover — v2 (PremiumControls redesign)
-   Стильная минималистичная рамка, выезжает ВВЕРХ из круга play.
-   Закрытие: выбор скорости / увод мыши / outside-click / Escape.
-   (unlayered → доминирует над @layer components)
-   ============================================================ */
-.gb-ember-wrap {
-  position: relative;
-  display: inline-grid;
-  place-items: center;
-  line-height: 0;
-}
-
-.gb-ember-expand {
-  position: absolute !important;
-  bottom: calc(100% + 12px) !important;
-  left: 50% !important;
-  right: auto !important;
-  top: auto !important;
-  transform: translateX(-50%) translateY(10px) scale(.88) !important;
-  transform-origin: bottom center !important;
-  display: flex !important;
-  align-items: center;
-  gap: 2px;
-  padding: 4px !important;
-  border-radius: 16px !important;
-  background: var(--color-surface, #ffffff) !important;
-  border: 1px solid color-mix(in srgb, var(--color-border, #e5e2dc) 85%, transparent) !important;
-  box-shadow:
-    0 12px 32px -8px rgba(0, 0, 0, .22),
-    0 4px 10px rgba(0, 0, 0, .08),
-    inset 0 1px 0 rgba(255, 255, 255, .9) !important;
-  -webkit-backdrop-filter: blur(18px) saturate(170%);
-  backdrop-filter: blur(18px) saturate(170%);
-  clip-path: none !important;
-  opacity: 0 !important;
-  pointer-events: none !important;
-  transition:
-    transform .34s cubic-bezier(.34, 1.56, .64, 1),
-    opacity .22s ease !important;
-  z-index: 60 !important;
-  white-space: nowrap;
-}
-
-.gb-ember-expand.is-open {
-  opacity: 1 !important;
-  pointer-events: auto !important;
-  transform: translateX(-50%) translateY(0) scale(1) !important;
-  box-shadow:
-    0 14px 36px -6px rgba(0, 0, 0, .24),
-    0 6px 14px rgba(0, 0, 0, .10),
-    inset 0 1px 0 rgba(255, 255, 255, .9) !important;
-}
-
-/* стрелка-хвостик, указывающая вниз на круг play */
-.gb-ember-expand::after {
-  content: '';
-  position: absolute;
-  bottom: -5px;
+/* === GBS Rail: pill expands UP (no horizontal space) === */
+[data-gill-v16] .gb-ember-expand,
+.gbs-rail-foot .gb-ember-expand {
+  right: auto;
   left: 50%;
-  transform: translateX(-50%) rotate(45deg);
-  width: 10px;
-  height: 10px;
-  background: var(--color-surface, #ffffff);
-  border-right: 1px solid color-mix(in srgb, var(--color-border, #e5e2dc) 85%, transparent);
-  border-bottom: 1px solid color-mix(in srgb, var(--color-border, #e5e2dc) 85%, transparent);
-  pointer-events: none;
+  top: auto;
+  bottom: calc(100% + 8px);
+  transform: translateX(-50%);
+  padding: 5px 8px;
+  clip-path: circle(16px at 50% calc(100% - 16px));
+}
+[data-gill-v16] .gb-ember-expand.is-open,
+.gbs-rail-foot .gb-ember-expand.is-open {
+  clip-path: inset(0 0 0 0 round 20px);
 }
 
-html.dark .gb-ember-expand {
-  background: color-mix(in srgb, var(--color-surface, #161a21) 94%, transparent) !important;
-  border-color: rgba(255, 255, 255, .10) !important;
-  box-shadow:
-    0 14px 38px -6px rgba(0, 0, 0, .55),
-    0 6px 14px rgba(0, 0, 0, .35),
-    inset 0 1px 0 rgba(255, 255, 255, .05) !important;
+/* === Mobile: pill above ember (no side space) === */
+@media (max-width: 899px) {
+  .gb-ember-expand {
+    right: auto;
+    left: 50%;
+    top: auto;
+    bottom: calc(100% + 10px);
+    transform: translateX(-50%);
+    padding: 5px 8px;
+    clip-path: circle(16px at 50% calc(100% - 16px));
+  }
+  .gb-ember-expand.is-open {
+    clip-path: inset(0 0 0 0 round 22px);
+  }
 }
-html.dark .gb-ember-expand::after {
-  background: color-mix(in srgb, var(--color-surface, #161a21) 94%, transparent);
-  border-color: rgba(255, 255, 255, .10);
-}
-
-/* кнопки скорости — компактные, минималистичные */
-.gb-ember-expand__btn {
-  appearance: none;
-  border: 0;
-  background: transparent;
-  color: var(--color-text-muted, #6a6a6a);
-  font-family: var(--f-ui, 'Source Sans 3', system-ui, sans-serif);
-  font-size: 12px;
-  font-weight: 600;
-  letter-spacing: .01em;
-  padding: 7px 9px;
-  min-width: 40px;
-  border-radius: 11px;
-  cursor: pointer;
-  transition: background .18s ease, color .18s ease, transform .18s ease;
-  -webkit-tap-highlight-color: transparent;
-  touch-action: manipulation;
-}
-.gb-ember-expand__btn:hover {
-  background: color-mix(in srgb, var(--color-accent, #7a2e2e) 9%, transparent);
-  color: var(--color-accent, #7a2e2e);
-  transform: translateY(-1px);
-}
-.gb-ember-expand__btn:active { transform: scale(.93); transition-duration: .08s; }
-.gb-ember-expand__btn.is-active {
-  background: color-mix(in srgb, var(--color-accent, #7a2e2e) 15%, transparent);
-  color: var(--color-accent, #7a2e2e);
-}
-html.dark .gb-ember-expand__btn { color: var(--color-text-muted, #9ca3af); }
-html.dark .gb-ember-expand__btn:hover {
-  background: color-mix(in srgb, var(--color-accent-strong, #e8b878) 13%, transparent);
-  color: var(--color-accent-strong, #e8b878);
-}
-html.dark .gb-ember-expand__btn.is-active {
-  background: color-mix(in srgb, var(--color-accent-strong, #e8b878) 17%, transparent);
-  color: var(--color-accent-strong, #e8b878);
-}
-
-/* старая close-кнопка убрана из JS; прячем, если где-то осталась */
-.gb-ember-expand__close { display: none !important; }
 
 @media (prefers-reduced-motion: reduce) {
-  .gb-ember-expand {
-    transform: translateX(-50%) !important;
-    transition: opacity .15s ease !important;
+  .gb-ember-expand, .gb-ember-expand__btn {
+    transition-duration: 0.01ms !important;
   }
 }
 
