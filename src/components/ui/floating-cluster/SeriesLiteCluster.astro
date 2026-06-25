@@ -1,11 +1,22 @@
 ---
-import ClusterButton from './ClusterButton.astro';
+/**
+ * SeriesLiteCluster — compact серийный кластер для коротких серий.
+ * Используется для: pastor-series, hard-texts (heart).
+ *
+ * Структура (desktop, fixed top-right):
+ *   [Chip: название серии + номер части]  ←link к hub
+ *   [gb-icon theme] [gb-icon search] [gb-ember] [gb-save]
+ *
+ * Мобайл: горизонтально внизу — chip + controls row
+ * Классы: gb-icon, gb-ember, gb-save (как в референсе)
+ */
+
 import PlayEmber from './PlayEmber.astro';
 import SaveButton from './SaveButton.astro';
 import { getSeriesLiteMeta, type SeriesKey } from '@/data/floating-cluster-ui';
 
 interface Props {
-  variant: 'pastor' | 'heart';
+  variant: 'pastor' | 'heart' | string;
   seriesKey: SeriesKey;
   currentSlug: string;
   hubHref?: string;
@@ -21,136 +32,185 @@ const {
 } = Astro.props;
 
 const meta = getSeriesLiteMeta(seriesKey, currentSlug);
-const currentNumber = meta.currentNumber;
-const currentLabel = currentNumber ? String(currentNumber).toUpperCase() : 'I';
+const currentNum = meta.currentNumber ? String(meta.currentNumber) : 'I';
 const resolvedHubHref = hubHref || meta.baseUrl || '/';
 const seriesTitle = meta.title || 'Серия';
 ---
 <div
   id="gbFloatingControls"
-  class={`gb-floating-controls fc-root fc-series-lite fc-series-lite--${variant}`}
+  class={`gb-floater gb-floater--series-lite gb-floater--${variant}`}
   data-fc-root
   data-fc-mode="series-lite"
   data-fc-variant={variant}
   data-fc-series={seriesKey}
-  data-fc-audio-state={audioState}
   role="group"
-  aria-label={`Быстрые действия серии «${seriesTitle}»`}
+  aria-label={`Действия серии «${seriesTitle}»`}
 >
-  <a class="fc-series-chip" href={resolvedHubHref} aria-label={`Открыть серию «${seriesTitle}»`}>
-    <span class="fc-series-chip__eyebrow">Серия</span>
-    <span class="fc-series-chip__title">{seriesTitle}</span>
+  <!-- Series chip — ссылка к hub -->
+  <a
+    class="gb-series-chip"
+    href={resolvedHubHref}
+    aria-label={`Открыть серию «${seriesTitle}»`}
+  >
+    <span class="gb-series-chip__eyebrow">Серия</span>
+    <span class="gb-series-chip__title">{seriesTitle}</span>
   </a>
 
-  <div class="fc-series-lite__controls">
-    <span aria-hidden="true" class="fc-series-index">{currentLabel}</span>
+  <!-- Controls pill -->
+  <div class="gb-series-controls">
+    <!-- Roman numeral index -->
+    <span class="gb-series-index" aria-label={`Часть ${currentNum}`}>{currentNum}</span>
 
-    <ClusterButton
-      label="Переключить тему"
-      title="Светлая / тёмная тема"
-      className="gb-fc-btn gb-fc-theme fc-theme-toggle"
-      action="theme"
-      pressed="false"
+    <!-- Theme toggle -->
+    <button
+      type="button"
+      class="gb-icon gb-theme-toggle"
+      id="gbFcTheme"
+      data-fc-action="theme"
+      aria-label="Тема"
+      aria-pressed="false"
     >
-      <span aria-hidden="true" class="fc-theme-toggle__sun">
-        <svg viewBox="0 0 24 24">
-          <circle cx="12" cy="12" r="4.5"></circle>
-          <path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"></path>
+      <span class="theme-icon-sun" aria-hidden="true">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="4.5"/>
+          <path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/>
         </svg>
       </span>
-      <span aria-hidden="true" class="fc-theme-toggle__moon">
-        <svg viewBox="0 0 24 24">
-          <path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"></path>
+      <span class="theme-icon-moon" aria-hidden="true">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/>
         </svg>
       </span>
-    </ClusterButton>
+    </button>
 
-    <ClusterButton
-      label="Поиск"
-      title="Поиск по сайту"
-      className="gb-fc-btn gb-fc-search"
-      action="search"
+    <!-- Search -->
+    <button
+      type="button"
+      class="gb-icon"
+      id="gbFcSearch"
+      data-fc-action="search"
+      aria-label="Поиск"
     >
-      <svg aria-hidden="true" viewBox="0 0 24 24">
-        <circle cx="11" cy="11" r="7"></circle>
-        <path d="M21 21l-4.3-4.3"></path>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <circle cx="11" cy="11" r="7"/>
+        <path d="M21 21l-4.3-4.3"/>
       </svg>
-    </ClusterButton>
+    </button>
 
+    <!-- Play Ember -->
     <PlayEmber audioState={audioState} />
+
+    <!-- Save -->
     <SaveButton />
   </div>
 </div>
 
 <style is:global>
 @layer components {
-  .fc-series-lite {
-    --fc-series-surface: color-mix(in srgb, var(--color-surface) 94%, transparent);
-    --fc-series-border: color-mix(in srgb, var(--color-border) 88%, transparent);
-    --fc-series-text: var(--color-text);
-    --fc-series-muted: var(--color-text-muted);
-    --fc-series-accent: var(--color-accent);
-    --fc-series-accent-strong: var(--color-accent-strong);
-    pointer-events: none;
+  /* =========================================================
+     gb-floater--series-lite — compact серийный кластер
+     Desktop: fixed top-right, flex-column, gap:8px
+     Mobile: fixed bottom-center, flex-row
+     ========================================================= */
+  .gb-floater--series-lite {
+    position: fixed;
+    top: max(20px, env(safe-area-inset-top, 20px));
+    right: max(20px, env(safe-area-inset-right, 20px));
+    z-index: var(--z-toast, 9800);
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
     gap: 8px;
+    pointer-events: none;
   }
 
-  .fc-series-lite--pastor {
-    --fc-series-accent: color-mix(in srgb, var(--color-accent) 82%, #5b2b20 18%);
-    --fc-series-accent-strong: color-mix(in srgb, var(--color-accent-strong) 74%, #b77b54 26%);
-  }
-
-  .fc-series-lite .fc-series-chip,
-  .fc-series-lite .fc-series-lite__controls {
+  .gb-floater--series-lite > * {
     pointer-events: auto;
   }
 
-  .fc-series-lite .fc-series-chip {
+  /* =========================================================
+     Chip — карточка-ссылка к hub серии
+     ========================================================= */
+  .gb-series-chip {
     display: flex;
     flex-direction: column;
     gap: 2px;
     min-width: 0;
     padding: 8px 12px;
-    border: 1px solid var(--fc-series-border);
+    border: 1px solid color-mix(in srgb, var(--color-border, #e5e2dc) 88%, transparent);
     border-radius: 14px;
-    background: var(--fc-series-surface);
-    color: var(--fc-series-text);
+    background: color-mix(in srgb, var(--color-surface, #fff) 94%, transparent);
+    color: var(--color-text, #1a1a1a);
     text-decoration: none;
-    box-shadow: 0 14px 36px -26px rgba(22, 15, 10, 0.28);
+    box-shadow: 0 14px 36px -26px rgba(22, 15, 10, .28);
     -webkit-backdrop-filter: blur(16px) saturate(150%);
     backdrop-filter: blur(16px) saturate(150%);
+    transition:
+      border-color .22s var(--gb-ease-out, cubic-bezier(.2,.7,.2,1)),
+      box-shadow .22s var(--gb-ease-out, cubic-bezier(.2,.7,.2,1));
   }
 
-  .fc-series-lite .fc-series-chip__eyebrow {
+  @media (hover: hover) and (pointer: fine) {
+    .gb-series-chip:hover {
+      border-color: var(--color-accent, #7a2e2e);
+      box-shadow: 0 16px 40px -24px rgba(22, 15, 10, .38);
+    }
+  }
+
+  .gb-series-chip__eyebrow {
     font-family: var(--f-ui, 'Source Sans 3', system-ui, sans-serif);
     font-size: 10px;
     font-weight: 800;
     letter-spacing: .14em;
     text-transform: uppercase;
-    color: var(--fc-series-accent);
+    color: var(--color-accent, #7a2e2e);
   }
 
-  .fc-series-lite .fc-series-chip__title {
+  .gb-series-chip__title {
     font-family: var(--f-body, Lora, Georgia, serif);
     font-size: 14px;
     font-weight: 700;
     line-height: 1.2;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 160px;
   }
 
-  .fc-series-lite .fc-series-lite__controls {
+  /* Pastor variant — тёмно-медный акцент */
+  .gb-floater--pastor .gb-series-chip__eyebrow {
+    color: color-mix(in srgb, var(--color-accent, #7a2e2e) 80%, #5b2b20 20%);
+  }
+
+  /* Heart variant — deep-red акцент */
+  .gb-floater--heart .gb-series-chip__eyebrow {
+    color: color-mix(in srgb, var(--color-accent, #7a2e2e) 85%, #8b0000 15%);
+  }
+
+  /* =========================================================
+     Controls pill
+     ========================================================= */
+  .gb-series-controls {
     display: flex;
     align-items: center;
     gap: 4px;
     padding: 3px;
-    border: 1px solid var(--fc-series-border);
+    border: 1px solid color-mix(in srgb, var(--color-border, #e5e2dc) 88%, transparent);
     border-radius: 24px;
-    background: var(--fc-series-surface);
-    box-shadow: 0 16px 38px -28px rgba(22, 15, 10, 0.24);
+    background: color-mix(in srgb, var(--color-surface, #fff) 94%, transparent);
+    box-shadow: 0 16px 38px -28px rgba(22, 15, 10, .24);
     -webkit-backdrop-filter: blur(16px) saturate(150%);
     backdrop-filter: blur(16px) saturate(150%);
   }
 
-  .fc-series-lite .fc-series-index {
+  html.dark .gb-series-controls,
+  html.dark .gb-series-chip {
+    background: color-mix(in srgb, var(--color-surface, #161a21) 94%, transparent);
+    border-color: rgba(255, 255, 255, .08);
+  }
+
+  /* Index номер (roman-like) */
+  .gb-series-index {
     display: inline-flex;
     align-items: center;
     justify-content: center;
@@ -160,43 +220,73 @@ const seriesTitle = meta.title || 'Серия';
     font-size: 14px;
     font-weight: 700;
     letter-spacing: .08em;
-    color: var(--fc-series-accent);
+    color: var(--color-accent, #7a2e2e);
   }
 
+  /* Кнопки в controls (gb-icon) — меньше 40px для pill */
+  .gb-series-controls .gb-icon,
+  .gb-series-controls .gb-ember,
+  .gb-series-controls .gb-save {
+    width: 34px !important;
+    height: 34px !important;
+  }
+
+  .gb-series-controls .gb-ember {
+    --ember-size: 34px !important;
+  }
+
+  /* =========================================================
+     Mobile: горизонтально внизу
+     ========================================================= */
   @media (max-width: 899px) {
-    .gb-floating-controls.fc-series-lite {
+    .gb-floater--series-lite {
       top: auto;
       left: 50%;
       right: auto;
       bottom: calc(12px + env(safe-area-inset-bottom, 0px));
       transform: translateX(-50%);
-      width: min(94vw, 420px);
       flex-direction: row;
       align-items: stretch;
       justify-content: center;
       gap: 8px;
-      z-index: var(--z-bottom-bar);
+      width: min(94vw, 420px);
+      z-index: var(--z-bottom-bar, 2000);
     }
 
-    .gb-floating-controls.fc-series-lite .fc-series-chip {
+    .gb-series-chip {
       flex: 1 1 auto;
       min-width: 0;
       justify-content: center;
     }
 
-    body.fc-series-lite-pilot .article-main {
+    /* Паддинг снизу статьи */
+    body.fc-series-active .article-main {
       padding-bottom: 96px;
     }
   }
 
-  body.fc-series-lite-pilot #reading-progress,
-  body.fc-series-lite-pilot #section-label,
-  body.fc-series-lite-pilot #back-to-top,
-  body.fc-series-lite-pilot #themeToggle,
-  body.fc-series-lite-pilot #tocSidebar,
-  body.fc-series-lite-pilot #bottomBar,
-  body.fc-series-lite-pilot #btocOverlay {
+  /* =========================================================
+     Скрываем старые дублирующие controls
+     ========================================================= */
+  body.fc-series-active #reading-progress,
+  body.fc-series-active #section-label,
+  body.fc-series-active #back-to-top,
+  body.fc-series-active #themeToggle,
+  body.fc-series-active #tocSidebar,
+  body.fc-series-active #bottomBar,
+  body.fc-series-active #btocOverlay {
     display: none !important;
+  }
+
+  /* =========================================================
+     Reduced motion
+     ========================================================= */
+  @media (prefers-reduced-motion: reduce) {
+    .gb-floater--series-lite,
+    .gb-series-chip,
+    .gb-series-controls {
+      transition: none !important;
+    }
   }
 }
 </style>
