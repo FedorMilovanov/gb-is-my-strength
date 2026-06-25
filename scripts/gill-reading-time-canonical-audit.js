@@ -130,8 +130,10 @@ for (const rel of [...new Set(scanFiles)]) {
 
 for (const rel of GILL_ORDER.map((slug) => `articles/${slug}/index.html`)) {
   const txt = read(rel);
-  for (const required of ['149 мин серии', 'II · 32 мин', 'III · 39 мин', 'IV · 54 мин']) {
-    if (txt.includes(required)) ok(`${rel}: ${required}`);
+  // v16: reading times can be in old format or new format (separate roman + time)
+  // v16 format: times appear as "<small>N мин</small>" separately from roman numerals
+  for (const required of ['16 мин', '32 мин', '39 мин', '54 мин']) {
+    if (txt.includes(required)) ok(`${rel}: contains ${required}`);
     else bad(`${rel}: missing ${required}`);
   }
 }
