@@ -10,11 +10,11 @@
  *   4. Save (gb-save)
  *
  * Positioning:
- *   - default: position:fixed, top-right (viewport edge)
- *   - data-fc-anchor="legacy-theme-toggle": position:absolute,
- *     matches old .theme-toggle coords (top: clamp(24,3.5vw,44)-4; right: 8.5vw).
- *     Используется на страницах, где кластер ЗАМЕНЯЕТ старый theme-toggle,
- *     сохраняя его геометрический anchor (breadcrumb-level / content-column right).
+ *   - default: position:fixed, top:max(20px,...), right:max(20px,...)
+ *   - variant="hermeneutics": same fixed, but top/right override
+ *     copies old .theme-toggle geometry (top:clamp(24,3.5vw,44)-4; right:8.5vw)
+ *     so day/night SVG sits exactly on the breadcrumb visual level
+ *     (owner spec: replace old control, preserve its anchor).
  *
  * На мобильных (≤899px): нижняя центрированная горизонтальная пилюля
  */
@@ -23,36 +23,30 @@ import PlayEmber from './PlayEmber.astro';
 import SaveButton from './SaveButton.astro';
 
 interface Props {
-  /** Визуальный вариант (влияет только на цветовые токены) */
+  /**
+   * Визуальный вариант.
+   *  - 'article' (default): generic standalone article.
+   *  - 'hermeneutics': day/night anchored на breadcrumb-level (overrides top/right,
+   *    не position) — per PDF-plan Phase 1 acceptance: "top delta ≤ 8px
+   *    relative to breadcrumb-level, right-edge matches old article slot".
+   */
   variant?: 'hermeneutics' | 'article';
   audioState?: 'none' | 'available' | 'loading' | 'playing' | 'paused';
   progress?: number;
-  /**
-   * Якорь позиционирования. Если задан, кластер использует абсолютное
-   * позиционирование относительно ближайшего positioned ancestor
-   * (обычно .article-main) вместо viewport-fixed.
-   *
-   *   'legacy-theme-toggle' — копирует геометрию старого .theme-toggle
-   *                            (top: clamp(24px,3.5vw,44px)-4;
-   *                             right: max(8.5vw,env(safe-area-inset-right,0px))).
-   */
-  anchor?: 'legacy-theme-toggle' | null;
 }
 
 const {
   variant = 'article',
   audioState = 'none',
   progress = 0,
-  anchor = null,
 } = Astro.props;
 ---
 <div
   id="gbFloatingControls"
-  class={`gb-floater gb-floater--${variant}${anchor ? ` gb-floater--anchor-${anchor}` : ''}`}
+  class={`gb-floater gb-floater--${variant}`}
   data-fc-root
   data-fc-variant={variant}
   data-fc-mode="single"
-  data-fc-anchor={anchor}
   role="group"
   aria-label="Быстрые действия"
 >
@@ -118,22 +112,19 @@ const {
     pointer-events: none;
   }
 
-  /* =========================================================
-     gb-floater--anchor-legacy-theme-toggle
-     Сохраняет геометрический anchor старого .theme-toggle:
-       top:    calc(clamp(24px,3.5vw,44px) - 4px)
-       right:  max(8.5vw, env(safe-area-inset-right, 0px))
-     Day/night SVG сидит на уровне breadcrumb, не выше и не у viewport-top.
-     ========================================================= */
-  .gb-floater--anchor-legacy-theme-toggle {
-    position: absolute;
+  /* Hermeneutics variant: inherit the legacy #themeToggle anchor.
+     Owner spec: new premium control must REPLACE the old correctly-tuned
+     control at its exact geometry — breadcrumb visual level (top) and
+     content-column right edge (right), NOT viewport edge.
+     Old .theme-toggle: top:calc(clamp(24px,3.5vw,44px)-4px); right:max(8.5vw).
+     position stays fixed so the persistent cluster (search/play/save) stays
+     usable while its theme glyph sits exactly on the breadcrumb line. */
+  .gb-floater--hermeneutics {
     top: calc(clamp(24px, 3.5vw, 44px) - 4px);
     right: max(8.5vw, env(safe-area-inset-right, 0px));
-    align-items: flex-end;
-    gap: 4px;
   }
   @media (max-width: 899px) {
-    .gb-floater--anchor-legacy-theme-toggle {
+    .gb-floater--hermeneutics {
       top: calc(clamp(24px, 3.5vw, 44px) - 4px);
       right: max(4.5vw, env(safe-area-inset-right, 0px));
     }
@@ -497,14 +488,24 @@ const {
 
   /* =========================================================
      Скрываем старые controls при активном кластере
-     ========================================================= */
+     Поддерживаем ОБА префикса: legacy `fc-` и current `gb-cluster-`
+     (BUG-001: контроллер ставит `gb-cluster-single-active`, а CSS
+     исторически смотрит на `fc-single-active` — двойной префикс
+     гарантирует, что legacy chrome не показывается поверх premium). */
   body.fc-single-active #reading-progress,
   body.fc-single-active #section-label,
   body.fc-single-active #back-to-top,
   body.fc-single-active #themeToggle,
   body.fc-single-active #tocSidebar,
   body.fc-single-active #bottomBar,
-  body.fc-single-active #btocOverlay {
+  body.fc-single-active #btocOverlay,
+  body.gb-cluster-single-active #reading-progress,
+  body.gb-cluster-single-active #section-label,
+  body.gb-cluster-single-active #back-to-top,
+  body.gb-cluster-single-active #themeToggle,
+  body.gb-cluster-single-active #tocSidebar,
+  body.gb-cluster-single-active #bottomBar,
+  body.gb-cluster-single-active #btocOverlay {
     display: none !important;
   }
 
