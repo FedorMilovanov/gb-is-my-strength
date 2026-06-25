@@ -361,3 +361,103 @@ PlayEmber и SaveButton добавлены в `nag-sidebar-controls`, но бе�
 *Итого мусора: 6 категорий (TRASH-001..007), ~30MB в PNG + ~18KB в JS + ~11KB в scripts.*
 *Сомнительных: 3 категории (MAYBE-001..003) — решение за владельцем.*
 *Дата: 2026-06-25. Аудит выполнен агентом по main (fb8e492).*
+
+---
+
+## 🔴 НОВЫЕ БАГИ — раунд 2
+
+---
+
+### BUG-026 · Все 10 `baptisty-rossii/*/index.html` не имеют `BreadcrumbList` в JSON-LD
+
+**Файлы:** `baptisty-rossii/{10 slug}/index.html`
+
+DOM-хлебные крошки присутствуют (`.breadcrumb` в HTML), но JSON-LD `BreadcrumbList` отсутствует во всех 10 страницах. Яндекс и Google используют именно JSON-LD для Rich Results навигации. Без него ни одна baptisty-страница не получит хлебные крошки в SERP. Проверка: `grep "BreadcrumbList" baptisty-rossii/noch-na-kure/index.html` → пусто.
+
+---
+
+### BUG-027 · Все 11 `baptisty-rossii` страниц имеют `og:image` в формате SVG
+
+**Файлы:** `baptisty-rossii/index.html` + 10 статей, `images/baptisty-rossii/cover-*.svg`
+
+`og:image:type` = `image/svg+xml`. Facebook, Twitter, Telegram, VK, WhatsApp — ни одна соцсеть **не рендерит SVG** в превью ссылки. При шеринге baptisty-страниц превью будет без изображения. SVG-обложки (`cover-01-kura.svg`, …) — крошечные (1.4–1.5KB) placeholder-иконки. WebP-версий нет совсем. Нужно создать 1200×630px WebP/JPG обложки для соцсетей.
+
+---
+
+### BUG-028 · `nagornaya-visual-parity-audit.js` не проверяет наличие `nag-sidebar-ember`
+
+**Файл:** `scripts/nagornaya-visual-parity-audit.js`
+
+После добавления Play+Save кнопок в Nagornaya sidebar (25 июня) audit-скрипт не обновлён. Он проверяет только `<!DOCTYPE html>`, `nagornaya-page`, `main-content`. Если кто-то случайно удалит `nag-sidebar-ember` из PageChrome — audit не поймает регрессию. Нужно добавить `must(chrome, 'nag-sidebar-ember', ...)` и `must(chrome, 'nag-sidebar-save', ...)` в проверки.
+
+---
+
+## 🗑️ НОВЫЙ МУСОР — раунд 2
+
+---
+
+### TRASH-008 · `data/term-links.json` (12KB) — нигде не используется
+
+**Статус: МУСОР или заготовка (уточнить у владельца)**
+
+Файл содержит заготовку системы term-linking с полями `id`, `term`, `cat`, `color`, `brief`. Не загружается ни в одном JS-файле, Astro-компоненте или скрипте. Возможно, заготовка для будущей фичи перекрёстных ссылок на термины. Если фича не планируется — мусор. Проверка: `grep -r "term-links" . --include="*.js" --include="*.ts" --include="*.astro"` → только сам файл.
+
+---
+
+### TRASH-009 · `data/strategic-map-antisovetov.json` (30KB) — нигде не используется
+
+**Статус: МУСОР или заготовка (уточнить у владельца)**
+
+Файл содержит biblical analysis blocks (объекты с `type: 'biblical'`, `title`, `text`) для статьи 20 антисоветов пастору. Не подключён в `articles/20-antisovetov-pastoru/index.html`, не загружается в `AntisovetovBody.astro`, не упоминается ни в каком скрипте. Возможно, готовился для интерактивной «стратегической карты» статьи — но не реализован.
+
+---
+
+### TRASH-010 · `src/utils/legacyFullDocument.ts` — не импортируется нигде
+
+**Статус: МУСОР (безопасно удалить)**
+
+Утилита `loadLegacyFullDocument()` для shadow-wrap режима (загрузка полного legacy HTML). Рефакторинг 6.0 убрал все shadow-wrap страницы. `grep -r "legacyFullDocument" src/` → 0 результатов в `.astro`/`.ts`/`.tsx`. Включён в tsconfig но не импортируется. Audit-скрипты проверяют отсутствие вызовов этой функции в routes — удаление файла на это не влияет.
+
+---
+
+### TRASH-011 · `src/utils/legacyShadow.ts` — не импортируется нигде
+
+**Статус: МУСОР (безопасно удалить)**
+
+Утилита-парсер для `legacyShadow` режима (извлечение head/body/meta из legacy HTML). Аналогично TRASH-010: после рефакторинга 6.0 не используется. `grep -r "legacyShadow" src/` → 0 результатов. Можно удалить вместе с TRASH-010.
+
+---
+
+## ⚠️ ЗАМЕЧАНИЯ — раунд 2
+
+---
+
+### NOTE-001 · `css/floating-cluster.css` содержит `.state-grid` — probe-класс из демо
+
+Уже в TRASH-006. Подтверждено: единственный probe-класс в файле. Остальной CSS файла — production-ready.
+
+### NOTE-002 · `data/visual-parity-baseline.json` и `data/public-content-baseline.json` — актуальны
+
+Оба используются в `scripts/visual-parity-baseline.js` и `scripts/generate-route-profiles.js`. Не мусор.
+
+### NOTE-003 · `src/styles/global.css` и `src/styles/tokens.css` — используются
+
+Импортируются в `src/layouts/BaseLayout.astro`. Не мусор.
+
+### NOTE-004 · React (`@astrojs/react`, `@xyflow/react`) — intentional для `/rodosloviye/`
+
+Родословие (`src/components/genealogy/*.tsx`) — интерактивное дерево генеалогии на React+XYFlow. AGENTS.md запрет React как runtime-стека относится к обычным статьям, не к специализированным интерактивным виджетам. Не баг.
+
+### NOTE-005 · Все 20 MDX-файлов используют `publishedAt`/`updatedAt` (не `date`) — корректно
+
+Astro content schema это принимает. Ложная тревога при первичном сканировании.
+
+### NOTE-006 · `baptisty-rossii` не имеет записей в `feed.xml`
+
+Baptisty-статьи отсутствуют в RSS-ленте. Возможно намеренно (серия ещё в работе). Требует решения владельца — включать ли в feed.
+
+---
+
+*Итого после раунда 2: +3 новых бага (BUG-026..028), +4 единицы мусора (TRASH-008..011), 6 замечаний.*
+*Общий счёт: 28 багов, 11 категорий мусора, 9 замечаний.*
+*Дата: 2026-06-25. Состояние main: коммит 216bc1a.*
