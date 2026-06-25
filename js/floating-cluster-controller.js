@@ -318,6 +318,14 @@
     var railControls = qs('[data-fc-controls="gill-rail"]');
     if (!railControls) return;
     initCluster(railControls);
+    // Expose public API for pages that use gill-rail without data-fc-root
+    if (!window.__gbCluster) {
+      window.__gbCluster = {
+        setTheme: setTheme, toggleTheme: toggleTheme,
+        setSaved: setSaved, setEmberState: setEmberState,
+        showToast: showToast, openSearch: openSearch,
+      };
+    }
   }
 
   /* =====================================================
@@ -347,7 +355,10 @@
     initActionHandlers();
     initPlayExpand();
 
-    // 2. Инициализировать ВСЕ корни кластеров
+    // 2. Gill rail / non-root cluster controls (работают без data-fc-root)
+    initGillRail();
+
+    // 3. Инициализировать корни с data-fc-root
     var roots = qsa('[data-fc-root]');
     if (!roots.length) return;
 
@@ -355,13 +366,11 @@
       var mode = root.getAttribute('data-fc-mode') || 'single';
       if (mode === 'single') activateSinglePilot();
       if (mode === 'series-lite') activateSeriesPilot();
+      if (mode === 'nagornaya') activateSinglePilot();
       initCluster(root);
     });
 
-    // 5. Gill rail controls
-    initGillRail();
-
-    // 6. Синхронизация состояний
+    // 5. Синхронизация состояний
     syncThemeButtons();
     syncSaveState();
 
