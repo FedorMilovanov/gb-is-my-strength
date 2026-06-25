@@ -323,6 +323,8 @@
   ready(function () {
     // 1. Inject SVG в ember кнопки (если SSR не вставил)
     initEmbers();
+    initTocPopups();
+    initActionHandlers();
 
     // 2. Найти корень кластера
     var root = qs('[data-fc-root]');
@@ -366,3 +368,90 @@
   });
 
 })();
+
+  /* =====================================================
+     v16 TOC POPUPS — Series & Part sheets
+     ===================================================== */
+  function initTocPopups() {
+    var seriesToc = qs('#seriesTocOverlay');
+    var partToc = qs('#partTocOverlay');
+    var mobTocBtn = qs('#mobTocBtn');
+    var backToSeries = qs('#backToSeries');
+
+    function openOverlay(el) {
+      if (el) { el.classList.add('is-open'); document.body.style.overflow = 'hidden'; }
+    }
+    function closeOverlay(el) {
+      if (el) { el.classList.remove('is-open'); document.body.style.overflow = ''; }
+    }
+
+    // Mobile TOC button opens series
+    if (mobTocBtn && seriesToc) {
+      mobTocBtn.addEventListener('click', function() { openOverlay(seriesToc); });
+    }
+
+    // Back button in Part TOC → Series TOC
+    if (backToSeries && seriesToc && partToc) {
+      backToSeries.addEventListener('click', function() {
+        closeOverlay(partToc);
+        openOverlay(seriesToc);
+      });
+    }
+
+    // Click on series item → open Part TOC (for current part) or navigate
+    if (seriesToc) {
+      seriesToc.addEventListener('click', function(e) {
+        var item = e.target.closest('.toc-item');
+        if (!item) return;
+        if (item.classList.contains('is-current') && partToc) {
+          e.preventDefault();
+          closeOverlay(seriesToc);
+          openOverlay(partToc);
+        }
+        // Non-current items are regular links — let them navigate
+      });
+    }
+
+    // Close overlay on backdrop click
+    [seriesToc, partToc].forEach(function(overlay) {
+      if (!overlay) return;
+      overlay.addEventListener('click', function(e) {
+        if (e.target === overlay) closeOverlay(overlay);
+      });
+      // Close on handle drag down (simple version)
+      var handle = overlay.querySelector('.toc-sheet__handle');
+      if (handle) {
+        handle.addEventListener('click', function() { closeOverlay(overlay); });
+      }
+    });
+
+    // Escape closes any open overlay
+    document.addEventListener('keydown', function(e) {
+      if (e.key === 'Escape') {
+        closeOverlay(seriesToc);
+        closeOverlay(partToc);
+      }
+    });
+  }
+
+  /* v16 action handlers (non-inline) */
+  function initActionHandlers() {
+    // Rail back button
+    var back = qs('.gbs-rail-back');
+    if (back) {
+      var href = back.closest('[data-home-href]');
+      back.addEventListener('click', function() {
+        location.href = href ? href.getAttribute('data-home-href') : '../../biografii/';
+      });
+    }
+    // Share button
+    qsa('[data-action="share"]').forEach(function(btn) {
+      btn.addEventListener('click', function() {
+        if (navigator.share) navigator.share({ title: document.title, url: location.href });
+      });
+    });
+    // Print button
+    qsa('[data-action="print"]').forEach(function(btn) {
+      btn.addEventListener('click', function() { window.print(); });
+    });
+  }
