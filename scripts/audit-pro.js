@@ -76,7 +76,6 @@ const CACHE_BUST_ASSETS = [
   'css/mobile-hotfix.css',
   'css/nagornaya-mobile-toc.css',
   'css/floating-cluster.css',
-  'css/site-layered.css',
   'fonts/fonts.css',
   'nagornaya/tw.min.css',
   'js/site.js',
@@ -89,8 +88,7 @@ const CACHE_BUST_ASSETS = [
   'js/sw-register.js',
   'js/nagornaya-mobile-toc.js',
   'js/glossary.js',
-  'js/floating-cluster-controller.js',
-  'js/site-modules.js'
+  'js/floating-cluster-controller.js'
 ];
 
 const MAX_CSS_TOTAL = 425_000; // global core CSS budget; route-scoped/pilot CSS is reported separately
@@ -2703,18 +2701,18 @@ const JS_SIZE_FLOORS = {
   const m = swText.match(/PRECACHE_ASSETS\s*=\s*\[([^\]]+)\]/);
   if (!m) { R.err('sw.js: PRECACHE_ASSETS array not found'); return; }
   const listed = new Set([...m[1].matchAll(/['"]([^'"]+)['"]/g)].map(x => x[1]));
-  const cssFiles = fs.readdirSync(path.join(ROOT, 'css'))
-    .filter(f => f.endsWith('.css')).map(f => '/css/' + f);
-  const jsFiles = fs.readdirSync(path.join(ROOT, 'js'))
-    .filter(f => f.endsWith('.js')).map(f => '/js/' + f);
+  // Only user-facing cache-busted assets are required in the SW precache.
+  // Tooling/pilot artifacts such as css/site-layered.css and js/site-modules.js
+  // may physically exist in the repo, but must not force users to download them.
+  const required = CACHE_BUST_ASSETS.map(f => '/' + f);
   const missing = [];
-  for (const f of [...cssFiles, ...jsFiles]) {
+  for (const f of required) {
     if (!listed.has(f)) missing.push(f);
   }
   if (missing.length) {
     R.err(`sw.js PRECACHE_ASSETS missing live files:\n  - ${missing.join('\n  - ')}`);
   } else {
-    R.ok(`sw.js PRECACHE_ASSETS lists all 5 CSS + 11 JS files`);
+    R.ok(`sw.js PRECACHE_ASSETS lists all required cache-busted live assets`);
   }
 })();
 
