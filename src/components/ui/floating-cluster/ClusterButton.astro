@@ -1,32 +1,38 @@
 ---
+/**
+ * ClusterButton — gb-icon из референса.
+ * С ::before halo на hover (в отличие от gb-save который без halo).
+ * Используется для theme-toggle, search, и прочих иконок.
+ */
+
 interface Props {
   label: string;
-  className?: string;
+  class?: string;
   title?: string;
   action?: string;
-  attrs?: Record<string, string | boolean | number | undefined | null>;
+  tip?: string;
   pressed?: 'true' | 'false';
 }
 
 const {
   label,
-  className = '',
+  class: className = '',
   title = label,
   action,
-  attrs = {},
+  tip,
   pressed,
 } = Astro.props;
 
-const actionAttrs = action ? { 'data-fc-action': action } : {};
+const classes = ['gb-icon', className].filter(Boolean).join(' ');
 ---
 <button
   type="button"
-  class={`fc-button ${className}`.trim()}
+  class={classes}
   aria-label={label}
   title={title}
   aria-pressed={pressed}
-  {...actionAttrs}
-  {...attrs}
+  data-fc-action={action}
+  data-tip={tip}
 >
   <slot />
 </button>

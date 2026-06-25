@@ -1,90 +1,89 @@
+/**
+ * floating-cluster-controller.js
+ * GB Floating Cluster v16 — контроллер для standalone и series кластеров.
+ *
+ * Точная реализация логики из gb-floating-cluster-probe-v16.html.
+ * CSS живёт в Astro-компонентах (site.css), НЕ инжектируется здесь.
+ *
+ * Принципы:
+ * - Использует window.SiteUtils если доступен
+ * - Использует window.BookmarkEngine для save
+ * - НЕ создаёт второй search/theme/bookmark
+ * - НЕ генерирует UI строками
+ * - НЕ инжектирует CSS
+ */
 (function () {
   'use strict';
 
   var THEME_KEY = 'theme';
-  var FALLBACK_SAVE_KEY = 'fc:saved:' + normalizePath(location.pathname || '/');
   var toastTimer = null;
-  var STYLE_ID = 'fc-runtime-styles';
 
-  function normalizePath(path) {
-    var clean = String(path || '/').split('?')[0].split('#')[0].replace(/index\.html$/, '');
-    if (clean !== '/' && /\/$/.test(clean)) clean = clean.slice(0, -1);
-    return clean || '/';
-  }
-
+  /* =====================================================
+     УТИЛИТЫ
+     ===================================================== */
   function ready(fn) {
     if (document.readyState === 'loading') {
       document.addEventListener('DOMContentLoaded', fn, { once: true });
-      return;
+    } else {
+      fn();
     }
-    fn();
   }
 
-  function qs(selector, root) {
-    return (root || document).querySelector(selector);
-  }
+  function qs(sel, root) { return (root || document).querySelector(sel); }
+  function qsa(sel, root) { return Array.prototype.slice.call((root || document).querySelectorAll(sel)); }
 
-  function ensureStyles() {
-    if (qs('#' + STYLE_ID)) return;
-    var style = document.createElement('style');
-    style.id = STYLE_ID;
-    style.textContent = `
-.fc-button{position:relative;display:inline-flex;align-items:center;justify-content:center;padding:0;margin:0;border:none;background:transparent;box-shadow:none}
-.fc-button svg{stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
-.fc-theme-toggle{overflow:hidden}.fc-theme-toggle__sun,.fc-theme-toggle__moon{position:absolute;inset:0;display:inline-flex;align-items:center;justify-content:center;transition:opacity .24s ease,transform .28s cubic-bezier(.22,1,.36,1)}.fc-theme-toggle__sun{opacity:1;transform:rotate(0) scale(1)}.fc-theme-toggle__moon{opacity:0;transform:rotate(-90deg) scale(.6)}html.dark .fc-theme-toggle__sun{opacity:0;transform:rotate(90deg) scale(.6)}html.dark .fc-theme-toggle__moon{opacity:1;transform:rotate(0) scale(1)}
-.fc-play-ember__ring{position:absolute;inset:7px;border-radius:999px;border:1px solid currentColor;opacity:.44}.fc-play-ember[data-audio-state='none'] .fc-play-ember__ring{opacity:.22}.fc-play-ember__icon--pause,.fc-play-ember__icon--spark{display:none}.fc-play-ember[data-audio-state='playing'] .fc-play-ember__icon--play,.fc-play-ember[data-audio-state='paused'] .fc-play-ember__icon--play,.fc-play-ember[data-audio-state='loading'] .fc-play-ember__icon--play{display:none}.fc-play-ember[data-audio-state='playing'] .fc-play-ember__icon--pause,.fc-play-ember[data-audio-state='paused'] .fc-play-ember__icon--pause{display:block}.fc-play-ember[data-audio-state='loading'] .fc-play-ember__icon--spark{display:block}
-.fc-save.is-saved{color:var(--color-accent-strong)}.fc-save.is-saved svg{fill:currentColor;stroke:currentColor}.fc-roman{font-family:var(--f-body,Lora,Georgia,serif);font-size:14px;font-weight:700;letter-spacing:.08em;color:var(--gbs2-accent2,var(--color-accent-strong))}
-.gbs2-rail.fc-rail{box-shadow:18px 0 52px rgba(22,15,10,.16)}.gbs2-rail.fc-rail .fc-rfoot{gap:6px;flex-wrap:wrap;align-items:center}.gbs2-rail.fc-rail .fc-button,.gbs2-mobile-actions.fc-mobile-actions .fc-button{border-radius:12px;transition:transform .22s cubic-bezier(.22,1,.36,1),color .22s ease,background-color .22s ease}.gbs2-rail.fc-rail .fc-button svg,.gbs2-mobile-actions.fc-mobile-actions .fc-button svg{width:17px;height:17px}.gbs2-mobile-actions.fc-mobile-actions{display:flex;gap:6px;margin-left:auto}.gbs2-bbar.fc-bbar{gap:8px}.gbs2-bbar.fc-bbar .fc-roman{display:inline-flex;align-items:center;justify-content:center;min-width:34px;padding:0 6px}.gbs2-rail.fc-rail .fc-font{font-size:12px;letter-spacing:-.02em}.gbs2-rail.fc-rail .fc-play-ember,.gbs2-mobile-actions.fc-mobile-actions .fc-play-ember{position:relative}.gbs2-rail.fc-rail .fc-play-ember__ring,.gbs2-mobile-actions.fc-mobile-actions .fc-play-ember__ring{opacity:.82}.gbs2-rail.fc-rail .fc-save.is-saved,.gbs2-mobile-actions.fc-mobile-actions .fc-save.is-saved{color:var(--gbs2-accent2,var(--color-accent-strong));background:rgba(232,184,120,.08)}.gbs2-rail.fc-rail .fc-button:hover,.gbs2-mobile-actions.fc-mobile-actions .fc-button:hover{background:rgba(0,0,0,.06);transform:scale(1.04)}html.dark .gbs2-rail.fc-rail .fc-button:hover,html.dark .gbs2-mobile-actions.fc-mobile-actions .fc-button:hover{background:rgba(255,255,255,.08);color:#eed093;box-shadow:0 0 14px rgba(216,176,104,.28)}
-.gb-floating-controls.fc-single{pointer-events:none;gap:4px}.gb-floating-controls.fc-single .fc-button,.gb-floating-controls.fc-single .gb-fc-btn{pointer-events:auto;width:36px;height:36px;color:var(--color-text-muted);transition:color .2s ease,transform .2s cubic-bezier(.22,1,.36,1)}.gb-floating-controls.fc-single .fc-button svg,.gb-floating-controls.fc-single .gb-fc-btn svg{width:20px;height:20px}.gb-floating-controls.fc-single .gb-fc-theme{color:var(--color-accent)}.gb-floating-controls.fc-single .gb-fc-search,.gb-floating-controls.fc-single .fc-play-ember,.gb-floating-controls.fc-single .fc-save{color:var(--color-text)}.gb-floating-controls.fc-single .fc-play-ember[data-audio-state='none']{color:var(--color-text-muted)}html.dark .gb-floating-controls.fc-single .gb-fc-theme,html.dark .gb-floating-controls.fc-single .fc-save.is-saved,html.dark .gb-floating-controls.fc-single .fc-play-ember[data-audio-state='playing'],html.dark .gb-floating-controls.fc-single .fc-play-ember[data-audio-state='paused']{color:var(--color-accent-strong)}@media (hover:hover) and (pointer:fine){.gb-floating-controls.fc-single .fc-button:hover,.gb-floating-controls.fc-single .gb-fc-btn:hover{background:transparent;color:var(--color-text);transform:translateY(-2px) scale(1.08)}html.dark .gb-floating-controls.fc-single .fc-button:hover,html.dark .gb-floating-controls.fc-single .gb-fc-btn:hover{color:var(--color-accent-strong)}}.gb-floating-controls.fc-single .fc-button:focus-visible,.gb-floating-controls.fc-single .gb-fc-btn:focus-visible,.gbs2-rail.fc-rail .fc-button:focus-visible,.gbs2-mobile-actions.fc-mobile-actions .fc-button:focus-visible{outline:2px solid var(--color-accent);outline-offset:2px}@media (max-width:899px){.gb-floating-controls.fc-single{top:auto;left:50%;right:auto;bottom:calc(12px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);flex-direction:row;gap:2px;padding:3px;border:1px solid color-mix(in srgb,var(--color-border) 86%,transparent);border-radius:24px;background:color-mix(in srgb,var(--color-surface) 94%,transparent);-webkit-backdrop-filter:blur(16px) saturate(160%);backdrop-filter:blur(16px) saturate(160%);z-index:var(--z-bottom-bar)}body.fc-single-pilot .article-main{padding-bottom:88px}}
-body.fc-single-pilot #reading-progress,body.fc-single-pilot #section-label,body.fc-single-pilot #back-to-top,body.fc-single-pilot #themeToggle,body.fc-single-pilot #tocSidebar,body.fc-single-pilot #bottomBar,body.fc-single-pilot #btocOverlay,body.fc-series-lite-pilot #reading-progress,body.fc-series-lite-pilot #section-label,body.fc-series-lite-pilot #back-to-top,body.fc-series-lite-pilot #themeToggle,body.fc-series-lite-pilot #tocSidebar,body.fc-series-lite-pilot #bottomBar,body.fc-series-lite-pilot #btocOverlay{display:none!important}
-.fc-series-lite{--fc-series-surface:color-mix(in srgb,var(--color-surface) 94%,transparent);--fc-series-border:color-mix(in srgb,var(--color-border) 88%,transparent);--fc-series-text:var(--color-text);--fc-series-muted:var(--color-text-muted);--fc-series-accent:var(--color-accent);--fc-series-accent-strong:var(--color-accent-strong);pointer-events:none;gap:8px}.fc-series-lite--pastor{--fc-series-accent:color-mix(in srgb,var(--color-accent) 82%,#5b2b20 18%);--fc-series-accent-strong:color-mix(in srgb,var(--color-accent-strong) 74%,#b77b54 26%)}.fc-series-lite .fc-series-chip,.fc-series-lite .fc-series-lite__controls{pointer-events:auto}.fc-series-lite .fc-series-chip{display:flex;flex-direction:column;gap:2px;min-width:0;padding:8px 12px;border:1px solid var(--fc-series-border);border-radius:14px;background:var(--fc-series-surface);color:var(--fc-series-text);text-decoration:none;box-shadow:0 14px 36px -26px rgba(22,15,10,.28);-webkit-backdrop-filter:blur(16px) saturate(150%);backdrop-filter:blur(16px) saturate(150%)}.fc-series-lite .fc-series-chip__eyebrow{font-family:var(--f-ui,'Source Sans 3',system-ui,sans-serif);font-size:10px;font-weight:800;letter-spacing:.14em;text-transform:uppercase;color:var(--fc-series-accent)}.fc-series-lite .fc-series-chip__title{font-family:var(--f-body,Lora,Georgia,serif);font-size:14px;font-weight:700;line-height:1.2}.fc-series-lite .fc-series-lite__controls{display:flex;align-items:center;gap:4px;padding:3px;border:1px solid var(--fc-series-border);border-radius:24px;background:var(--fc-series-surface);box-shadow:0 16px 38px -28px rgba(22,15,10,.24);-webkit-backdrop-filter:blur(16px) saturate(150%);backdrop-filter:blur(16px) saturate(150%)}.fc-series-lite .fc-series-index{display:inline-flex;align-items:center;justify-content:center;min-width:28px;padding:0 6px;font-family:var(--f-body,Lora,Georgia,serif);font-size:14px;font-weight:700;letter-spacing:.08em;color:var(--fc-series-accent)}@media (max-width:899px){.gb-floating-controls.fc-series-lite{top:auto;left:50%;right:auto;bottom:calc(12px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);width:min(94vw,420px);flex-direction:row;align-items:stretch;justify-content:center;gap:8px;z-index:var(--z-bottom-bar)}.gb-floating-controls.fc-series-lite .fc-series-chip{flex:1 1 auto;min-width:0;justify-content:center}body.fc-series-lite-pilot .article-main{padding-bottom:96px}}
-.fc-toast{position:fixed;left:50%;bottom:max(24px,calc(env(safe-area-inset-bottom,0px) + 24px));transform:translateX(-50%) translateY(20px);z-index:var(--z-toast);padding:10px 16px;border-radius:999px;background:color-mix(in srgb,var(--color-text) 94%,transparent);color:var(--color-surface);font-family:var(--f-ui,'Source Sans 3',system-ui,sans-serif);font-size:13px;font-weight:700;letter-spacing:.01em;opacity:0;pointer-events:none;transition:opacity .22s ease,transform .22s ease}.fc-toast.is-visible{opacity:1;transform:translateX(-50%) translateY(0)}
-@media (prefers-reduced-motion:reduce){.fc-button,.fc-button *, .fc-toast,.fc-series-lite,.fc-series-lite *{animation:none!important;transition-duration:.01ms!important}}
-`;
-    document.head.appendChild(style);
-  }
+  /* =====================================================
+     ИНИЦИАЛИЗАЦИЯ EMBER (SVG ring injection для SSR-совместимости)
+     Если SSR уже вставил SVG — повторно не вставляем.
+     ===================================================== */
+  var EMBER_TPL =
+    '<svg class="gb-ember__ring-svg" viewBox="0 0 100 100" aria-hidden="true">' +
+      '<circle class="gb-ember__ring-track" cx="50" cy="50" r="45"/>' +
+      '<circle class="gb-ember__ring-progress" cx="50" cy="50" r="45"/>' +
+    '</svg>' +
+    '<svg class="gb-ember__glyph" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 4.8v14.4L18.5 12 7 4.8z"/></svg>' +
+    '<svg class="gb-ember__pause" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 6v12M15 6v12"/></svg>' +
+    '<svg class="gb-ember__check" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.2 4.1L19 7"/></svg>';
 
-  function qsa(selector, root) {
-    return Array.prototype.slice.call((root || document).querySelectorAll(selector));
-  }
-
-  function getToast() {
-    var toast = qs('.fc-toast');
-    if (toast) return toast;
-    toast = document.createElement('div');
-    toast.className = 'fc-toast';
-    toast.setAttribute('aria-live', 'polite');
-    toast.setAttribute('aria-atomic', 'true');
-    document.body.appendChild(toast);
-    return toast;
-  }
-
-  function showToast(message) {
-    var toast = getToast();
-    toast.textContent = message;
-    toast.classList.add('is-visible');
-    clearTimeout(toastTimer);
-    toastTimer = setTimeout(function () {
-      toast.classList.remove('is-visible');
-    }, 2200);
-  }
-
-  function setTheme(isDark) {
-    document.documentElement.classList.toggle('dark', !!isDark);
-    try {
-      localStorage.setItem(THEME_KEY, isDark ? 'dark' : 'light');
-    } catch (_) {}
-    syncThemeButtons();
-  }
-
-  function syncThemeButtons() {
-    var isDark = document.documentElement.classList.contains('dark');
-    qsa('.gb-fc-theme, .fc-theme-toggle, [data-fc-action="theme"]').forEach(function (button) {
-      button.setAttribute('aria-pressed', isDark ? 'true' : 'false');
+  function initEmbers() {
+    qsa('.gb-ember').forEach(function (btn) {
+      if (!btn.querySelector('.gb-ember__ring-svg')) {
+        btn.insertAdjacentHTML('beforeend', EMBER_TPL);
+      }
     });
   }
 
-  function openSearch(sourceButton) {
+  /* =====================================================
+     THEME
+     Использует html.dark + localStorage.theme (контракт сайта)
+     ===================================================== */
+  function isDark() {
+    return document.documentElement.classList.contains('dark');
+  }
+
+  function setTheme(dark) {
+    document.documentElement.classList.toggle('dark', !!dark);
+    try { localStorage.setItem(THEME_KEY, dark ? 'dark' : 'light'); } catch (_) {}
+    syncThemeButtons();
+  }
+
+  function toggleTheme() {
+    setTheme(!isDark());
+  }
+
+  function syncThemeButtons() {
+    var dark = isDark();
+    qsa('.gb-theme-toggle, [data-fc-action="theme"]').forEach(function (btn) {
+      btn.setAttribute('aria-pressed', dark ? 'true' : 'false');
+    });
+  }
+
+  /* =====================================================
+     SEARCH
+     Делегирует на существующий command palette сайта.
+     НЕ создаёт второй поиск.
+     ===================================================== */
+  function openSearch(sourceBtn) {
     var selectors = [
       '[data-search-open]',
       '#searchToggle',
@@ -95,139 +94,270 @@ body.fc-single-pilot #reading-progress,body.fc-single-pilot #section-label,body.
       '[data-open-search]'
     ];
 
-    for (var i = 0; i < selectors.length; i += 1) {
-      var target = qs(selectors[i]);
-      if (!target || target === sourceButton) continue;
-      if (sourceButton && sourceButton.closest && target.closest && sourceButton.closest('.fc-root') && target.closest('.fc-root')) continue;
-      if (typeof target.click === 'function') {
-        target.click();
+    for (var i = 0; i < selectors.length; i++) {
+      var el = qs(selectors[i]);
+      if (el && el !== sourceBtn && !el.closest('[data-fc-root]')) {
+        el.click();
         return;
       }
     }
 
+    // Fallback: dispatch custom event
     document.dispatchEvent(new CustomEvent('gb:search:open', { bubbles: true }));
-    window.dispatchEvent(new CustomEvent('gb:openSearch'));
   }
 
-  function getBookmarkState() {
-    var engineSaved = false;
-    try {
-      if (window.BookmarkEngine && typeof window.BookmarkEngine.getCurrent === 'function') {
-        engineSaved = !!window.BookmarkEngine.getCurrent();
-      }
-    } catch (_) {}
-    try {
-      return engineSaved || localStorage.getItem(FALLBACK_SAVE_KEY) === '1';
-    } catch (_) {
-      return engineSaved;
+  /* =====================================================
+     SAVE / BOOKMARK
+     Фасад над BookmarkEngine. Если нет engine — localStorage fallback.
+     ===================================================== */
+  function saveCurrent(btn) {
+    var engine = window.BookmarkEngine;
+
+    if (engine && typeof engine.saveNow === 'function') {
+      engine.saveNow();
+      showToast('Сохранено', true);
+      setSaved(true);
+      return;
     }
+
+    // Fallback
+    var key = 'fc:saved:' + normalizePath(location.pathname);
+    var wasSaved = false;
+    try { wasSaved = !!localStorage.getItem(key); } catch (_) {}
+    var nowSaved = !wasSaved;
+    try {
+      if (nowSaved) localStorage.setItem(key, '1');
+      else localStorage.removeItem(key);
+    } catch (_) {}
+    setSaved(nowSaved);
+    showToast(nowSaved ? 'Сохранено' : 'Сохранение отменено', nowSaved);
   }
 
-  function setBookmarkState(saved) {
-    qsa('[data-fc-action="save"]').forEach(function (button) {
-      button.classList.toggle('is-saved', !!saved);
-      button.setAttribute('aria-pressed', saved ? 'true' : 'false');
+  function setSaved(saved) {
+    qsa('.gb-save').forEach(function (btn) {
+      btn.classList.toggle('is-saved', !!saved);
+      btn.setAttribute('aria-pressed', saved ? 'true' : 'false');
     });
   }
 
-  function saveNow() {
-    var willSave = !getBookmarkState();
-
-    try {
-      if (willSave && window.BookmarkEngine && typeof window.BookmarkEngine.saveNow === 'function') {
-        window.BookmarkEngine.saveNow();
-      } else if (!willSave && window.BookmarkEngine && typeof window.BookmarkEngine.clearCurrent === 'function') {
-        window.BookmarkEngine.clearCurrent();
-      }
-    } catch (_) {}
-
-    try {
-      localStorage.setItem(FALLBACK_SAVE_KEY, willSave ? '1' : '0');
-    } catch (_) {}
-
-    setBookmarkState(willSave);
-    showToast(willSave ? 'Сохранено' : 'Сохранение снято');
+  function normalizePath(path) {
+    return String(path || '/').split('?')[0].split('#')[0].replace(/\/$/, '') || '/';
   }
 
-  function togglePlay(button) {
-    var state = button.getAttribute('data-audio-state') || 'none';
-
-    if (state === 'none') {
-      showToast('Озвучка ещё не подключена');
-      return;
-    }
-
-    var nextState = state === 'playing' ? 'paused' : 'playing';
-    qsa('[data-fc-action="play"]').forEach(function (playButton) {
-      playButton.setAttribute('data-audio-state', nextState);
-      if (nextState === 'playing') {
-        playButton.removeAttribute('aria-disabled');
+  /* =====================================================
+     PLAY EMBER
+     Управляет data-state и --p переменной.
+     В пилоте audioState="none" → idle, кнопка видима но subdued.
+     ===================================================== */
+  function setEmberState(state, progress) {
+    qsa('.gb-ember').forEach(function (btn) {
+      btn.dataset.state = state;
+      if (typeof progress !== 'undefined') {
+        btn.style.setProperty('--p', String(progress));
       }
     });
-
-    showToast(nextState === 'playing' ? 'Озвучка запущена' : 'Озвучка на паузе');
+    updateEmberAriaLabel(state);
   }
 
-  function initRoots() {
-    var roots = qsa('[data-fc-root]');
-    if (!roots.length) return;
-
-    document.body.classList.add('gb-fc-active');
-
-    roots.forEach(function (root) {
-      var variant = root.getAttribute('data-fc-variant');
-      var mode = root.getAttribute('data-fc-mode');
-      if (variant === 'hermeneutics' || root.classList.contains('fc-single')) {
-        document.body.classList.add('fc-single-pilot');
-      }
-      if (mode === 'series-lite' || root.classList.contains('fc-series-lite')) {
-        document.body.classList.add('fc-series-lite-pilot');
-      }
+  function updateEmberAriaLabel(state) {
+    qsa('.gb-ember').forEach(function (btn) {
+      var label =
+        state === 'playing'  ? 'Пауза' :
+        state === 'paused'   ? 'Продолжить озвучку' :
+        state === 'loading'  ? 'Подключение озвучки' :
+        state === 'complete' ? 'Прослушано' :
+                               'Озвучка';
+      btn.setAttribute('aria-label', label);
     });
-
-    syncThemeButtons();
-    setBookmarkState(getBookmarkState());
   }
 
-  function onClick(event) {
-    var button = event.target && event.target.closest && event.target.closest('[data-fc-action]');
-    if (!button) return;
-
-    var action = button.getAttribute('data-fc-action');
-
-    if (action === 'theme') {
-      event.preventDefault();
-      setTheme(!document.documentElement.classList.contains('dark'));
+  function handlePlayClick() {
+    // В пилоте audioState=none → показываем toast
+    var ember = qs('.gb-ember');
+    var state = ember ? ember.dataset.state : 'idle';
+    if (state === 'idle' || !state) {
+      showToast('Озвучка ещё не подключена', false);
       return;
     }
-
-    if (action === 'search') {
-      event.preventDefault();
-      openSearch(button);
+    // Если есть audio engine
+    if (window.GBAudio && typeof window.GBAudio.toggle === 'function') {
+      window.GBAudio.toggle();
       return;
     }
+    // Demo toggle
+    var next = state === 'playing' ? 'paused' : 'playing';
+    setEmberState(next);
+  }
 
-    if (action === 'save') {
-      event.preventDefault();
-      saveNow();
-      return;
-    }
+  /* =====================================================
+     TOAST
+     gb-fc-toast — отдельный элемент, не конфликтует с bookmark toast
+     ===================================================== */
+  function getToast() {
+    var el = qs('.gb-fc-toast');
+    if (el) return el;
 
-    if (action === 'play') {
-      event.preventDefault();
-      togglePlay(button);
+    el = document.createElement('div');
+    el.className = 'gb-fc-toast';
+    el.setAttribute('aria-live', 'polite');
+    el.setAttribute('aria-atomic', 'true');
+    el.innerHTML =
+      '<svg viewBox="0 0 24 24" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg>' +
+      '<span></span>';
+    document.body.appendChild(el);
+    return el;
+  }
+
+  function showToast(message, showCheck) {
+    var toast = getToast();
+    var svg = toast.querySelector('svg');
+    var span = toast.querySelector('span');
+    if (span) span.textContent = message;
+    if (svg) svg.style.display = showCheck ? '' : 'none';
+    toast.classList.add('is-open');
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(function () {
+      toast.classList.remove('is-open');
+    }, 2200);
+  }
+
+  /* =====================================================
+     SCROLL TO TOP
+     Делегирует на SiteUtils если доступен.
+     ===================================================== */
+  function scrollTop() {
+    var utils = window.SiteUtils;
+    if (utils && typeof utils.scrollToTop === 'function') {
+      utils.scrollToTop();
+    } else {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
     }
   }
 
+  /* =====================================================
+     FONT SIZE
+     ===================================================== */
+  var fontScale = 1;
+  function changeFontSize(direction) {
+    fontScale = Math.max(0.85, Math.min(1.25, fontScale + direction * 0.05));
+    var article = qs('article.article-body') || qs('.article-main') || qs('main');
+    if (article) article.style.fontSize = fontScale === 1 ? '' : (fontScale * 100) + '%';
+  }
+
+  /* =====================================================
+     KEYBOARD SHORTCUTS (аналог референса)
+     ===================================================== */
+  function initKeyboard() {
+    document.addEventListener('keydown', function (e) {
+      var isInput = e.target.matches('input, textarea, select, [contenteditable]');
+      if (isInput) return;
+
+      if (e.key === 'd' || e.key === 'D') { e.preventDefault(); toggleTheme(); }
+      if (e.key === 's' || e.key === 'S') { e.preventDefault(); saveCurrent(); }
+      if (e.key === 't' || e.key === 'T') { e.preventDefault(); handlePlayClick(); }
+      if (e.key === 'b' || e.key === 'B') { e.preventDefault(); scrollTop(); }
+    });
+  }
+
+  /* =====================================================
+     BODY CLASS — fc-single-active для скрытия дублей
+     ===================================================== */
+  function activateSinglePilot() {
+    document.body.classList.add('fc-single-active');
+  }
+
+  /* =====================================================
+     CLICK DELEGATION
+     Один обработчик на весь кластер.
+     ===================================================== */
+  function initCluster(root) {
+    root.addEventListener('click', function (e) {
+      var btn = e.target.closest('[data-fc-action]');
+      if (!btn) return;
+      var action = btn.getAttribute('data-fc-action');
+
+      if (action === 'theme')     { toggleTheme(); }
+      else if (action === 'search')    { openSearch(btn); }
+      else if (action === 'play')      { handlePlayClick(); }
+      else if (action === 'save')      { saveCurrent(btn); }
+      else if (action === 'scroll-top'){ scrollTop(); }
+      else if (action === 'font-up')   { changeFontSize(1); }
+      else if (action === 'font-down') { changeFontSize(-1); }
+    });
+  }
+
+  /* =====================================================
+     GILL RAIL CONTROLS
+     Инициализирует fc-controls в gbs2-rail
+     ===================================================== */
+  function initGillRail() {
+    var railControls = qs('[data-fc-controls="gill-rail"]');
+    if (!railControls) return;
+    initCluster(railControls);
+  }
+
+  /* =====================================================
+     SYNC SAVE STATE
+     Читает BookmarkEngine при старте.
+     ===================================================== */
+  function syncSaveState() {
+    var engine = window.BookmarkEngine;
+    if (engine && typeof engine.getCurrent === 'function') {
+      var current = engine.getCurrent();
+      if (current) setSaved(true);
+    } else {
+      var key = 'fc:saved:' + normalizePath(location.pathname);
+      try {
+        if (localStorage.getItem(key)) setSaved(true);
+      } catch (_) {}
+    }
+  }
+
+  /* =====================================================
+     MAIN INIT
+     ===================================================== */
   ready(function () {
-    initRoots();
-    document.addEventListener('click', onClick);
+    // 1. Inject SVG в ember кнопки (если SSR не вставил)
+    initEmbers();
 
-    try {
-      new MutationObserver(syncThemeButtons).observe(document.documentElement, {
-        attributes: true,
-        attributeFilter: ['class']
-      });
-    } catch (_) {}
+    // 2. Найти корень кластера
+    var root = qs('[data-fc-root]');
+    if (!root) return;
+
+    var mode = root.getAttribute('data-fc-mode') || 'single';
+
+    // 3. Активировать класс на body для скрытия дублей
+    if (mode === 'single') activateSinglePilot();
+
+    // 4. Делегирование кликов
+    initCluster(root);
+
+    // 5. Gill rail controls
+    initGillRail();
+
+    // 6. Синхронизация состояний
+    syncThemeButtons();
+    syncSaveState();
+
+    // 7. Keyboard
+    initKeyboard();
+
+    // 8. Ember state из data атрибута
+    var embers = qsa('.gb-ember');
+    embers.forEach(function (ember) {
+      var state = ember.dataset.state || 'idle';
+      updateEmberAriaLabel(state);
+    });
+
+    // 9. Публичный API (для отладки и интеграций)
+    window.__gbCluster = {
+      setTheme: setTheme,
+      toggleTheme: toggleTheme,
+      setSaved: setSaved,
+      setEmberState: setEmberState,
+      showToast: showToast,
+      openSearch: openSearch,
+    };
   });
+
 })();

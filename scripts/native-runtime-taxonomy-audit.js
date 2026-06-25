@@ -72,11 +72,26 @@ function isProductionRoute(info) {
 }
 
 function isIntentionalApp(route, info, matrixContract) {
-  if (info && info.owner === 'built-app') return true;
-  if (matrixContract && matrixContract.mode === 'legacy-shadow-app') return true;
+  const mode = matrixContract && matrixContract.mode;
+
+  // Intentional legacy/iframe app by design — skip audit
+  if (mode === 'legacy-shadow-app') return true;
+  if (mode === 'legacy-shadow-app-intentional') return true;
+  if (mode === 'native-wrapper-iframe-app') return true;
+
+  // strict-native-app and strict-native-holding-page MUST be audited (P0.2 fix)
+  if (mode === 'strict-native-app') return false;
+  if (mode === 'strict-native-holding-page') return false;
+
+  // Hardcoded non-karty interactive routes
   if (route === '/map/' || route === '/rodosloviye/' || route === '/konfessii/russkij-baptizm/') return true;
-  if (route.startsWith('/karty/') && route !== '/karty/') return true;
   if (route === '/konfessii/russkij-baptizm/_app/') return true;
+
+  // owner=built-app is explicit intentional designation
+  if (info && info.owner === 'built-app') return true;
+
+  // NOTE: /karty/* blanket exemption REMOVED.
+  // Each /karty/* is classified by matrix mode above — not auto-exempt by path prefix.
   return false;
 }
 
@@ -191,7 +206,11 @@ function scanFiles(files) {
     if (/\bbodyHtml\b/.test(source)) add('bodyHtml', file);
     if (/\bheadHtml\b/.test(source)) add('headHtml', file);
     if (/\bbodyAttributes\b/.test(source)) add('bodyAttributes', file);
-    if (/<Fragment\s+set:html=/.test(source) || /set:html=/.test(source)) add('setHtml', file);
+    // P0.3: JSON-LD set:html is allowed; Fragment/div/main set:html is forbidden.
+    const hasJsonLdSetHtml = /<script\b[^>]*type=["']application\/ld\+json["'][^>]*set:html=/.test(source);
+    const hasAnySetHtml = /set:html=/.test(source);
+    const hasFragmentSetHtml = /<Fragment\s+set:html=/.test(source);
+    if (hasFragmentSetHtml || (hasAnySetHtml && !hasJsonLdSetHtml)) add('setHtml', file);
     if (/\?raw['"]/.test(source) || /\?raw\b/.test(source)) add('rawImport', file);
     if (/_legacy\//.test(source) || /from\s+['"][^'"]*_legacy/.test(source)) add('legacyPath', file);
     if (/body-segment-\d+\.html/.test(source) || /body-before\.html|body-after\.html|body-mid\.html/.test(source)) add('bodySegment', file);
@@ -315,6 +334,14 @@ for (const [rawRoute, info] of Object.entries(ownership.routes)) {
     }
     if (contract.mode === 'legacy-shadow-app' && category !== 'legacy-shadow-app-intentional') {
       warnings.push(`${route}: matrix says legacy-shadow-app, taxonomy=${category}; verify this was intentional`);
+    }
+    // P0.2: strict-native-app must not regress to shadow
+    if (contract.mode === 'strict-native-app' && ['full-body-shadow', 'legacy-shadow-app-intentional'].includes(category)) {
+      problems.push(`${route}: matrix says strict-native-app, but route regressed to ${category}`);
+    }
+    // P0.4: strict-native-holding-page must be strict-native
+    if (contract.mode === 'strict-native-holding-page' && !['strict-native', 'native-with-legacy-head'].includes(category)) {
+      problems.push(`${route}: matrix says strict-native-holding-page, but taxonomy=${category}`);
     }
   }
 }

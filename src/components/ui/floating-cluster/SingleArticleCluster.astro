@@ -1,266 +1,434 @@
 ---
-import ClusterButton from './ClusterButton.astro';
+/**
+ * SingleArticleCluster — одиночный вертикальный кластер для standalone статей.
+ * Точная реализация gb-floater из референса gb-floating-cluster-probe-v16.html.
+ *
+ * Структура (сверху вниз):
+ *   1. Theme toggle (gb-icon gb-theme-toggle)
+ *   2. Search (gb-icon)
+ *   3. PlayEmber (gb-ember)
+ *   4. Save (gb-save)
+ *
+ * Positioning: fixed, top-right, flex-direction:column, gap:6px
+ * На мобильных (≤899px): нижняя центрированная горизонтальная пилюля
+ */
+
 import PlayEmber from './PlayEmber.astro';
 import SaveButton from './SaveButton.astro';
 
 interface Props {
+  /** Визуальный вариант (влияет только на цветовые токены) */
   variant?: 'hermeneutics' | 'article';
   audioState?: 'none' | 'available' | 'loading' | 'playing' | 'paused';
+  progress?: number;
 }
 
 const {
   variant = 'article',
   audioState = 'none',
+  progress = 0,
 } = Astro.props;
 ---
 <div
   id="gbFloatingControls"
-  class={`gb-floating-controls fc-root fc-single fc-single--${variant}`}
+  class={`gb-floater gb-floater--${variant}`}
   data-fc-root
   data-fc-variant={variant}
-  data-fc-audio-state={audioState}
+  data-fc-mode="single"
   role="group"
-  aria-label="Быстрые действия статьи"
+  aria-label="Быстрые действия"
 >
-  <ClusterButton
-    label="Переключить тему"
-    title="Светлая / тёмная тема"
-    className="gb-fc-btn gb-fc-theme fc-theme-toggle"
-    action="theme"
-    pressed="false"
+  <!-- 1. Theme toggle -->
+  <button
+    type="button"
+    class="gb-icon gb-theme-toggle"
+    id="gbFcTheme"
+    data-fc-action="theme"
+    aria-label="Тема"
+    aria-pressed="false"
   >
-    <span aria-hidden="true" class="fc-theme-toggle__sun">
-      <svg viewBox="0 0 24 24">
-        <circle cx="12" cy="12" r="4.5"></circle>
-        <path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"></path>
+    <span class="theme-icon-sun" aria-hidden="true">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="12" cy="12" r="4.5" />
+        <path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41" />
       </svg>
     </span>
-    <span aria-hidden="true" class="fc-theme-toggle__moon">
-      <svg viewBox="0 0 24 24">
-        <path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"></path>
+    <span class="theme-icon-moon" aria-hidden="true">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z" />
       </svg>
     </span>
-  </ClusterButton>
+  </button>
 
-  <ClusterButton
-    label="Поиск"
-    title="Поиск по сайту"
-    className="gb-fc-btn gb-fc-search"
-    action="search"
+  <!-- 2. Search -->
+  <button
+    type="button"
+    class="gb-icon"
+    id="gbFcSearch"
+    data-fc-action="search"
+    aria-label="Поиск"
   >
-    <svg aria-hidden="true" viewBox="0 0 24 24">
-      <circle cx="11" cy="11" r="7"></circle>
-      <path d="M21 21l-4.3-4.3"></path>
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+      <circle cx="11" cy="11" r="7" />
+      <path d="M21 21l-4.3-4.3" />
     </svg>
-  </ClusterButton>
+  </button>
 
-  <PlayEmber audioState={audioState} />
+  <!-- 3. Play Ember -->
+  <PlayEmber audioState={audioState} progress={progress} />
+
+  <!-- 4. Save — NO halo (gb-save, not gb-icon) -->
   <SaveButton />
 </div>
 
 <style is:global>
 @layer components {
-  .fc-single {
-    --fc-text: var(--color-text);
-    --fc-muted: var(--color-text-muted);
-    --fc-border: color-mix(in srgb, var(--color-border) 86%, transparent);
-    --fc-accent: var(--color-accent);
-    --fc-accent-strong: var(--color-accent-strong);
-    pointer-events: none;
-    gap: 4px;
-  }
-
-  .fc-single .fc-button,
-  .fc-single .gb-fc-btn {
-    pointer-events: auto;
-    position: relative;
-    width: 36px;
-    height: 36px;
-    display: inline-flex;
+  /* =========================================================
+     gb-floater — standalone vertical cluster
+     Точная реализация из референса v16
+     ========================================================= */
+  .gb-floater {
+    position: fixed;
+    top: max(20px, env(safe-area-inset-top, 20px));
+    right: max(20px, env(safe-area-inset-right, 20px));
+    z-index: var(--z-toast, 9800);
+    display: flex;
+    flex-direction: column;
     align-items: center;
-    justify-content: center;
-    padding: 0;
-    margin: 0;
-    border: none;
-    border-radius: 0;
-    background: transparent;
-    box-shadow: none;
-    color: var(--fc-muted);
-    cursor: pointer;
-    transition: color .2s ease, transform .2s cubic-bezier(.22, 1, .36, 1);
+    gap: 6px;
+    /* Не перекрываем хлебные крошки на десктопе */
+    pointer-events: none;
   }
 
-  .fc-single .fc-button svg,
-  .fc-single .gb-fc-btn svg {
+  .gb-floater > * {
+    pointer-events: auto;
+  }
+
+  /* =========================================================
+     gb-icon — иконка с halo-кружком на hover (::before)
+     ========================================================= */
+  .gb-icon {
+    --icon-stroke: 1.7;
+    width: 40px;
+    height: 40px;
+    display: grid;
+    place-items: center;
+    position: relative;
+    color: var(--color-text, #1a1a1a);
+    background: transparent;
+    border: 0;
+    border-radius: 50%;
+    transition:
+      color .28s var(--gb-ease-out, cubic-bezier(.2,.7,.2,1)),
+      transform .32s var(--gb-ease-spring, cubic-bezier(.34,1.56,.64,1));
+    cursor: pointer;
+    flex-shrink: 0;
+    transform-origin: center;
+  }
+
+  .gb-icon::before {
+    content: '';
+    position: absolute;
+    inset: 6px;
+    border-radius: 50%;
+    border: 1px solid var(--color-accent, #7a2e2e);
+    opacity: 0;
+    transform: scale(.7);
+    transition:
+      opacity .28s var(--gb-ease-out, cubic-bezier(.2,.7,.2,1)),
+      transform .32s var(--gb-ease-spring, cubic-bezier(.34,1.56,.64,1));
+    pointer-events: none;
+  }
+
+  @media (hover: hover) and (pointer: fine) {
+    .gb-icon:hover {
+      color: var(--color-accent, #7a2e2e);
+      transform: scale(1.12);
+    }
+    .gb-icon:hover::before {
+      opacity: 0.35;
+      transform: scale(1);
+    }
+    html.dark .gb-icon:hover {
+      color: var(--color-accent-strong, #e8b878);
+    }
+    /* Усмирённый масштаб svg при hover (фикс из референса) */
+    .gb-icon:hover svg {
+      transform: scale(1.02);
+    }
+  }
+
+  .gb-icon:active {
+    transform: scale(.88);
+    transition: transform .12s cubic-bezier(.4,0,.2,1);
+  }
+  .gb-icon:active::before {
+    opacity: 0.5;
+    transform: scale(1);
+  }
+  .gb-icon:focus-visible {
+    outline: 2px solid var(--color-accent, #7a2e2e);
+    outline-offset: 4px;
+    border-radius: 50%;
+  }
+
+  .gb-icon svg {
     width: 20px;
     height: 20px;
     stroke: currentColor;
     fill: none;
-    stroke-width: 1.8;
+    stroke-width: var(--icon-stroke, 1.7);
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    transition:
+      transform .32s var(--gb-ease-spring, cubic-bezier(.34,1.56,.64,1)),
+      stroke-width .28s var(--gb-ease-out, cubic-bezier(.2,.7,.2,1));
+  }
+
+  /* =========================================================
+     gb-theme-toggle — морф солнца/луны (180° rotation)
+     ========================================================= */
+  .gb-theme-toggle {
+    overflow: hidden;
+  }
+
+  .gb-theme-toggle .theme-icon-sun,
+  .gb-theme-toggle .theme-icon-moon {
+    position: absolute;
+    inset: 0;
+    display: grid;
+    place-items: center;
+    transition:
+      opacity .32s var(--gb-ease-out, cubic-bezier(.2,.7,.2,1)),
+      transform .42s var(--gb-ease-spring, cubic-bezier(.34,1.56,.64,1));
+  }
+
+  .gb-theme-toggle .theme-icon-sun  { opacity: 1; transform: rotate(0) scale(1); }
+  .gb-theme-toggle .theme-icon-moon { opacity: 0; transform: rotate(-90deg) scale(.5); }
+
+  html.dark .gb-theme-toggle .theme-icon-sun  { opacity: 0; transform: rotate(90deg) scale(.5); }
+  html.dark .gb-theme-toggle .theme-icon-moon { opacity: 1; transform: rotate(0) scale(1); }
+
+  @media (hover: hover) and (pointer: fine) {
+    .gb-theme-toggle:hover { color: var(--color-accent, #7a2e2e); transform: scale(1.10); }
+  }
+  .gb-theme-toggle:active { transform: scale(.92); transition: transform .12s; }
+
+  /* =========================================================
+     gb-save — bookmark без halo (намеренно отличается от gb-icon)
+     При is-saved: gold fill + bounce, НИКАКОГО кружка ::before
+     ========================================================= */
+  .gb-save {
+    width: 40px;
+    height: 40px;
+    display: grid;
+    place-items: center;
+    position: relative;
+    color: var(--color-text, #1a1a1a);
+    background: transparent;
+    border: 0;
+    border-radius: 50%;
+    transition:
+      color .28s var(--gb-ease-out, cubic-bezier(.2,.7,.2,1)),
+      transform .32s var(--gb-ease-spring, cubic-bezier(.34,1.56,.64,1));
+    cursor: pointer;
+    flex-shrink: 0;
+    transform-origin: center;
+    /* NOTE: нет ::before — save без outline halo */
+  }
+
+  @media (hover: hover) and (pointer: fine) {
+    .gb-save:hover {
+      color: var(--color-accent-gold, #b8936a);
+      transform: scale(1.10);
+    }
+    html.dark .gb-save:hover {
+      color: var(--color-accent-strong, #e8b878);
+    }
+  }
+  .gb-save:active { transform: scale(.88); transition: transform .12s cubic-bezier(.4,0,.2,1); }
+  .gb-save:focus-visible { outline: 2px solid var(--color-accent, #7a2e2e); outline-offset: 4px; border-radius: 50%; }
+
+  /* Saved state: gold fill + bounce, НЕТ halo */
+  .gb-save.is-saved { color: var(--color-accent-gold-bright, #d8aa6d); }
+  .gb-save.is-saved svg {
+    fill: var(--color-accent-gold, #b8936a);
+    stroke: var(--color-accent-gold, #b8936a);
+    animation: gb-save-bounce .5s var(--gb-ease-spring, cubic-bezier(.34,1.56,.64,1));
+  }
+  @keyframes gb-save-bounce {
+    0%   { transform: scale(1); }
+    40%  { transform: scale(1.30); }
+    70%  { transform: scale(.92); }
+    100% { transform: scale(1); }
+  }
+
+  .gb-save svg {
+    width: 20px;
+    height: 20px;
+    stroke: currentColor;
+    fill: none;
+    stroke-width: 1.7;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    transition:
+      transform .32s var(--gb-ease-spring, cubic-bezier(.34,1.56,.64,1)),
+      fill .28s var(--gb-ease-out, cubic-bezier(.2,.7,.2,1)),
+      stroke .28s var(--gb-ease-out, cubic-bezier(.2,.7,.2,1));
+  }
+
+  /* =========================================================
+     gb-ember — play/pause с SVG progress ring
+     Точная реализация из референса
+     ========================================================= */
+  .gb-ember {
+    --p: 0;
+    --ember-size: 36px;
+    --ring-color: var(--color-accent, #7a2e2e);
+    appearance: none;
+    border: 0;
+    position: relative;
+    display: grid;
+    place-items: center;
+    isolation: isolate;
+    cursor: pointer;
+    color: var(--color-text, #1a1a1a);
+    width: var(--ember-size);
+    height: var(--ember-size);
+    border-radius: 50%;
+    background: transparent;
+    transition:
+      transform .32s var(--gb-ease-spring, cubic-bezier(.34,1.56,.64,1)),
+      color .28s var(--gb-ease-out, cubic-bezier(.2,.7,.2,1));
+    flex-shrink: 0;
+    transform-origin: center;
+  }
+
+  /* Halo ring — hover accent outline */
+  .gb-ember::before {
+    content: '';
+    position: absolute;
+    inset: 6px;
+    border-radius: 50%;
+    border: 1px solid var(--ring-color);
+    opacity: 0;
+    transform: scale(.7);
+    transition:
+      opacity .28s var(--gb-ease-out, cubic-bezier(.2,.7,.2,1)),
+      transform .32s var(--gb-ease-spring, cubic-bezier(.34,1.56,.64,1));
+    pointer-events: none;
+  }
+
+  @media (hover: hover) and (pointer: fine) {
+    .gb-ember:hover { transform: scale(1.12); }
+    .gb-ember:hover::before { opacity: 0.4; transform: scale(1); }
+  }
+  .gb-ember:active { transform: scale(.88); transition: transform .12s cubic-bezier(.4,0,.2,1); }
+  .gb-ember:active::before { opacity: 0.55; transform: scale(1); }
+  .gb-ember:focus-visible { outline: 2px solid var(--color-accent, #7a2e2e); outline-offset: 4px; border-radius: 50%; }
+  .gb-ember:focus-visible::before { opacity: 0.55; transform: scale(1); }
+
+  /* SVG progress ring */
+  .gb-ember__ring-svg {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    overflow: visible;
+    opacity: 0;
+    transform: rotate(-90deg);
+    transform-origin: center;
+    transition: opacity .28s var(--gb-ease-out, cubic-bezier(.2,.7,.2,1));
+  }
+  .gb-ember[data-state="playing"] .gb-ember__ring-svg,
+  .gb-ember[data-state="paused"]  .gb-ember__ring-svg,
+  .gb-ember[data-state="complete"] .gb-ember__ring-svg { opacity: 1; }
+
+  .gb-ember__ring-track {
+    fill: none;
+    stroke: var(--color-border, #e5e2dc);
+    stroke-width: 1.5;
+    opacity: 0.4;
+  }
+  .gb-ember__ring-progress {
+    fill: none;
+    stroke: var(--ring-color);
+    stroke-width: 1.5;
+    stroke-linecap: round;
+    stroke-dasharray: 283;
+    stroke-dashoffset: calc(283 - 283 * var(--p) / 100);
+    transition: stroke-dashoffset .42s cubic-bezier(.4,0,.2,1);
+  }
+
+  /* Иконки внутри ember */
+  .gb-ember__glyph {
+    position: relative;
+    z-index: 2;
+    width: 14px;
+    height: 14px;
+    fill: currentColor;
+    transform: translateX(1px); /* визуальная центровка play-треугольника */
+  }
+  .gb-ember__pause {
+    position: relative;
+    z-index: 2;
+    width: 14px;
+    height: 14px;
+    display: none;
+    stroke: currentColor;
+    fill: none;
+    stroke-width: 2.2;
+    stroke-linecap: round;
+  }
+  .gb-ember__check {
+    display: none;
+    position: relative;
+    z-index: 2;
+    width: 14px;
+    height: 14px;
+    stroke: currentColor;
+    fill: none;
+    stroke-width: 2.2;
     stroke-linecap: round;
     stroke-linejoin: round;
   }
 
-  .fc-single .gb-fc-theme {
-    color: var(--fc-accent);
+  /* Показываем нужную иконку по data-state */
+  .gb-ember[data-state="playing"]  .gb-ember__glyph,
+  .gb-ember[data-state="paused"]   .gb-ember__glyph,
+  .gb-ember[data-state="complete"] .gb-ember__glyph { display: none; }
+
+  .gb-ember[data-state="playing"] .gb-ember__pause,
+  .gb-ember[data-state="paused"]  .gb-ember__pause  { display: block; }
+  .gb-ember[data-state="complete"] .gb-ember__check  { display: block; }
+
+  /* Цвета по состоянию */
+  .gb-ember[data-state="playing"]  { color: var(--ring-color); }
+  .gb-ember[data-state="paused"]   { color: var(--ring-color); }
+  .gb-ember[data-state="complete"] { color: var(--color-accent-gold-bright, #d8aa6d); }
+
+  /* Loading pulse — только ::before (фикс из v15) */
+  .gb-ember.is-loading::before {
+    animation: gb-ember-loading-pulse 1.4s ease-in-out infinite;
+  }
+  @keyframes gb-ember-loading-pulse {
+    0%, 100% { opacity: 0; }
+    50%       { opacity: 0.5; }
   }
 
-  .fc-single .gb-fc-search {
-    color: var(--fc-text);
+  /* Dark mode ember glow (из v16 owner feedback) */
+  html.dark .gb-ember {
+    --ring-color: #eed093;
+    color: #eed093;
+    box-shadow: 0 0 14px rgba(216, 176, 104, 0.22);
   }
 
-  .fc-single .fc-theme-toggle {
-    overflow: hidden;
-  }
-
-  .fc-single .fc-theme-toggle__sun,
-  .fc-single .fc-theme-toggle__moon {
-    position: absolute;
-    inset: 0;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    transition: opacity .24s ease, transform .28s cubic-bezier(.22, 1, .36, 1);
-  }
-
-  .fc-single .fc-theme-toggle__sun {
-    opacity: 1;
-    transform: rotate(0deg) scale(1);
-  }
-
-  .fc-single .fc-theme-toggle__moon {
-    opacity: 0;
-    transform: rotate(-90deg) scale(.6);
-  }
-
-  .fc-single .fc-play-ember,
-  .fc-single .fc-save {
-    color: var(--fc-text);
-  }
-
-  .fc-single .fc-play-ember__ring {
-    position: absolute;
-    inset: 8px;
-    border-radius: 999px;
-    border: 1px solid currentColor;
-    opacity: 0.44;
-    transition: opacity .2s ease;
-  }
-
-  .fc-single .fc-play-ember[data-audio-state='none'] {
-    color: var(--fc-muted);
-  }
-
-  .fc-single .fc-play-ember[data-audio-state='none'] .fc-play-ember__ring {
-    opacity: 0.22;
-  }
-
-  .fc-single .fc-play-ember__icon--pause,
-  .fc-single .fc-play-ember__icon--spark {
-    display: none;
-  }
-
-  .fc-single .fc-play-ember[data-audio-state='playing'] .fc-play-ember__icon--play,
-  .fc-single .fc-play-ember[data-audio-state='paused'] .fc-play-ember__icon--play,
-  .fc-single .fc-play-ember[data-audio-state='loading'] .fc-play-ember__icon--play {
-    display: none;
-  }
-
-  .fc-single .fc-play-ember[data-audio-state='playing'] .fc-play-ember__icon--pause,
-  .fc-single .fc-play-ember[data-audio-state='paused'] .fc-play-ember__icon--pause {
-    display: block;
-  }
-
-  .fc-single .fc-play-ember[data-audio-state='loading'] .fc-play-ember__icon--spark {
-    display: block;
-  }
-
-  .fc-single .fc-save.is-saved {
-    color: var(--fc-accent-strong);
-  }
-
-  .fc-single .fc-save.is-saved svg {
-    fill: currentColor;
-    stroke: currentColor;
-  }
-
-  html.dark .fc-single .gb-fc-theme,
-  html.dark .fc-single .fc-save.is-saved,
-  html.dark .fc-single .fc-play-ember[data-audio-state='playing'],
-  html.dark .fc-single .fc-play-ember[data-audio-state='paused'] {
-    color: var(--fc-accent-strong);
-  }
-
-  html.dark .fc-single .fc-theme-toggle__sun {
-    opacity: 0;
-    transform: rotate(90deg) scale(.6);
-  }
-
-  html.dark .fc-single .fc-theme-toggle__moon {
-    opacity: 1;
-    transform: rotate(0deg) scale(1);
-  }
-
-  @media (hover: hover) and (pointer: fine) {
-    .fc-single .fc-button:hover,
-    .fc-single .gb-fc-btn:hover {
-      background: transparent;
-      color: var(--fc-text);
-      transform: translateY(-2px) scale(1.08);
-    }
-
-    html.dark .fc-single .fc-button:hover,
-    html.dark .fc-single .gb-fc-btn:hover {
-      color: var(--fc-accent-strong);
-    }
-  }
-
-  .fc-single .fc-button:focus-visible,
-  .fc-single .gb-fc-btn:focus-visible {
-    outline: 2px solid var(--fc-accent);
-    outline-offset: 2px;
-  }
-
-  .fc-single .fc-button[aria-disabled='true'] {
-    cursor: not-allowed;
-  }
-
-  .fc-toast {
-    position: fixed;
-    left: 50%;
-    bottom: max(24px, calc(env(safe-area-inset-bottom, 0px) + 24px));
-    transform: translateX(-50%) translateY(20px);
-    z-index: var(--z-toast);
-    padding: 10px 16px;
-    border-radius: 999px;
-    background: color-mix(in srgb, var(--color-text) 94%, transparent);
-    color: var(--color-surface);
-    font-family: var(--f-ui, 'Source Sans 3', system-ui, sans-serif);
-    font-size: 13px;
-    font-weight: 700;
-    letter-spacing: .01em;
-    opacity: 0;
-    pointer-events: none;
-    transition: opacity .22s ease, transform .22s ease;
-  }
-
-  .fc-toast.is-visible {
-    opacity: 1;
-    transform: translateX(-50%) translateY(0);
-  }
-
-  body.fc-single-pilot #reading-progress,
-  body.fc-single-pilot #section-label,
-  body.fc-single-pilot #back-to-top,
-  body.fc-single-pilot #themeToggle,
-  body.fc-single-pilot #tocSidebar,
-  body.fc-single-pilot #bottomBar,
-  body.fc-single-pilot #btocOverlay {
-    display: none !important;
-  }
-
+  /* =========================================================
+     Mobile: горизонтальная пилюля внизу
+     ========================================================= */
   @media (max-width: 899px) {
-    .gb-floating-controls.fc-single {
+    .gb-floater {
       top: auto;
       left: 50%;
       right: auto;
@@ -269,23 +437,86 @@ const {
       flex-direction: row;
       gap: 2px;
       padding: 3px;
-      border: 1px solid var(--fc-border);
+      border: 1px solid color-mix(in srgb, var(--color-border, #e5e2dc) 86%, transparent);
       border-radius: 24px;
-      background: color-mix(in srgb, var(--color-surface) 94%, transparent);
+      background: color-mix(in srgb, var(--color-surface, #fff) 94%, transparent);
       -webkit-backdrop-filter: blur(16px) saturate(160%);
       backdrop-filter: blur(16px) saturate(160%);
-      z-index: var(--z-bottom-bar);
+      z-index: var(--z-bottom-bar, 2000);
     }
 
-    body.fc-single-pilot .article-main {
+    html.dark .gb-floater {
+      background: color-mix(in srgb, var(--color-surface, #161a21) 94%, transparent);
+      border-color: rgba(255, 255, 255, 0.08);
+    }
+
+    /* Паддинг снизу для article-main чтобы кластер не перекрывал текст */
+    body.fc-single-active .article-main {
       padding-bottom: 88px;
     }
   }
 
+  /* =========================================================
+     Скрываем старые controls при активном кластере
+     ========================================================= */
+  body.fc-single-active #reading-progress,
+  body.fc-single-active #section-label,
+  body.fc-single-active #back-to-top,
+  body.fc-single-active #themeToggle,
+  body.fc-single-active #tocSidebar,
+  body.fc-single-active #bottomBar,
+  body.fc-single-active #btocOverlay {
+    display: none !important;
+  }
+
+  /* =========================================================
+     gb-toast — уведомление (используется контроллером)
+     ========================================================= */
+  .gb-fc-toast {
+    position: fixed;
+    left: 50%;
+    bottom: max(28px, env(safe-area-inset-bottom, 28px));
+    transform: translateX(-50%) translateY(40px) scale(.94);
+    padding: 10px 18px;
+    border-radius: 12px;
+    background: rgba(20, 24, 31, .94);
+    color: #fff;
+    font-family: var(--f-ui, 'Source Sans 3', system-ui, sans-serif);
+    font-size: 13px;
+    font-weight: 600;
+    letter-spacing: .02em;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    box-shadow: 0 12px 32px rgba(0, 0, 0, .30);
+    opacity: 0;
+    pointer-events: none;
+    z-index: var(--z-toast, 9800);
+    transition:
+      opacity .28s var(--gb-ease-out, cubic-bezier(.2,.7,.2,1)),
+      transform .38s var(--gb-ease-spring, cubic-bezier(.34,1.56,.64,1));
+  }
+  .gb-fc-toast.is-open {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0) scale(1);
+  }
+  .gb-fc-toast svg {
+    width: 16px;
+    height: 16px;
+    stroke: currentColor;
+    fill: none;
+    stroke-width: 2;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    color: var(--color-accent-gold-bright, #d8aa6d);
+  }
+
+  /* =========================================================
+     Reduced motion
+     ========================================================= */
   @media (prefers-reduced-motion: reduce) {
-    .fc-single,
-    .fc-single *,
-    .fc-toast {
+    .gb-icon, .gb-ember, .gb-save, .gb-theme-toggle svg,
+    .gb-floater, .gb-fc-toast {
       animation: none !important;
       transition-duration: 0.01ms !important;
     }
