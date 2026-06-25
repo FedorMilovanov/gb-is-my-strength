@@ -145,7 +145,7 @@ if (!problems.length) {
   mustContain('page head has JSON-LD', pageHead, 'application/ld+json');
   mustContain('page head has Yandex', pageHead, 'mc.yandex.ru');
   mustContain('page chrome exposes slot', pageChrome, '<slot />');
-  mustContain('page chrome keeps mobile sheet', pageChrome, 'id="gbs2Sheet"');
+  mustContain('page chrome has v16 toc popup', pageChrome, 'toc-overlay');
   mustContain('page chrome keeps bookmark runtime', pageChrome, 'bookmark-engine.js');
   mustContain('page chrome keeps site runtime', pageChrome, 'site.js');
   mustContain('main shell renders main-content', shell, '<main id="main-content">');
