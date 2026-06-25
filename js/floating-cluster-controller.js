@@ -334,6 +334,8 @@
      Один обработчик на весь кластер.
      ===================================================== */
   function initCluster(root) {
+    if (root._gbClusterInit) return; // P1-8: prevent double init
+    root._gbClusterInit = true;
     root.addEventListener('click', function (e) {
       // Также обрабатываем GBS2-style theme buttons (data-gbs2-theme)
       if (e.target.closest('[data-gbs2-theme]')) { toggleTheme(); return; }
