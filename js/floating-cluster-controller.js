@@ -386,7 +386,6 @@
     };
   });
 
-})();
 
   /* =====================================================
      v16 TOC POPUPS — Series & Part sheets
@@ -482,7 +481,11 @@
      ===================================================== */
   function initPlayExpand() {
     qsa('.gb-ember').forEach(function(ember) {
-      if (!ember.closest('.gb-floater')) return;
+      // Speed panel works for embers inside ANY cluster container,
+      // not only .gb-floater (single article). On Gill pages embers live
+      // in .gbs-rail-foot (desktop) and .mobile-bottom-bar (mobile), so
+      // we accept any [data-fc-root]. (BUG N-1 from arena-agent-2 amendment.)
+      if (!ember.closest('[data-fc-root]')) return;
       if (ember.parentNode.querySelector('.gb-ember-expand')) return;
 
       var speeds = [0.75, 1, 1.25, 1.5, 1.75, 2];
@@ -560,3 +563,5 @@
       });
     });
   }
+
+})();
