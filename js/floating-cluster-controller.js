@@ -110,33 +110,66 @@
      SAVE / BOOKMARK
      Фасад над BookmarkEngine. Если нет engine — localStorage fallback.
      ===================================================== */
-  function saveCurrent(btn) {
-    var engine = window.BookmarkEngine;
+  /* =====================================================
+     FAVORITES ENGINE — личная коллекция статей
+     Отдельно от BookmarkEngine (автосохранение позиции).
+     localStorage key: gb-favorites (JSON array)
+     ===================================================== */
+  var FAV_KEY = 'gb-favorites';
 
-    if (engine && typeof engine.saveNow === 'function') {
-      engine.saveNow();
-      var bm = engine.getCurrent && engine.getCurrent();
-      var pct = bm && bm.progress ? bm.progress + '%' : '';
-      var sec = bm && bm.sectionTitle ? bm.sectionTitle : '';
-      var msg = 'Закладка сохранена';
-      if (pct && sec) msg = 'Закладка · ' + sec + ' · ' + pct;
-      else if (pct) msg = 'Закладка · ' + pct;
-      showToast(msg, true);
+  function getFavorites() {
+    try { return JSON.parse(localStorage.getItem(FAV_KEY)) || []; }
+    catch (_) { return []; }
+  }
+
+  function setFavorites(list) {
+    try { localStorage.setItem(FAV_KEY, JSON.stringify(list)); } catch (_) {}
+  }
+
+  function isFavorite(path) {
+    return getFavorites().some(function(f) { return f.path === path; });
+  }
+
+  function getPageMeta() {
+    // Extract article metadata from OG tags or document
+    var meta = { path: normalizePath(location.pathname), addedAt: Date.now() };
+    var ogTitle = qs('meta[property="og:title"]');
+    meta.title = ogTitle ? ogTitle.getAttribute('content') : document.title;
+    var ogDesc = qs('meta[property="og:description"]');
+    meta.description = ogDesc ? (ogDesc.getAttribute('content') || '').substring(0, 120) : '';
+    var ogImg = qs('meta[property="og:image"]');
+    meta.image = ogImg ? ogImg.getAttribute('content') : '';
+    // Section from SITE_CONFIG or breadcrumb
+    var crumb = qs('.breadcrumb__link:last-of-type');
+    meta.section = crumb ? crumb.textContent.trim() : '';
+    return meta;
+  }
+
+  function toggleFavorite() {
+    var path = normalizePath(location.pathname);
+    var favs = getFavorites();
+    var idx = -1;
+    favs.forEach(function(f, i) { if (f.path === path) idx = i; });
+
+    if (idx >= 0) {
+      // Remove from favorites
+      favs.splice(idx, 1);
+      setFavorites(favs);
+      setSaved(false);
+      showToast('Убрано из Избранного', false);
+    } else {
+      // Add to favorites
+      var meta = getPageMeta();
+      favs.unshift(meta); // newest first
+      if (favs.length > 50) favs = favs.slice(0, 50); // cap at 50
+      setFavorites(favs);
       setSaved(true);
-      return;
+      showToast('Добавлено в Избранное', true);
     }
+  }
 
-    // Fallback
-    var key = 'fc:saved:' + normalizePath(location.pathname);
-    var wasSaved = false;
-    try { wasSaved = !!localStorage.getItem(key); } catch (_) {}
-    var nowSaved = !wasSaved;
-    try {
-      if (nowSaved) localStorage.setItem(key, '1');
-      else localStorage.removeItem(key);
-    } catch (_) {}
-    setSaved(nowSaved);
-    showToast(nowSaved ? 'Закладка сохранена' : 'Закладка удалена', nowSaved);
+  function saveCurrent(btn) {
+    toggleFavorite();
   }
 
   function setSaved(saved) {
@@ -360,7 +393,7 @@
     var engine = window.BookmarkEngine;
     if (engine && typeof engine.getCurrent === 'function') {
       var current = engine.getCurrent();
-      if (current) setSaved(true);
+      setSaved(isFavorite(normalizePath(location.pathname)));
     } else {
       var key = 'fc:saved:' + normalizePath(location.pathname);
       try {
