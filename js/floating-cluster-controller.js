@@ -296,6 +296,9 @@
      ===================================================== */
   function initCluster(root) {
     root.addEventListener('click', function (e) {
+      // Также обрабатываем GBS2-style theme buttons (data-gbs2-theme)
+      if (e.target.closest('[data-gbs2-theme]')) { toggleTheme(); return; }
+      if (e.target.closest('[data-gbs2-search]')) { openSearch(e.target.closest('[data-gbs2-search]')); return; }
       var btn = e.target.closest('[data-fc-action]');
       if (!btn) return;
       var action = btn.getAttribute('data-fc-action');
@@ -317,6 +320,15 @@
   function initGillRail() {
     var railControls = qs('[data-fc-controls="gill-rail"]');
     if (!railControls) return;
+    // Wire gbs2 theme/search buttons that exist outside fc-controls scope
+    var gbs2ThemeBtns = qsa('[data-gbs2-theme]');
+    gbs2ThemeBtns.forEach(function(btn) {
+      btn.addEventListener('click', toggleTheme);
+    });
+    var gbs2SearchBtns = qsa('[data-gbs2-search]');
+    gbs2SearchBtns.forEach(function(btn) {
+      btn.addEventListener('click', function() { openSearch(btn); });
+    });
     initCluster(railControls);
     // Expose public API for pages that use gill-rail without data-fc-root
     if (!window.__gbCluster) {
@@ -349,6 +361,12 @@
      MAIN INIT
      ===================================================== */
   ready(function () {
+    // 0. Global delegated listeners for GBS2-style controls (works regardless of DOM hierarchy)
+    document.addEventListener('click', function(e) {
+      if (e.target.closest('[data-gbs2-theme]')) { e.stopPropagation(); toggleTheme(); }
+      if (e.target.closest('[data-gbs2-search]')) { e.stopPropagation(); openSearch(e.target.closest('[data-gbs2-search]')); }
+    }, true);  // capture phase — fires before any stopPropagation
+
     // 1. Inject SVG в ember кнопки (если SSR не вставил)
     initEmbers();
     initTocPopups();
