@@ -77,3 +77,32 @@ PATH=/home/user/node-v22.12.0-linux-x64/bin:$PATH npm run validate:static-public
 ## Rollback
 
 Откатить этот lane commit целиком, если потребуется вернуться к предыдущему failing state для forensic diff.
+
+## Addendum — Visual Parity `/map/` green
+
+После первого push GitHub Actions показал red на `Visual Parity Guard — pixel-diff`.
+Локальное воспроизведение с Playwright deps показало единственный проблемный route:
+
+```text
+/map/ desktop diff=1.825% (legacy 1280x932 vs dist 1280x900)
+/map/ mobile  diff=3.690% (legacy 390x1099 vs dist 390x844)
+```
+
+Причина: root legacy `map/index.html` содержит статический SEO-блок `Static SEO content` после интерактивного SVG/JS, а strict-native `src/components/map/MapBody.astro` его не перенёс. Из-за этого full-page screenshot имел другую высоту.
+
+Фикс:
+
+- `src/components/map/MapBody.astro` получил тот же статический SEO-блок 1:1.
+
+Проверки:
+
+```bash
+node scripts/visual-parity-screenshots.js --routes "/map/" --threshold "1.0"
+# ✅ /map/ desktop 0.000%, mobile 0.000%
+
+node scripts/visual-parity-screenshots.js --routes "/,/about/,/articles/,/biografii/,/karty/,/baptisty-rossii/,/nagornaya/,/nagornaya/chast-1/,/hard-texts/,/konfessii/,/pastor-series/,/map/" --threshold "1.0"
+# ✅ 12 routes × 2 viewports at ≤1%
+
+PATH=/home/user/node-v22.12.0-linux-x64/bin:$PATH npm run validate:static-publication
+# ✅ passed
+```
