@@ -148,7 +148,7 @@ for (const p of htmlFiles) {
 
   const faq = extractFaq(html);
   if (faq.length) {
-    if (!html.includes('"@type": "FAQPage"')) err(file, 'visible FAQ without FAQPage JSON-LD');
+    if (!/\"@type\"\s*:\s*\"FAQPage\"/.test(html)) err(file, 'visible FAQ without FAQPage JSON-LD');
     for (const item of faq) {
       if (item.words < 60) warn(file, `FAQ answer too short (${item.words} words): ${item.q}`);
       if (item.words > 220) warn(file, `FAQ answer too long (${item.words} words): ${item.q}`);
