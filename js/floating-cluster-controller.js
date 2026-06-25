@@ -266,6 +266,10 @@
     document.body.classList.add('fc-single-active');
   }
 
+  function activateSeriesPilot() {
+    document.body.classList.add('fc-series-active');
+  }
+
   /* =====================================================
      CLICK DELEGATION
      Один обработчик на весь кластер.
@@ -328,6 +332,7 @@
 
     // 3. Активировать класс на body для скрытия дублей
     if (mode === 'single') activateSinglePilot();
+    if (mode === 'series-lite') activateSeriesPilot();
 
     // 4. Делегирование кликов
     initCluster(root);
