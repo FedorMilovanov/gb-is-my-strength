@@ -31,6 +31,7 @@ const ASSETS = [
   'css/mobile-hotfix.css',
   'css/nagornaya-mobile-toc.css',
   'css/floating-cluster.css',
+  'css/site-layered.css',       /* BUG P0-7: в SW precache, не было в cache-bust → drift */
   'fonts/fonts.css',           /* AUDIT V2 / PERF-1: self-host fonts */
   'nagornaya/tw.min.css',
   'js/site.js',
@@ -45,6 +46,7 @@ const ASSETS = [
   'js/glossary.js',
   'js/series-cards.js',
   'js/floating-cluster-controller.js',
+  'js/site-modules.js',         /* BUG P0-8: в SW precache, не было в cache-bust → drift */
 ];
 
 // ── Хеш файла ────────────────────────────────────────────────────────────────
