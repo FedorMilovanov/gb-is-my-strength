@@ -318,8 +318,15 @@
      Инициализирует floating-cluster controls в gbs2-rail
      ===================================================== */
   function initGillRail() {
-    var railControls = qs('[data-fc-controls="gill-rail"]');
-    if (!railControls) return;
+    // FIX (PremiumControls clickability): Gill pages render TWO
+    // [data-fc-controls="gill-rail"] containers (desktop rail + mobile bottom
+    // bar). Previous qs() grabbed only the first (the hidden one), so the
+    // VISIBLE desktop rail theme/search buttons stayed unwired and did not
+    // respond to clicks. Per rollout-plan runtime contract #1 ("init every
+    // root"), iterate ALL gill-rail containers.
+    var railControlsAll = qsa('[data-fc-controls="gill-rail"]');
+    if (!railControlsAll.length) return;
+    railControlsAll.forEach(function (rail) { initCluster(rail); });
     // Wire gbs2 theme/search buttons that exist outside fc-controls scope
     var gbs2ThemeBtns = qsa('[data-gbs2-theme]');
     gbs2ThemeBtns.forEach(function(btn) {
@@ -329,7 +336,6 @@
     gbs2SearchBtns.forEach(function(btn) {
       btn.addEventListener('click', function() { openSearch(btn); });
     });
-    initCluster(railControls);
     // Expose public API for pages that use gill-rail without data-fc-root
     if (!window.__gbCluster) {
       window.__gbCluster = {
