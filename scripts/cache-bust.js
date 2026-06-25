@@ -31,6 +31,7 @@ const ASSETS = [
   'css/mobile-hotfix.css',
   'css/nagornaya-mobile-toc.css',
   'css/floating-cluster.css',
+  'css/gill-v16.css',
   'fonts/fonts.css',           /* AUDIT V2 / PERF-1: self-host fonts */
   'nagornaya/tw.min.css',
   'js/site.js',

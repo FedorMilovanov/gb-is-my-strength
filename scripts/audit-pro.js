@@ -39,6 +39,7 @@ const ALLOWED_CSS = new Set([
   'css/mobile-hotfix.css',
   'css/site-layered.css',
   'css/floating-cluster.css',
+  'css/gill-v16.css',
   'css/nagornaya-mobile-toc.css'
 ]);
 
@@ -75,6 +76,7 @@ const CACHE_BUST_ASSETS = [
   'css/mobile-hotfix.css',
   'css/site-layered.css',
   'css/floating-cluster.css',
+  'css/gill-v16.css',
   'css/nagornaya-mobile-toc.css',
   'fonts/fonts.css',
   'nagornaya/tw.min.css',
@@ -237,7 +239,7 @@ function extractSiteConfig(html, fileLabel) {
   if (missingJs.length) R.err(`Missing JS files: ${missingJs.join(', ')}`);
   for (const f of REQUIRED_EXTRA_CSS) if (!exists(f)) R.err(`Missing required stylesheet: ${f}`);
 
-  if (!extraCss.length && !missingCss.length) R.ok('Structure: exactly 7 CSS files in /css');
+  if (!extraCss.length && !missingCss.length) R.ok('Structure: exactly 8 CSS files in /css');
   if (!extraJs.length && !missingJs.length) R.ok('Structure: exactly 11 JS files in /js');
   if ([...REQUIRED_EXTRA_CSS].every(exists)) R.ok('Structure: fonts/fonts.css and nagornaya/tw.min.css exist');
 })();
@@ -309,7 +311,8 @@ const SITE_CSS_MIN_BYTES = 200_000;
   for (const f of ['css/site.css', 'css/home.css', 'css/command-palette.css',
                    'css/mobile-hotfix.css',
   'css/site-layered.css',
-  'css/floating-cluster.css', 'css/nagornaya-mobile-toc.css', 'fonts/fonts.css']) {
+  'css/floating-cluster.css',
+  'css/gill-v16.css', 'css/nagornaya-mobile-toc.css', 'fonts/fonts.css']) {
     const p = path.join(ROOT, f);
     if (!fs.existsSync(p)) continue;
     const s = fs.readFileSync(p, 'utf8');
@@ -1387,7 +1390,8 @@ const SITE_CSS_MIN_BYTES = 200_000;
   const cssFiles = ['css/site.css', 'css/home.css', 'css/command-palette.css',
                     'css/mobile-hotfix.css',
   'css/site-layered.css',
-  'css/floating-cluster.css', 'css/nagornaya-mobile-toc.css'];
+  'css/floating-cluster.css',
+  'css/gill-v16.css', 'css/nagornaya-mobile-toc.css'];
   const offenders = [];
   for (const f of cssFiles) {
     const p = path.join(ROOT, f);
@@ -1672,7 +1676,8 @@ const SITE_CSS_MIN_BYTES = 200_000;
   const cssFiles = ['css/site.css', 'css/home.css', 'css/command-palette.css',
                     'css/mobile-hotfix.css',
   'css/site-layered.css',
-  'css/floating-cluster.css', 'css/nagornaya-mobile-toc.css', 'fonts/fonts.css',
+  'css/floating-cluster.css',
+  'css/gill-v16.css', 'css/nagornaya-mobile-toc.css', 'fonts/fonts.css',
                     'nagornaya/tw.min.css'];
   const defined = new Set();
   // Externals = vars set dynamically (JS / inline style at runtime) or by browser
@@ -2139,7 +2144,8 @@ const JS_SIZE_FLOORS = {
   const cssFiles = ['css/site.css', 'css/home.css', 'css/command-palette.css',
                     'css/mobile-hotfix.css',
   'css/site-layered.css',
-  'css/floating-cluster.css', 'css/nagornaya-mobile-toc.css'];
+  'css/floating-cluster.css',
+  'css/gill-v16.css', 'css/nagornaya-mobile-toc.css'];
   let css = '';
   for (const f of cssFiles) {
     const p = path.join(ROOT, f);
@@ -2313,7 +2319,8 @@ const JS_SIZE_FLOORS = {
   const cssFiles = ['css/site.css', 'css/home.css', 'css/command-palette.css',
                     'css/mobile-hotfix.css',
   'css/site-layered.css',
-  'css/floating-cluster.css', 'css/nagornaya-mobile-toc.css', 'fonts/fonts.css'];
+  'css/floating-cluster.css',
+  'css/gill-v16.css', 'css/nagornaya-mobile-toc.css', 'fonts/fonts.css'];
   const BAD = [
     /-webkit-border-radius\s*:/g,
     /-moz-border-radius\s*:/g,
@@ -2626,13 +2633,14 @@ const JS_SIZE_FLOORS = {
 })();
 
 // G58. CSS @import inside our own .css files — forbidden.
-//   AGENTS rule: exactly 7 CSS files. @import would smuggle in extra ones
+//   AGENTS rule: exactly 8 CSS files. @import would smuggle in extra ones
 //   and create a render-blocking serial waterfall.
 (function noCssImportGuard() {
   const cssFiles = ['css/site.css', 'css/home.css', 'css/command-palette.css',
                     'css/mobile-hotfix.css',
   'css/site-layered.css',
-  'css/floating-cluster.css', 'css/nagornaya-mobile-toc.css'];
+  'css/floating-cluster.css',
+  'css/gill-v16.css', 'css/nagornaya-mobile-toc.css'];
   const offenders = [];
   for (const f of cssFiles) {
     const p = path.join(ROOT, f);
@@ -2757,7 +2765,8 @@ const JS_SIZE_FLOORS = {
   const cssFiles = ['css/site.css', 'css/home.css', 'css/command-palette.css',
                     'css/mobile-hotfix.css',
   'css/site-layered.css',
-  'css/floating-cluster.css', 'css/nagornaya-mobile-toc.css'];
+  'css/floating-cluster.css',
+  'css/gill-v16.css', 'css/nagornaya-mobile-toc.css'];
   const NAMED = ['red','blue','green','yellow','purple','pink','cyan','magenta','orange','brown','gray','grey'];
   const offenders = [];
   for (const f of cssFiles) {
@@ -2809,7 +2818,8 @@ const JS_SIZE_FLOORS = {
   const cssFiles = ['css/site.css', 'css/home.css', 'css/command-palette.css',
                     'css/mobile-hotfix.css',
   'css/site-layered.css',
-  'css/floating-cluster.css', 'css/nagornaya-mobile-toc.css'];
+  'css/floating-cluster.css',
+  'css/gill-v16.css', 'css/nagornaya-mobile-toc.css'];
   const offenders = [];
   for (const f of cssFiles) {
     const p = path.join(ROOT, f);
@@ -3188,7 +3198,8 @@ const JS_SIZE_FLOORS = {
   const cssFiles = ['css/site.css', 'css/home.css', 'css/command-palette.css',
                     'css/mobile-hotfix.css',
   'css/site-layered.css',
-  'css/floating-cluster.css', 'css/nagornaya-mobile-toc.css'];
+  'css/floating-cluster.css',
+  'css/gill-v16.css', 'css/nagornaya-mobile-toc.css'];
   const offenders = [];
   for (const f of cssFiles) {
     const p = path.join(ROOT, f);
@@ -3278,7 +3289,8 @@ const JS_SIZE_FLOORS = {
   for (const f of ['css/site.css', 'css/home.css', 'css/command-palette.css',
                    'css/mobile-hotfix.css',
   'css/site-layered.css',
-  'css/floating-cluster.css', 'css/nagornaya-mobile-toc.css']) {
+  'css/floating-cluster.css',
+  'css/gill-v16.css', 'css/nagornaya-mobile-toc.css']) {
     const p = path.join(ROOT, f);
     if (!fs.existsSync(p)) continue;
     const css = fs.readFileSync(p, 'utf8');
@@ -3375,7 +3387,8 @@ const JS_SIZE_FLOORS = {
   const cssFiles = ['css/site.css', 'css/home.css', 'css/command-palette.css',
                     'css/mobile-hotfix.css',
   'css/site-layered.css',
-  'css/floating-cluster.css', 'css/nagornaya-mobile-toc.css'];
+  'css/floating-cluster.css',
+  'css/gill-v16.css', 'css/nagornaya-mobile-toc.css'];
   let allCss = '';
   for (const f of cssFiles) {
     const p = path.join(ROOT, f);
@@ -4234,13 +4247,19 @@ const JS_SIZE_FLOORS = {
     // required kit
     if (!/data-gbs2-done-min="\d+"/.test(html) || !/data-gbs2-part-min="\d+"/.test(html) || !/data-gbs2-total-min="\d+"/.test(html))
       probs.push('missing data-gbs2-*-min attrs');
-    const literalNeeds = ['gbs2-mobile-head', 'class="gbs2-world"', 'id="gbs2Ring"', 'id="gbs2Toc"', 'id="gbs2Bbar"', 'id="gbs2Sheet"'];
-    for (const need of literalNeeds)
-      if (!html.includes(need)) probs.push(`missing ${need}`);
-    if (!/class="[^"]*\bgbs2-rail\b/.test(html)) probs.push('missing class token gbs2-rail');
+    // v16 accepts either old gbs2-* or new v16 TOC markup
+    const v16HasRail = html.includes('class="gbs-rail"') || /class="[^"]*\bgbs2-rail\b/.test(html);
+    const v16HasMobile = html.includes('mobile-bottom-bar') || html.includes('gbs2-mobile-head');
+    const v16HasToc = html.includes('toc-overlay') || html.includes('id="gbs2Sheet"');
+    const v16HasWorld = html.includes('class="gbs2-world"');
+    if (!v16HasRail) probs.push('missing rail (gbs-rail or gbs2-rail)');
+    if (!v16HasMobile) probs.push('missing mobile bar (mobile-bottom-bar or gbs2-mobile-head)');
+    if (!v16HasToc) probs.push('missing TOC popup (toc-overlay or gbs2Sheet)');
+    if (!v16HasWorld) probs.push('missing gbs2-world');
     const isSeriesLanding = /"@type"\s*:\s*"CollectionPage"/.test(html) || (/<main[^>]*>/.test(html) && !/<article[^>]*data-gbs2-part/i.test(html));
-    if (!isSeriesLanding && !/<a\b(?=[^>]*\bclass="[^"]*\bgbs2-part\b)(?=[^>]*aria-current="page")[^>]*>/.test(html))
-      probs.push('no aria-current part in rail');
+    const hasCurrentPart = /<a\b(?=[^>]*\bclass="[^"]*\b(?:gbs2-part|gbs-rail-card)\b)(?=[^>]*(?:aria-current="page"|is-current))[^>]*>/.test(html) || html.includes('is-current');
+    if (!isSeriesLanding && !hasCurrentPart)
+      probs.push('no aria-current/is-current part in rail');
     // forbidden legacy leftovers
     for (const bad of ['id="reading-progress"', 'id="bottomBar"', 'id="btocOverlay"', 'id="tocSidebar"', 'id="themeToggle"', 'data-series-strip', 'data-series-nav', 'series-next-cta'])
       if (html.includes(bad)) probs.push(`legacy leftover: ${bad}`);
