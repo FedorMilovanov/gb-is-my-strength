@@ -95,7 +95,7 @@
 })();
 ;!function(){"use strict";
 /* §1.2 TTS — gospod-bog.ru sitewide article player */
-if(!("speechSynthesis" in window))return;
+if(!("speechSynthesis" in window))return;if(document.querySelector(".gb-ember,[data-fc-root]"))return;/* v16 cluster owns TTS */
 /* Emergency 2026-06-19: TTS is article-only. Do not show an audio prompt on the homepage/landing pages. */
 var path=(location.pathname||"/").replace(/\/+$/, "/");
 if(path==="/"||document.body.classList.contains("home-page")||document.querySelector(".home-v20"))return;
