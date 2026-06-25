@@ -44,7 +44,6 @@ const ASSETS = [
   'js/sw-register.js',
   'js/nagornaya-mobile-toc.js',
   'js/glossary.js',
-  'js/series-cards.js',
   'js/floating-cluster-controller.js',
   'js/site-modules.js',         /* BUG P0-8: в SW precache, не было в cache-bust → drift */
 ];
