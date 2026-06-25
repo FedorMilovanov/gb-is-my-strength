@@ -103,7 +103,7 @@
     }
 
     // Fallback: dispatch custom event
-    document.dispatchEvent(new CustomEvent('gb:search:open', { bubbles: true }));
+    document.dispatchEvent(new CustomEvent('gb:openSearch', { bubbles: true }));
   }
 
   /* =====================================================
