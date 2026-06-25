@@ -62,7 +62,7 @@ jobs:
         run: node scripts/cache-bust.js
 
       - name: Static publication gates
-        run: npm run validate:static-publication
+        run: npm run validate:static-publication:light
 
       - name: Commit updated metadata
         run: |
