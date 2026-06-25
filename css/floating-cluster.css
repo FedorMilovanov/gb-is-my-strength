@@ -1867,3 +1867,133 @@ html.dark .gb-floater .gb-ember.gb-ember--panel-open {
     animation-duration: 0.01ms !important;
   }
 }
+
+/* ============================================================
+   gb-ember speed popover — v2 (PremiumControls redesign)
+   Стильная минималистичная рамка, выезжает ВВЕРХ из круга play.
+   Закрытие: выбор скорости / увод мыши / outside-click / Escape.
+   (unlayered → доминирует над @layer components)
+   ============================================================ */
+.gb-ember-wrap {
+  position: relative;
+  display: inline-grid;
+  place-items: center;
+  line-height: 0;
+}
+
+.gb-ember-expand {
+  position: absolute !important;
+  bottom: calc(100% + 12px) !important;
+  left: 50% !important;
+  right: auto !important;
+  top: auto !important;
+  transform: translateX(-50%) translateY(10px) scale(.88) !important;
+  transform-origin: bottom center !important;
+  display: flex !important;
+  align-items: center;
+  gap: 2px;
+  padding: 4px !important;
+  border-radius: 16px !important;
+  background: var(--color-surface, #ffffff) !important;
+  border: 1px solid color-mix(in srgb, var(--color-border, #e5e2dc) 85%, transparent) !important;
+  box-shadow:
+    0 12px 32px -8px rgba(0, 0, 0, .22),
+    0 4px 10px rgba(0, 0, 0, .08),
+    inset 0 1px 0 rgba(255, 255, 255, .9) !important;
+  -webkit-backdrop-filter: blur(18px) saturate(170%);
+  backdrop-filter: blur(18px) saturate(170%);
+  clip-path: none !important;
+  opacity: 0 !important;
+  pointer-events: none !important;
+  transition:
+    transform .34s cubic-bezier(.34, 1.56, .64, 1),
+    opacity .22s ease !important;
+  z-index: 60 !important;
+  white-space: nowrap;
+}
+
+.gb-ember-expand.is-open {
+  opacity: 1 !important;
+  pointer-events: auto !important;
+  transform: translateX(-50%) translateY(0) scale(1) !important;
+  box-shadow:
+    0 14px 36px -6px rgba(0, 0, 0, .24),
+    0 6px 14px rgba(0, 0, 0, .10),
+    inset 0 1px 0 rgba(255, 255, 255, .9) !important;
+}
+
+/* стрелка-хвостик, указывающая вниз на круг play */
+.gb-ember-expand::after {
+  content: '';
+  position: absolute;
+  bottom: -5px;
+  left: 50%;
+  transform: translateX(-50%) rotate(45deg);
+  width: 10px;
+  height: 10px;
+  background: var(--color-surface, #ffffff);
+  border-right: 1px solid color-mix(in srgb, var(--color-border, #e5e2dc) 85%, transparent);
+  border-bottom: 1px solid color-mix(in srgb, var(--color-border, #e5e2dc) 85%, transparent);
+  pointer-events: none;
+}
+
+html.dark .gb-ember-expand {
+  background: color-mix(in srgb, var(--color-surface, #161a21) 94%, transparent) !important;
+  border-color: rgba(255, 255, 255, .10) !important;
+  box-shadow:
+    0 14px 38px -6px rgba(0, 0, 0, .55),
+    0 6px 14px rgba(0, 0, 0, .35),
+    inset 0 1px 0 rgba(255, 255, 255, .05) !important;
+}
+html.dark .gb-ember-expand::after {
+  background: color-mix(in srgb, var(--color-surface, #161a21) 94%, transparent);
+  border-color: rgba(255, 255, 255, .10);
+}
+
+/* кнопки скорости — компактные, минималистичные */
+.gb-ember-expand__btn {
+  appearance: none;
+  border: 0;
+  background: transparent;
+  color: var(--color-text-muted, #6a6a6a);
+  font-family: var(--f-ui, 'Source Sans 3', system-ui, sans-serif);
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: .01em;
+  padding: 7px 9px;
+  min-width: 40px;
+  border-radius: 11px;
+  cursor: pointer;
+  transition: background .18s ease, color .18s ease, transform .18s ease;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+}
+.gb-ember-expand__btn:hover {
+  background: color-mix(in srgb, var(--color-accent, #7a2e2e) 9%, transparent);
+  color: var(--color-accent, #7a2e2e);
+  transform: translateY(-1px);
+}
+.gb-ember-expand__btn:active { transform: scale(.93); transition-duration: .08s; }
+.gb-ember-expand__btn.is-active {
+  background: color-mix(in srgb, var(--color-accent, #7a2e2e) 15%, transparent);
+  color: var(--color-accent, #7a2e2e);
+}
+html.dark .gb-ember-expand__btn { color: var(--color-text-muted, #9ca3af); }
+html.dark .gb-ember-expand__btn:hover {
+  background: color-mix(in srgb, var(--color-accent-strong, #e8b878) 13%, transparent);
+  color: var(--color-accent-strong, #e8b878);
+}
+html.dark .gb-ember-expand__btn.is-active {
+  background: color-mix(in srgb, var(--color-accent-strong, #e8b878) 17%, transparent);
+  color: var(--color-accent-strong, #e8b878);
+}
+
+/* старая close-кнопка убрана из JS; прячем, если где-то осталась */
+.gb-ember-expand__close { display: none !important; }
+
+@media (prefers-reduced-motion: reduce) {
+  .gb-ember-expand {
+    transform: translateX(-50%) !important;
+    transition: opacity .15s ease !important;
+  }
+}

@@ -508,12 +508,15 @@
      ===================================================== */
   function initPlayExpand() {
     qsa('.gb-ember').forEach(function(ember) {
-      // Speed panel works for embers inside ANY cluster container,
-      // not only .gb-floater (single article). On Gill pages embers live
-      // in .gbs-rail-foot (desktop) and .mobile-bottom-bar (mobile), so
-      // we accept any [data-fc-root]. (BUG N-1 from arena-agent-2 amendment.)
-      if (!ember.closest('[data-fc-root]')) return;
+      // Speed panel works for embers inside ANY cluster container:
+      //   [data-fc-root]      — single / series-lite (hermenevtika, kod-da-vinchi, ...)
+      //   [data-fc-controls]  — gill-rail (gill part1/2/3/spravochnik)
+      // Previously only [data-fc-root] was accepted, so Gill part1/2/3/spravochnik
+      // embers (which live in .gbs-rail-foot under [data-fc-controls="gill-rail"])
+      // never received a speed panel — clicking play did nothing there.
+      if (!ember.closest('[data-fc-root], [data-fc-controls]')) return;
       if (ember.parentNode.querySelector('.gb-ember-expand')) return;
+      if (ember.parentNode.classList && ember.parentNode.classList.contains('gb-ember-wrap')) return;
 
       var speeds = [0.75, 1, 1.25, 1.5, 1.75, 2];
       var currentRate = 1;
@@ -525,23 +528,25 @@
       panel.setAttribute('aria-label', 'Скорость воспроизведения');
       panel.innerHTML = speeds.map(function(s) {
         var active = s === currentRate ? ' is-active' : '';
-        return '<button class="gb-ember-expand__btn' + active + '" data-speed="' + s + '" aria-label="Скорость ' + s + 'x">' + s + '\u00d7</button>';
-      }).join('') +
-      '<button class="gb-ember-expand__close" aria-label="Закрыть"><svg viewBox="0 0 24 24"><path d="M18 6L6 18M6 6l12 12"/></svg></button>';
+        return '<button class="gb-ember-expand__btn' + active + '" type="button" data-speed="' + s + '" aria-label="Скорость ' + s + '\u00d7" aria-pressed="' + (s === currentRate ? 'true' : 'false') + '">' + s + '\u00d7</button>';
+      }).join('');
 
+      // Wrap ember in a positioned span so the popover anchors exactly to the
+      // play circle and expands UPWARD ("из круга") instead of sideways.
       var parent = ember.parentNode;
-      if (getComputedStyle(parent).position === 'static') {
-        parent.style.position = 'relative';
-      }
-      parent.insertBefore(panel, ember.nextSibling);
+      var wrap = document.createElement('span');
+      wrap.className = 'gb-ember-wrap';
+      parent.insertBefore(wrap, ember);
+      wrap.appendChild(ember);
+      wrap.appendChild(panel);
 
       function openPanel() {
         panel.classList.add('is-open');
-        ember.classList.add('gb-ember--panel-open');
+        ember.setAttribute('aria-expanded', 'true');
       }
       function closePanel() {
         panel.classList.remove('is-open');
-        ember.classList.remove('gb-ember--panel-open');
+        ember.setAttribute('aria-expanded', 'false');
       }
 
       ember.addEventListener('click', function(e) {
@@ -553,42 +558,35 @@
       panel.addEventListener('click', function(e) {
         var btn = e.target.closest('[data-speed]');
         if (btn) {
+          e.stopPropagation();
           var speed = parseFloat(btn.getAttribute('data-speed'));
           try { localStorage.setItem('gbx-tts-rate', speed); } catch(_){}
-
-          // Update active + pulse animation
           panel.querySelectorAll('.gb-ember-expand__btn').forEach(function(b) {
             var isThis = parseFloat(b.getAttribute('data-speed')) === speed;
             b.classList.toggle('is-active', isThis);
-            b.classList.remove('is-pulsing');
+            b.setAttribute('aria-pressed', isThis ? 'true' : 'false');
           });
-          // Trigger pulse on selected
-          btn.classList.add('is-pulsing');
-          btn.addEventListener('animationend', function() {
-            btn.classList.remove('is-pulsing');
-          }, { once: true });
-
-          // Close smoothly after pulse
-          setTimeout(closePanel, 380);
+          // Close smoothly after selection
+          setTimeout(closePanel, 240);
           return;
         }
-        if (e.target.closest('.gb-ember-expand__close')) {
-          closePanel();
-        }
       });
 
+      // Close on mouse leave the wrap (ember + panel), outside click, and Escape.
+      var leaveTimer = null;
+      wrap.addEventListener('mouseleave', function() {
+        clearTimeout(leaveTimer);
+        leaveTimer = setTimeout(closePanel, 220);
+      });
+      wrap.addEventListener('mouseenter', function() { clearTimeout(leaveTimer); });
       document.addEventListener('click', function(e) {
-        if (!panel.contains(e.target) && e.target !== ember && !ember.contains(e.target)) {
-          closePanel();
-        }
+        if (!wrap.contains(e.target)) closePanel();
       });
-
       document.addEventListener('keydown', function(e) {
-        if (e.key === 'Escape' && panel.classList.contains('is-open')) {
-          closePanel();
-        }
+        if (e.key === 'Escape') closePanel();
       });
     });
   }
+
 
 })();
