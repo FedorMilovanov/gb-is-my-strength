@@ -423,6 +423,9 @@
     // 2. Gill rail / non-root cluster controls (работают без data-fc-root)
     initGillRail();
 
+    // 2b. GBS2 controls — Баптисты России series UI
+    initGbs2Controls();
+
     // 3. Инициализировать корни с data-fc-root
     var roots = qsa('[data-fc-root]');
     if (!roots.length) return;
@@ -635,5 +638,203 @@
     });
   }
 
+
+  /* =====================================================
+     GBS2 CONTROLS — Баптисты России series UI wiring
+     Handles: TOC population, sheet open/close, tabs,
+     font controls, share, progress tracking, bottom bar.
+     ===================================================== */
+  function initGbs2Controls() {
+    var sheet = qs('#gbs2Sheet');
+    var bbar = qs('#gbs2Bbar');
+    if (!sheet && !bbar) return; // Not a GBS2 page
+
+    // --- TOC Population ---
+    function populateToc() {
+      var article = qs('article.article-body') || qs('#main-content article') || qs('main');
+      if (!article) return;
+      var headings = qsa('h2[id], h3[id]', article);
+      if (!headings.length) return;
+
+      // Sidebar TOC (#gbs2Toc)
+      var sidebarToc = qs('#gbs2Toc');
+      if (sidebarToc && !sidebarToc.querySelector('li')) {
+        headings.forEach(function(h, idx) {
+          var li = document.createElement('li');
+          if (h.tagName === 'H3') li.classList.add('gbs2-sub');
+          var a = document.createElement('a');
+          a.href = '#' + h.id;
+          a.textContent = h.textContent.trim();
+          a.addEventListener('click', function(e) {
+            e.preventDefault();
+            var target = document.getElementById(h.id);
+            if (target) target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+          });
+          li.appendChild(a);
+          sidebarToc.appendChild(li);
+        });
+      }
+
+      // Sheet TOC pane
+      var sheetTocPane = qs('[data-gbs2-pane="toc"]');
+      if (sheetTocPane && !sheetTocPane.querySelector('a')) {
+        var h2Count = 0;
+        headings.forEach(function(h) {
+          var a = document.createElement('a');
+          a.className = 'gbs2-sheet-toclink' + (h.tagName === 'H3' ? ' gbs2-sheet-sub' : '');
+          a.href = '#' + h.id;
+          var span = document.createElement('span');
+          if (h.tagName === 'H2') {
+            h2Count++;
+            span.textContent = String(h2Count).padStart(2, '0');
+          }
+          a.appendChild(span);
+          var textNode = document.createTextNode(h.textContent.trim());
+          a.appendChild(textNode);
+          a.addEventListener('click', function(e) {
+            e.preventDefault();
+            closeSheet();
+            var target = document.getElementById(h.id);
+            if (target) setTimeout(function() {
+              target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }, 200);
+          });
+          sheetTocPane.appendChild(a);
+        });
+      }
+
+      // Update count
+      var countEl = qs('#gbs2Count');
+      if (countEl) countEl.textContent = headings.length;
+    }
+
+    // --- Sheet Open/Close ---
+    function openSheet() {
+      if (!sheet) return;
+      sheet.setAttribute('aria-hidden', 'false');
+      sheet.style.display = 'block';
+      sheet.classList.add('gbs2-open');
+      document.body.style.overflow = 'hidden';
+    }
+    function closeSheet() {
+      if (!sheet) return;
+      sheet.setAttribute('aria-hidden', 'true');
+      sheet.classList.remove('gbs2-open');
+      sheet.style.display = '';
+      document.body.style.overflow = '';
+    }
+
+    // Bottom bar opens sheet
+    if (bbar && sheet) {
+      bbar.addEventListener('click', function() { openSheet(); });
+    }
+
+    // Close buttons
+    qsa('[data-gbs2-close]').forEach(function(el) {
+      el.addEventListener('click', function(e) {
+        e.stopPropagation();
+        closeSheet();
+      });
+    });
+
+    // Escape closes sheet
+    document.addEventListener('keydown', function(e) {
+      if (e.key === 'Escape' && sheet && sheet.classList.contains('gbs2-open')) {
+        closeSheet();
+      }
+    });
+
+    // --- Tab Switching ---
+    var tabs = qsa('[data-gbs2-tab]');
+    tabs.forEach(function(tab) {
+      tab.addEventListener('click', function() {
+        var pane = tab.getAttribute('data-gbs2-tab');
+        tabs.forEach(function(t) { t.classList.toggle('gbs2-on', t === tab); });
+        qsa('[data-gbs2-pane]').forEach(function(p) {
+          p.classList.toggle('gbs2-on', p.getAttribute('data-gbs2-pane') === pane);
+        });
+      });
+    });
+
+    // --- Font Controls ---
+    qsa('[data-gbs2-font]').forEach(function(btn) {
+      btn.addEventListener('click', function(e) {
+        e.stopPropagation();
+        var dir = btn.getAttribute('data-gbs2-font') === 'up' ? 1 : -1;
+        changeFontSize(dir);
+      });
+    });
+
+    // --- Share ---
+    qsa('[data-gbs2-share]').forEach(function(btn) {
+      btn.addEventListener('click', function(e) {
+        e.stopPropagation();
+        if (navigator.share) {
+          navigator.share({ title: document.title, url: location.href });
+        } else {
+          // Fallback: copy URL
+          try {
+            navigator.clipboard.writeText(location.href);
+            showToast('Ссылка скопирована', true);
+          } catch(_) {}
+        }
+      });
+    });
+
+    // --- Scroll Progress ---
+    function updateProgress() {
+      var docH = document.documentElement.scrollHeight - window.innerHeight;
+      if (docH <= 0) return;
+      var pct = Math.min(100, Math.round((window.scrollY / docH) * 100));
+      var pctEl = qs('#gbs2MobPct');
+      if (pctEl) pctEl.textContent = pct + '%';
+      var pctSidebar = qs('#gbs2Pct');
+      if (pctSidebar) pctSidebar.textContent = pct + '%';
+      // Update progress bar
+      var curbar = qs('#gbs2Curbar');
+      if (curbar) curbar.style.width = pct + '%';
+      // Update ring SVG
+      var ring = qs('#gbs2Ring');
+      if (ring) {
+        var circ = 2 * Math.PI * 18; // r=18
+        ring.style.strokeDashoffset = circ - (circ * pct / 100);
+      }
+      // Update mobile bottom bar section
+      var mobSec = qs('#gbs2MobSec');
+      if (mobSec) {
+        var current = getCurrentHeading();
+        if (current) mobSec.textContent = current;
+      }
+    }
+
+    function getCurrentHeading() {
+      var article = qs('article.article-body') || qs('#main-content article') || qs('main');
+      if (!article) return '';
+      var headings = qsa('h2[id]', article);
+      var last = '';
+      for (var i = 0; i < headings.length; i++) {
+        if (headings[i].getBoundingClientRect().top < 120) {
+          last = headings[i].textContent.trim();
+        }
+      }
+      return last;
+    }
+
+    // Throttled scroll handler
+    var scrollTick = false;
+    window.addEventListener('scroll', function() {
+      if (!scrollTick) {
+        scrollTick = true;
+        requestAnimationFrame(function() {
+          updateProgress();
+          scrollTick = false;
+        });
+      }
+    }, { passive: true });
+
+    // Initial population
+    populateToc();
+    updateProgress();
+  }
 
 })();
