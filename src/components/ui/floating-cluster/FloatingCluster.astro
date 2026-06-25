@@ -4,12 +4,24 @@ import SeriesLiteCluster from './SeriesLiteCluster.astro';
 import type { SeriesKey } from '@/data/floating-cluster-ui';
 
 interface Props {
-  mode: 'single' | 'series-lite';
-  variant: string;
-  audioState?: 'none' | 'available' | 'loading' | 'playing' | 'paused';
-  seriesKey?: SeriesKey;
-  currentSlug?: string;
-  hubHref?: string;
+ mode: 'single' | 'series-lite';
+ variant: string;
+ audioState?: 'none' | 'available' | 'loading' | 'playing' | 'paused';
+ seriesKey?: SeriesKey;
+ currentSlug?: string;
+ hubHref?: string;
+ /**
+  * Якорь позиционирования для одиночных статей.
+  * Только для mode='single'.
+  *
+  * 'legacy-theme-toggle' — кластер ЗАМЕНЯЕТ старый .theme-toggle,
+  * сохраняя его геометрический anchor на уровне breadcrumbs.
+  *
+  * Рекомендуется для страниц, где раньше был отдельный .theme-toggle
+  * на конкретном месте (как Hermenevtika), чтобы новый premium-кластер
+  * не уехал к viewport-right edge.
+  */
+ anchor?: 'legacy-theme-toggle' | null;
 }
 
 const {
@@ -19,10 +31,15 @@ const {
   seriesKey,
   currentSlug,
   hubHref,
+  anchor = null,
 } = Astro.props;
 ---
 {mode === 'single' ? (
-  <SingleArticleCluster variant={variant as 'hermeneutics' | 'article'} audioState={audioState} />
+  <SingleArticleCluster
+    variant={variant as 'hermeneutics' | 'article'}
+    audioState={audioState}
+    anchor={anchor}
+  />
 ) : mode === 'series-lite' && seriesKey && currentSlug ? (
   <SeriesLiteCluster
     variant={variant as 'pastor' | 'heart'}

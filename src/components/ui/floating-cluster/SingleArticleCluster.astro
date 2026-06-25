@@ -9,7 +9,13 @@
  *   3. PlayEmber (gb-ember)
  *   4. Save (gb-save)
  *
- * Positioning: fixed, top-right, flex-direction:column, gap:6px
+ * Positioning:
+ *   - default: position:fixed, top-right (viewport edge)
+ *   - data-fc-anchor="legacy-theme-toggle": position:absolute,
+ *     matches old .theme-toggle coords (top: clamp(24,3.5vw,44)-4; right: 8.5vw).
+ *     Используется на страницах, где кластер ЗАМЕНЯЕТ старый theme-toggle,
+ *     сохраняя его геометрический anchor (breadcrumb-level / content-column right).
+ *
  * На мобильных (≤899px): нижняя центрированная горизонтальная пилюля
  */
 
@@ -21,20 +27,32 @@ interface Props {
   variant?: 'hermeneutics' | 'article';
   audioState?: 'none' | 'available' | 'loading' | 'playing' | 'paused';
   progress?: number;
+  /**
+   * Якорь позиционирования. Если задан, кластер использует абсолютное
+   * позиционирование относительно ближайшего positioned ancestor
+   * (обычно .article-main) вместо viewport-fixed.
+   *
+   *   'legacy-theme-toggle' — копирует геометрию старого .theme-toggle
+   *                            (top: clamp(24px,3.5vw,44px)-4;
+   *                             right: max(8.5vw,env(safe-area-inset-right,0px))).
+   */
+  anchor?: 'legacy-theme-toggle' | null;
 }
 
 const {
   variant = 'article',
   audioState = 'none',
   progress = 0,
+  anchor = null,
 } = Astro.props;
 ---
 <div
   id="gbFloatingControls"
-  class={`gb-floater gb-floater--${variant}`}
+  class={`gb-floater gb-floater--${variant}${anchor ? ` gb-floater--anchor-${anchor}` : ''}`}
   data-fc-root
   data-fc-variant={variant}
   data-fc-mode="single"
+  data-fc-anchor={anchor}
   role="group"
   aria-label="Быстрые действия"
 >
@@ -98,6 +116,27 @@ const {
     gap: 6px;
     /* Не перекрываем хлебные крошки на десктопе */
     pointer-events: none;
+  }
+
+  /* =========================================================
+     gb-floater--anchor-legacy-theme-toggle
+     Сохраняет геометрический anchor старого .theme-toggle:
+       top:    calc(clamp(24px,3.5vw,44px) - 4px)
+       right:  max(8.5vw, env(safe-area-inset-right, 0px))
+     Day/night SVG сидит на уровне breadcrumb, не выше и не у viewport-top.
+     ========================================================= */
+  .gb-floater--anchor-legacy-theme-toggle {
+    position: absolute;
+    top: calc(clamp(24px, 3.5vw, 44px) - 4px);
+    right: max(8.5vw, env(safe-area-inset-right, 0px));
+    align-items: flex-end;
+    gap: 4px;
+  }
+  @media (max-width: 899px) {
+    .gb-floater--anchor-legacy-theme-toggle {
+      top: calc(clamp(24px, 3.5vw, 44px) - 4px);
+      right: max(4.5vw, env(safe-area-inset-right, 0px));
+    }
   }
 
   .gb-floater > * {

@@ -41,14 +41,14 @@ import SaveButton from '@/components/ui/floating-cluster/SaveButton.astro';
     </div>
   </div>
   <div class="gbs-rail-spacer"></div>
-  <div class="gbs-rail-foot" data-fc-root data-fc-variant="gill">
-    <button class="gbs-rail-foot__btn gb-theme-toggle" data-fc-action="theme" aria-label="Тема">
+  <div class="gbs-rail-foot" data-fc-root data-fc-variant="gill" data-fc-mode="series-rich">
+    <button class="gbs-rail-foot__btn gb-theme-toggle" data-fc-action="theme" aria-label="Тема" data-tip="Тема">
       <span class="theme-icon-sun"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4.5"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/></svg></span>
       <span class="theme-icon-moon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg></span>
     </button>
-    <button class="gbs-rail-foot__btn" data-fc-action="search" aria-label="Поиск"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg></button>
-    <button class="gbs-rail-foot__btn gbs-rail-foot__btn--text" data-fc-action="font-down" aria-label="Уменьшить шрифт">A−</button>
-    <button class="gbs-rail-foot__btn gbs-rail-foot__btn--text" data-fc-action="font-up" aria-label="Увеличить шрифт">A+</button>
+    <button class="gbs-rail-foot__btn" data-fc-action="search" aria-label="Поиск" data-tip="Поиск"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg></button>
+    <button class="gbs-rail-foot__btn gbs-rail-foot__btn--text" data-fc-action="font-down" aria-label="Уменьшить шрифт" data-tip="Меньше">A−</button>
+    <button class="gbs-rail-foot__btn gbs-rail-foot__btn--text" data-fc-action="font-up" aria-label="Увеличить шрифт" data-tip="Больше">A+</button>
     <PlayEmber audioState="none" class="gbs-rail-ember" tip="Озвучка" />
     <SaveButton class="gbs-rail-foot__btn" tip="Сохранить" />
   </div>
