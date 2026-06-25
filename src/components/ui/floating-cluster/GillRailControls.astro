@@ -1,313 +1,247 @@
 ---
-import ClusterButton from './ClusterButton.astro';
+/**
+ * GillRailControls — v16 controls для gbs2-rail footer Гилла.
+ * Точная реализация .gbs-rail-foot из референса.
+ *
+ * Встраивается ВНУТРЬ существующего gbs2-rail, не заменяет его.
+ * Сохраняет gbs2-* классы для owner:ui-guard.
+ *
+ * Состав: Theme | Search | A− | A+ | PlayEmber | Save
+ * Все кнопки .gbs-rail-foot__btn (32×32px), кроме ember (--ember-size:32px) и save
+ */
+
 import PlayEmber from './PlayEmber.astro';
 import SaveButton from './SaveButton.astro';
 
 interface Props {
-  context?: 'rail' | 'mobile';
   audioState?: 'none' | 'available' | 'loading' | 'playing' | 'paused';
-  includeStyles?: boolean;
+  progress?: number;
+  showFontSize?: boolean;
+  /** context: 'rail' = desktop aside, 'mobile' = mobile head strip */
+  context?: 'rail' | 'mobile';
+  /** Ссылка "назад" в rail (arrow button) */
   homeHref?: string;
+  /** Устаревший prop для совместимости */
+  includeStyles?: boolean;
 }
 
 const {
-  context = 'rail',
   audioState = 'none',
-  includeStyles = false,
-  homeHref = '../../biografii/',
+  progress = 0,
+  showFontSize = true,
+  context = 'rail',
+  homeHref,
+  includeStyles: _unused,
 } = Astro.props;
-
-const rootClass = context === 'rail' ? 'gbs2-rfoot fc-rfoot' : 'gbs2-mobile-actions fc-mobile-actions';
-const buttonClass = context === 'rail' ? 'gbs2-ctl' : 'gbs2-mctl';
 ---
-<div class={rootClass} data-fc-root data-fc-variant="gill" role="group" aria-label={context === 'rail' ? 'Управление серией' : 'Быстрые действия серии'}>
-  <ClusterButton
-    label="Переключить тему"
-    title="Тема"
-    className={`${buttonClass} fc-button fc-theme-toggle`}
-    attrs={{ 'data-gbs2-theme': '' }}
-    pressed="false"
-  >
-    <span aria-hidden="true" class="fc-theme-toggle__sun">
-      <svg viewBox="0 0 24 24">
-        <circle cx="12" cy="12" r="4.5"></circle>
-        <path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"></path>
-      </svg>
-    </span>
-    <span aria-hidden="true" class="fc-theme-toggle__moon">
-      <svg viewBox="0 0 24 24">
-        <path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"></path>
-      </svg>
-    </span>
-  </ClusterButton>
+<div class="gbs-rail-foot fc-rail-foot" data-fc-controls="gill-rail">
 
-  <ClusterButton
-    label="Поиск"
-    title="Поиск"
-    className={`${buttonClass} fc-button`}
-    attrs={{ 'data-gbs2-search': '' }}
+  <!-- Theme toggle -->
+  <button
+    type="button"
+    class="gbs-rail-foot__btn gb-theme-toggle"
+    id="gbsTheme"
+    data-fc-action="theme"
+    aria-label="Тема"
+    aria-pressed="false"
+    data-tip="Тема"
   >
-    <svg aria-hidden="true" viewBox="0 0 24 24">
-      <circle cx="11" cy="11" r="7"></circle>
-      <path d="M21 21l-4.3-4.3"></path>
+    <span class="theme-icon-sun" aria-hidden="true">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="12" cy="12" r="4.5"/>
+        <path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/>
+      </svg>
+    </span>
+    <span class="theme-icon-moon" aria-hidden="true">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/>
+      </svg>
+    </span>
+  </button>
+
+  <!-- Search -->
+  <button
+    type="button"
+    class="gbs-rail-foot__btn"
+    id="gbsSearch"
+    data-fc-action="search"
+    aria-label="Поиск"
+    data-tip="Поиск"
+  >
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+      <circle cx="11" cy="11" r="7"/>
+      <path d="M21 21l-4.3-4.3"/>
     </svg>
-  </ClusterButton>
+  </button>
 
-  {context === 'rail' && (
+  {showFontSize && (
     <>
-      <ClusterButton
-        label="Поделиться"
-        title="Поделиться"
-        className={`${buttonClass} fc-button`}
-        attrs={{ 'data-gbs2-share': '' }}
-      >
-        <svg aria-hidden="true" viewBox="0 0 24 24">
-          <circle cx="18" cy="5" r="3"></circle>
-          <circle cx="6" cy="12" r="3"></circle>
-          <circle cx="18" cy="19" r="3"></circle>
-          <path d="M8.59 13.51l6.83 3.98"></path>
-          <path d="M15.41 6.51L8.59 10.49"></path>
-        </svg>
-      </ClusterButton>
-
-      <ClusterButton
-        label="Уменьшить шрифт"
-        title="Шрифт меньше"
-        className={`${buttonClass} fc-button fc-font`}
-        attrs={{ 'data-gbs2-font': 'down' }}
-      >A−</ClusterButton>
-
-      <ClusterButton
-        label="Увеличить шрифт"
-        title="Шрифт больше"
-        className={`${buttonClass} fc-button fc-font`}
-        attrs={{ 'data-gbs2-font': 'up' }}
-      >A+</ClusterButton>
+      <!-- Font size decrease -->
+      <button
+        type="button"
+        class="gbs-rail-foot__btn gbs-rail-foot__btn--text"
+        data-fc-action="font-down"
+        aria-label="Уменьшить шрифт"
+        data-tip="Меньше"
+      >A−</button>
+      <!-- Font size increase -->
+      <button
+        type="button"
+        class="gbs-rail-foot__btn gbs-rail-foot__btn--text"
+        data-fc-action="font-up"
+        aria-label="Увеличить шрифт"
+        data-tip="Больше"
+      >A+</button>
     </>
   )}
 
-  <PlayEmber audioState={audioState} className={buttonClass} />
-  <SaveButton className={buttonClass} />
+  <!-- Play Ember (32px в rail, ring-color = accent-gold) -->
+  <PlayEmber
+    audioState={audioState}
+    progress={progress}
+    class="gbs-rail-ember"
+    tip="Озвучка"
+  />
 
-  {context === 'rail' && (
-    <>
-      <ClusterButton
-        label="Сохранить серию офлайн"
-        title="Офлайн"
-        className={`${buttonClass} fc-button fc-offline`}
-        attrs={{ 'data-gbs2-offline': '' }}
-      >↓</ClusterButton>
-      <a class="gbs2-home fc-home" href={homeHref}>← Назад</a>
-    </>
-  )}
+  <!-- Save — без halo, gold fill при is-saved -->
+  <SaveButton class="gbs-rail-foot__btn" tip="Сохранить" />
+
 </div>
 
-{includeStyles && (
-  <style is:global>
-    @layer gbs2 {
-      .gbs2-rail.fc-rail {
-        box-shadow: 18px 0 52px rgba(22, 15, 10, 0.16);
-      }
+<style is:global>
+@layer gbs2 {
+  /* =========================================================
+     gbs-rail-foot — footer controls strip
+     Точная реализация из референса (6 кнопок в строку)
+     ========================================================= */
+  .gbs-rail-foot.fc-rail-foot {
+    margin-top: auto;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0;
+    padding-top: 12px;
+    border-top: 1px solid rgba(255, 255, 255, .08);
+    width: 100%;
+  }
 
-      .gbs2-rail.fc-rail .fc-rfoot {
-        gap: 6px;
-        flex-wrap: wrap;
-        align-items: center;
-      }
+  .gbs-rail-foot__btn {
+    width: 32px;
+    height: 32px;
+    display: grid;
+    place-items: center;
+    color: #a8957f;
+    background: transparent;
+    border: 0;
+    border-radius: 50%;
+    transition:
+      color .28s var(--gb-ease-out, cubic-bezier(.2,.7,.2,1)),
+      transform .32s var(--gb-ease-spring, cubic-bezier(.34,1.56,.64,1));
+    cursor: pointer;
+    position: relative;
+    flex-shrink: 0;
+    transform-origin: center;
+  }
 
-      .gbs2-rail.fc-rail .fc-button,
-      .gbs2-mobile-actions.fc-mobile-actions .fc-button {
-        border-radius: 12px;
-        transition:
-          transform .22s cubic-bezier(.22, 1, .36, 1),
-          border-color .22s ease,
-          color .22s ease,
-          background-color .22s ease,
-          box-shadow .22s ease;
-      }
-
-      .gbs2-rail.fc-rail .fc-button svg,
-      .gbs2-mobile-actions.fc-mobile-actions .fc-button svg {
-        width: 17px;
-        height: 17px;
-        stroke: currentColor;
-        fill: none;
-        stroke-width: 1.8;
-        stroke-linecap: round;
-        stroke-linejoin: round;
-      }
-
-      .gbs2-rail.fc-rail .fc-theme-toggle,
-      .gbs2-mobile-actions.fc-mobile-actions .fc-theme-toggle {
-        position: relative;
-        overflow: hidden;
-      }
-
-      .gbs2-rail.fc-rail .fc-theme-toggle__sun,
-      .gbs2-rail.fc-rail .fc-theme-toggle__moon,
-      .gbs2-mobile-actions.fc-mobile-actions .fc-theme-toggle__sun,
-      .gbs2-mobile-actions.fc-mobile-actions .fc-theme-toggle__moon {
-        position: absolute;
-        inset: 0;
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        transition: opacity .24s ease, transform .3s cubic-bezier(.22, 1, .36, 1);
-      }
-
-      .gbs2-rail.fc-rail .fc-theme-toggle__sun,
-      .gbs2-mobile-actions.fc-mobile-actions .fc-theme-toggle__sun {
-        opacity: 1;
-        transform: rotate(0deg) scale(1);
-      }
-
-      .gbs2-rail.fc-rail .fc-theme-toggle__moon,
-      .gbs2-mobile-actions.fc-mobile-actions .fc-theme-toggle__moon {
-        opacity: 0;
-        transform: rotate(-90deg) scale(.6);
-      }
-
-      html.dark .gbs2-rail.fc-rail .fc-theme-toggle__sun,
-      html.dark .gbs2-mobile-actions.fc-mobile-actions .fc-theme-toggle__sun {
-        opacity: 0;
-        transform: rotate(90deg) scale(.6);
-      }
-
-      html.dark .gbs2-rail.fc-rail .fc-theme-toggle__moon,
-      html.dark .gbs2-mobile-actions.fc-mobile-actions .fc-theme-toggle__moon {
-        opacity: 1;
-        transform: rotate(0deg) scale(1);
-      }
-
-      .gbs2-rail.fc-rail .fc-font {
-        font-size: 12px;
-        letter-spacing: -.02em;
-      }
-
-      .gbs2-rail.fc-rail .fc-play-ember,
-      .gbs2-mobile-actions.fc-mobile-actions .fc-play-ember {
-        position: relative;
-      }
-
-      .gbs2-rail.fc-rail .fc-play-ember__ring,
-      .gbs2-mobile-actions.fc-mobile-actions .fc-play-ember__ring {
-        position: absolute;
-        inset: 7px;
-        border-radius: 999px;
-        border: 1px solid currentColor;
-        opacity: 0.82;
-      }
-
-      .gbs2-rail.fc-rail .fc-play-ember__icon--pause,
-      .gbs2-rail.fc-rail .fc-play-ember__icon--spark,
-      .gbs2-mobile-actions.fc-mobile-actions .fc-play-ember__icon--pause,
-      .gbs2-mobile-actions.fc-mobile-actions .fc-play-ember__icon--spark {
-        display: none;
-      }
-
-      .gbs2-rail.fc-rail .fc-play-ember[data-audio-state='playing'] .fc-play-ember__icon--play,
-      .gbs2-rail.fc-rail .fc-play-ember[data-audio-state='paused'] .fc-play-ember__icon--play,
-      .gbs2-rail.fc-rail .fc-play-ember[data-audio-state='loading'] .fc-play-ember__icon--play,
-      .gbs2-mobile-actions.fc-mobile-actions .fc-play-ember[data-audio-state='playing'] .fc-play-ember__icon--play,
-      .gbs2-mobile-actions.fc-mobile-actions .fc-play-ember[data-audio-state='paused'] .fc-play-ember__icon--play,
-      .gbs2-mobile-actions.fc-mobile-actions .fc-play-ember[data-audio-state='loading'] .fc-play-ember__icon--play {
-        display: none;
-      }
-
-      .gbs2-rail.fc-rail .fc-play-ember[data-audio-state='playing'] .fc-play-ember__icon--pause,
-      .gbs2-rail.fc-rail .fc-play-ember[data-audio-state='paused'] .fc-play-ember__icon--pause,
-      .gbs2-mobile-actions.fc-mobile-actions .fc-play-ember[data-audio-state='playing'] .fc-play-ember__icon--pause,
-      .gbs2-mobile-actions.fc-mobile-actions .fc-play-ember[data-audio-state='paused'] .fc-play-ember__icon--pause {
-        display: block;
-      }
-
-      .gbs2-rail.fc-rail .fc-play-ember[data-audio-state='loading'] .fc-play-ember__icon--spark,
-      .gbs2-mobile-actions.fc-mobile-actions .fc-play-ember[data-audio-state='loading'] .fc-play-ember__icon--spark {
-        display: block;
-      }
-
-      .gbs2-rail.fc-rail .fc-save.is-saved,
-      .gbs2-mobile-actions.fc-mobile-actions .fc-save.is-saved {
-        color: var(--gbs2-accent2);
-        border-color: rgba(232, 184, 120, 0.35);
-        background: rgba(232, 184, 120, 0.08);
-      }
-
-      .gbs2-rail.fc-rail .fc-save.is-saved svg,
-      .gbs2-mobile-actions.fc-mobile-actions .fc-save.is-saved svg {
-        fill: currentColor;
-        stroke: currentColor;
-      }
-
-      .gbs2-mobile-actions.fc-mobile-actions {
-        display: flex;
-        gap: 6px;
-        margin-left: auto;
-      }
-
-      .gbs2-bbar.fc-bbar {
-        gap: 8px;
-      }
-
-      .gbs2-bbar.fc-bbar .fc-roman {
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        min-width: 34px;
-        padding: 0 6px;
-        font-family: var(--f-body, Lora, Georgia, serif);
-        font-size: 14px;
-        font-weight: 700;
-        letter-spacing: .08em;
-        color: var(--gbs2-accent2);
-      }
-
-      .fc-roman {
-        font-family: var(--f-body, Lora, Georgia, serif);
-        font-size: 15px;
-        font-weight: 700;
-        letter-spacing: .08em;
-        color: var(--gbs2-accent2);
-      }
-
-      .fc-toast {
-        position: fixed;
-        left: 50%;
-        bottom: max(24px, calc(env(safe-area-inset-bottom, 0px) + 24px));
-        transform: translateX(-50%) translateY(20px);
-        z-index: var(--z-toast);
-        padding: 10px 16px;
-        border-radius: 999px;
-        background: rgba(17, 13, 10, 0.94);
-        color: #fff;
-        font-family: var(--f-ui, 'Source Sans 3', system-ui, sans-serif);
-        font-size: 13px;
-        font-weight: 700;
-        opacity: 0;
-        pointer-events: none;
-        transition: opacity .22s ease, transform .22s ease;
-      }
-
-      .fc-toast.is-visible {
-        opacity: 1;
-        transform: translateX(-50%) translateY(0);
-      }
-
-      @media (hover: hover) and (pointer: fine) {
-        .gbs2-rail.fc-rail .fc-button:hover,
-        .gbs2-mobile-actions.fc-mobile-actions .fc-button:hover {
-          transform: translateY(-1px);
-        }
-      }
-
-      @media (prefers-reduced-motion: reduce) {
-        .gbs2-rail.fc-rail .fc-button,
-        .gbs2-mobile-actions.fc-mobile-actions .fc-button,
-        .fc-toast {
-          transition-duration: 0.01ms !important;
-          animation: none !important;
-        }
-      }
+  @media (hover: hover) and (pointer: fine) {
+    .gbs-rail-foot__btn:hover {
+      color: #f4e8d9;
+      transform: scale(1.18);
     }
-  </style>
-)}
+  }
+  .gbs-rail-foot__btn:active { transform: scale(.88); transition: transform .12s; }
+  .gbs-rail-foot__btn:focus-visible { outline: 2px solid var(--color-accent, #7a2e2e); outline-offset: 3px; border-radius: 50%; }
+
+  .gbs-rail-foot__btn svg {
+    width: 17px;
+    height: 17px;
+    stroke: currentColor;
+    fill: none;
+    stroke-width: 1.7;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    transition: transform .32s var(--gb-ease-spring, cubic-bezier(.34,1.56,.64,1));
+  }
+  @media (hover: hover) and (pointer: fine) {
+    .gbs-rail-foot__btn:hover svg { transform: scale(1.10); }
+  }
+
+  /* Текстовые кнопки (A+ A−) */
+  .gbs-rail-foot__btn--text {
+    font-family: var(--f-body, Georgia, serif);
+    font-size: 13px;
+    font-weight: 700;
+    line-height: 1;
+    letter-spacing: -.02em;
+  }
+
+  /* Theme toggle в rail (те же классы что и в standalone) */
+  .gbs-rail-foot__btn.gb-theme-toggle {
+    overflow: hidden;
+  }
+  .gbs-rail-foot__btn.gb-theme-toggle .theme-icon-sun,
+  .gbs-rail-foot__btn.gb-theme-toggle .theme-icon-moon {
+    position: absolute;
+    inset: 0;
+    display: grid;
+    place-items: center;
+    transition:
+      opacity .32s var(--gb-ease-out, cubic-bezier(.2,.7,.2,1)),
+      transform .42s var(--gb-ease-spring, cubic-bezier(.34,1.56,.64,1));
+  }
+  .gbs-rail-foot__btn.gb-theme-toggle .theme-icon-sun  { opacity: 1; transform: rotate(0) scale(1); }
+  .gbs-rail-foot__btn.gb-theme-toggle .theme-icon-moon { opacity: 0; transform: rotate(-90deg) scale(.5); }
+  html.dark .gbs-rail-foot__btn.gb-theme-toggle .theme-icon-sun  { opacity: 0; transform: rotate(90deg) scale(.5); }
+  html.dark .gbs-rail-foot__btn.gb-theme-toggle .theme-icon-moon { opacity: 1; transform: rotate(0) scale(1); }
+
+  /* Ember в rail — 32px и gold ring */
+  .fc-rail-foot .gb-ember,
+  .fc-rail-foot .gbs-rail-ember {
+    --ember-size: 32px;
+    --ring-color: var(--color-accent-gold-bright, #d8aa6d);
+  }
+  .fc-rail-foot .gb-ember__ring-track {
+    stroke: rgba(232, 184, 120, .22);
+  }
+  .fc-rail-foot .gb-ember__ring-progress {
+    stroke-width: 1.5;
+  }
+
+  /* Save в rail — те же классы gb-save, без halo */
+  .fc-rail-foot .gb-save {
+    width: 32px;
+    height: 32px;
+  }
+  .fc-rail-foot .gb-save svg {
+    width: 17px;
+    height: 17px;
+  }
+
+  /* Tooltips для rail foot (появляются вверх, не вниз) */
+  .gbs-rail-foot__btn[data-tip]::after,
+  .fc-rail-foot .gb-ember[data-tip]::after {
+    content: attr(data-tip);
+    position: absolute;
+    bottom: calc(100% + 10px);
+    left: 50%;
+    transform: translateX(-50%) translateY(6px) scale(.94);
+    padding: 5px 10px;
+    border-radius: 6px;
+    background: #1a1a1a;
+    color: #fff;
+    font-family: var(--f-ui, 'Source Sans 3', system-ui, sans-serif);
+    font-size: 11px;
+    font-weight: 600;
+    white-space: nowrap;
+    opacity: 0;
+    pointer-events: none;
+    transition:
+      opacity .22s var(--gb-ease-out, cubic-bezier(.2,.7,.2,1)),
+      transform .28s var(--gb-ease-spring, cubic-bezier(.34,1.56,.64,1));
+    z-index: 10;
+    /* В production отключаем тултипы (фикс из v16) */
+    display: none;
+  }
+}
+</style>
