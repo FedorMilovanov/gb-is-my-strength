@@ -47,6 +47,18 @@
   }
 }
 
+
+/* ---- GILL-A fix: prevent vertical text in gbs2-mobile-head on narrow screens ----
+   gbs2-mobile-title gets squeezed to 0 by 4 control buttons (4×38px+gaps=~170px).
+   Force title to truncate instead of stacking vertically per character. */
+.gbs2-mobile-title { overflow: hidden; }
+.gbs2-mobile-title b,
+.gbs2-mobile-title span {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100%;
+}
 /* Mobile: standalone floater becomes horizontal pill at bottom */
 @media (max-width: 899px) {
   .gb-floater {
