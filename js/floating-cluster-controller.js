@@ -236,9 +236,10 @@
     var blocks = article.querySelectorAll('p, h2, h3, li');
     var out = [];
     Array.prototype.forEach.call(blocks, function (el) {
-      // Пропускаем подсказки, кнопки, метаданные
-      if (el.closest('.summary-card, .gtip, .fn-marker, .tooltip, ' +
-                     '[hidden], [data-pagefind-ignore]')) return;
+      // Пропускаем: метаданные, сноски (английские), tooltips, notice (copyright/source)
+      if (el.closest('.summary-card, .gtip, .fn-marker, .tooltip, .notice, ' +
+                     '.original-author-card, .footnote, aside, .sources-block, ' +
+                     '.reading-list-section, [hidden], [data-pagefind-ignore]')) return;
       var t = (el.textContent || '').trim();
       if (t.length > 0) out.push(t);
     });
@@ -325,16 +326,18 @@
 
   function pauseTts() {
     if (!('speechSynthesis' in window)) return;
-    window.speechSynthesis.pause();
+    // Chrome: speechSynthesis.pause() is unreliable. Cancel and save position instead.
+    window.speechSynthesis.cancel();
     ttsState.paused = true;
     setEmberState('paused');
   }
 
   function resumeTts() {
     if (!('speechSynthesis' in window)) return;
-    window.speechSynthesis.resume();
     ttsState.paused = false;
     setEmberState('playing');
+    // Restart from saved chunk position (Chrome doesn't support real resume)
+    speakNextChunk();
   }
 
   function stopTts() {
