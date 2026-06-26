@@ -589,7 +589,8 @@ html.dark .gb-series-chip {
     justify-content: center;
   }
 
-  body.gb-cluster-series-active .article-main {
+  body.gb-cluster-series-active .article-main,
+  body.fc-series-active .article-main {
     padding-bottom: 96px;
   }
 }
@@ -613,7 +614,14 @@ body.gb-cluster-series-active #back-to-top,
 body.gb-cluster-series-active #themeToggle,
 body.gb-cluster-series-active #tocSidebar,
 body.gb-cluster-series-active #bottomBar,
-body.gb-cluster-series-active #btocOverlay {
+body.gb-cluster-series-active #btocOverlay,
+body.fc-series-active #reading-progress,
+body.fc-series-active #section-label,
+body.fc-series-active #back-to-top,
+body.fc-series-active #themeToggle,
+body.fc-series-active #tocSidebar,
+body.fc-series-active #bottomBar,
+body.fc-series-active #btocOverlay {
   display: none !important;
 }
 
