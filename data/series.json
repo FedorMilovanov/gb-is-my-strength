@@ -116,7 +116,9 @@
         "n": 3,
         "slug": "zakon-duha-zhizni-rimlyanam-8",
         "title": "Закон духа жизни: Римлянам 8",
-        "status": "planned"
+        "status": "planned",
+        "readTime": 0,
+        "note": "Не опубликовано; readTime будет заполнен при публикации"
       }
     ]
   },
