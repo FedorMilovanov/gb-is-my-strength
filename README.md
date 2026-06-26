@@ -662,7 +662,7 @@ npm run source:links:dist
 │   └── site-layered.css                    ← @layer-аудит pilot (НЕ в проде, только Node-аудиты)
 ├── fonts/fonts.css                         ← @font-face декларации
 │
-├── js/                                     ← 13 ФАЙЛОВ верхнего уровня
+├── js/                                     ← 12 ФАЙЛОВ верхнего уровня + 1 модуль
 │   ├── site.js                             ← главный (≈29 модулей)
 │   ├── site-utils.js                       ← общие хелперы
 │   ├── scroll-perf.js
@@ -671,12 +671,12 @@ npm run source:links:dist
 │   ├── highlights.js                       ← подсветка текста
 │   ├── glossary.js                         ← глоссарий
 │   ├── bookmark-engine.js                  ← закладки
-│   ├── series-cards.js                     ← карточки серий (legacy)
-│   ├── floating-cluster-controller.js      ← PremiumControls runtime
-│   ├── site-modules.js                     ← Phase-3 bundle (dead; см. cleanup TODO)
+│   ├── series-cards.js                     ← карточки серий (legacy, тонкий рендер)
+│   ├── floating-cluster-controller.js      ← PremiumControls runtime (Phase 1+2)
 │   ├── nagornaya-mobile-toc.js
-│   └── sw-register.js                      ← регистрация SW
-│   └── modules/                            ← back-to-top, faq-accordion, img-loaded, theme
+│   ├── sw-register.js                      ← регистрация SW
+│   └── modules/
+│       └── back-to-top.js                  ← scroll-to-top на 7 страницах
 │
 ├── data/                                   ← JSON-данные runtime
 │   ├── glossary.json                       ← 101 термин (definition+detail+category+aliases)

@@ -59,12 +59,12 @@ const ALLOWED_JS = new Set([
   'js/series-cards.js',
   'js/nagornaya-mobile-toc.js',
   'js/sw-register.js',
-  'js/site-modules.js',
+  
   'js/floating-cluster-controller.js',
   'js/modules/back-to-top.js',
-  'js/modules/faq-accordion.js',
-  'js/modules/img-loaded.js',
-  'js/modules/theme.js'
+  
+  
+  
 ]);
 
 // Same list as scripts/cache-bust.js. If cache-bust.js changes, update this list too.

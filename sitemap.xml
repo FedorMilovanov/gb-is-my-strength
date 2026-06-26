@@ -266,7 +266,7 @@
     <lastmod>2026-06-25T19:00:00+03:00</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
-    <image:image><image:loc>https://gospod-bog.ru/images/baptisty-rossii/cover-landing.svg</image:loc><image:title>Баптисты России</image:title></image:image>
+    <image:image><image:loc>https://gospod-bog.ru/images/baptisty-rossii/cover-landing.webp</image:loc><image:title>Баптисты России</image:title></image:image>
   </url>
 
   <url>
@@ -274,7 +274,7 @@
     <lastmod>2026-06-25T19:00:00+03:00</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
-    <image:image><image:loc>https://gospod-bog.ru/images/baptisty-rossii/cover-01-kura.svg</image:loc><image:title>Ночь на Куре</image:title></image:image>
+    <image:image><image:loc>https://gospod-bog.ru/images/baptisty-rossii/cover-01-kura.webp</image:loc><image:title>Ночь на Куре</image:title></image:image>
   </url>
 
   <url>
@@ -282,7 +282,7 @@
     <lastmod>2026-06-25T19:00:00+03:00</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
-    <image:image><image:loc>https://gospod-bog.ru/images/baptisty-rossii/cover-02-shtunda.svg</image:loc><image:title>Южная штунда</image:title></image:image>
+    <image:image><image:loc>https://gospod-bog.ru/images/baptisty-rossii/cover-02-shtunda.webp</image:loc><image:title>Южная штунда</image:title></image:image>
   </url>
 
   <url>
@@ -290,7 +290,7 @@
     <lastmod>2026-06-25T19:00:00+03:00</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
-    <image:image><image:loc>https://gospod-bog.ru/images/baptisty-rossii/cover-03-1884.svg</image:loc><image:title>1884: два съезда</image:title></image:image>
+    <image:image><image:loc>https://gospod-bog.ru/images/baptisty-rossii/cover-03-1884.webp</image:loc><image:title>1884: два съезда</image:title></image:image>
   </url>
 
   <url>
@@ -298,7 +298,7 @@
     <lastmod>2026-06-25T19:00:00+03:00</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
-    <image:image><image:loc>https://gospod-bog.ru/images/baptisty-rossii/cover-04-peterburg.svg</image:loc><image:title>Петербургская линия</image:title></image:image>
+    <image:image><image:loc>https://gospod-bog.ru/images/baptisty-rossii/cover-04-peterburg.webp</image:loc><image:title>Петербургская линия</image:title></image:image>
   </url>
 
   <url>
@@ -306,7 +306,7 @@
     <lastmod>2026-06-25T19:00:00+03:00</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
-    <image:image><image:loc>https://gospod-bog.ru/images/baptisty-rossii/cover-05-conscience.svg</image:loc><image:title>Гонения и совесть</image:title></image:image>
+    <image:image><image:loc>https://gospod-bog.ru/images/baptisty-rossii/cover-05-conscience.webp</image:loc><image:title>Гонения и совесть</image:title></image:image>
   </url>
 
   <url>
@@ -314,7 +314,7 @@
     <lastmod>2026-06-25T19:00:00+03:00</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
-    <image:image><image:loc>https://gospod-bog.ru/images/baptisty-rossii/cover-06-soviet-night.svg</image:loc><image:title>Советская ночь</image:title></image:image>
+    <image:image><image:loc>https://gospod-bog.ru/images/baptisty-rossii/cover-06-soviet-night.webp</image:loc><image:title>Советская ночь</image:title></image:image>
   </url>
 
   <url>
@@ -322,7 +322,7 @@
     <lastmod>2026-06-25T19:00:00+03:00</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.6</priority>
-    <image:image><image:loc>https://gospod-bog.ru/images/baptisty-rossii/cover-07-vsehib.svg</image:loc><image:title>1944: один союз</image:title></image:image>
+    <image:image><image:loc>https://gospod-bog.ru/images/baptisty-rossii/cover-07-vsehib.webp</image:loc><image:title>1944: один союз</image:title></image:image>
   </url>
 
   <url>
@@ -330,7 +330,7 @@
     <lastmod>2026-06-25T19:00:00+03:00</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.6</priority>
-    <image:image><image:loc>https://gospod-bog.ru/images/baptisty-rossii/cover-08-initiative.svg</image:loc><image:title>Инициативная группа</image:title></image:image>
+    <image:image><image:loc>https://gospod-bog.ru/images/baptisty-rossii/cover-08-initiative.webp</image:loc><image:title>Инициативная группа</image:title></image:image>
   </url>
 
   <url>
@@ -338,7 +338,7 @@
     <lastmod>2026-06-25T19:00:00+03:00</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.6</priority>
-    <image:image><image:loc>https://gospod-bog.ru/images/baptisty-rossii/cover-09-samizdat.svg</image:loc><image:title>Подпольная печать</image:title></image:image>
+    <image:image><image:loc>https://gospod-bog.ru/images/baptisty-rossii/cover-09-samizdat.webp</image:loc><image:title>Подпольная печать</image:title></image:image>
   </url>
 
   <url>
@@ -346,7 +346,7 @@
     <lastmod>2026-06-25T19:00:00+03:00</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.6</priority>
-    <image:image><image:loc>https://gospod-bog.ru/images/baptisty-rossii/cover-10-reference.svg</image:loc><image:title>Справочник</image:title></image:image>
+    <image:image><image:loc>https://gospod-bog.ru/images/baptisty-rossii/cover-10-reference.webp</image:loc><image:title>Справочник</image:title></image:image>
   </url>
   <url><loc>https://gospod-bog.ru/rodosloviye/</loc><lastmod>2026-06-18T00:00:00+03:00</lastmod><changefreq>monthly</changefreq><priority>0.7</priority><image:image><image:loc>https://gospod-bog.ru/images/og-karty-1200x630.webp</image:loc><image:title>Родословие от Адама до Христа</image:title></image:image></url>
 </urlset>
