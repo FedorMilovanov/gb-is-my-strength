@@ -31,6 +31,47 @@
 
 /* Play/Save in standalone floater: match reference HTML (transparent bg, 36px, no circle) */
 
+/* Hermeneutics variant: control at breadcrumb-level, NOT viewport edge.
+   Matches old #themeToggle anchor: top:calc(clamp(24px,3.5vw,44px)-4px); right:8.5vw */
+.gb-floater--hermeneutics {
+  top: calc(clamp(24px, 3.5vw, 44px) - 4px);
+  right: max(8.5vw, env(safe-area-inset-right, 0px));
+}
+@media (max-width: 899px) {
+  .gb-floater--hermeneutics {
+    top: calc(clamp(24px, 3.5vw, 44px) - 4px);
+    right: max(4.5vw, env(safe-area-inset-right, 0px));
+  }
+}
+
+/* Mobile: standalone floater becomes horizontal pill at bottom */
+@media (max-width: 899px) {
+  .gb-floater {
+    top: auto;
+    left: 50%;
+    right: auto;
+    bottom: calc(12px + env(safe-area-inset-bottom, 0px));
+    transform: translateX(-50%);
+    flex-direction: row;
+    gap: 2px;
+    padding: 3px;
+    border: 1px solid color-mix(in srgb, var(--color-border, #e5e2dc) 86%, transparent);
+    border-radius: 24px;
+    background: color-mix(in srgb, var(--color-surface, #fff) 94%, transparent);
+    -webkit-backdrop-filter: blur(16px) saturate(160%);
+    backdrop-filter: blur(16px) saturate(160%);
+    z-index: var(--z-bottom-bar, 2000);
+  }
+  html.dark .gb-floater {
+    background: color-mix(in srgb, var(--color-surface, #161a21) 94%, transparent);
+    border-color: rgba(255, 255, 255, 0.08);
+  }
+  body.fc-single-active .article-main,
+  body.gb-cluster-single-active .article-main {
+    padding-bottom: 88px;
+  }
+}
+
 /* =========================================================
    gb-icon — иконка с halo-кружком на hover (::before)
    ========================================================= */
@@ -582,7 +623,14 @@ body.gb-cluster-single-active #back-to-top,
 body.gb-cluster-single-active #themeToggle,
 body.gb-cluster-single-active #tocSidebar,
 body.gb-cluster-single-active #bottomBar,
-body.gb-cluster-single-active #btocOverlay {
+body.gb-cluster-single-active #btocOverlay,
+body.fc-single-active #reading-progress,
+body.fc-single-active #section-label,
+body.fc-single-active #back-to-top,
+body.fc-single-active #themeToggle,
+body.fc-single-active #tocSidebar,
+body.fc-single-active #bottomBar,
+body.fc-single-active #btocOverlay {
   display: none !important;
 }
 
