@@ -11,7 +11,7 @@
   "risk": 2,
   "hasMDX": false,
   "mdxPath": null,
-  "migrationMode": "native-main-with-legacy-chrome",
+  "migrationMode": "strict-native",
   "scope": "non-excluded",
   "anatomy": {
     "head": "legacy-full-document head via loadLegacyFullDocument('biografii/index.html')",
