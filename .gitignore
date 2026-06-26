@@ -27,3 +27,4 @@ _qa/
 reports/
 dist/
 .astro/
+.gitconfig
