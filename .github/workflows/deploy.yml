@@ -69,7 +69,8 @@ jobs:
     steps:
       - name: Checkout (последний коммит в main, включая cache-bust)
         uses: actions/checkout@v4
-        with:
+        uses: actions/checkout@v4  with:
+        uses: actions/checkout@v4    token: ${{ secrets.ARENA_AGENT || secrets.GITHUB_TOKEN }}
           # Берём самый свежий коммит (в т.ч. авто-коммит indexnow.yml)
           ref: main
 
@@ -123,8 +124,54 @@ jobs:
       - name: Production-like dist publication audit
         run: node scripts/dist-publication-audit.js --require-pagefind --forbid-dev
 
+      - name: Public URL contract compare on dist
+        run: npm run contract:extract:dist && npm run contract:compare:dist
+
+      - name: Dist JSON-LD parse audit
+        run: npm run dist:jsonld:audit
+
       - name: Service Worker deploy-switch readiness
         run: npm run sw:dist:audit:deploy-switch
+
+      # ───────────────────────────────────────────────────────────────
+      # Dist JSON-LD parse audit (closes BUG-A2/PFV-002/LHV-003).
+      # dist-publication-audit раньше был слеп к невалидному JSON-LD;
+      # это поймало бы крах /karty/ishod/ ещё до деплоя.
+      - name: Dist JSON-LD parse audit
+        run: |
+          node -e "
+            const fs = require('fs');
+            const path = require('path');
+            function walk(p) {
+              return fs.statSync(p).isDirectory()
+                ? fs.readdirSync(p).flatMap(n => walk(path.join(p, n)))
+                : [p];
+            }
+            let errors = 0;
+            for (const f of walk('dist').filter(p => p.endsWith('.html'))) {
+              const html = fs.readFileSync(f, 'utf8');
+              const re = /<script[^>]+application\\/ld\\+json[^>]*>([\\s\\S]*?)<\\/script>/g;
+              let m;
+              while ((m = re.exec(html)) !== null) {
+                try { JSON.parse(m[1]); }
+                catch (e) {
+                  console.error(f + ': ' + e.message);
+                  errors++;
+                }
+              }
+            }
+            if (errors) {
+              console.error('JSON-LD parse errors: ' + errors);
+              process.exit(1);
+            } else {
+              console.log('✅ All JSON-LD blocks parse cleanly');
+            }
+          "
+
+      # Production-like URL contract compare (closes BUG-A9/PFV-001/LHV-002).
+      - name: Dist URL contract compare
+        run: npm run contract:compare:dist
+      # ───────────────────────────────────────────────────────────────
 
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v3

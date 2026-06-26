@@ -19,6 +19,7 @@ const path = require('path');
 
 const ROOT = path.resolve(__dirname, '..');
 const OWNERSHIP_FILE = path.join(ROOT, 'migration/page-ownership.json');
+const MATRIX_FILE = path.join(ROOT, 'migration/route-migration-matrix.json');
 const PROFILES_DIR = path.join(ROOT, 'data/route-profiles');
 
 const strict = process.argv.includes('--strict');
@@ -97,6 +98,20 @@ function checkProfile(route, profile, owner) {
     }
   }
 
+  // If a profile declares migrationMode, it must be a known matrix mode and
+  // agree with the route-migration-matrix contract for that route. This catches
+  // stale profiles that still say legacy-shadow-app after a route was promoted
+  // to strict-native / strict-native-app.
+  if (profile.migrationMode) {
+    if (!declaredModes.has(profile.migrationMode)) {
+      problems.push(`${route}: profile.migrationMode "${profile.migrationMode}" is not declared in migration/route-migration-matrix.json modes`);
+    }
+    const matrixMode = matrixRoutes[route] && matrixRoutes[route].mode;
+    if (matrixMode && profile.migrationMode !== matrixMode) {
+      problems.push(`${route}: profile.migrationMode "${profile.migrationMode}" disagrees with route-migration-matrix mode "${matrixMode}"`);
+    }
+  }
+
   // Excluded routes must declare scope
   if (isExcludedRoute(route)) {
     if (profile.scope && profile.scope !== 'excluded-semantic-lane') {
@@ -141,6 +156,9 @@ if (!fs.existsSync(PROFILES_DIR)) {
 
 const ownership = readJson(OWNERSHIP_FILE);
 const routes = ownership.routes || {};
+const matrix = fs.existsSync(MATRIX_FILE) ? readJson(MATRIX_FILE) : { modes: {}, routes: {} };
+const matrixRoutes = matrix.routes || {};
+const declaredModes = new Set(Object.keys(matrix.modes || {}));
 const profileFiles = fs.readdirSync(PROFILES_DIR).filter((f) => f.endsWith('.json'));
 const knownProfiles = new Set(profileFiles.map((f) => f.replace(/\.json$/, '')));
 
