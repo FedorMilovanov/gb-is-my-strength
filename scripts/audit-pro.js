@@ -39,6 +39,7 @@ const ALLOWED_CSS = new Set([
   'css/mobile-hotfix.css',
   'css/site-layered.css',
   'css/floating-cluster.css',
+  'css/premium-controls.css',
                     'css/nagornaya-mobile-toc.css'
 ]);
 

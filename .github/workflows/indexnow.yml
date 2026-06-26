@@ -45,8 +45,8 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-        uses: actions/checkout@v4  with:
-        uses: actions/checkout@v4    token: ${{ secrets.ARENA_AGENT || secrets.GITHUB_TOKEN }}
+        with:
+          token: ${{ secrets.ARENA_AGENT || secrets.GITHUB_TOKEN }}
           fetch-depth: 0          # нужна полная история для gitDate()
 
       - name: Setup Node.js
