@@ -1953,3 +1953,23 @@ html.dark .favorites-card:hover {
     height: 100px;
   }
 }
+
+/* === Roman numeral chip (used in gbs2-bbar mobile) =====================
+   Unified naming: `gb-roman` (previously inconsistent fc-roman / gb-roman).
+   Style is editorial: serif italic, gold-tinted, slight letter-spacing.
+   Hidden in print and from screen readers (aria-hidden="true" already set
+   by RomanNumeral.astro). */
+.gb-roman {
+  display: inline-block;
+  font-family: var(--gb-font-serif-display, 'Playfair Display', Georgia, "Times New Roman", serif);
+  font-style: italic;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  color: var(--color-accent-gold, #b8936a);
+  margin-right: 6px;
+  line-height: 1;
+}
+html.dark .gb-roman {
+  color: var(--color-accent-gold-bright, #d8aa6d);
+}
+@media print { .gb-roman { display: none; } }
