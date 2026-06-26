@@ -6,7 +6,7 @@ export const ASSET_VERSIONS = {
   'css/site.css': 'b880b524',
   'css/command-palette.css': 'afe33045',
   'css/mobile-hotfix.css': 'c1f7664e',
-  'css/floating-cluster.css': '0142f39e',
+  'css/floating-cluster.css': 'cd1d984a',
   'css/premium-controls.css': 'pc-v21',
   'js/site.js': '158b6e05',
   'js/floating-cluster-controller.js': 'c9a44719',
