@@ -123,6 +123,12 @@ jobs:
       - name: Production-like dist publication audit
         run: node scripts/dist-publication-audit.js --require-pagefind --forbid-dev
 
+      - name: Public URL contract compare on dist
+        run: npm run contract:extract:dist && npm run contract:compare:dist
+
+      - name: Dist JSON-LD parse audit
+        run: npm run dist:jsonld:audit
+
       - name: Service Worker deploy-switch readiness
         run: npm run sw:dist:audit:deploy-switch
 
