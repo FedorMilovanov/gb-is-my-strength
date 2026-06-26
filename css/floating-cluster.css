@@ -851,12 +851,10 @@ html.dark [data-gill-v16] .gb-theme-toggle .theme-icon-moon{opacity:1;transform:
 [data-gill-v16] .gbs-rail-foot{
   margin-top:auto;
   display:flex;flex-direction:row;align-items:center;
-  justify-content:center;
-  gap:4px;
-  padding:10px 8px;
+  justify-content:space-between;
+  gap:0;
+  padding-top:12px;
   border-top:1px solid rgba(255,255,255,.08);
-  border-radius:12px;
-  background:rgba(255,255,255,.03);
   width:100%;
 }
 [data-gill-v16] .gbs-rail-foot__btn{
