@@ -214,7 +214,7 @@
      TTS — Web Speech API integration
      Per PremiumControls contract (AuditRepo §3): handlePlayClick
      должен запускать реальную озвучку через speechSynthesis,
-     применяя сохранённую скорость из localStorage.gbx-tts-rate.
+     применяя сохранённую скорость из localStorage gb:audio:rate (fallback gbx-tts-rate).
      ===================================================== */
   var ttsState = {
     utterance: null,
@@ -265,7 +265,7 @@
 
   function getStoredRate() {
     var r = 1;
-    try { r = parseFloat(localStorage.getItem('gbx-tts-rate')) || 1; } catch (_) {}
+    try { r = parseFloat(localStorage.getItem('gb:audio:rate') || localStorage.getItem('gbx-tts-rate')) || 1; } catch (_) {}
     if (isNaN(r) || r < 0.5 || r > 3) r = 1;
     return r;
   }
@@ -376,7 +376,7 @@
     }
 
     // Нет TTS вообще
-    showToast('Озвучка ещё не подключена', false);
+    showToast('Браузер не поддерживает озвучку', false);
   }
 
   /* =====================================================
@@ -577,30 +577,27 @@
     // 2b. GBS2 controls — Баптисты России series UI
     initGbs2Controls();
 
-    // 3. Инициализировать корни с data-fc-root
-    var roots = qsa('[data-fc-root]');
-    if (!roots.length) return;
+    // 3. Sync + keyboard + ARIA — run ALWAYS, even on pages without data-fc-root
+    //    (Fix R6: early return at line 582 skipped these on gill-rail-only pages)
+    syncThemeButtons();
+    syncSaveState();
+    initKeyboard();
 
+    // Ember ARIA labels
+    qsa('.gb-ember').forEach(function (ember) {
+      var state = ember.dataset.state || 'idle';
+      updateEmberAriaLabel(state);
+    });
+
+    // 4. Инициализировать корни с data-fc-root (pilot activation)
+    var roots = qsa('[data-fc-root]');
     roots.forEach(function(root) {
       var mode = root.getAttribute('data-fc-mode') || 'single';
       if (mode === 'single') activateSinglePilot();
       if (mode === 'series-lite') activateSeriesPilot();
       if (mode === 'nagornaya') activateSinglePilot();
+      if (mode === 'series-rich') activateSeriesPilot();
       initCluster(root);
-    });
-
-    // 5. Синхронизация состояний
-    syncThemeButtons();
-    syncSaveState();
-
-    // 7. Keyboard
-    initKeyboard();
-
-    // 8. Ember state из data атрибута
-    var embers = qsa('.gb-ember');
-    embers.forEach(function (ember) {
-      var state = ember.dataset.state || 'idle';
-      updateEmberAriaLabel(state);
     });
 
     // 9. Публичный API (для отладки и интеграций)
@@ -805,6 +802,10 @@
           } catch(_) {}
           // Close smoothly after selection
           setTimeout(closePanel, 240);
+          // Auto-start TTS after speed selection if idle (R6 fix — click path was dead)
+          var _ember = qs('.gb-ember');
+          var _st = _ember ? _ember.dataset.state : 'idle';
+          if (_st === 'idle' || !_st) { setTimeout(handlePlayClick, 300); }
           return;
         }
       });
