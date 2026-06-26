@@ -822,6 +822,25 @@
       });
       document.addEventListener('keydown', function(e) {
         if (e.key === 'Escape') closePanel();
+        // Arrow ←/→ navigation between speed buttons when panel is open
+        if (!panel.classList.contains('is-open')) return;
+        if (e.key === 'ArrowLeft' || e.key === 'ArrowRight') {
+          e.preventDefault();
+          var btns = Array.prototype.slice.call(panel.querySelectorAll('.gb-ember-expand__btn'));
+          if (!btns.length) return;
+          var cur = btns.findIndex(function(b) { return b.classList.contains('is-active'); });
+          var next = e.key === 'ArrowRight' ? Math.min(cur + 1, btns.length - 1) : Math.max(cur - 1, 0);
+          btns[next].focus();
+          btns[next].click();
+        }
+        // Tab trap inside speed panel
+        if (e.key === 'Tab') {
+          var focusable = Array.prototype.slice.call(panel.querySelectorAll('button'));
+          if (!focusable.length) return;
+          var first = focusable[0], last = focusable[focusable.length - 1];
+          if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); }
+          else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
+        }
       });
     });
   }
