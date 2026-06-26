@@ -259,14 +259,21 @@ const seriesTitle = meta.title || 'Серия';
       justify-content: center;
     }
 
-    /* Паддинг снизу статьи */
-    body.fc-series-active .article-main {
+    /* Паддинг снизу статьи. Двойной префикс: контроллер ставит
+       gb-cluster-series-active, исторический CSS — fc-series-active. */
+    body.fc-series-active .article-main,
+    body.gb-cluster-series-active .article-main {
       padding-bottom: 96px;
     }
   }
 
   /* =========================================================
-     Скрываем старые дублирующие controls
+     Скрываем старые дублирующие controls.
+     Поддерживаем ОБА префикса: legacy `fc-series-active` и
+     current `gb-cluster-series-active`. JS-controller добавляет
+     именно `gb-cluster-…`; без второй половины селектора
+     старый chrome остаётся видим поверх PremiumControls
+     (это и есть BUG-A3 на series-lite маршрутах).
      ========================================================= */
   body.fc-series-active #reading-progress,
   body.fc-series-active #section-label,
@@ -274,7 +281,14 @@ const seriesTitle = meta.title || 'Серия';
   body.fc-series-active #themeToggle,
   body.fc-series-active #tocSidebar,
   body.fc-series-active #bottomBar,
-  body.fc-series-active #btocOverlay {
+  body.fc-series-active #btocOverlay,
+  body.gb-cluster-series-active #reading-progress,
+  body.gb-cluster-series-active #section-label,
+  body.gb-cluster-series-active #back-to-top,
+  body.gb-cluster-series-active #themeToggle,
+  body.gb-cluster-series-active #tocSidebar,
+  body.gb-cluster-series-active #bottomBar,
+  body.gb-cluster-series-active #btocOverlay {
     display: none !important;
   }
 

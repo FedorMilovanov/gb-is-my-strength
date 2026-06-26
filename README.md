@@ -3,7 +3,7 @@
 Архитектурная и редакционная документация сайта с материалами для серьёзного изучения Писания:
 экзегеза, богословие, апологетика, переводы.
 
-**Версия документа:** v9 · 2026-06-22 · refactoring 6.0 hardening / dist-as-production
+**Версия документа:** v10 · 2026-06-26 · post-audit hardening (BUG-A1..A10, BUG-B1..B10, BUG-S1..S3 closed)
 **Прод:** https://gospod-bog.ru · GitHub Pages из `main`, artifact: Astro/strangler `dist/`
 
 > Этот README — для **владельца, редакторов и контент-менеджеров.**
@@ -652,15 +652,17 @@ npm run source:links:dist
 │   ├── index.html
 │   └── tw.min.css                          ← Tailwind (НЕ ТРОГАТЬ)
 │
-├── css/                                    ← РОВНО 5 ФАЙЛОВ (см. AGENTS §2)
+├── css/                                    ← 7 ФАЙЛОВ (см. AGENTS §2)
 │   ├── site.css                            ← основной слой, тёмная тема
 │   ├── home.css                            ← главная + каталоги
 │   ├── command-palette.css                 ← поиск Ctrl+K
 │   ├── mobile-hotfix.css                   ← touch / pointer:coarse
-│   └── nagornaya-mobile-toc.css            ← мобильный TOC проповеди
+│   ├── nagornaya-mobile-toc.css            ← мобильный TOC проповеди
+│   ├── floating-cluster.css                ← PremiumControls v16 canonical
+│   └── site-layered.css                    ← @layer-аудит pilot (НЕ в проде, только Node-аудиты)
 ├── fonts/fonts.css                         ← @font-face декларации
 │
-├── js/                                     ← РОВНО 11 ФАЙЛОВ
+├── js/                                     ← 13 ФАЙЛОВ верхнего уровня
 │   ├── site.js                             ← главный (≈29 модулей)
 │   ├── site-utils.js                       ← общие хелперы
 │   ├── scroll-perf.js
@@ -669,9 +671,12 @@ npm run source:links:dist
 │   ├── highlights.js                       ← подсветка текста
 │   ├── glossary.js                         ← глоссарий
 │   ├── bookmark-engine.js                  ← закладки
-│   ├── series-cards.js                     ← карточки серий
+│   ├── series-cards.js                     ← карточки серий (legacy)
+│   ├── floating-cluster-controller.js      ← PremiumControls runtime
+│   ├── site-modules.js                     ← Phase-3 bundle (dead; см. cleanup TODO)
 │   ├── nagornaya-mobile-toc.js
 │   └── sw-register.js                      ← регистрация SW
+│   └── modules/                            ← back-to-top, faq-accordion, img-loaded, theme
 │
 ├── data/                                   ← JSON-данные runtime
 │   ├── glossary.json                       ← 101 термин (definition+detail+category+aliases)
@@ -725,6 +730,9 @@ npm run source:links:dist
 
 | Версия | Дата | Что изменилось |
 |---|---|---|
+| **v10** | 2026-06-26 | Post-audit hardening session: BUG-A1 (порча кириллицы), BUG-A2 (Ishod JSON-LD), BUG-A3 (CSS dual-prefix fc-/gb-cluster-), BUG-A4 (data-fc-root на 10 baptisty + floating-cluster.css link на 15 pages), BUG-A5 (strict-native-app определён в matrix.modes + guard в check-route-migration-matrix.js), BUG-A6 (BreadcrumbList JSON-LD на 10 baptisty), BUG-A8 (gtip-luxury IDs теперь монотонно-уникальны), BUG-B3 (12 коллизий AGENTS-rNNN перенумерованы + guard скрипт), BUG-B5 (hard-texts part 3 readTime), BUG-S1 (deploy.yml парсит dist JSON-LD + contract:compare:dist), BUG-S3 (.gitconfig удалён). Реальная TTS-озвучка через speechSynthesis с live speed change. Канонический PremiumControls контракт перенесён в `AuditRepo/projects/<project>/PremiumControls/`. |
+| **v9** | 2026-06-22 | refactoring 6.0 hardening / dist-as-production |
+| **v8** | 2026-06-20 | (запись восстановлена post-hoc) Phase 5 visual parity baseline + native-shadow pixel-diff guard |
 | **v7** | 2026-06-18 | README приведён к refactoring 4.5: production теперь Astro/strangler `dist`, добавлены deploy-readiness/source-links-dist/ownership notes и обновлён authoring checklist. |
 | **v6** | 2026-06-06 | Добавлен документ `docs/EDITORIAL-SOURCE-POLICY.md`; README связан с редакционно-источниковой политикой, а число проверок `audit-pro` обновлено до 36. |
 | v5 | 2026-06-06 | Правило раздела 4.1 подкреплено автоматической проверкой в `validate.js` и `audit-pro.js`; английские прямые цитаты в русских статьях теперь блокируются проверками. |

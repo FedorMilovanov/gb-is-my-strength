@@ -257,6 +257,23 @@ const matrix = readJson(MATRIX_FILE);
 const ownership = readJson(OWNERSHIP_FILE);
 const routes = ownership.routes || {};
 
+// ── Guard: every route in matrix MUST use a mode defined in matrix.modes.
+// Closes BUG-A5 / AuditRepo PFV-007: previously 13 routes used the undefined
+// mode `strict-native-app` and this validator silently passed. The matrix
+// declared its own enum and then violated it.
+const definedModes = new Set(Object.keys(matrix.modes || {}));
+const matrixUndef = [];
+for (const [route, contract] of Object.entries(matrix.routes || {})) {
+  if (!definedModes.has(contract.mode)) {
+    matrixUndef.push(`${route}: matrix.mode="${contract.mode}" is NOT in matrix.modes (defined: ${[...definedModes].join(', ')})`);
+  }
+}
+if (matrixUndef.length) {
+  console.error('❌ Route migration matrix: undefined modes used');
+  matrixUndef.forEach((m) => console.error('  ❌ ' + m));
+  process.exit(1);
+}
+
 let checked = 0;
 
 for (const [route, info] of Object.entries(routes)) {
