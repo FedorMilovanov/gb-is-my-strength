@@ -50,6 +50,9 @@ mustScript(scripts, 'strangler:validate', /page-ownership:dist/, 'must verify ow
 mustScript(scripts, 'strangler:audit', /page-ownership:dist/, 'must verify ownership before dist publication audit');
 mustScript(scripts, 'strangler:audit:pagefind', /page-ownership:dist/, 'must verify ownership before Pagefind/dist audit');
 mustScript(scripts, 'strangler:audit:production-like', /page-ownership:dist:production-like/, 'must verify production-like ownership before Pagefind/dist audit');
+mustScript(scripts, 'strangler:audit:production-like', /contract:compare:dist/, 'must compare public URL contract against production-like dist');
+mustScript(scripts, 'strangler:audit:production-like', /dist:jsonld:audit/, 'must parse JSON-LD in production-like dist');
+mustScript(scripts, 'dist:jsonld:audit', /dist-jsonld-audit\.js[^\n]*--root\s+dist/, 'must audit JSON-LD in dist artifact');
 mustScript(scripts, 'strangler:deploy-readiness', /astro:audit:about/, 'must include about pilot audit');
 mustScript(scripts, 'strangler:deploy-readiness', /astro:audit:article-mdx:strict/, 'must include strict article MDX shadow audit');
 mustScript(scripts, 'strangler:deploy-readiness', /strangler:audit:production-like/, 'must include production-like strangler audit');
@@ -73,6 +76,8 @@ if (deployUploadsDist) {
   must('.github/workflows/deploy.yml', deploy, /npm run pagefind:build:dist/, 'dist deploy must build Pagefind into dist/pagefind');
   must('.github/workflows/deploy.yml', deploy, /npm run visual:parity:production|visual-parity-contract\.js/, 'dist deploy must run route-specific visual parity contract, not only SEO/text parity');
   must('.github/workflows/deploy.yml', deploy, /dist-publication-audit\.js[^\n]*--require-pagefind[^\n]*--forbid-dev|npm run strangler:audit:production-like/, 'dist deploy must run production-like dist publication audit with Pagefind required and dev route forbidden');
+  must('.github/workflows/deploy.yml', deploy, /contract:extract:dist[^\n]*&&[^\n]*contract:compare:dist|contract:compare:dist/, 'dist deploy must compare public URL contract against dist artifact');
+  must('.github/workflows/deploy.yml', deploy, /dist:jsonld:audit|dist-jsonld-audit\.js[^\n]*--root\s+dist/, 'dist deploy must parse JSON-LD in the dist artifact');
   must('.github/workflows/deploy.yml', deploy, /sw:dist:audit:deploy-switch|sw-dist-readiness-audit\.js[^\n]*--require-cache-bump/, 'dist deploy must enforce service-worker cache-version bump');
   must('.github/workflows/deploy.yml', deploy, />\s*"?dist\/\$\{KEY\}\.txt"?/, 'dist deploy must write IndexNow key file into dist (not repository root)');
   must('.github/workflows/deploy.yml', deploy, /touch\s+dist\/\.nojekyll/, 'dist deploy must create dist/.nojekyll');
