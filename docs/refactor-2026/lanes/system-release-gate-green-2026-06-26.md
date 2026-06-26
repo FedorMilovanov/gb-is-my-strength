@@ -106,3 +106,34 @@ node scripts/visual-parity-screenshots.js --routes "/,/about/,/articles/,/biogra
 PATH=/home/user/node-v22.12.0-linux-x64/bin:$PATH npm run validate:static-publication
 # ✅ passed
 ```
+
+## Addendum — production-like deploy audit green
+
+После `/map/` fix локально воспроизвёл deploy step:
+
+```bash
+npm run strangler:audit:production-like
+```
+
+Первый повторный прогон прошёл `dist-publication-audit`, но выявил следующий production-like blocker:
+
+```text
+word-count drop: https://gospod-bog.ru/karty/avraam/ 594 → 23 (floor 427)
+```
+
+Причина: native `/karty/avraam/` app route индексировал только короткий sr-only H1, тогда как legacy baseline содержал большой текстовый слой/интерактивный body. Для production-like dist это выглядело как потеря содержательного текста.
+
+Фикс:
+
+- `src/components/karty/avraam/AvraamMap.astro` получил расширенный `sr-only data-pagefind-body` SEO/accessibility слой с описанием маршрута Авраама, мест, сюжетов, источниковой осторожности и назначения карты.
+- Это не меняет визуал full-screen MapEngine app, но возвращает Pagefind / URL-contract word-count выше floor.
+
+Финальные проверки после Avraam fix:
+
+```bash
+npm run strangler:audit:production-like
+# ✅ passed: dist-publication, contract:compare:dist, smoke, css-parity, sw dist readiness
+
+PATH=/home/user/node-v22.12.0-linux-x64/bin:$PATH npm run validate:static-publication
+# ✅ passed
+```
