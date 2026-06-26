@@ -907,6 +907,24 @@ html.dark [data-gill-v16] .gb-theme-toggle .theme-icon-moon{opacity:1;transform:
 
 
 /* ============================================================
+
+/* ---- Global .gbs-rail-foot: compact 32px controls for ALL Gill rail footers ----
+   (VR-07 fix: previously scoped under [data-gill-v16] which only exists on context page.
+   Reference: space-between row, no boxed background, 32px baseline for all controls) */
+.gbs-rail-foot {
+  display: flex; flex-direction: row; align-items: center;
+  justify-content: space-between;
+  gap: 0;
+  padding-top: 12px;
+  width: 100%;
+}
+.gbs-rail-foot .gb-ember { --ember-size: 32px; --ring-color: var(--color-accent-gold-bright, #d8aa6d); }
+.gbs-rail-foot .gb-ember__ring-track { stroke: rgba(232,184,120,.22); }
+.gbs-rail-foot .gb-ember__ring-progress { stroke-width: 1.5; }
+.gbs-rail-foot .gb-save { width: 32px; height: 32px; }
+.gbs-rail-foot .gb-save svg { width: 17px; height: 17px; }
+.gbs-rail-foot .gbs-rail-foot__btn { width: 32px; height: 32px; display: grid; place-items: center; }
+.gbs-rail-foot .gbs-rail-foot__btn svg { width: 17px; height: 17px; }
    v15: MOBILE PREVIEW — Save REMOVED from bottom-bar
    Bottom-bar now has: TOC + section + dots + % + theme + search + play
    ============================================================ */
@@ -1666,32 +1684,6 @@ html.dark [data-gill-v16] .toc-part-item__progress {
 
 /* =========================================================
    Standalone article floater — position matching legacy .theme-toggle
-   Legacy: position:absolute, right:max(8.5vw, safe-area), top: near breadcrumb
-   Override fixed viewport positioning for content-aligned placement.
-   ========================================================= */
-.page-wrap ~ .gb-floater,
-.page-wrap + .gb-floater,
-#content ~ .gb-floater {
-  right: max(8.5vw, env(safe-area-inset-right, 0px));
-}
-@media (max-width: 899px) {
-  .page-wrap ~ .gb-floater,
-  .page-wrap + .gb-floater,
-  #content ~ .gb-floater {
-    right: max(4.5vw, env(safe-area-inset-right, 0px));
-  }
-}
-
-/* =========================================================
-   Standalone floater — top aligned with breadcrumb
-   .page-wrap padding-top = clamp(48px, 7vw, 100px)
-   Floater top matches that + small offset for optical center
-   ========================================================= */
-.page-wrap ~ .gb-floater,
-.page-wrap + .gb-floater,
-#content ~ .gb-floater {
-  top: clamp(48px, 7vw, 100px);
-}
 
 /* =========================================================
    Play Ember — Luxury Speed Expand
