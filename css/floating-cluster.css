@@ -1668,8 +1668,8 @@ html.dark [data-gill-v16] .toc-part-item__progress {
   display: flex;
   align-items: center;
   gap: 3px;
-  padding: 5px 48px 5px 8px; /* right padding = ember overlap */
-  border-radius: 26px;
+  padding: 10px 56px 10px 14px; /* right padding = ember overlap — spec match */
+  border-radius: 999px; /* full pill — spec match */
   background: color-mix(in srgb, var(--color-surface, #fff) 96%, transparent);
   border: 1.5px solid color-mix(in srgb, var(--color-accent-gold, #b8936a) 30%, var(--color-border, #e5e2dc));
   box-shadow:
@@ -1683,7 +1683,7 @@ html.dark [data-gill-v16] .toc-part-item__progress {
   /* Morph: start as circle at right edge, expand left */
   clip-path: circle(20px at calc(100% - 24px) 50%);
   transition:
-    clip-path .38s cubic-bezier(.16, 1, .3, 1),
+    clip-path .26s cubic-bezier(.2, .8, .2, 1),
     opacity .22s ease,
     box-shadow .3s ease;
   /* z-index: 0 (was -1). Negative stacking hid the panel under page
@@ -1706,7 +1706,7 @@ html.dark .gb-ember-expand {
 .gb-ember-expand.is-open {
   opacity: 1;
   pointer-events: auto;
-  clip-path: inset(0 0 0 0 round 26px);
+  clip-path: inset(0 0 0 0 round 999px);
   z-index: 1;
   box-shadow:
     0 6px 28px rgba(184, 147, 106, .14),
@@ -1761,12 +1761,12 @@ html.dark .gb-ember-expand::before {
   -webkit-tap-highlight-color: transparent;
 }
 /* Cascade: each button slides in from right, staggered */
-.gb-ember-expand.is-open .gb-ember-expand__btn:nth-child(1) { opacity:1; transform:none; transition-delay:.05s,.05s,0s,0s,0s; }
-.gb-ember-expand.is-open .gb-ember-expand__btn:nth-child(2) { opacity:1; transform:none; transition-delay:.08s,.08s,0s,0s,0s; }
-.gb-ember-expand.is-open .gb-ember-expand__btn:nth-child(3) { opacity:1; transform:none; transition-delay:.11s,.11s,0s,0s,0s; }
-.gb-ember-expand.is-open .gb-ember-expand__btn:nth-child(4) { opacity:1; transform:none; transition-delay:.14s,.14s,0s,0s,0s; }
-.gb-ember-expand.is-open .gb-ember-expand__btn:nth-child(5) { opacity:1; transform:none; transition-delay:.17s,.17s,0s,0s,0s; }
-.gb-ember-expand.is-open .gb-ember-expand__btn:nth-child(6) { opacity:1; transform:none; transition-delay:.20s,.20s,0s,0s,0s; }
+.gb-ember-expand.is-open .gb-ember-expand__btn:nth-child(1) { opacity:1; transform:none; transition-delay:.025s,.025s,0s,0s,0s; }
+.gb-ember-expand.is-open .gb-ember-expand__btn:nth-child(2) { opacity:1; transform:none; transition-delay:.05s,.05s,0s,0s,0s; }
+.gb-ember-expand.is-open .gb-ember-expand__btn:nth-child(3) { opacity:1; transform:none; transition-delay:.075s,.075s,0s,0s,0s; }
+.gb-ember-expand.is-open .gb-ember-expand__btn:nth-child(4) { opacity:1; transform:none; transition-delay:.10s,.10s,0s,0s,0s; }
+.gb-ember-expand.is-open .gb-ember-expand__btn:nth-child(5) { opacity:1; transform:none; transition-delay:.125s,.125s,0s,0s,0s; }
+.gb-ember-expand.is-open .gb-ember-expand__btn:nth-child(6) { opacity:1; transform:none; transition-delay:.15s,.15s,0s,0s,0s; }
 
 /* Hover */
 @media (hover: hover) and (pointer: fine) {
@@ -1798,8 +1798,15 @@ html.dark .gb-ember-expand__btn.is-active {
 }
 
 /* Ember glow when panel open */
+/* Play circle shifts RIGHT when pill opens — cursor lands on speed buttons (reference match) */
 .gb-ember-wrap .gb-ember[aria-expanded="true"] {
   z-index: 2;
+  transform: translateX(14px);
+  transition: transform .26s cubic-bezier(.2,.8,.2,1);
+}
+.gb-ember-wrap .gb-ember[aria-expanded="false"],
+.gb-ember-wrap .gb-ember:not([aria-expanded]) {
+  transition: transform .18s cubic-bezier(.2,.8,.2,1);
 }
 
 /* === GBS Rail: pill expands UP (no horizontal space) === */
@@ -1815,7 +1822,12 @@ html.dark .gb-ember-expand__btn.is-active {
 }
 [data-gill-v16] .gb-ember-expand.is-open,
 .gbs-rail-foot .gb-ember-expand.is-open {
-  clip-path: inset(0 0 0 0 round 20px);
+  clip-path: inset(0 0 0 0 round 999px);
+}
+/* No Play shift in rail — pill goes UP */
+[data-gill-v16] .gb-ember-wrap .gb-ember[aria-expanded="true"],
+.gbs-rail-foot .gb-ember-wrap .gb-ember[aria-expanded="true"] {
+  transform: none;
 }
 
 /* === Mobile: pill above ember with blur backdrop (no side space) ===
@@ -1839,7 +1851,11 @@ html.dark .gb-ember-expand__btn.is-active {
     backdrop-filter: blur(24px) saturate(180%);
   }
   .gb-ember-expand.is-open {
-    clip-path: inset(0 0 0 0 round 22px);
+    clip-path: inset(0 0 0 0 round 999px);
+  }
+  /* No Play shift on mobile — pill goes UP, not left */
+  .gb-ember-wrap .gb-ember[aria-expanded="true"] {
+    transform: none;
   }
   /* Компактнее кнопки чтобы 6 скоростей помещались на 320px */
   .gb-ember-expand__btn {
