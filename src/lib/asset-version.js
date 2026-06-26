@@ -9,7 +9,7 @@ export const ASSET_VERSIONS = {
   'css/floating-cluster.css': '0142f39e',
   'css/premium-controls.css': 'pc-v21',
   'js/site.js': '158b6e05',
-  'js/floating-cluster-controller.js': 'f2299253',
+  'js/floating-cluster-controller.js': 'c9a44719',
 };
 
 export function assetUrl(path) {
