@@ -150,10 +150,17 @@ function checkRouteMigration(route, contract, ownership) {
   const sourceClosureRaw = readSourceClosure(route, source);
   const sourceClosureContent = stripComments(sourceClosureRaw);
 
-  // Check 0: strict-native should not retain loader/raw legacy transport
+  // Check 0: strict-native should not retain loader/raw legacy transport.
+  // strict-native-app may legitimately use set:html for JSON-LD or tiny app bootstraps,
+  // but it must not use legacy document/body transport.
   if (contract.mode === 'strict-native') {
     if (sourceClosureContent.includes('loadLegacyFullDocument') || sourceClosureContent.includes('bodyHtml') || sourceClosureContent.includes('headHtml') || sourceClosureContent.includes('bodyAttributes') || sourceClosureContent.includes('?raw') || sourceClosureContent.includes('set:html') || sourceClosureContent.includes('_legacy/')) {
       problems.push(`${route}: strict-native route still retains legacy transport in its source closure.\n  Remove loadLegacyFullDocument/headHtml/bodyAttributes/?raw/set:html/_legacy from ${source}.`);
+    }
+  }
+  if (contract.mode === 'strict-native-app') {
+    if (sourceClosureContent.includes('loadLegacyFullDocument') || sourceClosureContent.includes('bodyHtml') || sourceClosureContent.includes('headHtml') || sourceClosureContent.includes('bodyAttributes') || sourceClosureContent.includes('?raw') || sourceClosureContent.includes('_legacy/')) {
+      problems.push(`${route}: strict-native-app route still retains legacy document/body transport in its source closure.\n  Remove loadLegacyFullDocument/headHtml/bodyAttributes/?raw/_legacy from ${source}.`);
     }
   }
 
@@ -256,6 +263,16 @@ if (!fs.existsSync(OWNERSHIP_FILE)) {
 const matrix = readJson(MATRIX_FILE);
 const ownership = readJson(OWNERSHIP_FILE);
 const routes = ownership.routes || {};
+const matrixRoutes = matrix.routes || {};
+const declaredModes = new Set(Object.keys(matrix.modes || {}));
+
+for (const [route, contract] of Object.entries(matrixRoutes)) {
+  if (!contract || !contract.mode) {
+    problems.push(`${route}: migration matrix entry missing mode`);
+  } else if (!declaredModes.has(contract.mode)) {
+    problems.push(`${route}: migration mode "${contract.mode}" is not declared in matrix.modes`);
+  }
+}
 
 let checked = 0;
 
