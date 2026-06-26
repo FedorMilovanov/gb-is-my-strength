@@ -9,7 +9,9 @@ export default defineConfig({
   output: 'static',
   integrations: [
     mdx(),
-    sitemap(),
+    sitemap({
+      filter: (page) => !page.includes('/izbrannoe'), // personal/localStorage page — noindex, not for search engines
+    }),
     react(),
   ],
 });
