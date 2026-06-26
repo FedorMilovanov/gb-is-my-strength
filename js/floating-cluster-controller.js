@@ -210,22 +210,173 @@
     });
   }
 
-  function handlePlayClick() {
-    // В пилоте audioState=none → показываем toast
-    var ember = qs('.gb-ember');
-    var state = ember ? ember.dataset.state : 'idle';
-    if (state === 'idle' || !state) {
-      showToast('Озвучка ещё не подключена', false);
+  /* =====================================================
+     TTS — Web Speech API integration
+     Per PremiumControls contract (AuditRepo §3): handlePlayClick
+     должен запускать реальную озвучку через speechSynthesis,
+     применяя сохранённую скорость из localStorage.gbx-tts-rate.
+     ===================================================== */
+  var ttsState = {
+    utterance: null,
+    text: '',
+    chunks: [],
+    chunkIdx: 0,
+    totalChars: 0,
+    spokenChars: 0,
+    paused: false,
+  };
+
+  function getArticleText() {
+    // Соберём читательский текст: только параграфы внутри <article>
+    var article = qs('article.article-body') ||
+                  qs('article') ||
+                  qs('main[data-pagefind-body]') ||
+                  qs('main');
+    if (!article) return '';
+    var blocks = article.querySelectorAll('p, h2, h3, li');
+    var out = [];
+    Array.prototype.forEach.call(blocks, function (el) {
+      // Пропускаем подсказки, кнопки, метаданные
+      if (el.closest('.summary-card, .gtip, .fn-marker, .tooltip, ' +
+                     '[hidden], [data-pagefind-ignore]')) return;
+      var t = (el.textContent || '').trim();
+      if (t.length > 0) out.push(t);
+    });
+    return out.join('. ');
+  }
+
+  function splitTtsChunks(text) {
+    // speechSynthesis в Chrome падает на utterances длиннее ~32000 chars.
+    // Делим на 200-символьные предложения по точкам.
+    var sentences = text.split(/(?<=[.!?])\s+/);
+    var chunks = [];
+    var buf = '';
+    sentences.forEach(function (s) {
+      if ((buf + ' ' + s).length > 220) {
+        if (buf) chunks.push(buf);
+        buf = s;
+      } else {
+        buf = buf ? buf + ' ' + s : s;
+      }
+    });
+    if (buf) chunks.push(buf);
+    return chunks;
+  }
+
+  function getStoredRate() {
+    var r = 1;
+    try { r = parseFloat(localStorage.getItem('gbx-tts-rate')) || 1; } catch (_) {}
+    if (isNaN(r) || r < 0.5 || r > 3) r = 1;
+    return r;
+  }
+
+  function updateProgress() {
+    if (!ttsState.totalChars) return;
+    var pct = Math.min(1, ttsState.spokenChars / ttsState.totalChars);
+    qsa('.gb-ember').forEach(function (btn) {
+      btn.style.setProperty('--p', String(pct));
+    });
+    if (pct >= 0.99) setEmberState('complete');
+  }
+
+  function speakNextChunk() {
+    if (ttsState.chunkIdx >= ttsState.chunks.length) {
+      setEmberState('complete');
       return;
     }
-    // Если есть audio engine
+    var chunk = ttsState.chunks[ttsState.chunkIdx];
+    var u = new SpeechSynthesisUtterance(chunk);
+    u.rate = getStoredRate();
+    u.lang = 'ru-RU';
+    u.onend = function () {
+      ttsState.spokenChars += chunk.length;
+      ttsState.chunkIdx += 1;
+      updateProgress();
+      if (!ttsState.paused) speakNextChunk();
+    };
+    u.onerror = function (e) {
+      // Если ошибка — стопаем чисто, без infinite loop
+      console.warn('[gbx-tts] utterance error:', e.error);
+      setEmberState('idle');
+    };
+    ttsState.utterance = u;
+    window.speechSynthesis.speak(u);
+  }
+
+  function startTts() {
+    if (!('speechSynthesis' in window)) {
+      showToast('Браузер не поддерживает озвучку', false);
+      return;
+    }
+    var text = getArticleText();
+    if (!text || text.length < 20) {
+      showToast('Текст статьи не найден', false);
+      return;
+    }
+    ttsState.text = text;
+    ttsState.chunks = splitTtsChunks(text);
+    ttsState.chunkIdx = 0;
+    ttsState.totalChars = text.length;
+    ttsState.spokenChars = 0;
+    ttsState.paused = false;
+    setEmberState('playing');
+    speakNextChunk();
+  }
+
+  function pauseTts() {
+    if (!('speechSynthesis' in window)) return;
+    window.speechSynthesis.pause();
+    ttsState.paused = true;
+    setEmberState('paused');
+  }
+
+  function resumeTts() {
+    if (!('speechSynthesis' in window)) return;
+    window.speechSynthesis.resume();
+    ttsState.paused = false;
+    setEmberState('playing');
+  }
+
+  function stopTts() {
+    if (!('speechSynthesis' in window)) return;
+    window.speechSynthesis.cancel();
+    ttsState.paused = false;
+    ttsState.chunkIdx = 0;
+    ttsState.spokenChars = 0;
+    setEmberState('idle');
+    qsa('.gb-ember').forEach(function (btn) { btn.style.setProperty('--p', '0'); });
+  }
+
+  // Применяем новую скорость на лету при выборе из Speed panel
+  window.addEventListener('gb:tts-rate-change', function (ev) {
+    if (!('speechSynthesis' in window)) return;
+    if (!ttsState.utterance || ttsState.chunkIdx >= ttsState.chunks.length) return;
+    // Останавливаем текущий utterance и перестартуем с того же chunk
+    window.speechSynthesis.cancel();
+    if (!ttsState.paused) speakNextChunk();
+  });
+
+  function handlePlayClick() {
+    var ember = qs('.gb-ember');
+    var state = ember ? ember.dataset.state : 'idle';
+
+    // Внешний движок имеет приоритет
     if (window.GBAudio && typeof window.GBAudio.toggle === 'function') {
       window.GBAudio.toggle();
       return;
     }
-    // Demo toggle
-    var next = state === 'playing' ? 'paused' : 'playing';
-    setEmberState(next);
+
+    // Web Speech API path
+    if ('speechSynthesis' in window) {
+      if (state === 'playing')      { pauseTts();  return; }
+      if (state === 'paused')       { resumeTts(); return; }
+      if (state === 'complete')     { stopTts(); startTts(); return; }
+      /* idle/none */                 startTts();
+      return;
+    }
+
+    // Нет TTS вообще
+    showToast('Озвучка ещё не подключена', false);
   }
 
   /* =====================================================
@@ -570,19 +721,26 @@
 
       var speeds = [0.75, 1, 1.25, 1.5, 1.75, 2];
       var currentRate = 1;
-      try { currentRate = parseFloat(localStorage.getItem('gbx-tts-rate')) || 1; } catch(_){}
+      try { currentRate = parseFloat(localStorage.getItem('gb:audio:rate') || localStorage.getItem('gbx-tts-rate')) || 1; } catch(_){}
 
       var panel = document.createElement('div');
+      var emberUid = 'gb-ember-speed-' + Math.random().toString(36).slice(2,9);
+      panel.id = emberUid;
+      ember.setAttribute('aria-controls', emberUid);
+      ember.setAttribute('aria-haspopup', 'true');
       panel.className = 'gb-ember-expand';
       panel.setAttribute('role', 'group');
       panel.setAttribute('aria-label', 'Скорость воспроизведения');
       panel.innerHTML = speeds.map(function(s) {
         var active = s === currentRate ? ' is-active' : '';
-        return '<button class="gb-ember-expand__btn' + active + '" type="button" data-speed="' + s + '" aria-label="Скорость ' + s + '\u00d7" aria-pressed="' + (s === currentRate ? 'true' : 'false') + '">' + s + '\u00d7</button>';
+        return '<button class="gb-ember-expand__btn' + active + '" type="button" role="radio" data-speed="' + s + '" aria-label="Скорость ' + s + '\u00d7" aria-pressed="' + (s === currentRate ? 'true' : 'false') + '">' + s + '\u00d7</button>';
       }).join('');
 
       // Wrap ember in a positioned span so the popover anchors exactly to the
-      // play circle and expands UPWARD ("из круга") instead of sideways.
+      // play circle. Direction is set by CSS, not by JS:
+      //   • desktop article/series-lite → morph LEFT  (gb-ember-expand: right:0)
+      //   • gill-rail (any) + mobile    → morph UP    (gb-ember-expand: bottom:100%+8)
+      // See PremiumControls canonical contract in AuditRepo (PremiumControls/README.md §3.2)
       var parent = ember.parentNode;
       var wrap = document.createElement('span');
       wrap.className = 'gb-ember-wrap';
@@ -593,10 +751,32 @@
       function openPanel() {
         panel.classList.add('is-open');
         ember.setAttribute('aria-expanded', 'true');
+        // Runtime viewport guard: после reflow проверяем,
+        // не вылез ли pill за край экрана. Если да — сдвигаем
+        // через translate. Дополнительная страховка к CSS max-width.
+        requestAnimationFrame(function() {
+          try {
+            var rect = panel.getBoundingClientRect();
+            var vw = window.innerWidth;
+            var pad = 8;
+            var shift = 0;
+            if (rect.right > vw - pad) shift = (vw - pad) - rect.right;
+            else if (rect.left < pad)  shift = pad - rect.left;
+            if (shift) {
+              // Сохраняем уже выставленный CSS-transform (centering)
+              // через CSS custom property, чтобы не сломать его.
+              panel.style.setProperty('--gb-ember-shift', shift + 'px');
+              panel.style.transform =
+                (panel.style.transform || '').replace(/translateX\([^)]+\)/, '') +
+                ' translateX(' + shift + 'px)';
+            }
+          } catch (_) {}
+        });
       }
       function closePanel() {
         panel.classList.remove('is-open');
         ember.setAttribute('aria-expanded', 'false');
+        panel.style.removeProperty('--gb-ember-shift');
       }
 
       ember.addEventListener('click', function(e) {
@@ -610,12 +790,19 @@
         if (btn) {
           e.stopPropagation();
           var speed = parseFloat(btn.getAttribute('data-speed'));
-          try { localStorage.setItem('gbx-tts-rate', speed); } catch(_){}
+          try { localStorage.setItem('gb:audio:rate', speed); try{localStorage.setItem('gbx-tts-rate', speed)}catch(_){}; } catch(_){}
           panel.querySelectorAll('.gb-ember-expand__btn').forEach(function(b) {
             var isThis = parseFloat(b.getAttribute('data-speed')) === speed;
             b.classList.toggle('is-active', isThis);
             b.setAttribute('aria-pressed', isThis ? 'true' : 'false');
+            b.setAttribute('aria-checked', isThis ? 'true' : 'false');
           });
+          // Live rate change — TTS подхватывает новую скорость со следующего chunk
+          try {
+            window.dispatchEvent(new CustomEvent('gb:tts-rate-change', {
+              detail: { rate: speed }
+            }));
+          } catch(_) {}
           // Close smoothly after selection
           setTimeout(closePanel, 240);
           return;

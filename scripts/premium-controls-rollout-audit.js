@@ -1,0 +1,147 @@
+#!/usr/bin/env node
+'use strict';
+
+/*
+ * premium-controls-rollout-audit.js  (PC-006)
+ *
+ * Enforces the PremiumControls route-archetype rollout contract so the controls
+ * roll out as a typed system, not "yet another widget". Prevents two regression
+ * classes that already bit this project:
+ *
+ *   1. DEAD CONTROLS (PC-002): a page renders visible gb-ember / gb-save /
+ *      [data-fc-action] but they are NOT inside a [data-fc-root] or
+ *      [data-fc-controls] scope, so floating-cluster-controller.js never wires
+ *      them (init guards require .closest('[data-fc-root],[data-fc-controls]')).
+ *
+ *   2. CONTROLS WHERE FORBIDDEN: app/landing/catalog routes should NOT receive
+ *      article PremiumControls by default. If they suddenly grow gb-ember/gb-save,
+ *      that's an accidental rollout and must be caught.
+ *
+ * This audit runs against the BUILT dist/ HTML (the real assembled DOM), so it
+ * cannot be fooled by controls whose [data-fc-root] comes from a parent component
+ * (the source-level component scan gives false positives — dist does not).
+ *
+ * Usage:
+ *   node scripts/premium-controls-rollout-audit.js            # expects dist/ to exist
+ *   node scripts/premium-controls-rollout-audit.js --build    # build production-like dist first
+ */
+
+const fs = require('fs');
+const path = require('path');
+const { execSync } = require('child_process');
+
+const ROOT = path.resolve(__dirname, '..');
+const DIST = path.join(ROOT, 'dist');
+
+if (process.argv.includes('--build')) {
+  console.log('Building production-like dist…');
+  execSync('npm run strangler:build:production-like', { cwd: ROOT, stdio: 'inherit' });
+}
+
+if (!fs.existsSync(DIST)) {
+  console.error('❌ dist/ does not exist. Run with --build or `npm run strangler:build:production-like` first.');
+  process.exit(2);
+}
+
+// ── Route archetypes (from PremiumControls rollout plan) ─────────────────────
+// ALLOWED: routes that may render article PremiumControls (must be scoped).
+// FORBIDDEN: app / landing / catalog routes that must NOT carry article controls.
+const FORBIDDEN_ROUTE_PREFIXES = [
+  'karty/avraam', 'karty/ishod', 'karty/early-church', 'karty/maccabim',
+  'karty/melachim', 'karty/pavel', 'karty/revelation', 'karty/shoftim',
+  'karty/shvatim', 'karty/yeshua', 'map', 'konfessii/russkij-baptizm',
+  'rodosloviye',
+];
+// Landing/catalog index pages (exact route dirs) that must stay controls-free.
+const FORBIDDEN_EXACT = new Set([
+  '', 'about', 'articles', 'biografii', 'karty', 'konfessii', 'pastor-series',
+]);
+
+const checks = [];
+const ok   = (name, d='') => checks.push({ ok:true,  name, detail:d });
+const bad  = (name, d='') => checks.push({ ok:false, name, detail:d });
+
+function walk(dir, out=[]) {
+  for (const e of fs.readdirSync(dir, { withFileTypes:true })) {
+    if (e.name.startsWith('.')) continue;
+    const p = path.join(dir, e.name);
+    if (e.isDirectory()) walk(p, out);
+    else if (e.name === 'index.html') out.push(p);
+  }
+  return out;
+}
+
+const routeOf = (file) =>
+  path.relative(DIST, path.dirname(file)).split(path.sep).join('/');
+
+const files = walk(DIST);
+
+const CONTROL_RE = /\b(gb-ember|gb-save)\b|data-fc-action=/;
+const SCOPE_RE   = /data-fc-root|data-fc-controls=/;
+
+let pagesWithControls = 0;
+
+for (const f of files) {
+  const route = routeOf(f);
+  const html = fs.readFileSync(f, 'utf8');
+  const hasControls = CONTROL_RE.test(html);
+  if (!hasControls) continue;
+  pagesWithControls++;
+
+  const forbidden =
+    FORBIDDEN_EXACT.has(route) ||
+    FORBIDDEN_ROUTE_PREFIXES.some(pre => route === pre || route.startsWith(pre + '/'));
+
+  if (forbidden) {
+    bad(`forbidden route has article controls: /${route}/`,
+        'app/landing/catalog routes must not carry gb-ember/gb-save by default');
+    continue;
+  }
+
+  // ALLOWED route: every control must be inside a scope. Cheap structural proof:
+  // the page must contain at least one [data-fc-root]/[data-fc-controls], AND the
+  // controller must be loaded.
+  const hasScope = SCOPE_RE.test(html);
+  const controllerLoaded = /floating-cluster-controller\.js/.test(html);
+
+  if (!hasScope) {
+    bad(`dead controls (no fc scope): /${route}/`,
+        'gb-ember/gb-save present but no [data-fc-root]/[data-fc-controls] → controller cannot wire them (PC-002 class)');
+  } else if (!controllerLoaded) {
+    bad(`controls present but controller not loaded: /${route}/`,
+        'floating-cluster-controller.js missing → controls dead');
+  } else {
+    ok(`/${route}/ controls scoped + controller loaded`);
+  }
+}
+
+ok(`scanned ${files.length} dist pages; ${pagesWithControls} carry PremiumControls`);
+
+// ── PC-004 invariant: no double CSS delivery of the floating-cluster styles ──
+// A page must not receive the SAME PremiumControls CSS twice — i.e. it must not
+// both <link> /css/floating-cluster.css AND load the Astro-bundled
+// /_astro/FloatingCluster*.css. Component-rendered pages use the bundle;
+// link-only pages use the external file. Never both.
+let doubleDelivery = 0;
+for (const f of files) {
+  const html = fs.readFileSync(f, 'utf8');
+  const hasLink   = /<link[^>]+href="[^"]*\/css\/floating-cluster\.css/.test(html);
+  const hasBundle = /<link[^>]+href="[^"]*\/_astro\/FloatingCluster\._[^"]*\.css/.test(html);
+  if (hasLink && hasBundle) {
+    doubleDelivery++;
+    bad(`double CSS delivery: /${routeOf(f)}/`,
+        'page loads BOTH /css/floating-cluster.css AND the _astro/FloatingCluster bundle (PC-004)');
+  }
+}
+if (!doubleDelivery) ok('no double floating-cluster CSS delivery (PC-004 invariant holds)');
+
+const failures = checks.filter(c => !c.ok);
+for (const c of checks) {
+  console.log(`${c.ok ? '✅' : '❌'} ${c.name}${c.detail ? ` — ${c.detail}` : ''}`);
+}
+console.log(`\nPremiumControls rollout audit: ${checks.length - failures.length}/${checks.length} passed`);
+if (failures.length) {
+  console.log('\n❌ PremiumControls rollout contract violated.');
+  process.exit(1);
+}
+console.log('\n✅ PremiumControls rollout contract OK.');

@@ -150,10 +150,17 @@ function checkRouteMigration(route, contract, ownership) {
   const sourceClosureRaw = readSourceClosure(route, source);
   const sourceClosureContent = stripComments(sourceClosureRaw);
 
-  // Check 0: strict-native should not retain loader/raw legacy transport
+  // Check 0: strict-native should not retain loader/raw legacy transport.
+  // strict-native-app may legitimately use set:html for JSON-LD or tiny app bootstraps,
+  // but it must not use legacy document/body transport.
   if (contract.mode === 'strict-native') {
     if (sourceClosureContent.includes('loadLegacyFullDocument') || sourceClosureContent.includes('bodyHtml') || sourceClosureContent.includes('headHtml') || sourceClosureContent.includes('bodyAttributes') || sourceClosureContent.includes('?raw') || sourceClosureContent.includes('set:html') || sourceClosureContent.includes('_legacy/')) {
       problems.push(`${route}: strict-native route still retains legacy transport in its source closure.\n  Remove loadLegacyFullDocument/headHtml/bodyAttributes/?raw/set:html/_legacy from ${source}.`);
+    }
+  }
+  if (contract.mode === 'strict-native-app') {
+    if (sourceClosureContent.includes('loadLegacyFullDocument') || sourceClosureContent.includes('bodyHtml') || sourceClosureContent.includes('headHtml') || sourceClosureContent.includes('bodyAttributes') || sourceClosureContent.includes('?raw') || sourceClosureContent.includes('_legacy/')) {
+      problems.push(`${route}: strict-native-app route still retains legacy document/body transport in its source closure.\n  Remove loadLegacyFullDocument/headHtml/bodyAttributes/?raw/_legacy from ${source}.`);
     }
   }
 
@@ -256,6 +263,33 @@ if (!fs.existsSync(OWNERSHIP_FILE)) {
 const matrix = readJson(MATRIX_FILE);
 const ownership = readJson(OWNERSHIP_FILE);
 const routes = ownership.routes || {};
+const matrixRoutes = matrix.routes || {};
+const declaredModes = new Set(Object.keys(matrix.modes || {}));
+
+for (const [route, contract] of Object.entries(matrixRoutes)) {
+  if (!contract || !contract.mode) {
+    problems.push(`${route}: migration matrix entry missing mode`);
+  } else if (!declaredModes.has(contract.mode)) {
+    problems.push(`${route}: migration mode "${contract.mode}" is not declared in matrix.modes`);
+  }
+}
+
+// ── Guard: every route in matrix MUST use a mode defined in matrix.modes.
+// Closes BUG-A5 / AuditRepo PFV-007: previously 13 routes used the undefined
+// mode `strict-native-app` and this validator silently passed. The matrix
+// declared its own enum and then violated it.
+const definedModes = new Set(Object.keys(matrix.modes || {}));
+const matrixUndef = [];
+for (const [route, contract] of Object.entries(matrix.routes || {})) {
+  if (!definedModes.has(contract.mode)) {
+    matrixUndef.push(`${route}: matrix.mode="${contract.mode}" is NOT in matrix.modes (defined: ${[...definedModes].join(', ')})`);
+  }
+}
+if (matrixUndef.length) {
+  console.error('❌ Route migration matrix: undefined modes used');
+  matrixUndef.forEach((m) => console.error('  ❌ ' + m));
+  process.exit(1);
+}
 
 let checked = 0;
 

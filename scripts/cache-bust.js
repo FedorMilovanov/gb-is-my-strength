@@ -74,6 +74,52 @@ function collectHTML(dir, acc = []) {
   return acc;
 }
 
+// ── Все Astro-компоненты в src/ (source of truth) ────────────────────────────
+//
+// FIX (S3-N4 / PC-003 / P0-10 root cause): Astro components hardcode `?v=HASH`
+// for the SAME shared CSS/JS assets, but `collectHTML` deliberately skips `src/`.
+// Result: asset hashes in `src/**/*.astro` drift forever and only the
+// `astro-cache-bust-postbuild.js` rescue keeps dist consistent. By cache-busting
+// the Astro source directly, the source of truth stays correct and postbuild
+// becomes a pure safety net (idempotent: it will find 0 drift after this).
+function collectAstro(dir, acc = []) {
+  for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
+    if (entry.name.startsWith('.')) continue;
+    const full = path.join(dir, entry.name);
+    if (entry.isDirectory())                 collectAstro(full, acc);
+    else if (entry.name.endsWith('.astro'))  acc.push(full);
+  }
+  return acc;
+}
+
+// ── Обновить один .astro файл (строгий режим) ────────────────────────────────
+//
+// В отличие от legacy HTML, для Astro-источника НЕ добавляем `?v=` там, где его
+// не было — только переписываем уже существующий `?v=<8 hex>`. Это исключает
+// случайное попадание в import-строки, комментарии или data-атрибуты. Логика
+// идентична проверенному `astro-cache-bust-postbuild.js`.
+function bustAstroFile(astroPath, hashes) {
+  const src = fs.readFileSync(astroPath, 'utf8');
+  let updated = src;
+
+  for (const [asset, hash] of Object.entries(hashes)) {
+    if (!hash) continue;
+    const escapedAsset = asset
+      .replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+
+    // Матчим: (../../ | ../ | / | '')(asset)?v=<8 hex> — только уже хешированные ссылки
+    const re = new RegExp(
+      `((?:\\.\\.\\/)*|/?)${escapedAsset}\\?v=[a-f0-9]{8}`,
+      'g'
+    );
+    updated = updated.replace(re, (m, prefix) => `${prefix}${asset}?v=${hash}`);
+  }
+
+  if (updated === src) return false;
+  if (!DRY_RUN) fs.writeFileSync(astroPath, updated, 'utf8');
+  return true;
+}
+
 // ── Обновить один HTML-файл ───────────────────────────────────────────────────
 //
 // Для каждого ресурса ищем паттерн вида:
@@ -125,7 +171,7 @@ function main() {
     else   console.log(`  ⚠  ${asset}: файл не найден, пропускаем`);
   }
 
-  // 2. Обойти все HTML
+  // 2. Обойти все HTML (legacy/public source tree)
   const htmlFiles = collectHTML(ROOT);
   let changed = 0;
 
@@ -137,13 +183,26 @@ function main() {
     }
   }
 
+  // 3. Обойти все Astro-компоненты (source of truth) — S3-N4 / PC-003 fix
+  const astroFiles = collectAstro(path.join(ROOT, 'src'));
+  let astroChanged = 0;
+
+  console.log(`\n  Astro-компонентов в src/: ${astroFiles.length}`);
+  for (const f of astroFiles) {
+    if (bustAstroFile(f, hashes)) {
+      console.log(`  ✎  ${path.relative(ROOT, f)}`);
+      astroChanged++;
+    }
+  }
+
   // Итог
   console.log('\n' + '─'.repeat(50));
-  if (changed === 0) {
-    console.log('✅  Хеши не изменились — HTML не тронут.\n');
+  const totalChanged = changed + astroChanged;
+  if (totalChanged === 0) {
+    console.log('✅  Хеши не изменились — HTML/Astro не тронуты.\n');
   } else {
     const action = DRY_RUN ? '(dry-run, не записано)' : 'обновлено';
-    console.log(`✅  Файлов ${action}: ${changed}\n`);
+    console.log(`✅  Файлов ${action}: ${totalChanged} (HTML: ${changed}, Astro: ${astroChanged})\n`);
   }
 }
 

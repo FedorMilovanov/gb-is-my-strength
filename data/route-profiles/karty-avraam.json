@@ -1,6 +1,7 @@
 {
   "route": "/karty/avraam/",
   "profiledAt": "2026-06-22",
+  "migrationContractSyncedAt": "2026-06-26",
   "migrationLane": "special",
   "routeType": "map",
   "section": "karty",
@@ -16,5 +17,5 @@
     "mobile": 0
   },
   "cssPilot": null,
-  "migrationMode": "legacy-shadow-app"
+  "migrationMode": "strict-native-app"
 }
