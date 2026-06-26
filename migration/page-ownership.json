@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updated": "2026-06-20",
+  "updated": "2026-06-26",
   "description": "Build-time strangler ownership manifest. Production GitHub Pages serves Astro/strangler `dist/` artifact (deploy.yml path: dist) per Рефакторинг 5.0 Phase 1-4. All landing/series/catalog pages use full-document shadow-wrap (loadLegacyFullDocument) for 100% visual parity. Phase 4 (AGENTS-r247): nagornaya/istochniki, nakhodki, seriya converted from native card-grid to full-document shadow; legacyFullDocument.ts enhanced with CSP/style/preload/theme-color extraction. Generic astro-card-grid fully eliminated from production (0 pages). Routes with owner `astro` are generated from `src/pages/**`; public baseline pages not listed as Astro-owned are copied from the legacy root into dist by copy-legacy-to-dist.js until promoted. `status:\"production-dist\"` means this Astro route is part of the production-ready dist artifact (full-document shadow or native parity). `status:\"shadow-dist\"` means full-document shadow-wrap awaiting final owner review. `status:\"shadow-pilot\"` means partial parity or native Astro without owner visual review.",
   "routes": {
     "/": {
@@ -319,6 +319,12 @@
       "owner": "astro",
       "source": "src/pages/rodosloviye/index.astro",
       "risk": 2,
+      "status": "production-dist"
+    },
+    "/izbrannoe/": {
+      "owner": "astro",
+      "source": "src/pages/izbrannoe/index.astro",
+      "risk": 1,
       "status": "production-dist"
     }
   }
