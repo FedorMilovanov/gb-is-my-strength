@@ -69,7 +69,8 @@ jobs:
     steps:
       - name: Checkout (последний коммит в main, включая cache-bust)
         uses: actions/checkout@v4
-        with:
+        uses: actions/checkout@v4  with:
+        uses: actions/checkout@v4    token: ${{ secrets.ARENA_AGENT || secrets.GITHUB_TOKEN }}
           # Берём самый свежий коммит (в т.ч. авто-коммит indexnow.yml)
           ref: main
 
