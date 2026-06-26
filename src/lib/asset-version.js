@@ -6,10 +6,10 @@ export const ASSET_VERSIONS = {
   'css/site.css': 'b880b524',
   'css/command-palette.css': 'afe33045',
   'css/mobile-hotfix.css': 'c1f7664e',
-  'css/floating-cluster.css': 'cd1d984a',
+  'css/floating-cluster.css': '0d78e1d4',
   'css/premium-controls.css': 'pc-v21',
   'js/site.js': '158b6e05',
-  'js/floating-cluster-controller.js': 'c9a44719',
+  'js/floating-cluster-controller.js': '61cb9b7b',
 };
 
 export function assetUrl(path) {

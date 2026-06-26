@@ -29,6 +29,30 @@
   pointer-events: auto;
 }
 
+/* ---- Play ember in standalone floater: larger circle, white bg, gold ring ---- */
+/* Reference: ~48px white circle, layered shadow, subtle gold outline ring */
+.gb-floater .gb-ember {
+  --ember-size: 48px;
+  background: #fffefb;
+  box-shadow:
+    0 2px 12px rgba(90,70,40,.12),
+    0 1px 3px rgba(0,0,0,.06),
+    inset 0 1px 0 rgba(255,255,255,.9),
+    0 0 0 1.5px rgba(200,165,110,.35); /* gold ring */
+}
+html.dark .gb-floater .gb-ember {
+  background: #1f232b;
+  box-shadow:
+    0 2px 14px rgba(0,0,0,.35),
+    inset 0 1px 0 rgba(255,255,255,.04),
+    0 0 0 1.5px rgba(200,165,110,.2);
+}
+.gb-floater .gb-ember .gb-ember__glyph,
+.gb-floater .gb-ember .gb-ember__pause,
+.gb-floater .gb-ember .gb-ember__check {
+  width: 20px; height: 20px;
+}
+
 /* =========================================================
    gb-icon — иконка с halo-кружком на hover (::before)
    ========================================================= */
@@ -1668,7 +1692,7 @@ html.dark [data-gill-v16] .toc-part-item__progress {
   display: flex;
   align-items: center;
   gap: 3px;
-  padding: 10px 56px 10px 14px; /* right padding = ember overlap — spec match */
+  padding: 10px 42px 10px 14px; /* right padding < ember radius → Play protrudes right */
   border-radius: 999px; /* full pill — spec match */
   background: color-mix(in srgb, var(--color-surface, #fff) 96%, transparent);
   border: 1.5px solid color-mix(in srgb, var(--color-accent-gold, #b8936a) 30%, var(--color-border, #e5e2dc));
@@ -1739,11 +1763,11 @@ html.dark .gb-ember-expand::before {
 .gb-ember-expand__btn {
   display: grid;
   place-items: center;
-  min-width: 40px;
-  height: 32px;
-  padding: 0 8px;
+  min-width: 44px;
+  height: 36px;
+  padding: 0 10px;
   border: 1.5px solid color-mix(in srgb, var(--color-border, #e5e2dc) 70%, transparent);
-  border-radius: 12px;
+  border-radius: 14px;
   background: transparent;
   font-family: var(--f-ui, 'Source Sans 3', system-ui, sans-serif);
   font-size: 12.5px;
