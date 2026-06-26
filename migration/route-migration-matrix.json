@@ -16,7 +16,8 @@
     "mdx-native-article": "Astro page uses MDX content file + ArticleLayout/SeriesArticleLayout. Body is hand-authored MDX. Chrome from layout. This is the target mode for standalone articles.",
     "legacy-shadow-app": "Astro page wraps a legacy app/island (WebGL, Three.js, interactive SVG) via loadLegacyFullDocument() or iframe. NOT simplified to plain content route. Required: runtime smoke + SVG/interactive checks.",
     "excluded-semantic-lane": "Route is in active semantic refactor exclusion. Do not change as part of non-excluded migration work. Profile must declare this scope. Production consistency checks still run, but migration progress is not required.",
-    "strict-native": "Astro route is fully native at runtime: no loadLegacyFullDocument, no headHtml/bodyHtml/bodyAttributes transport, no ?raw/_legacy fragment transport, no set:html legacy body injection. Route closure may still include normal native components, JSON-LD, and inline runtime scripts."
+    "strict-native": "Astro route is fully native at runtime: no loadLegacyFullDocument, no headHtml/bodyHtml/bodyAttributes transport, no ?raw/_legacy fragment transport, no set:html legacy body injection. Route closure may still include normal native components, JSON-LD, and inline runtime scripts.",
+    "strict-native-app": "Astro route is fully native at runtime for an interactive/app surface (MapEngine, genealogy, 3D app wrapper, or other app-like UI): no legacy document shadow transport in the route closure. App routes may load route-scoped engines/data and may use intentionally minimal visual chrome, but must declare their app audits and publication/indexing contract explicitly."
   },
   "forbid": {
     "plain-loadLegacyFullDocument-only": "Route already has named Astro components or MDX. Do NOT replace componentized structure with full-document loadLegacyFullDocument() monolith. This was the regression that broke 19 routes in r260.",
