@@ -31,14 +31,20 @@
 
 /* Play/Save in standalone floater: match reference HTML (transparent bg, 36px, no circle) */
 
-/* Hermeneutics variant: control at breadcrumb-level.
-   Old .theme-toggle was position:absolute inside article-main.
-   .gb-floater is position:fixed → right must account for content column offset.
-   Content = min(820px, 92vw) centered → right edge of content =
-   (100vw - min(820px,92vw)) / 2. We want floater ~20px outside content right edge. */
+/* Hermeneutics variant: EXACT historical .theme-toggle position from css/site.css
+   Source of truth: .theme-toggle { position:absolute; top:calc(clamp(24px,3.5vw,44px)-4px); right:max(8.5vw,...) }
+   DO NOT invent calc formulas — use these exact values. */
 .gb-floater--hermeneutics {
   top: calc(clamp(24px, 3.5vw, 44px) - 4px);
-  right: max(calc((100vw - min(820px, 92vw)) / 2 - 28px), 16px);
+  right: max(8.5vw, env(safe-area-inset-right, 0px));
+}
+@media (max-width: 899px) {
+  .gb-floater--hermeneutics {
+    /* On mobile the floater becomes horizontal pill at bottom (separate rule below),
+       but if it's still vertical, use the mobile theme-toggle position */
+    top: calc(clamp(24px, 3.5vw, 44px) - 4px);
+    right: max(4.5vw, env(safe-area-inset-right, 0px));
+  }
 }
 
 /* Mobile: standalone floater becomes horizontal pill at bottom */
