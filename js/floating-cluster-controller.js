@@ -265,7 +265,7 @@
 
   function getStoredRate() {
     var r = 1;
-    try { r = parseFloat(localStorage.getItem('gb:audio:rate') || localStorage.getItem('gbx-tts-rate')) || 1; } catch (_) {}
+    try { r = parseFloat(localStorage.getItem('gbx-tts-rate')) || 1; } catch (_) {}
     if (isNaN(r) || r < 0.5 || r > 3) r = 1;
     return r;
   }
@@ -376,7 +376,7 @@
     }
 
     // Нет TTS вообще
-    showToast('Браузер не поддерживает озвучку', false);
+    showToast('Озвучка ещё не подключена', false);
   }
 
   /* =====================================================

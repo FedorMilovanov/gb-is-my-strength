@@ -79,6 +79,11 @@ if (deployUploadsDist) {
   must('.github/workflows/deploy.yml', deploy, /contract:extract:dist[^\n]*&&[^\n]*contract:compare:dist|contract:compare:dist/, 'dist deploy must compare public URL contract against dist artifact');
   must('.github/workflows/deploy.yml', deploy, /dist:jsonld:audit|dist-jsonld-audit\.js[^\n]*--root\s+dist/, 'dist deploy must parse JSON-LD in the dist artifact');
   must('.github/workflows/deploy.yml', deploy, /sw:dist:audit:deploy-switch|sw-dist-readiness-audit\.js[^\n]*--require-cache-bump/, 'dist deploy must enforce service-worker cache-version bump');
+  // BUG-S1 / PFV-008 guard: dist artifact must be JSON-LD parse-clean.
+  // Без этого шага деплой /karty/ishod/ с битым JSON-LD проходит зелёным.
+  must('.github/workflows/deploy.yml', deploy, /application\\\/ld\\\+json|JSON-LD parse/, 'dist deploy must parse and validate every <script type="application/ld+json"> in dist/**/*.html');
+  // BUG-A9 guard: dist URL contract must be checked at deploy time.
+  must('.github/workflows/deploy.yml', deploy, /contract:compare:dist/, 'dist deploy must run contract:compare:dist against baseline');
   must('.github/workflows/deploy.yml', deploy, />\s*"?dist\/\$\{KEY\}\.txt"?/, 'dist deploy must write IndexNow key file into dist (not repository root)');
   must('.github/workflows/deploy.yml', deploy, /touch\s+dist\/\.nojekyll/, 'dist deploy must create dist/.nojekyll');
 } else {

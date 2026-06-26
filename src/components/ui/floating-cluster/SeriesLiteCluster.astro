@@ -108,3 +108,202 @@ const seriesTitle = meta.title || 'Серия';
   </div>
 </div>
 
+<style is:global>
+@layer components {
+  /* =========================================================
+     gb-floater--series-lite — compact серийный кластер
+     Desktop: fixed top-right, flex-column, gap:8px
+     Mobile: fixed bottom-center, flex-row
+     ========================================================= */
+  .gb-floater--series-lite {
+    position: fixed;
+    top: max(20px, env(safe-area-inset-top, 20px));
+    right: max(20px, env(safe-area-inset-right, 20px));
+    z-index: var(--z-toast, 9800);
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 8px;
+    pointer-events: none;
+  }
+
+  .gb-floater--series-lite > * {
+    pointer-events: auto;
+  }
+
+  /* =========================================================
+     Chip — карточка-ссылка к hub серии
+     ========================================================= */
+  .gb-series-chip {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    min-width: 0;
+    padding: 8px 12px;
+    border: 1px solid color-mix(in srgb, var(--color-border, #e5e2dc) 88%, transparent);
+    border-radius: 14px;
+    background: color-mix(in srgb, var(--color-surface, #fff) 94%, transparent);
+    color: var(--color-text, #1a1a1a);
+    text-decoration: none;
+    box-shadow: 0 14px 36px -26px rgba(22, 15, 10, .28);
+    -webkit-backdrop-filter: blur(16px) saturate(150%);
+    backdrop-filter: blur(16px) saturate(150%);
+    transition:
+      border-color .22s var(--gb-ease-out, cubic-bezier(.2,.7,.2,1)),
+      box-shadow .22s var(--gb-ease-out, cubic-bezier(.2,.7,.2,1));
+  }
+
+  @media (hover: hover) and (pointer: fine) {
+    .gb-series-chip:hover {
+      border-color: var(--color-accent, #7a2e2e);
+      box-shadow: 0 16px 40px -24px rgba(22, 15, 10, .38);
+    }
+  }
+
+  .gb-series-chip__eyebrow {
+    font-family: var(--f-ui, 'Source Sans 3', system-ui, sans-serif);
+    font-size: 10px;
+    font-weight: 800;
+    letter-spacing: .14em;
+    text-transform: uppercase;
+    color: var(--color-accent, #7a2e2e);
+  }
+
+  .gb-series-chip__title {
+    font-family: var(--f-body, Lora, Georgia, serif);
+    font-size: 14px;
+    font-weight: 700;
+    line-height: 1.2;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 160px;
+  }
+
+  /* Pastor variant — тёмно-медный акцент */
+  .gb-floater--pastor .gb-series-chip__eyebrow {
+    color: color-mix(in srgb, var(--color-accent, #7a2e2e) 80%, #5b2b20 20%);
+  }
+
+  /* Heart variant — deep-red акцент */
+  .gb-floater--heart .gb-series-chip__eyebrow {
+    color: color-mix(in srgb, var(--color-accent, #7a2e2e) 85%, #8b0000 15%);
+  }
+
+  /* =========================================================
+     Controls pill
+     ========================================================= */
+  .gb-series-controls {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    padding: 3px;
+    border: 1px solid color-mix(in srgb, var(--color-border, #e5e2dc) 88%, transparent);
+    border-radius: 24px;
+    background: color-mix(in srgb, var(--color-surface, #fff) 94%, transparent);
+    box-shadow: 0 16px 38px -28px rgba(22, 15, 10, .24);
+    -webkit-backdrop-filter: blur(16px) saturate(150%);
+    backdrop-filter: blur(16px) saturate(150%);
+  }
+
+  html.dark .gb-series-controls,
+  html.dark .gb-series-chip {
+    background: color-mix(in srgb, var(--color-surface, #161a21) 94%, transparent);
+    border-color: rgba(255, 255, 255, .08);
+  }
+
+  /* Index номер (roman-like) */
+  .gb-series-index {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 28px;
+    padding: 0 6px;
+    font-family: var(--f-body, Lora, Georgia, serif);
+    font-size: 14px;
+    font-weight: 700;
+    letter-spacing: .08em;
+    color: var(--color-accent, #7a2e2e);
+  }
+
+  /* Кнопки в controls (gb-icon) — меньше 40px для pill */
+  .gb-series-controls .gb-icon,
+  .gb-series-controls .gb-ember,
+  .gb-series-controls .gb-save {
+    width: 34px !important;
+    height: 34px !important;
+  }
+
+  .gb-series-controls .gb-ember {
+    --ember-size: 34px !important;
+  }
+
+  /* =========================================================
+     Mobile: горизонтально внизу
+     ========================================================= */
+  @media (max-width: 899px) {
+    .gb-floater--series-lite {
+      top: auto;
+      left: 50%;
+      right: auto;
+      bottom: calc(12px + env(safe-area-inset-bottom, 0px));
+      transform: translateX(-50%);
+      flex-direction: row;
+      align-items: stretch;
+      justify-content: center;
+      gap: 8px;
+      width: min(94vw, 420px);
+      z-index: var(--z-bottom-bar, 2000);
+    }
+
+    .gb-series-chip {
+      flex: 1 1 auto;
+      min-width: 0;
+      justify-content: center;
+    }
+
+    /* Паддинг снизу статьи. Двойной префикс: контроллер ставит
+       gb-cluster-series-active, исторический CSS — fc-series-active. */
+    body.fc-series-active .article-main,
+    body.gb-cluster-series-active .article-main {
+      padding-bottom: 96px;
+    }
+  }
+
+  /* =========================================================
+     Скрываем старые дублирующие controls.
+     Поддерживаем ОБА префикса: legacy `fc-series-active` и
+     current `gb-cluster-series-active`. JS-controller добавляет
+     именно `gb-cluster-…`; без второй половины селектора
+     старый chrome остаётся видим поверх PremiumControls
+     (это и есть BUG-A3 на series-lite маршрутах).
+     ========================================================= */
+  body.fc-series-active #reading-progress,
+  body.fc-series-active #section-label,
+  body.fc-series-active #back-to-top,
+  body.fc-series-active #themeToggle,
+  body.fc-series-active #tocSidebar,
+  body.fc-series-active #bottomBar,
+  body.fc-series-active #btocOverlay,
+  body.gb-cluster-series-active #reading-progress,
+  body.gb-cluster-series-active #section-label,
+  body.gb-cluster-series-active #back-to-top,
+  body.gb-cluster-series-active #themeToggle,
+  body.gb-cluster-series-active #tocSidebar,
+  body.gb-cluster-series-active #bottomBar,
+  body.gb-cluster-series-active #btocOverlay {
+    display: none !important;
+  }
+
+  /* =========================================================
+     Reduced motion
+     ========================================================= */
+  @media (prefers-reduced-motion: reduce) {
+    .gb-floater--series-lite,
+    .gb-series-chip,
+    .gb-series-controls {
+      transition: none !important;
+    }
+  }
+}
+</style>
