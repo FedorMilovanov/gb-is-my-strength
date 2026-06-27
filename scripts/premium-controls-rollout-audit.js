@@ -135,6 +135,53 @@ for (const f of files) {
 }
 if (!doubleDelivery) ok('no double floating-cluster CSS delivery (PC-004 invariant holds)');
 
+// ── PC-005 & PC-007 state-of-the-art PremiumControls assertions ──────────────
+const controllerPath = path.join(ROOT, 'js/floating-cluster-controller.js');
+if (fs.existsSync(controllerPath)) {
+  const cCode = fs.readFileSync(controllerPath, 'utf8');
+  if (cCode.includes('gb:audio:rate') && cCode.includes('gb:tts-rate-change')) {
+    ok('floating-cluster-controller.js canonical storage & events OK (PC-005)');
+  } else {
+    bad('floating-cluster-controller.js missing canonical rate or events', 'must contain gb:audio:rate and gb:tts-rate-change');
+  }
+} else {
+  bad('floating-cluster-controller.js missing', 'core PremiumControls runtime missing');
+}
+
+const cssPath = path.join(ROOT, 'css/floating-cluster.css');
+if (fs.existsSync(cssPath)) {
+  const cssCode = fs.readFileSync(cssPath, 'utf8');
+  if (cssCode.includes('.gb-floater--hermeneutics') && cssCode.includes('gb-ember-expand') && cssCode.includes('gb-roman')) {
+    ok('floating-cluster.css canonical rules OK (POS-01, speed morph, gb-roman)');
+  } else {
+    bad('floating-cluster.css missing canonical rules', 'must contain .gb-floater--hermeneutics, gb-ember-expand, gb-roman');
+  }
+} else {
+  bad('floating-cluster.css missing', 'core PremiumControls styles missing');
+}
+
+for (const f of files) {
+  const route = routeOf(f);
+  const html = fs.readFileSync(f, 'utf8');
+  const isAstro = html.includes('data-astro-cid-') || html.includes('data-pc-anchor') || html.includes('FloatingCluster');
+  if (CONTROL_RE.test(html)) {
+    if (html.includes('aria-haspopup') && html.includes('aria-expanded')) {
+      ok(`/${route}/ ARIA / accessibility parity OK`);
+    } else {
+      if (isAstro) bad(`/${route}/ missing ARIA attributes on controls`, 'controls must carry aria-haspopup and aria-expanded');
+      else console.log(`⚠️ /${route}/ (legacy root copy): missing ARIA attributes on controls (will be fixed upon Astro promotion)`);
+    }
+  }
+  if (route.startsWith('articles/dzhon-gill-') || route === 'articles/dzhon-gill-spravochnik') {
+    if (html.includes('gb-roman')) {
+      ok(`/${route}/ RomanNumeral integration OK (PC-007)`);
+    } else {
+      if (isAstro) bad(`/${route}/ missing gb-roman class`, 'Gill routes must use RomanNumeral component, no hardcoded raw numbers');
+      else console.log(`⚠️ /${route}/ (legacy root copy): missing gb-roman class (will be fixed upon Astro promotion)`);
+    }
+  }
+}
+
 const failures = checks.filter(c => !c.ok);
 for (const c of checks) {
   console.log(`${c.ok ? '✅' : '❌'} ${c.name}${c.detail ? ` — ${c.detail}` : ''}`);

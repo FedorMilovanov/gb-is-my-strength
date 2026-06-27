@@ -79,6 +79,11 @@ mustContain('docs/ASTRO-PREMIUM-MIGRATION-ROADMAP.md', 'Astro — не само�
 mustContain('docs/ASTRO-PREMIUM-MIGRATION-ROADMAP.md', '95%+ визуального совпадения legacy → Astro', 'roadmap visual parity target');
 mustContain('AGENTS.md', 'Astro migration — premium visual parity only', 'AGENTS visual parity doctrine');
 
+// PremiumControls protected subsystem guard (PC-001..PC-007)
+mustContain('src/components/ui/premium-controls/PremiumControlAnchor.astro', 'data-pc-anchor', 'PremiumControlAnchor component exists');
+mustContain('src/components/ui/floating-cluster/RomanNumeral.astro', 'gb-roman', 'RomanNumeral component exists');
+mustContain('AGENTS.md', '3.10 PremiumControls / Floating Cluster', 'AGENTS.md Section 3.10 PremiumControls protected status');
+
 console.log('\nOWNER UI REGRESSION GUARD');
 if (problems.length) {
   console.log(`❌ ${problems.length} issue(s). Do not deploy.`);
