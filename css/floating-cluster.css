@@ -1783,6 +1783,56 @@ html.dark .gb-ember-expand.is-open {
     inset 0 1px 0 rgba(255, 255, 255, .05);
 }
 
+/* ── Premium HOVER reveal (owner spec) ───────────────────────────────────
+   Desktop: the speed pill blooms out of the Play circle on HOVER, not click —
+   smooth, rubbery, deep. JS adds .is-open too, but this CSS makes the reveal
+   instant-feeling and resilient even before JS hydration. Touch (no hover)
+   ignores this and uses tap (JS). */
+@media (hover: hover) and (pointer: fine) {
+  .gb-ember-wrap:hover > .gb-ember-expand,
+  .gb-ember-wrap:focus-within > .gb-ember-expand {
+    opacity: 1;
+    pointer-events: auto;
+    clip-path: inset(0 0 0 0 round 999px);
+    z-index: 1;
+    box-shadow:
+      0 6px 28px rgba(184, 147, 106, .14),
+      0 12px 40px rgba(0, 0, 0, .07),
+      inset 0 1px 0 rgba(255, 255, 255, .8);
+  }
+  .gb-ember-wrap:hover > .gb-ember-expand::before,
+  .gb-ember-wrap:focus-within > .gb-ember-expand::before { opacity: 1; }
+  /* Cascade speed buttons on hover (mirror of .is-open cascade) */
+  .gb-ember-wrap:hover > .gb-ember-expand .gb-ember-expand__btn,
+  .gb-ember-wrap:focus-within > .gb-ember-expand .gb-ember-expand__btn {
+    opacity: 1; transform: none;
+  }
+  /* Play circle drifts slightly to the RIGHT as the pill blooms from it
+     (single-article reference geometry — Play "comes out of the circle").
+     ONLY on single-article clusters: in GBS/Gill rails the pill opens UP,
+     so the Play button must NOT drift sideways there. */
+  .gb-ember-wrap:hover > .gb-ember,
+  .gb-ember-wrap:focus-within > .gb-ember {
+    transform: translateX(4px) scale(1.04);
+  }
+  [data-gill-v16] .gb-ember-wrap:hover > .gb-ember,
+  [data-gill-v16] .gb-ember-wrap:focus-within > .gb-ember,
+  .gbs-rail-foot .gb-ember-wrap:hover > .gb-ember,
+  .gbs-rail-foot .gb-ember-wrap:focus-within > .gb-ember {
+    transform: scale(1.06); /* gentle lift only — pill blooms UPWARD */
+  }
+}
+/* Deeper rubbery morph timing for the bloom */
+.gb-ember-expand {
+  transition:
+    clip-path .42s cubic-bezier(.16, 1.08, .3, 1),
+    opacity .26s ease,
+    box-shadow .34s ease;
+}
+.gb-ember {
+  transition: transform .42s cubic-bezier(.34, 1.56, .64, 1), color .2s ease;
+}
+
 /* Shimmer line */
 .gb-ember-expand::before {
   content: '';
