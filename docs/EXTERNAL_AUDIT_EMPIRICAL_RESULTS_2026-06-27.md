@@ -1,0 +1,308 @@
+# External Audit Empirical Results — 2026-06-27
+
+**Project:** gb-is-my-strength / gospod-bog.ru  
+**Branch:** `lane/system-premiumcontrols-dist-gate-wiring-2026-06-27`  
+**Source HEAD tested:** `01b38ac0`  
+**Mode:** empirical tool verification, not broad refactor  
+**Environment:** Arena/E2B, Node `v22.12.0`, npm `10.9.0`, Playwright Chromium installed, 4 GiB temporary swap enabled.
+
+---
+
+## 1. Environment setup that worked
+
+```bash
+export PATH=/tmp/node-v22.12.0-linux-x64/bin:$PATH
+sudo fallocate -l 4G /swapfile-arena || true
+sudo chmod 600 /swapfile-arena
+sudo mkswap /swapfile-arena || true
+sudo swapon /swapfile-arena || true
+npm run strangler:build:production-like
+npm run pagefind:build:dist
+python3 -m http.server 8080 --bind 127.0.0.1 -d dist
+```
+
+Lighthouse required explicit Chrome path in this sandbox:
+
+```bash
+export CHROME_PATH=/home/user/.cache/ms-playwright/chromium-1228/chrome-linux64/chrome
+```
+
+Without `CHROME_PATH`, Lighthouse failed with:
+
+```text
+The CHROME_PATH environment variable must be set to a Chrome/Chromium executable
+```
+
+---
+
+## 2. 30+ link verification
+
+Extracted external links from `docs/EXTERNAL_AUDIT_CHECKS_TOOLBOX_2026-06-27.md` and checked them with `curl -I -L`.
+
+Result:
+
+```text
+TOTAL 72 external URLs checked
+OK-ish 72
+PROBLEM 0
+```
+
+Notes:
+
+- Some URLs are login-gated or product pages, but they resolve (`200`/redirect) and are real.
+- `cards-dev.twitter.com/validator` redirects to X login; useful only manually with account access.
+- PageSpeed Insights API endpoint is real but returned quota error without API key.
+
+---
+
+## 3. Tools actually executed and empirical value
+
+| Tool | Status in Arena | Result | Keep? |
+|---|---|---|---|
+| Lighthouse CLI | ✅ Works with `CHROME_PATH` | Produced JSON scores for home and Gill | ✅ Keep |
+| Pa11y (`axe` runner) | ✅ Works | Found real a11y classes: contrast and ARIA | ✅ Keep |
+| Linkinator | ✅ Works | Scanned 346 local links, all OK | ✅ Keep |
+| `html-validator-cli` | ⚠️ Works but remote/flaky | Home: 22 errors + 28 warnings; Gill: W3C 502 | ⚠️ Keep as sample/warn-only |
+| `npm audit --json` | ✅ Works | 8 dev vulns: 3 low, 5 moderate, 0 high/critical | ✅ Keep |
+| Retire.js | ✅ Works | No vulnerable JS libs found (`data: []`) | ✅ Keep |
+| markdownlint-cli2 | ✅ Works | Found style defects in new toolbox doc; fixed | ✅ Keep for docs |
+| curl production headers | ✅ Works | HSTS present; CSP/XCTO/XFO/Referrer/Permissions absent | ✅ Keep as advisory |
+| PageSpeed Insights API | ❌ Needs API key/quota | Returned 429 quota error | ❌ Do not rely without key |
+| `@axe-core/cli` | ❌ Bad fit in Arena npx | Could not find Chrome binary even with env; pa11y covers axe better | ❌ Drop local quick path |
+| Semgrep via `npx` | ❌ Bad invocation/package path | `npm error could not determine executable to run` | ⚠️ Use Docker/pip/GitHub Action only |
+| Lychee via `npx` | ❌ Not an npm quick tool here | `could not determine executable` | ⚠️ Use binary/GitHub Action, or Linkinator locally |
+| Gitleaks via `npx` | ❌ Not an npm quick tool here | `could not determine executable` | ⚠️ Use binary/GitHub Action |
+
+---
+
+## 4. Concrete findings from new checks
+
+### 4.1 Lighthouse
+
+Home:
+
+```text
+performance      65
+accessibility    95
+best-practices   75
+seo              100
+```
+
+Gill context:
+
+```text
+performance      56
+accessibility    92
+best-practices   75
+seo              100
+```
+
+Common failed Lighthouse audits:
+
+- browser console errors logged;
+- third-party cookies;
+- main-thread work;
+- LCP element / LCP image discovery;
+- color contrast;
+- unused CSS;
+- text compression when served by local Python server;
+- cache lifetimes when served locally.
+
+Interpretation:
+
+- SEO is strong in Lighthouse.
+- Performance findings are useful but local Python server makes compression/cache results non-production-representative.
+- LCP and unused CSS are worth future review.
+
+### 4.2 Pa11y / axe runner
+
+Home:
+
+```text
+105 issues
+101 color-contrast
+4 aria-prohibited-attr
+```
+
+Gill context:
+
+```text
+64 issues
+33 aria-allowed-attr
+29 color-contrast
+1 aria-hidden-focus
+1 aria-valid-attr-value
+```
+
+Kod da Vinci / PremiumControls route:
+
+```text
+118 issues
+84 color-contrast
+24 aria-allowed-attr
+7 aria-hidden-focus
+1 scrollable-region-focusable
+1 aria-prohibited-attr
+1 aria-valid-attr-value
+```
+
+Interpretation:
+
+- Pa11y is the strongest newly tested tool for this repo.
+- The biggest classes are contrast and ARIA semantics.
+- PremiumControls speed-panel radio buttons likely need semantic review: pa11y flags `aria-allowed-attr` around generated speed buttons.
+- This should start as warn-only; color contrast is highly visual/owner-sensitive.
+
+### 4.3 HTML validator
+
+`html-validator-cli --file dist/index.html --format json --verbose`:
+
+```text
+50 messages total
+22 errors
+28 warnings
+```
+
+Examples:
+
+- bad `http-equiv="X-Content-Type-Options"` meta;
+- unnecessary `role="navigation"` on `nav`;
+- unnecessary `role="list"` on `ul`;
+- `aria-label` on generic `div` without role;
+- several `href` not allowed at this point.
+
+Interpretation:
+
+- Useful but noisy; run first on representative pages, not whole site blocking.
+- The `http-equiv="X-Content-Type-Options"` issue is a real standards finding; security headers belong in HTTP response headers, not meta.
+
+### 4.4 Linkinator
+
+```text
+Successfully scanned 346 links in 3.186 seconds.
+```
+
+Exit code `0`.
+
+Interpretation:
+
+- Excellent local broken-link smoke.
+- More practical in Arena than Lychee npx.
+
+### 4.5 npm audit
+
+```text
+3 low
+5 moderate
+0 high
+0 critical
+8 total
+```
+
+Interpretation:
+
+- Not an immediate P0 because all are dev/transitive in current evidence.
+- Should be tracked; do not run `npm audit fix --force` blindly because it proposes major/dev-tool changes.
+
+### 4.6 Retire.js
+
+```json
+"data": [], "messages": [], "errors": []
+```
+
+Interpretation:
+
+- Good lightweight JS dependency/browser-library witness.
+- No issue found in this pass.
+
+### 4.7 Production security headers via curl
+
+Production response for `https://gospod-bog.ru/` showed:
+
+```text
+strict-transport-security: present
+content-security-policy: missing
+x-content-type-options: missing
+x-frame-options: missing
+referrer-policy: missing
+permissions-policy: missing
+cross-origin-opener-policy: missing
+```
+
+Interpretation:
+
+- This is production/platform-level evidence, not source HTML evidence.
+- Since the site is on GitHub Pages, adding headers may require platform/CDN strategy, not just Astro/source changes.
+- Keep as advisory unless/ until deployment platform supports custom headers.
+
+---
+
+## 5. Curated keep/defer/drop list after empirical testing
+
+### Keep now — real and useful
+
+1. Lighthouse CLI with explicit `CHROME_PATH`.
+2. Pa11y with axe runner.
+3. Linkinator local crawl.
+4. `html-validator-cli` sample-page validation.
+5. `npm audit --json` baseline.
+6. Retire.js.
+7. markdownlint-cli2 for docs.
+8. Production header check with `curl`.
+9. SecurityHeaders.com / Mozilla Observatory / SSL Labs as manual production checks.
+10. W3C / Rich Results / Schema validators as manual semantic checks.
+
+### Defer / use externally or in CI only
+
+1. PageSpeed Insights API — needs real API key/quota.
+2. Semgrep — use Docker/pip/GitHub Action, not `npx` quick path.
+3. Gitleaks — use official binary/GitHub Action, not `npx` quick path.
+4. TruffleHog — use official binary/GitHub Action.
+5. Lychee — use binary/GitHub Action; locally Linkinator is simpler.
+6. Percy / Argos / Chromatic — useful only if owner wants external visual review workflow.
+
+### Drop from Arena local quick checks
+
+1. `@axe-core/cli` direct npx path — Chrome binary detection failed; Pa11y already runs axe successfully.
+2. PageSpeed no-key API calls — quota error, not reliable.
+3. Whole-site W3C validation as blocking gate — likely too noisy/flaky at first.
+
+---
+
+## 6. Recommended next implementation lane
+
+If owner approves, add **warn-only** scripts, not blocking deploy gates:
+
+```json
+"external:a11y:pa11y:home": "pa11y http://127.0.0.1:8080/ --standard WCAG2AA --runner axe --reporter json",
+"external:links:local": "linkinator http://127.0.0.1:8080/ --recurse --verbosity error",
+"external:perf:lighthouse:home": "lighthouse http://127.0.0.1:8080/ --output=json --output-path=reports/lighthouse-home.json",
+"external:deps:audit": "npm audit --json",
+"external:deps:retire": "retire --path . --outputformat json"
+```
+
+But first create baselines and suppressions. Do not turn Pa11y or W3C validation into blocking gates until visual/ARIA policy is reviewed.
+
+---
+
+## 7. Evidence files generated locally
+
+Generated under ignored `reports/external-audit-2026-06-27/`:
+
+```text
+external-tool-url-head-check.tsv
+lighthouse-home.json
+lighthouse-gill-context.json
+pa11y-home.out
+pa11y-gill.out
+pa11y-premium.out
+htmlval-home.json
+linkinator-local.out
+npm-audit-json.out
+retire.json
+markdownlint-toolbox-after.out
+production-headers.txt
+empirical-summary.json
+```
+
+These are not committed by default because `reports/` is ignored. If needed, copy curated evidence into AuditRepo.

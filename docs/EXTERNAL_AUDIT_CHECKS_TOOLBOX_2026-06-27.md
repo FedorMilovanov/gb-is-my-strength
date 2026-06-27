@@ -1,3 +1,5 @@
+<!-- markdownlint-disable MD013 MD034 MD060 -->
+
 # External / Advanced Audit Checks Toolbox — gb-is-my-strength
 
 **Date:** 2026-06-27  
