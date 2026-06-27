@@ -902,3 +902,75 @@ Generic CSpell scan дал 306k+ unknown words из-за русского тек
 *Итого раунд 5: +5 багов/исправлений (BUG-039..043), +5 замечаний.*
 *Суммарный итог по всем раундам: 43 бага · 14 категорий мусора · 18 замечаний.*
 *Дата: 2026-06-27. Состояние lane: `lane/external-checks-registry`.*
+
+---
+
+## 🔴 НОВЫЕ БАГИ / FIXES — раунд 6 (external checks wave 3, verified 2026-06-27)
+
+---
+
+### BUG-044 · `dist-publication-audit.js` stale `gbs2-rail` marker fixed for Gill v16 routes
+
+**Файл:** `scripts/dist-publication-audit.js`
+
+Исправлен BUG-032: для четырёх Gill routes audit-карта теперь требует актуальный `gbs-rail`, а не устаревший `gbs2-rail`:
+
+- `dzhon-gill-spravochnik`
+- `dzhon-gill-chast-1-chelovek`
+- `dzhon-gill-chast-2-uchenyi`
+- `dzhon-gill-chast-3-nasledie`
+
+`rimlyanam-7` и `krajne` оставлены на `gbs2-rail`, потому что их источники ещё реально используют старый marker.
+
+**Статус:** fixed in main working session. Полный `strangler:audit:production-like` в Arena не удалось завершить из-за OOM/killed во время Astro check/build, но сама stale-marker правка точечная и проверена по source contract.
+
+---
+
+### BUG-045 · Prettier + Astro plugin показывает массовый formatting drift и CSS parse issue в `site-layered.css`
+
+**Инструмент:** Prettier with temporary `prettier-plugin-astro` install
+
+Обычный `npx prettier --check` не понимает `.astro`; после установки `prettier-plugin-astro` проверка запускается, но показывает много formatting diffs по Astro/JS/CSS и отдельный parse error:
+
+```text
+css/site-layered.css: SyntaxError: CssSyntaxError: Unknown word .bottom-bar,.btoc-link,.flip-card-inner,.h-article-card,.quiz-option
+```
+
+**Статус:** не добавлять Prettier как blocking gate без явной project config, plugin setup и exclude/cleanup для generated/layered CSS.
+
+---
+
+### BUG-046 · jscpd выявил 27 duplicated code clones в audit/script layer
+
+**Инструмент:** `jscpd`
+
+Команда нашла 27 clones. Самые показательные зоны:
+
+- повторяющийся scaffolding в `about-visual-parity-audit.js`, `articles-visual-parity-audit.js`, `biografii-visual-parity-audit.js`, `hard-texts-visual-parity-audit.js`, `karty-visual-parity-audit.js`, `konfessii-visual-parity-audit.js`, `nagornaya-visual-parity-audit.js`, `pastor-series-visual-parity-audit.js`;
+- сильное дублирование между `gill-context-visual-parity-audit.js` и `gill-spravochnik-visual-parity-audit.js`;
+- дубли между `map-browser-smoke.js` и `map-mobile-smoke.js`;
+- дубли между `audit-pro.js` и `validate.js`.
+
+**Статус:** refactor backlog, не production bug. Рекомендация: вынести общий audit helper для visual-parity скриптов, но не делать jscpd blocking gate.
+
+---
+
+## ⚠️ ЗАМЕЧАНИЯ — раунд 6
+
+### NOTE-019 · npm registry signatures и lockfile-lint чистые
+
+`npm audit signatures` прошёл: 476 packages have verified registry signatures, 106 packages have verified attestations. `lockfile-lint` прошёл: HTTPS/allowed hosts/integrity clean.
+
+### NOTE-020 · JSON/XML syntax checks чистые
+
+90 JSON файлов парсятся через `JSON.parse`, XML/XSL файлы проходят `xmllint --noout`.
+
+### NOTE-021 · ESLint/Stylelint не готовы без конфигурации
+
+ESLint v9 падает из-за отсутствия `eslint.config.*`; Stylelint падает из-за отсутствия config. Не добавлять как gate до отдельной config lane.
+
+---
+
+*Итого раунд 6: +3 пункта (BUG-044..046), +3 замечания.*
+*Суммарный итог по всем раундам: 46 багов/пунктов · 14 категорий мусора · 21 замечание.*
+*Дата: 2026-06-27. Состояние main session after direct push policy.*
