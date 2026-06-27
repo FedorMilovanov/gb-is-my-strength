@@ -542,7 +542,7 @@ CSS-фичи, не поддерживаемые в этих версиях (`col
 ### 3.10 PremiumControls / Floating Cluster (protected subsystem)
 
 **PremiumControls / Floating Cluster — Protected Subsystem Truths & Forbids**
-**Source of truth:** `AuditRepo/projects/gb-is-my-strength/PremiumControls/README.md` + owner instructions + VR history
+**Source of truth:** `AuditRepo/projects/<project>/PremiumControls/README.md` + owner instructions + VR history
 
 #### Core Truths (never violate)
 - Roman numerals **MUST** use `<RomanNumeral value="II" />` (`src/components/ui/floating-cluster/RomanNumeral.astro`) → renders `<span class="gb-roman">` (`css/floating-cluster.css`).
