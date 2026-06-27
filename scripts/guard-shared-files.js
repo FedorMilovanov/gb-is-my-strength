@@ -215,6 +215,28 @@ function guardGillRomanNumeralSource(problems) {
   }
 }
 
+
+function guardPremiumControlsAssetTruth(problems) {
+  const cacheBustPath = path.join(ROOT, 'scripts', 'cache-bust.js');
+  if (fs.existsSync(cacheBustPath)) {
+    const cacheBust = fs.readFileSync(cacheBustPath, 'utf8');
+    if (cacheBust.includes("'css/premium-controls.css'")) {
+      problems.push('FAIL: scripts/cache-bust.js must not list absent css/premium-controls.css as runtime PremiumControls canon.');
+    }
+  }
+  const gillFiles = collectFilesRecursive(path.join(ROOT, 'src', 'components', 'article-pilots'), (abs) => /gill-[^/\\]+[/\\].*Page(?:Head|Chrome)\.astro$/.test(abs));
+  for (const abs of gillFiles) {
+    const rel = path.relative(ROOT, abs).replace(/\\/g, '/');
+    const src = fs.readFileSync(abs, 'utf8');
+    if (/floating-cluster\.css(?!\?v=[a-f0-9]{8})/.test(src)) {
+      problems.push(`FAIL: ${rel} has unversioned floating-cluster.css reference.`);
+    }
+    if (/floating-cluster-controller\.js(?!\?v=[a-f0-9]{8})/.test(src)) {
+      problems.push(`FAIL: ${rel} has unversioned floating-cluster-controller.js reference.`);
+    }
+  }
+}
+
 function getChangedFiles() {
   const changed = new Set();
   try {
@@ -311,6 +333,7 @@ function main() {
   guardFloatingClusterCssSanitation(problems);
   guardGillMobileTocCurrentItem(problems);
   guardGillRomanNumeralSource(problems);
+  guardPremiumControlsAssetTruth(problems);
 
   for (const file of files) {
     if (isSafe(file)) continue;
