@@ -2181,3 +2181,16 @@ html.dark .gb-roman {
     z-index:var(--z-bottom-bar,400);
   }
 }
+
+/* =========================================================
+   GILL-C SAFETY NET — roman numerals must NEVER inherit link blue.
+   If a built page is missing the [data-gill-v16] attr (build desync),
+   the scoped gold rules don't apply and the numerals fall back to
+   --color-link (#1f4ea3) blue. This unscoped fallback prevents that.
+   The scoped [data-gill-v16] rules still win when the attr is present.
+   ========================================================= */
+.gbs-rail-card__num,
+.toc-item__num,
+.toc-part-item__num {
+  color: var(--color-accent-gold, #b8936a);
+}
