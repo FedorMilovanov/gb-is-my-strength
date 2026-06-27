@@ -152,7 +152,28 @@ async function checkSeries(browser) {
         await mob.waitForTimeout(350);
         const open = await mob.evaluate(() => document.querySelector('#seriesTocOverlay')?.classList.contains('is-open'));
         if (!open) push('gbs-v16-series-overlay-did-not-open', url, null);
-        await mob.evaluate(() => { document.querySelector('#seriesTocOverlay')?.classList.remove('is-open'); document.body.style.overflow = ''; });
+        else {
+          let currentItemNavigations = 0;
+          const navListener = (frame) => { if (frame === mob.mainFrame()) currentItemNavigations++; };
+          mob.on('framenavigated', navListener);
+          try { await mob.locator('#seriesTocOverlay .toc-item.is-current, #seriesTocOverlay .toc-item[aria-current="page"]').first().click({ timeout: 5000 }); }
+          catch (e) { push('gbs-v16-current-series-click-failed', url, e.message.slice(0, 200)); }
+          await mob.waitForTimeout(500);
+          mob.off('framenavigated', navListener);
+          const currentFlow = await mob.evaluate(() => ({
+            seriesOpen: !!document.querySelector('#seriesTocOverlay')?.classList.contains('is-open'),
+            partOpen: !!document.querySelector('#partTocOverlay')?.classList.contains('is-open'),
+            bodyLocked: document.body.style.overflow === 'hidden',
+            url: location.href,
+          }));
+          if (currentItemNavigations > 0) push('gbs-v16-current-series-item-navigated', url, { navigations: currentItemNavigations, currentFlow });
+          if (!currentFlow.partOpen) push('gbs-v16-current-series-did-not-open-part-toc', url, currentFlow);
+        }
+        await mob.evaluate(() => {
+          document.querySelector('#seriesTocOverlay')?.classList.remove('is-open');
+          document.querySelector('#partTocOverlay')?.classList.remove('is-open');
+          document.body.style.overflow = '';
+        });
       } else {
         if (!mobState.head || !mobState.bbar || !mobState.sheet) {
           push('gbs-mobile-ui-missing', url, mobState);

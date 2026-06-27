@@ -177,6 +177,26 @@ function guardFloatingClusterCssSanitation(problems) {
   });
 }
 
+
+function guardGillMobileTocCurrentItem(problems) {
+  const controllerPath = path.join(ROOT, 'js', 'floating-cluster-controller.js');
+  if (fs.existsSync(controllerPath)) {
+    const code = fs.readFileSync(controllerPath, 'utf8');
+    const branch = /if \(item\.classList\.contains\('is-current'\) && partToc\) \{([\s\S]{0,260}?)\n\s*\}/.exec(code);
+    if (!branch || !branch[1].includes('e.preventDefault();') || !branch[1].includes('e.stopPropagation();') || !branch[1].includes('return;')) {
+      problems.push('FAIL: js/floating-cluster-controller.js Gill current series item must preventDefault, stopPropagation, open part TOC, and return.');
+    }
+  }
+
+  const auditPath = path.join(ROOT, 'scripts', 'interactive-audit.js');
+  if (fs.existsSync(auditPath)) {
+    const audit = fs.readFileSync(auditPath, 'utf8');
+    if (!audit.includes('gbs-v16-current-series-item-navigated') || !audit.includes('gbs-v16-current-series-did-not-open-part-toc')) {
+      problems.push('FAIL: scripts/interactive-audit.js must assert Gill v16 current series item opens #partTocOverlay without navigation.');
+    }
+  }
+}
+
 function getChangedFiles() {
   const changed = new Set();
   try {
@@ -271,6 +291,7 @@ function main() {
 
   guardHermeneuticsPositionTruth(problems);
   guardFloatingClusterCssSanitation(problems);
+  guardGillMobileTocCurrentItem(problems);
 
   for (const file of files) {
     if (isSafe(file)) continue;
