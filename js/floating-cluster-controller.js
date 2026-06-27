@@ -614,6 +614,46 @@
     setSaved(saved);
   }
 
+
+  /* =====================================================
+     MOBILE FALLBACK CONTROLS
+     Some series-rich/GBS2 families keep their canonical controls in the
+     desktop rail (`.gbs2-rail` / nagornaya sidebar). On mobile that rail is
+     display:none, so the existing Play/Save DOM is correctly scoped but becomes
+     0×0 and untappable. Create one mobile-only clone before PlayEmber wrapping
+     so initPlayExpand/initCluster wire it like a normal PremiumControls root.
+     ===================================================== */
+  function hasVisibleEmber() {
+    return qsa('.gb-ember').some(function (el) {
+      var rect = el.getBoundingClientRect();
+      return rect.width >= 30 && rect.height >= 30 &&
+             window.getComputedStyle(el).visibility !== 'hidden' &&
+             window.getComputedStyle(el).display !== 'none';
+    });
+  }
+
+  function stripIds(root) {
+    qsa('[id]', root).forEach(function (el) { el.removeAttribute('id'); });
+  }
+
+  function ensureMobileFallbackControls() {
+    if (!window.matchMedia || !window.matchMedia('(max-width: 899px)').matches) return;
+    if (qs('.gb-mobile-fallback-controls')) return;
+    if (hasVisibleEmber()) return;
+
+    var source = qs('[data-fc-root] .gb-ember') || qs('[data-fc-controls] .gb-ember');
+    if (!source) return;
+    var sourceRoot = source.closest('[data-fc-root], [data-fc-controls]');
+    if (!sourceRoot) return;
+
+    var clone = sourceRoot.cloneNode(true);
+    stripIds(clone);
+    clone.classList.add('gb-mobile-fallback-controls');
+    clone.setAttribute('data-fc-mobile-fallback', 'true');
+    clone.setAttribute('aria-label', 'Быстрые действия чтения');
+    document.body.appendChild(clone);
+  }
+
   /* =====================================================
      MAIN INIT
      ===================================================== */
@@ -628,6 +668,7 @@
     initEmbers();
     initTocPopups();
     initActionHandlers();
+    ensureMobileFallbackControls();
     initPlayExpand();
 
     // 2. Gill rail / non-root cluster controls (работают без data-fc-root)
