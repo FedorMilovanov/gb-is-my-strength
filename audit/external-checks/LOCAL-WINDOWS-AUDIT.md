@@ -29,6 +29,8 @@ Reports are written under:
 C:\Users\Fedor\Projects\gb-is-my-strength\reports\local-external-checks-<timestamp>\
 ```
 
+The main report is intentionally compact. Full command output is split into per-check logs under `logs\` inside the same report folder. Do not commit raw 20k+ line reports to repo root.
+
 ## Arena-rejected / local-only candidates
 
 | Check | Arena status | Why not in Arena | Local decision |
@@ -104,3 +106,14 @@ These are implementation references for Windows 11 Pro / PowerShell usage. They 
 34. Trivy filesystem docs: https://trivy.dev/docs/latest/target/filesystem/
 35. CycloneDX npm docs: https://github.com/CycloneDX/cyclonedx-node-npm
 36. PowerShell 7 releases: https://github.com/PowerShell/PowerShell/releases
+
+
+## Report storage policy
+
+- `reports/` is git-ignored. Keep raw local outputs there.
+- Do not commit root files like `LOCAL_REPO_AUDIT_REPORT.txt` or huge pasted-console captures.
+- The runner writes:
+  - `LOCAL_WINDOWS_AUDIT_REPORT.md` — compact report with excerpts and links to logs;
+  - `summary.json` — machine-readable PASS/WARN/FAIL summary;
+  - `logs/*.log` — full per-check output.
+- If agents need to review local results, send/upload only `summary.json` and the compact `LOCAL_WINDOWS_AUDIT_REPORT.md` first. Add individual `logs/*.log` only for failed checks.
