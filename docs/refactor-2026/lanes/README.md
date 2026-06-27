@@ -17,6 +17,7 @@ abandoned  — отменён
 
 | Branch | Scope | Mode | Status | Merge? | Owner |
 |---|---|---|---|---|---|
+| `lane/system-gill-parts-2-3-h2-parity-2026-06-27` | Fix H2 parity between legacy `dzhon-gill-chast-2/3` and Astro reconstructions | SYSTEM | merged | ✅ | arena-surgical-surgeon |
 | `lane/system-gill-part1-h2-parity-2026-06-27` | Fix H2 parity between legacy `dzhon-gill-chast-1-chelovek` and Astro reconstruction | SYSTEM | merged | ✅ | arena-surgical-surgeon |
 | `lane/system-gill-spravochnik-h2-parity-2026-06-27` | Fix H2 parity between legacy `dzhon-gill-spravochnik` and Astro reconstruction | SYSTEM | merged | ✅ | arena-surgical-surgeon |
 | `lane/system-lane-report-leak-fix-2026-06-27` | Fix base path leak in previous lane report | SYSTEM | merged | ✅ | arena-surgical-surgeon |
