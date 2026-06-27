@@ -8,19 +8,20 @@ This file is the update point for local-only check decisions. Keep it compact: i
 
 ## How to run
 
-From PowerShell:
+From PowerShell or CMD, use the root launcher:
 
 ```powershell
-Set-ExecutionPolicy -Scope Process Bypass
 cd C:\Users\Fedor\Projects\gb-is-my-strength
-.\audit\external-checks\run-local-windows-audit.ps1
+.\RUN-LOCAL-WINDOWS-AUDIT.cmd
 ```
 
 Optional deeper/noisy re-evaluation:
 
 ```powershell
-.\audit\external-checks\run-local-windows-audit.ps1 -RunNoisy -RunFullTrivy
+.\RUN-LOCAL-WINDOWS-AUDIT.cmd -RunNoisy -RunFullTrivy
 ```
+
+Do **not** paste the full `.ps1` file into PowerShell. When pasted line by line, `$PSScriptRoot` is empty and the `param(...)` block is no longer script metadata. Execute the file/launcher instead.
 
 Reports are written under:
 
@@ -61,3 +62,45 @@ When a local report is sent back:
 2. Put real bugs into `docs/BUGS_FOUND_2026-06-25.md`.
 3. Put tool verdicts into `audit/external-checks/README.md` if the tool should affect future agents.
 4. Do not commit raw local reports unless specifically requested.
+
+
+## PowerShell / Windows references used for this runner
+
+These are implementation references for Windows 11 Pro / PowerShell usage. They justify the current launcher pattern and argument/redirect handling.
+
+1. PowerShell about_Scripts — `$PSScriptRoot`, script execution, execution policy: https://github.com/MicrosoftDocs/PowerShell-Docs/blob/main/reference/7.6/Microsoft.PowerShell.Core/About/about_Scripts.md
+2. Set-ExecutionPolicy docs: https://learn.microsoft.com/en-us/powershell/module/microsoft.powershell.security/set-executionpolicy
+3. PowerShell about_Parsing — native command argument mode: https://learn.microsoft.com/en-us/powershell/module/microsoft.powershell.core/about/about_parsing
+4. PowerShell about_Redirection: https://learn.microsoft.com/en-us/powershell/module/microsoft.powershell.core/about/about_redirection
+5. Start-Process docs: https://learn.microsoft.com/en-us/powershell/module/microsoft.powershell.management/start-process
+6. about_Automatic_Variables: https://learn.microsoft.com/en-us/powershell/module/microsoft.powershell.core/about/about_automatic_variables
+7. about_Execution_Policies: https://learn.microsoft.com/en-us/powershell/module/microsoft.powershell.core/about/about_execution_policies
+8. about_Preference_Variables: https://learn.microsoft.com/en-us/powershell/module/microsoft.powershell.core/about/about_preference_variables
+9. about_Operators: https://learn.microsoft.com/en-us/powershell/module/microsoft.powershell.core/about/about_operators
+10. about_Environment_Variables: https://learn.microsoft.com/en-us/powershell/module/microsoft.powershell.core/about/about_environment_variables
+11. about_Quoting_Rules: https://learn.microsoft.com/en-us/powershell/module/microsoft.powershell.core/about/about_quoting_rules
+12. Tee-Object docs: https://learn.microsoft.com/en-us/powershell/module/microsoft.powershell.utility/tee-object
+13. Out-File docs: https://learn.microsoft.com/en-us/powershell/module/microsoft.powershell.utility/out-file
+14. ConvertTo-Json docs: https://learn.microsoft.com/en-us/powershell/module/microsoft.powershell.utility/convertto-json
+15. Invoke-RestMethod docs: https://learn.microsoft.com/en-us/powershell/module/microsoft.powershell.utility/invoke-restmethod
+16. Invoke-WebRequest docs: https://learn.microsoft.com/en-us/powershell/module/microsoft.powershell.utility/invoke-webrequest
+17. Expand-Archive docs: https://learn.microsoft.com/en-us/powershell/module/microsoft.powershell.archive/expand-archive
+18. Get-Command docs: https://learn.microsoft.com/en-us/powershell/module/microsoft.powershell.core/get-command
+19. Resolve-Path docs: https://learn.microsoft.com/en-us/powershell/module/microsoft.powershell.management/resolve-path
+20. Join-Path docs: https://learn.microsoft.com/en-us/powershell/module/microsoft.powershell.management/join-path
+21. PowerShell script security / signing overview: https://learn.microsoft.com/en-us/powershell/scripting/security/security-features
+22. GitHub CLI / Git credential hygiene reference: https://docs.github.com/en/get-started/git-basics/caching-your-github-credentials-in-git
+23. Node.js Windows downloads: https://nodejs.org/en/download
+24. npm ci docs: https://docs.npmjs.com/cli/commands/npm-ci
+25. npm audit docs: https://docs.npmjs.com/cli/commands/npm-audit
+26. npm sbom docs: https://docs.npmjs.com/cli/commands/npm-sbom
+27. Playwright install browsers docs: https://playwright.dev/docs/browsers
+28. Playwright CI docs: https://playwright.dev/docs/ci
+29. Lighthouse CLI docs: https://github.com/GoogleChrome/lighthouse#using-the-node-cli
+30. Pa11y CLI docs: https://github.com/pa11y/pa11y
+31. actionlint usage docs: https://github.com/rhysd/actionlint/blob/main/docs/usage.md
+32. OSV Scanner releases/docs: https://github.com/google/osv-scanner
+33. Gitleaks docs: https://github.com/gitleaks/gitleaks
+34. Trivy filesystem docs: https://trivy.dev/docs/latest/target/filesystem/
+35. CycloneDX npm docs: https://github.com/CycloneDX/cyclonedx-node-npm
+36. PowerShell 7 releases: https://github.com/PowerShell/PowerShell/releases

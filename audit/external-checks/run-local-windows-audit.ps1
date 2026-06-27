@@ -13,12 +13,18 @@
   Optional switches re-run checks that were rejected or too heavy in Arena.
 
 .USAGE
-  Set-ExecutionPolicy -Scope Process Bypass
-  cd C:\Users\Fedor\Projects\gb-is-my-strength
-  .\audit\external-checks\run-local-windows-audit.ps1
+  Recommended launcher:
+    cd C:\Users\Fedor\Projects\gb-is-my-strength
+    .\RUN-LOCAL-WINDOWS-AUDIT.cmd
+
+  Direct script execution if needed:
+    Set-ExecutionPolicy -Scope Process Bypass
+    .\audit\external-checks\run-local-windows-audit.ps1
 
   Deep/noisy re-evaluation:
-  .\audit\external-checks\run-local-windows-audit.ps1 -RunNoisy -RunFullTrivy
+    .\RUN-LOCAL-WINDOWS-AUDIT.cmd -RunNoisy -RunFullTrivy
+
+  Do not paste this file into PowerShell line by line. Execute it as a file.
 #>
 param(
   [string]$RepoRoot,
@@ -32,7 +38,33 @@ $ErrorActionPreference = 'Continue'
 $ProgressPreference = 'SilentlyContinue'
 
 if (-not $RepoRoot -or $RepoRoot.Trim() -eq '') {
-  $RepoRoot = (Resolve-Path (Join-Path $PSScriptRoot '..\..')).Path
+  $CandidateRoots = New-Object System.Collections.Generic.List[string]
+
+  # Normal file execution path: $PSScriptRoot is populated only when the script is run as a file.
+  # If a user pastes this file into an interactive PowerShell console, $PSScriptRoot is empty.
+  if ($PSScriptRoot -and $PSScriptRoot.Trim() -ne '') {
+    try { $CandidateRoots.Add((Resolve-Path (Join-Path $PSScriptRoot '..\..')).Path) | Out-Null } catch { }
+  }
+
+  # Interactive/pasted fallback: use current git worktree if possible.
+  try {
+    $GitRoot = (git rev-parse --show-toplevel 2>$null)
+    if ($GitRoot) { $CandidateRoots.Add($GitRoot.Trim()) | Out-Null }
+  } catch { }
+
+  # Fedor workstation default.
+  $CandidateRoots.Add('C:\Users\Fedor\Projects\gb-is-my-strength') | Out-Null
+
+  # Last resort: current directory if it is already the repo root.
+  try { $CandidateRoots.Add((Get-Location).Path) | Out-Null } catch { }
+
+  $RepoRoot = $CandidateRoots |
+    Where-Object { $_ -and (Test-Path (Join-Path $_ 'package.json')) -and (Test-Path (Join-Path $_ 'AGENTS.md')) } |
+    Select-Object -First 1
+}
+
+if (-not $RepoRoot -or -not (Test-Path (Join-Path $RepoRoot 'package.json'))) {
+  throw "Cannot find repo root. Run from C:\Users\Fedor\Projects\gb-is-my-strength or pass -RepoRoot."
 }
 Set-Location $RepoRoot
 
@@ -105,6 +137,27 @@ function Invoke-AuditCheck {
   } else {
     Add-Result $Name 'FAIL' $exit 'required check failed'
   }
+}
+
+
+function Invoke-ExternalSequence {
+  param(
+    [Parameter(Mandatory=$true)][string[]]$Commands,
+    [switch]$ContinueOnError
+  )
+  $failed = 0
+  foreach ($cmd in $Commands) {
+    "PS> $cmd"
+    cmd.exe /d /c $cmd
+    $ec = if ($null -ne $LASTEXITCODE) { [int]$LASTEXITCODE } else { 0 }
+    "EXIT: $ec"
+    if ($ec -ne 0) {
+      if ($failed -eq 0) { $failed = $ec }
+      if (-not $ContinueOnError) { break }
+    }
+  }
+  $global:LASTEXITCODE = $failed
+  if ($failed -ne 0) { throw "External command sequence failed with exit $failed" }
 }
 
 function Test-CommandExists([string]$Command) {
@@ -210,28 +263,33 @@ Invoke-AuditCheck 'git status' { git status --short --branch } 'Baseline: verify
 Invoke-AuditCheck 'npm ci' { npm ci } 'Deterministic dependency install from lockfile.'
 
 Invoke-AuditCheck 'Project fast gates' {
-  npm run workflows:check
-  npm run guard:agents-rev
-  npm run validate:all
-  npm run seo-audit
-  npm run schema:rich-results:audit
-  npm run data:consistency
-  npm run content:guard
-  npm run content:parity
-  npm run mdx:structure:audit
-  npm run gill:reading-time:audit
-  npm run gill:pagefind:audit
+  Invoke-ExternalSequence @(
+    'npm run workflows:check',
+    'npm run guard:agents-rev',
+    'npm run validate:all',
+    'npm run seo-audit',
+    'npm run schema:rich-results:audit',
+    'npm run data:consistency',
+    'npm run content:guard',
+    'npm run content:parity',
+    'npm run mdx:structure:audit',
+    'npm run gill:reading-time:audit',
+    'npm run gill:pagefind:audit'
+  )
 } 'Core project checks that should be low-noise.'
 
 Invoke-AuditCheck 'Supply chain: npm audit/signatures/SBOM' {
-  npm audit --json
-  npm audit signatures
-  npm sbom --sbom-format cyclonedx --json
+  Invoke-ExternalSequence @(
+    'npm audit --json',
+    'npm audit signatures',
+    'npm sbom --sbom-format cyclonedx --json'
+  ) -ContinueOnError
 } 'npm advisory DB, registry signatures, and native CycloneDX SBOM.' -Advisory
 
 Invoke-AuditCheck 'Supply chain: lockfile-lint + CycloneDX' {
   npx -y lockfile-lint --path package-lock.json --type npm --validate-https --allowed-hosts npm --validate-integrity
-  npx -y @cyclonedx/cyclonedx-npm --output-format JSON --output-file (Join-Path $OutDir 'bom.cdx.json') --package-lock-only
+  $CycloneDxOut = Join-Path $OutDir 'bom.cdx.json'
+  npx -y @cyclonedx/cyclonedx-npm --output-format JSON --output-file $CycloneDxOut --package-lock-only
 } 'Lockfile host/HTTPS/integrity validation and independent CycloneDX SBOM.' -Advisory
 
 Invoke-AuditCheck 'OSV Scanner' {
@@ -260,15 +318,17 @@ Invoke-AuditCheck 'Workflow security: actionlint / Semgrep / Checkov / zizmor' {
 
 if (-not $SkipBuild) {
   Invoke-AuditCheck 'Production-like build and dist gates' {
-    npm run strangler:build:production-like
-    npm run pagefind:build:dist
-    npm run page-ownership:dist:production-like
-    npm run dist:jsonld:audit
-    npm run schema:rich-results:audit:dist
-    npm run dist:css-parity
-    npm run sw:dist:audit:pagefind
-    npm run audit:premium-controls
-    npm run strangler:smoke
+    Invoke-ExternalSequence @(
+      'npm run strangler:build:production-like',
+      'npm run pagefind:build:dist',
+      'npm run page-ownership:dist:production-like',
+      'npm run dist:jsonld:audit',
+      'npm run schema:rich-results:audit:dist',
+      'npm run dist:css-parity',
+      'npm run sw:dist:audit:pagefind',
+      'npm run audit:premium-controls',
+      'npm run strangler:smoke'
+    )
   } 'Builds production-like dist and runs dist-side gates.'
 }
 
@@ -279,8 +339,10 @@ if (-not $SkipBrowser) {
     try {
       Start-Sleep -Seconds 2
       $env:AUDIT_BASE = 'http://127.0.0.1:8080'
-      npm run interactive-audit
-      npm run visual-audit
+      Invoke-ExternalSequence @(
+        'npm run interactive-audit',
+        'npm run visual-audit'
+      )
       if (Test-Path 'visual-audit-report.json') {
         Move-Item -Force 'visual-audit-report.json' (Join-Path $OutDir 'visual-audit-report.json')
       }
@@ -298,10 +360,12 @@ if (-not $SkipBrowser) {
     $server = Start-LocalServer -Port 8090 -Directory (Join-Path $RepoRoot 'dist')
     try {
       Start-Sleep -Seconds 2
-      npm run smoke:maps
-      npm run smoke:maps:mobile
-      npm run smoke:content:mobile
-      npm run smoke:konfessii
+      Invoke-ExternalSequence @(
+        'npm run smoke:maps',
+        'npm run smoke:maps:mobile',
+        'npm run smoke:content:mobile',
+        'npm run smoke:konfessii'
+      )
     } finally {
       Stop-LocalServer $server
     }
@@ -326,7 +390,8 @@ if (-not $SkipBrowser) {
 Invoke-AuditCheck 'Static syntax / structure advisory' {
   node -e "const fs=require('fs'),path=require('path');let bad=0,total=0;function walk(d){for(const n of fs.readdirSync(d)){const p=path.join(d,n);if(/node_modules|dist|\\.git/.test(p))continue;const st=fs.statSync(p);if(st.isDirectory())walk(p);else if(p.endsWith('.json')){total++;try{JSON.parse(fs.readFileSync(p,'utf8'))}catch(e){bad++;console.error(p+': '+e.message)}}}}walk('.');console.log('json files',total,'bad',bad);process.exit(bad?1:0)"
   npx -y madge --extensions js,ts,tsx,astro --circular src scripts
-  npx -y jscpd src scripts js css --format javascript,typescript,css --min-lines 12 --min-tokens 80 --reporters json,console --output (Join-Path $OutDir 'jscpd') --ignore "**/node_modules/**,**/dist/**,**/*.min.js"
+  $JscpdOut = Join-Path $OutDir 'jscpd'
+  npx -y jscpd src scripts js css --format javascript,typescript,css --min-lines 12 --min-tokens 80 --reporters json,console --output $JscpdOut --ignore "**/node_modules/**,**/dist/**,**/*.min.js"
   npx -y oxlint js scripts src --ignore-path .gitignore
 } 'Low-noise/advisory syntax, circular dependency, duplication, and Rust linter checks.' -Advisory
 

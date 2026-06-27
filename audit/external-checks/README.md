@@ -14,13 +14,20 @@
 
 ## Local Windows runner
 
-For Fedor's workstation (`C:\Users\Fedor\Projects\gb-is-my-strength`) use:
+For Fedor's workstation (`C:\Users\Fedor\Projects\gb-is-my-strength`) use the root launcher:
 
 ```powershell
-Set-ExecutionPolicy -Scope Process Bypass
 cd C:\Users\Fedor\Projects\gb-is-my-strength
-.\audit\external-checks\run-local-windows-audit.ps1
+.\RUN-LOCAL-WINDOWS-AUDIT.cmd
 ```
+
+Deep/noisy local mode:
+
+```powershell
+.\RUN-LOCAL-WINDOWS-AUDIT.cmd -RunNoisy -RunFullTrivy
+```
+
+Do **not** paste the `.ps1` body into an interactive console. `$PSScriptRoot` and `param(...)` semantics are correct when the file is executed as a script, not when pasted line by line.
 
 Local-only/rejected-in-Arena decisions are tracked in `audit/external-checks/LOCAL-WINDOWS-AUDIT.md`.
 

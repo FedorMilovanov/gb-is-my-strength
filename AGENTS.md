@@ -79,6 +79,7 @@ SANDBOX-ENV   → как выжить в конкретной среде (Arena)
 | **AGENTS-r306** | 2026-06-27 | **Workflow lint/SBOM verification.** `actionlint` strict mode with ShellCheck now passes after `indexnow.yml` and `visual-parity.yml` shell cleanup. SBOM generation is verified via npm and CycloneDX; Trivy secret/misconfig scan is clean, while full Trivy vuln DB is rejected in Arena due disk limits. oxlint is advisory; Biome is config-first. |
 | **AGENTS-r307** | 2026-06-27 | **Local Windows audit pack added.** `audit/external-checks/LOCAL-WINDOWS-AUDIT.md` records Arena-rejected/local-only checks for `C:\Users\Fedor\Projects\gb-is-my-strength`; `audit/external-checks/run-local-windows-audit.ps1` runs compact PowerShell local audits and writes reports under `reports/local-external-checks-*`. `.tools/` is ignored for local portable audit binaries. |
 | **AGENTS-r308** | 2026-06-27 | **Schema rich-results audit added.** New `npm run schema:rich-results:audit` and `schema:rich-results:audit:dist` semantically validate JSON-LD Article/Breadcrumb/FAQ requirements and literal `{jsonLd}` regressions. Local Windows runner now inventories existing `reports/*` artifacts from Fedor's machine. |
+| **AGENTS-r309** | 2026-06-27 | **Local Windows launcher fixed.** Added root `RUN-LOCAL-WINDOWS-AUDIT.cmd` so Fedor runs audits as a script instead of pasting `.ps1` into PowerShell. The PowerShell runner now has robust repo-root fallback for pasted/interactive contexts and stricter external command sequencing. |
 
 ---
 
