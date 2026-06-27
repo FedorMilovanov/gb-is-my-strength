@@ -1,0 +1,16 @@
+---
+import RomanNumeral from '@/components/ui/floating-cluster/RomanNumeral.astro';
+
+interface Props {
+  kind: 'label' | 'roman';
+  value: string;
+  className?: string;
+}
+
+const { kind, value, className = '' } = Astro.props;
+---
+{kind === 'roman' ? (
+  <RomanNumeral value={value} className={className} />
+) : (
+  <span aria-hidden="true" class={`gb-series-mark--label ${className}`.trim()}>{value}</span>
+)}

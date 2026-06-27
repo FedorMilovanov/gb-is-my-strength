@@ -81,6 +81,7 @@ SANDBOX-ENV   → как выжить в конкретной среде (Arena)
 | **AGENTS-r308** | 2026-06-27 | **Schema rich-results audit added.** New `npm run schema:rich-results:audit` and `schema:rich-results:audit:dist` semantically validate JSON-LD Article/Breadcrumb/FAQ requirements and literal `{jsonLd}` regressions. Local Windows runner now inventories existing `reports/*` artifacts from Fedor's machine. |
 | **AGENTS-r309** | 2026-06-27 | **Local Windows launcher fixed.** Added root `RUN-LOCAL-WINDOWS-AUDIT.cmd` so Fedor runs audits as a script instead of pasting `.ps1` into PowerShell. The PowerShell runner now has robust repo-root fallback for pasted/interactive contexts and stricter external command sequencing. |
 | **AGENTS-r310** | 2026-06-27 | **Local audit report storage policy fixed.** Removed accidentally committed root `LOCAL_REPO_AUDIT_REPORT.txt`; local Windows runner now writes compact Markdown with per-check full logs under ignored `reports/local-external-checks-*/logs/`. Root pasted/raw audit reports are ignored. |
+| **AGENTS-r311** | 2026-06-28 | **PremiumControls / Floating Cluster doctrine reconciled.** Replaced forbidden `-28px` formula with canonical Hermeneutics position (`right: max(8.5vw, ...)`). |
 
 ---
 
@@ -564,7 +565,14 @@ CSS-фичи, не поддерживаемые в этих версиях (`col
   ```css
   .gb-floater--hermeneutics {
     top: calc(clamp(24px, 3.5vw, 44px) - 4px);
-    right: max(calc((100vw - min(820px, 92vw)) / 2 - 28px), 16px);
+    right: max(8.5vw, env(safe-area-inset-right, 0px));
+  }
+
+  @media (max-width: 899px) {
+    .gb-floater--hermeneutics {
+      top: calc(clamp(24px, 3.5vw, 44px) - 4px);
+      right: max(4.5vw, env(safe-area-inset-right, 0px));
+    }
   }
   ```
   (`floating-cluster.css:39`; matches legacy `.theme-toggle`).
