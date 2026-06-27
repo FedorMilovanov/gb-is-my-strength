@@ -31,3 +31,8 @@ dist/
 
 # Local audit tool cache
 .tools/
+
+# Local audit pasted/raw reports — use reports/local-external-checks-* instead
+/LOCAL_REPO_AUDIT_REPORT.txt
+/LOCAL_WINDOWS_AUDIT_REPORT.md
+/summary.json

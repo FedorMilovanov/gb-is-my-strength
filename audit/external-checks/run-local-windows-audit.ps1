@@ -73,6 +73,8 @@ $OutDir = Join-Path $RepoRoot "reports\local-external-checks-$Timestamp"
 New-Item -ItemType Directory -Force -Path $OutDir | Out-Null
 $Report = Join-Path $OutDir 'LOCAL_WINDOWS_AUDIT_REPORT.md'
 $SummaryJson = Join-Path $OutDir 'summary.json'
+$LogsDir = Join-Path $OutDir 'logs'
+New-Item -ItemType Directory -Force -Path $LogsDir | Out-Null
 $ToolsDir = Join-Path $RepoRoot '.tools\local-audit'
 New-Item -ItemType Directory -Force -Path $ToolsDir | Out-Null
 
@@ -103,6 +105,19 @@ function Add-Result([string]$Name, [string]$Status, [int]$ExitCode, [string]$Not
   }) | Out-Null
 }
 
+function Get-SafeFileName([string]$Name) {
+  return ($Name -replace '[^A-Za-z0-9._-]+', '_').Trim('_')
+}
+
+function Get-LogExcerpt([string]$Text, [int]$Head = 35, [int]$Tail = 80) {
+  if (-not $Text) { return '' }
+  $lines = $Text -split "`r?`n"
+  if ($lines.Count -le ($Head + $Tail + 10)) { return ($lines -join "`n") }
+  $first = $lines | Select-Object -First $Head
+  $last = $lines | Select-Object -Last $Tail
+  return (($first + @('', "... [truncated: full output is in the per-check log] ...", '') + $last) -join "`n")
+}
+
 function Invoke-AuditCheck {
   param(
     [Parameter(Mandatory=$true)][string]$Name,
@@ -125,17 +140,25 @@ function Invoke-AuditCheck {
     $exit = 999
   }
   $sw.Stop()
+
+  $safe = Get-SafeFileName $Name
+  $logPath = Join-Path $LogsDir "$safe.log"
+  $output.TrimEnd() | Out-File -FilePath $logPath -Encoding utf8
+  $relLog = Resolve-Path -Relative $logPath
+  $excerpt = Get-LogExcerpt $output
+
+  Add-Line "**Log:** `$relLog`"
   Add-Line '```text'
-  Add-Line ($output.TrimEnd())
+  Add-Line ($excerpt.TrimEnd())
   Add-Line '```'
   Add-Line "`nDuration: $([math]::Round($sw.Elapsed.TotalSeconds, 1)) sec · Exit: $exit"
 
   if ($exit -eq 0) {
-    Add-Result $Name 'PASS' $exit 'ok'
+    Add-Result $Name 'PASS' $exit "log=$relLog"
   } elseif ($Optional -or $Advisory) {
-    Add-Result $Name 'WARN' $exit 'optional/advisory failed or noisy'
+    Add-Result $Name 'WARN' $exit "optional/advisory; log=$relLog"
   } else {
-    Add-Result $Name 'FAIL' $exit 'required check failed'
+    Add-Result $Name 'FAIL' $exit "required failed; log=$relLog"
   }
 }
 

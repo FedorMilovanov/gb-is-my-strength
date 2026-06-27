@@ -1276,3 +1276,34 @@ reports\local-audit-*
 *Итого раунд 10: +1 guard (BUG-055), +1 замечание.*
 *Суммарный итог по всем раундам: 55 багов/пунктов · 14 категорий мусора · 26 замечаний.*
 *Дата: 2026-06-27. Состояние main session after schema audit work.*
+
+
+---
+
+## 🔴 НОВЫЕ БАГИ / FIXES — раунд 11 (local audit storage cleanup, 2026-06-27)
+
+---
+
+### BUG-056 · Root `LOCAL_REPO_AUDIT_REPORT.txt` was a pasted-console artifact, not a reliable audit
+
+**Файл:** `LOCAL_REPO_AUDIT_REPORT.txt` (удалён)
+
+Проверка коммита `77e29490 add LOCAL AUDIT FROM PC` показала, что файл был старым pasted-console прогоном, а не результатом нового launcher-а. Внутри есть ошибки PowerShell parsing / lost variables (`.Name is not recognized`, missing `Select-String -Pattern`, broken `foreach`, `Cannot bind FilePath` ранее). Реальных новых багов из него не получено.
+
+**Исправление:** файл удалён из git, добавлены ignore-правила для root raw reports. Новый local runner пишет компактный report + per-check logs в ignored `reports/local-external-checks-*`.
+
+---
+
+### NOTE-027 · Local audit reports should be reviewed as summary-first artifacts
+
+Для будущих локальных прогонов:
+
+1. Сначала присылать `reports/local-external-checks-*/summary.json`.
+2. Потом компактный `LOCAL_WINDOWS_AUDIT_REPORT.md`.
+3. Полные `logs/*.log` присылать только для FAIL/WARN проверок.
+4. Не коммитить 20k+ line raw console captures в root.
+
+---
+
+*Итого раунд 11: +1 cleanup/fix (BUG-056), +1 замечание.*
+*Дата: 2026-06-27. Состояние main session after local report storage cleanup.*

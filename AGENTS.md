@@ -80,6 +80,7 @@ SANDBOX-ENV   → как выжить в конкретной среде (Arena)
 | **AGENTS-r307** | 2026-06-27 | **Local Windows audit pack added.** `audit/external-checks/LOCAL-WINDOWS-AUDIT.md` records Arena-rejected/local-only checks for `C:\Users\Fedor\Projects\gb-is-my-strength`; `audit/external-checks/run-local-windows-audit.ps1` runs compact PowerShell local audits and writes reports under `reports/local-external-checks-*`. `.tools/` is ignored for local portable audit binaries. |
 | **AGENTS-r308** | 2026-06-27 | **Schema rich-results audit added.** New `npm run schema:rich-results:audit` and `schema:rich-results:audit:dist` semantically validate JSON-LD Article/Breadcrumb/FAQ requirements and literal `{jsonLd}` regressions. Local Windows runner now inventories existing `reports/*` artifacts from Fedor's machine. |
 | **AGENTS-r309** | 2026-06-27 | **Local Windows launcher fixed.** Added root `RUN-LOCAL-WINDOWS-AUDIT.cmd` so Fedor runs audits as a script instead of pasting `.ps1` into PowerShell. The PowerShell runner now has robust repo-root fallback for pasted/interactive contexts and stricter external command sequencing. |
+| **AGENTS-r310** | 2026-06-27 | **Local audit report storage policy fixed.** Removed accidentally committed root `LOCAL_REPO_AUDIT_REPORT.txt`; local Windows runner now writes compact Markdown with per-check full logs under ignored `reports/local-external-checks-*/logs/`. Root pasted/raw audit reports are ignored. |
 
 ---
 
