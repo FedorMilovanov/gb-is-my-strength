@@ -1,0 +1,27 @@
+---
+import PlayEmber from '@/components/ui/floating-cluster/PlayEmber.astro';
+import { GILL_PAGE_DATA, type GillSeriesPageId } from './gillSeriesData';
+
+interface Props {
+  pageId: GillSeriesPageId;
+}
+
+const { pageId } = Astro.props;
+const page = GILL_PAGE_DATA[pageId];
+---
+<div class="mobile-bottom-bar" data-fc-root data-fc-variant="gill">
+  <button class="mobile-toc-btn" id="mobTocBtn" aria-label="Содержание">
+    <svg viewBox="0 0 24 24"><line x1="8" y1="6" x2="21" y2="6" /><line x1="8" y1="12" x2="21" y2="12" /><line x1="8" y1="18" x2="21" y2="18" /><line x1="3" y1="6" x2="3.01" y2="6" /><line x1="3" y1="12" x2="3.01" y2="12" /><line x1="3" y1="18" x2="3.01" y2="18" /></svg>
+  </button>
+  <div class="mobile-btoc-section" id="gbs2MobSec">{page.mobileSection}</div>
+  <div class="mobile-btoc-progress-track"><div class="mobile-btoc-progress-fill" id="gbs2MobProgress" style="width:0%"></div></div>
+  <div class="mobile-btoc-pct" id="gbs2MobPct">0%</div>
+  <div class="mobile-icon-row">
+    <button class="gb-icon gb-theme-toggle" data-fc-action="theme" aria-label="Тема">
+      <span class="theme-icon-sun"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="4.5" /><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41" /></svg></span>
+      <span class="theme-icon-moon"><svg viewBox="0 0 24 24"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z" /></svg></span>
+    </button>
+    <button class="gb-icon" data-fc-action="search" aria-label="Поиск"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7" /><path d="M21 21l-4.3-4.3" /></svg></button>
+    <PlayEmber audioState="none" />
+  </div>
+</div>
