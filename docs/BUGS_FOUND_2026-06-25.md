@@ -1154,3 +1154,58 @@ abbr.gterm
 *Итого раунд 8: +3 пункта (BUG-051..053).*
 *Суммарный итог по всем раундам: 53 багов/пунктов · 14 категорий мусора · 22 замечания.*
 *Дата: 2026-06-27. Состояние main session after axe cleanup.*
+
+---
+
+## 🔴 НОВЫЕ БАГИ / FIXES — раунд 9 (workflow lint + SBOM checks, 2026-06-27)
+
+---
+
+### BUG-054 · actionlint strict ShellCheck findings in workflows fixed
+
+**Файлы:** `.github/workflows/indexnow.yml`, `.github/workflows/visual-parity.yml`
+
+Ранее `actionlint` с установленным ShellCheck падал на inline shell:
+
+- `SC2015` в `indexnow.yml`: `A && B || C` не является безопасным if/else;
+- `SC2034` в `indexnow.yml`: loop variable looked unused;
+- `SC2086` в `indexnow.yml`: unquoted GitHub SHA interpolation;
+- `SC2129` в `indexnow.yml` и `visual-parity.yml`: repeated redirects to the same file.
+
+**Исправление:**
+
+- commit metadata step переписан на явный `if ! git diff ...`;
+- retry loop использует `_attempt`;
+- `github.event.before/after` передаются через `env` and quoted shell vars;
+- output writes grouped through `{ ... } >> "$GITHUB_OUTPUT"`;
+- visual summary writes grouped through `{ ... } >> "$GITHUB_STEP_SUMMARY"`.
+
+**Верификация:**
+
+```bash
+actionlint -color=false .github/workflows/*.yml
+```
+
+Результат: `PASS`.
+
+---
+
+## ⚠️ ЗАМЕЧАНИЯ — раунд 9
+
+### NOTE-023 · SBOM generation is clean
+
+`npm sbom --sbom-format cyclonedx --json` produced CycloneDX 1.5 with 476 components. `@cyclonedx/cyclonedx-npm` also generated a JSON SBOM from `package-lock.json` successfully.
+
+### NOTE-024 · Trivy full vulnerability DB scan is not suitable for this Arena session
+
+`trivy fs --scanners vuln,secret,misconfig` failed before scanning because the vulnerability DB download exhausted sandbox disk (`no space left on device`). Scoped `trivy fs --scanners secret,misconfig` completed and found no secret/misconfig issues. Future agents should not retry full Trivy DB scan in Arena unless disk limits change.
+
+### NOTE-025 · oxlint useful advisory, Biome config-first
+
+`oxlint` ran without errors but reported 1094 warnings. `Biome check` emitted 1466 errors / 2855 warnings, mostly formatter/import organization. Use oxlint as advisory; do not add Biome as blocking gate without a project migration/config decision.
+
+---
+
+*Итого раунд 9: +1 fix (BUG-054), +3 замечания.*
+*Суммарный итог по всем раундам: 54 багов/пунктов · 14 категорий мусора · 25 замечаний.*
+*Дата: 2026-06-27. Состояние main session after workflow lint/SBOM checks.*

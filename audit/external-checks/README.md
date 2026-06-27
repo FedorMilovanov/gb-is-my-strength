@@ -221,6 +221,26 @@ checkov -d .github/workflows --framework github_actions --output json
 - Glossary hosts with `aria-expanded`/`aria-describedby` must have `role="button"` and `tabindex="0"`.
 - Remaining axe work is mostly visual/content-level: contrast, nested source marker structure, and links distinguished by more than color.
 
+
+## Верификация — волна 6 (2026-06-27)
+
+| Статус | Проверка | Команда / способ | Результат | Решение |
+|---|---|---|---|---|
+| `KEEP` | actionlint strict shell-aware mode | `actionlint -color=false .github/workflows/*.yml` after ShellCheck install | `PASS` after fixing `indexnow.yml` and `visual-parity.yml` shell snippets | Promote from syntax-only to preferred workflow lint when ShellCheck is available. |
+| `KEEP` | npm SBOM | `npm sbom --sbom-format cyclonedx --json` | `PASS`: CycloneDX 1.5, 476 components | Useful SBOM artifact check. |
+| `KEEP` | CycloneDX npm SBOM | `cyclonedx-npm --output-format JSON --package-lock-only` | `PASS` | Useful alternative SBOM generator. |
+| `KEEP` | Trivy secret/misconfig | `trivy fs --scanners secret,misconfig ...` | `PASS`: no secret/misconfig findings in scoped scan | Useful advisory scan. |
+| `REJECTED-IN-ARENA` | Trivy full vuln DB scan | `trivy fs --scanners vuln,secret,misconfig ...` | failed before scan: DB download hit sandbox disk limit (`no space left on device`) | Do not retry full Trivy vuln DB in this Arena; use npm audit + OSV here, run Trivy full in CI/local with enough disk. |
+| `KEEP-ADVISORY` | oxlint | `npx oxlint js scripts src` | `PASS command`: 0 errors, 1094 warnings | Useful no-config advisory linter; not blocking until warning budget/config exists. |
+| `CONFIG-FIRST` | Biome | `npx @biomejs/biome check js scripts src --reporter=json` | `FAIL/NOISY`: 1466 errors, 2855 warnings, mostly formatting/import organization | Do not add as blocking gate without Biome config and migration decision. |
+
+## Wave 6 decisions for future agents
+
+- actionlint strict mode is now green; use it instead of syntax-only when ShellCheck exists.
+- Full Trivy vulnerability scan is not practical in this Arena because DB download can exhaust disk; do not keep retrying it here.
+- SBOM generation is low-noise and should be kept as a release/security artifact candidate.
+- oxlint is useful as advisory; Biome is config/migration-first only.
+
 ## Не добавлять без новой верификации
 
 - `npx actionlint` — не работает в npm-варианте; нужен бинарь.
