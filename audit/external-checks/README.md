@@ -253,6 +253,20 @@ checkov -d .github/workflows --framework github_actions --output json
 - SBOM generation is low-noise and should be kept as a release/security artifact candidate.
 - oxlint is useful as advisory; Biome is config/migration-first only.
 
+
+## Верификация — волна 7 (2026-06-27)
+
+| Статус | Проверка | Команда / способ | Результат | Решение |
+|---|---|---|---|---|
+| `KEEP` | Schema rich-results semantic audit | `npm run schema:rich-results:audit` | `PASS`: 61 HTML, 63 JSON-LD blocks, 25 Articles, 41 BreadcrumbLists, 4 FAQPages | Keep as schema regression guard; complements parse-only `dist:jsonld:audit`. |
+| `KEEP` | Local reports inventory in PowerShell runner | `run-local-windows-audit.ps1` now inventories `reports\retire-*.json`, `semgrep.json`, `url-contract-*`, `htmlval-*`, `lighthouse-*`, `pa11y-*`, `npm-audit.json` | Local-only report files are not committed, but the runner records their presence and sizes | Useful for future updates sent from Fedor's workstation. |
+
+## Wave 7 decisions for future agents
+
+- Use `schema:rich-results:audit` for root/static source and `schema:rich-results:audit:dist` after build.
+- Do not rely only on JSON parse checks; Article/Breadcrumb/FAQ required-property regressions should be caught semantically.
+- Existing local `reports/*` artifacts are intentionally untracked; inspect them through the local Windows runner report.
+
 ## Не добавлять без новой верификации
 
 - `npx actionlint` — не работает в npm-варианте; нужен бинарь.

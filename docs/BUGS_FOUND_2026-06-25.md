@@ -1209,3 +1209,70 @@ actionlint -color=false .github/workflows/*.yml
 *Итого раунд 9: +1 fix (BUG-054), +3 замечания.*
 *Суммарный итог по всем раундам: 54 багов/пунктов · 14 категорий мусора · 25 замечаний.*
 *Дата: 2026-06-27. Состояние main session after workflow lint/SBOM checks.*
+
+---
+
+## 🔴 НОВЫЕ БАГИ / FIXES — раунд 10 (schema rich-results audit, 2026-06-27)
+
+---
+
+### BUG-055 · Schema semantic audit added for Article/Breadcrumb/FAQ regressions
+
+**Файлы:** `scripts/schema-rich-results-audit.js`, `package.json`, `audit/external-checks/run-local-windows-audit.ps1`
+
+Добавлен новый guard, который проверяет не только parse-valid JSON-LD, но и семантические поля rich-results:
+
+- Article / ScholarlyArticle: `headline`, `datePublished`, `dateModified`, `author`, `publisher`, absolute `image` URL;
+- BreadcrumbList: `ListItem`, sequential `position`, `name`, absolute `item` URL where required;
+- FAQPage: `Question`, `acceptedAnswer`, `Answer.text`;
+- known placeholder regression: literal `{jsonLd}`.
+
+**Команды:**
+
+```bash
+npm run schema:rich-results:audit
+npm run schema:rich-results:audit:dist
+```
+
+**Верификация root:**
+
+```text
+SCHEMA RICH RESULTS AUDIT (.)
+HTML files: 61
+JSON-LD blocks: 63
+Graphs: 50
+Articles: 25
+BreadcrumbLists: 41
+FAQPages: 4
+✅ Schema rich-results audit passed
+```
+
+**Статус:** добавлено как постоянная проверка и включено в local Windows runner. Это закрывает риск повторения старых schema-регрессий вроде missing `datePublished`/`dateModified`/`publisher`, broken BreadcrumbList и literal `{jsonLd}`.
+
+---
+
+### NOTE-026 · Local Windows runner now inventories existing `reports/*` artifacts
+
+Скрипт `audit/external-checks/run-local-windows-audit.ps1` теперь отдельно перечисляет локальные отчёты, которые есть у владельца, но не коммитятся:
+
+```text
+reports\retire-dist.json
+reports\retire-repo.json
+reports\semgrep.json
+reports\url-contract-dist.json/md
+reports\url-contract-draft.json/md
+reports\htmlval-*.json
+reports\lighthouse-*.json
+reports\pa11y-*.json
+reports\npm-audit.json
+reports\visual-parity
+reports\local-audit-*
+```
+
+Это позволит присылать локальные результаты и обновлять registry/bug report без хранения сырых report-файлов в git.
+
+---
+
+*Итого раунд 10: +1 guard (BUG-055), +1 замечание.*
+*Суммарный итог по всем раундам: 55 багов/пунктов · 14 категорий мусора · 26 замечаний.*
+*Дата: 2026-06-27. Состояние main session after schema audit work.*

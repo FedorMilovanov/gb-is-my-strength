@@ -174,6 +174,38 @@ Add-Section 'Environment'
   "PowerShell: $($PSVersionTable.PSVersion)"
 ) | ForEach-Object { Add-Line $_ }
 
+
+Invoke-AuditCheck 'Existing local reports inventory' {
+  if (Test-Path 'reports') {
+    Get-ChildItem reports -Force | Select-Object Name, Length, LastWriteTime | Format-Table -AutoSize
+    foreach ($file in @(
+      'reports\retire-dist.json',
+      'reports\retire-repo.json',
+      'reports\semgrep.json',
+      'reports\url-contract-dist.json',
+      'reports\url-contract-dist.md',
+      'reports\url-contract-draft.json',
+      'reports\url-contract-draft.md',
+      'reports\dist-copy-manifest.json',
+      'reports\htmlval-gill.json',
+      'reports\htmlval-home.json',
+      'reports\lighthouse-gill-context.json',
+      'reports\lighthouse-home.json',
+      'reports\npm-audit.json',
+      'reports\pa11y-home.json',
+      'reports\pa11y-sitemap.json'
+    )) {
+      if (Test-Path $file) {
+        "FOUND $file bytes=$((Get-Item $file).Length)"
+      } else {
+        "MISSING $file"
+      }
+    }
+  } else {
+    'reports directory not found'
+  }
+} 'Inventory Fedor local report files that may have been generated before this runner.' -Advisory
+
 Invoke-AuditCheck 'git status' { git status --short --branch } 'Baseline: verify local branch and uncommitted changes.'
 Invoke-AuditCheck 'npm ci' { npm ci } 'Deterministic dependency install from lockfile.'
 
@@ -182,6 +214,7 @@ Invoke-AuditCheck 'Project fast gates' {
   npm run guard:agents-rev
   npm run validate:all
   npm run seo-audit
+  npm run schema:rich-results:audit
   npm run data:consistency
   npm run content:guard
   npm run content:parity
@@ -231,6 +264,7 @@ if (-not $SkipBuild) {
     npm run pagefind:build:dist
     npm run page-ownership:dist:production-like
     npm run dist:jsonld:audit
+    npm run schema:rich-results:audit:dist
     npm run dist:css-parity
     npm run sw:dist:audit:pagefind
     npm run audit:premium-controls
