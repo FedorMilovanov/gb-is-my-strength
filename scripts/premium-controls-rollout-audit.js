@@ -160,6 +160,8 @@ if (fs.existsSync(cssPath)) {
   bad('floating-cluster.css missing', 'core PremiumControls styles missing');
 }
 
+const RAW_GILL_ROMAN_RE = /class="(?:gbs-rail-card__num|toc-item__num|toc-part-item__num|gbs2-kinetic)"[^>]*>[IVX]+</;
+
 for (const f of files) {
   const route = routeOf(f);
   const html = fs.readFileSync(f, 'utf8');
@@ -172,12 +174,24 @@ for (const f of files) {
       else console.log(`⚠️ /${route}/ (legacy root copy): missing ARIA attributes on controls (will be fixed upon Astro promotion)`);
     }
   }
-  if (route.startsWith('articles/dzhon-gill-') || route === 'articles/dzhon-gill-spravochnik') {
+  if (route.startsWith('articles/dzhon-gill-')) {
+    if (html.includes('data-gill-v16')) {
+      ok(`/${route}/ v16 marker present`);
+    } else {
+      bad(`/${route}/ missing data-gill-v16`, 'Gill chrome must stay on v16 marker contract');
+    }
+
     if (html.includes('gb-roman')) {
       ok(`/${route}/ RomanNumeral integration OK (PC-007)`);
     } else {
       if (isAstro) bad(`/${route}/ missing gb-roman class`, 'Gill routes must use RomanNumeral component, no hardcoded raw numbers');
       else console.log(`⚠️ /${route}/ (legacy root copy): missing gb-roman class (will be fixed upon Astro promotion)`);
+    }
+
+    if (RAW_GILL_ROMAN_RE.test(html)) {
+      bad(`/${route}/ raw Gill numerals remain`, 'Gill chrome must not render raw numerals in rail / TOC / kinetic markers');
+    } else {
+      ok(`/${route}/ no raw Gill numeral nodes in chrome`);
     }
   }
 }

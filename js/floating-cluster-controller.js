@@ -193,6 +193,7 @@
      В пилоте audioState="none" → idle, кнопка видима но subdued.
      ===================================================== */
   function setEmberState(state, progress) {
+    ttsState.status = state;
     qsa('.gb-ember').forEach(function (btn) {
       btn.dataset.state = state;
       if (typeof progress !== 'undefined') {
@@ -221,6 +222,7 @@
      применяя сохранённую скорость из localStorage gb:audio:rate (fallback gbx-tts-rate).
      ===================================================== */
   var ttsState = {
+    status: 'idle',
     utterance: null,
     text: '',
     chunks: [],
@@ -258,7 +260,9 @@
     var article = qs('article.article-body') ||
                   qs('article') ||
                   qs('main[data-pagefind-body]') ||
-                  qs('main');
+                  qs('main') ||
+                  qs('#content') ||
+                  qs('.page-wrap');
     if (!article) return '';
     var blocks = article.querySelectorAll('p, h2, h3, li');
     var out = [];
@@ -418,9 +422,8 @@
     }
   });
 
-  function handlePlayClick() {
-    var ember = qs('.gb-ember');
-    var state = ember ? ember.dataset.state : 'idle';
+  function handlePlayClick(clickedEmber) {
+    var state = ttsState.status || (clickedEmber ? clickedEmber.dataset.state : 'idle');
 
     // Внешний движок имеет приоритет
     if (window.GBAudio && typeof window.GBAudio.toggle === 'function') {
@@ -748,8 +751,10 @@
         if (!item) return;
         if (item.classList.contains('is-current') && partToc) {
           e.preventDefault();
+          e.stopPropagation();
           closeOverlay(seriesToc);
           openOverlay(partToc);
+          return;
         }
         // Non-current items are regular links — let them navigate
       });
@@ -831,7 +836,7 @@
       panel.innerHTML = speeds.map(function(s) {
         var active = s === currentRate ? ' is-active' : '';
         return '<button class="gb-ember-expand__btn' + active + '" type="button" role="radio" data-speed="' + s + '" aria-label="Скорость ' + s + '\u00d7" aria-checked="' + (s === currentRate ? 'true' : 'false') + '">' + s + '\u00d7</button>';
-      }).join('');
+      }).join('') + '<button class="gb-ember-expand__btn gb-ember-expand__stop" type="button" aria-label="Остановить и сбросить">■</button>';
 
       // Wrap ember in a positioned span so the popover anchors exactly to the
       // play circle. Direction is set by CSS, not by JS:
@@ -877,20 +882,31 @@
       ember.addEventListener('click', function(e) {
         e.preventDefault();
         e.stopPropagation();
-        // Click = PLAY/PAUSE only. The speed pill is hover-driven on desktop
-        // (see mouseenter below) and tap-driven on touch (handled in the
-        // no-hover branch). Keeping click=play/pause means the user can always
-        // pause; previously click only toggled the pill so playback got stuck.
-        handlePlayClick();
-        // On touch devices (no hover) reveal the pill on the play tap too,
-        // so speeds are reachable without a hover capability.
+        handlePlayClick(ember);
         if (!HOVER_CAPABLE) {
-          var st = ember.dataset.state || 'idle';
-          if (st === 'playing') openPanel(); else closePanel();
+          var st = ttsState.status || ember.dataset.state || 'idle';
+          if (st === 'playing' || st === 'paused') openPanel(); else closePanel();
         }
       });
 
+      var pressTimer = null;
+      ember.addEventListener('pointerdown', function(e) {
+        pressTimer = setTimeout(function() {
+          stopTts();
+          closePanel();
+        }, 600);
+      });
+      ember.addEventListener('pointerup', function(e) { clearTimeout(pressTimer); });
+      ember.addEventListener('pointercancel', function(e) { clearTimeout(pressTimer); });
+
       panel.addEventListener('click', function(e) {
+        var stopBtn = e.target.closest('.gb-ember-expand__stop');
+        if (stopBtn) {
+          e.stopPropagation();
+          stopTts();
+          closePanel();
+          return;
+        }
         var btn = e.target.closest('[data-speed]');
         if (btn) {
           e.stopPropagation();
@@ -907,12 +923,8 @@
               detail: { rate: speed }
             }));
           } catch(_) {}
-          // Click on a speed = select instantly AND start playback from idle
-          // (owner spec: "на клик мышки бы уже сразу 1.75 и т.п.").
-          var _ember = qs('.gb-ember');
-          var _st = _ember ? _ember.dataset.state : 'idle';
-          if (_st === 'idle' || !_st) { handlePlayClick(); }
-          // On touch, collapse after selection; on hover, leave open while pointer stays.
+          var _st = ttsState.status || ember.dataset.state || 'idle';
+          if (_st === 'idle' || !_st) { handlePlayClick(ember); }
           if (!HOVER_CAPABLE) setTimeout(closePanel, 220);
           return;
         }

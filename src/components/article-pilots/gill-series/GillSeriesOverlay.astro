@@ -1,0 +1,39 @@
+---
+import SeriesMark from './SeriesMark.astro';
+import { GILL_SERIES_ITEMS, type GillSeriesPageId } from './gillSeriesData';
+
+interface Props {
+  pageId: GillSeriesPageId;
+}
+
+const { pageId } = Astro.props;
+---
+<div class="toc-overlay" id="seriesTocOverlay">
+  <div class="toc-sheet" role="dialog" aria-label="Содержание серии">
+    <div class="toc-sheet__handle"></div>
+    <div class="toc-sheet__head">
+      <div class="lab">Содержание серии</div>
+      <h3>Джон Гилл (1697–1771)</h3>
+    </div>
+    <div class="toc-sheet__list">
+      {GILL_SERIES_ITEMS.map((item) => {
+        const isCurrent = item.id === pageId;
+        const href = isCurrent ? './' : item.href;
+        return (
+          <a class:list={['toc-item', isCurrent && 'is-current']} href={href} aria-current={isCurrent ? 'page' : undefined}>
+            <SeriesMark kind={item.markKind} value={item.markValue} className="toc-item__num" />
+            <div class="toc-item__info">
+              <b>{item.title}</b>
+              {isCurrent ? (
+                <small style="color:var(--gb-accent,#7a2e2e)">● Читаете сейчас · {item.readingTime}</small>
+              ) : (
+                <small>{item.readingTime}</small>
+              )}
+            </div>
+            <div class="toc-item__chevron"><svg viewBox="0 0 24 24"><path d="M9 18l6-6-6-6" /></svg></div>
+          </a>
+        );
+      })}
+    </div>
+  </div>
+</div>
