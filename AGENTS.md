@@ -76,6 +76,7 @@ SANDBOX-ENV   → как выжить в конкретной среде (Arena)
 | **AGENTS-r303** | 2026-06-27 | **External checks wave 3 verified on main.** Added npm signature, lockfile-lint, JSON/XML syntax, Prettier+Astro-plugin, ESLint, Stylelint, jscpd, and dependency-cruiser decisions to `audit/external-checks/README.md`. Fixed stale Gill `gbs2-rail` marker requirement in `scripts/dist-publication-audit.js`; Prettier/ESLint/Stylelint remain CONFIG-FIRST, jscpd is advisory only. |
 | **AGENTS-r304** | 2026-06-27 | **Runtime/axe verification wave.** `interactive-audit` now supports both legacy GBS2 and Gill v16 selectors; `visual-audit` no longer emits stale `bio-cover-missing` on Gill v16; Nagornaya mobile theme bridge is wired via `.nag-sidebar-theme-btn`; axe-core Playwright findings are recorded as accessibility backlog. |
 | **AGENTS-r305** | 2026-06-27 | **axe-core a11y cleanup.** Hidden selection-share popup now uses `inert`; glossary tooltip hosts with `aria-expanded`/`aria-describedby` are normalized to `role="button"` + `tabindex="0"`. Remaining axe backlog is contrast, nested source markers, and link-in-text-block. |
+| **AGENTS-r306** | 2026-06-27 | **Workflow lint/SBOM verification.** `actionlint` strict mode with ShellCheck now passes after `indexnow.yml` and `visual-parity.yml` shell cleanup. SBOM generation is verified via npm and CycloneDX; Trivy secret/misconfig scan is clean, while full Trivy vuln DB is rejected in Arena due disk limits. oxlint is advisory; Biome is config-first. |
 
 ---
 
