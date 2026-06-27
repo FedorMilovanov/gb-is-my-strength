@@ -175,6 +175,7 @@ function localTargetExists(abs) {
   if (fs.existsSync(abs)) return true;
   if (fs.existsSync(path.join(abs, 'index.html'))) return true;
   if (!path.extname(abs) && fs.existsSync(abs + '.html')) return true;
+  if (fs.existsSync(path.join(ROOT, 'src/pages', path.relative(ROOT, abs), 'index.astro'))) return true;
   return false;
 }
 function jsonLdBlocks(html) {

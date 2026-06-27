@@ -9,6 +9,29 @@
 
 @layer components {
 
+:root {
+  --gb-accent-strong: #d4af37;
+  --gb-ease-out: cubic-bezier(.2,.7,.2,1);
+  --gb-ease-spring: cubic-bezier(.34,1.56,.64,1);
+  --gb-accent: #d4af37;
+  --gb-font-serif-display: "Lora", serif;
+  --gb-accent-gold: #d4af37;
+  --gb-accent-gold-bright: #ffd700;
+  --gb-font-serif: "Lora", serif;
+  --gb-font-sans: "Source Sans 3", sans-serif;
+  --gb-border: rgba(255,255,255,0.15);
+  --gb-text: #fff;
+  --gb-text-muted: rgba(255,255,255,0.6);
+  --z-sheet: 1000;
+  --gb-surface: #1a1a1a;
+  --gb-ease-overshoot: cubic-bezier(.34,1.56,.64,1);
+  --gb-border-strong: rgba(255,255,255,0.25);
+  --gb-surface-muted: #2a2a2a;
+  --gb-ease-precise: cubic-bezier(.2,.7,.2,1);
+  --gb-text-faint: rgba(255,255,255,0.4);
+  --gb-accent-gold-deep: #b8860b;
+}
+
 /* =========================================================
    gb-floater — standalone vertical cluster
    (SingleArticleCluster.astro)
@@ -912,7 +935,7 @@ html.dark [data-gill-v16] .gb-theme-toggle .theme-icon-moon{opacity:1;transform:
   transition:
 [data-gill-v16] opacity .22s var(--gb-ease-out),[data-gill-v16] 
     transform .28s var(--gb-ease-spring);
-  z-index:10;
+  z-index:var(--z-above, 10);
 }
 @media (hover: hover) and (pointer: fine) {
 [data-gill-v16] .gbs-rail-foot__btn[data-tip]:hover::after,[data-gill-v16] .gbs-rail-foot__btn[data-tip]:focus-visible::after,[data-gill-v16] 
