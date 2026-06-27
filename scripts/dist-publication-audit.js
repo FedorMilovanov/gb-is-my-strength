@@ -209,11 +209,11 @@ function checkAstroArticlesIndexOwnership() {
 }
 function checkAstroArticleOwnership() {
   const visualShadowArticleMarkers = {
-    'dzhon-gill-spravochnik': ['gbs-world', 'data-gbs2-series="dzhon-gill"', 'gbs2-rail'],
+    'dzhon-gill-spravochnik': ['gbs-world', 'data-gbs2-series="dzhon-gill"', 'gbs-rail'],
     'dzhon-gill-istoricheskiy-kontekst': ['gbs-world', 'data-gbs2-series="dzhon-gill"', 'gbs-rail'],
-    'dzhon-gill-chast-1-chelovek': ['gbs-world', 'data-gbs2-series="dzhon-gill"', 'gbs2-rail'],
-    'dzhon-gill-chast-2-uchenyi': ['gbs-world', 'data-gbs2-series="dzhon-gill"', 'gbs2-rail'],
-    'dzhon-gill-chast-3-nasledie': ['gbs-world', 'data-gbs2-series="dzhon-gill"', 'gbs2-rail'],
+    'dzhon-gill-chast-1-chelovek': ['gbs-world', 'data-gbs2-series="dzhon-gill"', 'gbs-rail'],
+    'dzhon-gill-chast-2-uchenyi': ['gbs-world', 'data-gbs2-series="dzhon-gill"', 'gbs-rail'],
+    'dzhon-gill-chast-3-nasledie': ['gbs-world', 'data-gbs2-series="dzhon-gill"', 'gbs-rail'],
     'rimlyanam-7-veruyushchiy-ili-neveruyushchiy': ['gbs-world', 'data-gbs2-series="hard-texts"', 'gbs2-rail'],
     'krajne-li-isporcheno-serdce': ['gbs-world', 'data-gbs2-series="hard-texts"', 'gbs2-rail'],
     'kod-da-vinchi': ['article-body', 'data-pagefind-body'],

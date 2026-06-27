@@ -170,6 +170,28 @@ checkov -d .github/workflows --framework github_actions --output json
   - syntax-only: `actionlint -shellcheck '' .github/workflows/*.yml`
   - strict shell-aware: install `shellcheck` and run `actionlint .github/workflows/*.yml`
 
+
+## Верификация — волна 3 (2026-06-27)
+
+| Статус | Проверка | Команда / способ | Результат | Решение |
+|---|---|---|---|---|
+| `KEEP` | npm registry signatures | `npm audit signatures` | `PASS`: 476 packages with verified registry signatures, 106 attestations | Useful fast supply-chain check. |
+| `KEEP` | lockfile-lint | `lockfile-lint --path package-lock.json --type npm --validate-https --allowed-hosts npm --validate-integrity` | `PASS`: no lockfile host/HTTPS/integrity issues | Useful PR gate for lockfile safety. |
+| `KEEP` | JSON syntax scan | Node `JSON.parse` over repo JSON files excluding `node_modules`/`dist` | `PASS`: 90 JSON files, 0 parse errors | Useful fast data sanity check. |
+| `KEEP` | XML syntax scan | `xmllint --noout` over XML/XSL files | `PASS` | Useful for sitemap/feed validation. |
+| `CONFIG-FIRST` | Prettier | first `npx prettier --check`; retry with temp `prettier-plugin-astro` install | First run failed on `.astro` parser; plugin retry worked but reports many formatting diffs and one CSS parse issue in `css/site-layered.css` | Do not add blocking until project chooses Prettier config/plugins and excludes generated/layered CSS as needed. |
+| `CONFIG-FIRST` | ESLint v9 | `npx eslint .` | `FAIL`: no `eslint.config.*` | Not useful until config exists. |
+| `CONFIG-FIRST` | Stylelint | `npx stylelint ...` | `FAIL`: no Stylelint config | Not useful until `.stylelintrc` / standard config decision. |
+| `KEEP-ADVISORY` | jscpd duplicate detector | `jscpd src scripts js css --format javascript,typescript,css --min-lines 12 --min-tokens 80` | `PASS command`, found 27 clones; especially duplicated visual-parity audit scaffolding and Gill visual-parity scripts | Useful refactor advisory; not blocking. |
+| `KEEP-ADVISORY` | dependency-cruiser no-config | `dependency-cruiser --no-config --output-type err-long --include-only "^(src|scripts|js)" src scripts js` | `PASS`: no dependency violations, but only 0 dependencies cruised under no-config | Low value without config; keep as optional architecture-lane tool. |
+
+## Wave 3 decisions for future agents
+
+- `npm audit signatures`, `lockfile-lint`, JSON parse, and XML parse are low-noise and good candidates for fast checks.
+- Prettier/ESLint/Stylelint are **not** ready as blocking gates; they require project config first.
+- `jscpd` is useful to reveal duplicated audit scripts, but should produce refactor backlog, not fail CI.
+- `dependency-cruiser` needs config to be valuable; no-config mode did not discover meaningful dependency graph for this repo.
+
 ## Не добавлять без новой верификации
 
 - `npx actionlint` — не работает в npm-варианте; нужен бинарь.
