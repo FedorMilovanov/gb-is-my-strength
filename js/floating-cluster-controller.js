@@ -17,6 +17,10 @@
 
   var THEME_KEY = 'theme';
   var toastTimer = null;
+  /* True on devices with a real hover pointer (desktop/trackpad). Drives the
+     hover-to-open Play speed pill; touch devices fall back to tap. */
+  var HOVER_CAPABLE = !!(window.matchMedia &&
+    window.matchMedia('(hover: hover) and (pointer: fine)').matches);
 
   /* =====================================================
      УТИЛИТЫ
@@ -224,7 +228,28 @@
     totalChars: 0,
     spokenChars: 0,
     paused: false,
+    voice: null,
   };
+
+  /* Russian voice picker — без него браузер берёт дефолтный (часто английский)
+     голос, даже если u.lang='ru-RU'. */
+  function pickRuVoice() {
+    if (!('speechSynthesis' in window)) return null;
+    var voices = [];
+    try { voices = window.speechSynthesis.getVoices() || []; } catch (_) { return null; }
+    if (!voices.length) return null;
+    var ru = voices.filter(function (v) {
+      return /^ru(?:[-_]|$)/i.test(v.lang || '') ||
+             /рус|russian/i.test(((v.name || '') + ' ' + (v.lang || '')));
+    });
+    return ru.find(function (v) { return /google/i.test(v.name || ''); }) ||
+           ru.find(function (v) { return v.localService === false; }) ||
+           ru[0] || null;
+  }
+  if ('speechSynthesis' in window) {
+    ttsState.voice = pickRuVoice();
+    try { window.speechSynthesis.addEventListener('voiceschanged', function () { ttsState.voice = pickRuVoice(); }); } catch (_) {}
+  }
 
   function getArticleText() {
     // Соберём читательский текст: только параграфы внутри <article>
@@ -289,6 +314,8 @@
     var u = new SpeechSynthesisUtterance(chunk);
     u.rate = getStoredRate();
     u.lang = 'ru-RU';
+    if (!ttsState.voice) ttsState.voice = pickRuVoice();
+    if (ttsState.voice) u.voice = ttsState.voice;
     u.onend = function () {
       ttsState.spokenChars += chunk.length;
       ttsState.chunkIdx += 1;
@@ -782,7 +809,17 @@
       ember.addEventListener('click', function(e) {
         e.preventDefault();
         e.stopPropagation();
-        panel.classList.contains('is-open') ? closePanel() : openPanel();
+        // Click = PLAY/PAUSE only. The speed pill is hover-driven on desktop
+        // (see mouseenter below) and tap-driven on touch (handled in the
+        // no-hover branch). Keeping click=play/pause means the user can always
+        // pause; previously click only toggled the pill so playback got stuck.
+        handlePlayClick();
+        // On touch devices (no hover) reveal the pill on the play tap too,
+        // so speeds are reachable without a hover capability.
+        if (!HOVER_CAPABLE) {
+          var st = ember.dataset.state || 'idle';
+          if (st === 'playing') openPanel(); else closePanel();
+        }
       });
 
       panel.addEventListener('click', function(e) {
@@ -803,23 +840,40 @@
               detail: { rate: speed }
             }));
           } catch(_) {}
-          // Close smoothly after selection
-          setTimeout(closePanel, 240);
-          // Auto-start TTS after speed selection if idle (R6 fix — click path was dead)
+          // Click on a speed = select instantly AND start playback from idle
+          // (owner spec: "на клик мышки бы уже сразу 1.75 и т.п.").
           var _ember = qs('.gb-ember');
           var _st = _ember ? _ember.dataset.state : 'idle';
-          if (_st === 'idle' || !_st) { setTimeout(handlePlayClick, 300); }
+          if (_st === 'idle' || !_st) { handlePlayClick(); }
+          // On touch, collapse after selection; on hover, leave open while pointer stays.
+          if (!HOVER_CAPABLE) setTimeout(closePanel, 220);
           return;
         }
       });
 
-      // Close on mouse leave the wrap (ember + panel), outside click, and Escape.
+      // ── Premium open/close ───────────────────────────────────────────────
+      // Desktop (hover-capable): the speed pill blooms OUT of the Play circle
+      // on hover — smooth, rubbery, deep. Click stays = play/pause.
+      // Touch: pill is revealed via the play tap (above) / tap toggle (below).
       var leaveTimer = null;
-      wrap.addEventListener('mouseleave', function() {
-        clearTimeout(leaveTimer);
-        leaveTimer = setTimeout(closePanel, 220);
-      });
-      wrap.addEventListener('mouseenter', function() { clearTimeout(leaveTimer); });
+      if (HOVER_CAPABLE) {
+        wrap.addEventListener('mouseenter', function() {
+          clearTimeout(leaveTimer);
+          openPanel();
+        });
+        wrap.addEventListener('mouseleave', function() {
+          clearTimeout(leaveTimer);
+          leaveTimer = setTimeout(closePanel, 260);
+        });
+        // Keyboard a11y: focusing the ember opens the pill; blur (out of wrap) closes.
+        ember.addEventListener('focus', openPanel);
+        wrap.addEventListener('focusout', function(e) {
+          if (!wrap.contains(e.relatedTarget)) {
+            clearTimeout(leaveTimer);
+            leaveTimer = setTimeout(closePanel, 120);
+          }
+        });
+      }
       document.addEventListener('click', function(e) {
         if (!wrap.contains(e.target)) closePanel();
       });
