@@ -2218,3 +2218,71 @@ html.dark .gb-roman {
 .toc-part-item__num {
   color: var(--color-accent-gold, #b8936a);
 }
+
+
+/* =========================================================
+   Mobile fallback PremiumControls for series-rich/GBS2 routes
+   ---------------------------------------------------------
+   Runtime clones the existing scoped rail controls when every .gb-ember is
+   0×0 on mobile (desktop rail/sidebar hidden). This keeps Play/Save reachable
+   without rewriting each long generated article body.
+   ========================================================= */
+.gb-mobile-fallback-controls {
+  display: none;
+}
+@media (max-width: 899px) {
+  .gb-mobile-fallback-controls {
+    position: fixed !important;
+    left: 50% !important;
+    right: auto !important;
+    bottom: calc(64px + env(safe-area-inset-bottom, 0px)) !important;
+    top: auto !important;
+    transform: translateX(-50%) !important;
+    z-index: 2102 !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 4px !important;
+    width: max-content !important;
+    max-width: calc(100vw - 24px) !important;
+    min-height: 44px !important;
+    padding: 5px 8px !important;
+    border: 1px solid rgba(184,147,106,.28) !important;
+    border-radius: 999px !important;
+    background: rgba(253,252,249,.94) !important;
+    box-shadow: 0 14px 36px rgba(0,0,0,.14) !important;
+    -webkit-backdrop-filter: blur(18px) saturate(170%) !important;
+    backdrop-filter: blur(18px) saturate(170%) !important;
+    overflow: visible !important;
+  }
+  html.dark .gb-mobile-fallback-controls {
+    background: rgba(22,26,33,.94) !important;
+    border-color: rgba(255,255,255,.10) !important;
+    box-shadow: 0 16px 42px rgba(0,0,0,.42) !important;
+  }
+  .gb-mobile-fallback-controls .gbs2-home,
+  .gb-mobile-fallback-controls [data-gbs2-offline],
+  .gb-mobile-fallback-controls [data-gbs2-share] {
+    display: none !important;
+  }
+  .gb-mobile-fallback-controls .gbs2-ctl,
+  .gb-mobile-fallback-controls .nag-sidebar-btn,
+  .gb-mobile-fallback-controls .nag-sidebar-ember,
+  .gb-mobile-fallback-controls .nag-sidebar-save,
+  .gb-mobile-fallback-controls .gb-ember,
+  .gb-mobile-fallback-controls .gb-save {
+    width: 36px !important;
+    height: 36px !important;
+    min-width: 36px !important;
+    min-height: 36px !important;
+    display: grid !important;
+    place-items: center !important;
+    flex: 0 0 auto !important;
+  }
+  .gb-mobile-fallback-controls .gb-ember {
+    --ember-size: 36px !important;
+  }
+  .gb-mobile-fallback-controls .gb-ember-expand {
+    bottom: calc(100% + 10px);
+  }
+}
