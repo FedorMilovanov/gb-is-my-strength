@@ -3,13 +3,26 @@
 // Run `node scripts/cache-bust.js` to update VERSIONS below after CSS/JS changes
 
 export const ASSET_VERSIONS = {
-  'css/site.css': 'b880b524',
   'css/command-palette.css': 'afe33045',
+  'css/floating-cluster.css': 'e7feff19',
+  'css/home.css': 'f5b561ee',
   'css/mobile-hotfix.css': 'c1f7664e',
-  'css/floating-cluster.css': '56994ecc',
+  'css/nagornaya-mobile-toc.css': 'c4a4a7fd',
   'css/premium-controls.css': '35714e73',
+  'css/site.css': 'b880b524',
+  'fonts/fonts.css': '4504f3cb',
+  'js/bookmark-engine.js': 'c5e0bf10',
+  'js/enhancements.js': 'b3b77aa6',
+  'js/floating-cluster-controller.js': '2ea97d46',
+  'js/glossary.js': '2100cf4f',
+  'js/highlights.js': 'a1706b06',
+  'js/nagornaya-mobile-toc.js': '866d4238',
+  'js/scroll-perf.js': '454d6f7b',
+  'js/search.js': 'c9d65577',
+  'js/site-utils.js': '897afa55',
   'js/site.js': '158b6e05',
-  'js/floating-cluster-controller.js': 'd77256d1',
+  'js/sw-register.js': '318502c5',
+  'nagornaya/tw.min.css': '2670414e',
 };
 
 export function assetUrl(path) {
