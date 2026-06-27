@@ -12,6 +12,7 @@
  */
 import PlayEmber from '@/components/ui/floating-cluster/PlayEmber.astro';
 import SaveButton from '@/components/ui/floating-cluster/SaveButton.astro';
+import RomanNumeral from '@/components/ui/floating-cluster/RomanNumeral.astro';
 ---
 
 <a class="skip-link" href="#main-content">Перейти к содержимому</a>
@@ -30,11 +31,11 @@ import SaveButton from '@/components/ui/floating-cluster/SaveButton.astro';
       <div class="bar"><i id="gbs2Curbar"></i></div>
     </div>
     <div class="gbs-rail-list">
-      <a class="gbs-rail-card" href="../dzhon-gill-istoricheskiy-kontekst/"><div class="gbs-rail-card__num">I</div><div class="gbs-rail-card__info"><small>16 мин</small><b>Исторический контекст</b></div><div class="gbs-rail-card__chevron"><svg viewBox="0 0 24 24"><path d="M9 18l6-6-6-6"/></svg></div></a>
-      <a class="gbs-rail-card" href="../dzhon-gill-chast-1-chelovek/"><div class="gbs-rail-card__num">II</div><div class="gbs-rail-card__info"><small>32 мин</small><b>Часть I. Человек</b></div><div class="gbs-rail-card__chevron"><svg viewBox="0 0 24 24"><path d="M9 18l6-6-6-6"/></svg></div></a>
-      <a class="gbs-rail-card" href="../dzhon-gill-chast-2-uchenyi/"><div class="gbs-rail-card__num">III</div><div class="gbs-rail-card__info"><small>39 мин</small><b>Часть II. Учёный</b></div><div class="gbs-rail-card__chevron"><svg viewBox="0 0 24 24"><path d="M9 18l6-6-6-6"/></svg></div></a>
-      <a class="gbs-rail-card" href="../dzhon-gill-chast-3-nasledie/"><div class="gbs-rail-card__num">IV</div><div class="gbs-rail-card__info"><small>54 мин</small><b>Часть III. Наследие</b></div><div class="gbs-rail-card__chevron"><svg viewBox="0 0 24 24"><path d="M9 18l6-6-6-6"/></svg></div></a>
-      <a class="gbs-rail-card is-current" href="./" aria-current="page"><div class="gbs-rail-card__num">V</div><div class="gbs-rail-card__info"><small>8 мин</small><b>Справочник по Гиллу</b></div><div class="gbs-rail-card__check">✓</div><div class="gbs-rail-card__chevron"><svg viewBox="0 0 24 24"><path d="M9 18l6-6-6-6"/></svg></div></a>
+      <a class="gbs-rail-card" href="../dzhon-gill-istoricheskiy-kontekst/"><div class="gbs-rail-card__num"><RomanNumeral value="I" /></div><div class="gbs-rail-card__info"><small>16 мин</small><b>Исторический контекст</b></div><div class="gbs-rail-card__chevron"><svg viewBox="0 0 24 24"><path d="M9 18l6-6-6-6"/></svg></div></a>
+      <a class="gbs-rail-card" href="../dzhon-gill-chast-1-chelovek/"><div class="gbs-rail-card__num"><RomanNumeral value="II" /></div><div class="gbs-rail-card__info"><small>32 мин</small><b>Часть I. Человек</b></div><div class="gbs-rail-card__chevron"><svg viewBox="0 0 24 24"><path d="M9 18l6-6-6-6"/></svg></div></a>
+      <a class="gbs-rail-card" href="../dzhon-gill-chast-2-uchenyi/"><div class="gbs-rail-card__num"><RomanNumeral value="III" /></div><div class="gbs-rail-card__info"><small>39 мин</small><b>Часть II. Учёный</b></div><div class="gbs-rail-card__chevron"><svg viewBox="0 0 24 24"><path d="M9 18l6-6-6-6"/></svg></div></a>
+      <a class="gbs-rail-card" href="../dzhon-gill-chast-3-nasledie/"><div class="gbs-rail-card__num"><RomanNumeral value="IV" /></div><div class="gbs-rail-card__info"><small>54 мин</small><b>Часть III. Наследие</b></div><div class="gbs-rail-card__chevron"><svg viewBox="0 0 24 24"><path d="M9 18l6-6-6-6"/></svg></div></a>
+      <a class="gbs-rail-card is-current" href="./" aria-current="page"><div class="gbs-rail-card__num"><RomanNumeral value="V" /></div><div class="gbs-rail-card__info"><small>8 мин</small><b>Справочник по Гиллу</b></div><div class="gbs-rail-card__check">✓</div><div class="gbs-rail-card__chevron"><svg viewBox="0 0 24 24"><path d="M9 18l6-6-6-6"/></svg></div></a>
     </div>
   </div>
   <div class="gbs-rail-spacer"></div>
@@ -85,11 +86,11 @@ import SaveButton from '@/components/ui/floating-cluster/SaveButton.astro';
       <h3>Джон Гилл (1697–1771)</h3>
     </div>
     <div class="toc-sheet__list">
-      <a class="toc-item" href="../dzhon-gill-istoricheskiy-kontekst/"><div class="toc-item__num">I</div><div class="toc-item__info"><b>Исторический контекст</b><small>16 мин</small></div><div class="toc-item__chevron"><svg viewBox="0 0 24 24"><path d="M9 18l6-6-6-6"/></svg></div></a>
-      <a class="toc-item" href="../dzhon-gill-chast-1-chelovek/"><div class="toc-item__num">II</div><div class="toc-item__info"><b>Часть I. Человек</b><small>32 мин</small></div><div class="toc-item__chevron"><svg viewBox="0 0 24 24"><path d="M9 18l6-6-6-6"/></svg></div></a>
-      <a class="toc-item" href="../dzhon-gill-chast-2-uchenyi/"><div class="toc-item__num">III</div><div class="toc-item__info"><b>Часть II. Учёный</b><small>39 мин</small></div><div class="toc-item__chevron"><svg viewBox="0 0 24 24"><path d="M9 18l6-6-6-6"/></svg></div></a>
-      <a class="toc-item" href="../dzhon-gill-chast-3-nasledie/"><div class="toc-item__num">IV</div><div class="toc-item__info"><b>Часть III. Наследие</b><small>54 мин</small></div><div class="toc-item__chevron"><svg viewBox="0 0 24 24"><path d="M9 18l6-6-6-6"/></svg></div></a>
-      <a class="toc-item is-current" href="./" aria-current="page"><div class="toc-item__num">V</div><div class="toc-item__info"><b>Справочник по Гиллу</b><small style="color:var(--gb-accent,#7a2e2e)">● Читаете сейчас · 8 мин</small></div><div class="toc-item__chevron"><svg viewBox="0 0 24 24"><path d="M9 18l6-6-6-6"/></svg></div></a>
+      <a class="toc-item" href="../dzhon-gill-istoricheskiy-kontekst/"><div class="toc-item__num"><RomanNumeral value="I" /></div><div class="toc-item__info"><b>Исторический контекст</b><small>16 мин</small></div><div class="toc-item__chevron"><svg viewBox="0 0 24 24"><path d="M9 18l6-6-6-6"/></svg></div></a>
+      <a class="toc-item" href="../dzhon-gill-chast-1-chelovek/"><div class="toc-item__num"><RomanNumeral value="II" /></div><div class="toc-item__info"><b>Часть I. Человек</b><small>32 мин</small></div><div class="toc-item__chevron"><svg viewBox="0 0 24 24"><path d="M9 18l6-6-6-6"/></svg></div></a>
+      <a class="toc-item" href="../dzhon-gill-chast-2-uchenyi/"><div class="toc-item__num"><RomanNumeral value="III" /></div><div class="toc-item__info"><b>Часть II. Учёный</b><small>39 мин</small></div><div class="toc-item__chevron"><svg viewBox="0 0 24 24"><path d="M9 18l6-6-6-6"/></svg></div></a>
+      <a class="toc-item" href="../dzhon-gill-chast-3-nasledie/"><div class="toc-item__num"><RomanNumeral value="IV" /></div><div class="toc-item__info"><b>Часть III. Наследие</b><small>54 мин</small></div><div class="toc-item__chevron"><svg viewBox="0 0 24 24"><path d="M9 18l6-6-6-6"/></svg></div></a>
+      <a class="toc-item is-current" href="./" aria-current="page"><div class="toc-item__num"><RomanNumeral value="V" /></div><div class="toc-item__info"><b>Справочник по Гиллу</b><small style="color:var(--gb-accent,#7a2e2e)">● Читаете сейчас · 8 мин</small></div><div class="toc-item__chevron"><svg viewBox="0 0 24 24"><path d="M9 18l6-6-6-6"/></svg></div></a>
     </div>
   </div>
 </div>
@@ -109,15 +110,15 @@ import SaveButton from '@/components/ui/floating-cluster/SaveButton.astro';
     </div>
     <div class="toc-sheet__scroll-bar"><i style="--scroll-pct:0%"></i></div>
     <div class="toc-sheet__list" id="gbs2PartToc">
-      <a class="toc-part-item is-current" href="#sec-prdl"><div class="toc-part-item__num">I</div><div class="toc-part-item__info"><b>Масштаб корпуса</b><small style="color:var(--gb-accent,#7a2e2e)">● Глава 1</small></div><div class="toc-part-item__progress"><i style="width:0%"></i></div></a>
-      <a class="toc-part-item" href="#sec-timeline"><div class="toc-part-item__num">II</div><div class="toc-part-item__info"><b>Хронология жизни и служения</b><small>Глава 2</small></div><div class="toc-part-item__progress"><i></i></div></a>
-      <a class="toc-part-item" href="#sec-works"><div class="toc-part-item__num">III</div><div class="toc-part-item__info"><b>Основные труды</b><small>Глава 3</small></div><div class="toc-part-item__progress"><i></i></div></a>
-      <a class="toc-part-item" href="#sec-body-structure"><div class="toc-part-item__num">IV</div><div class="toc-part-item__info"><b>Структура «Свода богословия»</b><small>Глава 4</small></div><div class="toc-part-item__progress"><i></i></div></a>
-      <a class="toc-part-item" href="#sec-network"><div class="toc-part-item__num">V</div><div class="toc-part-item__info"><b>Сеть влияний и наследников</b><small>Глава 5</small></div><div class="toc-part-item__progress"><i></i></div></a>
-      <a class="toc-part-item" href="#sec-disputes"><div class="toc-part-item__num">VI</div><div class="toc-part-item__info"><b>Спорные темы и как их читать</b><small>Глава 6</small></div><div class="toc-part-item__progress"><i></i></div></a>
-      <a class="toc-part-item" href="#sec-terms"><div class="toc-part-item__num">VII</div><div class="toc-part-item__info"><b>Богословский словарь эпохи</b><small>Глава 7</small></div><div class="toc-part-item__progress"><i></i></div></a>
-      <a class="toc-part-item" href="#sec-links"><div class="toc-part-item__num">VIII</div><div class="toc-part-item__info"><b>Читать дальше</b><small>Глава 8</small></div><div class="toc-part-item__progress"><i></i></div></a>
-      <a class="toc-part-item" href="#sec-quiz"><div class="toc-part-item__num">IX</div><div class="toc-part-item__info"><b>Проверь себя</b><small>Глава 9</small></div><div class="toc-part-item__progress"><i></i></div></a>
+      <a class="toc-part-item is-current" href="#sec-prdl"><div class="toc-part-item__num"><RomanNumeral value="I" /></div><div class="toc-part-item__info"><b>Масштаб корпуса</b><small style="color:var(--gb-accent,#7a2e2e)">● Глава 1</small></div><div class="toc-part-item__progress"><i style="width:0%"></i></div></a>
+      <a class="toc-part-item" href="#sec-timeline"><div class="toc-part-item__num"><RomanNumeral value="II" /></div><div class="toc-part-item__info"><b>Хронология жизни и служения</b><small>Глава 2</small></div><div class="toc-part-item__progress"><i></i></div></a>
+      <a class="toc-part-item" href="#sec-works"><div class="toc-part-item__num"><RomanNumeral value="III" /></div><div class="toc-part-item__info"><b>Основные труды</b><small>Глава 3</small></div><div class="toc-part-item__progress"><i></i></div></a>
+      <a class="toc-part-item" href="#sec-body-structure"><div class="toc-part-item__num"><RomanNumeral value="IV" /></div><div class="toc-part-item__info"><b>Структура «Свода богословия»</b><small>Глава 4</small></div><div class="toc-part-item__progress"><i></i></div></a>
+      <a class="toc-part-item" href="#sec-network"><div class="toc-part-item__num"><RomanNumeral value="V" /></div><div class="toc-part-item__info"><b>Сеть влияний и наследников</b><small>Глава 5</small></div><div class="toc-part-item__progress"><i></i></div></a>
+      <a class="toc-part-item" href="#sec-disputes"><div class="toc-part-item__num"><RomanNumeral value="VI" /></div><div class="toc-part-item__info"><b>Спорные темы и как их читать</b><small>Глава 6</small></div><div class="toc-part-item__progress"><i></i></div></a>
+      <a class="toc-part-item" href="#sec-terms"><div class="toc-part-item__num"><RomanNumeral value="VII" /></div><div class="toc-part-item__info"><b>Богословский словарь эпохи</b><small>Глава 7</small></div><div class="toc-part-item__progress"><i></i></div></a>
+      <a class="toc-part-item" href="#sec-links"><div class="toc-part-item__num"><RomanNumeral value="VIII" /></div><div class="toc-part-item__info"><b>Читать дальше</b><small>Глава 8</small></div><div class="toc-part-item__progress"><i></i></div></a>
+      <a class="toc-part-item" href="#sec-quiz"><div class="toc-part-item__num"><RomanNumeral value="IX" /></div><div class="toc-part-item__info"><b>Проверь себя</b><small>Глава 9</small></div><div class="toc-part-item__progress"><i></i></div></a>
     </div>
     <div class="toc-sheet__actions toc-sheet__actions--grid">
       <button class="toc-action-btn gb-save" data-fc-action="save">

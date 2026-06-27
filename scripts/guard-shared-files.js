@@ -197,6 +197,24 @@ function guardGillMobileTocCurrentItem(problems) {
   }
 }
 
+
+function guardGillRomanNumeralSource(problems) {
+  const base = path.join(ROOT, 'src', 'components', 'article-pilots');
+  if (!fs.existsSync(base)) return;
+  const files = collectFilesRecursive(base, (abs) => /gill-[^/\\]+[/\\].*PageChrome\.astro$/.test(abs));
+  const rawRoman = /<div class="(?:gbs-rail-card__num|toc-item__num|toc-part-item__num)">[IVXLCDM]+<\/div>/;
+  for (const abs of files) {
+    const rel = path.relative(ROOT, abs).replace(/\\/g, '/');
+    const src = fs.readFileSync(abs, 'utf8');
+    if (!src.includes("RomanNumeral from '@/components/ui/floating-cluster/RomanNumeral.astro'")) {
+      problems.push(`FAIL: ${rel} must import RomanNumeral for Gill rail/TOC numerals.`);
+    }
+    if (rawRoman.test(src)) {
+      problems.push(`FAIL: ${rel} contains raw Gill roman numeral divs; use <RomanNumeral value="..." />.`);
+    }
+  }
+}
+
 function getChangedFiles() {
   const changed = new Set();
   try {
@@ -292,6 +310,7 @@ function main() {
   guardHermeneuticsPositionTruth(problems);
   guardFloatingClusterCssSanitation(problems);
   guardGillMobileTocCurrentItem(problems);
+  guardGillRomanNumeralSource(problems);
 
   for (const file of files) {
     if (isSafe(file)) continue;

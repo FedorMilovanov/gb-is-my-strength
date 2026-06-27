@@ -173,10 +173,11 @@ for (const f of files) {
     }
   }
   if (route.startsWith('articles/dzhon-gill-') || route === 'articles/dzhon-gill-spravochnik') {
+    const isGillV16 = html.includes('data-gill-v16') || /class="[^"]*\bgbs-rail\b/.test(html);
     if (html.includes('gb-roman')) {
       ok(`/${route}/ RomanNumeral integration OK (PC-007)`);
     } else {
-      if (isAstro) bad(`/${route}/ missing gb-roman class`, 'Gill routes must use RomanNumeral component, no hardcoded raw numbers');
+      if (isAstro || isGillV16) bad(`/${route}/ missing gb-roman class`, 'Gill v16 routes must use RomanNumeral component, no hardcoded raw numbers');
       else console.log(`⚠️ /${route}/ (legacy root copy): missing gb-roman class (will be fixed upon Astro promotion)`);
     }
   }

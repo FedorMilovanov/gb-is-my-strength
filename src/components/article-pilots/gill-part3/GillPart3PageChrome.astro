@@ -12,6 +12,7 @@
  */
 import PlayEmber from '@/components/ui/floating-cluster/PlayEmber.astro';
 import SaveButton from '@/components/ui/floating-cluster/SaveButton.astro';
+import RomanNumeral from '@/components/ui/floating-cluster/RomanNumeral.astro';
 ---
 
 <a class="skip-link" href="#main-content">Перейти к содержимому</a>
@@ -30,11 +31,11 @@ import SaveButton from '@/components/ui/floating-cluster/SaveButton.astro';
       <div class="bar"><i id="gbs2Curbar"></i></div>
     </div>
     <div class="gbs-rail-list">
-      <a class="gbs-rail-card" href="../dzhon-gill-istoricheskiy-kontekst/"><div class="gbs-rail-card__num">I</div><div class="gbs-rail-card__info"><small>16 мин</small><b>Исторический контекст</b></div><div class="gbs-rail-card__chevron"><svg viewBox="0 0 24 24"><path d="M9 18l6-6-6-6"/></svg></div></a>
-      <a class="gbs-rail-card" href="../dzhon-gill-chast-1-chelovek/"><div class="gbs-rail-card__num">II</div><div class="gbs-rail-card__info"><small>32 мин</small><b>Часть I. Человек</b></div><div class="gbs-rail-card__chevron"><svg viewBox="0 0 24 24"><path d="M9 18l6-6-6-6"/></svg></div></a>
-      <a class="gbs-rail-card" href="../dzhon-gill-chast-2-uchenyi/"><div class="gbs-rail-card__num">III</div><div class="gbs-rail-card__info"><small>39 мин</small><b>Часть II. Учёный</b></div><div class="gbs-rail-card__chevron"><svg viewBox="0 0 24 24"><path d="M9 18l6-6-6-6"/></svg></div></a>
-      <a class="gbs-rail-card is-current" href="./" aria-current="page"><div class="gbs-rail-card__num">IV</div><div class="gbs-rail-card__info"><small>54 мин</small><b>Часть III. Наследие</b></div><div class="gbs-rail-card__check">✓</div><div class="gbs-rail-card__chevron"><svg viewBox="0 0 24 24"><path d="M9 18l6-6-6-6"/></svg></div></a>
-      <a class="gbs-rail-card" href="../dzhon-gill-spravochnik/"><div class="gbs-rail-card__num">V</div><div class="gbs-rail-card__info"><small>8 мин</small><b>Справочник по Гиллу</b></div><div class="gbs-rail-card__chevron"><svg viewBox="0 0 24 24"><path d="M9 18l6-6-6-6"/></svg></div></a>
+      <a class="gbs-rail-card" href="../dzhon-gill-istoricheskiy-kontekst/"><div class="gbs-rail-card__num"><RomanNumeral value="I" /></div><div class="gbs-rail-card__info"><small>16 мин</small><b>Исторический контекст</b></div><div class="gbs-rail-card__chevron"><svg viewBox="0 0 24 24"><path d="M9 18l6-6-6-6"/></svg></div></a>
+      <a class="gbs-rail-card" href="../dzhon-gill-chast-1-chelovek/"><div class="gbs-rail-card__num"><RomanNumeral value="II" /></div><div class="gbs-rail-card__info"><small>32 мин</small><b>Часть I. Человек</b></div><div class="gbs-rail-card__chevron"><svg viewBox="0 0 24 24"><path d="M9 18l6-6-6-6"/></svg></div></a>
+      <a class="gbs-rail-card" href="../dzhon-gill-chast-2-uchenyi/"><div class="gbs-rail-card__num"><RomanNumeral value="III" /></div><div class="gbs-rail-card__info"><small>39 мин</small><b>Часть II. Учёный</b></div><div class="gbs-rail-card__chevron"><svg viewBox="0 0 24 24"><path d="M9 18l6-6-6-6"/></svg></div></a>
+      <a class="gbs-rail-card is-current" href="./" aria-current="page"><div class="gbs-rail-card__num"><RomanNumeral value="IV" /></div><div class="gbs-rail-card__info"><small>54 мин</small><b>Часть III. Наследие</b></div><div class="gbs-rail-card__check">✓</div><div class="gbs-rail-card__chevron"><svg viewBox="0 0 24 24"><path d="M9 18l6-6-6-6"/></svg></div></a>
+      <a class="gbs-rail-card" href="../dzhon-gill-spravochnik/"><div class="gbs-rail-card__num"><RomanNumeral value="V" /></div><div class="gbs-rail-card__info"><small>8 мин</small><b>Справочник по Гиллу</b></div><div class="gbs-rail-card__chevron"><svg viewBox="0 0 24 24"><path d="M9 18l6-6-6-6"/></svg></div></a>
     </div>
   </div>
   <div class="gbs-rail-spacer"></div>
@@ -85,11 +86,11 @@ import SaveButton from '@/components/ui/floating-cluster/SaveButton.astro';
       <h3>Джон Гилл (1697–1771)</h3>
     </div>
     <div class="toc-sheet__list">
-      <a class="toc-item" href="../dzhon-gill-istoricheskiy-kontekst/"><div class="toc-item__num">I</div><div class="toc-item__info"><b>Исторический контекст</b><small>16 мин</small></div><div class="toc-item__chevron"><svg viewBox="0 0 24 24"><path d="M9 18l6-6-6-6"/></svg></div></a>
-      <a class="toc-item" href="../dzhon-gill-chast-1-chelovek/"><div class="toc-item__num">II</div><div class="toc-item__info"><b>Часть I. Человек</b><small>32 мин</small></div><div class="toc-item__chevron"><svg viewBox="0 0 24 24"><path d="M9 18l6-6-6-6"/></svg></div></a>
-      <a class="toc-item" href="../dzhon-gill-chast-2-uchenyi/"><div class="toc-item__num">III</div><div class="toc-item__info"><b>Часть II. Учёный</b><small>39 мин</small></div><div class="toc-item__chevron"><svg viewBox="0 0 24 24"><path d="M9 18l6-6-6-6"/></svg></div></a>
-      <a class="toc-item is-current" href="./" aria-current="page"><div class="toc-item__num">IV</div><div class="toc-item__info"><b>Часть III. Наследие</b><small style="color:var(--gb-accent,#7a2e2e)">● Читаете сейчас · 54 мин</small></div><div class="toc-item__chevron"><svg viewBox="0 0 24 24"><path d="M9 18l6-6-6-6"/></svg></div></a>
-      <a class="toc-item" href="../dzhon-gill-spravochnik/"><div class="toc-item__num">V</div><div class="toc-item__info"><b>Справочник по Гиллу</b><small>8 мин</small></div><div class="toc-item__chevron"><svg viewBox="0 0 24 24"><path d="M9 18l6-6-6-6"/></svg></div></a>
+      <a class="toc-item" href="../dzhon-gill-istoricheskiy-kontekst/"><div class="toc-item__num"><RomanNumeral value="I" /></div><div class="toc-item__info"><b>Исторический контекст</b><small>16 мин</small></div><div class="toc-item__chevron"><svg viewBox="0 0 24 24"><path d="M9 18l6-6-6-6"/></svg></div></a>
+      <a class="toc-item" href="../dzhon-gill-chast-1-chelovek/"><div class="toc-item__num"><RomanNumeral value="II" /></div><div class="toc-item__info"><b>Часть I. Человек</b><small>32 мин</small></div><div class="toc-item__chevron"><svg viewBox="0 0 24 24"><path d="M9 18l6-6-6-6"/></svg></div></a>
+      <a class="toc-item" href="../dzhon-gill-chast-2-uchenyi/"><div class="toc-item__num"><RomanNumeral value="III" /></div><div class="toc-item__info"><b>Часть II. Учёный</b><small>39 мин</small></div><div class="toc-item__chevron"><svg viewBox="0 0 24 24"><path d="M9 18l6-6-6-6"/></svg></div></a>
+      <a class="toc-item is-current" href="./" aria-current="page"><div class="toc-item__num"><RomanNumeral value="IV" /></div><div class="toc-item__info"><b>Часть III. Наследие</b><small style="color:var(--gb-accent,#7a2e2e)">● Читаете сейчас · 54 мин</small></div><div class="toc-item__chevron"><svg viewBox="0 0 24 24"><path d="M9 18l6-6-6-6"/></svg></div></a>
+      <a class="toc-item" href="../dzhon-gill-spravochnik/"><div class="toc-item__num"><RomanNumeral value="V" /></div><div class="toc-item__info"><b>Справочник по Гиллу</b><small>8 мин</small></div><div class="toc-item__chevron"><svg viewBox="0 0 24 24"><path d="M9 18l6-6-6-6"/></svg></div></a>
     </div>
   </div>
 </div>
@@ -109,21 +110,21 @@ import SaveButton from '@/components/ui/floating-cluster/SaveButton.astro';
     </div>
     <div class="toc-sheet__scroll-bar"><i style="--scroll-pct:0%"></i></div>
     <div class="toc-sheet__list" id="gbs2PartToc">
-      <a class="toc-part-item is-current" href="#sec-legacy"><div class="toc-part-item__num">I</div><div class="toc-part-item__info"><b>Наследие, споры и память</b><small style="color:var(--gb-accent,#7a2e2e)">● Глава 1</small></div><div class="toc-part-item__progress"><i style="width:0%"></i></div></a>
-      <a class="toc-part-item" href="#sec-toplady-memoir"><div class="toc-part-item__num">II</div><div class="toc-part-item__info"><b>Полемика с Джоном Уэсли (1752–1755)</b><small>Глава 2</small></div><div class="toc-part-item__progress"><i></i></div></a>
-      <a class="toc-part-item" href="#sec-controversy"><div class="toc-part-item__num">III</div><div class="toc-part-item__info"><b>Гиперкальвинизм — спорное наследие</b><small>Глава 3</small></div><div class="toc-part-item__progress"><i></i></div></a>
-      <a class="toc-part-item" href="#sec-sources-gil-theology"><div class="toc-part-item__num">IV</div><div class="toc-part-item__info"><b>Богословские источники Гилла</b><small>Глава 4</small></div><div class="toc-part-item__progress"><i></i></div></a>
-      <a class="toc-part-item" href="#sec-disciples"><div class="toc-part-item__num">V</div><div class="toc-part-item__info"><b>Ученики и духовные наследники</b><small>Глава 5</small></div><div class="toc-part-item__progress"><i></i></div></a>
-      <a class="toc-part-item" href="#sec-church-gov"><div class="toc-part-item__num">VI</div><div class="toc-part-item__info"><b>Coffee House и права поместной церкви</b><small>Глава 6</small></div><div class="toc-part-item__progress"><i></i></div></a>
-      <a class="toc-part-item" href="#sec-america"><div class="toc-part-item__num">VII</div><div class="toc-part-item__info"><b>Влияние на Америку</b><small>Глава 7</small></div><div class="toc-part-item__progress"><i></i></div></a>
-      <a class="toc-part-item" href="#sec-gill-islam-detail"><div class="toc-part-item__num">VIII</div><div class="toc-part-item__info"><b>Гилл и ислам: Коран на столе</b><small>Глава 8</small></div><div class="toc-part-item__progress"><i></i></div></a>
-      <a class="toc-part-item" href="#sec-spurgeon-legacy"><div class="toc-part-item__num">IX</div><div class="toc-part-item__info"><b>Чарльз Сперджен — наследник и критик</b><small>Глава 9</small></div><div class="toc-part-item__progress"><i></i></div></a>
-      <a class="toc-part-item" href="#sec-gill-last-pages"><div class="toc-part-item__num">X</div><div class="toc-part-item__info"><b>Последние страницы и смерть (1771)</b><small>Глава 10</small></div><div class="toc-part-item__progress"><i></i></div></a>
-      <a class="toc-part-item" href="#sec-ordination-rippon"><div class="toc-part-item__num">XI</div><div class="toc-part-item__info"><b>Память и масштаб скорби</b><small>Глава 11</small></div><div class="toc-part-item__progress"><i></i></div></a>
-      <a class="toc-part-item" href="#sec-gill-muller-rediscovery"><div class="toc-part-item__num">XII</div><div class="toc-part-item__info"><b>Современная реабилитация (2023–2025)</b><small>Глава 12</small></div><div class="toc-part-item__progress"><i></i></div></a>
-      <a class="toc-part-item" href="#sec-contemporaries"><div class="toc-part-item__num">XIII</div><div class="toc-part-item__info"><b>Оценки Гилла: от восторга до критики</b><small>Глава 13</small></div><div class="toc-part-item__progress"><i></i></div></a>
-      <a class="toc-part-item" href="#sec-terms"><div class="toc-part-item__num">XIV</div><div class="toc-part-item__info"><b>Словарь эпохи: ключевые понятия</b><small>Глава 14</small></div><div class="toc-part-item__progress"><i></i></div></a>
-      <a class="toc-part-item" href="#sec-quiz"><div class="toc-part-item__num">XV</div><div class="toc-part-item__info"><b>Проверь себя</b><small>Глава 15</small></div><div class="toc-part-item__progress"><i></i></div></a>
+      <a class="toc-part-item is-current" href="#sec-legacy"><div class="toc-part-item__num"><RomanNumeral value="I" /></div><div class="toc-part-item__info"><b>Наследие, споры и память</b><small style="color:var(--gb-accent,#7a2e2e)">● Глава 1</small></div><div class="toc-part-item__progress"><i style="width:0%"></i></div></a>
+      <a class="toc-part-item" href="#sec-toplady-memoir"><div class="toc-part-item__num"><RomanNumeral value="II" /></div><div class="toc-part-item__info"><b>Полемика с Джоном Уэсли (1752–1755)</b><small>Глава 2</small></div><div class="toc-part-item__progress"><i></i></div></a>
+      <a class="toc-part-item" href="#sec-controversy"><div class="toc-part-item__num"><RomanNumeral value="III" /></div><div class="toc-part-item__info"><b>Гиперкальвинизм — спорное наследие</b><small>Глава 3</small></div><div class="toc-part-item__progress"><i></i></div></a>
+      <a class="toc-part-item" href="#sec-sources-gil-theology"><div class="toc-part-item__num"><RomanNumeral value="IV" /></div><div class="toc-part-item__info"><b>Богословские источники Гилла</b><small>Глава 4</small></div><div class="toc-part-item__progress"><i></i></div></a>
+      <a class="toc-part-item" href="#sec-disciples"><div class="toc-part-item__num"><RomanNumeral value="V" /></div><div class="toc-part-item__info"><b>Ученики и духовные наследники</b><small>Глава 5</small></div><div class="toc-part-item__progress"><i></i></div></a>
+      <a class="toc-part-item" href="#sec-church-gov"><div class="toc-part-item__num"><RomanNumeral value="VI" /></div><div class="toc-part-item__info"><b>Coffee House и права поместной церкви</b><small>Глава 6</small></div><div class="toc-part-item__progress"><i></i></div></a>
+      <a class="toc-part-item" href="#sec-america"><div class="toc-part-item__num"><RomanNumeral value="VII" /></div><div class="toc-part-item__info"><b>Влияние на Америку</b><small>Глава 7</small></div><div class="toc-part-item__progress"><i></i></div></a>
+      <a class="toc-part-item" href="#sec-gill-islam-detail"><div class="toc-part-item__num"><RomanNumeral value="VIII" /></div><div class="toc-part-item__info"><b>Гилл и ислам: Коран на столе</b><small>Глава 8</small></div><div class="toc-part-item__progress"><i></i></div></a>
+      <a class="toc-part-item" href="#sec-spurgeon-legacy"><div class="toc-part-item__num"><RomanNumeral value="IX" /></div><div class="toc-part-item__info"><b>Чарльз Сперджен — наследник и критик</b><small>Глава 9</small></div><div class="toc-part-item__progress"><i></i></div></a>
+      <a class="toc-part-item" href="#sec-gill-last-pages"><div class="toc-part-item__num"><RomanNumeral value="X" /></div><div class="toc-part-item__info"><b>Последние страницы и смерть (1771)</b><small>Глава 10</small></div><div class="toc-part-item__progress"><i></i></div></a>
+      <a class="toc-part-item" href="#sec-ordination-rippon"><div class="toc-part-item__num"><RomanNumeral value="XI" /></div><div class="toc-part-item__info"><b>Память и масштаб скорби</b><small>Глава 11</small></div><div class="toc-part-item__progress"><i></i></div></a>
+      <a class="toc-part-item" href="#sec-gill-muller-rediscovery"><div class="toc-part-item__num"><RomanNumeral value="XII" /></div><div class="toc-part-item__info"><b>Современная реабилитация (2023–2025)</b><small>Глава 12</small></div><div class="toc-part-item__progress"><i></i></div></a>
+      <a class="toc-part-item" href="#sec-contemporaries"><div class="toc-part-item__num"><RomanNumeral value="XIII" /></div><div class="toc-part-item__info"><b>Оценки Гилла: от восторга до критики</b><small>Глава 13</small></div><div class="toc-part-item__progress"><i></i></div></a>
+      <a class="toc-part-item" href="#sec-terms"><div class="toc-part-item__num"><RomanNumeral value="XIV" /></div><div class="toc-part-item__info"><b>Словарь эпохи: ключевые понятия</b><small>Глава 14</small></div><div class="toc-part-item__progress"><i></i></div></a>
+      <a class="toc-part-item" href="#sec-quiz"><div class="toc-part-item__num"><RomanNumeral value="XV" /></div><div class="toc-part-item__info"><b>Проверь себя</b><small>Глава 15</small></div><div class="toc-part-item__progress"><i></i></div></a>
     </div>
     <div class="toc-sheet__actions toc-sheet__actions--grid">
       <button class="toc-action-btn gb-save" data-fc-action="save">
