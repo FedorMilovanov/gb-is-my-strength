@@ -77,6 +77,7 @@ SANDBOX-ENV   → как выжить в конкретной среде (Arena)
 | **AGENTS-r304** | 2026-06-27 | **Runtime/axe verification wave.** `interactive-audit` now supports both legacy GBS2 and Gill v16 selectors; `visual-audit` no longer emits stale `bio-cover-missing` on Gill v16; Nagornaya mobile theme bridge is wired via `.nag-sidebar-theme-btn`; axe-core Playwright findings are recorded as accessibility backlog. |
 | **AGENTS-r305** | 2026-06-27 | **axe-core a11y cleanup.** Hidden selection-share popup now uses `inert`; glossary tooltip hosts with `aria-expanded`/`aria-describedby` are normalized to `role="button"` + `tabindex="0"`. Remaining axe backlog is contrast, nested source markers, and link-in-text-block. |
 | **AGENTS-r306** | 2026-06-27 | **Workflow lint/SBOM verification.** `actionlint` strict mode with ShellCheck now passes after `indexnow.yml` and `visual-parity.yml` shell cleanup. SBOM generation is verified via npm and CycloneDX; Trivy secret/misconfig scan is clean, while full Trivy vuln DB is rejected in Arena due disk limits. oxlint is advisory; Biome is config-first. |
+| **AGENTS-r307** | 2026-06-27 | **Local Windows audit pack added.** `audit/external-checks/LOCAL-WINDOWS-AUDIT.md` records Arena-rejected/local-only checks for `C:\Users\Fedor\Projects\gb-is-my-strength`; `audit/external-checks/run-local-windows-audit.ps1` runs compact PowerShell local audits and writes reports under `reports/local-external-checks-*`. `.tools/` is ignored for local portable audit binaries. |
 
 ---
 

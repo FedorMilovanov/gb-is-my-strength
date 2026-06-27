@@ -12,6 +12,18 @@
 4. Сырые логи не коммитить по умолчанию. Для воспроизведения используй команды ниже; артефакты держи в `/tmp` или `reports/` только если владелец попросил.
 5. В Arena обязательно сначала прочитать `docs/SANDBOX-ENV-2026-06-21.md`: нужен Node 22 из `/tmp` и Playwright deps.
 
+## Local Windows runner
+
+For Fedor's workstation (`C:\Users\Fedor\Projects\gb-is-my-strength`) use:
+
+```powershell
+Set-ExecutionPolicy -Scope Process Bypass
+cd C:\Users\Fedor\Projects\gb-is-my-strength
+.\audit\external-checks\run-local-windows-audit.ps1
+```
+
+Local-only/rejected-in-Arena decisions are tracked in `audit/external-checks/LOCAL-WINDOWS-AUDIT.md`.
+
 ## Быстрый setup в Arena
 
 ```bash

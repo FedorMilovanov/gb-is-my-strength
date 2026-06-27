@@ -28,3 +28,6 @@ reports/
 dist/
 .astro/
 .gitconfig
+
+# Local audit tool cache
+.tools/
