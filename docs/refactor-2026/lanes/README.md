@@ -17,6 +17,7 @@ abandoned  — отменён
 
 | Branch | Scope | Mode | Status | Merge? | Owner |
 |---|---|---|---|---|---|
+| `lane/system-download-fonts-syntax-fix-2026-06-27` | Fix `download-fonts.js` SPECS outer array syntax | SYSTEM | merged | ✅ | arena-surgical-surgeon |
 | `lane/system-premiumcontrols-reconciliation-2026-06-27` | PremiumControls reconciliation & Control plane parity | SYSTEM | merged | ✅ | arena-surgical-surgeon |
 | `lane/system-ci-contract-reconciliation-2026-06-24` | Fix CI checks, issues, guard behavior and stale docs | SYSTEM | active | ⏳ | Arena Agent |
 | `lane/system-protection-simple-v3-0` | Упрощение защиты агентов | SYSTEM | merged | ✅ | Arena Agent |

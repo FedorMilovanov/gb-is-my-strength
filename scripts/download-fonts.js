@@ -15,7 +15,6 @@ const SPECS = [
   ['Lora', 400, 'normal',  'cyrillic', 'Lora/lora-cyrillic-400'],
   ['Noto Serif Hebrew', 400, 'normal', 'hebrew', 'NotoSerifHebrew/notoserifhebrew-400'],
   ['Noto Serif Hebrew', 500, 'normal', 'hebrew', 'NotoSerifHebrew/notoserifhebrew-500'],
-],
   ['Lora', 500, 'normal',  'cyrillic', 'Lora/lora-cyrillic-500'],
   ['Lora', 600, 'normal',  'cyrillic', 'Lora/lora-cyrillic-600'],
   ['Lora', 400, 'italic',  'cyrillic', 'Lora/lora-cyrillic-400i'],
