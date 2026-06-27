@@ -143,6 +143,40 @@ function guardHermeneuticsPositionTruth(problems) {
   }
 }
 
+
+function guardFloatingClusterCssSanitation(problems) {
+  const cssPath = path.join(ROOT, 'css', 'floating-cluster.css');
+  if (!fs.existsSync(cssPath)) return;
+  const lines = fs.readFileSync(cssPath, 'utf8').split(/\r?\n/);
+
+  lines.forEach((line, idx) => {
+    if (/^\s*\[data-gill-v16\]\s+(background|border-color|color|transform|opacity|box-shadow)\b/.test(line)) {
+      problems.push(
+        `FAIL: css/floating-cluster.css:${idx + 1} has malformed transition/declaration fragment with [data-gill-v16] inside a property value.`
+      );
+    }
+    if (/,\s*\[data-gill-v16\]\s*$/.test(line)) {
+      problems.push(
+        `FAIL: css/floating-cluster.css:${idx + 1} has dangling [data-gill-v16] selector fragment from a malformed comma split.`
+      );
+    }
+  });
+
+  lines.forEach((line, idx) => {
+    if (!line.includes('{') || !line.includes(',') || !line.includes('[data-gill-v16]')) return;
+    const selector = line.split('{', 1)[0];
+    const parts = selector.split(',').map((part) => part.trim()).filter(Boolean);
+    if (parts.length < 2 || !parts[0].includes('[data-gill-v16]')) return;
+    for (let i = 1; i < parts.length; i++) {
+      if (!parts[i].includes('[data-gill-v16]')) {
+        problems.push(
+          `FAIL: css/floating-cluster.css:${idx + 1} has unscoped Gill v16 comma selector segment: "${parts[i]}".`
+        );
+      }
+    }
+  });
+}
+
 function getChangedFiles() {
   const changed = new Set();
   try {
@@ -236,6 +270,7 @@ function main() {
   const problems = [];
 
   guardHermeneuticsPositionTruth(problems);
+  guardFloatingClusterCssSanitation(problems);
 
   for (const file of files) {
     if (isSafe(file)) continue;
