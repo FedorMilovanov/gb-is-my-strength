@@ -11,6 +11,7 @@
     "hard-texts/**"
   ],
   "modes": {
+    "native-with-legacy-head": "Astro route uses native body/chrome components, but legacy head/body attributes remain in layout transport.",
     "native-main-with-legacy-chrome": "Astro page composes from named legacy fragments (body-segment-N.html) + named Astro component shells. Legacy chrome (skip-link, nav, theme, footer, runtime) loaded from fragments. Semantic main promoted to named component. This is the primary mode for landings and catalogs.",
     "full-body-shadow": "Astro page loads entire legacy HTML document via loadLegacyFullDocument(). Semantic block NOT promoted to separate component — full body is shadow-wrapped. Used for article subroutes in series where chrome + body are tightly coupled.",
     "mdx-native-article": "Astro page uses MDX content file + ArticleLayout/SeriesArticleLayout. Body is hand-authored MDX. Chrome from layout. This is the target mode for standalone articles.",
@@ -25,6 +26,21 @@
     "blanket-shadow-wrap": "Never blanket-wrap all routes in loadLegacyFullDocument(). Use componentized mode where components already exist."
   },
   "routes": {
+    "/izbrannoe/": {
+      "mode": "native-with-legacy-head",
+      "source": "src/pages/izbrannoe/index.astro",
+      "requiredMarkers": [
+        "izbrannoe-wrap"
+      ],
+      "forbid": [
+        "plain-loadLegacyFullDocument-only"
+      ],
+      "audits": [
+        "visual-parity",
+        "seo-parity"
+      ],
+      "reason": "Personal client-side favorites collection page, localStorage-driven, noindex"
+    },
     "/": {
       "mode": "strict-native",
       "source": "src/pages/index.astro",

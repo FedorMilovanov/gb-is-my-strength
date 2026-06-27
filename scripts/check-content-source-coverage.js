@@ -37,6 +37,7 @@ function isExcludedRoute(route) {
   if (route.includes('/dzhon-gill-')) return true;
   if (route === '/articles/krajne-li-isporcheno-serdce/') return true;
   if (route === '/articles/rimlyanam-7-veruyushchiy-ili-neveruyushchiy/') return true;
+  if (route === '/izbrannoe/') return true;
   return false;
 }
 
