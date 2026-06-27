@@ -229,6 +229,8 @@
     spokenChars: 0,
     paused: false,
     voice: null,
+    runId: 0,
+    suppressEnd: false,
   };
 
   /* Russian voice picker — без него браузер берёт дефолтный (часто английский)
@@ -306,7 +308,9 @@
   }
 
   function speakNextChunk() {
+    var runId = ttsState.runId;
     if (ttsState.chunkIdx >= ttsState.chunks.length) {
+      ttsState.utterance = null;
       setEmberState('complete');
       return;
     }
@@ -317,14 +321,23 @@
     if (!ttsState.voice) ttsState.voice = pickRuVoice();
     if (ttsState.voice) u.voice = ttsState.voice;
     u.onend = function () {
+      // speechSynthesis.cancel() may still fire onend. Ignore that synthetic end,
+      // otherwise pause/rate-change can skip chunks or start duplicate utterances.
+      if (runId !== ttsState.runId) return;
+      if (ttsState.suppressEnd) { ttsState.suppressEnd = false; return; }
       ttsState.spokenChars += chunk.length;
       ttsState.chunkIdx += 1;
       updateProgress();
       if (!ttsState.paused) speakNextChunk();
     };
     u.onerror = function (e) {
+      if (runId !== ttsState.runId || ttsState.suppressEnd) {
+        ttsState.suppressEnd = false;
+        return;
+      }
       // Если ошибка — стопаем чисто, без infinite loop
       console.warn('[gbx-tts] utterance error:', e.error);
+      ttsState.utterance = null;
       setEmberState('idle');
     };
     ttsState.utterance = u;
@@ -341,12 +354,16 @@
       showToast('Текст статьи не найден', false);
       return;
     }
+    ttsState.runId += 1;
+    ttsState.suppressEnd = false;
+    try { window.speechSynthesis.cancel(); } catch (_) {}
     ttsState.text = text;
     ttsState.chunks = splitTtsChunks(text);
     ttsState.chunkIdx = 0;
     ttsState.totalChars = text.length;
     ttsState.spokenChars = 0;
     ttsState.paused = false;
+    ttsState.utterance = null;
     setEmberState('playing');
     speakNextChunk();
   }
@@ -354,14 +371,19 @@
   function pauseTts() {
     if (!('speechSynthesis' in window)) return;
     // Chrome: speechSynthesis.pause() is unreliable. Cancel and save position instead.
-    window.speechSynthesis.cancel();
+    // Mark paused/suppress BEFORE cancel: some engines synchronously fire onend.
     ttsState.paused = true;
+    ttsState.suppressEnd = true;
+    window.speechSynthesis.cancel();
+    ttsState.utterance = null;
     setEmberState('paused');
   }
 
   function resumeTts() {
     if (!('speechSynthesis' in window)) return;
     ttsState.paused = false;
+    ttsState.suppressEnd = false;
+    ttsState.runId += 1;
     setEmberState('playing');
     // Restart from saved chunk position (Chrome doesn't support real resume)
     speakNextChunk();
@@ -369,8 +391,11 @@
 
   function stopTts() {
     if (!('speechSynthesis' in window)) return;
+    ttsState.runId += 1;
+    ttsState.suppressEnd = true;
     window.speechSynthesis.cancel();
     ttsState.paused = false;
+    ttsState.utterance = null;
     ttsState.chunkIdx = 0;
     ttsState.spokenChars = 0;
     setEmberState('idle');
@@ -381,9 +406,16 @@
   window.addEventListener('gb:tts-rate-change', function (ev) {
     if (!('speechSynthesis' in window)) return;
     if (!ttsState.utterance || ttsState.chunkIdx >= ttsState.chunks.length) return;
-    // Останавливаем текущий utterance и перестартуем с того же chunk
+    // Останавливаем текущий utterance и перестартуем с того же chunk.
+    // Guard against cancel() firing onend and double-advancing the queue.
+    ttsState.runId += 1;
+    ttsState.suppressEnd = true;
     window.speechSynthesis.cancel();
-    if (!ttsState.paused) speakNextChunk();
+    ttsState.utterance = null;
+    if (!ttsState.paused) {
+      ttsState.suppressEnd = false;
+      speakNextChunk();
+    }
   });
 
   function handlePlayClick() {
@@ -573,16 +605,13 @@
      Читает BookmarkEngine при старте.
      ===================================================== */
   function syncSaveState() {
-    var engine = window.BookmarkEngine;
-    if (engine && typeof engine.getCurrent === 'function') {
-      var current = engine.getCurrent();
-      setSaved(isFavorite(normalizePath(location.pathname)));
-    } else {
-      var key = 'fc:saved:' + normalizePath(location.pathname);
-      try {
-        if (localStorage.getItem(key)) setSaved(true);
-      } catch (_) {}
-    }
+    var path = normalizePath(location.pathname);
+    var saved = isFavorite(path);
+    // Backward compatibility: older floating-cluster builds used fc:saved:<path>.
+    // Do not depend on BookmarkEngine here: PremiumControls Favorites are stored
+    // in gb-favorites, while BookmarkEngine is reading-position infrastructure.
+    try { saved = saved || !!localStorage.getItem('fc:saved:' + path); } catch (_) {}
+    setSaved(saved);
   }
 
   /* =====================================================
@@ -756,11 +785,11 @@
       ember.setAttribute('aria-controls', emberUid);
       ember.setAttribute('aria-haspopup', 'true');
       panel.className = 'gb-ember-expand';
-      panel.setAttribute('role', 'group');
+      panel.setAttribute('role', 'radiogroup');
       panel.setAttribute('aria-label', 'Скорость воспроизведения');
       panel.innerHTML = speeds.map(function(s) {
         var active = s === currentRate ? ' is-active' : '';
-        return '<button class="gb-ember-expand__btn' + active + '" type="button" role="radio" data-speed="' + s + '" aria-label="Скорость ' + s + '\u00d7" aria-pressed="' + (s === currentRate ? 'true' : 'false') + '">' + s + '\u00d7</button>';
+        return '<button class="gb-ember-expand__btn' + active + '" type="button" role="radio" data-speed="' + s + '" aria-label="Скорость ' + s + '\u00d7" aria-pressed="' + (s === currentRate ? 'true' : 'false') + '" aria-checked="' + (s === currentRate ? 'true' : 'false') + '">' + s + '\u00d7</button>';
       }).join('');
 
       // Wrap ember in a positioned span so the popover anchors exactly to the
@@ -790,12 +819,10 @@
             if (rect.right > vw - pad) shift = (vw - pad) - rect.right;
             else if (rect.left < pad)  shift = pad - rect.left;
             if (shift) {
-              // Сохраняем уже выставленный CSS-transform (centering)
-              // через CSS custom property, чтобы не сломать его.
+              // CSS owns the base transform (left-bloom, Gill-up, mobile-up).
+              // Only feed a small viewport correction through a custom property;
+              // never overwrite transform inline or the pill loses its anchor.
               panel.style.setProperty('--gb-ember-shift', shift + 'px');
-              panel.style.transform =
-                (panel.style.transform || '').replace(/translateX\([^)]+\)/, '') +
-                ' translateX(' + shift + 'px)';
             }
           } catch (_) {}
         });
