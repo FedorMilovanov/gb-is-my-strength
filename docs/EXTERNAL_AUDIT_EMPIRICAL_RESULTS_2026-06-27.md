@@ -306,3 +306,237 @@ empirical-summary.json
 ```
 
 These are not committed by default because `reports/` is ignored. If needed, copy curated evidence into AuditRepo.
+
+---
+
+## 8. Round 2 empirical retries and additional tools
+
+This round followed the rule: if a tool does not start, try 2–3 realistic launch modes before rejecting it.
+
+### 8.1 Pa11y-ci sitemap
+
+Command shape:
+
+```bash
+npx pa11y-ci \
+  --sitemap http://127.0.0.1:8081/sitemap.xml \
+  --sitemap-find https://gospod-bog.ru \
+  --sitemap-replace http://127.0.0.1:8081 \
+  --threshold 9999 \
+  --reporter json
+```
+
+Result:
+
+```text
+total: 43 routes
+passes: 7
+errors: 615
+```
+
+Interpretation:
+
+- Very useful as a broad accessibility witness.
+- Too noisy for blocking CI today.
+- Findings are dominated by contrast; start as scheduled/warn-only.
+
+### 8.2 LHCI collect
+
+First attempt failed because Chrome was not discoverable. Retried with `CHROME_PATH` exported and it succeeded.
+
+```text
+Running Lighthouse 1 time on /
+Run #1...done.
+```
+
+Interpretation: LHCI is viable, but the repo must document `CHROME_PATH` for Arena or install system Chrome in CI.
+
+### 8.3 Unlighthouse
+
+Command shape:
+
+```bash
+CHROME_PATH=/home/user/.cache/ms-playwright/chromium-1228/chrome-linux64/chrome \
+  npx @unlighthouse/cli \
+  --site http://127.0.0.1:8081 \
+  --urls /,/articles/dzhon-gill-istoricheskiy-kontekst/ \
+  --samples 1 \
+  --reporter json
+```
+
+Result:
+
+```text
+2 routes in 30s
+Generated json report
+```
+
+Notes:
+
+- Works in Arena with explicit Chrome path.
+- Warns that its current Lighthouse dependency wants Node `>=22.19`; current project Node pin is `22.12.0`.
+- Good candidate for manual/scheduled runs, not immediate blocking gate.
+
+### 8.4 webhint
+
+Attempts:
+
+1. `npx hint URL --format json` — wrong option (`--formatters` needed).
+2. `npx hint URL --formatters json` — failed due missing X server.
+3. `xvfb-run -a npx hint URL --formatters json` — still failed: no supported browser installation found.
+
+Interpretation:
+
+- Not worth local Arena use.
+- Could be revisited only with a dedicated installed Chrome/Puppeteer setup.
+
+### 8.5 Stylelint with minimal config
+
+A no-config run fails because stylelint requires configuration. Retried with a minimal temporary config for syntax/duplicates.
+
+It found a **real CSS parse defect** in `css/floating-cluster.css`:
+
+```text
+Cannot parse selector around line 967:
+v15: MOBILE PREVIEW — Save REMOVED from bottom-bar
+```
+
+Root cause: malformed comments around the v15 mobile bottom-bar section.
+
+Fix applied in source:
+
+```text
+css/floating-cluster.css comment syntax normalized
+```
+
+Post-fix:
+
+```text
+parseErrors: []
+warnings: 28
+```
+
+Remaining stylelint warnings are mostly duplicate/empty-block technical debt and should not be mass-fixed in this lane.
+
+### 8.6 Semgrep
+
+Attempts:
+
+1. `npx semgrep ...` — failed (`could not determine executable`).
+2. `pip install --user semgrep`, then direct `/home/user/.local/bin/semgrep` — failed because `pysemgrep` was not in PATH.
+3. Retried with `PATH=/home/user/.local/bin:$PATH` — succeeded.
+
+Result:
+
+```text
+Semgrep 1.168.0
+74 rules
+125 tracked JS/TS files scanned
+0 findings
+2 partial parsing warnings
+several taint fixpoint timeouts in large/minified files
+```
+
+Interpretation:
+
+- Semgrep is viable in Arena via pip + PATH fix.
+- Best used warn-only / SARIF at first.
+- Need tuned excludes for minified/generated files.
+
+### 8.7 Depcheck
+
+Result highlights:
+
+- flagged devDependencies that look unused: `@astrojs/check`, `@astrojs/rss`, `typescript`;
+- flagged missing deps inside `_build-tools/konfessii-baptizm` snapshot paths: `framer-motion`, `three`, `lucide-react`, etc.;
+- flagged parser errors in some scripts due non-standard/minified patterns.
+
+Interpretation:
+
+- Too noisy without excludes.
+- Useful only after ignoring `_build-tools`, generated/minified JS, and package-script-only dependencies.
+
+### 8.8 npm-check-updates
+
+Found available major upgrades:
+
+```json
+{
+  "@astrojs/mdx": "^7.0.0",
+  "@astrojs/react": "^6.0.0",
+  "astro": "^7.0.3",
+  "pixelmatch": "^7.2.0"
+}
+```
+
+Interpretation:
+
+- Useful as advisory only.
+- Do not upgrade in PremiumControls lane.
+
+### 8.9 license-checker
+
+`--production` only sees the private root package because dependencies are dev-only.
+
+Interpretation:
+
+- Not useful as production-only for this static build repo.
+- If used, run dev dependency license inventory separately and classify noise.
+
+### 8.10 OSV scanner
+
+`npx osv-scanner` failed because it is not an npm package.
+
+Interpretation:
+
+- Use official binary/GitHub Action, not npx.
+
+---
+
+## 9. Round 2 keep/defer/drop update
+
+### Keep / can be implemented as repo scripts after baseline
+
+- Lighthouse CLI / LHCI with explicit `CHROME_PATH` note.
+- Pa11y and pa11y-ci, warn-only first.
+- Linkinator.
+- Stylelint with a small custom config, but initially only syntax-level rules.
+- Semgrep via pip/GitHub Action, with tuned excludes.
+- Retire.js.
+- npm audit.
+- markdownlint-cli2.
+
+### Manual / scheduled only
+
+- Unlighthouse: works, but heavier and wants newer Node than project minimum.
+- PageSpeed Insights API: key/quota required.
+- SecurityHeaders / Observatory / SSL Labs.
+- W3C/Rich Results/Schema validators.
+
+### Drop from local Arena quick path
+
+- webhint, unless a dedicated supported browser install is configured.
+- direct `@axe-core/cli`, because Pa11y already runs axe successfully.
+- Lychee/Gitleaks/OSV via npx; use official binaries/actions instead.
+- Depcheck as generic check without repo-specific excludes.
+
+---
+
+## 10. New code change caused by external checks
+
+`stylelint` found malformed CSS comments in `css/floating-cluster.css`. This was not caught by existing gates because browsers/builds tolerated it enough to continue.
+
+Fix class:
+
+```text
+CSS comment syntax repair only; no visual tuning and no selector/property changes.
+```
+
+Post-fix targeted gates:
+
+```text
+npm run validate:all                    ✅ PASS
+npm run strangler:build:production-like ✅ PASS
+npm run audit:premium-controls          ✅ PASS (39/39)
+npm run dist:css-parity                 ✅ PASS
+```

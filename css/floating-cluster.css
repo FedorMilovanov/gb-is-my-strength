@@ -945,7 +945,7 @@ html.dark [data-gill-v16] .gb-theme-toggle .theme-icon-moon{opacity:1;transform:
 }
 
 
-/* ============================================================
+/* ============================================================ */
 
 /* ---- Global .gbs-rail-foot: compact 32px controls for ALL Gill rail footers ----
    (VR-07 fix: previously scoped under [data-gill-v16] which only exists on context page.
@@ -964,7 +964,7 @@ html.dark [data-gill-v16] .gb-theme-toggle .theme-icon-moon{opacity:1;transform:
 .gbs-rail-foot .gb-save svg { width: 17px; height: 17px; }
 .gbs-rail-foot .gbs-rail-foot__btn { width: 32px; height: 32px; display: grid; place-items: center; }
 .gbs-rail-foot .gbs-rail-foot__btn svg { width: 17px; height: 17px; }
-   v15: MOBILE PREVIEW — Save REMOVED from bottom-bar
+/* v15: MOBILE PREVIEW — Save REMOVED from bottom-bar
    Bottom-bar now has: TOC + section + dots + % + theme + search + play
    ============================================================ */
 
