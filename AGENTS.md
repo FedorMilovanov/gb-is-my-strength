@@ -63,12 +63,16 @@ SANDBOX-ENV   → как выжить в конкретной среде (Arena)
 > В Arena полный gate дорогой из-за Astro build и 2 CPU/~2 GB RAM; частые full-gates
 > после каждой мелкой правки не нужны, но финальный full gate обязателен.
 
+> **External checks rule:** если задача про Lighthouse/Pa11y/Semgrep/Checkov/Retire/actionlint/OSV/Gitleaks/HTML validation, сначала см. `audit/external-checks/README.md`. Не плодить отдельные MD-отчёты; verified external findings добавляются в общий bug report.
+
 | Версия документа | Дата | Состояние |
 |---|---|---|
 | **AGENTS-r297** | 2026-06-24 | **Arena gate discipline clarified.** Agents must read `docs/SANDBOX-ENV-2026-06-21.md` in Arena, use FAST loop checks during small iterations, and reserve `validate:static-publication` + `guard:shared-files` as the required final release barrier for production/system/refactor lanes. |
 | **AGENTS-r298** | 2026-06-24 | **Arena long-session failure modes documented.** `docs/SANDBOX-ENV-2026-06-21.md` now includes a focused 50-link deep pass on why some agents fail early and others survive long sessions: context rot, compaction loss, zombie tool calls, subagent black holes, OOM/resource kills, stale worktrees, and bad state externalization. Rule: durable file/git state + FAST loop + final FULL barrier, not transcript-only memory. |
 | **AGENTS-r299** | 2026-06-24 | **Arena coding polish checklist added.** `docs/SANDBOX-ENV-2026-06-21.md` now includes 30 operational rules + 30 additional references for long-running coding-agent work: targeted reads, explicit timeouts, worktree hygiene, hooks/notifications, durable checkpoints, artifact verification, and final push hygiene. |
 | **AGENTS-r300** | 2026-06-27 | **PremiumControls / Control Plane reconciliation.** Reconciled `AGENTS.md` Section 2 inventory (8 CSS / 12 JS + modules). Added Section 3.10 `PremiumControls / Floating Cluster (protected subsystem)` verbatim with core invariants, explicit forbids, and regression history. Fixed `workflows:check` policy match by updating `dist:jsonld:audit` script to `--root dist`. Reconciled `/izbrannoe/` route contract in `migration/route-migration-matrix.json` (`native-with-legacy-head`) and `scripts/check-content-source-coverage.js`. Fixed syntax swallowing bug in `scripts/download-fonts.js`. |
+| **AGENTS-r301** | 2026-06-27 | **External checks registry added.** External audit tools must be routed through `audit/external-checks/README.md` before being proposed for CI. New agents must not re-add known-broken paths (`npx actionlint`, `npx osv-scanner`) or make noisy `html-validate` a blocking gate without project config. Bugs found by external checks still go to `docs/BUGS_FOUND_2026-06-25.md`, not separate bug reports. |
+| **AGENTS-r302** | 2026-06-27 | **External checks wave 2 verified.** `audit/external-checks/README.md` now records ShellCheck/yamllint/markdownlint/CSpell/Knip/depcheck/license-checker/madge/Lychee/Scorecard decisions. Semgrep GHA template-injection finding in `shared-files-guard.yml` is fixed via `env`; broken docs link in `LANE_LOCK_POLICY.md` and missing EOF newline in `notify-on-failure.yml` are fixed. |
 
 ---
 
