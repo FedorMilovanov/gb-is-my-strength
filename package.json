@@ -25,6 +25,7 @@
     "interactive-audit": "node scripts/interactive-audit.js",
     "readable-audit": "node scripts/readable-audit.js",
     "audit:premium-controls": "node scripts/premium-controls-rollout-audit.js",
+    "audit:premium-controls:no-build": "node scripts/premium-controls-rollout-audit.js",
     "validate:publication": "npm run validate:static-publication && npm run interactive-audit",
     "data:consistency": "node scripts/check-data-consistency.js",
     "editorial:lint": "node scripts/editorial-lint.js",

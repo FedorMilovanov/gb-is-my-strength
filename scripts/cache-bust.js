@@ -31,6 +31,7 @@ const ASSETS = [
   'css/mobile-hotfix.css',
   'css/nagornaya-mobile-toc.css',
   'css/floating-cluster.css',
+  'css/premium-controls.css',
   'fonts/fonts.css',           /* AUDIT V2 / PERF-1: self-host fonts */
   'nagornaya/tw.min.css',
   'js/site.js',
@@ -157,6 +158,25 @@ function bustFile(htmlPath, hashes) {
   return true;
 }
 
+// ── Обновить src/lib/asset-version.js (PC-003) ──────────────────────────────
+function syncAssetVersionHelper(hashes) {
+  const helperPath = path.join(ROOT, 'src', 'lib', 'asset-version.js');
+  if (!fs.existsSync(helperPath)) return false;
+  const src = fs.readFileSync(helperPath, 'utf8');
+  const body = Object.keys(hashes)
+    .filter(asset => hashes[asset])
+    .sort()
+    .map(asset => `  '${asset}': '${hashes[asset]}',`)
+    .join('\n');
+  const updated = src.replace(
+    /export const ASSET_VERSIONS = \{[\s\S]*?\n\};/,
+    `export const ASSET_VERSIONS = {\n${body}\n};`
+  );
+  if (updated === src) return false;
+  if (!DRY_RUN) fs.writeFileSync(helperPath, updated, 'utf8');
+  return true;
+}
+
 // ── Main ─────────────────────────────────────────────────────────────────────
 
 function main() {
@@ -169,6 +189,10 @@ function main() {
     hashes[asset] = h;
     if (h) console.log(`  ✔  ${asset.padEnd(30)}  →  ?v=${h}`);
     else   console.log(`  ⚠  ${asset}: файл не найден, пропускаем`);
+  }
+
+  if (syncAssetVersionHelper(hashes)) {
+    console.log(`  ✔  src/lib/asset-version.js  →  синхронизирован`);
   }
 
   // 2. Обойти все HTML (legacy/public source tree)
