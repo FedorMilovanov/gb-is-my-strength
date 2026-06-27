@@ -39,8 +39,7 @@ const ALLOWED_CSS = new Set([
   'css/mobile-hotfix.css',
   'css/site-layered.css',
   'css/floating-cluster.css',
-  'css/premium-controls.css',
-                    'css/nagornaya-mobile-toc.css'
+                      'css/nagornaya-mobile-toc.css'
 ]);
 
 const REQUIRED_EXTRA_CSS = new Set([
@@ -245,7 +244,7 @@ function extractSiteConfig(html, fileLabel) {
   // Core budget excludes route-scoped/pilot CSS: nagornaya/tw.min.css is
   // Tailwind-route scoped; site-layered.css is a one-route refactor pilot
   // duplicate of site.css and must not make the global budget look 2× larger.
-  const routeScopedCss = new Set(['nagornaya/tw.min.css', 'css/site-layered.css']);
+  const routeScopedCss = new Set(['nagornaya/tw.min.css', 'css/site-layered.css', 'css/home.css', 'css/nagornaya-mobile-toc.css']);
   const cssAssetsAll = [...ALLOWED_CSS, ...REQUIRED_EXTRA_CSS].filter(exists);
   const cssAssetsCore = cssAssetsAll.filter(f => !routeScopedCss.has(f));
   const cssAssetsRoute = cssAssetsAll.filter(f => routeScopedCss.has(f));

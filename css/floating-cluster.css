@@ -7,6 +7,30 @@
    Канонические классы: gb-* (единая система, fc-* упразднены).
    =================================================================== */
 
+:root {
+  --gb-accent: var(--color-accent, #bd6858);
+  --gb-accent-strong: var(--color-accent-strong, #a65242);
+  --gb-accent-gold: #d4a857;
+  --gb-accent-gold-bright: #ffd18b;
+  --gb-accent-gold-deep: #b8874a;
+  --gb-surface: var(--color-surface, #ffffff);
+  --gb-surface-muted: var(--color-surface-muted, #f5f5f5);
+  --gb-border: var(--color-border, #e5e5e5);
+  --gb-border-strong: var(--color-border-strong, #cccccc);
+  --gb-text: var(--color-text, #2b2b2b);
+  --gb-text-muted: var(--color-text-muted, #737373);
+  --gb-text-faint: var(--color-text-faint, #a3a3a3);
+  --gb-font-serif: Georgia, "Times New Roman", serif;
+  --gb-font-serif-display: Georgia, "Times New Roman", serif;
+  --gb-font-sans: system-ui, -apple-system, sans-serif;
+  --gb-ease-out: cubic-bezier(.2,.7,.2,1);
+  --gb-ease-spring: cubic-bezier(.34,1.56,.64,1);
+  --gb-ease-overshoot: cubic-bezier(.34,1.56,.64,1);
+  --gb-ease-precise: cubic-bezier(.2,.8,.2,1);
+  --z-sheet: 2000;
+  --z-bottom-bar: 2000;
+}
+
 @layer components {
 
 :root {
