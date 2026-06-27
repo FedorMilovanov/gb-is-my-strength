@@ -67,7 +67,7 @@
     "strangler:smoke:shots": "node scripts/dist-smoke-audit.js --write-shots",
     "strangler:audit": "npm run strangler:build && npm run page-ownership:dist && node scripts/dist-publication-audit.js",
     "strangler:audit:pagefind": "npm run strangler:build && npm run page-ownership:dist && npm run pagefind:build:dist && node scripts/dist-publication-audit.js --require-pagefind && npm run contract:extract:dist && npm run contract:compare:dist && node scripts/dist-smoke-audit.js --no-build",
-    "strangler:audit:production-like": "npm run strangler:build:production-like && npm run page-ownership:dist:production-like && npm run pagefind:build:dist && node scripts/dist-publication-audit.js --require-pagefind --forbid-dev && npm run contract:extract:dist && npm run contract:compare:dist && npm run dist:jsonld:audit && node scripts/dist-smoke-audit.js --no-build --production-like && npm run dist:css-parity && npm run sw:dist:audit:pagefind",
+    "strangler:audit:production-like": "npm run strangler:build:production-like && npm run page-ownership:dist:production-like && npm run pagefind:build:dist && node scripts/dist-publication-audit.js --require-pagefind --forbid-dev && npm run contract:extract:dist && npm run contract:compare:dist && npm run dist:jsonld:audit && npm run audit:premium-controls && node scripts/dist-smoke-audit.js --no-build --production-like && npm run dist:css-parity && npm run sw:dist:audit:pagefind",
     "sw:dist:audit": "node scripts/sw-dist-readiness-audit.js",
     "sw:dist:audit:pagefind": "node scripts/sw-dist-readiness-audit.js --require-pagefind",
     "sw:dist:audit:deploy-switch": "node scripts/sw-dist-readiness-audit.js --require-pagefind --require-cache-bump",
