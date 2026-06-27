@@ -974,3 +974,110 @@ ESLint v9 падает из-за отсутствия `eslint.config.*`; Styleli
 *Итого раунд 6: +3 пункта (BUG-044..046), +3 замечания.*
 *Суммарный итог по всем раундам: 46 багов/пунктов · 14 категорий мусора · 21 замечание.*
 *Дата: 2026-06-27. Состояние main session after direct push policy.*
+
+---
+
+## 🔴 НОВЫЕ БАГИ / FIXES — раунд 7 (runtime + axe verification, 2026-06-27)
+
+---
+
+### BUG-047 · `interactive-audit.js` stale Gill `gbs2-*` selectors fixed; runtime audit now passes
+
+**Файл:** `scripts/interactive-audit.js`
+
+Исправлены BUG-033/035 false positives:
+
+- desktop series audit теперь принимает `.gbs-rail` и `.gbs-rail-card.is-current` вместе с legacy `.gbs2-*`;
+- mobile series audit теперь различает legacy GBS2 sheet (`#gbs2Bbar`, `#gbs2Sheet`) и Gill v16 bottom bar (`.mobile-bottom-bar`, `#mobTocBtn`, `#seriesTocOverlay`, `#partTocOverlay`);
+- theme control discovery теперь видит `[data-fc-action="theme"]` и `.gb-theme-toggle`.
+
+**Верификация:**
+
+```bash
+AUDIT_BASE=http://127.0.0.1:8080 npm run interactive-audit
+```
+
+Результат на root server:
+
+```text
+GB INTERACTIVE AUDIT
+Pages: 41 · series: 10 · quizzes: 6 · glossary: 3 · theme: 6 · search: 4 · media: 2
+✅ Interactive audit passed
+```
+
+---
+
+### BUG-048 · `visual-audit.js` stale `bio-cover-missing` selector fixed; visual audit now passes
+
+**Файл:** `scripts/visual-audit.js`
+
+Исправлен BUG-034: Gill v16 chast-1 больше не обязан иметь legacy `.bio-cover` / `.gbs2-current-cover` / `.gbs2-mobile-head img`. В качестве актуального current marker audit принимает `.gbs-rail-card[aria-current="page"]` / `.gbs-rail-card.is-current`.
+
+**Верификация:**
+
+```bash
+AUDIT_BASE=http://127.0.0.1:8080 npm run visual-audit
+```
+
+Результат:
+
+```text
+Pages audited: 52
+Screenshots: 156
+After suppression: 0
+```
+
+---
+
+### BUG-049 · Nagornaya mobile theme button was visible but not wired; fixed in `site.js`
+
+**Файл:** `js/site.js`
+
+`interactive-audit` после stale-selector фикса оставлял один реальный runtime bug:
+
+```text
+mobile-theme-click-did-not-toggle /nagornaya/chast-1/: {"before":false,"after":false}
+```
+
+Причина: late theme bridge слушал только `#barThemeBtn`, а мобильная Nagornaya sidebar-кнопка имеет класс `.nag-sidebar-theme-btn`. Визуально кнопка была доступна, но click не переключал `html.dark`.
+
+**Исправление:** late theme bridge теперь слушает:
+
+```js
+#barThemeBtn,.nag-sidebar-theme-btn
+```
+
+**Верификация:** повторный `interactive-audit` → `✅ Interactive audit passed`.
+
+---
+
+### BUG-050 · axe-core нашёл accessibility backlog на home/about/Gill/Nagornaya
+
+**Инструмент:** `@axe-core/playwright`
+**Проверенные URL:** `/`, `/about/`, `/articles/dzhon-gill-chast-1-chelovek/`, `/nagornaya/chast-1/`
+
+Найдены реальные a11y категории:
+
+- `color-contrast` на `/` и других страницах;
+- `aria-hidden-focus` у `#selection-share-popup`;
+- `aria-allowed-attr` на glossary `<abbr>` / related tooltip markup;
+- `nested-interactive` у source marker внутри Gill article;
+- `link-in-text-block` на Nagornaya external links.
+
+**Частично исправлено в этой волне:** speed selector buttons in `floating-cluster-controller.js` больше не используют `aria-pressed` вместе с `role="radio"`; оставлен корректный `aria-checked`.
+
+**Статус:** нужен отдельный accessibility lane для оставшихся axe findings.
+
+---
+
+## ⚠️ ЗАМЕЧАНИЯ — раунд 7
+
+### NOTE-022 · Browser checks теперь подтверждают, что Gill v16 stale-check слой закрыт
+
+`interactive-audit` и `visual-audit` оба зелёные на root server после обновления селекторов. Это подтверждает, что BUG-033/034 были stale-check проблемами, а не production UI regression.
+
+---
+
+*Итого раунд 7: +4 пункта (BUG-047..050), +1 замечание.*
+*Суммарный итог по всем раундам: 50 багов/пунктов · 14 категорий мусора · 22 замечания.*
+*Дата: 2026-06-27. Состояние main session after runtime/axe checks.*

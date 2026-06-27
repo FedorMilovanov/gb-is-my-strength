@@ -830,7 +830,7 @@
       panel.setAttribute('aria-label', 'Скорость воспроизведения');
       panel.innerHTML = speeds.map(function(s) {
         var active = s === currentRate ? ' is-active' : '';
-        return '<button class="gb-ember-expand__btn' + active + '" type="button" role="radio" data-speed="' + s + '" aria-label="Скорость ' + s + '\u00d7" aria-pressed="' + (s === currentRate ? 'true' : 'false') + '" aria-checked="' + (s === currentRate ? 'true' : 'false') + '">' + s + '\u00d7</button>';
+        return '<button class="gb-ember-expand__btn' + active + '" type="button" role="radio" data-speed="' + s + '" aria-label="Скорость ' + s + '\u00d7" aria-checked="' + (s === currentRate ? 'true' : 'false') + '">' + s + '\u00d7</button>';
       }).join('');
 
       // Wrap ember in a positioned span so the popover anchors exactly to the
@@ -899,7 +899,6 @@
           panel.querySelectorAll('.gb-ember-expand__btn').forEach(function(b) {
             var isThis = parseFloat(b.getAttribute('data-speed')) === speed;
             b.classList.toggle('is-active', isThis);
-            b.setAttribute('aria-pressed', isThis ? 'true' : 'false');
             b.setAttribute('aria-checked', isThis ? 'true' : 'false');
           });
           // Live rate change — TTS подхватывает новую скорость со следующего chunk
