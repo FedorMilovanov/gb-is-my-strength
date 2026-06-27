@@ -45,7 +45,7 @@ if (!fs.existsSync(auditRoot)) {
 for (const file of walk(auditRoot)) {
   htmlFiles++;
   const html = fs.readFileSync(file, 'utf8');
-  const matches = [...html.matchAll(/<script\s+type=["']application\/ld\+json["'][^>]*>([\s\S]*?)<\/script>/gi)];
+  const matches = [...html.matchAll(/<script\s+[^>]*type=["']application\/ld\+json["'][^>]*>([\s\S]*?)<\/script>/gi)];
   matches.forEach((m, idx) => {
     blocks++;
     const raw = m[1].trim();
