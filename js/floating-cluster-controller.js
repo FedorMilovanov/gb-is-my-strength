@@ -748,8 +748,10 @@
         if (!item) return;
         if (item.classList.contains('is-current') && partToc) {
           e.preventDefault();
+          e.stopPropagation();
           closeOverlay(seriesToc);
           openOverlay(partToc);
+          return;
         }
         // Non-current items are regular links — let them navigate
       });

@@ -1,0 +1,54 @@
+---
+import PlayEmber from '@/components/ui/floating-cluster/PlayEmber.astro';
+import SaveButton from '@/components/ui/floating-cluster/SaveButton.astro';
+import RomanNumeral from '@/components/ui/floating-cluster/RomanNumeral.astro';
+import { GILL_PAGE_DATA, GILL_SERIES_ITEMS, type GillSeriesPageId } from './gillSeriesData';
+
+interface Props {
+  pageId: GillSeriesPageId;
+}
+
+const { pageId } = Astro.props;
+const page = GILL_PAGE_DATA[pageId];
+---
+<aside class="gbs-rail" aria-label="Серия «Джон Гилл»">
+  <button class="gbs-rail-back" aria-label="Назад" data-home-href="../../biografii/">
+    <svg viewBox="0 0 24 24"><path d="M19 12H5M12 19l-7-7 7-7" /></svg>
+  </button>
+  <div style="margin-top:50px">
+    <div class="gbs-rail-now">
+      <div class="lab">Сейчас читаете</div>
+      <h2>{page.railNowTitle}</h2>
+      <div class="bar"><i id="gbs2Curbar"></i></div>
+    </div>
+    <div class="gbs-rail-list">
+      {GILL_SERIES_ITEMS.map((item) => {
+        const isCurrent = item.id === pageId;
+        const href = isCurrent ? './' : item.href;
+        return (
+          <a class:list={['gbs-rail-card', isCurrent && 'is-current']} href={href} aria-current={isCurrent ? 'page' : undefined}>
+            <RomanNumeral value={item.roman} className="gbs-rail-card__num" />
+            <div class="gbs-rail-card__info">
+              <small>{item.readingTime}</small>
+              <b>{item.title}</b>
+            </div>
+            {isCurrent && <div class="gbs-rail-card__check">✓</div>}
+            <div class="gbs-rail-card__chevron"><svg viewBox="0 0 24 24"><path d="M9 18l6-6-6-6" /></svg></div>
+          </a>
+        );
+      })}
+    </div>
+  </div>
+  <div class="gbs-rail-spacer"></div>
+  <div class="gbs-rail-foot" data-fc-root data-fc-variant="gill" data-fc-mode="series-rich">
+    <button class="gbs-rail-foot__btn gb-theme-toggle" data-fc-action="theme" aria-label="Тема" data-tip="Тема">
+      <span class="theme-icon-sun"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4.5" /><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41" /></svg></span>
+      <span class="theme-icon-moon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z" /></svg></span>
+    </button>
+    <button class="gbs-rail-foot__btn" data-fc-action="search" aria-label="Поиск" data-tip="Поиск"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7" /><path d="M21 21l-4.3-4.3" /></svg></button>
+    <button class="gbs-rail-foot__btn gbs-rail-foot__btn--text" data-fc-action="font-down" aria-label="Уменьшить шрифт" data-tip="Меньше">A−</button>
+    <button class="gbs-rail-foot__btn gbs-rail-foot__btn--text" data-fc-action="font-up" aria-label="Увеличить шрифт" data-tip="Больше">A+</button>
+    <PlayEmber audioState="none" class="gbs-rail-ember" tip="Озвучка" />
+    <SaveButton class="gbs-rail-foot__btn" tip="Сохранить" />
+  </div>
+</aside>
