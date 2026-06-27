@@ -549,3 +549,356 @@ Baptisty-статьи отсутствуют в RSS-ленте. Возможно
 *Итого раунд 3: +3 бага (BUG-029..031), +3 мусора (TRASH-012..014), 4 замечания.*
 *Суммарный итог по всем раундам: 31 баг · 14 категорий мусора · 10 замечаний.*
 *Дата: 2026-06-25. Состояние main: 7f554dd.*
+
+---
+
+## 🔴 НОВЫЕ БАГИ — раунд 4 (external/internal gates, verified 2026-06-27)
+
+---
+
+### BUG-032 · `dist-publication-audit.js` требует устаревший `gbs2-rail` на 4 Gill routes
+
+**Файл:** `scripts/dist-publication-audit.js` (`visualShadowArticleMarkers`, строки ~211–217)
+
+Четыре Gill PageChrome-компонента уже сознательно конвертированы с `gbs2-rail` на `gbs-rail` v16 — см. комментарии в:
+
+- `src/components/article-pilots/gill-part1/GillPart1PageChrome.astro`
+- `src/components/article-pilots/gill-part2/GillPart2PageChrome.astro`
+- `src/components/article-pilots/gill-part3/GillPart3PageChrome.astro`
+- `src/components/article-pilots/gill-spravochnik/GillSpravochnikPageChrome.astro`
+
+Но `dist-publication-audit.js` всё ещё требует `gbs2-rail` для:
+
+- `dzhon-gill-chast-1-chelovek`
+- `dzhon-gill-chast-2-uchenyi`
+- `dzhon-gill-chast-3-nasledie`
+- `dzhon-gill-spravochnik`
+
+При этом `dzhon-gill-istoricheskiy-kontekst` в том же объекте уже требует правильный `gbs-rail`. Значит, часть карты маркеров забыли обновить после v16-конвергенции.
+
+**Воспроизведение:**
+
+```bash
+npm run strangler:audit:production-like
+```
+
+Фактический провал:
+
+```text
+❌ /articles/dzhon-gill-spravochnik/ in dist is missing visual-shadow markers: gbs2-rail
+❌ /articles/dzhon-gill-chast-1-chelovek/ in dist is missing visual-shadow markers: gbs2-rail
+❌ /articles/dzhon-gill-chast-2-uchenyi/ in dist is missing visual-shadow markers: gbs2-rail
+❌ /articles/dzhon-gill-chast-3-nasledie/ in dist is missing visual-shadow markers: gbs2-rail
+```
+
+**Исправление:** заменить `gbs2-rail` → `gbs-rail` только для четырёх Gill routes. `krajne`/`rimlyanam-7` не трогать: их источники ещё реально используют `gbs2-rail`.
+
+---
+
+### BUG-033 · `interactive-audit.js` проверяет только `.gbs2-*` и ложно валит конвертированную Gill-серию
+
+**Файл:** `scripts/interactive-audit.js` (селекторы `.gbs2-rail`, `.gbs2-parts`, `.gbs2-mobile-head`, `#gbs2Bbar`, `#gbs2Sheet`)
+
+После v16-конвергенции Gill routes используют `gbs-rail`, но browser-audit продолжает искать только старые `gbs2-*` DOM-маркеры. Поэтому `npm run interactive-audit` даёт 15+ false-positive issues на Gill pages:
+
+```text
+gbs-rail-not-visible
+gbs-no-current-part
+gbs-mobile-ui-missing
+```
+
+**Воспроизведение:** поднять `dist/` на `127.0.0.1:8080` и выполнить:
+
+```bash
+npm run interactive-audit
+```
+
+**Исправление:** принимать актуальные v16-селекторы (`gbs-rail`, current-card marker и т.п.) либо временно поддерживать оба поколения (`gbs2-*` и `gbs-*`) до завершения strangler-миграции.
+
+---
+
+### BUG-034 · `visual-audit.js` проверяет устаревший Gill cover selector и выдаёт `bio-cover-missing`
+
+**Файл:** `scripts/visual-audit.js` (строки ~275–315)
+
+`visual-audit.js` ожидает для `/articles/dzhon-gill-chast-1-chelovek/` один из старых селекторов:
+
+```text
+.bio-cover, .gbs2-current-cover, .gbs2-mobile-head img
+```
+
+В актуальной v16-разметке Gill chast-1 этих селекторов нет. Поэтому `npm run visual-audit` нашёл 2 HIGH-блокера (`mobile` и `desktop`):
+
+```json
+{"kind":"bio-cover-missing","page":"/articles/dzhon-gill-chast-1-chelovek/","detail":"bio-cover 16:9 block missing from Gill chast-1 article"}
+```
+
+**Статус:** вероятный stale-check после v16-конвергенции. Нужно либо обновить селектор на реальный текущий cover/current-card marker, либо зафиксировать в проектном контракте, что у этой страницы больше нет отдельного 16:9 `bio-cover` блока.
+
+---
+
+### BUG-035 · `interactive-audit` сообщает `mobile-theme-control-not-visible` на двух статьях
+
+**Файлы/страницы:**
+
+- `/articles/dzhon-gill-chast-1-chelovek/`
+- `/articles/hermenevticheskaya-otsenka-hristotsentrichnoy-germenevtiki/`
+
+Помимо stale `gbs2-*` проблем, `interactive-audit` отдельно сообщает:
+
+```text
+mobile-theme-control-not-visible: "theme enabled but no visible control"
+```
+
+Это не объясняется только `gbs2-rail → gbs-rail` конвергенцией и требует ручного UX-триажа на мобильном viewport: либо контрол темы действительно скрыт/недоступен, либо audit неверно определяет видимость.
+
+---
+
+### BUG-036 · Pa11y нашёл 45 WCAG2AA contrast errors на home page
+
+**Инструмент:** Pa11y `9.1.1`
+**Команда:**
+
+```bash
+pa11y http://127.0.0.1:8090/ --reporter json --standard WCAG2AA
+```
+
+`/about/` прошёл без ошибок, но `/` выдал 45 ошибок `WCAG2AA.Principle1.Guideline1_4.1_4_3.G18.Fail`: недостаточный контраст текста. Повторяющиеся зоны:
+
+- `.h-hero-tagline`
+- `.h-hero-desc`
+- `.h-hero-search__placeholder`
+- `.h-section-label`
+- `.h-planned-label`
+- `.h-meta-author`
+- `.h-meta-time`
+- `.h-meta-sep`
+- `.h-meta-tag--neutral`
+- `kbd` внутри hero search
+
+Пример:
+
+```text
+Expected a contrast ratio of at least 4.5:1, but text in this element has a contrast ratio of 4.41:1.
+<p class="h-hero-tagline">Для изучения Писания</p>
+```
+
+**Исправление:** поднять контраст secondary/meta текста home page до WCAG AA 4.5:1, особенно в светлой теме.
+
+---
+
+### BUG-037 · Semgrep/zizmor подтверждают template injection risk в `shared-files-guard.yml`
+
+**Файл:** `.github/workflows/shared-files-guard.yml`, строка ~43
+
+В шаге `Report shared files touched` GitHub context вставляется прямо в shell script:
+
+```yaml
+run: |
+  echo "Branch: ${{ github.ref_name }}"
+  echo "Event: ${{ github.event_name }}"
+```
+
+Semgrep rule `yaml.github-actions.security.run-shell-injection.run-shell-injection` пометил это как blocking finding. Zizmor также нашёл `template-injection` с `High` confidence / `High` severity для этого workflow.
+
+**Почему это баг:** значения GitHub context подставляются в shell source до выполнения. Для branch/ref names безопаснее разделять код и данные через `env:`.
+
+**Исправление:**
+
+```yaml
+- name: Report shared files touched
+  if: always()
+  env:
+    REF_NAME: ${{ github.ref_name }}
+    EVENT_NAME: ${{ github.event_name }}
+  run: |
+    echo "Branch: $REF_NAME"
+    echo "Event: $EVENT_NAME"
+    echo "Shared files guard completed"
+```
+
+---
+
+### BUG-038 · Dependency audit не зелёный: `npm audit` = 8 vulnerabilities, OSV подтверждает `esbuild` LOW
+
+**Файлы:** `package-lock.json`, dependency tree
+
+`npm audit --json` в текущем `main` возвращает ненулевой exit code:
+
+```text
+8 vulnerabilities: 3 low, 5 moderate
+```
+
+Независимый OSV Scanner по `package-lock.json` также подтвердил минимум одну актуальную advisory:
+
+```text
+esbuild 0.27.7 · GHSA-g7r4-m6w7-qqqr · LOW
+```
+
+**Статус:** dependency-security debt. Не запускать `npm audit fix --force` автоматически: audit сам предлагает major/breaking path через `@astrojs/check`. Нужен отдельный dependency lane с проверкой Astro/build gates.
+
+---
+
+## ⚠️ ЗАМЕЧАНИЯ — раунд 4
+
+### NOTE-011 · `html-validate` работает, но без конфигурации слишком шумный для CI
+
+`npx html-validate 'dist/**/*.html' --formatter json` нашёл 1591 errors на 53 файлах. Большая часть — проектно-спорные правила (`doctype-style`, `no-inline-style`, `no-redundant-role`, `script-type`, generated Astro output). Инструмент полезен только после создания `.htmlvalidate.json` с правилами проекта. Без конфигурации не делать blocking gate.
+
+### NOTE-012 · Lighthouse полезен как диагностика, но локальный `python3 http.server` искажает perf-gate
+
+Lighthouse успешно запустился через `CHROME_PATH` Playwright Chromium:
+
+```text
+/ home: Performance 66, Accessibility 95, Best Practices 75, SEO 100
+Gill part1: Performance 31, Accessibility 90, Best Practices 75, SEO 100
+```
+
+Но локальный `python3 http.server` не даёт production gzip/cache/CDN headers, поэтому `uses-text-compression` и часть perf score нельзя считать production-багом без проверки на реальном preview/prod.
+
+### NOTE-013 · `zizmor` нашёл 34 GitHub Actions hardening findings
+
+Категории: `unpinned-uses` (20), `artipacked` (7), `template-injection` (5), `dangerous-triggers` (2). Это не всё сразу production-баги, но хороший backlog для отдельной CI-hardening lane.
+
+---
+
+*Итого раунд 4: +7 багов (BUG-032..038), +3 замечания.*
+*Суммарный итог по всем раундам: 38 багов · 14 категорий мусора · 13 замечаний.*
+*Дата: 2026-06-27. Состояние main: `819fd3f`.*
+
+---
+
+## 🔴 НОВЫЕ БАГИ — раунд 5 (external checks wave 2, verified 2026-06-27)
+
+---
+
+### BUG-039 · `docs/LANE_LOCK_POLICY.md` содержит битую относительную ссылку на `WORK_MODES.md`
+
+**Файл:** `docs/LANE_LOCK_POLICY.md`, строка 6
+
+Lychee local-docs scan нашёл broken local link:
+
+```text
+docs/LANE_LOCK_POLICY.md: file:///home/user/repo/docs/docs/WORK_MODES.md
+File not found. Check if file exists and path is correct
+```
+
+Причина: файл уже находится в `docs/`, поэтому ссылка `[docs/WORK_MODES.md](docs/WORK_MODES.md)` резолвится как `docs/docs/WORK_MODES.md`.
+
+**Исправлено в lane:** ссылка заменена на `[docs/WORK_MODES.md](WORK_MODES.md)`.
+
+---
+
+### BUG-040 · `shared-files-guard.yml` template injection finding исправлен через `env`
+
+**Файл:** `.github/workflows/shared-files-guard.yml`
+
+Semgrep в предыдущей волне нашёл GitHub Actions template injection в shell step. В этой lane блок заменён с прямой подстановки `${{ github.* }}` внутри `run:` на безопасную передачу через `env:`:
+
+```yaml
+env:
+  REF_NAME: ${{ github.ref_name }}
+  EVENT_NAME: ${{ github.event_name }}
+run: |
+  echo "Branch: $REF_NAME"
+  echo "Event: $EVENT_NAME"
+```
+
+**Проверка после фикса:** `semgrep scan --config p/ci` → `0` findings.
+
+---
+
+### BUG-041 · actionlint+ShellCheck находит shell issues в GitHub Actions snippets
+
+**Файлы:** `.github/workflows/indexnow.yml`, `.github/workflows/visual-parity.yml`
+
+После установки `shellcheck` `actionlint` начинает проверять inline shell внутри workflow. Команда:
+
+```bash
+actionlint -color=false .github/workflows/*.yml
+```
+
+сейчас падает на shellcheck findings:
+
+- `indexnow.yml`: `SC2015` — `A && B || C` не является безопасным if-then-else;
+- `indexnow.yml`: `SC2034` — переменная `i` в retry loop выглядит unused;
+- `indexnow.yml`: `SC2086` — часть переменных/refs нужно quote-ить;
+- `indexnow.yml` и `visual-parity.yml`: `SC2129` style — несколько `>> file` можно сгруппировать.
+
+**Статус:** workflow syntax проходит, но strict shell-aware actionlint не зелёный. Рекомендация: отдельной CI-hardening правкой привести inline shell к ShellCheck-clean или запускать syntax-only mode `actionlint -shellcheck ''` до завершения hardening.
+
+---
+
+### BUG-042 · OpenSSF Scorecard = 4.5/10: repo security posture ниже желаемого уровня
+
+**Инструмент:** OpenSSF Scorecard `v5.5.0`
+**Команда:** `scorecard --repo=github.com/FedorMilovanov/gb-is-my-strength --format=json --show-details`
+
+Итоговый score:
+
+```text
+4.5 / 10
+```
+
+Низкие/нулевые зоны:
+
+- `Branch-Protection: 0` — branch protection not enabled on development/release branches;
+- `Code-Review: 0` — approved changesets not detected;
+- `License: 0` — license file not detected;
+- `SAST: 0` — no SAST tool detected;
+- `Security-Policy: 0` — security policy file not detected;
+- `Token-Permissions: 0` — detected GitHub workflow tokens with excessive permissions;
+- `Pinned-Dependencies: 2` — actions/dependencies not pinned by hash.
+
+**Статус:** это не один code bug, а repository-governance backlog. Нужно отдельной hardening lane: `SECURITY.md`, license decision, SAST workflow, token permissions, pinning policy, branch protection через GitHub settings.
+
+---
+
+### BUG-043 · `notify-on-failure.yml` не имел newline at EOF
+
+**Файл:** `.github/workflows/notify-on-failure.yml`
+
+`yamllint -d relaxed .github/workflows` нашёл единственный не-style error:
+
+```text
+.github/workflows/notify-on-failure.yml
+  166:14 error no new line character at the end of file (new-line-at-end-of-file)
+```
+
+**Исправлено в lane:** добавлен newline в конец файла.
+
+---
+
+## ⚠️ ЗАМЕЧАНИЯ — раунд 5
+
+### NOTE-014 · markdownlint-cli2 без конфигурации даёт 17k+ ошибок
+
+Инструмент работает, но текущий репозиторий содержит много старых research/build-tool Markdown файлов с длинными строками и нестандартной структурой. Blocking gate без `.markdownlint-cli2`/scoped changed-files режима будет шумом.
+
+### NOTE-015 · CSpell без русского/custom dictionary непригоден
+
+Generic CSpell scan дал 306k+ unknown words из-за русского текста, транслитерации (`nagornaya`, `rodosloviye`, `baptisty`) и project-specific терминов. Не добавлять до настройки словарей.
+
+### NOTE-016 · Knip дважды падает в Arena на `oxc-parser` ArrayBuffer allocation
+
+Пробовались:
+
+1. обычный `npx knip --reporter json`;
+2. scoped config с исключением `_build-tools`, `dist`, `docs`, `audit`;
+3. retry с `NODE_OPTIONS=--max-old-space-size=1536`.
+
+Все варианты завершились `RangeError: Array buffer allocation failed`. В Arena эту проверку не повторять без изменения памяти/версии Knip. Можно переоценить локально на машине владельца.
+
+### NOTE-017 · depcheck полезен только с ignore list
+
+`depcheck --json` нашёл потенциально unused devDependencies (`@astrojs/check`, `@astrojs/rss`, `typescript`) и missing deps в `_build-tools`, но в текущем виде это noisy: `astro:content` и R&D `_build-tools` дают false positives. Не делать blocking gate без config.
+
+### NOTE-018 · madge circular dependency scan чистый
+
+`madge --extensions js,ts,tsx,astro --circular src scripts` обработал 493 файла и не нашёл циклических зависимостей. Это хороший low-noise advisory check.
+
+---
+
+*Итого раунд 5: +5 багов/исправлений (BUG-039..043), +5 замечаний.*
+*Суммарный итог по всем раундам: 43 бага · 14 категорий мусора · 18 замечаний.*
+*Дата: 2026-06-27. Состояние lane: `lane/external-checks-registry`.*

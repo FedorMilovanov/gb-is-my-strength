@@ -40,7 +40,10 @@ jobs:
 
       - name: Report shared files touched
         if: always()
+        env:
+          REF_NAME: ${{ github.ref_name }}
+          EVENT_NAME: ${{ github.event_name }}
         run: |
-          echo "Branch: ${{ github.ref_name }}"
-          echo "Event: ${{ github.event_name }}"
+          echo "Branch: $REF_NAME"
+          echo "Event: $EVENT_NAME"
           echo "Shared files guard completed"

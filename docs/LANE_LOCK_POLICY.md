@@ -3,7 +3,7 @@
 **Дата:** 2026-06-23
 **Версия:** 2.0 (упрощено по `AGENT_PROTECTION_SIMPLE_v3_0`)
 
-См. также: [docs/WORK_MODES.md](docs/WORK_MODES.md)
+См. также: [docs/WORK_MODES.md](WORK_MODES.md)
 
 ---
 
