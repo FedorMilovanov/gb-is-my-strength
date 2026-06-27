@@ -2089,3 +2089,58 @@ html.dark .gb-roman {
   color: var(--color-accent-gold-bright, #d8aa6d);
 }
 @media print { .gb-roman { display: none; } }
+
+/* ============================================================
+   v16 LAYOUT + RESPONSIVE LAYER (GILL-F fix)
+   The v16 chrome uses .gbs-rail / .mobile-bottom-bar / .toc-overlay,
+   but the legacy .gbs2-world grid was built for .gbs2-rail (304px col).
+   This layer gives the v16 world its own desktop grid (rail + content)
+   and a proper mobile switch (hide rail, show fixed bottom bar, enable
+   the TOC overlay popups). Scoped to [data-gill-v16] so non-v16 pages
+   are untouched. Overlays/bottom-bar are nested inside the wrapper so
+   the existing [data-gill-v16] descendant rules apply.
+   ============================================================ */
+
+/* ---- Desktop: 2-column grid (rail + content) ---- */
+@media (min-width:64em){
+  .gbs2-world[data-gill-v16]{
+    display:grid;
+    grid-template-columns:240px minmax(0,1fr);
+    gap:clamp(20px,2.6vw,40px);
+    align-items:start;
+    min-height:auto;
+  }
+  .gbs2-world[data-gill-v16] > .gbs-rail{
+    grid-column:1;
+    position:sticky;top:16px;align-self:start;
+    max-height:calc(100vh - 32px);max-height:calc(100dvh - 32px);
+    overflow:auto;
+  }
+  .gbs2-world[data-gill-v16] > .page-wrap{
+    grid-column:2;width:min(820px,100%);
+  }
+  /* Bottom bar + overlays are desktop-hidden */
+  [data-gill-v16] .mobile-bottom-bar{display:none}
+}
+
+/* The legacy desktop body padding (304px) must not apply to v16 pages */
+@media (min-width:64em){
+  body.gbs-world:has(.gbs2-world[data-gill-v16]){padding-left:0}
+  body.gbs-world:has(.gbs2-world[data-gill-v16]) .gbs2-world[data-gill-v16]{
+    width:min(1180px,94vw);margin:0 auto;
+  }
+}
+
+/* ---- Mobile/tablet (<64em): hide rail, show fixed bottom bar ---- */
+@media (max-width:63.99em){
+  .gbs2-world[data-gill-v16]{display:block;min-height:0}
+  [data-gill-v16] .gbs-rail{display:none}
+  [data-gill-v16] .page-wrap{width:100%;padding-bottom:84px}
+  [data-gill-v16] .mobile-bottom-bar{
+    display:flex;
+    position:fixed;left:10px;right:10px;
+    bottom:calc(10px + env(safe-area-inset-bottom,0px));
+    top:auto;
+    z-index:var(--z-bottom-bar,400);
+  }
+}
