@@ -129,6 +129,9 @@ jobs:
       - name: Dist JSON-LD parse audit
         run: npm run dist:jsonld:audit
 
+      - name: PremiumControls rollout contract
+        run: npm run audit:premium-controls
+
       - name: Service Worker deploy-switch readiness
         run: npm run sw:dist:audit:deploy-switch
 
