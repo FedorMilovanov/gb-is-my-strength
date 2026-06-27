@@ -17,6 +17,7 @@
 'use strict';
 
 const { execSync } = require('child_process');
+const fs = require('fs');
 const path = require('path');
 
 const ROOT = path.resolve(__dirname, '..');
@@ -88,6 +89,60 @@ function isSystem(file) {
 
 function isShared(file) {
   return SHARED_PATTERNS.some((p) => matchesPattern(file, p));
+}
+
+
+function collectFilesRecursive(dir, predicate, acc = []) {
+  if (!fs.existsSync(dir)) return acc;
+  for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
+    if (entry.name.startsWith('.') || entry.name === 'node_modules' || entry.name === 'dist') continue;
+    const abs = path.join(dir, entry.name);
+    if (entry.isDirectory()) collectFilesRecursive(abs, predicate, acc);
+    else if (predicate(abs)) acc.push(abs);
+  }
+  return acc;
+}
+
+function contextAllowsSupersededFormula(lines, idx) {
+  const start = Math.max(0, idx - 3);
+  const end = Math.min(lines.length, idx + 4);
+  const window = lines.slice(start, end).join(' ');
+  return /SUPERSEDED|FORBIDDEN|WRONG|POS-01|NEVER\s+(?:REINTRODUCE|re-?introduce)/i.test(window);
+}
+
+function guardPremiumControlsTruth(problems) {
+  const agentsPath = path.join(ROOT, 'AGENTS.md');
+  if (fs.existsSync(agentsPath)) {
+    const agents = fs.readFileSync(agentsPath, 'utf8');
+    if (!agents.includes('right: max(8.5vw, env(safe-area-inset-right, 0px));') ||
+        !agents.includes('right: max(4.5vw, env(safe-area-inset-right, 0px));')) {
+      problems.push('FAIL: AGENTS.md §3.10 must preserve Hermeneutics canonical position: desktop 8.5vw and mobile 4.5vw.');
+    }
+  }
+
+  const candidates = [agentsPath]
+    .concat(collectFilesRecursive(path.join(ROOT, 'docs'), (abs) => /\.(md|mdx|txt)$/i.test(abs)))
+    .concat(collectFilesRecursive(path.join(ROOT, 'css'), (abs) => /\.css$/i.test(abs)))
+    .concat(collectFilesRecursive(path.join(ROOT, 'scripts'), (abs) => /\.(js|mjs|cjs)$/i.test(abs)));
+  const forbiddenFormula = /right:\s*max\(calc\(\(100vw\s*-\s*min\(820px,\s*92vw\)\)\s*\/\s*2\s*-\s*28px\),\s*16px\)/;
+  const forbiddenCalc = /100vw\s*-\s*min\(820px,\s*92vw\)[^\n]{0,120}-\s*28px/;
+  const seen = new Set();
+  for (const abs of candidates) {
+    if (seen.has(abs) || !fs.existsSync(abs)) continue;
+    seen.add(abs);
+    const rel = path.relative(ROOT, abs).replace(/\\/g, '/');
+    const lines = fs.readFileSync(abs, 'utf8').split(/\r?\n/);
+    lines.forEach((line, idx) => {
+      if ((forbiddenFormula.test(line) || forbiddenCalc.test(line)) && !contextAllowsSupersededFormula(lines, idx)) {
+        problems.push(`FAIL: ${rel}:${idx + 1} reintroduces old Hermeneutics POS-01 -28px formula without SUPERSEDED/FORBIDDEN/WRONG/POS-01/NEVER REINTRODUCE context.`);
+      }
+    });
+  }
+
+  const cacheBustPath = path.join(ROOT, 'scripts', 'cache-bust.js');
+  if (fs.existsSync(cacheBustPath) && fs.readFileSync(cacheBustPath, 'utf8').includes("'css/premium-controls.css'")) {
+    problems.push('FAIL: scripts/cache-bust.js must not list absent css/premium-controls.css as runtime PremiumControls canon.');
+  }
 }
 
 function getChangedFiles() {
@@ -181,6 +236,8 @@ function main() {
   }
 
   const problems = [];
+
+  guardPremiumControlsTruth(problems);
 
   for (const file of files) {
     if (isSafe(file)) continue;

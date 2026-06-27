@@ -81,6 +81,7 @@ SANDBOX-ENV   → как выжить в конкретной среде (Arena)
 | **AGENTS-r308** | 2026-06-27 | **Schema rich-results audit added.** New `npm run schema:rich-results:audit` and `schema:rich-results:audit:dist` semantically validate JSON-LD Article/Breadcrumb/FAQ requirements and literal `{jsonLd}` regressions. Local Windows runner now inventories existing `reports/*` artifacts from Fedor's machine. |
 | **AGENTS-r309** | 2026-06-27 | **Local Windows launcher fixed.** Added root `RUN-LOCAL-WINDOWS-AUDIT.cmd` so Fedor runs audits as a script instead of pasting `.ps1` into PowerShell. The PowerShell runner now has robust repo-root fallback for pasted/interactive contexts and stricter external command sequencing. |
 | **AGENTS-r310** | 2026-06-27 | **Local audit report storage policy fixed.** Removed accidentally committed root `LOCAL_REPO_AUDIT_REPORT.txt`; local Windows runner now writes compact Markdown with per-check full logs under ignored `reports/local-external-checks-*/logs/`. Root pasted/raw audit reports are ignored. |
+| **AGENTS-r311** | 2026-06-27 | **PremiumControls current truth cleanup.** Corrected §3.10 Hermeneutics protected position to the live `floating-cluster.css` canon (`8.5vw` desktop / `4.5vw` mobile), marked the old `calc(... - 28px)` as SUPERSEDED / WRONG / POS-01 / NEVER REINTRODUCE, and reconciled runtime CSS inventory to the actual 7 deployed files (`css/floating-cluster.css` is current runtime truth; absent `css/premium-controls.css` is not deployed canon). |
 
 ---
 
@@ -331,15 +332,17 @@ CSS-фичи, не поддерживаемые в этих версиях (`col
 ├── migration/page-ownership.json    ← ownership manifest для dist
 ├── .github/workflows/              ← deploy.yml + indexnow.yml + source-links + notify-on-failure
 │
-├── css/                            ← РОВНО 8 ФАЙЛОВ. БОЛЬШЕ НЕ СОЗДАВАТЬ.
+├── css/                            ← РОВНО 7 RUNTIME-ФАЙЛОВ. БОЛЬШЕ НЕ СОЗДАВАТЬ.
 │   ├── site.css                    ← основной слой (статьи, шапка, тёмная тема)
 │   ├── home.css                    ← только главная + каталоги (hero, dashboard)
 │   ├── command-palette.css         ← поиск (Ctrl+K)
 │   ├── mobile-hotfix.css           ← мобильные производительные hotfix-правки
 │   ├── nagornaya-mobile-toc.css    ← мобильное оглавление Нагорной проповеди
-│   ├── floating-cluster.css        ← runtime PremiumControls (загружается + SW precache)
-│   ├── premium-controls.css        ← копия канонического источника src/styles/premium-controls.css
+│   ├── floating-cluster.css        ← runtime PremiumControls (единственный deployed CSS control-plane)
 │   └── site-layered.css            ← legacy/layered резервный CSS
+│
+│   ВАЖНО: `css/premium-controls.css` отсутствует в runtime `/css`; не объявлять его каноном.
+│   `src/styles/premium-controls.css` — reference/subset до отдельной CSS architecture lane.
 │
 ├── fonts/
 │   └── fonts.css                   ← @font-face деклараты, не трогать
@@ -560,14 +563,26 @@ CSS-фичи, не поддерживаемые в этих версиях (`col
 - Roman numerals **MUST** use `<RomanNumeral value="II" />` (`src/components/ui/floating-cluster/RomanNumeral.astro`) → renders `<span class="gb-roman">` (`css/floating-cluster.css`).
   - Gold italic serif, `--color-accent-gold`.
   - Applies to: all Gill rails, series TOCs, part TOCs, sheets, bbars.
-- Hermeneutics floater position (breadcrumb-level, not top-right):
+- Hermeneutics floater position (breadcrumb-level, not top-right) — **canonical live truth from `css/floating-cluster.css`**:
   ```css
   .gb-floater--hermeneutics {
     top: calc(clamp(24px, 3.5vw, 44px) - 4px);
-    right: max(calc((100vw - min(820px, 92vw)) / 2 - 28px), 16px);
+    right: max(8.5vw, env(safe-area-inset-right, 0px));
+  }
+
+  @media (max-width: 899px) {
+    .gb-floater--hermeneutics {
+      top: calc(clamp(24px, 3.5vw, 44px) - 4px);
+      right: max(4.5vw, env(safe-area-inset-right, 0px));
+    }
   }
   ```
-  (`floating-cluster.css:39`; matches legacy `.theme-toggle`).
+  This is the historical `.theme-toggle` distance remembered by the owner. **Do not retune.**
+- **SUPERSEDED / WRONG / POS-01 / NEVER REINTRODUCE:**
+  ```css
+  right: max(calc((100vw - min(820px, 92vw)) / 2 - 28px), 16px);
+  ```
+  That invented content-column calc was the POS-01 “впритык” bug, not protected truth.
 - All PremiumControls scoped with `data-fc-root` or `data-fc-controls="gill-rail"`.
 - Controller (`js/floating-cluster-controller.js` — 1051 lines) handles TTS chunking, speed morph, `gb:tts-rate-change`, favorites, keyboard, Gill/GBS2 init.
 - No double CSS delivery (PC-004).
