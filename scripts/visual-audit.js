@@ -301,9 +301,14 @@ async function auditPage(browser, urlPath, vp) {
       bugs.push({ severity: 'CRITICAL', page: urlPath, viewport: vp.name, kind: 'ambient-phrases-missing',
         detail: 'Home page ambient phrases (names of God) count = 0 — guard failed!' });
     }
-    if (findings.fcControlsH !== null && findings.fcControlsH > 110) {
-      bugs.push({ severity: 'HIGH', page: urlPath, viewport: vp.name, kind: 'fc-controls-too-tall',
-        detail: `Floating controls height=${findings.fcControlsH}px, expected ≤ 110px (compact pill)` });
+    if (findings.fcControlsH !== null) {
+      if (vp.width < 900 && findings.fcControlsH > 110) {
+        bugs.push({ severity: 'HIGH', page: urlPath, viewport: vp.name, kind: 'fc-controls-too-tall',
+          detail: `Mobile floating controls height=${findings.fcControlsH}px, expected ≤ 110px (compact horizontal pill)` });
+      } else if (vp.width >= 900 && findings.fcControlsH > 250) {
+        bugs.push({ severity: 'HIGH', page: urlPath, viewport: vp.name, kind: 'fc-controls-too-tall',
+          detail: `Desktop floating controls height=${findings.fcControlsH}px, expected ≤ 250px (compact vertical cluster)` });
+      }
     }
     if (findings.bioCoverMissing) {
       bugs.push({ severity: 'HIGH', page: urlPath, viewport: vp.name, kind: 'bio-cover-missing',

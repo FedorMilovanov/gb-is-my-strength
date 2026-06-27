@@ -17,6 +17,7 @@ abandoned  — отменён
 
 | Branch | Scope | Mode | Status | Merge? | Owner |
 |---|---|---|---|---|---|
+| `lane/system-visual-audit-height-reconciliation-2026-06-27` | Reconcile `visual-audit.js` height expectations for desktop vs mobile | SYSTEM | merged | ✅ | arena-surgical-surgeon |
 | `lane/system-premiumcontrols-bulletproof-guards-2026-06-27` | Enhance `premium-controls-rollout-audit` and `owner-ui-regression-guard` with bulletproof assertions | SYSTEM | merged | ✅ | arena-surgical-surgeon |
 | `lane/system-gill-parts-2-3-h2-parity-2026-06-27` | Fix H2 parity between legacy `dzhon-gill-chast-2/3` and Astro reconstructions | SYSTEM | merged | ✅ | arena-surgical-surgeon |
 | `lane/system-gill-part1-h2-parity-2026-06-27` | Fix H2 parity between legacy `dzhon-gill-chast-1-chelovek` and Astro reconstruction | SYSTEM | merged | ✅ | arena-surgical-surgeon |
