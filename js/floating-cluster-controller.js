@@ -921,8 +921,11 @@
       if (!headings.length) return;
 
       // Sidebar TOC (#gbs2Toc)
+      // v16 pages ship a static roman-numeral part-TOC (.toc-part-item) inside
+      // #gbs2Toc — never overwrite it with auto-generated legacy <li> items.
+      var isV16Page = !!qs('[data-gill-v16]');
       var sidebarToc = qs('#gbs2Toc');
-      if (sidebarToc && !sidebarToc.querySelector('li')) {
+      if (!isV16Page && sidebarToc && !sidebarToc.querySelector('li')) {
         headings.forEach(function(h, idx) {
           var li = document.createElement('li');
           if (h.tagName === 'H3') li.classList.add('gbs2-sub');
