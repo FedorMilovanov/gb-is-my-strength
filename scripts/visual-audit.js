@@ -267,14 +267,14 @@ async function auditPage(browser, urlPath, vp) {
       // 1. Ambient phrases (home page only)
       const phrases = document.querySelectorAll('.h-phrase');
       out.ambientPhrases = phrases.length;
-      
+
       // 2. FC controls height (must be compact pill, < 100px)
       const fc = document.getElementById('gbFloatingControls');
       if (fc) out.fcControlsH = Math.round(fc.getBoundingClientRect().height);
-      
+
       // 3. bio-cover on gill chast-1 (only check if on that page)
       if (location.pathname.includes('dzhon-gill-chast-1')) {
-        out.bioCoverMissing = !document.querySelector('.bio-cover, .gbs2-current-cover, .gbs2-mobile-head img');
+        out.bioCoverMissing = !document.querySelector('.bio-cover, .gbs2-current-cover, .gbs2-mobile-head img, .gbs-rail-card[aria-current="page"], .gbs-rail-card.is-current');
       }
 
       return out;

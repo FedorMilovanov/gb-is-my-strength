@@ -192,6 +192,21 @@ checkov -d .github/workflows --framework github_actions --output json
 - `jscpd` is useful to reveal duplicated audit scripts, but should produce refactor backlog, not fail CI.
 - `dependency-cruiser` needs config to be valuable; no-config mode did not discover meaningful dependency graph for this repo.
 
+
+## Верификация — волна 4 (2026-06-27)
+
+| Статус | Проверка | Команда / способ | Результат | Решение |
+|---|---|---|---|---|
+| `KEEP` | Runtime interactive audit after v16 selector update | `AUDIT_BASE=http://127.0.0.1:8080 npm run interactive-audit` against root server | `PASS`: 41 pages, series/theme/search/media checks green | Keep as high-value runtime gate. It now supports both legacy `gbs2-*` and Gill v16 `gbs-*` UI. |
+| `KEEP` | Visual audit after Gill cover selector update | `AUDIT_BASE=http://127.0.0.1:8080 npm run visual-audit` | `PASS`: 52 pages, 156 screenshots, 0 unsuppressed bugs | Keep as browser visual smoke. The stale `bio-cover-missing` false positive is removed. |
+| `KEEP-ADVISORY` | axe-core Playwright | temp install `@axe-core/playwright`, scan `/`, `/about/`, Gill part1, Nagornaya part1 | Found real a11y backlog: contrast, `aria-hidden-focus`, glossary/abbr ARIA, nested interactive source marker | Useful as weekly a11y audit; not blocking until baseline/allowlist exists. |
+
+## Wave 4 decisions for future agents
+
+- `interactive-audit` and `visual-audit` are no longer stale on Gill v16 after this wave.
+- axe-core is more precise than generic CSpell/markdownlint noise, but needs baseline before CI blocking.
+- Remaining axe issues should be fixed in an accessibility lane: contrast, glossary tooltip ARIA, `selection-share-popup`, nested source marker.
+
 ## Не добавлять без новой верификации
 
 - `npx actionlint` — не работает в npm-варианте; нужен бинарь.

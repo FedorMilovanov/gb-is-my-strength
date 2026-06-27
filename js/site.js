@@ -79,12 +79,12 @@
     });
   }
   document.addEventListener('click', function(ev){
-    var btn = ev.target && ev.target.closest && ev.target.closest('#barThemeBtn');
+    var btn = ev.target && ev.target.closest && ev.target.closest('#barThemeBtn,.nag-sidebar-theme-btn');
     if(!btn) return;
     preClickDark = document.documentElement.classList.contains('dark');
   }, true);
   document.addEventListener('click', function(ev){
-    var btn = ev.target && ev.target.closest && ev.target.closest('#barThemeBtn');
+    var btn = ev.target && ev.target.closest && ev.target.closest('#barThemeBtn,.nag-sidebar-theme-btn');
     if(!btn) return;
     var before = preClickDark;
     setTimeout(function(){

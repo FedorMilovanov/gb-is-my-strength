@@ -87,21 +87,26 @@ async function checkSeries(browser) {
     // 1) GBS2 shell for the Russian Baptist series;
     // 2) Astro article series nav for MDX article series (Gill / hard-texts).
     const page = await openPage(browser, url, { width: 1366, height: 850 });
-    const state = await page.evaluate(() => ({
-      gbsWorld: !!document.querySelector('.gbs2-world, .gbs-world') || document.body?.classList.contains('gbs-world'),
-      gbsSeries: document.body?.getAttribute('data-gbs2-series') || '',
-      gbsRail: !!document.querySelector('.gbs2-rail'),
-      gbsRailVisible: (() => { const r = document.querySelector('.gbs2-rail'); if (!r) return false; const b = r.getBoundingClientRect(); return b.width > 200 && b.height > 400; })(),
-      gbsCurrent: !!document.querySelector('.gbs2-part[aria-current="page"], .gbs2-part--current'),
-      gbsNext: !!document.querySelector('.gbs2-next'),
-      gbsTimeline: !!document.querySelector('.gbs2-timeline'),
-      astroArticle: !!document.querySelector('.astro-article'),
-      astroSeriesNav: !!document.querySelector('.astro-series-nav'),
-      astroSeriesLinks: document.querySelectorAll('.astro-series-nav__link[href]').length,
-      astroSeriesDots: document.querySelectorAll('.astro-series-nav__dot').length,
-      legacy: ['reading-progress', 'bottomBar', 'btocOverlay', 'tocSidebar'].filter(id => document.getElementById(id)),
-      oldSeriesUi: document.querySelectorAll('[data-series-strip],[data-series-nav],.gb-strip,.series-next-cta').length,
-    }));
+    const state = await page.evaluate(() => {
+      const rail = document.querySelector('.gbs2-rail, .gbs-rail');
+      const railBox = rail ? rail.getBoundingClientRect() : null;
+      return {
+        gbsWorld: !!document.querySelector('.gbs2-world, .gbs-world') || document.body?.classList.contains('gbs-world'),
+        gbsSeries: document.body?.getAttribute('data-gbs2-series') || '',
+        gbsRail: !!rail,
+        gbsRailVisible: !!(railBox && railBox.width > 160 && railBox.height > 240),
+        gbsCurrent: !!document.querySelector('.gbs2-part[aria-current="page"], .gbs2-part--current, .gbs-rail-card[aria-current="page"], .gbs-rail-card.is-current'),
+        gbsNext: !!document.querySelector('.gbs2-next, .gbs-rail-card[href]:not([aria-current="page"]):not(.is-current)'),
+        gbsTimeline: !!document.querySelector('.gbs2-timeline'),
+        gbsV16: !!document.querySelector('[data-gill-v16], .mobile-bottom-bar, #seriesTocOverlay, #partTocOverlay'),
+        astroArticle: !!document.querySelector('.astro-article'),
+        astroSeriesNav: !!document.querySelector('.astro-series-nav'),
+        astroSeriesLinks: document.querySelectorAll('.astro-series-nav__link[href]').length,
+        astroSeriesDots: document.querySelectorAll('.astro-series-nav__dot').length,
+        legacy: ['reading-progress', 'bottomBar', 'btocOverlay', 'tocSidebar'].filter(id => document.getElementById(id)),
+        oldSeriesUi: document.querySelectorAll('[data-series-strip],[data-series-nav],.gb-strip,.series-next-cta').length,
+      };
+    });
     if (state.gbsWorld) {
       if (!state.gbsRail || !state.gbsRailVisible) push('gbs-rail-not-visible', url, state);
       if (!state.gbsCurrent) push('gbs-no-current-part', url, state);
@@ -125,33 +130,53 @@ async function checkSeries(browser) {
       head: !!document.querySelector('.gbs2-mobile-head'),
       bbar: !!document.querySelector('#gbs2Bbar, .gbs2-bbar'),
       sheet: !!document.querySelector('#gbs2Sheet, .gbs2-sheet'),
+      v16Bar: !!document.querySelector('.mobile-bottom-bar'),
+      v16TocButton: !!document.querySelector('#mobTocBtn'),
+      v16SeriesOverlay: !!document.querySelector('#seriesTocOverlay'),
+      v16PartOverlay: !!document.querySelector('#partTocOverlay'),
+      v16Current: !!document.querySelector('.toc-item[aria-current="page"], .toc-item.is-current'),
       astroArticle: !!document.querySelector('.astro-article'),
       astroSeriesNav: !!document.querySelector('.astro-series-nav'),
       overflow: document.documentElement.scrollWidth - window.innerWidth,
     }));
     if (mobState.gbsWorld) {
-      if (!mobState.head || !mobState.bbar || !mobState.sheet) {
-        push('gbs-mobile-ui-missing', url, mobState);
-        await mob.close();
-        continue;
+      const isV16Mobile = mobState.v16Bar || mobState.v16TocButton || mobState.v16SeriesOverlay || mobState.v16PartOverlay;
+      if (isV16Mobile) {
+        if (!mobState.v16Bar || !mobState.v16TocButton || !mobState.v16SeriesOverlay || !mobState.v16PartOverlay || !mobState.v16Current) {
+          push('gbs-v16-mobile-ui-missing', url, mobState);
+          await mob.close();
+          continue;
+        }
+        try { await mob.locator('#mobTocBtn').first().click({ timeout: 5000 }); }
+        catch (e) { push('gbs-v16-toc-open-failed', url, e.message.slice(0, 200)); await mob.close(); continue; }
+        await mob.waitForTimeout(350);
+        const open = await mob.evaluate(() => document.querySelector('#seriesTocOverlay')?.classList.contains('is-open'));
+        if (!open) push('gbs-v16-series-overlay-did-not-open', url, null);
+        await mob.evaluate(() => { document.querySelector('#seriesTocOverlay')?.classList.remove('is-open'); document.body.style.overflow = ''; });
+      } else {
+        if (!mobState.head || !mobState.bbar || !mobState.sheet) {
+          push('gbs-mobile-ui-missing', url, mobState);
+          await mob.close();
+          continue;
+        }
+        try { await mob.locator('#gbs2Bbar, .gbs2-bbar').first().click({ timeout: 5000 }); }
+        catch (e) { push('gbs-sheet-open-failed', url, e.message.slice(0, 200)); await mob.close(); continue; }
+        await mob.waitForTimeout(350);
+        const open = await mob.evaluate(() => document.querySelector('#gbs2Sheet, .gbs2-sheet')?.classList.contains('gbs2-open'));
+        if (!open) push('gbs-sheet-did-not-open', url, null);
+        const tabOk = await mob.evaluate(() => {
+          const t = document.querySelector('.gbs2-sheet-tab[data-gbs2-tab="toc"]');
+          if (!t) return true; // older GBS sheet without tabs is allowed only if it opens.
+          t.click();
+          const pane = document.querySelector('.gbs2-sheet-pane[data-gbs2-pane="toc"]');
+          return !!(pane && pane.classList.contains('gbs2-on'));
+        });
+        if (!tabOk) push('gbs-sheet-tab-broken', url, null);
+        await mob.evaluate(() => { const c = document.querySelector('[data-gbs2-close], .gbs2-sheet-close'); if (c) c.click(); });
+        await mob.waitForTimeout(250);
+        const closed = await mob.evaluate(() => !document.querySelector('#gbs2Sheet, .gbs2-sheet')?.classList.contains('gbs2-open'));
+        if (!closed) push('gbs-sheet-did-not-close', url, null);
       }
-      try { await mob.locator('#gbs2Bbar, .gbs2-bbar').first().click({ timeout: 5000 }); }
-      catch (e) { push('gbs-sheet-open-failed', url, e.message.slice(0, 200)); await mob.close(); continue; }
-      await mob.waitForTimeout(350);
-      const open = await mob.evaluate(() => document.querySelector('#gbs2Sheet, .gbs2-sheet')?.classList.contains('gbs2-open'));
-      if (!open) push('gbs-sheet-did-not-open', url, null);
-      const tabOk = await mob.evaluate(() => {
-        const t = document.querySelector('.gbs2-sheet-tab[data-gbs2-tab="toc"]');
-        if (!t) return true; // older GBS sheet without tabs is allowed only if it opens.
-        t.click();
-        const pane = document.querySelector('.gbs2-sheet-pane[data-gbs2-pane="toc"]');
-        return !!(pane && pane.classList.contains('gbs2-on'));
-      });
-      if (!tabOk) push('gbs-sheet-tab-broken', url, null);
-      await mob.evaluate(() => { const c = document.querySelector('[data-gbs2-close], .gbs2-sheet-close'); if (c) c.click(); });
-      await mob.waitForTimeout(250);
-      const closed = await mob.evaluate(() => !document.querySelector('#gbs2Sheet, .gbs2-sheet')?.classList.contains('gbs2-open'));
-      if (!closed) push('gbs-sheet-did-not-close', url, null);
     } else {
       if (!mobState.astroArticle || !mobState.astroSeriesNav) push('astro-mobile-series-ui-missing', url, mobState);
       if (mobState.overflow > 1) push('astro-mobile-series-overflow', url, mobState);
@@ -222,7 +247,7 @@ async function checkGlossary(browser) {
 
 async function visibleThemeHandle(page) {
   return await page.evaluateHandle(() => {
-    const selectors = ['.gbs2-mctl[data-gbs2-theme]', '.gbs2-ctl[data-gbs2-theme]', '.gb-fc-theme', '#barThemeBtn', '#themeToggle', '.theme-toggle', '.nag-sidebar-theme-btn'];
+    const selectors = ['[data-fc-action="theme"]', '.gb-theme-toggle', '.gbs2-mctl[data-gbs2-theme]', '.gbs2-ctl[data-gbs2-theme]', '.gb-fc-theme', '#barThemeBtn', '#themeToggle', '.theme-toggle', '.nag-sidebar-theme-btn'];
     function visible(el) {
       const cs = getComputedStyle(el);
       const r = el.getBoundingClientRect();
