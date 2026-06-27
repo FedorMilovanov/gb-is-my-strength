@@ -17,6 +17,7 @@ abandoned  — отменён
 
 | Branch | Scope | Mode | Status | Merge? | Owner |
 |---|---|---|---|---|---|
+| `lane/system-lane-report-leak-fix-2026-06-27` | Fix base path leak in previous lane report | SYSTEM | merged | ✅ | arena-surgical-surgeon |
 | `lane/system-audit-pro-clean-reconciliation-2026-06-27` | Fix `audit-pro.js` errors/warnings (AGENTS leak, izbrannoe local ref, z-index, bare CSS vars) | SYSTEM | merged | ✅ | arena-surgical-surgeon |
 | `lane/system-download-fonts-syntax-fix-2026-06-27` | Fix `download-fonts.js` SPECS outer array syntax | SYSTEM | merged | ✅ | arena-surgical-surgeon |
 | `lane/system-premiumcontrols-reconciliation-2026-06-27` | PremiumControls reconciliation & Control plane parity | SYSTEM | merged | ✅ | arena-surgical-surgeon |

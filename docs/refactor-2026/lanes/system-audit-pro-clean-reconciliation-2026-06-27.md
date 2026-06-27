@@ -12,7 +12,7 @@
 
 ## Changed files
 
-- `AGENTS.md` — Fixed repository base path leak by abstracting `AuditRepo/projects/gb-is-my-strength/PremiumControls` to `AuditRepo/projects/<project>/PremiumControls`.
+- `AGENTS.md` — Fixed repository base path leak by abstracting `AuditRepo/projects/<project>/PremiumControls`.
 - `scripts/audit-pro.js` — Extended `localTargetExists` to correctly resolve Astro native pages (`src/pages`) in the Strangler pattern, eliminating false-positive missing local reference warnings for `/izbrannoe/`.
 - `css/floating-cluster.css` — Added `:root` block defining all bare `--gb-*` variables and replaced `z-index: 10` with token `var(--z-above, 10)`.
 - `articles/**/*.html`, `src/**/*.astro` — Auto-updated asset hashes via `npm run cache-bust`.
