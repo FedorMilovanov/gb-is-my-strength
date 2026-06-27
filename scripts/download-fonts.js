@@ -12,7 +12,7 @@ const ROOT = path.resolve(__dirname, '..');
 const FONTS_DIR = path.join(ROOT, 'fonts');
 
 const SPECS = [
-  ['Lora', 400, 'normal',  'cyrillic', 'Lora/lora-cyrillic-400'
+  ['Lora', 400, 'normal',  'cyrillic', 'Lora/lora-cyrillic-400'],
   ['Noto Serif Hebrew', 400, 'normal', 'hebrew', 'NotoSerifHebrew/notoserifhebrew-400'],
   ['Noto Serif Hebrew', 500, 'normal', 'hebrew', 'NotoSerifHebrew/notoserifhebrew-500'],
 ],

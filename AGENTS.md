@@ -68,6 +68,7 @@ SANDBOX-ENV   → как выжить в конкретной среде (Arena)
 | **AGENTS-r297** | 2026-06-24 | **Arena gate discipline clarified.** Agents must read `docs/SANDBOX-ENV-2026-06-21.md` in Arena, use FAST loop checks during small iterations, and reserve `validate:static-publication` + `guard:shared-files` as the required final release barrier for production/system/refactor lanes. |
 | **AGENTS-r298** | 2026-06-24 | **Arena long-session failure modes documented.** `docs/SANDBOX-ENV-2026-06-21.md` now includes a focused 50-link deep pass on why some agents fail early and others survive long sessions: context rot, compaction loss, zombie tool calls, subagent black holes, OOM/resource kills, stale worktrees, and bad state externalization. Rule: durable file/git state + FAST loop + final FULL barrier, not transcript-only memory. |
 | **AGENTS-r299** | 2026-06-24 | **Arena coding polish checklist added.** `docs/SANDBOX-ENV-2026-06-21.md` now includes 30 operational rules + 30 additional references for long-running coding-agent work: targeted reads, explicit timeouts, worktree hygiene, hooks/notifications, durable checkpoints, artifact verification, and final push hygiene. |
+| **AGENTS-r300** | 2026-06-27 | **PremiumControls / Control Plane reconciliation.** Reconciled `AGENTS.md` Section 2 inventory (8 CSS / 12 JS + modules). Added Section 3.10 `PremiumControls / Floating Cluster (protected subsystem)` verbatim with core invariants, explicit forbids, and regression history. Fixed `workflows:check` policy match by updating `dist:jsonld:audit` script to `--root dist`. Reconciled `/izbrannoe/` route contract in `migration/route-migration-matrix.json` (`native-with-legacy-head`) and `scripts/check-content-source-coverage.js`. Fixed syntax swallowing bug in `scripts/download-fonts.js`. |
 
 ---
 
@@ -318,17 +319,20 @@ CSS-фичи, не поддерживаемые в этих версиях (`col
 ├── migration/page-ownership.json    ← ownership manifest для dist
 ├── .github/workflows/              ← deploy.yml + indexnow.yml + source-links + notify-on-failure
 │
-├── css/                            ← РОВНО 5 ФАЙЛОВ. БОЛЬШЕ НЕ СОЗДАВАТЬ.
+├── css/                            ← РОВНО 8 ФАЙЛОВ. БОЛЬШЕ НЕ СОЗДАВАТЬ.
 │   ├── site.css                    ← основной слой (статьи, шапка, тёмная тема)
 │   ├── home.css                    ← только главная + каталоги (hero, dashboard)
 │   ├── command-palette.css         ← поиск (Ctrl+K)
 │   ├── mobile-hotfix.css           ← мобильные производительные hotfix-правки
-│   └── nagornaya-mobile-toc.css    ← мобильное оглавление Нагорной проповеди
+│   ├── nagornaya-mobile-toc.css    ← мобильное оглавление Нагорной проповеди
+│   ├── floating-cluster.css        ← runtime PremiumControls (загружается + SW precache)
+│   ├── premium-controls.css        ← копия канонического источника src/styles/premium-controls.css
+│   └── site-layered.css            ← legacy/layered резервный CSS
 │
 ├── fonts/
 │   └── fonts.css                   ← @font-face деклараты, не трогать
 │
-├── js/                             ← РОВНО 11 ФАЙЛОВ. БОЛЬШЕ НЕ СОЗДАВАТЬ.
+├── js/                             ← РОВНО 12 ФАЙЛОВ + modules/. БОЛЬШЕ НЕ СОЗДАВАТЬ.
 │   ├── site.js                     ← главное (theme, nav, quiz, tooltips, gbFloatingControls)
 │   ├── site-utils.js               ← утилиты, доступные отдельным страницам
 │   ├── scroll-perf.js              ← производительность scroll/observers
@@ -339,7 +343,10 @@ CSS-фичи, не поддерживаемые в этих версиях (`col
 │   ├── bookmark-engine.js          ← закладки (localStorage)
 │   ├── series-cards.js             ← карточки серий
 │   ├── nagornaya-mobile-toc.js     ← мобильное TOC для проповеди
-│   └── sw-register.js              ← регистрация Service Worker
+│   ├── sw-register.js              ← регистрация Service Worker
+│   ├── floating-cluster-controller.js ← PremiumControls runtime controller (TTS, speed morph, favorites)
+│   └── modules/
+│       └── back-to-top.js          ← модуль кнопки возврата наверх
 │
 ├── data/                           ← JSON-данные для рантайма
 │   ├── glossary.json               ← термины глоссария
@@ -531,6 +538,52 @@ CSS-фичи, не поддерживаемые в этих версиях (`col
   <figcaption>Подпись без упоминания ИИ.</figcaption>
 </figure>
 ```
+
+### 3.10 PremiumControls / Floating Cluster (protected subsystem)
+
+**PremiumControls / Floating Cluster — Protected Subsystem Truths & Forbids**
+**Source of truth:** `AuditRepo/projects/gb-is-my-strength/PremiumControls/README.md` + owner instructions + VR history
+
+#### Core Truths (never violate)
+- Roman numerals **MUST** use `<RomanNumeral value="II" />` (`src/components/ui/floating-cluster/RomanNumeral.astro`) → renders `<span class="gb-roman">` (`css/floating-cluster.css`).
+  - Gold italic serif, `--color-accent-gold`.
+  - Applies to: all Gill rails, series TOCs, part TOCs, sheets, bbars.
+- Hermeneutics floater position (breadcrumb-level, not top-right):
+  ```css
+  .gb-floater--hermeneutics {
+    top: calc(clamp(24px, 3.5vw, 44px) - 4px);
+    right: max(calc((100vw - min(820px, 92vw)) / 2 - 28px), 16px);
+  }
+  ```
+  (`floating-cluster.css:39`; matches legacy `.theme-toggle`).
+- All PremiumControls scoped with `data-fc-root` or `data-fc-controls="gill-rail"`.
+- Controller (`js/floating-cluster-controller.js` — 1051 lines) handles TTS chunking, speed morph, `gb:tts-rate-change`, favorites, keyboard, Gill/GBS2 init.
+- No double CSS delivery (PC-004).
+- 4 archetypes supported (single, series-lite, series-rich, Nagornaya special).
+- Visual parity + rollout-audit (28/28 + PC-007) is blocking gate.
+
+#### Explicit Forbids (high-regression history)
+**DO NOT (without owner + full visual gate + 14-day freeze):**
+- Change any calc/position/top/right on `.gb-floater`, `.gb-floater--hermeneutics`, `.gb-floater--series-lite`.
+- Touch speed panel morph, viewport guard, tab trap, stagger, pill sizes (360-390px mobile).
+- Edit `floating-cluster.css` sizes, icon 40px, ember ring, or add new rules for `.gb-roman` / `.gb-icon`.
+- Introduce new CSS/JS files for controls (use existing only).
+- Split or refactor `floating-cluster-controller.js` without dedicated lane.
+- Allow raw `<div class="...__num">I</div>` or hardcoded romans in any Gill context / part / sheet (closes "самодел колхоз").
+- Apply legacy `gbs2-rail` / `gbs2-sheet` bleed to gill-context pages (Part 1+ must stay v16).
+- Override `data-fc-*` scoping or `fc-single-active` / `fc-series-active`.
+- Change Play/Save (36px transparent, no white circle — R9 revert history).
+- Break TTS click path, chunking, rate change, or favorites separate path.
+- Touch Nagornaya special variant without its own visual audit.
+- Change controller init for Gill rail (`initGillRail` that iterates ALL containers).
+
+#### Audit & Gates
+- `scripts/premium-controls-rollout-audit.js` (PC-006 + PC-007)
+- `npm run strangler:build:production-like` + rollout-audit (blocking)
+- `visual-parity` on Gill + Herm (`gill-context-visual-parity-audit` etc.)
+- 10-14 day freeze after sign-off on positioning/sizes.
+
+**Owner note (verbatim):** "PremiumControls и т п не доделано... углублись в него еще серьезно... много регрессий было, пришлось откатывать снова... будь аккуратен"
 
 ---
 
