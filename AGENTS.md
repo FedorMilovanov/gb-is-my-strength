@@ -75,6 +75,7 @@ SANDBOX-ENV   → как выжить в конкретной среде (Arena)
 | **AGENTS-r302** | 2026-06-27 | **External checks wave 2 verified.** `audit/external-checks/README.md` now records ShellCheck/yamllint/markdownlint/CSpell/Knip/depcheck/license-checker/madge/Lychee/Scorecard decisions. Semgrep GHA template-injection finding in `shared-files-guard.yml` is fixed via `env`; broken docs link in `LANE_LOCK_POLICY.md` and missing EOF newline in `notify-on-failure.yml` are fixed. |
 | **AGENTS-r303** | 2026-06-27 | **External checks wave 3 verified on main.** Added npm signature, lockfile-lint, JSON/XML syntax, Prettier+Astro-plugin, ESLint, Stylelint, jscpd, and dependency-cruiser decisions to `audit/external-checks/README.md`. Fixed stale Gill `gbs2-rail` marker requirement in `scripts/dist-publication-audit.js`; Prettier/ESLint/Stylelint remain CONFIG-FIRST, jscpd is advisory only. |
 | **AGENTS-r304** | 2026-06-27 | **Runtime/axe verification wave.** `interactive-audit` now supports both legacy GBS2 and Gill v16 selectors; `visual-audit` no longer emits stale `bio-cover-missing` on Gill v16; Nagornaya mobile theme bridge is wired via `.nag-sidebar-theme-btn`; axe-core Playwright findings are recorded as accessibility backlog. |
+| **AGENTS-r305** | 2026-06-27 | **axe-core a11y cleanup.** Hidden selection-share popup now uses `inert`; glossary tooltip hosts with `aria-expanded`/`aria-describedby` are normalized to `role="button"` + `tabindex="0"`. Remaining axe backlog is contrast, nested source markers, and link-in-text-block. |
 
 ---
 

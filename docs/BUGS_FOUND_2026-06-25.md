@@ -1081,3 +1081,76 @@ mobile-theme-click-did-not-toggle /nagornaya/chast-1/: {"before":false,"after":f
 *Итого раунд 7: +4 пункта (BUG-047..050), +1 замечание.*
 *Суммарный итог по всем раундам: 50 багов/пунктов · 14 категорий мусора · 22 замечания.*
 *Дата: 2026-06-27. Состояние main session after runtime/axe checks.*
+
+---
+
+## 🔴 НОВЫЕ БАГИ / FIXES — раунд 8 (axe a11y cleanup, 2026-06-27)
+
+---
+
+### BUG-051 · `#selection-share-popup` had `aria-hidden` focusable children; fixed with `inert`
+
+**Файл:** `js/site.js`
+
+axe-core находил:
+
+```text
+aria-hidden-focus #selection-share-popup
+```
+
+Причина: popup создавался с `aria-hidden="true"`, но внутри оставались focusable `button`/`a`. Пока popup скрыт, такие элементы не должны попадать в accessibility tree / tab order.
+
+**Исправление:** popup теперь получает `inert=true` при создании и при hide, и `inert=false` только при показе:
+
+```js
+e.inert = true  // hidden
+e.inert = false // visible
+```
+
+**Верификация:** повторный axe scan `/about/` и Gill part1 больше не сообщает `aria-hidden-focus`.
+
+---
+
+### BUG-052 · Glossary hosts had `aria-expanded`/`aria-describedby` without explicit interactive role; fixed
+
+**Файл:** `js/glossary.js`
+
+axe-core находил `aria-allowed-attr` на glossary hosts (`abbr.gterm`, `.gterm`). Причина: runtime tooltip layer добавлял `aria-expanded`/`aria-describedby`, но часть hosts оставалась без явного `role="button"`.
+
+**Исправление:** glossary runtime post-pass теперь гарантирует для tooltip hosts:
+
+```js
+role="button"
+tabindex="0"
+```
+
+для:
+
+```text
+abbr.gterm
+.gterm[data-term]
+.gterm[aria-expanded]
+.gterm[aria-describedby]
+```
+
+**Верификация:** повторный axe scan закрыл glossary `aria-allowed-attr` на `/nagornaya/chast-1/`; на Gill part1 массовые glossary findings исчезли. Оставшиеся Gill `aria-allowed-attr` заменились на отдельную структурную проблему `nested-interactive` source markers.
+
+---
+
+### BUG-053 · Remaining axe backlog after cleanup: contrast, nested source markers, link-in-text-block
+
+**Статус:** не исправлено в этой волне; зафиксировано для отдельной accessibility pass.
+
+После исправлений BUG-051/052 остаются:
+
+- `/about/`: `color-contrast` на `cite`;
+- `/articles/dzhon-gill-chast-1-chelovek/`: `color-contrast` на Gill cards, `nested-interactive` у source markers;
+- `/nagornaya/chast-1/`: `color-contrast` на controls/text, `link-in-text-block` для внешних ссылок.
+
+Это уже не stale-check и не runtime wiring bug, а реальный a11y backlog.
+
+---
+
+*Итого раунд 8: +3 пункта (BUG-051..053).*
+*Суммарный итог по всем раундам: 53 багов/пунктов · 14 категорий мусора · 22 замечания.*
+*Дата: 2026-06-27. Состояние main session after axe cleanup.*

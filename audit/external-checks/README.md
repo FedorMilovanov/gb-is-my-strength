@@ -207,6 +207,20 @@ checkov -d .github/workflows --framework github_actions --output json
 - axe-core is more precise than generic CSpell/markdownlint noise, but needs baseline before CI blocking.
 - Remaining axe issues should be fixed in an accessibility lane: contrast, glossary tooltip ARIA, `selection-share-popup`, nested source marker.
 
+
+## Верификация — волна 5 (2026-06-27)
+
+| Статус | Проверка | Команда / способ | Результат | Решение |
+|---|---|---|---|---|
+| `KEEP-ADVISORY` | axe-core Playwright after a11y runtime fixes | scan `/about/`, Gill part1, Nagornaya part1 | `aria-hidden-focus` on `#selection-share-popup` closed; glossary `aria-allowed-attr` reduced/closed; remaining: contrast, nested source markers, link-in-text-block | Keep as accessibility backlog tracker. |
+| `KEEP` | JS syntax checks for runtime fixes | `node --check js/site.js js/glossary.js js/floating-cluster-controller.js scripts/interactive-audit.js scripts/visual-audit.js` | `PASS` | Required after editing minified/runtime JS. |
+
+## Wave 5 decisions for future agents
+
+- The selection-share popup should remain `inert` while hidden; do not remove this or axe will report `aria-hidden-focus` again.
+- Glossary hosts with `aria-expanded`/`aria-describedby` must have `role="button"` and `tabindex="0"`.
+- Remaining axe work is mostly visual/content-level: contrast, nested source marker structure, and links distinguished by more than color.
+
 ## Не добавлять без новой верификации
 
 - `npx actionlint` — не работает в npm-варианте; нужен бинарь.
