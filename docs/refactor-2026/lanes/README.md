@@ -17,6 +17,7 @@ abandoned  — отменён
 
 | Branch | Scope | Mode | Status | Merge? | Owner |
 |---|---|---|---|---|---|
+| `lane/system-gill-spravochnik-h2-parity-2026-06-27` | Fix H2 parity between legacy `dzhon-gill-spravochnik` and Astro reconstruction | SYSTEM | merged | ✅ | arena-surgical-surgeon |
 | `lane/system-lane-report-leak-fix-2026-06-27` | Fix base path leak in previous lane report | SYSTEM | merged | ✅ | arena-surgical-surgeon |
 | `lane/system-audit-pro-clean-reconciliation-2026-06-27` | Fix `audit-pro.js` errors/warnings (AGENTS leak, izbrannoe local ref, z-index, bare CSS vars) | SYSTEM | merged | ✅ | arena-surgical-surgeon |
 | `lane/system-download-fonts-syntax-fix-2026-06-27` | Fix `download-fonts.js` SPECS outer array syntax | SYSTEM | merged | ✅ | arena-surgical-surgeon |
