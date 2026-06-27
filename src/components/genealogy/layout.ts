@@ -106,8 +106,12 @@ export function buildLayout(persons: Person[], opts: LayoutOptions): LayoutResul
     g.setNode(p.id, { width: NODE_W, height: h });
   }
   for (const p of filtered) {
-    const parent = resolveParent(p, ids);
-    if (parent) g.setEdge(parent, p.id);
+    // Feed BOTH parents (father + mother) into the dagre graph so matriarchs
+    // (Sarah, Rebekah, Leah, Bathsheba, Jochebed, Rahab, Ruth, Mary) rank near
+    // their children instead of floating disconnected.
+    for (const parent of resolveParents(p, ids)) {
+      g.setEdge(parent, p.id);
+    }
   }
 
   dagre.layout(g);
@@ -139,34 +143,61 @@ export function buildLayout(persons: Person[], opts: LayoutOptions): LayoutResul
 
   const edges: Edge[] = [];
   for (const p of filtered) {
-    const parentId = resolveParent(p, ids);
-    if (!parentId) continue;
-    const isGoldenEdge = goldenPath.has(p.id) && goldenPath.has(parentId);
+    const parents = resolveParents(p, ids);
+    if (parents.length === 0) continue;
+    // The "primary" parent carries the golden/messianic styling (father first,
+    // except Jesus whose canonical lineage is traced through Mary). Additional
+    // parent (the matriarch) gets a softer maternal edge so mothers are linked
+    // to their children instead of hanging in the void.
+    const primary = resolveParent(p, ids);
     const ls = getLineStyle(p.lineage);
-    edges.push({
-      id: `${parentId}->${p.id}`,
-      source: parentId,
-      target: p.id,
-      type: 'smoothstep',
-      animated: isGoldenEdge,
-      style: {
-        stroke: isGoldenEdge ? '#ffd700' : ls.border,
-        strokeWidth: isGoldenEdge ? 3.5 : p.lineage.startsWith('messianic') ? 2.2 : 1.4,
-        opacity: isGoldenEdge ? 0.95 : p.lineage.startsWith('messianic') ? 0.7 : 0.35,
-      },
-      markerEnd: {
-        type: MarkerType.ArrowClosed,
-        color: isGoldenEdge ? '#ffd700' : ls.border,
-        width: 14,
-      },
-    });
+    for (const parentId of parents) {
+      const isPrimary = parentId === primary;
+      const isGoldenEdge = isPrimary && goldenPath.has(p.id) && goldenPath.has(parentId);
+      const isMaternal = !isPrimary;
+      edges.push({
+        id: `${parentId}->${p.id}`,
+        source: parentId,
+        target: p.id,
+        type: 'smoothstep',
+        animated: isGoldenEdge,
+        style: {
+          stroke: isGoldenEdge ? '#ffd700' : ls.border,
+          strokeWidth: isGoldenEdge ? 3.5 : p.lineage.startsWith('messianic') ? 2.2 : 1.4,
+          opacity: isGoldenEdge ? 0.95 : isMaternal ? 0.28 : p.lineage.startsWith('messianic') ? 0.7 : 0.35,
+          strokeDasharray: isMaternal ? '5 4' : undefined,
+        },
+        markerEnd: {
+          type: MarkerType.ArrowClosed,
+          color: isGoldenEdge ? '#ffd700' : ls.border,
+          width: 14,
+        },
+      });
+    }
   }
 
   return { nodes, edges, goldenPath };
 }
 
 function resolveParent(p: Person, ids: Set<string>): string | null {
+  // Primary parent for golden-path / focus tracing.
+  // Jesus' canonical genealogy is traced through Mary; everyone else: father first.
+  if (p.id === 'jesus' && p.mother && ids.has(p.mother)) return p.mother;
   if (p.father && ids.has(p.father)) return p.father;
   if (p.mother && ids.has(p.mother)) return p.mother;
   return null;
+}
+
+/**
+ * All in-graph parents of a person (father AND mother). Order: primary first.
+ * Used to draw multi-parent edges so matriarchs connect to their children
+ * (multi-parent DAG instead of a father-only tree).
+ */
+function resolveParents(p: Person, ids: Set<string>): string[] {
+  const out: string[] = [];
+  const primary = resolveParent(p, ids);
+  if (primary) out.push(primary);
+  if (p.father && ids.has(p.father) && !out.includes(p.father)) out.push(p.father);
+  if (p.mother && ids.has(p.mother) && !out.includes(p.mother)) out.push(p.mother);
+  return out;
 }
