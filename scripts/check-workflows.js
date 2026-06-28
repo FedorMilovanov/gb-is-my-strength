@@ -52,8 +52,10 @@ mustScript(scripts, 'strangler:audit:pagefind', /page-ownership:dist/, 'must ver
 mustScript(scripts, 'strangler:audit:production-like', /page-ownership:dist:production-like/, 'must verify production-like ownership before Pagefind/dist audit');
 mustScript(scripts, 'strangler:audit:production-like', /contract:compare:dist/, 'must compare public URL contract against production-like dist');
 mustScript(scripts, 'strangler:audit:production-like', /dist:jsonld:audit/, 'must parse JSON-LD in production-like dist');
+mustScript(scripts, 'strangler:audit:production-like', /schema:rich-results:audit:dist|schema-rich-results-audit\.js[^\n]*--root\s+dist/, 'must semantically audit rich-results schema in production-like dist');
 mustScript(scripts, 'strangler:audit:production-like', /audit:premium-controls|premium-controls-rollout-audit\.js/, 'must enforce PremiumControls rollout contract on production-like dist');
 mustScript(scripts, 'dist:jsonld:audit', /dist-jsonld-audit\.js[^\n]*--root\s+dist/, 'must audit JSON-LD in dist artifact');
+mustScript(scripts, 'schema:rich-results:audit:dist', /schema-rich-results-audit\.js[^\n]*--root\s+dist/, 'must semantically audit rich-results schema in dist artifact');
 mustScript(scripts, 'strangler:deploy-readiness', /astro:audit:about/, 'must include about pilot audit');
 mustScript(scripts, 'strangler:deploy-readiness', /astro:audit:article-mdx:strict/, 'must include strict article MDX shadow audit');
 mustScript(scripts, 'strangler:deploy-readiness', /strangler:audit:production-like/, 'must include production-like strangler audit');
@@ -79,11 +81,12 @@ if (deployUploadsDist) {
   must('.github/workflows/deploy.yml', deploy, /dist-publication-audit\.js[^\n]*--require-pagefind[^\n]*--forbid-dev|npm run strangler:audit:production-like/, 'dist deploy must run production-like dist publication audit with Pagefind required and dev route forbidden');
   must('.github/workflows/deploy.yml', deploy, /contract:extract:dist[^\n]*&&[^\n]*contract:compare:dist|contract:compare:dist/, 'dist deploy must compare public URL contract against dist artifact');
   must('.github/workflows/deploy.yml', deploy, /dist:jsonld:audit|dist-jsonld-audit\.js[^\n]*--root\s+dist/, 'dist deploy must parse JSON-LD in the dist artifact');
+  must('.github/workflows/deploy.yml', deploy, /schema:rich-results:audit:dist|schema-rich-results-audit\.js[^\n]*--root\s+dist/, 'dist deploy must semantically audit rich-results schema in the dist artifact');
   must('.github/workflows/deploy.yml', deploy, /audit:premium-controls|premium-controls-rollout-audit\.js/, 'dist deploy must enforce PremiumControls rollout contract on the dist artifact');
   must('.github/workflows/deploy.yml', deploy, /sw:dist:audit:deploy-switch|sw-dist-readiness-audit\.js[^\n]*--require-cache-bump/, 'dist deploy must enforce service-worker cache-version bump');
   // BUG-S1 / PFV-008 guard: dist artifact must be JSON-LD parse-clean.
-  // Без этого шага деплой /karty/ishod/ с битым JSON-LD проходит зелёным.
-  must('.github/workflows/deploy.yml', deploy, /application\\\/ld\\\+json|JSON-LD parse/, 'dist deploy must parse and validate every <script type="application/ld+json"> in dist/**/*.html');
+  // Keep this through the canonical npm script, not a second inline parser.
+  must('.github/workflows/deploy.yml', deploy, /npm run dist:jsonld:audit|dist-jsonld-audit\.js[^\n]*--root\s+dist/, 'dist deploy must parse and validate every <script type="application/ld+json"> in dist/**/*.html');
   // BUG-A9 guard: dist URL contract must be checked at deploy time.
   must('.github/workflows/deploy.yml', deploy, /contract:compare:dist/, 'dist deploy must run contract:compare:dist against baseline');
   must('.github/workflows/deploy.yml', deploy, />\s*"?dist\/\$\{KEY\}\.txt"?/, 'dist deploy must write IndexNow key file into dist (not repository root)');
