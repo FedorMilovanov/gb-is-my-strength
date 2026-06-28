@@ -131,6 +131,11 @@ const EXCLUDED_PATTERNS = [
   'hard-texts/**',
 ];
 
+// SANITARY NOTE 2026-06-29 — RS Pass10
+// isExcludedRoute() still true for /nagornaya/**, /hard-texts/**, /dzhon-gill-*/**
+// TECHNICALLY STALE — these are production-dist per migration/page-ownership.json v2 (2026-06-29)
+// DO NOT remove blindly while Gill v16 / PremiumControls engine extraction in progress (owner note 2026-06-29)
+// TODO: replace blanket exclusion with per-route matrix status + reason+SHA
 function isExcludedRoute(route) {
   // Check exact first (no glob needed for full route match)
   if (route === '/articles/krajne-li-isporcheno-serdce/') return true;
