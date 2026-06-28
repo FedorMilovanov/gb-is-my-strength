@@ -2353,3 +2353,202 @@ html.dark .gb-roman {
     bottom: calc(100% + 10px);
   }
 }
+
+/* =========================================================
+   GILL UI POLISH HOTFIX 2026-06-29 — owner screenshots 01:16 MSK
+   Addresses: toast theme mismatch, gold mobile progress,
+   TOC label fit 360px, early dark FOUC guard, scroll-spy restore
+   ========================================================= */
+
+/* --- 1. gbs2-resume / bookmark toast — dark/light sync, no ugly hyphenation --- */
+.gbs2-resume,
+#bookmarkToast,
+.gb-bookmark-toast {
+  position: fixed !important;
+  left: 50% !important;
+  bottom: max(88px, calc(72px + env(safe-area-inset-bottom,0px))) !important;
+  transform: translateX(-50%) translateY(0) !important;
+  max-width: min(92vw, 420px) !important;
+  width: max-content !important;
+  min-width: 260px !important;
+  padding: 14px 16px !important;
+  border-radius: 16px !important;
+  background: color-mix(in srgb, var(--color-surface, #fff) 96%, transparent) !important;
+  color: var(--color-text, #1a1a1a) !important;
+  border: 1px solid color-mix(in srgb, var(--color-accent-gold, #b8936a) 28%, var(--color-border, #e5e2dc)) !important;
+  box-shadow: 0 18px 48px rgba(0,0,0,.18), 0 0 0 1px rgba(184,147,106,.06) inset !important;
+  font-family: var(--gb-font-sans, 'Source Sans 3', system-ui, sans-serif) !important;
+  font-size: 13px !important;
+  line-height: 1.45 !important;
+  z-index: 9999 !important;
+  -webkit-backdrop-filter: blur(18px) saturate(160%) !important;
+  backdrop-filter: blur(18px) saturate(160%) !important;
+  white-space: normal !important;
+  word-break: normal !important;
+  overflow-wrap: break-word !important;
+  hyphens: manual !important;
+  text-align: left !important;
+}
+.gbs2-resume small,
+#bookmarkToast small,
+.gb-bookmark-toast small,
+.gbs2-resume .gbs2-resume-label {
+  display: block !important;
+  font-size: 10px !important;
+  font-weight: 800 !important;
+  letter-spacing: .14em !important;
+  text-transform: uppercase !important;
+  color: var(--color-accent-gold, #b8936a) !important;
+  margin-bottom: 3px !important;
+  opacity: 1 !important;
+}
+.gbs2-resume-go,
+#bookmarkToastResume,
+.gb-bookmark-continue {
+  background: linear-gradient(135deg, #d4a857, #b8874a) !important;
+  color: #fff !important;
+  border: 0 !important;
+  border-radius: 12px !important;
+  padding: 10px 18px !important;
+  font-weight: 800 !important;
+  font-size: 14px !important;
+  box-shadow: 0 4px 14px rgba(184,147,106,.28) !important;
+  flex-shrink: 0 !important;
+  white-space: nowrap !important;
+}
+html.dark .gbs2-resume,
+html.dark #bookmarkToast,
+html.dark .gb-bookmark-toast,
+[data-theme="dark"] .gbs2-resume,
+[data-theme="dark"] #bookmarkToast {
+  background: color-mix(in srgb, #161a21 94%, transparent) !important;
+  color: #e6e1d7 !important;
+  border-color: rgba(216,176,104,.22) !important;
+  box-shadow: 0 20px 52px rgba(0,0,0,.55), 0 0 24px rgba(216,176,104,.08) !important;
+}
+html.dark .gbs2-resume small,
+html.dark #bookmarkToast small {
+  color: #eed093 !important;
+}
+
+/* --- 2. Gold mobile progress — top thin bar + bottom bar gold track --- */
+html body::before {
+  content: '';
+  position: fixed;
+  top: 0; left: 0; right: 0;
+  height: 3px;
+  z-index: 3000;
+  background: linear-gradient(90deg, #d4a857, #ffd18b, #d4a857);
+  transform-origin: left;
+  transform: scaleX(var(--gb-read-pct, 0));
+  opacity: var(--gb-read-active, 0);
+  transition: transform .25s ease, opacity .3s ease;
+  pointer-events: none;
+}
+@media (max-width: 899px) {
+  [data-gill-v16] .mobile-bottom-bar::before {
+    content: '';
+    position: absolute;
+    top: -2px; left: 8px; right: 8px;
+    height: 2px;
+    border-radius: 99px;
+    background: linear-gradient(90deg, #d4a857, #ffd18b);
+    transform: scaleX(var(--gb-read-pct, 0));
+    transform-origin: left;
+    opacity: .95;
+    box-shadow: 0 0 8px rgba(216,170,109,.45);
+  }
+  [data-gill-v16] .mobile-btoc-progress-track {
+    height: 3px !important;
+    background: color-mix(in srgb, var(--gb-accent-gold) 32%, transparent) !important;
+  }
+  [data-gill-v16] .mobile-btoc-progress-fill {
+    box-shadow: 0 0 10px rgba(216,170,109,.65) !important;
+  }
+}
+
+/* --- 3. TOC label fit — 360px tighten --- */
+@media (max-width: 390px) {
+  [data-gill-v16] .gb-series-mark--label.gbs-rail-card__num,
+  [data-gill-v16] .gb-series-mark--label.toc-item__num {
+    min-width: 56px !important;
+    padding: 3px 6px !important;
+    font-size: 9.5px !important;
+    letter-spacing: .06em !important;
+  }
+  [data-gill-v16] .toc-item {
+    grid-template-columns: minmax(60px, auto) 1fr auto !important;
+    gap: 10px !important;
+    padding: 12px 16px !important;
+  }
+  [data-gill-v16] .toc-part-item {
+    grid-template-columns: 30px 1fr auto !important;
+    gap: 10px !important;
+    padding: 10px 16px !important;
+  }
+}
+@media (max-width: 360px) {
+  [data-gill-v16] .gb-series-mark--label.gbs-rail-card__num,
+  [data-gill-v16] .gb-series-mark--label.toc-item__num {
+    min-width: 52px !important;
+    font-size: 9px !important;
+    padding: 3px 5px !important;
+  }
+}
+
+/* --- 4. TOC % alignment fix — tabular nums, right align --- */
+[data-gill-v16] .toc-item__info small,
+[data-gill-v16] .toc-part-item__info small,
+[data-gill-v16] .gbs-rail-card__info small {
+  font-variant-numeric: tabular-nums !important;
+  font-feature-settings: "tnum" 1 !important;
+  text-align: left !important;
+  min-width: 52px !important;
+  display: inline-block !important;
+}
+
+/* --- 5. Scroll-spy anchor highlight restore --- */
+.toc-part-item.is-active,
+.toc-part-item[aria-current="true"] {
+  background: color-mix(in srgb, var(--gb-accent-gold) 9%, transparent) !important;
+  border-left-color: var(--gb-accent-gold) !important;
+}
+.toc-part-item.is-active .toc-part-item__num,
+.toc-part-item[aria-current="true"] .toc-part-item__num {
+  color: var(--gb-accent-gold-bright, #ffd18b) !important;
+  transform: scale(1.08) !important;
+}
+
+/* --- 6. Early dark theme — prevent FOUC flash --- */
+html { color-scheme: light dark; }
+html:not(.dark) { color-scheme: light; }
+html.dark { color-scheme: dark; }
+/* force Gill surfaces to respect html.dark immediately */
+html.dark [data-gill-v16] .toc-sheet,
+html.dark [data-gill-v16] .mobile-bottom-bar {
+  background-color: #161a21 !important;
+  color: #e6e1d7 !important;
+}
+
+/* --- 7. Bookmark / resume toast — kill vertical word-break from screenshot --- */
+.gbs2-resume, .gbs2-resume * ,
+#bookmarkToast, #bookmarkToast * {
+  word-break: keep-all !important;
+  overflow-wrap: break-word !important;
+  hyphens: manual !important;
+  white-space: normal !important;
+  -webkit-hyphens: manual !important;
+}
+.gbs2-resume > span,
+#bookmarkToast .bookmark-toast-body {
+  min-width: 160px !important;
+  flex: 1 1 auto !important;
+}
+
+/* --- 8. Mobile bottom bar — gold progress z-layer fix --- */
+[data-gill-v16] .mobile-bottom-bar {
+  overflow: visible !important;
+}
+
+/* end Gill UI polish 2026-06-29 */
+}
