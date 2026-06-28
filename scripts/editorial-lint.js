@@ -8,6 +8,19 @@
 const fs = require('fs');
 const path = require('path');
 const ROOT = path.resolve(__dirname, '..');
+
+// --- sanitary 2026-06-29: source / dist modes (RS-038) ---
+const ARGV = process.argv.slice(2);
+const SOURCES_MODE = ARGV.includes('--sources');
+const ROOT_ARG_IDX = ARGV.indexOf('--root');
+let SCAN_ROOT = ROOT;
+if (ROOT_ARG_IDX !== -1 && ARGV[ROOT_ARG_IDX+1]) {
+  SCAN_ROOT = path.resolve(ROOT, ARGV[ROOT_ARG_IDX+1]);
+}
+const MODE_LABEL = SOURCES_MODE ? 'sources' : (SCAN_ROOT !== ROOT ? 'dist-html' : 'root-html');
+console.log(`[editorial-lint] mode=${MODE_LABEL} root=${path.relative(ROOT, SCAN_ROOT) || '.'}`);
+// --- end sanitary ---
+
 const issues = [];
 function walk(dir, out=[]) {
   for (const ent of fs.readdirSync(dir,{withFileTypes:true})) {
@@ -19,7 +32,16 @@ function walk(dir, out=[]) {
 }
 function rel(p){ return path.relative(ROOT,p).replace(/\\/g,'/'); }
 function fail(kind,file,line,txt){ issues.push({kind,file,line,txt}); }
-const files = walk(ROOT).filter(f => f.endsWith('.html') && !/[\\/](audit|node_modules)[\\/]/.test(f));
+const EXTENSIONS = SOURCES_MODE
+  ? ['.astro','.mdx']  // public copy lives in Astro components and MDX content
+  : ['.html'];
+const EXCLUDE_RE = /[\\/](node_modules|dist|_app|reports|__pycache__|\.git|audit|docs|projects|incoming|\.github|scripts|test|tests|tools|packages|coverage)[\\/]/;
+const files = walk(SCAN_ROOT).filter(f => 
+  EXTENSIONS.some(ext => f.endsWith(ext)) &&
+  !EXCLUDE_RE.test(f) &&
+  // in sources mode, only scan src/ public content
+  (!SOURCES_MODE || f.includes(`${path.sep}src${path.sep}`))
+);
 const banned = [
   { kind:'overclaim-historians', rx:/Проверено историками/ },
   { kind:'da-vinci-shouting-label', rx:/\b(?:БРАУН|НА САМОМ ДЕЛЕ)\b/ },
@@ -49,4 +71,5 @@ if (issues.length) {
   issues.slice(0,80).forEach(i=>console.log(`- ${i.kind} ${i.file}:${i.line}: ${i.txt}`));
   process.exit(1);
 }
-console.log('✅ Editorial lint passed');
+console.log(`✅ Editorial lint passed (${MODE_LABEL})`);
+// SANITARY NOTE 2026-06-29: --sources and --root flags added (RS-038). Use: node scripts/editorial-lint.js --sources   OR   node scripts/editorial-lint.js --root dist
