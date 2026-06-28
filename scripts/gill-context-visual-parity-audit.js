@@ -8,6 +8,7 @@ const ROOT = path.join(__dirname, '..');
 const LEGACY_REL = 'articles/dzhon-gill-istoricheskiy-kontekst/index.html';
 const PAGE_REL = 'src/pages/articles/dzhon-gill-istoricheskiy-kontekst/index.astro';
 const BASE_REL = 'src/components/article-pilots/gill-context';
+const SHARED_CHROME_REL = 'src/components/article-pilots/gill-series/GillSeriesChrome.astro';
 const REQUIRED = {
   pageHead: `${BASE_REL}/GillContextPageHead.astro`,
   pageChrome: `${BASE_REL}/GillContextPageChrome.astro`,
@@ -31,6 +32,8 @@ const SECTION_COMPONENTS = [
   'GillContextSectionSourcesAndSeriesTail.astro',
 ];
 const FORBIDDEN = ['loadLegacyFullDocument', 'headHtml', 'bodyHtml', 'bodyAttributes', '?raw', 'set:html', '_legacy'];
+const REQUIRE_DIST = process.argv.includes('--require-dist');
+const DIST_REL = 'dist/articles/dzhon-gill-istoricheskiy-kontekst/index.html';
 const problems = [];
 
 function ok(msg) { console.log(`✅ ${msg}`); }
@@ -121,17 +124,28 @@ if (!problems.length) {
   const page = read(PAGE_REL);
   const pageHead = read(REQUIRED.pageHead);
   const pageChrome = read(REQUIRED.pageChrome);
+  const sharedChrome = read(SHARED_CHROME_REL);
+  const pageChromeContract = pageChrome + '\n' + sharedChrome;
   const shell = read(REQUIRED.shell);
   const header = read(REQUIRED.header);
   const body = read(REQUIRED.body);
   const post = read(REQUIRED.post);
   const legacy = read(LEGACY_REL);
   const legacyBody = bodyInner(legacy);
+  let distHtml = '';
+  if (exists(DIST_REL)) {
+    distHtml = read(DIST_REL);
+    ok('dist page present for runtime parity');
+  } else if (REQUIRE_DIST) {
+    bad(`dist page required but missing: ${DIST_REL}`);
+  } else {
+    console.log('ℹ️ dist not built — dist-level assertions skipped (use --require-dist after strangler:build:production-like for full proof)');
+  }
   const sectionHtml = SECTION_COMPONENTS.map((name) => read(`${BASE_REL}/${name}`)).join('');
   const article = `<article class="article-body" data-pagefind-body>${sectionHtml}</article>`;
   const main = `<main id="main-content">${header}${article}${post}</main>`;
-  const reconstructed = expandChromeHelpers(stripFrontmatter(pageChrome).replace('<slot />', main), 'I');
-  const scopeText = [page, pageHead, pageChrome, shell, header, body, post, ...SECTION_COMPONENTS.map((name) => read(`${BASE_REL}/${name}`))].join('\n');
+  const reconstructed = expandChromeHelpers(stripFrontmatter(sharedChrome).replace('<slot />', main), 'I');
+  const scopeText = [page, pageHead, pageChrome, sharedChrome, shell, header, body, post, ...SECTION_COMPONENTS.map((name) => read(`${BASE_REL}/${name}`))].join('\n');
 
   for (const token of FORBIDDEN) mustNotContain('strict-native source scope', scopeText, token);
   mustContain('route imports native page head', page, 'GillContextPageHead');
@@ -139,15 +153,24 @@ if (!problems.length) {
   mustContain('route imports native main shell', page, 'GillContextMainShell');
   mustContain('route sets explicit body class', page, 'class="gbs-world"');
   mustContain('route sets explicit series key', page, 'data-gbs2-series="dzhon-gill"');
-  mustContain('route sets explicit minutes metadata', page, 'data-gbs2-part-min="16"');
+  if (page.includes('data-gbs2-part-min="16"') || page.includes('data-gbs2-part-min={pageData.readingProgressPartMin}')) ok('route sets explicit minutes metadata'); else bad('route sets explicit minutes metadata missing');
   mustContain('page head has canonical', pageHead, 'rel="canonical"');
   mustContain('page head has SITE_CONFIG', pageHead, 'window.SITE_CONFIG');
   mustContain('page head has JSON-LD', pageHead, 'application/ld+json');
   mustContain('page head has Yandex', pageHead, 'mc.yandex.ru');
-  mustContain('page chrome exposes slot', pageChrome, '<slot />');
-  mustContain('page chrome has v16 toc popup', pageChrome, 'toc-overlay');
-  mustContain('page chrome keeps bookmark runtime', pageChrome, 'bookmark-engine.js');
-  mustContain('page chrome keeps site runtime', pageChrome, 'site.js');
+  mustContain('page chrome exposes slot', pageChromeContract, '<slot />');
+  if (pageChromeContract.includes('toc-overlay') || pageChromeContract.includes('GillSeriesOverlay')) ok('page chrome has v16 toc popup'); else bad('page chrome has v16 toc popup missing');
+  mustContain('page chrome keeps bookmark runtime', pageChromeContract, 'bookmark-engine.js');
+  mustContain('page chrome keeps site runtime', pageChromeContract, 'site.js');
+  if (distHtml) {
+    mustContain('dist keeps v16 toc popup', distHtml, 'toc-overlay');
+    mustContain('dist keeps bookmark runtime', distHtml, 'bookmark-engine.js');
+    mustContain('dist keeps site runtime', distHtml, 'site.js');
+    mustContain('dist has data-gill-v16 marker', distHtml, 'data-gill-v16');
+    mustContain('dist has label series mark', distHtml, 'gb-series-mark--label');
+    mustNotContain('dist does not contain forbidden Часть 1 из 5', distHtml, 'Часть 1 из 5');
+    mustNotContain('dist does not contain forbidden Часть 0', distHtml, 'Часть 0');
+  }
   mustContain('main shell renders main-content', shell, '<main id="main-content">');
   mustContain('main shell uses header', shell, 'GillContextHeaderHero');
   mustContain('main shell uses article body', shell, 'GillContextArticleBody');
@@ -161,8 +184,14 @@ if (!problems.length) {
   else { console.log('⚠ reconstructed body differs from legacy body after normalization (non-blocking — word-count and markers match)'); }
   const lw = wordCount(legacyBody), rw = wordCount(reconstructed);
   var drift = Math.abs(lw - rw); drift <= 200 ? ok(`word-count within tolerance: legacy=${lw}, reconstructed=${rw}, drift=${drift}`) : bad(`word-count drift: legacy=${lw}, reconstructed=${rw}`);
-  const lh = h2Count(legacyBody), rh = h2Count(reconstructed);
-  lh === rh ? ok(`H2 parity: ${lh}`) : bad(`H2 drift: legacy=${lh}, reconstructed=${rh}`);
+  const lh = h2Count(legacyBody);
+  if (distHtml) {
+    const dh = h2Count(bodyInner(distHtml));
+    lh === dh ? ok(`H2 parity (dist): ${dh}`) : bad(`H2 drift: legacy=${lh}, dist=${dh}`);
+  } else {
+    const rh = h2Count(reconstructed);
+    Math.abs(lh - rh) <= 1 ? ok(`H2 parity within shared-chrome tolerance: legacy=${lh}, reconstructed=${rh}`) : bad(`H2 drift: legacy=${lh}, reconstructed=${rh}`);
+  }
 }
 
 console.log('');

@@ -350,6 +350,9 @@ if (-not $SkipBuild) {
       'npm run dist:css-parity',
       'npm run sw:dist:audit:pagefind',
       'npm run audit:premium-controls',
+      'node scripts/gill-context-visual-parity-audit.js --require-dist',
+      'node scripts/gill-spravochnik-visual-parity-audit.js --require-dist',
+      'npm run gill:mobile-play:smoke',
       'npm run strangler:smoke'
     )
   } 'Builds production-like dist and runs dist-side gates.'
@@ -387,6 +390,7 @@ if (-not $SkipBrowser) {
         'npm run smoke:maps',
         'npm run smoke:maps:mobile',
         'npm run smoke:content:mobile',
+        'npm run gill:mobile-play:smoke',
         'npm run smoke:konfessii'
       )
     } finally {

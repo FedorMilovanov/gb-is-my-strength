@@ -21,7 +21,7 @@ const { pageId } = Astro.props;
         const href = isCurrent ? './' : item.href;
         return (
           <a class:list={['toc-item', isCurrent && 'is-current']} href={href} aria-current={isCurrent ? 'page' : undefined}>
-            <SeriesMark kind={item.markKind} value={item.markValue} className="toc-item__num" />
+            <SeriesMark kind={item.mark.kind} value={item.mark.value} className="toc-item__num" />
             <div class="toc-item__info">
               <b>{item.title}</b>
               {isCurrent ? (

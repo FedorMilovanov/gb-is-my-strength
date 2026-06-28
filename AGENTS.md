@@ -81,7 +81,7 @@ SANDBOX-ENV   → как выжить в конкретной среде (Arena)
 | **AGENTS-r308** | 2026-06-27 | **Schema rich-results audit added.** New `npm run schema:rich-results:audit` and `schema:rich-results:audit:dist` semantically validate JSON-LD Article/Breadcrumb/FAQ requirements and literal `{jsonLd}` regressions. Local Windows runner now inventories existing `reports/*` artifacts from Fedor's machine. |
 | **AGENTS-r309** | 2026-06-27 | **Local Windows launcher fixed.** Added root `RUN-LOCAL-WINDOWS-AUDIT.cmd` so Fedor runs audits as a script instead of pasting `.ps1` into PowerShell. The PowerShell runner now has robust repo-root fallback for pasted/interactive contexts and stricter external command sequencing. |
 | **AGENTS-r310** | 2026-06-27 | **Local audit report storage policy fixed.** Removed accidentally committed root `LOCAL_REPO_AUDIT_REPORT.txt`; local Windows runner now writes compact Markdown with per-check full logs under ignored `reports/local-external-checks-*/logs/`. Root pasted/raw audit reports are ignored. |
-| **AGENTS-r311** | 2026-06-28 | **PremiumControls / Floating Cluster doctrine reconciled.** Replaced forbidden `-28px` formula with canonical Hermeneutics position (`right: max(8.5vw, ...)`). |
+| **AGENTS-r311** | 2026-06-28 | **PremiumControls doctrine corrected for Hermeneutics + Gill v16 marks.** Section 3.10 no longer teaches the retired `right: max(calc((100vw - min(820px, 92vw)) / 2 - 28px), 16px)` formula. Canonical Hermeneutics position is the v16 `right: max(8.5vw, env(...))` / mobile `max(4.5vw, env(...))` contract. Gill series marks must use `SeriesMark`/`RomanNumeral`: intro=`Введение`, parts=`I/II/III`, spravochnik=`Справ.`. |
 
 ---
 
@@ -575,8 +575,9 @@ CSS-фичи, не поддерживаемые в этих версиях (`col
     }
   }
   ```
-  (`floating-cluster.css:39`; matches legacy `.theme-toggle`).
+  (`floating-cluster.css`; matches canonical v16 `.theme-toggle` lineage; the older `-28px` centered-calc formula is retired).
 - All PremiumControls scoped with `data-fc-root` or `data-fc-controls="gill-rail"`.
+- Gill v16 series-level marks are not the same as chapter-level TOC numerals: `context` = label `Введение`, `part1` = Roman `I`, `part2` = Roman `II`, `part3` = Roman `III`, `spravochnik` = label `Справ.`. Use `SeriesMark` / `RomanNumeral`; never make intro Roman `I` or spravochnik Roman `V` at series level.
 - Controller (`js/floating-cluster-controller.js` — 1051 lines) handles TTS chunking, speed morph, `gb:tts-rate-change`, favorites, keyboard, Gill/GBS2 init.
 - No double CSS delivery (PC-004).
 - 4 archetypes supported (single, series-lite, series-rich, Nagornaya special).
