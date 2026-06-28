@@ -5,10 +5,14 @@ export type GillSeriesPageId =
   | "part3"
   | "spravochnik"
 
+export interface GillSeriesMark {
+  kind: 'label' | 'roman';
+  value: string;
+}
+
 export interface GillSeriesItem {
   id: GillSeriesPageId;
-  markKind: "label" | "roman";
-  markValue: string;
+  mark: GillSeriesMark;
   title: string;
   shortTitle: string;
   href: string;
@@ -40,8 +44,7 @@ export interface GillPageChromeData {
 export const GILL_SERIES_ITEMS: GillSeriesItem[] = [
   {
     id: "context",
-    markKind: "label",
-    markValue: "Введение",
+    mark: { kind: "label", value: "Введение" },
     title: "Исторический контекст",
     shortTitle: "Контекст",
     href: "/articles/dzhon-gill-istoricheskiy-kontekst/",
@@ -49,8 +52,7 @@ export const GILL_SERIES_ITEMS: GillSeriesItem[] = [
   },
   {
     id: "part1",
-    markKind: "roman",
-    markValue: "I",
+    mark: { kind: "roman", value: "I" },
     title: "Часть I. Человек",
     shortTitle: "Человек",
     href: "/articles/dzhon-gill-chast-1-chelovek/",
@@ -58,8 +60,7 @@ export const GILL_SERIES_ITEMS: GillSeriesItem[] = [
   },
   {
     id: "part2",
-    markKind: "roman",
-    markValue: "II",
+    mark: { kind: "roman", value: "II" },
     title: "Часть II. Учёный",
     shortTitle: "Учёный",
     href: "/articles/dzhon-gill-chast-2-uchenyi/",
@@ -67,8 +68,7 @@ export const GILL_SERIES_ITEMS: GillSeriesItem[] = [
   },
   {
     id: "part3",
-    markKind: "roman",
-    markValue: "III",
+    mark: { kind: "roman", value: "III" },
     title: "Часть III. Наследие",
     shortTitle: "Наследие",
     href: "/articles/dzhon-gill-chast-3-nasledie/",
@@ -76,8 +76,7 @@ export const GILL_SERIES_ITEMS: GillSeriesItem[] = [
   },
   {
     id: "spravochnik",
-    markKind: "label",
-    markValue: "Справ.",
+    mark: { kind: "label", value: "Справ." },
     title: "Справочник по Гиллу",
     shortTitle: "Справочник",
     href: "/articles/dzhon-gill-spravochnik/",
@@ -413,7 +412,7 @@ export const GILL_PAGE_DATA: Record<GillSeriesPageId, GillPageChromeData> = {
     id: "spravochnik",
     label: "Справочник по Джону Гиллу",
     title: "Справочник по Гиллу",
-    mobileSection: "Справ.",
+    mobileSection: "Справочник по Гиллу",
     partLabel: "Справочник · Содержание",
     readingProgressDoneMin: 141,
     readingProgressPartMin: 8,

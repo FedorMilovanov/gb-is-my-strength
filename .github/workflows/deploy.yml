@@ -132,6 +132,12 @@ jobs:
       - name: PremiumControls rollout contract
         run: npm run audit:premium-controls
 
+      - name: Gill v16 dist strict audits
+        run: node scripts/gill-context-visual-parity-audit.js --require-dist && node scripts/gill-spravochnik-visual-parity-audit.js --require-dist
+
+      - name: Gill mobile TOC and PlayEmber smoke
+        run: npm run gill:mobile-play:smoke
+
       - name: Service Worker deploy-switch readiness
         run: npm run sw:dist:audit:deploy-switch
 

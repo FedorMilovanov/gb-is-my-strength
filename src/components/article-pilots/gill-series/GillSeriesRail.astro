@@ -27,7 +27,7 @@ const page = GILL_PAGE_DATA[pageId];
         const href = isCurrent ? './' : item.href;
         return (
           <a class:list={['gbs-rail-card', isCurrent && 'is-current']} href={href} aria-current={isCurrent ? 'page' : undefined}>
-            <SeriesMark kind={item.markKind} value={item.markValue} className="gbs-rail-card__num" />
+            <SeriesMark kind={item.mark.kind} value={item.mark.value} className="gbs-rail-card__num" />
             <div class="gbs-rail-card__info">
               <small>{item.readingTime}</small>
               <b>{item.title}</b>

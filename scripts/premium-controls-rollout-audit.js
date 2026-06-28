@@ -151,10 +151,20 @@ if (fs.existsSync(controllerPath)) {
 const cssPath = path.join(ROOT, 'css/floating-cluster.css');
 if (fs.existsSync(cssPath)) {
   const cssCode = fs.readFileSync(cssPath, 'utf8');
-  if (cssCode.includes('.gb-floater--hermeneutics') && cssCode.includes('gb-ember-expand') && cssCode.includes('gb-roman')) {
-    ok('floating-cluster.css canonical rules OK (POS-01, speed morph, gb-roman)');
+  if (cssCode.includes('.gb-floater--hermeneutics') && cssCode.includes('gb-ember-expand') && cssCode.includes('gb-roman') && cssCode.includes('gb-series-mark--label')) {
+    ok('floating-cluster.css canonical rules OK (POS-01, speed morph, gb-roman, label marks)');
   } else {
-    bad('floating-cluster.css missing canonical rules', 'must contain .gb-floater--hermeneutics, gb-ember-expand, gb-roman');
+    bad('floating-cluster.css missing canonical rules', 'must contain .gb-floater--hermeneutics, gb-ember-expand, gb-roman, gb-series-mark--label');
+  }
+  if (/\[data-gill-v16\]\s*(background|border-color|color)\s+\./.test(cssCode)) {
+    bad('floating-cluster.css malformed transition fragment', 'transition values must not be prefixed with [data-gill-v16]');
+  } else {
+    ok('floating-cluster.css transition syntax OK');
+  }
+  if (/\[data-gill-v16\][^{\n]*,\s*(?:html\.dark\s+)?\.(?:toc|gb-|gbs)/.test(cssCode) || /html\.dark\s+\[data-gill-v16\][^{\n]*,\s*html\.dark\s+\.(?:toc|gb-|gbs)/.test(cssCode)) {
+    bad('floating-cluster.css Gill selector scope leak', 'every selector arm in Gill rules must repeat [data-gill-v16]');
+  } else {
+    ok('floating-cluster.css Gill selector scoping OK');
   }
 } else {
   bad('floating-cluster.css missing', 'core PremiumControls styles missing');
@@ -192,6 +202,35 @@ for (const f of files) {
       bad(`/${route}/ raw Gill numerals remain`, 'Gill chrome must not render raw numerals in rail / TOC / kinetic markers');
     } else {
       ok(`/${route}/ no raw Gill numeral nodes in chrome`);
+    }
+
+    if (html.includes('gb-series-mark--label')) {
+      ok(`/${route}/ label series-mark integration OK (PC-008)`);
+    } else if (isAstro) {
+      bad(`/${route}/ missing label series-mark`, 'Intro and spravochnik must render gb-series-mark--label badges');
+    }
+
+    for (const forbidden of ['Часть 1 из 5', 'Часть 0']) {
+      if (html.includes(forbidden)) {
+        bad(`/${route}/ forbidden series wording "${forbidden}"`, 'Introduction is a label (Введение), never a numbered part');
+      }
+    }
+    if (!html.includes('Часть 1 из 5') && !html.includes('Часть 0')) {
+      ok(`/${route}/ no forbidden numbered-intro wording`);
+    }
+
+    if (route.includes('dzhon-gill-istoricheskiy-kontekst')) {
+      const railNow = html.match(/Сейчас читаете[\s\S]{0,160}?<h2[^>]*>([\s\S]*?)<\/h2>/);
+      if (railNow) {
+        const title = railNow[1].replace(/<[^>]+>/g, '').trim();
+        if (title === 'Исторический контекст') {
+          ok(`/${route}/ rail "Сейчас читаете" shows article title, not series title (PC-010)`);
+        } else {
+          bad(`/${route}/ rail "Сейчас читаете" title regression`, `expected "Исторический контекст", got "${title}"`);
+        }
+      } else if (isAstro) {
+        bad(`/${route}/ rail "Сейчас читаете" heading missing`, 'introduction rail must carry a current-article h2');
+      }
     }
   }
 }

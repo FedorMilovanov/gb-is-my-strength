@@ -8,9 +8,12 @@ interface Props {
 }
 
 const { kind, value, className = '' } = Astro.props;
+const classes = ['gb-series-mark', kind === 'label' ? 'gb-series-mark--label' : '', className]
+  .filter(Boolean)
+  .join(' ');
 ---
 {kind === 'roman' ? (
-  <RomanNumeral value={value} className={className} />
+  <RomanNumeral value={value} className={classes} />
 ) : (
-  <span aria-hidden="true" class={`gb-series-mark--label ${className}`.trim()}>{value}</span>
+  <span class={classes}>{value}</span>
 )}
