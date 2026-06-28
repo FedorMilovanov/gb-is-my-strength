@@ -132,7 +132,9 @@
     "guard:agents-rev": "node scripts/check-agents-rev-uniqueness.js",
     "dist:jsonld:audit": "node scripts/dist-jsonld-audit.js --root dist",
     "schema:rich-results:audit": "node scripts/schema-rich-results-audit.js --root .",
-    "schema:rich-results:audit:dist": "node scripts/schema-rich-results-audit.js --root dist"
+    "schema:rich-results:audit:dist": "node scripts/schema-rich-results-audit.js --root dist",
+    "workflows:lint": "npx actionlint",
+    "workflows:policy": "npm run workflows:check && npm run workflows:lint"
   },
   "engines": {
     "node": ">=22.12.0"

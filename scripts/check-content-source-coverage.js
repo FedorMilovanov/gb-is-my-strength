@@ -1,3 +1,6 @@
+// SANITARY NOTE 2026-06-29 — content source coverage exclusions still broad (/nagornaya/, /hard-texts/, dzhon-gill-*, /izbrannoe/) — see REPO_SANITARY_DEEP_AUDIT RS-035
+// TODO: replace hardcoded exclusions with route-profile fields: contentSourceMode, renderSource, searchPolicy, profileRequired
+
 #!/usr/bin/env node
 /**
  * check-content-source-coverage.js — verifies content source provenance.
