@@ -1,6 +1,6 @@
 const { chromium } = require('playwright');
 const BASE = process.env.AUDIT_BASE || 'http://127.0.0.1:8090';
-const DEFAULT_LIVE_MAPS = ['ishod'];
+const DEFAULT_LIVE_MAPS = ['ishod','avraam'];
 const HOLDING_MAPS = ['pavel','melachim','shoftim','shvatim','yeshua','maccabim','early-church','revelation'];
 const MAPS = (process.env.MAP_SMOKE_ROUTES || DEFAULT_LIVE_MAPS.join(','))
   .split(',')

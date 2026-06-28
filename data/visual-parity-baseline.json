@@ -1,7 +1,16 @@
 {
-  "note": "Owner-approved pixel-diff baseline per Astro route. All 51 public routes now covered with full-document shadow-wrap (0% expected). Higher diff% than baseline+tolerance fails CI. Update only after owner visual review.",
+  "note": "Owner-approved pixel-diff baseline per Astro route — Gill v16 sanitary refresh 2026-06-29. BaselineType: legacy-vs-dist-pixel. 0% = pixel parity evidence, NOT proof of Native Astro completeness. Previous claim 'All 51 public routes now covered with full-document shadow-wrap' was HISTORICAL (2026-06-21) and superseded by Native Astro / Gill v16 shared chrome convergence (main 72c42d6 / 7792974 / a417d9c / d644e278 / 28d5962f / cc9957b8). Higher diff% than baseline+tolerance fails CI. Update only after owner visual review. See: data/visual-route-contracts.json (future), migration/page-ownership.json v2.",
   "tolerancePct": 0.5,
-  "updatedAt": "2026-06-21",
+  "updatedAt": "2026-06-29",
+  "baselineType": "legacy-vs-dist-pixel",
+  "baselineSource": "repo-root-html-vs-dist",
+  "routeArchitectureAtApproval": "mixed: native-astro + gill-v16-shared-chrome + gbs2-baptisty + built-app maps",
+  "sourceMainSha": "cc9957b816714f13f9a95e8acc499c2727f69228",
+  "policy": {
+    "newRouteDefault": "advisory-warn-only",
+    "strictNewRoutesMode": "available via --strict-new-routes (not default in CI, see visual-parity-baseline.js)",
+    "screenshotDiffIsNotNativeAstroProof": true
+  },
   "routes": {
     "/": {
       "desktop": 0,
