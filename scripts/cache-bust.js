@@ -31,7 +31,8 @@ const ASSETS = [
   'css/mobile-hotfix.css',
   'css/nagornaya-mobile-toc.css',
   'css/floating-cluster.css',
-  'css/premium-controls.css',
+  // PremiumControls runtime styles are consolidated into floating-cluster.css;
+  // src/styles/premium-controls.css is source/reference CSS, not a root public asset.
   'fonts/fonts.css',           /* AUDIT V2 / PERF-1: self-host fonts */
   'nagornaya/tw.min.css',
   'js/site.js',
