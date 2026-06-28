@@ -1,4 +1,23 @@
 # Баги — gospod-bog.ru · найдено 2026-06-25
+> Аудит выполнен агентом по актуальному состоянию main. **Часть пунктов ниже уже исправлена в main 72c42d6 / 7792974 / a417d9c / d644e278 / 28d5962f / cc9957b8 / 93059323 — см. статус-теги.**
+
+## STATUS_LEDGER — 2026-06-29 reverify (main 93059323f980c3120f6e539d3a6e4fd6daa1d657)
+
+**Легенда:** `OPEN` · `FIXED` · `SUPERSEDED` · `REVERIFY` · `HISTORICAL`
+
+| Bug | Статус на 2026-06-29 | Доказательство |
+|---|---|---|
+| BUG-004 validate:static-publication использует нестрогую проверку миграции | **FIXED** | `package.json` → `validate:static-publication` … `migration:metadata:check:strict` — есть |
+| BUG-006 `data/route-profiles/karty-avraam.json` → `migrationMode: legacy-shadow-app` | **FIXED** | сейчас `migrationMode: "strict-native-app"` |
+| BUG-007 `GillContextPageChrome.astro` lacks PlayEmber / SaveButton | **FIXED** | `GillContextPageChrome.astro` → thin wrapper → `GillSeriesChrome` → `GillSeriesRail` содержит PlayEmber + SaveButton, проверено в main 72c42d6+ |
+| BUG-009 `NagornayaChastNPageFooter.astro` controller версия `c78a4236` устарела | **REVERIFY** | требуется повторная проверка после Gill v16 cache-bust |
+| BUG-010 `hard-texts` series part3 без `readTime` | **REVERIFY** | проверить `data/series.json` на HEAD 93059323 |
+| остальные BUG-001…003,005,008,011… | **REVERIFY / HISTORICAL** | файл от 2026-06-25, требует построчного ре-верифа против 93059323, НЕ использовать как current-main истину без тега |
+
+> **Правило для новых записей:** каждая новая BUG-запись ОБЯЗАНА содержать: `status: OPEN|FIXED|…`, `verified_sha`, `date`, `evidence`. Без этого — невалидно.
+
+---
+# Баги — gospod-bog.ru · найдено 2026-06-25
 > Аудит выполнен агентом по актуальному состоянию main. Каждый пункт — конкретный баг с указанием файла и чёткой формулировкой. Не субъективные замечания, только проверяемые факты.
 
 ---
