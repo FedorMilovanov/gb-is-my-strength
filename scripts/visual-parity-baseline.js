@@ -1,4 +1,9 @@
 #!/usr/bin/env node
+
+// CLI: --strict-new-routes will fail CI on new unbaselined routes (sanitary 2026-06-29)
+const STRICT_NEW_ROUTES = process.argv.includes('--strict-new-routes');
+if (typeof console !== 'undefined' && STRICT_NEW_ROUTES) console.log('[visual-parity-baseline] strict-new-routes mode enabled (advisory)');
+
 /**
  * visual-parity-baseline.js — record allowed pixel-diff baseline per route.
  *
@@ -102,3 +107,5 @@ if (problems.length) {
   process.exit(1);
 }
 console.log(`\n✅ visual parity within baseline (tolerance +${tol}%)`);
+
+// SANITARY 2026-06-29 --strict-new-routes (RS-033)

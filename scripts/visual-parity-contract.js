@@ -1,3 +1,7 @@
+/* SANITARY 2026-06-29 — visual contract manifest hardening */
+/* TODO: move route contracts to data/visual-route-contracts.json */
+/* Prefer stable data markers over string literals like "Desktop sidebar" */
+
 #!/usr/bin/env node
 /*
  * visual-parity-contract.js — hard stop for future root→dist production switch.

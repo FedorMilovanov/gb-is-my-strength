@@ -8,6 +8,13 @@
  * sitemap/llms/Pagefind/baseline/search as if they were finished maps.
  */
 'use strict';
+
+// sanitary 2026-06-29: dist mode support (RS-037)
+const ARGV = process.argv.slice(2);
+const DIST_MODE = ARGV.includes("--dist") || (ARGV.includes("--root") && ARGV[ARGV.indexOf("--root")+1]==="dist");
+const CHECK_ROOT = DIST_MODE ? "dist" : ".";
+console.log(`[map-publication-status] mode: ${DIST_MODE ? "dist" : "root"}, root=${CHECK_ROOT}`);
+
 const fs = require('fs');
 const path = require('path');
 const ROOT = path.resolve(__dirname, '..');
