@@ -1145,10 +1145,19 @@
     });
 
     // --- Scroll Progress ---
+    // GILL UI POLISH 2026-06-29 — gold progress + scrollspy
     function updateProgress() {
       var docH = document.documentElement.scrollHeight - window.innerHeight;
       if (docH <= 0) return;
       var pct = Math.min(100, Math.round((window.scrollY / docH) * 100));
+      var pctF = pct / 100;
+      // CSS custom properties for gold progress bar (owner screenshots fix)
+      try {
+        document.documentElement.style.setProperty('--gb-read-pct', String(pctF));
+        document.documentElement.style.setProperty('--gb-read-active', pct > 2 ? '1' : '0');
+        // also mirror to body for [data-gill-v16] descendant rules
+        document.body.style.setProperty('--gb-read-pct', String(pctF));
+      } catch(_){}
       var pctEl = qs('#gbs2MobPct');
       if (pctEl) pctEl.textContent = pct + '%';
       var pctSidebar = qs('#gbs2Pct');
@@ -1168,6 +1177,40 @@
         var current = getCurrentHeading();
         if (current) mobSec.textContent = current;
       }
+      // === GILL v16 scroll-spy restore ===
+      // highlight current H2 in Part TOC
+      try {
+        var article = qs('article.article-body') || qs('main');
+        if (article) {
+          var heads = qsa('h2[id], h3[id]', article);
+          var currentId = '';
+          var scrollY = window.scrollY + 140;
+          for (var i = 0; i < heads.length; i++) {
+            if (heads[i].offsetTop <= scrollY) currentId = heads[i].id;
+            else break;
+          }
+          if (currentId) {
+            qsa('.toc-part-item').forEach(function(el) {
+              var a = el.tagName === 'A' ? el : el.closest('a');
+              var href = a ? a.getAttribute('href') : el.getAttribute('href');
+              var isActive = href && href.indexOf('#' + currentId) !== -1;
+              el.classList.toggle('is-active', !!isActive);
+              el.setAttribute('aria-current', isActive ? 'true' : 'false');
+            });
+          }
+          // update Part TOC progress bar
+          var partItems = qsa('.toc-part-item');
+          if (partItems.length) {
+            var activeIdx = -1;
+            partItems.forEach(function(el, idx) {
+              if (el.classList.contains('is-active') || el.classList.contains('is-current')) activeIdx = idx;
+            });
+            var partPct = activeIdx >= 0 ? Math.round(((activeIdx + 1) / partItems.length) * 100) : pct;
+            var scrollBar = qs('.toc-sheet__scroll-bar i');
+            if (scrollBar) scrollBar.style.width = partPct + '%';
+          }
+        }
+      } catch(_){}
     }
 
     function getCurrentHeading() {
