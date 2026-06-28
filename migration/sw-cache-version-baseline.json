@@ -1,7 +1,9 @@
 {
-  "version": 2,
-  "captured": "2026-06-18",
+  "version": 3,
+  "captured": "2026-06-29",
   "preSwitchProductionCacheVersion": "gb-v171-r62-maps-archaeology-20260612",
-  "currentDistProductionCacheVersion": "gb-v173-r64-astro-runtime-hub-20260618",
-  "purpose": "Historical safety baseline for the completed root→dist GitHub Pages deploy switch. The pre-switch value records the legacy-root Service Worker cache that had to be superseded; the current dist-production value records the latest cache version used to evict stale root/dist static assets after runtime and map-hub fixes. Keep this file for sw:dist:audit:deploy-switch, rollback analysis, and future cache bump comparisons."
+  "lastReviewedDistProductionCacheVersion": "gb-v173-r64-astro-runtime-hub-20260618",
+  "currentDistProductionCacheVersion": "gb-v176-floating-cluster-gill-all-20260625",
+  "currentExpectedCacheVersion": "gb-v176-floating-cluster-gill-all-20260625",
+  "purpose": "Service Worker cache version baseline — updated after Gill v16 verification ratchet (main a417d9c / d644e278). Historical pre-switch value: gb-v171. Last reviewed dist production: gb-v173 (2026-06-18). Current dist production / expected: gb-v176-floating-cluster-gill-all-20260625 — matches sw.js CACHE_VERSION. Used by sw:dist:audit:deploy-switch, sw:dist:audit:pagefind, and rollback analysis. See docs: sw-cache-baseline-policy."
 }
