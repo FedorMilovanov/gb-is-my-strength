@@ -44,19 +44,18 @@ if (!fs.existsSync(DIST)) {
 }
 
 // ── Route archetypes (from PremiumControls rollout plan) ─────────────────────
-// ALLOWED: routes that may render article PremiumControls (must be scoped).
-// FORBIDDEN: app / landing / catalog routes that must NOT carry article controls.
-const FORBIDDEN_ROUTE_PREFIXES = [
-  'karty/avraam', 'karty/ishod', 'karty/early-church', 'karty/maccabim',
-  'karty/melachim', 'karty/pavel', 'karty/revelation', 'karty/shoftim',
-  'karty/shvatim', 'karty/yeshua', 'map', 'konfessii/russkij-baptizm',
-  'rodosloviye',
-];
-// Landing/catalog index pages (exact route dirs) that must stay controls-free.
-const FORBIDDEN_EXACT = new Set([
-  '', 'about', 'articles', 'biografii', 'karty', 'konfessii', 'pastor-series',
-]);
+const pcRollout = JSON.parse(fs.readFileSync(path.join(ROOT, 'data/premium-controls-rollout.json'), 'utf8'));
 
+function isForbiddenRoute(route) {
+  for (const rule of pcRollout.forbiddenArchetypes) {
+    if (rule.allow && rule.allow.includes('/' + route + '/')) continue;
+    const pat = rule.routePattern;
+    if (pat === '/' && route === '') return true;
+    if (pat.endsWith('/*') && route.startsWith(pat.slice(1, -2))) return true;
+    if (pat === '/' + route + '/') return true;
+  }
+  return false;
+}
 const checks = [];
 const ok   = (name, d='') => checks.push({ ok:true,  name, detail:d });
 const bad  = (name, d='') => checks.push({ ok:false, name, detail:d });
