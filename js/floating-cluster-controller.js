@@ -1190,11 +1190,12 @@
             else break;
           }
           if (currentId) {
-            qsa('.toc-part-item').forEach(function(el) {
+            qsa('.toc-part-item, .gbs2-toc a').forEach(function(el) {
               var a = el.tagName === 'A' ? el : el.closest('a');
               var href = a ? a.getAttribute('href') : el.getAttribute('href');
               var isActive = href && href.indexOf('#' + currentId) !== -1;
               el.classList.toggle('is-active', !!isActive);
+              el.classList.toggle('gbs2-active', !!isActive);
               el.setAttribute('aria-current', isActive ? 'true' : 'false');
             });
           }
@@ -1208,6 +1209,8 @@
             var partPct = activeIdx >= 0 ? Math.round(((activeIdx + 1) / partItems.length) * 100) : pct;
             var scrollBar = qs('.toc-sheet__scroll-bar i');
             if (scrollBar) scrollBar.style.width = partPct + '%';
+            var trackBar = qs('.gbs2-track i');
+            if (trackBar) trackBar.style.height = partPct + '%';
           }
         }
       } catch(_){}
