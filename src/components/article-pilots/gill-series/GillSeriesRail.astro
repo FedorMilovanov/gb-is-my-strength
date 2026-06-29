@@ -20,6 +20,25 @@ const page = GILL_PAGE_DATA[pageId];
       <div class="lab">Сейчас читаете</div>
       <h2>{page.railNowTitle}</h2>
       <div class="bar"><i id="gbs2Curbar"></i></div>
+    
+    </div>
+    <!-- Restored scrollspy sub-TOC -->
+    <div class="gbs2-toch">
+      <span>Оглавление части</span>
+      <span class="gbs2-count" id="gbs2Count">1 / {page.partToc.length}</span>
+    </div>
+    <div class="gbs2-tocscroll">
+      <ul class="gbs2-toc" id="gbs2Toc">
+        <span aria-hidden="true" class="gbs2-track"><i></i></span>
+        {page.partToc.map((item) => (
+          <li class={item.subtitle ? 'gbs2-sub' : ''}>
+            <a href={item.href}>
+              <span aria-hidden="true" class="gbs2-dot"></span>
+              {item.roman ? item.roman + '. ' : ''}{item.title}
+            </a>
+          </li>
+        ))}
+      </ul>
     </div>
     <div class="gbs-rail-list">
       {GILL_SERIES_ITEMS.map((item) => {
