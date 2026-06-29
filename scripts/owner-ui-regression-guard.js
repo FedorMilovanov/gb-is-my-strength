@@ -1,5 +1,5 @@
-// SANITARY 2026-06-29 — owner-ui-regression-guard reads ROOT files, not dist. Header says protects premium legacy while Astro not visually approved — stale, production deploy = dist. TODO: rename to owner-root-baseline-guard, add dist mode, add Gill context/spravochnik to protected set.
 #!/usr/bin/env node
+// SANITARY 2026-06-29 — owner-ui-regression-guard reads ROOT files, not dist. Header says protects premium legacy while Astro not visually approved — stale, production deploy = dist. TODO: rename to owner-root-baseline-guard, add dist mode, add Gill context/spravochnik to protected set.
 /*
  * owner-ui-regression-guard.js — owner-facing UI contract for root production.
  *
@@ -39,9 +39,9 @@ for (const [rel, markers] of Object.entries({
   'articles/index.html': ['articles-index-page', 'home-v20', 'h-hero-title', 'h-article-card'],
   'biografii/index.html': ['home-v20', 'h-hero-title', 'h-article-card'],
   'nagornaya/seriya/index.html': ['nagornaya-page nagornaya-series-page', 'home-v20', 'h-hero-title', 'h-article-card'],
-  'articles/dzhon-gill-chast-1-chelovek/index.html': ['gbs-world', 'data-gbs2-series="dzhon-gill"', 'gbs2-rail', 'gbs2-hero'],
-  'articles/dzhon-gill-chast-2-uchenyi/index.html': ['gbs-world', 'data-gbs2-series="dzhon-gill"', 'gbs2-rail', 'gbs2-hero'],
-  'articles/dzhon-gill-chast-3-nasledie/index.html': ['gbs-world', 'data-gbs2-series="dzhon-gill"', 'gbs2-rail', 'gbs2-hero'],
+  'articles/dzhon-gill-chast-1-chelovek/index.html': ['gbs-world', 'data-gbs2-series="dzhon-gill"', 'gbs-rail', 'gbs2-hero'],
+  'articles/dzhon-gill-chast-2-uchenyi/index.html': ['gbs-world', 'data-gbs2-series="dzhon-gill"', 'gbs-rail', 'gbs2-hero'],
+  'articles/dzhon-gill-chast-3-nasledie/index.html': ['gbs-world', 'data-gbs2-series="dzhon-gill"', 'gbs-rail', 'gbs2-hero'],
 })) {
   for (const marker of markers) mustContain(rel, marker);
   mustNotContain(rel, 'astro-page', 'generic Astro page shell');
