@@ -45,6 +45,7 @@ for (const f of htmlFiles) {
         /<(?:meta|img|source|link)\b/i.test(line) ||
         /(?:src|srcset|href|content|url|contentUrl|image)\s*[:=]/i.test(line) ||
         /--gbs2-cover\s*:\s*url\(/i.test(line) ||
+        /\.(?:webp|jpe?g|png|avif)\s+\d+[wx]/i.test(line) ||
         /background(?:-image)?\s*:/i.test(line);
       if (!allowed) fail('raw-image-path-readable-leak', rel(f), `line ${idx + 1}: ${line.trim().slice(0, 180)}`);
     }
