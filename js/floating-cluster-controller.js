@@ -1190,28 +1190,65 @@
             else break;
           }
           if (currentId) {
-            qsa('.toc-part-item, .gbs2-toc a').forEach(function(el) {
-              var a = el.tagName === 'A' ? el : el.closest('a');
-              var href = a ? a.getAttribute('href') : el.getAttribute('href');
-              var isActive = href && href.indexOf('#' + currentId) !== -1;
-              el.classList.toggle('is-active', !!isActive);
-              el.classList.toggle('gbs2-active', !!isActive);
-              el.setAttribute('aria-current', isActive ? 'true' : 'false');
-            });
+            var allAs = qsa('.gbs2-toc a');
+            var topLevelAs = qsa('.gbs2-toc > li:not(.gbs2-sub) > a');
+            
+            var currentAIndex = -1;
+            for(var i=0; i<allAs.length; i++) {
+              var href = allAs[i].getAttribute('href');
+              if (href && href.indexOf('#' + currentId) !== -1) currentAIndex = i;
+            }
+
+            var activeH2Index = -1;
+            if (currentAIndex !== -1) {
+              var li = allAs[currentAIndex].closest('li');
+              if (li && li.classList.contains('gbs2-sub')) {
+                 var prevTop = li;
+                 while(prevTop && prevTop.tagName !== 'LI' || (prevTop.tagName === 'LI' && prevTop.classList.contains('gbs2-sub'))) {
+                     prevTop = prevTop.previousElementSibling;
+                 }
+                 if (prevTop && prevTop.firstElementChild && prevTop.firstElementChild.tagName === 'A') {
+                     activeH2Index = topLevelAs.indexOf(prevTop.firstElementChild);
+                 }
+              } else {
+                 activeH2Index = topLevelAs.indexOf(allAs[currentAIndex]);
+              }
+            }
+
+            var partItems = qsa('.toc-part-item');
+            if (activeH2Index >= 0 && activeH2Index < partItems.length) {
+              partItems.forEach(function(el, idx) {
+                var isActive = (idx === activeH2Index);
+                var isPassed = (idx < activeH2Index);
+                el.classList.toggle('is-active', !!isActive);
+                el.classList.toggle('is-done', !!isPassed);
+                el.setAttribute('aria-current', isActive ? 'true' : 'false');
+              });
+            }
+
+            if (activeH2Index >= 0 && activeH2Index < topLevelAs.length) {
+               topLevelAs.forEach(function(el, idx) {
+                 var isActive = (idx === activeH2Index);
+                 var isPassed = (idx < activeH2Index);
+                 el.classList.toggle('gbs2-active', !!isActive);
+                 el.classList.toggle('gbs2-passed', !!isPassed);
+               });
+            }
           }
-          // update Part TOC progress bar
-          var partItems = qsa('.toc-part-item');
-          if (partItems.length) {
-            var activeIdx = -1;
-            partItems.forEach(function(el, idx) {
-              if (el.classList.contains('is-active') || el.classList.contains('is-current')) activeIdx = idx;
-            });
-            var partPct = activeIdx >= 0 ? Math.round(((activeIdx + 1) / partItems.length) * 100) : pct;
-            var scrollBar = qs('.toc-sheet__scroll-bar i');
-            if (scrollBar) scrollBar.style.width = partPct + '%';
-            var trackBar = qs('.gbs2-track i');
-            if (trackBar) trackBar.style.height = partPct + '%';
-          }
+        }
+        
+        // update Part TOC progress bar
+        var partItems = qsa('.toc-part-item');
+        var activeIdx = -1;
+        if (partItems.length) {
+          partItems.forEach(function(el, idx) {
+            if (el.classList.contains('is-active') || el.classList.contains('is-current')) activeIdx = idx;
+          });
+          var partPct = activeIdx >= 0 ? Math.round(((activeIdx + 1) / partItems.length) * 100) : pct;
+          var scrollBar = qs('.toc-sheet__scroll-bar i');
+          if (scrollBar) scrollBar.style.width = partPct + '%';
+          var trackBar = qs('.gbs2-track i');
+          if (trackBar) trackBar.style.height = partPct + '%';
         }
       } catch(_){}
     }
