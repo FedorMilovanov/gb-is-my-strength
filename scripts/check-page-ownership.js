@@ -136,7 +136,7 @@ function validateRouteShape(route, meta) {
 }
 function validateManifest(manifest) {
   if (!manifest) return new Map();
-  if (manifest.version !== 1) bad(`${OWNERSHIP_REL}: expected version 1`);
+  if (manifest.version !== 2) bad(`${OWNERSHIP_REL}: expected version 1`);
   if (!manifest.routes || typeof manifest.routes !== 'object' || Array.isArray(manifest.routes)) {
     bad(`${OWNERSHIP_REL}: routes object missing`);
     return new Map();

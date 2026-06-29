@@ -87,9 +87,7 @@ for (const f of files) {
   if (!hasControls) continue;
   pagesWithControls++;
 
-  const forbidden =
-    FORBIDDEN_EXACT.has(route) ||
-    FORBIDDEN_ROUTE_PREFIXES.some(pre => route === pre || route.startsWith(pre + '/'));
+  const forbidden = isForbiddenRoute(route);
 
   if (forbidden) {
     bad(`forbidden route has article controls: /${route}/`,
