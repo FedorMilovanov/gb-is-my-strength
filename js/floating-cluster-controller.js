@@ -1204,7 +1204,10 @@
               var li = allAs[currentAIndex].closest('li');
               if (li && li.classList.contains('gbs2-sub')) {
                  var prevTop = li;
-                 while(prevTop && prevTop.tagName !== 'LI' || (prevTop.tagName === 'LI' && prevTop.classList.contains('gbs2-sub'))) {
+                 while (
+                   prevTop &&
+                   (prevTop.tagName !== 'LI' || prevTop.classList.contains('gbs2-sub'))
+                 ) {
                      prevTop = prevTop.previousElementSibling;
                  }
                  if (prevTop && prevTop.firstElementChild && prevTop.firstElementChild.tagName === 'A') {

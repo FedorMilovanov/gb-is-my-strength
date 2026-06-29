@@ -1,4 +1,5 @@
 #!/usr/bin/env node
+
 /**
  * Editorial lint: catches high-risk public wording that previous audits flagged
  * as over-heated, AI-ish, or misleading in publication Russian.
@@ -72,4 +73,3 @@ if (issues.length) {
   process.exit(1);
 }
 console.log(`✅ Editorial lint passed (${MODE_LABEL})`);
-// SANITARY NOTE 2026-06-29: --sources and --root flags added (RS-038). Use: node scripts/editorial-lint.js --sources   OR   node scripts/editorial-lint.js --root dist

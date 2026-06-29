@@ -1,5 +1,5 @@
-// SANITARY 2026-06-29 — dist-publication-audit route lists should be manifest-driven (page-ownership.json + data/public-content-baseline.json), currently hardcoded SHADOW_ARTICLES / SHADOW_BAPTISTY_ARTICLES — RS-... 
 #!/usr/bin/env node
+
 /*
  * dist-publication-audit.js — static checks for a future GitHub Pages dist artifact.
  *

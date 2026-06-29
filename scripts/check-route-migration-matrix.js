@@ -1,4 +1,5 @@
 #!/usr/bin/env node
+
 /**
  * check-route-migration-matrix.js — guards against migration mode violations.
  *
@@ -131,7 +132,6 @@ const EXCLUDED_PATTERNS = [
   'hard-texts/**',
 ];
 
-// SANITARY NOTE 2026-06-29 — RS Pass10
 // isExcludedRoute() still true for /nagornaya/**, /hard-texts/**, /dzhon-gill-*/**
 // TECHNICALLY STALE — these are production-dist per migration/page-ownership.json v2 (2026-06-29)
 // DO NOT remove blindly while Gill v16 / PremiumControls engine extraction in progress (owner note 2026-06-29)

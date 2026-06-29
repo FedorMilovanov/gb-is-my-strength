@@ -1,7 +1,4 @@
 /*
- * SANITARY 2026-06-29 — CSS parity route-mode hardening (RS-051)
- * Planned: project-css | route-css | self-contained | built-app
- * Current: passes css/site.css OR site-layered.css OR home.css OR ANY <style>
  */
 #!/usr/bin/env node
 /**

@@ -1,4 +1,3 @@
-/* SANITARY 2026-06-29 — visual contract manifest hardening */
 /* TODO: move route contracts to data/visual-route-contracts.json */
 /* Prefer stable data markers over string literals like "Desktop sidebar" */
 
