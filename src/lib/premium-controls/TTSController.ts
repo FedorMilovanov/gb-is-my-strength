@@ -89,7 +89,6 @@ export class TTSController {
       this.state = 'playing';
       this.config.onStateChange(this.state, this.progress);
     } else {
-      // Sometimes browsers clear the paused state on mobile if backgrounded
       this.speakNextChunk();
     }
   }
@@ -110,7 +109,6 @@ export class TTSController {
     this.currentUtterance.lang = 'ru-RU';
     
     this.currentUtterance.onboundary = (e) => {
-      // Very rough approximation without heavy string matching
       this.spokenChars += e.charLength || 5; 
       this.config.onStateChange(this.state, this.progress);
     };
@@ -129,7 +127,24 @@ export class TTSController {
     this.synthesis.speak(this.currentUtterance);
   }
 
-  private getRate(): number {
+  public setRate(rate: number): void {
+    try {
+      localStorage.setItem('gb:audio:rate', String(rate));
+      localStorage.setItem('gbx-tts-rate', String(rate));
+      // Dispatch an event to allow other components to react if needed
+      window.dispatchEvent(new CustomEvent('gb:tts-rate-change', { detail: { rate } }));
+      
+      // If currently playing, we must restart the utterance for rate to apply
+      if (this.state === 'playing') {
+        this.synthesis?.cancel();
+        // Spoken chars approximation means we might repeat some words in the current chunk, 
+        // which is acceptable fallback behavior vs completely breaking.
+        this.speakNextChunk();
+      }
+    } catch (_) {}
+  }
+
+  public getRate(): number {
     try {
       const r = parseFloat(localStorage.getItem('gb:audio:rate') || localStorage.getItem('gbx-tts-rate') || '1');
       if (isNaN(r) || r < 0.5 || r > 3) return 1;
@@ -140,7 +155,6 @@ export class TTSController {
   }
 
   private chunkText(text: string): string[] {
-    // Simple sentence-based chunker for robust mobile TTS
     return text.match(/[^.!?]+[.!?]+/g) || [text];
   }
 }
