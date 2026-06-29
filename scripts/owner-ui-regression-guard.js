@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// SANITARY 2026-06-29 — owner-ui-regression-guard reads ROOT files, not dist. Header says protects premium legacy while Astro not visually approved — stale, production deploy = dist. TODO: rename to owner-root-baseline-guard, add dist mode, add Gill context/spravochnik to protected set.
+
 /*
  * owner-ui-regression-guard.js — owner-facing UI contract for root production.
  *

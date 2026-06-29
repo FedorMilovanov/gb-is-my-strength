@@ -1,6 +1,5 @@
 #!/usr/bin/env node
 
-/* SANITARY NOTE 2026-06-29 — interactive-audit route archetype split (RS Pass10) */
 /* TODO: gill-v16 | gbs2-baptisty | gbs2-hard-texts | astro-series */
 /* Gill v16 required: data-gill-v16, .gbs-rail, .gbs-rail-card.is-current, .mobile-bottom-bar, #mobTocBtn, #seriesTocOverlay, #partTocOverlay */
 /* REMOVE .gbs2-timeline requirement from Gill v16 — prevents false-red */

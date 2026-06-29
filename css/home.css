@@ -443,3 +443,70 @@ body.articles-index-page .h-section{padding-top:40px;padding-bottom:24px}
 
 /* Emergency 2026-06-19: owner rejected the extra "Основные входы" strip. */
 .h-home-entry-strip{display:none!important}
+
+/* HOME MOBILE DAYLIGHT VIEWPORT GUARD 2026-06-29
+   Keeps the homepage light by default and prevents the decorative hero/header
+   layer from creating horizontal spill on narrow Android/Yandex viewports. */
+@media (max-width: 760px) {
+  html,
+  body.home-page {
+    max-width: 100%;
+    overflow-x: clip;
+  }
+  @supports not (overflow-x: clip) {
+    html,
+    body.home-page { overflow-x: hidden; }
+  }
+  body.home-page .home-v20,
+  body.home-page .home-content,
+  body.home-page .h-navbar,
+  body.home-page .h-navbar__inner,
+  body.home-page .h-hero,
+  body.home-page .h-sacred-block {
+    max-width: 100vw;
+  }
+  body.home-page .h-scripture-bg {
+    position: absolute;
+    inset: 0;
+    width: 100vw;
+    max-width: 100vw;
+    overflow: hidden;
+    contain: paint;
+  }
+  body.home-page .h-navbar__inner {
+    min-width: 0;
+    overflow: hidden;
+  }
+  body.home-page .h-nav-logo {
+    min-width: 0;
+    flex: 1 1 auto;
+    max-width: calc(100vw - 138px);
+    overflow: hidden;
+  }
+  body.home-page .h-nav-logo-main,
+  body.home-page .h-nav-logo-dash,
+  body.home-page .h-nav-logo-accent {
+    min-width: 0;
+  }
+  body.home-page .mobile-controls {
+    flex: 0 0 auto;
+    max-width: 118px;
+  }
+  body.home-page .h-sacred-block {
+    overflow: hidden;
+  }
+  body.home-page .h-sacred-line,
+  body.home-page .h-sacred-word {
+    max-width: 100%;
+  }
+}
+@media (max-width: 380px) {
+  body.home-page .h-nav-logo {
+    max-width: calc(100vw - 126px);
+  }
+  body.home-page .h-nav-logo-main,
+  body.home-page .h-nav-logo-dash,
+  body.home-page .h-nav-logo-accent {
+    font-size: 14px;
+  }
+}

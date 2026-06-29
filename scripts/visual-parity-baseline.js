@@ -108,4 +108,3 @@ if (problems.length) {
 }
 console.log(`\n✅ visual parity within baseline (tolerance +${tol}%)`);
 
-// SANITARY 2026-06-29 --strict-new-routes (RS-033)

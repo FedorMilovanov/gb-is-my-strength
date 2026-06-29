@@ -1,5 +1,5 @@
-// SANITARY 2026-06-29 — article-mdx-pilot-audit.js misnamed: actually checks public-shadow visual routes, not MDX-only. TODO split: article-public-shadow-audit.js vs article-mdx-pilot-audit.js ; replace hardcoded MIGRATED_ARTICLES with manifest; default build should be strangler:build:production-like
 #!/usr/bin/env node
+
 /*
  * article-mdx-pilot-audit.js — audit MDX article public shadow routes.
  *
