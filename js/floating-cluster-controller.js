@@ -275,19 +275,22 @@
 
   function splitTtsChunks(text) {
     // speechSynthesis в Chrome падает на utterances длиннее ~32000 chars.
-    // Делим на 200-символьные предложения по точкам.
-    var sentences = text.split(/(?<=[.!?])\s+/);
+    // Делим на ~200-символьные куски по границам предложений.
+    // Без lookbehind (?<=...) — Safari <16.4 его не поддерживает (SyntaxError).
+    var parts = text.split(/([.!?]+\s+)/);
     var chunks = [];
     var buf = '';
-    sentences.forEach(function (s) {
-      if ((buf + ' ' + s).length > 220) {
-        if (buf) chunks.push(buf);
-        buf = s;
-      } else {
-        buf = buf ? buf + ' ' + s : s;
+    for (var i = 0; i < parts.length; i++) {
+      buf += parts[i];
+      if (buf.length >= 180 && i % 2 === 1) {
+        var trimmed = buf.trim();
+        if (trimmed) chunks.push(trimmed);
+        buf = '';
       }
-    });
-    if (buf) chunks.push(buf);
+    }
+    var last = buf.trim();
+    if (last) chunks.push(last);
+    if (!chunks.length && text.trim()) chunks.push(text.trim());
     return chunks;
   }
 
@@ -811,12 +814,17 @@
       }
     });
 
+    var OVERLAY_LOCK_KEY = 'gill-toc-overlay';
     function openOverlay(el) {
       if (el) {
         el.classList.add('is-open');
         el.removeAttribute('aria-hidden');
         document.documentElement.classList.add('gb-gill-toc-open');
-        document.body.style.overflow = 'hidden';
+        if (window.SiteUtils && typeof window.SiteUtils.lockScroll === 'function') {
+          window.SiteUtils.lockScroll(OVERLAY_LOCK_KEY);
+        } else {
+          document.body.style.overflow = 'hidden';
+        }
       }
     }
     function closeOverlay(el) {
@@ -826,7 +834,11 @@
       }
       if (!qs('.toc-overlay.is-open')) {
         document.documentElement.classList.remove('gb-gill-toc-open');
-        document.body.style.overflow = '';
+        if (window.SiteUtils && typeof window.SiteUtils.unlockScroll === 'function') {
+          window.SiteUtils.unlockScroll(OVERLAY_LOCK_KEY);
+        } else {
+          document.body.style.overflow = '';
+        }
       }
     }
 
@@ -1174,19 +1186,28 @@
     }
 
     // --- Sheet Open/Close ---
+    var SHEET_LOCK_KEY = 'gbs2-sheet';
     function openSheet() {
-      if (!sheet) return;
+      if (!sheet || sheet.classList.contains('gbs2-open')) return;
       sheet.setAttribute('aria-hidden', 'false');
       sheet.style.display = 'block';
       sheet.classList.add('gbs2-open');
-      document.body.style.overflow = 'hidden';
+      if (window.SiteUtils && typeof window.SiteUtils.lockScroll === 'function') {
+        window.SiteUtils.lockScroll(SHEET_LOCK_KEY);
+      } else {
+        document.body.style.overflow = 'hidden';
+      }
     }
     function closeSheet() {
       if (!sheet) return;
       sheet.setAttribute('aria-hidden', 'true');
       sheet.classList.remove('gbs2-open');
       sheet.style.display = '';
-      document.body.style.overflow = '';
+      if (window.SiteUtils && typeof window.SiteUtils.unlockScroll === 'function') {
+        window.SiteUtils.unlockScroll(SHEET_LOCK_KEY);
+      } else {
+        document.body.style.overflow = '';
+      }
     }
 
     // Bottom bar opens sheet
@@ -1248,7 +1269,7 @@
 
     // --- Scroll Progress ---
     // GILL UI POLISH 2026-06-29 — gold progress + scrollspy
-    function updateProgress() {
+    function updateScrollProgress() {
       var docH = document.documentElement.scrollHeight - window.innerHeight;
       if (docH <= 0) return;
       var pct = Math.min(100, Math.round((window.scrollY / docH) * 100));
@@ -1377,7 +1398,7 @@
       if (!scrollTick) {
         scrollTick = true;
         requestAnimationFrame(function() {
-          updateProgress();
+          updateScrollProgress();
           scrollTick = false;
         });
       }
@@ -1385,7 +1406,7 @@
 
     // Initial population
     populateToc();
-    updateProgress();
+    updateScrollProgress();
   }
 
 })();

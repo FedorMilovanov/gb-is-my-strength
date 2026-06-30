@@ -1,6 +1,6 @@
+#!/usr/bin/env node
 // TODO: replace hardcoded exclusions with route-profile fields: contentSourceMode, renderSource, searchPolicy, profileRequired
 
-#!/usr/bin/env node
 /**
  * check-content-source-coverage.js — verifies content source provenance.
  *
