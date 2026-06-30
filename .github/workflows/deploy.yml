@@ -140,6 +140,9 @@ jobs:
       - name: Gill mobile TOC and PlayEmber smoke
         run: npm run gill:mobile-play:smoke
 
+      - name: Gill mobile reference layout audit
+        run: npm run gill:mobile-layout:audit
+
       - name: Service Worker deploy-switch readiness
         run: npm run sw:dist:audit:deploy-switch
 

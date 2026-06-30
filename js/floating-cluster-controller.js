@@ -725,22 +725,124 @@
   /* =====================================================
      v16 TOC POPUPS — Series & Part sheets
      ===================================================== */
+  function enhanceGillMobileBarMarkup() {
+    var bar = qs('.mobile-bottom-bar[data-fc-variant="gill"]');
+    if (!bar) return;
+
+    // Current production root HTML may still contain the old one-level bar:
+    //   button#mobTocBtn + div#gbs2MobSec + progress + pct + icon row.
+    // Upgrade it at runtime so the fix works both for fresh Astro output and
+    // for already-synced static root pages before the next full HTML sync.
+    bar.setAttribute('data-gill-mobile-bar', '');
+
+    var tocBtn = qs('#mobTocBtn');
+    if (tocBtn) {
+      tocBtn.setAttribute('type', 'button');
+      tocBtn.setAttribute('aria-label', 'Содержание серии');
+      if (!tocBtn.querySelector('.mobile-toc-btn__label')) {
+        var tocLabel = document.createElement('span');
+        tocLabel.className = 'mobile-toc-btn__label';
+        tocLabel.textContent = 'Серия';
+        tocBtn.appendChild(tocLabel);
+      }
+    }
+
+    var partBtn = qs('#mobPartTocBtn');
+    var oldSection = qs('#gbs2MobSec');
+    if (!partBtn && oldSection) {
+      partBtn = document.createElement('button');
+      partBtn.type = 'button';
+      partBtn.className = 'mobile-btoc-section';
+      partBtn.id = 'mobPartTocBtn';
+      var sectionText = (oldSection.textContent || 'Оглавление части').replace(/\s+/g, ' ').trim();
+      partBtn.setAttribute('aria-label', 'Оглавление текущей части: ' + sectionText);
+
+      var main = document.createElement('span');
+      main.className = 'mobile-btoc-section__main';
+      main.id = 'gbs2MobSec';
+      main.textContent = sectionText;
+
+      var sub = document.createElement('span');
+      sub.className = 'mobile-btoc-section__sub';
+      sub.textContent = 'Оглавление части';
+
+      partBtn.appendChild(main);
+      partBtn.appendChild(sub);
+      oldSection.parentNode.replaceChild(partBtn, oldSection);
+    } else if (partBtn) {
+      partBtn.setAttribute('type', 'button');
+      if (!partBtn.querySelector('.mobile-btoc-section__sub')) {
+        var partSub = document.createElement('span');
+        partSub.className = 'mobile-btoc-section__sub';
+        partSub.textContent = 'Оглавление части';
+        partBtn.appendChild(partSub);
+      }
+    }
+
+    var iconRow = bar.querySelector('.mobile-icon-row');
+    var meter = bar.querySelector('.mobile-btoc-meter');
+    if (!meter) {
+      var track = bar.querySelector('.mobile-btoc-progress-track');
+      var pct = bar.querySelector('#gbs2MobPct');
+      if (track && pct) {
+        meter = document.createElement('div');
+        meter.className = 'mobile-btoc-meter';
+        meter.setAttribute('aria-hidden', 'true');
+        bar.insertBefore(meter, iconRow || null);
+        meter.appendChild(track);
+        meter.appendChild(pct);
+      }
+    }
+  }
+
   function initTocPopups() {
+    enhanceGillMobileBarMarkup();
     var seriesToc = qs('#seriesTocOverlay');
     var partToc = qs('#partTocOverlay');
     var mobTocBtn = qs('#mobTocBtn');
+    var mobPartTocBtn = qs('#mobPartTocBtn');
     var backToSeries = qs('#backToSeries');
 
+    [seriesToc, partToc].forEach(function(overlay) {
+      if (overlay && !overlay.classList.contains('is-open')) overlay.setAttribute('aria-hidden', 'true');
+      if (overlay) {
+        var dialog = overlay.querySelector('.toc-sheet');
+        if (dialog) dialog.setAttribute('aria-modal', 'true');
+      }
+    });
+
     function openOverlay(el) {
-      if (el) { el.classList.add('is-open'); document.body.style.overflow = 'hidden'; }
+      if (el) {
+        el.classList.add('is-open');
+        el.removeAttribute('aria-hidden');
+        document.documentElement.classList.add('gb-gill-toc-open');
+        document.body.style.overflow = 'hidden';
+      }
     }
     function closeOverlay(el) {
-      if (el) { el.classList.remove('is-open'); document.body.style.overflow = ''; }
+      if (el) {
+        el.classList.remove('is-open');
+        el.setAttribute('aria-hidden', 'true');
+      }
+      if (!qs('.toc-overlay.is-open')) {
+        document.documentElement.classList.remove('gb-gill-toc-open');
+        document.body.style.overflow = '';
+      }
     }
 
     // Mobile TOC button opens series
     if (mobTocBtn && seriesToc) {
-      mobTocBtn.addEventListener('click', function() { openOverlay(seriesToc); });
+      mobTocBtn.addEventListener('click', function(e) { e.preventDefault(); openOverlay(seriesToc); });
+    }
+
+    // Explicit mobile Part TOC button opens the current article/part submenu.
+    if (mobPartTocBtn && partToc) {
+      mobPartTocBtn.addEventListener('click', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        closeOverlay(seriesToc);
+        openOverlay(partToc);
+      });
     }
 
     // Back button in Part TOC → Series TOC
@@ -751,7 +853,7 @@
       });
     }
 
-    // Click on series item → open Part TOC (for current part) or navigate
+    // Click on current series item → open Part TOC; non-current items navigate.
     if (seriesToc) {
       seriesToc.addEventListener('click', function(e) {
         var item = e.target.closest('.toc-item');
@@ -773,7 +875,7 @@
       overlay.addEventListener('click', function(e) {
         if (e.target === overlay) closeOverlay(overlay);
       });
-      // Close on handle drag down (simple version)
+      // Close on handle tap/click (simple version)
       var handle = overlay.querySelector('.toc-sheet__handle');
       if (handle) {
         handle.addEventListener('click', function() { closeOverlay(overlay); });
