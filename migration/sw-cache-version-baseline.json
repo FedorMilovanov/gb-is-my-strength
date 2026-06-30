@@ -1,9 +1,9 @@
 {
   "version": 3,
-  "captured": "2026-06-29",
+  "captured": "2026-06-30",
   "preSwitchProductionCacheVersion": "gb-v171-r62-maps-archaeology-20260612",
   "lastReviewedDistProductionCacheVersion": "gb-v173-r64-astro-runtime-hub-20260618",
-  "currentDistProductionCacheVersion": "gb-v176-floating-cluster-gill-all-20260625",
-  "currentExpectedCacheVersion": "gb-v176-floating-cluster-gill-all-20260625",
-  "purpose": "Service Worker cache version baseline — updated after Gill v16 verification ratchet (main a417d9c / d644e278). Historical pre-switch value: gb-v171. Last reviewed dist production: gb-v173 (2026-06-18). Current dist production / expected: gb-v176-floating-cluster-gill-all-20260625 — matches sw.js CACHE_VERSION. Used by sw:dist:audit:deploy-switch, sw:dist:audit:pagefind, and rollback analysis. See docs: sw-cache-baseline-policy."
+  "currentDistProductionCacheVersion": "gb-v177-security-font-normpath-20260630",
+  "currentExpectedCacheVersion": "gb-v177-security-font-normpath-20260630",
+  "purpose": "Service Worker cache version baseline — updated after Gill v16 verification ratchet (main a417d9c / d644e278). Historical pre-switch value: gb-v171. Last reviewed dist production: gb-v173 (2026-06-18). Current dist production / expected: gb-v177-security-font-normpath-20260630 — matches sw.js CACHE_VERSION. Used by sw:dist:audit:deploy-switch, sw:dist:audit:pagefind, and rollback analysis. See docs: sw-cache-baseline-policy."
 }

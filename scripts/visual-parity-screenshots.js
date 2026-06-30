@@ -56,6 +56,8 @@ const ROOT = path.resolve(__dirname, '..');
 const LEGACY_DIR = path.resolve(ROOT, arg('--legacy', '.'));
 const DIST_DIR = path.resolve(ROOT, arg('--dist', 'dist'));
 const OUT_DIR = path.resolve(ROOT, arg('--out', 'reports/visual-parity'));
+// Ensure report dir exists before any async work so writeSummary() never fails.
+fs.mkdirSync(OUT_DIR, { recursive: true });
 const THRESHOLD_PCT = parseFloat(arg('--threshold', '1.0'));
 const PIXEL_THRESHOLD = parseFloat(arg('--pixel-threshold', '0.1'));
 const WARN_ONLY = flag('--warn-only');
