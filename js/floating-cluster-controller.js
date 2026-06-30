@@ -184,7 +184,11 @@
   }
 
   function normalizePath(path) {
-    return String(path || '/').split('?')[0].split('#')[0].replace(/\/$/, '') || '/';
+    // Strip query, hash, trailing slash, and index.html — mirrors bookmark-engine normalize.
+    // Ensures Favorites key matches BookmarkEngine key for the same page.
+    var p = String(path || '/').split('?')[0].split('#')[0]
+              .replace(/index\.html$/, '').replace(/\/$/, '');
+    return p || '/';
   }
 
   /* =====================================================
@@ -501,11 +505,18 @@
   /* =====================================================
      FONT SIZE
      ===================================================== */
-  var fontScale = 1;
-  function changeFontSize(direction) {
-    fontScale = Math.max(0.85, Math.min(1.25, fontScale + direction * 0.05));
+  var FONT_SCALE_KEY = 'gb:font-scale';
+  var fontScale = (function() {
+    try { var s = parseFloat(localStorage.getItem(FONT_SCALE_KEY)); return (!isNaN(s) && s >= 0.85 && s <= 1.25) ? s : 1; } catch (_) { return 1; }
+  })();
+  function applyFontScale() {
     var article = qs('article.article-body') || qs('.article-main') || qs('main');
     if (article) article.style.fontSize = fontScale === 1 ? '' : (fontScale * 100) + '%';
+  }
+  function changeFontSize(direction) {
+    fontScale = Math.max(0.85, Math.min(1.25, Math.round((fontScale + direction * 0.05) * 100) / 100));
+    try { localStorage.setItem(FONT_SCALE_KEY, String(fontScale)); } catch (_) {}
+    applyFontScale();
   }
 
   /* =====================================================
@@ -694,6 +705,7 @@
     //    (Fix R6: early return at line 582 skipped these on gill-rail-only pages)
     syncThemeButtons();
     syncSaveState();
+    if (fontScale !== 1) applyFontScale(); // restore persisted font scale
     initKeyboard();
 
     // Ember ARIA labels
