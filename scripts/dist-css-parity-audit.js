@@ -1,6 +1,6 @@
+#!/usr/bin/env node
 /*
  */
-#!/usr/bin/env node
 /**
  * dist-css-parity-audit.js — verify every public dist page carries project CSS.
  *
