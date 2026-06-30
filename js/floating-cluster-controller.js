@@ -901,6 +901,30 @@
         closeOverlay(partToc);
       }
     });
+
+    // Gill v16 mobile bar scroll progress.
+    // initGbs2Controls() skips Gill v16 pages (no gbs2Sheet/gbs2Bbar),
+    // so we wire a dedicated lightweight scroll listener here.
+    var gillProgressFill = qs('#gbs2MobProgress');
+    var gillProgressPct  = qs('#gbs2MobPct');
+    if (gillProgressFill || gillProgressPct) {
+      var gillScrollTick = false;
+      function updateGillProgress() {
+        var docH = document.documentElement.scrollHeight - window.innerHeight;
+        if (docH <= 0) { gillScrollTick = false; return; }
+        var pct = Math.min(100, Math.round((window.scrollY / docH) * 100));
+        if (gillProgressFill) gillProgressFill.style.width = pct + '%';
+        if (gillProgressPct)  gillProgressPct.textContent  = pct + '%';
+        gillScrollTick = false;
+      }
+      window.addEventListener('scroll', function() {
+        if (!gillScrollTick) {
+          gillScrollTick = true;
+          requestAnimationFrame(updateGillProgress);
+        }
+      }, { passive: true });
+      updateGillProgress(); // initial call
+    }
   }
 
   /* v16 action handlers (non-inline) */
