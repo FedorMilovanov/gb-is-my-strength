@@ -283,6 +283,43 @@ async function testMobileOverlays(browser) {
   }
 }
 
+// PC-CURRENT-06 guard: #mobPartTocBtn must exist and open #partTocOverlay on ALL 5 Gill routes.
+async function testMobPartTocBtn(browser) {
+  for (const route of ROUTES) {
+    const ctx = await browser.newContext({ viewport: { width: 390, height: 844 }, deviceScaleFactor: 1, isMobile: true, hasTouch: true });
+    const page = await ctx.newPage();
+    await page.goto(BASE + route, { waitUntil: 'domcontentloaded' });
+    await page.waitForTimeout(600);
+    const prefix = `mobPartTocBtn_${route.replace(/\//g, '_').replace(/^_|_$/g, '')}`;
+    const has = await page.evaluate(() => ({
+      partBtn: !!document.querySelector('#mobPartTocBtn'),
+      partBtnType: document.querySelector('#mobPartTocBtn')?.getAttribute('type') || '',
+      hasMeter: !!document.querySelector('.mobile-btoc-meter'),
+      hasGillMobileBar: document.querySelector('.mobile-bottom-bar')?.hasAttribute('data-gill-mobile-bar') || false,
+    }));
+    assert(has.partBtn, `${prefix}: #mobPartTocBtn present`, JSON.stringify(has));
+    assert(has.partBtnType === 'button', `${prefix}: #mobPartTocBtn type=button`, JSON.stringify(has));
+    assert(has.hasMeter, `${prefix}: .mobile-btoc-meter present`, JSON.stringify(has));
+    assert(has.hasGillMobileBar, `${prefix}: data-gill-mobile-bar attr present`, JSON.stringify(has));
+    if (has.partBtn) {
+      const beforeUrl = page.url();
+      await page.click('#mobPartTocBtn');
+      await page.waitForTimeout(250);
+      const state = await page.evaluate(() => ({
+        partOpen: document.querySelector('#partTocOverlay')?.classList.contains('is-open') || false,
+        seriesOpen: document.querySelector('#seriesTocOverlay')?.classList.contains('is-open') || false,
+        url: location.href,
+        ariaHidden: document.querySelector('#partTocOverlay')?.getAttribute('aria-hidden'),
+      }));
+      assert(state.partOpen, `${prefix}: #mobPartTocBtn click opens #partTocOverlay`, JSON.stringify(state));
+      assert(!state.seriesOpen, `${prefix}: #mobPartTocBtn closes #seriesTocOverlay`, JSON.stringify(state));
+      assert(state.url === beforeUrl, `${prefix}: no URL change after #mobPartTocBtn click`, `${beforeUrl} -> ${state.url}`);
+      assert(state.ariaHidden === null || state.ariaHidden === 'false', `${prefix}: #partTocOverlay aria-hidden removed when open`, JSON.stringify(state));
+    }
+    await ctx.close();
+  }
+}
+
 async function testPlayState(browser, mobile) {
   const ctx = await browser.newContext({ viewport: mobile ? { width: 390, height: 844 } : { width: 1440, height: 900 }, deviceScaleFactor: 1, isMobile: mobile, hasTouch: mobile });
   await addFakeTts(ctx);
@@ -373,6 +410,7 @@ function writeReport() {
   try {
     await testSeriesModel(browser);
     await testMobileOverlays(browser);
+    await testMobPartTocBtn(browser);
     await testPlayState(browser, false);
     await testPlayState(browser, true);
   } finally {

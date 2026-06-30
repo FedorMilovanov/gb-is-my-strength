@@ -216,6 +216,35 @@ for (const f of files) {
       ok(`/${route}/ no forbidden numbered-intro wording`);
     }
 
+    // PC-CURRENT-06: Gill mobile V3 bar — static HTML checks
+    if (html.includes('mobile-bottom-bar')) {
+      if (html.includes('mobPartTocBtn')) {
+        ok(`/${route}/ #mobPartTocBtn present (PC-CURRENT-06)`);
+      } else if (isAstro) {
+        bad(`/${route}/ missing #mobPartTocBtn`, 'Gill V3 mobile bar must have explicit Part TOC button (PC-CURRENT-06)');
+      }
+      if (html.includes('data-gill-mobile-bar')) {
+        ok(`/${route}/ data-gill-mobile-bar attr present`);
+      } else if (isAstro) {
+        bad(`/${route}/ missing data-gill-mobile-bar attr`, 'Gill V3 mobile bar must carry data-gill-mobile-bar');
+      }
+    }
+    // aria-hidden on overlays (AT contract)
+    if (html.includes('id="seriesTocOverlay"')) {
+      if (/id="seriesTocOverlay"[^>]*aria-hidden="true"/.test(html) || /aria-hidden="true"[^>]*id="seriesTocOverlay"/.test(html)) {
+        ok(`/${route}/ #seriesTocOverlay has aria-hidden=true by default`);
+      } else if (isAstro) {
+        bad(`/${route}/ #seriesTocOverlay missing aria-hidden=true`, 'overlay must be hidden from AT when closed');
+      }
+    }
+    if (html.includes('id="partTocOverlay"')) {
+      if (/id="partTocOverlay"[^>]*aria-hidden="true"/.test(html) || /aria-hidden="true"[^>]*id="partTocOverlay"/.test(html)) {
+        ok(`/${route}/ #partTocOverlay has aria-hidden=true by default`);
+      } else if (isAstro) {
+        bad(`/${route}/ #partTocOverlay missing aria-hidden=true`, 'overlay must be hidden from AT when closed');
+      }
+    }
+
     if (route.includes('dzhon-gill-istoricheskiy-kontekst')) {
       const railNow = html.match(/Сейчас читаете[\s\S]{0,160}?<h2[^>]*>([\s\S]*?)<\/h2>/);
       if (railNow) {
