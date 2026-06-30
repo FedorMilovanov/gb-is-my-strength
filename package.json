@@ -88,6 +88,7 @@
     "smoke:maps:mobile": "node scripts/map-mobile-smoke.js",
     "smoke:content:mobile": "node scripts/content-mobile-smoke.js",
     "gill:mobile-play:smoke": "node scripts/gill-v16-mobile-play-smoke.js",
+    "gill:mobile-layout:audit": "node scripts/gill-mobile-layout-audit.js",
     "smoke:mobile-toc-play": "npm run gill:mobile-play:smoke",
     "smoke:konfessii": "node scripts/konfessii-smoke.js",
     "strangler:copy:dry-run": "npm run astro:build && node scripts/copy-legacy-to-dist.js --dry-run",

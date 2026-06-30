@@ -353,6 +353,7 @@ if (-not $SkipBuild) {
       'node scripts/gill-context-visual-parity-audit.js --require-dist',
       'node scripts/gill-spravochnik-visual-parity-audit.js --require-dist',
       'npm run gill:mobile-play:smoke',
+      'npm run gill:mobile-layout:audit',
       'npm run strangler:smoke'
     )
   } 'Builds production-like dist and runs dist-side gates.'
