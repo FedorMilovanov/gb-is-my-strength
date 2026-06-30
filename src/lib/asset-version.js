@@ -17,7 +17,7 @@ export const ASSET_VERSIONS = {
   'js/highlights.js': 'eca2588c',
   'js/nagornaya-mobile-toc.js': '866d4238',
   'js/scroll-perf.js': '454d6f7b',
-  'js/search.js': 'c9d65577',
+  'js/search.js': 'a76109a3',
   'js/site-utils.js': '897afa55',
   'js/site.js': '359d6005',
   'js/sw-register.js': '318502c5',
