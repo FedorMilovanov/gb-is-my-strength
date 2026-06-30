@@ -826,17 +826,12 @@
       }
     });
 
-    var OVERLAY_LOCK_KEY = 'gill-toc-overlay';
     function openOverlay(el) {
       if (el) {
         el.classList.add('is-open');
         el.removeAttribute('aria-hidden');
         document.documentElement.classList.add('gb-gill-toc-open');
-        if (window.SiteUtils && typeof window.SiteUtils.lockScroll === 'function') {
-          window.SiteUtils.lockScroll(OVERLAY_LOCK_KEY);
-        } else {
-          document.body.style.overflow = 'hidden';
-        }
+        document.body.style.overflow = 'hidden';
       }
     }
     function closeOverlay(el) {
@@ -846,11 +841,7 @@
       }
       if (!qs('.toc-overlay.is-open')) {
         document.documentElement.classList.remove('gb-gill-toc-open');
-        if (window.SiteUtils && typeof window.SiteUtils.unlockScroll === 'function') {
-          window.SiteUtils.unlockScroll(OVERLAY_LOCK_KEY);
-        } else {
-          document.body.style.overflow = '';
-        }
+        document.body.style.overflow = '';
       }
     }
 
@@ -1222,28 +1213,19 @@
     }
 
     // --- Sheet Open/Close ---
-    var SHEET_LOCK_KEY = 'gbs2-sheet';
     function openSheet() {
       if (!sheet || sheet.classList.contains('gbs2-open')) return;
       sheet.setAttribute('aria-hidden', 'false');
       sheet.style.display = 'block';
       sheet.classList.add('gbs2-open');
-      if (window.SiteUtils && typeof window.SiteUtils.lockScroll === 'function') {
-        window.SiteUtils.lockScroll(SHEET_LOCK_KEY);
-      } else {
-        document.body.style.overflow = 'hidden';
-      }
+      document.body.style.overflow = 'hidden';
     }
     function closeSheet() {
       if (!sheet) return;
       sheet.setAttribute('aria-hidden', 'true');
       sheet.classList.remove('gbs2-open');
       sheet.style.display = '';
-      if (window.SiteUtils && typeof window.SiteUtils.unlockScroll === 'function') {
-        window.SiteUtils.unlockScroll(SHEET_LOCK_KEY);
-      } else {
-        document.body.style.overflow = '';
-      }
+      document.body.style.overflow = '';
     }
 
     // Bottom bar opens sheet
