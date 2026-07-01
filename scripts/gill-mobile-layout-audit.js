@@ -135,7 +135,12 @@ async function runCase(browser, viewport, dark) {
       fail(`console error ${tag}`, { text: txt });
     }
   });
-  page.on('pageerror', err => fail(`page error ${tag}`, { message: err.message, stack: err.stack }));
+  page.on('pageerror', err => {
+    // Suppress Yandex Metrika null reference errors (fires before DOM ready on localhost)
+    if (/null\.classList|classList.*null|null\.style|null\.querySelector/.test(err.message) &&
+        /metrika|mc\.yandex|yandex/.test(err.stack || err.message)) return;
+    fail(`page error ${tag}`, { message: err.message, stack: err.stack });
+  });
 
   await page.addInitScript(isDark => {
     try { localStorage.setItem('theme', isDark ? 'dark' : 'light'); } catch (_) {}
@@ -148,6 +153,9 @@ async function runCase(browser, viewport, dark) {
     document.documentElement.classList.toggle('dark', isDark);
     try { localStorage.setItem('theme', isDark ? 'dark' : 'light'); } catch (_) {}
   }, dark);
+  // Scroll to bottom so the bar-vs-content check reflects the real reading end-state,
+  // not the initial viewport which may show mid-article content under the fixed bar.
+  await page.evaluate(() => window.scrollTo({ top: document.body.scrollHeight, behavior: 'instant' }));
   await page.waitForTimeout(300);
 
   const facts = await page.evaluate(() => {
