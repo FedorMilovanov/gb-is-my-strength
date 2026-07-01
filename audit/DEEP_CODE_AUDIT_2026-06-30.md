@@ -314,3 +314,70 @@ Astro-компоненты (например `AboutPageChrome.astro`) имеют
 | 353 | 61 HTML файлов — 0 img без alt | ✅ |
 | 356 | skip-link: 35 Astro компонентов + 38 HTML файлов | ✅ |
 | 359 | audit-pro финал: 162 passed · 0 errors | ✅ |
+
+---
+
+## Обновление — 2026-07-01 (checks 361–410)
+
+### Новые открытые проблемы
+
+---
+
+## 🟡 OPEN — P3 PERFORMANCE: `fonts/NotoSerifGreek/notoserifgreek-400.ttf` — нет woff2
+
+**Файл:** `fonts/fonts.css`, правило #27  
+**Проблема:** `Noto Serif Greek` (unicode-range U+0370–03FF греческие символы) загружается как TTF (444KB), тогда как woff2 был бы ~180KB.  
+Все остальные 27 `@font-face` правил используют woff2. `Noto Sans Greek` уже в woff2.  
+**Fix:** `python3 -m fonttools.woff2 compress fonts/NotoSerifGreek/notoserifgreek-400.ttf`  
+затем обновить `fonts.css`: `src: url('./NotoSerifGreek/notoserifgreek-400.woff2') format('woff2')`.  
+**Severity:** P3 — влияет только на страницы с греческим библейским текстом; `font-display:swap` + `unicode-range` уменьшают практический ущерб.
+
+---
+
+## 🟡 OPEN — P3: `tsconfig.json` без `strict: true`
+
+**Файл:** `tsconfig.json`  
+**Проблема:** `compilerOptions` содержит только `baseUrl` и `paths`. Нет `strict`, `noImplicitAny`, `noUncheckedIndexedAccess`.  
+**Покрытие:** 20 TypeScript файлов (15 `.ts` + 5 `.tsx`).  
+**Митигации:** Astro использует `@astrojs/check`; `gillSeriesData.ts` имеет строгие интерфейсы; `content.config.ts` использует Zod runtime-валидацию.  
+**Рекомендация:** добавить `"strict": true` в `tsconfig.json` — поймает баги на уровне компиляции.  
+Требует предварительного исправления существующих TS-ошибок → owner решает.
+
+---
+
+## 🔵 INFO: 29 мёртвых CSS custom properties
+
+**Файлы:** `site-layered.css` (21), `home.css` (4), `floating-cluster.css` (3), `nagornaya-mobile-toc.css` (1)  
+**Группы:** z-index токены (4), social palette (4), typography tokens (8), theme colours (5), planned home features (4), FC icon vars (3), nagornaya (1).  
+**Risk:** NONE — CSS переменные inert если не использованы. Косметический долг.
+
+---
+
+## 🔵 INFO: 6 пустых `@media` блоков в `floating-cluster.css`
+
+**5× `@media (hover: hover)`** + **1× `@media (prefers-reduced-motion: reduce)`** — пустые (нет правил внутри).  
+Вероятно, заготовки для планируемых hover/motion стилей. Inert, не влияют на рендер.
+
+---
+
+### Подтверждено ОК (проверки 361–410)
+
+| # | Проверка | Вердикт |
+|---|---|---|
+| 361–369 | 205 CSS vars: 29 unused (inert), 35 set per-route/JS | INFO |
+| 370 | Astro pages: 0 wrong-domain canonical URLs | ✅ |
+| 371 | check-workflows.js: 91 must() checks, PASS | ✅ |
+| 376–381 | cache-bust.js: покрывает 11/12 JS файлов; series-cards.js грузится динамически через SITE_CONFIG.version | ✅ |
+| 382 | gill-series-data-consistency: ALL CHECKS PASSED | ✅ |
+| 383–390 | check-data-consistency, check-design-tokens, check-mdx-html-parity, editorial-lint, readable-audit | ✅ all green |
+| 391–394 | Gill 5 routes: readingTime в series.json=MDX=HTML | ✅ |
+| 395–397 | FCC: 6 set=6 clear (balanced), nagornaya: fire-and-forget setTimeout OK | ✅ |
+| 398–400 | check-page-ownership, check-route-migration-matrix, check-route-profiles, check-content-source-coverage | ✅ all green |
+| 401 | CSS brace balance: 5 files OK | ✅ |
+| 402–403 | floating-cluster.css: 6 empty @media — inert placeholder | INFO |
+| 404 | tsconfig.json без strict | P3 документировано |
+| 405 | fonts.css: 28 @font-face, font-display:swap | ✅ |
+| 406 | llms.txt: 4,656 chars, корректная структура | ✅ |
+| 407 | AUDIT_HISTORY.md: 164KB, 189 entries | ✅ |
+| 409 | fonts.css: 27/28 woff2 | fonts/NotoSerifGreek: только TTF → P3 |
+| 410 | NotoSansGreek: woff2 ✅, NotoSerifGreek: только TTF ❌ | P3 документировано |
