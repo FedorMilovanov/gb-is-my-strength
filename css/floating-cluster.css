@@ -94,7 +94,6 @@
   }
 }
 
-
 /* ---- GILL-A fix: prevent vertical text in gbs2-mobile-head on narrow screens ----
    gbs2-mobile-title gets squeezed to 0 by 4 control buttons (4×38px+gaps=~170px).
    Force title to truncate instead of stacking vertically per character. */
@@ -726,14 +725,11 @@ body.fc-series-active #btocOverlay {
 
 } /* @layer components */
 
-
-
 /* ===================================================================
    Gill v16 Series Rail, Mobile Bar, TOC Popups
    Scope: [data-gill-v16] wrapper on pilot page
    Source: gb-floating-cluster-probe-v16.html (owner reference)
    =================================================================== */
-
 
 /* ============================================================
    v16 — Mobile TOC & Progress Redesign (owner approved):
@@ -743,10 +739,6 @@ body.fc-series-active #btocOverlay {
    4. Popup Overlays: Zero padding on mobile screens, full-width attachment.
    ============================================================ */
 
-
-
-
-
 @media(max-width:680px){.state-grid{grid-template-columns:repeat(2,1fr)}}
 
 /* ============================================================
@@ -755,19 +747,13 @@ body.fc-series-active #btocOverlay {
 @media (hover: hover) and (pointer: fine) {
   html.dark [data-gill-v16] .gb-icon:hover{color:var(--gb-accent-strong)}
 }
-@media (hover: hover) and (pointer: fine) {
-}
-
-@media (hover: hover) and (pointer: fine) {
-}
 
 /* ============================================================
    v15: SAVE button — NO ::before halo (different from gb-icon)
    Just gold fill on click + bounce. NO outline ring.
    ============================================================ */
 /* NOTE: no ::before outline! Save is purely visual feedback */
-@media (hover: hover) and (pointer: fine) {
-}
+
 /* When saved: gold fill + bounce. NO halo. */
 @keyframes save-bounce{
   0%{transform:scale(1)}
@@ -781,22 +767,16 @@ body.fc-series-active #btocOverlay {
    ============================================================ */
 html.dark [data-gill-v16] .gb-theme-toggle .theme-icon-sun{opacity:0;transform:rotate(90deg) scale(.5)}
 html.dark [data-gill-v16] .gb-theme-toggle .theme-icon-moon{opacity:1;transform:rotate(0) scale(1)}
-@media (hover: hover) and (pointer: fine) {
-}
 
 /* ============================================================
    PLAY EMBER (v14, fixed loading state in v15)
    ============================================================ */
-@media (hover: hover) and (pointer: fine) {
-}
-
 
 /* v15: Loading pulse (fixed — only on ::before) */
 @keyframes loading-pulse{
   0%,100%{opacity:0}
   50%{opacity:0.5}
 }
-
 
 /* GBS RAIL */
 [data-gill-v16] .gbs-rail{
@@ -886,7 +866,6 @@ html.dark [data-gill-v16] .gb-theme-toggle .theme-icon-moon{opacity:1;transform:
   color: var(--gb-accent-gold-bright, #ffd18b);
   text-shadow: none;
 }
-
 
 [data-gill-v16] .gb-series-mark--label.gbs-rail-card__num,
 [data-gill-v16] .gb-series-mark--label.toc-item__num {
@@ -1001,7 +980,6 @@ html.dark [data-gill-v16] .gb-theme-toggle .theme-icon-moon{opacity:1;transform:
     opacity:1;transform:translateX(-50%) translateY(0) scale(1);
   }
 }
-
 
 /* ============================================================
 
@@ -1314,7 +1292,6 @@ html.dark [data-gill-v16] .toc-sheet__actions{background:color-mix(in srgb,var(-
 
 /* KEYBOARD HELP */
 
-
 [data-gill-v16] .roman-grid{
   display:grid;grid-template-columns:repeat(6,1fr);gap:8px;
 }
@@ -1364,9 +1341,6 @@ html.dark [data-gill-v16] .toc-sheet__actions{background:color-mix(in srgb,var(-
   color:rgba(255,255,255,.45);
 }
 [data-gill-v16] .roman-cell.is-current .roman-cell__time{color:#e17c5e}
-
-@media (prefers-reduced-motion: reduce){
-}
 
 /* ============================================================
    v16 POPUP & BAR RESPONSIVE BEHAVIOR (for Arena demo & Real Devices)
@@ -1678,7 +1652,6 @@ html.dark [data-gill-v16] .gb-ember {
 [data-gill-v16] .toc-item.is-done { opacity: .82; }
 [data-gill-v16] .toc-item.is-done .toc-item__num { color: var(--gb-text-muted) !important; text-shadow: none !important; }
 html.dark [data-gill-v16] .toc-item.is-done .toc-item__num { color: #8b949e !important; text-shadow: none !important; }
-
 
 /* ============================================================
    v16 PURITAN ANTIQUE BRASS LUXURY & NO TEXT TIPS
@@ -2060,7 +2033,6 @@ html.dark .gb-ember-expand__btn.is-active {
   clip-path: inset(0 0 0 0 round 999px);
 }
 
-
 /* === Mobile: pill above ember with blur backdrop (no side space) ===
    Per owner spec 2026-06-26: на mobile нет горизонтального места
    для morph LEFT, поэтому открываем строго ВВЕРХ с blur-фоном.
@@ -2285,7 +2257,6 @@ html.dark .gb-roman {
 .toc-part-item__num {
   color: var(--color-accent-gold, #b8936a);
 }
-
 
 /* =========================================================
    Mobile fallback PremiumControls for series-rich/GBS2 routes

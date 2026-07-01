@@ -3,7 +3,7 @@
   "captured": "2026-07-01",
   "preSwitchProductionCacheVersion": "gb-v171-r62-maps-archaeology-20260612",
   "lastReviewedDistProductionCacheVersion": "gb-v173-r64-astro-runtime-hub-20260618",
-  "currentDistProductionCacheVersion": "gb-v180-shared-assets-cleanup-20260701",
-  "currentExpectedCacheVersion": "gb-v180-shared-assets-cleanup-20260701",
+  "currentDistProductionCacheVersion": "gb-v181-woff2-css-cleanup-20260701",
+  "currentExpectedCacheVersion": "gb-v181-woff2-css-cleanup-20260701",
   "purpose": "Service Worker cache version baseline \u2014 updated after Gill v16 verification ratchet (main a417d9c / d644e278). Historical pre-switch value: gb-v171. Last reviewed dist production: gb-v173 (2026-06-18). Current dist production / expected: gb-v179-sheet-lock-sri-5routes-20260701 \u2014 matches sw.js CACHE_VERSION. Used by sw:dist:audit:deploy-switch, sw:dist:audit:pagefind, and rollback analysis. See docs: sw-cache-baseline-policy."
 }
