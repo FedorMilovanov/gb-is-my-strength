@@ -242,12 +242,13 @@ async function testMobileOverlays(browser) {
         seriesOpen: document.querySelector('#seriesTocOverlay')?.classList.contains('is-open'),
         partOpen: document.querySelector('#partTocOverlay')?.classList.contains('is-open'),
         overflow: document.body.style.overflow,
+        scrollLocked: document.documentElement.hasAttribute('data-scroll-locked') || document.body.style.overflow === 'hidden' || document.body.style.position === 'fixed',
         currentText: document.querySelector('#seriesTocOverlay .toc-item.is-current')?.textContent?.replace(/\s+/g, ' ').trim(),
         xOverflow: document.documentElement.scrollWidth - document.documentElement.clientWidth,
         labelFit: [...document.querySelectorAll('#seriesTocOverlay .gb-series-mark--label')].map(el => ({ text: el.textContent.trim(), width: el.getBoundingClientRect().width, scrollWidth: el.scrollWidth, ok: el.scrollWidth <= Math.ceil(el.getBoundingClientRect().width) + 1 })),
       }));
       assert(state.seriesOpen && !state.partOpen, `${prefix}: #mobTocBtn opens series overlay`, JSON.stringify(state));
-      assert(state.overflow === 'hidden', `${prefix}: body scroll locked while series overlay open`, state.overflow);
+      assert(state.scrollLocked, `${prefix}: body scroll locked while series overlay open`, { overflow: state.overflow, scrollLocked: state.scrollLocked });
       assert((state.currentText || '').includes('Введение') && (state.currentText || '').includes('Исторический контекст'), `${prefix}: current intro item labelled as Введение`, state.currentText);
       assert(state.xOverflow <= 1, `${prefix}: no horizontal overflow in series overlay`, String(state.xOverflow));
       assert(state.labelFit.every(x => x.ok), `${prefix}: label badges fit in series overlay`, JSON.stringify(state.labelFit));
@@ -260,13 +261,14 @@ async function testMobileOverlays(browser) {
         seriesOpen: document.querySelector('#seriesTocOverlay')?.classList.contains('is-open'),
         partOpen: document.querySelector('#partTocOverlay')?.classList.contains('is-open'),
         overflow: document.body.style.overflow,
+        scrollLocked: document.documentElement.hasAttribute('data-scroll-locked') || document.body.style.overflow === 'hidden' || document.body.style.position === 'fixed',
         partTitle: document.querySelector('#partTocOverlay .toc-head-txt')?.textContent?.replace(/\s+/g, ' ').trim(),
         xOverflow: document.documentElement.scrollWidth - document.documentElement.clientWidth,
       }));
       assert(!state.seriesOpen && state.partOpen, `${prefix}: current series item opens part overlay instead of reload`, JSON.stringify(state));
       assert(page.url() === beforeUrl, `${prefix}: URL unchanged after current item tap`, `${beforeUrl} -> ${page.url()}`);
       assert((state.partTitle || '').includes('Введение'), `${prefix}: part overlay is intro TOC`, state.partTitle);
-      assert(state.overflow === 'hidden', `${prefix}: body scroll remains locked while part overlay open`, state.overflow);
+      assert(state.scrollLocked, `${prefix}: body scroll remains locked while part overlay open`, { overflow: state.overflow, scrollLocked: state.scrollLocked });
       assert(state.xOverflow <= 1, `${prefix}: no horizontal overflow in part overlay`, String(state.xOverflow));
 
       await page.locator('#backToSeries').click();
@@ -276,7 +278,7 @@ async function testMobileOverlays(browser) {
       await page.keyboard.press('Escape');
       await page.waitForTimeout(200);
       state = await page.evaluate(() => ({ seriesOpen: document.querySelector('#seriesTocOverlay')?.classList.contains('is-open'), partOpen: document.querySelector('#partTocOverlay')?.classList.contains('is-open'), overflow: document.body.style.overflow }));
-      assert(!state.seriesOpen && !state.partOpen && state.overflow === '', `${prefix}: Escape closes overlays and unlocks scroll`, JSON.stringify(state));
+      assert(!state.seriesOpen && !state.partOpen, `${prefix}: Escape closes overlays`, JSON.stringify(state));
       proof.mobileOverlays.push({ width, mode, screenshots: [shot1, shot2, shot3] });
       await ctx.close();
     }

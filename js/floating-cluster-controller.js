@@ -825,22 +825,38 @@
       if (dialog) dialog.setAttribute('aria-modal', 'true');
     });
 
+    var GILL_LOCK_KEY = 'gill-toc';
+
     function openOverlay(el) {
-      if (el && el.classList) { // ← enhanced guard
+      if (el && el.classList) {
         el.classList.add('is-open');
         el.removeAttribute('aria-hidden');
         document.documentElement.classList.add('gb-gill-toc-open');
-        if (document.body) document.body.style.overflow = 'hidden';
+        // Coordinate with SiteUtils lock system to prevent cross-overlay desync.
+        // SiteUtils.lockScroll uses position:fixed which also blocks scroll,
+        // and its named-key system prevents unlockScroll from other modals
+        // accidentally clearing the lock Gill set.
+        var utils = window.SiteUtils;
+        if (utils && typeof utils.lockScroll === 'function') {
+          utils.lockScroll(GILL_LOCK_KEY);
+        } else if (document.body) {
+          document.body.style.overflow = 'hidden';
+        }
       }
     }
     function closeOverlay(el) {
-      if (el && el.classList) { // ← enhanced guard
+      if (el && el.classList) {
         el.classList.remove('is-open');
         el.setAttribute('aria-hidden', 'true');
       }
       if (!qs('.toc-overlay.is-open')) {
         document.documentElement.classList.remove('gb-gill-toc-open');
-        if (document.body) document.body.style.overflow = '';
+        var utils = window.SiteUtils;
+        if (utils && typeof utils.unlockScroll === 'function') {
+          utils.unlockScroll(GILL_LOCK_KEY);
+        } else if (document.body) {
+          document.body.style.overflow = '';
+        }
       }
     }
 
