@@ -84,7 +84,7 @@ jobs:
       - name: Run pixel-diff screenshots
         id: screenshots
         env:
-          ROUTES: ${{ github.event.inputs.routes || '/,/about/,/articles/,/biografii/,/karty/,/baptisty-rossii/,/nagornaya/,/nagornaya/chast-1/,/hard-texts/,/konfessii/,/pastor-series/,/map/' }}
+          ROUTES: ${{ github.event.inputs.routes || '/,/about/,/articles/,/biografii/,/karty/,/baptisty-rossii/,/nagornaya/,/hard-texts/,/konfessii/,/pastor-series/,/map/' }}
           THRESHOLD: ${{ github.event.inputs.threshold || '1.0' }}
         run: |
           echo "Routes: $ROUTES"
