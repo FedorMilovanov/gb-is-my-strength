@@ -69,27 +69,8 @@ const ALLOWED_JS = new Set([
 
 // Same list as scripts/cache-bust.js. If cache-bust.js changes, update this list too.
 // P1-9 FIX: synced with cache-bust.js ASSETS — single source of truth
-const CACHE_BUST_ASSETS = [
-  'css/site.css',
-  'css/home.css',
-  'css/command-palette.css',
-  'css/mobile-hotfix.css',
-  'css/nagornaya-mobile-toc.css',
-  'css/floating-cluster.css',
-  'fonts/fonts.css',
-  'nagornaya/tw.min.css',
-  'js/site.js',
-  'js/site-utils.js',
-  'js/scroll-perf.js',
-  'js/bookmark-engine.js',
-  'js/enhancements.js',
-  'js/highlights.js',
-  'js/search.js',
-  'js/sw-register.js',
-  'js/nagornaya-mobile-toc.js',
-  'js/glossary.js',
-  'js/floating-cluster-controller.js'
-];
+// Shared asset list — single source of truth (see scripts/cache-bust-assets.js)
+const CACHE_BUST_ASSETS = require('./cache-bust-assets').ASSETS;
 
 const MAX_CSS_TOTAL = 425_000; // global core CSS budget; route-scoped/pilot CSS is reported separately
 const MAX_JS_TOTAL = 365_000; // includes sw.js + mobile utils; site.js is intentionally large right now

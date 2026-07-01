@@ -88,14 +88,12 @@
      НЕ создаёт второй поиск.
      ===================================================== */
   function openSearch(sourceBtn) {
+    // Active selectors: data-gbs2-search (GBS2 rail buttons), #gbSearchBtn (search.js injects)
+    // Removed dead selectors: [data-search-open], #searchToggle, #searchButton,
+    //   #hCpBtnNav (renamed to #gbSearchBtn by search.js), #hSearchBtn, [data-open-search]
     var selectors = [
-      '[data-search-open]',
-      '#searchToggle',
-      '#searchButton',
       '[data-gbs2-search]',
-      '#hCpBtnNav',
-      '#hSearchBtn',
-      '[data-open-search]'
+      '#gbSearchBtn'
     ];
 
     for (var i = 0; i < selectors.length; i++) {

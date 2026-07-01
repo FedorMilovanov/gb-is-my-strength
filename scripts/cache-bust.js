@@ -24,29 +24,8 @@ const DRY_RUN = process.argv.includes('--dry-run');
 
 // Файлы, для которых вычисляем хеш.
 // Ключ — относительный путь от корня проекта (именно он ищется в HTML).
-const ASSETS = [
-  'css/site.css',
-  'css/home.css',
-  'css/command-palette.css',   /* BUG-01 fix: добавлен в cache-bust */
-  'css/mobile-hotfix.css',
-  'css/nagornaya-mobile-toc.css',
-  'css/floating-cluster.css',
-  // PremiumControls runtime styles are consolidated into floating-cluster.css;
-  // src/styles/premium-controls.css is source/reference CSS, not a root public asset.
-  'fonts/fonts.css',           /* AUDIT V2 / PERF-1: self-host fonts */
-  'nagornaya/tw.min.css',
-  'js/site.js',
-  'js/site-utils.js',
-  'js/scroll-perf.js',
-  'js/bookmark-engine.js',
-  'js/enhancements.js',
-  'js/highlights.js',
-  'js/search.js',
-  'js/sw-register.js',
-  'js/nagornaya-mobile-toc.js',
-  'js/glossary.js',
-  'js/floating-cluster-controller.js',
-];
+// Shared asset list — single source of truth (see scripts/cache-bust-assets.js)
+const { ASSETS } = require('./cache-bust-assets');
 
 // ── Хеш файла ────────────────────────────────────────────────────────────────
 

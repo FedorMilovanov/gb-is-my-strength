@@ -38,14 +38,19 @@ if (!fs.existsSync(CB_SCRIPT)) {
   process.exit(1);
 }
 
-// ── 1. Read current ASSETS list from cache-bust.js ──────────────────────────
-const cbSrc = fs.readFileSync(CB_SCRIPT, 'utf8');
-const assetsMatch = cbSrc.match(/const\s+ASSETS\s*=\s*\[([\s\S]*?)\];/);
-if (!assetsMatch) {
-  console.error('❌ Could not parse ASSETS array from cache-bust.js');
+// ── 1. Read current ASSETS list from shared cache-bust-assets module ────────
+// The ASSETS list is now maintained in scripts/cache-bust-assets.js
+// as the single source of truth for both cache-bust.js and audit-pro.js.
+const ASSETS_MODULE = path.join(ROOT, 'scripts', 'cache-bust-assets.js');
+if (!fs.existsSync(ASSETS_MODULE)) {
+  console.error('❌ scripts/cache-bust-assets.js not found.');
   process.exit(1);
 }
-const ASSETS = [...assetsMatch[1].matchAll(/'([^']+)'/g)].map(m => m[1]);
+const ASSETS = require(ASSETS_MODULE).ASSETS;
+if (!Array.isArray(ASSETS) || ASSETS.length === 0) {
+  console.error('❌ Could not load ASSETS from cache-bust-assets.js');
+  process.exit(1);
+}
 
 // ── 2. Compute current hash for each asset ──────────────────────────────────
 const md5 = relPath => {
