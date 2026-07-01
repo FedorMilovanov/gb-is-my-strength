@@ -4406,15 +4406,37 @@ console.log(`\n${sep}\nGB-IS-MY-STRENGTH — PROFESSIONAL AUDIT\n${new Date().to
     while ((m2 = dynamicRe.exec(html)) !== null) {
       const src = m2[1];
       // Skip local-relative and known safe dynamic injections if needed
-      if (!html.includes('integrity') && !html.includes('setAttribute("integrity"')) {
+      const ctx = html.substring(Math.max(0, m2.index - 300), m2.index + m2[0].length + 300);
+      if (!ctx.includes('integrity') && !ctx.includes('setAttribute("integrity"')) {
         offenders.push(`${r}: dynamic script injection without SRI detected: ${src.slice(0, 80)}`);
+      }
+    }
+    // G114.2 CDN stylesheets must have SRI integrity= attribute
+    const linkRe = /<link[^>]+rel=["']stylesheet["'][^>]+href=["']https?:\/\/[^"']+["'][^>]*>/gi;
+    let m3;
+    while ((m3 = linkRe.exec(html)) !== null) {
+      const tag = m3[0];
+      if (!tag.includes('integrity=')) {
+        const hrefM = tag.match(/href=["']([^"']+)["']/i);
+        const href = hrefM ? hrefM[1] : '?';
+        offenders.push(`${r}: external stylesheet without SRI: ${href.slice(0, 80)}`);
+      }
+    }
+    // Also match <link href=... rel=stylesheet (reverse attribute order)
+    const linkRe2 = /<link[^>]+href=["']https?:\/\/[^"']+["'][^>]+rel=["']stylesheet["'][^>]*>/gi;
+    while ((m3 = linkRe2.exec(html)) !== null) {
+      const tag = m3[0];
+      if (!tag.includes('integrity=')) {
+        const hrefM = tag.match(/href=["']([^"']+)["']/i);
+        const href = hrefM ? hrefM[1] : '?';
+        offenders.push(`${r}: external stylesheet without SRI: ${href.slice(0, 80)}`);
       }
     }
   }
   if (offenders.length) {
     R.err(`CDN scripts without SRI integrity=:\n  - ${offenders.join('\n  - ')}`);
   } else {
-    R.ok('CDN SRI: all external scripts have integrity= attribute');
+    R.ok('CDN SRI: all external scripts and stylesheets have integrity= attribute');
   }
 })();
 
