@@ -567,6 +567,17 @@
      CLICK DELEGATION
      Один обработчик на весь кластер.
      ===================================================== */
+  function dispatchClusterAction(action, btn) {
+    if (action === 'theme')     { toggleTheme(); }
+    else if (action === 'search')    { openSearch(btn); }
+    else if (action === 'play')      { handlePlayClick(btn); }
+    else if (action === 'stop')      { stopTts(); }
+    else if (action === 'save')      { saveCurrent(btn); }
+    else if (action === 'scroll-top'){ scrollTop(); }
+    else if (action === 'font-up')   { changeFontSize(1); }
+    else if (action === 'font-down') { changeFontSize(-1); }
+  }
+
   function initCluster(root) {
     if (root._gbClusterInit) return; // P1-8: prevent double init
     root._gbClusterInit = true;
@@ -576,16 +587,7 @@
       if (e.target.closest('[data-gbs2-search]')) { openSearch(e.target.closest('[data-gbs2-search]')); return; }
       var btn = e.target.closest('[data-fc-action]');
       if (!btn) return;
-      var action = btn.getAttribute('data-fc-action');
-
-      if (action === 'theme')     { toggleTheme(); }
-      else if (action === 'search')    { openSearch(btn); }
-      else if (action === 'play')      { handlePlayClick(btn); }
-      else if (action === 'stop')      { stopTts(); }
-      else if (action === 'save')      { saveCurrent(btn); }
-      else if (action === 'scroll-top'){ scrollTop(); }
-      else if (action === 'font-up')   { changeFontSize(1); }
-      else if (action === 'font-down') { changeFontSize(-1); }
+      dispatchClusterAction(btn.getAttribute('data-fc-action'), btn);
     });
   }
 
@@ -684,6 +686,15 @@
     document.addEventListener('click', function(e) {
       if (e.target.closest('[data-gbs2-theme]')) { e.stopPropagation(); toggleTheme(); }
       if (e.target.closest('[data-gbs2-search]')) { e.stopPropagation(); openSearch(e.target.closest('[data-gbs2-search]')); }
+
+      // Gill TOC overlays are siblings of .mobile-bottom-bar, so their
+      // data-fc-action buttons are outside every [data-fc-root]/[data-fc-controls]
+      // delegated cluster. Keep the canonical action semantics for those
+      // out-of-cluster buttons without double-handling in normal clusters.
+      var fcBtn = e.target.closest('[data-fc-action]');
+      if (fcBtn && !fcBtn.closest('[data-fc-root], [data-fc-controls]')) {
+        dispatchClusterAction(fcBtn.getAttribute('data-fc-action'), fcBtn);
+      }
     }, true);  // capture phase — fires before any stopPropagation
 
     // 1. Inject SVG в ember кнопки (если SSR не вставил)
@@ -828,7 +839,7 @@
     function openOverlay(el) {
       if (el) {
         el.classList.add('is-open');
-        el.removeAttribute('aria-hidden');
+        el.setAttribute('aria-hidden', 'false');
         document.documentElement.classList.add('gb-gill-toc-open');
         // Coordinate with SiteUtils lock system to prevent cross-overlay desync.
         // SiteUtils.lockScroll uses position:fixed which also blocks scroll,
