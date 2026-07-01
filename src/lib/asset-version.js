@@ -4,12 +4,12 @@
 
 export const ASSET_VERSIONS = {
   'css/command-palette.css': 'afe33045',
-  'css/floating-cluster.css': 'ca0c6d09',
+  'css/floating-cluster.css': '91f72196',
   'css/home.css': '15b094aa',
   'css/mobile-hotfix.css': '997b959e',
   'css/nagornaya-mobile-toc.css': 'c4a4a7fd',
-  'css/site.css': 'b87bab28',
-  'fonts/fonts.css': '4504f3cb',
+  'css/site.css': '787f1928',
+  'fonts/fonts.css': '864cc57a',
   'js/bookmark-engine.js': '38a0b0ff',
   'js/enhancements.js': 'b3b77aa6',
   'js/floating-cluster-controller.js': '6e5c5f18',

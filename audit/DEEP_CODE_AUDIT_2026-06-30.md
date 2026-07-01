@@ -1,7 +1,9 @@
 # Deep Code Audit — Костыли, дублирование, слабости
 **Date:** 2026-06-30  
+**Updated:** 2026-07-01 — re-verified against current HEAD, items closed marked below  
 **Auditor:** Arena Agent (60+ проверок)  
-**HEAD:** 27862d4d  
+**HEAD:** 4bc2cb3e (updated from stale 27862d4d)
+**Previous stale HEAD:** 27862d4d (commit fix(code-quality): close 2 P2 bugs)  
 
 ---
 
