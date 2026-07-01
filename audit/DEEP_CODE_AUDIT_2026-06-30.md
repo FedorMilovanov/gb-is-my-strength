@@ -490,3 +490,71 @@ Astro-компоненты (например `AboutPageChrome.astro`) имеют
 - 11 titles > 70 chars
 - 4 TODO в scripts/
 - pastor-series unreferenced image 23KB
+
+---
+
+## Обновление — 2026-07-01 (checks 461–510)
+
+### ИСПРАВЛЕНО в этой сессии
+
+---
+
+## ✅ FIXED — audit-pro G114: Regression guard против CDN без SRI
+
+**Файл:** `scripts/audit-pro.js` — добавлен check **G114**  
+```
+// G114. CDN scripts must have SRI integrity= attribute.
+//   Incident 2026-07-01: karty/avraam loaded GSAP without integrity=
+```
+Guard проверяет все HTML файлы на наличие `integrity=` у внешних `<script src="https://...">`.  
+Теперь audit-pro показывает **163 passed** (было 162).  
+Любое будущее добавление CDN скрипта без SRI немедленно ломает deploy.
+
+---
+
+### Новые открытые проблемы (документировано)
+
+---
+
+## 🟡 OPEN — P3: BaptistyRossii PageHead — 11 почти идентичных компонентов
+
+**Файлы:** `src/components/baptisty-rossii/*PageHead*.astro` (11 файлов)  
+**Проблема:** 92–93% совпадение между файлами. Отличаются только canonical URL, title, og:title, og:description.  
+**Аналог:** GillPart*PageHead (73% copy-paste, задокументировано ранее).  
+**Рекомендация:** создать `BaptistyRossiiArticlePageHead.astro` с props.  
+**Risk:** при изменении общей SEO структуры нужно обновить 11 файлов вместо 1.
+
+---
+
+### AuditRepo PC-CURRENT items — статус проверки (2026-07-01)
+
+| Пункт | Описание | Статус |
+|---|---|---|
+| PC-CURRENT-02 | gb-roman на всех 5 Gill маршрутах | ✅ CLOSED (5/5) |
+| PC-CURRENT-03 | Версионированные refs floating-cluster.css | ✅ CLOSED (5/5) |
+| PC-CURRENT-04 | floating-cluster.css развёрнут, premium-controls.css отсутствует | ✅ CLOSED |
+| PC-CURRENT-05 | Старая формула `.gb-floater--hermeneutics` SUPERSEDED отсутствует | ✅ CLOSED |
+| PC-CURRENT-06 | `#partTocOverlay` в GillSeriesOverlay без навигации | ✅ CLOSED |
+
+---
+
+### Подтверждено ОК (проверки 461–510)
+
+| # | Проверка | Вердикт |
+|---|---|---|
+| 461–463 | Все 7 unclassified inline scripts — чистые: JSON data, Яндекс Метрика, visual effects | ✅ |
+| 464 | Bookmark expiry: 45 дней (нет warning пользователю) | INFO |
+| 465 | Highlights: export в JSON/Markdown присутствует | ✅ |
+| 466 | Favorites cap: 50 entries | ✅ |
+| 467–469 | Regression guards: G114 CDN SRI, overflow assert в smoke | ✅ |
+| 479 | Bible verse fetch: try/catch присутствует | ✅ |
+| 480 | Quiz: keydown + radiogroup role | ✅ |
+| 481 | scrollToTop: smooth + prefersReducedMotion() проверка | ✅ |
+| 482 | prefers-reduced-motion в site.js: yes | ✅ |
+| 484 | AuditRepo PC-CURRENT-02..06: все 5 закрыты | ✅ |
+| 485 | audit-pro: 163 passed · 0 errors | ✅ |
+| 486 | validate.js: 0 errors | ✅ |
+| 487 | check-workflows: PASS | ✅ |
+| 488 | gill-series-data-consistency: ALL PASSED | ✅ |
+| 489 | check-data-consistency: PASSED | ✅ |
+| 490 | editorial-lint: PASSED | ✅ |
