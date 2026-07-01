@@ -558,11 +558,11 @@
      BODY CLASS — gb-cluster-single-active для скрытия дублей
      ===================================================== */
   function activateSinglePilot() {
-    if (document.body) document.body.classList.add('gb-cluster-single-active');
+    document.body.classList.add('gb-cluster-single-active');
   }
 
   function activateSeriesPilot() {
-    if (document.body) document.body.classList.add('gb-cluster-series-active');
+    document.body.classList.add('gb-cluster-series-active');
   }
 
   /* =====================================================
@@ -828,7 +828,7 @@
     var GILL_LOCK_KEY = 'gill-toc';
 
     function openOverlay(el) {
-      if (el && el.classList) {
+      if (el) {
         el.classList.add('is-open');
         el.removeAttribute('aria-hidden');
         document.documentElement.classList.add('gb-gill-toc-open');
@@ -845,7 +845,7 @@
       }
     }
     function closeOverlay(el) {
-      if (el && el.classList) {
+      if (el) {
         el.classList.remove('is-open');
         el.setAttribute('aria-hidden', 'true');
       }
@@ -1228,19 +1228,31 @@
     }
 
     // --- Sheet Open/Close ---
+    var SHEET_LOCK_KEY = 'gbs2-sheet';
     function openSheet() {
       if (!sheet || sheet.classList.contains('gbs2-open')) return;
       sheet.setAttribute('aria-hidden', 'false');
       sheet.style.display = 'block';
       sheet.classList.add('gbs2-open');
-      document.body.style.overflow = 'hidden';
+      // Coordinate with SiteUtils lock system to prevent cross-overlay desync.
+      var utils = window.SiteUtils;
+      if (utils && typeof utils.lockScroll === 'function') {
+        utils.lockScroll(SHEET_LOCK_KEY);
+      } else if (document.body) {
+        document.body.style.overflow = 'hidden';
+      }
     }
     function closeSheet() {
       if (!sheet) return;
       sheet.setAttribute('aria-hidden', 'true');
       sheet.classList.remove('gbs2-open');
       sheet.style.display = '';
-      document.body.style.overflow = '';
+      var utils = window.SiteUtils;
+      if (utils && typeof utils.unlockScroll === 'function') {
+        utils.unlockScroll(SHEET_LOCK_KEY);
+      } else if (document.body) {
+        document.body.style.overflow = '';
+      }
     }
 
     // Bottom bar opens sheet

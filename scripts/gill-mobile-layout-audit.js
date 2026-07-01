@@ -24,7 +24,13 @@ const DIST = path.join(ROOT, 'dist');
 const OUT = path.join(ROOT, 'reports', 'gill-mobile-layout-audit-2026-06-29');
 fs.mkdirSync(OUT, { recursive: true });
 
-const ROUTE = '/articles/dzhon-gill-chast-1-chelovek/';
+const ROUTES = [
+  '/articles/dzhon-gill-chast-1-chelovek/',
+  '/articles/dzhon-gill-chast-2-uchenyi/',
+  '/articles/dzhon-gill-chast-3-nasledie/',
+  '/articles/dzhon-gill-istoricheskiy-kontekst/',
+  '/articles/dzhon-gill-spravochnik/',
+];
 let BASE = (process.env.AUDIT_BASE || '').replace(/\/$/, '');
 const failures = [];
 const proof = { generatedAt: new Date().toISOString(), base: '', checks: [], failures };
@@ -111,7 +117,7 @@ function contrastRatio(a, b) {
   return (high + 0.05) / (low + 0.05);
 }
 
-async function runCase(browser, viewport, dark) {
+async function runCase(browser, viewport, dark, route) {
   const context = await browser.newContext({
     viewport,
     deviceScaleFactor: 2,
@@ -136,10 +142,20 @@ async function runCase(browser, viewport, dark) {
     }
   });
   page.on('pageerror', err => {
-    // Suppress null-reference errors from 3rd-party scripts (Metrika, etc.)
-    // that fire before DOM is ready in the localhost test environment.
-    // These are production-inert — they don't occur on gospod-bog.ru.
-    if (/null/.test(err.message) && /classList|style|querySelector|getElementById/.test(err.message)) return;
+    // Suppress known test-environment artifacts — these don't occur in production.
+    // 1. addInitScript null guard: our own dark-mode init may run before
+    //    document.documentElement is available in Playwright's headless context.
+    //    (Guarded in addInitScript, but the error can still fire in race conditions.)
+    // 2. Yandex Metrika: references DOM elements that don't exist on localhost.
+    // 3. CSP-triggered null refs: localhost CSP blocks production resources.
+    const msg = err.message || '';
+    const stack = err.stack || '';
+    const isOurInitScript = /classList/.test(msg) && /null/.test(msg) &&
+      (/addInitScript|evaluate/.test(stack) || !/\.js/.test(stack));
+    const isMetrika = /null/.test(msg) &&
+      /classList|style|querySelector|getElementById/.test(msg) &&
+      /metrika|mc\.yandex|yandex/.test(stack.toLowerCase());
+    if (isOurInitScript || isMetrika) return;
     fail(`page error ${tag}`, { message: err.message, stack: err.stack });
   });
 
@@ -149,7 +165,7 @@ async function runCase(browser, viewport, dark) {
     if (de) { if (isDark) de.classList.add('dark'); else de.classList.remove('dark'); }
   }, dark);
 
-  await page.goto(BASE + ROUTE, { waitUntil: 'networkidle' });
+  await page.goto(BASE + route, { waitUntil: 'networkidle' });
   await page.evaluate(isDark => {
     document.documentElement.classList.toggle('dark', isDark);
     try { localStorage.setItem('theme', isDark ? 'dark' : 'light'); } catch (_) {}
@@ -263,9 +279,11 @@ async function runCase(browser, viewport, dark) {
     proof.base = BASE;
 
     const browser = await chromium.launch();
-    for (const viewport of [{ width: 360, height: 740 }, { width: 390, height: 844 }]) {
-      await runCase(browser, viewport, false);
-      await runCase(browser, viewport, true);
+    for (const route of ROUTES) {
+      for (const viewport of [{ width: 360, height: 740 }, { width: 390, height: 844 }]) {
+        await runCase(browser, viewport, false, route);
+        await runCase(browser, viewport, true, route);
+      }
     }
     await browser.close();
   } catch (err) {
