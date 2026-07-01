@@ -83,6 +83,7 @@ if (deployUploadsDist) {
   must('.github/workflows/deploy.yml', deploy, /dist:jsonld:audit|dist-jsonld-audit\.js[^\n]*--root\s+dist/, 'dist deploy must parse JSON-LD in the dist artifact');
   must('.github/workflows/deploy.yml', deploy, /schema:rich-results:audit:dist|schema-rich-results-audit\.js[^\n]*--root\s+dist/, 'dist deploy must semantically audit rich-results schema in the dist artifact');
   must('.github/workflows/deploy.yml', deploy, /audit:premium-controls|premium-controls-rollout-audit\.js/, 'dist deploy must enforce PremiumControls rollout contract on the dist artifact');
+  must('.github/workflows/deploy.yml', deploy, /playwright install --with-deps chromium/, 'deploy must install Playwright Chromium before mobile smoke/layout tests (regression guard: Deploy #1241 root cause)');
   must('.github/workflows/deploy.yml', deploy, /gill:mobile-layout:audit|gill-mobile-layout-audit\.js/, 'dist deploy must run Gill mobile reference layout audit (PC-CURRENT-06 guard)');
   must('.github/workflows/deploy.yml', deploy, /sw:dist:audit:deploy-switch|sw-dist-readiness-audit\.js[^\n]*--require-cache-bump/, 'dist deploy must enforce service-worker cache-version bump');
   // BUG-S1 / PFV-008 guard: dist artifact must be JSON-LD parse-clean.
