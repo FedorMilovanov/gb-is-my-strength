@@ -381,3 +381,112 @@ Astro-компоненты (например `AboutPageChrome.astro`) имеют
 | 407 | AUDIT_HISTORY.md: 164KB, 189 entries | ✅ |
 | 409 | fonts.css: 27/28 woff2 | fonts/NotoSerifGreek: только TTF → P3 |
 | 410 | NotoSansGreek: woff2 ✅, NotoSerifGreek: только TTF ❌ | P3 документировано |
+
+---
+
+## Обновление — 2026-07-01 (checks 411–460)
+
+### ИСПРАВЛЕНО в этой сессии
+
+---
+
+## ✅ FIXED — P2 SECURITY: GSAP CDN скрипты без SRI в `karty/avraam/index.html`
+
+**Файл:** `karty/avraam/index.html`  
+**Проблема:** 3 скрипта с `cdn.jsdelivr.net` без атрибутов `integrity=` и `crossorigin=`:
+- `gsap@3.13/dist/gsap.min.js`
+- `gsap@3.13/dist/DrawSVGPlugin.min.js`
+- `gsap@3.13/dist/MotionPathPlugin.min.js`
+
+При компрометации CDN — вредоносный код выполняется на странице.
+
+**Fix:** добавлены SRI хеши sha384 и `crossorigin="anonymous"`:
+```html
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.13/dist/gsap.min.js"
+        integrity="sha384-HOvlOYPIs/zjoIkWUGXkVmXsjr8GuZLV+Q+rcPwmJOVZVpvTSXQChiN4t9Euv9Vc"
+        crossorigin="anonymous"></script>
+```
+(аналогично для DrawSVGPlugin и MotionPathPlugin)
+
+---
+
+### Новые открытые проблемы (документировано)
+
+---
+
+## 🔵 INFO: `images/pastor-series/og-hero-600w.webp` — unreferenced (23KB)
+
+Файл существует в `images/`, но ни один HTML/Astro файл на него не ссылается.  
+**Risk:** NONE — только 23KB лишнего веса репозитория.  
+**Рекомендация:** удалить файл при следующей чистке.
+
+---
+
+## 🔵 INFO: `karty/avraam` — GSAP версия @3.13 требует ручного обновления
+
+Версия GSAP зашита в URL. При выходе GSAP 3.14 нужно вручную:
+1. Обновить URL → новая версия
+2. Пересчитать SRI хеши (`openssl dgst -sha384 -binary FILE | openssl base64 -A`)
+3. Обновить `integrity=` атрибуты
+
+---
+
+### Подтверждено ОК (проверки 411–460)
+
+| # | Проверка | Вердикт |
+|---|---|---|
+| 411–413 | images/: 288 файлов, 93% WebP, 2 файла > 500KB | INFO (gill-bunhill srcset OK) |
+| 414 | 20/23 JPG имеют WebP версию | INFO (3 konfessii/photos без WebP) |
+| 415 | gill-bunhill-fields.jpg: srcset 600w/900w используется | ✅ |
+| 416 | 285/288 images referenced | ✅ (og-about.webp ложное срабатывание) |
+| 418–419 | sync scripts: только site-utils.js + scroll-perf.js (intentional) | ✅ |
+| 420–421 | Performance budget: Home 116KB, Article 180KB, Nagornaya 147KB gz | ✅ all < 250KB |
+| 422 | karty pages: 8× noindex (correct), 2× indexable with title | ✅ |
+| 423 | karty/avraam: GSAP SVG interactive map, 178KB HTML inline SVG | INFO |
+| 427 | Единственная внешняя link: TMS PDF (hreflang=en, не загружаемый ресурс) | ✅ |
+| 428–429 | CSP meta: 37 страниц имеют CSP; karty/avraam без CSP → SRI достаточно | ✅ |
+| 430 | 6 legacy HTML без SITE_CONFIG: все owner=astro, production-dist → ✅ Astro даёт SITE_CONFIG |
+| 431 | 52 pages с description: все 50–180 chars | ✅ |
+| 432 | H1: 0 issues (все страницы ровно 1 H1) | ✅ |
+| 433 | OG image: 0 small (<1200×630) | ✅ |
+| 440–443 | Nagornaya/chast-* и baptisty-rossii/* — одинаковый набор JS | ✅ |
+| 444 | Preload: fonts.css + Lora woff2 + hero image | ✅ |
+| 445 | page-ownership coverage: 54 routes, 0 orphans | ✅ |
+| 459 | audit-pro финал | ✅ 162 passed · 0 errors |
+
+---
+
+## ИТОГОВЫЙ РЕЕСТР ВСЕХ НАХОДОК (checks 1–460)
+
+### Исправлено ✅ (9 багов)
+| Commit | Fix |
+|---|---|
+| `71f1efdf` | 5 багов: Safari lookbehind, updateProgress дублирование, bookmark GC, highlights Date guard, shebang |
+| `38333810` | safeUrl() XSS: блокирует javascript: href |
+| `27862d4d` | fontScale persist + normalizePath |
+| `89bbe754` | Gill v16 updateGillProgress |
+| `b15b3c23` | SW CACHE_VERSION v177 |
+| `32e82657` | OUT_DIR race в visual-parity-screenshots.js |
+| `33ed03f0` | **Deploy #1241**: openOverlay/closeOverlay → body.style.overflow |
+| текущий | GSAP SRI sha384 (karty/avraam) |
+
+### Открытые P2 (2)
+- `assetUrl()` dead export (owner решает)
+- `data-gill-current-part` не читается JS (owner решает)
+
+### Открытые P3 (8 + мёртвый код)
+- 16 файлов ~67KB мёртвого кода в `src/`
+- GillPart*PageHead 73% copy-paste
+- NotoSerifGreek TTF без woff2
+- tsconfig.json без strict
+- highlights нет confirm/undo
+- favorites innerHTML без textContent
+- style inject без id-guard
+- openSearch legacy selectors
+
+### INFO (11 пунктов)
+- 29 мёртвых CSS vars, 6 пустых @media
+- a11y: breadcrumb/nagornaya nav без aria-label
+- 11 titles > 70 chars
+- 4 TODO в scripts/
+- pastor-series unreferenced image 23KB
