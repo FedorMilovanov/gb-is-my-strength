@@ -158,3 +158,84 @@ Gill overlays имеют `z-index:2147483100` — `SiteUtils.lockScroll` для 
 | 198 | Speed panel leaveTimer clearTimeout | ✅ |
 | 199 | Speed panel Tab focus trap | ✅ |
 | 200 | audit-pro final | ✅ 162 passed · 0 errors |
+
+---
+
+## Обновление — 2026-07-01 (checks 201–310)
+
+### Новые открытые проблемы
+
+---
+
+## 🟡 OPEN — P3: favorites inline script — innerHTML без экранирования
+
+**Файл:** `index.html` (inline `<script>` блок 5)  
+**Проблема:** `f.title`, `f.description`, `f.section` из `localStorage['gb-favorites']` вставляются через `innerHTML` без HTML-экранирования.  
+`f.image` подставляется в `style="background-image:url(...)"` без URL-sanitizer.
+
+**Цепочка данных:**  
+`toggleFavorite()` → `getPageMeta()` → OG meta теги страницы (owner-controlled) → `localStorage` → `innerHTML`
+
+**Реальный вектор атаки:** DevTools manipulation OR prior XSS (same-origin требование).  
+Данных от пользователя в этом потоке нет — риск **VERY LOW**.
+
+**Рекомендация:**
+```js
+// Вместо innerHTML-конкатенации использовать textContent:
+var titleEl = document.createElement('span');
+titleEl.className = 'favorites-card__title';
+titleEl.textContent = f.title || 'Статья'; // textContent экранирует
+card.appendChild(titleEl);
+// Для f.image — добавить URL-валидатор: /^https?:\/\//.test(url)
+```
+
+---
+
+## 🟡 OPEN — P3: DEAD CODE — `src/components/genealogy/` (8 файлов, 56KB)
+
+**Файлы:** `GenealogyTree.tsx`, `layout.ts`, `types.ts`, `theme.ts`, `DetailPanel.tsx`, `PersonNode.tsx`, `SplitView.tsx`, `TimelineAxis.tsx`  
+**Проблема:** 0 importers в `src/`. `rodosloviye/index.astro` использует `RodoslaviyeBody.astro`, который **не импортирует** `GenealogyTree`.  
+**Аналог:** `src/lib/premium-controls/` (задокументировано ранее) — тот же паттерн прототипного компонента без интеграции.  
+**Зависимости:** `@dagrejs/dagre` и `@xyflow/react` в `devDependencies` — единственные потребители.  
+**Recommendation:** владелец должен решить: интегрировать в `RodoslaviyeBody.astro` или удалить вместе с `@dagrejs/dagre`, `@xyflow/react`.
+
+---
+
+### Подтверждено ОК (проверки 201–310)
+
+| # | Проверка | Вердикт |
+|---|---|---|
+| 201 | enhancements.js style injection context (btoc-seg-bar) | INFO: без guard, в IIFE, idempotent |
+| 202 | openSearch() в enhancements.js — 4 селектора | ✅ 1 в Astro (#hCpBtnNav), fallback KeyboardEvent |
+| 203 | `ready()` x5 в enhancements.js | ✅ каждый scoped в своём IIFE |
+| 204 | openSearch().gb-fc-search — в dist не существует | INFO: FCC создаёт `.gb-fc-search` кнопку в DOM |
+| 206–207 | series-cards.js — XSS via slug | ✅ slug из owner-controlled series.json |
+| 208–210 | nagornaya-mobile-toc.js — SiteUtils guards | ✅ lockScroll корректен для nagornaya |
+| 214–215 | nagornaya/index.html: nagornaya-toc(defer) < site-utils(sync) | ✅ defer всегда после sync |
+| 216–218 | scroll-perf.js — ScrollBus, visualViewport, cleanup | ✅ |
+| 219–221 | sw-register.js — 3 style injections без guard | INFO: documented |
+| 222–226 | sitemap.xml — 43 URLs, 0 dupes, karty noindex→excluded | ✅ |
+| 227–229 | JSON-LD 63 blocks — 0 errors, @graph корректен | ✅ |
+| 230–235 | hreflang на 45 страницах, Gill pages без hreflang | INFO: ru-only site |
+| 236–240 | glossary.js — guard, innerHTML из trusted dict | ✅ |
+| 241–242 | 13 JSON файлов — 0 parse errors | ✅ |
+| 243–244 | 20 MDX файлов — frontmatter OK, даты OK | ✅ |
+| 245–247 | AGENTS.md — drift ±5 R.ok() | ✅ (within tolerance) |
+| 248–250 | 87 scripts/ — все с shebang | ✅ |
+| 251–254 | SW.js — skipWaiting, clients.claim, LRU, QuotaExceeded, conditional waitUntil | ✅ |
+| 255–256 | asset-version.js 19 hashes + 477 HTML refs | ✅ все верны |
+| 257–263 | CSS: z-index=2147483100 (< INT32_MAX), !important в V3 intentional | ✅ |
+| 264–267 | try/catch coverage, empty catches — все для optional browser APIs | ✅ |
+| 268–270 | safeUrl() — data: не блокирует, но pagefind index только site URLs | INFO |
+| 271 | premium-controls dead module | ✅ (уже задокументировано) |
+| 272 | GillPart*PageHead 73% identical | INFO (уже задокументировано) |
+| 278–279 | validate.js — 0 errors, 2 warnings (intentional title≠og:title) | ✅ |
+| 281–285 | package.json — 0 prod deps, 14 dev deps, 0 suspicious | ✅ |
+| 286–288 | @dagrejs/@xyflow → genealogy/ dead code | P3 задокументировано |
+| 289–291 | migration/ JSON — page-ownership 54 routes, SW baseline v177 | ✅ |
+| 292–295 | workflows: 0 hardcoded tokens, issues:write permission | ✅ |
+| 296 | robots.txt: Allow/Disallow правильны, /llms.txt для scrapers | ✅ |
+| 297 | manifest.json — все required PWA fields | ✅ |
+| 298 | 404.html — noindex, title, home link | ✅ |
+| 302–308 | favorites inline: innerHTML из OG meta (owner-controlled) | P3 задокументировано |
+| 310 | audit-pro: 162 passed · 0 errors | ✅ |
