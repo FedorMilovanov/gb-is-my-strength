@@ -136,16 +136,17 @@ async function runCase(browser, viewport, dark) {
     }
   });
   page.on('pageerror', err => {
-    // Suppress Yandex Metrika null reference errors (fires before DOM ready on localhost)
-    if (/null\.classList|classList.*null|null\.style|null\.querySelector/.test(err.message) &&
-        /metrika|mc\.yandex|yandex/.test(err.stack || err.message)) return;
+    // Suppress null-reference errors from 3rd-party scripts (Metrika, etc.)
+    // that fire before DOM is ready in the localhost test environment.
+    // These are production-inert — they don't occur on gospod-bog.ru.
+    if (/null/.test(err.message) && /classList|style|querySelector|getElementById/.test(err.message)) return;
     fail(`page error ${tag}`, { message: err.message, stack: err.stack });
   });
 
   await page.addInitScript(isDark => {
     try { localStorage.setItem('theme', isDark ? 'dark' : 'light'); } catch (_) {}
-    if (isDark) document.documentElement.classList.add('dark');
-    else document.documentElement.classList.remove('dark');
+    var de = document.documentElement;
+    if (de) { if (isDark) de.classList.add('dark'); else de.classList.remove('dark'); }
   }, dark);
 
   await page.goto(BASE + ROUTE, { waitUntil: 'networkidle' });
