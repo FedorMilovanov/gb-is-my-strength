@@ -316,7 +316,23 @@ async function testMobPartTocBtn(browser) {
       assert(state.partOpen, `${prefix}: #mobPartTocBtn click opens #partTocOverlay`, JSON.stringify(state));
       assert(!state.seriesOpen, `${prefix}: #mobPartTocBtn closes #seriesTocOverlay`, JSON.stringify(state));
       assert(state.url === beforeUrl, `${prefix}: no URL change after #mobPartTocBtn click`, `${beforeUrl} -> ${state.url}`);
-      assert(state.ariaHidden === null || state.ariaHidden === 'false', `${prefix}: #partTocOverlay aria-hidden removed when open`, JSON.stringify(state));
+      assert(state.ariaHidden === 'false', `${prefix}: #partTocOverlay aria-hidden=false when open`, JSON.stringify(state));
+      const saveState = await page.evaluate(() => {
+        const btn = document.querySelector('#partTocOverlay .gb-save[data-fc-action="save"]');
+        if (!btn) return { exists: false };
+        const beforePressed = btn.getAttribute('aria-pressed');
+        const beforeSaved = btn.classList.contains('is-saved');
+        btn.click();
+        return {
+          exists: true,
+          beforePressed,
+          beforeSaved,
+          afterPressed: btn.getAttribute('aria-pressed'),
+          afterSaved: btn.classList.contains('is-saved'),
+        };
+      });
+      assert(saveState.exists, `${prefix}: part TOC save button present`, JSON.stringify(saveState));
+      assert(saveState.afterPressed === 'true' || saveState.afterSaved, `${prefix}: part TOC save button toggles`, JSON.stringify(saveState));
     }
     await ctx.close();
   }

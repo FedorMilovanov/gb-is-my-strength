@@ -2616,7 +2616,9 @@ html.dark [data-gill-v16] .mobile-bottom-bar {
     box-shadow: var(--gill-mobile-bar-shadow) !important;
     -webkit-backdrop-filter: none !important;
     backdrop-filter: none !important;
-    overflow: hidden !important;
+    /* The PlayEmber speed pill is anchored inside the bar and blooms upward.
+       Do not clip it at the rounded bar edge. */
+    overflow: visible !important;
     isolation: isolate !important;
   }
 
