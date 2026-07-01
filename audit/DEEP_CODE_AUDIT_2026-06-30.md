@@ -239,3 +239,78 @@ card.appendChild(titleEl);
 | 298 | 404.html — noindex, title, home link | ✅ |
 | 302–308 | favorites inline: innerHTML из OG meta (owner-controlled) | P3 задокументировано |
 | 310 | audit-pro: 162 passed · 0 errors | ✅ |
+
+---
+
+## Обновление — 2026-07-01 (checks 311–360)
+
+### Новые открытые проблемы
+
+---
+
+## 🟡 OPEN — P3: DEAD CODE — `src/utils/legacyFullDocument.ts` и `legacyShadow.ts`
+
+**Файлы:** `src/utils/legacyFullDocument.ts` (1KB), `src/utils/legacyShadow.ts` (3KB)  
+**Проблема:** 0 importers в `src/`. Экспортируют `LegacyFullDocument`, `loadLegacyFullDocument`, `LegacyShadowPage`, `loadLegacyShadowPage`.  
+**Аналог:** то же, что `premium-controls/` и `genealogy/` — прототипный/легаси код без интеграции.  
+**Рекомендация:** удалить после подтверждения у владельца.
+
+---
+
+## 🔵 INFO: breadcrumb `<nav>` без `aria-label` в `baptisty-rossii/index.html`
+
+**Файл:** `baptisty-rossii/index.html` (legacy HTML)  
+**Проблема:** `<nav class="breadcrumb">` без `aria-label="Хлебные крошки"`.  
+Astro-компоненты (например `AboutPageChrome.astro`) имеют правильный `aria-label`.  
+**Severity:** очень низкая — screen reader объявит "навигация" (допустимо).  
+**Рекомендация:** добавить `aria-label="Хлебные крошки"` в legacy HTML при следующем ручном обновлении файла.
+
+---
+
+## 🔵 INFO: nagornaya — 3 `<nav>` без `aria-label` на всех страницах серии
+
+**Файлы:** `nagornaya/index.html`, `nagornaya/chast-1/index.html` … `nakhodki/index.html` (9 файлов)  
+**Проблема:** breadcrumb nav, mobile-nav, btoc nav без `aria-label`.  
+**Severity:** низкая — screen reader видит роль "navigation" без метки.  
+**Рекомендация:** при рефакторинге nagornaya добавить `aria-label` на `<nav>` элементы.
+
+---
+
+### Полный реестр мёртвого кода в src/ (обновлён)
+
+| Путь | Файлов | Размер | Причина |
+|---|---|---|---|
+| `src/lib/premium-controls/` | 6 | ~7KB | TS controller stubs, 0 importers |
+| `src/components/genealogy/` | 8 | ~56KB | React GenealogyTree, 0 importers |
+| `src/utils/legacyFullDocument.ts` | 1 | ~1KB | Legacy loader, 0 importers |
+| `src/utils/legacyShadow.ts` | 1 | ~3KB | Legacy loader, 0 importers |
+| **Итого** | **16** | **~67KB** | Owner решает: интегрировать или удалить |
+
+---
+
+### Подтверждено ОК (проверки 311–360)
+
+| # | Проверка | Вердикт |
+|---|---|---|
+| 311–313 | site.js: 144 named functions, dupes — все в отдельных IIFEs | ✅ |
+| 314–315 | SiteUtils.forceUnlockEmergency — определена в site.js, fallback в site-utils.js | ✅ |
+| 316–320 | SiteBTOC, scrollRaf(RAF+passive), touch swipe detection | ✅ |
+| 321 | site.js: eval() = 0 | ✅ CRITICAL |
+| 322 | site.js: document.write() = 0 | ✅ |
+| 323 | site.js: 61 innerHTML= — все из owner-controlled данных | ✅ |
+| 324 | dangerouslySetInnerHTML: false | ✅ |
+| 325 | insertAdjacentHTML — хардкоженная SVG иконка | ✅ |
+| 326 | fetch(): 4 calls, все с .catch() | ✅ |
+| 327–329 | setTimeout 45/clearTimeout 12 — 35 fire-and-forget, 10 saved→cleared | ✅ |
+| 330–335 | innerHTML sources: quiz через tt() sanitizer, explanation из SITE_CONFIG | ✅ |
+| 336 | src/data/site.ts — нет sensitive data, clean exports | ✅ |
+| 337 | floating-cluster-ui.ts — 2 importers (FloatingCluster, SeriesLiteCluster) | ✅ |
+| 338–341 | data-fc-root: krajne/rimlyanam7 legacy HTML без root, но Astro Body имеет | ✅ |
+| 342 | content.config.ts Zod schema — min/max/regex/enum/superRefine | ✅ |
+| 345 | astro.config.mjs — trailingSlash:'always', sitemap filter /izbrannoe/ | ✅ |
+| 346–347 | Двойной sitemap: root/sitemap.xml копируется в dist/, Astro генерирует sitemap-0.xml — разные файлы | ✅ |
+| 348 | 39 PageHead компонентов — canonical/og/viewport/charset у всех | ✅ |
+| 350 | console.log: 0 (только warn/error в validated guards) | ✅ |
+| 353 | 61 HTML файлов — 0 img без alt | ✅ |
+| 356 | skip-link: 35 Astro компонентов + 38 HTML файлов | ✅ |
+| 359 | audit-pro финал: 162 passed · 0 errors | ✅ |
