@@ -2593,6 +2593,10 @@ html.dark [data-gill-v16] .mobile-bottom-bar {
       overflow-x: clip !important;
       padding-bottom: calc(var(--gill-mobile-bar-h) + env(safe-area-inset-bottom, 0px) + 36px) !important;
     }
+    /* scroll-padding-bottom: keeps fixed bar from covering scroll targets */
+    html:has([data-gill-v16]) {
+      scroll-padding-bottom: calc(var(--gill-mobile-bar-h) + env(safe-area-inset-bottom, 0px) + 20px) !important;
+    }
     @supports not (overflow-x: clip) {
       html:has([data-gill-v16]) body,
       body:has([data-gill-v16]) { overflow-x: hidden !important; }
