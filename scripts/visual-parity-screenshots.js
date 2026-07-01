@@ -185,9 +185,15 @@ async function screenshot(page, baseUrl, route, viewport, outFile) {
   }).catch(() => {});
   await page.evaluate(async () => {
     const h = document.documentElement.scrollHeight;
-    for (let y = 0; y <= h; y += 600) { window.scrollTo(0, y); await new Promise((r) => setTimeout(r, 30)); }
+    // Warm up long pages twice: lazy media/intersection observers and sticky rails
+    // can settle one frame later on GitHub runners, causing false pixel diffs.
+    for (let pass = 0; pass < 2; pass++) {
+      for (let y = 0; y <= h; y += 600) { window.scrollTo(0, y); await new Promise((r) => setTimeout(r, 35)); }
+      for (let y = h; y >= 0; y -= 900) { window.scrollTo(0, y); await new Promise((r) => setTimeout(r, 20)); }
+    }
     window.scrollTo(0, 0);
-    await new Promise((r) => setTimeout(r, 200));
+    await new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r)));
+    await new Promise((r) => setTimeout(r, 500));
   }).catch(() => {});
   await page.waitForLoadState('networkidle', { timeout: 10_000 }).catch(() => {});
   await page.waitForFunction(() => {
@@ -300,7 +306,6 @@ function writeSummary(OUT_DIR, summary) {
   }
 
   const context = await browser.newContext({ ignoreHTTPSErrors: true });
-  const page = await context.newPage();
   const legacyServer2 = legacyServer;
   const distServer2 = distServer;
   const legacyUrl = `http://127.0.0.1:${port(legacyServer2)}`;
@@ -319,8 +324,12 @@ function writeSummary(OUT_DIR, summary) {
       let best = null; let lastError = null;
       for (let attempt = 1; attempt <= MAX_ATTEMPTS; attempt++) {
         try {
-          await screenshot(page, legacyUrl, route, vp, legacyFile);
-          await screenshot(page, distUrl, route, vp, distFile);
+          const legacyPage = await context.newPage();
+          const distPage = await context.newPage();
+          await screenshot(legacyPage, legacyUrl, route, vp, legacyFile);
+          await screenshot(distPage, distUrl, route, vp, distFile);
+          await legacyPage.close().catch(() => {});
+          await distPage.close().catch(() => {});
           const d = diffPng(legacyFile, distFile, diffFile);
           if (!best || d.diffPct < best.diffPct) best = { ...d, attempts: attempt };
           if (d.diffPct <= THRESHOLD_PCT) break;
