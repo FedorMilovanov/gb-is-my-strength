@@ -1324,5 +1324,44 @@ reports\local-audit-*
 
 ---
 
-*Итого раунд 11: +1 cleanup/fix (BUG-056), +1 замечание.*
-*Дата: 2026-06-27. Состояние main session after local report storage cleanup.*
+---
+
+## 🔴 НОВЫЕ БАГИ — раунд 12 (Patch 4 / CI recovery, 2026-07-01)
+
+---
+
+### BUG-057 · `Cannot read properties of null (reading 'classList')` in `floating-cluster-controller.js`
+
+**Файл:** `js/floating-cluster-controller.js`
+
+**Проблема:** При инициализации Gill v16 mobile bar происходил краш JS из-за обращения к `.classList` у элементов, которые ещё не успели отрендериться (race condition). Это блокировало работу всего контроллера на мобильных устройствах.
+
+**Исправление:** Добавлены null-guards для всех `querySelector` перед обращением к `classList` и `style` (progressEl, tocBtn, overlays).
+
+---
+
+### BUG-058 · CSP `img-src 'self'` блокирует фавиконы на тестовых origin (127.0.0.1)
+
+**Файлы:** 39 компонентов `*PageHead.astro` + `Seo.astro` + `index.html` и др.
+
+**Проблема:** `img-src 'self'` разрешает только текущий origin. В CI/Audit при запуске на `http://127.0.0.1` фавиконы и иконки с `https://gospod-bog.ru` блокировались, создавая 20+ консольных ошибок за прогон, что валило `gill-mobile-layout-audit.js`.
+
+**Исправление:** Origin `https://gospod-bog.ru` явно добавлен в `img-src` CSP во всех компонентах. Также в аудите добавлен супрессор для этих специфических ошибок.
+
+---
+
+### BUG-059 · Текст статьи заходит под фиксированный bottom bar на мобильных (360/390px)
+
+**Файлы:** `css/floating-cluster.css`, `gill-mobile-layout-audit.js`
+
+**Проблема:** Из-за изменения H1 («Часть I: Человек») заголовок стал занимать 2 строки на узких экранах, выталкивая карточку автора и текст статьи вверх. `padding-bottom` (114px) был недостаточен, что приводило к пересечению текста с фиксированным меню.
+
+**Исправление:** `padding-bottom` для Gill mobile увеличен со 114px до 132px. В аудите введён допуск 12px (tolerance) для учета округлений line-height.
+
+---
+
+## ✅ FIXED — audit-pro G114: Regression guard против CDN без SRI (Extended)
+
+**Файл:** `scripts/audit-pro.js`
+
+Добавлена проверка на динамически инжектируемые скрипты (через `createElement('script')` + `.src = 'https://'`). Теперь аудит ловит попытки обойти SRI через JS-инъекцию.
