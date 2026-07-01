@@ -4,7 +4,7 @@
 
 export const ASSET_VERSIONS = {
   'css/command-palette.css': 'afe33045',
-  'css/floating-cluster.css': 'a2d1afb9',
+  'css/floating-cluster.css': '723080d5',
   'css/home.css': '15b094aa',
   'css/mobile-hotfix.css': '997b959e',
   'css/nagornaya-mobile-toc.css': 'c4a4a7fd',
@@ -12,14 +12,14 @@ export const ASSET_VERSIONS = {
   'fonts/fonts.css': '4504f3cb',
   'js/bookmark-engine.js': '38a0b0ff',
   'js/enhancements.js': 'b3b77aa6',
-  'js/floating-cluster-controller.js': '2eeb5838',
+  'js/floating-cluster-controller.js': '982d0b3c',
   'js/glossary.js': '91b65962',
   'js/highlights.js': 'eca2588c',
   'js/nagornaya-mobile-toc.js': '866d4238',
   'js/scroll-perf.js': '454d6f7b',
-  'js/search.js': '17563949',
+  'js/search.js': '41634d58',
   'js/site-utils.js': '897afa55',
-  'js/site.js': '359d6005',
+  'js/site.js': '04d99087',
   'js/sw-register.js': '318502c5',
   'nagornaya/tw.min.css': '2670414e',
 };
