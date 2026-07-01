@@ -4378,6 +4378,37 @@ const JS_SIZE_FLOORS = {
 const duration = ((Date.now() - R.start) / 1000).toFixed(2);
 const sep = '═'.repeat(78);
 console.log(`\n${sep}\nGB-IS-MY-STRENGTH — PROFESSIONAL AUDIT\n${new Date().toISOString()} · ${duration}s\n${sep}\n`);
+// G114. CDN scripts must have SRI integrity= attribute.
+//   Incident 2026-07-01: karty/avraam/index.html loaded GSAP 3.13 from
+//   cdn.jsdelivr.net without integrity= or crossorigin= attributes.
+//   Any CDN compromise would silently execute malicious code on the page.
+//   Fix: add sha384 integrity= + crossorigin=anonymous to every external script.
+(function cdnSriGuard() {
+  const files = walk(ROOT).filter(f => f.endsWith('.html'));
+  const offenders = [];
+  for (const f of files) {
+    const r = rel(f);
+    const html = fs.readFileSync(f, 'utf8');
+    // Find all external script tags
+    const scriptRe = /<script[^>]+src=["']https?:\/\/[^"']+["'][^>]*>/gi;
+    let m;
+    while ((m = scriptRe.exec(html)) !== null) {
+      const tag = m[0];
+      if (!tag.includes('integrity=')) {
+        const srcM = tag.match(/src=["']([^"']+)["']/i);
+        const src = srcM ? srcM[1] : '?';
+        offenders.push(`${r}: external script without SRI: ${src.slice(0, 80)}`);
+      }
+    }
+  }
+  if (offenders.length) {
+    R.err(`CDN scripts without SRI integrity=:\n  - ${offenders.join('\n  - ')}`);
+  } else {
+    R.ok('CDN SRI: all external scripts have integrity= attribute');
+  }
+})();
+
+
 console.log(`Summary: ✅ ${R.passed.length} passed · ⚠️ ${R.warnings.length} warnings · ❌ ${R.errors.length} errors · ℹ️ ${R.info.length} info\n`);
 if (R.passed.length) {
   console.log('── PASSED ──');
@@ -4432,6 +4463,7 @@ try {
 } catch (e) {
   console.log(`Could not write audit report: ${e.message}`);
 }
+
 
 process.exit(R.errors.length ? 1 : 0);
 
