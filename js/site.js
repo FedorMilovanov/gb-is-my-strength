@@ -98,7 +98,7 @@
 if(!("speechSynthesis" in window))return;if(document.querySelector(".gb-ember,[data-fc-root],[data-gbs2-theme]"))return;/* v16/gbs2 cluster owns TTS — suppress old gbx-tts overlay */
 /* Emergency 2026-06-19: TTS is article-only. Do not show an audio prompt on the homepage/landing pages. */
 var path=(location.pathname||"/").replace(/\/+$/, "/");
-if(path==="/"||document.body.classList.contains("home-page")||document.querySelector(".home-v20"))return;
+if(path==="/"||(document.body && document.body.classList.contains("home-page"))||document.querySelector(".home-v20"))return;
 // TTS is only useful on long-form reading articles. Suppress on /about/ and on
 // every catalog / landing / interactive section: these contain enough <p>
 // nodes to pass the paragraph heuristic below but are NOT reading articles.
@@ -294,7 +294,7 @@ owInit();
 }();
 ;!function(){"use strict";
 /* §1.11 Next-article ethical suggestion (standalone articles only) */
-if(document.body.classList.contains("gbs-world")||document.body.classList.contains("gbs2-world"))return;
+if(document.body && (document.body.classList.contains("gbs-world")||document.body.classList.contains("gbs2-world")))return;
 var ra=document.querySelector(".related-articles__item a[href]");
 if(!ra)return;
 var title=ra.querySelector(".related-articles__link");

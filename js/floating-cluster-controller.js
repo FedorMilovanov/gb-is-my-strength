@@ -558,11 +558,11 @@
      BODY CLASS — gb-cluster-single-active для скрытия дублей
      ===================================================== */
   function activateSinglePilot() {
-    document.body.classList.add('gb-cluster-single-active');
+    if (document.body) document.body.classList.add('gb-cluster-single-active');
   }
 
   function activateSeriesPilot() {
-    document.body.classList.add('gb-cluster-series-active');
+    if (document.body) document.body.classList.add('gb-cluster-series-active');
   }
 
   /* =====================================================
@@ -819,29 +819,28 @@
     var backToSeries = qs('#backToSeries');
 
     [seriesToc, partToc].forEach(function(overlay) {
-      if (overlay && !overlay.classList.contains('is-open')) overlay.setAttribute('aria-hidden', 'true');
-      if (overlay) {
-        var dialog = overlay.querySelector('.toc-sheet');
-        if (dialog) dialog.setAttribute('aria-modal', 'true');
-      }
+      if (!overlay) return; // ← guard added
+      if (!overlay.classList.contains('is-open')) overlay.setAttribute('aria-hidden', 'true');
+      var dialog = overlay.querySelector('.toc-sheet');
+      if (dialog) dialog.setAttribute('aria-modal', 'true');
     });
 
     function openOverlay(el) {
-      if (el) {
+      if (el && el.classList) { // ← enhanced guard
         el.classList.add('is-open');
         el.removeAttribute('aria-hidden');
         document.documentElement.classList.add('gb-gill-toc-open');
-        document.body.style.overflow = 'hidden';
+        if (document.body) document.body.style.overflow = 'hidden';
       }
     }
     function closeOverlay(el) {
-      if (el) {
+      if (el && el.classList) { // ← enhanced guard
         el.classList.remove('is-open');
         el.setAttribute('aria-hidden', 'true');
       }
       if (!qs('.toc-overlay.is-open')) {
         document.documentElement.classList.remove('gb-gill-toc-open');
-        document.body.style.overflow = '';
+        if (document.body) document.body.style.overflow = '';
       }
     }
 

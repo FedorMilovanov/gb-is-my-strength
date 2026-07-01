@@ -254,6 +254,22 @@ for (const [key, info] of Object.entries(series)) {
   }
 }
 
+// 2b. Links graph consistency.
+{
+  const graphRaw = JSON.parse(read('data/links-graph.json'));
+  const graphNodes = graphRaw.nodes || [];
+  for (const node of graphNodes) {
+    if (node.url && searchByUrl.has(node.url)) {
+      const searchItem = searchByUrl.get(node.url);
+      const graphTime = node.readingTime;
+      const searchTime = searchItem.readTime;
+      if (Number.isFinite(graphTime) && Number.isFinite(searchTime) && graphTime !== searchTime) {
+        fail('links-graph-read-time-drift', `${node.url}: graph=${graphTime}, manifest=${searchTime}`);
+      }
+    }
+  }
+}
+
 console.log('\nGB DATA CONSISTENCY AUDIT');
 if (issues.length) {
   const by = issues.reduce((a,i)=>(a[i.kind]=(a[i.kind]||0)+1,a),{});

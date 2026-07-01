@@ -4400,6 +4400,16 @@ console.log(`\n${sep}\nGB-IS-MY-STRENGTH — PROFESSIONAL AUDIT\n${new Date().to
         offenders.push(`${r}: external script without SRI: ${src.slice(0, 80)}`);
       }
     }
+    // G114.1 Dynamically injected scripts
+    const dynamicRe = /\.src\s*=\s*["'](https?:\/\/[^"']+)["']/gi;
+    let m2;
+    while ((m2 = dynamicRe.exec(html)) !== null) {
+      const src = m2[1];
+      // Skip local-relative and known safe dynamic injections if needed
+      if (!html.includes('integrity') && !html.includes('setAttribute("integrity"')) {
+        offenders.push(`${r}: dynamic script injection without SRI detected: ${src.slice(0, 80)}`);
+      }
+    }
   }
   if (offenders.length) {
     R.err(`CDN scripts without SRI integrity=:\n  - ${offenders.join('\n  - ')}`);
