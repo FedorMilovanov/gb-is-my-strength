@@ -14,16 +14,10 @@
  *   npm run hard-texts:visual-parity:audit
  *   npm run visual:parity:screenshots -- --routes /hard-texts/
  */
-import { ASSET_VERSIONS } from '@/lib/asset-version';
+import { assetUrl } from '@/lib/asset-version';
 import HardTextsPageChrome from '@/components/hard-texts/HardTextsPageChrome.astro';
 import HardTextsMain from '@/components/hard-texts/HardTextsMain.astro';
 import HardTextsPageFooter from '@/components/hard-texts/HardTextsPageFooter.astro';
-
-const fontsCss = ASSET_VERSIONS['fonts/fonts.css'];
-const siteCss = ASSET_VERSIONS['css/site.css'];
-const homeCss = ASSET_VERSIONS['css/home.css'];
-const commandPaletteCss = ASSET_VERSIONS['css/command-palette.css'];
-const mobileHotfixCss = ASSET_VERSIONS['css/mobile-hotfix.css'];
 
 // JSON-LD structured data (native inline script, no set:html transport).
 const jsonLd = `{
@@ -166,9 +160,9 @@ const jsonLd = `{
     <link rel="icon" type="image/png" sizes="120x120" href="https://gospod-bog.ru/favicon-120.png" />
     <link rel="icon" type="image/png" sizes="192x192" href="https://gospod-bog.ru/icons/icon-192.png" />
     <link rel="manifest" href="/manifest.json" />
-    <link rel="preload" as="style" href={`../fonts/fonts.css?v=${fontsCss}`} />
+    <link rel="preload" as="style" href={assetUrl('fonts/fonts.css')} />
     <link rel="preload" as="font" type="font/woff2" href="/fonts/Lora/lora-cyrillic-400.woff2" crossorigin />
-    <link rel="stylesheet" href={`../fonts/fonts.css?v=${fontsCss}`} />
+    <link rel="stylesheet" href={assetUrl('fonts/fonts.css')} />
 
     {/* Yandex.Metrika */}
     <script is:inline type="text/javascript">
@@ -180,8 +174,8 @@ const jsonLd = `{
     {/* Anti-FOUC */}
     <script is:inline>(function(){try{var t=localStorage.getItem('theme');if(t==='dark'||(!t&&window.matchMedia('(prefers-color-scheme: dark)').matches)){document.documentElement.classList.add('dark');}}catch(e){}})();</script>
 
-    <link rel="stylesheet" href={`../css/site.css?v=${siteCss}`} />
-    <link rel="stylesheet" href={`../css/home.css?v=${homeCss}`} />
+    <link rel="stylesheet" href={assetUrl('css/site.css')} />
+    <link rel="stylesheet" href={assetUrl('css/home.css')} />
 
     <script is:inline>
 window.SITE_CONFIG = {

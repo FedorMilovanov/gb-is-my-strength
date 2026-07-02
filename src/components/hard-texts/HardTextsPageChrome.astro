@@ -26,15 +26,7 @@
  * JS asset hashes are computed at build time via md5short, matching
  * scripts/cache-bust.js so legacy and dist share identical ?v= values.
  */
-import { ASSET_VERSIONS } from '@/lib/asset-version';
-
-const siteUtils = ASSET_VERSIONS['js/site-utils.js'];
-const scrollPerf = ASSET_VERSIONS['js/scroll-perf.js'];
-const siteJs = ASSET_VERSIONS['js/site.js'];
-const highlights = ASSET_VERSIONS['js/highlights.js'];
-const enhancements = ASSET_VERSIONS['js/enhancements.js'];
-const swRegister = ASSET_VERSIONS['js/sw-register.js'];
-const search = ASSET_VERSIONS['js/search.js'];
+import { assetUrl } from '@/lib/asset-version';
 ---
 <a href="#main-content" class="skip-link">Перейти к содержимому</a>
 
@@ -143,12 +135,12 @@ const search = ASSET_VERSIONS['js/search.js'];
   </span>
 </button>
 
-<script is:inline src={`../js/site-utils.js?v=${siteUtils}`}></script>
-<script is:inline src={`../js/scroll-perf.js?v=${scrollPerf}`}></script>
-<script is:inline src={`../js/site.js?v=${siteJs}`} defer></script>
+<script is:inline src={assetUrl('js/site-utils.js')}></script>
+<script is:inline src={assetUrl('js/scroll-perf.js')}></script>
+<script is:inline src={assetUrl('js/site.js')} defer></script>
 {/* home infrastructure handled by js/site.js module 35 */}
 
-<script is:inline src={`../js/highlights.js?v=${highlights}`} defer></script>
-<script is:inline src={`../js/enhancements.js?v=${enhancements}`} defer></script>
-<script is:inline src={`../js/sw-register.js?v=${swRegister}`} defer></script>
-<script is:inline src={`../js/search.js?v=${search}`} defer></script>
+<script is:inline src={assetUrl('js/highlights.js')} defer></script>
+<script is:inline src={assetUrl('js/enhancements.js')} defer></script>
+<script is:inline src={assetUrl('js/sw-register.js')} defer></script>
+<script is:inline src={assetUrl('js/search.js')} defer></script>

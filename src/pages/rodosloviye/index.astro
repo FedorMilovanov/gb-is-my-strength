@@ -9,6 +9,8 @@
 import RodosloviyePageHead from '@/components/rodosloviye/RodosloviyePageHead.astro';
 import RodosloviyeStyles from '@/components/rodosloviye/RodosloviyeStyles.astro';
 import RodosloviyeBody from '@/components/rodosloviye/RodosloviyeBody.astro';
+import GenealogyTree from '@/components/genealogy/GenealogyTree.tsx';
+import genealogyData from '@/data/genealogy/genealogy.json';
 ---
 <!DOCTYPE html>
 <html lang="ru" data-theme="light">
@@ -18,5 +20,8 @@ import RodosloviyeBody from '@/components/rodosloviye/RodosloviyeBody.astro';
   </head>
   <body class="site-page">
     <RodosloviyeBody />
+    <div id="genealogy-tree" class="genealogy-interactive-wrap" style="width: 100%; height: 85vh; min-height: 650px; border-top: 1px solid var(--border-color, #e2e8f0); margin-top: 2rem; position: relative;">
+      <GenealogyTree client:only="react" persons={genealogyData.persons} eras={genealogyData.eras} />
+    </div>
   </body>
 </html>
