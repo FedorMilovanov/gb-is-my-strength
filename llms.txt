@@ -37,6 +37,16 @@
 - [Джон Гилл: Часть III — Наследие](https://gospod-bog.ru/articles/dzhon-gill-chast-3-nasledie/): полемика с Уэсли, гиперкальвинизм, Сперджен, влияние на Америку
 - [Джон Гилл: Исторический контекст](https://gospod-bog.ru/articles/dzhon-gill-istoricheskiy-kontekst/): Лондон XVII–XVIII вв., нонконформизм, Acts of Uniformity
 - [Джон Гилл: Справочник](https://gospod-bog.ru/articles/dzhon-gill-spravochnik/): словарь терминов, хронология, библиография
+- [Воронин и ночь на Куре](https://gospod-bog.ru/baptisty-rossii/noch-na-kure/): истоки русского баптизма в Тифлисе
+- [Южная штунда и баптизм в Малороссии](https://gospod-bog.ru/baptisty-rossii/yuzhnaya-shtunda/): Ратушный, Рябошапка, Унгель
+- [Петербург и Ново-Васильевка: две развилки 1884 года](https://gospod-bog.ru/baptisty-rossii/dva-sezda-1884/): совещание Пашкова и съезд 1884
+- [Петербургское евангельское пробуждение](https://gospod-bog.ru/baptisty-rossii/peterburgskaya-liniya/): Редсток, Пашков, Корф, Каргель, Ливен
+- [Свобода совести и военный вопрос](https://gospod-bog.ru/baptisty-rossii/goneniya-i-sovest/): баптисты и государство на рубеже XIX–XX вв.
+- [ВСЕХБ 1944 года и Положение](https://gospod-bog.ru/baptisty-rossii/vsehib-1944/): создание единого союза в СССР
+- [Советская ночь и послевоенные годы](https://gospod-bog.ru/baptisty-rossii/sovetskaya-noch/): давление власти и внутренний кризис
+- [Инициативная группа: путь к Совету Церквей](https://gospod-bog.ru/baptisty-rossii/iniciativnaya-gruppa/): 1960–1966, Оргкомитет, СЦ ЕХБ
+- [Подпольная печать и самиздат](https://gospod-bog.ru/baptisty-rossii/podpolnaya-pechat/): издательство «Христианин», Бюллетень родственников узников
+- [Баптисты России: Справочник](https://gospod-bog.ru/baptisty-rossii/spravochnik/): персоналии, документы, хронология и источники
 
 ## Theological position
 
@@ -49,6 +59,18 @@
 - [Карты](https://gospod-bog.ru/karty/): хаб интерактивных карт библейского мира
 - [Путь Авраама](https://gospod-bog.ru/karty/avraam/): интерактивная карта пути Авраама по Бытию 11–25 (19 мест, 8 этапов, 5 сюжетных режимов, археология и научные варианты)
 - [Исход из Египта](https://gospod-bog.ru/karty/ishod/): маршрут Исхода, Синай, Кадеш, равнины Моава, спорные локализации переправы и Синая
+- [Ранняя Церковь](https://gospod-bog.ru/karty/early-church/): карта распространения христианства от Иерусалима до Рима в I веке
+- [Войны Маккавеев](https://gospod-bog.ru/karty/maccabim/): карта восстания Маккавеев и хасмонейских войн (II в. до н.э.)
+- [Царства Израиля и Иудеи](https://gospod-bog.ru/karty/melachim/): карта разделенного царства (4 Царств), пророки, походы Ассирии и Вавилона
+- [Миссионерские путешествия апостола Павла](https://gospod-bog.ru/karty/pavel/): интерактивная карта 1-го, 2-го, 3-го путешествий и пути в Рим
+- [Семь церквей Апокалипсиса](https://gospod-bog.ru/karty/revelation/): карта церквей Малой Азии из Откровения Иоанна 2–3
+- [Эпоха Судей](https://gospod-bog.ru/karty/shoftim/): карта сражений судей Израилевых и угнетателей от Иисуса Навина до Самуила
+- [12 колен Израилевых](https://gospod-bog.ru/karty/shvatim/): карта разделения Обетованной земли между племенами Израиля
+- [Земной путь Иисуса Христа](https://gospod-bog.ru/karty/yeshua/): карта евангельских событий от Вифлеема и Галилеи до Иерусалима и Воскресения
+
+## Biblical Tools / Инструменты
+
+- [Родословие от Адама до Христа](https://gospod-bog.ru/rodosloviye/): генеалогическое древо от Бытия до Евангелий (линия обетования)
 
 ## Site navigation
 
