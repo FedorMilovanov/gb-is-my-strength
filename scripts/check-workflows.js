@@ -152,7 +152,7 @@ if (/\bpush:|\bschedule:|workflow_run:/.test(distDryRun)) {
 const indexnow = read('.github/workflows/indexnow.yml');
 must('.github/workflows/indexnow.yml', indexnow, /npm run validate:static-publication/, 'indexnow must run validate:static-publication before metadata commit');
 must('.github/workflows/indexnow.yml', indexnow, /contents:\s*write/, 'indexnow needs contents: write for metadata commit');
-must('.github/workflows/indexnow.yml', indexnow, /build-indexnow-urls\.js[^\n]*--base/, 'indexnow must map src/MDX changes through scripts/build-indexnow-urls.js');
+must('.github/workflows/deploy.yml', deploy, /build-indexnow-urls\.js[^\n]*--base/, 'deploy must map src/MDX changes through scripts/build-indexnow-urls.js (moved from indexnow.yml in NEW-53 fix)');
 
 const sourceLinks = read('.github/workflows/source-links.yml');
 must('.github/workflows/source-links.yml', sourceLinks, /workflow_dispatch:/, 'source link audit must be manually runnable');

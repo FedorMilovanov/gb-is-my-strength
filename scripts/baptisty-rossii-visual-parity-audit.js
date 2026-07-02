@@ -35,7 +35,7 @@ mustContain('route imports native head', page, 'BaptistyRossiiPageHead');
 mustContain('route imports native body', page, 'BaptistyRossiiBody');
 mustContain('route explicit body class', page, 'class="gbs-world"');
 mustContain('route explicit total minutes', page, 'data-gbs2-total-min="229"');
-mustContain('route pagefind body marker', page, 'data-pagefind-body');
+mustContain('route pagefind body marker', body, 'data-pagefind-body');
 for (const marker of ['rel="canonical"','window.SITE_CONFIG','application/ld+json','mc.yandex.ru']) mustContain('head contract', head, marker);
 for (const marker of ['gbs2-mobile-head','gbs2-rail','gbs2-hero','article-body','gbs2-bbar','gbs2-sheet','Баптисты России']) mustContain('landing body marker', body, marker);
 const lw=wordCount(bodyInner(legacy)), rw=wordCount(body), ratio=rw/Math.max(1,lw);
