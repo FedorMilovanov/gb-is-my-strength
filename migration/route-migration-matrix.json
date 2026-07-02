@@ -27,7 +27,7 @@
   },
   "routes": {
     "/izbrannoe/": {
-      "mode": "strict-native",
+      "mode": "native-with-legacy-head",
       "source": "src/pages/izbrannoe/index.astro",
       "requiredMarkers": [
         "izbrannoe-wrap"
