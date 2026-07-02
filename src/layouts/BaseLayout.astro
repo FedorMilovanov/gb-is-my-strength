@@ -97,32 +97,7 @@ function routeToLegacyFile(canonicalUrl: string) {
   }
 }
 
-function extractLegacyRuntimeFromHtml(html: string) {
-  const head = section(html, 'head');
-  const body = section(html, 'body');
-  const headAndBody = `${head}\n${body}`;
-
-  // Keep the old runtime contract available on Astro-owned pages: SITE_CONFIG
-  // before scripts, Yandex.Metrika where legacy page had it, then the canonical
-  // public JS bundle script tags. Shadow-wrapped pages already carry their body
-  // scripts inside legacy.bodyHtml, so auto-runtime is disabled when headHtml is
-  // supplied unless a page explicitly opts in.
-  const config = firstMatch(headAndBody, /<script\b[^>]*>\s*window\.SITE_CONFIG\s*=\s*[\s\S]*?<\/script>/i);
-  const metrikaScripts = [...headAndBody.matchAll(/<script\b[^>]*>[\s\S]*?<\/script>/gi)]
-    .map((m) => m[0])
-    .filter((tag) => /ym\(|mc\.yandex|metrika/i.test(tag) && !/window\.SITE_CONFIG/i.test(tag));
-  const metrikaNoscript = [...headAndBody.matchAll(/<noscript\b[^>]*>[\s\S]*?mc\.yandex\.ru\/watch[\s\S]*?<\/noscript>/gi)].map((m) => m[0]);
-  const bodyScripts = [...body.matchAll(/<script\b[^>]*\bsrc=["'][^"']+\.js(?:\?v=[^"']+)?["'][^>]*><\/script>/gi)].map((m) => m[0]);
-  return uniqueTags([...metrikaScripts, ...metrikaNoscript, config, ...bodyScripts]).join('\n');
-}
-
-function loadLegacyRuntime(canonicalUrl: string) {
-  const rel = routeToLegacyFile(canonicalUrl);
-  if (!rel) return '';
-  const abs = path.join(process.cwd(), rel);
-  if (!existsSync(abs)) return '';
-  return extractLegacyRuntimeFromHtml(readFileSync(abs, 'utf8'));
-}
+// Legacy runtime I/O decoupled (REF-01)
 
 function md5short(rel: string) {
   const abs = path.join(process.cwd(), rel);
@@ -171,11 +146,9 @@ function makeGenericRuntime(includeMetrika = true) {
   ].join('\n');
 }
 
-const autoLegacyRuntime = includeLegacyRuntime && !headHtml ? loadLegacyRuntime(canonical) : '';
-const hasCoreRuntime = /window\.SITE_CONFIG|site\.js|search\.js/.test(autoLegacyRuntime);
-const hasMetrika = /ym\(|mc\.yandex\.ru\/watch/.test(autoLegacyRuntime);
-const genericRuntime = includeLegacyRuntime && !headHtml && !hasCoreRuntime ? makeGenericRuntime(!hasMetrika) : '';
-const effectiveBodyEndHtml = [autoLegacyRuntime, genericRuntime, bodyEndHtml].filter(Boolean).join('\n');
+// Generate clean generic runtime without filesystem I/O
+const genericRuntime = includeLegacyRuntime && !headHtml ? makeGenericRuntime(true) : '';
+const effectiveBodyEndHtml = [genericRuntime, bodyEndHtml].filter(Boolean).join('\n');
 ---
 <!doctype html>
 <html lang="ru">
