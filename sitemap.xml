@@ -54,62 +54,7 @@
     <priority>0.7</priority>
     <image:image><image:loc>https://gospod-bog.ru/images/og-karty-1200x630.webp</image:loc></image:image>
   </url>
-  <url>
-    <loc>https://gospod-bog.ru/karty/early-church/</loc>
-    <lastmod>2026-06-25T19:00:00+03:00</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.7</priority>
-    <image:image><image:loc>https://gospod-bog.ru/images/og-karty-1200x630.webp</image:loc></image:image>
-  </url>
-  <url>
-    <loc>https://gospod-bog.ru/karty/maccabim/</loc>
-    <lastmod>2026-06-25T19:00:00+03:00</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.7</priority>
-    <image:image><image:loc>https://gospod-bog.ru/images/og-karty-1200x630.webp</image:loc></image:image>
-  </url>
-  <url>
-    <loc>https://gospod-bog.ru/karty/melachim/</loc>
-    <lastmod>2026-06-25T19:00:00+03:00</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.7</priority>
-    <image:image><image:loc>https://gospod-bog.ru/images/og-karty-1200x630.webp</image:loc></image:image>
-  </url>
-  <url>
-    <loc>https://gospod-bog.ru/karty/pavel/</loc>
-    <lastmod>2026-06-25T19:00:00+03:00</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.7</priority>
-    <image:image><image:loc>https://gospod-bog.ru/images/og-karty-1200x630.webp</image:loc></image:image>
-  </url>
-  <url>
-    <loc>https://gospod-bog.ru/karty/revelation/</loc>
-    <lastmod>2026-06-25T19:00:00+03:00</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.7</priority>
-    <image:image><image:loc>https://gospod-bog.ru/images/og-karty-1200x630.webp</image:loc></image:image>
-  </url>
-  <url>
-    <loc>https://gospod-bog.ru/karty/shoftim/</loc>
-    <lastmod>2026-06-25T19:00:00+03:00</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.7</priority>
-    <image:image><image:loc>https://gospod-bog.ru/images/og-karty-1200x630.webp</image:loc></image:image>
-  </url>
-  <url>
-    <loc>https://gospod-bog.ru/karty/shvatim/</loc>
-    <lastmod>2026-06-25T19:00:00+03:00</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.7</priority>
-    <image:image><image:loc>https://gospod-bog.ru/images/og-karty-1200x630.webp</image:loc></image:image>
-  </url>
-  <url>
-    <loc>https://gospod-bog.ru/karty/yeshua/</loc>
-    <lastmod>2026-06-25T19:00:00+03:00</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.7</priority>
-    <image:image><image:loc>https://gospod-bog.ru/images/og-karty-1200x630.webp</image:loc></image:image>
-  </url>
+
   <url>
     <loc>https://gospod-bog.ru/map/</loc>
     <lastmod>2026-06-25T19:00:00+03:00</lastmod>

@@ -26,7 +26,8 @@
       "featured": true,
       "priority": 100,
       "publishedTime": "2026-06-18T00:00:00+03:00",
-      "modifiedTime": "2026-06-18T21:00:00+03:00"
+      "modifiedTime": "2026-06-18T21:00:00+03:00",
+      "readTime": 2
     },
     {
       "id": "nagornaya-seriya",
@@ -156,7 +157,8 @@
       "featured": true,
       "priority": 93,
       "publishedTime": "2026-06-18T00:00:00+03:00",
-      "modifiedTime": "2026-06-18T21:00:00+03:00"
+      "modifiedTime": "2026-06-18T21:00:00+03:00",
+      "readTime": 229
     },
     {
       "id": "dzhon-gill-chast-1-chelovek",
@@ -358,7 +360,8 @@
       "featured": true,
       "priority": 88,
       "publishedTime": "2026-06-18T00:00:00+03:00",
-      "modifiedTime": "2026-06-18T21:00:00+03:00"
+      "modifiedTime": "2026-06-18T21:00:00+03:00",
+      "readTime": 15
     },
     {
       "id": "articles-catalog",
@@ -376,7 +379,8 @@
       "featured": false,
       "priority": 86,
       "publishedTime": "2026-06-18T00:00:00+03:00",
-      "modifiedTime": "2026-06-18T21:00:00+03:00"
+      "modifiedTime": "2026-06-18T21:00:00+03:00",
+      "readTime": 2
     },
     {
       "id": "kod-da-vinchi",
@@ -436,7 +440,8 @@
       "featured": false,
       "priority": 82,
       "publishedTime": "2026-06-18T00:00:00+03:00",
-      "modifiedTime": "2026-06-18T21:00:00+03:00"
+      "modifiedTime": "2026-06-18T21:00:00+03:00",
+      "readTime": 89
     },
     {
       "id": "nagornaya-ch1",
@@ -475,7 +480,8 @@
       "featured": false,
       "priority": 78,
       "publishedTime": "2026-06-18T00:00:00+03:00",
-      "modifiedTime": "2026-06-18T21:00:00+03:00"
+      "modifiedTime": "2026-06-18T21:00:00+03:00",
+      "readTime": 10
     },
     {
       "id": "nagornaya-ch2",
@@ -533,7 +539,8 @@
       "featured": false,
       "priority": 74,
       "publishedTime": "2026-06-18T00:00:00+03:00",
-      "modifiedTime": "2026-06-18T21:00:00+03:00"
+      "modifiedTime": "2026-06-18T21:00:00+03:00",
+      "readTime": 17
     },
     {
       "id": "baptisty-goneniya-i-sovest",
@@ -552,7 +559,8 @@
       "featured": false,
       "priority": 74,
       "publishedTime": "2026-06-18T00:00:00+03:00",
-      "modifiedTime": "2026-06-18T21:00:00+03:00"
+      "modifiedTime": "2026-06-18T21:00:00+03:00",
+      "readTime": 24
     },
     {
       "id": "baptisty-iniciativnaya-gruppa",
@@ -571,7 +579,8 @@
       "featured": false,
       "priority": 74,
       "publishedTime": "2026-06-18T00:00:00+03:00",
-      "modifiedTime": "2026-06-18T21:00:00+03:00"
+      "modifiedTime": "2026-06-18T21:00:00+03:00",
+      "readTime": 25
     },
     {
       "id": "baptisty-noch-na-kure",
@@ -590,7 +599,8 @@
       "featured": false,
       "priority": 74,
       "publishedTime": "2026-06-18T00:00:00+03:00",
-      "modifiedTime": "2026-06-18T21:00:00+03:00"
+      "modifiedTime": "2026-06-18T21:00:00+03:00",
+      "readTime": 18
     },
     {
       "id": "baptisty-peterburgskaya-liniya",
@@ -609,7 +619,8 @@
       "featured": false,
       "priority": 74,
       "publishedTime": "2026-06-18T00:00:00+03:00",
-      "modifiedTime": "2026-06-18T21:00:00+03:00"
+      "modifiedTime": "2026-06-18T21:00:00+03:00",
+      "readTime": 21
     },
     {
       "id": "baptisty-podpolnaya-pechat",
@@ -628,7 +639,8 @@
       "featured": false,
       "priority": 74,
       "publishedTime": "2026-06-18T00:00:00+03:00",
-      "modifiedTime": "2026-06-18T21:00:00+03:00"
+      "modifiedTime": "2026-06-18T21:00:00+03:00",
+      "readTime": 23
     },
     {
       "id": "baptisty-sovetskaya-noch",
@@ -647,7 +659,8 @@
       "featured": false,
       "priority": 74,
       "publishedTime": "2026-06-18T00:00:00+03:00",
-      "modifiedTime": "2026-06-18T21:00:00+03:00"
+      "modifiedTime": "2026-06-18T21:00:00+03:00",
+      "readTime": 28
     },
     {
       "id": "baptisty-spravochnik",
@@ -666,7 +679,8 @@
       "featured": false,
       "priority": 74,
       "publishedTime": "2026-06-18T00:00:00+03:00",
-      "modifiedTime": "2026-06-18T21:00:00+03:00"
+      "modifiedTime": "2026-06-18T21:00:00+03:00",
+      "readTime": 27
     },
     {
       "id": "baptisty-vsehib-1944",
@@ -685,7 +699,8 @@
       "featured": false,
       "priority": 74,
       "publishedTime": "2026-06-18T00:00:00+03:00",
-      "modifiedTime": "2026-06-18T21:00:00+03:00"
+      "modifiedTime": "2026-06-18T21:00:00+03:00",
+      "readTime": 26
     },
     {
       "id": "baptisty-yuzhnaya-shtunda",
@@ -704,7 +719,8 @@
       "featured": false,
       "priority": 74,
       "publishedTime": "2026-06-18T00:00:00+03:00",
-      "modifiedTime": "2026-06-18T21:00:00+03:00"
+      "modifiedTime": "2026-06-18T21:00:00+03:00",
+      "readTime": 20
     },
     {
       "id": "nagornaya-ch4",
@@ -762,7 +778,8 @@
       "featured": false,
       "priority": 70,
       "publishedTime": "2026-06-18T00:00:00+03:00",
-      "modifiedTime": "2026-06-18T21:00:00+03:00"
+      "modifiedTime": "2026-06-18T21:00:00+03:00",
+      "readTime": 2
     },
     {
       "id": "nagornaya-istochniki",
