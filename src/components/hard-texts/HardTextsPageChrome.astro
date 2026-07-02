@@ -26,23 +26,15 @@
  * JS asset hashes are computed at build time via md5short, matching
  * scripts/cache-bust.js so legacy and dist share identical ?v= values.
  */
-import { readFileSync, existsSync } from 'node:fs';
-import path from 'node:path';
-import { createHash } from 'node:crypto';
+import { ASSET_VERSIONS } from '@/lib/asset-version';
 
-function md5short(rel: string): string {
-  const abs = path.join(process.cwd(), rel);
-  if (!existsSync(abs)) return '';
-  return createHash('md5').update(readFileSync(abs)).digest('hex').slice(0, 8);
-}
-
-const siteUtils = md5short('js/site-utils.js');
-const scrollPerf = md5short('js/scroll-perf.js');
-const siteJs = md5short('js/site.js');
-const highlights = md5short('js/highlights.js');
-const enhancements = md5short('js/enhancements.js');
-const swRegister = md5short('js/sw-register.js');
-const search = md5short('js/search.js');
+const siteUtils = ASSET_VERSIONS['js/site-utils.js'];
+const scrollPerf = ASSET_VERSIONS['js/scroll-perf.js'];
+const siteJs = ASSET_VERSIONS['js/site.js'];
+const highlights = ASSET_VERSIONS['js/highlights.js'];
+const enhancements = ASSET_VERSIONS['js/enhancements.js'];
+const swRegister = ASSET_VERSIONS['js/sw-register.js'];
+const search = ASSET_VERSIONS['js/search.js'];
 ---
 <a href="#main-content" class="skip-link">Перейти к содержимому</a>
 

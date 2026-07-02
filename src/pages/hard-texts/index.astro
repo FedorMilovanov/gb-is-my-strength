@@ -14,25 +14,16 @@
  *   npm run hard-texts:visual-parity:audit
  *   npm run visual:parity:screenshots -- --routes /hard-texts/
  */
-import { readFileSync, existsSync } from 'node:fs';
-import path from 'node:path';
-import { createHash } from 'node:crypto';
+import { ASSET_VERSIONS } from '@/lib/asset-version';
 import HardTextsPageChrome from '@/components/hard-texts/HardTextsPageChrome.astro';
 import HardTextsMain from '@/components/hard-texts/HardTextsMain.astro';
 import HardTextsPageFooter from '@/components/hard-texts/HardTextsPageFooter.astro';
 
-/** md5-short hash identical to scripts/cache-bust.js (8 hex chars). */
-function md5short(rel: string): string {
-  const abs = path.join(process.cwd(), rel);
-  if (!existsSync(abs)) return '';
-  return createHash('md5').update(readFileSync(abs)).digest('hex').slice(0, 8);
-}
-
-const fontsCss = md5short('fonts/fonts.css');
-const siteCss = md5short('css/site.css');
-const homeCss = md5short('css/home.css');
-const commandPaletteCss = md5short('css/command-palette.css');
-const mobileHotfixCss = md5short('css/mobile-hotfix.css');
+const fontsCss = ASSET_VERSIONS['fonts/fonts.css'];
+const siteCss = ASSET_VERSIONS['css/site.css'];
+const homeCss = ASSET_VERSIONS['css/home.css'];
+const commandPaletteCss = ASSET_VERSIONS['css/command-palette.css'];
+const mobileHotfixCss = ASSET_VERSIONS['css/mobile-hotfix.css'];
 
 // JSON-LD structured data (native inline script, no set:html transport).
 const jsonLd = `{

@@ -3,9 +3,7 @@ import Seo from '@/components/seo/Seo.astro';
 import Header from '@/components/ui/Header.astro';
 import Footer from '@/components/ui/Footer.astro';
 import { SITE } from '@/data/site';
-import { readFileSync, existsSync } from 'node:fs';
-import path from 'node:path';
-import { createHash } from 'node:crypto';
+import { assetUrl } from '@/lib/asset-version';
 import '@/styles/tokens.css';
 import '@/styles/global.css';
 
@@ -66,24 +64,6 @@ const {
   includeLegacyRuntime = true,
 } = Astro.props;
 
-function firstMatch(source: string, pattern: RegExp) {
-  return source.match(pattern)?.[0] || '';
-}
-
-function section(source: string, tag: 'head' | 'body') {
-  return source.match(new RegExp(`<${tag}[^>]*>([\\s\\S]*?)<\\/${tag}>`, 'i'))?.[1] || '';
-}
-
-function uniqueTags(tags: string[]) {
-  const seen = new Set<string>();
-  return tags.filter((tag) => {
-    const key = tag.replace(/\s+/g, ' ').trim();
-    if (!key || seen.has(key)) return false;
-    seen.add(key);
-    return true;
-  });
-}
-
 function routeToLegacyFile(canonicalUrl: string) {
   try {
     const url = new URL(canonicalUrl);
@@ -97,19 +77,7 @@ function routeToLegacyFile(canonicalUrl: string) {
   }
 }
 
-// Legacy runtime I/O decoupled (REF-01)
-
-function md5short(rel: string) {
-  const abs = path.join(process.cwd(), rel);
-  if (!existsSync(abs)) return '';
-  return createHash('md5').update(readFileSync(abs)).digest('hex').slice(0, 8);
-}
-
-function scriptTag(rel: string, attrs = 'defer') {
-  const hash = md5short(rel);
-  const src = `/${rel}${hash ? `?v=${hash}` : ''}`;
-  return `<script ${attrs} src="${src}"></script>`;
-}
+// Legacy runtime I/O and dead helper functions removed (REF-01 / REF-02)
 
 function makeGenericRuntime(includeMetrika = true) {
   const pageId = routeToLegacyFile(canonical).replace(/\/index\.html$/, '').replace(/\//g, '-') || 'home';
@@ -138,11 +106,11 @@ function makeGenericRuntime(includeMetrika = true) {
   return [
     includeMetrika ? metrika : '',
     cfg,
-    scriptTag('js/site-utils.js', ''),
-    scriptTag('js/scroll-perf.js', ''),
-    scriptTag('js/site.js'),
-    scriptTag('js/sw-register.js'),
-    scriptTag('js/search.js'),
+    `<script src="${assetUrl('js/site-utils.js')}"></script>`,
+    `<script src="${assetUrl('js/scroll-perf.js')}"></script>`,
+    `<script defer src="${assetUrl('js/site.js')}"></script>`,
+    `<script defer src="${assetUrl('js/sw-register.js')}"></script>`,
+    `<script defer src="${assetUrl('js/search.js')}"></script>`,
   ].join('\n');
 }
 
