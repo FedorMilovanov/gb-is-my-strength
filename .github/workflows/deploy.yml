@@ -158,3 +158,58 @@ jobs:
       - name: Deploy to GitHub Pages
         id: deploy
         uses: actions/deploy-pages@v4
+
+      - name: Build IndexNow payload
+        id: payload
+        env:
+          BEFORE_SHA: ${{ github.event.before }}
+          AFTER_SHA: ${{ github.event.after }}
+          INDEXNOW_KEY_VALUE: ${{ secrets.INDEXNOW_KEY }}
+        run: |
+          BASE="https://gospod-bog.ru"
+          KEY="$INDEXNOW_KEY_VALUE"
+
+          if [ -z "$KEY" ]; then
+            echo "::warning::INDEXNOW_KEY secret is not set; skipping IndexNow submit."
+            {
+              echo "urls=[]"
+              echo "key="
+              echo "host=gospod-bog.ru"
+            } >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          CHANGED=$(git diff --name-only "${BEFORE_SHA:-HEAD~1}" "${AFTER_SHA:-HEAD}" 2>/dev/null || git diff --name-only HEAD~1 HEAD 2>/dev/null || true)
+          URLS=$(printf '%s\n' "$CHANGED" | node scripts/build-indexnow-urls.js --base "$BASE")
+
+          {
+            echo "urls=$URLS"
+            echo "key=$KEY"
+            echo "host=gospod-bog.ru"
+          } >> "$GITHUB_OUTPUT"
+
+      - name: Submit to IndexNow (Bing / Yandex)
+        if: steps.payload.outputs.urls != '[]' && steps.payload.outputs.urls != ''
+        continue-on-error: true
+        run: |
+          KEY="${{ steps.payload.outputs.key }}"
+          HOST="${{ steps.payload.outputs.host }}"
+          URLS='${{ steps.payload.outputs.urls }}'
+
+          BODY=$(jq -n \
+            --arg host "$HOST" \
+            --arg key  "$KEY"  \
+            --argjson urls "$URLS" \
+            '{host: $host, key: $key, keyLocation: ("https://"+$host+"/"+$key+".txt"), urlList: $urls}')
+
+          echo "Payload: $BODY"
+
+          curl -s -o /tmp/indexnow-bing.out -w "%{http_code}\n" \
+            -X POST "https://api.indexnow.org/indexnow" \
+            -H "Content-Type: application/json; charset=utf-8" \
+            -d "$BODY" || true
+
+          curl -s -o /tmp/indexnow-yandex.out -w "%{http_code}\n" \
+            -X POST "https://yandex.com/indexnow" \
+            -H "Content-Type: application/json; charset=utf-8" \
+            -d "$BODY" || true

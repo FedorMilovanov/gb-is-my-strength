@@ -66,7 +66,7 @@ const PUBLIC_DIRS = [
   'nagornaya',
   'pastor-series',
 ];
-const NEVER_COPY_DIRS = new Set(['.git', 'node_modules', 'dist', 'out', 'build', 'coverage', 'reports', 'audit', '.astro', '_build-tools', 'src', 'scripts', 'docs', 'migration']);
+const NEVER_COPY_DIRS = new Set(['.git', 'node_modules', 'dist', 'out', 'build', 'coverage', 'reports', 'audit', '.astro', '_build-tools', 'src', 'scripts', 'docs', 'migration', 'research', '_legacy', 'raw-sources', 'map-data']);
 
 function rel(abs) { return path.relative(ROOT, abs).replace(/\\/g, '/'); }
 function relDist(abs) { return path.relative(DIST, abs).replace(/\\/g, '/'); }

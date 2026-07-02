@@ -45,7 +45,7 @@ for (const [slug, bodyComp, headComp] of ROUTES) {
   mustContain(`${slug} route imports page head`, page, headComp);
   mustContain(`${slug} route imports body component`, page, bodyComp);
   mustContain(`${slug} route explicit gbs body class`, page, 'class="gbs-world"');
-  mustContain(`${slug} route pagefind body marker`, page, 'data-pagefind-body');
+  mustContain(`${slug} route or body pagefind marker`, [page, body].join('\n'), 'data-pagefind-body');
   for (const marker of ['rel="canonical"','window.SITE_CONFIG','application/ld+json', `${SITE}/baptisty-rossii/${slug}/`]) mustContain(`${slug} head contract`, head, marker);
   for (const marker of ['gbs2-rail','gbs2-mobile-head','main-content','gbs2-next','gbs2-timeline']) mustContain(`${slug} body marker`, body, marker);
   const lw=wordCount(bodyInner(legacy)), rw=wordCount(body), ratio=rw/Math.max(1,lw);

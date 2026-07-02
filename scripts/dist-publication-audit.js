@@ -110,10 +110,25 @@ function checkRequiredFiles() {
   else ok(`required dist files present (${required.length})`);
 }
 function checkNoPrivateDirs() {
-  const forbidden = ['.git', 'node_modules', 'src', 'scripts', 'docs', 'audit', '_build-tools', 'migration', 'reports'];
+  const forbidden = ['.git', 'node_modules', 'src', 'scripts', 'docs', 'audit', '_build-tools', 'migration', 'reports', 'research', '_legacy'];
   const present = forbidden.filter(f => fs.existsSync(path.join(DIST, f)));
   if (present.length) present.forEach(f => bad(`forbidden private/build dir copied to dist: ${f}`));
   else ok('no private/build directories copied to dist');
+
+  const nestedForbiddenDirs = ['research', '_legacy', 'raw-sources', 'map-data'];
+  function walkCheck(dir) {
+    if (!fs.existsSync(dir)) return;
+    for (const ent of fs.readdirSync(dir, { withFileTypes: true })) {
+      if (ent.isDirectory()) {
+        if (nestedForbiddenDirs.includes(ent.name)) {
+          bad(`forbidden internal research/data dir copied to dist: ${path.relative(DIST, path.join(dir, ent.name))}`);
+        } else {
+          walkCheck(path.join(dir, ent.name));
+        }
+      }
+    }
+  }
+  walkCheck(DIST);
 }
 function checkSitemaps() {
   const generated = fs.readdirSync(DIST).filter(name => /^sitemap-(?:index|\d+)\.xml$/i.test(name));

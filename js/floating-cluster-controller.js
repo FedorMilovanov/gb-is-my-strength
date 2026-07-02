@@ -23,6 +23,46 @@
     window.matchMedia('(hover: hover) and (pointer: fine)').matches);
 
   /* =====================================================
+     ЖИЗНЕННЫЙ ЦИКЛ И ОЧИСТКА СОБЫТИЙ (BUG-001 fix)
+     ===================================================== */
+  if (window._fcCleanupListeners && typeof window._fcCleanupListeners === 'function') {
+    try { window._fcCleanupListeners(); } catch (_) {}
+  }
+  var _registeredListeners = [];
+  var abortCtrl = typeof AbortController !== 'undefined' ? new AbortController() : null;
+  window._fcAbortController = abortCtrl;
+
+  function addCleanListener(target, type, fn, options) {
+    if (!target || !target.addEventListener) return;
+    var opts = options;
+    if (abortCtrl) {
+      if (typeof options === 'boolean') {
+        opts = { capture: options, signal: abortCtrl.signal };
+      } else if (typeof options === 'object' && options !== null) {
+        opts = Object.assign({}, options, { signal: abortCtrl.signal });
+      } else {
+        opts = { signal: abortCtrl.signal };
+      }
+    }
+    addCleanListener(target, type, fn, opts);
+    _registeredListeners.push({ target: target, type: type, fn: fn, opts: options });
+  }
+
+  window._fcCleanupListeners = window.removeFloatingClusterListeners = function() {
+    if (window._fcAbortController && typeof window._fcAbortController.abort === 'function') {
+      try { window._fcAbortController.abort(); } catch (_) {}
+      window._fcAbortController = null;
+    }
+    for (var i = 0; i < _registeredListeners.length; i++) {
+      var item = _registeredListeners[i];
+      if (item.target && item.target.removeEventListener) {
+        try { item.target.removeEventListener(item.type, item.fn, item.opts); } catch (_) {}
+      }
+    }
+    _registeredListeners = [];
+  };
+
+  /* =====================================================
      УТИЛИТЫ
      ===================================================== */
   function ready(fn) {
@@ -252,7 +292,7 @@
   }
   if ('speechSynthesis' in window) {
     ttsState.voice = pickRuVoice();
-    try { window.speechSynthesis.addEventListener('voiceschanged', function () { ttsState.voice = pickRuVoice(); }); } catch (_) {}
+    try { addCleanListener(window.speechSynthesis, 'voiceschanged', function () { ttsState.voice = pickRuVoice(); }); } catch (_) {}
   }
 
   function getArticleText() {
@@ -408,7 +448,7 @@
   }
 
   // Применяем новую скорость на лету при выборе из Speed panel
-  window.addEventListener('gb:tts-rate-change', function (ev) {
+  addCleanListener(window, 'gb:tts-rate-change', function (ev) {
     if (!('speechSynthesis' in window)) return;
     if (!ttsState.utterance || ttsState.chunkIdx >= ttsState.chunks.length) return;
     // Останавливаем текущий utterance и перестартуем с того же chunk.
@@ -541,7 +581,7 @@
 
   function initKeyboard() {
     if (!shortcutsEnabled()) return;
-    document.addEventListener('keydown', function (e) {
+    addCleanListener(document, 'keydown', function (e) {
       var isInput = e.target.matches('input, textarea, select, [contenteditable]');
       if (isInput) return;
 
@@ -581,7 +621,7 @@
   function initCluster(root) {
     if (root._gbClusterInit) return; // P1-8: prevent double init
     root._gbClusterInit = true;
-    root.addEventListener('click', function (e) {
+    addCleanListener(root, 'click', function (e) {
       // Также обрабатываем GBS2-style theme buttons (data-gbs2-theme)
       if (e.target.closest('[data-gbs2-theme]')) { toggleTheme(); return; }
       if (e.target.closest('[data-gbs2-search]')) { openSearch(e.target.closest('[data-gbs2-search]')); return; }
@@ -608,11 +648,11 @@
     // Wire gbs2 theme/search buttons that exist outside fc-controls scope
     var gbs2ThemeBtns = qsa('[data-gbs2-theme]');
     gbs2ThemeBtns.forEach(function(btn) {
-      btn.addEventListener('click', toggleTheme);
+      addCleanListener(btn, 'click', toggleTheme);
     });
     var gbs2SearchBtns = qsa('[data-gbs2-search]');
     gbs2SearchBtns.forEach(function(btn) {
-      btn.addEventListener('click', function() { openSearch(btn); });
+      addCleanListener(btn, 'click', function() { openSearch(btn); });
     });
     // Expose public API for pages that use gill-rail without data-fc-root
     if (!window.__gbCluster) {
@@ -683,7 +723,7 @@
      ===================================================== */
   ready(function () {
     // 0. Global delegated listeners for GBS2-style controls (works regardless of DOM hierarchy)
-    document.addEventListener('click', function(e) {
+    addCleanListener(document, 'click', function(e) {
       if (e.target.closest('[data-gbs2-theme]')) { e.stopPropagation(); toggleTheme(); }
       if (e.target.closest('[data-gbs2-search]')) { e.stopPropagation(); openSearch(e.target.closest('[data-gbs2-search]')); }
 
@@ -871,12 +911,12 @@
 
     // Mobile TOC button opens series
     if (mobTocBtn && seriesToc) {
-      mobTocBtn.addEventListener('click', function(e) { e.preventDefault(); openOverlay(seriesToc); });
+      addCleanListener(mobTocBtn, 'click', function(e) { e.preventDefault(); openOverlay(seriesToc); });
     }
 
     // Explicit mobile Part TOC button opens the current article/part submenu.
     if (mobPartTocBtn && partToc) {
-      mobPartTocBtn.addEventListener('click', function(e) {
+      addCleanListener(mobPartTocBtn, 'click', function(e) {
         e.preventDefault();
         e.stopPropagation();
         closeOverlay(seriesToc);
@@ -886,7 +926,7 @@
 
     // Back button in Part TOC → Series TOC
     if (backToSeries && seriesToc && partToc) {
-      backToSeries.addEventListener('click', function() {
+      addCleanListener(backToSeries, 'click', function() {
         closeOverlay(partToc);
         openOverlay(seriesToc);
       });
@@ -894,7 +934,7 @@
 
     // Click on current series item → open Part TOC; non-current items navigate.
     if (seriesToc) {
-      seriesToc.addEventListener('click', function(e) {
+      addCleanListener(seriesToc, 'click', function(e) {
         var item = e.target.closest('.toc-item');
         if (!item) return;
         if (item.classList.contains('is-current') && partToc) {
@@ -911,18 +951,18 @@
     // Close overlay on backdrop click
     [seriesToc, partToc].forEach(function(overlay) {
       if (!overlay) return;
-      overlay.addEventListener('click', function(e) {
+      addCleanListener(overlay, 'click', function(e) {
         if (e.target === overlay) closeOverlay(overlay);
       });
       // Close on handle tap/click (simple version)
       var handle = overlay.querySelector('.toc-sheet__handle');
       if (handle) {
-        handle.addEventListener('click', function() { closeOverlay(overlay); });
+        addCleanListener(handle, 'click', function() { closeOverlay(overlay); });
       }
     });
 
     // Escape closes any open overlay
-    document.addEventListener('keydown', function(e) {
+    addCleanListener(document, 'keydown', function(e) {
       if (e.key === 'Escape') {
         closeOverlay(seriesToc);
         closeOverlay(partToc);
@@ -944,7 +984,7 @@
         if (gillProgressPct)  gillProgressPct.textContent  = pct + '%';
         gillScrollTick = false;
       }
-      window.addEventListener('scroll', function() {
+      addCleanListener(window, 'scroll', function() {
         if (!gillScrollTick) {
           gillScrollTick = true;
           requestAnimationFrame(updateGillProgress);
@@ -960,19 +1000,19 @@
     var back = qs('.gbs-rail-back');
     if (back) {
       var href = back.closest('[data-home-href]');
-      back.addEventListener('click', function() {
+      addCleanListener(back, 'click', function() {
         location.href = href ? href.getAttribute('data-home-href') : '../../biografii/';
       });
     }
     // Share button
     qsa('[data-action="share"]').forEach(function(btn) {
-      btn.addEventListener('click', function() {
+      addCleanListener(btn, 'click', function() {
         if (navigator.share) navigator.share({ title: document.title, url: location.href });
       });
     });
     // Print button
     qsa('[data-action="print"]').forEach(function(btn) {
-      btn.addEventListener('click', function() { window.print(); });
+      addCleanListener(btn, 'click', function() { window.print(); });
     });
   }
 
@@ -1053,7 +1093,7 @@
         panel.style.removeProperty('--gb-ember-shift');
       }
 
-      ember.addEventListener('pointerdown', function() {
+      addCleanListener(ember, 'pointerdown', function() {
         clearTimeout(pressTimer);
         pressTimer = setTimeout(function() {
           suppressNextEmberClick = true;
@@ -1062,10 +1102,10 @@
         }, 600);
       });
       ['pointerup', 'pointercancel', 'pointerleave'].forEach(function(type) {
-        ember.addEventListener(type, function() { clearTimeout(pressTimer); });
+        addCleanListener(ember, type, function() { clearTimeout(pressTimer); });
       });
 
-      ember.addEventListener('click', function(e) {
+      addCleanListener(ember, 'click', function(e) {
         e.preventDefault();
         e.stopPropagation();
         if (suppressNextEmberClick) {
@@ -1085,7 +1125,7 @@
         }
       });
 
-      panel.addEventListener('click', function(e) {
+      addCleanListener(panel, 'click', function(e) {
         var btn = e.target.closest('[data-speed]');
         if (btn) {
           e.stopPropagation();
@@ -1118,27 +1158,27 @@
       // Touch: pill is revealed via the play tap (above) / tap toggle (below).
       var leaveTimer = null;
       if (HOVER_CAPABLE) {
-        wrap.addEventListener('mouseenter', function() {
+        addCleanListener(wrap, 'mouseenter', function() {
           clearTimeout(leaveTimer);
           openPanel();
         });
-        wrap.addEventListener('mouseleave', function() {
+        addCleanListener(wrap, 'mouseleave', function() {
           clearTimeout(leaveTimer);
           leaveTimer = setTimeout(closePanel, 260);
         });
         // Keyboard a11y: focusing the ember opens the pill; blur (out of wrap) closes.
-        ember.addEventListener('focus', openPanel);
-        wrap.addEventListener('focusout', function(e) {
+        addCleanListener(ember, 'focus', openPanel);
+        addCleanListener(wrap, 'focusout', function(e) {
           if (!wrap.contains(e.relatedTarget)) {
             clearTimeout(leaveTimer);
             leaveTimer = setTimeout(closePanel, 120);
           }
         });
       }
-      document.addEventListener('click', function(e) {
+      addCleanListener(document, 'click', function(e) {
         if (!wrap.contains(e.target)) closePanel();
       });
-      document.addEventListener('keydown', function(e) {
+      addCleanListener(document, 'keydown', function(e) {
         if (e.key === 'Escape') closePanel();
         // Arrow ←/→ navigation between speed buttons when panel is open
         if (!panel.classList.contains('is-open')) return;
@@ -1193,7 +1233,7 @@
           var a = document.createElement('a');
           a.href = '#' + h.id;
           a.textContent = h.textContent.trim();
-          a.addEventListener('click', function(e) {
+          addCleanListener(a, 'click', function(e) {
             e.preventDefault();
             var target = document.getElementById(h.id);
             if (target) target.scrollIntoView({ behavior: 'smooth', block: 'start' });
@@ -1219,7 +1259,7 @@
           a.appendChild(span);
           var textNode = document.createTextNode(h.textContent.trim());
           a.appendChild(textNode);
-          a.addEventListener('click', function(e) {
+          addCleanListener(a, 'click', function(e) {
             e.preventDefault();
             closeSheet();
             var target = document.getElementById(h.id);
@@ -1266,19 +1306,19 @@
 
     // Bottom bar opens sheet
     if (bbar && sheet) {
-      bbar.addEventListener('click', function() { openSheet(); });
+      addCleanListener(bbar, 'click', function() { openSheet(); });
     }
 
     // Close buttons
     qsa('[data-gbs2-close]').forEach(function(el) {
-      el.addEventListener('click', function(e) {
+      addCleanListener(el, 'click', function(e) {
         e.stopPropagation();
         closeSheet();
       });
     });
 
     // Escape closes sheet
-    document.addEventListener('keydown', function(e) {
+    addCleanListener(document, 'keydown', function(e) {
       if (e.key === 'Escape' && sheet && sheet.classList.contains('gbs2-open')) {
         closeSheet();
       }
@@ -1287,7 +1327,7 @@
     // --- Tab Switching ---
     var tabs = qsa('[data-gbs2-tab]');
     tabs.forEach(function(tab) {
-      tab.addEventListener('click', function() {
+      addCleanListener(tab, 'click', function() {
         var pane = tab.getAttribute('data-gbs2-tab');
         tabs.forEach(function(t) { t.classList.toggle('gbs2-on', t === tab); });
         qsa('[data-gbs2-pane]').forEach(function(p) {
@@ -1298,7 +1338,7 @@
 
     // --- Font Controls ---
     qsa('[data-gbs2-font]').forEach(function(btn) {
-      btn.addEventListener('click', function(e) {
+      addCleanListener(btn, 'click', function(e) {
         e.stopPropagation();
         var dir = btn.getAttribute('data-gbs2-font') === 'up' ? 1 : -1;
         changeFontSize(dir);
@@ -1307,7 +1347,7 @@
 
     // --- Share ---
     qsa('[data-gbs2-share]').forEach(function(btn) {
-      btn.addEventListener('click', function(e) {
+      addCleanListener(btn, 'click', function(e) {
         e.stopPropagation();
         if (navigator.share) {
           navigator.share({ title: document.title, url: location.href });
@@ -1448,7 +1488,7 @@
 
     // Throttled scroll handler
     var scrollTick = false;
-    window.addEventListener('scroll', function() {
+    addCleanListener(window, 'scroll', function() {
       if (!scrollTick) {
         scrollTick = true;
         requestAnimationFrame(function() {
