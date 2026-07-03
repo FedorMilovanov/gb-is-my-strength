@@ -7,9 +7,9 @@
   <channel>
     <title>Господь Бог — Сила Моя</title>
     <link>https://gospod-bog.ru/</link>
-    <description><![CDATA[Богословские разборы и экзегетические статьи на русском языке: Нагорная проповедь (5 частей), Иеремия, Код да Винчи, герменевтика.]]></description>
+    <description><![CDATA[Богословские разборы и экзегетические статьи на русском языке: Нагорная проповедь (5 частей), Баптисты России (10 частей), Иеремия, Код да Винчи, герменевтика.]]></description>
     <language>ru</language>
-    <lastBuildDate>Fri, 03 Jul 2026 08:55:08 +0300</lastBuildDate>
+    <lastBuildDate>Fri, 03 Jul 2026 18:06:02 +0300</lastBuildDate>
     <ttl>1440</ttl>
     <image>
       <url>https://gospod-bog.ru/images/og-preview-1200x630.webp</url>
@@ -18,7 +18,137 @@
     </image>
     <atom:link href="https://gospod-bog.ru/feed.xml" rel="self" type="application/rss+xml"/>
 
+        <item>
+      <title>Справочник источников</title>
+      <link>https://gospod-bog.ru/baptisty-rossii/spravochnik/</link>
+      <guid isPermaLink="true">https://gospod-bog.ru/baptisty-rossii/spravochnik/</guid>
+      <pubDate>Sun, 14 Jun 2026 00:00:00 +0300</pubDate>
+      <dc:creator>Фёдор Милованов</dc:creator>
+      <category>Баптисты России</category>
+      <description><![CDATA[
+        <p>Живой справочник серии: люди, даты, документы, спорные факты, уровни источников, research-досье и очередь правок 3D-карты.</p>
+        <p><a href="https://gospod-bog.ru/baptisty-rossii/spravochnik/">Читать статью →</a></p>
+      ]]></description>
+    </item>
+
     <item>
+      <title>Подпольная печать: Вестники, «Христианин» и память узников</title>
+      <link>https://gospod-bog.ru/baptisty-rossii/podpolnaya-pechat/</link>
+      <guid isPermaLink="true">https://gospod-bog.ru/baptisty-rossii/podpolnaya-pechat/</guid>
+      <pubDate>Sat, 13 Jun 2026 00:00:00 +0300</pubDate>
+      <dc:creator>Фёдор Милованов</dc:creator>
+      <category>Баптисты России</category>
+      <description><![CDATA[
+        <p>Самиздат Совета Церквей: «Вестник спасения», «Вестник Истины», Совет родственников и издательство «Христианин».</p>
+        <p><a href="https://gospod-bog.ru/baptisty-rossii/podpolnaya-pechat/">Читать статью →</a></p>
+      ]]></description>
+    </item>
+
+    <item>
+      <title>Инициативная группа: путь к Совету Церквей</title>
+      <link>https://gospod-bog.ru/baptisty-rossii/iniciativnaya-gruppa/</link>
+      <guid isPermaLink="true">https://gospod-bog.ru/baptisty-rossii/iniciativnaya-gruppa/</guid>
+      <pubDate>Sat, 13 Jun 2026 00:00:00 +0300</pubDate>
+      <dc:creator>Фёдор Милованов</dc:creator>
+      <category>Баптисты России</category>
+      <description><![CDATA[
+        <p>1960–1966: Положение, Инструктивное письмо, Оргкомитет и рождение Совета Церквей ЕХБ.</p>
+        <p><a href="https://gospod-bog.ru/baptisty-rossii/iniciativnaya-gruppa/">Читать статью →</a></p>
+      ]]></description>
+    </item>
+
+    <item>
+      <title>ВСЕХБ 1944: один союз под надзором</title>
+      <link>https://gospod-bog.ru/baptisty-rossii/vsehib-1944/</link>
+      <guid isPermaLink="true">https://gospod-bog.ru/baptisty-rossii/vsehib-1944/</guid>
+      <pubDate>Sat, 13 Jun 2026 00:00:00 +0300</pubDate>
+      <dc:creator>Фёдор Милованов</dc:creator>
+      <category>Баптисты России</category>
+      <description><![CDATA[
+        <p>ВСЕХиБ, Братский Вестник, ХВЕ и Прибалтика</p>
+        <p><a href="https://gospod-bog.ru/baptisty-rossii/vsehib-1944/">Читать статью →</a></p>
+      ]]></description>
+    </item>
+
+    <item>
+      <title>Советская ночь: закон 1929 года и репрессии</title>
+      <link>https://gospod-bog.ru/baptisty-rossii/sovetskaya-noch/</link>
+      <guid isPermaLink="true">https://gospod-bog.ru/baptisty-rossii/sovetskaya-noch/</guid>
+      <pubDate>Sat, 13 Jun 2026 00:00:00 +0300</pubDate>
+      <dc:creator>Фёдор Милованов</dc:creator>
+      <category>Баптисты России</category>
+      <description><![CDATA[
+        <p>Закон 1929, Инструкция НКВД, закрытия и репрессии</p>
+        <p><a href="https://gospod-bog.ru/baptisty-rossii/sovetskaya-noch/">Читать статью →</a></p>
+      ]]></description>
+    </item>
+
+    <item>
+      <title>Свобода совести и военный вопрос</title>
+      <link>https://gospod-bog.ru/baptisty-rossii/goneniya-i-sovest/</link>
+      <guid isPermaLink="true">https://gospod-bog.ru/baptisty-rossii/goneniya-i-sovest/</guid>
+      <pubDate>Sat, 13 Jun 2026 00:00:00 +0300</pubDate>
+      <dc:creator>Фёдор Милованов</dc:creator>
+      <category>Баптисты России</category>
+      <description><![CDATA[
+        <p>Как баптисты и евангельские христиане отвечали на давление государства, военный вопрос и вызов свободы совести.</p>
+        <p><a href="https://gospod-bog.ru/baptisty-rossii/goneniya-i-sovest/">Читать статью →</a></p>
+      ]]></description>
+    </item>
+
+    <item>
+      <title>Петербургское пробуждение: Редсток, Пашков и Проханов</title>
+      <link>https://gospod-bog.ru/baptisty-rossii/peterburgskaya-liniya/</link>
+      <guid isPermaLink="true">https://gospod-bog.ru/baptisty-rossii/peterburgskaya-liniya/</guid>
+      <pubDate>Sat, 13 Jun 2026 00:00:00 +0300</pubDate>
+      <dc:creator>Фёдор Милованов</dc:creator>
+      <category>Баптисты России</category>
+      <description><![CDATA[
+        <p>Редсток, Пашков, Корф, Каргель и Проханов</p>
+        <p><a href="https://gospod-bog.ru/baptisty-rossii/peterburgskaya-liniya/">Читать статью →</a></p>
+      ]]></description>
+    </item>
+
+    <item>
+      <title>Петербург и Ново-Васильевка: две развилки 1884 года</title>
+      <link>https://gospod-bog.ru/baptisty-rossii/dva-sezda-1884/</link>
+      <guid isPermaLink="true">https://gospod-bog.ru/baptisty-rossii/dva-sezda-1884/</guid>
+      <pubDate>Sat, 13 Jun 2026 00:00:00 +0300</pubDate>
+      <dc:creator>Фёдор Милованов</dc:creator>
+      <category>Баптисты России</category>
+      <description><![CDATA[
+        <p>Почему Петербургское совещание Пашкова/Корфа и Ново-Васильевский баптистский съезд 1884 года нельзя смешивать.</p>
+        <p><a href="https://gospod-bog.ru/baptisty-rossii/dva-sezda-1884/">Читать статью →</a></p>
+      ]]></description>
+    </item>
+
+    <item>
+      <title>Южная штунда и первые крещения</title>
+      <link>https://gospod-bog.ru/baptisty-rossii/yuzhnaya-shtunda/</link>
+      <guid isPermaLink="true">https://gospod-bog.ru/baptisty-rossii/yuzhnaya-shtunda/</guid>
+      <pubDate>Sat, 13 Jun 2026 00:00:00 +0300</pubDate>
+      <dc:creator>Фёдор Милованов</dc:creator>
+      <category>Баптисты России</category>
+      <description><![CDATA[
+        <p>Унгер, Цимбал, Рябошапка, Ратушный, Прицкау и Онкен: как деревенское чтение Нового Завета стало баптистской сетью.</p>
+        <p><a href="https://gospod-bog.ru/baptisty-rossii/yuzhnaya-shtunda/">Читать статью →</a></p>
+      ]]></description>
+    </item>
+
+    <item>
+      <title>Воронин и ночь на Куре</title>
+      <link>https://gospod-bog.ru/baptisty-rossii/noch-na-kure/</link>
+      <guid isPermaLink="true">https://gospod-bog.ru/baptisty-rossii/noch-na-kure/</guid>
+      <pubDate>Sat, 13 Jun 2026 00:00:00 +0300</pubDate>
+      <dc:creator>Фёдор Милованов</dc:creator>
+      <category>Баптисты России</category>
+      <description><![CDATA[
+        <p>Как молоканский поиск, Деляков и Кальвейт привели к первой русской баптистской общине в Тифлисе.</p>
+        <p><a href="https://gospod-bog.ru/baptisty-rossii/noch-na-kure/">Читать статью →</a></p>
+      ]]></description>
+    </item>
+
+<item>
       <title>Римлянам 7: верующий, неверующий или человек под законом?</title>
       <link>https://gospod-bog.ru/articles/rimlyanam-7-veruyushchiy-ili-neveruyushchiy/</link>
       <guid isPermaLink="true">https://gospod-bog.ru/articles/rimlyanam-7-veruyushchiy-ili-neveruyushchiy/</guid>
