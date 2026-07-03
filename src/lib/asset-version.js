@@ -5,7 +5,7 @@
 export const ASSET_VERSIONS = {
   'css/command-palette.css': 'afe33045',
   'css/enhancements-runtime.css': '40f4c45f',
-  'css/floating-cluster.css': '34c92208',
+  'css/floating-cluster.css': '46d51653',
   'css/highlights-runtime.css': '4e0cd377',
   'css/home.css': '15b094aa',
   'css/mobile-hotfix.css': '997b959e',
