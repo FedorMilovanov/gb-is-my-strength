@@ -18,6 +18,8 @@ const ASSETS = [
   'css/mobile-hotfix.css',
   'css/nagornaya-mobile-toc.css',
   'css/floating-cluster.css',
+  'css/enhancements-runtime.css',
+  'css/highlights-runtime.css',
   'fonts/fonts.css',
   'nagornaya/tw.min.css',
   'js/site.js',
