@@ -10,7 +10,11 @@ import RodosloviyePageHead from '@/components/rodosloviye/RodosloviyePageHead.as
 import RodosloviyeStyles from '@/components/rodosloviye/RodosloviyeStyles.astro';
 import RodosloviyeBody from '@/components/rodosloviye/RodosloviyeBody.astro';
 import GenealogyTree from '@/components/genealogy/GenealogyTree.tsx';
-import genealogyData from '@/data/genealogy/genealogy.json';
+import type { Person, Era } from '@/components/genealogy/types';
+import genealogyData from '../../../data/genealogy/genealogy.json';
+
+const persons = genealogyData.persons as unknown as Person[];
+const eras = genealogyData.eras as unknown as Era[];
 ---
 <!DOCTYPE html>
 <html lang="ru" data-theme="light">
@@ -21,7 +25,7 @@ import genealogyData from '@/data/genealogy/genealogy.json';
   <body class="site-page">
     <RodosloviyeBody />
     <div id="genealogy-tree" class="genealogy-interactive-wrap" style="width: 100%; height: 85vh; min-height: 650px; border-top: 1px solid var(--border-color, #e2e8f0); margin-top: 2rem; position: relative;">
-      <GenealogyTree client:only="react" persons={genealogyData.persons} eras={genealogyData.eras} />
+      <GenealogyTree client:only="react" persons={persons} eras={eras} />
     </div>
   </body>
 </html>
