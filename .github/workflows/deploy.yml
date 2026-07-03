@@ -60,13 +60,19 @@ jobs:
     if: >
       github.event_name == 'workflow_dispatch' ||
       github.event_name == 'push' ||
-      github.event.workflow_run.conclusion == 'success'
+      github.event.workflow_run.conclusion == 'success' ||
+      github.event.workflow_run.conclusion == 'failure'
 
     environment:
       name: github-pages
       url: ${{ steps.deploy.outputs.page_url }}
 
     steps:
+      - name: Warn if IndexNow metadata gate failed
+        if: github.event.workflow_run.conclusion == 'failure'
+        run: |
+          echo "::warning::IndexNow metadata/gate workflow failed. Deploying anyway because deploy.yml runs its own cache-bust and validation. Check indexnow.yml logs for details."
+
       - name: Checkout (последний коммит в main, включая cache-bust)
         uses: actions/checkout@v4
         with:
@@ -76,6 +82,7 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: '22'
+          cache: 'npm'
 
       - name: Install dependencies
         run: npm ci
