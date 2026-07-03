@@ -5,6 +5,10 @@
 
 User-agent: *
 Allow: /css/*.css?*
+Allow: /fonts/*.css?*
+Allow: /fonts/*.woff2?*
+Allow: /images/*?*
+Allow: /icons/*?*
 Allow: /js/*.js?*
 Allow: /nagornaya/*.css?*
 Allow: /data/*.json?*
