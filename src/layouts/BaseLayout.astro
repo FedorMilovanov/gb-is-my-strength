@@ -146,6 +146,9 @@ const effectiveBodyEndHtml = [genericRuntime, bodyEndHtml].filter(Boolean).join(
          the legacy visual contract. Shadow-wrapped pages also receive their
          legacy-extracted CSS (links + inline <style>) via headHtml below; any
          overlap is the same file and is harmlessly deduped by the browser. -->
+    <link rel="preload" as="font" type="font/woff2" href="/fonts/Lora/lora-cyrillic-400.woff2" crossorigin />
+    <link rel="preload" as="font" type="font/woff2" href="/fonts/Inter/inter-cyrillic-600.woff2" crossorigin />
+    <link rel="preload" as="font" type="font/woff2" href="/fonts/PlayfairDisplay/playfairdisplay-cyrillic-700.woff2" crossorigin />
     <link rel="stylesheet" href="/fonts/fonts.css" />
     <link rel="stylesheet" href="/css/site.css" />
     <link rel="stylesheet" href="/css/command-palette.css" />
