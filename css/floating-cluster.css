@@ -779,13 +779,21 @@ html.dark [data-gill-v16] .gb-theme-toggle .theme-icon-moon{opacity:1;transform:
 }
 
 /* GBS RAIL */
+/* GB2 (Gill) series rail — full-page sticky card with a rounded frame.
+   Layout (grid + sticky + centered container) lives in the [data-gill-v16] desktop block below;
+   this block owns the card surface, frame and inner flex distribution. */
 [data-gill-v16] .gbs-rail{
-  width:240px;display:flex;flex-direction:column;gap:10px;
-  padding:14px 12px 12px;border-radius:14px;
-  background:rgba(255,255,255,.045);
-  border:1px solid rgba(255,255,255,.08);
-  position:relative;
+  display:flex;flex-direction:column;gap:0;width:100%;
+  border-radius:18px;
+  background:linear-gradient(180deg,#1f1c18 0%,#16130f 100%);
+  border:1px solid rgba(232,184,120,.16);
+  box-shadow:0 26px 70px rgba(20,12,6,.40),0 0 0 1px rgba(255,255,255,.025) inset,0 0 34px rgba(122,46,46,.10) inset;
+  color:var(--gbs2-rtext,#d6d3d1);
+  overflow:hidden;padding:0;z-index:2;
 }
+[data-gill-v16] .gbs-rail .gbs2-rmid{padding:48px 8px 6px;gap:6px;min-height:0}
+[data-gill-v16] .gbs-rail .gbs-rail-list{padding:0 2px}
+[data-gill-v16] .gbs-rail .gbs-rail-foot{padding:12px 8px 14px;border-top:1px solid rgba(255,255,255,.08)}
 [data-gill-v16] .gbs-rail-back{
   position:absolute;top:10px;left:10px;
   width:36px;height:36px;
@@ -2211,10 +2219,9 @@ html.dark .gb-roman {
     min-height:auto;
   }
   .gbs2-world[data-gill-v16] > .gbs-rail{
-    grid-column:1;
-    position:sticky;top:16px;align-self:start;
-    max-height:calc(100vh - 32px);max-height:calc(100dvh - 32px);
-    overflow:auto;
+    position:fixed;top:16px;bottom:16px;
+    left:calc((100vw - min(1180px,94vw)) / 2);
+    width:240px;overflow:hidden;z-index:var(--z-sticky,1000);
   }
   .gbs2-world[data-gill-v16] > .page-wrap{
     grid-column:2;width:min(820px,100%);
