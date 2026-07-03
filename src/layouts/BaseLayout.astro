@@ -107,8 +107,8 @@ function makeGenericRuntime(includeMetrika = true) {
   return [
     includeMetrika ? metrika : '',
     cfg,
-    `<script src="${assetUrl('js/site-utils.js')}"></script>`,
-    `<script src="${assetUrl('js/scroll-perf.js')}"></script>`,
+    `<script defer src="${assetUrl('js/site-utils.js')}"></script>`,
+    `<script defer src="${assetUrl('js/scroll-perf.js')}"></script>`,
     `<script defer src="${assetUrl('js/site.js')}"></script>`,
     `<script defer src="${assetUrl('js/sw-register.js')}"></script>`,
     `<script defer src="${assetUrl('js/search.js')}"></script>`,

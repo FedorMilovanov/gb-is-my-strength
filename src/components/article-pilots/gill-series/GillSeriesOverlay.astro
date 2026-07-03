@@ -20,7 +20,7 @@ const { pageId } = Astro.props;
         const isCurrent = item.id === pageId;
         const href = isCurrent ? '#partTocOverlay' : item.href;
         return (
-          <a class:list={['toc-item', isCurrent && 'is-current']} href={href} aria-current={isCurrent ? 'page' : undefined} data-gill-current-part={isCurrent ? 'true' : undefined}>
+          <a class:list={['toc-item', isCurrent && 'is-current']} href={href} aria-current={isCurrent ? 'page' : undefined}>
             <SeriesMark kind={item.mark.kind} value={item.mark.value} className="toc-item__num" />
             <div class="toc-item__info">
               <b>{item.title}</b>
