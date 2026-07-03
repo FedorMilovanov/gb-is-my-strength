@@ -337,9 +337,8 @@ CSS-фичи, не поддерживаемые в этих версиях (`col
 │   ├── home.css                    ← только главная + каталоги (hero, dashboard)
 │   ├── command-palette.css         ← поиск (Ctrl+K)
 │   ├── mobile-hotfix.css           ← мобильные производительные hotfix-правки
-│   ├── nagornaya-mobile-toc.css    ← мобильное оглавление Нагорной проповеди
-│   ├── floating-cluster.css        ← runtime PremiumControls (загружается + SW precache)
-│   └── premium-controls.css        ← копия канонического источника src/styles/premium-controls.css
+│   └── nagornaya-mobile-toc.css    ← мобильное оглавление Нагорной проповеди
+│   └── floating-cluster.css        ← runtime PremiumControls (загружается + SW precache)
 │
 ├── fonts/
 │   └── fonts.css                   ← @font-face деклараты, не трогать
