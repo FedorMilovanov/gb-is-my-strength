@@ -15,11 +15,12 @@ export const ASSET_VERSIONS = {
   'js/floating-cluster-controller.js': '1bbd3c54',
   'js/glossary.js': '91b65962',
   'js/highlights.js': 'eca2588c',
+  'js/modules/back-to-top.js': '6d211593',
   'js/nagornaya-mobile-toc.js': '866d4238',
   'js/scroll-perf.js': '454d6f7b',
   'js/search.js': '41634d58',
   'js/site-utils.js': '897afa55',
-  'js/site.js': '04d99087',
+  'js/site.js': '4c78fd7c',
   'js/sw-register.js': '318502c5',
   'nagornaya/tw.min.css': '2670414e',
 };
