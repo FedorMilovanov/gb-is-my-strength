@@ -153,6 +153,9 @@ jobs:
       - name: Gill mobile reference layout audit
         run: npm run gill:mobile-layout:audit
 
+      - name: Broad production-like dist runtime smoke
+        run: node scripts/dist-smoke-audit.js --no-build --production-like
+
       - name: Service Worker deploy-switch readiness
         run: npm run sw:dist:audit:deploy-switch
 
