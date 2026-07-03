@@ -1055,7 +1055,7 @@ html.dark [data-gill-v16] .mobile-bottom-bar{background:rgba(22,26,33,.96);borde
 [data-gill-v16] .mobile-icon-row .gb-ember__glyph{width:14px;height:14px}
 [data-gill-v16] .mobile-icon-row .gb-ember__pause{width:14px;height:14px}
 [data-gill-v16] .mobile-icon-row .gb-ember__check{width:14px;height:14px}
-[data-gill-v16] .mobile-icon-row .gb-icon{--icon-size:30px;--icon-radius:50%}
+[data-gill-v16] .mobile-icon-row .gb-icon{}
 [data-gill-v16] .mobile-icon-row .gb-icon svg{width:15px;height:15px}
 
 /* ============================================================
