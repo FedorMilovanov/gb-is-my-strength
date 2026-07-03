@@ -1,6 +1,6 @@
 function safeReady(fn){
   if(window.SiteUtils && typeof window.SiteUtils.ready === 'function'){
-    window.safeReady(fn);
+    window.SiteUtils.ready(fn);
   } else {
     if(document.readyState === 'loading'){
       document.addEventListener('DOMContentLoaded', fn);

@@ -440,6 +440,7 @@ return caches.open(CACHE).then(function(c){return Promise.all(urls.map(function(
 }();
 ;!function(){"use strict";
 /* §2.4a — Backlinks/outlinks block at bottom of articles */
+function tt(v){return String(v==null?"":v).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/\"/g,"&quot;")}
 var art=document.querySelector("article")||document.querySelector("main[data-pagefind-body]");
 if(!art)return;
 var path=decodeURIComponent(location.pathname).replace(/\/+$/,"/")+"/";
