@@ -81,6 +81,7 @@ SANDBOX-ENV   → как выжить в конкретной среде (Arena)
 | **AGENTS-r308** | 2026-06-27 | **Schema rich-results audit added.** New `npm run schema:rich-results:audit` and `schema:rich-results:audit:dist` semantically validate JSON-LD Article/Breadcrumb/FAQ requirements and literal `{jsonLd}` regressions. Local Windows runner now inventories existing `reports/*` artifacts from Fedor's machine. |
 | **AGENTS-r309** | 2026-06-27 | **Local Windows launcher fixed.** Added root `RUN-LOCAL-WINDOWS-AUDIT.cmd` so Fedor runs audits as a script instead of pasting `.ps1` into PowerShell. The PowerShell runner now has robust repo-root fallback for pasted/interactive contexts and stricter external command sequencing. |
 | **AGENTS-r310** | 2026-06-27 | **Local audit report storage policy fixed.** Removed accidentally committed root `LOCAL_REPO_AUDIT_REPORT.txt`; local Windows runner now writes compact Markdown with per-check full logs under ignored `reports/local-external-checks-*/logs/`. Root pasted/raw audit reports are ignored. |
+| **AGENTS-r312** | 2026-07-03 | **CSS inventory reconciled.** Section 2 updated from 8→9 CSS files (added `enhancements-runtime.css`, `highlights-runtime.css`, `sw-toast.css` extracted from CSS-in-JS in Pass 24). Dead exports removed from `floating-cluster-ui.ts` (5 dead: `FloatingClusterMode`, `FloatingClusterUiConfig`, `floatingClusterUi`, `floatingClusterRoutes`, `getSeriesParts`). §0 and §4 CSS table updated. |
 | **AGENTS-r311** | 2026-06-28 | **PremiumControls doctrine corrected for Hermeneutics + Gill v16 marks.** Section 3.10 no longer teaches the retired `right: max(calc((100vw - min(820px, 92vw)) / 2 - 28px), 16px)` formula. Canonical Hermeneutics position is the v16 `right: max(8.5vw, env(...))` / mobile `max(4.5vw, env(...))` contract. Gill series marks must use `SeriesMark`/`RomanNumeral`: intro=`Введение`, parts=`I/II/III`, spravochnik=`Справ.`. |
 
 ---
@@ -253,7 +254,7 @@ Older changelog rows **AGENTS-r77–r131** and older 2026-06-13 map-wave rows **
 
 ## 0. TLDR — что СРАЗУ нельзя делать
 
-1. ❌ **Создавать новые CSS/JS файлы.** Архитектурный максимум: **5 CSS + 1 шрифтовой + 11 JS**. Список фиксирован, см. §2.
+1. ❌ **Создавать новые CSS/JS файлы.** Архитектурный максимум: **9 CSS + 1 шрифтовой + 11 JS**. Список фиксирован, см. §2.
 2. ❌ **Менять byline на «Автор: Фёдор Милованов».** Только `Автор-редактор:` (тип A/B) или `Редактор:` (тип C — переводы). См. §3.1.
 3. ❌ **Возвращать `AI-disclosure`.** Удалён 2026-06-02 (`AGENTS-r11`), повторно удалён в PLAN-04 (CSS-остатки). Об ИИ — только на `/about/`.
 4. ❌ **Запускать `prettier --write .` или `eslint --fix .`** по всему дереву. Только точечно.
@@ -332,13 +333,16 @@ CSS-фичи, не поддерживаемые в этих версиях (`col
 ├── migration/page-ownership.json    ← ownership manifest для dist
 ├── .github/workflows/              ← deploy.yml + indexnow.yml + source-links + notify-on-failure
 │
-├── css/                            ← РОВНО 8 ФАЙЛОВ. БОЛЬШЕ НЕ СОЗДАВАТЬ.
+├── css/                            ← РОВНО 9 ФАЙЛОВ. БОЛЬШЕ НЕ СОЗДАВАТЬ.
 │   ├── site.css                    ← основной слой (статьи, шапка, тёмная тема)
 │   ├── home.css                    ← только главная + каталоги (hero, dashboard)
 │   ├── command-palette.css         ← поиск (Ctrl+K)
 │   ├── mobile-hotfix.css           ← мобильные производительные hotfix-правки
 │   └── nagornaya-mobile-toc.css    ← мобильное оглавление Нагорной проповеди
 │   └── floating-cluster.css        ← runtime PremiumControls (загружается + SW precache)
+│   ├── enhancements-runtime.css    ← извлечён из enhancements.js (CSS-in-JS → файл)
+│   ├── highlights-runtime.css      ← извлечён из highlights.js (CSS-in-JS → файл)
+│   └── sw-toast.css                ← извлечён из sw-register.js (CSS-in-JS → файл)
 │
 ├── fonts/
 │   └── fonts.css                   ← @font-face деклараты, не трогать
@@ -403,7 +407,7 @@ CSS-фичи, не поддерживаемые в этих версиях (`col
 
 ### Запрещено создавать новые CSS-файлы
 
-У сайта **ровно 5 CSS + 1 шрифтовой**. Каждый файл = отдельный HTTP-запрос на статическом хостинге без bundler'а. Новая правка идёт в существующий файл по таблице:
+У сайта **ровно 9 CSS + 1 шрифтовой**. Каждый файл = отдельный HTTP-запрос на статическом хостинге без bundler'а. Новая правка идёт в существующий файл по таблице:
 
 | Что правишь | В какой CSS |
 |---|---|
@@ -412,6 +416,10 @@ CSS-фичи, не поддерживаемые в этих версиях (`col
 | Поиск (Ctrl+K, всплывашка) | `command-palette.css` |
 | Мобильные hotfix touch-pointer overrides | `mobile-hotfix.css` |
 | Мобильное оглавление Нагорной проповеди | `nagornaya-mobile-toc.css` |
+| PremiumControls runtime | `floating-cluster.css` |
+| Runtime-стили enhancements (scroll-эффекты) | `enhancements-runtime.css` |
+| Runtime-стили highlights (подсветка) | `highlights-runtime.css` |
+| Runtime-стили SW toast | `sw-toast.css` |
 | @font-face декларации | `fonts/fonts.css` |
 | Tailwind для Нагорной | `nagornaya/tw.min.css` (НЕ ТРОГАТЬ) |
 
