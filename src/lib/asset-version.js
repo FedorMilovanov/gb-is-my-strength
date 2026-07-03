@@ -11,6 +11,7 @@ export const ASSET_VERSIONS = {
   'css/mobile-hotfix.css': '997b959e',
   'css/nagornaya-mobile-toc.css': 'c4a4a7fd',
   'css/site.css': '0ab84ed3',
+  'css/sw-toast.css': 'efbe868b',
   'fonts/fonts.css': '864cc57a',
   'js/bookmark-engine.js': '385acccc',
   'js/enhancements.js': '9a3d493e',
@@ -22,7 +23,7 @@ export const ASSET_VERSIONS = {
   'js/search.js': '41634d58',
   'js/site-utils.js': '897afa55',
   'js/site.js': '77687914',
-  'js/sw-register.js': '318502c5',
+  'js/sw-register.js': '620b42f2',
   'nagornaya/tw.min.css': '2670414e',
 };
 

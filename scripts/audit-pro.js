@@ -40,6 +40,7 @@ const ALLOWED_CSS = new Set([
   'css/floating-cluster.css',
   'css/enhancements-runtime.css',
   'css/highlights-runtime.css',
+  'css/sw-toast.css',
   'css/nagornaya-mobile-toc.css'
 ]);
 
@@ -283,7 +284,8 @@ const SITE_CSS_MIN_BYTES = 200_000;
                    'css/mobile-hotfix.css',
                    'css/floating-cluster.css',
   'css/enhancements-runtime.css',
-  'css/highlights-runtime.css', 'css/nagornaya-mobile-toc.css']) {
+  'css/highlights-runtime.css',
+  'css/sw-toast.css', 'css/nagornaya-mobile-toc.css']) {
     const p = path.join(ROOT, f);
     if (!fs.existsSync(p)) continue;
     const s = fs.readFileSync(p, 'utf8');
@@ -1362,7 +1364,8 @@ const SITE_CSS_MIN_BYTES = 200_000;
                     'css/mobile-hotfix.css',
   'css/floating-cluster.css',
   'css/enhancements-runtime.css',
-  'css/highlights-runtime.css', 'css/nagornaya-mobile-toc.css'];
+  'css/highlights-runtime.css',
+  'css/sw-toast.css', 'css/nagornaya-mobile-toc.css'];
   const offenders = [];
   for (const f of cssFiles) {
     const p = path.join(ROOT, f);
@@ -1649,6 +1652,7 @@ const SITE_CSS_MIN_BYTES = 200_000;
   'css/floating-cluster.css',
   'css/enhancements-runtime.css',
   'css/highlights-runtime.css',
+  'css/sw-toast.css',
                     'nagornaya/tw.min.css'];
   const defined = new Set();
   // Externals = vars set dynamically (JS / inline style at runtime) or by browser
@@ -2116,7 +2120,8 @@ const JS_SIZE_FLOORS = {
                     'css/mobile-hotfix.css',
   'css/floating-cluster.css',
   'css/enhancements-runtime.css',
-  'css/highlights-runtime.css', 'css/nagornaya-mobile-toc.css'];
+  'css/highlights-runtime.css',
+  'css/sw-toast.css', 'css/nagornaya-mobile-toc.css'];
   let css = '';
   for (const f of cssFiles) {
     const p = path.join(ROOT, f);
@@ -2291,7 +2296,8 @@ const JS_SIZE_FLOORS = {
                     'css/mobile-hotfix.css',
   'css/floating-cluster.css',
   'css/enhancements-runtime.css',
-  'css/highlights-runtime.css', 'css/nagornaya-mobile-toc.css'];
+  'css/highlights-runtime.css',
+  'css/sw-toast.css', 'css/nagornaya-mobile-toc.css'];
   const BAD = [
     /-webkit-border-radius\s*:/g,
     /-moz-border-radius\s*:/g,
@@ -2611,7 +2617,8 @@ const JS_SIZE_FLOORS = {
                     'css/mobile-hotfix.css',
   'css/floating-cluster.css',
   'css/enhancements-runtime.css',
-  'css/highlights-runtime.css', 'css/nagornaya-mobile-toc.css'];
+  'css/highlights-runtime.css',
+  'css/sw-toast.css', 'css/nagornaya-mobile-toc.css'];
   const offenders = [];
   for (const f of cssFiles) {
     const p = path.join(ROOT, f);
@@ -2737,7 +2744,8 @@ const JS_SIZE_FLOORS = {
                     'css/mobile-hotfix.css',
   'css/floating-cluster.css',
   'css/enhancements-runtime.css',
-  'css/highlights-runtime.css', 'css/nagornaya-mobile-toc.css'];
+  'css/highlights-runtime.css',
+  'css/sw-toast.css', 'css/nagornaya-mobile-toc.css'];
   const NAMED = ['red','blue','green','yellow','purple','pink','cyan','magenta','orange','brown','gray','grey'];
   const offenders = [];
   for (const f of cssFiles) {
@@ -2790,7 +2798,8 @@ const JS_SIZE_FLOORS = {
                     'css/mobile-hotfix.css',
   'css/floating-cluster.css',
   'css/enhancements-runtime.css',
-  'css/highlights-runtime.css', 'css/nagornaya-mobile-toc.css'];
+  'css/highlights-runtime.css',
+  'css/sw-toast.css', 'css/nagornaya-mobile-toc.css'];
   const offenders = [];
   for (const f of cssFiles) {
     const p = path.join(ROOT, f);
@@ -3170,7 +3179,8 @@ const JS_SIZE_FLOORS = {
                     'css/mobile-hotfix.css',
   'css/floating-cluster.css',
   'css/enhancements-runtime.css',
-  'css/highlights-runtime.css', 'css/nagornaya-mobile-toc.css'];
+  'css/highlights-runtime.css',
+  'css/sw-toast.css', 'css/nagornaya-mobile-toc.css'];
   const offenders = [];
   for (const f of cssFiles) {
     const p = path.join(ROOT, f);
@@ -3261,7 +3271,8 @@ const JS_SIZE_FLOORS = {
                    'css/mobile-hotfix.css',
                    'css/floating-cluster.css',
   'css/enhancements-runtime.css',
-  'css/highlights-runtime.css', 'css/nagornaya-mobile-toc.css']) {
+  'css/highlights-runtime.css',
+  'css/sw-toast.css', 'css/nagornaya-mobile-toc.css']) {
     const p = path.join(ROOT, f);
     if (!fs.existsSync(p)) continue;
     const css = fs.readFileSync(p, 'utf8');
@@ -3359,7 +3370,8 @@ const JS_SIZE_FLOORS = {
                     'css/mobile-hotfix.css',
   'css/floating-cluster.css',
   'css/enhancements-runtime.css',
-  'css/highlights-runtime.css', 'css/nagornaya-mobile-toc.css'];
+  'css/highlights-runtime.css',
+  'css/sw-toast.css', 'css/nagornaya-mobile-toc.css'];
   let allCss = '';
   for (const f of cssFiles) {
     const p = path.join(ROOT, f);

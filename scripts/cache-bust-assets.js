@@ -20,6 +20,7 @@ const ASSETS = [
   'css/floating-cluster.css',
   'css/enhancements-runtime.css',
   'css/highlights-runtime.css',
+  'css/sw-toast.css',
   'fonts/fonts.css',
   'nagornaya/tw.min.css',
   'js/site.js',
