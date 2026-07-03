@@ -296,6 +296,17 @@ function checkSwPrecache() {
   }
   if (missing.length) missing.forEach(a => bad(`sw.js precache asset missing in dist: ${a}`));
   else ok(`sw.js precache assets resolve in dist (${assets.length}, pagefind ${REQUIRE_PAGEFIND ? 'required' : 'optional'})`);
+
+  try {
+    const { ASSETS } = require('./cache-bust-assets');
+    const swAssets = new Set(assets.map(a => a.replace(/^\//, '').split('?')[0]));
+    const drift = ASSETS.filter(a => !swAssets.has(a));
+    if (drift.length) {
+      drift.forEach(a => bad(`sw.js PRECACHE_ASSETS is missing cache-busted asset: ${a}`));
+    } else {
+      ok(`sw.js PRECACHE_ASSETS is 100% synchronized with cache-bust-assets.js (${ASSETS.length} shared assets)`);
+    }
+  } catch (e) {}
 }
 function checkPagefind() {
   const has = exists('pagefind/pagefind.js');

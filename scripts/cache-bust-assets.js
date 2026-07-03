@@ -31,6 +31,7 @@ const ASSETS = [
   'js/nagornaya-mobile-toc.js',
   'js/glossary.js',
   'js/floating-cluster-controller.js',
+  'js/modules/back-to-top.js',
 ];
 
 module.exports = { ASSETS };
