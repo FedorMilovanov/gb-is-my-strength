@@ -44,7 +44,7 @@
         opts = { signal: abortCtrl.signal };
       }
     }
-    addCleanListener(target, type, fn, opts);
+    target.addEventListener(type, fn, opts);
     _registeredListeners.push({ target: target, type: type, fn: fn, opts: options });
   }
 
