@@ -54,13 +54,13 @@ jobs:
   deploy:
     runs-on: ubuntu-latest
 
-    # Deploy after manual run, asset-only push, or after IndexNow completes (success or failure).
-    # IndexNow failure must NOT block production deploy — the deploy gate validates independently.
+    # Deploy after manual run, asset-only push, or after IndexNow metadata/gate check succeeds.
+    # Now that IndexNow submission runs post-deploy in deploy.yml, indexnow.yml only runs metadata
+    # and validation gates. If indexnow.yml fails, production deploy must be blocked.
     if: >
       github.event_name == 'workflow_dispatch' ||
       github.event_name == 'push' ||
-      github.event.workflow_run.conclusion == 'success' ||
-      github.event.workflow_run.conclusion == 'failure'
+      github.event.workflow_run.conclusion == 'success'
 
     environment:
       name: github-pages
