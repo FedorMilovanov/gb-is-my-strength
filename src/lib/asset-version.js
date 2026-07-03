@@ -15,7 +15,6 @@ export const ASSET_VERSIONS = {
   'js/floating-cluster-controller.js': '1bbd3c54',
   'js/glossary.js': '91b65962',
   'js/highlights.js': 'eca2588c',
-  'js/modules/back-to-top.js': '6d211593',
   'js/nagornaya-mobile-toc.js': '866d4238',
   'js/scroll-perf.js': '454d6f7b',
   'js/search.js': '41634d58',

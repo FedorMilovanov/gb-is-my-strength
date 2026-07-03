@@ -306,7 +306,7 @@ function checkSwPrecache() {
     } else {
       ok(`sw.js PRECACHE_ASSETS is 100% synchronized with cache-bust-assets.js (${ASSETS.length} shared assets)`);
     }
-  } catch (e) {}
+  } catch (e) { bad(`cache-bust-assets sync check failed: ${e.message}`); }
 }
 function checkPagefind() {
   const has = exists('pagefind/pagefind.js');

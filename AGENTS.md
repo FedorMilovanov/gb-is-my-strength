@@ -339,13 +339,12 @@ CSS-фичи, не поддерживаемые в этих версиях (`col
 │   ├── mobile-hotfix.css           ← мобильные производительные hotfix-правки
 │   ├── nagornaya-mobile-toc.css    ← мобильное оглавление Нагорной проповеди
 │   ├── floating-cluster.css        ← runtime PremiumControls (загружается + SW precache)
-│   ├── premium-controls.css        ← копия канонического источника src/styles/premium-controls.css
-│   └── site-layered.css            ← legacy/layered резервный CSS
+│   └── premium-controls.css        ← копия канонического источника src/styles/premium-controls.css
 │
 ├── fonts/
 │   └── fonts.css                   ← @font-face деклараты, не трогать
 │
-├── js/                             ← РОВНО 12 ФАЙЛОВ + modules/. БОЛЬШЕ НЕ СОЗДАВАТЬ.
+├── js/                             ← РОВНО 12 ФАЙЛОВ. БОЛЬШЕ НЕ СОЗДАВАТЬ.
 │   ├── site.js                     ← главное (theme, nav, quiz, tooltips, gbFloatingControls)
 │   ├── site-utils.js               ← утилиты, доступные отдельным страницам
 │   ├── scroll-perf.js              ← производительность scroll/observers
@@ -354,12 +353,9 @@ CSS-фичи, не поддерживаемые в этих версиях (`col
 │   ├── highlights.js               ← подсветка текста, заметки
 │   ├── glossary.js                 ← глоссарий богословских терминов
 │   ├── bookmark-engine.js          ← закладки (localStorage)
-│   ├── series-cards.js             ← карточки серий
 │   ├── nagornaya-mobile-toc.js     ← мобильное TOC для проповеди
 │   ├── sw-register.js              ← регистрация Service Worker
-│   ├── floating-cluster-controller.js ← PremiumControls runtime controller (TTS, speed morph, favorites)
-│   └── modules/
-│       └── back-to-top.js          ← модуль кнопки возврата наверх
+│   └── floating-cluster-controller.js ← PremiumControls runtime controller (TTS, speed morph, favorites)
 │
 ├── data/                           ← JSON-данные для рантайма
 │   ├── glossary.json               ← термины глоссария

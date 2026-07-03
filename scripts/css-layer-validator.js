@@ -10,7 +10,7 @@
  *   5. Reports unlayered rules vs layered rules ratio
  *
  * Usage:
- *   node scripts/css-layer-validator.js css/site-layered.css
+ *   node scripts/css-layer-validator.js css/site.css
  *   node scripts/css-layer-validator.js css/site.css --ceiling 202
  */
 'use strict';
