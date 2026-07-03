@@ -17,12 +17,19 @@ const required = [
 
 const aliases = {
   '--bg': '--color-canvas', '--bg-elevated': '--color-surface', '--text': '--color-text', '--muted': '--color-text-muted',
-  '--border': '--color-border', '--border-strong': '--color-border-strong', '--accent': '--color-accent',
-  '--accent-soft': '--color-accent-soft', '--accent-strong': '--color-accent-strong', '--link': '--color-link',
-  '--note-bg': '--color-surface-muted', '--quote-bg': '--color-surface-quote', '--text-primary': '--color-text-primary',
-  '--text-secondary': '--color-text-secondary', '--text-muted': '--color-text-faint', '--fg': '--color-text-warm',
-  '--fg-secondary': '--color-text-warm-muted'
+  '--border': '--color-border', '--accent': '--color-accent',
+  '--accent-soft': '--color-accent-soft'
 };
+
+/* Some legacy aliases were removed from :root in earlier refactors.
+   They are tracked here so that if anyone re-adds a var() reference
+   to them, the ratchet check below will catch it.
+   --border-strong is defined in @media(prefers-contrast:more) as a
+   literal value (#666/#aaa), not a var() alias — that's intentional. */
+const removedAliases = [
+  '--border-strong', '--accent-strong', '--link', '--note-bg', '--quote-bg',
+  '--text-primary', '--text-secondary', '--text-muted', '--fg', '--fg-secondary'
+];
 
 function esc(s) { return s.replace(/[-/\\^$*+?.()|[\]{}]/g, '\\$&'); }
 let errors = 0;
@@ -46,7 +53,7 @@ if (errors) process.exit(1);
 const MAX_LEGACY_USES = 0;
 
 const cssFiles = fs.readdirSync(path.join(root, 'css')).filter(f => f.endsWith('.css'));
-const legacyNames = Object.keys(aliases).sort((a, b) => b.length - a.length);
+const legacyNames = Object.keys(aliases).concat(removedAliases).sort((a, b) => b.length - a.length);
 let legacyUses = 0;
 for (const file of cssFiles) {
   const css = fs.readFileSync(path.join(root, 'css', file), 'utf8');
