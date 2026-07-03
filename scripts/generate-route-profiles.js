@@ -93,7 +93,7 @@ for (const [urlPath, entry] of Object.entries(routes)) {
     mdxPath,
     legacyPath,
     visualParity: baselineEntry ? { desktop: baselineEntry.desktopDiff ?? 0, mobile: baselineEntry.mobileDiff ?? 0 } : { desktop: 0, mobile: 0 },
-    cssPilot: classification.slug === 'kod-da-vinchi' ? 'site-layered.css' : null,
+    cssPilot: null,
   };
 
   fs.writeFileSync(profilePath, JSON.stringify(profile, null, 2) + '\n');

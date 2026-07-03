@@ -37,9 +37,8 @@ const ALLOWED_CSS = new Set([
   'css/home.css',
   'css/command-palette.css',
   'css/mobile-hotfix.css',
-  'css/site-layered.css',
   'css/floating-cluster.css',
-                      'css/nagornaya-mobile-toc.css'
+  'css/nagornaya-mobile-toc.css'
 ]);
 
 const REQUIRED_EXTRA_CSS = new Set([
@@ -56,15 +55,9 @@ const ALLOWED_JS = new Set([
   'js/highlights.js',
   'js/glossary.js',
   'js/bookmark-engine.js',
-  'js/series-cards.js',
   'js/nagornaya-mobile-toc.js',
   'js/sw-register.js',
-  
   'js/floating-cluster-controller.js',
-  'js/modules/back-to-top.js',
-  
-  
-  
 ]);
 
 // Same list as scripts/cache-bust.js. If cache-bust.js changes, update this list too.
@@ -223,9 +216,9 @@ function extractSiteConfig(html, fileLabel) {
 // 2. Size budget
 (function sizeBudget() {
   // Core budget excludes route-scoped/pilot CSS: nagornaya/tw.min.css is
-  // Tailwind-route scoped; site-layered.css is a one-route refactor pilot
+  // Tailwind-route scoped; site.css is the production CSS
   // duplicate of site.css and must not make the global budget look 2× larger.
-  const routeScopedCss = new Set(['nagornaya/tw.min.css', 'css/site-layered.css', 'css/home.css', 'css/nagornaya-mobile-toc.css']);
+  const routeScopedCss = new Set(['nagornaya/tw.min.css', 'css/home.css', 'css/nagornaya-mobile-toc.css']);
   const cssAssetsAll = [...ALLOWED_CSS, ...REQUIRED_EXTRA_CSS].filter(exists);
   const cssAssetsCore = cssAssetsAll.filter(f => !routeScopedCss.has(f));
   const cssAssetsRoute = cssAssetsAll.filter(f => routeScopedCss.has(f));
@@ -285,7 +278,7 @@ const SITE_CSS_MIN_BYTES = 200_000;
 // nesting, which buries rules at huge depth and forces !important everywhere. Must be 0.
 (function braceBalance() {
   for (const f of ['css/site.css', 'css/home.css', 'css/command-palette.css',
-                   'css/mobile-hotfix.css', 'css/site-layered.css',
+                   'css/mobile-hotfix.css',
                    'css/floating-cluster.css', 'css/nagornaya-mobile-toc.css']) {
     const p = path.join(ROOT, f);
     if (!fs.existsSync(p)) continue;
@@ -1363,7 +1356,6 @@ const SITE_CSS_MIN_BYTES = 200_000;
 (function keyframesIntegrityGuard() {
   const cssFiles = ['css/site.css', 'css/home.css', 'css/command-palette.css',
                     'css/mobile-hotfix.css',
-  'css/site-layered.css',
   'css/floating-cluster.css', 'css/nagornaya-mobile-toc.css'];
   const offenders = [];
   for (const f of cssFiles) {
@@ -1648,7 +1640,6 @@ const SITE_CSS_MIN_BYTES = 200_000;
 (function cssVariableHygieneGuard() {
   const cssFiles = ['css/site.css', 'css/home.css', 'css/command-palette.css',
                     'css/mobile-hotfix.css',
-  'css/site-layered.css',
   'css/floating-cluster.css',
                     'nagornaya/tw.min.css'];
   const defined = new Set();
@@ -2115,7 +2106,6 @@ const JS_SIZE_FLOORS = {
 (function cssDeadVarsInfo() {
   const cssFiles = ['css/site.css', 'css/home.css', 'css/command-palette.css',
                     'css/mobile-hotfix.css',
-  'css/site-layered.css',
   'css/floating-cluster.css', 'css/nagornaya-mobile-toc.css'];
   let css = '';
   for (const f of cssFiles) {
@@ -2289,7 +2279,6 @@ const JS_SIZE_FLOORS = {
 (function deprecatedVendorPrefixGuard() {
   const cssFiles = ['css/site.css', 'css/home.css', 'css/command-palette.css',
                     'css/mobile-hotfix.css',
-  'css/site-layered.css',
   'css/floating-cluster.css', 'css/nagornaya-mobile-toc.css'];
   const BAD = [
     /-webkit-border-radius\s*:/g,
@@ -2608,7 +2597,6 @@ const JS_SIZE_FLOORS = {
 (function noCssImportGuard() {
   const cssFiles = ['css/site.css', 'css/home.css', 'css/command-palette.css',
                     'css/mobile-hotfix.css',
-  'css/site-layered.css',
   'css/floating-cluster.css', 'css/nagornaya-mobile-toc.css'];
   const offenders = [];
   for (const f of cssFiles) {
@@ -2684,7 +2672,7 @@ const JS_SIZE_FLOORS = {
   if (!m) { R.err('sw.js: PRECACHE_ASSETS array not found'); return; }
   const listed = new Set([...m[1].matchAll(/['"]([^'"]+)['"]/g)].map(x => x[1]));
   // Only user-facing cache-busted assets are required in the SW precache.
-  // Tooling/pilot artifacts such as css/site-layered.css and js/site-modules.js
+  // Tooling/pilot artifacts (site-modules.js was removed in dead-code cleanup)
   // may physically exist in the repo, but must not force users to download them.
   const required = CACHE_BUST_ASSETS.map(f => '/' + f);
   const missing = [];
@@ -2733,7 +2721,6 @@ const JS_SIZE_FLOORS = {
 (function namedColorAntiPatternGuard() {
   const cssFiles = ['css/site.css', 'css/home.css', 'css/command-palette.css',
                     'css/mobile-hotfix.css',
-  'css/site-layered.css',
   'css/floating-cluster.css', 'css/nagornaya-mobile-toc.css'];
   const NAMED = ['red','blue','green','yellow','purple','pink','cyan','magenta','orange','brown','gray','grey'];
   const offenders = [];
@@ -2785,7 +2772,6 @@ const JS_SIZE_FLOORS = {
 (function zIndexTokenGuard() {
   const cssFiles = ['css/site.css', 'css/home.css', 'css/command-palette.css',
                     'css/mobile-hotfix.css',
-  'css/site-layered.css',
   'css/floating-cluster.css', 'css/nagornaya-mobile-toc.css'];
   const offenders = [];
   for (const f of cssFiles) {
@@ -3164,7 +3150,6 @@ const JS_SIZE_FLOORS = {
 (function reducedMotionCoverageGuard() {
   const cssFiles = ['css/site.css', 'css/home.css', 'css/command-palette.css',
                     'css/mobile-hotfix.css',
-  'css/site-layered.css',
   'css/floating-cluster.css', 'css/nagornaya-mobile-toc.css'];
   const offenders = [];
   for (const f of cssFiles) {
@@ -3253,7 +3238,7 @@ const JS_SIZE_FLOORS = {
 (function colorMixFallbackInfo() {
   let total = 0;
   for (const f of ['css/site.css', 'css/home.css', 'css/command-palette.css',
-                   'css/mobile-hotfix.css', 'css/site-layered.css',
+                   'css/mobile-hotfix.css',
                    'css/floating-cluster.css', 'css/nagornaya-mobile-toc.css']) {
     const p = path.join(ROOT, f);
     if (!fs.existsSync(p)) continue;
@@ -3350,7 +3335,6 @@ const JS_SIZE_FLOORS = {
 (function unusedCssClassesInfo() {
   const cssFiles = ['css/site.css', 'css/home.css', 'css/command-palette.css',
                     'css/mobile-hotfix.css',
-  'css/site-layered.css',
   'css/floating-cluster.css', 'css/nagornaya-mobile-toc.css'];
   let allCss = '';
   for (const f of cssFiles) {
@@ -4120,10 +4104,7 @@ const JS_SIZE_FLOORS = {
       }
     }
   }
-  const seriesJs = fs.readFileSync(path.join(ROOT, 'js/series-cards.js'), 'utf8');
-  if (/gb-strip__toggle[\s\S]{0,900}<a\b/.test(seriesJs)) {
-    offenders.push('js/series-cards.js: gb-strip__toggle template contains <a>');
-  }
+  // series-cards.js removed (dead code cleanup 2026-07-03) — skip nested control check for that file
   if (offenders.length) {
     R.err(`Nested interactive controls inside <button> (invalid HTML / click hijack risk):\n  - ${offenders.slice(0, 30).join('\n  - ')}`);
   } else {
@@ -4226,8 +4207,7 @@ const JS_SIZE_FLOORS = {
     // forbidden legacy leftovers
     for (const bad of ['id="reading-progress"', 'id="bottomBar"', 'id="btocOverlay"', 'id="tocSidebar"', 'id="themeToggle"', 'data-series-strip', 'data-series-nav', 'series-next-cta'])
       if (html.includes(bad)) probs.push(`legacy leftover: ${bad}`);
-    // dead script: series-cards.js is catalog-only since r99
-    if (/js\/series-cards\.js/.test(html)) probs.push('series-cards.js linked on a gbs-world page (dead weight)');
+    // series-cards.js removed (dead code cleanup 2026-07-03)
     if (probs.length) offenders.push(`${p}: ${probs.join('; ')}`);
   }
   if (offenders.length) {
