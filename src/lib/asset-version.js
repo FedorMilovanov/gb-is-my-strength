@@ -14,7 +14,7 @@ export const ASSET_VERSIONS = {
   'css/sw-toast.css': 'efbe868b',
   'fonts/fonts.css': '864cc57a',
   'js/bookmark-engine.js': 'fdfb2ed7',
-  'js/enhancements.js': '9a3d493e',
+  'js/enhancements.js': 'fe6c9787',
   'js/floating-cluster-controller.js': '1bbd3c54',
   'js/glossary.js': '91b65962',
   'js/highlights.js': 'c972d20e',
@@ -23,7 +23,7 @@ export const ASSET_VERSIONS = {
   'js/search.js': '79b224c3',
   'js/site-utils.js': '897afa55',
   'js/site.js': '77687914',
-  'js/sw-register.js': '620b42f2',
+  'js/sw-register.js': '7a8bd1e7',
   'nagornaya/tw.min.css': '2670414e',
 };
 
