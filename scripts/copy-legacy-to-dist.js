@@ -32,6 +32,7 @@ const WRITE_MANIFEST = !process.argv.includes('--no-manifest');
 
 const PUBLIC_ROOT_FILES = [
   '.nojekyll',
+  '_headers',
   '404.html',
   'CNAME',
   'robots.txt',
