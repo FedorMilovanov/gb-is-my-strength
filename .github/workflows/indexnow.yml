@@ -15,6 +15,7 @@ on:
       - 'map/**'
       - 'biografii/**'
       - 'hard-texts/**'
+      - 'baptisty-rossii/**'
       - 'index.html'
       - '404.html'
       - 'css/**'
