@@ -285,7 +285,7 @@ if(!owD||!owCard)return;
 var key=el.getAttribute("data-ow");
 var w=owD[key];if(!w||w._comment)return;
 var langLabel=w.lang==="he"?"Иврит":"Греческий";
-owCard.innerHTML='<div class="gbx-ow__head"><span class="gbx-ow__lang">'+langLabel+'</span><div class="gbx-ow__original" data-lang="'+tt(w.lang)+'">'+tt(w.original)+'</div><span class="gbx-ow__translit">'+w.transliteration+'</span></div><div class="gbx-ow__body"><div class="gbx-ow__gloss">'+w.gloss+'</div><p class="gbx-ow__def">'+tt(w.definition)+'</p><span class="gbx-ow__src">'+w.source+'</span></div>';
+owCard.innerHTML='<div class="gbx-ow__head"><span class="gbx-ow__lang">'+langLabel+'</span><div class="gbx-ow__original" data-lang="'+tt(w.lang)+'">'+tt(w.original)+'</div><span class="gbx-ow__translit">'+tt(w.transliteration)+'</span></div><div class="gbx-ow__body"><div class="gbx-ow__gloss">'+tt(w.gloss)+'</div><p class="gbx-ow__def">'+tt(w.definition)+'</p><span class="gbx-ow__src">'+tt(w.source)+'</span></div>';
 owCard.classList.add("gbx-ow--open");
 if(window.SiteUtils)SiteUtils.positionTip(owCard,el);
 }
