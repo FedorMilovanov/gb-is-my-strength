@@ -7,80 +7,135 @@
 
 ## 🚦 Читать перед работой — порядок обязательных документов
 
-**Каждый агент (Arena Agent / Cursor / Copilot Workspace / Kilo / любой) должен прочитать документы в этом порядке:**
+**Каждый агент (Arena Agent / Cursor / Copilot Workspace / Kilo / Cline / любой) ОБЯЗАН прочитать ВСЕ документы в этом порядке ДО начала любой правки.**
+
+### ❗ ЖЕЛЕЗОБЕТОННОЕ ПРАВИЛО (нарушение = регрессия на проде)
 
 ```
-1. docs/WORK_MODES.md   ← ⭐ ГЛАВНЫЙ SANDBOX-контекст
-   Режимы работы (SOLO/MULTI-AGENT/HIGH-RISK/EMERGENCY),
-   Risk levels, lane policy, shared files, когда lane обязателен.
-   Это документ-песочница для любой задачи. Прочитай ПОСЛЕ AGENTS.md.
-
-2. AGENTS.md (этот файл) ← обязательный контракт с владельцем
-   Архитектура, CSS/JS правила, protected-блоки, UI-инварианты,
-   когда нельзя менять, проверки перед push.
-
-3. docs/LANE_LOCK_POLICY.md ← подробная lane-политика
-   Когда lane обязателен по риску, когда нет, merge-порядок,
-   out-of-lane findings, shared data batch lanes.
-
-4. migration/route-migration-matrix.json ← официальный migration contract
-   Какой режим миграции у каждого route (native/legacy-shadow/mdx-native).
-   Проверяй СВОЙ route против матрицы до начала работы.
-
-5. docs/SANDBOX-ENV-2026-06-21.md   ← только Arena Agent Mode (если работаешь в Arena.ai)
-   Как не потерять файлы в Arena sandbox, как пушить, почему агенты падают
-   и как не повторять ошибок. Обязателен для Arena-сессий.
+Любой агент, который:
+┌──────────────────────────────────────────────────────────────┐
+│ • НЕ прочитал ВСЕ 5 обязательных документов                   │
+│ • НЕ прочитал SANDBOX-ENV (если работает в Arena)            │
+│ • НЕ прочитал audit/external-checks/README.md (если задача    │
+│   касается внешних проверок)                                 │
+│                                                              │
+│ = НАРУШАЕТ КОНТРАКТ и создаёт регрессии на проде             │
+└──────────────────────────────────────────────────────────────┘
 ```
 
-**Почему этот порядок:**
+### 📋 Обязательный pre-flight checklist (отметь每一项 перед работой)
+
+Перед тем как написать ANY код, агент должен явно подтвердить:
 
 ```
-WORK_MODES.md → какой режим и дисциплина
-    ↓
-AGENTS.md     → что можно/нельзя менять в коде
-    ↓
-LANE_LOCK     → как организовать работу (lane/branches)
-    ↓
-matrix.json   → какой migration mode у моего route
-    ↓
-SANDBOX-ENV   → как выжить в конкретной среде (Arena)
+✅ Прочитал WORK_MODES.md (docs/WORK_MODES.md)
+   → Режимы: SOLO / LANE / SYSTEM
+   → Risk levels 0-3
+   → FAST loop vs FULL gate
+   → Когда lane обязателен
+
+✅ Прочитал AGENTS.md (этот файл, полностью)
+   → Архитектура, CSS/JS правила
+   → Protected-блоки (секция 3.10 PremiumControls)
+   → UI-инварианты, которые нельзя нарушать
+   → Проверки перед push
+
+✅ Прочитал LANE_LOCK_POLICY.md (docs/LANE_LOCK_POLICY.md)
+   → Когда lane обязателен по риску
+   → Когда можно работать без lane
+   → Merge-порядок, out-of-lane reporting
+
+✅ Проверил СВОЙ route в migration/route-migration-matrix.json
+   → Режим миграции: native / native-with-legacy-head / strict-native
+   → Если route НЕ в матрице — он excluded, проверь список exclude
+
+✅ [ЕСЛИ Arena Agent Mode] Прочитал SANDBOX-ENV-2026-06-21.md
+   (docs/SANDBOX-ENV-2026-06-21.md в AuditRepo)
+   → Node 22 требуется, а не 20
+   → Файлы сохраняются между сессиями (ext4)
+   → edit_file падает на крупных блоках → используй sed/python3
+   → CI-регрессии: всегда гоняй Playwright локально перед push
+   → Build-mode trap: прод = strangler-build, не plain astro build
+   → Токен в открытом чате = СКОМПРОМЕТИРОВАН
+
+✅ [ЕСЛИ задача про внешние проверки] Прочитал external-checks/README.md
+   (audit/external-checks/README.md)
+   → Какие инструменты reject/approved/config-first/advisory
+   → actionlint, osv-scanner — известные проблемы
+   → Не плодить отдельные MD-отчёты
 ```
 
-**Если ты не прочитал WORK_MODES.md — не начинай работу.**
-Это особенно важно при параллельных агентах и lane-работе.
+### 📖 Порядок обязательного чтения (подробно)
+
+Каждый агент должен прочитать документы **ИМЕННО В ЭТОМ ПОРЯДКЕ:**
+
+```
+┌─────────────────────────────────────────────────────────────────┐
+│ 1. docs/WORK_MODES.md         ← ⭐ ГЛАВНЫЙ SANDBOX-контекст      │
+│    Режимы работы, Risk levels, lane policy, shared files.        │
+│    ⚠️ ЕСЛИ НЕ ПРОЧИТАЛ — НЕ НАЧИНАЙ РАБОТУ                       │
+│                                                                  │
+│ 2. AGENTS.md (этот файл)      ← ОБЯЗАТЕЛЬНЫЙ КОНТРАКТ            │
+│    Архитектура, CSS/JS правила, protected-блоки, секция 3.10     │
+│    ⚠️ ПРОЧТИ ПОЛНОСТЬЮ — секция 3.10 PremiumControls критична   │
+│                                                                  │
+│ 3. docs/LANE_LOCK_POLICY.md   ← Lane-дисциплина                  │
+│    Когда lane обязателен, merge-порядок.                         │
+│    ⚠️ НАРУШЕНИЕ = конфликты и регрессии                          │
+│                                                                  │
+│ 4. migration/route-migration-matrix.json ← Migration contract    │
+│    Режим миграции твоего route.                                  │
+│    ⚠️ НЕПРАВИЛЬНЫЙ РЕЖИМ = регрессия                             │
+│                                                                  │
+│ 5. docs/SANDBOX-ENV-2026-06-21.md  ← Arena Agent Mode survival   │
+│    (из AuditRepo)                                                │
+│    ⚠️ ОБЯЗАТЕЛЕН для Arena.ai                                    │
+│                                                                  │
+│ 6. audit/external-checks/README.md ← External checks registry    │
+│    ⚠️ ОБЯЗАТЕЛЕН если задача про внешние проверки                │
+└─────────────────────────────────────────────────────────────────┘
+```
+
+### 🚨 Что будет, если НЕ прочитать
+
+| Нарушение | Последствия |
+|-----------|-------------|
+| Не прочитал WORK_MODES.md | Работа в SOLO вместо LANE → конфликт с другим агентом → потеря изменений |
+| Не прочитал AGENTS.md §3.10 | Изменил позицию герменевтики/контролы → POS-01 регрессия (было 3 раза) |
+| Не прочитал SANDBOX-ENV | Сборка на Node 20 → Astro 6 падает. Не запустил Playwright → CI красный (7 из 8 коммитов). Не сохранил токен → пиши в чат заново |
+| Не проверил route-matrix | Режим native-on-legacy → dist перезаписан, Visual Parity красный |
+| Не прочитал external-checks | Добавил actionlint в CI → известная проблема, зря потратил время |
+
+### ⚡ FAST loop vs FULL gate (из WORK_MODES.md, кратко)
+
+```
+FAST loop — после каждой мелкой правки: git diff --check + npm run guard:shared-files
+FULL gate — перед commit/merge/push: npm run validate:static-publication + guard:shared-files
+```
+
+> **В Arena Agent Mode:** не гоняй полный `validate:static-publication` после каждой правки
+> (2 CPU ~2 GB RAM — долго). Используй FAST loop, но финальный FULL gate обязателен.
 
 ---
 
-> **⚠️ Если ты работаешь в Arena Agent Mode (Qwen Code / Arena.ai):**
-> Также прочитай `docs/SANDBOX-ENV-2026-06-21.md` — инструкция по выживанию
-> в этой среде. Там описано: как не потерять файлы, как пушить, почему
-> агенты падают и как не повторять моих ошибок. **Этот файл обязателен для Arena.**
-> Если правило кажется глупым — **спроси, ПОЧЕМУ оно появилось**.
+> **⚠️ Если ты работаешь в Arena Agent Mode (Arena.ai):**
+> `docs/SANDBOX-ENV-2026-06-21.md` — **ОБЯЗАТЕЛЕН К ПРОЧТЕНИЮ.** Без него ты:
+> - Потеряешь файлы (на самом деле нет — ext4 сохраняет, но важно знать)
+> - Сломаешь CI (не запустив Playwright)
+> - Забудёшь про Node 22
+> - Попадёшь в build-mode trap
+> - Напишешь токен в чат (скомпрометируешь)
 >
-> **Arena speed/quality rule:** работай через FAST loop из `docs/WORK_MODES.md`,
-> но перед финальным commit/merge/push production-impact lane обязательно прогони
-> `npm run validate:static-publication` + `npm run guard:shared-files`.
-> В Arena полный gate дорогой из-за Astro build и 2 CPU/~2 GB RAM; частые full-gates
-> после каждой мелкой правки не нужны, но финальный full gate обязателен.
+> **Arena speed/quality rule:** работай через FAST loop, но перед финальным
+> commit/merge/push обязательно прогони `npm run validate:static-publication`
+> + `npm run guard:shared-files`.
 
-> **External checks rule:** если задача про Lighthouse/Pa11y/Semgrep/Checkov/Retire/actionlint/OSV/Gitleaks/HTML validation, сначала см. `audit/external-checks/README.md`. Не плодить отдельные MD-отчёты; verified external findings добавляются в общий bug report.
+---
 
-| Версия документа | Дата | Состояние |
-|---|---|---|
-| **AGENTS-r297** | 2026-06-24 | **Arena gate discipline clarified.** Agents must read `docs/SANDBOX-ENV-2026-06-21.md` in Arena, use FAST loop checks during small iterations, and reserve `validate:static-publication` + `guard:shared-files` as the required final release barrier for production/system/refactor lanes. |
-| **AGENTS-r298** | 2026-06-24 | **Arena long-session failure modes documented.** `docs/SANDBOX-ENV-2026-06-21.md` now includes a focused 50-link deep pass on why some agents fail early and others survive long sessions: context rot, compaction loss, zombie tool calls, subagent black holes, OOM/resource kills, stale worktrees, and bad state externalization. Rule: durable file/git state + FAST loop + final FULL barrier, not transcript-only memory. |
-| **AGENTS-r299** | 2026-06-24 | **Arena coding polish checklist added.** `docs/SANDBOX-ENV-2026-06-21.md` now includes 30 operational rules + 30 additional references for long-running coding-agent work: targeted reads, explicit timeouts, worktree hygiene, hooks/notifications, durable checkpoints, artifact verification, and final push hygiene. |
-| **AGENTS-r300** | 2026-06-27 | **PremiumControls / Control Plane reconciliation.** Reconciled `AGENTS.md` Section 2 inventory (8 CSS / 12 JS + modules). Added Section 3.10 `PremiumControls / Floating Cluster (protected subsystem)` verbatim with core invariants, explicit forbids, and regression history. Fixed `workflows:check` policy match by updating `dist:jsonld:audit` script to `--root dist`. Reconciled `/izbrannoe/` route contract in `migration/route-migration-matrix.json` (`native-with-legacy-head`) and `scripts/check-content-source-coverage.js`. Fixed syntax swallowing bug in `scripts/download-fonts.js`. |
-| **AGENTS-r301** | 2026-06-27 | **External checks registry added.** External audit tools must be routed through `audit/external-checks/README.md` before being proposed for CI. New agents must not re-add known-broken paths (`npx actionlint`, `npx osv-scanner`) or make noisy `html-validate` a blocking gate without project config. Bugs found by external checks still go to `docs/BUGS_FOUND_2026-06-25.md`, not separate bug reports. |
-| **AGENTS-r302** | 2026-06-27 | **External checks wave 2 verified.** `audit/external-checks/README.md` now records ShellCheck/yamllint/markdownlint/CSpell/Knip/depcheck/license-checker/madge/Lychee/Scorecard decisions. Semgrep GHA template-injection finding in `shared-files-guard.yml` is fixed via `env`; broken docs link in `LANE_LOCK_POLICY.md` and missing EOF newline in `notify-on-failure.yml` are fixed. |
-| **AGENTS-r303** | 2026-06-27 | **External checks wave 3 verified on main.** Added npm signature, lockfile-lint, JSON/XML syntax, Prettier+Astro-plugin, ESLint, Stylelint, jscpd, and dependency-cruiser decisions to `audit/external-checks/README.md`. Fixed stale Gill `gbs2-rail` marker requirement in `scripts/dist-publication-audit.js`; Prettier/ESLint/Stylelint remain CONFIG-FIRST, jscpd is advisory only. |
-| **AGENTS-r304** | 2026-06-27 | **Runtime/axe verification wave.** `interactive-audit` now supports both legacy GBS2 and Gill v16 selectors; `visual-audit` no longer emits stale `bio-cover-missing` on Gill v16; Nagornaya mobile theme bridge is wired via `.nag-sidebar-theme-btn`; axe-core Playwright findings are recorded as accessibility backlog. |
-| **AGENTS-r305** | 2026-06-27 | **axe-core a11y cleanup.** Hidden selection-share popup now uses `inert`; glossary tooltip hosts with `aria-expanded`/`aria-describedby` are normalized to `role="button"` + `tabindex="0"`. Remaining axe backlog is contrast, nested source markers, and link-in-text-block. |
-| **AGENTS-r306** | 2026-06-27 | **Workflow lint/SBOM verification.** `actionlint` strict mode with ShellCheck now passes after `indexnow.yml` and `visual-parity.yml` shell cleanup. SBOM generation is verified via npm and CycloneDX; Trivy secret/misconfig scan is clean, while full Trivy vuln DB is rejected in Arena due disk limits. oxlint is advisory; Biome is config-first. |
-| **AGENTS-r307** | 2026-06-27 | **Local Windows audit pack added.** `audit/external-checks/LOCAL-WINDOWS-AUDIT.md` records Arena-rejected/local-only checks for `C:\Users\Fedor\Projects\gb-is-my-strength`; `audit/external-checks/run-local-windows-audit.ps1` runs compact PowerShell local audits and writes reports under `reports/local-external-checks-*`. `.tools/` is ignored for local portable audit binaries. |
-| **AGENTS-r308** | 2026-06-27 | **Schema rich-results audit added.** New `npm run schema:rich-results:audit` and `schema:rich-results:audit:dist` semantically validate JSON-LD Article/Breadcrumb/FAQ requirements and literal `{jsonLd}` regressions. Local Windows runner now inventories existing `reports/*` artifacts from Fedor's machine. |
-| **AGENTS-r309** | 2026-06-27 | **Local Windows launcher fixed.** Added root `RUN-LOCAL-WINDOWS-AUDIT.cmd` so Fedor runs audits as a script instead of pasting `.ps1` into PowerShell. The PowerShell runner now has robust repo-root fallback for pasted/interactive contexts and stricter external command sequencing. |
-| **AGENTS-r310** | 2026-06-27 | **Local audit report storage policy fixed.** Removed accidentally committed root `LOCAL_REPO_AUDIT_REPORT.txt`; local Windows runner now writes compact Markdown with per-check full logs under ignored `reports/local-external-checks-*/logs/`. Root pasted/raw audit reports are ignored. |
+> **⚡ External checks rule:** если задача про Lighthouse/Pa11y/Semgrep/Checkov/Retire/actionlint/OSV/Gitleaks/HTML validation — **СНАЧАЛА** прочитай `audit/external-checks/README.md`. Там записаны решения по каждому инструменту (approved/rejected/config-first/advisory). Не предлагай то, что уже rejected. Не плоди отдельные MD-отчёты; verified external findings добавляются в общий bug report.
+
+---
+
 | **AGENTS-r321** | 2026-07-03 | **CSS inventory reconciled.** Section 2 updated from 8→9 CSS files (added `enhancements-runtime.css`, `highlights-runtime.css`, `sw-toast.css` extracted from CSS-in-JS in Pass 24). Dead exports removed from `floating-cluster-ui.ts` (5 dead: `FloatingClusterMode`, `FloatingClusterUiConfig`, `floatingClusterUi`, `floatingClusterRoutes`, `getSeriesParts`). §0 and §4 CSS table updated (renumbered from r312 — was duplicate of r312). |
 | **AGENTS-r311** | 2026-06-28 | **PremiumControls doctrine corrected for Hermeneutics + Gill v16 marks.** Section 3.10 no longer teaches the retired `right: max(calc((100vw - min(820px, 92vw)) / 2 - 28px), 16px)` formula. Canonical Hermeneutics position is the v16 `right: max(8.5vw, env(...))` / mobile `max(4.5vw, env(...))` contract. Gill series marks must use `SeriesMark`/`RomanNumeral`: intro=`Введение`, parts=`I/II/III`, spravochnik=`Справ.`. |
 
