@@ -20,9 +20,9 @@ export const ASSET_VERSIONS = {
   'js/highlights.js': '23b1a1bd',
   'js/nagornaya-mobile-toc.js': '649d9217',
   'js/scroll-perf.js': '454d6f7b',
-  'js/search.js': 'fb5cf04f',
+  'js/search.js': '3b9e141a',
   'js/site-utils.js': '897afa55',
-  'js/site.js': '0c38692e',
+  'js/site.js': 'ca8980f7',
   'js/sw-register.js': '7a8bd1e7',
   'nagornaya/tw.min.css': '2670414e',
 };
