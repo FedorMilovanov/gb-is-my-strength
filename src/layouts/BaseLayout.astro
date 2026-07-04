@@ -87,6 +87,7 @@ function makeGenericRuntime(includeMetrika = true) {
       baseUrl: SITE.url,
       locale: SITE.locale,
     },
+    version: Date.now(),
     page: {
       id: pageId,
       type: ogType === 'article' ? 'article' : 'page',
