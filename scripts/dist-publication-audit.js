@@ -280,6 +280,29 @@ function checkDevNoindex() {
     else ok(`${route} remains noindex`);
   }
 }
+
+function cspMetaTag(html) {
+  const tags = html.match(/<meta\b[^>]*>/gi) || [];
+  return tags.find((tag) => /http-equiv\s*=\s*["']Content-Security-Policy["']/i.test(tag)) || '';
+}
+function checkCspCoverage() {
+  const htmlFiles = walk(DIST).filter(f => f.endsWith('.html'));
+  const missing = [];
+  const missingForm = [];
+  for (const file of htmlFiles) {
+    const rel = path.relative(DIST, file).replace(/\\/g, '/');
+    const html = fs.readFileSync(file, 'utf8');
+    if (!/<html\b/i.test(html)) continue;
+    const csp = cspMetaTag(html);
+    if (!csp) { missing.push(rel); continue; }
+    if (!/(?:^|;)\s*form-action\s+'self'/i.test(csp)) missingForm.push(rel);
+  }
+  if (missing.length) missing.forEach(f => bad(`dist HTML missing CSP meta: ${f}`));
+  else ok('dist HTML CSP meta present on every HTML document');
+  if (missingForm.length) missingForm.forEach(f => bad(`dist CSP missing form-action 'self': ${f}`));
+  else ok("dist CSP includes form-action 'self' on every CSP meta");
+}
+
 function checkSwPrecache() {
   if (!exists('sw.js')) return;
   const sw = read('sw.js');
@@ -381,6 +404,7 @@ checkAstroArticlesIndexOwnership();
 checkAstroSeriesLandingOwnership();
 checkAstroArticleOwnership();
 checkDevNoindex();
+checkCspCoverage();
 checkSwPrecache();
 checkPagefind();
 console.log('');
