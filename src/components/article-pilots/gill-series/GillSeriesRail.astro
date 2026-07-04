@@ -25,10 +25,7 @@ const page = GILL_PAGE_DATA[pageId];
         return (
           <a class:list={['gbs-rail-card', isCurrent && 'is-current']} href={href} aria-current={isCurrent ? 'page' : undefined}>
             <SeriesMark kind={item.mark.kind} value={item.mark.value} className="gbs-rail-card__num" />
-            <span class="gbs-rail-card__info">
-              <small>{item.readingTime}</small>
-              <b>{item.title}</b>
-            </span>
+            <span class="gbs-rail-card__info"><small>{item.readingTime}</small><b>{item.title}</b></span>
             {isCurrent && <span class="gbs-rail-card__check" aria-hidden="true">✓</span>}
             <span class="gbs-rail-card__chevron" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M9 18l6-6-6-6" /></svg></span>
           </a>
@@ -36,37 +33,20 @@ const page = GILL_PAGE_DATA[pageId];
       })}
     </nav>
 
-    <div class="gbs-rail-now">
-      <div class="lab">Сейчас читаете</div>
-      <h2>{page.railNowTitle}</h2>
-      <div class="bar"><i id="gbs2Curbar"></i></div>
-    </div>
-
-    <div class="gbs2-toch">
-      <span>Оглавление части</span>
-      <span class="gbs2-count" id="gbs2Count">1 / {page.partToc.length}</span>
-    </div>
-
+    <div class="gbs-rail-now"><div class="lab">Сейчас читаете</div><h2>{page.railNowTitle}</h2><div class="bar"><i id="gbs2Curbar"></i></div></div>
+    <div class="gbs2-toch"><span>Оглавление части</span><span class="gbs2-count" id="gbs2Count">1 / {page.partToc.length}</span></div>
     <div class="gbs2-tocscroll">
+      <span aria-hidden="true" class="gbs2-track"><i></i></span>
       <ul class="gbs2-toc" id="gbs2Toc">
-        <span aria-hidden="true" class="gbs2-track"><i></i></span>
         {page.partToc.map((item) => (
-          <li class={item.subtitle ? 'gbs2-sub' : ''}>
-            <a href={item.href}>
-              <span aria-hidden="true" class="gbs2-dot"></span>
-              {item.roman ? item.roman + '. ' : ''}{item.title}
-            </a>
-          </li>
+          <li class:list={{ 'gbs2-sub': item.level === 3 }}><a href={item.href} class:list={{ 'gbs2-active': item.current }}><span aria-hidden="true" class="gbs2-dot"></span>{item.label}</a></li>
         ))}
       </ul>
     </div>
   </div>
 
   <div class="gbs-rail-foot" data-fc-root data-fc-variant="gill" data-fc-mode="series-rich">
-    <button class="gbs-rail-foot__btn gb-theme-toggle" data-fc-action="theme" aria-label="Тема" data-tip="Тема">
-      <span class="theme-icon-sun"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4.5" /><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41" /></svg></span>
-      <span class="theme-icon-moon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z" /></svg></span>
-    </button>
+    <button class="gbs-rail-foot__btn gb-theme-toggle" data-fc-action="theme" aria-label="Тема" data-tip="Тема"><span class="theme-icon-sun"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4.5" /><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41" /></svg></span><span class="theme-icon-moon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z" /></svg></span></button>
     <button class="gbs-rail-foot__btn" data-fc-action="search" aria-label="Поиск" data-tip="Поиск"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7" /><path d="M21 21l-4.3-4.3" /></svg></button>
     <button class="gbs-rail-foot__btn gbs-rail-foot__btn--text" data-fc-action="font-down" aria-label="Уменьшить шрифт" data-tip="Меньше">A−</button>
     <button class="gbs-rail-foot__btn gbs-rail-foot__btn--text" data-fc-action="font-up" aria-label="Увеличить шрифт" data-tip="Больше">A+</button>

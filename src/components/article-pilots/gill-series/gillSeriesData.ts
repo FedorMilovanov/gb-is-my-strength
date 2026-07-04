@@ -20,10 +20,12 @@ export interface GillSeriesItem {
 }
 
 export interface GillPartTocItem {
-  roman: string;
-  title: string;
-  subtitle: string;
-  href?: string;
+  /** Pre-v16 GBS submenu target. Must exist in the current rendered article. */
+  href: string;
+  /** Exact historical pre-v16 GBS submenu label. Roman prefix appears only on real top-level rows. */
+  label: string;
+  /** Historical hierarchy: H2/top-level = 2, H3/submenu row = 3. */
+  level: 2 | 3;
   current?: boolean;
 }
 
@@ -97,66 +99,16 @@ export const GILL_PAGE_DATA: Record<GillSeriesPageId, GillPageChromeData> = {
     railNowTitle: "Исторический контекст",
     partDialogLabel: "Введение · Исторический контекст",
     partToc: [
-    {
-      roman: "I",
-      title: "От пуритан к диссентерам",
-      subtitle: "● Глава 1",
-      current: true,
-    },
-    {
-      roman: "II",
-      title: "Партикулярные и генеральные",
-      subtitle: "Глава 2",
-      href: "#sec-particular-vs-general",
-    },
-    {
-      roman: "III",
-      title: "Тень 1662: Великое изгнание",
-      subtitle: "Глава 3",
-      href: "#sec-great-ejection",
-    },
-    {
-      roman: "IV",
-      title: "Кларендонский кодекс",
-      subtitle: "Глава 4",
-      href: "#sec-clarendon",
-    },
-    {
-      roman: "V",
-      title: "Диссентерские академии",
-      subtitle: "Глава 5",
-      href: "#sec-academies",
-    },
-    {
-      roman: "VI",
-      title: "Солтерс-Холл 1719",
-      subtitle: "Глава 6",
-      href: "#sec-salters-hall",
-    },
-    {
-      roman: "VII",
-      title: "Кофейная политика",
-      subtitle: "Глава 7",
-      href: "#sec-coffee-house",
-    },
-    {
-      roman: "VIII",
-      title: "Саутварк: джин, дым и Евангелие",
-      subtitle: "Глава 8",
-      href: "#sec-southwark",
-    },
-    {
-      roman: "IX",
-      title: "Кеттеринг и книжная лавка",
-      subtitle: "Глава 9",
-      href: "#sec-books",
-    },
-    {
-      roman: "X",
-      title: "Итог: пастор изгнанников",
-      subtitle: "Глава 10",
-      href: "#sec-conclusion",
-    }
+      { href: "#sec-from-puritans-to-baptists", label: "I. От пуритан к диссентерам: путь в полтора века", level: 2, current: true },
+      { href: "#sec-particular-vs-general", label: "II. Партикулярные и генеральные баптисты: почему это важно", level: 2 },
+      { href: "#sec-great-ejection", label: "III. Тень 1662 года: Великое изгнание", level: 2 },
+      { href: "#sec-clarendon", label: "IV. Кларендонский кодекс и позднейшие религиозные тесты", level: 2 },
+      { href: "#sec-academies", label: "V. Диссентерские академии: университеты для изгнанных", level: 2 },
+      { href: "#sec-salters-hall", label: "VI. Солтерс-Холл (1719): доктринальный разлом", level: 2 },
+      { href: "#sec-coffee-house", label: "VII. Кофейная политика", level: 2 },
+      { href: "#sec-southwark", label: "VIII. Саутварк: джин, дым и Евангелие", level: 2 },
+      { href: "#sec-books", label: "IX. Кеттеринг и книжная лавка", level: 2 },
+      { href: "#sec-conclusion", label: "X. Итог: пастор изгнанников, защитник Троицы, учёный с улицы", level: 2 },
     ],
   },
   part1: {
@@ -171,85 +123,21 @@ export const GILL_PAGE_DATA: Record<GillSeriesPageId, GillPageChromeData> = {
     railNowTitle: "Джон Гилл (1697–1771)",
     partDialogLabel: "Часть I · Человек",
     partToc: [
-    {
-      roman: "I",
-      title: "Ранние годы, обращение и формирование характера",
-      subtitle: "● Глава 1",
-      href: "#part-calling",
-      current: true,
-    },
-    {
-      roman: "II",
-      title: "Откуда рождаются гении без университетов",
-      subtitle: "Глава 2",
-      href: "#sec-intro",
-    },
-    {
-      roman: "III",
-      title: "Утро рождения: три пророчества",
-      subtitle: "Глава 3",
-      href: "#sec-birth-prophecy",
-    },
-    {
-      roman: "IV",
-      title: "Книжная лавка вместо грамматической школы",
-      subtitle: "Глава 4",
-      href: "#sec-education",
-    },
-    {
-      roman: "V",
-      title: "Бытие 3:9 — вопрос, изменивший жизнь",
-      subtitle: "Глава 5",
-      href: "#sec-conversion",
-    },
-    {
-      roman: "VI",
-      title: "Пасторское служение в Хорслидауне",
-      subtitle: "Глава 6",
-      href: "#part-pastor",
-    },
-    {
-      roman: "VII",
-      title: "Рукоположение 22 марта 1720 года",
-      subtitle: "Глава 7",
-      href: "#sec-ordination-1720",
-    },
-    {
-      roman: "VIII",
-      title: "Декларация Козьего Двора 1729 года",
-      subtitle: "Глава 8",
-      href: "#sec-goatyardDecl",
-    },
-    {
-      roman: "IX",
-      title: "Систематическая евангелизация Саутварка",
-      subtitle: "Глава 9",
-      href: "#sec-evangelism",
-    },
-    {
-      roman: "X",
-      title: "Проповедь отца на похоронах дочери",
-      subtitle: "Глава 10",
-      href: "#sec-daughter-sermon",
-    },
-    {
-      roman: "XI",
-      title: "Личная духовность и человек за богословом",
-      subtitle: "Глава 11",
-      href: "#sec-personal-credo",
-    },
-    {
-      roman: "XII",
-      title: "Контекст: Саутварк, джиновая лихорадка",
-      subtitle: "Глава 12",
-      href: "#sec-context-southwark",
-    },
-    {
-      roman: "XIII",
-      title: "Проверь себя",
-      subtitle: "Глава 13",
-      href: "#sec-quiz",
-    }
+      { href: "#part-calling", label: "I. Ранние годы, обращение и формирование характера", level: 2, current: true },
+      { href: "#sec-intro", label: "Откуда рождаются гении без университетов", level: 3 },
+      { href: "#sec-birth-prophecy", label: "Утро рождения: три пророчества", level: 3 },
+      { href: "#sec-education", label: "Книжная лавка вместо грамматической школы", level: 3 },
+      { href: "#sec-conversion", label: "Бытие 3:9 — вопрос, изменивший жизнь", level: 3 },
+      { href: "#part-pastor", label: "II. Пасторское служение в Хорслидауне", level: 2 },
+      { href: "#sec-pastor", label: "Хорслидаун: пятьдесят один год на одном месте", level: 3 },
+      { href: "#sec-ordination-1720", label: "Рукоположение 22 марта 1720 года: полный протокол события", level: 3 },
+      { href: "#sec-goatyardDecl", label: "Декларация Козьего Двора 1729 года: архитектура исповедания", level: 3 },
+      { href: "#sec-evangelism", label: "Систематическая евангелизация Саутварка", level: 3 },
+      { href: "#sec-daughter-sermon", label: "Проповедь отца на похоронах дочери: богословие скорби", level: 3 },
+      { href: "#sec-personal-credo", label: "Три личных высказывания: человек за богословом", level: 3 },
+      { href: "#sec-family-deep", label: "Личная духовность: молитва, медитация и домашнее благочестие", level: 3 },
+      { href: "#sec-context-southwark", label: "Исторический контекст: Саутварк, джиновая лихорадка, правовое бесправие", level: 3 },
+      { href: "#sec-quiz", label: "Проверь себя", level: 2 },
     ],
   },
   part2: {
@@ -264,43 +152,12 @@ export const GILL_PAGE_DATA: Record<GillSeriesPageId, GillPageChromeData> = {
     railNowTitle: "Джон Гилл (1697–1771)",
     partDialogLabel: "Часть II · Учёный",
     partToc: [
-    {
-      roman: "I",
-      title: "Раввинист — гебраист с Мишной в руках",
-      subtitle: "● Глава 1",
-      href: "#sec-hebrew",
-      current: true,
-    },
-    {
-      roman: "II",
-      title: "Песнь Песней (1728): аллегория Христа и Церкви",
-      subtitle: "Глава 2",
-      href: "#sec-canticles",
-    },
-    {
-      roman: "III",
-      title: "«Свод богословия» (1769–1770)",
-      subtitle: "Глава 3",
-      href: "#sec-systematics",
-    },
-    {
-      roman: "IV",
-      title: "Церковь, таинства и пасторское сердце",
-      subtitle: "Глава 4",
-      href: "#sec-ordinances",
-    },
-    {
-      roman: "V",
-      title: "Эсхатология: царствование Христа",
-      subtitle: "Глава 5",
-      href: "#sec-eschatology",
-    },
-    {
-      roman: "VI",
-      title: "Проверь себя",
-      subtitle: "Глава 6",
-      href: "#sec-quiz",
-    }
+      { href: "#sec-hebrew", label: "Раввинист — гебраист с Мишной в руках", level: 2, current: true },
+      { href: "#sec-canticles", label: "Песнь Песней (1728) — аллегория Христа и Церкви", level: 3 },
+      { href: "#sec-systematics", label: "«Свод богословия» (1769–1770) — первая баптистская систематика", level: 3 },
+      { href: "#sec-ordinances", label: "Церковь, таинства и пасторское сердце", level: 3 },
+      { href: "#sec-eschatology", label: "Эсхатология: духовное и личное царствование Христа", level: 3 },
+      { href: "#sec-quiz", label: "Проверь себя", level: 2 },
     ],
   },
   part3: {
@@ -315,97 +172,22 @@ export const GILL_PAGE_DATA: Record<GillSeriesPageId, GillPageChromeData> = {
     railNowTitle: "Джон Гилл (1697–1771)",
     partDialogLabel: "Часть III · Наследие",
     partToc: [
-    {
-      roman: "I",
-      title: "Наследие, споры и память",
-      subtitle: "● Глава 1",
-      href: "#sec-legacy",
-      current: true,
-    },
-    {
-      roman: "II",
-      title: "Полемика с Джоном Уэсли (1752–1755)",
-      subtitle: "Глава 2",
-      href: "#sec-toplady-memoir",
-    },
-    {
-      roman: "III",
-      title: "Гиперкальвинизм — спорное наследие",
-      subtitle: "Глава 3",
-      href: "#sec-controversy",
-    },
-    {
-      roman: "IV",
-      title: "Богословские источники Гилла",
-      subtitle: "Глава 4",
-      href: "#sec-sources-gil-theology",
-    },
-    {
-      roman: "V",
-      title: "Ученики и духовные наследники",
-      subtitle: "Глава 5",
-      href: "#sec-disciples",
-    },
-    {
-      roman: "VI",
-      title: "Coffee House и права поместной церкви",
-      subtitle: "Глава 6",
-      href: "#sec-church-gov",
-    },
-    {
-      roman: "VII",
-      title: "Влияние на Америку",
-      subtitle: "Глава 7",
-      href: "#sec-america",
-    },
-    {
-      roman: "VIII",
-      title: "Гилл и ислам: Коран на столе",
-      subtitle: "Глава 8",
-      href: "#sec-gill-islam-detail",
-    },
-    {
-      roman: "IX",
-      title: "Чарльз Сперджен — наследник и критик",
-      subtitle: "Глава 9",
-      href: "#sec-spurgeon-legacy",
-    },
-    {
-      roman: "X",
-      title: "Последние страницы и смерть (1771)",
-      subtitle: "Глава 10",
-      href: "#sec-gill-last-pages",
-    },
-    {
-      roman: "XI",
-      title: "Память и масштаб скорби",
-      subtitle: "Глава 11",
-      href: "#sec-ordination-rippon",
-    },
-    {
-      roman: "XII",
-      title: "Современная реабилитация (2023–2025)",
-      subtitle: "Глава 12",
-      href: "#sec-gill-muller-rediscovery",
-    },
-    {
-      roman: "XIII",
-      title: "Оценки Гилла: от восторга до критики",
-      subtitle: "Глава 13",
-      href: "#sec-contemporaries",
-    },
-    {
-      roman: "XIV",
-      title: "Словарь эпохи: ключевые понятия",
-      subtitle: "Глава 14",
-      href: "#sec-terms",
-    },
-    {
-      roman: "XV",
-      title: "Проверь себя",
-      subtitle: "Глава 15",
-      href: "#sec-quiz",
-    }
+      { href: "#part-legacy", label: "IV. Наследие, споры и память", level: 2, current: true },
+      { href: "#sec-church-gov", label: "Гилл и Рим: «безрассудство» ложной традиции", level: 3 },
+      { href: "#sec-toplady-memoir", label: "Полемика с Джоном Уэсли (1752–1755)", level: 3 },
+      { href: "#sec-controversy", label: "Гиперкальвинизм — спорное наследие", level: 3 },
+      { href: "#sec-sources-gil-theology", label: "Богословские источники Гилла", level: 3 },
+      { href: "#sec-disciples", label: "Ученики и духовные наследники", level: 3 },
+      { href: "#sec-church-gov", label: "Coffee House и права поместной церкви", level: 3 },
+      { href: "#sec-america", label: "Влияние на Америку и трансатлантический диалог", level: 3 },
+      { href: "#sec-gill-islam-detail", label: "Гилл и ислам: Коран на пасторском столе", level: 3 },
+      { href: "#sec-spurgeon-legacy", label: "Чарльз Сперджен — наследник и критик", level: 3 },
+      { href: "#sec-gill-last-pages", label: "Последние страницы и смерть (14 октября 1771)", level: 3 },
+      { href: "#sec-ordination-rippon", label: "Память и масштаб скорби", level: 3 },
+      { href: "#sec-gill-muller-rediscovery", label: "Современная реабилитация (2023–2025)", level: 3 },
+      { href: "#sec-contemporaries", label: "Оценки Гилла: от восторга до резкой критики", level: 3 },
+      { href: "#sec-terms", label: "Словарь эпохи: ключевые понятия", level: 3 },
+      { href: "#sec-quiz", label: "Проверь себя", level: 2 },
     ],
   },
   spravochnik: {
@@ -420,61 +202,15 @@ export const GILL_PAGE_DATA: Record<GillSeriesPageId, GillPageChromeData> = {
     railNowTitle: "Джон Гилл (1697–1771)",
     partDialogLabel: "Справочник по Гиллу",
     partToc: [
-    {
-      roman: "I",
-      title: "Масштаб корпуса",
-      subtitle: "● Глава 1",
-      href: "#sec-prdl",
-      current: true,
-    },
-    {
-      roman: "II",
-      title: "Хронология жизни и служения",
-      subtitle: "Глава 2",
-      href: "#sec-timeline",
-    },
-    {
-      roman: "III",
-      title: "Основные труды",
-      subtitle: "Глава 3",
-      href: "#sec-works",
-    },
-    {
-      roman: "IV",
-      title: "Структура «Свода богословия»",
-      subtitle: "Глава 4",
-      href: "#sec-body-structure",
-    },
-    {
-      roman: "V",
-      title: "Сеть влияний и наследников",
-      subtitle: "Глава 5",
-      href: "#sec-network",
-    },
-    {
-      roman: "VI",
-      title: "Спорные темы и как их читать",
-      subtitle: "Глава 6",
-      href: "#sec-disputes",
-    },
-    {
-      roman: "VII",
-      title: "Богословский словарь эпохи",
-      subtitle: "Глава 7",
-      href: "#sec-terms",
-    },
-    {
-      roman: "VIII",
-      title: "Читать дальше",
-      subtitle: "Глава 8",
-      href: "#sec-links",
-    },
-    {
-      roman: "IX",
-      title: "Проверь себя",
-      subtitle: "Глава 9",
-      href: "#sec-quiz",
-    }
+      { href: "#sec-prdl", label: "I. Масштаб корпуса", level: 2, current: true },
+      { href: "#sec-timeline", label: "II. Хронология жизни и служения", level: 2 },
+      { href: "#sec-works", label: "III. Основные труды", level: 2 },
+      { href: "#sec-body-structure", label: "IV. Структура «Свода богословия»", level: 2 },
+      { href: "#sec-network", label: "V. Сеть влияний и наследников", level: 2 },
+      { href: "#sec-disputes", label: "VI. Спорные темы и как их читать", level: 2 },
+      { href: "#sec-terms", label: "VII. Богословский словарь эпохи", level: 2 },
+      { href: "#sec-links", label: "VIII. Читать дальше", level: 2 },
+      { href: "#sec-quiz", label: "Проверь себя", level: 2 },
     ],
   },
 }

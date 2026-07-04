@@ -1394,69 +1394,57 @@
         var current = getCurrentHeading();
         if (current) mobSec.textContent = current;
       }
-      // === GILL v16 scroll-spy restore ===
-      // highlight current H2 in Part TOC
-      try {
-        var article = qs('article.article-body') || qs('main');
-        if (article) {
-          var heads = qsa('h2[id], h3[id]', article);
-          var currentId = '';
+      // === Pre-v16 GBS Gill submenu scroll-spy restore ===
+      var article = qs('article.article-body') || qs('main');
+      if (article) {
+        var represented = qsa('.gbs2-toc a[href^="#"]').map(function(a) {
+          var href = a.getAttribute('href') || '';
+          var id = href.slice(1);
+          var target = id ? document.getElementById(id) : null;
+          return target ? { a: a, target: target } : null;
+        }).filter(Boolean);
+        if (represented.length) {
           var scrollY = window.scrollY + 140;
-          for (var i = 0; i < heads.length; i++) {
-            if (heads[i].offsetTop <= scrollY) currentId = heads[i].id;
+          var activeIdx = 0;
+          for (var ri = 0; ri < represented.length; ri++) {
+            if (represented[ri].target.offsetTop <= scrollY) activeIdx = ri;
             else break;
           }
-          if (currentId) {
-            var allAs = qsa('.gbs2-toc a');
-            var topLevelAs = qsa('.gbs2-toc > li:not(.gbs2-sub) > a');
-            
-            var currentAIndex = -1;
-            for(var i=0; i<allAs.length; i++) {
-              var href = allAs[i].getAttribute('href');
-              if (href && href.indexOf('#' + currentId) !== -1) currentAIndex = i;
-            }
-
-            var activeH2Index = -1;
-            if (currentAIndex !== -1) {
-              var li = allAs[currentAIndex].closest('li');
-              if (li && li.classList.contains('gbs2-sub')) {
-                 var prevTop = li;
-                 while (
-                   prevTop &&
-                   (prevTop.tagName !== 'LI' || prevTop.classList.contains('gbs2-sub'))
-                 ) {
-                     prevTop = prevTop.previousElementSibling;
-                 }
-                 if (prevTop && prevTop.firstElementChild && prevTop.firstElementChild.tagName === 'A') {
-                     activeH2Index = topLevelAs.indexOf(prevTop.firstElementChild);
-                 }
-              } else {
-                 activeH2Index = topLevelAs.indexOf(allAs[currentAIndex]);
-              }
-            }
-
-            var partItems = qsa('.toc-part-item');
-            if (activeH2Index >= 0 && activeH2Index < partItems.length) {
-              partItems.forEach(function(el, idx) {
-                var isActive = (idx === activeH2Index);
-                var isPassed = (idx < activeH2Index);
-                el.classList.toggle('is-active', !!isActive);
-                el.classList.toggle('is-done', !!isPassed);
-                el.setAttribute('aria-current', isActive ? 'true' : 'false');
-              });
-            }
-
-            if (activeH2Index >= 0 && activeH2Index < topLevelAs.length) {
-               topLevelAs.forEach(function(el, idx) {
-                 var isActive = (idx === activeH2Index);
-                 var isPassed = (idx < activeH2Index);
-                 el.classList.toggle('gbs2-active', !!isActive);
-                 el.classList.toggle('gbs2-passed', !!isPassed);
-               });
-            }
+          represented.forEach(function(row, idx) {
+            row.a.classList.toggle('gbs2-active', idx === activeIdx);
+            row.a.classList.toggle('gbs2-passed', idx < activeIdx);
+          });
+          var track = qs('.gbs2-track');
+          var firstDot = represented[0] && qs('.gbs2-dot', represented[0].a);
+          var lastDot = represented[represented.length - 1] && qs('.gbs2-dot', represented[represented.length - 1].a);
+          var toc = qs('.gbs2-toc');
+          if (track && firstDot && lastDot && toc) {
+            var baseRect = toc.getBoundingClientRect();
+            var firstRect = firstDot.getBoundingClientRect();
+            var lastRect = lastDot.getBoundingClientRect();
+            var trackTop = firstRect.top + firstRect.height / 2 - baseRect.top;
+            var trackHeight = Math.max(0, lastRect.top + lastRect.height / 2 - baseRect.top - trackTop);
+            track.style.setProperty('--gbs2-track-top', trackTop + 'px');
+            track.style.setProperty('--gbs2-track-height', trackHeight + 'px');
           }
+          var countEl = qs('#gbs2Count');
+          if (countEl) countEl.textContent = (activeIdx + 1) + ' / ' + represented.length;
+          var activeRow = represented[activeIdx];
+          var scroller = qs('.gbs2-tocscroll');
+          if (activeRow && scroller) {
+            var ar = activeRow.a.getBoundingClientRect();
+            var sr = scroller.getBoundingClientRect();
+            if (ar.top < sr.top + 18 || ar.bottom > sr.bottom - 18) activeRow.a.scrollIntoView({ block: 'nearest' });
+          }
+          qsa('.toc-part-item').forEach(function(el, idx) {
+            var isActive = (idx === activeIdx);
+            var isPassed = (idx < activeIdx);
+            el.classList.toggle('is-active', !!isActive);
+            el.classList.toggle('is-done', !!isPassed);
+            el.setAttribute('aria-current', isActive ? 'true' : 'false');
+          });
         }
-        
+      }
         // update Part TOC progress bar
         var partItems = qsa('.toc-part-item');
         var activeIdx = -1;
@@ -1470,7 +1458,6 @@
           var trackBar = qs('.gbs2-track i');
           if (trackBar) trackBar.style.height = partPct + '%';
         }
-      } catch(_){}
     }
 
     function getCurrentHeading() {
