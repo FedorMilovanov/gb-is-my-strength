@@ -3,7 +3,7 @@
 Архитектурная и редакционная документация сайта с материалами для серьёзного изучения Писания:
 экзегеза, богословие, апологетика, переводы.
 
-**Версия документа:** v10 · 2026-06-26 · post-audit hardening (BUG-A1..A10, BUG-B1..B10, BUG-S1..S3 closed)
+**Версия документа:** v11 · 2026-07-04 · runtime/CI green + dist CSP hardening
 **Прод:** https://gospod-bog.ru · GitHub Pages из `main`, artifact: Astro/strangler `dist/`
 
 > Этот README — для **владельца, редакторов и контент-менеджеров.**
