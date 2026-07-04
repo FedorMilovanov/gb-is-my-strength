@@ -111,7 +111,8 @@ function makeGenericRuntime(includeMetrika = true) {
     `<script defer src="${assetUrl('js/scroll-perf.js')}"></script>`,
     `<script defer src="${assetUrl('js/site.js')}"></script>`,
     `<script defer src="${assetUrl('js/sw-register.js')}"></script>`,
-    `<script defer src="${assetUrl('js/search.js')}"></script>`,
+    // Lazy search: ~31KB saved on initial pageload. search.js loads on first Ctrl+K / click.
+    `<script>!function(){var e=function(){var t=document.createElement("script");t.defer=true,t.src="${assetUrl('js/search.js')}",document.head.appendChild(t);e=function(){}};function u(){e(),document.removeEventListener("keydown",k),document.removeEventListener("click",c),document.removeEventListener("touchstart",c)}function k(n){(n.metaKey||n.ctrlKey)&&"k"===String(n.key).toLowerCase()&&(n.preventDefault(),u())}function c(){u()}document.addEventListener("keydown",k),document.addEventListener("click",c),document.addEventListener("touchstart",c)}();</script>`,
   ].join('\n');
 }
 
