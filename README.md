@@ -10,6 +10,11 @@
 > Если ты — ИИ-агент, твой первый документ — [`AGENTS.md`](AGENTS.md).
 > История правок и аудитов — [`AUDIT_HISTORY.md`](AUDIT_HISTORY.md).
 > Редакционно-источниковая политика — [`docs/EDITORIAL-SOURCE-POLICY.md`](docs/EDITORIAL-SOURCE-POLICY.md).
+> Мультиагентные аудиты/верификация/bug-матрица живут в отдельном репозитории
+> **[FedorMilovanov/AuditRepo](https://github.com/FedorMilovanov/AuditRepo)** — туда кладутся
+> отчёты (`incoming/`), а каноническая матрица — `projects/gb-is-my-strength/verified/MASTER_BUG_MATRIX.md`.
+> Перед «исправлением» бага сначала сверься с текущим HEAD и с AuditRepo: описанный баг может
+> быть уже закрыт (пример: шаг `Gill pre-v16 submenu regression audit` в `deploy.yml` уже с одним `run`).
 
 ---
 
