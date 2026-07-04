@@ -37,6 +37,14 @@ jobs:
         run: node scripts/guard-shared-files.js --warn
         continue-on-error: true
 
+      - name: Lint workflow YAML (actionlint)
+        if: github.ref == 'refs/heads/main' || github.event_name == 'pull_request'
+        run: |
+          # Download actionlint binary (no npx — deterministic version)
+          curl -sL "https://github.com/rhysd/actionlint/releases/download/v1.7.7/actionlint_1.7.7_linux_amd64.tar.gz" \
+            | tar xz -C /tmp actionlint
+          /tmp/actionlint -color
+
       - name: Report shared files touched
         if: always()
         env:

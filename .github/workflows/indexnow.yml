@@ -78,11 +78,17 @@ jobs:
             git add -A
             git commit -m "chore: auto-update meta, cache-bust [skip ci]"
           fi
+          _pushed=false
           for _attempt in 1 2 3; do
             if git push; then
+              _pushed=true
               break
             fi
             sleep 5
           done
+          if [ "$_pushed" = false ]; then
+            echo "::error::git push failed after 3 attempts"
+            exit 1
+          fi
       # Note (NEW-53 fix): IndexNow submission to Bing and Yandex has been moved to
       # .github/workflows/deploy.yml to execute AFTER successful GitHub Pages deploy.
