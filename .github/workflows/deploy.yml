@@ -85,12 +85,16 @@ jobs:
           cache: 'npm'
 
       - name: Install dependencies
+        # Note: P1-CI-DUPE — when triggered by workflow_run, IndexNow already
+        # ran npm ci. Setup-node cache makes this <10s, so we keep it for
+        # build isolation rather than optimizing away.
         run: npm ci
 
       - name: Download fonts (if not in repo)
         run: node scripts/download-fonts.js || echo "Fonts download skipped"
 
-      - name: Cache bust assets
+      - name: Cache bust assets (skip if IndexNow already did it)
+        if: github.event_name != 'workflow_run'
         run: node scripts/cache-bust.js || echo "Cache bust skipped"
 
       - name: Static publication gates
