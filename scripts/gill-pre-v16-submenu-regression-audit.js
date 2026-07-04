@@ -20,11 +20,35 @@ const INLINE_EXPECTED = {
 'articles/dzhon-gill-spravochnik/index.html':[[2,'#sec-prdl','I. Масштаб корпуса'],[2,'#sec-timeline','II. Хронология жизни и служения'],[2,'#sec-works','III. Основные труды'],[2,'#sec-body-structure','IV. Структура «Свода богословия»'],[2,'#sec-network','V. Сеть влияний и наследников'],[2,'#sec-disputes','VI. Спорные темы и как их читать'],[2,'#sec-terms','VII. Богословский словарь эпохи'],[2,'#sec-links','VIII. Читать дальше'],[2,'#sec-quiz','Проверь себя']]
 };
 let EXPECTED = INLINE_EXPECTED;
+
+// data/gill-submenu-anchor-reconciliation.json records the 7 anchor-ID renames
+// introduced by the Astro migration. The historical witness (bcf6389f…) still
+// carries the OLD hrefs; the current render uses the NEW ones. Labels + order +
+// item count are identical. The audit MUST apply this map so the historical
+// reference manifest resolves to the current rendered anchors (otherwise every
+// check that compares against EXPECTED would false-fail and break the deploy).
+const reconPath = path.join(ROOT, 'data', 'gill-submenu-anchor-reconciliation.json');
+let RENAMES = {};
+if (fs.existsSync(reconPath)) {
+  try { const r = JSON.parse(fs.readFileSync(reconPath, 'utf8')); RENAMES = (r && r.renames) || {}; }
+  catch (e) { console.log('reconciliation unreadable, renames skipped: ' + e.message); }
+}
+function reconcile(h) { return RENAMES[h] || h; }
+
 const refPath = path.join(ROOT, 'data', 'gill-pre-v16-submenu-reference.json');
 if (fs.existsSync(refPath)) {
   try {
     const ref = JSON.parse(fs.readFileSync(refPath, 'utf8'));
-    if (ref && ref.routes) { EXPECTED = ref.routes; console.log('using generated historical reference manifest (sourceCommit ' + (ref.sourceCommit || '?') + ')'); }
+    if (ref && ref.routes) {
+      // Normalize manifest objects {order,level,href,label} -> INLINE_EXPECTED
+      // array form [level, href, label], applying historical anchor renames.
+      const norm = {};
+      for (const [rel, items] of Object.entries(ref.routes)) {
+        norm[rel] = items.map(it => [it.level || 2, reconcile(it.href), it.label || '']);
+      }
+      EXPECTED = norm;
+      console.log('using generated historical reference manifest (sourceCommit ' + (ref.sourceCommit || '?') + '), ' + Object.keys(RENAMES).length + ' anchor renames applied');
+    }
   } catch (e) { console.log('reference manifest unreadable, using inline snapshot: ' + e.message); }
 }
 
