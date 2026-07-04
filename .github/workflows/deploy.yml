@@ -153,7 +153,6 @@ jobs:
 
       - name: Gill pre-v16 submenu regression audit
         run: npm run gill:pre-v16-submenu:audit
-        run: npx playwright install --with-deps chromium
 
       - name: Gill mobile TOC and PlayEmber smoke
         run: npm run gill:mobile-play:smoke
