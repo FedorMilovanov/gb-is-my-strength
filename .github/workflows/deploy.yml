@@ -17,6 +17,7 @@ on:
       - 'map/**'
       - 'biografii/**'
       - 'hard-texts/**'
+      - 'baptisty-rossii/**'
       # Astro migration: public pages now live in src/ — deploy must fire on
       # any change to Astro pages, MDX content, layouts, or the strangler manifest.
       - 'src/**'
@@ -56,12 +57,12 @@ jobs:
 
     # Deploy after manual run, asset-only push, or after IndexNow metadata/gate check succeeds.
     # Now that IndexNow submission runs post-deploy in deploy.yml, indexnow.yml only runs metadata
-    # and validation gates. If indexnow.yml fails, production deploy must be blocked.
+    # and validation gates. If indexnow.yml FAILS, production deploy is BLOCKED (do not add a
+    # `== 'failure'` clause here — that would contradict this intent and ship unverified content).
     if: >
       github.event_name == 'workflow_dispatch' ||
       github.event_name == 'push' ||
-      github.event.workflow_run.conclusion == 'success' ||
-      github.event.workflow_run.conclusion == 'failure'
+      github.event.workflow_run.conclusion == 'success'
 
     environment:
       name: github-pages

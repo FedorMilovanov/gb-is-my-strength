@@ -1,0 +1,17 @@
+{
+  "historicalCommit": "bcf6389f29ee0c89e9e96e7587e0226ecf251ae0",
+  "reconciledAt": "2026-07-05",
+  "policy": "Two distinct submenu items must never share one target. Historical anchors that were renamed/missing during the Astro migration are mapped to current distinct targets. No invisible dummy anchors, no fake heading text.",
+  "entries": [
+    {
+      "route": "articles/dzhon-gill-chast-3-nasledie",
+      "historicalLabel": "Coffee House и права поместной церкви",
+      "historicalHref": "#sec-coffee-house-polity",
+      "currentRenderedHeading": "Управление церковью: единственный пастор, никаких степеней",
+      "currentId": "#sec-church-gov-polity",
+      "finalHref": "#sec-church-gov-polity",
+      "decision": "Added distinct sub-anchor id=\"sec-church-gov-polity\" on the church-membership paragraph inside the existing church-government section. Editorially tied to local-church rights/polity; visible, real content — not a dummy anchor.",
+      "verifiedTargetText": "О вступлении в членство ... голосованием церкви"
+    }
+  ]
+}
