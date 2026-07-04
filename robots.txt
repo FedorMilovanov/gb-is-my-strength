@@ -44,35 +44,45 @@ Allow: /
 # --- AI Training / bulk scrapers: blocked, content not licensed for model training ---
 User-agent: GPTBot
 Disallow: /
+Allow: /llms.txt
 
 # Google-Extended: блокирует использование контента для тренировки Gemini/Vertex AI.
 # НЕ влияет на AI Overviews, AI Mode или обычную поисковую выдачу Google.
 User-agent: Google-Extended
 Disallow: /
+Allow: /llms.txt
 
 User-agent: Applebot-Extended
 Disallow: /
+Allow: /llms.txt
 
 User-agent: anthropic-ai
 Disallow: /
+Allow: /llms.txt
 
 User-agent: ClaudeBot
 Disallow: /
+Allow: /llms.txt
 
 User-agent: CCBot
 Disallow: /
+Allow: /llms.txt
 
 User-agent: Bytespider
 Disallow: /
+Allow: /llms.txt
 
 User-agent: Meta-ExternalAgent
 Disallow: /
+Allow: /llms.txt
 
 User-agent: Meta-ExternalFetcher
 Disallow: /
+Allow: /llms.txt
 
 User-agent: cohere-ai
 Disallow: /
+Allow: /llms.txt
 
 User-agent: Omgilibot
 Disallow: /
@@ -96,16 +106,19 @@ Disallow: /
 
 User-agent: Diffbot
 Disallow: /
+Allow: /llms.txt
 
 User-agent: Amazonbot
 Disallow: /
+Allow: /llms.txt
 
 User-agent: FacebookBot
 Disallow: /
+Allow: /llms.txt
 
 User-agent: ImagesiftBot
 Disallow: /
-
 Allow: /llms.txt
+
 
 Sitemap: https://gospod-bog.ru/sitemap.xml
