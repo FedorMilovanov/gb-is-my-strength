@@ -22,7 +22,7 @@ export const ASSET_VERSIONS = {
   'js/scroll-perf.js': '454d6f7b',
   'js/search.js': 'b0fd43b8',
   'js/site-utils.js': '897afa55',
-  'js/site.js': 'edb94dbe',
+  'js/site.js': '58cd88e5',
   'js/sw-register.js': '7a8bd1e7',
   'nagornaya/tw.min.css': '2670414e',
 };
