@@ -791,7 +791,7 @@ html.dark [data-gill-v16] .gb-theme-toggle .theme-icon-moon{opacity:1;transform:
   color:var(--gbs2-rtext,#d6d3d1);
   overflow:hidden;padding:0;z-index:2;
 }
-[data-gill-v16] .gbs-rail .gbs2-rmid{padding:48px 8px 6px;gap:6px;min-height:0}
+[data-gill-v16] .gbs-rail .gbs2-rmid{display:flex;flex:1 1 auto;flex-direction:column;min-height:0;min-width:0;overflow:hidden;padding:48px 8px 6px;gap:6px}
 [data-gill-v16] .gbs-rail .gbs-rail-list{padding:0 2px}
 [data-gill-v16] .gbs-rail .gbs-rail-foot{padding:12px 8px 14px;border-top:1px solid rgba(255,255,255,.08)}
 [data-gill-v16] .gbs-rail-back{
@@ -944,7 +944,7 @@ html.dark [data-gill-v16] .gb-theme-toggle .theme-icon-moon{opacity:1;transform:
 [data-gill-v16] .gbs2-toch{display:flex;align-items:center;gap:8px;padding:10px 14px 7px;color:rgba(255,255,255,.68)}
 [data-gill-v16] .gbs2-toch span:first-child{flex:1;font-size:9.5px;font-weight:800;letter-spacing:.12em;text-transform:uppercase}
 [data-gill-v16] .gbs2-count{font-size:10px;font-weight:800;font-variant-numeric:tabular-nums;background:rgba(255,255,255,.08);border-radius:99px;padding:2px 8px}
-[data-gill-v16] .gbs2-tocscroll{position:relative;flex:1 1 auto;min-height:0;overflow:auto;padding:2px 8px 11px;scrollbar-width:thin;scrollbar-color:rgba(255,255,255,.28) transparent;-webkit-mask-image:linear-gradient(to bottom,transparent 0,#000 14px,#000 calc(100% - 18px),transparent 100%);mask-image:linear-gradient(to bottom,transparent 0,#000 14px,#000 calc(100% - 18px),transparent 100%)}
+[data-gill-v16] .gbs2-tocscroll{position:relative;flex:1 1 auto;min-height:0;min-width:0;overflow-y:auto;overflow-x:hidden;overscroll-behavior:contain;scrollbar-gutter:stable;padding:2px 8px 11px;scrollbar-width:thin;scrollbar-color:rgba(255,255,255,.28) transparent;-webkit-mask-image:linear-gradient(to bottom,transparent 0,#000 14px,#000 calc(100% - 18px),transparent 100%);mask-image:linear-gradient(to bottom,transparent 0,#000 14px,#000 calc(100% - 18px),transparent 100%)}
 [data-gill-v16] .gbs2-tocscroll::-webkit-scrollbar{width:5px}[data-gill-v16] .gbs2-tocscroll::-webkit-scrollbar-thumb{border-radius:999px;background:rgba(255,255,255,.24)}
 [data-gill-v16] .gbs2-toc{position:relative;list-style:none;margin:0;padding:0 0 0 22px}[data-gill-v16] .gbs2-toc>li{list-style:none;margin:0;padding:0}
 [data-gill-v16] .gbs2-track{position:absolute;left:9px;top:var(--gbs2-track-top,14px);width:2px;height:var(--gbs2-track-height,calc(100% - 28px));background:rgba(255,255,255,.12);border-radius:9px;overflow:hidden}

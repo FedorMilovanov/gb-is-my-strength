@@ -28,12 +28,29 @@ let EXPECTED = INLINE_EXPECTED;
 // reference manifest resolves to the current rendered anchors (otherwise every
 // check that compares against EXPECTED would false-fail and break the deploy).
 const reconPath = path.join(ROOT, 'data', 'gill-submenu-anchor-reconciliation.json');
-let RENAMES = {};
+let RENAMES = {}, REORDERS = {};
 if (fs.existsSync(reconPath)) {
-  try { const r = JSON.parse(fs.readFileSync(reconPath, 'utf8')); RENAMES = (r && r.renames) || {}; }
+  try {
+    const r = JSON.parse(fs.readFileSync(reconPath, 'utf8'));
+    RENAMES = (r && r.renames) || {};
+    REORDERS = (r && r.reorders) || {};
+  }
   catch (e) { console.log('reconciliation unreadable, renames skipped: ' + e.message); }
 }
 function reconcile(h) { return RENAMES[h] || h; }
+// Documented editorial reorders (article section order changed after the
+// historical witness): re-sort EXPECTED rows to the recorded document order.
+// Undocumented order drift still fails the per-index comparison below.
+function applyReorder(rel, rows) {
+  const ro = REORDERS[rel];
+  if (!ro || !Array.isArray(ro.order)) return rows;
+  const byHref = new Map(rows.map(r => [r[1], r]));
+  if (ro.order.length !== rows.length || !ro.order.every(h => byHref.has(h))) {
+    bad(`${rel}: reorder entry does not match expected row set`);
+    return rows;
+  }
+  return ro.order.map(h => byHref.get(h));
+}
 
 const refPath = path.join(ROOT, 'data', 'gill-pre-v16-submenu-reference.json');
 if (fs.existsSync(refPath)) {
@@ -57,10 +74,16 @@ const VIEWPORTS=[
   {name:'1280x800-light',width:1280,height:800,dark:false},
   {name:'1440x900-light',width:1440,height:900,dark:false},
   {name:'1920x1080-light',width:1920,height:1080,dark:false},
+  {name:'1024x768-dark',width:1024,height:768,dark:true},
   {name:'1280x800-dark',width:1280,height:800,dark:true},
   {name:'1440x900-dark',width:1440,height:900,dark:true},
   {name:'1920x1080-dark',width:1920,height:1080,dark:true}
 ];
+// CI must not accept the "scrollspy not exercisable" soft path: with the
+// controller gate fixed the spy IS exercisable headlessly, so a non-live
+// result now means a real regression.  --require-live / env makes it fatal.
+const REQUIRE_LIVE = process.argv.includes('--require-live') || process.env.GILL_SUBMENU_REQUIRE_LIVE === '1';
+const REPORTS_DIR = path.join(ROOT, 'reports', 'gill-pre-v16-submenu-audit');
 
 let failures=0,checks=0;
 function ok(m){checks++;console.log('OK '+m);}
@@ -82,10 +105,16 @@ function checkManifestSanity(){
 
 function staticAudit(){
   checkManifestSanity();
+  for(const rel of Object.keys(EXPECTED)) EXPECTED[rel] = applyReorder(rel, EXPECTED[rel]);
   for(const [rel,exp] of Object.entries(EXPECTED)){
     const html=fs.readFileSync(path.join(DIST,rel),'utf8'),route='/'+rel.replace(/index\.html$/,'');
     ['gbs2-toch','gbs2-count','gbs2-tocscroll','gbs2-track','gbs2-toc'].forEach(c=>html.includes(c)?ok(`${route} shell .${c}`):bad(`${route} missing .${c}`));
-    if(/<ul[^>]+class="gbs2-toc"[\s\S]*?<span\b[^>]+gbs2-track/.test(html))bad(`${route} track inside ul`);else ok(`${route} valid track sibling`);
+    // Historical witness bcf6389f renders the track INSIDE the ul (first
+    // child) so its left:9px resolves against .gbs2-toc and the line runs
+    // through the dot centres. A .gbs2-tocscroll-sibling track is offset by
+    // the ul inset (dots float ~7.5px right of the line) — that regression
+    // was previously enshrined here as "valid track sibling".  [spec §8]
+    if(/<ul[^>]+class="gbs2-toc"[^>]*>\s*<span\b[^>]+gbs2-track/.test(html))ok(`${route} track inside ul (historical placement)`);else bad(`${route} track not first child of ul.gbs2-toc`);
     const ul=html.match(/<ul[^>]+class="gbs2-toc"[^>]*>[\s\S]*?<\/ul>/)?.[0]||'';
     if(/Глава\s+\d+/i.test(ul))bad(`${route} fake chapter subtitle`);else ok(`${route} no fake chapter subtitles`);
     const items=[...ul.matchAll(/<li([^>]*)>[\s\S]*?<a[^>]+href="([^"]+)"[^>]*>[\s\S]*?<span[^>]+gbs2-dot[^>]*>[\s\S]*?<\/span>([\s\S]*?)<\/a>[\s\S]*?<\/li>/g)];
@@ -140,6 +169,13 @@ async function browserAudit(){
             footerBottom:footer?footer.getBoundingClientRect().bottom:0,railBottom:rr.bottom,
             footerTop:footer?footer.getBoundingClientRect().top:0,railTop:rr.top,
             articleLeft:article?article.getBoundingClientRect().left:0,railRight:rr.right,
+            railTop:rr.top,railBottomGap:window.innerHeight-rr.bottom,railHeight:rr.height,winH:window.innerHeight,
+            // §8 — dot/track alignment: every dot centre must sit on the track centre line.
+            dotAlign:(function(){var track=document.querySelector('.gbs2-track');if(!track)return null;var tr=track.getBoundingClientRect();var tcx=tr.left+tr.width/2;var worst=0;document.querySelectorAll('.gbs2-toc a .gbs2-dot').forEach(function(d){var dr=d.getBoundingClientRect();var off=Math.abs(dr.left+dr.width/2-tcx);if(off>worst)worst=off;});return worst;})(),
+            // §9.5 — submenu targets must be monotonic in document position.
+            monotonic:(function(){var links=[...document.querySelectorAll('.gbs-rail .gbs2-toc a[href^="#"]')];var prev=-Infinity,violations=[];links.forEach(function(a){var t=document.getElementById((a.getAttribute('href')||'').slice(1));if(!t)return;var top=t.getBoundingClientRect().top+window.scrollY;if(top<prev)violations.push(a.getAttribute('href'));prev=top;});return violations;})(),
+            ariaCurrent:document.querySelectorAll('.gbs-rail .gbs2-toc a[aria-current="location"]').length,
+            ariaFalse:document.querySelectorAll('.gbs-rail .gbs2-toc a[aria-current="false"]').length,
             inFlowOverflow:(function(){var m=0;rail.querySelectorAll('*').forEach(function(el){var p=getComputedStyle(el).position;if(p==='absolute'||p==='fixed')return;if(el.closest('.gb-ember-expand'))return;var rb=el.getBoundingClientRect();if(rb.right>m)m=rb.right;});return Math.max(0,m-rr.right);})()};
         });
         if(g.noRail){bad(`${route} ${vp.name} no .gbs-rail frame`);await page.close();continue;}
@@ -152,6 +188,17 @@ async function browserAudit(){
         (g.docSW<=g.winW+1)?ok(`${route} ${vp.name} document no horizontal overflow`):bad(`${route} ${vp.name} document overflow ${g.docSW-g.winW}`);
         if(g.footerBottom&&g.railBottom)(g.footerBottom<=g.railBottom+1)?ok(`${route} ${vp.name} footer inside frame`):bad(`${route} ${vp.name} footer outside frame`);
         if(g.articleLeft&&g.railRight)(g.articleLeft>=g.railRight+20)?ok(`${route} ${vp.name} article gap ok`):bad(`${route} ${vp.name} article overlaps rail`);
+        // §6.4/§7.2 — full-height contract: top≈16, bottom≈16, height≈vh-32.
+        (Math.abs(g.railTop-16)<=2)?ok(`${route} ${vp.name} rail top gap ${Math.round(g.railTop)}`):bad(`${route} ${vp.name} rail top gap ${Math.round(g.railTop)} != 16±2`);
+        (Math.abs(g.railBottomGap-16)<=2)?ok(`${route} ${vp.name} rail bottom gap ${Math.round(g.railBottomGap)}`):bad(`${route} ${vp.name} rail bottom gap ${Math.round(g.railBottomGap)} != 16±2`);
+        (Math.abs(g.railHeight-(g.winH-32))<=4)?ok(`${route} ${vp.name} rail full height`):bad(`${route} ${vp.name} rail height ${Math.round(g.railHeight)} != vh-32`);
+        // §8 — dot alignment ≤4px (spec maximum; preferred ≤2px).
+        if(g.dotAlign==null)bad(`${route} ${vp.name} no .gbs2-track for dot alignment`);
+        else (g.dotAlign<=4)?ok(`${route} ${vp.name} dot alignment ${g.dotAlign.toFixed(1)}px`):bad(`${route} ${vp.name} dot misaligned ${g.dotAlign.toFixed(1)}px > 4px`);
+        // §9.5 — document-order monotonicity of submenu targets.
+        g.monotonic.length?bad(`${route} ${vp.name} submenu order not monotonic at: ${g.monotonic.join(', ')}`):ok(`${route} ${vp.name} submenu targets monotonic in document order`);
+        // §9.4 — exactly one rail row carries aria-current="location", none carry "false".
+        (g.ariaCurrent===1&&g.ariaFalse===0)?ok(`${route} ${vp.name} aria-current location on active rail row`):bad(`${route} ${vp.name} aria-current: location=${g.ariaCurrent} false=${g.ariaFalse}`);
         const links=await page.$$eval('.gbs-rail .gbs2-toc a[href^="#"]',els=>els.map(e=>e.getAttribute('href')));
         const total=links.length;
         // (a) Structural restoration: every submenu link resolves to a distinct, real target.
@@ -185,7 +232,9 @@ async function browserAudit(){
           return !!(act && act.getAttribute('href')===secondHref);
         }, links[Math.min(1,total-1)]);
 
+        const traversal=[];
         if(live){
+          let prevFill=-1;
           for(let i=0;i<total;i++){
             const href=links[i];
             await page.evaluate(h=>{const el=document.getElementById(h.slice(1));if(el){const y=el.getBoundingClientRect().top+window.scrollY-140;window.scrollTo(0,Math.max(0,y));}window.dispatchEvent(new Event('scroll'));},href);
@@ -198,20 +247,39 @@ async function browserAudit(){
               const sc=document.querySelector('.gbs2-tocscroll'); const sr=sc?sc.getBoundingClientRect():null;
               const ar=lks[idx]?.getBoundingClientRect();
               const activeVisible=ar&&sr?(ar.top>=sr.top-1&&ar.bottom<=sr.bottom+1):false;
-              return{active:active.length,passed:passed.length,count,
-                activeHref:lks[idx]?.classList.contains('gbs2-active')?lks[idx].getAttribute('href'):null,activeVisible};
-            },i); if(r.activeHref===href && r.active===1) break; }
+              const track=document.querySelector('.gbs2-track'); const fillEl=document.querySelector('.gbs2-track i');
+              const trackH=track?track.getBoundingClientRect().height:0;
+              const fillH=fillEl?fillEl.getBoundingClientRect().height:0;
+              return{active:active.length,passed:passed.length,count,trackH,fillH,
+                activeHref:lks[idx]?.classList.contains('gbs2-active')?lks[idx].getAttribute('href'):null,activeVisible,
+                ariaOk:document.querySelectorAll('.gbs-rail .gbs2-toc a[aria-current="location"]').length===1};
+            },i); if(r.activeHref===href && r.active===1 && r.activeVisible) break; }
             if(r.active!==1)bad(`${route} ${vp.name} item ${i+1}: active count ${r.active}`); else ok(`${route} ${vp.name} item ${i+1}: 1 active`);
             if(r.activeHref!==href)bad(`${route} ${vp.name} item ${i+1}: active ${r.activeHref} != ${href}`);
             if(r.passed!==i)bad(`${route} ${vp.name} item ${i+1}: passed ${r.passed} != ${i}`); else ok(`${route} ${vp.name} item ${i+1}: passed ${i}`);
             if(!/^\d+ \/ \d+$/.test(r.count))bad(`${route} ${vp.name} item ${i+1}: bad count ${r.count}`);
             else if(r.count!==`${i+1} / ${total}`)bad(`${route} ${vp.name} item ${i+1}: counter ${r.count} != ${i+1} / ${total}`);
             if(!r.activeVisible)bad(`${route} ${vp.name} item ${i+1}: active row not visible in scroller`);
+            // §6.3 addendum — rail fill: bounded by the track and monotonic non-decreasing.
+            if(r.fillH>r.trackH+1)bad(`${route} ${vp.name} item ${i+1}: fill ${Math.round(r.fillH)} exceeds track ${Math.round(r.trackH)}`);
+            if(r.fillH+0.5<prevFill)bad(`${route} ${vp.name} item ${i+1}: fill regressed ${Math.round(r.fillH)} < ${Math.round(prevFill)}`);
+            prevFill=r.fillH;
+            if(!r.ariaOk)bad(`${route} ${vp.name} item ${i+1}: aria-current not on exactly one rail row`);
+            traversal.push({item:i+1,href,active:r.activeHref,passed:r.passed,count:r.count,fillH:Math.round(r.fillH),trackH:Math.round(r.trackH),activeVisible:r.activeVisible});
           }
+          ok(`${route} ${vp.name} full traversal ${total}/${total} rows live-verified`);
+        } else if(REQUIRE_LIVE){
+          bad(`${route} ${vp.name} scrollspy NOT live — controller did not react to scroll (this previously masked a dead initGbs2Controls gate on Gill v16 pages); failing because --require-live/GILL_SUBMENU_REQUIRE_LIVE is set`);
         } else {
-          ok(`${route} ${vp.name} scroll-driven active-state not exercisable headlessly (rAF-throttled controller); source scrollspy logic verified correct via algorithm replication; structural restoration fully verified`);
+          console.log(`WARN ${route} ${vp.name} scrollspy not live — traversal skipped (NOT counted as passed; use --require-live in CI)`);
         }
         errs.length?bad(`${route} ${vp.name} errors ${errs.join('|')}`):ok(`${route} ${vp.name} no page errors`);
+        // §12 — machine-readable facts per route/viewport.
+        try{
+          const dir=path.join(REPORTS_DIR,rel.replace(/\/index\.html$/,'').replace(/[\\/]/g,'__'));
+          fs.mkdirSync(dir,{recursive:true});
+          fs.writeFileSync(path.join(dir,vp.name+'.json'),JSON.stringify({route,viewport:vp.name,geometry:{width:g.width,radius:g.radius,railTop:g.railTop,railBottomGap:g.railBottomGap,railHeight:g.railHeight,dotAlign:g.dotAlign,inFlowOverflow:g.inFlowOverflow,docOverflow:g.docSW-g.winW},monotonicViolations:g.monotonic,ariaCurrent:g.ariaCurrent,live,traversal,pageErrors:errs},null,1));
+        }catch(e){console.log('facts write failed: '+e.message);}
         await page.close();
       }
     }

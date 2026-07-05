@@ -1212,7 +1212,11 @@
   function initGbs2Controls() {
     var sheet = qs('#gbs2Sheet');
     var bbar = qs('#gbs2Bbar');
-    if (!sheet && !bbar) return; // Not a GBS2 page
+    // Gill v16 pages ship neither #gbs2Sheet nor #gbs2Bbar, but their pre-v16
+    // desktop submenu scrollspy lives in updateScrollProgress() below — the
+    // old gate left the restored submenu permanently frozen at its SSR state
+    // (active row 1, counter "1 / N") on every Gill route.  [spec §6.3/§9]
+    if (!sheet && !bbar && !qs('[data-gill-v16]')) return; // Not a GBS2/Gill-v16 page
 
     // --- TOC Population ---
     function populateToc() {
@@ -1406,6 +1410,13 @@
           var target = id ? document.getElementById(id) : null;
           return target ? { a: a, target: target } : null;
         }).filter(Boolean);
+        // The active-index walk below assumes targets are in document order.
+        // Sort defensively by DOM position so an out-of-order menu row can
+        // degrade gracefully instead of freezing the walk.  [spec §9.5]
+        represented.sort(function(x, y) {
+          if (x.target === y.target) return 0;
+          return (x.target.compareDocumentPosition(y.target) & Node.DOCUMENT_POSITION_FOLLOWING) ? -1 : 1;
+        });
         if (represented.length) {
           var scrollY = window.scrollY + 140;
           var activeIdx = 0;
@@ -1417,6 +1428,10 @@
           represented.forEach(function(row, idx) {
             row.a.classList.toggle('gbs2-active', idx === activeIdx);
             row.a.classList.toggle('gbs2-passed', idx < activeIdx);
+            // Rail rows carry aria-current="location" on the active row only;
+            // never write aria-current="false".  [spec §9.4]
+            if (idx === activeIdx) row.a.setAttribute('aria-current', 'location');
+            else row.a.removeAttribute('aria-current');
           });
           var track = qs('.gbs2-track');
           var firstDot = represented[0] && qs('.gbs2-dot', represented[0].a);

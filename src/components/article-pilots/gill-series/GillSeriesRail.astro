@@ -36,8 +36,13 @@ const page = GILL_PAGE_DATA[pageId];
     <div class="gbs-rail-now"><div class="lab">Сейчас читаете</div><h2>{page.railNowTitle}</h2><div class="bar"><i id="gbs2Curbar"></i></div></div>
     <div class="gbs2-toch"><span>Оглавление части</span><span class="gbs2-count" id="gbs2Count">1 / {page.partToc.length}</span></div>
     <div class="gbs2-tocscroll">
-      <span aria-hidden="true" class="gbs2-track"><i></i></span>
+      {/* Historical placement (witness bcf6389f): the track lives INSIDE the ul —
+          .gbs2-track{left:9px} resolves against .gbs2-toc, putting the line exactly
+          through the dot centres (dots sit at left:-17px from the 22px list padding).
+          As a .gbs2-tocscroll sibling it was offset by the ul inset → dots floated
+          7.5px right of the line (audit §8 dot-alignment caught this). */}
       <ul class="gbs2-toc" id="gbs2Toc">
+        <span aria-hidden="true" class="gbs2-track"><i></i></span>
         {page.partToc.map((item) => (
           <li class:list={{ 'gbs2-sub': item.level === 3 }}><a href={item.href} class:list={{ 'gbs2-active': item.current }}><span aria-hidden="true" class="gbs2-dot"></span>{item.label}</a></li>
         ))}
