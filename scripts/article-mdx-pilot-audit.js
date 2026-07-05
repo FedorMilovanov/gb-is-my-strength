@@ -136,8 +136,18 @@ function canonical(html) {
   }
   return '';
 }
+function stripRailChrome(html) {
+  // The series rail (<aside class="gbs2-rail"> legacy / <aside class="gbs-rail">
+  // v16) is navigation chrome, not article content. Legacy and v16 rails
+  // legitimately carry DIFFERENT headings (legacy rtitle «Джон Гилл
+  // (1697–1771)» vs the v16 current-part card title, e.g. «Справочник по
+  // Гиллу»), so chrome H2s must not enter the content-parity inventory on
+  // either side — the old pass only survived because both rails happened to
+  // repeat the same series-title string.
+  return html.replace(/<aside\b[^>]*class=["'][^"']*\bgbs2?-rail\b[^"']*["'][^>]*>[\s\S]*?<\/aside>/gi, '');
+}
 function headings(html) {
-  return [...html.matchAll(/<h2\b[^>]*>([\s\S]*?)<\/h2>/gi)].map((m) => stripTags(m[1])).filter(Boolean);
+  return [...stripRailChrome(html).matchAll(/<h2\b[^>]*>([\s\S]*?)<\/h2>/gi)].map((m) => stripTags(m[1])).filter(Boolean);
 }
 function bodyHtml(html) {
   return html.match(/<body\b[^>]*>([\s\S]*?)<\/body>/i)?.[1] || html;
