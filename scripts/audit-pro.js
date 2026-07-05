@@ -2741,7 +2741,12 @@ const JS_SIZE_FLOORS = {
   // Only user-facing cache-busted assets are required in the SW precache.
   // Tooling/pilot artifacts (site-modules.js was removed in dead-code cleanup)
   // may physically exist in the repo, but must not force users to download them.
-  const required = CACHE_BUST_ASSETS.map(f => '/' + f);
+  // AUDIT-P2-SW-PRECACHE-4 (2026-07-05): lazy-loaded assets must NOT be
+  // precached — forcing every visitor to download them defeats the lazy
+  // loaders (search palette, glossary) and wastes mobile bandwidth. They are
+  // runtime-cached by the SW on first real use instead.
+  const LAZY_NO_PRECACHE = new Set(['/js/search.js', '/js/glossary.js', '/manifest.json', '/data/search-manifest.json']);
+  const required = CACHE_BUST_ASSETS.map(f => '/' + f).filter(f => !LAZY_NO_PRECACHE.has(f));
   const missing = [];
   for (const f of required) {
     if (!listed.has(f)) missing.push(f);
@@ -2749,7 +2754,13 @@ const JS_SIZE_FLOORS = {
   if (missing.length) {
     R.err(`sw.js PRECACHE_ASSETS missing live files:\n  - ${missing.join('\n  - ')}`);
   } else {
-    R.ok(`sw.js PRECACHE_ASSETS lists all required cache-busted live assets`);
+    R.ok(`sw.js PRECACHE_ASSETS lists all required cache-busted live assets (lazy set excluded by design)`);
+  }
+  const reintroduced = [...LAZY_NO_PRECACHE].filter(f => listed.has(f));
+  if (reintroduced.length) {
+    R.err(`sw.js PRECACHE_ASSETS re-introduced lazy assets (defeats lazy loading): ${reintroduced.join(', ')}`);
+  } else {
+    R.ok('sw.js PRECACHE_ASSETS contains no lazy-loaded assets');
   }
 })();
 
