@@ -38,7 +38,12 @@ export interface GillPageChromeData {
   readingProgressDoneMin: number;
   readingProgressPartMin: number;
   readingProgressTotalMin: number;
+  /** «Сейчас читаете» card title — the PART name (historical witness bcf6389f
+   *  showed «Часть II. Учёный», not the series title). */
   railNowTitle: string;
+  /** Cover image of the expanded current-part card (gbs2-current), relative
+   *  to the article page (../../images/...). Historical flow-rail contract. */
+  railCover: string;
   partDialogLabel: string;
   partToc: GillPartTocItem[];
 }
@@ -97,6 +102,7 @@ export const GILL_PAGE_DATA: Record<GillSeriesPageId, GillPageChromeData> = {
     readingProgressPartMin: 16,
     readingProgressTotalMin: 149,
     railNowTitle: "Исторический контекст",
+    railCover: "../../images/og-dzhon-gill-istoricheskiy-kontekst-600w.webp",
     partDialogLabel: "Введение · Исторический контекст",
     partToc: [
       { href: "#sec-from-puritans-to-baptists", label: "I. От пуритан к диссентерам: путь в полтора века", level: 2, current: true },
@@ -120,7 +126,8 @@ export const GILL_PAGE_DATA: Record<GillSeriesPageId, GillPageChromeData> = {
     readingProgressDoneMin: 16,
     readingProgressPartMin: 32,
     readingProgressTotalMin: 149,
-    railNowTitle: "Джон Гилл (1697–1771)",
+    railNowTitle: "Часть I. Человек",
+    railCover: "../../images/gill-study-portrait-600w.webp",
     partDialogLabel: "Часть I · Человек",
     partToc: [
       // Row order follows CURRENT document order (scrollspy invariant §9.5);
@@ -153,7 +160,8 @@ export const GILL_PAGE_DATA: Record<GillSeriesPageId, GillPageChromeData> = {
     readingProgressDoneMin: 48,
     readingProgressPartMin: 39,
     readingProgressTotalMin: 149,
-    railNowTitle: "Джон Гилл (1697–1771)",
+    railNowTitle: "Часть II. Учёный",
+    railCover: "../../images/og-dzhon-gill-chast-2-uchenyi-600w.webp",
     partDialogLabel: "Часть II · Учёный",
     partToc: [
       // Row order follows CURRENT document order (scrollspy invariant: submenu
@@ -178,7 +186,8 @@ export const GILL_PAGE_DATA: Record<GillSeriesPageId, GillPageChromeData> = {
     readingProgressDoneMin: 87,
     readingProgressPartMin: 54,
     readingProgressTotalMin: 149,
-    railNowTitle: "Джон Гилл (1697–1771)",
+    railNowTitle: "Часть III. Наследие",
+    railCover: "../../images/og-dzhon-gill-chast-3-nasledie-600w.webp",
     partDialogLabel: "Часть III · Наследие",
     partToc: [
       // Row order follows CURRENT document order (scrollspy invariant §9.5);
@@ -212,7 +221,8 @@ export const GILL_PAGE_DATA: Record<GillSeriesPageId, GillPageChromeData> = {
     readingProgressDoneMin: 141,
     readingProgressPartMin: 8,
     readingProgressTotalMin: 149,
-    railNowTitle: "Джон Гилл (1697–1771)",
+    railNowTitle: "Справочник по Гиллу",
+    railCover: "../../images/gill-five-volumes-shelf-600w.webp",
     partDialogLabel: "Справочник по Гиллу",
     partToc: [
       { href: "#sec-prdl", label: "I. Масштаб корпуса", level: 2, current: true },
