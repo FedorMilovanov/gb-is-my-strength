@@ -66,7 +66,12 @@ const ALLOWED_JS = new Set([
 // Same list as scripts/cache-bust.js. If cache-bust.js changes, update this list too.
 // P1-9 FIX: synced with cache-bust.js ASSETS — single source of truth
 // Shared asset list — single source of truth (see scripts/cache-bust-assets.js)
-const CACHE_BUST_ASSETS = require('./cache-bust-assets').ASSETS;
+let CACHE_BUST_ASSETS;
+try { CACHE_BUST_ASSETS = require('./cache-bust-assets').ASSETS; }
+catch (e) {
+  console.error('FATAL: scripts/cache-bust-assets.js unreadable (' + e.message + ') — audit-pro cannot run without the canonical asset list.');
+  process.exit(1);
+}
 
 const MAX_CSS_TOTAL = 425_000; // global core CSS budget; route-scoped/pilot CSS is reported separately
 const MAX_JS_TOTAL = 365_000; // includes sw.js + mobile utils; site.js is intentionally large right now
@@ -261,19 +266,61 @@ const SITE_CSS_MIN_BYTES = 200_000;
 })();
 
 // 2b. !important budget for site.css (anti-regression guard, AGENTS §4.10)
+// ============================================================
+// IMAGE-CROSSREF-GAP guard (2026-07-05): every local /images/... path
+// referenced from data/*.json or sitemap.xml must exist on disk. This is the
+// exact regression class of 629ed89a ("remove orphaned image files" left
+// broken refs in search-manifest.json/sitemap.xml, repaired by fc5f94bd).
+// When deleting referenced files, grep ALL consumers first.
+(function imageCrossRef() {
+  const refs = new Map(); // path -> [sources]
+  const collect = (txt, src) => {
+    for (const m of txt.matchAll(/\/images\/[A-Za-z0-9._\/-]+\.(?:webp|png|jpe?g|svg|gif|avif)/g)) {
+      const rel = m[0].replace(/^\//, '');
+      if (!refs.has(rel)) refs.set(rel, []);
+      if (!refs.get(rel).includes(src)) refs.get(rel).push(src);
+    }
+  };
+  const dataDir = path.join(ROOT, 'data');
+  if (fs.existsSync(dataDir)) {
+    for (const f of fs.readdirSync(dataDir).filter(f => f.endsWith('.json'))) {
+      collect(fs.readFileSync(path.join(dataDir, f), 'utf8'), 'data/' + f);
+    }
+  }
+  const sm = path.join(ROOT, 'sitemap.xml');
+  if (fs.existsSync(sm)) collect(fs.readFileSync(sm, 'utf8'), 'sitemap.xml');
+  let broken = 0;
+  for (const [rel, sources] of refs) {
+    if (!fs.existsSync(path.join(ROOT, rel))) {
+      broken++;
+      R.err(`image cross-ref broken: ${rel} referenced by ${sources.join(', ')} but missing on disk`);
+    }
+  }
+  if (!broken) R.ok(`image cross-ref: all ${refs.size} referenced /images/ paths exist (data/*.json + sitemap.xml)`);
+})();
+
 (function importantBudget() {
-  const f = path.join(ROOT, 'css/site.css');
-  if (!fs.existsSync(f)) { R.warn('css/site.css not found for !important check'); return; }
-  const count = (fs.readFileSync(f, 'utf8').match(/!important/g) || []).length;
-  if (count > IMPORTANT_CEIL) {
-    R.err(`site.css has ${count} !important — exceeds ceiling ${IMPORTANT_CEIL}. ` +
-      `This is a regression: refactor into @layer instead of adding !important. ` +
-      `(AGENTS §4.10 target ≤ ${IMPORTANT_GOAL})`);
-  } else if (count > IMPORTANT_GOAL) {
-    R.ok(`site.css !important within ratchet ceiling: ${count} ≤ ${IMPORTANT_CEIL} (long-term goal ${IMPORTANT_GOAL})`);
-    R.note(`site.css !important debt remains ${count - IMPORTANT_GOAL} above long-term goal; current ceiling is hard-ratcheted to ${IMPORTANT_CEIL}`);
-  } else {
-    R.ok(`site.css !important within goal: ${count} ≤ ${IMPORTANT_GOAL}`);
+  // Ratchet ceilings for EVERY core stylesheet — numbers may only go DOWN.
+  // AUDIT-P1-FC-IMP fix (2026-07-05): previously only site.css was guarded,
+  // so floating-cluster.css grew to 524 !important with CI silent.
+  const RATCHETS = [
+    { file: 'css/site.css',                 ceil: IMPORTANT_CEIL, goal: IMPORTANT_GOAL },
+    { file: 'css/floating-cluster.css',     ceil: 524,            goal: 100 },
+    { file: 'css/mobile-hotfix.css',        ceil: 142,            goal: 0 },
+    { file: 'css/nagornaya-mobile-toc.css', ceil: 135,            goal: 50 },
+  ];
+  for (const { file, ceil, goal } of RATCHETS) {
+    const f = path.join(ROOT, file);
+    if (!fs.existsSync(f)) { R.warn(file + ' not found for !important check'); continue; }
+    const count = (fs.readFileSync(f, 'utf8').match(/!important/g) || []).length;
+    if (count > ceil) {
+      R.err(`${file} has ${count} !important — exceeds ratchet ceiling ${ceil}. ` +
+        `This is a regression: refactor into @layer / higher specificity instead of adding !important.`);
+    } else if (count > goal) {
+      R.ok(`${file} !important within ratchet ceiling: ${count} ≤ ${ceil} (long-term goal ${goal})`);
+    } else {
+      R.ok(`${file} !important within goal: ${count} ≤ ${goal}`);
+    }
   }
 })();
 
@@ -2052,8 +2099,7 @@ const NOINDEX_ALLOWLIST = new Set([
   '404.html',
   'google7e02f9855e02b89a.html',
   'yandex_42bc0d54a1ca4952.html',
-  'yandex_d8876d66da1b4592.html',
-  // Temporary map placeholders: intentionally public URL, but not indexable/search-promoted until visual QA.
+    // Temporary map placeholders: intentionally public URL, but not indexable/search-promoted until visual QA.
   'karty/early-church/index.html',
   'karty/maccabim/index.html',
   'karty/melachim/index.html',

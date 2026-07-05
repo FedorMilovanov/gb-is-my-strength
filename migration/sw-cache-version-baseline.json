@@ -1,9 +1,9 @@
 {
-  "version": 3,
-  "captured": "2026-07-02",
+  "version": 4,
+  "captured": "2026-07-05",
   "preSwitchProductionCacheVersion": "gb-v171-r62-maps-archaeology-20260612",
   "lastReviewedDistProductionCacheVersion": "gb-v173-r64-astro-runtime-hub-20260618",
-  "currentDistProductionCacheVersion": "gb-v182-gill-toc-actions-20260702",
-  "currentExpectedCacheVersion": "gb-v182-gill-toc-actions-20260702",
-  "purpose": "Service Worker cache version baseline — bumped for Gill TOC overlay action wiring and mobile PlayEmber overflow fix. Historical pre-switch value: gb-v171. Last reviewed dist production: gb-v173 (2026-06-18). Current dist production / expected: gb-v182-gill-toc-actions-20260702 — matches sw.js CACHE_VERSION. Used by sw:dist:audit:deploy-switch, sw:dist:audit:pagefind, and rollback analysis. See docs: sw-cache-baseline-policy."
+  "currentDistProductionCacheVersion": "gb-v187-pagefind-bootstrap-20260703",
+  "currentExpectedCacheVersion": "gb-v187-pagefind-bootstrap-20260703",
+  "purpose": "Service Worker cache version baseline. currentExpectedCacheVersion MUST equal sw.js CACHE_VERSION at all times (enforced fatally by sw:dist:audit:deploy-switch since 2026-07-05 \u2014 BUG-SW-BASELINE-DRIFT fix); update this file in the same commit as any intentional bump. Historical pre-switch value: gb-v171 (never reintroduce). Last reviewed dist production: gb-v182 (2026-07-02) -> gb-v187 (2026-07-03, pagefind bootstrap). Used by sw:dist:audit:deploy-switch, sw:dist:audit:pagefind, and rollback analysis."
 }
