@@ -28,16 +28,22 @@ let EXPECTED = INLINE_EXPECTED;
 // reference manifest resolves to the current rendered anchors (otherwise every
 // check that compares against EXPECTED would false-fail and break the deploy).
 const reconPath = path.join(ROOT, 'data', 'gill-submenu-anchor-reconciliation.json');
-let RENAMES = {}, REORDERS = {};
+let RENAMES = {}, REORDERS = {}, RELABELS = {}, PARAGRAPH_TARGETS = {};
 if (fs.existsSync(reconPath)) {
   try {
     const r = JSON.parse(fs.readFileSync(reconPath, 'utf8'));
     RENAMES = (r && r.renames) || {};
     REORDERS = (r && r.reorders) || {};
+    RELABELS = (r && r.relabels) || {};
+    PARAGRAPH_TARGETS = (r && r.paragraphTargets) || {};
   }
   catch (e) { console.log('reconciliation unreadable, renames skipped: ' + e.message); }
 }
 function reconcile(h) { return RENAMES[h] || h; }
+// Owner decision 2026-07-05 (LABEL-SEMANTICS-09): submenu labels must match
+// the CURRENT rendered target heading. Documented relabels are applied on top
+// of the historical manifest; undocumented label drift still fails below.
+function relabel(rel, href, label) { return (RELABELS[rel] || {})[href] || label; }
 // Documented editorial reorders (article section order changed after the
 // historical witness): re-sort EXPECTED rows to the recorded document order.
 // Undocumented order drift still fails the per-index comparison below.
@@ -61,7 +67,10 @@ if (fs.existsSync(refPath)) {
       // array form [level, href, label], applying historical anchor renames.
       const norm = {};
       for (const [rel, items] of Object.entries(ref.routes)) {
-        norm[rel] = items.map(it => [it.level || 2, reconcile(it.href), it.label || '']);
+        norm[rel] = items.map(it => {
+          const href = reconcile(it.href);
+          return [it.level || 2, href, relabel(rel, href, it.label || '')];
+        });
       }
       EXPECTED = norm;
       console.log('using generated historical reference manifest (sourceCommit ' + (ref.sourceCommit || '?') + '), ' + Object.keys(RENAMES).length + ' anchor renames applied');
@@ -103,9 +112,32 @@ function checkManifestSanity(){
   }
 }
 
+// LABEL-SEMANTICS-09 — a submenu label must match its target: for heading
+// targets the heading text must equal the label or start with it (decorated
+// headings); non-heading targets must be declared in paragraphTargets and
+// start with the declared leadIn.
+function checkLabelSemantics(rel, html, route, exp){
+  for(const [,href,label] of exp){
+    const id=href.slice(1);
+    const hm=html.match(new RegExp(`<h([23])[^>]*\\bid=["']${esc(id)}["'][^>]*>([\\s\\S]*?)</h\\1>`));
+    if(hm){
+      const head=text(hm[2]);
+      (head===label||head.startsWith(label))?ok(`${route} label matches heading: ${href}`):bad(`${route} label/heading mismatch ${href}: label "${label}" vs heading "${head}"`);
+      continue;
+    }
+    const pt=(PARAGRAPH_TARGETS[rel]||{})[href];
+    if(!pt){bad(`${route} ${href} target is not an h2/h3 and not declared in paragraphTargets`);continue;}
+    const em=html.match(new RegExp(`\\bid=["']${esc(id)}["'][^>]*>([\\s\\S]{0,400})`));
+    const lead=em?text(em[1]):'';
+    lead.startsWith(pt.leadIn)?ok(`${route} paragraph target lead-in OK: ${href}`):bad(`${route} paragraph target ${href} lead-in mismatch: "${lead.slice(0,60)}" !startsWith "${pt.leadIn}"`);
+  }
+}
+
 function staticAudit(){
   checkManifestSanity();
-  for(const rel of Object.keys(EXPECTED)) EXPECTED[rel] = applyReorder(rel, EXPECTED[rel]);
+  for(const rel of Object.keys(EXPECTED)){
+    EXPECTED[rel] = applyReorder(rel, EXPECTED[rel]).map(r=>[r[0],r[1],relabel(rel,r[1],r[2])]);
+  }
   for(const [rel,exp] of Object.entries(EXPECTED)){
     const html=fs.readFileSync(path.join(DIST,rel),'utf8'),route='/'+rel.replace(/index\.html$/,'');
     ['gbs2-toch','gbs2-count','gbs2-tocscroll','gbs2-track','gbs2-toc'].forEach(c=>html.includes(c)?ok(`${route} shell .${c}`):bad(`${route} missing .${c}`));
@@ -138,6 +170,7 @@ function staticAudit(){
     if(dupTarget)bad(`${route} two rows resolve to the same target element`);
     const sub=exp.some(x=>x[0]===3), hasSub=items.some(m=>/gbs2-sub/.test(m[1]));
     if(sub&&!hasSub)bad(`${route} missing subitems`); else if(!sub&&hasSub)bad(`${route} should be flat`); else ok(`${route} hierarchy shape OK`);
+    checkLabelSemantics(rel, html, route, exp);
   }
 }
 
