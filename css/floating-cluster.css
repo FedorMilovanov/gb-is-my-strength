@@ -925,30 +925,35 @@ html.dark [data-gill-v16] .gb-theme-toggle .theme-icon-moon{opacity:1;transform:
   }
 }
 
-[data-gill-v16] .gbs-rail-now{position:relative;padding:10px 8px;border:1px solid rgba(255,255,255,.08);border-radius:13px;background:rgba(255,255,255,.04)}
-[data-gill-v16] .gbs-rail-now .lab{color:#e17c5e;font-size:9px;font-weight:900;letter-spacing:.16em;text-transform:uppercase}
-[data-gill-v16] .gbs-rail-now h2{font-family:var(--gb-font-serif);margin:4px 0 8px;font-size:15px;line-height:1.18;color:#eadfd1}
-[data-gill-v16] .gbs-rail-now .bar{height:3px;background:rgba(255,255,255,.13);border-radius:99px;overflow:hidden}
-[data-gill-v16] .gbs-rail-now .bar i{display:block;height:100%;width:58%;background:linear-gradient(90deg,#a94847,#dd7c5d);border-radius:99px}
+/* .gbs-rail-now removed 2026-07-05: the «Сейчас читаете» block returned into
+   the expanded current-part card (.gbs2-current), per historical flow-rail
+   (witness bcf6389f + enhancements.js GBS pilot v2.1). */
 
 
 
 /* Pre-v16 GBS Gill desktop submenu restoration (2026-07-04). Historical witness: bcf6389f29ee0c89e9e96e7587e0226ecf251ae0. */
 @media (min-width:64em){
-[data-gill-v16] .gbs2-current{flex:1 1 auto;min-height:0;margin:0 10px 10px;border:1px solid var(--gbs2-rline);border-radius:16px;background:rgba(255,255,255,.045);overflow:hidden;display:flex;flex-direction:column}
-[data-gill-v16] .gbs2-current-cover{height:78px;background-image:linear-gradient(180deg,rgba(25,22,20,0),var(--gbs2-rail)),var(--gbs2-cover,linear-gradient(135deg,var(--gbs2-accent),#2b1b13));background-size:cover;background-position:center;opacity:.62}
+[data-gill-v16] .gbs2-current{flex:1 1 auto;min-height:0;margin:2px 2px 4px;border:1px solid rgba(232,184,120,.20);border-radius:16px;background:rgba(255,255,255,.045);overflow:hidden;display:flex;flex-direction:column;box-shadow:0 10px 28px -14px rgba(0,0,0,.5),inset 0 1px 0 rgba(255,255,255,.05)}
+[data-gill-v16] .gbs2-current-cover{flex:0 0 auto;height:78px;background-image:linear-gradient(180deg,rgba(25,22,20,0),#16130f),var(--gbs2-cover,linear-gradient(135deg,var(--gbs2-accent),#2b1b13));background-size:cover;background-position:center;opacity:.62}
 [data-gill-v16] .gbs2-current-body{padding:12px 14px 0}[data-gill-v16] .gbs2-current-label{font-size:9px;font-weight:800;letter-spacing:.17em;text-transform:uppercase;color:var(--gbs2-accent2)}
-[data-gill-v16] .gbs2-current-title{margin-top:5px;font-family:var(--f-body,Lora,Georgia,serif);font-size:18px;line-height:1.2;color:#fff}
+[data-gill-v16] .gbs2-current-title{margin:5px 0 0;font-family:var(--f-body,Lora,Georgia,serif);font-size:17px;font-weight:700;line-height:1.2;color:#fff}
 [data-gill-v16] .gbs2-curbar{height:3px;margin-top:12px;border-radius:99px;background:rgba(255,255,255,.14);overflow:hidden}
 [data-gill-v16] .gbs2-curbar i{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--gbs2-accent),var(--gbs2-accent2));transition:width .25s}
 [data-gill-v16] .gbs2-toch{display:flex;align-items:center;gap:8px;padding:10px 14px 7px;color:rgba(255,255,255,.68)}
 [data-gill-v16] .gbs2-toch span:first-child{flex:1;font-size:9.5px;font-weight:800;letter-spacing:.12em;text-transform:uppercase}
 [data-gill-v16] .gbs2-count{font-size:10px;font-weight:800;font-variant-numeric:tabular-nums;background:rgba(255,255,255,.08);border-radius:99px;padding:2px 8px}
-[data-gill-v16] .gbs2-tocscroll{position:relative;flex:1 1 auto;min-height:0;min-width:0;overflow-y:auto;overflow-x:hidden;overscroll-behavior:contain;scrollbar-gutter:stable;padding:2px 8px 11px;scrollbar-width:thin;scrollbar-color:rgba(255,255,255,.28) transparent;-webkit-mask-image:linear-gradient(to bottom,transparent 0,#000 14px,#000 calc(100% - 18px),transparent 100%);mask-image:linear-gradient(to bottom,transparent 0,#000 14px,#000 calc(100% - 18px),transparent 100%)}
+[data-gill-v16] .gbs2-tocscroll{position:relative;flex:1 1 auto;min-height:96px;min-width:0;overflow-y:auto;overflow-x:hidden;overscroll-behavior:contain;scrollbar-gutter:stable;padding:2px 8px 11px;scrollbar-width:thin;scrollbar-color:rgba(255,255,255,.28) transparent;-webkit-mask-image:linear-gradient(to bottom,transparent 0,#000 14px,#000 calc(100% - 18px),transparent 100%);mask-image:linear-gradient(to bottom,transparent 0,#000 14px,#000 calc(100% - 18px),transparent 100%)}
 [data-gill-v16] .gbs2-tocscroll::-webkit-scrollbar{width:5px}[data-gill-v16] .gbs2-tocscroll::-webkit-scrollbar-thumb{border-radius:999px;background:rgba(255,255,255,.24)}
 [data-gill-v16] .gbs2-toc{position:relative;list-style:none;margin:0;padding:0 0 0 22px}[data-gill-v16] .gbs2-toc>li{list-style:none;margin:0;padding:0}
 [data-gill-v16] .gbs2-track{position:absolute;left:9px;top:var(--gbs2-track-top,14px);width:2px;height:var(--gbs2-track-height,calc(100% - 28px));background:rgba(255,255,255,.12);border-radius:9px;overflow:hidden}
-[data-gill-v16] .gbs2-track i{display:block;width:100%;height:var(--gbs2-fill-height,0);background:linear-gradient(180deg,var(--gbs2-accent),var(--gbs2-accent2));border-radius:9px;transition:height .38s ease}
+/* Fill follows the scroll near-instantly (historical follow(): 'height .08s
+   linear' on plain scrolls; the controller drops it to 'none' during the
+   expand/collapse rAF loop). A long eased transition here is what made the
+   line lag behind and then lurch after the first scrolls. */
+[data-gill-v16] .gbs2-track i{display:block;width:100%;height:var(--gbs2-fill-height,0);background:linear-gradient(180deg,var(--gbs2-accent),var(--gbs2-accent2));border-radius:9px;transition:height .08s linear}
+/* Night mode: the historical line was warm BEIGE (witness dark palette
+   #d4a574), not bright gold. Depth: lighter head → deeper tail + a soft halo. */
+html.dark [data-gill-v16] .gbs2-track i{background:linear-gradient(180deg,#e6cba3 0%,#d4a574 52%,#c1945f 100%);box-shadow:0 0 7px rgba(212,165,116,.42),0 0 1px rgba(230,203,163,.65)}
 [data-gill-v16] .gbs2-toc a{position:relative;display:block;padding:7px 8px 7px 12px;border-radius:9px;color:rgba(255,255,255,.68);text-decoration:none;font-family:var(--f-body,Lora,Georgia,serif);font-size:12px;line-height:1.25}
 [data-gill-v16] .gbs2-dot{position:absolute;left:-17px;top:50%;width:9px;height:9px;margin-top:-4.5px;border-radius:50%;border:2px solid rgba(255,255,255,.18);background:var(--gbs2-rail);box-shadow:0 0 0 4px var(--gbs2-rail)}
 [data-gill-v16] .gbs2-toc a.gbs2-active{background:rgba(122,46,46,.28);color:#fff;font-weight:700}[data-gill-v16] .gbs2-toc a.gbs2-active .gbs2-dot{background:var(--gbs2-accent2);border-color:var(--gbs2-accent2)}[data-gill-v16] .gbs2-toc a.gbs2-passed .gbs2-dot{background:var(--gbs2-accent);border-color:var(--gbs2-accent)}
@@ -956,7 +961,11 @@ html.dark [data-gill-v16] .gb-theme-toggle .theme-icon-moon{opacity:1;transform:
 /* Collapsible sub-groups (owner 2026-07-05): H3 rows fold away under inactive
    H2 sections and unfold — with a gentle fade + lift — under the active one.
    max-height is driven by the controller for exact-height animation. */
-[data-gill-v16] .gbs2-toc li.gbs2-sub{overflow:hidden;transition:max-height .46s cubic-bezier(.22,1,.36,1),opacity .34s ease,transform .38s cubic-bezier(.22,1,.36,1);opacity:1;transform:none}
+/* clip-path instead of overflow:hidden: the row must clip vertically while
+   folding (insets track the shrinking border box) yet keep its metro dot
+   visible — the dot hangs 20px LEFT of the li box (ul padding zone), and
+   overflow:hidden was amputating every sub-row circle. */
+[data-gill-v16] .gbs2-toc li.gbs2-sub{clip-path:inset(0 -2px 0 -30px);transition:max-height .46s cubic-bezier(.22,1,.36,1),opacity .34s ease,transform .38s cubic-bezier(.22,1,.36,1);opacity:1;transform:none}
 [data-gill-v16] .gbs2-toc li.gbs2-sub.gbs2-collapsed{max-height:0;opacity:0;transform:translateY(-6px);pointer-events:none}
 /* Gentle stagger as sub-rows appear (only while opening; collapse stays quick). */
 [data-gill-v16] .gbs2-toc li.gbs2-sub:not(.gbs2-collapsed):nth-child(2){transition-delay:0s,.02s,.02s}
@@ -967,6 +976,13 @@ html.dark [data-gill-v16] .gb-theme-toggle .theme-icon-moon{opacity:1;transform:
 /* Dots react with a subtle scale as the reader arrives. */
 [data-gill-v16] .gbs2-dot{transition:background .3s ease,border-color .3s ease,transform .32s cubic-bezier(.22,1,.36,1)}
 [data-gill-v16] .gbs2-toc a.gbs2-active .gbs2-dot{transform:scale(1.16)}
+/* Historical paint(): while a sub-row is active its parent H2 row stays softly
+   lit (pilot gave it full gbs2-active; the audit counts exactly ONE active row,
+   so the v16 parent uses its own class at a calmer intensity). */
+[data-gill-v16] .gbs2-toc a.gbs2-hold{background:rgba(122,46,46,.15);color:rgba(255,255,255,.88)}
+[data-gill-v16] .gbs2-toc a.gbs2-hold .gbs2-dot{border-color:rgba(232,184,120,.55)}
+/* Flow rail: the parts that FOLLOW the expanded current card. */
+[data-gill-v16] .gbs-rail-list--after{margin-top:2px}
 }
 
 [data-gill-v16] .gbs-rail-foot{

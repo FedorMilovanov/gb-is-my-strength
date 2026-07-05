@@ -100,7 +100,7 @@ async function checkSeries(browser) {
         gbsSeries: document.body?.getAttribute('data-gbs2-series') || '',
         gbsRail: !!rail,
         gbsRailVisible: !!(railBox && railBox.width > 160 && railBox.height > 240),
-        gbsCurrent: !!document.querySelector('.gbs2-part[aria-current="page"], .gbs2-part--current, .gbs-rail-card[aria-current="page"], .gbs-rail-card.is-current'),
+        gbsCurrent: !!document.querySelector('.gbs2-part[aria-current="page"], .gbs2-part--current, .gbs-rail-card[aria-current="page"], .gbs-rail-card.is-current, .gbs2-current[aria-current="page"]'),
         gbsNext: !!document.querySelector('.gbs2-next, .gbs-rail-card[href]:not([aria-current="page"]):not(.is-current)'),
         gbsTimeline: !!document.querySelector('.gbs2-timeline'),
         gbsV16: !!document.querySelector('[data-gill-v16], .mobile-bottom-bar, #seriesTocOverlay, #partTocOverlay'),

@@ -24,6 +24,16 @@ const partTocRows = page.partToc.map((item) => {
   return { ...item, grp: Math.max(0, grpIdx) };
 });
 const currentGrp = (partTocRows.find((r) => r.current) || partTocRows[0] || { grp: 0 }).grp;
+
+// Historical flow-rail (witness bcf6389f + enhancements.js GBS pilot v2.1):
+// the current part's compact card is NOT rendered in the list — in its place
+// sits the expanded gbs2-current card (cover + «Сейчас читаете» + part title +
+// progress bar + the part TOC), with the remaining parts flowing below it.
+// The pilot did this client-side (display:none + node moves); the Astro rail
+// renders the same result server-side.
+const currentIdx = GILL_SERIES_ITEMS.findIndex((item) => item.id === pageId);
+const partsBefore = GILL_SERIES_ITEMS.slice(0, Math.max(0, currentIdx));
+const partsAfter = currentIdx >= 0 ? GILL_SERIES_ITEMS.slice(currentIdx + 1) : [];
 ---
 
 <aside class="gbs-rail" aria-label="Серия «Джон Гилл»">
@@ -32,39 +42,60 @@ const currentGrp = (partTocRows.find((r) => r.current) || partTocRows[0] || { gr
   </button>
 
   <div class="gbs2-rmid">
-    <nav class="gbs-rail-list" aria-label="Части серии">
-      {GILL_SERIES_ITEMS.map((item) => {
-        const isCurrent = item.id === pageId;
-        const href = isCurrent ? './' : item.href;
-        return (
-          <a class:list={['gbs-rail-card', isCurrent && 'is-current']} href={href} aria-current={isCurrent ? 'page' : undefined}>
+    {partsBefore.length > 0 && (
+      <nav class="gbs-rail-list" aria-label="Предыдущие части серии">
+        {partsBefore.map((item) => (
+          <a class="gbs-rail-card" href={item.href}>
             <SeriesMark kind={item.mark.kind} value={item.mark.value} className="gbs-rail-card__num" />
             <span class="gbs-rail-card__info"><small>{item.readingTime}</small><b>{item.title}</b></span>
-            {isCurrent && <span class="gbs-rail-card__check" aria-hidden="true">✓</span>}
             <span class="gbs-rail-card__chevron" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M9 18l6-6-6-6" /></svg></span>
           </a>
-        );
-      })}
-    </nav>
-
-    <div class="gbs-rail-now"><div class="lab">Сейчас читаете</div><h2>{page.railNowTitle}</h2><div class="bar"><i id="gbs2Curbar"></i></div></div>
-    <div class="gbs2-toch"><span>Оглавление части</span><span class="gbs2-count" id="gbs2Count">1 / {page.partToc.length}</span></div>
-    <div class="gbs2-tocscroll">
-      {/* Historical placement (witness bcf6389f): the track lives INSIDE the ul —
-          .gbs2-track{left:9px} resolves against .gbs2-toc, putting the line exactly
-          through the dot centres (dots sit at left:-17px from the 22px list padding).
-          As a .gbs2-tocscroll sibling it was offset by the ul inset → dots floated
-          7.5px right of the line (audit §8 dot-alignment caught this). */}
-      <ul class="gbs2-toc" id="gbs2Toc" data-gbs2-cur-grp={String(currentGrp)}>
-        <span aria-hidden="true" class="gbs2-track"><i></i></span>
-        {partTocRows.map((item) => (
-          <li
-            class:list={{ 'gbs2-sub': item.level === 3, 'gbs2-collapsed': item.level === 3 && item.grp !== currentGrp }}
-            data-gbs2-grp={String(item.grp)}
-          ><a href={item.href} class:list={{ 'gbs2-active': item.current }}><span aria-hidden="true" class="gbs2-dot"></span>{item.label}</a></li>
         ))}
-      </ul>
-    </div>
+      </nav>
+    )}
+
+    <section
+      class="gbs2-current"
+      aria-label="Текущая часть"
+      aria-current="page"
+      style={`--gbs2-cover:url('${page.railCover}')`}
+    >
+      <div class="gbs2-current-cover" aria-hidden="true"></div>
+      <div class="gbs2-current-body">
+        <div class="gbs2-current-label">Сейчас читаете</div>
+        <h2 class="gbs2-current-title">{page.railNowTitle}</h2>
+        <div class="gbs2-curbar"><i id="gbs2Curbar"></i></div>
+      </div>
+      <div class="gbs2-toch"><span>Оглавление части</span><span class="gbs2-count" id="gbs2Count">1 / {page.partToc.length}</span></div>
+      <div class="gbs2-tocscroll">
+        {/* Historical placement (witness bcf6389f): the track lives INSIDE the ul —
+            .gbs2-track{left:9px} resolves against .gbs2-toc, putting the line exactly
+            through the dot centres (dots sit at left:-17px from the 22px list padding).
+            As a .gbs2-tocscroll sibling it was offset by the ul inset → dots floated
+            7.5px right of the line (audit §8 dot-alignment caught this). */}
+        <ul class="gbs2-toc" id="gbs2Toc" data-gbs2-cur-grp={String(currentGrp)}>
+          <span aria-hidden="true" class="gbs2-track"><i></i></span>
+          {partTocRows.map((item) => (
+            <li
+              class:list={{ 'gbs2-sub': item.level === 3, 'gbs2-collapsed': item.level === 3 && item.grp !== currentGrp }}
+              data-gbs2-grp={String(item.grp)}
+            ><a href={item.href} class:list={{ 'gbs2-active': item.current }}><span aria-hidden="true" class="gbs2-dot"></span>{item.label}</a></li>
+          ))}
+        </ul>
+      </div>
+    </section>
+
+    {partsAfter.length > 0 && (
+      <nav class="gbs-rail-list gbs-rail-list--after" aria-label="Следующие части серии">
+        {partsAfter.map((item) => (
+          <a class="gbs-rail-card" href={item.href}>
+            <SeriesMark kind={item.mark.kind} value={item.mark.value} className="gbs-rail-card__num" />
+            <span class="gbs-rail-card__info"><small>{item.readingTime}</small><b>{item.title}</b></span>
+            <span class="gbs-rail-card__chevron" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M9 18l6-6-6-6" /></svg></span>
+          </a>
+        ))}
+      </nav>
+    )}
   </div>
 
   <div class="gbs-rail-foot" data-fc-root data-fc-variant="gill" data-fc-mode="series-rich">

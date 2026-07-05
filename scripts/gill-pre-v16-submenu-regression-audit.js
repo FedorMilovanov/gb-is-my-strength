@@ -267,7 +267,7 @@ async function browserAudit(){
 
         const traversal=[];
         if(live){
-          let prevFill=-1;
+          let prevFill=-1, prevSig='';
           for(let i=0;i<total;i++){
             const href=links[i];
             await page.evaluate(h=>{const el=document.getElementById(h.slice(1));if(el){const y=el.getBoundingClientRect().top+window.scrollY-140;window.scrollTo(0,Math.max(0,y));}window.dispatchEvent(new Event('scroll'));},href);
@@ -288,20 +288,38 @@ async function browserAudit(){
               const track=document.querySelector('.gbs2-track'); const fillEl=document.querySelector('.gbs2-track i');
               const trackH=track?track.getBoundingClientRect().height:0;
               const fillH=fillEl?fillEl.getBoundingClientRect().height:0;
-              return{active:active.length,passed:passed.length,count,trackH,fillH,
+              // Layout signature: which rows are folded away. The metro line is
+              // only comparable between samples taken under the SAME signature.
+              const sig=[...document.querySelectorAll('.gbs-rail .gbs2-toc li')].map(li=>li.classList.contains('gbs2-collapsed')?'0':'1').join('');
+              return{active:active.length,passed:passed.length,count,trackH,fillH,sig,
                 activeHref:lks[idx]?.classList.contains('gbs2-active')?lks[idx].getAttribute('href'):null,activeVisible,
                 ariaOk:document.querySelectorAll('.gbs-rail .gbs2-toc a[aria-current="location"]').length===1};
             },i); if(r.activeHref===href && r.active===1 && r.activeVisible) break; }
+            // Let the expand/collapse animation + railKick follow-loop settle
+            // before judging fill geometry: sample until two consecutive reads
+            // agree within 1px (cap ~1.2s).
+            for(let s=0;s<12;s++){
+              await page.waitForTimeout(100);
+              const f2=await page.evaluate(()=>{const fl=document.querySelector('.gbs2-track i');const tr=document.querySelector('.gbs2-track');const sig=[...document.querySelectorAll('.gbs-rail .gbs2-toc li')].map(li=>li.classList.contains('gbs2-collapsed')?'0':'1').join('');return{fillH:fl?fl.getBoundingClientRect().height:0,trackH:tr?tr.getBoundingClientRect().height:0,sig};});
+              if(Math.abs(f2.fillH-r.fillH)<=1){r.fillH=f2.fillH;r.trackH=f2.trackH;r.sig=f2.sig;break;}
+              r.fillH=f2.fillH;r.trackH=f2.trackH;r.sig=f2.sig;
+            }
             if(r.active!==1)bad(`${route} ${vp.name} item ${i+1}: active count ${r.active}`); else ok(`${route} ${vp.name} item ${i+1}: 1 active`);
             if(r.activeHref!==href)bad(`${route} ${vp.name} item ${i+1}: active ${r.activeHref} != ${href}`);
             if(r.passed!==i)bad(`${route} ${vp.name} item ${i+1}: passed ${r.passed} != ${i}`); else ok(`${route} ${vp.name} item ${i+1}: passed ${i}`);
             if(!/^\d+ \/ \d+$/.test(r.count))bad(`${route} ${vp.name} item ${i+1}: bad count ${r.count}`);
             else if(r.count!==`${i+1} / ${total}`)bad(`${route} ${vp.name} item ${i+1}: counter ${r.count} != ${i+1} / ${total}`);
             if(!r.activeVisible)bad(`${route} ${vp.name} item ${i+1}: active row not visible in scroller`);
-            // §6.3 addendum — rail fill: bounded by the track and monotonic non-decreasing.
+            // §6.3 addendum v2 — rail fill: bounded by the track; monotonic
+            // non-decreasing WITHIN one collapse layout. When a sub-group folds
+            // or unfolds (owner feature 2026-07-05), dot centres legitimately
+            // move and the line re-baselines — comparing across two different
+            // layouts asserted false regressions (mid-animation snapshots of a
+            // healthy line), so the baseline resets on signature change.
             if(r.fillH>r.trackH+1)bad(`${route} ${vp.name} item ${i+1}: fill ${Math.round(r.fillH)} exceeds track ${Math.round(r.trackH)}`);
-            if(r.fillH+0.5<prevFill)bad(`${route} ${vp.name} item ${i+1}: fill regressed ${Math.round(r.fillH)} < ${Math.round(prevFill)}`);
-            prevFill=r.fillH;
+            if(r.sig!==prevSig){prevFill=-1;prevSig=r.sig;}
+            if(r.fillH+0.5<prevFill)bad(`${route} ${vp.name} item ${i+1}: fill regressed ${Math.round(r.fillH)} < ${Math.round(prevFill)} (same layout)`);
+            prevFill=Math.max(prevFill,r.fillH);
             if(!r.ariaOk)bad(`${route} ${vp.name} item ${i+1}: aria-current not on exactly one rail row`);
             traversal.push({item:i+1,href,active:r.activeHref,passed:r.passed,count:r.count,fillH:Math.round(r.fillH),trackH:Math.round(r.trackH),activeVisible:r.activeVisible});
           }

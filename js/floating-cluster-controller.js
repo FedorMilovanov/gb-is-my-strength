@@ -1417,9 +1417,17 @@
       _railKickUntil = _nowMs() + (ms || 500);
       if (_railKicking) return;
       _railKicking = true;
+      // Historical kick(): drop the fill transition for the whole follow loop so
+      // the line tracks the expand/collapse animation frame-by-frame, then hand
+      // back to the stylesheet's near-instant `.08s linear` (witness follow()).
+      var fillEl = qs('.gbs2-track i');
+      if (fillEl) fillEl.style.transition = 'none';
       (function tick() {
         computeRailFill();
-        if (_nowMs() < _railKickUntil) requestAnimationFrame(tick); else _railKicking = false;
+        if (_nowMs() < _railKickUntil) { requestAnimationFrame(tick); return; }
+        _railKicking = false;
+        var f = qs('.gbs2-track i');
+        if (f) f.style.transition = '';
       })();
     }
 
@@ -1488,6 +1496,22 @@
             if (idx === activeIdx) row.a.setAttribute('aria-current', 'location');
             else row.a.removeAttribute('aria-current');
           });
+          // Historical paint(): while a sub-row is active, keep its parent H2
+          // row softly lit. Own class (gbs2-hold) — exactly ONE row may carry
+          // gbs2-active per audit §9.4, and passed counts must stay untouched.
+          var holdA = null;
+          var activeSubLi = represented[activeIdx].a.closest('li.gbs2-sub');
+          if (activeSubLi) {
+            var holdGrp = activeSubLi.getAttribute('data-gbs2-grp');
+            var h2Li = qsa('.gbs2-toc > li:not(.gbs2-sub)').filter(function (li) {
+              return li.getAttribute('data-gbs2-grp') === holdGrp;
+            })[0];
+            holdA = h2Li ? qs('a', h2Li) : null;
+          }
+          qsa('.gbs2-toc a.gbs2-hold').forEach(function (a) {
+            if (a !== holdA) a.classList.remove('gbs2-hold');
+          });
+          if (holdA && !holdA.classList.contains('gbs2-active')) holdA.classList.add('gbs2-hold');
           // Collapsible sub-groups (historical gbs2-subg behaviour): expand the
           // active section's sub-rows and collapse the rest. On a group change,
           // toggle max-height with an explicit start height so the transition
