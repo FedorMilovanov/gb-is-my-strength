@@ -85,8 +85,17 @@ function checkCacheVersion(rootSw) {
   } else {
     ok(`CACHE_VERSION differs from recorded pre-switch baseline (${previous})`);
   }
-  if (baseline.currentDistProductionCacheVersion && version !== baseline.currentDistProductionCacheVersion) {
-    note(`CACHE_VERSION differs from recorded current dist-production value (${baseline.currentDistProductionCacheVersion}); verify this was an intentional cache bump`);
+  // BUG-SW-BASELINE-DRIFT: the baseline's currentExpectedCacheVersion must
+  // track sw.js exactly — v182 vs v187 rotted unnoticed for 5 bumps because
+  // this was only a note(). Under --require-cache-bump a mismatch is fatal;
+  // update the baseline in the same commit as every intentional bump.
+  const expected = baseline.currentExpectedCacheVersion || baseline.currentDistProductionCacheVersion;
+  if (expected && version !== expected) {
+    const msg = `CACHE_VERSION (${version}) != baseline currentExpectedCacheVersion (${expected}) — update migration/sw-cache-version-baseline.json in the same commit as the bump`;
+    if (REQUIRE_CACHE_BUMP) bad(msg);
+    else note(msg);
+  } else if (expected) {
+    ok(`CACHE_VERSION matches baseline currentExpectedCacheVersion (${expected})`);
   }
   return version;
 }
