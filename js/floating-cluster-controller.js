@@ -1368,6 +1368,61 @@
       });
     });
 
+    // --- Gill rail "metro line" geometry (collapsible sub-groups) ---
+    // Restored from the pre-v16 enhancements.js geo()/follow(): the track spans
+    // the first→last VISIBLE dot (dots inside a collapsed sub-group are skipped)
+    // and the fill interpolates continuously between the active dot and the next
+    // visible one by scroll progress. railKick() drives a short rAF loop so the
+    // spine + fill follow the expand/collapse animation frame-by-frame.
+    var _gbs2ActiveGrp = null, _railKickUntil = 0, _railKicking = false;
+    function _nowMs() { return (window.performance && performance.now) ? performance.now() : Date.now(); }
+    function computeRailFill() {
+      var toc = qs('.gbs2-toc'), track = qs('.gbs2-track');
+      var fill = track && qs('i', track);
+      if (!toc || !track || !fill) return;
+      var links = qsa('.gbs2-toc a[href^="#"]');
+      if (!links.length) return;
+      var dots = links.map(function (a) { return qs('.gbs2-dot', a); });
+      var vis = links.map(function (a) { return !a.closest('li.gbs2-collapsed'); });
+      var base = toc.getBoundingClientRect();
+      var f = -1, l = -1, i;
+      for (i = 0; i < dots.length; i++) { if (vis[i] && dots[i]) { if (f < 0) f = i; l = i; } }
+      if (f < 0) return;
+      var fr = dots[f].getBoundingClientRect(), lr = dots[l].getBoundingClientRect();
+      var top = fr.top + fr.height / 2 - base.top;
+      var h = Math.max(0, lr.top + lr.height / 2 - base.top - top);
+      track.style.setProperty('--gbs2-track-top', top + 'px');
+      track.style.setProperty('--gbs2-track-height', h + 'px');
+      var ai = -1;
+      for (i = 0; i < links.length; i++) { if (links[i].classList.contains('gbs2-active')) { ai = i; break; } }
+      if (ai < 0 || !vis[ai]) ai = f;
+      var center = function (idx) {
+        var d = dots[idx]; if (!d) return 0;
+        var r = d.getBoundingClientRect();
+        return Math.max(0, Math.min(h, r.top + r.height / 2 - base.top - top));
+      };
+      var curH = center(ai);
+      var ni = ai + 1; while (ni < dots.length && !vis[ni]) ni++;
+      var tgt = function (idx) { var id = (links[idx].getAttribute('href') || '').slice(1); return id ? document.getElementById(id) : null; };
+      var ta = tgt(ai), tn = ni < dots.length ? tgt(ni) : null;
+      if (ta && tn) {
+        var secStart = ta.offsetTop, secEnd = tn.offsetTop;
+        var secProg = secEnd > secStart ? Math.max(0, Math.min(1, (window.scrollY - secStart + 120) / (secEnd - secStart))) : 0;
+        fill.style.height = (curH + (center(ni) - curH) * secProg) + 'px';
+      } else {
+        fill.style.height = curH + 'px';
+      }
+    }
+    function railKick(ms) {
+      _railKickUntil = _nowMs() + (ms || 500);
+      if (_railKicking) return;
+      _railKicking = true;
+      (function tick() {
+        computeRailFill();
+        if (_nowMs() < _railKickUntil) requestAnimationFrame(tick); else _railKicking = false;
+      })();
+    }
+
     // --- Scroll Progress ---
     // GILL UI POLISH 2026-06-29 — gold progress + scrollspy
     function updateScrollProgress() {
@@ -1433,19 +1488,32 @@
             if (idx === activeIdx) row.a.setAttribute('aria-current', 'location');
             else row.a.removeAttribute('aria-current');
           });
-          var track = qs('.gbs2-track');
-          var firstDot = represented[0] && qs('.gbs2-dot', represented[0].a);
-          var lastDot = represented[represented.length - 1] && qs('.gbs2-dot', represented[represented.length - 1].a);
-          var toc = qs('.gbs2-toc');
-          if (track && firstDot && lastDot && toc) {
-            var baseRect = toc.getBoundingClientRect();
-            var firstRect = firstDot.getBoundingClientRect();
-            var lastRect = lastDot.getBoundingClientRect();
-            var trackTop = firstRect.top + firstRect.height / 2 - baseRect.top;
-            var trackHeight = Math.max(0, lastRect.top + lastRect.height / 2 - baseRect.top - trackTop);
-            track.style.setProperty('--gbs2-track-top', trackTop + 'px');
-            track.style.setProperty('--gbs2-track-height', trackHeight + 'px');
+          // Collapsible sub-groups (historical gbs2-subg behaviour): expand the
+          // active section's sub-rows and collapse the rest. On a group change,
+          // toggle max-height with an explicit start height so the transition
+          // runs, then kick the geometry loop so the spine + fill follow the
+          // animation frame-by-frame.
+          var activeLi = represented[activeIdx].a.closest('li');
+          var activeGrp = activeLi ? activeLi.getAttribute('data-gbs2-grp') : null;
+          if (activeGrp !== _gbs2ActiveGrp) {
+            _gbs2ActiveGrp = activeGrp;
+            qsa('.gbs2-toc li.gbs2-sub').forEach(function (li) {
+              var open = li.getAttribute('data-gbs2-grp') === activeGrp;
+              var collapsed = li.classList.contains('gbs2-collapsed');
+              if (open && collapsed) {
+                li.classList.remove('gbs2-collapsed');
+                li.style.maxHeight = '240px';
+              } else if (!open && !collapsed) {
+                li.style.maxHeight = li.getBoundingClientRect().height + 'px';
+                void li.offsetHeight; // reflow so the collapse animates from the real height
+                li.classList.add('gbs2-collapsed');
+                li.style.maxHeight = '0px';
+              }
+            });
+            railKick(560);
           }
+          // Track + fill geometry ("metro line"), skipping collapsed dots.
+          computeRailFill();
           var countEl = qs('#gbs2Count');
           if (countEl) countEl.textContent = (activeIdx + 1) + ' / ' + represented.length;
           var activeRow = represented[activeIdx];
@@ -1481,14 +1549,9 @@
           var partPct = activeIdx >= 0 ? Math.round(((activeIdx + 1) / partItems.length) * 100) : pct;
           var scrollBar = qs('.toc-sheet__scroll-bar i');
           if (scrollBar) scrollBar.style.width = partPct + '%';
-          // Rail fill must follow the historical submenu's represented rows, NOT
-          // the part-overlay items. Driving .gbs2-track i from partPct made the
-          // rail fill disagree with the rail's own active index.  [spec §9.2]
-          var trackBar = qs('.gbs2-track i');
-          if (trackBar) {
-            var submenuPct = represented.length ? Math.round(((submenuActiveIdx + 1) / represented.length) * 100) : 0;
-            trackBar.style.height = submenuPct + '%';
-          }
+          // Rail fill is driven directly from the represented rows in the
+          // submenu scroll-spy block above (smooth interpolated "metro line"),
+          // NOT from part-overlay items — keep the two independent.  [spec §9.2]
         }
     }
 

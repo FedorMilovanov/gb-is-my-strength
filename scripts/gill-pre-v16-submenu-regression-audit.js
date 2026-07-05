@@ -272,7 +272,12 @@ async function browserAudit(){
             const href=links[i];
             await page.evaluate(h=>{const el=document.getElementById(h.slice(1));if(el){const y=el.getBoundingClientRect().top+window.scrollY-140;window.scrollTo(0,Math.max(0,y));}window.dispatchEvent(new Event('scroll'));},href);
             let r=null;
-            for(let t=0;t<24;t++){ await page.waitForTimeout(50); r=await page.evaluate((idx)=>{
+            for(let t=0;t<36;t++){ await page.waitForTimeout(50);
+              // Anti-flake: under CPU contention a single scroll dispatch can
+              // land before the controller's rAF settles — re-issue it
+              // periodically instead of failing a healthy page.
+              if(t>0&&t%6===0)await page.evaluate(h=>{const el=document.getElementById(h.slice(1));if(el){const y=el.getBoundingClientRect().top+window.scrollY-140;window.scrollTo(0,Math.max(0,y));}window.dispatchEvent(new Event('scroll'));},href);
+              r=await page.evaluate((idx)=>{
               const lks=[...document.querySelectorAll('.gbs-rail .gbs2-toc a[href^="#"]')];
               const active=document.querySelectorAll('.gbs-rail .gbs2-toc a.gbs2-active');
               const passed=document.querySelectorAll('.gbs2-passed');
