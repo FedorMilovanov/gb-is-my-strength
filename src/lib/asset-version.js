@@ -10,7 +10,7 @@ export const ASSET_VERSIONS = {
   'css/home.css': '15b094aa',
   'css/mobile-hotfix.css': '997b959e',
   'css/nagornaya-mobile-toc.css': '361db0b3',
-  'css/site.css': '0ab84ed3',
+  'css/site.css': '4cbc899c',
   'css/sw-toast.css': 'efbe868b',
   'fonts/fonts.css': '864cc57a',
   'js/bookmark-engine.js': 'fdfb2ed7',
