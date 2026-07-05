@@ -71,7 +71,7 @@ mustNot(main, "import legacyHtml from './_legacy/main.html?raw'", 'raw monolithi
 
 for (const marker of [
   'Материалы серии',
-  '20 антисоветов: как пастору разрушить своё служение',
+  '20 антисоветов, как пастору разрушить своё служение',
   'Блок 2. Распознавание',
   'Блок 3. Здоровый образец',
   'Soli Deo Gloria',
