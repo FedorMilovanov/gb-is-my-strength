@@ -271,6 +271,55 @@ for (const [key, info] of Object.entries(series)) {
 }
 
 console.log('\nGB DATA CONSISTENCY AUDIT');
+
+// DATA-SERIES-DRIFT guard (2026-07-05): series.json keys and SERIES_ORDER
+// (src/data/site.ts) must stay in sync. Known intentional exceptions are
+// listed below with reasons; any NEW asymmetry fails.
+{
+  const seriesJson = JSON.parse(fs.readFileSync(path.join(ROOT, 'data', 'series.json'), 'utf8'));
+  const siteTs = fs.readFileSync(path.join(ROOT, 'src', 'data', 'site.ts'), 'utf8');
+  const om = siteTs.match(/SERIES_ORDER[^=]*=\s*\{([\s\S]*?)\n\};/);
+  const orderKeys = om ? [...om[1].matchAll(/^  '([^']+)':/gm)].map(m => m[1]) : [];
+  if (!orderKeys.length) fail('series-order-parse', 'could not parse SERIES_ORDER keys from src/data/site.ts');
+  // nagornaya: navigation is owned by the dedicated Nagornaya chrome (native
+  // pages, not ArticleLayout). pastor-series: single-article series — no
+  // prev/next to render. Both documented in MASTER_BUG_MATRIX DATA-SERIES-DRIFT.
+  const KNOWN_ORDER_GAPS = new Set(['nagornaya', 'pastor-series']);
+  for (const k of Object.keys(seriesJson)) {
+    if (!orderKeys.includes(k) && !KNOWN_ORDER_GAPS.has(k)) {
+      fail('series-order-drift', `series.json key "${k}" missing from SERIES_ORDER (site.ts) — articles in it get no prev/next nav`);
+    }
+  }
+  for (const k of orderKeys) {
+    if (!(k in seriesJson)) fail('series-order-drift', `SERIES_ORDER key "${k}" missing from data/series.json`);
+  }
+}
+
+
+// SEARCH-SCRIPTURE guard (2026-07-05): scripture-scope search depends on the
+// manifest scripture field for its offline/manifest fallback path. These
+// scripture-anchored routes must never lose the field again.
+{
+  const manifest = JSON.parse(fs.readFileSync(path.join(ROOT, 'data', 'search-manifest.json'), 'utf8'));
+  const mitems = manifest.items || manifest;
+  const REQUIRED_SCRIPTURE = [
+    '/articles/krajne-li-isporcheno-serdce/',
+    '/articles/rimlyanam-7-veruyushchiy-ili-neveruyushchiy/',
+    '/articles/hermenevticheskaya-otsenka-hristotsentrichnoy-germenevtiki/',
+    '/nagornaya/chast-1/', '/nagornaya/chast-2/', '/nagornaya/chast-3/',
+    '/nagornaya/chast-4/', '/nagornaya/chast-5/',
+    '/hard-texts/', '/rodosloviye/',
+  ];
+  const byUrl = new Map(mitems.map(i => [i.url, i]));
+  for (const url of REQUIRED_SCRIPTURE) {
+    const it = byUrl.get(url);
+    if (!it) { fail('search-scripture-missing-item', url + ' absent from search-manifest'); continue; }
+    if (!it.scripture || !String(it.scripture).trim()) {
+      fail('search-scripture-field-lost', url + ' lost its manifest "scripture" field (scripture-scope fallback depends on it)');
+    }
+  }
+}
+
 if (issues.length) {
   const by = issues.reduce((a,i)=>(a[i.kind]=(a[i.kind]||0)+1,a),{});
   console.log(`❌ ${issues.length} issue(s)`, by);

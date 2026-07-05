@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "generatedAt": "2026-07-04T16:48:42+03:00",
+  "generatedAt": "2026-07-05T09:14:14Z",
   "project": {
     "name": "Господь Бог — Сила Моя",
     "url": "https://gospod-bog.ru/",
@@ -48,7 +48,8 @@
       "featured": true,
       "priority": 100,
       "publishedTime": "2026-01-01T00:00:00+03:00",
-      "modifiedTime": "2026-05-01T00:00:00+03:00"
+      "modifiedTime": "2026-05-01T00:00:00+03:00",
+      "scripture": "Мф 5–7, Лк 6:17–49"
     },
     {
       "id": "dzhon-gill-seriya",
@@ -137,7 +138,8 @@
       "featured": true,
       "priority": 94,
       "publishedTime": "2026-06-18T00:00:00+03:00",
-      "modifiedTime": "2026-06-18T00:00:00+03:00"
+      "modifiedTime": "2026-06-18T00:00:00+03:00",
+      "scripture": "Быт 5, Быт 11:10–26, Лк 3:23–38, Мф 1:1–17"
     },
     {
       "id": "baptisty-rossii-series",
@@ -227,7 +229,8 @@
       "featured": true,
       "priority": 91,
       "publishedTime": "2026-06-02T00:00:00+03:00",
-      "modifiedTime": "2026-06-04T00:00:00+03:00"
+      "modifiedTime": "2026-06-04T00:00:00+03:00",
+      "scripture": "Рим 7:14–25"
     },
     {
       "id": "20-antisovetov-pastoru",
@@ -252,7 +255,8 @@
       "wordCount": 13321,
       "seriesId": "pastor-series",
       "seriesPosition": 1,
-      "modifiedTime": "2026-05-21T23:09:05+03:00"
+      "modifiedTime": "2026-05-21T23:09:05+03:00",
+      "scripture": "1 Тим 3, Тит 1, Деян 20:28"
     },
     {
       "id": "dzhon-gill-chast-3-nasledie",
@@ -297,7 +301,8 @@
       "featured": true,
       "priority": 90,
       "modifiedTime": "2026-06-04T00:00:00+03:00",
-      "publishedTime": "2026-04-01T00:00:00+03:00"
+      "publishedTime": "2026-04-01T00:00:00+03:00",
+      "scripture": "Иер 17:9"
     },
     {
       "id": "dzhon-gill-spravochnik",
@@ -341,7 +346,8 @@
       "featured": true,
       "priority": 88,
       "modifiedTime": "2026-05-21T23:09:05+03:00",
-      "publishedTime": "2016-09-01T00:00:00+03:00"
+      "publishedTime": "2016-09-01T00:00:00+03:00",
+      "scripture": "2 Тим 3:16"
     },
     {
       "id": "konfessii-russkij-baptizm",
@@ -441,7 +447,8 @@
       "priority": 82,
       "publishedTime": "2026-06-18T00:00:00+03:00",
       "modifiedTime": "2026-06-18T21:00:00+03:00",
-      "readTime": 89
+      "readTime": 89,
+      "scripture": "Мф 5–7, Лк 6:17–49"
     },
     {
       "id": "nagornaya-ch1",
@@ -461,7 +468,8 @@
       "featured": false,
       "priority": 80,
       "modifiedTime": "2026-05-22T00:46:34+03:00",
-      "publishedTime": "2026-05-01T00:00:00+03:00"
+      "publishedTime": "2026-05-01T00:00:00+03:00",
+      "scripture": "Мф 5–7, Лк 6:17–49"
     },
     {
       "id": "karty-ishod",
@@ -500,7 +508,8 @@
       "featured": false,
       "priority": 78,
       "modifiedTime": "2026-05-22T00:46:34+03:00",
-      "publishedTime": "2026-05-01T00:00:00+03:00"
+      "publishedTime": "2026-05-01T00:00:00+03:00",
+      "scripture": "Мф 5–7, Лк 6:17–49"
     },
     {
       "id": "nagornaya-ch3",
@@ -520,7 +529,8 @@
       "featured": false,
       "priority": 76,
       "modifiedTime": "2026-05-22T00:46:34+03:00",
-      "publishedTime": "2026-05-01T00:00:00+03:00"
+      "publishedTime": "2026-05-01T00:00:00+03:00",
+      "scripture": "Мф 5:20, Мф 28:20"
     },
     {
       "id": "baptisty-dva-sezda-1884",
@@ -740,7 +750,8 @@
       "featured": false,
       "priority": 74,
       "modifiedTime": "2026-05-22T00:46:34+03:00",
-      "publishedTime": "2026-05-01T00:00:00+03:00"
+      "publishedTime": "2026-05-01T00:00:00+03:00",
+      "scripture": "Мф 5:18, Ин 14:26, 2 Тим 3:16"
     },
     {
       "id": "nagornaya-ch5",
@@ -759,7 +770,8 @@
       "featured": false,
       "priority": 72,
       "modifiedTime": "2026-05-22T00:46:34+03:00",
-      "publishedTime": "2026-05-01T00:00:00+03:00"
+      "publishedTime": "2026-05-01T00:00:00+03:00",
+      "scripture": "Мф 7:21–23, Рим 3:20"
     },
     {
       "id": "konfessii",
@@ -798,7 +810,8 @@
       "priority": 52,
       "publishedTime": "2026-06-18T00:00:00+03:00",
       "modifiedTime": "2026-06-18T21:00:00+03:00",
-      "readTime": 7
+      "readTime": 7,
+      "scripture": "Мф 5–7"
     },
     {
       "id": "nagornaya-nakhodki",
@@ -817,7 +830,8 @@
       "priority": 51,
       "publishedTime": "2026-06-18T00:00:00+03:00",
       "modifiedTime": "2026-06-18T21:00:00+03:00",
-      "readTime": 4
+      "readTime": 4,
+      "scripture": "Мф 5–7"
     },
     {
       "id": "about",
@@ -849,7 +863,8 @@
         "экзегеза",
         "сердце"
       ],
-      "readTime": 2
+      "readTime": 2,
+      "scripture": "Иер 17:9, Рим 7:14–25"
     },
     {
       "id": "karty",
