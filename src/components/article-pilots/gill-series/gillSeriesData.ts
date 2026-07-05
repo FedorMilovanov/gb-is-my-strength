@@ -123,6 +123,10 @@ export const GILL_PAGE_DATA: Record<GillSeriesPageId, GillPageChromeData> = {
     railNowTitle: "Джон Гилл (1697–1771)",
     partDialogLabel: "Часть I · Человек",
     partToc: [
+      // Row order follows CURRENT document order (scrollspy invariant §9.5);
+      // the article grew after the historical witness bcf6389f and several
+      // sections moved. Documented in
+      // data/gill-submenu-anchor-reconciliation.json → "reorders".
       { href: "#part-calling", label: "I. Ранние годы, обращение и формирование характера", level: 2, current: true },
       { href: "#sec-intro", label: "Откуда рождаются гении без университетов", level: 3 },
       { href: "#sec-birth-prophecy", label: "Утро рождения: три пророчества", level: 3 },
@@ -130,12 +134,12 @@ export const GILL_PAGE_DATA: Record<GillSeriesPageId, GillPageChromeData> = {
       { href: "#sec-conversion", label: "Бытие 3:9 — вопрос, изменивший жизнь", level: 3 },
       { href: "#part-pastor", label: "II. Пасторское служение в Хорслидауне", level: 2 },
       { href: "#sec-pastor", label: "Хорслидаун: пятьдесят один год на одном месте", level: 3 },
-      { href: "#sec-ordination-1720", label: "Рукоположение 22 марта 1720 года: полный протокол события", level: 3 },
-      { href: "#sec-goatyardDecl", label: "Декларация Козьего Двора 1729 года: архитектура исповедания", level: 3 },
       { href: "#sec-evangelism", label: "Систематическая евангелизация Саутварка", level: 3 },
+      { href: "#sec-goatyardDecl", label: "Декларация Козьего Двора 1729 года: архитектура исповедания", level: 3 },
       { href: "#sec-daughter-sermon", label: "Проповедь отца на похоронах дочери: богословие скорби", level: 3 },
-      { href: "#sec-personal-credo", label: "Три личных высказывания: человек за богословом", level: 3 },
       { href: "#sec-family-deep", label: "Личная духовность: молитва, медитация и домашнее благочестие", level: 3 },
+      { href: "#sec-ordination-1720", label: "Рукоположение 22 марта 1720 года: полный протокол события", level: 3 },
+      { href: "#sec-personal-credo", label: "Три личных высказывания: человек за богословом", level: 3 },
       { href: "#sec-context-southwark", label: "Исторический контекст: Саутварк, джиновая лихорадка, правовое бесправие", level: 3 },
       { href: "#sec-quiz", label: "Проверь себя", level: 2 },
     ],
@@ -152,11 +156,16 @@ export const GILL_PAGE_DATA: Record<GillSeriesPageId, GillPageChromeData> = {
     railNowTitle: "Джон Гилл (1697–1771)",
     partDialogLabel: "Часть II · Учёный",
     partToc: [
+      // Row order follows CURRENT document order (scrollspy invariant: submenu
+      // order must be monotonic in target offsetTop). The article grew 6→29
+      // sections after the historical witness bcf6389f, and «Свод богословия»
+      // now sits after ordinances/eschatology in the text. Documented in
+      // data/gill-submenu-anchor-reconciliation.json → "reorders".
       { href: "#sec-hebrew", label: "Раввинист — гебраист с Мишной в руках", level: 2, current: true },
       { href: "#sec-canticles", label: "Песнь Песней (1728) — аллегория Христа и Церкви", level: 3 },
-      { href: "#sec-systematics", label: "«Свод богословия» (1769–1770) — первая баптистская систематика", level: 3 },
       { href: "#sec-ordinances", label: "Церковь, таинства и пасторское сердце", level: 3 },
       { href: "#sec-eschatology", label: "Эсхатология: духовное и личное царствование Христа", level: 3 },
+      { href: "#sec-systematics", label: "«Свод богословия» (1769–1770) — первая баптистская систематика", level: 3 },
       { href: "#sec-quiz", label: "Проверь себя", level: 2 },
     ],
   },
@@ -172,21 +181,25 @@ export const GILL_PAGE_DATA: Record<GillSeriesPageId, GillPageChromeData> = {
     railNowTitle: "Джон Гилл (1697–1771)",
     partDialogLabel: "Часть III · Наследие",
     partToc: [
+      // Row order follows CURRENT document order (scrollspy invariant §9.5);
+      // Part III was heavily expanded/re-arranged after the historical witness
+      // bcf6389f. Documented in
+      // data/gill-submenu-anchor-reconciliation.json → "reorders".
       { href: "#part-legacy", label: "IV. Наследие, споры и память", level: 2, current: true },
-      { href: "#sec-church-gov", label: "Гилл и Рим: «безрассудство» ложной традиции", level: 3 },
-      { href: "#sec-toplady-memoir", label: "Полемика с Джоном Уэсли (1752–1755)", level: 3 },
       { href: "#sec-controversy", label: "Гиперкальвинизм — спорное наследие", level: 3 },
-      { href: "#sec-sources-gil-theology", label: "Богословские источники Гилла", level: 3 },
-      { href: "#sec-disciples", label: "Ученики и духовные наследники", level: 3 },
+      { href: "#sec-church-gov", label: "Гилл и Рим: «безрассудство» ложной традиции", level: 3 },
       { href: "#sec-church-gov-polity", label: "Coffee House и права поместной церкви", level: 3 },
-      { href: "#sec-america", label: "Влияние на Америку и трансатлантический диалог", level: 3 },
-      { href: "#sec-gill-islam-detail", label: "Гилл и ислам: Коран на пасторском столе", level: 3 },
       { href: "#sec-spurgeon-legacy", label: "Чарльз Сперджен — наследник и критик", level: 3 },
-      { href: "#sec-gill-last-pages", label: "Последние страницы и смерть (14 октября 1771)", level: 3 },
-      { href: "#sec-ordination-rippon", label: "Память и масштаб скорби", level: 3 },
-      { href: "#sec-gill-muller-rediscovery", label: "Современная реабилитация (2023–2025)", level: 3 },
-      { href: "#sec-contemporaries", label: "Оценки Гилла: от восторга до резкой критики", level: 3 },
+      { href: "#sec-sources-gil-theology", label: "Богословские источники Гилла", level: 3 },
       { href: "#sec-terms", label: "Словарь эпохи: ключевые понятия", level: 3 },
+      { href: "#sec-disciples", label: "Ученики и духовные наследники", level: 3 },
+      { href: "#sec-america", label: "Влияние на Америку и трансатлантический диалог", level: 3 },
+      { href: "#sec-contemporaries", label: "Оценки Гилла: от восторга до резкой критики", level: 3 },
+      { href: "#sec-toplady-memoir", label: "Полемика с Джоном Уэсли (1752–1755)", level: 3 },
+      { href: "#sec-gill-islam-detail", label: "Гилл и ислам: Коран на пасторском столе", level: 3 },
+      { href: "#sec-ordination-rippon", label: "Память и масштаб скорби", level: 3 },
+      { href: "#sec-gill-last-pages", label: "Последние страницы и смерть (14 октября 1771)", level: 3 },
+      { href: "#sec-gill-muller-rediscovery", label: "Современная реабилитация (2023–2025)", level: 3 },
       { href: "#sec-quiz", label: "Проверь себя", level: 2 },
     ],
   },
