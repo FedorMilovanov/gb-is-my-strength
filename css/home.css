@@ -523,3 +523,18 @@ body.articles-index-page .h-section{padding-top:40px;padding-bottom:24px}
 .h-hero-title:hover .h-title-accent{transform:scale(1.045);text-shadow:0 6px 26px rgba(217,122,108,.22)}
 .h-hero-title:hover .h-title-static{transform:translateX(-.008em)}
 .h-hero-title:hover .h-title-dash{transform:scaleX(1.12)}
+/* ── Home «Ваше избранное» (favorites-block) — native home styling ──
+   Styles existed only in floating-cluster.css (не грузится на главной) —
+   блок рендерился сырыми синими ссылками. */
+.home-page .favorites-block{margin:34px 0 8px}
+.home-page .favorites-block__heading{font-family:var(--f-serif);font-size:18px;font-weight:700;color:var(--h-ink);margin:0 0 4px}
+.home-page .favorites-block__sub{font-family:var(--f-ui);font-size:12px;color:var(--h-muted);margin:0 0 14px}
+.home-page .favorites-list{display:grid;grid-template-columns:repeat(auto-fill,minmax(290px,1fr));gap:12px}
+.home-page .favorites-card{display:flex;gap:12px;align-items:stretch;padding:12px;border:1px solid var(--h-border);border-radius:14px;background:rgba(255,255,255,.5);text-decoration:none;color:var(--h-ink);transition:transform .35s cubic-bezier(.22,1,.36,1),box-shadow .35s ease,border-color .35s ease;border-inline-start:3px solid rgba(122,46,46,.28)}
+.home-page .favorites-card:hover{transform:translateY(-2px);box-shadow:0 12px 32px -18px rgba(28,25,23,.25);border-color:color-mix(in srgb,var(--h-accent) 35%,var(--h-border))}
+html.dark .home-page .favorites-card{background:rgba(32,27,22,.85)}
+.home-page .favorites-card__img{flex:0 0 84px;width:84px;min-height:64px;border-radius:9px;background-size:cover;background-position:center}
+.home-page .favorites-card__body{min-width:0;display:flex;flex-direction:column;gap:3px;justify-content:center}
+.home-page .favorites-card__section{font-family:var(--f-ui);font-size:9.5px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--h-accent)}
+.home-page .favorites-card__title{font-family:var(--f-serif);font-size:14.5px;font-weight:700;line-height:1.3;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.home-page .favorites-card__desc{font-family:var(--f-body);font-size:12.5px;line-height:1.4;color:var(--h-muted);display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
