@@ -1445,6 +1445,32 @@
             var trackHeight = Math.max(0, lastRect.top + lastRect.height / 2 - baseRect.top - trackTop);
             track.style.setProperty('--gbs2-track-top', trackTop + 'px');
             track.style.setProperty('--gbs2-track-height', trackHeight + 'px');
+
+            // Smooth interpolated fill — the historical pre-v16 "metro line"
+            // (enhancements.js geo()). The fill flows continuously between the
+            // active dot and the next as the reader scrolls WITHIN a section,
+            // instead of jumping in discrete percentage steps at each item.
+            var fillEl = qs('i', track);
+            if (fillEl) {
+              var dotCenter = function (idx) {
+                var d = represented[idx] && qs('.gbs2-dot', represented[idx].a);
+                if (!d) return 0;
+                var dr = d.getBoundingClientRect();
+                return Math.max(0, Math.min(trackHeight, dr.top + dr.height / 2 - baseRect.top - trackTop));
+              };
+              var curH = dotCenter(activeIdx);
+              var nextIdx = activeIdx + 1;
+              if (nextIdx < represented.length) {
+                var secStart = represented[activeIdx].target.offsetTop;
+                var secEnd = represented[nextIdx].target.offsetTop;
+                var secProg = secEnd > secStart
+                  ? Math.max(0, Math.min(1, (window.scrollY - secStart + 120) / (secEnd - secStart)))
+                  : 0;
+                fillEl.style.height = (curH + (dotCenter(nextIdx) - curH) * secProg) + 'px';
+              } else {
+                fillEl.style.height = curH + 'px';
+              }
+            }
           }
           var countEl = qs('#gbs2Count');
           if (countEl) countEl.textContent = (activeIdx + 1) + ' / ' + represented.length;
@@ -1481,14 +1507,9 @@
           var partPct = activeIdx >= 0 ? Math.round(((activeIdx + 1) / partItems.length) * 100) : pct;
           var scrollBar = qs('.toc-sheet__scroll-bar i');
           if (scrollBar) scrollBar.style.width = partPct + '%';
-          // Rail fill must follow the historical submenu's represented rows, NOT
-          // the part-overlay items. Driving .gbs2-track i from partPct made the
-          // rail fill disagree with the rail's own active index.  [spec §9.2]
-          var trackBar = qs('.gbs2-track i');
-          if (trackBar) {
-            var submenuPct = represented.length ? Math.round(((submenuActiveIdx + 1) / represented.length) * 100) : 0;
-            trackBar.style.height = submenuPct + '%';
-          }
+          // Rail fill is driven directly from the represented rows in the
+          // submenu scroll-spy block above (smooth interpolated "metro line"),
+          // NOT from part-overlay items — keep the two independent.  [spec §9.2]
         }
     }
 
