@@ -82,5 +82,5 @@ deploy gate.
   manifest (from `bcf6389f…` via `scripts/extract-gill-pre-v16-submenu-reference.js`).
 - `data/gill-submenu-anchor-reconciliation.json` — the 7-rename map + records.
 - `scripts/extract-gill-pre-v16-submenu-reference.js` — deterministic extractor.
-- AuditRepo: `projects/gb-is-my-strength/verified/MASTER_BUG_MATRIX.md`
+- AuditRepo: `verified/MASTER_BUG_MATRIX.md` (проект `gb-is-my-strength`)
   (finding `UI-GILL-SUBMENU-ANCHOR-02`, `UI-GILL-HISTORICAL-PARITY-03`).
