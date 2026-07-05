@@ -789,7 +789,11 @@ html.dark [data-gill-v16] .gb-theme-toggle .theme-icon-moon{opacity:1;transform:
   border:1px solid rgba(232,184,120,.16);
   box-shadow:0 26px 70px rgba(20,12,6,.40),0 0 0 1px rgba(255,255,255,.025) inset,0 0 34px rgba(122,46,46,.10) inset;
   color:var(--gbs2-rtext,#d6d3d1);
-  overflow:hidden;padding:0;z-index:2;
+  /* overflow:visible (was hidden): the Play speed pill blooms UP out of the
+     rail footer and is wider than the rail — hidden was slicing it off
+     (owner item 11). Inner scroll areas clip themselves (.gbs2-rmid,
+     .gbs2-tocscroll); nothing full-bleed paints over the rounded corners. */
+  overflow:visible;padding:0;z-index:2;
 }
 [data-gill-v16] .gbs-rail .gbs2-rmid{display:flex;flex:1 1 auto;flex-direction:column;min-height:0;min-width:0;overflow:hidden;padding:48px 8px 6px;gap:6px}
 [data-gill-v16] .gbs-rail .gbs-rail-list{padding:0 2px}
@@ -985,6 +989,28 @@ html.dark [data-gill-v16] .gbs2-track i{background:linear-gradient(180deg,#e6cba
 [data-gill-v16] .gbs-rail-list--after{margin-top:2px}
 }
 
+/* Kinetic numeral (owner item 10, 2026-07-05): "III" at 11vw is ~2× the
+   102–178px gutter .gbs2-head reserves, so the outline digits sat on the lead
+   text. Wider gutter + a size that fits three glyphs; the numeral also gets a
+   deliberate hover — the outline fills with layered gold and lifts. */
+[data-gill-v16] .gbs2-head{padding-right:clamp(128px,19vw,250px)}
+[data-gill-v16] .gbs2-kinetic{font-size:clamp(64px,8.4vw,124px);letter-spacing:-.1em;white-space:nowrap;opacity:.9;pointer-events:auto;cursor:default;-webkit-text-stroke:1px rgba(184,147,106,.30);transition:transform .5s cubic-bezier(.22,1,.36,1),filter .45s ease,opacity .45s ease}
+html.dark [data-gill-v16] .gbs2-kinetic{-webkit-text-stroke:1px rgba(216,176,104,.32)}
+@media (hover:hover) and (pointer:fine){
+  [data-gill-v16] .gbs2-kinetic:hover{
+    background-image:linear-gradient(165deg,#ecd5a5 8%,#c9a06b 48%,#8f6a3d 100%);
+    -webkit-background-clip:text;background-clip:text;
+    -webkit-text-stroke-color:transparent;
+    transform:translateY(calc(-50% + var(--gbs2-kin-y,0px))) scale(1.045);
+    filter:drop-shadow(0 14px 30px rgba(184,147,106,.30));
+    opacity:1;
+  }
+  html.dark [data-gill-v16] .gbs2-kinetic:hover{
+    background-image:linear-gradient(165deg,#f3e0b4 8%,#d8b06c 48%,#9a7440 100%);
+    filter:drop-shadow(0 14px 34px rgba(216,176,104,.26));
+  }
+}
+
 [data-gill-v16] .gbs-rail-foot{
   margin-top:auto;
   display:flex;flex-direction:row;align-items:center;
@@ -1019,6 +1045,12 @@ html.dark [data-gill-v16] .gbs2-track i{background:linear-gradient(180deg,#e6cba
 [data-gill-v16] .gbs-rail-foot .gb-ember__ring-progress{stroke-width:1.5}
 [data-gill-v16] .gbs-rail-foot .gb-save{width:32px;height:32px;color:#c4a882}
 [data-gill-v16] .gbs-rail-foot .gb-save svg{width:17px;height:17px}
+/* Saved state must repaint here too: the generic `.gbs-rail-foot__btn svg
+   {fill:none}` above ties on specificity with `.gb-save.is-saved svg` and,
+   being later in the file, was cancelling the gold fill — the bookmark
+   bounced but never filled. */
+[data-gill-v16] .gbs-rail-foot .gb-save.is-saved{color:var(--gb-accent-gold-bright,#d8aa6d)}
+[data-gill-v16] .gbs-rail-foot .gb-save.is-saved svg{fill:var(--color-accent-gold,#b8936a);stroke:var(--color-accent-gold,#b8936a)}
 
 [data-gill-v16] .gbs-rail-foot__btn[data-tip]::after,
 [data-gill-v16] .gbs-rail-foot .gb-ember[data-tip]::after{
