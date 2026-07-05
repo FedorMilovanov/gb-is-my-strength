@@ -10,6 +10,20 @@ interface Props {
 
 const { pageId } = Astro.props;
 const page = GILL_PAGE_DATA[pageId];
+
+// Assign each submenu row to a collapsible group: every top-level (H2) row
+// opens a new group; the H3 rows beneath it inherit that group index. The rail
+// keeps a FLAT <li> list (so anchors stay in document order for the scroll-spy
+// and the parity audit) — collapse is driven by class + max-height on the sub
+// rows, not by nesting. `hasSubs` marks groups that actually have sub-rows.
+let grpIdx = -1;
+const subCountByGrp: Record<number, number> = {};
+const partTocRows = page.partToc.map((item) => {
+  if (item.level === 2) grpIdx += 1;
+  else subCountByGrp[grpIdx] = (subCountByGrp[grpIdx] || 0) + 1;
+  return { ...item, grp: Math.max(0, grpIdx) };
+});
+const currentGrp = (partTocRows.find((r) => r.current) || partTocRows[0] || { grp: 0 }).grp;
 ---
 
 <aside class="gbs-rail" aria-label="Серия «Джон Гилл»">
@@ -41,10 +55,13 @@ const page = GILL_PAGE_DATA[pageId];
           through the dot centres (dots sit at left:-17px from the 22px list padding).
           As a .gbs2-tocscroll sibling it was offset by the ul inset → dots floated
           7.5px right of the line (audit §8 dot-alignment caught this). */}
-      <ul class="gbs2-toc" id="gbs2Toc">
+      <ul class="gbs2-toc" id="gbs2Toc" data-gbs2-cur-grp={String(currentGrp)}>
         <span aria-hidden="true" class="gbs2-track"><i></i></span>
-        {page.partToc.map((item) => (
-          <li class:list={{ 'gbs2-sub': item.level === 3 }}><a href={item.href} class:list={{ 'gbs2-active': item.current }}><span aria-hidden="true" class="gbs2-dot"></span>{item.label}</a></li>
+        {partTocRows.map((item) => (
+          <li
+            class:list={{ 'gbs2-sub': item.level === 3, 'gbs2-collapsed': item.level === 3 && item.grp !== currentGrp }}
+            data-gbs2-grp={String(item.grp)}
+          ><a href={item.href} class:list={{ 'gbs2-active': item.current }}><span aria-hidden="true" class="gbs2-dot"></span>{item.label}</a></li>
         ))}
       </ul>
     </div>
