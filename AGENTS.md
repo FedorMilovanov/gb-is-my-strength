@@ -1609,7 +1609,7 @@ A hand-built Astro biography catalog is allowed only after desktop+mobile screen
    browser-доказательства. Если матрица говорит «P0/P1 closed» — это верно, пока
    `reverify/` не докажет обратное. Не вводи фальшивые «correction banner».
 4. **Каноническая матрица — в AuditRepo** (`FedorMilovanov/AuditRepo`,
-   `projects/gb-is-my-strength/verified/MASTER_BUG_MATRIX.md`, см. `START_HERE.md` там).
+   `verified/MASTER_BUG_MATRIX.md` (проект `gb-is-my-strength`), см. `START_HERE.md` там).
    Архивные копии матриц в `archive/` — история, не текущая правда.
 5. **Lane-дисциплина.** Тяжёлые правки (особенно фронтенд/Gill) делай в ветке
    `lane/*` или `agent/*`; в `main` они триггерят деплой. Не деплой непроверенный контент.
