@@ -1591,3 +1591,31 @@ Current rule: `src/pages/biografii/index.astro` emits `biografii/index.html` thr
 - `Джон Гилл`
 
 A hand-built Astro biography catalog is allowed only after desktop+mobile screenshot parity and owner approval. Avoid accumulating throwaway generic code; once a shared visual migration guard covers a route, remove route-specific duplicate guards.
+
+---
+
+## Верификационная дисциплина (2026-07-05) — читай перед правкой по чужому отчёту
+
+Много агентов правят один source-репозиторий одновременно. Чтобы не плодить ложные
+находки, ложные «fix» и рассинхрон матрицы — соблюдай:
+
+1. **SHA-first.** Любой баг/исправление — с конкретным SHA. Перед правкой сверься с
+   текущим `main`: описанное может быть уже закрыто (история рассинхрона реальна —
+   `AUDIT_HISTORY.md` фиксирует 7 «race», 7 «conflict», 12 «duplicate»).
+2. **Не «исправляй» уже исправленное.** Пример: `deploy.yml` шаг
+   `Gill pre-v16 submenu regression audit` уже имеет по одному `run:` на шаг (исправлено
+   `8a8211ea`). Не добавляй «fix duplicate run key» поверх — это churn.
+3. **Никаких false-green.** Не пиши «all green» / «fixed» без удалённого CI-прогона или
+   browser-доказательства. Если матрица говорит «P0/P1 closed» — это верно, пока
+   `reverify/` не докажет обратное. Не вводи фальшивые «correction banner».
+4. **Каноническая матрица — в AuditRepo** (`FedorMilovanov/AuditRepo`,
+   `projects/gb-is-my-strength/verified/MASTER_BUG_MATRIX.md`, см. `START_HERE.md` там).
+   Архивные копии матриц в `archive/` — история, не текущая правда.
+5. **Lane-дисциплина.** Тяжёлые правки (особенно фронтенд/Gill) делай в ветке
+   `lane/*` или `agent/*`; в `main` они триггерят деплой. Не деплой непроверенный контент.
+6. **IndexNow/деплой.** `baptisty-rossii/**` теперь покрыт path-фильтрами `deploy.yml` и
+   `indexnow.yml`. `deploy.yml` НЕ деплоит, если IndexNow упал (нет `== 'failure'` клаузы) —
+   не добавляй её обратно.
+7. **Gill submenu-аудит теперь строгий:** отвергает дубликаты href/label, делает полный
+   перебор по всем пунктам и проверяет геометрию рамки. Если он падает — это настоящий
+   дефект, а не шум.

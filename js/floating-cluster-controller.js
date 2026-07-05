@@ -1271,9 +1271,12 @@
         });
       }
 
-      // Update count
+      // Update count — only for the legacy (non-v16) sidebar TOC. On Gill v16
+      // the historical submenu owns its own "N / TOTAL" counter and sets it
+      // itself in updateScrollProgress(); overwriting it here would flash the
+      // wrong value (e.g. total heading count instead of 1 / 15).  [spec §9.1]
       var countEl = qs('#gbs2Count');
-      if (countEl) countEl.textContent = headings.length;
+      if (!isV16Page && countEl) countEl.textContent = headings.length;
     }
 
     // --- Sheet Open/Close ---
@@ -1410,6 +1413,7 @@
             if (represented[ri].target.offsetTop <= scrollY) activeIdx = ri;
             else break;
           }
+          var submenuActiveIdx = activeIdx; // captured for rail-fill (see §9.2)
           represented.forEach(function(row, idx) {
             row.a.classList.toggle('gbs2-active', idx === activeIdx);
             row.a.classList.toggle('gbs2-passed', idx < activeIdx);
@@ -1434,14 +1438,21 @@
           if (activeRow && scroller) {
             var ar = activeRow.a.getBoundingClientRect();
             var sr = scroller.getBoundingClientRect();
-            if (ar.top < sr.top + 18 || ar.bottom > sr.bottom - 18) activeRow.a.scrollIntoView({ block: 'nearest' });
+            // Keep only the internal rail scroller in view — never scroll the page
+          // itself just because the rail keeps an item visible.  [spec §9.3]
+          if (ar.top < sr.top + 18 || ar.bottom > sr.bottom - 18) {
+            var desired = activeRow.a.offsetTop - scroller.clientHeight / 2 + activeRow.a.offsetHeight / 2;
+            scroller.scrollTo({ top: Math.max(0, desired), behavior: 'smooth' });
+          }
           }
           qsa('.toc-part-item').forEach(function(el, idx) {
             var isActive = (idx === activeIdx);
             var isPassed = (idx < activeIdx);
             el.classList.toggle('is-active', !!isActive);
             el.classList.toggle('is-done', !!isPassed);
-            el.setAttribute('aria-current', isActive ? 'true' : 'false');
+            // aria-current must be "location" on the active row only; never
+            // write the invalid aria-current="false".  [spec §9.4]
+            if (isActive) el.setAttribute('aria-current', 'location'); else el.removeAttribute('aria-current');
           });
         }
       }
@@ -1455,8 +1466,14 @@
           var partPct = activeIdx >= 0 ? Math.round(((activeIdx + 1) / partItems.length) * 100) : pct;
           var scrollBar = qs('.toc-sheet__scroll-bar i');
           if (scrollBar) scrollBar.style.width = partPct + '%';
+          // Rail fill must follow the historical submenu's represented rows, NOT
+          // the part-overlay items. Driving .gbs2-track i from partPct made the
+          // rail fill disagree with the rail's own active index.  [spec §9.2]
           var trackBar = qs('.gbs2-track i');
-          if (trackBar) trackBar.style.height = partPct + '%';
+          if (trackBar) {
+            var submenuPct = represented.length ? Math.round(((submenuActiveIdx + 1) / represented.length) * 100) : 0;
+            trackBar.style.height = submenuPct + '%';
+          }
         }
     }
 
