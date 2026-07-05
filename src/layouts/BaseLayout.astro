@@ -148,12 +148,12 @@ const effectiveBodyEndHtml = [genericRuntime, bodyEndHtml].filter(Boolean).join(
          the legacy visual contract. Shadow-wrapped pages also receive their
          legacy-extracted CSS (links + inline <style>) via headHtml below; any
          overlap is the same file and is harmlessly deduped by the browser. -->
-    <!-- Navigation prefetch hints — browser loads these speculatively during idle time -->
-    <link rel="prefetch" href="/articles/" />
-    <link rel="prefetch" href="/biografii/" />
-    <link rel="prefetch" href="/hard-texts/" />
-    <link rel="prefetch" href="/karty/" />
-    <link rel="prefetch" href="/about/" />
+    <!-- Navigation prefetch hints — browser loads these speculatively during
+         idle time. The current page is excluded: prefetching yourself is pure
+         wasted bandwidth (NEW-PREFETCH-UNCONDITIONAL). -->
+    {['/articles/', '/biografii/', '/hard-texts/', '/karty/', '/about/']
+      .filter((href) => href !== Astro.url.pathname)
+      .map((href) => <link rel="prefetch" href={href} />)}
     <link rel="preload" as="font" type="font/woff2" href="/fonts/Lora/lora-cyrillic-400.woff2" crossorigin />
     <link rel="preload" as="font" type="font/woff2" href="/fonts/Inter/inter-cyrillic-600.woff2" crossorigin />
     <link rel="preload" as="font" type="font/woff2" href="/fonts/PlayfairDisplay/playfairdisplay-cyrillic-700.woff2" crossorigin />
