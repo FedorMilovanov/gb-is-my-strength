@@ -577,3 +577,33 @@ html.dark body.nagornaya-page .btoc-link-num { color: #f59e0b; }
 /* Устранение дрожания карточек на одиночных статьях и всем сайте */
 .btoc-link, .toc-item, .toc-part-item, .gbs2-next-card { transform: none; }
 .btoc-link:hover, .toc-item:hover, .toc-part-item:hover { transform: none; }
+
+/* Glossary luxury card — light-mode refinement (owner 2026-07-05): drop the
+   faint lilac accent wash; use clean white with a deep, layered edge shadow
+   for a stylish sense of depth. Night mode keeps its warm shimmer untouched
+   (html.dark rules are not affected — these overrides only match light mode). */
+html:not(.dark) .gtip-luxury::before { background: linear-gradient(155deg, rgba(255,255,255,.5), rgba(255,255,255,0) 62%); }
+html:not(.dark) .gtip.gb-floating-tip {
+  background: #fffdfa;
+  border-color: rgba(40,26,12,.08);
+  box-shadow:
+    0 1px 2px rgba(40,26,12,.05),
+    0 10px 26px -8px rgba(40,26,12,.18),
+    0 30px 64px -24px rgba(40,26,12,.34),
+    inset 0 1px 0 rgba(255,255,255,.9),
+    inset 0 0 0 1px rgba(0,0,0,.02);
+}
+html:not(.dark) .gtip.gb-floating-tip::before {
+  background: #fffdfa;
+  box-shadow: -3px -3px 6px -3px rgba(40,26,12,.10);
+}
+
+/* Heading copy-link (paperclip) — owner 2026-07-05: remove the unstylish
+   square focus frame. The icon itself reacts (colour + a subtle lift) to
+   signal it is clickable; keyboard focus gets a soft rounded glow, never a
+   hard square outline. A touch more breathing room from the heading text. */
+.heading-anchor { margin-left: 10px; border-radius: 999px; }
+.heading-anchor:focus, .heading-anchor:focus-visible { outline: none; outline-offset: 0; }
+.heading-anchor:hover { color: var(--color-accent); transform: translateY(-1px); }
+.heading-anchor:active { transform: translateY(0); }
+.heading-anchor:focus-visible { color: var(--color-accent); box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-accent) 20%, transparent); }
