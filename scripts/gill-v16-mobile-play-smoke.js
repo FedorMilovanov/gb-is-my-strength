@@ -36,6 +36,17 @@ const ROUTES = [
 ];
 
 const expectedSeriesMarks = ['Введение', 'I', 'II', 'III', 'Справ.'];
+// Flow-rail (PR#45, witness bcf6389f): the CURRENT part's compact card is
+// replaced in-list by the expanded .gbs2-current card, so its mark is
+// legitimately absent from .gbs-rail-card__num — each route expects the
+// other four marks, and the expanded card must be present as the witness.
+const currentMarkByRoute = {
+  '/articles/dzhon-gill-istoricheskiy-kontekst/': 'Введение',
+  '/articles/dzhon-gill-chast-1-chelovek/': 'I',
+  '/articles/dzhon-gill-chast-2-uchenyi/': 'II',
+  '/articles/dzhon-gill-chast-3-nasledie/': 'III',
+  '/articles/dzhon-gill-spravochnik/': 'Справ.',
+};
 const failures = [];
 const proof = {
   generatedAt: new Date().toISOString(),
@@ -199,11 +210,14 @@ async function testSeriesModel(browser) {
       introBadPart0: document.body.textContent.includes('Часть 0'),
       introGoodUpper: document.body.textContent.toUpperCase().includes('СЕРИЯ «ДЖОН ГИЛЛ» · ВВЕДЕНИЕ'),
       isIntro: location.pathname === introRoute,
+      hasCurrentCard: !!document.querySelector('.gbs2-current[aria-current="page"]'),
     }), INTRO);
     const fit = await labelFit(page);
     proof.series.push({ route, ...facts, labelFit: fit });
     assert(facts.hasGillV16, `${route} has data-gill-v16`);
-    assert(JSON.stringify(facts.marks) === JSON.stringify(expectedSeriesMarks), `${route} series marks are Введение/I/II/III/Справ.`, JSON.stringify(facts.marks));
+    const expectedFlowMarks = expectedSeriesMarks.filter(m => m !== currentMarkByRoute[route]);
+    assert(JSON.stringify(facts.marks) === JSON.stringify(expectedFlowMarks), `${route} series marks are the four non-current parts (flow-rail)`, JSON.stringify(facts.marks));
+    assert(facts.hasCurrentCard, `${route} expanded current-part card replaces the compact card (flow-rail)`);
     assert(facts.labelCount > 0, `${route} has gb-series-mark--label in built output`, String(facts.labelCount));
     assert(facts.rawRailNums.length === 0, `${route} no raw visual-canon Gill mark nodes`, JSON.stringify(facts.rawRailNums));
     assert(!facts.introBadPart1, `${route} does not contain forbidden Часть 1 из 5`);
