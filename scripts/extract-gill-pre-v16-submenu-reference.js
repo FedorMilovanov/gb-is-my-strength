@@ -4,13 +4,23 @@
 // commit and writes an immutable reference manifest. This manifest is the
 // authoritative EXPECTED for scripts/gill-pre-v16-submenu-regression-audit.js.
 //
-// Usage: node scripts/extract-gill-pre-v16-submenu-reference.js [<commit>]
+// Usage: node scripts/extract-gill-pre-v16-submenu-reference.js [<commit>] [--verify]
+//   --verify: regenerate in memory and diff against the committed manifest;
+//             exit 1 on drift, never overwrite. (Spec Stage B.)
 // Requires full git history (the historical commit must be fetchable).
 const { execSync } = require('child_process');
 const fs = require('fs');
 const path = require('path');
 
-const SHA = process.argv[2] || 'bcf6389f29ee0c89e9e96e7587e0226ecf251ae0';
+const args = process.argv.slice(2);
+const VERIFY = args.includes('--verify');
+const positional = args.filter(a => !a.startsWith('--'));
+const unknown = args.filter(a => a.startsWith('--') && a !== '--verify');
+if (unknown.length) {
+  console.error('FATAL: unknown flag(s): ' + unknown.join(', ') + ' (a flag must never be treated as a commit SHA)');
+  process.exit(1);
+}
+const SHA = positional[0] || 'bcf6389f29ee0c89e9e96e7587e0226ecf251ae0';
 const ROUTES = [
   'articles/dzhon-gill-istoricheskiy-kontekst',
   'articles/dzhon-gill-chast-1-chelovek',
@@ -60,6 +70,14 @@ if (Object.keys(dup).length) {
   process.exit(1);
 }
 
+// Refuse to write (or verify against) an empty extraction — e.g. when the
+// historical commit is unreachable in a shallow clone. An empty manifest must
+// never silently replace the committed witness.
+if (!Object.keys(routes).length) {
+  console.error('FATAL: extracted 0 routes from ' + SHA + ' — is full git history available?');
+  process.exit(1);
+}
+
 const out = {
   sourceCommit: SHA,
   generatedBy: 'scripts/extract-gill-pre-v16-submenu-reference.js',
@@ -67,6 +85,27 @@ const out = {
   routes
 };
 const dest = path.resolve(__dirname, '..', 'data', 'gill-pre-v16-submenu-reference.json');
+
+if (VERIFY) {
+  let committed;
+  try { committed = JSON.parse(fs.readFileSync(dest, 'utf8')); }
+  catch (e) { console.error('FATAL --verify: committed manifest unreadable: ' + e.message); process.exit(1); }
+  const a = JSON.stringify(committed.routes), b = JSON.stringify(routes);
+  if (committed.sourceCommit !== SHA) {
+    console.error('FATAL --verify: committed sourceCommit ' + committed.sourceCommit + ' != ' + SHA);
+    process.exit(1);
+  }
+  if (a !== b) {
+    console.error('FATAL --verify: committed manifest drifted from historical witness ' + SHA);
+    for (const rel of new Set([...Object.keys(committed.routes), ...Object.keys(routes)])) {
+      if (JSON.stringify(committed.routes[rel]) !== JSON.stringify(routes[rel])) console.error('  drift in: ' + rel);
+    }
+    process.exit(1);
+  }
+  console.log('OK --verify: committed manifest matches historical witness ' + SHA + ' (' + Object.keys(routes).length + ' routes)');
+  process.exit(0);
+}
+
 fs.mkdirSync(path.dirname(dest), { recursive: true });
 fs.writeFileSync(dest, JSON.stringify(out, null, 2) + '\n', 'utf8');
 console.log('wrote ' + dest + ' (' + Object.keys(routes).length + ' routes)');

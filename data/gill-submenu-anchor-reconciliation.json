@@ -11,6 +11,23 @@
     "#sec-coffee-house-polity": "#sec-church-gov-polity",
     "#sec-evaluations-map": "#sec-contemporaries"
   },
+  "reorders": {
+    "articles/dzhon-gill-chast-1-chelovek/index.html": {
+      "order": ["#part-calling", "#sec-intro", "#sec-birth-prophecy", "#sec-education", "#sec-conversion", "#part-pastor", "#sec-pastor", "#sec-evangelism", "#sec-goatyardDecl", "#sec-daughter-sermon", "#sec-family-deep", "#sec-ordination-1720", "#sec-personal-credo", "#sec-context-southwark", "#sec-quiz"],
+      "reason": "Sections inside part II of the article were re-arranged editorially after the historical witness bcf6389f (evangelism/goatyardDecl/daughter-sermon/family-deep now precede ordination-1720/personal-credo). Submenu rows must follow CURRENT document order — the scrollspy active-index algorithm requires target document position to be monotonic in row order (spec §9.5). Labels, hierarchy and item count remain historical.",
+      "verifiedDocumentOrder": true
+    },
+    "articles/dzhon-gill-chast-2-uchenyi/index.html": {
+      "order": ["#sec-hebrew", "#sec-canticles", "#sec-ordinances", "#sec-eschatology", "#sec-systematics", "#sec-quiz"],
+      "reason": "The article grew from 6 to 29 sections after the historical witness bcf6389f; «Свод богословия» (#sec-systematics) now sits after #sec-ordinances/#sec-eschatology in the document. Submenu rows must follow CURRENT document order — the scrollspy active-index algorithm requires target document position to be monotonic in row order (spec §9.5). Labels, hierarchy and item count remain historical.",
+      "verifiedDocumentOrder": true
+    },
+    "articles/dzhon-gill-chast-3-nasledie/index.html": {
+      "order": ["#part-legacy", "#sec-controversy", "#sec-church-gov", "#sec-church-gov-polity", "#sec-spurgeon-legacy", "#sec-sources-gil-theology", "#sec-terms", "#sec-disciples", "#sec-america", "#sec-contemporaries", "#sec-toplady-memoir", "#sec-gill-islam-detail", "#sec-ordination-rippon", "#sec-gill-last-pages", "#sec-gill-muller-rediscovery", "#sec-quiz"],
+      "reason": "Part III was heavily expanded and re-arranged after the historical witness bcf6389f (e.g. the Wesley polemic moved from position 3 to position 11 in the document). Submenu rows must follow CURRENT document order — the scrollspy active-index algorithm requires target document position to be monotonic in row order (spec §9.5). Labels, hierarchy and item count remain historical.",
+      "verifiedDocumentOrder": true
+    }
+  },
   "entries": [
     {
       "route": "articles/dzhon-gill-chast-1-chelovek",

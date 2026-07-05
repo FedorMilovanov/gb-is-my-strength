@@ -69,11 +69,6 @@ jobs:
       url: ${{ steps.deploy.outputs.page_url }}
 
     steps:
-      - name: Warn if IndexNow metadata gate failed
-        if: github.event.workflow_run.conclusion == 'failure'
-        run: |
-          echo "::warning::IndexNow metadata/gate workflow failed. Deploying anyway because deploy.yml runs its own cache-bust and validation. Check indexnow.yml logs for details."
-
       - name: Checkout (последний коммит в main, включая cache-bust)
         uses: actions/checkout@v4
         with:
@@ -153,6 +148,11 @@ jobs:
         run: npx playwright install --with-deps chromium
 
       - name: Gill pre-v16 submenu regression audit
+        # --require-live: the full per-row scrollspy traversal must actually
+        # execute; the soft "not exercisable headlessly" path once masked a
+        # dead initGbs2Controls gate that froze the submenu on every Gill page.
+        env:
+          GILL_SUBMENU_REQUIRE_LIVE: '1'
         run: npm run gill:pre-v16-submenu:audit
 
       - name: Gill mobile TOC and PlayEmber smoke
