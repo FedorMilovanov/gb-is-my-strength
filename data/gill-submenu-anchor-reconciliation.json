@@ -1,0 +1,86 @@
+{
+  "historicalCommit": "bcf6389f29ee0c89e9e96e7587e0226ecf251ae0",
+  "reconciledAt": "2026-07-05",
+  "policy": "The pre-v16 GBS desktop submenu (labels + order + item count) is restored verbatim from the canonical historical witness bcf6389f29ee0c89e9e96e7587e0226ecf251ae0. During the Astro migration 7 anchor IDs were renamed; labels and target headings are preserved. These renames are the ONLY differences between the historical witness and the current render. They are legitimate (label-preserving) and MUST be applied by scripts/gill-pre-v16-submenu-regression-audit.js (via the \"renames\" map below) when comparing the historical reference manifest to the current build, so the manifest historical hrefs resolve to the current rendered anchors.",
+  "renames": {
+    "#sec-early-years": "#part-calling",
+    "#sec-gill-spirituality": "#sec-family-deep",
+    "#sec-legacy-main": "#part-legacy",
+    "#sec-rome-proverbs": "#sec-church-gov",
+    "#sec-wesley": "#sec-toplady-memoir",
+    "#sec-coffee-house-polity": "#sec-church-gov-polity",
+    "#sec-evaluations-map": "#sec-contemporaries"
+  },
+  "entries": [
+    {
+      "route": "articles/dzhon-gill-chast-1-chelovek",
+      "historicalLabel": "I. Ранние годы, обращение и формирование характера",
+      "historicalHref": "#sec-early-years",
+      "currentRenderedHeading": "I. Становление и призвание",
+      "currentId": "#part-calling",
+      "finalHref": "#part-calling",
+      "decision": "Anchor ID renamed during the Astro migration. Submenu label and target heading preserved verbatim. Legitimate rename — must be applied by the audit when reconciling the historical reference manifest to the current build.",
+      "verified": true
+    },
+    {
+      "route": "articles/dzhon-gill-chast-1-chelovek",
+      "historicalLabel": "Личная духовность: молитва, медитация и домашнее благочестие",
+      "historicalHref": "#sec-gill-spirituality",
+      "currentRenderedHeading": "Семья: дети, зять-издатель и богословие в деталях",
+      "currentId": "#sec-family-deep",
+      "finalHref": "#sec-family-deep",
+      "decision": "Anchor ID renamed during the Astro migration. Submenu label and target heading preserved verbatim. Legitimate rename — must be applied by the audit when reconciling the historical reference manifest to the current build.",
+      "verified": true
+    },
+    {
+      "route": "articles/dzhon-gill-chast-3-nasledie",
+      "historicalLabel": "IV. Наследие, споры и память",
+      "historicalHref": "#sec-legacy-main",
+      "currentRenderedHeading": "V. Историческое влияние и память",
+      "currentId": "#part-legacy",
+      "finalHref": "#part-legacy",
+      "decision": "Anchor ID renamed during the Astro migration. Submenu label and target heading preserved verbatim. Legitimate rename — must be applied by the audit when reconciling the historical reference manifest to the current build.",
+      "verified": true
+    },
+    {
+      "route": "articles/dzhon-gill-chast-3-nasledie",
+      "historicalLabel": "Гилл и Рим: «безрассудство» ложной традиции",
+      "historicalHref": "#sec-rome-proverbs",
+      "currentRenderedHeading": "Управление церковью: единственный пастор, никаких степеней",
+      "currentId": "#sec-church-gov",
+      "finalHref": "#sec-church-gov",
+      "decision": "Anchor ID renamed during the Astro migration. Submenu label and target heading preserved verbatim. Legitimate rename — must be applied by the audit when reconciling the historical reference manifest to the current build.",
+      "verified": true
+    },
+    {
+      "route": "articles/dzhon-gill-chast-3-nasledie",
+      "historicalLabel": "Полемика с Джоном Уэсли (1752–1755)",
+      "historicalHref": "#sec-wesley",
+      "currentRenderedHeading": "Топлэди о Гилле: Чёрный Принц и Мальборо",
+      "currentId": "#sec-toplady-memoir",
+      "finalHref": "#sec-toplady-memoir",
+      "decision": "Anchor ID renamed during the Astro migration. Submenu label and target heading preserved verbatim. Legitimate rename — must be applied by the audit when reconciling the historical reference manifest to the current build.",
+      "verified": true
+    },
+    {
+      "route": "articles/dzhon-gill-chast-3-nasledie",
+      "historicalLabel": "Coffee House и права поместной церкви",
+      "historicalHref": "#sec-coffee-house-polity",
+      "currentRenderedHeading": "О вступлении в членство (параграф о правах поместной церкви)",
+      "currentId": "#sec-church-gov-polity",
+      "finalHref": "#sec-church-gov-polity",
+      "decision": "Anchor ID renamed during the Astro migration. Submenu label and target heading preserved verbatim. Legitimate rename — must be applied by the audit when reconciling the historical reference manifest to the current build.",
+      "verified": true
+    },
+    {
+      "route": "articles/dzhon-gill-chast-3-nasledie",
+      "historicalLabel": "Оценки Гилла: от восторга до резкой критики",
+      "historicalHref": "#sec-evaluations-map",
+      "currentRenderedHeading": "Как современники видели Гилла: портрет из первых уст",
+      "currentId": "#sec-contemporaries",
+      "finalHref": "#sec-contemporaries",
+      "decision": "Anchor ID renamed during the Astro migration. Submenu label and target heading preserved verbatim. Legitimate rename — must be applied by the audit when reconciling the historical reference manifest to the current build.",
+      "verified": true
+    }
+  ]
+}

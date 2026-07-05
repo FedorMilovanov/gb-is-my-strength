@@ -178,7 +178,7 @@ export const GILL_PAGE_DATA: Record<GillSeriesPageId, GillPageChromeData> = {
       { href: "#sec-controversy", label: "Гиперкальвинизм — спорное наследие", level: 3 },
       { href: "#sec-sources-gil-theology", label: "Богословские источники Гилла", level: 3 },
       { href: "#sec-disciples", label: "Ученики и духовные наследники", level: 3 },
-      { href: "#sec-church-gov", label: "Coffee House и права поместной церкви", level: 3 },
+      { href: "#sec-church-gov-polity", label: "Coffee House и права поместной церкви", level: 3 },
       { href: "#sec-america", label: "Влияние на Америку и трансатлантический диалог", level: 3 },
       { href: "#sec-gill-islam-detail", label: "Гилл и ислам: Коран на пасторском столе", level: 3 },
       { href: "#sec-spurgeon-legacy", label: "Чарльз Сперджен — наследник и критик", level: 3 },

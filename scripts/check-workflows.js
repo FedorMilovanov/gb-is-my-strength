@@ -189,6 +189,29 @@ must('.github/workflows/notify-on-failure.yml', notify, /dist strangler|producti
 must('.github/workflows/deploy.yml', deploy, /-\s*['"]src\/\*\*['"]/, 'deploy paths must include src/** so Astro page/content changes deploy (migration: pages now live in src/)');
 must('.github/workflows/indexnow.yml', indexnow, /-\s*['"]src\/\*\*['"]/, 'indexnow paths must include src/** so Astro page/content changes notify search engines');
 
+// Legacy HTML content sections must remain covered by BOTH deploy and indexnow
+// path filters. If a workflow drops a legacy section (e.g. baptisty-rossii),
+// edits to those articles silently stop deploying AND indexing. This guard closes
+// that gap and prevents future regressions (2026-07-05 audit).
+['deploy.yml', 'indexnow.yml'].forEach(f => {
+  must('.github/workflows/' + f, read('.github/workflows/' + f), /-\s*['"]baptisty-rossii\/\*\*['"]/, f + ' paths must include baptisty-rossii/** (legacy content section)');
+});
+
+// Visual parity and shared-files guards must exist and stay well-formed, and the
+// failure notifier must listen for them. Previously only 3 of 7 workflows were
+// validated by this policy check — the two heaviest real gates were unchecked.
+const visualParity = read('.github/workflows/visual-parity.yml');
+must('.github/workflows/visual-parity.yml', visualParity, /^name:\s*.+/m, 'visual-parity must have a name');
+must('.github/workflows/visual-parity.yml', visualParity, /^on:\s*$/m, 'visual-parity must have an on: block');
+must('.github/workflows/visual-parity.yml', visualParity, /visual-parity-screenshots\.js/, 'visual-parity must run screenshots');
+
+const sharedFiles = read('.github/workflows/shared-files-guard.yml');
+must('.github/workflows/shared-files-guard.yml', sharedFiles, /^name:\s*.+/m, 'shared-files-guard must have a name');
+must('.github/workflows/shared-files-guard.yml', sharedFiles, /guard-shared-files\.js/, 'shared-files-guard must run guard-shared-files.js');
+
+must('.github/workflows/notify-on-failure.yml', notify, /Visual Parity Guard/, 'notify workflow must listen for Visual Parity Guard');
+must('.github/workflows/notify-on-failure.yml', notify, /Shared Files Guard/, 'notify workflow must listen for Shared Files Guard');
+
 console.log('\nGB WORKFLOW POLICY CHECK');
 if (issues.length) {
   console.log(`❌ ${issues.length} issue(s):`);
