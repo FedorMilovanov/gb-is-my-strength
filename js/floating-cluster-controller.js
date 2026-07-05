@@ -365,6 +365,16 @@
     u.lang = 'ru-RU';
     if (!ttsState.voice) ttsState.voice = pickRuVoice();
     if (ttsState.voice) u.voice = ttsState.voice;
+    u.onboundary = function (ev) {
+      // Continuous ring: without this the ring only advanced on chunk ends
+      // (~every 200 chars), which on a long article reads as "no progress".
+      if (runId !== ttsState.runId || ttsState.paused) return;
+      if (ev && typeof ev.charIndex === 'number' && ttsState.totalChars) {
+        var done = ttsState.spokenChars + Math.min(ev.charIndex, chunk.length);
+        var pctNow = Math.min(1, done / ttsState.totalChars);
+        qsa('.gb-ember').forEach(function (btn) { btn.style.setProperty('--p', String(pctNow)); });
+      }
+    };
     u.onend = function () {
       // speechSynthesis.cancel() may still fire onend. Ignore that synthetic end,
       // otherwise pause/rate-change can skip chunks or start duplicate utterances.
@@ -1431,6 +1441,65 @@
       })();
     }
 
+    // --- Reading-position memory + smart resume (Gill v16) ---
+    // enhancements.js phase-2 owns this on legacy GBS pages; on v16 pages its
+    // paint() driver never ran, so positions froze and «Вы здесь были» nagged
+    // with a stale percent on every visit. The v16 controller owns it now:
+    //   • save only after a real user scroll and y>120;
+    //   • offer resume only for a meaningful position (pc 8–92, y>1200);
+    //   • at most once per page per browser session; dismissal (×) mutes the
+    //     offer for 24h; finishing the article (pc≥95) clears the position.
+    var _resumeV16 = !!qs('[data-gill-v16]');
+    var _posKey = 'gb-series-pos:' + ((document.body && document.body.getAttribute('data-gbs2-series')) || 'page') + ':' +
+                  (location.pathname.replace(/\/+$/, '/').split('/').filter(Boolean).pop() || '');
+    var _userScrolled = false, _lastPosWrite = 0;
+    ['wheel', 'touchmove', 'keydown'].forEach(function (t) {
+      addCleanListener(window, t, function () { _userScrolled = true; }, { passive: true });
+    });
+    function _jget(k, d) { try { var v = JSON.parse(localStorage.getItem(k)); return v == null ? d : v; } catch (_) { return d; } }
+    function _jset(k, v) { try { if (v == null) localStorage.removeItem(k); else localStorage.setItem(k, JSON.stringify(v)); } catch (_) {} }
+    function saveReadingPos(pct) {
+      if (!_resumeV16 || !_userScrolled) return;
+      if (pct >= 95) { if (_jget(_posKey, null)) _jset(_posKey, null); return; }
+      var y = window.scrollY || 0, now = Date.now();
+      if (y <= 120 || now - _lastPosWrite < 1200) return;
+      _lastPosWrite = now;
+      var prev = _jget(_posKey, null) || {};
+      _jset(_posKey, { y: y, pc: pct, t: now, dismissedAt: prev.dismissedAt });
+    }
+    function maybeOfferResume() {
+      if (!_resumeV16) return;
+      var saved = _jget(_posKey, null);
+      if (!saved || !(saved.y > 1200) || !(saved.pc >= 8) || saved.pc > 92) return;
+      if ((window.scrollY || 0) > 200) return;
+      if (saved.dismissedAt && Date.now() - saved.dismissedAt < 86400000) return;
+      var sessionKey = 'gb-resume-offered:' + _posKey;
+      try { if (sessionStorage.getItem(sessionKey)) return; sessionStorage.setItem(sessionKey, '1'); } catch (_) {}
+      var reduced = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      var toast = document.createElement('div');
+      toast.className = 'gbs2-resume';
+      toast.setAttribute('role', 'status');
+      toast.innerHTML = '<span><small>Вы здесь были</small>Вы остановились на ' + Math.round(saved.pc) + '%</span>' +
+        '<button type="button" class="gbs2-resume-go">Продолжить</button>' +
+        '<button type="button" class="gbs2-resume-x" aria-label="Скрыть">×</button>';
+      document.body.appendChild(toast);
+      var hideT = null;
+      function hide(mute) {
+        toast.classList.remove('gbs2-on');
+        clearTimeout(hideT);
+        if (mute) { var cur = _jget(_posKey, null); if (cur) { cur.dismissedAt = Date.now(); _jset(_posKey, cur); } }
+        setTimeout(function () { if (toast.parentNode) toast.parentNode.removeChild(toast); }, 400);
+      }
+      toast.querySelector('.gbs2-resume-go').addEventListener('click', function () {
+        _userScrolled = true;
+        window.scrollTo({ top: saved.y, behavior: reduced ? 'auto' : 'smooth' });
+        hide(false);
+      });
+      toast.querySelector('.gbs2-resume-x').addEventListener('click', function () { hide(true); });
+      setTimeout(function () { toast.classList.add('gbs2-on'); }, 900);
+      hideT = setTimeout(function () { hide(false); }, 6500);
+    }
+
     // --- Scroll Progress ---
     // GILL UI POLISH 2026-06-29 — gold progress + scrollspy
     function updateScrollProgress() {
@@ -1445,6 +1514,7 @@
         // also mirror to body for [data-gill-v16] descendant rules
         document.body.style.setProperty('--gb-read-pct', String(pctF));
       } catch(_){}
+      saveReadingPos(pct);
       var pctEl = qs('#gbs2MobPct');
       if (pctEl) pctEl.textContent = pct + '%';
       var pctSidebar = qs('#gbs2Pct');
@@ -1464,6 +1534,13 @@
         var current = getCurrentHeading();
         if (current) mobSec.textContent = current;
       }
+      // Historical paint(): hero parallax + kinetic numeral drift. The old
+      // enhancements pilot owned these vars; it is guarded off on v16 pages,
+      // so the controller feeds them (site.css transforms consume the vars).
+      var heroImgEl = qs('.gbs2-hero img');
+      if (heroImgEl) heroImgEl.style.setProperty('--gbs2-par', String(Math.round(window.scrollY * 0.035)));
+      var kineticEl = qs('.gbs2-kinetic');
+      if (kineticEl) kineticEl.style.setProperty('--gbs2-kin-y', Math.round(window.scrollY * -0.018) + 'px');
       // === Pre-v16 GBS Gill submenu scroll-spy restore ===
       var article = qs('article.article-body') || qs('main');
       if (article) {
@@ -1607,6 +1684,7 @@
     // Initial population
     populateToc();
     updateScrollProgress();
+    maybeOfferResume();
   }
 
 })();
