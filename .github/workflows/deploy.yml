@@ -164,6 +164,12 @@ jobs:
       - name: Broad production-like dist runtime smoke
         run: node scripts/dist-smoke-audit.js --no-build --production-like
 
+      - name: Content word-coverage audit (legacy shadow vs dist)
+        # GATE-GAP-NATIVE-TEXT-PARITY: catches content silently lost between
+        # the legacy shadow and the built Astro page (CONTENT-PARITY-LOSS-01
+        # regression class).
+        run: npm run content:coverage:audit
+
       - name: Service Worker deploy-switch readiness
         run: npm run sw:dist:audit:deploy-switch
 
