@@ -607,3 +607,11 @@ html:not(.dark) .gtip.gb-floating-tip::before {
 .heading-anchor:hover { color: var(--color-accent); transform: translateY(-1px); }
 .heading-anchor:active { transform: translateY(0); }
 .heading-anchor:focus-visible { color: var(--color-accent); box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-accent) 20%, transparent); }
+
+/* GBS hero cover (owner item 9, 2026-07-05): the top-of-file UNLAYERED reset
+   `img{max-width:100%;height:auto}` outcascades the layered `.gbs2-hero img
+   {height:124%}` (unlayered beats layered regardless of specificity), so the
+   parallax cover rendered at 100% height while keeping its -12% top inset —
+   leaving a bare strip along the hero bottom (most visible on the bright
+   Spravochnik shelf photo). Re-assert the cover geometry unlayered. */
+.gbs2-hero img{height:124%}
