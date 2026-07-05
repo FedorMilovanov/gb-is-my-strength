@@ -7,7 +7,7 @@ export const ASSET_VERSIONS = {
   'css/enhancements-runtime.css': '40f4c45f',
   'css/floating-cluster.css': 'd656474a',
   'css/highlights-runtime.css': '4e0cd377',
-  'css/home.css': 'c21c0fc8',
+  'css/home.css': '4736bc5f',
   'css/mobile-hotfix.css': '997b959e',
   'css/nagornaya-mobile-toc.css': '361db0b3',
   'css/site.css': '08ea02d9',
@@ -22,7 +22,7 @@ export const ASSET_VERSIONS = {
   'js/scroll-perf.js': '454d6f7b',
   'js/search.js': 'b0fd43b8',
   'js/site-utils.js': '897afa55',
-  'js/site.js': 'ca8980f7',
+  'js/site.js': '9b693364',
   'js/sw-register.js': '7a8bd1e7',
   'nagornaya/tw.min.css': '2670414e',
 };
