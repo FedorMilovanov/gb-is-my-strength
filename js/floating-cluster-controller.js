@@ -314,25 +314,46 @@
     return _voskEngineScriptPromise;
   }
 
-  // Решает, каким движком озвучивать текущую сессию. Если Vosk уже прогрет
-  // (модель скачана и разобрана раньше) — используем сразу, без ожидания.
-  // Если нет — ждём его загрузку (первый раз дольше, дальше из кэша браузера);
-  // при любой ошибке (сеть, неподдерживаемый браузер, engine-скрипт не подключился)
-  // — тихий откат на Web Speech.
+  // Прогревает Vosk (скрипт движка + скачивание/разбор модели) в фоне, никогда
+  // не блокируя текущее воспроизведение — пока модель не готова, play уже идёт
+  // через Web Speech (см. resolveTtsEngine ниже); следующий клик «Слушать»
+  // подхватит Vosk сам, если прогрев успел завершиться. Ошибка сети/модели —
+  // тихая, просто остаёмся на Web Speech.
+  var _voskWarmupStarted = false;
+  function warmVoskInBackground() {
+    if (_voskWarmupStarted) return;
+    _voskWarmupStarted = true;
+    loadVoskEngineScript().then(function () {
+      if (window.VoskTTSEngine && window.VoskTTSEngine.isSupported() && !window.VoskTTSEngine.isReady()) {
+        return window.VoskTTSEngine.ensureLoaded();
+      }
+    }).catch(function (err) {
+      console.warn('[gbx-tts] background Vosk warm-up failed, staying on Web Speech:', err);
+    });
+  }
+
+  // Решает, каким движком озвучивать текущую сессию. Воспроизведение обязано
+  // начинаться мгновенно (PremiumControls contract — data-state/speak не ждут
+  // сеть): если Vosk уже прогрет (модель скачана и разобрана раньше, из кэша
+  // IndexedDB) — используем сразу; иначе играем Web Speech без всякой задержки
+  // и прогреваем Vosk в фоне для следующего раза. Ждём загрузку Vosk синхронно
+  // только если Web Speech в браузере вообще отсутствует (иначе играть нечем).
   function resolveTtsEngine() {
+    if (window.VoskTTSEngine && window.VoskTTSEngine.isReady()) return Promise.resolve('vosk');
+    if ('speechSynthesis' in window) {
+      warmVoskInBackground();
+      return Promise.resolve('webspeech');
+    }
     return loadVoskEngineScript().catch(function (err) {
       console.warn('[gbx-tts] failed to load vosk-tts-engine.js:', err);
     }).then(function () {
-      if (window.VoskTTSEngine && window.VoskTTSEngine.isReady()) return 'vosk';
-      if (!(window.VoskTTSEngine && window.VoskTTSEngine.isSupported())) {
-        return ('speechSynthesis' in window) ? 'webspeech' : null;
-      }
+      if (!(window.VoskTTSEngine && window.VoskTTSEngine.isSupported())) return null;
       showToast('Готовим озвучку (в первый раз — дольше, дальше из кэша браузера)…', false);
       return window.VoskTTSEngine.ensureLoaded().then(function () {
         return 'vosk';
       }).catch(function (err) {
-        console.warn('[gbx-tts] Vosk engine unavailable, falling back to Web Speech:', err);
-        return ('speechSynthesis' in window) ? 'webspeech' : null;
+        console.warn('[gbx-tts] Vosk engine unavailable:', err);
+        return null;
       });
     });
   }
