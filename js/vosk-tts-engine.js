@@ -168,6 +168,12 @@
     var speechRate = rate * (inf.speech_rate !== undefined ? inf.speech_rate : 1.0);
     chunk = chunk.trim().replace(/—/g, '-');
     var mt = cfg.model_type || '';
+    var knownMt = mt === 'multistream_v3' || mt === 'multistream_v2' || mt === 'multistream_v1';
+    if (state.tok && !knownMt && !state._warnedUnknownModelType) {
+      state._warnedUnknownModelType = true;
+      console.warn('[vosk-tts] unrecognized config.model_type "' + mt + '" — BERT stress ' +
+        'disambiguation is loaded but will be skipped for this model (falls back to plain g2p).');
+    }
 
     function runSession(feeds) {
       var avail = state.sess.inputNames;
@@ -215,6 +221,8 @@
     });
   }
 
+  var currentObjectUrl = null;
+
   function getAudioEl() {
     if (!audioEl) {
       audioEl = document.createElement('audio');
@@ -222,6 +230,14 @@
       document.body.appendChild(audioEl);
     }
     return audioEl;
+  }
+
+  function setAudioSrc(a, blob) {
+    // Each chunk creates a fresh Blob URL — without revoking the previous one,
+    // a long article (many chunks) leaks a Blob for the rest of the page's life.
+    if (currentObjectUrl) { try { URL.revokeObjectURL(currentObjectUrl); } catch (_) {} }
+    currentObjectUrl = URL.createObjectURL(blob);
+    a.src = currentObjectUrl;
   }
 
   function isSupported() {
@@ -242,7 +258,7 @@
       var wav = VoskTTSCore.int16ToWav(pcm, SAMPLE_RATE);
       a.onended = function () { if (!handle.cancelled) onend(); };
       a.onerror = function (e) { if (!handle.cancelled) onerror(e); };
-      a.src = URL.createObjectURL(new Blob([wav], { type: 'audio/wav' }));
+      setAudioSrc(a, new Blob([wav], { type: 'audio/wav' }));
       a.playbackRate = 1;
       var p = a.play();
       if (p && p.catch) p.catch(function (e) { if (!handle.cancelled) onerror(e); });
@@ -257,6 +273,7 @@
     if (audioEl) {
       try { audioEl.pause(); audioEl.removeAttribute('src'); audioEl.load(); } catch (_) {}
     }
+    if (currentObjectUrl) { try { URL.revokeObjectURL(currentObjectUrl); } catch (_) {} currentObjectUrl = null; }
   }
 
   window.VoskTTSEngine = {

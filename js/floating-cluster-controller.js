@@ -486,6 +486,11 @@
       if (myRun !== ttsState.runId) return; // stopped/replayed/navigated while we waited
       if (!engine) { showToast('Не удалось запустить озвучку', false); setEmberState('idle'); return; }
       ttsState.engine = engine;
+      // Пауза, нажатая пока мы ждали загрузку движка, не бампает runId (иначе
+      // resumeTts() не смог бы отличить "продолжить с текущего chunk" от
+      // "это устаревший запуск"), поэтому проверяем paused отдельно: инженю
+      // фиксируем, но воспроизведение не стартуем — resumeTts() подхватит.
+      if (ttsState.paused) return;
       setEmberState('playing');
       speakNextChunk();
     });
