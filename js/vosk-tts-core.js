@@ -266,7 +266,16 @@
     return out;
   }
 
-  var MS_PATTERN = /(\.\.\.|- |[ ,.?!;:"()_])/g;
+  // Deliberate divergence from upstream vosk-tts: the reference Python only
+  // splits "- " (hyphen+space), so a mid-word hyphen ("по-моему", "кто-то")
+  // stays glued into one g2p "word" while BertWordPieceTokenizer splits it
+  // into 2-3 tokens regardless — desyncing bertWordIndex from the BERT row
+  // list for every word after the first hyphen in a sentence (verified
+  // against the real vosk_tts.synth.Synth.g2p_multistream_scales — this bug
+  // exists upstream too, not just in this port). Matching a bare `-` here
+  // keeps word counts aligned with the tokenizer; the hyphen itself already
+  // falls into the explicit `word === '-'` branch below, unaffected.
+  var MS_PATTERN = /(\.\.\.|- |-|[ ,.?!;:"()_])/g;
   function isMsPunct(word) {
     return word === '...' || word === '- ' || /^[ ,.?!;:"()_]$/.test(word);
   }
