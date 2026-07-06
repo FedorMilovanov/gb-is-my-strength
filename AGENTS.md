@@ -1625,8 +1625,8 @@ A hand-built Astro biography catalog is allowed only after desktop+mobile screen
 7. **Gill submenu-аудит теперь строгий:** отвергает дубликаты href/label, делает полный
    перебор по всем пунктам и проверяет геометрию рамки. Если он падает — это настоящий
    дефект, а не шум.
-8. **Канон системного бэклога (2026-07-06):** AuditRepo →
-   `projects/gb-is-my-strength/verified/SUPER_AUDIT_2026-07-06_14a49be8.md` — единый
+8. **Канон системного бэклога (2026-07-06):** AuditRepo (проект `gb-is-my-strength`) →
+   `verified/SUPER_AUDIT_2026-07-06_14a49be8.md` — единый
    верифицированный аудит (CI/даты/SW/security/Bible/семантика) + план волн W0–W10 и
    список ОПРОВЕРГНУТЫХ старых формулировок (§1). Не воспроизводи опровергнутое.
 9. **Три идентичности релиза.** Различай FUNCTIONAL_SHA / BOT_SHA (`[skip ci]`
