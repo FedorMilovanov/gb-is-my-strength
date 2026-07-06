@@ -257,10 +257,16 @@
   }
 
   /* =====================================================
-     TTS — Web Speech API integration
+     TTS — Vosk TTS (нейросеть, js/vosk-tts-engine.js) с автооткатом на Web Speech API
      Per PremiumControls contract (AuditRepo §3): handlePlayClick
      должен запускать реальную озвучку через speechSynthesis,
      применяя сохранённую скорость из localStorage gb:audio:rate (fallback gbx-tts-rate).
+
+     Vosk грузится и кэшируется лениво (только по первому клику «Слушать»,
+     js/vosk-tts-engine.js). Пока модель не готова — используем Web Speech
+     без задержки; когда Vosk уже прогрет (кэш IndexedDB с прошлого визита),
+     он используется сразу. ttsState.engine хранит, какой движок обслуживает
+     текущую сессию воспроизведения ('vosk' | 'webspeech').
      ===================================================== */
   var ttsState = {
     utterance: null,
@@ -273,7 +279,63 @@
     voice: null,
     runId: 0,
     suppressEnd: false,
+    engine: null,
   };
+
+  // Не зависит от того, успел ли уже подгрузиться js/vosk-tts-engine.js
+  // (он лениво подключается только внутри resolveTtsEngine()) — просто проверяет,
+  // есть ли хоть какой-то движок, которым можно озвучить текст.
+  function ttsAvailable() {
+    return ('speechSynthesis' in window) ||
+           !!(window.indexedDB && window.WebAssembly && window.fetch);
+  }
+
+  function cancelActiveEngine() {
+    if (ttsState.engine === 'vosk' && window.VoskTTSEngine) {
+      window.VoskTTSEngine.cancel(ttsState.utterance);
+    } else if ('speechSynthesis' in window) {
+      try { window.speechSynthesis.cancel(); } catch (_) {}
+    }
+  }
+
+  var _voskEngineScriptPromise = null;
+  // js/vosk-tts-engine.js сам по себе не подключён ни одним <script> тегом —
+  // ленивая загрузка ровно по первому клику «Слушать», как и модель внутри него.
+  function loadVoskEngineScript() {
+    if (window.VoskTTSEngine) return Promise.resolve();
+    if (_voskEngineScriptPromise) return _voskEngineScriptPromise;
+    _voskEngineScriptPromise = new Promise(function (resolve, reject) {
+      var s = document.createElement('script');
+      s.src = '/js/vosk-tts-engine.js';
+      s.onload = function () { resolve(); };
+      s.onerror = function () { _voskEngineScriptPromise = null; reject(new Error('vosk-tts-engine.js load failed')); };
+      document.head.appendChild(s);
+    });
+    return _voskEngineScriptPromise;
+  }
+
+  // Решает, каким движком озвучивать текущую сессию. Если Vosk уже прогрет
+  // (модель скачана и разобрана раньше) — используем сразу, без ожидания.
+  // Если нет — ждём его загрузку (первый раз дольше, дальше из кэша браузера);
+  // при любой ошибке (сеть, неподдерживаемый браузер, engine-скрипт не подключился)
+  // — тихий откат на Web Speech.
+  function resolveTtsEngine() {
+    return loadVoskEngineScript().catch(function (err) {
+      console.warn('[gbx-tts] failed to load vosk-tts-engine.js:', err);
+    }).then(function () {
+      if (window.VoskTTSEngine && window.VoskTTSEngine.isReady()) return 'vosk';
+      if (!(window.VoskTTSEngine && window.VoskTTSEngine.isSupported())) {
+        return ('speechSynthesis' in window) ? 'webspeech' : null;
+      }
+      showToast('Готовим озвучку (в первый раз — дольше, дальше из кэша браузера)…', false);
+      return window.VoskTTSEngine.ensureLoaded().then(function () {
+        return 'vosk';
+      }).catch(function (err) {
+        console.warn('[gbx-tts] Vosk engine unavailable, falling back to Web Speech:', err);
+        return ('speechSynthesis' in window) ? 'webspeech' : null;
+      });
+    });
+  }
 
   /* Russian voice picker — без него браузер берёт дефолтный (часто английский)
      голос, даже если u.lang='ru-RU'. */
@@ -360,13 +422,9 @@
       return;
     }
     var chunk = ttsState.chunks[ttsState.chunkIdx];
-    var u = new SpeechSynthesisUtterance(chunk);
-    u.rate = getStoredRate();
-    u.lang = 'ru-RU';
-    if (!ttsState.voice) ttsState.voice = pickRuVoice();
-    if (ttsState.voice) u.voice = ttsState.voice;
-    u.onend = function () {
-      // speechSynthesis.cancel() may still fire onend. Ignore that synthetic end,
+
+    function onChunkEnd() {
+      // cancel() may still fire a synthetic end. Ignore that,
       // otherwise pause/rate-change can skip chunks or start duplicate utterances.
       if (runId !== ttsState.runId) return;
       if (ttsState.suppressEnd) { ttsState.suppressEnd = false; return; }
@@ -374,23 +432,36 @@
       ttsState.chunkIdx += 1;
       updateProgress();
       if (!ttsState.paused) speakNextChunk();
-    };
-    u.onerror = function (e) {
+    }
+    function onChunkError(e) {
       if (runId !== ttsState.runId || ttsState.suppressEnd) {
         ttsState.suppressEnd = false;
         return;
       }
       // Если ошибка — стопаем чисто, без infinite loop
-      console.warn('[gbx-tts] utterance error:', e.error);
+      console.warn('[gbx-tts] chunk error:', (e && e.error) || e);
       ttsState.utterance = null;
       setEmberState('idle');
-    };
+    }
+
+    if (ttsState.engine === 'vosk' && window.VoskTTSEngine) {
+      ttsState.utterance = window.VoskTTSEngine.speak(chunk, getStoredRate(), 0, onChunkEnd, onChunkError);
+      return;
+    }
+
+    var u = new SpeechSynthesisUtterance(chunk);
+    u.rate = getStoredRate();
+    u.lang = 'ru-RU';
+    if (!ttsState.voice) ttsState.voice = pickRuVoice();
+    if (ttsState.voice) u.voice = ttsState.voice;
+    u.onend = onChunkEnd;
+    u.onerror = onChunkError;
     ttsState.utterance = u;
     window.speechSynthesis.speak(u);
   }
 
   function startTts() {
-    if (!('speechSynthesis' in window)) {
+    if (!ttsAvailable()) {
       showToast('Браузер не поддерживает озвучку', false);
       return;
     }
@@ -400,8 +471,9 @@
       return;
     }
     ttsState.runId += 1;
+    var myRun = ttsState.runId;
     ttsState.suppressEnd = false;
-    try { window.speechSynthesis.cancel(); } catch (_) {}
+    cancelActiveEngine();
     ttsState.text = text;
     ttsState.chunks = splitTtsChunks(text);
     ttsState.chunkIdx = 0;
@@ -409,53 +481,60 @@
     ttsState.spokenChars = 0;
     ttsState.paused = false;
     ttsState.utterance = null;
-    setEmberState('playing');
-    speakNextChunk();
+    ttsState.engine = null;
+    resolveTtsEngine().then(function (engine) {
+      if (myRun !== ttsState.runId) return; // stopped/replayed/navigated while we waited
+      if (!engine) { showToast('Не удалось запустить озвучку', false); setEmberState('idle'); return; }
+      ttsState.engine = engine;
+      setEmberState('playing');
+      speakNextChunk();
+    });
   }
 
   function pauseTts() {
-    if (!('speechSynthesis' in window)) return;
-    // Chrome: speechSynthesis.pause() is unreliable. Cancel and save position instead.
+    if (!ttsAvailable()) return;
+    // Cancel-based pause (no real pause/resume in either engine).
     // Mark paused/suppress BEFORE cancel: some engines synchronously fire onend.
     ttsState.paused = true;
     ttsState.suppressEnd = true;
-    window.speechSynthesis.cancel();
+    cancelActiveEngine();
     ttsState.utterance = null;
     setEmberState('paused');
   }
 
   function resumeTts() {
-    if (!('speechSynthesis' in window)) return;
+    if (!ttsAvailable()) return;
     ttsState.paused = false;
     ttsState.suppressEnd = false;
     ttsState.runId += 1;
     setEmberState('playing');
-    // Restart from saved chunk position (Chrome doesn't support real resume)
+    // Restart from saved chunk position (neither engine supports real resume)
     speakNextChunk();
   }
 
   function stopTts() {
-    if (!('speechSynthesis' in window)) return;
+    if (!ttsAvailable()) return;
     ttsState.runId += 1;
     ttsState.suppressEnd = true;
-    window.speechSynthesis.cancel();
+    cancelActiveEngine();
     ttsState.paused = false;
     ttsState.utterance = null;
     ttsState.chunkIdx = 0;
     ttsState.spokenChars = 0;
+    ttsState.engine = null;
     setEmberState('idle');
     qsa('.gb-ember').forEach(function (btn) { btn.style.setProperty('--p', '0'); });
   }
 
   // Применяем новую скорость на лету при выборе из Speed panel
   addCleanListener(window, 'gb:tts-rate-change', function (ev) {
-    if (!('speechSynthesis' in window)) return;
+    if (!ttsAvailable()) return;
     if (!ttsState.utterance || ttsState.chunkIdx >= ttsState.chunks.length) return;
-    // Останавливаем текущий utterance и перестартуем с того же chunk.
+    // Останавливаем текущий chunk и перестартуем с того же места.
     // Guard against cancel() firing onend and double-advancing the queue.
     ttsState.runId += 1;
     ttsState.suppressEnd = true;
-    window.speechSynthesis.cancel();
+    cancelActiveEngine();
     ttsState.utterance = null;
     if (!ttsState.paused) {
       ttsState.suppressEnd = false;
@@ -482,8 +561,8 @@
       return;
     }
 
-    // Web Speech API path
-    if ('speechSynthesis' in window) {
+    // Vosk TTS (нейросеть) с автооткатом на Web Speech API
+    if (ttsAvailable()) {
       if (state === 'playing')      { pauseTts();  return; }
       if (state === 'paused')       { resumeTts(); return; }
       if (state === 'complete')     { stopTts(); startTts(); return; }
