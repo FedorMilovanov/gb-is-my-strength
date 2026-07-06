@@ -136,6 +136,7 @@ FULL gate — перед commit/merge/push: npm run validate:static-publication 
 
 ---
 
+| **AGENTS-r322** | 2026-07-06 | **Super-audit sync.** «Верификационная дисциплина» дополнена п.8–12: канон системного бэклога — AuditRepo `verified/SUPER_AUDIT_2026-07-06_14a49be8.md` (волны W0–W10 + опровергнутые формулировки); три идентичности релиза (FUNCTIONAL/BOT/DEPLOYED SHA); «паритет ≠ правда»; in-flight зоны (PremiumControls, глоссарий); создан `docs/OWNER-INVARIANTS.md`. Известный doc-drift для будущей правки: §0/§2 расходятся «11 vs 12 JS-файлов» (факт на 14a49be8: 11); README §1.1 shadow-wrap описание — HISTORICAL (см. page-ownership.json). |
 | **AGENTS-r321** | 2026-07-03 | **CSS inventory reconciled.** Section 2 updated from 8→9 CSS files (added `enhancements-runtime.css`, `highlights-runtime.css`, `sw-toast.css` extracted from CSS-in-JS in Pass 24). Dead exports removed from `floating-cluster-ui.ts` (5 dead: `FloatingClusterMode`, `FloatingClusterUiConfig`, `floatingClusterUi`, `floatingClusterRoutes`, `getSeriesParts`). §0 and §4 CSS table updated (renumbered from r312 — was duplicate of r312). |
 
 ---
@@ -1599,7 +1600,7 @@ A hand-built Astro biography catalog is allowed only after desktop+mobile screen
 
 ---
 
-## Верификационная дисциплина (2026-07-05) — читай перед правкой по чужому отчёту
+## Верификационная дисциплина (обновлено 2026-07-06) — читай перед правкой по чужому отчёту
 
 Много агентов правят один source-репозиторий одновременно. Чтобы не плодить ложные
 находки, ложные «fix» и рассинхрон матрицы — соблюдай:
@@ -1624,3 +1625,19 @@ A hand-built Astro biography catalog is allowed only after desktop+mobile screen
 7. **Gill submenu-аудит теперь строгий:** отвергает дубликаты href/label, делает полный
    перебор по всем пунктам и проверяет геометрию рамки. Если он падает — это настоящий
    дефект, а не шум.
+8. **Канон системного бэклога (2026-07-06):** AuditRepo →
+   `projects/gb-is-my-strength/verified/SUPER_AUDIT_2026-07-06_14a49be8.md` — единый
+   верифицированный аудит (CI/даты/SW/security/Bible/семантика) + план волн W0–W10 и
+   список ОПРОВЕРГНУТЫХ старых формулировок (§1). Не воспроизводи опровергнутое.
+9. **Три идентичности релиза.** Различай FUNCTIONAL_SHA / BOT_SHA (`[skip ci]`
+   auto-meta) / DEPLOYED_SHA. `[skip ci]`-HEAD не считается проверенным сам по себе;
+   зелёный шаг IndexNow — не доказательство (в workflow `continue-on-error` + `|| true`).
+10. **Паритет ≠ правда.** Байтовый паритет Astro↔legacy не доказывает фактическую
+    правду контента (квизы/числа/цитаты). Семантических гейтов пока НЕТ — не закрывай
+    контентные классы «паритетом» (см. SUPER_AUDIT, волна W7 и `docs/CONTENT-QUALITY-STANDARD.md`).
+11. **In-flight зоны владельца:** PremiumControls/Gill-визуал (§3.10 freeze) и
+    глоссарий/Библия-тултипы (данные обновляет владелец). Не менять без явного запроса;
+    инфраструктурные фиксы вокруг них (санитайзер, версия кэша данных, Bible-корпус)
+    координируй с этими треками.
+12. **Owner-инварианты собраны в `docs/OWNER-INVARIANTS.md`** — короткий канонический
+    список; при конфликте докам этого файла и AGENTS §9 верить им, не пересказам.
