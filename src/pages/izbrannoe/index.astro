@@ -88,12 +88,14 @@ const jsonLd = {
         count.textContent = favs.length + ' ' + ruPlural(favs.length, 'статья', 'статьи', 'статей');
 
         favs.forEach(function (f) {
-          var path = f.path || '/';
+          var rawPath = f.path || '/';
+          var path = /^\/(?!\/)/.test(rawPath) ? rawPath : '/';
           if (path !== '/' && !/\/$/.test(path)) path = path + '/';
           var card = document.createElement('article');
           card.className = 'izbrannoe-card';
-          var img = f.image
-            ? '<div class="izbrannoe-card__img" style="background-image:url(' + esc(f.image) + ')"></div>'
+          var safeImg = f.image && /^(https?:)?\//i.test(f.image) ? esc(f.image) : '';
+          var img = safeImg
+            ? '<div class="izbrannoe-card__img" style="background-image:url(\'' + safeImg + '\')"></div>'
             : '<div class="izbrannoe-card__img izbrannoe-card__img--empty"></div>';
           var section = f.section ? '<span class="izbrannoe-card__section">' + esc(f.section) + '</span>' : '';
           card.innerHTML =

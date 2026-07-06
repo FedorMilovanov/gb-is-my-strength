@@ -29,9 +29,10 @@
   }
 
   favs.slice(0, 8).forEach(function(f) {
+    var rawPath = f.path ? String(f.path) : '/';
+    var safePath = /^\/(?!\/)/.test(rawPath) ? rawPath : '/';
     var card = document.createElement('a');
     card.className = 'favorites-card';
-    var safePath = f.path ? String(f.path) : '/';
     card.href = safePath.endsWith('/') ? safePath : safePath + '/';
     card.setAttribute('data-fav-path', safePath);
 
