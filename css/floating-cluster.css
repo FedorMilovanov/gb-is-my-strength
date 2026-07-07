@@ -2298,19 +2298,34 @@ html.dark .gb-roman {
 /* ---- Desktop: 2-column grid (rail + content) ---- */
 @media (min-width:64em){
   .gbs2-world[data-gill-v16]{
-    display:grid;
-    grid-template-columns:minmax(272px,304px) minmax(0,1fr);
-    gap:clamp(20px,2.6vw,40px);
-    align-items:start;
+    /* rail is position:fixed (out of flow); article is a single centred column.
+       --gb-rail-reserve = the left space the fixed rail occupies (its left
+       margin + width + a breathing gap) — used as the minimum left margin so
+       the article clears the rail on narrower desktops. */
+    --gb-rail-reserve:calc(clamp(16px,2.4vw,40px) + clamp(272px,24vw,304px) + clamp(24px,3vw,48px));
+    --gb-measure:min(760px, calc(100vw - 48px));
+    display:block;
     min-height:auto;
   }
   .gbs2-world[data-gill-v16] > .gbs-rail{
     position:fixed;top:16px;bottom:16px;
-    left:calc((100vw - min(1180px,94vw)) / 2);
-    width:clamp(272px,24vw,304px);overflow:hidden;z-index:var(--z-sticky,1000);
+    /* rail hugs the left edge with a small margin (owner spec: «панель ближе
+       к левому краю браузера с небольшим отступом») instead of aligning to a
+       centered 1180px container */
+    left:clamp(16px, 2.4vw, 40px);
+    width:clamp(272px,24vw,304px);
+    /* overflow visible so the Play speed pill blooms UP out of the footer and
+       is not sliced at the rail edge; inner scroll areas (.gbs2-rmid,
+       .gbs2-tocscroll) clip themselves, so nothing else bleeds past the frame */
+    overflow:visible;z-index:var(--z-sticky,1000);
   }
   .gbs2-world[data-gill-v16] > .page-wrap{
-    grid-column:2;width:min(820px,100%);
+    /* article centred in the VIEWPORT («текст по середине сайта»), shifted right
+       only as much as needed to clear the rail on narrower desktops: the left
+       margin is the larger of the true-centre offset and the rail reserve */
+    width:var(--gb-measure);
+    margin-left:max((100vw - var(--gb-measure)) / 2, var(--gb-rail-reserve));
+    margin-right:auto;
   }
   /* Bottom bar + overlays are desktop-hidden */
   [data-gill-v16] .mobile-bottom-bar{display:none}
@@ -2320,7 +2335,9 @@ html.dark .gb-roman {
 @media (min-width:64em){
   body.gbs-world:has(.gbs2-world[data-gill-v16]){padding-left:0}
   body.gbs-world:has(.gbs2-world[data-gill-v16]) .gbs2-world[data-gill-v16]{
-    width:min(1180px,94vw);margin:0 auto;
+    /* full-bleed world so the rail can hug the left edge and the article can
+       centre in the remaining width (was a centred 1180px box) */
+    width:100%;margin:0;
   }
 }
 
