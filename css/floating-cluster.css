@@ -364,13 +364,16 @@ html.dark .gb-theme-toggle .theme-icon-moon { opacity: 1; transform: rotate(0) s
   stroke-linejoin: round;
 }
 
-/* Показываем нужную иконку по data-state */
+/* Показываем нужную иконку по data-state.
+   ИСПРАВЛЕНО: paused раньше держал ту же ❚❚-иконку, что и playing (ту же
+   ошибку унаследовал и мобильный референс — byte-for-byte идентичное
+   правило) — после нажатия «пауза» кнопка так и оставалась с ❚❚, хотя
+   aria-label уже честно говорил «Продолжить озвучку». Теперь на paused
+   возвращается ▶-глиф (= «нажмите, чтобы продолжить»), как и на idle. */
 .gb-ember[data-state="playing"]  .gb-ember__glyph,
-.gb-ember[data-state="paused"]   .gb-ember__glyph,
 .gb-ember[data-state="complete"] .gb-ember__glyph { display: none; }
 
-.gb-ember[data-state="playing"] .gb-ember__pause,
-.gb-ember[data-state="paused"]  .gb-ember__pause  { display: block; }
+.gb-ember[data-state="playing"] .gb-ember__pause { display: block; }
 .gb-ember[data-state="complete"] .gb-ember__check  { display: block; }
 
 /* Цвета по состоянию */
