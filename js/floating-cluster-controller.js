@@ -1114,29 +1114,9 @@
       }
     });
 
-    // Gill v16 mobile bar scroll progress.
-    // initGbs2Controls() skips Gill v16 pages (no gbs2Sheet/gbs2Bbar),
-    // so we wire a dedicated lightweight scroll listener here.
-    var gillProgressFill = qs('#gbs2MobProgress');
-    var gillProgressPct  = qs('#gbs2MobPct');
-    if (gillProgressFill || gillProgressPct) {
-      var gillScrollTick = false;
-      function updateGillProgress() {
-        var docH = document.documentElement.scrollHeight - window.innerHeight;
-        if (docH <= 0) { gillScrollTick = false; return; }
-        var pct = Math.min(100, Math.round((window.scrollY / docH) * 100));
-        if (gillProgressFill) gillProgressFill.style.width = pct + '%';
-        if (gillProgressPct)  gillProgressPct.textContent  = pct + '%';
-        gillScrollTick = false;
-      }
-      addCleanListener(window, 'scroll', function() {
-        if (!gillScrollTick) {
-          gillScrollTick = true;
-          requestAnimationFrame(updateGillProgress);
-        }
-      }, { passive: true });
-      updateGillProgress(); // initial call
-    }
+    // Gill v16 mobile bottom-bar dual-progress ring (article % + series %)
+    // is driven centrally by updateScrollProgress() below — no separate
+    // listener needed here (avoids two writers racing on the same nodes).
   }
 
   /* v16 action handlers (non-inline) */
@@ -1669,8 +1649,6 @@
       var seriesPc = totalMin > 0
         ? Math.round(((doneMin + (pct * partMin / 100)) / totalMin) * 100)
         : pct;
-      var pctEl = qs('#gbs2MobPct');
-      if (pctEl) pctEl.textContent = seriesPc + '%';
       var pctSidebar = qs('#gbs2Pct');
       if (pctSidebar) pctSidebar.textContent = seriesPc + '%';
       // Текущая ЧАСТЬ (не вся серия) — отдельная полоса под «Сейчас читаете»
@@ -1682,6 +1660,24 @@
         var circ = 2 * Math.PI * 18; // r=18
         ring.style.strokeDashoffset = circ - (circ * seriesPc / 100);
       }
+      // Мобильный dual-progress (bar-progress.dual-progress, референс
+      // gbs_series_mobile_v4_refined_no_accuracy.html): внутренний текст/
+      // кольцо — % ТЕКУЩЕЙ статьи (pct), внешнее кольцо — % ВСЕЙ серии
+      // (seriesPc). r=16/12.5 — те же радиусы, что в референсной разметке.
+      var mobPctEl = qs('#gbs2MobPct');
+      if (mobPctEl) mobPctEl.textContent = pct + '%';
+      var mobArticleRing = qs('#gbs2MobArticleRing');
+      if (mobArticleRing) {
+        var articleCirc = 2 * Math.PI * 12.5;
+        mobArticleRing.style.strokeDashoffset = articleCirc - (articleCirc * pct / 100);
+      }
+      var mobSeriesRing = qs('#gbs2MobSeriesRing');
+      if (mobSeriesRing) {
+        var mobSeriesCirc = 2 * Math.PI * 16;
+        mobSeriesRing.style.strokeDashoffset = mobSeriesCirc - (mobSeriesCirc * seriesPc / 100);
+      }
+      var mobDualBtn = qs('#gbs2DualProgress');
+      if (mobDualBtn) mobDualBtn.setAttribute('aria-label', 'Статья ' + pct + '%, серия ' + seriesPc + '%');
       // Update mobile bottom bar section
       var mobSec = qs('#gbs2MobSec');
       if (mobSec) {
