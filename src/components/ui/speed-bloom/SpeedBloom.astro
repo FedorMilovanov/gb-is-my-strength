@@ -17,7 +17,7 @@
 import SpeedBloomDefs from './SpeedBloomDefs.astro';
 interface Props { class?: string; defs?: boolean; }
 const { class: className = '', defs = true } = Astro.props;
-const speeds = [0.75, 1, 1.25, 1.5, 1.75, 2];
+const speeds = [1, 1.25, 1.5, 1.75, 2];
 const active = 1;
 ---
 <div class:list={['gb-speedbloom', className]} data-fc-root data-fc-variant="single" data-fc-mode="single" data-pagefind-ignore role="group" aria-label="Озвучка статьи">

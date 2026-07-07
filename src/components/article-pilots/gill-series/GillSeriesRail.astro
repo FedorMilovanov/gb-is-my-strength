@@ -1,7 +1,6 @@
 ---
 import SaveButton from '@/components/ui/floating-cluster/SaveButton.astro';
-import GooPlayMini from '@/components/ui/speed-bloom/GooPlayMini.astro';
-import SpeedBloomDefs from '@/components/ui/speed-bloom/SpeedBloomDefs.astro';
+import PlayEmber from '@/components/ui/floating-cluster/PlayEmber.astro';
 import SeriesMark from './SeriesMark.astro';
 import GillLeatherDefs from './GillLeatherDefs.astro';
 import GillLeatherRibbon from './GillLeatherRibbon.astro';
@@ -51,10 +50,33 @@ const partsAfter = currentIdx >= 0 ? GILL_SERIES_ITEMS.slice(currentIdx + 1) : [
 
 <aside class="gbs-rail" aria-label="Серия «Джон Гилл»">
   <GillLeatherDefs />
-  <SpeedBloomDefs />
-  <button class="gbs-rail-back" type="button" aria-label="Назад" data-home-href="../../biografii/">
-    <svg viewBox="0 0 24 24"><path d="M19 12H5M12 19l-7-7 7-7" /></svg>
-  </button>
+  <!-- Верх рейла: назад + слот-свап (поиск ⇄ скорости) + Play. Тот же
+       механизм, что проверен на мобильном референсе (bar.html): PLAY жмут —
+       иконка поиска уходит, на её месте выезжают чипы скорости в том же
+       слоте; выбор скорости — чипы уходят, поиск возвращается, выбранная
+       скорость остаётся бейджем на самом Play. НЕ goo-блум (GooPlayMini) и
+       НЕ канонная bloom-пилюля (initPlayExpand/.gb-ember-expand) — обе
+       заблокированы data-gb-speed-custom на этом ember, чтобы не завести
+       вторую параллельную панель скоростей. -->
+  <div class="gbs-rail-topbar" data-fc-root data-fc-variant="gill" data-fc-mode="series-rich" data-gb-speed-custom>
+    <button class="gbs-rail-back" type="button" aria-label="Назад" data-home-href="../../biografii/">
+      <svg viewBox="0 0 24 24"><path d="M19 12H5M12 19l-7-7 7-7" /></svg>
+    </button>
+    <div class="gbs-rail-slot" id="gbsRailSlot">
+      <button class="gbs-rail-foot__btn gbs-rail-slot__search" data-fc-action="search" aria-label="Поиск" data-tip="Поиск"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7" /><path d="M21 21l-4.3-4.3" /></svg></button>
+      <div class="gbs-rail-speedrail" id="gbsRailSpeedrail" role="radiogroup" aria-label="Скорость озвучки">
+        <button class="gbs-rail-spd" type="button" role="radio" data-speed="1" aria-checked="true">1×</button>
+        <button class="gbs-rail-spd" type="button" role="radio" data-speed="1.25" aria-checked="false">1.25×</button>
+        <button class="gbs-rail-spd" type="button" role="radio" data-speed="1.5" aria-checked="false">1.5×</button>
+        <button class="gbs-rail-spd" type="button" role="radio" data-speed="1.75" aria-checked="false">1.75×</button>
+        <button class="gbs-rail-spd" type="button" role="radio" data-speed="2" aria-checked="false">2×</button>
+      </div>
+    </div>
+    <span class="gbs-rail-playwrap">
+      <PlayEmber audioState="none" class="gbs-rail-ember" tip="Озвучка" />
+      <button class="gbs-rail-spdbadge" id="gbsRailSpdBadge" type="button" aria-label="Выбрать скорость, сейчас 1×">1×</button>
+    </span>
+  </div>
 
   <div class="gbs2-rmid">
     {partsBefore.length > 0 && (
@@ -118,11 +140,146 @@ const partsAfter = currentIdx >= 0 ? GILL_SERIES_ITEMS.slice(currentIdx + 1) : [
   </div>
 
   <div class="gbs-rail-foot" data-fc-root data-fc-variant="gill" data-fc-mode="series-rich">
-    <button class="gbs-rail-foot__btn gb-theme-toggle" data-fc-action="theme" aria-label="Тема" data-tip="Тема"><span class="theme-icon-sun"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4.5" /><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41" /></svg></span><span class="theme-icon-moon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z" /></svg></span></button>
-    <button class="gbs-rail-foot__btn" data-fc-action="search" aria-label="Поиск" data-tip="Поиск"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7" /><path d="M21 21l-4.3-4.3" /></svg></button>
     <button class="gbs-rail-foot__btn gbs-rail-foot__btn--text" data-fc-action="font-down" aria-label="Уменьшить шрифт" data-tip="Меньше">A−</button>
     <button class="gbs-rail-foot__btn gbs-rail-foot__btn--text" data-fc-action="font-up" aria-label="Увеличить шрифт" data-tip="Больше">A+</button>
-    <GooPlayMini defs={false} standalone={false} class="gbs-rail-ember" tip="Озвучка" />
     <SaveButton class="gbs-rail-foot__btn" tip="Сохранить" />
   </div>
 </aside>
+
+<!-- Тема — вынесена из рейла на уровень хлебных крошек в колонке статьи.
+     Канон 1-в-1: та же разметка (.gb-icon.gb-theme-toggle — halo-ring, crossfade
+     sun/moon), тот же fixed top/right что и у .gb-floater--hermeneutics
+     (css/floating-cluster.css: "DO NOT invent calc formulas — use these exact
+     values": top:calc(clamp(24px,3.5vw,44px) - 4px); right:max(8.5vw,...)).
+     Не переизобретаю новый вид кружка — просто другой [data-fc-root] с той же
+     канонной кнопкой, не завязанной на gbs-rail-foot. -->
+<div class="gbs-theme-corner" data-fc-root data-fc-variant="gill" data-fc-mode="series-rich">
+  <button class="gb-icon gb-theme-toggle" data-fc-action="theme" aria-label="Тема" aria-pressed="false">
+    <span class="theme-icon-sun" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4.5" /><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41" /></svg></span>
+    <span class="theme-icon-moon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z" /></svg></span>
+  </button>
+</div>
+
+<script>
+  // Слот-свап скоростей в верхнем рейле — та же механика, что проверена на
+  // мобильном референсе (bar.html): openSpeeds/closeSpeeds, drag с отложенным
+  // setPointerCapture (чтобы обычный тап не промахивался мимо чипа), бейдж
+  // выбранной скорости на самом Play. НЕ дублирует применение скорости —
+  // читает/пишет те же ключи localStorage и тот же CustomEvent, что и
+  // канонная initPlayExpand() в floating-cluster-controller.js, так TTS-движок
+  // подхватывает выбор одинаково, откуда бы он ни пришёл.
+  (function () {
+    function initGillRailSpeedSlot(topbar) {
+      var ember = topbar.querySelector('.gbs-rail-ember');
+      var speedrail = topbar.querySelector('.gbs-rail-speedrail');
+      var badge = topbar.parentElement.querySelector('.gbs-rail-spdbadge');
+      if (!ember || !speedrail || !badge) return;
+      var chips = Array.prototype.slice.call(speedrail.querySelectorAll('.gbs-rail-spd'));
+      var offeredThisSession = false;
+      var closeTimer = null;
+
+      function fmt(r) { return String(r).replace(/\.0$/, '') + '×'; }
+      function readRate() {
+        try {
+          var r = parseFloat(localStorage.getItem('gb:audio:rate') || localStorage.getItem('gbx-tts-rate') || '1');
+          return (!isNaN(r) && r > 0) ? r : 1;
+        } catch (_) { return 1; }
+      }
+      function syncActive(rate) {
+        chips.forEach(function (c) {
+          var on = parseFloat(c.dataset.speed) === rate;
+          c.setAttribute('aria-checked', on ? 'true' : 'false');
+        });
+        badge.textContent = fmt(rate);
+        badge.setAttribute('aria-label', 'Выбрать скорость, сейчас ' + fmt(rate));
+      }
+      syncActive(readRate());
+
+      function open(autoClose) {
+        clearTimeout(closeTimer);
+        topbar.classList.add('speed-open');
+        var active = speedrail.querySelector('.gbs-rail-spd[aria-checked="true"]');
+        if (active) setTimeout(function () { active.scrollIntoView({ block: 'nearest', inline: 'center', behavior: 'auto' }); }, 20);
+        if (autoClose) closeTimer = setTimeout(close, 4500);
+      }
+      function close() {
+        clearTimeout(closeTimer);
+        topbar.classList.remove('speed-open');
+      }
+
+      // Первый свежий запуск (idle/complete → playing) один раз за сессию
+      // предлагает рельсу; повторный play/pause (resume) её не трогает.
+      var prevState = ember.dataset.state || 'idle';
+      new MutationObserver(function () {
+        var state = ember.dataset.state || 'idle';
+        if (state === 'playing' && (prevState === 'idle' || prevState === 'complete') && !offeredThisSession) {
+          offeredThisSession = true;
+          open(true);
+        }
+        prevState = state;
+      }).observe(ember, { attributes: true, attributeFilter: ['data-state'] });
+
+      badge.addEventListener('click', function (e) {
+        e.preventDefault();
+        e.stopPropagation();
+        topbar.classList.contains('speed-open') ? close() : open(false);
+      });
+
+      chips.forEach(function (chip) {
+        chip.addEventListener('click', function (e) {
+          e.stopPropagation();
+          var rate = parseFloat(chip.dataset.speed);
+          syncActive(rate);
+          badge.classList.remove('is-bump'); void badge.offsetWidth; badge.classList.add('is-bump');
+          try {
+            localStorage.setItem('gb:audio:rate', String(rate));
+            localStorage.setItem('gbx-tts-rate', String(rate));
+          } catch (_) {}
+          window.dispatchEvent(new CustomEvent('gb:tts-rate-change', { detail: { rate: rate } }));
+          setTimeout(close, 220);
+        });
+      });
+
+      window.addEventListener('gb:tts-rate-change', function (ev) {
+        var r = ev && ev.detail && ev.detail.rate;
+        if (typeof r === 'number' && !isNaN(r)) syncActive(r);
+      });
+
+      document.addEventListener('pointerdown', function (e) {
+        if (topbar.classList.contains('speed-open') && !topbar.contains(e.target)) close();
+      }, { passive: true });
+
+      // Drag-to-scroll: setPointerCapture только после реального сдвига, иначе
+      // обычный тап по чипу не долетает до его click-обработчика (тот самый
+      // баг, уже пойманный и исправленный на мобильном референсе).
+      var dragging = false, startX = 0, startScroll = 0, moved = false, pid = null;
+      speedrail.addEventListener('pointerdown', function (e) {
+        dragging = true; moved = false; startX = e.clientX; startScroll = speedrail.scrollLeft; pid = e.pointerId;
+      });
+      speedrail.addEventListener('pointermove', function (e) {
+        if (!dragging || e.pointerId !== pid) return;
+        var dx = e.clientX - startX;
+        if (!moved && Math.abs(dx) > 4) {
+          moved = true;
+          speedrail.classList.add('is-dragging');
+          try { speedrail.setPointerCapture(pid); } catch (_) {}
+        }
+        if (moved) speedrail.scrollLeft = startScroll - dx;
+      });
+      function endDrag(e) {
+        if (!dragging || (pid !== null && e.pointerId !== pid)) return;
+        dragging = false; pid = null;
+        speedrail.classList.remove('is-dragging');
+      }
+      speedrail.addEventListener('pointerup', endDrag);
+      speedrail.addEventListener('pointercancel', endDrag);
+      speedrail.addEventListener('click', function (e) { if (moved) { e.stopPropagation(); moved = false; } }, true);
+    }
+
+    function boot() {
+      document.querySelectorAll('.gbs-rail-topbar[data-gb-speed-custom]').forEach(initGillRailSpeedSlot);
+    }
+    if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot, { once: true });
+    else boot();
+  })();
+</script>
