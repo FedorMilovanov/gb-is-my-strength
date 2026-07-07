@@ -93,6 +93,8 @@
     right: max(4.5vw, env(safe-area-inset-right, 0px));
   }
 }
+/* Single-article (Hermeneutics) floater hover-shift lives OUTSIDE @layer
+   components (below) so it beats the unlayered base rules. */
 
 /* ---- GILL-A fix: prevent vertical text in gbs2-mobile-head on narrow screens ----
    gbs2-mobile-title gets squeezed to 0 by 4 control buttons (4×38px+gaps=~170px).
@@ -2185,6 +2187,20 @@ html.dark .gb-ember-expand__btn.is-active {
    Gill rail so the pill is narrow enough to sit fully within the panel. Stop is
    still reachable via long-press on the Play button (controller). */
 [data-gill-v16] .gb-ember-expand__stop { display: none; }
+
+/* Single-article (Hermeneutics) speed pill blooms LEFT out of the Play; on hover
+   the whole floater slides RIGHT toward the edge so the leftward pill opens into
+   the freed margin instead of covering the article (owner reference / DALL-E).
+   Also drop the Stop chip — the reference pill is 6 speeds only (Stop stays
+   reachable via long-press on Play). Unlayered so it beats the base btn rule. */
+.gb-floater .gb-ember-expand__stop { display: none; }
+.gb-floater--hermeneutics { transition: transform .42s cubic-bezier(.22, 1, .36, 1); }
+@media (hover: hover) and (pointer: fine) {
+  .gb-floater--hermeneutics:has(.gb-ember-wrap:hover),
+  .gb-floater--hermeneutics:has(.gb-ember-expand.is-open) {
+    transform: translateX(clamp(56px, 7vw, 104px));
+  }
+}
 
 /* === Mobile: pill above ember with blur backdrop (no side space) ===
    Per owner spec 2026-06-26: на mobile нет горизонтального места
