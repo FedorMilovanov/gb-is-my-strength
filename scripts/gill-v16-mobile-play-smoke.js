@@ -155,22 +155,46 @@ async function addFakeTts(context) {
   });
 }
 
-// Desktop Gill rail footer Play is the goo control (GooPlayMini, data-fc-action
-// "play" on .gbmini-play) since the leather/goo port; mobile bottom bar keeps
-// the classic .gb-ember unchanged. Both are driven by the same TTS engine via
-// data-fc-action="play" click delegation — setEmberState() still updates every
-// .gb-ember in the DOM (the mobile bar's node exists even when hidden by CSS on
-// desktop viewports), so allEmberStates() below keeps reading real engine state
-// regardless of which control is visible.
+// Desktop Gill rail Play moved from the rail footer into the rail topbar
+// (back + poиск⇄speed slot-swap + Play, see GillSeriesRail.astro
+// .gbs-rail-topbar) — the footer selectors are kept alongside the topbar ones
+// so this smoke still passes against either layout. That topbar also opts out
+// of the canonical .gb-ember-wrap/.gb-ember-expand speed bloom via
+// [data-gb-speed-custom] and drives its own .gbs-rail-spdbadge/
+// .gbs-rail-speedrail slot instead (dispatches the same gb:tts-rate-change
+// CustomEvent, so the TTS engine reacts identically either way). Mobile
+// bottom bar keeps the classic .gb-ember unchanged. All are driven by the
+// same TTS engine via data-fc-action="play" click delegation —
+// setEmberState() still updates every .gb-ember in the DOM (the mobile bar's
+// node exists even when hidden by CSS on desktop viewports), so
+// allEmberStates() below keeps reading real engine state regardless of which
+// control is visible.
 async function visibleEmber(page, mobile) {
-  const selector = mobile ? '.mobile-bottom-bar .gb-ember' : '.gbs-rail-foot .gb-ember, .gbs-rail-foot .gbmini-play';
+  const selector = mobile
+    ? '.mobile-bottom-bar .gb-ember'
+    : '.gbs-rail-topbar .gb-ember, .gbs-rail-foot .gb-ember, .gbs-rail-foot .gbmini-play';
   const loc = page.locator(selector).first();
   await loc.waitFor({ state: 'visible', timeout: 8000 });
   return loc;
 }
 async function emberIsGoo(ember) { return ember.evaluate(el => el.classList.contains('gbmini-play')); }
+async function emberIsCustomSpeedSlot(ember) { return ember.evaluate(el => !!el.closest('[data-gb-speed-custom]')); }
 async function allEmberStates(page) { return page.$$eval('.gb-ember', els => els.map(el => el.getAttribute('data-state') || '')); }
 async function clickSpeedNearEmber(ember, speed) {
+  const isCustom = await emberIsCustomSpeedSlot(ember);
+  if (isCustom) {
+    const clicked = await ember.evaluate((el, targetSpeed) => {
+      const topbar = el.closest('[data-gb-speed-custom]');
+      const badge = topbar && topbar.querySelector('.gbs-rail-spdbadge');
+      if (badge) badge.click();
+      const btn = topbar && topbar.querySelector(`.gbs-rail-spd[data-speed="${targetSpeed}"]`);
+      if (!btn) return false;
+      btn.click();
+      return true;
+    }, String(speed));
+    if (!clicked) throw new Error(`speed button ${speed} not found in custom speed slot`);
+    return;
+  }
   const clicked = await ember.evaluate((el, targetSpeed) => {
     const wrap = el.closest('.gb-ember-wrap') || el.closest('.gbmini');
     const btn = wrap && wrap.querySelector(`[data-speed="${targetSpeed}"]`);
@@ -374,6 +398,7 @@ async function testPlayState(browser, mobile) {
   const label = mobile ? 'mobile 390' : 'desktop 1440';
   const ember = await visibleEmber(page, mobile);
   const isGoo = await emberIsGoo(ember);
+  const isCustom = await emberIsCustomSpeedSlot(ember);
 
   await ember.click();
   await page.waitForTimeout(150);
@@ -393,12 +418,13 @@ async function testPlayState(browser, mobile) {
   assert(speedFacts.calls === callsBeforeSpeed + 1, `${label}: speed change while playing restarts exactly once`, JSON.stringify(speedFacts));
   assert(speedFacts.rates.at(-1) === 1.75, `${label}: speed change uses selected 1.75×`, JSON.stringify(speedFacts.rates));
 
-  // GooPlayMini (desktop Gill rail footer, post leather/goo port) intentionally
-  // has no stop affordance — matches the approved reference (play/pause toggle +
-  // speed only, no separate stop button). Mobile keeps the classic .gb-ember with
-  // its long-press-to-stop gesture (exercised below), so the stop/idle-speed
+  // GooPlayMini (desktop Gill rail footer, post leather/goo port) and the
+  // rail-topbar's custom speed slot (post topbar rework, [data-gb-speed-custom])
+  // both intentionally have no stop affordance — play/pause toggle + speed
+  // only, no separate stop button. Mobile keeps the classic .gb-ember with its
+  // long-press-to-stop gesture (exercised below), so the stop/idle-speed
   // assertions still run there.
-  if (!isGoo) {
+  if (!isGoo && !isCustom) {
     await clickStopNearEmber(ember);
     await page.waitForTimeout(150);
     assert((await allEmberStates(page)).every(s => s === 'idle'), `${label}: stop/reset -> idle`, JSON.stringify(await allEmberStates(page)));
@@ -406,7 +432,7 @@ async function testPlayState(browser, mobile) {
     assert(progress.every(p => p === '0'), `${label}: stop/reset clears progress`, JSON.stringify(progress));
   }
 
-  if (!mobile && !isGoo) {
+  if (!mobile && !isGoo && !isCustom) {
     const beforeIdleSpeed = await page.evaluate(() => window.__ttsFake.speakCalls);
     await ember.hover();
     await clickSpeedNearEmber(ember, '1.25');
