@@ -892,6 +892,50 @@ html.dark [data-gill-v16] .gb-theme-toggle .theme-icon-moon{opacity:1;transform:
   text-transform: uppercase !important;
 }
 
+/* ===== Кожаные закладки оглавления (leather bookmarks) =====
+   Ported from the approved scratchpad design — «Введение» / «Справочник» rows
+   render a physically-lit leather bookmark instead of a flat gold pill.
+   Sized down for the compact rail (owner: «с адаптацией размеров»). */
+[data-gill-v16] .gbs-rail-card:has(.gblr-ribbon){grid-template-columns:76px 1fr auto auto}
+[data-gill-v16] .gblr-ribbon{
+  position:relative;display:block;width:72px;height:92px;flex-shrink:0;
+  filter:drop-shadow(0 6px 11px rgba(0,0,0,.5)) drop-shadow(0 1.5px 2px rgba(0,0,0,.5));
+  transition:transform .34s cubic-bezier(.22,1,.36,1),filter .34s ease;
+}
+[data-gill-v16] .gbs-rail-card:has(.gblr-ribbon):hover .gblr-ribbon{transform:translateY(-1px)}
+[data-gill-v16] .gblr-ribbon__shape{position:absolute;inset:0;width:100%;height:100%;display:block}
+[data-gill-v16] .gblr-ribbon__text{
+  position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;
+  gap:4px;padding-top:9px;pointer-events:none;
+}
+[data-gill-v16] .gblr-ribbon__orn{color:#f2d191;filter:drop-shadow(0 1.5px 0 rgba(50,24,8,.7)) drop-shadow(0 -1px 0 rgba(255,235,190,.3))}
+[data-gill-v16] .gblr-ribbon__orn svg{width:16px;height:16px;fill:currentColor;display:block}
+[data-gill-v16] .gblr-ribbon__word{
+  font-family:var(--gb-font-serif,Lora,Georgia,serif);font-weight:700;font-size:8.5px;
+  letter-spacing:.06em;text-transform:uppercase;text-align:center;line-height:1.05;
+  color:transparent;background-image:linear-gradient(172deg,#fff2d2 8%,#eec886 48%,#c28a48 94%);
+  -webkit-background-clip:text;background-clip:text;
+  filter:drop-shadow(0 1px 0 rgba(40,18,6,.85)) drop-shadow(0 -.5px 0 rgba(255,238,200,.32));
+}
+[data-gill-v16] .gblr-ribbon__div{display:flex;align-items:center;gap:3px;color:rgba(242,209,145,.9)}
+[data-gill-v16] .gblr-ribbon__div::before,[data-gill-v16] .gblr-ribbon__div::after{content:'';width:11px;height:1px;background:rgba(242,209,145,.55)}
+[data-gill-v16] .gblr-ribbon__div i{width:3px;height:3px;border-radius:50%;background:rgba(242,209,145,.95);box-shadow:0 0 4px rgba(242,209,145,.55)}
+/* default (Введение) leather layer strengths */
+[data-gill-v16] .gblr-l-pores{opacity:.5}
+[data-gill-v16] .gblr-l-spec{opacity:.05}
+[data-gill-v16] .gblr-l-warm{opacity:.14}
+[data-gill-v16] .gblr-l-glaze{opacity:.06}
+/* reference (Справочник) — darker neutral-chocolate leather */
+[data-gill-v16] .gblr-ribbon--reference .gblr-l-pores{opacity:.36}
+[data-gill-v16] .gblr-ribbon--reference .gblr-l-spec{opacity:.022}
+[data-gill-v16] .gblr-ribbon--reference .gblr-l-warm{fill:#54291b;opacity:.06}
+[data-gill-v16] .gblr-ribbon--reference .gblr-l-glaze{opacity:.1}
+[data-gill-v16] .gblr-ribbon--reference .gblr-l-stitchlight{stroke-opacity:.66}
+[data-gill-v16] .gblr-ribbon--reference .gblr-ribbon__word{background-image:linear-gradient(172deg,#f7ecd0 8%,#e2c07c 48%,#b3814a 94%)}
+@media (prefers-reduced-motion: reduce){
+  [data-gill-v16] .gblr-ribbon{transition:none}
+}
+
 [data-gill-v16] .gbs-rail-card__info{min-width:0;display:flex;flex-direction:column;gap:1px}
 [data-gill-v16] .gbs-rail-card__info b{
   font-family:var(--gb-font-serif);font-size:13px;line-height:1.2;color:#eadfd1;
@@ -2111,14 +2155,20 @@ html.dark .gb-ember-expand__btn.is-active {
   z-index: 2;
 }
 
-/* === GBS Rail: pill expands UP (no horizontal space) === */
+/* === GBS Rail: pill expands UP, centred over the panel === */
 [data-gill-v16] .gb-ember-expand,
 [data-gill-v16] .gbs-rail-foot .gb-ember-expand {
   right: auto;
   left: 50%;
   top: auto;
   bottom: calc(100% + 8px);
-  transform: translateX(calc(-50% + var(--gb-ember-shift, 0px)));
+  /* The Play ember is the 5th of 6 footer icons, so it sits right-of-centre.
+     Centre the pill over the RAIL (not the off-centre Play) by shifting it left
+     by the ember→panel-centre offset (~0.264 × footer width). This makes the
+     speed pill bloom straight UP, symmetric over the panel, instead of leaking
+     right into the article column. */
+  --gb-pill-center: calc((clamp(272px,24vw,304px) - 16px) * 0.264);
+  transform: translateX(calc(-50% - var(--gb-pill-center) + var(--gb-ember-shift, 0px)));
   padding: 5px 8px;
   clip-path: circle(16px at 50% calc(100% - 16px));
 }
@@ -2126,6 +2176,10 @@ html.dark .gb-ember-expand__btn.is-active {
 [data-gill-v16] .gbs-rail-foot .gb-ember-expand.is-open {
   clip-path: inset(0 0 0 0 round 999px);
 }
+/* Reference speed pill is 6 speeds only — hide the extra Stop (■) chip on the
+   Gill rail so the pill is narrow enough to sit fully within the panel. Stop is
+   still reachable via long-press on the Play button (controller). */
+[data-gill-v16] .gb-ember-expand__stop { display: none; }
 
 /* === Mobile: pill above ember with blur backdrop (no side space) ===
    Per owner spec 2026-06-26: на mobile нет горизонтального места
