@@ -1092,6 +1092,10 @@ html.dark [data-gill-v16] .gbs2-kinetic{-webkit-text-stroke:1px rgba(216,176,104
 }
 [data-gill-v16] .gbs-rail-foot__btn--text{font-family:var(--gb-font-serif);font-size:13px;font-weight:700;line-height:1;letter-spacing:-.02em}
 [data-gill-v16] .gbs-rail-foot .gb-ember{--ember-size:32px;--ring-color:var(--gb-accent-gold-bright,#d8aa6d);color:#c4a882}
+/* Goo Play (closed disc) replaces the ember in the rail footer — the primary
+   listen action, sized a touch larger than the neighbour icons so it reads as
+   the main control. Speeds live on the big top Play (SpeedBloom). */
+[data-gill-v16] .gbs-rail-foot .gbmini{--gbmini-size:42px}
 [data-gill-v16] .gbs-rail-foot .gb-ember__ring-track{stroke:rgba(232,184,120,.22)}
 [data-gill-v16] .gbs-rail-foot .gb-ember__ring-progress{stroke-width:1.5}
 [data-gill-v16] .gbs-rail-foot .gb-save{width:32px;height:32px;color:#c4a882}
@@ -2194,10 +2198,16 @@ html.dark .gb-ember-expand__btn.is-active {
    Also drop the Stop chip — the reference pill is 6 speeds only (Stop stays
    reachable via long-press on Play). Unlayered so it beats the base btn rule. */
 .gb-floater .gb-ember-expand__stop { display: none; }
+/* Goo Play (closed disc) in the single-article floating cluster — sized a touch
+   larger than the 40px icons so the listen action reads as primary. */
+.gb-floater .gbmini { --gbmini-size: 44px; }
 .gb-floater--hermeneutics { transition: transform .42s cubic-bezier(.22, 1, .36, 1); }
 @media (hover: hover) and (pointer: fine) {
   .gb-floater--hermeneutics:has(.gb-ember-wrap:hover),
-  .gb-floater--hermeneutics:has(.gb-ember-expand.is-open) {
+  .gb-floater--hermeneutics:has(.gb-ember-expand.is-open),
+  /* goo Play blooms LEFT — slide the whole cluster right so the pill has room
+     and doesn't hug the viewport edge (owner DALL-E spec). */
+  .gb-floater--hermeneutics:has(.gbmini.sb-open) {
     transform: translateX(clamp(56px, 7vw, 104px));
   }
 }

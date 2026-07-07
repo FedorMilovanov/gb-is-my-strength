@@ -1,0 +1,221 @@
+---
+/**
+ * GooPlayMini — the small persistent goo Play, ported from the approved
+ * scratchpad "vert" variant (speed-bloom.html): a closed Play circle that, on
+ * hover/focus, seamlessly blooms the 6-speed pill UP out of the circle (metaball
+ * goo merge, one SVG silhouette, gold contour drawn by the feMorphology filter).
+ * The circle carries the play/pause icon + current speed label; the pill flows up
+ * above it and overflows the row, so the CLOSED footprint stays just the circle.
+ *
+ * Used for the Gill series rail footer and the single-article floating cluster.
+ * Day palette default; html.dark swaps to night. Reuses the gbsb-* goo filter
+ * from SpeedBloomDefs (pass defs={false} when a SpeedBloom already owns them).
+ *
+ * Wiring: .gbmini-play carries data-fc-action="play" so the cluster/root click
+ * delegation drives play; chips dispatch gb:tts-rate-change; icon + progress ring
+ * mirror the controller's gb:tts-state broadcast. standalone={false} skips the
+ * nested [data-fc-root] when it lives inside an existing cluster.
+ */
+import SpeedBloomDefs from './SpeedBloomDefs.astro';
+interface Props {
+  class?: string;
+  defs?: boolean;
+  tip?: string;
+  standalone?: boolean;
+  /** Bloom direction: 'up' (series footer) grows the pill upward; 'left'
+      (right-edge floating cluster) grows it leftward. */
+  direction?: 'up' | 'left';
+}
+const { class: className = '', defs = false, tip = 'Озвучка', standalone = true, direction = 'up' } = Astro.props;
+const speeds = [0.75, 1, 1.25, 1.5, 1.75, 2];
+const active = 1;
+const rootAttrs = standalone
+  ? { 'data-fc-root': true, 'data-fc-variant': 'single', 'data-fc-mode': 'single' }
+  : {};
+---
+<div class:list={['gbmini', `gbmini--${direction}`, className]} {...rootAttrs} data-pagefind-ignore role="group" aria-label="Озвучка статьи">
+  <div class="gbmini-bloom" data-sb-hover>
+    {direction === 'left'
+      ? <svg class="gbmini-sil" viewBox="0 0 620 112" aria-hidden="true"><g filter="url(#gbsb-goo)"><rect class="gbmini-bar" x="0" y="24" width="520" height="64" rx="32"></rect><circle class="gbmini-disc" cx="575" cy="56" r="45"></circle></g></svg>
+      : <svg class="gbmini-sil" viewBox="0 0 430 132" aria-hidden="true"><g filter="url(#gbsb-goo)"><rect class="gbmini-bar" x="0" y="0" width="430" height="60" rx="30"></rect><circle class="gbmini-disc" cx="215" cy="78" r="38"></circle></g></svg>}
+    <div class="gbmini-content">
+      <div class="gbmini-chips" role="radiogroup" aria-label="Скорость озвучки">
+        {speeds.map((s) => (
+          <button class:list={['gbmini-chip', s === active && 'gbmini-on']} type="button" role="radio" data-speed={s} aria-checked={s === active ? 'true' : 'false'} aria-label={`Скорость ${s}×`}>{s}×</button>
+        ))}
+      </div>
+      <button class="gbmini-play" type="button" data-fc-action="play" aria-label={tip} data-tip={tip} aria-haspopup="true">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path class="sb-ic-play" d="M7 4.6v14.8L19 12 7 4.6z"></path><g class="sb-ic-pause"><rect x="7" y="5" width="3.4" height="14" rx="1.2"></rect><rect x="13.6" y="5" width="3.4" height="14" rx="1.2"></rect></g></svg>
+      </button>
+    </div>
+  </div>
+  {defs && <SpeedBloomDefs />}
+</div>
+
+<style is:global>
+  /* ===== GooPlayMini — small goo Play, blooms UP (footer / floating) ===== */
+  /* --gbmini-size is the CLOSED circle diameter; the bloom overflows above it. */
+  .gbmini{--gbmini-size:46px;position:relative;display:inline-block;
+    width:var(--gbmini-size);height:var(--gbmini-size);overflow:visible;line-height:0;vertical-align:middle}
+  /* Bloom box carries the full silhouette (bar top + disc bottom-centre); it is
+     absolutely placed so the disc sits over the .gbmini slot, the bar overflows up.
+     Ratios come from the 430×132 viewBox, disc r38 @ (215,78):
+       w=430/76·S  h=132/76·S  left=S/2−215/76·S  top=S/2−78/76·S            */
+  .gbmini-bloom{position:absolute;pointer-events:none;
+    width:calc(var(--gbmini-size) * 5.6579);
+    height:calc(var(--gbmini-size) * 1.7368);
+    left:calc(var(--gbmini-size) * -2.3289);
+    top:calc(var(--gbmini-size) * -0.5263)}
+  .gbmini-sil{position:absolute;inset:0;width:100%;height:100%;overflow:visible;
+    filter:drop-shadow(0 7px 14px rgba(120,85,40,.24)) drop-shadow(0 2px 5px rgba(120,85,40,.16))}
+  html.dark .gbmini-sil{filter:drop-shadow(0 7px 14px rgba(0,0,0,.5)) drop-shadow(0 2px 5px rgba(0,0,0,.4))}
+  .gbmini-bar,.gbmini-disc{fill:url(#gbsb-surf-day)}
+  html.dark .gbmini-bar,html.dark .gbmini-disc{fill:url(#gbsb-surf-night)}
+  .gbmini-bar{transform-box:view-box;transform-origin:215px 78px;transform:scale(.14);
+    transition:transform .52s cubic-bezier(.3,1.24,.4,1)}
+  .gbmini.sb-open .gbmini-bar{transform:scale(1)}
+  .gbmini-content{position:absolute;inset:0;pointer-events:none}
+  /* chips row lives across the bar (top strip of the viewBox) */
+  .gbmini-chips{position:absolute;left:0;right:0;top:0;height:calc(var(--gbmini-size) * .789);
+    display:flex;align-items:center;justify-content:center;gap:5px;padding:0 calc(var(--gbmini-size) * .35)}
+  .gbmini-chip{border:1px solid rgba(150,110,60,.35);border-radius:11px;background:linear-gradient(180deg,#fffdf6,#f6ecd9);
+    font-family:var(--f-ui,'Source Sans 3',system-ui,sans-serif);font-size:11px;font-weight:700;padding:5px 7px;color:#5a452a;
+    cursor:pointer;pointer-events:auto;white-space:nowrap;opacity:0;transform:translateY(10px) scale(.82);
+    transition:opacity .26s ease,transform .4s cubic-bezier(.3,1.4,.4,1),background .25s,color .25s,border-color .25s;
+    -webkit-tap-highlight-color:transparent}
+  html.dark .gbmini-chip{border-color:rgba(232,190,120,.22);background:linear-gradient(180deg,#332a20,#241d15);color:#d8c8a8}
+  .gbmini-chip.gbmini-on{background:linear-gradient(160deg,#d5ab6d,#b98a4e);color:#fff;border-color:transparent;
+    box-shadow:0 3px 9px rgba(160,115,55,.35),inset 0 1px 0 rgba(255,255,255,.45)}
+  html.dark .gbmini-chip.gbmini-on{background:linear-gradient(160deg,#dbb173,#a97f45);color:#241708;
+    box-shadow:0 3px 10px rgba(0,0,0,.5),inset 0 1px 0 rgba(255,240,200,.55),0 0 14px -2px rgba(219,177,115,.4)}
+  @media(hover:hover) and (pointer:fine){.gbmini-chip:hover:not(.gbmini-on){transform:translateY(-1px) scale(1.05)}}
+  .gbmini-chip:focus-visible{outline:0;box-shadow:0 0 0 3px rgba(255,255,255,.95),0 0 0 5px #b8863f}
+  .gbmini.sb-open .gbmini-chip{opacity:1;transform:none}
+  .gbmini.sb-open .gbmini-chips .gbmini-chip:nth-child(1){transition-delay:.12s}
+  .gbmini.sb-open .gbmini-chips .gbmini-chip:nth-child(2){transition-delay:.17s}
+  .gbmini.sb-open .gbmini-chips .gbmini-chip:nth-child(3){transition-delay:.22s}
+  .gbmini.sb-open .gbmini-chips .gbmini-chip:nth-child(4){transition-delay:.27s}
+  .gbmini.sb-open .gbmini-chips .gbmini-chip:nth-child(5){transition-delay:.32s}
+  .gbmini.sb-open .gbmini-chips .gbmini-chip:nth-child(6){transition-delay:.37s}
+  /* the Play circle sits over the disc (bottom-centre of the bloom) */
+  .gbmini-play{position:absolute;left:50%;top:calc(var(--gbmini-size) * .5263);
+    width:var(--gbmini-size);height:var(--gbmini-size);margin-left:calc(var(--gbmini-size) / -2);
+    border:0;background:transparent;border-radius:50%;display:grid;place-items:center;overflow:visible;
+    pointer-events:auto;cursor:pointer}
+  .gbmini-play::before{content:'';position:absolute;inset:0;border-radius:50%;
+    background:radial-gradient(14% 11% at 37% 40%, rgba(255,255,255,.8), transparent 100%),
+               radial-gradient(60% 55% at 40% 34%, rgba(255,255,255,.85), transparent 70%),
+               radial-gradient(75% 60% at 50% 100%, rgba(150,110,60,.16), transparent 72%)}
+  html.dark .gbmini-play::before{
+    background:radial-gradient(14% 11% at 37% 40%, rgba(255,245,220,.16), transparent 100%),
+               radial-gradient(60% 55% at 40% 34%, rgba(255,235,190,.1), transparent 70%),
+               radial-gradient(75% 60% at 50% 100%, rgba(0,0,0,.3), transparent 72%)}
+  .gbmini-play::after{content:'';position:absolute;inset:11%;border-radius:50%;
+    border:1px solid rgba(150,110,60,.3);box-shadow:inset 0 1px 1px rgba(255,255,255,.55)}
+  html.dark .gbmini-play::after{border-color:rgba(223,177,115,.28);box-shadow:inset 0 1px 1px rgba(255,235,190,.12)}
+  .gbmini-play svg:not(.gbmini-ringsvg){width:calc(var(--gbmini-size) * .42);height:calc(var(--gbmini-size) * .42);
+    fill:#7a5a30;transform:translateX(1px);position:relative;transition:transform .3s}
+  html.dark .gbmini-play svg:not(.gbmini-ringsvg){fill:#e6c286}
+  .gbmini.sb-open .gbmini-play svg:not(.gbmini-ringsvg){transform:translateX(1px) scale(1.06)}
+  .gbmini-play:focus-visible{outline:0;box-shadow:0 0 0 3px rgba(255,255,255,.95),0 0 0 5px #b8863f}
+  .gbmini .sb-ic-pause{display:none;fill:currentColor}
+  .gbmini.sb-playing .sb-ic-play{display:none}
+  .gbmini.sb-playing .sb-ic-pause{display:block}
+  .gbmini-ringsvg{position:absolute;inset:4%;pointer-events:none;overflow:visible}
+  .gbmini-prog{fill:none;stroke:#c39a5e;stroke-width:3.4;stroke-linecap:round;stroke-dasharray:100 100;stroke-dashoffset:100;opacity:0;transition:opacity .4s,stroke-dashoffset .3s linear;filter:drop-shadow(0 0 3px rgba(195,154,94,.45))}
+  html.dark .gbmini-prog{stroke:#dfb173;filter:drop-shadow(0 0 3px rgba(223,177,115,.5))}
+  .gbmini.sb-playing .gbmini-prog{opacity:1}
+  .gbmini-spd{font-family:var(--f-ui,'Source Sans 3',system-ui,sans-serif);font-weight:700;
+    font-size:10.5px;letter-spacing:.04em;fill:rgba(122,90,48,.8)}
+  html.dark .gbmini-spd{fill:rgba(223,177,115,.85)}
+
+  /* ===== direction: LEFT (right-edge floating cluster) — pill grows leftward =====
+     Geometry from the 620×112 viewBox (wide bar so 6 chips fit), disc r45 @ (575,56):
+       w=620/90·S  h=112/90·S  left=S/2−575/90·S  top=S/2−56/90·S            */
+  .gbmini--left .gbmini-bloom{
+    width:calc(var(--gbmini-size) * 6.8889);
+    height:calc(var(--gbmini-size) * 1.2444);
+    left:calc(var(--gbmini-size) * -5.8889);
+    top:calc(var(--gbmini-size) * -0.1222)}
+  .gbmini--left .gbmini-bar{transform-origin:575px 56px}
+  .gbmini--left .gbmini-chips{left:0;right:auto;top:calc(var(--gbmini-size) * .2667);
+    height:calc(var(--gbmini-size) * .7111);width:calc(var(--gbmini-size) * 5.7778);
+    justify-content:flex-start;padding:0 calc(var(--gbmini-size) * .3) 0 calc(var(--gbmini-size) * .25)}
+  .gbmini--left .gbmini-play{left:calc(var(--gbmini-size) * 5.8889);top:calc(var(--gbmini-size) * .1222);margin-left:0}
+  /* chips nearest the circle flow out first (rightmost → leftmost) */
+  .gbmini--left.sb-open .gbmini-chips .gbmini-chip:nth-child(6){transition-delay:.08s}
+  .gbmini--left.sb-open .gbmini-chips .gbmini-chip:nth-child(5){transition-delay:.12s}
+  .gbmini--left.sb-open .gbmini-chips .gbmini-chip:nth-child(4){transition-delay:.16s}
+  .gbmini--left.sb-open .gbmini-chips .gbmini-chip:nth-child(3){transition-delay:.20s}
+  .gbmini--left.sb-open .gbmini-chips .gbmini-chip:nth-child(2){transition-delay:.24s}
+  .gbmini--left.sb-open .gbmini-chips .gbmini-chip:nth-child(1){transition-delay:.28s}
+
+  @media(prefers-reduced-motion:reduce){.gbmini-bar,.gbmini-chip,.gbmini-play svg{transition:none!important}}
+</style>
+
+<script>
+  const NS = 'http://www.w3.org/2000/svg';
+  function readRate(){
+    try {
+      const r = parseFloat(localStorage.getItem('gb:audio:rate') || localStorage.getItem('gbx-tts-rate') || '1');
+      return (!isNaN(r) && r > 0) ? r : 1;
+    } catch(_){ return 1; }
+  }
+  function fmt(r: number){ return String(r) + '×'; }
+  function initMini(root: HTMLElement){
+    const bloom = root.querySelector('.gbmini-bloom') as HTMLElement | null;
+    const play = root.querySelector('.gbmini-play') as HTMLElement | null;
+    if(!bloom || !play) return;
+    const fine = () => matchMedia('(hover:hover) and (pointer:fine)').matches;
+    let t: number | undefined;
+    const open = () => { clearTimeout(t); root.classList.add('sb-open'); };
+    const close = () => { t = window.setTimeout(() => root.classList.remove('sb-open'), 240); };
+    root.addEventListener('mouseenter', () => { if(fine()) open(); });
+    root.addEventListener('mouseleave', () => { if(fine()) close(); });
+    play.addEventListener('focus', open);
+    play.addEventListener('blur', close);
+    // curved speed label + progress ring inside the circle
+    const svg = document.createElementNS(NS,'svg');
+    svg.setAttribute('class','gbmini-ringsvg'); svg.setAttribute('viewBox','0 0 100 100');
+    const c = document.createElementNS(NS,'circle'); c.setAttribute('class','gbmini-prog');
+    c.setAttribute('cx','50'); c.setAttribute('cy','50'); c.setAttribute('r','45'); c.setAttribute('pathLength','100');
+    const arc = document.createElementNS(NS,'path'); const pid = 'gbmarc'+Math.round(root.getBoundingClientRect().top||0)+'-'+(root.dataset.fcVariant||'x');
+    arc.setAttribute('id',pid); arc.setAttribute('d','M22,60 A32,32 0 0 0 78,60'); arc.setAttribute('fill','none');
+    const txt = document.createElementNS(NS,'text'); txt.setAttribute('class','gbmini-spd');
+    const tp = document.createElementNS(NS,'textPath'); tp.setAttribute('href','#'+pid); tp.setAttribute('startOffset','50%'); tp.setAttribute('text-anchor','middle');
+    // reflect the stored rate on the closed circle + the matching active chip
+    const rate0 = readRate();
+    tp.textContent = fmt(rate0);
+    txt.appendChild(tp); svg.append(c,arc,txt); play.appendChild(svg);
+    const chips = Array.prototype.slice.call(root.querySelectorAll('.gbmini-chip')) as HTMLElement[];
+    const syncActive = (rate: number) => {
+      chips.forEach((x) => {
+        const on = parseFloat(x.dataset.speed || '1') === rate;
+        x.classList.toggle('gbmini-on', on); x.setAttribute('aria-checked', on ? 'true' : 'false');
+      });
+      tp.textContent = fmt(rate);
+    };
+    syncActive(rate0);
+    // chip select → live TTS rate
+    chips.forEach((ch) => ch.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const rate = parseFloat(ch.dataset.speed || '1');
+      syncActive(rate);
+      try { localStorage.setItem('gb:audio:rate', String(rate)); localStorage.setItem('gbx-tts-rate', String(rate)); } catch(_){}
+      window.dispatchEvent(new CustomEvent('gb:tts-rate-change', { detail:{ rate } }));
+    }));
+    // keep in sync when the big top Play changes speed
+    window.addEventListener('gb:tts-rate-change', (ev: any) => {
+      const r = ev && ev.detail && ev.detail.rate;
+      if(typeof r === 'number' && !isNaN(r)) syncActive(r);
+    });
+    // mirror play/pause + progress from the controller broadcast
+    window.addEventListener('gb:tts-state', (ev: any) => {
+      const d = ev && ev.detail || {};
+      const st = d.state;
+      root.classList.toggle('sb-playing', st === 'playing' || st === 'paused' || st === 'loading');
+      if(typeof d.progress === 'number' && !isNaN(d.progress)) c.setAttribute('stroke-dashoffset', String(Math.max(0, 100 - d.progress * 100)));
+    });
+  }
+  document.querySelectorAll('.gbmini').forEach((el) => initMini(el as HTMLElement));
+</script>
