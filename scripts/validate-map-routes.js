@@ -22,6 +22,19 @@ function readJson(file) {
 function rel(file) { return path.relative(ROOT, file).replace(/\\/g, '/'); }
 function isFiniteNum(v) { return typeof v === 'number' && Number.isFinite(v); }
 function ids(arr) { return new Set((arr || []).map(x => x && x.id).filter(Boolean)); }
+function findDuplicateIds(items) {
+  const seen = new Set();
+  const dups = [];
+  for (const x of items || []) {
+    if (!x || !x.id) continue;
+    if (seen.has(x.id)) {
+      if (!dups.includes(x.id)) dups.push(x.id);
+    } else {
+      seen.add(x.id);
+    }
+  }
+  return dups;
+}
 function countPhotos(places) {
   return (places || []).reduce((sum, p) => sum + (Array.isArray(p.photos) ? p.photos.length : 0), 0);
 }
@@ -101,9 +114,13 @@ function validateRoute(file) {
   if (!stories.length) bad(`${label}: stories[] empty/missing`);
 
   const placeIds = ids(places);
-  if (placeIds.size !== places.length) bad(`${label}: duplicate or missing place ids`);
+  const placeDups = findDuplicateIds(places);
+  if (placeDups.length) bad(`${label}: duplicate place ids: ${placeDups.join(', ')}`);
+  else if (placeIds.size !== places.length) bad(`${label}: place with missing id`);
   const storyIds = ids(stories);
-  if (storyIds.size !== stories.length) bad(`${label}: duplicate or missing story ids`);
+  const storyDups = findDuplicateIds(stories);
+  if (storyDups.length) bad(`${label}: duplicate story ids: ${storyDups.join(', ')}`);
+  else if (storyIds.size !== stories.length) bad(`${label}: story with missing id`);
 
   places.forEach((p, i) => {
     const where = `${label}: places[${i}] ${p?.id || '(no id)'}`;

@@ -1,6 +1,7 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://gospod-bog.ru/karty/_shared/route.schema.json",
+  "$comment": "places[].id must be unique within a single route. Validated at runtime by scripts/validate-map-routes.js (findDuplicateIds). JSON Schema 2020-12 has no built-in 'unique by property' keyword — schema-level uniqueItems: true checks deep equality, not what we need.",
   "title": "GB Historical Map Route",
   "type": "object",
   "required": ["meta", "stories", "places", "stages"],
