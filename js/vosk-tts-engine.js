@@ -272,12 +272,65 @@
     });
   }
 
+  // Century references ("XIX век") are grammatically ORDINAL ("девятнадцатый
+  // век"/nineteenth century), not cardinal — expandRomanNumerals() above
+  // only produces a cardinal reading ("19 век"/"nineteen century"), audibly
+  // wrong. This covers the one bounded, common pattern: a Roman numeral
+  // immediately followed by "век" in one of its 5 singular case forms
+  // (masculine adjective agreement — "века" is treated as singular
+  // genitive, the far more common reading vs. a plural-range "XIX-XX века",
+  // which this doesn't special-case and falls through to the cardinal
+  // reading above instead — still an improvement over the number vanishing
+  // entirely, just not grammatically perfect for that narrower case).
+  var ORDINAL_UNITS = ['', 'первый', 'второй', 'третий', 'четвёртый', 'пятый', 'шестой', 'седьмой', 'восьмой', 'девятый'];
+  var ORDINAL_TEENS = ['десятый', 'одиннадцатый', 'двенадцатый', 'тринадцатый', 'четырнадцатый', 'пятнадцатый', 'шестнадцатый', 'семнадцатый', 'восемнадцатый', 'девятнадцатый'];
+  var ORDINAL_TENS = { 2: 'двадцатый', 3: 'тридцатый', 4: 'сороковой', 5: 'пятидесятый', 6: 'шестидесятый', 7: 'семидесятый', 8: 'восьмидесятый', 9: 'девяностый' };
+  var CARDINAL_TENS = { 2: 'двадцать', 3: 'тридцать', 4: 'сорок', 5: 'пятьдесят', 6: 'шестьдесят', 7: 'семьдесят', 8: 'восемьдесят', 9: 'девяносто' };
+  var VEK_CASE = { 'век': 'nom', 'века': 'gen', 'веку': 'dat', 'веком': 'instr', 'веке': 'prep' };
+  function ordinalNominative(n) {
+    if (n <= 0 || n > 99) return null;
+    if (n < 10) return ORDINAL_UNITS[n];
+    if (n < 20) return ORDINAL_TEENS[n - 10];
+    var tens = Math.floor(n / 10), units = n % 10;
+    if (units === 0) return ORDINAL_TENS[tens];
+    return CARDINAL_TENS[tens] + ' ' + ORDINAL_UNITS[units];
+  }
+  // "третий" (3rd) is the one irregular masculine ordinal (soft possessive-
+  // type declension); every other ordinal is a regular hard adjective —
+  // strip its nominative -ый/-ой ending and append the target case's suffix.
+  function declineOrdinal(phrase, caseCode) {
+    if (caseCode === 'nom' || !caseCode) return phrase;
+    var parts = phrase.split(' ');
+    var last = parts[parts.length - 1];
+    var declined;
+    if (last === 'третий') {
+      declined = { gen: 'третьего', dat: 'третьему', instr: 'третьим', prep: 'третьем' }[caseCode] || last;
+    } else {
+      declined = last.slice(0, -2) + ({ gen: 'ого', dat: 'ому', instr: 'ым', prep: 'ом' }[caseCode] || '');
+    }
+    parts[parts.length - 1] = declined;
+    return parts.join(' ');
+  }
+  function expandCenturyOrdinals(text) {
+    // [а-яё]* (not \w*) after "век" — JS regex \b/\w don't recognize
+    // Cyrillic as "word" characters, so \b never fires at a Cyrillic
+    // boundary and \w* never matches Cyrillic suffix letters at all.
+    return text.replace(/\b([IVXLCDM]{1,7})(\s+)(век[а-яё]*)/g, function (whole, roman, sp, vekForm) {
+      var n = romanToArabic(roman);
+      if (n === null || n <= 0 || n > 99 || arabicToRoman(n) !== roman) return whole;
+      var nomOrdinal = ordinalNominative(n);
+      if (!nomOrdinal) return whole;
+      var caseCode = VEK_CASE[vekForm.toLowerCase()] || 'nom';
+      return declineOrdinal(nomOrdinal, caseCode) + sp + vekForm;
+    });
+  }
+
   function expandSiteAbbreviations(text) {
     var out = text;
     for (var i = 0; i < SITE_ABBREVIATIONS.length; i++) {
       out = out.split(SITE_ABBREVIATIONS[i][0]).join(SITE_ABBREVIATIONS[i][1]);
     }
-    return expandRomanNumerals(out);
+    return expandRomanNumerals(expandCenturyOrdinals(out));
   }
 
   // Words vosk-tts's own dictionary doesn't know get NO stress at all
