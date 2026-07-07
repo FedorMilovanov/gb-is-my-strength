@@ -2845,6 +2845,12 @@ html.dark [data-gill-v16] .mobile-top-bar {
     --gill-mobile-bar-gold: #7d5a2f;
     --gill-mobile-track: rgba(125,90,47,.24);
     --gill-mobile-fill: linear-gradient(90deg, #7d5a2f, #b8936a);
+    /* Кольцо dual-progress: статья (внутр.) и серия (внешн.) должны
+       различаться визуально — --gill-mobile-bar-accent/-gold СОВПАДАЮТ
+       в dark (см. ниже), поэтому для колец нужен отдельный, реально
+       различимый в обеих темах паричик цветов, а не переиспользование
+       этих двух токенов «как есть». */
+    --gill-ring-article: #9c3a3a;
   }
 
   html.dark {
@@ -2857,6 +2863,7 @@ html.dark [data-gill-v16] .mobile-top-bar {
     --gill-mobile-bar-gold: #eed093;
     --gill-mobile-track: rgba(238,208,147,.22);
     --gill-mobile-fill: linear-gradient(90deg, #eed093, #c59b58);
+    --gill-ring-article: #e2735c;
   }
 
   :root { --gill-mobile-topbar-h: 58px; }
@@ -3105,10 +3112,15 @@ html.dark [data-gill-v16] .mobile-top-bar {
     --ring-color: var(--gill-mobile-bar-gold) !important;
     color: var(--gill-mobile-bar-gold) !important;
   }
+  /* Позиция бейджа — точно как в референсе (.play-speed: right:-3px;
+     bottom:-2px), НЕ top-right: тот вариант был скопирован по инерции с
+     десктопного рейла (.gbs-rail-spdbadge), где верх понадобился из-за
+     другого бага на другой геометрии — здесь это ничем не обосновано и
+     просто расходится с образцом. */
   [data-gill-v16] .mobile-spdbadge {
     position: absolute !important;
-    top: -3px !important;
     right: -3px !important;
+    bottom: -2px !important;
     min-width: 20px !important;
     height: 16px !important;
     padding: 0 4px !important;
@@ -3157,7 +3169,7 @@ html.dark [data-gill-v16] .mobile-top-bar {
   [data-gill-v16] .bar-series-track { stroke: var(--gill-mobile-track) !important; stroke-width: 1.7 !important; opacity: .8 !important; }
   [data-gill-v16] .bar-series-fill { stroke: var(--gill-mobile-bar-gold) !important; stroke-width: 1.9 !important; stroke-linecap: round !important; transition: stroke-dashoffset .24s linear !important; }
   [data-gill-v16] .bar-progress-track { stroke: var(--gill-mobile-track) !important; stroke-width: 2.6 !important; opacity: .85 !important; }
-  [data-gill-v16] .bar-progress-fill { stroke: var(--gill-mobile-bar-accent) !important; stroke-width: 2.8 !important; stroke-linecap: round !important; transition: stroke-dashoffset .15s linear !important; }
+  [data-gill-v16] .bar-progress-fill { stroke: var(--gill-ring-article) !important; stroke-width: 2.8 !important; stroke-linecap: round !important; transition: stroke-dashoffset .15s linear !important; }
   [data-gill-v16] .bar-progress-text {
     position: absolute !important;
     inset: 0 !important;
@@ -3168,7 +3180,7 @@ html.dark [data-gill-v16] .mobile-top-bar {
     font-size: 9px !important;
     font-weight: 800 !important;
     letter-spacing: -.02em !important;
-    color: var(--gill-mobile-bar-accent) !important;
+    color: var(--gill-ring-article) !important;
     pointer-events: none !important;
     font-variant-numeric: tabular-nums !important;
   }
