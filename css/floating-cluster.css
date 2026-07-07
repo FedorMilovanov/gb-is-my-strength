@@ -862,7 +862,12 @@ html.dark [data-gill-v16] .gb-theme-toggle .theme-icon-moon{opacity:1;transform:
   color:var(--gb-accent-gold-bright);
   text-shadow:0 0 12px rgba(216,170,109,.35);
 }
-[data-gill-v16] .gb-series-mark--label {
+/* :not(.gbs2-kinetic) — the big ghost-outline hero word mark («Введение» /
+   «Справ.») must keep its own transparent/stroke-only look from .gbs2-kinetic;
+   without this exclusion it also matches here and gets a small solid-gold
+   pill's background/border/padding forced onto its huge kinetic font-size,
+   rendering as a giant broken orange capsule over the hero. */
+[data-gill-v16] .gb-series-mark--label:not(.gbs2-kinetic) {
   min-width: 42px;
   padding: 3px 7px;
   border-radius: 999px;
@@ -879,8 +884,8 @@ html.dark [data-gill-v16] .gb-theme-toggle .theme-icon-moon{opacity:1;transform:
   text-shadow: none;
 }
 
-[data-gill-v16] .gb-series-mark--label.gbs-rail-card__num,
-[data-gill-v16] .gb-series-mark--label.toc-item__num {
+[data-gill-v16] .gb-series-mark--label.gbs-rail-card__num:not(.gblr-ribbon),
+[data-gill-v16] .gb-series-mark--label.toc-item__num:not(.gblr-ribbon) {
   width: auto !important;
   min-width: 64px !important;
   height: auto !important;
