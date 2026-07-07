@@ -2915,10 +2915,9 @@ html.dark [data-gill-v16] .mobile-top-bar {
     z-index: 2147483000 !important;
     min-height: var(--gill-mobile-bar-h) !important;
     box-sizing: border-box !important;
-    display: grid !important;
-    grid-template-columns: 48px minmax(0, 1fr) 52px max-content !important;
+    display: flex !important;
     align-items: center !important;
-    gap: 8px !important;
+    gap: 6px !important;
     padding: 9px 10px 8px !important;
     border-radius: 18px !important;
     border: 1px solid var(--gill-mobile-bar-border) !important;
@@ -2956,10 +2955,10 @@ html.dark [data-gill-v16] .mobile-top-bar {
     box-shadow: none !important;
   }
 
-  [data-gill-v16] .mobile-toc-btn,
   [data-gill-v16] .mobile-btoc-section,
-  [data-gill-v16] .mobile-icon-row .gb-icon,
-  [data-gill-v16] .mobile-icon-row .gb-ember {
+  [data-gill-v16] .mobile-bottom-bar > .gb-icon,
+  [data-gill-v16] .mobile-bottom-bar > .mobile-font-btn,
+  [data-gill-v16] .bar-progress.dual-progress {
     position: relative !important;
     z-index: 1 !important;
   }
@@ -3003,17 +3002,53 @@ html.dark [data-gill-v16] .mobile-top-bar {
     position: relative !important;
     flex: 1 1 auto !important;
     min-width: 0 !important;
-    height: 32px !important;
+    height: 36px !important;
   }
-  [data-gill-v16] .mobile-top-slot__search {
+  /* Wide search INPUT (не иконка) — референс gbs_series_mobile_v4_refined:
+     .gb-search — целиком заполняет слот, сворачивается в скорости так же,
+     как .gb-search/.speed-rail в референсе. */
+  [data-gill-v16] .mobile-top-search {
     position: absolute !important;
-    inset: 0 auto auto 0 !important;
+    inset: 0 !important;
+    display: flex !important;
+    align-items: center !important;
+    gap: 7px !important;
+    height: 36px !important;
+    padding: 0 12px !important;
+    border-radius: 999px !important;
+    border: 1px solid var(--gill-mobile-bar-border) !important;
+    background: color-mix(in srgb, var(--gill-mobile-bar-gold) 6%, transparent) !important;
+    cursor: text !important;
     opacity: 1 !important;
-    transition: opacity .18s ease !important;
+    transition: opacity .2s ease, transform .2s ease !important;
   }
-  [data-gill-v16] .mobile-top-bar.speed-open .mobile-top-slot__search {
+  [data-gill-v16] .mobile-top-bar.speed-open .mobile-top-search {
     opacity: 0 !important;
+    transform: translateX(-6px) !important;
     pointer-events: none !important;
+  }
+  [data-gill-v16] .mobile-top-search svg {
+    width: 15px !important;
+    height: 15px !important;
+    stroke: var(--gill-mobile-bar-muted) !important;
+    fill: none !important;
+    stroke-width: 2 !important;
+    flex-shrink: 0 !important;
+  }
+  [data-gill-v16] .mobile-top-search input {
+    flex: 1 1 auto !important;
+    min-width: 0 !important;
+    border: 0 !important;
+    background: transparent !important;
+    outline: 0 !important;
+    padding: 0 !important;
+    font-family: var(--gb-font-sans, system-ui, sans-serif) !important;
+    font-size: 13px !important;
+    color: var(--gill-mobile-bar-ink) !important;
+  }
+  [data-gill-v16] .mobile-top-search input::placeholder {
+    color: var(--gill-mobile-bar-muted) !important;
+    opacity: .8 !important;
   }
   [data-gill-v16] .mobile-speedrail {
     position: absolute !important;
@@ -3092,46 +3127,78 @@ html.dark [data-gill-v16] .mobile-top-bar {
   [data-gill-v16] .mobile-spdbadge:active { transform: scale(.94); }
   [data-gill-v16] .mobile-spdbadge.is-bump { animation: gbs-rail-spdbadge-bump .3s cubic-bezier(.34,1.56,.64,1); }
 
-  [data-gill-v16] .mobile-toc-btn {
-    width: 46px !important;
-    height: 54px !important;
-    min-width: 46px !important;
+  /* --- Bottom bar (референс: bar-progress.dual-progress / bar-section-btn /
+     divider / theme / A-/A+ / divider / share), один плоский flex-ряд --- */
+  [data-gill-v16] .bar-progress.dual-progress {
+    appearance: none !important;
+    flex: 0 0 auto !important;
+    width: 38px !important;
+    height: 38px !important;
     border: 0 !important;
-    border-radius: 14px !important;
-    background: color-mix(in srgb, var(--gill-mobile-bar-gold) 10%, transparent) !important;
-    color: var(--gill-mobile-bar-gold) !important;
-    display: grid !important;
-    grid-template-rows: 22px 1fr !important;
-    place-items: center !important;
-    gap: 1px !important;
-    padding: 6px 3px !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    background: transparent !important;
+    color: inherit !important;
+    cursor: pointer !important;
   }
-  [data-gill-v16] .mobile-toc-btn svg { width: 21px !important; height: 21px !important; stroke: currentColor !important; fill: none !important; }
-  [data-gill-v16] .mobile-toc-btn__label {
-    display: block !important;
+  [data-gill-v16] .bar-progress.dual-progress svg {
+    width: 38px !important;
+    height: 38px !important;
+    transform: rotate(-90deg) !important;
+    overflow: visible !important;
+  }
+  [data-gill-v16] .bar-series-track,
+  [data-gill-v16] .bar-series-fill,
+  [data-gill-v16] .bar-progress-track,
+  [data-gill-v16] .bar-progress-fill {
+    fill: none !important;
+    transform-origin: center !important;
+  }
+  [data-gill-v16] .bar-series-track { stroke: var(--gill-mobile-track) !important; stroke-width: 1.7 !important; opacity: .8 !important; }
+  [data-gill-v16] .bar-series-fill { stroke: var(--gill-mobile-bar-gold) !important; stroke-width: 1.9 !important; stroke-linecap: round !important; transition: stroke-dashoffset .24s linear !important; }
+  [data-gill-v16] .bar-progress-track { stroke: var(--gill-mobile-track) !important; stroke-width: 2.6 !important; opacity: .85 !important; }
+  [data-gill-v16] .bar-progress-fill { stroke: var(--gill-mobile-bar-accent) !important; stroke-width: 2.8 !important; stroke-linecap: round !important; transition: stroke-dashoffset .15s linear !important; }
+  [data-gill-v16] .bar-progress-text {
+    position: absolute !important;
+    inset: 0 !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
     font-family: var(--gb-font-sans, system-ui, sans-serif) !important;
     font-size: 9px !important;
     font-weight: 800 !important;
-    letter-spacing: .03em !important;
-    line-height: 1 !important;
-    color: var(--gill-mobile-bar-muted) !important;
+    letter-spacing: -.02em !important;
+    color: var(--gill-mobile-bar-accent) !important;
+    pointer-events: none !important;
+    font-variant-numeric: tabular-nums !important;
   }
 
   [data-gill-v16] .mobile-btoc-section {
-    width: 100% !important;
+    flex: 1 1 auto !important;
     min-width: 0 !important;
-    min-height: 54px !important;
     display: flex !important;
     flex-direction: column !important;
     justify-content: center !important;
     align-items: flex-start !important;
-    padding: 8px 10px !important;
+    gap: 2px !important;
+    padding: 6px 8px !important;
     border: 0 !important;
-    border-radius: 14px !important;
-    background: color-mix(in srgb, var(--gill-mobile-bar-gold) 8%, transparent) !important;
+    border-radius: 12px !important;
+    background: transparent !important;
     color: var(--gill-mobile-bar-ink) !important;
     text-align: left !important;
     cursor: pointer !important;
+  }
+  [data-gill-v16] .mobile-btoc-section__label {
+    display: block !important;
+    font-family: var(--gb-font-sans, system-ui, sans-serif) !important;
+    font-size: 9px !important;
+    font-weight: 800 !important;
+    letter-spacing: .08em !important;
+    text-transform: uppercase !important;
+    line-height: 1 !important;
+    color: var(--gill-mobile-bar-muted) !important;
+    opacity: .75 !important;
   }
   [data-gill-v16] .mobile-btoc-section__main,
   [data-gill-v16] #gbs2MobSec {
@@ -3142,87 +3209,50 @@ html.dark [data-gill-v16] .mobile-top-bar {
     text-overflow: ellipsis !important;
     white-space: nowrap !important;
     font-family: var(--gb-font-serif, Georgia, serif) !important;
-    font-size: 14px !important;
+    font-size: 13.5px !important;
     font-weight: 800 !important;
     letter-spacing: .01em !important;
-    line-height: 1.12 !important;
+    line-height: 1.15 !important;
     color: var(--gill-mobile-bar-ink) !important;
     opacity: 1 !important;
   }
-  [data-gill-v16] .mobile-btoc-section__sub {
-    display: block !important;
-    margin-top: 3px !important;
-    font-family: var(--gb-font-sans, system-ui, sans-serif) !important;
-    font-size: 9px !important;
-    font-weight: 800 !important;
-    letter-spacing: .12em !important;
-    text-transform: uppercase !important;
-    line-height: 1 !important;
-    color: var(--gill-mobile-bar-accent) !important;
-    opacity: 1 !important;
+
+  [data-gill-v16] .mobile-bottom-divider {
+    flex: 0 0 auto !important;
+    width: 1px !important;
+    height: 24px !important;
+    background: var(--gill-mobile-bar-border) !important;
   }
 
-  [data-gill-v16] .mobile-btoc-meter {
-    display: grid !important;
-    grid-template-rows: 1fr auto !important;
-    align-items: center !important;
-    justify-items: center !important;
-    gap: 5px !important;
-    width: 52px !important;
-    min-width: 52px !important;
-  }
-  [data-gill-v16] .mobile-btoc-progress-track {
-    width: 46px !important;
-    height: 4px !important;
-    border-radius: 99px !important;
-    background: var(--gill-mobile-track) !important;
-    overflow: hidden !important;
-  }
-  [data-gill-v16] .mobile-btoc-progress-fill {
-    display: block !important;
-    height: 100% !important;
-    border-radius: inherit !important;
-    background: var(--gill-mobile-fill) !important;
-    box-shadow: none !important;
-  }
-  [data-gill-v16] .mobile-btoc-pct {
-    display: block !important;
-    min-width: 40px !important;
-    text-align: center !important;
-    font-family: var(--gb-font-sans, system-ui, sans-serif) !important;
-    font-size: 12px !important;
-    font-weight: 900 !important;
-    font-variant-numeric: tabular-nums !important;
-    color: var(--gill-mobile-bar-accent) !important;
-    opacity: 1 !important;
-    line-height: 1 !important;
-  }
-
-  [data-gill-v16] .mobile-icon-row {
-    display: flex !important;
-    align-items: center !important;
-    justify-content: flex-end !important;
-    gap: 6px !important;
-    min-width: 0 !important;
-  }
-  [data-gill-v16] .mobile-icon-row .gb-icon,
-  [data-gill-v16] .mobile-icon-row .gb-ember {
-    width: 42px !important;
-    height: 42px !important;
-    min-width: 42px !important;
-    min-height: 42px !important;
+  [data-gill-v16] .mobile-bottom-bar > .gb-icon {
+    flex: 0 0 auto !important;
+    width: 38px !important;
+    height: 38px !important;
+    min-width: 38px !important;
+    min-height: 38px !important;
     border-radius: 999px !important;
     background: transparent !important;
     color: var(--gill-mobile-bar-ink) !important;
     border: 0 !important;
     box-shadow: none !important;
   }
-  [data-gill-v16] .mobile-icon-row .gb-icon svg { width: 21px !important; height: 21px !important; stroke: currentColor !important; }
-  [data-gill-v16] .mobile-icon-row .gb-ember {
-    --ember-size: 42px !important;
-    --ring-color: var(--gill-mobile-bar-gold) !important;
-    color: var(--gill-mobile-bar-gold) !important;
+  [data-gill-v16] .mobile-bottom-bar > .gb-icon svg { width: 18px !important; height: 18px !important; stroke: currentColor !important; }
+
+  [data-gill-v16] .mobile-font-btn {
+    flex: 0 0 auto !important;
+    width: 30px !important;
+    height: 38px !important;
+    border: 0 !important;
+    border-radius: 8px !important;
+    background: transparent !important;
+    color: var(--gill-mobile-bar-muted) !important;
+    font-family: var(--gb-font-serif, Georgia, serif) !important;
+    font-size: 15px !important;
+    font-weight: 700 !important;
+    line-height: 1 !important;
+    cursor: pointer !important;
   }
+  [data-gill-v16] .mobile-font-btn:active { transform: scale(.94); }
 
   [data-gill-v16] .toc-overlay.is-open {
     z-index: 2147483100 !important;
@@ -3268,9 +3298,8 @@ html.dark [data-gill-v16] .mobile-top-bar {
   [data-gill-v16] .mobile-bottom-bar {
     left: 8px !important;
     right: 8px !important;
-    grid-template-columns: 44px minmax(0, 1fr) 46px max-content !important;
-    gap: 6px !important;
-    padding: 8px !important;
+    gap: 4px !important;
+    padding: 7px 8px !important;
   }
   [data-gill-v16] .mobile-top-bar {
     left: 8px !important;
@@ -3287,19 +3316,11 @@ html.dark [data-gill-v16] .mobile-top-bar {
     --ember-size: 36px !important;
   }
   [data-gill-v16] .mobile-btoc-section__main,
-  [data-gill-v16] #gbs2MobSec { font-size: 13px !important; }
-  [data-gill-v16] .mobile-btoc-section__sub { font-size: 8px !important; letter-spacing: .09em !important; }
-  [data-gill-v16] .mobile-btoc-meter { width: 46px !important; min-width: 46px !important; }
-  [data-gill-v16] .mobile-btoc-progress-track { width: 40px !important; }
-  [data-gill-v16] .mobile-icon-row { gap: 4px !important; }
-  [data-gill-v16] .mobile-icon-row .gb-icon,
-  [data-gill-v16] .mobile-icon-row .gb-ember {
-    width: 38px !important;
-    height: 38px !important;
-    min-width: 38px !important;
-    min-height: 38px !important;
-    --ember-size: 38px !important;
-  }
+  [data-gill-v16] #gbs2MobSec { font-size: 12.5px !important; }
+  [data-gill-v16] .bar-progress.dual-progress,
+  [data-gill-v16] .bar-progress.dual-progress svg { width: 34px !important; height: 34px !important; }
+  [data-gill-v16] .mobile-bottom-bar > .gb-icon,
+  [data-gill-v16] .mobile-font-btn { width: 34px !important; min-width: 34px !important; }
 }
 
 /* Gill header watermark removed (giant faint "ВВЕДЕНИЕ"/roman numeral behind

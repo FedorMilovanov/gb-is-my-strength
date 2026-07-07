@@ -1,20 +1,24 @@
 ---
 /**
- * GillSeriesMobileBar — mobile (<64em) control surface, split into two fixed
- * bars per the approved mobile reference (gbs_series_mobile_v4_refined_no_accuracy.html):
+ * GillSeriesMobileBar — mobile (<64em) control surface, matching the
+ * approved mobile reference 1-в-1 (gbs_series_mobile_v4_refined_no_accuracy.html):
  *
- *   TOP bar: back(→«Биографии служителей») → search-slot(icon⇄speed rail,
- *     same slot-swap mechanic verified on GillSeriesRail's desktop topbar) →
- *     Play (canon .gb-ember + speed badge) → Save (binary toggle, no halo).
- *   BOTTOM bar (unchanged from before, minus the icons that moved up top):
- *     «Серия» (opens the series-level overlay) → «Оглавление части» +
- *     progress meter (opens the part-level overlay; meter already shows
- *     weighted series% via updateScrollProgress()) → theme.
+ *   TOP bar: back(→«Биографии служителей») → slot(wide search input over
+ *     current part's TOC ⇄ speed rail, same slot-swap mechanic verified on
+ *     GillSeriesRail's desktop topbar) → Play (canon .gb-ember + speed
+ *     badge) → Save (binary toggle, no halo).
+ *   BOTTOM bar: dual-progress ring (inner=текущая статья %, outer=вся
+ *     серия %) → «Сейчас читаете» + текущий раздел (opens the existing
+ *     part-TOC sheet — series access stays one tap further via its
+ *     #backToSeries arrow, same two-sheet system already live) → theme →
+ *     A−/A+ → «Поделиться».
  *
- * data-fc-action="theme"/"search"/"play"/"save" go through the existing
- * global cluster delegation on [data-fc-root] — only the speed-slot swap is
- * bar-local script (guarded via data-gb-speed-custom so the shared
- * initPlayExpand() bloom-pill does not also attach to this ember).
+ * data-fc-action="theme"/"play"/"save"/"font-up"/"font-down" and
+ * data-action="share" go through the existing global cluster delegation on
+ * [data-fc-root] (floating-cluster-controller.js) — only the speed-slot
+ * swap and the local TOC search are bar-local script here (guarded via
+ * data-gb-speed-custom so the shared initPlayExpand() bloom-pill does not
+ * also attach to this ember).
  */
 import PlayEmber from '@/components/ui/floating-cluster/PlayEmber.astro';
 import SaveButton from '@/components/ui/floating-cluster/SaveButton.astro';
@@ -32,9 +36,10 @@ const page = GILL_PAGE_DATA[pageId];
     <svg viewBox="0 0 24 24"><path d="M19 12H5M12 19l-7-7 7-7" /></svg>
   </button>
   <div class="mobile-top-slot" id="mobTopSlot">
-    <button class="gb-icon mobile-top-slot__search" type="button" data-fc-action="search" aria-label="Поиск">
+    <label class="mobile-top-search" for="mobTocSearch">
       <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7" /><path d="M21 21l-4.3-4.3" /></svg>
-    </button>
+      <input id="mobTocSearch" type="text" placeholder="Поиск по разделам…" autocomplete="off" />
+    </label>
     <div class="mobile-speedrail" id="mobSpeedrail" role="radiogroup" aria-label="Скорость озвучки">
       <button class="mobile-spd" type="button" role="radio" data-speed="1" aria-checked="true">1×</button>
       <button class="mobile-spd" type="button" role="radio" data-speed="1.25" aria-checked="false">1.25×</button>
@@ -51,32 +56,41 @@ const page = GILL_PAGE_DATA[pageId];
 </div>
 
 <div class="mobile-bottom-bar" data-fc-root data-fc-variant="gill" data-gill-mobile-bar>
-  <button class="mobile-toc-btn" id="mobTocBtn" type="button" aria-label="Содержание серии">
-    <svg viewBox="0 0 24 24"><line x1="8" y1="6" x2="21" y2="6" /><line x1="8" y1="12" x2="21" y2="12" /><line x1="8" y1="18" x2="21" y2="18" /><line x1="3" y1="6" x2="3.01" y2="6" /><line x1="3" y1="12" x2="3.01" y2="12" /><line x1="3" y1="18" x2="3.01" y2="18" /></svg>
-    <span class="mobile-toc-btn__label">Серия</span>
+  <button type="button" class="bar-progress dual-progress" id="gbs2DualProgress" aria-label="Статья 0%, серия 0%">
+    <svg viewBox="0 0 36 36" aria-hidden="true">
+      <circle class="bar-series-track" cx="18" cy="18" r="16"></circle>
+      <circle class="bar-series-fill" id="gbs2MobSeriesRing" cx="18" cy="18" r="16" stroke-dasharray="100.53" stroke-dashoffset="100.53"></circle>
+      <circle class="bar-progress-track" cx="18" cy="18" r="12.5"></circle>
+      <circle class="bar-progress-fill" id="gbs2MobArticleRing" cx="18" cy="18" r="12.5" stroke-dasharray="78.54" stroke-dashoffset="78.54"></circle>
+    </svg>
+    <span class="bar-progress-text" id="gbs2MobPct">0%</span>
   </button>
 
   <button
     type="button"
     class="mobile-btoc-section"
     id="mobPartTocBtn"
-    aria-label={`Оглавление текущей части: ${page.mobileSection}`}
+    aria-label={`Открыть оглавление части: ${page.mobileSection}`}
   >
+    <span class="mobile-btoc-section__label">Сейчас читаете</span>
     <span class="mobile-btoc-section__main" id="gbs2MobSec">{page.mobileSection}</span>
-    <span class="mobile-btoc-section__sub">Оглавление части</span>
   </button>
 
-  <div class="mobile-btoc-meter" aria-hidden="true">
-    <div class="mobile-btoc-progress-track"><div class="mobile-btoc-progress-fill" id="gbs2MobProgress" style="width:0%"></div></div>
-    <div class="mobile-btoc-pct" id="gbs2MobPct">0%</div>
-  </div>
+  <span class="mobile-bottom-divider" aria-hidden="true"></span>
 
-  <div class="mobile-icon-row">
-    <button class="gb-icon gb-theme-toggle" type="button" data-fc-action="theme" aria-label="Тема">
-      <span class="theme-icon-sun"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="4.5" /><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41" /></svg></span>
-      <span class="theme-icon-moon"><svg viewBox="0 0 24 24"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z" /></svg></span>
-    </button>
-  </div>
+  <button class="gb-icon gb-theme-toggle" type="button" data-fc-action="theme" aria-label="Тема">
+    <span class="theme-icon-sun"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="4.5" /><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41" /></svg></span>
+    <span class="theme-icon-moon"><svg viewBox="0 0 24 24"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z" /></svg></span>
+  </button>
+
+  <button class="mobile-font-btn" type="button" data-fc-action="font-down" aria-label="Уменьшить шрифт">A−</button>
+  <button class="mobile-font-btn" type="button" data-fc-action="font-up" aria-label="Увеличить шрифт">A+</button>
+
+  <span class="mobile-bottom-divider" aria-hidden="true"></span>
+
+  <button class="gb-icon" type="button" data-action="share" aria-label="Поделиться">
+    <svg viewBox="0 0 24 24"><circle cx="18" cy="5" r="3" /><circle cx="6" cy="12" r="3" /><circle cx="18" cy="19" r="3" /><line x1="8.59" y1="13.51" x2="15.42" y2="17.49" /><line x1="15.41" y1="6.51" x2="8.59" y2="10.49" /></svg>
+  </button>
 </div>
 
 <script>
@@ -179,11 +193,45 @@ const page = GILL_PAGE_DATA[pageId];
     speedrail.addEventListener('pointerup', endDrag);
     speedrail.addEventListener('pointercancel', endDrag);
     speedrail.addEventListener('click', (e: MouseEvent) => { if (moved) { e.stopPropagation(); moved = false; } }, true);
+
+    // Поле поиска в том же слоте: фокус должен закрывать рельсу скоростей
+    // (тот же UX, что в референсе — search.addEventListener('focus', closeSpeeds)).
+    const searchInput = topbar.querySelector('#mobTocSearch') as HTMLInputElement | null;
+    if (searchInput) searchInput.addEventListener('focus', () => close());
+  }
+
+  // Локальный поиск по оглавлению ТЕКУЩЕЙ части (референс: 'input' на
+  // #tocSearch фильтрует .btoc-link по тексту и открывает панель только
+  // когда есть реальный запрос — очистка поля не форсит открытие заново).
+  function initGillMobileTocSearch() {
+    const input = document.getElementById('mobTocSearch') as HTMLInputElement | null;
+    const partBtn = document.getElementById('mobPartTocBtn') as HTMLElement | null;
+    const list = document.getElementById('gbs2PartToc') as HTMLElement | null;
+    const empty = document.getElementById('gbs2PartTocEmpty') as HTMLElement | null;
+    if (!input || !list) return;
+
+    function items(): HTMLElement[] {
+      return Array.prototype.slice.call(list!.querySelectorAll('.toc-part-item')) as HTMLElement[];
+    }
+
+    input.addEventListener('input', () => {
+      const q = input.value.trim().toLowerCase();
+      const rows = items();
+      let shown = 0;
+      rows.forEach((row) => {
+        const hit = !q || (row.textContent || '').toLowerCase().indexOf(q) > -1;
+        row.hidden = !hit;
+        if (hit) shown++;
+      });
+      if (empty) empty.hidden = shown !== 0 || rows.length === 0;
+      if (q && partBtn) partBtn.click();
+    });
   }
 
   function boot() {
     const topbar = document.querySelector('.mobile-top-bar[data-gb-speed-custom]') as HTMLElement | null;
     if (topbar) initGillMobileSpeedSlot(topbar);
+    initGillMobileTocSearch();
 
     const backBtn = document.getElementById('mobBackBtn');
     if (backBtn) backBtn.addEventListener('click', () => {
