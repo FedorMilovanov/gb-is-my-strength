@@ -3172,3 +3172,22 @@ html.dark [data-gill-v16] .mobile-bottom-bar {
     z-index:var(--z-toast,9800);
   }
 }
+
+/* Прогресс серии (.gbs2-rprogress/.gbs2-ring) — канон-разметка 1-в-1 из
+   krajne/«Сердце» (css/site.css). Её цвета там завязаны на --gbs2-rline/
+   --gbs2-rail2/--gbs2-accent2, которые реально объявлены только под классом
+   .gbs2-scope — а его нет НИ на одной живой странице (ни у krajne, ни у
+   Gill), поэтому без явного override эти custom properties пусты и кольцо/
+   рамка рендерятся прозрачными. Тут — явные Gill-цвета того же тёплого
+   золотисто-коричневого набора, что уже используется у остальных элементов
+   рейла (#eadac7/#d8aa6d/#c4a882), а не догадка/невидимый fallback. */
+[data-gill-v16] .gbs2-rprogress{
+  border-color:rgba(232,184,120,.16);
+  background:rgba(255,255,255,.03);
+  margin:10px 10px 0;
+}
+[data-gill-v16] .gbs2-ring .t{stroke:rgba(232,184,120,.18)}
+[data-gill-v16] .gbs2-ring .f{stroke:var(--gb-accent-gold-bright,#d8aa6d)}
+[data-gill-v16] .gbs2-ring b{color:#eadac7}
+[data-gill-v16] .gbs2-rprogress small{color:#c4a882}
+[data-gill-v16] .gbs2-rprogress span{color:#a89684}

@@ -46,6 +46,7 @@ const currentGrp = (partTocRows.find((r) => r.current) || partTocRows[0] || { gr
 const currentIdx = GILL_SERIES_ITEMS.findIndex((item) => item.id === pageId);
 const partsBefore = GILL_SERIES_ITEMS.slice(0, Math.max(0, currentIdx));
 const partsAfter = currentIdx >= 0 ? GILL_SERIES_ITEMS.slice(currentIdx + 1) : [];
+const partNumber = currentIdx >= 0 ? currentIdx + 1 : 1;
 ---
 
 <aside class="gbs-rail" aria-label="Серия «Джон Гилл»">
@@ -76,6 +77,25 @@ const partsAfter = currentIdx >= 0 ? GILL_SERIES_ITEMS.slice(currentIdx + 1) : [
       <PlayEmber audioState="none" class="gbs-rail-ember" tip="Озвучка" />
       <button class="gbs-rail-spdbadge" id="gbsRailSpdBadge" type="button" aria-label="Выбрать скорость, сейчас 1×">1×</button>
     </span>
+  </div>
+
+  <!-- Прогресс СЕРИИ (не только текущей части) — восстановлен по образцу
+       серии «Сердце» (krajne): .gbs2-rprogress/.gbs2-ring/#gbs2Ring/#gbs2Pct
+       взяты 1-в-1 (та же разметка, тот же r=18/circ=113 в CSS). Раньше это
+       было и в Gill (до перехода на v16 — коммит 1d9ee644 его убрал вместе
+       со старым inline-рейлом), значение считает уже существующая
+       updateScrollProgress() в floating-cluster-controller.js по
+       data-gbs2-done-min/-part-min/-total-min на body (эти атрибуты у Gill
+       уже проставлены, отдельных правок данных не нужно). -->
+  <div class="gbs2-rprogress">
+    <div class="gbs2-ring" aria-hidden="true">
+      <svg width="44" height="44" viewBox="0 0 44 44">
+        <circle class="t" cx="22" cy="22" r="18" />
+        <circle class="f" id="gbs2Ring" cx="22" cy="22" r="18" stroke-dasharray="113" stroke-dashoffset="113" />
+      </svg>
+      <b id="gbs2Pct">0%</b>
+    </div>
+    <div><small>Прогресс серии</small><span id="gbs2Meta">Часть {partNumber} из {GILL_SERIES_ITEMS.length}</span></div>
   </div>
 
   <div class="gbs2-rmid">
