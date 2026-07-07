@@ -63,6 +63,7 @@ const ALLOWED_JS = new Set([
   'js/floating-cluster-controller.js',
   'js/vosk-tts-core.js',
   'js/vosk-tts-engine.js',
+  'js/vosk-stress-lookup.js',
 ]);
 
 // Same list as scripts/cache-bust.js. If cache-bust.js changes, update this list too.
