@@ -1655,18 +1655,32 @@
         document.body.style.setProperty('--gb-read-pct', String(pctF));
       } catch(_){}
       saveReadingPos(pct);
+      // Прогресс СЕРИИ (не только текущей части): та же формула, что раньше
+      // считал js/enhancements.js (window.__gbs2SeriesPct fallback) — done-min
+      // ранее прочитанных частей + доля прочитанного в текущей части, из
+      // total-min всей серии. enhancements.js гасит себя на [data-gill-v16]
+      // страницах, поэтому там это число раньше не считалось вообще; здесь
+      // формула восстановлена универсально — работает на любой странице,
+      // где выставлены эти три body-атрибута (Gill и krajne/«Сердце» — уже
+      // сейчас, без доп. правок разметки).
+      var doneMin = Number(document.body.getAttribute('data-gbs2-done-min') || 0);
+      var partMin = Number(document.body.getAttribute('data-gbs2-part-min') || 0);
+      var totalMin = Number(document.body.getAttribute('data-gbs2-total-min') || 0);
+      var seriesPc = totalMin > 0
+        ? Math.round(((doneMin + (pct * partMin / 100)) / totalMin) * 100)
+        : pct;
       var pctEl = qs('#gbs2MobPct');
-      if (pctEl) pctEl.textContent = pct + '%';
+      if (pctEl) pctEl.textContent = seriesPc + '%';
       var pctSidebar = qs('#gbs2Pct');
-      if (pctSidebar) pctSidebar.textContent = pct + '%';
-      // Update progress bar
+      if (pctSidebar) pctSidebar.textContent = seriesPc + '%';
+      // Текущая ЧАСТЬ (не вся серия) — отдельная полоса под «Сейчас читаете»
       var curbar = qs('#gbs2Curbar');
       if (curbar) curbar.style.width = pct + '%';
-      // Update ring SVG
+      // Кольцо прогресса СЕРИИ (r=18, circ=113 — тот же r, что и в разметке)
       var ring = qs('#gbs2Ring');
       if (ring) {
         var circ = 2 * Math.PI * 18; // r=18
-        ring.style.strokeDashoffset = circ - (circ * pct / 100);
+        ring.style.strokeDashoffset = circ - (circ * seriesPc / 100);
       }
       // Update mobile bottom bar section
       var mobSec = qs('#gbs2MobSec');
