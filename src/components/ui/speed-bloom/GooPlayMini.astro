@@ -119,8 +119,10 @@ const rootAttrs = standalone
   .gbmini.sb-open .gbmini-play svg:not(.gbmini-ringsvg){transform:translateX(1px) scale(1.06)}
   .gbmini-play:focus-visible{outline:0;box-shadow:0 0 0 3px rgba(255,255,255,.95),0 0 0 5px #b8863f}
   .gbmini .sb-ic-pause{display:none;fill:currentColor}
-  .gbmini.sb-playing .sb-ic-play{display:none}
-  .gbmini.sb-playing .sb-ic-pause{display:block}
+  /* icon reflects the precise state: pause glyph only while actually playing —
+     paused/idle show the play triangle so the next click's action is obvious */
+  .gbmini.sb-playing:not(.sb-paused) .sb-ic-play{display:none}
+  .gbmini.sb-playing:not(.sb-paused) .sb-ic-pause{display:block}
   .gbmini-ringsvg{position:absolute;inset:4%;pointer-events:none;overflow:visible}
   .gbmini-prog{fill:none;stroke:#c39a5e;stroke-width:3.4;stroke-linecap:round;stroke-dasharray:100 100;stroke-dashoffset:100;opacity:0;transition:opacity .4s,stroke-dashoffset .3s linear;filter:drop-shadow(0 0 3px rgba(195,154,94,.45))}
   html.dark .gbmini-prog{stroke:#dfb173;filter:drop-shadow(0 0 3px rgba(223,177,115,.5))}
@@ -214,6 +216,7 @@ const rootAttrs = standalone
       const d = ev && ev.detail || {};
       const st = d.state;
       root.classList.toggle('sb-playing', st === 'playing' || st === 'paused' || st === 'loading');
+      root.classList.toggle('sb-paused', st === 'paused');
       if(typeof d.progress === 'number' && !isNaN(d.progress)) c.setAttribute('stroke-dashoffset', String(Math.max(0, 100 - d.progress * 100)));
     });
   }
