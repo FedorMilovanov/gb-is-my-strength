@@ -2941,3 +2941,12 @@ html.dark [data-gill-v16] .mobile-bottom-bar {
     --ember-size: 38px !important;
   }
 }
+
+/* Gill header watermark removed (giant faint "ВВЕДЕНИЕ"/roman numeral behind
+   the H1) — the .gbs2-kinetic <SeriesMark> element was deleted from all 5
+   Gill header-hero components. .gbs2-head's right gutter (css/site.css) was
+   reserved for that watermark; reclaim it here, scoped to Gill only, so
+   other series (krajne etc.) that still use .gbs2-kinetic are untouched. */
+[data-gill-v16] .gbs2-head {
+  padding-right: 0;
+}
