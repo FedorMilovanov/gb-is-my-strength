@@ -275,6 +275,10 @@
      он используется сразу. ttsState.engine хранит, какой движок обслуживает
      текущую сессию воспроизведения ('vosk' | 'webspeech').
      ===================================================== */
+  // Vosk model's 5 speakers (config.json speaker_id_map): 0=female_0,
+  // 1=female_1, 2=female_2, 3=male_0, 4=male_1. male_0 chosen after a
+  // real-audio A/B listen (see AuditRepo tts-quality-audit-2026-07-07).
+  var VOSK_SPEAKER_ID = 3;
   var ttsState = {
     utterance: null,
     text: '',
@@ -295,6 +299,16 @@
   function ttsAvailable() {
     return ('speechSynthesis' in window) ||
            !!(window.indexedDB && window.WebAssembly && window.fetch);
+  }
+
+  // Vosk load/playback failures were previously silent (console.warn only) —
+  // the alphacephei.com CORS outage went unnoticed in production for days
+  // until a user manually checked DevTools. Same ym() reachGoal pattern as
+  // js/enhancements.js's quiz tracking.
+  function reportTtsIssue(reason) {
+    try {
+      window.ym && window.ym(108353327, 'reachGoal', 'vosk_tts_failed', { reason: reason });
+    } catch (_) {}
   }
 
   function cancelActiveEngine() {
@@ -336,6 +350,7 @@
       }
     }).catch(function (err) {
       console.warn('[gbx-tts] background Vosk warm-up failed, staying on Web Speech:', err);
+      reportTtsIssue('background_warmup: ' + ((err && err.message) || err));
     });
   }
 
@@ -353,6 +368,7 @@
     }
     return loadVoskEngineScript().catch(function (err) {
       console.warn('[gbx-tts] failed to load vosk-tts-engine.js:', err);
+      reportTtsIssue('script_load: ' + ((err && err.message) || err));
     }).then(function () {
       if (!(window.VoskTTSEngine && window.VoskTTSEngine.isSupported())) return null;
       showToast('Готовим озвучку (в первый раз — дольше, дальше из кэша браузера)…', false);
@@ -360,6 +376,7 @@
         return 'vosk';
       }).catch(function (err) {
         console.warn('[gbx-tts] Vosk engine unavailable:', err);
+        reportTtsIssue('ensure_loaded: ' + ((err && err.message) || err));
         return null;
       });
     });
@@ -407,14 +424,18 @@
 
   function splitTtsChunks(text) {
     // speechSynthesis в Chrome падает на utterances длиннее ~32000 chars.
-    // Делим на ~200-символьные куски по границам предложений.
+    // Делим на ~350-символьные куски по границам предложений (было 180 —
+    // поднято, т.к. Vosk синтезирует каждый chunk независимо без общего
+    // контекста, и граница chunk'а слышна как сброс интонации; более
+    // длинные chunk'и = реже такие сбросы, за счёт чуть более долгой
+    // паузы перед стартом каждого chunk'а).
     // Без lookbehind (?<=...) — Safari <16.4 его не поддерживает (SyntaxError).
     var parts = text.split(/([.!?]+\s+)/);
     var chunks = [];
     var buf = '';
     for (var i = 0; i < parts.length; i++) {
       buf += parts[i];
-      if (buf.length >= 180 && i % 2 === 1) {
+      if (buf.length >= 350 && i % 2 === 1) {
         var trimmed = buf.trim();
         if (trimmed) chunks.push(trimmed);
         buf = '';
@@ -468,12 +489,13 @@
       }
       // Если ошибка — стопаем чисто, без infinite loop
       console.warn('[gbx-tts] chunk error:', (e && e.error) || e);
+      if (ttsState.engine === 'vosk') reportTtsIssue('chunk_playback: ' + ((e && (e.error || e.message)) || e));
       ttsState.utterance = null;
       setEmberState('idle');
     }
 
     if (ttsState.engine === 'vosk' && window.VoskTTSEngine) {
-      ttsState.utterance = window.VoskTTSEngine.speak(chunk, getStoredRate(), 0, onChunkEnd, onChunkError);
+      ttsState.utterance = window.VoskTTSEngine.speak(chunk, getStoredRate(), VOSK_SPEAKER_ID, onChunkEnd, onChunkError);
       return;
     }
 

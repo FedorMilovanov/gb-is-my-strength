@@ -107,15 +107,19 @@
     return files;
   }
 
+  // Cache key is MODEL_URL itself, not a fixed string — if the model file
+  // this constant points to ever changes (e.g. a future quantized upload),
+  // returning visitors automatically re-fetch instead of playing back a
+  // stale/mismatched cached model from IndexedDB under the old URL's entry.
   function fetchModelFiles() {
-    return idbGet('files').then(function (cached) {
+    return idbGet(MODEL_URL).then(function (cached) {
       if (cached) return cached;
       return fetch(MODEL_URL).then(function (resp) {
         if (!resp.ok) throw new Error('model download HTTP ' + resp.status);
         return resp.arrayBuffer();
       }).then(function (buf) {
         var files = extractZip(new Uint8Array(buf));
-        return idbSet('files', files).then(function () { return files; });
+        return idbSet(MODEL_URL, files).then(function () { return files; });
       });
     });
   }
@@ -185,6 +189,95 @@
       }
       return { rows: rows, hidden: hid };
     });
+  }
+
+  // Site-specific pre-normalization, run BEFORE VoskTTSCore.normalizeText()
+  // (which strips all non-Cyrillic characters — Roman numerals and Latin
+  // abbreviation letters must be converted to Cyrillic/digits here first,
+  // or normalizeText silently deletes them). See AuditRepo
+  // tts-quality-audit-2026-07-07 for the source of this list.
+
+  // Bible-book abbreviations actually attested in this site's own content
+  // (see e.g. the decorative Scripture background in js/enhancements.js) —
+  // not a general-purpose Bible-abbreviation dictionary. Each spoken form
+  // follows standard Russian citation convention (OT law/history books
+  // nominative matching their title; prophets/Gospels genitive per "Книга
+  // пророка .../Евангелие от ..."; epistles per their own preposition).
+  // Extend this list as new abbreviations turn up in real articles.
+  var SITE_ABBREVIATIONS = [
+    ['1 Цар.', 'первая книга Царств'],   // multi-word / numbered forms first,
+    ['1 Пет.', 'первое послание Петра'], // no shorter "Цар."/"Пет." entry to conflict with
+    ['Быт.', 'Бытие'],
+    ['Исх.', 'Исход'],
+    ['Лев.', 'Левит'],
+    ['Втор.', 'Второзаконие'],
+    ['Суд.', 'Судей'],
+    ['Пс.', 'Псалом'],
+    ['Ис.', 'Исаии'],
+    ['Иер.', 'Иеремии'],
+    ['Иез.', 'Иезекииля'],
+    ['Мал.', 'Малахии'],
+    ['Лк.', 'Луки'],
+    ['Ин.', 'Иоанна'],
+    ['Рим.', 'Римлянам'],
+    ['Откр.', 'Откровение'],
+    // Safe, invariant (no grammatical-case dependency) abbreviations.
+    // Both cases listed explicitly — plain split/join below is case-sensitive
+    // (no regex flags needed), and these can legally start a sentence.
+    ['т.е.', 'то есть'], ['Т.е.', 'То есть'],
+    ['т.д.', 'так далее'], ['Т.д.', 'Так далее'],
+    ['т.п.', 'тому подобное'], ['Т.п.', 'Тому подобное'],
+    ['см.', 'смотри'], ['См.', 'Смотри']
+  ];
+
+  // Roman numerals ("XIX век") were previously silently deleted by
+  // normalizeText's non-Cyrillic strip — the number vanished entirely,
+  // leaving just "век". Converts to a plain Arabic-numeral CARDINAL
+  // reading via the existing numberToWords pipeline: "XIX" -> "19" ->
+  // "девятнадцать". This is *not* grammatically correct for a century
+  // ("девятнадцатый век" — ordinal — would be correct); building a real
+  // Russian ordinal generator with gender/case agreement was out of scope
+  // for this pass. Still strictly better than the number disappearing.
+  var ROMAN_ORDER = ['M', 'CM', 'D', 'CD', 'C', 'XC', 'L', 'XL', 'X', 'IX', 'V', 'IV', 'I'];
+  var ROMAN_VALUES = { M: 1000, CM: 900, D: 500, CD: 400, C: 100, XC: 90, L: 50, XL: 40, X: 10, IX: 9, V: 5, IV: 4, I: 1 };
+  function romanToArabic(s) {
+    var i = 0, num = 0;
+    while (i < s.length) {
+      var matched = false;
+      for (var j = 0; j < ROMAN_ORDER.length; j++) {
+        var sym = ROMAN_ORDER[j];
+        if (s.slice(i, i + sym.length) === sym) { num += ROMAN_VALUES[sym]; i += sym.length; matched = true; break; }
+      }
+      if (!matched) return null;
+    }
+    return num;
+  }
+  function arabicToRoman(n) {
+    var out = '', rest = n;
+    for (var j = 0; j < ROMAN_ORDER.length; j++) {
+      var sym = ROMAN_ORDER[j];
+      while (rest >= ROMAN_VALUES[sym]) { out += sym; rest -= ROMAN_VALUES[sym]; }
+    }
+    return out;
+  }
+  function expandRomanNumerals(text) {
+    // Round-trip validation (arabicToRoman(n) === m) rejects malformed
+    // sequences (e.g. "IIII", "VV") and most incidental all-caps Latin
+    // words that happen to use only I/V/X/L/C/D/M — real prose essentially
+    // never contains standalone valid-roman-numeral Latin tokens.
+    return text.replace(/\b[IVXLCDM]{1,15}\b/g, function (m) {
+      var n = romanToArabic(m);
+      if (n === null || n <= 0 || n > 3999 || arabicToRoman(n) !== m) return m;
+      return String(n);
+    });
+  }
+
+  function expandSiteAbbreviations(text) {
+    var out = text;
+    for (var i = 0; i < SITE_ABBREVIATIONS.length; i++) {
+      out = out.split(SITE_ABBREVIATIONS[i][0]).join(SITE_ABBREVIATIONS[i][1]);
+    }
+    return expandRomanNumerals(out);
   }
 
   // Words vosk-tts's own dictionary doesn't know get NO stress at all
@@ -296,7 +389,7 @@
   // записи через audio.playbackRate (не «съедает» фонемы на 2x).
   function speak(text, rate, speakerId, onend, onerror) {
     var handle = { engine: 'vosk', cancelled: false };
-    var norm = VoskTTSCore.normalizeText(text);
+    var norm = VoskTTSCore.normalizeText(expandSiteAbbreviations(text));
     if (!norm) { setTimeout(function () { if (!handle.cancelled) onend(); }, 0); return handle; }
     synthChunk(norm, rate || 1, speakerId || 0).then(function (pcm) {
       if (handle.cancelled) return;
