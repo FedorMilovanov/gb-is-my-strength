@@ -1155,8 +1155,13 @@
       if (!ember.closest('[data-fc-root], [data-fc-controls]')) return;
       if (ember.parentNode.querySelector('.gb-ember-expand')) return;
       if (ember.parentNode.classList && ember.parentNode.classList.contains('gb-ember-wrap')) return;
+      // Gill rail topbar owns its own slot-swap speed rail (search icon fades
+      // out, speed chips fade into the same slot — mobile reference pattern),
+      // not the bloom-pill this function builds. Skip it so there is only
+      // ONE speed panel per ember, not two competing ones.
+      if (ember.closest('[data-gb-speed-custom]')) return;
 
-      var speeds = [0.75, 1, 1.25, 1.5, 1.75, 2];
+      var speeds = [1, 1.25, 1.5, 1.75, 2];
       var currentRate = 1;
       try { currentRate = parseFloat(localStorage.getItem('gb:audio:rate') || localStorage.getItem('gbx-tts-rate')) || 1; } catch(_){}
       var pressTimer = null;

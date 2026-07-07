@@ -797,9 +797,86 @@ html.dark [data-gill-v16] .gb-theme-toggle .theme-icon-moon{opacity:1;transform:
      .gbs2-tocscroll); nothing full-bleed paints over the rounded corners. */
   overflow:visible;padding:0;z-index:2;
 }
-[data-gill-v16] .gbs-rail .gbs2-rmid{display:flex;flex:1 1 auto;flex-direction:column;min-height:0;min-width:0;overflow:hidden;padding:48px 8px 6px;gap:6px}
+[data-gill-v16] .gbs-rail .gbs2-rmid{display:flex;flex:1 1 auto;flex-direction:column;min-height:0;min-width:0;overflow:hidden;padding:8px 8px 6px;gap:6px}
 [data-gill-v16] .gbs-rail .gbs-rail-list{padding:0 2px}
 [data-gill-v16] .gbs-rail .gbs-rail-foot{padding:12px 8px 14px;border-top:1px solid rgba(255,255,255,.08)}
+
+/* Верх рейла: назад + слот-свап(поиск⇄скорости) + Play в один ряд (перенесены
+   из футера сюда — тот же стандарт, что и в мобильном топбаре: поиск и Play
+   наверху общего оглавления, а не внизу россыпью иконок). .gbs-rail-back
+   теряет свой старый absolute-позишен (он рассчитывал на то, что в верху
+   рейла больше ничего нет) и становится обычным flex-элементом ряда. */
+[data-gill-v16] .gbs-rail-topbar{
+  display:flex;align-items:center;gap:6px;
+  padding:10px 10px 8px;
+  border-bottom:1px solid rgba(255,255,255,.08);
+  overflow:visible;position:relative;z-index:3;
+}
+[data-gill-v16] .gbs-rail-topbar .gbs-rail-back{position:static;flex-shrink:0}
+[data-gill-v16] .gbs-rail-topbar .gbs-rail-foot__btn{flex-shrink:0}
+
+/* Слот-свап: иконка поиска и рельса скоростей делят одно и то же место —
+   ровно механика мобильного референса (bar.html .gb-slot/.gb-search/
+   .speed-rail), просто скорости выезжают на место ИКОНКИ поиска (тут нет
+   инпута, поиск — модальный оверлей), а не поискового поля. */
+[data-gill-v16] .gbs-rail-slot{position:relative;flex:1;min-width:0;height:32px}
+[data-gill-v16] .gbs-rail-slot__search{
+  position:absolute;inset:0;margin:0;
+  transition:opacity .25s ease,transform .25s cubic-bezier(.3,1.2,.4,1);
+}
+[data-gill-v16] .gbs-rail-topbar.speed-open .gbs-rail-slot__search{
+  opacity:0;transform:translateX(-8px);pointer-events:none;
+}
+[data-gill-v16] .gbs-rail-speedrail{
+  position:absolute;inset:0;display:flex;align-items:center;gap:3px;
+  opacity:0;transform:translateX(8px);pointer-events:none;
+  transition:opacity .25s ease,transform .25s cubic-bezier(.3,1.2,.4,1);
+  overflow-x:auto;overflow-y:hidden;scrollbar-width:none;-ms-overflow-style:none;
+  -webkit-overflow-scrolling:touch;overscroll-behavior-x:contain;
+  scroll-snap-type:x proximity;cursor:grab;
+}
+[data-gill-v16] .gbs-rail-speedrail::-webkit-scrollbar{display:none}
+[data-gill-v16] .gbs-rail-speedrail.is-dragging{cursor:grabbing;scroll-snap-type:none}
+[data-gill-v16] .gbs-rail-topbar.speed-open .gbs-rail-speedrail{
+  opacity:1;transform:translateX(0);pointer-events:auto;
+}
+[data-gill-v16] .gbs-rail-spd{
+  flex:0 0 auto;font:700 10.5px/1 var(--gb-font-serif,"Source Sans 3",system-ui,sans-serif);
+  border:1px solid rgba(232,184,120,.28);background:transparent;color:#c4a882;
+  padding:6px 7px;border-radius:8px;cursor:pointer;white-space:nowrap;position:relative;
+  transition:background .15s,color .15s,border-color .15s,transform .12s;
+  scroll-snap-align:center;-webkit-tap-highlight-color:transparent;
+}
+[data-gill-v16] .gbs-rail-spd::before{content:'';position:absolute;inset:-7px -1px}
+@media (hover:hover) and (pointer:fine){
+  [data-gill-v16] .gbs-rail-spd:hover{color:#f4e8d9;border-color:rgba(232,184,120,.5)}
+}
+[data-gill-v16] .gbs-rail-spd:active{transform:scale(.92);transition-duration:.08s}
+[data-gill-v16] .gbs-rail-spd[aria-checked="true"]{
+  background:var(--gb-accent-gold-bright,#d8aa6d);color:#241708;border-color:transparent;
+}
+[data-gill-v16] .gbs-rail-speedrail.is-dragging .gbs-rail-spd{transition:none}
+
+[data-gill-v16] .gbs-rail-playwrap{position:relative;flex-shrink:0;display:grid;place-items:center}
+[data-gill-v16] .gbs-rail-playwrap .gbs-rail-ember{--ember-size:32px;--ring-color:var(--gb-accent-gold-bright,#d8aa6d);color:#c4a882}
+[data-gill-v16] .gbs-rail-playwrap .gb-ember__ring-track{stroke:rgba(232,184,120,.22)}
+[data-gill-v16] .gbs-rail-playwrap .gb-ember__ring-progress{stroke-width:1.5}
+[data-gill-v16] .gbs-rail-spdbadge{
+  /* Верхний угол, не нижний: нижняя правая четверть Play должна ВСЕГДА бить
+     по самому Play, а не по бейджу (проверено elementFromPoint — прежняя
+     bottom-right позиция с широкой ::before-зоной перекрывала центр Play и
+     перехватывала клики по нему). */
+  position:absolute;right:-3px;top:-3px;z-index:2;
+  min-width:18px;height:13px;padding:0 3px;border-radius:999px;
+  border:1px solid var(--gb-accent-gold-bright,#d8aa6d);background:var(--gb-accent-gold-bright,#d8aa6d);
+  color:#241708;font:800 8px/12px "Source Sans 3",system-ui,sans-serif;text-align:center;
+  cursor:pointer;box-shadow:0 2px 6px rgba(0,0,0,.28);
+  transition:transform .18s cubic-bezier(.34,1.56,.64,1);
+}
+[data-gill-v16] .gbs-rail-spdbadge::before{content:'';position:absolute;inset:-4px -3px}
+[data-gill-v16] .gbs-rail-spdbadge:active{transform:scale(.94)}
+[data-gill-v16] .gbs-rail-spdbadge.is-bump{animation:gbs-rail-spdbadge-bump .3s cubic-bezier(.34,1.56,.64,1)}
+@keyframes gbs-rail-spdbadge-bump{0%{transform:scale(1)}50%{transform:scale(1.16)}100%{transform:scale(1)}}
 [data-gill-v16] .gbs-rail-back{
   position:absolute;top:10px;left:10px;
   width:36px;height:36px;
@@ -3074,4 +3151,24 @@ html.dark [data-gill-v16] .mobile-bottom-bar {
    other series (krajne etc.) that still use .gbs2-kinetic are untouched. */
 [data-gill-v16] .gbs2-head {
   padding-right: 0;
+}
+
+/* Тема — вынесена из левого рейла на уровень хлебных крошек в колонке статьи.
+   Кнопка сама уже канон (.gb-icon.gb-theme-toggle, стили выше в этом файле) —
+   здесь только позиционирование обёртки, и оно тоже не изобретено: те же
+   точные top/right, что канон уже использует для breadcrumb-level themetoggle
+   (.gb-floater--hermeneutics выше в этом файле — "DO NOT invent calc formulas,
+   use these exact values"). Только Gill, только десктоп (на мобильном рейл
+   скрыт, тема уже есть в мобильном баре). */
+[data-gill-v16] .gbs-theme-corner{
+  display:none;
+}
+@media (min-width:64em){
+  [data-gill-v16] .gbs-theme-corner{
+    display:flex;
+    position:fixed;
+    top:calc(clamp(24px, 3.5vw, 44px) - 4px);
+    right:max(8.5vw, env(safe-area-inset-right, 0px));
+    z-index:var(--z-toast,9800);
+  }
 }
