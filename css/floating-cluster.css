@@ -858,7 +858,13 @@ html.dark [data-gill-v16] .gb-theme-toggle .theme-icon-moon{opacity:1;transform:
 [data-gill-v16] .gbs-rail-speedrail.is-dragging .gbs-rail-spd{transition:none}
 
 [data-gill-v16] .gbs-rail-playwrap{position:relative;flex-shrink:0;display:grid;place-items:center}
-[data-gill-v16] .gbs-rail-playwrap .gbs-rail-ember{--ember-size:32px;--ring-color:var(--gb-accent-gold-bright,#d8aa6d);color:#c4a882}
+/* color НЕ переопределён нарочно: canon .gb-ember{color:var(--color-text)}
+   рисует ▶-глиф основной тёмной краской (currentColor у SVG-глифа) — это
+   и есть контраст на светлом фоне рейла. Только --ring-color красит
+   кольцо/halo; если задать сюда ещё и color:gold, глиф в IDLE становится
+   бледно-золотым на почти таком же фоне и еле виден (найдено на
+   мобильной версии того же компонента — тот же баг, тот же фикс). */
+[data-gill-v16] .gbs-rail-playwrap .gbs-rail-ember{--ember-size:32px;--ring-color:var(--gb-accent-gold-bright,#d8aa6d)}
 [data-gill-v16] .gbs-rail-playwrap .gb-ember__ring-track{stroke:rgba(232,184,120,.22)}
 [data-gill-v16] .gbs-rail-playwrap .gb-ember__ring-progress{stroke-width:1.5}
 [data-gill-v16] .gbs-rail-spdbadge{
@@ -3107,10 +3113,16 @@ html.dark [data-gill-v16] .mobile-top-bar {
     display: grid !important;
     place-items: center !important;
   }
+  /* color НЕ переопределён нарочно (тот же баг только что найден и
+     исправлен на десктопном .gbs-rail-ember выше): canon .gb-ember рисует
+     ▶-глиф currentColor = var(--color-text) — тёмная краска, читаемая на
+     светлом фоне бара. Задать сюда color:gold — и глиф в IDLE становится
+     бледно-золотым на почти таком же фоне бара, еле видимым. Только
+     --ring-color красит кольцо/halo. */
   [data-gill-v16] .mobile-playwrap .mobile-top-ember {
     --ember-size: 40px !important;
     --ring-color: var(--gill-mobile-bar-gold) !important;
-    color: var(--gill-mobile-bar-gold) !important;
+    color: var(--gill-mobile-bar-ink) !important;
   }
   /* Позиция бейджа — точно как в референсе (.play-speed: right:-3px;
      bottom:-2px), НЕ top-right: тот вариант был скопирован по инерции с
@@ -3236,6 +3248,9 @@ html.dark [data-gill-v16] .mobile-top-bar {
     background: var(--gill-mobile-bar-border) !important;
   }
 
+  /* Референс: .bar-icon-btn{color:var(--color-text-muted)} — приглушённые
+     иконки (тема/поделиться), не полная тёмная краска. Полный ink здесь
+     сделал бы их заметнее, чем в образце. */
   [data-gill-v16] .mobile-bottom-bar > .gb-icon {
     flex: 0 0 auto !important;
     width: 38px !important;
@@ -3244,7 +3259,7 @@ html.dark [data-gill-v16] .mobile-top-bar {
     min-height: 38px !important;
     border-radius: 999px !important;
     background: transparent !important;
-    color: var(--gill-mobile-bar-ink) !important;
+    color: var(--gill-mobile-bar-muted) !important;
     border: 0 !important;
     box-shadow: none !important;
   }
