@@ -189,41 +189,41 @@ const partNumber = currentIdx >= 0 ? currentIdx + 1 : 1;
   // канонная initPlayExpand() в floating-cluster-controller.js, так TTS-движок
   // подхватывает выбор одинаково, откуда бы он ни пришёл.
   (function () {
-    function initGillRailSpeedSlot(topbar) {
-      var ember = topbar.querySelector('.gbs-rail-ember');
-      var speedrail = topbar.querySelector('.gbs-rail-speedrail');
-      var badge = topbar.parentElement.querySelector('.gbs-rail-spdbadge');
+    function initGillRailSpeedSlot(topbar: HTMLElement) {
+      var ember = topbar.querySelector('.gbs-rail-ember') as HTMLElement | null;
+      var speedrail = topbar.querySelector('.gbs-rail-speedrail') as HTMLElement | null;
+      var badge = topbar.parentElement ? topbar.parentElement.querySelector('.gbs-rail-spdbadge') as HTMLElement | null : null;
       if (!ember || !speedrail || !badge) return;
-      var chips = Array.prototype.slice.call(speedrail.querySelectorAll('.gbs-rail-spd'));
+      var chips = Array.prototype.slice.call(speedrail.querySelectorAll('.gbs-rail-spd')) as HTMLElement[];
       var offeredThisSession = false;
-      var closeTimer = null;
+      var closeTimer: ReturnType<typeof setTimeout> | null = null;
 
-      function fmt(r) { return String(r).replace(/\.0$/, '') + '×'; }
+      function fmt(r: number) { return String(r).replace(/\.0$/, '') + '×'; }
       function readRate() {
         try {
           var r = parseFloat(localStorage.getItem('gb:audio:rate') || localStorage.getItem('gbx-tts-rate') || '1');
           return (!isNaN(r) && r > 0) ? r : 1;
         } catch (_) { return 1; }
       }
-      function syncActive(rate) {
+      function syncActive(rate: number) {
         chips.forEach(function (c) {
-          var on = parseFloat(c.dataset.speed) === rate;
+          var on = parseFloat(c.dataset.speed || '') === rate;
           c.setAttribute('aria-checked', on ? 'true' : 'false');
         });
-        badge.textContent = fmt(rate);
-        badge.setAttribute('aria-label', 'Выбрать скорость, сейчас ' + fmt(rate));
+        badge!.textContent = fmt(rate);
+        badge!.setAttribute('aria-label', 'Выбрать скорость, сейчас ' + fmt(rate));
       }
       syncActive(readRate());
 
-      function open(autoClose) {
-        clearTimeout(closeTimer);
+      function open(autoClose: boolean) {
+        if (closeTimer) clearTimeout(closeTimer);
         topbar.classList.add('speed-open');
-        var active = speedrail.querySelector('.gbs-rail-spd[aria-checked="true"]');
-        if (active) setTimeout(function () { active.scrollIntoView({ block: 'nearest', inline: 'center', behavior: 'auto' }); }, 20);
+        var active = speedrail!.querySelector('.gbs-rail-spd[aria-checked="true"]') as HTMLElement | null;
+        if (active) { var activeChip = active; setTimeout(function () { activeChip.scrollIntoView({ block: 'nearest', inline: 'center', behavior: 'auto' }); }, 20); }
         if (autoClose) closeTimer = setTimeout(close, 4500);
       }
       function close() {
-        clearTimeout(closeTimer);
+        if (closeTimer) clearTimeout(closeTimer);
         topbar.classList.remove('speed-open');
       }
 
@@ -231,7 +231,7 @@ const partNumber = currentIdx >= 0 ? currentIdx + 1 : 1;
       // предлагает рельсу; повторный play/pause (resume) её не трогает.
       var prevState = ember.dataset.state || 'idle';
       new MutationObserver(function () {
-        var state = ember.dataset.state || 'idle';
+        var state = ember!.dataset.state || 'idle';
         if (state === 'playing' && (prevState === 'idle' || prevState === 'complete') && !offeredThisSession) {
           offeredThisSession = true;
           open(true);
@@ -239,18 +239,18 @@ const partNumber = currentIdx >= 0 ? currentIdx + 1 : 1;
         prevState = state;
       }).observe(ember, { attributes: true, attributeFilter: ['data-state'] });
 
-      badge.addEventListener('click', function (e) {
+      badge.addEventListener('click', function (e: Event) {
         e.preventDefault();
         e.stopPropagation();
         topbar.classList.contains('speed-open') ? close() : open(false);
       });
 
       chips.forEach(function (chip) {
-        chip.addEventListener('click', function (e) {
+        chip.addEventListener('click', function (e: Event) {
           e.stopPropagation();
-          var rate = parseFloat(chip.dataset.speed);
+          var rate = parseFloat(chip.dataset.speed || '');
           syncActive(rate);
-          badge.classList.remove('is-bump'); void badge.offsetWidth; badge.classList.add('is-bump');
+          badge!.classList.remove('is-bump'); void badge!.offsetWidth; badge!.classList.add('is-bump');
           try {
             localStorage.setItem('gb:audio:rate', String(rate));
             localStorage.setItem('gbx-tts-rate', String(rate));
@@ -260,44 +260,44 @@ const partNumber = currentIdx >= 0 ? currentIdx + 1 : 1;
         });
       });
 
-      window.addEventListener('gb:tts-rate-change', function (ev) {
-        var r = ev && ev.detail && ev.detail.rate;
+      window.addEventListener('gb:tts-rate-change', function (ev: Event) {
+        var r = (ev as CustomEvent)?.detail?.rate;
         if (typeof r === 'number' && !isNaN(r)) syncActive(r);
       });
 
-      document.addEventListener('pointerdown', function (e) {
-        if (topbar.classList.contains('speed-open') && !topbar.contains(e.target)) close();
+      document.addEventListener('pointerdown', function (e: PointerEvent) {
+        if (topbar.classList.contains('speed-open') && !topbar.contains(e.target as Node)) close();
       }, { passive: true });
 
       // Drag-to-scroll: setPointerCapture только после реального сдвига, иначе
       // обычный тап по чипу не долетает до его click-обработчика (тот самый
       // баг, уже пойманный и исправленный на мобильном референсе).
-      var dragging = false, startX = 0, startScroll = 0, moved = false, pid = null;
-      speedrail.addEventListener('pointerdown', function (e) {
-        dragging = true; moved = false; startX = e.clientX; startScroll = speedrail.scrollLeft; pid = e.pointerId;
+      var dragging = false, startX = 0, startScroll = 0, moved = false, pid: number | null = null;
+      speedrail.addEventListener('pointerdown', function (e: PointerEvent) {
+        dragging = true; moved = false; startX = e.clientX; startScroll = speedrail!.scrollLeft; pid = e.pointerId;
       });
-      speedrail.addEventListener('pointermove', function (e) {
+      speedrail.addEventListener('pointermove', function (e: PointerEvent) {
         if (!dragging || e.pointerId !== pid) return;
         var dx = e.clientX - startX;
         if (!moved && Math.abs(dx) > 4) {
           moved = true;
-          speedrail.classList.add('is-dragging');
-          try { speedrail.setPointerCapture(pid); } catch (_) {}
+          speedrail!.classList.add('is-dragging');
+          try { speedrail!.setPointerCapture(pid as number); } catch (_) {}
         }
-        if (moved) speedrail.scrollLeft = startScroll - dx;
+        if (moved) speedrail!.scrollLeft = startScroll - dx;
       });
-      function endDrag(e) {
+      function endDrag(e: PointerEvent) {
         if (!dragging || (pid !== null && e.pointerId !== pid)) return;
         dragging = false; pid = null;
-        speedrail.classList.remove('is-dragging');
+        speedrail!.classList.remove('is-dragging');
       }
       speedrail.addEventListener('pointerup', endDrag);
       speedrail.addEventListener('pointercancel', endDrag);
-      speedrail.addEventListener('click', function (e) { if (moved) { e.stopPropagation(); moved = false; } }, true);
+      speedrail.addEventListener('click', function (e: MouseEvent) { if (moved) { e.stopPropagation(); moved = false; } }, true);
     }
 
     function boot() {
-      document.querySelectorAll('.gbs-rail-topbar[data-gb-speed-custom]').forEach(initGillRailSpeedSlot);
+      document.querySelectorAll('.gbs-rail-topbar[data-gb-speed-custom]').forEach(function (el) { initGillRailSpeedSlot(el as HTMLElement); });
     }
     if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot, { once: true });
     else boot();
