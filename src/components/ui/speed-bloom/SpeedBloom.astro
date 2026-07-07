@@ -60,7 +60,7 @@ const active = 1;
   .sb-chips{position:absolute;left:0;top:24px;height:64px;padding:0 66px 0 20px;width:390px;display:flex;align-items:center;gap:7px}
   .sb-chip{border:1px solid rgba(150,110,60,.35);border-radius:13px;background:linear-gradient(180deg,#fffdf6,#f6ecd9);
     font-family:var(--f-ui,'Source Sans 3',system-ui,sans-serif);font-size:13px;font-weight:700;padding:7px 11px;color:#5a452a;
-    cursor:pointer;pointer-events:auto;opacity:0;transform:translateY(12px) scale(.82);
+    cursor:pointer;pointer-events:none;opacity:0;transform:translateY(12px) scale(.82);
     transition:opacity .26s ease,transform .4s cubic-bezier(.3,1.4,.4,1),background .25s,color .25s,border-color .25s;
     -webkit-tap-highlight-color:transparent}
   html.dark .sb-chip{border-color:rgba(232,190,120,.22);background:linear-gradient(180deg,#332a20,#241d15);color:#d8c8a8}
@@ -70,7 +70,7 @@ const active = 1;
     box-shadow:0 3px 10px rgba(0,0,0,.5),inset 0 1px 0 rgba(255,240,200,.55),0 0 14px -2px rgba(219,177,115,.4)}
   @media(hover:hover) and (pointer:fine){.sb-chip:hover:not(.sb-on){transform:translateY(-1px) scale(1.05)}}
   .sb-chip:focus-visible{outline:0;box-shadow:0 0 0 3px rgba(255,255,255,.95),0 0 0 6px #b8863f}
-  .sb-bloom.sb-open .sb-chip{opacity:1;transform:none}
+  .sb-bloom.sb-open .sb-chip{opacity:1;transform:none;pointer-events:auto}
   .sb-bloom.sb-open .sb-chips .sb-chip:nth-child(6){transition-delay:.08s}
   .sb-bloom.sb-open .sb-chips .sb-chip:nth-child(5){transition-delay:.12s}
   .sb-bloom.sb-open .sb-chips .sb-chip:nth-child(4){transition-delay:.16s}

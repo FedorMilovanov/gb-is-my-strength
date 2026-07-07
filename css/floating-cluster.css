@@ -2202,6 +2202,12 @@ html.dark .gb-ember-expand__btn.is-active {
    larger than the 40px icons so the listen action reads as primary. */
 .gb-floater .gbmini { --gbmini-size: 44px; }
 .gb-floater--hermeneutics { transition: transform .42s cubic-bezier(.22, 1, .36, 1); }
+/* Desktop (≥1200px) now gets HermenevtikaRail (left, own TOC) + the top-right
+   goo Play instead of this floater — mobile/tablet keep the floater pill
+   unchanged (HermenevtikaRail hides itself below 1200px, see its own CSS). */
+@media (min-width: 1200px) {
+  .gb-floater--hermeneutics { display: none; }
+}
 @media (hover: hover) and (pointer: fine) {
   .gb-floater--hermeneutics:has(.gb-ember-wrap:hover),
   .gb-floater--hermeneutics:has(.gb-ember-expand.is-open),
