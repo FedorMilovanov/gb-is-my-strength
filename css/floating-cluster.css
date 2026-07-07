@@ -2723,18 +2723,10 @@ html body::before {
   pointer-events: none;
 }
 @media (max-width: 899px) {
-  [data-gill-v16] .mobile-bottom-bar::before {
-    content: '';
-    position: absolute;
-    top: -2px; left: 8px; right: 8px;
-    height: 2px;
-    border-radius: 99px;
-    background: linear-gradient(90deg, #d4a857, #ffd18b);
-    transform: scaleX(var(--gb-read-pct, 0));
-    transform-origin: left;
-    opacity: .95;
-    box-shadow: 0 0 8px rgba(216,170,109,.45);
-  }
+  /* Старый gold-track индикатор на .mobile-bottom-bar::before убран —
+     не из референса (там у .bottom-bar простой border-top:1px), а на
+     новой структуре бара (кольцо прогресса + иконки) плашка сверху
+     смотрелась лишним, ничем не объяснённым артефактом. */
   [data-gill-v16] .mobile-btoc-progress-track {
     height: 3px !important;
     background: color-mix(in srgb, var(--gb-accent-gold) 32%, transparent) !important;
@@ -2952,20 +2944,6 @@ html.dark [data-gill-v16] .mobile-top-bar {
     background: var(--gill-mobile-bar-bg) !important;
     z-index: -1 !important;
     pointer-events: none !important;
-  }
-
-  [data-gill-v16] .mobile-bottom-bar::before {
-    content: '' !important;
-    position: absolute !important;
-    left: 12px !important;
-    right: 12px !important;
-    top: 6px !important;
-    height: 3px !important;
-    border-radius: 99px !important;
-    background: var(--gill-mobile-track) !important;
-    opacity: 1 !important;
-    transform: none !important;
-    box-shadow: none !important;
   }
 
   [data-gill-v16] .mobile-btoc-section,
