@@ -35,7 +35,12 @@ const ROUTES = [
   '/articles/dzhon-gill-spravochnik/',
 ];
 
-const expectedSeriesMarks = ['Введение', 'I', 'II', 'III', 'Справ.'];
+// Desktop rail: 'Введение' and 'Справочник' render as the full leather-bookmark
+// word (GillLeatherRibbon), not the abbreviated 'Справ.' used on the compact
+// mobile TOC overlay (GillSeriesOverlay, still plain SeriesMark) — the leather
+// port deliberately spelled the word out in full once the ribbon was widened to
+// fit it (owner spec: mute glow, shrink font, keep the full word legible).
+const expectedSeriesMarks = ['Введение', 'I', 'II', 'III', 'Справочник'];
 // Flow-rail (PR#45, witness bcf6389f): the CURRENT part's compact card is
 // replaced in-list by the expanded .gbs2-current card, so its mark is
 // legitimately absent from .gbs-rail-card__num — each route expects the
@@ -45,7 +50,7 @@ const currentMarkByRoute = {
   '/articles/dzhon-gill-chast-1-chelovek/': 'I',
   '/articles/dzhon-gill-chast-2-uchenyi/': 'II',
   '/articles/dzhon-gill-chast-3-nasledie/': 'III',
-  '/articles/dzhon-gill-spravochnik/': 'Справ.',
+  '/articles/dzhon-gill-spravochnik/': 'Справочник',
 };
 const failures = [];
 const proof = {
@@ -150,16 +155,24 @@ async function addFakeTts(context) {
   });
 }
 
+// Desktop Gill rail footer Play is the goo control (GooPlayMini, data-fc-action
+// "play" on .gbmini-play) since the leather/goo port; mobile bottom bar keeps
+// the classic .gb-ember unchanged. Both are driven by the same TTS engine via
+// data-fc-action="play" click delegation — setEmberState() still updates every
+// .gb-ember in the DOM (the mobile bar's node exists even when hidden by CSS on
+// desktop viewports), so allEmberStates() below keeps reading real engine state
+// regardless of which control is visible.
 async function visibleEmber(page, mobile) {
-  const selector = mobile ? '.mobile-bottom-bar .gb-ember' : '.gbs-rail-foot .gb-ember';
+  const selector = mobile ? '.mobile-bottom-bar .gb-ember' : '.gbs-rail-foot .gb-ember, .gbs-rail-foot .gbmini-play';
   const loc = page.locator(selector).first();
   await loc.waitFor({ state: 'visible', timeout: 8000 });
   return loc;
 }
+async function emberIsGoo(ember) { return ember.evaluate(el => el.classList.contains('gbmini-play')); }
 async function allEmberStates(page) { return page.$$eval('.gb-ember', els => els.map(el => el.getAttribute('data-state') || '')); }
 async function clickSpeedNearEmber(ember, speed) {
   const clicked = await ember.evaluate((el, targetSpeed) => {
-    const wrap = el.closest('.gb-ember-wrap');
+    const wrap = el.closest('.gb-ember-wrap') || el.closest('.gbmini');
     const btn = wrap && wrap.querySelector(`[data-speed="${targetSpeed}"]`);
     if (!btn) return false;
     btn.click();
@@ -360,6 +373,7 @@ async function testPlayState(browser, mobile) {
   await page.waitForTimeout(900);
   const label = mobile ? 'mobile 390' : 'desktop 1440';
   const ember = await visibleEmber(page, mobile);
+  const isGoo = await emberIsGoo(ember);
 
   await ember.click();
   await page.waitForTimeout(150);
@@ -379,13 +393,20 @@ async function testPlayState(browser, mobile) {
   assert(speedFacts.calls === callsBeforeSpeed + 1, `${label}: speed change while playing restarts exactly once`, JSON.stringify(speedFacts));
   assert(speedFacts.rates.at(-1) === 1.75, `${label}: speed change uses selected 1.75×`, JSON.stringify(speedFacts.rates));
 
-  await clickStopNearEmber(ember);
-  await page.waitForTimeout(150);
-  assert((await allEmberStates(page)).every(s => s === 'idle'), `${label}: stop/reset -> idle`, JSON.stringify(await allEmberStates(page)));
-  const progress = await page.$$eval('.gb-ember', els => els.map(el => el.style.getPropertyValue('--p') || ''));
-  assert(progress.every(p => p === '0'), `${label}: stop/reset clears progress`, JSON.stringify(progress));
+  // GooPlayMini (desktop Gill rail footer, post leather/goo port) intentionally
+  // has no stop affordance — matches the approved reference (play/pause toggle +
+  // speed only, no separate stop button). Mobile keeps the classic .gb-ember with
+  // its long-press-to-stop gesture (exercised below), so the stop/idle-speed
+  // assertions still run there.
+  if (!isGoo) {
+    await clickStopNearEmber(ember);
+    await page.waitForTimeout(150);
+    assert((await allEmberStates(page)).every(s => s === 'idle'), `${label}: stop/reset -> idle`, JSON.stringify(await allEmberStates(page)));
+    const progress = await page.$$eval('.gb-ember', els => els.map(el => el.style.getPropertyValue('--p') || ''));
+    assert(progress.every(p => p === '0'), `${label}: stop/reset clears progress`, JSON.stringify(progress));
+  }
 
-  if (!mobile) {
+  if (!mobile && !isGoo) {
     const beforeIdleSpeed = await page.evaluate(() => window.__ttsFake.speakCalls);
     await ember.hover();
     await clickSpeedNearEmber(ember, '1.25');

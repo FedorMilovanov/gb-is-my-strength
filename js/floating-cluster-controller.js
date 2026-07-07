@@ -242,6 +242,13 @@
       }
     });
     updateEmberAriaLabel(state);
+    // Broadcast so non-ember Play surfaces (SpeedBloom goo control) can mirror
+    // play/pause + progress without being a .gb-ember themselves.
+    try {
+      window.dispatchEvent(new CustomEvent('gb:tts-state', {
+        detail: { state: state, progress: progress },
+      }));
+    } catch (_) {}
   }
 
   function updateEmberAriaLabel(state) {

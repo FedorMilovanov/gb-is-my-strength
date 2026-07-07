@@ -209,7 +209,12 @@ async function browserAudit(){
             monotonic:(function(){var links=[...document.querySelectorAll('.gbs-rail .gbs2-toc a[href^="#"]')];var prev=-Infinity,violations=[];links.forEach(function(a){var t=document.getElementById((a.getAttribute('href')||'').slice(1));if(!t)return;var top=t.getBoundingClientRect().top+window.scrollY;if(top<prev)violations.push(a.getAttribute('href'));prev=top;});return violations;})(),
             ariaCurrent:document.querySelectorAll('.gbs-rail .gbs2-toc a[aria-current="location"]').length,
             ariaFalse:document.querySelectorAll('.gbs-rail .gbs2-toc a[aria-current="false"]').length,
-            inFlowOverflow:(function(){var m=0;rail.querySelectorAll('*').forEach(function(el){var p=getComputedStyle(el).position;if(p==='absolute'||p==='fixed')return;if(el.closest('.gb-ember-expand'))return;var rb=el.getBoundingClientRect();if(rb.right>m)m=rb.right;});return Math.max(0,m-rr.right);})()};
+            // .gbmini-bloom (goo-play speed popover, rail footer) is the same kind of
+            // floating overlay as .gb-ember-expand — its silhouette/chips sit at full
+            // bloom geometry at all times (only opacity/scale animate open vs closed,
+            // for the SVG goo-merge filter to work), so it legitimately extends past
+            // the rail edge while invisible. Exempt it the same way.
+            inFlowOverflow:(function(){var m=0;rail.querySelectorAll('*').forEach(function(el){var p=getComputedStyle(el).position;if(p==='absolute'||p==='fixed')return;if(el.closest('.gb-ember-expand'))return;if(el.closest('.gbmini-bloom'))return;var rb=el.getBoundingClientRect();if(rb.right>m)m=rb.right;});return Math.max(0,m-rr.right);})()};
         });
         if(g.noRail){bad(`${route} ${vp.name} no .gbs-rail frame`);await page.close();continue;}
         g.posFixed?ok(`${route} ${vp.name} rail fixed`):bad(`${route} ${vp.name} rail not fixed (${g.posFixed})`);
