@@ -862,18 +862,18 @@ _on(searchInput,'input',()=>{
         setTimeout(() => { if(dot) { dot.setAttribute('r','4.5'); dot.style.transition = 'r .2s ease, fill .2s ease, filter .2s ease'; } }, 400);
       }
     });
-  }, 200);
-  // Show match count
-  if (q) {
-    const mc = markersG.querySelectorAll('g[transform]').length;
-    let visibleCount = 0;
-    markersG.querySelectorAll('g[transform]').forEach(g => {
-      if (g.style.opacity !== '0.08' && g.style.opacity !== '.08') visibleCount++;
-    });
-    if (visibleCount > 0 && visibleCount < mc) {
-      showToast('Найдено: ' + visibleCount, 1500);
+    // Show match count (was: at handler entry; crashed: q not in scope here)
+    if (q) {
+      const mc = markersG.querySelectorAll('g[transform]').length;
+      let visibleCount = 0;
+      markersG.querySelectorAll('g[transform]').forEach(g => {
+        if (g.style.opacity !== '0.08' && g.style.opacity !== '.08') visibleCount++;
+      });
+      if (visibleCount > 0 && visibleCount < mc) {
+        showToast('Найдено: ' + visibleCount, 1500);
+      }
     }
-  }
+  }, 200);
 });
 header.appendChild(searchInput);
 container.appendChild(header);
