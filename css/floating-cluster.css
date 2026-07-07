@@ -2292,22 +2292,19 @@ html.dark .gb-ember-expand__btn.is-active {
    Also drop the Stop chip — the reference pill is 6 speeds only (Stop stays
    reachable via long-press on Play). Unlayered so it beats the base btn rule. */
 .gb-floater .gb-ember-expand__stop { display: none; }
-/* Goo Play (closed disc) in the single-article floating cluster — sized a touch
-   larger than the 40px icons so the listen action reads as primary. */
-.gb-floater .gbmini { --gbmini-size: 44px; }
 .gb-floater--hermeneutics { transition: transform .42s cubic-bezier(.22, 1, .36, 1); }
-/* Desktop (≥1200px) now gets HermenevtikaRail (left, own TOC) + the top-right
-   goo Play instead of this floater — mobile/tablet keep the floater pill
-   unchanged (HermenevtikaRail hides itself below 1200px, see its own CSS). */
-@media (min-width: 1200px) {
+/* Owner rollback: restore the floater on desktop (it was hidden ≥1200px while
+   HermenevtikaRail's own top-right goo Play stood in for it — that Play is
+   removed). Below 1200px HermenevtikaMobileBar is the sole control surface
+   (its own theme/search/play/save), so the floater stays hidden there to
+   avoid duplicate controls — matching HermenevtikaRail/MobileBar's own
+   1199/1200px split. */
+@media (max-width: 1199px) {
   .gb-floater--hermeneutics { display: none; }
 }
 @media (hover: hover) and (pointer: fine) {
   .gb-floater--hermeneutics:has(.gb-ember-wrap:hover),
-  .gb-floater--hermeneutics:has(.gb-ember-expand.is-open),
-  /* goo Play blooms LEFT — slide the whole cluster right so the pill has room
-     and doesn't hug the viewport edge (owner DALL-E spec). */
-  .gb-floater--hermeneutics:has(.gbmini.sb-open) {
+  .gb-floater--hermeneutics:has(.gb-ember-expand.is-open) {
     transform: translateX(clamp(56px, 7vw, 104px));
   }
 }

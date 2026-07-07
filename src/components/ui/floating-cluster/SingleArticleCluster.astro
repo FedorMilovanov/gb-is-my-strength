@@ -21,7 +21,6 @@
 
 import PlayEmber from './PlayEmber.astro';
 import SaveButton from './SaveButton.astro';
-import GooPlayMini from '@/components/ui/speed-bloom/GooPlayMini.astro';
 
 interface Props {
   /**
@@ -89,14 +88,11 @@ const {
     </svg>
   </button>
 
-  <!-- 3. Play — Hermeneutics gets the goo Play (closed disc, gold contour, in-circle
-       speed label); other single articles keep the classic ember until rollout.
-       standalone={false}: this control lives inside the cluster root, so the
-       cluster's own click delegation drives play (no nested [data-fc-root]). The
-       goo mini owns the shared goo defs on single-article pages. -->
-  {variant === 'hermeneutics'
-    ? <GooPlayMini defs={true} standalone={false} direction="left" class="gb-floater-ember" tip="Озвучка" />
-    : <PlayEmber audioState={audioState} progress={progress} />}
+  <!-- 3. Play — the tested PlayEmber ring circle, same as every other single
+       article. Hermeneutics previously had a goo-Play carve-out here; that
+       whole family is being retired in favour of PlayEmber + .gb-ember-expand
+       (owner rollback), so it now matches the rest of the site. -->
+  <PlayEmber audioState={audioState} progress={progress} />
 
   <!-- 4. Save — NO halo (gb-save, not gb-icon) -->
   <SaveButton />
