@@ -2,8 +2,11 @@
  * vosk-tts-engine.js
  * Браузерный движок озвучки на базе vosk-tts (github.com/alphacep/vosk-tts, Apache 2.0):
  * настоящая нейросеть (VITS + BERT-эмбеддинги для ударений), инференс через onnxruntime-web,
- * целиком в браузере, без сервера. Модель качается с alphacephei.com один раз и кэшируется
+ * целиком в браузере, без сервера. Модель качается с Hugging Face один раз и кэшируется
  * в IndexedDB — при повторных визитах готова мгновенно.
+ * (alphacephei.com — официальный хост той же модели — не отдаёт Access-Control-Allow-Origin,
+ * поэтому cross-origin fetch() с этого сайта до него не доходит; huggingface.co подтверждённо
+ * отдаёт "access-control-allow-origin: *" на этот файл, см. AuditRepo REPORT.md Round 3.)
  *
  * Ничего не подключается, пока страница явно не вызовет ensureLoaded()/speak() — используется
  * только floating-cluster-controller.js по клику «Слушать».
@@ -19,7 +22,7 @@
   var STRESS_MARKER_URL = '/js/vosk-stress-marker.bin';
   var ORT_SRC = 'https://cdn.jsdelivr.net/npm/onnxruntime-web@1.19.2/dist/ort.min.js';
   var FFLATE_SRC = 'https://cdn.jsdelivr.net/npm/fflate@0.8.2/umd/index.js';
-  var MODEL_URL = 'https://alphacephei.com/vosk/models/vosk-model-tts-ru-0.9-multi.zip';
+  var MODEL_URL = 'https://huggingface.co/CurtMil/gb-vosk-tts-model/resolve/main/vosk-model-tts-ru-0.9-multi.zip';
   var NEEDED = ['model.onnx', 'dictionary', 'config.json', 'bert/model.onnx', 'bert/vocab.txt'];
   var DB_NAME = 'gb-vosk-tts';
   var SAMPLE_RATE = 22050;
