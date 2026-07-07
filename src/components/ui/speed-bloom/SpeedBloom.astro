@@ -1,0 +1,165 @@
+---
+/**
+ * SpeedBloom — the approved seamless "goo" speed control, ported verbatim from
+ * the perfected scratchpad (speed-bloom.html, single/horizontal variant).
+ *
+ * Closed = a single Play circle (icon + speed label inside + gold contour).
+ * On hover the speed pill "flows" LEFT out of the circle (metaball goo merge,
+ * one SVG silhouette + one shared gradient, gold contour drawn by the filter).
+ *
+ * Day colours are the default; html.dark swaps to the night palette. Classes
+ * (sb-*) and filter ids (gbsb-*) are namespaced so nothing collides.
+ *
+ * Wiring: the Play button carries data-fc-action="play" and the whole control
+ * sits in a [data-fc-root] so the existing TTS controller drives play/pause;
+ * chips dispatch gb:tts-rate-change (the controller applies the rate live).
+ */
+import SpeedBloomDefs from './SpeedBloomDefs.astro';
+interface Props { class?: string; defs?: boolean; }
+const { class: className = '', defs = true } = Astro.props;
+const speeds = [0.75, 1, 1.25, 1.5, 1.75, 2];
+const active = 1;
+---
+<div class:list={['gb-speedbloom', className]} data-fc-root data-fc-variant="single" data-fc-mode="single" data-pagefind-ignore role="group" aria-label="Озвучка статьи">
+  <div class="sb-bloom sb-single" data-sb-hover>
+    <svg class="sb-sil" viewBox="0 0 470 112" aria-hidden="true">
+      <g filter="url(#gbsb-goo)">
+        <rect class="sb-bar" x="0" y="24" width="390" height="64" rx="32"/>
+        <circle class="sb-disc" cx="400" cy="56" r="45"/>
+      </g>
+    </svg>
+    <div class="sb-content">
+      <div class="sb-chips" role="radiogroup" aria-label="Скорость озвучки">
+        {speeds.map((s) => (
+          <button class:list={['sb-chip', s === active && 'sb-on']} type="button" role="radio" data-speed={s} aria-checked={s === active ? 'true' : 'false'} aria-label={`Скорость ${s}×`}>{s}×</button>
+        ))}
+      </div>
+      <button class="sb-play" type="button" data-fc-action="play" aria-label="Слушать озвучку" aria-haspopup="true">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path class="sb-ic-play" d="M7 4.6v14.8L19 12 7 4.6z"></path><g class="sb-ic-pause"><rect x="7" y="5" width="3.4" height="14" rx="1.2"></rect><rect x="13.6" y="5" width="3.4" height="14" rx="1.2"></rect></g></svg>
+      </button>
+    </div>
+  </div>
+
+  {defs && <SpeedBloomDefs />}
+</div>
+
+<style is:global>
+  /* ===== SpeedBloom (goo) — ported from approved scratchpad, day default + dark ===== */
+  .gb-speedbloom{display:flex;justify-content:center;margin:6px 0 30px}
+  .sb-bloom{position:relative;margin:0 auto}
+  .sb-bloom.sb-single{width:min(470px,100%);height:112px}
+  .sb-sil{position:absolute;inset:0;width:100%;height:100%;overflow:visible;
+    filter:drop-shadow(0 10px 20px rgba(120,85,40,.26)) drop-shadow(0 3px 6px rgba(120,85,40,.18))}
+  html.dark .sb-sil{filter:drop-shadow(0 10px 20px rgba(0,0,0,.55)) drop-shadow(0 3px 6px rgba(0,0,0,.4))}
+  .sb-bar,.sb-disc{fill:url(#gbsb-surf-day)}
+  html.dark .sb-bar,html.dark .sb-disc{fill:url(#gbsb-surf-night)}
+  .sb-bar{transform-box:view-box;transform-origin:400px 56px;transform:scale(.12);
+    transition:transform .5s cubic-bezier(.3,1.24,.4,1)}
+  .sb-bloom.sb-open .sb-bar{transform:scale(1)}
+  .sb-content{position:absolute;inset:0;pointer-events:none}
+  .sb-chips{position:absolute;left:0;top:24px;height:64px;padding:0 66px 0 20px;width:390px;display:flex;align-items:center;gap:7px}
+  .sb-chip{border:1px solid rgba(150,110,60,.35);border-radius:13px;background:linear-gradient(180deg,#fffdf6,#f6ecd9);
+    font-family:var(--f-ui,'Source Sans 3',system-ui,sans-serif);font-size:13px;font-weight:700;padding:7px 11px;color:#5a452a;
+    cursor:pointer;pointer-events:none;opacity:0;transform:translateY(12px) scale(.82);
+    transition:opacity .26s ease,transform .4s cubic-bezier(.3,1.4,.4,1),background .25s,color .25s,border-color .25s;
+    -webkit-tap-highlight-color:transparent}
+  html.dark .sb-chip{border-color:rgba(232,190,120,.22);background:linear-gradient(180deg,#332a20,#241d15);color:#d8c8a8}
+  .sb-chip.sb-on{background:linear-gradient(160deg,#d5ab6d,#b98a4e);color:#fff;border-color:transparent;
+    box-shadow:0 3px 9px rgba(160,115,55,.35),inset 0 1px 0 rgba(255,255,255,.45)}
+  html.dark .sb-chip.sb-on{background:linear-gradient(160deg,#dbb173,#a97f45);color:#241708;
+    box-shadow:0 3px 10px rgba(0,0,0,.5),inset 0 1px 0 rgba(255,240,200,.55),0 0 14px -2px rgba(219,177,115,.4)}
+  @media(hover:hover) and (pointer:fine){.sb-chip:hover:not(.sb-on){transform:translateY(-1px) scale(1.05)}}
+  .sb-chip:focus-visible{outline:0;box-shadow:0 0 0 3px rgba(255,255,255,.95),0 0 0 6px #b8863f}
+  .sb-bloom.sb-open .sb-chip{opacity:1;transform:none;pointer-events:auto}
+  .sb-bloom.sb-open .sb-chips .sb-chip:nth-child(6){transition-delay:.08s}
+  .sb-bloom.sb-open .sb-chips .sb-chip:nth-child(5){transition-delay:.12s}
+  .sb-bloom.sb-open .sb-chips .sb-chip:nth-child(4){transition-delay:.16s}
+  .sb-bloom.sb-open .sb-chips .sb-chip:nth-child(3){transition-delay:.20s}
+  .sb-bloom.sb-open .sb-chips .sb-chip:nth-child(2){transition-delay:.24s}
+  .sb-bloom.sb-open .sb-chips .sb-chip:nth-child(1){transition-delay:.28s}
+  .sb-play{position:absolute;left:355px;top:11px;width:90px;height:90px;pointer-events:auto;cursor:pointer;
+    border:0;background:transparent;border-radius:50%;display:grid;place-items:center;overflow:visible}
+  .sb-play::before{content:'';position:absolute;inset:0;border-radius:50%;
+    background:radial-gradient(14% 11% at 37% 40%, rgba(255,255,255,.8), transparent 100%),
+               radial-gradient(60% 55% at 40% 34%, rgba(255,255,255,.85), transparent 70%),
+               radial-gradient(75% 60% at 50% 100%, rgba(150,110,60,.16), transparent 72%)}
+  html.dark .sb-play::before{
+    background:radial-gradient(14% 11% at 37% 40%, rgba(255,245,220,.16), transparent 100%),
+               radial-gradient(60% 55% at 40% 34%, rgba(255,235,190,.1), transparent 70%),
+               radial-gradient(75% 60% at 50% 100%, rgba(0,0,0,.3), transparent 72%)}
+  .sb-play::after{content:'';position:absolute;inset:11%;border-radius:50%;
+    border:1px solid rgba(150,110,60,.3);box-shadow:inset 0 1px 1px rgba(255,255,255,.55)}
+  html.dark .sb-play::after{border-color:rgba(223,177,115,.28);box-shadow:inset 0 1px 1px rgba(255,235,190,.12)}
+  .sb-play svg:not(.sb-ringsvg){width:22px;height:22px;fill:#7a5a30;transform:translateX(1.5px);position:relative;transition:transform .3s}
+  html.dark .sb-play svg:not(.sb-ringsvg){fill:#e6c286}
+  .sb-bloom.sb-open .sb-play svg:not(.sb-ringsvg){transform:translateX(1.5px) scale(1.06)}
+  .sb-play:focus-visible{outline:0;box-shadow:0 0 0 3px rgba(255,255,255,.95),0 0 0 6px #b8863f}
+  .sb-ic-pause{display:none;fill:currentColor}
+  /* icon reflects the precise state: pause glyph only while actually playing —
+     paused/idle show the play triangle so the next click's action is obvious */
+  .sb-bloom.sb-playing:not(.sb-paused) .sb-ic-play{display:none}
+  .sb-bloom.sb-playing:not(.sb-paused) .sb-ic-pause{display:block}
+  .sb-ringsvg{position:absolute;inset:4%;pointer-events:none;overflow:visible}
+  .sb-prog{fill:none;stroke:#c39a5e;stroke-width:3.2;stroke-linecap:round;stroke-dasharray:100 100;stroke-dashoffset:100;opacity:0;transition:opacity .4s;filter:drop-shadow(0 0 3px rgba(195,154,94,.45))}
+  html.dark .sb-prog{stroke:#dfb173;filter:drop-shadow(0 0 3px rgba(223,177,115,.5))}
+  .sb-bloom.sb-playing .sb-prog{opacity:1}
+  .sb-spd{font-family:var(--f-ui,'Source Sans 3',system-ui,sans-serif);font-weight:700;font-size:11.5px;letter-spacing:.06em;fill:rgba(122,90,48,.78)}
+  html.dark .sb-spd{fill:rgba(223,177,115,.85)}
+  /* responsive: shrink the whole control under 500px so it never overflows */
+  @media(max-width:520px){
+    .sb-bloom.sb-single{width:362px;height:92px;transform-origin:right center}
+    .sb-bloom.sb-single .sb-bar{transform-origin:316px 46px}
+  }
+  @media(prefers-reduced-motion:reduce){.sb-bar,.sb-chip,.sb-play svg{transition:none!important}}
+</style>
+
+<script>
+  const NS = 'http://www.w3.org/2000/svg';
+  function initBloom(root: HTMLElement){
+    const bloom = root.querySelector('.sb-bloom') as HTMLElement | null;
+    if(!bloom) return;
+    const play = bloom.querySelector('.sb-play') as HTMLElement;
+    const fine = () => matchMedia('(hover:hover) and (pointer:fine)').matches;
+    let t: number | undefined;
+    const open = () => { clearTimeout(t); bloom.classList.add('sb-open'); };
+    const close = () => { t = window.setTimeout(() => bloom.classList.remove('sb-open'), 240); };
+    bloom.addEventListener('mouseenter', () => { if(fine()) open(); });
+    bloom.addEventListener('mouseleave', () => { if(fine()) close(); });
+    play.addEventListener('focus', open);
+    play.addEventListener('blur', close);
+    // speed label (curved) + progress ring inside the circle
+    const on = bloom.querySelector('.sb-chip.sb-on');
+    const label = on ? (on.textContent || '1×') : '1×';
+    const svg = document.createElementNS(NS,'svg');
+    svg.setAttribute('class','sb-ringsvg'); svg.setAttribute('viewBox','0 0 100 100');
+    const c = document.createElementNS(NS,'circle'); c.setAttribute('class','sb-prog');
+    c.setAttribute('cx','50'); c.setAttribute('cy','50'); c.setAttribute('r','45'); c.setAttribute('pathLength','100');
+    const arc = document.createElementNS(NS,'path'); const pid = 'sbarc'+Math.random().toString(36).slice(2,7);
+    arc.setAttribute('id',pid); arc.setAttribute('d','M20.5,60 A34,34 0 0 0 79.5,60'); arc.setAttribute('fill','none');
+    const txt = document.createElementNS(NS,'text'); txt.setAttribute('class','sb-spd');
+    const tp = document.createElementNS(NS,'textPath'); tp.setAttribute('href','#'+pid); tp.setAttribute('startOffset','50%'); tp.setAttribute('text-anchor','middle'); tp.textContent = label;
+    txt.appendChild(tp); svg.append(c,arc,txt); play.appendChild(svg);
+    // chip select → live TTS rate + active/label sync
+    bloom.querySelectorAll('.sb-chip').forEach((ch) => ch.addEventListener('click', (e) => {
+      e.stopPropagation();
+      bloom.querySelectorAll('.sb-chip').forEach((x) => { x.classList.remove('sb-on'); x.setAttribute('aria-checked','false'); });
+      ch.classList.add('sb-on'); ch.setAttribute('aria-checked','true');
+      if(tp) tp.textContent = ch.textContent;
+      const rate = parseFloat((ch as HTMLElement).dataset.speed || '1');
+      try { localStorage.setItem('gb:audio:rate', String(rate)); localStorage.setItem('gbx-tts-rate', String(rate)); } catch(_){}
+      window.dispatchEvent(new CustomEvent('gb:tts-rate-change', { detail:{ rate } }));
+    }));
+    // reflect the actual TTS state on the icon (controller drives data-fc-action="play")
+    window.addEventListener('gb:tts-state', (ev: any) => {
+      const d = ev && ev.detail || {};
+      const st = d.state;
+      const playing = st === 'playing' || st === 'paused' || st === 'loading';
+      bloom.classList.toggle('sb-playing', playing);
+      bloom.classList.toggle('sb-paused', st === 'paused');
+      if (typeof d.progress === 'number' && !isNaN(d.progress)) {
+        c.setAttribute('stroke-dashoffset', String(Math.max(0, 100 - d.progress * 100)));
+      }
+    });
+  }
+  document.querySelectorAll('.gb-speedbloom').forEach((el) => initBloom(el as HTMLElement));
+</script>

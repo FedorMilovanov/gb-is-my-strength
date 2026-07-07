@@ -1,0 +1,136 @@
+---
+/**
+ * HermenevtikaMobileBar — mobile (<1200px) counterpart to HermenevtikaRail.
+ * Fixed bottom bar: TOC toggle (opens a slide-up sheet with the article's own
+ * H2/H3 outline — same data as the desktop rail), theme, search, the goo Play
+ * (direction="up", blooms upward above the bar — matches the approved
+ * reference), save. Same day/wine palette as the desktop rail.
+ */
+import SaveButton from '@/components/ui/floating-cluster/SaveButton.astro';
+import GooPlayMini from '@/components/ui/speed-bloom/GooPlayMini.astro';
+import { HERMENEVTIKA_TOC } from './hermenevtikaToc';
+
+interface Props {
+  title: string;
+}
+const { title } = Astro.props;
+---
+<div class="hmbar" data-fc-root data-fc-variant="single" data-fc-mode="single">
+  <button class="hmbar-toc" id="hmbarTocBtn" type="button" aria-label="Оглавление статьи" aria-expanded="false">
+    <svg viewBox="0 0 24 24"><line x1="8" y1="6" x2="21" y2="6" /><line x1="8" y1="12" x2="21" y2="12" /><line x1="8" y1="18" x2="21" y2="18" /><line x1="3" y1="6" x2="3.01" y2="6" /><line x1="3" y1="12" x2="3.01" y2="12" /><line x1="3" y1="18" x2="3.01" y2="18" /></svg>
+    <span>Оглавление</span>
+  </button>
+  <!-- Play sits right after TOC (not last) so the "up" bloom — which grows
+       symmetrically left/right of its own centre — has room on both sides
+       within the viewport instead of clipping against the right edge. -->
+  <GooPlayMini direction="up" defs={true} standalone={false} tip="Слушать озвучку" class="hmbar-play" />
+  <button class="hmbar-btn gb-theme-toggle" data-fc-action="theme" aria-label="Тема">
+    <span class="theme-icon-sun"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4.5" /><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41" /></svg></span>
+    <span class="theme-icon-moon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z" /></svg></span>
+  </button>
+  <button class="hmbar-btn" data-fc-action="search" aria-label="Поиск">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7" /><path d="M21 21l-4.3-4.3" /></svg>
+  </button>
+  <SaveButton class="hmbar-btn" tip="Сохранить" />
+</div>
+
+<div class="hmsheet" id="hmbarSheet" aria-hidden="true">
+  <div class="hmsheet-backdrop" id="hmbarSheetBackdrop"></div>
+  <div class="hmsheet-panel" role="dialog" aria-modal="true" aria-label={`Оглавление: ${title}`}>
+    <div class="hmsheet-head">
+      <span>Оглавление статьи</span>
+      <button class="hmsheet-close" id="hmbarSheetClose" type="button" aria-label="Закрыть">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18" /></svg>
+      </button>
+    </div>
+    <ul class="hmsheet-list">
+      {HERMENEVTIKA_TOC.map((item) => (
+        <li class:list={{ 'hmsheet-sub': item.level === 3 }}>
+          <a href={item.href} class="hmbar-sheet-link">{item.label}</a>
+        </li>
+      ))}
+    </ul>
+  </div>
+</div>
+
+<style is:global>
+  .hmbar{display:none}
+  @media(max-width:1199px){
+    .hmbar{
+      display:flex; align-items:center; justify-content:center; gap:10px; position:fixed; left:0; right:0;
+      bottom:0; z-index:var(--z-bottom-bar,2000); padding:8px 10px calc(8px + env(safe-area-inset-bottom,0px));
+      background:linear-gradient(180deg,#fbf3ea,#f3e6d8); border-top:1px solid #e8d9c8;
+      box-shadow:0 -8px 24px -12px rgba(122,46,46,.18);
+    }
+    html.dark .hmbar{
+      background:linear-gradient(180deg,#241019,#150a0e); border-top-color:rgba(212,140,150,.16);
+      box-shadow:0 -8px 24px -12px rgba(0,0,0,.5);
+    }
+  }
+  .hmbar-toc{display:flex;flex-direction:column;align-items:center;gap:2px;flex:0 1 68px;min-width:0;
+    border:0;background:none;color:#8a5a4a;font:inherit;font-size:10px;padding:4px 2px;cursor:pointer}
+  html.dark .hmbar-toc{color:#caa1a0}
+  .hmbar-toc svg{width:19px;height:19px;stroke:currentColor;fill:none;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
+  .hmbar-toc span{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%}
+  .hmbar-btn{position:relative;width:38px;height:38px;flex-shrink:0;border-radius:50%;display:grid;place-items:center;
+    color:#8a5a4a;background:none;border:0;cursor:pointer}
+  html.dark .hmbar-btn{color:#caa1a0}
+  .hmbar-btn svg{width:18px;height:18px;stroke:currentColor;fill:none;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
+  .hmbar .gb-save.is-saved{color:#b8724f}
+  .hmbar .gb-save.is-saved svg{fill:#b8724f;stroke:#b8724f}
+  html.dark .hmbar .gb-save.is-saved{color:#e0a89c}
+  html.dark .hmbar .gb-save.is-saved svg{fill:#e0a89c;stroke:#e0a89c}
+  .hmbar-play{--gbmini-size:46px;flex-shrink:0;margin:0 2px}
+
+  /* TOC sheet — slides up from the bottom, sits above the bar */
+  .hmsheet{display:none}
+  .hmsheet.is-open{display:block}
+  .hmsheet-backdrop{position:fixed;inset:0;background:rgba(20,10,8,.42);z-index:var(--z-overlay,2500)}
+  .hmsheet-panel{position:fixed;left:0;right:0;bottom:0;z-index:var(--z-overlay-high,3000);
+    max-height:70vh;overflow-y:auto;border-radius:20px 20px 0 0;padding:14px 18px calc(18px + env(safe-area-inset-bottom,0px));
+    background:#fbf3ea;box-shadow:0 -20px 50px -10px rgba(0,0,0,.35);
+    transform:translateY(100%);transition:transform .3s cubic-bezier(.22,1,.36,1)}
+  .hmsheet.is-open .hmsheet-panel{transform:translateY(0)}
+  html.dark .hmsheet-panel{background:#1c0e14;box-shadow:0 -20px 50px -10px rgba(0,0,0,.6)}
+  .hmsheet-head{display:flex;align-items:center;justify-content:space-between;
+    font-family:var(--f-serif,Lora,Georgia,serif);font-weight:700;font-size:15px;color:#2a1814;
+    padding-bottom:10px;margin-bottom:6px;border-bottom:1px solid rgba(0,0,0,.08)}
+  html.dark .hmsheet-head{color:#f2e9e6;border-bottom-color:rgba(255,255,255,.08)}
+  .hmsheet-close{width:30px;height:30px;border-radius:50%;display:grid;place-items:center;border:0;
+    background:rgba(122,46,46,.08);color:#7a2e2e;cursor:pointer}
+  html.dark .hmsheet-close{background:rgba(224,160,150,.1);color:#e0a89c}
+  .hmsheet-close svg{width:15px;height:15px}
+  .hmsheet-list{list-style:none;margin:0;padding:6px 0 0}
+  .hmsheet-list li{margin:0}
+  .hmbar-sheet-link{display:block;padding:9px 4px;color:rgba(42,24,20,.72);text-decoration:none;
+    font-family:var(--f-serif,Lora,Georgia,serif);font-size:14.5px;border-bottom:1px solid rgba(0,0,0,.05)}
+  html.dark .hmbar-sheet-link{color:rgba(255,255,255,.68);border-bottom-color:rgba(255,255,255,.06)}
+  .hmsheet-sub .hmbar-sheet-link{padding-left:18px;font-size:13.5px;color:rgba(42,24,20,.55)}
+  html.dark .hmsheet-sub .hmbar-sheet-link{color:rgba(255,255,255,.5)}
+
+  @media(min-width:1200px){ .hmsheet{display:none !important} }
+
+  /* Reserve room so the fixed bar never covers the last paragraph. */
+  @media(max-width:1199px){
+    .article-main--hrail{ padding-bottom: calc(84px + env(safe-area-inset-bottom,0px)); }
+  }
+</style>
+
+<script>
+  function initHermenevtikaMobileBar(){
+    const btn = document.getElementById('hmbarTocBtn');
+    const sheet = document.getElementById('hmbarSheet');
+    const backdrop = document.getElementById('hmbarSheetBackdrop');
+    const closeBtn = document.getElementById('hmbarSheetClose');
+    if(!btn || !sheet) return;
+    const open = () => { sheet.classList.add('is-open'); sheet.setAttribute('aria-hidden', 'false'); btn.setAttribute('aria-expanded', 'true'); document.body.style.overflow = 'hidden'; };
+    const close = () => { sheet.classList.remove('is-open'); sheet.setAttribute('aria-hidden', 'true'); btn.setAttribute('aria-expanded', 'false'); document.body.style.overflow = ''; };
+    btn.addEventListener('click', () => sheet.classList.contains('is-open') ? close() : open());
+    backdrop?.addEventListener('click', close);
+    closeBtn?.addEventListener('click', close);
+    sheet.querySelectorAll('.hmbar-sheet-link').forEach((a) => a.addEventListener('click', close));
+    document.addEventListener('keydown', (e) => { if(e.key === 'Escape' && sheet.classList.contains('is-open')) close(); });
+  }
+  if(document.readyState === 'loading') document.addEventListener('DOMContentLoaded', initHermenevtikaMobileBar, { once: true });
+  else initHermenevtikaMobileBar();
+</script>

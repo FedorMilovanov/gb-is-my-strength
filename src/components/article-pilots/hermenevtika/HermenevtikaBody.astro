@@ -1,5 +1,6 @@
 ---
-import FloatingCluster from '@/components/ui/floating-cluster/FloatingCluster.astro';
+import HermenevtikaRail from './HermenevtikaRail.astro';
+import HermenevtikaMobileBar from './HermenevtikaMobileBar.astro';
 ---
 
 <!-- Премиум-SVG кластер ЗАМЕНЯЕТ старый .theme-toggle + .back-to-top + .bottom-bar + .btoc-overlay + .bookmark-toast.
@@ -11,12 +12,12 @@ import FloatingCluster from '@/components/ui/floating-cluster/FloatingCluster.as
      стоит ровно на линии breadcrumb (не у viewport-top, не у viewport-right edge).
      Старый #themeToggle удалён, его anchor наследуется variant-CSS. -->
 <a class="skip-link" href="#content">Перейти к содержанию</a>
-<main class="article-main" id="content">
-<FloatingCluster
-  mode="single"
-  variant="hermeneutics"
-  audioState="none"
-/>
+<!-- Desktop (≥1200px): left rail with the article's own TOC + top-right goo
+     Play. Mobile (<1200px): bottom bar with a TOC sheet + the goo Play
+     blooming UP from the bar. Both share the same day/wine palette. -->
+<HermenevtikaRail eyebrow="Герменевтика" title="Оценка христоцентричной герменевтики" backHref="../../" />
+<HermenevtikaMobileBar title="Оценка христоцентричной герменевтики" />
+<main class="article-main article-main--hrail" id="content">
 <nav aria-label="Хлебные крошки" class="breadcrumb">
 <ol class="breadcrumb__list">
 <li class="breadcrumb__item">
