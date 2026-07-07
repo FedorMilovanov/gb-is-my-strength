@@ -925,13 +925,18 @@ html.dark [data-gill-v16] .gb-theme-toggle .theme-icon-moon{opacity:1;transform:
 [data-gill-v16] .gblr-l-spec{opacity:.05}
 [data-gill-v16] .gblr-l-warm{opacity:.14}
 [data-gill-v16] .gblr-l-glaze{opacity:.06}
-/* reference (Справочник) — darker neutral-chocolate leather */
-[data-gill-v16] .gblr-ribbon--reference .gblr-l-pores{opacity:.36}
-[data-gill-v16] .gblr-ribbon--reference .gblr-l-spec{opacity:.022}
-[data-gill-v16] .gblr-ribbon--reference .gblr-l-warm{fill:#54291b;opacity:.06}
-[data-gill-v16] .gblr-ribbon--reference .gblr-l-glaze{opacity:.1}
-[data-gill-v16] .gblr-ribbon--reference .gblr-l-stitchlight{stroke-opacity:.66}
-[data-gill-v16] .gblr-ribbon--reference .gblr-ribbon__word{background-image:linear-gradient(172deg,#f7ecd0 8%,#e2c07c 48%,#b3814a 94%)}
+/* reference (Справочник) — darker neutral-chocolate leather, more muted glow */
+[data-gill-v16] .gblr-ribbon--reference .gblr-l-pores{opacity:.32}
+[data-gill-v16] .gblr-ribbon--reference .gblr-l-spec{opacity:.012}
+[data-gill-v16] .gblr-ribbon--reference .gblr-l-warm{fill:#54291b;opacity:.05}
+[data-gill-v16] .gblr-ribbon--reference .gblr-l-glaze{opacity:.16}
+[data-gill-v16] .gblr-ribbon--reference .gblr-l-stitchlight{stroke-opacity:.58}
+/* longer word («СПРАВОЧНИК» = 10 chars) — smaller + tighter so it never touches
+   the stitched border, and a hair cooler/less bright gold */
+[data-gill-v16] .gblr-ribbon--reference .gblr-ribbon__word{
+  font-size:7px;letter-spacing:.01em;padding:0 2px;
+  background-image:linear-gradient(172deg,#f2e6cc 8%,#dab873 48%,#a97b45 94%);
+}
 @media (prefers-reduced-motion: reduce){
   [data-gill-v16] .gblr-ribbon{transition:none}
 }
