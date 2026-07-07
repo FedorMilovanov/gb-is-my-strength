@@ -95,8 +95,10 @@ const active = 1;
   .sb-bloom.sb-open .sb-play svg:not(.sb-ringsvg){transform:translateX(1.5px) scale(1.06)}
   .sb-play:focus-visible{outline:0;box-shadow:0 0 0 3px rgba(255,255,255,.95),0 0 0 6px #b8863f}
   .sb-ic-pause{display:none;fill:currentColor}
-  .sb-bloom.sb-playing .sb-ic-play{display:none}
-  .sb-bloom.sb-playing .sb-ic-pause{display:block}
+  /* icon reflects the precise state: pause glyph only while actually playing —
+     paused/idle show the play triangle so the next click's action is obvious */
+  .sb-bloom.sb-playing:not(.sb-paused) .sb-ic-play{display:none}
+  .sb-bloom.sb-playing:not(.sb-paused) .sb-ic-pause{display:block}
   .sb-ringsvg{position:absolute;inset:4%;pointer-events:none;overflow:visible}
   .sb-prog{fill:none;stroke:#c39a5e;stroke-width:3.2;stroke-linecap:round;stroke-dasharray:100 100;stroke-dashoffset:100;opacity:0;transition:opacity .4s;filter:drop-shadow(0 0 3px rgba(195,154,94,.45))}
   html.dark .sb-prog{stroke:#dfb173;filter:drop-shadow(0 0 3px rgba(223,177,115,.5))}

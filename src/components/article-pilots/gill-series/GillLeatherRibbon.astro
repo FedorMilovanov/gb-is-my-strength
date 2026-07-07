@@ -22,7 +22,7 @@ const book = 'M12 6.2C10.1 4.6 7.4 4 4.5 4.2v13.4c2.9-.2 5.6.5 7.5 2.1 1.9-1.6 4
 const ornPath = ornament === 'lily' ? lily : book;
 const P = 'M8,2 H104 Q110,2 110,8 V124 L56,103 L2,124 V8 Q2,2 8,2 Z';
 ---
-<span class:list={['gblr-ribbon', variant === 'reference' && 'gblr-ribbon--reference', className]} aria-hidden="true">
+<span class:list={['gblr-ribbon', 'gb-series-mark--label', variant === 'reference' && 'gblr-ribbon--reference', className]} aria-hidden="true">
   <svg class="gblr-ribbon__shape" viewBox="0 0 112 142" preserveAspectRatio="none">
     <!-- geometric thickness: dark slice offset down -->
     <path d={P} fill="#160a03" transform="translate(0,1.9)"/>
