@@ -340,10 +340,33 @@
   // через Web Speech (см. resolveTtsEngine ниже); следующий клик «Слушать»
   // подхватит Vosk сам, если прогрев успел завершиться. Ошибка сети/модели —
   // тихая, просто остаёмся на Web Speech.
+  // Пользователь на тарифе с экономией трафика (браузерный сигнал Save-Data)
+  // либо явно отказавшийся раньше (localStorage) — не тянем ~280 МБ модель в
+  // фоне, честно остаёмся на мгновенном системном голосе. Save-Data — только
+  // подсказка (ограниченная поддержка), поэтому это НЕ запрет улучшенного
+  // голоса, а лишь отказ от автоматической тяжёлой загрузки без спроса.
+  var VOSK_WARMUP_OPTOUT_KEY = 'gbx-vosk-warmup';
+  function voskWarmupOptedOut() {
+    try { if (localStorage.getItem(VOSK_WARMUP_OPTOUT_KEY) === 'off') return true; } catch (_) {}
+    try {
+      var c = navigator.connection || navigator.mozConnection || navigator.webkitConnection;
+      if (c && c.saveData === true) return true;
+    } catch (_) {}
+    return false;
+  }
+
   var _voskWarmupStarted = false;
   function warmVoskInBackground() {
     if (_voskWarmupStarted) return;
     _voskWarmupStarted = true;
+    if (voskWarmupOptedOut()) return;
+    // Прозрачность: если движок реально начнёт СЕТЕВУЮ загрузку модели (кэш-мисс,
+    // ~280 МБ) — покажем один ненавязчивый тост. На повторных визитах модель уже
+    // в IndexedDB, события нет, тост не мозолит глаза. Событие шлёт сам движок из
+    // fetchModelFiles() ровно в ветке кэш-мисса.
+    addCleanListener(window, 'gb:vosk-model-download-start', function () {
+      showToast('Готовим улучшенный голос — один раз качаем ~280 МБ', false);
+    }, { once: true });
     loadVoskEngineScript().then(function () {
       if (window.VoskTTSEngine && window.VoskTTSEngine.isSupported() && !window.VoskTTSEngine.isReady()) {
         return window.VoskTTSEngine.ensureLoaded();
