@@ -230,7 +230,9 @@ async function runCase(browser, viewport, dark, route) {
   assert(facts.hasRoot, `Gill root present ${tag}`);
   assert(facts.hasBar, `Gill mobile bar present ${tag}`, facts);
   assert(facts.hasPartBtn, `Explicit Part TOC button present ${tag}`, facts);
-  assert(facts.hasSeriesBtn, `Explicit Series TOC button present ${tag}`, facts);
+  // v4 bottom bar (gbs_series_mobile_v4_refined) has NO dedicated «Серия»
+  // button (#mobTocBtn); the series list is reached one level up via the
+  // part overlay's #backToSeries arrow (exercised below).
   assert(facts.upgradedOldRoot, `Old/static Gill bar upgraded or native V3 bar present ${tag}`, facts);
   assert(facts.barPosition === 'fixed', `Bottom bar fixed ${tag}`, facts);
   assert(alpha >= 0.94, `Bottom bar background alpha >= .94 ${tag}`, { alpha, bg: facts.barBg });
@@ -240,8 +242,10 @@ async function runCase(browser, viewport, dark, route) {
   assert(facts.labelOpacity === null || facts.labelOpacity >= 0.85, `Mobile section label opacity readable ${tag}`, facts);
   assert(contrast === null || contrast >= 4.0, `Mobile section label contrast >= 4.0 ${tag}`, { contrast, color: facts.labelColor, bg: facts.barBg, labelBg: facts.labelBg });
   assert(!facts.articleIntersectsBar, `Article text does not run under bottom bar ${tag}`, facts.articleLeakCandidate || {});
-  assert(/Оглавление части/.test(facts.barText), `Bottom bar exposes Part TOC label ${tag}`, facts);
-  assert(/Серия/.test(facts.barText), `Bottom bar exposes Series label ${tag}`, facts);
+  // v4 section button carries the «Сейчас читаете» label above the current
+  // section name (the old bar exposed «Оглавление части»/«Серия» text — both
+  // retired). No «Серия» text in the bar any more.
+  assert(/Сейчас читаете/.test(facts.barText), `Bottom bar exposes «Сейчас читаете» label ${tag}`, facts);
 
   await page.click('#mobPartTocBtn');
   await page.waitForTimeout(250);
@@ -253,9 +257,9 @@ async function runCase(browser, viewport, dark, route) {
   });
   assert(partOpen && partOpen.visible, `Part TOC opens from bottom bar ${tag}`, partOpen || {});
 
-  await page.keyboard.press('Escape');
-  await page.waitForTimeout(150);
-  await page.click('#mobTocBtn');
+  // v4 series-reachability: the part overlay's #backToSeries arrow opens the
+  // series list (replaces the retired direct #mobTocBtn «Серия» button).
+  await page.click('#backToSeries');
   await page.waitForTimeout(250);
   const seriesOpen = await page.evaluate(() => {
     const el = document.querySelector('#seriesTocOverlay');
@@ -263,7 +267,7 @@ async function runCase(browser, viewport, dark, route) {
     const s = getComputedStyle(el);
     return { className: el.className, ariaHidden: el.getAttribute('aria-hidden'), display: s.display, opacity: s.opacity, visible: s.display !== 'none' && Number(s.opacity) > 0.5 };
   });
-  assert(seriesOpen && seriesOpen.visible, `Series TOC opens from bottom bar ${tag}`, seriesOpen || {});
+  assert(seriesOpen && seriesOpen.visible, `Series TOC reachable via part→back arrow ${tag}`, seriesOpen || {});
 
   await context.close();
 }

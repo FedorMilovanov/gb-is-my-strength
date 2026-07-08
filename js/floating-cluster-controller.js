@@ -888,6 +888,7 @@
     initActionHandlers();
     ensureMobileFallbackControls();
     initPlayExpand();
+    initCustomSlotLongPressStop();
 
     // 2. Gill rail / non-root cluster controls (работают без data-fc-root)
     initGillRail();
@@ -1335,6 +1336,53 @@
           var first = focusable[0], last = focusable[focusable.length - 1];
           if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); }
           else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
+        }
+      });
+    });
+  }
+
+  /* =====================================================
+     LONG-PRESS-TO-STOP for custom speed-slot embers
+     -----------------------------------------------------
+     initPlayExpand() skips [data-gb-speed-custom] embers (Gill desktop
+     rail topbar, Gill v4 mobile bar, Hermenevtika mobile bar) because they
+     run their own slot-swap speed UI, so the bloom-pill's long-press-stop
+     never got wired on them — the v4 mobile Play lost the "hold = stop"
+     gesture the old bottom-bar ember had. Restore it here as a small
+     dedicated handler (owner: "дополняем на максимум удобный" — better than
+     the reference, which has play/pause only). Touch-gated: a mouse hold on
+     desktop does NOT stop (avoids accidental stops on click-hold); the
+     gesture is a deliberate touch affordance. Click that immediately
+     follows a fired long-press is suppressed so it doesn't re-trigger play.
+     ===================================================== */
+  function initCustomSlotLongPressStop() {
+    qsa('[data-gb-speed-custom] .gb-ember').forEach(function (ember) {
+      var pressTimer;
+      var suppressClick = false;
+      addCleanListener(ember, 'pointerdown', function (e) {
+        // touch (and pen) only — never a desktop mouse hold
+        if (e.pointerType && e.pointerType !== 'touch' && e.pointerType !== 'pen') return;
+        clearTimeout(pressTimer);
+        pressTimer = setTimeout(function () {
+          var st = ember.dataset.state || 'idle';
+          if (st === 'playing' || st === 'paused') {
+            suppressClick = true;
+            stopTts();
+          }
+        }, 600);
+      });
+      ['pointerup', 'pointercancel', 'pointerleave'].forEach(function (type) {
+        addCleanListener(ember, type, function () { clearTimeout(pressTimer); });
+      });
+      // Ember click normally bubbles to the [data-fc-root] delegated handler
+      // (→ handlePlayClick). When a long-press-stop just fired, eat the
+      // trailing click here (ember is deeper than the root, so its bubble
+      // listener runs first) so playback is not immediately restarted.
+      addCleanListener(ember, 'click', function (e) {
+        if (suppressClick) {
+          suppressClick = false;
+          e.preventDefault();
+          e.stopPropagation();
         }
       });
     });
