@@ -156,6 +156,11 @@
   function fetchModelFiles() {
     return idbGet(MODEL_URL).then(function (cached) {
       if (cached) return cached;
+      // Cache miss → a real ~280MB network download is about to start. Announce
+      // it so the page can show a one-time "downloading enhanced voice" notice;
+      // on warm (cached) visits this never fires. Purely a UI signal — never
+      // gates or blocks the download itself.
+      try { window.dispatchEvent(new CustomEvent('gb:vosk-model-download-start')); } catch (_) {}
       return fetch(MODEL_URL).then(function (resp) {
         if (!resp.ok) throw new Error('model download HTTP ' + resp.status);
         return resp.arrayBuffer();
