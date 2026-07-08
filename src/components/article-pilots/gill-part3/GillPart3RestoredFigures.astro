@@ -1,0 +1,102 @@
+<div id="gill-part3-restored-figures">
+  <figure
+    id="gill-part3-spurgeon-figure"
+    class="article-img wide reveal"
+    data-gill-restored-figure="spurgeon"
+  >
+    <picture>
+      <source
+        srcset="../../images/gill-spurgeon-succession-600w.webp 600w, ../../images/gill-spurgeon-succession-900w.webp 900w"
+        sizes="(max-width: 640px) 92vw, 760px"
+        type="image/webp"
+      />
+      <img
+        src="../../images/gill-spurgeon-succession-900w.webp"
+        alt="Символическая иллюстрация преемственности кафедры от Джона Гилла к Чарльзу Сперджену"
+        loading="lazy"
+        decoding="async"
+        width="1408"
+        height="768"
+      />
+    </picture>
+    <figcaption>
+      Символическая иллюстрация преемственности одной лондонской баптистской общины: от служения Джона Гилла к эпохе Чарльза Сперджена.
+    </figcaption>
+  </figure>
+
+  <figure
+    id="gill-part3-bunhill-figure"
+    class="article-img reveal"
+    data-gill-restored-figure="bunhill"
+    style="max-width: 460px; margin-inline: auto;"
+  >
+    <picture>
+      <source
+        srcset="../../images/gill-bunhill-fields-600w.webp 600w, ../../images/gill-bunhill-fields-900w.webp 900w"
+        sizes="(max-width: 520px) 92vw, 460px"
+        type="image/webp"
+      />
+      <img
+        src="../../images/gill-bunhill-fields-900w.webp"
+        alt="Художественная реконструкция похоронной процессии на кладбище Банхилл-Филдс"
+        loading="lazy"
+        decoding="async"
+        width="1024"
+        height="1536"
+      />
+    </picture>
+    <figcaption>
+      Художественная реконструкция похоронной процессии английских диссентеров XVIII века. Джон Гилл был погребён на Банхилл-Филдс.
+    </figcaption>
+  </figure>
+</div>
+
+<script is:inline>
+  (() => {
+    const article = document.querySelector('#main-content > .article-body[data-pagefind-body]');
+    const fallback = document.getElementById('gill-part3-restored-figures');
+
+    if (!article || !fallback) return;
+
+    const spurgeonFigure = document.getElementById('gill-part3-spurgeon-figure');
+    const spurgeonAlreadyPresent = document.querySelector(
+      'img[src*="gill-spurgeon-succession"]'
+    );
+
+    if (spurgeonAlreadyPresent && !spurgeonFigure?.contains(spurgeonAlreadyPresent)) {
+      spurgeonFigure?.remove();
+    } else {
+      const spurgeonHeading = article.querySelector('#sec-spurgeon-legacy');
+
+      if (spurgeonFigure && spurgeonHeading) {
+        const firstParagraph = spurgeonHeading.nextElementSibling;
+        const foundationParagraph = firstParagraph?.matches('p')
+          ? firstParagraph.nextElementSibling
+          : null;
+        const anchor = foundationParagraph?.matches('p')
+          ? foundationParagraph
+          : firstParagraph;
+
+        if (anchor) anchor.insertAdjacentElement('afterend', spurgeonFigure);
+      }
+    }
+
+    const bunhillFigure = document.getElementById('gill-part3-bunhill-figure');
+    const bunhillAlreadyPresent = document.querySelector('img[src*="gill-bunhill-fields"]');
+
+    if (bunhillAlreadyPresent && !bunhillFigure?.contains(bunhillAlreadyPresent)) {
+      bunhillFigure?.remove();
+    } else {
+      const burialParagraph = Array.from(article.querySelectorAll('p')).find((paragraph) => {
+        const text = paragraph.textContent || '';
+        return text.includes('Его похоронили на') && text.includes('Банхилл-Филдс');
+      });
+
+      if (bunhillFigure && burialParagraph) {
+        burialParagraph.insertAdjacentElement('afterend', bunhillFigure);
+      }
+    }
+
+    if (!fallback.children.length) fallback.remove();
+  })();
+</script>
