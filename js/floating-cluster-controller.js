@@ -938,10 +938,17 @@
     var bar = qs('.mobile-bottom-bar[data-fc-variant="gill"]');
     if (!bar) return;
 
-    // Current production root HTML may still contain the old one-level bar:
-    //   button#mobTocBtn + div#gbs2MobSec + progress + pct + icon row.
-    // Upgrade it at runtime so the fix works both for fresh Astro output and
-    // for already-synced static root pages before the next full HTML sync.
+    // This is a legacy shim: it upgrades the OLD one-level static root bar
+    //   (button#mobTocBtn + div#gbs2MobSec + progress + pct + icon row)
+    // to an intermediate structure. The v4 reference bar (GillSeriesMobileBar
+    // .astro) already ships the final structure — a section button with
+    // .mobile-btoc-section__label ("Сейчас читаете") + __main — and must NOT
+    // be touched, or the shim grafts an extra unstyled "Оглавление части"
+    // __sub line onto it (real regression caught 2026-07-08). Detect the new
+    // markup by its label span and bail; the shim only exists for un-resynced
+    // legacy root HTML, which never has that span.
+    if (qs('.mobile-btoc-section__label')) return;
+
     bar.setAttribute('data-gill-mobile-bar', '');
 
     var tocBtn = qs('#mobTocBtn');
