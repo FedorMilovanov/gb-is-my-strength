@@ -171,7 +171,7 @@ async function addFakeTts(context) {
 // control is visible.
 async function visibleEmber(page, mobile) {
   const selector = mobile
-    ? '.mobile-bottom-bar .gb-ember'
+    ? '.mobile-top-bar .gb-ember'
     : '.gbs-rail-topbar .gb-ember, .gbs-rail-foot .gb-ember, .gbs-rail-foot .gbmini-play';
   const loc = page.locator(selector).first();
   await loc.waitFor({ state: 'visible', timeout: 8000 });
@@ -185,9 +185,16 @@ async function clickSpeedNearEmber(ember, speed) {
   if (isCustom) {
     const clicked = await ember.evaluate((el, targetSpeed) => {
       const topbar = el.closest('[data-gb-speed-custom]');
-      const badge = topbar && topbar.querySelector('.gbs-rail-spdbadge');
+      // Custom speed slot exists in three flavours with different class
+      // prefixes: desktop rail (.gbs-rail-*), Gill v4 mobile bar (.mobile-*),
+      // Hermenevtika mobile bar (.hm-*). All share the same badge→chip mechanic.
+      const badge = topbar && (topbar.querySelector('.gbs-rail-spdbadge')
+        || topbar.querySelector('.mobile-spdbadge')
+        || topbar.querySelector('.hm-spdbadge'));
       if (badge) badge.click();
-      const btn = topbar && topbar.querySelector(`.gbs-rail-spd[data-speed="${targetSpeed}"]`);
+      const btn = topbar && (topbar.querySelector(`.gbs-rail-spd[data-speed="${targetSpeed}"]`)
+        || topbar.querySelector(`.mobile-spd[data-speed="${targetSpeed}"]`)
+        || topbar.querySelector(`.hm-spd[data-speed="${targetSpeed}"]`));
       if (!btn) return false;
       btn.click();
       return true;
@@ -285,11 +292,38 @@ async function testMobileOverlays(browser) {
       assert(overflow0.labelFit.every(x => x.ok), `${prefix}: label badges fit when closed`, JSON.stringify(overflow0.labelFit));
 
       const beforeUrl = page.url();
-      await page.locator('#mobTocBtn').click();
+      // v4 mobile bar (gbs_series_mobile_v4_refined): the bottom bar no longer
+      // has a dedicated «Серия» button (#mobTocBtn) — the reference bar is
+      // dual-progress ring + «Сейчас читаете» section button + theme/font/share.
+      // The section button (#mobPartTocBtn) opens the PART overlay directly;
+      // the series list is reached one level up via the part overlay's
+      // #backToSeries arrow. This test now drives that verified v4 flow
+      // (section → part → back → series → Escape) instead of the retired
+      // «Серия»-button-first flow, keeping every overflow/label-fit/scroll-lock
+      // assertion intact.
+      await page.locator('#mobPartTocBtn').click();
       await page.waitForTimeout(250);
-      const shot2 = path.join(OUT, `${prefix}_2_series_overlay.png`);
+      const shot2 = path.join(OUT, `${prefix}_2_part_overlay.png`);
       await page.screenshot({ path: shot2, fullPage: false });
       let state = await page.evaluate(() => ({
+        seriesOpen: document.querySelector('#seriesTocOverlay')?.classList.contains('is-open'),
+        partOpen: document.querySelector('#partTocOverlay')?.classList.contains('is-open'),
+        overflow: document.body.style.overflow,
+        scrollLocked: document.documentElement.hasAttribute('data-scroll-locked') || document.body.style.overflow === 'hidden' || document.body.style.position === 'fixed',
+        partTitle: document.querySelector('#partTocOverlay .toc-head-txt')?.textContent?.replace(/\s+/g, ' ').trim(),
+        xOverflow: document.documentElement.scrollWidth - document.documentElement.clientWidth,
+      }));
+      assert(state.partOpen && !state.seriesOpen, `${prefix}: #mobPartTocBtn opens part overlay`, JSON.stringify(state));
+      assert(page.url() === beforeUrl, `${prefix}: URL unchanged after section-button tap`, `${beforeUrl} -> ${page.url()}`);
+      assert((state.partTitle || '').includes('Введение'), `${prefix}: part overlay is intro TOC`, state.partTitle);
+      assert(state.scrollLocked, `${prefix}: body scroll locked while part overlay open`, { overflow: state.overflow, scrollLocked: state.scrollLocked });
+      assert(state.xOverflow <= 1, `${prefix}: no horizontal overflow in part overlay`, String(state.xOverflow));
+
+      await page.locator('#backToSeries').click();
+      await page.waitForTimeout(250);
+      const shot3 = path.join(OUT, `${prefix}_3_series_overlay.png`);
+      await page.screenshot({ path: shot3, fullPage: false });
+      state = await page.evaluate(() => ({
         seriesOpen: document.querySelector('#seriesTocOverlay')?.classList.contains('is-open'),
         partOpen: document.querySelector('#partTocOverlay')?.classList.contains('is-open'),
         overflow: document.body.style.overflow,
@@ -298,34 +332,12 @@ async function testMobileOverlays(browser) {
         xOverflow: document.documentElement.scrollWidth - document.documentElement.clientWidth,
         labelFit: [...document.querySelectorAll('#seriesTocOverlay .gb-series-mark--label')].map(el => ({ text: el.textContent.trim(), width: el.getBoundingClientRect().width, scrollWidth: el.scrollWidth, ok: el.scrollWidth <= Math.ceil(el.getBoundingClientRect().width) + 1 })),
       }));
-      assert(state.seriesOpen && !state.partOpen, `${prefix}: #mobTocBtn opens series overlay`, JSON.stringify(state));
-      assert(state.scrollLocked, `${prefix}: body scroll locked while series overlay open`, { overflow: state.overflow, scrollLocked: state.scrollLocked });
+      assert(state.seriesOpen && !state.partOpen, `${prefix}: part back arrow opens series overlay`, JSON.stringify(state));
+      assert(state.scrollLocked, `${prefix}: body scroll remains locked while series overlay open`, { overflow: state.overflow, scrollLocked: state.scrollLocked });
       assert((state.currentText || '').includes('Введение') && (state.currentText || '').includes('Исторический контекст'), `${prefix}: current intro item labelled as Введение`, state.currentText);
       assert(state.xOverflow <= 1, `${prefix}: no horizontal overflow in series overlay`, String(state.xOverflow));
       assert(state.labelFit.every(x => x.ok), `${prefix}: label badges fit in series overlay`, JSON.stringify(state.labelFit));
 
-      await page.locator('#seriesTocOverlay .toc-item.is-current').click();
-      await page.waitForTimeout(250);
-      const shot3 = path.join(OUT, `${prefix}_3_part_overlay.png`);
-      await page.screenshot({ path: shot3, fullPage: false });
-      state = await page.evaluate(() => ({
-        seriesOpen: document.querySelector('#seriesTocOverlay')?.classList.contains('is-open'),
-        partOpen: document.querySelector('#partTocOverlay')?.classList.contains('is-open'),
-        overflow: document.body.style.overflow,
-        scrollLocked: document.documentElement.hasAttribute('data-scroll-locked') || document.body.style.overflow === 'hidden' || document.body.style.position === 'fixed',
-        partTitle: document.querySelector('#partTocOverlay .toc-head-txt')?.textContent?.replace(/\s+/g, ' ').trim(),
-        xOverflow: document.documentElement.scrollWidth - document.documentElement.clientWidth,
-      }));
-      assert(!state.seriesOpen && state.partOpen, `${prefix}: current series item opens part overlay instead of reload`, JSON.stringify(state));
-      assert(page.url() === beforeUrl, `${prefix}: URL unchanged after current item tap`, `${beforeUrl} -> ${page.url()}`);
-      assert((state.partTitle || '').includes('Введение'), `${prefix}: part overlay is intro TOC`, state.partTitle);
-      assert(state.scrollLocked, `${prefix}: body scroll remains locked while part overlay open`, { overflow: state.overflow, scrollLocked: state.scrollLocked });
-      assert(state.xOverflow <= 1, `${prefix}: no horizontal overflow in part overlay`, String(state.xOverflow));
-
-      await page.locator('#backToSeries').click();
-      await page.waitForTimeout(200);
-      state = await page.evaluate(() => ({ seriesOpen: document.querySelector('#seriesTocOverlay')?.classList.contains('is-open'), partOpen: document.querySelector('#partTocOverlay')?.classList.contains('is-open') }));
-      assert(state.seriesOpen && !state.partOpen, `${prefix}: part back button returns to series overlay`, JSON.stringify(state));
       await page.keyboard.press('Escape');
       await page.waitForTimeout(200);
       state = await page.evaluate(() => ({ seriesOpen: document.querySelector('#seriesTocOverlay')?.classList.contains('is-open'), partOpen: document.querySelector('#partTocOverlay')?.classList.contains('is-open'), overflow: document.body.style.overflow }));
@@ -347,12 +359,14 @@ async function testMobPartTocBtn(browser) {
     const has = await page.evaluate(() => ({
       partBtn: !!document.querySelector('#mobPartTocBtn'),
       partBtnType: document.querySelector('#mobPartTocBtn')?.getAttribute('type') || '',
-      hasMeter: !!document.querySelector('.mobile-btoc-meter'),
+      // v4 bar shows a dual concentric progress ring (article %/series %),
+      // not the old flat .mobile-btoc-meter track.
+      hasProgress: !!document.querySelector('.bar-progress.dual-progress'),
       hasGillMobileBar: document.querySelector('.mobile-bottom-bar')?.hasAttribute('data-gill-mobile-bar') || false,
     }));
     assert(has.partBtn, `${prefix}: #mobPartTocBtn present`, JSON.stringify(has));
     assert(has.partBtnType === 'button', `${prefix}: #mobPartTocBtn type=button`, JSON.stringify(has));
-    assert(has.hasMeter, `${prefix}: .mobile-btoc-meter present`, JSON.stringify(has));
+    assert(has.hasProgress, `${prefix}: dual-progress ring present`, JSON.stringify(has));
     assert(has.hasGillMobileBar, `${prefix}: data-gill-mobile-bar attr present`, JSON.stringify(has));
     if (has.partBtn) {
       const beforeUrl = page.url();
@@ -418,12 +432,14 @@ async function testPlayState(browser, mobile) {
   assert(speedFacts.calls === callsBeforeSpeed + 1, `${label}: speed change while playing restarts exactly once`, JSON.stringify(speedFacts));
   assert(speedFacts.rates.at(-1) === 1.75, `${label}: speed change uses selected 1.75×`, JSON.stringify(speedFacts.rates));
 
-  // GooPlayMini (desktop Gill rail footer, post leather/goo port) and the
-  // rail-topbar's custom speed slot (post topbar rework, [data-gb-speed-custom])
-  // both intentionally have no stop affordance — play/pause toggle + speed
-  // only, no separate stop button. Mobile keeps the classic .gb-ember with its
-  // long-press-to-stop gesture (exercised below), so the stop/idle-speed
-  // assertions still run there.
+  // Custom speed slots — GooPlayMini (desktop rail footer), the desktop
+  // rail-topbar, AND the v4 mobile top bar (all [data-gb-speed-custom]) —
+  // intentionally have no stop affordance: play/pause toggle + speed only.
+  // initPlayExpand() skips [data-gb-speed-custom] embers, so neither the
+  // bloom-pill stop nor the long-press-to-stop gesture is wired on them; the
+  // v4 mobile bar matches the reference (gbs_series_mobile_v4_refined), which
+  // has no stop either. The stop/idle-speed and long-press blocks below are
+  // therefore gated to non-custom embers only.
   if (!isGoo && !isCustom) {
     await clickStopNearEmber(ember);
     await page.waitForTimeout(150);
@@ -442,7 +458,7 @@ async function testPlayState(browser, mobile) {
     assert(idleFacts.rates.at(-1) === 1.25, `${label}: speed select from idle uses chosen 1.25×`, JSON.stringify(idleFacts.rates));
   }
 
-  if (mobile) {
+  if (mobile && !isCustom) {
     await ember.click();
     await page.waitForTimeout(150);
     const beforeLong = await page.evaluate(() => window.__ttsFake.speakCalls);
