@@ -29,6 +29,7 @@
     #gb-hl-backdrop.is-open { display: flex; }
 
     #gb-hl-panel {
+      position: relative;
       background: var(--paper, #faf8f4);
       border-radius: 12px 12px 0 0;
       width: min(640px, 100vw);
@@ -92,9 +93,54 @@
     }
     #gb-hl-close:hover { background: var(--paper-2, #f3efe8); }
 
+    /* Search — only shown past a handful of saved quotes (see render() in
+       highlights.js); below that threshold it's just clutter. */
+    #gb-hl-searchwrap {
+      display: none; align-items: center; gap: 8px;
+      margin: 0 18px 8px; padding: 7px 10px;
+      border: 1px solid rgba(20,16,11,.14);
+      border-radius: 8px;
+      color: var(--ink-3, #8a7968);
+      flex-shrink: 0;
+    }
+    #gb-hl-searchwrap svg { flex-shrink: 0; }
+    #gb-hl-search {
+      border: none; background: none; outline: none;
+      font-family: var(--sans, 'Source Sans 3', system-ui, sans-serif);
+      font-size: .85rem; color: var(--ink, #14100b);
+      width: 100%;
+    }
+    #gb-hl-search::placeholder { color: var(--ink-3, #8a7968); }
+    html.dark #gb-hl-searchwrap { border-color: rgba(255,255,255,.14); }
+
     #gb-hl-list {
       overflow-y: auto; flex: 1; padding: 8px 0;
       overscroll-behavior: contain;
+    }
+
+    /* Delete-with-undo snackbar, replacing a jarring window.confirm(). */
+    .gb-hl-undo {
+      position: absolute; left: 50%; bottom: 14px;
+      transform: translateX(-50%);
+      display: flex; align-items: center; gap: 12px;
+      background: var(--ink, #14100b); color: #f5f0e8;
+      padding: 10px 16px; border-radius: 999px;
+      font-size: .82rem; white-space: nowrap;
+      box-shadow: 0 6px 20px rgba(20,16,11,.3);
+      animation: gbHlUndoIn .2s ease;
+      z-index: 2;
+    }
+    .gb-hl-undo button {
+      background: none; border: none; color: #dfb173;
+      font-weight: 700; cursor: pointer; padding: 2px 4px;
+      font-size: inherit; font-family: inherit;
+    }
+    @keyframes gbHlUndoIn {
+      from { opacity: 0; transform: translate(-50%, 8px); }
+      to   { opacity: 1; transform: translate(-50%, 0); }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      .gb-hl-undo { animation: none; }
     }
 
     .gb-hl-item {
@@ -126,13 +172,29 @@
     }
     .gb-hl-meta a:hover { text-decoration: underline; }
 
-    .gb-hl-del {
+    .gb-hl-card, .gb-hl-del {
       background: none; border: none; cursor: pointer;
       color: var(--ink-3, #8a7968); font-size: .8rem;
       padding: 2px 5px; border-radius: 3px;
-      margin-left: auto; opacity: .6;
+      opacity: .6;
     }
+    .gb-hl-card { margin-left: auto; }
+    .gb-hl-card:hover { opacity: 1; background: var(--paper-2, #f3efe8); color: var(--gold-2, #7c5c18); }
     .gb-hl-del:hover { opacity: 1; background: var(--red-soft, #f8e8e8); color: var(--red, #9b2d2d); }
+
+    /* "Jump back to passage": the saved-quote link carries a native Text
+       Fragment directive (#:~:text=…, see highlights.js buildTextFragment())
+       so the browser itself finds, scrolls to, and highlights the exact
+       saved sentence on arrival — restyled here from the UA default yellow
+       to the site's own gold, site-wide (this isn't scoped to quotes; any
+       text-fragment link landing anywhere on the site gets it). */
+    ::target-text {
+      background: rgba(219,177,115,.42);
+      color: inherit;
+    }
+    html.dark ::target-text {
+      background: rgba(238,208,147,.32);
+    }
 
     .gb-hl-empty {
       padding: 40px 18px; text-align: center;
@@ -195,6 +257,31 @@
     @media (prefers-reduced-motion: reduce) {
       #gb-hl-fab { transition: none; }
       #gb-hl-fab.is-bump { animation: none; }
+    }
+
+    /* Docked variant — when a page has an actual bottom bar (Gill's
+       .mobile-bottom-bar, Hermenevtika's .hmbar, or the legacy
+       .bottom-bar-inner), highlights.js moves the button INTO that bar's
+       own icon row (see dockFab()) instead of floating it above the page.
+       It then also carries .gb-icon / .hmbar-btn / .bar-icon-btn, which
+       supplies the actual circle size/hover halo — this variant only
+       strips the FAB's own fixed-position styling so the two don't fight. */
+    #gb-hl-fab.gb-hl-fab--docked {
+      position: static;
+      width: auto; height: auto;
+      background: none; border: none; box-shadow: none;
+      color: inherit;
+      transform: none;
+    }
+    #gb-hl-fab.gb-hl-fab--docked:hover,
+    #gb-hl-fab.gb-hl-fab--docked:focus-visible { transform: none; }
+    #gb-hl-fab.gb-hl-fab--docked #gb-hl-fab-count {
+      top: 2px; right: 2px;
+      min-width: 14px; height: 14px; font-size: 8px; line-height: 14px;
+      box-shadow: 0 0 0 2px var(--color-canvas, #fdfcf9);
+    }
+    html.dark #gb-hl-fab.gb-hl-fab--docked #gb-hl-fab-count {
+      box-shadow: 0 0 0 2px var(--gill-mobile-bar-bg, #0d1117);
     }
 
     html.dark #gb-hl-panel { background: #1a1612; }
