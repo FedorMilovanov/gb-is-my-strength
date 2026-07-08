@@ -1287,28 +1287,9 @@ html.dark [data-gill-v16] .mobile-bottom-bar{background:rgba(22,26,33,.96);borde
   font-weight:700;flex-shrink:0;
 }
 
-/* v16: Elegant gold line progress bar instead of dots */
-[data-gill-v16] .mobile-btoc-progress-track{
-  flex:1 1 auto;max-width:80px;height:2.5px;border-radius:99px;background:color-mix(in srgb,var(--gb-accent-gold) 22%,transparent);overflow:hidden;position:relative;margin:0 4px;
-}
-[data-gill-v16] .mobile-btoc-progress-fill{
-  height:100%;background:linear-gradient(90deg,var(--gb-accent-gold-bright),var(--gb-accent-gold));border-radius:99px;box-shadow:0 0 6px rgba(216,170,109,.55);
-}
-[data-gill-v16] .mobile-btoc-pct{
-  font-weight:900;color:var(--gb-accent);
-  min-width:26px;text-align:right;font-size:11px;flex-shrink:0;
-}
-
-[data-gill-v16] .mobile-icon-row{
-  display:flex;align-items:center;gap:3px;
-  margin-left:auto;flex-shrink:0;
-}
-[data-gill-v16] .mobile-icon-row .gb-ember{--ember-size:34px}
-[data-gill-v16] .mobile-icon-row .gb-ember__glyph{width:14px;height:14px}
-[data-gill-v16] .mobile-icon-row .gb-ember__pause{width:14px;height:14px}
-[data-gill-v16] .mobile-icon-row .gb-ember__check{width:14px;height:14px}
-[data-gill-v16] .mobile-icon-row .gb-icon{}
-[data-gill-v16] .mobile-icon-row .gb-icon svg{width:15px;height:15px}
+/* (removed dead .mobile-btoc-progress-track/-fill/.mobile-btoc-pct/.mobile-icon-row
+   rules — the v4 bottom bar uses .bar-progress.dual-progress + a flat flex row;
+   no markup or JS emits these old one-level-bar classes any more.) */
 
 /* ============================================================
    TOC POPUPS — Series + Part (with Save action in Part TOC)
@@ -1659,13 +1640,6 @@ html.dark [data-gill-v16] .gb-ember {
 html.dark [data-gill-v16] .gb-ember::after {
   filter: drop-shadow(0 0 4px #f5c542);
 }
-html.dark [data-gill-v16] .mobile-btoc-progress-track {
-  background: rgba(216, 176, 104, 0.16) !important;
-}
-html.dark [data-gill-v16] .mobile-btoc-progress-fill {
-  background: linear-gradient(90deg, #eed093, #c59b58) !important;
-  box-shadow: 0 0 8px rgba(216, 176, 104, 0.35) !important;
-}
 html.dark [data-gill-v16] .toc-part-item.is-current .toc-part-item__progress i {
   background: linear-gradient(90deg, #eed093, #c59b58) !important;
   box-shadow: 0 0 8px rgba(216, 176, 104, 0.38) !important;
@@ -2009,13 +1983,11 @@ html.dark [data-gill-v16] .toc-part-item:hover .toc-part-item__num {
    ============================================================ */
 
 /* 1. Ночные полоски прогресса без кислотной желтизны */
-html.dark [data-gill-v16] .mobile-btoc-progress-fill,
 html.dark [data-gill-v16] .toc-part-item__progress i,
 html.dark [data-gill-v16] .toc-part-item.is-current .toc-part-item__progress i {
   background: linear-gradient(90deg, #eed093, #c59b58) !important; /* Тёплый светлый пергамент → античная английская латунь */
   box-shadow: 0 0 8px rgba(216, 176, 104, 0.35) !important;
 }
-html.dark [data-gill-v16] .mobile-btoc-progress-track,
 html.dark [data-gill-v16] .toc-part-item__progress {
   background: rgba(216, 176, 104, 0.15) !important;
 }
@@ -2730,13 +2702,6 @@ html body::before {
      не из референса (там у .bottom-bar простой border-top:1px), а на
      новой структуре бара (кольцо прогресса + иконки) плашка сверху
      смотрелась лишним, ничем не объяснённым артефактом. */
-  [data-gill-v16] .mobile-btoc-progress-track {
-    height: 3px !important;
-    background: color-mix(in srgb, var(--gb-accent-gold) 32%, transparent) !important;
-  }
-  [data-gill-v16] .mobile-btoc-progress-fill {
-    box-shadow: 0 0 10px rgba(216,170,109,.65) !important;
-  }
 }
 
 /* --- 3. TOC label fit — 360px tighten --- */
