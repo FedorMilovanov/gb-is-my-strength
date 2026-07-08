@@ -46,16 +46,22 @@ const currentGrp = (partTocRows.find((r) => r.current) || partTocRows[0] || { gr
 const currentIdx = GILL_SERIES_ITEMS.findIndex((item) => item.id === pageId);
 const partsBefore = GILL_SERIES_ITEMS.slice(0, Math.max(0, currentIdx));
 const partsAfter = currentIdx >= 0 ? GILL_SERIES_ITEMS.slice(currentIdx + 1) : [];
-const partNumber = currentIdx >= 0 ? currentIdx + 1 : 1;
 // Введение/Справочник — «label»-пункты серии (mark.kind==="label"), не
-// пронумерованные части: «Часть 1 из 5» для Введения — запрещённая
-// формулировка (audit: premium-controls-rollout-audit.js), т.к. вводная
-// статья не является «частью 1» ни в каком читательском смысле. Для них
-// показываем сам ярлык серии («Введение»/«Справ.»), не номер.
+// пронумерованные части. Two bugs fixed here together:
+//  1. "Часть 1 из 5" for Введение — forbidden wording (audit:
+//     premium-controls-rollout-audit.js), the intro isn't "part 1" in any
+//     reader sense. Labels show their own mark value instead.
+//  2. Numbered parts must count ONLY themselves (I/II/III), not the 5-item
+//     raw array — a naive currentIdx+1 over GILL_SERIES_ITEMS.length made
+//     Part II read as "Часть 3 из 5" (index 2 in the 5-item list, off by
+//     the 2 label entries) instead of the correct "Часть 2 из 3".
 const currentItem = currentIdx >= 0 ? GILL_SERIES_ITEMS[currentIdx] : null;
+const romanItems = GILL_SERIES_ITEMS.filter((item) => item.mark.kind === 'roman');
+const romanIdx = romanItems.findIndex((item) => item.id === pageId);
+const partNumber = romanIdx >= 0 ? romanIdx + 1 : 1;
 const seriesMeta = currentItem && currentItem.mark.kind === 'label'
   ? currentItem.mark.value
-  : `Часть ${partNumber} из ${GILL_SERIES_ITEMS.length}`;
+  : `Часть ${partNumber} из ${romanItems.length}`;
 ---
 
 <aside class="gbs-rail" aria-label="Серия «Джон Гилл»">
