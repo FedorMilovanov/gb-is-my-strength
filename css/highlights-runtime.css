@@ -9,14 +9,20 @@
     }
     #ss-save:hover { opacity: .75; }
 
-    /* Highlights panel */
+    /* Highlights panel.
+       z-index: the Gill v16 mobile top/bottom bars use an escape-hatch value
+       of 2147483000 (see css/floating-cluster.css) so they always sit above
+       ordinary page chrome; without matching that, this modal rendered
+       underneath those bars instead of over them. Same fix as
+       .toc-overlay.is-open (bar value + 100) — offset differently (+200) so
+       the two modals don't collide if both ever end up in the DOM at once. */
     #gb-hl-backdrop {
       display: none;
       position: fixed; inset: 0;
       background: rgba(20,16,11,.5);
       backdrop-filter: blur(4px);
       -webkit-backdrop-filter: blur(4px);
-      z-index: var(--z-tooltip-high);
+      z-index: 2147483200;
       align-items: flex-end;
       justify-content: center;
     }
@@ -139,22 +145,57 @@
       font-family: var(--serif, Georgia, serif); font-style: italic;
     }
 
-    /* Floating button */
+    /* Floating button — a small icon-only circle with a corner count badge,
+       not a wide always-solid pill: it needs to sit over article copy on
+       every page (there's no single header layout to dock it into site-wide),
+       so keeping its footprint tiny and letting it fade during active
+       scrolling (see .is-idle-faded) is what keeps it from feeling intrusive.
+       Position is set by JS (--gb-hl-fab-bottom, highlights.js
+       updateFabOffset()), which measures whatever bottom bar actually exists
+       on the page instead of a guessed pixel offset — the fallback below
+       only applies before that first measurement or if no bar is found. */
     #gb-hl-fab {
-      position: fixed; bottom: 100px; right: 18px;
-      background: var(--ink, #14100b);
+      position: fixed;
+      right: 14px;
+      bottom: var(--gb-hl-fab-bottom, calc(20px + env(safe-area-inset-bottom, 0px)));
+      width: 44px; height: 44px;
+      background: linear-gradient(160deg, #241d15, #14100b);
       color: #f5f0e8;
-      border: none; border-radius: 24px;
-      padding: 8px 14px 8px 10px;
-      display: none; align-items: center; gap: 7px;
-      cursor: pointer; z-index: var(--z-raised-high);
-      font-family: var(--mono, monospace);
-      font-size: 10px; letter-spacing: .08em;
-      box-shadow: 0 4px 20px rgba(20,16,11,.25);
-      transition: transform .15s, opacity .15s;
+      border: 1px solid rgba(255,255,255,.08);
+      border-radius: 999px;
+      display: none; align-items: center; justify-content: center;
+      cursor: pointer; z-index: var(--z-sticky, 1000);
+      box-shadow: 0 6px 22px rgba(20,16,11,.3), inset 0 1px 0 rgba(255,255,255,.06);
+      transition: opacity .25s ease, transform .2s ease, bottom .2s ease;
     }
     #gb-hl-fab.visible { display: flex; }
-    #gb-hl-fab:hover { transform: translateY(-2px); }
+    #gb-hl-fab.is-idle-faded { opacity: .46; }
+    #gb-hl-fab:hover, #gb-hl-fab:focus-visible { opacity: 1; transform: translateY(-2px); }
+    #gb-hl-fab:active { transform: scale(.94); }
+
+    #gb-hl-fab-count {
+      position: absolute; top: -3px; right: -3px;
+      min-width: 17px; height: 17px; padding: 0 4px;
+      border-radius: 999px;
+      background: var(--gold-2, #7c5c18);
+      color: #fff;
+      font-family: var(--mono, monospace);
+      font-size: 9.5px; font-weight: 800; line-height: 17px;
+      text-align: center;
+      box-shadow: 0 1px 4px rgba(20,16,11,.35), 0 0 0 2px #14100b;
+    }
+
+    @keyframes gbHlFabBump {
+      0%   { transform: scale(1); }
+      40%  { transform: scale(1.16); }
+      100% { transform: scale(1); }
+    }
+    #gb-hl-fab.is-bump { animation: gbHlFabBump .34s cubic-bezier(.34,1.56,.64,1); }
+
+    @media (prefers-reduced-motion: reduce) {
+      #gb-hl-fab { transition: none; }
+      #gb-hl-fab.is-bump { animation: none; }
+    }
 
     html.dark #gb-hl-panel { background: #1a1612; }
     html.dark #gb-hl-export { color: #a09080; border-color: rgba(255,255,255,.14); }
@@ -162,4 +203,6 @@
     html.dark #gb-hl-close:hover { background: rgba(255,255,255,.07); }
     html.dark .gb-hl-item { border-color: rgba(255,255,255,.06); }
     html.dark .gb-hl-del:hover { background: rgba(155,45,45,.25); }
+    html.dark #gb-hl-fab { background: linear-gradient(160deg, #2a2119, #1a1410); border-color: rgba(255,255,255,.1); }
+    html.dark #gb-hl-fab-count { background: #eed093; color: #241708; box-shadow: 0 1px 4px rgba(0,0,0,.4), 0 0 0 2px #1a1410; }
   
