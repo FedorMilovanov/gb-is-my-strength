@@ -831,7 +831,7 @@ html.dark [data-gill-v16] .gb-theme-toggle .theme-icon-moon{opacity:1;transform:
   opacity:0;transform:translateX(-8px);pointer-events:none;
 }
 [data-gill-v16] .gbs-rail-speedrail{
-  position:absolute;inset:0;display:flex;align-items:center;gap:3px;
+  position:absolute;inset:0;display:flex;align-items:center;justify-content:flex-end;gap:3px;
   opacity:0;transform:translateX(8px);pointer-events:none;
   transition:opacity .25s ease,transform .25s cubic-bezier(.3,1.2,.4,1);
   overflow-x:auto;overflow-y:hidden;scrollbar-width:none;-ms-overflow-style:none;
@@ -861,28 +861,32 @@ html.dark [data-gill-v16] .gb-theme-toggle .theme-icon-moon{opacity:1;transform:
 [data-gill-v16] .gbs-rail-speedrail.is-dragging .gbs-rail-spd{transition:none}
 
 [data-gill-v16] .gbs-rail-playwrap{position:relative;flex-shrink:0;display:grid;place-items:center}
-/* color НЕ переопределён нарочно: canon .gb-ember{color:var(--color-text)}
-   рисует ▶-глиф основной тёмной краской (currentColor у SVG-глифа) — это
-   и есть контраст на светлом фоне рейла. Только --ring-color красит
-   кольцо/halo; если задать сюда ещё и color:gold, глиф в IDLE становится
-   бледно-золотым на почти таком же фоне и еле виден (найдено на
-   мобильной версии того же компонента — тот же баг, тот же фикс). */
-[data-gill-v16] .gbs-rail-playwrap .gbs-rail-ember{--ember-size:32px;--ring-color:var(--gb-accent-gold-bright,#d8aa6d)}
+/* `color` MUST be set explicitly here: canon .gb-ember{color:var(--color-text)}
+   only reads as dark ink against a LIGHT background — this rail is always
+   dark brown/black (--gbs2-rail), independent of the site's day/night toggle,
+   so --color-text's day-mode value (#1a1a1a) painted the glyph almost the
+   same shade as the rail itself. Confirmed empirically (computed color was
+   rgb(26,26,26) — invisible) before this fix; #c4a882 matches the old
+   footer's tone so Play reads the same wherever it lives in the rail. */
+[data-gill-v16] .gbs-rail-playwrap .gbs-rail-ember{--ember-size:32px;--ring-color:var(--gb-accent-gold-bright,#d8aa6d);color:#c4a882}
 [data-gill-v16] .gbs-rail-playwrap .gb-ember__ring-track{stroke:rgba(232,184,120,.22)}
 [data-gill-v16] .gbs-rail-playwrap .gb-ember__ring-progress{stroke-width:1.5}
 [data-gill-v16] .gbs-rail-spdbadge{
-  /* Верхний угол, не нижний: нижняя правая четверть Play должна ВСЕГДА бить
-     по самому Play, а не по бейджу (проверено elementFromPoint — прежняя
-     bottom-right позиция с широкой ::before-зоной перекрывала центр Play и
-     перехватывала клики по нему). */
-  position:absolute;right:-3px;top:-3px;z-index:2;
+  /* Bottom-right, matching the mobile reference (owner: "в мобиле снизу
+     было"). The badge box itself (top edge at ember-bottom-13px, i.e. below
+     the 32px circle's vertical centre) never reaches Play's own centre, so
+     clicks there still land on Play — the PREVIOUS bottom-right attempt was
+     only broken because its ::before hit-zone was expanded wide enough to
+     reach into that centre; this one stays small (inset:-2px, verified via
+     elementFromPoint at the ember's centre before shipping). */
+  position:absolute;right:-3px;bottom:-3px;top:auto;z-index:2;
   min-width:18px;height:13px;padding:0 3px;border-radius:999px;
   border:1px solid var(--gb-accent-gold-bright,#d8aa6d);background:var(--gb-accent-gold-bright,#d8aa6d);
   color:#241708;font:800 8px/12px "Source Sans 3",system-ui,sans-serif;text-align:center;
   cursor:pointer;box-shadow:0 2px 6px rgba(0,0,0,.28);
   transition:transform .18s cubic-bezier(.34,1.56,.64,1);
 }
-[data-gill-v16] .gbs-rail-spdbadge::before{content:'';position:absolute;inset:-4px -3px}
+[data-gill-v16] .gbs-rail-spdbadge::before{content:'';position:absolute;inset:-2px}
 [data-gill-v16] .gbs-rail-spdbadge:active{transform:scale(.94)}
 [data-gill-v16] .gbs-rail-spdbadge.is-bump{animation:gbs-rail-spdbadge-bump .3s cubic-bezier(.34,1.56,.64,1)}
 @keyframes gbs-rail-spdbadge-bump{0%{transform:scale(1)}50%{transform:scale(1.16)}100%{transform:scale(1)}}
@@ -1177,7 +1181,7 @@ html.dark [data-gill-v16] .gbs2-kinetic{-webkit-text-stroke:1px rgba(216,176,104
 [data-gill-v16] .gbs-rail-foot__btn{
   width:32px;height:32px;
   display:grid;place-items:center;
-  color:#c4a882;background:transparent;border:0;border-radius:50%;
+  color:#c4a882;background:transparent;border:0;border-radius:50%;text-decoration:none;
   transition:
     color .28s var(--gb-ease-out),
     transform .32s var(--gb-ease-spring);
@@ -2267,26 +2271,56 @@ html.dark .gb-ember-expand__btn.is-active {
    still reachable via long-press on the Play button (controller). */
 [data-gill-v16] .gb-ember-expand__stop { display: none; }
 
-/* Single-article (Hermeneutics) speed pill blooms LEFT out of the Play; on hover
-   the whole floater slides RIGHT toward the edge so the leftward pill opens into
-   the freed margin instead of covering the article (owner reference / DALL-E).
-   Also drop the Stop chip — the reference pill is 6 speeds only (Stop stays
-   reachable via long-press on Play). Unlayered so it beats the base btn rule. */
+/* Drop the Stop chip everywhere the pill can appear — reachable via long-press
+   on Play instead. Unlayered so it beats the base btn rule. */
 .gb-floater .gb-ember-expand__stop { display: none; }
-.gb-floater--hermeneutics { transition: transform .42s cubic-bezier(.22, 1, .36, 1); }
-/* Owner rollback: restore the floater on desktop (it was hidden ≥1200px while
-   HermenevtikaRail's own top-right goo Play stood in for it — that Play is
-   removed). Below 1200px HermenevtikaMobileBar is the sole control surface
-   (its own theme/search/play/save), so the floater stays hidden there to
-   avoid duplicate controls — matching HermenevtikaRail/MobileBar's own
-   1199/1200px split. */
+/* Hermeneutics: top-right floater is theme-toggle only now (Play/Search/Save
+   moved into HermenevtikaRail's own top bar — see .hrail-top below) — no more
+   whole-floater hover-slide hack, that WAS the "not smooth" complaint. Stays
+   hidden ≥1200px is irrelevant now (nothing left to hide/show), but the rule
+   is harmless to keep in case a bare theme corner is ever wanted responsive too. */
 @media (max-width: 1199px) {
   .gb-floater--hermeneutics { display: none; }
 }
+
+/* === HermenevtikaRail top bar: Play's speed pill blooms DOWN, anchored just
+   under Play and a touch to the right (owner reference: "снизу PLAY
+   прилеплялись, снизу чуть справа" — NOT the Gill-rail's morph-UP, and NOT
+   the default morph-LEFT either — the rail's top row has no headroom above
+   it (24px to the viewport edge) and no width to spare beside it, but there
+   IS open space below Play, over the meta/TOC block, same as any normal
+   dropdown. ONLY Play itself moves (scale, no drift) — the rest of the row
+   stays put, matching the canonical .gb-ember-wrap contract. */
+.hrail-top .gb-ember-expand {
+  right: -6px;
+  left: auto;
+  top: calc(100% + 9px);
+  bottom: auto;
+  transform: translateX(var(--gb-ember-shift, 0px));
+  padding: 5px 7px;
+  /* Fits inside the 270px rail's inner width (238px) with margin on both
+     sides — the rail is overflow:hidden, so a wider pill would clip its
+     left edge (1px bug caught in QA). flex-nowrap + compact chips keep all
+     five speeds on ONE row instead of the previous 3-row wrap. */
+  max-width: 216px;
+  flex-wrap: nowrap;
+  clip-path: circle(15px at calc(100% - 28px) 0%);
+}
+.hrail-top .gb-ember-expand.is-open {
+  clip-path: inset(0 0 0 0 round 999px);
+}
+.hrail-top .gb-ember-expand__stop { display: none; }
+.hrail-top .gb-ember-expand__btn {
+  min-width: 0;
+  height: 27px;
+  padding: 0 7px;
+  font-size: 11px;
+  border-radius: 8px;
+}
 @media (hover: hover) and (pointer: fine) {
-  .gb-floater--hermeneutics:has(.gb-ember-wrap:hover),
-  .gb-floater--hermeneutics:has(.gb-ember-expand.is-open) {
-    transform: translateX(clamp(56px, 7vw, 104px));
+  .hrail-top .gb-ember-wrap:hover > .gb-ember,
+  .hrail-top .gb-ember-wrap:focus-within > .gb-ember {
+    transform: scale(1.06);
   }
 }
 

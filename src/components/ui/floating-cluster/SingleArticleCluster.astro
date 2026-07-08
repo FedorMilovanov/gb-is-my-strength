@@ -5,16 +5,19 @@
  *
  * Структура (сверху вниз):
  *   1. Theme toggle (gb-icon gb-theme-toggle)
- *   2. Search (gb-icon)
- *   3. PlayEmber (gb-ember)
- *   4. Save (gb-save)
+ *   2. Search (gb-icon)         — variant="article" only
+ *   3. PlayEmber (gb-ember)     — variant="article" only
+ *   4. Save (gb-save)           — variant="article" only
  *
  * Positioning:
  *   - default: position:fixed, top:max(20px,...), right:max(20px,...)
  *   - variant="hermeneutics": same fixed, but top/right override
  *     copies old .theme-toggle geometry (top:clamp(24,3.5vw,44)-4; right:8.5vw)
  *     so day/night SVG sits exactly on the breadcrumb visual level
- *     (owner spec: replace old control, preserve its anchor).
+ *     (owner spec: replace old control, preserve its anchor). Search/Play/Save
+ *     are DROPPED for this variant — they live in HermenevtikaRail's own top
+ *     bar instead (owner: Play blooming here over the article read as buggy;
+ *     the rail's version blooms up within its own 270px column instead).
  *
  * На мобильных (≤899px): нижняя центрированная горизонтальная пилюля
  */
@@ -74,27 +77,33 @@ const {
     </span>
   </button>
 
-  <!-- 2. Search -->
-  <button
-    type="button"
-    class="gb-icon"
-    id="gbFcSearch"
-    data-fc-action="search"
-    aria-label="Поиск"
-  >
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-      <circle cx="11" cy="11" r="7" />
-      <path d="M21 21l-4.3-4.3" />
-    </svg>
-  </button>
+  {variant !== 'hermeneutics' && (
+    <Fragment>
+      <!-- 2. Search -->
+      <button
+        type="button"
+        class="gb-icon"
+        id="gbFcSearch"
+        data-fc-action="search"
+        aria-label="Поиск"
+      >
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <circle cx="11" cy="11" r="7" />
+          <path d="M21 21l-4.3-4.3" />
+        </svg>
+      </button>
 
-  <!-- 3. Play — the tested PlayEmber ring circle, same as every other single
-       article. Hermeneutics previously had a goo-Play carve-out here; that
-       whole family is being retired in favour of PlayEmber + .gb-ember-expand
-       (owner rollback), so it now matches the rest of the site. -->
-  <PlayEmber audioState={audioState} progress={progress} />
+      <!-- 3. Play — the tested PlayEmber ring circle, same as every other single
+           article. -->
+      <PlayEmber audioState={audioState} progress={progress} />
 
-  <!-- 4. Save — NO halo (gb-save, not gb-icon) -->
-  <SaveButton />
+      <!-- 4. Save — NO halo (gb-save, not gb-icon) -->
+      <SaveButton />
+    </Fragment>
+  )}
+  <!-- Hermeneutics: Search/Play/Save moved into HermenevtikaRail's own top
+       bar (search pill → Play → Save, blooms UP not over the article) — this
+       floater is theme-toggle only there now, at its unchanged breadcrumb-level
+       anchor. -->
 </div>
 
