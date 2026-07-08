@@ -311,115 +311,17 @@ const { title, backHref, readingMinutes = 50 } = Astro.props;
 </style>
 
 <script>
-  // ---- speed-slot swap (top bar) — same mechanic as GillSeriesRail topbar ----
-  function initSpeedSlot(topbar: HTMLElement) {
-    const ember = topbar.querySelector('.hm-ember') as HTMLElement | null;
-    const speedrail = topbar.querySelector('.hm-speedrail') as HTMLElement | null;
-    const badge = topbar.querySelector('.hm-spdbadge') as HTMLElement | null;
-    if (!ember || !speedrail || !badge) return;
-    const chips = Array.prototype.slice.call(speedrail.querySelectorAll('.hm-spd')) as HTMLElement[];
-    let offeredThisSession = false;
-    let closeTimer: number | undefined;
-
-    function fmt(r: number): string { return String(r).replace(/\.0$/, '') + '×'; }
-    function readRate(): number {
-      try {
-        const r = parseFloat(localStorage.getItem('gb:audio:rate') || localStorage.getItem('gbx-tts-rate') || '1');
-        return (!isNaN(r) && r > 0) ? r : 1;
-      } catch (_) { return 1; }
-    }
-    function syncActive(rate: number) {
-      chips.forEach((c) => {
-        const on = parseFloat(c.dataset.speed || '1') === rate;
-        c.setAttribute('aria-checked', on ? 'true' : 'false');
-      });
-      (badge as HTMLElement).textContent = fmt(rate);
-      (badge as HTMLElement).setAttribute('aria-label', 'Выбрать скорость, сейчас ' + fmt(rate));
-    }
-    syncActive(readRate());
-
-    function open(autoClose: boolean) {
-      clearTimeout(closeTimer);
-      topbar.classList.add('speed-open');
-      const active = (speedrail as HTMLElement).querySelector('.hm-spd[aria-checked="true"]') as HTMLElement | null;
-      if (active) setTimeout(() => { active.scrollIntoView({ block: 'nearest', inline: 'center', behavior: 'auto' }); }, 20);
-      if (autoClose) closeTimer = window.setTimeout(close, 4500);
-    }
-    function close() {
-      clearTimeout(closeTimer);
-      topbar.classList.remove('speed-open');
-    }
-
-    let prevState = ember.dataset.state || 'idle';
-    new MutationObserver(() => {
-      const state = ember.dataset.state || 'idle';
-      if (state === 'playing' && (prevState === 'idle' || prevState === 'complete') && !offeredThisSession) {
-        offeredThisSession = true;
-        open(true);
-      }
-      prevState = state;
-    }).observe(ember, { attributes: true, attributeFilter: ['data-state'] });
-
-    badge.addEventListener('click', (e: MouseEvent) => {
-      e.preventDefault(); e.stopPropagation();
-      topbar.classList.contains('speed-open') ? close() : open(false);
-    });
-
-    chips.forEach((chip) => {
-      chip.addEventListener('click', (e: MouseEvent) => {
-        e.stopPropagation();
-        const rate = parseFloat(chip.dataset.speed || '1');
-        syncActive(rate);
-        badge.classList.remove('is-bump'); void badge.offsetWidth; badge.classList.add('is-bump');
-        try {
-          localStorage.setItem('gb:audio:rate', String(rate));
-          localStorage.setItem('gbx-tts-rate', String(rate));
-        } catch (_) {}
-        window.dispatchEvent(new CustomEvent('gb:tts-rate-change', { detail: { rate: rate } }));
-        setTimeout(close, 220);
-      });
-    });
-
-    window.addEventListener('gb:tts-rate-change', ((ev: CustomEvent) => {
-      const r = ev && ev.detail && ev.detail.rate;
-      if (typeof r === 'number' && !isNaN(r)) syncActive(r);
-    }) as EventListener);
-
-    document.addEventListener('pointerdown', (e: PointerEvent) => {
-      if (topbar.classList.contains('speed-open') && !topbar.contains(e.target as Node)) close();
-    }, { passive: true });
-
-    let dragging = false, startX = 0, startScroll = 0, moved = false, pid: number | null = null;
-    speedrail.addEventListener('pointerdown', (e: PointerEvent) => {
-      dragging = true; moved = false; startX = e.clientX; startScroll = (speedrail as HTMLElement).scrollLeft; pid = e.pointerId;
-    });
-    speedrail.addEventListener('pointermove', (e: PointerEvent) => {
-      if (!dragging || e.pointerId !== pid) return;
-      const dx = e.clientX - startX;
-      if (!moved && Math.abs(dx) > 4) {
-        moved = true;
-        (speedrail as HTMLElement).classList.add('is-dragging');
-        try { (speedrail as HTMLElement).setPointerCapture(pid); } catch (_) {}
-      }
-      if (moved) (speedrail as HTMLElement).scrollLeft = startScroll - dx;
-    });
-    function endDrag(e: PointerEvent) {
-      if (!dragging || (pid !== null && e.pointerId !== pid)) return;
-      dragging = false; pid = null;
-      (speedrail as HTMLElement).classList.remove('is-dragging');
-    }
-    speedrail.addEventListener('pointerup', endDrag);
-    speedrail.addEventListener('pointercancel', endDrag);
-    speedrail.addEventListener('click', (e: MouseEvent) => { if (moved) { e.stopPropagation(); moved = false; } }, true);
-
-    // Референс: фокус на поиске закрывает рельсу скоростей (search.addEventListener('focus', closeSpeeds))
-    const searchInput = topbar.querySelector('#hmTocSearch') as HTMLInputElement | null;
-    if (searchInput) searchInput.addEventListener('focus', () => close());
-  }
+  import { initSpeedSlot } from '../_shared/speedSlot';
 
   function initHermenevtikaMobileBar(){
     const topbar = document.querySelector('.hmtop[data-gb-speed-custom]') as HTMLElement | null;
-    if (topbar) initSpeedSlot(topbar);
+    if (topbar) initSpeedSlot(topbar, {
+      ember: '.hm-ember',
+      speedrail: '.hm-speedrail',
+      badge: '.hm-spdbadge',
+      chip: '.hm-spd',
+      searchInput: '#hmTocSearch',
+    });
 
     const backBtn = document.getElementById('hmBackBtn');
     if (backBtn) backBtn.addEventListener('click', () => {
