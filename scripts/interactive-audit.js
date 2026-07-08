@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
 /* TODO: gill-v16 | gbs2-baptisty | gbs2-hard-texts | astro-series */
-/* Gill v16 required: data-gill-v16, .gbs-rail, .gbs-rail-card.is-current, .mobile-bottom-bar, #mobTocBtn, #seriesTocOverlay, #partTocOverlay */
+/* Gill v16 required: data-gill-v16, .gbs-rail, .gbs-rail-card.is-current, .mobile-bottom-bar, #mobPartTocBtn, #seriesTocOverlay, #partTocOverlay */
 /* REMOVE .gbs2-timeline requirement from Gill v16 — prevents false-red */
 
 /**
@@ -136,7 +136,9 @@ async function checkSeries(browser) {
       bbar: !!document.querySelector('#gbs2Bbar, .gbs2-bbar'),
       sheet: !!document.querySelector('#gbs2Sheet, .gbs2-sheet'),
       v16Bar: !!document.querySelector('.mobile-bottom-bar'),
-      v16TocButton: !!document.querySelector('#mobTocBtn'),
+      // v4 bar has the section button (#mobPartTocBtn), not the retired
+      // «Серия» button (#mobTocBtn).
+      v16PartButton: !!document.querySelector('#mobPartTocBtn'),
       v16SeriesOverlay: !!document.querySelector('#seriesTocOverlay'),
       v16PartOverlay: !!document.querySelector('#partTocOverlay'),
       v16Current: !!document.querySelector('.toc-item[aria-current="page"], .toc-item.is-current'),
@@ -145,19 +147,24 @@ async function checkSeries(browser) {
       overflow: document.documentElement.scrollWidth - window.innerWidth,
     }));
     if (mobState.gbsWorld) {
-      const isV16Mobile = mobState.v16Bar || mobState.v16TocButton || mobState.v16SeriesOverlay || mobState.v16PartOverlay;
+      const isV16Mobile = mobState.v16Bar || mobState.v16PartButton || mobState.v16SeriesOverlay || mobState.v16PartOverlay;
       if (isV16Mobile) {
-        if (!mobState.v16Bar || !mobState.v16TocButton || !mobState.v16SeriesOverlay || !mobState.v16PartOverlay || !mobState.v16Current) {
+        if (!mobState.v16Bar || !mobState.v16PartButton || !mobState.v16SeriesOverlay || !mobState.v16PartOverlay || !mobState.v16Current) {
           push('gbs-v16-mobile-ui-missing', url, mobState);
           await mob.close();
           continue;
         }
-        try { await mob.locator('#mobTocBtn').first().click({ timeout: 5000 }); }
+        // v4 flow: section button → part overlay → #backToSeries → series overlay.
+        try { await mob.locator('#mobPartTocBtn').first().click({ timeout: 5000 }); }
         catch (e) { push('gbs-v16-toc-open-failed', url, e.message.slice(0, 200)); await mob.close(); continue; }
         await mob.waitForTimeout(350);
+        const partOpen = await mob.evaluate(() => document.querySelector('#partTocOverlay')?.classList.contains('is-open'));
+        if (!partOpen) push('gbs-v16-part-overlay-did-not-open', url, null);
+        try { await mob.locator('#backToSeries').first().click({ timeout: 5000 }); } catch (e) { /* series is optional-reachable */ }
+        await mob.waitForTimeout(300);
         const open = await mob.evaluate(() => document.querySelector('#seriesTocOverlay')?.classList.contains('is-open'));
         if (!open) push('gbs-v16-series-overlay-did-not-open', url, null);
-        await mob.evaluate(() => { document.querySelector('#seriesTocOverlay')?.classList.remove('is-open'); document.body.style.overflow = ''; });
+        await mob.evaluate(() => { document.querySelector('#seriesTocOverlay')?.classList.remove('is-open'); document.querySelector('#partTocOverlay')?.classList.remove('is-open'); document.body.style.overflow = ''; });
       } else {
         if (!mobState.head || !mobState.bbar || !mobState.sheet) {
           push('gbs-mobile-ui-missing', url, mobState);

@@ -432,14 +432,12 @@ async function testPlayState(browser, mobile) {
   assert(speedFacts.calls === callsBeforeSpeed + 1, `${label}: speed change while playing restarts exactly once`, JSON.stringify(speedFacts));
   assert(speedFacts.rates.at(-1) === 1.75, `${label}: speed change uses selected 1.75×`, JSON.stringify(speedFacts.rates));
 
-  // Custom speed slots — GooPlayMini (desktop rail footer), the desktop
-  // rail-topbar, AND the v4 mobile top bar (all [data-gb-speed-custom]) —
-  // intentionally have no stop affordance: play/pause toggle + speed only.
-  // initPlayExpand() skips [data-gb-speed-custom] embers, so neither the
-  // bloom-pill stop nor the long-press-to-stop gesture is wired on them; the
-  // v4 mobile bar matches the reference (gbs_series_mobile_v4_refined), which
-  // has no stop either. The stop/idle-speed and long-press blocks below are
-  // therefore gated to non-custom embers only.
+  // Custom speed slots (GooPlayMini + desktop rail-topbar + both mobile
+  // bars, all [data-gb-speed-custom]) have no bloom-pill STOP BUTTON — the
+  // desktop-only stop/idle-speed assertions below stay gated to non-custom.
+  // (Touch long-press-to-stop IS restored on the mobile custom slots via
+  // initCustomSlotLongPressStop() — exercised in the mobile block further
+  // down, no longer gated out.)
   if (!isGoo && !isCustom) {
     await clickStopNearEmber(ember);
     await page.waitForTimeout(150);
@@ -458,7 +456,7 @@ async function testPlayState(browser, mobile) {
     assert(idleFacts.rates.at(-1) === 1.25, `${label}: speed select from idle uses chosen 1.25×`, JSON.stringify(idleFacts.rates));
   }
 
-  if (mobile && !isCustom) {
+  if (mobile) {
     await ember.click();
     await page.waitForTimeout(150);
     const beforeLong = await page.evaluate(() => window.__ttsFake.speakCalls);
