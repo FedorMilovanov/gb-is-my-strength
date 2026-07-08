@@ -23,6 +23,12 @@
   var ORT_SRC = 'https://cdn.jsdelivr.net/npm/onnxruntime-web@1.19.2/dist/ort.min.js';
   var FFLATE_SRC = 'https://cdn.jsdelivr.net/npm/fflate@0.8.2/umd/index.js';
   var MODEL_URL = 'https://huggingface.co/CurtMil/gb-vosk-tts-model/resolve/main/vosk-model-tts-ru-0.9-multi.zip';
+  // Matches the SHA-256 GitHub itself computed for this exact file when it
+  // was uploaded as a release asset (gb-vosk-tts release "model-v1") — that
+  // upload is this hash's provenance. Update this whenever MODEL_URL points
+  // at different bytes (new upload / quantized variant / etc.), or every
+  // fresh download will fail the check below.
+  var EXPECTED_MODEL_SHA256 = '0aa332451ce46bfdbd620e74765fc16a4087988067c299969121ed0f8ed5bdf2';
   var NEEDED = ['model.onnx', 'dictionary', 'config.json', 'bert/model.onnx', 'bert/vocab.txt'];
   var DB_NAME = 'gb-vosk-tts';
   var SAMPLE_RATE = 22050;
@@ -107,6 +113,30 @@
     return files;
   }
 
+  function bufToHex(buf) {
+    var bytes = new Uint8Array(buf), hex = '';
+    for (var i = 0; i < bytes.length; i++) hex += bytes[i].toString(16).padStart(2, '0');
+    return hex;
+  }
+
+  // Verifies the raw downloaded zip against EXPECTED_MODEL_SHA256 before it's
+  // trusted/unzipped/cached — the model is a 700+MB arbitrary binary fetched
+  // from a third-party host (Hugging Face) with no other integrity signal in
+  // this pipeline otherwise. Only runs on a fresh network download, not on
+  // cache hits (already-cached bytes were verified the first time they were
+  // stored). Skips (doesn't block playback) if SubtleCrypto is unavailable —
+  // e.g. very old browsers or a non-HTTPS context — rather than breaking TTS
+  // entirely over a missing nice-to-have safety check.
+  function verifyModelIntegrity(buf) {
+    if (!(window.crypto && window.crypto.subtle && window.crypto.subtle.digest)) return Promise.resolve();
+    return window.crypto.subtle.digest('SHA-256', buf).then(function (hash) {
+      var hex = bufToHex(hash);
+      if (hex !== EXPECTED_MODEL_SHA256) {
+        throw new Error('model integrity check failed: sha256 ' + hex.slice(0, 12) + '... != expected ' + EXPECTED_MODEL_SHA256.slice(0, 12) + '...');
+      }
+    });
+  }
+
   // Cache key is MODEL_URL itself, not a fixed string — if the model file
   // this constant points to ever changes (e.g. a future quantized upload),
   // returning visitors automatically re-fetch instead of playing back a
@@ -118,8 +148,10 @@
         if (!resp.ok) throw new Error('model download HTTP ' + resp.status);
         return resp.arrayBuffer();
       }).then(function (buf) {
-        var files = extractZip(new Uint8Array(buf));
-        return idbSet(MODEL_URL, files).then(function () { return files; });
+        return verifyModelIntegrity(buf).then(function () {
+          var files = extractZip(new Uint8Array(buf));
+          return idbSet(MODEL_URL, files).then(function () { return files; });
+        });
       });
     });
   }
