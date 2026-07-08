@@ -7,12 +7,18 @@
  * tokens (day: warm cream + maroon; night: dark wine + dusty rose), not
  * Gill's brown-chocolate/gold leather skin.
  *
- * Owner rollback: theme/search/Play/save moved BACK to the restored top-right
- * FloatingCluster (see HermenevtikaBody.astro) — this rail is now purely the
- * article's own TOC (oglavlenie) plus font-size controls and a Save/Share/PDF
- * action row at the bottom, matching Gill's mobile TOC-sheet footer pattern
- * (toc-sheet__actions) ported to this desktop rail.
+ * Owner spec (3rd pass): Search/Play/Save moved OUT of the top-right
+ * FloatingCluster and INTO this rail's own top bar — back → search → Play
+ * → Save, matching the mobile reference's topbar layout. Play uses the
+ * canonical .gb-ember-wrap/.gb-ember-expand bloom (auto-wired by
+ * initPlayExpand() in floating-cluster-controller.js — no goo, no custom
+ * slot-swap), just blooming UP instead of LEFT (see .hrail-top .gb-ember-expand
+ * in floating-cluster.css) since the rail has no horizontal room. The
+ * top-right FloatingCluster now carries ONLY the theme toggle. Bottom of the
+ * rail is a flat row of plain SVG icon buttons (share / print / font size) —
+ * no boxed icon+label grid.
  */
+import PlayEmber from '@/components/ui/floating-cluster/PlayEmber.astro';
 import SaveButton from '@/components/ui/floating-cluster/SaveButton.astro';
 import { HERMENEVTIKA_TOC } from './hermenevtikaToc';
 
@@ -23,10 +29,18 @@ interface Props {
 }
 const { eyebrow, title, backHref } = Astro.props;
 ---
-<aside class="hrail" aria-label={title}>
-  <button class="hrail-back" type="button" aria-label="Назад" data-home-href={backHref}>
-    <svg viewBox="0 0 24 24"><path d="M19 12H5M12 19l-7-7 7-7" /></svg>
-  </button>
+<aside class="hrail" aria-label={title} data-fc-root data-fc-variant="single" data-fc-mode="single">
+  <div class="hrail-top">
+    <button class="hrail-back" type="button" aria-label="Назад" data-home-href={backHref}>
+      <svg viewBox="0 0 24 24"><path d="M19 12H5M12 19l-7-7 7-7" /></svg>
+    </button>
+    <button class="hrail-search-btn" type="button" data-fc-action="search" aria-label="Поиск">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7" /><path d="M21 21l-4.3-4.3" /></svg>
+      <span>Поиск</span>
+    </button>
+    <PlayEmber audioState="none" class="hrail-play" tip="Озвучка" />
+    <SaveButton class="hrail-save" tip="Сохранить" />
+  </div>
   <div class="hrail-meta">
     <div class="hrail-meta__eyebrow">{eyebrow}</div>
     <p class="hrail-meta__title">{title}</p>
@@ -40,25 +54,23 @@ const { eyebrow, title, backHref } = Astro.props;
       <span class="hrail-track" aria-hidden="true"><i></i></span>
       {HERMENEVTIKA_TOC.map((item) => (
         <li class:list={{ 'hrail-sub': item.level === 3 }}>
-          <a href={item.href}><span class="hrail-dot" aria-hidden="true"></span>{item.label}</a>
+          <a href={item.href}>{item.level !== 3 && <span class="hrail-dot" aria-hidden="true"></span>}{item.label}</a>
         </li>
       ))}
     </ul>
   </div>
-  <div class="hrail-foot" data-fc-root data-fc-variant="single" data-fc-mode="single">
-    <button class="hrail-foot__btn hrail-foot__btn--text" data-fc-action="font-down" aria-label="Уменьшить шрифт" data-tip="Меньше">A−</button>
-    <button class="hrail-foot__btn hrail-foot__btn--text" data-fc-action="font-up" aria-label="Увеличить шрифт" data-tip="Больше">A+</button>
-  </div>
-  <div class="hrail-actions">
-    <SaveButton class="hrail-action-btn" tip="Сохранить" />
-    <button class="hrail-action-btn" id="hrailShare" type="button">
+  <div class="hrail-bottom">
+    <a class="hrail-bottom-btn" href="../../" aria-label="Все разделы сайта">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"><path d="M4 7h16M4 12h16M4 17h16" /></svg>
+    </a>
+    <button class="hrail-bottom-btn" id="hrailShare" type="button" aria-label="Поделиться">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="2.6" /><circle cx="6" cy="12" r="2.6" /><circle cx="18" cy="19" r="2.6" /><path d="M8.3 10.7l7.4-4.2M8.3 13.3l7.4 4.2" /></svg>
-      <span>Поделиться</span>
     </button>
-    <button class="hrail-action-btn" data-action="print" type="button">
+    <button class="hrail-bottom-btn" data-action="print" type="button" aria-label="Скачать PDF">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 6 2 18 2 18 9" /><path d="M6 18H4a2 2 0 0 1-2-2V11a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2" /><rect x="6" y="14" width="12" height="8" /></svg>
-      <span>PDF</span>
     </button>
+    <button class="hrail-bottom-btn hrail-bottom-btn--text" data-fc-action="font-down" aria-label="Уменьшить шрифт">A−</button>
+    <button class="hrail-bottom-btn hrail-bottom-btn--text" data-fc-action="font-up" aria-label="Увеличить шрифт">A+</button>
   </div>
 </aside>
 
@@ -77,14 +89,33 @@ const { eyebrow, title, backHref } = Astro.props;
     border-color:rgba(212,140,150,.16);
     box-shadow:0 34px 100px rgba(0,0,0,.5),inset 0 1px 0 rgba(255,255,255,.04);
   }
-  .hrail-back{width:38px;height:38px;border-radius:50%;display:grid;place-items:center;color:#7a2e2e;margin:0 0 8px 4px;opacity:.85;
+  /* ---- top bar: back, search, Play (canonical .gb-ember-wrap bloom, see
+     floating-cluster.css), Save — replaces the old top-right floater's
+     Search/Play/Save for this page (theme stays up there, alone). ---- */
+  .hrail-top{display:flex;align-items:center;gap:6px;margin:0 0 12px}
+  .hrail-back{flex:none;width:34px;height:34px;border-radius:50%;display:grid;place-items:center;color:#7a2e2e;opacity:.85;
     transition:transform .3s,color .3s;cursor:pointer;background:none;border:0;padding:0;font:inherit}
   html.dark .hrail-back{color:#e0a89c}
-  .hrail-back svg{width:21px;height:21px;stroke:currentColor;fill:none;stroke-width:1.8}
+  .hrail-back svg{width:19px;height:19px;stroke:currentColor;fill:none;stroke-width:1.8}
   @media(hover:hover) and (pointer:fine){
     .hrail-back:hover{transform:translateX(-3px);color:#5f2323}
     html.dark .hrail-back:hover{color:#f2c4b6}
   }
+  .hrail-search-btn{flex:1;min-width:0;display:flex;align-items:center;gap:7px;height:34px;padding:0 12px;
+    border-radius:999px;background:rgba(122,46,46,.055);border:1px solid rgba(122,46,46,.15);
+    color:rgba(42,24,20,.55);cursor:pointer;font:inherit;transition:background-color .25s,border-color .25s,color .25s}
+  html.dark .hrail-search-btn{background:rgba(224,160,150,.05);border-color:rgba(224,160,150,.16);color:rgba(255,255,255,.42)}
+  .hrail-search-btn svg{width:15px;height:15px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;flex:none}
+  .hrail-search-btn span{font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  @media(hover:hover) and (pointer:fine){
+    .hrail-search-btn:hover{background:rgba(122,46,46,.09);color:#2a1814}
+    html.dark .hrail-search-btn:hover{background:rgba(224,160,150,.09);color:#f6efe9}
+  }
+  .hrail-top .gb-ember{--ember-size:32px;--ring-color:#c4694c;flex:none}
+  html.dark .hrail-top .gb-ember{--ring-color:#dd7c5d}
+  .hrail-top .gb-save{width:32px;height:32px;flex:none}
+  .hrail-top .gb-save svg{width:16px;height:16px}
+
   .hrail-meta{padding:2px 4px 14px}
   .hrail-meta__eyebrow{font-size:9.5px;font-weight:900;letter-spacing:.2em;text-transform:uppercase;color:#7a2e2e}
   html.dark .hrail-meta__eyebrow{color:#d68a7a}
@@ -96,7 +127,7 @@ const { eyebrow, title, backHref } = Astro.props;
   .hrail-toch b{margin-left:auto;background:rgba(122,46,46,.08);border:1px solid rgba(122,46,46,.22);border-radius:99px;padding:2px 9px;font-size:10px;color:#7a2e2e;font-variant-numeric:tabular-nums}
   html.dark .hrail-toch b{background:rgba(212,168,87,.08);border-color:rgba(224,160,150,.24);color:#e0a89c}
   .hrail-scroll{flex:1 1 auto; overflow-y:auto; margin-right:-8px; padding-right:8px}
-  .hrail-toc{position:relative;list-style:none;margin:6px 0 0;padding:2px 12px 14px 0;--toc-axis-x:14px}
+  .hrail-toc{position:relative;list-style:none;margin:6px 0 0;padding:2px 12px 14px 0;--toc-axis-x:22px;--toc-sub-in:16px}
   .hrail-track{position:absolute;left:calc(var(--toc-axis-x) - 1px);width:2px;border-radius:9px;overflow:hidden;
     top:14px;bottom:22px;background:rgba(0,0,0,.08)}
   html.dark .hrail-track{background:rgba(255,255,255,.08)}
@@ -108,7 +139,7 @@ const { eyebrow, title, backHref } = Astro.props;
        real scroll position instead of tracking it. */
     transition:transform 120ms linear;
     background:linear-gradient(180deg,#c4694c 0%,#a94847 48%,#7a2e2e 100%)}
-  .hrail-toc li{position:relative;margin:1px 0;padding-left:30px}
+  .hrail-toc li{position:relative;margin:1px 0;padding-left:38px}
   .hrail-toc a{display:block;padding:6px 10px;border-radius:9px;color:rgba(42,24,20,.68);text-decoration:none;
     font-family:var(--f-serif,Lora,Georgia,serif);font-size:12.5px;line-height:1.3;transition:color .2s,background-color .2s}
   html.dark .hrail-toc a{color:rgba(255,255,255,.62)}
@@ -116,6 +147,10 @@ const { eyebrow, title, backHref } = Astro.props;
     border:2px solid rgba(42,24,20,.22);background:#fff;box-shadow:0 0 0 3px #f3e6d8;z-index:1;transition:.2s}
   html.dark .hrail-dot{border-color:rgba(255,255,255,.18);background:#1c0e10;box-shadow:0 0 0 3px #170b0c}
   .hrail-toc li.hrail-passed .hrail-dot{background:#b85c3e;border-color:#b85c3e}
+  /* Sub-items: pushed further right (no dot of their own — the track/dots
+     mark only the article's main sections, matching "пункты и подпункты, а
+     не просто список" — subs read as nested text, not extra stops). */
+  .hrail-toc li.hrail-sub{padding-left:calc(38px + var(--toc-sub-in))}
   .hrail-toc li.hrail-sub a{font-size:11px}
   .hrail-toc li.hrail-sub:not(.hrail-act):not(.hrail-passed) a{color:rgba(42,24,20,.5)}
   html.dark .hrail-toc li.hrail-sub:not(.hrail-act):not(.hrail-passed) a{color:rgba(255,255,255,.46)}
@@ -124,48 +159,28 @@ const { eyebrow, title, backHref } = Astro.props;
   html.dark .hrail-toc li.hrail-act a{background:linear-gradient(90deg,rgba(122,46,46,.44),rgba(122,46,46,.16) 72%,rgba(122,46,46,.05));
     color:#f6efe9;box-shadow:inset 0 0 0 1px rgba(224,160,150,.16)}
   .hrail-toc li.hrail-act .hrail-dot{background:#dd7c5d;border-color:#dd7c5d;transform:scale(1.11)}
-  .hrail-toc li.hrail-sub .hrail-dot{width:7px;height:7px;margin-top:-3.5px;left:calc(var(--toc-axis-x) - 3.5px);border-width:1.5px}
   @media(hover:hover) and (pointer:fine){
     .hrail-toc li:not(.hrail-act) a:hover{color:#2a1814;background:rgba(122,46,46,.05)}
     html.dark .hrail-toc li:not(.hrail-act) a:hover{color:#f6efe9;background:rgba(255,255,255,.03)}
   }
 
-  .hrail-foot{display:flex;align-items:center;gap:6px;margin-top:8px;padding:10px 6px 2px;border-top:1px solid rgba(0,0,0,.08)}
-  html.dark .hrail-foot{border-top-color:rgba(255,255,255,.07)}
-  .hrail-foot__btn{position:relative;width:34px;height:34px;border-radius:50%;display:grid;place-items:center;color:#8a5a4a;cursor:pointer;
-    transition:color .3s,transform .32s cubic-bezier(.34,1.56,.64,1);background:none;border:0;padding:0;font:inherit}
-  html.dark .hrail-foot__btn{color:#caa1a0}
+  /* Bottom row: share / print / font-size — plain SVG icon buttons in a flat
+     row, no boxed icon+label grid (owner: "слишком громоздко", "нужны
+     минималистичные SVG"). Halo-on-hover only, matching canon .gb-icon. */
+  .hrail-bottom{display:flex;align-items:center;justify-content:space-between;margin-top:8px;padding:10px 4px 0;border-top:1px solid rgba(0,0,0,.08)}
+  html.dark .hrail-bottom{border-top-color:rgba(255,255,255,.07)}
+  .hrail-bottom-btn{position:relative;width:31px;height:31px;border-radius:50%;display:grid;place-items:center;color:#8a5a4a;cursor:pointer;
+    transition:color .25s,transform .25s cubic-bezier(.34,1.56,.64,1);background:none;border:0;padding:0;font:inherit;text-decoration:none}
+  .hrail-bottom-btn::before{content:'';position:absolute;inset:2px;border-radius:50%;border:1px solid currentColor;
+    opacity:0;transform:scale(.7);transition:opacity .25s,transform .3s cubic-bezier(.34,1.56,.64,1)}
+  html.dark .hrail-bottom-btn{color:#caa1a0}
   @media(hover:hover) and (pointer:fine){
-    .hrail-foot__btn:hover{color:#7a2e2e;transform:translateY(-1px) scale(1.06)}
-    html.dark .hrail-foot__btn:hover{color:#f2c9c9}
+    .hrail-bottom-btn:hover{color:#7a2e2e;transform:translateY(-1px)}
+    .hrail-bottom-btn:hover::before{opacity:.3;transform:scale(1)}
+    html.dark .hrail-bottom-btn:hover{color:#f2c9c9}
   }
-  .hrail-foot__btn--text{font-family:var(--f-serif,Lora,Georgia,serif);font-size:13px;font-weight:700}
-
-  /* Save / Share / PDF — ported from Gill's mobile toc-sheet__actions grid to
-     this desktop rail (owner: same bottom action row on both surfaces). */
-  .hrail-actions{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;padding:2px 2px 0}
-  .hrail-action-btn{display:flex;flex-direction:column;align-items:center;gap:4px;padding:9px 4px;border-radius:12px;
-    color:#8a5a4a;background:rgba(122,46,46,.05);border:1px solid rgba(122,46,46,.12);cursor:pointer;
-    transition:color .25s,background-color .25s,border-color .25s,transform .25s;font:inherit}
-  html.dark .hrail-action-btn{color:#caa1a0;background:rgba(224,160,150,.05);border-color:rgba(224,160,150,.14)}
-  @media(hover:hover) and (pointer:fine){
-    .hrail-action-btn:hover{color:#7a2e2e;background:rgba(122,46,46,.09);transform:translateY(-1px)}
-    html.dark .hrail-action-btn:hover{color:#f2c9c9;background:rgba(224,160,150,.09)}
-  }
-  .hrail-action-btn svg{width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
-  .hrail-action-btn span{font-size:9.5px;font-weight:800;letter-spacing:.02em;text-transform:uppercase;white-space:nowrap}
-  /* SaveButton renders icon-only (no label slot) — override its own fixed
-     40px/circle/grid base so it matches the icon+label column layout of its
-     Share/PDF siblings, and add the label via ::after since the component
-     itself can't be passed one. */
-  .hrail-action-btn.gb-save{width:auto;height:auto;display:flex;flex-direction:column;align-items:center;gap:4px;
-    border-radius:12px;color:#8a5a4a}
-  html.dark .hrail-action-btn.gb-save{color:#caa1a0}
-  .hrail-action-btn.gb-save::after{content:'Сохранить';font-size:9.5px;font-weight:800;letter-spacing:.02em;text-transform:uppercase}
-  .hrail-action-btn.gb-save.is-saved{color:#b8724f;background:rgba(184,114,79,.10);border-color:rgba(184,114,79,.3)}
-  .hrail-action-btn.gb-save.is-saved svg{fill:#b8724f;stroke:#b8724f}
-  html.dark .hrail-action-btn.gb-save.is-saved{color:#e0a89c;background:rgba(224,168,156,.12);border-color:rgba(224,168,156,.32)}
-  html.dark .hrail-action-btn.gb-save.is-saved svg{fill:#e0a89c;stroke:#e0a89c}
+  .hrail-bottom-btn svg{width:15px;height:15px;stroke:currentColor;fill:none;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
+  .hrail-bottom-btn--text{font-family:var(--f-serif,Lora,Georgia,serif);font-size:12px;font-weight:700}
 
   @media(max-width:1200px){ .hrail{display:none} }
 
