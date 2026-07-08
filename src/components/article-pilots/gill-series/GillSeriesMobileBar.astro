@@ -28,7 +28,7 @@ interface Props {
   pageId: GillSeriesPageId;
 }
 
-const { pageId } = Astro.props;
+const { pageId } = Astro.props as Props;
 const page = GILL_PAGE_DATA[pageId];
 ---
 <div class="mobile-top-bar" data-fc-root data-fc-variant="gill" data-gill-mobile-bar data-gb-speed-custom>
