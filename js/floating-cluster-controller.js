@@ -311,6 +311,17 @@
     } catch (_) {}
   }
 
+  // Success-side counterpart to reportTtsIssue: which engine actually started
+  // playing this session ('vosk' | 'webspeech'). Without it we could only see
+  // failures, never the Vosk-vs-Web-Speech split — which is exactly why the CSP
+  // outage stayed invisible for days (a broken Vosk just silently fell back and
+  // nothing was logged). See AuditRepo TTS-OUTCOME-TELEMETRY. Fire-and-forget.
+  function reportTtsOutcome(engine) {
+    try {
+      window.ym && window.ym(108353327, 'reachGoal', 'tts_engine_selected', { engine: engine });
+    } catch (_) {}
+  }
+
   function cancelActiveEngine() {
     if (ttsState.engine === 'vosk' && window.VoskTTSEngine) {
       window.VoskTTSEngine.cancel(ttsState.utterance);
@@ -570,6 +581,7 @@
       if (myRun !== ttsState.runId) return; // stopped/replayed/navigated while we waited
       if (!engine) { showToast('Не удалось запустить озвучку', false); setEmberState('idle'); return; }
       ttsState.engine = engine;
+      reportTtsOutcome(engine);
       // Пауза, нажатая пока мы ждали загрузку движка, не бампает runId (иначе
       // resumeTts() не смог бы отличить "продолжить с текущего chunk" от
       // "это устаревший запуск"), поэтому проверяем paused отдельно: инженю
