@@ -115,6 +115,8 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: native-source-contract-${{ github.run_id }}
-          path: reports/native-source-contract-*.log
-          if-no-files-found: ignore
+          path: |
+            reports/native-source-contract-*.log
+            migration/route-migration-matrix.json
+          if-no-files-found: error
           retention-days: 7
