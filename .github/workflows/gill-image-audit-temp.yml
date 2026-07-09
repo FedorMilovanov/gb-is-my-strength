@@ -30,7 +30,7 @@ concurrency:
 jobs:
   audit:
     runs-on: ubuntu-latest
-    timeout-minutes: 35
+    timeout-minutes: 55
     steps:
       - name: Checkout lane
         uses: actions/checkout@v4
@@ -49,6 +49,12 @@ jobs:
 
       - name: Download fonts
         run: node scripts/download-fonts.js || echo 'Fonts already present or download skipped'
+
+      - name: Static publication gates
+        run: npm run validate:static-publication
+
+      - name: Strict native runtime audit
+        run: npm run native:runtime:audit:strict
 
       - name: Build production-like dist
         run: npm run strangler:build:production-like
