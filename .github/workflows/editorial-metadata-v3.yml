@@ -1,0 +1,95 @@
+name: Editorial Metadata v3
+
+on:
+  push:
+    branches:
+      - lane/system-editorial-metadata-v3-2026-07-09
+  pull_request:
+    branches: [main]
+    paths:
+      - 'data/editorial-metadata.json'
+      - 'scripts/editorial-metadata-*.js'
+      - 'scripts/lib/editorial-metadata.js'
+      - 'scripts/update-meta.js'
+      - 'scripts/cache-bust.js'
+      - '.github/workflows/editorial-metadata-v3.yml'
+      - '.github/workflows/indexnow.yml'
+  workflow_dispatch:
+
+concurrency:
+  group: editorial-metadata-v3-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: write
+
+jobs:
+  metadata-contract:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+
+    steps:
+      - name: Checkout implementation lane
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          ref: ${{ github.event_name == 'pull_request' && github.head_ref || github.ref_name }}
+
+      - name: Set up Node 22.12
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22.12.0'
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: One-time capture production metadata observations
+        if: github.ref_name == 'lane/system-editorial-metadata-v3-2026-07-09' || github.head_ref == 'lane/system-editorial-metadata-v3-2026-07-09'
+        shell: bash
+        env:
+          HEAD_BRANCH: lane/system-editorial-metadata-v3-2026-07-09
+        run: |
+          node scripts/editorial-metadata-registry.js --write --build
+          if git diff --quiet -- data/editorial-metadata.json; then
+            echo "Registry already captured"
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add data/editorial-metadata.json
+          git commit -m "refactor(metadata): freeze observed editorial projections [LANE lane/system-editorial-metadata-v3-2026-07-09]"
+          git push origin "HEAD:${HEAD_BRANCH}"
+
+      - name: Validate registry structure
+        run: node scripts/editorial-metadata-registry.js --check
+
+      - name: Build production-like dist for projection audit
+        run: npm run strangler:build:production-like
+
+      - name: Validate frozen projections
+        shell: bash
+        run: |
+          mkdir -p reports
+          set -o pipefail
+          node scripts/editorial-metadata-freeze-audit.js 2>&1 \
+            | tee reports/editorial-metadata-freeze.log
+
+      - name: Validate asset revisions without writing
+        shell: bash
+        run: |
+          set -o pipefail
+          node scripts/cache-bust.js 2>&1 \
+            | tee reports/asset-revision-drift.log
+
+      - name: Upload metadata diagnostics
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: editorial-metadata-v3-${{ github.run_id }}
+          path: |
+            reports/editorial-metadata-*.log
+            reports/asset-revision-drift.log
+            data/editorial-metadata.json
+          if-no-files-found: ignore
+          retention-days: 7
