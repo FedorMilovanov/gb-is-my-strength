@@ -16,6 +16,7 @@ on:
       - "scripts/baptisty-series-shadow-audit.js"
       - "scripts/check-mdx-html-parity.js"
       - "scripts/route-source-contract-audit.js"
+      - "scripts/sync-route-migration-matrix.js"
       - "scripts/lib/route-source-contract.js"
       - ".github/workflows/native-source-contract.yml"
       - "package.json"
@@ -35,6 +36,7 @@ on:
       - "scripts/baptisty-series-shadow-audit.js"
       - "scripts/check-mdx-html-parity.js"
       - "scripts/route-source-contract-audit.js"
+      - "scripts/sync-route-migration-matrix.js"
       - "scripts/lib/route-source-contract.js"
       - ".github/workflows/native-source-contract.yml"
       - "package.json"
@@ -46,7 +48,7 @@ concurrency:
   cancel-in-progress: true
 
 permissions:
-  contents: read
+  contents: write
 
 jobs:
   native-source-contract:
@@ -58,12 +60,33 @@ jobs:
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
+          ref: ${{ github.event_name == 'pull_request' && github.head_ref || github.ref_name }}
 
       - name: Set up Node 22.12
         uses: actions/setup-node@v4
         with:
           node-version: "22.12.0"
           cache: npm
+
+      - name: One-time normalize matrix on implementation lane
+        if: github.event_name == 'pull_request' && github.head_ref == 'lane/system-native-source-contract-v1-2026-07-09'
+        shell: bash
+        env:
+          HEAD_BRANCH: ${{ github.head_ref }}
+        run: |
+          node scripts/sync-route-migration-matrix.js --write
+          if git diff --quiet -- migration/route-migration-matrix.json; then
+            echo "Matrix already normalized"
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add migration/route-migration-matrix.json
+          git commit -m "refactor(matrix): synchronize production route contracts [LANE lane/system-native-source-contract-v1-2026-07-09]"
+          git push origin "HEAD:${HEAD_BRANCH}"
+
+      - name: Validate matrix synchronizer is clean
+        run: node scripts/sync-route-migration-matrix.js --check
 
       - name: Validate declared sources against actual import graphs
         shell: bash
