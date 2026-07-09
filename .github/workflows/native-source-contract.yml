@@ -1,0 +1,87 @@
+name: Native Source Contract
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - "src/pages/**"
+      - "src/components/**"
+      - "src/content/**"
+      - "data/route-profiles/**"
+      - "data/public-content-baseline.json"
+      - "migration/page-ownership.json"
+      - "migration/route-migration-matrix.json"
+      - "scripts/article-native-contract-audit.js"
+      - "scripts/article-mdx-pilot-audit.js"
+      - "scripts/baptisty-series-shadow-audit.js"
+      - "scripts/check-mdx-html-parity.js"
+      - "scripts/route-source-contract-audit.js"
+      - "scripts/lib/route-source-contract.js"
+      - ".github/workflows/native-source-contract.yml"
+      - "package.json"
+      - "package-lock.json"
+  push:
+    branches: [main]
+    paths:
+      - "src/pages/**"
+      - "src/components/**"
+      - "src/content/**"
+      - "data/route-profiles/**"
+      - "data/public-content-baseline.json"
+      - "migration/page-ownership.json"
+      - "migration/route-migration-matrix.json"
+      - "scripts/article-native-contract-audit.js"
+      - "scripts/article-mdx-pilot-audit.js"
+      - "scripts/baptisty-series-shadow-audit.js"
+      - "scripts/check-mdx-html-parity.js"
+      - "scripts/route-source-contract-audit.js"
+      - "scripts/lib/route-source-contract.js"
+      - ".github/workflows/native-source-contract.yml"
+      - "package.json"
+      - "package-lock.json"
+  workflow_dispatch:
+
+concurrency:
+  group: native-source-contract-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  native-source-contract:
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+
+    steps:
+      - name: Checkout exact head
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Node 22.12
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22.12.0"
+          cache: npm
+
+      - name: Validate declared sources against actual import graphs
+        run: node scripts/route-source-contract-audit.js --strict --articles-only
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Astro type and template check
+        run: npm run astro:check
+
+      - name: Build production-like dist
+        run: npm run strangler:build:production-like
+
+      - name: Validate native article and series output
+        run: node scripts/article-native-contract-audit.js --no-build --require-content-parity
+
+      - name: Validate migration metadata coherence
+        run: npm run migration:metadata:check:strict
+
+      - name: Validate workflow policy
+        run: npm run workflows:check
