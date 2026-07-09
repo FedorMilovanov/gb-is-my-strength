@@ -10,13 +10,21 @@ on:
       - 'src/**'
       - 'css/**'
       - 'images/**'
+  pull_request:
+    branches: [main]
+    paths:
+      - '.github/workflows/gill-image-audit-temp.yml'
+      - 'scripts/gill-image-audit-temp.mjs'
+      - 'src/**'
+      - 'css/**'
+      - 'images/**'
   workflow_dispatch:
 
 permissions:
   contents: read
 
 concurrency:
-  group: temp-gill-image-premium-audit
+  group: temp-gill-image-premium-audit-${{ github.event.pull_request.number || github.ref }}
   cancel-in-progress: true
 
 jobs:
