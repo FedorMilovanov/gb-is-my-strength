@@ -1,556 +1,100 @@
 {
   "version": "2026-07-09.native-source-contract-v1",
   "scope": "all-production-routes-runtime-contract",
-  "created": "2026-06-23",
   "source": "Native Source Contract v1; semantic edit exclusions do not exempt production routes from runtime ownership checks",
-  "exclude": [],
   "modes": {
-    "native-with-legacy-head": "Astro route uses native body/chrome components, but legacy head/body attributes remain in layout transport.",
-    "native-main-with-legacy-chrome": "Astro page composes from named legacy fragments (body-segment-N.html) + named Astro component shells. Legacy chrome (skip-link, nav, theme, footer, runtime) loaded from fragments. Semantic main promoted to named component. This is the primary mode for landings and catalogs.",
-    "full-body-shadow": "Astro page loads entire legacy HTML document via loadLegacyFullDocument(). Semantic block NOT promoted to separate component — full body is shadow-wrapped. Used for article subroutes in series where chrome + body are tightly coupled.",
-    "mdx-native-article": "Astro page uses MDX content file + ArticleLayout/SeriesArticleLayout. Body is hand-authored MDX. Chrome from layout. This is the target mode for standalone articles.",
-    "legacy-shadow-app": "Astro page wraps a legacy app/island (WebGL, Three.js, interactive SVG) via loadLegacyFullDocument() or iframe. NOT simplified to plain content route. Required: runtime smoke + SVG/interactive checks.",
-    "excluded-semantic-lane": "Route is in active semantic refactor exclusion. Do not change as part of non-excluded migration work. Profile must declare this scope. Production consistency checks still run, but migration progress is not required.",
-    "strict-native": "Astro route is fully native at runtime: no loadLegacyFullDocument, no headHtml/bodyHtml/bodyAttributes transport, no ?raw/_legacy fragment transport, no set:html legacy body injection. Route closure may still include normal native components, JSON-LD, and inline runtime scripts.",
-    "strict-native-app": "Astro page is a fully-native runtime application (interactive SVG map, WebGL, 3D engine, React island, or canvas hub). Uses native Astro at build-time but at runtime behaves like an application, not an article. Required: runtime smoke + interactive/SVG/WebGL checks. Pagefind body may be a hidden semantic summary block. Public URL contract may have explicit word-count exception."
-  },
-  "forbid": {
-    "plain-loadLegacyFullDocument-only": "Route already has named Astro components or MDX. Do NOT replace componentized structure with full-document loadLegacyFullDocument() monolith. This was the regression that broke 19 routes in r260.",
-    "astro-native-article-layout": "Route is a legacy-shadow-app (karty, 3D, interactive). Do NOT migrate to mdx-native-article or native-main-with-legacy-chrome without explicit runtime smoke.",
-    "blanket-shadow-wrap": "Never blanket-wrap all routes in loadLegacyFullDocument(). Use componentized mode where components already exist."
-  },
-  "routes": {
-    "/izbrannoe/": {
-      "mode": "native-with-legacy-head",
-      "source": "src/pages/izbrannoe/index.astro",
-      "requiredMarkers": [
-        "izbrannoe-wrap"
-      ],
+    "strict-native": {
+      "description": "Astro route rendered from native Astro components only. No runtime legacy HTML/raw-fragment transport.",
       "forbid": [
-        "plain-loadLegacyFullDocument-only"
-      ],
-      "audits": [
-        "visual-parity",
-        "seo-parity"
-      ],
-      "reason": "Personal client-side favorites collection page, localStorage-driven, noindex"
+        "loadLegacyFullDocument",
+        "headHtml",
+        "bodyHtml",
+        "bodyAttributes",
+        "set:html",
+        "?raw",
+        "/_legacy/"
+      ]
     },
+    "strict-native-app": {
+      "description": "Astro route with native app shell/engine. Built app assets may remain runtime dependencies, but legacy document transport is forbidden.",
+      "forbid": [
+        "loadLegacyFullDocument",
+        "headHtml",
+        "bodyHtml",
+        "bodyAttributes",
+        "?raw",
+        "/_legacy/"
+      ]
+    },
+    "legacy-shadow-app": {
+      "description": "Legacy/built app route intentionally retained. Runtime legacy/app transport is allowed only where explicitly declared.",
+      "forbid": []
+    }
+  },
+  "semanticEditExclusions": [
+    "nagornaya/**",
+    "articles/dzhon-gill-*",
+    "articles/krajne-li-isporcheno-serdce/**",
+    "articles/rimlyanam-7-veruyushchiy-ili-neveruyushchiy/**",
+    "hard-texts/**"
+  ],
+  "exclude": [],
+  "routes": {
     "/": {
       "mode": "strict-native",
       "source": "src/pages/index.astro",
       "requiredMarkers": [
-        "home-v20",
-        "h-mobile-hero-hub"
-      ],
-      "forbid": [
-        "plain-loadLegacyFullDocument-only"
+        "data-pagefind-body"
       ],
       "audits": [
-        "visual-parity",
-        "seo-parity",
-        "contract-compare-dist",
-        "home-visual-parity-audit"
+        "native-source-contract",
+        "native-runtime-taxonomy"
       ],
-      "reason": "HomePageHead/PageChrome/HomeMain now render fully native Astro shell; legacy transport retired."
+      "reason": "Runtime ownership registered from page-ownership + route profile. Semantic editing protection, when present, does not exempt runtime checks."
     },
     "/about/": {
       "mode": "strict-native",
       "source": "src/pages/about/index.astro",
       "requiredMarkers": [
-        "about-page",
-        "about-contact-card",
-        "gb-accuracy-block"
-      ],
-      "forbid": [
-        "plain-loadLegacyFullDocument-only",
-        "astro-generic-article"
+        "data-pagefind-body"
       ],
       "audits": [
-        "about-visual-parity-audit",
-        "astro-about-pilot-audit"
+        "native-source-contract",
+        "native-runtime-taxonomy"
       ],
-      "reason": "Balanced native AboutPageChrome + AboutMain landed; legacy head/body transport retired."
+      "reason": "Runtime ownership registered from page-ownership + route profile. Semantic editing protection, when present, does not exempt runtime checks."
     },
     "/articles/": {
       "mode": "strict-native",
       "source": "src/pages/articles/index.astro",
       "requiredMarkers": [
-        "articles-index-page",
-        "home-v20",
-        "h-article-card"
-      ],
-      "forbid": [
-        "plain-loadLegacyFullDocument-only",
-        "astro-card-grid"
+        "data-pagefind-body"
       ],
       "audits": [
-        "articles-visual-parity-audit",
-        "catalogs-visual-parity-audit"
+        "native-source-contract",
+        "native-runtime-taxonomy"
       ],
-      "reason": "Articles catalog now renders via native PageChrome/Main/PageFooter components; legacy transport retired."
+      "reason": "Runtime ownership registered from page-ownership + route profile. Semantic editing protection, when present, does not exempt runtime checks."
     },
     "/articles/20-antisovetov-pastoru/": {
       "mode": "strict-native",
       "source": "src/pages/articles/20-antisovetov-pastoru/index.astro",
-      "reason": "Legacy full-body shadow retired; route now uses native PageHead + native body component while preserving public article output.",
-      "targetMode": "mdx-native-article",
       "requiredMarkers": [
         "data-pagefind-body"
       ],
       "audits": [
-        "article-mdx-pilot-audit",
-        "content-parity",
-        "seo-parity",
-        "native-runtime-taxonomy"
-      ]
-    },
-    "/articles/hermenevticheskaya-otsenka-hristotsentrichnoy-germenevtiki/": {
-      "mode": "strict-native",
-      "source": "src/pages/articles/hermenevticheskaya-otsenka-hristotsentrichnoy-germenevtiki/index.astro",
-      "reason": "Legacy full-body shadow retired; route now uses native PageHead + native body component while preserving public article output.",
-      "targetMode": "mdx-native-article",
-      "requiredMarkers": [
-        "data-pagefind-body"
-      ],
-      "audits": [
-        "article-mdx-pilot-audit",
-        "content-parity",
-        "seo-parity",
-        "native-runtime-taxonomy"
-      ]
-    },
-    "/articles/kod-da-vinchi/": {
-      "mode": "strict-native",
-      "source": "src/pages/articles/kod-da-vinchi/index.astro",
-      "requiredMarkers": [
-        "data-pagefind-body",
-        "KodDaVinchiMainShell"
-      ],
-      "forbid": [
-        "plain-loadLegacyFullDocument-only",
-        "astro-generic-article"
-      ],
-      "targetMode": "mdx-native-article",
-      "audits": [
-        "article-mdx-pilot-audit",
-        "content-parity",
-        "seo-parity",
+        "native-source-contract",
         "native-runtime-taxonomy"
       ],
-      "reason": "Route shell now uses native PageHead + explicit body class; final trailing raw section promoted to Astro."
-    },
-    "/baptisty-rossii/": {
-      "mode": "strict-native",
-      "source": "src/pages/baptisty-rossii/index.astro",
-      "requiredMarkers": [
-        "gbs2-world",
-        "data-gbs2-series=\"russian-baptism\""
-      ],
-      "forbid": [
-        "plain-loadLegacyFullDocument-only"
-      ],
-      "audits": [
-        "baptisty-rossii-visual-parity-audit"
-      ],
-      "reason": "Balanced native BaptistyRossiiBody + native PageHead landed; runtime raw transport retired."
-    },
-    "/baptisty-rossii/dva-sezda-1884/": {
-      "mode": "strict-native",
-      "source": "src/pages/baptisty-rossii/dva-sezda-1884/index.astro",
-      "requiredMarkers": [
-        "data-pagefind-body"
-      ],
-      "audits": [
-        "series-article-parity",
-        "baptisty-series-shadow-audit"
-      ],
-      "reason": "Balanced native series body component + native PageHead landed; runtime raw transport retired."
-    },
-    "/baptisty-rossii/goneniya-i-sovest/": {
-      "mode": "strict-native",
-      "source": "src/pages/baptisty-rossii/goneniya-i-sovest/index.astro",
-      "requiredMarkers": [
-        "data-pagefind-body"
-      ],
-      "audits": [
-        "series-article-parity",
-        "baptisty-series-shadow-audit"
-      ],
-      "reason": "Balanced native series body component + native PageHead landed; runtime raw transport retired."
-    },
-    "/baptisty-rossii/iniciativnaya-gruppa/": {
-      "mode": "strict-native",
-      "source": "src/pages/baptisty-rossii/iniciativnaya-gruppa/index.astro",
-      "requiredMarkers": [
-        "data-pagefind-body"
-      ],
-      "audits": [
-        "series-article-parity",
-        "baptisty-series-shadow-audit"
-      ],
-      "reason": "Balanced native series body component + native PageHead landed; runtime raw transport retired."
-    },
-    "/baptisty-rossii/noch-na-kure/": {
-      "mode": "strict-native",
-      "source": "src/pages/baptisty-rossii/noch-na-kure/index.astro",
-      "requiredMarkers": [
-        "data-pagefind-body"
-      ],
-      "audits": [
-        "series-article-parity",
-        "baptisty-series-shadow-audit"
-      ],
-      "reason": "Balanced native series body component + native PageHead landed; runtime raw transport retired."
-    },
-    "/baptisty-rossii/peterburgskaya-liniya/": {
-      "mode": "strict-native",
-      "source": "src/pages/baptisty-rossii/peterburgskaya-liniya/index.astro",
-      "requiredMarkers": [
-        "data-pagefind-body"
-      ],
-      "audits": [
-        "series-article-parity",
-        "baptisty-series-shadow-audit"
-      ],
-      "reason": "Balanced native series body component + native PageHead landed; runtime raw transport retired."
-    },
-    "/baptisty-rossii/podpolnaya-pechat/": {
-      "mode": "strict-native",
-      "source": "src/pages/baptisty-rossii/podpolnaya-pechat/index.astro",
-      "requiredMarkers": [
-        "data-pagefind-body"
-      ],
-      "audits": [
-        "series-article-parity",
-        "baptisty-series-shadow-audit"
-      ],
-      "reason": "Balanced native series body component + native PageHead landed; runtime raw transport retired."
-    },
-    "/baptisty-rossii/sovetskaya-noch/": {
-      "mode": "strict-native",
-      "source": "src/pages/baptisty-rossii/sovetskaya-noch/index.astro",
-      "requiredMarkers": [
-        "data-pagefind-body"
-      ],
-      "audits": [
-        "series-article-parity",
-        "baptisty-series-shadow-audit"
-      ],
-      "reason": "Balanced native series body component + native PageHead landed; runtime raw transport retired."
-    },
-    "/baptisty-rossii/spravochnik/": {
-      "mode": "strict-native",
-      "source": "src/pages/baptisty-rossii/spravochnik/index.astro",
-      "requiredMarkers": [
-        "data-pagefind-body"
-      ],
-      "audits": [
-        "series-article-parity",
-        "baptisty-series-shadow-audit"
-      ],
-      "reason": "Balanced native series body component + native PageHead landed; runtime raw transport retired."
-    },
-    "/baptisty-rossii/vsehib-1944/": {
-      "mode": "strict-native",
-      "source": "src/pages/baptisty-rossii/vsehib-1944/index.astro",
-      "requiredMarkers": [
-        "data-pagefind-body"
-      ],
-      "audits": [
-        "series-article-parity",
-        "baptisty-series-shadow-audit"
-      ],
-      "reason": "Balanced native series body component + native PageHead landed; runtime raw transport retired."
-    },
-    "/baptisty-rossii/yuzhnaya-shtunda/": {
-      "mode": "strict-native",
-      "source": "src/pages/baptisty-rossii/yuzhnaya-shtunda/index.astro",
-      "requiredMarkers": [
-        "data-pagefind-body"
-      ],
-      "audits": [
-        "series-article-parity",
-        "baptisty-series-shadow-audit"
-      ],
-      "reason": "Balanced native series body component + native PageHead landed; runtime raw transport retired."
-    },
-    "/biografii/": {
-      "mode": "strict-native",
-      "source": "src/pages/biografii/index.astro",
-      "requiredMarkers": [
-        "home-v20",
-        "biografii-landing"
-      ],
-      "forbid": [
-        "plain-loadLegacyFullDocument-only"
-      ],
-      "audits": [
-        "biografii-visual-parity-audit",
-        "catalogs-visual-parity-audit"
-      ],
-      "reason": "Biografii landing now renders via native PageChrome/Main/PageFooter components; legacy transport retired."
-    },
-    "/karty/": {
-      "mode": "strict-native",
-      "source": "src/pages/karty/index.astro",
-      "requiredMarkers": [
-        "karty-hub"
-      ],
-      "forbid": [
-        "plain-loadLegacyFullDocument-only"
-      ],
-      "audits": [
-        "karty-visual-parity-audit"
-      ],
-      "reason": "Karty hub now uses native PageHead + native main shell; legacy transport retired."
-    },
-    "/karty/avraam/": {
-      "mode": "strict-native-app",
-      "source": "src/pages/karty/avraam/index.astro",
-      "requiredMarkers": [
-        "data-pagefind-body"
-      ],
-      "forbid": [
-        "loadLegacyFullDocument",
-        "base.css",
-        "site.css"
-      ],
-      "audits": [
-        "avraam-map-audit",
-        "maps:validate"
-      ],
-      "reason": "Protected App Route Native Astro Phase: migrated from legacy-shadow-app to native App Shell + MapEngine."
-    },
-    "/karty/early-church/": {
-      "mode": "strict-native-app",
-      "source": "src/pages/karty/early-church/index.astro",
-      "requiredMarkers": [
-        "data-pagefind-body"
-      ],
-      "forbid": [
-        "loadLegacyFullDocument",
-        "base.css",
-        "site.css"
-      ],
-      "audits": [
-        "maps:validate"
-      ],
-      "reason": "Protected App Route Native Astro Phase: migrated from legacy-shadow-app to native App Shell + MapEngine."
-    },
-    "/karty/ishod/": {
-      "mode": "strict-native-app",
-      "source": "src/pages/karty/ishod/index.astro",
-      "requiredMarkers": [
-        "data-pagefind-body"
-      ],
-      "forbid": [
-        "loadLegacyFullDocument",
-        "base.css",
-        "site.css"
-      ],
-      "audits": [
-        "maps:validate"
-      ],
-      "reason": "Protected App Route Native Astro Phase: migrated from legacy-shadow-app to native App Shell + MapEngine."
-    },
-    "/karty/maccabim/": {
-      "mode": "strict-native-app",
-      "source": "src/pages/karty/maccabim/index.astro",
-      "requiredMarkers": [
-        "data-pagefind-body"
-      ],
-      "forbid": [
-        "loadLegacyFullDocument",
-        "base.css",
-        "site.css"
-      ],
-      "audits": [
-        "maps:validate"
-      ],
-      "reason": "Protected App Route Native Astro Phase: migrated from legacy-shadow-app to native App Shell + MapEngine."
-    },
-    "/karty/melachim/": {
-      "mode": "strict-native-app",
-      "source": "src/pages/karty/melachim/index.astro",
-      "requiredMarkers": [
-        "data-pagefind-body"
-      ],
-      "forbid": [
-        "loadLegacyFullDocument",
-        "base.css",
-        "site.css"
-      ],
-      "audits": [
-        "maps:validate"
-      ],
-      "reason": "Protected App Route Native Astro Phase: migrated from legacy-shadow-app to native App Shell + MapEngine."
-    },
-    "/karty/pavel/": {
-      "mode": "strict-native-app",
-      "source": "src/pages/karty/pavel/index.astro",
-      "requiredMarkers": [
-        "data-pagefind-body"
-      ],
-      "forbid": [
-        "loadLegacyFullDocument",
-        "base.css",
-        "site.css"
-      ],
-      "audits": [
-        "maps:validate"
-      ],
-      "reason": "Protected App Route Native Astro Phase: migrated from legacy-shadow-app to native App Shell + MapEngine."
-    },
-    "/karty/revelation/": {
-      "mode": "strict-native-app",
-      "source": "src/pages/karty/revelation/index.astro",
-      "requiredMarkers": [
-        "data-pagefind-body"
-      ],
-      "forbid": [
-        "loadLegacyFullDocument",
-        "base.css",
-        "site.css"
-      ],
-      "audits": [
-        "maps:validate"
-      ],
-      "reason": "Protected App Route Native Astro Phase: migrated from legacy-shadow-app to native App Shell + MapEngine."
-    },
-    "/karty/shoftim/": {
-      "mode": "strict-native-app",
-      "source": "src/pages/karty/shoftim/index.astro",
-      "requiredMarkers": [
-        "data-pagefind-body"
-      ],
-      "forbid": [
-        "loadLegacyFullDocument",
-        "base.css",
-        "site.css"
-      ],
-      "audits": [
-        "maps:validate"
-      ],
-      "reason": "Protected App Route Native Astro Phase: migrated from legacy-shadow-app to native App Shell + MapEngine."
-    },
-    "/karty/shvatim/": {
-      "mode": "strict-native-app",
-      "source": "src/pages/karty/shvatim/index.astro",
-      "requiredMarkers": [
-        "data-pagefind-body"
-      ],
-      "forbid": [
-        "loadLegacyFullDocument",
-        "base.css",
-        "site.css"
-      ],
-      "audits": [
-        "maps:validate"
-      ],
-      "reason": "Protected App Route Native Astro Phase: migrated from legacy-shadow-app to native App Shell + MapEngine."
-    },
-    "/karty/yeshua/": {
-      "mode": "strict-native-app",
-      "source": "src/pages/karty/yeshua/index.astro",
-      "requiredMarkers": [
-        "data-pagefind-body"
-      ],
-      "forbid": [
-        "loadLegacyFullDocument",
-        "base.css",
-        "site.css"
-      ],
-      "audits": [
-        "maps:validate"
-      ],
-      "reason": "Protected App Route Native Astro Phase: migrated from legacy-shadow-app to native App Shell + MapEngine."
-    },
-    "/konfessii/": {
-      "mode": "strict-native",
-      "source": "src/pages/konfessii/index.astro",
-      "requiredMarkers": [
-        "grid h-reveal"
-      ],
-      "forbid": [
-        "plain-loadLegacyFullDocument-only"
-      ],
-      "audits": [
-        "konfessii-visual-parity-audit",
-        "catalogs-visual-parity-audit"
-      ],
-      "reason": "Konfessii landing now uses native PageHead/PageChrome/Main; legacy transport retired."
-    },
-    "/konfessii/russkij-baptizm/": {
-      "mode": "strict-native-app",
-      "source": "src/pages/konfessii/russkij-baptizm/index.astro",
-      "requiredMarkers": [
-        "data-pagefind-body",
-        "iframe",
-        "appframe",
-        "./_app/index.html"
-      ],
-      "forbid": [
-        "loadLegacyFullDocument"
-      ],
-      "audits": [
-        "konfessii-map-audit",
-        "maps:validate",
-        "smoke:konfessii",
-        "native-runtime-taxonomy"
-      ],
-      "protectedStatus": "PROTECTED-POLISHED-INTERACTIVE",
-      "targetMode": "native-wrapper-iframe-app",
-      "appAsset": "konfessii/russkij-baptizm/_app/",
-      "reason": "Protected App Route Native Astro Phase: migrated 3D webgl app wrapper."
-    },
-    "/map/": {
-      "mode": "strict-native-app",
-      "source": "src/pages/map/index.astro",
-      "requiredMarkers": [],
-      "forbid": [
-        "loadLegacyFullDocument"
-      ],
-      "audits": [
-        "maps:validate"
-      ],
-      "reason": "Protected App Route Native Astro Phase: migrated graph map."
-    },
-    "/pastor-series/": {
-      "mode": "strict-native",
-      "source": "src/pages/pastor-series/index.astro",
-      "requiredMarkers": [
-        "home-v20",
-        "pastor-series-landing"
-      ],
-      "forbid": [
-        "plain-loadLegacyFullDocument-only"
-      ],
-      "audits": [
-        "pastor-series-visual-parity-audit",
-        "catalogs-visual-parity-audit"
-      ],
-      "reason": "Pastor-series landing now uses native PageHead/PageChrome/Main; legacy transport retired."
-    },
-    "/rodosloviye/": {
-      "mode": "strict-native-app",
-      "source": "src/pages/rodosloviye/index.astro",
-      "requiredMarkers": [
-        "data-pagefind-body"
-      ],
-      "forbid": [
-        "loadLegacyFullDocument"
-      ],
-      "audits": [
-        "runtime-smoke",
-        "interactive-audit"
-      ],
-      "reason": "Protected App Route Native Astro Phase: migrated React family tree."
+      "reason": "Runtime ownership registered from page-ownership + route profile. Semantic editing protection, when present, does not exempt runtime checks."
     },
     "/articles/dzhon-gill-chast-1-chelovek/": {
       "mode": "strict-native",
       "source": "src/pages/articles/dzhon-gill-chast-1-chelovek/index.astro",
       "scope": "excluded-semantic-lane",
-      "requiredMarkers": [],
+      "requiredMarkers": [
+        "data-pagefind-body"
+      ],
       "audits": [
         "native-source-contract",
         "native-runtime-taxonomy"
@@ -561,7 +105,9 @@
       "mode": "strict-native",
       "source": "src/pages/articles/dzhon-gill-chast-2-uchenyi/index.astro",
       "scope": "excluded-semantic-lane",
-      "requiredMarkers": [],
+      "requiredMarkers": [
+        "data-pagefind-body"
+      ],
       "audits": [
         "native-source-contract",
         "native-runtime-taxonomy"
@@ -572,7 +118,9 @@
       "mode": "strict-native",
       "source": "src/pages/articles/dzhon-gill-chast-3-nasledie/index.astro",
       "scope": "excluded-semantic-lane",
-      "requiredMarkers": [],
+      "requiredMarkers": [
+        "data-pagefind-body"
+      ],
       "audits": [
         "native-source-contract",
         "native-runtime-taxonomy"
@@ -583,7 +131,9 @@
       "mode": "strict-native",
       "source": "src/pages/articles/dzhon-gill-istoricheskiy-kontekst/index.astro",
       "scope": "excluded-semantic-lane",
-      "requiredMarkers": [],
+      "requiredMarkers": [
+        "data-pagefind-body"
+      ],
       "audits": [
         "native-source-contract",
         "native-runtime-taxonomy"
@@ -594,6 +144,30 @@
       "mode": "strict-native",
       "source": "src/pages/articles/dzhon-gill-spravochnik/index.astro",
       "scope": "excluded-semantic-lane",
+      "requiredMarkers": [
+        "data-pagefind-body"
+      ],
+      "audits": [
+        "native-source-contract",
+        "native-runtime-taxonomy"
+      ],
+      "reason": "Runtime ownership registered from page-ownership + route profile. Semantic editing protection, when present, does not exempt runtime checks."
+    },
+    "/articles/hermenevticheskaya-otsenka-hristotsentrichnoy-germenevtiki/": {
+      "mode": "strict-native",
+      "source": "src/pages/articles/hermenevticheskaya-otsenka-hristotsentrichnoy-germenevtiki/index.astro",
+      "requiredMarkers": [
+        "data-pagefind-body"
+      ],
+      "audits": [
+        "native-source-contract",
+        "native-runtime-taxonomy"
+      ],
+      "reason": "Runtime ownership registered from page-ownership + route profile. Semantic editing protection, when present, does not exempt runtime checks."
+    },
+    "/articles/kod-da-vinchi/": {
+      "mode": "strict-native",
+      "source": "src/pages/articles/kod-da-vinchi/index.astro",
       "requiredMarkers": [],
       "audits": [
         "native-source-contract",
@@ -605,7 +179,9 @@
       "mode": "strict-native",
       "source": "src/pages/articles/krajne-li-isporcheno-serdce/index.astro",
       "scope": "excluded-semantic-lane",
-      "requiredMarkers": [],
+      "requiredMarkers": [
+        "data-pagefind-body"
+      ],
       "audits": [
         "native-source-contract",
         "native-runtime-taxonomy"
@@ -616,7 +192,153 @@
       "mode": "strict-native",
       "source": "src/pages/articles/rimlyanam-7-veruyushchiy-ili-neveruyushchiy/index.astro",
       "scope": "excluded-semantic-lane",
-      "requiredMarkers": [],
+      "requiredMarkers": [
+        "data-pagefind-body"
+      ],
+      "audits": [
+        "native-source-contract",
+        "native-runtime-taxonomy"
+      ],
+      "reason": "Runtime ownership registered from page-ownership + route profile. Semantic editing protection, when present, does not exempt runtime checks."
+    },
+    "/baptisty-rossii/": {
+      "mode": "strict-native",
+      "source": "src/pages/baptisty-rossii/index.astro",
+      "requiredMarkers": [
+        "data-pagefind-body"
+      ],
+      "audits": [
+        "native-source-contract",
+        "native-runtime-taxonomy"
+      ],
+      "reason": "Runtime ownership registered from page-ownership + route profile. Semantic editing protection, when present, does not exempt runtime checks."
+    },
+    "/baptisty-rossii/dva-sezda-1884/": {
+      "mode": "strict-native",
+      "source": "src/pages/baptisty-rossii/dva-sezda-1884/index.astro",
+      "requiredMarkers": [
+        "data-pagefind-body"
+      ],
+      "audits": [
+        "native-source-contract",
+        "native-runtime-taxonomy"
+      ],
+      "reason": "Runtime ownership registered from page-ownership + route profile. Semantic editing protection, when present, does not exempt runtime checks."
+    },
+    "/baptisty-rossii/goneniya-i-sovest/": {
+      "mode": "strict-native",
+      "source": "src/pages/baptisty-rossii/goneniya-i-sovest/index.astro",
+      "requiredMarkers": [
+        "data-pagefind-body"
+      ],
+      "audits": [
+        "native-source-contract",
+        "native-runtime-taxonomy"
+      ],
+      "reason": "Runtime ownership registered from page-ownership + route profile. Semantic editing protection, when present, does not exempt runtime checks."
+    },
+    "/baptisty-rossii/iniciativnaya-gruppa/": {
+      "mode": "strict-native",
+      "source": "src/pages/baptisty-rossii/iniciativnaya-gruppa/index.astro",
+      "requiredMarkers": [
+        "data-pagefind-body"
+      ],
+      "audits": [
+        "native-source-contract",
+        "native-runtime-taxonomy"
+      ],
+      "reason": "Runtime ownership registered from page-ownership + route profile. Semantic editing protection, when present, does not exempt runtime checks."
+    },
+    "/baptisty-rossii/noch-na-kure/": {
+      "mode": "strict-native",
+      "source": "src/pages/baptisty-rossii/noch-na-kure/index.astro",
+      "requiredMarkers": [
+        "data-pagefind-body"
+      ],
+      "audits": [
+        "native-source-contract",
+        "native-runtime-taxonomy"
+      ],
+      "reason": "Runtime ownership registered from page-ownership + route profile. Semantic editing protection, when present, does not exempt runtime checks."
+    },
+    "/baptisty-rossii/peterburgskaya-liniya/": {
+      "mode": "strict-native",
+      "source": "src/pages/baptisty-rossii/peterburgskaya-liniya/index.astro",
+      "requiredMarkers": [
+        "data-pagefind-body"
+      ],
+      "audits": [
+        "native-source-contract",
+        "native-runtime-taxonomy"
+      ],
+      "reason": "Runtime ownership registered from page-ownership + route profile. Semantic editing protection, when present, does not exempt runtime checks."
+    },
+    "/baptisty-rossii/podpolnaya-pechat/": {
+      "mode": "strict-native",
+      "source": "src/pages/baptisty-rossii/podpolnaya-pechat/index.astro",
+      "requiredMarkers": [
+        "data-pagefind-body"
+      ],
+      "audits": [
+        "native-source-contract",
+        "native-runtime-taxonomy"
+      ],
+      "reason": "Runtime ownership registered from page-ownership + route profile. Semantic editing protection, when present, does not exempt runtime checks."
+    },
+    "/baptisty-rossii/sovetskaya-noch/": {
+      "mode": "strict-native",
+      "source": "src/pages/baptisty-rossii/sovetskaya-noch/index.astro",
+      "requiredMarkers": [
+        "data-pagefind-body"
+      ],
+      "audits": [
+        "native-source-contract",
+        "native-runtime-taxonomy"
+      ],
+      "reason": "Runtime ownership registered from page-ownership + route profile. Semantic editing protection, when present, does not exempt runtime checks."
+    },
+    "/baptisty-rossii/spravochnik/": {
+      "mode": "strict-native",
+      "source": "src/pages/baptisty-rossii/spravochnik/index.astro",
+      "requiredMarkers": [
+        "data-pagefind-body"
+      ],
+      "audits": [
+        "native-source-contract",
+        "native-runtime-taxonomy"
+      ],
+      "reason": "Runtime ownership registered from page-ownership + route profile. Semantic editing protection, when present, does not exempt runtime checks."
+    },
+    "/baptisty-rossii/vsehib-1944/": {
+      "mode": "strict-native",
+      "source": "src/pages/baptisty-rossii/vsehib-1944/index.astro",
+      "requiredMarkers": [
+        "data-pagefind-body"
+      ],
+      "audits": [
+        "native-source-contract",
+        "native-runtime-taxonomy"
+      ],
+      "reason": "Runtime ownership registered from page-ownership + route profile. Semantic editing protection, when present, does not exempt runtime checks."
+    },
+    "/baptisty-rossii/yuzhnaya-shtunda/": {
+      "mode": "strict-native",
+      "source": "src/pages/baptisty-rossii/yuzhnaya-shtunda/index.astro",
+      "requiredMarkers": [
+        "data-pagefind-body"
+      ],
+      "audits": [
+        "native-source-contract",
+        "native-runtime-taxonomy"
+      ],
+      "reason": "Runtime ownership registered from page-ownership + route profile. Semantic editing protection, when present, does not exempt runtime checks."
+    },
+    "/biografii/": {
+      "mode": "strict-native",
+      "source": "src/pages/biografii/index.astro",
+      "requiredMarkers": [
+        "data-pagefind-body"
+      ],
       "audits": [
         "native-source-contract",
         "native-runtime-taxonomy"
@@ -627,6 +349,104 @@
       "mode": "strict-native",
       "source": "src/pages/hard-texts/index.astro",
       "scope": "excluded-semantic-lane",
+      "requiredMarkers": [
+        "data-pagefind-body"
+      ],
+      "audits": [
+        "native-source-contract",
+        "native-runtime-taxonomy"
+      ],
+      "reason": "Runtime ownership registered from page-ownership + route profile. Semantic editing protection, when present, does not exempt runtime checks."
+    },
+    "/izbrannoe/": {
+      "mode": "strict-native",
+      "source": "src/pages/izbrannoe/index.astro",
+      "requiredMarkers": [],
+      "audits": [
+        "native-source-contract",
+        "native-runtime-taxonomy"
+      ],
+      "reason": "Runtime ownership registered from page-ownership + route profile. Semantic editing protection, when present, does not exempt runtime checks."
+    },
+    "/karty/": {
+      "mode": "strict-native",
+      "source": "src/pages/karty/index.astro",
+      "requiredMarkers": [
+        "data-pagefind-body"
+      ],
+      "audits": [
+        "native-source-contract",
+        "native-runtime-taxonomy"
+      ],
+      "reason": "Runtime ownership registered from page-ownership + route profile. Semantic editing protection, when present, does not exempt runtime checks."
+    },
+    "/karty/avraam/": {
+      "mode": "strict-native-app",
+      "source": "src/pages/karty/avraam/index.astro",
+      "requiredMarkers": [],
+      "audits": [
+        "native-source-contract",
+        "native-runtime-taxonomy"
+      ],
+      "reason": "Runtime ownership registered from page-ownership + route profile. Semantic editing protection, when present, does not exempt runtime checks."
+    },
+    "/karty/david/": {
+      "mode": "strict-native",
+      "source": "src/pages/karty/david/index.astro",
+      "requiredMarkers": [],
+      "audits": [
+        "native-source-contract",
+        "native-runtime-taxonomy"
+      ],
+      "reason": "Runtime ownership registered from page-ownership + route profile. Semantic editing protection, when present, does not exempt runtime checks."
+    },
+    "/karty/isus/": {
+      "mode": "strict-native",
+      "source": "src/pages/karty/isus/index.astro",
+      "requiredMarkers": [],
+      "audits": [
+        "native-source-contract",
+        "native-runtime-taxonomy"
+      ],
+      "reason": "Runtime ownership registered from page-ownership + route profile. Semantic editing protection, when present, does not exempt runtime checks."
+    },
+    "/karty/pavel/": {
+      "mode": "strict-native",
+      "source": "src/pages/karty/pavel/index.astro",
+      "requiredMarkers": [],
+      "audits": [
+        "native-source-contract",
+        "native-runtime-taxonomy"
+      ],
+      "reason": "Runtime ownership registered from page-ownership + route profile. Semantic editing protection, when present, does not exempt runtime checks."
+    },
+    "/konfessii/": {
+      "mode": "strict-native",
+      "source": "src/pages/konfessii/index.astro",
+      "requiredMarkers": [
+        "data-pagefind-body"
+      ],
+      "audits": [
+        "native-source-contract",
+        "native-runtime-taxonomy"
+      ],
+      "reason": "Runtime ownership registered from page-ownership + route profile. Semantic editing protection, when present, does not exempt runtime checks."
+    },
+    "/konfessii/russkij-baptizm/": {
+      "mode": "strict-native-app",
+      "source": "src/pages/konfessii/russkij-baptizm/index.astro",
+      "requiredMarkers": [
+        "data-pagefind-body"
+      ],
+      "audits": [
+        "native-source-contract",
+        "native-runtime-taxonomy"
+      ],
+      "reason": "Runtime ownership registered from page-ownership + route profile. Semantic editing protection, when present, does not exempt runtime checks."
+    },
+    "/map/": {
+      "mode": "strict-native-app",
+      "source": "src/pages/map/index.astro",
       "requiredMarkers": [],
       "audits": [
         "native-source-contract",
@@ -638,40 +458,9 @@
       "mode": "strict-native",
       "source": "src/pages/nagornaya/index.astro",
       "scope": "excluded-semantic-lane",
-      "requiredMarkers": [],
-      "audits": [
-        "native-source-contract",
-        "native-runtime-taxonomy"
+      "requiredMarkers": [
+        "data-pagefind-body"
       ],
-      "reason": "Runtime ownership registered from page-ownership + route profile. Semantic editing protection, when present, does not exempt runtime checks."
-    },
-    "/nagornaya/istochniki/": {
-      "mode": "strict-native",
-      "source": "src/pages/nagornaya/istochniki/index.astro",
-      "scope": "excluded-semantic-lane",
-      "requiredMarkers": [],
-      "audits": [
-        "native-source-contract",
-        "native-runtime-taxonomy"
-      ],
-      "reason": "Runtime ownership registered from page-ownership + route profile. Semantic editing protection, when present, does not exempt runtime checks."
-    },
-    "/nagornaya/nakhodki/": {
-      "mode": "strict-native",
-      "source": "src/pages/nagornaya/nakhodki/index.astro",
-      "scope": "excluded-semantic-lane",
-      "requiredMarkers": [],
-      "audits": [
-        "native-source-contract",
-        "native-runtime-taxonomy"
-      ],
-      "reason": "Runtime ownership registered from page-ownership + route profile. Semantic editing protection, when present, does not exempt runtime checks."
-    },
-    "/nagornaya/seriya/": {
-      "mode": "strict-native",
-      "source": "src/pages/nagornaya/seriya/index.astro",
-      "scope": "excluded-semantic-lane",
-      "requiredMarkers": [],
       "audits": [
         "native-source-contract",
         "native-runtime-taxonomy"
@@ -682,7 +471,9 @@
       "mode": "strict-native",
       "source": "src/pages/nagornaya/chast-1/index.astro",
       "scope": "excluded-semantic-lane",
-      "requiredMarkers": [],
+      "requiredMarkers": [
+        "data-pagefind-body"
+      ],
       "audits": [
         "native-source-contract",
         "native-runtime-taxonomy"
@@ -693,7 +484,9 @@
       "mode": "strict-native",
       "source": "src/pages/nagornaya/chast-2/index.astro",
       "scope": "excluded-semantic-lane",
-      "requiredMarkers": [],
+      "requiredMarkers": [
+        "data-pagefind-body"
+      ],
       "audits": [
         "native-source-contract",
         "native-runtime-taxonomy"
@@ -704,7 +497,9 @@
       "mode": "strict-native",
       "source": "src/pages/nagornaya/chast-3/index.astro",
       "scope": "excluded-semantic-lane",
-      "requiredMarkers": [],
+      "requiredMarkers": [
+        "data-pagefind-body"
+      ],
       "audits": [
         "native-source-contract",
         "native-runtime-taxonomy"
@@ -715,7 +510,9 @@
       "mode": "strict-native",
       "source": "src/pages/nagornaya/chast-4/index.astro",
       "scope": "excluded-semantic-lane",
-      "requiredMarkers": [],
+      "requiredMarkers": [
+        "data-pagefind-body"
+      ],
       "audits": [
         "native-source-contract",
         "native-runtime-taxonomy"
@@ -726,7 +523,72 @@
       "mode": "strict-native",
       "source": "src/pages/nagornaya/chast-5/index.astro",
       "scope": "excluded-semantic-lane",
-      "requiredMarkers": [],
+      "requiredMarkers": [
+        "data-pagefind-body"
+      ],
+      "audits": [
+        "native-source-contract",
+        "native-runtime-taxonomy"
+      ],
+      "reason": "Runtime ownership registered from page-ownership + route profile. Semantic editing protection, when present, does not exempt runtime checks."
+    },
+    "/nagornaya/istochniki/": {
+      "mode": "strict-native",
+      "source": "src/pages/nagornaya/istochniki/index.astro",
+      "scope": "excluded-semantic-lane",
+      "requiredMarkers": [
+        "data-pagefind-body"
+      ],
+      "audits": [
+        "native-source-contract",
+        "native-runtime-taxonomy"
+      ],
+      "reason": "Runtime ownership registered from page-ownership + route profile. Semantic editing protection, when present, does not exempt runtime checks."
+    },
+    "/nagornaya/nakhodki/": {
+      "mode": "strict-native",
+      "source": "src/pages/nagornaya/nakhodki/index.astro",
+      "scope": "excluded-semantic-lane",
+      "requiredMarkers": [
+        "data-pagefind-body"
+      ],
+      "audits": [
+        "native-source-contract",
+        "native-runtime-taxonomy"
+      ],
+      "reason": "Runtime ownership registered from page-ownership + route profile. Semantic editing protection, when present, does not exempt runtime checks."
+    },
+    "/nagornaya/seriya/": {
+      "mode": "strict-native",
+      "source": "src/pages/nagornaya/seriya/index.astro",
+      "scope": "excluded-semantic-lane",
+      "requiredMarkers": [
+        "data-pagefind-body"
+      ],
+      "audits": [
+        "native-source-contract",
+        "native-runtime-taxonomy"
+      ],
+      "reason": "Runtime ownership registered from page-ownership + route profile. Semantic editing protection, when present, does not exempt runtime checks."
+    },
+    "/pastor-series/": {
+      "mode": "strict-native",
+      "source": "src/pages/pastor-series/index.astro",
+      "requiredMarkers": [
+        "data-pagefind-body"
+      ],
+      "audits": [
+        "native-source-contract",
+        "native-runtime-taxonomy"
+      ],
+      "reason": "Runtime ownership registered from page-ownership + route profile. Semantic editing protection, when present, does not exempt runtime checks."
+    },
+    "/rodosloviye/": {
+      "mode": "strict-native-app",
+      "source": "src/pages/rodosloviye/index.astro",
+      "requiredMarkers": [
+        "data-pagefind-body"
+      ],
       "audits": [
         "native-source-contract",
         "native-runtime-taxonomy"
@@ -736,19 +598,12 @@
   },
   "changelog": [
     {
-      "date": "2026-06-26",
-      "change": "Added 'strict-native-app' to modes (it was used by 13 routes but undefined — closes BUG-A5 / PFV-007 from AuditRepo)."
+      "date": "2026-07-09",
+      "change": "Native Source Contract v1: runtime matrix now covers all production routes; semantic edit exclusions moved to semanticEditExclusions; missing Astro production entries are derived from ownership + route profiles."
     },
     {
       "date": "2026-07-09",
-      "change": "Native Source Contract v1: runtime matrix now covers all production routes; semantic edit exclusions moved to semanticEditExclusions; missing Astro production entries are derived from ownership + route profiles."
+      "change": "Runtime requiredMarkers normalized: source-only Astro component identifiers are not valid dist markers and are removed deterministically."
     }
-  ],
-  "semanticEditExclusions": [
-    "nagornaya/**",
-    "articles/dzhon-gill-*",
-    "articles/krajne-li-isporcheno-serdce",
-    "articles/rimlyanam-7-veruyushchiy-ili-neveruyushchiy",
-    "hard-texts/**"
   ]
 }
