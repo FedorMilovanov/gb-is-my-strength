@@ -31,7 +31,6 @@ const LEGACY_SOURCE_PATTERNS = [
   ['headHtml', /\bheadHtml\b/],
   ['bodyHtml', /\bbodyHtml\b/],
   ['bodyAttributes', /\bbodyAttributes\b/],
-  ['set:html', /\bset:html\s*=/],
 ];
 
 function readJson(file) {
@@ -127,12 +126,21 @@ function stripComments(source) {
     .replace(/(^|[^:])\/\/.*$/gm, '$1 ');
 }
 
+function hasUnsafeSetHtml(source) {
+  const withoutJsonLdSerialization = String(source || '').replace(
+    /<script\b(?=[^>]*\btype=["']application\/ld\+json["'])(?=[^>]*\bset:html\s*=)[^>]*\/?>/gi,
+    '<script type="application/ld+json">'
+  );
+  return /\bset:html\s*=/.test(withoutJsonLdSerialization);
+}
+
 function sourceLegacyMarkers(source, fileRel) {
   const clean = stripComments(source);
   const markers = [];
   for (const [name, re] of LEGACY_SOURCE_PATTERNS) {
     if (re.test(clean)) markers.push({ file: fileRel, marker: name });
   }
+  if (hasUnsafeSetHtml(clean)) markers.push({ file: fileRel, marker: 'non-JSON-LD set:html' });
   return markers;
 }
 
