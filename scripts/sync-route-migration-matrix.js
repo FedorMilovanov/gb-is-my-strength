@@ -31,19 +31,25 @@ function main() {
   const { next, derivedRoutes, removedMarkers } = normalizeRouteMatrix(rawMatrix, ownership);
   const materialized = stripDerivedFlags(next);
   const serialized = `${JSON.stringify(materialized, null, 2)}\n`;
-  const productionRoutes = Object.values(ownership.routes || {}).filter(isProductionAstro).length;
-  const effectiveRoutes = Object.keys(next.routes || {}).length;
+  const productionRouteNames = Object.entries(ownership.routes || {})
+    .filter(([, owner]) => isProductionAstro(owner))
+    .map(([route]) => route)
+    .sort();
+  const effectiveRouteNames = Object.keys(next.routes || {}).sort();
+  const missingProductionRoutes = productionRouteNames.filter((route) => !next.routes?.[route]);
+  const additionalOwnedOverrides = effectiveRouteNames.filter((route) => !productionRouteNames.includes(route));
 
   console.log('=== Route Migration Matrix Contract ===');
   console.log(`Mode: ${WRITE ? 'MATERIALIZE' : REQUIRE_MATERIALIZED ? 'CHECK MATERIALIZED' : 'CHECK EFFECTIVE'}`);
-  console.log(`Production Astro routes: ${productionRoutes}`);
+  console.log(`Production Astro routes: ${productionRouteNames.length}`);
   console.log(`Explicit raw overrides: ${Object.keys(rawMatrix.routes || {}).length}`);
-  console.log(`Effective runtime contracts: ${effectiveRoutes}`);
+  console.log(`Effective runtime contracts: ${effectiveRouteNames.length}`);
   console.log(`Contracts derived in memory: ${derivedRoutes.length}`);
+  console.log(`Additional owned overrides: ${additionalOwnedOverrides.length}`);
   console.log(`Source-only markers normalized in memory: ${removedMarkers.length}`);
 
-  if (effectiveRoutes !== productionRoutes) {
-    throw new Error(`effective registry size ${effectiveRoutes} != production Astro route count ${productionRoutes}`);
+  if (missingProductionRoutes.length) {
+    throw new Error(`effective registry misses production routes: ${missingProductionRoutes.join(', ')}`);
   }
 
   if (WRITE) {
@@ -63,16 +69,20 @@ function main() {
   }
 
   if (derivedRoutes.length) {
-    console.log('ℹ️ Raw matrix intentionally stores overrides; missing route contracts are derived from ownership + profiles.');
+    console.log('ℹ️ Raw matrix intentionally stores overrides; missing production contracts are derived from ownership + profiles.');
     derivedRoutes.slice(0, 30).forEach((route) => console.log(`  + ${route}`));
     if (derivedRoutes.length > 30) console.log(`  …and ${derivedRoutes.length - 30} more`);
+  }
+  if (additionalOwnedOverrides.length) {
+    console.log('ℹ️ Effective matrix also retains explicit contracts for owned non-production routes:');
+    additionalOwnedOverrides.slice(0, 30).forEach((route) => console.log(`  · ${route}`));
   }
   if (removedMarkers.length) {
     console.log('ℹ️ Invalid source-only marker overrides are ignored by the effective registry:');
     removedMarkers.forEach(({ route, marker }) => console.log(`  - ${route}: ${marker}`));
   }
 
-  console.log('✅ Effective route migration registry is complete and coherent');
+  console.log('✅ Effective route migration registry covers every production Astro route');
 }
 
 try {
