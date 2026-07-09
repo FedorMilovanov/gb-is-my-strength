@@ -4,6 +4,7 @@ import GillSeriesRail from './GillSeriesRail.astro';
 import GillSeriesMobileBar from './GillSeriesMobileBar.astro';
 import GillSeriesOverlay from './GillSeriesOverlay.astro';
 import GillPartTocOverlay from './GillPartTocOverlay.astro';
+import GillSeriesImagePremium from './GillSeriesImagePremium.astro';
 
 interface Props {
   pageId: GillSeriesPageId;
@@ -12,6 +13,7 @@ interface Props {
 const { pageId } = Astro.props;
 const page = GILL_PAGE_DATA[pageId];
 ---
+<GillSeriesImagePremium />
 <a class="skip-link" href="#main-content">Перейти к содержимому</a>
 
 <div class="gbs2-world" data-gill-v16={pageId}>
