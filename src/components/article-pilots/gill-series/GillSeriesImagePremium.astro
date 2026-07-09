@@ -1,8 +1,9 @@
 <style is:global>
   /*
    * Gill image system — editorial, not decorative.
-   * Heroes keep a stable crop; body captions become floating museum labels;
-   * narrow floats stop collapsing into postage stamps on phones.
+   * The image remains the primary object; captions are museum labels beneath it,
+   * not accidental strips or stickers. Rail covers use a real photographic crop
+   * with text floating inside the frame, never on a separate bottom band.
    */
 
   [data-gill-v16] .gbs2-hero {
@@ -69,7 +70,7 @@
     display: block;
     overflow: hidden;
     border: 1px solid color-mix(in srgb, var(--color-border-strong) 72%, transparent);
-    border-radius: 15px;
+    border-radius: 16px;
     background: color-mix(in srgb, var(--color-surface) 94%, #17110d);
     box-shadow:
       0 20px 48px -30px rgba(49, 29, 13, .72),
@@ -81,36 +82,38 @@
   [data-gill-v16] .article-body .article-img:not(#gbs2Hero) > a.gill-figure-zoom img,
   [data-gill-v16] .article-body .article-img:not(#gbs2Hero) > img {
     display: block;
-    border-radius: 14px;
+    border-radius: 15px;
   }
 
   [data-gill-v16] .article-body .article-img:not(#gbs2Hero) > figcaption {
     position: relative;
     z-index: 2;
-    width: calc(100% - clamp(20px, 6vw, 42px));
-    max-width: 720px;
-    margin: -16px auto 0 !important;
-    padding: 10px 14px 11px;
-    border: 1px solid color-mix(in srgb, var(--color-border-strong) 74%, transparent);
-    border-radius: 11px;
-    background: color-mix(in srgb, var(--color-surface) 94%, transparent);
+    width: calc(100% - clamp(18px, 5vw, 36px));
+    max-width: 700px;
+    margin: 9px auto 0 !important;
+    padding: 9px 13px 10px;
+    border: 1px solid color-mix(in srgb, var(--color-border-strong) 62%, transparent);
+    border-top-color: color-mix(in srgb, var(--gbs2-accent2, #d4a857) 34%, var(--color-border-strong));
+    border-radius: 12px;
+    background: color-mix(in srgb, var(--color-surface) 96%, transparent);
     color: var(--color-text-muted);
     box-shadow:
-      0 14px 30px -22px rgba(34, 21, 11, .65),
-      inset 0 1px 0 rgba(255, 255, 255, .68);
-    -webkit-backdrop-filter: blur(12px) saturate(1.08);
-    backdrop-filter: blur(12px) saturate(1.08);
-    font-size: 12.5px;
+      0 12px 26px -22px rgba(34, 21, 11, .58),
+      inset 0 1px 0 rgba(255, 255, 255, .72);
+    -webkit-backdrop-filter: blur(10px) saturate(1.05);
+    backdrop-filter: blur(10px) saturate(1.05);
+    font-size: 12.4px;
     line-height: 1.48;
     text-align: center;
     text-wrap: pretty;
   }
 
   html.dark [data-gill-v16] .article-body .article-img:not(#gbs2Hero) > figcaption {
-    border-color: rgba(230, 203, 163, .17);
-    background: rgba(23, 20, 17, .91);
+    border-color: rgba(230, 203, 163, .16);
+    border-top-color: rgba(230, 203, 163, .35);
+    background: rgba(23, 20, 17, .88);
     color: rgba(244, 235, 221, .72);
-    box-shadow: 0 16px 34px -22px rgba(0, 0, 0, .9), inset 0 1px 0 rgba(255, 255, 255, .05);
+    box-shadow: 0 14px 32px -24px rgba(0, 0, 0, .9), inset 0 1px 0 rgba(255, 255, 255, .05);
   }
 
   [data-gill-v16] .gill-figure--bunhill {
@@ -162,13 +165,16 @@
     [data-gill-v16] .gbs2-current-cover {
       grid-column: 1;
       grid-row: 1;
-      height: 116px;
+      height: 128px;
       opacity: 1;
       background-image:
-        linear-gradient(180deg, rgba(13, 10, 8, .06) 4%, rgba(13, 10, 8, .28) 46%, rgba(13, 10, 8, .94) 100%),
+        linear-gradient(180deg, rgba(13, 10, 8, .04) 0%, rgba(13, 10, 8, .16) 42%, rgba(13, 10, 8, .78) 100%),
+        linear-gradient(90deg, rgba(13, 10, 8, .16), transparent 54%),
         var(--gbs2-cover, linear-gradient(135deg, var(--gbs2-accent), #2b1b13));
+      background-size: cover;
       background-position: var(--gbs2-cover-position, center);
-      filter: saturate(.88) contrast(1.04);
+      filter: saturate(.92) contrast(1.04);
+      box-shadow: inset 0 -1px 0 rgba(232, 184, 120, .12);
     }
 
     [data-gill-v16] .gbs2-current-body {
@@ -176,9 +182,9 @@
       grid-row: 1;
       align-self: end;
       z-index: 1;
-      padding: 42px 14px 13px;
-      background: linear-gradient(180deg, transparent, rgba(14, 11, 9, .42));
-      text-shadow: 0 2px 12px rgba(0, 0, 0, .72);
+      padding: 54px 14px 15px;
+      background: none;
+      text-shadow: 0 2px 12px rgba(0, 0, 0, .78), 0 0 2px rgba(0, 0, 0, .8);
     }
 
     [data-gill-v16] .gbs2-current-label {
@@ -193,7 +199,7 @@
 
     [data-gill-v16] .gbs2-curbar {
       margin-top: 10px;
-      background: rgba(255, 255, 255, .2);
+      background: rgba(255, 255, 255, .22);
     }
 
     [data-gill-v16] .gbs2-toch { grid-column: 1; grid-row: 2; }
@@ -247,30 +253,24 @@
 
     [data-gill-v16] .article-body .article-img:has(img[src*="gill-pulpit-strip"]) > picture,
     [data-gill-v16] .article-body .article-img:has(img[src*="gill-bookshop-strip"]) > picture {
-      aspect-ratio: 16 / 9;
+      aspect-ratio: auto;
     }
 
     [data-gill-v16] .article-body .article-img:has(img[src*="gill-pulpit-strip"]) img,
     [data-gill-v16] .article-body .article-img:has(img[src*="gill-bookshop-strip"]) img {
       width: 100% !important;
-      height: 100% !important;
+      height: auto !important;
       max-height: none !important;
-      object-fit: cover !important;
-    }
-
-    [data-gill-v16] .article-body .article-img:has(img[src*="gill-pulpit-strip"]) img {
-      object-position: 24% 50%;
-    }
-
-    [data-gill-v16] .article-body .article-img:has(img[src*="gill-bookshop-strip"]) img {
-      object-position: 76% 50%;
+      object-fit: contain !important;
+      object-position: 50% 50%;
     }
 
     [data-gill-v16] .article-body .article-img:not(#gbs2Hero) > figcaption {
-      width: calc(100% - 18px);
-      margin-top: -13px !important;
-      padding: 9px 11px 10px;
+      width: calc(100% - 16px);
+      margin-top: 8px !important;
+      padding: 8px 10px 9px;
       font-size: 12px;
+      border-radius: 11px;
     }
   }
 
