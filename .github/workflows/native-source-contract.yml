@@ -12,12 +12,15 @@ on:
       - "migration/page-ownership.json"
       - "migration/route-migration-matrix.json"
       - "scripts/article-native-contract-audit.js"
+      - "scripts/article-native-effective-contract-audit.js"
       - "scripts/article-mdx-pilot-audit.js"
       - "scripts/baptisty-series-shadow-audit.js"
       - "scripts/check-mdx-html-parity.js"
       - "scripts/route-source-contract-audit.js"
       - "scripts/sync-route-migration-matrix.js"
       - "scripts/lib/route-source-contract.js"
+      - "scripts/lib/route-matrix-normalizer.js"
+      - "scripts/lib/effective-route-registry.js"
       - ".github/workflows/native-source-contract.yml"
       - "package.json"
       - "package-lock.json"
@@ -32,12 +35,15 @@ on:
       - "migration/page-ownership.json"
       - "migration/route-migration-matrix.json"
       - "scripts/article-native-contract-audit.js"
+      - "scripts/article-native-effective-contract-audit.js"
       - "scripts/article-mdx-pilot-audit.js"
       - "scripts/baptisty-series-shadow-audit.js"
       - "scripts/check-mdx-html-parity.js"
       - "scripts/route-source-contract-audit.js"
       - "scripts/sync-route-migration-matrix.js"
       - "scripts/lib/route-source-contract.js"
+      - "scripts/lib/route-matrix-normalizer.js"
+      - "scripts/lib/effective-route-registry.js"
       - ".github/workflows/native-source-contract.yml"
       - "package.json"
       - "package-lock.json"
@@ -48,7 +54,7 @@ concurrency:
   cancel-in-progress: true
 
 permissions:
-  contents: write
+  contents: read
 
 jobs:
   native-source-contract:
@@ -56,11 +62,10 @@ jobs:
     timeout-minutes: 35
 
     steps:
-      - name: Checkout implementation lane
+      - name: Checkout exact head
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
-          ref: ${{ github.head_ref }}
 
       - name: Set up Node 22.12
         uses: actions/setup-node@v4
@@ -68,24 +73,7 @@ jobs:
           node-version: "22.12.0"
           cache: npm
 
-      - name: One-time restore complete matrix registry
-        if: github.event_name == 'pull_request' && github.head_ref == 'lane/system-native-source-contract-v1-2026-07-09'
-        shell: bash
-        env:
-          HEAD_BRANCH: ${{ github.head_ref }}
-        run: |
-          node scripts/sync-route-migration-matrix.js --write
-          if git diff --quiet -- migration/route-migration-matrix.json; then
-            echo "Matrix already complete"
-            exit 0
-          fi
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add migration/route-migration-matrix.json
-          git commit -m "fix(matrix): restore complete production route registry [LANE lane/system-native-source-contract-v1-2026-07-09]"
-          git push origin "HEAD:${HEAD_BRANCH}"
-
-      - name: Validate matrix synchronizer is clean
+      - name: Validate effective matrix contract without writing
         run: node scripts/sync-route-migration-matrix.js --check
 
       - name: Validate declared sources against actual import graphs
@@ -116,7 +104,7 @@ jobs:
         shell: bash
         run: |
           set -o pipefail
-          node scripts/article-native-contract-audit.js --no-build --require-content-parity 2>&1 \
+          node scripts/article-native-effective-contract-audit.js --no-build --require-content-parity 2>&1 \
             | tee reports/native-source-contract-dist.log
 
       - name: Validate migration metadata coherence
@@ -132,6 +120,9 @@ jobs:
           set -o pipefail
           npm run workflows:check 2>&1 \
             | tee reports/native-source-contract-workflows.log
+
+      - name: Ensure validation did not mutate tracked sources
+        run: git diff --exit-code
 
       - name: Upload native source contract diagnostics
         if: always()
