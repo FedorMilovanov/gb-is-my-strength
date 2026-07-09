@@ -19,6 +19,7 @@ function loadRouteRecords() {
     matrixDiagnostics: {
       derivedRoutes: normalized.derivedRoutes,
       removedMarkers: normalized.removedMarkers,
+      ignoredOrphanRoutes: normalized.ignoredOrphanRoutes,
     },
   };
 }
