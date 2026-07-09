@@ -1,0 +1,106 @@
+name: Route Registry Validators
+
+on:
+  push:
+    branches:
+      - lane/system-route-registry-validators-v2-2026-07-09
+  pull_request:
+    branches: [main]
+    paths:
+      - "data/route-profiles/**"
+      - "data/series.json"
+      - "migration/page-ownership.json"
+      - "migration/route-migration-matrix.json"
+      - "src/content/**"
+      - "scripts/check-route-profiles.js"
+      - "scripts/check-route-migration-matrix.js"
+      - "scripts/check-content-source-coverage.js"
+      - "scripts/install-effective-route-registry.js"
+      - "scripts/route-profile-contract-audit.js"
+      - "scripts/route-migration-matrix-contract-audit.js"
+      - "scripts/content-source-provenance-audit.js"
+      - "scripts/lib/route-source-contract.js"
+      - "scripts/lib/route-matrix-normalizer.js"
+      - "scripts/lib/effective-route-registry.js"
+      - "scripts/sync-route-migration-matrix.js"
+      - ".github/workflows/route-registry-validators.yml"
+  workflow_dispatch:
+
+concurrency:
+  group: route-registry-validators-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  registry-contracts:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout exact head
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Node 22.12
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22.12.0"
+
+      - name: Validate effective matrix contract without writing
+        run: node scripts/sync-route-migration-matrix.js --check
+
+      - name: Route profile contract
+        shell: bash
+        run: |
+          mkdir -p reports
+          set -o pipefail
+          node -r ./scripts/install-effective-route-registry.js \
+            scripts/route-profile-contract-audit.js --strict 2>&1 \
+            | tee reports/route-profile-contract.log
+
+      - name: Migration matrix contract
+        if: always()
+        shell: bash
+        run: |
+          set -o pipefail
+          node -r ./scripts/install-effective-route-registry.js \
+            scripts/route-migration-matrix-contract-audit.js --strict 2>&1 \
+            | tee reports/route-migration-matrix-contract.log
+
+      - name: Content source provenance
+        if: always()
+        shell: bash
+        run: |
+          set -o pipefail
+          node -r ./scripts/install-effective-route-registry.js \
+            scripts/content-source-provenance-audit.js --strict 2>&1 \
+            | tee reports/content-source-provenance.log
+
+      - name: Compatibility command surface
+        if: always()
+        shell: bash
+        run: |
+          set -o pipefail
+          {
+            node scripts/check-route-profiles.js --strict
+            node scripts/check-route-migration-matrix.js --strict
+            node scripts/check-content-source-coverage.js --strict
+          } 2>&1 | tee reports/route-registry-compatibility.log
+
+      - name: Verify all validators are read-only
+        if: always()
+        run: git diff --exit-code
+
+      - name: Upload registry diagnostics
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: route-registry-validators-${{ github.run_id }}
+          path: |
+            reports/*.log
+            migration/route-migration-matrix.json
+          if-no-files-found: error
+          retention-days: 7
