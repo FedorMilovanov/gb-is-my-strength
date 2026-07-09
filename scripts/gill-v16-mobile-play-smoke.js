@@ -27,10 +27,17 @@ process.env.PLAYWRIGHT_BROWSERS_PATH =
 let BASE = (process.env.AUDIT_BASE || '').replace(/\/$/, '');
 const INTRO = '/articles/dzhon-gill-istoricheskiy-kontekst/';
 const PART1 = '/articles/dzhon-gill-chast-1-chelovek/';
+// Display order: Введение → I Человек → II Учёный → III Экзегет → IV Наследие
+// → Справочник. NB the slugs intentionally decouple from display numbers
+// (owner kept the live /chast-3-nasledie/ URL): chast-4-ekzeget renders mark
+// III, chast-3-nasledie renders mark IV. Source of truth: gillSeriesData.ts,
+// enforced by gill:series:data:consistency:audit — keep these in sync with it
+// (the fully data-driven derivation is tracked as GATE-MARKER-DATA-DRIFT).
 const ROUTES = [
   INTRO,
   PART1,
   '/articles/dzhon-gill-chast-2-uchenyi/',
+  '/articles/dzhon-gill-chast-4-ekzeget/',
   '/articles/dzhon-gill-chast-3-nasledie/',
   '/articles/dzhon-gill-spravochnik/',
 ];
@@ -40,7 +47,7 @@ const ROUTES = [
 // mobile TOC overlay (GillSeriesOverlay, still plain SeriesMark) — the leather
 // port deliberately spelled the word out in full once the ribbon was widened to
 // fit it (owner spec: mute glow, shrink font, keep the full word legible).
-const expectedSeriesMarks = ['Введение', 'I', 'II', 'III', 'Справочник'];
+const expectedSeriesMarks = ['Введение', 'I', 'II', 'III', 'IV', 'Справочник'];
 // Flow-rail (PR#45, witness bcf6389f): the CURRENT part's compact card is
 // replaced in-list by the expanded .gbs2-current card, so its mark is
 // legitimately absent from .gbs-rail-card__num — each route expects the
@@ -49,7 +56,8 @@ const currentMarkByRoute = {
   '/articles/dzhon-gill-istoricheskiy-kontekst/': 'Введение',
   '/articles/dzhon-gill-chast-1-chelovek/': 'I',
   '/articles/dzhon-gill-chast-2-uchenyi/': 'II',
-  '/articles/dzhon-gill-chast-3-nasledie/': 'III',
+  '/articles/dzhon-gill-chast-4-ekzeget/': 'III',
+  '/articles/dzhon-gill-chast-3-nasledie/': 'IV',
   '/articles/dzhon-gill-spravochnik/': 'Справочник',
 };
 const failures = [];
@@ -172,7 +180,11 @@ async function addFakeTts(context) {
 async function visibleEmber(page, mobile) {
   const selector = mobile
     ? '.mobile-top-bar .gb-ember'
-    : '.gbs-rail-topbar .gb-ember, .gbs-rail-foot .gb-ember, .gbs-rail-foot .gbmini-play';
+    // Desktop play ember moved from the horizontal .gbs-rail-topbar into the
+    // vertical .gbs-theme-corner cluster (theme→search→play→save) in the rail
+    // reorg; keep the old topbar/foot selectors alongside so this smoke stays
+    // layout-tolerant across either generation.
+    : '.gbs-theme-corner .gb-ember, .gbs-rail-topbar .gb-ember, .gbs-rail-foot .gb-ember, .gbs-rail-foot .gbmini-play';
   const loc = page.locator(selector).first();
   await loc.waitFor({ state: 'visible', timeout: 8000 });
   return loc;
@@ -260,7 +272,7 @@ async function testSeriesModel(browser) {
     proof.series.push({ route, ...facts, labelFit: fit });
     assert(facts.hasGillV16, `${route} has data-gill-v16`);
     const expectedFlowMarks = expectedSeriesMarks.filter(m => m !== currentMarkByRoute[route]);
-    assert(JSON.stringify(facts.marks) === JSON.stringify(expectedFlowMarks), `${route} series marks are the four non-current parts (flow-rail)`, JSON.stringify(facts.marks));
+    assert(JSON.stringify(facts.marks) === JSON.stringify(expectedFlowMarks), `${route} series marks are the non-current parts (flow-rail)`, JSON.stringify(facts.marks));
     assert(facts.hasCurrentCard, `${route} expanded current-part card replaces the compact card (flow-rail)`);
     assert(facts.labelCount > 0, `${route} has gb-series-mark--label in built output`, String(facts.labelCount));
     assert(facts.rawRailNums.length === 0, `${route} no raw visual-canon Gill mark nodes`, JSON.stringify(facts.rawRailNums));
