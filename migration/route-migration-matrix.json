@@ -1,15 +1,9 @@
 {
-  "version": "2026-06-26.strict-native-app-defined.v1",
-  "scope": "all-routes-except-nagornaya-gill-heart-hard-texts",
+  "version": "2026-07-09.native-source-contract-v1",
+  "scope": "all-production-routes-runtime-contract",
   "created": "2026-06-23",
-  "source": "GBS non-excluded living audit (P0.1)",
-  "exclude": [
-    "nagornaya/**",
-    "articles/dzhon-gill-*",
-    "articles/krajne-li-isporcheno-serdce",
-    "articles/rimlyanam-7-veruyushchiy-ili-neveruyushchiy",
-    "hard-texts/**"
-  ],
+  "source": "Native Source Contract v1; semantic edit exclusions do not exempt production routes from runtime ownership checks",
+  "exclude": [],
   "modes": {
     "native-with-legacy-head": "Astro route uses native body/chrome components, but legacy head/body attributes remain in layout transport.",
     "native-main-with-legacy-chrome": "Astro page composes from named legacy fragments (body-segment-N.html) + named Astro component shells. Legacy chrome (skip-link, nav, theme, footer, runtime) loaded from fragments. Semantic main promoted to named component. This is the primary mode for landings and catalogs.",
@@ -551,12 +545,210 @@
         "interactive-audit"
       ],
       "reason": "Protected App Route Native Astro Phase: migrated React family tree."
+    },
+    "/articles/dzhon-gill-chast-1-chelovek/": {
+      "mode": "strict-native",
+      "source": "src/pages/articles/dzhon-gill-chast-1-chelovek/index.astro",
+      "scope": "excluded-semantic-lane",
+      "requiredMarkers": [],
+      "audits": [
+        "native-source-contract",
+        "native-runtime-taxonomy"
+      ],
+      "reason": "Runtime ownership registered from page-ownership + route profile. Semantic editing protection, when present, does not exempt runtime checks."
+    },
+    "/articles/dzhon-gill-chast-2-uchenyi/": {
+      "mode": "strict-native",
+      "source": "src/pages/articles/dzhon-gill-chast-2-uchenyi/index.astro",
+      "scope": "excluded-semantic-lane",
+      "requiredMarkers": [],
+      "audits": [
+        "native-source-contract",
+        "native-runtime-taxonomy"
+      ],
+      "reason": "Runtime ownership registered from page-ownership + route profile. Semantic editing protection, when present, does not exempt runtime checks."
+    },
+    "/articles/dzhon-gill-chast-3-nasledie/": {
+      "mode": "strict-native",
+      "source": "src/pages/articles/dzhon-gill-chast-3-nasledie/index.astro",
+      "scope": "excluded-semantic-lane",
+      "requiredMarkers": [],
+      "audits": [
+        "native-source-contract",
+        "native-runtime-taxonomy"
+      ],
+      "reason": "Runtime ownership registered from page-ownership + route profile. Semantic editing protection, when present, does not exempt runtime checks."
+    },
+    "/articles/dzhon-gill-istoricheskiy-kontekst/": {
+      "mode": "strict-native",
+      "source": "src/pages/articles/dzhon-gill-istoricheskiy-kontekst/index.astro",
+      "scope": "excluded-semantic-lane",
+      "requiredMarkers": [],
+      "audits": [
+        "native-source-contract",
+        "native-runtime-taxonomy"
+      ],
+      "reason": "Runtime ownership registered from page-ownership + route profile. Semantic editing protection, when present, does not exempt runtime checks."
+    },
+    "/articles/dzhon-gill-spravochnik/": {
+      "mode": "strict-native",
+      "source": "src/pages/articles/dzhon-gill-spravochnik/index.astro",
+      "scope": "excluded-semantic-lane",
+      "requiredMarkers": [],
+      "audits": [
+        "native-source-contract",
+        "native-runtime-taxonomy"
+      ],
+      "reason": "Runtime ownership registered from page-ownership + route profile. Semantic editing protection, when present, does not exempt runtime checks."
+    },
+    "/articles/krajne-li-isporcheno-serdce/": {
+      "mode": "strict-native",
+      "source": "src/pages/articles/krajne-li-isporcheno-serdce/index.astro",
+      "scope": "excluded-semantic-lane",
+      "requiredMarkers": [],
+      "audits": [
+        "native-source-contract",
+        "native-runtime-taxonomy"
+      ],
+      "reason": "Runtime ownership registered from page-ownership + route profile. Semantic editing protection, when present, does not exempt runtime checks."
+    },
+    "/articles/rimlyanam-7-veruyushchiy-ili-neveruyushchiy/": {
+      "mode": "strict-native",
+      "source": "src/pages/articles/rimlyanam-7-veruyushchiy-ili-neveruyushchiy/index.astro",
+      "scope": "excluded-semantic-lane",
+      "requiredMarkers": [],
+      "audits": [
+        "native-source-contract",
+        "native-runtime-taxonomy"
+      ],
+      "reason": "Runtime ownership registered from page-ownership + route profile. Semantic editing protection, when present, does not exempt runtime checks."
+    },
+    "/hard-texts/": {
+      "mode": "strict-native",
+      "source": "src/pages/hard-texts/index.astro",
+      "scope": "excluded-semantic-lane",
+      "requiredMarkers": [],
+      "audits": [
+        "native-source-contract",
+        "native-runtime-taxonomy"
+      ],
+      "reason": "Runtime ownership registered from page-ownership + route profile. Semantic editing protection, when present, does not exempt runtime checks."
+    },
+    "/nagornaya/": {
+      "mode": "strict-native",
+      "source": "src/pages/nagornaya/index.astro",
+      "scope": "excluded-semantic-lane",
+      "requiredMarkers": [],
+      "audits": [
+        "native-source-contract",
+        "native-runtime-taxonomy"
+      ],
+      "reason": "Runtime ownership registered from page-ownership + route profile. Semantic editing protection, when present, does not exempt runtime checks."
+    },
+    "/nagornaya/istochniki/": {
+      "mode": "strict-native",
+      "source": "src/pages/nagornaya/istochniki/index.astro",
+      "scope": "excluded-semantic-lane",
+      "requiredMarkers": [],
+      "audits": [
+        "native-source-contract",
+        "native-runtime-taxonomy"
+      ],
+      "reason": "Runtime ownership registered from page-ownership + route profile. Semantic editing protection, when present, does not exempt runtime checks."
+    },
+    "/nagornaya/nakhodki/": {
+      "mode": "strict-native",
+      "source": "src/pages/nagornaya/nakhodki/index.astro",
+      "scope": "excluded-semantic-lane",
+      "requiredMarkers": [],
+      "audits": [
+        "native-source-contract",
+        "native-runtime-taxonomy"
+      ],
+      "reason": "Runtime ownership registered from page-ownership + route profile. Semantic editing protection, when present, does not exempt runtime checks."
+    },
+    "/nagornaya/seriya/": {
+      "mode": "strict-native",
+      "source": "src/pages/nagornaya/seriya/index.astro",
+      "scope": "excluded-semantic-lane",
+      "requiredMarkers": [],
+      "audits": [
+        "native-source-contract",
+        "native-runtime-taxonomy"
+      ],
+      "reason": "Runtime ownership registered from page-ownership + route profile. Semantic editing protection, when present, does not exempt runtime checks."
+    },
+    "/nagornaya/chast-1/": {
+      "mode": "strict-native",
+      "source": "src/pages/nagornaya/chast-1/index.astro",
+      "scope": "excluded-semantic-lane",
+      "requiredMarkers": [],
+      "audits": [
+        "native-source-contract",
+        "native-runtime-taxonomy"
+      ],
+      "reason": "Runtime ownership registered from page-ownership + route profile. Semantic editing protection, when present, does not exempt runtime checks."
+    },
+    "/nagornaya/chast-2/": {
+      "mode": "strict-native",
+      "source": "src/pages/nagornaya/chast-2/index.astro",
+      "scope": "excluded-semantic-lane",
+      "requiredMarkers": [],
+      "audits": [
+        "native-source-contract",
+        "native-runtime-taxonomy"
+      ],
+      "reason": "Runtime ownership registered from page-ownership + route profile. Semantic editing protection, when present, does not exempt runtime checks."
+    },
+    "/nagornaya/chast-3/": {
+      "mode": "strict-native",
+      "source": "src/pages/nagornaya/chast-3/index.astro",
+      "scope": "excluded-semantic-lane",
+      "requiredMarkers": [],
+      "audits": [
+        "native-source-contract",
+        "native-runtime-taxonomy"
+      ],
+      "reason": "Runtime ownership registered from page-ownership + route profile. Semantic editing protection, when present, does not exempt runtime checks."
+    },
+    "/nagornaya/chast-4/": {
+      "mode": "strict-native",
+      "source": "src/pages/nagornaya/chast-4/index.astro",
+      "scope": "excluded-semantic-lane",
+      "requiredMarkers": [],
+      "audits": [
+        "native-source-contract",
+        "native-runtime-taxonomy"
+      ],
+      "reason": "Runtime ownership registered from page-ownership + route profile. Semantic editing protection, when present, does not exempt runtime checks."
+    },
+    "/nagornaya/chast-5/": {
+      "mode": "strict-native",
+      "source": "src/pages/nagornaya/chast-5/index.astro",
+      "scope": "excluded-semantic-lane",
+      "requiredMarkers": [],
+      "audits": [
+        "native-source-contract",
+        "native-runtime-taxonomy"
+      ],
+      "reason": "Runtime ownership registered from page-ownership + route profile. Semantic editing protection, when present, does not exempt runtime checks."
     }
   },
   "changelog": [
     {
       "date": "2026-06-26",
       "change": "Added 'strict-native-app' to modes (it was used by 13 routes but undefined — closes BUG-A5 / PFV-007 from AuditRepo)."
+    },
+    {
+      "date": "2026-07-09",
+      "change": "Native Source Contract v1: runtime matrix now covers all production routes; semantic edit exclusions moved to semanticEditExclusions; missing Astro production entries are derived from ownership + route profiles."
     }
+  ],
+  "semanticEditExclusions": [
+    "nagornaya/**",
+    "articles/dzhon-gill-*",
+    "articles/krajne-li-isporcheno-serdce",
+    "articles/rimlyanam-7-veruyushchiy-ili-neveruyushchiy",
+    "hard-texts/**"
   ]
 }
