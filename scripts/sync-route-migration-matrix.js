@@ -13,6 +13,7 @@ const OWNERSHIP_FILE = path.join(ROOT, 'migration/page-ownership.json');
 const WRITE = process.argv.includes('--write');
 const CHECK = process.argv.includes('--check') || !WRITE;
 const CHANGELOG_TEXT = 'Native Source Contract v1: runtime matrix now covers all production routes; semantic edit exclusions moved to semanticEditExclusions; missing Astro production entries are derived from ownership + route profiles.';
+const MARKER_CHANGELOG_TEXT = 'Runtime requiredMarkers normalized: source-only Astro component identifiers are not valid dist markers and are removed deterministically.';
 
 function readJson(file) {
   return JSON.parse(fs.readFileSync(file, 'utf8'));
@@ -45,6 +46,18 @@ function sourceHasPagefindBody(sourceRel) {
   if (!sourceRel) return false;
   const file = path.join(ROOT, sourceRel);
   return fs.existsSync(file) && fs.readFileSync(file, 'utf8').includes('data-pagefind-body');
+}
+
+function isSourceOnlyComponentMarker(marker) {
+  return typeof marker === 'string' &&
+    /^[A-Z][A-Za-z0-9]*(?:Shell|Component|Page|Body|Head|Footer|Chrome)$/.test(marker);
+}
+
+function normalizeRequiredMarkers(contract) {
+  if (!Array.isArray(contract.requiredMarkers)) return [];
+  const removed = contract.requiredMarkers.filter(isSourceOnlyComponentMarker);
+  contract.requiredMarkers = [...new Set(contract.requiredMarkers.filter((marker) => !isSourceOnlyComponentMarker(marker)))];
+  return removed;
 }
 
 function createMissingContract(route, owner, profile, semanticEditExclusions, matrixModes) {
@@ -85,6 +98,7 @@ function normalizeMatrix(matrix, ownership) {
 
   const matrixModes = new Set(Object.keys(next.modes || {}));
   const added = [];
+  const removedMarkers = [];
 
   for (const [route, owner] of Object.entries(ownership.routes || {})) {
     if (!isProductionAstro(owner)) continue;
@@ -99,6 +113,10 @@ function normalizeMatrix(matrix, ownership) {
     }
 
     const contract = next.routes[route];
+    for (const marker of normalizeRequiredMarkers(contract)) {
+      removedMarkers.push({ route, marker });
+    }
+
     if (contract.source !== owner.source) {
       throw new Error(`${route}: matrix source ${contract.source} != ownership source ${owner.source}`);
     }
@@ -113,15 +131,18 @@ function normalizeMatrix(matrix, ownership) {
   if (!next.changelog.some((entry) => entry?.date === '2026-07-09' && entry?.change === CHANGELOG_TEXT)) {
     next.changelog.push({ date: '2026-07-09', change: CHANGELOG_TEXT });
   }
+  if (removedMarkers.length && !next.changelog.some((entry) => entry?.date === '2026-07-09' && entry?.change === MARKER_CHANGELOG_TEXT)) {
+    next.changelog.push({ date: '2026-07-09', change: MARKER_CHANGELOG_TEXT });
+  }
 
-  return { next, added };
+  return { next, added, removedMarkers };
 }
 
 function main() {
   const matrix = readJson(MATRIX_FILE);
   const ownership = readJson(OWNERSHIP_FILE);
   const original = fs.readFileSync(MATRIX_FILE, 'utf8');
-  const { next, added } = normalizeMatrix(matrix, ownership);
+  const { next, added, removedMarkers } = normalizeMatrix(matrix, ownership);
   const serialized = `${JSON.stringify(next, null, 2)}\n`;
 
   console.log('=== Route Migration Matrix Synchronizer ===');
@@ -130,6 +151,8 @@ function main() {
   console.log(`Matrix routes after normalization: ${Object.keys(next.routes || {}).length}`);
   console.log(`Missing contracts derived: ${added.length}`);
   added.forEach((route) => console.log(`  + ${route}`));
+  console.log(`Source-only runtime markers removed: ${removedMarkers.length}`);
+  removedMarkers.forEach(({ route, marker }) => console.log(`  - ${route}: ${marker}`));
 
   if (WRITE) {
     if (serialized === original) {
