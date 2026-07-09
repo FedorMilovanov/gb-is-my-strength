@@ -2533,8 +2533,8 @@ html.dark .gb-roman {
    rail. Desktop-only (≥64em; the rail is display:none below that). Purely
    additive — the default (wide, TOC-expanded) look is unchanged. All motion
    uses cubic-bezier(.22,1,.36,1) and is disabled under prefers-reduced-motion.
-   Introduced state: .rail-narrow (on .gbs2-world[data-gill-v16]),
-   .toc-collapsed (on .gbs2-current), .is-scrolling (on .gbs2-rmid),
+   Introduced state: .rail-narrow on .gbs2-world[data-gill-v16];
+   .toc-collapsed on .gbs2-current; .is-scrolling on .gbs2-rmid;
    .no-anim (one-frame first-paint guard on the world).
    ============================================================ */
 
@@ -2704,22 +2704,22 @@ html.dark .gb-roman {
 
 /* First-paint guard: kill the width/margin transition for one frame so a
    persisted narrow state applies without a collapse animation on load. */
-.gbs2-world[data-gill-v16].no-anim > .gbs-rail,
-.gbs2-world[data-gill-v16].no-anim > .page-wrap,
-.gbs2-world[data-gill-v16].no-anim .gbs2-tocscroll,
-.gbs2-world[data-gill-v16].no-anim .gbs-rail-collapse svg,
-.gbs2-world[data-gill-v16].no-anim .gbs2-toch-toggle svg{transition:none !important}
+[data-gill-v16].gbs2-world.no-anim > .gbs-rail,
+[data-gill-v16].gbs2-world.no-anim > .page-wrap,
+[data-gill-v16].gbs2-world.no-anim .gbs2-tocscroll,
+[data-gill-v16].gbs2-world.no-anim .gbs-rail-collapse svg,
+[data-gill-v16].gbs2-world.no-anim .gbs2-toch-toggle svg{transition:none !important}
 
 /* Reduced motion — no transitions for any of the above. */
 @media (prefers-reduced-motion: reduce){
-  .gbs2-world[data-gill-v16] > .gbs-rail,
-  .gbs2-world[data-gill-v16] > .page-wrap,
+  [data-gill-v16].gbs2-world > .gbs-rail,
+  [data-gill-v16].gbs2-world > .page-wrap,
   [data-gill-v16] .gbs-rail-collapse svg,
   [data-gill-v16] .gbs2-toch-toggle svg,
   [data-gill-v16] .gbs2-current .gbs2-tocscroll,
   [data-gill-v16] .gbs-rail .gbs2-rmid,
-  .gbs2-world[data-gill-v16] .gbs-rail-spine__item,
-  .gbs2-world[data-gill-v16] .gbs-rail-spine__tip{transition:none}
+  [data-gill-v16].gbs2-world .gbs-rail-spine__item,
+  [data-gill-v16].gbs2-world .gbs-rail-spine__tip{transition:none}
 }
 
 /* ---- Mobile/tablet (<64em): hide rail, show fixed bottom bar ---- */
