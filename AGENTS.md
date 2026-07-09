@@ -136,6 +136,7 @@ FULL gate — перед commit/merge/push: npm run validate:static-publication 
 
 ---
 
+| **AGENTS-r323** | 2026-07-09 | **Derived route-registry stack merged + doc drift fixed.** Влиты 3 системных лейна (`native-source-contract-v1` + `route-registry-validators-v2` + `editorial-metadata-v3`): `route-migration-matrix.json` теперь **материализуется** из `page-ownership.json` + `route-profiles/*` (движок `scripts/lib/effective-route-registry.js`); режимы свёрнуты 8→3 (`strict-native`/`strict-native-app`/`legacy-shadow-app`); registry-driven чекеры заменили прямые (оригиналы → `scripts/legacy-audits/*`); добавлен editorial-freeze baseline `data/editorial-metadata.json`. Закрывает **AUDIT-P2-MATRIX-DRIFT**. Doc-drift из r322 исправлен: JS-файлов **14** (11 базовых + 3 vosk-TTS), не 11/12; §0/§2 синхронизированы. `izbrannoe`/`BaseLayout` рантайм переведён на нативные `<script>` (strict-native clean, мёртвые `headHtml`/`bodyEndHtml` пропсы удалены). См. блок «Матрица теперь ПРОИЗВОДНАЯ» в Work Modes. |
 | **AGENTS-r322** | 2026-07-06 | **Super-audit sync.** «Верификационная дисциплина» дополнена п.8–12: канон системного бэклога — AuditRepo `verified/SUPER_AUDIT_2026-07-06_14a49be8.md` (волны W0–W10 + опровергнутые формулировки); три идентичности релиза (FUNCTIONAL/BOT/DEPLOYED SHA); «паритет ≠ правда»; in-flight зоны (PremiumControls, глоссарий); создан `docs/OWNER-INVARIANTS.md`. Известный doc-drift для будущей правки: §0/§2 расходятся «11 vs 12 JS-файлов» (факт на 14a49be8: 11); README §1.1 shadow-wrap описание — HISTORICAL (см. page-ownership.json). |
 | **AGENTS-r321** | 2026-07-03 | **CSS inventory reconciled.** Section 2 updated from 8→9 CSS files (added `enhancements-runtime.css`, `highlights-runtime.css`, `sw-toast.css` extracted from CSS-in-JS in Pass 24). Dead exports removed from `floating-cluster-ui.ts` (5 dead: `FloatingClusterMode`, `FloatingClusterUiConfig`, `floatingClusterUi`, `floatingClusterRoutes`, `getSeriesParts`). §0 and §4 CSS table updated (renumbered from r312 — was duplicate of r312). |
 
@@ -151,6 +152,15 @@ FULL gate — перед commit/merge/push: npm run validate:static-publication 
 
 **⚠️ Перед любой работой проверь свой route в `migration/route-migration-matrix.json`.**
 Неправильный migration mode = регрессия (как blanket shadow-wrap в r260).
+
+**🔑 Матрица теперь ПРОИЗВОДНАЯ (derived registry, `native-source-contract-v1`, 2026-07-09).**
+`route-migration-matrix.json` больше не правится руками для набора routes — он **материализуется из `migration/page-ownership.json` + `data/route-profiles/*.json`** движком `scripts/lib/effective-route-registry.js` (+ `route-matrix-normalizer.js`, `route-source-contract.js`). Практика для агентов:
+- Меняешь ownership/профиль route → перегенерируй: `node scripts/sync-route-migration-matrix.js --write`. НЕ дописывай routes в матрицу вручную (ветки-лейны так уже уронили секцию `/karty/*` — david/isus вместо 11 реальных; исправлено регенерацией).
+- Единый набор режимов: **`strict-native`**, **`strict-native-app`**, **`legacy-shadow-app`** (было 8 разрозненных — свёрнуто в 3). Профиль production-Astro route обязан иметь `migrationMode` из этого набора; `scope` — либо отсутствует, либо `excluded-semantic-lane`.
+- Registry-driven чекеры (заменили старые прямые проверки; оригиналы → `scripts/legacy-audits/*`): `route-profile-contract-audit.js`, `route-migration-matrix-contract-audit.js`, `content-source-provenance-audit.js`, `route-source-contract-audit.js` (все с `--strict`). Гоняются через `npm run migration:metadata:check:strict`.
+- Editorial-freeze: `data/editorial-metadata.json` — замороженный baseline проекций (даты/тайтлы). Дрейф ловит `scripts/editorial-metadata-freeze-audit.js` (блокирующий в `indexnow.yml`); при легитимном изменении дат — `node scripts/editorial-metadata-registry.js --write` + ревью.
+
+**«Одна матрица» — не путать два смысла:** (1) `route-migration-matrix.json` — контракт routes (выше, в этом репо); (2) AuditRepo `verified/MASTER_BUG_MATRIX.md` — канон баг-бэклога (внешний репо). Плодить матрицы нельзя; закрывать — только эти две.
 
 ### Work Mode Decision Tree
 
@@ -244,7 +254,7 @@ Older changelog rows **AGENTS-r77–r131** and older 2026-06-13 map-wave rows **
 
 ## 0. TLDR — что СРАЗУ нельзя делать
 
-1. ❌ **Создавать новые CSS/JS файлы.** Архитектурный максимум: **9 CSS + 1 шрифтовой + 11 JS**. Список фиксирован, см. §2.
+1. ❌ **Создавать новые CSS/JS файлы.** Архитектурный максимум: **9 CSS + 1 шрифтовой + 14 JS** (11 базовых + 3 vosk-TTS: `vosk-tts-engine`/`vosk-tts-core`/`vosk-stress-lookup`). Список фиксирован, см. §2.
 2. ❌ **Менять byline на «Автор: Фёдор Милованов».** Только `Автор-редактор:` (тип A/B) или `Редактор:` (тип C — переводы). См. §3.1.
 3. ❌ **Возвращать `AI-disclosure`.** Удалён 2026-06-02 (`AGENTS-r11`), повторно удалён в PLAN-04 (CSS-остатки). Об ИИ — только на `/about/`.
 4. ❌ **Запускать `prettier --write .` или `eslint --fix .`** по всему дереву. Только точечно.
@@ -337,7 +347,7 @@ CSS-фичи, не поддерживаемые в этих версиях (`col
 ├── fonts/
 │   └── fonts.css                   ← @font-face деклараты, не трогать
 │
-├── js/                             ← РОВНО 12 ФАЙЛОВ. БОЛЬШЕ НЕ СОЗДАВАТЬ.
+├── js/                             ← РОВНО 14 ФАЙЛОВ. БОЛЬШЕ НЕ СОЗДАВАТЬ.
 │   ├── site.js                     ← главное (theme, nav, quiz, tooltips, gbFloatingControls)
 │   ├── site-utils.js               ← утилиты, доступные отдельным страницам
 │   ├── scroll-perf.js              ← производительность scroll/observers
@@ -348,13 +358,18 @@ CSS-фичи, не поддерживаемые в этих версиях (`col
 │   ├── bookmark-engine.js          ← закладки (localStorage)
 │   ├── nagornaya-mobile-toc.js     ← мобильное TOC для проповеди
 │   ├── sw-register.js              ← регистрация Service Worker
-│   └── floating-cluster-controller.js ← PremiumControls runtime controller (TTS, speed morph, favorites)
+│   ├── floating-cluster-controller.js ← PremiumControls runtime controller (TTS, speed morph, favorites)
+│   ├── vosk-tts-engine.js          ← neural TTS engine (VITS+BERT, model on HF, IndexedDB cache)
+│   ├── vosk-tts-core.js            ← vosk-tts inference core (chunking, synthesis)
+│   └── vosk-stress-lookup.js       ← русское ударение для TTS (словарь + эвристика)
 │
-├── data/                           ← JSON-данные для рантайма
+├── data/                           ← JSON-данные (рантайм + derived-registry входы; ~16 файлов, список иллюстративный)
 │   ├── glossary.json               ← термины глоссария
 │   ├── search-manifest.json        ← индекс поиска
 │   ├── series.json                 ← карточки серий
-│   └── strategic-map-antisovetov.json  ← MAP_DATA для 20-antisovetov-pastoru
+│   ├── strategic-map-antisovetov.json  ← MAP_DATA для 20-antisovetov-pastoru
+│   ├── route-profiles/*.json       ← профиль каждого route (вход derived-registry, ~54 файла)
+│   └── editorial-metadata.json     ← замороженный baseline editorial-проекций (freeze-audit)
 │
 ├── articles/                       ← статьи (каждая = папка с index.html)
 │   ├── index.html                  ← каталог всех статей
@@ -432,7 +447,7 @@ CSS-фичи, не поддерживаемые в этих версиях (`col
 
 ### Запрещено создавать новые JS-файлы в `js/`
 
-Все 11 файлов — фиксированный набор. Новая логика идёт **внутрь существующего** файла по теме (если ничего не подходит — в `enhancements.js`).
+Все 14 файлов — фиксированный набор (11 базовых + 3 vosk-TTS). Новая логика идёт **внутрь существующего** файла по теме (если ничего не подходит — в `enhancements.js`).
 
 ---
 
@@ -750,7 +765,7 @@ CSS-фичи, не поддерживаемые в этих версиях (`col
 ### 5.3 Обязательные проверки перед коммитом
 
 ```bash
-# Синтаксис JS — все 11 файлов + sw.js + scripts
+# Синтаксис JS — все 14 файлов + sw.js + scripts
 node --check js/*.js
 node --check scripts/*.js
 node --check sw.js
