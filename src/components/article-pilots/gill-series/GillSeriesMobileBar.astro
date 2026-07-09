@@ -56,7 +56,11 @@ const page = GILL_PAGE_DATA[pageId];
 </div>
 
 <div class="mobile-bottom-bar" data-fc-root data-fc-variant="gill" data-gill-mobile-bar>
-  <button type="button" class="bar-progress dual-progress" id="gbs2DualProgress" aria-label="Статья 0%, серия 0%">
+  <!-- Progress is a read-only indicator, not a control: it never had a click
+       handler (the controller only refreshes its aria-label on scroll), so it
+       must not announce as an interactive button. role="img" + live aria-label
+       gives screen readers the two progress values without implying an action. -->
+  <div class="bar-progress dual-progress" id="gbs2DualProgress" role="img" aria-label="Статья 0%, серия 0%">
     <svg viewBox="0 0 36 36" aria-hidden="true">
       <circle class="bar-series-track" cx="18" cy="18" r="16"></circle>
       <circle class="bar-series-fill" id="gbs2MobSeriesRing" cx="18" cy="18" r="16" stroke-dasharray="100.53" stroke-dashoffset="100.53"></circle>
@@ -64,7 +68,7 @@ const page = GILL_PAGE_DATA[pageId];
       <circle class="bar-progress-fill" id="gbs2MobArticleRing" cx="18" cy="18" r="12.5" stroke-dasharray="78.54" stroke-dashoffset="78.54"></circle>
     </svg>
     <span class="bar-progress-text" id="gbs2MobPct">0%</span>
-  </button>
+  </div>
 
   <button
     type="button"
