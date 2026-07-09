@@ -2,7 +2,10 @@
   "route": "/about/",
   "profiledAt": "2026-06-22",
   "migrationLane": "shell-first",
-  "currentStatus": "native-shadow (Phase 6, AGENTS-r249)",
+  "currentStatus": "production-dist",
+  "source": "src/pages/about/index.astro",
+  "migrationMode": "strict-native",
+  "statusDetail": "native-shadow (Phase 6, AGENTS-r249) → production-dist via AboutPageChrome + AboutMain",
   "migrationHistory": [
     { "phase": "full-document-shadow", "version": "r247", "description": "loadLegacyFullDocument('about/index.html')" },
     { "phase": "native-shadow", "version": "r249", "description": "head verbatim + body segments + AboutArticle + AboutAccuracyBlock as named Astro components" },

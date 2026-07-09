@@ -2,7 +2,10 @@
   "route": "/izbrannoe/",
   "profiledAt": "2026-06-26",
   "migrationLane": "native",
-  "currentStatus": "native Astro (Favorites personal collection page)",
+  "currentStatus": "production-dist",
+  "source": "src/pages/izbrannoe/index.astro",
+  "migrationMode": "strict-native",
+  "statusDetail": "native Astro (Favorites personal collection page)",
   "migrationHistory": [
     { "phase": "native", "version": "r260", "description": "src/pages/izbrannoe/index.astro — client-side favorites page reading gb-favorites localStorage, rendered via BaseLayout. noindex (personal data)." }
   ],
