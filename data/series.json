@@ -67,13 +67,20 @@
       },
       {
         "n": 4,
+        "slug": "dzhon-gill-chast-4-ekzeget",
+        "title": "Часть III. Экзегет",
+        "status": "published",
+        "readingTime": 71
+      },
+      {
+        "n": 5,
         "slug": "dzhon-gill-chast-3-nasledie",
-        "title": "Часть III. Наследие",
+        "title": "Часть IV. Наследие",
         "status": "published",
         "readingTime": 54
       },
       {
-        "n": 5,
+        "n": 6,
         "slug": "dzhon-gill-spravochnik",
         "title": "Справочник по Гиллу",
         "status": "published",

@@ -54,7 +54,7 @@ while ((m = seriesItemRe.exec(gillTS)) !== null) {
     readingTimeMin: parseInt(m[7],10)||0
   });
 }
-if (seriesItems.length !== 5) bad('GILL_SERIES_ITEMS count', `expected 5, got ${seriesItems.length}`);
+if (seriesItems.length !== 6) bad('GILL_SERIES_ITEMS count', `expected 6, got ${seriesItems.length}`);
 else ok(`GILL_SERIES_ITEMS parsed: ${seriesItems.length} items`);
 
 // Extract GILL_PAGE_DATA progress fields
@@ -76,7 +76,7 @@ function countCurrentToc(pageId){
   // naive: find partToc: [ ... ] block for given page
   const pageStart = gillTS.indexOf(`${pageId}: {`);
   if (pageStart === -1) return -1;
-  const nextPageIdx = ['context','part1','part2','part3','spravochnik']
+  const nextPageIdx = ['context','part1','part2','part3','part4','spravochnik']
     .map(id => gillTS.indexOf(`\n  ${id}: {`, pageStart+1))
     .filter(x=>x>pageStart)
     .sort((a,b)=>a-b)[0] || gillTS.length;
@@ -102,6 +102,7 @@ const mdxMap = {
   part1: 'src/content/articles/dzhon-gill-chast-1-chelovek.mdx',
   part2: 'src/content/articles/dzhon-gill-chast-2-uchenyi.mdx',
   part3: 'src/content/articles/dzhon-gill-chast-3-nasledie.mdx',
+  part4: 'src/content/articles/dzhon-gill-chast-4-ekzeget.mdx',
   spravochnik: 'src/content/articles/dzhon-gill-spravochnik.mdx'
 };
 seriesItems.forEach(item => {
@@ -126,6 +127,7 @@ if (seriesJson && seriesJson['dzhon-gill']) {
     part1: 'dzhon-gill-chast-1-chelovek',
     part2: 'dzhon-gill-chast-2-uchenyi',
     part3: 'dzhon-gill-chast-3-nasledie',
+    part4: 'dzhon-gill-chast-4-ekzeget',
     spravochnik: 'dzhon-gill-spravochnik'
   };
   seriesItems.forEach(item => {
@@ -170,19 +172,22 @@ if (searchManifest && Array.isArray(searchManifest.items)) {
 }
 
 // 6. Progress coherence
-const expectedOrder = ['context','part1','part2','part3','spravochnik'];
+// Reading order (2026-07-09 display reorder): exegete (part4) now displays as
+// «Часть III» and precedes legacy (part3) which displays as «Часть IV».
+// Internal ids/slugs unchanged; only display order/numbering swapped.
+const expectedOrder = ['context','part1','part2','part4','part3','spravochnik'];
 let cumulative = 0;
 expectedOrder.forEach((pid, idx) => {
   const pd = pageData[pid];
   if (!pd) { bad('pageData missing', pid); return; }
-  if (pd.totalMin !== 149) bad('totalMin must be 149', `${pid}: got ${pd.totalMin}`);
-  else ok(`totalMin OK ${pid}: 149`);
+  if (pd.totalMin !== 220) bad('totalMin must be 220', `${pid}: got ${pd.totalMin}`);
+  else ok(`totalMin OK ${pid}: 220`);
   if (pd.doneMin !== cumulative) bad('progress doneMin drift', `${pid}: expected done=${cumulative}, got ${pd.doneMin}`);
   else ok(`progress doneMin OK ${pid}: ${pd.doneMin}`);
   cumulative += pd.partMin;
 });
-if (cumulative !== 149) bad('cumulative progress sum != 149', `got ${cumulative}`);
-else ok(`cumulative progress sum = 149 ✅`);
+if (cumulative !== 220) bad('cumulative progress sum != 220', `got ${cumulative}`);
+else ok(`cumulative progress sum = 220 ✅`);
 
 // Verify partMin matches series readingTime
 expectedOrder.forEach(pid => {
@@ -215,7 +220,8 @@ const expectedMarks = [
   {id:'context', kind:'label', value:'Введение'},
   {id:'part1', kind:'roman', value:'I'},
   {id:'part2', kind:'roman', value:'II'},
-  {id:'part3', kind:'roman', value:'III'},
+  {id:'part4', kind:'roman', value:'III'},
+  {id:'part3', kind:'roman', value:'IV'},
   {id:'spravochnik', kind:'label', value:'Справ.'}
 ];
 expectedMarks.forEach(exp => {

@@ -4325,6 +4325,7 @@ const JS_SIZE_FLOORS = {
     'articles/dzhon-gill-chast-1-chelovek/index.html': 5500,
     'articles/dzhon-gill-chast-2-uchenyi/index.html': 6500,
     'articles/dzhon-gill-chast-3-nasledie/index.html': 9000,
+    'articles/dzhon-gill-chast-4-ekzeget/index.html': 3600,
     'articles/dzhon-gill-istoricheskiy-kontekst/index.html': 2800,
     'articles/dzhon-gill-spravochnik/index.html': 1500,
     'articles/hermenevticheskaya-otsenka-hristotsentrichnoy-germenevtiki/index.html': 9000,
