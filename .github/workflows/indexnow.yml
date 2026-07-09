@@ -1,4 +1,4 @@
-name: IndexNow — Notify Search Engines
+name: Metadata & IndexNow Readiness
 
 on:
   workflow_dispatch:
@@ -6,90 +6,80 @@ on:
   push:
     branches: [main]
     paths:
-      - 'articles/**'
-      - 'nagornaya/**'
-      - 'about/**'
-      - 'pastor-series/**'
-      - 'konfessii/**'
-      - 'karty/**'
-      - 'map/**'
-      - 'biografii/**'
-      - 'hard-texts/**'
-      - 'baptisty-rossii/**'
-      - 'index.html'
-      - '404.html'
+      - 'src/**'
+      - 'data/**'
+      - 'scripts/editorial-metadata-*.js'
+      - 'scripts/lib/editorial-metadata.js'
+      - 'scripts/update-meta.js'
+      - 'scripts/cache-bust.js'
       - 'css/**'
       - 'js/**'
-      - 'data/**'
-      - 'sw.js'
-      - 'manifest.json'
-      - 'robots.txt'
       - 'sitemap.xml'
       - 'feed.xml'
-      # Astro migration: source pages/content/layouts must also trigger indexing.
-      - 'src/**'
       - 'astro.config.mjs'
+      - 'package.json'
+      - 'package-lock.json'
 
 permissions:
-  contents: write
+  contents: read
 
 concurrency:
-  group: indexnow-meta-push
-  cancel-in-progress: false
+  group: metadata-indexnow-readiness-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
-  notify:
+  readiness:
     runs-on: ubuntu-latest
+    timeout-minutes: 40
     permissions:
-      contents: write
+      contents: read
 
     steps:
-      - name: Checkout
+      - name: Checkout exact head
         uses: actions/checkout@v4
         with:
-          token: ${{ secrets.ARENA_AGENT || secrets.GITHUB_TOKEN }}
-          fetch-depth: 0          # нужна полная история для gitDate()
+          fetch-depth: 0
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '22'
-          cache: 'npm'
+          node-version: '22.12.0'
+          cache: npm
 
       - name: Install dependencies
         run: npm ci
 
-      - name: Update metadata
-        run: node scripts/update-meta.js
-        env:
-          BEFORE_SHA: ${{ github.event.before }}
-          AFTER_SHA:  ${{ github.event.after }}
+      - name: Validate registry structure
+        run: node scripts/editorial-metadata-registry.js --check
 
-      - name: Cache bust assets
+      - name: Check source asset revisions without writing
         run: node scripts/cache-bust.js
+
+      - name: Build production-like dist
+        run: npm run strangler:build:production-like
+
+      - name: Verify frozen editorial projections
+        shell: bash
+        run: |
+          mkdir -p reports
+          set -o pipefail
+          node scripts/editorial-metadata-freeze-audit.js 2>&1 \
+            | tee reports/editorial-metadata-freeze.log
 
       - name: Static publication gates
         run: npm run validate:static-publication:light
 
-      - name: Commit updated metadata
-        run: |
-          git config user.name  "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
-          if ! git diff --quiet || ! git diff --staged --quiet; then
-            git add -A
-            git commit -m "chore: auto-update meta, cache-bust [skip ci]"
-          fi
-          _pushed=false
-          for _attempt in 1 2 3; do
-            if git push; then
-              _pushed=true
-              break
-            fi
-            sleep 5
-          done
-          if [ "$_pushed" = false ]; then
-            echo "::error::git push failed after 3 attempts"
-            exit 1
-          fi
-      # Note (NEW-53 fix): IndexNow submission to Bing and Yandex has been moved to
-      # .github/workflows/deploy.yml to execute AFTER successful GitHub Pages deploy.
+      - name: Ensure validation left tracked sources clean
+        run: git diff --exit-code
+
+      - name: Upload metadata diagnostics
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: editorial-metadata-${{ github.run_id }}
+          path: reports/editorial-metadata-*.log
+          if-no-files-found: ignore
+          retention-days: 7
+
+      # IndexNow submission itself remains in deploy.yml and runs only after a
+      # successful GitHub Pages deploy. This workflow validates readiness only.
