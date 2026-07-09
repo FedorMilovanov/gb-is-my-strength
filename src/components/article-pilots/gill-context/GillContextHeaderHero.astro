@@ -1,9 +1,15 @@
 ---
+import GillSeriesHero from '../gill-series/GillSeriesHero.astro';
+// Strict-native parity contract: class="gbs2-hero" is rendered by GillSeriesHero.
 ---
-<figure class="gbs2-hero" id="gbs2Hero" data-n="intro">
-  <img src="../../images/og-dzhon-gill-istoricheskiy-kontekst-600w.webp" alt="Англия XVIII века — исторический мир Джона Гилла" width="600" height="315" loading="lazy" decoding="async">
-  <figcaption class="gbs2-hero-cap"><i aria-hidden="true"></i>Серия «Джон Гилл» · Введение</figcaption>
-</figure>
+<GillSeriesHero
+  src="../../images/og-dzhon-gill-istoricheskiy-kontekst-600w.webp"
+  srcset="../../images/og-dzhon-gill-istoricheskiy-kontekst-600w.webp 600w, ../../images/og-dzhon-gill-istoricheskiy-kontekst.webp 1200w"
+  alt="Англия XVIII века — исторический мир Джона Гилла"
+  caption="Серия «Джон Гилл» · Введение"
+  width={1200}
+  height={630}
+/>
 <header class="article-header gbs2-head">
   <p class="reveal section-label">Биографии служителей · Контекст</p>
   <h1>Джон Гилл: исторический контекст</h1>

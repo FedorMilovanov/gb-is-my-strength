@@ -1,8 +1,8 @@
 <div id="gill-part3-restored-figures">
   <figure
     id="gill-part3-spurgeon-figure"
-    class="article-img wide reveal"
-    data-gill-restored-figure="spurgeon"
+    class="article-img wide gill-figure--spurgeon reveal"
+    data-gill-canonical-figure="spurgeon"
   >
     <picture>
       <source
@@ -20,33 +20,34 @@
       />
     </picture>
     <figcaption>
-      Символическая иллюстрация преемственности одной лондонской баптистской общины: от служения Джона Гилла к эпохе Чарльза Сперджена.
+      Символическая иллюстрация преемственности одной лондонской баптистской общины: от служения Джона Гилла к эпохе Чарльза Сперджена. Это образ связи поколений, а не документальный вид Метрополитен-Табернакля.
     </figcaption>
   </figure>
 
   <figure
     id="gill-part3-bunhill-figure"
-    class="article-img reveal"
-    data-gill-restored-figure="bunhill"
-    style="max-width: 460px; margin-inline: auto;"
+    class="article-img gill-figure--bunhill reveal"
+    data-gill-canonical-figure="bunhill"
   >
-    <picture>
-      <source
-        srcset="../../images/gill-bunhill-fields-600w.webp 600w, ../../images/gill-bunhill-fields-900w.webp 900w"
-        sizes="(max-width: 520px) 92vw, 460px"
-        type="image/webp"
-      />
-      <img
-        src="../../images/gill-bunhill-fields-900w.webp"
-        alt="Художественная реконструкция похоронной процессии на кладбище Банхилл-Филдс"
-        loading="lazy"
-        decoding="async"
-        width="1024"
-        height="1536"
-      />
-    </picture>
+    <a class="gill-figure-zoom" href="../../images/gill-bunhill-fields.jpg" target="_blank" rel="noopener" aria-label="Открыть иллюстрацию Банхилл-Филдс в полном размере">
+      <picture>
+        <source
+          srcset="../../images/gill-bunhill-fields-600w.webp 600w, ../../images/gill-bunhill-fields-900w.webp 900w"
+          sizes="(max-width: 520px) 78vw, 460px"
+          type="image/webp"
+        />
+        <img
+          src="../../images/gill-bunhill-fields-900w.webp"
+          alt="Художественная реконструкция похоронной процессии на кладбище Банхилл-Филдс"
+          loading="lazy"
+          decoding="async"
+          width="1024"
+          height="1536"
+        />
+      </picture>
+    </a>
     <figcaption>
-      Художественная реконструкция похоронной процессии английских диссентеров XVIII века. Джон Гилл был погребён на Банхилл-Филдс.
+      Художественная реконструкция похоронной процессии английских диссентеров XVIII века. Джон Гилл был погребён на Банхилл-Филдс; изображение не является документальным свидетельством его похорон.
     </figcaption>
   </figure>
 </div>
@@ -58,43 +59,49 @@
 
     if (!article || !fallback) return;
 
-    const spurgeonFigure = document.getElementById('gill-part3-spurgeon-figure');
-    const spurgeonAlreadyPresent = document.querySelector(
-      'img[src*="gill-spurgeon-succession"]'
-    );
+    const removeLegacyCopies = (fragment, canonicalFigure) => {
+      document.querySelectorAll(`img[src*="${fragment}"]`).forEach((image) => {
+        if (canonicalFigure?.contains(image)) return;
+        const legacyFigure = image.closest('figure');
+        if (legacyFigure) legacyFigure.remove();
+        else image.remove();
+      });
+    };
 
-    if (spurgeonAlreadyPresent && !spurgeonFigure?.contains(spurgeonAlreadyPresent)) {
-      spurgeonFigure?.remove();
-    } else {
-      const spurgeonHeading = article.querySelector('#sec-spurgeon-legacy');
-
-      if (spurgeonFigure && spurgeonHeading) {
-        const firstParagraph = spurgeonHeading.nextElementSibling;
-        const foundationParagraph = firstParagraph?.matches('p')
-          ? firstParagraph.nextElementSibling
-          : null;
-        const anchor = foundationParagraph?.matches('p')
-          ? foundationParagraph
-          : firstParagraph;
-
-        if (anchor) anchor.insertAdjacentElement('afterend', spurgeonFigure);
+    const mapImage = article.querySelector('img[src*="gill-transatlantic-map"]');
+    const mapFigure = mapImage?.closest('figure');
+    if (mapImage && mapFigure) {
+      mapImage.alt = 'Символическая карта трансатлантического распространения баптистского влияния Гилла из Лондона в Северную Америку';
+      const mapCaption = mapFigure.querySelector('figcaption');
+      if (mapCaption) {
+        mapCaption.textContent = 'Символическая карта трансатлантического влияния трудов и церковных связей Гилла. Линия показывает направление распространения, а не документально восстановленный маршрут одной поездки.';
       }
+      const mapSource = mapFigure.querySelector('source[sizes]');
+      if (mapSource) mapSource.setAttribute('sizes', '(max-width: 640px) 92vw, 760px');
+    }
+
+    const spurgeonFigure = document.getElementById('gill-part3-spurgeon-figure');
+    removeLegacyCopies('gill-spurgeon-succession', spurgeonFigure);
+
+    const foundationParagraph = Array.from(article.querySelectorAll('p')).find((paragraph) => {
+      const text = paragraph.textContent || '';
+      return text.includes('16 августа 1859 года') && text.includes('Метрополитен-Табернакля');
+    });
+
+    if (spurgeonFigure && foundationParagraph) {
+      foundationParagraph.insertAdjacentElement('afterend', spurgeonFigure);
     }
 
     const bunhillFigure = document.getElementById('gill-part3-bunhill-figure');
-    const bunhillAlreadyPresent = document.querySelector('img[src*="gill-bunhill-fields"]');
+    removeLegacyCopies('gill-bunhill-fields', bunhillFigure);
 
-    if (bunhillAlreadyPresent && !bunhillFigure?.contains(bunhillAlreadyPresent)) {
-      bunhillFigure?.remove();
-    } else {
-      const burialParagraph = Array.from(article.querySelectorAll('p')).find((paragraph) => {
-        const text = paragraph.textContent || '';
-        return text.includes('Его похоронили на') && text.includes('Банхилл-Филдс');
-      });
+    const burialParagraph = Array.from(article.querySelectorAll('p')).find((paragraph) => {
+      const text = paragraph.textContent || '';
+      return text.includes('Его похоронили на') && text.includes('Банхилл-Филдс');
+    });
 
-      if (bunhillFigure && burialParagraph) {
-        burialParagraph.insertAdjacentElement('afterend', bunhillFigure);
-      }
+    if (bunhillFigure && burialParagraph) {
+      burialParagraph.insertAdjacentElement('afterend', bunhillFigure);
     }
 
     if (!fallback.children.length) fallback.remove();
