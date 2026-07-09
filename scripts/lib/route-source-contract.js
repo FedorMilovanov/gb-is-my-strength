@@ -23,16 +23,15 @@ const METADATA_SOURCE_MODES = new Set([
   'app-manifest',
 ]);
 const REFERENCE_STATUSES = new Set(['canonical', 'reference-only', 'runtime-required', 'absent']);
-const LEGACY_RUNTIME_MARKERS = [
-  'loadLegacyFullDocument',
-  'headHtml',
-  'bodyHtml',
-  'bodyAttributes',
-  'set:html',
-  '?raw',
-  '/_legacy/',
-  "from '_legacy",
-  'from "_legacy',
+const TRAVERSABLE_EXTENSIONS = new Set(['.astro', '.mdx', '.js', '.mjs', '.cjs', '.ts', '.tsx', '.jsx']);
+const MAX_IMPORT_GRAPH_FILES = 1200;
+
+const LEGACY_SOURCE_PATTERNS = [
+  ['loadLegacyFullDocument', /\bloadLegacyFullDocument\s*\(/],
+  ['headHtml', /\bheadHtml\b/],
+  ['bodyHtml', /\bbodyHtml\b/],
+  ['bodyAttributes', /\bbodyAttributes\b/],
+  ['set:html', /\bset:html\s*=/],
 ];
 
 function readJson(file) {
@@ -69,13 +68,14 @@ function resolveImport(importerRel, specifier) {
     return null;
   }
 
+  const cleanSpecifier = specifier.replace(/[?#].*$/, '');
   let base;
-  if (specifier.startsWith('@/')) {
-    base = path.join(ROOT, 'src', specifier.slice(2));
-  } else if (specifier.startsWith('/')) {
-    base = path.join(ROOT, specifier.replace(/^\/+/, ''));
+  if (cleanSpecifier.startsWith('@/')) {
+    base = path.join(ROOT, 'src', cleanSpecifier.slice(2));
+  } else if (cleanSpecifier.startsWith('/')) {
+    base = path.join(ROOT, cleanSpecifier.replace(/^\/+/, ''));
   } else {
-    base = path.resolve(path.dirname(path.join(ROOT, importerRel)), specifier);
+    base = path.resolve(path.dirname(path.join(ROOT, importerRel)), cleanSpecifier);
   }
 
   const candidates = [
@@ -83,11 +83,17 @@ function resolveImport(importerRel, specifier) {
     `${base}.astro`,
     `${base}.mdx`,
     `${base}.ts`,
+    `${base}.tsx`,
     `${base}.js`,
+    `${base}.jsx`,
+    `${base}.mjs`,
+    `${base}.cjs`,
     path.join(base, 'index.astro'),
     path.join(base, 'index.mdx'),
     path.join(base, 'index.ts'),
+    path.join(base, 'index.tsx'),
     path.join(base, 'index.js'),
+    path.join(base, 'index.jsx'),
   ];
 
   const found = candidates.find((candidate) => fs.existsSync(candidate));
@@ -95,51 +101,122 @@ function resolveImport(importerRel, specifier) {
 }
 
 function parseImports(source, importerRel) {
-  const imports = [];
-  const re = /import\s+(?:[\s\S]*?\s+from\s+)?['"]([^'"]+)['"]/g;
-  let match;
-  while ((match = re.exec(source))) {
-    const specifier = match[1];
-    imports.push({
-      specifier,
-      resolved: resolveImport(importerRel, specifier),
-    });
+  const specifiers = new Set();
+  const patterns = [
+    /\bimport\s+(?:type\s+)?(?:[\w*$\s{},]+?\s+from\s+)?['"]([^'"]+)['"]/g,
+    /\bimport\s*\(\s*['"]([^'"]+)['"]\s*\)/g,
+    /\bexport\s+(?:type\s+)?(?:\*|{[^}]*})\s+from\s+['"]([^'"]+)['"]/g,
+  ];
+
+  for (const re of patterns) {
+    let match;
+    while ((match = re.exec(source))) specifiers.add(match[1]);
   }
-  return imports;
+
+  return [...specifiers].map((specifier) => ({
+    importer: importerRel,
+    specifier,
+    resolved: resolveImport(importerRel, specifier),
+  }));
+}
+
+function stripComments(source) {
+  return String(source || '')
+    .replace(/<!--[\s\S]*?-->/g, ' ')
+    .replace(/\/\*[\s\S]*?\*\//g, ' ')
+    .replace(/(^|[^:])\/\/.*$/gm, '$1 ');
+}
+
+function sourceLegacyMarkers(source, fileRel) {
+  const clean = stripComments(source);
+  const markers = [];
+  for (const [name, re] of LEGACY_SOURCE_PATTERNS) {
+    if (re.test(clean)) markers.push({ file: fileRel, marker: name });
+  }
+  return markers;
+}
+
+function importLegacyMarkers(importItem) {
+  const markers = [];
+  if (/[?&]raw(?:[=&]|$)/.test(importItem.specifier)) {
+    markers.push({ file: importItem.importer, marker: `raw import ${importItem.specifier}` });
+  }
+  if (/(?:^|\/)\_legacy(?:\/|$)/.test(importItem.specifier) || /(?:^|\/)\_legacy(?:\/|$)/.test(importItem.resolved || '')) {
+    markers.push({ file: importItem.importer, marker: `legacy import ${importItem.specifier}` });
+  }
+  return markers;
 }
 
 function inspectRouteSource(sourceRel) {
-  const abs = path.join(ROOT, sourceRel);
-  if (!fs.existsSync(abs)) {
+  const entryAbs = path.join(ROOT, sourceRel);
+  if (!fs.existsSync(entryAbs)) {
     return {
       exists: false,
       source: '',
+      files: [],
       imports: [],
       localImports: [],
+      unresolvedLocalImports: [],
       mdxImports: [],
       astroImports: [],
       headImports: [],
       legacyMarkers: [],
+      graphTruncated: false,
     };
   }
 
-  const source = fs.readFileSync(abs, 'utf8');
-  const imports = parseImports(source, sourceRel);
+  const queue = [sourceRel];
+  const visited = new Set();
+  const files = [];
+  const imports = [];
+  const legacyMarkers = [];
+  let entrySource = '';
+  let graphTruncated = false;
+
+  while (queue.length) {
+    const fileRel = queue.shift();
+    if (visited.has(fileRel)) continue;
+    if (visited.size >= MAX_IMPORT_GRAPH_FILES) {
+      graphTruncated = true;
+      break;
+    }
+
+    const abs = path.join(ROOT, fileRel);
+    if (!fs.existsSync(abs) || !fs.statSync(abs).isFile()) continue;
+    visited.add(fileRel);
+
+    const source = fs.readFileSync(abs, 'utf8');
+    if (fileRel === sourceRel) entrySource = source;
+    files.push(fileRel);
+    legacyMarkers.push(...sourceLegacyMarkers(source, fileRel));
+
+    for (const item of parseImports(source, fileRel)) {
+      imports.push(item);
+      legacyMarkers.push(...importLegacyMarkers(item));
+      if (!item.resolved || !existsRel(item.resolved)) continue;
+      if (!TRAVERSABLE_EXTENSIONS.has(path.extname(item.resolved).toLowerCase())) continue;
+      if (!visited.has(item.resolved)) queue.push(item.resolved);
+    }
+  }
+
   const localImports = imports.filter((item) => item.resolved);
+  const unresolvedLocalImports = localImports.filter((item) => !existsRel(item.resolved));
   const mdxImports = localImports.filter((item) => /\.mdx$/i.test(item.resolved || item.specifier));
   const astroImports = localImports.filter((item) => /\.astro$/i.test(item.resolved || item.specifier));
   const headImports = astroImports.filter((item) => /(?:PageHead|Head)\.astro$/i.test(item.resolved || ''));
-  const legacyMarkers = LEGACY_RUNTIME_MARKERS.filter((marker) => source.includes(marker));
 
   return {
     exists: true,
-    source,
+    source: entrySource,
+    files,
     imports,
     localImports,
+    unresolvedLocalImports,
     mdxImports,
     astroImports,
     headImports,
     legacyMarkers,
+    graphTruncated,
   };
 }
 
@@ -207,9 +284,19 @@ function validateRecord(record, options = {}) {
     issue(`renderSource (${profile.renderSource}) must equal Astro route entry (${owner.source})`);
   }
   if (!inspection.exists) issue(`render source not found: ${sourceRel}`);
+  if (inspection.graphTruncated) issue(`import graph exceeded ${MAX_IMPORT_GRAPH_FILES} files`);
+  if (inspection.unresolvedLocalImports.length) {
+    const sample = inspection.unresolvedLocalImports.slice(0, 8)
+      .map((item) => `${item.importer} -> ${item.specifier}`)
+      .join(', ');
+    issue(`unresolved local import(s): ${sample}`);
+  }
 
   if (isStrictNative && inspection.legacyMarkers.length) {
-    issue(`strict-native source contains legacy runtime marker(s): ${inspection.legacyMarkers.join(', ')}`);
+    const markers = inspection.legacyMarkers.slice(0, 12)
+      .map((item) => `${item.file}: ${item.marker}`)
+      .join(', ');
+    issue(`strict-native import graph contains legacy runtime marker(s): ${markers}`);
   }
 
   if (isStrictNative && isArticle) {
@@ -248,13 +335,13 @@ function validateRecord(record, options = {}) {
     }
 
     if (profile.mdxStatus === 'canonical' && !inspection.mdxImports.length) {
-      issue('mdxStatus=canonical but public route does not import MDX');
+      issue('mdxStatus=canonical but public route import graph does not include MDX');
     }
     if (profile.mdxStatus === 'reference-only') {
       if (!profile.mdxPath) issue('mdxStatus=reference-only requires mdxPath');
       else if (!existsRel(profile.mdxPath)) issue(`reference MDX not found: ${profile.mdxPath}`);
       if (inspection.mdxImports.some((item) => item.resolved === profile.mdxPath)) {
-        issue('reference-only MDX is imported by the public route');
+        issue('reference-only MDX is imported by the public route graph');
       }
     }
 
@@ -278,7 +365,7 @@ module.exports = {
   CONTENT_SOURCE_MODES,
   METADATA_SOURCE_MODES,
   REFERENCE_STATUSES,
-  LEGACY_RUNTIME_MARKERS,
+  TRAVERSABLE_EXTENSIONS,
   existsRel,
   findProfileFile,
   inspectRouteSource,
