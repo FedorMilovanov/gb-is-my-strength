@@ -45,6 +45,12 @@
       "risk": 2,
       "status": "production-dist"
     },
+    "/articles/dzhon-gill-chast-4-bogoslovie/": {
+      "owner": "astro",
+      "source": "src/pages/articles/dzhon-gill-chast-4-bogoslovie/index.astro",
+      "risk": 2,
+      "status": "production-dist"
+    },
     "/articles/dzhon-gill-istoricheskiy-kontekst/": {
       "owner": "astro",
       "source": "src/pages/articles/dzhon-gill-istoricheskiy-kontekst/index.astro",

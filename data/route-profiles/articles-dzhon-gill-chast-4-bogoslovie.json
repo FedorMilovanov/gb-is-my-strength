@@ -1,0 +1,27 @@
+{
+  "route": "/articles/dzhon-gill-chast-4-bogoslovie/",
+  "profiledAt": "2026-07-09",
+  "migrationLane": "content",
+  "routeType": "article",
+  "section": "articles",
+  "slug": "dzhon-gill-chast-4-bogoslovie",
+  "currentStatus": "production-dist",
+  "source": "src/pages/articles/dzhon-gill-chast-4-bogoslovie/index.astro",
+  "risk": 2,
+  "sourceContractVersion": 1,
+  "contentSourceMode": "astro-native-entry",
+  "renderSource": "src/pages/articles/dzhon-gill-chast-4-bogoslovie/index.astro",
+  "metadataSourceMode": "astro-head-import",
+  "hasMDX": false,
+  "mdxStatus": "reference-only",
+  "mdxPath": "src/content/articles/dzhon-gill-chast-4-bogoslovie.mdx",
+  "legacyStatus": "reference-only",
+  "legacyPath": "articles/dzhon-gill-chast-4-bogoslovie/index.html",
+  "visualParity": {
+    "desktop": 0,
+    "mobile": 0
+  },
+  "cssPilot": null,
+  "scope": "excluded-semantic-lane",
+  "migrationMode": "strict-native"
+}
