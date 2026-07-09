@@ -68,6 +68,18 @@
       });
     };
 
+    const mapImage = article.querySelector('img[src*="gill-transatlantic-map"]');
+    const mapFigure = mapImage?.closest('figure');
+    if (mapImage && mapFigure) {
+      mapImage.alt = 'Символическая карта трансатлантического распространения баптистского влияния Гилла из Лондона в Северную Америку';
+      const mapCaption = mapFigure.querySelector('figcaption');
+      if (mapCaption) {
+        mapCaption.textContent = 'Символическая карта трансатлантического влияния трудов и церковных связей Гилла. Линия показывает направление распространения, а не документально восстановленный маршрут одной поездки.';
+      }
+      const mapSource = mapFigure.querySelector('source[sizes]');
+      if (mapSource) mapSource.setAttribute('sizes', '(max-width: 640px) 92vw, 760px');
+    }
+
     const spurgeonFigure = document.getElementById('gill-part3-spurgeon-figure');
     removeLegacyCopies('gill-spurgeon-succession', spurgeonFigure);
 
