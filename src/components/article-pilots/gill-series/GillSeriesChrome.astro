@@ -14,6 +14,15 @@ const { pageId } = Astro.props;
 const page = GILL_PAGE_DATA[pageId];
 ---
 <GillSeriesImagePremium />
+<style is:global>
+  /* Final calibration from the 390/768/1440 Playwright witness. */
+  @media (max-width: 640px) {
+    [data-gill-v16] .gbs2-hero-cap { font-size: 11px; }
+  }
+  @media (min-width: 64em) {
+    [data-gill-v16="context"] .gbs2-current-cover { --gbs2-cover-position: 100% 50%; }
+  }
+</style>
 <a class="skip-link" href="#main-content">Перейти к содержимому</a>
 
 <div class="gbs2-world" data-gill-v16={pageId}>
