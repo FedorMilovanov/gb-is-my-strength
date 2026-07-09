@@ -102,7 +102,7 @@ const mdxMap = {
   part1: 'src/content/articles/dzhon-gill-chast-1-chelovek.mdx',
   part2: 'src/content/articles/dzhon-gill-chast-2-uchenyi.mdx',
   part3: 'src/content/articles/dzhon-gill-chast-3-nasledie.mdx',
-  part4: 'src/content/articles/dzhon-gill-chast-4-bogoslovie.mdx',
+  part4: 'src/content/articles/dzhon-gill-chast-4-ekzeget.mdx',
   spravochnik: 'src/content/articles/dzhon-gill-spravochnik.mdx'
 };
 seriesItems.forEach(item => {
@@ -127,7 +127,7 @@ if (seriesJson && seriesJson['dzhon-gill']) {
     part1: 'dzhon-gill-chast-1-chelovek',
     part2: 'dzhon-gill-chast-2-uchenyi',
     part3: 'dzhon-gill-chast-3-nasledie',
-    part4: 'dzhon-gill-chast-4-bogoslovie',
+    part4: 'dzhon-gill-chast-4-ekzeget',
     spravochnik: 'dzhon-gill-spravochnik'
   };
   seriesItems.forEach(item => {

@@ -45,9 +45,9 @@
       "risk": 2,
       "status": "production-dist"
     },
-    "/articles/dzhon-gill-chast-4-bogoslovie/": {
+    "/articles/dzhon-gill-chast-4-ekzeget/": {
       "owner": "astro",
-      "source": "src/pages/articles/dzhon-gill-chast-4-bogoslovie/index.astro",
+      "source": "src/pages/articles/dzhon-gill-chast-4-ekzeget/index.astro",
       "risk": 2,
       "status": "production-dist"
     },

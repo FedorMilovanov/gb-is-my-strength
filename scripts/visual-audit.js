@@ -29,7 +29,7 @@ const URLS = [
   '/articles/dzhon-gill-chast-1-chelovek/',
   '/articles/dzhon-gill-chast-2-uchenyi/',
   '/articles/dzhon-gill-chast-3-nasledie/',
-  '/articles/dzhon-gill-chast-4-bogoslovie/',
+  '/articles/dzhon-gill-chast-4-ekzeget/',
   '/articles/dzhon-gill-spravochnik/',
   '/articles/hermenevticheskaya-otsenka-hristotsentrichnoy-germenevtiki/',
   '/articles/kod-da-vinchi/',

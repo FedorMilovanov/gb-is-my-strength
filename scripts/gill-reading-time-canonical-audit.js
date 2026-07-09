@@ -17,7 +17,7 @@ const GILL_ORDER = [
   'dzhon-gill-chast-1-chelovek',
   'dzhon-gill-chast-2-uchenyi',
   'dzhon-gill-chast-3-nasledie',
-  'dzhon-gill-chast-4-bogoslovie',
+  'dzhon-gill-chast-4-ekzeget',
   'dzhon-gill-spravochnik',
 ];
 const problems = [];
