@@ -125,5 +125,13 @@ auditComponent(
   6000,
   ['Уэсли','гиперкальвинизм','Сперджен','Америка','Банхилл-Филдс']
 );
+const part4Base = 'src/components/article-pilots/gill-part4';
+auditComponent(
+  'dzhon-gill-chast-4-ekzeget',
+  `${part4Base}/GillPart4ArticleBody.astro`,
+  [`${part4Base}/GillPart4ArticleBody.astro`],
+  3000,
+  ['Уитби','глашатая','супралапсарианскую','Йоханана']
+);
 if (problems.length){ console.log(`\n❌ Gill Pagefind body audit failed: ${problems.length} issue(s)`); process.exit(1); }
 console.log('\n✅ Gill Pagefind body audit passed');

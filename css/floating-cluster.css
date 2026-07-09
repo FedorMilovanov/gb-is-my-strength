@@ -905,6 +905,22 @@ html.dark [data-gill-v16] .gb-theme-toggle .theme-icon-moon{opacity:1;transform:
 [data-gill-v16] .gbs-rail-back:focus-visible{outline:2px solid var(--gb-accent);outline-offset:2px;border-radius:50%}
 [data-gill-v16] .gbs-rail-back svg{width:18px;height:18px;stroke:currentColor;fill:none;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
 
+/* Домой — второй значок топбара, тот же визуальный язык, что у back (owner:
+   "и значок домой еще можно"). */
+[data-gill-v16] .gbs-rail-home{
+  width:36px;height:36px;flex-shrink:0;
+  display:grid;place-items:center;
+  color:#eadac7;background:transparent;border:0;border-radius:50%;text-decoration:none;
+  transition:color .22s var(--gb-ease-out),transform .32s var(--gb-ease-spring);
+  cursor:pointer;
+}
+@media (hover: hover) and (pointer: fine) {
+  [data-gill-v16] .gbs-rail-home:hover{color:#f4e8d9;transform:scale(1.10)}
+}
+[data-gill-v16] .gbs-rail-home:active{transform:scale(.92);transition:transform .12s}
+[data-gill-v16] .gbs-rail-home:focus-visible{outline:2px solid var(--gb-accent);outline-offset:2px;border-radius:50%}
+[data-gill-v16] .gbs-rail-home svg{width:17px;height:17px;stroke:currentColor;fill:none;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
+
 [data-gill-v16] .gbs-rail-list{display:flex;flex-direction:column;gap:6px;margin-top:6px}
 [data-gill-v16] .gbs-rail-card{
   display:grid;
@@ -1087,7 +1103,13 @@ html.dark [data-gill-v16] .gb-theme-toggle .theme-icon-moon{opacity:1;transform:
 
 /* Pre-v16 GBS Gill desktop submenu restoration (2026-07-04). Historical witness: bcf6389f29ee0c89e9e96e7587e0226ecf251ae0. */
 @media (min-width:64em){
-[data-gill-v16] .gbs2-current{flex:1 1 auto;min-height:0;margin:2px 2px 4px;border:1px solid rgba(232,184,120,.20);border-radius:16px;background:rgba(255,255,255,.045);overflow:hidden;display:flex;flex-direction:column;box-shadow:0 10px 28px -14px rgba(0,0,0,.5),inset 0 1px 0 rgba(255,255,255,.05)}
+/* flex:0 (was 1 1 auto): the card grew to fill .gbs2-rmid's leftover
+   vertical space whenever a part's submenu was short (e.g. Часть II, 6
+   TOC rows) — a visible dead zone below "Проверь себя" inside the
+   "Сейчас читаете" card (owner screenshot). Sizing to content instead;
+   any true leftover space now sits below the next-parts list, not inside
+   the card. */
+[data-gill-v16] .gbs2-current{flex:0 1 auto;min-height:0;margin:2px 2px 4px;border:1px solid rgba(232,184,120,.20);border-radius:16px;background:rgba(255,255,255,.045);overflow:hidden;display:flex;flex-direction:column;box-shadow:0 10px 28px -14px rgba(0,0,0,.5),inset 0 1px 0 rgba(255,255,255,.05)}
 [data-gill-v16] .gbs2-current-cover{flex:0 0 auto;height:78px;background-image:linear-gradient(180deg,rgba(25,22,20,0),#16130f),var(--gbs2-cover,linear-gradient(135deg,var(--gbs2-accent),#2b1b13));background-size:cover;background-position:center;opacity:.62}
 [data-gill-v16] .gbs2-current-body{padding:12px 14px 0}[data-gill-v16] .gbs2-current-label{font-size:9px;font-weight:800;letter-spacing:.17em;text-transform:uppercase;color:var(--gbs2-accent2)}
 [data-gill-v16] .gbs2-current-title{margin:5px 0 0;font-family:var(--f-body,Lora,Georgia,serif);font-size:17px;font-weight:700;line-height:1.2;color:#fff}
@@ -2505,6 +2527,201 @@ html.dark .gb-roman {
   }
 }
 
+/* ============================================================
+   SCALABLE SERIES-RAIL (system-matrix-stack, 2026-07-09)
+   Premium collapsible / demand-scroll / TOC-disclosure layer for the Gill
+   rail. Desktop-only (≥64em; the rail is display:none below that). Purely
+   additive — the default (wide, TOC-expanded) look is unchanged. All motion
+   uses cubic-bezier(.22,1,.36,1) and is disabled under prefers-reduced-motion.
+   Introduced state: .rail-narrow (on .gbs2-world[data-gill-v16]),
+   .toc-collapsed (on .gbs2-current), .is-scrolling (on .gbs2-rmid),
+   .no-anim (one-frame first-paint guard on the world).
+   ============================================================ */
+
+/* --- Topbar collapse toggle (styled like .gbs-rail-back) --- */
+[data-gill-v16] .gbs-rail-collapse{
+  margin-left:auto;                /* pin to the right end of the wide topbar */
+  width:36px;height:36px;flex-shrink:0;
+  display:grid;place-items:center;
+  color:#eadac7;background:transparent;border:0;border-radius:50%;
+  transition:color .22s var(--gb-ease-out),transform .32s var(--gb-ease-spring);
+  cursor:pointer;transform-origin:center;
+}
+@media (hover: hover) and (pointer: fine){
+  [data-gill-v16] .gbs-rail-collapse:hover{color:#f4e8d9;transform:scale(1.10)}
+}
+[data-gill-v16] .gbs-rail-collapse:active{transform:scale(.92);transition:transform .12s}
+[data-gill-v16] .gbs-rail-collapse:focus-visible{outline:2px solid var(--gb-accent);outline-offset:2px;border-radius:50%}
+[data-gill-v16] .gbs-rail-collapse svg{width:18px;height:18px;transition:transform .32s cubic-bezier(.22,1,.36,1)}
+/* narrow → chevron flips «‹» → «›» */
+.gbs2-world[data-gill-v16].rail-narrow .gbs-rail-collapse svg{transform:rotate(180deg)}
+
+/* --- Section-TOC disclosure toggle (Mechanism 3) --- */
+[data-gill-v16] .gbs2-toch-toggle{
+  flex-shrink:0;width:22px;height:22px;display:grid;place-items:center;
+  background:transparent;border:0;border-radius:6px;color:rgba(255,255,255,.6);
+  cursor:pointer;transition:color .22s var(--gb-ease-out),background .22s var(--gb-ease-out);
+}
+@media (hover: hover) and (pointer: fine){
+  [data-gill-v16] .gbs2-toch-toggle:hover{color:#fff;background:rgba(255,255,255,.08)}
+}
+[data-gill-v16] .gbs2-toch-toggle:focus-visible{outline:2px solid var(--gb-accent);outline-offset:2px}
+[data-gill-v16] .gbs2-toch-toggle svg{width:14px;height:14px;transition:transform .32s cubic-bezier(.22,1,.36,1)}
+[data-gill-v16] .gbs2-current.toc-collapsed .gbs2-toch-toggle svg{transform:rotate(-90deg)}
+/* Collapse the section-TOC scroller; it hands its space back to the parts list. */
+[data-gill-v16] .gbs2-current .gbs2-tocscroll{
+  max-height:600px;
+  transition:max-height .40s cubic-bezier(.22,1,.36,1),opacity .30s ease;
+}
+[data-gill-v16] .gbs2-current.toc-collapsed .gbs2-tocscroll{
+  max-height:0;min-height:0;flex:0 0 auto;opacity:0;overflow:hidden;
+  padding-top:0;padding-bottom:0;pointer-events:none;
+}
+
+/* --- Compact spine (Mechanism 1), hidden until narrow --- */
+[data-gill-v16] .gbs-rail-spine{display:none}
+
+/* ============================================================
+   Desktop-only layout + interior for the narrow (collapsed) rail.
+   ============================================================ */
+@media (min-width:64em){
+  /* Smooth reflow: rail resizes, article margin follows. */
+  .gbs2-world[data-gill-v16] > .gbs-rail{transition:width .32s cubic-bezier(.22,1,.36,1)}
+  .gbs2-world[data-gill-v16] > .page-wrap{transition:margin-left .32s cubic-bezier(.22,1,.36,1)}
+
+  /* Narrow state: 72px rail + matching article reserve. */
+  .gbs2-world[data-gill-v16].rail-narrow{
+    --gb-rail-reserve:calc(clamp(16px,2.4vw,40px) + 72px + clamp(24px,3vw,48px));
+  }
+  .gbs2-world[data-gill-v16].rail-narrow > .gbs-rail{width:72px}
+
+  /* Swap the rich column for the spine. */
+  .gbs2-world[data-gill-v16].rail-narrow .gbs2-rmid{display:none}
+  .gbs2-world[data-gill-v16].rail-narrow .gbs-rail-spine{display:flex}
+
+  /* Topbar stacks vertically to fit 72px (back / home / toggle). */
+  .gbs2-world[data-gill-v16].rail-narrow .gbs-rail-topbar{
+    flex-direction:column;gap:4px;padding:10px 6px 8px;
+  }
+  .gbs2-world[data-gill-v16].rail-narrow .gbs-rail-collapse{margin-left:0}
+
+  /* Progress: keep the ring centred, drop the «Прогресс серии» text block. */
+  .gbs2-world[data-gill-v16].rail-narrow .gbs2-rprogress{
+    justify-content:center;margin:10px 6px 0;padding:10px 6px;
+  }
+  .gbs2-world[data-gill-v16].rail-narrow .gbs2-rprogress > :not(.gbs2-ring){display:none}
+
+  /* Footer icons stack vertically & centre, one per row (fits 72px). */
+  .gbs2-world[data-gill-v16].rail-narrow .gbs-rail-foot{
+    flex-direction:column;justify-content:center;gap:8px;padding:12px 6px 14px;
+  }
+
+  /* --- Demand-scroll on the rich column (Mechanism 2) ---
+     overflow-y:auto so 10+ parts scroll; the scrollbar is invisible until the
+     region is hovered / actively scrolling. With Gill's 6 parts content fits,
+     so scrollHeight==clientHeight → nothing scrolls and nothing shows. The
+     inner .gbs2-tocscroll keeps its own overscroll-behavior:contain. */
+  [data-gill-v16] .gbs-rail .gbs2-rmid{
+    overflow-y:auto;overflow-x:hidden;
+    scrollbar-width:thin;scrollbar-color:transparent transparent;
+    transition:scrollbar-color .3s ease;
+  }
+  [data-gill-v16] .gbs-rail .gbs2-rmid::-webkit-scrollbar{width:6px}
+  [data-gill-v16] .gbs-rail .gbs2-rmid::-webkit-scrollbar-thumb{
+    background:transparent;border-radius:3px;transition:background .3s ease;
+  }
+  [data-gill-v16] .gbs-rail .gbs2-rmid:hover,
+  [data-gill-v16] .gbs-rail .gbs2-rmid.is-scrolling{scrollbar-color:rgba(232,184,120,.30) transparent}
+  [data-gill-v16] .gbs-rail .gbs2-rmid:hover::-webkit-scrollbar-thumb,
+  [data-gill-v16] .gbs-rail .gbs2-rmid.is-scrolling::-webkit-scrollbar-thumb{background:rgba(232,184,120,.30)}
+}
+
+/* --- Spine interior (only meaningful once .rail-narrow reveals it) --- */
+.gbs2-world[data-gill-v16] .gbs-rail-spine{
+  flex:1 1 auto;min-height:0;
+  flex-direction:column;align-items:center;gap:8px;
+  padding:12px 6px;
+  /* overflow visible: the exactly-6-item Gill spine always fits, and this lets
+     the hover flyout escape to the right (the rail itself is overflow:visible). */
+  overflow:visible;
+}
+.gbs2-world[data-gill-v16] .gbs-rail-spine__item{
+  position:relative;display:grid;place-items:center;
+  width:56px;min-height:52px;flex-shrink:0;border-radius:12px;
+  text-decoration:none;color:var(--gb-accent-gold);
+  background:transparent;border:1px solid transparent;
+  transition:background .28s var(--gb-ease-out),border-color .28s var(--gb-ease-out),transform .32s var(--gb-ease-spring);
+}
+@media (hover: hover) and (pointer: fine){
+  .gbs2-world[data-gill-v16] .gbs-rail-spine__item:hover{
+    background:rgba(255,255,255,.05);border-color:rgba(255,255,255,.10);transform:scale(1.04);
+  }
+}
+.gbs2-world[data-gill-v16] .gbs-rail-spine__item:active{transform:scale(.96)}
+.gbs2-world[data-gill-v16] .gbs-rail-spine__item:focus-visible{outline:2px solid var(--gb-accent);outline-offset:2px}
+.gbs2-world[data-gill-v16] .gbs-rail-spine__item.is-current{
+  background:rgba(232,184,120,.12);border-color:rgba(232,184,120,.42);
+  box-shadow:0 0 0 1px rgba(232,184,120,.25),0 0 14px rgba(232,184,120,.18);
+}
+/* Roman numeral mark */
+.gbs2-world[data-gill-v16] .gbs-rail-spine__mark:not(.gblr-ribbon){
+  font-family:var(--gb-font-serif-display);font-size:21px;font-weight:600;font-style:italic;
+  letter-spacing:.02em;line-height:1;text-align:center;color:var(--gb-accent-gold);
+}
+.gbs2-world[data-gill-v16] .gbs-rail-spine__item.is-current .gbs-rail-spine__mark:not(.gblr-ribbon){
+  color:var(--gb-accent-gold-bright);text-shadow:0 0 12px rgba(216,170,109,.35);
+}
+/* Leather-ribbon mark, scaled down for the 72px spine. The shape stretches
+   (preserveAspectRatio:none); the embossed text is px-sized, so scale its
+   overlay together to keep the badge proportional. */
+.gbs2-world[data-gill-v16] .gbs-rail-spine__item .gblr-ribbon{
+  width:40px;height:51px;
+  filter:drop-shadow(0 4px 8px rgba(0,0,0,.5)) drop-shadow(0 1px 1.5px rgba(0,0,0,.5));
+}
+.gbs2-world[data-gill-v16] .gbs-rail-spine__item .gblr-ribbon__text{
+  transform:scale(.56);transform-origin:top center;
+}
+/* Hover flyout tooltip (matches the dark speedrail/footer flyout language). */
+.gbs2-world[data-gill-v16] .gbs-rail-spine__tip{
+  position:absolute;left:calc(100% + 10px);top:50%;
+  transform:translateY(-50%) translateX(6px) scale(.96);
+  padding:6px 11px;border-radius:8px;
+  background:var(--gb-tooltip-bg,#1a1a1a);color:var(--gb-tooltip-text,#fff);
+  font-family:var(--gb-font-sans);font-size:11.5px;font-weight:600;
+  white-space:nowrap;opacity:0;pointer-events:none;
+  box-shadow:0 8px 24px rgba(0,0,0,.35);
+  transition:opacity .22s var(--gb-ease-out),transform .28s var(--gb-ease-spring);
+  z-index:var(--z-above,10);
+}
+@media (hover: hover) and (pointer: fine){
+  .gbs2-world[data-gill-v16] .gbs-rail-spine__item:hover .gbs-rail-spine__tip{
+    opacity:1;transform:translateY(-50%) translateX(0) scale(1);
+  }
+}
+.gbs2-world[data-gill-v16] .gbs-rail-spine__item:focus-visible .gbs-rail-spine__tip{
+  opacity:1;transform:translateY(-50%) translateX(0) scale(1);
+}
+
+/* First-paint guard: kill the width/margin transition for one frame so a
+   persisted narrow state applies without a collapse animation on load. */
+.gbs2-world[data-gill-v16].no-anim > .gbs-rail,
+.gbs2-world[data-gill-v16].no-anim > .page-wrap,
+.gbs2-world[data-gill-v16].no-anim .gbs2-tocscroll,
+.gbs2-world[data-gill-v16].no-anim .gbs-rail-collapse svg,
+.gbs2-world[data-gill-v16].no-anim .gbs2-toch-toggle svg{transition:none !important}
+
+/* Reduced motion — no transitions for any of the above. */
+@media (prefers-reduced-motion: reduce){
+  .gbs2-world[data-gill-v16] > .gbs-rail,
+  .gbs2-world[data-gill-v16] > .page-wrap,
+  [data-gill-v16] .gbs-rail-collapse svg,
+  [data-gill-v16] .gbs2-toch-toggle svg,
+  [data-gill-v16] .gbs2-current .gbs2-tocscroll,
+  [data-gill-v16] .gbs-rail .gbs2-rmid,
+  .gbs2-world[data-gill-v16] .gbs-rail-spine__item,
+  .gbs2-world[data-gill-v16] .gbs-rail-spine__tip{transition:none}
+}
+
 /* ---- Mobile/tablet (<64em): hide rail, show fixed bottom bar ---- */
 @media (max-width:63.99em){
   .gbs2-world[data-gill-v16]{display:block;min-height:0}
@@ -3305,23 +3522,52 @@ html.dark [data-gill-v16] .mobile-top-bar {
   padding-right: 0;
 }
 
-/* Тема — вынесена из левого рейла на уровень хлебных крошек в колонке статьи.
-   Кнопка сама уже канон (.gb-icon.gb-theme-toggle, стили выше в этом файле) —
-   здесь только позиционирование обёртки, и оно тоже не изобретено: те же
+/* Единый вертикальный кластер — вынесен из левого рейла на уровень хлебных
+   крошек в колонке статьи. Позиционирование обёртки не изобретено: те же
    точные top/right, что канон уже использует для breadcrumb-level themetoggle
    (.gb-floater--hermeneutics выше в этом файле — "DO NOT invent calc formulas,
    use these exact values"). Только Gill, только десктоп (на мобильном рейл
-   скрыт, тема уже есть в мобильном баре). */
+   скрыт, у мобильного бара своя версия search⇄speed + отдельная тема).
+   Порядок (owner): день-ночь → поиск → PLAY (тот же slot-swap, что раньше
+   жил в топбаре) → избранное. Иконки — тот же канон, что и в
+   SingleArticleCluster (theme/search/save — не переизобретаю вид кружка). */
 [data-gill-v16] .gbs-theme-corner{
   display:none;
 }
 @media (min-width:64em){
   [data-gill-v16] .gbs-theme-corner{
     display:flex;
+    flex-direction:column;
+    align-items:center;
+    gap:10px;
     position:fixed;
     top:calc(clamp(24px, 3.5vw, 44px) - 4px);
     right:max(8.5vw, env(safe-area-inset-right, 0px));
     z-index:var(--z-toast,9800);
+  }
+  /* Слот поиска: фиксированный квадрат вместо flex:1 (тот был нужен только
+     в горизонтальном топбаре, чтобы съедать оставшееся место в ряду). */
+  [data-gill-v16] .gbs-theme-corner .gbs-rail-slot{
+    flex:0 0 auto;width:40px;height:40px;min-width:0;
+  }
+  /* Рельса скоростей теперь флайаут ВЛЕВО от колонки (колонка прижата к
+     правому краю вьюпорта), а не инлайн-свап внутри узкой полосы топбара. */
+  [data-gill-v16] .gbs-theme-corner .gbs-rail-speedrail{
+    inset:auto;top:50%;right:calc(100% + 10px);left:auto;
+    transform:translateY(-50%) translateX(6px);
+    justify-content:flex-start;
+    background:rgba(20,14,9,.94);
+    border:1px solid rgba(232,184,120,.28);
+    border-radius:12px;
+    padding:5px;
+    box-shadow:0 10px 28px -10px rgba(0,0,0,.55);
+    max-width:min(50vw,230px);
+  }
+  [data-gill-v16] .gbs-theme-corner.speed-open .gbs-rail-slot__search{
+    opacity:0;transform:scale(.7);pointer-events:none;
+  }
+  [data-gill-v16] .gbs-theme-corner.speed-open .gbs-rail-speedrail{
+    opacity:1;transform:translateY(-50%) translateX(0);pointer-events:auto;
   }
 }
 

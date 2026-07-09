@@ -83,7 +83,7 @@
     "/articles/dzhon-gill-chast-3-nasledie/": {
       "route": "/articles/dzhon-gill-chast-3-nasledie/",
       "canonical": "https://gospod-bog.ru/articles/dzhon-gill-chast-3-nasledie/",
-      "title": "Джон Гилл (1697–1771). Часть III: Наследие — полемика, память, наука",
+      "title": "Джон Гилл (1697–1771). Часть IV: Наследие — полемика, память, наука",
       "metadataSource": "src/components/article-pilots/gill-part3/GillPart3PageHead.astro",
       "contentType": "article",
       "editorialPublishedAt": "2026-06-13T21:00:00.000Z",
