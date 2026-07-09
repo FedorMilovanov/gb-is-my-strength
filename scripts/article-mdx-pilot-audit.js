@@ -12,5 +12,6 @@
  * intentionally outside blocking validation.
  */
 
-console.log('ℹ️ astro:audit:article-mdx now runs the strict-native article contract audit.');
+if (!process.argv.includes('--articles-only')) process.argv.push('--articles-only');
+console.log('ℹ️ astro:audit:article-mdx now runs the strict-native standalone article contract audit.');
 require('./article-native-contract-audit');
