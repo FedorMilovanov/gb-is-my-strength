@@ -24,7 +24,7 @@ permissions:
   contents: read
 
 concurrency:
-  group: temp-gill-image-premium-audit-${{ github.event.pull_request.number || github.ref }}
+  group: temp-gill-image-premium-audit-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
@@ -70,6 +70,13 @@ jobs:
         env:
           BASE_URL: http://127.0.0.1:4173
         run: node scripts/gill-image-audit-temp.mjs
+
+      - name: Preserve source styles for selector tracing
+        if: always()
+        run: |
+          mkdir -p reports/gill-image-premium-audit/source
+          cp css/site.css reports/gill-image-premium-audit/source/site.css
+          cp css/floating-cluster.css reports/gill-image-premium-audit/source/floating-cluster.css
 
       - name: Upload audit package
         if: always()
