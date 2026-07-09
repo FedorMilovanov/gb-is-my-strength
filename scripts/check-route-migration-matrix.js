@@ -8,5 +8,6 @@
  * exemption based on a route name or prefix.
  */
 
-console.log('ℹ️ migration:matrix:check uses the registry-driven runtime matrix contract.');
+require('./install-effective-route-registry');
+console.log('ℹ️ migration:matrix:check uses the effective registry-driven runtime matrix contract.');
 require('./route-migration-matrix-contract-audit');
