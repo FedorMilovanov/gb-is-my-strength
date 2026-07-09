@@ -905,6 +905,22 @@ html.dark [data-gill-v16] .gb-theme-toggle .theme-icon-moon{opacity:1;transform:
 [data-gill-v16] .gbs-rail-back:focus-visible{outline:2px solid var(--gb-accent);outline-offset:2px;border-radius:50%}
 [data-gill-v16] .gbs-rail-back svg{width:18px;height:18px;stroke:currentColor;fill:none;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
 
+/* Домой — второй значок топбара, тот же визуальный язык, что у back (owner:
+   "и значок домой еще можно"). */
+[data-gill-v16] .gbs-rail-home{
+  width:36px;height:36px;flex-shrink:0;
+  display:grid;place-items:center;
+  color:#eadac7;background:transparent;border:0;border-radius:50%;text-decoration:none;
+  transition:color .22s var(--gb-ease-out),transform .32s var(--gb-ease-spring);
+  cursor:pointer;
+}
+@media (hover: hover) and (pointer: fine) {
+  [data-gill-v16] .gbs-rail-home:hover{color:#f4e8d9;transform:scale(1.10)}
+}
+[data-gill-v16] .gbs-rail-home:active{transform:scale(.92);transition:transform .12s}
+[data-gill-v16] .gbs-rail-home:focus-visible{outline:2px solid var(--gb-accent);outline-offset:2px;border-radius:50%}
+[data-gill-v16] .gbs-rail-home svg{width:17px;height:17px;stroke:currentColor;fill:none;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
+
 [data-gill-v16] .gbs-rail-list{display:flex;flex-direction:column;gap:6px;margin-top:6px}
 [data-gill-v16] .gbs-rail-card{
   display:grid;
@@ -1087,7 +1103,13 @@ html.dark [data-gill-v16] .gb-theme-toggle .theme-icon-moon{opacity:1;transform:
 
 /* Pre-v16 GBS Gill desktop submenu restoration (2026-07-04). Historical witness: bcf6389f29ee0c89e9e96e7587e0226ecf251ae0. */
 @media (min-width:64em){
-[data-gill-v16] .gbs2-current{flex:1 1 auto;min-height:0;margin:2px 2px 4px;border:1px solid rgba(232,184,120,.20);border-radius:16px;background:rgba(255,255,255,.045);overflow:hidden;display:flex;flex-direction:column;box-shadow:0 10px 28px -14px rgba(0,0,0,.5),inset 0 1px 0 rgba(255,255,255,.05)}
+/* flex:0 (was 1 1 auto): the card grew to fill .gbs2-rmid's leftover
+   vertical space whenever a part's submenu was short (e.g. Часть II, 6
+   TOC rows) — a visible dead zone below "Проверь себя" inside the
+   "Сейчас читаете" card (owner screenshot). Sizing to content instead;
+   any true leftover space now sits below the next-parts list, not inside
+   the card. */
+[data-gill-v16] .gbs2-current{flex:0 1 auto;min-height:0;margin:2px 2px 4px;border:1px solid rgba(232,184,120,.20);border-radius:16px;background:rgba(255,255,255,.045);overflow:hidden;display:flex;flex-direction:column;box-shadow:0 10px 28px -14px rgba(0,0,0,.5),inset 0 1px 0 rgba(255,255,255,.05)}
 [data-gill-v16] .gbs2-current-cover{flex:0 0 auto;height:78px;background-image:linear-gradient(180deg,rgba(25,22,20,0),#16130f),var(--gbs2-cover,linear-gradient(135deg,var(--gbs2-accent),#2b1b13));background-size:cover;background-position:center;opacity:.62}
 [data-gill-v16] .gbs2-current-body{padding:12px 14px 0}[data-gill-v16] .gbs2-current-label{font-size:9px;font-weight:800;letter-spacing:.17em;text-transform:uppercase;color:var(--gbs2-accent2)}
 [data-gill-v16] .gbs2-current-title{margin:5px 0 0;font-family:var(--f-body,Lora,Georgia,serif);font-size:17px;font-weight:700;line-height:1.2;color:#fff}
@@ -3305,23 +3327,52 @@ html.dark [data-gill-v16] .mobile-top-bar {
   padding-right: 0;
 }
 
-/* Тема — вынесена из левого рейла на уровень хлебных крошек в колонке статьи.
-   Кнопка сама уже канон (.gb-icon.gb-theme-toggle, стили выше в этом файле) —
-   здесь только позиционирование обёртки, и оно тоже не изобретено: те же
+/* Единый вертикальный кластер — вынесен из левого рейла на уровень хлебных
+   крошек в колонке статьи. Позиционирование обёртки не изобретено: те же
    точные top/right, что канон уже использует для breadcrumb-level themetoggle
    (.gb-floater--hermeneutics выше в этом файле — "DO NOT invent calc formulas,
    use these exact values"). Только Gill, только десктоп (на мобильном рейл
-   скрыт, тема уже есть в мобильном баре). */
+   скрыт, у мобильного бара своя версия search⇄speed + отдельная тема).
+   Порядок (owner): день-ночь → поиск → PLAY (тот же slot-swap, что раньше
+   жил в топбаре) → избранное. Иконки — тот же канон, что и в
+   SingleArticleCluster (theme/search/save — не переизобретаю вид кружка). */
 [data-gill-v16] .gbs-theme-corner{
   display:none;
 }
 @media (min-width:64em){
   [data-gill-v16] .gbs-theme-corner{
     display:flex;
+    flex-direction:column;
+    align-items:center;
+    gap:10px;
     position:fixed;
     top:calc(clamp(24px, 3.5vw, 44px) - 4px);
     right:max(8.5vw, env(safe-area-inset-right, 0px));
     z-index:var(--z-toast,9800);
+  }
+  /* Слот поиска: фиксированный квадрат вместо flex:1 (тот был нужен только
+     в горизонтальном топбаре, чтобы съедать оставшееся место в ряду). */
+  [data-gill-v16] .gbs-theme-corner .gbs-rail-slot{
+    flex:0 0 auto;width:40px;height:40px;min-width:0;
+  }
+  /* Рельса скоростей теперь флайаут ВЛЕВО от колонки (колонка прижата к
+     правому краю вьюпорта), а не инлайн-свап внутри узкой полосы топбара. */
+  [data-gill-v16] .gbs-theme-corner .gbs-rail-speedrail{
+    inset:auto;top:50%;right:calc(100% + 10px);left:auto;
+    transform:translateY(-50%) translateX(6px);
+    justify-content:flex-start;
+    background:rgba(20,14,9,.94);
+    border:1px solid rgba(232,184,120,.28);
+    border-radius:12px;
+    padding:5px;
+    box-shadow:0 10px 28px -10px rgba(0,0,0,.55);
+    max-width:min(50vw,230px);
+  }
+  [data-gill-v16] .gbs-theme-corner.speed-open .gbs-rail-slot__search{
+    opacity:0;transform:scale(.7);pointer-events:none;
+  }
+  [data-gill-v16] .gbs-theme-corner.speed-open .gbs-rail-speedrail{
+    opacity:1;transform:translateY(-50%) translateX(0);pointer-events:auto;
   }
 }
 
