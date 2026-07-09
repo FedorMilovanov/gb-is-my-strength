@@ -172,7 +172,10 @@ if (searchManifest && Array.isArray(searchManifest.items)) {
 }
 
 // 6. Progress coherence
-const expectedOrder = ['context','part1','part2','part3','part4','spravochnik'];
+// Reading order (2026-07-09 display reorder): exegete (part4) now displays as
+// «Часть III» and precedes legacy (part3) which displays as «Часть IV».
+// Internal ids/slugs unchanged; only display order/numbering swapped.
+const expectedOrder = ['context','part1','part2','part4','part3','spravochnik'];
 let cumulative = 0;
 expectedOrder.forEach((pid, idx) => {
   const pd = pageData[pid];
@@ -217,8 +220,8 @@ const expectedMarks = [
   {id:'context', kind:'label', value:'Введение'},
   {id:'part1', kind:'roman', value:'I'},
   {id:'part2', kind:'roman', value:'II'},
-  {id:'part3', kind:'roman', value:'III'},
-  {id:'part4', kind:'roman', value:'IV'},
+  {id:'part4', kind:'roman', value:'III'},
+  {id:'part3', kind:'roman', value:'IV'},
   {id:'spravochnik', kind:'label', value:'Справ.'}
 ];
 expectedMarks.forEach(exp => {
