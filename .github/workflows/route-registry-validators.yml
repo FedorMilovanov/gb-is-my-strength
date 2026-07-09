@@ -15,10 +15,13 @@ on:
       - "scripts/check-route-profiles.js"
       - "scripts/check-route-migration-matrix.js"
       - "scripts/check-content-source-coverage.js"
+      - "scripts/install-effective-route-registry.js"
       - "scripts/route-profile-contract-audit.js"
       - "scripts/route-migration-matrix-contract-audit.js"
       - "scripts/content-source-provenance-audit.js"
       - "scripts/lib/route-source-contract.js"
+      - "scripts/lib/route-matrix-normalizer.js"
+      - "scripts/lib/effective-route-registry.js"
       - "scripts/sync-route-migration-matrix.js"
       - ".github/workflows/route-registry-validators.yml"
   workflow_dispatch:
@@ -46,15 +49,16 @@ jobs:
         with:
           node-version: "22.12.0"
 
-      - name: Normalize matrix in disposable CI worktree
-        run: node scripts/sync-route-migration-matrix.js --write
+      - name: Validate effective matrix contract without writing
+        run: node scripts/sync-route-migration-matrix.js --check
 
       - name: Route profile contract
         shell: bash
         run: |
           mkdir -p reports
           set -o pipefail
-          node scripts/route-profile-contract-audit.js --strict 2>&1 \
+          node -r ./scripts/install-effective-route-registry.js \
+            scripts/route-profile-contract-audit.js --strict 2>&1 \
             | tee reports/route-profile-contract.log
 
       - name: Migration matrix contract
@@ -62,7 +66,8 @@ jobs:
         shell: bash
         run: |
           set -o pipefail
-          node scripts/route-migration-matrix-contract-audit.js --strict 2>&1 \
+          node -r ./scripts/install-effective-route-registry.js \
+            scripts/route-migration-matrix-contract-audit.js --strict 2>&1 \
             | tee reports/route-migration-matrix-contract.log
 
       - name: Content source provenance
@@ -70,7 +75,8 @@ jobs:
         shell: bash
         run: |
           set -o pipefail
-          node scripts/content-source-provenance-audit.js --strict 2>&1 \
+          node -r ./scripts/install-effective-route-registry.js \
+            scripts/content-source-provenance-audit.js --strict 2>&1 \
             | tee reports/content-source-provenance.log
 
       - name: Compatibility command surface
@@ -84,13 +90,9 @@ jobs:
             node scripts/check-content-source-coverage.js --strict
           } 2>&1 | tee reports/route-registry-compatibility.log
 
-      - name: Verify validators are read-only after disposable normalization
+      - name: Verify all validators are read-only
         if: always()
-        shell: bash
-        run: |
-          git diff --exit-code -- \
-            ':!migration/route-migration-matrix.json' \
-            ':!reports/**'
+        run: git diff --exit-code
 
       - name: Upload registry diagnostics
         if: always()
