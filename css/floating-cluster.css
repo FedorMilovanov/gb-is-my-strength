@@ -2283,48 +2283,14 @@ html.dark .gb-ember-expand__btn.is-active {
   .gb-floater--hermeneutics { display: none; }
 }
 
-/* === HermenevtikaRail top bar: Play's speed pill blooms DOWN, anchored just
-   under Play and a touch to the right (owner reference: "снизу PLAY
-   прилеплялись, снизу чуть справа" — NOT the Gill-rail's morph-UP, and NOT
-   the default morph-LEFT either — the rail's top row has no headroom above
-   it (24px to the viewport edge) and no width to spare beside it, but there
-   IS open space below Play, over the meta/TOC block, same as any normal
-   dropdown. ONLY Play itself moves (scale, no drift) — the rest of the row
-   stays put, matching the canonical .gb-ember-wrap contract. */
-.hrail-top .gb-ember-expand {
-  right: -6px;
-  left: auto;
-  top: calc(100% + 9px);
-  bottom: auto;
-  transform: translateX(var(--gb-ember-shift, 0px));
-  padding: 5px 7px;
-  /* Fits inside the 270px rail's inner width (238px) with margin on both
-     sides — the rail is overflow:hidden, so a wider pill would clip its
-     left edge (1px bug caught in QA). flex-nowrap + compact chips keep all
-     five speeds on ONE row instead of the previous 3-row wrap. */
-  max-width: 216px;
-  flex-wrap: nowrap;
-  clip-path: circle(15px at calc(100% - 28px) 0%);
-}
-.hrail-top .gb-ember-expand.is-open {
-  clip-path: inset(0 0 0 0 round 999px);
-}
-.hrail-top .gb-ember-expand__stop { display: none; }
-.hrail-top .gb-ember-expand__btn {
-  min-width: 0;
-  height: 27px;
-  padding: 0 7px;
-  font-size: 11px;
-  border-radius: 8px;
-}
-@media (hover: hover) and (pointer: fine) {
-  .hrail-top .gb-ember-wrap:hover > .gb-ember,
-  .hrail-top .gb-ember-wrap:focus-within > .gb-ember {
-    transform: scale(1.06);
-  }
-}
+/* HermenevtikaRail's top bar no longer uses the canonical .gb-ember-wrap/
+   .gb-ember-expand bloom panel (owner: unify with Gill desktop + both mobile
+   bars, which all use the [data-gb-speed-custom] search⇄speed slot-swap
+   instead — see HermenevtikaRail.astro's .hrail-slot/.hrail-speedrail/
+   .hrail-spdbadge). The old bloom-panel rules for .hrail-top lived here;
+   removed together with the markup that used them.
 
-/* === Mobile: pill above ember with blur backdrop (no side space) ===
+   === Mobile: pill above ember with blur backdrop (no side space) ===
    Per owner spec 2026-06-26: на mobile нет горизонтального места
    для morph LEFT, поэтому открываем строго ВВЕРХ с blur-фоном.
    max-width = viewport-8px с обеих сторон гарантирует, что pill
