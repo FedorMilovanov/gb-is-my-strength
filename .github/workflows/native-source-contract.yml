@@ -12,12 +12,15 @@ on:
       - "migration/page-ownership.json"
       - "migration/route-migration-matrix.json"
       - "scripts/article-native-contract-audit.js"
+      - "scripts/article-native-effective-contract-audit.js"
       - "scripts/article-mdx-pilot-audit.js"
       - "scripts/baptisty-series-shadow-audit.js"
       - "scripts/check-mdx-html-parity.js"
       - "scripts/route-source-contract-audit.js"
       - "scripts/sync-route-migration-matrix.js"
       - "scripts/lib/route-source-contract.js"
+      - "scripts/lib/route-matrix-normalizer.js"
+      - "scripts/lib/effective-route-registry.js"
       - ".github/workflows/native-source-contract.yml"
       - "package.json"
       - "package-lock.json"
@@ -32,12 +35,15 @@ on:
       - "migration/page-ownership.json"
       - "migration/route-migration-matrix.json"
       - "scripts/article-native-contract-audit.js"
+      - "scripts/article-native-effective-contract-audit.js"
       - "scripts/article-mdx-pilot-audit.js"
       - "scripts/baptisty-series-shadow-audit.js"
       - "scripts/check-mdx-html-parity.js"
       - "scripts/route-source-contract-audit.js"
       - "scripts/sync-route-migration-matrix.js"
       - "scripts/lib/route-source-contract.js"
+      - "scripts/lib/route-matrix-normalizer.js"
+      - "scripts/lib/effective-route-registry.js"
       - ".github/workflows/native-source-contract.yml"
       - "package.json"
       - "package-lock.json"
@@ -67,7 +73,7 @@ jobs:
           node-version: "22.12.0"
           cache: npm
 
-      - name: Validate matrix synchronizer is clean
+      - name: Validate effective matrix contract without writing
         run: node scripts/sync-route-migration-matrix.js --check
 
       - name: Validate declared sources against actual import graphs
@@ -98,7 +104,7 @@ jobs:
         shell: bash
         run: |
           set -o pipefail
-          node scripts/article-native-contract-audit.js --no-build --require-content-parity 2>&1 \
+          node scripts/article-native-effective-contract-audit.js --no-build --require-content-parity 2>&1 \
             | tee reports/native-source-contract-dist.log
 
       - name: Validate migration metadata coherence
@@ -114,6 +120,9 @@ jobs:
           set -o pipefail
           npm run workflows:check 2>&1 \
             | tee reports/native-source-contract-workflows.log
+
+      - name: Ensure validation did not mutate tracked sources
+        run: git diff --exit-code
 
       - name: Upload native source contract diagnostics
         if: always()
