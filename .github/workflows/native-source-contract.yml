@@ -74,12 +74,16 @@ jobs:
           cache: npm
 
       - name: Validate effective matrix contract without writing
-        run: node scripts/sync-route-migration-matrix.js --check
+        shell: bash
+        run: |
+          mkdir -p reports
+          set -o pipefail
+          node scripts/sync-route-migration-matrix.js --check 2>&1 \
+            | tee reports/native-source-contract-matrix.log
 
       - name: Validate declared sources against actual import graphs
         shell: bash
         run: |
-          mkdir -p reports
           set -o pipefail
           node scripts/route-source-contract-audit.js --strict 2>&1 \
             | tee reports/native-source-contract-source.log
