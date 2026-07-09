@@ -1,0 +1,1717 @@
+<!DOCTYPE html>
+<html lang="ru" class="light">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Premium Submenu Variants — GB Сила Моя</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,600;0,700;1,400&family=Source+Sans+3:wght@400;600;700&display=swap" rel="stylesheet">
+  <style>
+    /* ═══════════════════════════════════════════════════════════════
+       PREMIUM CSS TOKENS — sync with site.css
+    ═══════════════════════════════════════════════════════════════ */
+    :root {
+      --color-canvas: #fdfcf9;
+      --color-surface: #ffffff;
+      --color-surface-muted: #f4f2ed;
+      --color-text: #1a1a1a;
+      --color-text-muted: #6a6a6a;
+      --color-accent: #7a2e2e;
+      --color-accent-soft: #f6ece8;
+      --color-accent-strong: #5f2323;
+      --color-border: #e5e2dc;
+      --color-border-strong: #cfc9bd;
+      --h-accent: #8b2626;
+      --h-font-display: 'Lora', Georgia, serif;
+      --font-ui: 'Source Sans 3', system-ui, sans-serif;
+      --shadow-sm: 0 1px 2px rgba(16, 18, 22, .06);
+      --shadow-lg: 0 8px 24px rgba(16, 18, 22, .11);
+      --shadow-xl: 0 16px 44px rgba(16, 18, 22, .14);
+      --radius-sm: 8px;
+      --radius-md: 12px;
+      --radius-lg: 16px;
+      --transition-fast: 0.2s ease;
+      --transition-medium: 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+      --z-dropdown: 800;
+    }
+
+    html.dark {
+      --color-canvas: #0e1116;
+      --color-surface: #161a21;
+      --color-surface-muted: #161a21;
+      --color-text: #e6e1d7;
+      --color-text-muted: #9ca3af;
+      --color-accent: #d4a574;
+      --color-accent-soft: #1f1a13;
+      --color-accent-strong: #e8b878;
+      --color-border: #232830;
+      --color-border-strong: #2f3540;
+      --h-accent: #d97a6c;
+      --shadow-sm: 0 1px 2px rgba(0, 0, 0, .4);
+      --shadow-lg: 0 8px 24px rgba(0, 0, 0, .55);
+      --shadow-xl: 0 24px 60px rgba(0, 0, 0, .6);
+    }
+
+    /* ═══════════════════════════════════════════════════════════════
+       BASE STYLES
+    ═══════════════════════════════════════════════════════════════ */
+    *, *::before, *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Lora', Georgia, serif;
+      background: var(--color-canvas);
+      color: var(--color-text);
+      line-height: 1.6;
+      min-height: 100vh;
+      padding: 40px 24px 80px;
+    }
+
+    /* Theme toggle (for demo) */
+    .demo-theme-toggle {
+      position: fixed;
+      top: 16px;
+      right: 16px;
+      z-index: 9999;
+      width: 44px;
+      height: 44px;
+      background: var(--color-surface);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-md);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: var(--font-ui);
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--color-text-muted);
+      transition: var(--transition-fast);
+    }
+    .demo-theme-toggle:hover {
+      border-color: var(--color-accent);
+      color: var(--color-accent);
+    }
+
+    /* ═══════════════════════════════════════════════════════════════
+       PAGE LAYOUT
+    ═══════════════════════════════════════════════════════════════ */
+    .page-header {
+      text-align: center;
+      margin-bottom: 56px;
+      padding-bottom: 32px;
+      border-bottom: 1px solid var(--color-border);
+    }
+
+    .page-header__eyebrow {
+      font-family: var(--font-ui);
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: var(--color-accent);
+      margin-bottom: 12px;
+    }
+
+    .page-header__title {
+      font-family: var(--h-font-display);
+      font-size: clamp(28px, 5vw, 42px);
+      font-weight: 700;
+      line-height: 1.15;
+      margin-bottom: 16px;
+    }
+
+    .page-header__desc {
+      font-size: 16px;
+      color: var(--color-text-muted);
+      max-width: 600px;
+      margin: 0 auto;
+    }
+
+    /* Section layout */
+    .variant-section {
+      max-width: 800px;
+      margin: 0 auto 64px;
+      padding: 32px;
+      background: var(--color-surface);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow-sm);
+    }
+
+    .variant-section__header {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      margin-bottom: 24px;
+      padding-bottom: 20px;
+      border-bottom: 1px solid var(--color-border);
+    }
+
+    .variant-badge {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 36px;
+      height: 36px;
+      background: var(--color-accent);
+      color: #fff;
+      font-family: var(--font-ui);
+      font-size: 14px;
+      font-weight: 700;
+      border-radius: var(--radius-sm);
+    }
+
+    .variant-section__title {
+      font-family: var(--h-font-display);
+      font-size: 20px;
+      font-weight: 700;
+    }
+
+    .variant-section__desc {
+      font-size: 13px;
+      color: var(--color-text-muted);
+      margin-top: 8px;
+      font-family: var(--font-ui);
+    }
+
+    .variant-meta {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-top: 12px;
+    }
+
+    .variant-tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 4px 10px;
+      background: var(--color-surface-muted);
+      border-radius: 100px;
+      font-family: var(--font-ui);
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--color-text-muted);
+    }
+
+    /* ═══════════════════════════════════════════════════════════════
+       VARIANT 1: ACCORDION SPOILER
+       Плавное раскрытие спойлера с иконкой стрелки
+    ═══════════════════════════════════════════════════════════════ */
+    .submenu-accordion {
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-md);
+      overflow: hidden;
+    }
+
+    .submenu-accordion__trigger {
+      width: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 18px 20px;
+      background: var(--color-surface);
+      border: none;
+      cursor: pointer;
+      font-family: var(--font-ui);
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--color-text);
+      text-align: left;
+      transition: background var(--transition-fast);
+    }
+
+    .submenu-accordion__trigger:hover {
+      background: var(--color-surface-muted);
+    }
+
+    .submenu-accordion__trigger:focus-visible {
+      outline: 2px solid var(--color-accent);
+      outline-offset: -2px;
+    }
+
+    .submenu-accordion__left {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .submenu-accordion__icon {
+      width: 32px;
+      height: 32px;
+      background: var(--color-accent-soft);
+      border-radius: var(--radius-sm);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--color-accent);
+      flex-shrink: 0;
+    }
+
+    .submenu-accordion__label {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+
+    .submenu-accordion__title {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--color-text);
+    }
+
+    .submenu-accordion__subtitle {
+      font-size: 12px;
+      color: var(--color-text-muted);
+      font-weight: 400;
+    }
+
+    .submenu-accordion__arrow {
+      width: 28px;
+      height: 28px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 50%;
+      background: var(--color-surface-muted);
+      transition: transform var(--transition-medium), background var(--transition-fast);
+      flex-shrink: 0;
+    }
+
+    .submenu-accordion__arrow svg {
+      width: 14px;
+      height: 14px;
+      stroke: var(--color-text-muted);
+      stroke-width: 2.5;
+      fill: none;
+    }
+
+    .submenu-accordion__trigger[aria-expanded="true"] .submenu-accordion__arrow {
+      transform: rotate(180deg);
+      background: var(--color-accent);
+    }
+
+    .submenu-accordion__trigger[aria-expanded="true"] .submenu-accordion__arrow svg {
+      stroke: #fff;
+    }
+
+    /* Accordion body with CSS grid animation */
+    .submenu-accordion__body {
+      display: grid;
+      grid-template-rows: 0fr;
+      transition: grid-template-rows var(--transition-medium);
+    }
+
+    .submenu-accordion__trigger[aria-expanded="true"] ~ .submenu-accordion__body {
+      grid-template-rows: 1fr;
+    }
+
+    .submenu-accordion__body-inner {
+      overflow: hidden;
+    }
+
+    .submenu-accordion__parts {
+      padding: 0 20px 20px;
+      list-style: none;
+    }
+
+    .submenu-accordion__part {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 12px 0;
+      border-bottom: 1px solid var(--color-border);
+      text-decoration: none;
+      color: var(--color-text);
+      transition: var(--transition-fast);
+    }
+
+    .submenu-accordion__part:last-child {
+      border-bottom: none;
+    }
+
+    .submenu-accordion__part:hover {
+      color: var(--color-accent);
+    }
+
+    .submenu-accordion__part-num {
+      width: 28px;
+      height: 28px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: var(--color-surface-muted);
+      border-radius: var(--radius-sm);
+      font-family: var(--font-ui);
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--color-text-muted);
+      flex-shrink: 0;
+    }
+
+    .submenu-accordion__part.is-done .submenu-accordion__part-num {
+      background: var(--color-accent-soft);
+      color: var(--color-accent);
+    }
+
+    .submenu-accordion__part.is-active .submenu-accordion__part-num {
+      background: var(--color-accent);
+      color: #fff;
+    }
+
+    .submenu-accordion__part-info {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .submenu-accordion__part-title {
+      font-size: 14px;
+      font-weight: 600;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .submenu-accordion__part-meta {
+      font-size: 11px;
+      color: var(--color-text-muted);
+      margin-top: 2px;
+      font-family: var(--font-ui);
+    }
+
+    /* ═══════════════════════════════════════════════════════════════
+       VARIANT 2: FLOATING DROPDOWN PANEL
+       Плавающая панель с автоскроллингом
+    ═══════════════════════════════════════════════════════════════ */
+    .submenu-dropdown {
+      position: relative;
+    }
+
+    .submenu-dropdown__trigger {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      padding: 12px 18px;
+      background: var(--color-surface);
+      border: 1px solid var(--color-border);
+      border-radius: 100px;
+      cursor: pointer;
+      font-family: var(--font-ui);
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--color-text);
+      transition: var(--transition-fast);
+      box-shadow: var(--shadow-sm);
+    }
+
+    .submenu-dropdown__trigger:hover {
+      border-color: var(--color-accent);
+      box-shadow: var(--shadow-lg);
+      transform: translateY(-1px);
+    }
+
+    .submenu-dropdown__trigger:focus-visible {
+      outline: 2px solid var(--color-accent);
+      outline-offset: 2px;
+    }
+
+    .submenu-dropdown__badge {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-width: 22px;
+      height: 22px;
+      padding: 0 6px;
+      background: var(--color-accent);
+      color: #fff;
+      font-size: 11px;
+      font-weight: 700;
+      border-radius: 100px;
+    }
+
+    .submenu-dropdown__chevron {
+      width: 18px;
+      height: 18px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: transform var(--transition-medium);
+    }
+
+    .submenu-dropdown__chevron svg {
+      width: 14px;
+      height: 14px;
+      stroke: var(--color-text-muted);
+      stroke-width: 2.5;
+      fill: none;
+    }
+
+    .submenu-dropdown.is-open .submenu-dropdown__chevron {
+      transform: rotate(180deg);
+    }
+
+    .submenu-dropdown__panel {
+      position: absolute;
+      top: calc(100% + 8px);
+      left: 0;
+      min-width: 320px;
+      max-width: 400px;
+      background: var(--color-surface);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-md);
+      box-shadow: var(--shadow-xl);
+      z-index: var(--z-dropdown);
+      opacity: 0;
+      transform: translateY(-8px);
+      pointer-events: none;
+      transition: opacity var(--transition-fast), transform var(--transition-medium);
+    }
+
+    .submenu-dropdown.is-open .submenu-dropdown__panel {
+      opacity: 1;
+      transform: translateY(0);
+      pointer-events: auto;
+    }
+
+    .submenu-dropdown__panel-header {
+      padding: 14px 16px;
+      border-bottom: 1px solid var(--color-border);
+      font-family: var(--font-ui);
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      color: var(--color-text-muted);
+    }
+
+    .submenu-dropdown__list {
+      list-style: none;
+      max-height: 320px;
+      overflow-y: auto;
+      padding: 8px 0;
+    }
+
+    /* Custom scrollbar */
+    .submenu-dropdown__list::-webkit-scrollbar {
+      width: 6px;
+    }
+
+    .submenu-dropdown__list::-webkit-scrollbar-track {
+      background: transparent;
+    }
+
+    .submenu-dropdown__list::-webkit-scrollbar-thumb {
+      background: var(--color-border-strong);
+      border-radius: 3px;
+    }
+
+    .submenu-dropdown__item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 10px 16px;
+      text-decoration: none;
+      color: var(--color-text);
+      transition: background var(--transition-fast);
+    }
+
+    .submenu-dropdown__item:hover {
+      background: var(--color-surface-muted);
+    }
+
+    .submenu-dropdown__item.is-active {
+      background: var(--color-accent-soft);
+    }
+
+    .submenu-dropdown__item-num {
+      width: 24px;
+      height: 24px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: var(--color-surface-muted);
+      border-radius: var(--radius-sm);
+      font-family: var(--font-ui);
+      font-size: 10px;
+      font-weight: 700;
+      color: var(--color-text-muted);
+      flex-shrink: 0;
+    }
+
+    .submenu-dropdown__item.is-done .submenu-dropdown__item-num {
+      background: var(--color-accent);
+      color: #fff;
+    }
+
+    .submenu-dropdown__item-title {
+      flex: 1;
+      font-size: 13px;
+      font-weight: 600;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .submenu-dropdown__item.is-planned .submenu-dropdown__item-title {
+      opacity: 0.5;
+    }
+
+    .submenu-dropdown__item-time {
+      font-size: 11px;
+      color: var(--color-text-muted);
+      font-family: var(--font-ui);
+      flex-shrink: 0;
+    }
+
+    .submenu-dropdown__panel-footer {
+      padding: 10px 16px;
+      border-top: 1px solid var(--color-border);
+      font-family: var(--font-ui);
+      font-size: 12px;
+      color: var(--color-text-muted);
+      text-align: center;
+    }
+
+    /* ═══════════════════════════════════════════════════════════════
+       VARIANT 3: COMPACT PILL WITH EXPAND
+       Компактная кнопка-пилюля с индикатором и expand
+    ═══════════════════════════════════════════════════════════════ */
+    .submenu-pill {
+      position: relative;
+      display: inline-flex;
+    }
+
+    .submenu-pill__main {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 14px 10px 16px;
+      background: linear-gradient(135deg, var(--color-accent), var(--color-accent-strong));
+      color: #fff;
+      border: none;
+      border-radius: 100px 0 0 100px;
+      cursor: pointer;
+      font-family: var(--font-ui);
+      font-size: 13px;
+      font-weight: 600;
+      transition: var(--transition-fast);
+    }
+
+    .submenu-pill__main:hover {
+      filter: brightness(1.08);
+    }
+
+    .submenu-pill__main:focus-visible {
+      outline: 2px solid var(--color-accent);
+      outline-offset: 2px;
+    }
+
+    .submenu-pill__icon {
+      width: 20px;
+      height: 20px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .submenu-pill__icon svg {
+      width: 16px;
+      height: 16px;
+      stroke: currentColor;
+      stroke-width: 2;
+      fill: none;
+    }
+
+    .submenu-pill__divider {
+      width: 1px;
+      background: rgba(255, 255, 255, 0.3);
+    }
+
+    .submenu-pill__expand {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 10px 14px;
+      background: var(--color-accent-strong);
+      color: #fff;
+      border: none;
+      border-radius: 0 100px 100px 0;
+      cursor: pointer;
+      transition: var(--transition-fast);
+    }
+
+    .submenu-pill__expand:hover {
+      background: #4a1a1a;
+    }
+
+    .submenu-pill__expand svg {
+      width: 14px;
+      height: 14px;
+      stroke: currentColor;
+      stroke-width: 2.5;
+      fill: none;
+      transition: transform var(--transition-medium);
+    }
+
+    .submenu-pill.is-open .submenu-pill__expand svg {
+      transform: rotate(180deg);
+    }
+
+    .submenu-pill__panel {
+      position: absolute;
+      top: calc(100% + 8px);
+      left: 0;
+      min-width: 300px;
+      max-height: 400px;
+      overflow-y: auto;
+      background: var(--color-surface);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-md);
+      box-shadow: var(--shadow-xl);
+      z-index: var(--z-dropdown);
+      opacity: 0;
+      transform: translateY(-4px);
+      pointer-events: none;
+      transition: opacity var(--transition-fast), transform var(--transition-medium);
+    }
+
+    .submenu-pill.is-open .submenu-pill__panel {
+      opacity: 1;
+      transform: translateY(0);
+      pointer-events: auto;
+    }
+
+    .submenu-pill__list {
+      list-style: none;
+      padding: 8px;
+    }
+
+    .submenu-pill__item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 12px;
+      border-radius: var(--radius-sm);
+      text-decoration: none;
+      color: var(--color-text);
+      transition: background var(--transition-fast);
+    }
+
+    .submenu-pill__item:hover {
+      background: var(--color-surface-muted);
+    }
+
+    .submenu-pill__item.is-active {
+      background: var(--color-accent-soft);
+    }
+
+    .submenu-pill__item-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--color-border-strong);
+      flex-shrink: 0;
+    }
+
+    .submenu-pill__item.is-done .submenu-pill__item-dot {
+      background: #2f9e56;
+    }
+
+    .submenu-pill__item.is-active .submenu-pill__item-dot {
+      background: var(--color-accent);
+    }
+
+    .submenu-pill__item-text {
+      flex: 1;
+      font-size: 13px;
+      font-weight: 500;
+    }
+
+    .submenu-pill__item-time {
+      font-size: 11px;
+      color: var(--color-text-muted);
+      font-family: var(--font-ui);
+    }
+
+    /* ═══════════════════════════════════════════════════════════════
+       VARIANT 4: STRIP PROGRESS WITH EXPAND
+       Узкая полоса с прогрессом чтения и expand
+    ═══════════════════════════════════════════════════════════════ */
+    .submenu-strip {
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-md);
+      overflow: hidden;
+      background: var(--color-surface);
+    }
+
+    .submenu-strip__header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 14px 16px;
+      cursor: pointer;
+      transition: background var(--transition-fast);
+    }
+
+    .submenu-strip__header:hover {
+      background: var(--color-surface-muted);
+    }
+
+    .submenu-strip__left {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .submenu-strip__icon {
+      width: 36px;
+      height: 36px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: var(--color-accent-soft);
+      border-radius: var(--radius-sm);
+      color: var(--color-accent);
+    }
+
+    .submenu-strip__icon svg {
+      width: 18px;
+      height: 18px;
+      stroke: currentColor;
+      stroke-width: 2;
+      fill: none;
+    }
+
+    .submenu-strip__info {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .submenu-strip__title {
+      font-family: var(--font-ui);
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--color-text);
+    }
+
+    .submenu-strip__progress {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .submenu-strip__progress-bar {
+      width: 80px;
+      height: 4px;
+      background: var(--color-surface-muted);
+      border-radius: 2px;
+      overflow: hidden;
+    }
+
+    .submenu-strip__progress-fill {
+      height: 100%;
+      background: var(--color-accent);
+      border-radius: 2px;
+      transition: width 0.3s ease;
+    }
+
+    .submenu-strip__progress-text {
+      font-family: var(--font-ui);
+      font-size: 11px;
+      color: var(--color-text-muted);
+    }
+
+    .submenu-strip__toggle {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 28px;
+      height: 28px;
+      background: var(--color-surface-muted);
+      border-radius: 50%;
+      transition: var(--transition-medium);
+    }
+
+    .submenu-strip__toggle svg {
+      width: 12px;
+      height: 12px;
+      stroke: var(--color-text-muted);
+      stroke-width: 2.5;
+      fill: none;
+    }
+
+    .submenu-strip.is-open .submenu-strip__toggle {
+      background: var(--color-accent);
+      transform: rotate(180deg);
+    }
+
+    .submenu-strip.is-open .submenu-strip__toggle svg {
+      stroke: #fff;
+    }
+
+    .submenu-strip__body {
+      display: grid;
+      grid-template-rows: 0fr;
+      transition: grid-template-rows var(--transition-medium);
+    }
+
+    .submenu-strip.is-open .submenu-strip__body {
+      grid-template-rows: 1fr;
+    }
+
+    .submenu-strip__body-inner {
+      overflow: hidden;
+    }
+
+    .submenu-strip__parts {
+      list-style: none;
+      padding: 0 16px 16px;
+    }
+
+    .submenu-strip__part {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 0;
+      border-bottom: 1px solid var(--color-border);
+      text-decoration: none;
+      color: var(--color-text);
+    }
+
+    .submenu-strip__part:last-child {
+      border-bottom: none;
+    }
+
+    .submenu-strip__part-marker {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: var(--color-border-strong);
+      flex-shrink: 0;
+    }
+
+    .submenu-strip__part.is-done .submenu-strip__part-marker {
+      background: #2f9e56;
+    }
+
+    .submenu-strip__part.is-active .submenu-strip__part-marker {
+      background: var(--color-accent);
+      box-shadow: 0 0 0 3px var(--color-accent-soft);
+    }
+
+    .submenu-strip__part-title {
+      flex: 1;
+      font-size: 13px;
+      font-weight: 500;
+    }
+
+    .submenu-strip__part-time {
+      font-size: 11px;
+      color: var(--color-text-muted);
+      font-family: var(--font-ui);
+    }
+
+    /* ═══════════════════════════════════════════════════════════════
+       VARIANT 5: MINIMALIST EXPAND-ONLY
+       Минималистичный - только иконка + click anywhere
+    ═══════════════════════════════════════════════════════════════ */
+    .submenu-minimal {
+      position: relative;
+      display: inline-flex;
+      flex-direction: column;
+      align-items: flex-start;
+    }
+
+    .submenu-minimal__trigger {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 16px;
+      background: var(--color-surface);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-md);
+      cursor: pointer;
+      font-family: var(--font-ui);
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--color-text);
+      transition: var(--transition-fast);
+      box-shadow: var(--shadow-sm);
+      width: 100%;
+    }
+
+    .submenu-minimal__trigger:hover {
+      border-color: var(--color-accent);
+      box-shadow: var(--shadow-lg);
+    }
+
+    .submenu-minimal__trigger:focus-visible {
+      outline: 2px solid var(--color-accent);
+      outline-offset: 2px;
+    }
+
+    .submenu-minimal__icon {
+      width: 20px;
+      height: 20px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--color-accent);
+    }
+
+    .submenu-minimal__icon svg {
+      width: 18px;
+      height: 18px;
+      stroke: currentColor;
+      stroke-width: 2;
+      fill: none;
+    }
+
+    .submenu-minimal__text {
+      flex: 1;
+    }
+
+    .submenu-minimal__count {
+      font-size: 11px;
+      padding: 2px 8px;
+      background: var(--color-accent-soft);
+      color: var(--color-accent);
+      border-radius: 100px;
+      font-weight: 700;
+    }
+
+    .submenu-minimal__arrow {
+      width: 16px;
+      height: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: transform var(--transition-medium);
+    }
+
+    .submenu-minimal__arrow svg {
+      width: 12px;
+      height: 12px;
+      stroke: var(--color-text-muted);
+      stroke-width: 2.5;
+      fill: none;
+    }
+
+    .submenu-minimal.is-open .submenu-minimal__arrow {
+      transform: rotate(180deg);
+    }
+
+    .submenu-minimal__panel {
+      position: absolute;
+      top: calc(100% + 8px);
+      left: 0;
+      right: 0;
+      min-width: 280px;
+      background: var(--color-surface);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-md);
+      box-shadow: var(--shadow-xl);
+      z-index: var(--z-dropdown);
+      opacity: 0;
+      transform: translateY(-8px);
+      pointer-events: none;
+      transition: opacity var(--transition-fast), transform var(--transition-medium);
+    }
+
+    .submenu-minimal.is-open .submenu-minimal__panel {
+      opacity: 1;
+      transform: translateY(0);
+      pointer-events: auto;
+    }
+
+    .submenu-minimal__list {
+      list-style: none;
+      padding: 8px;
+    }
+
+    .submenu-minimal__item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 12px;
+      border-radius: var(--radius-sm);
+      text-decoration: none;
+      color: var(--color-text);
+      transition: background var(--transition-fast);
+    }
+
+    .submenu-minimal__item:hover {
+      background: var(--color-surface-muted);
+    }
+
+    .submenu-minimal__item.is-active {
+      background: var(--color-accent-soft);
+    }
+
+    .submenu-minimal__item-num {
+      width: 22px;
+      height: 22px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: var(--color-surface-muted);
+      border-radius: var(--radius-sm);
+      font-family: var(--font-ui);
+      font-size: 10px;
+      font-weight: 700;
+      color: var(--color-text-muted);
+      flex-shrink: 0;
+    }
+
+    .submenu-minimal__item.is-done .submenu-minimal__item-num {
+      background: var(--color-accent);
+      color: #fff;
+    }
+
+    .submenu-minimal__item-title {
+      flex: 1;
+      font-size: 13px;
+    }
+
+    .submenu-minimal__item-time {
+      font-size: 11px;
+      color: var(--color-text-muted);
+      font-family: var(--font-ui);
+    }
+
+    /* ═══════════════════════════════════════════════════════════════
+       RESPONSIVE
+    ═══════════════════════════════════════════════════════════════ */
+    @media (max-width: 640px) {
+      body {
+        padding: 24px 16px 60px;
+      }
+
+      .variant-section {
+        padding: 24px 20px;
+      }
+
+      .submenu-dropdown__panel,
+      .submenu-pill__panel,
+      .submenu-minimal__panel {
+        position: fixed;
+        top: auto;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        max-width: none;
+        border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+        max-height: 70vh;
+        transform: translateY(100%);
+      }
+
+      .submenu-dropdown.is-open .submenu-dropdown__panel,
+      .submenu-pill.is-open .submenu-pill__panel,
+      .submenu-minimal.is-open .submenu-minimal__panel {
+        transform: translateY(0);
+      }
+    }
+
+    /* ═══════════════════════════════════════════════════════════════
+       ACCESSIBILITY
+    ═══════════════════════════════════════════════════════════════ */
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after {
+        transition-duration: 0.01ms !important;
+        animation-duration: 0.01ms !important;
+      }
+    }
+
+    /* Close on outside click */
+    .submenu-dropdown,
+    .submenu-pill,
+    .submenu-minimal {
+      position: relative;
+    }
+  </style>
+</head>
+<body>
+
+<!-- Theme toggle for demo -->
+<button class="demo-theme-toggle" onclick="toggleTheme()" aria-label="Toggle theme">
+  ◐
+</button>
+
+<div style="max-width: 900px; margin: 0 auto;">
+  
+  <!-- Page header -->
+  <header class="page-header">
+    <p class="page-header__eyebrow">UI Prototypes</p>
+    <h1 class="page-header__title">Premium Submenu Variants</h1>
+    <p class="page-header__desc">
+      Пять вариантов раскрывающихся меню для серий статей с поддержкой 10+ частей.
+      Выберите подходящий и мы его доработаем.
+    </p>
+  </header>
+
+  <!-- VARIANT 1: Accordion Spoiler -->
+  <section class="variant-section" id="variant-1">
+    <div class="variant-section__header">
+      <span class="variant-badge">1</span>
+      <div>
+        <h2 class="variant-section__title">Accordion Spoiler</h2>
+        <p class="variant-section__desc">Плавное раскрытие спойлера. Показывает все части сразу.</p>
+        <div class="variant-meta">
+          <span class="variant-tag">📱 Mobile-friendly</span>
+          <span class="variant-tag">♿ Accessible</span>
+          <span class="variant-tag">⚡ CSS animation</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="submenu-accordion" data-variant="accordion">
+      <button class="submenu-accordion__trigger" aria-expanded="false" aria-controls="accordion-content">
+        <div class="submenu-accordion__left">
+          <div class="submenu-accordion__icon">
+            <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" stroke-width="2" fill="none">
+              <path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1 0-5H20"/>
+            </svg>
+          </div>
+          <div class="submenu-accordion__label">
+            <span class="submenu-accordion__title">Баптисты России</span>
+            <span class="submenu-accordion__subtitle">9 частей · ~45 мин на часть</span>
+          </div>
+        </div>
+        <div class="submenu-accordion__arrow">
+          <svg viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg>
+        </div>
+      </button>
+      <div class="submenu-accordion__body" id="accordion-content">
+        <div class="submenu-accordion__body-inner">
+          <ul class="submenu-accordion__parts">
+            <li>
+              <a href="#" class="submenu-accordion__part is-done">
+                <span class="submenu-accordion__part-num">✓</span>
+                <div class="submenu-accordion__part-info">
+                  <div class="submenu-accordion__part-title">Баптисты России: введение</div>
+                  <div class="submenu-accordion__part-meta">~45 мин · Опубликована</div>
+                </div>
+              </a>
+            </li>
+            <li>
+              <a href="#" class="submenu-accordion__part is-done">
+                <span class="submenu-accordion__part-num">✓</span>
+                <div class="submenu-accordion__part-info">
+                  <div class="submenu-accordion__part-title">Инициативная группа 1917–1920</div>
+                  <div class="submenu-accordion__part-meta">~45 мин · Опубликована</div>
+                </div>
+              </a>
+            </li>
+            <li>
+              <a href="#" class="submenu-accordion__part is-active">
+                <span class="submenu-accordion__part-num">3</span>
+                <div class="submenu-accordion__part-info">
+                  <div class="submenu-accordion__part-title">Два съезда 1884 года</div>
+                  <div class="submenu-accordion__part-meta">~45 мин · Читаете сейчас</div>
+                </div>
+              </a>
+            </li>
+            <li>
+              <a href="#" class="submenu-accordion__part">
+                <span class="submenu-accordion__part-num">4</span>
+                <div class="submenu-accordion__part-info">
+                  <div class="submenu-accordion__part-title">Южная штунда</div>
+                  <div class="submenu-accordion__part-meta">~45 мин · В работе</div>
+                </div>
+              </a>
+            </li>
+            <li>
+              <a href="#" class="submenu-accordion__part" style="opacity: 0.5; pointer-events: none;">
+                <span class="submenu-accordion__part-num">5</span>
+                <div class="submenu-accordion__part-info">
+                  <div class="submenu-accordion__part-title">Гонения и совесть</div>
+                  <div class="submenu-accordion__part-meta">Планируется</div>
+                </div>
+              </a>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- VARIANT 2: Floating Dropdown Panel -->
+  <section class="variant-section" id="variant-2">
+    <div class="variant-section__header">
+      <span class="variant-badge">2</span>
+      <div>
+        <h2 class="variant-section__title">Floating Dropdown Panel</h2>
+        <p class="variant-section__desc">Плавающая панель с автоскроллингом когда частей > видимой зоны.</p>
+        <div class="variant-meta">
+          <span class="variant-tag">📦 Max height scroll</span>
+          <span class="variant-tag">🎯 Click-to-open</span>
+          <span class="variant-tag">📋 Out-of-flow</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="submenu-dropdown" id="dropdown-demo">
+      <button class="submenu-dropdown__trigger" aria-expanded="false" aria-haspopup="true">
+        <svg width="18" height="18" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" fill="none">
+          <path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1 0-5H20"/>
+        </svg>
+        <span>Баптисты России</span>
+        <span class="submenu-dropdown__badge">9</span>
+        <span class="submenu-dropdown__chevron">
+          <svg viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg>
+        </span>
+      </button>
+      <div class="submenu-dropdown__panel" role="menu">
+        <div class="submenu-dropdown__panel-header">Выберите часть</div>
+        <ul class="submenu-dropdown__list">
+          <li>
+            <a href="#" class="submenu-dropdown__item is-done" role="menuitem">
+              <span class="submenu-dropdown__item-num">✓</span>
+              <span class="submenu-dropdown__item-title">Баптисты России: введение</span>
+              <span class="submenu-dropdown__item-time">~45м</span>
+            </a>
+          </li>
+          <li>
+            <a href="#" class="submenu-dropdown__item is-done" role="menuitem">
+              <span class="submenu-dropdown__item-num">✓</span>
+              <span class="submenu-dropdown__item-title">Инициативная группа 1917–1920</span>
+              <span class="submenu-dropdown__item-time">~45м</span>
+            </a>
+          </li>
+          <li>
+            <a href="#" class="submenu-dropdown__item is-active" role="menuitem">
+              <span class="submenu-dropdown__item-num">3</span>
+              <span class="submenu-dropdown__item-title">Два съезда 1884 года</span>
+              <span class="submenu-dropdown__item-time">~45м</span>
+            </a>
+          </li>
+          <li>
+            <a href="#" class="submenu-dropdown__item" role="menuitem">
+              <span class="submenu-dropdown__item-num">4</span>
+              <span class="submenu-dropdown__item-title">Южная штунда</span>
+              <span class="submenu-dropdown__item-time">~45м</span>
+            </a>
+          </li>
+          <li>
+            <a href="#" class="submenu-dropdown__item" role="menuitem">
+              <span class="submenu-dropdown__item-num">5</span>
+              <span class="submenu-dropdown__item-title">Гонения и совесть</span>
+              <span class="submenu-dropdown__item-time">~45м</span>
+            </a>
+          </li>
+          <li>
+            <a href="#" class="submenu-dropdown__item" role="menuitem">
+              <span class="submenu-dropdown__item-num">6</span>
+              <span class="submenu-dropdown__item-title">Советская ночь 1920–1940</span>
+              <span class="submenu-dropdown__item-time">~45м</span>
+            </a>
+          </li>
+          <li>
+            <a href="#" class="submenu-dropdown__item" role="menuitem">
+              <span class="submenu-dropdown__item-num">7</span>
+              <span class="submenu-dropdown__item-title">Подпольная печать</span>
+              <span class="submenu-dropdown__item-time">~45м</span>
+            </a>
+          </li>
+          <li>
+            <a href="#" class="submenu-dropdown__item" role="menuitem">
+              <span class="submenu-dropdown__item-num">8</span>
+              <span class="submenu-dropdown__item-title">Петербургская линия</span>
+              <span class="submenu-dropdown__item-time">~45м</span>
+            </a>
+          </li>
+          <li>
+            <a href="#" class="submenu-dropdown__item is-planned" role="menuitem">
+              <span class="submenu-dropdown__item-num">9</span>
+              <span class="submenu-dropdown__item-title">Всесоюзный съезд 1944</span>
+              <span class="submenu-dropdown__item-time">~45м</span>
+            </a>
+          </li>
+        </ul>
+        <div class="submenu-dropdown__panel-footer">3 из 9 частей прочитано</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- VARIANT 3: Compact Pill with Expand -->
+  <section class="variant-section" id="variant-3">
+    <div class="variant-section__header">
+      <span class="variant-badge">3</span>
+      <div>
+        <h2 class="variant-section__title">Compact Pill + Expand</h2>
+        <p class="variant-section__desc">Кнопка-пилюля: основная часть + отдельная кнопка раскрытия.</p>
+        <div class="variant-meta">
+          <span class="variant-tag">🎨 Styled pill</span>
+          <span class="variant-tag">✂️ Compact</span>
+          <span class="variant-tag">🔗 Split button</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="submenu-pill" id="pill-demo">
+      <button class="submenu-pill__main">
+        <span class="submenu-pill__icon">
+          <svg viewBox="0 0 24 24"><path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1 0-5H20"/></svg>
+        </span>
+        Два съезда 1884
+      </button>
+      <div class="submenu-pill__divider"></div>
+      <button class="submenu-pill__expand" aria-label="Показать все части">
+        <svg viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg>
+      </button>
+      <div class="submenu-pill__panel">
+        <ul class="submenu-pill__list">
+          <li>
+            <a href="#" class="submenu-pill__item is-done">
+              <span class="submenu-pill__item-dot"></span>
+              <span class="submenu-pill__item-text">Баптисты России: введение</span>
+              <span class="submenu-pill__item-time">~45м</span>
+            </a>
+          </li>
+          <li>
+            <a href="#" class="submenu-pill__item is-done">
+              <span class="submenu-pill__item-dot"></span>
+              <span class="submenu-pill__item-text">Инициативная группа 1917–1920</span>
+              <span class="submenu-pill__item-time">~45м</span>
+            </a>
+          </li>
+          <li>
+            <a href="#" class="submenu-pill__item is-active">
+              <span class="submenu-pill__item-dot"></span>
+              <span class="submenu-pill__item-text">Два съезда 1884 года</span>
+              <span class="submenu-pill__item-time">~45м</span>
+            </a>
+          </li>
+          <li>
+            <a href="#" class="submenu-pill__item">
+              <span class="submenu-pill__item-dot"></span>
+              <span class="submenu-pill__item-text">Южная штунда</span>
+              <span class="submenu-pill__item-time">~45м</span>
+            </a>
+          </li>
+          <li>
+            <a href="#" class="submenu-pill__item">
+              <span class="submenu-pill__item-dot"></span>
+              <span class="submenu-pill__item-text">Гонения и совесть</span>
+              <span class="submenu-pill__item-time">~45м</span>
+            </a>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- VARIANT 4: Strip Progress with Expand -->
+  <section class="variant-section" id="variant-4">
+    <div class="variant-section__header">
+      <span class="variant-badge">4</span>
+      <div>
+        <h2 class="variant-section__title">Strip Progress + Expand</h2>
+        <p class="variant-section__desc">Узкая полоса с прогрессом чтения и кнопкой раскрытия.</p>
+        <div class="variant-meta">
+          <span class="variant-tag">📊 Progress bar</span>
+          <span class="variant-tag">📏 Compact</span>
+          <span class="variant-tag">💡 Visual feedback</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="submenu-strip" id="strip-demo">
+      <div class="submenu-strip__header" role="button" tabindex="0" aria-expanded="false">
+        <div class="submenu-strip__left">
+          <div class="submenu-strip__icon">
+            <svg viewBox="0 0 24 24"><path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1 0-5H20"/></svg>
+          </div>
+          <div class="submenu-strip__info">
+            <span class="submenu-strip__title">Баптисты России · 3 из 9</span>
+            <div class="submenu-strip__progress">
+              <div class="submenu-strip__progress-bar">
+                <div class="submenu-strip__progress-fill" style="width: 33%"></div>
+              </div>
+              <span class="submenu-strip__progress-text">33%</span>
+            </div>
+          </div>
+        </div>
+        <div class="submenu-strip__toggle">
+          <svg viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg>
+        </div>
+      </div>
+      <div class="submenu-strip__body">
+        <div class="submenu-strip__body-inner">
+          <ul class="submenu-strip__parts">
+            <li>
+              <a href="#" class="submenu-strip__part is-done">
+                <span class="submenu-strip__part-marker"></span>
+                <span class="submenu-strip__part-title">Баптисты России: введение</span>
+                <span class="submenu-strip__part-time">~45м</span>
+              </a>
+            </li>
+            <li>
+              <a href="#" class="submenu-strip__part is-done">
+                <span class="submenu-strip__part-marker"></span>
+                <span class="submenu-strip__part-title">Инициативная группа 1917–1920</span>
+                <span class="submenu-strip__part-time">~45м</span>
+              </a>
+            </li>
+            <li>
+              <a href="#" class="submenu-strip__part is-active">
+                <span class="submenu-strip__part-marker"></span>
+                <span class="submenu-strip__part-title">Два съезда 1884 года</span>
+                <span class="submenu-strip__part-time">~45м</span>
+              </a>
+            </li>
+            <li>
+              <a href="#" class="submenu-strip__part">
+                <span class="submenu-strip__part-marker"></span>
+                <span class="submenu-strip__part-title">Южная штунда</span>
+                <span class="submenu-strip__part-time">~45м</span>
+              </a>
+            </li>
+            <li>
+              <a href="#" class="submenu-strip__part">
+                <span class="submenu-strip__part-marker"></span>
+                <span class="submenu-strip__part-title">Гонения и совесть</span>
+                <span class="submenu-strip__part-time">~45м</span>
+              </a>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- VARIANT 5: Minimalist Expand-Only -->
+  <section class="variant-section" id="variant-5">
+    <div class="variant-section__header">
+      <span class="variant-badge">5</span>
+      <div>
+        <h2 class="variant-section__title">Minimalist Expand-Only</h2>
+        <p class="variant-section__desc">Минималистичный вариант — только иконка + click anywhere.</p>
+        <div class="variant-meta">
+          <span class="variant-tag">🎯 Minimal</span>
+          <span class="variant-tag">📐 One-line</span>
+          <span class="variant-tag">✨ Clean</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="submenu-minimal" id="minimal-demo">
+      <button class="submenu-minimal__trigger" aria-expanded="false">
+        <span class="submenu-minimal__icon">
+          <svg viewBox="0 0 24 24"><path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1 0-5H20"/></svg>
+        </span>
+        <span class="submenu-minimal__text">Баптисты России: все части</span>
+        <span class="submenu-minimal__count">9</span>
+        <span class="submenu-minimal__arrow">
+          <svg viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg>
+        </span>
+      </button>
+      <div class="submenu-minimal__panel">
+        <ul class="submenu-minimal__list">
+          <li>
+            <a href="#" class="submenu-minimal__item is-done">
+              <span class="submenu-minimal__item-num">✓</span>
+              <span class="submenu-minimal__item-title">Баптисты России: введение</span>
+              <span class="submenu-minimal__item-time">~45м</span>
+            </a>
+          </li>
+          <li>
+            <a href="#" class="submenu-minimal__item is-done">
+              <span class="submenu-minimal__item-num">✓</span>
+              <span class="submenu-minimal__item-title">Инициативная группа 1917–1920</span>
+              <span class="submenu-minimal__item-time">~45м</span>
+            </a>
+          </li>
+          <li>
+            <a href="#" class="submenu-minimal__item is-active">
+              <span class="submenu-minimal__item-num">3</span>
+              <span class="submenu-minimal__item-title">Два съезда 1884 года</span>
+              <span class="submenu-minimal__item-time">~45м</span>
+            </a>
+          </li>
+          <li>
+            <a href="#" class="submenu-minimal__item">
+              <span class="submenu-minimal__item-num">4</span>
+              <span class="submenu-minimal__item-title">Южная штунда</span>
+              <span class="submenu-minimal__item-time">~45м</span>
+            </a>
+          </li>
+          <li>
+            <a href="#" class="submenu-minimal__item">
+              <span class="submenu-minimal__item-num">5</span>
+              <span class="submenu-minimal__item-title">Гонения и совесть</span>
+              <span class="submenu-minimal__item-time">~45м</span>
+            </a>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- Info section -->
+  <section class="variant-section" style="background: var(--color-surface-muted);">
+    <h3 style="font-family: var(--font-ui); font-size: 14px; font-weight: 700; margin-bottom: 16px; color: var(--color-text);">
+      ℹ️ Что дальше?
+    </h3>
+    <p style="font-size: 14px; color: var(--color-text-muted); line-height: 1.7; font-family: var(--font-ui);">
+      Выберите вариант который вам ближе (1-5) или комбинацию идей. 
+      Мы доработаем выбранный вариант под премиум-стиль проекта с поддержкой:
+    </p>
+    <ul style="margin-top: 12px; padding-left: 20px; font-size: 13px; color: var(--color-text-muted); line-height: 1.8; font-family: var(--font-ui);">
+      <li>Автоскроллинг когда частей больше чем видно (10+)</li>
+      <li>По умолчанию скроллинг скрыт, появляется только при необходимости</li>
+      <li>Анимации open/close с предотвращением layout shift</li>
+      <li>Accessible: keyboard nav, ARIA, focus management</li>
+      <li>Light/dark theme из коробки</li>
+      <li>Mobile: панель снизу как sheet</li>
+    </ul>
+    <p style="margin-top: 16px; font-size: 14px; color: var(--color-text-muted); font-family: var(--font-ui);">
+      <strong style="color: var(--color-accent);">Также:</strong> покажите скриншот вашего браузера или опишите что не нравится — поправим.
+    </p>
+  </section>
+
+</div>
+
+<script>
+  // ═══════════════════════════════════════════════════════════════
+  // THEME TOGGLE
+  // ═══════════════════════════════════════════════════════════════
+  function toggleTheme() {
+    const html = document.documentElement;
+    if (html.classList.contains('light')) {
+      html.classList.remove('light');
+      html.classList.add('dark');
+    } else {
+      html.classList.remove('dark');
+      html.classList.add('light');
+    }
+  }
+
+  // ═══════════════════════════════════════════════════════════════
+  // VARIANT 1: Accordion
+  // ═══════════════════════════════════════════════════════════════
+  const accordion = document.querySelector('[data-variant="accordion"]');
+  const accordionTrigger = accordion.querySelector('.submenu-accordion__trigger');
+  
+  accordionTrigger.addEventListener('click', () => {
+    const expanded = accordionTrigger.getAttribute('aria-expanded') === 'true';
+    accordionTrigger.setAttribute('aria-expanded', !expanded);
+  });
+
+  // ═══════════════════════════════════════════════════════════════
+  // VARIANT 2: Dropdown Panel
+  // ═══════════════════════════════════════════════════════════════
+  const dropdown = document.getElementById('dropdown-demo');
+  const dropdownTrigger = dropdown.querySelector('.submenu-dropdown__trigger');
+
+  dropdownTrigger.addEventListener('click', (e) => {
+    e.stopPropagation();
+    dropdown.classList.toggle('is-open');
+    const expanded = dropdown.classList.contains('is-open');
+    dropdownTrigger.setAttribute('aria-expanded', expanded);
+  });
+
+  // Close on outside click
+  document.addEventListener('click', (e) => {
+    if (!dropdown.contains(e.target)) {
+      dropdown.classList.remove('is-open');
+      dropdownTrigger.setAttribute('aria-expanded', 'false');
+    }
+  });
+
+  // ═══════════════════════════════════════════════════════════════
+  // VARIANT 3: Pill Expand
+  // ═══════════════════════════════════════════════════════════════
+  const pill = document.getElementById('pill-demo');
+  const pillExpand = pill.querySelector('.submenu-pill__expand');
+
+  pillExpand.addEventListener('click', (e) => {
+    e.stopPropagation();
+    pill.classList.toggle('is-open');
+    const expanded = pill.classList.contains('is-open');
+    pillExpand.setAttribute('aria-expanded', expanded);
+  });
+
+  document.addEventListener('click', (e) => {
+    if (!pill.contains(e.target)) {
+      pill.classList.remove('is-open');
+      pillExpand.setAttribute('aria-expanded', 'false');
+    }
+  });
+
+  // ═══════════════════════════════════════════════════════════════
+  // VARIANT 4: Strip Progress
+  // ═══════════════════════════════════════════════════════════════
+  const strip = document.getElementById('strip-demo');
+  const stripHeader = strip.querySelector('.submenu-strip__header');
+
+  stripHeader.addEventListener('click', () => {
+    strip.classList.toggle('is-open');
+    const expanded = strip.classList.contains('is-open');
+    stripHeader.setAttribute('aria-expanded', expanded);
+  });
+
+  stripHeader.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault();
+      stripHeader.click();
+    }
+  });
+
+  // ═══════════════════════════════════════════════════════════════
+  // VARIANT 5: Minimalist Expand
+  // ═══════════════════════════════════════════════════════════════
+  const minimal = document.getElementById('minimal-demo');
+  const minimalTrigger = minimal.querySelector('.submenu-minimal__trigger');
+
+  minimalTrigger.addEventListener('click', (e) => {
+    e.stopPropagation();
+    minimal.classList.toggle('is-open');
+    const expanded = minimal.classList.contains('is-open');
+    minimalTrigger.setAttribute('aria-expanded', expanded);
+  });
+
+  document.addEventListener('click', (e) => {
+    if (!minimal.contains(e.target)) {
+      minimal.classList.remove('is-open');
+      minimalTrigger.setAttribute('aria-expanded', 'false');
+    }
+  });
+
+  // ═══════════════════════════════════════════════════════════════
+  // ESCAPE KEY CLOSES ALL
+  // ═══════════════════════════════════════════════════════════════
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') {
+      dropdown.classList.remove('is-open');
+      pill.classList.remove('is-open');
+      minimal.classList.remove('is-open');
+      accordionTrigger.setAttribute('aria-expanded', 'false');
+      stripHeader.setAttribute('aria-expanded', 'false');
+    }
+  });
+
+  // ═══════════════════════════════════════════════════════════════
+  // OPTIONAL: Sync CSS grid-template-rows for browsers without support
+  // ═══════════════════════════════════════════════════════════════
+  if (!CSS.supports('grid-template-rows', '0fr')) {
+    accordion.querySelector('.submenu-accordion__body').style.cssText += 
+      'display: block; max-height: 0; overflow: hidden; transition: max-height 0.35s;';
+    accordionTrigger.addEventListener('click', () => {
+      const body = accordion.querySelector('.submenu-accordion__body');
+      if (accordionTrigger.getAttribute('aria-expanded') === 'true') {
+        body.style.maxHeight = body.scrollHeight + 'px';
+      } else {
+        body.style.maxHeight = '0';
+      }
+    });
+  }
+</script>
+
+</body>
+</html>
