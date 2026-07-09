@@ -28,9 +28,9 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  diagnose-static:
+  audit:
     runs-on: ubuntu-latest
-    timeout-minutes: 25
+    timeout-minutes: 55
     steps:
       - name: Checkout lane
         uses: actions/checkout@v4
@@ -44,26 +44,57 @@ jobs:
       - name: Install dependencies
         run: npm ci --no-audit --no-fund
 
-      - name: Static publication gates
-        id: static
-        continue-on-error: true
-        run: |
-          mkdir -p reports/gill-image-gate-logs
-          set -o pipefail
-          npm run validate:static-publication 2>&1 | tee reports/gill-image-gate-logs/validate-static-publication.log
+      - name: Install Chromium
+        run: npx playwright install --with-deps chromium
 
-      - name: Upload gate log
+      - name: Download fonts
+        run: node scripts/download-fonts.js || echo 'Fonts already present or download skipped'
+
+      - name: Static publication gates
+        run: npm run validate:static-publication
+
+      - name: Strict native runtime audit
+        run: npm run native:runtime:audit:strict
+
+      - name: Build production-like dist
+        run: npm run strangler:build:production-like
+
+      - name: Start local dist server
+        run: |
+          python3 -m http.server 4173 --directory dist >/tmp/gill-audit-server.log 2>&1 &
+          echo $! >/tmp/gill-audit-server.pid
+          for i in $(seq 1 45); do
+            if curl -fsS http://127.0.0.1:4173/ >/dev/null; then
+              exit 0
+            fi
+            sleep 1
+          done
+          cat /tmp/gill-audit-server.log
+          exit 1
+
+      - name: Capture Gill image geometry and screenshots
+        env:
+          BASE_URL: http://127.0.0.1:4173
+        run: node scripts/gill-image-audit-temp.mjs
+
+      - name: Preserve source styles for selector tracing
+        if: always()
+        run: |
+          mkdir -p reports/gill-image-premium-audit/source
+          cp css/site.css reports/gill-image-premium-audit/source/site.css
+          cp css/floating-cluster.css reports/gill-image-premium-audit/source/floating-cluster.css
+
+      - name: Upload audit package
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: gill-image-static-gate-log
-          path: reports/gill-image-gate-logs/
+          name: gill-image-premium-audit
+          path: reports/gill-image-premium-audit/
           retention-days: 7
 
-      - name: Enforce static gate
+      - name: Summary
         if: always()
-        env:
-          STATIC_OUTCOME: ${{ steps.static.outcome }}
         run: |
-          echo "static=$STATIC_OUTCOME"
-          test "$STATIC_OUTCOME" = success
+          if [ -f reports/gill-image-premium-audit/SUMMARY.md ]; then
+            cat reports/gill-image-premium-audit/SUMMARY.md >> "$GITHUB_STEP_SUMMARY"
+          fi
