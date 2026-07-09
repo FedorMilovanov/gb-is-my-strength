@@ -70,7 +70,7 @@ jobs:
         run: |
           mkdir -p reports
           set -o pipefail
-          node scripts/route-source-contract-audit.js --strict --articles-only 2>&1 \
+          node scripts/route-source-contract-audit.js --strict 2>&1 \
             | tee reports/native-source-contract-source.log
 
       - name: Install dependencies
