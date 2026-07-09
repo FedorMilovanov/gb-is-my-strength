@@ -5,172 +5,74 @@ const fs = require('fs');
 const path = require('path');
 const {
   ROOT,
-  findProfileFile,
-} = require('./lib/route-source-contract');
+  isProductionAstro,
+  normalizeRouteMatrix,
+} = require('./lib/route-matrix-normalizer');
 
 const MATRIX_FILE = path.join(ROOT, 'migration/route-migration-matrix.json');
 const OWNERSHIP_FILE = path.join(ROOT, 'migration/page-ownership.json');
 const WRITE = process.argv.includes('--write');
-const CHECK = process.argv.includes('--check') || !WRITE;
-const CHANGELOG_TEXT = 'Native Source Contract v1: runtime matrix now covers all production routes; semantic edit exclusions moved to semanticEditExclusions; missing Astro production entries are derived from ownership + route profiles.';
-const MARKER_CHANGELOG_TEXT = 'Runtime requiredMarkers normalized: source-only Astro component identifiers are not valid dist markers and are removed deterministically.';
+const REQUIRE_MATERIALIZED = process.argv.includes('--require-materialized');
 
 function readJson(file) {
   return JSON.parse(fs.readFileSync(file, 'utf8'));
 }
 
-function normalizeRouteForPattern(route) {
-  return route.replace(/^\/+|\/+$/g, '');
-}
-
-function matchesGlob(value, pattern) {
-  const escaped = pattern
-    .replace(/[.+^${}()|[\]\\]/g, '\\$&')
-    .replace(/\*\*/g, '§§DOUBLESTAR§§')
-    .replace(/\*/g, '[^/]*')
-    .replace(/§§DOUBLESTAR§§/g, '.*')
-    .replace(/\?/g, '.');
-  return new RegExp(`^${escaped}$`).test(value);
-}
-
-function matchesAny(route, patterns) {
-  const value = normalizeRouteForPattern(route);
-  return patterns.some((pattern) => matchesGlob(value, pattern));
-}
-
-function isProductionAstro(owner) {
-  return owner?.owner === 'astro' && owner?.status === 'production-dist';
-}
-
-function sourceHasPagefindBody(sourceRel) {
-  if (!sourceRel) return false;
-  const file = path.join(ROOT, sourceRel);
-  return fs.existsSync(file) && fs.readFileSync(file, 'utf8').includes('data-pagefind-body');
-}
-
-function isSourceOnlyComponentMarker(marker) {
-  return typeof marker === 'string' &&
-    /^[A-Z][A-Za-z0-9]*(?:Shell|Component|Page|Body|Head|Footer|Chrome)$/.test(marker);
-}
-
-function normalizeRequiredMarkers(contract) {
-  if (!Array.isArray(contract.requiredMarkers)) return [];
-  const removed = contract.requiredMarkers.filter(isSourceOnlyComponentMarker);
-  contract.requiredMarkers = [...new Set(contract.requiredMarkers.filter((marker) => !isSourceOnlyComponentMarker(marker)))];
-  return removed;
-}
-
-function createMissingContract(route, owner, profile, semanticEditExclusions, matrixModes) {
-  const mode = profile?.migrationMode;
-  if (!mode) throw new Error(`${route}: route profile has no migrationMode`);
-  if (!matrixModes.has(mode)) throw new Error(`${route}: profile migrationMode ${mode} is not declared in matrix.modes`);
-  if (!owner.source) throw new Error(`${route}: page ownership has no source`);
-
-  const contract = {
-    mode,
-    source: owner.source,
-  };
-
-  const semanticProtected = profile?.scope === 'excluded-semantic-lane' || matchesAny(route, semanticEditExclusions);
-  if (semanticProtected) contract.scope = 'excluded-semantic-lane';
-
-  contract.requiredMarkers = sourceHasPagefindBody(owner.source) ? ['data-pagefind-body'] : [];
-  contract.audits = ['native-source-contract', 'native-runtime-taxonomy'];
-  contract.reason = 'Runtime ownership registered from page-ownership + route profile. Semantic editing protection, when present, does not exempt runtime checks.';
-  return contract;
-}
-
-function normalizeMatrix(matrix, ownership) {
-  const next = JSON.parse(JSON.stringify(matrix));
-  const legacyExclusions = Array.isArray(next.semanticEditExclusions)
-    ? next.semanticEditExclusions
-    : Array.isArray(next.exclude)
-      ? next.exclude
-      : [];
-
-  next.version = '2026-07-09.native-source-contract-v1';
-  next.scope = 'all-production-routes-runtime-contract';
-  next.source = 'Native Source Contract v1; semantic edit exclusions do not exempt production routes from runtime ownership checks';
-  next.semanticEditExclusions = legacyExclusions;
-  next.exclude = [];
-  next.routes ||= {};
-  next.changelog ||= [];
-
-  const matrixModes = new Set(Object.keys(next.modes || {}));
-  const added = [];
-  const removedMarkers = [];
-
-  for (const [route, owner] of Object.entries(ownership.routes || {})) {
-    if (!isProductionAstro(owner)) continue;
-    const profileFile = findProfileFile(route);
-    if (!profileFile) throw new Error(`${route}: production Astro route has no route profile`);
-    const profile = readJson(profileFile);
-
-    if (!next.routes[route]) {
-      next.routes[route] = createMissingContract(route, owner, profile, legacyExclusions, matrixModes);
-      added.push(route);
-      continue;
-    }
-
-    const contract = next.routes[route];
-    for (const marker of normalizeRequiredMarkers(contract)) {
-      removedMarkers.push({ route, marker });
-    }
-
-    if (contract.source !== owner.source) {
-      throw new Error(`${route}: matrix source ${contract.source} != ownership source ${owner.source}`);
-    }
-    if (profile.migrationMode && contract.mode !== profile.migrationMode) {
-      throw new Error(`${route}: matrix mode ${contract.mode} != profile migrationMode ${profile.migrationMode}`);
-    }
-    if (profile.scope === 'excluded-semantic-lane' || matchesAny(route, legacyExclusions)) {
-      contract.scope = 'excluded-semantic-lane';
-    }
-  }
-
-  if (!next.changelog.some((entry) => entry?.date === '2026-07-09' && entry?.change === CHANGELOG_TEXT)) {
-    next.changelog.push({ date: '2026-07-09', change: CHANGELOG_TEXT });
-  }
-  if (removedMarkers.length && !next.changelog.some((entry) => entry?.date === '2026-07-09' && entry?.change === MARKER_CHANGELOG_TEXT)) {
-    next.changelog.push({ date: '2026-07-09', change: MARKER_CHANGELOG_TEXT });
-  }
-
-  return { next, added, removedMarkers };
+function stripDerivedFlags(value) {
+  const clone = JSON.parse(JSON.stringify(value));
+  for (const contract of Object.values(clone.routes || {})) delete contract.derived;
+  return clone;
 }
 
 function main() {
-  const matrix = readJson(MATRIX_FILE);
+  const rawMatrix = readJson(MATRIX_FILE);
   const ownership = readJson(OWNERSHIP_FILE);
   const original = fs.readFileSync(MATRIX_FILE, 'utf8');
-  const { next, added, removedMarkers } = normalizeMatrix(matrix, ownership);
-  const serialized = `${JSON.stringify(next, null, 2)}\n`;
+  const { next, derivedRoutes, removedMarkers } = normalizeRouteMatrix(rawMatrix, ownership);
+  const materialized = stripDerivedFlags(next);
+  const serialized = `${JSON.stringify(materialized, null, 2)}\n`;
+  const productionRoutes = Object.values(ownership.routes || {}).filter(isProductionAstro).length;
+  const effectiveRoutes = Object.keys(next.routes || {}).length;
 
-  console.log('=== Route Migration Matrix Synchronizer ===');
-  console.log(`Mode: ${WRITE ? 'WRITE' : 'CHECK'}`);
-  console.log(`Production routes: ${Object.values(ownership.routes || {}).filter(isProductionAstro).length}`);
-  console.log(`Matrix routes after normalization: ${Object.keys(next.routes || {}).length}`);
-  console.log(`Missing contracts derived: ${added.length}`);
-  added.forEach((route) => console.log(`  + ${route}`));
-  console.log(`Source-only runtime markers removed: ${removedMarkers.length}`);
-  removedMarkers.forEach(({ route, marker }) => console.log(`  - ${route}: ${marker}`));
+  console.log('=== Route Migration Matrix Contract ===');
+  console.log(`Mode: ${WRITE ? 'MATERIALIZE' : REQUIRE_MATERIALIZED ? 'CHECK MATERIALIZED' : 'CHECK EFFECTIVE'}`);
+  console.log(`Production Astro routes: ${productionRoutes}`);
+  console.log(`Explicit raw overrides: ${Object.keys(rawMatrix.routes || {}).length}`);
+  console.log(`Effective runtime contracts: ${effectiveRoutes}`);
+  console.log(`Contracts derived in memory: ${derivedRoutes.length}`);
+  console.log(`Source-only markers normalized in memory: ${removedMarkers.length}`);
+
+  if (effectiveRoutes !== productionRoutes) {
+    throw new Error(`effective registry size ${effectiveRoutes} != production Astro route count ${productionRoutes}`);
+  }
 
   if (WRITE) {
     if (serialized === original) {
-      console.log('✅ Matrix already normalized; no write needed');
+      console.log('✅ Materialized matrix already matches the effective registry');
       return;
     }
     fs.writeFileSync(MATRIX_FILE, serialized, 'utf8');
-    console.log(`✅ Wrote ${path.relative(ROOT, MATRIX_FILE).replace(/\\/g, '/')}`);
+    console.log(`✅ Materialized ${path.relative(ROOT, MATRIX_FILE).replace(/\\/g, '/')}`);
     return;
   }
 
-  if (CHECK && serialized !== original) {
-    console.error('❌ Route migration matrix is not synchronized.');
-    console.error('Run: node scripts/sync-route-migration-matrix.js --write');
+  if (REQUIRE_MATERIALIZED && serialized !== original) {
+    console.error('❌ Raw matrix is not a full materialization of the effective registry.');
+    console.error('Run explicitly: node scripts/sync-route-migration-matrix.js --write');
     process.exit(1);
   }
 
-  console.log('✅ Route migration matrix is synchronized');
+  if (derivedRoutes.length) {
+    console.log('ℹ️ Raw matrix intentionally stores overrides; missing route contracts are derived from ownership + profiles.');
+    derivedRoutes.slice(0, 30).forEach((route) => console.log(`  + ${route}`));
+    if (derivedRoutes.length > 30) console.log(`  …and ${derivedRoutes.length - 30} more`);
+  }
+  if (removedMarkers.length) {
+    console.log('ℹ️ Invalid source-only marker overrides are ignored by the effective registry:');
+    removedMarkers.forEach(({ route, marker }) => console.log(`  - ${route}: ${marker}`));
+  }
+
+  console.log('✅ Effective route migration registry is complete and coherent');
 }
 
 try {
