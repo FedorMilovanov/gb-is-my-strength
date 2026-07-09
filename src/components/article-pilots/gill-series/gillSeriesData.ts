@@ -85,9 +85,9 @@ export const GILL_SERIES_ITEMS: GillSeriesItem[] = [
   {
     id: "part4",
     mark: { kind: "roman", value: "IV" },
-    title: "Часть IV. Богословие",
-    shortTitle: "Богословие",
-    href: "/articles/dzhon-gill-chast-4-bogoslovie/",
+    title: "Часть IV. Экзегет",
+    shortTitle: "Экзегет",
+    href: "/articles/dzhon-gill-chast-4-ekzeget/",
     readingTime: "71 мин",
   },
   {
@@ -224,15 +224,15 @@ export const GILL_PAGE_DATA: Record<GillSeriesPageId, GillPageChromeData> = {
   part4: {
     id: "part4",
     label: "Джон Гилл",
-    title: "Часть IV. Богословие",
-    mobileSection: "Часть IV. Богословие",
+    title: "Часть IV. Экзегет",
+    mobileSection: "Часть IV. Экзегет",
     partLabel: "Часть IV · Содержание",
     readingProgressDoneMin: 141,
     readingProgressPartMin: 71,
     readingProgressTotalMin: 220,
-    railNowTitle: "Часть IV. Богословие",
-    railCover: "../../images/og-dzhon-gill-chast-4-bogoslovie-600w.webp",
-    partDialogLabel: "Часть IV · Богословие",
+    railNowTitle: "Часть IV. Экзегет",
+    railCover: "../../images/og-dzhon-gill-chast-4-ekzeget-600w.webp",
+    partDialogLabel: "Часть IV · Экзегет",
     partToc: [
       { href: "#sec-exegete-intro", label: "Джон Гилл: экзегет за работой", level: 2, current: true },
       { href: "#sec-method", label: "Герменевтический метод: пять координат", level: 3 },

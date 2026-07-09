@@ -127,7 +127,7 @@ auditComponent(
 );
 const part4Base = 'src/components/article-pilots/gill-part4';
 auditComponent(
-  'dzhon-gill-chast-4-bogoslovie',
+  'dzhon-gill-chast-4-ekzeget',
   `${part4Base}/GillPart4ArticleBody.astro`,
   [`${part4Base}/GillPart4ArticleBody.astro`],
   3000,

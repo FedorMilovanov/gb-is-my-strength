@@ -42,7 +42,7 @@ for (const [rel, markers] of Object.entries({
   'articles/dzhon-gill-chast-1-chelovek/index.html': ['gbs-world', 'data-gbs2-series="dzhon-gill"', 'gbs-rail', 'gbs2-hero'],
   'articles/dzhon-gill-chast-2-uchenyi/index.html': ['gbs-world', 'data-gbs2-series="dzhon-gill"', 'gbs-rail', 'gbs2-hero'],
   'articles/dzhon-gill-chast-3-nasledie/index.html': ['gbs-world', 'data-gbs2-series="dzhon-gill"', 'gbs-rail', 'gbs2-hero'],
-  'articles/dzhon-gill-chast-4-bogoslovie/index.html': ['gbs-world', 'data-gbs2-series="dzhon-gill"', 'gbs-rail', 'gbs2-hero'],
+  'articles/dzhon-gill-chast-4-ekzeget/index.html': ['gbs-world', 'data-gbs2-series="dzhon-gill"', 'gbs-rail', 'gbs2-hero'],
 })) {
   for (const marker of markers) mustContain(rel, marker);
   mustNotContain(rel, 'astro-page', 'generic Astro page shell');
