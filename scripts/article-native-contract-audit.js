@@ -6,6 +6,7 @@ const path = require('path');
 const { spawnSync } = require('child_process');
 const {
   ROOT,
+  ARTICLE_ROUTE_TYPES,
   loadRouteRecords,
   validateRecord,
 } = require('./lib/route-source-contract');
@@ -14,8 +15,15 @@ const DIST = path.join(ROOT, 'dist');
 const BASELINE_FILE = path.join(ROOT, 'data/public-content-baseline.json');
 const NO_BUILD = process.argv.includes('--no-build');
 const REQUIRE_CONTENT_PARITY = process.argv.includes('--require-content-parity');
+const ARTICLES_ONLY = process.argv.includes('--articles-only');
+const SERIES_ONLY = process.argv.includes('--series-only');
 const SITE = 'https://gospod-bog.ru';
 const RETIRED_PREVIEW_REL = 'dev/article-mdx-pilot/index.html';
+
+if (ARTICLES_ONLY && SERIES_ONLY) {
+  console.error('❌ Use only one of --articles-only or --series-only');
+  process.exit(2);
+}
 
 const errors = [];
 const warnings = [];
@@ -163,6 +171,13 @@ function assertSelfConsistentMetadata(label, html, expectedUrl) {
   }
 }
 
+function routeTypeSelected(routeType) {
+  if (!ARTICLE_ROUTE_TYPES.has(routeType)) return false;
+  if (ARTICLES_ONLY) return routeType === 'article';
+  if (SERIES_ONLY) return routeType === 'series-article';
+  return true;
+}
+
 function auditArticle(record, baselineByUrl) {
   const { route, profile, matrix } = record;
   const label = profile.slug || route;
@@ -170,7 +185,7 @@ function auditArticle(record, baselineByUrl) {
   const distPath = path.join(DIST, rel);
   const expectedUrl = expectedCanonical(route);
 
-  console.log(`\nARTICLE: ${route}`);
+  console.log(`\n${profile.routeType === 'series-article' ? 'SERIES ARTICLE' : 'ARTICLE'}: ${route}`);
 
   const sourceResult = validateRecord(record, { strict: true });
   sourceResult.errors.forEach((message) => bad(message));
@@ -227,7 +242,8 @@ function auditArticle(record, baselineByUrl) {
 }
 
 function main() {
-  console.log(`ARTICLE NATIVE CONTRACT AUDIT (${NO_BUILD ? 'no-build' : 'production-like build'})`);
+  const scope = ARTICLES_ONLY ? 'standalone articles' : SERIES_ONLY ? 'series articles' : 'all native articles';
+  console.log(`ARTICLE NATIVE CONTRACT AUDIT (${NO_BUILD ? 'no-build' : 'production-like build'}; ${scope})`);
   console.log('Legacy HTML and MDX references are migration evidence, not current production truth.');
 
   runBuild();
@@ -239,8 +255,8 @@ function main() {
   const articles = records.filter((record) =>
     record.owner.owner === 'astro' &&
     record.owner.status === 'production-dist' &&
-    record.profile?.routeType === 'article' &&
-    record.profile?.migrationMode === 'strict-native'
+    record.profile?.migrationMode === 'strict-native' &&
+    routeTypeSelected(record.profile?.routeType)
   );
   const baselineByUrl = loadBaseline();
 
@@ -249,11 +265,11 @@ function main() {
   console.log('');
   if (errors.length) {
     console.error(`❌ Article native contract audit failed (${errors.length} error(s))`);
-    errors.slice(0, 60).forEach((message) => console.error(`  - ${message}`));
+    errors.slice(0, 80).forEach((message) => console.error(`  - ${message}`));
     process.exit(1);
   }
 
-  console.log(`✅ Article native contract audit passed (${articles.length} article(s))`);
+  console.log(`✅ Article native contract audit passed (${articles.length} route(s))`);
   if (warnings.length) console.log(`ℹ️ Warnings: ${warnings.length}`);
 }
 
