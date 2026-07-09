@@ -1,7 +1,7 @@
 {
   "version": "2026-07-09.native-source-contract-v1",
-  "scope": "all-production-routes-runtime-contract",
-  "source": "Native Source Contract v1; semantic edit exclusions do not exempt production routes from runtime ownership checks",
+  "scope": "production-route-overrides-plus-derived-contracts",
+  "source": "Effective runtime registry is derived from page-ownership + route profiles; this file stores modes, semantic edit policy and explicit route overrides",
   "modes": {
     "strict-native": {
       "description": "Astro route rendered from native Astro components only. No runtime legacy HTML/raw-fragment transport.",
@@ -390,26 +390,6 @@
       ],
       "reason": "Runtime ownership registered from page-ownership + route profile. Semantic editing protection, when present, does not exempt runtime checks."
     },
-    "/karty/david/": {
-      "mode": "strict-native",
-      "source": "src/pages/karty/david/index.astro",
-      "requiredMarkers": [],
-      "audits": [
-        "native-source-contract",
-        "native-runtime-taxonomy"
-      ],
-      "reason": "Runtime ownership registered from page-ownership + route profile. Semantic editing protection, when present, does not exempt runtime checks."
-    },
-    "/karty/isus/": {
-      "mode": "strict-native",
-      "source": "src/pages/karty/isus/index.astro",
-      "requiredMarkers": [],
-      "audits": [
-        "native-source-contract",
-        "native-runtime-taxonomy"
-      ],
-      "reason": "Runtime ownership registered from page-ownership + route profile. Semantic editing protection, when present, does not exempt runtime checks."
-    },
     "/karty/pavel/": {
       "mode": "strict-native",
       "source": "src/pages/karty/pavel/index.astro",
@@ -594,6 +574,100 @@
         "native-runtime-taxonomy"
       ],
       "reason": "Runtime ownership registered from page-ownership + route profile. Semantic editing protection, when present, does not exempt runtime checks."
+    },
+    "/karty/ishod/": {
+      "mode": "strict-native-app",
+      "source": "src/pages/karty/ishod/index.astro",
+      "requiredMarkers": [],
+      "audits": [
+        "native-source-contract",
+        "native-runtime-taxonomy"
+      ],
+      "reason": "Runtime ownership derived from page-ownership + route profile. Semantic edit protection never exempts runtime checks."
+    },
+    "/karty/shoftim/": {
+      "mode": "strict-native-app",
+      "source": "src/pages/karty/shoftim/index.astro",
+      "requiredMarkers": [
+        "data-pagefind-body"
+      ],
+      "audits": [
+        "native-source-contract",
+        "native-runtime-taxonomy"
+      ],
+      "reason": "Runtime ownership derived from page-ownership + route profile. Semantic edit protection never exempts runtime checks."
+    },
+    "/karty/melachim/": {
+      "mode": "strict-native-app",
+      "source": "src/pages/karty/melachim/index.astro",
+      "requiredMarkers": [
+        "data-pagefind-body"
+      ],
+      "audits": [
+        "native-source-contract",
+        "native-runtime-taxonomy"
+      ],
+      "reason": "Runtime ownership derived from page-ownership + route profile. Semantic edit protection never exempts runtime checks."
+    },
+    "/karty/shvatim/": {
+      "mode": "strict-native-app",
+      "source": "src/pages/karty/shvatim/index.astro",
+      "requiredMarkers": [
+        "data-pagefind-body"
+      ],
+      "audits": [
+        "native-source-contract",
+        "native-runtime-taxonomy"
+      ],
+      "reason": "Runtime ownership derived from page-ownership + route profile. Semantic edit protection never exempts runtime checks."
+    },
+    "/karty/yeshua/": {
+      "mode": "strict-native-app",
+      "source": "src/pages/karty/yeshua/index.astro",
+      "requiredMarkers": [
+        "data-pagefind-body"
+      ],
+      "audits": [
+        "native-source-contract",
+        "native-runtime-taxonomy"
+      ],
+      "reason": "Runtime ownership derived from page-ownership + route profile. Semantic edit protection never exempts runtime checks."
+    },
+    "/karty/maccabim/": {
+      "mode": "strict-native-app",
+      "source": "src/pages/karty/maccabim/index.astro",
+      "requiredMarkers": [
+        "data-pagefind-body"
+      ],
+      "audits": [
+        "native-source-contract",
+        "native-runtime-taxonomy"
+      ],
+      "reason": "Runtime ownership derived from page-ownership + route profile. Semantic edit protection never exempts runtime checks."
+    },
+    "/karty/early-church/": {
+      "mode": "strict-native-app",
+      "source": "src/pages/karty/early-church/index.astro",
+      "requiredMarkers": [
+        "data-pagefind-body"
+      ],
+      "audits": [
+        "native-source-contract",
+        "native-runtime-taxonomy"
+      ],
+      "reason": "Runtime ownership derived from page-ownership + route profile. Semantic edit protection never exempts runtime checks."
+    },
+    "/karty/revelation/": {
+      "mode": "strict-native-app",
+      "source": "src/pages/karty/revelation/index.astro",
+      "requiredMarkers": [
+        "data-pagefind-body"
+      ],
+      "audits": [
+        "native-source-contract",
+        "native-runtime-taxonomy"
+      ],
+      "reason": "Runtime ownership derived from page-ownership + route profile. Semantic edit protection never exempts runtime checks."
     }
   },
   "changelog": [
@@ -604,6 +678,10 @@
     {
       "date": "2026-07-09",
       "change": "Runtime requiredMarkers normalized: source-only Astro component identifiers are not valid dist markers and are removed deterministically."
+    },
+    {
+      "date": "2026-07-09",
+      "change": "Orphan raw matrix overrides without page-ownership records are excluded from the effective runtime registry and reported for later quarantine cleanup."
     }
   ]
 }

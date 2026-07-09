@@ -31,8 +31,6 @@ interface Props {
   hideHeader?: boolean;
   hideFooter?: boolean;
   legacyStylesheets?: string[];
-  headHtml?: string;
-  bodyEndHtml?: string;
   includeLegacyRuntime?: boolean;
 }
 const {
@@ -59,8 +57,6 @@ const {
   hideHeader = false,
   hideFooter = false,
   legacyStylesheets = [],
-  headHtml = '',
-  bodyEndHtml = '',
   includeLegacyRuntime = true,
 } = Astro.props;
 
@@ -77,49 +73,41 @@ function routeToLegacyFile(canonicalUrl: string) {
   }
 }
 
-// Legacy runtime I/O and dead helper functions removed (REF-01 / REF-02)
+// Legacy runtime I/O and dead helper functions removed (REF-01 / REF-02).
+// The generic runtime is now emitted as native Astro <script> elements in the
+// body (see below) instead of a raw-HTML string blob — strict-native clean
+// per the route-source contract (no legacy runtime transport markers).
 
-function makeGenericRuntime(includeMetrika = true) {
-  const pageId = routeToLegacyFile(canonical).replace(/\/index\.html$/, '').replace(/\//g, '-') || 'home';
-  const config = {
-    site: {
-      name: SITE.name,
-      baseUrl: SITE.url,
-      locale: SITE.locale,
-    },
-    version: Date.now(),
-    page: {
-      id: pageId,
-      type: ogType === 'article' ? 'article' : 'page',
-      title,
-      description,
-      url: canonical,
-    },
-    features: {
-      themeToggle: { enabled: true },
-      search: { enabled: true },
-      bookmarks: { enabled: false },
-      quiz: { enabled: false },
-    },
-  };
-  const metrika_preconnect = `<link rel="preconnect" href="https://mc.yandex.ru" crossorigin>`;
-  const metrika = `<script>\n(function(m,e,t,r,i,k,a){m[i]=m[i]||function(){(m[i].a=m[i].a||[]).push(arguments)};m[i].l=1*new Date();k=e.createElement(t),a=e.getElementsByTagName(t)[0],k.async=1,k.src=r,a.parentNode.insertBefore(k,a)})(window,document,'script','https://mc.yandex.ru/metrika/tag.js','ym');\nym(108353327,'init',{ssr:false,webvisor:true,clickmap:true,accurateTrackBounce:true,trackLinks:true});\n</script>\n<noscript><div><img alt="" decoding="async" src="https://mc.yandex.ru/watch/108353327" style="position:absolute;left:-9999px;"></div></noscript>`;
-  const cfg = `<script>window.SITE_CONFIG=${JSON.stringify(config)};</script>`;
-  return [
-    includeMetrika ? metrika_preconnect + metrika : '',
-    cfg,
-    `<script defer src="${assetUrl('js/site-utils.js')}"></script>`,
-    `<script defer src="${assetUrl('js/scroll-perf.js')}"></script>`,
-    `<script defer src="${assetUrl('js/site.js')}"></script>`,
-    `<script defer src="${assetUrl('js/sw-register.js')}"></script>`,
-    // Lazy search: ~31KB saved on initial pageload. search.js loads on first Ctrl+K / click.
-    `<script>!function(){var e=function(o){window.__gbSearchBootRequested=true,window.__gbSearchOpenAfterLoad=!!o;var t=document.createElement("script");t.defer=true,t.src="${assetUrl('js/search.js')}",document.head.appendChild(t);e=function(){}};function u(o){e(o),document.removeEventListener("keydown",k),document.removeEventListener("click",c),document.removeEventListener("touchstart",c)}function k(n){(n.metaKey||n.ctrlKey)&&"k"===String(n.key).toLowerCase()&&(n.preventDefault(),u(true))}function c(){u(false)}document.addEventListener("keydown",k),document.addEventListener("click",c),document.addEventListener("touchstart",c)}();</script>`,
-  ].join('\n');
-}
-
-// Generate clean generic runtime without filesystem I/O
-const genericRuntime = includeLegacyRuntime && !headHtml ? makeGenericRuntime(true) : '';
-const effectiveBodyEndHtml = [genericRuntime, bodyEndHtml].filter(Boolean).join('\n');
+const runtimePageId =
+  routeToLegacyFile(canonical).replace(/\/index\.html$/, '').replace(/\//g, '-') || 'home';
+const runtimeConfig = {
+  site: {
+    name: SITE.name,
+    baseUrl: SITE.url,
+    locale: SITE.locale,
+  },
+  version: Date.now(),
+  page: {
+    id: runtimePageId,
+    type: ogType === 'article' ? 'article' : 'page',
+    title,
+    description,
+    url: canonical,
+  },
+  features: {
+    themeToggle: { enabled: true },
+    search: { enabled: true },
+    bookmarks: { enabled: false },
+    quiz: { enabled: false },
+  },
+};
+const runtimeScripts = [
+  assetUrl('js/site-utils.js'),
+  assetUrl('js/scroll-perf.js'),
+  assetUrl('js/site.js'),
+  assetUrl('js/sw-register.js'),
+];
+const searchSrc = assetUrl('js/search.js');
 ---
 <!doctype html>
 <html lang="ru">
@@ -145,9 +133,8 @@ const effectiveBodyEndHtml = [genericRuntime, bodyEndHtml].filter(Boolean).join(
       jsonLd={jsonLd}
     />
     <!-- Core project CSS — loaded on every page so Astro-owned routes match
-         the legacy visual contract. Shadow-wrapped pages also receive their
-         legacy-extracted CSS (links + inline <style>) via headHtml below; any
-         overlap is the same file and is harmlessly deduped by the browser. -->
+         the legacy visual contract. Additional per-route stylesheets are passed
+         via the `legacyStylesheets` prop as native <link> elements below. -->
     <!-- Navigation prefetch hints — browser loads these speculatively during
          idle time. The current page is excluded: prefetching yourself is pure
          wasted bandwidth (NEW-PREFETCH-UNCONDITIONAL). -->
@@ -162,7 +149,6 @@ const effectiveBodyEndHtml = [genericRuntime, bodyEndHtml].filter(Boolean).join(
     <link rel="stylesheet" href="/css/command-palette.css" />
     <link rel="stylesheet" href="/css/mobile-hotfix.css" />
     {legacyStylesheets.map((href) => <link rel="stylesheet" href={href} />)}
-    {headHtml && <Fragment set:html={headHtml} />}
   </head>
   <body class={bodyClass}>
     <div class="astro-shell">
@@ -172,6 +158,22 @@ const effectiveBodyEndHtml = [genericRuntime, bodyEndHtml].filter(Boolean).join(
       </main>
       {!hideFooter && <Footer note={footerNote} />}
     </div>
-    {effectiveBodyEndHtml && <Fragment set:html={effectiveBodyEndHtml} />}
+    {includeLegacyRuntime && (
+      <>
+        <link rel="preconnect" href="https://mc.yandex.ru" crossorigin />
+        <script is:inline>
+          {`(function(m,e,t,r,i,k,a){m[i]=m[i]||function(){(m[i].a=m[i].a||[]).push(arguments)};m[i].l=1*new Date();k=e.createElement(t),a=e.getElementsByTagName(t)[0],k.async=1,k.src=r,a.parentNode.insertBefore(k,a)})(window,document,'script','https://mc.yandex.ru/metrika/tag.js','ym');ym(108353327,'init',{ssr:false,webvisor:true,clickmap:true,accurateTrackBounce:true,trackLinks:true});`}
+        </script>
+        <noscript><div><img alt="" decoding="async" src="https://mc.yandex.ru/watch/108353327" style="position:absolute;left:-9999px;" /></div></noscript>
+        <script is:inline define:vars={{ __gbSiteConfig: runtimeConfig }}>
+          window.SITE_CONFIG = __gbSiteConfig;
+        </script>
+        {runtimeScripts.map((src) => <script is:inline defer src={src}></script>)}
+        {/* Lazy search: ~31KB saved on initial pageload. search.js loads on first Ctrl+K / click. */}
+        <script is:inline define:vars={{ __gbSearchSrc: searchSrc }}>
+          {`!function(){var e=function(o){window.__gbSearchBootRequested=true,window.__gbSearchOpenAfterLoad=!!o;var t=document.createElement("script");t.defer=true,t.src=__gbSearchSrc,document.head.appendChild(t);e=function(){}};function u(o){e(o),document.removeEventListener("keydown",k),document.removeEventListener("click",c),document.removeEventListener("touchstart",c)}function k(n){(n.metaKey||n.ctrlKey)&&"k"===String(n.key).toLowerCase()&&(n.preventDefault(),u(true))}function c(){u(false)}document.addEventListener("keydown",k),document.addEventListener("click",c),document.addEventListener("touchstart",c)}();`}
+        </script>
+      </>
+    )}
   </body>
 </html>
