@@ -76,6 +76,13 @@ const seriesMeta = currentItem && currentItem.mark.kind === 'label'
     <a class="gbs-rail-home" href="/" aria-label="На главную">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11l9-8 9 8" /><path d="M5 10v10h4v-6h6v6h4V10" /></svg>
     </a>
+    <!-- Свернуть ⇄ развернуть рейл (Mechanism 1): широкий (по умолчанию) ⇄
+         узкий 72px-спайн. Стрелка «‹» в широком режиме (collapse), поворот на
+         180° → «›» в узком (expand). Состояние — класс rail-narrow на
+         .gbs2-world[data-gill-v16], персист в localStorage gb:rail:narrow. -->
+    <button class="gbs-rail-collapse" id="gbsRailCollapse" type="button" aria-label="Свернуть панель" aria-expanded="true" aria-controls="gbsRailMid">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6" /></svg>
+    </button>
   </div>
 
   <!-- Прогресс СЕРИИ (не только текущей части) — восстановлен по образцу
@@ -97,7 +104,7 @@ const seriesMeta = currentItem && currentItem.mark.kind === 'label'
     <div><small>Прогресс серии</small><span id="gbs2Meta">{seriesMeta}</span></div>
   </div>
 
-  <div class="gbs2-rmid">
+  <div class="gbs2-rmid" id="gbsRailMid">
     {partsBefore.length > 0 && (
       <nav class="gbs-rail-list" aria-label="Предыдущие части серии">
         {partsBefore.map((item) => { const leather = item.mark.kind === 'label' ? leatherFor(item.id) : null; return (
@@ -124,8 +131,17 @@ const seriesMeta = currentItem && currentItem.mark.kind === 'label'
         <h2 class="gbs2-current-title">{page.railNowTitle}</h2>
         <div class="gbs2-curbar"><i id="gbs2Curbar"></i></div>
       </div>
-      <div class="gbs2-toch"><span>Оглавление части</span><span class="gbs2-count" id="gbs2Count">1 / {page.partToc.length}</span></div>
-      <div class="gbs2-tocscroll">
+      <div class="gbs2-toch">
+        <span>Оглавление части</span>
+        <span class="gbs2-count" id="gbs2Count">1 / {page.partToc.length}</span>
+        <!-- Mechanism 3: раскрытие/сворачивание оглавления части. Персист в
+             localStorage gb:rail:toc-collapsed; класс toc-collapsed на
+             .gbs2-current. Шеврон вниз (раскрыто) → вправо (свёрнуто). -->
+        <button class="gbs2-toch-toggle" id="gbsTocToggle" type="button" aria-expanded="true" aria-controls="gbsTocScroll" aria-label="Свернуть оглавление части">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6" /></svg>
+        </button>
+      </div>
+      <div class="gbs2-tocscroll" id="gbsTocScroll">
         {/* Historical placement (witness bcf6389f): the track lives INSIDE the ul —
             .gbs2-track{left:9px} resolves against .gbs2-toc, putting the line exactly
             through the dot centres (dots sit at left:-17px from the 22px list padding).
@@ -157,6 +173,27 @@ const seriesMeta = currentItem && currentItem.mark.kind === 'label'
       </nav>
     )}
   </div>
+
+  <!-- Компактный спайн (Mechanism 1): виден только в узком (rail-narrow)
+       режиме вместо .gbs2-rmid. Один значок на часть — римская цифра
+       (SeriesMark) или кожаная закладка (GillLeatherRibbon) для label-пунктов
+       (Введение/Справ.), те же компоненты и helper leatherFor(), что и у
+       .gbs-rail-card. Текущая часть — .is-current (золотое кольцо/подсветка).
+       Название части — CSS-флайаут .gbs-rail-spine__tip справа при hover. -->
+  <nav class="gbs-rail-spine" aria-label="Части серии">
+    {GILL_SERIES_ITEMS.map((item) => { const leather = item.mark.kind === 'label' ? leatherFor(item.id) : null; return (
+      <a
+        class:list={['gbs-rail-spine__item', { 'is-current': item.id === pageId }]}
+        href={item.href}
+        aria-current={item.id === pageId ? 'page' : undefined}
+      >
+        {leather
+          ? <GillLeatherRibbon word={leather.word} ornament={leather.ornament} variant={leather.variant} className="gbs-rail-spine__mark" />
+          : <SeriesMark kind={item.mark.kind} value={item.mark.value} className="gbs-rail-spine__mark" />}
+        <span class="gbs-rail-spine__tip">{item.title}</span>
+      </a>
+    ); })}
+  </nav>
 
   <div class="gbs-rail-foot" data-fc-root data-fc-variant="gill" data-fc-mode="series-rich">
     <a class="gbs-rail-foot__btn" href="../../" aria-label="Все разделы сайта" data-tip="Разделы сайта"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"><path d="M4 7h16M4 12h16M4 17h16" /></svg></a>

@@ -845,6 +845,106 @@
   }
 
   /* =====================================================
+     SCALABLE SERIES-RAIL (Gill) — collapse / TOC-disclosure / demand-scroll
+     Desktop-only chrome (rail is display:none <64em). Additive: wires the three
+     new controls added to GillSeriesRail.astro. No new framework, uses the same
+     qs/qsa/addCleanListener helpers as the rest of the file.
+       #gbsRailCollapse → toggle .rail-narrow on .gbs2-world[data-gill-v16]
+                          (persist gb:rail:narrow)
+       #gbsTocToggle    → toggle .toc-collapsed on .gbs2-current
+                          (persist gb:rail:toc-collapsed)
+       .gbs2-rmid       → .is-scrolling while scrolling (fade the scrollbar)
+                        + auto-centre the current-part card on load
+     ===================================================== */
+  function initGillRailScalable() {
+    var world = qs('.gbs2-world[data-gill-v16]');
+    if (!world) return;
+    var rail = qs('.gbs-rail', world);
+    if (!rail) return;
+
+    var NARROW_KEY = 'gb:rail:narrow';
+    var TOC_KEY = 'gb:rail:toc-collapsed';
+
+    var collapseBtn = qs('#gbsRailCollapse');
+    var tocToggle = qs('#gbsTocToggle');
+    var current = qs('.gbs2-current', rail);
+    var rmid = qs('.gbs2-rmid', rail);
+
+    function readFlag(key) {
+      try { return localStorage.getItem(key) === '1'; } catch (_) { return false; }
+    }
+    function writeFlag(key, on) {
+      try { localStorage.setItem(key, on ? '1' : '0'); } catch (_) {}
+    }
+
+    function applyNarrow(on) {
+      world.classList.toggle('rail-narrow', on);
+      if (collapseBtn) {
+        collapseBtn.setAttribute('aria-expanded', on ? 'false' : 'true');
+        collapseBtn.setAttribute('aria-label', on ? 'Развернуть панель' : 'Свернуть панель');
+      }
+    }
+    function applyTocCollapsed(on) {
+      if (current) current.classList.toggle('toc-collapsed', on);
+      if (tocToggle) {
+        tocToggle.setAttribute('aria-expanded', on ? 'false' : 'true');
+        tocToggle.setAttribute('aria-label', on ? 'Развернуть оглавление части' : 'Свернуть оглавление части');
+      }
+    }
+
+    // Apply persisted state with transitions suppressed for one frame (no
+    // width-jump animation on first paint), then release the guard.
+    var narrow = readFlag(NARROW_KEY);
+    var tocCollapsed = readFlag(TOC_KEY);
+    world.classList.add('no-anim');
+    applyNarrow(narrow);
+    applyTocCollapsed(tocCollapsed);
+    requestAnimationFrame(function () {
+      requestAnimationFrame(function () { world.classList.remove('no-anim'); });
+    });
+
+    if (collapseBtn) {
+      addCleanListener(collapseBtn, 'click', function () {
+        narrow = !narrow;
+        applyNarrow(narrow);
+        writeFlag(NARROW_KEY, narrow);
+      });
+    }
+    if (tocToggle) {
+      addCleanListener(tocToggle, 'click', function () {
+        tocCollapsed = !tocCollapsed;
+        applyTocCollapsed(tocCollapsed);
+        writeFlag(TOC_KEY, tocCollapsed);
+      });
+    }
+
+    if (rmid) {
+      // Auto-centre the current-part card within the (possibly scrolling) rich
+      // column on load — only if the column actually overflows and is visible
+      // (not in narrow mode, where .gbs2-rmid is display:none). Adjusts only
+      // rmid.scrollTop via rects, so the page/window never jumps.
+      if (current && !narrow) {
+        requestAnimationFrame(function () {
+          if (rmid.clientHeight > 0 && rmid.scrollHeight > rmid.clientHeight + 4) {
+            var mRect = rmid.getBoundingClientRect();
+            var cRect = current.getBoundingClientRect();
+            var delta = (cRect.top - mRect.top) - (mRect.height - cRect.height) / 2;
+            rmid.scrollTop += delta;
+          }
+        });
+      }
+
+      // Fade the premium scrollbar in while scrolling, out shortly after.
+      var scrollTimer = null;
+      addCleanListener(rmid, 'scroll', function () {
+        rmid.classList.add('is-scrolling');
+        if (scrollTimer) clearTimeout(scrollTimer);
+        scrollTimer = setTimeout(function () { rmid.classList.remove('is-scrolling'); }, 900);
+      }, { passive: true });
+    }
+  }
+
+  /* =====================================================
      SYNC SAVE STATE
      Читает BookmarkEngine при старте.
      ===================================================== */
@@ -927,6 +1027,7 @@
 
     // 2. Gill rail / non-root cluster controls (работают без data-fc-root)
     initGillRail();
+    initGillRailScalable();
 
     // 2b. GBS2 controls — Баптисты России series UI
     initGbs2Controls();
