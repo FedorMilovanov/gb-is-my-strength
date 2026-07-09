@@ -1,0 +1,84 @@
+name: Editorial Metadata v3
+
+on:
+  push:
+    branches:
+      - lane/system-editorial-metadata-v3-2026-07-09
+  pull_request:
+    branches:
+      - main
+      - lane/system-native-source-contract-v1-2026-07-09
+    paths:
+      - 'data/editorial-metadata.json'
+      - 'scripts/editorial-metadata-*.js'
+      - 'scripts/lib/editorial-metadata.js'
+      - 'scripts/update-meta.js'
+      - 'scripts/cache-bust.js'
+      - '.github/workflows/editorial-metadata-v3.yml'
+      - '.github/workflows/indexnow.yml'
+  workflow_dispatch:
+
+concurrency:
+  group: editorial-metadata-v3-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  metadata-contract:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+
+    steps:
+      - name: Checkout exact head
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Node 22.12
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22.12.0'
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Capture production metadata observations in disposable worktree
+        shell: bash
+        run: |
+          mkdir -p reports
+          set -o pipefail
+          node scripts/editorial-metadata-registry.js --write --build 2>&1 \
+            | tee reports/editorial-metadata-capture.log
+
+      - name: Validate generated registry structure
+        run: node scripts/editorial-metadata-registry.js --check
+
+      - name: Validate frozen projections against generated registry
+        shell: bash
+        run: |
+          set -o pipefail
+          node scripts/editorial-metadata-freeze-audit.js 2>&1 \
+            | tee reports/editorial-metadata-freeze.log
+
+      - name: Validate asset revisions without writing
+        if: always()
+        shell: bash
+        run: |
+          set -o pipefail
+          node scripts/cache-bust.js 2>&1 \
+            | tee reports/asset-revision-drift.log
+
+      - name: Upload exact generated registry and diagnostics
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: editorial-metadata-v3-${{ github.run_id }}
+          path: |
+            reports/editorial-metadata-*.log
+            reports/asset-revision-drift.log
+            data/editorial-metadata.json
+          if-no-files-found: error
+          retention-days: 7
