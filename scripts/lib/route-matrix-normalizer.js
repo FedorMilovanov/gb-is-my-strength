@@ -7,6 +7,7 @@ const ROOT = path.resolve(__dirname, '../..');
 const PROFILES_DIR = path.join(ROOT, 'data/route-profiles');
 const CHANGELOG_TEXT = 'Native Source Contract v1: runtime matrix now covers all production routes; semantic edit exclusions moved to semanticEditExclusions; missing Astro production entries are derived from ownership + route profiles.';
 const MARKER_CHANGELOG_TEXT = 'Runtime requiredMarkers normalized: source-only Astro component identifiers are not valid dist markers and are removed deterministically.';
+const ORPHAN_CHANGELOG_TEXT = 'Orphan raw matrix overrides without page-ownership records are excluded from the effective runtime registry and reported for later quarantine cleanup.';
 
 function readJson(file) {
   return JSON.parse(fs.readFileSync(file, 'utf8'));
@@ -110,6 +111,17 @@ function normalizeRouteMatrix(matrix, ownership) {
   const matrixModes = new Set(Object.keys(next.modes || {}));
   const derivedRoutes = [];
   const removedMarkers = [];
+  const ignoredOrphanRoutes = [];
+
+  // Raw matrix entries are overrides, not independent route declarations.
+  // Overrides without page ownership cannot participate in the effective public
+  // registry. Keep the raw file unchanged for migration archaeology, but remove
+  // them from the normalized view and report them for validators/quarantine work.
+  for (const route of Object.keys(next.routes)) {
+    if (ownership.routes?.[route]) continue;
+    ignoredOrphanRoutes.push(route);
+    delete next.routes[route];
+  }
 
   for (const [route, owner] of Object.entries(ownership.routes || {})) {
     if (!isProductionAstro(owner)) continue;
@@ -139,18 +151,17 @@ function normalizeRouteMatrix(matrix, ownership) {
     contract.derived = false;
   }
 
-  for (const route of Object.keys(next.routes)) {
-    if (!ownership.routes?.[route]) throw new Error(`${route}: matrix route has no page-ownership record`);
-  }
-
   if (!next.changelog.some((entry) => entry?.date === '2026-07-09' && entry?.change === CHANGELOG_TEXT)) {
     next.changelog.push({ date: '2026-07-09', change: CHANGELOG_TEXT });
   }
   if (removedMarkers.length && !next.changelog.some((entry) => entry?.date === '2026-07-09' && entry?.change === MARKER_CHANGELOG_TEXT)) {
     next.changelog.push({ date: '2026-07-09', change: MARKER_CHANGELOG_TEXT });
   }
+  if (ignoredOrphanRoutes.length && !next.changelog.some((entry) => entry?.date === '2026-07-09' && entry?.change === ORPHAN_CHANGELOG_TEXT)) {
+    next.changelog.push({ date: '2026-07-09', change: ORPHAN_CHANGELOG_TEXT });
+  }
 
-  return { next, derivedRoutes, removedMarkers };
+  return { next, derivedRoutes, removedMarkers, ignoredOrphanRoutes };
 }
 
 module.exports = {
