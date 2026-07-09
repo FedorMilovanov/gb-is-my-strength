@@ -28,9 +28,9 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  audit:
+  diagnose-static:
     runs-on: ubuntu-latest
-    timeout-minutes: 55
+    timeout-minutes: 25
     steps:
       - name: Checkout lane
         uses: actions/checkout@v4
@@ -44,86 +44,26 @@ jobs:
       - name: Install dependencies
         run: npm ci --no-audit --no-fund
 
-      - name: Install Chromium
-        run: npx playwright install --with-deps chromium
-
-      - name: Download fonts
-        run: node scripts/download-fonts.js || echo 'Fonts already present or download skipped'
-
       - name: Static publication gates
         id: static
         continue-on-error: true
         run: |
-          mkdir -p reports/gill-image-premium-audit/logs
+          mkdir -p reports/gill-image-gate-logs
           set -o pipefail
-          npm run validate:static-publication 2>&1 | tee reports/gill-image-premium-audit/logs/validate-static-publication.log
+          npm run validate:static-publication 2>&1 | tee reports/gill-image-gate-logs/validate-static-publication.log
 
-      - name: Strict native runtime audit
-        id: native
-        continue-on-error: true
-        run: |
-          mkdir -p reports/gill-image-premium-audit/logs
-          set -o pipefail
-          npm run native:runtime:audit:strict 2>&1 | tee reports/gill-image-premium-audit/logs/native-runtime-strict.log
-
-      - name: Build production-like dist
-        id: build
-        continue-on-error: true
-        run: |
-          mkdir -p reports/gill-image-premium-audit/logs
-          set -o pipefail
-          npm run strangler:build:production-like 2>&1 | tee reports/gill-image-premium-audit/logs/production-like-build.log
-
-      - name: Start local dist server
-        if: steps.build.outcome == 'success'
-        run: |
-          python3 -m http.server 4173 --directory dist >/tmp/gill-audit-server.log 2>&1 &
-          echo $! >/tmp/gill-audit-server.pid
-          for i in $(seq 1 45); do
-            if curl -fsS http://127.0.0.1:4173/ >/dev/null; then
-              exit 0
-            fi
-            sleep 1
-          done
-          cat /tmp/gill-audit-server.log
-          exit 1
-
-      - name: Capture Gill image geometry and screenshots
-        if: steps.build.outcome == 'success'
-        env:
-          BASE_URL: http://127.0.0.1:4173
-        run: node scripts/gill-image-audit-temp.mjs
-
-      - name: Preserve source styles for selector tracing
-        if: always()
-        run: |
-          mkdir -p reports/gill-image-premium-audit/source
-          cp css/site.css reports/gill-image-premium-audit/source/site.css
-          cp css/floating-cluster.css reports/gill-image-premium-audit/source/floating-cluster.css
-
-      - name: Upload audit package
+      - name: Upload gate log
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: gill-image-premium-audit
-          path: reports/gill-image-premium-audit/
+          name: gill-image-static-gate-log
+          path: reports/gill-image-gate-logs/
           retention-days: 7
 
-      - name: Summary
-        if: always()
-        run: |
-          if [ -f reports/gill-image-premium-audit/SUMMARY.md ]; then
-            cat reports/gill-image-premium-audit/SUMMARY.md >> "$GITHUB_STEP_SUMMARY"
-          fi
-
-      - name: Enforce mandatory gates
+      - name: Enforce static gate
         if: always()
         env:
           STATIC_OUTCOME: ${{ steps.static.outcome }}
-          NATIVE_OUTCOME: ${{ steps.native.outcome }}
-          BUILD_OUTCOME: ${{ steps.build.outcome }}
         run: |
-          echo "static=$STATIC_OUTCOME native=$NATIVE_OUTCOME build=$BUILD_OUTCOME"
+          echo "static=$STATIC_OUTCOME"
           test "$STATIC_OUTCOME" = success
-          test "$NATIVE_OUTCOME" = success
-          test "$BUILD_OUTCOME" = success
