@@ -1,0 +1,79 @@
+name: TEMP — Gill image premium audit
+
+on:
+  push:
+    branches:
+      - lane/gill-image-premium-audit-2026-07-09
+    paths:
+      - '.github/workflows/gill-image-audit-temp.yml'
+      - 'scripts/gill-image-audit-temp.mjs'
+      - 'src/**'
+      - 'css/**'
+      - 'images/**'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: temp-gill-image-premium-audit
+  cancel-in-progress: true
+
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    steps:
+      - name: Checkout lane
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci --no-audit --no-fund
+
+      - name: Install Chromium
+        run: npx playwright install --with-deps chromium
+
+      - name: Download fonts
+        run: node scripts/download-fonts.js || echo 'Fonts already present or download skipped'
+
+      - name: Build production-like dist
+        run: npm run strangler:build:production-like
+
+      - name: Start local dist server
+        run: |
+          python3 -m http.server 4173 --directory dist >/tmp/gill-audit-server.log 2>&1 &
+          echo $! >/tmp/gill-audit-server.pid
+          for i in $(seq 1 45); do
+            if curl -fsS http://127.0.0.1:4173/ >/dev/null; then
+              exit 0
+            fi
+            sleep 1
+          done
+          cat /tmp/gill-audit-server.log
+          exit 1
+
+      - name: Capture Gill image geometry and screenshots
+        env:
+          BASE_URL: http://127.0.0.1:4173
+        run: node scripts/gill-image-audit-temp.mjs
+
+      - name: Upload audit package
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: gill-image-premium-audit
+          path: reports/gill-image-premium-audit/
+          retention-days: 7
+
+      - name: Summary
+        if: always()
+        run: |
+          if [ -f reports/gill-image-premium-audit/SUMMARY.md ]; then
+            cat reports/gill-image-premium-audit/SUMMARY.md >> "$GITHUB_STEP_SUMMARY"
+          fi
