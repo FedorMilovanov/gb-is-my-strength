@@ -217,6 +217,39 @@ function main() {
     }
   }
 
+  // Реестр книг (data/atlas/books/*.json) — если существует.
+  const BOOKS_DIR = path.join(ROOT, 'data', 'atlas', 'books');
+  const bookIds = new Set();
+  if (fs.existsSync(BOOKS_DIR)) {
+    const bs = JSON.parse(fs.readFileSync(path.join(ROOT, 'data', 'atlas', 'schemas', 'book.schema.json'), 'utf8'));
+    const SECTIONS = new Set(bs.properties.section.enum);
+    const orders = new Set();
+    const knownMaps3 = new Set(mapSlugs);
+    for (const f of fs.readdirSync(BOOKS_DIR).filter((x) => x.endsWith('.json'))) {
+      const b = JSON.parse(fs.readFileSync(path.join(BOOKS_DIR, f), 'utf8'));
+      const ctx = `books/${f}`;
+      if (b.id !== path.basename(f, '.json')) fail(`${ctx}: id != имя файла`);
+      if (!b.title || !b.title.ru) fail(`${ctx}: title.ru пуст`);
+      if (!SECTIONS.has(b.section)) fail(`${ctx}: section вне enum`);
+      if (!(Number.isInteger(b.order) && b.order >= 1 && b.order <= 66)) fail(`${ctx}: order вне 1..66`);
+      if (orders.has(b.order)) fail(`${ctx}: дубль order ${b.order}`);
+      orders.add(b.order);
+      for (const m of b.maps || []) if (!knownMaps3.has(m)) fail(`${ctx}: карта "${m}" не существует`);
+      bookIds.add(b.id);
+    }
+    if (bookIds.size && bookIds.size !== 66) fail(`books: ожидалось 66 книг, найдено ${bookIds.size}`);
+    // Связка пророк → книга.
+    const PD = path.join(ROOT, 'data', 'atlas', 'persons');
+    if (fs.existsSync(PD)) {
+      for (const f of fs.readdirSync(PD).filter((x) => x.endsWith('.json'))) {
+        const h = JSON.parse(fs.readFileSync(path.join(PD, f), 'utf8'));
+        for (const bid of h.bookIds || []) {
+          if (!bookIds.has(bid)) fail(`persons/${f}: bookId "${bid}" нет в реестре книг`);
+        }
+      }
+    }
+  }
+
   // Полное покрытие route.json → реестр.
   for (const key of routeOcc) {
     if (!claimed.has(key)) fail(`покрытие: место карты ${key} не учтено в реестре places/`);
@@ -228,7 +261,7 @@ function main() {
     process.exit(1);
   }
   const cnt = (d) => { const dir = path.join(ROOT, 'data', 'atlas', d); return fs.existsSync(dir) ? fs.readdirSync(dir).filter((x) => x.endsWith('.json') && x !== '_index.json').length : 0; };
-  console.log(`✅ ATLAS DATA CHECK: ${files.length} мест + ${cnt('periods')} эпох + ${cnt('routes')} дорог + ${cnt('persons')} персон + ${cnt('events')} событий валидны; покрытие карт полное (${routeOcc.size} вхождений в ${mapSlugs.length} картах)`);
+  console.log(`✅ ATLAS DATA CHECK: ${files.length} мест + ${cnt('periods')} эпох + ${cnt('routes')} дорог + ${cnt('persons')} персон + ${cnt('events')} событий + ${cnt('books')} книг валидны; покрытие карт полное (${routeOcc.size} вхождений в ${mapSlugs.length} картах)`);
 }
 
 main();

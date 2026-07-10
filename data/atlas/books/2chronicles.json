@@ -1,0 +1,14 @@
+{
+  "id": "2chronicles",
+  "title": {
+    "ru": "2 Паралипоменон",
+    "abbr": "2 Пар"
+  },
+  "testament": "ot",
+  "section": "history",
+  "order": 14,
+  "chapters": 36,
+  "maps": [
+    "melachim"
+  ]
+}

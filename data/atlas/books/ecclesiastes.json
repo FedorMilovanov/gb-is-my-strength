@@ -1,0 +1,11 @@
+{
+  "id": "ecclesiastes",
+  "title": {
+    "ru": "Екклесиаст",
+    "abbr": "Еккл"
+  },
+  "testament": "ot",
+  "section": "poetry",
+  "order": 21,
+  "chapters": 12
+}

@@ -1,0 +1,14 @@
+{
+  "id": "revelation-book",
+  "title": {
+    "ru": "Откровение",
+    "abbr": "Откр"
+  },
+  "testament": "nt",
+  "section": "revelation",
+  "order": 66,
+  "chapters": 22,
+  "maps": [
+    "revelation"
+  ]
+}

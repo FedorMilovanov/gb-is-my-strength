@@ -1,0 +1,14 @@
+{
+  "id": "1timothy",
+  "title": {
+    "ru": "1 Тимофею",
+    "abbr": "1 Тим"
+  },
+  "testament": "nt",
+  "section": "pauline",
+  "order": 54,
+  "chapters": 6,
+  "maps": [
+    "pavel"
+  ]
+}

@@ -1,0 +1,14 @@
+{
+  "id": "luke",
+  "title": {
+    "ru": "От Луки",
+    "abbr": "Лк"
+  },
+  "testament": "nt",
+  "section": "gospels",
+  "order": 42,
+  "chapters": 24,
+  "maps": [
+    "yeshua"
+  ]
+}

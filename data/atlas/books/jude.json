@@ -1,0 +1,11 @@
+{
+  "id": "jude",
+  "title": {
+    "ru": "Иуды",
+    "abbr": "Иуд"
+  },
+  "testament": "nt",
+  "section": "general",
+  "order": 65,
+  "chapters": 1
+}

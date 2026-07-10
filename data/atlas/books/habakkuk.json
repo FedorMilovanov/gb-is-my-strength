@@ -1,0 +1,11 @@
+{
+  "id": "habakkuk",
+  "title": {
+    "ru": "Аввакум",
+    "abbr": "Авв"
+  },
+  "testament": "ot",
+  "section": "minor-prophets",
+  "order": 35,
+  "chapters": 3
+}

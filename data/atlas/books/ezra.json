@@ -1,0 +1,14 @@
+{
+  "id": "ezra",
+  "title": {
+    "ru": "Ездра",
+    "abbr": "Езд"
+  },
+  "testament": "ot",
+  "section": "history",
+  "order": 15,
+  "chapters": 10,
+  "maps": [
+    "melachim"
+  ]
+}

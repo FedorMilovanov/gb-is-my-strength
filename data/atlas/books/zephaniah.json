@@ -1,0 +1,14 @@
+{
+  "id": "zephaniah",
+  "title": {
+    "ru": "Софония",
+    "abbr": "Соф"
+  },
+  "testament": "ot",
+  "section": "minor-prophets",
+  "order": 36,
+  "chapters": 3,
+  "maps": [
+    "melachim"
+  ]
+}

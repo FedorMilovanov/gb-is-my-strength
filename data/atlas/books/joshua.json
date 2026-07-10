@@ -1,0 +1,14 @@
+{
+  "id": "joshua",
+  "title": {
+    "ru": "Иисус Навин",
+    "abbr": "Нав"
+  },
+  "testament": "ot",
+  "section": "history",
+  "order": 6,
+  "chapters": 24,
+  "maps": [
+    "shvatim"
+  ]
+}

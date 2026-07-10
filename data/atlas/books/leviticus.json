@@ -1,0 +1,11 @@
+{
+  "id": "leviticus",
+  "title": {
+    "ru": "Левит",
+    "abbr": "Лев"
+  },
+  "testament": "ot",
+  "section": "law",
+  "order": 3,
+  "chapters": 27
+}

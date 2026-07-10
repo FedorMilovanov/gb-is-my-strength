@@ -1,0 +1,14 @@
+{
+  "id": "galatians",
+  "title": {
+    "ru": "К Галатам",
+    "abbr": "Гал"
+  },
+  "testament": "nt",
+  "section": "pauline",
+  "order": 48,
+  "chapters": 6,
+  "maps": [
+    "pavel"
+  ]
+}

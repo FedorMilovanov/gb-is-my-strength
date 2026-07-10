@@ -1,0 +1,14 @@
+{
+  "id": "malachi",
+  "title": {
+    "ru": "Малахия",
+    "abbr": "Мал"
+  },
+  "testament": "ot",
+  "section": "minor-prophets",
+  "order": 39,
+  "chapters": 4,
+  "maps": [
+    "melachim"
+  ]
+}

@@ -1,0 +1,11 @@
+{
+  "id": "2john",
+  "title": {
+    "ru": "2 Иоанна",
+    "abbr": "2 Ин"
+  },
+  "testament": "nt",
+  "section": "general",
+  "order": 63,
+  "chapters": 1
+}
