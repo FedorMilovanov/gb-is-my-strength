@@ -197,6 +197,16 @@ function main() {
     if (p.parentId && renames[p.parentId]) p.parentId = renames[p.parentId];
   }
 
+  // 3b2. Ручные координаты для мест вне OpenBible (review-decisions.manualGeo).
+  const mg = review.manualGeo || {};
+  for (const p of places) {
+    const g = mg[p.id];
+    if (g && !p.geo) {
+      p.geo = { lat: g.lat, lng: g.lng };
+      if (g.note) p.notes = [p.notes, `geo: ${g.note} (manualGeo, уровень B)`].filter(Boolean).join(' | ');
+    }
+  }
+
   // 3c. Висячие parentId (экстрактор предлагал родителя, которого нет как записи) —
   // убрать, кандидата сохранить в notes.
   const allIds = new Set(places.map((p) => p.id));

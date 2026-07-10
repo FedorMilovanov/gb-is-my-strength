@@ -102,6 +102,18 @@ function main() {
     if (!ids.has(pid)) fail(`${ctx}: parentId "${pid}" не существует в реестре`);
   }
 
+  // Дубли sameAs.openbible: два самостоятельных места с одним slug — подозрение
+  // на дубль сущности (так были пойманы hebron_shoftim и kadesh/kadesh-barnea).
+  // Суб-локации (с parentId) легитимно делят slug родителя — исключаются.
+  const bySlugX = new Map();
+  for (const f of files) {
+    const p = JSON.parse(fs.readFileSync(path.join(PLACES_DIR, f), 'utf8'));
+    const slug = p.sameAs && p.sameAs.openbible;
+    if (!slug || p.parentId) continue;
+    if (bySlugX.has(slug)) fail(`дубль сущности? "${bySlugX.get(slug)}" и "${p.id}" делят sameAs.openbible="${slug}" без parentId — слить или обосновать`);
+    else bySlugX.set(slug, p.id);
+  }
+
   // Реестр эпох (data/atlas/periods/*.json) — если существует.
   const PERIODS_DIR = path.join(ROOT, 'data', 'atlas', 'periods');
   const PERIOD_SCHEMA = path.join(ROOT, 'data', 'atlas', 'schemas', 'period.schema.json');

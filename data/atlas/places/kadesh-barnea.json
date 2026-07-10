@@ -2,7 +2,10 @@
   "id": "kadesh-barnea",
   "names": {
     "ru": "Кадеш-Барнеа",
-    "he": "קָדֵשׁ בַּרְנֵעַ"
+    "he": "קָדֵשׁ בַּרְנֵעַ",
+    "variants": [
+      "Кадеш (Кадеш-Барнеа)"
+    ]
   },
   "type": "city",
   "placements": {
@@ -15,6 +18,10 @@
     {
       "slug": "ishod",
       "localId": "kadesh_barnea"
+    },
+    {
+      "slug": "avraam",
+      "localId": "kadesh"
     }
   ],
   "needsReview": false,
@@ -60,5 +67,6 @@
     "Gen 20:1",
     "Num 13:26",
     "Num 20:1"
-  ]
+  ],
+  "notes": "review-hold: P0-досье в Research (Эйн эль-Кудейрат vs Петра; хронология крепости X в. vs дата Исхода) | review: Кадеш-Варни (Эйн эль-Кудейрат): avraam «Кадеш» (Быт 14:7 Эн-Мишпат; 16:14) + ishod «Кадеш-Барнеа» — одно место, дубль подтверждён одинаковым sameAs/geo; P0-досье в Research"
 }
