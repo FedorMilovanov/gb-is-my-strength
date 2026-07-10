@@ -445,6 +445,18 @@
     ],
     "prophets-south": [
       {
+        "id": "samuel",
+        "label": "Самуил",
+        "start": -1075,
+        "end": -1017
+      },
+      {
+        "id": "nathan",
+        "label": "Нафан",
+        "start": -1005,
+        "end": -965
+      },
+      {
         "id": "joel",
         "label": "Иоиль",
         "start": -835,
@@ -525,18 +537,6 @@
       }
     ],
     "prophets-exile": [
-      {
-        "id": "samuel",
-        "label": "Самуил",
-        "start": -1075,
-        "end": -1017
-      },
-      {
-        "id": "nathan",
-        "label": "Нафан",
-        "start": -1005,
-        "end": -965
-      },
       {
         "id": "daniel",
         "label": "Даниил",
