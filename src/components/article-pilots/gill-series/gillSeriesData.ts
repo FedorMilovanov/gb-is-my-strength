@@ -28,6 +28,10 @@ export interface GillPartTocItem {
   /** Historical hierarchy: H2/top-level = 2, H3/submenu row = 3. */
   level: 2 | 3;
   current?: boolean;
+  /** One-sentence gloss for the mobile Learning → «Конспект» outline tab.
+   *  Only populated on real level:2 (H2) rows — sub-items stay in the
+   *  granular Part TOC sheet, the outline tab shows the coarse structure. */
+  summary?: string;
 }
 
 export interface GillPageChromeData {
@@ -114,16 +118,16 @@ export const GILL_PAGE_DATA: Record<GillSeriesPageId, GillPageChromeData> = {
     railCover: "../../images/og-dzhon-gill-istoricheskiy-kontekst-600w.webp",
     partDialogLabel: "Введение · Исторический контекст",
     partToc: [
-      { href: "#sec-from-puritans-to-baptists", label: "I. От пуритан к диссентерам: путь в полтора века", level: 2, current: true },
-      { href: "#sec-particular-vs-general", label: "II. Партикулярные и генеральные баптисты: почему это важно", level: 2 },
-      { href: "#sec-great-ejection", label: "III. Тень 1662 года: Великое изгнание", level: 2 },
-      { href: "#sec-clarendon", label: "IV. Кларендонский кодекс и позднейшие религиозные тесты", level: 2 },
-      { href: "#sec-academies", label: "V. Диссентерские академии: университеты для изгнанных", level: 2 },
-      { href: "#sec-salters-hall", label: "VI. Солтерс-Холл (1719): доктринальный разлом", level: 2 },
-      { href: "#sec-coffee-house", label: "VII. Кофейная политика", level: 2 },
-      { href: "#sec-southwark", label: "VIII. Саутварк: джин, дым и Евангелие", level: 2 },
-      { href: "#sec-books", label: "IX. Кеттеринг и книжная лавка", level: 2 },
-      { href: "#sec-conclusion", label: "X. Итог: пастор изгнанников, защитник Троицы, учёный с улицы", level: 2 },
+      { href: "#sec-from-puritans-to-baptists", label: "I. От пуритан к диссентерам: путь в полтора века", level: 2, current: true, summary: "Как английские пуритане XVII века привели к отдельной партикулярно-баптистской традиции, в которой вырос Гилл." },
+      { href: "#sec-particular-vs-general", label: "II. Партикулярные и генеральные баптисты: почему это важно", level: 2, summary: "Ключевое различие между двумя баптистскими течениями — по объёму искупления — определяющее богословскую позицию Гилла." },
+      { href: "#sec-great-ejection", label: "III. Тень 1662 года: Великое изгнание", level: 2, summary: "Как массовое изгнание нонконформистского духовенства в 1662 году сформировало мир диссентеров, в котором позже служил Гилл." },
+      { href: "#sec-clarendon", label: "IV. Кларендонский кодекс и позднейшие религиозные тесты", level: 2, summary: "Законодательные ограничения против нонконформистов и то, как община Гилла существовала под правовым давлением." },
+      { href: "#sec-academies", label: "V. Диссентерские академии: университеты для изгнанных", level: 2, summary: "Альтернативные учебные заведения, заменявшие нонконформистам закрытые для них Оксфорд и Кембридж." },
+      { href: "#sec-salters-hall", label: "VI. Солтерс-Холл (1719): доктринальный разлом", level: 2, summary: "Спор 1719 года о подписании тринитарных формул, расколовший английских диссентеров незадолго до служения Гилла." },
+      { href: "#sec-coffee-house", label: "VII. Кофейная политика", level: 2, summary: "Роль лондонских кофеен как площадок религиозных и политических дискуссий эпохи Гилла." },
+      { href: "#sec-southwark", label: "VIII. Саутварк: джин, дым и Евангелие", level: 2, summary: "Социальный портрет лондонского района, где Гилл десятилетиями возглавлял общину." },
+      { href: "#sec-books", label: "IX. Кеттеринг и книжная лавка", level: 2, summary: "Ранние годы Гилла и то, как книжная лавка заменила ему формальное университетское образование." },
+      { href: "#sec-conclusion", label: "X. Итог: пастор изгнанников, защитник Троицы, учёный с улицы", level: 2, summary: "Краткое резюме исторического контекста, из которого вырос Гилл как богослов и пастор." },
     ],
   },
   part1: {
@@ -143,12 +147,12 @@ export const GILL_PAGE_DATA: Record<GillSeriesPageId, GillPageChromeData> = {
       // the article grew after the historical witness bcf6389f and several
       // sections moved. Documented in
       // data/gill-submenu-anchor-reconciliation.json → "reorders".
-      { href: "#part-calling", label: "I. Становление и призвание", level: 2, current: true },
+      { href: "#part-calling", label: "I. Становление и призвание", level: 2, current: true, summary: "Детство, обращение и первые шаги Гилла к пасторскому служению." },
       { href: "#sec-intro", label: "Откуда рождаются гении без университетов", level: 3 },
       { href: "#sec-birth-prophecy", label: "Утро рождения: три пророчества", level: 3 },
       { href: "#sec-education", label: "Книжная лавка вместо грамматической школы", level: 3 },
       { href: "#sec-conversion", label: "Бытие 3:9 — вопрос, изменивший жизнь", level: 3 },
-      { href: "#part-pastor", label: "II. Пасторское служение в Хорслидауне", level: 2 },
+      { href: "#part-pastor", label: "II. Пасторское служение в Хорслидауне", level: 2, summary: "Пятьдесят один год служения Гилла на одном месте — Хорслидаун, Саутварк." },
       { href: "#sec-pastor", label: "Хорслидаун: пятьдесят один год на одном месте", level: 3 },
       { href: "#sec-evangelism", label: "Систематическая евангелизация Саутварка", level: 3 },
       { href: "#sec-goatyardDecl", label: "Декларация Козьего Двора 1729 года: архитектура исповедания", level: 3 },
@@ -178,7 +182,7 @@ export const GILL_PAGE_DATA: Record<GillSeriesPageId, GillPageChromeData> = {
       // sections after the historical witness bcf6389f, and «Свод богословия»
       // now sits after ordinances/eschatology in the text. Documented in
       // data/gill-submenu-anchor-reconciliation.json → "reorders".
-      { href: "#sec-hebrew", label: "Раввинист — христианин с Мишной в руках", level: 2, current: true },
+      { href: "#sec-hebrew", label: "Раввинист — христианин с Мишной в руках", level: 2, current: true, summary: "Гилл как учёный: работа с раввинистическими источниками и главные научные труды его жизни." },
       { href: "#sec-canticles", label: "Песнь Песней: самый личный труд Гилла", level: 3 },
       { href: "#sec-ordinances", label: "Таинства и церковные установления: крещение и Вечеря", level: 3 },
       { href: "#sec-eschatology", label: "Эсхатология: духовное и личное царствование Христа", level: 3 },
@@ -203,7 +207,7 @@ export const GILL_PAGE_DATA: Record<GillSeriesPageId, GillPageChromeData> = {
       // Part III was heavily expanded/re-arranged after the historical witness
       // bcf6389f. Documented in
       // data/gill-submenu-anchor-reconciliation.json → "reorders".
-      { href: "#part-legacy", label: "V. Историческое влияние и память", level: 2, current: true },
+      { href: "#part-legacy", label: "V. Историческое влияние и память", level: 2, current: true, summary: "Как наследие Гилла воспринималось современниками и последующими поколениями, включая спорные и признанные стороны." },
       { href: "#sec-controversy", label: "Гиперкальвинизм — спорное наследие", level: 3 },
       { href: "#sec-church-gov", label: "Управление церковью: единственный пастор, никаких степеней", level: 3 },
       { href: "#sec-church-gov-polity", label: "О вступлении в членство и права поместной общины", level: 3 },
@@ -234,7 +238,7 @@ export const GILL_PAGE_DATA: Record<GillSeriesPageId, GillPageChromeData> = {
     railCover: "../../images/og-dzhon-gill-chast-4-ekzeget-600w.webp",
     partDialogLabel: "Часть III · Экзегет",
     partToc: [
-      { href: "#sec-exegete-intro", label: "Джон Гилл: экзегет за работой", level: 2, current: true },
+      { href: "#sec-exegete-intro", label: "Джон Гилл: экзегет за работой", level: 2, current: true, summary: "Как Гилл читал сложные тексты Писания и разбирал спорные толкования на конкретных примерах." },
       { href: "#sec-method", label: "Герменевтический метод: пять координат", level: 3 },
       { href: "#sec-seven-texts", label: "Семь «универсальных» текстов: экзегеза Гилла", level: 3 },
       { href: "#sec-1tim-2-4", label: "1 Тимофею 2:4 — «все» разных сортов", level: 3 },
@@ -263,14 +267,14 @@ export const GILL_PAGE_DATA: Record<GillSeriesPageId, GillPageChromeData> = {
     railCover: "../../images/gill-five-volumes-shelf-600w.webp",
     partDialogLabel: "Справочник по Гиллу",
     partToc: [
-      { href: "#sec-prdl", label: "I. Масштаб корпуса", level: 2, current: true },
-      { href: "#sec-timeline", label: "II. Хронология жизни и служения", level: 2 },
-      { href: "#sec-works", label: "III. Основные труды", level: 2 },
-      { href: "#sec-body-structure", label: "IV. Структура «Свода богословия»", level: 2 },
-      { href: "#sec-network", label: "V. Сеть влияний и наследников", level: 2 },
-      { href: "#sec-disputes", label: "VI. Спорные темы и как их читать", level: 2 },
-      { href: "#sec-terms", label: "VII. Богословский словарь эпохи", level: 2 },
-      { href: "#sec-links", label: "VIII. Читать дальше", level: 2 },
+      { href: "#sec-prdl", label: "I. Масштаб корпуса", level: 2, current: true, summary: "Общий объём и охват литературного наследия Гилла." },
+      { href: "#sec-timeline", label: "II. Хронология жизни и служения", level: 2, summary: "Основные даты жизни и пасторского пути Гилла." },
+      { href: "#sec-works", label: "III. Основные труды", level: 2, summary: "Ключевые сочинения Гилла и их значение." },
+      { href: "#sec-body-structure", label: "IV. Структура «Свода богословия»", level: 2, summary: "Как устроен главный систематический труд Гилла." },
+      { href: "#sec-network", label: "V. Сеть влияний и наследников", level: 2, summary: "Кто повлиял на Гилла и кто продолжил его дело." },
+      { href: "#sec-disputes", label: "VI. Спорные темы и как их читать", level: 2, summary: "Обзор дискуссионных вопросов вокруг наследия Гилла и корректный подход к их оценке." },
+      { href: "#sec-terms", label: "VII. Богословский словарь эпохи", level: 2, summary: "Ключевые богословские термины, необходимые для понимания текстов Гилла." },
+      { href: "#sec-links", label: "VIII. Читать дальше", level: 2, summary: "Куда двигаться дальше при изучении наследия Гилла." },
       { href: "#sec-quiz", label: "Проверь себя", level: 2 },
     ],
   },
