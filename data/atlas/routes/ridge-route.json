@@ -1,0 +1,43 @@
+{
+  "id": "ridge-route",
+  "title": {
+    "ru": "Дорога патриархов",
+    "historical": "Ridge Route / водораздельный путь — современное академическое название"
+  },
+  "kind": "regional-road",
+  "bibleRefs": [
+    "Быт 12:8–9",
+    "Быт 13:3",
+    "Суд 21:19"
+  ],
+  "waypoints": [
+    {
+      "placeId": "beersheba"
+    },
+    {
+      "placeId": "hebron"
+    },
+    {
+      "placeId": "bethlehem"
+    },
+    {
+      "placeId": "jerusalem"
+    },
+    {
+      "placeId": "bethel"
+    },
+    {
+      "placeId": "shiloh"
+    },
+    {
+      "placeId": "shechem"
+    }
+  ],
+  "sources": [
+    {
+      "ref": "Dorsey, Roads and Highways of Ancient Israel (1991)",
+      "level": "B"
+    }
+  ],
+  "note": "Маршрут Авраама Быт 12 идёт по нему с севера на юг; ось будущих карт Давида и Иакова"
+}
