@@ -163,20 +163,16 @@ async function addFakeTts(context) {
   });
 }
 
-// Desktop Gill rail Play moved from the rail footer into the rail topbar
-// (back + poиск⇄speed slot-swap + Play, see GillSeriesRail.astro
-// .gbs-rail-topbar) — the footer selectors are kept alongside the topbar ones
-// so this smoke still passes against either layout. That topbar also opts out
-// of the canonical .gb-ember-wrap/.gb-ember-expand speed bloom via
-// [data-gb-speed-custom] and drives its own .gbs-rail-spdbadge/
-// .gbs-rail-speedrail slot instead (dispatches the same gb:tts-rate-change
-// CustomEvent, so the TTS engine reacts identically either way). Mobile
-// bottom bar keeps the classic .gb-ember unchanged. All are driven by the
-// same TTS engine via data-fc-action="play" click delegation —
-// setEmberState() still updates every .gb-ember in the DOM (the mobile bar's
-// node exists even when hidden by CSS on desktop viewports), so
-// allEmberStates() below keeps reading real engine state regardless of which
-// control is visible.
+// Gill's rail/mobile-bar Play embers no longer opt out via
+// [data-gb-speed-custom] — they use the same canonical .gb-ember-wrap/
+// .gb-ember-expand speed bloom as single articles, so clickSpeedNearEmber()
+// below takes its non-custom branch for Gill. Hermenevtika's rail/mobile bar
+// still runs its own custom speed slot (.hm-spdbadge/.hm-spd), so that branch
+// stays exercised too. All are driven by the same TTS engine via
+// data-fc-action="play" click delegation — setEmberState() still updates
+// every .gb-ember in the DOM (the mobile bar's node exists even when hidden
+// by CSS on desktop viewports), so allEmberStates() below keeps reading real
+// engine state regardless of which control is visible.
 async function visibleEmber(page, mobile) {
   const selector = mobile
     ? '.mobile-top-bar .gb-ember'
@@ -197,16 +193,11 @@ async function clickSpeedNearEmber(ember, speed) {
   if (isCustom) {
     const clicked = await ember.evaluate((el, targetSpeed) => {
       const topbar = el.closest('[data-gb-speed-custom]');
-      // Custom speed slot exists in three flavours with different class
-      // prefixes: desktop rail (.gbs-rail-*), Gill v4 mobile bar (.mobile-*),
-      // Hermenevtika mobile bar (.hm-*). All share the same badge→chip mechanic.
-      const badge = topbar && (topbar.querySelector('.gbs-rail-spdbadge')
-        || topbar.querySelector('.mobile-spdbadge')
-        || topbar.querySelector('.hm-spdbadge'));
+      // Only Hermenevtika still opts out via [data-gb-speed-custom] — Gill's
+      // rail/mobile bar use the canonical speed bloom (non-custom branch above).
+      const badge = topbar && topbar.querySelector('.hm-spdbadge');
       if (badge) badge.click();
-      const btn = topbar && (topbar.querySelector(`.gbs-rail-spd[data-speed="${targetSpeed}"]`)
-        || topbar.querySelector(`.mobile-spd[data-speed="${targetSpeed}"]`)
-        || topbar.querySelector(`.hm-spd[data-speed="${targetSpeed}"]`));
+      const btn = topbar && topbar.querySelector(`.hm-spd[data-speed="${targetSpeed}"]`);
       if (!btn) return false;
       btn.click();
       return true;

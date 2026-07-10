@@ -76,13 +76,6 @@ const seriesMeta = currentItem && currentItem.mark.kind === 'label'
     <a class="gbs-rail-home" href="/" aria-label="На главную">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11l9-8 9 8" /><path d="M5 10v10h4v-6h6v6h4V10" /></svg>
     </a>
-    <!-- Свернуть ⇄ развернуть рейл (Mechanism 1): широкий (по умолчанию) ⇄
-         узкий 72px-спайн. Стрелка «‹» в широком режиме (collapse), поворот на
-         180° → «›» в узком (expand). Состояние — класс rail-narrow на
-         .gbs2-world[data-gill-v16], персист в localStorage gb:rail:narrow. -->
-    <button class="gbs-rail-collapse" id="gbsRailCollapse" type="button" aria-label="Свернуть панель" aria-expanded="true" aria-controls="gbsRailMid">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6" /></svg>
-    </button>
   </div>
 
   <!-- Прогресс СЕРИИ (не только текущей части) — восстановлен по образцу
@@ -174,29 +167,8 @@ const seriesMeta = currentItem && currentItem.mark.kind === 'label'
     )}
   </div>
 
-  <!-- Компактный спайн (Mechanism 1): виден только в узком (rail-narrow)
-       режиме вместо .gbs2-rmid. Один значок на часть — римская цифра
-       (SeriesMark) или кожаная закладка (GillLeatherRibbon) для label-пунктов
-       (Введение/Справ.), те же компоненты и helper leatherFor(), что и у
-       .gbs-rail-card. Текущая часть — .is-current (золотое кольцо/подсветка).
-       Название части — CSS-флайаут .gbs-rail-spine__tip справа при hover. -->
-  <nav class="gbs-rail-spine" aria-label="Части серии">
-    {GILL_SERIES_ITEMS.map((item) => { const leather = item.mark.kind === 'label' ? leatherFor(item.id) : null; return (
-      <a
-        class:list={['gbs-rail-spine__item', { 'is-current': item.id === pageId }]}
-        href={item.href}
-        aria-current={item.id === pageId ? 'page' : undefined}
-      >
-        {leather
-          ? <GillLeatherRibbon word={leather.word} ornament={leather.ornament} variant={leather.variant} className="gbs-rail-spine__mark" />
-          : <SeriesMark kind={item.mark.kind} value={item.mark.value} className="gbs-rail-spine__mark" />}
-        <span class="gbs-rail-spine__tip">{item.title}</span>
-      </a>
-    ); })}
-  </nav>
-
   <div class="gbs-rail-foot" data-fc-root data-fc-variant="gill" data-fc-mode="series-rich">
-    <a class="gbs-rail-foot__btn" href="../../" aria-label="Все разделы сайта" data-tip="Разделы сайта"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"><path d="M4 7h16M4 12h16M4 17h16" /></svg></a>
+    <button class="gbs-rail-foot__btn" type="button" data-fc-action="search" aria-label="Поиск и разделы сайта" data-tip="Поиск и разделы"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"><path d="M4 7h16M4 12h16M4 17h16" /></svg></button>
     <button class="gbs-rail-foot__btn gbs-rail-foot__btn--text" data-fc-action="font-down" aria-label="Уменьшить шрифт" data-tip="Меньше">A−</button>
     <button class="gbs-rail-foot__btn gbs-rail-foot__btn--text" data-fc-action="font-up" aria-label="Увеличить шрифт" data-tip="Больше">A+</button>
     <button class="gbs-rail-foot__btn" data-action="share" aria-label="Поделиться" data-tip="Поделиться"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="2.6" /><circle cx="6" cy="12" r="2.6" /><circle cx="18" cy="19" r="2.6" /><path d="M8.3 10.7l7.4-4.2M8.3 13.3l7.4 4.2" /></svg></button>
@@ -210,154 +182,20 @@ const seriesMeta = currentItem && currentItem.mark.kind === 'label'
      избранное: день-ночь, поиск, PLAY (с нынешним раскрытием), избранное" —
      4 чистых SVG, тот же canonical паттерн, что уже есть на одиночных
      статьях (SingleArticleCluster: theme → search → PlayEmber → Save).
-     Скорость-слот (поиск ⇄ чипы) — тот же проверенный механизм, что был в
-     топбаре, просто теперь раскрывается флайаутом влево из вертикальной
-     колонки вместо инлайн-свапа в горизонтальном топбаре. -->
-<div class="gbs-theme-corner" data-fc-root data-fc-variant="gill" data-fc-mode="series-rich" data-gb-speed-custom>
+     Скорость больше НЕ кастомный слот-свап (поиск ⇄ чипы) — тот флайаут был
+     непрошеным отклонением от canonical-паттерна и мешал: подряд два разных
+     UI для одной вещи. Теперь ember без data-gb-speed-custom, поэтому
+     initPlayExpand() в floating-cluster-controller.js сама вешает
+     canonical-панель .gb-ember-expand — тот же bloom и то же направление
+     (влево), что и на одиночных статьях, без Gill-специфичных отклонений. -->
+<div class="gbs-theme-corner" data-fc-root data-fc-variant="gill" data-fc-mode="series-rich">
   <button class="gb-icon gb-theme-toggle" data-fc-action="theme" aria-label="Тема" aria-pressed="false">
     <span class="theme-icon-sun" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4.5" /><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41" /></svg></span>
     <span class="theme-icon-moon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z" /></svg></span>
   </button>
-  <div class="gbs-rail-slot" id="gbsRailSlot">
-    <button class="gb-icon gbs-rail-slot__search" data-fc-action="search" aria-label="Поиск" data-tip="Поиск"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7" /><path d="M21 21l-4.3-4.3" /></svg></button>
-    <div class="gbs-rail-speedrail" id="gbsRailSpeedrail" role="radiogroup" aria-label="Скорость озвучки">
-      <button class="gbs-rail-spd" type="button" role="radio" data-speed="1" aria-checked="true">1×</button>
-      <button class="gbs-rail-spd" type="button" role="radio" data-speed="1.25" aria-checked="false">1.25×</button>
-      <button class="gbs-rail-spd" type="button" role="radio" data-speed="1.5" aria-checked="false">1.5×</button>
-      <button class="gbs-rail-spd" type="button" role="radio" data-speed="1.75" aria-checked="false">1.75×</button>
-      <button class="gbs-rail-spd" type="button" role="radio" data-speed="2" aria-checked="false">2×</button>
-    </div>
-  </div>
+  <button class="gb-icon" data-fc-action="search" aria-label="Поиск" data-tip="Поиск"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7" /><path d="M21 21l-4.3-4.3" /></svg></button>
   <span class="gbs-rail-playwrap">
     <PlayEmber audioState="none" class="gbs-rail-ember" tip="Озвучка" />
-    <button class="gbs-rail-spdbadge" id="gbsRailSpdBadge" type="button" aria-label="Выбрать скорость, сейчас 1×">1×</button>
   </span>
   <SaveButton tip="Сохранить" />
 </div>
-
-<script>
-  // Слот-свап скоростей — та же механика, что проверена на мобильном
-  // референсе (bar.html): openSpeeds/closeSpeeds, drag с отложенным
-  // setPointerCapture (чтобы обычный тап не промахивался мимо чипа), бейдж
-  // выбранной скорости на самом Play. НЕ дублирует применение скорости —
-  // читает/пишет те же ключи localStorage и тот же CustomEvent, что и
-  // канонная initPlayExpand() в floating-cluster-controller.js, так TTS-движок
-  // подхватывает выбор одинаково, откуда бы он ни пришёл. Раньше жил в
-  // горизонтальном топбаре, теперь — в вертикальном .gbs-theme-corner
-  // (ember/speedrail/badge все внутри одного root — упростил badge-запрос,
-  // больше не нужен topbar.parentElement).
-  (function () {
-    function initGillRailSpeedSlot(topbar: HTMLElement) {
-      var ember = topbar.querySelector('.gbs-rail-ember') as HTMLElement | null;
-      var speedrail = topbar.querySelector('.gbs-rail-speedrail') as HTMLElement | null;
-      var badge = topbar.querySelector('.gbs-rail-spdbadge') as HTMLElement | null;
-      if (!ember || !speedrail || !badge) return;
-      var chips = Array.prototype.slice.call(speedrail.querySelectorAll('.gbs-rail-spd')) as HTMLElement[];
-      var offeredThisSession = false;
-      var closeTimer: ReturnType<typeof setTimeout> | null = null;
-
-      function fmt(r: number) { return String(r).replace(/\.0$/, '') + '×'; }
-      function readRate() {
-        try {
-          var r = parseFloat(localStorage.getItem('gb:audio:rate') || localStorage.getItem('gbx-tts-rate') || '1');
-          return (!isNaN(r) && r > 0) ? r : 1;
-        } catch (_) { return 1; }
-      }
-      function syncActive(rate: number) {
-        chips.forEach(function (c) {
-          var on = parseFloat(c.dataset.speed || '') === rate;
-          c.setAttribute('aria-checked', on ? 'true' : 'false');
-        });
-        badge!.textContent = fmt(rate);
-        badge!.setAttribute('aria-label', 'Выбрать скорость, сейчас ' + fmt(rate));
-      }
-      syncActive(readRate());
-
-      function open(autoClose: boolean) {
-        if (closeTimer) clearTimeout(closeTimer);
-        topbar.classList.add('speed-open');
-        var active = speedrail!.querySelector('.gbs-rail-spd[aria-checked="true"]') as HTMLElement | null;
-        if (active) { var activeChip = active; setTimeout(function () { activeChip.scrollIntoView({ block: 'nearest', inline: 'center', behavior: 'auto' }); }, 20); }
-        if (autoClose) closeTimer = setTimeout(close, 4500);
-      }
-      function close() {
-        if (closeTimer) clearTimeout(closeTimer);
-        topbar.classList.remove('speed-open');
-      }
-
-      // Первый свежий запуск (idle/complete → playing) один раз за сессию
-      // предлагает рельсу; повторный play/pause (resume) её не трогает.
-      var prevState = ember.dataset.state || 'idle';
-      new MutationObserver(function () {
-        var state = ember!.dataset.state || 'idle';
-        if (state === 'playing' && (prevState === 'idle' || prevState === 'complete') && !offeredThisSession) {
-          offeredThisSession = true;
-          open(true);
-        }
-        prevState = state;
-      }).observe(ember, { attributes: true, attributeFilter: ['data-state'] });
-
-      badge.addEventListener('click', function (e: Event) {
-        e.preventDefault();
-        e.stopPropagation();
-        topbar.classList.contains('speed-open') ? close() : open(false);
-      });
-
-      chips.forEach(function (chip) {
-        chip.addEventListener('click', function (e: Event) {
-          e.stopPropagation();
-          var rate = parseFloat(chip.dataset.speed || '');
-          syncActive(rate);
-          badge!.classList.remove('is-bump'); void badge!.offsetWidth; badge!.classList.add('is-bump');
-          try {
-            localStorage.setItem('gb:audio:rate', String(rate));
-            localStorage.setItem('gbx-tts-rate', String(rate));
-          } catch (_) {}
-          window.dispatchEvent(new CustomEvent('gb:tts-rate-change', { detail: { rate: rate } }));
-          setTimeout(close, 220);
-        });
-      });
-
-      window.addEventListener('gb:tts-rate-change', function (ev: Event) {
-        var r = (ev as CustomEvent)?.detail?.rate;
-        if (typeof r === 'number' && !isNaN(r)) syncActive(r);
-      });
-
-      document.addEventListener('pointerdown', function (e: PointerEvent) {
-        if (topbar.classList.contains('speed-open') && !topbar.contains(e.target as Node)) close();
-      }, { passive: true });
-
-      // Drag-to-scroll: setPointerCapture только после реального сдвига, иначе
-      // обычный тап по чипу не долетает до его click-обработчика (тот самый
-      // баг, уже пойманный и исправленный на мобильном референсе).
-      var dragging = false, startX = 0, startScroll = 0, moved = false, pid: number | null = null;
-      speedrail.addEventListener('pointerdown', function (e: PointerEvent) {
-        dragging = true; moved = false; startX = e.clientX; startScroll = speedrail!.scrollLeft; pid = e.pointerId;
-      });
-      speedrail.addEventListener('pointermove', function (e: PointerEvent) {
-        if (!dragging || e.pointerId !== pid) return;
-        var dx = e.clientX - startX;
-        if (!moved && Math.abs(dx) > 4) {
-          moved = true;
-          speedrail!.classList.add('is-dragging');
-          try { speedrail!.setPointerCapture(pid as number); } catch (_) {}
-        }
-        if (moved) speedrail!.scrollLeft = startScroll - dx;
-      });
-      function endDrag(e: PointerEvent) {
-        if (!dragging || (pid !== null && e.pointerId !== pid)) return;
-        dragging = false; pid = null;
-        speedrail!.classList.remove('is-dragging');
-      }
-      speedrail.addEventListener('pointerup', endDrag);
-      speedrail.addEventListener('pointercancel', endDrag);
-      speedrail.addEventListener('click', function (e: MouseEvent) { if (moved) { e.stopPropagation(); moved = false; } }, true);
-    }
-
-    function boot() {
-      document.querySelectorAll('.gbs-theme-corner[data-gb-speed-custom]').forEach(function (el) { initGillRailSpeedSlot(el as HTMLElement); });
-    }
-    if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot, { once: true });
-    else boot();
-  })();
-</script>

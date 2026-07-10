@@ -845,27 +845,25 @@
   }
 
   /* =====================================================
-     SCALABLE SERIES-RAIL (Gill) — collapse / TOC-disclosure / demand-scroll
-     Desktop-only chrome (rail is display:none <64em). Additive: wires the three
-     new controls added to GillSeriesRail.astro. No new framework, uses the same
+     SCALABLE SERIES-RAIL (Gill) — TOC-disclosure / demand-scroll
+     Desktop-only chrome (rail is display:none <64em). Additive: wires the
+     controls on GillSeriesRail.astro. No new framework, uses the same
      qs/qsa/addCleanListener helpers as the rest of the file.
-       #gbsRailCollapse → toggle .rail-narrow on .gbs2-world[data-gill-v16]
-                          (persist gb:rail:narrow)
        #gbsTocToggle    → toggle .toc-collapsed on .gbs2-current
                           (persist gb:rail:toc-collapsed)
        .gbs2-rmid       → .is-scrolling while scrolling (fade the scrollbar)
                         + auto-centre the current-part card on load
-     ===================================================== */
+     (The narrow-spine rail-collapse mode — .rail-narrow, #gbsRailCollapse,
+     .gbs-rail-spine — was removed per owner: unclear purpose, not worth
+     the complexity.) */
   function initGillRailScalable() {
     var world = qs('.gbs2-world[data-gill-v16]');
     if (!world) return;
     var rail = qs('.gbs-rail', world);
     if (!rail) return;
 
-    var NARROW_KEY = 'gb:rail:narrow';
     var TOC_KEY = 'gb:rail:toc-collapsed';
 
-    var collapseBtn = qs('#gbsRailCollapse');
     var tocToggle = qs('#gbsTocToggle');
     var current = qs('.gbs2-current', rail);
     var rmid = qs('.gbs2-rmid', rail);
@@ -877,13 +875,6 @@
       try { localStorage.setItem(key, on ? '1' : '0'); } catch (_) {}
     }
 
-    function applyNarrow(on) {
-      world.classList.toggle('rail-narrow', on);
-      if (collapseBtn) {
-        collapseBtn.setAttribute('aria-expanded', on ? 'false' : 'true');
-        collapseBtn.setAttribute('aria-label', on ? 'Развернуть панель' : 'Свернуть панель');
-      }
-    }
     function applyTocCollapsed(on) {
       if (current) current.classList.toggle('toc-collapsed', on);
       if (tocToggle) {
@@ -893,23 +884,14 @@
     }
 
     // Apply persisted state with transitions suppressed for one frame (no
-    // width-jump animation on first paint), then release the guard.
-    var narrow = readFlag(NARROW_KEY);
+    // height-jump animation on first paint), then release the guard.
     var tocCollapsed = readFlag(TOC_KEY);
     world.classList.add('no-anim');
-    applyNarrow(narrow);
     applyTocCollapsed(tocCollapsed);
     requestAnimationFrame(function () {
       requestAnimationFrame(function () { world.classList.remove('no-anim'); });
     });
 
-    if (collapseBtn) {
-      addCleanListener(collapseBtn, 'click', function () {
-        narrow = !narrow;
-        applyNarrow(narrow);
-        writeFlag(NARROW_KEY, narrow);
-      });
-    }
     if (tocToggle) {
       addCleanListener(tocToggle, 'click', function () {
         tocCollapsed = !tocCollapsed;
@@ -920,10 +902,9 @@
 
     if (rmid) {
       // Auto-centre the current-part card within the (possibly scrolling) rich
-      // column on load — only if the column actually overflows and is visible
-      // (not in narrow mode, where .gbs2-rmid is display:none). Adjusts only
+      // column on load — only if the column actually overflows. Adjusts only
       // rmid.scrollTop via rects, so the page/window never jumps.
-      if (current && !narrow) {
+      if (current) {
         requestAnimationFrame(function () {
           if (rmid.clientHeight > 0 && rmid.scrollHeight > rmid.clientHeight + 4) {
             var mRect = rmid.getBoundingClientRect();
@@ -1328,8 +1309,12 @@
 
       // Wrap ember in a positioned span so the popover anchors exactly to the
       // play circle. Direction is set by CSS, not by JS:
-      //   • desktop article/series-lite → morph LEFT  (gb-ember-expand: right:0)
-      //   • gill-rail (any) + mobile    → morph UP    (gb-ember-expand: bottom:100%+8)
+      //   • desktop (article/series-lite/gill-rail) → morph LEFT (gb-ember-expand: right:0)
+      //   • mobile bars                              → morph DOWN (see [data-gill-mobile-bar] override)
+      // Gill's rail used to force morph-UP here (owner spec, when the ember
+      // lived in the old bottom-of-rail footer); it now lives in the fixed
+      // top-right corner cluster with open space to its left, so it uses the
+      // same left-bloom as everywhere else instead of a bespoke direction.
       // See PremiumControls canonical contract in AuditRepo (PremiumControls/README.md §3.2)
       var parent = ember.parentNode;
       var wrap = document.createElement('span');
@@ -1387,17 +1372,26 @@
           return;
         }
         // Click = PLAY/PAUSE only. The speed pill is hover-driven on desktop
-        // (see mouseenter below) and tap-driven on touch (handled in the
-        // no-hover branch). Keeping click=play/pause means the user can always
-        // pause; previously click only toggled the pill so playback got stuck.
+        // (see mouseenter below) and tap-driven on touch (handled by the
+        // data-state observer below). Keeping click=play/pause means the
+        // user can always pause; previously click only toggled the pill so
+        // playback got stuck.
         handlePlayClick(ember);
-        // On touch devices (no hover) reveal the pill on the play tap too,
-        // so speeds are reachable without a hover capability.
-        if (!HOVER_CAPABLE) {
+      });
+      // On touch devices (no hover) reveal the pill once playback actually
+      // starts. startTts() resolves its engine via a Promise before calling
+      // setEmberState('playing'), so reading ember.dataset.state right after
+      // handlePlayClick() above (synchronously, in the same tick) always saw
+      // the PREVIOUS state and left the pill permanently unreachable on
+      // touch — the click handler fired before the async flip happened.
+      // Watching the attribute directly sidesteps the race regardless of
+      // how long engine resolution takes.
+      if (!HOVER_CAPABLE) {
+        new MutationObserver(function() {
           var st = ember.dataset.state || 'idle';
           if (st === 'playing') openPanel(); else closePanel();
-        }
-      });
+        }).observe(ember, { attributes: true, attributeFilter: ['data-state'] });
+      }
 
       addCleanListener(panel, 'click', function(e) {
         var btn = e.target.closest('[data-speed]');

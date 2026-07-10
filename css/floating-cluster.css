@@ -804,11 +804,12 @@ html.dark [data-gill-v16] .gb-theme-toggle .theme-icon-moon{opacity:1;transform:
 [data-gill-v16] .gbs-rail .gbs-rail-list{padding:0 2px}
 [data-gill-v16] .gbs-rail .gbs-rail-foot{padding:12px 8px 14px;border-top:1px solid rgba(255,255,255,.08)}
 
-/* Верх рейла: назад + слот-свап(поиск⇄скорости) + Play в один ряд (перенесены
-   из футера сюда — тот же стандарт, что и в мобильном топбаре: поиск и Play
-   наверху общего оглавления, а не внизу россыпью иконок). .gbs-rail-back
-   теряет свой старый absolute-позишен (он рассчитывал на то, что в верху
-   рейла больше ничего нет) и становится обычным flex-элементом ряда. */
+/* Верх рейла: назад + Play в один ряд (перенесены из футера сюда — тот же
+   стандарт, что и в мобильном топбаре: поиск и Play наверху общего
+   оглавления, а не внизу россыпью иконок). .gbs-rail-back теряет свой
+   старый absolute-позишен (он рассчитывал на то, что в верху рейла больше
+   ничего нет) и становится обычным flex-элементом ряда. Поиск и Play живут
+   в .gbs-theme-corner (фиксированная колонка справа), не здесь. */
 [data-gill-v16] .gbs-rail-topbar{
   display:flex;align-items:center;gap:6px;
   padding:10px 10px 8px;
@@ -818,78 +819,15 @@ html.dark [data-gill-v16] .gb-theme-toggle .theme-icon-moon{opacity:1;transform:
 [data-gill-v16] .gbs-rail-topbar .gbs-rail-back{position:static;flex-shrink:0}
 [data-gill-v16] .gbs-rail-topbar .gbs-rail-foot__btn{flex-shrink:0}
 
-/* Слот-свап: иконка поиска и рельса скоростей делят одно и то же место —
-   ровно механика мобильного референса (bar.html .gb-slot/.gb-search/
-   .speed-rail), просто скорости выезжают на место ИКОНКИ поиска (тут нет
-   инпута, поиск — модальный оверлей), а не поискового поля. */
-[data-gill-v16] .gbs-rail-slot{position:relative;flex:1;min-width:0;height:32px}
-[data-gill-v16] .gbs-rail-slot__search{
-  position:absolute;inset:0;margin:0;
-  transition:opacity .25s ease,transform .25s cubic-bezier(.3,1.2,.4,1);
-}
-[data-gill-v16] .gbs-rail-topbar.speed-open .gbs-rail-slot__search{
-  opacity:0;transform:translateX(-8px);pointer-events:none;
-}
-[data-gill-v16] .gbs-rail-speedrail{
-  position:absolute;inset:0;display:flex;align-items:center;justify-content:flex-end;gap:3px;
-  opacity:0;transform:translateX(8px);pointer-events:none;
-  transition:opacity .25s ease,transform .25s cubic-bezier(.3,1.2,.4,1);
-  overflow-x:auto;overflow-y:hidden;scrollbar-width:none;-ms-overflow-style:none;
-  -webkit-overflow-scrolling:touch;overscroll-behavior-x:contain;
-  scroll-snap-type:x proximity;cursor:grab;
-}
-[data-gill-v16] .gbs-rail-speedrail::-webkit-scrollbar{display:none}
-[data-gill-v16] .gbs-rail-speedrail.is-dragging{cursor:grabbing;scroll-snap-type:none}
-[data-gill-v16] .gbs-rail-topbar.speed-open .gbs-rail-speedrail{
-  opacity:1;transform:translateX(0);pointer-events:auto;
-}
-[data-gill-v16] .gbs-rail-spd{
-  flex:0 0 auto;font:700 10.5px/1 var(--gb-font-serif,"Source Sans 3",system-ui,sans-serif);
-  border:1px solid rgba(232,184,120,.28);background:transparent;color:#c4a882;
-  padding:6px 7px;border-radius:8px;cursor:pointer;white-space:nowrap;position:relative;
-  transition:background .15s,color .15s,border-color .15s,transform .12s;
-  scroll-snap-align:center;-webkit-tap-highlight-color:transparent;
-}
-[data-gill-v16] .gbs-rail-spd::before{content:'';position:absolute;inset:-7px -1px}
-@media (hover:hover) and (pointer:fine){
-  [data-gill-v16] .gbs-rail-spd:hover{color:#f4e8d9;border-color:rgba(232,184,120,.5)}
-}
-[data-gill-v16] .gbs-rail-spd:active{transform:scale(.92);transition-duration:.08s}
-[data-gill-v16] .gbs-rail-spd[aria-checked="true"]{
-  background:var(--gb-accent-gold-bright,#d8aa6d);color:#241708;border-color:transparent;
-}
-[data-gill-v16] .gbs-rail-speedrail.is-dragging .gbs-rail-spd{transition:none}
-
 [data-gill-v16] .gbs-rail-playwrap{position:relative;flex-shrink:0;display:grid;place-items:center}
-/* `color` MUST be set explicitly here: canon .gb-ember{color:var(--color-text)}
-   only reads as dark ink against a LIGHT background — this rail is always
-   dark brown/black (--gbs2-rail), independent of the site's day/night toggle,
-   so --color-text's day-mode value (#1a1a1a) painted the glyph almost the
-   same shade as the rail itself. Confirmed empirically (computed color was
-   rgb(26,26,26) — invisible) before this fix; #c4a882 matches the old
-   footer's tone so Play reads the same wherever it lives in the rail. */
-[data-gill-v16] .gbs-rail-playwrap .gbs-rail-ember{--ember-size:32px;--ring-color:var(--gb-accent-gold-bright,#d8aa6d);color:#c4a882}
+/* Canon color (var(--color-text)/gold in dark) — no override. .gbs-theme-corner
+   is transparent and floats over the page body, not the always-dark rail
+   panel, so the canon palette already has correct contrast here; a stale
+   #c4a882 override from when Play lived in the rail footer used to make it
+   read brown in every theme. */
+[data-gill-v16] .gbs-rail-playwrap .gbs-rail-ember{--ember-size:32px;--ring-color:var(--gb-accent-gold-bright,#d8aa6d)}
 [data-gill-v16] .gbs-rail-playwrap .gb-ember__ring-track{stroke:rgba(232,184,120,.22)}
 [data-gill-v16] .gbs-rail-playwrap .gb-ember__ring-progress{stroke-width:1.5}
-[data-gill-v16] .gbs-rail-spdbadge{
-  /* Bottom-right, matching the mobile reference (owner: "в мобиле снизу
-     было"). The badge box itself (top edge at ember-bottom-13px, i.e. below
-     the 32px circle's vertical centre) never reaches Play's own centre, so
-     clicks there still land on Play — the PREVIOUS bottom-right attempt was
-     only broken because its ::before hit-zone was expanded wide enough to
-     reach into that centre; this one stays small (inset:-2px, verified via
-     elementFromPoint at the ember's centre before shipping). */
-  position:absolute;right:-3px;bottom:-3px;top:auto;z-index:2;
-  min-width:18px;height:13px;padding:0 3px;border-radius:999px;
-  border:1px solid var(--gb-accent-gold-bright,#d8aa6d);background:var(--gb-accent-gold-bright,#d8aa6d);
-  color:#241708;font:800 8px/12px "Source Sans 3",system-ui,sans-serif;text-align:center;
-  cursor:pointer;box-shadow:0 2px 6px rgba(0,0,0,.28);
-  transition:transform .18s cubic-bezier(.34,1.56,.64,1);
-}
-[data-gill-v16] .gbs-rail-spdbadge::before{content:'';position:absolute;inset:-2px}
-[data-gill-v16] .gbs-rail-spdbadge:active{transform:scale(.94)}
-[data-gill-v16] .gbs-rail-spdbadge.is-bump{animation:gbs-rail-spdbadge-bump .3s cubic-bezier(.34,1.56,.64,1)}
-@keyframes gbs-rail-spdbadge-bump{0%{transform:scale(1)}50%{transform:scale(1.16)}100%{transform:scale(1)}}
 [data-gill-v16] .gbs-rail-back{
   position:absolute;top:10px;left:10px;
   width:36px;height:36px;
@@ -1220,7 +1158,6 @@ html.dark [data-gill-v16] .gbs2-kinetic{-webkit-text-stroke:1px rgba(216,176,104
 [data-gill-v16] .gbs-rail-foot__btn:hover svg{transform:scale(1.10)}
 }
 [data-gill-v16] .gbs-rail-foot__btn--text{font-family:var(--gb-font-serif);font-size:13px;font-weight:700;line-height:1;letter-spacing:-.02em}
-[data-gill-v16] .gbs-rail-foot .gb-ember{--ember-size:32px;--ring-color:var(--gb-accent-gold-bright,#d8aa6d);color:#c4a882}
 /* Goo Play (closed disc) replaces the ember in the rail footer — the primary
    listen action, sized a touch larger than the neighbour icons so it reads as
    the main control. Speeds live on the big top Play (SpeedBloom). */
@@ -2119,6 +2056,22 @@ html.dark .gb-ember-expand.is-open {
     inset 0 1px 0 rgba(255, 255, 255, .05);
 }
 
+/* Gill mobile top bar: the Play ember sits mid-row (search input to its
+   left, Save to its right) — no free edge to morph the pill sideways into.
+   The bar itself sits at the very top of the viewport (safe-area inset),
+   so morphing UP pushes the pill off-screen; morph DOWN into the open page
+   area below instead. Same pill, same mechanics (initPlayExpand()), just a
+   different expansion axis. */
+[data-gill-mobile-bar] .mobile-playwrap .gb-ember-expand {
+  right: auto;
+  left: 50%;
+  top: calc(100% + 8px);
+  bottom: auto;
+  transform: translateX(-50%) translateX(var(--gb-ember-shift, 0px));
+  padding: 46px 14px 12px;
+  clip-path: circle(20px at 50% 24px);
+}
+
 /* ── Premium HOVER reveal (owner spec) ───────────────────────────────────
    Desktop: the speed pill blooms out of the Play circle on HOVER, not click —
    smooth, rubbery, deep. JS adds .is-open too, but this CSS makes the reveal
@@ -2159,17 +2112,11 @@ html.dark .gb-ember-expand.is-open {
   .gb-ember-wrap:focus-within > .gb-ember-expand .gb-ember-expand__btn:nth-child(6) { transition-delay:.15s,.15s,0s,0s,0s; }
   /* Play circle drifts slightly to the RIGHT as the pill blooms from it
      (single-article reference geometry — Play "comes out of the circle").
-     ONLY on single-article clusters: in GBS/Gill rails the pill opens UP,
-     so the Play button must NOT drift sideways there. */
+     Gill's rail now blooms LEFT too (same as everywhere else), so it gets
+     the same drift — no Gill-specific override left here. */
   .gb-ember-wrap:hover > .gb-ember,
   .gb-ember-wrap:focus-within > .gb-ember {
     transform: translateX(4px) scale(1.04);
-  }
-  [data-gill-v16] .gb-ember-wrap:hover > .gb-ember,
-  [data-gill-v16] .gb-ember-wrap:focus-within > .gb-ember,
-  [data-gill-v16] .gbs-rail-foot .gb-ember-wrap:hover > .gb-ember,
-  [data-gill-v16] .gbs-rail-foot .gb-ember-wrap:focus-within > .gb-ember {
-    transform: scale(1.06); /* gentle lift only — pill blooms UPWARD */
   }
 }
 /* Deeper rubbery morph timing for the bloom */
@@ -2267,26 +2214,38 @@ html.dark .gb-ember-expand__btn.is-active {
   z-index: 2;
 }
 
-/* === GBS Rail: pill expands UP, centred over the panel === */
-[data-gill-v16] .gb-ember-expand,
-[data-gill-v16] .gbs-rail-foot .gb-ember-expand {
-  right: auto;
-  left: 50%;
-  top: auto;
-  bottom: calc(100% + 8px);
-  /* The Play ember is the 5th of 6 footer icons, so it sits right-of-centre.
-     Centre the pill over the RAIL (not the off-centre Play) by shifting it left
-     by the ember→panel-centre offset (~0.264 × footer width). This makes the
-     speed pill bloom straight UP, symmetric over the panel, instead of leaking
-     right into the article column. */
-  --gb-pill-center: calc((clamp(272px,24vw,304px) - 16px) * 0.264);
-  transform: translateX(calc(-50% - var(--gb-pill-center) + var(--gb-ember-shift, 0px)));
-  padding: 5px 8px;
-  clip-path: circle(16px at 50% calc(100% - 16px));
+/* Gill desktop rail: Play now lives in the fixed top-right corner column, so
+   the pill blooms LEFT into the open page — the same direction and geometry
+   as every other desktop Play button (no Gill-specific position override
+   left; it used to force bloom-UP back when Play lived in the rail footer).
+   What IS Gill-only (owner: "без каких-то круглых рамок… минималистичные
+   красивые глубокие цифры с тень") is the pill's look: no pill background,
+   no chip borders — just numbers with a shadow. */
+[data-gill-v16] .gbs-theme-corner .gb-ember-expand {
+  background: transparent;
+  border: none;
+  box-shadow: none;
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
 }
-[data-gill-v16] .gb-ember-expand.is-open,
-[data-gill-v16] .gbs-rail-foot .gb-ember-expand.is-open {
-  clip-path: inset(0 0 0 0 round 999px);
+[data-gill-v16] .gbs-theme-corner .gb-ember-expand::before { display: none; }
+[data-gill-v16] .gbs-theme-corner .gb-ember-expand__btn {
+  min-width: 26px;
+  border: none;
+  background: none !important;
+  font-size: 15px;
+  font-weight: 800;
+  color: var(--color-text, #1a1a1a);
+  text-shadow: 0 2px 6px rgba(0, 0, 0, .3);
+  box-shadow: none;
+}
+html.dark [data-gill-v16] .gbs-theme-corner .gb-ember-expand__btn {
+  color: #eed093;
+  text-shadow: 0 2px 8px rgba(0, 0, 0, .55);
+}
+[data-gill-v16] .gbs-theme-corner .gb-ember-expand__btn.is-active {
+  color: var(--gb-accent-gold-bright, #d8aa6d);
+  text-shadow: 0 2px 10px rgba(216, 170, 109, .45);
 }
 /* Reference speed pill is 6 speeds only — hide the extra Stop (■) chip on the
    Gill rail so the pill is narrow enough to sit fully within the panel. Stop is
@@ -2529,32 +2488,15 @@ html.dark .gb-roman {
 
 /* ============================================================
    SCALABLE SERIES-RAIL (system-matrix-stack, 2026-07-09)
-   Premium collapsible / demand-scroll / TOC-disclosure layer for the Gill
-   rail. Desktop-only (≥64em; the rail is display:none below that). Purely
-   additive — the default (wide, TOC-expanded) look is unchanged. All motion
-   uses cubic-bezier(.22,1,.36,1) and is disabled under prefers-reduced-motion.
-   Introduced state: .rail-narrow on .gbs2-world[data-gill-v16];
-   .toc-collapsed on .gbs2-current; .is-scrolling on .gbs2-rmid;
-   .no-anim (one-frame first-paint guard on the world).
+   TOC-disclosure + demand-scroll layer for the Gill rail. Desktop-only
+   (≥64em; the rail is display:none below that). All motion uses
+   cubic-bezier(.22,1,.36,1) and is disabled under prefers-reduced-motion.
+   Introduced state: .toc-collapsed on .gbs2-current; .is-scrolling on
+   .gbs2-rmid; .no-anim (one-frame first-paint guard on the world).
+   (The narrow-spine rail-collapse mode was removed per owner: unclear
+   purpose, not worth the complexity — .rail-narrow/.gbs-rail-collapse/
+   .gbs-rail-spine no longer exist.)
    ============================================================ */
-
-/* --- Topbar collapse toggle (styled like .gbs-rail-back) --- */
-[data-gill-v16] .gbs-rail-collapse{
-  margin-left:auto;                /* pin to the right end of the wide topbar */
-  width:36px;height:36px;flex-shrink:0;
-  display:grid;place-items:center;
-  color:#eadac7;background:transparent;border:0;border-radius:50%;
-  transition:color .22s var(--gb-ease-out),transform .32s var(--gb-ease-spring);
-  cursor:pointer;transform-origin:center;
-}
-@media (hover: hover) and (pointer: fine){
-  [data-gill-v16] .gbs-rail-collapse:hover{color:#f4e8d9;transform:scale(1.10)}
-}
-[data-gill-v16] .gbs-rail-collapse:active{transform:scale(.92);transition:transform .12s}
-[data-gill-v16] .gbs-rail-collapse:focus-visible{outline:2px solid var(--gb-accent);outline-offset:2px;border-radius:50%}
-[data-gill-v16] .gbs-rail-collapse svg{width:18px;height:18px;transition:transform .32s cubic-bezier(.22,1,.36,1)}
-/* narrow → chevron flips «‹» → «›» */
-.gbs2-world[data-gill-v16].rail-narrow .gbs-rail-collapse svg{transform:rotate(180deg)}
 
 /* --- Section-TOC disclosure toggle (Mechanism 3) --- */
 [data-gill-v16] .gbs2-toch-toggle{
@@ -2578,44 +2520,7 @@ html.dark .gb-roman {
   padding-top:0;padding-bottom:0;pointer-events:none;
 }
 
-/* --- Compact spine (Mechanism 1), hidden until narrow --- */
-[data-gill-v16] .gbs-rail-spine{display:none}
-
-/* ============================================================
-   Desktop-only layout + interior for the narrow (collapsed) rail.
-   ============================================================ */
 @media (min-width:64em){
-  /* Smooth reflow: rail resizes, article margin follows. */
-  .gbs2-world[data-gill-v16] > .gbs-rail{transition:width .32s cubic-bezier(.22,1,.36,1)}
-  .gbs2-world[data-gill-v16] > .page-wrap{transition:margin-left .32s cubic-bezier(.22,1,.36,1)}
-
-  /* Narrow state: 72px rail + matching article reserve. */
-  .gbs2-world[data-gill-v16].rail-narrow{
-    --gb-rail-reserve:calc(clamp(16px,2.4vw,40px) + 72px + clamp(24px,3vw,48px));
-  }
-  .gbs2-world[data-gill-v16].rail-narrow > .gbs-rail{width:72px}
-
-  /* Swap the rich column for the spine. */
-  .gbs2-world[data-gill-v16].rail-narrow .gbs2-rmid{display:none}
-  .gbs2-world[data-gill-v16].rail-narrow .gbs-rail-spine{display:flex}
-
-  /* Topbar stacks vertically to fit 72px (back / home / toggle). */
-  .gbs2-world[data-gill-v16].rail-narrow .gbs-rail-topbar{
-    flex-direction:column;gap:4px;padding:10px 6px 8px;
-  }
-  .gbs2-world[data-gill-v16].rail-narrow .gbs-rail-collapse{margin-left:0}
-
-  /* Progress: keep the ring centred, drop the «Прогресс серии» text block. */
-  .gbs2-world[data-gill-v16].rail-narrow .gbs2-rprogress{
-    justify-content:center;margin:10px 6px 0;padding:10px 6px;
-  }
-  .gbs2-world[data-gill-v16].rail-narrow .gbs2-rprogress > :not(.gbs2-ring){display:none}
-
-  /* Footer icons stack vertically & centre, one per row (fits 72px). */
-  .gbs2-world[data-gill-v16].rail-narrow .gbs-rail-foot{
-    flex-direction:column;justify-content:center;gap:8px;padding:12px 6px 14px;
-  }
-
   /* --- Demand-scroll on the rich column (Mechanism 2) ---
      overflow-y:auto so 10+ parts scroll; the scrollbar is invisible until the
      region is hovered / actively scrolling. With Gill's 6 parts content fits,
@@ -2636,90 +2541,16 @@ html.dark .gb-roman {
   [data-gill-v16] .gbs-rail .gbs2-rmid.is-scrolling::-webkit-scrollbar-thumb{background:rgba(232,184,120,.30)}
 }
 
-/* --- Spine interior (only meaningful once .rail-narrow reveals it) --- */
-.gbs2-world[data-gill-v16] .gbs-rail-spine{
-  flex:1 1 auto;min-height:0;
-  flex-direction:column;align-items:center;gap:8px;
-  padding:12px 6px;
-  /* overflow visible: the exactly-6-item Gill spine always fits, and this lets
-     the hover flyout escape to the right (the rail itself is overflow:visible). */
-  overflow:visible;
-}
-.gbs2-world[data-gill-v16] .gbs-rail-spine__item{
-  position:relative;display:grid;place-items:center;
-  width:56px;min-height:52px;flex-shrink:0;border-radius:12px;
-  text-decoration:none;color:var(--gb-accent-gold);
-  background:transparent;border:1px solid transparent;
-  transition:background .28s var(--gb-ease-out),border-color .28s var(--gb-ease-out),transform .32s var(--gb-ease-spring);
-}
-@media (hover: hover) and (pointer: fine){
-  .gbs2-world[data-gill-v16] .gbs-rail-spine__item:hover{
-    background:rgba(255,255,255,.05);border-color:rgba(255,255,255,.10);transform:scale(1.04);
-  }
-}
-.gbs2-world[data-gill-v16] .gbs-rail-spine__item:active{transform:scale(.96)}
-.gbs2-world[data-gill-v16] .gbs-rail-spine__item:focus-visible{outline:2px solid var(--gb-accent);outline-offset:2px}
-.gbs2-world[data-gill-v16] .gbs-rail-spine__item.is-current{
-  background:rgba(232,184,120,.12);border-color:rgba(232,184,120,.42);
-  box-shadow:0 0 0 1px rgba(232,184,120,.25),0 0 14px rgba(232,184,120,.18);
-}
-/* Roman numeral mark */
-.gbs2-world[data-gill-v16] .gbs-rail-spine__mark:not(.gblr-ribbon){
-  font-family:var(--gb-font-serif-display);font-size:21px;font-weight:600;font-style:italic;
-  letter-spacing:.02em;line-height:1;text-align:center;color:var(--gb-accent-gold);
-}
-.gbs2-world[data-gill-v16] .gbs-rail-spine__item.is-current .gbs-rail-spine__mark:not(.gblr-ribbon){
-  color:var(--gb-accent-gold-bright);text-shadow:0 0 12px rgba(216,170,109,.35);
-}
-/* Leather-ribbon mark, scaled down for the 72px spine. The shape stretches
-   (preserveAspectRatio:none); the embossed text is px-sized, so scale its
-   overlay together to keep the badge proportional. */
-.gbs2-world[data-gill-v16] .gbs-rail-spine__item .gblr-ribbon{
-  width:40px;height:51px;
-  filter:drop-shadow(0 4px 8px rgba(0,0,0,.5)) drop-shadow(0 1px 1.5px rgba(0,0,0,.5));
-}
-.gbs2-world[data-gill-v16] .gbs-rail-spine__item .gblr-ribbon__text{
-  transform:scale(.56);transform-origin:top center;
-}
-/* Hover flyout tooltip (matches the dark speedrail/footer flyout language). */
-.gbs2-world[data-gill-v16] .gbs-rail-spine__tip{
-  position:absolute;left:calc(100% + 10px);top:50%;
-  transform:translateY(-50%) translateX(6px) scale(.96);
-  padding:6px 11px;border-radius:8px;
-  background:var(--gb-tooltip-bg,#1a1a1a);color:var(--gb-tooltip-text,#fff);
-  font-family:var(--gb-font-sans);font-size:11.5px;font-weight:600;
-  white-space:nowrap;opacity:0;pointer-events:none;
-  box-shadow:0 8px 24px rgba(0,0,0,.35);
-  transition:opacity .22s var(--gb-ease-out),transform .28s var(--gb-ease-spring);
-  z-index:var(--z-above,10);
-}
-@media (hover: hover) and (pointer: fine){
-  .gbs2-world[data-gill-v16] .gbs-rail-spine__item:hover .gbs-rail-spine__tip{
-    opacity:1;transform:translateY(-50%) translateX(0) scale(1);
-  }
-}
-.gbs2-world[data-gill-v16] .gbs-rail-spine__item:focus-visible .gbs-rail-spine__tip{
-  opacity:1;transform:translateY(-50%) translateX(0) scale(1);
-}
-
-/* First-paint guard: kill the width/margin transition for one frame so a
-   persisted narrow state applies without a collapse animation on load. */
-[data-gill-v16].gbs2-world.no-anim > .gbs-rail,
-[data-gill-v16].gbs2-world.no-anim > .page-wrap,
+/* First-paint guard: kill the transition for one frame so a persisted
+   toc-collapsed state applies without an animation on load. */
 [data-gill-v16].gbs2-world.no-anim .gbs2-tocscroll,
-[data-gill-v16].gbs2-world.no-anim .gbs-rail-collapse svg,
 [data-gill-v16].gbs2-world.no-anim .gbs2-toch-toggle svg{transition:none !important}
 
 /* Reduced motion — no transitions for any of the above. */
 @media (prefers-reduced-motion: reduce){
-  [data-gill-v16].gbs2-world > .gbs-rail,
-  [data-gill-v16].gbs2-world > .page-wrap,
-  [data-gill-v16] .gbs-rail-collapse svg,
   [data-gill-v16] .gbs2-toch-toggle svg,
   [data-gill-v16] .gbs2-current .gbs2-tocscroll,
-  [data-gill-v16] .gbs-rail .gbs2-rmid,
-  [data-gill-v16].gbs2-world .gbs-rail-spine__item,
-  [data-gill-v16].gbs2-world .gbs-rail-spine__tip{transition:none}
+  [data-gill-v16] .gbs-rail .gbs2-rmid{transition:none}
 }
 
 /* ---- Mobile/tablet (<64em): hide rail, show fixed bottom bar ---- */
@@ -3174,18 +3005,15 @@ html.dark [data-gill-v16] .mobile-top-bar {
   }
   [data-gill-v16] .mobile-top-bar .gb-icon svg { width: 20px; height: 20px; stroke: currentColor; }
 
-  [data-gill-v16] .mobile-top-slot {
+  /* Wide search INPUT (не иконка), always visible — a normal flex item in
+     .mobile-top-bar's row (was position:absolute;inset:0 inside a now-removed
+     .mobile-top-slot wrapper, which — with no wrapper left to size it — filled
+     the ENTIRE fixed bar and sat on top of back/Play/Save, breaking taps and
+     focus on the input; that is why typing into it never really worked). */
+  [data-gill-v16] .mobile-top-search {
     position: relative;
     flex: 1 1 auto;
     min-width: 0;
-    height: 36px;
-  }
-  /* Wide search INPUT (не иконка) — референс gbs_series_mobile_v4_refined:
-     .gb-search — целиком заполняет слот, сворачивается в скорости так же,
-     как .gb-search/.speed-rail в референсе. */
-  [data-gill-v16] .mobile-top-search {
-    position: absolute;
-    inset: 0;
     display: flex;
     align-items: center;
     gap: 7px;
@@ -3195,13 +3023,6 @@ html.dark [data-gill-v16] .mobile-top-bar {
     border: 1px solid var(--gill-mobile-bar-border);
     background: color-mix(in srgb, var(--gill-mobile-bar-gold) 6%, transparent);
     cursor: text;
-    opacity: 1;
-    transition: opacity .2s ease, transform .2s ease;
-  }
-  [data-gill-v16] .mobile-top-bar.speed-open .mobile-top-search {
-    opacity: 0;
-    transform: translateX(-6px);
-    pointer-events: none;
   }
   [data-gill-v16] .mobile-top-search svg {
     width: 15px;
@@ -3226,50 +3047,6 @@ html.dark [data-gill-v16] .mobile-top-bar {
     color: var(--gill-mobile-bar-muted);
     opacity: .8;
   }
-  [data-gill-v16] .mobile-speedrail {
-    position: absolute;
-    inset: 0;
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    overflow-x: auto;
-    scroll-snap-type: x proximity;
-    opacity: 0;
-    pointer-events: none;
-    transition: opacity .18s ease;
-    -ms-overflow-style: none;
-    scrollbar-width: none;
-  }
-  [data-gill-v16] .mobile-speedrail::-webkit-scrollbar { display: none; }
-  [data-gill-v16] .mobile-speedrail.is-dragging { cursor: grabbing; scroll-snap-type: none; }
-  [data-gill-v16] .mobile-top-bar.speed-open .mobile-speedrail {
-    opacity: 1;
-    pointer-events: auto;
-  }
-  [data-gill-v16] .mobile-spd {
-    flex-shrink: 0;
-    scroll-snap-align: center;
-    padding: 5px 11px;
-    border-radius: 999px;
-    border: 1px solid var(--gill-mobile-bar-border);
-    background: transparent;
-    color: var(--gill-mobile-bar-muted);
-    font-family: var(--gb-font-sans, system-ui, sans-serif);
-    font-size: 12px;
-    font-weight: 800;
-    line-height: 1;
-    cursor: pointer;
-    position: relative;
-  }
-  [data-gill-v16] .mobile-spd::before { content: ''; position: absolute; inset: -7px -1px; }
-  [data-gill-v16] .mobile-spd:active { transform: scale(.92); transition-duration: .08s; }
-  [data-gill-v16] .mobile-spd[aria-checked="true"] {
-    color: var(--gill-mobile-bar-ink);
-    border-color: var(--gill-mobile-bar-gold);
-    background: color-mix(in srgb, var(--gill-mobile-bar-gold) 14%, transparent);
-  }
-  [data-gill-v16] .mobile-speedrail.is-dragging .mobile-spd { transition: none; }
-
   [data-gill-v16] .mobile-playwrap {
     position: relative;
     flex-shrink: 0;
@@ -3287,33 +3064,6 @@ html.dark [data-gill-v16] .mobile-top-bar {
     --ring-color: var(--gill-mobile-bar-gold);
     color: var(--gill-mobile-bar-ink);
   }
-  /* Позиция бейджа — точно как в референсе (.play-speed: right:-3px;
-     bottom:-2px), НЕ top-right: тот вариант был скопирован по инерции с
-     десктопного рейла (.gbs-rail-spdbadge), где верх понадобился из-за
-     другого бага на другой геометрии — здесь это ничем не обосновано и
-     просто расходится с образцом. */
-  [data-gill-v16] .mobile-spdbadge {
-    position: absolute;
-    right: -3px;
-    bottom: -2px;
-    min-width: 20px;
-    height: 16px;
-    padding: 0 4px;
-    border-radius: 999px;
-    border: 1px solid var(--gill-mobile-bar-bg);
-    background: var(--gill-mobile-bar-gold);
-    color: var(--gill-mobile-bar-bg);
-    font-family: var(--gb-font-sans, system-ui, sans-serif);
-    font-size: 9px;
-    font-weight: 900;
-    line-height: 14px;
-    text-align: center;
-    cursor: pointer;
-  }
-  [data-gill-v16] .mobile-spdbadge::before { content: ''; position: absolute; inset: -4px -3px; }
-  [data-gill-v16] .mobile-spdbadge:active { transform: scale(.94); }
-  [data-gill-v16] .mobile-spdbadge.is-bump { animation: gbs-rail-spdbadge-bump .3s cubic-bezier(.34,1.56,.64,1); }
-
   /* --- Bottom bar (референс: bar-progress.dual-progress / bar-section-btn /
      divider / theme / A-/A+ / divider / share), один плоский flex-ряд --- */
   [data-gill-v16] .bar-progress.dual-progress {
@@ -3528,8 +3278,8 @@ html.dark [data-gill-v16] .mobile-top-bar {
    (.gb-floater--hermeneutics выше в этом файле — "DO NOT invent calc formulas,
    use these exact values"). Только Gill, только десктоп (на мобильном рейл
    скрыт, у мобильного бара своя версия search⇄speed + отдельная тема).
-   Порядок (owner): день-ночь → поиск → PLAY (тот же slot-swap, что раньше
-   жил в топбаре) → избранное. Иконки — тот же канон, что и в
+   Порядок (owner): день-ночь → поиск → PLAY (canonical .gb-ember-expand
+   bloom, no custom slot-swap) → избранное. Иконки — тот же канон, что и в
    SingleArticleCluster (theme/search/save — не переизобретаю вид кружка). */
 [data-gill-v16] .gbs-theme-corner{
   display:none;
@@ -3544,30 +3294,6 @@ html.dark [data-gill-v16] .mobile-top-bar {
     top:calc(clamp(24px, 3.5vw, 44px) - 4px);
     right:max(8.5vw, env(safe-area-inset-right, 0px));
     z-index:var(--z-toast,9800);
-  }
-  /* Слот поиска: фиксированный квадрат вместо flex:1 (тот был нужен только
-     в горизонтальном топбаре, чтобы съедать оставшееся место в ряду). */
-  [data-gill-v16] .gbs-theme-corner .gbs-rail-slot{
-    flex:0 0 auto;width:40px;height:40px;min-width:0;
-  }
-  /* Рельса скоростей теперь флайаут ВЛЕВО от колонки (колонка прижата к
-     правому краю вьюпорта), а не инлайн-свап внутри узкой полосы топбара. */
-  [data-gill-v16] .gbs-theme-corner .gbs-rail-speedrail{
-    inset:auto;top:50%;right:calc(100% + 10px);left:auto;
-    transform:translateY(-50%) translateX(6px);
-    justify-content:flex-start;
-    background:rgba(20,14,9,.94);
-    border:1px solid rgba(232,184,120,.28);
-    border-radius:12px;
-    padding:5px;
-    box-shadow:0 10px 28px -10px rgba(0,0,0,.55);
-    max-width:min(50vw,230px);
-  }
-  [data-gill-v16] .gbs-theme-corner.speed-open .gbs-rail-slot__search{
-    opacity:0;transform:scale(.7);pointer-events:none;
-  }
-  [data-gill-v16] .gbs-theme-corner.speed-open .gbs-rail-speedrail{
-    opacity:1;transform:translateY(-50%) translateX(0);pointer-events:auto;
   }
 }
 
