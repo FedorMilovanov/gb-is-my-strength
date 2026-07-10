@@ -3896,6 +3896,45 @@ html.dark [data-gill-v16] .mobile-top-bar {
   }
 }
 
+/* ================= Gill mobile polish overrides (additive, surgical) =================
+   Scoped to [data-gill-v16] + mobile only. Placed after the main Gill mobile
+   block so these later rules win the cascade without editing the originals. */
+@media (max-width: 63.99em) {
+  /* Fix 1 — learning-sheet tabs must fit all 4 within the sheet (>=360px)
+     instead of overflowing/clipping "Тест". Let the 4 tabs share the row
+     equally; scroll remains a harmless fallback below ~340px. */
+  [data-gill-v16] .gill-tabs { gap: 4px; }
+  [data-gill-v16] .gill-tab {
+    flex: 1 1 auto;
+    min-width: 0;
+    padding: 0 6px;
+    font-size: 11px;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+  }
+
+  /* Fix 2 — settings segment buttons ("Свободный", "Широкая", …) must never
+     wrap to 2 lines, down to 320px, even with enlarged font. */
+  [data-gill-v16] .reader-setting-btn {
+    white-space: nowrap;
+    font-size: 12px;
+    padding: 0 2px;
+  }
+
+  /* Fix 3 — hide desktop hover "copy link" paperclips on touch. */
+  [data-gill-v16] .heading-anchor { display: none !important; }
+
+  /* Fix 4 — give article tables room so cells stop breaking mid-word; the
+     parent wrapper already scrolls horizontally (overflow-x: auto). */
+  [data-gill-v16] .article-body table { min-width: 34rem; }
+  [data-gill-v16] .article-body td,
+  [data-gill-v16] .article-body th {
+    word-break: normal;
+    overflow-wrap: normal;
+    hyphens: none;
+  }
+}
+
 /* ================= Scoped sepia reading theme (Gill mobile only) =================
    Never touches html.sepia (doesn't exist sitewide) — this is a Gill-local
    overlay of the SAME semantic tokens the rest of the mobile chrome/sheets
