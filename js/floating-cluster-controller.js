@@ -1294,6 +1294,12 @@
       var pressTimer = null;
       var suppressNextEmberClick = false;
 
+      // Persistent selected-speed echo next to Play (Gill rail only — see
+      // .gbs-rail-spdbadge in floating-cluster.css). Optional: most embers
+      // don't have this sibling, so it's just a no-op elsewhere.
+      var spdBadge = ember.parentNode && ember.parentNode.querySelector('.gbs-rail-spdbadge');
+      if (spdBadge) spdBadge.textContent = currentRate + '×';
+
       var panel = document.createElement('div');
       var emberUid = 'gb-ember-speed-' + Math.random().toString(36).slice(2,9);
       panel.id = emberUid;
@@ -1399,6 +1405,12 @@
           e.stopPropagation();
           var speed = parseFloat(btn.getAttribute('data-speed'));
           try { localStorage.setItem('gb:audio:rate', speed); try{localStorage.setItem('gbx-tts-rate', speed)}catch(_){}; } catch(_){}
+          if (spdBadge) {
+            spdBadge.textContent = speed + '×';
+            spdBadge.classList.remove('is-bump');
+            void spdBadge.offsetWidth;
+            spdBadge.classList.add('is-bump');
+          }
           panel.querySelectorAll('.gb-ember-expand__btn').forEach(function(b) {
             var isThis = parseFloat(b.getAttribute('data-speed')) === speed;
             b.classList.toggle('is-active', isThis);
@@ -1414,7 +1426,14 @@
           // (owner spec: "на клик мышки бы уже сразу 1.75 и т.п.").
           var _st = currentTtsUiState(ember);
           if (_st === 'idle' || !_st || _st === 'complete') { handlePlayClick(ember); }
-          // On touch, collapse after selection; on hover, leave open while pointer stays.
+          // Blur the clicked chip: it just received focus from the click,
+          // and :focus-within (the keyboard-a11y keep-open rule) would
+          // otherwise hold the panel open indefinitely even after the
+          // pointer leaves — reading as a stray leftover mark next to Play
+          // instead of a closed pill (owner: "выбрал — и ушли они"). The
+          // existing mouseleave timer (below) closes it once the pointer
+          // actually leaves; on touch there's no hover, so force-close here.
+          try { btn.blur(); } catch (_) {}
           if (!HOVER_CAPABLE) setTimeout(closePanel, 220);
           return;
         }
