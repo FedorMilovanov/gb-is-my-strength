@@ -825,9 +825,55 @@ html.dark [data-gill-v16] .gb-theme-toggle .theme-icon-moon{opacity:1;transform:
    panel, so the canon palette already has correct contrast here; a stale
    #c4a882 override from when Play lived in the rail footer used to make it
    read brown in every theme. */
-[data-gill-v16] .gbs-rail-playwrap .gbs-rail-ember{--ember-size:32px;--ring-color:var(--gb-accent-gold-bright,#d8aa6d)}
+/* Ring color follows theme like everything else on the site (owner: "в
+   светлой нужно... прогресс бар в круге... нашим винным цветом, тоже
+   меняется от день ночь") — canon --color-accent (wine in light, warm
+   tan in dark) instead of a flat gold that never changed with the theme.
+   Dark keeps the brighter gold-bright token (owner: "бежевый в тёмной
+   норм"), which reads better than --color-accent's dark-mode tan here. */
+[data-gill-v16] .gbs-rail-playwrap .gbs-rail-ember{--ember-size:32px;--ring-color:var(--color-accent,#7a2e2e)}
+html.dark [data-gill-v16] .gbs-rail-playwrap .gbs-rail-ember{--ring-color:var(--gb-accent-gold-bright,#d8aa6d)}
 [data-gill-v16] .gbs-rail-playwrap .gb-ember__ring-track{stroke:rgba(232,184,120,.22)}
 [data-gill-v16] .gbs-rail-playwrap .gb-ember__ring-progress{stroke-width:1.5}
+/* Persistent selected-speed echo, bottom-right corner of Play (owner
+   reference: mobile prototype's .mobile-spdbadge — a filled gold pill, not
+   bare text; bare text let the ring stroke show right through the digits,
+   "круг наезжает прямо внутри цифры"). Same gradient/shadow values as the
+   canon .gb-ember-expand__btn.is-active pill a few lines up in this file —
+   reused verbatim, not invented, just wrapped into a small corner badge. */
+[data-gill-v16] .gbs-rail-spdbadge{
+  position:absolute;right:-7px;bottom:-6px;z-index:3;
+  min-width:18px;height:14px;padding:0 3px;
+  display:grid;place-items:center;
+  border-radius:999px;
+  background:var(--color-text,#1a1a1a);
+  color:#fdfcf9;
+  font:800 8px/1 "Source Sans 3",system-ui,sans-serif;
+  text-align:center;
+  box-shadow:0 2px 6px rgba(0,0,0,.28);
+  pointer-events:none;
+  transition:background .2s var(--gb-ease-out,ease),color .2s var(--gb-ease-out,ease),box-shadow .2s var(--gb-ease-out,ease);
+}
+html.dark [data-gill-v16] .gbs-rail-spdbadge{
+  background:linear-gradient(135deg,var(--color-accent-gold,#b8936a),#eed093);
+  color:#0e1116;
+  box-shadow:0 2px 8px rgba(216,176,104,.3);
+}
+/* Tiny confirmation bounce on value change — same spring timing the site
+   already uses for the Save-button bump (gb-save-bounce), so it feels like
+   the same design language, not a new one-off animation. */
+[data-gill-v16] .gbs-rail-spdbadge.is-bump{
+  animation:gbs-rail-spdbadge-bump .4s var(--gb-ease-spring,cubic-bezier(.34,1.56,.64,1));
+}
+@keyframes gbs-rail-spdbadge-bump{
+  0%{transform:scale(1)}
+  45%{transform:scale(1.22)}
+  70%{transform:scale(.94)}
+  100%{transform:scale(1)}
+}
+@media (prefers-reduced-motion:reduce){
+  [data-gill-v16] .gbs-rail-spdbadge.is-bump{animation:none}
+}
 [data-gill-v16] .gbs-rail-back{
   position:absolute;top:10px;left:10px;
   width:36px;height:36px;
@@ -2243,9 +2289,18 @@ html.dark [data-gill-v16] .gbs-theme-corner .gb-ember-expand__btn {
   color: #eed093;
   text-shadow: 0 2px 8px rgba(0, 0, 0, .55);
 }
+/* Active chip: wine in light mode (owner: "на светлом не нужно бежевым...
+   можно винный наш"), gold kept in dark (owner: "бежевый в тёмной норм"). */
 [data-gill-v16] .gbs-theme-corner .gb-ember-expand__btn.is-active {
+  color: var(--color-accent, #7a2e2e);
+  text-shadow: 0 2px 8px rgba(122, 46, 46, .35);
+  box-shadow: none; /* canon .is-active also sets a glow shadow — killed here
+    too, not just background/border, or the chip still reads as a pill. */
+}
+html.dark [data-gill-v16] .gbs-theme-corner .gb-ember-expand__btn.is-active {
   color: var(--gb-accent-gold-bright, #d8aa6d);
   text-shadow: 0 2px 10px rgba(216, 170, 109, .45);
+  box-shadow: none;
 }
 /* Reference speed pill is 6 speeds only — hide the extra Stop (■) chip on the
    Gill rail so the pill is narrow enough to sit fully within the panel. Stop is
@@ -3364,3 +3419,127 @@ html.dark [data-gill-v16] .mobile-top-bar {
 [data-gill-v16] .gbs2-ring b{color:#eadac7}
 [data-gill-v16] .gbs2-rprogress small{color:#c4a882}
 [data-gill-v16] .gbs2-rprogress span{color:#a89684}
+
+/* ============================================================
+   Site-sections menu (#hMobileNav/#hMobileBackdrop) reskinned for Gill.
+   home.css's rules are correct for the home/pastor-series slim top-nav
+   context (a wide dropdown under a header bar) but land as an unstyled-
+   looking mismatch here — wrong link color, no anchor to anything, hard
+   rectangular edges over the always-dark rail. Owner: "жуткий колхоз,
+   некрасиво... улучшай". Anchored near the rail-foot hamburger that opens
+   it, dressed in the same premium card treatment as the rest of the rail
+   (canon .gb-ember-expand pattern: blur + hairline border + soft shadow).
+   ============================================================ */
+@media (min-width:64em){
+  body:has([data-gill-v16]) #hMobileNav{
+    top:auto;bottom:78px;left:26px;right:auto;
+    width:230px;
+    padding:8px;
+    border-radius:16px;
+    background:color-mix(in srgb,var(--color-surface,#fff) 96%,transparent);
+    border:1.5px solid color-mix(in srgb,var(--color-accent-gold,#b8936a) 30%,var(--color-border,#e5e2dc));
+    box-shadow:0 20px 50px -20px rgba(20,12,6,.35),0 8px 26px -14px rgba(0,0,0,.18),inset 0 1px 0 rgba(255,255,255,.5);
+    -webkit-backdrop-filter:blur(20px) saturate(180%);
+    backdrop-filter:blur(20px) saturate(180%);
+    transform:translateY(10px) scale(.97);
+    transform-origin:bottom left;
+  }
+  body:has([data-gill-v16]) #hMobileNav.open{
+    transform:none;
+  }
+  html.dark body:has([data-gill-v16]) #hMobileNav{
+    background:color-mix(in srgb,var(--color-surface,#161a21) 94%,transparent);
+    border-color:color-mix(in srgb,var(--color-accent-gold,#b8936a) 22%,rgba(255,255,255,.08));
+    box-shadow:0 20px 50px -20px rgba(0,0,0,.6),inset 0 1px 0 rgba(255,255,255,.05);
+  }
+  /* Connector arrow — same rotated-square trick as .mobile-settings-pop::after
+     in the owner's own reference prototype, just pointed at the hamburger
+     below-left instead of a gear above-right. Ties the floating card to its
+     trigger instead of leaving it looking unanchored. */
+  body:has([data-gill-v16]) #hMobileNav::after{
+    content:'';
+    position:absolute;bottom:-7px;left:28px;
+    width:13px;height:13px;
+    background:color-mix(in srgb,var(--color-surface,#fff) 96%,transparent);
+    border-right:1.5px solid color-mix(in srgb,var(--color-accent-gold,#b8936a) 30%,var(--color-border,#e5e2dc));
+    border-bottom:1.5px solid color-mix(in srgb,var(--color-accent-gold,#b8936a) 30%,var(--color-border,#e5e2dc));
+    transform:rotate(45deg);
+    border-radius:0 0 3px 0;
+  }
+  html.dark body:has([data-gill-v16]) #hMobileNav::after{
+    background:color-mix(in srgb,var(--color-surface,#161a21) 94%,transparent);
+    border-color:color-mix(in srgb,var(--color-accent-gold,#b8936a) 22%,rgba(255,255,255,.08));
+  }
+  body:has([data-gill-v16]) .gbs-menu-label{
+    display:block;
+    padding:6px 12px 9px;
+    margin-bottom:2px;
+    border-bottom:1px solid color-mix(in srgb,var(--color-accent-gold,#b8936a) 18%,var(--color-border,#e5e2dc));
+    font-family:var(--gb-font-sans,"Source Sans 3",sans-serif);
+    font-size:9.5px;font-weight:800;letter-spacing:.14em;text-transform:uppercase;
+    color:var(--color-text-muted,#6a6a6a);
+  }
+  body:has([data-gill-v16]) #hMobileNav a{
+    display:flex;align-items:center;justify-content:space-between;gap:8px;
+    font-family:var(--gb-font-serif,Georgia,serif);
+    font-size:14px;font-weight:600;
+    color:var(--color-text,#1a1a1a);
+    padding:10px 12px;
+    border-radius:10px;
+    min-height:0;
+    border-left:2px solid transparent;
+    transition:background .16s var(--gb-ease-out,ease),color .16s var(--gb-ease-out,ease),border-color .16s var(--gb-ease-out,ease),padding-left .16s var(--gb-ease-out,ease);
+  }
+  /* Chevron — same mark as .gbs-rail-card__chevron on the part cards, reused
+     verbatim rather than a new icon. */
+  body:has([data-gill-v16]) .gbs-menu-chevron{
+    width:13px;height:13px;flex-shrink:0;
+    stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;
+    opacity:0;transform:translateX(-3px);
+    transition:opacity .18s var(--gb-ease-out,ease),transform .22s var(--gb-ease-spring,cubic-bezier(.34,1.56,.64,1));
+  }
+  body:has([data-gill-v16]) #hMobileNav a:hover .gbs-menu-chevron{
+    opacity:.75;transform:translateX(0);
+  }
+  body:has([data-gill-v16]) #hMobileNav a + a{
+    border-top:1px solid color-mix(in srgb,var(--color-border,#e5e2dc) 60%,transparent);
+  }
+  html.dark body:has([data-gill-v16]) #hMobileNav a + a{
+    border-top-color:rgba(255,255,255,.06);
+  }
+  body:has([data-gill-v16]) #hMobileNav a:hover{
+    background:color-mix(in srgb,var(--color-accent-gold,#b8936a) 10%,transparent);
+    color:var(--color-accent,#7a2e2e);
+    border-left-color:var(--color-accent,#7a2e2e);
+    padding-left:16px;
+  }
+  /* Dark gets its own flat tint tuned for a dark surface, not light's tint
+     just recolored — owner: "светлая мне больше нравилась... одна для
+     LIGHT, другая для DARK" (their own two distinct treatments, not one
+     rule inverted for both). */
+  html.dark body:has([data-gill-v16]) #hMobileNav a:hover{
+    background:color-mix(in srgb,var(--gb-accent-gold-bright,#f0c896) 15%,transparent);
+    color:var(--gb-accent-gold-bright,#f0c896);
+    border-left-color:var(--gb-accent-gold-bright,#f0c896);
+  }
+  body:has([data-gill-v16]) #hMobileBackdrop{
+    background:rgba(20,14,9,.28);
+    -webkit-backdrop-filter:blur(2px);
+    backdrop-filter:blur(2px);
+  }
+  /* Hamburger → X morph on open — exact transform values already established
+     for .h-mobile-menu-btn.is-open in home.css/mobile-hotfix.css, just keyed
+     off aria-expanded instead of a class (avoids inheriting home.css's own
+     .h-mobile-menu-btn base rules, which display:none this button outside
+     its own narrow-viewport breakpoint). */
+  body:has([data-gill-v16]) #hMobileMenuBtn svg{transition:transform .28s var(--gb-ease-spring,cubic-bezier(.34,1.56,.64,1))}
+  body:has([data-gill-v16]) #hMobileMenuBtn .burger-top,
+  body:has([data-gill-v16]) #hMobileMenuBtn .burger-mid,
+  body:has([data-gill-v16]) #hMobileMenuBtn .burger-bottom{
+    transform-origin:center;
+    transition:transform .28s var(--gb-ease-spring,cubic-bezier(.34,1.56,.64,1)),opacity .2s ease;
+  }
+  body:has([data-gill-v16]) #hMobileMenuBtn[aria-expanded="true"] .burger-top{transform:translateY(5px) rotate(45deg)}
+  body:has([data-gill-v16]) #hMobileMenuBtn[aria-expanded="true"] .burger-mid{opacity:0;transform:scaleX(0)}
+  body:has([data-gill-v16]) #hMobileMenuBtn[aria-expanded="true"] .burger-bottom{transform:translateY(-5px) rotate(-45deg)}
+}
