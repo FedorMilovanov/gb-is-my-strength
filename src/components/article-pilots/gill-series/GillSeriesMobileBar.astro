@@ -1,12 +1,13 @@
 ---
 /**
- * GillSeriesMobileBar — mobile (<64em) control surface, matching the
- * approved mobile reference 1-в-1 (gbs_series_mobile_v4_refined_no_accuracy.html):
+ * GillSeriesMobileBar — mobile (<64em) control surface.
  *
- *   TOP bar: back(→«Биографии служителей») → slot(wide search input over
- *     current part's TOC ⇄ speed rail, same slot-swap mechanic verified on
- *     GillSeriesRail's desktop topbar) → Play (canon .gb-ember + speed
- *     badge) → Save (binary toggle, no halo).
+ *   TOP bar: back(→«Биографии служителей») → search-this-part input
+ *     (filters the current part's TOC by heading text, always visible —
+ *     no longer swaps with a speed rail; that swap was confusing and is
+ *     gone) → Play (canon .gb-ember; speed is its own canonical bloom
+ *     panel, .gb-ember-expand, same as everywhere else in the app) →
+ *     Save (binary toggle, no halo).
  *   BOTTOM bar: dual-progress ring (inner=текущая статья %, outer=вся
  *     серия %) → «Сейчас читаете» + текущий раздел (opens the existing
  *     part-TOC sheet — series access stays one tap further via its
@@ -15,10 +16,8 @@
  *
  * data-fc-action="theme"/"play"/"save"/"font-up"/"font-down" and
  * data-action="share" go through the existing global cluster delegation on
- * [data-fc-root] (floating-cluster-controller.js) — only the speed-slot
- * swap and the local TOC search are bar-local script here (guarded via
- * data-gb-speed-custom so the shared initPlayExpand() bloom-pill does not
- * also attach to this ember).
+ * [data-fc-root] (floating-cluster-controller.js) — only the local TOC
+ * search is bar-local script here.
  */
 import PlayEmber from '@/components/ui/floating-cluster/PlayEmber.astro';
 import SaveButton from '@/components/ui/floating-cluster/SaveButton.astro';
@@ -31,26 +30,16 @@ interface Props {
 const { pageId } = Astro.props as Props;
 const page = GILL_PAGE_DATA[pageId];
 ---
-<div class="mobile-top-bar" data-fc-root data-fc-variant="gill" data-gill-mobile-bar data-gb-speed-custom>
+<div class="mobile-top-bar" data-fc-root data-fc-variant="gill" data-gill-mobile-bar>
   <button class="gb-icon" id="mobBackBtn" type="button" aria-label="Назад" data-home-href="../../biografii/">
     <svg viewBox="0 0 24 24"><path d="M19 12H5M12 19l-7-7 7-7" /></svg>
   </button>
-  <div class="mobile-top-slot" id="mobTopSlot">
-    <label class="mobile-top-search" for="mobTocSearch">
-      <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7" /><path d="M21 21l-4.3-4.3" /></svg>
-      <input id="mobTocSearch" type="text" placeholder="Поиск по разделам…" autocomplete="off" />
-    </label>
-    <div class="mobile-speedrail" id="mobSpeedrail" role="radiogroup" aria-label="Скорость озвучки">
-      <button class="mobile-spd" type="button" role="radio" data-speed="1" aria-checked="true">1×</button>
-      <button class="mobile-spd" type="button" role="radio" data-speed="1.25" aria-checked="false">1.25×</button>
-      <button class="mobile-spd" type="button" role="radio" data-speed="1.5" aria-checked="false">1.5×</button>
-      <button class="mobile-spd" type="button" role="radio" data-speed="1.75" aria-checked="false">1.75×</button>
-      <button class="mobile-spd" type="button" role="radio" data-speed="2" aria-checked="false">2×</button>
-    </div>
-  </div>
+  <label class="mobile-top-search" for="mobTocSearch">
+    <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7" /><path d="M21 21l-4.3-4.3" /></svg>
+    <input id="mobTocSearch" type="text" placeholder="Поиск по разделам…" autocomplete="off" />
+  </label>
   <span class="mobile-playwrap">
     <PlayEmber audioState="none" class="mobile-top-ember" tip="Озвучка" />
-    <button class="mobile-spdbadge" id="mobSpdBadge" type="button" aria-label="Выбрать скорость, сейчас 1×">1×</button>
   </span>
   <SaveButton class="gb-icon" tip="Сохранить" />
 </div>
@@ -98,8 +87,6 @@ const page = GILL_PAGE_DATA[pageId];
 </div>
 
 <script>
-  import { initSpeedSlot } from '../_shared/speedSlot';
-
   // Локальный поиск по оглавлению ТЕКУЩЕЙ части (референс: 'input' на
   // #tocSearch фильтрует .btoc-link по тексту и открывает панель только
   // когда есть реальный запрос — очистка поля не форсит открытие заново).
@@ -129,14 +116,6 @@ const page = GILL_PAGE_DATA[pageId];
   }
 
   function boot() {
-    const topbar = document.querySelector('.mobile-top-bar[data-gb-speed-custom]') as HTMLElement | null;
-    if (topbar) initSpeedSlot(topbar, {
-      ember: '.mobile-top-ember',
-      speedrail: '.mobile-speedrail',
-      badge: '.mobile-spdbadge',
-      chip: '.mobile-spd',
-      searchInput: '#mobTocSearch',
-    });
     initGillMobileTocSearch();
 
     const backBtn = document.getElementById('mobBackBtn');
