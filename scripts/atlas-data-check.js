@@ -140,6 +140,25 @@ function main() {
     }
   }
 
+  // Реестр дорог (data/atlas/routes/*.json) — если существует.
+  const ROUTES_DIR = path.join(ROOT, 'data', 'atlas', 'routes');
+  if (fs.existsSync(ROUTES_DIR)) {
+    const rs = JSON.parse(fs.readFileSync(path.join(ROOT, 'data', 'atlas', 'schemas', 'route.schema.json'), 'utf8'));
+    const KINDS = new Set(rs.properties.kind.enum);
+    for (const f of fs.readdirSync(ROUTES_DIR).filter((x) => x.endsWith('.json'))) {
+      const r = JSON.parse(fs.readFileSync(path.join(ROUTES_DIR, f), 'utf8'));
+      const ctx = `routes/${f}`;
+      if (r.id !== path.basename(f, '.json')) fail(`${ctx}: id != имя файла`);
+      if (!r.title || !r.title.ru) fail(`${ctx}: title.ru пуст`);
+      if (!KINDS.has(r.kind)) fail(`${ctx}: kind вне enum`);
+      if (!Array.isArray(r.waypoints) || r.waypoints.length < 2) fail(`${ctx}: waypoints < 2`);
+      for (const w of r.waypoints || []) {
+        if (w.placeId && !ids.has(w.placeId)) fail(`${ctx}: waypoint placeId "${w.placeId}" нет в реестре мест`);
+        if (!w.placeId && !w.label) fail(`${ctx}: waypoint без placeId и label`);
+      }
+    }
+  }
+
   // Полное покрытие route.json → реестр.
   for (const key of routeOcc) {
     if (!claimed.has(key)) fail(`покрытие: место карты ${key} не учтено в реестре places/`);

@@ -1,0 +1,43 @@
+{
+  "id": "kings-highway",
+  "title": {
+    "ru": "Царская дорога",
+    "he": "דֶּרֶךְ הַמֶּלֶךְ"
+  },
+  "kind": "royal-road",
+  "bibleRefs": [
+    "Числ 20:17",
+    "Числ 21:22"
+  ],
+  "waypoints": [
+    {
+      "label": "Эцион-Гевер (Акаба)"
+    },
+    {
+      "placeId": "kir-haraseth"
+    },
+    {
+      "label": "Дивон"
+    },
+    {
+      "label": "Есевон"
+    },
+    {
+      "label": "Равва Аммонитская"
+    },
+    {
+      "placeId": "damascus"
+    }
+  ],
+  "sources": [
+    {
+      "ref": "Числ 20:17 — прямое библейское имя дороги",
+      "level": "A"
+    },
+    {
+      "ref": "Aharoni (B); MacDonald, East of the Jordan",
+      "level": "B"
+    }
+  ],
+  "note": "Трансиорданский хребтовый путь; Едом отказал Израилю в проходе именно по ней"
+}

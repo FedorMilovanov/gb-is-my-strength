@@ -1,0 +1,118 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://gospod-bog.ru/schemas/atlas/route.schema.json",
+  "title": "Atlas Route — каноническая дорога/путь Библейского Атласа",
+  "description": "ATLAS-CONTRACT §7. Великие дороги — сквозные сущности (Via Maris на 5+ картах). Геометрия появится в KA-6 (AWMC/Itiner-e/собственная оцифровка); здесь — идентичность, маршрутные узлы ссылками на реестр мест, источники.",
+  "type": "object",
+  "required": [
+    "id",
+    "title",
+    "kind",
+    "waypoints"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "id": {
+      "type": "string",
+      "pattern": "^[a-z][a-z0-9-]*$"
+    },
+    "title": {
+      "type": "object",
+      "required": [
+        "ru"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "ru": {
+          "type": "string"
+        },
+        "he": {
+          "type": "string"
+        },
+        "historical": {
+          "type": "string",
+          "description": "Историческое/условное название с оговоркой"
+        }
+      }
+    },
+    "kind": {
+      "type": "string",
+      "enum": [
+        "international-road",
+        "royal-road",
+        "regional-road",
+        "sea-lane",
+        "pilgrim-route"
+      ]
+    },
+    "bibleRefs": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "waypoints": {
+      "type": "array",
+      "minItems": 2,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "placeId": {
+            "type": "string",
+            "description": "Ссылка на data/atlas/places/"
+          },
+          "label": {
+            "type": "string",
+            "description": "Узел вне реестра (пока)"
+          },
+          "note": {
+            "type": "string"
+          }
+        },
+        "anyOf": [
+          {
+            "required": [
+              "placeId"
+            ]
+          },
+          {
+            "required": [
+              "label"
+            ]
+          }
+        ]
+      }
+    },
+    "geometryLicense": {
+      "type": "string"
+    },
+    "sources": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "ref"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "ref": {
+            "type": "string"
+          },
+          "level": {
+            "type": "string",
+            "enum": [
+              "A",
+              "B",
+              "C",
+              "HOLD"
+            ]
+          }
+        }
+      }
+    },
+    "note": {
+      "type": "string"
+    }
+  }
+}
