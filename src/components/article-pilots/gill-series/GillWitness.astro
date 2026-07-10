@@ -1,0 +1,150 @@
+---
+/**
+ * GillWitness — атмосферная вставка «свидетельство эпохи».
+ *
+ * Редакционный контракт (02_GILL_ATMOSPHERE_EDITORIAL_STANDARD):
+ * - русский перевод всегда первым в DOM и визуально;
+ * - английский оригинал — на раскрытии, вне default Pagefind/TTS;
+ * - один объект на H2, не два quote-like подряд;
+ * - attribution и источник обязательны.
+ *
+ * Оригинал скрыт в <details data-pagefind-ignore>: это исключает его из
+ * Pagefind, а движок TTS (getArticleText) пропускает и .closest('[data-pagefind-ignore]'),
+ * и сам [lang="en"] блок — русский голос его не читает.
+ *
+ * tone задаёт смысловой вид: witness (современник/наследник),
+ * marginalia (запись на полях/корректуре), archive (документ/письмо/тираж),
+ * critic (критика по конкретному вопросу), voice (короткая фраза самого Гилла).
+ */
+interface Props {
+  eyebrow?: string;
+  translation: string;
+  original?: string;
+  originalLang?: string;
+  attribution: string;
+  work?: string;
+  year?: string;
+  sourceHref?: string;
+  sourceLabel?: string;
+  tone?: 'witness' | 'marginalia' | 'archive' | 'critic' | 'voice';
+}
+
+const {
+  eyebrow,
+  translation,
+  original,
+  originalLang = 'en',
+  attribution,
+  work,
+  year,
+  sourceHref,
+  sourceLabel = 'Источник',
+  tone = 'witness',
+} = Astro.props as Props;
+
+const EYEBROW_BY_TONE: Record<string, string> = {
+  witness: 'Свидетельство эпохи',
+  marginalia: 'На полях',
+  archive: 'Из архива',
+  critic: 'Голос критики',
+  voice: 'Слова Гилла',
+};
+const eyebrowText = eyebrow ?? EYEBROW_BY_TONE[tone] ?? 'Свидетельство эпохи';
+---
+<aside class:list={['gill-witness', `gill-witness--${tone}`]} data-gill-witness>
+  <p class="gill-witness__eyebrow">{eyebrowText}</p>
+
+  <blockquote class="gill-witness__translation" lang="ru">
+    <p>{translation}</p>
+  </blockquote>
+
+  <footer class="gill-witness__meta">
+    <span class="gill-witness__author">{attribution}</span>
+    {work && <cite class="gill-witness__work">{work}</cite>}
+    {year && <time class="gill-witness__year">{year}</time>}
+    {sourceHref && <a class="gill-witness__source" href={sourceHref}>{sourceLabel}</a>}
+  </footer>
+
+  {original && (
+    <details class="gill-witness__original" data-pagefind-ignore data-tts-ignore>
+      <summary>Показать оригинал</summary>
+      <blockquote lang={originalLang}>
+        <p>{original}</p>
+      </blockquote>
+    </details>
+  )}
+</aside>
+
+<style>
+  .gill-witness {
+    margin: var(--s-6, 32px) 0;
+    padding: 20px 22px;
+    border-left: 3px solid var(--color-accent-strong, #7c2d2d);
+    background: var(--color-surface-quote, #f6f2ea);
+    border-radius: 0 8px 8px 0;
+  }
+  .gill-witness__eyebrow {
+    margin: 0 0 10px;
+    font-family: 'Source Sans 3', system-ui, sans-serif;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--color-accent, #9b3c3c);
+  }
+  .gill-witness__translation {
+    margin: 0;
+    padding: 0;
+    border: 0;
+    font-family: ui-serif, Georgia, serif;
+    font-size: 1.02rem;
+    line-height: 1.7;
+    color: var(--color-text, #1a1714);
+  }
+  .gill-witness__translation p { margin: 0; }
+  .gill-witness__meta {
+    margin-top: 12px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px 10px;
+    align-items: baseline;
+    font-size: 13px;
+    color: var(--color-text-muted, #78716c);
+  }
+  .gill-witness__author { font-weight: 600; color: var(--color-text-secondary, #57534e); }
+  .gill-witness__work { font-style: italic; }
+  .gill-witness__source { color: var(--color-link, #7c2d2d); text-underline-offset: 2px; }
+  .gill-witness__original {
+    margin-top: 12px;
+    font-size: 14px;
+  }
+  .gill-witness__original > summary {
+    cursor: pointer;
+    font-family: 'Source Sans 3', system-ui, sans-serif;
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+    color: var(--color-text-muted, #78716c);
+    list-style: none;
+  }
+  .gill-witness__original > summary::-webkit-details-marker { display: none; }
+  .gill-witness__original > summary::before { content: '▸ '; }
+  .gill-witness__original[open] > summary::before { content: '▾ '; }
+  .gill-witness__original blockquote {
+    margin: 10px 0 0;
+    padding: 0 0 0 14px;
+    border-left: 2px solid var(--color-border-strong, #cfc9bd);
+    font-family: ui-serif, Georgia, serif;
+    font-style: italic;
+    font-size: 0.95rem;
+    line-height: 1.65;
+    color: var(--color-text-secondary, #57534e);
+  }
+  .gill-witness__original blockquote p { margin: 0; }
+
+  /* tone accents — деликатная семантическая метка левой границы */
+  .gill-witness--marginalia { border-left-style: dashed; }
+  .gill-witness--archive { border-left-color: var(--color-border-strong, #cfc9bd); }
+  .gill-witness--critic { border-left-color: var(--color-text-muted, #78716c); }
+  .gill-witness--voice { border-left-width: 4px; }
+</style>
