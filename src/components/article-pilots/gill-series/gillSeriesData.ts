@@ -220,6 +220,7 @@ export const GILL_PAGE_DATA: Record<GillSeriesPageId, GillPageChromeData> = {
       { href: "#sec-toplady-memoir", label: "Топлэди о Гилле: Чёрный Принц и Мальборо", level: 3 },
       { href: "#sec-gill-islam-detail", label: "Гилл и ислам: Коран на пасторском столе", level: 3 },
       { href: "#sec-ordination-rippon", label: "Риппон: «Столь великого плача в мире»", level: 3 },
+      { href: "#sec-gill-last-pages", label: "Последние страницы: «10 000!» и Nunc Dimittis", level: 3 },
       { href: "#sec-gill-muller-rediscovery", label: "Современная реабилитация: «Проект Джона Гилла» (2023–2025)", level: 3 },
       { href: "#sec-quiz", label: "Проверь себя", level: 2 },
     ],
