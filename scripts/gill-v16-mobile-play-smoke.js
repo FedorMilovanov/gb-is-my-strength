@@ -187,6 +187,12 @@ async function visibleEmber(page, mobile) {
 }
 async function emberIsGoo(ember) { return ember.evaluate(el => el.classList.contains('gbmini-play')); }
 async function emberIsCustomSpeedSlot(ember) { return ember.evaluate(el => !!el.closest('[data-gb-speed-custom]')); }
+// Gill mobile v5 top bar: ember opts out of the bloom-pill entirely (no
+// .gb-ember-wrap is ever created for it) in favor of the inline
+// .mobile-speedrail slot-swap — see initGillInlineSpeedRail() in
+// floating-cluster-controller.js and data-fc-speed-mode="inline" in
+// GillSeriesMobileBar.astro.
+async function emberIsInlineSpeedMode(ember) { return ember.evaluate(el => !!el.closest('[data-fc-speed-mode="inline"]')); }
 async function allEmberStates(page) { return page.$$eval('.gb-ember', els => els.map(el => el.getAttribute('data-state') || '')); }
 async function clickSpeedNearEmber(ember, speed) {
   const isCustom = await emberIsCustomSpeedSlot(ember);
@@ -203,6 +209,18 @@ async function clickSpeedNearEmber(ember, speed) {
       return true;
     }, String(speed));
     if (!clicked) throw new Error(`speed button ${speed} not found in custom speed slot`);
+    return;
+  }
+  const isInline = await emberIsInlineSpeedMode(ember);
+  if (isInline) {
+    const clicked = await ember.evaluate((el, targetSpeed) => {
+      const root = el.closest('[data-fc-speed-mode="inline"]');
+      const btn = root && root.querySelector(`.mobile-speedrail [data-speed="${targetSpeed}"]`);
+      if (!btn) return false;
+      btn.click();
+      return true;
+    }, String(speed));
+    if (!clicked) throw new Error(`speed button ${speed} not found in inline speed rail`);
     return;
   }
   const clicked = await ember.evaluate((el, targetSpeed) => {
@@ -416,6 +434,7 @@ async function testPlayState(browser, mobile) {
   const ember = await visibleEmber(page, mobile);
   const isGoo = await emberIsGoo(ember);
   const isCustom = await emberIsCustomSpeedSlot(ember);
+  const isInline = await emberIsInlineSpeedMode(ember);
 
   await ember.click();
   await page.waitForTimeout(150);
@@ -435,13 +454,13 @@ async function testPlayState(browser, mobile) {
   assert(speedFacts.calls === callsBeforeSpeed + 1, `${label}: speed change while playing restarts exactly once`, JSON.stringify(speedFacts));
   assert(speedFacts.rates.at(-1) === 1.75, `${label}: speed change uses selected 1.75×`, JSON.stringify(speedFacts.rates));
 
-  // Custom speed slots (GooPlayMini + desktop rail-topbar + both mobile
-  // bars, all [data-gb-speed-custom]) have no bloom-pill STOP BUTTON — the
-  // desktop-only stop/idle-speed assertions below stay gated to non-custom.
-  // (Touch long-press-to-stop IS restored on the mobile custom slots via
-  // initCustomSlotLongPressStop() — exercised in the mobile block further
-  // down, no longer gated out.)
-  if (!isGoo && !isCustom) {
+  // Custom speed slots (GooPlayMini + Hermenevtika bars, [data-gb-speed-custom])
+  // and the Gill mobile v5 inline speed rail ([data-fc-speed-mode="inline"])
+  // have no bloom-pill STOP BUTTON — the desktop-only stop/idle-speed
+  // assertions below stay gated to neither. (Touch long-press-to-stop IS
+  // restored on both via initCustomSlotLongPressStop() — exercised in the
+  // mobile block further down, no longer gated out.)
+  if (!isGoo && !isCustom && !isInline) {
     await clickStopNearEmber(ember);
     await page.waitForTimeout(150);
     assert((await allEmberStates(page)).every(s => s === 'idle'), `${label}: stop/reset -> idle`, JSON.stringify(await allEmberStates(page)));
