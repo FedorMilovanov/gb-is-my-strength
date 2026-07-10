@@ -1,0 +1,3814 @@
+{
+  "$comment": "ЧЕРНОВИК канонического реестра мест (KA-2a). Все записи needsReview. Не подключать к рантайму до ручной проверки. Схема цели: data/atlas/schemas/place.schema.json (поле _extract — служебное, в финальный реестр не переносится).",
+  "stats": {
+    "occurrences": 133,
+    "canonical": 115,
+    "crossMap": 13
+  },
+  "places": [
+    {
+      "id": "aaron-mount",
+      "names": {
+        "ru": "Гора Ор",
+        "he": "הֹר הָהָר"
+      },
+      "type": "other",
+      "placements": {
+        "levant": {
+          "x": 622,
+          "y": 972
+        }
+      },
+      "maps": [
+        {
+          "slug": "ishod",
+          "localId": "aaron_mount"
+        }
+      ],
+      "needsReview": true,
+      "_extract": {
+        "mergedFrom": [
+          "ishod:aaron_mount"
+        ],
+        "engineTypes": [
+          "main"
+        ],
+        "coordVariants": 1,
+        "heVariants": 1,
+        "crossMap": false
+      }
+    },
+    {
+      "id": "ai",
+      "names": {
+        "ru": "Гай",
+        "he": "הָעָי"
+      },
+      "type": "other",
+      "placements": {
+        "levant": {
+          "x": 645,
+          "y": 790
+        }
+      },
+      "maps": [
+        {
+          "slug": "shvatim",
+          "localId": "ai"
+        }
+      ],
+      "needsReview": true,
+      "_extract": {
+        "mergedFrom": [
+          "shvatim:ai"
+        ],
+        "engineTypes": [
+          "main"
+        ],
+        "coordVariants": 1,
+        "heVariants": 1,
+        "crossMap": false
+      }
+    },
+    {
+      "id": "alexandria",
+      "names": {
+        "ru": "Александрия",
+        "he": "Ἀλεξάνδρεια"
+      },
+      "type": "other",
+      "placements": {
+        "levant": {
+          "x": 250,
+          "y": 950
+        }
+      },
+      "maps": [
+        {
+          "slug": "maccabim",
+          "localId": "alexandria"
+        }
+      ],
+      "needsReview": true,
+      "_extract": {
+        "mergedFrom": [
+          "maccabim:alexandria"
+        ],
+        "engineTypes": [
+          "main"
+        ],
+        "coordVariants": 1,
+        "heVariants": 1,
+        "crossMap": false
+      }
+    },
+    {
+      "id": "antioch",
+      "names": {
+        "ru": "Антиохия Сирийская",
+        "he": "Ἀντιόχεια",
+        "variants": [
+          "Антиохия Сирийская",
+          "Антиохия"
+        ]
+      },
+      "type": "other",
+      "placements": {
+        "levant": {
+          "x": 880,
+          "y": 240
+        }
+      },
+      "maps": [
+        {
+          "slug": "early-church",
+          "localId": "antioch_church"
+        },
+        {
+          "slug": "maccabim",
+          "localId": "antioch_syria"
+        },
+        {
+          "slug": "pavel",
+          "localId": "antioch"
+        }
+      ],
+      "needsReview": true,
+      "_extract": {
+        "mergedFrom": [
+          "early-church:antioch_church",
+          "maccabim:antioch_syria",
+          "pavel:antioch"
+        ],
+        "engineTypes": [
+          "main"
+        ],
+        "coordVariants": 1,
+        "heVariants": 1,
+        "crossMap": true
+      }
+    },
+    {
+      "id": "asher",
+      "names": {
+        "ru": "Асир",
+        "he": "אָשֵׁר"
+      },
+      "type": "other",
+      "placements": {
+        "levant": {
+          "x": 660,
+          "y": 600
+        }
+      },
+      "maps": [
+        {
+          "slug": "shvatim",
+          "localId": "asher"
+        }
+      ],
+      "needsReview": true,
+      "_extract": {
+        "mergedFrom": [
+          "shvatim:asher"
+        ],
+        "engineTypes": [
+          "main"
+        ],
+        "coordVariants": 1,
+        "heVariants": 1,
+        "crossMap": false
+      }
+    },
+    {
+      "id": "athens--ареопаг",
+      "names": {
+        "ru": "Афины · Ареопаг",
+        "he": "Ἀθῆναι"
+      },
+      "type": "other",
+      "parentId": "athens",
+      "notes": "SUB-LOCATION: проверить parentId",
+      "placements": {
+        "levant": {
+          "x": 730,
+          "y": 480
+        }
+      },
+      "maps": [
+        {
+          "slug": "pavel",
+          "localId": "athens"
+        }
+      ],
+      "needsReview": true,
+      "_extract": {
+        "mergedFrom": [
+          "pavel:athens"
+        ],
+        "engineTypes": [
+          "main"
+        ],
+        "coordVariants": 1,
+        "heVariants": 1,
+        "crossMap": false
+      }
+    },
+    {
+      "id": "babylon",
+      "names": {
+        "ru": "Вавилон",
+        "he": "בָּבֶל"
+      },
+      "type": "other",
+      "placements": {
+        "levant": {
+          "x": 1472,
+          "y": 755
+        }
+      },
+      "maps": [
+        {
+          "slug": "melachim",
+          "localId": "babylon"
+        }
+      ],
+      "needsReview": true,
+      "_extract": {
+        "mergedFrom": [
+          "melachim:babylon"
+        ],
+        "engineTypes": [
+          "main"
+        ],
+        "coordVariants": 1,
+        "heVariants": 1,
+        "crossMap": false
+      }
+    },
+    {
+      "id": "beersheba",
+      "names": {
+        "ru": "Беэр-Шева",
+        "he": "בְּאֵר שֶׁבַע"
+      },
+      "type": "other",
+      "placements": {
+        "levant": {
+          "x": 584,
+          "y": 864
+        }
+      },
+      "maps": [
+        {
+          "slug": "avraam",
+          "localId": "beersheba"
+        }
+      ],
+      "needsReview": true,
+      "_extract": {
+        "mergedFrom": [
+          "avraam:beersheba"
+        ],
+        "engineTypes": [
+          "main"
+        ],
+        "coordVariants": 1,
+        "heVariants": 1,
+        "crossMap": false
+      }
+    },
+    {
+      "id": "beit-shean",
+      "names": {
+        "ru": "Беф-Сан",
+        "he": "בֵּית שְׁאָן"
+      },
+      "type": "other",
+      "placements": {
+        "levant": {
+          "x": 680,
+          "y": 670
+        }
+      },
+      "maps": [
+        {
+          "slug": "maccabim",
+          "localId": "beit_shean"
+        }
+      ],
+      "needsReview": true,
+      "_extract": {
+        "mergedFrom": [
+          "maccabim:beit_shean"
+        ],
+        "engineTypes": [
+          "main"
+        ],
+        "coordVariants": 1,
+        "heVariants": 1,
+        "crossMap": false
+      }
+    },
+    {
+      "id": "benjamin",
+      "names": {
+        "ru": "Вениамин",
+        "he": "בִּנְיָמִין"
+      },
+      "type": "other",
+      "placements": {
+        "levant": {
+          "x": 635,
+          "y": 785
+        }
+      },
+      "maps": [
+        {
+          "slug": "shvatim",
+          "localId": "benjamin"
+        }
+      ],
+      "needsReview": true,
+      "_extract": {
+        "mergedFrom": [
+          "shvatim:benjamin"
+        ],
+        "engineTypes": [
+          "main"
+        ],
+        "coordVariants": 1,
+        "heVariants": 1,
+        "crossMap": false
+      }
+    },
+    {
+      "id": "beth-horon",
+      "names": {
+        "ru": "Беф-Орон",
+        "he": "בֵּית חוֹרוֹן"
+      },
+      "type": "other",
+      "placements": {
+        "levant": {
+          "x": 620,
+          "y": 785
+        }
+      },
+      "maps": [
+        {
+          "slug": "maccabim",
+          "localId": "beth_horon"
+        }
+      ],
+      "needsReview": true,
+      "_extract": {
+        "mergedFrom": [
+          "maccabim:beth_horon"
+        ],
+        "engineTypes": [
+          "main"
+        ],
+        "coordVariants": 1,
+        "heVariants": 1,
+        "crossMap": false
+      }
+    },
+    {
+      "id": "beth-zur",
+      "names": {
+        "ru": "Беф-Цур",
+        "he": "בֵּית צוּר"
+      },
+      "type": "other",
+      "placements": {
+        "levant": {
+          "x": 615,
+          "y": 815
+        }
+      },
+      "maps": [
+        {
+          "slug": "maccabim",
+          "localId": "beth_zur"
+        }
+      ],
+      "needsReview": true,
+      "_extract": {
+        "mergedFrom": [
+          "maccabim:beth_zur"
+        ],
+        "engineTypes": [
+          "main"
+        ],
+        "coordVariants": 1,
+        "heVariants": 1,
+        "crossMap": false
+      }
+    },
+    {
+      "id": "bethany",
+      "names": {
+        "ru": "Вифания",
+        "he": "בֵּית עַנְיָה"
+      },
+      "type": "other",
+      "placements": {
+        "levant": {
+          "x": 628,
+          "y": 802
+        }
+      },
+      "maps": [
+        {
+          "slug": "yeshua",
+          "localId": "bethany"
+        }
+      ],
+      "needsReview": true,
+      "_extract": {
+        "mergedFrom": [
+          "yeshua:bethany"
+        ],
+        "engineTypes": [
+          "main"
+        ],
+        "coordVariants": 1,
+        "heVariants": 1,
+        "crossMap": false
+      }
+    },
+    {
+      "id": "bethel",
+      "names": {
+        "ru": "Бет-Эль и Гай",
+        "he": "בֵּית-אֵל וְהָעַי",
+        "variants": [
+          "Бет-Эль и Гай",
+          "Вефиль"
+        ]
+      },
+      "type": "other",
+      "placements": {
+        "levant": {
+          "x": 624,
+          "y": 782
+        }
+      },
+      "maps": [
+        {
+          "slug": "avraam",
+          "localId": "bethel"
+        },
+        {
+          "slug": "melachim",
+          "localId": "bethel_kings"
+        }
+      ],
+      "needsReview": true,
+      "_extract": {
+        "mergedFrom": [
+          "avraam:bethel",
+          "melachim:bethel_kings"
+        ],
+        "engineTypes": [
+          "main"
+        ],
+        "coordVariants": 2,
+        "heVariants": 2,
+        "crossMap": true
+      }
+    },
+    {
+      "id": "bethlehem",
+      "names": {
+        "ru": "Вифлеем",
+        "he": "בֵּית לֶחֶם"
+      },
+      "type": "other",
+      "placements": {
+        "levant": {
+          "x": 630,
+          "y": 815
+        }
+      },
+      "maps": [
+        {
+          "slug": "yeshua",
+          "localId": "bethlehem"
+        }
+      ],
+      "needsReview": true,
+      "_extract": {
+        "mergedFrom": [
+          "yeshua:bethlehem"
+        ],
+        "engineTypes": [
+          "main"
+        ],
+        "coordVariants": 1,
+        "heVariants": 1,
+        "crossMap": false
+      }
+    },
+    {
+      "id": "caesarea-cornelius",
+      "names": {
+        "ru": "Кесария Приморская",
+        "he": "קֵיסָרִיָּה"
+      },
+      "type": "other",
+      "placements": {
+        "levant": {
+          "x": 630,
+          "y": 740
+        }
+      },
+      "maps": [
+        {
+          "slug": "early-church",
+          "localId": "caesarea_cornelius"
+        }
+      ],
+      "needsReview": true,
+      "_extract": {
+        "mergedFrom": [
+          "early-church:caesarea_cornelius"
+        ],
+        "engineTypes": [
+          "main"
+        ],
+        "coordVariants": 1,
+        "heVariants": 1,
+        "crossMap": false
+      }
+    },
+    {
+      "id": "caesarea-philippi",
+      "names": {
+        "ru": "Кесария Филиппова",
+        "he": "קֵיסָרִיָּה פִילִיפּוֹס"
+      },
+      "type": "other",
+      "placements": {
+        "levant": {
+          "x": 720,
+          "y": 580
+        }
+      },
+      "maps": [
+        {
+          "slug": "yeshua",
+          "localId": "caesarea_philippi"
+        }
+      ],
+      "needsReview": true,
+      "_extract": {
+        "mergedFrom": [
+          "yeshua:caesarea_philippi"
+        ],
+        "engineTypes": [
+          "main"
+        ],
+        "coordVariants": 1,
+        "heVariants": 1,
+        "crossMap": false
+      }
+    },
+    {
+      "id": "capernaum",
+      "names": {
+        "ru": "Капернаум",
+        "he": "כְּפַר נַחוּם"
+      },
+      "type": "other",
+      "placements": {
+        "levant": {
+          "x": 700,
+          "y": 620
+        }
+      },
+      "maps": [
+        {
+          "slug": "yeshua",
+          "localId": "capernaum"
+        }
+      ],
+      "needsReview": true,
+      "_extract": {
+        "mergedFrom": [
+          "yeshua:capernaum"
+        ],
+        "engineTypes": [
+          "main"
+        ],
+        "coordVariants": 1,
+        "heVariants": 1,
+        "crossMap": false
+      }
+    },
+    {
+      "id": "carmel",
+      "names": {
+        "ru": "Кармил",
+        "he": "הַכַּרְמֶל"
+      },
+      "type": "other",
+      "placements": {
+        "levant": {
+          "x": 624,
+          "y": 670
+        }
+      },
+      "maps": [
+        {
+          "slug": "melachim",
+          "localId": "carmel"
+        }
+      ],
+      "needsReview": true,
+      "_extract": {
+        "mergedFrom": [
+          "melachim:carmel"
+        ],
+        "engineTypes": [
+          "main"
+        ],
+        "coordVariants": 1,
+        "heVariants": 1,
+        "crossMap": false
+      }
+    },
+    {
+      "id": "corinth",
+      "names": {
+        "ru": "Коринф",
+        "he": "Κόρινθος"
+      },
+      "type": "other",
+      "placements": {
+        "levant": {
+          "x": 705,
+          "y": 500
+        }
+      },
+      "maps": [
+        {
+          "slug": "pavel",
+          "localId": "corinth"
+        }
+      ],
+      "needsReview": true,
+      "_extract": {
+        "mergedFrom": [
+          "pavel:corinth"
+        ],
+        "engineTypes": [
+          "main"
+        ],
+        "coordVariants": 1,
+        "heVariants": 1,
+        "crossMap": false
+      }
+    },
+    {
+      "id": "cyprus--саламин",
+      "names": {
+        "ru": "Кипр · Саламин",
+        "he": "Κύπρος"
+      },
+      "type": "other",
+      "parentId": "cyprus",
+      "notes": "SUB-LOCATION: проверить parentId",
+      "placements": {
+        "levant": {
+          "x": 820,
+          "y": 310
+        }
+      },
+      "maps": [
+        {
+          "slug": "pavel",
+          "localId": "cyprus"
+        }
+      ],
+      "needsReview": true,
+      "_extract": {
+        "mergedFrom": [
+          "pavel:cyprus"
+        ],
+        "engineTypes": [
+          "main"
+        ],
+        "coordVariants": 1,
+        "heVariants": 1,
+        "crossMap": false
+      }
+    },
+    {
+      "id": "damascus",
+      "names": {
+        "ru": "Дамаск",
+        "he": "דַּמֶּשֶׂק"
+      },
+      "type": "other",
+      "placements": {
+        "levant": {
+          "x": 731,
+          "y": 594
+        }
+      },
+      "maps": [
+        {
+          "slug": "avraam",
+          "localId": "damascus"
+        },
+        {
+          "slug": "early-church",
+          "localId": "damascus"
+        }
+      ],
+      "needsReview": true,
+      "_extract": {
+        "mergedFrom": [
+          "avraam:damascus",
+          "early-church:damascus"
+        ],
+        "engineTypes": [
+          "main"
+        ],
+        "coordVariants": 1,
+        "heVariants": 1,
+        "crossMap": true
+      }
+    },
+    {
+      "id": "dan",
+      "names": {
+        "ru": "Дан (Лаиш)",
+        "he": "דָּן (לַיִשׁ)",
+        "variants": [
+          "Дан (Лаиш)",
+          "Дан"
+        ]
+      },
+      "type": "other",
+      "placements": {
+        "levant": {
+          "x": 665,
+          "y": 625
+        }
+      },
+      "maps": [
+        {
+          "slug": "avraam",
+          "localId": "dan"
+        },
+        {
+          "slug": "melachim",
+          "localId": "dan_kings"
+        },
+        {
+          "slug": "shvatim",
+          "localId": "dan"
+        }
+      ],
+      "needsReview": true,
+      "_extract": {
+        "mergedFrom": [
+          "avraam:dan",
+          "melachim:dan_kings",
+          "shvatim:dan"
+        ],
+        "engineTypes": [
+          "main"
+        ],
+        "coordVariants": 1,
+        "heVariants": 2,
+        "crossMap": true
+      }
+    },
+    {
+      "id": "egypt",
+      "names": {
+        "ru": "Египет",
+        "he": "מִצְרַיִם"
+      },
+      "type": "other",
+      "placements": {
+        "levant": {
+          "x": 235,
+          "y": 940
+        }
+      },
+      "maps": [
+        {
+          "slug": "avraam",
+          "localId": "egypt"
+        }
+      ],
+      "needsReview": true,
+      "_extract": {
+        "mergedFrom": [
+          "avraam:egypt"
+        ],
+        "engineTypes": [
+          "main"
+        ],
+        "coordVariants": 1,
+        "heVariants": 1,
+        "crossMap": false
+      }
+    },
+    {
+      "id": "elim",
+      "names": {
+        "ru": "Елим",
+        "he": "אֵילִם"
+      },
+      "type": "other",
+      "placements": {
+        "levant": {
+          "x": 485,
+          "y": 1040
+        }
+      },
+      "maps": [
+        {
+          "slug": "ishod",
+          "localId": "elim"
+        }
+      ],
+      "needsReview": true,
+      "_extract": {
+        "mergedFrom": [
+          "ishod:elim"
+        ],
+        "engineTypes": [
+          "main"
+        ],
+        "coordVariants": 1,
+        "heVariants": 1,
+        "crossMap": false
+      }
+    },
+    {
+      "id": "emmaus",
+      "names": {
+        "ru": "Еммаус",
+        "he": "אַמַּאוּס"
+      },
+      "type": "other",
+      "placements": {
+        "levant": {
+          "x": 615,
+          "y": 795
+        }
+      },
+      "maps": [
+        {
+          "slug": "maccabim",
+          "localId": "emmaus"
+        }
+      ],
+      "needsReview": true,
+      "_extract": {
+        "mergedFrom": [
+          "maccabim:emmaus"
+        ],
+        "engineTypes": [
+          "main"
+        ],
+        "coordVariants": 1,
+        "heVariants": 1,
+        "crossMap": false
+      }
+    },
+    {
+      "id": "ephesus",
+      "names": {
+        "ru": "Эфес",
+        "he": "Ἔφεσος"
+      },
+      "type": "other",
+      "placements": {
+        "levant": {
+          "x": 810,
+          "y": 400
+        }
+      },
+      "maps": [
+        {
+          "slug": "pavel",
+          "localId": "ephesus"
+        },
+        {
+          "slug": "revelation",
+          "localId": "ephesus_rev"
+        }
+      ],
+      "needsReview": true,
+      "_extract": {
+        "mergedFrom": [
+          "pavel:ephesus",
+          "revelation:ephesus_rev"
+        ],
+        "engineTypes": [
+          "main"
+        ],
+        "coordVariants": 1,
+        "heVariants": 1,
+        "crossMap": true
+      }
+    },
+    {
+      "id": "ephraim",
+      "names": {
+        "ru": "Ефрем",
+        "he": "אֶפְרָיִם"
+      },
+      "type": "other",
+      "placements": {
+        "levant": {
+          "x": 630,
+          "y": 750
+        }
+      },
+      "maps": [
+        {
+          "slug": "shvatim",
+          "localId": "ephraim"
+        }
+      ],
+      "needsReview": true,
+      "_extract": {
+        "mergedFrom": [
+          "shvatim:ephraim"
+        ],
+        "engineTypes": [
+          "main"
+        ],
+        "coordVariants": 1,
+        "heVariants": 1,
+        "crossMap": false
+      }
+    },
+    {
+      "id": "etham",
+      "names": {
+        "ru": "Ефам",
+        "he": "אֵתָם"
+      },
+      "type": "other",
+      "placements": {
+        "levant": {
+          "x": 330,
+          "y": 940
+        }
+      },
+      "maps": [
+        {
+          "slug": "ishod",
+          "localId": "etham"
+        }
+      ],
+      "needsReview": true,
+      "_extract": {
+        "mergedFrom": [
+          "ishod:etham"
+        ],
+        "engineTypes": [
+          "main"
+        ],
+        "coordVariants": 1,
+        "heVariants": 1,
+        "crossMap": false
+      }
+    },
+    {
+      "id": "gad",
+      "names": {
+        "ru": "Гад",
+        "he": "גָּד"
+      },
+      "type": "other",
+      "placements": {
+        "levant": {
+          "x": 710,
+          "y": 740
+        }
+      },
+      "maps": [
+        {
+          "slug": "shvatim",
+          "localId": "gad"
+        }
+      ],
+      "needsReview": true,
+      "_extract": {
+        "mergedFrom": [
+          "shvatim:gad"
+        ],
+        "engineTypes": [
+          "main"
+        ],
+        "coordVariants": 1,
+        "heVariants": 1,
+        "crossMap": false
+      }
+    },
+    {
+      "id": "gaza",
+      "names": {
+        "ru": "Газа",
+        "he": "עַזָּה"
+      },
+      "type": "other",
+      "placements": {
+        "levant": {
+          "x": 490,
+          "y": 870
+        }
+      },
+      "maps": [
+        {
+          "slug": "shoftim",
+          "localId": "gaza"
+        }
+      ],
+      "needsReview": true,
+      "_extract": {
+        "mergedFrom": [
+          "shoftim:gaza"
+        ],
+        "engineTypes": [
+          "main"
+        ],
+        "coordVariants": 1,
+        "heVariants": 1,
+        "crossMap": false
+      }
+    },
+    {
+      "id": "gaza-road",
+      "names": {
+        "ru": "Дорога в Газу",
+        "he": "דֶּרֶךְ עַזָּה"
+      },
+      "type": "other",
+      "placements": {
+        "levant": {
+          "x": 550,
+          "y": 830
+        }
+      },
+      "maps": [
+        {
+          "slug": "early-church",
+          "localId": "gaza_road"
+        }
+      ],
+      "needsReview": true,
+      "_extract": {
+        "mergedFrom": [
+          "early-church:gaza_road"
+        ],
+        "engineTypes": [
+          "main"
+        ],
+        "coordVariants": 1,
+        "heVariants": 1,
+        "crossMap": false
+      }
+    },
+    {
+      "id": "gerar",
+      "names": {
+        "ru": "Герар",
+        "he": "גְּרָר"
+      },
+      "type": "other",
+      "placements": {
+        "levant": {
+          "x": 561,
+          "y": 847
+        }
+      },
+      "maps": [
+        {
+          "slug": "avraam",
+          "localId": "gerar"
+        }
+      ],
+      "needsReview": true,
+      "_extract": {
+        "mergedFrom": [
+          "avraam:gerar"
+        ],
+        "engineTypes": [
+          "main"
+        ],
+        "coordVariants": 1,
+        "heVariants": 1,
+        "crossMap": false
+      }
+    },
+    {
+      "id": "gerasa",
+      "names": {
+        "ru": "Гераса",
+        "he": "גֶּרַשָּׁא"
+      },
+      "type": "other",
+      "placements": {
+        "levant": {
+          "x": 720,
+          "y": 730
+        }
+      },
+      "maps": [
+        {
+          "slug": "maccabim",
+          "localId": "gerasa"
+        }
+      ],
+      "needsReview": true,
+      "_extract": {
+        "mergedFrom": [
+          "maccabim:gerasa"
+        ],
+        "engineTypes": [
+          "main"
+        ],
+        "coordVariants": 1,
+        "heVariants": 1,
+        "crossMap": false
+      }
+    },
+    {
+      "id": "gethsemane",
+      "names": {
+        "ru": "Гефсимания",
+        "he": "גַּת שְׁמָנִים"
+      },
+      "type": "other",
+      "placements": {
+        "levant": {
+          "x": 626,
+          "y": 798
+        }
+      },
+      "maps": [
+        {
+          "slug": "yeshua",
+          "localId": "gethsemane"
+        }
+      ],
+      "needsReview": true,
+      "_extract": {
+        "mergedFrom": [
+          "yeshua:gethsemane"
+        ],
+        "engineTypes": [
+          "main"
+        ],
+        "coordVariants": 1,
+        "heVariants": 1,
+        "crossMap": false
+      }
+    },
+    {
+      "id": "gezer",
+      "names": {
+        "ru": "Газер",
+        "he": "גֶּזֶר"
+      },
+      "type": "other",
+      "placements": {
+        "levant": {
+          "x": 595,
+          "y": 770
+        }
+      },
+      "maps": [
+        {
+          "slug": "melachim",
+          "localId": "gezer"
+        }
+      ],
+      "needsReview": true,
+      "_extract": {
+        "mergedFrom": [
+          "melachim:gezer"
+        ],
+        "engineTypes": [
+          "main"
+        ],
+        "coordVariants": 1,
+        "heVariants": 1,
+        "crossMap": false
+      }
+    },
+    {
+      "id": "gibeah",
+      "names": {
+        "ru": "Гива",
+        "he": "גִּבְעָה"
+      },
+      "type": "other",
+      "placements": {
+        "levant": {
+          "x": 632,
+          "y": 790
+        }
+      },
+      "maps": [
+        {
+          "slug": "melachim",
+          "localId": "gibeah"
+        }
+      ],
+      "needsReview": true,
+      "_extract": {
+        "mergedFrom": [
+          "melachim:gibeah"
+        ],
+        "engineTypes": [
+          "main"
+        ],
+        "coordVariants": 1,
+        "heVariants": 1,
+        "crossMap": false
+      }
+    },
+    {
+      "id": "gibeon",
+      "names": {
+        "ru": "Гаваон",
+        "he": "גִּבְעוֹן"
+      },
+      "type": "other",
+      "placements": {
+        "levant": {
+          "x": 635,
+          "y": 790
+        }
+      },
+      "maps": [
+        {
+          "slug": "shvatim",
+          "localId": "gibeon"
+        }
+      ],
+      "needsReview": true,
+      "_extract": {
+        "mergedFrom": [
+          "shvatim:gibeon"
+        ],
+        "engineTypes": [
+          "main"
+        ],
+        "coordVariants": 1,
+        "heVariants": 1,
+        "crossMap": false
+      }
+    },
+    {
+      "id": "golgotha",
+      "names": {
+        "ru": "Голгофа",
+        "he": "גָּלְגָּתָא"
+      },
+      "type": "other",
+      "placements": {
+        "levant": {
+          "x": 622,
+          "y": 799
+        }
+      },
+      "maps": [
+        {
+          "slug": "yeshua",
+          "localId": "golgotha"
+        }
+      ],
+      "needsReview": true,
+      "_extract": {
+        "mergedFrom": [
+          "yeshua:golgotha"
+        ],
+        "engineTypes": [
+          "main"
+        ],
+        "coordVariants": 1,
+        "heVariants": 1,
+        "crossMap": false
+      }
+    },
+    {
+      "id": "hammam",
+      "names": {
+        "ru": "Талл эль-Хаммам",
+        "he": "כִּכַּר הַיַּרְדֵּן"
+      },
+      "type": "other",
+      "placements": {
+        "levant": {
+          "x": 667,
+          "y": 818
+        }
+      },
+      "maps": [
+        {
+          "slug": "avraam",
+          "localId": "hammam"
+        }
+      ],
+      "needsReview": true,
+      "_extract": {
+        "mergedFrom": [
+          "avraam:hammam"
+        ],
+        "engineTypes": [
+          "cand"
+        ],
+        "coordVariants": 1,
+        "heVariants": 1,
+        "crossMap": false
+      }
+    },
+    {
+      "id": "harod",
+      "names": {
+        "ru": "Источник Харод",
+        "he": "עֵין חֲרֹד"
+      },
+      "type": "other",
+      "placements": {
+        "levant": {
+          "x": 670,
+          "y": 660
+        }
+      },
+      "maps": [
+        {
+          "slug": "shoftim",
+          "localId": "harod"
+        }
+      ],
+      "needsReview": true,
+      "_extract": {
+        "mergedFrom": [
+          "shoftim:harod"
+        ],
+        "engineTypes": [
+          "main"
+        ],
+        "coordVariants": 1,
+        "heVariants": 1,
+        "crossMap": false
+      }
+    },
+    {
+      "id": "harran",
+      "names": {
+        "ru": "Харран",
+        "he": "חָרָן"
+      },
+      "type": "other",
+      "placements": {
+        "levant": {
+          "x": 1003,
+          "y": 194
+        }
+      },
+      "maps": [
+        {
+          "slug": "avraam",
+          "localId": "harran"
+        }
+      ],
+      "needsReview": true,
+      "_extract": {
+        "mergedFrom": [
+          "avraam:harran"
+        ],
+        "engineTypes": [
+          "main"
+        ],
+        "coordVariants": 1,
+        "heVariants": 1,
+        "crossMap": false
+      }
+    },
+    {
+      "id": "hazor",
+      "names": {
+        "ru": "Асор",
+        "he": "חָצוֹר"
+      },
+      "type": "other",
+      "placements": {
+        "levant": {
+          "x": 740,
+          "y": 500
+        }
+      },
+      "maps": [
+        {
+          "slug": "melachim",
+          "localId": "hazor_kings"
+        },
+        {
+          "slug": "shoftim",
+          "localId": "hazor"
+        },
+        {
+          "slug": "shvatim",
+          "localId": "hazor_conquest"
+        }
+      ],
+      "needsReview": true,
+      "_extract": {
+        "mergedFrom": [
+          "melachim:hazor_kings",
+          "shoftim:hazor",
+          "shvatim:hazor_conquest"
+        ],
+        "engineTypes": [
+          "main"
+        ],
+        "coordVariants": 1,
+        "heVariants": 1,
+        "crossMap": true
+      }
+    },
+    {
+      "id": "hebron",
+      "names": {
+        "ru": "Хеврон",
+        "he": "חֶבְרוֹן"
+      },
+      "type": "other",
+      "placements": {
+        "levant": {
+          "x": 610,
+          "y": 829
+        }
+      },
+      "maps": [
+        {
+          "slug": "melachim",
+          "localId": "hebron_kings"
+        },
+        {
+          "slug": "shoftim",
+          "localId": "hebron"
+        }
+      ],
+      "needsReview": true,
+      "_extract": {
+        "mergedFrom": [
+          "melachim:hebron_kings",
+          "shoftim:hebron"
+        ],
+        "engineTypes": [
+          "main"
+        ],
+        "coordVariants": 1,
+        "heVariants": 1,
+        "crossMap": true
+      }
+    },
+    {
+      "id": "hebron--мамре",
+      "names": {
+        "ru": "Хеврон · Мамре",
+        "he": "חֶבְרוֹן · אֵלֹנֵי מַמְרֵא"
+      },
+      "type": "other",
+      "parentId": "hebron",
+      "notes": "SUB-LOCATION: проверить parentId",
+      "placements": {
+        "levant": {
+          "x": 610,
+          "y": 829
+        }
+      },
+      "maps": [
+        {
+          "slug": "avraam",
+          "localId": "hebron"
+        }
+      ],
+      "needsReview": true,
+      "_extract": {
+        "mergedFrom": [
+          "avraam:hebron"
+        ],
+        "engineTypes": [
+          "main"
+        ],
+        "coordVariants": 1,
+        "heVariants": 1,
+        "crossMap": false
+      }
+    },
+    {
+      "id": "hebron-shoftim",
+      "names": {
+        "ru": "Хеврон (судьи)",
+        "he": "חֶבְרוֹן"
+      },
+      "type": "other",
+      "placements": {
+        "levant": {
+          "x": 610,
+          "y": 829
+        }
+      },
+      "maps": [
+        {
+          "slug": "shoftim",
+          "localId": "hebron_shoftim"
+        }
+      ],
+      "needsReview": true,
+      "_extract": {
+        "mergedFrom": [
+          "shoftim:hebron_shoftim"
+        ],
+        "engineTypes": [
+          "main"
+        ],
+        "coordVariants": 1,
+        "heVariants": 1,
+        "crossMap": false
+      }
+    },
+    {
+      "id": "hovah",
+      "names": {
+        "ru": "Хова",
+        "he": "חוֹבָה"
+      },
+      "type": "other",
+      "placements": {
+        "levant": {
+          "x": 752,
+          "y": 556
+        }
+      },
+      "maps": [
+        {
+          "slug": "avraam",
+          "localId": "hovah"
+        }
+      ],
+      "needsReview": true,
+      "_extract": {
+        "mergedFrom": [
+          "avraam:hovah"
+        ],
+        "engineTypes": [
+          "main"
+        ],
+        "coordVariants": 1,
+        "heVariants": 1,
+        "crossMap": false
+      }
+    },
+    {
+      "id": "iconium",
+      "names": {
+        "ru": "Икония",
+        "he": "Ἰκόνιον"
+      },
+      "type": "other",
+      "placements": {
+        "levant": {
+          "x": 900,
+          "y": 360
+        }
+      },
+      "maps": [
+        {
+          "slug": "pavel",
+          "localId": "iconium"
+        }
+      ],
+      "needsReview": true,
+      "_extract": {
+        "mergedFrom": [
+          "pavel:iconium"
+        ],
+        "engineTypes": [
+          "main"
+        ],
+        "coordVariants": 1,
+        "heVariants": 1,
+        "crossMap": false
+      }
+    },
+    {
+      "id": "issachar",
+      "names": {
+        "ru": "Иссахар",
+        "he": "יִשָּׂשכָר"
+      },
+      "type": "other",
+      "placements": {
+        "levant": {
+          "x": 665,
+          "y": 660
+        }
+      },
+      "maps": [
+        {
+          "slug": "shvatim",
+          "localId": "issachar"
+        }
+      ],
+      "needsReview": true,
+      "_extract": {
+        "mergedFrom": [
+          "shvatim:issachar"
+        ],
+        "engineTypes": [
+          "main"
+        ],
+        "coordVariants": 1,
+        "heVariants": 1,
+        "crossMap": false
+      }
+    },
+    {
+      "id": "jericho",
+      "names": {
+        "ru": "Иерихон",
+        "he": "יְרִיחוֹ"
+      },
+      "type": "other",
+      "placements": {
+        "levant": {
+          "x": 660,
+          "y": 815
+        }
+      },
+      "maps": [
+        {
+          "slug": "shvatim",
+          "localId": "jericho"
+        },
+        {
+          "slug": "yeshua",
+          "localId": "jericho"
+        }
+      ],
+      "needsReview": true,
+      "_extract": {
+        "mergedFrom": [
+          "shvatim:jericho",
+          "yeshua:jericho"
+        ],
+        "engineTypes": [
+          "main"
+        ],
+        "coordVariants": 2,
+        "heVariants": 1,
+        "crossMap": true
+      }
+    },
+    {
+      "id": "jerusalem",
+      "names": {
+        "ru": "Иерусалим",
+        "he": "יְרוּשָׁלַיִם"
+      },
+      "type": "other",
+      "placements": {
+        "levant": {
+          "x": 623,
+          "y": 800
+        }
+      },
+      "maps": [
+        {
+          "slug": "maccabim",
+          "localId": "jerusalem_meet"
+        },
+        {
+          "slug": "melachim",
+          "localId": "jerusalem_kings"
+        },
+        {
+          "slug": "pavel",
+          "localId": "jerusalem"
+        }
+      ],
+      "needsReview": true,
+      "_extract": {
+        "mergedFrom": [
+          "maccabim:jerusalem_meet",
+          "melachim:jerusalem_kings",
+          "pavel:jerusalem"
+        ],
+        "engineTypes": [
+          "main"
+        ],
+        "coordVariants": 2,
+        "heVariants": 1,
+        "crossMap": true
+      }
+    },
+    {
+      "id": "jerusalem--горница",
+      "names": {
+        "ru": "Иерусалим · Горница",
+        "he": "הָעֲלִיָּה"
+      },
+      "type": "other",
+      "parentId": "jerusalem",
+      "notes": "SUB-LOCATION: проверить parentId",
+      "placements": {
+        "levant": {
+          "x": 623,
+          "y": 800
+        }
+      },
+      "maps": [
+        {
+          "slug": "early-church",
+          "localId": "jerusalem_upper"
+        },
+        {
+          "slug": "yeshua",
+          "localId": "jerusalem_passion"
+        }
+      ],
+      "needsReview": true,
+      "_extract": {
+        "mergedFrom": [
+          "early-church:jerusalem_upper",
+          "yeshua:jerusalem_passion"
+        ],
+        "engineTypes": [
+          "main"
+        ],
+        "coordVariants": 1,
+        "heVariants": 2,
+        "crossMap": true
+      }
+    },
+    {
+      "id": "jerusalem-temple--храм",
+      "names": {
+        "ru": "Иерусалим · Храм",
+        "he": "בֵּית הַמִּקְדָּשׁ"
+      },
+      "type": "other",
+      "parentId": "jerusalem-temple",
+      "notes": "SUB-LOCATION: проверить parentId",
+      "placements": {
+        "levant": {
+          "x": 623,
+          "y": 800
+        }
+      },
+      "maps": [
+        {
+          "slug": "yeshua",
+          "localId": "jerusalem_temple"
+        }
+      ],
+      "needsReview": true,
+      "_extract": {
+        "mergedFrom": [
+          "yeshua:jerusalem_temple"
+        ],
+        "engineTypes": [
+          "main"
+        ],
+        "coordVariants": 1,
+        "heVariants": 1,
+        "crossMap": false
+      }
+    },
+    {
+      "id": "jezreel",
+      "names": {
+        "ru": "Изреель",
+        "he": "יִזְרְעֶאל"
+      },
+      "type": "other",
+      "placements": {
+        "levant": {
+          "x": 670,
+          "y": 665
+        }
+      },
+      "maps": [
+        {
+          "slug": "melachim",
+          "localId": "jezreel"
+        }
+      ],
+      "needsReview": true,
+      "_extract": {
+        "mergedFrom": [
+          "melachim:jezreel"
+        ],
+        "engineTypes": [
+          "main"
+        ],
+        "coordVariants": 1,
+        "heVariants": 1,
+        "crossMap": false
+      }
+    },
+    {
+      "id": "joppa",
+      "names": {
+        "ru": "Иоппия",
+        "he": "יָפוֹ"
+      },
+      "type": "other",
+      "placements": {
+        "levant": {
+          "x": 590,
+          "y": 775
+        }
+      },
+      "maps": [
+        {
+          "slug": "early-church",
+          "localId": "joppa"
+        }
+      ],
+      "needsReview": true,
+      "_extract": {
+        "mergedFrom": [
+          "early-church:joppa"
+        ],
+        "engineTypes": [
+          "main"
+        ],
+        "coordVariants": 1,
+        "heVariants": 1,
+        "crossMap": false
+      }
+    },
+    {
+      "id": "jordan-baptism--крещение",
+      "names": {
+        "ru": "Вифавара · Крещение",
+        "he": "בֵּית עֲבָרָה"
+      },
+      "type": "other",
+      "parentId": "jordan-baptism",
+      "notes": "SUB-LOCATION: проверить parentId",
+      "placements": {
+        "levant": {
+          "x": 665,
+          "y": 785
+        }
+      },
+      "maps": [
+        {
+          "slug": "yeshua",
+          "localId": "jordan_baptism"
+        }
+      ],
+      "needsReview": true,
+      "_extract": {
+        "mergedFrom": [
+          "yeshua:jordan_baptism"
+        ],
+        "engineTypes": [
+          "main"
+        ],
+        "coordVariants": 1,
+        "heVariants": 1,
+        "crossMap": false
+      }
+    },
+    {
+      "id": "judah",
+      "names": {
+        "ru": "Иуда",
+        "he": "יְהוּדָה"
+      },
+      "type": "other",
+      "placements": {
+        "levant": {
+          "x": 600,
+          "y": 850
+        }
+      },
+      "maps": [
+        {
+          "slug": "shvatim",
+          "localId": "judah"
+        }
+      ],
+      "needsReview": true,
+      "_extract": {
+        "mergedFrom": [
+          "shvatim:judah"
+        ],
+        "engineTypes": [
+          "main"
+        ],
+        "coordVariants": 1,
+        "heVariants": 1,
+        "crossMap": false
+      }
+    },
+    {
+      "id": "kadesh",
+      "names": {
+        "ru": "Кадеш (Кадеш-Барнеа)",
+        "he": "קָדֵשׁ בַּרְנֵעַ"
+      },
+      "type": "other",
+      "placements": {
+        "levant": {
+          "x": 542,
+          "y": 934
+        }
+      },
+      "maps": [
+        {
+          "slug": "avraam",
+          "localId": "kadesh"
+        }
+      ],
+      "needsReview": true,
+      "_extract": {
+        "mergedFrom": [
+          "avraam:kadesh"
+        ],
+        "engineTypes": [
+          "main"
+        ],
+        "coordVariants": 1,
+        "heVariants": 1,
+        "crossMap": false
+      }
+    },
+    {
+      "id": "kadesh-barnea",
+      "names": {
+        "ru": "Кадеш-Барнеа",
+        "he": "קָדֵשׁ בַּרְנֵעַ"
+      },
+      "type": "other",
+      "placements": {
+        "levant": {
+          "x": 542,
+          "y": 934
+        }
+      },
+      "maps": [
+        {
+          "slug": "ishod",
+          "localId": "kadesh_barnea"
+        }
+      ],
+      "needsReview": true,
+      "_extract": {
+        "mergedFrom": [
+          "ishod:kadesh_barnea"
+        ],
+        "engineTypes": [
+          "main"
+        ],
+        "coordVariants": 1,
+        "heVariants": 1,
+        "crossMap": false
+      }
+    },
+    {
+      "id": "kir-haraseth",
+      "names": {
+        "ru": "Кир-Харешет",
+        "he": "קִיר חֲרֶשֶׂת"
+      },
+      "type": "other",
+      "placements": {
+        "levant": {
+          "x": 650,
+          "y": 850
+        }
+      },
+      "maps": [
+        {
+          "slug": "melachim",
+          "localId": "kir_haraseth"
+        }
+      ],
+      "needsReview": true,
+      "_extract": {
+        "mergedFrom": [
+          "melachim:kir_haraseth"
+        ],
+        "engineTypes": [
+          "main"
+        ],
+        "coordVariants": 1,
+        "heVariants": 1,
+        "crossMap": false
+      }
+    },
+    {
+      "id": "kishon",
+      "names": {
+        "ru": "Поток Киссон",
+        "he": "קִישׁוֹן"
+      },
+      "type": "other",
+      "placements": {
+        "levant": {
+          "x": 655,
+          "y": 625
+        }
+      },
+      "maps": [
+        {
+          "slug": "shoftim",
+          "localId": "kishon"
+        }
+      ],
+      "needsReview": true,
+      "_extract": {
+        "mergedFrom": [
+          "shoftim:kishon"
+        ],
+        "engineTypes": [
+          "main"
+        ],
+        "coordVariants": 1,
+        "heVariants": 1,
+        "crossMap": false
+      }
+    },
+    {
+      "id": "lachish",
+      "names": {
+        "ru": "Лахис",
+        "he": "לָכִישׁ"
+      },
+      "type": "other",
+      "placements": {
+        "levant": {
+          "x": 580,
+          "y": 830
+        }
+      },
+      "maps": [
+        {
+          "slug": "melachim",
+          "localId": "lachish"
+        }
+      ],
+      "needsReview": true,
+      "_extract": {
+        "mergedFrom": [
+          "melachim:lachish"
+        ],
+        "engineTypes": [
+          "main"
+        ],
+        "coordVariants": 1,
+        "heVariants": 1,
+        "crossMap": false
+      }
+    },
+    {
+      "id": "lahairoi",
+      "names": {
+        "ru": "Беэр-лахай-рои",
+        "he": "בְּאֵר לַחַי רֹאִי"
+      },
+      "type": "other",
+      "placements": {
+        "levant": {
+          "x": 492,
+          "y": 946
+        }
+      },
+      "maps": [
+        {
+          "slug": "avraam",
+          "localId": "lahairoi"
+        }
+      ],
+      "needsReview": true,
+      "_extract": {
+        "mergedFrom": [
+          "avraam:lahairoi"
+        ],
+        "engineTypes": [
+          "cand"
+        ],
+        "coordVariants": 1,
+        "heVariants": 1,
+        "crossMap": false
+      }
+    },
+    {
+      "id": "laodicea",
+      "names": {
+        "ru": "Лаодикия",
+        "he": "Λαοδίκεια"
+      },
+      "type": "other",
+      "placements": {
+        "levant": {
+          "x": 830,
+          "y": 370
+        }
+      },
+      "maps": [
+        {
+          "slug": "revelation",
+          "localId": "laodicea"
+        }
+      ],
+      "needsReview": true,
+      "_extract": {
+        "mergedFrom": [
+          "revelation:laodicea"
+        ],
+        "engineTypes": [
+          "main"
+        ],
+        "coordVariants": 1,
+        "heVariants": 1,
+        "crossMap": false
+      }
+    },
+    {
+      "id": "lydda",
+      "names": {
+        "ru": "Лидда",
+        "he": "לֹד"
+      },
+      "type": "other",
+      "placements": {
+        "levant": {
+          "x": 605,
+          "y": 785
+        }
+      },
+      "maps": [
+        {
+          "slug": "early-church",
+          "localId": "lydda"
+        }
+      ],
+      "needsReview": true,
+      "_extract": {
+        "mergedFrom": [
+          "early-church:lydda"
+        ],
+        "engineTypes": [
+          "main"
+        ],
+        "coordVariants": 1,
+        "heVariants": 1,
+        "crossMap": false
+      }
+    },
+    {
+      "id": "manasseh-e",
+      "names": {
+        "ru": "Манассия (восток)",
+        "he": "מְנַשֶּׁה"
+      },
+      "type": "other",
+      "placements": {
+        "levant": {
+          "x": 720,
+          "y": 680
+        }
+      },
+      "maps": [
+        {
+          "slug": "shvatim",
+          "localId": "manasseh_e"
+        }
+      ],
+      "needsReview": true,
+      "_extract": {
+        "mergedFrom": [
+          "shvatim:manasseh_e"
+        ],
+        "engineTypes": [
+          "main"
+        ],
+        "coordVariants": 1,
+        "heVariants": 1,
+        "crossMap": false
+      }
+    },
+    {
+      "id": "manasseh-n",
+      "names": {
+        "ru": "Манассия (запад)",
+        "he": "מְנַשֶּׁה"
+      },
+      "type": "other",
+      "placements": {
+        "levant": {
+          "x": 650,
+          "y": 710
+        }
+      },
+      "maps": [
+        {
+          "slug": "shvatim",
+          "localId": "manasseh_n"
+        }
+      ],
+      "needsReview": true,
+      "_extract": {
+        "mergedFrom": [
+          "shvatim:manasseh_n"
+        ],
+        "engineTypes": [
+          "main"
+        ],
+        "coordVariants": 1,
+        "heVariants": 1,
+        "crossMap": false
+      }
+    },
+    {
+      "id": "marah",
+      "names": {
+        "ru": "Мара",
+        "he": "מָרָה"
+      },
+      "type": "other",
+      "placements": {
+        "levant": {
+          "x": 450,
+          "y": 1010
+        }
+      },
+      "maps": [
+        {
+          "slug": "ishod",
+          "localId": "marah"
+        }
+      ],
+      "needsReview": true,
+      "_extract": {
+        "mergedFrom": [
+          "ishod:marah"
+        ],
+        "engineTypes": [
+          "main"
+        ],
+        "coordVariants": 1,
+        "heVariants": 1,
+        "crossMap": false
+      }
+    },
+    {
+      "id": "masada",
+      "names": {
+        "ru": "Масада",
+        "he": "מְצָדָה"
+      },
+      "type": "other",
+      "placements": {
+        "levant": {
+          "x": 590,
+          "y": 850
+        }
+      },
+      "maps": [
+        {
+          "slug": "maccabim",
+          "localId": "masada"
+        }
+      ],
+      "needsReview": true,
+      "_extract": {
+        "mergedFrom": [
+          "maccabim:masada"
+        ],
+        "engineTypes": [
+          "main"
+        ],
+        "coordVariants": 1,
+        "heVariants": 1,
+        "crossMap": false
+      }
+    },
+    {
+      "id": "megiddo",
+      "names": {
+        "ru": "Мегиддо",
+        "he": "מְגִדּוֹ"
+      },
+      "type": "other",
+      "placements": {
+        "levant": {
+          "x": 660,
+          "y": 640
+        }
+      },
+      "maps": [
+        {
+          "slug": "melachim",
+          "localId": "megiddo_kings"
+        },
+        {
+          "slug": "shoftim",
+          "localId": "megiddo"
+        }
+      ],
+      "needsReview": true,
+      "_extract": {
+        "mergedFrom": [
+          "melachim:megiddo_kings",
+          "shoftim:megiddo"
+        ],
+        "engineTypes": [
+          "main"
+        ],
+        "coordVariants": 1,
+        "heVariants": 1,
+        "crossMap": true
+      }
+    },
+    {
+      "id": "mizpah-gilead",
+      "names": {
+        "ru": "Массифа Галаадская",
+        "he": "הַמִּצְפָּה"
+      },
+      "type": "other",
+      "placements": {
+        "levant": {
+          "x": 730,
+          "y": 700
+        }
+      },
+      "maps": [
+        {
+          "slug": "shoftim",
+          "localId": "mizpah_gilead"
+        }
+      ],
+      "needsReview": true,
+      "_extract": {
+        "mergedFrom": [
+          "shoftim:mizpah_gilead"
+        ],
+        "engineTypes": [
+          "main"
+        ],
+        "coordVariants": 1,
+        "heVariants": 1,
+        "crossMap": false
+      }
+    },
+    {
+      "id": "mizpah-judah",
+      "names": {
+        "ru": "Массифа",
+        "he": "הַמִּצְפָּה"
+      },
+      "type": "other",
+      "placements": {
+        "levant": {
+          "x": 635,
+          "y": 785
+        }
+      },
+      "maps": [
+        {
+          "slug": "melachim",
+          "localId": "mizpah_judah"
+        }
+      ],
+      "needsReview": true,
+      "_extract": {
+        "mergedFrom": [
+          "melachim:mizpah_judah"
+        ],
+        "engineTypes": [
+          "main"
+        ],
+        "coordVariants": 1,
+        "heVariants": 1,
+        "crossMap": false
+      }
+    },
+    {
+      "id": "modiin",
+      "names": {
+        "ru": "Модиин",
+        "he": "מוֹדִיעִין"
+      },
+      "type": "other",
+      "placements": {
+        "levant": {
+          "x": 610,
+          "y": 790
+        }
+      },
+      "maps": [
+        {
+          "slug": "maccabim",
+          "localId": "modiin"
+        }
+      ],
+      "needsReview": true,
+      "_extract": {
+        "mergedFrom": [
+          "maccabim:modiin"
+        ],
+        "engineTypes": [
+          "main"
+        ],
+        "coordVariants": 1,
+        "heVariants": 1,
+        "crossMap": false
+      }
+    },
+    {
+      "id": "mount-beatitudes",
+      "names": {
+        "ru": "Гора Блаженств",
+        "he": "הַר הַאֹשֶׁר"
+      },
+      "type": "other",
+      "placements": {
+        "levant": {
+          "x": 705,
+          "y": 615
+        }
+      },
+      "maps": [
+        {
+          "slug": "yeshua",
+          "localId": "mount_beatitudes"
+        }
+      ],
+      "needsReview": true,
+      "_extract": {
+        "mergedFrom": [
+          "yeshua:mount_beatitudes"
+        ],
+        "engineTypes": [
+          "main"
+        ],
+        "coordVariants": 1,
+        "heVariants": 1,
+        "crossMap": false
+      }
+    },
+    {
+      "id": "mount-ebal--благословение-и-проклятие",
+      "names": {
+        "ru": "Гевал · благословение и проклятие",
+        "he": "הַר עֵיבָל"
+      },
+      "type": "other",
+      "parentId": "mount-ebal",
+      "notes": "SUB-LOCATION: проверить parentId",
+      "placements": {
+        "levant": {
+          "x": 635,
+          "y": 745
+        }
+      },
+      "maps": [
+        {
+          "slug": "shvatim",
+          "localId": "mount_ebal"
+        }
+      ],
+      "needsReview": true,
+      "_extract": {
+        "mergedFrom": [
+          "shvatim:mount_ebal"
+        ],
+        "engineTypes": [
+          "main"
+        ],
+        "coordVariants": 1,
+        "heVariants": 1,
+        "crossMap": false
+      }
+    },
+    {
+      "id": "nain",
+      "names": {
+        "ru": "Наин",
+        "he": "נָעִים"
+      },
+      "type": "other",
+      "placements": {
+        "levant": {
+          "x": 680,
+          "y": 645
+        }
+      },
+      "maps": [
+        {
+          "slug": "yeshua",
+          "localId": "nain"
+        }
+      ],
+      "needsReview": true,
+      "_extract": {
+        "mergedFrom": [
+          "yeshua:nain"
+        ],
+        "engineTypes": [
+          "main"
+        ],
+        "coordVariants": 1,
+        "heVariants": 1,
+        "crossMap": false
+      }
+    },
+    {
+      "id": "naphtali",
+      "names": {
+        "ru": "Неффалим",
+        "he": "נַפְתָּלִי"
+      },
+      "type": "other",
+      "placements": {
+        "levant": {
+          "x": 700,
+          "y": 570
+        }
+      },
+      "maps": [
+        {
+          "slug": "shvatim",
+          "localId": "naphtali"
+        }
+      ],
+      "needsReview": true,
+      "_extract": {
+        "mergedFrom": [
+          "shvatim:naphtali"
+        ],
+        "engineTypes": [
+          "main"
+        ],
+        "coordVariants": 1,
+        "heVariants": 1,
+        "crossMap": false
+      }
+    },
+    {
+      "id": "nazareth",
+      "names": {
+        "ru": "Назарет",
+        "he": "נָצְרַת"
+      },
+      "type": "other",
+      "placements": {
+        "levant": {
+          "x": 675,
+          "y": 650
+        }
+      },
+      "maps": [
+        {
+          "slug": "yeshua",
+          "localId": "nazareth"
+        }
+      ],
+      "needsReview": true,
+      "_extract": {
+        "mergedFrom": [
+          "yeshua:nazareth"
+        ],
+        "engineTypes": [
+          "main"
+        ],
+        "coordVariants": 1,
+        "heVariants": 1,
+        "crossMap": false
+      }
+    },
+    {
+      "id": "ophrah",
+      "names": {
+        "ru": "Офра",
+        "he": "עָפְרָה"
+      },
+      "type": "other",
+      "placements": {
+        "levant": {
+          "x": 650,
+          "y": 680
+        }
+      },
+      "maps": [
+        {
+          "slug": "shoftim",
+          "localId": "ophrah"
+        }
+      ],
+      "needsReview": true,
+      "_extract": {
+        "mergedFrom": [
+          "shoftim:ophrah"
+        ],
+        "engineTypes": [
+          "main"
+        ],
+        "coordVariants": 1,
+        "heVariants": 1,
+        "crossMap": false
+      }
+    },
+    {
+      "id": "pergamon",
+      "names": {
+        "ru": "Пергам",
+        "he": "Πέργαμος"
+      },
+      "type": "other",
+      "placements": {
+        "levant": {
+          "x": 790,
+          "y": 360
+        }
+      },
+      "maps": [
+        {
+          "slug": "revelation",
+          "localId": "pergamon"
+        }
+      ],
+      "needsReview": true,
+      "_extract": {
+        "mergedFrom": [
+          "revelation:pergamon"
+        ],
+        "engineTypes": [
+          "main"
+        ],
+        "coordVariants": 1,
+        "heVariants": 1,
+        "crossMap": false
+      }
+    },
+    {
+      "id": "philadelphia",
+      "names": {
+        "ru": "Филадельфия",
+        "he": "Φιλαδέλφεια"
+      },
+      "type": "other",
+      "placements": {
+        "levant": {
+          "x": 820,
+          "y": 330
+        }
+      },
+      "maps": [
+        {
+          "slug": "revelation",
+          "localId": "philadelphia"
+        }
+      ],
+      "needsReview": true,
+      "_extract": {
+        "mergedFrom": [
+          "revelation:philadelphia"
+        ],
+        "engineTypes": [
+          "main"
+        ],
+        "coordVariants": 1,
+        "heVariants": 1,
+        "crossMap": false
+      }
+    },
+    {
+      "id": "philippi",
+      "names": {
+        "ru": "Филиппы",
+        "he": "Φίλιπποι"
+      },
+      "type": "other",
+      "placements": {
+        "levant": {
+          "x": 780,
+          "y": 440
+        }
+      },
+      "maps": [
+        {
+          "slug": "pavel",
+          "localId": "philippi"
+        }
+      ],
+      "needsReview": true,
+      "_extract": {
+        "mergedFrom": [
+          "pavel:philippi"
+        ],
+        "engineTypes": [
+          "main"
+        ],
+        "coordVariants": 1,
+        "heVariants": 1,
+        "crossMap": false
+      }
+    },
+    {
+      "id": "pihahiroth",
+      "names": {
+        "ru": "Пи-Гахироф",
+        "he": "פִּי הַחִירֹת"
+      },
+      "type": "other",
+      "placements": {
+        "levant": {
+          "x": 360,
+          "y": 970
+        }
+      },
+      "maps": [
+        {
+          "slug": "ishod",
+          "localId": "pihahiroth"
+        }
+      ],
+      "needsReview": true,
+      "_extract": {
+        "mergedFrom": [
+          "ishod:pihahiroth"
+        ],
+        "engineTypes": [
+          "main"
+        ],
+        "coordVariants": 1,
+        "heVariants": 1,
+        "crossMap": false
+      }
+    },
+    {
+      "id": "plains-moab",
+      "names": {
+        "ru": "Равнины Моавитские",
+        "he": "עַרְבוֹת מוֹאָב"
+      },
+      "type": "other",
+      "placements": {
+        "levant": {
+          "x": 690,
+          "y": 800
+        }
+      },
+      "maps": [
+        {
+          "slug": "ishod",
+          "localId": "plains_moab"
+        }
+      ],
+      "needsReview": true,
+      "_extract": {
+        "mergedFrom": [
+          "ishod:plains_moab"
+        ],
+        "engineTypes": [
+          "main"
+        ],
+        "coordVariants": 1,
+        "heVariants": 1,
+        "crossMap": false
+      }
+    },
+    {
+      "id": "rameses",
+      "names": {
+        "ru": "Раамсес",
+        "he": "רַעְמְסֵס"
+      },
+      "type": "other",
+      "placements": {
+        "levant": {
+          "x": 210,
+          "y": 880
+        }
+      },
+      "maps": [
+        {
+          "slug": "ishod",
+          "localId": "rameses"
+        }
+      ],
+      "needsReview": true,
+      "_extract": {
+        "mergedFrom": [
+          "ishod:rameses"
+        ],
+        "engineTypes": [
+          "main"
+        ],
+        "coordVariants": 1,
+        "heVariants": 1,
+        "crossMap": false
+      }
+    },
+    {
+      "id": "rephidim",
+      "names": {
+        "ru": "Рефидим",
+        "he": "רְפִידִם"
+      },
+      "type": "other",
+      "placements": {
+        "levant": {
+          "x": 535,
+          "y": 1165
+        }
+      },
+      "maps": [
+        {
+          "slug": "ishod",
+          "localId": "rephidim"
+        }
+      ],
+      "needsReview": true,
+      "_extract": {
+        "mergedFrom": [
+          "ishod:rephidim"
+        ],
+        "engineTypes": [
+          "main"
+        ],
+        "coordVariants": 1,
+        "heVariants": 1,
+        "crossMap": false
+      }
+    },
+    {
+      "id": "reuben",
+      "names": {
+        "ru": "Рувим",
+        "he": "רְאוּבֵן"
+      },
+      "type": "other",
+      "placements": {
+        "levant": {
+          "x": 710,
+          "y": 780
+        }
+      },
+      "maps": [
+        {
+          "slug": "shvatim",
+          "localId": "reuben"
+        }
+      ],
+      "needsReview": true,
+      "_extract": {
+        "mergedFrom": [
+          "shvatim:reuben"
+        ],
+        "engineTypes": [
+          "main"
+        ],
+        "coordVariants": 1,
+        "heVariants": 1,
+        "crossMap": false
+      }
+    },
+    {
+      "id": "rome",
+      "names": {
+        "ru": "Рим",
+        "he": "Ῥώμη"
+      },
+      "type": "other",
+      "placements": {
+        "levant": {
+          "x": 530,
+          "y": 440
+        }
+      },
+      "maps": [
+        {
+          "slug": "pavel",
+          "localId": "rome"
+        }
+      ],
+      "needsReview": true,
+      "_extract": {
+        "mergedFrom": [
+          "pavel:rome"
+        ],
+        "engineTypes": [
+          "main"
+        ],
+        "coordVariants": 1,
+        "heVariants": 1,
+        "crossMap": false
+      }
+    },
+    {
+      "id": "salem--гора-мория",
+      "names": {
+        "ru": "Шалем · гора Мория",
+        "he": "שָׁלֵם · הַר הַמֹּרִיָּה"
+      },
+      "type": "other",
+      "parentId": "salem",
+      "notes": "SUB-LOCATION: проверить parentId",
+      "placements": {
+        "levant": {
+          "x": 623,
+          "y": 800
+        }
+      },
+      "maps": [
+        {
+          "slug": "avraam",
+          "localId": "salem"
+        }
+      ],
+      "needsReview": true,
+      "_extract": {
+        "mergedFrom": [
+          "avraam:salem"
+        ],
+        "engineTypes": [
+          "main"
+        ],
+        "coordVariants": 1,
+        "heVariants": 1,
+        "crossMap": false
+      }
+    },
+    {
+      "id": "samaria",
+      "names": {
+        "ru": "Самария",
+        "he": "שֹׁמְרוֹן"
+      },
+      "type": "other",
+      "placements": {
+        "levant": {
+          "x": 640,
+          "y": 720
+        }
+      },
+      "maps": [
+        {
+          "slug": "early-church",
+          "localId": "samaria_philip"
+        },
+        {
+          "slug": "maccabim",
+          "localId": "samaria_hasm"
+        },
+        {
+          "slug": "melachim",
+          "localId": "samaria"
+        }
+      ],
+      "needsReview": true,
+      "_extract": {
+        "mergedFrom": [
+          "early-church:samaria_philip",
+          "maccabim:samaria_hasm",
+          "melachim:samaria"
+        ],
+        "engineTypes": [
+          "main"
+        ],
+        "coordVariants": 1,
+        "heVariants": 1,
+        "crossMap": true
+      }
+    },
+    {
+      "id": "sardis",
+      "names": {
+        "ru": "Сардис",
+        "he": "Σάρδεις"
+      },
+      "type": "other",
+      "placements": {
+        "levant": {
+          "x": 800,
+          "y": 340
+        }
+      },
+      "maps": [
+        {
+          "slug": "revelation",
+          "localId": "sardis"
+        }
+      ],
+      "needsReview": true,
+      "_extract": {
+        "mergedFrom": [
+          "revelation:sardis"
+        ],
+        "engineTypes": [
+          "main"
+        ],
+        "coordVariants": 1,
+        "heVariants": 1,
+        "crossMap": false
+      }
+    },
+    {
+      "id": "sea-galilee",
+      "names": {
+        "ru": "Галилейское море",
+        "he": "כִּנֶּרֶת"
+      },
+      "type": "other",
+      "placements": {
+        "levant": {
+          "x": 710,
+          "y": 610
+        }
+      },
+      "maps": [
+        {
+          "slug": "yeshua",
+          "localId": "sea_galilee"
+        }
+      ],
+      "needsReview": true,
+      "_extract": {
+        "mergedFrom": [
+          "yeshua:sea_galilee"
+        ],
+        "engineTypes": [
+          "main"
+        ],
+        "coordVariants": 1,
+        "heVariants": 1,
+        "crossMap": false
+      }
+    },
+    {
+      "id": "shechem",
+      "names": {
+        "ru": "Сихем",
+        "he": "שְׁכֶם"
+      },
+      "type": "other",
+      "placements": {
+        "levant": {
+          "x": 628,
+          "y": 748
+        }
+      },
+      "maps": [
+        {
+          "slug": "avraam",
+          "localId": "shechem"
+        },
+        {
+          "slug": "melachim",
+          "localId": "shechem_kings"
+        }
+      ],
+      "needsReview": true,
+      "_extract": {
+        "mergedFrom": [
+          "avraam:shechem",
+          "melachim:shechem_kings"
+        ],
+        "engineTypes": [
+          "main"
+        ],
+        "coordVariants": 1,
+        "heVariants": 1,
+        "crossMap": true
+      }
+    },
+    {
+      "id": "shiloh",
+      "names": {
+        "ru": "Силом",
+        "he": "שִׁילֹה"
+      },
+      "type": "other",
+      "placements": {
+        "levant": {
+          "x": 660,
+          "y": 740
+        }
+      },
+      "maps": [
+        {
+          "slug": "shoftim",
+          "localId": "shiloh"
+        }
+      ],
+      "needsReview": true,
+      "_extract": {
+        "mergedFrom": [
+          "shoftim:shiloh"
+        ],
+        "engineTypes": [
+          "main"
+        ],
+        "coordVariants": 1,
+        "heVariants": 1,
+        "crossMap": false
+      }
+    },
+    {
+      "id": "shur",
+      "names": {
+        "ru": "Пустыня Сур",
+        "he": "מִדְבַּר שׁוּר"
+      },
+      "type": "other",
+      "placements": {
+        "levant": {
+          "x": 400,
+          "y": 940
+        }
+      },
+      "maps": [
+        {
+          "slug": "avraam",
+          "localId": "shur"
+        }
+      ],
+      "needsReview": true,
+      "_extract": {
+        "mergedFrom": [
+          "avraam:shur"
+        ],
+        "engineTypes": [
+          "main"
+        ],
+        "coordVariants": 1,
+        "heVariants": 1,
+        "crossMap": false
+      }
+    },
+    {
+      "id": "simeon",
+      "names": {
+        "ru": "Симеон",
+        "he": "שִׁמְעוֹן"
+      },
+      "type": "other",
+      "placements": {
+        "levant": {
+          "x": 575,
+          "y": 875
+        }
+      },
+      "maps": [
+        {
+          "slug": "shvatim",
+          "localId": "simeon"
+        }
+      ],
+      "needsReview": true,
+      "_extract": {
+        "mergedFrom": [
+          "shvatim:simeon"
+        ],
+        "engineTypes": [
+          "main"
+        ],
+        "coordVariants": 1,
+        "heVariants": 1,
+        "crossMap": false
+      }
+    },
+    {
+      "id": "sinai--гора-хорив",
+      "names": {
+        "ru": "Синай · гора Хорив",
+        "he": "הַר סִינַי · חֹרֵב"
+      },
+      "type": "other",
+      "parentId": "sinai",
+      "notes": "SUB-LOCATION: проверить parentId",
+      "placements": {
+        "levant": {
+          "x": 560,
+          "y": 1280
+        }
+      },
+      "maps": [
+        {
+          "slug": "ishod",
+          "localId": "sinai"
+        }
+      ],
+      "needsReview": true,
+      "_extract": {
+        "mergedFrom": [
+          "ishod:sinai"
+        ],
+        "engineTypes": [
+          "main"
+        ],
+        "coordVariants": 1,
+        "heVariants": 1,
+        "crossMap": false
+      }
+    },
+    {
+      "id": "smyrna",
+      "names": {
+        "ru": "Смирна",
+        "he": "Σμύρνα"
+      },
+      "type": "other",
+      "placements": {
+        "levant": {
+          "x": 800,
+          "y": 380
+        }
+      },
+      "maps": [
+        {
+          "slug": "revelation",
+          "localId": "smyrna"
+        }
+      ],
+      "needsReview": true,
+      "_extract": {
+        "mergedFrom": [
+          "revelation:smyrna"
+        ],
+        "engineTypes": [
+          "main"
+        ],
+        "coordVariants": 1,
+        "heVariants": 1,
+        "crossMap": false
+      }
+    },
+    {
+      "id": "sodom",
+      "names": {
+        "ru": "Содом и Гоморра",
+        "he": "סְדֹם וַעֲמֹרָה"
+      },
+      "type": "other",
+      "placements": {
+        "levant": {
+          "x": 653,
+          "y": 874
+        }
+      },
+      "maps": [
+        {
+          "slug": "avraam",
+          "localId": "sodom"
+        }
+      ],
+      "needsReview": true,
+      "_extract": {
+        "mergedFrom": [
+          "avraam:sodom"
+        ],
+        "engineTypes": [
+          "lot"
+        ],
+        "coordVariants": 1,
+        "heVariants": 1,
+        "crossMap": false
+      }
+    },
+    {
+      "id": "solomons-porch",
+      "names": {
+        "ru": "Притвор Соломонов",
+        "he": "אוּלָם שְׁלֹמֹה"
+      },
+      "type": "other",
+      "placements": {
+        "levant": {
+          "x": 624,
+          "y": 800
+        }
+      },
+      "maps": [
+        {
+          "slug": "early-church",
+          "localId": "solomons_porch"
+        }
+      ],
+      "needsReview": true,
+      "_extract": {
+        "mergedFrom": [
+          "early-church:solomons_porch"
+        ],
+        "engineTypes": [
+          "main"
+        ],
+        "coordVariants": 1,
+        "heVariants": 1,
+        "crossMap": false
+      }
+    },
+    {
+      "id": "sorek",
+      "names": {
+        "ru": "Долина Сорек",
+        "he": "נַחַל שׂוֹרֵק"
+      },
+      "type": "other",
+      "placements": {
+        "levant": {
+          "x": 600,
+          "y": 800
+        }
+      },
+      "maps": [
+        {
+          "slug": "shoftim",
+          "localId": "sorek"
+        }
+      ],
+      "needsReview": true,
+      "_extract": {
+        "mergedFrom": [
+          "shoftim:sorek"
+        ],
+        "engineTypes": [
+          "main"
+        ],
+        "coordVariants": 1,
+        "heVariants": 1,
+        "crossMap": false
+      }
+    },
+    {
+      "id": "succoth",
+      "names": {
+        "ru": "Сокхоф",
+        "he": "סֻכּוֹת"
+      },
+      "type": "other",
+      "placements": {
+        "levant": {
+          "x": 280,
+          "y": 920
+        }
+      },
+      "maps": [
+        {
+          "slug": "ishod",
+          "localId": "succoth"
+        }
+      ],
+      "needsReview": true,
+      "_extract": {
+        "mergedFrom": [
+          "ishod:succoth"
+        ],
+        "engineTypes": [
+          "main"
+        ],
+        "coordVariants": 1,
+        "heVariants": 1,
+        "crossMap": false
+      }
+    },
+    {
+      "id": "syria-aram",
+      "names": {
+        "ru": "Дамаск Арамейский",
+        "he": "אֲרָם דַּמֶּשֶׂק"
+      },
+      "type": "other",
+      "placements": {
+        "levant": {
+          "x": 780,
+          "y": 560
+        }
+      },
+      "maps": [
+        {
+          "slug": "melachim",
+          "localId": "syria_aram"
+        }
+      ],
+      "needsReview": true,
+      "_extract": {
+        "mergedFrom": [
+          "melachim:syria_aram"
+        ],
+        "engineTypes": [
+          "main"
+        ],
+        "coordVariants": 1,
+        "heVariants": 1,
+        "crossMap": false
+      }
+    },
+    {
+      "id": "tabor",
+      "names": {
+        "ru": "Фавор",
+        "he": "תָּבוֹר"
+      },
+      "type": "other",
+      "placements": {
+        "levant": {
+          "x": 690,
+          "y": 610
+        }
+      },
+      "maps": [
+        {
+          "slug": "shoftim",
+          "localId": "tabor"
+        }
+      ],
+      "needsReview": true,
+      "_extract": {
+        "mergedFrom": [
+          "shoftim:tabor"
+        ],
+        "engineTypes": [
+          "main"
+        ],
+        "coordVariants": 1,
+        "heVariants": 1,
+        "crossMap": false
+      }
+    },
+    {
+      "id": "tarsus",
+      "names": {
+        "ru": "Тарс",
+        "he": "טַרְסוֹס"
+      },
+      "type": "other",
+      "placements": {
+        "levant": {
+          "x": 850,
+          "y": 330
+        }
+      },
+      "maps": [
+        {
+          "slug": "early-church",
+          "localId": "tarsus"
+        }
+      ],
+      "needsReview": true,
+      "_extract": {
+        "mergedFrom": [
+          "early-church:tarsus"
+        ],
+        "engineTypes": [
+          "main"
+        ],
+        "coordVariants": 1,
+        "heVariants": 1,
+        "crossMap": false
+      }
+    },
+    {
+      "id": "temple-early--красные-ворота",
+      "names": {
+        "ru": "Храм · Красные ворота",
+        "he": "שַׁעַר נָאֶה"
+      },
+      "type": "other",
+      "parentId": "temple-early",
+      "notes": "SUB-LOCATION: проверить parentId",
+      "placements": {
+        "levant": {
+          "x": 624,
+          "y": 800
+        }
+      },
+      "maps": [
+        {
+          "slug": "early-church",
+          "localId": "temple_early"
+        }
+      ],
+      "needsReview": true,
+      "_extract": {
+        "mergedFrom": [
+          "early-church:temple_early"
+        ],
+        "engineTypes": [
+          "main"
+        ],
+        "coordVariants": 1,
+        "heVariants": 1,
+        "crossMap": false
+      }
+    },
+    {
+      "id": "thessalonica",
+      "names": {
+        "ru": "Фессалоника",
+        "he": "Θεσσαλονίκη"
+      },
+      "type": "other",
+      "placements": {
+        "levant": {
+          "x": 750,
+          "y": 450
+        }
+      },
+      "maps": [
+        {
+          "slug": "pavel",
+          "localId": "thessalonica"
+        }
+      ],
+      "needsReview": true,
+      "_extract": {
+        "mergedFrom": [
+          "pavel:thessalonica"
+        ],
+        "engineTypes": [
+          "main"
+        ],
+        "coordVariants": 1,
+        "heVariants": 1,
+        "crossMap": false
+      }
+    },
+    {
+      "id": "thyatira",
+      "names": {
+        "ru": "Фиатира",
+        "he": "Θυάτειρα"
+      },
+      "type": "other",
+      "placements": {
+        "levant": {
+          "x": 810,
+          "y": 350
+        }
+      },
+      "maps": [
+        {
+          "slug": "revelation",
+          "localId": "thyatira"
+        }
+      ],
+      "needsReview": true,
+      "_extract": {
+        "mergedFrom": [
+          "revelation:thyatira"
+        ],
+        "engineTypes": [
+          "main"
+        ],
+        "coordVariants": 1,
+        "heVariants": 1,
+        "crossMap": false
+      }
+    },
+    {
+      "id": "timnah",
+      "names": {
+        "ru": "Фимнафа",
+        "he": "תִּמְנָתָה"
+      },
+      "type": "other",
+      "placements": {
+        "levant": {
+          "x": 580,
+          "y": 790
+        }
+      },
+      "maps": [
+        {
+          "slug": "shoftim",
+          "localId": "timnah"
+        }
+      ],
+      "needsReview": true,
+      "_extract": {
+        "mergedFrom": [
+          "shoftim:timnah"
+        ],
+        "engineTypes": [
+          "main"
+        ],
+        "coordVariants": 1,
+        "heVariants": 1,
+        "crossMap": false
+      }
+    },
+    {
+      "id": "tomb--воскресение",
+      "names": {
+        "ru": "Гробница · Воскресение",
+        "he": "הַתְּקוּמָה"
+      },
+      "type": "other",
+      "parentId": "tomb",
+      "notes": "SUB-LOCATION: проверить parentId",
+      "placements": {
+        "levant": {
+          "x": 622,
+          "y": 799
+        }
+      },
+      "maps": [
+        {
+          "slug": "yeshua",
+          "localId": "tomb"
+        }
+      ],
+      "needsReview": true,
+      "_extract": {
+        "mergedFrom": [
+          "yeshua:tomb"
+        ],
+        "engineTypes": [
+          "main"
+        ],
+        "coordVariants": 1,
+        "heVariants": 1,
+        "crossMap": false
+      }
+    },
+    {
+      "id": "tyre",
+      "names": {
+        "ru": "Тир",
+        "he": "צוֹר"
+      },
+      "type": "other",
+      "placements": {
+        "levant": {
+          "x": 650,
+          "y": 580
+        }
+      },
+      "maps": [
+        {
+          "slug": "maccabim",
+          "localId": "tyre"
+        }
+      ],
+      "needsReview": true,
+      "_extract": {
+        "mergedFrom": [
+          "maccabim:tyre"
+        ],
+        "engineTypes": [
+          "main"
+        ],
+        "coordVariants": 1,
+        "heVariants": 1,
+        "crossMap": false
+      }
+    },
+    {
+      "id": "ur",
+      "names": {
+        "ru": "Ур Халдейский",
+        "he": "אוּר כַּשְׂדִּים"
+      },
+      "type": "other",
+      "placements": {
+        "levant": {
+          "x": 1710,
+          "y": 897
+        }
+      },
+      "maps": [
+        {
+          "slug": "avraam",
+          "localId": "ur"
+        }
+      ],
+      "needsReview": true,
+      "_extract": {
+        "mergedFrom": [
+          "avraam:ur"
+        ],
+        "engineTypes": [
+          "main"
+        ],
+        "coordVariants": 1,
+        "heVariants": 1,
+        "crossMap": false
+      }
+    },
+    {
+      "id": "urfa",
+      "names": {
+        "ru": "Урфа (Шанлыурфа)",
+        "he": "אוּרְהַי"
+      },
+      "type": "other",
+      "placements": {
+        "levant": {
+          "x": 979,
+          "y": 159
+        }
+      },
+      "maps": [
+        {
+          "slug": "avraam",
+          "localId": "urfa"
+        }
+      ],
+      "needsReview": true,
+      "_extract": {
+        "mergedFrom": [
+          "avraam:urfa"
+        ],
+        "engineTypes": [
+          "cand"
+        ],
+        "coordVariants": 1,
+        "heVariants": 1,
+        "crossMap": false
+      }
+    },
+    {
+      "id": "zebulun",
+      "names": {
+        "ru": "Завулон",
+        "he": "זְבוּלֻן"
+      },
+      "type": "other",
+      "placements": {
+        "levant": {
+          "x": 670,
+          "y": 640
+        }
+      },
+      "maps": [
+        {
+          "slug": "shvatim",
+          "localId": "zebulun"
+        }
+      ],
+      "needsReview": true,
+      "_extract": {
+        "mergedFrom": [
+          "shvatim:zebulun"
+        ],
+        "engineTypes": [
+          "main"
+        ],
+        "coordVariants": 1,
+        "heVariants": 1,
+        "crossMap": false
+      }
+    },
+    {
+      "id": "zoar",
+      "names": {
+        "ru": "Цоар",
+        "he": "צֹעַר"
+      },
+      "type": "other",
+      "placements": {
+        "levant": {
+          "x": 650,
+          "y": 889
+        }
+      },
+      "maps": [
+        {
+          "slug": "avraam",
+          "localId": "zoar"
+        }
+      ],
+      "needsReview": true,
+      "_extract": {
+        "mergedFrom": [
+          "avraam:zoar"
+        ],
+        "engineTypes": [
+          "lot"
+        ],
+        "coordVariants": 1,
+        "heVariants": 1,
+        "crossMap": false
+      }
+    }
+  ]
+}
