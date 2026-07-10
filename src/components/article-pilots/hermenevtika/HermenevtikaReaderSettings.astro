@@ -127,6 +127,18 @@
     :global(#content[data-hm-reader-theme="sepia"] .article-body h3),
     :global(#content[data-hm-reader-theme="sepia"] .article-body h4),
     :global(#content[data-hm-reader-theme="sepia"] .article-body strong) { color: #3a2712 !important; }
+    /* Внутристатейные карточки (Коротко/автор/примечание переводчика) не должны
+       «пробивать» белым по сепии — тёплая слоновая кость поверх бумаги #ece0c6. */
+    :global(#content[data-hm-reader-theme="sepia"] .summary-card),
+    :global(#content[data-hm-reader-theme="sepia"] .author-card),
+    :global(#content[data-hm-reader-theme="sepia"] .original-author-card),
+    :global(#content[data-hm-reader-theme="sepia"] .translation-note) {
+      background: #f3ead4 !important; border-color: rgba(74,56,32,.18) !important;
+    }
+    :global(#content[data-hm-reader-theme="sepia"] .summary-card__head),
+    :global(#content[data-hm-reader-theme="sepia"] .summary-card__item + .summary-card__item) {
+      border-color: rgba(74,56,32,.14) !important;
+    }
     :global(html:has(#content[data-hm-reader-theme="sepia"]) body) { background: #ece0c6; }
   }
 </style>
