@@ -1,0 +1,22 @@
+{
+  "id": "zebulun",
+  "names": {
+    "ru": "Завулон",
+    "he": "זְבוּלֻן"
+  },
+  "type": "region",
+  "placements": {
+    "levant": {
+      "x": 670,
+      "y": 640
+    }
+  },
+  "maps": [
+    {
+      "slug": "shvatim",
+      "localId": "zebulun"
+    }
+  ],
+  "needsReview": true,
+  "notes": "no-match: территория колена"
+}

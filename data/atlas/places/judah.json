@@ -1,0 +1,22 @@
+{
+  "id": "judah",
+  "names": {
+    "ru": "Иуда",
+    "he": "יְהוּדָה"
+  },
+  "type": "region",
+  "placements": {
+    "levant": {
+      "x": 600,
+      "y": 850
+    }
+  },
+  "maps": [
+    {
+      "slug": "shvatim",
+      "localId": "judah"
+    }
+  ],
+  "needsReview": true,
+  "notes": "no-match: территория колена"
+}

@@ -92,7 +92,7 @@
           ]
         },
         {
-          "status": "minor",
+          "status": "rejected",
           "label": "Jebel el Hamrah",
           "lat": 30.68306,
           "lng": 34.56261,
@@ -106,7 +106,7 @@
           ]
         },
         {
-          "status": "minor",
+          "status": "rejected",
           "label": "Jebel Nebi Harun",
           "lat": 30.317,
           "lng": 35.407,
@@ -1226,7 +1226,7 @@
           ]
         },
         {
-          "status": "minor",
+          "status": "rejected",
           "label": "Khirbet Minyeh",
           "lat": 32.864722,
           "lng": 35.536111,
@@ -1818,7 +1818,7 @@
           ]
         },
         {
-          "status": "minor",
+          "status": "rejected",
           "label": "Artas",
           "lat": 31.689167,
           "lng": 35.186111,
@@ -1831,7 +1831,7 @@
           ]
         },
         {
-          "status": "minor",
+          "status": "rejected",
           "label": "Khirbet Khamasa",
           "lat": 31.70639,
           "lng": 35.10816,
@@ -1844,7 +1844,7 @@
           ]
         },
         {
-          "status": "minor",
+          "status": "rejected",
           "label": "Abu Ghosh",
           "lat": 31.80742,
           "lng": 35.107541,
@@ -2082,7 +2082,7 @@
           ]
         },
         {
-          "status": "minor",
+          "status": "rejected",
           "label": "Ismailia",
           "lat": 30.583333,
           "lng": 32.266667,
@@ -2339,7 +2339,7 @@
           ]
         },
         {
-          "status": "minor",
+          "status": "rejected",
           "label": "Tell Jemmeh",
           "lat": 31.38724,
           "lng": 34.44506,
@@ -2744,7 +2744,7 @@
           ]
         },
         {
-          "status": "minor",
+          "status": "rejected",
           "label": "Gordon’s Calvary",
           "lat": 31.783957,
           "lng": 35.230147,
@@ -2858,7 +2858,7 @@
           ]
         },
         {
-          "status": "minor",
+          "status": "rejected",
           "label": "Numeira",
           "lat": 31.129757,
           "lng": 35.529368,
@@ -4000,7 +4000,7 @@
           ]
         },
         {
-          "status": "minor",
+          "status": "rejected",
           "label": "Makhadhet Abarah",
           "lat": 32.531763,
           "lng": 35.559259,
@@ -4104,7 +4104,7 @@
           ]
         },
         {
-          "status": "minor",
+          "status": "rejected",
           "label": "Ein Qedeis",
           "lat": 30.583378,
           "lng": 34.484081,
@@ -4179,7 +4179,7 @@
           ]
         },
         {
-          "status": "minor",
+          "status": "rejected",
           "label": "Ein Qedeis",
           "lat": 30.583378,
           "lng": 34.484081,
@@ -5441,7 +5441,7 @@
           ]
         },
         {
-          "status": "minor",
+          "status": "rejected",
           "label": "Silat ad Dhahr",
           "lat": 32.319492,
           "lng": 35.184564,
@@ -5454,7 +5454,7 @@
           ]
         },
         {
-          "status": "minor",
+          "status": "rejected",
           "label": "Farata",
           "lat": 32.190556,
           "lng": 35.165833,
@@ -5467,7 +5467,7 @@
           ]
         },
         {
-          "status": "minor",
+          "status": "rejected",
           "label": "Tell el Farah",
           "lat": 32.2874,
           "lng": 35.3378,
@@ -5843,7 +5843,7 @@
           ]
         },
         {
-          "status": "minor",
+          "status": "rejected",
           "label": "Al Qantarah",
           "lat": 30.85,
           "lng": 32.316667,
@@ -5856,7 +5856,7 @@
           ]
         },
         {
-          "status": "minor",
+          "status": "rejected",
           "label": "Jebel Abu Hasa",
           "lat": 30.18333,
           "lng": 32.51667,
@@ -5869,7 +5869,7 @@
           ]
         },
         {
-          "status": "minor",
+          "status": "rejected",
           "label": "Jabal Ataqah",
           "lat": 29.996111,
           "lng": 32.3075,
@@ -5883,7 +5883,7 @@
           ]
         },
         {
-          "status": "minor",
+          "status": "rejected",
           "label": "marsh west of the Bitter Lakes",
           "lat": 30.308779,
           "lng": 32.125787,
@@ -5971,7 +5971,7 @@
           ]
         },
         {
-          "status": "minor",
+          "status": "rejected",
           "label": "Tell Matabi",
           "lat": 31.84161,
           "lng": 35.68404,
@@ -6068,7 +6068,7 @@
           ]
         },
         {
-          "status": "minor",
+          "status": "rejected",
           "label": "Tanis",
           "lat": 30.976944,
           "lng": 31.88,
@@ -7019,7 +7019,7 @@
           ]
         },
         {
-          "status": "minor",
+          "status": "rejected",
           "label": "Al Manifa",
           "lat": 28.3405,
           "lng": 35.2925,
@@ -7033,7 +7033,7 @@
           ]
         },
         {
-          "status": "minor",
+          "status": "rejected",
           "label": "Jabal Harb",
           "lat": 27.9607,
           "lng": 35.6572,
@@ -7209,7 +7209,7 @@
           ]
         },
         {
-          "status": "minor",
+          "status": "rejected",
           "label": "Numeira",
           "lat": 31.129757,
           "lng": 35.529368,
@@ -7880,7 +7880,7 @@
           ]
         },
         {
-          "status": "minor",
+          "status": "rejected",
           "label": "Horbat Timna",
           "lat": 31.743041,
           "lng": 34.935419,
@@ -8341,7 +8341,7 @@
           ]
         },
         {
-          "status": "minor",
+          "status": "rejected",
           "label": "Bab edh Dhra",
           "lat": 31.248729,
           "lng": 35.523005,

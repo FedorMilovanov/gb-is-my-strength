@@ -1,0 +1,22 @@
+{
+  "id": "ephraim",
+  "names": {
+    "ru": "Ефрем",
+    "he": "אֶפְרָיִם"
+  },
+  "type": "region",
+  "placements": {
+    "levant": {
+      "x": 630,
+      "y": 750
+    }
+  },
+  "maps": [
+    {
+      "slug": "shvatim",
+      "localId": "ephraim"
+    }
+  ],
+  "needsReview": true,
+  "notes": "no-match: территория колена"
+}

@@ -1,0 +1,92 @@
+{
+  "$comment": "Экспертные решения выверки канонического реестра (KA-2c). Применяются scripts/atlas-promote-places.js поверх places-draft.json при генерации data/atlas/places/*.json. Каждое решение аргументировано в notes; спорные вопросы локализации — в Research/«БИБЛЕЙСКИЙ АТЛАС». idRenames: канонические id — только латиница (паттерн схемы); кириллические ключи суб-локаций экстрактора переименовываются при промоуте (Красные ворота = Beautiful Gate Деян 3:2; Вифавара = Bethany beyond Jordan Ин 1:28).",
+  "confirmedMerges": {
+    "antioch": "Антиохия-на-Оронте: одно место в 3 картах (maccabim/early-church/pavel)",
+    "damascus": "Дамаск: avraam + early-church",
+    "dan": "Тель-Дан (Лаиш/Дан): avraam + shvatim + melachim",
+    "ephesus": "Эфес: pavel + revelation — один город",
+    "hazor": "Тель-Хацор: shvatim + shoftim + melachim",
+    "hebron": "Хеврон: melachim + shoftim (+ влитый дубль hebron_shoftim)",
+    "jerusalem": "Иерусалим: pavel + melachim + maccabim — канонический placement по melachim (ВЗ-центр); карты выравниваются при возврате на витрину (гейты G1/G5)",
+    "jerusalem--горница": "Горница Тайной вечери и Пятидесятницы (Сионская): yeshua + early-church — одна традиция, суб-локация Иерусалима",
+    "megiddo": "Тель-Мегиддо: shoftim + melachim",
+    "samaria": "Себастия/Шомрон: melachim + maccabim + early-church",
+    "shechem": "Тель-Балата (Сихем): avraam + melachim",
+    "bethel": "Вефиль (Бейтин): avraam + melachim. У Авраама точка стоит восточнее города — это стан «между Вефилем и Гаем» (Быт 12:8); канонический placement = город (melachim), нюанс стана — в подписи карты avraam при её выравнивании"
+  },
+  "mergeInto": {
+    "hebron-shoftim": "hebron"
+  },
+  "splits": [
+    {
+      "from": "jericho",
+      "keepFor": [
+        {
+          "slug": "shvatim",
+          "localId": "jericho"
+        }
+      ],
+      "newId": "jericho-nt",
+      "moveMaps": [
+        {
+          "slug": "yeshua",
+          "localId": "jericho"
+        }
+      ],
+      "nameRu": "Иерихон новозаветный",
+      "sameAsOpenbible": "jericho-2",
+      "note": "ВЗ Иерихон = Тель эс-Султан (jericho-1, OpenBible score 1000); НЗ Иерихон = иродианский Тулуль Абу эль-Алаик (jericho-2, score 1000), ~2 км южнее. Разные x/y в shvatim и yeshua оказались НЕ дефектом, а корректным различием двух телей — раздельные канонические места, связка через notes"
+    }
+  ],
+  "typeOverrides": {
+    "asher": "region",
+    "benjamin": "region",
+    "ephraim": "region",
+    "gad": "region",
+    "issachar": "region",
+    "judah": "region",
+    "manasseh-e": "region",
+    "manasseh-n": "region",
+    "naphtali": "region",
+    "reuben": "region",
+    "simeon": "region",
+    "zebulun": "region",
+    "masada": "structure",
+    "modiin": "town",
+    "mount-beatitudes": "mountain",
+    "urfa": "city",
+    "gaza-road": "road",
+    "jerusalem--горница": "structure",
+    "jerusalem-temple--храм": "sanctuary",
+    "temple-early--красные-ворота": "sanctuary",
+    "solomons-porch": "sanctuary",
+    "tomb--воскресение": "structure",
+    "hammam": "city",
+    "syria-aram": "region",
+    "sea-galilee": "lake",
+    "plains-moab": "camp",
+    "sinai--гора-хорив": "mountain",
+    "salem--гора-мория": "city"
+  },
+  "parentOverrides": {
+    "solomons-porch": "jerusalem-temple--храм",
+    "temple-early--красные-ворота": "jerusalem-temple--храм",
+    "jerusalem-temple--храм": "jerusalem",
+    "jerusalem--горница": "jerusalem",
+    "tomb--воскресение": "jerusalem"
+  },
+  "autoConfirmRule": "needsReview снимается автоматически, если место живёт в ОДНОЙ карте И заматчено с OpenBible точным совпадением id==url_slug (низкий риск ошибочной канонизации). Все прочие требуют строки в confirmedMerges или остаются needsReview:true.",
+  "idRenames": {
+    "athens--ареопаг": "athens-areopagus",
+    "jerusalem--горница": "jerusalem-upper-room",
+    "jerusalem-temple--храм": "jerusalem-temple",
+    "temple-early--красные-ворота": "temple-beautiful-gate",
+    "tomb--воскресение": "resurrection-tomb",
+    "mount-ebal--благословение-и-проклятие": "mount-ebal",
+    "hebron--мамре": "mamre",
+    "salem--гора-мория": "salem-moriah",
+    "sinai--гора-хорив": "mount-sinai",
+    "cyprus--саламин": "salamis",
+    "jordan-baptism--крещение": "bethany-beyond-jordan"
+  }
+}

@@ -1,0 +1,22 @@
+{
+  "id": "gad",
+  "names": {
+    "ru": "Гад",
+    "he": "גָּד"
+  },
+  "type": "region",
+  "placements": {
+    "levant": {
+      "x": 710,
+      "y": 740
+    }
+  },
+  "maps": [
+    {
+      "slug": "shvatim",
+      "localId": "gad"
+    }
+  ],
+  "needsReview": true,
+  "notes": "no-match: территория колена"
+}
