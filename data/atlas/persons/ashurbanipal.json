@@ -1,0 +1,19 @@
+{
+  "id": "ashurbanipal",
+  "names": {
+    "ru": "Ашшурбанапал"
+  },
+  "role": "emperor",
+  "realm": "assyria",
+  "reign": {
+    "start": -669,
+    "end": -631,
+    "note": "Оснаппар; падение Фив 663 (фон Наум 3:8)"
+  },
+  "periodIds": [
+    "judah-alone"
+  ],
+  "bibleRefs": [
+    "Езд 4:10"
+  ]
+}

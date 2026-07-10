@@ -1,0 +1,20 @@
+{
+  "id": "darius1",
+  "names": {
+    "ru": "Дарий I"
+  },
+  "role": "emperor",
+  "realm": "persia",
+  "reign": {
+    "start": -522,
+    "end": -486,
+    "note": "достройка Храма 520-516; Аггей и Захария датируют по нему"
+  },
+  "periodIds": [
+    "persian"
+  ],
+  "bibleRefs": [
+    "Езд 6",
+    "Агг 1:1"
+  ]
+}
