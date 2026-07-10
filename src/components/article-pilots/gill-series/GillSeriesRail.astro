@@ -168,7 +168,13 @@ const seriesMeta = currentItem && currentItem.mark.kind === 'label'
   </div>
 
   <div class="gbs-rail-foot" data-fc-root data-fc-variant="gill" data-fc-mode="series-rich">
-    <button class="gbs-rail-foot__btn" type="button" data-fc-action="search" aria-label="Поиск и разделы сайта" data-tip="Поиск и разделы"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"><path d="M4 7h16M4 12h16M4 17h16" /></svg></button>
+    <!-- Real site-sections menu (owner, said several times: this icon must
+         open the menu, not search) — reuses the exact canon dropdown already
+         wired site-wide (#hMobileMenuBtn/#hMobileNav/#hMobileBackdrop, JS in
+         site.js, markup+links pattern from PastorSeriesPageChrome.astro),
+         just rendered once here in GillSeriesChrome.astro. Search stays a
+         click away via the corner-cluster magnifying glass. -->
+    <button class="gbs-rail-foot__btn gbs-rail-menu-btn" type="button" id="hMobileMenuBtn" aria-label="Открыть меню" aria-expanded="false" data-tip="Меню сайта"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"><line class="burger-top" x1="4" y1="7" x2="20" y2="7" /><line class="burger-mid" x1="4" y1="12" x2="20" y2="12" /><line class="burger-bottom" x1="4" y1="17" x2="20" y2="17" /></svg></button>
     <button class="gbs-rail-foot__btn gbs-rail-foot__btn--text" data-fc-action="font-down" aria-label="Уменьшить шрифт" data-tip="Меньше">A−</button>
     <button class="gbs-rail-foot__btn gbs-rail-foot__btn--text" data-fc-action="font-up" aria-label="Увеличить шрифт" data-tip="Больше">A+</button>
     <button class="gbs-rail-foot__btn" data-action="share" aria-label="Поделиться" data-tip="Поделиться"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="2.6" /><circle cx="6" cy="12" r="2.6" /><circle cx="18" cy="19" r="2.6" /><path d="M8.3 10.7l7.4-4.2M8.3 13.3l7.4 4.2" /></svg></button>
@@ -196,6 +202,7 @@ const seriesMeta = currentItem && currentItem.mark.kind === 'label'
   <button class="gb-icon" data-fc-action="search" aria-label="Поиск" data-tip="Поиск"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7" /><path d="M21 21l-4.3-4.3" /></svg></button>
   <span class="gbs-rail-playwrap">
     <PlayEmber audioState="none" class="gbs-rail-ember" tip="Озвучка" />
+    <span class="gbs-rail-spdbadge" id="gbsRailSpdBadge" aria-hidden="true">1×</span>
   </span>
   <SaveButton tip="Сохранить" />
 </div>
