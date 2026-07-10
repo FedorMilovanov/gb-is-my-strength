@@ -74,8 +74,8 @@ function main() {
       lanes.empires.push({ ...seg(h, t), realm: h.realm });
     } else if (h.role === 'prophet' || h.role === 'prophetess') {
       if (h.realm === 'israel') lanes['prophets-north'].push(seg(h, t));
-      else if (h.realm === 'judah') lanes['prophets-south'].push(seg(h, t));
-      else lanes['prophets-exile'].push(seg(h, t));
+      else if (h.realm === 'judah' || h.realm === 'united') lanes['prophets-south'].push(seg(h, t));
+      else lanes['prophets-exile'].push(seg(h, t)); // babylon / persia
     }
   }
   for (const k of Object.keys(lanes)) lanes[k].sort((a, b) => a.start - b.start || a.end - b.end);
