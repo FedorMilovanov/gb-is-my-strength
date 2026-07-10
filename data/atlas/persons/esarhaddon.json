@@ -1,0 +1,19 @@
+{
+  "id": "esarhaddon",
+  "names": {
+    "ru": "Асархаддон"
+  },
+  "role": "emperor",
+  "realm": "assyria",
+  "reign": {
+    "start": -681,
+    "end": -669,
+    "note": "пленение Манассии (2 Пар 33:11 — «царём Ассирийским»)"
+  },
+  "periodIds": [
+    "judah-alone"
+  ],
+  "bibleRefs": [
+    "Езд 4:2"
+  ]
+}
