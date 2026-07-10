@@ -1,0 +1,21 @@
+{
+  "id": "solomon",
+  "names": {
+    "ru": "Соломон"
+  },
+  "role": "king",
+  "realm": "united",
+  "reign": {
+    "start": -970,
+    "end": -931
+  },
+  "periodIds": [
+    "united-kingdom",
+    "divided-kingdom"
+  ],
+  "assessment": "mixed",
+  "relations": {
+    "dynasty": "davidic",
+    "successor": "rehoboam"
+  }
+}

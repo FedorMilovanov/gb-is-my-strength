@@ -1,0 +1,22 @@
+{
+  "id": "haggai",
+  "names": {
+    "ru": "Аггей"
+  },
+  "role": "prophet",
+  "realm": "persia",
+  "ministry": {
+    "start": -520,
+    "end": -520,
+    "approx": true
+  },
+  "periodIds": [
+    "persian"
+  ],
+  "bookIds": [
+    "haggai"
+  ],
+  "placeIds": [
+    "jerusalem"
+  ]
+}

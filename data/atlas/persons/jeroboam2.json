@@ -1,0 +1,22 @@
+{
+  "id": "jeroboam2",
+  "names": {
+    "ru": "Иеровоам II"
+  },
+  "role": "king",
+  "realm": "israel",
+  "reign": {
+    "start": -793,
+    "end": -753,
+    "coregency": true,
+    "note": "расцвет Севера; Амос/Осия/Иона"
+  },
+  "periodIds": [
+    "divided-kingdom"
+  ],
+  "assessment": "evil",
+  "relations": {
+    "dynasty": "jehu",
+    "successor": "zechariah-israel"
+  }
+}

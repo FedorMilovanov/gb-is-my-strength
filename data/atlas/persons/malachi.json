@@ -1,0 +1,23 @@
+{
+  "id": "malachi",
+  "names": {
+    "ru": "Малахия"
+  },
+  "role": "prophet",
+  "realm": "persia",
+  "ministry": {
+    "start": -435,
+    "end": -415,
+    "approx": true,
+    "note": "датировка условна"
+  },
+  "periodIds": [
+    "persian"
+  ],
+  "bookIds": [
+    "malachi"
+  ],
+  "placeIds": [
+    "jerusalem"
+  ]
+}

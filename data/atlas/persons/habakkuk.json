@@ -1,0 +1,20 @@
+{
+  "id": "habakkuk",
+  "names": {
+    "ru": "Аввакум"
+  },
+  "role": "prophet",
+  "realm": "judah",
+  "ministry": {
+    "start": -609,
+    "end": -598,
+    "approx": true,
+    "note": "накануне вавилонского нашествия"
+  },
+  "periodIds": [
+    "judah-alone"
+  ],
+  "bookIds": [
+    "habakkuk"
+  ]
+}

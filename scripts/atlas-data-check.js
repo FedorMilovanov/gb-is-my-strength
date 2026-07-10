@@ -159,6 +159,35 @@ function main() {
     }
   }
 
+  // Реестр персон (data/atlas/persons/*.json) — если существует.
+  const PERSONS_DIR = path.join(ROOT, 'data', 'atlas', 'persons');
+  if (fs.existsSync(PERSONS_DIR)) {
+    const hs = JSON.parse(fs.readFileSync(path.join(ROOT, 'data', 'atlas', 'schemas', 'person.schema.json'), 'utf8'));
+    const ROLES = new Set(hs.properties.role.enum);
+    const REALMS = new Set(hs.properties.realm.enum);
+    const periodIds = fs.existsSync(path.join(ROOT, 'data', 'atlas', 'periods'))
+      ? new Set(fs.readdirSync(path.join(ROOT, 'data', 'atlas', 'periods')).map((f) => path.basename(f, '.json')))
+      : new Set();
+    const personFiles = fs.readdirSync(PERSONS_DIR).filter((x) => x.endsWith('.json'));
+    const personIds = new Set(personFiles.map((f) => path.basename(f, '.json')));
+    for (const f of personFiles) {
+      const h = JSON.parse(fs.readFileSync(path.join(PERSONS_DIR, f), 'utf8'));
+      const ctx = `persons/${f}`;
+      if (h.id !== path.basename(f, '.json')) fail(`${ctx}: id != имя файла`);
+      if (!ID_RE.test(h.id)) fail(`${ctx}: id вне паттерна`);
+      if (!h.names || !h.names.ru) fail(`${ctx}: names.ru пуст`);
+      if (!ROLES.has(h.role)) fail(`${ctx}: role вне enum`);
+      if (h.realm && !REALMS.has(h.realm)) fail(`${ctx}: realm вне enum`);
+      const t = h.reign || h.ministry;
+      if ((h.role === 'king' || h.role === 'queen' || h.role === 'prophet' || h.role === 'prophetess') && !t) fail(`${ctx}: нет reign/ministry`);
+      if (t && !(Number.isInteger(t.start) && Number.isInteger(t.end) && t.start <= t.end)) fail(`${ctx}: годы некорректны`);
+      for (const pid of h.periodIds || []) if (!periodIds.has(pid)) fail(`${ctx}: periodId "${pid}" не существует`);
+      for (const pl of h.placeIds || []) if (!ids.has(pl)) fail(`${ctx}: placeId "${pl}" нет в реестре мест`);
+      const succ = h.relations && h.relations.successor;
+      if (succ && !personIds.has(succ)) fail(`${ctx}: successor "${succ}" не существует`);
+    }
+  }
+
   // Полное покрытие route.json → реестр.
   for (const key of routeOcc) {
     if (!claimed.has(key)) fail(`покрытие: место карты ${key} не учтено в реестре places/`);
@@ -169,7 +198,8 @@ function main() {
     for (const e of errors) console.error('   - ' + e);
     process.exit(1);
   }
-  console.log(`✅ ATLAS DATA CHECK: ${files.length} мест валидны; покрытие карт полное (${routeOcc.size} вхождений в ${mapSlugs.length} картах)`);
+  const cnt = (d) => { const dir = path.join(ROOT, 'data', 'atlas', d); return fs.existsSync(dir) ? fs.readdirSync(dir).filter((x) => x.endsWith('.json') && x !== '_index.json').length : 0; };
+  console.log(`✅ ATLAS DATA CHECK: ${files.length} мест + ${cnt('periods')} эпох + ${cnt('routes')} дорог + ${cnt('persons')} персон валидны; покрытие карт полное (${routeOcc.size} вхождений в ${mapSlugs.length} картах)`);
 }
 
 main();

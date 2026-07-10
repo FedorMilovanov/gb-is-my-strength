@@ -1,0 +1,20 @@
+{
+  "id": "josiah",
+  "names": {
+    "ru": "Иосия"
+  },
+  "role": "king",
+  "realm": "judah",
+  "reign": {
+    "start": -640,
+    "end": -609
+  },
+  "periodIds": [
+    "judah-alone"
+  ],
+  "assessment": "good",
+  "relations": {
+    "dynasty": "davidic",
+    "successor": "jehoahaz-judah"
+  }
+}

@@ -1,0 +1,21 @@
+{
+  "id": "omri",
+  "names": {
+    "ru": "Амврий"
+  },
+  "role": "king",
+  "realm": "israel",
+  "reign": {
+    "start": -885,
+    "end": -874,
+    "note": "основал Самарию"
+  },
+  "periodIds": [
+    "divided-kingdom"
+  ],
+  "assessment": "evil",
+  "relations": {
+    "dynasty": "omride",
+    "successor": "ahab"
+  }
+}
