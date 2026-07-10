@@ -153,8 +153,8 @@ if (/\bpush:|\bschedule:|workflow_run:/.test(distDryRun)) {
 }
 
 const indexnow = read('.github/workflows/indexnow.yml');
-must('.github/workflows/indexnow.yml', indexnow, /npm run validate:static-publication/, 'indexnow must run validate:static-publication before metadata commit');
-must('.github/workflows/indexnow.yml', indexnow, /contents:\s*write/, 'indexnow needs contents: write for metadata commit');
+must('.github/workflows/indexnow.yml', indexnow, /npm run validate:static-publication/, 'indexnow readiness gate must run validate:static-publication');
+must('.github/workflows/indexnow.yml', indexnow, /contents:\s*read/, 'indexnow is a read-only readiness gate: contents: read (least-privilege — cache-bust is validated here, not committed; IndexNow submission + deploy moved to deploy.yml in NEW-53)');
 must('.github/workflows/deploy.yml', deploy, /build-indexnow-urls\.js[^\n]*--base/, 'deploy must map src/MDX changes through scripts/build-indexnow-urls.js (moved from indexnow.yml in NEW-53 fix)');
 
 const sourceLinks = read('.github/workflows/source-links.yml');
