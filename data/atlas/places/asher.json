@@ -1,0 +1,22 @@
+{
+  "id": "asher",
+  "names": {
+    "ru": "Асир",
+    "he": "אָשֵׁר"
+  },
+  "type": "region",
+  "placements": {
+    "levant": {
+      "x": 660,
+      "y": 600
+    }
+  },
+  "maps": [
+    {
+      "slug": "shvatim",
+      "localId": "asher"
+    }
+  ],
+  "needsReview": true,
+  "notes": "no-match: территория колена — полигон собственной генерализации, не точка OpenBible"
+}

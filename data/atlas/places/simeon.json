@@ -1,0 +1,22 @@
+{
+  "id": "simeon",
+  "names": {
+    "ru": "Симеон",
+    "he": "שִׁמְעוֹן"
+  },
+  "type": "region",
+  "placements": {
+    "levant": {
+      "x": 575,
+      "y": 875
+    }
+  },
+  "maps": [
+    {
+      "slug": "shvatim",
+      "localId": "simeon"
+    }
+  ],
+  "needsReview": true,
+  "notes": "no-match: территория колена"
+}

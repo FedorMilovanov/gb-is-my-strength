@@ -1,0 +1,22 @@
+{
+  "id": "issachar",
+  "names": {
+    "ru": "Иссахар",
+    "he": "יִשָּׂשכָר"
+  },
+  "type": "region",
+  "placements": {
+    "levant": {
+      "x": 665,
+      "y": 660
+    }
+  },
+  "maps": [
+    {
+      "slug": "shvatim",
+      "localId": "issachar"
+    }
+  ],
+  "needsReview": true,
+  "notes": "no-match: территория колена"
+}

@@ -1,0 +1,22 @@
+{
+  "id": "modiin",
+  "names": {
+    "ru": "Модиин",
+    "he": "מוֹדִיעִין"
+  },
+  "type": "town",
+  "placements": {
+    "levant": {
+      "x": 610,
+      "y": 790
+    }
+  },
+  "maps": [
+    {
+      "slug": "maccabim",
+      "localId": "modiin"
+    }
+  ],
+  "needsReview": true,
+  "notes": "no-match: 1 Макк — вне протестантского канона OpenBible; координаты из академических источников"
+}

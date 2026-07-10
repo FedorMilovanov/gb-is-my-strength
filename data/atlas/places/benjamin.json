@@ -1,0 +1,22 @@
+{
+  "id": "benjamin",
+  "names": {
+    "ru": "Вениамин",
+    "he": "בִּנְיָמִין"
+  },
+  "type": "region",
+  "placements": {
+    "levant": {
+      "x": 635,
+      "y": 785
+    }
+  },
+  "maps": [
+    {
+      "slug": "shvatim",
+      "localId": "benjamin"
+    }
+  ],
+  "needsReview": true,
+  "notes": "no-match: территория колена"
+}

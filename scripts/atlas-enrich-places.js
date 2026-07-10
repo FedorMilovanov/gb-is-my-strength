@@ -39,6 +39,7 @@ function loadJsonl(file) {
 }
 
 function scoreToStatus(score) {
+  if (score < 0) return 'rejected';
   if (score >= 900) return 'consensus';
   if (score >= 500) return 'primary';
   if (score >= 250) return 'candidate';

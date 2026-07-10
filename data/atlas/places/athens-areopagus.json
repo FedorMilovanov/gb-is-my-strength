@@ -1,0 +1,50 @@
+{
+  "id": "athens-areopagus",
+  "names": {
+    "ru": "Афины · Ареопаг",
+    "he": "Ἀθῆναι"
+  },
+  "type": "mountain",
+  "notes": "SUB-LOCATION: проверить parentId | parent-candidate: athens (записи нет — место самостоятельное)",
+  "placements": {
+    "levant": {
+      "x": 730,
+      "y": 480
+    }
+  },
+  "maps": [
+    {
+      "slug": "pavel",
+      "localId": "athens"
+    }
+  ],
+  "needsReview": true,
+  "sameAs": {
+    "openbible": "areopagus",
+    "wikidata": "Q202487"
+  },
+  "identifications": [
+    {
+      "status": "consensus",
+      "label": "Areopagus",
+      "lat": 37.972222,
+      "lng": 23.723611,
+      "score": 1000,
+      "sources": [
+        {
+          "ref": "OpenBible.info geo: areopagus → areopagus",
+          "level": "B"
+        }
+      ]
+    }
+  ],
+  "geo": {
+    "lat": 37.972222,
+    "lng": 23.723611
+  },
+  "bibleRefs": [
+    "Acts 17:19",
+    "Acts 17:22",
+    "Acts 17:33"
+  ]
+}

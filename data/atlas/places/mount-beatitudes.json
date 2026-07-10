@@ -1,0 +1,22 @@
+{
+  "id": "mount-beatitudes",
+  "names": {
+    "ru": "Гора Блаженств",
+    "he": "הַר הַאֹשֶׁר"
+  },
+  "type": "mountain",
+  "placements": {
+    "levant": {
+      "x": 705,
+      "y": 615
+    }
+  },
+  "maps": [
+    {
+      "slug": "yeshua",
+      "localId": "mount_beatitudes"
+    }
+  ],
+  "needsReview": true,
+  "notes": "no-match: традиционная идентификация без библейского топонима; статус traditional"
+}

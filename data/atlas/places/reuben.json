@@ -1,0 +1,22 @@
+{
+  "id": "reuben",
+  "names": {
+    "ru": "Рувим",
+    "he": "רְאוּבֵן"
+  },
+  "type": "region",
+  "placements": {
+    "levant": {
+      "x": 710,
+      "y": 780
+    }
+  },
+  "maps": [
+    {
+      "slug": "shvatim",
+      "localId": "reuben"
+    }
+  ],
+  "needsReview": true,
+  "notes": "no-match: территория колена"
+}

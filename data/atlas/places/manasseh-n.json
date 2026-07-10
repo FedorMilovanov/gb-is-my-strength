@@ -1,0 +1,22 @@
+{
+  "id": "manasseh-n",
+  "names": {
+    "ru": "Манассия (запад)",
+    "he": "מְנַשֶּׁה"
+  },
+  "type": "region",
+  "placements": {
+    "levant": {
+      "x": 650,
+      "y": 710
+    }
+  },
+  "maps": [
+    {
+      "slug": "shvatim",
+      "localId": "manasseh_n"
+    }
+  ],
+  "needsReview": true,
+  "notes": "no-match: территория колена (западная половина)"
+}

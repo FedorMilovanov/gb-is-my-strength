@@ -1,0 +1,22 @@
+{
+  "id": "naphtali",
+  "names": {
+    "ru": "Неффалим",
+    "he": "נַפְתָּלִי"
+  },
+  "type": "region",
+  "placements": {
+    "levant": {
+      "x": 700,
+      "y": 570
+    }
+  },
+  "maps": [
+    {
+      "slug": "shvatim",
+      "localId": "naphtali"
+    }
+  ],
+  "needsReview": true,
+  "notes": "no-match: территория колена"
+}
