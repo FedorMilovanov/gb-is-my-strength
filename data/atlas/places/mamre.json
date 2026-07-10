@@ -19,7 +19,7 @@
       "localId": "hebron"
     }
   ],
-  "needsReview": true,
+  "needsReview": false,
   "sameAs": {
     "openbible": "mamre",
     "wikidata": "Q2143048"

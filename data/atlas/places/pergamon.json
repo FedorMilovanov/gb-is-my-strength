@@ -17,7 +17,7 @@
       "localId": "pergamon"
     }
   ],
-  "needsReview": true,
+  "needsReview": false,
   "sameAs": {
     "openbible": "pergamum",
     "wikidata": "Q18986"

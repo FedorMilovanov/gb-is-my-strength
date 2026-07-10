@@ -17,7 +17,7 @@
       "localId": "sorek"
     }
   ],
-  "needsReview": true,
+  "needsReview": false,
   "sameAs": {
     "openbible": "valley-of-sorek",
     "wikidata": "Q252254"

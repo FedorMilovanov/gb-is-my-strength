@@ -17,7 +17,7 @@
       "localId": "bethlehem"
     }
   ],
-  "needsReview": true,
+  "needsReview": false,
   "sameAs": {
     "openbible": "bethlehem-1",
     "wikidata": "Q5776"

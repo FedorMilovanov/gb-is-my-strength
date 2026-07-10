@@ -19,7 +19,7 @@
       "localId": "tomb"
     }
   ],
-  "needsReview": true,
+  "needsReview": false,
   "sameAs": {
     "openbible": "jerusalem",
     "wikidata": "Q1218"

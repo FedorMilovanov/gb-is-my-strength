@@ -17,7 +17,7 @@
       "localId": "ai"
     }
   ],
-  "needsReview": true,
+  "needsReview": false,
   "sameAs": {
     "openbible": "ai-1",
     "wikidata": "Q403166"

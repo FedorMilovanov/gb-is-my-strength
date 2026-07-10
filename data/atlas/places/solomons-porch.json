@@ -17,7 +17,7 @@
       "localId": "solomons_porch"
     }
   ],
-  "needsReview": true,
+  "needsReview": false,
   "sameAs": {
     "openbible": "jerusalem",
     "wikidata": "Q1218"

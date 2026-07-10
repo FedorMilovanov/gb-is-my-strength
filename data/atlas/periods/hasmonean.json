@@ -1,0 +1,20 @@
+{
+  "id": "hasmonean",
+  "title": {
+    "ru": "Маккавеи и Хасмонеи",
+    "short": "Маккавеи"
+  },
+  "start": -167,
+  "end": -63,
+  "engineEra": "roman",
+  "colorToken": "#c9d98a",
+  "colorStatus": "draft",
+  "maps": [
+    "maccabim"
+  ],
+  "keyEvents": [
+    "Восстание 167",
+    "Очищение Храма 164",
+    "Независимость 142"
+  ]
+}

@@ -17,7 +17,7 @@
       "localId": "jericho"
     }
   ],
-  "needsReview": true,
+  "needsReview": false,
   "sameAs": {
     "openbible": "jericho-1",
     "wikidata": "Q5687"

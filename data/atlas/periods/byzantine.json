@@ -1,0 +1,19 @@
+{
+  "id": "byzantine",
+  "title": {
+    "ru": "Византийская эпоха",
+    "short": "Византия"
+  },
+  "start": 313,
+  "end": 636,
+  "engineEra": "byzantine",
+  "colorToken": "#9ee7ad",
+  "colorStatus": "contract",
+  "maps": [],
+  "keyEvents": [
+    "Милан 313",
+    "Елена и базилики",
+    "Мадабская карта VI в."
+  ],
+  "note": "Карт пока нет; эпоха нужна слою археологии/традиций"
+}

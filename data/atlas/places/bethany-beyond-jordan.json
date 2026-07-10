@@ -18,7 +18,7 @@
       "localId": "jordan_baptism"
     }
   ],
-  "needsReview": true,
+  "needsReview": false,
   "sameAs": {
     "openbible": "bethany-2",
     "wikidata": "Q2617848"

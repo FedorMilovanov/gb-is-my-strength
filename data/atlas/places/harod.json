@@ -17,7 +17,7 @@
       "localId": "harod"
     }
   ],
-  "needsReview": true,
+  "needsReview": false,
   "sameAs": {
     "openbible": "harod-1",
     "wikidata": "Q603425"

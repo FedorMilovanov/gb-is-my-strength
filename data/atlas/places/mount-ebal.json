@@ -19,7 +19,7 @@
       "localId": "mount_ebal"
     }
   ],
-  "needsReview": true,
+  "needsReview": false,
   "sameAs": {
     "openbible": "mount-ebal",
     "wikidata": "Q1975866"

@@ -1,0 +1,20 @@
+{
+  "id": "exile",
+  "title": {
+    "ru": "Вавилонский плен",
+    "short": "Плен"
+  },
+  "start": -586,
+  "end": -538,
+  "engineEra": "iron",
+  "colorToken": "#b0a8c9",
+  "colorStatus": "draft",
+  "maps": [
+    "melachim"
+  ],
+  "keyEvents": [
+    "Депортации 605/597/586",
+    "Иезекииль и Даниил в Вавилоне"
+  ],
+  "note": "Цикл «Даниил» (KA-8): DN-1, DN-2"
+}

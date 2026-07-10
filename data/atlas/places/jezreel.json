@@ -17,7 +17,7 @@
       "localId": "jezreel"
     }
   ],
-  "needsReview": true,
+  "needsReview": false,
   "sameAs": {
     "openbible": "jezreel-2",
     "wikidata": "Q2914898"

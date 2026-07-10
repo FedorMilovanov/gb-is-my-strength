@@ -17,7 +17,7 @@
       "localId": "kir_haraseth"
     }
   ],
-  "needsReview": true,
+  "needsReview": false,
   "sameAs": {
     "openbible": "kir-hareseth",
     "wikidata": "Q3782348"

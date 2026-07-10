@@ -17,7 +17,7 @@
       "localId": "harran"
     }
   ],
-  "needsReview": true,
+  "needsReview": false,
   "sameAs": {
     "openbible": "haran",
     "wikidata": "Q199547"

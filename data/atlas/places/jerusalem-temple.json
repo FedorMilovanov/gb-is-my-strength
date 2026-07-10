@@ -19,7 +19,7 @@
       "localId": "jerusalem_temple"
     }
   ],
-  "needsReview": true,
+  "needsReview": false,
   "sameAs": {
     "openbible": "jerusalem",
     "wikidata": "Q1218"

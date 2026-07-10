@@ -88,5 +88,33 @@
     "sinai--гора-хорив": "mount-sinai",
     "cyprus--саламин": "salamis",
     "jordan-baptism--крещение": "bethany-beyond-jordan"
+  },
+  "curatedConfirm": {
+    "$comment": "Курируемые мэппинги openbible-mapping.json выверены экспертно по стихам записей OpenBible (KA-2b, см. notes мэппинга). Правило: needsReview снимается у мест с curated-мэппингом, ОДНОЙ картой и заполненным geo — кроме исключений ниже, где решение содержательно шаткое и ждёт досье Research.",
+    "exceptions": {
+      "hammam": "идентификация с Содомом — громкая, но оспариваемая (северная теория); ждёт GEO-DOSSIER",
+      "urfa": "запись-кандидат северной теории Ура; судьба записи решается при выравнивании карты avraam",
+      "syria-aram": "региональная привязка царства к точке-маркеру — проверить при возврате melachim",
+      "gaza-road": "объект-дорога с точкой-мэппингом на Газу — проверить представление при возврате early-church",
+      "salem-moriah": "двойная привязка Шалем/Мория — ждёт решения по city-jerusalem",
+      "plains-moab": "стан 'равнины Моава' = Аве-Ситтим — интерпретация станов Числ 33, проверить в досье Исхода",
+      "mount-sinai": "P0-досье в Research (крупнейшая дискуссия локализации)",
+      "kadesh": "P0-досье в Research (двойной Кадеш ishod: kadesh и kadesh-barnea)"
+    },
+    "noMatchConfirmedTypes": [
+      "asher",
+      "benjamin",
+      "ephraim",
+      "gad",
+      "issachar",
+      "judah",
+      "manasseh-e",
+      "manasseh-n",
+      "naphtali",
+      "reuben",
+      "simeon",
+      "zebulun"
+    ],
+    "noMatchConfirmedNote": "территории 12 колен: тип region подтверждён, геометрия уделов появится в KA-6 (собственная генерализация по академическим атласам); needsReview снимается — записи структурно полны для своей роли"
   }
 }

@@ -17,7 +17,7 @@
       "localId": "babylon"
     }
   ],
-  "needsReview": true,
+  "needsReview": false,
   "sameAs": {
     "openbible": "babylon-1",
     "wikidata": "Q5684"

@@ -17,7 +17,7 @@
       "localId": "carmel"
     }
   ],
-  "needsReview": true,
+  "needsReview": false,
   "sameAs": {
     "openbible": "mount-carmel",
     "wikidata": "Q185318"

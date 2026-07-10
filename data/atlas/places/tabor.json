@@ -17,7 +17,7 @@
       "localId": "tabor"
     }
   ],
-  "needsReview": true,
+  "needsReview": false,
   "sameAs": {
     "openbible": "mount-tabor",
     "wikidata": "Q193785"

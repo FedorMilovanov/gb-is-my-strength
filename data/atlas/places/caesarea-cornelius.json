@@ -17,7 +17,7 @@
       "localId": "caesarea_cornelius"
     }
   ],
-  "needsReview": true,
+  "needsReview": false,
   "sameAs": {
     "openbible": "caesarea",
     "wikidata": "Q319242"
