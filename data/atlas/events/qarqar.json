@@ -1,0 +1,15 @@
+{
+  "id": "qarqar",
+  "title": {
+    "ru": "Битва при Каркаре"
+  },
+  "kind": "battle",
+  "year": -853,
+  "personIds": [
+    "ahab",
+    "shalmaneser3"
+  ],
+  "periodId": "divided-kingdom",
+  "extraBiblical": "Курхский монолит Салманасара III: «Ахав израильтянин» — 2000 колесниц",
+  "note": "вне Библии; синхронизм №1 библейской хронологии"
+}

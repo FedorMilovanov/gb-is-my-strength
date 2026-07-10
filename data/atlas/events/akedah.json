@@ -1,0 +1,19 @@
+{
+  "id": "akedah",
+  "title": {
+    "ru": "Жертвоприношение Исаака (Акеда)"
+  },
+  "kind": "covenant",
+  "year": -2054,
+  "approx": true,
+  "placeIds": [
+    "salem-moriah"
+  ],
+  "periodId": "patriarchal",
+  "bibleRefs": [
+    "Быт 22"
+  ],
+  "maps": [
+    "avraam"
+  ]
+}

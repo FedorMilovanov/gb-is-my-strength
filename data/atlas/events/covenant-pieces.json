@@ -1,0 +1,19 @@
+{
+  "id": "covenant-pieces",
+  "title": {
+    "ru": "Завет рассечённых животных"
+  },
+  "kind": "covenant",
+  "year": -2081,
+  "approx": true,
+  "placeIds": [
+    "hebron"
+  ],
+  "periodId": "patriarchal",
+  "bibleRefs": [
+    "Быт 15"
+  ],
+  "maps": [
+    "avraam"
+  ]
+}
