@@ -37,8 +37,8 @@ return "«"+clean+"» — "+meta.title+(meta.section?" · "+meta.section:"")+" �
 function updatePopupContent(text){
 var pr=document.getElementById("ss-preview");
 if(pr){
-pr.textContent="«"+(text.length>80?text.slice(0,80)+"…":text)+"»";
-pr.style.display="block";
+pr.textContent="«"+(text.length>260?text.slice(0,260)+"…":text)+"»";
+pr.style.display="-webkit-box";
 }
 if(!canShare){
 var meta=quoteMeta(text),quote=text.length>200?text.slice(0,200)+"…":text;

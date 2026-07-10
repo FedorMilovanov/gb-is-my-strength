@@ -84,22 +84,24 @@
     border-radius: 14px;
   }
 
+  /* Plain museum-label text under the frame, no box (owner: "не нравятся в
+     белых таких рамках полукруглых, лучше просто минималистично… просто
+     надписи без таких рамок, под картинкой"). No border/background/shadow/
+     blur — just centred muted text below the image. */
   [data-gill-v16] .article-body .article-img:not(#gbs2Hero) > figcaption {
     position: relative;
     z-index: 2;
     width: calc(100% - clamp(20px, 6vw, 42px));
     max-width: 720px;
-    margin: -16px auto 0 !important;
-    padding: 10px 14px 11px;
-    border: 1px solid color-mix(in srgb, var(--color-border-strong) 74%, transparent);
-    border-radius: 11px;
-    background: color-mix(in srgb, var(--color-surface) 94%, transparent);
+    margin: 10px auto 0 !important;
+    padding: 0;
+    border: none;
+    border-radius: 0;
+    background: none;
+    box-shadow: none;
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
     color: var(--color-text-muted);
-    box-shadow:
-      0 14px 30px -22px rgba(34, 21, 11, .65),
-      inset 0 1px 0 rgba(255, 255, 255, .68);
-    -webkit-backdrop-filter: blur(12px) saturate(1.08);
-    backdrop-filter: blur(12px) saturate(1.08);
     font-size: 12.5px;
     line-height: 1.48;
     text-align: center;
@@ -107,10 +109,7 @@
   }
 
   html.dark [data-gill-v16] .article-body .article-img:not(#gbs2Hero) > figcaption {
-    border-color: rgba(230, 203, 163, .17);
-    background: rgba(23, 20, 17, .91);
     color: rgba(244, 235, 221, .72);
-    box-shadow: 0 16px 34px -22px rgba(0, 0, 0, .9), inset 0 1px 0 rgba(255, 255, 255, .05);
   }
 
   [data-gill-v16] .gill-figure--bunhill {
@@ -268,8 +267,7 @@
 
     [data-gill-v16] .article-body .article-img:not(#gbs2Hero) > figcaption {
       width: calc(100% - 18px);
-      margin-top: -13px !important;
-      padding: 9px 11px 10px;
+      margin-top: 8px !important;
       font-size: 12px;
     }
   }

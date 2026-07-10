@@ -7,17 +7,19 @@
  *     no longer swaps with a speed rail; that swap was confusing and is
  *     gone) → Play (canon .gb-ember; speed is its own canonical bloom
  *     panel, .gb-ember-expand, same as everywhere else in the app) →
- *     Save (binary toggle, no halo).
+ *     Save (binary toggle, no halo). Auto-hides on scroll-down for a clean
+ *     1-on-1 reading view, reveals on scroll-up, and stays pinned open the
+ *     whole time TTS is playing (initGillMobileTopBarAutoHide below).
  *   BOTTOM bar: dual-progress ring (inner=текущая статья %, outer=вся
  *     серия %) → «Сейчас читаете» + текущий раздел (opens the existing
  *     part-TOC sheet — series access stays one tap further via its
  *     #backToSeries arrow, same two-sheet system already live) → theme →
- *     A−/A+ → «Поделиться».
+ *     A−/A+ → «Поделиться». Always visible — never auto-hides.
  *
  * data-fc-action="theme"/"play"/"save"/"font-up"/"font-down" and
  * data-action="share" go through the existing global cluster delegation on
  * [data-fc-root] (floating-cluster-controller.js) — only the local TOC
- * search is bar-local script here.
+ * search and the top-bar auto-hide are bar-local script here.
  */
 import PlayEmber from '@/components/ui/floating-cluster/PlayEmber.astro';
 import SaveButton from '@/components/ui/floating-cluster/SaveButton.astro';
@@ -115,8 +117,63 @@ const page = GILL_PAGE_DATA[pageId];
     });
   }
 
+  // Smart auto-hide (owner: "верхняя как-то умно убирается и появляется…
+  // если PLAY нажали, то пускай фиксируется"): hides the top bar on
+  // scroll-down to give a clean 1-on-1 reading view, reveals it again on
+  // scroll-up, and stays pinned open the whole time TTS is playing so the
+  // Play control is never lost mid-listen. Toggles .gbs2-tbhidden on the
+  // world root; the CSS (floating-cluster.css) owns the actual hide/reveal
+  // animation and the matching content padding-top shrink/grow. The Play
+  // ring animation itself needs no new work — .gb-ember already animates
+  // its progress ring via the canonical --p mechanism.
+  function initGillMobileTopBarAutoHide() {
+    const worldEl = document.querySelector('.gbs2-world[data-gill-v16]');
+    const topBar = document.querySelector('.mobile-top-bar[data-gill-mobile-bar]');
+    const ember = topBar && topBar.querySelector('.gb-ember');
+    if (!worldEl || !topBar) return;
+    const world = worldEl;
+
+    let lastY = window.scrollY || 0;
+    let hidden = false;
+    let pinned = false;
+    let ticking = false;
+
+    function apply() {
+      world.classList.toggle('gbs2-tbhidden', hidden && !pinned);
+    }
+
+    function onScroll() {
+      if (ticking) return;
+      ticking = true;
+      requestAnimationFrame(() => {
+        const y = window.scrollY || 0;
+        const delta = y - lastY;
+        // Ignore rubber-band/sub-gesture jitter; only react to a real scroll.
+        if (Math.abs(delta) > 6) {
+          // Nothing to gain by hiding right at the top of the article.
+          hidden = y >= 80 && delta > 0;
+          lastY = y;
+          apply();
+        }
+        ticking = false;
+      });
+    }
+    window.addEventListener('scroll', onScroll, { passive: true });
+
+    if (ember) {
+      const syncPinned = () => {
+        const wasPinned = pinned;
+        pinned = (ember as HTMLElement).dataset.state === 'playing';
+        if (pinned !== wasPinned) apply();
+      };
+      syncPinned();
+      new MutationObserver(syncPinned).observe(ember, { attributes: true, attributeFilter: ['data-state'] });
+    }
+  }
+
   function boot() {
     initGillMobileTocSearch();
+    initGillMobileTopBarAutoHide();
 
     const backBtn = document.getElementById('mobBackBtn');
     if (backBtn) backBtn.addEventListener('click', () => {
