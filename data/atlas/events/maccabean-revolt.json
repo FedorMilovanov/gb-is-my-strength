@@ -1,0 +1,16 @@
+{
+  "id": "maccabean-revolt",
+  "title": {
+    "ru": "Маккавейское восстание"
+  },
+  "kind": "revolt",
+  "year": -167,
+  "placeIds": [
+    "modiin"
+  ],
+  "periodId": "hasmonean",
+  "maps": [
+    "maccabim"
+  ],
+  "extraBiblical": "1 Макк 2 (вне протестантского канона — исторический источник уровня A)"
+}

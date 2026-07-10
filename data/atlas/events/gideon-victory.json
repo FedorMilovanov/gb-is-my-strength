@@ -1,0 +1,19 @@
+{
+  "id": "gideon-victory",
+  "title": {
+    "ru": "Победа Гедеона над Мадианом"
+  },
+  "kind": "battle",
+  "year": -1169,
+  "approx": true,
+  "placeIds": [
+    "harod"
+  ],
+  "periodId": "judges",
+  "bibleRefs": [
+    "Суд 7"
+  ],
+  "maps": [
+    "shoftim"
+  ]
+}

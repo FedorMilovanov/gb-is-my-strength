@@ -1,0 +1,19 @@
+{
+  "id": "kadesh-rebellion",
+  "title": {
+    "ru": "Восстание в Кадеше и приговор 38 лет"
+  },
+  "kind": "exodus-event",
+  "year": -1444,
+  "placeIds": [
+    "kadesh-barnea"
+  ],
+  "periodId": "exodus-conquest",
+  "bibleRefs": [
+    "Числ 13-14",
+    "Втор 2:14"
+  ],
+  "maps": [
+    "ishod"
+  ]
+}

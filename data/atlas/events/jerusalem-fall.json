@@ -1,0 +1,24 @@
+{
+  "id": "jerusalem-fall",
+  "title": {
+    "ru": "Падение Иерусалима и разрушение Храма"
+  },
+  "kind": "destruction",
+  "year": -586,
+  "placeIds": [
+    "jerusalem"
+  ],
+  "personIds": [
+    "zedekiah",
+    "nebuchadnezzar2",
+    "jeremiah"
+  ],
+  "periodId": "judah-alone",
+  "bibleRefs": [
+    "4 Цар 25",
+    "Плач"
+  ],
+  "maps": [
+    "melachim"
+  ]
+}

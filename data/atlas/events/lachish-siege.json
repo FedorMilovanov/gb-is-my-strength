@@ -1,0 +1,20 @@
+{
+  "id": "lachish-siege",
+  "title": {
+    "ru": "Взятие Лахиса Синаххерибом"
+  },
+  "kind": "siege",
+  "year": -701,
+  "placeIds": [
+    "lachish"
+  ],
+  "personIds": [
+    "sennacherib",
+    "hezekiah"
+  ],
+  "periodId": "judah-alone",
+  "bibleRefs": [
+    "4 Цар 18:13-17"
+  ],
+  "extraBiblical": "рельефы Лахиса (Ниневия, Британский музей)"
+}

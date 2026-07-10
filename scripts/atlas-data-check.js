@@ -188,6 +188,35 @@ function main() {
     }
   }
 
+  // Реестр событий (data/atlas/events/*.json) — если существует.
+  const EVENTS_DIR = path.join(ROOT, 'data', 'atlas', 'events');
+  if (fs.existsSync(EVENTS_DIR)) {
+    const es = JSON.parse(fs.readFileSync(path.join(ROOT, 'data', 'atlas', 'schemas', 'event.schema.json'), 'utf8'));
+    const EKINDS = new Set(es.properties.kind.enum);
+    const periodIds2 = new Set(fs.readdirSync(path.join(ROOT, 'data', 'atlas', 'periods')).map((f) => path.basename(f, '.json')));
+    const personIds2 = fs.existsSync(path.join(ROOT, 'data', 'atlas', 'persons'))
+      ? new Set(fs.readdirSync(path.join(ROOT, 'data', 'atlas', 'persons')).map((f) => path.basename(f, '.json')))
+      : new Set();
+    const knownMaps2 = new Set(mapSlugs);
+    for (const f of fs.readdirSync(EVENTS_DIR).filter((x) => x.endsWith('.json'))) {
+      const e = JSON.parse(fs.readFileSync(path.join(EVENTS_DIR, f), 'utf8'));
+      const ctx = `events/${f}`;
+      if (e.id !== path.basename(f, '.json')) fail(`${ctx}: id != имя файла`);
+      if (!e.title || !e.title.ru) fail(`${ctx}: title.ru пуст`);
+      if (!EKINDS.has(e.kind)) fail(`${ctx}: kind вне enum`);
+      if (!Number.isInteger(e.year)) fail(`${ctx}: year не целое`);
+      if (e.periodId && !periodIds2.has(e.periodId)) fail(`${ctx}: periodId "${e.periodId}" не существует`);
+      // Год события внутри диапазона своей эпохи.
+      if (e.periodId) {
+        const pd = JSON.parse(fs.readFileSync(path.join(ROOT, 'data', 'atlas', 'periods', e.periodId + '.json'), 'utf8'));
+        if (e.year < pd.start || e.year > pd.end) fail(`${ctx}: year ${e.year} вне эпохи ${e.periodId} (${pd.start}..${pd.end})`);
+      }
+      for (const pl of e.placeIds || []) if (!ids.has(pl)) fail(`${ctx}: placeId "${pl}" нет в реестре мест`);
+      for (const pe of e.personIds || []) if (!personIds2.has(pe)) fail(`${ctx}: personId "${pe}" нет в реестре персон`);
+      for (const m of e.maps || []) if (!knownMaps2.has(m)) fail(`${ctx}: карта "${m}" не существует`);
+    }
+  }
+
   // Полное покрытие route.json → реестр.
   for (const key of routeOcc) {
     if (!claimed.has(key)) fail(`покрытие: место карты ${key} не учтено в реестре places/`);
@@ -199,7 +228,7 @@ function main() {
     process.exit(1);
   }
   const cnt = (d) => { const dir = path.join(ROOT, 'data', 'atlas', d); return fs.existsSync(dir) ? fs.readdirSync(dir).filter((x) => x.endsWith('.json') && x !== '_index.json').length : 0; };
-  console.log(`✅ ATLAS DATA CHECK: ${files.length} мест + ${cnt('periods')} эпох + ${cnt('routes')} дорог + ${cnt('persons')} персон валидны; покрытие карт полное (${routeOcc.size} вхождений в ${mapSlugs.length} картах)`);
+  console.log(`✅ ATLAS DATA CHECK: ${files.length} мест + ${cnt('periods')} эпох + ${cnt('routes')} дорог + ${cnt('persons')} персон + ${cnt('events')} событий валидны; покрытие карт полное (${routeOcc.size} вхождений в ${mapSlugs.length} картах)`);
 }
 
 main();
