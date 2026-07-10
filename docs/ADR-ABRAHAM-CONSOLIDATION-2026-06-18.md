@@ -1,5 +1,17 @@
 # ADR: Консолидация рендерера Авраама на MapEngine
 
+> **⚠️ СТАТУС-ОБНОВЛЕНИЕ 2026-07-10 (ATLAS-CONTRACT v1): вопрос закрыт жизнью — консолидация ФАКТИЧЕСКИ ВЫПОЛНЕНА.**
+> Production `/karty/avraam/` работает на едином `MapEngine.createMap()` через native-Astro
+> (`src/components/karty/avraam/AvraamMap.astro`: «Replaces the buggy legacy cinematic-only map
+> with the unified MapEngine»; `page-ownership.json`: owner=astro, strict-native-app).
+> Вердикт «двойной путь — правильное конечное состояние» устарел для production; в исходниках
+> legacy-файлы (`karty/avraam/index.html` + `avraam-app.js`) сохраняются как исторический артефакт
+> до извлечения ценных декоративных фич (караван, ночной режим) в опциональные signature-слои,
+> затем удаляются отдельным PR с owner-review. Урок раздела «безопасный путь» остаётся в силе:
+> потеря контента при той миграции реально случилась (CONTENT-LOSS-AVRAAM-SOURCES, восстановлено
+> PR#36) — поэтому контент-паритет теперь формальный гейт G6 (`node scripts/atlas-inventory.js --check`).
+> Основание: `docs/ATLAS-CONTRACT-2026-07-10.md` §2.2.
+
 **Статус:** Принято (рекомендация) · **Дата:** 2026-06-18 · **Решающий:** технический анализ
 **Контекст:** AGENTS §12.5, `karty/avraam/avraam-app.js` (2404 строки) + `index.html` (2385 строк)
 
