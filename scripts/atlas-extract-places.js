@@ -20,6 +20,9 @@
  *   data/atlas/places-draft.json  — черновой реестр (schema: place.schema.json, все needsReview:true)
  *   reports/atlas-places-extract.md — человекочитаемый отчёт (локальный, reports/ в .gitignore)
  *
+ * ⚠️ ПОРЯДОК КОНВЕЙЕРА: extract ПЕРЕЗАПИСЫВАЕТ places-draft.json с нуля. После него
+ * обязательно повторить обогащение: node scripts/atlas-enrich-places.js (KA-2b).
+ *
  * Draft-реестр становится каноническим (data/atlas/places/*.json) только после ручной
  * проверки в волне KA-2: заполнение geo/identifications/sameAs из OpenBible/Pleiades
  * и подтверждение слияний. См. docs/ATLAS-CONTRACT-2026-07-10.md §7.

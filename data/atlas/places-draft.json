@@ -1,9 +1,17 @@
 {
-  "$comment": "ЧЕРНОВИК канонического реестра мест (KA-2a). Все записи needsReview. Не подключать к рантайму до ручной проверки. Схема цели: data/atlas/schemas/place.schema.json (поле _extract — служебное, в финальный реестр не переносится).",
+  "$comment": "ЧЕРНОВИК канонического реестра мест (KA-2a). Все записи needsReview. Не подключать к рантайму до ручной проверки. Схема цели: data/atlas/schemas/place.schema.json (поле _extract — служебное, в финальный реестр не переносится). Обогащено atlas-enrich-places.js из OpenBible Bible Geocoding Data (CC BY 4.0, snapshot 2021-11) — атрибуция обязательна: openbible.info.",
   "stats": {
     "occurrences": 133,
     "canonical": 115,
-    "crossMap": 13
+    "crossMap": 13,
+    "enrichment": {
+      "matchedAuto": 48,
+      "matchedCurated": 51,
+      "noMatchDocumented": 16,
+      "unmapped": 0,
+      "withGeo": 99,
+      "withWikidata": 93
+    }
   },
   "places": [
     {
@@ -36,7 +44,94 @@
         "coordVariants": 1,
         "heVariants": 1,
         "crossMap": false
-      }
+      },
+      "sameAs": {
+        "openbible": "mount-hor-1",
+        "wikidata": "Q2915115"
+      },
+      "identifications": [
+        {
+          "status": "candidate",
+          "label": "Har Zin",
+          "lat": 30.832057,
+          "lng": 35.056872,
+          "accuracyMeters": 5000,
+          "score": 336,
+          "sources": [
+            {
+              "ref": "OpenBible.info geo: mount-hor-1 → har-zin",
+              "level": "B"
+            }
+          ]
+        },
+        {
+          "status": "alternative",
+          "label": "Imaret el Khureisheh",
+          "lat": 30.76517,
+          "lng": 34.52912,
+          "score": 114,
+          "sources": [
+            {
+              "ref": "OpenBible.info geo: mount-hor-1 → imaret-el-khureisheh",
+              "level": "B"
+            }
+          ]
+        },
+        {
+          "status": "minor",
+          "label": "Jebel es Sabha",
+          "lat": 30.74704,
+          "lng": 34.43891,
+          "accuracyMeters": 5000,
+          "score": 15,
+          "sources": [
+            {
+              "ref": "OpenBible.info geo: mount-hor-1 → jebel-es-sabha",
+              "level": "B"
+            }
+          ]
+        },
+        {
+          "status": "minor",
+          "label": "Jebel el Hamrah",
+          "lat": 30.68306,
+          "lng": 34.56261,
+          "accuracyMeters": 5000,
+          "score": -2,
+          "sources": [
+            {
+              "ref": "OpenBible.info geo: mount-hor-1 → jebel-el-hamrah",
+              "level": "B"
+            }
+          ]
+        },
+        {
+          "status": "minor",
+          "label": "Jebel Nebi Harun",
+          "lat": 30.317,
+          "lng": 35.407,
+          "accuracyMeters": 5000,
+          "score": -86,
+          "sources": [
+            {
+              "ref": "OpenBible.info geo: mount-hor-1 → jebel-nebi-harun",
+              "level": "B"
+            }
+          ]
+        }
+      ],
+      "geo": {
+        "lat": 30.832057,
+        "lng": 35.056872,
+        "accuracyMeters": 5000
+      },
+      "bibleRefs": [
+        "Num 20:22",
+        "Num 20:23",
+        "Num 20:25",
+        "Num 20:27",
+        "Num 21:4"
+      ]
     },
     {
       "id": "ai",
@@ -68,7 +163,89 @@
         "coordVariants": 1,
         "heVariants": 1,
         "crossMap": false
-      }
+      },
+      "sameAs": {
+        "openbible": "ai-1",
+        "wikidata": "Q403166"
+      },
+      "identifications": [
+        {
+          "status": "primary",
+          "label": "Et Tell",
+          "lat": 31.916944,
+          "lng": 35.261111,
+          "score": 522,
+          "sources": [
+            {
+              "ref": "OpenBible.info geo: ai-1 → et-tell",
+              "level": "B"
+            }
+          ]
+        },
+        {
+          "status": "minor",
+          "label": "Khirbet el Maqatir",
+          "lat": 31.91476,
+          "lng": 35.2496,
+          "score": 75,
+          "sources": [
+            {
+              "ref": "OpenBible.info geo: ai-1 → khirbet-el-maqatir",
+              "level": "B"
+            }
+          ]
+        },
+        {
+          "status": "minor",
+          "label": "Khirbet Nisieh",
+          "lat": 31.897515,
+          "lng": 35.228619,
+          "score": 28,
+          "sources": [
+            {
+              "ref": "OpenBible.info geo: ai-1 → khirbet-nisieh",
+              "level": "B"
+            }
+          ]
+        },
+        {
+          "status": "minor",
+          "label": "Khirbet Haiyan",
+          "lat": 31.905169,
+          "lng": 35.270379,
+          "score": 9,
+          "sources": [
+            {
+              "ref": "OpenBible.info geo: ai-1 → khirbet-haiyan",
+              "level": "B"
+            }
+          ]
+        },
+        {
+          "status": "minor",
+          "label": "Khirbet Ibn Baraq",
+          "lat": 31.9125,
+          "lng": 35.2464,
+          "score": 9,
+          "sources": [
+            {
+              "ref": "OpenBible.info geo: ai-1 → khirbet-ibn-baraq",
+              "level": "B"
+            }
+          ]
+        }
+      ],
+      "geo": {
+        "lat": 31.916944,
+        "lng": 35.261111
+      },
+      "bibleRefs": [
+        "Gen 12:8",
+        "Gen 13:3",
+        "Josh 7:2",
+        "Josh 7:3",
+        "Josh 7:4"
+      ]
     },
     {
       "id": "alexandria",
@@ -100,7 +277,36 @@
         "coordVariants": 1,
         "heVariants": 1,
         "crossMap": false
-      }
+      },
+      "sameAs": {
+        "openbible": "alexandria",
+        "wikidata": "Q87"
+      },
+      "identifications": [
+        {
+          "status": "consensus",
+          "label": "Alexandria",
+          "lat": 31.1825,
+          "lng": 29.8965,
+          "score": 1000,
+          "sources": [
+            {
+              "ref": "OpenBible.info geo: alexandria → alexandria",
+              "level": "B"
+            }
+          ]
+        }
+      ],
+      "geo": {
+        "lat": 31.1825,
+        "lng": 29.8965
+      },
+      "bibleRefs": [
+        "Acts 6:9",
+        "Acts 18:24",
+        "Acts 27:6",
+        "Acts 28:11"
+      ]
     },
     {
       "id": "antioch",
@@ -146,7 +352,37 @@
         "coordVariants": 1,
         "heVariants": 1,
         "crossMap": true
-      }
+      },
+      "sameAs": {
+        "openbible": "antioch-1",
+        "wikidata": "Q200441"
+      },
+      "identifications": [
+        {
+          "status": "consensus",
+          "label": "Antioch on the Orontes",
+          "lat": 36.226691,
+          "lng": 36.171743,
+          "score": 1000,
+          "sources": [
+            {
+              "ref": "OpenBible.info geo: antioch-1 → antioch-on-the-orontes",
+              "level": "B"
+            }
+          ]
+        }
+      ],
+      "geo": {
+        "lat": 36.226691,
+        "lng": 36.171743
+      },
+      "bibleRefs": [
+        "Acts 6:5",
+        "Acts 11:19",
+        "Acts 11:20",
+        "Acts 11:22",
+        "Acts 11:26"
+      ]
     },
     {
       "id": "asher",
@@ -178,7 +414,8 @@
         "coordVariants": 1,
         "heVariants": 1,
         "crossMap": false
-      }
+      },
+      "notes": "no-match: территория колена — полигон собственной генерализации, не точка OpenBible"
     },
     {
       "id": "athens--ареопаг",
@@ -212,7 +449,35 @@
         "coordVariants": 1,
         "heVariants": 1,
         "crossMap": false
-      }
+      },
+      "sameAs": {
+        "openbible": "areopagus",
+        "wikidata": "Q202487"
+      },
+      "identifications": [
+        {
+          "status": "consensus",
+          "label": "Areopagus",
+          "lat": 37.972222,
+          "lng": 23.723611,
+          "score": 1000,
+          "sources": [
+            {
+              "ref": "OpenBible.info geo: areopagus → areopagus",
+              "level": "B"
+            }
+          ]
+        }
+      ],
+      "geo": {
+        "lat": 37.972222,
+        "lng": 23.723611
+      },
+      "bibleRefs": [
+        "Acts 17:19",
+        "Acts 17:22",
+        "Acts 17:33"
+      ]
     },
     {
       "id": "babylon",
@@ -244,7 +509,37 @@
         "coordVariants": 1,
         "heVariants": 1,
         "crossMap": false
-      }
+      },
+      "sameAs": {
+        "openbible": "babylon-1",
+        "wikidata": "Q5684"
+      },
+      "identifications": [
+        {
+          "status": "consensus",
+          "label": "Babylon",
+          "lat": 32.543333,
+          "lng": 44.422222,
+          "score": 1000,
+          "sources": [
+            {
+              "ref": "OpenBible.info geo: babylon-1 → babylon",
+              "level": "B"
+            }
+          ]
+        }
+      ],
+      "geo": {
+        "lat": 32.543333,
+        "lng": 44.422222
+      },
+      "bibleRefs": [
+        "2 Kgs 17:24",
+        "2 Kgs 17:30",
+        "2 Kgs 20:12",
+        "2 Kgs 20:14",
+        "2 Kgs 20:17"
+      ]
     },
     {
       "id": "beersheba",
@@ -276,7 +571,50 @@
         "coordVariants": 1,
         "heVariants": 1,
         "crossMap": false
-      }
+      },
+      "sameAs": {
+        "openbible": "beersheba-2",
+        "wikidata": "Q534596"
+      },
+      "identifications": [
+        {
+          "status": "candidate",
+          "label": "Tel Beer Sheva",
+          "lat": 31.244722,
+          "lng": 34.840833,
+          "score": 334,
+          "sources": [
+            {
+              "ref": "OpenBible.info geo: beersheba-2 → tel-beer-sheva",
+              "level": "B"
+            }
+          ]
+        },
+        {
+          "status": "candidate",
+          "label": "Bir es Seba",
+          "lat": 31.237225,
+          "lng": 34.793078,
+          "score": 286,
+          "sources": [
+            {
+              "ref": "OpenBible.info geo: beersheba-2 → bir-es-seba",
+              "level": "B"
+            }
+          ]
+        }
+      ],
+      "geo": {
+        "lat": 31.244722,
+        "lng": 34.840833
+      },
+      "bibleRefs": [
+        "Gen 21:14",
+        "Gen 21:31",
+        "Gen 21:32",
+        "Gen 21:33",
+        "Gen 22:19"
+      ]
     },
     {
       "id": "beit-shean",
@@ -308,7 +646,37 @@
         "coordVariants": 1,
         "heVariants": 1,
         "crossMap": false
-      }
+      },
+      "sameAs": {
+        "openbible": "beth-shan",
+        "wikidata": "Q152368"
+      },
+      "identifications": [
+        {
+          "status": "primary",
+          "label": "Tel Bet Shean",
+          "lat": 32.503611,
+          "lng": 35.503056,
+          "score": 889,
+          "sources": [
+            {
+              "ref": "OpenBible.info geo: beth-shan → tel-bet-shean",
+              "level": "B"
+            }
+          ]
+        }
+      ],
+      "geo": {
+        "lat": 32.503611,
+        "lng": 35.503056
+      },
+      "bibleRefs": [
+        "Josh 17:11",
+        "Josh 17:16",
+        "Judg 1:27",
+        "1 Sam 31:10",
+        "1 Sam 31:12"
+      ]
     },
     {
       "id": "benjamin",
@@ -340,7 +708,8 @@
         "coordVariants": 1,
         "heVariants": 1,
         "crossMap": false
-      }
+      },
+      "notes": "no-match: территория колена"
     },
     {
       "id": "beth-horon",
@@ -372,7 +741,37 @@
         "coordVariants": 1,
         "heVariants": 1,
         "crossMap": false
-      }
+      },
+      "sameAs": {
+        "openbible": "beth-horon",
+        "wikidata": "Q1268514"
+      },
+      "identifications": [
+        {
+          "status": "consensus",
+          "label": "Beit Ur al Tahta",
+          "lat": 31.895,
+          "lng": 35.083611,
+          "score": 1000,
+          "sources": [
+            {
+              "ref": "OpenBible.info geo: beth-horon → beit-ur-al-tahta",
+              "level": "B"
+            }
+          ]
+        }
+      ],
+      "geo": {
+        "lat": 31.895,
+        "lng": 35.083611
+      },
+      "bibleRefs": [
+        "Josh 10:10",
+        "Josh 10:11",
+        "Josh 18:14",
+        "Josh 21:22",
+        "1 Sam 13:18"
+      ]
     },
     {
       "id": "beth-zur",
@@ -404,7 +803,36 @@
         "coordVariants": 1,
         "heVariants": 1,
         "crossMap": false
-      }
+      },
+      "sameAs": {
+        "openbible": "beth-zur",
+        "wikidata": "Q4897432"
+      },
+      "identifications": [
+        {
+          "status": "primary",
+          "label": "Khirbet et Tubeiqa",
+          "lat": 31.589383,
+          "lng": 35.094155,
+          "score": 842,
+          "sources": [
+            {
+              "ref": "OpenBible.info geo: beth-zur → khirbet-et-tubeiqa",
+              "level": "B"
+            }
+          ]
+        }
+      ],
+      "geo": {
+        "lat": 31.589383,
+        "lng": 35.094155
+      },
+      "bibleRefs": [
+        "Josh 15:58",
+        "1 Chr 2:45",
+        "2 Chr 11:7",
+        "Neh 3:16"
+      ]
     },
     {
       "id": "bethany",
@@ -436,7 +864,37 @@
         "coordVariants": 1,
         "heVariants": 1,
         "crossMap": false
-      }
+      },
+      "sameAs": {
+        "openbible": "bethany-1",
+        "wikidata": "Q831190"
+      },
+      "identifications": [
+        {
+          "status": "primary",
+          "label": "Al Eizariya",
+          "lat": 31.771661,
+          "lng": 35.255903,
+          "score": 889,
+          "sources": [
+            {
+              "ref": "OpenBible.info geo: bethany-1 → al-eizariya",
+              "level": "B"
+            }
+          ]
+        }
+      ],
+      "geo": {
+        "lat": 31.771661,
+        "lng": 35.255903
+      },
+      "bibleRefs": [
+        "Matt 21:17",
+        "Matt 26:6",
+        "Mark 11:1",
+        "Mark 11:11",
+        "Mark 11:12"
+      ]
     },
     {
       "id": "bethel",
@@ -477,7 +935,63 @@
         "coordVariants": 2,
         "heVariants": 2,
         "crossMap": true
-      }
+      },
+      "sameAs": {
+        "openbible": "bethel-1",
+        "wikidata": "Q3876767"
+      },
+      "identifications": [
+        {
+          "status": "primary",
+          "label": "Beitin",
+          "lat": 31.922778,
+          "lng": 35.241389,
+          "score": 716,
+          "sources": [
+            {
+              "ref": "OpenBible.info geo: bethel-1 → beitin",
+              "level": "B"
+            }
+          ]
+        },
+        {
+          "status": "minor",
+          "label": "Al Bira",
+          "lat": 31.905142,
+          "lng": 35.214958,
+          "score": 99,
+          "sources": [
+            {
+              "ref": "OpenBible.info geo: bethel-1 → al-bira",
+              "level": "B"
+            }
+          ]
+        },
+        {
+          "status": "minor",
+          "label": "Burj Beitin",
+          "lat": 31.921866,
+          "lng": 35.245478,
+          "score": 5,
+          "sources": [
+            {
+              "ref": "OpenBible.info geo: bethel-1 → burj-beitin",
+              "level": "B"
+            }
+          ]
+        }
+      ],
+      "geo": {
+        "lat": 31.922778,
+        "lng": 35.241389
+      },
+      "bibleRefs": [
+        "Gen 12:8",
+        "Gen 13:3",
+        "Gen 28:19",
+        "Gen 31:13",
+        "Gen 35:1"
+      ]
     },
     {
       "id": "bethlehem",
@@ -509,7 +1023,37 @@
         "coordVariants": 1,
         "heVariants": 1,
         "crossMap": false
-      }
+      },
+      "sameAs": {
+        "openbible": "bethlehem-1",
+        "wikidata": "Q5776"
+      },
+      "identifications": [
+        {
+          "status": "consensus",
+          "label": "Bethlehem",
+          "lat": 31.704306,
+          "lng": 35.207639,
+          "score": 1000,
+          "sources": [
+            {
+              "ref": "OpenBible.info geo: bethlehem-1 → bethlehem",
+              "level": "B"
+            }
+          ]
+        }
+      ],
+      "geo": {
+        "lat": 31.704306,
+        "lng": 35.207639
+      },
+      "bibleRefs": [
+        "Gen 35:19",
+        "Gen 48:7",
+        "Judg 17:7",
+        "Judg 17:8",
+        "Judg 17:9"
+      ]
     },
     {
       "id": "caesarea-cornelius",
@@ -541,7 +1085,37 @@
         "coordVariants": 1,
         "heVariants": 1,
         "crossMap": false
-      }
+      },
+      "sameAs": {
+        "openbible": "caesarea",
+        "wikidata": "Q319242"
+      },
+      "identifications": [
+        {
+          "status": "consensus",
+          "label": "Caesarea Maritima",
+          "lat": 32.5,
+          "lng": 34.891667,
+          "score": 1000,
+          "sources": [
+            {
+              "ref": "OpenBible.info geo: caesarea → caesarea-maritima",
+              "level": "B"
+            }
+          ]
+        }
+      ],
+      "geo": {
+        "lat": 32.5,
+        "lng": 34.891667
+      },
+      "bibleRefs": [
+        "Acts 8:40",
+        "Acts 9:30",
+        "Acts 10:1",
+        "Acts 10:24",
+        "Acts 11:11"
+      ]
     },
     {
       "id": "caesarea-philippi",
@@ -573,7 +1147,34 @@
         "coordVariants": 1,
         "heVariants": 1,
         "crossMap": false
-      }
+      },
+      "sameAs": {
+        "openbible": "caesarea-philippi",
+        "wikidata": "Q2484244"
+      },
+      "identifications": [
+        {
+          "status": "consensus",
+          "label": "Banias",
+          "lat": 33.246111,
+          "lng": 35.693333,
+          "score": 1000,
+          "sources": [
+            {
+              "ref": "OpenBible.info geo: caesarea-philippi → banias",
+              "level": "B"
+            }
+          ]
+        }
+      ],
+      "geo": {
+        "lat": 33.246111,
+        "lng": 35.693333
+      },
+      "bibleRefs": [
+        "Matt 16:13",
+        "Mark 8:27"
+      ]
     },
     {
       "id": "capernaum",
@@ -605,7 +1206,50 @@
         "coordVariants": 1,
         "heVariants": 1,
         "crossMap": false
-      }
+      },
+      "sameAs": {
+        "openbible": "capernaum",
+        "wikidata": "Q59174"
+      },
+      "identifications": [
+        {
+          "status": "primary",
+          "label": "Tell Hum",
+          "lat": 32.881111,
+          "lng": 35.575,
+          "score": 842,
+          "sources": [
+            {
+              "ref": "OpenBible.info geo: capernaum → tell-hum",
+              "level": "B"
+            }
+          ]
+        },
+        {
+          "status": "minor",
+          "label": "Khirbet Minyeh",
+          "lat": 32.864722,
+          "lng": 35.536111,
+          "score": -18,
+          "sources": [
+            {
+              "ref": "OpenBible.info geo: capernaum → khirbet-minyeh",
+              "level": "B"
+            }
+          ]
+        }
+      ],
+      "geo": {
+        "lat": 32.881111,
+        "lng": 35.575
+      },
+      "bibleRefs": [
+        "Matt 4:13",
+        "Matt 8:5",
+        "Matt 11:23",
+        "Matt 17:24",
+        "Mark 1:21"
+      ]
     },
     {
       "id": "carmel",
@@ -637,7 +1281,39 @@
         "coordVariants": 1,
         "heVariants": 1,
         "crossMap": false
-      }
+      },
+      "sameAs": {
+        "openbible": "mount-carmel",
+        "wikidata": "Q185318"
+      },
+      "identifications": [
+        {
+          "status": "consensus",
+          "label": "Mount Carmel",
+          "lat": 32.6725,
+          "lng": 35.023333,
+          "accuracyMeters": 5000,
+          "score": 1000,
+          "sources": [
+            {
+              "ref": "OpenBible.info geo: mount-carmel → mount-carmel",
+              "level": "B"
+            }
+          ]
+        }
+      ],
+      "geo": {
+        "lat": 32.6725,
+        "lng": 35.023333,
+        "accuracyMeters": 5000
+      },
+      "bibleRefs": [
+        "Josh 12:22",
+        "Josh 19:26",
+        "1 Kgs 18:19",
+        "1 Kgs 18:20",
+        "1 Kgs 18:42"
+      ]
     },
     {
       "id": "corinth",
@@ -669,7 +1345,37 @@
         "coordVariants": 1,
         "heVariants": 1,
         "crossMap": false
-      }
+      },
+      "sameAs": {
+        "openbible": "corinth",
+        "wikidata": "Q1363688"
+      },
+      "identifications": [
+        {
+          "status": "consensus",
+          "label": "Corinth",
+          "lat": 37.905785,
+          "lng": 22.878741,
+          "score": 1000,
+          "sources": [
+            {
+              "ref": "OpenBible.info geo: corinth → corinth",
+              "level": "B"
+            }
+          ]
+        }
+      ],
+      "geo": {
+        "lat": 37.905785,
+        "lng": 22.878741
+      },
+      "bibleRefs": [
+        "Acts 18:1",
+        "Acts 18:8",
+        "Acts 18:11",
+        "Acts 18:12",
+        "Acts 18:18"
+      ]
     },
     {
       "id": "cyprus--саламин",
@@ -703,7 +1409,33 @@
         "coordVariants": 1,
         "heVariants": 1,
         "crossMap": false
-      }
+      },
+      "sameAs": {
+        "openbible": "salamis",
+        "wikidata": "Q767089"
+      },
+      "identifications": [
+        {
+          "status": "consensus",
+          "label": "Salamis",
+          "lat": 35.184944,
+          "lng": 33.901944,
+          "score": 1000,
+          "sources": [
+            {
+              "ref": "OpenBible.info geo: salamis → salamis",
+              "level": "B"
+            }
+          ]
+        }
+      ],
+      "geo": {
+        "lat": 35.184944,
+        "lng": 33.901944
+      },
+      "bibleRefs": [
+        "Acts 13:5"
+      ]
     },
     {
       "id": "damascus",
@@ -740,7 +1472,37 @@
         "coordVariants": 1,
         "heVariants": 1,
         "crossMap": true
-      }
+      },
+      "sameAs": {
+        "openbible": "damascus",
+        "wikidata": "Q3766"
+      },
+      "identifications": [
+        {
+          "status": "consensus",
+          "label": "Damascus",
+          "lat": 33.511112,
+          "lng": 36.30639,
+          "score": 1000,
+          "sources": [
+            {
+              "ref": "OpenBible.info geo: damascus → damascus",
+              "level": "B"
+            }
+          ]
+        }
+      ],
+      "geo": {
+        "lat": 33.511112,
+        "lng": 36.30639
+      },
+      "bibleRefs": [
+        "Gen 14:15",
+        "Gen 15:2",
+        "2 Sam 8:5",
+        "2 Sam 8:6",
+        "1 Kgs 11:24"
+      ]
     },
     {
       "id": "dan",
@@ -786,7 +1548,37 @@
         "coordVariants": 1,
         "heVariants": 2,
         "crossMap": true
-      }
+      },
+      "sameAs": {
+        "openbible": "dan",
+        "wikidata": "Q1346856"
+      },
+      "identifications": [
+        {
+          "status": "consensus",
+          "label": "Tel Dan",
+          "lat": 33.249,
+          "lng": 35.652,
+          "score": 1000,
+          "sources": [
+            {
+              "ref": "OpenBible.info geo: dan → tel-dan",
+              "level": "B"
+            }
+          ]
+        }
+      ],
+      "geo": {
+        "lat": 33.249,
+        "lng": 35.652
+      },
+      "bibleRefs": [
+        "Gen 14:14",
+        "Josh 19:47",
+        "Judg 18:7",
+        "Judg 18:14",
+        "Judg 18:27"
+      ]
     },
     {
       "id": "egypt",
@@ -818,7 +1610,37 @@
         "coordVariants": 1,
         "heVariants": 1,
         "crossMap": false
-      }
+      },
+      "sameAs": {
+        "openbible": "egypt",
+        "wikidata": "Q11768"
+      },
+      "identifications": [
+        {
+          "status": "consensus",
+          "label": "Ain Shams",
+          "lat": 30.129444,
+          "lng": 31.3075,
+          "score": 1000,
+          "sources": [
+            {
+              "ref": "OpenBible.info geo: egypt → ain-shams",
+              "level": "B"
+            }
+          ]
+        }
+      ],
+      "geo": {
+        "lat": 30.129444,
+        "lng": 31.3075
+      },
+      "bibleRefs": [
+        "Gen 12:10",
+        "Gen 12:11",
+        "Gen 12:14",
+        "Gen 13:1",
+        "Gen 13:10"
+      ]
     },
     {
       "id": "elim",
@@ -850,7 +1672,75 @@
         "coordVariants": 1,
         "heVariants": 1,
         "crossMap": false
-      }
+      },
+      "sameAs": {
+        "openbible": "elim",
+        "wikidata": "Q629659"
+      },
+      "identifications": [
+        {
+          "status": "primary",
+          "label": "Wadi Gharandal",
+          "lat": 29.254722,
+          "lng": 32.915833,
+          "score": 533,
+          "sources": [
+            {
+              "ref": "OpenBible.info geo: elim → wadi-gharandal",
+              "level": "B"
+            }
+          ]
+        },
+        {
+          "status": "minor",
+          "label": "Uyun Musa",
+          "lat": 29.876944,
+          "lng": 32.658333,
+          "score": 88,
+          "sources": [
+            {
+              "ref": "OpenBible.info geo: elim → uyun-musa",
+              "level": "B"
+            }
+          ]
+        },
+        {
+          "status": "minor",
+          "label": "Wadi ar Raynah",
+          "lat": 29.866111,
+          "lng": 32.748056,
+          "score": 14,
+          "sources": [
+            {
+              "ref": "OpenBible.info geo: elim → wadi-ar-raynah",
+              "level": "B"
+            }
+          ]
+        },
+        {
+          "status": "minor",
+          "label": "El Tor",
+          "lat": 28.24168,
+          "lng": 33.6222,
+          "score": 14,
+          "sources": [
+            {
+              "ref": "OpenBible.info geo: elim → el-tor",
+              "level": "B"
+            }
+          ]
+        }
+      ],
+      "geo": {
+        "lat": 29.254722,
+        "lng": 32.915833
+      },
+      "bibleRefs": [
+        "Ex 15:27",
+        "Ex 16:1",
+        "Num 33:9",
+        "Num 33:10"
+      ]
     },
     {
       "id": "emmaus",
@@ -882,7 +1772,100 @@
         "coordVariants": 1,
         "heVariants": 1,
         "crossMap": false
-      }
+      },
+      "sameAs": {
+        "openbible": "emmaus",
+        "wikidata": "Q165887"
+      },
+      "identifications": [
+        {
+          "status": "candidate",
+          "label": "Qalunya",
+          "lat": 31.79289,
+          "lng": 35.16419,
+          "score": 338,
+          "sources": [
+            {
+              "ref": "OpenBible.info geo: emmaus → qalunya",
+              "level": "B"
+            }
+          ]
+        },
+        {
+          "status": "alternative",
+          "label": "Emmaus Nicopolis",
+          "lat": 31.8393,
+          "lng": 34.989458,
+          "score": 240,
+          "sources": [
+            {
+              "ref": "OpenBible.info geo: emmaus → emmaus-nicopolis",
+              "level": "B"
+            }
+          ]
+        },
+        {
+          "status": "minor",
+          "label": "El Qubeibeh",
+          "lat": 31.839933,
+          "lng": 35.13685,
+          "score": 60,
+          "sources": [
+            {
+              "ref": "OpenBible.info geo: emmaus → el-qubeibeh",
+              "level": "B"
+            }
+          ]
+        },
+        {
+          "status": "minor",
+          "label": "Artas",
+          "lat": 31.689167,
+          "lng": 35.186111,
+          "score": -17,
+          "sources": [
+            {
+              "ref": "OpenBible.info geo: emmaus → artas",
+              "level": "B"
+            }
+          ]
+        },
+        {
+          "status": "minor",
+          "label": "Khirbet Khamasa",
+          "lat": 31.70639,
+          "lng": 35.10816,
+          "score": -17,
+          "sources": [
+            {
+              "ref": "OpenBible.info geo: emmaus → khirbet-khamasa",
+              "level": "B"
+            }
+          ]
+        },
+        {
+          "status": "minor",
+          "label": "Abu Ghosh",
+          "lat": 31.80742,
+          "lng": 35.107541,
+          "score": -21,
+          "sources": [
+            {
+              "ref": "OpenBible.info geo: emmaus → abu-ghosh",
+              "level": "B"
+            }
+          ]
+        }
+      ],
+      "geo": {
+        "lat": 31.79289,
+        "lng": 35.16419
+      },
+      "bibleRefs": [
+        "Luke 24:13",
+        "Luke 24:28",
+        "Luke 24:35"
+      ]
     },
     {
       "id": "ephesus",
@@ -919,7 +1902,37 @@
         "coordVariants": 1,
         "heVariants": 1,
         "crossMap": true
-      }
+      },
+      "sameAs": {
+        "openbible": "ephesus",
+        "wikidata": "Q47611"
+      },
+      "identifications": [
+        {
+          "status": "consensus",
+          "label": "Ephesus",
+          "lat": 37.939125,
+          "lng": 27.3407,
+          "score": 1000,
+          "sources": [
+            {
+              "ref": "OpenBible.info geo: ephesus → ephesus",
+              "level": "B"
+            }
+          ]
+        }
+      ],
+      "geo": {
+        "lat": 37.939125,
+        "lng": 27.3407
+      },
+      "bibleRefs": [
+        "Acts 18:19",
+        "Acts 18:21",
+        "Acts 18:24",
+        "Acts 18:27",
+        "Acts 19:1"
+      ]
     },
     {
       "id": "ephraim",
@@ -951,7 +1964,8 @@
         "coordVariants": 1,
         "heVariants": 1,
         "crossMap": false
-      }
+      },
+      "notes": "no-match: территория колена"
     },
     {
       "id": "etham",
@@ -983,7 +1997,114 @@
         "coordVariants": 1,
         "heVariants": 1,
         "crossMap": false
-      }
+      },
+      "sameAs": {
+        "openbible": "etham",
+        "wikidata": "Q5402858"
+      },
+      "identifications": [
+        {
+          "status": "alternative",
+          "label": "Tell Abu Sefeh",
+          "lat": 30.861009,
+          "lng": 32.352252,
+          "score": 135,
+          "sources": [
+            {
+              "ref": "OpenBible.info geo: etham → tell-abu-sefeh",
+              "level": "B"
+            }
+          ]
+        },
+        {
+          "status": "minor",
+          "label": "Tell er Retaba",
+          "lat": 30.5475,
+          "lng": 31.963611,
+          "score": 72,
+          "sources": [
+            {
+              "ref": "OpenBible.info geo: etham → tell-er-retaba",
+              "level": "B"
+            }
+          ]
+        },
+        {
+          "status": "minor",
+          "label": "Al Qantarah",
+          "lat": 30.85,
+          "lng": 32.316667,
+          "score": 52,
+          "sources": [
+            {
+              "ref": "OpenBible.info geo: etham → al-qantarah",
+              "level": "B"
+            }
+          ]
+        },
+        {
+          "status": "minor",
+          "label": "Tell el Maskhuta",
+          "lat": 30.5527,
+          "lng": 32.099,
+          "score": 30,
+          "sources": [
+            {
+              "ref": "OpenBible.info geo: etham → tell-el-maskhuta",
+              "level": "B"
+            }
+          ]
+        },
+        {
+          "status": "minor",
+          "label": "Tel Habuwa",
+          "lat": 30.9352,
+          "lng": 32.3669,
+          "score": 18,
+          "sources": [
+            {
+              "ref": "OpenBible.info geo: etham → tel-habuwa",
+              "level": "B"
+            }
+          ]
+        },
+        {
+          "status": "minor",
+          "label": "Ain Shams",
+          "lat": 30.129444,
+          "lng": 31.3075,
+          "score": 3,
+          "sources": [
+            {
+              "ref": "OpenBible.info geo: etham → ain-shams",
+              "level": "B"
+            }
+          ]
+        },
+        {
+          "status": "minor",
+          "label": "Ismailia",
+          "lat": 30.583333,
+          "lng": 32.266667,
+          "score": -3,
+          "sources": [
+            {
+              "ref": "OpenBible.info geo: etham → ismailia",
+              "level": "B"
+            }
+          ]
+        }
+      ],
+      "geo": {
+        "lat": 30.861009,
+        "lng": 32.352252
+      },
+      "bibleRefs": [
+        "Ex 13:20",
+        "Num 33:6",
+        "Num 33:7",
+        "Num 33:8"
+      ]
     },
     {
       "id": "gad",
@@ -1015,7 +2136,8 @@
         "coordVariants": 1,
         "heVariants": 1,
         "crossMap": false
-      }
+      },
+      "notes": "no-match: территория колена"
     },
     {
       "id": "gaza",
@@ -1047,7 +2169,37 @@
         "coordVariants": 1,
         "heVariants": 1,
         "crossMap": false
-      }
+      },
+      "sameAs": {
+        "openbible": "gaza",
+        "wikidata": "Q47492"
+      },
+      "identifications": [
+        {
+          "status": "consensus",
+          "label": "Tell Harube",
+          "lat": 31.504,
+          "lng": 34.4644,
+          "score": 1000,
+          "sources": [
+            {
+              "ref": "OpenBible.info geo: gaza → tell-harube",
+              "level": "B"
+            }
+          ]
+        }
+      ],
+      "geo": {
+        "lat": 31.504,
+        "lng": 34.4644
+      },
+      "bibleRefs": [
+        "Gen 10:19",
+        "Deut 2:23",
+        "Josh 10:41",
+        "Josh 11:22",
+        "Josh 13:3"
+      ]
     },
     {
       "id": "gaza-road",
@@ -1079,7 +2231,37 @@
         "coordVariants": 1,
         "heVariants": 1,
         "crossMap": false
-      }
+      },
+      "sameAs": {
+        "openbible": "gaza",
+        "wikidata": "Q47492"
+      },
+      "identifications": [
+        {
+          "status": "consensus",
+          "label": "Tell Harube",
+          "lat": 31.504,
+          "lng": 34.4644,
+          "score": 1000,
+          "sources": [
+            {
+              "ref": "OpenBible.info geo: gaza → tell-harube",
+              "level": "B"
+            }
+          ]
+        }
+      ],
+      "geo": {
+        "lat": 31.504,
+        "lng": 34.4644
+      },
+      "bibleRefs": [
+        "Gen 10:19",
+        "Deut 2:23",
+        "Josh 10:41",
+        "Josh 11:22",
+        "Josh 13:3"
+      ]
     },
     {
       "id": "gerar",
@@ -1111,7 +2293,76 @@
         "coordVariants": 1,
         "heVariants": 1,
         "crossMap": false
-      }
+      },
+      "sameAs": {
+        "openbible": "gerar",
+        "wikidata": "Q1510126"
+      },
+      "identifications": [
+        {
+          "status": "primary",
+          "label": "Tel Haror",
+          "lat": 31.3821,
+          "lng": 34.6065,
+          "score": 694,
+          "sources": [
+            {
+              "ref": "OpenBible.info geo: gerar → tel-haror",
+              "level": "B"
+            }
+          ]
+        },
+        {
+          "status": "minor",
+          "label": "Tell esh Sharia",
+          "lat": 31.3912,
+          "lng": 34.6816,
+          "score": 35,
+          "sources": [
+            {
+              "ref": "OpenBible.info geo: gerar → tell-esh-sharia",
+              "level": "B"
+            }
+          ]
+        },
+        {
+          "status": "minor",
+          "label": "Tell Tuweiyil",
+          "lat": 31.183861,
+          "lng": 34.567048,
+          "score": 12,
+          "sources": [
+            {
+              "ref": "OpenBible.info geo: gerar → tell-tuweiyil",
+              "level": "B"
+            }
+          ]
+        },
+        {
+          "status": "minor",
+          "label": "Tell Jemmeh",
+          "lat": 31.38724,
+          "lng": 34.44506,
+          "score": -86,
+          "sources": [
+            {
+              "ref": "OpenBible.info geo: gerar → tell-jemmeh",
+              "level": "B"
+            }
+          ]
+        }
+      ],
+      "geo": {
+        "lat": 31.3821,
+        "lng": 34.6065
+      },
+      "bibleRefs": [
+        "Gen 10:19",
+        "Gen 20:1",
+        "Gen 20:2",
+        "Gen 26:1",
+        "Gen 26:6"
+      ]
     },
     {
       "id": "gerasa",
@@ -1143,7 +2394,35 @@
         "coordVariants": 1,
         "heVariants": 1,
         "crossMap": false
-      }
+      },
+      "sameAs": {
+        "openbible": "gerasa",
+        "wikidata": "Q31565"
+      },
+      "identifications": [
+        {
+          "status": "consensus",
+          "label": "Jerash",
+          "lat": 32.272281,
+          "lng": 35.891397,
+          "score": 1000,
+          "sources": [
+            {
+              "ref": "OpenBible.info geo: gerasa → jerash",
+              "level": "B"
+            }
+          ]
+        }
+      ],
+      "geo": {
+        "lat": 32.272281,
+        "lng": 35.891397
+      },
+      "bibleRefs": [
+        "Mark 5:1",
+        "Luke 8:26",
+        "Luke 8:37"
+      ]
     },
     {
       "id": "gethsemane",
@@ -1175,7 +2454,34 @@
         "coordVariants": 1,
         "heVariants": 1,
         "crossMap": false
-      }
+      },
+      "sameAs": {
+        "openbible": "gethsemane",
+        "wikidata": "Q205333"
+      },
+      "identifications": [
+        {
+          "status": "consensus",
+          "label": "Gethsemane",
+          "lat": 31.779419,
+          "lng": 35.239425,
+          "score": 1000,
+          "sources": [
+            {
+              "ref": "OpenBible.info geo: gethsemane → gethsemane",
+              "level": "B"
+            }
+          ]
+        }
+      ],
+      "geo": {
+        "lat": 31.779419,
+        "lng": 35.239425
+      },
+      "bibleRefs": [
+        "Matt 26:36",
+        "Mark 14:32"
+      ]
     },
     {
       "id": "gezer",
@@ -1207,7 +2513,37 @@
         "coordVariants": 1,
         "heVariants": 1,
         "crossMap": false
-      }
+      },
+      "sameAs": {
+        "openbible": "gezer",
+        "wikidata": "Q1466687"
+      },
+      "identifications": [
+        {
+          "status": "consensus",
+          "label": "Tel Gezer",
+          "lat": 31.859167,
+          "lng": 34.919167,
+          "score": 942,
+          "sources": [
+            {
+              "ref": "OpenBible.info geo: gezer → tel-gezer",
+              "level": "B"
+            }
+          ]
+        }
+      ],
+      "geo": {
+        "lat": 31.859167,
+        "lng": 34.919167
+      },
+      "bibleRefs": [
+        "Josh 10:33",
+        "Josh 12:12",
+        "Josh 16:3",
+        "Josh 16:10",
+        "Josh 21:21"
+      ]
     },
     {
       "id": "gibeah",
@@ -1239,7 +2575,49 @@
         "coordVariants": 1,
         "heVariants": 1,
         "crossMap": false
-      }
+      },
+      "sameAs": {
+        "openbible": "gibeah-1"
+      },
+      "identifications": [
+        {
+          "status": "primary",
+          "label": "Tel el Ful",
+          "lat": 31.823113,
+          "lng": 35.230718,
+          "score": 669,
+          "sources": [
+            {
+              "ref": "OpenBible.info geo: gibeah-1 → tel-el-ful",
+              "level": "B"
+            }
+          ]
+        },
+        {
+          "status": "minor",
+          "label": "Jaba",
+          "lat": 31.8575,
+          "lng": 35.261111,
+          "score": 70,
+          "sources": [
+            {
+              "ref": "OpenBible.info geo: gibeah-1 → jaba",
+              "level": "B"
+            }
+          ]
+        }
+      ],
+      "geo": {
+        "lat": 31.823113,
+        "lng": 35.230718
+      },
+      "bibleRefs": [
+        "Judg 19:12",
+        "Judg 19:13",
+        "Judg 19:14",
+        "Judg 19:15",
+        "Judg 19:16"
+      ]
     },
     {
       "id": "gibeon",
@@ -1271,7 +2649,37 @@
         "coordVariants": 1,
         "heVariants": 1,
         "crossMap": false
-      }
+      },
+      "sameAs": {
+        "openbible": "gibeon",
+        "wikidata": "Q889398"
+      },
+      "identifications": [
+        {
+          "status": "consensus",
+          "label": "El Jib",
+          "lat": 31.847451,
+          "lng": 35.183351,
+          "score": 912,
+          "sources": [
+            {
+              "ref": "OpenBible.info geo: gibeon → el-jib",
+              "level": "B"
+            }
+          ]
+        }
+      ],
+      "geo": {
+        "lat": 31.847451,
+        "lng": 35.183351
+      },
+      "bibleRefs": [
+        "Josh 9:3",
+        "Josh 9:17",
+        "Josh 10:1",
+        "Josh 10:2",
+        "Josh 10:4"
+      ]
     },
     {
       "id": "golgotha",
@@ -1303,7 +2711,62 @@
         "coordVariants": 1,
         "heVariants": 1,
         "crossMap": false
-      }
+      },
+      "sameAs": {
+        "openbible": "golgotha",
+        "wikidata": "Q170516"
+      },
+      "identifications": [
+        {
+          "status": "candidate",
+          "label": "Church of the Holy Sepulchre",
+          "lat": 31.778444,
+          "lng": 35.22975,
+          "score": 426,
+          "sources": [
+            {
+              "ref": "OpenBible.info geo: golgotha → church-of-the-holy-sepulchre",
+              "level": "B"
+            }
+          ]
+        },
+        {
+          "status": "minor",
+          "label": "Taylor Golgotha",
+          "lat": 31.776629,
+          "lng": 35.230688,
+          "score": 31,
+          "sources": [
+            {
+              "ref": "OpenBible.info geo: golgotha → taylor-golgotha",
+              "level": "B"
+            }
+          ]
+        },
+        {
+          "status": "minor",
+          "label": "Gordon’s Calvary",
+          "lat": 31.783957,
+          "lng": 35.230147,
+          "score": -23,
+          "sources": [
+            {
+              "ref": "OpenBible.info geo: golgotha → gordons-calvary",
+              "level": "B"
+            }
+          ]
+        }
+      ],
+      "geo": {
+        "lat": 31.778444,
+        "lng": 35.22975
+      },
+      "bibleRefs": [
+        "Matt 27:33",
+        "Mark 15:22",
+        "Luke 23:33",
+        "John 19:17"
+      ]
     },
     {
       "id": "hammam",
@@ -1335,7 +2798,91 @@
         "coordVariants": 1,
         "heVariants": 1,
         "crossMap": false
-      }
+      },
+      "sameAs": {
+        "openbible": "sodom"
+      },
+      "identifications": [
+        {
+          "status": "candidate",
+          "label": "south of the Lisan",
+          "lat": 31.20849,
+          "lng": 35.449223,
+          "accuracyMeters": 25000,
+          "score": 250,
+          "sources": [
+            {
+              "ref": "OpenBible.info geo: sodom → south-of-the-lisan",
+              "level": "B"
+            }
+          ]
+        },
+        {
+          "status": "alternative",
+          "label": "Bab edh Dhra",
+          "lat": 31.248729,
+          "lng": 35.523005,
+          "score": 135,
+          "sources": [
+            {
+              "ref": "OpenBible.info geo: sodom → bab-edh-dhra",
+              "level": "B"
+            }
+          ]
+        },
+        {
+          "status": "alternative",
+          "label": "north of the Dead Sea",
+          "lat": 31.795,
+          "lng": 35.595278,
+          "accuracyMeters": 25000,
+          "score": 115,
+          "sources": [
+            {
+              "ref": "OpenBible.info geo: sodom → north-of-the-dead-sea",
+              "level": "B"
+            }
+          ]
+        },
+        {
+          "status": "minor",
+          "label": "Tall el Hammam",
+          "lat": 31.84018,
+          "lng": 35.67368,
+          "score": 30,
+          "sources": [
+            {
+              "ref": "OpenBible.info geo: sodom → tall-el-hammam",
+              "level": "B"
+            }
+          ]
+        },
+        {
+          "status": "minor",
+          "label": "Numeira",
+          "lat": 31.129757,
+          "lng": 35.529368,
+          "score": -24,
+          "sources": [
+            {
+              "ref": "OpenBible.info geo: sodom → numeira",
+              "level": "B"
+            }
+          ]
+        }
+      ],
+      "geo": {
+        "lat": 31.20849,
+        "lng": 35.449223,
+        "accuracyMeters": 25000
+      },
+      "bibleRefs": [
+        "Gen 10:19",
+        "Gen 13:10",
+        "Gen 13:12",
+        "Gen 13:13",
+        "Gen 14:2"
+      ]
     },
     {
       "id": "harod",
@@ -1367,7 +2914,33 @@
         "coordVariants": 1,
         "heVariants": 1,
         "crossMap": false
-      }
+      },
+      "sameAs": {
+        "openbible": "harod-1",
+        "wikidata": "Q603425"
+      },
+      "identifications": [
+        {
+          "status": "primary",
+          "label": "Well of Harod",
+          "lat": 32.548611,
+          "lng": 35.355833,
+          "score": 722,
+          "sources": [
+            {
+              "ref": "OpenBible.info geo: harod-1 → well-of-harod",
+              "level": "B"
+            }
+          ]
+        }
+      ],
+      "geo": {
+        "lat": 32.548611,
+        "lng": 35.355833
+      },
+      "bibleRefs": [
+        "Judg 7:1"
+      ]
     },
     {
       "id": "harran",
@@ -1399,7 +2972,37 @@
         "coordVariants": 1,
         "heVariants": 1,
         "crossMap": false
-      }
+      },
+      "sameAs": {
+        "openbible": "haran",
+        "wikidata": "Q199547"
+      },
+      "identifications": [
+        {
+          "status": "consensus",
+          "label": "Harran",
+          "lat": 36.864444,
+          "lng": 39.032778,
+          "score": 922,
+          "sources": [
+            {
+              "ref": "OpenBible.info geo: haran → harran",
+              "level": "B"
+            }
+          ]
+        }
+      ],
+      "geo": {
+        "lat": 36.864444,
+        "lng": 39.032778
+      },
+      "bibleRefs": [
+        "Gen 11:31",
+        "Gen 11:32",
+        "Gen 12:4",
+        "Gen 12:5",
+        "Gen 27:43"
+      ]
     },
     {
       "id": "hazor",
@@ -1441,7 +3044,37 @@
         "coordVariants": 1,
         "heVariants": 1,
         "crossMap": true
-      }
+      },
+      "sameAs": {
+        "openbible": "hazor-1",
+        "wikidata": "Q740138"
+      },
+      "identifications": [
+        {
+          "status": "consensus",
+          "label": "Tel Hazor",
+          "lat": 33.018333,
+          "lng": 35.569167,
+          "score": 928,
+          "sources": [
+            {
+              "ref": "OpenBible.info geo: hazor-1 → tel-hazor",
+              "level": "B"
+            }
+          ]
+        }
+      ],
+      "geo": {
+        "lat": 33.018333,
+        "lng": 35.569167
+      },
+      "bibleRefs": [
+        "Josh 11:1",
+        "Josh 11:10",
+        "Josh 11:11",
+        "Josh 11:13",
+        "Josh 12:19"
+      ]
     },
     {
       "id": "hebron",
@@ -1478,7 +3111,37 @@
         "coordVariants": 1,
         "heVariants": 1,
         "crossMap": true
-      }
+      },
+      "sameAs": {
+        "openbible": "hebron",
+        "wikidata": "Q168225"
+      },
+      "identifications": [
+        {
+          "status": "consensus",
+          "label": "Tel Rumeida",
+          "lat": 31.525087,
+          "lng": 35.10222,
+          "score": 1000,
+          "sources": [
+            {
+              "ref": "OpenBible.info geo: hebron → tel-rumeida",
+              "level": "B"
+            }
+          ]
+        }
+      ],
+      "geo": {
+        "lat": 31.525087,
+        "lng": 35.10222
+      },
+      "bibleRefs": [
+        "Gen 13:18",
+        "Gen 23:2",
+        "Gen 23:19",
+        "Gen 35:27",
+        "Num 13:22"
+      ]
     },
     {
       "id": "hebron--мамре",
@@ -1512,7 +3175,63 @@
         "coordVariants": 1,
         "heVariants": 1,
         "crossMap": false
-      }
+      },
+      "sameAs": {
+        "openbible": "mamre",
+        "wikidata": "Q2143048"
+      },
+      "identifications": [
+        {
+          "status": "primary",
+          "label": "Ramat el Khalil",
+          "lat": 31.556536,
+          "lng": 35.105336,
+          "score": 667,
+          "sources": [
+            {
+              "ref": "OpenBible.info geo: mamre → ramat-el-khalil",
+              "level": "B"
+            }
+          ]
+        },
+        {
+          "status": "minor",
+          "label": "Ain Sebta",
+          "lat": 31.536,
+          "lng": 35.0856,
+          "score": 34,
+          "sources": [
+            {
+              "ref": "OpenBible.info geo: mamre → ain-sebta",
+              "level": "B"
+            }
+          ]
+        },
+        {
+          "status": "minor",
+          "label": "Khirbet Nimreh",
+          "lat": 31.53502,
+          "lng": 35.10203,
+          "score": 20,
+          "sources": [
+            {
+              "ref": "OpenBible.info geo: mamre → khirbet-nimreh",
+              "level": "B"
+            }
+          ]
+        }
+      ],
+      "geo": {
+        "lat": 31.556536,
+        "lng": 35.105336
+      },
+      "bibleRefs": [
+        "Gen 23:17",
+        "Gen 23:19",
+        "Gen 25:9",
+        "Gen 35:27",
+        "Gen 49:30"
+      ]
     },
     {
       "id": "hebron-shoftim",
@@ -1544,7 +3263,37 @@
         "coordVariants": 1,
         "heVariants": 1,
         "crossMap": false
-      }
+      },
+      "sameAs": {
+        "openbible": "hebron",
+        "wikidata": "Q168225"
+      },
+      "identifications": [
+        {
+          "status": "consensus",
+          "label": "Tel Rumeida",
+          "lat": 31.525087,
+          "lng": 35.10222,
+          "score": 1000,
+          "sources": [
+            {
+              "ref": "OpenBible.info geo: hebron → tel-rumeida",
+              "level": "B"
+            }
+          ]
+        }
+      ],
+      "geo": {
+        "lat": 31.525087,
+        "lng": 35.10222
+      },
+      "bibleRefs": [
+        "Gen 13:18",
+        "Gen 23:2",
+        "Gen 23:19",
+        "Gen 35:27",
+        "Num 13:22"
+      ]
     },
     {
       "id": "hovah",
@@ -1576,7 +3325,59 @@
         "coordVariants": 1,
         "heVariants": 1,
         "crossMap": false
-      }
+      },
+      "sameAs": {
+        "openbible": "hobah",
+        "wikidata": "Q16919660"
+      },
+      "identifications": [
+        {
+          "status": "alternative",
+          "label": "Hoba",
+          "lat": 34.25,
+          "lng": 37.066667,
+          "score": 158,
+          "sources": [
+            {
+              "ref": "OpenBible.info geo: hobah → hoba",
+              "level": "B"
+            }
+          ]
+        },
+        {
+          "status": "alternative",
+          "label": "Damascus",
+          "lat": 33.511112,
+          "lng": 36.30639,
+          "score": 124,
+          "sources": [
+            {
+              "ref": "OpenBible.info geo: hobah → damascus",
+              "level": "B"
+            }
+          ]
+        },
+        {
+          "status": "minor",
+          "label": "Tell el Salihiye",
+          "lat": 33.508611,
+          "lng": 36.469722,
+          "score": 58,
+          "sources": [
+            {
+              "ref": "OpenBible.info geo: hobah → tell-el-salihiye",
+              "level": "B"
+            }
+          ]
+        }
+      ],
+      "geo": {
+        "lat": 34.25,
+        "lng": 37.066667
+      },
+      "bibleRefs": [
+        "Gen 14:15"
+      ]
     },
     {
       "id": "iconium",
@@ -1608,7 +3409,37 @@
         "coordVariants": 1,
         "heVariants": 1,
         "crossMap": false
-      }
+      },
+      "sameAs": {
+        "openbible": "iconium",
+        "wikidata": "Q79857"
+      },
+      "identifications": [
+        {
+          "status": "consensus",
+          "label": "Konya",
+          "lat": 37.872202,
+          "lng": 32.492331,
+          "score": 1000,
+          "sources": [
+            {
+              "ref": "OpenBible.info geo: iconium → konya",
+              "level": "B"
+            }
+          ]
+        }
+      ],
+      "geo": {
+        "lat": 37.872202,
+        "lng": 32.492331
+      },
+      "bibleRefs": [
+        "Acts 13:51",
+        "Acts 14:1",
+        "Acts 14:19",
+        "Acts 14:21",
+        "Acts 16:2"
+      ]
     },
     {
       "id": "issachar",
@@ -1640,7 +3471,8 @@
         "coordVariants": 1,
         "heVariants": 1,
         "crossMap": false
-      }
+      },
+      "notes": "no-match: территория колена"
     },
     {
       "id": "jericho",
@@ -1677,7 +3509,37 @@
         "coordVariants": 2,
         "heVariants": 1,
         "crossMap": true
-      }
+      },
+      "sameAs": {
+        "openbible": "jericho-1",
+        "wikidata": "Q5687"
+      },
+      "identifications": [
+        {
+          "status": "consensus",
+          "label": "Tell es Sultan",
+          "lat": 31.871719,
+          "lng": 35.444564,
+          "score": 1000,
+          "sources": [
+            {
+              "ref": "OpenBible.info geo: jericho-1 → tell-es-sultan",
+              "level": "B"
+            }
+          ]
+        }
+      ],
+      "geo": {
+        "lat": 31.871719,
+        "lng": 35.444564
+      },
+      "bibleRefs": [
+        "Num 22:1",
+        "Num 26:3",
+        "Num 26:63",
+        "Num 31:12",
+        "Num 33:48"
+      ]
     },
     {
       "id": "jerusalem",
@@ -1719,7 +3581,37 @@
         "coordVariants": 2,
         "heVariants": 1,
         "crossMap": true
-      }
+      },
+      "sameAs": {
+        "openbible": "jerusalem",
+        "wikidata": "Q1218"
+      },
+      "identifications": [
+        {
+          "status": "consensus",
+          "label": "Jerusalem",
+          "lat": 31.776667,
+          "lng": 35.234167,
+          "score": 1000,
+          "sources": [
+            {
+              "ref": "OpenBible.info geo: jerusalem → jerusalem",
+              "level": "B"
+            }
+          ]
+        }
+      ],
+      "geo": {
+        "lat": 31.776667,
+        "lng": 35.234167
+      },
+      "bibleRefs": [
+        "Josh 10:1",
+        "Josh 10:2",
+        "Josh 10:3",
+        "Josh 10:5",
+        "Josh 10:23"
+      ]
     },
     {
       "id": "jerusalem--горница",
@@ -1758,7 +3650,37 @@
         "coordVariants": 1,
         "heVariants": 2,
         "crossMap": true
-      }
+      },
+      "sameAs": {
+        "openbible": "jerusalem",
+        "wikidata": "Q1218"
+      },
+      "identifications": [
+        {
+          "status": "consensus",
+          "label": "Jerusalem",
+          "lat": 31.776667,
+          "lng": 35.234167,
+          "score": 1000,
+          "sources": [
+            {
+              "ref": "OpenBible.info geo: jerusalem → jerusalem",
+              "level": "B"
+            }
+          ]
+        }
+      ],
+      "geo": {
+        "lat": 31.776667,
+        "lng": 35.234167
+      },
+      "bibleRefs": [
+        "Josh 10:1",
+        "Josh 10:2",
+        "Josh 10:3",
+        "Josh 10:5",
+        "Josh 10:23"
+      ]
     },
     {
       "id": "jerusalem-temple--храм",
@@ -1792,7 +3714,37 @@
         "coordVariants": 1,
         "heVariants": 1,
         "crossMap": false
-      }
+      },
+      "sameAs": {
+        "openbible": "jerusalem",
+        "wikidata": "Q1218"
+      },
+      "identifications": [
+        {
+          "status": "consensus",
+          "label": "Jerusalem",
+          "lat": 31.776667,
+          "lng": 35.234167,
+          "score": 1000,
+          "sources": [
+            {
+              "ref": "OpenBible.info geo: jerusalem → jerusalem",
+              "level": "B"
+            }
+          ]
+        }
+      ],
+      "geo": {
+        "lat": 31.776667,
+        "lng": 35.234167
+      },
+      "bibleRefs": [
+        "Josh 10:1",
+        "Josh 10:2",
+        "Josh 10:3",
+        "Josh 10:5",
+        "Josh 10:23"
+      ]
     },
     {
       "id": "jezreel",
@@ -1824,7 +3776,37 @@
         "coordVariants": 1,
         "heVariants": 1,
         "crossMap": false
-      }
+      },
+      "sameAs": {
+        "openbible": "jezreel-2",
+        "wikidata": "Q2914898"
+      },
+      "identifications": [
+        {
+          "status": "primary",
+          "label": "Tel Yizre’el",
+          "lat": 32.557853,
+          "lng": 35.327953,
+          "score": 806,
+          "sources": [
+            {
+              "ref": "OpenBible.info geo: jezreel-2 → tel-yizreel",
+              "level": "B"
+            }
+          ]
+        }
+      ],
+      "geo": {
+        "lat": 32.557853,
+        "lng": 35.327953
+      },
+      "bibleRefs": [
+        "Josh 19:18",
+        "1 Sam 29:1",
+        "1 Sam 29:11",
+        "2 Sam 2:9",
+        "2 Sam 4:4"
+      ]
     },
     {
       "id": "joppa",
@@ -1856,7 +3838,37 @@
         "coordVariants": 1,
         "heVariants": 1,
         "crossMap": false
-      }
+      },
+      "sameAs": {
+        "openbible": "joppa",
+        "wikidata": "Q180294"
+      },
+      "identifications": [
+        {
+          "status": "consensus",
+          "label": "Jaffa",
+          "lat": 32.054481,
+          "lng": 34.753039,
+          "score": 1000,
+          "sources": [
+            {
+              "ref": "OpenBible.info geo: joppa → jaffa",
+              "level": "B"
+            }
+          ]
+        }
+      ],
+      "geo": {
+        "lat": 32.054481,
+        "lng": 34.753039
+      },
+      "bibleRefs": [
+        "Josh 19:46",
+        "2 Chr 2:16",
+        "Ezra 3:7",
+        "Jonah 1:3",
+        "Acts 9:36"
+      ]
     },
     {
       "id": "jordan-baptism--крещение",
@@ -1890,7 +3902,124 @@
         "coordVariants": 1,
         "heVariants": 1,
         "crossMap": false
-      }
+      },
+      "sameAs": {
+        "openbible": "bethany-2",
+        "wikidata": "Q2617848"
+      },
+      "identifications": [
+        {
+          "status": "candidate",
+          "label": "Al Maghtas",
+          "lat": 31.837109,
+          "lng": 35.550301,
+          "score": 320,
+          "sources": [
+            {
+              "ref": "OpenBible.info geo: bethany-2 → al-maghtas",
+              "level": "B"
+            }
+          ]
+        },
+        {
+          "status": "alternative",
+          "label": "Raphana",
+          "lat": 32.852034,
+          "lng": 36.19934,
+          "score": 192,
+          "sources": [
+            {
+              "ref": "OpenBible.info geo: bethany-2 → raphana",
+              "level": "B"
+            }
+          ]
+        },
+        {
+          "status": "minor",
+          "label": "Al Eizariya",
+          "lat": 31.771661,
+          "lng": 35.255903,
+          "score": 67,
+          "sources": [
+            {
+              "ref": "OpenBible.info geo: bethany-2 → al-eizariya",
+              "level": "B"
+            }
+          ]
+        },
+        {
+          "status": "minor",
+          "label": "Khirbet Batneh",
+          "lat": 32.010571,
+          "lng": 35.710739,
+          "score": 13,
+          "sources": [
+            {
+              "ref": "OpenBible.info geo: bethany-2 → khirbet-batneh",
+              "level": "B"
+            }
+          ]
+        },
+        {
+          "status": "minor",
+          "label": "Tall Bleibel",
+          "lat": 31.909106,
+          "lng": 35.63872,
+          "score": 12,
+          "sources": [
+            {
+              "ref": "OpenBible.info geo: bethany-2 → tall-bleibel",
+              "level": "B"
+            }
+          ]
+        },
+        {
+          "status": "minor",
+          "label": "Tall Nimrin",
+          "lat": 31.90094,
+          "lng": 35.624546,
+          "score": 6,
+          "sources": [
+            {
+              "ref": "OpenBible.info geo: bethany-2 → tall-nimrin",
+              "level": "B"
+            }
+          ]
+        },
+        {
+          "status": "minor",
+          "label": "Wadi al Fara",
+          "lat": 32.1,
+          "lng": 35.52,
+          "score": 3,
+          "sources": [
+            {
+              "ref": "OpenBible.info geo: bethany-2 → wadi-al-fara",
+              "level": "B"
+            }
+          ]
+        },
+        {
+          "status": "minor",
+          "label": "Makhadhet Abarah",
+          "lat": 32.531763,
+          "lng": 35.559259,
+          "score": -3,
+          "sources": [
+            {
+              "ref": "OpenBible.info geo: bethany-2 → makhadhet-abarah",
+              "level": "B"
+            }
+          ]
+        }
+      ],
+      "geo": {
+        "lat": 31.837109,
+        "lng": 35.550301
+      },
+      "bibleRefs": [
+        "John 1:28"
+      ]
     },
     {
       "id": "judah",
@@ -1922,7 +4051,8 @@
         "coordVariants": 1,
         "heVariants": 1,
         "crossMap": false
-      }
+      },
+      "notes": "no-match: территория колена"
     },
     {
       "id": "kadesh",
@@ -1954,7 +4084,50 @@
         "coordVariants": 1,
         "heVariants": 1,
         "crossMap": false
-      }
+      },
+      "sameAs": {
+        "openbible": "kadesh-barnea",
+        "wikidata": "Q954599"
+      },
+      "identifications": [
+        {
+          "status": "primary",
+          "label": "Ain el Qudeirat",
+          "lat": 30.648333,
+          "lng": 34.422222,
+          "score": 864,
+          "sources": [
+            {
+              "ref": "OpenBible.info geo: kadesh-barnea → ain-el-qudeirat",
+              "level": "B"
+            }
+          ]
+        },
+        {
+          "status": "minor",
+          "label": "Ein Qedeis",
+          "lat": 30.583378,
+          "lng": 34.484081,
+          "score": -92,
+          "sources": [
+            {
+              "ref": "OpenBible.info geo: kadesh-barnea → ein-qedeis",
+              "level": "B"
+            }
+          ]
+        }
+      ],
+      "geo": {
+        "lat": 30.648333,
+        "lng": 34.422222
+      },
+      "bibleRefs": [
+        "Gen 14:7",
+        "Gen 16:14",
+        "Gen 20:1",
+        "Num 13:26",
+        "Num 20:1"
+      ]
     },
     {
       "id": "kadesh-barnea",
@@ -1986,7 +4159,50 @@
         "coordVariants": 1,
         "heVariants": 1,
         "crossMap": false
-      }
+      },
+      "sameAs": {
+        "openbible": "kadesh-barnea",
+        "wikidata": "Q954599"
+      },
+      "identifications": [
+        {
+          "status": "primary",
+          "label": "Ain el Qudeirat",
+          "lat": 30.648333,
+          "lng": 34.422222,
+          "score": 864,
+          "sources": [
+            {
+              "ref": "OpenBible.info geo: kadesh-barnea → ain-el-qudeirat",
+              "level": "B"
+            }
+          ]
+        },
+        {
+          "status": "minor",
+          "label": "Ein Qedeis",
+          "lat": 30.583378,
+          "lng": 34.484081,
+          "score": -92,
+          "sources": [
+            {
+              "ref": "OpenBible.info geo: kadesh-barnea → ein-qedeis",
+              "level": "B"
+            }
+          ]
+        }
+      ],
+      "geo": {
+        "lat": 30.648333,
+        "lng": 34.422222
+      },
+      "bibleRefs": [
+        "Gen 14:7",
+        "Gen 16:14",
+        "Gen 20:1",
+        "Num 13:26",
+        "Num 20:1"
+      ]
     },
     {
       "id": "kir-haraseth",
@@ -2018,7 +4234,37 @@
         "coordVariants": 1,
         "heVariants": 1,
         "crossMap": false
-      }
+      },
+      "sameAs": {
+        "openbible": "kir-hareseth",
+        "wikidata": "Q3782348"
+      },
+      "identifications": [
+        {
+          "status": "primary",
+          "label": "Kerak",
+          "lat": 31.180556,
+          "lng": 35.701389,
+          "score": 805,
+          "sources": [
+            {
+              "ref": "OpenBible.info geo: kir-hareseth → kerak",
+              "level": "B"
+            }
+          ]
+        }
+      ],
+      "geo": {
+        "lat": 31.180556,
+        "lng": 35.701389
+      },
+      "bibleRefs": [
+        "2 Kgs 3:25",
+        "Isa 16:7",
+        "Isa 16:11",
+        "Jer 48:31",
+        "Jer 48:36"
+      ]
     },
     {
       "id": "kishon",
@@ -2050,7 +4296,50 @@
         "coordVariants": 1,
         "heVariants": 1,
         "crossMap": false
-      }
+      },
+      "sameAs": {
+        "openbible": "kishon",
+        "wikidata": "Q1743701"
+      },
+      "identifications": [
+        {
+          "status": "primary",
+          "label": "Kishon River",
+          "lat": 32.816667,
+          "lng": 35.033333,
+          "score": 854,
+          "sources": [
+            {
+              "ref": "OpenBible.info geo: kishon → kishon-river",
+              "level": "B"
+            }
+          ]
+        },
+        {
+          "status": "minor",
+          "label": "Nahal Tabor",
+          "lat": 32.652383,
+          "lng": 35.463181,
+          "score": 69,
+          "sources": [
+            {
+              "ref": "OpenBible.info geo: kishon → nahal-tabor",
+              "level": "B"
+            }
+          ]
+        }
+      ],
+      "geo": {
+        "lat": 32.816667,
+        "lng": 35.033333
+      },
+      "bibleRefs": [
+        "Judg 4:7",
+        "Judg 4:13",
+        "Judg 5:21",
+        "1 Kgs 18:40",
+        "Ps 83:9"
+      ]
     },
     {
       "id": "lachish",
@@ -2082,7 +4371,37 @@
         "coordVariants": 1,
         "heVariants": 1,
         "crossMap": false
-      }
+      },
+      "sameAs": {
+        "openbible": "lachish",
+        "wikidata": "Q848509"
+      },
+      "identifications": [
+        {
+          "status": "consensus",
+          "label": "Tell ed Duweir",
+          "lat": 31.565278,
+          "lng": 34.849167,
+          "score": 1000,
+          "sources": [
+            {
+              "ref": "OpenBible.info geo: lachish → tell-ed-duweir",
+              "level": "B"
+            }
+          ]
+        }
+      ],
+      "geo": {
+        "lat": 31.565278,
+        "lng": 34.849167
+      },
+      "bibleRefs": [
+        "Josh 10:3",
+        "Josh 10:5",
+        "Josh 10:23",
+        "Josh 10:31",
+        "Josh 10:32"
+      ]
     },
     {
       "id": "lahairoi",
@@ -2114,7 +4433,73 @@
         "coordVariants": 1,
         "heVariants": 1,
         "crossMap": false
-      }
+      },
+      "sameAs": {
+        "openbible": "beer-lahai-roi"
+      },
+      "identifications": [
+        {
+          "status": "candidate",
+          "label": "Ain Muweileh",
+          "lat": 30.6875,
+          "lng": 34.333333,
+          "score": 258,
+          "sources": [
+            {
+              "ref": "OpenBible.info geo: beer-lahai-roi → ain-muweileh",
+              "level": "B"
+            }
+          ]
+        },
+        {
+          "status": "minor",
+          "label": "Haluza",
+          "lat": 31.097,
+          "lng": 34.652,
+          "score": 80,
+          "sources": [
+            {
+              "ref": "OpenBible.info geo: beer-lahai-roi → haluza",
+              "level": "B"
+            }
+          ]
+        },
+        {
+          "status": "minor",
+          "label": "Jebel Umm el Bared",
+          "lat": 30.382414,
+          "lng": 34.173133,
+          "score": 58,
+          "sources": [
+            {
+              "ref": "OpenBible.info geo: beer-lahai-roi → jebel-umm-el-bared",
+              "level": "B"
+            }
+          ]
+        },
+        {
+          "status": "minor",
+          "label": "Wadi Umm Rajil",
+          "lat": 30.76286,
+          "lng": 34.12978,
+          "score": 45,
+          "sources": [
+            {
+              "ref": "OpenBible.info geo: beer-lahai-roi → wadi-umm-rajil",
+              "level": "B"
+            }
+          ]
+        }
+      ],
+      "geo": {
+        "lat": 30.6875,
+        "lng": 34.333333
+      },
+      "bibleRefs": [
+        "Gen 16:14",
+        "Gen 24:62",
+        "Gen 25:11"
+      ]
     },
     {
       "id": "laodicea",
@@ -2146,7 +4531,37 @@
         "coordVariants": 1,
         "heVariants": 1,
         "crossMap": false
-      }
+      },
+      "sameAs": {
+        "openbible": "laodicea",
+        "wikidata": "Q849709"
+      },
+      "identifications": [
+        {
+          "status": "consensus",
+          "label": "Laodicea on the Lycus",
+          "lat": 37.835833,
+          "lng": 29.1075,
+          "score": 1000,
+          "sources": [
+            {
+              "ref": "OpenBible.info geo: laodicea → laodicea-on-the-lycus",
+              "level": "B"
+            }
+          ]
+        }
+      ],
+      "geo": {
+        "lat": 37.835833,
+        "lng": 29.1075
+      },
+      "bibleRefs": [
+        "Col 2:1",
+        "Col 4:13",
+        "Col 4:15",
+        "Col 4:16",
+        "Rev 1:11"
+      ]
     },
     {
       "id": "lydda",
@@ -2178,7 +4593,37 @@
         "coordVariants": 1,
         "heVariants": 1,
         "crossMap": false
-      }
+      },
+      "sameAs": {
+        "openbible": "lod",
+        "wikidata": "Q207540"
+      },
+      "identifications": [
+        {
+          "status": "consensus",
+          "label": "Lod",
+          "lat": 31.95,
+          "lng": 34.9,
+          "score": 1000,
+          "sources": [
+            {
+              "ref": "OpenBible.info geo: lod → lod",
+              "level": "B"
+            }
+          ]
+        }
+      ],
+      "geo": {
+        "lat": 31.95,
+        "lng": 34.9
+      },
+      "bibleRefs": [
+        "1 Chr 8:12",
+        "Ezra 2:33",
+        "Neh 7:37",
+        "Neh 11:35",
+        "Acts 9:32"
+      ]
     },
     {
       "id": "manasseh-e",
@@ -2210,7 +4655,8 @@
         "coordVariants": 1,
         "heVariants": 1,
         "crossMap": false
-      }
+      },
+      "notes": "no-match: территория колена (восточная половина)"
     },
     {
       "id": "manasseh-n",
@@ -2242,7 +4688,8 @@
         "coordVariants": 1,
         "heVariants": 1,
         "crossMap": false
-      }
+      },
+      "notes": "no-match: территория колена (западная половина)"
     },
     {
       "id": "marah",
@@ -2274,7 +4721,76 @@
         "coordVariants": 1,
         "heVariants": 1,
         "crossMap": false
-      }
+      },
+      "sameAs": {
+        "openbible": "marah",
+        "wikidata": "Q2554928"
+      },
+      "identifications": [
+        {
+          "status": "candidate",
+          "label": "Ain Hawarah",
+          "lat": 29.34604,
+          "lng": 32.94284,
+          "score": 384,
+          "sources": [
+            {
+              "ref": "OpenBible.info geo: marah → ain-hawarah",
+              "level": "B"
+            }
+          ]
+        },
+        {
+          "status": "alternative",
+          "label": "Bir Mara",
+          "lat": 29.96667,
+          "lng": 32.7,
+          "score": 125,
+          "sources": [
+            {
+              "ref": "OpenBible.info geo: marah → bir-mara",
+              "level": "B"
+            }
+          ]
+        },
+        {
+          "status": "alternative",
+          "label": "Uyun Musa",
+          "lat": 29.876944,
+          "lng": 32.658333,
+          "score": 106,
+          "sources": [
+            {
+              "ref": "OpenBible.info geo: marah → uyun-musa",
+              "level": "B"
+            }
+          ]
+        },
+        {
+          "status": "minor",
+          "label": "Bitter Lakes",
+          "lat": 30.338333,
+          "lng": 32.377778,
+          "score": 18,
+          "sources": [
+            {
+              "ref": "OpenBible.info geo: marah → bitter-lakes",
+              "level": "B"
+            }
+          ]
+        }
+      ],
+      "geo": {
+        "lat": 29.34604,
+        "lng": 32.94284
+      },
+      "bibleRefs": [
+        "Ex 15:23",
+        "Ex 15:25",
+        "Ex 15:27",
+        "Num 33:8",
+        "Num 33:9"
+      ]
     },
     {
       "id": "masada",
@@ -2306,7 +4822,8 @@
         "coordVariants": 1,
         "heVariants": 1,
         "crossMap": false
-      }
+      },
+      "notes": "no-match: вне протестантского канона (Иосиф Флавий); координаты добавить из Pleiades/Wikidata в KA-2"
     },
     {
       "id": "megiddo",
@@ -2343,7 +4860,37 @@
         "coordVariants": 1,
         "heVariants": 1,
         "crossMap": true
-      }
+      },
+      "sameAs": {
+        "openbible": "megiddo",
+        "wikidata": "Q208379"
+      },
+      "identifications": [
+        {
+          "status": "consensus",
+          "label": "Tel Megiddo",
+          "lat": 32.585278,
+          "lng": 35.184444,
+          "score": 1000,
+          "sources": [
+            {
+              "ref": "OpenBible.info geo: megiddo → tel-megiddo",
+              "level": "B"
+            }
+          ]
+        }
+      ],
+      "geo": {
+        "lat": 32.585278,
+        "lng": 35.184444
+      },
+      "bibleRefs": [
+        "Josh 12:21",
+        "Josh 17:11",
+        "Judg 1:27",
+        "Judg 5:19",
+        "1 Kgs 4:12"
+      ]
     },
     {
       "id": "mizpah-gilead",
@@ -2375,7 +4922,76 @@
         "coordVariants": 1,
         "heVariants": 1,
         "crossMap": false
-      }
+      },
+      "sameAs": {
+        "openbible": "mizpah-1",
+        "wikidata": "Q6884729"
+      },
+      "identifications": [
+        {
+          "status": "alternative",
+          "label": "Jel‘ad",
+          "lat": 32.118511,
+          "lng": 35.77702,
+          "score": 171,
+          "sources": [
+            {
+              "ref": "OpenBible.info geo: mizpah-1 → jelad",
+              "level": "B"
+            }
+          ]
+        },
+        {
+          "status": "minor",
+          "label": "Tall er Rumeith",
+          "lat": 32.499852,
+          "lng": 36.014988,
+          "score": 80,
+          "sources": [
+            {
+              "ref": "OpenBible.info geo: mizpah-1 → tall-er-rumeith",
+              "level": "B"
+            }
+          ]
+        },
+        {
+          "status": "minor",
+          "label": "Khirbet er Rasuni",
+          "lat": 32.131192,
+          "lng": 35.761295,
+          "score": 76,
+          "sources": [
+            {
+              "ref": "OpenBible.info geo: mizpah-1 → khirbet-er-rasuni",
+              "level": "B"
+            }
+          ]
+        },
+        {
+          "status": "minor",
+          "label": "Suf",
+          "lat": 32.31372,
+          "lng": 35.83713,
+          "score": 26,
+          "sources": [
+            {
+              "ref": "OpenBible.info geo: mizpah-1 → suf",
+              "level": "B"
+            }
+          ]
+        }
+      ],
+      "geo": {
+        "lat": 32.118511,
+        "lng": 35.77702
+      },
+      "bibleRefs": [
+        "Judg 10:17",
+        "Judg 11:11",
+        "Judg 11:29",
+        "Judg 11:34",
+        "Hos 5:1"
+      ]
     },
     {
       "id": "mizpah-judah",
@@ -2407,7 +5023,50 @@
         "coordVariants": 1,
         "heVariants": 1,
         "crossMap": false
-      }
+      },
+      "sameAs": {
+        "openbible": "mizpah-3",
+        "wikidata": "Q1755389"
+      },
+      "identifications": [
+        {
+          "status": "primary",
+          "label": "Tell en Nasbeh",
+          "lat": 31.885136,
+          "lng": 35.216417,
+          "score": 781,
+          "sources": [
+            {
+              "ref": "OpenBible.info geo: mizpah-3 → tell-en-nasbeh",
+              "level": "B"
+            }
+          ]
+        },
+        {
+          "status": "minor",
+          "label": "Nabi Samwil",
+          "lat": 31.832733,
+          "lng": 35.18015,
+          "score": 51,
+          "sources": [
+            {
+              "ref": "OpenBible.info geo: mizpah-3 → nabi-samwil",
+              "level": "B"
+            }
+          ]
+        }
+      ],
+      "geo": {
+        "lat": 31.885136,
+        "lng": 35.216417
+      },
+      "bibleRefs": [
+        "Judg 20:1",
+        "Judg 20:3",
+        "Judg 21:1",
+        "Judg 21:5",
+        "Judg 21:8"
+      ]
     },
     {
       "id": "modiin",
@@ -2439,7 +5098,8 @@
         "coordVariants": 1,
         "heVariants": 1,
         "crossMap": false
-      }
+      },
+      "notes": "no-match: 1 Макк — вне протестантского канона OpenBible; координаты из академических источников"
     },
     {
       "id": "mount-beatitudes",
@@ -2471,7 +5131,8 @@
         "coordVariants": 1,
         "heVariants": 1,
         "crossMap": false
-      }
+      },
+      "notes": "no-match: традиционная идентификация без библейского топонима; статус traditional"
     },
     {
       "id": "mount-ebal--благословение-и-проклятие",
@@ -2505,7 +5166,39 @@
         "coordVariants": 1,
         "heVariants": 1,
         "crossMap": false
-      }
+      },
+      "sameAs": {
+        "openbible": "mount-ebal",
+        "wikidata": "Q1975866"
+      },
+      "identifications": [
+        {
+          "status": "consensus",
+          "label": "Mount Ebal",
+          "lat": 32.234,
+          "lng": 35.2733,
+          "accuracyMeters": 5000,
+          "score": 1000,
+          "sources": [
+            {
+              "ref": "OpenBible.info geo: mount-ebal → mount-ebal",
+              "level": "B"
+            }
+          ]
+        }
+      ],
+      "geo": {
+        "lat": 32.234,
+        "lng": 35.2733,
+        "accuracyMeters": 5000
+      },
+      "bibleRefs": [
+        "Deut 11:29",
+        "Deut 27:4",
+        "Deut 27:13",
+        "Josh 8:30",
+        "Josh 8:33"
+      ]
     },
     {
       "id": "nain",
@@ -2537,7 +5230,33 @@
         "coordVariants": 1,
         "heVariants": 1,
         "crossMap": false
-      }
+      },
+      "sameAs": {
+        "openbible": "nain",
+        "wikidata": "Q934904"
+      },
+      "identifications": [
+        {
+          "status": "consensus",
+          "label": "Nein",
+          "lat": 32.630694,
+          "lng": 35.350139,
+          "score": 1000,
+          "sources": [
+            {
+              "ref": "OpenBible.info geo: nain → nein",
+              "level": "B"
+            }
+          ]
+        }
+      ],
+      "geo": {
+        "lat": 32.630694,
+        "lng": 35.350139
+      },
+      "bibleRefs": [
+        "Luke 7:11"
+      ]
     },
     {
       "id": "naphtali",
@@ -2569,7 +5288,8 @@
         "coordVariants": 1,
         "heVariants": 1,
         "crossMap": false
-      }
+      },
+      "notes": "no-match: территория колена"
     },
     {
       "id": "nazareth",
@@ -2601,7 +5321,37 @@
         "coordVariants": 1,
         "heVariants": 1,
         "crossMap": false
-      }
+      },
+      "sameAs": {
+        "openbible": "nazareth",
+        "wikidata": "Q430776"
+      },
+      "identifications": [
+        {
+          "status": "consensus",
+          "label": "Nazareth",
+          "lat": 32.70214,
+          "lng": 35.29769,
+          "score": 1000,
+          "sources": [
+            {
+              "ref": "OpenBible.info geo: nazareth → nazareth",
+              "level": "B"
+            }
+          ]
+        }
+      ],
+      "geo": {
+        "lat": 32.70214,
+        "lng": 35.29769
+      },
+      "bibleRefs": [
+        "Matt 2:23",
+        "Matt 4:13",
+        "Matt 13:54",
+        "Matt 21:11",
+        "Matt 26:71"
+      ]
     },
     {
       "id": "ophrah",
@@ -2633,7 +5383,114 @@
         "coordVariants": 1,
         "heVariants": 1,
         "crossMap": false
-      }
+      },
+      "sameAs": {
+        "openbible": "ophrah-2"
+      },
+      "identifications": [
+        {
+          "status": "primary",
+          "label": "Afula",
+          "lat": 32.6057,
+          "lng": 35.29,
+          "score": 506,
+          "sources": [
+            {
+              "ref": "OpenBible.info geo: ophrah-2 → afula",
+              "level": "B"
+            }
+          ]
+        },
+        {
+          "status": "alternative",
+          "label": "Khirbet Taiyibeh",
+          "lat": 32.51718,
+          "lng": 35.17854,
+          "score": 158,
+          "sources": [
+            {
+              "ref": "OpenBible.info geo: ophrah-2 → khirbet-taiyibeh",
+              "level": "B"
+            }
+          ]
+        },
+        {
+          "status": "minor",
+          "label": "Ramat Rahel",
+          "lat": 31.739901,
+          "lng": 35.216896,
+          "score": 31,
+          "sources": [
+            {
+              "ref": "OpenBible.info geo: ophrah-2 → ramat-rahel",
+              "level": "B"
+            }
+          ]
+        },
+        {
+          "status": "minor",
+          "label": "Et Taiyibeh",
+          "lat": 32.60385,
+          "lng": 35.44661,
+          "score": 30,
+          "sources": [
+            {
+              "ref": "OpenBible.info geo: ophrah-2 → et-taiyibeh",
+              "level": "B"
+            }
+          ]
+        },
+        {
+          "status": "minor",
+          "label": "Silat ad Dhahr",
+          "lat": 32.319492,
+          "lng": 35.184564,
+          "score": -4,
+          "sources": [
+            {
+              "ref": "OpenBible.info geo: ophrah-2 → silat-ad-dhahr",
+              "level": "B"
+            }
+          ]
+        },
+        {
+          "status": "minor",
+          "label": "Farata",
+          "lat": 32.190556,
+          "lng": 35.165833,
+          "score": -22,
+          "sources": [
+            {
+              "ref": "OpenBible.info geo: ophrah-2 → farata",
+              "level": "B"
+            }
+          ]
+        },
+        {
+          "status": "minor",
+          "label": "Tell el Farah",
+          "lat": 32.2874,
+          "lng": 35.3378,
+          "score": -23,
+          "sources": [
+            {
+              "ref": "OpenBible.info geo: ophrah-2 → tell-el-farah",
+              "level": "B"
+            }
+          ]
+        }
+      ],
+      "geo": {
+        "lat": 32.6057,
+        "lng": 35.29
+      },
+      "bibleRefs": [
+        "Judg 6:11",
+        "Judg 6:24",
+        "Judg 8:27",
+        "Judg 8:32",
+        "Judg 9:5"
+      ]
     },
     {
       "id": "pergamon",
@@ -2665,7 +5522,34 @@
         "coordVariants": 1,
         "heVariants": 1,
         "crossMap": false
-      }
+      },
+      "sameAs": {
+        "openbible": "pergamum",
+        "wikidata": "Q18986"
+      },
+      "identifications": [
+        {
+          "status": "consensus",
+          "label": "Pergamon",
+          "lat": 39.13216,
+          "lng": 27.18421,
+          "score": 1000,
+          "sources": [
+            {
+              "ref": "OpenBible.info geo: pergamum → pergamon",
+              "level": "B"
+            }
+          ]
+        }
+      ],
+      "geo": {
+        "lat": 39.13216,
+        "lng": 27.18421
+      },
+      "bibleRefs": [
+        "Rev 1:11",
+        "Rev 2:12"
+      ]
     },
     {
       "id": "philadelphia",
@@ -2697,7 +5581,34 @@
         "coordVariants": 1,
         "heVariants": 1,
         "crossMap": false
-      }
+      },
+      "sameAs": {
+        "openbible": "philadelphia",
+        "wikidata": "Q138280"
+      },
+      "identifications": [
+        {
+          "status": "consensus",
+          "label": "Alaşehir",
+          "lat": 38.35,
+          "lng": 28.516667,
+          "score": 1000,
+          "sources": [
+            {
+              "ref": "OpenBible.info geo: philadelphia → alasehir",
+              "level": "B"
+            }
+          ]
+        }
+      ],
+      "geo": {
+        "lat": 38.35,
+        "lng": 28.516667
+      },
+      "bibleRefs": [
+        "Rev 1:11",
+        "Rev 3:7"
+      ]
     },
     {
       "id": "philippi",
@@ -2729,7 +5640,36 @@
         "coordVariants": 1,
         "heVariants": 1,
         "crossMap": false
-      }
+      },
+      "sameAs": {
+        "openbible": "philippi",
+        "wikidata": "Q379652"
+      },
+      "identifications": [
+        {
+          "status": "consensus",
+          "label": "Philippi",
+          "lat": 41.012072,
+          "lng": 24.284576,
+          "score": 1000,
+          "sources": [
+            {
+              "ref": "OpenBible.info geo: philippi → philippi",
+              "level": "B"
+            }
+          ]
+        }
+      ],
+      "geo": {
+        "lat": 41.012072,
+        "lng": 24.284576
+      },
+      "bibleRefs": [
+        "Acts 16:12",
+        "Acts 20:6",
+        "Phil 1:1",
+        "1 Thes 2:2"
+      ]
     },
     {
       "id": "pihahiroth",
@@ -2761,7 +5701,212 @@
         "coordVariants": 1,
         "heVariants": 1,
         "crossMap": false
-      }
+      },
+      "sameAs": {
+        "openbible": "pi-hahiroth",
+        "wikidata": "Q2776756"
+      },
+      "identifications": [
+        {
+          "status": "alternative",
+          "label": "plain near Jabal Jinayfah",
+          "lat": 30.22518,
+          "lng": 32.46951,
+          "accuracyMeters": 25000,
+          "score": 103,
+          "sources": [
+            {
+              "ref": "OpenBible.info geo: pi-hahiroth → plain-near-jabal-jinayfah",
+              "level": "B"
+            }
+          ]
+        },
+        {
+          "status": "minor",
+          "label": "Tell Defenneh",
+          "lat": 30.860556,
+          "lng": 32.171389,
+          "score": 75,
+          "sources": [
+            {
+              "ref": "OpenBible.info geo: pi-hahiroth → tell-defenneh",
+              "level": "B"
+            }
+          ]
+        },
+        {
+          "status": "minor",
+          "label": "Tell el Farama",
+          "lat": 31.042512,
+          "lng": 32.546139,
+          "score": 45,
+          "sources": [
+            {
+              "ref": "OpenBible.info geo: pi-hahiroth → tell-el-farama",
+              "level": "B"
+            }
+          ]
+        },
+        {
+          "status": "minor",
+          "label": "Zahr al Qais",
+          "lat": 31.21373,
+          "lng": 33.067,
+          "accuracyMeters": 5000,
+          "score": 22,
+          "sources": [
+            {
+              "ref": "OpenBible.info geo: pi-hahiroth → zahr-al-qais",
+              "level": "B"
+            }
+          ]
+        },
+        {
+          "status": "minor",
+          "label": "Al Mahamdiyah",
+          "lat": 31.044722,
+          "lng": 32.66,
+          "accuracyMeters": 5000,
+          "score": 11,
+          "sources": [
+            {
+              "ref": "OpenBible.info geo: pi-hahiroth → al-mahamdiyah",
+              "level": "B"
+            }
+          ]
+        },
+        {
+          "status": "minor",
+          "label": "Jabal al Murr",
+          "lat": 29.952222,
+          "lng": 32.701667,
+          "accuracyMeters": 5000,
+          "score": 9,
+          "sources": [
+            {
+              "ref": "OpenBible.info geo: pi-hahiroth → jabal-al-murr",
+              "level": "B"
+            }
+          ]
+        },
+        {
+          "status": "minor",
+          "label": "Kibrit",
+          "lat": 30.22518,
+          "lng": 32.46951,
+          "score": 0,
+          "sources": [
+            {
+              "ref": "OpenBible.info geo: pi-hahiroth → kibrit",
+              "level": "B"
+            }
+          ]
+        },
+        {
+          "status": "minor",
+          "label": "Tall al Qulzum",
+          "lat": 29.974189,
+          "lng": 32.552904,
+          "score": 0,
+          "sources": [
+            {
+              "ref": "OpenBible.info geo: pi-hahiroth → tall-al-qulzum",
+              "level": "B"
+            }
+          ]
+        },
+        {
+          "status": "minor",
+          "label": "between Maghfar and Lake Timsah",
+          "lat": 30.566667,
+          "lng": 32.266667,
+          "accuracyMeters": 25000,
+          "score": 0,
+          "sources": [
+            {
+              "ref": "OpenBible.info geo: pi-hahiroth → between-maghfar-and-lake-timsah",
+              "level": "B"
+            }
+          ]
+        },
+        {
+          "status": "minor",
+          "label": "Fayid",
+          "lat": 30.326111,
+          "lng": 32.298611,
+          "score": 0,
+          "sources": [
+            {
+              "ref": "OpenBible.info geo: pi-hahiroth → fayid",
+              "level": "B"
+            }
+          ]
+        },
+        {
+          "status": "minor",
+          "label": "Al Qantarah",
+          "lat": 30.85,
+          "lng": 32.316667,
+          "score": -7,
+          "sources": [
+            {
+              "ref": "OpenBible.info geo: pi-hahiroth → al-qantarah",
+              "level": "B"
+            }
+          ]
+        },
+        {
+          "status": "minor",
+          "label": "Jebel Abu Hasa",
+          "lat": 30.18333,
+          "lng": 32.51667,
+          "score": -7,
+          "sources": [
+            {
+              "ref": "OpenBible.info geo: pi-hahiroth → jebel-abu-hasa",
+              "level": "B"
+            }
+          ]
+        },
+        {
+          "status": "minor",
+          "label": "Jabal Ataqah",
+          "lat": 29.996111,
+          "lng": 32.3075,
+          "accuracyMeters": 5000,
+          "score": -8,
+          "sources": [
+            {
+              "ref": "OpenBible.info geo: pi-hahiroth → jabal-ataqah",
+              "level": "B"
+            }
+          ]
+        },
+        {
+          "status": "minor",
+          "label": "marsh west of the Bitter Lakes",
+          "lat": 30.308779,
+          "lng": 32.125787,
+          "score": -63,
+          "sources": [
+            {
+              "ref": "OpenBible.info geo: pi-hahiroth → marsh-west-of-the-bitter-lakes",
+              "level": "B"
+            }
+          ]
+        }
+      ],
+      "geo": {
+        "lat": 30.22518,
+        "lng": 32.46951,
+        "accuracyMeters": 25000
+      },
+      "bibleRefs": [
+        "Ex 14:2",
+        "Ex 14:9",
+        "Num 33:7",
+        "Num 33:8"
+      ]
     },
     {
       "id": "plains-moab",
@@ -2793,7 +5938,59 @@
         "coordVariants": 1,
         "heVariants": 1,
         "crossMap": false
-      }
+      },
+      "sameAs": {
+        "openbible": "abel-shittim",
+        "wikidata": "Q2236536"
+      },
+      "identifications": [
+        {
+          "status": "primary",
+          "label": "Tall el Hammam",
+          "lat": 31.84018,
+          "lng": 35.67368,
+          "score": 511,
+          "sources": [
+            {
+              "ref": "OpenBible.info geo: abel-shittim → tall-el-hammam",
+              "level": "B"
+            }
+          ]
+        },
+        {
+          "status": "alternative",
+          "label": "Tall Kafrayn",
+          "lat": 31.85055,
+          "lng": 35.65296,
+          "score": 112,
+          "sources": [
+            {
+              "ref": "OpenBible.info geo: abel-shittim → tall-kafrayn",
+              "level": "B"
+            }
+          ]
+        },
+        {
+          "status": "minor",
+          "label": "Tell Matabi",
+          "lat": 31.84161,
+          "lng": 35.68404,
+          "score": -4,
+          "sources": [
+            {
+              "ref": "OpenBible.info geo: abel-shittim → tell-matabi",
+              "level": "B"
+            }
+          ]
+        }
+      ],
+      "geo": {
+        "lat": 31.84018,
+        "lng": 35.67368
+      },
+      "bibleRefs": [
+        "Num 33:49"
+      ]
     },
     {
       "id": "rameses",
@@ -2825,7 +6022,76 @@
         "coordVariants": 1,
         "heVariants": 1,
         "crossMap": false
-      }
+      },
+      "sameAs": {
+        "openbible": "rameses",
+        "wikidata": "Q937930"
+      },
+      "identifications": [
+        {
+          "status": "primary",
+          "label": "Qantir",
+          "lat": 30.79937,
+          "lng": 31.834217,
+          "score": 509,
+          "sources": [
+            {
+              "ref": "OpenBible.info geo: rameses → qantir",
+              "level": "B"
+            }
+          ]
+        },
+        {
+          "status": "candidate",
+          "label": "Tell el Daba",
+          "lat": 30.786228,
+          "lng": 31.82253,
+          "score": 270,
+          "sources": [
+            {
+              "ref": "OpenBible.info geo: rameses → tell-el-daba",
+              "level": "B"
+            }
+          ]
+        },
+        {
+          "status": "minor",
+          "label": "Tell el Farama",
+          "lat": 31.042512,
+          "lng": 32.546139,
+          "score": 13,
+          "sources": [
+            {
+              "ref": "OpenBible.info geo: rameses → tell-el-farama",
+              "level": "B"
+            }
+          ]
+        },
+        {
+          "status": "minor",
+          "label": "Tanis",
+          "lat": 30.976944,
+          "lng": 31.88,
+          "score": -206,
+          "sources": [
+            {
+              "ref": "OpenBible.info geo: rameses → tanis",
+              "level": "B"
+            }
+          ]
+        }
+      ],
+      "geo": {
+        "lat": 30.79937,
+        "lng": 31.834217
+      },
+      "bibleRefs": [
+        "Gen 47:11",
+        "Ex 1:11",
+        "Ex 12:37",
+        "Num 33:3",
+        "Num 33:5"
+      ]
     },
     {
       "id": "rephidim",
@@ -2857,7 +6123,90 @@
         "coordVariants": 1,
         "heVariants": 1,
         "crossMap": false
-      }
+      },
+      "sameAs": {
+        "openbible": "rephidim",
+        "wikidata": "Q587141"
+      },
+      "identifications": [
+        {
+          "status": "candidate",
+          "label": "Wadi Rufaiyil",
+          "lat": 28.623056,
+          "lng": 33.880278,
+          "score": 379,
+          "sources": [
+            {
+              "ref": "OpenBible.info geo: rephidim → wadi-rufaiyil",
+              "level": "B"
+            }
+          ]
+        },
+        {
+          "status": "alternative",
+          "label": "Wadi Feiran",
+          "lat": 28.7125,
+          "lng": 33.611944,
+          "score": 194,
+          "sources": [
+            {
+              "ref": "OpenBible.info geo: rephidim → wadi-feiran",
+              "level": "B"
+            }
+          ]
+        },
+        {
+          "status": "minor",
+          "label": "Wadi el Sheikh",
+          "lat": 28.699444,
+          "lng": 33.681667,
+          "score": 62,
+          "sources": [
+            {
+              "ref": "OpenBible.info geo: rephidim → wadi-el-sheikh",
+              "level": "B"
+            }
+          ]
+        },
+        {
+          "status": "minor",
+          "label": "Jabal Huwayti",
+          "lat": 28.621667,
+          "lng": 33.861389,
+          "accuracyMeters": 5000,
+          "score": 14,
+          "sources": [
+            {
+              "ref": "OpenBible.info geo: rephidim → jabal-huwayti",
+              "level": "B"
+            }
+          ]
+        },
+        {
+          "status": "minor",
+          "label": "Wadi Sudr",
+          "lat": 29.63625,
+          "lng": 32.80587,
+          "score": 14,
+          "sources": [
+            {
+              "ref": "OpenBible.info geo: rephidim → wadi-sudr",
+              "level": "B"
+            }
+          ]
+        }
+      ],
+      "geo": {
+        "lat": 28.623056,
+        "lng": 33.880278
+      },
+      "bibleRefs": [
+        "Ex 17:1",
+        "Ex 17:8",
+        "Ex 19:2",
+        "Num 33:14",
+        "Num 33:15"
+      ]
     },
     {
       "id": "reuben",
@@ -2889,7 +6238,8 @@
         "coordVariants": 1,
         "heVariants": 1,
         "crossMap": false
-      }
+      },
+      "notes": "no-match: территория колена"
     },
     {
       "id": "rome",
@@ -2921,7 +6271,37 @@
         "coordVariants": 1,
         "heVariants": 1,
         "crossMap": false
-      }
+      },
+      "sameAs": {
+        "openbible": "rome",
+        "wikidata": "Q220"
+      },
+      "identifications": [
+        {
+          "status": "consensus",
+          "label": "Rome",
+          "lat": 41.8922,
+          "lng": 12.4852,
+          "score": 1000,
+          "sources": [
+            {
+              "ref": "OpenBible.info geo: rome → rome",
+              "level": "B"
+            }
+          ]
+        }
+      ],
+      "geo": {
+        "lat": 41.8922,
+        "lng": 12.4852
+      },
+      "bibleRefs": [
+        "Acts 2:10",
+        "Acts 18:2",
+        "Acts 19:21",
+        "Acts 19:40",
+        "Acts 23:11"
+      ]
     },
     {
       "id": "salem--гора-мория",
@@ -2955,7 +6335,36 @@
         "coordVariants": 1,
         "heVariants": 1,
         "crossMap": false
-      }
+      },
+      "sameAs": {
+        "openbible": "salem",
+        "wikidata": "Q4377375"
+      },
+      "identifications": [
+        {
+          "status": "consensus",
+          "label": "Jerusalem",
+          "lat": 31.776667,
+          "lng": 35.234167,
+          "score": 1000,
+          "sources": [
+            {
+              "ref": "OpenBible.info geo: salem → jerusalem",
+              "level": "B"
+            }
+          ]
+        }
+      ],
+      "geo": {
+        "lat": 31.776667,
+        "lng": 35.234167
+      },
+      "bibleRefs": [
+        "Gen 14:18",
+        "Ps 76:2",
+        "Heb 7:1",
+        "Heb 7:2"
+      ]
     },
     {
       "id": "samaria",
@@ -2997,7 +6406,37 @@
         "coordVariants": 1,
         "heVariants": 1,
         "crossMap": true
-      }
+      },
+      "sameAs": {
+        "openbible": "samaria-1",
+        "wikidata": "Q1757438"
+      },
+      "identifications": [
+        {
+          "status": "consensus",
+          "label": "Samaria",
+          "lat": 32.276111,
+          "lng": 35.195,
+          "score": 1000,
+          "sources": [
+            {
+              "ref": "OpenBible.info geo: samaria-1 → samaria",
+              "level": "B"
+            }
+          ]
+        }
+      ],
+      "geo": {
+        "lat": 32.276111,
+        "lng": 35.195
+      },
+      "bibleRefs": [
+        "1 Kgs 13:32",
+        "1 Kgs 16:24",
+        "1 Kgs 16:28",
+        "1 Kgs 16:29",
+        "1 Kgs 16:32"
+      ]
     },
     {
       "id": "sardis",
@@ -3029,7 +6468,35 @@
         "coordVariants": 1,
         "heVariants": 1,
         "crossMap": false
-      }
+      },
+      "sameAs": {
+        "openbible": "sardis",
+        "wikidata": "Q232615"
+      },
+      "identifications": [
+        {
+          "status": "consensus",
+          "label": "Sardis",
+          "lat": 38.488333,
+          "lng": 28.040278,
+          "score": 1000,
+          "sources": [
+            {
+              "ref": "OpenBible.info geo: sardis → sardis",
+              "level": "B"
+            }
+          ]
+        }
+      ],
+      "geo": {
+        "lat": 38.488333,
+        "lng": 28.040278
+      },
+      "bibleRefs": [
+        "Rev 1:11",
+        "Rev 3:1",
+        "Rev 3:4"
+      ]
     },
     {
       "id": "sea-galilee",
@@ -3061,7 +6528,37 @@
         "coordVariants": 1,
         "heVariants": 1,
         "crossMap": false
-      }
+      },
+      "sameAs": {
+        "openbible": "sea-of-galilee",
+        "wikidata": "Q126982"
+      },
+      "identifications": [
+        {
+          "status": "consensus",
+          "label": "Sea of Galilee",
+          "lat": 32.818906,
+          "lng": 35.590033,
+          "score": 1000,
+          "sources": [
+            {
+              "ref": "OpenBible.info geo: sea-of-galilee → sea-of-galilee",
+              "level": "B"
+            }
+          ]
+        }
+      ],
+      "geo": {
+        "lat": 32.818906,
+        "lng": 35.590033
+      },
+      "bibleRefs": [
+        "Num 34:11",
+        "Josh 12:3",
+        "Josh 13:27",
+        "Matt 4:18",
+        "Matt 9:1"
+      ]
     },
     {
       "id": "shechem",
@@ -3098,7 +6595,37 @@
         "coordVariants": 1,
         "heVariants": 1,
         "crossMap": true
-      }
+      },
+      "sameAs": {
+        "openbible": "shechem",
+        "wikidata": "Q7951237"
+      },
+      "identifications": [
+        {
+          "status": "consensus",
+          "label": "Tell Balatah",
+          "lat": 32.213611,
+          "lng": 35.281944,
+          "score": 1000,
+          "sources": [
+            {
+              "ref": "OpenBible.info geo: shechem → tell-balatah",
+              "level": "B"
+            }
+          ]
+        }
+      ],
+      "geo": {
+        "lat": 32.213611,
+        "lng": 35.281944
+      },
+      "bibleRefs": [
+        "Gen 12:6",
+        "Gen 33:18",
+        "Gen 35:4",
+        "Gen 37:12",
+        "Gen 37:13"
+      ]
     },
     {
       "id": "shiloh",
@@ -3130,7 +6657,37 @@
         "coordVariants": 1,
         "heVariants": 1,
         "crossMap": false
-      }
+      },
+      "sameAs": {
+        "openbible": "shiloh",
+        "wikidata": "Q985542"
+      },
+      "identifications": [
+        {
+          "status": "consensus",
+          "label": "Khirbet Seilun",
+          "lat": 32.055703,
+          "lng": 35.289536,
+          "score": 1000,
+          "sources": [
+            {
+              "ref": "OpenBible.info geo: shiloh → khirbet-seilun",
+              "level": "B"
+            }
+          ]
+        }
+      ],
+      "geo": {
+        "lat": 32.055703,
+        "lng": 35.289536
+      },
+      "bibleRefs": [
+        "Gen 49:10",
+        "Josh 18:1",
+        "Josh 18:8",
+        "Josh 18:9",
+        "Josh 18:10"
+      ]
     },
     {
       "id": "shur",
@@ -3162,7 +6719,65 @@
         "coordVariants": 1,
         "heVariants": 1,
         "crossMap": false
-      }
+      },
+      "sameAs": {
+        "openbible": "shur",
+        "wikidata": "Q7505200"
+      },
+      "identifications": [
+        {
+          "status": "primary",
+          "label": "Ar Ruwaysat",
+          "lat": 30.493333,
+          "lng": 32.956667,
+          "accuracyMeters": 5000,
+          "score": 554,
+          "sources": [
+            {
+              "ref": "OpenBible.info geo: shur → ar-ruwaysat",
+              "level": "B"
+            }
+          ]
+        },
+        {
+          "status": "minor",
+          "label": "Wadi as Sakriyat",
+          "lat": 29.955833,
+          "lng": 32.8725,
+          "score": 92,
+          "sources": [
+            {
+              "ref": "OpenBible.info geo: shur → wadi-as-sakriyat",
+              "level": "B"
+            }
+          ]
+        },
+        {
+          "status": "minor",
+          "label": "Tel Sharuhen",
+          "lat": 31.281944,
+          "lng": 34.4825,
+          "score": 59,
+          "sources": [
+            {
+              "ref": "OpenBible.info geo: shur → tel-sharuhen",
+              "level": "B"
+            }
+          ]
+        }
+      ],
+      "geo": {
+        "lat": 30.493333,
+        "lng": 32.956667,
+        "accuracyMeters": 5000
+      },
+      "bibleRefs": [
+        "Gen 16:7",
+        "Gen 20:1",
+        "Gen 25:18",
+        "Ex 15:22",
+        "1 Sam 15:7"
+      ]
     },
     {
       "id": "simeon",
@@ -3194,7 +6809,8 @@
         "coordVariants": 1,
         "heVariants": 1,
         "crossMap": false
-      }
+      },
+      "notes": "no-match: территория колена"
     },
     {
       "id": "sinai--гора-хорив",
@@ -3228,7 +6844,221 @@
         "coordVariants": 1,
         "heVariants": 1,
         "crossMap": false
-      }
+      },
+      "sameAs": {
+        "openbible": "mount-sinai",
+        "wikidata": "Q377485"
+      },
+      "identifications": [
+        {
+          "status": "candidate",
+          "label": "Jebel Musa",
+          "lat": 28.539722,
+          "lng": 33.973333,
+          "accuracyMeters": 5000,
+          "score": 465,
+          "sources": [
+            {
+              "ref": "OpenBible.info geo: mount-sinai → jebel-musa",
+              "level": "B"
+            }
+          ]
+        },
+        {
+          "status": "alternative",
+          "label": "Har Karkom",
+          "lat": 30.283333,
+          "lng": 34.75,
+          "accuracyMeters": 5000,
+          "score": 103,
+          "sources": [
+            {
+              "ref": "OpenBible.info geo: mount-sinai → har-karkom",
+              "level": "B"
+            }
+          ]
+        },
+        {
+          "status": "minor",
+          "label": "Jebel Sin Bishar",
+          "lat": 29.671,
+          "lng": 32.961,
+          "accuracyMeters": 5000,
+          "score": 89,
+          "sources": [
+            {
+              "ref": "OpenBible.info geo: mount-sinai → jebel-sin-bishar",
+              "level": "B"
+            }
+          ]
+        },
+        {
+          "status": "minor",
+          "label": "Ras es Safsafeh",
+          "lat": 28.555556,
+          "lng": 33.967222,
+          "accuracyMeters": 5000,
+          "score": 55,
+          "sources": [
+            {
+              "ref": "OpenBible.info geo: mount-sinai → ras-es-safsafeh",
+              "level": "B"
+            }
+          ]
+        },
+        {
+          "status": "minor",
+          "label": "Jebel Serbal",
+          "lat": 28.646389,
+          "lng": 33.651667,
+          "accuracyMeters": 5000,
+          "score": 54,
+          "sources": [
+            {
+              "ref": "OpenBible.info geo: mount-sinai → jebel-serbal",
+              "level": "B"
+            }
+          ]
+        },
+        {
+          "status": "minor",
+          "label": "Jebel Katherina",
+          "lat": 28.510833,
+          "lng": 33.955278,
+          "accuracyMeters": 5000,
+          "score": 28,
+          "sources": [
+            {
+              "ref": "OpenBible.info geo: mount-sinai → jebel-katherina",
+              "level": "B"
+            }
+          ]
+        },
+        {
+          "status": "minor",
+          "label": "Jebel Hashem el Tarif",
+          "lat": 29.669217,
+          "lng": 34.633411,
+          "accuracyMeters": 5000,
+          "score": 20,
+          "sources": [
+            {
+              "ref": "OpenBible.info geo: mount-sinai → jebel-hashem-el-tarif",
+              "level": "B"
+            }
+          ]
+        },
+        {
+          "status": "minor",
+          "label": "Jebel Halal",
+          "lat": 30.653056,
+          "lng": 34.028889,
+          "accuracyMeters": 5000,
+          "score": 12,
+          "sources": [
+            {
+              "ref": "OpenBible.info geo: mount-sinai → jebel-halal",
+              "level": "B"
+            }
+          ]
+        },
+        {
+          "status": "minor",
+          "label": "Jebel Yeleq",
+          "lat": 30.351111,
+          "lng": 33.523056,
+          "accuracyMeters": 5000,
+          "score": 5,
+          "sources": [
+            {
+              "ref": "OpenBible.info geo: mount-sinai → jebel-yeleq",
+              "level": "B"
+            }
+          ]
+        },
+        {
+          "status": "minor",
+          "label": "Jabal al Magharah",
+          "lat": 30.702222,
+          "lng": 33.376667,
+          "accuracyMeters": 5000,
+          "score": 5,
+          "sources": [
+            {
+              "ref": "OpenBible.info geo: mount-sinai → jabal-al-magharah",
+              "level": "B"
+            }
+          ]
+        },
+        {
+          "status": "minor",
+          "label": "Har ‘Arif",
+          "lat": 30.4265,
+          "lng": 34.7334,
+          "accuracyMeters": 5000,
+          "score": 5,
+          "sources": [
+            {
+              "ref": "OpenBible.info geo: mount-sinai → har-arif",
+              "level": "B"
+            }
+          ]
+        },
+        {
+          "status": "minor",
+          "label": "Jabal al Lawz",
+          "lat": 28.654167,
+          "lng": 35.305833,
+          "accuracyMeters": 5000,
+          "score": 4,
+          "sources": [
+            {
+              "ref": "OpenBible.info geo: mount-sinai → jabal-al-lawz",
+              "level": "B"
+            }
+          ]
+        },
+        {
+          "status": "minor",
+          "label": "Al Manifa",
+          "lat": 28.3405,
+          "lng": 35.2925,
+          "accuracyMeters": 5000,
+          "score": -7,
+          "sources": [
+            {
+              "ref": "OpenBible.info geo: mount-sinai → al-manifa",
+              "level": "B"
+            }
+          ]
+        },
+        {
+          "status": "minor",
+          "label": "Jabal Harb",
+          "lat": 27.9607,
+          "lng": 35.6572,
+          "accuracyMeters": 5000,
+          "score": -24,
+          "sources": [
+            {
+              "ref": "OpenBible.info geo: mount-sinai → jabal-harb",
+              "level": "B"
+            }
+          ]
+        }
+      ],
+      "geo": {
+        "lat": 28.539722,
+        "lng": 33.973333,
+        "accuracyMeters": 5000
+      },
+      "bibleRefs": [
+        "Ex 16:1",
+        "Ex 19:2",
+        "Ex 19:11",
+        "Ex 19:18",
+        "Ex 19:20"
+      ]
     },
     {
       "id": "smyrna",
@@ -3260,7 +7090,34 @@
         "coordVariants": 1,
         "heVariants": 1,
         "crossMap": false
-      }
+      },
+      "sameAs": {
+        "openbible": "smyrna",
+        "wikidata": "Q1379299"
+      },
+      "identifications": [
+        {
+          "status": "consensus",
+          "label": "Izmir",
+          "lat": 38.418889,
+          "lng": 27.137778,
+          "score": 1000,
+          "sources": [
+            {
+              "ref": "OpenBible.info geo: smyrna → izmir",
+              "level": "B"
+            }
+          ]
+        }
+      ],
+      "geo": {
+        "lat": 38.418889,
+        "lng": 27.137778
+      },
+      "bibleRefs": [
+        "Rev 1:11",
+        "Rev 2:8"
+      ]
     },
     {
       "id": "sodom",
@@ -3292,7 +7149,91 @@
         "coordVariants": 1,
         "heVariants": 1,
         "crossMap": false
-      }
+      },
+      "sameAs": {
+        "openbible": "sodom"
+      },
+      "identifications": [
+        {
+          "status": "candidate",
+          "label": "south of the Lisan",
+          "lat": 31.20849,
+          "lng": 35.449223,
+          "accuracyMeters": 25000,
+          "score": 250,
+          "sources": [
+            {
+              "ref": "OpenBible.info geo: sodom → south-of-the-lisan",
+              "level": "B"
+            }
+          ]
+        },
+        {
+          "status": "alternative",
+          "label": "Bab edh Dhra",
+          "lat": 31.248729,
+          "lng": 35.523005,
+          "score": 135,
+          "sources": [
+            {
+              "ref": "OpenBible.info geo: sodom → bab-edh-dhra",
+              "level": "B"
+            }
+          ]
+        },
+        {
+          "status": "alternative",
+          "label": "north of the Dead Sea",
+          "lat": 31.795,
+          "lng": 35.595278,
+          "accuracyMeters": 25000,
+          "score": 115,
+          "sources": [
+            {
+              "ref": "OpenBible.info geo: sodom → north-of-the-dead-sea",
+              "level": "B"
+            }
+          ]
+        },
+        {
+          "status": "minor",
+          "label": "Tall el Hammam",
+          "lat": 31.84018,
+          "lng": 35.67368,
+          "score": 30,
+          "sources": [
+            {
+              "ref": "OpenBible.info geo: sodom → tall-el-hammam",
+              "level": "B"
+            }
+          ]
+        },
+        {
+          "status": "minor",
+          "label": "Numeira",
+          "lat": 31.129757,
+          "lng": 35.529368,
+          "score": -24,
+          "sources": [
+            {
+              "ref": "OpenBible.info geo: sodom → numeira",
+              "level": "B"
+            }
+          ]
+        }
+      ],
+      "geo": {
+        "lat": 31.20849,
+        "lng": 35.449223,
+        "accuracyMeters": 25000
+      },
+      "bibleRefs": [
+        "Gen 10:19",
+        "Gen 13:10",
+        "Gen 13:12",
+        "Gen 13:13",
+        "Gen 14:2"
+      ]
     },
     {
       "id": "solomons-porch",
@@ -3324,7 +7265,37 @@
         "coordVariants": 1,
         "heVariants": 1,
         "crossMap": false
-      }
+      },
+      "sameAs": {
+        "openbible": "jerusalem",
+        "wikidata": "Q1218"
+      },
+      "identifications": [
+        {
+          "status": "consensus",
+          "label": "Jerusalem",
+          "lat": 31.776667,
+          "lng": 35.234167,
+          "score": 1000,
+          "sources": [
+            {
+              "ref": "OpenBible.info geo: jerusalem → jerusalem",
+              "level": "B"
+            }
+          ]
+        }
+      ],
+      "geo": {
+        "lat": 31.776667,
+        "lng": 35.234167
+      },
+      "bibleRefs": [
+        "Josh 10:1",
+        "Josh 10:2",
+        "Josh 10:3",
+        "Josh 10:5",
+        "Josh 10:23"
+      ]
     },
     {
       "id": "sorek",
@@ -3356,7 +7327,33 @@
         "coordVariants": 1,
         "heVariants": 1,
         "crossMap": false
-      }
+      },
+      "sameAs": {
+        "openbible": "valley-of-sorek",
+        "wikidata": "Q252254"
+      },
+      "identifications": [
+        {
+          "status": "consensus",
+          "label": "Nahal Sorek",
+          "lat": 31.755833,
+          "lng": 35.05,
+          "score": 1000,
+          "sources": [
+            {
+              "ref": "OpenBible.info geo: valley-of-sorek → nahal-sorek",
+              "level": "B"
+            }
+          ]
+        }
+      ],
+      "geo": {
+        "lat": 31.755833,
+        "lng": 35.05
+      },
+      "bibleRefs": [
+        "Judg 16:4"
+      ]
     },
     {
       "id": "succoth",
@@ -3388,7 +7385,75 @@
         "coordVariants": 1,
         "heVariants": 1,
         "crossMap": false
-      }
+      },
+      "sameAs": {
+        "openbible": "succoth-2"
+      },
+      "identifications": [
+        {
+          "status": "alternative",
+          "label": "Tell el Maskhuta",
+          "lat": 30.5527,
+          "lng": 32.099,
+          "score": 206,
+          "sources": [
+            {
+              "ref": "OpenBible.info geo: succoth-2 → tell-el-maskhuta",
+              "level": "B"
+            }
+          ]
+        },
+        {
+          "status": "minor",
+          "label": "Jabal Maryam",
+          "lat": 30.5467,
+          "lng": 32.3042,
+          "accuracyMeters": 5000,
+          "score": 39,
+          "sources": [
+            {
+              "ref": "OpenBible.info geo: succoth-2 → jabal-maryam",
+              "level": "B"
+            }
+          ]
+        },
+        {
+          "status": "minor",
+          "label": "Tell er Retaba",
+          "lat": 30.5475,
+          "lng": 31.963611,
+          "score": 18,
+          "sources": [
+            {
+              "ref": "OpenBible.info geo: succoth-2 → tell-er-retaba",
+              "level": "B"
+            }
+          ]
+        },
+        {
+          "status": "minor",
+          "label": "Ain Shams",
+          "lat": 30.129444,
+          "lng": 31.3075,
+          "score": 0,
+          "sources": [
+            {
+              "ref": "OpenBible.info geo: succoth-2 → ain-shams",
+              "level": "B"
+            }
+          ]
+        }
+      ],
+      "geo": {
+        "lat": 30.5527,
+        "lng": 32.099
+      },
+      "bibleRefs": [
+        "Ex 12:37",
+        "Ex 13:20",
+        "Num 33:5",
+        "Num 33:6"
+      ]
     },
     {
       "id": "syria-aram",
@@ -3420,7 +7485,37 @@
         "coordVariants": 1,
         "heVariants": 1,
         "crossMap": false
-      }
+      },
+      "sameAs": {
+        "openbible": "aram",
+        "wikidata": "Q1157079"
+      },
+      "identifications": [
+        {
+          "status": "consensus",
+          "label": "Damascus",
+          "lat": 33.511112,
+          "lng": 36.30639,
+          "score": 1000,
+          "sources": [
+            {
+              "ref": "OpenBible.info geo: aram → damascus",
+              "level": "B"
+            }
+          ]
+        }
+      ],
+      "geo": {
+        "lat": 33.511112,
+        "lng": 36.30639
+      },
+      "bibleRefs": [
+        "Num 23:7",
+        "Judg 18:7",
+        "Judg 18:28",
+        "2 Sam 8:6",
+        "2 Sam 15:8"
+      ]
     },
     {
       "id": "tabor",
@@ -3452,7 +7547,39 @@
         "coordVariants": 1,
         "heVariants": 1,
         "crossMap": false
-      }
+      },
+      "sameAs": {
+        "openbible": "mount-tabor",
+        "wikidata": "Q193785"
+      },
+      "identifications": [
+        {
+          "status": "consensus",
+          "label": "Jebel et Tur",
+          "lat": 32.68625,
+          "lng": 35.392917,
+          "accuracyMeters": 5000,
+          "score": 1000,
+          "sources": [
+            {
+              "ref": "OpenBible.info geo: mount-tabor → jebel-et-tur",
+              "level": "B"
+            }
+          ]
+        }
+      ],
+      "geo": {
+        "lat": 32.68625,
+        "lng": 35.392917,
+        "accuracyMeters": 5000
+      },
+      "bibleRefs": [
+        "Josh 19:22",
+        "Judg 4:6",
+        "Judg 4:12",
+        "Judg 4:14",
+        "Judg 5:13"
+      ]
     },
     {
       "id": "tarsus",
@@ -3484,7 +7611,37 @@
         "coordVariants": 1,
         "heVariants": 1,
         "crossMap": false
-      }
+      },
+      "sameAs": {
+        "openbible": "tarsus",
+        "wikidata": "Q134287"
+      },
+      "identifications": [
+        {
+          "status": "consensus",
+          "label": "Tarsus",
+          "lat": 36.913028,
+          "lng": 34.892056,
+          "score": 1000,
+          "sources": [
+            {
+              "ref": "OpenBible.info geo: tarsus → tarsus",
+              "level": "B"
+            }
+          ]
+        }
+      ],
+      "geo": {
+        "lat": 36.913028,
+        "lng": 34.892056
+      },
+      "bibleRefs": [
+        "Acts 9:11",
+        "Acts 9:30",
+        "Acts 11:25",
+        "Acts 21:39",
+        "Acts 22:3"
+      ]
     },
     {
       "id": "temple-early--красные-ворота",
@@ -3518,7 +7675,37 @@
         "coordVariants": 1,
         "heVariants": 1,
         "crossMap": false
-      }
+      },
+      "sameAs": {
+        "openbible": "jerusalem",
+        "wikidata": "Q1218"
+      },
+      "identifications": [
+        {
+          "status": "consensus",
+          "label": "Jerusalem",
+          "lat": 31.776667,
+          "lng": 35.234167,
+          "score": 1000,
+          "sources": [
+            {
+              "ref": "OpenBible.info geo: jerusalem → jerusalem",
+              "level": "B"
+            }
+          ]
+        }
+      ],
+      "geo": {
+        "lat": 31.776667,
+        "lng": 35.234167
+      },
+      "bibleRefs": [
+        "Josh 10:1",
+        "Josh 10:2",
+        "Josh 10:3",
+        "Josh 10:5",
+        "Josh 10:23"
+      ]
     },
     {
       "id": "thessalonica",
@@ -3550,7 +7737,37 @@
         "coordVariants": 1,
         "heVariants": 1,
         "crossMap": false
-      }
+      },
+      "sameAs": {
+        "openbible": "thessalonica",
+        "wikidata": "Q17151"
+      },
+      "identifications": [
+        {
+          "status": "consensus",
+          "label": "Thessaloniki",
+          "lat": 40.637771,
+          "lng": 22.945767,
+          "score": 1000,
+          "sources": [
+            {
+              "ref": "OpenBible.info geo: thessalonica → thessaloniki",
+              "level": "B"
+            }
+          ]
+        }
+      ],
+      "geo": {
+        "lat": 40.637771,
+        "lng": 22.945767
+      },
+      "bibleRefs": [
+        "Acts 17:1",
+        "Acts 17:11",
+        "Acts 17:13",
+        "Acts 20:4",
+        "Acts 27:2"
+      ]
     },
     {
       "id": "thyatira",
@@ -3582,7 +7799,36 @@
         "coordVariants": 1,
         "heVariants": 1,
         "crossMap": false
-      }
+      },
+      "sameAs": {
+        "openbible": "thyatira",
+        "wikidata": "Q1135603"
+      },
+      "identifications": [
+        {
+          "status": "consensus",
+          "label": "Akhisar",
+          "lat": 38.92021,
+          "lng": 27.83655,
+          "score": 1000,
+          "sources": [
+            {
+              "ref": "OpenBible.info geo: thyatira → akhisar",
+              "level": "B"
+            }
+          ]
+        }
+      ],
+      "geo": {
+        "lat": 38.92021,
+        "lng": 27.83655
+      },
+      "bibleRefs": [
+        "Acts 16:14",
+        "Rev 1:11",
+        "Rev 2:18",
+        "Rev 2:24"
+      ]
     },
     {
       "id": "timnah",
@@ -3614,7 +7860,50 @@
         "coordVariants": 1,
         "heVariants": 1,
         "crossMap": false
-      }
+      },
+      "sameAs": {
+        "openbible": "timnah-1",
+        "wikidata": "Q2916736"
+      },
+      "identifications": [
+        {
+          "status": "primary",
+          "label": "Tel Batash",
+          "lat": 31.784831,
+          "lng": 34.910297,
+          "score": 836,
+          "sources": [
+            {
+              "ref": "OpenBible.info geo: timnah-1 → tel-batash",
+              "level": "B"
+            }
+          ]
+        },
+        {
+          "status": "minor",
+          "label": "Horbat Timna",
+          "lat": 31.743041,
+          "lng": 34.935419,
+          "score": -98,
+          "sources": [
+            {
+              "ref": "OpenBible.info geo: timnah-1 → horbat-timna",
+              "level": "B"
+            }
+          ]
+        }
+      ],
+      "geo": {
+        "lat": 31.784831,
+        "lng": 34.910297
+      },
+      "bibleRefs": [
+        "Josh 15:10",
+        "Josh 19:43",
+        "Judg 14:1",
+        "Judg 14:2",
+        "Judg 14:5"
+      ]
     },
     {
       "id": "tomb--воскресение",
@@ -3648,7 +7937,37 @@
         "coordVariants": 1,
         "heVariants": 1,
         "crossMap": false
-      }
+      },
+      "sameAs": {
+        "openbible": "jerusalem",
+        "wikidata": "Q1218"
+      },
+      "identifications": [
+        {
+          "status": "consensus",
+          "label": "Jerusalem",
+          "lat": 31.776667,
+          "lng": 35.234167,
+          "score": 1000,
+          "sources": [
+            {
+              "ref": "OpenBible.info geo: jerusalem → jerusalem",
+              "level": "B"
+            }
+          ]
+        }
+      ],
+      "geo": {
+        "lat": 31.776667,
+        "lng": 35.234167
+      },
+      "bibleRefs": [
+        "Josh 10:1",
+        "Josh 10:2",
+        "Josh 10:3",
+        "Josh 10:5",
+        "Josh 10:23"
+      ]
     },
     {
       "id": "tyre",
@@ -3680,7 +7999,37 @@
         "coordVariants": 1,
         "heVariants": 1,
         "crossMap": false
-      }
+      },
+      "sameAs": {
+        "openbible": "tyre",
+        "wikidata": "Q82070"
+      },
+      "identifications": [
+        {
+          "status": "consensus",
+          "label": "Tyre",
+          "lat": 33.270833,
+          "lng": 35.196111,
+          "score": 1000,
+          "sources": [
+            {
+              "ref": "OpenBible.info geo: tyre → tyre",
+              "level": "B"
+            }
+          ]
+        }
+      ],
+      "geo": {
+        "lat": 33.270833,
+        "lng": 35.196111
+      },
+      "bibleRefs": [
+        "Josh 19:29",
+        "2 Sam 5:11",
+        "2 Sam 24:7",
+        "1 Kgs 5:1",
+        "1 Kgs 7:13"
+      ]
     },
     {
       "id": "ur",
@@ -3712,7 +8061,76 @@
         "coordVariants": 1,
         "heVariants": 1,
         "crossMap": false
-      }
+      },
+      "sameAs": {
+        "openbible": "ur-1",
+        "wikidata": "Q5373099"
+      },
+      "identifications": [
+        {
+          "status": "primary",
+          "label": "Tell el Muqayyar",
+          "lat": 30.962222,
+          "lng": 46.104444,
+          "score": 703,
+          "sources": [
+            {
+              "ref": "OpenBible.info geo: ur-1 → tell-el-muqayyar",
+              "level": "B"
+            }
+          ]
+        },
+        {
+          "status": "minor",
+          "label": "Urfa",
+          "lat": 37.147778,
+          "lng": 38.784444,
+          "score": 53,
+          "sources": [
+            {
+              "ref": "OpenBible.info geo: ur-1 → urfa",
+              "level": "B"
+            }
+          ]
+        },
+        {
+          "status": "minor",
+          "label": "Bayburt",
+          "lat": 40.254639,
+          "lng": 40.226,
+          "score": 22,
+          "sources": [
+            {
+              "ref": "OpenBible.info geo: ur-1 → bayburt",
+              "level": "B"
+            }
+          ]
+        },
+        {
+          "status": "minor",
+          "label": "Urartu",
+          "lat": 39.702761,
+          "lng": 44.300381,
+          "accuracyMeters": 25000,
+          "score": 12,
+          "sources": [
+            {
+              "ref": "OpenBible.info geo: ur-1 → urartu",
+              "level": "B"
+            }
+          ]
+        }
+      ],
+      "geo": {
+        "lat": 30.962222,
+        "lng": 46.104444
+      },
+      "bibleRefs": [
+        "Gen 11:28",
+        "Gen 11:31",
+        "Gen 15:7",
+        "Neh 9:7"
+      ]
     },
     {
       "id": "urfa",
@@ -3744,7 +8162,8 @@
         "coordVariants": 1,
         "heVariants": 1,
         "crossMap": false
-      }
+      },
+      "notes": "no-match: Шанлыурфа — современный город, кандидат северной теории Ура/родины Авраама; остаётся отдельной записью-кандидатом"
     },
     {
       "id": "zebulun",
@@ -3776,7 +8195,8 @@
         "coordVariants": 1,
         "heVariants": 1,
         "crossMap": false
-      }
+      },
+      "notes": "no-match: территория колена"
     },
     {
       "id": "zoar",
@@ -3808,7 +8228,144 @@
         "coordVariants": 1,
         "heVariants": 1,
         "crossMap": false
-      }
+      },
+      "sameAs": {
+        "openbible": "zoar",
+        "wikidata": "Q218016"
+      },
+      "identifications": [
+        {
+          "status": "candidate",
+          "label": "Al Safi",
+          "lat": 31.036904,
+          "lng": 35.487657,
+          "score": 347,
+          "sources": [
+            {
+              "ref": "OpenBible.info geo: zoar → al-safi",
+              "level": "B"
+            }
+          ]
+        },
+        {
+          "status": "alternative",
+          "label": "south of the Lisan",
+          "lat": 31.20849,
+          "lng": 35.449223,
+          "accuracyMeters": 25000,
+          "score": 140,
+          "sources": [
+            {
+              "ref": "OpenBible.info geo: zoar → south-of-the-lisan",
+              "level": "B"
+            }
+          ]
+        },
+        {
+          "status": "minor",
+          "label": "north of the Dead Sea",
+          "lat": 31.795,
+          "lng": 35.595278,
+          "accuracyMeters": 25000,
+          "score": 46,
+          "sources": [
+            {
+              "ref": "OpenBible.info geo: zoar → north-of-the-dead-sea",
+              "level": "B"
+            }
+          ]
+        },
+        {
+          "status": "minor",
+          "label": "Tell al Sheikh Isa",
+          "lat": 31.022968,
+          "lng": 35.47216,
+          "score": 45,
+          "sources": [
+            {
+              "ref": "OpenBible.info geo: zoar → tell-al-sheikh-isa",
+              "level": "B"
+            }
+          ]
+        },
+        {
+          "status": "minor",
+          "label": "mouth of Wadi Mujib",
+          "lat": 31.465833,
+          "lng": 35.573333,
+          "score": 39,
+          "sources": [
+            {
+              "ref": "OpenBible.info geo: zoar → mouth-of-wadi-mujib",
+              "level": "B"
+            }
+          ]
+        },
+        {
+          "status": "minor",
+          "label": "Tawahin el Sukkar",
+          "lat": 31.021611,
+          "lng": 35.475163,
+          "score": 29,
+          "sources": [
+            {
+              "ref": "OpenBible.info geo: zoar → tawahin-el-sukkar",
+              "level": "B"
+            }
+          ]
+        },
+        {
+          "status": "minor",
+          "label": "Tall Iktanu",
+          "lat": 31.819256,
+          "lng": 35.671878,
+          "score": 5,
+          "sources": [
+            {
+              "ref": "OpenBible.info geo: zoar → tall-iktanu",
+              "level": "B"
+            }
+          ]
+        },
+        {
+          "status": "minor",
+          "label": "Esh Shaghur",
+          "lat": 31.829531,
+          "lng": 35.649971,
+          "score": 5,
+          "sources": [
+            {
+              "ref": "OpenBible.info geo: zoar → esh-shaghur",
+              "level": "B"
+            }
+          ]
+        },
+        {
+          "status": "minor",
+          "label": "Bab edh Dhra",
+          "lat": 31.248729,
+          "lng": 35.523005,
+          "score": -46,
+          "sources": [
+            {
+              "ref": "OpenBible.info geo: zoar → bab-edh-dhra",
+              "level": "B"
+            }
+          ]
+        }
+      ],
+      "geo": {
+        "lat": 31.036904,
+        "lng": 35.487657
+      },
+      "bibleRefs": [
+        "Gen 13:10",
+        "Gen 14:2",
+        "Gen 14:8",
+        "Gen 19:22",
+        "Gen 19:23"
+      ]
     }
-  ]
+  ],
+  "attribution": "Place identifications, confidence scores and coordinates partially derived from OpenBible.info Bible Geocoding Data (https://github.com/openbibleinfo/Bible-Geocoding-Data), CC BY 4.0, snapshot 2021-11."
 }
