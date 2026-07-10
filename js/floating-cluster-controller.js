@@ -436,6 +436,32 @@
     try { addCleanListener(window.speechSynthesis, 'voiceschanged', function () { ttsState.voice = pickRuVoice(); }); } catch (_) {}
   }
 
+  // Вставки, которые русский голос не должен читать, будучи вкраплёнными
+  // прямо в русский абзац (иначе textContent склеивает их с прозой):
+  //   [lang="en"]     — англоязычные оригиналы цитат, названия трудов, термины;
+  //   .gtip           — определения глоссария (всплывающая подсказка у .gterm);
+  //   .fn-marker/.tooltip — маркеры сносок и их подсказки.
+  // Латынь (lang="la") намеренно НЕ трогаем — короткие формулы читаются приемлемо.
+  var TTS_STRIP_INLINE = '[lang="en"], [lang^="en-"], .gtip, .fn-marker, .tooltip';
+
+  function readableRuText(el) {
+    if (!el.querySelector(TTS_STRIP_INLINE)) {
+      return (el.textContent || '').trim();
+    }
+    // Клонируем узел и вырезаем нечитаемые вставки, затем берём чистый текст.
+    var clone = el.cloneNode(true);
+    var marked = clone.querySelectorAll(TTS_STRIP_INLINE);
+    Array.prototype.forEach.call(marked, function (n) {
+      if (n.parentNode) n.parentNode.removeChild(n);
+    });
+    // Схлопнём осевшие двойные пробелы/пробелы перед пунктуацией после выреза.
+    return (clone.textContent || '')
+      .replace(/\s{2,}/g, ' ')
+      .replace(/\s+([,.;:!?»])/g, '$1')
+      .replace(/([«])\s+/g, '$1')
+      .trim();
+  }
+
   function getArticleText() {
     // Соберём читательский текст: только параграфы внутри <article>
     var article = qs('article.article-body') ||
@@ -446,11 +472,13 @@
     var blocks = article.querySelectorAll('p, h2, h3, li');
     var out = [];
     Array.prototype.forEach.call(blocks, function (el) {
-      // Пропускаем: метаданные, сноски (английские), tooltips, notice (copyright/source)
+      // Пропускаем: метаданные, сноски, tooltips, notice (copyright/source),
+      // и целые англоязычные блоки (оригиналы цитат/карточек, [lang="en"]).
       if (el.closest('.summary-card, .gtip, .fn-marker, .tooltip, .notice, ' +
                      '.original-author-card, .footnote, aside, .sources-block, ' +
-                     '.reading-list-section, [hidden], [data-pagefind-ignore]')) return;
-      var t = (el.textContent || '').trim();
+                     '.reading-list-section, [hidden], [data-pagefind-ignore], ' +
+                     '[lang="en"], [lang^="en-"]')) return;
+      var t = readableRuText(el);
       if (t.length > 0) out.push(t);
     });
     return out.join('. ');
