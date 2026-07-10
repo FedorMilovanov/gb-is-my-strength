@@ -1005,6 +1005,7 @@
     ensureMobileFallbackControls();
     initPlayExpand();
     initCustomSlotLongPressStop();
+    initGillInlineSpeedRail();
 
     // 2. Gill rail / non-root cluster controls (работают без data-fc-root)
     initGillRail();
@@ -1161,6 +1162,10 @@
         } else if (document.body) {
           document.body.style.overflow = 'hidden';
         }
+        // Any Gill mobile top-bar auto-hide logic listens for this to force
+        // an immediate re-show, even mid-scroll-down (GillSeriesMobileBar.astro).
+        // Harmless no-op on routes without that listener (Hermenevtika, etc.).
+        try { document.dispatchEvent(new CustomEvent('gb:gill-sheet-open')); } catch (_) {}
       }
     }
     function closeOverlay(el) {
@@ -1242,6 +1247,89 @@
     // Gill v16 mobile bottom-bar dual-progress ring (article % + series %)
     // is driven centrally by updateScrollProgress() below — no separate
     // listener needed here (avoids two writers racing on the same nodes).
+
+    // ── Learning & Settings sheets (Gill mobile v5) ──────────────────────
+    // Additive: only present on routes that ship GillLearningSheet.astro /
+    // GillReaderSettingsSheet.astro (the 6 Gill mobile routes). Reuses the
+    // same openOverlay/closeOverlay primitives as series/part above, so
+    // Hermenevtika/GillContext (which use .toc-overlay for OTHER ids) are
+    // completely unaffected — these selectors simply don't match there.
+    var learningOverlay = qs('#gillLearningOverlay');
+    var settingsOverlay = qs('#gillSettingsOverlay');
+    var mobLearningBtn = qs('#mobLearningBtn');
+    var mobSettingsBtn = qs('#mobSettingsBtn');
+    var extraOverlays = [learningOverlay, settingsOverlay].filter(function(el) { return !!el; });
+
+    extraOverlays.forEach(function(overlay) {
+      if (!overlay.classList.contains('is-open')) overlay.setAttribute('aria-hidden', 'true');
+      var dialog = overlay.querySelector('.toc-sheet');
+      if (dialog) dialog.setAttribute('aria-modal', 'true');
+    });
+
+    function triggerFor(overlay) {
+      return overlay === learningOverlay ? mobLearningBtn : overlay === settingsOverlay ? mobSettingsBtn : null;
+    }
+    function openGillSheet(overlay, trigger) {
+      if (!overlay) return;
+      openOverlay(overlay);
+      if (trigger) trigger.setAttribute('aria-expanded', 'true');
+      var focusable = overlay.querySelector('input, button:not([data-overlay-close]):not(.toc-sheet__handle)');
+      if (focusable) setTimeout(function() { try { focusable.focus(); } catch(_) {} }, 20);
+    }
+    function closeGillSheet(overlay, restoreFocus) {
+      if (!overlay) return;
+      var trigger = triggerFor(overlay);
+      closeOverlay(overlay);
+      if (trigger) trigger.setAttribute('aria-expanded', 'false');
+      if (restoreFocus && trigger && trigger.focus) { try { trigger.focus(); } catch(_) {} }
+    }
+
+    if (mobLearningBtn && learningOverlay) {
+      addCleanListener(mobLearningBtn, 'click', function(e) {
+        e.preventDefault();
+        closeGillSheet(settingsOverlay, false);
+        openGillSheet(learningOverlay, mobLearningBtn);
+      });
+    }
+    if (mobSettingsBtn && settingsOverlay) {
+      addCleanListener(mobSettingsBtn, 'click', function(e) {
+        e.preventDefault();
+        closeGillSheet(learningOverlay, false);
+        openGillSheet(settingsOverlay, mobSettingsBtn);
+      });
+    }
+
+    extraOverlays.forEach(function(overlay) {
+      addCleanListener(overlay, 'click', function(e) {
+        // Only a direct hit on the backdrop closes — clicks inside the
+        // sheet must never bubble-close it (owner: A-/A+ etc. stay open).
+        if (e.target === overlay) closeGillSheet(overlay, true);
+      });
+      var handle = overlay.querySelector('.toc-sheet__handle');
+      if (handle) addCleanListener(handle, 'click', function() { closeGillSheet(overlay, true); });
+      overlay.querySelectorAll('[data-overlay-close]').forEach(function(btn) {
+        addCleanListener(btn, 'click', function() { closeGillSheet(overlay, true); });
+      });
+      // Focus trap while this sheet is open.
+      addCleanListener(overlay, 'keydown', function(e) {
+        if (e.key !== 'Tab' || !overlay.classList.contains('is-open')) return;
+        var focusable = Array.prototype.slice.call(
+          overlay.querySelectorAll('button:not([disabled]), a[href], input:not([disabled]), [tabindex]:not([tabindex="-1"])')
+        ).filter(function(el) { return el.offsetParent !== null; });
+        if (!focusable.length) return;
+        var first = focusable[0], last = focusable[focusable.length - 1];
+        if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); }
+        else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
+      });
+    });
+
+    if (extraOverlays.length) {
+      addCleanListener(document, 'keydown', function(e) {
+        if (e.key !== 'Escape') return;
+        if (learningOverlay && learningOverlay.classList.contains('is-open')) closeGillSheet(learningOverlay, true);
+        if (settingsOverlay && settingsOverlay.classList.contains('is-open')) closeGillSheet(settingsOverlay, true);
+      });
+    }
   }
 
   /* v16 action handlers (non-inline) */
@@ -1287,6 +1375,10 @@
       // not the bloom-pill this function builds. Skip it so there is only
       // ONE speed panel per ember, not two competing ones.
       if (ember.closest('[data-gb-speed-custom]')) return;
+      // Gill mobile v5 top bar: no free edge for the bloom-pill (Play sits
+      // mid-row between Home and Save), so the "Обучение" trigger slot-swaps
+      // to a horizontal .mobile-speedrail instead — see initGillInlineSpeedRail().
+      if (ember.closest('[data-fc-speed-mode="inline"]')) return;
 
       var speeds = [1, 1.25, 1.5, 1.75, 2];
       var currentRate = 1;
@@ -1505,7 +1597,10 @@
      follows a fired long-press is suppressed so it doesn't re-trigger play.
      ===================================================== */
   function initCustomSlotLongPressStop() {
-    qsa('[data-gb-speed-custom] .gb-ember').forEach(function (ember) {
+    // Gill mobile v5 top bar (data-fc-speed-mode="inline") also opts its
+    // ember out of the bloom-pill (see initPlayExpand()), so it needs this
+    // same restored gesture — same selector family as [data-gb-speed-custom].
+    qsa('[data-gb-speed-custom] .gb-ember, [data-fc-speed-mode="inline"] .gb-ember').forEach(function (ember) {
       var pressTimer;
       var suppressClick = false;
       addCleanListener(ember, 'pointerdown', function (e) {
@@ -1537,6 +1632,108 @@
     });
   }
 
+  /* =====================================================
+     GILL MOBILE v5 — inline speed rail
+     -----------------------------------------------------
+     The Gill mobile top bar has no free edge for the bloom-pill (Play sits
+     mid-row between Home and Save), so instead of .gb-ember-expand it
+     slot-swaps the "Обучение" trigger for a horizontal .mobile-speedrail in
+     the same .mobile-top-slot (data-fc-speed-mode="inline", opted out of
+     initPlayExpand() above — see there). Storage stays gb:audio:rate, the
+     same key the canonical bloom-pill and the TTS engine already read/write,
+     so switching between desktop and mobile mid-session keeps the same rate.
+     ===================================================== */
+  function initGillInlineSpeedRail() {
+    var root = qs('[data-fc-speed-mode="inline"]');
+    if (!root) return;
+    var slot = root.querySelector('.mobile-top-slot');
+    var learningBtn = root.querySelector('.mobile-learning-trigger');
+    var rail = root.querySelector('.mobile-speedrail');
+    var badge = root.querySelector('.mobile-spdbadge');
+    var ember = root.querySelector('.mobile-playwrap .gb-ember');
+    if (!slot || !rail || !ember) return;
+
+    var currentRate = 1;
+    try { currentRate = parseFloat(localStorage.getItem('gb:audio:rate') || localStorage.getItem('gbx-tts-rate')) || 1; } catch(_){}
+    var speedButtons = Array.prototype.slice.call(rail.querySelectorAll('[data-speed]'));
+
+    function syncButtons() {
+      speedButtons.forEach(function(btn) {
+        var isThis = parseFloat(btn.getAttribute('data-speed')) === currentRate;
+        btn.setAttribute('aria-checked', isThis ? 'true' : 'false');
+      });
+      if (badge) {
+        var label = currentRate + '×';
+        badge.textContent = label;
+        badge.setAttribute('aria-label', 'Скорость озвучки ' + label);
+      }
+    }
+    syncButtons();
+
+    var open = false;
+    var offeredOnce = false;
+    var closeTimer = null;
+    function setOpen(next) {
+      open = next;
+      root.classList.toggle('speed-open', open);
+      rail.setAttribute('aria-hidden', open ? 'false' : 'true');
+      if (learningBtn) learningBtn.tabIndex = open ? -1 : 0;
+      speedButtons.forEach(function(btn) { btn.tabIndex = open ? 0 : -1; });
+      if (open) { try { document.dispatchEvent(new CustomEvent('gb:gill-sheet-open')); } catch(_) {} }
+    }
+    setOpen(false);
+    // Cross-file hook: GillSeriesMobileBar.astro's auto-hide logic and other
+    // sheet triggers can force-close the rail without reaching into this
+    // closure directly.
+    window.__gillCloseSpeedRail = function() { clearTimeout(closeTimer); setOpen(false); };
+
+    if (badge) {
+      addCleanListener(badge, 'click', function(e) {
+        e.stopPropagation();
+        clearTimeout(closeTimer);
+        setOpen(!open);
+      });
+    }
+    addCleanListener(rail, 'click', function(e) {
+      var btn = e.target.closest('[data-speed]');
+      if (!btn) return;
+      currentRate = parseFloat(btn.getAttribute('data-speed'));
+      try { localStorage.setItem('gb:audio:rate', currentRate); try{localStorage.setItem('gbx-tts-rate', currentRate)}catch(_){}; } catch(_){}
+      syncButtons();
+      try { window.dispatchEvent(new CustomEvent('gb:tts-rate-change', { detail: { rate: currentRate } })); } catch(_) {}
+      var st = currentTtsUiState(ember);
+      if (st === 'idle' || !st || st === 'complete') { handlePlayClick(ember); }
+      clearTimeout(closeTimer);
+      closeTimer = setTimeout(function() { setOpen(false); }, 150);
+    });
+    addCleanListener(document, 'click', function(e) {
+      if (open && !slot.contains(e.target)) setOpen(false);
+    });
+    addCleanListener(document, 'keydown', function(e) {
+      if (!open) return;
+      if (e.key === 'Escape') { setOpen(false); return; }
+      if (e.key === 'ArrowLeft' || e.key === 'ArrowRight') {
+        e.preventDefault();
+        var idx = speedButtons.indexOf(document.activeElement);
+        var next = e.key === 'ArrowRight' ? Math.min(idx + 1, speedButtons.length - 1) : Math.max(idx - 1, 0);
+        if (idx === -1) next = 0;
+        speedButtons[next].focus();
+      }
+    });
+
+    // First play from idle: reveal the rail once, briefly, so the reader
+    // discovers it exists — never again after that (owner spec, mirrors the
+    // mobile reference's one-time speedOffered auto-close pattern).
+    new MutationObserver(function() {
+      var st = ember.dataset.state || 'idle';
+      if (st === 'playing' && !offeredOnce) {
+        offeredOnce = true;
+        clearTimeout(closeTimer);
+        setOpen(true);
+        closeTimer = setTimeout(function() { setOpen(false); }, 4500);
+      }
+    }).observe(ember, { attributes: true, attributeFilter: ['data-state'] });
+  }
 
   /* =====================================================
      GBS2 CONTROLS — Баптисты России series UI wiring

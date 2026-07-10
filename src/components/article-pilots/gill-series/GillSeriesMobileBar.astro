@@ -1,25 +1,31 @@
 ---
 /**
- * GillSeriesMobileBar — mobile (<64em) control surface.
+ * GillSeriesMobileBar — mobile (<64em) control surface, v5.
  *
- *   TOP bar: back(→«Биографии служителей») → search-this-part input
- *     (filters the current part's TOC by heading text, always visible —
- *     no longer swaps with a speed rail; that swap was confusing and is
- *     gone) → Play (canon .gb-ember; speed is its own canonical bloom
- *     panel, .gb-ember-expand, same as everywhere else in the app) →
- *     Save (binary toggle, no halo). Auto-hides on scroll-down for a clean
- *     1-on-1 reading view, reveals on scroll-up, and stays pinned open the
- *     whole time TTS is playing (initGillMobileTopBarAutoHide below).
- *   BOTTOM bar: dual-progress ring (inner=текущая статья %, outer=вся
- *     серия %) → «Сейчас читаете» + текущий раздел (opens the existing
- *     part-TOC sheet — series access stays one tap further via its
- *     #backToSeries arrow, same two-sheet system already live) → theme →
- *     A−/A+ → «Поделиться». Always visible — never auto-hides.
+ *   TOP bar: Back(→«Биографии служителей») → Home(→«/») → Learning trigger
+ *     /inline speed rail slot-swap (data-fc-speed-mode="inline" opts the
+ *     ember OUT of the canonical bloom-pill in floating-cluster-controller.js
+ *     — see initGillInlineSpeedRail()) → Play+badge → Save. Auto-hides on
+ *     scroll-down, reveals on scroll-up, stays pinned while any Gill sheet
+ *     or the speed rail is open, or while TTS is playing/paused
+ *     (initGillMobileTopBarAutoHide below implements the exact
+ *     hasOpenGillSheet/canAutoHideGillTopBar contract — this is also the
+ *     fix for the A−/A+ reflow bug: hideGillTopBar() only ever touches the
+ *     top bar's own class, never closeGillSheet()).
+ *   BOTTOM bar: dual-progress ring → «Сейчас читаете» (opens Part TOC,
+ *     unchanged) → theme cycle (День→Сепия→Ночь→День,
+ *     window.applyGillReaderTheme) → settings sheet trigger → «Поделиться»
+ *     (data-action="share" — kept verbatim; js/highlights.js docks its
+ *     contextual save FAB immediately before this exact selector). Always
+ *     visible, never auto-hides.
  *
- * data-fc-action="theme"/"play"/"save"/"font-up"/"font-down" and
- * data-action="share" go through the existing global cluster delegation on
- * [data-fc-root] (floating-cluster-controller.js) — only the local TOC
- * search and the top-bar auto-hide are bar-local script here.
+ * data-fc-action="save" and data-action="share" go through the existing
+ * global cluster delegation / initActionHandlers() on
+ * [data-fc-root]/[data-fc-controls]. Learning/Settings sheet open+close,
+ * focus-trap and scroll-lock are wired generically in initTocPopups()
+ * (floating-cluster-controller.js) alongside the existing Part/Series TOC —
+ * only the theme cycle, inline speed rail and top-bar auto-hide are
+ * bar-local script here.
  */
 import PlayEmber from '@/components/ui/floating-cluster/PlayEmber.astro';
 import SaveButton from '@/components/ui/floating-cluster/SaveButton.astro';
@@ -32,18 +38,35 @@ interface Props {
 const { pageId } = Astro.props as Props;
 const page = GILL_PAGE_DATA[pageId];
 ---
-<div class="mobile-top-bar" data-fc-root data-fc-variant="gill" data-gill-mobile-bar>
+<div class="mobile-top-bar" data-fc-root data-fc-variant="gill" data-gill-mobile-bar data-fc-speed-mode="inline">
   <button class="gb-icon" id="mobBackBtn" type="button" aria-label="Назад" data-home-href="../../biografii/">
     <svg viewBox="0 0 24 24"><path d="M19 12H5M12 19l-7-7 7-7" /></svg>
   </button>
-  <label class="mobile-top-search" for="mobTocSearch">
-    <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7" /><path d="M21 21l-4.3-4.3" /></svg>
-    <input id="mobTocSearch" type="text" placeholder="Поиск по разделам…" autocomplete="off" />
-  </label>
+  <a class="gb-icon" id="mobHomeBtn" href="../../" aria-label="На главную">
+    <svg viewBox="0 0 24 24"><path d="M3 11l9-8 9 8" /><path d="M5 10v10h14V10" /><path d="M9 20v-6h6v6" /></svg>
+  </a>
+
+  <div class="mobile-top-slot">
+    <button type="button" class="mobile-learning-trigger" id="mobLearningBtn" data-gill-learning-open aria-expanded="false" aria-controls="gillLearningOverlay">
+      <svg viewBox="0 0 24 24"><path d="M2 10l10-5 10 5-10 5z" /><path d="M6 12v5c3 2 9 2 12 0v-5" /><path d="M22 10v6" /></svg>
+      <span>Обучение</span>
+    </button>
+    <div class="mobile-speedrail" id="mobileSpeedrail" role="radiogroup" aria-label="Скорость озвучки" aria-hidden="true">
+      <button type="button" class="mobile-speed" role="radio" data-speed="0.8" aria-checked="false">0.8×</button>
+      <button type="button" class="mobile-speed" role="radio" data-speed="1" aria-checked="true">1×</button>
+      <button type="button" class="mobile-speed" role="radio" data-speed="1.25" aria-checked="false">1.25×</button>
+      <button type="button" class="mobile-speed" role="radio" data-speed="1.5" aria-checked="false">1.5×</button>
+      <button type="button" class="mobile-speed" role="radio" data-speed="1.75" aria-checked="false">1.75×</button>
+      <button type="button" class="mobile-speed" role="radio" data-speed="2" aria-checked="false">2×</button>
+    </div>
+  </div>
+
   <span class="mobile-playwrap">
     <PlayEmber audioState="none" class="mobile-top-ember" tip="Озвучка" />
+    <button type="button" class="mobile-spdbadge" id="mobSpdBadge" aria-label="Скорость озвучки 1×">1×</button>
   </span>
-  <SaveButton class="gb-icon" tip="Сохранить" />
+
+  <SaveButton class="mobile-top-save" tip="Сохранить" />
 </div>
 
 <div class="mobile-bottom-bar" data-fc-root data-fc-variant="gill" data-gill-mobile-bar>
@@ -71,17 +94,13 @@ const page = GILL_PAGE_DATA[pageId];
     <span class="mobile-btoc-section__main" id="gbs2MobSec">{page.mobileSection}</span>
   </button>
 
-  <span class="mobile-bottom-divider" aria-hidden="true"></span>
-
-  <button class="gb-icon gb-theme-toggle" type="button" data-fc-action="theme" aria-label="Тема">
-    <span class="theme-icon-sun"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="4.5" /><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41" /></svg></span>
-    <span class="theme-icon-moon"><svg viewBox="0 0 24 24"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z" /></svg></span>
+  <button class="gb-icon" type="button" id="mobGillThemeBtn" data-gill-theme-cycle aria-label="Тема: День">
+    <span class="theme-glyph" aria-hidden="true">☀</span>
   </button>
 
-  <button class="mobile-font-btn" type="button" data-fc-action="font-down" aria-label="Уменьшить шрифт">A−</button>
-  <button class="mobile-font-btn" type="button" data-fc-action="font-up" aria-label="Увеличить шрифт">A+</button>
-
-  <span class="mobile-bottom-divider" aria-hidden="true"></span>
+  <button class="gb-icon" type="button" id="mobSettingsBtn" data-gill-settings-open aria-label="Настройки чтения" aria-expanded="false" aria-controls="gillSettingsOverlay">
+    <svg viewBox="0 0 24 24"><path d="M4 7h10M18 7h2M4 17h2M10 17h10" /><circle cx="16" cy="7" r="2" /><circle cx="8" cy="17" r="2" /></svg>
+  </button>
 
   <button class="gb-icon" type="button" data-action="share" aria-label="Поделиться">
     <svg viewBox="0 0 24 24"><circle cx="18" cy="5" r="3" /><circle cx="6" cy="12" r="3" /><circle cx="18" cy="19" r="3" /><line x1="8.59" y1="13.51" x2="15.42" y2="17.49" /><line x1="15.41" y1="6.51" x2="8.59" y2="10.49" /></svg>
@@ -89,57 +108,97 @@ const page = GILL_PAGE_DATA[pageId];
 </div>
 
 <script>
-  // Локальный поиск по оглавлению ТЕКУЩЕЙ части (референс: 'input' на
-  // #tocSearch фильтрует .btoc-link по тексту и открывает панель только
-  // когда есть реальный запрос — очистка поля не форсит открытие заново).
-  function initGillMobileTocSearch() {
-    const input = document.getElementById('mobTocSearch') as HTMLInputElement | null;
-    const partBtn = document.getElementById('mobPartTocBtn') as HTMLElement | null;
-    const list = document.getElementById('gbs2PartToc') as HTMLElement | null;
-    const empty = document.getElementById('gbs2PartTocEmpty') as HTMLElement | null;
-    if (!input || !list) return;
+  const READER_THEME_KEY = 'gb:gill-reader-theme:v1';
 
-    function items(): HTMLElement[] {
-      return Array.prototype.slice.call(list!.querySelectorAll('.toc-part-item')) as HTMLElement[];
+  // Shared by the bottom-bar quick-cycle button AND GillReaderSettingsSheet's
+  // segmented control — one function owns theme application so the two
+  // surfaces can never fall out of sync. "Ночь" reuses the sitewide
+  // html.dark toggle (single dark-mode implementation); "Сепия" is scoped
+  // to [data-gill-v16][data-gill-reader-theme="sepia"] under <64em only
+  // (see css/floating-cluster.css) and never touches html.sepia, which
+  // doesn't exist sitewide.
+  function applyGillReaderTheme(theme: string) {
+    const gillRoot = document.querySelector('[data-gill-v16]') as HTMLElement | null;
+    if (theme === 'dark') {
+      document.documentElement.classList.add('dark');
+      if (gillRoot) gillRoot.removeAttribute('data-gill-reader-theme');
+    } else if (theme === 'sepia') {
+      document.documentElement.classList.remove('dark');
+      if (gillRoot) gillRoot.setAttribute('data-gill-reader-theme', 'sepia');
+    } else {
+      document.documentElement.classList.remove('dark');
+      if (gillRoot) gillRoot.removeAttribute('data-gill-reader-theme');
     }
+    try { localStorage.setItem(READER_THEME_KEY, theme); } catch (_) {}
+    try { localStorage.setItem('theme', theme === 'dark' ? 'dark' : 'light'); } catch (_) {}
 
-    input.addEventListener('input', () => {
-      const q = input.value.trim().toLowerCase();
-      const rows = items();
-      let shown = 0;
-      rows.forEach((row) => {
-        const hit = !q || (row.textContent || '').toLowerCase().indexOf(q) > -1;
-        row.hidden = !hit;
-        if (hit) shown++;
-      });
-      if (empty) empty.hidden = shown !== 0 || rows.length === 0;
-      if (q && partBtn) partBtn.click();
+    const label = theme === 'dark' ? 'Ночь' : theme === 'sepia' ? 'Сепия' : 'День';
+    const glyph = theme === 'dark' ? '☾' : theme === 'sepia' ? '◐' : '☀';
+    const cycleBtn = document.getElementById('mobGillThemeBtn');
+    if (cycleBtn) {
+      cycleBtn.setAttribute('aria-label', 'Тема: ' + label);
+      const g = cycleBtn.querySelector('.theme-glyph');
+      if (g) g.textContent = glyph;
+    }
+    document.querySelectorAll('[data-gill-theme-btn]').forEach((btn) => {
+      btn.setAttribute('aria-pressed', (btn as HTMLElement).dataset.theme === theme ? 'true' : 'false');
     });
+  }
+  (window as any).applyGillReaderTheme = applyGillReaderTheme;
+
+  function initGillThemeCycle() {
+    const cycleBtn = document.getElementById('mobGillThemeBtn');
+    if (!cycleBtn) return;
+    const order = ['light', 'sepia', 'dark'];
+    cycleBtn.addEventListener('click', () => {
+      const gillRoot = document.querySelector('[data-gill-v16]') as HTMLElement | null;
+      const current = document.documentElement.classList.contains('dark')
+        ? 'dark'
+        : gillRoot && gillRoot.getAttribute('data-gill-reader-theme') === 'sepia'
+          ? 'sepia'
+          : 'light';
+      applyGillReaderTheme(order[(order.indexOf(current) + 1) % order.length]);
+    });
+    // Restore on load — best effort only (no FOUC guard for the sepia
+    // scope specifically; a brief flash for returning sepia readers is an
+    // accepted trade-off, see lane report).
+    try {
+      const saved = localStorage.getItem(READER_THEME_KEY);
+      if (saved) applyGillReaderTheme(saved);
+    } catch (_) {}
   }
 
   // Smart auto-hide (owner: "верхняя как-то умно убирается и появляется…
   // если PLAY нажали, то пускай фиксируется"): hides the top bar on
-  // scroll-down to give a clean 1-on-1 reading view, reveals it again on
-  // scroll-up, and stays pinned open the whole time TTS is playing so the
-  // Play control is never lost mid-listen. Toggles .gbs2-tbhidden on the
-  // world root; the CSS (floating-cluster.css) owns the actual hide/reveal
-  // animation and the matching content padding-top shrink/grow. The Play
-  // ring animation itself needs no new work — .gb-ember already animates
-  // its progress ring via the canonical --p mechanism.
+  // scroll-down, reveals on scroll-up, stays pinned while ANY Gill sheet
+  // (Part/Series TOC, Learning, Settings) or the inline speed rail is open,
+  // or while TTS is playing/paused. This is also the A−/A+ reflow fix: the
+  // hide function only ever toggles the bar's own class and NEVER closes a
+  // sheet — a font-size change reflowing the article and nudging scrollTop
+  // can no longer read as "the settings sheet vanished".
   function initGillMobileTopBarAutoHide() {
     const worldEl = document.querySelector('.gbs2-world[data-gill-v16]');
     const topBar = document.querySelector('.mobile-top-bar[data-gill-mobile-bar]');
-    const ember = topBar && topBar.querySelector('.gb-ember');
+    const ember = topBar ? topBar.querySelector('.gb-ember') : null;
     if (!worldEl || !topBar) return;
     const world = worldEl;
 
     let lastY = window.scrollY || 0;
     let hidden = false;
-    let pinned = false;
+    let ttsActive = false;
     let ticking = false;
 
+    function hasOpenGillSheet() {
+      return Boolean(document.querySelector('.toc-overlay.is-open'));
+    }
+    function speedRailOpen() {
+      return topBar!.classList.contains('speed-open');
+    }
+    function canAutoHide() {
+      return !hasOpenGillSheet() && !speedRailOpen() && !ttsActive && !topBar!.contains(document.activeElement);
+    }
     function apply() {
-      world.classList.toggle('gbs2-tbhidden', hidden && !pinned);
+      world!.classList.toggle('gbs2-tbhidden', hidden && canAutoHide());
     }
 
     function onScroll() {
@@ -147,10 +206,15 @@ const page = GILL_PAGE_DATA[pageId];
       ticking = true;
       requestAnimationFrame(() => {
         const y = window.scrollY || 0;
+        if (!canAutoHide()) {
+          hidden = false;
+          lastY = y;
+          apply();
+          ticking = false;
+          return;
+        }
         const delta = y - lastY;
-        // Ignore rubber-band/sub-gesture jitter; only react to a real scroll.
         if (Math.abs(delta) > 6) {
-          // Nothing to gain by hiding right at the top of the article.
           hidden = y >= 80 && delta > 0;
           lastY = y;
           apply();
@@ -161,18 +225,23 @@ const page = GILL_PAGE_DATA[pageId];
     window.addEventListener('scroll', onScroll, { passive: true });
 
     if (ember) {
-      const syncPinned = () => {
-        const wasPinned = pinned;
-        pinned = (ember as HTMLElement).dataset.state === 'playing';
-        if (pinned !== wasPinned) apply();
+      const syncTts = () => {
+        const st = (ember as HTMLElement).dataset.state;
+        const wasActive = ttsActive;
+        ttsActive = st === 'playing' || st === 'paused';
+        if (ttsActive !== wasActive) apply();
       };
-      syncPinned();
-      new MutationObserver(syncPinned).observe(ember, { attributes: true, attributeFilter: ['data-state'] });
+      syncTts();
+      new MutationObserver(syncTts).observe(ember, { attributes: true, attributeFilter: ['data-state'] });
     }
+
+    // A sheet or the speed rail opening must re-show the bar immediately,
+    // even mid-scroll-down — not just on the next scroll tick.
+    document.addEventListener('gb:gill-sheet-open', () => { hidden = false; apply(); });
   }
 
   function boot() {
-    initGillMobileTocSearch();
+    initGillThemeCycle();
     initGillMobileTopBarAutoHide();
 
     const backBtn = document.getElementById('mobBackBtn');

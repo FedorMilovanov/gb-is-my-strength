@@ -1,0 +1,165 @@
+---
+/**
+ * GillReaderSettingsSheet — mobile (<64em) reading settings for the Gill
+ * series: theme (День/Сепия/Ночь), text size (A−/A+, reuses the existing
+ * site-wide font-scale contract via data-fc-action), line-height and
+ * measure (width). Same .toc-overlay/.toc-sheet shell as the other Gill
+ * sheets — open/close/focus-trap/scroll-lock come from
+ * initTocPopups() in floating-cluster-controller.js.
+ *
+ * Sepia is scoped to [data-gill-v16][data-gill-reader-theme="sepia"] under
+ * a <64em media query (see css/floating-cluster.css) — it never touches
+ * html.sepia (doesn't exist sitewide) or bleeds into desktop/other routes.
+ * "Ночь" reuses the existing sitewide html.dark toggle so there is only
+ * ONE dark-mode implementation, not a second competing one.
+ */
+---
+<div id="gillSettingsOverlay" class="toc-overlay gill-settings-overlay" data-gill-overlay="settings" aria-hidden="true">
+  <section class="toc-sheet gill-settings-sheet" role="dialog" aria-modal="true" aria-labelledby="gillSettingsTitle">
+    <button type="button" class="toc-sheet__handle" data-overlay-close aria-label="Закрыть настройки"></button>
+    <div class="toc-sheet__head">
+      <div class="head-copy"><div class="lab">Чтение</div><h3 id="gillSettingsTitle">Настройки</h3></div>
+      <button type="button" class="gb-icon" data-overlay-close aria-label="Закрыть"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18" /></svg></button>
+    </div>
+    <div class="toc-sheet__body">
+      <div class="setting-group">
+        <span class="setting-label">Тема</span>
+        <div class="setting-segment" id="gillSettingsThemeGroup">
+          <button type="button" class="reader-setting-btn" data-gill-theme-btn data-theme="light" aria-pressed="true">День</button>
+          <button type="button" class="reader-setting-btn" data-gill-theme-btn data-theme="sepia" aria-pressed="false">Сепия</button>
+          <button type="button" class="reader-setting-btn" data-gill-theme-btn data-theme="dark" aria-pressed="false">Ночь</button>
+        </div>
+      </div>
+      <div class="setting-group">
+        <span class="setting-label">Размер текста</span>
+        <div class="font-track">
+          <button type="button" class="font-step font-step--sm" data-fc-action="font-down" aria-label="Уменьшить текст">A</button>
+          <div class="font-dots" id="gillFontDots" aria-hidden="true"></div>
+          <button type="button" class="font-step font-step--lg" data-fc-action="font-up" aria-label="Увеличить текст">A</button>
+        </div>
+      </div>
+      <div class="setting-group">
+        <span class="setting-label">Межстрочный интервал</span>
+        <div class="setting-segment" id="gillLineHeightGroup">
+          <button type="button" class="reader-setting-btn" data-line="compact" aria-pressed="false">Плотный</button>
+          <button type="button" class="reader-setting-btn" data-line="normal" aria-pressed="true">Обычный</button>
+          <button type="button" class="reader-setting-btn" data-line="relaxed" aria-pressed="false">Свободный</button>
+        </div>
+      </div>
+      <div class="setting-group">
+        <span class="setting-label">Ширина текста</span>
+        <div class="setting-segment" id="gillMeasureGroup">
+          <button type="button" class="reader-setting-btn" data-measure="narrow" aria-pressed="false">Узкая</button>
+          <button type="button" class="reader-setting-btn" data-measure="normal" aria-pressed="true">Обычная</button>
+          <button type="button" class="reader-setting-btn" data-measure="wide" aria-pressed="false">Широкая</button>
+        </div>
+      </div>
+    </div>
+  </section>
+</div>
+
+<script>
+  const LINE_HEIGHT_KEY = 'gb:gill-line-height:v1';
+  const MEASURE_KEY = 'gb:gill-measure:v1';
+  // "normal" matches the site's existing baseline article line-height (1.6)
+  // exactly, so picking it explicitly never causes a visible jump.
+  const LINE_VALUES: Record<string, string> = { compact: '1.45', normal: '1.6', relaxed: '1.85' };
+  const MEASURE_VALUES: Record<string, string> = { narrow: '36rem', normal: '43rem', wide: '50rem' };
+
+  function initGillReaderSettings() {
+    const overlay = document.getElementById('gillSettingsOverlay');
+    if (!overlay) return;
+    const gillRoot = document.querySelector('[data-gill-v16]') as HTMLElement | null;
+
+    function setPressed(group: Element, current: HTMLElement) {
+      group.querySelectorAll('button').forEach((b) => b.setAttribute('aria-pressed', b === current ? 'true' : 'false'));
+    }
+
+    // ---- Line-height ----
+    const lineGroup = document.getElementById('gillLineHeightGroup');
+    function applyLineHeight(value: string) {
+      if (gillRoot) gillRoot.style.setProperty('--gbs2-article-line', LINE_VALUES[value] || LINE_VALUES.normal);
+      try { localStorage.setItem(LINE_HEIGHT_KEY, value); } catch (_) {}
+    }
+    if (lineGroup) {
+      lineGroup.addEventListener('click', (e) => {
+        const btn = (e.target as HTMLElement).closest('[data-line]') as HTMLElement | null;
+        if (!btn) return;
+        applyLineHeight(btn.dataset.line || 'normal');
+        setPressed(lineGroup, btn);
+      });
+      try {
+        const saved = localStorage.getItem(LINE_HEIGHT_KEY);
+        if (saved && LINE_VALUES[saved]) {
+          applyLineHeight(saved);
+          const btn = lineGroup.querySelector('[data-line="' + saved + '"]') as HTMLElement | null;
+          if (btn) setPressed(lineGroup, btn);
+        }
+      } catch (_) {}
+    }
+
+    // ---- Measure (text width) ----
+    const measureGroup = document.getElementById('gillMeasureGroup');
+    function applyMeasure(value: string) {
+      if (gillRoot) gillRoot.style.setProperty('--gbs2-article-measure', MEASURE_VALUES[value] || MEASURE_VALUES.normal);
+      try { localStorage.setItem(MEASURE_KEY, value); } catch (_) {}
+    }
+    if (measureGroup) {
+      measureGroup.addEventListener('click', (e) => {
+        const btn = (e.target as HTMLElement).closest('[data-measure]') as HTMLElement | null;
+        if (!btn) return;
+        applyMeasure(btn.dataset.measure || 'normal');
+        setPressed(measureGroup, btn);
+      });
+      try {
+        const saved = localStorage.getItem(MEASURE_KEY);
+        if (saved && MEASURE_VALUES[saved]) {
+          applyMeasure(saved);
+          const btn = measureGroup.querySelector('[data-measure="' + saved + '"]') as HTMLElement | null;
+          if (btn) setPressed(measureGroup, btn);
+        }
+      } catch (_) {}
+    }
+
+    // ---- Theme (День/Сепия/Ночь) — settings segment mirrors the quick
+    // cycle button in the bottom bar via the shared window.applyGillReaderTheme
+    // (defined in GillSeriesMobileBar.astro, which also restores it on load).
+    const themeGroup = document.getElementById('gillSettingsThemeGroup');
+    if (themeGroup) {
+      themeGroup.addEventListener('click', (e) => {
+        const btn = (e.target as HTMLElement).closest('[data-gill-theme-btn]') as HTMLElement | null;
+        if (!btn) return;
+        const theme = btn.dataset.theme || 'light';
+        if ((window as any).applyGillReaderTheme) (window as any).applyGillReaderTheme(theme);
+      });
+    }
+
+    // Font-scale dots mirror the existing sitewide contract (gb:font-scale,
+    // 0.85–1.25 step 0.05, five displayed steps) — read-only reflection,
+    // the actual +/- buttons already work via data-fc-action="font-up/down".
+    const dots = document.getElementById('gillFontDots');
+    if (dots && !dots.childElementCount) {
+      for (let i = 0; i < 5; i++) {
+        const d = document.createElement('span');
+        d.className = 'font-dot';
+        dots.appendChild(d);
+      }
+    }
+    function syncFontDots() {
+      if (!dots) return;
+      let scale = 1;
+      try { scale = parseFloat(localStorage.getItem('gb:font-scale') || '1') || 1; } catch (_) {}
+      const idx = Math.round((scale - 0.85) / 0.05);
+      Array.prototype.forEach.call(dots.children, (dot: HTMLElement, i: number) => {
+        dot.classList.toggle('is-on', i <= idx);
+      });
+    }
+    syncFontDots();
+    document.querySelectorAll('[data-fc-action="font-up"], [data-fc-action="font-down"]').forEach((btn) => {
+      btn.addEventListener('click', () => setTimeout(syncFontDots, 0));
+    });
+  }
+
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', initGillReaderSettings, { once: true });
+  else initGillReaderSettings();
+</script>

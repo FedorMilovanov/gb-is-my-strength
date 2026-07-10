@@ -3543,3 +3543,384 @@ html.dark [data-gill-v16] .mobile-top-bar {
   body:has([data-gill-v16]) #hMobileMenuBtn[aria-expanded="true"] .burger-mid{opacity:0;transform:scaleX(0)}
   body:has([data-gill-v16]) #hMobileMenuBtn[aria-expanded="true"] .burger-bottom{transform:translateY(-5px) rotate(-45deg)}
 }
+
+/* =====================================================
+   GILL MOBILE READER v5 — Learning + Settings sheets,
+   inline speed rail, scoped sepia, top-bar Home/Learning slot.
+   All rules scoped to [data-gill-v16] under <64em; nothing here
+   touches desktop Gill or any other route.
+   ===================================================== */
+@media (max-width: 64em) {
+  /* ---- Top bar: Learning trigger / inline speed rail slot-swap ---- */
+  [data-gill-v16] .mobile-top-slot {
+    position: relative;
+    height: 40px;
+    min-width: 0;
+    flex: 1 1 auto;
+  }
+  [data-gill-v16] .mobile-learning-trigger,
+  [data-gill-v16] .mobile-speedrail {
+    position: absolute;
+    inset: 0;
+  }
+  [data-gill-v16] .mobile-learning-trigger {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    border: 1px solid var(--gill-mobile-bar-border);
+    border-radius: 999px;
+    background: color-mix(in srgb, var(--gill-mobile-bar-gold) 7%, transparent);
+    color: var(--gill-mobile-bar-muted);
+    font-family: var(--gb-font-sans, system-ui, sans-serif);
+    font-size: 12.5px;
+    font-weight: 800;
+    cursor: pointer;
+    transition: opacity .2s ease, transform .24s var(--gb-ease-out), color .2s ease;
+  }
+  [data-gill-v16] .mobile-learning-trigger svg {
+    width: 16px; height: 16px;
+    fill: none; stroke: currentColor; stroke-width: 1.8;
+    stroke-linecap: round; stroke-linejoin: round;
+    flex-shrink: 0;
+  }
+  [data-gill-v16] .mobile-speedrail {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    overflow-x: auto;
+    scrollbar-width: none;
+    opacity: 0;
+    transform: translateX(8px);
+    pointer-events: none;
+    transition: opacity .2s ease, transform .24s var(--gb-ease-out);
+  }
+  [data-gill-v16] .mobile-speedrail::-webkit-scrollbar { display: none; }
+  [data-gill-v16] .mobile-top-bar.speed-open .mobile-learning-trigger {
+    opacity: 0;
+    transform: translateX(-8px);
+    pointer-events: none;
+  }
+  [data-gill-v16] .mobile-top-bar.speed-open .mobile-speedrail {
+    opacity: 1;
+    transform: none;
+    pointer-events: auto;
+  }
+  [data-gill-v16] .mobile-speed {
+    flex: 0 0 auto;
+    height: 32px;
+    min-width: 38px;
+    padding: 0 8px;
+    border: 1px solid var(--gill-mobile-bar-border);
+    border-radius: 10px;
+    background: transparent;
+    color: var(--gill-mobile-bar-muted);
+    font-family: var(--gb-font-sans, system-ui, sans-serif);
+    font-size: 11.5px;
+    font-weight: 800;
+    cursor: pointer;
+    transition: background .16s ease, border-color .16s ease, color .16s ease;
+  }
+  [data-gill-v16] .mobile-speed[aria-checked="true"] {
+    background: var(--gill-mobile-bar-gold);
+    border-color: var(--gill-mobile-bar-gold);
+    color: var(--gb-surface, #fff);
+  }
+  html.dark [data-gill-v16] .mobile-speed[aria-checked="true"] { color: #0e1116; }
+
+  /* ---- Persistent speed badge on the Play ember (inline-rail mode) ---- */
+  [data-gill-v16] .mobile-spdbadge {
+    position: absolute;
+    right: -2px;
+    bottom: -2px;
+    z-index: 3;
+    min-width: 20px;
+    height: 16px;
+    padding: 0 4px;
+    display: grid;
+    place-items: center;
+    border-radius: 999px;
+    border: 1.5px solid var(--gill-mobile-bar-bg);
+    background: var(--gill-mobile-bar-ink);
+    color: var(--gill-mobile-bar-bg);
+    font: 900 8.5px/1 var(--gb-font-sans, system-ui, sans-serif);
+    cursor: pointer;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, .22);
+  }
+  html.dark [data-gill-v16] .mobile-spdbadge {
+    background: linear-gradient(135deg, var(--color-accent-gold, #b8936a), #eed093);
+    color: #0e1116;
+  }
+
+  /* ---- Bottom bar: theme cycle glyph ---- */
+  [data-gill-v16] .theme-glyph { font-size: 17px; line-height: 1; }
+
+  /* ================= Learning & Settings sheets ================= */
+  [data-gill-v16] .gill-learning-sheet { height: min(86%, 760px); }
+  /* Settings has short, fixed content (4 groups) — shrink-to-fit reads as
+     premium and precise; a forced tall sheet leaves an ugly empty gap. */
+  [data-gill-v16] .gill-settings-sheet { height: auto; max-height: min(70%, 560px); }
+  [data-gill-v16] .toc-sheet.gill-learning-sheet,
+  [data-gill-v16] .toc-sheet.gill-settings-sheet {
+    display: flex;
+    flex-direction: column;
+  }
+  [data-gill-v16] .gill-learning-sheet .toc-sheet__body,
+  [data-gill-v16] .gill-settings-sheet .toc-sheet__body {
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow-y: auto;
+  }
+
+  [data-gill-v16] .gill-tabs {
+    display: flex;
+    gap: 5px;
+    overflow-x: auto;
+    scrollbar-width: none;
+    padding: 0 16px 10px;
+    flex-shrink: 0;
+  }
+  [data-gill-v16] .gill-tabs::-webkit-scrollbar { display: none; }
+  [data-gill-v16] .gill-tab {
+    flex: 0 0 auto;
+    min-width: 72px;
+    min-height: 36px;
+    padding: 0 12px;
+    border: 1px solid var(--gb-border-strong);
+    border-radius: 11px;
+    background: transparent;
+    color: var(--gb-text-muted);
+    font-family: var(--gb-font-sans, system-ui, sans-serif);
+    font-size: 12px;
+    font-weight: 800;
+    cursor: pointer;
+  }
+  [data-gill-v16] .gill-tab[aria-selected="true"] {
+    color: var(--gb-text);
+    border-color: color-mix(in srgb, var(--gb-accent) 45%, var(--gb-border));
+    background: color-mix(in srgb, var(--gb-accent) 9%, transparent);
+  }
+  [data-gill-v16] .gill-panel[hidden] { display: none; }
+  [data-gill-v16] .gill-panel { padding: 2px 16px 16px; }
+
+  [data-gill-v16] .gill-searchbox {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    border: 1px solid var(--gb-border-strong);
+    border-radius: 13px;
+    background: var(--gb-surface);
+    padding: 0 12px;
+    height: 46px;
+  }
+  [data-gill-v16] .gill-searchbox svg {
+    width: 16px; height: 16px;
+    fill: none; stroke: var(--gb-text-muted); stroke-width: 2;
+    flex-shrink: 0;
+  }
+  [data-gill-v16] .gill-searchbox input {
+    min-width: 0; flex: 1;
+    border: 0; outline: 0; background: transparent;
+    color: var(--gb-text); font-size: 15px;
+    font-family: var(--gb-font-sans, system-ui, sans-serif);
+  }
+  [data-gill-v16] .gill-search-status { font-size: 12px; color: var(--gb-text-muted); padding: 10px 2px 6px; }
+  [data-gill-v16] .gill-search-results { display: flex; flex-direction: column; gap: 6px; }
+  [data-gill-v16] .gill-search-result {
+    display: block; width: 100%;
+    padding: 11px 12px;
+    border: 1px solid var(--gb-border-strong);
+    border-radius: 12px;
+    background: var(--gb-surface);
+    color: var(--gb-text);
+    text-align: left;
+    cursor: pointer;
+  }
+  [data-gill-v16] .gill-search-result strong { display: block; font-size: 13px; font-family: var(--gb-font-serif); }
+  [data-gill-v16] .gill-search-result span { display: block; font-size: 12px; line-height: 1.45; color: var(--gb-text-muted); margin-top: 3px; }
+  [data-gill-v16] .gill-search-result mark { background: color-mix(in srgb, var(--gb-accent-gold) 32%, transparent); color: inherit; border-radius: 3px; padding: 0 1px; }
+  [data-gill-v16] .gill-global-search {
+    margin-top: 12px; width: 100%; height: 44px;
+    border: 1px solid var(--gb-accent);
+    border-radius: 12px;
+    background: transparent;
+    color: var(--gb-accent);
+    font-family: var(--gb-font-sans, system-ui, sans-serif);
+    font-weight: 800;
+    cursor: pointer;
+  }
+
+  [data-gill-v16] .term-card {
+    width: 100%; margin: 0 0 7px; padding: 12px 13px;
+    border: 1px solid var(--gb-border-strong);
+    border-radius: 12px;
+    background: var(--gb-surface);
+    color: var(--gb-text);
+    text-align: left;
+    cursor: pointer;
+  }
+  [data-gill-v16] .term-card__head {
+    display: flex; align-items: center; gap: 8px;
+    font-family: var(--gb-font-serif); font-weight: 700;
+  }
+  [data-gill-v16] .term-card__head::after { content: '⌄'; margin-left: auto; color: var(--gb-text-muted); transition: transform .18s ease; }
+  [data-gill-v16] .term-card[aria-expanded="true"] .term-card__head::after { transform: rotate(180deg); }
+  [data-gill-v16] .term-card__hint {
+    display: block; margin-top: 2px;
+    font-family: var(--gb-font-sans, system-ui, sans-serif);
+    font-size: 11px; color: var(--gb-text-faint);
+  }
+  [data-gill-v16] .term-card[aria-expanded="true"] .term-card__hint { display: none; }
+  [data-gill-v16] .term-card__definition { display: none; margin-top: 8px; color: var(--gb-text-muted); font-size: 13px; line-height: 1.55; }
+  [data-gill-v16] .term-card[aria-expanded="true"] .term-card__definition { display: block; }
+
+  [data-gill-v16] .outline-card {
+    display: flex; gap: 11px; padding: 12px 4px;
+    border-bottom: 1px solid var(--gb-border-strong);
+    color: var(--gb-text);
+    text-decoration: none;
+  }
+  [data-gill-v16] .outline-card:last-child { border-bottom: 0; }
+  [data-gill-v16] .outline-card__num { width: 20px; text-align: center; color: var(--gb-accent); font-weight: 900; flex-shrink: 0; }
+  [data-gill-v16] .outline-card strong { font-size: 13.5px; display: block; font-family: var(--gb-font-serif); }
+  [data-gill-v16] .outline-card small { font-size: 12px; color: var(--gb-text-muted); line-height: 1.45; display: block; margin-top: 3px; }
+
+  [data-gill-v16] .quiz-meta { display: flex; justify-content: space-between; align-items: center; font-size: 11px; color: var(--gb-text-muted); margin: 2px 0 8px; }
+  [data-gill-v16] .quiz-category { font-weight: 900; text-transform: uppercase; letter-spacing: .08em; color: var(--gb-accent); }
+  [data-gill-v16] .quiz-question { font-family: var(--gb-font-serif); font-size: 18px; line-height: 1.28; margin: 0 0 13px; }
+  [data-gill-v16] .quiz-options { display: flex; flex-direction: column; gap: 8px; }
+  [data-gill-v16] .quiz-option {
+    min-height: 46px; padding: 11px 13px;
+    border: 1px solid var(--gb-border-strong);
+    border-radius: 11px;
+    background: var(--gb-surface);
+    color: var(--gb-text);
+    text-align: left;
+    font-size: 14px;
+    cursor: pointer;
+  }
+  [data-gill-v16] .quiz-option:disabled { cursor: default; }
+  [data-gill-v16] .quiz-option.is-correct { border-color: var(--gb-success, #2d6a4f); background: color-mix(in srgb, var(--gb-success, #2d6a4f) 12%, transparent); }
+  [data-gill-v16] .quiz-option.is-wrong { border-color: #9c3939; background: color-mix(in srgb, #9c3939 10%, transparent); }
+  [data-gill-v16] .quiz-explanation { margin-top: 12px; padding: 11px 12px; border-radius: 11px; background: var(--gb-surface-muted); font-size: 13px; line-height: 1.5; }
+  [data-gill-v16] .quiz-source { display: block; margin-top: 10px; font-size: 12.5px; font-weight: 700; color: var(--gb-accent); text-decoration: none; }
+  [data-gill-v16] .quiz-next {
+    display: none; margin-top: 12px; width: 100%; height: 44px;
+    border: 1px solid var(--gb-accent);
+    border-radius: 11px;
+    background: transparent;
+    color: var(--gb-accent);
+    font-weight: 800;
+    cursor: pointer;
+  }
+  [data-gill-v16] .quiz-next.is-visible { display: block; }
+
+  [data-gill-v16] .note-card { padding: 12px 13px; margin-bottom: 8px; border: 1px solid var(--gb-border-strong); border-radius: 12px; background: var(--gb-surface); }
+  [data-gill-v16] .note-card blockquote { font-family: var(--gb-font-serif); margin: 0 0 8px; font-size: 14px; line-height: 1.45; }
+  [data-gill-v16] .note-meta { font-size: 11px; color: var(--gb-text-muted); }
+  [data-gill-v16] .note-actions { display: flex; gap: 8px; margin-top: 9px; }
+  [data-gill-v16] .note-actions button {
+    min-height: 38px; border: 1px solid var(--gb-border); border-radius: 10px;
+    background: transparent; color: var(--gb-text); font-size: 12px; font-weight: 700; cursor: pointer;
+  }
+  [data-gill-v16] .empty-state { text-align: center; padding: 34px 16px; color: var(--gb-text-muted); font-size: 13px; }
+
+  /* ---- Settings sheet: theme/font/line-height/measure controls ---- */
+  [data-gill-v16] .gill-settings-sheet .toc-sheet__head { padding: 10px 16px 8px; border-bottom: none; }
+  [data-gill-v16] .gill-settings-sheet .toc-sheet__head h3 { font-size: 17px; }
+  /* Learning sheet: kill the canon head/body divider — with the tab strip
+     sitting directly under the header, a second hairline right above it
+     reads as a stray connecting line, not a real section boundary. */
+  [data-gill-v16] .gill-learning-sheet .toc-sheet__head { padding: 10px 16px 6px; border-bottom: none; }
+  [data-gill-v16] .gill-learning-sheet .toc-sheet__head h3 { font-size: 17px; }
+  [data-gill-v16] .setting-group { padding: 10px 16px 11px; border-bottom: 1px solid var(--gb-border); }
+  [data-gill-v16] .setting-group:last-child { border-bottom: 0; }
+  [data-gill-v16] .setting-label {
+    display: block; margin-bottom: 7px;
+    font-family: var(--gb-font-sans, system-ui, sans-serif);
+    font-size: 9.5px; font-weight: 900; text-transform: uppercase; letter-spacing: .09em;
+    color: var(--gb-text-muted);
+  }
+  [data-gill-v16] .setting-segment { display: flex; gap: 4px; padding: 3px; border: 1px solid var(--gb-border-strong); border-radius: 11px; background: var(--gb-surface-muted); }
+  [data-gill-v16] .reader-setting-btn {
+    flex: 1; min-width: 0; min-height: 36px;
+    border: 1px solid transparent; border-radius: 9px;
+    background: transparent; color: var(--gb-text-muted);
+    font-family: var(--gb-font-sans, system-ui, sans-serif);
+    font-size: 12.5px; font-weight: 700; cursor: pointer;
+    transition: background .15s ease, color .15s ease, border-color .15s ease, box-shadow .15s ease;
+  }
+  [data-gill-v16] .reader-setting-btn[aria-pressed="true"] {
+    background: var(--gb-surface); border-color: var(--gb-border-strong); color: var(--gb-text);
+    font-weight: 800;
+    box-shadow: 0 1px 5px rgba(0, 0, 0, .08);
+  }
+  /* Single continuous track (small A ... dots ... large A), matching the
+     reference's slider-like presentation rather than two separate boxed
+     buttons either side of a detached dot row. */
+  [data-gill-v16] .font-track {
+    display: flex; align-items: center; justify-content: space-between;
+    gap: 8px; height: 40px; padding: 0 14px;
+    border: 1px solid var(--gb-border-strong); border-radius: 11px;
+    background: var(--gb-surface-muted);
+  }
+  [data-gill-v16] .font-step {
+    flex: 0 0 auto; border: 0; background: transparent; padding: 0;
+    color: var(--gb-text); font-family: var(--gb-font-serif); font-weight: 700; cursor: pointer;
+    line-height: 1;
+  }
+  [data-gill-v16] .font-step--sm { font-size: 13px; color: var(--gb-text-muted); }
+  [data-gill-v16] .font-step--lg { font-size: 21px; }
+  [data-gill-v16] .font-dots { display: flex; align-items: center; justify-content: center; gap: 6px; flex: 1 1 auto; }
+  [data-gill-v16] .font-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--gb-border-strong); transition: background .15s ease, transform .15s ease; }
+  [data-gill-v16] .font-dot.is-on { background: var(--gb-accent-gold); transform: scale(1.15); }
+
+  /* ---- Reader line-height / measure custom properties (Settings sheet) ---- */
+  [data-gill-v16] .article-body p,
+  [data-gill-v16] .article-body li,
+  [data-gill-v16] .article-body blockquote {
+    line-height: var(--gbs2-article-line, 1.6);
+  }
+  [data-gill-v16] .page-wrap {
+    max-width: var(--gbs2-article-measure, none);
+    margin-left: auto;
+    margin-right: auto;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    [data-gill-v16] .mobile-learning-trigger,
+    [data-gill-v16] .mobile-speedrail,
+    [data-gill-v16] .term-card__head::after {
+      transition: none !important;
+    }
+  }
+}
+
+/* ================= Scoped sepia reading theme (Gill mobile only) =================
+   Never touches html.sepia (doesn't exist sitewide) — this is a Gill-local
+   overlay of the SAME semantic tokens the rest of the mobile chrome/sheets
+   already consume, so no component needs a separate "sepia" branch. */
+@media (max-width: 64em) {
+  [data-gill-v16][data-gill-reader-theme="sepia"] {
+    --gb-surface: #f8f0dc;
+    --gb-surface-muted: #e9dcc0;
+    --gb-text: #493823;
+    --gb-text-muted: #776348;
+    --gb-text-faint: #9a825d;
+    --gb-border: #d8c49e;
+    --gb-border-strong: #bea778;
+    --gb-accent: #87562b;
+    --gb-accent-strong: #a16a36;
+    --gb-accent-gold: #8a612f;
+    --gb-accent-gold-bright: #b68445;
+    --gill-mobile-bar-bg: rgba(243, 234, 212, .96);
+    --gill-mobile-bar-border: rgba(135, 86, 43, .30);
+    --gill-mobile-bar-ink: #3a2c1a;
+    --gill-mobile-bar-muted: rgba(58, 44, 26, .74);
+    --gill-mobile-bar-gold: #87562b;
+    background: #f3ead4;
+  }
+  [data-gill-v16][data-gill-reader-theme="sepia"] .toc-sheet {
+    background: #f3ead4 !important;
+  }
+}
