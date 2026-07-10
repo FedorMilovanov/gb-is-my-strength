@@ -1,0 +1,14 @@
+{
+  "id": "exodus",
+  "title": {
+    "ru": "Исход",
+    "abbr": "Исх"
+  },
+  "testament": "ot",
+  "section": "law",
+  "order": 2,
+  "chapters": 40,
+  "maps": [
+    "ishod"
+  ]
+}

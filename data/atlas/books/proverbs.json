@@ -1,0 +1,11 @@
+{
+  "id": "proverbs",
+  "title": {
+    "ru": "Притчи",
+    "abbr": "Притч"
+  },
+  "testament": "ot",
+  "section": "poetry",
+  "order": 20,
+  "chapters": 31
+}

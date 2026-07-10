@@ -1,0 +1,11 @@
+{
+  "id": "james",
+  "title": {
+    "ru": "Иакова",
+    "abbr": "Иак"
+  },
+  "testament": "nt",
+  "section": "general",
+  "order": 59,
+  "chapters": 5
+}

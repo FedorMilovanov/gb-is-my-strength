@@ -1,0 +1,14 @@
+{
+  "id": "deuteronomy",
+  "title": {
+    "ru": "Второзаконие",
+    "abbr": "Втор"
+  },
+  "testament": "ot",
+  "section": "law",
+  "order": 5,
+  "chapters": 34,
+  "maps": [
+    "ishod"
+  ]
+}

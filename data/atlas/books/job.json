@@ -1,0 +1,11 @@
+{
+  "id": "job",
+  "title": {
+    "ru": "Иов",
+    "abbr": "Иов"
+  },
+  "testament": "ot",
+  "section": "poetry",
+  "order": 18,
+  "chapters": 42
+}

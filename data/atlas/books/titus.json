@@ -1,0 +1,14 @@
+{
+  "id": "titus",
+  "title": {
+    "ru": "К Титу",
+    "abbr": "Тит"
+  },
+  "testament": "nt",
+  "section": "pauline",
+  "order": 56,
+  "chapters": 3,
+  "maps": [
+    "pavel"
+  ]
+}

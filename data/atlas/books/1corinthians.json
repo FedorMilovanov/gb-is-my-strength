@@ -1,0 +1,14 @@
+{
+  "id": "1corinthians",
+  "title": {
+    "ru": "1 Коринфянам",
+    "abbr": "1 Кор"
+  },
+  "testament": "nt",
+  "section": "pauline",
+  "order": 46,
+  "chapters": 16,
+  "maps": [
+    "pavel"
+  ]
+}

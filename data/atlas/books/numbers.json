@@ -1,0 +1,14 @@
+{
+  "id": "numbers",
+  "title": {
+    "ru": "Числа",
+    "abbr": "Числ"
+  },
+  "testament": "ot",
+  "section": "law",
+  "order": 4,
+  "chapters": 36,
+  "maps": [
+    "ishod"
+  ]
+}
