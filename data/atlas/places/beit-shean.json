@@ -17,7 +17,7 @@
       "localId": "beit_shean"
     }
   ],
-  "needsReview": true,
+  "needsReview": false,
   "sameAs": {
     "openbible": "beth-shan",
     "wikidata": "Q152368"

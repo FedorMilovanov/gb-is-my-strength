@@ -18,7 +18,7 @@
       "localId": "salem"
     }
   ],
-  "needsReview": true,
+  "needsReview": false,
   "sameAs": {
     "openbible": "salem",
     "wikidata": "Q4377375"

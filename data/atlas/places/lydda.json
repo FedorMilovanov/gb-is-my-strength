@@ -17,7 +17,7 @@
       "localId": "lydda"
     }
   ],
-  "needsReview": true,
+  "needsReview": false,
   "sameAs": {
     "openbible": "lod",
     "wikidata": "Q207540"

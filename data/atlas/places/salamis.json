@@ -18,7 +18,7 @@
       "localId": "cyprus"
     }
   ],
-  "needsReview": true,
+  "needsReview": false,
   "sameAs": {
     "openbible": "salamis",
     "wikidata": "Q767089"

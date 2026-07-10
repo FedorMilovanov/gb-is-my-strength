@@ -17,7 +17,7 @@
       "localId": "bethany"
     }
   ],
-  "needsReview": true,
+  "needsReview": false,
   "sameAs": {
     "openbible": "bethany-1",
     "wikidata": "Q831190"

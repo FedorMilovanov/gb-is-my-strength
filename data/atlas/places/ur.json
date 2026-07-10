@@ -17,7 +17,7 @@
       "localId": "ur"
     }
   ],
-  "needsReview": true,
+  "needsReview": false,
   "sameAs": {
     "openbible": "ur-1",
     "wikidata": "Q5373099"

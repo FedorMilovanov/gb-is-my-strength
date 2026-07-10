@@ -17,7 +17,7 @@
       "localId": "beersheba"
     }
   ],
-  "needsReview": true,
+  "needsReview": false,
   "sameAs": {
     "openbible": "beersheba-2",
     "wikidata": "Q534596"

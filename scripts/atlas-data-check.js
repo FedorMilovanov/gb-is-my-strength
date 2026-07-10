@@ -102,6 +102,32 @@ function main() {
     if (!ids.has(pid)) fail(`${ctx}: parentId "${pid}" не существует в реестре`);
   }
 
+  // Реестр эпох (data/atlas/periods/*.json) — если существует.
+  const PERIODS_DIR = path.join(ROOT, 'data', 'atlas', 'periods');
+  const PERIOD_SCHEMA = path.join(ROOT, 'data', 'atlas', 'schemas', 'period.schema.json');
+  if (fs.existsSync(PERIODS_DIR)) {
+    const ps = JSON.parse(fs.readFileSync(PERIOD_SCHEMA, 'utf8'));
+    const P_ID = new RegExp(ps.properties.id.pattern);
+    const ERAS = new Set(ps.properties.engineEra.enum);
+    const knownMaps = new Set(mapSlugs);
+    let prev = null;
+    const periodFiles = fs.readdirSync(PERIODS_DIR).filter((f) => f.endsWith('.json'));
+    const periods = periodFiles.map((f) => ({ f, d: JSON.parse(fs.readFileSync(path.join(PERIODS_DIR, f), 'utf8')) }));
+    periods.sort((a, b) => a.d.start - b.d.start);
+    for (const { f, d } of periods) {
+      const ctx = `periods/${f}`;
+      if (d.id !== path.basename(f, '.json')) fail(`${ctx}: id != имя файла`);
+      if (!P_ID.test(d.id)) fail(`${ctx}: id вне паттерна`);
+      if (!d.title || !d.title.ru) fail(`${ctx}: title.ru пуст`);
+      if (!(Number.isInteger(d.start) && Number.isInteger(d.end) && d.start < d.end)) fail(`${ctx}: start/end некорректны`);
+      if (d.engineEra && !ERAS.has(d.engineEra)) fail(`${ctx}: engineEra вне enum`);
+      if (d.colorToken && !/^#[0-9a-f]{6}$/.test(d.colorToken)) fail(`${ctx}: colorToken не hex`);
+      for (const m of d.maps || []) if (!knownMaps.has(m)) fail(`${ctx}: карта "${m}" не существует`);
+      if (prev && d.start > prev.d.end) fail(`${ctx}: разрыв оси времени после ${prev.f} (${prev.d.end} → ${d.start})`);
+      prev = { f, d };
+    }
+  }
+
   // Полное покрытие route.json → реестр.
   for (const key of routeOcc) {
     if (!claimed.has(key)) fail(`покрытие: место карты ${key} не учтено в реестре places/`);

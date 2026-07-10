@@ -114,6 +114,7 @@ function deriveType(entry, ancBySlug, overrides) {
 function main() {
   const draft = JSON.parse(fs.readFileSync(DRAFT, 'utf8'));
   const review = JSON.parse(fs.readFileSync(REVIEW, 'utf8'));
+  const mapping = JSON.parse(fs.readFileSync(path.join(ROOT, 'data', 'atlas', 'openbible-mapping.json'), 'utf8'));
   const ancient = loadJsonl(path.join(CACHE, 'ancient.jsonl'));
   const modern = loadJsonl(path.join(CACHE, 'modern.jsonl'));
   const ancBySlug = new Map(ancient.map((a) => [a.url_slug, a]));
@@ -168,6 +169,18 @@ function main() {
     const singleMap = p.maps.length === 1;
     const autoMatched = p.sameAs && p.sameAs.openbible === p.id;
     if (confirmed.has(p.id) || (singleMap && autoMatched)) p.needsReview = false;
+
+    // curatedConfirm: выверенные по стихам curated-мэппинги (KA-2b) с одной картой
+    // и заполненным geo — reviewed, кроме содержательных исключений.
+    const cc = review.curatedConfirm || {};
+    const isCurated = !!(mapping.overrides && mapping.overrides[p.id]);
+    const isException = !!(cc.exceptions && cc.exceptions[p.id]);
+    if (isCurated && singleMap && p.geo && !isException) p.needsReview = false;
+    if (isException) p.notes = [p.notes, `review-hold: ${cc.exceptions[p.id]}`].filter(Boolean).join(' | ');
+    if ((cc.noMatchConfirmedTypes || []).includes(p.id)) {
+      p.needsReview = false;
+      p.notes = [p.notes, cc.noMatchConfirmedNote].filter(Boolean).join(' | ');
+    }
     if (confirmed.has(p.id)) {
       p.notes = [p.notes, `review: ${review.confirmedMerges[p.id]}`].filter(Boolean).join(' | ');
     }

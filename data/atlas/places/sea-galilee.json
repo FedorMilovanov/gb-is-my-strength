@@ -17,7 +17,7 @@
       "localId": "sea_galilee"
     }
   ],
-  "needsReview": true,
+  "needsReview": false,
   "sameAs": {
     "openbible": "sea-of-galilee",
     "wikidata": "Q126982"

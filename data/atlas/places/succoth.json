@@ -17,7 +17,7 @@
       "localId": "succoth"
     }
   ],
-  "needsReview": true,
+  "needsReview": false,
   "sameAs": {
     "openbible": "succoth-2"
   },

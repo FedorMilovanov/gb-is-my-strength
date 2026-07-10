@@ -17,7 +17,7 @@
       "localId": "timnah"
     }
   ],
-  "needsReview": true,
+  "needsReview": false,
   "sameAs": {
     "openbible": "timnah-1",
     "wikidata": "Q2916736"

@@ -18,7 +18,7 @@
       "localId": "athens"
     }
   ],
-  "needsReview": true,
+  "needsReview": false,
   "sameAs": {
     "openbible": "areopagus",
     "wikidata": "Q202487"

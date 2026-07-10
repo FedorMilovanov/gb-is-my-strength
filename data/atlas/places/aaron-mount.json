@@ -17,7 +17,7 @@
       "localId": "aaron_mount"
     }
   ],
-  "needsReview": true,
+  "needsReview": false,
   "sameAs": {
     "openbible": "mount-hor-1",
     "wikidata": "Q2915115"

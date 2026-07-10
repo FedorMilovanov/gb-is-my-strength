@@ -17,7 +17,7 @@
       "localId": "ophrah"
     }
   ],
-  "needsReview": true,
+  "needsReview": false,
   "sameAs": {
     "openbible": "ophrah-2"
   },

@@ -1,0 +1,22 @@
+{
+  "id": "united-kingdom",
+  "title": {
+    "ru": "Объединённое царство",
+    "short": "Саул–Соломон"
+  },
+  "start": -1050,
+  "end": -931,
+  "approx": true,
+  "engineEra": "iron",
+  "colorToken": "#9fc0dd",
+  "colorStatus": "contract",
+  "maps": [
+    "melachim"
+  ],
+  "keyEvents": [
+    "Помазание Саула ~1050",
+    "Давид в Иерусалиме ~1003",
+    "Храм Соломона 966"
+  ],
+  "note": "Будущая карта «Давид: путь к престолу» (KA-9) живёт здесь"
+}
