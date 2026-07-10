@@ -1,0 +1,18 @@
+{
+  "id": "gilboa-battle",
+  "title": {
+    "ru": "Битва при Гелвуе"
+  },
+  "kind": "battle",
+  "year": -1010,
+  "approx": true,
+  "personIds": [
+    "saul",
+    "david"
+  ],
+  "periodId": "united-kingdom",
+  "bibleRefs": [
+    "1 Цар 31"
+  ],
+  "note": "гибель Саула и Ионафана; плач Давида (2 Цар 1). Гора Гелвуе — добавить в реестр мест при возврате melachim/появлении карты Давида"
+}
