@@ -1,0 +1,56 @@
+---
+/**
+ * MobileChromeShell — общий структурный каркас мобильной обвязки.
+ *
+ * (Пакет GILL_RESEARCH_3_ENGINES, документ 03 §4.) Гарантирует единую
+ * структуру верхней/нижней панелей, safe-area, landmarks и общий data-контракт
+ * для рантайма (js/floating-cluster-controller.js расширяется аддитивно и
+ * инициализирует всё по [data-mobile-chrome]).
+ *
+ * Shell НЕ знает про Gill/Hermenevtika/Pagefind/TTS/BookmarkEngine/quiz — он
+ * только раскладывает именованные слоты. Конкретное наполнение (marks, dual
+ * progress, Learning, Search…) кладёт адаптер движка.
+ *
+ * Классы верхней/нижней панели по умолчанию совпадают с текущим Gill/Herm
+ * каноном (.mobile-top-bar / .mobile-bottom-bar), поэтому первая миграция
+ * может идти с нулевым визуальным диффом; адаптер вправе их переопределить.
+ */
+import type { MobileChromeEngine } from './mobileChromeTypes';
+
+interface Props {
+  engine: MobileChromeEngine;
+  id: string;
+  rootClass?: string;
+  topClass?: string;
+  bottomClass?: string;
+}
+
+const {
+  engine,
+  id,
+  rootClass = '',
+  topClass = 'mobile-top-bar',
+  bottomClass = 'mobile-bottom-bar',
+} = Astro.props as Props;
+---
+<div
+  id={id}
+  class:list={['mobile-chrome', rootClass]}
+  data-mobile-chrome
+  data-mobile-chrome-engine={engine}
+>
+  <header class={topClass} data-mobile-topbar>
+    <div class="mobile-chrome__top-leading"><slot name="top-leading" /></div>
+    <div class="mobile-chrome__top-primary"><slot name="top-primary" /></div>
+    <div class="mobile-chrome__top-playback"><slot name="top-playback" /></div>
+    <div class="mobile-chrome__top-trailing"><slot name="top-trailing" /></div>
+  </header>
+
+  <footer class={bottomClass} data-mobile-bottombar>
+    <div class="mobile-chrome__bottom-progress"><slot name="bottom-progress" /></div>
+    <div class="mobile-chrome__bottom-context"><slot name="bottom-context" /></div>
+    <div class="mobile-chrome__bottom-actions"><slot name="bottom-actions" /></div>
+  </footer>
+
+  <slot name="overlays" />
+</div>
