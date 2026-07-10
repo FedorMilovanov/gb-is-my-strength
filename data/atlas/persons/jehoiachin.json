@@ -1,0 +1,21 @@
+{
+  "id": "jehoiachin",
+  "names": {
+    "ru": "Иехония"
+  },
+  "role": "king",
+  "realm": "judah",
+  "reign": {
+    "start": -598,
+    "end": -597,
+    "note": "3 месяца, депортация 597"
+  },
+  "periodIds": [
+    "judah-alone"
+  ],
+  "assessment": "evil",
+  "relations": {
+    "dynasty": "davidic",
+    "successor": "zedekiah"
+  }
+}

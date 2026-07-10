@@ -1,0 +1,19 @@
+{
+  "id": "nadab",
+  "names": {
+    "ru": "Нават"
+  },
+  "role": "king",
+  "realm": "israel",
+  "reign": {
+    "start": -910,
+    "end": -909
+  },
+  "periodIds": [
+    "divided-kingdom"
+  ],
+  "assessment": "evil",
+  "relations": {
+    "successor": "baasha"
+  }
+}

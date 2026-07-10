@@ -1,0 +1,21 @@
+{
+  "id": "jehu",
+  "names": {
+    "ru": "Ииуй"
+  },
+  "role": "king",
+  "realm": "israel",
+  "reign": {
+    "start": -841,
+    "end": -814,
+    "note": "истребил дом Ахава и Ваала"
+  },
+  "periodIds": [
+    "divided-kingdom"
+  ],
+  "assessment": "mixed",
+  "relations": {
+    "dynasty": "jehu",
+    "successor": "jehoahaz-israel"
+  }
+}

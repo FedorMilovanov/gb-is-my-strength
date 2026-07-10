@@ -1,0 +1,23 @@
+{
+  "id": "amos",
+  "names": {
+    "ru": "Амос"
+  },
+  "role": "prophet",
+  "realm": "israel",
+  "ministry": {
+    "start": -765,
+    "end": -750,
+    "approx": true,
+    "note": "пастух из Фекои — к Северу"
+  },
+  "periodIds": [
+    "divided-kingdom"
+  ],
+  "bookIds": [
+    "amos"
+  ],
+  "placeIds": [
+    "bethel"
+  ]
+}

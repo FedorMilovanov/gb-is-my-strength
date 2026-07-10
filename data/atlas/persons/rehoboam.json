@@ -1,0 +1,21 @@
+{
+  "id": "rehoboam",
+  "names": {
+    "ru": "Ровоам"
+  },
+  "role": "king",
+  "realm": "judah",
+  "reign": {
+    "start": -931,
+    "end": -913
+  },
+  "periodIds": [
+    "united-kingdom",
+    "divided-kingdom"
+  ],
+  "assessment": "evil",
+  "relations": {
+    "dynasty": "davidic",
+    "successor": "abijah"
+  }
+}

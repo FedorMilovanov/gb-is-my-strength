@@ -1,0 +1,20 @@
+{
+  "id": "joash-judah",
+  "names": {
+    "ru": "Иоас Иудейский"
+  },
+  "role": "king",
+  "realm": "judah",
+  "reign": {
+    "start": -835,
+    "end": -796
+  },
+  "periodIds": [
+    "divided-kingdom"
+  ],
+  "assessment": "mixed",
+  "relations": {
+    "dynasty": "davidic",
+    "successor": "amaziah"
+  }
+}

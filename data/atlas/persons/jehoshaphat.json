@@ -1,0 +1,21 @@
+{
+  "id": "jehoshaphat",
+  "names": {
+    "ru": "Иосафат"
+  },
+  "role": "king",
+  "realm": "judah",
+  "reign": {
+    "start": -872,
+    "end": -848,
+    "coregency": true
+  },
+  "periodIds": [
+    "divided-kingdom"
+  ],
+  "assessment": "good",
+  "relations": {
+    "dynasty": "davidic",
+    "successor": "jehoram-judah"
+  }
+}

@@ -1,0 +1,20 @@
+{
+  "id": "zimri",
+  "names": {
+    "ru": "Замврий"
+  },
+  "role": "king",
+  "realm": "israel",
+  "reign": {
+    "start": -885,
+    "end": -885,
+    "note": "7 дней"
+  },
+  "periodIds": [
+    "divided-kingdom"
+  ],
+  "assessment": "evil",
+  "relations": {
+    "successor": "omri"
+  }
+}

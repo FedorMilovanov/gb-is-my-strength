@@ -1,0 +1,19 @@
+{
+  "id": "nathan",
+  "names": {
+    "ru": "Нафан"
+  },
+  "role": "prophet",
+  "realm": "united",
+  "ministry": {
+    "start": -1005,
+    "end": -965,
+    "approx": true
+  },
+  "periodIds": [
+    "united-kingdom"
+  ],
+  "placeIds": [
+    "jerusalem"
+  ]
+}

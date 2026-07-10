@@ -1,0 +1,19 @@
+{
+  "id": "menahem",
+  "names": {
+    "ru": "Менаим"
+  },
+  "role": "king",
+  "realm": "israel",
+  "reign": {
+    "start": -752,
+    "end": -742
+  },
+  "periodIds": [
+    "divided-kingdom"
+  ],
+  "assessment": "evil",
+  "relations": {
+    "successor": "pekahiah"
+  }
+}

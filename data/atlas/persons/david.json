@@ -1,0 +1,20 @@
+{
+  "id": "david",
+  "names": {
+    "ru": "Давид"
+  },
+  "role": "king",
+  "realm": "united",
+  "reign": {
+    "start": -1010,
+    "end": -970
+  },
+  "periodIds": [
+    "united-kingdom"
+  ],
+  "assessment": "good",
+  "relations": {
+    "dynasty": "davidic",
+    "successor": "solomon"
+  }
+}
