@@ -3913,14 +3913,15 @@ html.dark [data-gill-v16] .mobile-top-bar {
     border-color: color-mix(in srgb, var(--gb-accent) 45%, var(--gb-border));
     background: color-mix(in srgb, var(--gb-accent) 9%, transparent);
   }
-  /* Pointer/programmatic focus (e.g. auto-focus on sheet-open) must NOT paint a
-     ring on an unselected tab — otherwise two tabs read as "selected" at once.
-     Keyboard users still get an accent ring via :focus-visible. */
-  [data-gill-v16] .gill-tab:focus { outline: none; }
-  [data-gill-v16] .gill-tab:focus-visible {
-    outline: 2px solid var(--gb-accent);
-    outline-offset: 2px;
-  }
+  /* БАГ «двойная рамка»: у прямоугольной таб-кнопки уже есть своя рамка
+     (border), а focus-visible-outline со смещением (outline-offset) рисовал
+     ВТОРУЮ рамку вокруг неё. tab.focus() на переключении/открытии листа
+     триггерил focus-visible и на тач-устройствах. В ARIA-tablist с roving
+     tabindex фокус идёт за выбором, поэтому индикатор фокуса — это уже
+     акцентная рамка aria-selected; отдельное кольцо избыточно и давало
+     двойную рамку. Убираем кольцо у таб-кнопок (референс — без двойной рамки). */
+  [data-gill-v16] .gill-tab:focus,
+  [data-gill-v16] .gill-tab:focus-visible { outline: none; }
   [data-gill-v16] .gill-panel[hidden] { display: none; }
   [data-gill-v16] .gill-panel { padding: 2px 16px 16px; }
 
