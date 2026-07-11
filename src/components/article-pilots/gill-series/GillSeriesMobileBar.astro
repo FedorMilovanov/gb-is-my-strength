@@ -29,6 +29,7 @@
  */
 import PlayEmber from '@/components/ui/floating-cluster/PlayEmber.astro';
 import SaveButton from '@/components/ui/floating-cluster/SaveButton.astro';
+import MobileChromeShell from '../_shared/MobileChromeShell.astro';
 import { GILL_PAGE_DATA, type GillSeriesPageId } from './gillSeriesData';
 
 interface Props {
@@ -38,15 +39,21 @@ interface Props {
 const { pageId } = Astro.props as Props;
 const page = GILL_PAGE_DATA[pageId];
 ---
-<div class="mobile-top-bar" data-fc-root data-fc-variant="gill" data-gill-mobile-bar data-fc-speed-mode="inline">
-  <button class="gb-icon" id="mobBackBtn" type="button" aria-label="Назад" data-home-href="../../biografii/">
-    <svg viewBox="0 0 24 24"><path d="M19 12H5M12 19l-7-7 7-7" /></svg>
-  </button>
-  <a class="gb-icon" id="mobHomeBtn" href="../../" aria-label="На главную">
-    <svg viewBox="0 0 24 24"><path d="M3 11l9-8 9 8" /><path d="M5 10v10h14V10" /><path d="M9 20v-6h6v6" /></svg>
-  </a>
+<MobileChromeShell
+  engine="series"
+  topAttrs={{ 'data-fc-root': true, 'data-fc-variant': 'gill', 'data-gill-mobile-bar': true, 'data-fc-speed-mode': 'inline' }}
+  bottomAttrs={{ 'data-fc-root': true, 'data-fc-variant': 'gill', 'data-gill-mobile-bar': true }}
+>
+  <Fragment slot="top-leading">
+    <button class="gb-icon" id="mobBackBtn" type="button" aria-label="Назад" data-home-href="../../biografii/">
+      <svg viewBox="0 0 24 24"><path d="M19 12H5M12 19l-7-7 7-7" /></svg>
+    </button>
+    <a class="gb-icon" id="mobHomeBtn" href="../../" aria-label="На главную">
+      <svg viewBox="0 0 24 24"><path d="M3 11l9-8 9 8" /><path d="M5 10v10h14V10" /><path d="M9 20v-6h6v6" /></svg>
+    </a>
+  </Fragment>
 
-  <div class="mobile-top-slot">
+  <div class="mobile-top-slot" slot="top-primary">
     <button type="button" class="mobile-learning-trigger" id="mobLearningBtn" data-gill-learning-open aria-expanded="false" aria-controls="gillLearningOverlay">
       <svg viewBox="0 0 24 24"><path d="M2 10l10-5 10 5-10 5z" /><path d="M6 12v5c3 2 9 2 12 0v-5" /><path d="M22 10v6" /></svg>
       <span>Обучение</span>
@@ -61,51 +68,54 @@ const page = GILL_PAGE_DATA[pageId];
     </div>
   </div>
 
-  <span class="mobile-playwrap">
+  <span class="mobile-playwrap" slot="top-playback">
     <PlayEmber audioState="none" class="mobile-top-ember" tip="Озвучка" />
     <button type="button" class="mobile-spdbadge" id="mobSpdBadge" aria-label="Скорость озвучки 1×">1×</button>
   </span>
 
-  <SaveButton class="mobile-top-save" tip="Сохранить" />
-</div>
+  <SaveButton class="mobile-top-save" tip="Сохранить" slot="top-trailing" />
 
-<div class="mobile-bottom-bar" data-fc-root data-fc-variant="gill" data-gill-mobile-bar>
-  <!-- Progress is a read-only indicator, not a control: it never had a click
-       handler (the controller only refreshes its aria-label on scroll), so it
-       must not announce as an interactive button. role="img" + live aria-label
-       gives screen readers the two progress values without implying an action. -->
-  <div class="bar-progress dual-progress" id="gbs2DualProgress" role="img" aria-label="Статья 0%, серия 0%">
-    <svg viewBox="0 0 36 36" aria-hidden="true">
-      <circle class="bar-series-track" cx="18" cy="18" r="16"></circle>
-      <circle class="bar-series-fill" id="gbs2MobSeriesRing" cx="18" cy="18" r="16" stroke-dasharray="100.53" stroke-dashoffset="100.53"></circle>
-      <circle class="bar-progress-track" cx="18" cy="18" r="12.5"></circle>
-      <circle class="bar-progress-fill" id="gbs2MobArticleRing" cx="18" cy="18" r="12.5" stroke-dasharray="78.54" stroke-dashoffset="78.54"></circle>
-    </svg>
-    <span class="bar-progress-text" id="gbs2MobPct">0%</span>
-  </div>
+  <Fragment slot="bottom-progress">
+    <!-- Progress is a read-only indicator, not a control: it never had a click
+         handler (the controller only refreshes its aria-label on scroll), so it
+         must not announce as an interactive button. role="img" + live aria-label
+         gives screen readers the two progress values without implying an action. -->
+    <div class="bar-progress dual-progress" id="gbs2DualProgress" role="img" aria-label="Статья 0%, серия 0%">
+      <svg viewBox="0 0 36 36" aria-hidden="true">
+        <circle class="bar-series-track" cx="18" cy="18" r="16"></circle>
+        <circle class="bar-series-fill" id="gbs2MobSeriesRing" cx="18" cy="18" r="16" stroke-dasharray="100.53" stroke-dashoffset="100.53"></circle>
+        <circle class="bar-progress-track" cx="18" cy="18" r="12.5"></circle>
+        <circle class="bar-progress-fill" id="gbs2MobArticleRing" cx="18" cy="18" r="12.5" stroke-dasharray="78.54" stroke-dashoffset="78.54"></circle>
+      </svg>
+      <span class="bar-progress-text" id="gbs2MobPct">0%</span>
+    </div>
+  </Fragment>
 
   <button
     type="button"
     class="mobile-btoc-section"
     id="mobPartTocBtn"
     aria-label={`Открыть оглавление части: ${page.mobileSection}`}
+    slot="bottom-context"
   >
     <span class="mobile-btoc-section__label">Сейчас читаете</span>
     <span class="mobile-btoc-section__main" id="gbs2MobSec">{page.mobileSection}</span>
   </button>
 
-  <button class="gb-icon" type="button" id="mobGillThemeBtn" data-gill-theme-cycle aria-label="Тема: День">
-    <span class="theme-glyph" aria-hidden="true">☀</span>
-  </button>
+  <Fragment slot="bottom-actions">
+    <button class="gb-icon" type="button" id="mobGillThemeBtn" data-gill-theme-cycle aria-label="Тема: День">
+      <span class="theme-glyph" aria-hidden="true">☀</span>
+    </button>
 
-  <button class="gb-icon" type="button" id="mobSettingsBtn" data-gill-settings-open aria-label="Настройки чтения" aria-expanded="false" aria-controls="gillSettingsOverlay">
-    <svg viewBox="0 0 24 24"><path d="M4 7h10M18 7h2M4 17h2M10 17h10" /><circle cx="16" cy="7" r="2" /><circle cx="8" cy="17" r="2" /></svg>
-  </button>
+    <button class="gb-icon" type="button" id="mobSettingsBtn" data-gill-settings-open aria-label="Настройки чтения" aria-expanded="false" aria-controls="gillSettingsOverlay">
+      <svg viewBox="0 0 24 24"><path d="M4 7h10M18 7h2M4 17h2M10 17h10" /><circle cx="16" cy="7" r="2" /><circle cx="8" cy="17" r="2" /></svg>
+    </button>
 
-  <button class="gb-icon" type="button" data-action="share" aria-label="Поделиться">
-    <svg viewBox="0 0 24 24"><circle cx="18" cy="5" r="3" /><circle cx="6" cy="12" r="3" /><circle cx="18" cy="19" r="3" /><line x1="8.59" y1="13.51" x2="15.42" y2="17.49" /><line x1="15.41" y1="6.51" x2="8.59" y2="10.49" /></svg>
-  </button>
-</div>
+    <button class="gb-icon" type="button" data-action="share" aria-label="Поделиться">
+      <svg viewBox="0 0 24 24"><circle cx="18" cy="5" r="3" /><circle cx="6" cy="12" r="3" /><circle cx="18" cy="19" r="3" /><line x1="8.59" y1="13.51" x2="15.42" y2="17.49" /><line x1="15.41" y1="6.51" x2="8.59" y2="10.49" /></svg>
+    </button>
+  </Fragment>
+</MobileChromeShell>
 
 <script>
   const READER_THEME_KEY = 'gb:gill-reader-theme:v1';
