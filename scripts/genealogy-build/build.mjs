@@ -20,6 +20,8 @@ import { computeClusters, nationsLayer } from './lib/clusters.mjs';
 import { traceSpine } from './lib/spine.mjs';
 import { buildLayoutL0 } from './lib/layout-l0.mjs';
 import { renderL0Svg } from './lib/render-l0-svg.mjs';
+import { buildTribes12 } from './lib/layout-l1.mjs';
+import { renderTribes12Svg } from './lib/render-l1-tribes.mjs';
 
 const log = (...a) => console.log('[genealogy-build]', ...a);
 
@@ -348,6 +350,10 @@ async function runAll() {
   // фокус-вариант: мессианская линия Давида ярко, остальное приглушено (демо цели §3)
   const spineIds = new Set(layoutL0.nodes.filter(n => n.kind === 'spine').map(n => n.id));
   const l0FocusSvg = renderL0Svg(layoutL0, { focus: { label: 'Фокус: линия Давида', brightIds: spineIds } });
+  // L1: развёртка «12 колен» (демо семантического зума — раскрытие сжатой группы)
+  const tribes12 = buildTribes12(outPersons);
+  const l1TribesSvg = renderTribes12Svg(tribes12);
+  log(`layout-l1: «12 колен» — центр Иаков + ${tribes12.sons.length} сыновей радиально`);
   log(`layout-l0: узлов ${layoutL0.nodes.length} (хребет ${layoutL0.nodes.filter(n => n.kind === 'spine').length} + мега ${layoutL0.nodes.filter(n => n.kind === 'mega').length}), bbox ${Math.round(layoutL0.bbox.w)}×${Math.round(layoutL0.bbox.h)}`);
 
   // 7. Валидация
@@ -383,6 +389,8 @@ async function runAll() {
   await writeFile(path.join(PATHS.outDir, 'build', 'layout-l0.json'), JSON.stringify(layoutL0, null, 1) + '\n');
   await writeFile(path.join(PATHS.outDir, 'build', 'genealogy-l0-preview.svg'), l0Svg);
   await writeFile(path.join(PATHS.outDir, 'build', 'genealogy-l0-focus-david.svg'), l0FocusSvg);
+  await writeFile(path.join(PATHS.outDir, 'build', 'layout-l1-tribes-12.json'), JSON.stringify(tribes12, null, 1) + '\n');
+  await writeFile(path.join(PATHS.outDir, 'build', 'genealogy-l1-tribes-12.svg'), l1TribesSvg);
   await writeFile(path.join(PATHS.outDir, 'meta.json'), JSON.stringify(meta, null, 2) + '\n');
   try { await access(path.join(PATHS.outDir, 'ru-overrides.json')); }
   catch {
