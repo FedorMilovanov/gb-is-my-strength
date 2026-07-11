@@ -5,10 +5,30 @@ import { GILL_PAGE_DATA, type GillPartTocItem, type GillSeriesPageId } from './g
 interface Props { pageId: GillSeriesPageId; }
 const { pageId } = Astro.props;
 const page = GILL_PAGE_DATA[pageId];
-function splitHistoricalLabel(item: GillPartTocItem) {
-  const match = item.label.match(/^([IVX]+)\.\s*(.+)$/);
-  return { mark: match ? match[1] : '·', title: match ? match[2] : item.label, isRoman: Boolean(match) };
+// Numeral is assigned per level:2 row by a running counter (v2.8 canon: every
+// section shows an explicit numeral) — NOT parsed out of the label text, which
+// silently degraded prefix-less rows (e.g. "Проверь себя") to a "·" dot.
+function toRoman(n: number): string {
+  const map: [number, string][] = [[10, 'X'], [9, 'IX'], [5, 'V'], [4, 'IV'], [1, 'I']];
+  let out = '';
+  for (const [v, s] of map) { while (n >= v) { out += s; n -= v; } }
+  return out;
 }
+function cleanTitle(label: string): string {
+  const m = label.match(/^[IVXLC]+\.\s*(.+)$/);
+  return m ? m[1] : label;
+}
+let romanCount = 0;
+const partTocView = page.partToc.map((item: GillPartTocItem) => {
+  const isLevel2 = item.level === 2;
+  if (isLevel2) romanCount += 1;
+  return {
+    item,
+    isRoman: isLevel2,
+    mark: isLevel2 ? toRoman(romanCount) : '·',
+    title: isLevel2 ? cleanTitle(item.label) : item.label,
+  };
+});
 ---
 <div class="toc-overlay" id="partTocOverlay" aria-hidden="true">
   <div class="toc-sheet" role="dialog" aria-modal="true" aria-label={page.partDialogLabel}>
@@ -19,8 +39,8 @@ function splitHistoricalLabel(item: GillPartTocItem) {
     </div>
     <div class="toc-sheet__scroll-bar"><i style="--scroll-pct:0%"></i></div>
     <div class="toc-sheet__list" id="gbs2PartToc">
-      {page.partToc.map((item) => {
-        const view = splitHistoricalLabel(item);
+      {partTocView.map((view) => {
+        const item = view.item;
         const className = ['toc-part-item', item.level === 3 && 'toc-part-item--sub', item.current && 'is-current'].filter(Boolean).join(' ');
         const content = (<>{view.isRoman ? <SeriesMark kind="roman" value={view.mark} className="toc-part-item__num" /> : <span aria-hidden="true" class="gb-series-mark--label toc-part-item__num toc-part-item__num--sub">·</span>}<div class="toc-part-item__info"><b>{view.title}</b><small>{item.level === 3 ? 'Подраздел' : 'Раздел'}</small></div><div class="toc-part-item__progress"><i style={item.current ? 'width:0%' : undefined}></i></div></>);
         return item.current ? <div class={className}>{content}</div> : <a class={className} href={item.href}>{content}</a>;

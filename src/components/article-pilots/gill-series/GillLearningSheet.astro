@@ -360,10 +360,12 @@ const quizItems = quizPool.length >= 4 ? quizPool : GILL_LEARNING_QUIZ;
         const correctText = item.answers[item.correctIndex];
         const correctBtn = buttons.find((b) => b.textContent === correctText);
         if (correctBtn) correctBtn.classList.add('is-correct');
-        const explEl = document.getElementById('glsQuizExplanation');
-        if (explEl) { explEl.textContent = item.explanation; explEl.hidden = false; }
         if (liveEl) liveEl.textContent = 'Неверно. ' + item.explanation;
       }
+      // v2.8 elaborative interrogation: the "why it matters" note shows on
+      // EVERY answer (correct too), not only on wrong ones.
+      const explEl = document.getElementById('glsQuizExplanation');
+      if (explEl) { explEl.textContent = item.explanation; explEl.hidden = false; }
       const streakEl = document.getElementById('glsQuizStreak');
       if (streakEl) streakEl.textContent = 'Серия: ' + quizStreak;
       const sourceEl = document.getElementById('glsQuizSource') as HTMLAnchorElement | null;
