@@ -117,9 +117,9 @@
   <ellipse cx="432" cy="400" rx="80" ry="40" transform="rotate(-8 432 400)" 
     fill="url(#seaG)" opacity=".3" filter="url(#waterRipple)"/>
   <path fill="url(#landG)" stroke="#3a4150" stroke-width="1.2" opacity=".9"
-    d="M352,409 C358,398 374,390 396,387 C420,384 444,387 460,393 C468,396 474,396 482,392 C492,386 502,379 510,374 C513,372 515,375 512,379 C504,389 492,398 480,403 C470,408 458,411 446,413 C424,417 396,417 376,414 C364,412 354,413 352,409 Z"/>
+    d="M366,398 C363,389 376,384 391,382 C411,379 431,380 449,383 C463,385 475,387 484,389 C491,390 495,393 494,397 C492,401 485,403 477,403 C465,404 455,406 446,408 C427,412 405,413 387,410 C376,408 368,405 366,398 Z"/>
   <!-- Кипр иврит -->
-  <text x="432" y="408" font-size="4" fill="#8d949f" text-anchor="middle" opacity=".5" class="lbl-z1">כִּתִּים · Κύπρος</text>
+  <text x="416" y="404" font-size="3.6" fill="#8d949f" text-anchor="middle" opacity=".45" class="lbl-z1">כִּתִּים · Κύπρος</text>
 
   <!-- Red Sea -->
   <g filter="url(#waterRipple)">
@@ -323,7 +323,7 @@
     <!-- Пустыня Аравии — stipple pattern -->
 <ellipse cx="1250" cy="1050" rx="380" ry="280" fill="url(#desertStipple)" opacity=".7"/>
 <text class="region-label" x="1075" y="1000" font-size="16" letter-spacing=".4em" opacity=".3">АРАВИЙСКАЯ ПУСТЫНЯ</text>
-    <text class="region-label" x="378" y="412" font-size="10" letter-spacing=".25em" opacity=".35">КИПР</text>
+    <text class="region-label" x="416" y="396" font-size="9" letter-spacing=".2em" opacity=".4" text-anchor="middle">КИПР</text>
   </g>
 
   <!-- ============ ANCIENT TRADE ROUTES ============ -->
@@ -403,18 +403,14 @@
 <!-- Лион-подобный изгиб Средиземного -->
 <!-- Небольшой остров Родос -->
 <!-- Лесбос -->
-<ellipse cx="355" cy="290" rx="8" ry="5" transform="rotate(-15 355 290)"
-  fill="url(#landG)" stroke="#3a4150" stroke-width=".7" opacity=".6" class="lbl-z2"/>
+
 <!-- Хиос -->
-<ellipse cx="360" cy="320" rx="4" ry="9" transform="rotate(-10 360 320)"
-  fill="url(#landG)" stroke="#3a4150" stroke-width=".7" opacity=".6" class="lbl-z2"/>
+
 <!-- Родос -->
-<ellipse cx="395" cy="368" rx="5" ry="10" transform="rotate(20 395 368)"
-  fill="url(#landG)" stroke="#3a4150" stroke-width=".8" opacity=".7" class="lbl-z1"/>
-<text x="395" y="365" font-size="3.5" fill="#8d949f" text-anchor="middle" opacity=".5" class="lbl-z1">Ρόδος</text>
+
+
 <!-- Крит (обозначение) -->
-<ellipse cx="212" cy="462" rx="22" ry="7" transform="rotate(-8 212 462)"
-  fill="url(#landG)" stroke="#3a4150" stroke-width=".8" opacity=".6"/>
+<path d="M190,463 C194,459 202,458 212,459 C223,459 231,460 235,463 C236,465 232,467 226,467 C215,468 203,468 196,467 C192,466 188,465 190,463 Z" fill="url(#landG)" stroke="#3a4150" stroke-width=".9" opacity=".9"/>
 <text x="212" y="460" font-size="4" fill="#8d949f" text-anchor="middle" opacity=".5" class="lbl-z1">КРИТ · כָּפְתּוֹר</text>
 <!-- Западная граница known world -->
 <g class="lbl-z2" opacity=".2">
