@@ -140,7 +140,7 @@ function glyphSvg(name, x, y, k) {
     pyramid: `<g class="glyph"><path d="M${x - 7 * s},${y - 3 * s} L${x - .5 * s},${y - 14 * s} L${x + 6 * s},${y - 3 * s} Z"/><path d="M${x - .5 * s},${y - 14 * s} L${x + 1.4 * s},${y - 3 * s}" class="glyph-line" style="stroke-width:${.55 * s}"/><path d="M${x + 4.4 * s},${y - 3 * s} L${x + 7.6 * s},${y - 8 * s} L${x + 10.4 * s},${y - 3 * s}" class="glyph-line"/></g>`,
     altar: `<g class="glyph"><path d="M${x - 5 * s},${y - 3 * s} h${10 * s} v${-2.5 * s} h${-1.5 * s} v${-3 * s} h${-7 * s} v${3 * s} h${-1.5 * s} Z"/><path d="M${x},${y - 12 * s} q${1.6 * s},${1.8 * s} 0,${3.4 * s} q${-1.6 * s},${-1.8 * s} 0,${-3.4 * s} Z" class="glyph-flame"/></g>`,
     well: `<g class="glyph"><path d="M${x - 3.8 * s},${y - 3.2 * s} a${3.8 * s},${1.7 * s} 0 1 0 ${7.6 * s},0 a${3.8 * s},${1.7 * s} 0 1 0 ${-7.6 * s},0 Z"/><path class="glyph-line" d="M${x - 3.2 * s},${y - 4.6 * s} a${3.2 * s},${3.6 * s} 0 0 1 ${6.4 * s},0"/></g>`,
-    oak: `<g class="glyph"><path class="glyph-line" d="M${x},${y - 2.2 * s} v${-3.6 * s} m0,${1.8 * s} l${-2.4 * s},${-2.4 * s}"/><path d="M${x - 5.4 * s},${y - 5.4 * s} Q${x - 4.8 * s},${y - 10.6 * s} ${x},${y - 11 * s} Q${x + 4.8 * s},${y - 10.6 * s} ${x + 5.4 * s},${y - 5.4 * s} Q${x + 2 * s},${y - 6.6 * s} ${x},${y - 6.2 * s} Q${x - 2 * s},${y - 6.6 * s} ${x - 5.4 * s},${y - 5.4 * s} Z"/></g>`,
+    oak: `<g class="glyph"><path class="glyph-line" d="M${x},${y - 3.4 * s} v${-2.6 * s}"/><path d="M${x - 4.6 * s},${y - 6.4 * s} Q${x - 5.4 * s},${y - 10.4 * s} ${x - 1.6 * s},${y - 10.6 * s} Q${x},${y - 13 * s} ${x + 1.6 * s},${y - 10.6 * s} Q${x + 5.4 * s},${y - 10.4 * s} ${x + 4.6 * s},${y - 6.4 * s} Q${x + 2.4 * s},${y - 5 * s} ${x},${y - 5.4 * s} Q${x - 2.4 * s},${y - 5 * s} ${x - 4.6 * s},${y - 6.4 * s} Z"/></g>`,
     ruin: `<g class="glyph"><path d="M${x - 5.5 * s},${y - 3 * s} v${-6 * s} h${2.6 * s} v${3.4 * s} h${2.2 * s} v${-6.5 * s} h${2.6 * s} v${9.1 * s} Z"/><path d="M${x + 3.4 * s},${y - 12 * s} q${1.4 * s},${-1.8 * s} ${2.8 * s},${-.6 * s}" class="glyph-smoke"/><path d="M${x + 1.8 * s},${y - 10.6 * s} q${1.2 * s},${-1.5 * s} ${2.4 * s},${-.5 * s}" class="glyph-smoke"/></g>`,
     gate: `<g class="glyph"><path d="M${x - 5 * s},${y - 3 * s} v${-6.5 * s} a${5 * s},${4.6 * s} 0 0 1 ${10 * s},0 v${6.5 * s} h${-2.4 * s} v${-5.8 * s} a${2.6 * s},${2.6 * s} 0 0 0 ${-5.2 * s},0 v${5.8 * s} Z"/></g>`,
     palm: `<g class="glyph"><path d="M${x},${y - 3 * s} q${-.6 * s},${-4 * s} ${.4 * s},${-7.6 * s}" class="glyph-line" style="stroke-width:${1.3 * s}"/><path d="M${x + .4 * s},${y - 10.6 * s} q${2.8 * s},${-1.4 * s} ${4.6 * s},${.6 * s} M${x + .4 * s},${y - 10.6 * s} q${-2.8 * s},${-1.4 * s} ${-4.6 * s},${.6 * s} M${x + .4 * s},${y - 10.6 * s} q${2 * s},${-2.6 * s} ${4 * s},${-2.6 * s} M${x + .4 * s},${y - 10.6 * s} q${-2 * s},${-2.6 * s} ${-4 * s},${-2.6 * s}" class="glyph-line"/></g>`,
@@ -568,10 +568,10 @@ function sheetCss() {
   .decor-ship path{fill:none;stroke:#5c718a;stroke-width:1.1;opacity:.5;stroke-linejoin:round}
   .decor-ship .ds-line{stroke-width:.9}
   .decor-ship .ds-wave{opacity:.35}
-  .pl-ctx{fill:#8a7a5e;stroke:#f6f1e7;stroke-width:.7;opacity:.85}
+  .pl-ctx{fill:#6e5f43;stroke:#f6f1e7;stroke-width:.7;opacity:.9}
   .lab-ctx{font-family:Lora,Georgia,serif;font-style:italic;font-weight:400;fill:#8a7a5e;opacity:.9;paint-order:stroke;stroke:#f3ecdc;stroke-width:.14em;stroke-linejoin:round}
-  .war-x{stroke:#96503c;stroke-width:1.05;opacity:.75;fill:none}
-  .war-route{fill:none;stroke:#96503c;stroke-width:1.25;stroke-dasharray:7 4.5;opacity:.5;stroke-linecap:round}
+  .war-x{stroke:#8a5a5c;stroke-width:1.05;opacity:.72;fill:none}
+  .war-route{fill:none;stroke:#8a6668;stroke-width:1.15;stroke-dasharray:10 6;opacity:.42;stroke-linecap:round}
   .lab-war{font-family:'Cormorant Garamond',Georgia,serif;font-style:italic;font-weight:500;fill:#8a4a38;opacity:.92;paint-order:stroke;stroke:#f3ecdc;stroke-width:.14em;stroke-linejoin:round}
   .lab-war-note{opacity:.8}
   .glyph-hit{cursor:pointer}
