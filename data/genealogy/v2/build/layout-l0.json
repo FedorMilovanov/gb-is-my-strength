@@ -10,9 +10,11 @@
    "w": 168,
    "h": 64,
    "label": "Адам",
+   "refRu": "Быт 2:19",
    "am": 0,
    "era": "creation",
-   "golden": true
+   "golden": true,
+   "messiah": false
   },
   {
    "id": "noah--gen-5-29",
@@ -23,9 +25,11 @@
    "w": 168,
    "h": 64,
    "label": "Ной",
+   "refRu": "Быт 5:29",
    "am": 1056,
    "era": "antediluvian",
-   "golden": true
+   "golden": true,
+   "messiah": false
   },
   {
    "id": "shem--gen-5-32",
@@ -36,9 +40,11 @@
    "w": 168,
    "h": 64,
    "label": "Сим",
+   "refRu": "Быт 5:32",
    "am": 1558,
    "era": "postdiluvian",
-   "golden": true
+   "golden": true,
+   "messiah": false
   },
   {
    "id": "abraham--gen-11-26",
@@ -49,9 +55,11 @@
    "w": 168,
    "h": 64,
    "label": "Авраам",
+   "refRu": "Быт 11:26",
    "am": 1948,
    "era": "patriarchs",
-   "golden": true
+   "golden": true,
+   "messiah": false
   },
   {
    "id": "isaac--gen-17-19",
@@ -62,9 +70,11 @@
    "w": 168,
    "h": 64,
    "label": "Исаак",
+   "refRu": "Быт 17:19",
    "am": 2048,
    "era": "patriarchs",
-   "golden": true
+   "golden": true,
+   "messiah": false
   },
   {
    "id": "israel--gen-25-26",
@@ -75,9 +85,11 @@
    "w": 168,
    "h": 64,
    "label": "Иаков",
+   "refRu": "Быт 25:26",
    "am": 2108,
    "era": "patriarchs",
-   "golden": true
+   "golden": true,
+   "messiah": false
   },
   {
    "id": "judah--gen-29-35",
@@ -88,9 +100,11 @@
    "w": 168,
    "h": 64,
    "label": "Иуда",
+   "refRu": "Быт 29:35",
    "am": null,
    "era": "patriarchs",
-   "golden": true
+   "golden": true,
+   "messiah": false
   },
   {
    "id": "david--rut-4-17",
@@ -101,9 +115,11 @@
    "w": 168,
    "h": 64,
    "label": "Давид",
+   "refRu": "Руф 4:17",
    "am": 2920,
    "era": "kings",
-   "golden": true
+   "golden": true,
+   "messiah": false
   },
   {
    "id": "solomon--2sa-5-14",
@@ -114,9 +130,11 @@
    "w": 168,
    "h": 64,
    "label": "Соломон",
+   "refRu": "2Цар 5:14",
    "am": null,
    "era": "kings",
-   "golden": true
+   "golden": true,
+   "messiah": false
   },
   {
    "id": "jesus--isa-7-14",
@@ -127,9 +145,11 @@
    "w": 168,
    "h": 64,
    "label": "Иисус Христос",
+   "refRu": "Ис 7:14",
    "am": 4000,
    "era": "incarnation",
-   "golden": true
+   "golden": true,
+   "messiah": true
   },
   {
    "id": "cluster--antediluvian-patriarchs",
