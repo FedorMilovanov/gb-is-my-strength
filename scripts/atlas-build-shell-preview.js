@@ -368,7 +368,10 @@ const mapsHtml = `<div class="maps-grid">` + mapsSorted.map(({ m, st }) => {
   const cover600 = path.join(ROOT, 'images', `atlas-${m.slug}-scene-600w.webp`);
   const hasCover = fs.existsSync(cover600);
   const hero = hasCover
-    ? `<img src="../../images/atlas-${m.slug}-scene-600w.webp" alt="" loading="lazy">`
+    ? `<img src="../../images/atlas-${m.slug}-scene-600w.webp"
+         srcset="../../images/atlas-${m.slug}-scene-600w.webp 600w, ../../images/atlas-${m.slug}-scene-900w.webp 900w, ../../images/atlas-${m.slug}-scene-1200w.webp 1200w"
+         sizes="(max-width:720px) 92vw, 300px" width="600" height="338" alt="" loading="lazy" decoding="async">` +
+      `<span class="hero-shade" aria-hidden="true"></span>`
     : `<div class="map-hero-ph" style="--tone:${tone}">${ic(ARCH_ICON[m.slug] || 'map', 'hero-ic')}</div>`;
   return `<article class="map-card">` +
     `<div class="map-hero">${hero}<span class="map-status ${st[0]}">${st[1]}</span></div>` +
@@ -657,8 +660,11 @@ const html = `<!DOCTYPE html>
   .map-card{background:var(--card);border:1px solid var(--line);border-radius:14px;overflow:hidden;display:flex;flex-direction:column;
     box-shadow:0 1px 0 #fff inset,0 10px 24px -20px rgba(74,58,24,.5);transition:transform .18s, box-shadow .18s}
   .map-card:hover{transform:translateY(-3px);box-shadow:0 1px 0 #fff inset,0 18px 32px -20px rgba(74,58,24,.55)}
-  .map-hero{position:relative;aspect-ratio:16/9;background:var(--parch2)}
-  .map-hero img{width:100%;height:100%;object-fit:cover;display:block}
+  .map-hero{position:relative;aspect-ratio:16/9;background:var(--parch2);overflow:hidden}
+  .map-hero img{width:100%;height:100%;object-fit:cover;display:block;transform:scale(1.001);transition:transform .45s cubic-bezier(.2,.6,.25,1)}
+  .map-card:hover .map-hero img{transform:scale(1.055)}
+  .hero-shade{position:absolute;inset:0;pointer-events:none;
+    background:linear-gradient(180deg, rgba(30,26,14,.16) 0%, transparent 26%, transparent 70%, rgba(30,26,14,.18) 100%)}
   .map-hero-ph{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
     border-bottom:3px solid color-mix(in srgb, var(--tone) 65%, #8a6a1f);
     background:
