@@ -16,26 +16,27 @@
   .base [stroke="#2e4d6b"]{stroke:#6f97ae}
   .base [stroke="#2d4a66"]{stroke:#6f97ae}
   .base text{opacity:.85}
-  .route-under{fill:none;stroke:#f6f1e7;stroke-width:5.4;stroke-linecap:round;stroke-linejoin:round;opacity:.65}
-  .route{fill:none;stroke:#a25d33;stroke-width:2.6;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:.1 7.4;opacity:.95}
-  .pl-city{fill:#1e3a63;stroke:#f6f1e7;stroke-width:1.2;filter:url(#dotShadow)}
-  .pl-cand{fill:none;stroke:#8a6a1f;stroke-width:1.6;stroke-dasharray:3 2.2}
+  .route-under{fill:none;stroke:#fdf9ef;stroke-width:3;stroke-linecap:round;stroke-linejoin:round;opacity:.3}
+  .route{fill:none;stroke:#a2653f;stroke-width:2.1;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:.1 8.2;opacity:.82}
+  .pl-city{fill:#1e3a63;stroke:#f6f1e7;stroke-width:.9}
+  .pl-cand{fill:none;stroke:#8a6a1f;stroke-width:1.2;stroke-dasharray:2.6 2}
   .pl{cursor:pointer}
-  .glyph path,.glyph circle{fill:rgba(94,74,30,.34);stroke:#6b5216;stroke-width:.9;stroke-linejoin:round}
+  #sheet-svg [fill="url(#jordanG)"]{opacity:.22}
+  #sheet-svg #tradeRoutes{opacity:.32}
+  .glyph path,.glyph circle{fill:none;stroke:#6b5216;stroke-width:.85;stroke-linejoin:round;opacity:.85}
   .glyph .glyph-line{fill:none;stroke:#6b5216;stroke-width:.9;stroke-linecap:round}
   .glyph .glyph-flame{fill:#a25d33;stroke:none}
   .glyph .glyph-smoke{fill:none;stroke:#8a7a58;stroke-width:.8;opacity:.75;stroke-linecap:round}
-  .ruin-halo{fill:rgba(120,100,80,.14);stroke:rgba(120,100,80,.3);stroke-width:.6;stroke-dasharray:2 3}
-  .wp-dot{fill:#4a7a52;stroke:#f6f1e7;stroke-width:.9;opacity:.85}
-  .leader{stroke:#5c4d33;stroke-width:.9;opacity:.55}
-  .mile-c{fill:#f6f1e7;stroke-width:1.6;filter:url(#dotShadow)}
-  .mile-cand{stroke-dasharray:3 2.2}
-  .mile-t{font:700 1em Georgia,serif}
-  text.lab-place{font-family:Georgia,'Times New Roman',serif;font-weight:600;fill:#2b2418;paint-order:stroke;stroke:#f5edd8;stroke-width:.22em;stroke-linejoin:round}
+
+  .wp-dot{fill:#4a7a52;stroke:none;opacity:.6}
+  .leader{stroke:#5c4d33;stroke-width:.75;opacity:.45}
+  .mile-t{font:italic 700 1em Georgia,serif;opacity:.9}
+  text.lab-place{font-family:Georgia,'Times New Roman',serif;font-weight:600;fill:#2b2418;paint-order:stroke;stroke:#f5edd8;stroke-width:.17em;stroke-linejoin:round}
   text.lab-cand{font-style:italic;fill:#5c4a1e}
   text.lab-region{font-family:Georgia,serif;font-weight:600;letter-spacing:.3em;fill:#7a6a48;opacity:.78;paint-order:stroke;stroke:#f5edd8;stroke-width:.18em}
   text.lab-ctx{font-family:Georgia,serif;letter-spacing:.24em;fill:#8a7a58;opacity:.6;paint-order:stroke;stroke:#f5edd8;stroke-width:.16em}
-  text.lab-wp{font-family:Georgia,serif;font-style:italic;fill:#4a6a52;opacity:.82;paint-order:stroke;stroke:#f5edd8;stroke-width:.18em}
+  text.lab-wp{font-family:Georgia,serif;font-style:italic;fill:#4a6a52;opacity:0;transition:opacity .3s;paint-order:stroke;stroke:#f5edd8;stroke-width:.16em}
+  svg.zoomed text.lab-wp{opacity:.85}
   .plate{fill:rgba(246,241,231,.85);stroke:rgba(120,95,40,.35);stroke-width:1}
   .cart-plate{fill:rgba(246,241,231,.92)}
   .cart-inner{fill:none;stroke:rgba(138,106,31,.3);stroke-width:.8}
@@ -638,13 +639,13 @@
 <path d="M623,800 C623.2,800.0 623.8,800.0 624,800 C624.2,800.0 636.3,795.0 624,800 C611.7,805.0 550.5,840.0 550,830 C549.5,820.0 614.2,748.3 621,740 C627.8,731.7 598.5,775.5 591,780 C583.5,784.5 576.2,778.0 576,767 C575.8,756.0 564.2,742.8 590,714 C615.8,685.2 731.0,682.3 731,594 C731.0,505.7 592.2,238.7 590,184 C587.8,129.3 696.7,252.3 718,266" class="route-under"/>
 <path d="M623,800 C623.2,800.0 623.8,800.0 624,800 C624.2,800.0 636.3,795.0 624,800 C611.7,805.0 550.5,840.0 550,830 C549.5,820.0 614.2,748.3 621,740 C627.8,731.7 598.5,775.5 591,780 C583.5,784.5 576.2,778.0 576,767 C575.8,756.0 564.2,742.8 590,714 C615.8,685.2 731.0,682.3 731,594 C731.0,505.7 592.2,238.7 590,184 C587.8,129.3 696.7,252.3 718,266" class="route"/>
 
-<line x1="626.9" y1="795.7" x2="641.3" y2="774.1" class="leader"/><line x1="627.6" y1="803.7" x2="641.3" y2="817.8" class="leader"/>
-<g class="pl" data-pid="temple_early"><circle cx="624" cy="800" r="3.50" class="pl-city"/></g><g class="pl" data-pid="solomons_porch"><circle cx="624" cy="800" r="3.50" class="pl-city"/></g><g class="pl" data-pid="samaria_philip"><circle cx="621" cy="740" r="3.50" class="pl-city"/></g><g class="pl" data-pid="joppa"><circle cx="576" cy="767" r="3.50" class="pl-city"/></g><g class="pl" data-pid="caesarea_cornelius"><circle cx="590" cy="714" r="3.50" class="pl-city"/></g><g class="pl" data-pid="tarsus"><circle cx="590" cy="184" r="3.50" class="pl-city"/></g><g class="pl" data-pid="antioch_church"><circle cx="718" cy="266" r="3.50" class="pl-city"/></g>
-<g class="mile" data-stage="0" data-x="623" data-y="800"><circle cx="623" cy="800" r="6.17" class="mile-c" style="stroke:#8a6a1f"/><text x="623" y="802.8333333333334" text-anchor="middle" class="mile-t" font-size="7.92" style="fill:#8a6a1f">I</text></g><g class="mile" data-stage="2" data-x="550" data-y="830"><circle cx="550" cy="830" r="6.17" class="mile-c" style="stroke:#4a7a52"/><text x="550" y="832.8333333333334" text-anchor="middle" class="mile-t" font-size="7.92" style="fill:#4a7a52">III</text></g><g class="mile" data-stage="1" data-x="591" data-y="780"><circle cx="591" cy="780" r="6.17" class="mile-c" style="stroke:#a25d33"/><text x="591" y="782.8333333333334" text-anchor="middle" class="mile-t" font-size="7.92" style="fill:#a25d33">II</text></g><g class="mile" data-stage="3" data-x="731" data-y="594"><circle cx="731" cy="594" r="6.17" class="mile-c" style="stroke:#8f4a56"/><text x="731" y="596.8333333333334" text-anchor="middle" class="mile-t" font-size="7.92" style="fill:#8f4a56">IV</text></g>
+<line x1="626.5" y1="796.2" x2="641.0" y2="774.5" class="leader"/><line x1="627.2" y1="803.3" x2="641.0" y2="817.4" class="leader"/>
+<g class="pl" data-pid="jerusalem_upper"><circle cx="623" cy="800" r="2.92" class="pl-city"/></g><g class="pl" data-pid="temple_early"><circle cx="624" cy="800" r="2.92" class="pl-city"/></g><g class="pl" data-pid="solomons_porch"><circle cx="624" cy="800" r="2.92" class="pl-city"/></g><g class="pl" data-pid="gaza_road"><circle cx="550" cy="830" r="2.92" class="pl-city"/></g><g class="pl" data-pid="samaria_philip"><circle cx="621" cy="740" r="2.92" class="pl-city"/></g><g class="pl" data-pid="lydda"><circle cx="591" cy="780" r="2.92" class="pl-city"/></g><g class="pl" data-pid="joppa"><circle cx="576" cy="767" r="2.92" class="pl-city"/></g><g class="pl" data-pid="caesarea_cornelius"><circle cx="590" cy="714" r="2.92" class="pl-city"/></g><g class="pl" data-pid="damascus"><circle cx="731" cy="594" r="2.92" class="pl-city"/></g><g class="pl" data-pid="tarsus"><circle cx="590" cy="184" r="2.92" class="pl-city"/></g><g class="pl" data-pid="antioch_church"><circle cx="718" cy="266" r="2.92" class="pl-city"/></g>
+<g class="mile" data-stage="0" data-x="623" data-y="800"><text x="617.6" y="795.8" text-anchor="end" class="mile-t" font-size="8.33" style="fill:#8a6a1f">I</text></g><g class="mile" data-stage="2" data-x="550" data-y="830"><text x="544.6" y="825.8" text-anchor="end" class="mile-t" font-size="8.33" style="fill:#4a7a52">III</text></g><g class="mile" data-stage="1" data-x="591" data-y="780"><text x="585.6" y="775.8" text-anchor="end" class="mile-t" font-size="8.33" style="fill:#a25d33">II</text></g><g class="mile" data-stage="3" data-x="731" data-y="594"><text x="725.6" y="589.8" text-anchor="end" class="mile-t" font-size="8.33" style="fill:#8f4a56">IV</text></g>
 
 
 <text x="500" y="400" class="lab-ctx" font-size="9.58" text-anchor="middle">ИТАЛИЯ</text><text x="641" y="684" class="lab-ctx" font-size="9.58" text-anchor="middle">ГАЛИЛЕЯ</text><text x="621" y="740" class="lab-ctx" font-size="9.58" text-anchor="middle">САМАРИЯ</text>
-<text x="610.5" y="803.7" class="lab-place" font-size="10.83" text-anchor="end">Иерусалим · Горница</text><text x="643.0" y="777.3" class="lab-place" font-size="9.17" text-anchor="start">Храм · Красные ворота</text><text x="643.0" y="820.9" class="lab-place" font-size="9.17" text-anchor="start">Притвор Соломонов</text><text x="537.5" y="833.7" class="lab-place" font-size="10.83" text-anchor="end">Дорога в Газу</text><text x="613.5" y="743.1" class="lab-place" font-size="9.17" text-anchor="end">Самария</text><text x="603.5" y="783.7" class="lab-place" font-size="10.83" text-anchor="start">Лидда</text><text x="568.5" y="770.1" class="lab-place" font-size="9.17" text-anchor="end">Иоппия</text><text x="597.5" y="717.1" class="lab-place" font-size="9.17" text-anchor="start">Кесария Приморская</text><text x="743.5" y="597.7" class="lab-place" font-size="10.83" text-anchor="start">Дамаск</text><text x="597.5" y="187.1" class="lab-place" font-size="9.17" text-anchor="start">Тарс</text><text x="725.5" y="269.1" class="lab-place" font-size="9.17" text-anchor="start">Антиохия Сирийская</text>
+<text x="615.9" y="803.7" class="lab-place" font-size="10.83" text-anchor="end">Иерусалим · Горница</text><text x="642.6" y="777.6" class="lab-place" font-size="9.17" text-anchor="start">Храм · Красные ворота</text><text x="642.6" y="820.5" class="lab-place" font-size="9.17" text-anchor="start">Притвор Соломонов</text><text x="542.9" y="833.7" class="lab-place" font-size="10.83" text-anchor="end">Дорога в Газу</text><text x="613.9" y="743.1" class="lab-place" font-size="9.17" text-anchor="end">Самария</text><text x="598.1" y="783.7" class="lab-place" font-size="10.83" text-anchor="start">Лидда</text><text x="568.9" y="770.1" class="lab-place" font-size="9.17" text-anchor="end">Иоппия</text><text x="597.1" y="717.1" class="lab-place" font-size="9.17" text-anchor="start">Кесария Приморская</text><text x="738.1" y="597.7" class="lab-place" font-size="10.83" text-anchor="start">Дамаск</text><text x="597.1" y="187.1" class="lab-place" font-size="9.17" text-anchor="start">Тарс</text><text x="725.1" y="269.1" class="lab-place" font-size="9.17" text-anchor="start">Антиохия Сирийская</text>
 
   <g class="cartouche">
     <rect x="200" y="421.6666666666667" width="333.33333333333337" height="71.66666666666667" rx="6.666666666666667" class="plate cart-plate"/>

@@ -118,8 +118,8 @@ function glyphSvg(name, x, y, k) {
     ziggurat: `<g class="glyph"><path d="M${x - 7 * s},${y} h${14 * s} v${-3 * s} h${-2.5 * s} v${-3 * s} h${-2.5 * s} v${-3 * s} h${-4 * s} v${3 * s} h${-2.5 * s} v${3 * s} h${-2.5 * s} Z" transform="translate(0,${-4 * s})"/></g>`,
     pyramid: `<g class="glyph"><path d="M${x - 7 * s},${y - 3 * s} L${x},${y - 15 * s} L${x + 7 * s},${y - 3 * s} Z"/><path d="M${x},${y - 15 * s} L${x + 2 * s},${y - 3 * s}" class="glyph-line"/></g>`,
     altar: `<g class="glyph"><path d="M${x - 5 * s},${y - 3 * s} h${10 * s} v${-2.5 * s} h${-1.5 * s} v${-3 * s} h${-7 * s} v${3 * s} h${-1.5 * s} Z"/><path d="M${x},${y - 12 * s} q${1.6 * s},${1.8 * s} 0,${3.4 * s} q${-1.6 * s},${-1.8 * s} 0,${-3.4 * s} Z" class="glyph-flame"/></g>`,
-    well: `<g class="glyph"><path d="M${x - 4.4 * s},${y - 3 * s} a${4.4 * s},${2 * s} 0 1 0 ${8.8 * s},0 a${4.4 * s},${2 * s} 0 1 0 ${-8.8 * s},0 Z"/><path d="M${x - 4 * s},${y - 3.4 * s} v${-6 * s} m${8 * s},${6 * s} v${-6 * s} m${-9 * s},${-1 * s} h${10 * s}" class="glyph-line"/></g>`,
-    oak: `<g class="glyph"><path d="M${x},${y - 2.6 * s} v${-4 * s}" class="glyph-line" style="stroke-width:${1.4 * s}"/><circle cx="${x - 2.6 * s}" cy="${y - 8.4 * s}" r="${2.8 * s}"/><circle cx="${x + 2.6 * s}" cy="${y - 8.4 * s}" r="${2.8 * s}"/><circle cx="${x}" cy="${y - 10.8 * s}" r="${3.2 * s}"/></g>`,
+    well: `<g class="glyph"><path d="M${x - 3.8 * s},${y - 3.2 * s} a${3.8 * s},${1.7 * s} 0 1 0 ${7.6 * s},0 a${3.8 * s},${1.7 * s} 0 1 0 ${-7.6 * s},0 Z"/><path class="glyph-line" d="M${x - 3.2 * s},${y - 4.6 * s} a${3.2 * s},${3.6 * s} 0 0 1 ${6.4 * s},0"/></g>`,
+    oak: `<g class="glyph"><path class="glyph-line" d="M${x},${y - 2.2 * s} v${-3.6 * s} m0,${1.8 * s} l${-2.4 * s},${-2.4 * s}"/><path d="M${x - 5.4 * s},${y - 5.4 * s} Q${x - 4.8 * s},${y - 10.6 * s} ${x},${y - 11 * s} Q${x + 4.8 * s},${y - 10.6 * s} ${x + 5.4 * s},${y - 5.4 * s} Q${x + 2 * s},${y - 6.6 * s} ${x},${y - 6.2 * s} Q${x - 2 * s},${y - 6.6 * s} ${x - 5.4 * s},${y - 5.4 * s} Z"/></g>`,
     ruin: `<g class="glyph"><path d="M${x - 5.5 * s},${y - 3 * s} v${-6 * s} h${2.6 * s} v${3.4 * s} h${2.2 * s} v${-6.5 * s} h${2.6 * s} v${9.1 * s} Z"/><path d="M${x + 3.4 * s},${y - 12 * s} q${1.4 * s},${-1.8 * s} ${2.8 * s},${-.6 * s}" class="glyph-smoke"/><path d="M${x + 1.8 * s},${y - 10.6 * s} q${1.2 * s},${-1.5 * s} ${2.4 * s},${-.5 * s}" class="glyph-smoke"/></g>`,
     gate: `<g class="glyph"><path d="M${x - 5 * s},${y - 3 * s} v${-6.5 * s} a${5 * s},${4.6 * s} 0 0 1 ${10 * s},0 v${6.5 * s} h${-2.4 * s} v${-5.8 * s} a${2.6 * s},${2.6 * s} 0 0 0 ${-5.2 * s},0 v${5.8 * s} Z"/></g>`,
     palm: `<g class="glyph"><path d="M${x},${y - 3 * s} q${-.6 * s},${-4 * s} ${.4 * s},${-7.6 * s}" class="glyph-line" style="stroke-width:${1.3 * s}"/><path d="M${x + .4 * s},${y - 10.6 * s} q${2.8 * s},${-1.4 * s} ${4.6 * s},${.6 * s} M${x + .4 * s},${y - 10.6 * s} q${-2.8 * s},${-1.4 * s} ${-4.6 * s},${.6 * s} M${x + .4 * s},${y - 10.6 * s} q${2 * s},${-2.6 * s} ${4 * s},${-2.6 * s} M${x + .4 * s},${y - 10.6 * s} q${-2 * s},${-2.6 * s} ${-4 * s},${-2.6 * s}" class="glyph-line"/></g>`,
@@ -180,14 +180,14 @@ function renderSheet(route, opts) {
   // Маршрут героя — только основные станы: кандидаты (cand) и линии спутников
   // (lot и т.п.) в главную нить не входят
   const routePts = places.filter(p => typeof p.stage === 'number' &&
-    p.type !== 'region' && p.type !== 'cand' && p.type !== 'lot').map(p => [p.x, p.y]);
+    p.type !== 'region' && p.type !== 'cand' && p.type !== 'lot' && !p.noRoute).map(p => [p.x, p.y]);
   const routePath = catmullRom(routePts);
 
   const seenStage = new Set(), milestones = [], milestoneIds = new Set();
   for (const p of places) {
     if (typeof p.stage === 'number' && !seenStage.has(p.stage)) {
       seenStage.add(p.stage);
-      milestones.push({ x: p.x, y: p.y, n: p.stage, cand: p.type === 'cand' });
+      milestones.push({ x: p.x + (p.mileDx || 0), y: p.y + (p.mileDy || 0), n: p.stage, cand: p.type === 'cand', g: !!p.glyph, fix: p.mileDx != null || p.mileDy != null });
       milestoneIds.add(p.id);
     }
   }
@@ -201,31 +201,27 @@ function renderSheet(route, opts) {
       continue;
     }
     const isMile = milestoneIds.has(p.id);
-    const r = (isMile ? 7.4 : p.type === 'cand' ? 4.6 : 4.2) * k;
+    const r = (p.type === 'cand' ? 3.7 : 3.5) * k;
     const cls = p.type === 'cand' ? 'pl-cand' : 'pl-city';
-    if (!isMile) {
+    {
       let shape;
-      if (p.type === 'mountain' || /гора|Гора/.test(p.name || '')) {
+      if (p.type === 'mountain') {
         shape = `<path d="M${p.x - r * 1.25},${p.y + r} L${p.x},${p.y - r * 1.3} L${p.x + r * 1.25},${p.y + r} Z" class="${cls}"/>`;
-      } else if (p.type === 'spring' || p.type === 'well') {
-        shape = `<circle cx="${p.x}" cy="${p.y}" r="${r.toFixed(2)}" class="${cls}"/><circle cx="${p.x}" cy="${p.y}" r="${(r * .4).toFixed(2)}" fill="#fcf9f1"/>`;
       } else {
         shape = `<circle cx="${p.x}" cy="${p.y}" r="${r.toFixed(2)}" class="${cls}"/>`;
       }
       dots.push(`<g class="pl" data-pid="${esc(p.id)}">${shape}</g>`);
     }
-    // Пиктограмма важного места (place.glyph из данных) — над точкой/вехой
+    // Пиктограмма (place.glyph) — контурная, компактная, только уникальный смысл
     if (p.glyph) {
-      const g = glyphSvg(p.glyph, p.x, p.y - (isMile ? 7 : 3) * k, k);
+      const g = glyphSvg(p.glyph, p.x + (p.glyphDx || 0), p.y - 3 * k + (p.glyphDy || 0), k * 0.82);
       if (g) glyphs.push(g);
-      if (p.glyph === 'ruin') // пепельный ореол Содома
-        halos.push(`<circle cx="${p.x}" cy="${p.y}" r="${16 * k}" class="ruin-halo"/>`);
     }
 
     const fontPlace = (isMile || p.glyph) ? fontMain : fontMinor;
     const a = p.labelAnchor || ((p.side === 'l') ? 'w' : 'e');
     const sp = anchorSpec(a);
-    const off = (isMile ? 15 : 9) * k;
+    const off = 8.5 * k;
     let lx = p.x + sp.dx * off;
     let ly = p.y + sp.dy * off + fontPlace * 0.34;
     if (sp.dy < 0) ly = p.y - off * 0.9;
@@ -247,7 +243,7 @@ function renderSheet(route, opts) {
 
   const placeXY = places.filter(p => p.type !== 'region');
   const wps = (route.verified_waypoints || []).map(w => {
-    const s = 3.2 * k;
+    const s = 2.3 * k;
     // wp, совпадающий с местом (арх-подтверждение той же точки) — текст вниз,
     // чтобы не бодаться с подписью места
     const near = placeXY.some(p => Math.hypot(p.x - w.x, p.y - w.y) < 8 * k + 4);
@@ -259,9 +255,10 @@ function renderSheet(route, opts) {
   const ctxs = (route.ctx || []).filter(c => c && typeof c.x === 'number').map(c =>
     `<text x="${c.x}" y="${c.y}" class="lab-ctx" font-size="${fontCtx.toFixed(2)}" text-anchor="middle">${esc((c.name || '').toUpperCase())}</text>`);
 
+  // Минимализм: веха = тонкая римская цифра у точки (без кружков и полей)
   const miles = milestones.map(m =>
-    `<g class="mile" data-stage="${m.n}" data-x="${m.x}" data-y="${m.y}"><circle cx="${m.x}" cy="${m.y}" r="${(7.4 * k).toFixed(2)}" class="mile-c${m.cand ? ' mile-cand' : ''}" style="stroke:${STAGE_TINT[m.n % STAGE_TINT.length]}"/>` +
-    `<text x="${m.x}" y="${m.y + 3.4 * k}" text-anchor="middle" class="mile-t" font-size="${(9.5 * k).toFixed(2)}" style="fill:${STAGE_TINT[m.n % STAGE_TINT.length]}">${ROMAN[m.n] || m.n + 1}</text></g>`);
+    `<g class="mile" data-stage="${m.n}" data-x="${m.x}" data-y="${m.y}">` +
+    `<text x="${(m.fix ? m.x : m.x - 6.5 * k).toFixed(1)}" y="${(m.fix ? m.y : m.g ? m.y + 10.5 * k : m.y - 5 * k).toFixed(1)}" text-anchor="${m.fix ? 'middle' : 'end'}" class="mile-t" font-size="${(10 * k).toFixed(2)}" style="fill:${STAGE_TINT[m.n % STAGE_TINT.length]}">${ROMAN[m.n] || m.n + 1}</text></g>`);
 
   const km100 = 100 / KM_PER_UNIT[family];
   const sbW = km100 * 2;
@@ -352,26 +349,27 @@ function sheetCss() {
   .base [stroke="#2e4d6b"]{stroke:#6f97ae}
   .base [stroke="#2d4a66"]{stroke:#6f97ae}
   .base text{opacity:.85}
-  .route-under{fill:none;stroke:#f6f1e7;stroke-width:5.4;stroke-linecap:round;stroke-linejoin:round;opacity:.65}
-  .route{fill:none;stroke:#a25d33;stroke-width:2.6;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:.1 7.4;opacity:.95}
-  .pl-city{fill:#1e3a63;stroke:#f6f1e7;stroke-width:1.2;filter:url(#dotShadow)}
-  .pl-cand{fill:none;stroke:#8a6a1f;stroke-width:1.6;stroke-dasharray:3 2.2}
+  .route-under{fill:none;stroke:#fdf9ef;stroke-width:3;stroke-linecap:round;stroke-linejoin:round;opacity:.3}
+  .route{fill:none;stroke:#a2653f;stroke-width:2.1;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:.1 8.2;opacity:.82}
+  .pl-city{fill:#1e3a63;stroke:#f6f1e7;stroke-width:.9}
+  .pl-cand{fill:none;stroke:#8a6a1f;stroke-width:1.2;stroke-dasharray:2.6 2}
   .pl{cursor:pointer}
-  .glyph path,.glyph circle{fill:rgba(94,74,30,.34);stroke:#6b5216;stroke-width:.9;stroke-linejoin:round}
+  #sheet-svg [fill="url(#jordanG)"]{opacity:.22}
+  #sheet-svg #tradeRoutes{opacity:.32}
+  .glyph path,.glyph circle{fill:none;stroke:#6b5216;stroke-width:.85;stroke-linejoin:round;opacity:.85}
   .glyph .glyph-line{fill:none;stroke:#6b5216;stroke-width:.9;stroke-linecap:round}
   .glyph .glyph-flame{fill:#a25d33;stroke:none}
   .glyph .glyph-smoke{fill:none;stroke:#8a7a58;stroke-width:.8;opacity:.75;stroke-linecap:round}
-  .ruin-halo{fill:rgba(120,100,80,.14);stroke:rgba(120,100,80,.3);stroke-width:.6;stroke-dasharray:2 3}
-  .wp-dot{fill:#4a7a52;stroke:#f6f1e7;stroke-width:.9;opacity:.85}
-  .leader{stroke:#5c4d33;stroke-width:.9;opacity:.55}
-  .mile-c{fill:#f6f1e7;stroke-width:1.6;filter:url(#dotShadow)}
-  .mile-cand{stroke-dasharray:3 2.2}
-  .mile-t{font:700 1em Georgia,serif}
-  text.lab-place{font-family:Georgia,'Times New Roman',serif;font-weight:600;fill:#2b2418;paint-order:stroke;stroke:#f5edd8;stroke-width:.22em;stroke-linejoin:round}
+
+  .wp-dot{fill:#4a7a52;stroke:none;opacity:.6}
+  .leader{stroke:#5c4d33;stroke-width:.75;opacity:.45}
+  .mile-t{font:italic 700 1em Georgia,serif;opacity:.9}
+  text.lab-place{font-family:Georgia,'Times New Roman',serif;font-weight:600;fill:#2b2418;paint-order:stroke;stroke:#f5edd8;stroke-width:.17em;stroke-linejoin:round}
   text.lab-cand{font-style:italic;fill:#5c4a1e}
   text.lab-region{font-family:Georgia,serif;font-weight:600;letter-spacing:.3em;fill:#7a6a48;opacity:.78;paint-order:stroke;stroke:#f5edd8;stroke-width:.18em}
   text.lab-ctx{font-family:Georgia,serif;letter-spacing:.24em;fill:#8a7a58;opacity:.6;paint-order:stroke;stroke:#f5edd8;stroke-width:.16em}
-  text.lab-wp{font-family:Georgia,serif;font-style:italic;fill:#4a6a52;opacity:.82;paint-order:stroke;stroke:#f5edd8;stroke-width:.18em}
+  text.lab-wp{font-family:Georgia,serif;font-style:italic;fill:#4a6a52;opacity:0;transition:opacity .3s;paint-order:stroke;stroke:#f5edd8;stroke-width:.16em}
+  svg.zoomed text.lab-wp{opacity:.85}
   .plate{fill:rgba(246,241,231,.85);stroke:rgba(120,95,40,.35);stroke-width:1}
   .cart-plate{fill:rgba(246,241,231,.92)}
   .cart-inner{fill:none;stroke:rgba(138,106,31,.3);stroke-width:.8}
