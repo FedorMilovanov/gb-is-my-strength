@@ -50,8 +50,12 @@ function iconUse(id, x, y, size, color, opacity = 1) {
   return `<use href="#ic-${id}" x="${f(x)}" y="${f(y)}" width="${size}" height="${size}" color="${color}" opacity="${opacity}"/>`;
 }
 
-export function renderL0Svg(layout, { title = 'Генеалогия Спасителя', subtitle = 'От Адама до Христа Спасителя' } = {}) {
+export function renderL0Svg(layout, { title = 'Генеалогия Спасителя', subtitle = 'От Адама до Христа Спасителя', focus = null } = {}) {
   const { bbox, nodes, edges } = layout;
+  // focus = { label, brightIds:Set<string> } — фокус-режим: не-фокус приглушается
+  const bright = focus?.brightIds ?? null;
+  const isBright = id => !bright || bright.has(id);
+  const dimAttr = id => (bright && !bright.has(id)) ? ' opacity="0.28" filter="url(#desat)"' : '';
   const padTop = 190, padL = 250, padR = 90, padB = 96;
   const vbX = bbox.x - padL, vbY = bbox.y - padTop;
   const vbW = bbox.w + padL + padR, vbH = bbox.h + padTop + padB;
@@ -99,6 +103,7 @@ export function renderL0Svg(layout, { title = 'Генеалогия Спасит
     <feDropShadow dx="0" dy="2.2" stdDeviation="3.4" flood-color="#4a3616" flood-opacity="0.26"/></filter>`);
   P.push(`<filter id="goldSoft" x="-60%" y="-60%" width="220%" height="220%">
     <feGaussianBlur stdDeviation="3.2"/></filter>`);
+  P.push(`<filter id="desat"><feColorMatrix type="saturate" values="0.15"/></filter>`);
   P.push(iconSymbolDefs());
   P.push('</defs>');
 
@@ -159,19 +164,32 @@ export function renderL0Svg(layout, { title = 'Генеалогия Спасит
     const ax = b.side === 'left' ? a.x : a.x + a.w, bx = b.side === 'left' ? b.x + b.w : b.x;
     const ay = cy(a), by = cy(b);
     const dashed = (cid === 'lords-relatives' || cid === 'return-from-exile') ? ` stroke-dasharray="1.5 5"` : '';
+    const dim = (bright && !(isBright(a.id) && isBright(b.id))) ? ' opacity="0.14"' : ` opacity="0.62"`;
     if (b.side === 'center') {
-      P.push(`<path d="M${f(cx(a))} ${f(a.y + a.h)} L${f(cx(b))} ${f(b.y)}" fill="none" stroke="${col}" stroke-width="1.6"${dashed} opacity="0.6" stroke-linecap="round"/>`);
+      P.push(`<path d="M${f(cx(a))} ${f(a.y + a.h)} L${f(cx(b))} ${f(b.y)}" fill="none" stroke="${col}" stroke-width="1.6"${dashed}${dim} stroke-linecap="round"/>`);
     } else {
       const mx = (ax + bx) / 2;
-      P.push(`<path d="M${f(ax)} ${f(ay)} C ${f(mx)} ${f(ay)}, ${f(mx)} ${f(by)}, ${f(bx)} ${f(by)}" fill="none" stroke="${col}" stroke-width="1.6"${dashed} opacity="0.62" stroke-linecap="round"/>`);
+      P.push(`<path d="M${f(ax)} ${f(ay)} C ${f(mx)} ${f(ay)}, ${f(mx)} ${f(by)}, ${f(bx)} ${f(by)}" fill="none" stroke="${col}" stroke-width="1.6"${dashed}${dim} stroke-linecap="round"/>`);
     }
+  }
+
+  // чип фокуса в верхней панели (если фокус-режим)
+  if (focus?.label) {
+    const chY = vbY + 118, chW = 30 + focus.label.length * 8.4;
+    const chX = centerX - chW / 2;
+    P.push(`<g>
+      <rect x="${f(chX)}" y="${f(chY)}" width="${f(chW)}" height="30" rx="15" fill="${C.cardTop}" stroke="url(#goldGrad)" stroke-width="1.4" filter="url(#cardShadow)"/>
+      <circle cx="${f(chX + 15)}" cy="${f(chY + 15)}" r="5" fill="none" stroke="${C.gold}" stroke-width="1.4"/>
+      <circle cx="${f(chX + 15)}" cy="${f(chY + 15)}" r="1.6" fill="${C.gold}"/>
+      <text x="${f(chX + 27)}" y="${f(chY + 19.5)}" font-size="13" fill="${C.ink}">${esc(focus.label)}</text></g>`);
   }
 
   // ─────────── узлы ───────────
   for (const n of nodes) {
-    if (n.kind === 'spine' && n.messiah) { P.push(renderChrist(n)); continue; }
-    if (n.kind === 'spine') { P.push(renderSpine(n)); continue; }
-    P.push(renderMega(n));
+    const wrap = s => (bright && !isBright(n.id)) ? `<g${dimAttr(n.id)}>${s}</g>` : s;
+    if (n.kind === 'spine' && n.messiah) { P.push(wrap(renderChrist(n))); continue; }
+    if (n.kind === 'spine') { P.push(wrap(renderSpine(n))); continue; }
+    P.push(wrap(renderMega(n)));
   }
 
   // ─────────── легенда ───────────
