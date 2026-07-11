@@ -108,7 +108,8 @@
       ],
       "dispute": "<div class=\"dispute-block\"><div class=\"dispute-title\">Дата Исхода: XV или XIII в. до н.э.?</div><div class=\"dispute-pos cons\"><b>Ранняя (~1447 до н.э.)</b>: 3Цар 6:1 — 480 лет до Храма (~967). Фараон: Тутмос III / Аменхотеп II. <span class=\"conf-med\">Средняя</span></div><div class=\"dispute-pos alt\"><b>Поздняя (~1260 до н.э.)</b>: Исх 1:11 — Раамсес при Рамессидах. Фараон: Рамсес II. <span class=\"conf-med\">Средняя</span></div><div class=\"dispute-note\">Позиция: YEC — ранняя дата. Название «Раамсес» может быть ретроспективным (ср. Быт 14:14).</div></div>",
       "he_deep": "<div class=\"he-block\"><div class=\"he-word\"><span class=\"hw\" lang=\"he\">רַעְמְסֵס</span><span class=\"he-tr\">Раамсес</span></div><div class=\"he-etym\">Егип. <em>pr-Rʿ-ms-sw</em> — «Дом Рамессеса». В масоретском тексте: регион Гесем (Быт 47:11) и город-склад (Исх 1:11).</div><div class=\"he-refs\">Быт 47:11 · Исх 1:11; 12:37 · Числ 33:3-5</div></div>",
-      "bible_extra": "<p class=\"bib-note\"><b>Пророчество:</b> Быт 15:13-14 — «потомки твои будут пришельцами… но Я произведу суд». Исполнено в Исх 12:35-36.</p>"
+      "bible_extra": "<p class=\"bib-note\"><b>Пророчество:</b> Быт 15:13-14 — «потомки твои будут пришельцами… но Я произведу суд». Исполнено в Исх 12:35-36.</p>",
+      "placeId": "rameses"
     },
     {
       "id": "succoth",
@@ -142,7 +143,8 @@
           "type": "geo",
           "alt": "Вади Тумилат"
         }
-      ]
+      ],
+      "placeId": "succoth"
     },
     {
       "id": "pihahiroth",
@@ -177,7 +179,8 @@
           "type": "geo",
           "alt": "Суэцкий залив"
         }
-      ]
+      ],
+      "placeId": "pihahiroth"
     },
     {
       "id": "etham",
@@ -211,7 +214,8 @@
           "type": "geo",
           "alt": "Синайская пустыня"
         }
-      ]
+      ],
+      "placeId": "etham"
     },
     {
       "id": "marah",
@@ -245,7 +249,8 @@
           "type": "geo",
           "alt": "Синайский источник"
         }
-      ]
+      ],
+      "placeId": "marah"
     },
     {
       "id": "elim",
@@ -279,7 +284,8 @@
           "type": "geo",
           "alt": "Вади Гарандель"
         }
-      ]
+      ],
+      "placeId": "elim"
     },
     {
       "id": "rephidim",
@@ -313,7 +319,8 @@
           "type": "geo",
           "alt": "Вади Фейран"
         }
-      ]
+      ],
+      "placeId": "rephidim"
     },
     {
       "id": "sinai",
@@ -348,7 +355,8 @@
           "alt": "Гора Синай — Джебель Муса"
         }
       ],
-      "bible_extra": "<p class=\"bib-note\"><b>Пятидесятница:</b> Пасха → 50 дней → Синай // Пасха → 50 дней → Деян 2. Евр 12:18-24: «вы приступили к горе Сион».</p>"
+      "bible_extra": "<p class=\"bib-note\"><b>Пятидесятница:</b> Пасха → 50 дней → Синай // Пасха → 50 дней → Деян 2. Евр 12:18-24: «вы приступили к горе Сион».</p>",
+      "placeId": "mount-sinai"
     },
     {
       "id": "kadesh_barnea",
@@ -383,7 +391,8 @@
         }
       ],
       "dispute": "<div class=\"dispute-block\"><div class=\"dispute-title\">Кадеш: оазис без бронзового слоя</div><div class=\"dispute-pos cons\"><b>Эйн эль-Кудейрат</b>: три железновековые крепости (X–VII вв.). Бронза отсутствует. <span class=\"conf-med\">Средняя</span></div><div class=\"dispute-pos alt\"><b>Кочевая стоянка</b>: отсутствие архитектуры ожидаемо. Керамика Qurayyah Painted Ware. <span class=\"conf-med\">Средняя</span></div><div class=\"dispute-note\">Кочевники не оставляют построек; традиция (Евсевий) сильна.</div></div>",
-      "bible_extra": "<p class=\"bib-note\"><b>40 лет за 40 дней:</b> Числ 13:25; 14:34. Разведчики → неверие → приговор. Иисус Навин и Халев — остаток веры.</p>"
+      "bible_extra": "<p class=\"bib-note\"><b>40 лет за 40 дней:</b> Числ 13:25; 14:34. Разведчики → неверие → приговор. Иисус Навин и Халев — остаток веры.</p>",
+      "placeId": "kadesh-barnea"
     },
     {
       "id": "plains_moab",
@@ -417,7 +426,8 @@
           "alt": "Вид с горы Нево"
         }
       ],
-      "bible_extra": "<p class=\"bib-note\"><b>Смерть Моисея:</b> Тора заканчивается не Ханааном. Закон не вводит в обетование — нужен Иисус (Навин). Втор 18:15 обещает Пророка.</p>"
+      "bible_extra": "<p class=\"bib-note\"><b>Смерть Моисея:</b> Тора заканчивается не Ханааном. Закон не вводит в обетование — нужен Иисус (Навин). Втор 18:15 обещает Пророка.</p>",
+      "placeId": "plains-moab"
     },
     {
       "id": "aaron_mount",
@@ -451,7 +461,8 @@
           "type": "geo",
           "alt": "Гора Аарона"
         }
-      ]
+      ],
+      "placeId": "aaron-mount"
     }
   ],
   "stages": [
