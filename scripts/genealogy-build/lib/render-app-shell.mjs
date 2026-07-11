@@ -20,7 +20,7 @@ const iconUse = (id, x, y, s, col, op = 1) => id ? `<use href="#ic-${id}" x="${f
 const W = 1680, H = 1012;
 const TOP = 58, RAIL = 60, PANEL = 320, STAT = 40;
 
-export function renderAppShell(layoutL0, { theme = 'light' } = {}) {
+export function renderAppShell(layoutL0, { theme = 'light', views = null } = {}) {
   const C = getPalette(theme);
   const dark = theme === 'dark';
   const panelBg = dark ? '#1c150c' : '#efe6ce';
@@ -98,7 +98,7 @@ export function renderAppShell(layoutL0, { theme = 'light' } = {}) {
   // ── правая панель-навигатор ──
   P.push(`<rect x="${panelX}" y="${TOP}" width="${PANEL}" height="${H - TOP - STAT}" fill="${panelBg}"/>`);
   P.push(`<line x1="${panelX}" y1="${TOP}" x2="${panelX}" y2="${H - STAT}" stroke="${panelEdge}" stroke-width="1"/>`);
-  P.push(rightPanel(layoutL0, panelX, C, dark, fieldBg, panelEdge));
+  P.push(rightPanel(layoutL0, panelX, C, dark, fieldBg, panelEdge, views));
 
   // ── статус-бар ──
   P.push(`<rect x="0" y="${H - STAT}" width="${W}" height="${STAT}" fill="${chromeBg}"/>`);
@@ -192,7 +192,7 @@ function eraRail(layoutL0, mapY, mapH, C) {
 }
 
 // ── правая панель ──
-function rightPanel(layoutL0, px, C, dark, fieldBg, edge) {
+function rightPanel(layoutL0, px, C, dark, fieldBg, edge, views) {
   const g = [];
   const x0 = px + 20, innerW = PANEL - 40;
   // заголовок «Навигатор»
@@ -224,18 +224,13 @@ function rightPanel(layoutL0, px, C, dark, fieldBg, edge) {
   });
   y += 3 * 26 + 18;
 
-  // быстрые виды
+  // быстрые виды — из данных (views.json), не хардкод
   g.push(`<text x="${x0}" y="${y}" font-size="11" letter-spacing="1.5" fill="${C.inkFaint}">БЫСТРЫЕ ВИДЫ</text>`);
   y += 12;
-  const views = [
-    ['Адам → Христос', 'cross', 'хребет'], ['12 колен Израиля', 'tribes', 'L1'],
-    ['Дом Давида', 'crown', '+173'], ['Народы от Ноя', 'globe', '70'],
-    ['Родословие Матфея', 'book', 'Мф 1'], ['Родословие Луки', 'scroll', 'Лк 3'],
-    ['Женские фигуры', 'people', '200'], ['Хронология (эпохи)', 'ladder', 'I–VI'],
-  ];
-  views.forEach((v, i) => {
+  const items = (views ?? []).map(v => [v.titleRu, v.icon, v.hint ?? '', v.id]);
+  items.forEach((v, i) => {
     const yy = y + i * 30;
-    const hot = i === 3; // «Народы от Ноя» — подсвечен как только что открытый архетип
+    const hot = v[3] === 'nations'; // «Народы от Ноя» — подсвечен как только что открытый архетип
     g.push(`<rect x="${x0}" y="${f(yy)}" width="${innerW}" height="26" rx="8" fill="${hot ? (dark ? '#2a2011' : '#f7edd4') : 'none'}" stroke="${hot ? C.gold : edge}" stroke-width="${hot ? 1.3 : 0.8}" opacity="${hot ? 1 : 0.7}"/>`);
     g.push(iconUse(v[1], x0 + 8, yy + 4, 18, hot ? C.gold : C.inkSoft, 0.9));
     g.push(`<text x="${x0 + 34}" y="${f(yy + 17)}" font-size="12" fill="${C.ink}">${esc(v[0])}</text>`);
