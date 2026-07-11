@@ -22,6 +22,8 @@ import { buildLayoutL0 } from './lib/layout-l0.mjs';
 import { renderL0Svg } from './lib/render-l0-svg.mjs';
 import { buildTribes12 } from './lib/layout-l1.mjs';
 import { renderTribes12Svg } from './lib/render-l1-tribes.mjs';
+import { buildMatthewLuke } from './lib/layout-l1-lineages.mjs';
+import { renderMatthewLukeSvg } from './lib/render-l1-lineages.mjs';
 
 const log = (...a) => console.log('[genealogy-build]', ...a);
 
@@ -354,6 +356,9 @@ async function runAll() {
   const tribes12 = buildTribes12(outPersons);
   const l1TribesSvg = renderTribes12Svg(tribes12);
   log(`layout-l1: «12 колен» — центр Иаков + ${tribes12.sons.length} сыновей радиально`);
+  const mtLk = buildMatthewLuke();
+  const l1MtLkSvg = renderMatthewLukeSvg(mtLk);
+  log(`layout-l1: «Матфей/Лука» — колоночная развёртка (${mtLk.nodes.length} узлов)`);
   log(`layout-l0: узлов ${layoutL0.nodes.length} (хребет ${layoutL0.nodes.filter(n => n.kind === 'spine').length} + мега ${layoutL0.nodes.filter(n => n.kind === 'mega').length}), bbox ${Math.round(layoutL0.bbox.w)}×${Math.round(layoutL0.bbox.h)}`);
 
   // 7. Валидация
@@ -391,6 +396,8 @@ async function runAll() {
   await writeFile(path.join(PATHS.outDir, 'build', 'genealogy-l0-focus-david.svg'), l0FocusSvg);
   await writeFile(path.join(PATHS.outDir, 'build', 'layout-l1-tribes-12.json'), JSON.stringify(tribes12, null, 1) + '\n');
   await writeFile(path.join(PATHS.outDir, 'build', 'genealogy-l1-tribes-12.svg'), l1TribesSvg);
+  await writeFile(path.join(PATHS.outDir, 'build', 'layout-l1-matthew-luke.json'), JSON.stringify(mtLk, null, 1) + '\n');
+  await writeFile(path.join(PATHS.outDir, 'build', 'genealogy-l1-matthew-luke.svg'), l1MtLkSvg);
   await writeFile(path.join(PATHS.outDir, 'meta.json'), JSON.stringify(meta, null, 2) + '\n');
   try { await access(path.join(PATHS.outDir, 'ru-overrides.json')); }
   catch {
