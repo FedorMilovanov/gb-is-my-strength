@@ -12,38 +12,10 @@
  * Всё self-hosted (CSP): текстура — SVG-фильтры, иконки — инлайновые symbol'ы.
  */
 import { iconSymbolDefs, ANCHOR_ICON, CLUSTER_ICON, ANCHOR_SUBTITLE } from './icons.mjs';
+import { PALETTE as C, ERA_ACCENT, ROMAN, CLUSTER_LINE } from './palette.mjs';
 
 const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
 const f = (n, d = 1) => Number(n).toFixed(d);
-
-// ── Палитра (тёплый пергамент + золото + линии по родословным) ──
-const C = {
-  paper0: '#f6eedb', paper1: '#f0e5cb', paperEdge: '#e6d8b8',
-  ink: '#3c3120', inkSoft: '#6e5c3d', inkFaint: '#9c8862',
-  gold: '#b8933f', goldLo: '#a07d33', goldHi: '#e6c877', goldGlow: '#f0d488',
-  cardTop: '#fdf9ef', cardBot: '#f6eeda', cardBorder: '#c8a961',
-  megaTop: '#f6efdd', megaBot: '#efe4cb', megaBorder: '#c9b488',
-  // линии
-  messianic: '#c19a41', matthew: '#7c5ba6', luke: '#3f8a9a', patriarch: '#6f8a4c',
-  cainite: '#a0533f', relation: '#b9a06f',
-};
-
-const ERA_ACCENT = {
-  creation: '#8B6914', antediluvian: '#A0734A', flood: '#5A7A8C',
-  postdiluvian: '#6B8E4E', patriarchs: '#C4A04A', kings: '#B8743A',
-  exile: '#8C6A4A', incarnation: '#C99A3A',
-};
-const ROMAN = ['', 'I', 'II', 'III', 'IV', 'V', 'VI', 'VII', 'VIII'];
-
-// Цвет коннектора кластера к якорю — по смыслу линии.
-const CLUSTER_LINE = {
-  'matthew-1': C.matthew, 'luke-3': C.luke,
-  'lords-relatives': C.relation, 'disciples-apostles': C.luke,
-  'antediluvian-patriarchs': C.patriarch, 'abraham-descendants': C.patriarch,
-  'tribes-12': C.patriarch, 'levites': C.patriarch, 'house-of-david': C.matthew,
-  'nations-of-noah': C.cainite, 'ishmaelites': C.cainite, 'esau-edom': C.cainite,
-  'priests': C.patriarch, 'return-from-exile': C.relation,
-};
 
 function iconUse(id, x, y, size, color, opacity = 1) {
   if (!id) return '';
