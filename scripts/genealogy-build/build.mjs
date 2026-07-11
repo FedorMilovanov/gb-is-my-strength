@@ -377,8 +377,8 @@ async function runAll() {
   const searchIndex = buildSearchIndex({ persons: outPersons, nationsTree: tonData });
   log(`views: ${views.length} быстрых видов; search-index: персон ${searchIndex.persons.length}, народов ${searchIndex.nations.length}`);
   // Камертон интерфейса: оболочка приложения (карта + панель-навигатор + миникарта)
-  const appShellSvg = renderAppShell(layoutL0, { views });
-  const appShellDarkSvg = renderAppShell(layoutL0, { theme: 'dark', views });
+  const appShellSvg = renderAppShell(layoutL0, { views, personsCount: outPersons.length });
+  const appShellDarkSvg = renderAppShell(layoutL0, { theme: 'dark', views, personsCount: outPersons.length });
   log(`app-shell: прототип интерфейса (карта + навигатор + миникарта), обе темы`);
   log(`layout-l0: узлов ${layoutL0.nodes.length} (хребет ${layoutL0.nodes.filter(n => n.kind === 'spine').length} + мега ${layoutL0.nodes.filter(n => n.kind === 'mega').length}), bbox ${Math.round(layoutL0.bbox.w)}×${Math.round(layoutL0.bbox.h)}`);
 
