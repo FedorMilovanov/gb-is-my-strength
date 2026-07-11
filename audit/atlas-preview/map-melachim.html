@@ -4,10 +4,14 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="robots" content="noindex,nofollow">
-<title>Семь церквей Откровения — сборка KA-5 (awaiting G9, не витрина)</title>
+<title>Цари Израиля и Иудеи — сборка KA-5 (awaiting G9, не витрина)</title>
 <style>html,body{margin:0;height:100%;background:#070a10}#stage{position:fixed;inset:0}
 .g9{position:fixed;left:50%;transform:translateX(-50%);top:8px;z-index:99;font:600 10px/1 system-ui;letter-spacing:.08em;color:#e8c879;background:rgba(0,0,0,.55);border:1px solid rgba(232,200,121,.35);border-radius:999px;padding:6px 10px}
-/* дуга семи церквей — акцент; базы mediterranean пока нет (долг KA-6, D-14) */
+/* усиление читаемости базы на юге (страничный слой, движок не трогаем) */
+#stage #me-base-geo{opacity:.78!important}
+#stage .sea-label{opacity:.8}
+#stage .region-label{opacity:.7}
+/* линия маршрута — главный акцент листа */
 #stage path[stroke="#e8c879"]{stroke-width:3.2px}
 @media (max-width:560px){.g9{top:auto;bottom:8px;font-size:9px;max-width:86vw;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}}
 </style>
@@ -162,16 +166,16 @@
   </radialGradient>
 </defs></svg>
 <div id="stage"></div>
-<span class="g9">REVELATION · KA-5 · awaiting G9 · база v1 (Ф2-Ц2)</span>
+<span class="g9">MELACHIM · KA-5 · awaiting G9</span>
 <script src="../../karty/_engine/map-engine.js"></script>
 <script>
 (function(){
-  MapEngine.loadRoute('../../karty/revelation/route.json').then(function(route){
+  MapEngine.loadRoute('../../karty/melachim/route.json').then(function(route){
     MapEngine.createMap(document.getElementById('stage'), route, {
-      baseGeoUrl: '../../data/atlas/base/base-geo-mediterranean.svg',
+      baseGeoUrl: '../../karty/_engine/base-geo.svg',
       backUrl: '../atlas-preview/index.html#maps'
     });
-  }).catch(function(e){console.error('[revelation build] failed:', e);});
+  }).catch(function(e){console.error('[melachim build] failed:', e);});
 })();
 </script>
 </body>
