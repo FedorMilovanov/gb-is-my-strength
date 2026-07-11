@@ -414,6 +414,11 @@ const mapsHtml = `<div class="maps-grid">` + mapsSorted.map(({ m, st }) => {
 // Точки: placements.levant из data/atlas/places/*.json; кодировка честности §3:
 // заливка = уверенная локализация, золото = спорная, пунктирный контур = слабая/традиционная.
 const placesAll = loadDir(A('places'));
+// KA-3: подписи/маршруты листа — ТОЛЬКО из label-pipeline (scripts/atlas-labels.js)
+const LGEN = JSON.parse(fs.readFileSync(path.join(A('generated'), 'labels-levant.json'), 'utf8'));
+const CLUSTER = (LGEN.clusters && LGEN.clusters[0]) || { memberIds: [], members: [], extra: 0 };
+const CLUSTERED = new Set(CLUSTER.memberIds || []);
+const GLYPH = (t) => t === 'mountain' ? 'mount' : (t === 'spring' || t === 'well') ? 'spring' : (t === 'sanctuary') ? 'sanct' : 'city';
 const RANK = { consensus: 6, primary: 5, candidate: 4, alternative: 3, caveat: 2, minor: 1, rejected: 0 };
 const TYPE_RU = { city: 'город', town: 'посёлок', region: 'регион', mountain: 'гора', river: 'река', sea: 'море', lake: 'озеро', spring: 'источник', road: 'дорога', garden: 'сад', structure: 'сооружение', sanctuary: 'святилище', camp: 'стан', valley: 'долина', other: 'место' };
 const STATUS_WORD = { sure: 'уверенная локализация', disputed: 'СПОРНАЯ локализация — есть варианты', weak: 'слабая/традиционная локализация', plain: 'позиция реестра (без внешней идентификации)' };
@@ -496,11 +501,12 @@ const geoDots = [];
 const geoLabels = [];
 let inFrame = 0, offFamily = 0, subSkipped = 0, regionSkipped = 0;
 const stCount = { sure: 0, disputed: 0, weak: 0, plain: 0 };
-for (const p of placesAll.sort((a, b) => (b.maps || []).length - (a.maps || []).length)) {
+for (const p of placesAll.sort((a, b) => (a.rank || 3) - (b.rank || 3))) {
   const pl = p.placements && p.placements.levant;
   if (!pl) { offFamily++; continue; }
-  if (p.parentId) { subSkipped++; continue; } // суб-локации — дело городских планов (KA-6)
-  if (p.type === 'region') { regionSkipped++; continue; } // регионы — полигоны KA-6, точкой не врём
+  if (p.parentId) { subSkipped++; continue; }
+  if (p.type === 'region') { regionSkipped++; continue; }
+  if (CLUSTERED.has(p.id)) continue; // члены иерусалимского кластера — в бейдже ⊕N
   inFrame++;
   const idents = p.identifications || [];
   const best = idents.reduce((b, i) => (RANK[i.status] > RANK[b] ? i.status : b), 'rejected');
@@ -508,21 +514,43 @@ for (const p of placesAll.sort((a, b) => (b.maps || []).length - (a.maps || []).
     : (best === 'consensus' || best === 'primary') ? 'sure'
     : best === 'candidate' ? 'disputed' : 'weak';
   stCount[cls]++;
-  const nMaps = (p.maps || []).length;
-  const r = 3 + 1.15 * Math.sqrt(Math.max(nMaps - 1, 0));
+  const rk = p.rank || 3;
+  const r = rk === 1 ? 6.5 : rk === 2 ? 5 : 3.8;
   const cands = idents.filter((i) => RANK[i.status] >= RANK.alternative).length;
-  const tipRest = `${TYPE_RU[p.type] || p.type} · ${STATUS_WORD[cls]}` +
+  const tipRest = `${TYPE_RU[p.type] || p.type} · ранг ${rk} · ${STATUS_WORD[cls]}` +
     (cls === 'disputed' && cands > 1 ? ` (${cands} кандидата)` : '') +
     ` · карты: ${(p.maps || []).map((m) => m.slug).join(', ')}`;
   const tip = tipAttr(p.names.ru, tipRest);
   const needle = [p.names.ru, ...(p.names.variants || [])].join(' ').toLowerCase().replace(/ё/g, 'е');
   const firstMap = (p.maps && p.maps[0] && p.maps[0].slug) || "";
-  geoDots.push(`<g ${tip} class="geo-dot" data-name="${esc(needle)}"${firstMap ? ` data-href="../../karty/${firstMap}/" tabindex="0" role="link" aria-label="${esc(p.names.ru)} — открыть карту"` : ""}><circle cx="${pl.x}" cy="${pl.y}" r="${r.toFixed(1)}" class="dot-${cls}"/></g>`);
-  if (nMaps >= 3 || (cls === 'disputed' && nMaps >= 2)) {
-    const side = pl.x > 1550 ? -1 : 1;
-    geoLabels.push(`<text x="${pl.x + side * (r + 5)}" y="${pl.y + 3.5}" ${side < 0 ? 'text-anchor="end"' : ''} class="geo-lab" data-name="${esc(needle)}">${esc(p.names.ru)}</text>`);
-  }
+  const href = firstMap ? ` data-href="../../karty/${firstMap}/" tabindex="0" role="link" aria-label="${esc(p.names.ru)} — открыть карту"` : '';
+  const g = GLYPH(p.type);
+  let shape;
+  if (g === 'mount') shape = `<path d="M${pl.x - r - 1},${pl.y + r * 0.8} L${pl.x},${pl.y - r - 1} L${pl.x + r + 1},${pl.y + r * 0.8} Z" class="dot-${cls}"/>`;
+  else if (g === 'spring') shape = `<circle cx="${pl.x}" cy="${pl.y}" r="${(r * 0.8).toFixed(1)}" class="dot-${cls}"/><circle cx="${pl.x}" cy="${pl.y}" r="${(r * 0.35).toFixed(1)}" fill="#fcf9f1" pointer-events="none"/>`;
+  else if (g === 'sanct') shape = `<rect x="${(pl.x - r * 0.85).toFixed(1)}" y="${(pl.y - r * 0.85).toFixed(1)}" width="${(r * 1.7).toFixed(1)}" height="${(r * 1.7).toFixed(1)}" transform="rotate(45 ${pl.x} ${pl.y})" class="dot-${cls}"/>`;
+  else shape = `<circle cx="${pl.x}" cy="${pl.y}" r="${r.toFixed(1)}" class="dot-${cls}"/>`;
+  geoDots.push(`<g ${tip} class="geo-dot" data-name="${esc(needle)}"${href}>${shape}</g>`);
 }
+// Кластер Иерусалима (§6: city-inset в интерактиве; на листе — «⊕N»)
+{
+  const jp = placesAll.find((p) => p.id === 'jerusalem').placements.levant;
+  geoDots.push(`<g class="geo-dot geo-cluster" data-name="иерусалим кластер" data-href="../../karty/yeshua/" tabindex="0" role="link" ` +
+    tipAttr('Иерусалим и окрестности', `⊕${CLUSTER.extra} мест: ${CLUSTER.members.join(', ')} · городской план — KA-6`) +
+    `><circle cx="${jp.x}" cy="${jp.y}" r="10.5" fill="none" class="cluster-ring"/><text x="${jp.x + 13}" y="${jp.y - 8}" class="cluster-badge">⊕${CLUSTER.extra}</text></g>`);
+}
+// Подписи листа — из pipeline (гало, кегль по бакету, выноски)
+for (const L of LGEN.labels) {
+  if (L.leader) geoLabels.push(`<line x1="${L.leader.fromX}" y1="${L.leader.fromY}" x2="${L.leader.toX}" y2="${L.leader.toY}" class="leader-line"/>`);
+  geoLabels.push(`<text x="${L.x.toFixed(1)}" y="${L.y.toFixed(1)}" font-size="${L.font}" class="geo-lab lab-r${L.rank}" data-name="${esc(L.text.toLowerCase().replace(/ё/g,'е'))}">${esc(L.text)}</text>`);
+}
+// Дороги (data/atlas/routes) — терракотовый штрих + подпись вдоль (textPath)
+const geoRoutes = [];
+LGEN.routes.forEach((rt, i) => {
+  const d = 'M' + rt.pts.map((pt) => pt.join(',')).join(' L');
+  geoRoutes.push(`<path id="rt-${rt.id}" d="${d}" class="route-line"/>`);
+  geoRoutes.push(`<text class="route-lab" dy="-4"><textPath href="#rt-${rt.id}" startOffset="${i === 0 ? 38 : 50}%">${esc(rt.title)}</textPath></text>`);
+});
 
 // Картографическая фурнитура: линейка масштаба (сегменты по 100 км ≈ 108.7 ед. при 0.92 км/ед.)
 // и стрелка севера. 300 км → ~326 ед.: читаемая длина в кадре 1900.
@@ -550,7 +578,7 @@ const placesHtml =
   `<span class="geo-search">${ic('pin')}<input id="geo-q" type="search" placeholder="Найти место…" autocomplete="off" aria-label="Поиск места на мини-карте"><span id="geo-n" aria-live="polite"></span></span>` +
   `</div>` +
   `<div class="geo-frame"><svg viewBox="0 0 1900 1430" class="geo-svg" role="img" aria-label="Мини-карта Леванта: места реестра Атласа со статусами уверенности локализаций">` +
-  GEO_DEFS + baseGeoFixed + geoDots.join('') + geoLabels.join('') + geoFurniture + `</svg></div>` +
+  GEO_DEFS + baseGeoFixed + geoRoutes.join('') + geoDots.join('') + geoLabels.join('') + geoFurniture + `</svg></div>` +
   `<div class="legend geo-legend">` +
   `<span><b style="background:#1e3a63;border-radius:50%"></b> уверенная — ${stCount.sure}</span>` +
   `<span><b style="background:#d9b36a;border:1.5px solid #8a6a1f;border-radius:50%"></b> спорная — ${stCount.disputed}</span>` +
@@ -823,6 +851,17 @@ const html = `<!DOCTYPE html>
   .geo-dot[data-href]:focus-visible circle{stroke:var(--blue);stroke-width:2.6}
   .geo-dot.dim{opacity:.12}
   .geo-lab.dim{opacity:.15}
+  .geo-lab{font-family:Georgia,'Times New Roman',serif;font-weight:600;fill:#2b2418;pointer-events:none;
+    paint-order:stroke;stroke:rgba(242,234,216,.88);stroke-width:2.6px;stroke-linejoin:round}
+  .lab-r1{font-weight:700;letter-spacing:.02em}
+  .lab-r3{fill:#4a3f2c}
+  .leader-line{stroke:rgba(90,74,40,.55);stroke-width:.9;pointer-events:none}
+  .route-line{fill:none;stroke:#a2683c;stroke-width:2.4;stroke-dasharray:7 4;stroke-linecap:round;opacity:.75}
+  .route-lab{font:italic 700 11px Georgia,serif;fill:#8a5a30;letter-spacing:.22em;opacity:.9;
+    paint-order:stroke;stroke:rgba(242,234,216,.8);stroke-width:2.4px}
+  .cluster-ring{stroke:#1e3a63;stroke-width:1.6;stroke-dasharray:3 2.4}
+  .geo-cluster{cursor:pointer}
+  .cluster-badge{font:700 11px Georgia,serif;fill:#1e3a63;paint-order:stroke;stroke:rgba(242,234,216,.9);stroke-width:2.4px}
   /* Типографика подложки: серифные картографические подписи (CSS перекрывает презентационные атрибуты base-geo) */
   .geo-svg .sea-label{font-family:Georgia,"Times New Roman",serif;font-style:italic;font-weight:700;fill:#5f8bab;letter-spacing:.42em;opacity:.75}
   .geo-svg .region-label{font-family:Georgia,"Times New Roman",serif;font-weight:700;fill:#8a7a52;letter-spacing:.3em;opacity:.62}
@@ -846,8 +885,6 @@ const html = `<!DOCTYPE html>
   .dot-plain{fill:#7d8ba1;stroke:#f6f1e7;stroke-width:1}
   .dot-region{fill:rgba(150,96,74,.07);stroke:#96604a;stroke-width:1.2;stroke-dasharray:3 2}
   .geo-svg g[data-tip]:hover circle,.geo-svg g[data-tip]:hover rect{stroke:var(--blue);stroke-width:2;transform:scale(1.25);transform-box:fill-box;transform-origin:center}
-  .geo-lab{font:600 12.5px Georgia,'Times New Roman',serif;fill:#2b2418;pointer-events:none;
-    paint-order:stroke;stroke:rgba(242,234,216,.85);stroke-width:3px;stroke-linejoin:round}
   .geo-legend{margin-top:14px}
   .geo-legend b{border:0}
   footer{margin-top:42px;padding-top:0;font:12px/1.7 var(--sans);color:var(--ink3)}
@@ -868,6 +905,8 @@ const html = `<!DOCTYPE html>
     h2{font-size:20px}
     .tl-labels{width:112px}.tl-lab{width:106px;font-size:10.5px}
     .geo-bar{gap:8px}.geo-search{flex:1}.geo-search input{width:100%;min-width:0}
+    .geo-frame{overflow-x:auto}
+    .geo-svg{min-width:920px} /* печатный лист листается пальцем, кегли читаемы */
     .maps-grid{grid-template-columns:repeat(auto-fill,minmax(230px,1fr))}
   }
   @media print{

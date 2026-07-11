@@ -1,0 +1,857 @@
+{
+  "$comment": "ГЕНЕРИРУЕТСЯ scripts/atlas-labels.js (KA-3 label pipeline) — не править руками. Коллизии решены в юнитах viewBox 1900×1430; бакеты far/mid/close/detail.",
+  "bucketFont": {
+    "far": 12.5,
+    "mid": 8.5,
+    "close": 6.5,
+    "detail": 5
+  },
+  "labels": [
+    {
+      "id": "antioch",
+      "text": "Антиохия Сирийская",
+      "x": 889.5,
+      "y": 245.25,
+      "anchor": "e",
+      "zbucket": "far",
+      "rank": 1,
+      "font": 12.5
+    },
+    {
+      "id": "dan",
+      "text": "Дан (Лаиш)",
+      "x": 579.9,
+      "y": 615.4,
+      "anchor": "nw",
+      "zbucket": "far",
+      "rank": 1,
+      "font": 12.5
+    },
+    {
+      "id": "hebron",
+      "text": "Хеврон",
+      "x": 555.9,
+      "y": 819.4,
+      "anchor": "nw",
+      "zbucket": "far",
+      "rank": 1,
+      "font": 12.5
+    },
+    {
+      "id": "jerusalem",
+      "text": "Иерусалим",
+      "x": 410.95,
+      "y": 787.65,
+      "anchor": "w",
+      "zbucket": "far",
+      "rank": 1,
+      "font": 12.5,
+      "leader": {
+        "fromX": 623,
+        "fromY": 800,
+        "toX": 480.7,
+        "toY": 782.4
+      }
+    },
+    {
+      "id": "samaria",
+      "text": "Самария",
+      "x": 649.5,
+      "y": 725.25,
+      "anchor": "e",
+      "zbucket": "far",
+      "rank": 1,
+      "font": 12.5
+    },
+    {
+      "id": "bethel",
+      "text": "Бет-Эль и Гай",
+      "x": 331.34999999999997,
+      "y": 769.65,
+      "anchor": "w",
+      "zbucket": "far",
+      "rank": 1,
+      "font": 12.5,
+      "leader": {
+        "fromX": 624,
+        "fromY": 782,
+        "toX": 432.09999999999997,
+        "toY": 764.4
+      }
+    },
+    {
+      "id": "damascus",
+      "text": "Дамаск",
+      "x": 740.5,
+      "y": 599.25,
+      "anchor": "e",
+      "zbucket": "far",
+      "rank": 1,
+      "font": 12.5
+    },
+    {
+      "id": "megiddo",
+      "text": "Мегиддо",
+      "x": 596.25,
+      "y": 645.25,
+      "anchor": "w",
+      "zbucket": "far",
+      "rank": 1,
+      "font": 12.5
+    },
+    {
+      "id": "shechem",
+      "text": "Сихем",
+      "x": 496.55,
+      "y": 735.65,
+      "anchor": "w",
+      "zbucket": "far",
+      "rank": 1,
+      "font": 12.5,
+      "leader": {
+        "fromX": 628,
+        "fromY": 748,
+        "toX": 535.3,
+        "toY": 730.4
+      }
+    },
+    {
+      "id": "babylon",
+      "text": "Вавилон",
+      "x": 1481.5,
+      "y": 760.25,
+      "anchor": "e",
+      "zbucket": "far",
+      "rank": 1,
+      "font": 12.5
+    },
+    {
+      "id": "beersheba",
+      "text": "Беэр-Шева",
+      "x": 504.75,
+      "y": 869.25,
+      "anchor": "w",
+      "zbucket": "far",
+      "rank": 1,
+      "font": 12.5
+    },
+    {
+      "id": "gaza",
+      "text": "Газа",
+      "x": 449.5,
+      "y": 875.25,
+      "anchor": "w",
+      "zbucket": "far",
+      "rank": 1,
+      "font": 12.5
+    },
+    {
+      "id": "harran",
+      "text": "Харран",
+      "x": 1012.5,
+      "y": 199.25,
+      "anchor": "e",
+      "zbucket": "far",
+      "rank": 1,
+      "font": 12.5
+    },
+    {
+      "id": "jericho",
+      "text": "Иерихон",
+      "x": 488.25,
+      "y": 802.65,
+      "anchor": "w",
+      "zbucket": "far",
+      "rank": 1,
+      "font": 12.5,
+      "leader": {
+        "fromX": 660,
+        "fromY": 815,
+        "toX": 542.5,
+        "toY": 797.4
+      }
+    },
+    {
+      "id": "tyre",
+      "text": "Тир",
+      "x": 659.5,
+      "y": 585.25,
+      "anchor": "e",
+      "zbucket": "far",
+      "rank": 1,
+      "font": 12.5
+    },
+    {
+      "id": "hazor",
+      "text": "Асор",
+      "x": 748,
+      "y": 503.25,
+      "anchor": "e",
+      "zbucket": "mid",
+      "rank": 2,
+      "font": 8.5
+    },
+    {
+      "id": "kadesh-barnea",
+      "text": "Кадеш-Барнеа",
+      "x": 550,
+      "y": 937.25,
+      "anchor": "e",
+      "zbucket": "mid",
+      "rank": 2,
+      "font": 8.5
+    },
+    {
+      "id": "aaron-mount",
+      "text": "Гора Ор",
+      "x": 630,
+      "y": 975.25,
+      "anchor": "e",
+      "zbucket": "mid",
+      "rank": 2,
+      "font": 8.5
+    },
+    {
+      "id": "carmel",
+      "text": "Кармил",
+      "x": 584.38,
+      "y": 673.25,
+      "anchor": "w",
+      "zbucket": "mid",
+      "rank": 2,
+      "font": 8.5
+    },
+    {
+      "id": "marah",
+      "text": "Мара",
+      "x": 458,
+      "y": 1013.25,
+      "anchor": "e",
+      "zbucket": "mid",
+      "rank": 2,
+      "font": 8.5
+    },
+    {
+      "id": "mount-beatitudes",
+      "text": "Гора Блаженств",
+      "x": 711.4,
+      "y": 629.9,
+      "anchor": "se",
+      "zbucket": "mid",
+      "rank": 2,
+      "font": 8.5
+    },
+    {
+      "id": "mount-sinai",
+      "text": "Синай · гора Хорив",
+      "x": 568,
+      "y": 1283.25,
+      "anchor": "e",
+      "zbucket": "mid",
+      "rank": 2,
+      "font": 8.5
+    },
+    {
+      "id": "pihahiroth",
+      "text": "Пи-Гахироф",
+      "x": 368,
+      "y": 973.25,
+      "anchor": "e",
+      "zbucket": "mid",
+      "rank": 2,
+      "font": 8.5
+    },
+    {
+      "id": "sea-galilee",
+      "text": "Галилейское море",
+      "x": 718,
+      "y": 613.25,
+      "anchor": "e",
+      "zbucket": "mid",
+      "rank": 2,
+      "font": 8.5
+    },
+    {
+      "id": "tabor",
+      "text": "Фавор",
+      "x": 594.6899999999999,
+      "y": 598.85,
+      "anchor": "w",
+      "zbucket": "mid",
+      "rank": 2,
+      "font": 8.5,
+      "leader": {
+        "fromX": 690,
+        "fromY": 610,
+        "toX": 621.04,
+        "toY": 595.6
+      }
+    },
+    {
+      "id": "alexandria",
+      "text": "Александрия",
+      "x": 256.8,
+      "y": 952.25,
+      "anchor": "e",
+      "zbucket": "close",
+      "rank": 3,
+      "font": 6.5
+    },
+    {
+      "id": "beit-shean",
+      "text": "Беф-Сан",
+      "x": 686.8,
+      "y": 672.25,
+      "anchor": "e",
+      "zbucket": "close",
+      "rank": 3,
+      "font": 6.5
+    },
+    {
+      "id": "caesarea-cornelius",
+      "text": "Кесария Приморская",
+      "x": 417.71600000000024,
+      "y": 729.45,
+      "anchor": "w",
+      "zbucket": "close",
+      "rank": 3,
+      "font": 6.5,
+      "leader": {
+        "fromX": 630,
+        "fromY": 740,
+        "toX": 490.25600000000026,
+        "toY": 727.2
+      }
+    },
+    {
+      "id": "caesarea-philippi",
+      "text": "Кесария Филиппова",
+      "x": 726.8,
+      "y": 582.25,
+      "anchor": "e",
+      "zbucket": "close",
+      "rank": 3,
+      "font": 6.5
+    },
+    {
+      "id": "capernaum",
+      "text": "Капернаум",
+      "x": 585.5539999999999,
+      "y": 584.2559999999999,
+      "anchor": "nw",
+      "zbucket": "close",
+      "rank": 3,
+      "font": 6.5,
+      "leader": {
+        "fromX": 700,
+        "fromY": 620,
+        "toX": 621.8239999999998,
+        "toY": 582.0059999999999
+      }
+    },
+    {
+      "id": "elim",
+      "text": "Елим",
+      "x": 491.8,
+      "y": 1042.25,
+      "anchor": "e",
+      "zbucket": "close",
+      "rank": 3,
+      "font": 6.5
+    },
+    {
+      "id": "etham",
+      "text": "Ефам",
+      "x": 336.8,
+      "y": 942.25,
+      "anchor": "e",
+      "zbucket": "close",
+      "rank": 3,
+      "font": 6.5
+    },
+    {
+      "id": "gaza-road",
+      "text": "Дорога в Газу",
+      "x": 390.1060000000001,
+      "y": 819.45,
+      "anchor": "w",
+      "zbucket": "close",
+      "rank": 3,
+      "font": 6.5,
+      "leader": {
+        "fromX": 550,
+        "fromY": 830,
+        "toX": 442.4960000000001,
+        "toY": 817.2
+      }
+    },
+    {
+      "id": "gerar",
+      "text": "Герар",
+      "x": 534.0500000000001,
+      "y": 849.25,
+      "anchor": "w",
+      "zbucket": "close",
+      "rank": 3,
+      "font": 6.5
+    },
+    {
+      "id": "gerasa",
+      "text": "Гераса",
+      "x": 726.8,
+      "y": 732.25,
+      "anchor": "e",
+      "zbucket": "close",
+      "rank": 3,
+      "font": 6.5
+    },
+    {
+      "id": "gezer",
+      "text": "Газер",
+      "x": 600.44,
+      "y": 762.56,
+      "anchor": "ne",
+      "zbucket": "close",
+      "rank": 3,
+      "font": 6.5
+    },
+    {
+      "id": "hammam",
+      "text": "Талл эль-Хаммам",
+      "x": 673.8,
+      "y": 820.25,
+      "anchor": "e",
+      "zbucket": "close",
+      "rank": 3,
+      "font": 6.5
+    },
+    {
+      "id": "harod",
+      "text": "Источник Харод",
+      "x": 499.6280000000002,
+      "y": 649.45,
+      "anchor": "w",
+      "zbucket": "close",
+      "rank": 3,
+      "font": 6.5,
+      "leader": {
+        "fromX": 670,
+        "fromY": 660,
+        "toX": 556.0480000000002,
+        "toY": 647.2
+      }
+    },
+    {
+      "id": "jericho-nt",
+      "text": "Иерихон новозаветный",
+      "x": 680.1440000000001,
+      "y": 779.2559999999999,
+      "anchor": "ne",
+      "zbucket": "close",
+      "rank": 3,
+      "font": 6.5,
+      "leader": {
+        "fromX": 660,
+        "fromY": 815,
+        "toX": 680.1440000000001,
+        "toY": 777.0059999999999
+      }
+    },
+    {
+      "id": "jezreel",
+      "text": "Изреель",
+      "x": 576.5099999999998,
+      "y": 691.6440000000001,
+      "anchor": "sw",
+      "zbucket": "close",
+      "rank": 3,
+      "font": 6.5,
+      "leader": {
+        "fromX": 670,
+        "fromY": 665,
+        "toX": 604.7199999999998,
+        "toY": 689.3940000000001
+      }
+    },
+    {
+      "id": "joppa",
+      "text": "Иоппия",
+      "x": 503.4520000000002,
+      "y": 764.45,
+      "anchor": "w",
+      "zbucket": "close",
+      "rank": 3,
+      "font": 6.5,
+      "leader": {
+        "fromX": 590,
+        "fromY": 775,
+        "toX": 527.6320000000002,
+        "toY": 762.2
+      }
+    },
+    {
+      "id": "kir-haraseth",
+      "text": "Кир-Харешет",
+      "x": 598.87,
+      "y": 852.25,
+      "anchor": "w",
+      "zbucket": "close",
+      "rank": 3,
+      "font": 6.5
+    },
+    {
+      "id": "kishon",
+      "text": "Поток Киссон",
+      "x": 599.84,
+      "y": 627.25,
+      "anchor": "w",
+      "zbucket": "close",
+      "rank": 3,
+      "font": 6.5
+    },
+    {
+      "id": "lachish",
+      "text": "Лахис",
+      "x": 503.9300000000002,
+      "y": 819.45,
+      "anchor": "w",
+      "zbucket": "close",
+      "rank": 3,
+      "font": 6.5,
+      "leader": {
+        "fromX": 580,
+        "fromY": 830,
+        "toX": 524.0800000000002,
+        "toY": 817.2
+      }
+    },
+    {
+      "id": "lahairoi",
+      "text": "Беэр-лахай-рои",
+      "x": 498.8,
+      "y": 948.25,
+      "anchor": "e",
+      "zbucket": "close",
+      "rank": 3,
+      "font": 6.5
+    },
+    {
+      "id": "masada",
+      "text": "Масада",
+      "x": 610.1440000000001,
+      "y": 876.6440000000001,
+      "anchor": "se",
+      "zbucket": "close",
+      "rank": 3,
+      "font": 6.5,
+      "leader": {
+        "fromX": 590,
+        "fromY": 850,
+        "toX": 610.1440000000001,
+        "toY": 874.3940000000001
+      }
+    },
+    {
+      "id": "mizpah-gilead",
+      "text": "Массифа Галаадская",
+      "x": 736.8,
+      "y": 702.25,
+      "anchor": "e",
+      "zbucket": "close",
+      "rank": 3,
+      "font": 6.5
+    },
+    {
+      "id": "nain",
+      "text": "Наин",
+      "x": 686.8,
+      "y": 647.25,
+      "anchor": "e",
+      "zbucket": "close",
+      "rank": 3,
+      "font": 6.5
+    },
+    {
+      "id": "nazareth",
+      "text": "Назарет",
+      "x": 680.44,
+      "y": 660.44,
+      "anchor": "se",
+      "zbucket": "detail",
+      "rank": 3,
+      "font": 5
+    },
+    {
+      "id": "ophrah",
+      "text": "Офра",
+      "x": 656.8,
+      "y": 682.25,
+      "anchor": "e",
+      "zbucket": "close",
+      "rank": 3,
+      "font": 6.5
+    },
+    {
+      "id": "plains-moab",
+      "text": "Равнины Моавитские",
+      "x": 696.8,
+      "y": 802.25,
+      "anchor": "e",
+      "zbucket": "close",
+      "rank": 3,
+      "font": 6.5
+    },
+    {
+      "id": "rameses",
+      "text": "Раамсес",
+      "x": 216.8,
+      "y": 882.25,
+      "anchor": "e",
+      "zbucket": "close",
+      "rank": 3,
+      "font": 6.5
+    },
+    {
+      "id": "rephidim",
+      "text": "Рефидим",
+      "x": 541.8,
+      "y": 1167.25,
+      "anchor": "e",
+      "zbucket": "close",
+      "rank": 3,
+      "font": 6.5
+    },
+    {
+      "id": "shiloh",
+      "text": "Силом",
+      "x": 666.8,
+      "y": 742.25,
+      "anchor": "e",
+      "zbucket": "close",
+      "rank": 3,
+      "font": 6.5
+    },
+    {
+      "id": "sodom",
+      "text": "Содом и Гоморра",
+      "x": 659.8,
+      "y": 876.25,
+      "anchor": "e",
+      "zbucket": "close",
+      "rank": 3,
+      "font": 6.5
+    },
+    {
+      "id": "succoth",
+      "text": "Сокхоф",
+      "x": 286.8,
+      "y": 922.25,
+      "anchor": "e",
+      "zbucket": "close",
+      "rank": 3,
+      "font": 6.5
+    },
+    {
+      "id": "tarsus",
+      "text": "Тарс",
+      "x": 856.8,
+      "y": 332.25,
+      "anchor": "e",
+      "zbucket": "close",
+      "rank": 3,
+      "font": 6.5
+    },
+    {
+      "id": "timnah",
+      "text": "Фимнафа",
+      "x": 482.97400000000005,
+      "y": 779.45,
+      "anchor": "w",
+      "zbucket": "close",
+      "rank": 3,
+      "font": 6.5,
+      "leader": {
+        "fromX": 580,
+        "fromY": 790,
+        "toX": 511.184,
+        "toY": 777.2
+      }
+    },
+    {
+      "id": "urfa",
+      "text": "Урфа (Шанлыурфа)",
+      "x": 985.8,
+      "y": 161.25,
+      "anchor": "e",
+      "zbucket": "close",
+      "rank": 3,
+      "font": 6.5
+    },
+    {
+      "id": "zoar",
+      "text": "Цоар",
+      "x": 656.8,
+      "y": 891.25,
+      "anchor": "e",
+      "zbucket": "close",
+      "rank": 3,
+      "font": 6.5
+    }
+  ],
+  "clusters": [
+    {
+      "id": "jerusalem-cluster",
+      "x": 623,
+      "y": 800,
+      "extra": 15,
+      "memberIds": [
+        "ai",
+        "beth-horon",
+        "beth-zur",
+        "bethany",
+        "bethlehem",
+        "emmaus",
+        "gethsemane",
+        "gibeah",
+        "gibeon",
+        "golgotha",
+        "lydda",
+        "mizpah-judah",
+        "modiin",
+        "salem-moriah",
+        "sorek"
+      ],
+      "members": [
+        "Гай",
+        "Беф-Орон",
+        "Беф-Цур",
+        "Вифания",
+        "Вифлеем",
+        "Еммаус",
+        "Гефсимания",
+        "Гива",
+        "Гаваон",
+        "Голгофа",
+        "Лидда",
+        "Массифа",
+        "Модиин",
+        "Шалем · гора Мория",
+        "Долина Сорек"
+      ]
+    }
+  ],
+  "routes": [
+    {
+      "id": "kings-highway",
+      "title": "Царская дорога",
+      "kind": "royal-road",
+      "pts": [
+        [
+          760,
+          1008
+        ],
+        [
+          650,
+          850
+        ],
+        [
+          668,
+          872
+        ],
+        [
+          676,
+          806
+        ],
+        [
+          694,
+          768
+        ],
+        [
+          731,
+          594
+        ]
+      ]
+    },
+    {
+      "id": "ridge-route",
+      "title": "Дорога патриархов",
+      "kind": "regional-road",
+      "pts": [
+        [
+          584,
+          864
+        ],
+        [
+          610,
+          829
+        ],
+        [
+          630,
+          815
+        ],
+        [
+          623,
+          800
+        ],
+        [
+          624,
+          782
+        ],
+        [
+          660,
+          740
+        ],
+        [
+          628,
+          748
+        ]
+      ]
+    },
+    {
+      "id": "via-maris",
+      "title": "Приморский путь",
+      "kind": "international-road",
+      "pts": [
+        [
+          250,
+          876
+        ],
+        [
+          490,
+          870
+        ],
+        [
+          596,
+          745
+        ],
+        [
+          660,
+          640
+        ],
+        [
+          740,
+          500
+        ],
+        [
+          731,
+          594
+        ]
+      ]
+    }
+  ],
+  "report": {
+    "placed": 60,
+    "perBucket": {
+      "far": 15,
+      "mid": 10,
+      "close": 34,
+      "detail": 1
+    },
+    "demoted": [
+      "nazareth: close→detail"
+    ],
+    "leaders": 15,
+    "clustered": 15,
+    "unresolved": []
+  }
+}
