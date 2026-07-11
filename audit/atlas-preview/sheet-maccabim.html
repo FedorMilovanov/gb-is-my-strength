@@ -32,8 +32,11 @@
   text.lab-wp{font-family:Georgia,serif;font-style:italic;fill:#4a6a52;opacity:.82;paint-order:stroke;stroke:#f5edd8;stroke-width:.18em}
   .plate{fill:rgba(246,241,231,.85);stroke:rgba(120,95,40,.35);stroke-width:1}
   .cart-plate{fill:rgba(246,241,231,.92)}
+  .cart-inner{fill:none;stroke:rgba(138,106,31,.3);stroke-width:.8}
+  .cart-over{font-family:Georgia,serif;fill:#8a6a1f;letter-spacing:.22em;font-weight:600}
   .cart-title{font-family:Georgia,serif;font-weight:700;fill:#1e3a63}
   .cart-sub{font-family:Georgia,serif;fill:#5c4d33;opacity:.85}
+  .leg-t{font-family:Georgia,serif;fill:#3a3020;opacity:.9}
   .sb-d{fill:#3a3020}.sb-l{fill:#f6f1e7;stroke:#3a3020;stroke-width:1}
   .sb-t{font-family:Georgia,serif;fill:#5c4d33;font-weight:600}
   .north{fill:#8a6a1f;stroke:#6b5216;stroke-width:1}
@@ -565,9 +568,21 @@
 <text x="644.8" y="628.0" class="lab-place" font-size="20.58" text-anchor="start">Тир</text><text x="654.0" y="845.9" class="lab-place" font-size="20.58" text-anchor="start">Иерусалим</text><text x="114.8" y="879.0" class="lab-place" font-size="20.58" text-anchor="start">Александрия</text><text x="572.0" y="740.4" class="lab-place" font-size="20.58" text-anchor="end">Модиин</text><text x="732.3" y="273.0" class="lab-place" font-size="20.58" text-anchor="start">Антиохия Сирийская</text><text x="647.1" y="749.4" class="lab-place" font-size="20.58" text-anchor="start">Беф-Орон</text><text x="565.5" y="815.2" class="lab-place" font-size="20.58" text-anchor="end">Еммаус</text><text x="595.8" y="830.0" class="lab-place" font-size="20.58" text-anchor="end">Беф-Цур</text><text x="665.3" y="720.0" class="lab-place" font-size="20.58" text-anchor="start">Беф-Сан</text><text x="597.3" y="747.0" class="lab-place" font-size="20.58" text-anchor="end">Самария</text><text x="704.3" y="748.0" class="lab-place" font-size="20.58" text-anchor="start">Гераса</text><text x="650.3" y="863.0" class="lab-place" font-size="20.58" text-anchor="start">Масада</text>
 
   <g class="cartouche">
-    <rect x="38" y="110.16666666666663" width="633.3333333333333" height="114" rx="12.666666666666666" class="plate cart-plate"/>
-    <text x="66.5" y="160.8333333333333" class="cart-title" font-size="39.58333333333333">Межзаветный период · Маккавеи</text>
-    <text x="66.5" y="198.8333333333333" class="cart-sub" font-size="19">От Александра до Ирода · 332–37 гг. до н.э.</text>
+    <rect x="38" y="110.16666666666663" width="633.3333333333333" height="136.16666666666666" rx="12.666666666666666" class="plate cart-plate"/>
+    <rect x="45.916666666666664" y="118.08333333333329" width="617.5" height="120.33333333333333" rx="9.5" class="cart-inner"/>
+    <text x="69.66666666666666" y="146.5833333333333" class="cart-over" font-size="15.041666666666666">БИБЛЕЙСКИЙ АТЛАС</text>
+    <text x="69.66666666666666" y="189.3333333333333" class="cart-title" font-size="39.58333333333333">Межзаветный период · Маккавеи</text>
+    <text x="69.66666666666666" y="224.16666666666663" class="cart-sub" font-size="18.208333333333332">От Александра до Ирода · 332–37 гг. до н.э.</text>
+  </g>
+
+  <g class="legend">
+    <rect x="38" y="1269.1666666666667" width="589" height="47.5" rx="9.5" class="plate"/>
+    <circle cx="66.5" cy="1292.9166666666667" r="6.65" class="pl-city"/>
+    <text x="82.33333333333333" y="1299.2500000000002" class="leg-t" font-size="16.625">город · стан</text>
+    <circle cx="209" cy="1292.9166666666667" r="7.283333333333332" class="pl-cand"/>
+    <text x="224.83333333333331" y="1299.2500000000002" class="leg-t" font-size="16.625">локализация спорна</text>
+    <rect x="424.3333333333333" y="1286.5833333333335" width="12.666666666666666" height="12.666666666666666" transform="rotate(45 430.66666666666663 1292.9166666666667)" class="wp-dot"/>
+    <text x="446.5" y="1299.2500000000002" class="leg-t" font-size="16.625">археология</text>
   </g>
 
   <g class="furn">

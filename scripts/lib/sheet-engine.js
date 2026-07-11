@@ -226,11 +226,28 @@ function renderSheet(route, opts) {
     </g>
   </g>`;
 
+  const sheetNo = opts.sheetNo; // номер листа в атласе (римская цифра), опционально
   const cart = `
   <g class="cartouche">
-    <rect x="${x0 + 24 * k}" y="${y0 + 18 * k}" width="${400 * k}" height="${72 * k}" rx="${8 * k}" class="plate cart-plate"/>
-    <text x="${x0 + 42 * k}" y="${y0 + 50 * k}" class="cart-title" font-size="${25 * k}">${esc(meta.title || slug)}</text>
-    <text x="${x0 + 42 * k}" y="${y0 + 74 * k}" class="cart-sub" font-size="${12 * k}">${esc(meta.subtitle || '')}</text>
+    <rect x="${x0 + 24 * k}" y="${y0 + 18 * k}" width="${400 * k}" height="${86 * k}" rx="${8 * k}" class="plate cart-plate"/>
+    <rect x="${x0 + 29 * k}" y="${y0 + 23 * k}" width="${390 * k}" height="${76 * k}" rx="${6 * k}" class="cart-inner"/>
+    <text x="${x0 + 44 * k}" y="${y0 + 41 * k}" class="cart-over" font-size="${9.5 * k}">БИБЛЕЙСКИЙ АТЛАС${sheetNo ? ` · ЛИСТ ${sheetNo}` : ''}</text>
+    <text x="${x0 + 44 * k}" y="${y0 + 68 * k}" class="cart-title" font-size="${25 * k}">${esc(meta.title || slug)}</text>
+    <text x="${x0 + 44 * k}" y="${y0 + 90 * k}" class="cart-sub" font-size="${11.5 * k}">${esc(meta.subtitle || '')}</text>
+  </g>`;
+
+  // Легенда глифов — компакт над этап-зоной, левый низ
+  const lg = (i) => y0 + H - (36 - i * 0) * k;
+  const legY = y0 + H - 36 * k;
+  const legend = `
+  <g class="legend">
+    <rect x="${x0 + 24 * k}" y="${legY - 14 * k}" width="${372 * k}" height="${30 * k}" rx="${6 * k}" class="plate"/>
+    <circle cx="${x0 + 42 * k}" cy="${legY + 1 * k}" r="${4.2 * k}" class="pl-city"/>
+    <text x="${x0 + 52 * k}" y="${legY + 5 * k}" class="leg-t" font-size="${10.5 * k}">город · стан</text>
+    <circle cx="${x0 + 132 * k}" cy="${legY + 1 * k}" r="${4.6 * k}" class="pl-cand"/>
+    <text x="${x0 + 142 * k}" y="${legY + 5 * k}" class="leg-t" font-size="${10.5 * k}">локализация спорна</text>
+    <rect x="${x0 + 268 * k}" y="${legY - 3 * k}" width="${8 * k}" height="${8 * k}" transform="rotate(45 ${x0 + 272 * k} ${legY + 1 * k})" class="wp-dot"/>
+    <text x="${x0 + 282 * k}" y="${legY + 5 * k}" class="leg-t" font-size="${10.5 * k}">археология</text>
   </g>`;
 
   const stageStripHtml = stages.length ? `
@@ -254,6 +271,7 @@ ${wps.join('')}
 ${ctxs.join('')}
 ${labels.join('')}
 ${cart}
+${legend}
 ${furn}
 <rect x="${x0}" y="${y0}" width="${W}" height="${H}" fill="url(#sunGlow)" pointer-events="none"/>
 <rect x="${x0}" y="${y0}" width="${W}" height="${H}" fill="url(#edgeFog)" pointer-events="none"/>
@@ -292,8 +310,11 @@ function sheetCss() {
   text.lab-wp{font-family:Georgia,serif;font-style:italic;fill:#4a6a52;opacity:.82;paint-order:stroke;stroke:#f5edd8;stroke-width:.18em}
   .plate{fill:rgba(246,241,231,.85);stroke:rgba(120,95,40,.35);stroke-width:1}
   .cart-plate{fill:rgba(246,241,231,.92)}
+  .cart-inner{fill:none;stroke:rgba(138,106,31,.3);stroke-width:.8}
+  .cart-over{font-family:Georgia,serif;fill:#8a6a1f;letter-spacing:.22em;font-weight:600}
   .cart-title{font-family:Georgia,serif;font-weight:700;fill:#1e3a63}
   .cart-sub{font-family:Georgia,serif;fill:#5c4d33;opacity:.85}
+  .leg-t{font-family:Georgia,serif;fill:#3a3020;opacity:.9}
   .sb-d{fill:#3a3020}.sb-l{fill:#f6f1e7;stroke:#3a3020;stroke-width:1}
   .sb-t{font-family:Georgia,serif;fill:#5c4d33;font-weight:600}
   .north{fill:#8a6a1f;stroke:#6b5216;stroke-width:1}

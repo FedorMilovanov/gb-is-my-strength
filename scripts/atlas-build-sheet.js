@@ -30,7 +30,7 @@ for (const slug of slugs) {
     const baseSvg = fs.readFileSync(family === 'levant'
       ? path.join(ROOT, 'karty', '_engine', 'base-geo.svg')
       : path.join(ROOT, 'data', 'atlas', 'base', 'base-geo-mediterranean.svg'), 'utf8');
-    const html = buildSheetHtml(route, { family, baseSvg, slug });
+    const html = buildSheetHtml(route, { family, baseSvg, slug, sheetNo: (route.meta || {}).sheet_no });
     fs.writeFileSync(path.join(OUTDIR, `sheet-${slug}.html`), html);
     console.log(`[sheet] ${slug}: ${route.places.length} мест → sheet-${slug}.html`);
   } catch (e) {
