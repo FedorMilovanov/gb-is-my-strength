@@ -112,11 +112,28 @@ const RELIEF = {
 
 // Пиктограммы важных мест (place.glyph в данных) — силуэты старого атласа.
 // Рисуются НАД точкой (точка = координата), высота ~14 единиц листа.
+
+// Декор старинного атласа: одинокий парусник в пустой воде (op низкая, контур)
+function shipSvg(x, y, s2) {
+  return `<g class="decor-ship" transform="translate(${x},${y}) scale(${s2})">
+    <path d="M-16,6 Q0,13 16,6 L11,10 Q0,15 -11,10 Z"/>
+    <path d="M-1,6 v-20" class="ds-line"/>
+    <path d="M-1,-14 Q9,-9 12,1 L-1,1 Z"/>
+    <path d="M-1,-14 Q-9,-10 -11,-2 L-1,-2 Z"/>
+    <path d="M-24,12 q4,-2.4 8,0 q4,2.4 8,0 M8,12 q4,-2.4 8,0 q4,2.4 8,0" class="ds-wave"/>
+  </g>`;
+}
+const DECOR = {
+  levant: shipSvg(298, 468, 1.15) + shipSvg(430, 300, 0.8),
+  mediterranean: shipSvg(700, 560, 1.2) + shipSvg(360, 810, 0.85),
+  urheimat: '',
+};
+
 function glyphSvg(name, x, y, k) {
   const s = k; // масштаб
   const G = {
     ziggurat: `<g class="glyph"><path d="M${x - 7 * s},${y - 2.6 * s} h${14 * s} m${-1.6 * s},0 v${-3 * s} h${-2.2 * s} m${-6.4 * s},${3 * s} v${-3 * s} h${2.2 * s} m${1.2 * s},${-3 * s} h${3.9 * s} v${3 * s} m${-3.9 * s},${-3 * s} v${3 * s} m${.6 * s},${-3 * s} v${-2.6 * s} h${2.7 * s} v${2.6 * s} Z" class="glyph-line"/><path d="M${x},${y - 2.6 * s} v${-8.4 * s}" class="glyph-line" style="stroke-width:${.55 * s};opacity:.7"/></g>`,
-    pyramid: `<g class="glyph"><path d="M${x - 7 * s},${y - 3 * s} L${x},${y - 15 * s} L${x + 7 * s},${y - 3 * s} Z"/><path d="M${x},${y - 15 * s} L${x + 2 * s},${y - 3 * s}" class="glyph-line"/></g>`,
+    pyramid: `<g class="glyph"><path d="M${x - 7 * s},${y - 3 * s} L${x - .5 * s},${y - 14 * s} L${x + 6 * s},${y - 3 * s} Z"/><path d="M${x - .5 * s},${y - 14 * s} L${x + 1.4 * s},${y - 3 * s}" class="glyph-line" style="stroke-width:${.55 * s}"/><path d="M${x + 4.4 * s},${y - 3 * s} L${x + 7.6 * s},${y - 8 * s} L${x + 10.4 * s},${y - 3 * s}" class="glyph-line"/></g>`,
     altar: `<g class="glyph"><path d="M${x - 5 * s},${y - 3 * s} h${10 * s} v${-2.5 * s} h${-1.5 * s} v${-3 * s} h${-7 * s} v${3 * s} h${-1.5 * s} Z"/><path d="M${x},${y - 12 * s} q${1.6 * s},${1.8 * s} 0,${3.4 * s} q${-1.6 * s},${-1.8 * s} 0,${-3.4 * s} Z" class="glyph-flame"/></g>`,
     well: `<g class="glyph"><path d="M${x - 3.8 * s},${y - 3.2 * s} a${3.8 * s},${1.7 * s} 0 1 0 ${7.6 * s},0 a${3.8 * s},${1.7 * s} 0 1 0 ${-7.6 * s},0 Z"/><path class="glyph-line" d="M${x - 3.2 * s},${y - 4.6 * s} a${3.2 * s},${3.6 * s} 0 0 1 ${6.4 * s},0"/></g>`,
     oak: `<g class="glyph"><path class="glyph-line" d="M${x},${y - 2.2 * s} v${-3.6 * s} m0,${1.8 * s} l${-2.4 * s},${-2.4 * s}"/><path d="M${x - 5.4 * s},${y - 5.4 * s} Q${x - 4.8 * s},${y - 10.6 * s} ${x},${y - 11 * s} Q${x + 4.8 * s},${y - 10.6 * s} ${x + 5.4 * s},${y - 5.4 * s} Q${x + 2 * s},${y - 6.6 * s} ${x},${y - 6.2 * s} Q${x - 2 * s},${y - 6.6 * s} ${x - 5.4 * s},${y - 5.4 * s} Z"/></g>`,
@@ -127,6 +144,7 @@ function glyphSvg(name, x, y, k) {
     tent: `<g class="glyph"><path d="M${x - 6 * s},${y - 2.6 * s} L${x},${y - 9.6 * s} L${x + 6 * s},${y - 2.6 * s} Z"/><path d="M${x},${y - 9.6 * s} L${x + 1.8 * s},${y - 2.6 * s} M${x - 6 * s},${y - 2.6 * s} l${-1.6 * s},${1.2 * s} M${x + 6 * s},${y - 2.6 * s} l${1.6 * s},${1.2 * s}" class="glyph-line" style="stroke-width:${.6 * s}"/></g>`,
     sheep: `<g class="glyph"><path d="M${x - 3.6 * s},${y - 5 * s} a${1.8 * s},${1.8 * s} 0 0 1 ${1.2 * s},${-2.6 * s} a${2.2 * s},${2.2 * s} 0 0 1 ${3 * s},${-1 * s} a${2 * s},${2 * s} 0 0 1 ${2.8 * s},${.8 * s} a${1.7 * s},${1.7 * s} 0 0 1 ${.6 * s},${2.8 * s} Z"/><path d="M${x + 3.9 * s},${y - 7.4 * s} a${1.1 * s},${1.1 * s} 0 1 1 ${1.4 * s},${1.4 * s} M${x - 2.4 * s},${y - 4.9 * s} v${2.2 * s} m${4 * s},${-2.2 * s} v${2.2 * s}" class="glyph-line" style="stroke-width:${.6 * s}"/></g>`,
     spring: `<g class="glyph"><path d="M${x - 4 * s},${y - 4 * s} q${2 * s},${-2.2 * s} ${4 * s},0 q${2 * s},${2.2 * s} ${4 * s},0 M${x - 4 * s},${y - 6.8 * s} q${2 * s},${-2.2 * s} ${4 * s},0 q${2 * s},${2.2 * s} ${4 * s},0" class="glyph-line"/><circle cx="${x}" cy="${y - 10.4 * s}" r="${.9 * s}" style="fill:#6b5216;stroke:none;opacity:.7"/></g>`,
+    ark: `<g class="glyph"><path d="M${x - 7 * s},${y - 5.6 * s} q${7 * s},${2.6 * s} ${14 * s},0 l${-1.6 * s},${3 * s} q${-5.4 * s},${1.8 * s} ${-10.8 * s},0 Z"/><path d="M${x - 3.4 * s},${y - 5.9 * s} h${6.8 * s} v${-2.6 * s} h${-6.8 * s} Z"/><path d="M${x - .8 * s},${y - 8.5 * s} v${-1.6 * s}" class="glyph-line" style="stroke-width:${.6 * s}"/></g>`,
   };
   return G[name] || '';
 }
@@ -141,6 +159,7 @@ const GLYPH_META = {
   well: { t: 'Колодец', d: 'Беэр — колодец: главная валюта кочевника в Негеве. За колодцы клялись (Беэр-Шева, Быт 21:25–31), из-за них спорили пастухи (Быт 26). Знак вырытого колодца с воротом.' },
   tent: { t: 'Шатёр патриарха', d: '«Авраам сидел при входе в шатёр, во время зноя дневного» (Быт 18:1). Шатёр — дом странника, не построившего города: «ибо он ожидал города, имеющего основание» (Евр 11:9–10).' },
   sheep: { t: 'Стада', d: 'Богатство патриархов измерялось скотом (Быт 13:2; 24:35). Из-за пастбищ разошлись Авраам и Лот (Быт 13:5–9); мелкий скот — предмет клятвы в Гераре и Беэр-Шеве (Быт 21:27–30).' },
+  ark: { t: 'Ковчег', d: 'Знак традиции, не находки: Быт 8:4 говорит о «горах Араратских» (страна Урарту), а не о пике. Все заявленные «находки ковчега» — от Дурупынара до «Арарат-аномалии» — не верифицированы; лодкообразную формацию Дурупынар первыми разобрали креационные геологи (Snelling, 1992). Атлас показывает регион и честно называет традиции.' },
   spring: { t: 'Источник', d: 'Аин — источник живой воды в пустыне; у источников останавливаются и встречают Бога (Агарь — Быт 16:7,13–14).' },
   altar: { t: 'Жертвенник', d: 'Маршрут Аврама размечен жертвенниками: Сихем (Быт 12:7), Бет-Эль (12:8), Хеврон (13:18), Мория (22:9) — богословская нить листа.' },
   gate: { t: 'Ворота', d: 'Городские ворота — суд и сделки (Быт 23:10,18). У Тель-Дана сохранилась сырцовая арка ворот средней бронзы — «ворота времён Авраама».' },
@@ -281,7 +300,37 @@ function renderSheet(route, opts) {
       `<text x="${tx.toFixed(1)}" y="${ty.toFixed(1)}" class="lab-wp" font-size="${(10 * k).toFixed(2)}">${esc(w.name)}</text>`;
   });
   const ctxs = (route.ctx || []).filter(c => c && typeof c.x === 'number').map(c =>
-    `<text x="${c.x}" y="${c.y}" class="lab-ctx" font-size="${fontCtx.toFixed(2)}" text-anchor="middle">${esc((c.name || '').toUpperCase())}</text>`);
+    `<text x="${c.x}" y="${c.y}" class="lab-ctxnote" font-size="${fontCtx.toFixed(2)}" text-anchor="middle">${esc((c.name || '').toUpperCase())}</text>`);
+
+  // Смысловые оверлеи (route.overlays): границы обетования, путь Лота и т.п.
+  const ovls = (route.overlays || []).map(o => {
+    const od = catmullRom(o.path || []);
+    let arrow = '';
+    if (o.arrow && o.path && o.path.length > 1) {
+      const oe = o.path[o.path.length - 1], op2 = o.path[o.path.length - 2];
+      const oa = Math.atan2(oe[1] - op2[1], oe[0] - op2[0]);
+      const ah = (a2) => [oe[0] - 6 * k * Math.cos(oa + a2), oe[1] - 6 * k * Math.sin(oa + a2)];
+      const [x1, y1] = ah(0.45), [x2, y2] = ah(-0.45);
+      arrow = `<path d="M${x1.toFixed(1)},${y1.toFixed(1)} L${oe[0]},${oe[1]} L${x2.toFixed(1)},${y2.toFixed(1)}" class="ovl ovl-${o.style || 'ctxpath'}" style="stroke-dasharray:none;fill:none"/>`;
+    }
+    const la = anchorSpec(o.labelAnchor || 'e');
+    const lab = (o.label && o.labelPos) ?
+      `<text x="${o.labelPos[0]}" y="${o.labelPos[1]}" text-anchor="${la.ta}" class="lab-ovl lab-ovl-${o.style || 'ctxpath'}" font-size="${(9.5 * k).toFixed(2)}">${esc(o.label)}</text>` : '';
+    return `<g class="ovl-layer">${od ? `<path d="${od}" class="ovl ovl-${o.style || 'ctxpath'}"/>` : ''}${arrow}${lab}</g>`;
+  });
+
+  // Врезка-заметка (route.sidenote) — честные оговорки листа в пустой зоне
+  let sidenote = '';
+  if (route.sidenote && route.sidenote.lines) {
+    const sn = route.sidenote;
+    const nw = (sn.w || 300) * k, lh = 13.5 * k;
+    const nh = (22 + 10) * k + sn.lines.length * lh;
+    sidenote = `<g class="sidenote" aria-label="Примечание листа">
+      <rect x="${sn.x}" y="${sn.y}" width="${nw.toFixed(1)}" height="${nh.toFixed(1)}" rx="${5 * k}" class="sn-plate"/>
+      <text x="${sn.x + 12 * k}" y="${sn.y + 17 * k}" class="sn-title" font-size="${(9.5 * k).toFixed(2)}">${esc(sn.title || 'ПРИМЕЧАНИЕ')}</text>
+      ${sn.lines.map((ln, i) => `<text x="${sn.x + 12 * k}" y="${(sn.y + 32 * k + i * lh).toFixed(1)}" class="sn-line" font-size="${(10 * k).toFixed(2)}">${esc(ln)}</text>`).join('')}
+    </g>`;
+  }
 
   // Минимализм: веха = тонкая римская цифра у точки (без кружков и полей)
   // Поход царей (Быт 14): тонкая линия вторжения + узлы-крестики (кликабельны)
@@ -330,10 +379,11 @@ function renderSheet(route, opts) {
   </g>`;
 
   const sheetNo = opts.sheetNo; // номер листа в атласе (римская цифра), опционально
+    const cartW = Math.max(400, 46 + Math.max((meta.title || slug).length * 14.6, ((meta.subtitle || '').length) * 6.6)) * k;
   const cart = `
   <g class="cartouche">
-    <rect x="${x0 + 24 * k}" y="${y0 + 18 * k}" width="${400 * k}" height="${86 * k}" rx="${8 * k}" class="plate cart-plate"/>
-    <rect x="${x0 + 29 * k}" y="${y0 + 23 * k}" width="${390 * k}" height="${76 * k}" rx="${6 * k}" class="cart-inner"/>
+    <rect x="${x0 + 24 * k}" y="${y0 + 18 * k}" width="${cartW.toFixed(1)}" height="${86 * k}" rx="${8 * k}" class="plate cart-plate"/>
+    <rect x="${x0 + 29 * k}" y="${y0 + 23 * k}" width="${(cartW - 10 * k).toFixed(1)}" height="${76 * k}" rx="${6 * k}" class="cart-inner"/>
     <text x="${x0 + 44 * k}" y="${y0 + 41 * k}" class="cart-over" font-size="${9.5 * k}">БИБЛЕЙСКИЙ АТЛАС${sheetNo ? ` · ЛИСТ ${sheetNo}` : ''}</text>
     <text x="${x0 + 44 * k}" y="${y0 + 68 * k}" class="cart-title" font-size="${25 * k}">${esc(meta.title || slug)}</text>
     <text x="${x0 + 44 * k}" y="${y0 + 90 * k}" class="cart-sub" font-size="${11.5 * k}">${esc(meta.subtitle || '')}</text>
@@ -343,9 +393,11 @@ function renderSheet(route, opts) {
   const lg = (i) => y0 + H - (36 - i * 0) * k;
   const legY = y0 + H - 36 * k;
   const hasWar = !!(route.campaign && (route.campaign.places || []).length);
+  const legOvl = (route.overlays || []).find(o => o.legend && o.label);
+  const legW = 372 + (hasWar ? 140 : 0) + (legOvl ? 36 + legOvl.label.length * 5.6 : 0);
   const legend = `
   <g class="legend">
-    <rect x="${x0 + 24 * k}" y="${legY - 14 * k}" width="${(hasWar ? 512 : 372) * k}" height="${30 * k}" rx="${6 * k}" class="plate"/>
+    <rect x="${x0 + 24 * k}" y="${legY - 14 * k}" width="${(legW * k).toFixed(1)}" height="${30 * k}" rx="${6 * k}" class="plate"/>
     <circle cx="${x0 + 42 * k}" cy="${legY + 1 * k}" r="${4.2 * k}" class="pl-city"/>
     <text x="${x0 + 52 * k}" y="${legY + 5 * k}" class="leg-t" font-size="${10.5 * k}">город · стан</text>
     <circle cx="${x0 + 132 * k}" cy="${legY + 1 * k}" r="${4.6 * k}" class="pl-cand"/>
@@ -353,7 +405,9 @@ function renderSheet(route, opts) {
     <rect x="${x0 + 268 * k}" y="${legY - 3 * k}" width="${8 * k}" height="${8 * k}" transform="rotate(45 ${x0 + 272 * k} ${legY + 1 * k})" class="wp-dot"/>
     <text x="${x0 + 282 * k}" y="${legY + 5 * k}" class="leg-t" font-size="${10.5 * k}">археология</text>${hasWar ? `
     <path d="M${x0 + 352 * k},${legY - 2 * k} l${6 * k},${6 * k} m${-6 * k},0 l${6 * k},${-6 * k}" class="war-x"/>
-    <text x="${x0 + 364 * k}" y="${legY + 5 * k}" class="leg-t" font-size="${10.5 * k}">поход царей · Быт 14</text>` : ''}
+    <text x="${x0 + 364 * k}" y="${legY + 5 * k}" class="leg-t" font-size="${10.5 * k}">поход царей · Быт 14</text>` : ''}${legOvl ? `
+    <path d="M${x0 + (hasWar ? 512 : 372) * k},${legY + 1 * k} h${22 * k}" class="ovl ovl-${legOvl.style || 'ctxpath'}"/>
+    <text x="${x0 + ((hasWar ? 512 : 372) + 30) * k}" y="${legY + 5 * k}" class="leg-t" font-size="${(10.5 * k).toFixed(2)}">${esc(legOvl.label)}</text>` : ''}
   </g>`;
 
   const stageStripHtml = stages.length ? `
@@ -369,6 +423,7 @@ ${GEO_DEFS}
 <rect x="${x0}" y="${y0}" width="${W}" height="${H}" fill="url(#seaG)"/>
 <g class="base">${base}</g>
 ${RELIEF[family] || ''}
+${DECOR[family] || ''}
 <path d="${routePath}" class="route-under"/>
 <path d="${routePath}" class="route"/>
 ${halos.join('')}
@@ -379,6 +434,8 @@ ${warSvg}
 ${glyphs.join('')}
 ${wps.join('')}
 ${ctxs.join('')}
+${ovls.join('')}
+${sidenote}
 ${labels.join('')}
 ${cart}
 ${legend}
@@ -409,6 +466,19 @@ function sheetCss() {
   .pl-city{fill:#1e3a63;stroke:#f6f1e7;stroke-width:.9}
   .pl-cand{fill:none;stroke:#8a6a1f;stroke-width:1.2;stroke-dasharray:2.6 2}
   .pl{cursor:pointer}
+  .lab-ctxnote{font-family:Lora,Georgia,serif;font-weight:500;fill:#8a7a5e;letter-spacing:.3em;opacity:.7;paint-order:stroke;stroke:#f3ecdc;stroke-width:.16em}
+  .ovl{fill:none;stroke-linecap:round}
+  .ovl-covenant{stroke:#7d8f4e;stroke-width:1.5;stroke-dasharray:11 7;opacity:.5}
+  .ovl-ctxpath{stroke:#7a8fa0;stroke-width:1.2;stroke-dasharray:3 5;opacity:.55}
+  .lab-ovl{font-family:'Cormorant Garamond',Georgia,serif;font-style:italic;font-weight:500;paint-order:stroke;stroke:#f3ecdc;stroke-width:.14em;stroke-linejoin:round}
+  .lab-ovl-covenant{fill:#6e7f42;letter-spacing:.12em}
+  .lab-ovl-ctxpath{fill:#63798a}
+  .sn-plate{fill:rgba(246,241,231,.72);stroke:rgba(138,106,31,.28);stroke-width:.7}
+  .sn-title{font-family:Lora,Georgia,serif;font-weight:600;fill:#8a6a30;letter-spacing:.22em}
+  .sn-line{font-family:Lora,Georgia,serif;font-style:italic;fill:#5a4c30}
+  .decor-ship path{fill:none;stroke:#5c718a;stroke-width:1.1;opacity:.5;stroke-linejoin:round}
+  .decor-ship .ds-line{stroke-width:.9}
+  .decor-ship .ds-wave{opacity:.35}
   .pl-ctx{fill:#8a7a5e;stroke:#f6f1e7;stroke-width:.7;opacity:.85}
   .lab-ctx{font-family:Lora,Georgia,serif;font-style:italic;font-weight:400;fill:#8a7a5e;opacity:.9;paint-order:stroke;stroke:#f3ecdc;stroke-width:.14em;stroke-linejoin:round}
   .war-x{stroke:#96503c;stroke-width:1.05;opacity:.75;fill:none}
