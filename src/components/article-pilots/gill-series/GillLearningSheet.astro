@@ -37,15 +37,18 @@ const quizItems = quizPool.length >= 4 ? quizPool : GILL_LEARNING_QUIZ;
     </div>
 
     <div class="gill-tabs" role="tablist" aria-label="Инструменты обучения">
-      <button type="button" class="gill-tab" id="tabSearch" role="tab" aria-selected="true" aria-controls="panelSearch" data-tab="search">Поиск</button>
-      <button type="button" class="gill-tab" id="tabTerms" role="tab" aria-selected="false" aria-controls="panelTerms" data-tab="terms" tabindex="-1">Термины</button>
+      <button type="button" class="gill-tab" id="tabTerms" role="tab" aria-selected="true" aria-controls="panelTerms" data-tab="terms">Термины</button>
       <button type="button" class="gill-tab" id="tabOutline" role="tab" aria-selected="false" aria-controls="panelOutline" data-tab="outline" tabindex="-1">Конспект</button>
       <button type="button" class="gill-tab" id="tabQuiz" role="tab" aria-selected="false" aria-controls="panelQuiz" data-tab="quiz" tabindex="-1">Тест</button>
       <button type="button" class="gill-tab" id="tabNotes" role="tab" aria-selected="false" aria-controls="panelNotes" data-tab="notes" tabindex="-1">Заметки</button>
+      <span class="gill-tabs__sep" aria-hidden="true"></span>
+      <button type="button" class="gill-tab gill-tab--icon" id="tabSearch" role="tab" aria-selected="false" aria-controls="panelSearch" data-tab="search" tabindex="-1" aria-label="Поиск по разделу">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7" /><path d="M21 21l-4.3-4.3" /></svg>
+      </button>
     </div>
 
     <div class="toc-sheet__body">
-      <section class="gill-panel" id="panelSearch" role="tabpanel" aria-labelledby="tabSearch" data-panel="search">
+      <section class="gill-panel" id="panelSearch" role="tabpanel" aria-labelledby="tabSearch" data-panel="search" hidden>
         <label class="gill-searchbox">
           <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7" /><path d="M21 21l-4.3-4.3" /></svg>
           <input id="learningSearchInput" type="search" placeholder="Найти в этой статье" autocomplete="off" />
@@ -55,7 +58,7 @@ const quizItems = quizPool.length >= 4 ? quizPool : GILL_LEARNING_QUIZ;
         <button type="button" class="gill-global-search" id="globalSearchBtn">Искать по всему сайту</button>
       </section>
 
-      <section class="gill-panel" id="panelTerms" role="tabpanel" aria-labelledby="tabTerms" data-panel="terms" hidden>
+      <section class="gill-panel" id="panelTerms" role="tabpanel" aria-labelledby="tabTerms" data-panel="terms">
         <div id="termsList"></div>
       </section>
 
@@ -432,6 +435,15 @@ const quizItems = quizPool.length >= 4 ? quizPool : GILL_LEARNING_QUIZ;
         jumpTo((a as HTMLAnchorElement).getAttribute('href') || '');
       });
     });
+
+    // Термины is the default pane (v2.6), but buildTerms() depends on glossary
+    // hydration (SiteUtils.hydrateGlossaryTerms), which isn't ready at page-init —
+    // building then renders empty AND trips the `termsBuilt` guard so it never
+    // recovers. Build on the first sheet OPEN instead (hydration ready by then).
+    const buildTermsOnOpen = new MutationObserver(() => {
+      if (overlay.classList.contains('is-open') || overlay.getAttribute('aria-hidden') === 'false') buildTerms();
+    });
+    buildTermsOnOpen.observe(overlay, { attributes: true, attributeFilter: ['class', 'aria-hidden'] });
   }
 
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', initGillLearningSheet, { once: true });
