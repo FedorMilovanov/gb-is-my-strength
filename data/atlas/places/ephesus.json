@@ -7,8 +7,8 @@
   "type": "city",
   "placements": {
     "mediterranean": {
-      "x": 810,
-      "y": 400
+      "x": 1167,
+      "y": 535
     }
   },
   "maps": [
@@ -52,6 +52,6 @@
     "Acts 18:27",
     "Acts 19:1"
   ],
-  "notes": "review: Эфес: pavel + revelation — один город",
+  "notes": "review: Эфес: pavel + revelation — один город | координаты семи церквей разнесены по реальной дуге зап. Анатолии (Ф2-Ц2, G2-фикс revelation; было — пятачок 40×70)",
   "rank": 2
 }
