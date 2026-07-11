@@ -16,26 +16,27 @@
   .base [stroke="#2e4d6b"]{stroke:#6f97ae}
   .base [stroke="#2d4a66"]{stroke:#6f97ae}
   .base text{opacity:.85}
-  .route-under{fill:none;stroke:#f6f1e7;stroke-width:5.4;stroke-linecap:round;stroke-linejoin:round;opacity:.65}
-  .route{fill:none;stroke:#a25d33;stroke-width:2.6;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:.1 7.4;opacity:.95}
-  .pl-city{fill:#1e3a63;stroke:#f6f1e7;stroke-width:1.2;filter:url(#dotShadow)}
-  .pl-cand{fill:none;stroke:#8a6a1f;stroke-width:1.6;stroke-dasharray:3 2.2}
+  .route-under{fill:none;stroke:#fdf9ef;stroke-width:3;stroke-linecap:round;stroke-linejoin:round;opacity:.3}
+  .route{fill:none;stroke:#a2653f;stroke-width:2.1;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:.1 8.2;opacity:.82}
+  .pl-city{fill:#1e3a63;stroke:#f6f1e7;stroke-width:.9}
+  .pl-cand{fill:none;stroke:#8a6a1f;stroke-width:1.2;stroke-dasharray:2.6 2}
   .pl{cursor:pointer}
-  .glyph path,.glyph circle{fill:rgba(94,74,30,.34);stroke:#6b5216;stroke-width:.9;stroke-linejoin:round}
+  #sheet-svg [fill="url(#jordanG)"]{opacity:.22}
+  #sheet-svg #tradeRoutes{opacity:.32}
+  .glyph path,.glyph circle{fill:none;stroke:#6b5216;stroke-width:.85;stroke-linejoin:round;opacity:.85}
   .glyph .glyph-line{fill:none;stroke:#6b5216;stroke-width:.9;stroke-linecap:round}
   .glyph .glyph-flame{fill:#a25d33;stroke:none}
   .glyph .glyph-smoke{fill:none;stroke:#8a7a58;stroke-width:.8;opacity:.75;stroke-linecap:round}
-  .ruin-halo{fill:rgba(120,100,80,.14);stroke:rgba(120,100,80,.3);stroke-width:.6;stroke-dasharray:2 3}
-  .wp-dot{fill:#4a7a52;stroke:#f6f1e7;stroke-width:.9;opacity:.85}
-  .leader{stroke:#5c4d33;stroke-width:.9;opacity:.55}
-  .mile-c{fill:#f6f1e7;stroke-width:1.6;filter:url(#dotShadow)}
-  .mile-cand{stroke-dasharray:3 2.2}
-  .mile-t{font:700 1em Georgia,serif}
-  text.lab-place{font-family:Georgia,'Times New Roman',serif;font-weight:600;fill:#2b2418;paint-order:stroke;stroke:#f5edd8;stroke-width:.22em;stroke-linejoin:round}
+
+  .wp-dot{fill:#4a7a52;stroke:none;opacity:.6}
+  .leader{stroke:#5c4d33;stroke-width:.75;opacity:.45}
+  .mile-t{font:italic 700 1em Georgia,serif;opacity:.9}
+  text.lab-place{font-family:Georgia,'Times New Roman',serif;font-weight:600;fill:#2b2418;paint-order:stroke;stroke:#f5edd8;stroke-width:.17em;stroke-linejoin:round}
   text.lab-cand{font-style:italic;fill:#5c4a1e}
   text.lab-region{font-family:Georgia,serif;font-weight:600;letter-spacing:.3em;fill:#7a6a48;opacity:.78;paint-order:stroke;stroke:#f5edd8;stroke-width:.18em}
   text.lab-ctx{font-family:Georgia,serif;letter-spacing:.24em;fill:#8a7a58;opacity:.6;paint-order:stroke;stroke:#f5edd8;stroke-width:.16em}
-  text.lab-wp{font-family:Georgia,serif;font-style:italic;fill:#4a6a52;opacity:.82;paint-order:stroke;stroke:#f5edd8;stroke-width:.18em}
+  text.lab-wp{font-family:Georgia,serif;font-style:italic;fill:#4a6a52;opacity:0;transition:opacity .3s;paint-order:stroke;stroke:#f5edd8;stroke-width:.16em}
+  svg.zoomed text.lab-wp{opacity:.85}
   .plate{fill:rgba(246,241,231,.85);stroke:rgba(120,95,40,.35);stroke-width:1}
   .cart-plate{fill:rgba(246,241,231,.92)}
   .cart-inner{fill:none;stroke:rgba(138,106,31,.3);stroke-width:.8}
@@ -366,12 +367,12 @@ Z"/>
 <path d="M1740,678 C1715.7,691.8 1633.7,783.8 1594,761 C1554.3,738.2 1606.2,620.7 1502,541 C1397.8,461.3 1072.5,320.8 969,283 C865.5,245.2 887.2,272.7 881,314 C874.8,355.3 932.7,493.7 932,531 C931.3,568.3 837.8,537.3 877,538 C916.2,538.7 1033.3,451.3 1167,535 C1300.7,618.7 1840.0,1094.0 1679,1040 C1518.0,986.0 447.3,349.2 201,211" class="route"/>
 
 
-<g class="pl" data-pid="cyprus"><circle cx="1594" cy="761" r="6.23" class="pl-city"/></g><g class="pl" data-pid="iconium"><circle cx="1502" cy="541" r="6.23" class="pl-city"/></g><g class="pl" data-pid="thessalonica"><circle cx="881" cy="314" r="6.23" class="pl-city"/></g><g class="pl" data-pid="athens"><circle cx="932" cy="531" r="6.23" class="pl-city"/></g><g class="pl" data-pid="corinth"><circle cx="877" cy="538" r="6.23" class="pl-city"/></g><g class="pl" data-pid="jerusalem"><circle cx="1679" cy="1040" r="6.23" class="pl-city"/></g><g class="pl" data-pid="rome"><circle cx="201" cy="211" r="6.23" class="pl-city"/></g>
-<g class="mile" data-stage="0" data-x="1740" data-y="678"><circle cx="1740" cy="678" r="10.98" class="mile-c" style="stroke:#8a6a1f"/><text x="1740" y="683.0433333333333" text-anchor="middle" class="mile-t" font-size="14.09" style="fill:#8a6a1f">I</text></g><g class="mile" data-stage="1" data-x="969" data-y="283"><circle cx="969" cy="283" r="10.98" class="mile-c" style="stroke:#a25d33"/><text x="969" y="288.04333333333335" text-anchor="middle" class="mile-t" font-size="14.09" style="fill:#a25d33">II</text></g><g class="mile" data-stage="2" data-x="1167" data-y="535"><circle cx="1167" cy="535" r="10.98" class="mile-c" style="stroke:#4a7a52"/><text x="1167" y="540.0433333333333" text-anchor="middle" class="mile-t" font-size="14.09" style="fill:#4a7a52">III</text></g>
+<g class="pl" data-pid="antioch"><circle cx="1740" cy="678" r="5.19" class="pl-city"/></g><g class="pl" data-pid="cyprus"><circle cx="1594" cy="761" r="5.19" class="pl-city"/></g><g class="pl" data-pid="iconium"><circle cx="1502" cy="541" r="5.19" class="pl-city"/></g><g class="pl" data-pid="philippi"><circle cx="969" cy="283" r="5.19" class="pl-city"/></g><g class="pl" data-pid="thessalonica"><circle cx="881" cy="314" r="5.19" class="pl-city"/></g><g class="pl" data-pid="athens"><circle cx="932" cy="531" r="5.19" class="pl-city"/></g><g class="pl" data-pid="corinth"><circle cx="877" cy="538" r="5.19" class="pl-city"/></g><g class="pl" data-pid="ephesus"><circle cx="1167" cy="535" r="5.19" class="pl-city"/></g><g class="pl" data-pid="jerusalem"><circle cx="1679" cy="1040" r="5.19" class="pl-city"/></g><g class="pl" data-pid="rome"><circle cx="201" cy="211" r="5.19" class="pl-city"/></g>
+<g class="mile" data-stage="0" data-x="1740" data-y="678"><text x="1730.4" y="670.6" text-anchor="end" class="mile-t" font-size="14.83" style="fill:#8a6a1f">I</text></g><g class="mile" data-stage="1" data-x="969" data-y="283"><text x="959.4" y="275.6" text-anchor="end" class="mile-t" font-size="14.83" style="fill:#a25d33">II</text></g><g class="mile" data-stage="2" data-x="1167" data-y="535"><text x="1157.4" y="527.6" text-anchor="end" class="mile-t" font-size="14.83" style="fill:#4a7a52">III</text></g>
 
-<rect x="1735.3" y="673.3" width="9.5" height="9.5" transform="rotate(45 1740 678)" class="wp-dot"/><text x="1745.9" y="698.8" class="lab-wp" font-size="14.83">Антиохия (арх.)</text><rect x="964.3" y="278.3" width="9.5" height="9.5" transform="rotate(45 969 283)" class="wp-dot"/><text x="974.9" y="303.8" class="lab-wp" font-size="14.83">Филиппы (арх.)</text><rect x="872.3" y="533.3" width="9.5" height="9.5" transform="rotate(45 877 538)" class="wp-dot"/><text x="882.9" y="558.8" class="lab-wp" font-size="14.83">Бема Коринфа</text><rect x="1162.3" y="530.3" width="9.5" height="9.5" transform="rotate(45 1167 535)" class="wp-dot"/><text x="1172.9" y="555.8" class="lab-wp" font-size="14.83">Эфес (арх.)</text>
+<rect x="1736.6" y="674.6" width="6.8" height="6.8" transform="rotate(45 1740 678)" class="wp-dot"/><text x="1745.9" y="698.8" class="lab-wp" font-size="14.83">Антиохия (арх.)</text><rect x="965.6" y="279.6" width="6.8" height="6.8" transform="rotate(45 969 283)" class="wp-dot"/><text x="974.9" y="303.8" class="lab-wp" font-size="14.83">Филиппы (арх.)</text><rect x="873.6" y="534.6" width="6.8" height="6.8" transform="rotate(45 877 538)" class="wp-dot"/><text x="882.9" y="558.8" class="lab-wp" font-size="14.83">Бема Коринфа</text><rect x="1163.6" y="531.6" width="6.8" height="6.8" transform="rotate(45 1167 535)" class="wp-dot"/><text x="1172.9" y="555.8" class="lab-wp" font-size="14.83">Эфес (арх.)</text>
 
-<text x="1762.3" y="684.6" class="lab-place" font-size="19.28" text-anchor="start">Антиохия</text><text x="1607.3" y="766.5" class="lab-place" font-size="16.32" text-anchor="start">Кипр · Саламин</text><text x="1515.3" y="546.5" class="lab-place" font-size="16.32" text-anchor="start">Икония</text><text x="991.3" y="289.6" class="lab-place" font-size="19.28" text-anchor="start">Филиппы</text><text x="867.6" y="319.5" class="lab-place" font-size="16.32" text-anchor="end">Фессалоника</text><text x="945.4" y="536.5" class="lab-place" font-size="16.32" text-anchor="start">Афины · Ареопаг</text><text x="890.4" y="543.5" class="lab-place" font-size="16.32" text-anchor="start">Коринф</text><text x="1189.3" y="541.6" class="lab-place" font-size="19.28" text-anchor="start">Эфес</text><text x="1692.3" y="1045.5" class="lab-place" font-size="16.32" text-anchor="start">Иерусалим</text><text x="214.3" y="216.5" class="lab-place" font-size="16.32" text-anchor="start">Рим</text>
+<text x="1752.6" y="684.6" class="lab-place" font-size="19.28" text-anchor="start">Антиохия</text><text x="1606.6" y="766.5" class="lab-place" font-size="16.32" text-anchor="start">Кипр · Саламин</text><text x="1514.6" y="546.5" class="lab-place" font-size="16.32" text-anchor="start">Икония</text><text x="981.6" y="289.6" class="lab-place" font-size="19.28" text-anchor="start">Филиппы</text><text x="868.4" y="319.5" class="lab-place" font-size="16.32" text-anchor="end">Фессалоника</text><text x="944.6" y="536.5" class="lab-place" font-size="16.32" text-anchor="start">Афины · Ареопаг</text><text x="889.6" y="543.5" class="lab-place" font-size="16.32" text-anchor="start">Коринф</text><text x="1179.6" y="541.6" class="lab-place" font-size="19.28" text-anchor="start">Эфес</text><text x="1691.6" y="1045.5" class="lab-place" font-size="16.32" text-anchor="start">Иерусалим</text><text x="213.6" y="216.5" class="lab-place" font-size="16.32" text-anchor="start">Рим</text>
 
   <g class="cartouche">
     <rect x="115.6" y="53.36666666666663" width="593.3333333333334" height="127.56666666666668" rx="11.866666666666667" class="plate cart-plate"/>
