@@ -635,7 +635,8 @@
       },
       {
         "id": "nebuchadnezzar2",
-        "label": "Навуходоносор II",
+        "label": "Навуходоносор",
+        "labelFull": "Навуходоносор II",
         "start": -605,
         "end": -562,
         "realm": "babylon"

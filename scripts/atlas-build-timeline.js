@@ -48,7 +48,8 @@ function main() {
 
   const seg = (h, t) => ({
     id: h.id,
-    label: h.names.ru,
+    label: h.names.short || h.names.ru, // short — компактная форма для подписи на шкале
+    ...(h.names.short ? { labelFull: h.names.ru } : {}), // полное имя — для тултипа/таблицы
     start: Math.max(t.start, RANGE.start),
     end: Math.min(t.end, RANGE.end),
     ...(h.assessment ? { assessment: h.assessment } : {}),

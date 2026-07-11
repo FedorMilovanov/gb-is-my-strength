@@ -1,7 +1,8 @@
 {
   "id": "nebuchadnezzar2",
   "names": {
-    "ru": "Навуходоносор II"
+    "ru": "Навуходоносор II",
+    "short": "Навуходоносор"
   },
   "role": "emperor",
   "realm": "babylon",
