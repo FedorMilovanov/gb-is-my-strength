@@ -18,6 +18,8 @@ import { parseTipnr, resolveRelations, parseUnifiedRef, parseRelField } from './
 import { extractRuName, translitEnRu, similarity, normalizeRuCandidate } from './lib/ru-extract.mjs';
 import { computeClusters, nationsLayer } from './lib/clusters.mjs';
 import { traceSpine } from './lib/spine.mjs';
+import { buildLayoutL0 } from './lib/layout-l0.mjs';
+import { renderL0Svg } from './lib/render-l0-svg.mjs';
 
 const log = (...a) => console.log('[genealogy-build]', ...a);
 
@@ -339,6 +341,12 @@ async function runAll() {
   log(`spine: Христос→Адам ${spine.reachedRoot ? 'СВЯЗАН' : 'РАЗОРВАН'}, длина ${spine.length}` +
       (spine.missingAnchors.length ? `, нет якорей: ${spine.missingAnchors.join(',')}` : ''));
 
+  // 6.5. L0 build-time layout + статический SVG-превью (санитарная проверка + seed §8)
+  const erasV1 = v1.eras ?? [];
+  const layoutL0 = buildLayoutL0(outPersons, clusters, erasV1);
+  const l0Svg = renderL0Svg(layoutL0);
+  log(`layout-l0: узлов ${layoutL0.nodes.length} (хребет ${layoutL0.nodes.filter(n => n.kind === 'spine').length} + мега ${layoutL0.nodes.filter(n => n.kind === 'mega').length}), bbox ${Math.round(layoutL0.bbox.w)}×${Math.round(layoutL0.bbox.h)}`);
+
   // 7. Валидация
   const report = validate(outPersons, edges, { parseStats, relStats, ruStats, v1Unmatched, v1Soft, v1Collisions, v1Total: v1.persons.length, v1Matched: v1Matches.size, mirrorMisses, clusters, nations, spine });
 
@@ -368,6 +376,9 @@ async function runAll() {
     missingAnchors: spine.missingAnchors,
     chain: spine.chain,
   }, null, 1) + '\n');
+  await mkdir(path.join(PATHS.outDir, 'build'), { recursive: true });
+  await writeFile(path.join(PATHS.outDir, 'build', 'layout-l0.json'), JSON.stringify(layoutL0, null, 1) + '\n');
+  await writeFile(path.join(PATHS.outDir, 'build', 'atlas-l0-preview.svg'), l0Svg);
   await writeFile(path.join(PATHS.outDir, 'meta.json'), JSON.stringify(meta, null, 2) + '\n');
   try { await access(path.join(PATHS.outDir, 'ru-overrides.json')); }
   catch {

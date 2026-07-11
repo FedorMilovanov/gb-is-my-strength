@@ -1,0 +1,180 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="-760 -153 1630 1874" width="1630" height="1874" font-family="Georgia, 'Times New Roman', serif" role="img" aria-label="Библейский атлас родословий — обзорная схема L0">
+<defs>
+    <radialGradient id="parch" cx="50%" cy="18%" r="90%">
+      <stop offset="0%" stop-color="#f5efe1"/><stop offset="100%" stop-color="#efe6d3"/>
+    </radialGradient>
+    <linearGradient id="goldline" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#d8b060"/><stop offset="100%" stop-color="#c39a3f"/>
+    </linearGradient>
+    <filter id="soft"><feDropShadow dx="0" dy="1.5" stdDeviation="2.2" flood-color="#000" flood-opacity="0.16"/></filter>
+  </defs>
+<rect x="-760" y="-153" width="1630" height="1874" fill="url(#parch)"/>
+<rect x="-742" y="25.0" width="168" height="100.0" fill="#8B6914" opacity="0.08"/>
+<rect x="-742" y="25.0" width="4" height="100.0" fill="#8B6914" opacity="0.5"/>
+<text x="-728" y="45.0" font-size="15" fill="#8a7a55" opacity="0.85">Сотворение</text>
+<rect x="-742" y="175.0" width="168" height="100.0" fill="#A0734A" opacity="0.08"/>
+<rect x="-742" y="175.0" width="4" height="100.0" fill="#A0734A" opacity="0.5"/>
+<text x="-728" y="195.0" font-size="15" fill="#8a7a55" opacity="0.85">Допотопный мир</text>
+<rect x="-742" y="331.0" width="168" height="88.0" fill="#6B8E4E" opacity="0.08"/>
+<rect x="-742" y="331.0" width="4" height="88.0" fill="#6B8E4E" opacity="0.5"/>
+<text x="-728" y="351.0" font-size="15" fill="#8a7a55" opacity="0.85">Послепотопный мир</text>
+<rect x="-742" y="475.0" width="168" height="544.0" fill="#C4A04A" opacity="0.08"/>
+<rect x="-742" y="475.0" width="4" height="544.0" fill="#C4A04A" opacity="0.5"/>
+<text x="-728" y="495.0" font-size="15" fill="#8a7a55" opacity="0.85">Патриархи</text>
+<rect x="-742" y="1075.0" width="168" height="250.0" fill="#B8743A" opacity="0.08"/>
+<rect x="-742" y="1075.0" width="4" height="250.0" fill="#B8743A" opacity="0.5"/>
+<text x="-728" y="1095.0" font-size="15" fill="#8a7a55" opacity="0.85">Царства</text>
+<rect x="-742" y="1375.0" width="168" height="258.0" fill="#D4A857" opacity="0.08"/>
+<rect x="-742" y="1375.0" width="4" height="258.0" fill="#D4A857" opacity="0.5"/>
+<text x="-728" y="1395.0" font-size="15" fill="#8a7a55" opacity="0.85">Воплощение</text>
+<text x="130" y="-93" text-anchor="middle" font-size="34" fill="#3f3320" font-weight="bold">Библейский атлас родословий</text>
+<text x="130" y="-63" text-anchor="middle" font-size="16" fill="#c39a3f" font-style="italic">От Адама до Иисуса Христа</text>
+<line x1="0" y1="75" x2="0" y2="1425" stroke="url(#goldline)" stroke-width="6" stroke-linecap="round" opacity="0.55"/>
+<line x1="0" y1="107" x2="0" y2="193" stroke="url(#goldline)" stroke-width="4" stroke-linecap="round"/>
+<line x1="0" y1="257" x2="0" y2="343" stroke="url(#goldline)" stroke-width="4" stroke-linecap="round"/>
+<line x1="0" y1="407" x2="0" y2="493" stroke="url(#goldline)" stroke-width="4" stroke-linecap="round"/>
+<line x1="0" y1="557" x2="0" y2="643" stroke="url(#goldline)" stroke-width="4" stroke-linecap="round"/>
+<line x1="0" y1="707" x2="0" y2="793" stroke="url(#goldline)" stroke-width="4" stroke-linecap="round"/>
+<line x1="0" y1="857" x2="0" y2="943" stroke="url(#goldline)" stroke-width="4" stroke-linecap="round"/>
+<line x1="0" y1="1007" x2="0" y2="1093" stroke="url(#goldline)" stroke-width="4" stroke-linecap="round"/>
+<line x1="0" y1="1157" x2="0" y2="1243" stroke="url(#goldline)" stroke-width="4" stroke-linecap="round"/>
+<line x1="0" y1="1307" x2="0" y2="1393" stroke="url(#goldline)" stroke-width="4" stroke-linecap="round"/>
+<path d="M 0 75 C -202.5 75, -202.5 75, -405 75" fill="none" stroke="#c8b89a" stroke-width="1.5" stroke-dasharray="2 5" opacity="0.7"/>
+<path d="M 0 225 C 202.5 225, 202.5 225, 405 225" fill="none" stroke="#c8b89a" stroke-width="1.5" stroke-dasharray="2 5" opacity="0.7"/>
+<path d="M 0 525 C -202.5 525, -202.5 525, -405 525" fill="none" stroke="#c8b89a" stroke-width="1.5" stroke-dasharray="2 5" opacity="0.7"/>
+<path d="M 0 525 C 202.5 525, 202.5 525, 405 525" fill="none" stroke="#c8b89a" stroke-width="1.5" stroke-dasharray="2 5" opacity="0.7"/>
+<path d="M 0 675 C 202.5 675, 202.5 675, 405 675" fill="none" stroke="#c8b89a" stroke-width="1.5" stroke-dasharray="2 5" opacity="0.7"/>
+<path d="M 0 825 C -202.5 825, -202.5 825, -405 825" fill="none" stroke="#c8b89a" stroke-width="1.5" stroke-dasharray="2 5" opacity="0.7"/>
+<path d="M 0 825 C 202.5 825, 202.5 825, 405 825" fill="none" stroke="#c8b89a" stroke-width="1.5" stroke-dasharray="2 5" opacity="0.7"/>
+<path d="M 0 1125 C -202.5 1125, -202.5 1125, -405 1125" fill="none" stroke="#c8b89a" stroke-width="1.5" stroke-dasharray="2 5" opacity="0.7"/>
+<path d="M 0 1125 C 202.5 1125, 202.5 1125, 405 1125" fill="none" stroke="#c8b89a" stroke-width="1.5" stroke-dasharray="2 5" opacity="0.7"/>
+<path d="M 0 1275 C -202.5 1275, -202.5 1275, -405 1275" fill="none" stroke="#c8b89a" stroke-width="1.5" stroke-dasharray="2 5" opacity="0.7"/>
+<path d="M 0 1425 C -202.5 1425, -202.5 1425, -405 1425" fill="none" stroke="#c8b89a" stroke-width="1.5" stroke-dasharray="2 5" opacity="0.7"/>
+<path d="M 0 1425 C 202.5 1425, 202.5 1425, 405 1425" fill="none" stroke="#c8b89a" stroke-width="1.5" stroke-dasharray="2 5" opacity="0.7"/>
+<path d="M 0 1425 C 332.5 1425, 332.5 1525, 665 1525" fill="none" stroke="#c8b89a" stroke-width="1.5" stroke-dasharray="2 5" opacity="0.7"/>
+<path d="M 0 1425 C 0 1425, 0 1583, 0 1583" fill="none" stroke="#c8b89a" stroke-width="1.5" stroke-dasharray="2 5" opacity="0.7"/>
+<g filter="url(#soft)">
+<rect x="-84" y="43" width="168" height="64" rx="12" fill="#fffaf0" stroke="#c39a3f" stroke-width="2"/>
+<text x="0" y="73" text-anchor="middle" font-size="19" fill="#3f3320" font-weight="bold">Адам</text>
+<text x="0" y="92" text-anchor="middle" font-size="11" fill="#6b5a3c">AM 0</text>
+</g>
+<g filter="url(#soft)">
+<rect x="-84" y="193" width="168" height="64" rx="12" fill="#fffaf0" stroke="#c39a3f" stroke-width="2"/>
+<text x="0" y="223" text-anchor="middle" font-size="19" fill="#3f3320" font-weight="bold">Ной</text>
+<text x="0" y="242" text-anchor="middle" font-size="11" fill="#6b5a3c">AM 1056</text>
+</g>
+<g filter="url(#soft)">
+<rect x="-84" y="343" width="168" height="64" rx="12" fill="#fffaf0" stroke="#c39a3f" stroke-width="2"/>
+<text x="0" y="373" text-anchor="middle" font-size="19" fill="#3f3320" font-weight="bold">Сим</text>
+<text x="0" y="392" text-anchor="middle" font-size="11" fill="#6b5a3c">AM 1558</text>
+</g>
+<g filter="url(#soft)">
+<rect x="-84" y="493" width="168" height="64" rx="12" fill="#fffaf0" stroke="#c39a3f" stroke-width="2"/>
+<text x="0" y="523" text-anchor="middle" font-size="19" fill="#3f3320" font-weight="bold">Авраам</text>
+<text x="0" y="542" text-anchor="middle" font-size="11" fill="#6b5a3c">AM 1948</text>
+</g>
+<g filter="url(#soft)">
+<rect x="-84" y="643" width="168" height="64" rx="12" fill="#fffaf0" stroke="#c39a3f" stroke-width="2"/>
+<text x="0" y="673" text-anchor="middle" font-size="19" fill="#3f3320" font-weight="bold">Исаак</text>
+<text x="0" y="692" text-anchor="middle" font-size="11" fill="#6b5a3c">AM 2048</text>
+</g>
+<g filter="url(#soft)">
+<rect x="-84" y="793" width="168" height="64" rx="12" fill="#fffaf0" stroke="#c39a3f" stroke-width="2"/>
+<text x="0" y="823" text-anchor="middle" font-size="19" fill="#3f3320" font-weight="bold">Иаков</text>
+<text x="0" y="842" text-anchor="middle" font-size="11" fill="#6b5a3c">AM 2108</text>
+</g>
+<g filter="url(#soft)">
+<rect x="-84" y="943" width="168" height="64" rx="12" fill="#fffaf0" stroke="#c39a3f" stroke-width="2"/>
+<text x="0" y="973" text-anchor="middle" font-size="19" fill="#3f3320" font-weight="bold">Иуда</text>
+</g>
+<g filter="url(#soft)">
+<rect x="-84" y="1093" width="168" height="64" rx="12" fill="#fffaf0" stroke="#c39a3f" stroke-width="2"/>
+<text x="0" y="1123" text-anchor="middle" font-size="19" fill="#3f3320" font-weight="bold">Давид</text>
+<text x="0" y="1142" text-anchor="middle" font-size="11" fill="#6b5a3c">AM 2920</text>
+</g>
+<g filter="url(#soft)">
+<rect x="-84" y="1243" width="168" height="64" rx="12" fill="#fffaf0" stroke="#c39a3f" stroke-width="2"/>
+<text x="0" y="1273" text-anchor="middle" font-size="19" fill="#3f3320" font-weight="bold">Соломон</text>
+</g>
+<g filter="url(#soft)">
+<rect x="-84" y="1393" width="168" height="64" rx="12" fill="#fffaf0" stroke="#c39a3f" stroke-width="2"/>
+<text x="0" y="1423" text-anchor="middle" font-size="19" fill="#3f3320" font-weight="bold">Иисус Христос</text>
+<text x="0" y="1442" text-anchor="middle" font-size="11" fill="#6b5a3c">AM 4000</text>
+</g>
+<g filter="url(#soft)">
+<rect x="-510" y="37" width="210" height="76" rx="10" fill="#faf5ea" stroke="#cabfa0" stroke-width="1.5"/>
+<text x="-405" y="67" text-anchor="middle" font-size="15" fill="#3f3320" font-weight="bold">Допотопные патриархи</text>
+<text x="-405" y="89" text-anchor="middle" font-size="13" fill="#c39a3f">+25 имён</text>
+</g>
+<g filter="url(#soft)">
+<rect x="300" y="187" width="210" height="76" rx="10" fill="#faf5ea" stroke="#cabfa0" stroke-width="1.5"/>
+<text x="405" y="217" text-anchor="middle" font-size="15" fill="#3f3320" font-weight="bold">Народы от Ноя</text>
+<text x="405" y="239" text-anchor="middle" font-size="13" fill="#c39a3f">+63 имён</text>
+</g>
+<g filter="url(#soft)">
+<rect x="-510" y="487" width="210" height="76" rx="10" fill="#faf5ea" stroke="#cabfa0" stroke-width="1.5"/>
+<text x="-405" y="517" text-anchor="middle" font-size="15" fill="#3f3320" font-weight="bold">Потомки Авраама</text>
+<text x="-405" y="539" text-anchor="middle" font-size="13" fill="#c39a3f">+764 имён</text>
+</g>
+<g filter="url(#soft)">
+<rect x="300" y="487" width="210" height="76" rx="10" fill="#faf5ea" stroke="#cabfa0" stroke-width="1.5"/>
+<text x="405" y="517" text-anchor="middle" font-size="15" fill="#3f3320" font-weight="bold">Измаильтяне</text>
+<text x="405" y="539" text-anchor="middle" font-size="13" fill="#c39a3f">+19 имён</text>
+</g>
+<g filter="url(#soft)">
+<rect x="300" y="637" width="210" height="76" rx="10" fill="#faf5ea" stroke="#cabfa0" stroke-width="1.5"/>
+<text x="405" y="667" text-anchor="middle" font-size="15" fill="#3f3320" font-weight="bold">Исав / Едом</text>
+<text x="405" y="689" text-anchor="middle" font-size="13" fill="#c39a3f">+17 имён</text>
+</g>
+<g filter="url(#soft)">
+<rect x="-510" y="787" width="210" height="76" rx="10" fill="#faf5ea" stroke="#cabfa0" stroke-width="1.5"/>
+<text x="-405" y="817" text-anchor="middle" font-size="15" fill="#3f3320" font-weight="bold">12 колен Израиля</text>
+<text x="-405" y="839" text-anchor="middle" font-size="13" fill="#c39a3f">+12 имён</text>
+</g>
+<g filter="url(#soft)">
+<rect x="300" y="787" width="210" height="76" rx="10" fill="#faf5ea" stroke="#cabfa0" stroke-width="1.5"/>
+<text x="405" y="817" text-anchor="middle" font-size="15" fill="#3f3320" font-weight="bold">Левиты</text>
+<text x="405" y="839" text-anchor="middle" font-size="13" fill="#c39a3f">+266 имён</text>
+</g>
+<g filter="url(#soft)">
+<rect x="-510" y="1087" width="210" height="76" rx="10" fill="#faf5ea" stroke="#cabfa0" stroke-width="1.5"/>
+<text x="-405" y="1117" text-anchor="middle" font-size="15" fill="#3f3320" font-weight="bold">Священники</text>
+<text x="-405" y="1139" text-anchor="middle" font-size="13" fill="#c39a3f">+61 имён</text>
+</g>
+<g filter="url(#soft)">
+<rect x="300" y="1087" width="210" height="76" rx="10" fill="#faf5ea" stroke="#cabfa0" stroke-width="1.5"/>
+<text x="405" y="1117" text-anchor="middle" font-size="15" fill="#3f3320" font-weight="bold">Дом Давида</text>
+<text x="405" y="1139" text-anchor="middle" font-size="13" fill="#c39a3f">+173 имён</text>
+</g>
+<g filter="url(#soft)">
+<rect x="-510" y="1237" width="210" height="76" rx="10" fill="#faf5ea" stroke="#cabfa0" stroke-width="1.5"/>
+<text x="-405" y="1267" text-anchor="middle" font-size="15" fill="#3f3320" font-weight="bold">Возвращение из плена</text>
+<text x="-405" y="1289" text-anchor="middle" font-size="13" fill="#c39a3f">+583 имён</text>
+</g>
+<g filter="url(#soft)">
+<rect x="-510" y="1387" width="210" height="76" rx="10" fill="#faf5ea" stroke="#cabfa0" stroke-width="1.5"/>
+<text x="-405" y="1417" text-anchor="middle" font-size="15" fill="#3f3320" font-weight="bold">Родословие по Матфею</text>
+<text x="-405" y="1439" text-anchor="middle" font-size="13" fill="#c39a3f">+74 имён</text>
+</g>
+<g filter="url(#soft)">
+<rect x="300" y="1387" width="210" height="76" rx="10" fill="#faf5ea" stroke="#cabfa0" stroke-width="1.5"/>
+<text x="405" y="1417" text-anchor="middle" font-size="15" fill="#3f3320" font-weight="bold">Родословие по Луке</text>
+<text x="405" y="1439" text-anchor="middle" font-size="13" fill="#c39a3f">+75 имён</text>
+</g>
+<g filter="url(#soft)">
+<rect x="560" y="1487" width="210" height="76" rx="10" fill="#faf5ea" stroke="#cabfa0" stroke-width="1.5"/>
+<text x="665" y="1517" text-anchor="middle" font-size="15" fill="#3f3320" font-weight="bold">Родственники Господа</text>
+<text x="665" y="1539" text-anchor="middle" font-size="13" fill="#c39a3f">+4 имён</text>
+</g>
+<g filter="url(#soft)">
+<rect x="-105" y="1545" width="210" height="76" rx="10" fill="#faf5ea" stroke="#cabfa0" stroke-width="1.5"/>
+<text x="0" y="1575" text-anchor="middle" font-size="15" fill="#3f3320" font-weight="bold">Ученики и апостолы</text>
+<text x="0" y="1597" text-anchor="middle" font-size="13" fill="#c39a3f">+14 имён</text>
+</g>
+<g font-size="12" fill="#6b5a3c">
+    <line x1="590" y1="1665" x2="614" y2="1665" stroke="url(#goldline)" stroke-width="4"/>
+    <text x="622" y="1669">Мессианская линия (хребет)</text>
+    <line x1="590" y1="1685" x2="614" y2="1685" stroke="#c8b89a" stroke-width="1.5" stroke-dasharray="2 5"/>
+    <text x="622" y="1689">Связь кластера с линией</text>
+  </g>
+</svg>

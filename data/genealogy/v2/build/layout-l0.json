@@ -1,0 +1,478 @@
+{
+ "_status": "phase1-draft: L0 build-time layout (детерминированный, компактный обзор). Вход движка Phase 3.",
+ "nodes": [
+  {
+   "id": "adam--gen-2-19",
+   "key": "Adam@Gen.2.19",
+   "kind": "spine",
+   "x": -84,
+   "y": 43,
+   "w": 168,
+   "h": 64,
+   "label": "Адам",
+   "am": 0,
+   "era": "creation",
+   "golden": true
+  },
+  {
+   "id": "noah--gen-5-29",
+   "key": "Noah@Gen.5.29",
+   "kind": "spine",
+   "x": -84,
+   "y": 193,
+   "w": 168,
+   "h": 64,
+   "label": "Ной",
+   "am": 1056,
+   "era": "antediluvian",
+   "golden": true
+  },
+  {
+   "id": "shem--gen-5-32",
+   "key": "Shem@Gen.5.32",
+   "kind": "spine",
+   "x": -84,
+   "y": 343,
+   "w": 168,
+   "h": 64,
+   "label": "Сим",
+   "am": 1558,
+   "era": "postdiluvian",
+   "golden": true
+  },
+  {
+   "id": "abraham--gen-11-26",
+   "key": "Abraham@Gen.11.26",
+   "kind": "spine",
+   "x": -84,
+   "y": 493,
+   "w": 168,
+   "h": 64,
+   "label": "Авраам",
+   "am": 1948,
+   "era": "patriarchs",
+   "golden": true
+  },
+  {
+   "id": "isaac--gen-17-19",
+   "key": "Isaac@Gen.17.19",
+   "kind": "spine",
+   "x": -84,
+   "y": 643,
+   "w": 168,
+   "h": 64,
+   "label": "Исаак",
+   "am": 2048,
+   "era": "patriarchs",
+   "golden": true
+  },
+  {
+   "id": "israel--gen-25-26",
+   "key": "Israel@Gen.25.26",
+   "kind": "spine",
+   "x": -84,
+   "y": 793,
+   "w": 168,
+   "h": 64,
+   "label": "Иаков",
+   "am": 2108,
+   "era": "patriarchs",
+   "golden": true
+  },
+  {
+   "id": "judah--gen-29-35",
+   "key": "Judah@Gen.29.35",
+   "kind": "spine",
+   "x": -84,
+   "y": 943,
+   "w": 168,
+   "h": 64,
+   "label": "Иуда",
+   "am": null,
+   "era": "patriarchs",
+   "golden": true
+  },
+  {
+   "id": "david--rut-4-17",
+   "key": "David@Rut.4.17",
+   "kind": "spine",
+   "x": -84,
+   "y": 1093,
+   "w": 168,
+   "h": 64,
+   "label": "Давид",
+   "am": 2920,
+   "era": "kings",
+   "golden": true
+  },
+  {
+   "id": "solomon--2sa-5-14",
+   "key": "Solomon@2Sa.5.14",
+   "kind": "spine",
+   "x": -84,
+   "y": 1243,
+   "w": 168,
+   "h": 64,
+   "label": "Соломон",
+   "am": null,
+   "era": "kings",
+   "golden": true
+  },
+  {
+   "id": "jesus--isa-7-14",
+   "key": "Jesus@Isa.7.14",
+   "kind": "spine",
+   "x": -84,
+   "y": 1393,
+   "w": 168,
+   "h": 64,
+   "label": "Иисус Христос",
+   "am": 4000,
+   "era": "incarnation",
+   "golden": true
+  },
+  {
+   "id": "cluster--antediluvian-patriarchs",
+   "clusterId": "antediluvian-patriarchs",
+   "kind": "mega",
+   "x": -510,
+   "y": 37,
+   "w": 210,
+   "h": 76,
+   "label": "Допотопные патриархи",
+   "count": 25,
+   "anchorKey": "Adam@Gen.2.19",
+   "side": "left"
+  },
+  {
+   "id": "cluster--nations-of-noah",
+   "clusterId": "nations-of-noah",
+   "kind": "mega",
+   "x": 300,
+   "y": 187,
+   "w": 210,
+   "h": 76,
+   "label": "Народы от Ноя",
+   "count": 63,
+   "anchorKey": "Noah@Gen.5.29",
+   "side": "right"
+  },
+  {
+   "id": "cluster--abraham-descendants",
+   "clusterId": "abraham-descendants",
+   "kind": "mega",
+   "x": -510,
+   "y": 487,
+   "w": 210,
+   "h": 76,
+   "label": "Потомки Авраама",
+   "count": 764,
+   "anchorKey": "Abraham@Gen.11.26",
+   "side": "left"
+  },
+  {
+   "id": "cluster--ishmaelites",
+   "clusterId": "ishmaelites",
+   "kind": "mega",
+   "x": 300,
+   "y": 487,
+   "w": 210,
+   "h": 76,
+   "label": "Измаильтяне",
+   "count": 19,
+   "anchorKey": "Abraham@Gen.11.26",
+   "side": "right"
+  },
+  {
+   "id": "cluster--esau-edom",
+   "clusterId": "esau-edom",
+   "kind": "mega",
+   "x": 300,
+   "y": 637,
+   "w": 210,
+   "h": 76,
+   "label": "Исав / Едом",
+   "count": 17,
+   "anchorKey": "Isaac@Gen.17.19",
+   "side": "right"
+  },
+  {
+   "id": "cluster--tribes-12",
+   "clusterId": "tribes-12",
+   "kind": "mega",
+   "x": -510,
+   "y": 787,
+   "w": 210,
+   "h": 76,
+   "label": "12 колен Израиля",
+   "count": 12,
+   "anchorKey": "Israel@Gen.25.26",
+   "side": "left"
+  },
+  {
+   "id": "cluster--levites",
+   "clusterId": "levites",
+   "kind": "mega",
+   "x": 300,
+   "y": 787,
+   "w": 210,
+   "h": 76,
+   "label": "Левиты",
+   "count": 266,
+   "anchorKey": "Israel@Gen.25.26",
+   "side": "right"
+  },
+  {
+   "id": "cluster--priests",
+   "clusterId": "priests",
+   "kind": "mega",
+   "x": -510,
+   "y": 1087,
+   "w": 210,
+   "h": 76,
+   "label": "Священники",
+   "count": 61,
+   "anchorKey": "David@Rut.4.17",
+   "side": "left"
+  },
+  {
+   "id": "cluster--house-of-david",
+   "clusterId": "house-of-david",
+   "kind": "mega",
+   "x": 300,
+   "y": 1087,
+   "w": 210,
+   "h": 76,
+   "label": "Дом Давида",
+   "count": 173,
+   "anchorKey": "David@Rut.4.17",
+   "side": "right"
+  },
+  {
+   "id": "cluster--return-from-exile",
+   "clusterId": "return-from-exile",
+   "kind": "mega",
+   "x": -510,
+   "y": 1237,
+   "w": 210,
+   "h": 76,
+   "label": "Возвращение из плена",
+   "count": 583,
+   "anchorKey": "Solomon@2Sa.5.14",
+   "side": "left"
+  },
+  {
+   "id": "cluster--matthew-1",
+   "clusterId": "matthew-1",
+   "kind": "mega",
+   "x": -510,
+   "y": 1387,
+   "w": 210,
+   "h": 76,
+   "label": "Родословие по Матфею",
+   "count": 74,
+   "anchorKey": "Jesus@Isa.7.14",
+   "side": "left"
+  },
+  {
+   "id": "cluster--luke-3",
+   "clusterId": "luke-3",
+   "kind": "mega",
+   "x": 300,
+   "y": 1387,
+   "w": 210,
+   "h": 76,
+   "label": "Родословие по Луке",
+   "count": 75,
+   "anchorKey": "Jesus@Isa.7.14",
+   "side": "right"
+  },
+  {
+   "id": "cluster--lords-relatives",
+   "clusterId": "lords-relatives",
+   "kind": "mega",
+   "x": 560,
+   "y": 1487,
+   "w": 210,
+   "h": 76,
+   "label": "Родственники Господа",
+   "count": 4,
+   "anchorKey": "Jesus@Isa.7.14",
+   "side": "right"
+  },
+  {
+   "id": "cluster--disciples-apostles",
+   "clusterId": "disciples-apostles",
+   "kind": "mega",
+   "x": -105,
+   "y": 1545,
+   "w": 210,
+   "h": 76,
+   "label": "Ученики и апостолы",
+   "count": 14,
+   "anchorKey": "Jesus@Isa.7.14",
+   "side": "center"
+  }
+ ],
+ "edges": [
+  {
+   "from": "adam--gen-2-19",
+   "to": "noah--gen-5-29",
+   "kind": "golden"
+  },
+  {
+   "from": "noah--gen-5-29",
+   "to": "shem--gen-5-32",
+   "kind": "golden"
+  },
+  {
+   "from": "shem--gen-5-32",
+   "to": "abraham--gen-11-26",
+   "kind": "golden"
+  },
+  {
+   "from": "abraham--gen-11-26",
+   "to": "isaac--gen-17-19",
+   "kind": "golden"
+  },
+  {
+   "from": "isaac--gen-17-19",
+   "to": "israel--gen-25-26",
+   "kind": "golden"
+  },
+  {
+   "from": "israel--gen-25-26",
+   "to": "judah--gen-29-35",
+   "kind": "golden"
+  },
+  {
+   "from": "judah--gen-29-35",
+   "to": "david--rut-4-17",
+   "kind": "golden"
+  },
+  {
+   "from": "david--rut-4-17",
+   "to": "solomon--2sa-5-14",
+   "kind": "golden"
+  },
+  {
+   "from": "solomon--2sa-5-14",
+   "to": "jesus--isa-7-14",
+   "kind": "golden"
+  },
+  {
+   "from": "adam--gen-2-19",
+   "to": "cluster--antediluvian-patriarchs",
+   "kind": "cluster-link"
+  },
+  {
+   "from": "noah--gen-5-29",
+   "to": "cluster--nations-of-noah",
+   "kind": "cluster-link"
+  },
+  {
+   "from": "abraham--gen-11-26",
+   "to": "cluster--abraham-descendants",
+   "kind": "cluster-link"
+  },
+  {
+   "from": "abraham--gen-11-26",
+   "to": "cluster--ishmaelites",
+   "kind": "cluster-link"
+  },
+  {
+   "from": "isaac--gen-17-19",
+   "to": "cluster--esau-edom",
+   "kind": "cluster-link"
+  },
+  {
+   "from": "israel--gen-25-26",
+   "to": "cluster--tribes-12",
+   "kind": "cluster-link"
+  },
+  {
+   "from": "israel--gen-25-26",
+   "to": "cluster--levites",
+   "kind": "cluster-link"
+  },
+  {
+   "from": "david--rut-4-17",
+   "to": "cluster--priests",
+   "kind": "cluster-link"
+  },
+  {
+   "from": "david--rut-4-17",
+   "to": "cluster--house-of-david",
+   "kind": "cluster-link"
+  },
+  {
+   "from": "solomon--2sa-5-14",
+   "to": "cluster--return-from-exile",
+   "kind": "cluster-link"
+  },
+  {
+   "from": "jesus--isa-7-14",
+   "to": "cluster--matthew-1",
+   "kind": "cluster-link"
+  },
+  {
+   "from": "jesus--isa-7-14",
+   "to": "cluster--luke-3",
+   "kind": "cluster-link"
+  },
+  {
+   "from": "jesus--isa-7-14",
+   "to": "cluster--lords-relatives",
+   "kind": "cluster-link"
+  },
+  {
+   "from": "jesus--isa-7-14",
+   "to": "cluster--disciples-apostles",
+   "kind": "cluster-link"
+  }
+ ],
+ "eraBands": [
+  {
+   "id": "creation",
+   "label": "Сотворение",
+   "y0": 25,
+   "y1": 125
+  },
+  {
+   "id": "antediluvian",
+   "label": "Допотопный мир",
+   "y0": 175,
+   "y1": 275
+  },
+  {
+   "id": "postdiluvian",
+   "label": "Послепотопный мир",
+   "y0": 331,
+   "y1": 419
+  },
+  {
+   "id": "patriarchs",
+   "label": "Патриархи",
+   "y0": 475,
+   "y1": 1019
+  },
+  {
+   "id": "kings",
+   "label": "Царства",
+   "y0": 1075,
+   "y1": 1325
+  },
+  {
+   "id": "incarnation",
+   "label": "Воплощение",
+   "y0": 1375,
+   "y1": 1633
+  }
+ ],
+ "bbox": {
+  "x": -550,
+  "y": -3,
+  "w": 1360,
+  "h": 1664
+ }
+}
