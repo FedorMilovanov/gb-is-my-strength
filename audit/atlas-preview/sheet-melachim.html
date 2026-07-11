@@ -12,7 +12,6 @@
   svg.sheet{display:block;width:100%;height:auto;background:#f5edd8}
   .frame{fill:none;stroke:#8a6a1f;stroke-width:1.2;opacity:.55}
   .base{opacity:.96}
-  /* светлая тема вод базы (тёмный канон файла) */
   .base [fill="#10263a"]{fill:#8fb7cb}
   .base [stroke="#2e4d6b"]{stroke:#6f97ae}
   .base [stroke="#2d4a66"]{stroke:#6f97ae}
@@ -24,6 +23,7 @@
   .wp-dot{fill:#4a7a52;stroke:#f6f1e7;stroke-width:.9;opacity:.85}
   .leader{stroke:#5c4d33;stroke-width:.9;opacity:.55}
   .mile-c{fill:#f6f1e7;stroke-width:1.6;filter:url(#dotShadow)}
+  .mile-cand{stroke-dasharray:3 2.2}
   .mile-t{font:700 1em Georgia,serif}
   text.lab-place{font-family:Georgia,'Times New Roman',serif;font-weight:600;fill:#2b2418;paint-order:stroke;stroke:#f5edd8;stroke-width:.22em;stroke-linejoin:round}
   text.lab-cand{font-style:italic;fill:#5c4a1e}
@@ -38,8 +38,12 @@
   .sb-t{font-family:Georgia,serif;fill:#5c4d33;font-weight:600}
   .north{fill:#8a6a1f;stroke:#6b5216;stroke-width:1}
   .north-t{font-family:Georgia,serif;font-weight:700;fill:#6b5216}
-  .st-n{font-family:Georgia,serif;fill:#8a6a1f;font-weight:700;letter-spacing:.06em}
-  .st-t{font-family:Georgia,serif;fill:#3a3020}
+  .stage-strip{display:flex;flex-wrap:wrap;gap:6px 22px;padding:12px 18px;background:#f0e8d2;border-top:1px solid rgba(138,106,31,.25)}
+  .st{display:flex;align-items:center;gap:8px}
+  .st-dot{width:9px;height:9px;border-radius:50%;flex-shrink:0;box-shadow:0 1px 2px rgba(90,70,30,.4)}
+  .st-body{font-family:Georgia,serif;font-size:13px;color:#3a3020}
+  .st-body b{color:#8a6a1f}
+  .st-body i{color:#7a6a48;margin-left:6px;font-size:11.5px}
   .g9{position:fixed;right:10px;bottom:10px;z-index:9;font:600 10px/1 system-ui;letter-spacing:.08em;color:#7a5c26;background:rgba(246,241,231,.9);border:1px solid rgba(138,106,31,.4);border-radius:999px;padding:6px 10px}
 </style>
 </head>
@@ -89,6 +93,20 @@
   <filter id="soft" x="-40%" y="-40%" width="180%" height="180%"><feGaussianBlur stdDeviation="6"/></filter>
   <filter id="dotShadow" x="-60%" y="-60%" width="220%" height="220%">
     <feDropShadow dx="0" dy=".7" stdDeviation=".8" flood-color="#3a2c10" flood-opacity=".45"/>
+  </filter>
+  <radialGradient id="sunGlow" cx=".22" cy=".14" r=".9">
+    <stop offset="0" stop-color="#ffdf9a" stop-opacity=".22"/>
+    <stop offset=".4" stop-color="#f5d489" stop-opacity=".08"/>
+    <stop offset="1" stop-color="#f5d489" stop-opacity="0"/>
+  </radialGradient>
+  <radialGradient id="edgeFog" cx=".5" cy=".5" r=".72">
+    <stop offset="0" stop-color="#7a5c26" stop-opacity="0"/>
+    <stop offset=".8" stop-color="#7a5c26" stop-opacity="0"/>
+    <stop offset="1" stop-color="#6b4f1e" stop-opacity=".18"/>
+  </radialGradient>
+  <filter id="parchmentGrain">
+    <feTurbulence type="fractalNoise" baseFrequency=".55" numOctaves="2" stitchTiles="stitch" result="n"/>
+    <feColorMatrix in="n" type="matrix" values="0 0 0 0 .45  0 0 0 0 .36  0 0 0 0 .2  0 0 0 .05 0"/>
   </filter>
 </defs>
 <rect x="400" y="546.6666666666666" width="520" height="346.6666666666667" fill="url(#seaG)"/>
@@ -539,17 +557,17 @@
 </g>
 <path d="M623,800 C623.2,799.2 626.2,790.2 624,795 C621.8,799.8 609.3,836.8 610,829 C610.7,821.2 626.2,762.8 628,748 C629.8,733.2 624.7,750.0 621,740 C617.3,730.0 605.5,681.0 606,688 C606.5,695.0 614.2,792.5 624,782 C633.8,771.5 670.2,623.7 665,625 C659.8,626.3 600.7,777.0 593,790 C585.3,803.0 608.2,726.2 619,703 C629.8,679.8 664.5,629.8 658,651 C651.5,672.2 585.8,807.3 580,830 C574.2,852.7 462.5,807.3 623,787 C783.5,766.7 1541.2,721.3 1543,708 C1544.8,694.7 779.3,679.7 634,707 C488.7,734.3 654.8,890.8 671,872 C687.2,853.2 721.0,640.3 731,594" class="route-under"/>
 <path d="M623,800 C623.2,799.2 626.2,790.2 624,795 C621.8,799.8 609.3,836.8 610,829 C610.7,821.2 626.2,762.8 628,748 C629.8,733.2 624.7,750.0 621,740 C617.3,730.0 605.5,681.0 606,688 C606.5,695.0 614.2,792.5 624,782 C633.8,771.5 670.2,623.7 665,625 C659.8,626.3 600.7,777.0 593,790 C585.3,803.0 608.2,726.2 619,703 C629.8,679.8 664.5,629.8 658,651 C651.5,672.2 585.8,807.3 580,830 C574.2,852.7 462.5,807.3 623,787 C783.5,766.7 1541.2,721.3 1543,708 C1544.8,694.7 779.3,679.7 634,707 C488.7,734.3 654.8,890.8 671,872 C687.2,853.2 721.0,640.3 731,594" class="route"/>
-<line x1="625.5" y1="792.7" x2="630.2" y2="785.4" class="leader"/><line x1="623.1" y1="779.5" x2="617.8" y2="765.5" class="leader"/><line x1="622.0" y1="784.5" x2="618.6" y2="775.9" class="leader"/>
-<circle cx="623" cy="800" r="1.82" class="pl-city"/><circle cx="624" cy="795" r="1.82" class="pl-city"/><circle cx="610" cy="829" r="1.82" class="pl-city"/><circle cx="628" cy="748" r="1.82" class="pl-city"/><circle cx="621" cy="740" r="1.82" class="pl-city"/><circle cx="606" cy="688" r="1.82" class="pl-city"/><circle cx="624" cy="782" r="1.82" class="pl-city"/><circle cx="665" cy="625" r="1.82" class="pl-city"/><circle cx="593" cy="790" r="1.82" class="pl-city"/><circle cx="619" cy="703" r="1.82" class="pl-city"/><circle cx="658" cy="651" r="1.82" class="pl-city"/><circle cx="580" cy="830" r="1.82" class="pl-city"/><circle cx="623" cy="787" r="1.82" class="pl-city"/><circle cx="1543" cy="708" r="1.82" class="pl-city"/><circle cx="634" cy="707" r="1.82" class="pl-city"/><circle cx="671" cy="872" r="1.82" class="pl-city"/><circle cx="731" cy="594" r="1.82" class="pl-city"/>
+<line x1="626.3" y1="791.6" x2="632.2" y2="783.1" class="leader"/><line x1="623.1" y1="779.5" x2="617.8" y2="765.5" class="leader"/><line x1="622.0" y1="784.5" x2="618.6" y2="775.9" class="leader"/>
+<circle cx="610" cy="829" r="1.82" class="pl-city"/><circle cx="621" cy="740" r="1.82" class="pl-city"/><circle cx="606" cy="688" r="1.82" class="pl-city"/><circle cx="624" cy="782" r="1.82" class="pl-city"/><circle cx="665" cy="625" r="1.82" class="pl-city"/><circle cx="619" cy="703" r="1.82" class="pl-city"/><circle cx="658" cy="651" r="1.82" class="pl-city"/><circle cx="623" cy="787" r="1.82" class="pl-city"/><circle cx="634" cy="707" r="1.82" class="pl-city"/><circle cx="671" cy="872" r="1.82" class="pl-city"/><circle cx="731" cy="594" r="1.82" class="pl-city"/>
 <g class="mile"><circle cx="623" cy="800" r="3.21" class="mile-c" style="stroke:#a25d33"/><text x="623" y="801.4733333333334" text-anchor="middle" class="mile-t" font-size="4.12" style="fill:#a25d33">II</text></g><g class="mile"><circle cx="624" cy="795" r="3.21" class="mile-c" style="stroke:#8a6a1f"/><text x="624" y="796.4733333333334" text-anchor="middle" class="mile-t" font-size="4.12" style="fill:#8a6a1f">I</text></g><g class="mile"><circle cx="628" cy="748" r="3.21" class="mile-c" style="stroke:#8f4a56"/><text x="628" y="749.4733333333334" text-anchor="middle" class="mile-t" font-size="4.12" style="fill:#8f4a56">IV</text></g><g class="mile"><circle cx="593" cy="790" r="3.21" class="mile-c" style="stroke:#4a7a52"/><text x="593" y="791.4733333333334" text-anchor="middle" class="mile-t" font-size="4.12" style="fill:#4a7a52">III</text></g><g class="mile"><circle cx="580" cy="830" r="3.21" class="mile-c" style="stroke:#6b5a43"/><text x="580" y="831.4733333333334" text-anchor="middle" class="mile-t" font-size="4.12" style="fill:#6b5a43">V</text></g><g class="mile"><circle cx="1543" cy="708" r="3.21" class="mile-c" style="stroke:#3f6a8a"/><text x="1543" y="709.4733333333334" text-anchor="middle" class="mile-t" font-size="4.12" style="fill:#3f6a8a">VI</text></g>
-<rect x="621.6" y="798.6" width="2.8" height="2.8" transform="rotate(45 623 800)" class="wp-dot"/><text x="625.6" y="801.6" class="lab-wp" font-size="4.33">Город Давида (арх.)</text><rect x="619.6" y="738.6" width="2.8" height="2.8" transform="rotate(45 621 740)" class="wp-dot"/><text x="623.6" y="741.6" class="lab-wp" font-size="4.33">Самария (раскопки)</text><rect x="578.6" y="828.6" width="2.8" height="2.8" transform="rotate(45 580 830)" class="wp-dot"/><text x="582.6" y="831.6" class="lab-wp" font-size="4.33">Тель Лахиш (осада Сеннахирима)</text><rect x="666.6" y="628.6" width="2.8" height="2.8" transform="rotate(45 668 630)" class="wp-dot"/><text x="670.6" y="631.6" class="lab-wp" font-size="4.33">Стела Тель Дан (дом Давида)</text>
+<rect x="621.6" y="798.6" width="2.8" height="2.8" transform="rotate(45 623 800)" class="wp-dot"/><text x="624.7" y="806.1" class="lab-wp" font-size="4.33">Город Давида (арх.)</text><rect x="619.6" y="738.6" width="2.8" height="2.8" transform="rotate(45 621 740)" class="wp-dot"/><text x="622.7" y="746.1" class="lab-wp" font-size="4.33">Самария (раскопки)</text><rect x="578.6" y="828.6" width="2.8" height="2.8" transform="rotate(45 580 830)" class="wp-dot"/><text x="581.7" y="836.1" class="lab-wp" font-size="4.33">Тель Лахиш (осада Сеннахирима)</text><rect x="666.6" y="628.6" width="2.8" height="2.8" transform="rotate(45 668 630)" class="wp-dot"/><text x="669.7" y="636.1" class="lab-wp" font-size="4.33">Стела Тель Дан (дом Давида)</text>
 <text x="1380" y="300" class="lab-ctx" font-size="4.98" text-anchor="middle">АССИРИЯ</text><text x="1450" y="820" class="lab-ctx" font-size="4.98" text-anchor="middle">ВАВИЛОНИЯ</text><text x="300" y="950" class="lab-ctx" font-size="4.98" text-anchor="middle">ЕГИПЕТ</text><text x="550" y="830" class="lab-ctx" font-size="4.98" text-anchor="middle">ФИЛИСТИЯ</text>
-<text x="626.9" y="801.9" class="lab-place" font-size="5.63" text-anchor="start">Иерусалим</text><text x="631.1" y="787.3" class="lab-place" font-size="5.63" text-anchor="start">Гива</text><text x="613.9" y="830.9" class="lab-place" font-size="5.63" text-anchor="start">Хеврон</text><text x="631.9" y="749.9" class="lab-place" font-size="5.63" text-anchor="start">Сихем</text><text x="617.1" y="741.9" class="lab-place" font-size="5.63" text-anchor="end">Самария</text><text x="602.1" y="689.9" class="lab-place" font-size="5.63" text-anchor="end">Кармил</text><text x="616.9" y="767.4" class="lab-place" font-size="5.63" text-anchor="end">Вефиль</text><text x="668.9" y="626.9" class="lab-place" font-size="5.63" text-anchor="start">Дан</text><text x="589.1" y="791.9" class="lab-place" font-size="5.63" text-anchor="end">Газер</text><text x="615.1" y="704.9" class="lab-place" font-size="5.63" text-anchor="end">Мегиддо</text><text x="654.1" y="652.9" class="lab-place" font-size="5.63" text-anchor="end">Асор</text><text x="576.1" y="831.9" class="lab-place" font-size="5.63" text-anchor="end">Лахис</text><text x="617.7" y="777.8" class="lab-place" font-size="5.63" text-anchor="end">Массифа</text><text x="1546.9" y="709.9" class="lab-place" font-size="5.63" text-anchor="start">Вавилон</text><text x="637.9" y="708.9" class="lab-place" font-size="5.63" text-anchor="start">Изреель</text><text x="674.9" y="873.9" class="lab-place" font-size="5.63" text-anchor="start">Кир-Харешет</text><text x="727.1" y="595.9" class="lab-place" font-size="5.63" text-anchor="end">Дамаск Арамейский</text>
+<text x="629.5" y="801.9" class="lab-place" font-size="5.63" text-anchor="start">Иерусалим</text><text x="633.0" y="785.0" class="lab-place" font-size="5.63" text-anchor="start">Гива</text><text x="613.9" y="830.9" class="lab-place" font-size="5.63" text-anchor="start">Хеврон</text><text x="634.5" y="749.9" class="lab-place" font-size="5.63" text-anchor="start">Сихем</text><text x="617.1" y="741.9" class="lab-place" font-size="5.63" text-anchor="end">Самария</text><text x="602.1" y="689.9" class="lab-place" font-size="5.63" text-anchor="end">Кармил</text><text x="616.9" y="767.4" class="lab-place" font-size="5.63" text-anchor="end">Вефиль</text><text x="668.9" y="626.9" class="lab-place" font-size="5.63" text-anchor="start">Дан</text><text x="586.5" y="791.9" class="lab-place" font-size="5.63" text-anchor="end">Газер</text><text x="615.1" y="704.9" class="lab-place" font-size="5.63" text-anchor="end">Мегиддо</text><text x="654.1" y="652.9" class="lab-place" font-size="5.63" text-anchor="end">Асор</text><text x="573.5" y="831.9" class="lab-place" font-size="5.63" text-anchor="end">Лахис</text><text x="617.7" y="777.8" class="lab-place" font-size="5.63" text-anchor="end">Массифа</text><text x="1549.5" y="709.9" class="lab-place" font-size="5.63" text-anchor="start">Вавилон</text><text x="637.9" y="708.9" class="lab-place" font-size="5.63" text-anchor="start">Изреель</text><text x="674.9" y="873.9" class="lab-place" font-size="5.63" text-anchor="start">Кир-Харешет</text><text x="727.1" y="595.9" class="lab-place" font-size="5.63" text-anchor="end">Дамаск Арамейский</text>
 
   <g class="cartouche">
-    <rect x="411.26666666666665" y="557.0666666666666" width="182" height="37.266666666666666" rx="3.466666666666667" class="plate cart-plate"/>
-    <text x="419.93333333333334" y="573.5333333333333" class="cart-title" font-size="11.266666666666667">Царства Израиля и Иуды</text>
-    <text x="419.93333333333334" y="584.8" class="cart-sub" font-size="5.416666666666667">1-2 Царств · 1-2 Паралипоменон · ~1050–586 гг. до н.э.</text>
+    <rect x="410.4" y="554.4666666666666" width="173.33333333333334" height="31.200000000000003" rx="3.466666666666667" class="plate cart-plate"/>
+    <text x="418.2" y="568.3333333333333" class="cart-title" font-size="10.833333333333334">Царства Израиля и Иуды</text>
+    <text x="418.2" y="578.7333333333333" class="cart-sub" font-size="5.2">1-2 Царств · 1-2 Паралипоменон · ~1050–586 гг. до н.э.</text>
   </g>
 
   <g class="furn">
@@ -565,13 +583,14 @@
       <text y="11.266666666666667" text-anchor="middle" class="north-t" font-size="5.633333333333334">С</text>
     </g>
   </g>
-
-  <g class="stages">
-    <rect x="411.26666666666665" y="869.0666666666666" width="351" height="16.46666666666667" rx="3.033333333333333" class="plate"/>
-    <circle cx="419.93333333333334" cy="877.3" r="1.906666666666667" fill="#8a6a1f"/><text x="424.26666666666665" y="875.5666666666666" class="st-n" font-size="4.116666666666667">I · 40 ЛЕТ ПРАВЛЕНИЯ</text><text x="424.26666666666665" y="881.1999999999999" class="st-t" font-size="4.55">Саул — первый царь</text><circle cx="476.26666666666665" cy="877.3" r="1.906666666666667" fill="#a25d33"/><text x="480.6" y="875.5666666666666" class="st-n" font-size="4.116666666666667">II · 40 ЛЕТ · ИЕРУСАЛИМ</text><text x="480.6" y="881.1999999999999" class="st-t" font-size="4.55">Давид — царь воин</text><circle cx="532.6" cy="877.3" r="1.906666666666667" fill="#4a7a52"/><text x="536.9333333333334" y="875.5666666666666" class="st-n" font-size="4.116666666666667">III · 40 ЛЕТ · ХРАМ</text><text x="536.9333333333334" y="881.1999999999999" class="st-t" font-size="4.55">Соломон — строитель</text><circle cx="588.9333333333334" cy="877.3" r="1.906666666666667" fill="#8f4a56"/><text x="593.2666666666667" y="875.5666666666666" class="st-n" font-size="4.116666666666667">IV · ИЗРАИЛЬ · 20 ЦАРЕЙ</text><text x="593.2666666666667" y="881.1999999999999" class="st-t" font-size="4.55">Разделённое царство</text><circle cx="645.2666666666667" cy="877.3" r="1.906666666666667" fill="#6b5a43"/><text x="649.6" y="875.5666666666666" class="st-n" font-size="4.116666666666667">V · ЕЗЕКИЯ · ИОСИЯ · ПАДЕНИЕ</text><text x="649.6" y="881.1999999999999" class="st-t" font-size="4.55">Иудея одна</text><circle cx="701.6" cy="877.3" r="1.906666666666667" fill="#3f6a8a"/><text x="705.9333333333334" y="875.5666666666666" class="st-n" font-size="4.116666666666667">VI · 70 ЛЕТ · КИР · ЗОРОВАВЕЛЬ</text><text x="705.9333333333334" y="881.1999999999999" class="st-t" font-size="4.55">Плен и возвращение</text>
-  </g>
+<rect x="400" y="546.6666666666666" width="520" height="346.6666666666667" fill="url(#sunGlow)" pointer-events="none"/>
+<rect x="400" y="546.6666666666666" width="520" height="346.6666666666667" fill="url(#edgeFog)" pointer-events="none"/>
+<rect x="400" y="546.6666666666666" width="520" height="346.6666666666667" filter="url(#parchmentGrain)" opacity=".5" pointer-events="none"/>
 <rect x="403.46666666666664" y="550.1333333333333" width="513.0666666666667" height="339.73333333333335" class="frame"/>
-</svg></div>
-<span class="g9">MELACHIM · SHEET v1 · awaiting G9</span>
+</svg>
+  <div class="stage-strip">
+    <div class="st"><span class="st-dot" style="background:#8a6a1f"></span><span class="st-body"><b>I</b> · Саул — первый царь<i>40 ЛЕТ ПРАВЛЕНИЯ</i></span></div><div class="st"><span class="st-dot" style="background:#a25d33"></span><span class="st-body"><b>II</b> · Давид — царь воин<i>40 ЛЕТ · ИЕРУСАЛИМ</i></span></div><div class="st"><span class="st-dot" style="background:#4a7a52"></span><span class="st-body"><b>III</b> · Соломон — строитель<i>40 ЛЕТ · ХРАМ</i></span></div><div class="st"><span class="st-dot" style="background:#8f4a56"></span><span class="st-body"><b>IV</b> · Разделённое царство<i>ИЗРАИЛЬ · 20 ЦАРЕЙ</i></span></div><div class="st"><span class="st-dot" style="background:#6b5a43"></span><span class="st-body"><b>V</b> · Иудея одна<i>ЕЗЕКИЯ · ИОСИЯ · ПАДЕНИЕ</i></span></div><div class="st"><span class="st-dot" style="background:#3f6a8a"></span><span class="st-body"><b>VI</b> · Плен и возвращение<i>70 ЛЕТ · КИР · ЗОРОВАВЕЛЬ</i></span></div>
+  </div></div>
+<span class="g9">MELACHIM · SHEET · awaiting G9</span>
 </body>
 </html>

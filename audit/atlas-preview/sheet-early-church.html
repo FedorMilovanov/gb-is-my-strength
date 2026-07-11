@@ -12,7 +12,6 @@
   svg.sheet{display:block;width:100%;height:auto;background:#f5edd8}
   .frame{fill:none;stroke:#8a6a1f;stroke-width:1.2;opacity:.55}
   .base{opacity:.96}
-  /* светлая тема вод базы (тёмный канон файла) */
   .base [fill="#10263a"]{fill:#8fb7cb}
   .base [stroke="#2e4d6b"]{stroke:#6f97ae}
   .base [stroke="#2d4a66"]{stroke:#6f97ae}
@@ -24,6 +23,7 @@
   .wp-dot{fill:#4a7a52;stroke:#f6f1e7;stroke-width:.9;opacity:.85}
   .leader{stroke:#5c4d33;stroke-width:.9;opacity:.55}
   .mile-c{fill:#f6f1e7;stroke-width:1.6;filter:url(#dotShadow)}
+  .mile-cand{stroke-dasharray:3 2.2}
   .mile-t{font:700 1em Georgia,serif}
   text.lab-place{font-family:Georgia,'Times New Roman',serif;font-weight:600;fill:#2b2418;paint-order:stroke;stroke:#f5edd8;stroke-width:.22em;stroke-linejoin:round}
   text.lab-cand{font-style:italic;fill:#5c4a1e}
@@ -38,8 +38,12 @@
   .sb-t{font-family:Georgia,serif;fill:#5c4d33;font-weight:600}
   .north{fill:#8a6a1f;stroke:#6b5216;stroke-width:1}
   .north-t{font-family:Georgia,serif;font-weight:700;fill:#6b5216}
-  .st-n{font-family:Georgia,serif;fill:#8a6a1f;font-weight:700;letter-spacing:.06em}
-  .st-t{font-family:Georgia,serif;fill:#3a3020}
+  .stage-strip{display:flex;flex-wrap:wrap;gap:6px 22px;padding:12px 18px;background:#f0e8d2;border-top:1px solid rgba(138,106,31,.25)}
+  .st{display:flex;align-items:center;gap:8px}
+  .st-dot{width:9px;height:9px;border-radius:50%;flex-shrink:0;box-shadow:0 1px 2px rgba(90,70,30,.4)}
+  .st-body{font-family:Georgia,serif;font-size:13px;color:#3a3020}
+  .st-body b{color:#8a6a1f}
+  .st-body i{color:#7a6a48;margin-left:6px;font-size:11.5px}
   .g9{position:fixed;right:10px;bottom:10px;z-index:9;font:600 10px/1 system-ui;letter-spacing:.08em;color:#7a5c26;background:rgba(246,241,231,.9);border:1px solid rgba(138,106,31,.4);border-radius:999px;padding:6px 10px}
 </style>
 </head>
@@ -89,6 +93,20 @@
   <filter id="soft" x="-40%" y="-40%" width="180%" height="180%"><feGaussianBlur stdDeviation="6"/></filter>
   <filter id="dotShadow" x="-60%" y="-60%" width="220%" height="220%">
     <feDropShadow dx="0" dy=".7" stdDeviation=".8" flood-color="#3a2c10" flood-opacity=".45"/>
+  </filter>
+  <radialGradient id="sunGlow" cx=".22" cy=".14" r=".9">
+    <stop offset="0" stop-color="#ffdf9a" stop-opacity=".22"/>
+    <stop offset=".4" stop-color="#f5d489" stop-opacity=".08"/>
+    <stop offset="1" stop-color="#f5d489" stop-opacity="0"/>
+  </radialGradient>
+  <radialGradient id="edgeFog" cx=".5" cy=".5" r=".72">
+    <stop offset="0" stop-color="#7a5c26" stop-opacity="0"/>
+    <stop offset=".8" stop-color="#7a5c26" stop-opacity="0"/>
+    <stop offset="1" stop-color="#6b4f1e" stop-opacity=".18"/>
+  </radialGradient>
+  <filter id="parchmentGrain">
+    <feTurbulence type="fractalNoise" baseFrequency=".55" numOctaves="2" stitchTiles="stitch" result="n"/>
+    <feColorMatrix in="n" type="matrix" values="0 0 0 0 .45  0 0 0 0 .36  0 0 0 0 .2  0 0 0 .05 0"/>
   </filter>
 </defs>
 <rect x="180" y="406.6666666666667" width="1000" height="666.6666666666666" fill="url(#seaG)"/>
@@ -540,16 +558,16 @@
 <path d="M623,800 C623.2,800.0 623.8,800.0 624,800 C624.2,800.0 636.3,795.0 624,800 C611.7,805.0 550.5,840.0 550,830 C549.5,820.0 614.2,748.3 621,740 C627.8,731.7 598.5,775.5 591,780 C583.5,784.5 576.2,778.0 576,767 C575.8,756.0 564.2,742.8 590,714 C615.8,685.2 731.0,682.3 731,594 C731.0,505.7 592.2,238.7 590,184 C587.8,129.3 696.7,252.3 718,266" class="route-under"/>
 <path d="M623,800 C623.2,800.0 623.8,800.0 624,800 C624.2,800.0 636.3,795.0 624,800 C611.7,805.0 550.5,840.0 550,830 C549.5,820.0 614.2,748.3 621,740 C627.8,731.7 598.5,775.5 591,780 C583.5,784.5 576.2,778.0 576,767 C575.8,756.0 564.2,742.8 590,714 C615.8,685.2 731.0,682.3 731,594 C731.0,505.7 592.2,238.7 590,184 C587.8,129.3 696.7,252.3 718,266" class="route"/>
 <line x1="626.8" y1="795.7" x2="641.3" y2="773.6" class="leader"/><line x1="627.6" y1="803.7" x2="641.3" y2="817.8" class="leader"/>
-<circle cx="623" cy="800" r="3.50" class="pl-city"/><circle cx="624" cy="800" r="3.50" class="pl-city"/><circle cx="624" cy="800" r="3.50" class="pl-city"/><circle cx="550" cy="830" r="3.50" class="pl-city"/><circle cx="621" cy="740" r="3.50" class="pl-city"/><circle cx="591" cy="780" r="3.50" class="pl-city"/><circle cx="576" cy="767" r="3.50" class="pl-city"/><circle cx="590" cy="714" r="3.50" class="pl-city"/><circle cx="731" cy="594" r="3.50" class="pl-city"/><circle cx="590" cy="184" r="3.50" class="pl-city"/><circle cx="718" cy="266" r="3.50" class="pl-city"/>
+<circle cx="624" cy="800" r="3.50" class="pl-city"/><circle cx="624" cy="800" r="3.50" class="pl-city"/><circle cx="621" cy="740" r="3.50" class="pl-city"/><circle cx="576" cy="767" r="3.50" class="pl-city"/><circle cx="590" cy="714" r="3.50" class="pl-city"/><circle cx="590" cy="184" r="3.50" class="pl-city"/><circle cx="718" cy="266" r="3.50" class="pl-city"/>
 <g class="mile"><circle cx="623" cy="800" r="6.17" class="mile-c" style="stroke:#8a6a1f"/><text x="623" y="802.8333333333334" text-anchor="middle" class="mile-t" font-size="7.92" style="fill:#8a6a1f">I</text></g><g class="mile"><circle cx="550" cy="830" r="6.17" class="mile-c" style="stroke:#4a7a52"/><text x="550" y="832.8333333333334" text-anchor="middle" class="mile-t" font-size="7.92" style="fill:#4a7a52">III</text></g><g class="mile"><circle cx="591" cy="780" r="6.17" class="mile-c" style="stroke:#a25d33"/><text x="591" y="782.8333333333334" text-anchor="middle" class="mile-t" font-size="7.92" style="fill:#a25d33">II</text></g><g class="mile"><circle cx="731" cy="594" r="6.17" class="mile-c" style="stroke:#8f4a56"/><text x="731" y="596.8333333333334" text-anchor="middle" class="mile-t" font-size="7.92" style="fill:#8f4a56">IV</text></g>
 
 <text x="500" y="400" class="lab-ctx" font-size="9.58" text-anchor="middle">ИТАЛИЯ</text><text x="641" y="684" class="lab-ctx" font-size="9.58" text-anchor="middle">ГАЛИЛЕЯ</text><text x="621" y="740" class="lab-ctx" font-size="9.58" text-anchor="middle">САМАРИЯ</text>
-<text x="615.5" y="803.7" class="lab-place" font-size="10.83" text-anchor="end">Иерусалим · Горница</text><text x="643.0" y="777.3" class="lab-place" font-size="10.83" text-anchor="start">Храм · Красные ворота</text><text x="643.0" y="821.5" class="lab-place" font-size="10.83" text-anchor="start">Притвор Соломонов</text><text x="542.5" y="833.7" class="lab-place" font-size="10.83" text-anchor="end">Дорога в Газу</text><text x="613.5" y="743.7" class="lab-place" font-size="10.83" text-anchor="end">Самария</text><text x="598.5" y="783.7" class="lab-place" font-size="10.83" text-anchor="start">Лидда</text><text x="568.5" y="770.7" class="lab-place" font-size="10.83" text-anchor="end">Иоппия</text><text x="597.5" y="717.7" class="lab-place" font-size="10.83" text-anchor="start">Кесария Приморская</text><text x="738.5" y="597.7" class="lab-place" font-size="10.83" text-anchor="start">Дамаск</text><text x="597.5" y="187.7" class="lab-place" font-size="10.83" text-anchor="start">Тарс</text><text x="725.5" y="269.7" class="lab-place" font-size="10.83" text-anchor="start">Антиохия Сирийская</text>
+<text x="610.5" y="803.7" class="lab-place" font-size="10.83" text-anchor="end">Иерусалим · Горница</text><text x="643.0" y="777.3" class="lab-place" font-size="10.83" text-anchor="start">Храм · Красные ворота</text><text x="643.0" y="821.5" class="lab-place" font-size="10.83" text-anchor="start">Притвор Соломонов</text><text x="537.5" y="833.7" class="lab-place" font-size="10.83" text-anchor="end">Дорога в Газу</text><text x="613.5" y="743.7" class="lab-place" font-size="10.83" text-anchor="end">Самария</text><text x="603.5" y="783.7" class="lab-place" font-size="10.83" text-anchor="start">Лидда</text><text x="568.5" y="770.7" class="lab-place" font-size="10.83" text-anchor="end">Иоппия</text><text x="597.5" y="717.7" class="lab-place" font-size="10.83" text-anchor="start">Кесария Приморская</text><text x="743.5" y="597.7" class="lab-place" font-size="10.83" text-anchor="start">Дамаск</text><text x="597.5" y="187.7" class="lab-place" font-size="10.83" text-anchor="start">Тарс</text><text x="725.5" y="269.7" class="lab-place" font-size="10.83" text-anchor="start">Антиохия Сирийская</text>
 
   <g class="cartouche">
-    <rect x="201.66666666666666" y="426.6666666666667" width="350" height="71.66666666666667" rx="6.666666666666667" class="plate cart-plate"/>
-    <text x="218.33333333333334" y="458.33333333333337" class="cart-title" font-size="21.666666666666668">Ранняя Церковь · Деяния 1–12</text>
-    <text x="218.33333333333334" y="480" class="cart-sub" font-size="10.416666666666668">От Пятидесятницы до Антиохии · 30–47 гг. н.э.</text>
+    <rect x="200" y="421.6666666666667" width="333.33333333333337" height="60" rx="6.666666666666667" class="plate cart-plate"/>
+    <text x="215" y="448.33333333333337" class="cart-title" font-size="20.833333333333336">Ранняя Церковь · Деяния 1–12</text>
+    <text x="215" y="468.33333333333337" class="cart-sub" font-size="10">От Пятидесятницы до Антиохии · 30–47 гг. н.э.</text>
   </g>
 
   <g class="furn">
@@ -565,13 +583,14 @@
       <text y="21.666666666666668" text-anchor="middle" class="north-t" font-size="10.833333333333334">С</text>
     </g>
   </g>
-
-  <g class="stages">
-    <rect x="201.66666666666666" y="1026.6666666666665" width="458.33333333333337" height="31.666666666666668" rx="5.833333333333334" class="plate"/>
-    <circle cx="218.33333333333334" cy="1042.5" r="3.666666666666667" fill="#8a6a1f"/><text x="226.66666666666669" y="1039.1666666666665" class="st-n" font-size="7.916666666666667">I · 30–35 ГГ. · РОЖДЕНИЕ ЦЕРКВИ</text><text x="226.66666666666669" y="1050" class="st-t" font-size="8.75">Пятидесятница и Иеруса</text><circle cx="326.6666666666667" cy="1042.5" r="3.666666666666667" fill="#a25d33"/><text x="335" y="1039.1666666666665" class="st-n" font-size="7.916666666666667">II · 35–40 ГГ. · ЛИДДА · ИОППИЯ · КЕСАРИЯ</text><text x="335" y="1050" class="st-t" font-size="8.75">Пётр в Иудее и Самарии</text><circle cx="435" cy="1042.5" r="3.666666666666667" fill="#4a7a52"/><text x="443.33333333333337" y="1039.1666666666665" class="st-n" font-size="7.916666666666667">III · 35–37 ГГ. · СТЕФАН · ФИЛИПП</text><text x="443.33333333333337" y="1050" class="st-t" font-size="8.75">Гонения и рассеяние</text><circle cx="543.3333333333334" cy="1042.5" r="3.666666666666667" fill="#8f4a56"/><text x="551.6666666666667" y="1039.1666666666665" class="st-n" font-size="7.916666666666667">IV · 37–47 ГГ. · ДАМАСК · АНТИОХИЯ</text><text x="551.6666666666667" y="1050" class="st-t" font-size="8.75">Обращение Савла и Анти</text>
-  </g>
+<rect x="180" y="406.6666666666667" width="1000" height="666.6666666666666" fill="url(#sunGlow)" pointer-events="none"/>
+<rect x="180" y="406.6666666666667" width="1000" height="666.6666666666666" fill="url(#edgeFog)" pointer-events="none"/>
+<rect x="180" y="406.6666666666667" width="1000" height="666.6666666666666" filter="url(#parchmentGrain)" opacity=".5" pointer-events="none"/>
 <rect x="186.66666666666666" y="413.33333333333337" width="986.6666666666666" height="653.3333333333333" class="frame"/>
-</svg></div>
-<span class="g9">EARLY-CHURCH · SHEET v1 · awaiting G9</span>
+</svg>
+  <div class="stage-strip">
+    <div class="st"><span class="st-dot" style="background:#8a6a1f"></span><span class="st-body"><b>I</b> · Пятидесятница и Иерусалим<i>30–35 ГГ. · РОЖДЕНИЕ ЦЕРКВИ</i></span></div><div class="st"><span class="st-dot" style="background:#a25d33"></span><span class="st-body"><b>II</b> · Пётр в Иудее и Самарии<i>35–40 ГГ. · ЛИДДА · ИОППИЯ · КЕСАРИЯ</i></span></div><div class="st"><span class="st-dot" style="background:#4a7a52"></span><span class="st-body"><b>III</b> · Гонения и рассеяние<i>35–37 ГГ. · СТЕФАН · ФИЛИПП</i></span></div><div class="st"><span class="st-dot" style="background:#8f4a56"></span><span class="st-body"><b>IV</b> · Обращение Савла и Антиохия<i>37–47 ГГ. · ДАМАСК · АНТИОХИЯ</i></span></div>
+  </div></div>
+<span class="g9">EARLY-CHURCH · SHEET · awaiting G9</span>
 </body>
 </html>

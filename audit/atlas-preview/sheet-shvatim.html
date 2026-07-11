@@ -12,7 +12,6 @@
   svg.sheet{display:block;width:100%;height:auto;background:#f5edd8}
   .frame{fill:none;stroke:#8a6a1f;stroke-width:1.2;opacity:.55}
   .base{opacity:.96}
-  /* светлая тема вод базы (тёмный канон файла) */
   .base [fill="#10263a"]{fill:#8fb7cb}
   .base [stroke="#2e4d6b"]{stroke:#6f97ae}
   .base [stroke="#2d4a66"]{stroke:#6f97ae}
@@ -24,6 +23,7 @@
   .wp-dot{fill:#4a7a52;stroke:#f6f1e7;stroke-width:.9;opacity:.85}
   .leader{stroke:#5c4d33;stroke-width:.9;opacity:.55}
   .mile-c{fill:#f6f1e7;stroke-width:1.6;filter:url(#dotShadow)}
+  .mile-cand{stroke-dasharray:3 2.2}
   .mile-t{font:700 1em Georgia,serif}
   text.lab-place{font-family:Georgia,'Times New Roman',serif;font-weight:600;fill:#2b2418;paint-order:stroke;stroke:#f5edd8;stroke-width:.22em;stroke-linejoin:round}
   text.lab-cand{font-style:italic;fill:#5c4a1e}
@@ -38,8 +38,12 @@
   .sb-t{font-family:Georgia,serif;fill:#5c4d33;font-weight:600}
   .north{fill:#8a6a1f;stroke:#6b5216;stroke-width:1}
   .north-t{font-family:Georgia,serif;font-weight:700;fill:#6b5216}
-  .st-n{font-family:Georgia,serif;fill:#8a6a1f;font-weight:700;letter-spacing:.06em}
-  .st-t{font-family:Georgia,serif;fill:#3a3020}
+  .stage-strip{display:flex;flex-wrap:wrap;gap:6px 22px;padding:12px 18px;background:#f0e8d2;border-top:1px solid rgba(138,106,31,.25)}
+  .st{display:flex;align-items:center;gap:8px}
+  .st-dot{width:9px;height:9px;border-radius:50%;flex-shrink:0;box-shadow:0 1px 2px rgba(90,70,30,.4)}
+  .st-body{font-family:Georgia,serif;font-size:13px;color:#3a3020}
+  .st-body b{color:#8a6a1f}
+  .st-body i{color:#7a6a48;margin-left:6px;font-size:11.5px}
   .g9{position:fixed;right:10px;bottom:10px;z-index:9;font:600 10px/1 system-ui;letter-spacing:.08em;color:#7a5c26;background:rgba(246,241,231,.9);border:1px solid rgba(138,106,31,.4);border-radius:999px;padding:6px 10px}
 </style>
 </head>
@@ -89,6 +93,20 @@
   <filter id="soft" x="-40%" y="-40%" width="180%" height="180%"><feGaussianBlur stdDeviation="6"/></filter>
   <filter id="dotShadow" x="-60%" y="-60%" width="220%" height="220%">
     <feDropShadow dx="0" dy=".7" stdDeviation=".8" flood-color="#3a2c10" flood-opacity=".45"/>
+  </filter>
+  <radialGradient id="sunGlow" cx=".22" cy=".14" r=".9">
+    <stop offset="0" stop-color="#ffdf9a" stop-opacity=".22"/>
+    <stop offset=".4" stop-color="#f5d489" stop-opacity=".08"/>
+    <stop offset="1" stop-color="#f5d489" stop-opacity="0"/>
+  </radialGradient>
+  <radialGradient id="edgeFog" cx=".5" cy=".5" r=".72">
+    <stop offset="0" stop-color="#7a5c26" stop-opacity="0"/>
+    <stop offset=".8" stop-color="#7a5c26" stop-opacity="0"/>
+    <stop offset="1" stop-color="#6b4f1e" stop-opacity=".18"/>
+  </radialGradient>
+  <filter id="parchmentGrain">
+    <feTurbulence type="fractalNoise" baseFrequency=".55" numOctaves="2" stitchTiles="stitch" result="n"/>
+    <feColorMatrix in="n" type="matrix" values="0 0 0 0 .45  0 0 0 0 .36  0 0 0 0 .2  0 0 0 .05 0"/>
   </filter>
 </defs>
 <rect x="150" y="333.3333333333333" width="1100" height="733.3333333333334" fill="url(#seaG)"/>
@@ -540,16 +558,16 @@
 <path d="M600,850 C600.2,835.0 599.3,780.7 601,760 C602.7,739.3 594.8,738.0 610,726 C625.2,714.0 689.7,673.7 692,688 C694.3,702.3 628.5,822.5 624,812 C619.5,801.5 673.2,614.5 665,625 C656.8,635.5 579.0,862.0 575,875 C571.0,888.0 632.2,735.3 641,703 C649.8,670.7 628.2,693.5 628,681 C627.8,668.5 642.3,633.8 640,628 C637.7,622.2 606.7,625.3 614,646 C621.3,666.7 673.2,722.7 684,752 C694.8,781.3 685.5,815.8 679,822 C672.5,828.2 653.7,795.3 645,789 C636.3,782.7 631.3,783.5 627,784 C622.7,784.5 613.8,814.2 619,792 C624.2,769.8 656.5,659.5 658,651 C659.5,642.5 633.0,726.0 628,741" class="route-under"/>
 <path d="M600,850 C600.2,835.0 599.3,780.7 601,760 C602.7,739.3 594.8,738.0 610,726 C625.2,714.0 689.7,673.7 692,688 C694.3,702.3 628.5,822.5 624,812 C619.5,801.5 673.2,614.5 665,625 C656.8,635.5 579.0,862.0 575,875 C571.0,888.0 632.2,735.3 641,703 C649.8,670.7 628.2,693.5 628,681 C627.8,668.5 642.3,633.8 640,628 C637.7,622.2 606.7,625.3 614,646 C621.3,666.7 673.2,722.7 684,752 C694.8,781.3 685.5,815.8 679,822 C672.5,828.2 653.7,795.3 645,789 C636.3,782.7 631.3,783.5 627,784 C622.7,784.5 613.8,814.2 619,792 C624.2,769.8 656.5,659.5 658,651 C659.5,642.5 633.0,726.0 628,741" class="route"/>
 <line x1="627.0" y1="778.3" x2="627.0" y2="763.7" class="leader"/><line x1="613.7" y1="794.0" x2="603.8" y2="797.9" class="leader"/>
-<circle cx="600" cy="850" r="3.85" class="pl-city"/><circle cx="601" cy="760" r="3.85" class="pl-city"/><circle cx="610" cy="726" r="3.85" class="pl-city"/><circle cx="692" cy="688" r="3.85" class="pl-city"/><circle cx="624" cy="812" r="3.85" class="pl-city"/><circle cx="665" cy="625" r="3.85" class="pl-city"/><circle cx="575" cy="875" r="3.85" class="pl-city"/><circle cx="641" cy="703" r="3.85" class="pl-city"/><circle cx="628" cy="681" r="3.85" class="pl-city"/><circle cx="640" cy="628" r="3.85" class="pl-city"/><circle cx="614" cy="646" r="3.85" class="pl-city"/><circle cx="684" cy="752" r="3.85" class="pl-city"/><circle cx="679" cy="822" r="3.85" class="pl-city"/><circle cx="645" cy="789" r="3.85" class="pl-city"/><circle cx="627" cy="784" r="3.85" class="pl-city"/><circle cx="619" cy="792" r="3.85" class="pl-city"/><circle cx="658" cy="651" r="3.85" class="pl-city"/><circle cx="628" cy="741" r="3.85" class="pl-city"/>
+<circle cx="601" cy="760" r="3.85" class="pl-city"/><circle cx="610" cy="726" r="3.85" class="pl-city"/><circle cx="665" cy="625" r="3.85" class="pl-city"/><circle cx="575" cy="875" r="3.85" class="pl-city"/><circle cx="641" cy="703" r="3.85" class="pl-city"/><circle cx="628" cy="681" r="3.85" class="pl-city"/><circle cx="640" cy="628" r="3.85" class="pl-city"/><circle cx="614" cy="646" r="3.85" class="pl-city"/><circle cx="684" cy="752" r="3.85" class="pl-city"/><circle cx="679" cy="822" r="3.85" class="pl-city"/><circle cx="645" cy="789" r="3.85" class="pl-city"/><circle cx="627" cy="784" r="3.85" class="pl-city"/><circle cx="619" cy="792" r="3.85" class="pl-city"/><circle cx="658" cy="651" r="3.85" class="pl-city"/><circle cx="628" cy="741" r="3.85" class="pl-city"/>
 <g class="mile"><circle cx="600" cy="850" r="6.78" class="mile-c" style="stroke:#8a6a1f"/><text x="600" y="853.1166666666667" text-anchor="middle" class="mile-t" font-size="8.71" style="fill:#8a6a1f">I</text></g><g class="mile"><circle cx="692" cy="688" r="6.78" class="mile-c" style="stroke:#4a7a52"/><text x="692" y="691.1166666666667" text-anchor="middle" class="mile-t" font-size="8.71" style="fill:#4a7a52">III</text></g><g class="mile"><circle cx="624" cy="812" r="6.78" class="mile-c" style="stroke:#a25d33"/><text x="624" y="815.1166666666667" text-anchor="middle" class="mile-t" font-size="8.71" style="fill:#a25d33">II</text></g>
 
 <text x="700" y="520" class="lab-ctx" font-size="10.54" text-anchor="middle">ЛИВАН</text><text x="800" y="500" class="lab-ctx" font-size="10.54" text-anchor="middle">СИРИЯ</text><text x="500" y="700" class="lab-ctx" font-size="10.54" text-anchor="middle">ВЕЛИКОЕ МОРЕ</text>
-<text x="591.8" y="854.1" class="lab-place" font-size="11.92" text-anchor="end">Иуда</text><text x="592.8" y="764.1" class="lab-place" font-size="11.92" text-anchor="end">Ефрем</text><text x="618.3" y="730.1" class="lab-place" font-size="11.92" text-anchor="start">Манассия (запад)</text><text x="700.3" y="692.1" class="lab-place" font-size="11.92" text-anchor="start">Манассия (восток)</text><text x="615.8" y="816.1" class="lab-place" font-size="11.92" text-anchor="end">Вениамин</text><text x="673.3" y="629.1" class="lab-place" font-size="11.92" text-anchor="start">Дан</text><text x="583.3" y="879.1" class="lab-place" font-size="11.92" text-anchor="start">Симеон</text><text x="632.8" y="707.1" class="lab-place" font-size="11.92" text-anchor="end">Иссахар</text><text x="619.8" y="685.1" class="lab-place" font-size="11.92" text-anchor="end">Завулон</text><text x="631.8" y="632.1" class="lab-place" font-size="11.92" text-anchor="end">Неффалим</text><text x="605.8" y="650.1" class="lab-place" font-size="11.92" text-anchor="end">Асир</text><text x="692.3" y="756.1" class="lab-place" font-size="11.92" text-anchor="start">Гад</text><text x="670.8" y="826.1" class="lab-place" font-size="11.92" text-anchor="end">Рувим</text><text x="653.3" y="793.1" class="lab-place" font-size="11.92" text-anchor="start">Иерихон</text><text x="627.0" y="767.8" class="lab-place" font-size="11.92" text-anchor="middle">Гай</text><text x="602.0" y="801.9" class="lab-place" font-size="11.92" text-anchor="end">Гаваон</text><text x="649.8" y="655.1" class="lab-place" font-size="11.92" text-anchor="end">Асор</text><text x="619.8" y="745.1" class="lab-place" font-size="11.92" text-anchor="end">Гевал · благословение и проклятие</text>
+<text x="586.3" y="854.1" class="lab-place" font-size="11.92" text-anchor="end">Иуда</text><text x="592.8" y="764.1" class="lab-place" font-size="11.92" text-anchor="end">Ефрем</text><text x="618.3" y="730.1" class="lab-place" font-size="11.92" text-anchor="start">Манассия (запад)</text><text x="705.8" y="692.1" class="lab-place" font-size="11.92" text-anchor="start">Манассия (восток)</text><text x="610.3" y="816.1" class="lab-place" font-size="11.92" text-anchor="end">Вениамин</text><text x="673.3" y="629.1" class="lab-place" font-size="11.92" text-anchor="start">Дан</text><text x="583.3" y="879.1" class="lab-place" font-size="11.92" text-anchor="start">Симеон</text><text x="632.8" y="707.1" class="lab-place" font-size="11.92" text-anchor="end">Иссахар</text><text x="619.8" y="685.1" class="lab-place" font-size="11.92" text-anchor="end">Завулон</text><text x="631.8" y="632.1" class="lab-place" font-size="11.92" text-anchor="end">Неффалим</text><text x="605.8" y="650.1" class="lab-place" font-size="11.92" text-anchor="end">Асир</text><text x="692.3" y="756.1" class="lab-place" font-size="11.92" text-anchor="start">Гад</text><text x="670.8" y="826.1" class="lab-place" font-size="11.92" text-anchor="end">Рувим</text><text x="653.3" y="793.1" class="lab-place" font-size="11.92" text-anchor="start">Иерихон</text><text x="627.0" y="767.8" class="lab-place" font-size="11.92" text-anchor="middle">Гай</text><text x="602.0" y="801.9" class="lab-place" font-size="11.92" text-anchor="end">Гаваон</text><text x="649.8" y="655.1" class="lab-place" font-size="11.92" text-anchor="end">Асор</text><text x="619.8" y="745.1" class="lab-place" font-size="11.92" text-anchor="end">Гевал · благословение и проклятие</text>
 
   <g class="cartouche">
-    <rect x="173.83333333333334" y="355.3333333333333" width="385" height="78.83333333333333" rx="7.333333333333333" class="plate cart-plate"/>
-    <text x="192.16666666666666" y="390.16666666666663" class="cart-title" font-size="23.833333333333332">12 Колен Израиля</text>
-    <text x="192.16666666666666" y="414" class="cart-sub" font-size="11.458333333333332">Наследие колен · Иисус Навин 13–21</text>
+    <rect x="172" y="349.8333333333333" width="366.66666666666663" height="66" rx="7.333333333333333" class="plate cart-plate"/>
+    <text x="188.5" y="379.16666666666663" class="cart-title" font-size="22.916666666666664">12 Колен Израиля</text>
+    <text x="188.5" y="401.16666666666663" class="cart-sub" font-size="11">Наследие колен · Иисус Навин 13–21</text>
   </g>
 
   <g class="furn">
@@ -565,13 +583,14 @@
       <text y="23.833333333333332" text-anchor="middle" class="north-t" font-size="11.916666666666666">С</text>
     </g>
   </g>
-
-  <g class="stages">
-    <rect x="173.83333333333334" y="1015.3333333333334" width="385" height="34.83333333333333" rx="6.416666666666666" class="plate"/>
-    <circle cx="192.16666666666666" cy="1032.75" r="4.033333333333333" fill="#8a6a1f"/><text x="201.33333333333331" y="1029.0833333333335" class="st-n" font-size="8.708333333333332">I · 6 КОЛЕН · ГАЛИЛЕЯ, САМАРИЯ</text><text x="201.33333333333331" y="1041" class="st-t" font-size="9.625">Северные колена</text><circle cx="311.3333333333333" cy="1032.75" r="4.033333333333333" fill="#a25d33"/><text x="320.5" y="1029.0833333333335" class="st-n" font-size="8.708333333333332">II · 4 КОЛЕНА · ИУДЕЯ, ШФЕЛА, НЕГЕВ</text><text x="320.5" y="1041" class="st-t" font-size="9.625">Южные колена</text><circle cx="430.5" cy="1032.75" r="4.033333333333333" fill="#4a7a52"/><text x="439.66666666666663" y="1029.0833333333335" class="st-n" font-size="8.708333333333332">III · 2½ КОЛЕНА · ГАЛААД, ВАСАН, МОАВ</text><text x="439.66666666666663" y="1041" class="st-t" font-size="9.625">Заиорданские колена</text>
-  </g>
+<rect x="150" y="333.3333333333333" width="1100" height="733.3333333333334" fill="url(#sunGlow)" pointer-events="none"/>
+<rect x="150" y="333.3333333333333" width="1100" height="733.3333333333334" fill="url(#edgeFog)" pointer-events="none"/>
+<rect x="150" y="333.3333333333333" width="1100" height="733.3333333333334" filter="url(#parchmentGrain)" opacity=".5" pointer-events="none"/>
 <rect x="157.33333333333334" y="340.66666666666663" width="1085.3333333333333" height="718.6666666666667" class="frame"/>
-</svg></div>
-<span class="g9">SHVATIM · SHEET v1 · awaiting G9</span>
+</svg>
+  <div class="stage-strip">
+    <div class="st"><span class="st-dot" style="background:#8a6a1f"></span><span class="st-body"><b>I</b> · Северные колена<i>6 КОЛЕН · ГАЛИЛЕЯ, САМАРИЯ</i></span></div><div class="st"><span class="st-dot" style="background:#a25d33"></span><span class="st-body"><b>II</b> · Южные колена<i>4 КОЛЕНА · ИУДЕЯ, ШФЕЛА, НЕГЕВ</i></span></div><div class="st"><span class="st-dot" style="background:#4a7a52"></span><span class="st-body"><b>III</b> · Заиорданские колена<i>2½ КОЛЕНА · ГАЛААД, ВАСАН, МОАВ</i></span></div>
+  </div></div>
+<span class="g9">SHVATIM · SHEET · awaiting G9</span>
 </body>
 </html>

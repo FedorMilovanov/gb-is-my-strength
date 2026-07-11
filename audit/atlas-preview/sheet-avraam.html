@@ -12,7 +12,6 @@
   svg.sheet{display:block;width:100%;height:auto;background:#f5edd8}
   .frame{fill:none;stroke:#8a6a1f;stroke-width:1.2;opacity:.55}
   .base{opacity:.96}
-  /* светлая тема вод базы (тёмный канон файла) */
   .base [fill="#10263a"]{fill:#8fb7cb}
   .base [stroke="#2e4d6b"]{stroke:#6f97ae}
   .base [stroke="#2d4a66"]{stroke:#6f97ae}
@@ -24,6 +23,7 @@
   .wp-dot{fill:#4a7a52;stroke:#f6f1e7;stroke-width:.9;opacity:.85}
   .leader{stroke:#5c4d33;stroke-width:.9;opacity:.55}
   .mile-c{fill:#f6f1e7;stroke-width:1.6;filter:url(#dotShadow)}
+  .mile-cand{stroke-dasharray:3 2.2}
   .mile-t{font:700 1em Georgia,serif}
   text.lab-place{font-family:Georgia,'Times New Roman',serif;font-weight:600;fill:#2b2418;paint-order:stroke;stroke:#f5edd8;stroke-width:.22em;stroke-linejoin:round}
   text.lab-cand{font-style:italic;fill:#5c4a1e}
@@ -38,8 +38,12 @@
   .sb-t{font-family:Georgia,serif;fill:#5c4d33;font-weight:600}
   .north{fill:#8a6a1f;stroke:#6b5216;stroke-width:1}
   .north-t{font-family:Georgia,serif;font-weight:700;fill:#6b5216}
-  .st-n{font-family:Georgia,serif;fill:#8a6a1f;font-weight:700;letter-spacing:.06em}
-  .st-t{font-family:Georgia,serif;fill:#3a3020}
+  .stage-strip{display:flex;flex-wrap:wrap;gap:6px 22px;padding:12px 18px;background:#f0e8d2;border-top:1px solid rgba(138,106,31,.25)}
+  .st{display:flex;align-items:center;gap:8px}
+  .st-dot{width:9px;height:9px;border-radius:50%;flex-shrink:0;box-shadow:0 1px 2px rgba(90,70,30,.4)}
+  .st-body{font-family:Georgia,serif;font-size:13px;color:#3a3020}
+  .st-body b{color:#8a6a1f}
+  .st-body i{color:#7a6a48;margin-left:6px;font-size:11.5px}
   .g9{position:fixed;right:10px;bottom:10px;z-index:9;font:600 10px/1 system-ui;letter-spacing:.08em;color:#7a5c26;background:rgba(246,241,231,.9);border:1px solid rgba(138,106,31,.4);border-radius:999px;padding:6px 10px}
 </style>
 </head>
@@ -89,6 +93,20 @@
   <filter id="soft" x="-40%" y="-40%" width="180%" height="180%"><feGaussianBlur stdDeviation="6"/></filter>
   <filter id="dotShadow" x="-60%" y="-60%" width="220%" height="220%">
     <feDropShadow dx="0" dy=".7" stdDeviation=".8" flood-color="#3a2c10" flood-opacity=".45"/>
+  </filter>
+  <radialGradient id="sunGlow" cx=".22" cy=".14" r=".9">
+    <stop offset="0" stop-color="#ffdf9a" stop-opacity=".22"/>
+    <stop offset=".4" stop-color="#f5d489" stop-opacity=".08"/>
+    <stop offset="1" stop-color="#f5d489" stop-opacity="0"/>
+  </radialGradient>
+  <radialGradient id="edgeFog" cx=".5" cy=".5" r=".72">
+    <stop offset="0" stop-color="#7a5c26" stop-opacity="0"/>
+    <stop offset=".8" stop-color="#7a5c26" stop-opacity="0"/>
+    <stop offset="1" stop-color="#6b4f1e" stop-opacity=".18"/>
+  </radialGradient>
+  <filter id="parchmentGrain">
+    <feTurbulence type="fractalNoise" baseFrequency=".55" numOctaves="2" stitchTiles="stitch" result="n"/>
+    <feColorMatrix in="n" type="matrix" values="0 0 0 0 .45  0 0 0 0 .36  0 0 0 0 .2  0 0 0 .05 0"/>
   </filter>
 </defs>
 <rect x="25" y="-30" width="1950" height="1300" fill="url(#seaG)"/>
@@ -540,16 +558,16 @@
 <path d="M1710,897 C1588.2,774.0 1096.8,276.2 979,159 C861.2,41.8 1044.3,121.5 1003,194 C961.7,266.5 793.5,501.7 731,594 C668.5,686.3 645.8,716.7 628,748 C610.2,779.3 689.5,750.0 624,782 C558.5,814.0 237.3,932.2 235,940 C232.7,947.8 545.3,852.3 610,829 C674.7,805.7 613.8,834.0 623,800 C632.2,766.0 660.0,612.7 665,625 C670.0,637.3 652.7,841.8 653,874 C653.3,906.2 667.5,815.5 667,818 C666.5,820.5 667.7,884.2 650,889 C632.3,893.8 572.0,851.2 561,847 C550.0,842.8 587.2,849.5 584,864 C580.8,878.5 572.7,921.3 542,934 C511.3,946.7 401.3,940.5 400,940 C398.7,939.5 475.3,995.0 534,931 C592.7,867.0 715.7,618.5 752,556" class="route-under"/>
 <path d="M1710,897 C1588.2,774.0 1096.8,276.2 979,159 C861.2,41.8 1044.3,121.5 1003,194 C961.7,266.5 793.5,501.7 731,594 C668.5,686.3 645.8,716.7 628,748 C610.2,779.3 689.5,750.0 624,782 C558.5,814.0 237.3,932.2 235,940 C232.7,947.8 545.3,852.3 610,829 C674.7,805.7 613.8,834.0 623,800 C632.2,766.0 660.0,612.7 665,625 C670.0,637.3 652.7,841.8 653,874 C653.3,906.2 667.5,815.5 667,818 C666.5,820.5 667.7,884.2 650,889 C632.3,893.8 572.0,851.2 561,847 C550.0,842.8 587.2,849.5 584,864 C580.8,878.5 572.7,921.3 542,934 C511.3,946.7 401.3,940.5 400,940 C398.7,939.5 475.3,995.0 534,931 C592.7,867.0 715.7,618.5 752,556" class="route"/>
 
-<circle cx="1710" cy="897" r="6.83" class="pl-city"/><circle cx="979" cy="159" r="7.47" class="pl-cand"/><circle cx="1003" cy="194" r="6.83" class="pl-city"/><circle cx="731" cy="594" r="6.83" class="pl-city"/><circle cx="628" cy="748" r="6.83" class="pl-city"/><circle cx="624" cy="782" r="6.83" class="pl-city"/><circle cx="235" cy="940" r="6.83" class="pl-city"/><circle cx="610" cy="829" r="6.83" class="pl-city"/><path d="M614.46875,806.825 L623,791.1275 L631.53125,806.825 Z" class="pl-city"/><circle cx="665" cy="625" r="6.83" class="pl-city"/><circle cx="653" cy="874" r="6.83" class="pl-city"/><circle cx="667" cy="818" r="7.47" class="pl-cand"/><circle cx="650" cy="889" r="6.83" class="pl-city"/><circle cx="561" cy="847" r="6.83" class="pl-city"/><circle cx="584" cy="864" r="6.83" class="pl-city"/><circle cx="542" cy="934" r="6.83" class="pl-city"/><circle cx="400" cy="940" r="6.83" class="pl-city"/><circle cx="534" cy="931" r="7.47" class="pl-cand"/><circle cx="752" cy="556" r="6.83" class="pl-city"/>
+<circle cx="979" cy="159" r="7.47" class="pl-cand"/><circle cx="1003" cy="194" r="6.83" class="pl-city"/><circle cx="628" cy="748" r="6.83" class="pl-city"/><circle cx="624" cy="782" r="6.83" class="pl-city"/><circle cx="653" cy="874" r="6.83" class="pl-city"/><circle cx="667" cy="818" r="7.47" class="pl-cand"/><circle cx="650" cy="889" r="6.83" class="pl-city"/><circle cx="584" cy="864" r="6.83" class="pl-city"/><circle cx="542" cy="934" r="6.83" class="pl-city"/><circle cx="400" cy="940" r="6.83" class="pl-city"/><circle cx="534" cy="931" r="7.47" class="pl-cand"/><circle cx="752" cy="556" r="6.83" class="pl-city"/>
 <g class="mile"><circle cx="1710" cy="897" r="12.03" class="mile-c" style="stroke:#8a6a1f"/><text x="1710" y="902.525" text-anchor="middle" class="mile-t" font-size="15.44" style="fill:#8a6a1f">I</text></g><g class="mile"><circle cx="731" cy="594" r="12.03" class="mile-c" style="stroke:#a25d33"/><text x="731" y="599.525" text-anchor="middle" class="mile-t" font-size="15.44" style="fill:#a25d33">II</text></g><g class="mile"><circle cx="235" cy="940" r="12.03" class="mile-c" style="stroke:#4a7a52"/><text x="235" y="945.525" text-anchor="middle" class="mile-t" font-size="15.44" style="fill:#4a7a52">III</text></g><g class="mile"><circle cx="610" cy="829" r="12.03" class="mile-c" style="stroke:#8f4a56"/><text x="610" y="834.525" text-anchor="middle" class="mile-t" font-size="15.44" style="fill:#8f4a56">IV</text></g><g class="mile"><circle cx="623" cy="800" r="12.03" class="mile-c" style="stroke:#7a5a8a"/><text x="623" y="805.525" text-anchor="middle" class="mile-t" font-size="15.44" style="fill:#7a5a8a">VII</text></g><g class="mile"><circle cx="665" cy="625" r="12.03" class="mile-c" style="stroke:#6b5a43"/><text x="665" y="630.525" text-anchor="middle" class="mile-t" font-size="15.44" style="fill:#6b5a43">V</text></g><g class="mile"><circle cx="561" cy="847" r="12.03" class="mile-c" style="stroke:#3f6a8a"/><text x="561" y="852.525" text-anchor="middle" class="mile-t" font-size="15.44" style="fill:#3f6a8a">VI</text></g>
 <rect x="1640.8" y="830.8" width="10.4" height="10.4" transform="rotate(45 1646 836)" class="wp-dot"/><text x="1655.8" y="841.9" class="lab-wp" font-size="16.25">Урук</text><rect x="1536.8" y="783.8" width="10.4" height="10.4" transform="rotate(45 1542 789)" class="wp-dot"/><text x="1551.8" y="794.9" class="lab-wp" font-size="16.25">Ниппур</text><rect x="1534.8" y="704.8" width="10.4" height="10.4" transform="rotate(45 1540 710)" class="wp-dot"/><text x="1549.8" y="715.9" class="lab-wp" font-size="16.25">Вавилон</text><rect x="1183.8" y="464.8" width="10.4" height="10.4" transform="rotate(45 1189 470)" class="wp-dot"/><text x="1198.8" y="475.9" class="lab-wp" font-size="16.25">Мари</text><rect x="897.8" y="188.8" width="10.4" height="10.4" transform="rotate(45 903 194)" class="wp-dot"/><text x="912.8" y="199.8" class="lab-wp" font-size="16.25">Каркемиш</text>
 <text x="1540" y="710" class="lab-ctx" font-size="18.69" text-anchor="middle"></text><text x="1189" y="470" class="lab-ctx" font-size="18.69" text-anchor="middle"></text><text x="780" y="320" class="lab-ctx" font-size="18.69" text-anchor="middle"></text><text x="1410" y="256" class="lab-ctx" font-size="18.69" text-anchor="middle"></text><text x="613" y="706" class="lab-ctx" font-size="18.69" text-anchor="middle"></text><text x="660" y="895" class="lab-ctx" font-size="18.69" text-anchor="middle"></text><text x="658" y="648" class="lab-ctx" font-size="18.69" text-anchor="middle"></text>
-<text x="1724.6" y="904.2" class="lab-place" font-size="21.13" text-anchor="start">Ур Халдейский</text><text x="993.6" y="166.2" class="lab-place lab-cand" font-size="21.13" text-anchor="start">Урфа (Шанлыурфа)</text><text x="1017.6" y="201.2" class="lab-place" font-size="21.13" text-anchor="start">Харран</text><text x="745.6" y="601.2" class="lab-place" font-size="21.13" text-anchor="start">Дамаск</text><text x="642.6" y="755.2" class="lab-place" font-size="21.13" text-anchor="start">Сихем</text><text x="609.4" y="789.2" class="lab-place" font-size="21.13" text-anchor="end">Бет-Эль и Гай</text><text x="220.4" y="947.2" class="lab-place" font-size="21.13" text-anchor="end">Египет</text><text x="595.4" y="836.2" class="lab-place" font-size="21.13" text-anchor="end">Хеврон · Мамре</text><text x="637.6" y="807.2" class="lab-place" font-size="21.13" text-anchor="start">Шалем · гора Мория</text><text x="679.6" y="632.2" class="lab-place" font-size="21.13" text-anchor="start">Дан (Лаиш)</text><text x="667.6" y="881.2" class="lab-place" font-size="21.13" text-anchor="start">Содом и Гоморра</text><text x="681.6" y="825.2" class="lab-place lab-cand" font-size="21.13" text-anchor="start">Талл эль-Хаммам</text><text x="664.6" y="896.2" class="lab-place" font-size="21.13" text-anchor="start">Цоар</text><text x="546.4" y="854.2" class="lab-place" font-size="21.13" text-anchor="end">Герар</text><text x="569.4" y="871.2" class="lab-place" font-size="21.13" text-anchor="end">Беэр-Шева</text><text x="556.6" y="941.2" class="lab-place" font-size="21.13" text-anchor="start">Кадеш (Кадеш-Барнеа)</text><text x="385.4" y="947.2" class="lab-place" font-size="21.13" text-anchor="end">Пустыня Сур</text><text x="519.4" y="938.2" class="lab-place lab-cand" font-size="21.13" text-anchor="end">Беэр-лахай-рои</text><text x="766.6" y="563.2" class="lab-place" font-size="21.13" text-anchor="start">Хова</text>
+<text x="1734.4" y="904.2" class="lab-place" font-size="21.13" text-anchor="start">Ур Халдейский</text><text x="993.6" y="166.2" class="lab-place lab-cand" font-size="21.13" text-anchor="start">Урфа (Шанлыурфа)</text><text x="1017.6" y="201.2" class="lab-place" font-size="21.13" text-anchor="start">Харран</text><text x="755.4" y="601.2" class="lab-place" font-size="21.13" text-anchor="start">Дамаск</text><text x="642.6" y="755.2" class="lab-place" font-size="21.13" text-anchor="start">Сихем</text><text x="609.4" y="789.2" class="lab-place" font-size="21.13" text-anchor="end">Бет-Эль и Гай</text><text x="210.6" y="947.2" class="lab-place" font-size="21.13" text-anchor="end">Египет</text><text x="585.6" y="836.2" class="lab-place" font-size="21.13" text-anchor="end">Хеврон · Мамре</text><text x="647.4" y="807.2" class="lab-place" font-size="21.13" text-anchor="start">Шалем · гора Мория</text><text x="689.4" y="632.2" class="lab-place" font-size="21.13" text-anchor="start">Дан (Лаиш)</text><text x="667.6" y="881.2" class="lab-place" font-size="21.13" text-anchor="start">Содом и Гоморра</text><text x="681.6" y="825.2" class="lab-place lab-cand" font-size="21.13" text-anchor="start">Талл эль-Хаммам</text><text x="664.6" y="896.2" class="lab-place" font-size="21.13" text-anchor="start">Цоар</text><text x="536.6" y="854.2" class="lab-place" font-size="21.13" text-anchor="end">Герар</text><text x="569.4" y="871.2" class="lab-place" font-size="21.13" text-anchor="end">Беэр-Шева</text><text x="556.6" y="941.2" class="lab-place" font-size="21.13" text-anchor="start">Кадеш (Кадеш-Барнеа)</text><text x="385.4" y="947.2" class="lab-place" font-size="21.13" text-anchor="end">Пустыня Сур</text><text x="519.4" y="938.2" class="lab-place lab-cand" font-size="21.13" text-anchor="end">Беэр-лахай-рои</text><text x="766.6" y="563.2" class="lab-place" font-size="21.13" text-anchor="start">Хова</text>
 
   <g class="cartouche">
-    <rect x="67.25" y="9" width="682.5" height="139.75" rx="13" class="plate cart-plate"/>
-    <text x="99.75" y="70.75" class="cart-title" font-size="42.25">Путь Авраама</text>
-    <text x="99.75" y="113" class="cart-sub" font-size="20.3125">Бытие 11–25 · Средняя бронза · ~2166–1991 до н.э.</text>
+    <rect x="64" y="-0.75" width="650" height="117" rx="13" class="plate cart-plate"/>
+    <text x="93.25" y="51.25" class="cart-title" font-size="40.625">Путь Авраама</text>
+    <text x="93.25" y="90.25" class="cart-sub" font-size="19.5">Бытие 11–25 · Средняя бронза · ~2166–1991 до н.э.</text>
   </g>
 
   <g class="furn">
@@ -565,13 +583,14 @@
       <text y="42.25" text-anchor="middle" class="north-t" font-size="21.125">С</text>
     </g>
   </g>
-
-  <g class="stages">
-    <rect x="67.25" y="1179" width="1738.75" height="61.75" rx="11.375" class="plate"/>
-    <circle cx="99.75" cy="1209.875" r="7.15" fill="#8a6a1f"/><text x="116" y="1203.375" class="st-n" font-size="15.4375">I · АВРАМУ ~70 ЛЕТ · ~1000 КМ ВВЕРХ ПО ЕВФРАТУ</text><text x="116" y="1224.5" class="st-t" font-size="17.0625">Из Ура в Харран</text><circle cx="311" cy="1209.875" r="7.15" fill="#a25d33"/><text x="327.25" y="1203.375" class="st-n" font-size="15.4375">II · АВРАМУ 75 ЛЕТ · ~700 КМ ЧЕРЕЗ ДАМАСК</text><text x="327.25" y="1224.5" class="st-t" font-size="17.0625">Лех-леха: в Ханаан</text><circle cx="522.25" cy="1209.875" r="7.15" fill="#4a7a52"/><text x="538.5" y="1203.375" class="st-n" font-size="15.4375">III · ДОРОГА СУРА · ТУДА И ОБРАТНО ~800 КМ</text><text x="538.5" y="1224.5" class="st-t" font-size="17.0625">Голод: Египет</text><circle cx="733.5" cy="1209.875" r="7.15" fill="#8f4a56"/><text x="749.75" y="1203.375" class="st-n" font-size="15.4375">IV · БЕТ-ЭЛЬ: РАЗВИЛКА ДВУХ СУДЕБ</text><text x="749.75" y="1224.5" class="st-t" font-size="17.0625">Раздел с Лотом · Хевро</text><circle cx="944.75" cy="1209.875" r="7.15" fill="#6b5a43"/><text x="961" y="1203.375" class="st-n" font-size="15.4375">V · 318 ВОИНОВ · НОЧНОЙ МАРШ ~200 КМ</text><text x="961" y="1224.5" class="st-t" font-size="17.0625">Война царей · Мелхисед</text><circle cx="1156" cy="1209.875" r="7.15" fill="#3f6a8a"/><text x="1172.25" y="1203.375" class="st-n" font-size="15.4375">VI · АВРААМУ 99 ЛЕТ · ДОЛИНА СИДДИМ</text><text x="1172.25" y="1224.5" class="st-t" font-size="17.0625">Катастрофа Содома</text><circle cx="1367.25" cy="1209.875" r="7.15" fill="#7a5a8a"/><text x="1383.5" y="1203.375" class="st-n" font-size="15.4375">VII · АВРААМУ 100 ЛЕТ · РОЖДЕНИЕ ИСААКА</text><text x="1383.5" y="1224.5" class="st-t" font-size="17.0625">Герар и Беэр-Шева</text><circle cx="1578.5" cy="1209.875" r="7.15" fill="#4a6a6a"/><text x="1594.75" y="1203.375" class="st-n" font-size="15.4375">VIII · ТРИ ДНЯ ПУТИ · ~75 КМ · ФИНАЛ: 175 ЛЕТ</text><text x="1594.75" y="1224.5" class="st-t" font-size="17.0625">Акеда: гора Мория</text>
-  </g>
+<rect x="25" y="-30" width="1950" height="1300" fill="url(#sunGlow)" pointer-events="none"/>
+<rect x="25" y="-30" width="1950" height="1300" fill="url(#edgeFog)" pointer-events="none"/>
+<rect x="25" y="-30" width="1950" height="1300" filter="url(#parchmentGrain)" opacity=".5" pointer-events="none"/>
 <rect x="38" y="-17" width="1924" height="1274" class="frame"/>
-</svg></div>
-<span class="g9">AVRAAM · SHEET v1 · awaiting G9</span>
+</svg>
+  <div class="stage-strip">
+    <div class="st"><span class="st-dot" style="background:#8a6a1f"></span><span class="st-body"><b>I</b> · Из Ура в Харран<i>АВРАМУ ~70 ЛЕТ · ~1000 КМ ВВЕРХ ПО ЕВФРАТУ</i></span></div><div class="st"><span class="st-dot" style="background:#a25d33"></span><span class="st-body"><b>II</b> · Лех-леха: в Ханаан<i>АВРАМУ 75 ЛЕТ · ~700 КМ ЧЕРЕЗ ДАМАСК</i></span></div><div class="st"><span class="st-dot" style="background:#4a7a52"></span><span class="st-body"><b>III</b> · Голод: Египет<i>ДОРОГА СУРА · ТУДА И ОБРАТНО ~800 КМ</i></span></div><div class="st"><span class="st-dot" style="background:#8f4a56"></span><span class="st-body"><b>IV</b> · Раздел с Лотом · Хеврон<i>БЕТ-ЭЛЬ: РАЗВИЛКА ДВУХ СУДЕБ</i></span></div><div class="st"><span class="st-dot" style="background:#6b5a43"></span><span class="st-body"><b>V</b> · Война царей · Мелхиседек<i>318 ВОИНОВ · НОЧНОЙ МАРШ ~200 КМ</i></span></div><div class="st"><span class="st-dot" style="background:#3f6a8a"></span><span class="st-body"><b>VI</b> · Катастрофа Содома<i>АВРААМУ 99 ЛЕТ · ДОЛИНА СИДДИМ</i></span></div><div class="st"><span class="st-dot" style="background:#7a5a8a"></span><span class="st-body"><b>VII</b> · Герар и Беэр-Шева<i>АВРААМУ 100 ЛЕТ · РОЖДЕНИЕ ИСААКА</i></span></div><div class="st"><span class="st-dot" style="background:#4a6a6a"></span><span class="st-body"><b>VIII</b> · Акеда: гора Мория<i>ТРИ ДНЯ ПУТИ · ~75 КМ · ФИНАЛ: 175 ЛЕТ</i></span></div>
+  </div></div>
+<span class="g9">AVRAAM · SHEET · awaiting G9</span>
 </body>
 </html>
