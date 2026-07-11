@@ -19,6 +19,11 @@ const ROOT = path.resolve(__dirname, '..');
 const OUTDIR = path.join(ROOT, 'audit', 'atlas-preview');
 const MED = new Set(['pavel', 'revelation']);
 
+const ORDER = ['avraam','ishod','shvatim','shoftim','melachim','yeshua','early-church','pavel','revelation','maccabim'];
+const TITLES = {};
+for (const s2 of ORDER) {
+  try { TITLES[s2] = (JSON.parse(fs.readFileSync(path.join(ROOT, 'karty', s2, 'route.json'), 'utf8')).meta || {}).title || s2; } catch (_) { TITLES[s2] = s2; }
+}
 const args = process.argv.slice(2);
 const slugs = args.length ? args :
   fs.readdirSync(path.join(ROOT, 'karty')).filter(d => !d.startsWith('_') && fs.existsSync(path.join(ROOT, 'karty', d, 'route.json'))).sort();
@@ -30,7 +35,11 @@ for (const slug of slugs) {
     const baseSvg = fs.readFileSync(family === 'levant'
       ? path.join(ROOT, 'karty', '_engine', 'base-geo.svg')
       : path.join(ROOT, 'data', 'atlas', 'base', 'base-geo-mediterranean.svg'), 'utf8');
-    const html = buildSheetHtml(route, { family, baseSvg, slug, sheetNo: (route.meta || {}).sheet_no });
+    const spine = ORDER.map(s2 => ({
+      slug: s2, title: TITLES[s2], current: s2 === slug,
+      cover: fs.existsSync(path.join(ROOT, 'images', `atlas-${s2}-scene-600w.webp`)) ? `../../images/atlas-${s2}-scene-600w.webp` : null,
+    }));
+    const html = buildSheetHtml(route, { family, baseSvg, slug, sheetNo: (route.meta || {}).sheet_no, spine });
     fs.writeFileSync(path.join(OUTDIR, `sheet-${slug}.html`), html);
     console.log(`[sheet] ${slug}: ${route.places.length} мест → sheet-${slug}.html`);
   } catch (e) {

@@ -205,7 +205,7 @@ function renderSheet(route, opts) {
     `<text x="${c.x}" y="${c.y}" class="lab-ctx" font-size="${fontCtx.toFixed(2)}" text-anchor="middle">${esc((c.name || '').toUpperCase())}</text>`);
 
   const miles = milestones.map(m =>
-    `<g class="mile"><circle cx="${m.x}" cy="${m.y}" r="${(7.4 * k).toFixed(2)}" class="mile-c${m.cand ? ' mile-cand' : ''}" style="stroke:${STAGE_TINT[m.n % STAGE_TINT.length]}"/>` +
+    `<g class="mile" data-stage="${m.n}" data-x="${m.x}" data-y="${m.y}"><circle cx="${m.x}" cy="${m.y}" r="${(7.4 * k).toFixed(2)}" class="mile-c${m.cand ? ' mile-cand' : ''}" style="stroke:${STAGE_TINT[m.n % STAGE_TINT.length]}"/>` +
     `<text x="${m.x}" y="${m.y + 3.4 * k}" text-anchor="middle" class="mile-t" font-size="${(9.5 * k).toFixed(2)}" style="fill:${STAGE_TINT[m.n % STAGE_TINT.length]}">${ROMAN[m.n] || m.n + 1}</text></g>`);
 
   const km100 = 100 / KM_PER_UNIT[family];
@@ -253,12 +253,12 @@ function renderSheet(route, opts) {
   const stageStripHtml = stages.length ? `
   <div class="stage-strip">
     ${stages.map((s, i) =>
-    `<div class="st"><span class="st-dot" style="background:${STAGE_TINT[i % STAGE_TINT.length]}"></span>` +
+    `<div class="st" data-stage="${i}" role="button" tabindex="0" title="Показать этап на листе"><span class="st-dot" style="background:${STAGE_TINT[i % STAGE_TINT.length]}"></span>` +
     `<span class="st-body"><b>${esc(ROMAN[i] || i + 1)}</b> · ${esc(String(s.t || ''))}` +
     (s.age || s.km ? `<i>${esc(String(s.age || s.km))}</i>` : '') + `</span></div>`).join('')}
   </div>` : '';
 
-  const svg = `<svg viewBox="${x0.toFixed(1)} ${y0.toFixed(1)} ${W} ${H.toFixed(1)}" xmlns="http://www.w3.org/2000/svg" class="sheet" role="img" aria-label="${esc(meta.title || slug)} — лист Атласа">
+  const svg = `<svg id="sheet-svg" viewBox="${x0.toFixed(1)} ${y0.toFixed(1)} ${W} ${H.toFixed(1)}" data-vb="${x0.toFixed(1)} ${y0.toFixed(1)} ${W} ${H.toFixed(1)}" xmlns="http://www.w3.org/2000/svg" class="sheet" role="img" aria-label="${esc(meta.title || slug)} — лист Атласа">
 ${GEO_DEFS}
 <rect x="${x0}" y="${y0}" width="${W}" height="${H}" fill="url(#seaG)"/>
 <g class="base">${base}</g>
@@ -325,12 +325,34 @@ function sheetCss() {
   .st-body{font-family:Georgia,serif;font-size:13px;color:#3a3020}
   .st-body b{color:#8a6a1f}
   .st-body i{color:#7a6a48;margin-left:6px;font-size:11.5px}
-  .g9{position:fixed;right:10px;bottom:10px;z-index:9;font:600 10px/1 system-ui;letter-spacing:.08em;color:#7a5c26;background:rgba(246,241,231,.9);border:1px solid rgba(138,106,31,.4);border-radius:999px;padding:6px 10px}`;
+  .g9{position:fixed;right:10px;bottom:10px;z-index:9;font:600 10px/1 system-ui;letter-spacing:.08em;color:#7a5c26;background:rgba(246,241,231,.9);border:1px solid rgba(138,106,31,.4);border-radius:999px;padding:6px 10px}
+  /* ── Читалка (R1, §14): корешок, погружение, курсоры ── */
+  svg.sheet{cursor:grab;touch-action:none}
+  .frame,.legend,.cartouche,.furn{transition:opacity .35s}
+  svg.zoomed .frame,svg.zoomed .legend,svg.zoomed .cartouche,svg.zoomed .furn{opacity:0;pointer-events:none}
+  svg.sheet.grabbing{cursor:grabbing}
+  .stage-strip .st{cursor:pointer;border-radius:8px;padding:2px 8px;margin:-2px -8px;transition:background .15s}
+  .stage-strip .st:hover{background:rgba(138,106,31,.1)}
+  .stage-strip .st--on{background:rgba(138,106,31,.16)}
+  .spine{position:fixed;left:0;top:0;bottom:0;z-index:20;display:flex;align-items:stretch}
+  .spine-tab{writing-mode:vertical-rl;transform:rotate(180deg);display:flex;align-items:center;gap:6px;padding:14px 5px;background:rgba(246,241,231,.94);border-right:1px solid rgba(138,106,31,.35);color:#8a6a1f;font:700 11px/1 Georgia,serif;letter-spacing:.22em;cursor:pointer;box-shadow:2px 0 10px rgba(90,70,30,.15)}
+  .spine-list{width:0;overflow:hidden;overflow-y:auto;background:rgba(246,241,231,.97);transition:width .25s ease;box-shadow:4px 0 18px rgba(90,70,30,.2)}
+  .spine:hover .spine-list,.spine:focus-within .spine-list{width:212px}
+  .spine-it{display:block;padding:10px 12px;text-decoration:none;color:#3a3020;font:600 13px/1.25 Georgia,serif;border-bottom:1px solid rgba(138,106,31,.14)}
+  .spine-it img{display:block;width:100%;border-radius:6px;margin-bottom:6px;box-shadow:0 2px 8px rgba(90,70,30,.25)}
+  .spine-it:hover{background:rgba(138,106,31,.08)}
+  .spine-it--on{background:rgba(138,106,31,.14)}
+  .dive-btn{position:fixed;right:10px;top:10px;z-index:21;width:38px;height:38px;border-radius:10px;border:1px solid rgba(138,106,31,.4);background:rgba(246,241,231,.92);color:#7a5c26;font-size:17px;cursor:pointer;box-shadow:0 2px 8px rgba(90,70,30,.2)}
+  .dive-btn:hover{background:#f6f1e7}
+  body.dive .spine,body.dive .stage-strip,body.dive .g9{display:none}
+  body.dive .wrap{max-width:none;border-radius:0;box-shadow:none}
+  body.dive{padding:0}`;
 }
 
 function buildSheetHtml(route, opts) {
   const { svg, stageStripHtml, meta } = renderSheet(route, opts);
   const badge = opts.badge || `${String(opts.slug || '').toUpperCase()} · SHEET · awaiting G9`;
+  const spine = JSON.stringify(opts.spine || []);
   return `<!DOCTYPE html>
 <html lang="ru">
 <head>
@@ -344,6 +366,8 @@ function buildSheetHtml(route, opts) {
 <body>
 <div class="wrap">${svg}${stageStripHtml}</div>
 <span class="g9">${esc(badge)}</span>
+<script>window.ATLAS_SPINE=${spine};</script>
+<script src="atlas-reader.js"></script>
 </body>
 </html>`;
 }
