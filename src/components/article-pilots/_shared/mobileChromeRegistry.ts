@@ -43,9 +43,14 @@ export const MOBILE_CHROME_ROUTES: Record<string, MobileChromeRegistryEntry> = {
   '/biografii/':   { enabled: true, engine: 'page', adapter: 'default-page', mount: 'registry', backHref: '/' },
   '/hard-texts/':  { enabled: true, engine: 'page', adapter: 'default-page', mount: 'registry', backHref: '/' },
   '/rodosloviye/': { enabled: true, engine: 'page', adapter: 'default-page', mount: 'registry', backHref: '/' },
-  // /izbrannoe/ НЕ подключается: у него sticky-navbar (top:0, без автоскрытия) —
-  // бар движка стекнулся бы поверх «двойной шапкой». Верхняя навигация там уже
-  // постоянна, движок «page» не нужен.
+  '/karty/':       { enabled: true, engine: 'page', adapter: 'default-page', mount: 'registry', backHref: '/' },
+  '/konfessii/':   { enabled: true, engine: 'page', adapter: 'default-page', mount: 'registry', backHref: '/' },
+  // НЕ подключены (сознательно):
+  // - /izbrannoe/ — sticky-navbar (top:0, без автоскрытия): бар движка стекнулся
+  //   бы «двойной шапкой»; верхняя навигация там уже постоянна.
+  // - /map/ — полноэкранный интерактивный граф, страница почти не скроллится
+  //   (~110px): scroll-reveal-модель бара не срабатывает, а свой back-линк
+  //   «← НА ГЛАВНУЮ» в контенте уже покрывает навигацию.
 };
 
 /** Точное совпадение маршрута; null = у страницы нет мобильной обвязки движка. */

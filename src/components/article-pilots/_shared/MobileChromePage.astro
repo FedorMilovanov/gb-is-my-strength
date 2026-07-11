@@ -23,6 +23,7 @@
  *    floating-cluster.css НЕ требуется (прецедент: HermenevtikaMobileBar).
  */
 import MobileChromeShell from './MobileChromeShell.astro';
+import { assetUrl } from '@/lib/asset-version';
 
 interface Props {
   /** Куда ведёт «Назад», если истории нет (прямой заход). */
@@ -31,6 +32,13 @@ interface Props {
   searchLabel?: string;
 }
 const { backHref, homeHref = '/', searchLabel = 'Поиск по сайту…' } = Astro.props as Props;
+
+// Кэш-бастнутый путь палитры — движок сам догружает её на страницах без
+// сайтового lazy-loader'а (karty/map/konfessii), поэтому поиск работает везде.
+const searchSrc = assetUrl('js/search.js');
+// Стили палитры — на страницах без command-palette.css (map/konfessii) движок
+// подгружает их сам, иначе оверлей открылся бы неоформленным.
+const paletteCss = assetUrl('css/command-palette.css');
 ---
 <MobileChromeShell engine="page" topClass="mcp-top" id="mobileChromePage">
   <button class="mcp-icon" id="mcpBackBtn" type="button" aria-label="Назад" data-back-href={backHref} slot="top-leading">
@@ -43,7 +51,7 @@ const { backHref, homeHref = '/', searchLabel = 'Поиск по сайту…' 
   <!-- Клик обрабатывает скрипт адаптера (см. ниже), а НЕ класс/атрибут-хук
        конкретного лоадера: .gb-search-btn коллидирует с command-palette.css
        (прячет текстовый span), а data-fc-action работает не на всех страницах. -->
-  <button class="mcp-search" type="button" aria-label="Открыть поиск по сайту" slot="top-primary">
+  <button class="mcp-search" type="button" aria-label="Открыть поиск по сайту" data-search-src={searchSrc} data-palette-css={paletteCss} slot="top-primary">
     <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7" /><path d="M21 21l-4.3-4.3" /></svg>
     <span>{searchLabel}</span>
     <kbd aria-hidden="true">Ctrl K</kbd>
@@ -123,19 +131,48 @@ const { backHref, homeHref = '/', searchLabel = 'Поиск по сайту…' 
       }
     });
 
-    // Поиск: единый портируемый триггер. Прямой вызов, если палитра готова;
-    // иначе синтетический Ctrl+K — его слушают оба сайтовых lazy-loader'а.
-    const search = root.querySelector('.mcp-search');
+    // Поиск: самодостаточный триггер. Прямой вызов, если палитра готова; иначе
+    // ленивая догрузка js/search.js через ТЕ ЖЕ флаги-гварды, что и сайтовые
+    // lazy-loader'ы (__gbSearchLoading/__gbSearchBootRequested/OpenAfterLoad) —
+    // на страницах с готовым лоадером двойной загрузки не будет, а на страницах
+    // без него (karty/map/konfessii) движок догружает палитру сам.
+    const search = root.querySelector('.mcp-search') as HTMLElement | null;
     search?.addEventListener('click', (e) => {
       e.preventDefault();
-      const w = window as unknown as { GBSearch?: { open?: () => void } };
+      const w = window as unknown as {
+        GBSearch?: { open?: () => void };
+        __gbSearchLoading?: boolean;
+        __gbSearchBootRequested?: boolean;
+        __gbSearchOpenAfterLoad?: boolean;
+      };
+      // Гарантируем стили палитры (на страницах без command-palette.css).
+      const pcss = search.dataset.paletteCss;
+      if (pcss && !document.querySelector('link[data-mcp-palette-css]')) {
+        const href = pcss.split('?')[0];
+        const present = [...document.querySelectorAll('link[rel=stylesheet]')]
+          .some((l) => (l as HTMLLinkElement).href.split('?')[0].endsWith(href));
+        if (!present) {
+          const link = document.createElement('link');
+          link.rel = 'stylesheet';
+          link.href = pcss;
+          link.setAttribute('data-mcp-palette-css', '');
+          document.head.appendChild(link);
+        }
+      }
       if (w.GBSearch && typeof w.GBSearch.open === 'function') {
         w.GBSearch.open();
         return;
       }
-      document.dispatchEvent(new KeyboardEvent('keydown', {
-        key: 'k', ctrlKey: true, bubbles: true, cancelable: true,
-      }));
+      w.__gbSearchOpenAfterLoad = true;
+      if (w.__gbSearchLoading || w.__gbSearchBootRequested) return; // лоадер уже стартовал
+      w.__gbSearchLoading = true;
+      w.__gbSearchBootRequested = true;
+      const s = document.createElement('script');
+      s.defer = true;
+      s.src = search.dataset.searchSrc || '/js/search.js';
+      s.onload = () => { w.__gbSearchLoading = false; w.GBSearch?.open?.(); };
+      s.onerror = () => { w.__gbSearchLoading = false; };
+      document.head.appendChild(s);
     });
 
     // Показ бара: когда родной navbar уехал (.nav-hidden) — либо, без navbar,
