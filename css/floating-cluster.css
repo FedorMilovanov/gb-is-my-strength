@@ -3656,7 +3656,7 @@ html.dark [data-gill-v16] .mobile-top-bar {
   [data-gill-v16] .theme-glyph { font-size: 17px; line-height: 1; }
 
   /* ================= Learning & Settings sheets ================= */
-  [data-gill-v16] .gill-learning-sheet { height: min(86%, 760px); }
+  [data-gill-v16] .gill-learning-sheet { height: auto; max-height: min(86%, 760px); }
   /* Settings has short, fixed content (4 groups) — shrink-to-fit reads as
      premium and precise; a forced tall sheet leaves an ugly empty gap. */
   [data-gill-v16] .gill-settings-sheet { height: auto; max-height: min(70%, 560px); }
@@ -3828,6 +3828,15 @@ html.dark [data-gill-v16] .mobile-top-bar {
   /* ---- Settings sheet: theme/font/line-height/measure controls ---- */
   [data-gill-v16] .gill-settings-sheet .toc-sheet__head { padding: 10px 16px 8px; border-bottom: none; }
   [data-gill-v16] .gill-settings-sheet .toc-sheet__head h3 { font-size: 17px; }
+  /* Close "×" was orphaning below the title (head is block, not a row) — pin it
+     top-right (mirrors the .back button's absolute top-left), reserve space so
+     the title never runs under it. Applies to both reader sheets consistently. */
+  [data-gill-v16] .gill-settings-sheet .toc-sheet__head,
+  [data-gill-v16] .gill-learning-sheet .toc-sheet__head { padding-right: 50px; }
+  [data-gill-v16] .gill-settings-sheet .toc-sheet__head .gb-icon,
+  [data-gill-v16] .gill-learning-sheet .toc-sheet__head .gb-icon {
+    position: absolute; right: 12px; top: 10px; margin: 0;
+  }
   /* Learning sheet: kill the canon head/body divider — with the tab strip
      sitting directly under the header, a second hairline right above it
      reads as a stray connecting line, not a real section boundary. */
@@ -3917,7 +3926,7 @@ html.dark [data-gill-v16] .mobile-top-bar {
      wrap to 2 lines, down to 320px, even with enlarged font. */
   [data-gill-v16] .reader-setting-btn {
     white-space: nowrap;
-    font-size: 12px;
+    font-size: clamp(11px, 3vw, 12.5px);
     padding: 0 2px;
   }
 
