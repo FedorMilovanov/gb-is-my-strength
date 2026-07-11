@@ -608,8 +608,9 @@ const html = `<!DOCTYPE html>
   .legend{display:flex;gap:16px;flex-wrap:wrap;font:12px/1 system-ui,sans-serif;color:var(--ink2);margin:14px 4px 4px}
   .legend span{display:inline-flex;align-items:center}
   .legend b{display:inline-block;width:12px;height:12px;border-radius:3.5px;margin-right:7px}
-  details.tbl{margin-top:16px;font:13px/1.5 system-ui,sans-serif}
+  details.tbl{margin-top:16px;font:13px/1.5 var(--sans)}
   details.tbl summary{cursor:pointer;color:var(--blue);font-weight:600;padding:4px 0}
+  .tbl-scroll{overflow-x:auto;max-width:100%} /* закрытый details в новых Chromium сохраняет боксы содержимого — таблица не должна распирать страницу */
   table{border-collapse:collapse;margin-top:10px;background:var(--card);border-radius:10px;overflow:hidden;box-shadow:0 0 0 1px var(--line)}
   td,th{border-bottom:1px solid var(--line2);padding:6px 12px;text-align:left}
   th{font:600 11.5px/1 system-ui,sans-serif;letter-spacing:.06em;text-transform:uppercase;background:var(--parch2);color:var(--ink2)}
@@ -742,10 +743,17 @@ const html = `<!DOCTYPE html>
   .foot-stamp{margin-top:8px;font:italic 11.5px/1.6 var(--serif);color:#a59772}
 
   @media (max-width:720px){
-    h1{font-size:30px}.hero-compass{display:none}header.hero{padding:22px 20px}
-    .tab{padding:10px 10px;font-size:12.5px}.tab-n{display:none}
+    .wrap{padding:18px 13px 44px}
+    h1{font-size:29px}.he{font-size:15px}.hero-compass{display:none}
+    header.hero{padding:20px 18px 18px}
+    .kicker{letter-spacing:.15em;font-size:10px}
+    .epigraph{font-size:12.5px}
+    .hm{padding:6px 10px;font-size:10px}
+    .tab{padding:10px 10px;font-size:12.5px;gap:6px}.tab-n{display:none}
+    h2{font-size:20px}
     .tl-labels{width:112px}.tl-lab{width:106px;font-size:10.5px}
-    .geo-search input{width:150px}
+    .geo-bar{gap:8px}.geo-search{flex:1}.geo-search input{width:100%;min-width:0}
+    .maps-grid{grid-template-columns:repeat(auto-fill,minmax(230px,1fr))}
   }
   @media print{
     body{background:#fff}body::before{display:none}
@@ -815,7 +823,7 @@ const html = `<!DOCTYPE html>
       <span><b style="background:#eef4f9;border:1.5px dashed #a4bcd4"></b>устный пророк</span>
     </div>
     <details class="tbl"><summary>Данные шкалы таблицей — ${stats.kings} правителей</summary>
-      <table><thead><tr><th>Престол</th><th>Правитель</th><th>Годы</th><th>Библейская оценка</th></tr></thead><tbody>${tableRows.join('')}</tbody></table>
+      <div class="tbl-scroll"><table><thead><tr><th>Престол</th><th>Правитель</th><th>Годы</th><th>Библейская оценка</th></tr></thead><tbody>${tableRows.join('')}</tbody></table></div>
     </details>
   </section>
 
