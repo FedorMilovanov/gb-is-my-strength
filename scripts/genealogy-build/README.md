@@ -16,6 +16,11 @@ node scripts/genealogy-build/build.mjs validate # валидаторы на те
 Требования: Node ≥ 22 (встроенный `fetch`). Внешних npm-зависимостей НЕТ (намеренно:
 пайплайн не должен добавлять ничего в package.json).
 
+> **npm-обёртки** (`npm run genealogy:build/test/validate`) намеренно НЕ добавлены:
+> `package.json` — shared/high-risk файл (AGENTS §0), правится только в lane. Скрипты
+> пропишутся в lane интеграции атласа с рантаймом (Phase 3/5), когда `package.json`
+> трогается по делу вместе с deploy/CI-гейтами. Пока — прямой вызов `node …` выше.
+
 ## Источники (пины по SHA256 — см. config.mjs)
 
 | Источник | Роль | Лицензия |
