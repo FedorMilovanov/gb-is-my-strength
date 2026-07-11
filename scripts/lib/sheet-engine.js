@@ -1,0 +1,330 @@
+/**
+ * sheet-engine.js — движок светлого витринного листа Атласа (§13-бис контракта).
+ *
+ * ЕДИНСТВЕННОЕ место, где живёт рендер листа: карта = данные (route.json) + конфиг.
+ * Никакого кода в картах; никаких монолитов на страницу (урок прод-Авраама).
+ *
+ * API:
+ *   renderSheet(route, opts)  → { svg, stageStripHtml, meta }
+ *   buildSheetHtml(route, opts) → полный самодостаточный HTML листа
+ *   sheetCss()                → CSS листа (для встраивания в другие страницы)
+ *
+ * opts: { family: 'levant'|'mediterranean', baseSvg: строка-исходник базы,
+ *         slug, badge?: строка бейджа (по умолчанию awaiting G9) }
+ *
+ * Визуальный язык: референсы владельца — светлый пергамент, мягкие моря,
+ * атласные глифы, засечковые подписи с гало, терракотовый маршрут с вехами,
+ * компас/линейка/картуш. Тёмный движок v0.5x — только донор данных (§13-бис).
+ */
+'use strict';
+
+const KM_PER_UNIT = { levant: 0.92, mediterranean: 1.354 };
+const ROMAN = ['I', 'II', 'III', 'IV', 'V', 'VI', 'VII', 'VIII', 'IX', 'X'];
+const STAGE_TINT = ['#8a6a1f', '#a25d33', '#4a7a52', '#8f4a56', '#6b5a43', '#3f6a8a', '#7a5a8a', '#4a6a6a'];
+
+const esc = (s) => String(s ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/"/g, '&quot;');
+
+const GEO_DEFS = `<defs>
+  <linearGradient id="landG" x1="0" y1="0" x2="1" y2="1">
+    <stop offset="0" stop-color="#f0e7cf"/><stop offset=".45" stop-color="#e8dcbc"/><stop offset="1" stop-color="#dfd1a9"/>
+  </linearGradient>
+  <linearGradient id="richLandG" x1="0" y1="0" x2=".5" y2="1">
+    <stop offset="0" stop-color="#ece1c2"/><stop offset=".5" stop-color="#e5d8b4"/><stop offset="1" stop-color="#decfa6"/>
+  </linearGradient>
+  <linearGradient id="seaG" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0" stop-color="#cfe0e9"/><stop offset="1" stop-color="#b4cedd"/>
+  </linearGradient>
+  <pattern id="seaPattern" x="0" y="0" width="20" height="20" patternUnits="userSpaceOnUse">
+    <path d="M0,10 Q5,6 10,10 Q15,14 20,10" fill="none" stroke="#7fa7c4" stroke-width=".6" opacity=".38"/>
+    <path d="M0,20 Q5,16 10,20 Q15,24 20,20" fill="none" stroke="#7fa7c4" stroke-width=".5" opacity=".26"/>
+  </pattern>
+  <radialGradient id="fertileG" cx=".5" cy=".5" r=".5">
+    <stop offset="0" stop-color="#6b8f4a" stop-opacity=".26"/><stop offset="1" stop-color="#6b8f4a" stop-opacity="0"/>
+  </radialGradient>
+  <linearGradient id="jordanG" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0" stop-color="#4f7a3f" stop-opacity=".3"/><stop offset="1" stop-color="#4f7a3f" stop-opacity="0"/>
+  </linearGradient>
+  <radialGradient id="desertG" cx=".5" cy=".5" r=".5">
+    <stop offset="0" stop-color="#c09a55" stop-opacity=".2"/><stop offset="1" stop-color="#c09a55" stop-opacity="0"/>
+  </radialGradient>
+  <radialGradient id="negevG" cx=".5" cy=".5" r=".5">
+    <stop offset="0" stop-color="#b08050" stop-opacity=".16"/><stop offset="1" stop-color="#b08050" stop-opacity="0"/>
+  </radialGradient>
+  <radialGradient id="sinaiG" cx=".5" cy=".5" r=".5">
+    <stop offset="0" stop-color="#a07040" stop-opacity=".18"/><stop offset="1" stop-color="#a07040" stop-opacity="0"/>
+  </radialGradient>
+  <linearGradient id="mtG" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0" stop-color="#8b7d5a" stop-opacity=".4"/><stop offset="1" stop-color="#8b7d5a" stop-opacity="0"/>
+  </linearGradient>
+  <pattern id="mountainHatch" x="0" y="0" width="6" height="6" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
+    <line x1="0" y1="0" x2="0" y2="6" stroke="#8b7d5a" stroke-width=".6" opacity=".45"/>
+  </pattern>
+  <pattern id="desertStipple" x="0" y="0" width="12" height="12" patternUnits="userSpaceOnUse">
+    <circle cx="3" cy="3" r=".7" fill="#9c7c43" opacity=".4"/>
+    <circle cx="9" cy="9" r=".5" fill="#9c7c43" opacity=".3"/>
+    <circle cx="6" cy="1" r=".4" fill="#b08050" opacity=".25"/>
+  </pattern>
+  <filter id="waterRipple" x="-10%" y="-10%" width="120%" height="120%"><feGaussianBlur stdDeviation=".8"/></filter>
+  <filter id="soft" x="-40%" y="-40%" width="180%" height="180%"><feGaussianBlur stdDeviation="6"/></filter>
+  <filter id="dotShadow" x="-60%" y="-60%" width="220%" height="220%">
+    <feDropShadow dx="0" dy=".7" stdDeviation=".8" flood-color="#3a2c10" flood-opacity=".45"/>
+  </filter>
+  <radialGradient id="sunGlow" cx=".22" cy=".14" r=".9">
+    <stop offset="0" stop-color="#ffdf9a" stop-opacity=".22"/>
+    <stop offset=".4" stop-color="#f5d489" stop-opacity=".08"/>
+    <stop offset="1" stop-color="#f5d489" stop-opacity="0"/>
+  </radialGradient>
+  <radialGradient id="edgeFog" cx=".5" cy=".5" r=".72">
+    <stop offset="0" stop-color="#7a5c26" stop-opacity="0"/>
+    <stop offset=".8" stop-color="#7a5c26" stop-opacity="0"/>
+    <stop offset="1" stop-color="#6b4f1e" stop-opacity=".18"/>
+  </radialGradient>
+  <filter id="parchmentGrain">
+    <feTurbulence type="fractalNoise" baseFrequency=".55" numOctaves="2" stitchTiles="stitch" result="n"/>
+    <feColorMatrix in="n" type="matrix" values="0 0 0 0 .45  0 0 0 0 .36  0 0 0 0 .2  0 0 0 .05 0"/>
+  </filter>
+</defs>`;
+
+function anchorSpec(a) {
+  const A = {
+    e: { dx: 1, dy: 0, ta: 'start' }, w: { dx: -1, dy: 0, ta: 'end' },
+    n: { dx: 0, dy: -1, ta: 'middle' }, s: { dx: 0, dy: 1, ta: 'middle' },
+    ne: { dx: .75, dy: -.7, ta: 'start' }, nw: { dx: -.75, dy: -.7, ta: 'end' },
+    se: { dx: .75, dy: .95, ta: 'start' }, sw: { dx: -.75, dy: .95, ta: 'end' },
+  };
+  return A[a] || A.e;
+}
+
+function catmullRom(pts) {
+  if (pts.length < 2) return '';
+  if (pts.length === 2) return `M${pts[0][0]},${pts[0][1]} L${pts[1][0]},${pts[1][1]}`;
+  let d = `M${pts[0][0]},${pts[0][1]}`;
+  for (let i = 0; i < pts.length - 1; i++) {
+    const p0 = pts[Math.max(0, i - 1)], p1 = pts[i], p2 = pts[i + 1], p3 = pts[Math.min(pts.length - 1, i + 2)];
+    const c1 = [p1[0] + (p2[0] - p0[0]) / 6, p1[1] + (p2[1] - p0[1]) / 6];
+    const c2 = [p2[0] - (p3[0] - p1[0]) / 6, p2[1] - (p3[1] - p1[1]) / 6];
+    d += ` C${c1[0].toFixed(1)},${c1[1].toFixed(1)} ${c2[0].toFixed(1)},${c2[1].toFixed(1)} ${p2[0]},${p2[1]}`;
+  }
+  return d;
+}
+
+function renderSheet(route, opts) {
+  const { family, baseSvg, slug } = opts;
+  const meta = route.meta || {};
+  const places = route.places || [];
+  const stages = route.stages || [];
+
+  // Кадр листа: meta.sheet_viewport (своё поле листа) > meta.viewport_init (движковое) > bbox
+  const vp = meta.sheet_viewport || meta.viewport_init || (() => {
+    const xs = places.map(p => p.x), ys = places.map(p => p.y);
+    const cx = (Math.min(...xs) + Math.max(...xs)) / 2, cy = (Math.min(...ys) + Math.max(...ys)) / 2;
+    return { cx, cy, w: Math.max(Math.max(...xs) - Math.min(...xs) + 260, (Math.max(...ys) - Math.min(...ys) + 200) * 1.5) };
+  })();
+  const W = vp.w, H = W / 1.5;
+  const x0 = vp.cx - W / 2, y0 = vp.cy - H / 2;
+  const k = W / 1200;
+
+  let base = String(baseSvg || '').replace(/<svg[^>]*>/, '').replace('</svg>', '');
+  if (family === 'levant') {
+    // хирургия устья Кишона (файл базы — SYSTEM, правка на потребителе)
+    base = base.replace(
+      'M613,706 C595,712 575,720 555,728 C535,736 510,738 490,735 C468,730 445,720 420,710',
+      'M613,706 C603,712 595,720 588,728');
+  } else {
+    base = base.replace(/<!--[\s\S]*?-->/g, '');
+  }
+
+  const routePts = places.filter(p => typeof p.stage === 'number' && p.type !== 'region').map(p => [p.x, p.y]);
+  const routePath = catmullRom(routePts);
+
+  const seenStage = new Set(), milestones = [], milestoneIds = new Set();
+  for (const p of places) {
+    if (typeof p.stage === 'number' && !seenStage.has(p.stage)) {
+      seenStage.add(p.stage);
+      milestones.push({ x: p.x, y: p.y, n: p.stage, cand: p.type === 'cand' });
+      milestoneIds.add(p.id);
+    }
+  }
+
+  const dots = [], labels = [], leaders = [];
+  const fontPlace = 13 * k, fontCtx = 11.5 * k;
+  for (const p of places) {
+    if (p.type === 'region') {
+      labels.push(`<text x="${p.x}" y="${p.y}" class="lab-region" font-size="${(12.5 * k).toFixed(2)}" text-anchor="middle">${esc((p.name || '').toUpperCase())}</text>`);
+      continue;
+    }
+    const isMile = milestoneIds.has(p.id);
+    const r = (isMile ? 7.4 : p.type === 'cand' ? 4.6 : 4.2) * k;
+    const cls = p.type === 'cand' ? 'pl-cand' : 'pl-city';
+    if (!isMile) {
+      let shape;
+      if (p.type === 'mountain' || /гора|Гора/.test(p.name || '')) {
+        shape = `<path d="M${p.x - r * 1.25},${p.y + r} L${p.x},${p.y - r * 1.3} L${p.x + r * 1.25},${p.y + r} Z" class="${cls}"/>`;
+      } else if (p.type === 'spring' || p.type === 'well') {
+        shape = `<circle cx="${p.x}" cy="${p.y}" r="${r.toFixed(2)}" class="${cls}"/><circle cx="${p.x}" cy="${p.y}" r="${(r * .4).toFixed(2)}" fill="#fcf9f1"/>`;
+      } else {
+        shape = `<circle cx="${p.x}" cy="${p.y}" r="${r.toFixed(2)}" class="${cls}"/>`;
+      }
+      dots.push(shape);
+    }
+
+    const a = p.labelAnchor || ((p.side === 'l') ? 'w' : 'e');
+    const sp = anchorSpec(a);
+    const off = (isMile ? 15 : 9) * k;
+    let lx = p.x + sp.dx * off;
+    let ly = p.y + sp.dy * off + fontPlace * 0.34;
+    if (sp.dy < 0) ly = p.y - off * 0.9;
+    if (sp.dy > 0 && sp.dx === 0) ly = p.y + off + fontPlace * 0.8;
+    if (p.leader && typeof p.leader.dx === 'number') {
+      const LX = p.leader.dx * 1.6 * k, LY = p.leader.dy * 1.6 * k;
+      const tx = lx + LX, ty = ly + LY;
+      if (Math.hypot(LX, LY) > 8 * k) {
+        const ex = sp.ta === 'end' ? tx + 2 * k : sp.ta === 'middle' ? tx : tx - 2 * k;
+        const ey = ty - fontPlace * 0.34;
+        const dl = Math.hypot(ex - p.x, ey - p.y) || 1;
+        const sx = p.x + (ex - p.x) / dl * (r + 2 * k), sy = p.y + (ey - p.y) / dl * (r + 2 * k);
+        leaders.push(`<line x1="${sx.toFixed(1)}" y1="${sy.toFixed(1)}" x2="${ex.toFixed(1)}" y2="${ey.toFixed(1)}" class="leader"/>`);
+      }
+      lx = tx; ly = ty;
+    }
+    labels.push(`<text x="${lx.toFixed(1)}" y="${ly.toFixed(1)}" class="lab-place${p.type === 'cand' ? ' lab-cand' : ''}" font-size="${fontPlace.toFixed(2)}" text-anchor="${sp.ta}">${esc(p.name)}</text>`);
+  }
+
+  const placeXY = places.filter(p => p.type !== 'region');
+  const wps = (route.verified_waypoints || []).map(w => {
+    const s = 3.2 * k;
+    // wp, совпадающий с местом (арх-подтверждение той же точки) — текст вниз,
+    // чтобы не бодаться с подписью места
+    const near = placeXY.some(p => Math.hypot(p.x - w.x, p.y - w.y) < 8 * k + 4);
+    const tx = near ? w.x + 4 * k : w.x + 6 * k;
+    const ty = near ? w.y + 14 * k : w.y + 3.6 * k;
+    return `<rect x="${(w.x - s).toFixed(1)}" y="${(w.y - s).toFixed(1)}" width="${(s * 2).toFixed(1)}" height="${(s * 2).toFixed(1)}" transform="rotate(45 ${w.x} ${w.y})" class="wp-dot"/>` +
+      `<text x="${tx.toFixed(1)}" y="${ty.toFixed(1)}" class="lab-wp" font-size="${(10 * k).toFixed(2)}">${esc(w.name)}</text>`;
+  });
+  const ctxs = (route.ctx || []).filter(c => c && typeof c.x === 'number').map(c =>
+    `<text x="${c.x}" y="${c.y}" class="lab-ctx" font-size="${fontCtx.toFixed(2)}" text-anchor="middle">${esc((c.name || '').toUpperCase())}</text>`);
+
+  const miles = milestones.map(m =>
+    `<g class="mile"><circle cx="${m.x}" cy="${m.y}" r="${(7.4 * k).toFixed(2)}" class="mile-c${m.cand ? ' mile-cand' : ''}" style="stroke:${STAGE_TINT[m.n % STAGE_TINT.length]}"/>` +
+    `<text x="${m.x}" y="${m.y + 3.4 * k}" text-anchor="middle" class="mile-t" font-size="${(9.5 * k).toFixed(2)}" style="fill:${STAGE_TINT[m.n % STAGE_TINT.length]}">${ROMAN[m.n] || m.n + 1}</text></g>`);
+
+  const km100 = 100 / KM_PER_UNIT[family];
+  const sbW = km100 * 2;
+  const sbX = x0 + W - sbW - 60 * k, sbY = y0 + H - 34 * k;
+  const furn = `
+  <g class="furn">
+    <rect x="${sbX - 14 * k}" y="${sbY - 22 * k}" width="${sbW + 28 * k}" height="${40 * k}" rx="${6 * k}" class="plate"/>
+    <rect x="${sbX}" y="${sbY}" width="${km100}" height="${7 * k}" class="sb-d"/>
+    <rect x="${sbX + km100}" y="${sbY}" width="${km100}" height="${7 * k}" class="sb-l"/>
+    <text x="${sbX}" y="${sbY - 7 * k}" class="sb-t" font-size="${11 * k}">0</text>
+    <text x="${sbX + km100}" y="${sbY - 7 * k}" class="sb-t" font-size="${11 * k}" text-anchor="middle">100</text>
+    <text x="${sbX + km100 * 2}" y="${sbY - 7 * k}" class="sb-t" font-size="${11 * k}" text-anchor="end">200 км</text>
+    <g transform="translate(${x0 + W - 52 * k},${y0 + 56 * k})">
+      <circle r="${30 * k}" class="plate"/>
+      <path d="M0,${-19 * k} L${6 * k},${11 * k} L0,${5 * k} L${-6 * k},${11 * k} Z" class="north"/>
+      <text y="${26 * k}" text-anchor="middle" class="north-t" font-size="${13 * k}">С</text>
+    </g>
+  </g>`;
+
+  const cart = `
+  <g class="cartouche">
+    <rect x="${x0 + 24 * k}" y="${y0 + 18 * k}" width="${400 * k}" height="${72 * k}" rx="${8 * k}" class="plate cart-plate"/>
+    <text x="${x0 + 42 * k}" y="${y0 + 50 * k}" class="cart-title" font-size="${25 * k}">${esc(meta.title || slug)}</text>
+    <text x="${x0 + 42 * k}" y="${y0 + 74 * k}" class="cart-sub" font-size="${12 * k}">${esc(meta.subtitle || '')}</text>
+  </g>`;
+
+  const stageStripHtml = stages.length ? `
+  <div class="stage-strip">
+    ${stages.map((s, i) =>
+    `<div class="st"><span class="st-dot" style="background:${STAGE_TINT[i % STAGE_TINT.length]}"></span>` +
+    `<span class="st-body"><b>${esc(ROMAN[i] || i + 1)}</b> · ${esc(String(s.t || ''))}` +
+    (s.age || s.km ? `<i>${esc(String(s.age || s.km))}</i>` : '') + `</span></div>`).join('')}
+  </div>` : '';
+
+  const svg = `<svg viewBox="${x0.toFixed(1)} ${y0.toFixed(1)} ${W} ${H.toFixed(1)}" xmlns="http://www.w3.org/2000/svg" class="sheet" role="img" aria-label="${esc(meta.title || slug)} — лист Атласа">
+${GEO_DEFS}
+<rect x="${x0}" y="${y0}" width="${W}" height="${H}" fill="url(#seaG)"/>
+<g class="base">${base}</g>
+<path d="${routePath}" class="route-under"/>
+<path d="${routePath}" class="route"/>
+${leaders.join('')}
+${dots.join('')}
+${miles.join('')}
+${wps.join('')}
+${ctxs.join('')}
+${labels.join('')}
+${cart}
+${furn}
+<rect x="${x0}" y="${y0}" width="${W}" height="${H}" fill="url(#sunGlow)" pointer-events="none"/>
+<rect x="${x0}" y="${y0}" width="${W}" height="${H}" fill="url(#edgeFog)" pointer-events="none"/>
+<rect x="${x0}" y="${y0}" width="${W}" height="${H}" filter="url(#parchmentGrain)" opacity=".5" pointer-events="none"/>
+<rect x="${x0 + 8 * k}" y="${y0 + 8 * k}" width="${W - 16 * k}" height="${H - 16 * k}" class="frame"/>
+</svg>`;
+
+  return { svg, stageStripHtml, meta: { title: meta.title || slug, subtitle: meta.subtitle || '' } };
+}
+
+function sheetCss() {
+  return `
+  html,body{margin:0;min-height:100%;background:#efe6cf}
+  body{display:grid;place-items:center;padding:12px;box-sizing:border-box}
+  .wrap{max-width:1500px;width:100%;box-shadow:0 18px 60px rgba(90,70,30,.35), 0 2px 10px rgba(90,70,30,.22);border-radius:6px;overflow:hidden}
+  svg.sheet{display:block;width:100%;height:auto;background:#f5edd8}
+  .frame{fill:none;stroke:#8a6a1f;stroke-width:1.2;opacity:.55}
+  .base{opacity:.96}
+  .base [fill="#10263a"]{fill:#8fb7cb}
+  .base [stroke="#2e4d6b"]{stroke:#6f97ae}
+  .base [stroke="#2d4a66"]{stroke:#6f97ae}
+  .base text{opacity:.85}
+  .route-under{fill:none;stroke:#f6f1e7;stroke-width:5.4;stroke-linecap:round;stroke-linejoin:round;opacity:.65}
+  .route{fill:none;stroke:#a25d33;stroke-width:2.6;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:.1 7.4;opacity:.95}
+  .pl-city{fill:#1e3a63;stroke:#f6f1e7;stroke-width:1.2;filter:url(#dotShadow)}
+  .pl-cand{fill:none;stroke:#8a6a1f;stroke-width:1.6;stroke-dasharray:3 2.2}
+  .wp-dot{fill:#4a7a52;stroke:#f6f1e7;stroke-width:.9;opacity:.85}
+  .leader{stroke:#5c4d33;stroke-width:.9;opacity:.55}
+  .mile-c{fill:#f6f1e7;stroke-width:1.6;filter:url(#dotShadow)}
+  .mile-cand{stroke-dasharray:3 2.2}
+  .mile-t{font:700 1em Georgia,serif}
+  text.lab-place{font-family:Georgia,'Times New Roman',serif;font-weight:600;fill:#2b2418;paint-order:stroke;stroke:#f5edd8;stroke-width:.22em;stroke-linejoin:round}
+  text.lab-cand{font-style:italic;fill:#5c4a1e}
+  text.lab-region{font-family:Georgia,serif;font-weight:600;letter-spacing:.3em;fill:#7a6a48;opacity:.78;paint-order:stroke;stroke:#f5edd8;stroke-width:.18em}
+  text.lab-ctx{font-family:Georgia,serif;letter-spacing:.24em;fill:#8a7a58;opacity:.6;paint-order:stroke;stroke:#f5edd8;stroke-width:.16em}
+  text.lab-wp{font-family:Georgia,serif;font-style:italic;fill:#4a6a52;opacity:.82;paint-order:stroke;stroke:#f5edd8;stroke-width:.18em}
+  .plate{fill:rgba(246,241,231,.85);stroke:rgba(120,95,40,.35);stroke-width:1}
+  .cart-plate{fill:rgba(246,241,231,.92)}
+  .cart-title{font-family:Georgia,serif;font-weight:700;fill:#1e3a63}
+  .cart-sub{font-family:Georgia,serif;fill:#5c4d33;opacity:.85}
+  .sb-d{fill:#3a3020}.sb-l{fill:#f6f1e7;stroke:#3a3020;stroke-width:1}
+  .sb-t{font-family:Georgia,serif;fill:#5c4d33;font-weight:600}
+  .north{fill:#8a6a1f;stroke:#6b5216;stroke-width:1}
+  .north-t{font-family:Georgia,serif;font-weight:700;fill:#6b5216}
+  .stage-strip{display:flex;flex-wrap:wrap;gap:6px 22px;padding:12px 18px;background:#f0e8d2;border-top:1px solid rgba(138,106,31,.25)}
+  .st{display:flex;align-items:center;gap:8px}
+  .st-dot{width:9px;height:9px;border-radius:50%;flex-shrink:0;box-shadow:0 1px 2px rgba(90,70,30,.4)}
+  .st-body{font-family:Georgia,serif;font-size:13px;color:#3a3020}
+  .st-body b{color:#8a6a1f}
+  .st-body i{color:#7a6a48;margin-left:6px;font-size:11.5px}
+  .g9{position:fixed;right:10px;bottom:10px;z-index:9;font:600 10px/1 system-ui;letter-spacing:.08em;color:#7a5c26;background:rgba(246,241,231,.9);border:1px solid rgba(138,106,31,.4);border-radius:999px;padding:6px 10px}`;
+}
+
+function buildSheetHtml(route, opts) {
+  const { svg, stageStripHtml, meta } = renderSheet(route, opts);
+  const badge = opts.badge || `${String(opts.slug || '').toUpperCase()} · SHEET · awaiting G9`;
+  return `<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex,nofollow">
+<title>${esc(meta.title)} — лист Атласа (светлый, awaiting G9)</title>
+<style>${sheetCss()}
+</style>
+</head>
+<body>
+<div class="wrap">${svg}${stageStripHtml}</div>
+<span class="g9">${esc(badge)}</span>
+</body>
+</html>`;
+}
+
+module.exports = { renderSheet, buildSheetHtml, sheetCss, KM_PER_UNIT, STAGE_TINT, ROMAN };
