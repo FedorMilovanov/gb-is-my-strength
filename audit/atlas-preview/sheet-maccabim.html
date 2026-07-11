@@ -12,7 +12,6 @@
   svg.sheet{display:block;width:100%;height:auto;background:#f5edd8}
   .frame{fill:none;stroke:#8a6a1f;stroke-width:1.2;opacity:.55}
   .base{opacity:.96}
-  /* светлая тема вод базы (тёмный канон файла) */
   .base [fill="#10263a"]{fill:#8fb7cb}
   .base [stroke="#2e4d6b"]{stroke:#6f97ae}
   .base [stroke="#2d4a66"]{stroke:#6f97ae}
@@ -24,6 +23,7 @@
   .wp-dot{fill:#4a7a52;stroke:#f6f1e7;stroke-width:.9;opacity:.85}
   .leader{stroke:#5c4d33;stroke-width:.9;opacity:.55}
   .mile-c{fill:#f6f1e7;stroke-width:1.6;filter:url(#dotShadow)}
+  .mile-cand{stroke-dasharray:3 2.2}
   .mile-t{font:700 1em Georgia,serif}
   text.lab-place{font-family:Georgia,'Times New Roman',serif;font-weight:600;fill:#2b2418;paint-order:stroke;stroke:#f5edd8;stroke-width:.22em;stroke-linejoin:round}
   text.lab-cand{font-style:italic;fill:#5c4a1e}
@@ -38,8 +38,12 @@
   .sb-t{font-family:Georgia,serif;fill:#5c4d33;font-weight:600}
   .north{fill:#8a6a1f;stroke:#6b5216;stroke-width:1}
   .north-t{font-family:Georgia,serif;font-weight:700;fill:#6b5216}
-  .st-n{font-family:Georgia,serif;fill:#8a6a1f;font-weight:700;letter-spacing:.06em}
-  .st-t{font-family:Georgia,serif;fill:#3a3020}
+  .stage-strip{display:flex;flex-wrap:wrap;gap:6px 22px;padding:12px 18px;background:#f0e8d2;border-top:1px solid rgba(138,106,31,.25)}
+  .st{display:flex;align-items:center;gap:8px}
+  .st-dot{width:9px;height:9px;border-radius:50%;flex-shrink:0;box-shadow:0 1px 2px rgba(90,70,30,.4)}
+  .st-body{font-family:Georgia,serif;font-size:13px;color:#3a3020}
+  .st-body b{color:#8a6a1f}
+  .st-body i{color:#7a6a48;margin-left:6px;font-size:11.5px}
   .g9{position:fixed;right:10px;bottom:10px;z-index:9;font:600 10px/1 system-ui;letter-spacing:.08em;color:#7a5c26;background:rgba(246,241,231,.9);border:1px solid rgba(138,106,31,.4);border-radius:999px;padding:6px 10px}
 </style>
 </head>
@@ -89,6 +93,20 @@
   <filter id="soft" x="-40%" y="-40%" width="180%" height="180%"><feGaussianBlur stdDeviation="6"/></filter>
   <filter id="dotShadow" x="-60%" y="-60%" width="220%" height="220%">
     <feDropShadow dx="0" dy=".7" stdDeviation=".8" flood-color="#3a2c10" flood-opacity=".45"/>
+  </filter>
+  <radialGradient id="sunGlow" cx=".22" cy=".14" r=".9">
+    <stop offset="0" stop-color="#ffdf9a" stop-opacity=".22"/>
+    <stop offset=".4" stop-color="#f5d489" stop-opacity=".08"/>
+    <stop offset="1" stop-color="#f5d489" stop-opacity="0"/>
+  </radialGradient>
+  <radialGradient id="edgeFog" cx=".5" cy=".5" r=".72">
+    <stop offset="0" stop-color="#7a5c26" stop-opacity="0"/>
+    <stop offset=".8" stop-color="#7a5c26" stop-opacity="0"/>
+    <stop offset="1" stop-color="#6b4f1e" stop-opacity=".18"/>
+  </radialGradient>
+  <filter id="parchmentGrain">
+    <feTurbulence type="fractalNoise" baseFrequency=".55" numOctaves="2" stitchTiles="stitch" result="n"/>
+    <feColorMatrix in="n" type="matrix" values="0 0 0 0 .45  0 0 0 0 .36  0 0 0 0 .2  0 0 0 .05 0"/>
   </filter>
 </defs>
 <rect x="0" y="81.66666666666663" width="1900" height="1266.6666666666667" fill="url(#seaG)"/>
@@ -539,17 +557,17 @@
 </g>
 <path d="M621,621 C621.3,650.8 711.3,758.2 623,800 C534.7,841.8 94.0,875.0 91,872 C88.0,869.0 500.5,883.0 605,782 C709.5,681.0 717.3,265.3 718,266 C718.7,266.7 628.7,698.2 609,786 C589.3,873.8 599.8,786.8 600,793 C600.2,799.2 601.5,836.3 610,823 C618.5,809.7 649.2,726.8 651,713 C652.8,699.2 614.5,735.3 621,740 C627.5,744.7 687.5,721.7 690,741 C692.5,760.3 645.0,836.8 636,856" class="route-under"/>
 <path d="M621,621 C621.3,650.8 711.3,758.2 623,800 C534.7,841.8 94.0,875.0 91,872 C88.0,869.0 500.5,883.0 605,782 C709.5,681.0 717.3,265.3 718,266 C718.7,266.7 628.7,698.2 609,786 C589.3,873.8 599.8,786.8 600,793 C600.2,799.2 601.5,836.3 610,823 C618.5,809.7 649.2,726.8 651,713 C652.8,699.2 614.5,735.3 621,740 C627.5,744.7 687.5,721.7 690,741 C692.5,760.3 645.0,836.8 636,856" class="route"/>
-<line x1="628.7" y1="808.0" x2="650.8" y2="838.9" class="leader"/><line x1="600.2" y1="773.5" x2="582.3" y2="741.9" class="leader"/><line x1="615.1" y1="778.3" x2="636.8" y2="751.0" class="leader"/><line x1="591.2" y1="797.3" x2="568.6" y2="808.2" class="leader"/>
-<circle cx="621" cy="621" r="6.65" class="pl-city"/><circle cx="623" cy="800" r="6.65" class="pl-city"/><circle cx="91" cy="872" r="6.65" class="pl-city"/><circle cx="605" cy="782" r="6.65" class="pl-city"/><circle cx="718" cy="266" r="6.65" class="pl-city"/><circle cx="609" cy="786" r="6.65" class="pl-city"/><circle cx="600" cy="793" r="6.65" class="pl-city"/><circle cx="610" cy="823" r="6.65" class="pl-city"/><circle cx="651" cy="713" r="6.65" class="pl-city"/><circle cx="621" cy="740" r="6.65" class="pl-city"/><circle cx="690" cy="741" r="6.65" class="pl-city"/><circle cx="636" cy="856" r="6.65" class="pl-city"/>
+<line x1="628.7" y1="808.0" x2="650.8" y2="838.9" class="leader"/><line x1="597.2" y1="769.3" x2="575.2" y2="733.4" class="leader"/><line x1="618.3" y1="774.4" x2="643.9" y2="742.4" class="leader"/><line x1="591.2" y1="797.3" x2="568.6" y2="808.2" class="leader"/>
+<circle cx="623" cy="800" r="6.65" class="pl-city"/><circle cx="718" cy="266" r="6.65" class="pl-city"/><circle cx="600" cy="793" r="6.65" class="pl-city"/><circle cx="610" cy="823" r="6.65" class="pl-city"/><circle cx="651" cy="713" r="6.65" class="pl-city"/><circle cx="690" cy="741" r="6.65" class="pl-city"/><circle cx="636" cy="856" r="6.65" class="pl-city"/>
 <g class="mile"><circle cx="621" cy="621" r="11.72" class="mile-c" style="stroke:#8a6a1f"/><text x="621" y="626.3833333333333" text-anchor="middle" class="mile-t" font-size="15.04" style="fill:#8a6a1f">I</text></g><g class="mile"><circle cx="91" cy="872" r="11.72" class="mile-c" style="stroke:#a25d33"/><text x="91" y="877.3833333333333" text-anchor="middle" class="mile-t" font-size="15.04" style="fill:#a25d33">II</text></g><g class="mile"><circle cx="605" cy="782" r="11.72" class="mile-c" style="stroke:#4a7a52"/><text x="605" y="787.3833333333333" text-anchor="middle" class="mile-t" font-size="15.04" style="fill:#4a7a52">III</text></g><g class="mile"><circle cx="609" cy="786" r="11.72" class="mile-c" style="stroke:#8f4a56"/><text x="609" y="791.3833333333333" text-anchor="middle" class="mile-t" font-size="15.04" style="fill:#8f4a56">IV</text></g><g class="mile"><circle cx="621" cy="740" r="11.72" class="mile-c" style="stroke:#6b5a43"/><text x="621" y="745.3833333333333" text-anchor="middle" class="mile-t" font-size="15.04" style="fill:#6b5a43">V</text></g>
 
 <text x="600" y="400" class="lab-ctx" font-size="18.21" text-anchor="middle">ГРЕЦИЯ</text><text x="1600" y="600" class="lab-ctx" font-size="18.21" text-anchor="middle">ПЕРСИЯ</text><text x="250" y="950" class="lab-ctx" font-size="18.21" text-anchor="middle">ЕГИПЕТ ПТОЛЕМЕЕВ</text>
-<text x="635.3" y="628.0" class="lab-place" font-size="20.58" text-anchor="start">Тир</text><text x="654.0" y="845.9" class="lab-place" font-size="20.58" text-anchor="start">Иерусалим</text><text x="105.3" y="879.0" class="lab-place" font-size="20.58" text-anchor="start">Александрия</text><text x="579.1" y="748.9" class="lab-place" font-size="20.58" text-anchor="end">Модиин</text><text x="732.3" y="273.0" class="lab-place" font-size="20.58" text-anchor="start">Антиохия Сирийская</text><text x="640.0" y="758.0" class="lab-place" font-size="20.58" text-anchor="start">Беф-Орон</text><text x="565.5" y="815.2" class="lab-place" font-size="20.58" text-anchor="end">Еммаус</text><text x="595.8" y="830.0" class="lab-place" font-size="20.58" text-anchor="end">Беф-Цур</text><text x="665.3" y="720.0" class="lab-place" font-size="20.58" text-anchor="start">Беф-Сан</text><text x="606.8" y="747.0" class="lab-place" font-size="20.58" text-anchor="end">Самария</text><text x="704.3" y="748.0" class="lab-place" font-size="20.58" text-anchor="start">Гераса</text><text x="650.3" y="863.0" class="lab-place" font-size="20.58" text-anchor="start">Масада</text>
+<text x="644.8" y="628.0" class="lab-place" font-size="20.58" text-anchor="start">Тир</text><text x="654.0" y="845.9" class="lab-place" font-size="20.58" text-anchor="start">Иерусалим</text><text x="114.8" y="879.0" class="lab-place" font-size="20.58" text-anchor="start">Александрия</text><text x="572.0" y="740.4" class="lab-place" font-size="20.58" text-anchor="end">Модиин</text><text x="732.3" y="273.0" class="lab-place" font-size="20.58" text-anchor="start">Антиохия Сирийская</text><text x="647.1" y="749.4" class="lab-place" font-size="20.58" text-anchor="start">Беф-Орон</text><text x="565.5" y="815.2" class="lab-place" font-size="20.58" text-anchor="end">Еммаус</text><text x="595.8" y="830.0" class="lab-place" font-size="20.58" text-anchor="end">Беф-Цур</text><text x="665.3" y="720.0" class="lab-place" font-size="20.58" text-anchor="start">Беф-Сан</text><text x="597.3" y="747.0" class="lab-place" font-size="20.58" text-anchor="end">Самария</text><text x="704.3" y="748.0" class="lab-place" font-size="20.58" text-anchor="start">Гераса</text><text x="650.3" y="863.0" class="lab-place" font-size="20.58" text-anchor="start">Масада</text>
 
   <g class="cartouche">
-    <rect x="41.166666666666664" y="119.66666666666663" width="665" height="136.16666666666666" rx="12.666666666666666" class="plate cart-plate"/>
-    <text x="72.83333333333333" y="179.8333333333333" class="cart-title" font-size="41.166666666666664">Межзаветный период · Маккавеи</text>
-    <text x="72.83333333333333" y="220.99999999999994" class="cart-sub" font-size="19.791666666666664">От Александра до Ирода · 332–37 гг. до н.э.</text>
+    <rect x="38" y="110.16666666666663" width="633.3333333333333" height="114" rx="12.666666666666666" class="plate cart-plate"/>
+    <text x="66.5" y="160.8333333333333" class="cart-title" font-size="39.58333333333333">Межзаветный период · Маккавеи</text>
+    <text x="66.5" y="198.8333333333333" class="cart-sub" font-size="19">От Александра до Ирода · 332–37 гг. до н.э.</text>
   </g>
 
   <g class="furn">
@@ -565,13 +583,14 @@
       <text y="41.166666666666664" text-anchor="middle" class="north-t" font-size="20.583333333333332">С</text>
     </g>
   </g>
-
-  <g class="stages">
-    <rect x="41.166666666666664" y="1259.6666666666667" width="1076.6666666666665" height="60.166666666666664" rx="11.083333333333332" class="plate"/>
-    <circle cx="72.83333333333333" cy="1289.7500000000002" r="6.966666666666667" fill="#8a6a1f"/><text x="88.66666666666666" y="1283.4166666666667" class="st-n" font-size="15.041666666666666">I · 332–323 ДО Н.Э.</text><text x="88.66666666666666" y="1304.0000000000002" class="st-t" font-size="16.625">Александр Македонский</text><circle cx="278.66666666666663" cy="1289.7500000000002" r="6.966666666666667" fill="#a25d33"/><text x="294.5" y="1283.4166666666667" class="st-n" font-size="15.041666666666666">II · 323–198 ДО Н.Э. · СЕПТУАГИНТА</text><text x="294.5" y="1304.0000000000002" class="st-t" font-size="16.625">Под властью Птолемеев</text><circle cx="484.5" cy="1289.7500000000002" r="6.966666666666667" fill="#4a7a52"/><text x="500.3333333333333" y="1283.4166666666667" class="st-n" font-size="15.041666666666666">III · 198–167 ДО Н.Э. · АНТИОХ IV</text><text x="500.3333333333333" y="1304.0000000000002" class="st-t" font-size="16.625">Селевкиды и гонения</text><circle cx="690.3333333333333" cy="1289.7500000000002" r="6.966666666666667" fill="#8f4a56"/><text x="706.1666666666666" y="1283.4166666666667" class="st-n" font-size="15.041666666666666">IV · 167–142 ДО Н.Э. · ХАНУКА</text><text x="706.1666666666666" y="1304.0000000000002" class="st-t" font-size="16.625">Восстание Маккавеев</text><circle cx="896.1666666666666" cy="1289.7500000000002" r="6.966666666666667" fill="#6b5a43"/><text x="912" y="1283.4166666666667" class="st-n" font-size="15.041666666666666">V · 142–37 ДО Н.Э. · ДО ИРОДА</text><text x="912" y="1304.0000000000002" class="st-t" font-size="16.625">Хасмонейское царство</text>
-  </g>
+<rect x="0" y="81.66666666666663" width="1900" height="1266.6666666666667" fill="url(#sunGlow)" pointer-events="none"/>
+<rect x="0" y="81.66666666666663" width="1900" height="1266.6666666666667" fill="url(#edgeFog)" pointer-events="none"/>
+<rect x="0" y="81.66666666666663" width="1900" height="1266.6666666666667" filter="url(#parchmentGrain)" opacity=".5" pointer-events="none"/>
 <rect x="12.666666666666666" y="94.3333333333333" width="1874.6666666666667" height="1241.3333333333335" class="frame"/>
-</svg></div>
-<span class="g9">MACCABIM · SHEET v1 · awaiting G9</span>
+</svg>
+  <div class="stage-strip">
+    <div class="st"><span class="st-dot" style="background:#8a6a1f"></span><span class="st-body"><b>I</b> · Александр Македонский<i>332–323 ДО Н.Э.</i></span></div><div class="st"><span class="st-dot" style="background:#a25d33"></span><span class="st-body"><b>II</b> · Под властью Птолемеев<i>323–198 ДО Н.Э. · СЕПТУАГИНТА</i></span></div><div class="st"><span class="st-dot" style="background:#4a7a52"></span><span class="st-body"><b>III</b> · Селевкиды и гонения<i>198–167 ДО Н.Э. · АНТИОХ IV</i></span></div><div class="st"><span class="st-dot" style="background:#8f4a56"></span><span class="st-body"><b>IV</b> · Восстание Маккавеев<i>167–142 ДО Н.Э. · ХАНУКА</i></span></div><div class="st"><span class="st-dot" style="background:#6b5a43"></span><span class="st-body"><b>V</b> · Хасмонейское царство<i>142–37 ДО Н.Э. · ДО ИРОДА</i></span></div>
+  </div></div>
+<span class="g9">MACCABIM · SHEET · awaiting G9</span>
 </body>
 </html>
