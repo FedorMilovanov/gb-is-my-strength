@@ -5,6 +5,11 @@
 import BiografiiPageChrome from '@/components/biografii/BiografiiPageChrome.astro';
 import BiografiiMain from '@/components/biografii/BiografiiMain.astro';
 import BiografiiPageFooter from '@/components/biografii/BiografiiPageFooter.astro';
+import MobileChromePage from '@/components/article-pilots/_shared/MobileChromePage.astro';
+import { mobileChromeFor } from '@/components/article-pilots/_shared/mobileChromeRegistry';
+
+// Мобильная обвязка выбирается registry (движок «page»: Back·Home·Поиск сверху).
+const mobileChrome = mobileChromeFor('/biografii/');
 ---
 <!DOCTYPE html>
 <html lang="ru" class="">
@@ -45,6 +50,10 @@ import BiografiiPageFooter from '@/components/biografii/BiografiiPageFooter.astr
         </div>
       </div>
     </nav>
+
+    {mobileChrome?.enabled && mobileChrome.mount === 'registry' && mobileChrome.engine === 'page' && (
+      <MobileChromePage backHref={mobileChrome.backHref ?? '/'} homeHref="../" />
+    )}
 
     <div id="hMobileBackdrop" class="h-mobile-backdrop" aria-hidden="true"></div>
 

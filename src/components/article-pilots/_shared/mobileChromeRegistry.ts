@@ -38,8 +38,9 @@ export const MOBILE_CHROME_ROUTES: Record<string, MobileChromeRegistryEntry> = {
   '/articles/hermenevticheskaya-otsenka-hristotsentrichnoy-germenevtiki/':
     { enabled: true, engine: 'article', adapter: 'hermenevtika', mount: 'static' },
 
-  // --- page (пилот): каталог статей — Back·Home·Глобальный Поиск сверху ---
-  '/articles/': { enabled: true, engine: 'page', adapter: 'default-page', mount: 'registry', backHref: '/' },
+  // --- page: каталоги/лендинги — Back·Home·Глобальный Поиск сверху ---
+  '/articles/':  { enabled: true, engine: 'page', adapter: 'default-page', mount: 'registry', backHref: '/' },
+  '/biografii/': { enabled: true, engine: 'page', adapter: 'default-page', mount: 'registry', backHref: '/' },
 };
 
 /** Точное совпадение маршрута; null = у страницы нет мобильной обвязки движка. */
