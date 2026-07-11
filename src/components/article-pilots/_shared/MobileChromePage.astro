@@ -39,7 +39,10 @@ const { backHref, homeHref = '/', searchLabel = 'Поиск по сайту…' 
     <svg viewBox="0 0 24 24"><path d="M3 11l9-8 9 8" /><path d="M5 10v10h14V10" /><path d="M9 20v-6h6v6" /></svg>
   </a>
 
-  <button class="mcp-search gb-search-btn" type="button" aria-label="Открыть поиск по сайту" slot="top-primary">
+  <!-- Хук — атрибут data-fc-action="search" (в списке селекторов сайтового
+       lazy-loader'а), НЕ класс .gb-search-btn: у того в command-palette.css
+       своя иконочная вёрстка, прячущая текстовый span. -->
+  <button class="mcp-search" data-fc-action="search" type="button" aria-label="Открыть поиск по сайту" slot="top-primary">
     <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7" /><path d="M21 21l-4.3-4.3" /></svg>
     <span>{searchLabel}</span>
     <kbd aria-hidden="true">Ctrl K</kbd>
