@@ -83,7 +83,26 @@ export function parseTipnr(text) {
     const sec = SECTION_RE.exec(line);
     if (sec) { section = sec[1].toUpperCase(); current = null; continue; }
     if (section !== 'PERSON') continue;
-    if (!line.trim() || line.startsWith('$') || line.startsWith('–') || line.startsWith('‖')) { current = null; continue; }
+    // строки форм имени «– Named/Greek …»: dStrong«eStrong=Оригинал (иврит/греческий).
+    // Именно здесь лежат оригинальные написания ВСЕХ имён — собираем для слоя
+    // «имя в оригинале» (тултипы, сверка Синодального с первоисточником).
+    if (line.startsWith('–')) {
+      if (current) {
+        const f = line.split('\t');
+        const kind = (f[0] ?? '').replace(/^–\s*/, '').trim();
+        const m = /^([HG]\d+[A-Za-z]?)«[^=]*=(.+)$/.exec((f[2] ?? '').trim());
+        if (m && !/^Total/i.test(kind)) {
+          const original = m[2].trim();
+          const en = (f[3] ?? '').split('=')[0].trim();
+          if (original && !current.nameForms.some(x => x.strong === m[1] && x.original === original)) {
+            current.nameForms.push({ lang: m[1][0], strong: m[1], original, en });
+          }
+        }
+        stats.subRecordLines += 1;
+      }
+      continue;
+    }
+    if (!line.trim() || line.startsWith('$') || line.startsWith('‖')) { current = null; continue; }
     if (line.startsWith(' ') || line.startsWith('\t')) {
       // подстрока (форма имени / refs) текущей записи
       if (current) { current.nameFormLines += 1; stats.subRecordLines += 1; }
@@ -114,6 +133,7 @@ export function parseTipnr(text) {
       summary: (f[7] ?? '').trim(),
       type,
       nameFormLines: 0,
+      nameForms: [],   // [{lang:'H'|'G', strong, original, en}] — из «– Named/Greek»
     };
 
     if (type === 'Male' || type === 'Female') {
