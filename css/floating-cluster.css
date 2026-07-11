@@ -3912,14 +3912,54 @@ html.dark [data-gill-v16] .mobile-top-bar {
   /* Fix 1 — learning-sheet tabs must fit all 4 within the sheet (>=360px)
      instead of overflowing/clipping "Тест". Let the 4 tabs share the row
      equally; scroll remains a harmless fallback below ~340px. */
-  [data-gill-v16] .gill-tabs { gap: 4px; }
+  /* Match the v2.6 reference (.hlp-tab): four equal-width compact learning tabs,
+     a thin vertical divider, then a compact 34px square search icon-tab. 16px
+     inset so the selected border never clips at the container edge; exact
+     reference sizing (h34, radius10, 12.5px/700, subtle-tint selected). */
+  [data-gill-v16] .gill-tabs {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding-left: 16px;
+    padding-right: 16px;
+    overflow: visible;
+  }
   [data-gill-v16] .gill-tab {
-    flex: 1 1 auto;
+    flex: 1 1 0;
     min-width: 0;
-    padding: 0 6px;
-    font-size: 11px;
+    height: 34px;
+    min-height: 34px;
+    padding: 0 4px;
+    border-radius: 10px;
+    font-size: clamp(11.5px, 3.2vw, 12.5px);
+    font-weight: 700;
     white-space: nowrap;
     text-overflow: ellipsis;
+  }
+  /* Thin divider between learning tabs and the search icon-tab. */
+  [data-gill-v16] .gill-tabs__sep {
+    flex: 0 0 auto;
+    width: 1px;
+    height: 20px;
+    background: var(--gb-border);
+    margin: 0 1px;
+  }
+  /* Compact square search tab — a "find" mode set apart from the study tabs. */
+  [data-gill-v16] .gill-tab--icon {
+    flex: 0 0 auto;
+    width: 34px;
+    min-width: 34px;
+    padding: 0;
+    display: grid;
+    place-items: center;
+  }
+  [data-gill-v16] .gill-tab--icon svg {
+    width: 16px;
+    height: 16px;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 2;
+    stroke-linecap: round;
   }
 
   /* Fix 2 — settings segment buttons ("Свободный", "Широкая", …) must never
