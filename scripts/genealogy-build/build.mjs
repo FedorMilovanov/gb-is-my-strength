@@ -17,6 +17,7 @@ import { SynodalText, refToRu, parseRef, OSIS_RU } from './lib/refs.mjs';
 import { parseTipnr, resolveRelations, parseUnifiedRef, parseRelField } from './lib/tipnr-parser.mjs';
 import { extractRuName, translitEnRu, similarity, normalizeRuCandidate } from './lib/ru-extract.mjs';
 import { computeClusters, nationsLayer } from './lib/clusters.mjs';
+import { traceSpine } from './lib/spine.mjs';
 
 const log = (...a) => console.log('[genealogy-build]', ...a);
 
@@ -333,8 +334,13 @@ async function runAll() {
   log(`clusters: ${clusters.map(c => `${c.id}:${c.count}`).join(', ')}`);
   log(`nations: ${nations.length} (с прародителем: ${nations.filter(n => n.progenitorId).length})`);
 
+  // 6.4. Золотой хребет (Адам→Христос) — L0-якоря + валидатор связности
+  const spine = traceSpine(outPersons, edges);
+  log(`spine: Христос→Адам ${spine.reachedRoot ? 'СВЯЗАН' : 'РАЗОРВАН'}, длина ${spine.length}` +
+      (spine.missingAnchors.length ? `, нет якорей: ${spine.missingAnchors.join(',')}` : ''));
+
   // 7. Валидация
-  const report = validate(outPersons, edges, { parseStats, relStats, ruStats, v1Unmatched, v1Soft, v1Collisions, v1Total: v1.persons.length, v1Matched: v1Matches.size, mirrorMisses, clusters, nations });
+  const report = validate(outPersons, edges, { parseStats, relStats, ruStats, v1Unmatched, v1Soft, v1Collisions, v1Total: v1.persons.length, v1Matched: v1Matches.size, mirrorMisses, clusters, nations, spine });
 
   // 8. Emit
   await mkdir(PATHS.outDir, { recursive: true });
@@ -354,6 +360,13 @@ async function runAll() {
     _status: 'phase1-draft: членство кластеров — воспроизводимые эвристики (rule хранится рядом), сверка редактором обязательна',
     clusters,
     nations,
+  }, null, 1) + '\n');
+  await writeFile(path.join(PATHS.outDir, 'spine.json'), JSON.stringify({
+    _status: 'phase1-draft: золотой мессианский хребет (Христос→Адам), L0-persistent якоря',
+    reachedRoot: spine.reachedRoot,
+    length: spine.length,
+    missingAnchors: spine.missingAnchors,
+    chain: spine.chain,
   }, null, 1) + '\n');
   await writeFile(path.join(PATHS.outDir, 'meta.json'), JSON.stringify(meta, null, 2) + '\n');
   try { await access(path.join(PATHS.outDir, 'ru-overrides.json')); }
@@ -493,6 +506,12 @@ ${cycles.length ? '\nЦиклы:\n' + cycles.slice(0, 5).map(c => '- ' + c.join(
 
 ### Нерезолвнутые ссылки (первые 20 — вход для Phase 1 доводки)
 ${ctx.relStats.unresolvedRefs.slice(0, 20).map(u => `- ${u.from} · ${u.field}: \`${u.raw}\``).join('\n') || '- нет'}
+
+## Золотой хребет (Христос→Адам) — ${ctx.spine?.reachedRoot ? '✅ СВЯЗАН' : '❌ РАЗОРВАН'}
+
+Длина цепи: ${ctx.spine?.length ?? '—'} узлов.${(ctx.spine?.missingAnchors?.length) ? ` Отсутствуют якоря: ${ctx.spine.missingAnchors.join(', ')}` : ' Все контрольные якоря на месте.'}
+
+${(ctx.spine?.chain ?? []).map(c => c.ru ?? c.key).join(' → ')}
 
 ## Кластеры атласа (${(ctx.clusters ?? []).length}) и народы (${(ctx.nations ?? []).length})
 
