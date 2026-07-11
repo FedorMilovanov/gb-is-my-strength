@@ -124,7 +124,7 @@
     const d = cards[pid];
     if (!d) return;
     if (cardPid !== pid) {
-      card.innerHTML = (d.t ? `<div class="pc-ph"><img src="${d.t}" alt="" loading="lazy">${d.tl ? `<i>${d.tl}</i>` : ''}</div>` : '') +
+      card.innerHTML = (d.t ? `<div class="pc-ph"><img src="${d.t}" alt="" loading="lazy" onerror="this.parentNode.style.display='none'">${d.tl ? `<i>${d.tl}</i>` : ''}</div>` : '') +
         `<div class="pc-body"><b>${d.n}</b>${d.k ? `<u>${d.k}</u>` : ''}${d.f ? `<p>${d.f}</p>` : ''}</div>`;
       cardPid = pid;
     }
@@ -167,7 +167,7 @@
       `</section>` : ((d.glyphs || []).length ? `<section class="do-sec do-lex">` +
       d.glyphs.map(g2 => gm[g2] ? `<div class="lex-glyph"><b>${gm[g2].t}</b><span>${gm[g2].d}</span></div>` : '').join('') + `</section>` : '');
     const phs = (ds.photos || []).map(p2 =>
-      `<figure class="do-ph"><img loading="lazy" src="${p2.thumb || p2.src}" alt="">` +
+      `<figure class="do-ph"><img loading="lazy" src="${p2.thumb || p2.src}" alt="" onerror="this.closest('figure').style.display='none'">` +
       (p2.label ? `<figcaption>${p2.label}${p2.credit ? `<i>${p2.credit}</i>` : ''}</figcaption>` : '') + '</figure>').join('');
     panel.innerHTML = `<button class="do-x" title="Закрыть (Esc)">×</button>` +
       `<header class="do-head"><b>${d.n}</b>${d.k ? `<u>${d.k}</u>` : ''}</header>` +

@@ -70,7 +70,7 @@ M1610,60 C1652,118 1678,186 1688,262 C1696,332 1692,402 1672,462 C1660,498 1668,
 
 <!-- ═══ Ярлыки вод и земель ═══ -->
 <g font-family="Georgia, 'Times New Roman', serif" fill="#4a80a0" text-anchor="middle" letter-spacing=".3em" opacity=".85">
-  <text class="sea-label" x="1600" y="1370" font-size="22" transform="rotate(14 1600 1370)">ПЕРСИДСКИЙ&#160;ЗАЛИВ</text>
+  <text class="sea-label" x="1308" y="1306" font-size="14" letter-spacing=".2em" transform="rotate(17 1308 1306)" opacity=".8">ПЕРСИДСКИЙ&#160;ЗАЛИВ</text>
   <text class="sea-label" x="600" y="322" font-size="11" letter-spacing=".18em" opacity=".75">ОЗ.&#160;ВАН</text>
   <text class="sea-label" x="945" y="390" font-size="11" letter-spacing=".18em" opacity=".75">ОЗ.&#160;УРМИЯ</text>
   <text class="sea-label" x="1780" y="240" font-size="13" transform="rotate(78 1780 240)" opacity=".7">КАСПИЙСКОЕ&#160;МОРЕ</text>
