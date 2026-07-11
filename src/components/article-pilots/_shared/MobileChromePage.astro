@@ -7,12 +7,13 @@
  *
  * Принципы:
  *  - НЕТ Learning/TTS/прогресса чтения/Save — этому движку они запрещены.
- *  - Поиск НЕ создаёт второй поиск: кнопка несёт класс `gb-search-btn` —
- *    её клик перехватывает существующий сайтовый lazy-loader (инлайн в
- *    футере страниц v20: селектор '#gbSearchBtn,[data-gbs2-search],
- *    [data-fc-action=search],.gb-nav-search-icon,.gb-search-btn'), который
- *    лениво грузит js/search.js и открывает палитру GBSearch. Работает и
- *    без floating-cluster-controller.js.
+ *  - Поиск НЕ создаёт второй поиск: клик по кнопке обрабатывает СОБСТВЕННЫЙ
+ *    скрипт адаптера — он вызывает GBSearch.open() напрямую, если палитра уже
+ *    загружена, иначе диспатчит синтетический Ctrl/⌘+K. Оба сайтовых
+ *    lazy-loader'а (articles-стиль в футере страниц v20 И BaseLayout) слушают
+ *    именно keydown Ctrl/⌘+K → лениво грузят js/search.js и открывают палитру.
+ *    Единый триггер портируется на любой тип страницы без дубль-открытия
+ *    (не полагаемся на класс/атрибут-хук конкретного лоадера).
  *  - Без «двойной шапки»: у страниц v20 родной fixed-navbar (#hNavbar, 58px)
  *    с автоскрытием (.nav-hidden при скролле вниз). Бар движка спрятан, пока
  *    navbar виден, и выезжает, когда navbar уехал, — постоянный доступ к
@@ -39,10 +40,10 @@ const { backHref, homeHref = '/', searchLabel = 'Поиск по сайту…' 
     <svg viewBox="0 0 24 24"><path d="M3 11l9-8 9 8" /><path d="M5 10v10h14V10" /><path d="M9 20v-6h6v6" /></svg>
   </a>
 
-  <!-- Хук — атрибут data-fc-action="search" (в списке селекторов сайтового
-       lazy-loader'а), НЕ класс .gb-search-btn: у того в command-palette.css
-       своя иконочная вёрстка, прячущая текстовый span. -->
-  <button class="mcp-search" data-fc-action="search" type="button" aria-label="Открыть поиск по сайту" slot="top-primary">
+  <!-- Клик обрабатывает скрипт адаптера (см. ниже), а НЕ класс/атрибут-хук
+       конкретного лоадера: .gb-search-btn коллидирует с command-palette.css
+       (прячет текстовый span), а data-fc-action работает не на всех страницах. -->
+  <button class="mcp-search" type="button" aria-label="Открыть поиск по сайту" slot="top-primary">
     <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7" /><path d="M21 21l-4.3-4.3" /></svg>
     <span>{searchLabel}</span>
     <kbd aria-hidden="true">Ctrl K</kbd>
@@ -120,6 +121,21 @@ const { backHref, homeHref = '/', searchLabel = 'Поиск по сайту…' 
       } else {
         window.location.href = href;
       }
+    });
+
+    // Поиск: единый портируемый триггер. Прямой вызов, если палитра готова;
+    // иначе синтетический Ctrl+K — его слушают оба сайтовых lazy-loader'а.
+    const search = root.querySelector('.mcp-search');
+    search?.addEventListener('click', (e) => {
+      e.preventDefault();
+      const w = window as unknown as { GBSearch?: { open?: () => void } };
+      if (w.GBSearch && typeof w.GBSearch.open === 'function') {
+        w.GBSearch.open();
+        return;
+      }
+      document.dispatchEvent(new KeyboardEvent('keydown', {
+        key: 'k', ctrlKey: true, bubbles: true, cancelable: true,
+      }));
     });
 
     // Показ бара: когда родной navbar уехал (.nav-hidden) — либо, без navbar,

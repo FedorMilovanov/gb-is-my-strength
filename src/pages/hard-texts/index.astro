@@ -18,6 +18,11 @@ import { assetUrl } from '@/lib/asset-version';
 import HardTextsPageChrome from '@/components/hard-texts/HardTextsPageChrome.astro';
 import HardTextsMain from '@/components/hard-texts/HardTextsMain.astro';
 import HardTextsPageFooter from '@/components/hard-texts/HardTextsPageFooter.astro';
+import MobileChromePage from '@/components/article-pilots/_shared/MobileChromePage.astro';
+import { mobileChromeFor } from '@/components/article-pilots/_shared/mobileChromeRegistry';
+
+// Мобильная обвязка выбирается registry (движок «page»: Back·Home·Поиск сверху).
+const mobileChrome = mobileChromeFor('/hard-texts/');
 
 // JSON-LD structured data (native inline script, no set:html transport).
 const jsonLd = `{
@@ -195,6 +200,9 @@ window.SITE_CONFIG = {
   </head>
   <body>
     <HardTextsPageChrome>
+      {mobileChrome?.enabled && mobileChrome.mount === 'registry' && mobileChrome.engine === 'page' && (
+        <MobileChromePage backHref={mobileChrome.backHref ?? '/'} homeHref="../" />
+      )}
       <HardTextsMain />
       <HardTextsPageFooter />
     </HardTextsPageChrome>

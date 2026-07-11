@@ -39,8 +39,13 @@ export const MOBILE_CHROME_ROUTES: Record<string, MobileChromeRegistryEntry> = {
     { enabled: true, engine: 'article', adapter: 'hermenevtika', mount: 'static' },
 
   // --- page: каталоги/лендинги — Back·Home·Глобальный Поиск сверху ---
-  '/articles/':  { enabled: true, engine: 'page', adapter: 'default-page', mount: 'registry', backHref: '/' },
-  '/biografii/': { enabled: true, engine: 'page', adapter: 'default-page', mount: 'registry', backHref: '/' },
+  '/articles/':    { enabled: true, engine: 'page', adapter: 'default-page', mount: 'registry', backHref: '/' },
+  '/biografii/':   { enabled: true, engine: 'page', adapter: 'default-page', mount: 'registry', backHref: '/' },
+  '/hard-texts/':  { enabled: true, engine: 'page', adapter: 'default-page', mount: 'registry', backHref: '/' },
+  '/rodosloviye/': { enabled: true, engine: 'page', adapter: 'default-page', mount: 'registry', backHref: '/' },
+  // /izbrannoe/ НЕ подключается: у него sticky-navbar (top:0, без автоскрытия) —
+  // бар движка стекнулся бы поверх «двойной шапкой». Верхняя навигация там уже
+  // постоянна, движок «page» не нужен.
 };
 
 /** Точное совпадение маршрута; null = у страницы нет мобильной обвязки движка. */
