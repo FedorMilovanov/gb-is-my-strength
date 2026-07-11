@@ -42,16 +42,16 @@
       "label": "Плен",
       "start": -586,
       "end": -538,
-      "color": "#b0a8c9",
-      "colorStatus": "draft"
+      "color": "#c9a6bd",
+      "colorStatus": "validated"
     },
     {
       "id": "persian",
       "label": "Персия",
       "start": -538,
       "end": -400,
-      "color": "#e0b089",
-      "colorStatus": "draft"
+      "color": "#ddb28a",
+      "colorStatus": "validated"
     }
   ],
   "lanes": {
