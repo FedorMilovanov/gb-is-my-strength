@@ -7,6 +7,12 @@
  * were calibrated empirically against the whole corpus and pruned until the
  * false-positive rate was ~zero. See docs/ARTICLE-STANDARD-CHARTER.md §checks.
  *
+ * Checks (all ERROR unless noted): (1) «» guillemet balance; (2) tooltip
+ * well-formedness (empty gtip/tooltip = ERROR; gterm w/o tip = WARN); (3) mixed-
+ * script contamination — a token mixing Cyrillic+Latin, or any CJK ideograph, is
+ * homoglyph corruption that ships broken, unsearchable text (calibrated: 3 real
+ * hits, 0 false positives across the corpus).
+ *
  * Deliberately NOT checked (would be noise, per calibration 2026-07-11):
  *  - «…» → source: blanket rule false-positives on Bible refs, emphasis, titles.
  *    We check only BLOCK quotes, and count footnotes/prose/attribution as sourced.
@@ -75,13 +81,29 @@ for (const rel of files) {
   const tipForTerm = cnt(raw, /class="gterm"[^>]*data-term=/g) + cnt(raw, /class="gterm"[^>]*>[\s\S]{0,120}?class="gtip"/g);
   if (gterm && tipForTerm < gterm) warn(rel, `gterm без перевода/пояснения (${gterm} терминов, ${tipForTerm} с тултипом/глоссарием)`);
 
+  // ── 3. Mixed-script contamination (ERROR: real corruption, never legitimate) ──
+  // A single word-token mixing Cyrillic with Latin — or any CJK ideograph in the
+  // prose — is always a defect in this Russian corpus (a homoglyph slip that ships
+  // broken, unsearchable text, e.g. «relig»+«ией», «Мартин»+lat.«a», a stray «传»).
+  // Calibrated 2026-07-11 against the WHOLE corpus: 3 hits, ALL real defects, 0
+  // false positives. Foreign titles/terms are whole-Latin tokens and never trip
+  // this. The one theoretical exception — a Russian inflection glued onto a Latin
+  // acronym («URLом») — is precluded by house style (hyphenate: «URL-ом»); if such
+  // a token ever legitimately appears, hyphenate it rather than loosening the rule.
+  for (const tok of text.match(/[A-Za-zА-Яа-яЁё]+/g) || []) {
+    if (/[А-Яа-яЁё]/.test(tok) && /[A-Za-z]/.test(tok))
+      err(rel, `смешанный алфавит в слове (кириллица+латиница): «${tok}»`);
+  }
+  const cjk = text.match(/[㐀-鿿豈-﫿]/g);
+  if (cjk) err(rel, `иероглиф(ы) в русском тексте: ${[...new Set(cjk)].join(' ')}`);
+
   // NOTE: block-quote→attribution was prototyped and DROPPED after calibration —
   // this corpus attributes via footnotes / surrounding prose that no cheap heuristic
   // detects reliably, so the rule produced ~60 false positives. A noisy check is
   // worse than none (Charter §checks). Attribution stays a human/review concern.
 }
 
-console.log('=== article-qa (guillemet balance · tooltip well-formedness) ===');
+console.log('=== article-qa (guillemet balance · tooltip well-formedness · mixed-script) ===');
 console.log(`Scanned ${files.length} article files.\n`);
 for (const e of errors) console.log(`❌ ${e}`);
 for (const w of warnings) console.log(`⚠️  ${w}`);
