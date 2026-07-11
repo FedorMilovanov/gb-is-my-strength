@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex,nofollow">
+<title>Начало: от Эдема до Вавилона — лист Атласа (светлый, awaiting G9)</title>
+<style>
+  html,body{margin:0;min-height:100%;background:#efe6cf}
+  body{display:grid;place-items:center;padding:12px;box-sizing:border-box}
+  .wrap{max-width:1500px;width:100%;box-shadow:0 18px 60px rgba(90,70,30,.35), 0 2px 10px rgba(90,70,30,.22);border-radius:6px;overflow:hidden}
+  svg.sheet{display:block;width:100%;height:auto;background:#f5edd8}
+  .frame{fill:none;stroke:#8a6a1f;stroke-width:1.2;opacity:.55}
+  .base{opacity:.96}
+  .base [fill="#10263a"]{fill:#8fb7cb}
+  .base [stroke="#2e4d6b"]{stroke:#6f97ae}
+  .base [stroke="#2d4a66"]{stroke:#6f97ae}
+  .base text{opacity:.85}
+  .route-under{fill:none;stroke:#f6f1e7;stroke-width:5.4;stroke-linecap:round;stroke-linejoin:round;opacity:.65}
+  .route{fill:none;stroke:#a25d33;stroke-width:2.6;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:.1 7.4;opacity:.95}
+  .pl-city{fill:#1e3a63;stroke:#f6f1e7;stroke-width:1.2;filter:url(#dotShadow)}
+  .pl-cand{fill:none;stroke:#8a6a1f;stroke-width:1.6;stroke-dasharray:3 2.2}
+  .pl{cursor:pointer}
+  .glyph path,.glyph circle{fill:rgba(94,74,30,.34);stroke:#6b5216;stroke-width:.9;stroke-linejoin:round}
+  .glyph .glyph-line{fill:none;stroke:#6b5216;stroke-width:.9;stroke-linecap:round}
+  .glyph .glyph-flame{fill:#a25d33;stroke:none}
+  .glyph .glyph-smoke{fill:none;stroke:#8a7a58;stroke-width:.8;opacity:.75;stroke-linecap:round}
+  .ruin-halo{fill:rgba(120,100,80,.14);stroke:rgba(120,100,80,.3);stroke-width:.6;stroke-dasharray:2 3}
+  .wp-dot{fill:#4a7a52;stroke:#f6f1e7;stroke-width:.9;opacity:.85}
+  .leader{stroke:#5c4d33;stroke-width:.9;opacity:.55}
+  .mile-c{fill:#f6f1e7;stroke-width:1.6;filter:url(#dotShadow)}
+  .mile-cand{stroke-dasharray:3 2.2}
+  .mile-t{font:700 1em Georgia,serif}
+  text.lab-place{font-family:Georgia,'Times New Roman',serif;font-weight:600;fill:#2b2418;paint-order:stroke;stroke:#f5edd8;stroke-width:.22em;stroke-linejoin:round}
+  text.lab-cand{font-style:italic;fill:#5c4a1e}
+  text.lab-region{font-family:Georgia,serif;font-weight:600;letter-spacing:.3em;fill:#7a6a48;opacity:.78;paint-order:stroke;stroke:#f5edd8;stroke-width:.18em}
+  text.lab-ctx{font-family:Georgia,serif;letter-spacing:.24em;fill:#8a7a58;opacity:.6;paint-order:stroke;stroke:#f5edd8;stroke-width:.16em}
+  text.lab-wp{font-family:Georgia,serif;font-style:italic;fill:#4a6a52;opacity:.82;paint-order:stroke;stroke:#f5edd8;stroke-width:.18em}
+  .plate{fill:rgba(246,241,231,.85);stroke:rgba(120,95,40,.35);stroke-width:1}
+  .cart-plate{fill:rgba(246,241,231,.92)}
+  .cart-inner{fill:none;stroke:rgba(138,106,31,.3);stroke-width:.8}
+  .cart-over{font-family:Georgia,serif;fill:#8a6a1f;letter-spacing:.22em;font-weight:600}
+  .cart-title{font-family:Georgia,serif;font-weight:700;fill:#1e3a63}
+  .cart-sub{font-family:Georgia,serif;fill:#5c4d33;opacity:.85}
+  .leg-t{font-family:Georgia,serif;fill:#3a3020;opacity:.9}
+  .sb-d{fill:#3a3020}.sb-l{fill:#f6f1e7;stroke:#3a3020;stroke-width:1}
+  .sb-t{font-family:Georgia,serif;fill:#5c4d33;font-weight:600}
+  .north{fill:#8a6a1f;stroke:#6b5216;stroke-width:1}
+  .north-t{font-family:Georgia,serif;font-weight:700;fill:#6b5216}
+  .stage-strip{display:flex;flex-wrap:wrap;gap:6px 22px;padding:12px 18px;background:#f0e8d2;border-top:1px solid rgba(138,106,31,.25)}
+  .st{display:flex;align-items:center;gap:8px}
+  .st-dot{width:9px;height:9px;border-radius:50%;flex-shrink:0;box-shadow:0 1px 2px rgba(90,70,30,.4)}
+  .st-body{font-family:Georgia,serif;font-size:13px;color:#3a3020}
+  .st-body b{color:#8a6a1f}
+  .st-body i{color:#7a6a48;margin-left:6px;font-size:11.5px}
+  .g9{position:fixed;right:10px;bottom:10px;z-index:9;font:600 10px/1 system-ui;letter-spacing:.08em;color:#7a5c26;background:rgba(246,241,231,.9);border:1px solid rgba(138,106,31,.4);border-radius:999px;padding:6px 10px}
+  /* ── Читалка (R1, §14): корешок, погружение, курсоры ── */
+  svg.sheet{cursor:grab;touch-action:none}
+  .frame,.legend,.cartouche,.furn{transition:opacity .35s}
+  svg.zoomed .frame,svg.zoomed .legend,svg.zoomed .cartouche,svg.zoomed .furn{opacity:0;pointer-events:none}
+  svg.sheet.grabbing{cursor:grabbing}
+  .stage-strip .st{cursor:pointer;border-radius:8px;padding:2px 8px;margin:-2px -8px;transition:background .15s}
+  .stage-strip .st:hover{background:rgba(138,106,31,.1)}
+  .stage-strip .st--on{background:rgba(138,106,31,.16)}
+  .spine{position:fixed;left:0;top:0;bottom:0;z-index:20;display:flex;align-items:stretch}
+  .spine-tab{writing-mode:vertical-rl;transform:rotate(180deg);display:flex;align-items:center;gap:6px;padding:14px 5px;background:rgba(246,241,231,.94);border-right:1px solid rgba(138,106,31,.35);color:#8a6a1f;font:700 11px/1 Georgia,serif;letter-spacing:.22em;cursor:pointer;box-shadow:2px 0 10px rgba(90,70,30,.15)}
+  .spine-list{width:0;overflow:hidden;overflow-y:auto;background:rgba(246,241,231,.97);transition:width .25s ease;box-shadow:4px 0 18px rgba(90,70,30,.2)}
+  .spine:hover .spine-list,.spine:focus-within .spine-list{width:212px}
+  .spine-it{display:block;padding:10px 12px;text-decoration:none;color:#3a3020;font:600 13px/1.25 Georgia,serif;border-bottom:1px solid rgba(138,106,31,.14)}
+  .spine-it img{display:block;width:100%;border-radius:6px;margin-bottom:6px;box-shadow:0 2px 8px rgba(90,70,30,.25)}
+  .spine-it:hover{background:rgba(138,106,31,.08)}
+  .spine-it--on{background:rgba(138,106,31,.14);box-shadow:inset 3px 0 0 #8a6a1f}
+  .spine-head{padding:12px 12px 8px;font:700 10px/1 Georgia,serif;letter-spacing:.28em;color:#8a6a1f;border-bottom:1px solid rgba(138,106,31,.25)}
+  .spine-cover{position:relative;display:block}
+  .spine-cover b{position:absolute;left:6px;top:6px;background:rgba(246,241,231,.92);color:#8a6a1f;font:700 10px/1 Georgia,serif;border-radius:6px;padding:3px 6px;border:1px solid rgba(138,106,31,.4)}
+  /* ── Ховер-карточка места: фото раскопок + факт ── */
+  .place-card{position:fixed;z-index:30;width:300px;background:#f6f1e7;border:1px solid rgba(138,106,31,.45);border-radius:12px;box-shadow:0 14px 40px rgba(60,45,15,.35);overflow:hidden;opacity:0;transform:translateY(6px) scale(.98);transition:opacity .18s,transform .18s;pointer-events:none}
+  .place-card.pc--on{opacity:1;transform:none}
+  .pc-ph{position:relative;height:130px;background:#e8dcbc}
+  .pc-ph img{width:100%;height:100%;object-fit:cover;display:block}
+  .pc-ph i{position:absolute;left:0;right:0;bottom:0;padding:14px 10px 5px;font:600 9px/1 system-ui;letter-spacing:.12em;color:#fff;background:linear-gradient(transparent,rgba(20,14,4,.72))}
+  .pc-body{padding:10px 12px 12px}
+  .pc-body b{display:block;font:700 15px/1.2 Georgia,serif;color:#1e3a63}
+  .pc-body u{display:block;text-decoration:none;font:600 10.5px/1.3 Georgia,serif;color:#8a6a1f;letter-spacing:.06em;margin-top:2px}
+  .pc-body p{margin:7px 0 0;font:400 12px/1.5 Georgia,serif;color:#3a3020}
+  .dive-btn{position:fixed;right:10px;top:10px;z-index:21;width:38px;height:38px;border-radius:10px;border:1px solid rgba(138,106,31,.4);background:rgba(246,241,231,.92);color:#7a5c26;font-size:17px;cursor:pointer;box-shadow:0 2px 8px rgba(90,70,30,.2)}
+  .dive-btn:hover{background:#f6f1e7}
+  body.dive .spine,body.dive .stage-strip,body.dive .g9{display:none}
+  body.dive .wrap{max-width:none;border-radius:0;box-shadow:none}
+  body.dive{padding:0}
+</style>
+</head>
+<body>
+<div class="wrap"><svg id="sheet-svg" viewBox="0.0 81.7 1900 1266.7" data-vb="0.0 81.7 1900 1266.7" xmlns="http://www.w3.org/2000/svg" class="sheet" role="img" aria-label="Начало: от Эдема до Вавилона — лист Атласа">
+<defs>
+  <linearGradient id="landG" x1="0" y1="0" x2="1" y2="1">
+    <stop offset="0" stop-color="#f0e7cf"/><stop offset=".45" stop-color="#e8dcbc"/><stop offset="1" stop-color="#dfd1a9"/>
+  </linearGradient>
+  <linearGradient id="richLandG" x1="0" y1="0" x2=".5" y2="1">
+    <stop offset="0" stop-color="#ece1c2"/><stop offset=".5" stop-color="#e5d8b4"/><stop offset="1" stop-color="#decfa6"/>
+  </linearGradient>
+  <linearGradient id="seaG" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0" stop-color="#cfe0e9"/><stop offset="1" stop-color="#b4cedd"/>
+  </linearGradient>
+  <pattern id="seaPattern" x="0" y="0" width="20" height="20" patternUnits="userSpaceOnUse">
+    <path d="M0,10 Q5,6 10,10 Q15,14 20,10" fill="none" stroke="#7fa7c4" stroke-width=".6" opacity=".38"/>
+    <path d="M0,20 Q5,16 10,20 Q15,24 20,20" fill="none" stroke="#7fa7c4" stroke-width=".5" opacity=".26"/>
+  </pattern>
+  <radialGradient id="fertileG" cx=".5" cy=".5" r=".5">
+    <stop offset="0" stop-color="#6b8f4a" stop-opacity=".26"/><stop offset="1" stop-color="#6b8f4a" stop-opacity="0"/>
+  </radialGradient>
+  <linearGradient id="jordanG" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0" stop-color="#4f7a3f" stop-opacity=".3"/><stop offset="1" stop-color="#4f7a3f" stop-opacity="0"/>
+  </linearGradient>
+  <radialGradient id="desertG" cx=".5" cy=".5" r=".5">
+    <stop offset="0" stop-color="#c09a55" stop-opacity=".2"/><stop offset="1" stop-color="#c09a55" stop-opacity="0"/>
+  </radialGradient>
+  <radialGradient id="negevG" cx=".5" cy=".5" r=".5">
+    <stop offset="0" stop-color="#b08050" stop-opacity=".16"/><stop offset="1" stop-color="#b08050" stop-opacity="0"/>
+  </radialGradient>
+  <radialGradient id="sinaiG" cx=".5" cy=".5" r=".5">
+    <stop offset="0" stop-color="#a07040" stop-opacity=".18"/><stop offset="1" stop-color="#a07040" stop-opacity="0"/>
+  </radialGradient>
+  <linearGradient id="mtG" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0" stop-color="#8b7d5a" stop-opacity=".4"/><stop offset="1" stop-color="#8b7d5a" stop-opacity="0"/>
+  </linearGradient>
+  <pattern id="mountainHatch" x="0" y="0" width="6" height="6" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
+    <line x1="0" y1="0" x2="0" y2="6" stroke="#8b7d5a" stroke-width=".6" opacity=".45"/>
+  </pattern>
+  <pattern id="desertStipple" x="0" y="0" width="12" height="12" patternUnits="userSpaceOnUse">
+    <circle cx="3" cy="3" r=".7" fill="#9c7c43" opacity=".4"/>
+    <circle cx="9" cy="9" r=".5" fill="#9c7c43" opacity=".3"/>
+    <circle cx="6" cy="1" r=".4" fill="#b08050" opacity=".25"/>
+  </pattern>
+  <filter id="waterRipple" x="-10%" y="-10%" width="120%" height="120%"><feGaussianBlur stdDeviation=".8"/></filter>
+  <filter id="soft" x="-40%" y="-40%" width="180%" height="180%"><feGaussianBlur stdDeviation="6"/></filter>
+  <filter id="dotShadow" x="-60%" y="-60%" width="220%" height="220%">
+    <feDropShadow dx="0" dy=".7" stdDeviation=".8" flood-color="#3a2c10" flood-opacity=".45"/>
+  </filter>
+  <radialGradient id="sunGlow" cx=".22" cy=".14" r=".9">
+    <stop offset="0" stop-color="#ffdf9a" stop-opacity=".22"/>
+    <stop offset=".4" stop-color="#f5d489" stop-opacity=".08"/>
+    <stop offset="1" stop-color="#f5d489" stop-opacity="0"/>
+  </radialGradient>
+  <radialGradient id="edgeFog" cx=".5" cy=".5" r=".72">
+    <stop offset="0" stop-color="#7a5c26" stop-opacity="0"/>
+    <stop offset=".8" stop-color="#7a5c26" stop-opacity="0"/>
+    <stop offset="1" stop-color="#6b4f1e" stop-opacity=".18"/>
+  </radialGradient>
+  <filter id="parchmentGrain">
+    <feTurbulence type="fractalNoise" baseFrequency=".55" numOctaves="2" stitchTiles="stitch" result="n"/>
+    <feColorMatrix in="n" type="matrix" values="0 0 0 0 .45  0 0 0 0 .36  0 0 0 0 .2  0 0 0 .05 0"/>
+  </filter>
+</defs>
+<rect x="0" y="81.66666666666663" width="1900" height="1266.6666666666667" fill="url(#seaG)"/>
+<g class="base">
+
+<rect x="0" y="0" width="1900" height="1430" fill="url(#landG)"/>
+<rect x="0" y="0" width="1900" height="1430" fill="url(#desertG)" opacity=".5"/>
+
+
+<path fill="url(#seaG)" stroke="#2e4d6b" stroke-width="1.4" stroke-linejoin="round" d="
+M1220,1290
+C1260,1266 1305,1252 1350,1246
+C1420,1238 1490,1244 1550,1270
+C1620,1300 1690,1330 1750,1372
+C1800,1408 1850,1424 1900,1430
+L1220,1430
+Z"/>
+<path fill="url(#seaPattern)" opacity=".35" d="
+M1220,1290 C1260,1266 1305,1252 1350,1246 C1420,1238 1490,1244 1550,1270
+C1620,1300 1690,1330 1750,1372 C1800,1408 1850,1424 1900,1430 L1220,1430 Z"/>
+
+
+<path fill="url(#seaG)" stroke="#2e4d6b" stroke-width="1.1" d="
+M540,290 C570,272 610,268 645,280 C670,290 680,312 668,334 C650,362 610,370 572,358 C536,346 520,315 540,290 Z"/>
+<path fill="url(#seaG)" stroke="#2e4d6b" stroke-width="1.1" d="
+M910,330 C940,318 972,322 992,344 C1010,364 1006,398 986,424 C962,454 924,458 898,436 C870,412 878,352 910,330 Z"/>
+
+
+<path fill="url(#seaG)" stroke="#2e4d6b" stroke-width="1.2" d="
+M1610,60 C1650,120 1680,190 1690,270 C1698,340 1690,410 1668,470 C1700,470 1800,470 1900,470 L1900,60 Z"/>
+
+
+<g fill="none" stroke="#2d4a66" stroke-width="2.4">
+  
+  <path d="M560,240 C520,300 470,360 440,430 C405,510 390,590 415,660 C445,742 520,800 610,850 C700,900 790,952 855,1010 C920,1068 985,1130 1060,1180 C1120,1220 1180,1252 1240,1276" stroke-width="3"/>
+  
+  <path d="M660,300 C680,370 700,440 730,510 C765,592 810,668 860,740 C915,818 975,890 1030,960 C1085,1030 1140,1105 1195,1170 C1225,1206 1258,1240 1290,1264" stroke-width="2.6"/>
+  
+  <path d="M880,470 C860,510 840,545 820,580 C800,612 780,640 762,664" stroke-width="1.6"/>
+  
+  <path d="M1240,1276 C1258,1282 1275,1280 1290,1264 C1282,1292 1262,1300 1240,1276" stroke-width="2"/>
+</g>
+
+
+<g>
+  
+  <path d="M810,182 L850,108 L890,182 Z" fill="url(#mtG)" stroke="#8b7d5a" stroke-width="1.6" stroke-linejoin="round"/>
+  <path d="M838,130 L850,108 L862,130 L850,138 Z" fill="#f6f1e7" stroke="#8b7d5a" stroke-width=".8"/>
+  
+  <path d="M900,182 L925,132 L950,182 Z" fill="url(#mtG)" stroke="#8b7d5a" stroke-width="1.2" stroke-linejoin="round"/>
+  
+  <ellipse cx="600" cy="200" rx="200" ry="34" fill="url(#mountainHatch)" transform="rotate(-8 600 200)"/>
+  <ellipse cx="1000" cy="230" rx="170" ry="30" fill="url(#mountainHatch)" transform="rotate(6 1000 230)"/>
+  
+  <ellipse cx="1150" cy="700" rx="80" ry="300" fill="url(#mountainHatch)" transform="rotate(38 1150 700)"/>
+  <ellipse cx="1360" cy="1000" rx="70" ry="260" fill="url(#mountainHatch)" transform="rotate(42 1360 1000)"/>
+  
+  <ellipse cx="620" cy="520" rx="120" ry="20" fill="url(#mountainHatch)" opacity=".6" transform="rotate(-4 620 520)"/>
+</g>
+
+
+<ellipse cx="1000" cy="1050" rx="330" ry="200" fill="url(#fertileG)" transform="rotate(35 1000 1050)"/>
+<ellipse cx="760" cy="700" rx="220" ry="130" fill="url(#fertileG)" opacity=".6" transform="rotate(38 760 700)"/>
+<ellipse cx="420" cy="1150" rx="300" ry="180" fill="url(#desertStipple)" opacity=".55"/>
+<ellipse cx="1550" cy="800" rx="240" ry="200" fill="url(#desertStipple)" opacity=".45"/>
+
+
+<g font-family="Georgia, 'Times New Roman', serif" fill="#4a80a0" text-anchor="middle" letter-spacing=".3em" opacity=".85">
+  <text class="sea-label" x="1600" y="1370" font-size="22" transform="rotate(14 1600 1370)">ПЕРСИДСКИЙ&#160;ЗАЛИВ</text>
+  <text class="sea-label" x="600" y="322" font-size="11" letter-spacing=".18em" opacity=".75">ОЗ.&#160;ВАН</text>
+  <text class="sea-label" x="945" y="390" font-size="11" letter-spacing=".18em" opacity=".75">ОЗ.&#160;УРМИЯ</text>
+  <text class="sea-label" x="1780" y="240" font-size="13" transform="rotate(78 1780 240)" opacity=".7">КАСПИЙСКОЕ&#160;МОРЕ</text>
+  <text class="sea-label" x="620" y="640" font-size="13" transform="rotate(48 620 640)" opacity=".8">ЕВФРАТ · פְּרָת</text>
+  <text class="sea-label" x="930" y="800" font-size="13" transform="rotate(52 930 800)" opacity=".8">ТИГР · חִדֶּקֶל</text>
+</g>
+<g font-family="Georgia, 'Times New Roman', serif" fill="#8b7d5a" text-anchor="middle" letter-spacing=".3em" opacity=".8">
+  <text class="region-label" x="760" y="70" font-size="15">АРМЯНСКОЕ&#160;НАГОРЬЕ · АРАРАТ</text>
+  <text class="region-label" x="500" y="470" font-size="13" opacity=".75">АРАМ-НАХАРАИМ</text>
+  <text class="region-label" x="820" y="640" font-size="14" transform="rotate(36 820 640)">МЕЖДУРЕЧЬЕ</text>
+  <text class="region-label" x="1010" y="1105" font-size="15" transform="rotate(33 1010 1105)">ШИНАР · שִׁנְעָר</text>
+  <text class="region-label" x="1420" y="640" font-size="13" transform="rotate(40 1420 640)" opacity=".7">ЗАГРОС · ЭЛАМ</text>
+  <text class="region-label" x="380" y="1120" font-size="13" opacity=".7">АРАВИЙСКАЯ&#160;СТЕПЬ</text>
+</g>
+
+</g>
+<path d="M710,535 C713.8,540.3 705.5,484.5 733,567 C760.5,649.5 825.0,926.5 875,1030 C925.0,1133.5 996.7,1153.8 1033,1188 C1069.3,1222.2 1083.0,1227.2 1093,1235" class="route-under"/>
+<path d="M710,535 C713.8,540.3 705.5,484.5 733,567 C760.5,649.5 825.0,926.5 875,1030 C925.0,1133.5 996.7,1153.8 1033,1188 C1069.3,1222.2 1083.0,1227.2 1093,1235" class="route"/>
+
+<line x1="686.8" y1="269.8" x2="712.9" y2="273.1" class="leader"/><line x1="866.1" y1="176.7" x2="897.9" y2="187.2" class="leader"/><line x1="695.1" y1="535.0" x2="674.2" y2="535.0" class="leader"/><line x1="739.8" y1="574.1" x2="755.7" y2="590.7" class="leader"/><line x1="862.1" y1="953.8" x2="840.6" y2="946.9" class="leader"/><line x1="883.7" y1="1017.9" x2="909.9" y2="981.4" class="leader"/><line x1="1042.7" y1="1189.6" x2="1064.3" y2="1193.1" class="leader"/><line x1="1103.1" y1="1245.9" x2="1127.9" y2="1272.8" class="leader"/>
+<g class="pl" data-pid="calah"><circle cx="733" cy="567" r="6.65" class="pl-city"/></g><g class="pl" data-pid="akkad"><circle cx="872" cy="957" r="7.28" class="pl-cand"/></g><g class="pl" data-pid="uruk-city"><circle cx="1033" cy="1188" r="6.65" class="pl-city"/></g>
+<g class="mile" data-stage="0" data-x="672" data-y="268"><circle cx="672" cy="268" r="11.72" class="mile-c mile-cand" style="stroke:#8a6a1f"/><text x="672" y="273.3833333333333" text-anchor="middle" class="mile-t" font-size="15.04" style="fill:#8a6a1f">I</text></g><g class="mile" data-stage="1" data-x="852" data-y="172"><circle cx="852" cy="172" r="11.72" class="mile-c mile-cand" style="stroke:#a25d33"/><text x="852" y="177.38333333333333" text-anchor="middle" class="mile-t" font-size="15.04" style="fill:#a25d33">II</text></g><g class="mile" data-stage="2" data-x="710" data-y="535"><circle cx="710" cy="535" r="11.72" class="mile-c" style="stroke:#4a7a52"/><text x="710" y="540.3833333333333" text-anchor="middle" class="mile-t" font-size="15.04" style="fill:#4a7a52">III</text></g><g class="mile" data-stage="3" data-x="875" data-y="1030"><circle cx="875" cy="1030" r="11.72" class="mile-c" style="stroke:#8f4a56"/><text x="875" y="1035.3833333333334" text-anchor="middle" class="mile-t" font-size="15.04" style="fill:#8f4a56">IV</text></g><g class="mile" data-stage="4" data-x="1093" data-y="1235"><circle cx="1093" cy="1235" r="11.72" class="mile-c" style="stroke:#6b5a43"/><text x="1093" y="1240.3833333333334" text-anchor="middle" class="mile-t" font-size="15.04" style="fill:#6b5a43">V</text></g>
+<g class="glyph"><path d="M869.6166666666667,1014.1666666666666 v-14.25 h-1.9 v-3.1666666666666665 h3.8 v1.5833333333333333 h2.533333333333333 v-1.5833333333333333 h3.8 v1.5833333333333333 h2.533333333333333 v-1.5833333333333333 h3.8 v3.1666666666666665 h-1.9 v14.25 Z" transform="translate(-2.058333333333333,0)"/></g><g class="glyph"><path d="M1081.9166666666667,1223.9166666666667 h22.166666666666664 v-4.75 h-3.958333333333333 v-4.75 h-3.958333333333333 v-4.75 h-6.333333333333333 v4.75 h-3.958333333333333 v4.75 h-3.958333333333333 Z" transform="translate(0,-6.333333333333333)"/></g>
+<rect x="880.9" y="1038.9" width="10.1" height="10.1" transform="rotate(45 886 1044)" class="wp-dot"/><text x="895.5" y="1049.7" class="lab-wp" font-size="15.83">Этеменанки (фундамент)</text><rect x="1040.9" y="1195.9" width="10.1" height="10.1" transform="rotate(45 1046 1201)" class="wp-dot"/><text x="1055.5" y="1206.7" class="lab-wp" font-size="15.83">Варка (раскопки Урука)</text><rect x="1100.9" y="1241.9" width="10.1" height="10.1" transform="rotate(45 1106 1247)" class="wp-dot"/><text x="1115.5" y="1252.7" class="lab-wp" font-size="15.83">Зиккурат Ур-Намму</text>
+<text x="330" y="330" class="lab-ctx" font-size="18.21" text-anchor="middle">→ ИАФЕТ · СЕВЕР И ЗАПАД</text><text x="1560" y="700" class="lab-ctx" font-size="18.21" text-anchor="middle">→ СИМ · ВОСТОК</text><text x="280" y="1235" class="lab-ctx" font-size="18.21" text-anchor="middle">→ ХАМ · ЮГ И ЕГИПЕТ</text>
+<text x="716.0" y="280.1" class="lab-place lab-cand" font-size="20.58" text-anchor="start">Эдем? (версии)</text><text x="901.1" y="194.2" class="lab-place lab-cand" font-size="20.58" text-anchor="start">Горы Араратские</text><text x="671.0" y="542.0" class="lab-place" font-size="20.58" text-anchor="end">Ниневия</text><text x="758.9" y="596.6" class="lab-place" font-size="17.42" text-anchor="start">Калах</text><text x="837.5" y="952.8" class="lab-place lab-cand" font-size="17.42" text-anchor="end">Аккад</text><text x="913.1" y="988.4" class="lab-place" font-size="20.58" text-anchor="start">Вавилон · башня</text><text x="1067.5" y="1199.0" class="lab-place" font-size="17.42" text-anchor="start">Эрех (Урук)</text><text x="1131.1" y="1279.8" class="lab-place" font-size="20.58" text-anchor="start">Ур Халдейский</text>
+
+  <g class="cartouche">
+    <rect x="38" y="110.16666666666663" width="633.3333333333333" height="136.16666666666666" rx="12.666666666666666" class="plate cart-plate"/>
+    <rect x="45.916666666666664" y="118.08333333333329" width="617.5" height="120.33333333333333" rx="9.5" class="cart-inner"/>
+    <text x="69.66666666666666" y="146.5833333333333" class="cart-over" font-size="15.041666666666666">БИБЛЕЙСКИЙ АТЛАС · ЛИСТ ПРОЛОГ</text>
+    <text x="69.66666666666666" y="189.3333333333333" class="cart-title" font-size="39.58333333333333">Начало: от Эдема до Вавилона</text>
+    <text x="69.66666666666666" y="224.16666666666663" class="cart-sub" font-size="18.208333333333332">Бытие 1–11 · Потоп · Арарат · Шинар · ~2350–2000 до н.э.</text>
+  </g>
+
+  <g class="legend">
+    <rect x="38" y="1269.1666666666667" width="589" height="47.5" rx="9.5" class="plate"/>
+    <circle cx="66.5" cy="1292.9166666666667" r="6.65" class="pl-city"/>
+    <text x="82.33333333333333" y="1299.2500000000002" class="leg-t" font-size="16.625">город · стан</text>
+    <circle cx="209" cy="1292.9166666666667" r="7.283333333333332" class="pl-cand"/>
+    <text x="224.83333333333331" y="1299.2500000000002" class="leg-t" font-size="16.625">локализация спорна</text>
+    <rect x="424.3333333333333" y="1286.5833333333335" width="12.666666666666666" height="12.666666666666666" transform="rotate(45 430.66666666666663 1292.9166666666667)" class="wp-dot"/>
+    <text x="446.5" y="1299.2500000000002" class="leg-t" font-size="16.625">археология</text>
+  </g>
+
+  <g class="furn">
+    <rect x="1548.6412958626072" y="1259.666666666667" width="278.5253708040593" height="63.33333333333333" rx="9.5" class="plate"/>
+    <rect x="1570.807962529274" y="1294.5000000000002" width="117.096018735363" height="11.083333333333332" class="sb-d"/>
+    <rect x="1687.903981264637" y="1294.5000000000002" width="117.096018735363" height="11.083333333333332" class="sb-l"/>
+    <text x="1570.807962529274" y="1283.416666666667" class="sb-t" font-size="17.416666666666664">0</text>
+    <text x="1687.903981264637" y="1283.416666666667" class="sb-t" font-size="17.416666666666664" text-anchor="middle">100</text>
+    <text x="1805" y="1283.416666666667" class="sb-t" font-size="17.416666666666664" text-anchor="end">200 км</text>
+    <g transform="translate(1817.6666666666667,170.3333333333333)">
+      <circle r="47.5" class="plate"/>
+      <path d="M0,-30.083333333333332 L9.5,17.416666666666664 L0,7.916666666666666 L-9.5,17.416666666666664 Z" class="north"/>
+      <text y="41.166666666666664" text-anchor="middle" class="north-t" font-size="20.583333333333332">С</text>
+    </g>
+  </g>
+<rect x="0" y="81.66666666666663" width="1900" height="1266.6666666666667" fill="url(#sunGlow)" pointer-events="none"/>
+<rect x="0" y="81.66666666666663" width="1900" height="1266.6666666666667" fill="url(#edgeFog)" pointer-events="none"/>
+<rect x="0" y="81.66666666666663" width="1900" height="1266.6666666666667" filter="url(#parchmentGrain)" opacity=".5" pointer-events="none"/>
+<rect x="12.666666666666666" y="94.3333333333333" width="1874.6666666666667" height="1241.3333333333335" class="frame"/>
+</svg>
+  <div class="stage-strip">
+    <div class="st" data-stage="0" role="button" tabindex="0" title="Показать этап на листе"><span class="st-dot" style="background:#8a6a1f"></span><span class="st-body"><b>I</b> · Мир до потопа<i>ЭДЕМ · ВЕРСИИ</i></span></div><div class="st" data-stage="1" role="button" tabindex="0" title="Показать этап на листе"><span class="st-dot" style="background:#a25d33"></span><span class="st-body"><b>II</b> · Потоп и Арарат<i>ГОРЫ АРАРАТСКИЕ</i></span></div><div class="st" data-stage="2" role="button" tabindex="0" title="Показать этап на листе"><span class="st-dot" style="background:#4a7a52"></span><span class="st-body"><b>III</b> · Города Нимрода<i>ПЕРВЫЕ ЦАРСТВА</i></span></div><div class="st" data-stage="3" role="button" tabindex="0" title="Показать этап на листе"><span class="st-dot" style="background:#8f4a56"></span><span class="st-body"><b>IV</b> · Вавилонская башня<i>СМЕШЕНИЕ ЯЗЫКОВ</i></span></div><div class="st" data-stage="4" role="button" tabindex="0" title="Показать этап на листе"><span class="st-dot" style="background:#6b5a43"></span><span class="st-body"><b>V</b> · Расселение народов<i>СИМ · ХАМ · ИАФЕТ</i></span></div>
+  </div></div>
+<span class="g9">NACHALO · SHEET · awaiting G9</span>
+<script>window.ATLAS_SPINE=[{"slug":"nachalo","title":"Начало: от Эдема до Вавилона","current":true,"cover":null},{"slug":"avraam","title":"Путь Авраама","current":false,"cover":"../../images/atlas-avraam-scene-600w.webp"},{"slug":"ishod","title":"Исход из Египта","current":false,"cover":"../../images/atlas-ishod-scene-600w.webp"},{"slug":"shvatim","title":"12 Колен Израиля","current":false,"cover":"../../images/atlas-shvatim-scene-600w.webp"},{"slug":"shoftim","title":"Эпоха Судей","current":false,"cover":"../../images/atlas-shoftim-scene-600w.webp"},{"slug":"melachim","title":"Царства Израиля и Иуды","current":false,"cover":"../../images/atlas-melachim-scene-600w.webp"},{"slug":"yeshua","title":"Жизнь Иисуса Христа","current":false,"cover":"../../images/atlas-yeshua-scene-600w.webp"},{"slug":"early-church","title":"Ранняя Церковь · Деяния 1–12","current":false,"cover":"../../images/atlas-early-church-scene-600w.webp"},{"slug":"pavel","title":"Миссионерские путешествия Павла","current":false,"cover":"../../images/atlas-pavel-scene-600w.webp"},{"slug":"revelation","title":"7 Церквей Откровения","current":false,"cover":"../../images/atlas-revelation-scene-600w.webp"},{"slug":"maccabim","title":"Межзаветный период · Маккавеи","current":false,"cover":"../../images/atlas-maccabim-scene-600w.webp"}];window.ATLAS_PLACES={"eden":{"n":"Эдем? (версии)","k":"География до потопа не реконструируется","t":null,"tl":"","f":"Быт 2:10–14 — река из Эдема разделялась на четыре — Фисон, Гихон, Хиддекель, Евфрат; имена Тигра и Евфрата после потопа — тёзки, а не координаты"},"ararat":{"n":"Горы Араратские","k":"«И остановился ковчег…» — Быт 8:4","t":null,"tl":"","f":"Урарту — в тексте — горная СТРАНА Арарат (Урарту), не конкретный пик; Агры-Даг — традиция, не находка. Достоверных остатков ковчега не предъявлено — честно показываем регион"},"nineveh":{"n":"Ниневия","k":"Город Нимрода · Быт 10:11","t":"https://commons.wikimedia.org/wiki/Special:FilePath/Nineveh%20Adad%20gate%20exterior%20entrance%20far2.JPG?width=320","tl":"ВОРОТА АДАДА · НИНЕВИЯ","f":"Куюнджик (Мосул) — холмы Куюнджик и Наби-Юнус («пророк Иона»!) — раскопки с 1842 г.; дворец Сеннахирима и библиотека Ашшурбанипала"},"calah":{"n":"Калах","k":"Нимруд · Быт 10:11–12","t":null,"tl":"","f":"Нимруд — само арабское имя телля хранит память о Нимроде; дворец Ашшурнацирапала II, слоновая кость «Мона Лиза из Нимруда»"},"akkad":{"n":"Аккад","k":"Быт 10:10 · город не найден","t":null,"tl":"","f":"локализация неизвестна — столица первой месопотамской империи Саргона упомянута в Быт 10:10 — и до сих пор НЕ найдена археологами: где-то у слияния Тигра и Диялы"},"babylon":{"n":"Вавилон · башня","k":"Быт 11 · «сделаем себе имя»","t":"https://commons.wikimedia.org/wiki/Special:FilePath/Ruins%20of%20Etemenanki%20ziggurat.jpg?width=320","tl":"ЭТЕМЕНАНКИ · ФУНДАМЕНТ","f":"Этеменанки — фундамент зиккурата Этеменанки (91×91 м) — вероятный «наследник» башни: место, где город впервые попытался дотянуться до неба без Бога"},"uruk-city":{"n":"Эрех (Урук)","k":"Быт 10:10 · родина письменности","t":"https://commons.wikimedia.org/wiki/Special:FilePath/Uruk%20Archaealogical%20site%20at%20Warka%2C%20Iraq%20MOD%2045156521.jpg?width=320","tl":"УРУК (ВАРКА) · РАСКОПКИ","f":"Варка — именно здесь найдены древнейшие таблички письма и городская стена Гильгамеша; «Эрех» Библии = Урук шумеров = современное имя Ирака"},"ur":{"n":"Ур Халдейский","k":"Мост к листу I · Быт 11:27–32","t":null,"tl":"","f":"Телль эль-Мукайяр — зиккурат Ур-Намму стоит до сих пор; отсюда Господь выведет Аврама — пролог кончается там, где начинается путь веры"}};</script>
+<script src="atlas-reader.js"></script>
+</body>
+</html>

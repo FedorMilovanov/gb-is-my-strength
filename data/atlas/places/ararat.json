@@ -1,0 +1,22 @@
+{
+  "id": "ararat",
+  "names": {
+    "ru": "Горы Араратские",
+    "he": "אֲרָרָט"
+  },
+  "type": "mountain",
+  "rank": 2,
+  "placements": {
+    "urheimat": {
+      "x": 852,
+      "y": 172
+    }
+  },
+  "maps": [
+    {
+      "slug": "nachalo",
+      "localId": "ararat"
+    }
+  ],
+  "needsReview": true
+}

@@ -9,11 +9,19 @@
     "levant": {
       "x": 1543,
       "y": 708
+    },
+    "urheimat": {
+      "x": 875,
+      "y": 1030
     }
   },
   "maps": [
     {
       "slug": "melachim",
+      "localId": "babylon"
+    },
+    {
+      "slug": "nachalo",
       "localId": "babylon"
     }
   ],

@@ -18,7 +18,7 @@
  */
 'use strict';
 
-const KM_PER_UNIT = { levant: 0.92, mediterranean: 1.354 };
+const KM_PER_UNIT = { levant: 0.92, mediterranean: 1.354, urheimat: 0.854 };
 const ROMAN = ['I', 'II', 'III', 'IV', 'V', 'VI', 'VII', 'VIII', 'IX', 'X'];
 const STAGE_TINT = ['#8a6a1f', '#a25d33', '#4a7a52', '#8f4a56', '#6b5a43', '#3f6a8a', '#7a5a8a', '#4a6a6a'];
 
