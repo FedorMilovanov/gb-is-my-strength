@@ -23,7 +23,7 @@ function iconUse(id, x, y, size, color, opacity = 1) {
   return `<use href="#ic-${id}" x="${f(x)}" y="${f(y)}" width="${size}" height="${size}" color="${color}" opacity="${opacity}"/>`;
 }
 
-export function renderL0Svg(layout, { title = 'Генеалогия Спасителя', subtitle = 'От Адама до Христа Спасителя', focus = null, theme = 'light' } = {}) {
+export function renderL0Svg(layout, { title = 'Генеалогия Спасителя', subtitle = 'От Адама до Христа Спасителя', focus = null, theme = 'light', chrono = null } = {}) {
   const C = getPalette(theme);
   const dark = theme === 'dark';
   // тёплое свечение/виньетка адаптируются под тему
@@ -37,7 +37,20 @@ export function renderL0Svg(layout, { title = 'Генеалогия Спасит
   const bright = focus?.brightIds ?? null;
   const isBright = id => !bright || bright.has(id);
   const dimAttr = id => (bright && !bright.has(id)) ? ' opacity="0.28" filter="url(#desat)"' : '';
-  const padTop = 190, padL = 250, padR = 90, padB = 96;
+  const padTop = 190, padL = 250, padR = 90, padB = 136;
+  // датировки якорей хребта (chronology.json): ключ → [id якоря шкалы, префикс]
+  const SPINE_DATE = {
+    'Adam@Gen.2.19': ['creation', ''], 'Noah@Gen.5.29': ['flood', 'Потоп: '],
+    'Abraham@Gen.11.26': ['abraham-birth', 'род. '], 'David@Rut.4.17': ['david-king', 'воцарение: '],
+    'Jesus@Isa.7.14': ['nativity', ''],
+  };
+  const chronoById = new Map((chrono?.anchors ?? []).map(a => [a.id, a]));
+  const dateChip = key => {
+    const m = SPINE_DATE[key];
+    if (!m || !chrono) return null;
+    const a = chronoById.get(m[0]);
+    return a ? `${m[1]}${a.am} AM · ${a.bc} до Р.Х.` : null;
+  };
   const vbX = bbox.x - padL, vbY = bbox.y - padTop;
   const vbW = bbox.w + padL + padR, vbH = bbox.h + padTop + padB;
   const nodeById = new Map(nodes.map(n => [n.id, n]));
@@ -100,6 +113,7 @@ export function renderL0Svg(layout, { title = 'Генеалогия Спасит
   const eraX = vbX + 30;
   const eras = layout.eraBands ?? [];
   P.push(`<line x1="${f(eraX + 150)}" y1="${f((eras[0]?.y0 ?? bbox.y) - 6)}" x2="${f(eraX + 150)}" y2="${f((eras[eras.length - 1]?.y1 ?? bbox.y + bbox.h) + 6)}" stroke="${C.gold}" stroke-width="1" opacity="0.28"/>`);
+  const spanById = new Map((chrono?.eraSpans ?? []).map(s => [s.id, s]));
   eras.forEach((b, i) => {
     const col = ERA_ACCENT[b.id] ?? C.inkSoft;
     const midY = (b.y0 + b.y1) / 2;
@@ -107,6 +121,9 @@ export function renderL0Svg(layout, { title = 'Генеалогия Спасит
     P.push(`<circle cx="${f(eraX + 150)}" cy="${f(midY)}" r="4.5" fill="url(#goldGrad)" stroke="${C.paper0}" stroke-width="1"/>`);
     P.push(`<text x="${f(eraX + 12)}" y="${f(midY - 3)}" font-size="8.5" letter-spacing="1.5" fill="${C.inkFaint}">ЭПОХА ${ROMAN[i + 1] ?? i + 1}</text>`);
     P.push(`<text x="${f(eraX + 12)}" y="${f(midY + 12)}" font-size="14.5" fill="${C.inkSoft}">${esc(b.label)}</text>`);
+    // диапазон шкалы «от Адама» (chronology.json, МТ/Ашшер)
+    const sp = spanById.get(b.id);
+    if (sp) P.push(`<text x="${f(eraX + 12)}" y="${f(midY + 27)}" font-size="9" fill="${C.gold}" opacity="0.85">${sp.amFrom}–${sp.amTo} AM</text>`);
   });
 
   // ─────────── заголовок + эмблема ───────────
@@ -173,6 +190,10 @@ export function renderL0Svg(layout, { title = 'Генеалогия Спасит
 
   // ─────────── легенда ───────────
   P.push(renderLegend(bbox));
+  // сноска о временной шкале (консервативная позиция, честные вилки)
+  if (chrono) {
+    P.push(`<text x="${f(bbox.x)}" y="${f(bbox.y + bbox.h + 116)}" font-size="11" fill="${C.inkFaint}" font-style="italic">Шкала времени: родословия масоретского текста (Ашшер) · AM — лет от Адама · по LXX шкала длиннее — текстологические вилки помечены (chronology.json)</text>`);
+  }
 
   P.push('</svg>');
   return P.join('\n');
@@ -194,6 +215,9 @@ export function renderL0Svg(layout, { title = 'Генеалогия Спасит
       g.push(`<text x="${f(tx)}" y="${f(cy(n) + 1)}" font-size="18" fill="${C.ink}" font-weight="bold">${esc(n.label)}</text>`);
       if (n.refRu) g.push(`<text x="${f(tx)}" y="${f(cy(n) + 16)}" font-size="9.5" fill="${C.inkFaint}">${esc(n.refRu)}</text>`);
     }
+    // датировка (шкала AM «от Адама», МТ/Ашшер) — под карточкой
+    const dc = dateChip(n.key);
+    if (dc) g.push(`<text x="${f(cx(n))}" y="${f(n.y + n.h + 15)}" text-anchor="middle" font-size="9.5" fill="${C.gold}" opacity="0.9">${esc(dc)}</text>`);
     return g.join('');
   }
 
@@ -212,6 +236,8 @@ export function renderL0Svg(layout, { title = 'Генеалогия Спасит
     const tx = cx(n) - W / 2 + 52;
     g.push(`<text x="${f(tx)}" y="${f(cy(n) - 2)}" font-size="22" fill="${C.ink}" font-weight="bold">${esc(n.label)}</text>`);
     g.push(`<text x="${f(tx)}" y="${f(cy(n) + 17)}" font-size="12.5" fill="${C.gold}" font-style="italic" letter-spacing="1">Мессия · Сын Божий</text>`);
+    const dc = dateChip(n.key);
+    if (dc) g.push(`<text x="${f(cx(n))}" y="${f(cy(n) + H / 2 + 17)}" text-anchor="middle" font-size="10" fill="${C.gold}" opacity="0.95">${esc(dc)}</text>`);
     return g.join('');
   }
 
