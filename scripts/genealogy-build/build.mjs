@@ -31,6 +31,7 @@ import { buildViews, buildSearchIndex } from './lib/views.mjs';
 import { renderNationsMapSvg } from './lib/render-map-nations.mjs';
 import { renderPersonL2Svg } from './lib/render-l2-person.mjs';
 import { renderMorphFramesSvg } from './lib/render-morph-frames.mjs';
+import { renderTimelineSvg } from './lib/render-timeline.mjs';
 
 const log = (...a) => console.log('[genealogy-build]', ...a);
 
@@ -456,6 +457,10 @@ async function runAll() {
   const morphSvg = renderMorphFramesSvg();
   const morphDarkSvg = renderMorphFramesSvg({ theme: 'dark' });
   log(`morph: три кадра FLIP-раскрытия (L0 → переход → L1), обе темы`);
+  // Шкала времени: линейка AM (МТ/Ашшер) + сравнительная дорожка LXX
+  const timelineSvg = renderTimelineSvg(chrono);
+  const timelineDarkSvg = renderTimelineSvg(chrono, { theme: 'dark' });
+  log(`timeline: шкала AM 0–4040 (МТ) + сравнение LXX, обе темы`);
   log(`layout-l1: «Народы от Ноя» — 3 ветви, ${nationsTree.columns.reduce((s, c) => s + c.rows.length, 0)} народов (Таблица народов)`);
   // Быстрые виды + поисковый индекс (данные, на которые опирается панель интерфейса)
   const views = buildViews({ clusters, persons: outPersons, nationsCount: 70 });
@@ -516,6 +521,8 @@ async function runAll() {
   await writeFile(path.join(PATHS.outDir, 'build', 'genealogy-l2-person-david-dark.svg'), l2PersonDarkSvg);
   await writeFile(path.join(PATHS.outDir, 'build', 'genealogy-morph-frames.svg'), morphSvg);
   await writeFile(path.join(PATHS.outDir, 'build', 'genealogy-morph-frames-dark.svg'), morphDarkSvg);
+  await writeFile(path.join(PATHS.outDir, 'build', 'genealogy-timeline.svg'), timelineSvg);
+  await writeFile(path.join(PATHS.outDir, 'build', 'genealogy-timeline-dark.svg'), timelineDarkSvg);
   await writeFile(path.join(PATHS.outDir, 'build', 'genealogy-app-shell.svg'), appShellSvg);
   await writeFile(path.join(PATHS.outDir, 'build', 'genealogy-app-shell-dark.svg'), appShellDarkSvg);
   await writeFile(path.join(PATHS.outDir, 'views.json'), JSON.stringify({
