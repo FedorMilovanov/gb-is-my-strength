@@ -3588,6 +3588,10 @@ html.dark [data-gill-v16] .mobile-top-bar {
     display: flex;
     align-items: center;
     gap: 4px;
+    /* RC-04: 44px tall so the speed pills' touch-target ::before has vertical
+       room inside the rail box (it clips to this height, not the 32px pill).
+       Fits inside the 58px top bar → no layout jump when the rail opens. */
+    min-height: 44px;
     overflow-x: auto;
     scrollbar-width: none;
     opacity: 0;
@@ -3607,6 +3611,7 @@ html.dark [data-gill-v16] .mobile-top-bar {
     pointer-events: auto;
   }
   [data-gill-v16] .mobile-speed {
+    position: relative;
     flex: 0 0 auto;
     height: 32px;
     min-width: 38px;
@@ -3620,6 +3625,13 @@ html.dark [data-gill-v16] .mobile-top-bar {
     font-weight: 800;
     cursor: pointer;
     transition: background .16s ease, border-color .16s ease, color .16s ease;
+  }
+  /* RC-04: touch target expands to the rail's full 44px height without growing
+     the visual pill (absolute ::before, clipped to the 44px rail box). */
+  [data-gill-v16] .mobile-speed::before {
+    content: '';
+    position: absolute;
+    inset: -6px -2px;
   }
   [data-gill-v16] .mobile-speed[aria-checked="true"] {
     background: var(--gill-mobile-bar-gold);
