@@ -3732,6 +3732,15 @@ html.dark [data-gill-v16] .mobile-top-bar {
     color: var(--gb-text); font-size: 15px;
     font-family: var(--gb-font-sans, system-ui, sans-serif);
   }
+  /* The native type=search clear button renders an off-palette blue × on
+     Chromium. Replace it with a theme-muted × (mask recolours per theme). */
+  [data-gill-v16] .gill-searchbox input::-webkit-search-cancel-button {
+    -webkit-appearance: none; appearance: none;
+    width: 15px; height: 15px; margin-left: 6px; cursor: pointer;
+    background-color: var(--gb-text-muted);
+    -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M6 6l12 12M18 6L6 18' stroke='black' stroke-width='2.5' stroke-linecap='round'/%3E%3C/svg%3E") center/contain no-repeat;
+    mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M6 6l12 12M18 6L6 18' stroke='black' stroke-width='2.5' stroke-linecap='round'/%3E%3C/svg%3E") center/contain no-repeat;
+  }
   [data-gill-v16] .gill-search-status { font-size: 12px; color: var(--gb-text-muted); padding: 10px 2px 6px; }
   [data-gill-v16] .gill-search-results { display: flex; flex-direction: column; gap: 6px; }
   [data-gill-v16] .gill-search-result {
