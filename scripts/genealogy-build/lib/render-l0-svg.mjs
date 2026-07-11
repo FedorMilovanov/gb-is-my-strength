@@ -13,6 +13,7 @@
  */
 import { iconSymbolDefs, ANCHOR_ICON, CLUSTER_ICON, ANCHOR_SUBTITLE } from './icons.mjs';
 import { getPalette, ERA_ACCENT, ROMAN, CLUSTER_LINE } from './palette.mjs';
+import { christDefs, christHalo } from './christ-halo.mjs';
 
 const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
 const f = (n, d = 1) => Number(n).toFixed(d);
@@ -67,10 +68,7 @@ export function renderL0Svg(layout, { title = 'Генеалогия Спасит
     <stop offset="0%" stop-color="${C.cardTop}"/><stop offset="100%" stop-color="${C.cardBot}"/></linearGradient>`);
   P.push(`<linearGradient id="megaGrad" x1="0" y1="0" x2="0" y2="1">
     <stop offset="0%" stop-color="${C.megaTop}"/><stop offset="100%" stop-color="${C.megaBot}"/></linearGradient>`);
-  P.push(`<radialGradient id="christBurst" cx="50%" cy="50%" r="60%">
-    <stop offset="0%" stop-color="#fff3d0" stop-opacity="0.95"/>
-    <stop offset="55%" stop-color="#f4dc9e" stop-opacity="0.35"/>
-    <stop offset="100%" stop-color="#f4dc9e" stop-opacity="0"/></radialGradient>`);
+  P.push(christDefs(C));
   // текстура пергамента: крупная мраморность + мелкое зерно
   P.push(`<filter id="paperTex" x="-5%" y="-5%" width="110%" height="110%">
     <feTurbulence type="fractalNoise" baseFrequency="0.011 0.017" numOctaves="3" seed="7" stitchTiles="stitch" result="mot"/>
@@ -203,15 +201,8 @@ export function renderL0Svg(layout, { title = 'Генеалогия Спасит
     const W = n.w + 54, H = n.h + 26;
     const x = cx(n) - W / 2, y = cy(n) - H / 2;
     const g = [];
-    g.push(`<ellipse cx="${f(cx(n))}" cy="${f(cy(n))}" rx="${f(W * 0.95)}" ry="${f(H * 1.5)}" fill="url(#christBurst)"/>`);
-    // лучи
-    const rays = [];
-    for (let i = 0; i < 16; i++) {
-      const a = (i / 16) * Math.PI * 2;
-      const r1 = W * 0.62, r2 = W * 0.94;
-      rays.push(`M${f(cx(n) + Math.cos(a) * r1)} ${f(cy(n) + Math.sin(a) * r1 * 0.66)} L${f(cx(n) + Math.cos(a) * r2)} ${f(cy(n) + Math.sin(a) * r2 * 0.66)}`);
-    }
-    g.push(`<path d="${rays.join(' ')}" stroke="${C.goldGlow}" stroke-width="1.4" opacity="0.5" stroke-linecap="round"/>`);
+    // глубокая ауреола: блум + корона лучей + крестчатый нимб + кольцо + искры
+    g.push(christHalo(cx(n), cy(n), Math.max(W * 0.47, H * 1.08), C, 0.72));
     g.push(`<g filter="url(#cardShadow)">`);
     g.push(`<rect x="${f(x)}" y="${f(y)}" width="${f(W)}" height="${f(H)}" rx="17" fill="url(#cardGrad)" stroke="url(#goldGrad)" stroke-width="2.4"/>`);
     g.push(`<rect x="${f(x + 4)}" y="${f(y + 4)}" width="${f(W - 8)}" height="${f(H - 8)}" rx="13" fill="none" stroke="url(#goldGrad)" stroke-width="1"/>`);

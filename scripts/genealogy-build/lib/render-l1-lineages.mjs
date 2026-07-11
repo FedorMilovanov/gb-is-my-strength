@@ -7,6 +7,7 @@
  */
 import { PALETTE as C, commonDefs } from './palette.mjs';
 import { iconSymbolDefs } from './icons.mjs';
+import { christDefs, christHalo } from './christ-halo.mjs';
 
 const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
 const f = (n, d = 1) => Number(n).toFixed(d);
@@ -32,6 +33,7 @@ export function renderMatthewLukeSvg(layout, { title, subtitle } = {}) {
     <stop offset="0%" stop-color="#fff6df" stop-opacity="0.9"/>
     <stop offset="50%" stop-color="#f7eccf" stop-opacity="0.35"/>
     <stop offset="100%" stop-color="#f7eccf" stop-opacity="0"/></radialGradient>`);
+  P.push(christDefs(C));
   P.push(iconSymbolDefs());
   P.push('</defs>');
   P.push(`<rect x="${f(vbX)}" y="${f(vbY)}" width="${f(vbW)}" height="${f(vbH)}" fill="url(#paperGrad)"/>`);
@@ -121,9 +123,8 @@ export function renderMatthewLukeSvg(layout, { title, subtitle } = {}) {
 
   function renderChrist(n) {
     const g = [];
-    const rays = [];
-    for (let i = 0; i < 16; i++) { const a = i / 16 * Math.PI * 2; rays.push(`M${f(cx(n) + Math.cos(a) * n.w * 0.62)} ${f(cy(n) + Math.sin(a) * n.h * 1.1)} L${f(cx(n) + Math.cos(a) * n.w * 0.9)} ${f(cy(n) + Math.sin(a) * n.h * 1.5)}`); }
-    g.push(`<path d="${rays.join(' ')}" stroke="${C.goldGlow}" stroke-width="1.4" opacity="0.5" stroke-linecap="round"/>`);
+    // глубокая ауреола: блум + корона лучей + крестчатый нимб + кольцо + искры
+    g.push(christHalo(cx(n), cy(n), Math.max(n.w * 0.5, n.h * 1.05), C, 0.74));
     g.push(`<g filter="url(#cardShadow)"><rect x="${f(n.x)}" y="${f(n.y)}" width="${f(n.w)}" height="${f(n.h)}" rx="16" fill="url(#cardGrad)" stroke="url(#goldGrad)" stroke-width="2.4"/><rect x="${f(n.x + 4)}" y="${f(n.y + 4)}" width="${f(n.w - 8)}" height="${f(n.h - 8)}" rx="12" fill="none" stroke="url(#goldGrad)" stroke-width="0.9"/></g>`);
     g.push(iconUse('cross', n.x + 16, cy(n) - 14, 28, C.gold));
     g.push(`<text x="${f(n.x + 50)}" y="${f(cy(n) - 1)}" font-size="19" fill="${C.ink}" font-weight="bold">${esc(n.name)}</text>`);
