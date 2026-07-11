@@ -5,24 +5,36 @@
  * (Пакет GILL_RESEARCH_3_ENGINES, документ 03 §4.) Гарантирует единую
  * структуру верхней/нижней панелей, safe-area, landmarks и общий data-контракт
  * для рантайма (js/floating-cluster-controller.js расширяется аддитивно и
- * инициализирует всё по [data-mobile-chrome]).
+ * может инициализировать всё по [data-mobile-chrome]).
  *
  * Shell НЕ знает про Gill/Hermenevtika/Pagefind/TTS/BookmarkEngine/quiz — он
  * только раскладывает именованные слоты. Конкретное наполнение (marks, dual
  * progress, Learning, Search…) кладёт адаптер движка.
  *
- * Классы верхней/нижней панели по умолчанию совпадают с текущим Gill/Herm
- * каноном (.mobile-top-bar / .mobile-bottom-bar), поэтому первая миграция
- * может идти с нулевым визуальным диффом; адаптер вправе их переопределить.
+ * Pixel-parity контракт (этап 2→3, миграция без визуального диффа):
+ *  - Слоты вставляются ПРЯМЫМИ детьми header/footer, без div-обёрток: легаси
+ *    CSS использует селекторы прямого потомка (.mobile-bottom-bar > .gb-icon),
+ *    и даже display:contents-обёртка сломала бы их (селектор `>` матчится по
+ *    DOM-дереву, не по layout-дереву).
+ *  - Корневой .mobile-chrome нейтрализуется display:contents в
+ *    css/floating-cluster.css — новых CSS-файлов не создаём (protected
+ *    contract), лейаут-дерево баров идентично долегаси-разметке.
+ *  - Контрактные атрибуты панелей (data-fc-root, data-fc-variant,
+ *    data-gill-mobile-bar, data-fc-speed-mode…) адаптер передаёт через
+ *    topAttrs/bottomAttrs — делегирование кластера живёт на самой панели.
  */
 import type { MobileChromeEngine } from './mobileChromeTypes';
 
 interface Props {
   engine: MobileChromeEngine;
-  id: string;
+  id?: string;
   rootClass?: string;
   topClass?: string;
   bottomClass?: string;
+  /** Дополнительные атрибуты верхней панели (data-fc-root и т.п.). */
+  topAttrs?: Record<string, string | boolean>;
+  /** Дополнительные атрибуты нижней панели. */
+  bottomAttrs?: Record<string, string | boolean>;
 }
 
 const {
@@ -31,6 +43,8 @@ const {
   rootClass = '',
   topClass = 'mobile-top-bar',
   bottomClass = 'mobile-bottom-bar',
+  topAttrs = {},
+  bottomAttrs = {},
 } = Astro.props as Props;
 ---
 <div
@@ -39,17 +53,17 @@ const {
   data-mobile-chrome
   data-mobile-chrome-engine={engine}
 >
-  <header class={topClass} data-mobile-topbar>
-    <div class="mobile-chrome__top-leading"><slot name="top-leading" /></div>
-    <div class="mobile-chrome__top-primary"><slot name="top-primary" /></div>
-    <div class="mobile-chrome__top-playback"><slot name="top-playback" /></div>
-    <div class="mobile-chrome__top-trailing"><slot name="top-trailing" /></div>
+  <header class={topClass} data-mobile-topbar {...topAttrs}>
+    <slot name="top-leading" />
+    <slot name="top-primary" />
+    <slot name="top-playback" />
+    <slot name="top-trailing" />
   </header>
 
-  <footer class={bottomClass} data-mobile-bottombar>
-    <div class="mobile-chrome__bottom-progress"><slot name="bottom-progress" /></div>
-    <div class="mobile-chrome__bottom-context"><slot name="bottom-context" /></div>
-    <div class="mobile-chrome__bottom-actions"><slot name="bottom-actions" /></div>
+  <footer class={bottomClass} data-mobile-bottombar {...bottomAttrs}>
+    <slot name="bottom-progress" />
+    <slot name="bottom-context" />
+    <slot name="bottom-actions" />
   </footer>
 
   <slot name="overlays" />
