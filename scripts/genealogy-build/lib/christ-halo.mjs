@@ -21,7 +21,13 @@ export function christDefs(C) {
     <radialGradient id="christCore" cx="50%" cy="50%" r="50%">
       <stop offset="0%" stop-color="#fff7e2" stop-opacity="0.9"/>
       <stop offset="60%" stop-color="${C.goldGlow}" stop-opacity="0.3"/>
-      <stop offset="100%" stop-color="${C.goldGlow}" stop-opacity="0"/></radialGradient>`;
+      <stop offset="100%" stop-color="${C.goldGlow}" stop-opacity="0"/></radialGradient>
+    <radialGradient id="christMandorla" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#fff7e2" stop-opacity="0"/>
+      <stop offset="58%" stop-color="${C.goldGlow}" stop-opacity="0"/>
+      <stop offset="74%" stop-color="${C.goldHi}" stop-opacity="0.14"/>
+      <stop offset="86%" stop-color="${C.gold}" stop-opacity="0.10"/>
+      <stop offset="100%" stop-color="${C.gold}" stop-opacity="0"/></radialGradient>`;
 }
 
 /**
@@ -32,6 +38,11 @@ export function christHalo(cx, cy, R, C, sy = 0.72) {
   const g = [];
   const P = (x, y) => `${f(x)} ${f(y)}`;
   const pt = (a, r) => [cx + Math.cos(a) * r, cy + Math.sin(a) * r * sy];
+
+  // 0) мандорла славы — слоистое эллиптическое сияние «тела» (Христос во славе)
+  g.push(`<ellipse cx="${f(cx)}" cy="${f(cy)}" rx="${f(R * 2.6)}" ry="${f(R * 2.6 * sy)}" fill="url(#christMandorla)"/>`);
+  g.push(`<ellipse cx="${f(cx)}" cy="${f(cy)}" rx="${f(R * 1.62)}" ry="${f(R * 1.62 * sy)}" fill="none" stroke="${C.goldHi}" stroke-width="0.8" opacity="0.16"/>`);
+  g.push(`<ellipse cx="${f(cx)}" cy="${f(cy)}" rx="${f(R * 1.35)}" ry="${f(R * 1.35 * sy)}" fill="none" stroke="${C.goldHi}" stroke-width="0.7" opacity="0.12"/>`);
 
   // 1) мягкий блум (два эллипса) + тёплое ядро
   g.push(`<ellipse cx="${f(cx)}" cy="${f(cy)}" rx="${f(R * 2.15)}" ry="${f(R * 2.15 * sy)}" fill="url(#christBloom)"/>`);
@@ -59,8 +70,15 @@ export function christHalo(cx, cy, R, C, sy = 0.72) {
     g.push(`<path d="M${P(b1x, b1y)} L${P(tx, ty)} L${P(b2x, b2y)} Z" fill="url(#christRay)" opacity="0.7"/>`);
   }
 
-  // 4) внутреннее золотое кольцо (нимб)
+  // 4) двойное золотое кольцо-нимб + жемчужный (самоцветный) обод
   g.push(`<ellipse cx="${f(cx)}" cy="${f(cy)}" rx="${f(R * 0.9)}" ry="${f(R * 0.9 * sy)}" fill="none" stroke="${C.goldHi}" stroke-width="1.3" opacity="0.55"/>`);
+  g.push(`<ellipse cx="${f(cx)}" cy="${f(cy)}" rx="${f(R * 0.82)}" ry="${f(R * 0.82 * sy)}" fill="none" stroke="${C.goldGlow}" stroke-width="0.7" opacity="0.4"/>`);
+  const beads = 24;
+  for (let i = 0; i < beads; i++) {
+    const a = (i / beads) * Math.PI * 2;
+    const [bx, by] = pt(a, R * 0.9);
+    g.push(`<circle cx="${f(bx)}" cy="${f(by)}" r="${i % 2 === 0 ? 1.1 : 0.7}" fill="${C.goldHi}" opacity="0.55"/>`);
+  }
 
   // 5) искры-звёздочки на кончиках крестчатых лучей
   for (const a of [Math.PI / 4, Math.PI * 3 / 4, Math.PI * 5 / 4, Math.PI * 7 / 4]) {
