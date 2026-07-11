@@ -15,7 +15,7 @@ import path from 'node:path';
 import { PATHS, SOURCES, PIPELINE_VERSION, HARD_INVARIANTS } from './config.mjs';
 import { SynodalText, refToRu, parseRef, OSIS_RU } from './lib/refs.mjs';
 import { parseTipnr, resolveRelations, parseUnifiedRef, parseRelField } from './lib/tipnr-parser.mjs';
-import { extractRuName, translitEnRu, similarity } from './lib/ru-extract.mjs';
+import { extractRuName, translitEnRu, similarity, normalizeRuCandidate } from './lib/ru-extract.mjs';
 
 const log = (...a) => console.log('[genealogy-build]', ...a);
 
@@ -445,6 +445,12 @@ async function runTests() {
   const fakeVerses = [{ ref: 'Gen.10.25', offset: 0, text: 'У Евера родились два сына; имя одному: Фалек, потому что во дни его земля разделена; имя брата его: Иоктан.' }];
   const ru = extractRuName('Peleg', fakeVerses);
   assert(ru?.name === 'Фалек' && ru.source === 'pattern', `extractRuName Peleg→Фалек (получили ${JSON.stringify(ru)})`);
+
+  assert(normalizeRuCandidate('Elnathan', 'Елнафана') === 'Елнафан', 'нормализация вин. падежа (Елнафана→Елнафан)');
+  assert(normalizeRuCandidate('Melchi', 'Мелхиев') === 'Мелхий', 'нормализация притяжательного (Мелхиев→Мелхий)');
+  assert(normalizeRuCandidate('Mattathias', 'Маттафиев') === 'Маттафия', 'нормализация -ias (Маттафиев→Маттафия)');
+  assert(normalizeRuCandidate('Judah', 'Иуда') === 'Иуда', 'именительный не трогаем (Иуда)');
+  assert(normalizeRuCandidate('Reuben', 'Рувим') === 'Рувим', 'без ложных срабатываний (Рувим)');
 
   const mini = [
     '$==========PERSON(s)',

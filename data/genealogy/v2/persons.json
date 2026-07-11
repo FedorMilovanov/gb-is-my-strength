@@ -294,10 +294,10 @@
   "key": "Jabal@Gen.4.20",
   "en": "Jabal",
   "ru": {
-   "name": "Иавала",
+   "name": "Иавал",
    "source": "pattern",
    "confidence": 1.083,
-   "review": false,
+   "review": true,
    "verseRef": "Gen.4.20"
   },
   "gender": "m",
@@ -351,10 +351,10 @@
   "key": "Tubal-cain@Gen.4.22",
   "en": "Tubal-cain",
   "ru": {
-   "name": "Тувалкаина",
+   "name": "Тувалкаин",
    "source": "pattern",
    "confidence": 1.15,
-   "review": false,
+   "review": true,
    "verseRef": "Gen.4.22"
   },
   "gender": "m",
@@ -1742,10 +1742,10 @@
   "key": "Almodad@Gen.10.26",
   "en": "Almodad",
   "ru": {
-   "name": "Алмодада",
+   "name": "Алмодад",
    "source": "pattern",
    "confidence": 1.125,
-   "review": false,
+   "review": true,
    "verseRef": "Gen.10.26"
   },
   "gender": "m",
@@ -1837,7 +1837,7 @@
   "key": "Hadoram@Gen.10.27",
   "en": "Hadoram",
   "ru": {
-   "name": "Гадорама",
+   "name": "Гадорам",
    "source": "candidate",
    "confidence": 0.75,
    "review": true,
@@ -1856,10 +1856,10 @@
   "key": "Uzal@Gen.10.27",
   "en": "Uzal",
   "ru": {
-   "name": "Узала",
+   "name": "Узал",
    "source": "candidate",
    "confidence": 0.8,
-   "review": false,
+   "review": true,
    "verseRef": "Gen.10.27"
   },
   "gender": "m",
@@ -1875,7 +1875,7 @@
   "key": "Abimael@Gen.10.28",
   "en": "Abimael",
   "ru": {
-   "name": "Авимаила",
+   "name": "Авимаил",
    "source": "candidate",
    "confidence": 0.75,
    "review": true,
@@ -1894,10 +1894,10 @@
   "key": "Obal@Gen.10.28",
   "en": "Obal",
   "ru": {
-   "name": "Овала",
+   "name": "Овал",
    "source": "candidate",
    "confidence": 0.8,
-   "review": false,
+   "review": true,
    "verseRef": "Gen.10.28"
   },
   "gender": "m",
@@ -1951,10 +1951,10 @@
   "key": "Jobab@Gen.10.29",
   "en": "Jobab",
   "ru": {
-   "name": "Иовава",
+   "name": "Иовав",
    "source": "candidate",
    "confidence": 0.833,
-   "review": false,
+   "review": true,
    "verseRef": "Gen.10.29"
   },
   "gender": "m",
@@ -1970,10 +1970,10 @@
   "key": "Ophir@Gen.10.29",
   "en": "Ophir",
   "ru": {
-   "name": "Офира",
+   "name": "Офир",
    "source": "candidate",
    "confidence": 0.8,
-   "review": false,
+   "review": true,
    "verseRef": "Gen.10.29"
   },
   "gender": "m",
@@ -2318,10 +2318,10 @@
   "key": "Amraphel@Gen.14.1",
   "en": "Amraphel",
   "ru": {
-   "name": "Амрафела",
+   "name": "Амрафел",
    "source": "candidate",
    "confidence": 0.875,
-   "review": false,
+   "review": true,
    "verseRef": "Gen.14.1"
   },
   "gender": "m",
@@ -2356,10 +2356,10 @@
   "key": "Chedorlaomer@Gen.14.1",
   "en": "Chedorlaomer",
   "ru": {
-   "name": "Кедорлаомера",
+   "name": "Кедорлаомер",
    "source": "candidate",
    "confidence": 0.833,
-   "review": false,
+   "review": true,
    "verseRef": "Gen.14.1"
   },
   "gender": "m",
@@ -2375,7 +2375,7 @@
   "key": "Tidal@Gen.14.1",
   "en": "Tidal",
   "ru": {
-   "name": "Фидала",
+   "name": "Фидал",
    "source": "candidate",
    "confidence": 0.667,
    "review": true,
@@ -2432,10 +2432,10 @@
   "key": "Shemeber@Gen.14.2",
   "en": "Shemeber",
   "ru": {
-   "name": "Шемевера",
+   "name": "Шемевер",
    "source": "candidate",
    "confidence": 0.875,
-   "review": false,
+   "review": true,
    "verseRef": "Gen.14.2"
   },
   "gender": "m",
@@ -2451,10 +2451,10 @@
   "key": "Shinab@Gen.14.2",
   "en": "Shinab",
   "ru": {
-   "name": "Шинава",
+   "name": "Шинав",
    "source": "candidate",
    "confidence": 0.833,
-   "review": false,
+   "review": true,
    "verseRef": "Gen.14.2"
   },
   "gender": "m",
@@ -2848,7 +2848,7 @@
   "key": "Kemuel@Gen.22.21",
   "en": "Kemuel",
   "ru": {
-   "name": "Кемуила",
+   "name": "Кемуил",
    "source": "candidate",
    "confidence": 0.714,
    "review": true,
@@ -2915,7 +2915,7 @@
   "key": "Chesed@Gen.22.22",
   "en": "Chesed",
   "ru": {
-   "name": "Кеседа",
+   "name": "Кесед",
    "source": "candidate",
    "confidence": 0.667,
    "review": true,
@@ -3020,7 +3020,7 @@
   "key": "Gaham@Gen.22.24",
   "en": "Gaham",
   "ru": {
-   "name": "Гахама",
+   "name": "Гахам",
    "source": "candidate",
    "confidence": 0.667,
    "review": true,
@@ -3201,7 +3201,7 @@
   "key": "Ishbak@Gen.25.2",
   "en": "Ishbak",
   "ru": {
-   "name": "Ишбака",
+   "name": "Ишбак",
    "source": "candidate",
    "confidence": 0.667,
    "review": true,
@@ -3239,10 +3239,10 @@
   "key": "Medan@Gen.25.2",
   "en": "Medan",
   "ru": {
-   "name": "Медана",
+   "name": "Медан",
    "source": "candidate",
    "confidence": 0.833,
-   "review": false,
+   "review": true,
    "verseRef": "Gen.25.2"
   },
   "gender": "m",
@@ -3258,7 +3258,7 @@
   "key": "Midian@Gen.25.2",
   "en": "Midian",
   "ru": {
-   "name": "Мадиана",
+   "name": "Мадиан",
    "source": "candidate",
    "confidence": 0.714,
    "review": true,
@@ -3296,10 +3296,10 @@
   "key": "Zimran@Gen.25.2",
   "en": "Zimran",
   "ru": {
-   "name": "Зимрана",
+   "name": "Зимран",
    "source": "candidate",
    "confidence": 0.857,
-   "review": false,
+   "review": true,
    "verseRef": "Gen.25.2"
   },
   "gender": "m",
@@ -3315,10 +3315,10 @@
   "key": "Dedan@Gen.25.3",
   "en": "Dedan",
   "ru": {
-   "name": "Дедана",
+   "name": "Дедан",
    "source": "candidate",
    "confidence": 0.833,
-   "review": false,
+   "review": true,
    "verseRef": "Gen.25.3"
   },
   "gender": "m",
@@ -3781,10 +3781,10 @@
   "key": "Elon@Gen.26.34",
   "en": "Elon",
   "ru": {
-   "name": "Елона",
+   "name": "Елон",
    "source": "candidate",
    "confidence": 0.8,
-   "review": false,
+   "review": true,
    "verseRef": "Gen.26.34"
   },
   "gender": "m",
@@ -4399,7 +4399,7 @@
   "key": "Zibeon@Gen.36.2",
   "en": "Zibeon",
   "ru": {
-   "name": "Цивеона",
+   "name": "Цивеон",
    "source": "candidate",
    "confidence": 0.714,
    "review": true,
@@ -4418,10 +4418,10 @@
   "key": "Eliphaz@Gen.36.4",
   "en": "Eliphaz",
   "ru": {
-   "name": "Елифаза",
+   "name": "Елифаз",
    "source": "candidate",
    "confidence": 0.857,
-   "review": false,
+   "review": true,
    "verseRef": "Gen.36.4"
   },
   "gender": "m",
@@ -4437,7 +4437,7 @@
   "key": "Reuel@Gen.36.4",
   "en": "Reuel",
   "ru": {
-   "name": "Рагуила",
+   "name": "Рагуил",
    "source": "pattern",
    "confidence": 0.679,
    "review": true,
@@ -4627,7 +4627,7 @@
   "key": "Amalek@Gen.36.12",
   "en": "Amalek",
   "ru": {
-   "name": "Амалика",
+   "name": "Амалик",
    "source": "candidate",
    "confidence": 0.714,
    "review": true,
@@ -4779,10 +4779,10 @@
   "key": "Seir@Gen.36.20",
   "en": "Seir",
   "ru": {
-   "name": "Сеира",
+   "name": "Сеир",
    "source": "candidate",
    "confidence": 0.8,
-   "review": false,
+   "review": true,
    "verseRef": "Gen.36.20"
   },
   "gender": "m",
@@ -5216,7 +5216,7 @@
   "key": "Beor@Gen.36.32",
   "en": "Beor",
   "ru": {
-   "name": "Веоров",
+   "name": "Веор",
    "source": "candidate",
    "confidence": 0.667,
    "review": true,
@@ -5368,7 +5368,7 @@
   "key": "Achbor@Gen.36.38",
   "en": "Achbor",
   "ru": {
-   "name": "Ахбора",
+   "name": "Ахбор",
    "source": "candidate",
    "confidence": 0.667,
    "review": true,
@@ -5482,7 +5482,7 @@
   "key": "Mezahab@Gen.36.39",
   "en": "Mezahab",
   "ru": {
-   "name": "Мезагава",
+   "name": "Мезагав",
    "source": "candidate",
    "confidence": 0.75,
    "review": true,
@@ -6985,10 +6985,10 @@
   "key": "Machir@Gen.50.23",
   "en": "Machir",
   "ru": {
-   "name": "Махира",
+   "name": "Махир",
    "source": "candidate",
    "confidence": 0.833,
-   "review": false,
+   "review": true,
    "verseRef": "Gen.50.23"
   },
   "gender": "m",
@@ -7538,7 +7538,7 @@
   "key": "Amminadab@Exo.6.23",
   "en": "Amminadab",
   "ru": {
-   "name": "Аминадава",
+   "name": "Аминадав",
    "source": "candidate",
    "confidence": 0.748,
    "review": true,
@@ -7605,10 +7605,10 @@
   "key": "Ithamar@Exo.6.23",
   "en": "Ithamar",
   "ru": {
-   "name": "Ифамара",
+   "name": "Ифамар",
    "source": "candidate",
    "confidence": 0.827,
-   "review": false,
+   "review": true,
    "verseRef": "Exo.6.22"
   },
   "gender": "m",
@@ -7624,10 +7624,10 @@
   "key": "Nadab@Exo.6.23",
   "en": "Nadab",
   "ru": {
-   "name": "Надава",
+   "name": "Надав",
    "source": "candidate",
    "confidence": 0.803,
-   "review": false,
+   "review": true,
    "verseRef": "Exo.6.22"
   },
   "gender": "m",
@@ -7748,7 +7748,7 @@
   "key": "Phinehas@Exo.6.25",
   "en": "Phinehas",
   "ru": {
-   "name": "Финееса",
+   "name": "Финеес",
    "source": "candidate",
    "confidence": 0.684,
    "review": true,
@@ -7929,7 +7929,7 @@
   "key": "Oholiab@Exo.31.6",
   "en": "Oholiab",
   "ru": {
-   "name": "Аголиава",
+   "name": "Аголиав",
    "source": "candidate",
    "confidence": 0.625,
    "review": true,
@@ -8024,10 +8024,10 @@
   "key": "Shedeur@Num.1.5",
   "en": "Shedeur",
   "ru": {
-   "name": "Шедеура",
+   "name": "Шедеур",
    "source": "candidate",
    "confidence": 0.857,
-   "review": false,
+   "review": true,
    "verseRef": "Num.1.5"
   },
   "gender": "m",
@@ -8138,7 +8138,7 @@
   "key": "Helon@Num.1.9",
   "en": "Helon",
   "ru": {
-   "name": "Хелона",
+   "name": "Хелон",
    "source": "candidate",
    "confidence": 0.667,
    "review": true,
@@ -8157,10 +8157,10 @@
   "key": "Ammihud@Num.1.10",
   "en": "Ammihud",
   "ru": {
-   "name": "Аммиуда",
+   "name": "Аммиуд",
    "source": "candidate",
    "confidence": 0.857,
-   "review": false,
+   "review": true,
    "verseRef": "Num.1.10"
   },
   "gender": "m",
@@ -8214,7 +8214,7 @@
   "key": "Pedahzur@Num.1.10",
   "en": "Pedahzur",
   "ru": {
-   "name": "Педацура",
+   "name": "Педацур",
    "source": "candidate",
    "confidence": 0.75,
    "review": true,
@@ -8309,10 +8309,10 @@
   "key": "Ochran@Num.1.13",
   "en": "Ochran",
   "ru": {
-   "name": "Охрана",
+   "name": "Охран",
    "source": "candidate",
    "confidence": 0.833,
-   "review": false,
+   "review": true,
    "verseRef": "Num.1.13"
   },
   "gender": "m",
@@ -8404,10 +8404,10 @@
   "key": "Enan@Num.1.15",
   "en": "Enan",
   "ru": {
-   "name": "Енана",
+   "name": "Енан",
    "source": "candidate",
    "confidence": 0.8,
-   "review": false,
+   "review": true,
    "verseRef": "Num.1.15"
   },
   "gender": "m",
@@ -8442,7 +8442,7 @@
   "key": "Lael@Num.3.24",
   "en": "Lael",
   "ru": {
-   "name": "Лаелов",
+   "name": "Лаел",
    "source": "candidate",
    "confidence": 0.667,
    "review": true,
@@ -8461,7 +8461,7 @@
   "key": "Abihail@Num.3.35",
   "en": "Abihail",
   "ru": {
-   "name": "Авихаила",
+   "name": "Авихаил",
    "source": "candidate",
    "confidence": 0.75,
    "review": true,
@@ -8575,7 +8575,7 @@
   "key": "Zaccur@Num.13.4",
   "en": "Zaccur",
   "ru": {
-   "name": "Закхуров",
+   "name": "Закхур",
    "source": "candidate",
    "confidence": 0.625,
    "review": true,
@@ -8632,10 +8632,10 @@
   "key": "Caleb@Num.13.6",
   "en": "Caleb",
   "ru": {
-   "name": "Халев",
+   "name": "Хал",
    "source": "candidate",
    "confidence": 0.8,
-   "review": false,
+   "review": true,
    "verseRef": "Num.13.6"
   },
   "gender": "m",
@@ -8727,7 +8727,7 @@
   "key": "Raphu@Num.13.9",
   "en": "Raphu",
   "ru": {
-   "name": "Рафуев",
+   "name": "Рафу",
    "source": "candidate",
    "confidence": 0.667,
    "review": true,
@@ -8765,7 +8765,7 @@
   "key": "Sodi@Num.13.10",
   "en": "Sodi",
   "ru": {
-   "name": "Содиев",
+   "name": "Содий",
    "source": "candidate",
    "confidence": 0.667,
    "review": true,
@@ -8803,7 +8803,7 @@
   "key": "Susi@Num.13.11",
   "en": "Susi",
   "ru": {
-   "name": "Сусиев",
+   "name": "Сусий",
    "source": "candidate",
    "confidence": 0.667,
    "review": true,
@@ -8841,7 +8841,7 @@
   "key": "Gemalli@Num.13.12",
   "en": "Gemalli",
   "ru": {
-   "name": "Гемаллиев",
+   "name": "Гемаллий",
    "source": "candidate",
    "confidence": 0.778,
    "review": true,
@@ -8860,7 +8860,7 @@
   "key": "Michael@Num.13.13",
   "en": "Michael",
   "ru": {
-   "name": "Михаилев",
+   "name": "Михаил",
    "source": "candidate",
    "confidence": 0.625,
    "review": true,
@@ -8917,7 +8917,7 @@
   "key": "Vophsi@Num.13.14",
   "en": "Vophsi",
   "ru": {
-   "name": "Вофсиев",
+   "name": "Вофсий",
    "source": "candidate",
    "confidence": 0.714,
    "review": true,
@@ -8955,7 +8955,7 @@
   "key": "Machi@Num.13.15",
   "en": "Machi",
   "ru": {
-   "name": "Махиев",
+   "name": "Махий",
    "source": "candidate",
    "confidence": 0.667,
    "review": true,
@@ -9088,10 +9088,10 @@
   "key": "Eliab@Num.16.1",
   "en": "Eliab",
   "ru": {
-   "name": "Елиава",
+   "name": "Елиав",
    "source": "candidate",
    "confidence": 0.833,
-   "review": false,
+   "review": true,
    "verseRef": "Num.16.1"
   },
   "gender": "m",
@@ -9259,10 +9259,10 @@
   "key": "Agag@Num.24.7",
   "en": "Agag",
   "ru": {
-   "name": "Агага",
+   "name": "Агаг",
    "source": "candidate",
    "confidence": 0.8,
-   "review": false,
+   "review": true,
    "verseRef": "Num.24.7"
   },
   "gender": "m",
@@ -9411,7 +9411,7 @@
   "key": "Helek@Num.26.30",
   "en": "Helek",
   "ru": {
-   "name": "Хелека",
+   "name": "Хелек",
    "source": "candidate",
    "confidence": 0.667,
    "review": true,
@@ -9430,7 +9430,7 @@
   "key": "Asriel@Num.26.31",
   "en": "Asriel",
   "ru": {
-   "name": "Асриила",
+   "name": "Асриил",
    "source": "candidate",
    "confidence": 0.714,
    "review": true,
@@ -9449,10 +9449,10 @@
   "key": "Shechem@Num.26.31",
   "en": "Shechem",
   "ru": {
-   "name": "Шехема",
+   "name": "Шехем",
    "source": "candidate",
    "confidence": 0.833,
-   "review": false,
+   "review": true,
    "verseRef": "Num.26.31"
   },
   "gender": "m",
@@ -9468,7 +9468,7 @@
   "key": "Hepher@Num.26.32",
   "en": "Hepher",
   "ru": {
-   "name": "Хефера",
+   "name": "Хефер",
    "source": "candidate",
    "confidence": 0.667,
    "review": true,
@@ -9620,7 +9620,7 @@
   "key": "Becher@Num.26.35",
   "en": "Becher",
   "ru": {
-   "name": "Бехера",
+   "name": "Бехер",
    "source": "candidate",
    "confidence": 0.667,
    "review": true,
@@ -9658,7 +9658,7 @@
   "key": "Tahan@Num.26.35",
   "en": "Tahan",
   "ru": {
-   "name": "Тахана",
+   "name": "Тахан",
    "source": "candidate",
    "confidence": 0.667,
    "review": true,
@@ -9791,10 +9791,10 @@
   "key": "Rekem@Num.31.8",
   "en": "Rekem",
   "ru": {
-   "name": "Рекема",
+   "name": "Рекем",
    "source": "candidate",
    "confidence": 0.833,
-   "review": false,
+   "review": true,
    "verseRef": "Num.31.8"
   },
   "gender": "m",
@@ -9886,10 +9886,10 @@
   "key": "Ammihud@Num.34.20",
   "en": "Ammihud",
   "ru": {
-   "name": "Аммиуда",
+   "name": "Аммиуд",
    "source": "candidate",
    "confidence": 0.857,
-   "review": false,
+   "review": true,
    "verseRef": "Num.34.20"
   },
   "gender": "m",
@@ -9924,7 +9924,7 @@
   "key": "Chislon@Num.34.21",
   "en": "Chislon",
   "ru": {
-   "name": "Кислона",
+   "name": "Кислон",
    "source": "candidate",
    "confidence": 0.714,
    "review": true,
@@ -10000,10 +10000,10 @@
   "key": "Ephod@Num.34.23",
   "en": "Ephod",
   "ru": {
-   "name": "Ефода",
+   "name": "Ефод",
    "source": "candidate",
    "confidence": 0.8,
-   "review": false,
+   "review": true,
    "verseRef": "Num.34.23"
   },
   "gender": "m",
@@ -10057,10 +10057,10 @@
   "key": "Shiphtan@Num.34.24",
   "en": "Shiphtan",
   "ru": {
-   "name": "Шифтана",
+   "name": "Шифтан",
    "source": "candidate",
    "confidence": 0.857,
-   "review": false,
+   "review": true,
    "verseRef": "Num.34.24"
   },
   "gender": "m",
@@ -10114,7 +10114,7 @@
   "key": "Azzan@Num.34.26",
   "en": "Azzan",
   "ru": {
-   "name": "Аззана",
+   "name": "Аззан",
    "source": "candidate",
    "confidence": 0.667,
    "review": true,
@@ -10190,10 +10190,10 @@
   "key": "Ammihud@Num.34.28",
   "en": "Ammihud",
   "ru": {
-   "name": "Аммиуда",
+   "name": "Аммиуд",
    "source": "candidate",
    "confidence": 0.857,
-   "review": false,
+   "review": true,
    "verseRef": "Num.34.28"
   },
   "gender": "m",
@@ -10561,10 +10561,10 @@
   "key": "Japhlet@Jos.16.3",
   "en": "Japhlet",
   "ru": {
-   "name": "Иафлета",
+   "name": "Иафлет",
    "source": "candidate",
    "confidence": 0.857,
-   "review": false,
+   "review": true,
    "verseRef": "Jos.16.3"
   },
   "gender": "m",
@@ -10618,10 +10618,10 @@
   "key": "Eglon@Jdg.3.12",
   "en": "Eglon",
   "ru": {
-   "name": "Еглона",
+   "name": "Еглон",
    "source": "candidate",
    "confidence": 0.833,
-   "review": false,
+   "review": true,
    "verseRef": "Jdg.3.12"
   },
   "gender": "m",
@@ -10656,7 +10656,7 @@
   "key": "Anath@Jdg.3.31",
   "en": "Anath",
   "ru": {
-   "name": "Анафов",
+   "name": "Анаф",
    "source": "candidate",
    "confidence": 0.667,
    "review": true,
@@ -10694,10 +10694,10 @@
   "key": "Jabin@Jdg.4.2",
   "en": "Jabin",
   "ru": {
-   "name": "Иавина",
+   "name": "Иавин",
    "source": "candidate",
    "confidence": 0.833,
-   "review": false,
+   "review": true,
    "verseRef": "Jdg.4.2"
   },
   "gender": "m",
@@ -10770,7 +10770,7 @@
   "key": "Abinoam@Jdg.4.6",
   "en": "Abinoam",
   "ru": {
-   "name": "Авиноамова",
+   "name": "Авиноамов",
    "source": "candidate",
    "confidence": 0.7,
    "review": true,
@@ -11036,7 +11036,7 @@
   "key": "Ebed@Jdg.9.26",
   "en": "Ebed",
   "ru": {
-   "name": "Еведов",
+   "name": "Евед",
    "source": "candidate",
    "confidence": 0.667,
    "review": true,
@@ -11169,7 +11169,7 @@
   "key": "Gilead@Jdg.11.1",
   "en": "Gilead",
   "ru": {
-   "name": "Галаадова",
+   "name": "Галаадов",
    "source": "pattern",
    "confidence": 0.664,
    "review": true,
@@ -11264,7 +11264,7 @@
   "key": "Hillel@Jdg.12.13",
   "en": "Hillel",
   "ru": {
-   "name": "Гиллела",
+   "name": "Гиллел",
    "source": "candidate",
    "confidence": 0.714,
    "review": true,
@@ -11633,10 +11633,10 @@
   "key": "Ram@Rut.4.19",
   "en": "Ram",
   "ru": {
-   "name": "Арама",
+   "name": "Арам",
    "source": "pattern",
    "confidence": 0.82,
-   "review": false,
+   "review": true,
    "verseRef": "Rut.4.18"
   },
   "gender": "m",
@@ -11719,7 +11719,7 @@
   "key": "Jeroham@1Sa.1.1",
   "en": "Jeroham",
   "ru": {
-   "name": "Иерохама",
+   "name": "Иерохам",
    "source": "candidate",
    "confidence": 0.75,
    "review": true,
@@ -11938,7 +11938,7 @@
   "key": "Abinadab@1Sa.7.1",
   "en": "Abinadab",
   "ru": {
-   "name": "Аминадава",
+   "name": "Аминадав",
    "source": "candidate",
    "confidence": 0.778,
    "review": true,
@@ -11957,10 +11957,10 @@
   "key": "Eleazar@1Sa.7.1",
   "en": "Eleazar",
   "ru": {
-   "name": "Елеазара",
+   "name": "Елеазар",
    "source": "candidate",
    "confidence": 0.875,
-   "review": false,
+   "review": true,
    "verseRef": "1Sa.7.1"
   },
   "gender": "m",
@@ -12014,7 +12014,7 @@
   "key": "Abiel@1Sa.9.1",
   "en": "Abiel",
   "ru": {
-   "name": "Авиила",
+   "name": "Авиил",
    "source": "candidate",
    "confidence": 0.667,
    "review": true,
@@ -12204,7 +12204,7 @@
   "key": "Ahitub@1Sa.14.3",
   "en": "Ahitub",
   "ru": {
-   "name": "Ахитува",
+   "name": "Ахитув",
    "source": "candidate",
    "confidence": 0.714,
    "review": true,
@@ -12375,10 +12375,10 @@
   "key": "Agag@1Sa.15.8",
   "en": "Agag",
   "ru": {
-   "name": "Агага",
+   "name": "Агаг",
    "source": "candidate",
    "confidence": 0.8,
-   "review": false,
+   "review": true,
    "verseRef": "1Sa.15.8"
   },
   "gender": "m",
@@ -12394,10 +12394,10 @@
   "key": "Eliab@1Sa.16.6",
   "en": "Eliab",
   "ru": {
-   "name": "Елиава",
+   "name": "Елиав",
    "source": "candidate",
    "confidence": 0.803,
-   "review": false,
+   "review": true,
    "verseRef": "1Sa.16.5"
   },
   "gender": "m",
@@ -12413,7 +12413,7 @@
   "key": "Abinadab@1Sa.16.8",
   "en": "Abinadab",
   "ru": {
-   "name": "Аминадава",
+   "name": "Аминадав",
    "source": "candidate",
    "confidence": 0.748,
    "review": true,
@@ -12470,7 +12470,7 @@
   "key": "Adriel@1Sa.18.19",
   "en": "Adriel",
   "ru": {
-   "name": "Адриэла",
+   "name": "Адриэл",
    "source": "candidate",
    "confidence": 0.714,
    "review": true,
@@ -12717,10 +12717,10 @@
   "key": "Joab@1Sa.26.6",
   "en": "Joab",
   "ru": {
-   "name": "Иоава",
+   "name": "Иоав",
    "source": "candidate",
    "confidence": 0.8,
-   "review": false,
+   "review": true,
    "verseRef": "1Sa.26.6"
   },
   "gender": "m",
@@ -12774,10 +12774,10 @@
   "key": "Jerahmeel@1Sa.27.10",
   "en": "Jerahmeel",
   "ru": {
-   "name": "Иерахмеела",
+   "name": "Иерахмеел",
    "source": "candidate",
    "confidence": 0.8,
-   "review": false,
+   "review": true,
    "verseRef": "1Sa.27.10"
   },
   "gender": "m",
@@ -13116,7 +13116,7 @@
   "key": "Rimmon@2Sa.4.2",
   "en": "Rimmon",
   "ru": {
-   "name": "Реммона",
+   "name": "Реммон",
    "source": "candidate",
    "confidence": 0.714,
    "review": true,
@@ -13563,10 +13563,10 @@
   "key": "Joram@2Sa.8.10",
   "en": "Joram",
   "ru": {
-   "name": "Иорама",
+   "name": "Иорам",
    "source": "candidate",
    "confidence": 0.833,
-   "review": false,
+   "review": true,
    "verseRef": "2Sa.8.10"
   },
   "gender": "m",
@@ -13582,7 +13582,7 @@
   "key": "Ahilud@2Sa.8.16",
   "en": "Ahilud",
   "ru": {
-   "name": "Ахилуда",
+   "name": "Ахилуд",
    "source": "candidate",
    "confidence": 0.714,
    "review": true,
@@ -13639,7 +13639,7 @@
   "key": "Ahitub@2Sa.8.17",
   "en": "Ahitub",
   "ru": {
-   "name": "Ахитува",
+   "name": "Ахитув",
    "source": "candidate",
    "confidence": 0.714,
    "review": true,
@@ -13772,10 +13772,10 @@
   "key": "Machir@2Sa.9.4",
   "en": "Machir",
   "ru": {
-   "name": "Махира",
+   "name": "Махир",
    "source": "candidate",
    "confidence": 0.833,
-   "review": false,
+   "review": true,
    "verseRef": "2Sa.9.4"
   },
   "gender": "m",
@@ -13896,10 +13896,10 @@
   "key": "Eliam@2Sa.11.3",
   "en": "Eliam",
   "ru": {
-   "name": "Елиама",
+   "name": "Елиам",
    "source": "candidate",
    "confidence": 0.833,
-   "review": false,
+   "review": true,
    "verseRef": "2Sa.11.3"
   },
   "gender": "m",
@@ -14010,7 +14010,7 @@
   "key": "Ahithophel@2Sa.15.12",
   "en": "Ahithophel",
   "ru": {
-   "name": "Ахитофела",
+   "name": "Ахитофел",
    "source": "candidate",
    "confidence": 0.667,
    "review": true,
@@ -14181,10 +14181,10 @@
   "key": "Jether@2Sa.17.25",
   "en": "Jether",
   "ru": {
-   "name": "Иефера",
+   "name": "Иефер",
    "source": "candidate",
    "confidence": 0.803,
-   "review": false,
+   "review": true,
    "verseRef": "2Sa.17.24"
   },
   "gender": "m",
@@ -14922,10 +14922,10 @@
   "key": "Heleb@2Sa.23.29",
   "en": "Heleb",
   "ru": {
-   "name": "Хелев",
+   "name": "Хел",
    "source": "candidate",
    "confidence": 0.8,
-   "review": false,
+   "review": true,
    "verseRef": "2Sa.23.29"
   },
   "gender": "m",
@@ -15169,10 +15169,10 @@
   "key": "Sharar@2Sa.23.33",
   "en": "Sharar",
   "ru": {
-   "name": "Шарара",
+   "name": "Шарар",
    "source": "candidate",
    "confidence": 0.833,
-   "review": false,
+   "review": true,
    "verseRef": "2Sa.23.33"
   },
   "gender": "m",
@@ -16186,7 +16186,7 @@
   "key": "Calcol@1Ki.4.31",
   "en": "Calcol",
   "ru": {
-   "name": "Халкола",
+   "name": "Халкол",
    "source": "candidate",
    "confidence": 0.714,
    "review": true,
@@ -16224,10 +16224,10 @@
   "key": "Ethan@1Ki.4.31",
   "en": "Ethan",
   "ru": {
-   "name": "Ефана",
+   "name": "Ефан",
    "source": "candidate",
    "confidence": 0.8,
-   "review": false,
+   "review": true,
    "verseRef": "1Ki.4.31"
   },
   "gender": "m",
@@ -16243,10 +16243,10 @@
   "key": "Heman@1Ki.4.31",
   "en": "Heman",
   "ru": {
-   "name": "Емана",
+   "name": "Еман",
    "source": "candidate",
    "confidence": 0.8,
-   "review": false,
+   "review": true,
    "verseRef": "1Ki.4.31"
   },
   "gender": "m",
@@ -16262,7 +16262,7 @@
   "key": "Mahol@1Ki.4.31",
   "en": "Mahol",
   "ru": {
-   "name": "Махола",
+   "name": "Махол",
    "source": "candidate",
    "confidence": 0.667,
    "review": true,
@@ -16281,7 +16281,7 @@
   "key": "Hiram@1Ki.7.13",
   "en": "Hiram",
   "ru": {
-   "name": "Хирама",
+   "name": "Хирам",
    "source": "candidate",
    "confidence": 0.667,
    "review": true,
@@ -16433,7 +16433,7 @@
   "key": "Rezon@1Ki.11.23",
   "en": "Rezon",
   "ru": {
-   "name": "Разона",
+   "name": "Разон",
    "source": "candidate",
    "confidence": 0.637,
    "review": true,
@@ -16815,7 +16815,7 @@
   "key": "Tabrimmon@1Ki.15.18",
   "en": "Tabrimmon",
   "ru": {
-   "name": "Тавримона",
+   "name": "Тавримон",
    "source": "candidate",
    "confidence": 0.778,
    "review": true,
@@ -17072,10 +17072,10 @@
   "key": "Ethbaal@1Ki.16.31",
   "en": "Ethbaal",
   "ru": {
-   "name": "Ефваала",
+   "name": "Ефваал",
    "source": "candidate",
    "confidence": 0.857,
-   "review": false,
+   "review": true,
    "verseRef": "1Ki.16.31"
   },
   "gender": "m",
@@ -17205,7 +17205,7 @@
   "key": "Hazael@1Ki.19.15",
   "en": "Hazael",
   "ru": {
-   "name": "Азаила",
+   "name": "Азаил",
    "source": "candidate",
    "confidence": 0.667,
    "review": true,
@@ -17671,7 +17671,7 @@
   "key": "Jehoshaphat@2Ki.9.2",
   "en": "Jehoshaphat",
   "ru": {
-   "name": "Иосафата",
+   "name": "Иосафат",
    "source": "candidate",
    "confidence": 0.625,
    "review": true,
@@ -17823,7 +17823,7 @@
   "key": "Mattan@2Ki.11.18",
   "en": "Mattan",
   "ru": {
-   "name": "Матфана",
+   "name": "Матфан",
    "source": "candidate",
    "confidence": 0.684,
    "review": true,
@@ -17975,10 +17975,10 @@
   "key": "Ben-hadad@2Ki.13.3",
   "en": "Ben-hadad",
   "ru": {
-   "name": "Венадада",
+   "name": "Венадад",
    "source": "candidate",
    "confidence": 0.875,
-   "review": false,
+   "review": true,
    "verseRef": "2Ki.13.3"
   },
   "gender": "m",
@@ -18454,7 +18454,7 @@
   "key": "Zadok@2Ki.15.33",
   "en": "Zadok",
   "ru": {
-   "name": "Садока",
+   "name": "Садок",
    "source": "candidate",
    "confidence": 0.667,
    "review": true,
@@ -18473,7 +18473,7 @@
   "key": "Rezin@2Ki.15.37",
   "en": "Rezin",
   "ru": {
-   "name": "Рецина",
+   "name": "Рецин",
    "source": "candidate",
    "confidence": 0.667,
    "review": true,
@@ -18702,7 +18702,7 @@
   "key": "Rab-saris@2Ki.18.17",
   "en": "Rab-saris",
   "ru": {
-   "name": "Рабсариса",
+   "name": "Рабсарис",
    "source": "candidate",
    "confidence": 0.778,
    "review": true,
@@ -18740,10 +18740,10 @@
   "key": "Tartan@2Ki.18.17",
   "en": "Tartan",
   "ru": {
-   "name": "Тартана",
+   "name": "Тартан",
    "source": "candidate",
    "confidence": 0.857,
-   "review": false,
+   "review": true,
    "verseRef": "2Ki.18.17"
   },
   "gender": "m",
@@ -18759,7 +18759,7 @@
   "key": "Asaph@2Ki.18.18",
   "en": "Asaph",
   "ru": {
-   "name": "Асафов",
+   "name": "Асаф",
    "source": "candidate",
    "confidence": 0.667,
    "review": true,
@@ -19197,7 +19197,7 @@
   "key": "Meshullam@2Ki.22.3",
   "en": "Meshullam",
   "ru": {
-   "name": "Мешулламова",
+   "name": "Мешулламов",
    "source": "candidate",
    "confidence": 0.727,
    "review": true,
@@ -19216,10 +19216,10 @@
   "key": "Shaphan@2Ki.22.3",
   "en": "Shaphan",
   "ru": {
-   "name": "Шафана",
+   "name": "Шафан",
    "source": "candidate",
    "confidence": 0.833,
-   "review": false,
+   "review": true,
    "verseRef": "2Ki.22.3"
   },
   "gender": "m",
@@ -19368,10 +19368,10 @@
   "key": "Shallum@2Ki.22.14",
   "en": "Shallum",
   "ru": {
-   "name": "Шаллума",
+   "name": "Шаллум",
    "source": "pattern",
    "confidence": 1.107,
-   "review": false,
+   "review": true,
    "verseRef": "2Ki.22.14"
   },
   "gender": "m",
@@ -19625,10 +19625,10 @@
   "key": "Elnathan@2Ki.24.8",
   "en": "Elnathan",
   "ru": {
-   "name": "Елнафана",
+   "name": "Елнафан",
    "source": "candidate",
    "confidence": 0.875,
-   "review": false,
+   "review": true,
    "verseRef": "2Ki.24.8"
   },
   "gender": "m",
@@ -20271,7 +20271,7 @@
   "key": "Ashhur@1Ch.2.24",
   "en": "Ashhur",
   "ru": {
-   "name": "Ашхура",
+   "name": "Ашхур",
    "source": "candidate",
    "confidence": 0.667,
    "review": true,
@@ -20433,10 +20433,10 @@
   "key": "Onam@1Ch.2.26",
   "en": "Onam",
   "ru": {
-   "name": "Онама",
+   "name": "Онам",
    "source": "candidate",
    "confidence": 0.8,
-   "review": false,
+   "review": true,
    "verseRef": "1Ch.2.26"
   },
   "gender": "m",
@@ -20623,10 +20623,10 @@
   "key": "Molid@1Ch.2.29",
   "en": "Molid",
   "ru": {
-   "name": "Молида",
+   "name": "Молид",
    "source": "candidate",
    "confidence": 0.833,
-   "review": false,
+   "review": true,
    "verseRef": "1Ch.2.29"
   },
   "gender": "m",
@@ -20832,10 +20832,10 @@
   "key": "Nathan@1Ch.2.36",
   "en": "Nathan",
   "ru": {
-   "name": "Нафана",
+   "name": "Нафан",
    "source": "pattern",
    "confidence": 1.083,
-   "review": false,
+   "review": true,
    "verseRef": "1Ch.2.36"
   },
   "gender": "m",
@@ -20851,10 +20851,10 @@
   "key": "Zabad@1Ch.2.36",
   "en": "Zabad",
   "ru": {
-   "name": "Завада",
+   "name": "Завад",
    "source": "pattern",
    "confidence": 1.083,
-   "review": false,
+   "review": true,
    "verseRef": "1Ch.2.36"
   },
   "gender": "m",
@@ -20870,10 +20870,10 @@
   "key": "Ephlal@1Ch.2.37",
   "en": "Ephlal",
   "ru": {
-   "name": "Ефлала",
+   "name": "Ефлал",
    "source": "pattern",
    "confidence": 1.083,
-   "review": false,
+   "review": true,
    "verseRef": "1Ch.2.37"
   },
   "gender": "m",
@@ -20889,10 +20889,10 @@
   "key": "Obed@1Ch.2.37",
   "en": "Obed",
   "ru": {
-   "name": "Овида",
+   "name": "Овид",
    "source": "pattern",
    "confidence": 0.85,
-   "review": false,
+   "review": true,
    "verseRef": "1Ch.2.37"
   },
   "gender": "m",
@@ -20965,7 +20965,7 @@
   "key": "Helez@1Ch.2.39",
   "en": "Helez",
   "ru": {
-   "name": "Хелеца",
+   "name": "Хелец",
    "source": "pattern",
    "confidence": 0.75,
    "review": true,
@@ -20984,10 +20984,10 @@
   "key": "Shallum@1Ch.2.40",
   "en": "Shallum",
   "ru": {
-   "name": "Саллума",
+   "name": "Саллум",
    "source": "pattern",
    "confidence": 0.964,
-   "review": false,
+   "review": true,
    "verseRef": "1Ch.2.40"
   },
   "gender": "m",
@@ -21060,7 +21060,7 @@
   "key": "Hebron@1Ch.2.42",
   "en": "Hebron",
   "ru": {
-   "name": "Хеврона",
+   "name": "Хеврон",
    "source": "candidate",
    "confidence": 0.714,
    "review": true,
@@ -21193,7 +21193,7 @@
   "key": "Jorkeam@1Ch.2.44",
   "en": "Jorkeam",
   "ru": {
-   "name": "Иоркеамова",
+   "name": "Иоркеамов",
    "source": "candidate",
    "confidence": 0.7,
    "review": true,
@@ -21212,10 +21212,10 @@
   "key": "Raham@1Ch.2.44",
   "en": "Raham",
   "ru": {
-   "name": "Рахама",
+   "name": "Рахам",
    "source": "pattern",
    "confidence": 0.917,
-   "review": false,
+   "review": true,
    "verseRef": "1Ch.2.44"
   },
   "gender": "m",
@@ -21288,10 +21288,10 @@
   "key": "Gazez@1Ch.2.46a",
   "en": "Gazez",
   "ru": {
-   "name": "Газеза",
+   "name": "Газез",
    "source": "pattern",
    "confidence": 1.083,
-   "review": false,
+   "review": true,
    "verseRef": "1Ch.2.46"
   },
   "gender": "m",
@@ -21307,10 +21307,10 @@
   "key": "Gazez@1Ch.2.46b",
   "en": "Gazez",
   "ru": {
-   "name": "Газеза",
+   "name": "Газез",
    "source": "pattern",
    "confidence": 1.083,
-   "review": false,
+   "review": true,
    "verseRef": "1Ch.2.46"
   },
   "gender": "m",
@@ -21326,10 +21326,10 @@
   "key": "Haran@1Ch.2.46",
   "en": "Haran",
   "ru": {
-   "name": "Харана",
+   "name": "Харан",
    "source": "pattern",
    "confidence": 0.917,
-   "review": false,
+   "review": true,
    "verseRef": "1Ch.2.46"
   },
   "gender": "m",
@@ -21516,10 +21516,10 @@
   "key": "Sheber@1Ch.2.48",
   "en": "Sheber",
   "ru": {
-   "name": "Шевера",
+   "name": "Шевер",
    "source": "pattern",
    "confidence": 1.083,
-   "review": false,
+   "review": true,
    "verseRef": "1Ch.2.48"
   },
   "gender": "m",
@@ -22657,7 +22657,7 @@
   "key": "Lahad@1Ch.4.2",
   "en": "Lahad",
   "ru": {
-   "name": "Лагада",
+   "name": "Лагад",
    "source": "candidate",
    "confidence": 0.667,
    "review": true,
@@ -22847,7 +22847,7 @@
   "key": "Ahuzzam@1Ch.4.6",
   "en": "Ahuzzam",
   "ru": {
-   "name": "Ахузама",
+   "name": "Ахузам",
    "source": "candidate",
    "confidence": 0.714,
    "review": true,
@@ -22980,7 +22980,7 @@
   "key": "Aharhel@1Ch.4.8",
   "en": "Aharhel",
   "ru": {
-   "name": "Ахархела",
+   "name": "Ахархел",
    "source": "candidate",
    "confidence": 0.625,
    "review": true,
@@ -22999,10 +22999,10 @@
   "key": "Anub@1Ch.4.8",
   "en": "Anub",
   "ru": {
-   "name": "Анува",
+   "name": "Анув",
    "source": "candidate",
    "confidence": 0.8,
-   "review": false,
+   "review": true,
    "verseRef": "1Ch.4.8"
   },
   "gender": "m",
@@ -23132,7 +23132,7 @@
   "key": "Mehir@1Ch.4.11",
   "en": "Mehir",
   "ru": {
-   "name": "Махира",
+   "name": "Махир",
    "source": "pattern",
    "confidence": 0.75,
    "review": true,
@@ -23265,10 +23265,10 @@
   "key": "Joab@1Ch.4.14",
   "en": "Joab",
   "ru": {
-   "name": "Иоава",
+   "name": "Иоав",
    "source": "pattern",
    "confidence": 1.05,
-   "review": false,
+   "review": true,
    "verseRef": "1Ch.4.14"
   },
   "gender": "m",
@@ -23417,10 +23417,10 @@
   "key": "Jehallelel@1Ch.4.16",
   "en": "Jehallelel",
   "ru": {
-   "name": "Иегаллелела",
+   "name": "Иегаллелел",
    "source": "candidate",
    "confidence": 0.818,
-   "review": false,
+   "review": true,
    "verseRef": "1Ch.4.16"
   },
   "gender": "m",
@@ -23702,7 +23702,7 @@
   "key": "Jekuthiel@1Ch.4.18",
   "en": "Jekuthiel",
   "ru": {
-   "name": "Иекуфиила",
+   "name": "Иекуфиил",
    "source": "candidate",
    "confidence": 0.778,
    "review": true,
@@ -23721,10 +23721,10 @@
   "key": "Jered@1Ch.4.18",
   "en": "Jered",
   "ru": {
-   "name": "Иереда",
+   "name": "Иеред",
    "source": "pattern",
    "confidence": 1.083,
-   "review": false,
+   "review": true,
    "verseRef": "1Ch.4.18"
   },
   "gender": "m",
@@ -23816,7 +23816,7 @@
   "key": "Naham@1Ch.4.19",
   "en": "Naham",
   "ru": {
-   "name": "Нахама",
+   "name": "Нахам",
    "source": "candidate",
    "confidence": 0.667,
    "review": true,
@@ -24538,10 +24538,10 @@
   "key": "Allon@1Ch.4.37",
   "en": "Allon",
   "ru": {
-   "name": "Аллона",
+   "name": "Аллон",
    "source": "candidate",
    "confidence": 0.833,
-   "review": false,
+   "review": true,
    "verseRef": "1Ch.4.37"
   },
   "gender": "m",
@@ -24937,10 +24937,10 @@
   "key": "Azaz@1Ch.5.8",
   "en": "Azaz",
   "ru": {
-   "name": "Азаза",
+   "name": "Азаз",
    "source": "candidate",
    "confidence": 0.8,
-   "review": false,
+   "review": true,
    "verseRef": "1Ch.5.8"
   },
   "gender": "m",
@@ -25241,7 +25241,7 @@
   "key": "Abihail@1Ch.5.14",
   "en": "Abihail",
   "ru": {
-   "name": "Авихаила",
+   "name": "Авихаил",
    "source": "candidate",
    "confidence": 0.75,
    "review": true,
@@ -25393,7 +25393,7 @@
   "key": "Abdiel@1Ch.5.15",
   "en": "Abdiel",
   "ru": {
-   "name": "Авдиила",
+   "name": "Авдиил",
    "source": "candidate",
    "confidence": 0.714,
    "review": true,
@@ -25716,10 +25716,10 @@
   "key": "Johanan@1Ch.6.9",
   "en": "Johanan",
   "ru": {
-   "name": "Иоанана",
+   "name": "Иоанан",
    "source": "pattern",
    "confidence": 1.107,
-   "review": false,
+   "review": true,
    "verseRef": "1Ch.6.9"
   },
   "gender": "m",
@@ -25735,10 +25735,10 @@
   "key": "Ahitub@1Ch.6.11",
   "en": "Ahitub",
   "ru": {
-   "name": "Ахитува",
+   "name": "Ахитув",
    "source": "pattern",
    "confidence": 0.964,
-   "review": false,
+   "review": true,
    "verseRef": "1Ch.6.11"
   },
   "gender": "m",
@@ -25773,10 +25773,10 @@
   "key": "Shallum@1Ch.6.12",
   "en": "Shallum",
   "ru": {
-   "name": "Селлума",
+   "name": "Селлум",
    "source": "pattern",
    "confidence": 0.821,
-   "review": false,
+   "review": true,
    "verseRef": "1Ch.6.12"
   },
   "gender": "m",
@@ -25792,10 +25792,10 @@
   "key": "Zadok@1Ch.6.12",
   "en": "Zadok",
   "ru": {
-   "name": "Садока",
+   "name": "Садок",
    "source": "pattern",
    "confidence": 0.917,
-   "review": false,
+   "review": true,
    "verseRef": "1Ch.6.12"
   },
   "gender": "m",
@@ -25830,7 +25830,7 @@
   "key": "Jehozadak@1Ch.6.14",
   "en": "Jehozadak",
   "ru": {
-   "name": "Иоседека",
+   "name": "Иоседек",
    "source": "pattern",
    "confidence": 0.625,
    "review": true,
@@ -26362,7 +26362,7 @@
   "key": "Michael@1Ch.6.40",
   "en": "Michael",
   "ru": {
-   "name": "Михаила",
+   "name": "Михаил",
    "source": "candidate",
    "confidence": 0.714,
    "review": true,
@@ -26571,10 +26571,10 @@
   "key": "Shemer@1Ch.6.46",
   "en": "Shemer",
   "ru": {
-   "name": "Шемера",
+   "name": "Шемер",
    "source": "candidate",
    "confidence": 0.833,
-   "review": false,
+   "review": true,
    "verseRef": "1Ch.6.46"
   },
   "gender": "m",
@@ -27502,10 +27502,10 @@
   "key": "Abiezer@1Ch.7.18",
   "en": "Abiezer",
   "ru": {
-   "name": "Авиезера",
+   "name": "Авиезер",
    "source": "candidate",
    "confidence": 0.875,
-   "review": false,
+   "review": true,
    "verseRef": "1Ch.7.18"
   },
   "gender": "m",
@@ -27559,10 +27559,10 @@
   "key": "Ishhod@1Ch.7.18",
   "en": "Ishhod",
   "ru": {
-   "name": "Ишгода",
+   "name": "Ишгод",
    "source": "pattern",
    "confidence": 0.917,
-   "review": false,
+   "review": true,
    "verseRef": "1Ch.7.18"
   },
   "gender": "m",
@@ -27977,7 +27977,7 @@
   "key": "Hotham@1Ch.7.32",
   "en": "Hotham",
   "ru": {
-   "name": "Хофама",
+   "name": "Хофам",
    "source": "candidate",
    "confidence": 0.667,
    "review": true,
@@ -27996,10 +27996,10 @@
   "key": "Shomer@1Ch.7.32",
   "en": "Shomer",
   "ru": {
-   "name": "Шомера",
+   "name": "Шомер",
    "source": "candidate",
    "confidence": 0.833,
-   "review": false,
+   "review": true,
    "verseRef": "1Ch.7.32"
   },
   "gender": "m",
@@ -28823,10 +28823,10 @@
   "key": "Jobab@1Ch.8.9",
   "en": "Jobab",
   "ru": {
-   "name": "Иовава",
+   "name": "Иовав",
    "source": "candidate",
    "confidence": 0.833,
-   "review": false,
+   "review": true,
    "verseRef": "1Ch.8.9"
   },
   "gender": "m",
@@ -28842,7 +28842,7 @@
   "key": "Malcam@1Ch.8.9",
   "en": "Malcam",
   "ru": {
-   "name": "Малхама",
+   "name": "Малхам",
    "source": "candidate",
    "confidence": 0.714,
    "review": true,
@@ -28956,10 +28956,10 @@
   "key": "Abitub@1Ch.8.11",
   "en": "Abitub",
   "ru": {
-   "name": "Авитува",
+   "name": "Авитув",
    "source": "candidate",
    "confidence": 0.857,
-   "review": false,
+   "review": true,
    "verseRef": "1Ch.8.11"
   },
   "gender": "m",
@@ -28975,10 +28975,10 @@
   "key": "Elpaal@1Ch.8.11",
   "en": "Elpaal",
   "ru": {
-   "name": "Елпаала",
+   "name": "Елпаал",
    "source": "candidate",
    "confidence": 0.857,
-   "review": false,
+   "review": true,
    "verseRef": "1Ch.8.11"
   },
   "gender": "m",
@@ -29887,7 +29887,7 @@
   "key": "Jeroham@1Ch.8.27",
   "en": "Jeroham",
   "ru": {
-   "name": "Иерохама",
+   "name": "Иерохам",
    "source": "candidate",
    "confidence": 0.75,
    "review": true,
@@ -30533,10 +30533,10 @@
   "key": "Ammihud@1Ch.9.4",
   "en": "Ammihud",
   "ru": {
-   "name": "Аммиуда",
+   "name": "Аммиуд",
    "source": "candidate",
    "confidence": 0.857,
-   "review": false,
+   "review": true,
    "verseRef": "1Ch.9.4"
   },
   "gender": "m",
@@ -30799,7 +30799,7 @@
   "key": "Jeroham@1Ch.9.8",
   "en": "Jeroham",
   "ru": {
-   "name": "Иерохама",
+   "name": "Иерохам",
    "source": "candidate",
    "confidence": 0.75,
    "review": true,
@@ -30989,10 +30989,10 @@
   "key": "Adiel@1Ch.9.12",
   "en": "Adiel",
   "ru": {
-   "name": "Адиела",
+   "name": "Адиел",
    "source": "candidate",
    "confidence": 0.833,
-   "review": false,
+   "review": true,
    "verseRef": "1Ch.9.12"
   },
   "gender": "m",
@@ -31008,10 +31008,10 @@
   "key": "Immer@1Ch.9.12",
   "en": "Immer",
   "ru": {
-   "name": "Иммера",
+   "name": "Иммер",
    "source": "candidate",
    "confidence": 0.833,
-   "review": false,
+   "review": true,
    "verseRef": "1Ch.9.12"
   },
   "gender": "m",
@@ -31046,7 +31046,7 @@
   "key": "Jeroham@1Ch.9.12",
   "en": "Jeroham",
   "ru": {
-   "name": "Иерохама",
+   "name": "Иерохам",
    "source": "candidate",
    "confidence": 0.75,
    "review": true,
@@ -31122,10 +31122,10 @@
   "key": "Meshullam@1Ch.9.12",
   "en": "Meshullam",
   "ru": {
-   "name": "Мешуллама",
+   "name": "Мешуллам",
    "source": "candidate",
    "confidence": 0.889,
-   "review": false,
+   "review": true,
    "verseRef": "1Ch.9.12"
   },
   "gender": "m",
@@ -31141,7 +31141,7 @@
   "key": "Pashhur@1Ch.9.12",
   "en": "Pashhur",
   "ru": {
-   "name": "Пашхура",
+   "name": "Пашхур",
    "source": "candidate",
    "confidence": 0.714,
    "review": true,
@@ -31160,10 +31160,10 @@
   "key": "Azrikam@1Ch.9.14",
   "en": "Azrikam",
   "ru": {
-   "name": "Азрикама",
+   "name": "Азрикам",
    "source": "candidate",
    "confidence": 0.875,
-   "review": false,
+   "review": true,
    "verseRef": "1Ch.9.14"
   },
   "gender": "m",
@@ -31958,7 +31958,7 @@
   "key": "Hotham@1Ch.11.44",
   "en": "Hotham",
   "ru": {
-   "name": "Хофама",
+   "name": "Хофам",
    "source": "candidate",
    "confidence": 0.637,
    "review": true,
@@ -32110,10 +32110,10 @@
   "key": "Elnaam@1Ch.11.46",
   "en": "Elnaam",
   "ru": {
-   "name": "Елнаама",
+   "name": "Елнаам",
    "source": "candidate",
    "confidence": 0.827,
-   "review": false,
+   "review": true,
    "verseRef": "1Ch.11.45"
   },
   "gender": "m",
@@ -32690,7 +32690,7 @@
   "key": "Jeroham@1Ch.12.7",
   "en": "Jeroham",
   "ru": {
-   "name": "Иерохама",
+   "name": "Иерохам",
    "source": "candidate",
    "confidence": 0.75,
    "review": true,
@@ -33108,7 +33108,7 @@
   "key": "Uriel@1Ch.15.5",
   "en": "Uriel",
   "ru": {
-   "name": "Уриила",
+   "name": "Уриил",
    "source": "candidate",
    "confidence": 0.667,
    "review": true,
@@ -33184,10 +33184,10 @@
   "key": "Eliel@1Ch.15.9",
   "en": "Eliel",
   "ru": {
-   "name": "Елиела",
+   "name": "Елиел",
    "source": "candidate",
    "confidence": 0.833,
-   "review": false,
+   "review": true,
    "verseRef": "1Ch.15.9"
   },
   "gender": "m",
@@ -33308,7 +33308,7 @@
   "key": "Jaaziel@1Ch.15.18",
   "en": "Jaaziel",
   "ru": {
-   "name": "Иаазиила",
+   "name": "Иаазиил",
    "source": "candidate",
    "confidence": 0.75,
    "review": true,
@@ -33327,10 +33327,10 @@
   "key": "Jehiel@1Ch.15.18",
   "en": "Jehiel",
   "ru": {
-   "name": "Иеиела",
+   "name": "Иеиел",
    "source": "candidate",
    "confidence": 0.833,
-   "review": false,
+   "review": true,
    "verseRef": "1Ch.15.18"
   },
   "gender": "m",
@@ -33346,10 +33346,10 @@
   "key": "Jeiel@1Ch.15.18",
   "en": "Jeiel",
   "ru": {
-   "name": "Иеиела",
+   "name": "Иеиел",
    "source": "candidate",
    "confidence": 0.833,
-   "review": false,
+   "review": true,
    "verseRef": "1Ch.15.18"
   },
   "gender": "m",
@@ -35778,7 +35778,7 @@
   "key": "Zabdiel@1Ch.27.2",
   "en": "Zabdiel",
   "ru": {
-   "name": "Завдиила",
+   "name": "Завдиил",
    "source": "candidate",
    "confidence": 0.75,
    "review": true,
@@ -35968,7 +35968,7 @@
   "key": "Kemuel@1Ch.27.17",
   "en": "Kemuel",
   "ru": {
-   "name": "Кемуила",
+   "name": "Кемуил",
    "source": "candidate",
    "confidence": 0.714,
    "review": true,
@@ -36006,7 +36006,7 @@
   "key": "Michael@1Ch.27.18",
   "en": "Michael",
   "ru": {
-   "name": "Михаила",
+   "name": "Михаил",
    "source": "candidate",
    "confidence": 0.714,
    "review": true,
@@ -36044,7 +36044,7 @@
   "key": "Azriel@1Ch.27.19",
   "en": "Azriel",
   "ru": {
-   "name": "Азриила",
+   "name": "Азриил",
    "source": "candidate",
    "confidence": 0.714,
    "review": true,
@@ -36272,7 +36272,7 @@
   "key": "Jeroham@1Ch.27.22",
   "en": "Jeroham",
   "ru": {
-   "name": "Иерохама",
+   "name": "Иерохам",
    "source": "candidate",
    "confidence": 0.75,
    "review": true,
@@ -36367,10 +36367,10 @@
   "key": "Chelub@1Ch.27.26",
   "en": "Chelub",
   "ru": {
-   "name": "Хелува",
+   "name": "Хелув",
    "source": "candidate",
    "confidence": 0.833,
-   "review": false,
+   "review": true,
    "verseRef": "1Ch.27.26"
   },
   "gender": "m",
@@ -36595,7 +36595,7 @@
   "key": "Hachmoni@1Ch.27.32",
   "en": "Hachmoni",
   "ru": {
-   "name": "Хахмониев",
+   "name": "Хахмоний",
    "source": "candidate",
    "confidence": 0.667,
    "review": true,
@@ -36785,7 +36785,7 @@
   "key": "Zaham@2Ch.11.19",
   "en": "Zaham",
   "ru": {
-   "name": "Загама",
+   "name": "Загам",
    "source": "candidate",
    "confidence": 0.667,
    "review": true,
@@ -36937,7 +36937,7 @@
   "key": "Ben-hail@2Ch.17.7",
   "en": "Ben-hail",
   "ru": {
-   "name": "Бенхаила",
+   "name": "Бенхаил",
    "source": "candidate",
    "confidence": 0.625,
    "review": true,
@@ -37089,7 +37089,7 @@
   "key": "Jehonathan@2Ch.17.8",
   "en": "Jehonathan",
   "ru": {
-   "name": "Ионафана",
+   "name": "Ионафан",
    "source": "candidate",
    "confidence": 0.75,
    "review": true,
@@ -37108,7 +37108,7 @@
   "key": "Jehoram@2Ch.17.8",
   "en": "Jehoram",
   "ru": {
-   "name": "Иорама",
+   "name": "Иорам",
    "source": "candidate",
    "confidence": 0.667,
    "review": true,
@@ -37450,10 +37450,10 @@
   "key": "Jeiel@2Ch.20.14",
   "en": "Jeiel",
   "ru": {
-   "name": "Иеиела",
+   "name": "Иеиел",
    "source": "candidate",
    "confidence": 0.833,
-   "review": false,
+   "review": true,
    "verseRef": "2Ch.20.14"
   },
   "gender": "m",
@@ -37716,10 +37716,10 @@
   "key": "Elishaphat@2Ch.23.1",
   "en": "Elishaphat",
   "ru": {
-   "name": "Елишафата",
+   "name": "Елишафат",
    "source": "candidate",
    "confidence": 0.889,
-   "review": false,
+   "review": true,
    "verseRef": "2Ch.23.1"
   },
   "gender": "m",
@@ -37906,10 +37906,10 @@
   "key": "Jeiel@2Ch.26.11",
   "en": "Jeiel",
   "ru": {
-   "name": "Иеиела",
+   "name": "Иеиел",
    "source": "candidate",
    "confidence": 0.833,
-   "review": false,
+   "review": true,
    "verseRef": "2Ch.26.11"
   },
   "gender": "m",
@@ -37963,10 +37963,10 @@
   "key": "Azrikam@2Ch.28.7",
   "en": "Azrikam",
   "ru": {
-   "name": "Азрикама",
+   "name": "Азрикам",
    "source": "candidate",
    "confidence": 0.875,
-   "review": false,
+   "review": true,
    "verseRef": "2Ch.28.7"
   },
   "gender": "m",
@@ -38191,10 +38191,10 @@
   "key": "Shallum@2Ch.28.12",
   "en": "Shallum",
   "ru": {
-   "name": "Шаллума",
+   "name": "Шаллум",
    "source": "candidate",
    "confidence": 0.857,
-   "review": false,
+   "review": true,
    "verseRef": "2Ch.28.12"
   },
   "gender": "m",
@@ -38305,10 +38305,10 @@
   "key": "Jehallelel@2Ch.29.12",
   "en": "Jehallelel",
   "ru": {
-   "name": "Иегаллелела",
+   "name": "Иегаллелел",
    "source": "candidate",
    "confidence": 0.818,
-   "review": false,
+   "review": true,
    "verseRef": "2Ch.29.12"
   },
   "gender": "m",
@@ -39597,10 +39597,10 @@
   "key": "Joab@Ezr.2.6",
   "en": "Joab",
   "ru": {
-   "name": "Иоава",
+   "name": "Иоав",
    "source": "candidate",
    "confidence": 0.8,
-   "review": false,
+   "review": true,
    "verseRef": "Ezr.2.6"
   },
   "gender": "m",
@@ -39616,7 +39616,7 @@
   "key": "Pahath-moab@Ezr.2.6",
   "en": "Pahath-moab",
   "ru": {
-   "name": "Пахаф-Моава",
+   "name": "Пахаф-Моав",
    "source": "candidate",
    "confidence": 0.727,
    "review": true,
@@ -39635,10 +39635,10 @@
   "key": "Elam@Ezr.2.7",
   "en": "Elam",
   "ru": {
-   "name": "Елама",
+   "name": "Елам",
    "source": "candidate",
    "confidence": 0.8,
-   "review": false,
+   "review": true,
    "verseRef": "Ezr.2.7"
   },
   "gender": "m",
@@ -39730,10 +39730,10 @@
   "key": "Azgad@Ezr.2.12",
   "en": "Azgad",
   "ru": {
-   "name": "Азгада",
+   "name": "Азгад",
    "source": "candidate",
    "confidence": 0.833,
-   "review": false,
+   "review": true,
    "verseRef": "Ezr.2.12"
   },
   "gender": "m",
@@ -39749,10 +39749,10 @@
   "key": "Adonikam@Ezr.2.13",
   "en": "Adonikam",
   "ru": {
-   "name": "Адоникама",
+   "name": "Адоникам",
    "source": "candidate",
    "confidence": 0.889,
-   "review": false,
+   "review": true,
    "verseRef": "Ezr.2.13"
   },
   "gender": "m",
@@ -39787,10 +39787,10 @@
   "key": "Adin@Ezr.2.15",
   "en": "Adin",
   "ru": {
-   "name": "Адина",
+   "name": "Адин",
    "source": "candidate",
    "confidence": 0.8,
-   "review": false,
+   "review": true,
    "verseRef": "Ezr.2.15"
   },
   "gender": "m",
@@ -39806,10 +39806,10 @@
   "key": "Ater@Ezr.2.16",
   "en": "Ater",
   "ru": {
-   "name": "Атера",
+   "name": "Атер",
    "source": "candidate",
    "confidence": 0.8,
-   "review": false,
+   "review": true,
    "verseRef": "Ezr.2.16"
   },
   "gender": "m",
@@ -39882,7 +39882,7 @@
   "key": "Hashum@Ezr.2.19",
   "en": "Hashum",
   "ru": {
-   "name": "Хашума",
+   "name": "Хашум",
    "source": "candidate",
    "confidence": 0.667,
    "review": true,
@@ -39901,7 +39901,7 @@
   "key": "Harim@Ezr.2.32",
   "en": "Harim",
   "ru": {
-   "name": "Харима",
+   "name": "Харим",
    "source": "candidate",
    "confidence": 0.667,
    "review": true,
@@ -39958,7 +39958,7 @@
   "key": "Kadmiel@Ezr.2.40",
   "en": "Kadmiel",
   "ru": {
-   "name": "Кадмиила",
+   "name": "Кадмиил",
    "source": "candidate",
    "confidence": 0.75,
    "review": true,
@@ -39977,10 +39977,10 @@
   "key": "Ater@Ezr.2.42",
   "en": "Ater",
   "ru": {
-   "name": "Атера",
+   "name": "Атер",
    "source": "candidate",
    "confidence": 0.8,
-   "review": false,
+   "review": true,
    "verseRef": "Ezr.2.42"
   },
   "gender": "m",
@@ -40091,10 +40091,10 @@
   "key": "Keros@Ezr.2.44",
   "en": "Keros",
   "ru": {
-   "name": "Кероса",
+   "name": "Керос",
    "source": "candidate",
    "confidence": 0.833,
-   "review": false,
+   "review": true,
    "verseRef": "Ezr.2.44"
   },
   "gender": "m",
@@ -40110,7 +40110,7 @@
   "key": "Padon@Ezr.2.44",
   "en": "Padon",
   "ru": {
-   "name": "Фадона",
+   "name": "Фадон",
    "source": "candidate",
    "confidence": 0.667,
    "review": true,
@@ -40148,10 +40148,10 @@
   "key": "Akkub@Ezr.2.45",
   "en": "Akkub",
   "ru": {
-   "name": "Аккува",
+   "name": "Аккув",
    "source": "candidate",
    "confidence": 0.833,
-   "review": false,
+   "review": true,
    "verseRef": "Ezr.2.45"
   },
   "gender": "m",
@@ -40205,7 +40205,7 @@
   "key": "Hagab@Ezr.2.46",
   "en": "Hagab",
   "ru": {
-   "name": "Хагава",
+   "name": "Хагав",
    "source": "candidate",
    "confidence": 0.667,
    "review": true,
@@ -40224,7 +40224,7 @@
   "key": "Hanan@Ezr.2.46",
   "en": "Hanan",
   "ru": {
-   "name": "Ханана",
+   "name": "Ханан",
    "source": "candidate",
    "confidence": 0.667,
    "review": true,
@@ -40262,7 +40262,7 @@
   "key": "Gahar@Ezr.2.47",
   "en": "Gahar",
   "ru": {
-   "name": "Гахара",
+   "name": "Гахар",
    "source": "candidate",
    "confidence": 0.667,
    "review": true,
@@ -40281,10 +40281,10 @@
   "key": "Giddel@Ezr.2.47",
   "en": "Giddel",
   "ru": {
-   "name": "Гиддела",
+   "name": "Гиддел",
    "source": "candidate",
    "confidence": 0.857,
-   "review": false,
+   "review": true,
    "verseRef": "Ezr.2.47"
   },
   "gender": "m",
@@ -40319,7 +40319,7 @@
   "key": "Gazzam@Ezr.2.48",
   "en": "Gazzam",
   "ru": {
-   "name": "Газзама",
+   "name": "Газзам",
    "source": "candidate",
    "confidence": 0.714,
    "review": true,
@@ -40357,7 +40357,7 @@
   "key": "Rezin@Ezr.2.48",
   "en": "Rezin",
   "ru": {
-   "name": "Рецина",
+   "name": "Рецин",
    "source": "candidate",
    "confidence": 0.667,
    "review": true,
@@ -40566,7 +40566,7 @@
   "key": "Barkos@Ezr.2.53",
   "en": "Barkos",
   "ru": {
-   "name": "Баркоса",
+   "name": "Баркос",
    "source": "candidate",
    "confidence": 0.714,
    "review": true,
@@ -40718,10 +40718,10 @@
   "key": "Darkon@Ezr.2.56",
   "en": "Darkon",
   "ru": {
-   "name": "Даркона",
+   "name": "Даркон",
    "source": "candidate",
    "confidence": 0.857,
-   "review": false,
+   "review": true,
    "verseRef": "Ezr.2.56"
   },
   "gender": "m",
@@ -40737,10 +40737,10 @@
   "key": "Giddel@Ezr.2.56",
   "en": "Giddel",
   "ru": {
-   "name": "Гиддела",
+   "name": "Гиддел",
    "source": "candidate",
    "confidence": 0.857,
-   "review": false,
+   "review": true,
    "verseRef": "Ezr.2.56"
   },
   "gender": "m",
@@ -40794,7 +40794,7 @@
   "key": "Hattil@Ezr.2.57",
   "en": "Hattil",
   "ru": {
-   "name": "Хаттила",
+   "name": "Хаттил",
    "source": "candidate",
    "confidence": 0.714,
    "review": true,
@@ -40813,7 +40813,7 @@
   "key": "Pochereth-hazzebaim@Ezr.2.57",
   "en": "Pochereth-hazzebaim",
   "ru": {
-   "name": "Похереф-Гаццебайима",
+   "name": "Похереф-Гаццебайим",
    "source": "candidate",
    "confidence": 0.632,
    "review": true,
@@ -40965,7 +40965,7 @@
   "key": "Henadad@Ezr.3.9",
   "en": "Henadad",
   "ru": {
-   "name": "Хенадада",
+   "name": "Хенадад",
    "source": "candidate",
    "confidence": 0.75,
    "review": true,
@@ -41022,10 +41022,10 @@
   "key": "Artaxerxes@Ezr.4.7",
   "en": "Artaxerxes",
   "ru": {
-   "name": "Артаксеркса",
+   "name": "Артаксеркс",
    "source": "candidate",
    "confidence": 0.833,
-   "review": false,
+   "review": true,
    "verseRef": "Ezr.4.7"
   },
   "gender": "m",
@@ -41497,10 +41497,10 @@
   "key": "Jonathan@Ezr.8.6",
   "en": "Jonathan",
   "ru": {
-   "name": "Ионафана",
+   "name": "Ионафан",
    "source": "candidate",
    "confidence": 0.875,
-   "review": false,
+   "review": true,
    "verseRef": "Ezr.8.6"
   },
   "gender": "m",
@@ -41554,7 +41554,7 @@
   "key": "Michael@Ezr.8.8",
   "en": "Michael",
   "ru": {
-   "name": "Михаилов",
+   "name": "Михаил",
    "source": "candidate",
    "confidence": 0.625,
    "review": true,
@@ -41592,7 +41592,7 @@
   "key": "Jehiel@Ezr.8.9",
   "en": "Jehiel",
   "ru": {
-   "name": "Иехиелов",
+   "name": "Иехиел",
    "source": "candidate",
    "confidence": 0.625,
    "review": true,
@@ -41611,10 +41611,10 @@
   "key": "Joab@Ezr.8.9",
   "en": "Joab",
   "ru": {
-   "name": "Иоава",
+   "name": "Иоав",
    "source": "candidate",
    "confidence": 0.8,
-   "review": false,
+   "review": true,
    "verseRef": "Ezr.8.9"
   },
   "gender": "m",
@@ -41725,7 +41725,7 @@
   "key": "Hakkatan@Ezr.8.12",
   "en": "Hakkatan",
   "ru": {
-   "name": "Гаккатана",
+   "name": "Гаккатан",
    "source": "candidate",
    "confidence": 0.778,
    "review": true,
@@ -41858,7 +41858,7 @@
   "key": "Ariel@Ezr.8.16",
   "en": "Ariel",
   "ru": {
-   "name": "Ариэла",
+   "name": "Ариэл",
    "source": "candidate",
    "confidence": 0.667,
    "review": true,
@@ -41877,10 +41877,10 @@
   "key": "Eliezer@Ezr.8.16",
   "en": "Eliezer",
   "ru": {
-   "name": "Елиезера",
+   "name": "Елиезер",
    "source": "candidate",
    "confidence": 0.875,
-   "review": false,
+   "review": true,
    "verseRef": "Ezr.8.16"
   },
   "gender": "m",
@@ -41896,7 +41896,7 @@
   "key": "Elnathan@Ezr.8.16a",
   "en": "Elnathan",
   "ru": {
-   "name": "Элнафана",
+   "name": "Элнафан",
    "source": "candidate",
    "confidence": 0.75,
    "review": true,
@@ -41915,7 +41915,7 @@
   "key": "Elnathan@Ezr.8.16b",
   "en": "Elnathan",
   "ru": {
-   "name": "Элнафана",
+   "name": "Элнафан",
    "source": "candidate",
    "confidence": 0.75,
    "review": true,
@@ -41934,7 +41934,7 @@
   "key": "Elnathan@Ezr.8.16c",
   "en": "Elnathan",
   "ru": {
-   "name": "Элнафана",
+   "name": "Элнафан",
    "source": "candidate",
    "confidence": 0.75,
    "review": true,
@@ -41953,10 +41953,10 @@
   "key": "Jarib@Ezr.8.16",
   "en": "Jarib",
   "ru": {
-   "name": "Иарива",
+   "name": "Иарив",
    "source": "candidate",
    "confidence": 0.833,
-   "review": false,
+   "review": true,
    "verseRef": "Ezr.8.16"
   },
   "gender": "m",
@@ -41991,10 +41991,10 @@
   "key": "Meshullam@Ezr.8.16",
   "en": "Meshullam",
   "ru": {
-   "name": "Мешуллама",
+   "name": "Мешуллам",
    "source": "candidate",
    "confidence": 0.889,
-   "review": false,
+   "review": true,
    "verseRef": "Ezr.8.16"
   },
   "gender": "m",
@@ -42010,10 +42010,10 @@
   "key": "Nathan@Ezr.8.16",
   "en": "Nathan",
   "ru": {
-   "name": "Нафана",
+   "name": "Нафан",
    "source": "candidate",
    "confidence": 0.833,
-   "review": false,
+   "review": true,
    "verseRef": "Ezr.8.16"
   },
   "gender": "m",
@@ -42352,7 +42352,7 @@
   "key": "Jehohanan@Ezr.10.6",
   "en": "Jehohanan",
   "ru": {
-   "name": "Иоханана",
+   "name": "Иоханан",
    "source": "candidate",
    "confidence": 0.625,
    "review": true,
@@ -42371,7 +42371,7 @@
   "key": "Asahel@Ezr.10.15",
   "en": "Asahel",
   "ru": {
-   "name": "Асаила",
+   "name": "Асаил",
    "source": "candidate",
    "confidence": 0.667,
    "review": true,
@@ -44917,7 +44917,7 @@
   "key": "Meshezabel@Neh.3.4",
   "en": "Meshezabel",
   "ru": {
-   "name": "Мешизабела",
+   "name": "Мешизабел",
    "source": "candidate",
    "confidence": 0.7,
    "review": true,
@@ -45259,7 +45259,7 @@
   "key": "Harim@Neh.3.11",
   "en": "Harim",
   "ru": {
-   "name": "Харима",
+   "name": "Харим",
    "source": "candidate",
    "confidence": 0.667,
    "review": true,
@@ -45316,7 +45316,7 @@
   "key": "Pahath-moab@Neh.3.11",
   "en": "Pahath-moab",
   "ru": {
-   "name": "Пахаф-Моава",
+   "name": "Пахаф-Моав",
    "source": "candidate",
    "confidence": 0.727,
    "review": true,
@@ -45411,10 +45411,10 @@
   "key": "Rechab@Neh.3.14",
   "en": "Rechab",
   "ru": {
-   "name": "Рехава",
+   "name": "Рехав",
    "source": "candidate",
    "confidence": 0.833,
-   "review": false,
+   "review": true,
    "verseRef": "Neh.3.14"
   },
   "gender": "m",
@@ -45468,7 +45468,7 @@
   "key": "Azbuk@Neh.3.16",
   "en": "Azbuk",
   "ru": {
-   "name": "Азбука",
+   "name": "Азбук",
    "source": "candidate",
    "confidence": 0.667,
    "review": true,
@@ -45582,7 +45582,7 @@
   "key": "Henadad@Neh.3.18",
   "en": "Henadad",
   "ru": {
-   "name": "Хенадада",
+   "name": "Хенадад",
    "source": "candidate",
    "confidence": 0.75,
    "review": true,
@@ -45791,7 +45791,7 @@
   "key": "Henadad@Neh.3.24",
   "en": "Henadad",
   "ru": {
-   "name": "Хенадада",
+   "name": "Хенадад",
    "source": "candidate",
    "confidence": 0.75,
    "review": true,
@@ -45886,10 +45886,10 @@
   "key": "Immer@Neh.3.29",
   "en": "Immer",
   "ru": {
-   "name": "Иммера",
+   "name": "Иммер",
    "source": "candidate",
    "confidence": 0.833,
-   "review": false,
+   "review": true,
    "verseRef": "Neh.3.29"
   },
   "gender": "m",
@@ -46057,7 +46057,7 @@
   "key": "Mehetabel@Neh.6.10",
   "en": "Mehetabel",
   "ru": {
-   "name": "Мегетавелова",
+   "name": "Мегетавелов",
    "source": "candidate",
    "confidence": 0.667,
    "review": true,
@@ -47216,10 +47216,10 @@
   "key": "Rehob@Neh.10.11",
   "en": "Rehob",
   "ru": {
-   "name": "Рехов",
+   "name": "Рех",
    "source": "candidate",
    "confidence": 0.8,
-   "review": false,
+   "review": true,
    "verseRef": "Neh.10.11"
   },
   "gender": "m",
@@ -48337,10 +48337,10 @@
   "key": "Joiarib@Neh.11.5",
   "en": "Joiarib",
   "ru": {
-   "name": "Иоиарива",
+   "name": "Иоиарив",
    "source": "candidate",
    "confidence": 0.875,
-   "review": false,
+   "review": true,
    "verseRef": "Neh.11.5"
   },
   "gender": "m",
@@ -48394,7 +48394,7 @@
   "key": "Ithiel@Neh.11.7",
   "en": "Ithiel",
   "ru": {
-   "name": "Ифиила",
+   "name": "Ифиил",
    "source": "candidate",
    "confidence": 0.667,
    "review": true,
@@ -48432,10 +48432,10 @@
   "key": "Joed@Neh.11.7",
   "en": "Joed",
   "ru": {
-   "name": "Иоеда",
+   "name": "Иоед",
    "source": "candidate",
    "confidence": 0.8,
-   "review": false,
+   "review": true,
    "verseRef": "Neh.11.7"
   },
   "gender": "m",
@@ -48489,10 +48489,10 @@
   "key": "Meshullam@Neh.11.7",
   "en": "Meshullam",
   "ru": {
-   "name": "Мешуллама",
+   "name": "Мешуллам",
    "source": "candidate",
    "confidence": 0.889,
-   "review": false,
+   "review": true,
    "verseRef": "Neh.11.7"
   },
   "gender": "m",
@@ -48698,7 +48698,7 @@
   "key": "Haggedolim@Neh.11.14",
   "en": "Haggedolim",
   "ru": {
-   "name": "Гагедолима",
+   "name": "Гагедолим",
    "source": "candidate",
    "confidence": 0.7,
    "review": true,
@@ -48945,10 +48945,10 @@
   "key": "Meshezabel@Neh.11.24",
   "en": "Meshezabel",
   "ru": {
-   "name": "Мешезавела",
+   "name": "Мешезавел",
    "source": "candidate",
    "confidence": 0.9,
-   "review": false,
+   "review": true,
    "verseRef": "Neh.11.24"
   },
   "gender": "m",
@@ -49135,10 +49135,10 @@
   "key": "Eliashib@Neh.12.10",
   "en": "Eliashib",
   "ru": {
-   "name": "Елиашива",
+   "name": "Елиашив",
    "source": "pattern",
    "confidence": 1.125,
-   "review": false,
+   "review": true,
    "verseRef": "Neh.12.10"
   },
   "gender": "m",
@@ -49173,10 +49173,10 @@
   "key": "Joiakim@Neh.12.10",
   "en": "Joiakim",
   "ru": {
-   "name": "Иоакима",
+   "name": "Иоаким",
    "source": "pattern",
    "confidence": 0.964,
-   "review": false,
+   "review": true,
    "verseRef": "Neh.12.10"
   },
   "gender": "m",
@@ -49211,10 +49211,10 @@
   "key": "Johanan@Neh.12.11",
   "en": "Johanan",
   "ru": {
-   "name": "Ионафана",
+   "name": "Ионафан",
    "source": "pattern",
    "confidence": 0.875,
-   "review": false,
+   "review": true,
    "verseRef": "Neh.12.11"
   },
   "gender": "m",
@@ -49705,10 +49705,10 @@
   "key": "Jonathan@Neh.12.35",
   "en": "Jonathan",
   "ru": {
-   "name": "Ионафана",
+   "name": "Ионафан",
    "source": "candidate",
    "confidence": 0.875,
-   "review": false,
+   "review": true,
    "verseRef": "Neh.12.35"
   },
   "gender": "m",
@@ -50237,7 +50237,7 @@
   "key": "Hanan@Neh.13.13",
   "en": "Hanan",
   "ru": {
-   "name": "Ханана",
+   "name": "Ханан",
    "source": "candidate",
    "confidence": 0.667,
    "review": true,
@@ -50313,7 +50313,7 @@
   "key": "Zaccur@Neh.13.13",
   "en": "Zaccur",
   "ru": {
-   "name": "Закхура",
+   "name": "Закхур",
    "source": "candidate",
    "confidence": 0.714,
    "review": true,
@@ -50332,7 +50332,7 @@
   "key": "Zadok@Neh.13.13",
   "en": "Zadok",
   "ru": {
-   "name": "Садока",
+   "name": "Садок",
    "source": "candidate",
    "confidence": 0.667,
    "review": true,
@@ -50693,10 +50693,10 @@
   "key": "Jair@Est.2.5",
   "en": "Jair",
   "ru": {
-   "name": "Иаира",
+   "name": "Иаир",
    "source": "candidate",
    "confidence": 0.8,
-   "review": false,
+   "review": true,
    "verseRef": "Est.2.5"
   },
   "gender": "m",
@@ -50788,7 +50788,7 @@
   "key": "Shaashgaz@Est.2.14",
   "en": "Shaashgaz",
   "ru": {
-   "name": "Шаазгаза",
+   "name": "Шаазгаз",
    "source": "candidate",
    "confidence": 0.75,
    "review": true,
@@ -50864,10 +50864,10 @@
   "key": "Haman@Est.3.1",
   "en": "Haman",
   "ru": {
-   "name": "Амана",
+   "name": "Аман",
    "source": "candidate",
    "confidence": 0.8,
-   "review": false,
+   "review": true,
    "verseRef": "Est.3.1"
   },
   "gender": "m",
@@ -50978,10 +50978,10 @@
   "key": "Dalphon@Est.9.7",
   "en": "Dalphon",
   "ru": {
-   "name": "Далфона",
+   "name": "Далфон",
    "source": "candidate",
    "confidence": 0.857,
-   "review": false,
+   "review": true,
    "verseRef": "Est.9.7"
   },
   "gender": "m",
@@ -51358,10 +51358,10 @@
   "key": "Agur@Pro.30.1",
   "en": "Agur",
   "ru": {
-   "name": "Агура",
+   "name": "Агур",
    "source": "candidate",
    "confidence": 0.8,
-   "review": false,
+   "review": true,
    "verseRef": "Pro.30.1"
   },
   "gender": "m",
@@ -51434,7 +51434,7 @@
   "key": "Lemuel@Pro.31.1",
   "en": "Lemuel",
   "ru": {
-   "name": "Лемуила",
+   "name": "Лемуил",
    "source": "candidate",
    "confidence": 0.714,
    "review": true,
@@ -51790,10 +51790,10 @@
   "key": "Azzur@Jer.28.1",
   "en": "Azzur",
   "ru": {
-   "name": "Азура",
+   "name": "Азур",
    "source": "candidate",
    "confidence": 0.8,
-   "review": false,
+   "review": true,
    "verseRef": "Jer.28.1"
   },
   "gender": "m",
@@ -51999,7 +51999,7 @@
   "key": "Hanamel@Jer.32.7",
   "en": "Hanamel",
   "ru": {
-   "name": "Анамеила",
+   "name": "Анамеил",
    "source": "candidate",
    "confidence": 0.72,
    "review": true,
@@ -52151,10 +52151,10 @@
   "key": "Hanan@Jer.35.4",
   "en": "Hanan",
   "ru": {
-   "name": "Анана",
+   "name": "Анан",
    "source": "candidate",
    "confidence": 0.8,
-   "review": false,
+   "review": true,
    "verseRef": "Jer.35.4"
   },
   "gender": "m",
@@ -52550,7 +52550,7 @@
   "key": "Jehucal@Jer.37.3",
   "en": "Jehucal",
   "ru": {
-   "name": "Иегухала",
+   "name": "Иегухал",
    "source": "candidate",
    "confidence": 0.625,
    "review": true,
@@ -52664,10 +52664,10 @@
   "key": "Jonathan@Jer.37.15",
   "en": "Jonathan",
   "ru": {
-   "name": "Ионафана",
+   "name": "Ионафан",
    "source": "candidate",
    "confidence": 0.845,
-   "review": false,
+   "review": true,
    "verseRef": "Jer.37.14"
   },
   "gender": "m",
@@ -52702,7 +52702,7 @@
   "key": "Mattan@Jer.38.1",
   "en": "Mattan",
   "ru": {
-   "name": "Матфана",
+   "name": "Матфан",
    "source": "candidate",
    "confidence": 0.714,
    "review": true,
@@ -53443,10 +53443,10 @@
   "key": "Diblaim@Hos.1.3",
   "en": "Diblaim",
   "ru": {
-   "name": "Дивлаима",
+   "name": "Дивлаим",
    "source": "candidate",
    "confidence": 0.875,
-   "review": false,
+   "review": true,
    "verseRef": "Hos.1.3"
   },
   "gender": "m",
@@ -53576,10 +53576,10 @@
   "key": "Amos@Amo.1.1",
   "en": "Amos",
   "ru": {
-   "name": "Амоса",
+   "name": "Амос",
    "source": "candidate",
    "confidence": 0.8,
-   "review": false,
+   "review": true,
    "verseRef": "Amo.1.1"
   },
   "gender": "m",
@@ -53633,10 +53633,10 @@
   "key": "Nahum@Nam.1.1",
   "en": "Nahum",
   "ru": {
-   "name": "Наума",
+   "name": "Наум",
    "source": "candidate",
    "confidence": 0.8,
-   "review": false,
+   "review": true,
    "verseRef": "Nam.1.1"
   },
   "gender": "m",
@@ -53899,7 +53899,7 @@
   "key": "Sharezer@Zec.7.2",
   "en": "Sharezer",
   "ru": {
-   "name": "Сарецера",
+   "name": "Сарецер",
    "source": "candidate",
    "confidence": 0.625,
    "review": true,
@@ -53937,10 +53937,10 @@
   "key": "Abiud@Mat.1.13",
   "en": "Abiud",
   "ru": {
-   "name": "Авиуда",
+   "name": "Авиуд",
    "source": "pattern",
    "confidence": 1.083,
-   "review": false,
+   "review": true,
    "verseRef": "Mat.1.13"
   },
   "gender": "m",
@@ -54904,10 +54904,10 @@
   "key": "Philip@Mat.14.3",
   "en": "Philip",
   "ru": {
-   "name": "Филиппа",
+   "name": "Филипп",
    "source": "pattern",
    "confidence": 0.964,
-   "review": false,
+   "review": true,
    "verseRef": "Mat.14.3"
   },
   "gender": "m",
@@ -55018,10 +55018,10 @@
   "key": "Simon@Mat.26.6",
   "en": "Simon",
   "ru": {
-   "name": "Симона",
+   "name": "Симон",
    "source": "candidate",
    "confidence": 0.833,
-   "review": false,
+   "review": true,
    "verseRef": "Mat.26.6"
   },
   "gender": "m",
@@ -55056,10 +55056,10 @@
   "key": "Barabbas@Mat.27.16",
   "en": "Barabbas",
   "ru": {
-   "name": "Варавва",
+   "name": "Варавв",
    "source": "candidate",
    "confidence": 0.845,
-   "review": false,
+   "review": true,
    "verseRef": "Mat.27.15"
   },
   "gender": "m",
@@ -55075,10 +55075,10 @@
   "key": "Simon@Mat.27.32",
   "en": "Simon",
   "ru": {
-   "name": "Симона",
+   "name": "Симон",
    "source": "candidate",
    "confidence": 0.803,
-   "review": false,
+   "review": true,
    "verseRef": "Mat.27.31"
   },
   "gender": "m",
@@ -55227,7 +55227,7 @@
   "key": "Alexander@Mrk.15.21",
   "en": "Alexander",
   "ru": {
-   "name": "Александрова",
+   "name": "Александров",
    "source": "candidate",
    "confidence": 0.667,
    "review": true,
@@ -55360,7 +55360,7 @@
   "key": "Augustus@Luk.2.1",
   "en": "Augustus",
   "ru": {
-   "name": "Августа",
+   "name": "Август",
    "source": "candidate",
    "confidence": 0.625,
    "review": true,
@@ -56382,7 +56382,7 @@
   "key": "Matthat@Luk.3.29",
   "en": "Matthat",
   "ru": {
-   "name": "Матфатов",
+   "name": "Матфат",
    "source": "candidate",
    "confidence": 0.75,
    "review": true,
@@ -57116,7 +57116,7 @@
   "key": "Theudas@Act.5.36",
   "en": "Theudas",
   "ru": {
-   "name": "Февда",
+   "name": "Февд",
    "source": "candidate",
    "confidence": 0.667,
    "review": true,
@@ -57154,10 +57154,10 @@
   "key": "Nicanor@Act.6.5",
   "en": "Nicanor",
   "ru": {
-   "name": "Никанора",
+   "name": "Никанор",
    "source": "candidate",
    "confidence": 0.875,
-   "review": false,
+   "review": true,
    "verseRef": "Act.6.5"
   },
   "gender": "m",
@@ -57192,10 +57192,10 @@
   "key": "Parmenas@Act.6.5",
   "en": "Parmenas",
   "ru": {
-   "name": "Пармена",
+   "name": "Пармен",
    "source": "candidate",
    "confidence": 0.875,
-   "review": false,
+   "review": true,
    "verseRef": "Act.6.5"
   },
   "gender": "m",
@@ -57211,7 +57211,7 @@
   "key": "Philip@Act.6.5",
   "en": "Philip",
   "ru": {
-   "name": "Филиппа",
+   "name": "Филипп",
    "source": "candidate",
    "confidence": 0.714,
    "review": true,
@@ -57230,7 +57230,7 @@
   "key": "Prochorus@Act.6.5",
   "en": "Prochorus",
   "ru": {
-   "name": "Прохора",
+   "name": "Прохор",
    "source": "candidate",
    "confidence": 0.75,
    "review": true,
@@ -57249,7 +57249,7 @@
   "key": "Stephen@Act.6.5",
   "en": "Stephen",
   "ru": {
-   "name": "Стефана",
+   "name": "Стефан",
    "source": "candidate",
    "confidence": 0.714,
    "review": true,
@@ -57268,10 +57268,10 @@
   "key": "Timon@Act.6.5",
   "en": "Timon",
   "ru": {
-   "name": "Тимона",
+   "name": "Тимон",
    "source": "candidate",
    "confidence": 0.833,
-   "review": false,
+   "review": true,
    "verseRef": "Act.6.5"
   },
   "gender": "m",
@@ -57572,7 +57572,7 @@
   "key": "Blastus@Act.12.20",
   "en": "Blastus",
   "ru": {
-   "name": "Власта",
+   "name": "Власт",
    "source": "candidate",
    "confidence": 0.714,
    "review": true,
@@ -57648,7 +57648,7 @@
   "key": "Bar-jesus@Act.13.6",
   "en": "Bar-jesus",
   "ru": {
-   "name": "Вариисуса",
+   "name": "Вариисус",
    "source": "candidate",
    "confidence": 0.778,
    "review": true,
@@ -57933,7 +57933,7 @@
   "key": "Sosthenes@Act.18.17",
   "en": "Sosthenes",
   "ru": {
-   "name": "Сосфена",
+   "name": "Сосфен",
    "source": "candidate",
    "confidence": 0.75,
    "review": true,
@@ -57971,7 +57971,7 @@
   "key": "Tyrannus@Act.19.9",
   "en": "Tyrannus",
   "ru": {
-   "name": "Тиранна",
+   "name": "Тиранн",
    "source": "candidate",
    "confidence": 0.75,
    "review": true,
@@ -58009,7 +58009,7 @@
   "key": "Erastus@Act.19.22",
   "en": "Erastus",
   "ru": {
-   "name": "Ераста",
+   "name": "Ераст",
    "source": "candidate",
    "confidence": 0.714,
    "review": true,
@@ -58047,10 +58047,10 @@
   "key": "Aristarchus@Act.19.29",
   "en": "Aristarchus",
   "ru": {
-   "name": "Аристарха",
+   "name": "Аристарх",
    "source": "candidate",
    "confidence": 0.8,
-   "review": false,
+   "review": true,
    "verseRef": "Act.19.29"
   },
   "gender": "m",
@@ -58123,7 +58123,7 @@
   "key": "Pyrrhus@Act.20.4",
   "en": "Pyrrhus",
   "ru": {
-   "name": "Пирров",
+   "name": "Пирр",
    "source": "candidate",
    "confidence": 0.667,
    "review": true,
@@ -58465,7 +58465,7 @@
   "key": "Epaenetus@Rom.16.5",
   "en": "Epaenetus",
   "ru": {
-   "name": "Епенета",
+   "name": "Епенет",
    "source": "candidate",
    "confidence": 0.667,
    "review": true,
@@ -58503,10 +58503,10 @@
   "key": "Andronicus@Rom.16.7",
   "en": "Andronicus",
   "ru": {
-   "name": "Андроника",
+   "name": "Андроник",
    "source": "candidate",
    "confidence": 0.8,
-   "review": false,
+   "review": true,
    "verseRef": "Rom.16.7"
   },
   "gender": "m",
@@ -58598,10 +58598,10 @@
   "key": "Apelles@Rom.16.10",
   "en": "Apelles",
   "ru": {
-   "name": "Апеллеса",
+   "name": "Апеллес",
    "source": "candidate",
    "confidence": 0.875,
-   "review": false,
+   "review": true,
    "verseRef": "Rom.16.10"
   },
   "gender": "m",
@@ -58617,7 +58617,7 @@
   "key": "Aristobulus@Rom.16.10",
   "en": "Aristobulus",
   "ru": {
-   "name": "Аристовулова",
+   "name": "Аристовулов",
    "source": "candidate",
    "confidence": 0.75,
    "review": true,
@@ -58636,7 +58636,7 @@
   "key": "Herodion@Rom.16.11",
   "en": "Herodion",
   "ru": {
-   "name": "Иродиона",
+   "name": "Иродион",
    "source": "candidate",
    "confidence": 0.75,
    "review": true,
@@ -58655,7 +58655,7 @@
   "key": "Narcissus@Rom.16.11",
   "en": "Narcissus",
   "ru": {
-   "name": "Наркисса",
+   "name": "Наркисс",
    "source": "candidate",
    "confidence": 0.778,
    "review": true,
@@ -58750,10 +58750,10 @@
   "key": "Asyncritus@Rom.16.14",
   "en": "Asyncritus",
   "ru": {
-   "name": "Асинкрита",
+   "name": "Асинкрит",
    "source": "candidate",
    "confidence": 0.8,
-   "review": false,
+   "review": true,
    "verseRef": "Rom.16.14"
   },
   "gender": "m",
@@ -58807,10 +58807,10 @@
   "key": "Patrobas@Rom.16.14",
   "en": "Patrobas",
   "ru": {
-   "name": "Патрова",
+   "name": "Патров",
    "source": "candidate",
    "confidence": 0.875,
-   "review": false,
+   "review": true,
    "verseRef": "Rom.16.14"
   },
   "gender": "m",
@@ -58826,7 +58826,7 @@
   "key": "Phlegon@Rom.16.14",
   "en": "Phlegon",
   "ru": {
-   "name": "Флегонта",
+   "name": "Флегонт",
    "source": "candidate",
    "confidence": 0.75,
    "review": true,
@@ -58883,7 +58883,7 @@
   "key": "Olympas@Rom.16.15",
   "en": "Olympas",
   "ru": {
-   "name": "Олимпана",
+   "name": "Олимпан",
    "source": "candidate",
    "confidence": 0.75,
    "review": true,
@@ -58902,7 +58902,7 @@
   "key": "Philologus@Rom.16.15",
   "en": "Philologus",
   "ru": {
-   "name": "Филолога",
+   "name": "Филолог",
    "source": "candidate",
    "confidence": 0.778,
    "review": true,
@@ -58997,7 +58997,7 @@
   "key": "Stephanas@1Co.1.16",
   "en": "Stephanas",
   "ru": {
-   "name": "Стефанов",
+   "name": "Стефан",
    "source": "candidate",
    "confidence": 0.72,
    "review": true,
@@ -59016,7 +59016,7 @@
   "key": "Achaicus@1Co.16.17",
   "en": "Achaicus",
   "ru": {
-   "name": "Ахаика",
+   "name": "Ахаик",
    "source": "candidate",
    "confidence": 0.714,
    "review": true,
@@ -59035,10 +59035,10 @@
   "key": "Fortunatus@1Co.16.17",
   "en": "Fortunatus",
   "ru": {
-   "name": "Фортуната",
+   "name": "Фортунат",
    "source": "candidate",
    "confidence": 0.8,
-   "review": false,
+   "review": true,
    "verseRef": "1Co.16.17"
   },
   "gender": "m",
@@ -59111,10 +59111,10 @@
   "key": "Epaphroditus@Php.2.25",
   "en": "Epaphroditus",
   "ru": {
-   "name": "Епафродита",
+   "name": "Епафродит",
    "source": "candidate",
    "confidence": 0.818,
-   "review": false,
+   "review": true,
    "verseRef": "Php.2.25"
   },
   "gender": "m",
@@ -59206,10 +59206,10 @@
   "key": "Epaphras@Col.1.7",
   "en": "Epaphras",
   "ru": {
-   "name": "Епафраса",
+   "name": "Епафрас",
    "source": "candidate",
    "confidence": 0.875,
-   "review": false,
+   "review": true,
    "verseRef": "Col.1.7"
   },
   "gender": "m",
@@ -59472,7 +59472,7 @@
   "key": "Onesiphorus@2Ti.1.16",
   "en": "Onesiphorus",
   "ru": {
-   "name": "Онисифора",
+   "name": "Онисифор",
    "source": "candidate",
    "confidence": 0.7,
    "review": true,
@@ -59567,7 +59567,7 @@
   "key": "Carpus@2Ti.4.13",
   "en": "Carpus",
   "ru": {
-   "name": "Карпа",
+   "name": "Карп",
    "source": "candidate",
    "confidence": 0.667,
    "review": true,
@@ -59776,10 +59776,10 @@
   "key": "Antipas@Rev.2.13",
   "en": "Antipas",
   "ru": {
-   "name": "Антипа",
+   "name": "Антип",
    "source": "candidate",
    "confidence": 0.857,
-   "review": false,
+   "review": true,
    "verseRef": "Rev.2.13"
   },
   "gender": "m",
