@@ -485,6 +485,13 @@ const GEO_DEFS = `<defs>
   </filter>
 </defs>`;
 
+// Хирургия деталей base-geo (правки только в превью-слое; сам файл — SYSTEM):
+// Кишон в базе уходит хвостом далеко в море (до x=420 при береге ~586) — укорачиваем устье.
+const baseGeoFixed = baseGeoRaw.replace(
+  'M613,706 C595,712 575,720 555,728 C535,736 510,738 490,735 C468,730 445,720 420,710',
+  'M613,706 C603,712 595,720 588,728'
+);
+
 const geoDots = [];
 const geoLabels = [];
 let inFrame = 0, offFamily = 0, subSkipped = 0, regionSkipped = 0;
@@ -520,7 +527,7 @@ for (const p of placesAll.sort((a, b) => (b.maps || []).length - (a.maps || []).
 // Картографическая фурнитура: линейка масштаба (сегменты по 100 км ≈ 108.7 ед. при 0.92 км/ед.)
 // и стрелка севера. 300 км → ~326 ед.: читаемая длина в кадре 1900.
 const KM100 = 100 / 0.92;
-const sbX = 70, sbY = 1372;
+const sbX = 1185, sbY = 1372; // правый нижний угол пустыни: не пересекается с Нилом и подписями
 const geoFurniture =
   `<g class="geo-furn" aria-hidden="true">` +
   `<rect x="${sbX - 16}" y="${sbY - 34}" width="${KM100 * 3 + 32 + 44}" height="60" rx="8" class="furn-plate"/>` +
@@ -543,7 +550,7 @@ const placesHtml =
   `<span class="geo-search">${ic('pin')}<input id="geo-q" type="search" placeholder="Найти место…" autocomplete="off" aria-label="Поиск места на мини-карте"><span id="geo-n" aria-live="polite"></span></span>` +
   `</div>` +
   `<div class="geo-frame"><svg viewBox="0 0 1900 1430" class="geo-svg" role="img" aria-label="Мини-карта Леванта: места реестра Атласа со статусами уверенности локализаций">` +
-  GEO_DEFS + baseGeoRaw + geoDots.join('') + geoLabels.join('') + geoFurniture + `</svg></div>` +
+  GEO_DEFS + baseGeoFixed + geoDots.join('') + geoLabels.join('') + geoFurniture + `</svg></div>` +
   `<div class="legend geo-legend">` +
   `<span><b style="background:#1e3a63;border-radius:50%"></b> уверенная — ${stCount.sure}</span>` +
   `<span><b style="background:#d9b36a;border:1.5px solid #8a6a1f;border-radius:50%"></b> спорная — ${stCount.disputed}</span>` +
@@ -821,6 +828,10 @@ const html = `<!DOCTYPE html>
   .geo-svg .region-label{font-family:Georgia,"Times New Roman",serif;font-weight:700;fill:#8a7a52;letter-spacing:.3em;opacity:.62}
   .geo-svg .region-he{font-family:Georgia,serif;fill:#93a7b8;opacity:.5}
   .geo-svg .lbl-z2{opacity:.45}
+  /* Светлая тема вод: прод-заливка Мёртвого/Кинерета #10263a почти чёрная на пергаменте */
+  .geo-svg [fill="#10263a"]{fill:#8fb7cb}
+  .geo-svg [stroke="#2e4d6b"]{stroke:#6f97ae}
+  .geo-svg [stroke="#2d4a66"]{stroke:#6f97ae}
   .dot-sure,.dot-disputed{filter:url(#dotShadow)}
   .geo-dot.hit circle{stroke:var(--blue);stroke-width:2.6;filter:drop-shadow(0 0 6px rgba(30,58,99,.55))}
   .furn-plate{fill:rgba(246,241,231,.82);stroke:rgba(120,95,40,.35);stroke-width:1}
