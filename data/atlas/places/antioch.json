@@ -11,12 +11,12 @@
   "type": "city",
   "placements": {
     "levant": {
-      "x": 880,
-      "y": 240
+      "x": 718,
+      "y": 266
     },
     "mediterranean": {
-      "x": 880,
-      "y": 240
+      "x": 1740,
+      "y": 678
     }
   },
   "maps": [

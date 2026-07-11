@@ -115,6 +115,10 @@ function main() {
   for (const r of results) {
     const mark = r.pairs.length ? '⚠️ ' : '✅ ';
     console.log(`  ${mark}${r.slug}: ${r.pairs.length} пересечений, ${r.markerHits.length} наездов на маркеры${r.shifted ? ` (движок сдвинул ${r.shifted})` : ''}`);
+    if (process.argv.includes('--pairs')) {
+      for (const pr of r.pairs) console.log(`       ✂ ${pr.a} × ${pr.b} (area ${pr.area})`);
+      for (const mh of r.markerHits) console.log(`       ⊙ «${mh.label}» наезжает на маркер «${mh.marker}»`);
+    }
   }
   if (GATE && total > 0) process.exit(1);
 }
