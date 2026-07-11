@@ -17,6 +17,10 @@
     // на зуме растворяем паспарту/фурнитуру — вблизи остаётся чистая карта
     const zoomed = Math.abs(vb[2] - vb0[2]) > vb0[2] * 0.04 || Math.abs(vb[0] - vb0[0]) > vb0[2] * 0.04;
     svg.classList.toggle('zoomed', zoomed);
+    // семантический зум: подписи и точки не растут с картой (LOD-ступени)
+    const zf = vb0[2] / vb[2];
+    svg.classList.toggle('z2', zf >= 1.6 && zf < 3.1);
+    svg.classList.toggle('z3', zf >= 3.1);
   };
 
   // ── Зум/пан ────────────────────────────────────────────────────────────────
@@ -184,11 +188,59 @@
     hideCard();
     panel.querySelector('.do-x').addEventListener('click', closeDossier);
   }
+  function openGeneric(title, kicker, html) {
+    panel.innerHTML = `<button class="do-x" title="Закрыть (Esc)">×</button>` +
+      `<header class="do-head"><b>${title}</b>${kicker ? `<u>${kicker}</u>` : ''}</header>` +
+      `<div class="do-scroll">${html}</div>`;
+    panel.classList.add('do--on');
+    hideCard();
+    panel.querySelector('.do-x').addEventListener('click', closeDossier);
+  }
+  const STAGES = window.ATLAS_STAGES || [];
+  function openStage(n) {
+    const st = STAGES[n];
+    if (!st) return;
+    const meta = [st.age, st.km].filter(Boolean).join(' · ');
+    openGeneric(`Этап ${st.n || n + 1}. ${st.t || ''}`, meta,
+      (st.d ? `<section class="do-sec"><h4>Что происходит</h4><p>${st.d}</p></section>` : '') +
+      (st.r ? `<section class="do-sec do-bible"><div class="verse">${st.r}</div></section>` : ''));
+  }
+  const WPS = window.ATLAS_WPS || [];
+  function openWp(i) {
+    const w = WPS[i];
+    if (!w) return;
+    openGeneric(w.n, w.role || 'археологическая точка',
+      (w.note ? `<section class="do-sec"><p>${w.note}</p></section>` : '') +
+      `<section class="do-sec"><p class="lex-refs">Ромб на листе — верифицированная точка раскопок/руин: то, что можно найти на местности.</p></section>`);
+  }
+  const OVLS = window.ATLAS_OVLS || [];
+  function openOvl(i) {
+    const o = OVLS[i];
+    if (!o) return;
+    openGeneric(o.label || 'Слой листа', 'смысловая линия',
+      (o.story ? `<section class="do-sec"><p>${o.story}</p></section>` : '') +
+      (o.refs ? `<section class="do-sec"><p class="lex-refs">${o.refs}</p></section>` : ''));
+  }
+  const DECOR = window.ATLAS_DECOR || {};
+  function openDecor(kind) {
+    const d2 = DECOR[kind];
+    if (!d2) return;
+    openGeneric(d2.t, 'украшение листа', `<section class="do-sec"><p>${d2.d}</p></section>`);
+  }
+
   function closeDossier() { panel.classList.remove('do--on'); }
   document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeDossier(); });
   svg.addEventListener('click', (e) => {
     const g = e.target.closest && e.target.closest(HIT);
-    if (g) openDossier(g.dataset.pid);
+    if (g) return openDossier(g.dataset.pid);
+    const mi = e.target.closest && e.target.closest('.mile[data-stage]');
+    if (mi) return openStage(Number(mi.dataset.stage));
+    const wp = e.target.closest && e.target.closest('.wp[data-wpi]');
+    if (wp) return openWp(Number(wp.dataset.wpi));
+    const ov = e.target.closest && e.target.closest('.ovl-layer[data-ovl]');
+    if (ov) return openOvl(Number(ov.dataset.ovl));
+    const dc = e.target.closest && e.target.closest('.decor-ship[data-decor]');
+    if (dc) return openDecor(dc.dataset.decor);
   });
 
   // ── Погружение (прячет рамку читалки) ─────────────────────────────────────
