@@ -1,6 +1,6 @@
 # VALIDATION — data/genealogy/v2 (генерируется build.mjs)
 
-Пайплайн: 0.1.0-phase1 · 2026-07-11T13:17:29.170Z
+Пайплайн: 0.1.0-phase1 · 2026-07-11T13:20:15.768Z
 
 ## Жёсткие инварианты — ✅ OK
 
@@ -27,13 +27,14 @@
 
 | source | персон |
 |---|---:|
-| override | 0 |
-| seed (v1) | 153 |
-| pattern | 118 |
-| candidate | 2129 |
-| translit (fallback) | 656 |
+| override (курировано) | 29 |
+| seed (v1-скелет) | 153 |
+| structural (безымянные узлы) | 13 |
+| pattern (стих) | 118 |
+| candidate (стих+транслит) | 2113 |
+| translit (fallback) | 630 |
 | none | 0 |
-| **review-очередь** | **1623** |
+| **review-очередь** | **1591** |
 
 ## TIPNR-парсер
 
