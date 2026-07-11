@@ -1,6 +1,6 @@
 # VALIDATION — data/genealogy/v2 (генерируется build.mjs)
 
-Пайплайн: 0.1.0-phase1 · 2026-07-11T09:22:38.910Z
+Пайплайн: 0.1.0-phase1 · 2026-07-11T13:17:29.170Z
 
 ## Жёсткие инварианты — ✅ OK
 
@@ -21,19 +21,19 @@
 | — spouse | 144 |
 | Изолированных персон (без рёбер) | 982 |
 | Русское имя есть | 3056 (100%) |
-| Слито из v1-скелета | 154 / 156 |
+| Слито из v1-скелета | 153 / 156 |
 
 ## Русские имена по источникам
 
 | source | персон |
 |---|---:|
 | override | 0 |
-| seed (v1) | 152 |
-| pattern | 119 |
+| seed (v1) | 153 |
+| pattern | 118 |
 | candidate | 2129 |
 | translit (fallback) | 656 |
 | none | 0 |
-| **review-очередь** | **1624** |
+| **review-очередь** | **1623** |
 
 ## TIPNR-парсер
 
@@ -64,11 +64,38 @@
 - Egypt@Gen.10.6 · offspring: `Pathrusim@Gen.10.14-1Ch`
 - Egypt@Gen.10.6 · offspring: `Casluhim@Gen.10.14-1Ch`
 
-## v1-скелет: немэпнутые (2)
-- simeon_lk2 (Симеон (Лк); Лк 3:26-30; кандидатов 4)
-- joseph_lk3 (Иосиф (Лк, отец Илий?); Лк 3:23-26; кандидатов 10)
+## Кластеры атласа (14) и народы (76)
 
-## v1-скелет: эвристические сопоставления — сверить редактору (57)
+- **Допотопные патриархи** (antediluvian-patriarchs): 25 · правило: `{"type":"refRange","books":["Gen"],"chapters":[4,5,6]}`
+- **Народы от Ноя** (nations-of-noah): 63 · правило: `{"type":"refRange","books":["Gen"],"chapters":[10,11]}`
+- **Потомки Авраама** (abraham-descendants): 764 · правило: `{"type":"descendants","rootKey":"Abraham@Gen.11.26"}`
+- **Измаильтяне** (ishmaelites): 19 · правило: `{"type":"descendants","rootKey":"Ishmael@Gen.16.11","includeRoot":true}`
+- **Исав / Едом** (esau-edom): 17 · правило: `{"type":"descendants","rootKey":"Esau@Gen.25.25","includeRoot":true}`
+- **12 колен Израиля** (tribes-12): 12 · правило: `{"type":"childrenOf","rootKey":"Israel@Gen.25.26","gender":"m"}`
+- **Левиты** (levites): 266 · правило: `{"type":"tribe","equals":"Tribe of Levi"}`
+- **Священники** (priests): 61 · правило: `{"type":"description","re":"\\bpriest\\b"}`
+- **Дом Давида** (house-of-david): 173 · правило: `{"type":"descendants","rootKey":"David@Rut.4.17","includeRoot":true}`
+- **Возвращение из плена** (return-from-exile): 583 · правило: `{"type":"refBooks","books":["Ezr","Neh"]}`
+- **Родословие по Матфею** (matthew-1): 74 · правило: `{"type":"ancestorsVia","rootKey":"Joseph@Mat.1.16","role":"father","includeRoot":true}`
+- **Родословие по Луке** (luke-3): 75 · правило: `{"type":"ancestorsVia","rootKey":"Mary@Mat.1.16","role":"father","includeRoot":true}`
+- **Родственники Господа** (lords-relatives): 4 · правило: `{"type":"siblingsOf","rootKey":"Jesus@Isa.7.14"}`
+- **Ученики и апостолы** (disciples-apostles): 14 · правило: `{"type":"description","re":"apostle|disciple"}`
+
+Народов из TIPNR Group-записей: 76, из них с известным
+прародителем-персоной: 25.
+
+## Зеркальность offspring↔parents (информационно): 0 расхождений
+- нет
+
+## v1-скелет: немэпнутые (3)
+- simeon_lk2 (Симеон (Лк); Лк 3:26-30; кандидатов no-tipnr-counterpart)
+- judah_lk2 (Иуда (Лк); Лк 3:26-30; кандидатов no-tipnr-counterpart)
+- joseph_lk3 (Иосиф (Лк, отец Илий?); Лк 3:23-26; кандидатов no-tipnr-counterpart)
+
+## v1-скелет: коллизии мэппинга (два v1-id → один TIPNR-ключ) — 0
+- нет
+
+## v1-скелет: эвристические сопоставления — сверить редактору (55)
 - mahalalel ← disamb:Mahalalel@Gen.5.12
 - enoch ← disamb:Enoch@Gen.4.17
 - lamech_gen5 ← disamb:Lamech@Gen.4.18
@@ -111,7 +138,6 @@
 - amon ← disamb:Amon@2Ki.21.18
 - josiah ← disamb:Josiah@1Ki.13.2
 - eliakim_lk ← disamb:Eliakim@Luk.3.30
-- judah_lk ← disamb:Judah@Luk.3.30
 - matthat ← disamb:Matthat@Luk.3.24
 - eliezer_lk ← disamb:Eliezer@Luk.3.29
 - joshua_lk ← disamb:Joshua@Luk.3.29
@@ -121,7 +147,6 @@
 - naum_lk ← fuzzy:Nahum(0.80)
 - naum_lk ← disamb:Nahum@Luk.3.25
 - amos_lk ← disamb:Amos@Luk.3.25
-- judah_lk2 ← disamb:Judah@Luk.3.30
 - eliakim_mt ← disamb:Eliakim@Mat.1.13
 - zadok_mt ← disamb:Zadok@Mat.1.14
 - eleazar_mt ← disamb:Eleazar@Mat.1.15

@@ -71,10 +71,11 @@ const SECTION_RE = /^\$=+\s*(PERSON|PLACE|OTHER)/i;
  */
 export function parseTipnr(text) {
   const stats = {
-    topLines: 0, personRecords: 0, byType: {}, duplicates: [],
+    topLines: 0, personRecords: 0, groupRecords: 0, byType: {}, duplicates: [],
     subRecordLines: 0, badTopLines: 0,
   };
   const persons = new Map();
+  const groups = new Map();   // Type === 'Group': народы/роды (Быт 10 и др.)
   let section = null;
   let current = null;
 
@@ -122,10 +123,15 @@ export function parseTipnr(text) {
         persons.set(rec.key, rec);
         stats.personRecords += 1;
       }
+    } else if (type === 'Group') {
+      if (!groups.has(rec.key)) {
+        groups.set(rec.key, rec);
+        stats.groupRecords += 1;
+      }
     }
     current = rec;
   }
-  return { persons, stats };
+  return { persons, groups, stats };
 }
 
 /**

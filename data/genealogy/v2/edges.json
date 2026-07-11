@@ -6122,7 +6122,8 @@
   "kind": "parent",
   "from": "joseph--mat-1-16",
   "to": "jesus--isa-7-14",
-  "role": "father"
+  "role": "father",
+  "legal": true
  },
  {
   "kind": "parent",

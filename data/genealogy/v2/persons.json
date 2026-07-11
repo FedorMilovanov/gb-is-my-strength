@@ -3705,11 +3705,11 @@
   "key": "Israel@Gen.25.26",
   "en": "Israel",
   "ru": {
-   "name": "Исав",
-   "source": "pattern",
-   "confidence": 0.72,
-   "review": true,
-   "verseRef": "Gen.25.25"
+   "name": "Иаков",
+   "source": "seed",
+   "confidence": 1,
+   "review": false,
+   "verseRef": null
   },
   "gender": "m",
   "firstRef": {
@@ -3717,7 +3717,23 @@
    "ru": "Быт 25:26"
   },
   "tribe": "Early Patriarch",
-  "description": "Man living at the time of the Patriarchs"
+  "description": "Man living at the time of the Patriarchs",
+  "skeleton": {
+   "v1Id": "jacob",
+   "lineage": "messianic",
+   "era": "patriarchs",
+   "role": "patriarch",
+   "significance": "Израиль. 12 колен от него. Предок Христа через Иуду.",
+   "chronology": {
+    "mt": {
+     "lifespan": 147,
+     "birthAM": 2108,
+     "deathAM": 2255
+    }
+   },
+   "disputed": null,
+   "he": "יַעֲקֹב"
+  }
  },
  {
   "id": "ahuzzath--gen-26-26",
@@ -56502,11 +56518,11 @@
   "tribe": "Tribe of Judah",
   "description": "Man living at the time of Divided Monarchy",
   "skeleton": {
-   "v1Id": "judah_lk2",
+   "v1Id": "judah_lk",
    "lineage": "messianic-luke",
-   "era": "exile",
+   "era": "kings",
    "role": "person",
-   "significance": "В Лк ветви.",
+   "significance": "В Лукановой линии.",
    "chronology": null,
    "disputed": null,
    "he": null
