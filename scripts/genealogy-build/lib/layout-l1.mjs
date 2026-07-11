@@ -26,9 +26,9 @@ const TRIBE_ORDER = [
 ];
 
 const G = {
-  centerW: 190, centerH: 74,
-  sonW: 156, sonH: 62,
-  radius: 372,
+  centerW: 198, centerH: 78,
+  sonW: 158, sonH: 62,
+  radius: 338,           // компактнее: центр не «тонет» в пустоте
 };
 
 export function buildTribes12(persons) {
