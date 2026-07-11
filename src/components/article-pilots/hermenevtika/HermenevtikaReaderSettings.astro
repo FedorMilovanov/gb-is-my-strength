@@ -41,7 +41,7 @@
       <span class="hmset-label">Размер текста</span>
       <div class="hmset-fonttrack">
         <button type="button" class="hmset-font hmset-font--sm" data-fc-action="font-down" aria-label="Уменьшить текст">A</button>
-        <div class="hmset-dots" id="hmFontDots" aria-hidden="true"></div>
+        <div class="hmset-dots" id="hmFontDots" aria-hidden="true"><span class="hmset-dot"></span><span class="hmset-dot"></span><span class="hmset-dot"></span><span class="hmset-dot"></span><span class="hmset-dot"></span></div>
         <button type="button" class="hmset-font hmset-font--lg" data-fc-action="font-up" aria-label="Увеличить текст">A</button>
       </div>
     </div>
@@ -67,9 +67,12 @@
 </div>
 
 <style>
-  /* Лист виден только на мобильной ширине, где живёт вся hm-обвязка. */
+  /* Лист виден только на мобильной ширине, где живёт вся hm-обвязка.
+     Брейкпоинт СИНХРОНИЗИРОВАН с баром (HermenevtikaMobileBar: max-width:1199px):
+     иначе шестерёнка в баре видна на 1024–1199px, а лист не открывается (мёртвая
+     кнопка), и сепия не применяется в том же диапазоне. */
   .hmsettings { display: none; }
-  @media (max-width: 63.99em) {
+  @media (max-width: 1199px) {
     .hmsettings.is-open { display: block; }
 
     .hmset-group { padding: 12px 0 4px; }
