@@ -28,11 +28,15 @@ const A = (d) => path.join(ROOT, 'data', 'atlas', d);
 const OUT = path.join(A('generated'), 'labels-levant.json');
 
 // Статический мультикегльный лист (печатная модель): бакет ≡ кегль подписи.
-// rank задаёт стартовый кегль; демоция = уменьшение кегля до размещения.
-const BUCKET_FONT = { far: 12.5, mid: 8.5, close: 6.5, detail: 5 };
+// ЗАКОН КЕГЛЯ (фаза 2): ни одна отрендеренная подпись не меньше 11px на 1280×900.
+// Контейнер листа ~1152px на 1900 юнитов → 11px ≈ 18.2u. far=22u (~13.3px),
+// mid=18.5u (~11.2px); close/detail НЕ рендерятся на статике (zmin — интерактив),
+// их места уходят в кластеры или скрываются до зума (немых точек не существует).
+const BUCKET_FONT = { far: 22, mid: 18.5, close: 18.5, detail: 18.5 };
+const STATIC_BUCKETS = new Set(['far', 'mid']); // что рендерит статический лист
 const CHAR_W = 0.62;               // средняя ширина кириллического знака в em
 const PAD = 2;                     // зазор между прямоугольниками
-const ROUTE_BUFFER = 5;            // полукоридор маршрута
+const ROUTE_BUFFER = 6;            // полукоридор маршрута
 const BUCKETS = ['far', 'mid', 'close', 'detail'];
 const RANK_BUCKET = { 1: 'far', 2: 'mid', 3: 'close' };
 
@@ -133,7 +137,7 @@ const clusters = [{
 const order = [...places].filter((p) => !clusteredIds.has(p.id))
   .sort((a, b) => (a.rank - b.rank) || ((b.maps || []).length - (a.maps || []).length) || a.id.localeCompare(b.id));
 const labels = [];
-const report = { placed: 0, perBucket: { far: 0, mid: 0, close: 0, detail: 0 }, demoted: [], leaders: 0, clustered: clusterMembers.length, unresolved: [] };
+const report = { placed: 0, perBucket: { far: 0, mid: 0, close: 0, detail: 0 }, demoted: [], leaders: 0, clustered: clusterMembers.length, hiddenAtStatic: [], unresolved: [] };
 
 for (const p of order) {
   const { x, y } = p.placements.levant;
@@ -158,6 +162,7 @@ for (const p of order) {
     }
   }
   if (placed) { labels.push(placed); report.placed++; report.perBucket[placed.zbucket]++; }
+  else if (p.rank >= 3) { report.hiddenAtStatic.push(p.id); } // до зума: ни точки, ни подписи
   else report.unresolved.push(p.id);
 }
 
@@ -168,7 +173,7 @@ const payload = {
 fs.mkdirSync(path.dirname(OUT), { recursive: true });
 fs.writeFileSync(OUT, JSON.stringify(payload, null, 2) + '\n');
 
-console.log(`[atlas-labels] мест: ${order.length} · размещено: ${report.placed} (far ${report.perBucket.far} / mid ${report.perBucket.mid} / close ${report.perBucket.close} / detail ${report.perBucket.detail}) · понижено: ${report.demoted.length} · выносок: ${report.leaders} · в кластере Иерусалима: ${report.clustered} · НЕРАЗРЕШЕНО: ${report.unresolved.length}`);
+console.log(`[atlas-labels] мест: ${order.length} · размещено: ${report.placed} (far ${report.perBucket.far} / mid ${report.perBucket.mid} / close ${report.perBucket.close} / detail ${report.perBucket.detail}) · понижено: ${report.demoted.length} · выносок: ${report.leaders} · кластер: ${report.clustered} · скрыто до зума: ${report.hiddenAtStatic.length} · НЕРАЗРЕШЕНО(r1/r2): ${report.unresolved.length}`);
 if (report.demoted.length) console.log('   demoted: ' + report.demoted.slice(0, 12).join('; ') + (report.demoted.length > 12 ? ' …' : ''));
 if (report.unresolved.length) {
   console.error('❌ G2: неразрешённые коллизии: ' + report.unresolved.join(', '));

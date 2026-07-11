@@ -418,6 +418,7 @@ const placesAll = loadDir(A('places'));
 const LGEN = JSON.parse(fs.readFileSync(path.join(A('generated'), 'labels-levant.json'), 'utf8'));
 const CLUSTER = (LGEN.clusters && LGEN.clusters[0]) || { memberIds: [], members: [], extra: 0 };
 const CLUSTERED = new Set(CLUSTER.memberIds || []);
+const HIDDEN_STATIC = new Set((LGEN.report && LGEN.report.hiddenAtStatic) || []);
 const GLYPH = (t) => t === 'mountain' ? 'mount' : (t === 'spring' || t === 'well') ? 'spring' : (t === 'sanctuary') ? 'sanct' : 'city';
 const RANK = { consensus: 6, primary: 5, candidate: 4, alternative: 3, caveat: 2, minor: 1, rejected: 0 };
 const TYPE_RU = { city: 'город', town: 'посёлок', region: 'регион', mountain: 'гора', river: 'река', sea: 'море', lake: 'озеро', spring: 'источник', road: 'дорога', garden: 'сад', structure: 'сооружение', sanctuary: 'святилище', camp: 'стан', valley: 'долина', other: 'место' };
@@ -507,6 +508,7 @@ for (const p of placesAll.sort((a, b) => (a.rank || 3) - (b.rank || 3))) {
   if (p.parentId) { subSkipped++; continue; }
   if (p.type === 'region') { regionSkipped++; continue; }
   if (CLUSTERED.has(p.id)) continue; // члены иерусалимского кластера — в бейдже ⊕N
+  if (HIDDEN_STATIC.has(p.id)) continue; // rank3, не вместившиеся на статике — до зума (KA-4c)
   inFrame++;
   const idents = p.identifications || [];
   const best = idents.reduce((b, i) => (RANK[i.status] > RANK[b] ? i.status : b), 'rejected');

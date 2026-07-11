@@ -7,8 +7,8 @@
   "type": "city",
   "placements": {
     "levant": {
-      "x": 740,
-      "y": 500
+      "x": 648,
+      "y": 655
     }
   },
   "maps": [
@@ -56,6 +56,6 @@
     "Josh 11:13",
     "Josh 12:19"
   ],
-  "notes": "review: Тель-Хацор: shvatim + shoftim + melachim",
+  "notes": "review: Тель-Хацор: shvatim + shoftim + melachim | гео-фикс 2026-07-11: placements.levant был (740,500) — выброс из route.json melachim (точка в Сирии, севернее Дамаска); поставлен по реальной географии Тель-Хацора (север Кинерета); синхронизировать x/y в karty/melachim/route.json при KA-5-волне карты",
   "rank": 2
 }
