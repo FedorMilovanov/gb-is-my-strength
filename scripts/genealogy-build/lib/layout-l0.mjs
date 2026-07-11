@@ -61,18 +61,54 @@ export function buildLayoutL0(persons, clusters, eras) {
   const byKey = new Map(persons.map(p => [p.key, p]));
   const clusterById = new Map(clusters.map(c => [c.id, c]));
 
-  // L0 — КОМПАКТНЫЙ обзор: равномерный шаг по индексу якоря (референсы владельца
-  // именно такие). AM показывается на карточке как атрибут, но НЕ управляет Y —
-  // AM-пропорциональная ось это отдельный режим/слой (engine-contract §9), не обзор.
+  // L0 — КОМПАКТНЫЙ обзор с АДАПТИВНЫМ шагом: ряды с боковыми кластерами получают
+  // высоту под их стек, пустые ряды (Сим, Иуда) сжимаются — так убираются мёртвые
+  // вертикальные провалы и композиция становится плотной, как на референсах. AM —
+  // атрибут карточки, НЕ управляет Y (AM-ось — отдельный слой, engine-contract §9).
   const nodes = [];
   const anchorY = new Map();
+  const VGAP = GEO.megaH + 24;   // шаг вертикального стека кластеров у одного якоря
+
+  // Проход 1 — раскладка кластеров по якорям (сторона + индекс в стеке + «ниже»)
+  const placements = [];
+  const sideCount = {};
+  for (const [cid, place] of Object.entries(L0_CLUSTER_PLACEMENT)) {
+    const c = clusterById.get(cid);
+    if (!c || anchorY === undefined) { /* ключ проверяется ниже */ }
+    if (!c) continue;
+    const below = place.side === 'center' || place.below === true;
+    const stackKey = `${place.anchor}|${place.side}`;
+    const stackIdx = below ? 0 : (sideCount[stackKey] ?? 0);
+    if (!below) sideCount[stackKey] = stackIdx + 1;
+    placements.push({ cid, c, anchor: place.anchor, side: place.side, tier: place.tier, below, stackIdx });
+  }
+
+  // Проход 2 — вертикальные экстенты каждого якоря и последовательное позиционирование
+  const halfSpine = GEO.spineNodeH / 2, halfMega = GEO.megaH / 2;
+  const extent = new Map();  // key → { up, down }
+  for (const key of L0_SPINE_ANCHORS) {
+    const pls = placements.filter(p => p.anchor === key);
+    const sideStacks = pls.filter(p => !p.below);
+    const maxStack = sideStacks.reduce((m, p) => Math.max(m, p.stackIdx), -1);
+    const hasIdx0 = sideStacks.some(p => p.stackIdx === 0);
+    const hasBelow = pls.some(p => p.below);
+    const up = hasIdx0 ? halfMega : halfSpine;
+    const downStack = maxStack >= 0 ? (maxStack * VGAP + halfMega) : halfSpine;
+    const downBelow = hasBelow ? (GEO.belowGap + GEO.megaH) : 0;
+    extent.set(key, { up, down: Math.max(downStack, downBelow, halfSpine) });
+  }
+  const ROW_GAP = 46;
+  let cursor = GEO.topY;
   L0_SPINE_ANCHORS.forEach((key, i) => {
-    const y = GEO.topY + i * GEO.rowH + GEO.rowH / 2;
-    anchorY.set(key, y);
+    const ex = extent.get(key);
+    const prev = i > 0 ? extent.get(L0_SPINE_ANCHORS[i - 1]) : null;
+    if (prev) cursor += prev.down + ROW_GAP + ex.up;
+    else cursor += ex.up;
+    anchorY.set(key, cursor);
     const p = byKey.get(key);
     nodes.push({
       id: p.id, key, kind: 'spine',
-      x: GEO.centerX - GEO.spineNodeW / 2, y: y - GEO.spineNodeH / 2,
+      x: GEO.centerX - GEO.spineNodeW / 2, y: cursor - GEO.spineNodeH / 2,
       w: GEO.spineNodeW, h: GEO.spineNodeH,
       label: p.ru?.name ?? p.en,
       refRu: p.firstRef?.ru ?? null,
@@ -83,27 +119,22 @@ export function buildLayoutL0(persons, clusters, eras) {
     });
   });
 
-  // Мега-узлы кластеров
-  const sideCount = {};   // сколько кластеров уже на (anchor|side) — для вертикального разнесения
-  for (const [cid, place] of Object.entries(L0_CLUSTER_PLACEMENT)) {
-    const c = clusterById.get(cid);
-    if (!c) continue;
-    const ay = anchorY.get(place.anchor);
+  // Проход 3 — эмит мега-узлов по вычисленным anchorY
+  for (const pl of placements) {
+    const ay = anchorY.get(pl.anchor);
     if (ay == null) continue;
-    const stackKey = `${place.anchor}|${place.side}`;
-    const idx = sideCount[stackKey] ?? 0;
-    sideCount[stackKey] = idx + 1;
-
-    let x, y = ay - GEO.megaH / 2 + idx * (GEO.megaH + 24);
-    if (place.side === 'left')  x = GEO.centerX - GEO.sideGap - GEO.megaW;
-    else if (place.side === 'right') x = GEO.centerX + (place.tier === 2 ? GEO.sideGap2 : GEO.sideGap);
-    else { x = GEO.centerX - GEO.megaW / 2; y = ay + GEO.belowGap; } // center/below
-
+    let x, y;
+    if (pl.below) { x = GEO.centerX - GEO.megaW / 2; y = ay + GEO.belowGap; }
+    else {
+      y = ay - GEO.megaH / 2 + pl.stackIdx * VGAP;
+      x = pl.side === 'left' ? GEO.centerX - GEO.sideGap - GEO.megaW
+        : GEO.centerX + (pl.tier === 2 ? GEO.sideGap2 : GEO.sideGap);
+    }
     nodes.push({
-      id: `cluster--${cid}`, clusterId: cid, kind: 'mega',
+      id: `cluster--${pl.cid}`, clusterId: pl.cid, kind: 'mega',
       x, y, w: GEO.megaW, h: GEO.megaH,
-      label: c.titleRu, count: c.count,
-      anchorKey: place.anchor, side: place.side,
+      label: pl.c.titleRu, count: pl.c.count,
+      anchorKey: pl.anchor, side: pl.side,
     });
   }
 
