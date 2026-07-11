@@ -27,20 +27,37 @@ const KARTY = path.join(ROOT, 'karty');
 const OUT_MD = path.join(ROOT, 'reports', 'atlas-label-audit.md');
 const GATE = process.argv.includes('--gate');
 
-const FONT = 10, PAD_H = 6, H = 14, OFF_X = 14, MARKER_R = 8;
+const FONT = 10, PAD_H = 6, H = 14, MARKER_R = 8;
+
+// Модель v2 (движок v0.53, §11 P-8): 8 якорей labelAnchor + выноска leader{dx,dy};
+// legacy side 'l'→'w', 'r'/умолчание→'e'; авто-сдвиг только у legacy-мест.
+const ANCHOR_POS = {
+  e:  { x: 14,  y: 4,   ta: 'start'  }, w:  { x: -14, y: 4,   ta: 'end'    },
+  n:  { x: 0,   y: -12, ta: 'middle' }, s:  { x: 0,   y: 20,  ta: 'middle' },
+  ne: { x: 10,  y: -8,  ta: 'start'  }, nw: { x: -10, y: -8,  ta: 'end'    },
+  se: { x: 10,  y: 16,  ta: 'start'  }, sw: { x: -10, y: 16,  ta: 'end'    },
+};
 
 function labelBox(place, all) {
   const side = place.side || 'r';
-  const nearby = all.filter((op) =>
-    op.id !== place.id &&
-    Math.abs(op.x - place.x) < 100 &&
-    Math.abs(op.y - place.y) < 16 &&
-    (op.side || 'r') === side
-  );
-  const dy = nearby.length > 0 ? 12 : 0;
+  const ap = ANCHOR_POS[place.labelAnchor || (side === 'l' ? 'w' : 'e')] || ANCHOR_POS.e;
+  let lx = place.x + ap.x, ly = place.y + ap.y;
+  let shifted = false;
+  if (!place.labelAnchor) {
+    const nearby = all.filter((op) =>
+      op.id !== place.id && !op.labelAnchor &&
+      Math.abs(op.x - place.x) < 100 &&
+      Math.abs(op.y - place.y) < 16 &&
+      (op.side || 'r') === side
+    );
+    if (nearby.length > 0) { ly += 12; shifted = true; }
+  }
+  if (place.leader && typeof place.leader.dx === 'number') {
+    lx += place.leader.dx; ly += place.leader.dy;
+  }
   const w = String(place.name || '').length * FONT * 0.6 + PAD_H;
-  const x = side === 'l' ? place.x - OFF_X - w : place.x + OFF_X;
-  return { id: place.id, name: place.name, x, y: place.y - 7 + dy, w, h: H, shifted: dy > 0 };
+  const x = ap.ta === 'end' ? lx - w + 3 : ap.ta === 'middle' ? lx - w / 2 : lx - 3;
+  return { id: place.id, name: place.name, x, y: ly - 11, w, h: H, shifted };
 }
 
 function overlap(a, b) {

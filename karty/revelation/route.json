@@ -214,7 +214,12 @@
         }
       ],
       "he_deep": "<div class=\"he-block\"><div class=\"he-word\"><span class=\"hw\" lang=\"el\">Σάρδεις</span><span class=\"he-tr\">Сардис</span></div><div class=\"he-etym\">Столица древней Лидии, город царя Креза. Дважды пал из-за невнимательности стражи: Кир Великий (546 г. до н.э.) и Антиох III (214 г. до н.э.). «Ты носишь имя, будто жив, но ты мёртв» — город знал, что значит быть застигнутым врасплох.</div><div class=\"he-refs\">Откр 3:1-6</div></div>",
-      "placeId": "sardis"
+      "placeId": "sardis",
+      "labelAnchor": "ne",
+      "leader": {
+        "dx": 6,
+        "dy": -8
+      }
     },
     {
       "id": "philadelphia",
@@ -243,7 +248,12 @@
         }
       ],
       "he_deep": "<div class=\"he-block\"><div class=\"he-word\"><span class=\"hw\" lang=\"el\">Φιλαδέλφεια</span><span class=\"he-tr\">Филадельфия</span></div><div class=\"he-etym\">«Братская любовь». Основана Атталом II Филадельфом (II в. до н.э.), названа в честь его верности брату. Город страдал от землетрясений — отсюда обещание «сделаю столпом». Единственная церковь без упрёка наряду со Смирной.</div><div class=\"he-refs\">Откр 3:7-13</div></div>",
-      "placeId": "philadelphia"
+      "placeId": "philadelphia",
+      "labelAnchor": "e",
+      "leader": {
+        "dx": 6,
+        "dy": 10
+      }
     },
     {
       "id": "laodicea",
