@@ -345,6 +345,9 @@ async function runAll() {
   const erasV1 = v1.eras ?? [];
   const layoutL0 = buildLayoutL0(outPersons, clusters, erasV1);
   const l0Svg = renderL0Svg(layoutL0);
+  // фокус-вариант: мессианская линия Давида ярко, остальное приглушено (демо цели §3)
+  const spineIds = new Set(layoutL0.nodes.filter(n => n.kind === 'spine').map(n => n.id));
+  const l0FocusSvg = renderL0Svg(layoutL0, { focus: { label: 'Фокус: линия Давида', brightIds: spineIds } });
   log(`layout-l0: узлов ${layoutL0.nodes.length} (хребет ${layoutL0.nodes.filter(n => n.kind === 'spine').length} + мега ${layoutL0.nodes.filter(n => n.kind === 'mega').length}), bbox ${Math.round(layoutL0.bbox.w)}×${Math.round(layoutL0.bbox.h)}`);
 
   // 7. Валидация
@@ -379,6 +382,7 @@ async function runAll() {
   await mkdir(path.join(PATHS.outDir, 'build'), { recursive: true });
   await writeFile(path.join(PATHS.outDir, 'build', 'layout-l0.json'), JSON.stringify(layoutL0, null, 1) + '\n');
   await writeFile(path.join(PATHS.outDir, 'build', 'genealogy-l0-preview.svg'), l0Svg);
+  await writeFile(path.join(PATHS.outDir, 'build', 'genealogy-l0-focus-david.svg'), l0FocusSvg);
   await writeFile(path.join(PATHS.outDir, 'meta.json'), JSON.stringify(meta, null, 2) + '\n');
   try { await access(path.join(PATHS.outDir, 'ru-overrides.json')); }
   catch {
