@@ -12,6 +12,13 @@
   .wrap{max-width:1500px;width:100%;box-shadow:0 18px 60px rgba(90,70,30,.35), 0 2px 10px rgba(90,70,30,.22);border-radius:6px;overflow:hidden}
   svg.sheet{display:block;width:100%;height:auto;background:#f5edd8}
   .frame{fill:none;stroke:#8a6a1f;stroke-width:1.2;opacity:.55}
+  .grat{stroke:#8a6a1f;stroke-width:.8;opacity:.4}
+  .grat-t{font-family:Lora,Georgia,serif;font-weight:500;fill:#8a6a1f;opacity:.5}
+  .rose path{fill:rgba(138,106,31,.32);stroke:#8a6a1f;stroke-width:.5;opacity:.8}
+  .rose .rose-diag{fill:none;stroke:#8a6a1f;stroke-width:.7;opacity:.5}
+  .rose .rose-hub{fill:#8a6a1f;stroke:none;opacity:.7}
+  .graticule{transition:opacity .35s}
+  svg.zoomed .graticule{opacity:0}
   .base{opacity:.96}
   .base [fill="#10263a"]{fill:#8fb7cb}
   .base [stroke="#2e4d6b"]{stroke:#6f97ae}
@@ -140,6 +147,7 @@
   .do-sec .act-btn{display:none}
   body.dive .dossier{display:none}
   .dive-btn{position:fixed;right:10px;top:10px;z-index:21;width:38px;height:38px;border-radius:10px;border:1px solid rgba(138,106,31,.4);background:rgba(246,241,231,.92);color:#7a5c26;font-size:17px;cursor:pointer;box-shadow:0 2px 8px rgba(90,70,30,.2)}
+  .home-btn{right:64px}
   .dive-btn:hover{background:#f6f1e7}
   body.dive .spine,body.dive .stage-strip,body.dive .g9{display:none}
   body.dive .wrap{max-width:none;border-radius:0;box-shadow:none}
@@ -436,7 +444,7 @@
     <text class="sea-label" x="1826" y="1002" font-size="11" transform="rotate(60 1826 1002)" letter-spacing=".22em">ЗАЛИВ</text>
   <text class="sea-label lbl-z1" x="1870" y="1035" font-size="6" transform="rotate(60 1870 1035)" letter-spacing=".12em" opacity=".6">הַיָּם הַמִּזְרָחִי · Вост. море</text>
     <text class="sea-label lbl-z1" x="649" y="848" font-size="5.5" letter-spacing=".16em" text-anchor="middle" transform="rotate(86 649 848)">МЁРТВОЕ&#160;МОРЕ</text>
-    <text class="sea-label lbl-z2" x="650" y="856" font-size="4" letter-spacing=".1em" text-anchor="middle" transform="rotate(86 650 856)" fill="#4a80a0" opacity=".45">−430 м · низшая точка Земли</text>
+    <text class="sea-label lbl-z2" x="640" y="858" font-size="4" letter-spacing=".1em" text-anchor="middle" transform="rotate(86 640 858)" fill="#4a80a0" opacity=".4">−430 м · низшая точка Земли</text>
 
     <text class="sea-label lbl-z2" x="668" y="670" font-size="4" letter-spacing=".14em" transform="rotate(60 668 670)">КИНЕРЕТ</text>
   <!-- Ярмук (приток Иордана) -->
@@ -651,6 +659,10 @@
 </g>
 <!-- ============ DEBATE: spor o Sodome ============ -->
 <g id="debate" style="display:none">
+  <text x="668" y="785" font-size="4.2" fill="#8fd0c5" style="letter-spacing:.06em">киккар виден (~40 км)</text>
+  <text x="668" y="791" font-size="3" fill="#6fb3a8" opacity=".8">аргумент С. Коллинза за Талл эль-Хаммам</text>
+  <text x="655" y="842" font-size="4.2" fill="#e08a96" style="letter-spacing:.06em">южная котловина не видна (~60 км, за рельефом)</text>
+  <text x="655" y="848" font-size="3" fill="#cf5b6b" opacity=".85">контраргумент: Быт 13 «географически размыта» (У. Раст)</text>
   <!-- sight line Bethel -> Tall el-Hammam (visible) -->
   <path d="M624,782 L662,790" fill="none" stroke="#6fb3a8" stroke-width="1.6" stroke-dasharray="1 0" opacity=".9" vector-effect="non-scaling-stroke"/>
   <circle cx="624" cy="782" r="2" fill="#6fb3a8"/><circle cx="624" cy="782" r="4.5" fill="none" stroke="#6fb3a8" stroke-width=".7" opacity=".6"/>
@@ -660,10 +672,10 @@
     <line x1="-2.6" y1="-2.6" x2="2.6" y2="2.6" stroke="#cf5b6b" stroke-width="1.1"/>
     <line x1="-2.6" y1="2.6" x2="2.6" y2="-2.6" stroke="#cf5b6b" stroke-width="1.1"/>
   </g>
-  <text x="668" y="785" font-size="4.2" fill="#8fd0c5" style="letter-spacing:.06em">киккар виден (~40 км)</text>
-  <text x="668" y="791" font-size="3" fill="#6fb3a8" opacity=".8">аргумент С. Коллинза за Талл эль-Хаммам</text>
-  <text x="655" y="842" font-size="4.2" fill="#e08a96" style="letter-spacing:.06em">южная котловина не видна (~60 км, за рельефом)</text>
-  <text x="655" y="848" font-size="3" fill="#cf5b6b" opacity=".85">контраргумент: Быт 13 «географически размыта» (У. Раст)</text>
+  
+  
+  
+  
   <text x="619" y="776" font-size="4.2" fill="#8fd0c5" text-anchor="end" style="letter-spacing:.06em">точка обзора Лота · Быт 13:10</text>
 </g>
 </g>
@@ -692,6 +704,10 @@
     <path d="M-1,-14 Q9,-9 12,1 L-1,1 Z"/>
     <path d="M-1,-14 Q-9,-10 -11,-2 L-1,-2 Z"/>
     <path d="M-24,12 q4,-2.4 8,0 q4,2.4 8,0 M8,12 q4,-2.4 8,0 q4,2.4 8,0" class="ds-wave"/>
+  </g><g class="decor-ship" transform="translate(255,655) scale(1.05)">
+    <path d="M-14,4 Q-6,-6 6,-4 Q14,-2.6 16,2 Q10,6 0,6 Q-8,6 -14,4 Z M16,2 L21,-3 L19,3 Z"/>
+    <path d="M-7,-5 q-1,-4 -3,-5 m3,5 q1,-4 3,-5" class="ds-line"/>
+    <path d="M-22,9 q4,-2.4 8,0 q4,2.4 8,0 M6,9 q4,-2.4 8,0 q4,2.4 8,0" class="ds-wave"/>
   </g>
 <path d="M623,800 C623.2,799.2 626.2,790.2 624,795 C621.8,799.8 609.3,836.8 610,829 C610.7,821.2 626.2,762.8 628,748 C629.8,733.2 624.7,750.0 621,740 C617.3,730.0 605.5,681.0 606,688 C606.5,695.0 614.2,792.5 624,782 C633.8,771.5 670.2,623.7 665,625 C659.8,626.3 600.7,777.0 593,790 C585.3,803.0 608.2,726.2 619,703 C629.8,679.8 664.5,629.8 658,651 C651.5,672.2 585.8,807.3 580,830 C574.2,852.7 462.5,807.3 623,787 C783.5,766.7 1541.2,721.3 1543,708 C1544.8,694.7 779.3,679.7 634,707 C488.7,734.3 654.8,890.8 671,872 C687.2,853.2 721.0,640.3 731,594" class="route-under"/>
 <path d="M623,800 C623.2,799.2 626.2,790.2 624,795 C621.8,799.8 609.3,836.8 610,829 C610.7,821.2 626.2,762.8 628,748 C629.8,733.2 624.7,750.0 621,740 C617.3,730.0 605.5,681.0 606,688 C606.5,695.0 614.2,792.5 624,782 C633.8,771.5 670.2,623.7 665,625 C659.8,626.3 600.7,777.0 593,790 C585.3,803.0 608.2,726.2 619,703 C629.8,679.8 664.5,629.8 658,651 C651.5,672.2 585.8,807.3 580,830 C574.2,852.7 462.5,807.3 623,787 C783.5,766.7 1541.2,721.3 1543,708 C1544.8,694.7 779.3,679.7 634,707 C488.7,734.3 654.8,890.8 671,872 C687.2,853.2 721.0,640.3 731,594" class="route"/>
@@ -734,13 +750,19 @@
     <text x="894" y="875.5666666666666" class="sb-t" font-size="4.766666666666667" text-anchor="end">200 км</text>
     <g transform="translate(897.4666666666667,570.9333333333333)">
       <circle r="13" class="plate"/>
-      <path d="M0,-8.233333333333334 L2.6,4.766666666666667 L0,2.166666666666667 L-2.6,4.766666666666667 Z" class="north"/>
+      <g class="rose">
+        <path d="M0,-9.533333333333333 L1.3,-1.3 L9.533333333333333,0 L1.3,1.3 L0,9.533333333333333 L-1.3,1.3 L-9.533333333333333,0 L-1.3,-1.3 Z"/>
+        <path d="M4.766666666666667,-4.766666666666667 L1.1266666666666667,-0.52 M4.766666666666667,4.766666666666667 L0.52,1.1266666666666667 M-4.766666666666667,4.766666666666667 L-1.1266666666666667,0.52 M-4.766666666666667,-4.766666666666667 L-0.52,-1.1266666666666667" class="rose-diag"/>
+        <circle r="0.91" class="rose-hub"/>
+      </g>
+      <path d="M0,-9.533333333333333 L1.3,-1.3 L0,-2.6 L-1.3,-1.3 Z" class="north"/>
       <text y="11.266666666666667" text-anchor="middle" class="north-t" font-size="5.633333333333334">С</text>
     </g>
   </g>
 <rect x="400" y="546.6666666666666" width="520" height="346.6666666666667" fill="url(#sunGlow)" pointer-events="none"/>
 <rect x="400" y="546.6666666666666" width="520" height="346.6666666666667" fill="url(#edgeFog)" pointer-events="none"/>
 <rect x="400" y="546.6666666666666" width="520" height="346.6666666666667" filter="url(#parchmentGrain)" opacity=".5" pointer-events="none"/>
+<g class="graticule" aria-hidden="true"><line x1="501.0" y1="550.1" x2="501.0" y2="553.2" class="grat"/><text x="501.0" y="557.5" text-anchor="middle" class="grat-t" font-size="3.47">34°</text><line x1="601.0" y1="550.1" x2="601.0" y2="551.9" class="grat"/><line x1="701.0" y1="550.1" x2="701.0" y2="553.2" class="grat"/><text x="701.0" y="557.5" text-anchor="middle" class="grat-t" font-size="3.47">36°</text><line x1="801.0" y1="550.1" x2="801.0" y2="551.9" class="grat"/><line x1="901.0" y1="550.1" x2="901.0" y2="553.2" class="grat"/><text x="901.0" y="557.5" text-anchor="middle" class="grat-t" font-size="3.47">38°</text><line x1="403.5" y1="773.6" x2="406.5" y2="773.6" class="grat"/><text x="407.8" y="774.8" text-anchor="start" class="grat-t" font-size="3.47">32°</text><line x1="916.5" y1="773.6" x2="913.5" y2="773.6" class="grat"/><text x="912.2" y="774.8" text-anchor="end" class="grat-t" font-size="3.47">32°</text><line x1="403.5" y1="653.6" x2="405.2" y2="653.6" class="grat"/><line x1="916.5" y1="653.6" x2="914.8" y2="653.6" class="grat"/></g>
 <rect x="403.46666666666664" y="550.1333333333333" width="513.0666666666667" height="339.73333333333335" class="frame"/>
 </svg>
   <div class="stage-strip">

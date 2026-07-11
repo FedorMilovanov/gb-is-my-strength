@@ -192,6 +192,18 @@
   });
 
   // ── Погружение (прячет рамку читалки) ─────────────────────────────────────
+  const home = document.createElement('button');
+  home.className = 'dive-btn home-btn';
+  home.title = 'Весь лист (Esc)';
+  home.textContent = '⌂';
+  home.addEventListener('click', () => { vb = vb0.slice(); animate(); });
+  document.body.appendChild(home);
+  document.addEventListener('keydown', (e) => {
+    if (e.key !== 'Escape') return;
+    const panelOpen = panel.classList.contains('do--on') || document.body.classList.contains('dive');
+    if (!panelOpen && svg.classList.contains('zoomed')) { vb = vb0.slice(); animate(); }
+  });
+
   const dive = document.createElement('button');
   dive.className = 'dive-btn';
   dive.title = 'Полное погружение (Esc — вернуть рамку)';

@@ -12,6 +12,13 @@
   .wrap{max-width:1500px;width:100%;box-shadow:0 18px 60px rgba(90,70,30,.35), 0 2px 10px rgba(90,70,30,.22);border-radius:6px;overflow:hidden}
   svg.sheet{display:block;width:100%;height:auto;background:#f5edd8}
   .frame{fill:none;stroke:#8a6a1f;stroke-width:1.2;opacity:.55}
+  .grat{stroke:#8a6a1f;stroke-width:.8;opacity:.4}
+  .grat-t{font-family:Lora,Georgia,serif;font-weight:500;fill:#8a6a1f;opacity:.5}
+  .rose path{fill:rgba(138,106,31,.32);stroke:#8a6a1f;stroke-width:.5;opacity:.8}
+  .rose .rose-diag{fill:none;stroke:#8a6a1f;stroke-width:.7;opacity:.5}
+  .rose .rose-hub{fill:#8a6a1f;stroke:none;opacity:.7}
+  .graticule{transition:opacity .35s}
+  svg.zoomed .graticule{opacity:0}
   .base{opacity:.96}
   .base [fill="#10263a"]{fill:#8fb7cb}
   .base [stroke="#2e4d6b"]{stroke:#6f97ae}
@@ -140,6 +147,7 @@
   .do-sec .act-btn{display:none}
   body.dive .dossier{display:none}
   .dive-btn{position:fixed;right:10px;top:10px;z-index:21;width:38px;height:38px;border-radius:10px;border:1px solid rgba(138,106,31,.4);background:rgba(246,241,231,.92);color:#7a5c26;font-size:17px;cursor:pointer;box-shadow:0 2px 8px rgba(90,70,30,.2)}
+  .home-btn{right:64px}
   .dive-btn:hover{background:#f6f1e7}
   body.dive .spine,body.dive .stage-strip,body.dive .g9{display:none}
   body.dive .wrap{max-width:none;border-radius:0;box-shadow:none}
@@ -448,13 +456,19 @@ Z"/>
     <text x="1771" y="1152.5166666666667" class="sb-t" font-size="16.316666666666666" text-anchor="end">200 км</text>
     <g transform="translate(1782.8666666666666,109.73333333333329)">
       <circle r="44.5" class="plate"/>
-      <path d="M0,-28.183333333333334 L8.9,16.316666666666666 L0,7.416666666666667 L-8.9,16.316666666666666 Z" class="north"/>
+      <g class="rose">
+        <path d="M0,-32.63333333333333 L4.45,-4.45 L32.63333333333333,0 L4.45,4.45 L0,32.63333333333333 L-4.45,4.45 L-32.63333333333333,0 L-4.45,-4.45 Z"/>
+        <path d="M16.316666666666666,-16.316666666666666 L3.856666666666667,-1.78 M16.316666666666666,16.316666666666666 L1.78,3.856666666666667 M-16.316666666666666,16.316666666666666 L-3.856666666666667,1.78 M-16.316666666666666,-16.316666666666666 L-1.78,-3.856666666666667" class="rose-diag"/>
+        <circle r="3.115" class="rose-hub"/>
+      </g>
+      <path d="M0,-32.63333333333333 L4.45,-4.45 L0,-8.9 L-4.45,-4.45 Z" class="north"/>
       <text y="38.56666666666667" text-anchor="middle" class="north-t" font-size="19.283333333333335">С</text>
     </g>
   </g>
 <rect x="80" y="26.66666666666663" width="1780" height="1186.6666666666667" fill="url(#sunGlow)" pointer-events="none"/>
 <rect x="80" y="26.66666666666663" width="1780" height="1186.6666666666667" fill="url(#edgeFog)" pointer-events="none"/>
 <rect x="80" y="26.66666666666663" width="1780" height="1186.6666666666667" filter="url(#parchmentGrain)" opacity=".5" pointer-events="none"/>
+<g class="graticule" aria-hidden="true"><line x1="170.0" y1="38.5" x2="170.0" y2="48.9" class="grat"/><text x="170.0" y="63.7" text-anchor="middle" class="grat-t" font-size="11.87">12°</text><line x1="235.0" y1="38.5" x2="235.0" y2="44.5" class="grat"/><line x1="300.0" y1="38.5" x2="300.0" y2="44.5" class="grat"/><line x1="365.0" y1="38.5" x2="365.0" y2="44.5" class="grat"/><line x1="430.0" y1="38.5" x2="430.0" y2="48.9" class="grat"/><text x="430.0" y="63.7" text-anchor="middle" class="grat-t" font-size="11.87">16°</text><line x1="495.0" y1="38.5" x2="495.0" y2="44.5" class="grat"/><line x1="560.0" y1="38.5" x2="560.0" y2="44.5" class="grat"/><line x1="625.0" y1="38.5" x2="625.0" y2="44.5" class="grat"/><line x1="690.0" y1="38.5" x2="690.0" y2="48.9" class="grat"/><text x="690.0" y="63.7" text-anchor="middle" class="grat-t" font-size="11.87">20°</text><line x1="755.0" y1="38.5" x2="755.0" y2="44.5" class="grat"/><line x1="820.0" y1="38.5" x2="820.0" y2="44.5" class="grat"/><line x1="885.0" y1="38.5" x2="885.0" y2="44.5" class="grat"/><line x1="950.0" y1="38.5" x2="950.0" y2="48.9" class="grat"/><text x="950.0" y="63.7" text-anchor="middle" class="grat-t" font-size="11.87">24°</text><line x1="1015.0" y1="38.5" x2="1015.0" y2="44.5" class="grat"/><line x1="1080.0" y1="38.5" x2="1080.0" y2="44.5" class="grat"/><line x1="1145.0" y1="38.5" x2="1145.0" y2="44.5" class="grat"/><line x1="1210.0" y1="38.5" x2="1210.0" y2="48.9" class="grat"/><text x="1210.0" y="63.7" text-anchor="middle" class="grat-t" font-size="11.87">28°</text><line x1="1275.0" y1="38.5" x2="1275.0" y2="44.5" class="grat"/><line x1="1340.0" y1="38.5" x2="1340.0" y2="44.5" class="grat"/><line x1="1405.0" y1="38.5" x2="1405.0" y2="44.5" class="grat"/><line x1="1470.0" y1="38.5" x2="1470.0" y2="48.9" class="grat"/><text x="1470.0" y="63.7" text-anchor="middle" class="grat-t" font-size="11.87">32°</text><line x1="1535.0" y1="38.5" x2="1535.0" y2="44.5" class="grat"/><line x1="1600.0" y1="38.5" x2="1600.0" y2="44.5" class="grat"/><line x1="1665.0" y1="38.5" x2="1665.0" y2="44.5" class="grat"/><line x1="1730.0" y1="38.5" x2="1730.0" y2="48.9" class="grat"/><text x="1730.0" y="63.7" text-anchor="middle" class="grat-t" font-size="11.87">36°</text><line x1="1795.0" y1="38.5" x2="1795.0" y2="44.5" class="grat"/><line x1="91.9" y1="1104.0" x2="97.8" y2="1104.0" class="grat"/><line x1="1848.1" y1="1104.0" x2="1842.2" y2="1104.0" class="grat"/><line x1="91.9" y1="1022.0" x2="102.3" y2="1022.0" class="grat"/><text x="106.7" y="1026.2" text-anchor="start" class="grat-t" font-size="11.87">32°</text><line x1="1848.1" y1="1022.0" x2="1837.8" y2="1022.0" class="grat"/><text x="1833.3" y="1026.2" text-anchor="end" class="grat-t" font-size="11.87">32°</text><line x1="91.9" y1="940.0" x2="97.8" y2="940.0" class="grat"/><line x1="1848.1" y1="940.0" x2="1842.2" y2="940.0" class="grat"/><line x1="91.9" y1="858.0" x2="102.3" y2="858.0" class="grat"/><text x="106.7" y="862.2" text-anchor="start" class="grat-t" font-size="11.87">34°</text><line x1="1848.1" y1="858.0" x2="1837.8" y2="858.0" class="grat"/><text x="1833.3" y="862.2" text-anchor="end" class="grat-t" font-size="11.87">34°</text><line x1="91.9" y1="776.0" x2="97.8" y2="776.0" class="grat"/><line x1="1848.1" y1="776.0" x2="1842.2" y2="776.0" class="grat"/><line x1="91.9" y1="694.0" x2="102.3" y2="694.0" class="grat"/><text x="106.7" y="698.2" text-anchor="start" class="grat-t" font-size="11.87">36°</text><line x1="1848.1" y1="694.0" x2="1837.8" y2="694.0" class="grat"/><text x="1833.3" y="698.2" text-anchor="end" class="grat-t" font-size="11.87">36°</text><line x1="91.9" y1="612.0" x2="97.8" y2="612.0" class="grat"/><line x1="1848.1" y1="612.0" x2="1842.2" y2="612.0" class="grat"/><line x1="91.9" y1="530.0" x2="102.3" y2="530.0" class="grat"/><text x="106.7" y="534.2" text-anchor="start" class="grat-t" font-size="11.87">38°</text><line x1="1848.1" y1="530.0" x2="1837.8" y2="530.0" class="grat"/><text x="1833.3" y="534.2" text-anchor="end" class="grat-t" font-size="11.87">38°</text><line x1="91.9" y1="448.0" x2="97.8" y2="448.0" class="grat"/><line x1="1848.1" y1="448.0" x2="1842.2" y2="448.0" class="grat"/><line x1="91.9" y1="366.0" x2="102.3" y2="366.0" class="grat"/><text x="106.7" y="370.2" text-anchor="start" class="grat-t" font-size="11.87">40°</text><line x1="1848.1" y1="366.0" x2="1837.8" y2="366.0" class="grat"/><text x="1833.3" y="370.2" text-anchor="end" class="grat-t" font-size="11.87">40°</text><line x1="91.9" y1="284.0" x2="97.8" y2="284.0" class="grat"/><line x1="1848.1" y1="284.0" x2="1842.2" y2="284.0" class="grat"/><line x1="91.9" y1="202.0" x2="102.3" y2="202.0" class="grat"/><text x="106.7" y="206.2" text-anchor="start" class="grat-t" font-size="11.87">42°</text><line x1="1848.1" y1="202.0" x2="1837.8" y2="202.0" class="grat"/><text x="1833.3" y="206.2" text-anchor="end" class="grat-t" font-size="11.87">42°</text><line x1="91.9" y1="120.0" x2="97.8" y2="120.0" class="grat"/><line x1="1848.1" y1="120.0" x2="1842.2" y2="120.0" class="grat"/></g>
 <rect x="91.86666666666667" y="38.533333333333296" width="1756.2666666666667" height="1162.9333333333334" class="frame"/>
 </svg>
   <div class="stage-strip">
