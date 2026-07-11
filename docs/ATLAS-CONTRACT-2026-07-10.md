@@ -191,6 +191,23 @@ KA-9  Карты пробелов (Давид, Иаков-Иосиф, Ирод, 
 
 (до мержа системного лейна скрипт запускается напрямую: `node scripts/atlas-inventory.js`)
 
+### §11-патч P-7 (2026-07-11, марафон): газеттир /karty/mesta/ — ownership-манифест
+
+Для KA-4 (газеттир мест) нужен новый роут `src/pages/karty/mesta/index.astro`.
+Блокер: `migration/page-ownership.json` — SYSTEM. Готовый фрагмент манифеста:
+
+```json
+"/karty/mesta/": {
+  "owner": "astro",
+  "source": "src/pages/karty/mesta/index.astro",
+  "status": "shadow-pilot",
+  "note": "Газеттир Атласа: указатель мест из data/atlas/places (KA-4); noindex до owner-review"
+}
+```
+
+Применить на system-lane вместе с P-1…P-6; до этого газеттир не публикуется
+(файл страницы может лежать в ветке, но не маршрутизируется в dist-гейтах).
+
 ## 12. Definition of Done волны
 
 Волна закрыта, когда: (1) exit-критерии выполнены и показаны в PR; (2) `node scripts/atlas-inventory.js --check` зелёный (контент не потерян); (3) существующие гейты зелёные (`maps:validate`, `avraam:audit`, смоуки — по зоне изменений); (4) строка в `AuditRepo/MASTER_BUG_MATRIX`/бэклоге обновлена в ту же сессию (правило DOC_MAP «приземлил — отметь»); (5) для видимых изменений — скрины в `AuditRepo/verification/atlas/`.
