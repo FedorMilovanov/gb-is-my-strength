@@ -134,16 +134,17 @@
     card.classList.add('pc--on');
   }
   const hideCard = () => { card.classList.remove('pc--on'); };
+  const HIT = '.pl[data-pid], .glyph-hit[data-pid], .war[data-pid]';
   svg.addEventListener('pointerover', (e) => {
-    const g = e.target.closest('.pl[data-pid], .mile[data-stage]');
+    const g = e.target.closest(HIT + ', .mile[data-stage]');
     if (g && g.dataset.pid) showCard(g.dataset.pid, e.clientX, e.clientY);
   });
   svg.addEventListener('pointermove', (e) => {
     if (!card.classList.contains('pc--on')) return;
-    const g = e.target.closest('.pl[data-pid]');
+    const g = e.target.closest(HIT);
     if (g) showCard(g.dataset.pid, e.clientX, e.clientY); else if (!drag) hideCard();
   });
-  svg.addEventListener('pointerout', (e) => { if (!e.relatedTarget || !e.relatedTarget.closest('.pl')) hideCard(); });
+  svg.addEventListener('pointerout', (e) => { if (!e.relatedTarget || !e.relatedTarget.closest('.pl, .glyph-hit, .war')) hideCard(); });
 
   // ── Панель-досье по клику: полные тексты и споры из данных карты ──────────
   const panel = document.createElement('aside');
@@ -154,6 +155,17 @@
     const d = cards[pid];
     if (!d) return;
     const ds = d.dossier || {};
+    const gm = window.ATLAS_GLYPHS || {};
+    const lex = d.lex ? `<section class="do-sec do-lex">` +
+      `<h4>Имя и знак</h4>` +
+      `<div class="lex-head">${d.lex.he ? `<span class="he" dir="rtl" lang="he">${d.lex.he}</span>` : ''}` +
+      `${d.lex.tr ? `<i class="lex-tr">${d.lex.tr}</i>` : ''}</div>` +
+      `${d.lex.ru ? `<p class="lex-ru">${d.lex.ru}</p>` : ''}` +
+      `${d.lex.note ? `<p class="lex-note">${d.lex.note}</p>` : ''}` +
+      `${d.lex.refs ? `<p class="lex-refs">${d.lex.refs}</p>` : ''}` +
+      (d.glyphs || []).map(g2 => gm[g2] ? `<div class="lex-glyph"><b>${gm[g2].t}</b><span>${gm[g2].d}</span></div>` : '').join('') +
+      `</section>` : ((d.glyphs || []).length ? `<section class="do-sec do-lex">` +
+      d.glyphs.map(g2 => gm[g2] ? `<div class="lex-glyph"><b>${gm[g2].t}</b><span>${gm[g2].d}</span></div>` : '').join('') + `</section>` : '');
     const phs = (ds.photos || []).map(p2 =>
       `<figure class="do-ph"><img loading="lazy" src="${p2.thumb || p2.src}" alt="">` +
       (p2.label ? `<figcaption>${p2.label}${p2.credit ? `<i>${p2.credit}</i>` : ''}</figcaption>` : '') + '</figure>').join('');
@@ -161,9 +173,10 @@
       `<header class="do-head"><b>${d.n}</b>${d.k ? `<u>${d.k}</u>` : ''}</header>` +
       `<div class="do-scroll">` +
       (phs ? `<div class="do-gallery">${phs}</div>` : '') +
+      lex +
       (ds.story ? `<section class="do-sec"><h4>История</h4>${ds.story}</section>` : '') +
       (ds.bible ? `<section class="do-sec do-bible">${ds.bible}</section>` : '') +
-      (ds.bible_extra ? `<section class="do-sec do-bible">${ds.bible_extra}</section>` : '') +
+      (ds.bible_extra && ds.bible_extra !== ds.bible ? `<section class="do-sec do-bible">${ds.bible_extra}</section>` : '') +
       (ds.arch ? `<section class="do-sec"><h4>Археология</h4>${ds.arch}</section>` : '') +
       (ds.dispute ? `<section class="do-sec">${ds.dispute}</section>` : '') +
       `</div>`;
@@ -174,7 +187,7 @@
   function closeDossier() { panel.classList.remove('do--on'); }
   document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeDossier(); });
   svg.addEventListener('click', (e) => {
-    const g = e.target.closest && e.target.closest('.pl[data-pid]');
+    const g = e.target.closest && e.target.closest(HIT);
     if (g) openDossier(g.dataset.pid);
   });
 
