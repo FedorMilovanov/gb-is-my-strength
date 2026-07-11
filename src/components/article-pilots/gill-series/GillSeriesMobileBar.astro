@@ -206,6 +206,9 @@ const page = GILL_PAGE_DATA[pageId];
       ticking = true;
       requestAnimationFrame(() => {
         const y = window.scrollY || 0;
+        // v2.8: top bar is transparent/frameless at the very top and gains its
+        // frosted background + hairline only once the page is scrolled.
+        topBar!.classList.toggle('is-scrolled', y > 4);
         if (!canAutoHide()) {
           hidden = false;
           lastY = y;
@@ -223,6 +226,9 @@ const page = GILL_PAGE_DATA[pageId];
       });
     }
     window.addEventListener('scroll', onScroll, { passive: true });
+    // Seed the scrolled state in case the page loads already scrolled (reload
+    // mid-article / anchor navigation), so the top bar isn't stuck transparent.
+    topBar.classList.toggle('is-scrolled', (window.scrollY || 0) > 4);
 
     if (ember) {
       const syncTts = () => {

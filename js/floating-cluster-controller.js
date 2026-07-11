@@ -2208,15 +2208,22 @@
             scroller.scrollTo({ top: Math.max(0, desired), behavior: 'smooth' });
           }
           }
-          qsa('.toc-part-item').forEach(function(el, idx) {
-            var isActive = (idx === activeIdx);
-            var isPassed = (idx < activeIdx);
-            el.classList.toggle('is-active', !!isActive);
-            el.classList.toggle('is-done', !!isPassed);
-            // aria-current must be "location" on the active row only; never
-            // write the invalid aria-current="false".  [spec §9.4]
-            if (isActive) el.setAttribute('aria-current', 'location'); else el.removeAttribute('aria-current');
-          });
+          // The v2.9 «Оглавление части» overlay lists the SERIES PARTS (cross-
+          // page nav), not the current article's sections — its rows carry
+          // #gbs2PartToc[data-gill-parts-nav]. There the current part stays
+          // statically highlighted (.is-current from markup); the section
+          // scroll-spy must NOT roam the active class across the part rows.
+          if (!qs('#gbs2PartToc[data-gill-parts-nav]')) {
+            qsa('.toc-part-item').forEach(function(el, idx) {
+              var isActive = (idx === activeIdx);
+              var isPassed = (idx < activeIdx);
+              el.classList.toggle('is-active', !!isActive);
+              el.classList.toggle('is-done', !!isPassed);
+              // aria-current must be "location" on the active row only; never
+              // write the invalid aria-current="false".  [spec §9.4]
+              if (isActive) el.setAttribute('aria-current', 'location'); else el.removeAttribute('aria-current');
+            });
+          }
         }
       }
         // update Part TOC progress bar
