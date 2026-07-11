@@ -78,8 +78,25 @@ const quizItems = quizPool.length >= 4 ? quizPool : GILL_LEARNING_QUIZ;
 
       <section class="gill-panel" id="panelQuiz" role="tabpanel" aria-labelledby="tabQuiz" data-panel="quiz" hidden>
         <div class="quiz-meta"><span class="quiz-category" id="glsQuizCategory"></span><span id="glsQuizStreak"></span></div>
+        <!-- Метр калибровки (CBM): насколько уверенность совпадает со знанием.
+             Виден только после первого ответа (seen>0). -->
+        <div class="quiz-calib" id="glsQuizCalib" hidden title="Совпадение уверенности с результатом">
+          <span class="quiz-calib__lbl">Калибровка</span>
+          <span class="quiz-calib__bar"><i id="glsQuizCalibFill"></i></span>
+          <span class="quiz-calib__pct" id="glsQuizCalibPct"></span>
+        </div>
         <h4 class="quiz-question" id="glsQuizQuestion"></h4>
         <div class="quiz-options" id="glsQuizOptions"></div>
+        <!-- Certainty-Based Marking: сначала оцени уверенность → это разблокирует
+             варианты. Строится в JS (renderQuiz). -->
+        <div class="quiz-conf" id="glsQuizConf">
+          <span class="quiz-conf__q">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3a9 9 0 0 0-9 9M12 3a9 9 0 0 1 9 9" /><path d="M12 12l4-3" /></svg>
+            Насколько уверены?
+          </span>
+          <div class="quiz-conf__row" id="glsQuizConfRow"></div>
+        </div>
+        <div class="quiz-verdict" id="glsQuizVerdict" hidden></div>
         <div class="quiz-explanation" id="glsQuizExplanation" hidden></div>
         <a class="quiz-source" id="glsQuizSource" href="#" hidden></a>
         <button type="button" class="quiz-next" id="glsQuizNext">Следующий вопрос</button>
@@ -314,6 +331,27 @@ const quizItems = quizPool.length >= 4 ? quizPool : GILL_LEARNING_QUIZ;
           ? 'Пройдено: ' + quizSeen + (quizBest > 1 ? ' · рекорд ' + quizBest : '')
           : '';
     }
+    // ---- Certainty-Based Marking (CBM) ----
+    // Confidence chosen BEFORE the answer; calibration = how often confidence
+    // matched the outcome (only an "honest" match counts). v2.9 reference.
+    let quizConf: string | null = null;
+    let quizCalScore = 0;
+    const CONF: Array<{ k: string; t: string; d: number }> = [
+      { k: 'sure', t: 'Точно знаю', d: 3 },
+      { k: 'guess', t: 'Кажется', d: 2 },
+      { k: 'random', t: 'Наугад', d: 1 },
+    ];
+    function updateQuizCalib() {
+      const wrap = document.getElementById('glsQuizCalib') as HTMLElement | null;
+      const fill = document.getElementById('glsQuizCalibFill') as HTMLElement | null;
+      const pct = document.getElementById('glsQuizCalibPct');
+      if (!wrap) return;
+      if (!quizSeen) { wrap.hidden = true; return; }
+      const val = Math.round((quizCalScore / quizSeen) * 100);
+      wrap.hidden = false;
+      if (fill) { fill.style.width = val + '%'; fill.className = val >= 70 ? 'is-hi' : val >= 40 ? 'is-mid' : 'is-lo'; }
+      if (pct) pct.textContent = val + '%';
+    }
     function shuffle<T>(values: T[]): T[] {
       const a = values.slice();
       for (let i = a.length - 1; i > 0; i--) {
@@ -339,28 +377,65 @@ const quizItems = quizPool.length >= 4 ? quizPool : GILL_LEARNING_QUIZ;
       }
       if (!quizOrder.length || quizIndex >= quizOrder.length) resetQuizOrder();
       const item = quizPool[quizOrder[quizIndex]];
+      quizConf = null;
       const catEl = document.getElementById('glsQuizCategory');
       const qEl = document.getElementById('glsQuizQuestion');
       if (catEl) catEl.textContent = CATEGORY_LABEL[item.category] || item.category;
       updateQuizStreak();
+      updateQuizCalib();
       if (qEl) qEl.textContent = item.question;
       const optionsEl = document.getElementById('glsQuizOptions');
       const explEl = document.getElementById('glsQuizExplanation') as HTMLElement | null;
       const sourceEl = document.getElementById('glsQuizSource') as HTMLAnchorElement | null;
       const nextEl = document.getElementById('glsQuizNext');
+      const verdictEl = document.getElementById('glsQuizVerdict') as HTMLElement | null;
+      const confEl = document.getElementById('glsQuizConf') as HTMLElement | null;
+      const confRow = document.getElementById('glsQuizConfRow');
       if (optionsEl) optionsEl.replaceChildren();
       if (explEl) explEl.hidden = true;
+      if (verdictEl) { verdictEl.hidden = true; verdictEl.className = 'quiz-verdict'; verdictEl.textContent = ''; }
       if (sourceEl) sourceEl.hidden = true;
       if (nextEl) nextEl.classList.remove('is-visible');
+      if (confEl) confEl.hidden = false;
+      // Options render DISABLED — a confidence pick unlocks them.
       const order = shuffle(item.answers.map((text, index) => ({ text, index })));
       order.forEach((answer) => {
         const b = document.createElement('button');
         b.type = 'button';
         b.className = 'quiz-option';
         b.textContent = answer.text;
-        b.addEventListener('click', () => answerQuiz(b, answer.index, item));
+        b.disabled = true;
+        b.addEventListener('click', () => { if (quizConf) answerQuiz(b, answer.index, item); });
         if (optionsEl) optionsEl.appendChild(b);
       });
+      // Confidence buttons (Точно знаю / Кажется / Наугад).
+      if (confRow) {
+        confRow.replaceChildren();
+        CONF.forEach((c) => {
+          const b = document.createElement('button');
+          b.type = 'button';
+          b.className = 'quiz-conf__btn';
+          b.setAttribute('data-conf', c.k);
+          const lbl = document.createElement('span');
+          lbl.textContent = c.t;
+          const dots = document.createElement('span');
+          dots.className = 'quiz-conf__dots';
+          for (let d = 0; d < 3; d++) { const i = document.createElement('i'); if (d < c.d) i.className = 'on'; dots.appendChild(i); }
+          b.append(lbl, dots);
+          b.addEventListener('click', () => pickConf(c.k));
+          confRow.appendChild(b);
+        });
+      }
+    }
+    function pickConf(k: string) {
+      if (quizConf) return;
+      quizConf = k;
+      const confRow = document.getElementById('glsQuizConfRow');
+      if (confRow) confRow.querySelectorAll('.quiz-conf__btn').forEach((b) => {
+        (b as HTMLButtonElement).disabled = true;
+        b.classList.toggle('is-picked', b.getAttribute('data-conf') === k);
+      });
+      document.querySelectorAll('#glsQuizOptions .quiz-option').forEach((b) => { (b as HTMLButtonElement).disabled = false; });
     }
     function answerQuiz(button: HTMLElement, index: number, item: GillLearningQuizItem) {
       const buttons = Array.prototype.slice.call(document.querySelectorAll('#glsQuizOptions .quiz-option')) as HTMLButtonElement[];
@@ -380,11 +455,30 @@ const quizItems = quizPool.length >= 4 ? quizPool : GILL_LEARNING_QUIZ;
         if (correctBtn) correctBtn.classList.add('is-correct');
         if (liveEl) liveEl.textContent = 'Неверно. ' + item.explanation;
       }
+      // Calibration verdict (3 honest grades) — tone matches meaning:
+      //  good    — confidence matched knowledge (sure+right, doubtful+wrong)
+      //  warn    — confident error (overrated): most important to revisit
+      //  neutral — lucky guess (random+right): no alarm, but reinforce.
+      let tone: string, msg: string;
+      if (correct) {
+        if (quizConf === 'sure') { tone = 'good'; msg = 'Верно — и вы были уверены. Точная калибровка.'; }
+        else if (quizConf === 'guess') { tone = 'good'; msg = 'Верно, хотя сомневались — знаете лучше, чем думали.'; }
+        else { tone = 'neutral'; msg = 'Верно, хоть и наугад. Закрепите, чтобы знать уверенно.'; }
+      } else {
+        if (quizConf === 'sure') { tone = 'warn'; msg = 'Неверно — а уверенность была высокой. Такие «уверенные ошибки» важнее всего пересмотреть.'; }
+        else { tone = 'good'; msg = 'Неверно — и вы это чувствовали. Честная оценка своих знаний.'; }
+      }
+      if (tone === 'good') quizCalScore++; // калибровка засчитывается только за точное совпадение
+      const confEl = document.getElementById('glsQuizConf') as HTMLElement | null;
+      if (confEl) confEl.hidden = true;
+      const verdictEl = document.getElementById('glsQuizVerdict') as HTMLElement | null;
+      if (verdictEl) { verdictEl.className = 'quiz-verdict is-' + tone; verdictEl.textContent = msg; verdictEl.hidden = false; }
       // v2.8 elaborative interrogation: the "why it matters" note shows on
       // EVERY answer (correct too), not only on wrong ones.
       const explEl = document.getElementById('glsQuizExplanation');
       if (explEl) { explEl.textContent = item.explanation; explEl.hidden = false; }
       updateQuizStreak();
+      updateQuizCalib();
       const sourceEl = document.getElementById('glsQuizSource') as HTMLAnchorElement | null;
       if (sourceEl && item.sourceHref) {
         sourceEl.href = item.sourceHref;
