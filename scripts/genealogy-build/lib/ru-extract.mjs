@@ -97,6 +97,30 @@ export function similarity(a, b) {
 }
 
 /**
+ * Осторожная нормализация падежной/притяжательной формы кандидата к именительному.
+ * Только два безопасных класса (остальное — редактуре):
+ *  1) притяжательные цепочки Лк 3 («Мелхиев», «Маттафиев»): -ов/-ев → основа,
+ *     окончание по EN-форме (-ias → «я», -i → «й»);
+ *  2) вин./род. падеж согласной основы («Елнафана» при EN на согласную) → срез «а».
+ */
+export function normalizeRuCandidate(en, cand) {
+  const e = String(en).split('|')[0].trim();
+  let c = String(cand);
+  // 1) притяжательное -ов/-ев (но не законные -ов/-ев в самих именах EN: -ov/-ev)
+  if (/[а-яё](ов|ев)$/.test(c) && !/(ov|ev)$/i.test(e)) {
+    let stem = c.replace(/(ов|ев)$/, '');
+    if (/ias$/i.test(e)) return stem.endsWith('и') ? stem + 'я' : stem + 'ия';
+    if (/i$/i.test(e)) return stem.endsWith('и') ? stem + 'й' : stem + 'ий';
+    return stem;
+  }
+  // 2) вин./род. «-а» при EN на твёрдую согласную (Elnathan → Елнафан[а])
+  if (/[бвгджзклмнпрстфхцчшщ]а$/.test(c) && /[bcdfgklmnpqrstvxz]$/i.test(e) && c.length >= 5) {
+    return c.slice(0, -1);
+  }
+  return c;
+}
+
+/**
  * Извлечь русское имя для персоны из окна стихов первого упоминания.
  * @param {string} enName       английское имя (TIPNR, первая альтернатива до '|')
  * @param {Array<{ref,text,offset}>} verses  окно из SynodalText.verseWindow()
@@ -122,11 +146,13 @@ export function extractRuName(enName, verses) {
   }
 
   if (best && best.score >= 0.62) {
+    const normalized = normalizeRuCandidate(en, best.c);
     return {
-      name: best.c,
+      name: normalized,
       source: best.via,
       confidence: Number(best.score.toFixed(3)),
-      review: best.score < 0.8,
+      review: best.score < 0.8 || normalized !== best.c,
+      verseForm: normalized !== best.c ? best.c : undefined,
       verseRef: best.verseRef,
     };
   }
