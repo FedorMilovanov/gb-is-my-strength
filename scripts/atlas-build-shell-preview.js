@@ -80,6 +80,7 @@ function groupCaption(text) {
     const x = X(p.start), w = X(p.end) - x;
     svg.push(`<g class="era-chip" data-x1="${x}" data-x2="${x + w}" ${tipAttr(p.label, `${yearRu(p.start)} — ${yearRu(p.end)}${p.colorStatus === 'draft' ? ' · цвет draft (KA-6)' : ''}`)}>` +
       `<rect x="${x + 1}" y="${Y + 1}" width="${Math.max(w - 4, 2)}" height="${h - 2}" rx="${(h - 2) / 2}" fill="${p.color || '#e5dcc4'}" class="era-pill"/>` +
+      `<rect x="${x + 5}" y="${Y + 3.5}" width="${Math.max(w - 12, 2)}" height="${(h - 2) / 2.7}" rx="${(h - 2) / 5}" fill="rgba(255,255,255,.32)" pointer-events="none"/>` +
       (w > 84 ? `<text x="${x + w / 2}" y="${Y + h / 2 + 4}" text-anchor="middle" class="chip-text">${esc(p.label)}</text>`
         : w > p.label.length * 6.2 + 8 ? `<text x="${x + w / 2}" y="${Y + h / 2 + 3.5}" text-anchor="middle" class="chip-text chip-text-sm">${esc(p.label)}</text>` : '') + `</g>`);
   }
@@ -420,6 +421,70 @@ const STATUS_WORD = { sure: 'уверенная локализация', dispute
 const baseGeoRaw = fs.readFileSync(path.join(ROOT, 'karty', '_engine', 'base-geo.svg'), 'utf8')
   .replace(/^[\s\S]*?<svg[^>]*>/, '').replace(/<\/svg>\s*$/, '');
 
+// base-geo.svg сознательно поставляется с ПУСТЫМИ defs («градиенты импортируются конкретной
+// картой»): 16 url(#…)-ссылок без красок → море/суша/рельеф не рисовались вовсе. Ниже —
+// АВТОРСКИЙ СВЕТЛЫЙ paint-set листа Атласа (те же id, пергаментная палитра VISUAL-DIRECTION
+// §3): превью арт-направления KA-6 «пергамент-гравюра», сознательно НЕ копия тёмной
+// кинематографической гаммы производственного Авраама.
+const GEO_DEFS = `<defs>
+  <linearGradient id="landG" x1="0" y1="0" x2="1" y2="1">
+    <stop offset="0" stop-color="#f0e7cf"/><stop offset=".45" stop-color="#e8dcbc"/><stop offset="1" stop-color="#dfd1a9"/>
+  </linearGradient>
+  <linearGradient id="richLandG" x1="0" y1="0" x2=".5" y2="1">
+    <stop offset="0" stop-color="#ece1c2"/><stop offset=".5" stop-color="#e5d8b4"/><stop offset="1" stop-color="#decfa6"/>
+  </linearGradient>
+  <linearGradient id="seaG" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0" stop-color="#cfe0e9"/><stop offset="1" stop-color="#b4cedd"/>
+  </linearGradient>
+  <pattern id="seaPattern" x="0" y="0" width="20" height="20" patternUnits="userSpaceOnUse">
+    <path d="M0,10 Q5,6 10,10 Q15,14 20,10" fill="none" stroke="#7fa7c4" stroke-width=".6" opacity=".38"/>
+    <path d="M0,20 Q5,16 10,20 Q15,24 20,20" fill="none" stroke="#7fa7c4" stroke-width=".5" opacity=".26"/>
+  </pattern>
+  <radialGradient id="fertileG" cx=".5" cy=".5" r=".5">
+    <stop offset="0" stop-color="#6b8f4a" stop-opacity=".26"/><stop offset="1" stop-color="#6b8f4a" stop-opacity="0"/>
+  </radialGradient>
+  <linearGradient id="jordanG" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0" stop-color="#4f7a3f" stop-opacity=".3"/><stop offset="1" stop-color="#4f7a3f" stop-opacity="0"/>
+  </linearGradient>
+  <radialGradient id="desertG" cx=".5" cy=".5" r=".5">
+    <stop offset="0" stop-color="#c09a55" stop-opacity=".2"/><stop offset="1" stop-color="#c09a55" stop-opacity="0"/>
+  </radialGradient>
+  <radialGradient id="negevG" cx=".5" cy=".5" r=".5">
+    <stop offset="0" stop-color="#b08050" stop-opacity=".16"/><stop offset="1" stop-color="#b08050" stop-opacity="0"/>
+  </radialGradient>
+  <radialGradient id="sinaiG" cx=".5" cy=".5" r=".5">
+    <stop offset="0" stop-color="#a07040" stop-opacity=".18"/><stop offset="1" stop-color="#a07040" stop-opacity="0"/>
+  </radialGradient>
+  <linearGradient id="mtG" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0" stop-color="#8b7d5a" stop-opacity=".4"/><stop offset="1" stop-color="#8b7d5a" stop-opacity="0"/>
+  </linearGradient>
+  <pattern id="mountainHatch" x="0" y="0" width="6" height="6" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
+    <line x1="0" y1="0" x2="0" y2="6" stroke="#8b7d5a" stroke-width=".6" opacity=".45"/>
+  </pattern>
+  <pattern id="desertStipple" x="0" y="0" width="12" height="12" patternUnits="userSpaceOnUse">
+    <circle cx="3" cy="3" r=".7" fill="#9c7c43" opacity=".4"/>
+    <circle cx="9" cy="9" r=".5" fill="#9c7c43" opacity=".3"/>
+    <circle cx="6" cy="1" r=".4" fill="#b08050" opacity=".25"/>
+  </pattern>
+  <filter id="terrainTex" x="0" y="0" width="100%" height="100%">
+    <feTurbulence type="fractalNoise" baseFrequency=".4 .35" numOctaves="4" seed="12" result="noise"/>
+    <feColorMatrix in="noise" type="matrix" values="0 0 0 0 .54  0 0 0 0 .42  0 0 0 0 .12  0 0 0 .05 0" result="tinted"/>
+    <feComposite in="SourceGraphic" in2="tinted" operator="over"/>
+  </filter>
+  <filter id="waterRipple" x="-10%" y="-10%" width="120%" height="120%">
+    <feGaussianBlur stdDeviation=".8"/>
+  </filter>
+  <filter id="soft" x="-40%" y="-40%" width="180%" height="180%"><feGaussianBlur stdDeviation="6"/></filter>
+  <radialGradient id="edgeFog" cx=".5" cy=".5" r=".5">
+    <stop offset="0" stop-color="#7a5c26" stop-opacity="0"/>
+    <stop offset=".78" stop-color="#7a5c26" stop-opacity="0"/>
+    <stop offset="1" stop-color="#7a5c26" stop-opacity=".26"/>
+  </radialGradient>
+  <filter id="dotShadow" x="-60%" y="-60%" width="220%" height="220%">
+    <feDropShadow dx="0" dy=".7" stdDeviation=".8" flood-color="#3a2c10" flood-opacity=".45"/>
+  </filter>
+</defs>`;
+
 const geoDots = [];
 const geoLabels = [];
 let inFrame = 0, offFamily = 0, subSkipped = 0, regionSkipped = 0;
@@ -478,7 +543,7 @@ const placesHtml =
   `<span class="geo-search">${ic('pin')}<input id="geo-q" type="search" placeholder="Найти место…" autocomplete="off" aria-label="Поиск места на мини-карте"><span id="geo-n" aria-live="polite"></span></span>` +
   `</div>` +
   `<div class="geo-frame"><svg viewBox="0 0 1900 1430" class="geo-svg" role="img" aria-label="Мини-карта Леванта: места реестра Атласа со статусами уверенности локализаций">` +
-  baseGeoRaw + geoDots.join('') + geoLabels.join('') + geoFurniture + `</svg></div>` +
+  GEO_DEFS + baseGeoRaw + geoDots.join('') + geoLabels.join('') + geoFurniture + `</svg></div>` +
   `<div class="legend geo-legend">` +
   `<span><b style="background:#1e3a63;border-radius:50%"></b> уверенная — ${stCount.sure}</span>` +
   `<span><b style="background:#d9b36a;border:1.5px solid #8a6a1f;border-radius:50%"></b> спорная — ${stCount.disputed}</span>` +
@@ -552,6 +617,7 @@ const html = `<!DOCTYPE html>
     padding:11px 16px;border:1px solid transparent;background:none;color:var(--ink2);cursor:pointer;border-radius:9px;
     transition:color .15s, background .15s, box-shadow .15s}
   .tab:hover{color:var(--ink);background:rgba(255,255,255,.55)}
+  .tab:active{transform:translateY(1px)}
   .tab[aria-selected="true"]{color:var(--blue);background:var(--card);border-color:var(--line);
     box-shadow:0 2px 6px -3px rgba(74,58,24,.4), 0 1px 0 #fff inset}
   .tab[aria-selected="true"]::after{content:"";position:absolute;left:14px;right:14px;bottom:4.5px;height:2px;
@@ -594,6 +660,8 @@ const html = `<!DOCTYPE html>
   .axis-year,.axis-era{font:600 10px/1 var(--sans);fill:#a59772}
   .axis-year.century{font-weight:700;font-size:11px;fill:#8a7a58}
   .seg{fill:url(#gSeg);stroke:#c6b384;stroke-width:1}
+  .seg,.prophet-seg,.emp-seg{filter:drop-shadow(0 1px .6px rgba(74,58,24,.26))}
+  .event-mark,.event-star{filter:drop-shadow(0 1px 1px rgba(74,58,24,.4))}
   .seg.coreg{fill:url(#pCoreg);stroke-dasharray:3.5 2.5}
   .seg-text{font:600 11px/1 var(--sans);fill:var(--ink);dominant-baseline:middle;pointer-events:none}
   .prophet-seg{fill:url(#gProph);stroke:#a4bcd4;stroke-width:1;stroke-dasharray:3.2 2.2}
@@ -712,6 +780,7 @@ const html = `<!DOCTYPE html>
     border:1px solid var(--gold2);border-radius:999px;padding:7px 13px;background:rgba(255,255,255,.5);
     transition:background .16s, color .16s, border-color .16s, box-shadow .16s}
   .btn-go .arr{transition:transform .16s}
+  .map-card:active .btn-go{transform:translateY(1px);box-shadow:inset 0 2px 4px rgba(122,92,26,.35)}
   .map-card:hover .btn-go{background:linear-gradient(180deg,#f7ecd2,#efdfb9);color:#7a5c1a;border-color:var(--gold);
     box-shadow:0 3px 8px -4px rgba(185,138,47,.7)}
   .map-card:hover .btn-go .arr{transform:translateX(3px)}
@@ -736,6 +805,7 @@ const html = `<!DOCTYPE html>
   .geo-search .ic{width:14px;height:14px;color:var(--gold)}
   .geo-search input{border:0;background:none;outline:none;font:600 13px/1 var(--sans);color:var(--ink);width:230px}
   .geo-search input::placeholder{color:var(--ink3);font-weight:500}
+  .geo-search:focus-within{border-color:var(--gold2);box-shadow:inset 0 1px 3px rgba(74,58,24,.09), 0 0 0 3px rgba(185,138,47,.16)}
   #geo-n{font:700 10.5px/1 var(--sans);color:var(--gold);min-width:52px;text-align:right}
   .geo-frame{position:relative;border:1px solid var(--line);border-radius:14px;overflow:hidden;background:#eae2cd;
     box-shadow:0 1px 0 #fff inset,0 10px 26px -20px rgba(74,58,24,.4)}
@@ -746,6 +816,12 @@ const html = `<!DOCTYPE html>
   .geo-dot[data-href]:focus-visible circle{stroke:var(--blue);stroke-width:2.6}
   .geo-dot.dim{opacity:.12}
   .geo-lab.dim{opacity:.15}
+  /* Типографика подложки: серифные картографические подписи (CSS перекрывает презентационные атрибуты base-geo) */
+  .geo-svg .sea-label{font-family:Georgia,"Times New Roman",serif;font-style:italic;font-weight:700;fill:#5f8bab;letter-spacing:.42em;opacity:.75}
+  .geo-svg .region-label{font-family:Georgia,"Times New Roman",serif;font-weight:700;fill:#8a7a52;letter-spacing:.3em;opacity:.62}
+  .geo-svg .region-he{font-family:Georgia,serif;fill:#93a7b8;opacity:.5}
+  .geo-svg .lbl-z2{opacity:.45}
+  .dot-sure,.dot-disputed{filter:url(#dotShadow)}
   .geo-dot.hit circle{stroke:var(--blue);stroke-width:2.6;filter:drop-shadow(0 0 6px rgba(30,58,99,.55))}
   .furn-plate{fill:rgba(246,241,231,.82);stroke:rgba(120,95,40,.35);stroke-width:1}
   .sb-dark{fill:#3a3020;stroke:#3a3020}
