@@ -433,7 +433,7 @@
     </g>
     <!-- Персидский залив — coastal texture -->
     <path fill="url(#seaPattern)" opacity=".25" d="M1846,952 C1862,938 1892,932 1930,940 C2010,958 2105,1000 2190,1056 C2230,1082 2266,1110 2300,1140 L2300,1330 C2240,1280 2170,1228 2096,1182 C2010,1128 1930,1086 1880,1042 C1852,1016 1838,980 1846,952 Z"/>
-    <text class="sea-label" x="1846" y="1014" font-size="12" transform="rotate(60 1846 1014)" letter-spacing=".25em">ЗАЛИВ</text>
+    <text class="sea-label" x="1826" y="1002" font-size="11" transform="rotate(60 1826 1002)" letter-spacing=".22em">ЗАЛИВ</text>
   <text class="sea-label lbl-z1" x="1870" y="1035" font-size="6" transform="rotate(60 1870 1035)" letter-spacing=".12em" opacity=".6">הַיָּם הַמִּזְרָחִי · Вост. море</text>
     <text class="sea-label lbl-z1" x="649" y="848" font-size="5.5" letter-spacing=".16em" text-anchor="middle" transform="rotate(86 649 848)">МЁРТВОЕ&#160;МОРЕ</text>
     <text class="sea-label lbl-z2" x="650" y="856" font-size="4" letter-spacing=".1em" text-anchor="middle" transform="rotate(86 650 856)" fill="#4a80a0" opacity=".45">−430 м · низшая точка Земли</text>
@@ -441,13 +441,26 @@
     <text class="sea-label lbl-z2" x="668" y="670" font-size="4" letter-spacing=".14em" transform="rotate(60 668 670)">КИНЕРЕТ</text>
   <!-- Ярмук (приток Иордана) -->
   <path fill="none" stroke="#2d4a66" stroke-width="1.2" opacity=".5" stroke-linecap="round"
-    d="M700,640 C685,648 672,656 664,662" class="lbl-z2"/>
+    d="M702,690 C688,692 676,694 662,696" class="lbl-z2"/>
   <!-- зелёная зона у Кинерета -->
-  <ellipse cx="658" cy="655" rx="18" ry="10" fill="rgba(58,90,45,.12)" class="lbl-z1"/>
+  <ellipse cx="652" cy="667" rx="10" ry="7" transform="rotate(-24 652 667)" fill="rgba(58,90,45,.10)" class="lbl-z1"/>
   <!-- Река Аббана/Барада (Дамаск) — оазис Гута -->
   <path fill="none" stroke="#2d4a66" stroke-width="1" opacity=".4" stroke-linecap="round" class="lbl-z2"
     d="M731,594 C714,590 695,588 675,590 C655,593 638,598 620,610"/>
   <text class="sea-label lbl-z2" x="685" y="583" font-size="4" fill="#4a80a0" opacity=".4" letter-spacing=".1em">АББАНА · אֲמָנָה</text>
+  <!-- Иордан: русло Кинерет → Мёртвое море (меандры Гхора) -->
+  <path fill="none" stroke="#2d4a66" stroke-width="1.5" opacity=".62" stroke-linecap="round"
+    d="M657,691 C655,700 657,708 655,716 C652,724 655,731 653,739 C650,747 653,755 651,763 C649,771 651,779 649,787 C648,790 647,793 646,795"/>
+  <!-- Иавок (вади Зарка) — Быт 32: переправа Иакова, Пенуэл -->
+  <path fill="none" stroke="#2d4a66" stroke-width="1.1" opacity=".5" stroke-linecap="round" class="lbl-z2"
+    d="M712,748 C698,753 680,759 664,763 C660,764 656,764 653,763"/>
+  <text class="sea-label lbl-z2" x="676" y="754" font-size="4.6" letter-spacing=".12em" transform="rotate(-14 676 754)" fill="#4a80a0" opacity=".55">ИАВОК</text>
+  <!-- Арнон (вади Муджиб) — восточный приток Мёртвого моря -->
+  <path fill="none" stroke="#2d4a66" stroke-width="1" opacity=".45" stroke-linecap="round" class="lbl-z2"
+    d="M700,843 C686,843 672,841 659,838"/>
+  <text class="sea-label lbl-z2" x="676" y="836" font-size="4.4" letter-spacing=".12em" transform="rotate(-3 676 836)" fill="#4a80a0" opacity=".5">АРНОН</text>
+  <!-- Воды Мерома (озерцо Хуле) — Нав 11:5 -->
+  <ellipse cx="656" cy="641" rx="3.4" ry="4.6" transform="rotate(-12 656 641)" fill="#10263a" opacity=".55" stroke="#2e4d6b" stroke-width=".5" class="lbl-z2"/>
   <!-- Иордан — стрелка течения (С→Ю) -->
   <path class="lbl-z2" d="M648,710 L644,720 L652,720 Z" fill="#4a80a0" opacity=".35"/>
   <!-- Евфрат — стрелка течения -->
@@ -703,7 +716,7 @@
   </g>
 
   <g class="legend">
-    <rect x="192" y="1040.8333333333335" width="341" height="27.5" rx="5.5" class="plate"/>
+    <rect x="192" y="1040.8333333333335" width="341.0" height="27.5" rx="5.5" class="plate"/>
     <circle cx="208.5" cy="1054.5833333333335" r="3.85" class="pl-city"/>
     <text x="217.66666666666666" y="1058.25" class="leg-t" font-size="9.625">город · стан</text>
     <circle cx="291" cy="1054.5833333333335" r="4.216666666666666" class="pl-cand"/>
