@@ -12,7 +12,7 @@
  * Всё self-hosted (CSP): текстура — SVG-фильтры, иконки — инлайновые symbol'ы.
  */
 import { iconSymbolDefs, ANCHOR_ICON, CLUSTER_ICON, ANCHOR_SUBTITLE } from './icons.mjs';
-import { PALETTE as C, ERA_ACCENT, ROMAN, CLUSTER_LINE } from './palette.mjs';
+import { getPalette, ERA_ACCENT, ROMAN, CLUSTER_LINE } from './palette.mjs';
 
 const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
 const f = (n, d = 1) => Number(n).toFixed(d);
@@ -22,7 +22,15 @@ function iconUse(id, x, y, size, color, opacity = 1) {
   return `<use href="#ic-${id}" x="${f(x)}" y="${f(y)}" width="${size}" height="${size}" color="${color}" opacity="${opacity}"/>`;
 }
 
-export function renderL0Svg(layout, { title = 'Генеалогия Спасителя', subtitle = 'От Адама до Христа Спасителя', focus = null } = {}) {
+export function renderL0Svg(layout, { title = 'Генеалогия Спасителя', subtitle = 'От Адама до Христа Спасителя', focus = null, theme = 'light' } = {}) {
+  const C = getPalette(theme);
+  const dark = theme === 'dark';
+  // тёплое свечение/виньетка адаптируются под тему
+  const glowStops = dark
+    ? { a: '#fff0c8', ao: '0.34', b: '#d8b45f', bo: '0.14' }
+    : { a: '#fff6df', ao: '0.9', b: '#f7eccf', bo: '0.45' };
+  const vignetteCol = dark ? '#000000' : '#6a5230';
+  const vignetteOp = dark ? '0.42' : '0.13';
   const { bbox, nodes, edges } = layout;
   // focus = { label, brightIds:Set<string> } — фокус-режим: не-фокус приглушается
   const bright = focus?.brightIds ?? null;
@@ -42,16 +50,16 @@ export function renderL0Svg(layout, { title = 'Генеалогия Спасит
   // ─────────── defs ───────────
   P.push('<defs>');
   P.push(`<radialGradient id="glow" cx="50%" cy="86%" r="75%">
-    <stop offset="0%" stop-color="#fff6df" stop-opacity="0.9"/>
-    <stop offset="42%" stop-color="#f7eccf" stop-opacity="0.45"/>
-    <stop offset="100%" stop-color="#f7eccf" stop-opacity="0"/></radialGradient>`);
+    <stop offset="0%" stop-color="${glowStops.a}" stop-opacity="${glowStops.ao}"/>
+    <stop offset="42%" stop-color="${glowStops.b}" stop-opacity="${glowStops.bo}"/>
+    <stop offset="100%" stop-color="${glowStops.b}" stop-opacity="0"/></radialGradient>`);
   P.push(`<linearGradient id="paperGrad" x1="0" y1="0" x2="0" y2="1">
     <stop offset="0%" stop-color="${C.paper0}"/><stop offset="55%" stop-color="${C.paper1}"/>
     <stop offset="100%" stop-color="${C.paperEdge}"/></linearGradient>`);
   P.push(`<radialGradient id="vignette" cx="50%" cy="42%" r="78%">
-    <stop offset="0%" stop-color="#6a5230" stop-opacity="0"/>
-    <stop offset="86%" stop-color="#6a5230" stop-opacity="0"/>
-    <stop offset="100%" stop-color="#6a5230" stop-opacity="0.13"/></radialGradient>`);
+    <stop offset="0%" stop-color="${vignetteCol}" stop-opacity="0"/>
+    <stop offset="86%" stop-color="${vignetteCol}" stop-opacity="0"/>
+    <stop offset="100%" stop-color="${vignetteCol}" stop-opacity="${vignetteOp}"/></radialGradient>`);
   P.push(`<linearGradient id="goldGrad" x1="0" y1="0" x2="0" y2="1">
     <stop offset="0%" stop-color="${C.goldHi}"/><stop offset="50%" stop-color="${C.gold}"/>
     <stop offset="100%" stop-color="${C.goldLo}"/></linearGradient>`);

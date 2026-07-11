@@ -14,6 +14,19 @@ export const PALETTE = {
   cainite: '#a0533f', relation: '#b9a06f', priest: '#8a6db0',
 };
 
+/** Тёмная тема — тёплый ночной пергамент/кожа, золото сияет, кремовый текст. */
+export const PALETTE_DARK = {
+  paper0: '#241c11', paper1: '#1b140b', paperEdge: '#100b06',
+  ink: '#efe3c6', inkSoft: '#cbb891', inkFaint: '#94815d',
+  gold: '#d4af5f', goldLo: '#b8933f', goldHi: '#f2d789', goldGlow: '#f4dc94',
+  cardTop: '#2f2617', cardBot: '#251d11', cardBorder: '#836a34',
+  megaTop: '#261e12', megaBot: '#1e1710', megaBorder: '#5f4e2b',
+  messianic: '#d4af5f', matthew: '#a98cc8', luke: '#5fb0c0', patriarch: '#93b06a',
+  cainite: '#c88066', relation: '#c2ab77', priest: '#a98cc8',
+};
+
+export const getPalette = theme => (theme === 'dark' ? PALETTE_DARK : PALETTE);
+
 export const ERA_ACCENT = {
   creation: '#8B6914', antediluvian: '#A0734A', flood: '#5A7A8C',
   postdiluvian: '#6B8E4E', patriarchs: '#C4A04A', kings: '#B8743A',

@@ -352,6 +352,7 @@ async function runAll() {
   // фокус-вариант: мессианская линия Давида ярко, остальное приглушено (демо цели §3)
   const spineIds = new Set(layoutL0.nodes.filter(n => n.kind === 'spine').map(n => n.id));
   const l0FocusSvg = renderL0Svg(layoutL0, { focus: { label: 'Фокус: линия Давида', brightIds: spineIds } });
+  const l0DarkSvg = renderL0Svg(layoutL0, { theme: 'dark' });   // обе темы (interface-spec требование)
   // L1: развёртка «12 колен» (демо семантического зума — раскрытие сжатой группы)
   const tribes12 = buildTribes12(outPersons);
   const l1TribesSvg = renderTribes12Svg(tribes12);
@@ -394,6 +395,7 @@ async function runAll() {
   await writeFile(path.join(PATHS.outDir, 'build', 'layout-l0.json'), JSON.stringify(layoutL0, null, 1) + '\n');
   await writeFile(path.join(PATHS.outDir, 'build', 'genealogy-l0-preview.svg'), l0Svg);
   await writeFile(path.join(PATHS.outDir, 'build', 'genealogy-l0-focus-david.svg'), l0FocusSvg);
+  await writeFile(path.join(PATHS.outDir, 'build', 'genealogy-l0-dark.svg'), l0DarkSvg);
   await writeFile(path.join(PATHS.outDir, 'build', 'layout-l1-tribes-12.json'), JSON.stringify(tribes12, null, 1) + '\n');
   await writeFile(path.join(PATHS.outDir, 'build', 'genealogy-l1-tribes-12.svg'), l1TribesSvg);
   await writeFile(path.join(PATHS.outDir, 'build', 'layout-l1-matthew-luke.json'), JSON.stringify(mtLk, null, 1) + '\n');
