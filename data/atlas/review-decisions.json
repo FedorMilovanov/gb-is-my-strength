@@ -146,5 +146,9 @@
       "lng": 38.7919,
       "note": "Шанлыурфа, Турция"
     }
+  },
+  "dossierConfirmed": {
+    "$comment": "needsReview снят на основании готового GEO-DOSSIER (Research/БИБЛЕЙСКИЙ АТЛАС), когда решение досье НЕ меняет данные записи. Owner может вернуть review, удалив запись отсюда.",
+    "mount-beatitudes": "GEO-DOSSIER-mount-beatitudes.md — точка остаётся на традиционном хребте над Табхой, статус candidate/traditional; Евангелия гору не называют (Мф 5:1 / Лк 6:17 — терраса на склоне)"
   }
 }

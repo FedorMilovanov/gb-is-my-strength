@@ -181,6 +181,14 @@ function main() {
       p.needsReview = false;
       p.notes = [p.notes, cc.noMatchConfirmedNote].filter(Boolean).join(' | ');
     }
+    // dossierConfirmed: needsReview снят готовым GEO-DOSSIER Research, когда решение
+    // досье НЕ меняет данные записи (та же точка/статус). Содержательные развилки,
+    // где owner может изменить данные, остаются в curatedConfirm.exceptions.
+    const dossier = (review.dossierConfirmed || {})[p.id];
+    if (typeof dossier === 'string') {
+      p.needsReview = false;
+      p.notes = [p.notes, `review: досье — ${dossier}`].filter(Boolean).join(' | ');
+    }
     if (confirmed.has(p.id)) {
       p.notes = [p.notes, `review: ${review.confirmedMerges[p.id]}`].filter(Boolean).join(' | ');
     }
