@@ -323,6 +323,10 @@
         "levant": {
           "x": 880,
           "y": 240
+        },
+        "mediterranean": {
+          "x": 880,
+          "y": 240
         }
       },
       "maps": [
@@ -349,7 +353,7 @@
         "engineTypes": [
           "main"
         ],
-        "coordVariants": 1,
+        "coordVariants": 2,
         "heVariants": 1,
         "crossMap": true
       },
@@ -427,7 +431,7 @@
       "parentId": "athens",
       "notes": "SUB-LOCATION: проверить parentId",
       "placements": {
-        "levant": {
+        "mediterranean": {
           "x": 730,
           "y": 480
         }
@@ -934,7 +938,10 @@
         ],
         "coordVariants": 2,
         "heVariants": 2,
-        "crossMap": true
+        "crossMap": true,
+        "coordConflicts": [
+          "levant: melachim:bethel_kings даёт 640,770 против принятых 624,782"
+        ]
       },
       "sameAs": {
         "openbible": "bethel-1",
@@ -1323,7 +1330,7 @@
       },
       "type": "other",
       "placements": {
-        "levant": {
+        "mediterranean": {
           "x": 705,
           "y": 500
         }
@@ -1387,7 +1394,7 @@
       "parentId": "cyprus",
       "notes": "SUB-LOCATION: проверить parentId",
       "placements": {
-        "levant": {
+        "mediterranean": {
           "x": 820,
           "y": 310
         }
@@ -1875,7 +1882,7 @@
       },
       "type": "other",
       "placements": {
-        "levant": {
+        "mediterranean": {
           "x": 810,
           "y": 400
         }
@@ -3275,7 +3282,7 @@
       },
       "type": "other",
       "placements": {
-        "levant": {
+        "mediterranean": {
           "x": 900,
           "y": 360
         }
@@ -3396,7 +3403,10 @@
         ],
         "coordVariants": 2,
         "heVariants": 1,
-        "crossMap": true
+        "crossMap": true,
+        "coordConflicts": [
+          "levant: yeshua:jericho даёт 650,800 против принятых 660,815"
+        ]
       },
       "sameAs": {
         "openbible": "jericho-1",
@@ -3440,6 +3450,10 @@
         "levant": {
           "x": 623,
           "y": 800
+        },
+        "mediterranean": {
+          "x": 740,
+          "y": 580
         }
       },
       "maps": [
@@ -4397,7 +4411,7 @@
       },
       "type": "other",
       "placements": {
-        "levant": {
+        "mediterranean": {
           "x": 830,
           "y": 370
         }
@@ -5388,7 +5402,7 @@
       },
       "type": "other",
       "placements": {
-        "levant": {
+        "mediterranean": {
           "x": 790,
           "y": 360
         }
@@ -5447,7 +5461,7 @@
       },
       "type": "other",
       "placements": {
-        "levant": {
+        "mediterranean": {
           "x": 820,
           "y": 330
         }
@@ -5506,7 +5520,7 @@
       },
       "type": "other",
       "placements": {
-        "levant": {
+        "mediterranean": {
           "x": 780,
           "y": 440
         }
@@ -6137,7 +6151,7 @@
       },
       "type": "other",
       "placements": {
-        "levant": {
+        "mediterranean": {
           "x": 530,
           "y": 440
         }
@@ -6334,7 +6348,7 @@
       },
       "type": "other",
       "placements": {
-        "levant": {
+        "mediterranean": {
           "x": 800,
           "y": 340
         }
@@ -6956,7 +6970,7 @@
       },
       "type": "other",
       "placements": {
-        "levant": {
+        "mediterranean": {
           "x": 800,
           "y": 380
         }
@@ -7603,7 +7617,7 @@
       },
       "type": "other",
       "placements": {
-        "levant": {
+        "mediterranean": {
           "x": 750,
           "y": 450
         }
@@ -7665,7 +7679,7 @@
       },
       "type": "other",
       "placements": {
-        "levant": {
+        "mediterranean": {
           "x": 810,
           "y": 350
         }

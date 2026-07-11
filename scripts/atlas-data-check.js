@@ -11,7 +11,8 @@
  *   3. identifications[].status ∈ словарю уверенности; score в диапазоне схемы (отрицательный = rejected); lat/lng в диапазонах;
  *   4. geo.lat/lng в диапазонах;
  *   5. parentId указывает на существующее место;
- *   6. placements ссылаются только на семейства из coordinate-spaces.json;
+ *   6. placements ссылаются только на семейства из coordinate-spaces.json; у места есть
+ *      координата в семействе КАЖДОЙ его карты и нет координат-«сирот» в чужих семействах;
  *   7. maps[]: slug — существующая карта, localId — реальное место её route.json;
  *   8. (map, localId) закреплены ровно за ОДНИМ каноническим местом;
  *   9. ПОЛНОЕ ПОКРЫТИЕ: каждое место каждого route.json учтено в реестре
@@ -45,7 +46,11 @@ function main() {
   const scoreSchema = schema.properties.identifications.items.properties.score;
   const SCORE_MIN = scoreSchema.minimum, SCORE_MAX = scoreSchema.maximum;
   const LEVELS = new Set(['A', 'B', 'C', 'HOLD']);
-  const spaces = new Set(Object.keys(JSON.parse(fs.readFileSync(SPACES, 'utf8')).spaces));
+  const spacesObj = JSON.parse(fs.readFileSync(SPACES, 'utf8')).spaces;
+  const spaces = new Set(Object.keys(spacesObj));
+  // карта → её координатное семейство (для сверки полноты placements)
+  const mapFamily = {};
+  for (const [fam, sp] of Object.entries(spacesObj)) for (const slug of sp.maps || []) mapFamily[slug] = fam;
 
   // Вхождения из route.json — эталон покрытия.
   const routeOcc = new Set();
@@ -90,11 +95,23 @@ function main() {
     for (const space of Object.keys(p.placements || {})) {
       if (!spaces.has(space)) fail(`${ctx}: placement в необъявленном семействе "${space}"`);
     }
+    const neededFams = new Set();
     for (const m of p.maps || []) {
       const key = `${m.slug}:${m.localId}`;
       if (!routeOcc.has(key)) fail(`${ctx}: maps ссылается на несуществующее вхождение ${key}`);
       if (claimed.has(key)) fail(`${ctx}: вхождение ${key} уже закреплено за "${claimed.get(key)}"`);
       claimed.set(key, p.id);
+      if (mapFamily[m.slug]) neededFams.add(mapFamily[m.slug]);
+      else fail(`${ctx}: карта "${m.slug}" не приписана ни к одному семейству в coordinate-spaces.json`);
+    }
+    // Полнота и отсутствие «сирот»: место должно иметь координату в семействе КАЖДОЙ
+    // своей карты и не иметь координат в семействах, где его карт нет (защита от
+    // повторения дефекта «Рим под ключом levant»).
+    for (const fam of neededFams) {
+      if (!(p.placements && p.placements[fam])) fail(`${ctx}: нет placement для семейства "${fam}" (карты места этого требуют)`);
+    }
+    for (const fam of Object.keys(p.placements || {})) {
+      if (!neededFams.has(fam)) fail(`${ctx}: placement "${fam}" без единой карты этого семейства — чужая/устаревшая координата`);
     }
   }
 

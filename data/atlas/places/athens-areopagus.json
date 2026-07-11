@@ -7,7 +7,7 @@
   "type": "mountain",
   "notes": "SUB-LOCATION: проверить parentId | parent-candidate: athens (записи нет — место самостоятельное)",
   "placements": {
-    "levant": {
+    "mediterranean": {
       "x": 730,
       "y": 480
     }

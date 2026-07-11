@@ -37,6 +37,16 @@ const KARTY = path.join(ROOT, 'karty');
 const OUT_JSON = path.join(ROOT, 'data', 'atlas', 'places-draft.json');
 const OUT_MD = path.join(ROOT, 'reports', 'atlas-places-extract.md');
 
+// Координатное семейство каждой карты (ATLAS-CONTRACT §6): x/y карты валидны ТОЛЬКО
+// в своём семействе. Писать их под чужим ключом — дефект (Рим не живёт в levant-фрейме).
+const SPACES = JSON.parse(fs.readFileSync(path.join(ROOT, 'data', 'atlas', 'coordinate-spaces.json'), 'utf8')).spaces;
+const MAP_FAMILY = {};
+for (const [fam, sp] of Object.entries(SPACES)) for (const slug of sp.maps || []) MAP_FAMILY[slug] = fam;
+function familyOf(mapSlug) {
+  if (!MAP_FAMILY[mapSlug]) throw new Error(`карта "${mapSlug}" не приписана ни к одному координатному семейству в coordinate-spaces.json`);
+  return MAP_FAMILY[mapSlug];
+}
+
 // Суффиксы локальных id, добавлявшиеся ради уникальности внутри карты.
 const ID_SUFFIXES = /_(kings|conquest|hasm|rev|church|meet|philip|passion|upper|kadesh|exodus|judges|paul|acts)$/;
 
@@ -139,7 +149,19 @@ function buildDraft(groups) {
     const heNames = [...new Set(occ.map((o) => o.he).filter(Boolean))];
     const types = [...new Set(occ.map((o) => o.type).filter(Boolean))];
     const merged = new Set(occ.map((o) => `${o.map}:${o.localId}`));
-    const coordVariants = new Set(occ.map((o) => `${o.x},${o.y}`));
+    const coordVariants = new Set(occ.map((o) => `${familyOf(o.map)}:${o.x},${o.y}`));
+
+    // Размещения ПО СЕМЕЙСТВАМ: первое вхождение внутри семейства задаёт координату,
+    // расхождения внутри одного семейства (>12 units) фиксируются для ручной выверки.
+    const placements = {};
+    const coordConflicts = [];
+    for (const o of occ) {
+      const fam = familyOf(o.map);
+      if (!placements[fam]) placements[fam] = { x: o.x, y: o.y };
+      else if (Math.abs(placements[fam].x - o.x) + Math.abs(placements[fam].y - o.y) > 12) {
+        coordConflicts.push(`${fam}: ${o.map}:${o.localId} даёт ${o.x},${o.y} против принятых ${placements[fam].x},${placements[fam].y}`);
+      }
+    }
 
     const entry = {
       id: canonicalId,
@@ -151,9 +173,7 @@ function buildDraft(groups) {
       // Тип уточняется вручную в KA-2; черновая эвристика по type движка.
       type: 'other',
       ...(allSub ? { parentId: slugifyCanonical(occ[0].localId), notes: 'SUB-LOCATION: проверить parentId' } : {}),
-      placements: {
-        levant: { x: occ[0].x, y: occ[0].y },
-      },
+      placements,
       maps: occ.map((o) => ({ slug: o.map, localId: o.localId })),
       needsReview: true,
     };
@@ -163,6 +183,7 @@ function buildDraft(groups) {
       coordVariants: coordVariants.size,
       heVariants: heNames.length,
       crossMap: new Set(occ.map((o) => o.map)).size > 1,
+      ...(coordConflicts.length ? { coordConflicts } : {}),
     };
     places.push(entry);
   }
