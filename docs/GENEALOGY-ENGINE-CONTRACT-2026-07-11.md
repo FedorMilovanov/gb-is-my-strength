@@ -1,8 +1,8 @@
-# GENEALOGY ENGINE CONTRACT — GenealogyAtlasEngine (Phase 2, дизайн-до-кода)
+# GENEALOGY ENGINE CONTRACT — GenealogyEngine (Phase 2, дизайн-до-кода)
 
 > **Статус:** контракт движка v0 (design-before-code, доктрина karty STRAT-02).
 > **Не** код — спецификация, по которой пишется рендер Phase 3.
-> **Основа:** GENEALOGY-ATLAS-FOUNDATION-2026-07-11 (стратегия) + AuditRepo intake
+> **Основа:** GENEALOGY-FOUNDATION-2026-07-11 (стратегия) + AuditRepo intake
 > claude-genealogy-atlas-strategy/2026-07-11 (REPORT §S5, evidence, 89 источников).
 > **Данные-вход:** `data/genealogy/v2/` (persons/edges/groups/spine — Phase 1, готовы).
 > **Академические входы:** McGuffin & Balakrishnan (genealogical graphs), ZMLT
@@ -22,7 +22,7 @@
 - Cytoscape WebGL bench: тормоза при 3k узлов идут от **плотности рёбер** (68k рёбер
   → 3fps); наш граф — 3056 узлов / **2053 ребра** ⇒ bottleneck нас не касается при
   LOD-бюджете ≤500 видимых карточек.
-- ⇒ **GenealogyAtlasEngine**: vanilla TS, один `<svg>`-сценграф, d3-zoom + d3-interpolate,
+- ⇒ **GenealogyEngine**: vanilla TS, один `<svg>`-сценграф, d3-zoom + d3-interpolate,
   предвычисленный layout, виртуализация вьюпорта. Цель ≤70KB gz своего кода.
 
 Отвергнуто: Canvas/WebGL-ядро (владелец заказал SVG; теряем a11y-DOM, чёткость
@@ -34,8 +34,8 @@
 ## 1. Расположение и форма (интеграционный контракт)
 
 ```
-src/lib/genealogy-atlas/            ← движок (vanilla TS, БЕЗ React в рантайме)
-├── engine.ts            — GenealogyAtlasEngine: mount/destroy, публичный API (§4)
+src/lib/genealogy-engine/            ← движок (vanilla TS, БЕЗ React в рантайме)
+├── engine.ts            — GenealogyEngine: mount/destroy, публичный API (§4)
 ├── scene.ts             — сценграф SVG-слоёв (§3)
 ├── viewport.ts          — d3-zoom, pan/zoom, minimap, URL-state (§5)
 ├── lod.ts               — LOD-контроллер: выбор видимого множества по зуму (§2)
@@ -65,7 +65,7 @@ Tailwind не вводим (токены сайта + scoped CSS); обе тем
 
 | Уровень | Триггер (zoom) | Что видно | Бюджет узлов |
 |---|---|---|---|
-| **L0 «Атлас»** | < 0.35 | Хребет (76 якорей spine.json, но визуально ~10-12 крупных) + 14 мега-узлов кластеров со счётчиками + пунктирные превью-глифы | ≤ ~90 «узлов» (якоря+кластеры) |
+| **L0 «Обзор»** | < 0.35 | Хребет (76 якорей spine.json, но визуально ~10-12 крупных) + 14 мега-узлов кластеров со счётчиками + пунктирные превью-глифы | ≤ ~90 «узлов» (якоря+кластеры) |
 | **L1 «Ветвь»** | 0.35–0.8 ИЛИ клик по кластеру | Развёртка целевого кластера (радиальная — 12 колен; колоночная — Мф1/Лк3; список — народы/изолированные), соседи сжаты в мега-узлы | 100–300 |
 | **L2 «Персоны»** | > 0.8 | Полные карточки в пересечении вьюпорт∩LOD, lazy-чанки данных | ≤ 400–500 |
 
@@ -85,7 +85,7 @@ Tailwind не вводим (токены сайта + scoped CSS); обе тем
 4. Play: d3-interpolate 300–450ms к финальным позициям; мега-узел растворяется.
 `prefers-reduced-motion` → мгновенное переключение (без Play).
 **Fallback (если морфинг не уложится в бюджет Phase 2-прототипа):** жёсткое
-переключение уровней без анимации — всё ещё atlas-grade minus, не блокер.
+переключение уровней без анимации — всё ещё эталонного уровня minus, не блокер.
 
 ---
 
@@ -112,7 +112,7 @@ AM-ось (§9) — слой сценграфа `layer-era-bands` (в коорд
 ## 4. Публичный API движка
 
 ```ts
-interface GenealogyAtlasEngine {
+interface GenealogyEngine {
   mount(el: HTMLElement, opts: MountOptions): void;
   destroy(): void;                          // снимает listeners (AGENTS §5.2)
   // навигация
@@ -164,7 +164,7 @@ interface MountOptions {
 
 ---
 
-## 7. A11y (не опционально — atlas-grade)
+## 7. A11y (не опционально — эталонного уровня)
 
 - **Клавиатура** (модель v1, сохранить): ↑ родитель, ↓ первый ребёнок, ←→ братья,
   Enter детали, Esc выход; Tab по интерактивным контролам; `/` или Ctrl+K — поиск.
@@ -180,7 +180,7 @@ interface MountOptions {
 ## 8. Статический слой (SEO/SR/print/no-JS) — обязателен
 
 Build-time (Astro, из `data/genealogy/v2/`), в DOM страницы независимо от JS:
-- HTML-оглавление атласа: эпохи → кластеры → персоны (ru-имя + ссылка на стих),
+- HTML-оглавление генеалогии: эпохи → кластеры → персоны (ru-имя + ссылка на стих),
   `data-pagefind-body` (внутренний поиск сайта индексирует), `<details>`-раскрытие.
 - `<noscript>` — тот же оглавление-вид как основной контент.
 - Print-CSS: линейное родословие (хребет + ключевые ветви).

@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * build.mjs — оркестратор пайплайна «Библейского атласа родословий» (Phase 1).
+ * build.mjs — оркестратор пайплайна «Генеалогии Спасителя» (Phase 1).
  *
  *   node scripts/genealogy-build/build.mjs all        # полный прогон
  *   node scripts/genealogy-build/build.mjs fetch      # только источники → .cache/
@@ -329,7 +329,7 @@ async function runAll() {
     }
   }
 
-  // 6.3. Кластеры атласа + слой народов
+  // 6.3. Кластеры генеалогии + слой народов
   const clusters = computeClusters(outPersons, edges);
   const byKeyOut = new Map(outPersons.map(p => [p.key, p]));
   const nations = nationsLayer(groups, byKeyOut);
@@ -378,7 +378,7 @@ async function runAll() {
   }, null, 1) + '\n');
   await mkdir(path.join(PATHS.outDir, 'build'), { recursive: true });
   await writeFile(path.join(PATHS.outDir, 'build', 'layout-l0.json'), JSON.stringify(layoutL0, null, 1) + '\n');
-  await writeFile(path.join(PATHS.outDir, 'build', 'atlas-l0-preview.svg'), l0Svg);
+  await writeFile(path.join(PATHS.outDir, 'build', 'genealogy-l0-preview.svg'), l0Svg);
   await writeFile(path.join(PATHS.outDir, 'meta.json'), JSON.stringify(meta, null, 2) + '\n');
   try { await access(path.join(PATHS.outDir, 'ru-overrides.json')); }
   catch {
@@ -524,7 +524,7 @@ ${ctx.relStats.unresolvedRefs.slice(0, 20).map(u => `- ${u.from} · ${u.field}: 
 
 ${(ctx.spine?.chain ?? []).map(c => c.ru ?? c.key).join(' → ')}
 
-## Кластеры атласа (${(ctx.clusters ?? []).length}) и народы (${(ctx.nations ?? []).length})
+## Кластеры генеалогии (${(ctx.clusters ?? []).length}) и народы (${(ctx.nations ?? []).length})
 
 ${(ctx.clusters ?? []).map(c => `- **${c.titleRu}** (${c.id}): ${c.count} · правило: \`${JSON.stringify(c.rule)}\``).join('\n') || '- нет'}
 
