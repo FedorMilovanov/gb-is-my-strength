@@ -4073,6 +4073,26 @@ html.dark [data-gill-v16] .mobile-top-bar {
     color: var(--gb-accent-gold-bright) !important;
     text-shadow: 0 0 12px rgba(216, 176, 104, .45) !important;
   }
+  /* Введение / Справочник marks: clean GOLD labels, NOT bordered "gold-chip"
+     pills — this was the "рамка вместо цифры" the owner disliked. */
+  [data-gill-v16] .toc-part-item__num.gb-series-mark--label {
+    border: 0 !important;
+    background: transparent !important;
+    box-shadow: none !important;
+    padding: 0 !important;
+    color: var(--gb-accent-gold) !important;
+    font-weight: 800 !important;
+    text-transform: uppercase !important;
+    letter-spacing: .04em !important;
+  }
+  /* The sepia scope redefines --gb-accent-gold to a muted bronze (#8a612f);
+     force a real gold for the part numerals on the sepia paper too. */
+  [data-gill-v16][data-gill-reader-theme="sepia"] .toc-part-item__num {
+    color: #bf9a3a !important;
+  }
+  [data-gill-v16][data-gill-reader-theme="sepia"] .toc-part-item.is-current .toc-part-item__num {
+    color: #d4a857 !important;
+  }
   /* Footer: single full-width print button (v2.9 .btoc-share-btn) → window.print(). */
   [data-gill-v16] .toc-action-btn--print {
     flex: 1 1 auto !important;
