@@ -124,7 +124,11 @@ function shipSvg(x, y, s2) {
   </g>`;
 }
 const DECOR = {
-  levant: shipSvg(298, 468, 1.15) + shipSvg(430, 300, 0.8),
+  levant: shipSvg(298, 468, 1.15) + shipSvg(430, 300, 0.8) + `<g class="decor-ship" transform="translate(255,655) scale(1.05)">
+    <path d="M-14,4 Q-6,-6 6,-4 Q14,-2.6 16,2 Q10,6 0,6 Q-8,6 -14,4 Z M16,2 L21,-3 L19,3 Z"/>
+    <path d="M-7,-5 q-1,-4 -3,-5 m3,5 q1,-4 3,-5" class="ds-line"/>
+    <path d="M-22,9 q4,-2.4 8,0 q4,2.4 8,0 M6,9 q4,-2.4 8,0 q4,2.4 8,0" class="ds-wave"/>
+  </g>`,
   mediterranean: shipSvg(700, 560, 1.2) + shipSvg(360, 810, 0.85),
   urheimat: '',
 };
@@ -166,6 +170,39 @@ const GLYPH_META = {
   palm: { t: 'Пальма', d: 'Знак оазиса; Хацацон-Фамар — «Фамарь» значит «пальма» (Эн-Геди, 2 Пар 20:2).' },
   tower: { t: 'Башня', d: 'Знак города-крепости; на листе-прологе — Вавилонская башня (Быт 11).' },
 };
+
+
+// Градусная сетка листа — из выведенных калибровок (§ контракта KA-4/D-13).
+// levant: юг (y > maxY) — художественная проекция, широты там не подписываем.
+const GRID = {
+  levant: { lonToX: (L) => 623 + (L - 35.22) * 100, latToY: (B) => 800 - (B - 31.78) * 120, lonStep: 2, latStep: 2, maxY: 950 },
+  mediterranean: { lonToX: (L) => 40 + (L - 10) * 65, latToY: (B) => 120 + (43 - B) * 82, lonStep: 4, latStep: 2, maxY: Infinity },
+  urheimat: { lonToX: (L) => 40 + (L - 38) * 130, latToY: (B) => 60 + (40 - B) * 130, lonStep: 2, latStep: 2, maxY: Infinity },
+};
+function graticule(family, x0, y0, W, H, k) {
+  const g = GRID[family];
+  if (!g) return '';
+  const parts = [];
+  const inX = (x) => x > x0 + 40 * k && x < x0 + W - 40 * k;
+  const inY = (y) => y > y0 + 40 * k && y < y0 + H - 40 * k && y < g.maxY;
+  for (let lon = -20; lon <= 60; lon++) {
+    const x = g.lonToX(lon);
+    if (!inX(x)) continue;
+    const major = lon % g.lonStep === 0;
+    parts.push(`<line x1="${x.toFixed(1)}" y1="${(y0 + 8 * k).toFixed(1)}" x2="${x.toFixed(1)}" y2="${(y0 + (major ? 15 : 12) * k).toFixed(1)}" class="grat"/>`);
+    if (major) parts.push(`<text x="${x.toFixed(1)}" y="${(y0 + 25 * k).toFixed(1)}" text-anchor="middle" class="grat-t" font-size="${(8 * k).toFixed(2)}">${lon}°</text>`);
+  }
+  for (let lat = 0; lat <= 60; lat++) {
+    const y = g.latToY(lat);
+    if (!inY(y)) continue;
+    const major = lat % g.latStep === 0;
+    for (const [ex, ta, dx] of [[x0 + 8 * k, 'start', 15], [x0 + W - 8 * k, 'end', -15]]) {
+      parts.push(`<line x1="${ex.toFixed(1)}" y1="${y.toFixed(1)}" x2="${(ex + (ta === 'start' ? 1 : -1) * (major ? 7 : 4) * k).toFixed(1)}" y2="${y.toFixed(1)}" class="grat"/>`);
+      if (major) parts.push(`<text x="${(ta === 'start' ? ex + 10 * k : ex - 10 * k).toFixed(1)}" y="${(y + 2.8 * k).toFixed(1)}" text-anchor="${ta}" class="grat-t" font-size="${(8 * k).toFixed(2)}">${lat}°</text>`);
+    }
+  }
+  return `<g class="graticule" aria-hidden="true">${parts.join('')}</g>`;
+}
 
 function anchorSpec(a) {
   const A = {
@@ -373,7 +410,12 @@ function renderSheet(route, opts) {
     <text x="${sbX + km100 * 2}" y="${sbY - 7 * k}" class="sb-t" font-size="${11 * k}" text-anchor="end">200 км</text>
     <g transform="translate(${x0 + W - 52 * k},${y0 + 56 * k})">
       <circle r="${30 * k}" class="plate"/>
-      <path d="M0,${-19 * k} L${6 * k},${11 * k} L0,${5 * k} L${-6 * k},${11 * k} Z" class="north"/>
+      <g class="rose">
+        <path d="M0,${-22 * k} L${3 * k},${-3 * k} L${22 * k},0 L${3 * k},${3 * k} L0,${22 * k} L${-3 * k},${3 * k} L${-22 * k},0 L${-3 * k},${-3 * k} Z"/>
+        <path d="M${11 * k},${-11 * k} L${2.6 * k},${-1.2 * k} M${11 * k},${11 * k} L${1.2 * k},${2.6 * k} M${-11 * k},${11 * k} L${-2.6 * k},${1.2 * k} M${-11 * k},${-11 * k} L${-1.2 * k},${-2.6 * k}" class="rose-diag"/>
+        <circle r="${2.1 * k}" class="rose-hub"/>
+      </g>
+      <path d="M0,${-22 * k} L${3 * k},${-3 * k} L0,${-6 * k} L${-3 * k},${-3 * k} Z" class="north"/>
       <text y="${26 * k}" text-anchor="middle" class="north-t" font-size="${13 * k}">С</text>
     </g>
   </g>`;
@@ -443,6 +485,7 @@ ${furn}
 <rect x="${x0}" y="${y0}" width="${W}" height="${H}" fill="url(#sunGlow)" pointer-events="none"/>
 <rect x="${x0}" y="${y0}" width="${W}" height="${H}" fill="url(#edgeFog)" pointer-events="none"/>
 <rect x="${x0}" y="${y0}" width="${W}" height="${H}" filter="url(#parchmentGrain)" opacity=".5" pointer-events="none"/>
+${graticule(family, x0, y0, W, H, k)}
 <rect x="${x0 + 8 * k}" y="${y0 + 8 * k}" width="${W - 16 * k}" height="${H - 16 * k}" class="frame"/>
 </svg>`;
 
@@ -456,6 +499,13 @@ function sheetCss() {
   .wrap{max-width:1500px;width:100%;box-shadow:0 18px 60px rgba(90,70,30,.35), 0 2px 10px rgba(90,70,30,.22);border-radius:6px;overflow:hidden}
   svg.sheet{display:block;width:100%;height:auto;background:#f5edd8}
   .frame{fill:none;stroke:#8a6a1f;stroke-width:1.2;opacity:.55}
+  .grat{stroke:#8a6a1f;stroke-width:.8;opacity:.4}
+  .grat-t{font-family:Lora,Georgia,serif;font-weight:500;fill:#8a6a1f;opacity:.5}
+  .rose path{fill:rgba(138,106,31,.32);stroke:#8a6a1f;stroke-width:.5;opacity:.8}
+  .rose .rose-diag{fill:none;stroke:#8a6a1f;stroke-width:.7;opacity:.5}
+  .rose .rose-hub{fill:#8a6a1f;stroke:none;opacity:.7}
+  .graticule{transition:opacity .35s}
+  svg.zoomed .graticule{opacity:0}
   .base{opacity:.96}
   .base [fill="#10263a"]{fill:#8fb7cb}
   .base [stroke="#2e4d6b"]{stroke:#6f97ae}
@@ -584,6 +634,7 @@ function sheetCss() {
   .do-sec .act-btn{display:none}
   body.dive .dossier{display:none}
   .dive-btn{position:fixed;right:10px;top:10px;z-index:21;width:38px;height:38px;border-radius:10px;border:1px solid rgba(138,106,31,.4);background:rgba(246,241,231,.92);color:#7a5c26;font-size:17px;cursor:pointer;box-shadow:0 2px 8px rgba(90,70,30,.2)}
+  .home-btn{right:64px}
   .dive-btn:hover{background:#f6f1e7}
   body.dive .spine,body.dive .stage-strip,body.dive .g9{display:none}
   body.dive .wrap{max-width:none;border-radius:0;box-shadow:none}
@@ -604,7 +655,7 @@ function buildSheetHtml(route, opts) {
     cards[p.id] = {
       n: p.name, k: p.kick || '',
       t: ph.thumb || ph.src || null, tl: ph.label || '',
-      f: (p.id1 && p.ep1) ? `${p.id1} — ${p.ep1}` : (arch ? arch.slice(0, 180) + (arch.length > 180 ? '…' : '') : ''),
+      f: (p.id1 && p.ep1) ? `${p.id1} — ${p.ep1}` : (arch ? arch.slice(0, 180) + (arch.length > 180 ? '…' : '') : (p.lex && p.lex.ru ? p.lex.ru : '')),
       // полное досье для панели (R2); в прод-версии R4 вынести в отдельный fetch
       lex: p.lex || null, glyphs: [p.glyph, p.glyph2].filter(Boolean),
       dossier: {
