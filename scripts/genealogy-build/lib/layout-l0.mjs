@@ -75,9 +75,11 @@ export function buildLayoutL0(persons, clusters, eras) {
       x: GEO.centerX - GEO.spineNodeW / 2, y: y - GEO.spineNodeH / 2,
       w: GEO.spineNodeW, h: GEO.spineNodeH,
       label: p.ru?.name ?? p.en,
+      refRu: p.firstRef?.ru ?? null,
       am: p?.skeleton?.chronology?.mt?.birthAM ?? null,
       era: p?.skeleton?.era ?? null,
       golden: true,
+      messiah: p?.skeleton?.role === 'messiah' || key === 'Jesus@Isa.7.14',
     });
   });
 
