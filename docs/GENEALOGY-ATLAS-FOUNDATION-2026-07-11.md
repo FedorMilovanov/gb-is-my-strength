@@ -1,7 +1,7 @@
 # GENEALOGY ATLAS — FOUNDATION (2026-07-11)
 
 > **Статус:** foundation-аудит / стратегия v2 (proposal-open — ждёт 6 решений владельца).
-> **Полный аудит:** AuditRepo `projects/gb-is-my-strength/incoming/claude-genealogy-atlas-strategy/2026-07-11/`
+> **Полный аудит:** AuditRepo, проект `gb-is-my-strength` → `incoming/claude-genealogy-atlas-strategy/2026-07-11/`
 > (REPORT.md + evidence + 65 внешних источников).
 > **Заменяет по объёму** GENEALOGY-MASTERPLAN-2026-06-18 §4 («~75–120 узлов»):
 > целевой охват теперь — **полная Библия (все именованные персоны, ~3–3.6k)** по
