@@ -243,11 +243,34 @@ export function renderL0Svg(layout, { title = 'Генеалогия Спасит
     return g.join('');
   }
 
+  // ── «веер точек»: сжатая группа (множество имён), расходится наружу от кластера ──
+  function dotFan(n, col) {
+    let ox, oy, t0;
+    if (n.side === 'left') { ox = n.x; oy = cy(n); t0 = Math.PI; }
+    else if (n.side === 'right') { ox = n.x + n.w; oy = cy(n); t0 = 0; }
+    else { ox = cx(n); oy = n.y + n.h; t0 = Math.PI / 2; }
+    const density = Math.min(1, (n.count ?? 0) / 300);   // больше имён → плотнее веер
+    const rings = [26, 47, 69, 92];
+    const spread = 0.95;                                  // угловой разброс веера
+    const out = [];
+    rings.forEach((r, ri) => {
+      const cnt = 3 + ri;                                 // 3,4,5,6 точек по кольцам
+      for (let j = 0; j < cnt; j++) {
+        const a = t0 + spread * ((cnt === 1 ? 0 : j / (cnt - 1)) - 0.5);
+        const px = ox + Math.cos(a) * r, py = oy + Math.sin(a) * r;
+        const op = (0.4 - ri * 0.075) * (0.45 + 0.55 * density);
+        const rad = 2.5 - ri * 0.32;
+        out.push(`<circle cx="${f(px)}" cy="${f(py)}" r="${f(rad)}" fill="${col}" opacity="${f(op, 2)}"/>`);
+      }
+    });
+    return out.join('');
+  }
+
   // ── карточка мега-узла кластера ──
   function renderMega(n) {
     const icon = CLUSTER_ICON[n.clusterId] ?? 'people';
     const col = CLUSTER_LINE[n.clusterId] ?? C.relation;
-    const g = [`<g filter="url(#cardShadow)">`];
+    const g = [dotFan(n, col), `<g filter="url(#cardShadow)">`];
     g.push(`<rect x="${f(n.x)}" y="${f(n.y)}" width="${f(n.w)}" height="${f(n.h)}" rx="13" fill="url(#megaGrad)" stroke="${C.megaBorder}" stroke-width="1.3"/>`);
     g.push(`</g>`);
     // цветная «корешок»-полоска слева = линия кластера
