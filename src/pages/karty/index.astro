@@ -1,6 +1,11 @@
 ---
 import KartyPageHead from '@/components/karty/KartyPageHead.astro';
 import KartyMain from '@/components/karty/KartyMain.astro';
+import MobileChromePage from '@/components/article-pilots/_shared/MobileChromePage.astro';
+import { mobileChromeFor } from '@/components/article-pilots/_shared/mobileChromeRegistry';
+
+// Мобильная обвязка выбирается registry (движок «page»: Back·Home·Поиск сверху).
+const mobileChrome = mobileChromeFor('/karty/');
 ---
 <!DOCTYPE html>
 <html lang="ru">
@@ -8,6 +13,9 @@ import KartyMain from '@/components/karty/KartyMain.astro';
     <KartyPageHead />
   </head>
   <body>
+    {mobileChrome?.enabled && mobileChrome.mount === 'registry' && mobileChrome.engine === 'page' && (
+      <MobileChromePage backHref={mobileChrome.backHref ?? '/'} homeHref="../" />
+    )}
     <KartyMain />
   </body>
 </html>

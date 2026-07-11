@@ -2,6 +2,11 @@
 import KonfessiiPageHead from '@/components/konfessii/KonfessiiPageHead.astro';
 import KonfessiiPageChrome from '@/components/konfessii/KonfessiiPageChrome.astro';
 import KonfessiiMain from '@/components/konfessii/KonfessiiMain.astro';
+import MobileChromePage from '@/components/article-pilots/_shared/MobileChromePage.astro';
+import { mobileChromeFor } from '@/components/article-pilots/_shared/mobileChromeRegistry';
+
+// Мобильная обвязка выбирается registry (движок «page»: Back·Home·Поиск сверху).
+const mobileChrome = mobileChromeFor('/konfessii/');
 ---
 <!DOCTYPE html>
 <html lang="ru">
@@ -12,6 +17,9 @@ import KonfessiiMain from '@/components/konfessii/KonfessiiMain.astro';
     <div class="sr-only" data-pagefind-body style="position:absolute;left:-9999px;top:auto;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);clip-path:inset(50%);white-space:nowrap">
       Конфессии и Деноминации. История церковных движений, русский баптизм, первоисточники, карты, документы, биографии, статистика и богословские различия.
     </div>
+    {mobileChrome?.enabled && mobileChrome.mount === 'registry' && mobileChrome.engine === 'page' && (
+      <MobileChromePage backHref={mobileChrome.backHref ?? '/'} homeHref="../" />
+    )}
     <KonfessiiPageChrome>
       <KonfessiiMain />
     </KonfessiiPageChrome>
