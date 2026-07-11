@@ -34,6 +34,26 @@ import { renderMorphFramesSvg } from './lib/render-morph-frames.mjs';
 
 const log = (...a) => console.log('[genealogy-build]', ...a);
 
+/**
+ * Авторазметка теофорных элементов в ивритском имени (по согласному скелету):
+ * приставка יהו (Йехо-), суффикс יהו/-יה (-я́ху/-ья) — имя Яхве; אל в начале/конце — Эл
+ * «Бог». Отдаёт undefined, если элементов нет. Разметка автоматическая (review:auto) —
+ * редакционная сверка обязательна для UI-подписей; ядро вручную — name-etymology.json.
+ */
+function analyzeTheophoric(nameForms) {
+  const heb = (nameForms ?? []).find(n => n.lang === 'H')?.original;
+  if (!heb) return undefined;
+  // согласный скелет: снять огласовки/кантилляцию/макаф
+  const sk = heb.replace(/[֑-ׇ־\s]/g, '').split(',')[0];
+  if (sk.length < 3) return undefined;
+  const t = {};
+  if (/^יהו/.test(sk)) t.yahPrefix = true;
+  if (/(יהו|יה)$/.test(sk)) t.yahSuffix = true;
+  if (/^אל/.test(sk) && sk.length >= 4) t.elPrefix = true;
+  if (/אל$/.test(sk) && sk.length >= 4) t.elSuffix = true;
+  return Object.keys(t).length ? { ...t, source: 'auto-skeleton', review: true } : undefined;
+}
+
 // ─────────────────────────── fetch ───────────────────────────
 
 async function sha256(buf) {
@@ -260,6 +280,8 @@ async function runAll() {
       // имя в оригинале (иврит/греческий) из TIPNR «– Named/Greek» — слой сверки
       // с первоисточником и тултипов «имя в оригинале»
       names: rec.nameForms?.length ? rec.nameForms : undefined,
+      // теофорные элементы в ивритском написании (Яхве/Эл) — авторазметка по скелету
+      theophoric: analyzeTheophoric(rec.nameForms),
       skeleton: seed ? {
         v1Id: seed.id,
         lineage: seed.lineage,
@@ -355,14 +377,20 @@ async function runAll() {
   log(`spine: Христос→Адам ${spine.reachedRoot ? 'СВЯЗАН' : 'РАЗОРВАН'}, длина ${spine.length}` +
       (spine.missingAnchors.length ? `, нет якорей: ${spine.missingAnchors.join(',')}` : ''));
 
+  const theoCount = outPersons.filter(p => p.theophoric).length;
+  const namesCount = outPersons.filter(p => p.names?.length).length;
+  log(`иврит-слой: оригиналы у ${namesCount}/${outPersons.length}, теофорных (авто, review) ${theoCount}`);
+
   // 6.5. L0 build-time layout + статический SVG-превью (санитарная проверка + seed §8)
   const erasV1 = v1.eras ?? [];
   const layoutL0 = buildLayoutL0(outPersons, clusters, erasV1);
-  const l0Svg = renderL0Svg(layoutL0);
+  // временная шкала (курируемая, консервативная МТ/Ашшер) — для датировок на обзоре
+  const chrono = JSON.parse(await readFile(path.join(PATHS.outDir, 'chronology.json'), 'utf8'));
+  const l0Svg = renderL0Svg(layoutL0, { chrono });
   // фокус-вариант: мессианская линия Давида ярко, остальное приглушено (демо цели §3)
   const spineIds = new Set(layoutL0.nodes.filter(n => n.kind === 'spine').map(n => n.id));
-  const l0FocusSvg = renderL0Svg(layoutL0, { focus: { label: 'Фокус: линия Давида', brightIds: spineIds } });
-  const l0DarkSvg = renderL0Svg(layoutL0, { theme: 'dark' });   // обе темы (interface-spec требование)
+  const l0FocusSvg = renderL0Svg(layoutL0, { focus: { label: 'Фокус: линия Давида', brightIds: spineIds }, chrono });
+  const l0DarkSvg = renderL0Svg(layoutL0, { theme: 'dark', chrono });   // обе темы (interface-spec требование)
   // L1: развёртка «12 колен» (демо семантического зума — раскрытие сжатой группы)
   const tribes12 = buildTribes12(outPersons);
   const l1TribesSvg = renderTribes12Svg(tribes12);
