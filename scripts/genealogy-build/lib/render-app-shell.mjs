@@ -20,7 +20,7 @@ const iconUse = (id, x, y, s, col, op = 1) => id ? `<use href="#ic-${id}" x="${f
 const W = 1680, H = 1012;
 const TOP = 58, RAIL = 60, PANEL = 320, STAT = 40;
 
-export function renderAppShell(layoutL0, { theme = 'light', views = null } = {}) {
+export function renderAppShell(layoutL0, { theme = 'light', views = null, personsCount = null } = {}) {
   const C = getPalette(theme);
   const dark = theme === 'dark';
   const panelBg = dark ? '#1c150c' : '#efe6ce';
@@ -104,7 +104,8 @@ export function renderAppShell(layoutL0, { theme = 'light', views = null } = {})
   P.push(`<rect x="0" y="${H - STAT}" width="${W}" height="${STAT}" fill="${chromeBg}"/>`);
   P.push(`<line x1="0" y1="${H - STAT}" x2="${W}" y2="${H - STAT}" stroke="${panelEdge}" stroke-width="1"/>`);
   const nMega = layoutL0.nodes.filter(n => n.kind === 'mega').length;
-  P.push(`<text x="16" y="${H - 15}" font-size="11.5" fill="${C.inkSoft}">Обзор · золотой хребет Адам → Христос (${layoutL0.nodes.filter(n => n.kind === 'spine').length} вех) · ${nMega} свёрнутых групп · 3056 имён</text>`);
+  const namesPart = personsCount ? ` · ${personsCount} имён` : '';
+  P.push(`<text x="16" y="${H - 15}" font-size="11.5" fill="${C.inkSoft}">Обзор · золотой хребет Адам → Христос (${layoutL0.nodes.filter(n => n.kind === 'spine').length} вех) · ${nMega} свёрнутых групп${namesPart}</text>`);
   P.push(`<text x="${W - 16}" y="${H - 15}" text-anchor="end" font-size="11.5" fill="${C.inkFaint}">масштаб 42% · зум колёсиком, двойной клик — раскрыть группу</text>`);
 
   P.push('</svg>');
@@ -258,9 +259,19 @@ function miniMap(layoutL0, x, y, w, h, C) {
     const r = isSpine ? (n.messiah ? 3.6 : 2.6) : 2;
     g.push(`<circle cx="${f(tx(n.x + n.w / 2))}" cy="${f(ty(n.y + n.h / 2))}" r="${r}" fill="${col}" opacity="${isSpine ? 1 : 0.7}"/>`);
   }
-  // прямоугольник текущего вида (камера смотрит на нижнюю половину — Авраам→Христос)
-  const vx = ox + bb.w * scale * 0.16, vw = bb.w * scale * 0.68;
-  const vy = oy + bb.h * scale * 0.52, vh = bb.h * scale * 0.46;
+  // прямоугольник текущего вида — из РЕАЛЬНЫХ якорей сцены (Авраам→Христос),
+  // не из хардкод-долей: миникарта честна к камере
+  const ab = layoutL0.nodes.find(n => n.key === 'Abraham@Gen.11.26');
+  const ms = layoutL0.nodes.find(n => n.messiah);
+  let vx, vy, vw, vh;
+  if (ab && ms) {
+    const y0 = ab.y - 60, y1 = ms.y + ms.h + 60;
+    vx = ox + 6; vw = bb.w * scale - 12;
+    vy = ty(y0); vh = ty(y1) - ty(y0);
+  } else {
+    vx = ox + bb.w * scale * 0.16; vw = bb.w * scale * 0.68;
+    vy = oy + bb.h * scale * 0.52; vh = bb.h * scale * 0.46;
+  }
   g.push(`<rect x="${f(vx)}" y="${f(vy)}" width="${f(vw)}" height="${f(vh)}" rx="3" fill="${C.gold}" fill-opacity="0.1" stroke="${C.gold}" stroke-width="1.5"/>`);
   return g.join('');
 }
