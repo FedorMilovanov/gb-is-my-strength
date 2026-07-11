@@ -3700,6 +3700,14 @@ html.dark [data-gill-v16] .mobile-top-bar {
     border-color: color-mix(in srgb, var(--gb-accent) 45%, var(--gb-border));
     background: color-mix(in srgb, var(--gb-accent) 9%, transparent);
   }
+  /* Pointer/programmatic focus (e.g. auto-focus on sheet-open) must NOT paint a
+     ring on an unselected tab — otherwise two tabs read as "selected" at once.
+     Keyboard users still get an accent ring via :focus-visible. */
+  [data-gill-v16] .gill-tab:focus { outline: none; }
+  [data-gill-v16] .gill-tab:focus-visible {
+    outline: 2px solid var(--gb-accent);
+    outline-offset: 2px;
+  }
   [data-gill-v16] .gill-panel[hidden] { display: none; }
   [data-gill-v16] .gill-panel { padding: 2px 16px 16px; }
 
