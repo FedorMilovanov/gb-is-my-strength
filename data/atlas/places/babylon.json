@@ -23,6 +23,10 @@
     {
       "slug": "nachalo",
       "localId": "babylon"
+    },
+    {
+      "slug": "avraam",
+      "localId": "babylon"
     }
   ],
   "needsReview": false,
