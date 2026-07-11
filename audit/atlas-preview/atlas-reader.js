@@ -94,7 +94,7 @@
     nav.innerHTML = '<div class="spine-tab" title="Карты Атласа">≡ КАРТЫ</div>' +
       '<div class="spine-list"><div class="spine-head">БИБЛЕЙСКИЙ АТЛАС</div>' +
       spine.map((s, i) => `<a class="spine-it${s.current ? ' spine-it--on' : ''}" href="sheet-${s.slug}.html" title="${s.title}">` +
-        (s.cover ? `<span class="spine-cover"><img loading="lazy" src="${s.cover}" alt=""><b>${ROMAN[i] || i + 1}</b></span>` : '') +
+        (s.cover ? `<span class="spine-cover"><img loading="lazy" src="${s.cover}" alt=""><b>${s.slug === 'nachalo' ? '✦' : (ROMAN[i - 1] || i)}</b></span>` : '') +
         `<span>${s.title}</span></a>`).join('') + '</div>';
     document.body.appendChild(nav);
     // листание клавишами ← →

@@ -1,0 +1,22 @@
+{
+  "id": "uruk-city",
+  "names": {
+    "ru": "Эрех (Урук)",
+    "he": "אֶרֶךְ"
+  },
+  "type": "city",
+  "rank": 3,
+  "placements": {
+    "urheimat": {
+      "x": 1033,
+      "y": 1188
+    }
+  },
+  "maps": [
+    {
+      "slug": "nachalo",
+      "localId": "uruk-city"
+    }
+  ],
+  "needsReview": true
+}

@@ -1,0 +1,22 @@
+{
+  "id": "eden",
+  "names": {
+    "ru": "Эдем",
+    "he": "עֵדֶן"
+  },
+  "type": "garden",
+  "rank": 2,
+  "placements": {
+    "urheimat": {
+      "x": 672,
+      "y": 268
+    }
+  },
+  "maps": [
+    {
+      "slug": "nachalo",
+      "localId": "eden"
+    }
+  ],
+  "needsReview": true
+}
