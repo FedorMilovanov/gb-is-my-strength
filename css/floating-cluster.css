@@ -4043,6 +4043,43 @@ html.dark [data-gill-v16] .mobile-top-bar {
     box-shadow: none !important;
   }
 
+  /* --- Part-nav (series parts) numerals: clearly GOLD — owner wants the roman
+     numerals golden, NOT the muted #8a6538 bronze the older TOC layers paint.
+     Uses --gb-accent-gold (the same token the series rail card numerals
+     .gbs-rail-card__num use — the light-surface gold, unlike the dark-bar ring
+     token --gill-mobile-bar-gold #7d5a2f). The current part is brighter + bold.
+     Later-in-file !important beats the bronze layer without editing it; the
+     Введение / Справочник label pills keep their own gold-chip styling.
+     grid-template-columns widened so a text label pill still fits its cell. --- */
+  [data-gill-v16] .toc-part-item { grid-template-columns: minmax(28px, auto) 1fr auto !important; }
+  [data-gill-v16] .gb-series-mark--label.toc-part-item__num:not(.gblr-ribbon) {
+    width: auto !important;
+    min-width: 56px !important;
+    white-space: nowrap !important;
+  }
+  [data-gill-v16] .toc-part-item__num:not(.gb-series-mark--label) {
+    color: var(--gb-accent-gold) !important;
+    font-weight: 700 !important;
+    text-shadow: none !important;
+  }
+  html.dark [data-gill-v16] .toc-part-item__num:not(.gb-series-mark--label) {
+    color: var(--gb-accent-gold) !important;
+  }
+  [data-gill-v16] .toc-part-item.is-current .toc-part-item__num:not(.gb-series-mark--label) {
+    color: var(--gb-accent-gold) !important;
+    font-weight: 800 !important;
+  }
+  html.dark [data-gill-v16] .toc-part-item.is-current .toc-part-item__num:not(.gb-series-mark--label) {
+    color: var(--gb-accent-gold-bright) !important;
+    text-shadow: 0 0 12px rgba(216, 176, 104, .45) !important;
+  }
+  /* Footer: single full-width print button (v2.9 .btoc-share-btn) → window.print(). */
+  [data-gill-v16] .toc-action-btn--print {
+    flex: 1 1 auto !important;
+    justify-content: flex-start !important;
+    width: 100% !important;
+  }
+
   /* --- Bottom bar: flush edge-to-edge, borderless except a subtle top
      hairline, frosted blur, NO drop shadow / inset highlight / opaque
      ::after backing. Also holds flush across the 960–1024px gap the V3
