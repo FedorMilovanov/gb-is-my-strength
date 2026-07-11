@@ -134,11 +134,14 @@
     <!-- Нил — основное русло -->
     <path d="M220,852 C222,870 224,892 226,915 C228,938 230,958 232,975" fill="none" stroke="#2d4a66" stroke-width="4" stroke-linecap="round"/>
     <!-- Дельта — пять рукавов -->
-    <path d="M230,972 C215,985 198,995 178,1002" fill="none" stroke="#2d4a66" stroke-width="2.2" stroke-linecap="round" opacity=".75"/>
-    <path d="M230,972 C240,982 258,992 272,998" fill="none" stroke="#2d4a66" stroke-width="2" stroke-linecap="round" opacity=".7"/>
-    <path d="M230,972 C228,990 226,1005 224,1015" fill="none" stroke="#2d4a66" stroke-width="2" stroke-linecap="round" opacity=".65"/>
-    <path d="M230,972 C222,984 212,994 200,1002" fill="none" stroke="#2d4a66" stroke-width="1.6" stroke-linecap="round" opacity=".55"/>
-    <path d="M230,972 C245,986 260,998 278,1004" fill="none" stroke="#2d4a66" stroke-width="1.5" stroke-linecap="round" opacity=".5"/>
+    <path d="M230,968 C206,982 190,996 180,1010 C214,1002 250,1003 284,1010 C270,996 252,982 230,968 Z" fill="url(#seaG)" opacity=".26"/>
+    <path d="M230,972 C214,986 196,998 182,1008" fill="none" stroke="#2d4a66" stroke-width="2" stroke-linecap="round" opacity=".6"/>
+    <path d="M230,972 C246,986 264,998 282,1006" fill="none" stroke="#2d4a66" stroke-width="2" stroke-linecap="round" opacity=".55"/>
+    <path d="M230,972 C228,990 226,1004 225,1014" fill="none" stroke="#2d4a66" stroke-width="1.4" stroke-linecap="round" opacity=".4"/>
+    
+    
+    
+    
     <!-- Нил — лёгкий glow -->
     <path d="M220,852 C222,870 224,892 226,915 C228,938 230,958 232,975" fill="none" stroke="#4a80a8" stroke-width="8" stroke-linecap="round" opacity=".08" filter="url(#soft)"/>
     <text class="region-label lbl-z1" x="184" y="890" font-size="6" fill="#7fa7c4" opacity=".55" letter-spacing=".15em">ДЕЛЬТА НИЛА</text>
