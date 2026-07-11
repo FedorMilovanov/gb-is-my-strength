@@ -1,0 +1,81 @@
+{
+ "_status": "phase1: быстрые виды панели-навигатора; счётчики из данных пайплайна",
+ "views": [
+  {
+   "id": "spine",
+   "titleRu": "Адам → Христос",
+   "icon": "cross",
+   "kind": "focus-spine",
+   "hint": "хребет",
+   "descRu": "Золотая мессианская нить через всю Библию"
+  },
+  {
+   "id": "tribes-12",
+   "titleRu": "12 колен Израиля",
+   "icon": "tribes",
+   "kind": "cluster",
+   "target": "tribes-12",
+   "count": 12,
+   "hint": "L1",
+   "descRu": "Сыновья Иакова — родоначальники колен (радиальная развёртка)"
+  },
+  {
+   "id": "house-of-david",
+   "titleRu": "Дом Давида",
+   "icon": "crown",
+   "kind": "cluster",
+   "target": "house-of-david",
+   "count": 173,
+   "hint": "+173",
+   "descRu": "Царская династия от Давида"
+  },
+  {
+   "id": "nations",
+   "titleRu": "Народы от Ноя",
+   "icon": "globe",
+   "kind": "archetype",
+   "target": "nations",
+   "count": 70,
+   "hint": "70",
+   "descRu": "Таблица народов (Быт 10): 70 народов от трёх сыновей Ноя"
+  },
+  {
+   "id": "matthew-1",
+   "titleRu": "Родословие Матфея",
+   "icon": "book",
+   "kind": "cluster",
+   "target": "matthew-1",
+   "count": 74,
+   "hint": "Мф 1",
+   "descRu": "Царская (юридическая) линия: Авраам → Иосиф"
+  },
+  {
+   "id": "luke-3",
+   "titleRu": "Родословие Луки",
+   "icon": "scroll",
+   "kind": "cluster",
+   "target": "luke-3",
+   "count": 75,
+   "hint": "Лк 3",
+   "descRu": "Кровная линия через Марию: Христос → Адам"
+  },
+  {
+   "id": "women",
+   "titleRu": "Женские фигуры",
+   "icon": "people",
+   "kind": "filter",
+   "target": "gender:f",
+   "count": 200,
+   "hint": "200",
+   "descRu": "Все женщины генеалогии (матери, жёны, дочери)"
+  },
+  {
+   "id": "eras",
+   "titleRu": "Хронология (эпохи)",
+   "icon": "ladder",
+   "kind": "era",
+   "hint": "I–VI",
+   "descRu": "Шесть эпох от Сотворения до Воплощения"
+  }
+ ]
+}
