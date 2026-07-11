@@ -48,10 +48,31 @@
   .st-body b{color:#8a6a1f}
   .st-body i{color:#7a6a48;margin-left:6px;font-size:11.5px}
   .g9{position:fixed;right:10px;bottom:10px;z-index:9;font:600 10px/1 system-ui;letter-spacing:.08em;color:#7a5c26;background:rgba(246,241,231,.9);border:1px solid rgba(138,106,31,.4);border-radius:999px;padding:6px 10px}
+  /* ── Читалка (R1, §14): корешок, погружение, курсоры ── */
+  svg.sheet{cursor:grab;touch-action:none}
+  .frame,.legend,.cartouche,.furn{transition:opacity .35s}
+  svg.zoomed .frame,svg.zoomed .legend,svg.zoomed .cartouche,svg.zoomed .furn{opacity:0;pointer-events:none}
+  svg.sheet.grabbing{cursor:grabbing}
+  .stage-strip .st{cursor:pointer;border-radius:8px;padding:2px 8px;margin:-2px -8px;transition:background .15s}
+  .stage-strip .st:hover{background:rgba(138,106,31,.1)}
+  .stage-strip .st--on{background:rgba(138,106,31,.16)}
+  .spine{position:fixed;left:0;top:0;bottom:0;z-index:20;display:flex;align-items:stretch}
+  .spine-tab{writing-mode:vertical-rl;transform:rotate(180deg);display:flex;align-items:center;gap:6px;padding:14px 5px;background:rgba(246,241,231,.94);border-right:1px solid rgba(138,106,31,.35);color:#8a6a1f;font:700 11px/1 Georgia,serif;letter-spacing:.22em;cursor:pointer;box-shadow:2px 0 10px rgba(90,70,30,.15)}
+  .spine-list{width:0;overflow:hidden;overflow-y:auto;background:rgba(246,241,231,.97);transition:width .25s ease;box-shadow:4px 0 18px rgba(90,70,30,.2)}
+  .spine:hover .spine-list,.spine:focus-within .spine-list{width:212px}
+  .spine-it{display:block;padding:10px 12px;text-decoration:none;color:#3a3020;font:600 13px/1.25 Georgia,serif;border-bottom:1px solid rgba(138,106,31,.14)}
+  .spine-it img{display:block;width:100%;border-radius:6px;margin-bottom:6px;box-shadow:0 2px 8px rgba(90,70,30,.25)}
+  .spine-it:hover{background:rgba(138,106,31,.08)}
+  .spine-it--on{background:rgba(138,106,31,.14)}
+  .dive-btn{position:fixed;right:10px;top:10px;z-index:21;width:38px;height:38px;border-radius:10px;border:1px solid rgba(138,106,31,.4);background:rgba(246,241,231,.92);color:#7a5c26;font-size:17px;cursor:pointer;box-shadow:0 2px 8px rgba(90,70,30,.2)}
+  .dive-btn:hover{background:#f6f1e7}
+  body.dive .spine,body.dive .stage-strip,body.dive .g9{display:none}
+  body.dive .wrap{max-width:none;border-radius:0;box-shadow:none}
+  body.dive{padding:0}
 </style>
 </head>
 <body>
-<div class="wrap"><svg viewBox="80.0 26.7 1780 1186.7" xmlns="http://www.w3.org/2000/svg" class="sheet" role="img" aria-label="Миссионерские путешествия Павла — лист Атласа">
+<div class="wrap"><svg id="sheet-svg" viewBox="80.0 26.7 1780 1186.7" data-vb="80.0 26.7 1780 1186.7" xmlns="http://www.w3.org/2000/svg" class="sheet" role="img" aria-label="Миссионерские путешествия Павла — лист Атласа">
 <defs>
   <linearGradient id="landG" x1="0" y1="0" x2="1" y2="1">
     <stop offset="0" stop-color="#f0e7cf"/><stop offset=".45" stop-color="#e8dcbc"/><stop offset="1" stop-color="#dfd1a9"/>
@@ -296,7 +317,7 @@ Z"/>
 <path d="M1740,678 C1715.7,691.8 1633.7,783.8 1594,761 C1554.3,738.2 1606.2,620.7 1502,541 C1397.8,461.3 1072.5,320.8 969,283 C865.5,245.2 887.2,272.7 881,314 C874.8,355.3 932.7,493.7 932,531 C931.3,568.3 837.8,537.3 877,538 C916.2,538.7 1033.3,451.3 1167,535 C1300.7,618.7 1840.0,1094.0 1679,1040 C1518.0,986.0 447.3,349.2 201,211" class="route"/>
 
 <circle cx="1594" cy="761" r="6.23" class="pl-city"/><circle cx="1502" cy="541" r="6.23" class="pl-city"/><circle cx="881" cy="314" r="6.23" class="pl-city"/><circle cx="932" cy="531" r="6.23" class="pl-city"/><circle cx="877" cy="538" r="6.23" class="pl-city"/><circle cx="1679" cy="1040" r="6.23" class="pl-city"/><circle cx="201" cy="211" r="6.23" class="pl-city"/>
-<g class="mile"><circle cx="1740" cy="678" r="10.98" class="mile-c" style="stroke:#8a6a1f"/><text x="1740" y="683.0433333333333" text-anchor="middle" class="mile-t" font-size="14.09" style="fill:#8a6a1f">I</text></g><g class="mile"><circle cx="969" cy="283" r="10.98" class="mile-c" style="stroke:#a25d33"/><text x="969" y="288.04333333333335" text-anchor="middle" class="mile-t" font-size="14.09" style="fill:#a25d33">II</text></g><g class="mile"><circle cx="1167" cy="535" r="10.98" class="mile-c" style="stroke:#4a7a52"/><text x="1167" y="540.0433333333333" text-anchor="middle" class="mile-t" font-size="14.09" style="fill:#4a7a52">III</text></g>
+<g class="mile" data-stage="0" data-x="1740" data-y="678"><circle cx="1740" cy="678" r="10.98" class="mile-c" style="stroke:#8a6a1f"/><text x="1740" y="683.0433333333333" text-anchor="middle" class="mile-t" font-size="14.09" style="fill:#8a6a1f">I</text></g><g class="mile" data-stage="1" data-x="969" data-y="283"><circle cx="969" cy="283" r="10.98" class="mile-c" style="stroke:#a25d33"/><text x="969" y="288.04333333333335" text-anchor="middle" class="mile-t" font-size="14.09" style="fill:#a25d33">II</text></g><g class="mile" data-stage="2" data-x="1167" data-y="535"><circle cx="1167" cy="535" r="10.98" class="mile-c" style="stroke:#4a7a52"/><text x="1167" y="540.0433333333333" text-anchor="middle" class="mile-t" font-size="14.09" style="fill:#4a7a52">III</text></g>
 <rect x="1735.3" y="673.3" width="9.5" height="9.5" transform="rotate(45 1740 678)" class="wp-dot"/><text x="1745.9" y="698.8" class="lab-wp" font-size="14.83">Антиохия (арх.)</text><rect x="964.3" y="278.3" width="9.5" height="9.5" transform="rotate(45 969 283)" class="wp-dot"/><text x="974.9" y="303.8" class="lab-wp" font-size="14.83">Филиппы (арх.)</text><rect x="872.3" y="533.3" width="9.5" height="9.5" transform="rotate(45 877 538)" class="wp-dot"/><text x="882.9" y="558.8" class="lab-wp" font-size="14.83">Бема Коринфа</text><rect x="1162.3" y="530.3" width="9.5" height="9.5" transform="rotate(45 1167 535)" class="wp-dot"/><text x="1172.9" y="555.8" class="lab-wp" font-size="14.83">Эфес (арх.)</text>
 
 <text x="1762.3" y="684.6" class="lab-place" font-size="19.28" text-anchor="start">Антиохия</text><text x="1607.3" y="767.6" class="lab-place" font-size="19.28" text-anchor="start">Кипр · Саламин</text><text x="1515.3" y="547.6" class="lab-place" font-size="19.28" text-anchor="start">Икония</text><text x="991.3" y="289.6" class="lab-place" font-size="19.28" text-anchor="start">Филиппы</text><text x="867.6" y="320.6" class="lab-place" font-size="19.28" text-anchor="end">Фессалоника</text><text x="945.4" y="537.6" class="lab-place" font-size="19.28" text-anchor="start">Афины · Ареопаг</text><text x="890.4" y="544.6" class="lab-place" font-size="19.28" text-anchor="start">Коринф</text><text x="1189.3" y="541.6" class="lab-place" font-size="19.28" text-anchor="start">Эфес</text><text x="1692.3" y="1046.6" class="lab-place" font-size="19.28" text-anchor="start">Иерусалим</text><text x="214.3" y="217.6" class="lab-place" font-size="19.28" text-anchor="start">Рим</text>
@@ -338,8 +359,10 @@ Z"/>
 <rect x="91.86666666666667" y="38.533333333333296" width="1756.2666666666667" height="1162.9333333333334" class="frame"/>
 </svg>
   <div class="stage-strip">
-    <div class="st"><span class="st-dot" style="background:#8a6a1f"></span><span class="st-body"><b>I</b> · Первое путешествие<i>45–48 гг. н.э.</i></span></div><div class="st"><span class="st-dot" style="background:#a25d33"></span><span class="st-body"><b>II</b> · Второе путешествие<i>49–52 гг. н.э.</i></span></div><div class="st"><span class="st-dot" style="background:#4a7a52"></span><span class="st-body"><b>III</b> · Третье + путь в Рим<i>53–60 гг. н.э.</i></span></div>
+    <div class="st" data-stage="0" role="button" tabindex="0" title="Показать этап на листе"><span class="st-dot" style="background:#8a6a1f"></span><span class="st-body"><b>I</b> · Первое путешествие<i>45–48 гг. н.э.</i></span></div><div class="st" data-stage="1" role="button" tabindex="0" title="Показать этап на листе"><span class="st-dot" style="background:#a25d33"></span><span class="st-body"><b>II</b> · Второе путешествие<i>49–52 гг. н.э.</i></span></div><div class="st" data-stage="2" role="button" tabindex="0" title="Показать этап на листе"><span class="st-dot" style="background:#4a7a52"></span><span class="st-body"><b>III</b> · Третье + путь в Рим<i>53–60 гг. н.э.</i></span></div>
   </div></div>
 <span class="g9">PAVEL · SHEET · awaiting G9</span>
+<script>window.ATLAS_SPINE=[{"slug":"avraam","title":"Путь Авраама","current":false,"cover":"../../images/atlas-avraam-scene-600w.webp"},{"slug":"ishod","title":"Исход из Египта","current":false,"cover":"../../images/atlas-ishod-scene-600w.webp"},{"slug":"shvatim","title":"12 Колен Израиля","current":false,"cover":"../../images/atlas-shvatim-scene-600w.webp"},{"slug":"shoftim","title":"Эпоха Судей","current":false,"cover":"../../images/atlas-shoftim-scene-600w.webp"},{"slug":"melachim","title":"Царства Израиля и Иуды","current":false,"cover":"../../images/atlas-melachim-scene-600w.webp"},{"slug":"yeshua","title":"Жизнь Иисуса Христа","current":false,"cover":"../../images/atlas-yeshua-scene-600w.webp"},{"slug":"early-church","title":"Ранняя Церковь · Деяния 1–12","current":false,"cover":"../../images/atlas-early-church-scene-600w.webp"},{"slug":"pavel","title":"Миссионерские путешествия Павла","current":true,"cover":"../../images/atlas-pavel-scene-600w.webp"},{"slug":"revelation","title":"7 Церквей Откровения","current":false,"cover":"../../images/atlas-revelation-scene-600w.webp"},{"slug":"maccabim","title":"Межзаветный период · Маккавеи","current":false,"cover":"../../images/atlas-maccabim-scene-600w.webp"}];</script>
+<script src="atlas-reader.js"></script>
 </body>
 </html>

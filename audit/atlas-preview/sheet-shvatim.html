@@ -48,10 +48,31 @@
   .st-body b{color:#8a6a1f}
   .st-body i{color:#7a6a48;margin-left:6px;font-size:11.5px}
   .g9{position:fixed;right:10px;bottom:10px;z-index:9;font:600 10px/1 system-ui;letter-spacing:.08em;color:#7a5c26;background:rgba(246,241,231,.9);border:1px solid rgba(138,106,31,.4);border-radius:999px;padding:6px 10px}
+  /* ── Читалка (R1, §14): корешок, погружение, курсоры ── */
+  svg.sheet{cursor:grab;touch-action:none}
+  .frame,.legend,.cartouche,.furn{transition:opacity .35s}
+  svg.zoomed .frame,svg.zoomed .legend,svg.zoomed .cartouche,svg.zoomed .furn{opacity:0;pointer-events:none}
+  svg.sheet.grabbing{cursor:grabbing}
+  .stage-strip .st{cursor:pointer;border-radius:8px;padding:2px 8px;margin:-2px -8px;transition:background .15s}
+  .stage-strip .st:hover{background:rgba(138,106,31,.1)}
+  .stage-strip .st--on{background:rgba(138,106,31,.16)}
+  .spine{position:fixed;left:0;top:0;bottom:0;z-index:20;display:flex;align-items:stretch}
+  .spine-tab{writing-mode:vertical-rl;transform:rotate(180deg);display:flex;align-items:center;gap:6px;padding:14px 5px;background:rgba(246,241,231,.94);border-right:1px solid rgba(138,106,31,.35);color:#8a6a1f;font:700 11px/1 Georgia,serif;letter-spacing:.22em;cursor:pointer;box-shadow:2px 0 10px rgba(90,70,30,.15)}
+  .spine-list{width:0;overflow:hidden;overflow-y:auto;background:rgba(246,241,231,.97);transition:width .25s ease;box-shadow:4px 0 18px rgba(90,70,30,.2)}
+  .spine:hover .spine-list,.spine:focus-within .spine-list{width:212px}
+  .spine-it{display:block;padding:10px 12px;text-decoration:none;color:#3a3020;font:600 13px/1.25 Georgia,serif;border-bottom:1px solid rgba(138,106,31,.14)}
+  .spine-it img{display:block;width:100%;border-radius:6px;margin-bottom:6px;box-shadow:0 2px 8px rgba(90,70,30,.25)}
+  .spine-it:hover{background:rgba(138,106,31,.08)}
+  .spine-it--on{background:rgba(138,106,31,.14)}
+  .dive-btn{position:fixed;right:10px;top:10px;z-index:21;width:38px;height:38px;border-radius:10px;border:1px solid rgba(138,106,31,.4);background:rgba(246,241,231,.92);color:#7a5c26;font-size:17px;cursor:pointer;box-shadow:0 2px 8px rgba(90,70,30,.2)}
+  .dive-btn:hover{background:#f6f1e7}
+  body.dive .spine,body.dive .stage-strip,body.dive .g9{display:none}
+  body.dive .wrap{max-width:none;border-radius:0;box-shadow:none}
+  body.dive{padding:0}
 </style>
 </head>
 <body>
-<div class="wrap"><svg viewBox="150.0 333.3 1100 733.3" xmlns="http://www.w3.org/2000/svg" class="sheet" role="img" aria-label="12 Колен Израиля — лист Атласа">
+<div class="wrap"><svg id="sheet-svg" viewBox="150.0 333.3 1100 733.3" data-vb="150.0 333.3 1100 733.3" xmlns="http://www.w3.org/2000/svg" class="sheet" role="img" aria-label="12 Колен Израиля — лист Атласа">
 <defs>
   <linearGradient id="landG" x1="0" y1="0" x2="1" y2="1">
     <stop offset="0" stop-color="#f0e7cf"/><stop offset=".45" stop-color="#e8dcbc"/><stop offset="1" stop-color="#dfd1a9"/>
@@ -562,7 +583,7 @@
 <path d="M600,850 C600.2,835.0 599.3,780.7 601,760 C602.7,739.3 594.8,738.0 610,726 C625.2,714.0 689.7,673.7 692,688 C694.3,702.3 628.5,822.5 624,812 C619.5,801.5 673.2,614.5 665,625 C656.8,635.5 579.0,862.0 575,875 C571.0,888.0 632.2,735.3 641,703 C649.8,670.7 628.2,693.5 628,681 C627.8,668.5 642.3,633.8 640,628 C637.7,622.2 606.7,625.3 614,646 C621.3,666.7 673.2,722.7 684,752 C694.8,781.3 685.5,815.8 679,822 C672.5,828.2 653.7,795.3 645,789 C636.3,782.7 631.3,783.5 627,784 C622.7,784.5 613.8,814.2 619,792 C624.2,769.8 656.5,659.5 658,651 C659.5,642.5 633.0,726.0 628,741" class="route"/>
 <line x1="627.0" y1="778.3" x2="627.0" y2="763.7" class="leader"/><line x1="613.7" y1="794.0" x2="603.8" y2="797.9" class="leader"/>
 <circle cx="601" cy="760" r="3.85" class="pl-city"/><circle cx="610" cy="726" r="3.85" class="pl-city"/><circle cx="665" cy="625" r="3.85" class="pl-city"/><circle cx="575" cy="875" r="3.85" class="pl-city"/><circle cx="641" cy="703" r="3.85" class="pl-city"/><circle cx="628" cy="681" r="3.85" class="pl-city"/><circle cx="640" cy="628" r="3.85" class="pl-city"/><circle cx="614" cy="646" r="3.85" class="pl-city"/><circle cx="684" cy="752" r="3.85" class="pl-city"/><circle cx="679" cy="822" r="3.85" class="pl-city"/><circle cx="645" cy="789" r="3.85" class="pl-city"/><circle cx="627" cy="784" r="3.85" class="pl-city"/><circle cx="619" cy="792" r="3.85" class="pl-city"/><circle cx="658" cy="651" r="3.85" class="pl-city"/><circle cx="628" cy="741" r="3.85" class="pl-city"/>
-<g class="mile"><circle cx="600" cy="850" r="6.78" class="mile-c" style="stroke:#8a6a1f"/><text x="600" y="853.1166666666667" text-anchor="middle" class="mile-t" font-size="8.71" style="fill:#8a6a1f">I</text></g><g class="mile"><circle cx="692" cy="688" r="6.78" class="mile-c" style="stroke:#4a7a52"/><text x="692" y="691.1166666666667" text-anchor="middle" class="mile-t" font-size="8.71" style="fill:#4a7a52">III</text></g><g class="mile"><circle cx="624" cy="812" r="6.78" class="mile-c" style="stroke:#a25d33"/><text x="624" y="815.1166666666667" text-anchor="middle" class="mile-t" font-size="8.71" style="fill:#a25d33">II</text></g>
+<g class="mile" data-stage="0" data-x="600" data-y="850"><circle cx="600" cy="850" r="6.78" class="mile-c" style="stroke:#8a6a1f"/><text x="600" y="853.1166666666667" text-anchor="middle" class="mile-t" font-size="8.71" style="fill:#8a6a1f">I</text></g><g class="mile" data-stage="2" data-x="692" data-y="688"><circle cx="692" cy="688" r="6.78" class="mile-c" style="stroke:#4a7a52"/><text x="692" y="691.1166666666667" text-anchor="middle" class="mile-t" font-size="8.71" style="fill:#4a7a52">III</text></g><g class="mile" data-stage="1" data-x="624" data-y="812"><circle cx="624" cy="812" r="6.78" class="mile-c" style="stroke:#a25d33"/><text x="624" y="815.1166666666667" text-anchor="middle" class="mile-t" font-size="8.71" style="fill:#a25d33">II</text></g>
 
 <text x="700" y="520" class="lab-ctx" font-size="10.54" text-anchor="middle">ЛИВАН</text><text x="800" y="500" class="lab-ctx" font-size="10.54" text-anchor="middle">СИРИЯ</text><text x="500" y="700" class="lab-ctx" font-size="10.54" text-anchor="middle">ВЕЛИКОЕ МОРЕ</text>
 <text x="586.3" y="854.1" class="lab-place" font-size="11.92" text-anchor="end">Иуда</text><text x="592.8" y="764.1" class="lab-place" font-size="11.92" text-anchor="end">Ефрем</text><text x="618.3" y="730.1" class="lab-place" font-size="11.92" text-anchor="start">Манассия (запад)</text><text x="705.8" y="692.1" class="lab-place" font-size="11.92" text-anchor="start">Манассия (восток)</text><text x="610.3" y="816.1" class="lab-place" font-size="11.92" text-anchor="end">Вениамин</text><text x="673.3" y="629.1" class="lab-place" font-size="11.92" text-anchor="start">Дан</text><text x="583.3" y="879.1" class="lab-place" font-size="11.92" text-anchor="start">Симеон</text><text x="632.8" y="707.1" class="lab-place" font-size="11.92" text-anchor="end">Иссахар</text><text x="619.8" y="685.1" class="lab-place" font-size="11.92" text-anchor="end">Завулон</text><text x="631.8" y="632.1" class="lab-place" font-size="11.92" text-anchor="end">Неффалим</text><text x="605.8" y="650.1" class="lab-place" font-size="11.92" text-anchor="end">Асир</text><text x="692.3" y="756.1" class="lab-place" font-size="11.92" text-anchor="start">Гад</text><text x="670.8" y="826.1" class="lab-place" font-size="11.92" text-anchor="end">Рувим</text><text x="653.3" y="793.1" class="lab-place" font-size="11.92" text-anchor="start">Иерихон</text><text x="627.0" y="767.8" class="lab-place" font-size="11.92" text-anchor="middle">Гай</text><text x="602.0" y="801.9" class="lab-place" font-size="11.92" text-anchor="end">Гаваон</text><text x="649.8" y="655.1" class="lab-place" font-size="11.92" text-anchor="end">Асор</text><text x="619.8" y="745.1" class="lab-place" font-size="11.92" text-anchor="end">Гевал · благословение и проклятие</text>
@@ -604,8 +625,10 @@
 <rect x="157.33333333333334" y="340.66666666666663" width="1085.3333333333333" height="718.6666666666667" class="frame"/>
 </svg>
   <div class="stage-strip">
-    <div class="st"><span class="st-dot" style="background:#8a6a1f"></span><span class="st-body"><b>I</b> · Северные колена<i>6 КОЛЕН · ГАЛИЛЕЯ, САМАРИЯ</i></span></div><div class="st"><span class="st-dot" style="background:#a25d33"></span><span class="st-body"><b>II</b> · Южные колена<i>4 КОЛЕНА · ИУДЕЯ, ШФЕЛА, НЕГЕВ</i></span></div><div class="st"><span class="st-dot" style="background:#4a7a52"></span><span class="st-body"><b>III</b> · Заиорданские колена<i>2½ КОЛЕНА · ГАЛААД, ВАСАН, МОАВ</i></span></div>
+    <div class="st" data-stage="0" role="button" tabindex="0" title="Показать этап на листе"><span class="st-dot" style="background:#8a6a1f"></span><span class="st-body"><b>I</b> · Северные колена<i>6 КОЛЕН · ГАЛИЛЕЯ, САМАРИЯ</i></span></div><div class="st" data-stage="1" role="button" tabindex="0" title="Показать этап на листе"><span class="st-dot" style="background:#a25d33"></span><span class="st-body"><b>II</b> · Южные колена<i>4 КОЛЕНА · ИУДЕЯ, ШФЕЛА, НЕГЕВ</i></span></div><div class="st" data-stage="2" role="button" tabindex="0" title="Показать этап на листе"><span class="st-dot" style="background:#4a7a52"></span><span class="st-body"><b>III</b> · Заиорданские колена<i>2½ КОЛЕНА · ГАЛААД, ВАСАН, МОАВ</i></span></div>
   </div></div>
 <span class="g9">SHVATIM · SHEET · awaiting G9</span>
+<script>window.ATLAS_SPINE=[{"slug":"avraam","title":"Путь Авраама","current":false,"cover":"../../images/atlas-avraam-scene-600w.webp"},{"slug":"ishod","title":"Исход из Египта","current":false,"cover":"../../images/atlas-ishod-scene-600w.webp"},{"slug":"shvatim","title":"12 Колен Израиля","current":true,"cover":"../../images/atlas-shvatim-scene-600w.webp"},{"slug":"shoftim","title":"Эпоха Судей","current":false,"cover":"../../images/atlas-shoftim-scene-600w.webp"},{"slug":"melachim","title":"Царства Израиля и Иуды","current":false,"cover":"../../images/atlas-melachim-scene-600w.webp"},{"slug":"yeshua","title":"Жизнь Иисуса Христа","current":false,"cover":"../../images/atlas-yeshua-scene-600w.webp"},{"slug":"early-church","title":"Ранняя Церковь · Деяния 1–12","current":false,"cover":"../../images/atlas-early-church-scene-600w.webp"},{"slug":"pavel","title":"Миссионерские путешествия Павла","current":false,"cover":"../../images/atlas-pavel-scene-600w.webp"},{"slug":"revelation","title":"7 Церквей Откровения","current":false,"cover":"../../images/atlas-revelation-scene-600w.webp"},{"slug":"maccabim","title":"Межзаветный период · Маккавеи","current":false,"cover":"../../images/atlas-maccabim-scene-600w.webp"}];</script>
+<script src="atlas-reader.js"></script>
 </body>
 </html>
