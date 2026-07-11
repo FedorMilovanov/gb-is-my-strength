@@ -24,6 +24,7 @@
  */
 import SaveButton from '@/components/ui/floating-cluster/SaveButton.astro';
 import PlayEmber from '@/components/ui/floating-cluster/PlayEmber.astro';
+import MobileChromeShell from '../_shared/MobileChromeShell.astro';
 import { HERMENEVTIKA_TOC } from './hermenevtikaToc';
 
 interface Props {
@@ -33,11 +34,17 @@ interface Props {
 }
 const { title, backHref, readingMinutes = 50 } = Astro.props;
 ---
-<div class="hmtop" data-fc-root data-fc-variant="single" data-fc-mode="single" data-gb-speed-custom>
-  <button class="hm-icon" id="hmBackBtn" type="button" aria-label="Назад" data-home-href={backHref}>
+<MobileChromeShell
+  engine="article"
+  topClass="hmtop"
+  bottomClass="hmbar"
+  topAttrs={{ 'data-fc-root': true, 'data-fc-variant': 'single', 'data-fc-mode': 'single', 'data-gb-speed-custom': true }}
+  bottomAttrs={{ 'data-fc-root': true, 'data-fc-variant': 'single', 'data-fc-mode': 'single' }}
+>
+  <button class="hm-icon" id="hmBackBtn" type="button" aria-label="Назад" data-home-href={backHref} slot="top-leading">
     <svg viewBox="0 0 24 24"><path d="M19 12H5M12 19l-7-7 7-7" /></svg>
   </button>
-  <div class="hm-slot" id="hmSlot">
+  <div class="hm-slot" id="hmSlot" slot="top-primary">
     <label class="hm-slot-search" for="hmTocSearch">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7" /><path d="M21 21l-4.3-4.3" /></svg>
       <input id="hmTocSearch" type="text" placeholder="Поиск по разделам…" autocomplete="off" />
@@ -50,25 +57,24 @@ const { title, backHref, readingMinutes = 50 } = Astro.props;
       <button class="hm-spd" type="button" role="radio" data-speed="2" aria-checked="false">2×</button>
     </div>
   </div>
-  <span class="hm-playwrap">
+  <span class="hm-playwrap" slot="top-playback">
     <PlayEmber audioState="none" class="hm-ember" tip="Озвучка" />
     <button class="hm-spdbadge" id="hmSpdBadge" type="button" aria-label="Выбрать скорость, сейчас 1×">1×</button>
   </span>
-  <SaveButton class="hm-icon" tip="Сохранить" />
-</div>
+  <SaveButton class="hm-icon" tip="Сохранить" slot="top-trailing" />
 
-<div class="hmbar" data-fc-root data-fc-variant="single" data-fc-mode="single">
-  <button class="hmbar-progress" id="hmBottomBtn" type="button" aria-label="Открыть оглавление статьи">
+  <button class="hmbar-progress" id="hmBottomBtn" type="button" aria-label="Открыть оглавление статьи" slot="bottom-progress">
     <svg aria-hidden="true" viewBox="0 0 36 36">
       <circle class="hmbar-progress-track" cx="18" cy="18" r="15.5" />
       <circle class="hmbar-progress-fill" id="hmProgressFill" cx="18" cy="18" r="15.5" stroke-dasharray="97.4" stroke-dashoffset="97.4" />
     </svg>
     <span class="hmbar-progress-text" id="hmProgressText">0%</span>
   </button>
-  <button class="hmbar-section" id="hmSectionBtn" type="button" aria-label="Открыть оглавление статьи">
+  <button class="hmbar-section" id="hmSectionBtn" type="button" aria-label="Открыть оглавление статьи" slot="bottom-context">
     <span class="hmbar-section-label">Сейчас читаете</span>
     <span class="hmbar-section-name" id="hmSectionName">{HERMENEVTIKA_TOC[0]?.label}</span>
   </button>
+  <Fragment slot="bottom-actions">
   <span class="hmbar-divider"></span>
   <button class="hmbar-btn gb-theme-toggle" data-fc-action="theme" aria-label="Тема">
     <span class="theme-icon-sun" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4.5" /><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41" /></svg></span>
@@ -81,9 +87,9 @@ const { title, backHref, readingMinutes = 50 } = Astro.props;
   <button class="hmbar-btn" id="hmShareBtn" type="button" aria-label="Поделиться">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3" /><circle cx="6" cy="12" r="3" /><circle cx="18" cy="19" r="3" /><path d="M8.6 13.5l6.8 4M15.4 6.5l-6.8 4" /></svg>
   </button>
-</div>
+  </Fragment>
 
-<div class="hmsheet" id="hmSheet" aria-hidden="true" data-reading-minutes={readingMinutes}>
+  <div class="hmsheet" id="hmSheet" aria-hidden="true" data-reading-minutes={readingMinutes} slot="overlays">
   <div class="hmsheet-backdrop" id="hmSheetBackdrop"></div>
   <div class="hmsheet-panel" role="dialog" aria-modal="true" aria-labelledby="hmSheetTitle">
     <div class="hmsheet-handle"></div>
@@ -128,7 +134,8 @@ const { title, backHref, readingMinutes = 50 } = Astro.props;
       </button>
     </div>
   </div>
-</div>
+  </div>
+</MobileChromeShell>
 
 <style is:global>
   .hmtop, .hmbar{display:none}
