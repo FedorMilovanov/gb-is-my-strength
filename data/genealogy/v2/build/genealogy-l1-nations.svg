@@ -23,7 +23,8 @@
     <filter id="desat"><feColorMatrix type="saturate" values="0.15"/></filter>
 <radialGradient id="nglow" cx="50%" cy="14%" r="74%">
     <stop offset="0%" stop-color="#fff6df" stop-opacity="0.85"/>
-    <stop offset="46%" stop-color="#f7eccf" stop-opacity="0.4"/>
+    <stop offset="40%" stop-color="#f7eccf" stop-opacity="0.4"/>
+    <stop offset="78%" stop-color="#f7eccf" stop-opacity="0.12"/>
     <stop offset="100%" stop-color="#f7eccf" stop-opacity="0"/></radialGradient>
 <radialGradient id="vignette" cx="50%" cy="40%" r="80%">
     <stop offset="0%" stop-color="#6a5230" stop-opacity="0"/>

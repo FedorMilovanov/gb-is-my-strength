@@ -359,9 +359,11 @@ async function runAll() {
   // L1: развёртка «12 колен» (демо семантического зума — раскрытие сжатой группы)
   const tribes12 = buildTribes12(outPersons);
   const l1TribesSvg = renderTribes12Svg(tribes12);
+  const l1TribesDarkSvg = renderTribes12Svg(tribes12, { theme: 'dark' });
   log(`layout-l1: «12 колен» — центр Иаков + ${tribes12.sons.length} сыновей радиально`);
   const mtLk = buildMatthewLuke();
   const l1MtLkSvg = renderMatthewLukeSvg(mtLk);
+  const l1MtLkDarkSvg = renderMatthewLukeSvg(mtLk, { theme: 'dark' });
   log(`layout-l1: «Матфей/Лука» — колоночная развёртка (${mtLk.nodes.length} узлов)`);
   // L1: архетип 3 «Народы от Ноя» (Таблица народов, Быт 10) — отступный список-дерево
   const tonData = JSON.parse(await readFile(path.join(PATHS.outDir, 'table-of-nations.json'), 'utf8'));
@@ -411,8 +413,10 @@ async function runAll() {
   await writeFile(path.join(PATHS.outDir, 'build', 'genealogy-l0-dark.svg'), l0DarkSvg);
   await writeFile(path.join(PATHS.outDir, 'build', 'layout-l1-tribes-12.json'), JSON.stringify(tribes12, null, 1) + '\n');
   await writeFile(path.join(PATHS.outDir, 'build', 'genealogy-l1-tribes-12.svg'), l1TribesSvg);
+  await writeFile(path.join(PATHS.outDir, 'build', 'genealogy-l1-tribes-12-dark.svg'), l1TribesDarkSvg);
   await writeFile(path.join(PATHS.outDir, 'build', 'layout-l1-matthew-luke.json'), JSON.stringify(mtLk, null, 1) + '\n');
   await writeFile(path.join(PATHS.outDir, 'build', 'genealogy-l1-matthew-luke.svg'), l1MtLkSvg);
+  await writeFile(path.join(PATHS.outDir, 'build', 'genealogy-l1-matthew-luke-dark.svg'), l1MtLkDarkSvg);
   await writeFile(path.join(PATHS.outDir, 'build', 'layout-l1-nations.json'), JSON.stringify(nationsTree, null, 1) + '\n');
   await writeFile(path.join(PATHS.outDir, 'build', 'genealogy-l1-nations.svg'), l1NationsSvg);
   await writeFile(path.join(PATHS.outDir, 'build', 'genealogy-l1-nations-dark.svg'), l1NationsDarkSvg);

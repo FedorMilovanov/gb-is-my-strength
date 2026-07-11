@@ -5,16 +5,18 @@
  * Матфей — пурпур (царская), Лука — бирюза (кровная), общие узлы и хребет — золото.
  * Детерминированный вывод.
  */
-import { PALETTE as C, commonDefs } from './palette.mjs';
+import { getPalette, commonDefs } from './palette.mjs';
 import { iconSymbolDefs } from './icons.mjs';
 import { christDefs, christHalo } from './christ-halo.mjs';
 
 const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
 const f = (n, d = 1) => Number(n).toFixed(d);
 const iconUse = (id, x, y, s, col, op = 1) => id ? `<use href="#ic-${id}" x="${f(x)}" y="${f(y)}" width="${s}" height="${s}" color="${col}" opacity="${op}"/>` : '';
-const COL = { mt: C.matthew, lk: C.luke };
 
-export function renderMatthewLukeSvg(layout, { title, subtitle } = {}) {
+export function renderMatthewLukeSvg(layout, { title, subtitle, theme = 'light' } = {}) {
+  const C = getPalette(theme);
+  const dark = theme === 'dark';
+  const COL = { mt: C.matthew, lk: C.luke };
   const { bbox, nodes } = layout;
   title = title ?? layout.title; subtitle = subtitle ?? layout.subtitle;
   const padTop = 150, padSide = 70, padBot = 250;
@@ -28,12 +30,17 @@ export function renderMatthewLukeSvg(layout, { title, subtitle } = {}) {
 
   P.push(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="${f(vbX)} ${f(vbY)} ${f(vbW)} ${f(vbH)}" width="${Math.round(vbW)}" height="${Math.round(vbH)}" font-family="Georgia, 'Times New Roman', serif" role="img" aria-label="${esc(title)}">`);
   P.push('<defs>');
-  P.push(commonDefs());
+  P.push(commonDefs(C));
+  // тёмная тема: мягче и с дальним спадом — без границы-«обрыва» у купола
+  const gs = dark
+    ? { a: '#fff0c8', ao: '0.18', b: '#d8b45f', bo: '0.07', far: '0.02' }
+    : { a: '#fff6df', ao: '0.9', b: '#f7eccf', bo: '0.35', far: '0.1' };
   P.push(`<radialGradient id="l1glow" cx="50%" cy="92%" r="70%">
-    <stop offset="0%" stop-color="#fff6df" stop-opacity="0.9"/>
-    <stop offset="50%" stop-color="#f7eccf" stop-opacity="0.35"/>
-    <stop offset="100%" stop-color="#f7eccf" stop-opacity="0"/></radialGradient>`);
-  P.push(christDefs(C));
+    <stop offset="0%" stop-color="${gs.a}" stop-opacity="${gs.ao}"/>
+    <stop offset="45%" stop-color="${gs.b}" stop-opacity="${gs.bo}"/>
+    <stop offset="78%" stop-color="${gs.b}" stop-opacity="${gs.far}"/>
+    <stop offset="100%" stop-color="${gs.b}" stop-opacity="0"/></radialGradient>`);
+  P.push(christDefs(C, dark));
   P.push(iconSymbolDefs());
   P.push('</defs>');
   P.push(`<rect x="${f(vbX)}" y="${f(vbY)}" width="${f(vbW)}" height="${f(vbH)}" fill="url(#paperGrad)"/>`);
@@ -124,7 +131,7 @@ export function renderMatthewLukeSvg(layout, { title, subtitle } = {}) {
   function renderChrist(n) {
     const g = [];
     // глубокая ауреола: блум + корона лучей + крестчатый нимб + кольцо + искры
-    g.push(christHalo(cx(n), cy(n), Math.max(n.w * 0.5, n.h * 1.05), C, 0.74));
+    g.push(christHalo(cx(n), cy(n), Math.max(n.w * 0.5, n.h * 1.05), C, 0.74, dark));
     g.push(`<g filter="url(#cardShadow)"><rect x="${f(n.x)}" y="${f(n.y)}" width="${f(n.w)}" height="${f(n.h)}" rx="16" fill="url(#cardGrad)" stroke="url(#goldGrad)" stroke-width="2.4"/><rect x="${f(n.x + 4)}" y="${f(n.y + 4)}" width="${f(n.w - 8)}" height="${f(n.h - 8)}" rx="12" fill="none" stroke="url(#goldGrad)" stroke-width="0.9"/></g>`);
     g.push(iconUse('cross', n.x + 16, cy(n) - 14, 28, C.gold));
     g.push(`<text x="${f(n.x + 50)}" y="${f(cy(n) - 1)}" font-size="19" fill="${C.ink}" font-weight="bold">${esc(n.name)}</text>`);

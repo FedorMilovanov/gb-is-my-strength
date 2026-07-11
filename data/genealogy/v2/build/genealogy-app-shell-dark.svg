@@ -37,11 +37,12 @@
       <stop offset="0%" stop-color="#fff7e2" stop-opacity="0"/>
       <stop offset="58%" stop-color="#f4dc94" stop-opacity="0"/>
       <stop offset="74%" stop-color="#f2d789" stop-opacity="0.14"/>
-      <stop offset="86%" stop-color="#d4af5f" stop-opacity="0.10"/>
+      <stop offset="86%" stop-color="#d4af5f" stop-opacity="0.1"/>
       <stop offset="100%" stop-color="#d4af5f" stop-opacity="0"/></radialGradient>
 <radialGradient id="mapGlow" cx="50%" cy="60%" r="65%">
-    <stop offset="0%" stop-color="#fff0c8" stop-opacity="0.26"/>
-    <stop offset="48%" stop-color="#d8b45f" stop-opacity="0.10"/>
+    <stop offset="0%" stop-color="#fff0c8" stop-opacity="0.16"/>
+    <stop offset="48%" stop-color="#d8b45f" stop-opacity="0.06"/>
+    <stop offset="80%" stop-color="#d8b45f" stop-opacity="0.015"/>
     <stop offset="100%" stop-color="#d8b45f" stop-opacity="0"/></radialGradient>
 <linearGradient id="fogT" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#161009" stop-opacity="0.96"/><stop offset="100%" stop-color="#161009" stop-opacity="0"/></linearGradient>
 <linearGradient id="fogB" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#161009" stop-opacity="0"/><stop offset="100%" stop-color="#161009" stop-opacity="0.96"/></linearGradient>
@@ -95,9 +96,9 @@
     <circle cx="706.0" cy="29.0" r="5" fill="none" stroke="#94815d" stroke-width="1.4"/>
     <line x1="710.0" y1="33.0" x2="714.0" y2="37.0" stroke="#94815d" stroke-width="1.4" stroke-linecap="round"/>
     <text x="720.0" y="33.5" font-size="12.5" fill="#94815d" font-style="italic">Поиск имени, места или стиха…</text>
-<rect x="1232.0" y="16.0" width="52" height="26" rx="13" fill="#100b06" stroke="#3a2e19" stroke-width="1"/>
-    <circle cx="1271.0" cy="29.0" r="9" fill="#d4af5f"/>
-    <text x="1247.0" y="33.0" text-anchor="middle" font-size="10" fill="#94815d">☾</text>
+<rect x="1192.0" y="16.0" width="52" height="26" rx="13" fill="#100b06" stroke="#3a2e19" stroke-width="1"/>
+    <circle cx="1231.0" cy="29.0" r="9" fill="#d4af5f"/>
+    <path d="M1209.6 24.6 a4.6 4.6 0 1 0 2.4 8.1 5.4 5.4 0 0 1 -2.4 -8.1z" fill="#94815d"/>
 <rect x="1260.0" y="16.0" width="92" height="26" rx="13" fill="#2a2011" stroke="#d4af5f" stroke-width="1.2"/>
     <text x="1306.0" y="33.0" text-anchor="middle" font-size="12" fill="#d4af5f">Обзор · L0</text>
 <rect x="0" y="58" width="60" height="914" fill="#161009"/>

@@ -37,11 +37,12 @@ export function renderAppShell(layoutL0, { theme = 'light' } = {}) {
   // ── defs ──
   P.push('<defs>');
   P.push(commonDefs(C));
-  P.push(christDefs(C));
-  const gs = dark ? { a: '#fff0c8', ao: '0.26', b: '#d8b45f', bo: '0.10' } : { a: '#fff6df', ao: '0.85', b: '#f7eccf', bo: '0.4' };
+  P.push(christDefs(C, dark));
+  const gs = dark ? { a: '#fff0c8', ao: '0.16', b: '#d8b45f', bo: '0.06', far: '0.015' } : { a: '#fff6df', ao: '0.85', b: '#f7eccf', bo: '0.4', far: '0.1' };
   P.push(`<radialGradient id="mapGlow" cx="50%" cy="60%" r="65%">
     <stop offset="0%" stop-color="${gs.a}" stop-opacity="${gs.ao}"/>
     <stop offset="48%" stop-color="${gs.b}" stop-opacity="${gs.bo}"/>
+    <stop offset="80%" stop-color="${gs.b}" stop-opacity="${gs.far}"/>
     <stop offset="100%" stop-color="${gs.b}" stop-opacity="0"/></radialGradient>`);
   // «туман» по краям вьюпорта (карта уходит за край)
   const fog = dark ? '#161009' : '#f2e8ce';
@@ -86,7 +87,7 @@ export function renderAppShell(layoutL0, { theme = 'light' } = {}) {
   // поиск (центр)
   P.push(searchField(W / 2 - 150, 15, 300, C, fieldBg, panelEdge));
   // тема-переключатель + уровень (справа)
-  P.push(themeToggle(panelX - 128, 16, C, dark, fieldBg, panelEdge, theme));
+  P.push(themeToggle(panelX - 168, 16, C, dark, fieldBg, panelEdge));
   P.push(pill(panelX - 8 - 92, 16, 92, 26, `Обзор · L0`, C, dark, true));
 
   // ── рейка эпох (слева) ──
@@ -156,7 +157,7 @@ function cameraScene(mx, my, mw, mh, C, dark) {
     if (a.messiah) {
       const cw = 268, ch = 74;
       const x = cx - cw / 2, y = a.y - ch / 2;
-      g.push(christHalo(cx, a.y, Math.max(cw * 0.46, ch * 1.06), C, 0.72));
+      g.push(christHalo(cx, a.y, Math.max(cw * 0.46, ch * 1.06), C, 0.72, dark));
       g.push(`<g filter="url(#cardShadow)"><rect x="${f(x)}" y="${f(y)}" width="${cw}" height="${ch}" rx="16" fill="url(#cardGrad)" stroke="url(#goldGrad)" stroke-width="2.4"/><rect x="${f(x + 4)}" y="${f(y + 4)}" width="${cw - 8}" height="${ch - 8}" rx="12" fill="none" stroke="url(#goldGrad)" stroke-width="0.9"/></g>`);
       g.push(iconUse('cross', x + 20, a.y - 16, 32, C.gold));
       g.push(`<text x="${f(x + 60)}" y="${f(a.y - 3)}" font-size="22" fill="${C.ink}" font-weight="bold">${esc(a.ru)}</text>`);
@@ -314,9 +315,18 @@ function pill(x, y, w, h, label, C, dark, gold) {
     <text x="${f(x + w / 2)}" y="${f(y + h / 2 + 4)}" text-anchor="middle" font-size="12" fill="${gold ? C.gold : C.inkSoft}">${esc(label)}</text>`;
 }
 
-function themeToggle(x, y, C, dark, fieldBg, edge, theme) {
+function themeToggle(x, y, C, dark, fieldBg, edge) {
   const on = dark;
+  const gx = x + (on ? 15 : 32), gy = y + 13; // глиф на свободной половине
+  // солнце/луна рисуются путями (текстовые ☀/☾ фолбэчат в шрифте на «‹»)
+  const glyph = on
+    ? `<path d="M${f(gx + 2.6)} ${f(gy - 4.4)} a4.6 4.6 0 1 0 2.4 8.1 5.4 5.4 0 0 1 -2.4 -8.1z" fill="${C.inkFaint}"/>`
+    : `<circle cx="${f(gx)}" cy="${f(gy)}" r="2.8" fill="none" stroke="${C.inkFaint}" stroke-width="1.1"/>
+       <g stroke="${C.inkFaint}" stroke-width="1" stroke-linecap="round">${[0, 45, 90, 135, 180, 225, 270, 315].map(a => {
+    const r = a * Math.PI / 180, x1 = gx + Math.cos(r) * 4.2, y1 = gy + Math.sin(r) * 4.2, x2 = gx + Math.cos(r) * 5.8, y2 = gy + Math.sin(r) * 5.8;
+    return `<line x1="${f(x1)}" y1="${f(y1)}" x2="${f(x2)}" y2="${f(y2)}"/>`;
+  }).join('')}</g>`;
   return `<rect x="${f(x)}" y="${f(y)}" width="52" height="26" rx="13" fill="${fieldBg}" stroke="${edge}" stroke-width="1"/>
     <circle cx="${f(x + (on ? 39 : 13))}" cy="${f(y + 13)}" r="9" fill="${C.gold}"/>
-    <text x="${f(x + (on ? 15 : 30))}" y="${f(y + 17)}" text-anchor="middle" font-size="10" fill="${C.inkFaint}">${on ? '☾' : '☀'}</text>`;
+    ${glyph}`;
 }

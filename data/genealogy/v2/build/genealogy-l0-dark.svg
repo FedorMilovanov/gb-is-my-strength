@@ -1,8 +1,9 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="-800.0 -230.0 1700.0 1674.0" width="1700" height="1674" font-family="Georgia, 'Times New Roman', serif" role="img" aria-label="Генеалогия Спасителя — обзорная генеалогическая схема">
 <defs>
 <radialGradient id="glow" cx="50%" cy="86%" r="75%">
-    <stop offset="0%" stop-color="#fff0c8" stop-opacity="0.34"/>
-    <stop offset="42%" stop-color="#d8b45f" stop-opacity="0.14"/>
+    <stop offset="0%" stop-color="#fff0c8" stop-opacity="0.20"/>
+    <stop offset="42%" stop-color="#d8b45f" stop-opacity="0.08"/>
+    <stop offset="78%" stop-color="#d8b45f" stop-opacity="0.02"/>
     <stop offset="100%" stop-color="#d8b45f" stop-opacity="0"/></radialGradient>
 <linearGradient id="paperGrad" x1="0" y1="0" x2="0" y2="1">
     <stop offset="0%" stop-color="#241c11"/><stop offset="55%" stop-color="#1b140b"/>
@@ -34,7 +35,7 @@
       <stop offset="0%" stop-color="#fff7e2" stop-opacity="0"/>
       <stop offset="58%" stop-color="#f4dc94" stop-opacity="0"/>
       <stop offset="74%" stop-color="#f2d789" stop-opacity="0.14"/>
-      <stop offset="86%" stop-color="#d4af5f" stop-opacity="0.10"/>
+      <stop offset="86%" stop-color="#d4af5f" stop-opacity="0.1"/>
       <stop offset="100%" stop-color="#d4af5f" stop-opacity="0"/></radialGradient>
 <filter id="paperTex" x="-5%" y="-5%" width="110%" height="110%">
     <feTurbulence type="fractalNoise" baseFrequency="0.011 0.017" numOctaves="3" seed="7" stitchTiles="stitch" result="mot"/>
