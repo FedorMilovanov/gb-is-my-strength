@@ -46,6 +46,14 @@ const {
   topAttrs = {},
   bottomAttrs = {},
 } = Astro.props as Props;
+
+// Панель рендерится только если адаптер дал ей контент: у page-движка нижнего
+// бара по умолчанию НЕТ (план §8 — «только реальные page actions»), и пустой
+// <footer> в потоке был бы мусорным блоком на страницах без floating-cluster.css.
+const hasTop = Astro.slots.has('top-leading') || Astro.slots.has('top-primary')
+  || Astro.slots.has('top-playback') || Astro.slots.has('top-trailing');
+const hasBottom = Astro.slots.has('bottom-progress') || Astro.slots.has('bottom-context')
+  || Astro.slots.has('bottom-actions');
 ---
 <div
   id={id}
@@ -53,18 +61,22 @@ const {
   data-mobile-chrome
   data-mobile-chrome-engine={engine}
 >
-  <header class={topClass} data-mobile-topbar {...topAttrs}>
-    <slot name="top-leading" />
-    <slot name="top-primary" />
-    <slot name="top-playback" />
-    <slot name="top-trailing" />
-  </header>
+  {hasTop && (
+    <header class={topClass} data-mobile-topbar {...topAttrs}>
+      <slot name="top-leading" />
+      <slot name="top-primary" />
+      <slot name="top-playback" />
+      <slot name="top-trailing" />
+    </header>
+  )}
 
-  <footer class={bottomClass} data-mobile-bottombar {...bottomAttrs}>
-    <slot name="bottom-progress" />
-    <slot name="bottom-context" />
-    <slot name="bottom-actions" />
-  </footer>
+  {hasBottom && (
+    <footer class={bottomClass} data-mobile-bottombar {...bottomAttrs}>
+      <slot name="bottom-progress" />
+      <slot name="bottom-context" />
+      <slot name="bottom-actions" />
+    </footer>
+  )}
 
   <slot name="overlays" />
 </div>
