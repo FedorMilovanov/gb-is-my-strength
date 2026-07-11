@@ -28,6 +28,9 @@ import { buildNationsTree } from './lib/layout-l1-nations.mjs';
 import { renderNationsSvg } from './lib/render-l1-nations.mjs';
 import { renderAppShell } from './lib/render-app-shell.mjs';
 import { buildViews, buildSearchIndex } from './lib/views.mjs';
+import { renderNationsMapSvg } from './lib/render-map-nations.mjs';
+import { renderPersonL2Svg } from './lib/render-l2-person.mjs';
+import { renderMorphFramesSvg } from './lib/render-morph-frames.mjs';
 
 const log = (...a) => console.log('[genealogy-build]', ...a);
 
@@ -254,6 +257,9 @@ async function runAll() {
       tribe: rec.tribe,
       description: rec.description || null,
       uncertainIdentity: rec.uncertainIdentity || undefined,
+      // имя в оригинале (иврит/греческий) из TIPNR «– Named/Greek» — слой сверки
+      // с первоисточником и тултипов «имя в оригинале»
+      names: rec.nameForms?.length ? rec.nameForms : undefined,
       skeleton: seed ? {
         v1Id: seed.id,
         lineage: seed.lineage,
@@ -371,6 +377,57 @@ async function runAll() {
   const nationsTree = buildNationsTree(tonData);
   const l1NationsSvg = renderNationsSvg(nationsTree);
   const l1NationsDarkSvg = renderNationsSvg(nationsTree, { theme: 'dark' });
+  // Гео-подложка: стилизованная карта расселения (Иафет/Хам/Сим по направлениям)
+  const mapNationsSvg = renderNationsMapSvg();
+  const mapNationsDarkSvg = renderNationsMapSvg({ theme: 'dark' });
+  log(`map: карта расселения народов (стилизованная), обе темы`);
+  // L2 «лица»: личная карточка Давида — отец/сыновья из данных, стих из Синодального
+  const byKeyL2 = new Map(outPersons.map(p => [p.key, p]));
+  const dvd = byKeyL2.get('David@Rut.4.17');
+  const l2Data = {
+    person: { ru: dvd?.ru?.name ?? 'Давид', sub: 'Царь Израиля · завет о вечном престоле (2Цар 7)',
+      icon: 'crown', refRu: dvd?.firstRef?.ru ?? 'Руф 4:17', tribeRu: 'колено Иудино',
+      // иврит — из TIPNR (persons.names), этимология — из name-etymology.json
+      heb: dvd?.names?.find(n => n.lang === 'H')?.original ?? 'דָּוִד',
+      hebTranslit: 'Дави́д (Dāwīḏ)', hebMeaning: 'возлюбленный',
+      hebNote: 'корень דוד (дод) — «любить; любимый»' },
+    father: { ru: byKeyL2.get('Jesse@Rut.4.17')?.ru?.name ?? 'Иессей', refRu: 'Руф 4:17' },
+    sons: [
+      { ru: byKeyL2.get('Solomon@2Sa.5.14')?.ru?.name ?? 'Соломон', refRu: '2Цар 5:14',
+        line: 'matthew', lineRu: 'Матфей · царская линия', icon: 'temple' },
+      { ru: byKeyL2.get('Nathan@2Sa.5.14')?.ru?.name ?? 'Нафан', refRu: '2Цар 5:14',
+        line: 'luke', lineRu: 'Лука · кровная линия', icon: 'scroll' },
+    ],
+    // Источник-JSON Синодального опускает Руф 4:17 (в главе 21 стих вместо 22),
+    // хвост сдвинут на −1 от канонической нумерации. Ищем стих с Давидом в широком
+    // окне и восстанавливаем каноническую ссылку (json v≥17 → канонич. v+1).
+    verse: (() => {
+      const win = synodal.verseWindow('Rut.4.17', 5);
+      const hit = win.find(v => /Давид/.test(v.text ?? ''));
+      if (!hit) return { text: synodal.verse('Rut.4.17') ?? '', refRu: refToRu('Rut.4.17') };
+      const p = parseRef(hit.ref);
+      const canonical = p && p.osis === 'Rut' && p.chapter === 4 && p.verse >= 17
+        ? `Rut.4.${p.verse + 1}` : hit.ref;
+      return { text: hit.text, refRu: refToRu(canonical) };
+    })(),
+    chips: [
+      { label: 'Эпоха V · Царства', kind: 'era' },
+      { label: 'Мессианская линия', kind: 'messianic' },
+      { label: 'Хребет Спасителя', kind: 'spine' },
+    ],
+    related: [
+      { label: 'Дом Давида', hint: '+173 имён' },
+      { label: 'Родословие Матфея', hint: 'Мф 1:6' },
+      { label: 'Родословие Луки', hint: 'Лк 3:31' },
+    ],
+  };
+  const l2PersonSvg = renderPersonL2Svg(l2Data);
+  const l2PersonDarkSvg = renderPersonL2Svg(l2Data, { theme: 'dark' });
+  log(`l2: личная карточка «${l2Data.person.ru}» (стих ${l2Data.verse.refRu}), обе темы`);
+  // Пре-виз FLIP-морфа «сжатая группа → 12 колен» — визуальное ТЗ аниматору Phase 2
+  const morphSvg = renderMorphFramesSvg();
+  const morphDarkSvg = renderMorphFramesSvg({ theme: 'dark' });
+  log(`morph: три кадра FLIP-раскрытия (L0 → переход → L1), обе темы`);
   log(`layout-l1: «Народы от Ноя» — 3 ветви, ${nationsTree.columns.reduce((s, c) => s + c.rows.length, 0)} народов (Таблица народов)`);
   // Быстрые виды + поисковый индекс (данные, на которые опирается панель интерфейса)
   const views = buildViews({ clusters, persons: outPersons, nationsCount: 70 });
@@ -425,6 +482,12 @@ async function runAll() {
   await writeFile(path.join(PATHS.outDir, 'build', 'layout-l1-nations.json'), JSON.stringify(nationsTree, null, 1) + '\n');
   await writeFile(path.join(PATHS.outDir, 'build', 'genealogy-l1-nations.svg'), l1NationsSvg);
   await writeFile(path.join(PATHS.outDir, 'build', 'genealogy-l1-nations-dark.svg'), l1NationsDarkSvg);
+  await writeFile(path.join(PATHS.outDir, 'build', 'genealogy-map-nations.svg'), mapNationsSvg);
+  await writeFile(path.join(PATHS.outDir, 'build', 'genealogy-map-nations-dark.svg'), mapNationsDarkSvg);
+  await writeFile(path.join(PATHS.outDir, 'build', 'genealogy-l2-person-david.svg'), l2PersonSvg);
+  await writeFile(path.join(PATHS.outDir, 'build', 'genealogy-l2-person-david-dark.svg'), l2PersonDarkSvg);
+  await writeFile(path.join(PATHS.outDir, 'build', 'genealogy-morph-frames.svg'), morphSvg);
+  await writeFile(path.join(PATHS.outDir, 'build', 'genealogy-morph-frames-dark.svg'), morphDarkSvg);
   await writeFile(path.join(PATHS.outDir, 'build', 'genealogy-app-shell.svg'), appShellSvg);
   await writeFile(path.join(PATHS.outDir, 'build', 'genealogy-app-shell-dark.svg'), appShellDarkSvg);
   await writeFile(path.join(PATHS.outDir, 'views.json'), JSON.stringify({

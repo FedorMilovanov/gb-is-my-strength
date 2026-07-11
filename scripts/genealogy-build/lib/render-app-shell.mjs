@@ -185,8 +185,9 @@ function eraRail(layoutL0, mapY, mapH, C) {
     const midFrac = ((b.y0 + b.y1) / 2 - y0) / span;
     const yy = mapY + 40 + midFrac * (mapH - 80);
     const col = ERA_ACCENT[b.id] ?? C.inkSoft;
+    g.push(`<circle cx="${RAIL / 2}" cy="${f(yy)}" r="8.5" fill="none" stroke="${C.gold}" stroke-width="0.8" opacity="0.4"/>`);
     g.push(`<circle cx="${RAIL / 2}" cy="${f(yy)}" r="6" fill="${col}" stroke="${C.paper0}" stroke-width="1.4"/>`);
-    g.push(`<text x="${RAIL / 2}" y="${f(yy + 18)}" text-anchor="middle" font-size="8.5" letter-spacing="1" fill="${C.inkFaint}">${ROMAN[i + 1] ?? i + 1}</text>`);
+    g.push(`<text x="${RAIL / 2}" y="${f(yy + 22)}" text-anchor="middle" font-size="9.5" letter-spacing="1" fill="${C.inkSoft}">${ROMAN[i + 1] ?? i + 1}</text>`);
   });
   g.push(`<line x1="${RAIL / 2}" y1="${f(mapY + 40)}" x2="${RAIL / 2}" y2="${f(mapY + mapH - 40)}" stroke="${C.gold}" stroke-width="1" opacity="0.25"/>`);
   return g.join('');
