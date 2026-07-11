@@ -7,13 +7,13 @@
   "start": 313,
   "end": 636,
   "engineEra": "byzantine",
-  "colorToken": "#9ee7ad",
-  "colorStatus": "contract",
+  "colorToken": "#abd3b4",
+  "colorStatus": "validated",
   "maps": [],
   "keyEvents": [
     "Милан 313",
     "Елена и базилики",
     "Мадабская карта VI в."
   ],
-  "note": "Карт пока нет; эпоха нужна слою археологии/традиций"
+  "note": "Карт пока нет; эпоха нужна слою археологии/традиций | цвет validated 2026-07-11: dataviz-прогон — текст #2b2418 контраст ≥7:1 (AAA), CVD смежных пар хронологической ленты ≥10 (protan worst, WARN-band легален: подписи всегда внутри чипов)"
 }
