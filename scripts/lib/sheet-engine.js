@@ -85,6 +85,24 @@ const GEO_DEFS = `<defs>
   </filter>
 </defs>`;
 
+// Пиктограммы важных мест (place.glyph в данных) — силуэты старого атласа.
+// Рисуются НАД точкой (точка = координата), высота ~14 единиц листа.
+function glyphSvg(name, x, y, k) {
+  const s = k; // масштаб
+  const G = {
+    ziggurat: `<g class="glyph"><path d="M${x - 7 * s},${y} h${14 * s} v${-3 * s} h${-2.5 * s} v${-3 * s} h${-2.5 * s} v${-3 * s} h${-4 * s} v${3 * s} h${-2.5 * s} v${3 * s} h${-2.5 * s} Z" transform="translate(0,${-4 * s})"/></g>`,
+    pyramid: `<g class="glyph"><path d="M${x - 7 * s},${y - 3 * s} L${x},${y - 15 * s} L${x + 7 * s},${y - 3 * s} Z"/><path d="M${x},${y - 15 * s} L${x + 2 * s},${y - 3 * s}" class="glyph-line"/></g>`,
+    altar: `<g class="glyph"><path d="M${x - 5 * s},${y - 3 * s} h${10 * s} v${-2.5 * s} h${-1.5 * s} v${-3 * s} h${-7 * s} v${3 * s} h${-1.5 * s} Z"/><path d="M${x},${y - 12 * s} q${1.6 * s},${1.8 * s} 0,${3.4 * s} q${-1.6 * s},${-1.8 * s} 0,${-3.4 * s} Z" class="glyph-flame"/></g>`,
+    well: `<g class="glyph"><path d="M${x - 4.4 * s},${y - 3 * s} a${4.4 * s},${2 * s} 0 1 0 ${8.8 * s},0 a${4.4 * s},${2 * s} 0 1 0 ${-8.8 * s},0 Z"/><path d="M${x - 4 * s},${y - 3.4 * s} v${-6 * s} m${8 * s},${6 * s} v${-6 * s} m${-9 * s},${-1 * s} h${10 * s}" class="glyph-line"/></g>`,
+    oak: `<g class="glyph"><path d="M${x},${y - 2.6 * s} v${-4 * s}" class="glyph-line" style="stroke-width:${1.4 * s}"/><circle cx="${x - 2.6 * s}" cy="${y - 8.4 * s}" r="${2.8 * s}"/><circle cx="${x + 2.6 * s}" cy="${y - 8.4 * s}" r="${2.8 * s}"/><circle cx="${x}" cy="${y - 10.8 * s}" r="${3.2 * s}"/></g>`,
+    ruin: `<g class="glyph"><path d="M${x - 5.5 * s},${y - 3 * s} v${-6 * s} h${2.6 * s} v${3.4 * s} h${2.2 * s} v${-6.5 * s} h${2.6 * s} v${9.1 * s} Z"/><path d="M${x + 3.4 * s},${y - 12 * s} q${1.4 * s},${-1.8 * s} ${2.8 * s},${-.6 * s}" class="glyph-smoke"/><path d="M${x + 1.8 * s},${y - 10.6 * s} q${1.2 * s},${-1.5 * s} ${2.4 * s},${-.5 * s}" class="glyph-smoke"/></g>`,
+    gate: `<g class="glyph"><path d="M${x - 5 * s},${y - 3 * s} v${-6.5 * s} a${5 * s},${4.6 * s} 0 0 1 ${10 * s},0 v${6.5 * s} h${-2.4 * s} v${-5.8 * s} a${2.6 * s},${2.6 * s} 0 0 0 ${-5.2 * s},0 v${5.8 * s} Z"/></g>`,
+    palm: `<g class="glyph"><path d="M${x},${y - 3 * s} q${-.6 * s},${-4 * s} ${.4 * s},${-7.6 * s}" class="glyph-line" style="stroke-width:${1.3 * s}"/><path d="M${x + .4 * s},${y - 10.6 * s} q${2.8 * s},${-1.4 * s} ${4.6 * s},${.6 * s} M${x + .4 * s},${y - 10.6 * s} q${-2.8 * s},${-1.4 * s} ${-4.6 * s},${.6 * s} M${x + .4 * s},${y - 10.6 * s} q${2 * s},${-2.6 * s} ${4 * s},${-2.6 * s} M${x + .4 * s},${y - 10.6 * s} q${-2 * s},${-2.6 * s} ${-4 * s},${-2.6 * s}" class="glyph-line"/></g>`,
+    tower: `<g class="glyph"><path d="M${x - 3.4 * s},${y - 3 * s} v${-9 * s} h${-1.2 * s} v${-2 * s} h${2.4 * s} v${1 * s} h${1.6 * s} v${-1 * s} h${2.4 * s} v${1 * s} h${1.6 * s} v${-1 * s} h${2.4 * s} v${2 * s} h${-1.2 * s} v${9 * s} Z" transform="translate(${-1.3 * s},0)"/></g>`,
+  };
+  return G[name] || '';
+}
+
 function anchorSpec(a) {
   const A = {
     e: { dx: 1, dy: 0, ta: 'start' }, w: { dx: -1, dy: 0, ta: 'end' },
@@ -134,7 +152,10 @@ function renderSheet(route, opts) {
     base = base.replace(/<!--[\s\S]*?-->/g, '');
   }
 
-  const routePts = places.filter(p => typeof p.stage === 'number' && p.type !== 'region').map(p => [p.x, p.y]);
+  // Маршрут героя — только основные станы: кандидаты (cand) и линии спутников
+  // (lot и т.п.) в главную нить не входят
+  const routePts = places.filter(p => typeof p.stage === 'number' &&
+    p.type !== 'region' && p.type !== 'cand' && p.type !== 'lot').map(p => [p.x, p.y]);
   const routePath = catmullRom(routePts);
 
   const seenStage = new Set(), milestones = [], milestoneIds = new Set();
@@ -146,8 +167,9 @@ function renderSheet(route, opts) {
     }
   }
 
-  const dots = [], labels = [], leaders = [];
-  const fontPlace = 13 * k, fontCtx = 11.5 * k;
+  const dots = [], labels = [], leaders = [], glyphs = [], halos = [];
+  // Иерархия кеглей листа: вехи и места с глифами — крупно, остальное — второй кегль
+  const fontMain = 13 * k, fontMinor = 11 * k, fontCtx = 11.5 * k;
   for (const p of places) {
     if (p.type === 'region') {
       labels.push(`<text x="${p.x}" y="${p.y}" class="lab-region" font-size="${(12.5 * k).toFixed(2)}" text-anchor="middle">${esc((p.name || '').toUpperCase())}</text>`);
@@ -165,9 +187,17 @@ function renderSheet(route, opts) {
       } else {
         shape = `<circle cx="${p.x}" cy="${p.y}" r="${r.toFixed(2)}" class="${cls}"/>`;
       }
-      dots.push(shape);
+      dots.push(`<g class="pl" data-pid="${esc(p.id)}">${shape}</g>`);
+    }
+    // Пиктограмма важного места (place.glyph из данных) — над точкой/вехой
+    if (p.glyph) {
+      const g = glyphSvg(p.glyph, p.x, p.y - (isMile ? 7 : 3) * k, k);
+      if (g) glyphs.push(g);
+      if (p.glyph === 'ruin') // пепельный ореол Содома
+        halos.push(`<circle cx="${p.x}" cy="${p.y}" r="${16 * k}" class="ruin-halo"/>`);
     }
 
+    const fontPlace = (isMile || p.glyph) ? fontMain : fontMinor;
     const a = p.labelAnchor || ((p.side === 'l') ? 'w' : 'e');
     const sp = anchorSpec(a);
     const off = (isMile ? 15 : 9) * k;
@@ -264,9 +294,11 @@ ${GEO_DEFS}
 <g class="base">${base}</g>
 <path d="${routePath}" class="route-under"/>
 <path d="${routePath}" class="route"/>
+${halos.join('')}
 ${leaders.join('')}
 ${dots.join('')}
 ${miles.join('')}
+${glyphs.join('')}
 ${wps.join('')}
 ${ctxs.join('')}
 ${labels.join('')}
@@ -298,6 +330,12 @@ function sheetCss() {
   .route{fill:none;stroke:#a25d33;stroke-width:2.6;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:.1 7.4;opacity:.95}
   .pl-city{fill:#1e3a63;stroke:#f6f1e7;stroke-width:1.2;filter:url(#dotShadow)}
   .pl-cand{fill:none;stroke:#8a6a1f;stroke-width:1.6;stroke-dasharray:3 2.2}
+  .pl{cursor:pointer}
+  .glyph path,.glyph circle{fill:rgba(94,74,30,.34);stroke:#6b5216;stroke-width:.9;stroke-linejoin:round}
+  .glyph .glyph-line{fill:none;stroke:#6b5216;stroke-width:.9;stroke-linecap:round}
+  .glyph .glyph-flame{fill:#a25d33;stroke:none}
+  .glyph .glyph-smoke{fill:none;stroke:#8a7a58;stroke-width:.8;opacity:.75;stroke-linecap:round}
+  .ruin-halo{fill:rgba(120,100,80,.14);stroke:rgba(120,100,80,.3);stroke-width:.6;stroke-dasharray:2 3}
   .wp-dot{fill:#4a7a52;stroke:#f6f1e7;stroke-width:.9;opacity:.85}
   .leader{stroke:#5c4d33;stroke-width:.9;opacity:.55}
   .mile-c{fill:#f6f1e7;stroke-width:1.6;filter:url(#dotShadow)}
@@ -341,7 +379,20 @@ function sheetCss() {
   .spine-it{display:block;padding:10px 12px;text-decoration:none;color:#3a3020;font:600 13px/1.25 Georgia,serif;border-bottom:1px solid rgba(138,106,31,.14)}
   .spine-it img{display:block;width:100%;border-radius:6px;margin-bottom:6px;box-shadow:0 2px 8px rgba(90,70,30,.25)}
   .spine-it:hover{background:rgba(138,106,31,.08)}
-  .spine-it--on{background:rgba(138,106,31,.14)}
+  .spine-it--on{background:rgba(138,106,31,.14);box-shadow:inset 3px 0 0 #8a6a1f}
+  .spine-head{padding:12px 12px 8px;font:700 10px/1 Georgia,serif;letter-spacing:.28em;color:#8a6a1f;border-bottom:1px solid rgba(138,106,31,.25)}
+  .spine-cover{position:relative;display:block}
+  .spine-cover b{position:absolute;left:6px;top:6px;background:rgba(246,241,231,.92);color:#8a6a1f;font:700 10px/1 Georgia,serif;border-radius:6px;padding:3px 6px;border:1px solid rgba(138,106,31,.4)}
+  /* ── Ховер-карточка места: фото раскопок + факт ── */
+  .place-card{position:fixed;z-index:30;width:300px;background:#f6f1e7;border:1px solid rgba(138,106,31,.45);border-radius:12px;box-shadow:0 14px 40px rgba(60,45,15,.35);overflow:hidden;opacity:0;transform:translateY(6px) scale(.98);transition:opacity .18s,transform .18s;pointer-events:none}
+  .place-card.pc--on{opacity:1;transform:none}
+  .pc-ph{position:relative;height:130px;background:#e8dcbc}
+  .pc-ph img{width:100%;height:100%;object-fit:cover;display:block}
+  .pc-ph i{position:absolute;left:0;right:0;bottom:0;padding:14px 10px 5px;font:600 9px/1 system-ui;letter-spacing:.12em;color:#fff;background:linear-gradient(transparent,rgba(20,14,4,.72))}
+  .pc-body{padding:10px 12px 12px}
+  .pc-body b{display:block;font:700 15px/1.2 Georgia,serif;color:#1e3a63}
+  .pc-body u{display:block;text-decoration:none;font:600 10.5px/1.3 Georgia,serif;color:#8a6a1f;letter-spacing:.06em;margin-top:2px}
+  .pc-body p{margin:7px 0 0;font:400 12px/1.5 Georgia,serif;color:#3a3020}
   .dive-btn{position:fixed;right:10px;top:10px;z-index:21;width:38px;height:38px;border-radius:10px;border:1px solid rgba(138,106,31,.4);background:rgba(246,241,231,.92);color:#7a5c26;font-size:17px;cursor:pointer;box-shadow:0 2px 8px rgba(90,70,30,.2)}
   .dive-btn:hover{background:#f6f1e7}
   body.dive .spine,body.dive .stage-strip,body.dive .g9{display:none}
@@ -353,6 +404,20 @@ function buildSheetHtml(route, opts) {
   const { svg, stageStripHtml, meta } = renderSheet(route, opts);
   const badge = opts.badge || `${String(opts.slug || '').toUpperCase()} · SHEET · awaiting G9`;
   const spine = JSON.stringify(opts.spine || []);
+  // Пакет ховер-карточек: фото раскопок + небанальный факт из данных карты
+  const strip = (h) => String(h || '').replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim();
+  const cards = {};
+  for (const p of route.places || []) {
+    if (p.type === 'region') continue;
+    const ph = (p.photos || [])[0] || {};
+    const arch = strip(p.arch);
+    cards[p.id] = {
+      n: p.name, k: p.kick || '',
+      t: ph.thumb || ph.src || null, tl: ph.label || '',
+      f: (p.id1 && p.ep1) ? `${p.id1} — ${p.ep1}` : (arch ? arch.slice(0, 180) + (arch.length > 180 ? '…' : '') : ''),
+    };
+  }
+  const cardsJson = JSON.stringify(cards);
   return `<!DOCTYPE html>
 <html lang="ru">
 <head>
@@ -366,7 +431,7 @@ function buildSheetHtml(route, opts) {
 <body>
 <div class="wrap">${svg}${stageStripHtml}</div>
 <span class="g9">${esc(badge)}</span>
-<script>window.ATLAS_SPINE=${spine};</script>
+<script>window.ATLAS_SPINE=${spine};window.ATLAS_PLACES=${cardsJson};</script>
 <script src="atlas-reader.js"></script>
 </body>
 </html>`;

@@ -86,16 +86,56 @@
 
   // ── Корешок карт (данные вписывает генератор в window.ATLAS_SPINE) ────────
   const spine = window.ATLAS_SPINE || [];
+  const ROMAN = ['I', 'II', 'III', 'IV', 'V', 'VI', 'VII', 'VIII', 'IX', 'X'];
   if (spine.length) {
     const nav = document.createElement('nav');
     nav.className = 'spine';
     nav.setAttribute('aria-label', 'Карты Атласа');
-    nav.innerHTML = '<div class="spine-tab" title="Карты Атласа">≡ КАРТЫ</div><div class="spine-list">' +
-      spine.map(s => `<a class="spine-it${s.current ? ' spine-it--on' : ''}" href="sheet-${s.slug}.html" title="${s.title}">` +
-        (s.cover ? `<img loading="lazy" src="${s.cover}" alt="">` : '') +
+    nav.innerHTML = '<div class="spine-tab" title="Карты Атласа">≡ КАРТЫ</div>' +
+      '<div class="spine-list"><div class="spine-head">БИБЛЕЙСКИЙ АТЛАС</div>' +
+      spine.map((s, i) => `<a class="spine-it${s.current ? ' spine-it--on' : ''}" href="sheet-${s.slug}.html" title="${s.title}">` +
+        (s.cover ? `<span class="spine-cover"><img loading="lazy" src="${s.cover}" alt=""><b>${ROMAN[i] || i + 1}</b></span>` : '') +
         `<span>${s.title}</span></a>`).join('') + '</div>';
     document.body.appendChild(nav);
+    // листание клавишами ← →
+    const cur = spine.findIndex(s => s.current);
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'ArrowLeft' && spine[cur - 1]) location.href = `sheet-${spine[cur - 1].slug}.html`;
+      if (e.key === 'ArrowRight' && spine[cur + 1]) location.href = `sheet-${spine[cur + 1].slug}.html`;
+    });
   }
+
+  // ── Ховер-карточки мест: фото раскопок + небанальный факт ─────────────────
+  const cards = window.ATLAS_PLACES || {};
+  const card = document.createElement('div');
+  card.className = 'place-card';
+  card.setAttribute('aria-hidden', 'true');
+  document.body.appendChild(card);
+  let cardPid = null;
+  function showCard(pid, cx2, cy2) {
+    const d = cards[pid];
+    if (!d) return;
+    if (cardPid !== pid) {
+      card.innerHTML = (d.t ? `<div class="pc-ph"><img src="${d.t}" alt="" loading="lazy">${d.tl ? `<i>${d.tl}</i>` : ''}</div>` : '') +
+        `<div class="pc-body"><b>${d.n}</b>${d.k ? `<u>${d.k}</u>` : ''}${d.f ? `<p>${d.f}</p>` : ''}</div>`;
+      cardPid = pid;
+    }
+    const vw = innerWidth, vh = innerHeight;
+    card.style.left = Math.min(cx2 + 16, vw - 320) + 'px';
+    card.style.top = Math.min(cy2 + 14, vh - 240) + 'px';
+    card.classList.add('pc--on');
+  }
+  const hideCard = () => { card.classList.remove('pc--on'); };
+  svg.addEventListener('pointerover', (e) => {
+    const g = e.target.closest('.pl[data-pid], .mile[data-stage]');
+    if (g && g.dataset.pid) showCard(g.dataset.pid, e.clientX, e.clientY);
+  });
+  svg.addEventListener('pointermove', (e) => {
+    if (!card.classList.contains('pc--on')) return;
+    const g = e.target.closest('.pl[data-pid]');
+    if (g) showCard(g.dataset.pid, e.clientX, e.clientY); else if (!drag) hideCard();
+  });
+  svg.addEventListener('pointerout', (e) => { if (!e.relatedTarget || !e.relatedTarget.closest('.pl')) hideCard(); });
 
   // ── Погружение (прячет рамку читалки) ─────────────────────────────────────
   const dive = document.createElement('button');
