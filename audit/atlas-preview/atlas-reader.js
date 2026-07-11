@@ -42,9 +42,17 @@
   }, { passive: false });
 
   let drag = null;
-  svg.addEventListener('pointerdown', (e) => { drag = { x: e.clientX, y: e.clientY, vb: vb.slice() }; svg.setPointerCapture(e.pointerId); svg.classList.add('grabbing'); });
+  svg.addEventListener('pointerdown', (e) => { drag = { x: e.clientX, y: e.clientY, vb: vb.slice(), id: e.pointerId, moved: false }; });
   svg.addEventListener('pointermove', (e) => {
     if (!drag) return;
+    if (!drag.moved && Math.hypot(e.clientX - drag.x, e.clientY - drag.y) > 4) {
+      // захватываем указатель только когда начался настоящий пан —
+      // иначе capture ретаргетит click и клик по месту не долетает
+      drag.moved = true;
+      svg.setPointerCapture(drag.id);
+      svg.classList.add('grabbing');
+    }
+    if (!drag.moved) return;
     const r = svg.getBoundingClientRect();
     vb[0] = drag.vb[0] - (e.clientX - drag.x) / r.width * vb[2];
     vb[1] = drag.vb[1] - (e.clientY - drag.y) / r.height * vb[3];
@@ -136,6 +144,39 @@
     if (g) showCard(g.dataset.pid, e.clientX, e.clientY); else if (!drag) hideCard();
   });
   svg.addEventListener('pointerout', (e) => { if (!e.relatedTarget || !e.relatedTarget.closest('.pl')) hideCard(); });
+
+  // ── Панель-досье по клику: полные тексты и споры из данных карты ──────────
+  const panel = document.createElement('aside');
+  panel.className = 'dossier';
+  panel.setAttribute('aria-label', 'Досье места');
+  document.body.appendChild(panel);
+  function openDossier(pid) {
+    const d = cards[pid];
+    if (!d) return;
+    const ds = d.dossier || {};
+    const phs = (ds.photos || []).map(p2 =>
+      `<figure class="do-ph"><img loading="lazy" src="${p2.thumb || p2.src}" alt="">` +
+      (p2.label ? `<figcaption>${p2.label}${p2.credit ? `<i>${p2.credit}</i>` : ''}</figcaption>` : '') + '</figure>').join('');
+    panel.innerHTML = `<button class="do-x" title="Закрыть (Esc)">×</button>` +
+      `<header class="do-head"><b>${d.n}</b>${d.k ? `<u>${d.k}</u>` : ''}</header>` +
+      `<div class="do-scroll">` +
+      (phs ? `<div class="do-gallery">${phs}</div>` : '') +
+      (ds.story ? `<section class="do-sec"><h4>История</h4>${ds.story}</section>` : '') +
+      (ds.bible ? `<section class="do-sec do-bible">${ds.bible}</section>` : '') +
+      (ds.bible_extra ? `<section class="do-sec do-bible">${ds.bible_extra}</section>` : '') +
+      (ds.arch ? `<section class="do-sec"><h4>Археология</h4>${ds.arch}</section>` : '') +
+      (ds.dispute ? `<section class="do-sec">${ds.dispute}</section>` : '') +
+      `</div>`;
+    panel.classList.add('do--on');
+    hideCard();
+    panel.querySelector('.do-x').addEventListener('click', closeDossier);
+  }
+  function closeDossier() { panel.classList.remove('do--on'); }
+  document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeDossier(); });
+  svg.addEventListener('click', (e) => {
+    const g = e.target.closest && e.target.closest('.pl[data-pid]');
+    if (g) openDossier(g.dataset.pid);
+  });
 
   // ── Погружение (прячет рамку читалки) ─────────────────────────────────────
   const dive = document.createElement('button');

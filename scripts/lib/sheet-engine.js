@@ -85,6 +85,31 @@ const GEO_DEFS = `<defs>
   </filter>
 </defs>`;
 
+// Рельефный слой листа (поверх базы, только на листе — SYSTEM-файл не трогаем).
+// Свет с северо-запада: хребет = штриховой гребень + мягкая тень на юго-восток.
+const RELIEF = {
+  levant: `
+  <g class="relief" aria-hidden="true">
+    <ellipse cx="668" cy="520" rx="16" ry="86" fill="url(#mtG)" transform="rotate(14 668 520)"/>
+    <ellipse cx="704" cy="530" rx="12" ry="72" fill="url(#mountainHatch)" transform="rotate(16 704 530)"/>
+    <ellipse cx="676" cy="524" rx="15" ry="82" fill="url(#mountainHatch)" transform="rotate(14 676 524)" opacity=".7"/>
+    <ellipse cx="628" cy="770" rx="13" ry="92" fill="url(#mountainHatch)" transform="rotate(8 628 770)" opacity=".8"/>
+    <ellipse cx="638" cy="778" rx="9" ry="88" fill="url(#mtG)" transform="rotate(8 638 778)" opacity=".55"/>
+    <ellipse cx="640" cy="620" rx="12" ry="40" fill="url(#mountainHatch)" transform="rotate(12 640 620)" opacity=".7"/>
+    <ellipse cx="608" cy="688" rx="7" ry="26" fill="url(#mountainHatch)" transform="rotate(-38 608 688)" opacity=".8"/>
+    <ellipse cx="690" cy="760" rx="11" ry="70" fill="url(#mountainHatch)" transform="rotate(4 690 760)" opacity=".65"/>
+    <ellipse cx="700" cy="900" rx="12" ry="80" fill="url(#mountainHatch)" transform="rotate(2 700 900)" opacity=".6"/>
+    <ellipse cx="648" cy="820" rx="14" ry="46" fill="url(#negevG)" transform="rotate(6 648 820)"/>
+  </g>`,
+  urheimat: '',
+  mediterranean: `
+  <g class="relief" aria-hidden="true">
+    <ellipse cx="1470" cy="620" rx="150" ry="20" fill="url(#mtG)" transform="rotate(-4 1470 620)" opacity=".5"/>
+    <ellipse cx="890" cy="390" rx="22" ry="13" fill="url(#mtG)" opacity=".6"/>
+    <ellipse cx="330" cy="300" rx="18" ry="86" fill="url(#mtG)" transform="rotate(24 330 300)" opacity=".5"/>
+  </g>`,
+};
+
 // Пиктограммы важных мест (place.glyph в данных) — силуэты старого атласа.
 // Рисуются НАД точкой (точка = координата), высота ~14 единиц листа.
 function glyphSvg(name, x, y, k) {
@@ -292,6 +317,7 @@ function renderSheet(route, opts) {
 ${GEO_DEFS}
 <rect x="${x0}" y="${y0}" width="${W}" height="${H}" fill="url(#seaG)"/>
 <g class="base">${base}</g>
+${RELIEF[family] || ''}
 <path d="${routePath}" class="route-under"/>
 <path d="${routePath}" class="route"/>
 ${halos.join('')}
@@ -393,6 +419,30 @@ function sheetCss() {
   .pc-body b{display:block;font:700 15px/1.2 Georgia,serif;color:#1e3a63}
   .pc-body u{display:block;text-decoration:none;font:600 10.5px/1.3 Georgia,serif;color:#8a6a1f;letter-spacing:.06em;margin-top:2px}
   .pc-body p{margin:7px 0 0;font:400 12px/1.5 Georgia,serif;color:#3a3020}
+  /* ── Панель-досье (клик по месту) ── */
+  .dossier{position:fixed;right:0;top:0;bottom:0;width:min(430px,94vw);z-index:26;background:#f6f1e7;border-left:1px solid rgba(138,106,31,.4);box-shadow:-16px 0 44px rgba(60,45,15,.3);transform:translateX(103%);transition:transform .28s ease;display:flex;flex-direction:column}
+  .dossier.do--on{transform:none}
+  .do-x{position:absolute;right:10px;top:10px;z-index:2;width:34px;height:34px;border-radius:9px;border:1px solid rgba(138,106,31,.4);background:rgba(246,241,231,.95);color:#7a5c26;font-size:19px;cursor:pointer}
+  .do-head{padding:16px 54px 12px 18px;border-bottom:1px solid rgba(138,106,31,.25);background:rgba(240,232,210,.6)}
+  .do-head b{display:block;font:700 20px/1.2 Georgia,serif;color:#1e3a63}
+  .do-head u{display:block;text-decoration:none;font:600 11.5px/1.35 Georgia,serif;color:#8a6a1f;margin-top:3px;letter-spacing:.05em}
+  .do-scroll{overflow-y:auto;padding:14px 18px 22px;flex:1}
+  .do-gallery{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px}
+  .do-ph{margin:0}
+  .do-ph img{width:100%;height:96px;object-fit:cover;border-radius:8px;box-shadow:0 2px 8px rgba(90,70,30,.3);display:block;background:#e8dcbc}
+  .do-ph figcaption{font:600 8.5px/1.3 system-ui;letter-spacing:.08em;color:#7a6a48;margin-top:3px}
+  .do-ph figcaption i{display:block;font:400 8px/1.2 system-ui;color:#9a8a68;letter-spacing:0}
+  .do-sec{margin:0 0 14px}
+  .do-sec h4{margin:0 0 5px;font:700 10.5px/1 Georgia,serif;letter-spacing:.22em;color:#8a6a1f;text-transform:uppercase}
+  .do-sec p{margin:0 0 8px;font:400 13.5px/1.6 Georgia,serif;color:#2b2418}
+  .do-bible .verse{display:block;padding:10px 12px;background:rgba(30,58,99,.06);border-left:3px solid #1e3a63;border-radius:6px;font:italic 400 13.5px/1.55 Georgia,serif;color:#1e3a63;margin-bottom:8px}
+  .do-bible .verse span{display:block;font:700 9.5px/1 system-ui;letter-spacing:.16em;color:#8a6a1f;margin-top:6px;font-style:normal}
+  .do-sec .dispute-block{border:1px solid rgba(138,106,31,.35);border-radius:10px;padding:10px 12px;background:rgba(240,232,210,.5)}
+  .do-sec .dispute-title{font:700 11px/1.2 Georgia,serif;letter-spacing:.1em;color:#8a6a1f;margin-bottom:7px}
+  .do-sec .dispute-pos{font:400 12.5px/1.55 Georgia,serif;color:#2b2418;margin-bottom:7px}
+  .do-sec .conf-med,.do-sec .conf-lo,.do-sec .conf-hi{display:inline-block;font:600 9px/1 system-ui;letter-spacing:.08em;padding:2px 7px;border-radius:999px;background:rgba(138,106,31,.15);color:#7a5c26}
+  .do-sec .act-btn{display:none}
+  body.dive .dossier{display:none}
   .dive-btn{position:fixed;right:10px;top:10px;z-index:21;width:38px;height:38px;border-radius:10px;border:1px solid rgba(138,106,31,.4);background:rgba(246,241,231,.92);color:#7a5c26;font-size:17px;cursor:pointer;box-shadow:0 2px 8px rgba(90,70,30,.2)}
   .dive-btn:hover{background:#f6f1e7}
   body.dive .spine,body.dive .stage-strip,body.dive .g9{display:none}
@@ -415,6 +465,12 @@ function buildSheetHtml(route, opts) {
       n: p.name, k: p.kick || '',
       t: ph.thumb || ph.src || null, tl: ph.label || '',
       f: (p.id1 && p.ep1) ? `${p.id1} — ${p.ep1}` : (arch ? arch.slice(0, 180) + (arch.length > 180 ? '…' : '') : ''),
+      // полное досье для панели (R2); в прод-версии R4 вынести в отдельный fetch
+      dossier: {
+        story: p.story || '', bible: p.bible || '', arch: p.arch || '',
+        dispute: p.dispute || '', bible_extra: p.bible_extra || '',
+        photos: (p.photos || []).map(x => ({ src: x.src, thumb: x.thumb, label: x.label || '', credit: x.credit || '' })),
+      },
     };
   }
   const cardsJson = JSON.stringify(cards);
