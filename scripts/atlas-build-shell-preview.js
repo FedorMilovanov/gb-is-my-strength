@@ -317,24 +317,31 @@ const booksHtml = SECTIONS.map(([sec, ru, num]) => {
     (covered ? `<div class="book-bar" aria-hidden="true"><i style="width:${pct}%"></i></div>` : '') +
     `<div class="chips">` + list.map((b) => {
       const has = b.maps && b.maps.length;
-      return `<span class="chip${has ? ' has-map' : ''}" tabindex="0" data-tip-t="${esc(b.title.ru)}" data-tip="${esc(`${b.chapters} гл.` + (has ? ` · карты: ${b.maps.join(', ')}` : ' · карт пока нет'))}">${esc(b.title.abbr)}${has ? `<sup>${b.maps.length}</sup>` : ''}</span>`;
+      const tipA = `data-tip-t="${esc(b.title.ru)}" data-tip="${esc(`${b.chapters} гл.` + (has ? ` · карты: ${b.maps.join(', ')} · клик — открыть` : ' · карт пока нет'))}"`;
+      return has
+        ? `<a class="chip has-map" href="../../karty/${b.maps[0]}/" ${tipA}>${esc(b.title.abbr)}<sup>${b.maps.length}</sup></a>`
+        : `<span class="chip" tabindex="0" ${tipA}>${esc(b.title.abbr)}</span>`;
     }).join('') + `</div></div>`;
 }).join('');
 
 // ── Ось «По темам» ───────────────────────────────────────────────────────────
+// [иконка, заголовок, {живые карты: title→slug}, план §9]
 const THEMES = [
-  ['route', 'Маршруты и путешествия', 'Авраам · Исход · Павел', 'Давид · Иаков и Иосиф · Илия и Елисей'],
-  ['crown', 'Царства и границы', 'Царства Израиля и Иудеи', 'Четыре царства Даниила · Мир Ирода'],
-  ['region', 'Территории и уделы', 'Земля двенадцати колен', 'Таблица народов'],
-  ['city', 'Планы городов', '—', 'Иерусалим по эпохам · Вавилон Даниила'],
-  ['layers', 'Тематические слои', 'Семь церквей Откровения', 'Пророчества о народах'],
-  ['compass', 'Обзор и вход', '—', 'Земля Библии · Хронология · Сравнение эпох'],
+  ['route', 'Маршруты и путешествия', { 'Путь Авраама': 'avraam', 'Исход': 'ishod', 'Путешествия Павла': 'pavel', 'Жизнь Иисуса': 'yeshua' }, 'Давид · Иаков и Иосиф · Илия и Елисей'],
+  ['crown', 'Царства и границы', { 'Царства Израиля и Иудеи': 'melachim', 'Эпоха Судей': 'shoftim', 'Маккавеи': 'maccabim' }, 'Четыре царства Даниила · Мир Ирода'],
+  ['region', 'Территории и уделы', { '12 колен Израиля': 'shvatim' }, 'Таблица народов'],
+  ['city', 'Планы городов', null, 'Иерусалим по эпохам · Вавилон Даниила'],
+  ['layers', 'Тематические слои', { '7 церквей Откровения': 'revelation', 'Ранняя Церковь': 'early-church' }, 'Пророчества о народах'],
+  ['compass', 'Обзор и вход', null, 'Земля Библии · Хронология · Сравнение эпох'],
 ];
 const themesHtml = `<div class="themes-grid">` + THEMES.map(([icn, t, now, plan]) =>
   `<div class="theme-card"><span class="theme-medal">${ic(icn, 'theme-ic')}</span><h4>${esc(t)}</h4>` +
-  (now !== '—' ? `<p class="theme-now">${esc(now)}</p>` : `<p class="theme-now theme-empty">карт пока нет — направление открывается каталогом</p>`) +
+  (now
+    ? `<div class="theme-thumbs">` + Object.entries(now).map(([title, slug]) =>
+        `<a class="thumb" href="../../karty/${slug}/" title="${esc(title)}" style="background-image:url('../../images/atlas-${slug}-scene-600w.webp')"><span>${esc(title)}</span></a>`).join('') + `</div>`
+    : `<p class="theme-now theme-empty">карт пока нет — направление открывается каталогом</p>`) +
   `<div class="plan-chips">` + plan.split(' · ').map((x) => `<span class="plan-chip">${esc(x)}</span>`).join('') + `</div></div>`).join('') + `</div>` +
-  `<p class="note">Пунктирные чипы — карты целевого каталога (ATLAS-CONTRACT §9), появятся волнами KA-6…KA-9.</p>`;
+  `<p class="note">Обложки-миниатюры — живые карты (клик — открыть); пунктирные чипы — целевой каталог §9, волны KA-6…KA-9.</p>`;
 
 // ── Карточки карт (hero-слот под будущие обложки-сцены §8.2) ────────────────
 const periodById = new Map(periodsAll.map((p) => [p.id, p]));
@@ -373,7 +380,7 @@ const mapsHtml = `<div class="maps-grid">` + mapsSorted.map(({ m, st }) => {
          sizes="(max-width:720px) 92vw, 300px" width="600" height="338" alt="" loading="lazy" decoding="async">` +
       `<span class="hero-shade" aria-hidden="true"></span>`
     : `<div class="map-hero-ph" style="--tone:${tone}">${ic(ARCH_ICON[m.slug] || 'map', 'hero-ic')}</div>`;
-  return `<article class="map-card">` +
+  return `<a class="map-card" href="../../karty/${m.slug}/">` +
     `<div class="map-hero">${hero}<span class="map-status ${st[0]}">${st[1]}</span></div>` +
     `<div class="map-body"><h4>${esc(meta.title)}</h4>` +
     `<div class="map-era">${esc(ERA_RU[meta.era] || meta.era || (per ? per.title.ru : ''))}</div>` +
@@ -381,7 +388,7 @@ const mapsHtml = `<div class="maps-grid">` + mapsSorted.map(({ m, st }) => {
     `<span class="mm">${ic('pin')}${plural(m.counts.places, ['место', 'места', 'мест'])}</span>` +
     `<span class="mm">${ic('route')}${plural(m.counts.stages, ['этап', 'этапа', 'этапов'])}</span>` +
     `<span class="mm">${ic('book')}${plural(m.counts.stories, ['история', 'истории', 'историй'])}</span></div>` +
-    `<div class="map-foot"><span class="map-slug">/karty/${m.slug}/</span><span class="btn-go">Открыть<span class="arr">→</span></span></div></div></article>`;
+    `<div class="map-foot"><span class="map-slug">/karty/${m.slug}/</span><span class="btn-go">Открыть<span class="arr">→</span></span></div></div></a>`;
 }).join('') + `</div>` +
   `<p class="note">Hero-зоны карточек готовы под обложки-сцены (images/atlas-&lt;slug&gt;-scene-600w.webp, VISUAL-DIRECTION §8.2): файл появится — карточка подхватит его при перегенерации автоматически.</p>` +
 
@@ -437,7 +444,8 @@ for (const p of placesAll.sort((a, b) => (b.maps || []).length - (a.maps || []).
     ` · карты: ${(p.maps || []).map((m) => m.slug).join(', ')}`;
   const tip = tipAttr(p.names.ru, tipRest);
   const needle = [p.names.ru, ...(p.names.variants || [])].join(' ').toLowerCase().replace(/ё/g, 'е');
-  geoDots.push(`<g ${tip} class="geo-dot" data-name="${esc(needle)}"><circle cx="${pl.x}" cy="${pl.y}" r="${r.toFixed(1)}" class="dot-${cls}"/></g>`);
+  const firstMap = (p.maps && p.maps[0] && p.maps[0].slug) || "";
+  geoDots.push(`<g ${tip} class="geo-dot" data-name="${esc(needle)}"${firstMap ? ` data-href="../../karty/${firstMap}/" tabindex="0" role="link" aria-label="${esc(p.names.ru)} — открыть карту"` : ""}><circle cx="${pl.x}" cy="${pl.y}" r="${r.toFixed(1)}" class="dot-${cls}"/></g>`);
   if (nMaps >= 3 || (cls === 'disputed' && nMaps >= 2)) {
     const side = pl.x > 1550 ? -1 : 1;
     geoLabels.push(`<text x="${pl.x + side * (r + 5)}" y="${pl.y + 3.5}" ${side < 0 ? 'text-anchor="end"' : ''} class="geo-lab" data-name="${esc(needle)}">${esc(p.names.ru)}</text>`);
@@ -632,7 +640,9 @@ const html = `<!DOCTYPE html>
   .book-bar i{display:block;height:100%;border-radius:2px;background:linear-gradient(90deg,var(--gold2),var(--gold))}
   .chips{display:flex;flex-wrap:wrap;gap:7px}
   .chip{position:relative;font:600 12.5px/1 var(--sans);background:#fff;border:1px solid var(--line);border-radius:9px;
-    padding:8px 11px;color:var(--ink2);cursor:default;transition:border-color .15s, box-shadow .15s, transform .15s}
+    padding:8px 11px;color:var(--ink2);cursor:default;transition:border-color .15s, box-shadow .15s, transform .15s;
+    text-decoration:none;display:inline-block}
+  a.chip{cursor:pointer}
   .chip:hover{border-color:var(--blue);box-shadow:0 3px 9px -4px rgba(30,58,99,.45);transform:translateY(-1px)}
   .chip.has-map{border-color:var(--gold2);color:var(--ink);background:linear-gradient(180deg,#fffdf6,#faf3e2);
     box-shadow:0 1px 4px -2px rgba(185,138,47,.5)}
@@ -651,6 +661,14 @@ const html = `<!DOCTYPE html>
   .theme-card h4{color:var(--blue);font:700 17.5px/1.25 var(--serif);margin-bottom:6px}
   .theme-now{font:13.5px/1.55 var(--sans);color:var(--ink)}
   .theme-now.theme-empty{color:var(--ink3);font-style:italic}
+  .theme-thumbs{display:flex;flex-wrap:wrap;gap:8px}
+  .thumb{position:relative;width:118px;height:64px;border-radius:9px;overflow:hidden;background-size:cover;background-position:center;
+    border:1px solid var(--line);box-shadow:0 3px 10px -6px rgba(74,58,24,.6);transition:transform .18s, box-shadow .18s;flex:none}
+  .thumb::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,transparent 38%,rgba(24,20,10,.78))}
+  .thumb span{position:absolute;left:7px;right:6px;bottom:5px;z-index:1;font:600 9.5px/1.25 var(--sans);color:#f2ead8;
+    letter-spacing:.02em;text-shadow:0 1px 2px rgba(0,0,0,.6)}
+  .thumb:hover{transform:translateY(-2px) scale(1.03);box-shadow:0 6px 14px -6px rgba(74,58,24,.75);border-color:var(--gold2)}
+  .thumb:focus-visible{outline:2px solid var(--blue);outline-offset:2px}
   .plan-chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
   .plan-chip{font:600 11px/1 var(--sans);color:var(--ink3);border:1px dashed var(--line);border-radius:999px;
     padding:5px 9px;background:rgba(255,255,255,.4)}
@@ -658,8 +676,10 @@ const html = `<!DOCTYPE html>
   /* ── Map cards ── */
   .maps-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(264px,1fr));gap:16px}
   .map-card{background:var(--card);border:1px solid var(--line);border-radius:14px;overflow:hidden;display:flex;flex-direction:column;
-    box-shadow:0 1px 0 #fff inset,0 10px 24px -20px rgba(74,58,24,.5);transition:transform .18s, box-shadow .18s}
+    box-shadow:0 1px 0 #fff inset,0 10px 24px -20px rgba(74,58,24,.5);transition:transform .18s, box-shadow .18s;
+    text-decoration:none;color:inherit}
   .map-card:hover{transform:translateY(-3px);box-shadow:0 1px 0 #fff inset,0 18px 32px -20px rgba(74,58,24,.55)}
+  .map-card:focus-visible{outline:2px solid var(--blue);outline-offset:3px}
   .map-hero{position:relative;aspect-ratio:16/9;background:var(--parch2);overflow:hidden}
   .map-hero img{width:100%;height:100%;object-fit:cover;display:block;transform:scale(1.001);transition:transform .45s cubic-bezier(.2,.6,.25,1)}
   .map-card:hover .map-hero img{transform:scale(1.055)}
@@ -722,6 +742,8 @@ const html = `<!DOCTYPE html>
   .geo-frame::after{content:"";position:absolute;inset:7px;border:1px solid rgba(120,95,40,.28);border-radius:9px;pointer-events:none}
   .geo-svg{width:100%;height:auto;display:block}
   .geo-dot,.geo-lab{transition:opacity .18s}
+  .geo-dot[data-href]{cursor:pointer}
+  .geo-dot[data-href]:focus-visible circle{stroke:var(--blue);stroke-width:2.6}
   .geo-dot.dim{opacity:.12}
   .geo-lab.dim{opacity:.15}
   .geo-dot.hit circle{stroke:var(--blue);stroke-width:2.6;filter:drop-shadow(0 0 6px rgba(30,58,99,.55))}
@@ -924,6 +946,11 @@ const html = `<!DOCTYPE html>
     });
     tl.addEventListener('mouseleave',function(){xh.setAttribute('opacity','0');yc.style.display='none'});
   }
+  // Клик/Enter по точке мини-карты — открыть первую карту места
+  document.querySelectorAll('.geo-dot[data-href]').forEach(function(d){
+    d.addEventListener('click',function(){location.href=d.getAttribute('data-href')});
+    d.addEventListener('keydown',function(e){if(e.key==='Enter'){location.href=d.getAttribute('data-href')}});
+  });
   // Поиск по мини-карте: подсветка совпадений, затемнение остальных
   var q=document.getElementById('geo-q'), n=document.getElementById('geo-n');
   if(q){
