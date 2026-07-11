@@ -26,6 +26,7 @@ import { buildMatthewLuke } from './lib/layout-l1-lineages.mjs';
 import { renderMatthewLukeSvg } from './lib/render-l1-lineages.mjs';
 import { buildNationsTree } from './lib/layout-l1-nations.mjs';
 import { renderNationsSvg } from './lib/render-l1-nations.mjs';
+import { renderAppShell } from './lib/render-app-shell.mjs';
 
 const log = (...a) => console.log('[genealogy-build]', ...a);
 
@@ -368,6 +369,10 @@ async function runAll() {
   const l1NationsSvg = renderNationsSvg(nationsTree);
   const l1NationsDarkSvg = renderNationsSvg(nationsTree, { theme: 'dark' });
   log(`layout-l1: «Народы от Ноя» — 3 ветви, ${nationsTree.columns.reduce((s, c) => s + c.rows.length, 0)} народов (Таблица народов)`);
+  // Камертон интерфейса: оболочка приложения (карта + панель-навигатор + миникарта)
+  const appShellSvg = renderAppShell(layoutL0);
+  const appShellDarkSvg = renderAppShell(layoutL0, { theme: 'dark' });
+  log(`app-shell: прототип интерфейса (карта + навигатор + миникарта), обе темы`);
   log(`layout-l0: узлов ${layoutL0.nodes.length} (хребет ${layoutL0.nodes.filter(n => n.kind === 'spine').length} + мега ${layoutL0.nodes.filter(n => n.kind === 'mega').length}), bbox ${Math.round(layoutL0.bbox.w)}×${Math.round(layoutL0.bbox.h)}`);
 
   // 7. Валидация
@@ -411,6 +416,8 @@ async function runAll() {
   await writeFile(path.join(PATHS.outDir, 'build', 'layout-l1-nations.json'), JSON.stringify(nationsTree, null, 1) + '\n');
   await writeFile(path.join(PATHS.outDir, 'build', 'genealogy-l1-nations.svg'), l1NationsSvg);
   await writeFile(path.join(PATHS.outDir, 'build', 'genealogy-l1-nations-dark.svg'), l1NationsDarkSvg);
+  await writeFile(path.join(PATHS.outDir, 'build', 'genealogy-app-shell.svg'), appShellSvg);
+  await writeFile(path.join(PATHS.outDir, 'build', 'genealogy-app-shell-dark.svg'), appShellDarkSvg);
   await writeFile(path.join(PATHS.outDir, 'meta.json'), JSON.stringify(meta, null, 2) + '\n');
   try { await access(path.join(PATHS.outDir, 'ru-overrides.json')); }
   catch {
