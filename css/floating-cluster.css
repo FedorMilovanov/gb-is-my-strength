@@ -3982,6 +3982,174 @@ html.dark [data-gill-v16] .mobile-top-bar {
     overflow-wrap: normal;
     hyphens: none;
   }
+
+  /* ============================================================
+     v2.8 RECONCILIATION — borderless frosted bars, single left-accent
+     part-TOC rows, learning-pane term/quiz polish. Additive + scoped
+     [data-gill-v16] + mobile; later-in-cascade so it wins the older
+     "luxury card / opaque bar" !important layers without editing them.
+     ============================================================ */
+
+  /* Dedicated frost + hairline tokens so the shared --gill-mobile-bar-bg
+     (also consumed by the opaque TOC sheet) is NOT lowered to translucent. */
+  [data-gill-v16] {
+    --gill-mobile-hairline: rgba(120, 96, 66, .16);
+    --gill-mobile-bar-frost: rgba(253, 251, 246, .80);
+  }
+  html.dark [data-gill-v16] {
+    --gill-mobile-hairline: rgba(232, 184, 120, .16);
+    --gill-mobile-bar-frost: rgba(13, 17, 23, .78);
+  }
+
+  /* --- Part-TOC (section) rows: single LEFT ACCENT BAR (v2.8 .btoc-link),
+     not a full rounded box frame + top hairline. Scoped to .toc-part-item
+     only so the series-TOC .toc-item card look is left untouched. --- */
+  [data-gill-v16] .toc-part-item {
+    border: 0 !important;
+    border-left: 2px solid var(--gb-border) !important;
+    border-radius: 0 12px 12px 0 !important;
+    overflow: visible !important;
+    margin: 2px 6px !important;
+    box-shadow: none !important;
+  }
+  [data-gill-v16] .toc-part-item::before {
+    display: none !important;
+    content: none !important;
+  }
+  [data-gill-v16] .toc-part-item:hover {
+    background: color-mix(in srgb, var(--gb-accent) 5%, transparent) !important;
+    border-left-color: var(--gb-accent) !important;
+    box-shadow: none !important;
+  }
+  html.dark [data-gill-v16] .toc-part-item:hover {
+    background: rgba(255, 255, 255, .05) !important;
+    border-left-color: var(--gb-accent) !important;
+    box-shadow: none !important;
+  }
+  [data-gill-v16] .toc-part-item.is-current,
+  [data-gill-v16] .toc-part-item.is-active,
+  [data-gill-v16] .toc-part-item[aria-current="true"] {
+    background: var(--gb-surface-muted) !important;
+    border-color: transparent !important;
+    border-left-color: var(--gb-accent) !important;
+    box-shadow: none !important;
+  }
+  html.dark [data-gill-v16] .toc-part-item.is-current,
+  html.dark [data-gill-v16] .toc-part-item.is-active,
+  html.dark [data-gill-v16] .toc-part-item[aria-current="true"] {
+    background: rgba(255, 255, 255, .05) !important;
+    border-color: transparent !important;
+    border-left-color: var(--gb-accent) !important;
+    box-shadow: none !important;
+  }
+
+  /* --- Bottom bar: flush edge-to-edge, borderless except a subtle top
+     hairline, frosted blur, NO drop shadow / inset highlight / opaque
+     ::after backing. Also holds flush across the 960–1024px gap the V3
+     max-width:960px block misses. --- */
+  [data-gill-v16] .mobile-bottom-bar {
+    position: fixed !important;
+    left: 0 !important;
+    right: 0 !important;
+    bottom: 0 !important;
+    z-index: 2147483000 !important;
+    min-height: var(--gill-mobile-bar-h, 78px) !important;
+    border: 0 !important;
+    border-radius: 0 !important;
+    border-top: 1px solid var(--gill-mobile-hairline) !important;
+    box-shadow: none !important;
+    background: var(--gill-mobile-bar-frost) !important;
+    -webkit-backdrop-filter: blur(22px) saturate(180%) !important;
+    backdrop-filter: blur(22px) saturate(180%) !important;
+  }
+  [data-gill-v16] .mobile-bottom-bar::after {
+    display: none !important;
+    content: none !important;
+  }
+  html.dark [data-gill-v16] .mobile-bottom-bar {
+    background: var(--gill-mobile-bar-frost) !important;
+    border-top-color: var(--gill-mobile-hairline) !important;
+  }
+
+  /* --- Top bar: transparent + frameless at the very top, gaining the
+     frosted background + hairline only when scrolled (.is-scrolled is
+     toggled by the mobile-bar auto-hide scroll handler). Frost blur always
+     on. Overrides the always-opaque base + dark FOUC-guard by equal/higher
+     specificity + later source order. --- */
+  [data-gill-v16] .mobile-top-bar {
+    background: transparent !important;
+    border-bottom: 1px solid transparent !important;
+    box-shadow: none !important;
+    -webkit-backdrop-filter: blur(22px) saturate(180%) !important;
+    backdrop-filter: blur(22px) saturate(180%) !important;
+  }
+  html.dark [data-gill-v16] .mobile-top-bar {
+    background: transparent !important;
+  }
+  [data-gill-v16] .mobile-top-bar.is-scrolled,
+  html.dark [data-gill-v16] .mobile-top-bar.is-scrolled {
+    background: var(--gill-mobile-bar-frost) !important;
+    border-bottom-color: var(--gill-mobile-hairline) !important;
+  }
+
+  /* --- Term cards: v2.8 accent left-edge that scaleY-animates in on open,
+     plus an accent-tinted border while expanded. --- */
+  [data-gill-v16] .term-card {
+    position: relative;
+    overflow: hidden;
+  }
+  [data-gill-v16] .term-card::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 3px;
+    background: var(--gb-accent);
+    transform: scaleY(0);
+    transform-origin: center;
+    transition: transform .24s cubic-bezier(.34, 1.4, .64, 1);
+  }
+  [data-gill-v16] .term-card[aria-expanded="true"]::before {
+    transform: scaleY(1);
+  }
+  [data-gill-v16] .term-card[aria-expanded="true"] {
+    border-color: color-mix(in srgb, var(--gb-accent) 40%, transparent);
+  }
+
+  /* --- Quiz category: rounded accent chip (v2.8 .hlp-cat), not bare text. --- */
+  [data-gill-v16] .quiz-category {
+    display: inline-block;
+    padding: 2px 9px;
+    border-radius: 999px;
+    font-size: 10px;
+    font-weight: 800;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+    background: color-mix(in srgb, var(--gb-accent) 12%, transparent);
+    color: var(--gb-accent);
+  }
+
+  /* --- Quiz explanation: v2.8 always-on "why it matters" note with an
+     accent left border + uppercase accent label. --- */
+  [data-gill-v16] .quiz-explanation {
+    border-left: 3px solid var(--gb-accent);
+  }
+  [data-gill-v16] .quiz-explanation::before {
+    content: 'Почему это важно';
+    display: block;
+    margin-bottom: 4px;
+    font-family: var(--gb-font-sans, system-ui, sans-serif);
+    font-size: 10px;
+    font-weight: 800;
+    letter-spacing: .09em;
+    text-transform: uppercase;
+    color: var(--gb-accent);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    [data-gill-v16] .term-card::before { transition: none !important; }
+  }
 }
 
 /* ================= Scoped sepia reading theme (Gill mobile only) =================
