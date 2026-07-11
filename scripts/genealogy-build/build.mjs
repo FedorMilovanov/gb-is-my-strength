@@ -217,9 +217,14 @@ async function runAll() {
   for (const rec of [...persons.values()].sort((a, b) => cmpRef(a.ref, b.ref) || a.name.localeCompare(b.name))) {
     const id = personId(rec);
     const seed = v1ByTipnrKey.get(rec.key);
+    const isAnon = /^Unnamed#\d+$/i.test(rec.name);
     let ru;
     if (overrides[id]) {
       ru = { name: overrides[id], source: 'override', confidence: 1, review: false };
+    } else if (isAnon) {
+      // структурный безымянный узел TIPNR (Strong G0000, имя "[ ]") — несёт рёбра
+      // родословия (напр. Матфан→…→Иаков в Мф 1), но именем не является
+      ru = { name: '(без имени)', source: 'structural', confidence: 1, review: false, anonymous: true };
     } else if (seed?.name?.ru) {
       ru = { name: seed.name.ru, source: 'seed', confidence: 1, review: false };
     } else {
@@ -232,7 +237,7 @@ async function runAll() {
       id,
       key: rec.key,
       en: rec.name,
-      ru: ru.name ? { name: ru.name, source: ru.source, confidence: ru.confidence, review: ru.review, verseRef: ru.verseRef ?? null } : null,
+      ru: ru.name ? { name: ru.name, source: ru.source, confidence: ru.confidence, review: ru.review, verseRef: ru.verseRef ?? null, ...(ru.anonymous ? { anonymous: true } : {}) } : null,
       gender: rec.type === 'Male' ? 'm' : 'f',
       firstRef: { osis: rec.ref, ru: refToRu(rec.ref) },
       tribe: rec.tribe,
@@ -470,10 +475,11 @@ ${cycles.length ? '\nЦиклы:\n' + cycles.slice(0, 5).map(c => '- ' + c.join(
 
 | source | персон |
 |---|---:|
-| override | ${ru.override} |
-| seed (v1) | ${ru.seed} |
-| pattern | ${ru.pattern} |
-| candidate | ${ru.candidate} |
+| override (курировано) | ${ru.override} |
+| seed (v1-скелет) | ${ru.seed} |
+| structural (безымянные узлы) | ${ru.structural ?? 0} |
+| pattern (стих) | ${ru.pattern} |
+| candidate (стих+транслит) | ${ru.candidate} |
 | translit (fallback) | ${ru.translit} |
 | none | ${ru.none} |
 | **review-очередь** | **${ru.review}** |

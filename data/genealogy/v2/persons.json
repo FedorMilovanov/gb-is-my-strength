@@ -7555,10 +7555,10 @@
   "en": "Amminadab",
   "ru": {
    "name": "Аминадав",
-   "source": "candidate",
-   "confidence": 0.748,
-   "review": true,
-   "verseRef": "Exo.6.22"
+   "source": "override",
+   "confidence": 1,
+   "review": false,
+   "verseRef": null
   },
   "gender": "m",
   "firstRef": {
@@ -11630,10 +11630,10 @@
   "key": "Obed@Rut.4.17",
   "en": "Obed",
   "ru": {
-   "name": "Овед",
-   "source": "translit",
-   "confidence": 0.3,
-   "review": true,
+   "name": "Овид",
+   "source": "override",
+   "confidence": 1,
+   "review": false,
    "verseRef": null
   },
   "gender": "m",
@@ -13209,10 +13209,10 @@
   "en": "Nathan",
   "ru": {
    "name": "Нафан",
-   "source": "candidate",
-   "confidence": 0.94,
+   "source": "override",
+   "confidence": 1,
    "review": false,
-   "verseRef": "2Sa.5.12"
+   "verseRef": null
   },
   "gender": "m",
   "firstRef": {
@@ -15537,11 +15537,12 @@
   "key": "Unnamed#1@1Ki.2.27",
   "en": "Unnamed#1",
   "ru": {
-   "name": "Уннамед",
-   "source": "translit",
-   "confidence": 0.3,
-   "review": true,
-   "verseRef": null
+   "name": "(без имени)",
+   "source": "structural",
+   "confidence": 1,
+   "review": false,
+   "verseRef": null,
+   "anonymous": true
   },
   "gender": "m",
   "firstRef": {
@@ -15556,11 +15557,12 @@
   "key": "Unnamed#2@1Ki.2.27",
   "en": "Unnamed#2",
   "ru": {
-   "name": "Уннамед",
-   "source": "translit",
-   "confidence": 0.3,
-   "review": true,
-   "verseRef": null
+   "name": "(без имени)",
+   "source": "structural",
+   "confidence": 1,
+   "review": false,
+   "verseRef": null,
+   "anonymous": true
   },
   "gender": "m",
   "firstRef": {
@@ -15575,11 +15577,12 @@
   "key": "Unnamed#3@1Ki.2.27",
   "en": "Unnamed#3",
   "ru": {
-   "name": "Уннамед",
-   "source": "translit",
-   "confidence": 0.3,
-   "review": true,
-   "verseRef": null
+   "name": "(без имени)",
+   "source": "structural",
+   "confidence": 1,
+   "review": false,
+   "verseRef": null,
+   "anonymous": true
   },
   "gender": "m",
   "firstRef": {
@@ -15594,11 +15597,12 @@
   "key": "Unnamed#4@1Ki.2.27",
   "en": "Unnamed#4",
   "ru": {
-   "name": "Уннамед",
-   "source": "translit",
-   "confidence": 0.3,
-   "review": true,
-   "verseRef": null
+   "name": "(без имени)",
+   "source": "structural",
+   "confidence": 1,
+   "review": false,
+   "verseRef": null,
+   "anonymous": true
   },
   "gender": "m",
   "firstRef": {
@@ -16707,10 +16711,10 @@
   "key": "Abijah@1Ki.14.31",
   "en": "Abijah",
   "ru": {
-   "name": "Авииа",
-   "source": "translit",
-   "confidence": 0.3,
-   "review": true,
+   "name": "Авия",
+   "source": "override",
+   "confidence": 1,
+   "review": false,
    "verseRef": null
   },
   "gender": "m",
@@ -17507,10 +17511,10 @@
   "en": "Jehoram",
   "ru": {
    "name": "Иорам",
-   "source": "candidate",
-   "confidence": 0.803,
+   "source": "override",
+   "confidence": 1,
    "review": false,
-   "verseRef": "1Ki.22.49"
+   "verseRef": null
   },
   "gender": "m",
   "firstRef": {
@@ -17649,10 +17653,10 @@
   "key": "Ahaziah@2Ki.8.24",
   "en": "Ahaziah",
   "ru": {
-   "name": "Аазиа",
-   "source": "translit",
-   "confidence": 0.3,
-   "review": true,
+   "name": "Охозия",
+   "source": "override",
+   "confidence": 1,
+   "review": false,
    "verseRef": null
   },
   "gender": "m",
@@ -17801,10 +17805,10 @@
   "key": "Joash@2Ki.11.2",
   "en": "Joash",
   "ru": {
-   "name": "Иоаш",
-   "source": "translit",
-   "confidence": 0.3,
-   "review": true,
+   "name": "Иоас",
+   "source": "override",
+   "confidence": 1,
+   "review": false,
    "verseRef": null
   },
   "gender": "m",
@@ -17878,10 +17882,10 @@
   "en": "Amaziah",
   "ru": {
    "name": "Амасия",
-   "source": "candidate",
-   "confidence": 0.667,
-   "review": true,
-   "verseRef": "2Ki.12.21"
+   "source": "override",
+   "confidence": 1,
+   "review": false,
+   "verseRef": null
   },
   "gender": "m",
   "firstRef": {
@@ -19622,10 +19626,10 @@
   "key": "Jehoiachin@2Ki.24.6",
   "en": "Jehoiachin",
   "ru": {
-   "name": "Иеоиахин",
-   "source": "translit",
-   "confidence": 0.3,
-   "review": true,
+   "name": "Иехония",
+   "source": "override",
+   "confidence": 1,
+   "review": false,
    "verseRef": null
   },
   "gender": "m",
@@ -21980,10 +21984,10 @@
   "en": "Pedaiah",
   "ru": {
    "name": "Федаия",
-   "source": "candidate",
-   "confidence": 0.667,
-   "review": true,
-   "verseRef": "1Ch.3.18"
+   "source": "override",
+   "confidence": 1,
+   "review": false,
+   "verseRef": null
   },
   "gender": "m",
   "firstRef": {
@@ -54204,11 +54208,12 @@
   "key": "Unnamed#1@Mat.1.15",
   "en": "Unnamed#1",
   "ru": {
-   "name": "Уннамед",
-   "source": "translit",
-   "confidence": 0.3,
-   "review": true,
-   "verseRef": null
+   "name": "(без имени)",
+   "source": "structural",
+   "confidence": 1,
+   "review": false,
+   "verseRef": null,
+   "anonymous": true
   },
   "gender": "m",
   "firstRef": {
@@ -54223,11 +54228,12 @@
   "key": "Unnamed#2@Mat.1.15",
   "en": "Unnamed#2",
   "ru": {
-   "name": "Уннамед",
-   "source": "translit",
-   "confidence": 0.3,
-   "review": true,
-   "verseRef": null
+   "name": "(без имени)",
+   "source": "structural",
+   "confidence": 1,
+   "review": false,
+   "verseRef": null,
+   "anonymous": true
   },
   "gender": "m",
   "firstRef": {
@@ -54242,11 +54248,12 @@
   "key": "Unnamed#3@Mat.1.15",
   "en": "Unnamed#3",
   "ru": {
-   "name": "Уннамед",
-   "source": "translit",
-   "confidence": 0.3,
-   "review": true,
-   "verseRef": null
+   "name": "(без имени)",
+   "source": "structural",
+   "confidence": 1,
+   "review": false,
+   "verseRef": null,
+   "anonymous": true
   },
   "gender": "m",
   "firstRef": {
@@ -54261,11 +54268,12 @@
   "key": "Unnamed#4@Mat.1.15",
   "en": "Unnamed#4",
   "ru": {
-   "name": "Уннамед",
-   "source": "translit",
-   "confidence": 0.3,
-   "review": true,
-   "verseRef": null
+   "name": "(без имени)",
+   "source": "structural",
+   "confidence": 1,
+   "review": false,
+   "verseRef": null,
+   "anonymous": true
   },
   "gender": "m",
   "firstRef": {
@@ -54280,11 +54288,12 @@
   "key": "Unnamed#5@Mat.1.15",
   "en": "Unnamed#5",
   "ru": {
-   "name": "Уннамед",
-   "source": "translit",
-   "confidence": 0.3,
-   "review": true,
-   "verseRef": null
+   "name": "(без имени)",
+   "source": "structural",
+   "confidence": 1,
+   "review": false,
+   "verseRef": null,
+   "anonymous": true
   },
   "gender": "m",
   "firstRef": {
@@ -54299,11 +54308,12 @@
   "key": "Unnamed#6@Mat.1.15",
   "en": "Unnamed#6",
   "ru": {
-   "name": "Уннамед",
-   "source": "translit",
-   "confidence": 0.3,
-   "review": true,
-   "verseRef": null
+   "name": "(без имени)",
+   "source": "structural",
+   "confidence": 1,
+   "review": false,
+   "verseRef": null,
+   "anonymous": true
   },
   "gender": "m",
   "firstRef": {
@@ -54318,11 +54328,12 @@
   "key": "Unnamed#7@Mat.1.15",
   "en": "Unnamed#7",
   "ru": {
-   "name": "Уннамед",
-   "source": "translit",
-   "confidence": 0.3,
-   "review": true,
-   "verseRef": null
+   "name": "(без имени)",
+   "source": "structural",
+   "confidence": 1,
+   "review": false,
+   "verseRef": null,
+   "anonymous": true
   },
   "gender": "m",
   "firstRef": {
@@ -54337,11 +54348,12 @@
   "key": "Unnamed#8@Mat.1.15",
   "en": "Unnamed#8",
   "ru": {
-   "name": "Уннамед",
-   "source": "translit",
-   "confidence": 0.3,
-   "review": true,
-   "verseRef": null
+   "name": "(без имени)",
+   "source": "structural",
+   "confidence": 1,
+   "review": false,
+   "verseRef": null,
+   "anonymous": true
   },
   "gender": "m",
   "firstRef": {
@@ -54356,11 +54368,12 @@
   "key": "Unnamed#9@Mat.1.15",
   "en": "Unnamed#9",
   "ru": {
-   "name": "Уннамед",
-   "source": "translit",
-   "confidence": 0.3,
-   "review": true,
-   "verseRef": null
+   "name": "(без имени)",
+   "source": "structural",
+   "confidence": 1,
+   "review": false,
+   "verseRef": null,
+   "anonymous": true
   },
   "gender": "m",
   "firstRef": {
@@ -54502,11 +54515,11 @@
   "key": "Andrew@Mat.4.18",
   "en": "Andrew",
   "ru": {
-   "name": "Андрея",
-   "source": "candidate",
-   "confidence": 0.833,
+   "name": "Андрей",
+   "source": "override",
+   "confidence": 1,
    "review": false,
-   "verseRef": "Mat.4.18"
+   "verseRef": null
   },
   "gender": "m",
   "firstRef": {
@@ -54521,10 +54534,10 @@
   "key": "Peter@Mat.4.18",
   "en": "Peter",
   "ru": {
-   "name": "Петер",
-   "source": "translit",
-   "confidence": 0.3,
-   "review": true,
+   "name": "Пётр",
+   "source": "override",
+   "confidence": 1,
+   "review": false,
    "verseRef": null
   },
   "gender": "m",
@@ -54540,10 +54553,10 @@
   "key": "James@Mat.4.21",
   "en": "James",
   "ru": {
-   "name": "Иамес",
-   "source": "translit",
-   "confidence": 0.3,
-   "review": true,
+   "name": "Иаков (Зеведеев)",
+   "source": "override",
+   "confidence": 1,
+   "review": false,
    "verseRef": null
   },
   "gender": "m",
@@ -54559,10 +54572,10 @@
   "key": "John@Mat.4.21",
   "en": "John",
   "ru": {
-   "name": "Ион",
-   "source": "translit",
-   "confidence": 0.3,
-   "review": true,
+   "name": "Иоанн",
+   "source": "override",
+   "confidence": 1,
+   "review": false,
    "verseRef": null
   },
   "gender": "m",
@@ -54635,11 +54648,11 @@
   "key": "Matthew@Mat.9.9",
   "en": "Matthew",
   "ru": {
-   "name": "Матфея",
-   "source": "candidate",
-   "confidence": 0.833,
+   "name": "Матфей",
+   "source": "override",
+   "confidence": 1,
    "review": false,
-   "verseRef": "Mat.9.9"
+   "verseRef": null
   },
   "gender": "m",
   "firstRef": {
@@ -54674,10 +54687,10 @@
   "en": "Bartholomew",
   "ru": {
    "name": "Варфоломей",
-   "source": "candidate",
-   "confidence": 0.9,
+   "source": "override",
+   "confidence": 1,
    "review": false,
-   "verseRef": "Mat.10.3"
+   "verseRef": null
   },
   "gender": "m",
   "firstRef": {
@@ -54692,10 +54705,10 @@
   "key": "James@Mat.10.3",
   "en": "James",
   "ru": {
-   "name": "Иамес",
-   "source": "translit",
-   "confidence": 0.3,
-   "review": true,
+   "name": "Иаков (Алфеев)",
+   "source": "override",
+   "confidence": 1,
+   "review": false,
    "verseRef": null
   },
   "gender": "m",
@@ -54711,11 +54724,11 @@
   "key": "Judas@Mat.10.3",
   "en": "Judas",
   "ru": {
-   "name": "Иуда",
-   "source": "candidate",
-   "confidence": 0.77,
-   "review": true,
-   "verseRef": "Mat.10.4"
+   "name": "Иуда (Иаковлев)",
+   "source": "override",
+   "confidence": 1,
+   "review": false,
+   "verseRef": null
   },
   "gender": "m",
   "firstRef": {
@@ -54731,10 +54744,10 @@
   "en": "Philip",
   "ru": {
    "name": "Филипп",
-   "source": "candidate",
-   "confidence": 0.833,
+   "source": "override",
+   "confidence": 1,
    "review": false,
-   "verseRef": "Mat.10.3"
+   "verseRef": null
   },
   "gender": "m",
   "firstRef": {
@@ -54750,10 +54763,10 @@
   "en": "Thomas",
   "ru": {
    "name": "Фома",
-   "source": "candidate",
-   "confidence": 0.8,
+   "source": "override",
+   "confidence": 1,
    "review": false,
-   "verseRef": "Mat.10.3"
+   "verseRef": null
   },
   "gender": "m",
   "firstRef": {
@@ -54768,11 +54781,11 @@
   "key": "Judas@Mat.10.4",
   "en": "Judas",
   "ru": {
-   "name": "Иуда",
-   "source": "candidate",
-   "confidence": 0.8,
+   "name": "Иуда Искариот",
+   "source": "override",
+   "confidence": 1,
    "review": false,
-   "verseRef": "Mat.10.4"
+   "verseRef": null
   },
   "gender": "m",
   "firstRef": {
@@ -54787,11 +54800,11 @@
   "key": "Simon@Mat.10.4",
   "en": "Simon",
   "ru": {
-   "name": "Симон",
-   "source": "candidate",
+   "name": "Симон Кананит",
+   "source": "override",
    "confidence": 1,
    "review": false,
-   "verseRef": "Mat.10.4"
+   "verseRef": null
   },
   "gender": "m",
   "firstRef": {
@@ -54806,10 +54819,10 @@
   "key": "James@Mat.13.55",
   "en": "James",
   "ru": {
-   "name": "Иамес",
-   "source": "translit",
-   "confidence": 0.3,
-   "review": true,
+   "name": "Иаков (брат Господень)",
+   "source": "override",
+   "confidence": 1,
+   "review": false,
    "verseRef": null
   },
   "gender": "m",
@@ -54825,10 +54838,10 @@
   "key": "Joses@Mat.13.55",
   "en": "Joses",
   "ru": {
-   "name": "Иосес",
-   "source": "translit",
-   "confidence": 0.3,
-   "review": true,
+   "name": "Иосия",
+   "source": "override",
+   "confidence": 1,
+   "review": false,
    "verseRef": null
   },
   "gender": "m",
@@ -54844,11 +54857,11 @@
   "key": "Jude@Mat.13.55",
   "en": "Jude",
   "ru": {
-   "name": "Иуда",
-   "source": "candidate",
-   "confidence": 0.75,
-   "review": true,
-   "verseRef": "Mat.13.55"
+   "name": "Иуда (брат Господень)",
+   "source": "override",
+   "confidence": 1,
+   "review": false,
+   "verseRef": null
   },
   "gender": "m",
   "firstRef": {
@@ -54863,11 +54876,11 @@
   "key": "Simon@Mat.13.55",
   "en": "Simon",
   "ru": {
-   "name": "Симон",
-   "source": "candidate",
+   "name": "Симон (брат Господень)",
+   "source": "override",
    "confidence": 1,
    "review": false,
-   "verseRef": "Mat.13.55"
+   "verseRef": null
   },
   "gender": "m",
   "firstRef": {
@@ -56399,10 +56412,10 @@
   "en": "Matthat",
   "ru": {
    "name": "Матфат",
-   "source": "candidate",
-   "confidence": 0.75,
-   "review": true,
-   "verseRef": "Luk.3.29"
+   "source": "override",
+   "confidence": 1,
+   "review": false,
+   "verseRef": null
   },
   "gender": "m",
   "firstRef": {
@@ -56695,10 +56708,10 @@
   "key": "James@Luk.6.16",
   "en": "James",
   "ru": {
-   "name": "Иамес",
-   "source": "translit",
-   "confidence": 0.3,
-   "review": true,
+   "name": "Иаков",
+   "source": "override",
+   "confidence": 1,
+   "review": false,
    "verseRef": null
   },
   "gender": "m",
@@ -57303,10 +57316,10 @@
   "key": "Paul@Act.7.58",
   "en": "Paul",
   "ru": {
-   "name": "Паул",
-   "source": "translit",
-   "confidence": 0.3,
-   "review": true,
+   "name": "Павел",
+   "source": "override",
+   "confidence": 1,
+   "review": false,
    "verseRef": null
   },
   "gender": "m",
