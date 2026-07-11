@@ -32,8 +32,11 @@
   text.lab-wp{font-family:Georgia,serif;font-style:italic;fill:#4a6a52;opacity:.82;paint-order:stroke;stroke:#f5edd8;stroke-width:.18em}
   .plate{fill:rgba(246,241,231,.85);stroke:rgba(120,95,40,.35);stroke-width:1}
   .cart-plate{fill:rgba(246,241,231,.92)}
+  .cart-inner{fill:none;stroke:rgba(138,106,31,.3);stroke-width:.8}
+  .cart-over{font-family:Georgia,serif;fill:#8a6a1f;letter-spacing:.22em;font-weight:600}
   .cart-title{font-family:Georgia,serif;font-weight:700;fill:#1e3a63}
   .cart-sub{font-family:Georgia,serif;fill:#5c4d33;opacity:.85}
+  .leg-t{font-family:Georgia,serif;fill:#3a3020;opacity:.9}
   .sb-d{fill:#3a3020}.sb-l{fill:#f6f1e7;stroke:#3a3020;stroke-width:1}
   .sb-t{font-family:Georgia,serif;fill:#5c4d33;font-weight:600}
   .north{fill:#8a6a1f;stroke:#6b5216;stroke-width:1}
@@ -565,9 +568,21 @@
 <text x="1734.4" y="904.2" class="lab-place" font-size="21.13" text-anchor="start">Ур Халдейский</text><text x="993.6" y="166.2" class="lab-place lab-cand" font-size="21.13" text-anchor="start">Урфа (Шанлыурфа)</text><text x="1017.6" y="201.2" class="lab-place" font-size="21.13" text-anchor="start">Харран</text><text x="755.4" y="601.2" class="lab-place" font-size="21.13" text-anchor="start">Дамаск</text><text x="642.6" y="755.2" class="lab-place" font-size="21.13" text-anchor="start">Сихем</text><text x="609.4" y="789.2" class="lab-place" font-size="21.13" text-anchor="end">Бет-Эль и Гай</text><text x="210.6" y="947.2" class="lab-place" font-size="21.13" text-anchor="end">Египет</text><text x="585.6" y="836.2" class="lab-place" font-size="21.13" text-anchor="end">Хеврон · Мамре</text><text x="647.4" y="807.2" class="lab-place" font-size="21.13" text-anchor="start">Шалем · гора Мория</text><text x="689.4" y="632.2" class="lab-place" font-size="21.13" text-anchor="start">Дан (Лаиш)</text><text x="667.6" y="881.2" class="lab-place" font-size="21.13" text-anchor="start">Содом и Гоморра</text><text x="681.6" y="825.2" class="lab-place lab-cand" font-size="21.13" text-anchor="start">Талл эль-Хаммам</text><text x="664.6" y="896.2" class="lab-place" font-size="21.13" text-anchor="start">Цоар</text><text x="536.6" y="854.2" class="lab-place" font-size="21.13" text-anchor="end">Герар</text><text x="569.4" y="871.2" class="lab-place" font-size="21.13" text-anchor="end">Беэр-Шева</text><text x="556.6" y="941.2" class="lab-place" font-size="21.13" text-anchor="start">Кадеш (Кадеш-Барнеа)</text><text x="385.4" y="947.2" class="lab-place" font-size="21.13" text-anchor="end">Пустыня Сур</text><text x="519.4" y="938.2" class="lab-place lab-cand" font-size="21.13" text-anchor="end">Беэр-лахай-рои</text><text x="766.6" y="563.2" class="lab-place" font-size="21.13" text-anchor="start">Хова</text>
 
   <g class="cartouche">
-    <rect x="64" y="-0.75" width="650" height="117" rx="13" class="plate cart-plate"/>
-    <text x="93.25" y="51.25" class="cart-title" font-size="40.625">Путь Авраама</text>
-    <text x="93.25" y="90.25" class="cart-sub" font-size="19.5">Бытие 11–25 · Средняя бронза · ~2166–1991 до н.э.</text>
+    <rect x="64" y="-0.75" width="650" height="139.75" rx="13" class="plate cart-plate"/>
+    <rect x="72.125" y="7.375" width="633.75" height="123.5" rx="9.75" class="cart-inner"/>
+    <text x="96.5" y="36.625" class="cart-over" font-size="15.4375">БИБЛЕЙСКИЙ АТЛАС</text>
+    <text x="96.5" y="80.5" class="cart-title" font-size="40.625">Путь Авраама</text>
+    <text x="96.5" y="116.25" class="cart-sub" font-size="18.6875">Бытие 11–25 · Средняя бронза · ~2166–1991 до н.э.</text>
+  </g>
+
+  <g class="legend">
+    <rect x="64" y="1188.75" width="604.5" height="48.75" rx="9.75" class="plate"/>
+    <circle cx="93.25" cy="1213.125" r="6.825" class="pl-city"/>
+    <text x="109.5" y="1219.625" class="leg-t" font-size="17.0625">город · стан</text>
+    <circle cx="239.5" cy="1213.125" r="7.475" class="pl-cand"/>
+    <text x="255.75" y="1219.625" class="leg-t" font-size="17.0625">локализация спорна</text>
+    <rect x="460.5" y="1206.625" width="13" height="13" transform="rotate(45 467 1213.125)" class="wp-dot"/>
+    <text x="483.25" y="1219.625" class="leg-t" font-size="17.0625">археология</text>
   </g>
 
   <g class="furn">
