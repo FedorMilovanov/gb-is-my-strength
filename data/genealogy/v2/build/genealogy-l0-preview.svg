@@ -1,4 +1,4 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="-760 -153 1630 1874" width="1630" height="1874" font-family="Georgia, 'Times New Roman', serif" role="img" aria-label="Библейский атлас родословий — обзорная схема L0">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="-760 -153 1630 1874" width="1630" height="1874" font-family="Georgia, 'Times New Roman', serif" role="img" aria-label="Генеалогия Спасителя — обзорная схема L0">
 <defs>
     <radialGradient id="parch" cx="50%" cy="18%" r="90%">
       <stop offset="0%" stop-color="#f5efe1"/><stop offset="100%" stop-color="#efe6d3"/>
@@ -27,8 +27,8 @@
 <rect x="-742" y="1375.0" width="168" height="258.0" fill="#D4A857" opacity="0.08"/>
 <rect x="-742" y="1375.0" width="4" height="258.0" fill="#D4A857" opacity="0.5"/>
 <text x="-728" y="1395.0" font-size="15" fill="#8a7a55" opacity="0.85">Воплощение</text>
-<text x="130" y="-93" text-anchor="middle" font-size="34" fill="#3f3320" font-weight="bold">Библейский атлас родословий</text>
-<text x="130" y="-63" text-anchor="middle" font-size="16" fill="#c39a3f" font-style="italic">От Адама до Иисуса Христа</text>
+<text x="130" y="-93" text-anchor="middle" font-size="34" fill="#3f3320" font-weight="bold">Генеалогия Спасителя</text>
+<text x="130" y="-63" text-anchor="middle" font-size="16" fill="#c39a3f" font-style="italic">От Адама до Христа Спасителя</text>
 <line x1="0" y1="75" x2="0" y2="1425" stroke="url(#goldline)" stroke-width="6" stroke-linecap="round" opacity="0.55"/>
 <line x1="0" y1="107" x2="0" y2="193" stroke="url(#goldline)" stroke-width="4" stroke-linecap="round"/>
 <line x1="0" y1="257" x2="0" y2="343" stroke="url(#goldline)" stroke-width="4" stroke-linecap="round"/>

@@ -1,7 +1,7 @@
-# genealogy-build — пайплайн данных «Библейского атласа родословий» (Phase 1)
+# genealogy-build — пайплайн данных «Генеалогии Спасителя» (Phase 1)
 
 Генерирует производный датасет `data/genealogy/v2/` из открытых источников.
-Стратегия и контракт: `docs/GENEALOGY-ATLAS-FOUNDATION-2026-07-11.md` +
+Стратегия и контракт: `docs/GENEALOGY-FOUNDATION-2026-07-11.md` +
 AuditRepo `projects/gb-is-my-strength/incoming/claude-genealogy-atlas-strategy/2026-07-11/`.
 
 ## Запуск
@@ -18,7 +18,7 @@ node scripts/genealogy-build/build.mjs validate # валидаторы на те
 
 > **npm-обёртки** (`npm run genealogy:build/test/validate`) намеренно НЕ добавлены:
 > `package.json` — shared/high-risk файл (AGENTS §0), правится только в lane. Скрипты
-> пропишутся в lane интеграции атласа с рантаймом (Phase 3/5), когда `package.json`
+> пропишутся в lane интеграции генеалогии с рантаймом (Phase 3/5), когда `package.json`
 > трогается по делу вместе с deploy/CI-гейтами. Пока — прямой вызов `node …` выше.
 
 ## Источники (пины по SHA256 — см. config.mjs)
