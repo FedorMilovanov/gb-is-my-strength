@@ -9,6 +9,10 @@
     "levant": {
       "x": 623,
       "y": 800
+    },
+    "mediterranean": {
+      "x": 740,
+      "y": 580
     }
   },
   "maps": [

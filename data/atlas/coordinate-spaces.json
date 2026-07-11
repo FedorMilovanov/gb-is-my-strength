@@ -15,7 +15,23 @@
         "$comment": "Историческая художественная развёртка base-geo.svg (не строгая картографическая проекция). Обратное преобразование x/y → lat/lng НЕ определено; реальные координаты мест заполняются из внешних источников (OpenBible/Pleiades) в реестре, а не выводятся из SVG."
       },
       "baseGeo": "karty/_engine/base-geo.svg",
-      "maps": ["avraam", "ishod", "shvatim", "shoftim", "melachim", "maccabim", "yeshua", "early-church", "pavel", "revelation"]
+      "maps": ["avraam", "ishod", "shvatim", "shoftim", "melachim", "maccabim", "yeshua", "early-church"]
+    },
+    "mediterranean": {
+      "title": "Средиземноморье: путешествия Павла и семь церквей",
+      "status": "active",
+      "viewBox": "0 0 1900 1430",
+      "W0": 1900,
+      "H0": 1430,
+      "kmPerUnit": null,
+      "pad": { "x": 450, "y": 380 },
+      "zoom": { "minW": 300, "maxW": 2600 },
+      "projection": {
+        "type": "legacy-artistic",
+        "$comment": "Собственная художественная развёртка карт pavel/revelation (Рим→Иерусалим): номинальный viewBox совпадает с levant, но ГЕОГРАФИЯ ДРУГАЯ — одинаковые числа ≠ одно пространство (Иерусалим здесь 740,580 против 623,800 в levant). kmPerUnit не калиброван — сделать при базовой географии Средиземноморья (KA-6). Обратное x/y → lat/lng не определено."
+      },
+      "baseGeo": null,
+      "maps": ["pavel", "revelation"]
     },
     "ane-core": {
       "title": "Древний Ближний Восток: Месопотамия — Египет — Анатолия",
