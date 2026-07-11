@@ -1,6 +1,6 @@
 {
   "pipelineVersion": "0.1.0-phase1",
-  "generatedAt": "2026-07-11T09:22:38.912Z",
+  "generatedAt": "2026-07-11T13:17:29.171Z",
   "counts": {
     "persons": 3056,
     "edges": 2053,
@@ -10,7 +10,10 @@
     "isolatedPersons": 982,
     "ruNamed": 3056,
     "ruCoveragePct": 100,
-    "skeletonMerged": 154
+    "skeletonMerged": 153,
+    "clusters": 14,
+    "nations": 76,
+    "mirrorMisses": 0
   },
   "sources": {
     "tipnr": {

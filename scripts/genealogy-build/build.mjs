@@ -16,6 +16,7 @@ import { PATHS, SOURCES, PIPELINE_VERSION, HARD_INVARIANTS } from './config.mjs'
 import { SynodalText, refToRu, parseRef, OSIS_RU } from './lib/refs.mjs';
 import { parseTipnr, resolveRelations, parseUnifiedRef, parseRelField } from './lib/tipnr-parser.mjs';
 import { extractRuName, translitEnRu, similarity, normalizeRuCandidate } from './lib/ru-extract.mjs';
+import { computeClusters, nationsLayer } from './lib/clusters.mjs';
 
 const log = (...a) => console.log('[genealogy-build]', ...a);
 
@@ -70,6 +71,8 @@ const V1_EXCEPTIONS = {
   // против канонического порядка Лк 3:23-31 и текста Быт)
   abram: 'Abraham@Gen.11.26',
   jesus: 'Jesus@Isa.7.14',
+  jacob: 'Israel@Gen.25.26',          // патриарх Иаков в TIPNR = Israel@Gen.25.26 (не Jacob@Mat = NT-тёзка)
+  jacob_mt: 'Jacob@Mat.1.15',         // NT-Иаков, отец Иосифа-обручника
   arphaxad: 'Arpachshad@Gen.10.22',
   shelah: 'Shelah@Gen.10.24',        // сын Арфаксада (не Шела сын Иуды Gen.38.5)
   mizraim: 'Egypt@Gen.10.6',         // Мицраим = Egypt в ESV-номенклатуре TIPNR
@@ -84,9 +87,14 @@ const V1_EXCEPTIONS = {
   mattathias_lk: 'Mattathias@Luk.3.26',  // сын Семеина
   mattathias2_lk: 'Mattathias@Luk.3.25', // сын Амоса
   naggesi_lk: 'Naggai@Luk.3.25',
-  // joseph_lk3, simeon_lk2 — v1-структурные надстройки без 1:1 в TIPNR/каноне:
-  // остаются unmatched намеренно, решение за редактором (см. VALIDATION.md)
+  judah_lk: 'Judah@Luk.3.30',
 };
+
+// v1-узлы БЕЗ TIPNR-аналога: реконструкции цепи Луки (Лк 3:26-30), где v1 смоделировал
+// больше повторяющихся имён (Иосиф/Симеон/Левий/Иуда ×2), чем различает TIPNR/канон.
+// Не матчить — иначе фуззи притянет их к единственному TIPNR-тёзке (коллизия).
+// Их русские имена/структура сохранены в v1-скелете; в v2 они — редакторское решение.
+const V1_NO_MATCH = new Set(['judah_lk2', 'simeon_lk2', 'joseph_lk3']);
 
 function slugName(s) {
   return String(s).split('|')[0].toLowerCase().replace(/[^a-z0-9]+/g, '');
@@ -126,6 +134,7 @@ function matchSkeleton(v1Persons, tipnrPersons) {
   const soft = [];             // сопоставлено эвристикой — в отчёт для сверки
   const unmatched = [];
   for (const p of v1Persons) {
+    if (V1_NO_MATCH.has(p.id)) { unmatched.push({ id: p.id, ru: p.name?.ru, ref: p.ref ?? null, candidates: 'no-tipnr-counterpart' }); continue; }
     if (V1_EXCEPTIONS[p.id]) { matches.set(p.id, V1_EXCEPTIONS[p.id]); continue; }
     const base = p.id.replace(/_[a-z0-9]{1,6}$/i, ''); // joseph_nt / kenan_gen5 / melki_lk → базовое имя
     let cands = byName.get(slugName(base)) ?? [];
@@ -149,7 +158,18 @@ function matchSkeleton(v1Persons, tipnrPersons) {
     }
     unmatched.push({ id: p.id, ru: p.name?.ru, ref: p.ref ?? null, candidates: cands.length });
   }
-  return { matches, unmatched, soft };
+
+  // Коллизии: два v1-id указывают на один TIPNR-ключ (напр. jacob + jacob_mt → один Jacob).
+  // Тихо теряется seed одного из них — это баг данных, а не мелочь: surface явно.
+  const byTarget = new Map();
+  for (const [id, key] of matches) {
+    if (!byTarget.has(key)) byTarget.set(key, []);
+    byTarget.get(key).push(id);
+  }
+  const collisions = [...byTarget.entries()].filter(([, ids]) => ids.length > 1)
+    .map(([key, ids]) => ({ key, ids }));
+
+  return { matches, unmatched, soft, collisions };
 }
 
 // ─────────────────────────── сборка ───────────────────────────
@@ -165,10 +185,10 @@ async function runAll() {
 
   // 1. Парсинг TIPNR
   const tipnrText = await loadCached('tipnr');
-  const { persons, stats: parseStats } = parseTipnr(tipnrText);
+  const { persons, groups, stats: parseStats } = parseTipnr(tipnrText);
   const relStats = resolveRelations(persons);
-  log(`parse: персон ${parseStats.personRecords}, топ-строк ${parseStats.topLines}, ` +
-      `типы ${JSON.stringify(parseStats.byType)}, дубликатов ${parseStats.duplicates.length}`);
+  log(`parse: персон ${parseStats.personRecords}, групп-народов ${parseStats.groupRecords}, ` +
+      `топ-строк ${parseStats.topLines}, типы ${JSON.stringify(parseStats.byType)}, дубликатов ${parseStats.duplicates.length}`);
   log(`resolve: связей ${relStats.resolved}, нерезолв ${relStats.unresolvedRefs.length}, (d)-пропущено ${relStats.skippedDescendedGroup}`);
 
   // 2. Синодальный текст
@@ -177,7 +197,8 @@ async function runAll() {
 
   // 3. v1-скелет
   const v1 = JSON.parse(await readFile(PATHS.v1Skeleton, 'utf8'));
-  const { matches: v1Matches, unmatched: v1Unmatched, soft: v1Soft } = matchSkeleton(v1.persons, persons);
+  const { matches: v1Matches, unmatched: v1Unmatched, soft: v1Soft, collisions: v1Collisions } = matchSkeleton(v1.persons, persons);
+  if (v1Collisions.length) log(`skeleton COLLISIONS (два v1-id → один ключ): ${v1Collisions.map(c => `${c.key}=[${c.ids.join(',')}]`).join('; ')}`);
   const v1ByTipnrKey = new Map();
   for (const p of v1.persons) {
     const key = v1Matches.get(p.id);
@@ -258,8 +279,57 @@ async function runAll() {
   }
   log(`edges: ${edges.length} (parent/ancestor/spouse)`);
 
+  // 6.1. Аннотации рёбер (редакционный слой поверх TIPNR — напр. юридическое
+  // отцовство Иосифа по Мф 1; файл создаётся с дефолтом при первом прогоне)
+  const annPath = path.join(PATHS.outDir, 'edge-annotations.json');
+  let annotations;
+  try { annotations = JSON.parse(await readFile(annPath, 'utf8')); }
+  catch {
+    annotations = {
+      _readme: 'Редакционные пометки рёбер поверх TIPNR: match по from+to(+kind), set — присваиваемые поля.',
+      annotations: [
+        {
+          from: 'joseph--mat-1-16', to: 'jesus--isa-7-14', kind: 'parent',
+          set: { legal: true },
+          note: 'Иосиф — обручник: юридическая (не кровная) линия Мф 1; кровная — через Марию (Лк 3). См. GENEALOGY-DEEP-ANALYSIS §5.',
+        },
+      ],
+    };
+    await mkdir(PATHS.outDir, { recursive: true });
+    await writeFile(annPath, JSON.stringify(annotations, null, 2) + '\n');
+  }
+  let annotated = 0;
+  for (const a of annotations.annotations ?? []) {
+    for (const e of edges) {
+      if (e.from === a.from && e.to === a.to && (!a.kind || e.kind === a.kind)) {
+        Object.assign(e, a.set);
+        annotated += 1;
+      }
+    }
+  }
+  log(`annotations: применено ${annotated}`);
+
+  // 6.2. Зеркальная проверка offspring↔parents (информационная)
+  const parentPairs = new Set(edges.filter(e => e.kind === 'parent' || e.kind === 'ancestor').map(e => `${e.from}→${e.to}`));
+  const mirrorMisses = [];
+  for (const rec of persons.values()) {
+    const pid = keyToId.get(rec.key);
+    for (const rel of rec.offspring) {
+      if (!rel.resolved) continue;
+      const cid = keyToId.get(rel.refKey);
+      if (!parentPairs.has(`${pid}→${cid}`)) mirrorMisses.push(`${rec.key} → ${rel.refKey}`);
+    }
+  }
+
+  // 6.3. Кластеры атласа + слой народов
+  const clusters = computeClusters(outPersons, edges);
+  const byKeyOut = new Map(outPersons.map(p => [p.key, p]));
+  const nations = nationsLayer(groups, byKeyOut);
+  log(`clusters: ${clusters.map(c => `${c.id}:${c.count}`).join(', ')}`);
+  log(`nations: ${nations.length} (с прародителем: ${nations.filter(n => n.progenitorId).length})`);
+
   // 7. Валидация
-  const report = validate(outPersons, edges, { parseStats, relStats, ruStats, v1Unmatched, v1Soft, v1Total: v1.persons.length, v1Matched: v1Matches.size });
+  const report = validate(outPersons, edges, { parseStats, relStats, ruStats, v1Unmatched, v1Soft, v1Collisions, v1Total: v1.persons.length, v1Matched: v1Matches.size, mirrorMisses, clusters, nations });
 
   // 8. Emit
   await mkdir(PATHS.outDir, { recursive: true });
@@ -275,6 +345,11 @@ async function runAll() {
   };
   await writeFile(path.join(PATHS.outDir, 'persons.json'), JSON.stringify(outPersons, null, 1) + '\n');
   await writeFile(path.join(PATHS.outDir, 'edges.json'), JSON.stringify(edges, null, 1) + '\n');
+  await writeFile(path.join(PATHS.outDir, 'groups.json'), JSON.stringify({
+    _status: 'phase1-draft: членство кластеров — воспроизводимые эвристики (rule хранится рядом), сверка редактором обязательна',
+    clusters,
+    nations,
+  }, null, 1) + '\n');
   await writeFile(path.join(PATHS.outDir, 'meta.json'), JSON.stringify(meta, null, 2) + '\n');
   try { await access(path.join(PATHS.outDir, 'ru-overrides.json')); }
   catch {
@@ -356,6 +431,9 @@ function validate(personsArr, edges, ctx) {
     ruNamed,
     ruCoveragePct: Number((100 * ruNamed / personsArr.length).toFixed(1)),
     skeletonMerged: ctx.v1Matched,
+    clusters: (ctx.clusters ?? []).length,
+    nations: (ctx.nations ?? []).length,
+    mirrorMisses: (ctx.mirrorMisses ?? []).length,
   };
 
   const ok =
@@ -410,8 +488,21 @@ ${cycles.length ? '\nЦиклы:\n' + cycles.slice(0, 5).map(c => '- ' + c.join(
 ### Нерезолвнутые ссылки (первые 20 — вход для Phase 1 доводки)
 ${ctx.relStats.unresolvedRefs.slice(0, 20).map(u => `- ${u.from} · ${u.field}: \`${u.raw}\``).join('\n') || '- нет'}
 
+## Кластеры атласа (${(ctx.clusters ?? []).length}) и народы (${(ctx.nations ?? []).length})
+
+${(ctx.clusters ?? []).map(c => `- **${c.titleRu}** (${c.id}): ${c.count} · правило: \`${JSON.stringify(c.rule)}\``).join('\n') || '- нет'}
+
+Народов из TIPNR Group-записей: ${(ctx.nations ?? []).length}, из них с известным
+прародителем-персоной: ${(ctx.nations ?? []).filter(n => n.progenitorId).length}.
+
+## Зеркальность offspring↔parents (информационно): ${(ctx.mirrorMisses ?? []).length} расхождений
+${(ctx.mirrorMisses ?? []).slice(0, 12).map(m => `- ${m}`).join('\n') || '- нет'}
+
 ## v1-скелет: немэпнутые (${ctx.v1Unmatched.length})
 ${ctx.v1Unmatched.slice(0, 30).map(u => `- ${u.id} (${u.ru ?? '?'}; ${u.ref ?? '—'}; кандидатов ${u.candidates})`).join('\n') || '- нет'}
+
+## v1-скелет: коллизии мэппинга (два v1-id → один TIPNR-ключ) — ${(ctx.v1Collisions ?? []).length}
+${(ctx.v1Collisions ?? []).map(c => `- \`${c.key}\` ← [${c.ids.join(', ')}]`).join('\n') || '- нет'}
 
 ## v1-скелет: эвристические сопоставления — сверить редактору (${(ctx.v1Soft ?? []).length})
 ${(ctx.v1Soft ?? []).slice(0, 60).map(s => `- ${s.id} ← ${s.via}`).join('\n') || '- нет'}
