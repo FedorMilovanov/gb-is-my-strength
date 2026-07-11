@@ -93,6 +93,12 @@
       "risk": 2,
       "status": "production-dist"
     },
+    "/articles/serdce-i-duh/": {
+      "owner": "astro",
+      "source": "src/pages/articles/serdce-i-duh/index.astro",
+      "risk": 2,
+      "status": "production-dist"
+    },
     "/biografii/": {
       "owner": "astro",
       "source": "src/pages/biografii/index.astro",
