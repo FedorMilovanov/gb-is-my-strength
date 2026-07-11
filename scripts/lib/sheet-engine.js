@@ -39,7 +39,7 @@ const GEO_DEFS = `<defs>
     <path d="M0,20 Q5,16 10,20 Q15,24 20,20" fill="none" stroke="#7fa7c4" stroke-width=".5" opacity=".26"/>
   </pattern>
   <radialGradient id="fertileG" cx=".5" cy=".5" r=".5">
-    <stop offset="0" stop-color="#6b8f4a" stop-opacity=".26"/><stop offset="1" stop-color="#6b8f4a" stop-opacity="0"/>
+    <stop offset="0" stop-color="#8a9a4e" stop-opacity=".17"/><stop offset="1" stop-color="#8a9a4e" stop-opacity="0"/>
   </radialGradient>
   <linearGradient id="jordanG" x1="0" y1="0" x2="0" y2="1">
     <stop offset="0" stop-color="#4f7a3f" stop-opacity=".3"/><stop offset="1" stop-color="#4f7a3f" stop-opacity="0"/>
@@ -115,7 +115,7 @@ const RELIEF = {
 
 // Декор старинного атласа: одинокий парусник в пустой воде (op низкая, контур)
 function shipSvg(x, y, s2) {
-  return `<g class="decor-ship" transform="translate(${x},${y}) scale(${s2})">
+  return `<g class="decor-ship" data-decor="ship" transform="translate(${x},${y}) scale(${s2})"><circle r="26" fill="transparent" stroke="none"/>
     <path d="M-16,6 Q0,13 16,6 L11,10 Q0,15 -11,10 Z"/>
     <path d="M-1,6 v-20" class="ds-line"/>
     <path d="M-1,-14 Q9,-9 12,1 L-1,1 Z"/>
@@ -124,7 +124,7 @@ function shipSvg(x, y, s2) {
   </g>`;
 }
 const DECOR = {
-  levant: shipSvg(298, 468, 1.15) + shipSvg(430, 300, 0.8) + `<g class="decor-ship" transform="translate(255,655) scale(1.05)">
+  levant: shipSvg(298, 468, 1.15) + shipSvg(430, 300, 0.8) + `<g class="decor-ship" data-decor="whale" transform="translate(255,655) scale(1.05)"><circle r="26" fill="transparent" stroke="none"/>
     <path d="M-14,4 Q-6,-6 6,-4 Q14,-2.6 16,2 Q10,6 0,6 Q-8,6 -14,4 Z M16,2 L21,-3 L19,3 Z"/>
     <path d="M-7,-5 q-1,-4 -3,-5 m3,5 q1,-4 3,-5" class="ds-line"/>
     <path d="M-22,9 q4,-2.4 8,0 q4,2.4 8,0 M6,9 q4,-2.4 8,0 q4,2.4 8,0" class="ds-wave"/>
@@ -153,6 +153,11 @@ function glyphSvg(name, x, y, k) {
   return G[name] || '';
 }
 
+
+const DECOR_META = {
+  ship: { t: 'Корабль Великого моря', d: 'Декор в традиции старинных атласов — и напоминание, что Средиземное («Великое», Чис 34:6) море для патриархов было краем мира: их пути шли по суше. Морская торговля (корабли Фарсиса — 3 Цар 10:22; Ион 1:3) расцветёт много позже.' },
+  whale: { t: '«Левиафан, которого Ты сотворил играть в нём»', d: 'Пс 103:25–26 о Великом море: «Это — море великое и пространное: там пресмыкающиеся, которым нет числа… там плавают корабли, там этот левиафан, которого Ты сотворил играть в нём». Кит на пустой воде — цитата старинной картографии и псалма разом.' },
+};
 
 // Что означает каждый знак на листе — панель показывает по клику на глиф
 const GLYPH_META = {
@@ -322,25 +327,26 @@ function renderSheet(route, opts) {
       }
       lx = tx; ly = ty;
     }
-    labels.push(`<text x="${lx.toFixed(1)}" y="${ly.toFixed(1)}" class="lab-place${p.type === 'cand' ? ' lab-cand' : ''}" font-size="${fontPlace.toFixed(2)}" text-anchor="${sp.ta}">${esc(p.name)}</text>`);
+    labels.push(`<text x="${lx.toFixed(1)}" y="${ly.toFixed(1)}" class="lab-place ${fontPlace === fontMain ? 'lab-main' : 'lab-minor'}${p.type === 'cand' ? ' lab-cand' : ''}" font-size="${fontPlace.toFixed(2)}" text-anchor="${sp.ta}">${esc(p.name)}</text>`);
   }
 
   const placeXY = places.filter(p => p.type !== 'region');
-  const wps = (route.verified_waypoints || []).map(w => {
+  const wps = (route.verified_waypoints || []).map((w, wpi) => {
     const s = 2.3 * k;
     // wp, совпадающий с местом (арх-подтверждение той же точки) — текст вниз,
     // чтобы не бодаться с подписью места
     const near = placeXY.some(p => Math.hypot(p.x - w.x, p.y - w.y) < 8 * k + 4);
     const tx = near ? w.x + 4 * k : w.x + 6 * k;
     const ty = near ? w.y + 14 * k : w.y + 3.6 * k;
-    return `<rect x="${(w.x - s).toFixed(1)}" y="${(w.y - s).toFixed(1)}" width="${(s * 2).toFixed(1)}" height="${(s * 2).toFixed(1)}" transform="rotate(45 ${w.x} ${w.y})" class="wp-dot"/>` +
-      `<text x="${tx.toFixed(1)}" y="${ty.toFixed(1)}" class="lab-wp" font-size="${(10 * k).toFixed(2)}">${esc(w.name)}</text>`;
+    return `<g class="wp" data-wpi="${wpi}"><circle cx="${w.x}" cy="${w.y}" r="${(7 * k).toFixed(1)}" fill="transparent" stroke="none"/>` +
+      `<rect x="${(w.x - s).toFixed(1)}" y="${(w.y - s).toFixed(1)}" width="${(s * 2).toFixed(1)}" height="${(s * 2).toFixed(1)}" transform="rotate(45 ${w.x} ${w.y})" class="wp-dot"/>` +
+      `<text x="${tx.toFixed(1)}" y="${ty.toFixed(1)}" class="lab-wp" font-size="${(10 * k).toFixed(2)}">${esc(w.name)}</text></g>`;
   });
   const ctxs = (route.ctx || []).filter(c => c && typeof c.x === 'number').map(c =>
     `<text x="${c.x}" y="${c.y}" class="lab-ctxnote" font-size="${fontCtx.toFixed(2)}" text-anchor="middle">${esc((c.name || '').toUpperCase())}</text>`);
 
   // Смысловые оверлеи (route.overlays): границы обетования, путь Лота и т.п.
-  const ovls = (route.overlays || []).map(o => {
+  const ovls = (route.overlays || []).map((o, oi) => {
     const od = catmullRom(o.path || []);
     let arrow = '';
     if (o.arrow && o.path && o.path.length > 1) {
@@ -353,7 +359,7 @@ function renderSheet(route, opts) {
     const la = anchorSpec(o.labelAnchor || 'e');
     const lab = (o.label && o.labelPos) ?
       `<text x="${o.labelPos[0]}" y="${o.labelPos[1]}" text-anchor="${la.ta}" class="lab-ovl lab-ovl-${o.style || 'ctxpath'}" font-size="${(9.5 * k).toFixed(2)}">${esc(o.label)}</text>` : '';
-    return `<g class="ovl-layer">${od ? `<path d="${od}" class="ovl ovl-${o.style || 'ctxpath'}"/>` : ''}${arrow}${lab}</g>`;
+    return `<g class="ovl-layer" data-ovl="${oi}">${od ? `<path d="${od}" class="ovl-hit" fill="none" stroke="transparent" stroke-width="${(9 * k).toFixed(1)}"/><path d="${od}" class="ovl ovl-${o.style || 'ctxpath'}"/>` : ''}${arrow}${lab}</g>`;
   });
 
   // Врезка-заметка (route.sidenote) — честные оговорки листа в пустой зоне
@@ -499,6 +505,39 @@ function sheetCss() {
   .wrap{max-width:1500px;width:100%;box-shadow:0 18px 60px rgba(90,70,30,.35), 0 2px 10px rgba(90,70,30,.22);border-radius:6px;overflow:hidden}
   svg.sheet{display:block;width:100%;height:auto;background:#f5edd8}
   .frame{fill:none;stroke:#8a6a1f;stroke-width:1.2;opacity:.55}
+  /* Семантический зум (LOD): при увеличении подписи/точки компенсируются,
+     второстепенное раскрывается ступенями z2/z3 */
+  svg.z2 text.lab-main{font-size:12.5px}
+  svg.z2 text.lab-minor{font-size:10px}
+  svg.z2 text.lab-cand{font-size:9.5px}
+  svg.z2 .pl-city{r:2.6px}
+  svg.z2 .pl-cand{r:2.8px}
+  svg.z2 .mile-t{font-size:9.5px}
+  svg.z2 .lab-war{font-size:7.5px}
+  svg.z2 .lab-ovl{font-size:7px}
+  svg.z2 .lab-ctx{font-size:8px}
+  svg.z3 text.lab-main{font-size:8px}
+  svg.z3 text.lab-minor{font-size:6.5px}
+  svg.z3 text.lab-cand{font-size:6px}
+  svg.z3 .pl-city{r:1.7px}
+  svg.z3 .pl-cand{r:1.9px}
+  svg.z3 .mile-t{font-size:6px}
+  svg.z3 .lab-war{font-size:5px}
+  svg.z3 .lab-ovl{font-size:4.6px}
+  svg.z3 .lab-ctx{font-size:5.2px}
+  svg.z3 .lab-region{opacity:.25}
+  svg.z3 .route{stroke-width:1.2}
+  svg.z3 .route-under{stroke-width:1.8}
+  svg.z3 .war-route{stroke-width:.7}
+  svg.z3 .ovl{stroke-width:.7}
+  svg.z2 .glyph path,svg.z2 .glyph circle{stroke-width:.6}
+  svg.z3 .glyph path,svg.z3 .glyph circle{stroke-width:.42}
+  svg.z2 .glyph .glyph-line{stroke-width:.62}
+  svg.z3 .glyph .glyph-line{stroke-width:.45}
+  svg.z2 text.lab-wp{font-size:7px}
+  svg.z3 text.lab-wp{font-size:4.6px}
+  svg.z2 .wp-dot{opacity:.75}
+  text.lab-place,text.lab-cand,.mile-t,.lab-war,.lab-ovl,.lab-ctx,.pl-city,.pl-cand,text.lab-wp{transition:font-size .25s, r .25s}
   .grat{stroke:#8a6a1f;stroke-width:.8;opacity:.4}
   .grat-t{font-family:Lora,Georgia,serif;font-weight:500;fill:#8a6a1f;opacity:.5}
   .rose path{fill:rgba(138,106,31,.32);stroke:#8a6a1f;stroke-width:.5;opacity:.8}
@@ -536,7 +575,8 @@ function sheetCss() {
   .lab-war{font-family:'Cormorant Garamond',Georgia,serif;font-style:italic;font-weight:500;fill:#8a4a38;opacity:.92;paint-order:stroke;stroke:#f3ecdc;stroke-width:.14em;stroke-linejoin:round}
   .lab-war-note{opacity:.8}
   .glyph-hit{cursor:pointer}
-  #sheet-svg [fill="url(#jordanG)"]{opacity:.22}
+  .mile,.wp,.ovl-layer,.decor-ship,.war{cursor:pointer}
+  #sheet-svg [fill="url(#jordanG)"]{opacity:.15}
   #sheet-svg #tradeRoutes{opacity:.32}
   .glyph path,.glyph circle{fill:none;stroke:#6b5216;stroke-width:.85;stroke-linejoin:round;opacity:.85}
   .glyph .glyph-line{fill:none;stroke:#6b5216;stroke-width:.9;stroke-linecap:round}
@@ -685,7 +725,7 @@ function buildSheetHtml(route, opts) {
 <body>
 <div class="wrap">${svg}${stageStripHtml}</div>
 <span class="g9">${esc(badge)}</span>
-<script>window.ATLAS_SPINE=${spine};window.ATLAS_PLACES=${cardsJson};window.ATLAS_GLYPHS=${JSON.stringify(GLYPH_META)};</script>
+<script>window.ATLAS_SPINE=${spine};window.ATLAS_PLACES=${cardsJson};window.ATLAS_GLYPHS=${JSON.stringify(GLYPH_META)};window.ATLAS_STAGES=${JSON.stringify((route.stages || []).map(st => ({ n: st.n, t: st.t, d: st.d || '', age: st.age || '', km: st.km || '', r: st.r || '' })))};window.ATLAS_WPS=${JSON.stringify((route.verified_waypoints || []).map(w2 => ({ n: w2.name, role: w2.role || '', note: w2.note || '' })))};window.ATLAS_OVLS=${JSON.stringify((route.overlays || []).map(o2 => ({ label: o2.label || '', story: o2.story || '', refs: o2.refs || '' })))};window.ATLAS_DECOR=${JSON.stringify(DECOR_META)};</script>
 <script src="atlas-reader.js"></script>
 </body>
 </html>`;
