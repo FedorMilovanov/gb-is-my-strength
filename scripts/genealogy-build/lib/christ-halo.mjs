@@ -8,8 +8,13 @@
  */
 const f = (n, d = 1) => Number(n).toFixed(d);
 
-/** Градиенты ауреолы — включить в <defs> рендера. */
-export function christDefs(C) {
+/**
+ * Градиенты ауреолы — включить в <defs> рендера.
+ * dark: на тёмном пергаменте золото малой плотности — СИЯНИЕ, на светлом — ГРЯЗЬ;
+ * поэтому плотность мандорлы тема-зависима (светлая тема ≈ вдвое прозрачнее).
+ */
+export function christDefs(C, dark = false) {
+  const m1 = dark ? 0.14 : 0.06, m2 = dark ? 0.10 : 0.04;
   return `
     <radialGradient id="christBloom" cx="50%" cy="50%" r="50%">
       <stop offset="0%" stop-color="${C.goldGlow}" stop-opacity="0.55"/>
@@ -25,24 +30,25 @@ export function christDefs(C) {
     <radialGradient id="christMandorla" cx="50%" cy="50%" r="50%">
       <stop offset="0%" stop-color="#fff7e2" stop-opacity="0"/>
       <stop offset="58%" stop-color="${C.goldGlow}" stop-opacity="0"/>
-      <stop offset="74%" stop-color="${C.goldHi}" stop-opacity="0.14"/>
-      <stop offset="86%" stop-color="${C.gold}" stop-opacity="0.10"/>
-      <stop offset="100%" stop-color="${C.gold}" stop-opacity="0"/></radialGradient>`;
+      <stop offset="74%" stop-color="${C.goldHi}" stop-opacity="${m1}"/>
+      <stop offset="86%" stop-color="${dark ? C.gold : C.goldGlow}" stop-opacity="${m2}"/>
+      <stop offset="100%" stop-color="${dark ? C.gold : C.goldGlow}" stop-opacity="0"/></radialGradient>`;
 }
 
 /**
  * Разметка ауреолы вокруг (cx,cy). R — базовый радиус; sy — вертикальное сжатие
  * (карточка Христа шире высоты → эллиптическая корона). Рисовать ДО карточки.
  */
-export function christHalo(cx, cy, R, C, sy = 0.72) {
+export function christHalo(cx, cy, R, C, sy = 0.72, dark = false) {
   const g = [];
   const P = (x, y) => `${f(x)} ${f(y)}`;
   const pt = (a, r) => [cx + Math.cos(a) * r, cy + Math.sin(a) * r * sy];
+  const ringOp = dark ? [0.16, 0.12] : [0.10, 0.07];
 
   // 0) мандорла славы — слоистое эллиптическое сияние «тела» (Христос во славе)
   g.push(`<ellipse cx="${f(cx)}" cy="${f(cy)}" rx="${f(R * 2.6)}" ry="${f(R * 2.6 * sy)}" fill="url(#christMandorla)"/>`);
-  g.push(`<ellipse cx="${f(cx)}" cy="${f(cy)}" rx="${f(R * 1.62)}" ry="${f(R * 1.62 * sy)}" fill="none" stroke="${C.goldHi}" stroke-width="0.8" opacity="0.16"/>`);
-  g.push(`<ellipse cx="${f(cx)}" cy="${f(cy)}" rx="${f(R * 1.35)}" ry="${f(R * 1.35 * sy)}" fill="none" stroke="${C.goldHi}" stroke-width="0.7" opacity="0.12"/>`);
+  g.push(`<ellipse cx="${f(cx)}" cy="${f(cy)}" rx="${f(R * 1.62)}" ry="${f(R * 1.62 * sy)}" fill="none" stroke="${dark ? C.goldHi : C.gold}" stroke-width="0.8" opacity="${ringOp[0]}"/>`);
+  g.push(`<ellipse cx="${f(cx)}" cy="${f(cy)}" rx="${f(R * 1.35)}" ry="${f(R * 1.35 * sy)}" fill="none" stroke="${dark ? C.goldHi : C.gold}" stroke-width="0.7" opacity="${ringOp[1]}"/>`);
 
   // 1) мягкий блум (два эллипса) + тёплое ядро
   g.push(`<ellipse cx="${f(cx)}" cy="${f(cy)}" rx="${f(R * 2.15)}" ry="${f(R * 2.15 * sy)}" fill="url(#christBloom)"/>`);
@@ -77,7 +83,7 @@ export function christHalo(cx, cy, R, C, sy = 0.72) {
   for (let i = 0; i < beads; i++) {
     const a = (i / beads) * Math.PI * 2;
     const [bx, by] = pt(a, R * 0.9);
-    g.push(`<circle cx="${f(bx)}" cy="${f(by)}" r="${i % 2 === 0 ? 1.1 : 0.7}" fill="${C.goldHi}" opacity="0.55"/>`);
+    g.push(`<circle cx="${f(bx)}" cy="${f(by)}" r="${i % 2 === 0 ? 1.1 : 0.7}" fill="${dark ? C.goldHi : C.gold}" opacity="${dark ? 0.55 : 0.45}"/>`);
   }
 
   // 5) искры-звёздочки на кончиках крестчатых лучей

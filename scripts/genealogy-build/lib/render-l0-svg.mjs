@@ -28,8 +28,8 @@ export function renderL0Svg(layout, { title = 'Генеалогия Спасит
   const dark = theme === 'dark';
   // тёплое свечение/виньетка адаптируются под тему
   const glowStops = dark
-    ? { a: '#fff0c8', ao: '0.34', b: '#d8b45f', bo: '0.14' }
-    : { a: '#fff6df', ao: '0.9', b: '#f7eccf', bo: '0.45' };
+    ? { a: '#fff0c8', ao: '0.20', b: '#d8b45f', bo: '0.08', far: '0.02' }
+    : { a: '#fff6df', ao: '0.9', b: '#f7eccf', bo: '0.45', far: '0.12' };
   const vignetteCol = dark ? '#000000' : '#6a5230';
   const vignetteOp = dark ? '0.42' : '0.13';
   const { bbox, nodes, edges } = layout;
@@ -53,6 +53,7 @@ export function renderL0Svg(layout, { title = 'Генеалогия Спасит
   P.push(`<radialGradient id="glow" cx="50%" cy="86%" r="75%">
     <stop offset="0%" stop-color="${glowStops.a}" stop-opacity="${glowStops.ao}"/>
     <stop offset="42%" stop-color="${glowStops.b}" stop-opacity="${glowStops.bo}"/>
+    <stop offset="78%" stop-color="${glowStops.b}" stop-opacity="${glowStops.far}"/>
     <stop offset="100%" stop-color="${glowStops.b}" stop-opacity="0"/></radialGradient>`);
   P.push(`<linearGradient id="paperGrad" x1="0" y1="0" x2="0" y2="1">
     <stop offset="0%" stop-color="${C.paper0}"/><stop offset="55%" stop-color="${C.paper1}"/>
@@ -68,7 +69,7 @@ export function renderL0Svg(layout, { title = 'Генеалогия Спасит
     <stop offset="0%" stop-color="${C.cardTop}"/><stop offset="100%" stop-color="${C.cardBot}"/></linearGradient>`);
   P.push(`<linearGradient id="megaGrad" x1="0" y1="0" x2="0" y2="1">
     <stop offset="0%" stop-color="${C.megaTop}"/><stop offset="100%" stop-color="${C.megaBot}"/></linearGradient>`);
-  P.push(christDefs(C));
+  P.push(christDefs(C, dark));
   // текстура пергамента: крупная мраморность + мелкое зерно
   P.push(`<filter id="paperTex" x="-5%" y="-5%" width="110%" height="110%">
     <feTurbulence type="fractalNoise" baseFrequency="0.011 0.017" numOctaves="3" seed="7" stitchTiles="stitch" result="mot"/>
@@ -202,7 +203,7 @@ export function renderL0Svg(layout, { title = 'Генеалогия Спасит
     const x = cx(n) - W / 2, y = cy(n) - H / 2;
     const g = [];
     // глубокая ауреола: блум + корона лучей + крестчатый нимб + кольцо + искры
-    g.push(christHalo(cx(n), cy(n), Math.max(W * 0.47, H * 1.08), C, 0.72));
+    g.push(christHalo(cx(n), cy(n), Math.max(W * 0.47, H * 1.08), C, 0.72, dark));
     g.push(`<g filter="url(#cardShadow)">`);
     g.push(`<rect x="${f(x)}" y="${f(y)}" width="${f(W)}" height="${f(H)}" rx="17" fill="url(#cardGrad)" stroke="url(#goldGrad)" stroke-width="2.4"/>`);
     g.push(`<rect x="${f(x + 4)}" y="${f(y + 4)}" width="${f(W - 8)}" height="${f(H - 8)}" rx="13" fill="none" stroke="url(#goldGrad)" stroke-width="1"/>`);

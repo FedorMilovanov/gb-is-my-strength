@@ -58,8 +58,12 @@ export function buildTribes12(persons) {
     x: -G.centerW / 2, y: -G.centerH / 2, w: G.centerW, h: G.centerH,
   };
 
-  const R = G.radius + Math.max(G.sonW, G.sonH);
-  const bbox = { x: -R - 40, y: -R - 40, w: (R + 40) * 2, h: (R + 40) * 2 };
+  // bbox — по реальным экстентам карточек (не квадрат R+max: он давал
+  // ~120–170px мёртвого поля с каждой стороны и вертикальный дисбаланс)
+  const maxX = Math.max(...sons.map(s => Math.abs(s.cx) + G.sonW / 2));
+  const maxY = Math.max(...sons.map(s => Math.abs(s.cy) + G.sonH / 2));
+  const padX = 34, padTopIn = 30, padBotIn = 58; // снизу — подписи «→ Мессия» и легенда ближе
+  const bbox = { x: -maxX - padX, y: -maxY - padTopIn, w: (maxX + padX) * 2, h: maxY * 2 + padTopIn + padBotIn };
 
   return {
     _status: 'phase1-draft: L1 развёртка кластера «12 колен» (радиально). Вход движка Phase 3.',

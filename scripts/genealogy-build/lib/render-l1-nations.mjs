@@ -37,10 +37,13 @@ export function renderNationsSvg(layout, { title, subtitle, theme = 'light' } = 
   // defs
   P.push('<defs>');
   P.push(commonDefs(C));
-  const glowStops = dark ? { a: '#fff0c8', ao: '0.30', b: '#d8b45f', bo: '0.12' } : { a: '#fff6df', ao: '0.85', b: '#f7eccf', bo: '0.4' };
+  // тёмная тема: купол заметно мягче и с плавным дальним спадом — иначе на ночном
+  // пергаменте у сияния читается граница-«обрыв»
+  const glowStops = dark ? { a: '#fff0c8', ao: '0.13', b: '#d8b45f', bo: '0.05' } : { a: '#fff6df', ao: '0.85', b: '#f7eccf', bo: '0.4' };
   P.push(`<radialGradient id="nglow" cx="50%" cy="14%" r="74%">
     <stop offset="0%" stop-color="${glowStops.a}" stop-opacity="${glowStops.ao}"/>
-    <stop offset="46%" stop-color="${glowStops.b}" stop-opacity="${glowStops.bo}"/>
+    <stop offset="40%" stop-color="${glowStops.b}" stop-opacity="${glowStops.bo}"/>
+    <stop offset="78%" stop-color="${glowStops.b}" stop-opacity="${dark ? '0.015' : '0.12'}"/>
     <stop offset="100%" stop-color="${glowStops.b}" stop-opacity="0"/></radialGradient>`);
   const vCol = dark ? '#000000' : '#6a5230', vOp = dark ? '0.4' : '0.12';
   P.push(`<radialGradient id="vignette" cx="50%" cy="40%" r="80%">
