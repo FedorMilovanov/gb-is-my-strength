@@ -77,7 +77,7 @@ const quizItems = quizPool.length >= 4 ? quizPool : GILL_LEARNING_QUIZ;
       </section>
 
       <section class="gill-panel" id="panelQuiz" role="tabpanel" aria-labelledby="tabQuiz" data-panel="quiz" hidden>
-        <div class="quiz-meta"><span class="quiz-category" id="glsQuizCategory"></span><span id="glsQuizStreak">Серия: 0</span></div>
+        <div class="quiz-meta"><span class="quiz-category" id="glsQuizCategory"></span><span id="glsQuizStreak"></span></div>
         <h4 class="quiz-question" id="glsQuizQuestion"></h4>
         <div class="quiz-options" id="glsQuizOptions"></div>
         <div class="quiz-explanation" id="glsQuizExplanation" hidden></div>
@@ -128,7 +128,11 @@ const quizItems = quizPool.length >= 4 ? quizPool : GILL_LEARNING_QUIZ;
       });
       if (focus) tab.focus();
       tab.scrollIntoView({ inline: 'center', block: 'nearest' });
+      // Build panes on activation (click OR keyboard), not on a click listener —
+      // otherwise keyboard/arrow activation leaves the pane empty. Rebuild notes
+      // every time so freshly-saved highlights show up.
       if (tab.dataset.tab === 'terms') buildTerms();
+      if (tab.dataset.tab === 'notes') buildNotes();
     }
     tabs.forEach((tab, index) => {
       tab.addEventListener('click', () => activateTab(tab, false));
@@ -297,6 +301,19 @@ const quizItems = quizPool.length >= 4 ? quizPool : GILL_LEARNING_QUIZ;
     let quizOrder: number[] = [];
     let quizIndex = 0;
     let quizStreak = 0;
+    let quizSeen = 0;
+    let quizBest = 0;
+    // Streak label mirrors the v2.9 reference: never a bare "Серия: 0" —
+    // stay quiet until there's a run or progress worth showing.
+    function updateQuizStreak() {
+      const el = document.getElementById('glsQuizStreak');
+      if (!el) return;
+      el.textContent = quizStreak >= 2
+        ? '🔥 ' + quizStreak + ' подряд'
+        : quizSeen
+          ? 'Пройдено: ' + quizSeen + (quizBest > 1 ? ' · рекорд ' + quizBest : '')
+          : '';
+    }
     function shuffle<T>(values: T[]): T[] {
       const a = values.slice();
       for (let i = a.length - 1; i > 0; i--) {
@@ -323,10 +340,9 @@ const quizItems = quizPool.length >= 4 ? quizPool : GILL_LEARNING_QUIZ;
       if (!quizOrder.length || quizIndex >= quizOrder.length) resetQuizOrder();
       const item = quizPool[quizOrder[quizIndex]];
       const catEl = document.getElementById('glsQuizCategory');
-      const streakEl = document.getElementById('glsQuizStreak');
       const qEl = document.getElementById('glsQuizQuestion');
       if (catEl) catEl.textContent = CATEGORY_LABEL[item.category] || item.category;
-      if (streakEl) streakEl.textContent = 'Серия: ' + quizStreak;
+      updateQuizStreak();
       if (qEl) qEl.textContent = item.question;
       const optionsEl = document.getElementById('glsQuizOptions');
       const explEl = document.getElementById('glsQuizExplanation') as HTMLElement | null;
@@ -352,8 +368,10 @@ const quizItems = quizPool.length >= 4 ? quizPool : GILL_LEARNING_QUIZ;
       const correct = index === item.correctIndex;
       button.classList.add(correct ? 'is-correct' : 'is-wrong');
       const liveEl = document.getElementById('glsQuizLive');
+      quizSeen++;
       if (correct) {
         quizStreak++;
+        if (quizStreak > quizBest) quizBest = quizStreak;
         if (liveEl) liveEl.textContent = 'Верно';
       } else {
         quizStreak = 0;
@@ -366,8 +384,7 @@ const quizItems = quizPool.length >= 4 ? quizPool : GILL_LEARNING_QUIZ;
       // EVERY answer (correct too), not only on wrong ones.
       const explEl = document.getElementById('glsQuizExplanation');
       if (explEl) { explEl.textContent = item.explanation; explEl.hidden = false; }
-      const streakEl = document.getElementById('glsQuizStreak');
-      if (streakEl) streakEl.textContent = 'Серия: ' + quizStreak;
+      updateQuizStreak();
       const sourceEl = document.getElementById('glsQuizSource') as HTMLAnchorElement | null;
       if (sourceEl && item.sourceHref) {
         sourceEl.href = item.sourceHref;
@@ -415,11 +432,6 @@ const quizItems = quizPool.length >= 4 ? quizPool : GILL_LEARNING_QUIZ;
         card.append(q, meta, actions);
         list.appendChild(card);
       });
-    }
-    let notesBuilt = false;
-    const tabNotes = document.getElementById('tabNotes');
-    if (tabNotes) {
-      tabNotes.addEventListener('click', () => { if (!notesBuilt) { notesBuilt = true; buildNotes(); } });
     }
     const manageNotesBtn = document.getElementById('manageNotesBtn');
     if (manageNotesBtn) {
