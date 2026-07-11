@@ -355,6 +355,59 @@ const mapsHtml = `<div class="maps-grid">` + inventory.maps.map((m) => {
 }).join('') + `</div>` +
   `<p class="note">Hero-зоны карточек готовы под обложки-сцены (images/atlas-&lt;slug&gt;-scene-600w.webp, VISUAL-DIRECTION §8.2): файл появится — карточка подхватит его при перегенерации автоматически.</p>`;
 
+// ── Мини-карта Леванта (KA-4c шаг 1): места реестра на реальной подложке ─────
+// Подложка: karty/_engine/base-geo.svg (семейство levant, 0 0 1900 1430 — заморожено).
+// Точки: placements.levant из data/atlas/places/*.json; кодировка честности §3:
+// заливка = уверенная локализация, золото = спорная, пунктирный контур = слабая/традиционная.
+const placesAll = loadDir(A('places'));
+const RANK = { consensus: 6, primary: 5, candidate: 4, alternative: 3, caveat: 2, minor: 1, rejected: 0 };
+const TYPE_RU = { city: 'город', town: 'посёлок', region: 'регион', mountain: 'гора', river: 'река', sea: 'море', lake: 'озеро', spring: 'источник', road: 'дорога', garden: 'сад', structure: 'сооружение', sanctuary: 'святилище', camp: 'стан', valley: 'долина', other: 'место' };
+const STATUS_WORD = { sure: 'уверенная локализация', disputed: 'СПОРНАЯ локализация — есть варианты', weak: 'слабая/традиционная локализация', plain: 'позиция реестра (без внешней идентификации)' };
+
+const baseGeoRaw = fs.readFileSync(path.join(ROOT, 'karty', '_engine', 'base-geo.svg'), 'utf8')
+  .replace(/^[\s\S]*?<svg[^>]*>/, '').replace(/<\/svg>\s*$/, '');
+
+const geoDots = [];
+const geoLabels = [];
+let inFrame = 0, offFamily = 0, subSkipped = 0, regionSkipped = 0;
+for (const p of placesAll.sort((a, b) => (b.maps || []).length - (a.maps || []).length)) {
+  const pl = p.placements && p.placements.levant;
+  if (!pl) { offFamily++; continue; }
+  if (p.parentId) { subSkipped++; continue; } // суб-локации — дело городских планов (KA-6)
+  if (p.type === 'region') { regionSkipped++; continue; } // регионы — полигоны KA-6, точкой не врём
+  inFrame++;
+  const idents = p.identifications || [];
+  const best = idents.reduce((b, i) => (RANK[i.status] > RANK[b] ? i.status : b), 'rejected');
+  const cls = !idents.length ? 'plain'
+    : (best === 'consensus' || best === 'primary') ? 'sure'
+    : best === 'candidate' ? 'disputed' : 'weak';
+  const nMaps = (p.maps || []).length;
+  const r = 3 + 1.15 * Math.sqrt(Math.max(nMaps - 1, 0));
+  const cands = idents.filter((i) => RANK[i.status] >= RANK.alternative).length;
+  const tipRest = `${TYPE_RU[p.type] || p.type} · ${STATUS_WORD[cls]}` +
+    (cls === 'disputed' && cands > 1 ? ` (${cands} кандидата)` : '') +
+    ` · карты: ${(p.maps || []).map((m) => m.slug).join(', ')}`;
+  const tip = tipAttr(p.names.ru, tipRest);
+  geoDots.push(`<g ${tip}><circle cx="${pl.x}" cy="${pl.y}" r="${r.toFixed(1)}" class="dot-${cls}"/></g>`);
+  if (nMaps >= 3 || (cls === 'disputed' && nMaps >= 2)) {
+    const side = pl.x > 1550 ? -1 : 1;
+    geoLabels.push(`<text x="${pl.x + side * (r + 5)}" y="${pl.y + 3.5}" ${side < 0 ? 'text-anchor="end"' : ''} class="geo-lab">${esc(p.names.ru)}</text>`);
+  }
+}
+
+const placesHtml =
+  `<div class="geo-frame"><svg viewBox="0 0 1900 1430" class="geo-svg" role="img" aria-label="Мини-карта Леванта: места реестра Атласа со статусами уверенности локализаций">` +
+  baseGeoRaw + geoDots.join('') + geoLabels.join('') + `</svg></div>` +
+  `<div class="legend geo-legend">` +
+  `<span><b style="background:#1e3a63;border-radius:50%"></b> уверенная локализация</span>` +
+  `<span><b style="background:#d9b36a;border:1.5px solid #8a6a1f;border-radius:50%"></b> спорная — варианты в реестре</span>` +
+  `<span><b style="background:transparent;border:1.5px dashed #1e3a63;border-radius:50%"></b> слабая / традиционная</span>` +
+  `<span><b style="background:#7d8ba1;border-radius:50%"></b> позиция реестра</span>` +
+  `</div>` +
+  `<p class="note">В кадре ${inFrame} мест семейства levant (размер точки — число карт с местом; наведите курсор — статус и карты). ` +
+  `Честно за кадром: ${regionSkipped} регионов (уделы колен и т.п.) появятся ПОЛИГОНАМИ в KA-6 — точкой их не изображаем; ${subSkipped} суб-локаций (Горница, Гефсимания…) — на городских планах; ${offFamily} средиземноморских мест (Павел, семь церквей) — в семействе mediterranean со своей подложкой. ` +
+  `Подложка — художественная развёртка base-geo.svg (не строгая проекция; kmPerUnit ≈ 0.92).</p>`;
+
 const stats = timeline.stats;
 const html = `<!DOCTYPE html>
 <html lang="ru">
@@ -515,6 +568,21 @@ const html = `<!DOCTYPE html>
   .map-card:hover .map-go{color:var(--blue)}
 
   .note{font:12px/1.55 system-ui,sans-serif;color:var(--ink3);margin-top:12px}
+
+  /* ── Мини-карта Леванта ── */
+  .geo-frame{border:1px solid var(--line);border-radius:14px;overflow:hidden;background:#eae2cd;
+    box-shadow:0 1px 0 #fff inset,0 10px 26px -20px rgba(74,58,24,.4)}
+  .geo-svg{width:100%;height:auto;display:block}
+  .dot-sure{fill:#1e3a63;stroke:#f6f1e7;stroke-width:1.1}
+  .dot-disputed{fill:#d9b36a;stroke:#8a6a1f;stroke-width:1.2}
+  .dot-weak{fill:rgba(246,241,231,.35);stroke:#1e3a63;stroke-width:1.2;stroke-dasharray:2.2 1.7}
+  .dot-plain{fill:#7d8ba1;stroke:#f6f1e7;stroke-width:1}
+  .dot-region{fill:rgba(150,96,74,.07);stroke:#96604a;stroke-width:1.2;stroke-dasharray:3 2}
+  .geo-svg g[data-tip]:hover circle,.geo-svg g[data-tip]:hover rect{stroke:var(--blue);stroke-width:2;transform:scale(1.25);transform-box:fill-box;transform-origin:center}
+  .geo-lab{font:600 12.5px Georgia,'Times New Roman',serif;fill:#2b2418;pointer-events:none;
+    paint-order:stroke;stroke:rgba(242,234,216,.85);stroke-width:3px;stroke-linejoin:round}
+  .geo-legend{margin-top:14px}
+  .geo-legend b{border:0}
   footer{margin-top:38px;border-top:1px solid var(--line);padding-top:15px;font:12px/1.7 system-ui,sans-serif;color:var(--ink3)}
   footer code{font-family:ui-monospace,monospace;background:var(--parch2);padding:1px 5px;border-radius:4px}
   @media (max-width:720px){
@@ -549,6 +617,7 @@ const html = `<!DOCTYPE html>
     <button class="tab" role="tab" aria-selected="false" data-pane="books">${ic('book')}По книгам</button>
     <button class="tab" role="tab" aria-selected="false" data-pane="themes">${ic('theme')}По темам</button>
     <button class="tab" role="tab" aria-selected="false" data-pane="maps">${ic('map')}Карты</button>
+    <button class="tab" role="tab" aria-selected="false" data-pane="places">${ic('compass')}Места</button>
   </nav>
 
   <section class="pane on" id="pane-time">
@@ -587,6 +656,12 @@ const html = `<!DOCTYPE html>
     <div class="sec-head"><h2>Карты Атласа</h2><div class="sec-orn"></div></div>
     <p class="lead">Живой инвентарь: счётчики — из базовой линии контент-паритета (гейт G6).</p>
     ${mapsHtml}
+  </section>
+
+  <section class="pane" id="pane-places">
+    <div class="sec-head"><h2>Места Атласа · Левант</h2><div class="sec-orn"></div></div>
+    <p class="lead">Канонический реестр мест на реальной подложке движка. Фирменная честность §3: точка показывает не только «где», но и «насколько уверенно мы это знаем».</p>
+    ${placesHtml}
   </section>
 
   <footer>
