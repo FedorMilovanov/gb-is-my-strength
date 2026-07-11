@@ -1,8 +1,8 @@
 {
   "$comment": "Генерируется atlas-promote-places.js — не править руками. Атрибуция: identifications/geo частично из OpenBible.info Bible Geocoding Data (CC BY 4.0, snapshot 2021-11).",
   "count": 114,
-  "reviewed": 106,
-  "needsReview": 8,
+  "reviewed": 107,
+  "needsReview": 7,
   "byType": {
     "mountain": 9,
     "city": 70,
