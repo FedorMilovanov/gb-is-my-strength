@@ -115,7 +115,7 @@ const RELIEF = {
 function glyphSvg(name, x, y, k) {
   const s = k; // масштаб
   const G = {
-    ziggurat: `<g class="glyph"><path d="M${x - 7 * s},${y} h${14 * s} v${-3 * s} h${-2.5 * s} v${-3 * s} h${-2.5 * s} v${-3 * s} h${-4 * s} v${3 * s} h${-2.5 * s} v${3 * s} h${-2.5 * s} Z" transform="translate(0,${-4 * s})"/></g>`,
+    ziggurat: `<g class="glyph"><path d="M${x - 7 * s},${y - 2.6 * s} h${14 * s} m${-1.6 * s},0 v${-3 * s} h${-2.2 * s} m${-6.4 * s},${3 * s} v${-3 * s} h${2.2 * s} m${1.2 * s},${-3 * s} h${3.9 * s} v${3 * s} m${-3.9 * s},${-3 * s} v${3 * s} m${.6 * s},${-3 * s} v${-2.6 * s} h${2.7 * s} v${2.6 * s} Z" class="glyph-line"/><path d="M${x},${y - 2.6 * s} v${-8.4 * s}" class="glyph-line" style="stroke-width:${.55 * s};opacity:.7"/></g>`,
     pyramid: `<g class="glyph"><path d="M${x - 7 * s},${y - 3 * s} L${x},${y - 15 * s} L${x + 7 * s},${y - 3 * s} Z"/><path d="M${x},${y - 15 * s} L${x + 2 * s},${y - 3 * s}" class="glyph-line"/></g>`,
     altar: `<g class="glyph"><path d="M${x - 5 * s},${y - 3 * s} h${10 * s} v${-2.5 * s} h${-1.5 * s} v${-3 * s} h${-7 * s} v${3 * s} h${-1.5 * s} Z"/><path d="M${x},${y - 12 * s} q${1.6 * s},${1.8 * s} 0,${3.4 * s} q${-1.6 * s},${-1.8 * s} 0,${-3.4 * s} Z" class="glyph-flame"/></g>`,
     well: `<g class="glyph"><path d="M${x - 3.8 * s},${y - 3.2 * s} a${3.8 * s},${1.7 * s} 0 1 0 ${7.6 * s},0 a${3.8 * s},${1.7 * s} 0 1 0 ${-7.6 * s},0 Z"/><path class="glyph-line" d="M${x - 3.2 * s},${y - 4.6 * s} a${3.2 * s},${3.6 * s} 0 0 1 ${6.4 * s},0"/></g>`,
@@ -124,9 +124,29 @@ function glyphSvg(name, x, y, k) {
     gate: `<g class="glyph"><path d="M${x - 5 * s},${y - 3 * s} v${-6.5 * s} a${5 * s},${4.6 * s} 0 0 1 ${10 * s},0 v${6.5 * s} h${-2.4 * s} v${-5.8 * s} a${2.6 * s},${2.6 * s} 0 0 0 ${-5.2 * s},0 v${5.8 * s} Z"/></g>`,
     palm: `<g class="glyph"><path d="M${x},${y - 3 * s} q${-.6 * s},${-4 * s} ${.4 * s},${-7.6 * s}" class="glyph-line" style="stroke-width:${1.3 * s}"/><path d="M${x + .4 * s},${y - 10.6 * s} q${2.8 * s},${-1.4 * s} ${4.6 * s},${.6 * s} M${x + .4 * s},${y - 10.6 * s} q${-2.8 * s},${-1.4 * s} ${-4.6 * s},${.6 * s} M${x + .4 * s},${y - 10.6 * s} q${2 * s},${-2.6 * s} ${4 * s},${-2.6 * s} M${x + .4 * s},${y - 10.6 * s} q${-2 * s},${-2.6 * s} ${-4 * s},${-2.6 * s}" class="glyph-line"/></g>`,
     tower: `<g class="glyph"><path d="M${x - 3.4 * s},${y - 3 * s} v${-9 * s} h${-1.2 * s} v${-2 * s} h${2.4 * s} v${1 * s} h${1.6 * s} v${-1 * s} h${2.4 * s} v${1 * s} h${1.6 * s} v${-1 * s} h${2.4 * s} v${2 * s} h${-1.2 * s} v${9 * s} Z" transform="translate(${-1.3 * s},0)"/></g>`,
+    tent: `<g class="glyph"><path d="M${x - 6 * s},${y - 2.6 * s} L${x},${y - 9.6 * s} L${x + 6 * s},${y - 2.6 * s} Z"/><path d="M${x},${y - 9.6 * s} L${x + 1.8 * s},${y - 2.6 * s} M${x - 6 * s},${y - 2.6 * s} l${-1.6 * s},${1.2 * s} M${x + 6 * s},${y - 2.6 * s} l${1.6 * s},${1.2 * s}" class="glyph-line" style="stroke-width:${.6 * s}"/></g>`,
+    sheep: `<g class="glyph"><path d="M${x - 3.6 * s},${y - 5 * s} a${1.8 * s},${1.8 * s} 0 0 1 ${1.2 * s},${-2.6 * s} a${2.2 * s},${2.2 * s} 0 0 1 ${3 * s},${-1 * s} a${2 * s},${2 * s} 0 0 1 ${2.8 * s},${.8 * s} a${1.7 * s},${1.7 * s} 0 0 1 ${.6 * s},${2.8 * s} Z"/><path d="M${x + 3.9 * s},${y - 7.4 * s} a${1.1 * s},${1.1 * s} 0 1 1 ${1.4 * s},${1.4 * s} M${x - 2.4 * s},${y - 4.9 * s} v${2.2 * s} m${4 * s},${-2.2 * s} v${2.2 * s}" class="glyph-line" style="stroke-width:${.6 * s}"/></g>`,
+    spring: `<g class="glyph"><path d="M${x - 4 * s},${y - 4 * s} q${2 * s},${-2.2 * s} ${4 * s},0 q${2 * s},${2.2 * s} ${4 * s},0 M${x - 4 * s},${y - 6.8 * s} q${2 * s},${-2.2 * s} ${4 * s},0 q${2 * s},${2.2 * s} ${4 * s},0" class="glyph-line"/><circle cx="${x}" cy="${y - 10.4 * s}" r="${.9 * s}" style="fill:#6b5216;stroke:none;opacity:.7"/></g>`,
   };
   return G[name] || '';
 }
+
+
+// Что означает каждый знак на листе — панель показывает по клику на глиф
+const GLYPH_META = {
+  ziggurat: { t: 'Зиккурат', d: 'Ступенчатая храмовая башня Междуречья. У Ура — зиккурат Ур-Намму (~2100 г. до н.э.), раскопан Л. Вулли; святилище бога луны Нанны/Сина, городского божества Ура и Харрана.' },
+  pyramid: { t: 'Пирамида', d: 'Великие пирамиды Гизы к приходу Аврама уже стояли века (Древнее царство). Знак Египта — «дома фараонов», куда голод погнал патриарха (Быт 12:10).' },
+  ruin: { t: 'Разрушенный город', d: 'Знак городов долины Сиддим, «ниспроверженных» серой и огнём (Быт 19:24–25). Дым над руиной — то, что увидел Авраам с высоты у Хеврона: «дым поднимается с земли, как дым из печи» (Быт 19:28).' },
+  oak: { t: 'Дубрава Мамре', d: 'Элоне-Мамре — «дубрава Мамре» (Быт 13:18; 18:1): вековые деревья, под которыми Авраам принял трёх гостей. Знак дерева — место шатра и жертвенника патриарха.' },
+  well: { t: 'Колодец', d: 'Беэр — колодец: главная валюта кочевника в Негеве. За колодцы клялись (Беэр-Шева, Быт 21:25–31), из-за них спорили пастухи (Быт 26). Знак вырытого колодца с воротом.' },
+  tent: { t: 'Шатёр патриарха', d: '«Авраам сидел при входе в шатёр, во время зноя дневного» (Быт 18:1). Шатёр — дом странника, не построившего города: «ибо он ожидал города, имеющего основание» (Евр 11:9–10).' },
+  sheep: { t: 'Стада', d: 'Богатство патриархов измерялось скотом (Быт 13:2; 24:35). Из-за пастбищ разошлись Авраам и Лот (Быт 13:5–9); мелкий скот — предмет клятвы в Гераре и Беэр-Шеве (Быт 21:27–30).' },
+  spring: { t: 'Источник', d: 'Аин — источник живой воды в пустыне; у источников останавливаются и встречают Бога (Агарь — Быт 16:7,13–14).' },
+  altar: { t: 'Жертвенник', d: 'Маршрут Аврама размечен жертвенниками: Сихем (Быт 12:7), Бет-Эль (12:8), Хеврон (13:18), Мория (22:9) — богословская нить листа.' },
+  gate: { t: 'Ворота', d: 'Городские ворота — суд и сделки (Быт 23:10,18). У Тель-Дана сохранилась сырцовая арка ворот средней бронзы — «ворота времён Авраама».' },
+  palm: { t: 'Пальма', d: 'Знак оазиса; Хацацон-Фамар — «Фамарь» значит «пальма» (Эн-Геди, 2 Пар 20:2).' },
+  tower: { t: 'Башня', d: 'Знак города-крепости; на листе-прологе — Вавилонская башня (Быт 11).' },
+};
 
 function anchorSpec(a) {
   const A = {
@@ -200,6 +220,12 @@ function renderSheet(route, opts) {
       labels.push(`<text x="${p.x}" y="${p.y}" class="lab-region" font-size="${(12.5 * k).toFixed(2)}" text-anchor="middle">${esc((p.name || '').toUpperCase())}</text>`);
       continue;
     }
+    if (p.type === 'ctx') {
+      dots.push(`<g class="pl" data-pid="${esc(p.id)}"><circle cx="${p.x}" cy="${p.y}" r="${(2.5 * k).toFixed(2)}" class="pl-ctx"/></g>`);
+      const ca = anchorSpec(p.labelAnchor || 'e');
+      labels.push(`<text x="${(p.x + ca.dx * 7 * k).toFixed(1)}" y="${(p.y + ca.dy * 7 * k + 10 * k * 0.34).toFixed(1)}" text-anchor="${ca.ta}" class="lab-ctx" font-size="${(10 * k).toFixed(2)}">${esc(p.name)}</text>`);
+      continue;
+    }
     const isMile = milestoneIds.has(p.id);
     const r = (p.type === 'cand' ? 3.7 : 3.5) * k;
     const cls = p.type === 'cand' ? 'pl-cand' : 'pl-city';
@@ -212,13 +238,15 @@ function renderSheet(route, opts) {
       }
       dots.push(`<g class="pl" data-pid="${esc(p.id)}">${shape}</g>`);
     }
-    // Пиктограмма (place.glyph) — контурная, компактная, только уникальный смысл
-    if (p.glyph) {
-      const g = glyphSvg(p.glyph, p.x + (p.glyphDx || 0), p.y - 3 * k + (p.glyphDy || 0), k * 0.82);
-      if (g) glyphs.push(g);
+    // Пиктограммы (place.glyph / glyph2) — контурные, кликабельные (лексикон места)
+    for (const [gname, gdx, gdy] of [[p.glyph, p.glyphDx, p.glyphDy], [p.glyph2, p.glyph2Dx, p.glyph2Dy]]) {
+      if (!gname) continue;
+      const gx = p.x + (gdx || 0), gy = p.y - 3 * k + (gdy || 0);
+      const g = glyphSvg(gname, gx, gy, k * 0.82);
+      if (g) glyphs.push(`<g class="glyph-hit" data-pid="${esc(p.id)}"><circle cx="${gx}" cy="${(gy - 5 * k).toFixed(1)}" r="${(7.5 * k).toFixed(1)}" fill="transparent" stroke="none"/>${g}</g>`);
     }
 
-    const fontPlace = (isMile || p.glyph) ? fontMain : fontMinor;
+    const fontPlace = (isMile || (p.glyph && p.type !== 'cand')) ? fontMain : fontMinor;
     const a = p.labelAnchor || ((p.side === 'l') ? 'w' : 'e');
     const sp = anchorSpec(a);
     const off = 8.5 * k;
@@ -256,6 +284,29 @@ function renderSheet(route, opts) {
     `<text x="${c.x}" y="${c.y}" class="lab-ctx" font-size="${fontCtx.toFixed(2)}" text-anchor="middle">${esc((c.name || '').toUpperCase())}</text>`);
 
   // Минимализм: веха = тонкая римская цифра у точки (без кружков и полей)
+  // Поход царей (Быт 14): тонкая линия вторжения + узлы-крестики (кликабельны)
+  let warSvg = '';
+  const camp = route.campaign;
+  if (camp && Array.isArray(camp.places) && camp.places.length) {
+    const wpath = (camp.path && camp.path.length > 1) ? camp.path : camp.places.map(w => [w.x, w.y]);
+    const wd = catmullRom(wpath);
+    const wpts = camp.places.map(w => {
+      const wa = anchorSpec(w.labelAnchor || 'e');
+      return `<g class="war" data-pid="${esc(w.id)}"><circle cx="${w.x}" cy="${w.y}" r="${(6 * k).toFixed(1)}" fill="transparent" stroke="none"/>` +
+        (w.noX ? '' : `<path d="M${w.x - 2.3 * k},${w.y - 2.3 * k} L${w.x + 2.3 * k},${w.y + 2.3 * k} M${w.x - 2.3 * k},${w.y + 2.3 * k} L${w.x + 2.3 * k},${w.y - 2.3 * k}" class="war-x"/>`) +
+        `<text x="${(w.x + wa.dx * 6.5 * k).toFixed(1)}" y="${(w.y + wa.dy * 6.5 * k + 9 * k * 0.34).toFixed(1)}" text-anchor="${wa.ta}" class="lab-war" font-size="${(9 * k).toFixed(2)}">${esc(w.name)}</text></g>`;
+    }).join('');
+    const wend = wpath[wpath.length - 1], wprev = wpath[wpath.length - 2] || wend;
+    const ang = Math.atan2(wend[1] - wprev[1], wend[0] - wprev[0]);
+    const ah = (a2) => [wend[0] - 7 * k * Math.cos(ang + a2), wend[1] - 7 * k * Math.sin(ang + a2)];
+    const [a1x, a1y] = ah(0.42), [a2x, a2y] = ah(-0.42);
+    warSvg = `<g class="war-layer" aria-label="${esc(camp.label || 'Поход царей')}">` +
+      `<path d="${wd}" class="war-route"/>` +
+      `<path d="M${a1x.toFixed(1)},${a1y.toFixed(1)} L${wend[0]},${wend[1]} L${a2x.toFixed(1)},${a2y.toFixed(1)}" class="war-route" style="stroke-dasharray:none"/>` +
+      (camp.note ? `<text x="${(camp.notePos ? camp.notePos[0] : wpath[0][0] + 8 * k).toFixed(1)}" y="${(camp.notePos ? camp.notePos[1] : wpath[0][1] - 6 * k).toFixed(1)}" class="lab-war lab-war-note" font-size="${(9 * k).toFixed(2)}">${esc(camp.note)}</text>` : '') +
+      wpts + `</g>`;
+  }
+
   const miles = milestones.map(m =>
     `<g class="mile" data-stage="${m.n}" data-x="${m.x}" data-y="${m.y}">` +
     `<text x="${(m.fix ? m.x : m.x - 6.5 * k).toFixed(1)}" y="${(m.fix ? m.y : m.g ? m.y + 10.5 * k : m.y - 5 * k).toFixed(1)}" text-anchor="${m.fix ? 'middle' : 'end'}" class="mile-t" font-size="${(10 * k).toFixed(2)}" style="fill:${STAGE_TINT[m.n % STAGE_TINT.length]}">${ROMAN[m.n] || m.n + 1}</text></g>`);
@@ -291,15 +342,18 @@ function renderSheet(route, opts) {
   // Легенда глифов — компакт над этап-зоной, левый низ
   const lg = (i) => y0 + H - (36 - i * 0) * k;
   const legY = y0 + H - 36 * k;
+  const hasWar = !!(route.campaign && (route.campaign.places || []).length);
   const legend = `
   <g class="legend">
-    <rect x="${x0 + 24 * k}" y="${legY - 14 * k}" width="${372 * k}" height="${30 * k}" rx="${6 * k}" class="plate"/>
+    <rect x="${x0 + 24 * k}" y="${legY - 14 * k}" width="${(hasWar ? 512 : 372) * k}" height="${30 * k}" rx="${6 * k}" class="plate"/>
     <circle cx="${x0 + 42 * k}" cy="${legY + 1 * k}" r="${4.2 * k}" class="pl-city"/>
     <text x="${x0 + 52 * k}" y="${legY + 5 * k}" class="leg-t" font-size="${10.5 * k}">город · стан</text>
     <circle cx="${x0 + 132 * k}" cy="${legY + 1 * k}" r="${4.6 * k}" class="pl-cand"/>
     <text x="${x0 + 142 * k}" y="${legY + 5 * k}" class="leg-t" font-size="${10.5 * k}">локализация спорна</text>
     <rect x="${x0 + 268 * k}" y="${legY - 3 * k}" width="${8 * k}" height="${8 * k}" transform="rotate(45 ${x0 + 272 * k} ${legY + 1 * k})" class="wp-dot"/>
-    <text x="${x0 + 282 * k}" y="${legY + 5 * k}" class="leg-t" font-size="${10.5 * k}">археология</text>
+    <text x="${x0 + 282 * k}" y="${legY + 5 * k}" class="leg-t" font-size="${10.5 * k}">археология</text>${hasWar ? `
+    <path d="M${x0 + 352 * k},${legY - 2 * k} l${6 * k},${6 * k} m${-6 * k},0 l${6 * k},${-6 * k}" class="war-x"/>
+    <text x="${x0 + 364 * k}" y="${legY + 5 * k}" class="leg-t" font-size="${10.5 * k}">поход царей · Быт 14</text>` : ''}
   </g>`;
 
   const stageStripHtml = stages.length ? `
@@ -321,6 +375,7 @@ ${halos.join('')}
 ${leaders.join('')}
 ${dots.join('')}
 ${miles.join('')}
+${warSvg}
 ${glyphs.join('')}
 ${wps.join('')}
 ${ctxs.join('')}
@@ -354,6 +409,13 @@ function sheetCss() {
   .pl-city{fill:#1e3a63;stroke:#f6f1e7;stroke-width:.9}
   .pl-cand{fill:none;stroke:#8a6a1f;stroke-width:1.2;stroke-dasharray:2.6 2}
   .pl{cursor:pointer}
+  .pl-ctx{fill:#8a7a5e;stroke:#f6f1e7;stroke-width:.7;opacity:.85}
+  .lab-ctx{font-family:Lora,Georgia,serif;font-style:italic;font-weight:400;fill:#8a7a5e;opacity:.9;paint-order:stroke;stroke:#f3ecdc;stroke-width:.14em;stroke-linejoin:round}
+  .war-x{stroke:#96503c;stroke-width:1.05;opacity:.75;fill:none}
+  .war-route{fill:none;stroke:#96503c;stroke-width:1.25;stroke-dasharray:7 4.5;opacity:.5;stroke-linecap:round}
+  .lab-war{font-family:'Cormorant Garamond',Georgia,serif;font-style:italic;font-weight:500;fill:#8a4a38;opacity:.92;paint-order:stroke;stroke:#f3ecdc;stroke-width:.14em;stroke-linejoin:round}
+  .lab-war-note{opacity:.8}
+  .glyph-hit{cursor:pointer}
   #sheet-svg [fill="url(#jordanG)"]{opacity:.22}
   #sheet-svg #tradeRoutes{opacity:.32}
   .glyph path,.glyph circle{fill:none;stroke:#6b5216;stroke-width:.85;stroke-linejoin:round;opacity:.85}
@@ -363,20 +425,20 @@ function sheetCss() {
 
   .wp-dot{fill:#4a7a52;stroke:none;opacity:.6}
   .leader{stroke:#5c4d33;stroke-width:.75;opacity:.45}
-  .mile-t{font:italic 700 1em Georgia,serif;opacity:.9}
-  text.lab-place{font-family:Georgia,'Times New Roman',serif;font-weight:600;fill:#2b2418;paint-order:stroke;stroke:#f5edd8;stroke-width:.17em;stroke-linejoin:round}
-  text.lab-cand{font-style:italic;fill:#5c4a1e}
-  text.lab-region{font-family:Georgia,serif;font-weight:600;letter-spacing:.3em;fill:#7a6a48;opacity:.78;paint-order:stroke;stroke:#f5edd8;stroke-width:.18em}
+  .mile-t{font:italic 500 1em 'Cormorant Garamond',Georgia,serif;opacity:.95;letter-spacing:.04em}
+  text.lab-place{font-family:Lora,Georgia,serif;font-weight:600;fill:#2b2418;letter-spacing:.01em;paint-order:stroke;stroke:#f5edd8;stroke-width:.17em;stroke-linejoin:round}
+  text.lab-cand{font-family:Lora,Georgia,serif;font-style:italic;font-weight:400;fill:#6b5a35;paint-order:stroke;stroke:#f5edd8;stroke-width:.15em;stroke-linejoin:round}
+  text.lab-region{font-family:Lora,Georgia,serif;font-weight:500;fill:#7a6a48;letter-spacing:.34em;opacity:.78;paint-order:stroke;stroke:#f5edd8;stroke-width:.18em;stroke-linejoin:round}
   text.lab-ctx{font-family:Georgia,serif;letter-spacing:.24em;fill:#8a7a58;opacity:.6;paint-order:stroke;stroke:#f5edd8;stroke-width:.16em}
   text.lab-wp{font-family:Georgia,serif;font-style:italic;fill:#4a6a52;opacity:0;transition:opacity .3s;paint-order:stroke;stroke:#f5edd8;stroke-width:.16em}
   svg.zoomed text.lab-wp{opacity:.85}
   .plate{fill:rgba(246,241,231,.85);stroke:rgba(120,95,40,.35);stroke-width:1}
   .cart-plate{fill:rgba(246,241,231,.92)}
   .cart-inner{fill:none;stroke:rgba(138,106,31,.3);stroke-width:.8}
-  .cart-over{font-family:Georgia,serif;fill:#8a6a1f;letter-spacing:.22em;font-weight:600}
-  .cart-title{font-family:Georgia,serif;font-weight:700;fill:#1e3a63}
-  .cart-sub{font-family:Georgia,serif;fill:#5c4d33;opacity:.85}
-  .leg-t{font-family:Georgia,serif;fill:#3a3020;opacity:.9}
+  .cart-over{font-family:Lora,Georgia,serif;fill:#8a6a1f;letter-spacing:.26em;font-weight:500}
+  .cart-title{font-family:'Playfair Display',Georgia,serif;font-weight:700;fill:#243a56;letter-spacing:.01em}
+  .cart-sub{font-family:Lora,Georgia,serif;font-style:italic;font-weight:400;fill:#5c6e86}
+  .leg-t{font-family:Lora,Georgia,serif;font-weight:500;fill:#3a3020;opacity:.9}
   .sb-d{fill:#3a3020}.sb-l{fill:#f6f1e7;stroke:#3a3020;stroke-width:1}
   .sb-t{font-family:Georgia,serif;fill:#5c4d33;font-weight:600}
   .north{fill:#8a6a1f;stroke:#6b5216;stroke-width:1}
@@ -408,7 +470,7 @@ function sheetCss() {
   .spine-cover{position:relative;display:block}
   .spine-cover b{position:absolute;left:6px;top:6px;background:rgba(246,241,231,.92);color:#8a6a1f;font:700 10px/1 Georgia,serif;border-radius:6px;padding:3px 6px;border:1px solid rgba(138,106,31,.4)}
   /* ── Ховер-карточка места: фото раскопок + факт ── */
-  .place-card{position:fixed;z-index:30;width:300px;background:#f6f1e7;border:1px solid rgba(138,106,31,.45);border-radius:12px;box-shadow:0 14px 40px rgba(60,45,15,.35);overflow:hidden;opacity:0;transform:translateY(6px) scale(.98);transition:opacity .18s,transform .18s;pointer-events:none}
+  .place-card{position:fixed;z-index:30;width:300px;background:#f6f1e7;border:1px solid rgba(138,106,31,.45);border-radius:12px;box-shadow:0 14px 40px rgba(60,45,15,.35);overflow:hidden;opacity:0;transform:translateY(6px) scale(.98);transition:opacity .18s,transform .18s;pointer-events:none;font-family:Lora,Georgia,serif}
   .place-card.pc--on{opacity:1;transform:none}
   .pc-ph{position:relative;height:130px;background:#e8dcbc}
   .pc-ph img{width:100%;height:100%;object-fit:cover;display:block}
@@ -418,7 +480,7 @@ function sheetCss() {
   .pc-body u{display:block;text-decoration:none;font:600 10.5px/1.3 Georgia,serif;color:#8a6a1f;letter-spacing:.06em;margin-top:2px}
   .pc-body p{margin:7px 0 0;font:400 12px/1.5 Georgia,serif;color:#3a3020}
   /* ── Панель-досье (клик по месту) ── */
-  .dossier{position:fixed;right:0;top:0;bottom:0;width:min(430px,94vw);z-index:26;background:#f6f1e7;border-left:1px solid rgba(138,106,31,.4);box-shadow:-16px 0 44px rgba(60,45,15,.3);transform:translateX(103%);transition:transform .28s ease;display:flex;flex-direction:column}
+  .dossier{position:fixed;right:0;top:0;bottom:0;width:min(430px,94vw);z-index:26;background:#f6f1e7;border-left:1px solid rgba(138,106,31,.4);box-shadow:-16px 0 44px rgba(60,45,15,.3);transform:translateX(103%);transition:transform .28s ease;display:flex;flex-direction:column;font-family:Lora,Georgia,serif}
   .dossier.do--on{transform:none}
   .do-x{position:absolute;right:10px;top:10px;z-index:2;width:34px;height:34px;border-radius:9px;border:1px solid rgba(138,106,31,.4);background:rgba(246,241,231,.95);color:#7a5c26;font-size:19px;cursor:pointer}
   .do-head{padding:16px 54px 12px 18px;border-bottom:1px solid rgba(138,106,31,.25);background:rgba(240,232,210,.6)}
@@ -432,6 +494,16 @@ function sheetCss() {
   .do-ph figcaption i{display:block;font:400 8px/1.2 system-ui;color:#9a8a68;letter-spacing:0}
   .do-sec{margin:0 0 14px}
   .do-sec h4{margin:0 0 5px;font:700 10.5px/1 Georgia,serif;letter-spacing:.22em;color:#8a6a1f;text-transform:uppercase}
+  .do-lex{background:rgba(138,106,31,.06);border:1px solid rgba(138,106,31,.16);border-radius:10px;padding:12px 14px}
+  .do-lex .lex-head{display:flex;align-items:baseline;gap:12px;flex-wrap:wrap;margin-bottom:6px}
+  .do-lex .he{font-family:'Noto Serif Hebrew',serif;font-size:1.7em;line-height:1.2;color:#3a3020}
+  .do-lex .lex-tr{font-family:Lora,Georgia,serif;color:#8a6a30;font-size:.95em}
+  .do-lex .lex-ru{font-family:Lora,Georgia,serif;font-weight:600;margin:.2em 0 .35em}
+  .do-lex .lex-note{margin:.25em 0;line-height:1.55}
+  .do-lex .lex-refs{margin:.35em 0 0;font-style:italic;color:#6b5a35;font-size:.92em}
+  .do-lex .lex-glyph{display:flex;flex-direction:column;gap:2px;margin-top:.7em;padding-top:.6em;border-top:1px dashed rgba(138,106,31,.25)}
+  .do-lex .lex-glyph b{font-family:Lora,Georgia,serif}
+  .do-lex .lex-glyph span{line-height:1.5;font-size:.94em}
   .do-sec p{margin:0 0 8px;font:400 13.5px/1.6 Georgia,serif;color:#2b2418}
   .do-bible .verse{display:block;padding:10px 12px;background:rgba(30,58,99,.06);border-left:3px solid #1e3a63;border-radius:6px;font:italic 400 13.5px/1.55 Georgia,serif;color:#1e3a63;margin-bottom:8px}
   .do-bible .verse span{display:block;font:700 9.5px/1 system-ui;letter-spacing:.16em;color:#8a6a1f;margin-top:6px;font-style:normal}
@@ -464,12 +536,18 @@ function buildSheetHtml(route, opts) {
       t: ph.thumb || ph.src || null, tl: ph.label || '',
       f: (p.id1 && p.ep1) ? `${p.id1} — ${p.ep1}` : (arch ? arch.slice(0, 180) + (arch.length > 180 ? '…' : '') : ''),
       // полное досье для панели (R2); в прод-версии R4 вынести в отдельный fetch
+      lex: p.lex || null, glyphs: [p.glyph, p.glyph2].filter(Boolean),
       dossier: {
         story: p.story || '', bible: p.bible || '', arch: p.arch || '',
         dispute: p.dispute || '', bible_extra: p.bible_extra || '',
         photos: (p.photos || []).map(x => ({ src: x.src, thumb: x.thumb, label: x.label || '', credit: x.credit || '' })),
       },
     };
+  }
+  for (const w of ((route.campaign || {}).places || [])) {
+    cards[w.id] = { n: w.name, k: w.kick || 'Быт 14 · поход царей', t: null, tl: '',
+      f: w.note || '', lex: w.lex || null, glyphs: [],
+      dossier: { story: w.story || '', bible: w.bible || '', arch: w.arch || '', dispute: w.dispute || '', bible_extra: '', photos: [] } };
   }
   const cardsJson = JSON.stringify(cards);
   return `<!DOCTYPE html>
@@ -479,13 +557,14 @@ function buildSheetHtml(route, opts) {
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="robots" content="noindex,nofollow">
 <title>${esc(meta.title)} — лист Атласа (светлый, awaiting G9)</title>
+<link rel="stylesheet" href="${opts.fontsHref || '../../fonts/fonts.css'}">
 <style>${sheetCss()}
 </style>
 </head>
 <body>
 <div class="wrap">${svg}${stageStripHtml}</div>
 <span class="g9">${esc(badge)}</span>
-<script>window.ATLAS_SPINE=${spine};window.ATLAS_PLACES=${cardsJson};</script>
+<script>window.ATLAS_SPINE=${spine};window.ATLAS_PLACES=${cardsJson};window.ATLAS_GLYPHS=${JSON.stringify(GLYPH_META)};</script>
 <script src="atlas-reader.js"></script>
 </body>
 </html>`;
