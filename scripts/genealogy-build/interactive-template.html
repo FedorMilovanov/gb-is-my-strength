@@ -199,30 +199,44 @@
         <stop offset="100%" stop-color="#ffffff" stop-opacity="0"/>
       </radialGradient>
       <radialGradient id="christGlow" cx="50%" cy="50%" r="50%">
-        <stop offset="0%" stop-color="#fff2cf" stop-opacity="0.6"/>
-        <stop offset="20%" stop-color="#f9e4a8" stop-opacity="0.4"/>
-        <stop offset="42%" stop-color="#f0d488" stop-opacity="0.2"/>
-        <stop offset="65%" stop-color="#f0d488" stop-opacity="0.08"/>
-        <stop offset="85%" stop-color="#f0d488" stop-opacity="0.02"/>
+        <stop offset="0%" stop-color="#fff2cf" stop-opacity="0.4"/>
+        <stop offset="22%" stop-color="#f9e4a8" stop-opacity="0.26"/>
+        <stop offset="46%" stop-color="#f0d488" stop-opacity="0.12"/>
+        <stop offset="68%" stop-color="#f0d488" stop-opacity="0.05"/>
+        <stop offset="86%" stop-color="#f0d488" stop-opacity="0.014"/>
         <stop offset="100%" stop-color="#f0d488" stop-opacity="0"/>
       </radialGradient>
-      <!-- стеклянный шар: смещённый фокус света (верх-лево), тёплое золото → янтарь → тень -->
-      <radialGradient id="christGlass" cx="34%" cy="28%" r="78%">
-        <stop offset="0%" stop-color="#fffdf3"/>
-        <stop offset="20%" stop-color="#ffe9a4"/>
-        <stop offset="45%" stop-color="#e7b64e"/>
-        <stop offset="74%" stop-color="#b07f2a"/>
-        <stop offset="100%" stop-color="#5f3d10"/>
+      <!-- стеклянный (не глянцевый) шар: светящееся тёплое ядро, полупрозрачные края (без тёмной кромки) -->
+      <radialGradient id="christGlass" cx="40%" cy="34%" r="82%">
+        <stop offset="0%" stop-color="#fffbf1"/>
+        <stop offset="28%" stop-color="#f7dd94"/>
+        <stop offset="56%" stop-color="#e6bd60"/>
+        <stop offset="80%" stop-color="#d3a648"/>
+        <stop offset="100%" stop-color="#c89a3f"/>
       </radialGradient>
+      <!-- мягкая объёмная кромка вместо жёсткого чёрного контура -->
+      <radialGradient id="christEdge" cx="50%" cy="50%" r="50%">
+        <stop offset="0%" stop-color="#7a5410" stop-opacity="0"/>
+        <stop offset="72%" stop-color="#7a5410" stop-opacity="0"/>
+        <stop offset="92%" stop-color="#6b4a12" stop-opacity="0.16"/>
+        <stop offset="100%" stop-color="#5c3f10" stop-opacity="0.30"/>
+      </radialGradient>
+      <!-- мягкий стеклянный блик (не резкий зеркальный) -->
       <radialGradient id="christSpecular" cx="50%" cy="50%" r="50%">
-        <stop offset="0%" stop-color="#ffffff" stop-opacity="0.95"/>
-        <stop offset="50%" stop-color="#ffffff" stop-opacity="0.3"/>
-        <stop offset="100%" stop-color="#ffffff" stop-opacity="0"/>
+        <stop offset="0%" stop-color="#fffdf6" stop-opacity="0.62"/>
+        <stop offset="55%" stop-color="#fffdf6" stop-opacity="0.16"/>
+        <stop offset="100%" stop-color="#fffdf6" stop-opacity="0"/>
       </radialGradient>
+      <!-- нижний рефлекс: свет проходит сквозь стекло на противоположный край -->
       <radialGradient id="christRim" cx="50%" cy="50%" r="50%">
-        <stop offset="0%" stop-color="#ffe9a4" stop-opacity="0.5"/>
+        <stop offset="0%" stop-color="#fff0c2" stop-opacity="0.6"/>
         <stop offset="100%" stop-color="#ffe9a4" stop-opacity="0"/>
       </radialGradient>
+      <linearGradient id="crossGold" x1="0" y1="-24" x2="0" y2="26" gradientUnits="userSpaceOnUse">
+        <stop offset="0%" stop-color="#fff4d4"/>
+        <stop offset="42%" stop-color="#f0cb6a"/>
+        <stop offset="100%" stop-color="#b6821f"/>
+      </linearGradient>
     </defs><g id="viewport">
       <g id="g-hulls"></g>
       <g id="g-edges"></g>
@@ -293,6 +307,21 @@ const gNodes=document.getElementById('g-nodes');
 const tether=document.getElementById('tether');
 document.getElementById('icon-defs').innerHTML = GRAPH.iconDefs || '';
 const mk=(t,a)=>{const el=document.createElementNS(SVGNS,t);for(const k in a)el.setAttribute(k,a[k]);return el;};
+const noStroke=el=>{el.style.stroke='none';return el;};   // перебить CSS-контур .node circle
+// красивый объёмный крест Спасителя: латинский, из двух скруглённых брусьев,
+// с фаской (свет верх-лево) и тенью (глубина) — «глубоко прорисованный»
+function messiahCross(r){
+  const g=mk('g',{'pointer-events':'none'});
+  const vw=0.25*r, hh=0.25*r, top=-0.64*r, bot=0.66*r, left=-0.40*r, right=0.40*r, cy=-0.10*r;
+  const bars=(dx,dy,fill,op)=>{const gg=mk('g',op!=null?{opacity:op}:{});
+    gg.appendChild(mk('rect',{x:(-vw/2+dx).toFixed(2),y:(top+dy).toFixed(2),width:vw.toFixed(2),height:(bot-top).toFixed(2),rx:(vw*0.44).toFixed(2),fill}));
+    gg.appendChild(mk('rect',{x:(left+dx).toFixed(2),y:(cy-hh/2+dy).toFixed(2),width:(right-left).toFixed(2),height:hh.toFixed(2),rx:(hh*0.44).toFixed(2),fill}));
+    return gg;};
+  g.appendChild(bars(0.9,1.9,'#2a1a05',0.4));    // тень — глубина
+  g.appendChild(bars(-0.7,-1.1,'#fff7e2',0.5));   // фаска — свет сверху-слева
+  g.appendChild(bars(0,0,'url(#crossGold)',1));   // тело — золотой градиент
+  return g;
+}
 // ---- цветные облака-кластеры семейств (выпуклая оболочка + сглаживание) ----
 const gHulls=document.getElementById('g-hulls');
 const hullEls=new Map();
@@ -316,30 +345,33 @@ for(const n of nodes){
   const g=document.createElementNS(SVGNS,'g');g.setAttribute('class','node');g.dataset.id=n.id;
   const big=(n.kind!=='leaf');
   if(n.messiah){
-    // мягкое рассеянное сияние вокруг — один слой, без кольца и без венца лучей
-    // (венец читался как иконописный нимб конкретной традиции — сайт межконфессиональный)
-    g.appendChild(mk('circle',{r:n.r+50,fill:'url(#christGlow)','pointer-events':'none'}));
+    // мягкое рассеянное сияние — один слой, без кольца, без венца лучей, без контура
+    g.appendChild(noStroke(mk('circle',{r:n.r+56,fill:'url(#christGlow)','pointer-events':'none'})));
   }
-  else if(n.kind==='spine'){g.appendChild(mk('circle',{r:n.r+7,fill:'var(--goldGlow)',opacity:0.15}));}
-  // медальон: круг-основа (у Христа — стеклянный 3D-шар: смещённый градиент+блики вместо плоской заливки)
+  else if(n.kind==='spine'){g.appendChild(noStroke(mk('circle',{r:n.r+7,fill:'var(--goldGlow)',opacity:0.15})));}
+  // медальон: круг-основа (у Христа — стеклянный 3D-шар, без жёсткого чёрного контура)
   const c=mk('circle',{r:n.r,fill:n.messiah?'url(#christGlass)':(n.kind==='spine'?'var(--spineGold)':n.color),'stroke-width':n.kind==='leaf'?1.2:2});
+  if(n.messiah)c.style.stroke='none';
   // достоверность отождествления (режим народов): спорное — пунктир, малоизвестное — бледнее
   if(n.kind==='leaf'&&n.confidence){if(n.confidence==='disputed'){c.setAttribute('stroke','#b5643f');c.setAttribute('stroke-dasharray','2.2 1.8');c.setAttribute('stroke-width',1.4);}if(n.confidence==='obscure'){c.setAttribute('fill-opacity','0.4');}}
   n.circle=c;g.appendChild(c);
   if(big){
     if(n.messiah){
-      // блики стекла: большое мягкое пятно света + маленький яркий блик + тёплый рефлекс снизу-справа
-      g.appendChild(mk('ellipse',{cx:-n.r*0.3,cy:-n.r*0.36,rx:n.r*0.52,ry:n.r*0.38,fill:'url(#christSpecular)','pointer-events':'none'}));
-      g.appendChild(mk('ellipse',{cx:-n.r*0.16,cy:-n.r*0.48,rx:n.r*0.13,ry:n.r*0.08,fill:'#fffdf6',opacity:0.9,'pointer-events':'none'}));
-      g.appendChild(mk('ellipse',{cx:n.r*0.32,cy:n.r*0.4,rx:n.r*0.4,ry:n.r*0.22,fill:'url(#christRim)','pointer-events':'none'}));
+      // стекло: мягкая объёмная кромка (вместо контура) + рассеянный блик + деликатный
+      // глинт + нижний рефлекс (свет сквозь стекло). Всё мягко — стеклянно, не глянцево.
+      g.appendChild(noStroke(mk('circle',{r:n.r,fill:'url(#christEdge)','pointer-events':'none'})));
+      g.appendChild(mk('ellipse',{cx:-n.r*0.26,cy:-n.r*0.32,rx:n.r*0.58,ry:n.r*0.44,fill:'url(#christSpecular)','pointer-events':'none'}));
+      g.appendChild(mk('ellipse',{cx:-n.r*0.2,cy:-n.r*0.44,rx:n.r*0.1,ry:n.r*0.06,fill:'#fffdf6',opacity:0.55,'pointer-events':'none'}));
+      g.appendChild(mk('ellipse',{cx:n.r*0.3,cy:n.r*0.42,rx:n.r*0.46,ry:n.r*0.26,fill:'url(#christRim)','pointer-events':'none'}));
     } else {
       // блик-подсветка сверху (объём) + чёткий маленький глинт (clearcoat) + тонкий край медальона
-      g.appendChild(mk('circle',{r:n.r,fill:'url(#nodeSheen)','pointer-events':'none'}));
+      g.appendChild(noStroke(mk('circle',{r:n.r,fill:'url(#nodeSheen)','pointer-events':'none'})));
       g.appendChild(mk('ellipse',{cx:-n.r*0.34,cy:-n.r*0.4,rx:n.r*0.16,ry:n.r*0.1,fill:'url(#nodeGlint)','pointer-events':'none'}));
       g.appendChild(mk('circle',{r:n.r-3.4,fill:'none',stroke:n.kind==='spine'?'rgba(58,42,14,.42)':'rgba(255,250,236,.5)','stroke-width':1,'pointer-events':'none'}));
     }
-    // SVG-эмблема внутри «шара»
-    if(n.icon){const s=n.r*(n.kind==='spine'?1.32:1.42);const u=mk('use',{href:'#ic-'+n.icon,x:-s/2,y:-s/2,width:s,height:s});u.setAttributeNS('http://www.w3.org/1999/xlink','href','#ic-'+n.icon);u.style.color=n.messiah?'#3a2408':(n.kind==='spine'?'#3a2a0e':'#fbf4e2');u.style.pointerEvents='none';if(n.messiah)u.style.opacity=0.82;g.appendChild(u);}
+    // эмблема внутри «шара»: у Христа — объёмный крест, у прочих — SVG-иконка
+    if(n.messiah){g.appendChild(messiahCross(n.r));}
+    else if(n.icon){const s=n.r*(n.kind==='spine'?1.32:1.42);const u=mk('use',{href:'#ic-'+n.icon,x:-s/2,y:-s/2,width:s,height:s});u.setAttributeNS('http://www.w3.org/1999/xlink','href','#ic-'+n.icon);u.style.color=(n.kind==='spine'?'#3a2a0e':'#fbf4e2');u.style.pointerEvents='none';g.appendChild(u);}
   }
   if(big){
     const lw=mk('g',{'class':'lbl-wrap'});
