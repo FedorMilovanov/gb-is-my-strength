@@ -46,6 +46,25 @@
     svg.classList.toggle('z3', zf >= 3.1 && zf < 5.5);
     svg.classList.toggle('z4', zf >= 5.5);
     updateHud(zoomed);
+    cullEdgeLabels(zoomed);
+  };
+
+  // viewport-culling крупных подписей (AV-036): если региональный/морской
+  // заголовок обрезан краем карты и виден меньше порога — прячем целиком,
+  // чтобы у края не оставались случайные 1-3 буквы огромного слова
+  const bigLabels = [...svg.querySelectorAll('text.region-label, text.sea-label, text.region-he')]
+    .filter(t => parseFloat(t.getAttribute('font-size') || 0) >= 9);
+  const cullEdgeLabels = (zoomed) => {
+    if (!zoomed) { bigLabels.forEach(t => t.style.visibility = ''); return; }
+    const v = svg.getBoundingClientRect();
+    for (const t of bigLabels) {
+      const b = t.getBoundingClientRect();
+      if (!b.width) { t.style.visibility = ''; continue; }
+      const ix = Math.max(0, Math.min(b.right, v.right) - Math.max(b.left, v.left));
+      const iy = Math.max(0, Math.min(b.bottom, v.bottom) - Math.max(b.top, v.top));
+      const visible = (ix * iy) / (b.width * b.height);
+      t.style.visibility = visible < 0.6 ? 'hidden' : '';
+    }
   };
 
   // ── Зум/пан ────────────────────────────────────────────────────────────────
