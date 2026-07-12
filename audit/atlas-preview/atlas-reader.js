@@ -12,6 +12,29 @@
   if (!svg) return;
   const vb0 = (svg.getAttribute('data-vb') || svg.getAttribute('viewBox')).split(/\s+/).map(Number);
   let vb = vb0.slice();
+  // Zoom-HUD: фурнитура листа (шкала/роза) растворяется на зуме, но масштаб и
+  // направление должны оставаться доступными — компактная экранная шкала
+  const kmPerUnit = parseFloat(svg.getAttribute('data-km-per-unit')) || 1;
+  const hud = document.createElement('div');
+  hud.className = 'zoom-hud';
+  hud.innerHTML = '<span class="zh-north">С&thinsp;↑</span><span class="zh-bar"></span><span class="zh-km"></span>';
+  hud.hidden = true;
+  (document.querySelector('.wrap') || document.body).appendChild(hud);
+  const updateHud = (zoomed) => {
+    hud.hidden = !zoomed;
+    if (!zoomed) return;
+    // прижать к нижнему краю КАРТЫ (в .wrap ниже лежит строка этапов)
+    const wrapR = hud.parentElement.getBoundingClientRect();
+    const svgR = svg.getBoundingClientRect();
+    hud.style.bottom = Math.max(14, Math.round(wrapR.bottom - svgR.bottom) + 14) + 'px';
+    const pxPerUnit = svgR.width / vb[2];
+    const pxPerKm = pxPerUnit / kmPerUnit;
+    // подобрать «круглую» длину шкалы под ~60–140 px
+    const steps = [500, 200, 100, 50, 25, 10, 5];
+    let km = steps.find(s => s * pxPerKm <= 140) || 5;
+    hud.querySelector('.zh-bar').style.width = Math.round(km * pxPerKm) + 'px';
+    hud.querySelector('.zh-km').textContent = km + ' км';
+  };
   const apply = () => {
     svg.setAttribute('viewBox', vb.map(n => n.toFixed(1)).join(' '));
     // на зуме растворяем паспарту/фурнитуру — вблизи остаётся чистая карта
@@ -22,6 +45,7 @@
     svg.classList.toggle('z2', zf >= 1.6 && zf < 3.1);
     svg.classList.toggle('z3', zf >= 3.1 && zf < 5.5);
     svg.classList.toggle('z4', zf >= 5.5);
+    updateHud(zoomed);
   };
 
   // ── Зум/пан ────────────────────────────────────────────────────────────────

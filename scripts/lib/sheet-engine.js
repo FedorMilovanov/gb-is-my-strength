@@ -260,8 +260,18 @@ function renderSheet(route, opts) {
 
   // Маршрут героя — только основные станы: кандидаты (cand) и линии спутников
   // (lot и т.п.) в главную нить не входят
-  const routePts = places.filter(p => typeof p.stage === 'number' &&
-    p.type !== 'region' && p.type !== 'cand' && p.type !== 'lot' && !p.noRoute).map(p => [p.x, p.y]);
+  const routeStops = places.filter(p => typeof p.stage === 'number' &&
+    p.type !== 'region' && p.type !== 'cand' && p.type !== 'lot' && !p.noRoute);
+  // route_via: невидимые формирующие точки между станами — гнут нить вокруг
+  // воды/гор там, где прямая интерполяция между городами шла бы по озеру
+  // (сами станы — данные, кривая между ними — интерполяция, ей нужны опоры)
+  const viaMap = {};
+  for (const v of (route.route_via || [])) viaMap[v.after] = v.pts || [];
+  const routePts = [];
+  for (const p of routeStops) {
+    routePts.push([p.x, p.y]);
+    if (viaMap[p.id]) routePts.push(...viaMap[p.id]);
+  }
   const routePath = catmullRom(routePts);
 
   const seenStage = new Set(), milestones = [], milestoneIds = new Set();
@@ -470,8 +480,10 @@ function renderSheet(route, opts) {
     (s.age || s.km ? `<i>${esc(String(s.age || s.km))}</i>` : '') + `</span></div>`).join('')}
   </div>` : '';
 
-  const svg = `<svg id="sheet-svg" viewBox="${x0.toFixed(1)} ${y0.toFixed(1)} ${W} ${H.toFixed(1)}" data-vb="${x0.toFixed(1)} ${y0.toFixed(1)} ${W} ${H.toFixed(1)}" xmlns="http://www.w3.org/2000/svg" class="sheet" role="img" aria-label="${esc(meta.title || slug)} — лист Атласа">
+  const svg = `<svg id="sheet-svg" viewBox="${x0.toFixed(1)} ${y0.toFixed(1)} ${W} ${H.toFixed(1)}" data-vb="${x0.toFixed(1)} ${y0.toFixed(1)} ${W} ${H.toFixed(1)}" data-km-per-unit="${KM_PER_UNIT[family]}" xmlns="http://www.w3.org/2000/svg" class="sheet" role="img" aria-label="${esc(meta.title || slug)} — лист Атласа">
 ${GEO_DEFS}
+<clipPath id="mapClip"><rect x="${(x0 + 8 * k).toFixed(1)}" y="${(y0 + 8 * k).toFixed(1)}" width="${(W - 16 * k).toFixed(1)}" height="${(H - 16 * k).toFixed(1)}"/></clipPath>
+<g class="geo" clip-path="url(#mapClip)">
 <rect x="${x0}" y="${y0}" width="${W}" height="${H}" fill="url(#seaG)"/>
 <g class="base">${base}</g>
 ${RELIEF[family] || ''}
@@ -489,6 +501,7 @@ ${ctxs.join('')}
 ${ovls.join('')}
 ${sidenote}
 ${labels.join('')}
+</g>
 ${cart}
 ${legend}
 ${furn}
@@ -515,6 +528,8 @@ function sheetCss() {
      экранных px, пересчитаны на середину каждой ступени).            */
   #sheet-svg path[fill="none"][stroke="#2d4a66"],
   #sheet-svg path[fill="none"][stroke="#2e4d6b"],
+  #sheet-svg g[stroke="#2d4a66"] path,
+  #sheet-svg path[stroke="#4a80a8"],
   #sheet-svg #tradeRoutes path,
   #sheet-svg .route, #sheet-svg .route-under,
   #sheet-svg .war-route, #sheet-svg .ovl,
@@ -686,6 +701,10 @@ function sheetCss() {
      теперь внутри .wrap (position:absolute) и в верхнем правом углу, где
      после переноса dive-btn ниже розы ветров освободилось место */
   .g9{position:absolute;right:10px;top:10px;z-index:9;font:600 10px/1 system-ui;letter-spacing:.08em;color:#7a5c26;background:rgba(246,241,231,.9);border:1px solid rgba(138,106,31,.4);border-radius:999px;padding:6px 10px}
+  /* компактный HUD зума: экранная шкала + север (фурнитура листа на зуме скрыта) */
+  .zoom-hud{position:absolute;left:14px;bottom:14px;z-index:20;display:flex;align-items:center;gap:9px;font:600 11px/1 Georgia,serif;color:#6b5216;background:rgba(246,241,231,.92);border:1px solid rgba(138,106,31,.4);border-radius:8px;padding:7px 11px;box-shadow:0 2px 8px rgba(90,70,30,.18);pointer-events:none}
+  .zoom-hud .zh-bar{display:inline-block;height:5px;background:#4a3f28;border:1px solid #6b5216;border-radius:1px}
+  .zoom-hud .zh-north{letter-spacing:.05em}
   /* ── Читалка (R1, §14): корешок, погружение, курсоры ── */
   svg.sheet{cursor:grab;touch-action:none}
   .frame,.legend,.cartouche,.furn{transition:opacity .35s}
@@ -804,7 +823,8 @@ function buildSheetHtml(route, opts) {
 </style>
 </head>
 <body>
-<div class="wrap">${svg}${stageStripHtml}<span class="g9">${esc(badge)}</span></div>
+<div class="wrap">${svg}${stageStripHtml}<span class="g9" hidden>${esc(badge)}</span></div>
+<script>if (/[?&]dev=1/.test(location.search)) document.querySelector('.g9').hidden = false;</script>
 <script>window.ATLAS_SPINE=${spine};window.ATLAS_PLACES=${cardsJson};window.ATLAS_GLYPHS=${JSON.stringify(GLYPH_META)};window.ATLAS_STAGES=${JSON.stringify((route.stages || []).map(st => ({ n: st.n, t: st.t, d: st.d || '', age: st.age || '', km: st.km || '', r: st.r || '' })))};window.ATLAS_WPS=${JSON.stringify((route.verified_waypoints || []).map(w2 => ({ n: w2.name, role: w2.role || '', note: w2.note || '' })))};window.ATLAS_OVLS=${JSON.stringify((route.overlays || []).map(o2 => ({ label: o2.label || '', story: o2.story || '', refs: o2.refs || '' })))};window.ATLAS_DECOR=${JSON.stringify(DECOR_META)};</script>
 <script src="atlas-reader.js"></script>
 </body>
