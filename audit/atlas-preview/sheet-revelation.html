@@ -21,7 +21,7 @@
   #sheet-svg g[stroke="#2d4a66"] path,
   #sheet-svg path[stroke="#4a80a8"],
   #sheet-svg #tradeRoutes path,
-  #sheet-svg .route, #sheet-svg .route-under,
+  #sheet-svg .route, #sheet-svg .route-under, #sheet-svg .route-arrow,
   #sheet-svg .war-route, #sheet-svg .ovl,
   #sheet-svg .leader, #sheet-svg .grat,
   #sheet-svg .glyph path, #sheet-svg .glyph circle,
@@ -36,6 +36,7 @@
   /* при non-scaling-stroke dash-паттерн тоже в ЭКРАННЫХ px — задаём один раз */
   #sheet-svg #tradeRoutes path{stroke-width:2.1px;stroke-dasharray:.1 6.5}
   #sheet-svg .route{stroke-width:2.1px;stroke-dasharray:.1 8}
+  #sheet-svg .route-arrow{fill:none;stroke:#b0472e;stroke-width:1.5px;stroke-linecap:round;stroke-linejoin:round;opacity:.72}
   #sheet-svg .route-under{stroke-width:3px}
   #sheet-svg .war-route{stroke-width:1.15px;stroke-dasharray:9 5.5}
   #sheet-svg .ovl-covenant{stroke-width:1.5px;stroke-dasharray:10 6}
@@ -106,6 +107,13 @@
   svg.z4 text.sea-label:not(.lbl-z1):not(.lbl-z2),
   svg.z4 text.region-label:not(.lbl-z1):not(.lbl-z2){opacity:0}
   svg.z3 text.region-he, svg.z4 text.region-he{opacity:.1}
+  /* штриховка рельефа хороша как фактура на обзоре, но при зуме тайл растёт
+     (userSpaceOnUse) и превращается в редкие гигантские полосы — гасим её
+     к близким масштабам, оставляя мягкий рельефный тон (mtG-эллипсы) */
+  #sheet-svg .relief{transition:none}
+  svg.zoomed .relief{opacity:.5}
+  svg.z3 .relief{opacity:.22}
+  svg.z4 .relief{opacity:.08}
   svg.z3 text.lbl-z1, svg.z3 g.lbl-z1 text{font-size:2.4px}
   svg.z4 text.lbl-z1, svg.z4 g.lbl-z1 text{font-size:1.6px}
   svg.z3 text.lbl-z2, svg.z3 g.lbl-z2 text{font-size:2.2px}
@@ -306,7 +314,7 @@
     <stop offset="0" stop-color="#8b7d5a" stop-opacity=".4"/><stop offset="1" stop-color="#8b7d5a" stop-opacity="0"/>
   </linearGradient>
   <pattern id="mountainHatch" x="0" y="0" width="6" height="6" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
-    <line x1="0" y1="0" x2="0" y2="6" stroke="#8b7d5a" stroke-width=".6" opacity=".45"/>
+    <line x1="0" y1="0" x2="0" y2="6" stroke="#8b7d5a" stroke-width=".6" opacity=".38" vector-effect="non-scaling-stroke"/>
   </pattern>
   <pattern id="desertStipple" x="0" y="0" width="12" height="12" patternUnits="userSpaceOnUse">
     <circle cx="3" cy="3" r=".7" fill="#9c7c43" opacity=".4"/>
@@ -536,6 +544,7 @@ Z"/>
   </g>
 <path d="M1167,535 C1164.8,528.5 1155.7,512.3 1154,496 C1152.3,479.7 1149.5,444.0 1157,437 C1164.5,430.0 1189.7,445.2 1199,454 C1208.3,462.8 1205.5,482.2 1213,490 C1220.5,497.8 1232.5,492.2 1244,501 C1255.5,509.8 1275.7,536.0 1282,543" class="route-under"/>
 <path d="M1167,535 C1164.8,528.5 1155.7,512.3 1154,496 C1152.3,479.7 1149.5,444.0 1157,437 C1164.5,430.0 1189.7,445.2 1199,454 C1208.3,462.8 1205.5,482.2 1213,490 C1220.5,497.8 1232.5,492.2 1244,501 C1255.5,509.8 1275.7,536.0 1282,543" class="route"/>
+
 
 <line x1="1214.0" y1="488.3" x2="1218.0" y2="481.3" class="leader"/><line x1="1245.4" y1="502.4" x2="1249.8" y2="506.7" class="leader"/>
 <g class="pl" data-pid="ephesus_rev"><circle cx="1167" cy="535" r="1.25" class="pl-city"/></g><g class="pl" data-pid="smyrna"><circle cx="1154" cy="496" r="1.25" class="pl-city"/></g><g class="pl" data-pid="pergamon"><circle cx="1157" cy="437" r="1.25" class="pl-city"/></g><g class="pl" data-pid="thyatira"><circle cx="1199" cy="454" r="1.25" class="pl-city"/></g><g class="pl" data-pid="sardis"><circle cx="1213" cy="490" r="1.25" class="pl-city"/></g><g class="pl" data-pid="philadelphia"><circle cx="1244" cy="501" r="1.25" class="pl-city"/></g><g class="pl" data-pid="laodicea"><circle cx="1282" cy="543" r="1.25" class="pl-city"/></g>

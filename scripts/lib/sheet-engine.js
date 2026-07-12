@@ -57,7 +57,7 @@ const GEO_DEFS = `<defs>
     <stop offset="0" stop-color="#8b7d5a" stop-opacity=".4"/><stop offset="1" stop-color="#8b7d5a" stop-opacity="0"/>
   </linearGradient>
   <pattern id="mountainHatch" x="0" y="0" width="6" height="6" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
-    <line x1="0" y1="0" x2="0" y2="6" stroke="#8b7d5a" stroke-width=".6" opacity=".45"/>
+    <line x1="0" y1="0" x2="0" y2="6" stroke="#8b7d5a" stroke-width=".6" opacity=".38" vector-effect="non-scaling-stroke"/>
   </pattern>
   <pattern id="desertStipple" x="0" y="0" width="12" height="12" patternUnits="userSpaceOnUse">
     <circle cx="3" cy="3" r=".7" fill="#9c7c43" opacity=".4"/>
@@ -273,6 +273,19 @@ function renderSheet(route, opts) {
     if (viaMap[p.id]) routePts.push(...viaMap[p.id]);
   }
   const routePath = catmullRom(routePts);
+
+  // Направление движения (AV-022): шеврон на середине достаточно длинных
+  // перегонов между станами, ориентированный по ходу пути. Экранный размер
+  // держим через non-scaling-stroke (класс .route-arrow) — не растёт с зумом.
+  const routeArrows = [];
+  for (let i = 0; i < routeStops.length - 1; i++) {
+    const a = [routeStops[i].x, routeStops[i].y], b = [routeStops[i + 1].x, routeStops[i + 1].y];
+    const dx = b[0] - a[0], dy = b[1] - a[1], len = Math.hypot(dx, dy);
+    if (len < 60) continue; // короткие перегоны не помечаем
+    const mx = a[0] + dx * 0.52, my = a[1] + dy * 0.52;
+    const ang = Math.atan2(dy, dx) * 180 / Math.PI;
+    routeArrows.push(`<path d="M-3.4,-3 L0,0 L-3.4,3" transform="translate(${mx.toFixed(1)},${my.toFixed(1)}) rotate(${ang.toFixed(1)})" class="route-arrow"/>`);
+  }
 
   const seenStage = new Set(), milestones = [], milestoneIds = new Set();
   for (const p of places) {
@@ -490,6 +503,7 @@ ${RELIEF[family] || ''}
 ${DECOR[family] || ''}
 <path d="${routePath}" class="route-under"/>
 <path d="${routePath}" class="route"/>
+${routeArrows.join('')}
 ${halos.join('')}
 ${leaders.join('')}
 ${dots.join('')}
@@ -531,7 +545,7 @@ function sheetCss() {
   #sheet-svg g[stroke="#2d4a66"] path,
   #sheet-svg path[stroke="#4a80a8"],
   #sheet-svg #tradeRoutes path,
-  #sheet-svg .route, #sheet-svg .route-under,
+  #sheet-svg .route, #sheet-svg .route-under, #sheet-svg .route-arrow,
   #sheet-svg .war-route, #sheet-svg .ovl,
   #sheet-svg .leader, #sheet-svg .grat,
   #sheet-svg .glyph path, #sheet-svg .glyph circle,
@@ -546,6 +560,7 @@ function sheetCss() {
   /* при non-scaling-stroke dash-паттерн тоже в ЭКРАННЫХ px — задаём один раз */
   #sheet-svg #tradeRoutes path{stroke-width:2.1px;stroke-dasharray:.1 6.5}
   #sheet-svg .route{stroke-width:2.1px;stroke-dasharray:.1 8}
+  #sheet-svg .route-arrow{fill:none;stroke:#b0472e;stroke-width:1.5px;stroke-linecap:round;stroke-linejoin:round;opacity:.72}
   #sheet-svg .route-under{stroke-width:3px}
   #sheet-svg .war-route{stroke-width:1.15px;stroke-dasharray:9 5.5}
   #sheet-svg .ovl-covenant{stroke-width:1.5px;stroke-dasharray:10 6}
@@ -616,6 +631,13 @@ function sheetCss() {
   svg.z4 text.sea-label:not(.lbl-z1):not(.lbl-z2),
   svg.z4 text.region-label:not(.lbl-z1):not(.lbl-z2){opacity:0}
   svg.z3 text.region-he, svg.z4 text.region-he{opacity:.1}
+  /* штриховка рельефа хороша как фактура на обзоре, но при зуме тайл растёт
+     (userSpaceOnUse) и превращается в редкие гигантские полосы — гасим её
+     к близким масштабам, оставляя мягкий рельефный тон (mtG-эллипсы) */
+  #sheet-svg .relief{transition:none}
+  svg.zoomed .relief{opacity:.5}
+  svg.z3 .relief{opacity:.22}
+  svg.z4 .relief{opacity:.08}
   svg.z3 text.lbl-z1, svg.z3 g.lbl-z1 text{font-size:2.4px}
   svg.z4 text.lbl-z1, svg.z4 g.lbl-z1 text{font-size:1.6px}
   svg.z3 text.lbl-z2, svg.z3 g.lbl-z2 text{font-size:2.2px}

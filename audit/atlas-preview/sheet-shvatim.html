@@ -21,7 +21,7 @@
   #sheet-svg g[stroke="#2d4a66"] path,
   #sheet-svg path[stroke="#4a80a8"],
   #sheet-svg #tradeRoutes path,
-  #sheet-svg .route, #sheet-svg .route-under,
+  #sheet-svg .route, #sheet-svg .route-under, #sheet-svg .route-arrow,
   #sheet-svg .war-route, #sheet-svg .ovl,
   #sheet-svg .leader, #sheet-svg .grat,
   #sheet-svg .glyph path, #sheet-svg .glyph circle,
@@ -36,6 +36,7 @@
   /* при non-scaling-stroke dash-паттерн тоже в ЭКРАННЫХ px — задаём один раз */
   #sheet-svg #tradeRoutes path{stroke-width:2.1px;stroke-dasharray:.1 6.5}
   #sheet-svg .route{stroke-width:2.1px;stroke-dasharray:.1 8}
+  #sheet-svg .route-arrow{fill:none;stroke:#b0472e;stroke-width:1.5px;stroke-linecap:round;stroke-linejoin:round;opacity:.72}
   #sheet-svg .route-under{stroke-width:3px}
   #sheet-svg .war-route{stroke-width:1.15px;stroke-dasharray:9 5.5}
   #sheet-svg .ovl-covenant{stroke-width:1.5px;stroke-dasharray:10 6}
@@ -106,6 +107,13 @@
   svg.z4 text.sea-label:not(.lbl-z1):not(.lbl-z2),
   svg.z4 text.region-label:not(.lbl-z1):not(.lbl-z2){opacity:0}
   svg.z3 text.region-he, svg.z4 text.region-he{opacity:.1}
+  /* штриховка рельефа хороша как фактура на обзоре, но при зуме тайл растёт
+     (userSpaceOnUse) и превращается в редкие гигантские полосы — гасим её
+     к близким масштабам, оставляя мягкий рельефный тон (mtG-эллипсы) */
+  #sheet-svg .relief{transition:none}
+  svg.zoomed .relief{opacity:.5}
+  svg.z3 .relief{opacity:.22}
+  svg.z4 .relief{opacity:.08}
   svg.z3 text.lbl-z1, svg.z3 g.lbl-z1 text{font-size:2.4px}
   svg.z4 text.lbl-z1, svg.z4 g.lbl-z1 text{font-size:1.6px}
   svg.z3 text.lbl-z2, svg.z3 g.lbl-z2 text{font-size:2.2px}
@@ -306,7 +314,7 @@
     <stop offset="0" stop-color="#8b7d5a" stop-opacity=".4"/><stop offset="1" stop-color="#8b7d5a" stop-opacity="0"/>
   </linearGradient>
   <pattern id="mountainHatch" x="0" y="0" width="6" height="6" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
-    <line x1="0" y1="0" x2="0" y2="6" stroke="#8b7d5a" stroke-width=".6" opacity=".45"/>
+    <line x1="0" y1="0" x2="0" y2="6" stroke="#8b7d5a" stroke-width=".6" opacity=".38" vector-effect="non-scaling-stroke"/>
   </pattern>
   <pattern id="desertStipple" x="0" y="0" width="12" height="12" patternUnits="userSpaceOnUse">
     <circle cx="3" cy="3" r=".7" fill="#9c7c43" opacity=".4"/>
@@ -597,12 +605,11 @@
   <!-- Воды Мерома (озерцо Хуле) — Нав 11:5 -->
   <ellipse cx="656" cy="641" rx="3.4" ry="4.6" transform="rotate(-12 656 641)" fill="#10263a" opacity=".55" stroke="#2e4d6b" stroke-width=".5" class="lbl-z2"/>
   <text class="sea-label lbl-z2" x="664" y="639" font-size="3.2" letter-spacing=".08em" fill="#4a80a0" opacity=".75">Хула</text>
-  <!-- Иордан — стрелка течения (С→Ю) -->
-  <path class="lbl-z2" d="M648,710 L644,720 L652,720 Z" fill="#4a80a0" opacity=".35"/>
-  <!-- Евфрат — стрелка течения -->
-  <path class="lbl-z2" d="M1296,618 L1290,628 L1298,628 Z" fill="#4a80a0" opacity=".3"/>
-  <!-- Нил — стрелка течения (С→Ю зеркально = С) -->
-  <path class="lbl-z2" d="M222,950 L218,960 L226,960 Z" fill="#4a80a0" opacity=".35"/>
+  <!-- стрелки течения рек — тонкие шевроны (были сплошные треугольники,
+       читались как маркеры/горы, а не как направление потока) -->
+  <path class="lbl-z2" d="M649,714 L653,720 L651,720 M645,714 L649,720" fill="none" stroke="#4a80a0" stroke-width=".9" stroke-linecap="round" stroke-linejoin="round" opacity=".5"/>
+  <path class="lbl-z2" d="M1291,622 L1296,628 L1294,628 M1287,622 L1292,628" fill="none" stroke="#4a80a0" stroke-width=".9" stroke-linecap="round" stroke-linejoin="round" opacity=".45"/>
+  <path class="lbl-z2" d="M219,954 L223,960 L221,960 M215,954 L219,960" fill="none" stroke="#4a80a0" stroke-width=".9" stroke-linecap="round" stroke-linejoin="round" opacity=".5"/>
   <!-- Иордан -->
   <text class="sea-label lbl-z1" x="644" y="730" font-size="4.5" letter-spacing=".14em" transform="rotate(80 644 730)" fill="#4a80a0" opacity=".55">ИОРДАН · הַיַּרְדֵּן</text>
   <!-- Евфрат -->
@@ -773,8 +780,10 @@
   <text x="0" y="32" font-size="3.8" fill="#8a6838" text-anchor="middle" opacity=".8">הַר סִינַי · 2285 м</text>
 </g>
 <!-- Хермон — гора у Дана -->
-<g class="lbl-z1" transform="translate(668,594)" opacity=".4">
-  <path d="M-14,10 L-4,-8 L0,-16 L4,-8 L14,10 Z" fill="rgba(120,140,160,.12)" stroke="#6080a0" stroke-width="1" stroke-linejoin="round"/>
+<g class="lbl-z1" transform="translate(668,594)" opacity=".5">
+  <path d="M-14,10 L-4,-8 L0,-16 L4,-8 L14,10 Z" fill="rgba(120,140,160,.16)" stroke="#6080a0" stroke-width="1" stroke-linejoin="round"/>
+  <!-- снежная шапка: Хермон — высочайшая вершина региона (2814 м) -->
+  <path d="M-4.5,-6.5 L0,-16 L4.5,-6.5 C2,-8 -2,-8 -4.5,-6.5 Z" fill="rgba(248,250,252,.72)" stroke="none"/>
   <text x="0" y="17" text-anchor="middle" font-size="4.5" fill="#7090b8" letter-spacing=".1em">ХЕРМОН</text>
   <text x="0" y="22" font-size="3.2" fill="#6080a8" text-anchor="middle" opacity=".8">2814 м · הַר חֶרְמוֹן</text>
 </g>
@@ -832,6 +841,7 @@
   </g>
 <path d="M600,850 C600.2,835.0 599.3,780.7 601,760 C602.7,739.3 594.8,738.0 610,726 C625.2,714.0 689.7,673.7 692,688 C694.3,702.3 628.5,822.5 624,812 C619.5,801.5 673.2,614.5 665,625 C656.8,635.5 579.0,862.0 575,875 C571.0,888.0 632.2,735.3 641,703 C649.8,670.7 628.2,693.5 628,681 C627.8,668.5 642.3,633.8 640,628 C637.7,622.2 606.7,625.3 614,646 C621.3,666.7 673.2,722.7 684,752 C694.8,781.3 685.5,815.8 679,822 C672.5,828.2 653.7,795.3 645,789 C636.3,782.7 631.3,783.5 627,784 C622.7,784.5 613.8,814.2 619,792 C624.2,769.8 656.5,659.5 658,651 C659.5,642.5 633.0,726.0 628,741" class="route-under"/>
 <path d="M600,850 C600.2,835.0 599.3,780.7 601,760 C602.7,739.3 594.8,738.0 610,726 C625.2,714.0 689.7,673.7 692,688 C694.3,702.3 628.5,822.5 624,812 C619.5,801.5 673.2,614.5 665,625 C656.8,635.5 579.0,862.0 575,875 C571.0,888.0 632.2,735.3 641,703 C649.8,670.7 628.2,693.5 628,681 C627.8,668.5 642.3,633.8 640,628 C637.7,622.2 606.7,625.3 614,646 C621.3,666.7 673.2,722.7 684,752 C694.8,781.3 685.5,815.8 679,822 C672.5,828.2 653.7,795.3 645,789 C636.3,782.7 631.3,783.5 627,784 C622.7,784.5 613.8,814.2 619,792 C624.2,769.8 656.5,659.5 658,651 C659.5,642.5 633.0,726.0 628,741" class="route"/>
+<path d="M-3.4,-3 L0,0 L-3.4,3" transform="translate(600.5,803.2) rotate(-89.4)" class="route-arrow"/><path d="M-3.4,-3 L0,0 L-3.4,3" transform="translate(652.6,706.2) rotate(-24.9)" class="route-arrow"/><path d="M-3.4,-3 L0,0 L-3.4,3" transform="translate(656.6,752.5) rotate(118.7)" class="route-arrow"/><path d="M-3.4,-3 L0,0 L-3.4,3" transform="translate(645.3,714.8) rotate(-77.6)" class="route-arrow"/><path d="M-3.4,-3 L0,0 L-3.4,3" transform="translate(618.2,755.0) rotate(109.8)" class="route-arrow"/><path d="M-3.4,-3 L0,0 L-3.4,3" transform="translate(609.3,785.6) rotate(-69.0)" class="route-arrow"/><path d="M-3.4,-3 L0,0 L-3.4,3" transform="translate(650.4,701.1) rotate(56.6)" class="route-arrow"/><path d="M-3.4,-3 L0,0 L-3.4,3" transform="translate(681.4,788.4) rotate(94.1)" class="route-arrow"/><path d="M-3.4,-3 L0,0 L-3.4,3" transform="translate(639.3,718.7) rotate(-74.5)" class="route-arrow"/><path d="M-3.4,-3 L0,0 L-3.4,3" transform="translate(642.4,697.8) rotate(108.4)" class="route-arrow"/>
 
 <line x1="627.0" y1="779.0" x2="627.0" y2="764.8" class="leader"/><line x1="614.3" y1="793.9" x2="604.2" y2="797.9" class="leader"/>
 <g class="pl" data-pid="judah"><circle cx="600" cy="850" r="3.21" class="pl-city"/></g><g class="pl" data-pid="ephraim"><circle cx="601" cy="760" r="3.21" class="pl-city"/></g><g class="pl" data-pid="manasseh_n"><circle cx="610" cy="726" r="3.21" class="pl-city"/></g><g class="pl" data-pid="manasseh_e"><circle cx="692" cy="688" r="3.21" class="pl-city"/></g><g class="pl" data-pid="benjamin"><circle cx="624" cy="812" r="3.21" class="pl-city"/></g><g class="pl" data-pid="dan"><circle cx="665" cy="625" r="3.21" class="pl-city"/></g><g class="pl" data-pid="simeon"><circle cx="575" cy="875" r="3.21" class="pl-city"/></g><g class="pl" data-pid="issachar"><circle cx="641" cy="703" r="3.21" class="pl-city"/></g><g class="pl" data-pid="zebulun"><circle cx="628" cy="681" r="3.21" class="pl-city"/></g><g class="pl" data-pid="naphtali"><circle cx="640" cy="628" r="3.21" class="pl-city"/></g><g class="pl" data-pid="asher"><circle cx="614" cy="646" r="3.21" class="pl-city"/></g><g class="pl" data-pid="gad"><circle cx="684" cy="752" r="3.21" class="pl-city"/></g><g class="pl" data-pid="reuben"><circle cx="679" cy="822" r="3.21" class="pl-city"/></g><g class="pl" data-pid="jericho"><circle cx="645" cy="789" r="3.21" class="pl-city"/></g><g class="pl" data-pid="ai"><circle cx="627" cy="784" r="3.21" class="pl-city"/></g><g class="pl" data-pid="gibeon"><circle cx="619" cy="792" r="3.21" class="pl-city"/></g><g class="pl" data-pid="hazor_conquest"><circle cx="658" cy="651" r="3.21" class="pl-city"/></g><g class="pl" data-pid="mount_ebal"><circle cx="628" cy="741" r="3.21" class="pl-city"/></g>
