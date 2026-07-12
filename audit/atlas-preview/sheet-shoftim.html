@@ -83,7 +83,7 @@
   .lab-war-note{opacity:.8}
   .glyph-hit{cursor:pointer}
   .mile,.wp,.ovl-layer,.decor-ship,.war{cursor:pointer}
-  #sheet-svg [fill="url(#jordanG)"]{opacity:.15}
+  #sheet-svg [fill="url(#jordanG)"]{opacity:.09}
   #sheet-svg #tradeRoutes{opacity:.32}
   .glyph path,.glyph circle{fill:none;stroke:#6b5216;stroke-width:.85;stroke-linejoin:round;opacity:.85}
   .glyph .glyph-line{fill:none;stroke:#6b5216;stroke-width:.9;stroke-linecap:round}
@@ -230,7 +230,7 @@
     <circle cx="9" cy="9" r=".5" fill="#9c7c43" opacity=".3"/>
     <circle cx="6" cy="1" r=".4" fill="#b08050" opacity=".25"/>
   </pattern>
-  <filter id="waterRipple" x="-10%" y="-10%" width="120%" height="120%"><feGaussianBlur stdDeviation=".8"/></filter>
+  <filter id="waterRipple" x="-8%" y="-8%" width="116%" height="116%"><feGaussianBlur stdDeviation=".45"/></filter>
   <filter id="soft" x="-40%" y="-40%" width="180%" height="180%"><feGaussianBlur stdDeviation="6"/></filter>
   <filter id="dotShadow" x="-60%" y="-60%" width="220%" height="220%">
     <feDropShadow dx="0" dy=".7" stdDeviation=".8" flood-color="#3a2c10" flood-opacity=".45"/>
@@ -420,7 +420,7 @@
   <circle cx="656" cy="852" r=".7" fill="#c8d4a0"/><circle cx="642" cy="842" r=".6" fill="#c8d4a0"/>
 </g>
   <!-- Sea of Galilee -->
-  <g filter="url(#waterRipple)" opacity=".9">
+  <g opacity=".9">
 <ellipse cx="658" cy="678" rx="8" ry="14" transform="rotate(-20 658 678)" fill="#10263a" stroke="#2e4d6b" stroke-width=".9"/>
 <!-- отражение на Кинерете -->
 <ellipse cx="658" cy="678" rx="8" ry="14" transform="rotate(-20 658 678)" fill="url(#seaPattern)" opacity=".4"/>
@@ -434,15 +434,15 @@
     d="M912,-10 C918,80 905,160 900,226 C920,270 945,295 960,321 C1010,380 1060,430 1100,476 C1170,545 1240,580 1300,619 C1370,672 1440,730 1500,785 C1570,830 1640,865 1700,893"/>
   <g fill="none" stroke="#2d4a66" stroke-width="3" opacity=".95" stroke-linecap="round">
     <path d="M912,-10 C918,80 905,160 900,226 C920,270 945,295 960,321 C1010,380 1060,430 1100,476 C1170,545 1240,580 1300,619 C1370,672 1440,730 1500,785 C1570,830 1640,865 1700,893 C1760,912 1820,928 1868,938 C1884,944 1896,950 1906,958"/>
-    <path d="M1205,-10 C1230,100 1300,180 1410,256 C1470,310 1520,400 1550,476 C1548,530 1542,575 1540,619 C1600,700 1680,780 1750,833 C1800,870 1845,900 1872,922 C1884,930 1894,938 1902,948"/>
+    <path d="M1205,-10 C1230,100 1300,180 1410,256 C1470,310 1520,400 1550,476 C1560,542 1582,604 1620,670 C1662,744 1712,800 1750,833 C1800,870 1845,900 1872,922 C1884,930 1894,938 1902,948"/>
   </g>
   <g fill="none" stroke="#2d4a66" stroke-width="2" opacity=".8" stroke-linecap="round">
     <path d="M1003,194 C1000,250 998,310 1002,362 C1008,404 1040,444 1093,470"/>
     <path d="M1108,140 C1100,230 1110,330 1140,405 C1160,460 1196,530 1238,578"/>
-    <path d="M665,625 C660,645 658,656 657,667"/>
+    <!-- Иордан: единая нить в стандалон-блоке ниже -->
     <!-- Река Кишон (вдоль Изреельской долины к морю) -->
     <path d="M613,706 C603,712 595,720 588,728" fill="none" stroke="#2d4a66" stroke-width="1.4" opacity=".55" stroke-linecap="round"/>
-    <path d="M657,689 C650,720 662,755 655,797"/>
+    
     <path d="M232,1830 C226,1690 234,1550 230,1430 C220,1330 232,1200 226,1100 C222,1050 224,1020 226,1004"/>
     <path d="M226,1004 C214,972 198,938 182,908 C172,890 158,872 144,858" stroke-width="1.7"/>
     <path d="M226,1004 C234,968 246,932 260,900 C268,884 278,868 288,850" stroke-width="1.7"/>
@@ -486,23 +486,28 @@
     <text class="sea-label lbl-z2" x="668" y="670" font-size="4" letter-spacing=".14em" transform="rotate(60 668 670)">КИНЕРЕТ</text>
   <!-- Ярмук (приток Иордана) -->
   <path fill="none" stroke="#2d4a66" stroke-width="1.2" opacity=".5" stroke-linecap="round"
-    d="M702,690 C688,692 676,694 662,696" class="lbl-z2"/>
+    d="M702,690 C688,692 672,695 654,697" class="lbl-z2"/>
   <!-- зелёная зона у Кинерета -->
   <ellipse cx="652" cy="667" rx="10" ry="7" transform="rotate(-24 652 667)" fill="rgba(58,90,45,.10)" class="lbl-z1"/>
   <!-- Река Аббана/Барада (Дамаск) — оазис Гута -->
   <path fill="none" stroke="#2d4a66" stroke-width="1" opacity=".4" stroke-linecap="round" class="lbl-z2"
     d="M731,594 C714,590 695,588 675,590 C655,593 638,598 620,610"/>
   <text class="sea-label lbl-z2" x="685" y="583" font-size="4" fill="#4a80a0" opacity=".4" letter-spacing=".1em">АББАНА · אֲמָנָה</text>
+  <!-- Верхний Иордан: Дан/Хермон → Мером → Кинерет (единая нить озёр) -->
+  <path fill="none" stroke="#2d4a66" stroke-width="1.9" opacity=".78" stroke-linecap="round"
+    d="M668,620 C664,626 660,631 657,637"/>
+  <path fill="none" stroke="#2d4a66" stroke-width="1.9" opacity=".78" stroke-linecap="round"
+    d="M655,646 C656,652 659,659 663,665"/>
   <!-- Иордан: русло Кинерет → Мёртвое море (меандры Гхора) -->
-  <path fill="none" stroke="#2d4a66" stroke-width="1.5" opacity=".62" stroke-linecap="round"
-    d="M657,691 C655,700 657,708 655,716 C652,724 655,731 653,739 C650,747 653,755 651,763 C649,771 651,779 649,787 C648,790 647,793 646,795"/>
+  <path fill="none" stroke="#2d4a66" stroke-width="1.9" opacity=".78" stroke-linecap="round"
+    d="M654,692 C653,701 656,709 654,717 C651,725 654,732 652,740 C649,748 652,756 650,764 C648,772 650,780 648,788 C647,791 646,793 646,795"/>
   <!-- Иавок (вади Зарка) — Быт 32: переправа Иакова, Пенуэл -->
   <path fill="none" stroke="#2d4a66" stroke-width="1.1" opacity=".5" stroke-linecap="round" class="lbl-z2"
-    d="M712,748 C698,753 680,759 664,763 C660,764 656,764 653,763"/>
+    d="M712,748 C698,753 678,759 664,762 C660,763 656,763 651,763"/>
   <text class="sea-label lbl-z2" x="676" y="754" font-size="4.6" letter-spacing=".12em" transform="rotate(-14 676 754)" fill="#4a80a0" opacity=".55">ИАВОК</text>
   <!-- Арнон (вади Муджиб) — восточный приток Мёртвого моря -->
   <path fill="none" stroke="#2d4a66" stroke-width="1" opacity=".45" stroke-linecap="round" class="lbl-z2"
-    d="M700,843 C686,843 672,841 659,838"/>
+    d="M702,842 C688,841 672,838 657,835"/>
   <text class="sea-label lbl-z2" x="688" y="840" font-size="4.4" letter-spacing=".12em" transform="rotate(-3 688 840)" fill="#4a80a0" opacity=".5">АРНОН</text>
   <!-- Воды Мерома (озерцо Хуле) — Нав 11:5 -->
   <ellipse cx="656" cy="641" rx="3.4" ry="4.6" transform="rotate(-12 656 641)" fill="#10263a" opacity=".55" stroke="#2e4d6b" stroke-width=".5" class="lbl-z2"/>
