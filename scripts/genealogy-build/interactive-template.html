@@ -134,9 +134,11 @@
   .node .ovbadge{fill:#6d4b9a;stroke:var(--paper0);stroke-width:1.4px}
   .node .ovbadge-g{opacity:.82;transition:opacity .16s}
   .node:hover .ovbadge-g,.node.hl .ovbadge-g{opacity:1}
-  /* coverage tracker (режим народов) */
+  /* coverage tracker (режим народов) — кликабельно: подсветить узлы этой достоверности */
   #coverage{margin-top:16px;font-size:11.5px;color:var(--inkSoft)}
-  #coverage .cv{display:flex;align-items:center;gap:8px;padding:3px 0}
+  #coverage .cv{display:flex;align-items:center;gap:8px;padding:6px 8px;border-radius:8px;cursor:pointer;border:1px solid transparent;user-select:none;margin:0 -8px}
+  #coverage .cv:hover{background:color-mix(in srgb,var(--gold) 10%,transparent)}
+  #coverage .cv.on{border-color:var(--gold);background:color-mix(in srgb,var(--gold) 16%,transparent)}
   #coverage .cv i{width:10px;height:10px;border-radius:3px;flex:none;font-style:normal}
   #coverage .cv b{margin-left:auto;font-variant-numeric:tabular-nums;color:var(--ink)}
   .fbadge{display:inline-flex;align-items:center;gap:6px;font-size:11.5px;padding:3px 9px;border-radius:11px;border:1px solid currentColor}
@@ -290,7 +292,7 @@ for(const e of edges){if(e.kind==='leaf'||e.kind==='spine'){childrenOf.get(e.a.i
 const famColor = new Map(GRAPH.families.map(f=>[f.id,f.color]));
 const famName = new Map(GRAPH.families.map(f=>[f.id,f.ru]));
 const NATIONS = GRAPH.mode==='nations';
-let focusFam=null, selected=null, hovered=null, showEdges=true, showLabels=NATIONS, showHulls=true, searchHits=new Set();
+let focusFam=null, focusConf=null, selected=null, hovered=null, showEdges=true, showLabels=NATIONS, showHulls=true, searchHits=new Set();
 // узлы по семьям (для цветных облаков-кластеров, как на референсе карты)
 const famNodes=new Map();
 for(const n of nodes){ if(n.family&&n.family!=='spine'){ if(!famNodes.has(n.family))famNodes.set(n.family,[]); famNodes.get(n.family).push(n); } }
@@ -463,10 +465,11 @@ function loop(){step();render();requestAnimationFrame(loop);}
 
 // ---- highlighting ----
 function refresh(){
-  const anyFocus=focusFam||hovered||selected||searchHits.size;
+  const anyFocus=focusFam||focusConf||hovered||selected||searchHits.size;
   for(const n of nodes){
     let bright=true;
     if(focusFam) bright=(n.family===focusFam);
+    else if(focusConf) bright=(n.confidence===focusConf);
     else if(hovered){const h=byId.get(hovered);bright=(n.id===hovered||neighbors.get(hovered).has(n.id)||n.family===h.family);}
     else if(searchHits.size){bright=searchHits.has(n.id);}
     else if(selected){bright=(n.id===selected||neighbors.get(selected).has(n.id));}
@@ -478,16 +481,18 @@ function refresh(){
   for(const e of edges){
     let bright=true;
     if(focusFam) bright=(e.a.family===focusFam&&e.b.family===focusFam)||(e.color===famColor.get(focusFam));
+    else if(focusConf) bright=(e.b.confidence===focusConf);
     else if(hovered) bright=(e.a.id===hovered||e.b.id===hovered);
     else if(selected) bright=(e.a.id===selected||e.b.id===selected);
     else if(searchHits.size) bright=false;
-    e.el.style.opacity = showEdges ? ((focusFam||hovered||selected||searchHits.size)&&!bright?0.06:(e.kind==='spine'?.85:.5)) : 0;
+    e.el.style.opacity = showEdges ? ((focusFam||focusConf||hovered||selected||searchHits.size)&&!bright?0.06:(e.kind==='spine'?.85:.5)) : 0;
   }
   const hHov=hovered?byId.get(hovered):null, hSel=selected?byId.get(selected):null;
   for(const [fid,el] of hullEls){
     let op=0.07;
     if(!showHulls) op=0;
     else if(focusFam) op=(fid===focusFam)?0.18:0.018;
+    else if(focusConf) op=0.03;
     else if(hHov) op=(hHov.family===fid)?0.14:0.04;
     else if(hSel) op=(hSel.family===fid)?0.12:0.055;
     else if(searchHits.size) op=0.03;
@@ -567,7 +572,7 @@ function flash(id){const n=byId.get(id);n.vx+=(Math.sign(Math.random()-.5)||1)*2
 const famsEl=document.getElementById('fams');
 for(const f of GRAPH.families){const d=document.createElement('div');d.className='fam';d.dataset.fam=f.id;
   d.innerHTML=`<span class="sw" style="background:${f.color}"></span><span class="nm">${f.ru}</span>${f.count?`<span class="ct">${f.count}</span>`:''}`;
-  d.addEventListener('click',()=>{focusFam=(focusFam===f.id)?null:f.id;document.querySelectorAll('.fam').forEach(x=>x.classList.toggle('on',x.dataset.fam===focusFam));refresh();if(isMobile())setTimeout(closeSheets,260);});
+  d.addEventListener('click',()=>{focusFam=(focusFam===f.id)?null:f.id;focusConf=null;document.querySelectorAll('.fam').forEach(x=>x.classList.toggle('on',x.dataset.fam===focusFam));document.querySelectorAll('.cv').forEach(x=>x.classList.remove('on'));refresh();if(isMobile())setTimeout(closeSheets,260);});
   famsEl.appendChild(d);}
 
 // ---- search ----
@@ -582,7 +587,7 @@ function bindToggle(id,init,fn){const el=document.getElementById(id);let on=init
 bindToggle('tg-hulls',true,v=>{showHulls=v;for(const [,el] of hullEls)if(!v)el.style.opacity=0;refresh();});
 bindToggle('tg-edges',true,v=>{showEdges=v;refresh();});
 bindToggle('tg-labels',showLabels,v=>{showLabels=v;refresh();});
-document.getElementById('reset').addEventListener('click',()=>{for(const n of nodes){n.x=n.homeX;n.y=n.homeY;n.vx=n.vy=0;}focusFam=null;selected=null;searchHits=new Set();searchOrder=[];searchIdx=-1;q.value='';document.querySelectorAll('.fam').forEach(x=>x.classList.remove('on'));document.getElementById('detail').innerHTML='<div class="empty">Наведите на узел — увидите имя в оригинале.<br><br>Потяните узел мышью — он «резиново» вернётся домой.</div>';fit();refresh();if(isMobile())closeSheets();});
+document.getElementById('reset').addEventListener('click',()=>{for(const n of nodes){n.x=n.homeX;n.y=n.homeY;n.vx=n.vy=0;}focusFam=null;focusConf=null;selected=null;searchHits=new Set();searchOrder=[];searchIdx=-1;q.value='';document.querySelectorAll('.fam').forEach(x=>x.classList.remove('on'));document.querySelectorAll('.cv').forEach(x=>x.classList.remove('on'));document.getElementById('detail').innerHTML='<div class="empty">Наведите на узел — увидите имя в оригинале.<br><br>Потяните узел мышью — он «резиново» вернётся домой.</div>';fit();refresh();if(isMobile())closeSheets();});
 document.getElementById('theme').addEventListener('click',()=>{const cur=document.documentElement.getAttribute('data-theme')|| (matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light');const next=cur==='dark'?'light':'dark';document.documentElement.setAttribute('data-theme',next);document.getElementById('theme').textContent=next==='dark'?'☀':'☾';});
 
 // ---- мобильные шторки (боковые панели прячутся под экран, а не исчезают совсем) ----
@@ -594,9 +599,11 @@ scrimEl.addEventListener('click',closeSheets);
 document.querySelectorAll('.sheet-close').forEach(b=>b.addEventListener('click',closeSheets));
 document.getElementById('mob-fams').addEventListener('click',()=>openSheet(asideL));
 
-// ---- coverage tracker (что исследовано — режим народов) ----
+// ---- coverage tracker (что исследовано — режим народов): клик подсвечивает узлы этой достоверности ----
 if(GRAPH.coverage){const cv=GRAPH.coverage;const rows=[['certain','#4f7a4a','достоверно'],['probable','var(--gold)','вероятно'],['disputed','#b5643f','спорно'],['obscure','var(--inkFaint)','мало данных']];
-  document.getElementById('coverage').innerHTML='<div class="lab" style="margin-bottom:8px">Что исследовано</div>'+rows.map(([k,c,l])=>`<div class="cv"><i style="background:${c}"></i>${l}<b>${cv[k]||0}</b></div>`).join('');}
+  const covEl=document.getElementById('coverage');
+  covEl.innerHTML='<div class="lab" style="margin-bottom:8px">Что исследовано · клик — показать на карте</div>'+rows.map(([k,c,l])=>`<div class="cv" data-conf="${k}"><i style="background:${c}"></i>${l}<b>${cv[k]||0}</b></div>`).join('');
+  covEl.querySelectorAll('.cv').forEach(el=>el.addEventListener('click',()=>{focusConf=(focusConf===el.dataset.conf)?null:el.dataset.conf;focusFam=null;document.querySelectorAll('.fam').forEach(x=>x.classList.remove('on'));covEl.querySelectorAll('.cv').forEach(x=>x.classList.toggle('on',x.dataset.conf===focusConf));refresh();if(isMobile())setTimeout(closeSheets,260);}));}
 
 // ---- start ----
 document.getElementById('stat').textContent = NATIONS
