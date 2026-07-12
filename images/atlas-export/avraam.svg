@@ -79,14 +79,14 @@
 <!-- ============ TERRAIN ============ -->
 <g id="terrain" data-layer="base-geo">
   <rect x="-400" y="-400" width="2700" height="2230" fill="url(#landG)"></rect>
-  <!-- Terrain texture overlay для глубины рельефа -->
-  <rect x="-400" y="-400" width="2700" height="2230" fill="url(#richLandG)" opacity=".3" filter="url(#terrainTex)"></rect>
+  <!-- (удалён мёртвый rect с filter=url(#terrainTex): фильтр нигде не
+       определён, элемент по SVG-спеке не рендерился — broken reference) -->
 
   <!-- deserts / fertile tints -->
   <ellipse cx="1240" cy="1010" rx="520" ry="330" fill="url(#desertG)"></ellipse>
   <ellipse cx="470" cy="1130" rx="260" ry="220" fill="url(#desertG)"></ellipse>
   <ellipse cx="560" cy="930" rx="170" ry="110" fill="url(#desertG)"></ellipse>
-  <ellipse cx="1280" cy="520" rx="430" ry="200" fill="url(#fertileG)" transform="rotate(28 1280 520)"></ellipse>
+  <ellipse cx="1280" cy="520" rx="430" ry="200" fill="url(#fertileG)" transform="rotate(28 1280 520)" filter="url(#soft)"></ellipse>
   <ellipse cx="640" cy="700" rx="110" ry="240" fill="url(#fertileG)"></ellipse>
   <ellipse cx="220" cy="930" rx="120" ry="120" fill="url(#fertileG)"></ellipse>
   <!-- зелень дельты: веер от вершины (226,1004) К МОРЮ, по контуру рукавов -->
@@ -341,13 +341,15 @@
     <!-- Декоративная рамка-bounding box Ханаана -->
     <rect x="575" y="580" width="115" height="310" rx="8" fill="none" stroke="rgba(232,200,121,.06)" stroke-width="1.5" stroke-dasharray="4 6" class="lbl-z1" pointer-events="none"></rect>
     <text class="region-he" font-size="10"><textPath href="#canaanRidge" startOffset="64%">כְּנַעַן</textPath></text>
-    <text class="region-label" x="120" y="1040" font-size="20">ЕГИПЕТ</text>
+    <!-- макро-подпись СТРАНЫ — в глубине ЮЗ суши, вдали от точки-стана
+         «Египет» у дельты (иначе оба «Египта» стоят рядом = дубль) -->
+    <text class="region-label" x="105" y="1108" font-size="20">ЕГИПЕТ</text>
     <!-- Раамсес (Тель эд-Даба/Авар) — будущая карта Исхода -->
     <g class="lbl-z2" transform="translate(210,880)" opacity=".3">
       <circle r="2" fill="rgba(10,13,20,.7)" stroke="#c8a060" stroke-width=".7"></circle>
       <text x="5" y="4" font-size="4" fill="#c8a060" letter-spacing=".06em">РААМСЕС</text>
     </g>
-    <text class="region-he" x="135" y="1066" font-size="13">מִצְרַיִם</text>
+    <text class="region-he" x="120" y="1134" font-size="13">מִצְרַיִם</text>
     <text class="region-label" x="520" y="1170" font-size="14" letter-spacing=".3em">СИНАЙ</text>
     <!-- Вифлеем (Бейт-Лехем) — недалеко от Хеврона и Мории -->
     <text class="region-label lbl-z2" x="602" y="815" font-size="4.5" fill="#9aa2ae" opacity=".4" letter-spacing=".12em">ВИФЛЕЕМ · בֵּית לֶחֶם</text>
@@ -582,9 +584,9 @@
       <text y="39" text-anchor="middle" class="north-t" font-size="19.5">С</text>
     </g>
   </g>
-<rect x="70" y="20" width="1800" height="1200" fill="url(#sunGlow)" pointer-events="none"></rect>
-<rect x="70" y="20" width="1800" height="1200" fill="url(#edgeFog)" pointer-events="none"></rect>
-<rect x="70" y="20" width="1800" height="1200" filter="url(#parchmentGrain)" opacity=".5" pointer-events="none"></rect>
+<rect x="70" y="20" width="1800" height="1200" fill="url(#sunGlow)" pointer-events="none" class="paper-fx"></rect>
+<rect x="70" y="20" width="1800" height="1200" fill="url(#edgeFog)" pointer-events="none" class="paper-fx"></rect>
+<rect x="70" y="20" width="1800" height="1200" filter="url(#parchmentGrain)" opacity=".5" pointer-events="none" class="paper-fx paper-grain"></rect>
 <g class="graticule" aria-hidden="true"><line x1="201.0" y1="32.0" x2="201.0" y2="38.0" class="grat"></line><line x1="301.0" y1="32.0" x2="301.0" y2="42.5" class="grat"></line><text x="301.0" y="57.5" text-anchor="middle" class="grat-t" font-size="12.00">32°</text><line x1="401.0" y1="32.0" x2="401.0" y2="38.0" class="grat"></line><line x1="501.0" y1="32.0" x2="501.0" y2="42.5" class="grat"></line><text x="501.0" y="57.5" text-anchor="middle" class="grat-t" font-size="12.00">34°</text><line x1="601.0" y1="32.0" x2="601.0" y2="38.0" class="grat"></line><line x1="701.0" y1="32.0" x2="701.0" y2="42.5" class="grat"></line><text x="701.0" y="57.5" text-anchor="middle" class="grat-t" font-size="12.00">36°</text><line x1="801.0" y1="32.0" x2="801.0" y2="38.0" class="grat"></line><line x1="901.0" y1="32.0" x2="901.0" y2="42.5" class="grat"></line><text x="901.0" y="57.5" text-anchor="middle" class="grat-t" font-size="12.00">38°</text><line x1="1001.0" y1="32.0" x2="1001.0" y2="38.0" class="grat"></line><line x1="1101.0" y1="32.0" x2="1101.0" y2="42.5" class="grat"></line><text x="1101.0" y="57.5" text-anchor="middle" class="grat-t" font-size="12.00">40°</text><line x1="1201.0" y1="32.0" x2="1201.0" y2="38.0" class="grat"></line><line x1="1301.0" y1="32.0" x2="1301.0" y2="42.5" class="grat"></line><text x="1301.0" y="57.5" text-anchor="middle" class="grat-t" font-size="12.00">42°</text><line x1="1401.0" y1="32.0" x2="1401.0" y2="38.0" class="grat"></line><line x1="1501.0" y1="32.0" x2="1501.0" y2="42.5" class="grat"></line><text x="1501.0" y="57.5" text-anchor="middle" class="grat-t" font-size="12.00">44°</text><line x1="1601.0" y1="32.0" x2="1601.0" y2="38.0" class="grat"></line><line x1="1701.0" y1="32.0" x2="1701.0" y2="42.5" class="grat"></line><text x="1701.0" y="57.5" text-anchor="middle" class="grat-t" font-size="12.00">46°</text><line x1="1801.0" y1="32.0" x2="1801.0" y2="38.0" class="grat"></line><line x1="82.0" y1="893.6" x2="88.0" y2="893.6" class="grat"></line><line x1="1858.0" y1="893.6" x2="1852.0" y2="893.6" class="grat"></line><line x1="82.0" y1="773.6" x2="92.5" y2="773.6" class="grat"></line><text x="97.0" y="777.8" text-anchor="start" class="grat-t" font-size="12.00">32°</text><line x1="1858.0" y1="773.6" x2="1847.5" y2="773.6" class="grat"></line><text x="1843.0" y="777.8" text-anchor="end" class="grat-t" font-size="12.00">32°</text><line x1="82.0" y1="653.6" x2="88.0" y2="653.6" class="grat"></line><line x1="1858.0" y1="653.6" x2="1852.0" y2="653.6" class="grat"></line><line x1="82.0" y1="533.6" x2="92.5" y2="533.6" class="grat"></line><text x="97.0" y="537.8" text-anchor="start" class="grat-t" font-size="12.00">34°</text><line x1="1858.0" y1="533.6" x2="1847.5" y2="533.6" class="grat"></line><text x="1843.0" y="537.8" text-anchor="end" class="grat-t" font-size="12.00">34°</text><line x1="82.0" y1="413.6" x2="88.0" y2="413.6" class="grat"></line><line x1="1858.0" y1="413.6" x2="1852.0" y2="413.6" class="grat"></line><line x1="82.0" y1="293.6" x2="92.5" y2="293.6" class="grat"></line><text x="97.0" y="297.8" text-anchor="start" class="grat-t" font-size="12.00">36°</text><line x1="1858.0" y1="293.6" x2="1847.5" y2="293.6" class="grat"></line><text x="1843.0" y="297.8" text-anchor="end" class="grat-t" font-size="12.00">36°</text><line x1="82.0" y1="173.6" x2="88.0" y2="173.6" class="grat"></line><line x1="1858.0" y1="173.6" x2="1852.0" y2="173.6" class="grat"></line></g>
 <rect x="82" y="32" width="1776" height="1176" class="frame"></rect>
 </svg>
