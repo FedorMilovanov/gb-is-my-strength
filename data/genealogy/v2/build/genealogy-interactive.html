@@ -101,6 +101,11 @@
   #tooltip .t-mean b{color:var(--gold);font-weight:600}
   #tooltip .t-id{color:var(--inkSoft);font-size:11.5px;margin-top:2px}
   #tooltip .t-ref{color:var(--inkFaint);font-size:10.5px;margin-top:2px}
+  /* minimap */
+  #minimap{position:absolute;right:14px;bottom:14px;width:196px;height:150px;background:color-mix(in srgb,var(--panel) 90%,transparent);border:1px solid var(--panelEdge);border-radius:10px;box-shadow:0 4px 14px var(--shadow);overflow:hidden;cursor:crosshair;z-index:4}
+  #minimap .mm-lab{position:absolute;left:8px;top:5px;font-size:8.5px;letter-spacing:1.2px;color:var(--inkFaint);text-transform:uppercase;pointer-events:none}
+  #mm{width:100%;height:100%;display:block}
+  #mm-view{fill:color-mix(in srgb,var(--gold) 15%,transparent);stroke:var(--gold);stroke-width:1.4;rx:2}
   /* details */
   .details .card{background:var(--card);border:1px solid var(--cardEdge);border-radius:12px;padding:14px;box-shadow:0 3px 10px var(--shadow)}
   .details .dn{font-size:22px;font-weight:700;margin:0}
@@ -164,6 +169,7 @@
       <g id="g-nodes"></g>
     </g></svg>
     <div id="tooltip"></div>
+    <div id="minimap"><span class="mm-lab">Карта</span><svg id="mm" viewBox="0 0 196 150"><g id="mm-nodes"></g><rect id="mm-view" x="0" y="0" width="10" height="10"></rect></svg></div>
   </main>
 
   <aside class="right details">
@@ -188,6 +194,9 @@ const byId = new Map(nodes.map(n=>[n.id,n]));
 const edges = GRAPH.edges.map(e=>({...e, a:byId.get(e.a), b:byId.get(e.b)})).filter(e=>e.a&&e.b);
 const neighbors = new Map(nodes.map(n=>[n.id,new Set()]));
 for(const e of edges){neighbors.get(e.a.id).add(e.b.id);neighbors.get(e.b.id).add(e.a.id);}
+// направленные связи (родитель→ребёнок) из реальных рёбер — для панели «родословие»
+const parentsOf=new Map(nodes.map(n=>[n.id,new Set()])), childrenOf=new Map(nodes.map(n=>[n.id,new Set()]));
+for(const e of edges){if(e.kind==='leaf'||e.kind==='spine'){childrenOf.get(e.a.id).add(e.b.id);parentsOf.get(e.b.id).add(e.a.id);}}
 const famColor = new Map(GRAPH.families.map(f=>[f.id,f.color]));
 const famName = new Map(GRAPH.families.map(f=>[f.id,f.ru]));
 let focusFam=null, selected=null, hovered=null, showEdges=true, showLabels=false, showHulls=true, searchHits=new Set();
@@ -267,6 +276,32 @@ for(const n of nodes){ if(!n.lblWrap) continue;
   n.lblWrap.insertBefore(rect,n.lblWrap.firstChild);
 }
 
+// ---- minimap (карта-навигатор, как в референсе-атласе) ----
+const mm=document.getElementById('mm'), mmNodes=document.getElementById('mm-nodes'), mmView=document.getElementById('mm-view');
+const MMW=196, MMH=150, mmPad=10; let mmScale=1, mmOx=0, mmOy=0, mmDrag=false;
+(function mmSetup(){
+  const b=GRAPH.bbox, w=b.maxX-b.minX, h=b.maxY-b.minY;
+  mmScale=Math.min((MMW-mmPad*2)/w,(MMH-mmPad*2)/h);
+  mmOx=mmPad-b.minX*mmScale+((MMW-mmPad*2)-w*mmScale)/2;
+  mmOy=mmPad-b.minY*mmScale+((MMH-mmPad*2)-h*mmScale)/2;
+  for(const n of nodes){const c=mk('circle',{r:n.kind==='spine'?1.9:n.kind==='hub'?1.4:0.85,fill:n.kind==='spine'?'var(--spineGold)':n.color});n.mmDot=c;mmNodes.appendChild(c);}
+})();
+function mmUpdate(){
+  for(const n of nodes){if(!n.mmDot)continue;n.mmDot.setAttribute('cx',(n.x*mmScale+mmOx).toFixed(1));n.mmDot.setAttribute('cy',(n.y*mmScale+mmOy).toFixed(1));}
+  const r=svg.getBoundingClientRect();
+  const x0=(-vp.x)/vp.k*mmScale+mmOx, y0=(-vp.y)/vp.k*mmScale+mmOy;
+  const x1=(r.width-vp.x)/vp.k*mmScale+mmOx, y1=(r.height-vp.y)/vp.k*mmScale+mmOy;
+  mmView.setAttribute('x',x0.toFixed(1));mmView.setAttribute('y',y0.toFixed(1));
+  mmView.setAttribute('width',Math.max(4,x1-x0).toFixed(1));mmView.setAttribute('height',Math.max(4,y1-y0).toFixed(1));
+}
+function mmPanTo(ev){const r=mm.getBoundingClientRect();const mx=(ev.clientX-r.left)/r.width*MMW,my=(ev.clientY-r.top)/r.height*MMH;const wx=(mx-mmOx)/mmScale,wy=(my-mmOy)/mmScale;const sr=svg.getBoundingClientRect();vp.x=sr.width/2-wx*vp.k;vp.y=sr.height/2-wy*vp.k;applyVp();}
+mm.addEventListener('pointerdown',ev=>{ev.stopPropagation();mmDrag=true;mmPanTo(ev);});
+window.addEventListener('pointermove',ev=>{if(mmDrag)mmPanTo(ev);});
+window.addEventListener('pointerup',()=>{mmDrag=false;});
+// плавный перелёт вида к точке (для поиска/связей)
+function tweenVp(tx,ty,tk){const x0=vp.x,y0=vp.y,k0=vp.k;let t=0;(function st(){t+=0.11;const e=t>=1?1:1-Math.pow(1-t,3);vp.x=x0+(tx-x0)*e;vp.y=y0+(ty-y0)*e;vp.k=k0+(tk-k0)*e;applyVp();if(t<1)requestAnimationFrame(st);})();}
+function flyTo(n,zoom){const sr=svg.getBoundingClientRect();const k=zoom?Math.max(vp.k,1.35):vp.k;tweenVp(sr.width/2-n.x*k,sr.height/2-n.y*k,k);}
+
 // ---- physics ----
 const kHome=0.021, kEdge=0.006, damping=0.86, repel=1.0;
 function step(){
@@ -290,6 +325,7 @@ function render(){
   for(const e of edges){const a=e.a,b=e.b;const mx=(a.x+b.x)/2,my=(a.y+b.y)/2;const dx=b.x-a.x,dy=b.y-a.y;const nx=-dy,ny=dx;const l=Math.hypot(nx,ny)||1;const sag=Math.min(24,Math.hypot(dx,dy)*0.08);e.el.setAttribute('d',`M${a.x} ${a.y} Q ${mx+nx/l*sag} ${my+ny/l*sag} ${b.x} ${b.y}`);}
   for(const n of nodes){n.g.setAttribute('transform',`translate(${n.x} ${n.y})`);}
   if(dragNode){tether.setAttribute('x1',dragNode.homeX);tether.setAttribute('y1',dragNode.homeY);tether.setAttribute('x2',dragNode.x);tether.setAttribute('y2',dragNode.y);}
+  mmUpdate();
 }
 let settle=0;
 function loop(){step();render();requestAnimationFrame(loop);}
@@ -358,7 +394,14 @@ function showTip(n,ev){
 function hideTip(){tip.style.opacity=0;}
 
 // ---- details ----
-function selectNode(id){selected=id;refresh();const n=byId.get(id);const rel=[...neighbors.get(id)].map(i=>byId.get(i));
+const relLink=r=>`<a data-id="${r.id}"><span class="d" style="background:${r.kind==='spine'?'var(--spineGold)':r.color}"></span>${r.ru}<span style="margin-left:auto;color:var(--inkFaint);font-size:10.5px">${r.ref||''}</span></a>`;
+function selectNode(id){selected=id;refresh();const n=byId.get(id);
+  const par=[...parentsOf.get(id)].map(i=>byId.get(i)).filter(x=>x&&x.kind!=='hub');
+  const chi=[...childrenOf.get(id)].map(i=>byId.get(i)).filter(Boolean);
+  const up=n.kind==='spine'?'Выше по линии':'Родитель', dn=n.kind==='spine'?'Ниже по линии':(n.kind==='hub'?'В роду':'Дети');
+  const rel=(par.length||chi.length)
+    ? `${par.length?`<h3>${up}</h3>${par.map(relLink).join('')}`:''}${chi.length?`<h3>${dn} (${chi.length})</h3>${chi.map(relLink).join('')}`:''}`
+    : `<p class="empty" style="padding:6px 4px">Прямых связей в этой выборке нет.</p>`;
   document.getElementById('detail').innerHTML=`<div class="card">
     <div class="dn">${n.ru}${n.heb?`<span class="dheb">${n.heb}</span>`:''}</div>
     ${n.translit?`<div class="dtr">${n.translit}</div>`:''}
@@ -367,8 +410,8 @@ function selectNode(id){selected=id;refresh();const n=byId.get(id);const rel=[..
     <div class="dref">${n.ref||''}${n.am?' · '+n.am:''}</div>
     <span class="fbadge" style="color:${n.kind==='spine'?'var(--spineGold)':n.color}">${famName.get(n.family)||'хребет'}</span>
   </div>
-  <div class="rel"><h3>Связано (${rel.length})</h3>${rel.map(r=>`<a data-id="${r.id}"><span class="d" style="background:${r.kind==='spine'?'var(--spineGold)':r.color}"></span>${r.ru}<span style="margin-left:auto;color:var(--inkFaint);font-size:10.5px">${r.ref||''}</span></a>`).join('')}</div>`;
-  document.querySelectorAll('.rel a').forEach(a=>a.addEventListener('click',()=>{selectNode(a.dataset.id);flash(a.dataset.id);}));
+  <div class="rel">${rel}</div>`;
+  document.querySelectorAll('.rel a').forEach(a=>a.addEventListener('click',()=>{const t=byId.get(a.dataset.id);selectNode(a.dataset.id);flash(a.dataset.id);flyTo(t,false);}));
 }
 function flash(id){const n=byId.get(id);n.vx+=(Math.sign(Math.random()-.5)||1)*2.5;} // tiny nudge for life
 
@@ -381,9 +424,10 @@ for(const f of GRAPH.families){const d=document.createElement('div');d.className
 
 // ---- search ----
 const q=document.getElementById('q');
-q.addEventListener('input',()=>{const v=q.value.trim().toLowerCase();searchHits=new Set();if(v){for(const n of nodes)if(n.ru.toLowerCase().includes(v))searchHits.add(n.id);}refresh();
-  if(v&&searchHits.size){const f=byId.get([...searchHits][0]);for(const id of searchHits){const nn=byId.get(id);nn.vx+=0;}}
-});
+let searchOrder=[], searchIdx=-1;
+q.addEventListener('input',()=>{const v=q.value.trim().toLowerCase();searchHits=new Set();searchOrder=[];searchIdx=-1;if(v){for(const n of nodes)if(n.ru.toLowerCase().includes(v)){searchHits.add(n.id);searchOrder.push(n.id);}}refresh();});
+// Enter — перелёт к найденному; повторный Enter — к следующему совпадению по кругу
+q.addEventListener('keydown',e=>{if(e.key!=='Enter'||!searchOrder.length)return;e.preventDefault();searchIdx=(searchIdx+1)%searchOrder.length;const n=byId.get(searchOrder[searchIdx]);selectNode(n.id);flyTo(n,true);});
 
 // ---- toggles / buttons ----
 function bindToggle(id,init,fn){const el=document.getElementById(id);let on=init;el.setAttribute('aria-pressed',on);const set=()=>{on=!on;el.setAttribute('aria-pressed',on);fn(on);};el.addEventListener('click',set);el.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();set();}});}
