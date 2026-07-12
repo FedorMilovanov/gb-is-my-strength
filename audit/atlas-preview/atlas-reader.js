@@ -307,4 +307,27 @@
   dive.addEventListener('click', () => document.body.classList.toggle('dive'));
   document.addEventListener('keydown', (e) => { if (e.key === 'Escape') document.body.classList.remove('dive'); });
   (document.querySelector('.wrap') || document.body).appendChild(dive);
+
+  // ── Легенда, доступная на зуме (AV-018): фурнитура листа гаснет вблизи,
+  //    поэтому дублируем условные обозначения в сворачиваемую HTML-панель
+  const spineBtn = document.createElement('button');
+  spineBtn.className = 'dive-btn legend-btn';
+  spineBtn.title = 'Условные обозначения';
+  spineBtn.textContent = '☰';
+  const heroLabel = (window.ATLAS_LAYERS && window.ATLAS_LAYERS[0] && window.ATLAS_LAYERS[0].pathLabel) || 'путь героя';
+  const legendPanel = document.createElement('div');
+  legendPanel.className = 'legend-pop';
+  legendPanel.hidden = true;
+  legendPanel.innerHTML =
+    '<b>Условные обозначения</b>' +
+    '<i><span class="lg-route"></span>' + heroLabel + '</i>' +
+    '<i><span class="lg-dot"></span>город · стан</i>' +
+    '<i><span class="lg-cand"></span>локализация спорна</i>' +
+    '<i><span class="lg-arch"></span>археология</i>' +
+    '<i><span class="lg-war"></span>поход царей · Быт 14</i>' +
+    '<i><span class="lg-lot"></span>путь Лота · Быт 13:11</i>';
+  spineBtn.addEventListener('click', () => { legendPanel.hidden = !legendPanel.hidden; });
+  const wrap = document.querySelector('.wrap') || document.body;
+  wrap.appendChild(spineBtn);
+  wrap.appendChild(legendPanel);
 })();
