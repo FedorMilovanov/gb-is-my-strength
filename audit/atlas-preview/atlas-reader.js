@@ -250,7 +250,7 @@
   home.title = 'Весь лист (Esc)';
   home.textContent = '⌂';
   home.addEventListener('click', () => { vb = vb0.slice(); animate(); });
-  document.body.appendChild(home);
+  (document.querySelector('.wrap') || document.body).appendChild(home);
   document.addEventListener('keydown', (e) => {
     if (e.key !== 'Escape') return;
     const panelOpen = panel.classList.contains('do--on') || document.body.classList.contains('dive');
@@ -263,5 +263,5 @@
   dive.textContent = '⛶';
   dive.addEventListener('click', () => document.body.classList.toggle('dive'));
   document.addEventListener('keydown', (e) => { if (e.key === 'Escape') document.body.classList.remove('dive'); });
-  document.body.appendChild(dive);
+  (document.querySelector('.wrap') || document.body).appendChild(dive);
 })();
