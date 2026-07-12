@@ -36,6 +36,8 @@ function deriveConfidence(n) {
   return 'probable';
 }
 const stripG = s => s ? String(s).replace(/[«»]/g, '').trim() : null;
+// ссылки в данных — англ. сокращения (Gen.10.7); в интерфейсе везде русский (Быт 10:7)
+const toRuRef = ref => { const m = /^Gen\.(\d+)\.(\d+)$/.exec(ref); return m ? `Быт ${m[1]}:${m[2]}` : ref; };
 
 async function main() {
   const doc = JSON.parse(await readFile(path.join(OUT, 'table-of-nations.json'), 'utf8'));
@@ -81,7 +83,7 @@ async function main() {
     const isRoot = node.kind === 'root', isBranch = node.kind === 'branch';
     const conf = node.kind === 'nation' ? deriveConfidence(node) : null;
     nodes.push({
-      id, ru: node.ru, ref: node.ref, kind: isRoot ? 'spine' : isBranch ? 'hub' : 'leaf',
+      id, ru: node.ru, ref: toRuRef(node.ref), kind: isRoot ? 'spine' : isBranch ? 'hub' : 'leaf',
       family: isRoot ? 'spine' : node.branch,
       color: isRoot ? NOAH_GOLD : (isBranch ? BRANCH[node.en].color : branchColor(node.branch)),
       r: isRoot ? 30 : isBranch ? 20 : 8.5,
@@ -110,6 +112,20 @@ async function main() {
   const coverage = { certain: 0, probable: 0, disputed: 0, obscure: 0 };
   for (const n of nats) coverage[n.confidence] = (coverage[n.confidence] ?? 0) + 1;
 
+  // ── «народы смешались»: документированные повторы имён / напряжения в тексте ──
+  const byId = new Map(nodes.map(n => [n.id, n]));
+  const overlaps = (doc._meta.nameOverlaps ?? []).map(ov => {
+    const members = ov.refs.map(r => {
+      const id = 'nat:' + r.en + '@' + r.ref;
+      const node = byId.get(id);
+      if (!node) throw new Error(`nameOverlaps[${ov.id}]: узел ${id} не найден в дереве`);
+      return { id: node.id, ru: node.ru, ref: node.ref, forefather: node.forefather, color: node.color, kind: node.kind };
+    });
+    for (const m of members) byId.get(m.id).overlap = ov.id;
+    return { id: ov.id, title: ov.title, kind: ov.kind, confidence: ov.confidence,
+      note: ov.note, sources: ov.sources, mythWatch: ov.mythWatch, members };
+  });
+
   const families = [
     { id: 'spine', ru: 'Ной', color: NOAH_GOLD, icon: 'ark' },
     ...Object.values(BRANCH).map(b => ({ id: b.id, ru: 'Народы от ' + b.ru, color: b.color, icon: b.icon,
@@ -123,12 +139,13 @@ async function main() {
     bbox: { minX: Math.min(...xs), maxX: Math.max(...xs), minY: Math.min(...ys), maxY: Math.max(...ys), cx: LEFT },
     coverage,
     iconDefs: iconSymbolDefs(),
-    families, nodes, edges,
+    families, nodes, edges, overlaps,
     counts: { nodes: nodes.length, edges: edges.length, nations: nats.length },
   };
   await writeFile(path.join(OUT, 'build', 'nations-graph.json'), JSON.stringify(graph, null, 1) + '\n');
   console.log(`[build-nations] узлов ${nodes.length}, народов ${nats.length}, рёбер ${edges.length}`);
   console.log(`  достоверность: certain ${coverage.certain} · probable ${coverage.probable} · disputed ${coverage.disputed} · obscure ${coverage.obscure}`);
+  console.log(`  народы смешались: ${overlaps.length} случая (${overlaps.map(o => o.id).join(', ')})`);
 }
 
 main().catch(e => { console.error(e); process.exit(1); });
