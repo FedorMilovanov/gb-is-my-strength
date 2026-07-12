@@ -579,9 +579,13 @@ function sheetCss() {
   #sheet-svg text.lbl-z2, #sheet-svg g.lbl-z2{opacity:0;transition:opacity .3s}
   svg.z2 text.lbl-z2, svg.z2 g.lbl-z2{opacity:.85}
   svg.z3 text.lbl-z2, svg.z3 g.lbl-z2, svg.z4 text.lbl-z2, svg.z4 g.lbl-z2{opacity:.9}
-  /* крупные надписи базы (моря/регионы без lbl-классов) гаснут при близком зуме */
+  /* крупные надписи базы (моря/макрорегионы без lbl-классов) — хороши как фоновый
+     "водяной знак" на обзоре, но перечёркивают локальные подписи при малейшем
+     приближении: гасим уже на первой ступени зума, а не только с z3 */
+  svg.zoomed text.sea-label:not(.lbl-z1):not(.lbl-z2),
+  svg.zoomed text.region-label:not(.lbl-z1):not(.lbl-z2){opacity:.45}
   svg.z3 text.sea-label:not(.lbl-z1):not(.lbl-z2),
-  svg.z3 text.region-label:not(.lbl-z1):not(.lbl-z2){opacity:.25}
+  svg.z3 text.region-label:not(.lbl-z1):not(.lbl-z2){opacity:.15}
   svg.z4 text.sea-label:not(.lbl-z1):not(.lbl-z2),
   svg.z4 text.region-label:not(.lbl-z1):not(.lbl-z2){opacity:0}
   svg.z3 text.region-he, svg.z4 text.region-he{opacity:.1}
