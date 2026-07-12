@@ -24,7 +24,8 @@
   <ellipse cx="1280" cy="520" rx="430" ry="200" fill="url(#fertileG)" transform="rotate(28 1280 520)"/>
   <ellipse cx="640" cy="700" rx="110" ry="240" fill="url(#fertileG)"/>
   <ellipse cx="220" cy="930" rx="120" ry="120" fill="url(#fertileG)"/>
-  <path fill="url(#fertileG)" d="M226,1014 C196,964 168,916 142,868 L304,860 C280,912 252,964 226,1014 Z"/>
+  <!-- зелень дельты: веер от вершины (226,1004) К МОРЮ, по контуру рукавов -->
+  <path fill="url(#fertileG)" d="M226,1008 C202,958 174,910 148,862 L290,854 C262,908 240,958 226,1008 Z"/>
 
   <!-- mountain ridges (decorative) -->
   <g stroke="#6b6248" stroke-width="2" fill="none" opacity=".14" filter="url(#soft)">
@@ -128,25 +129,11 @@
 </g>
 <!-- Паттерн волн на Красном море -->
 <path fill="url(#seaPattern)" opacity=".3" d="M424,1012 C418,1024 420,1044 428,1070 C440,1112 462,1170 490,1230 C504,1258 516,1278 526,1292 C548,1340 584,1392 622,1430 C660,1490 692,1560 714,1640 C730,1702 740,1768 744,1830 L1110,1830 C1064,1740 1018,1640 974,1546 C946,1486 920,1456 900,1430 C860,1402 818,1368 762,1318 C740,1298 722,1278 708,1258 C692,1190 678,1110 670,1044 C668,1030 660,1022 652,1028 C644,1100 632,1190 614,1262 C606,1290 596,1300 580,1288 C560,1240 532,1160 506,1090 C494,1056 480,1028 466,1016 C452,1004 432,1000 424,1012 Z"/>
-  <!-- Nile delta hint -->
-  <!-- Нил с waterRipple -->
-  <g filter="url(#waterRipple)" opacity=".65">
-    <!-- Нил — основное русло -->
-    <path d="M220,852 C222,870 224,892 226,915 C228,938 230,958 232,975" fill="none" stroke="#2d4a66" stroke-width="4" stroke-linecap="round"/>
-    <!-- Дельта — пять рукавов, разведены по углам от вершины сразу (не идут
-         пучком) — иначе близкие рукава сливаются в одну жирную линию;
-         отдельной заливки-веера нет — она не совпадала с реальной шириной
-         русел и читалась как лишний технический полигон -->
-    <path d="M230,970 C198,978 168,996 152,1016" fill="none" stroke="#2d4a66" stroke-width="1.5" stroke-linecap="round" opacity=".5"/>
-    <path d="M230,971 C214,982 198,997 184,1011" fill="none" stroke="#2d4a66" stroke-width="1.8" stroke-linecap="round" opacity=".58"/>
-    <path d="M230,972 C229,988 227,1002 225,1015" fill="none" stroke="#2d4a66" stroke-width="1.3" stroke-linecap="round" opacity=".38"/>
-    <path d="M230,971 C247,982 262,997 276,1011" fill="none" stroke="#2d4a66" stroke-width="1.8" stroke-linecap="round" opacity=".54"/>
-    <path d="M230,970 C263,978 292,996 307,1016" fill="none" stroke="#2d4a66" stroke-width="1.5" stroke-linecap="round" opacity=".48"/>
-    <!-- Нил — лёгкий glow -->
-    <path d="M220,852 C222,870 224,892 226,915 C228,938 230,958 232,975" fill="none" stroke="#4a80a8" stroke-width="8" stroke-linecap="round" opacity=".08" filter="url(#soft)"/>
-    <text class="region-label lbl-z1" x="184" y="890" font-size="6" fill="#7fa7c4" opacity=".55" letter-spacing=".15em">ДЕЛЬТА НИЛА</text>
-    <text class="region-label lbl-z2" x="184" y="900" font-size="5" fill="#7fa7c4" opacity=".45" letter-spacing=".1em">יְאוֹר · Нил</text>
-  </g>
+  <!-- Нил живёт ОДНОЙ системой в группе рек ниже (русло с юга + веер рукавов
+       к морю). Здесь остаются только подписи дельты: второй параллельный Нил
+       с waterRipple дублировал легаси-русло и дал «сдвоенную линию» -->
+  <text class="region-label lbl-z1" x="176" y="932" font-size="6" fill="#7fa7c4" opacity=".55" letter-spacing=".15em">ДЕЛЬТА НИЛА</text>
+  <text class="region-label lbl-z2" x="176" y="942" font-size="5" fill="#7fa7c4" opacity=".45" letter-spacing=".1em">יְאוֹר · Нил</text>
   
 
   <!-- Persian Gulf -->
@@ -191,9 +178,12 @@
     <path d="M613,706 C595,712 575,720 555,728 C535,736 510,738 490,735 C468,730 445,720 420,710" fill="none" stroke="#2d4a66" stroke-width="1.4" opacity=".55" stroke-linecap="round"/>
     
     <path d="M232,1830 C226,1690 234,1550 230,1430 C220,1330 232,1200 226,1100 C222,1050 224,1020 226,1004"/>
+    <!-- Дельта: пять рукавов веером К МОРЮ от вершины (226,1004), асимметрично -->
     <path d="M226,1004 C214,972 198,938 182,908 C172,890 158,872 144,858" stroke-width="1.7"/>
-    <path d="M226,1004 C234,968 246,932 260,900 C268,884 278,868 288,850" stroke-width="1.7"/>
+    <path d="M226,1004 C218,966 205,925 188,880" stroke-width="1.2" opacity=".55"/>
     <path d="M226,1004 C224,960 222,910 220,852" stroke-width="1.4" opacity=".7"/>
+    <path d="M226,1004 C231,963 241,919 254,876" stroke-width="1.2" opacity=".5"/>
+    <path d="M226,1004 C234,968 246,932 260,900 C268,884 278,868 288,850" stroke-width="1.7"/>
   </g>
 
   <!-- sea & region labels -->
@@ -302,7 +292,7 @@
   <!-- Истоки Евфрата и Тигра (Анатолия) -->
   
   
-    <text class="region-he" x="1235" y="430" font-size="15" transform="rotate(22 1235 430)">אֲרַם נַהֲרַיִם</text>
+    <text class="region-he" x="1222" y="468" font-size="15" transform="rotate(22 1222 468)">אֲרַם נַהֲרַיִם</text>
     <text class="region-label" font-size="13" letter-spacing=".48em"><textPath href="#canaanRidge" startOffset="6%">Х&#160;А&#160;Н&#160;А&#160;А&#160;Н</textPath></text>
     <!-- Декоративная рамка-bounding box Ханаана -->
     <rect x="575" y="580" width="115" height="310" rx="8"

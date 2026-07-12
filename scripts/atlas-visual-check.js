@@ -59,6 +59,34 @@ const T = {
   });
   fails.push(...domIssues.map((m) => `[dom] ${m}`));
 
+  // Сухопутные маршруты против воды: семплируем нити и проверяем попадание
+  // в ЗАЛИВКИ водоёмов (isPointInFill в user units). Фоновая rect-подложка
+  // моря не в счёт — только реальные фигуры воды (моря, Киннерет, Хула).
+  // Допуск: единичные касания берега не валят гейт, валит серия ≥3 подряд.
+  const waterIssues = await pg.evaluate(() => {
+    const svg = document.getElementById('sheet-svg');
+    const water = [...svg.querySelectorAll('g.base path[fill="url(#seaG)"], g.base ellipse[fill="#10263a"]')];
+    const out = [];
+    const pt = svg.createSVGPoint();
+    for (const sel of ['path.route', 'path.war-route']) {
+      for (const line of svg.querySelectorAll(sel)) {
+        const L = line.getTotalLength();
+        if (L < 60) continue; // образцы легенды и стрелки
+        let run = 0, worst = 0, at = null;
+        for (let t = 0; t <= L; t += 4) {
+          const p = line.getPointAtLength(t);
+          pt.x = p.x; pt.y = p.y;
+          const wet = water.some((w) => w.isPointInFill(pt));
+          if (wet) { run++; if (run > worst) { worst = run; at = [Math.round(p.x), Math.round(p.y)]; } }
+          else run = 0;
+        }
+        if (worst >= 3) out.push(`${sel} идёт по воде ~${worst * 4} юнитов у (${at})`);
+      }
+    }
+    return out;
+  });
+  fails.push(...waterIssues.map((m) => `[water] ${m}`));
+
   for (const zf of ZOOMS) {
     await pg.evaluate((z) => {
       const svg = document.getElementById('sheet-svg');
