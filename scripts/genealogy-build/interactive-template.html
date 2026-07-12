@@ -110,7 +110,24 @@
   .details .dmean .k{display:block;font-size:9.5px;letter-spacing:1.4px;color:var(--inkFaint);text-transform:uppercase;margin-bottom:2px}
   .details .did{color:var(--inkSoft);font-size:12.5px;margin:6px 0}
   .details .did b{color:var(--gold);font-weight:600}
+  .details .dfore{font-size:11.5px;color:var(--inkSoft);margin:2px 0 8px}
+  .details .dfore b{color:var(--ink)}
+  .details .dconf{display:inline-flex;align-items:center;gap:6px;font-size:10.5px;letter-spacing:.3px;padding:3px 9px;border-radius:11px;margin:2px 0}
+  .details .dconf.certain{color:#4f7a4a;border:1px solid #4f7a4a;background:color-mix(in srgb,#4f7a4a 12%,transparent)}
+  .details .dconf.probable{color:var(--gold);border:1px solid var(--gold);background:color-mix(in srgb,var(--gold) 12%,transparent)}
+  .details .dconf.disputed{color:#b5643f;border:1px dashed #b5643f;background:color-mix(in srgb,#b5643f 9%,transparent)}
+  .details .dconf.obscure{color:var(--inkFaint);border:1px dotted var(--inkFaint)}
+  .details .dregion{font-size:12px;color:var(--inkSoft);margin:7px 0}
+  .details .dspravka{font-size:12.5px;line-height:1.52;color:var(--ink);margin:8px 0}
+  .details .dsrc{font-size:10px;color:var(--inkFaint);margin:6px 0;letter-spacing:.2px}
+  .details .dmyth{font-size:11.5px;line-height:1.45;color:var(--ink);margin:9px 0;padding:8px 10px;border-radius:8px;background:color-mix(in srgb,#b5643f 13%,transparent);border-left:2px solid #b5643f}
+  .details .dmyth b{color:#b5643f}
   .details .dref{color:var(--inkFaint);font-size:12px;margin:6px 0 10px}
+  /* coverage tracker (режим народов) */
+  #coverage{margin-top:16px;font-size:11.5px;color:var(--inkSoft)}
+  #coverage .cv{display:flex;align-items:center;gap:8px;padding:3px 0}
+  #coverage .cv i{width:10px;height:10px;border-radius:3px;flex:none;font-style:normal}
+  #coverage .cv b{margin-left:auto;font-variant-numeric:tabular-nums;color:var(--ink)}
   .fbadge{display:inline-flex;align-items:center;gap:6px;font-size:11.5px;padding:3px 9px;border-radius:11px;border:1px solid currentColor}
   .rel h3{font-size:10.5px;letter-spacing:1.4px;color:var(--inkFaint);text-transform:uppercase;margin:16px 0 8px}
   .rel a{display:flex;align-items:center;gap:8px;padding:5px 6px;border-radius:7px;color:var(--ink);text-decoration:none;font-size:12.5px;cursor:pointer}
@@ -147,6 +164,7 @@
       <div class="tg"><span>Показывать связи</span><span class="sw-tg" id="tg-edges" role="button" aria-pressed="true" tabindex="0"></span></div>
       <div class="tg"><span>Подписи листьев</span><span class="sw-tg" id="tg-labels" role="button" aria-pressed="false" tabindex="0"></span></div>
     </div>
+    <div id="coverage"></div>
   </aside>
 
   <main>
@@ -186,6 +204,7 @@
 <script>
 const GRAPH = /*__GRAPH__*/;
 const SVGNS="http://www.w3.org/2000/svg";
+const CONF={certain:'отождествление достоверно',probable:'вероятное отождествление',disputed:'спорно — мнения расходятся',obscure:'малоизвестно — данных мало'};
 const reduceMotion = matchMedia("(prefers-reduced-motion: reduce)").matches;
 
 // ---- state ----
@@ -199,7 +218,8 @@ const parentsOf=new Map(nodes.map(n=>[n.id,new Set()])), childrenOf=new Map(node
 for(const e of edges){if(e.kind==='leaf'||e.kind==='spine'){childrenOf.get(e.a.id).add(e.b.id);parentsOf.get(e.b.id).add(e.a.id);}}
 const famColor = new Map(GRAPH.families.map(f=>[f.id,f.color]));
 const famName = new Map(GRAPH.families.map(f=>[f.id,f.ru]));
-let focusFam=null, selected=null, hovered=null, showEdges=true, showLabels=false, showHulls=true, searchHits=new Set();
+const NATIONS = GRAPH.mode==='nations';
+let focusFam=null, selected=null, hovered=null, showEdges=true, showLabels=NATIONS, showHulls=true, searchHits=new Set();
 // узлы по семьям (для цветных облаков-кластеров, как на референсе карты)
 const famNodes=new Map();
 for(const n of nodes){ if(n.family&&n.family!=='spine'){ if(!famNodes.has(n.family))famNodes.set(n.family,[]); famNodes.get(n.family).push(n); } }
@@ -260,6 +280,8 @@ for(const n of nodes){
   if(n.kind==='spine'){g.appendChild(mk('circle',{r:n.r+ (n.messiah?11:7),fill:'var(--goldGlow)',opacity:n.messiah?.30:.15}));}
   // медальон: круг-основа
   const c=mk('circle',{r:n.r,fill:n.kind==='spine'?'var(--spineGold)':n.color,'stroke-width':n.kind==='leaf'?1.2:2});
+  // достоверность отождествления (режим народов): спорное — пунктир, малоизвестное — бледнее
+  if(n.kind==='leaf'&&n.confidence){if(n.confidence==='disputed'){c.setAttribute('stroke','#b5643f');c.setAttribute('stroke-dasharray','2.2 1.8');c.setAttribute('stroke-width',1.4);}if(n.confidence==='obscure'){c.setAttribute('fill-opacity','0.4');}}
   n.circle=c;g.appendChild(c);
   if(big){
     // блик-подсветка сверху (объём) + внутреннее кольцо-медальон
@@ -311,7 +333,8 @@ function tweenVp(tx,ty,tk){const x0=vp.x,y0=vp.y,k0=vp.k;let t=0;(function st(){
 function flyTo(n,zoom){const sr=svg.getBoundingClientRect();const k=zoom?Math.max(vp.k,1.35):vp.k;tweenVp(sr.width/2-n.x*k,sr.height/2-n.y*k,k);}
 
 // ---- physics ----
-const kHome=0.021, kEdge=0.006, damping=0.86, repel=1.0;
+// режим народов — аккуратная дендрограмма: сильнее держим «дом», слабее расталкивание
+const kHome=NATIONS?0.05:0.021, kEdge=NATIONS?0.002:0.006, damping=0.86, repel=NATIONS?0.16:1.0;
 function step(){
   // forces
   for(const n of nodes){ if(n.drag)continue; n.vx+=(n.homeX-n.x)*kHome; n.vy+=(n.homeY-n.y)*kHome; }
@@ -414,7 +437,13 @@ function selectNode(id){selected=id;refresh();const n=byId.get(id);
     <div class="dn">${n.ru}${n.heb?`<span class="dheb">${n.heb}</span>`:''}</div>
     ${n.translit?`<div class="dtr">${n.translit}</div>`:''}
     ${n.meaning?`<div class="dmean"><span class="k">Что значит имя</span>«${n.meaning}»</div>`:''}
-    ${n.ident?`<div class="did">Этим именем в Библии названы <b>${n.ident}</b></div>`:''}
+    ${n.forefather&&n.forefather.length?`<div class="dfore">Родоначальник: <b>${n.forefather.join(' › ')}</b></div>`:''}
+    ${n.ident?`<div class="did">Отождествление: <b>${n.ident}</b></div>`:''}
+    ${n.confidence?`<div class="dconf ${n.confidence}">${CONF[n.confidence]||n.confidence}</div>`:''}
+    ${n.region?`<div class="dregion">Где жили: ${n.region}</div>`:''}
+    ${n.spravka?`<div class="dspravka">${n.spravka}</div>`:''}
+    ${n.mythWatch?`<div class="dmyth"><b>Не путать с мифом:</b> ${n.mythWatch}</div>`:''}
+    ${n.sources&&n.sources.length?`<div class="dsrc">Источники: ${n.sources.join(' · ')}</div>`:''}
     <div class="dref">${n.ref||''}${n.am?' · '+n.am:''}</div>
     <span class="fbadge" style="color:${n.kind==='spine'?'var(--spineGold)':n.color}">${famName.get(n.family)||'хребет'}</span>
   </div>
@@ -441,12 +470,18 @@ q.addEventListener('keydown',e=>{if(e.key!=='Enter'||!searchOrder.length)return;
 function bindToggle(id,init,fn){const el=document.getElementById(id);let on=init;el.setAttribute('aria-pressed',on);const set=()=>{on=!on;el.setAttribute('aria-pressed',on);fn(on);};el.addEventListener('click',set);el.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();set();}});}
 bindToggle('tg-hulls',true,v=>{showHulls=v;for(const [,el] of hullEls)if(!v)el.style.opacity=0;refresh();});
 bindToggle('tg-edges',true,v=>{showEdges=v;refresh();});
-bindToggle('tg-labels',false,v=>{showLabels=v;refresh();});
+bindToggle('tg-labels',showLabels,v=>{showLabels=v;refresh();});
 document.getElementById('reset').addEventListener('click',()=>{for(const n of nodes){n.x=n.homeX;n.y=n.homeY;n.vx=n.vy=0;}focusFam=null;selected=null;searchHits=new Set();searchOrder=[];searchIdx=-1;q.value='';document.querySelectorAll('.fam').forEach(x=>x.classList.remove('on'));document.getElementById('detail').innerHTML='<div class="empty">Наведите на узел — увидите имя в оригинале.<br><br>Потяните узел мышью — он «резиново» вернётся домой.</div>';fit();refresh();});
 document.getElementById('theme').addEventListener('click',()=>{const cur=document.documentElement.getAttribute('data-theme')|| (matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light');const next=cur==='dark'?'light':'dark';document.documentElement.setAttribute('data-theme',next);document.getElementById('theme').textContent=next==='dark'?'☀':'☾';});
 
+// ---- coverage tracker (что исследовано — режим народов) ----
+if(GRAPH.coverage){const cv=GRAPH.coverage;const rows=[['certain','#4f7a4a','достоверно'],['probable','var(--gold)','вероятно'],['disputed','#b5643f','спорно'],['obscure','var(--inkFaint)','мало данных']];
+  document.getElementById('coverage').innerHTML='<div class="lab" style="margin-bottom:8px">Что исследовано</div>'+rows.map(([k,c,l])=>`<div class="cv"><i style="background:${c}"></i>${l}<b>${cv[k]||0}</b></div>`).join('');}
+
 // ---- start ----
-document.getElementById('stat').textContent=`${nodes.length} узлов · ${GRAPH.families.length} семейств · демо-выборка из 3056 имён`;
+document.getElementById('stat').textContent = NATIONS
+  ? `Таблица народов · Быт 10 · ${GRAPH.counts.nations} народов · структура достоверна, отождествления честно размечены`
+  : `${nodes.length} узлов · ${GRAPH.families.length} семейств · демо-выборка из 3056 имён`;
 // scatter-in on load for a premium settle (unless reduced motion)
 if(!reduceMotion){for(const n of nodes){const a=Math.random()*6.283,d=90+Math.random()*120;n.x=n.homeX+Math.cos(a)*d;n.y=n.homeY+Math.sin(a)*d;}}
 window.addEventListener('resize',fit);
