@@ -442,20 +442,24 @@ function renderSheet(route, opts) {
   const legY = y0 + H - 36 * k;
   const hasWar = !!(route.campaign && (route.campaign.places || []).length);
   const legOvl = (route.overlays || []).find(o => o.legend && o.label);
-  const legW = 372 + (hasWar ? 140 : 0) + (legOvl ? 36 + legOvl.label.length * 5.6 : 0);
+  const heroPathLabel = (route.layers && route.layers[0] && (route.layers[0].pathLabel || `путь ${route.layers[0].label}`)) || 'маршрут';
+  const heroOff = 250 + Math.max(0, heroPathLabel.length - 24) * 8;
+  const legW = 372 + heroOff + (hasWar ? 140 : 0) + (legOvl ? 36 + legOvl.label.length * 5.6 : 0);
   const legend = `
   <g class="legend">
     <rect x="${x0 + 24 * k}" y="${legY - 14 * k}" width="${(legW * k).toFixed(1)}" height="${30 * k}" rx="${6 * k}" class="plate"/>
-    <circle cx="${x0 + 42 * k}" cy="${legY + 1 * k}" r="${4.2 * k}" class="pl-city"/>
-    <text x="${x0 + 52 * k}" y="${legY + 5 * k}" class="leg-t" font-size="${10.5 * k}">город · стан</text>
-    <circle cx="${x0 + 132 * k}" cy="${legY + 1 * k}" r="${4.6 * k}" class="pl-cand"/>
-    <text x="${x0 + 142 * k}" y="${legY + 5 * k}" class="leg-t" font-size="${10.5 * k}">локализация спорна</text>
-    <rect x="${x0 + 268 * k}" y="${legY - 3 * k}" width="${8 * k}" height="${8 * k}" transform="rotate(45 ${x0 + 272 * k} ${legY + 1 * k})" class="wp-dot"/>
-    <text x="${x0 + 282 * k}" y="${legY + 5 * k}" class="leg-t" font-size="${10.5 * k}">археология</text>${hasWar ? `
-    <path d="M${x0 + 352 * k},${legY - 2 * k} l${6 * k},${6 * k} m${-6 * k},0 l${6 * k},${-6 * k}" class="war-x"/>
-    <text x="${x0 + 364 * k}" y="${legY + 5 * k}" class="leg-t" font-size="${10.5 * k}">поход царей · Быт 14</text>` : ''}${legOvl ? `
-    <path d="M${x0 + (hasWar ? 512 : 372) * k},${legY + 1 * k} h${22 * k}" class="ovl ovl-${legOvl.style || 'ctxpath'}"/>
-    <text x="${x0 + ((hasWar ? 512 : 372) + 30) * k}" y="${legY + 5 * k}" class="leg-t" font-size="${(10.5 * k).toFixed(2)}">${esc(legOvl.label)}</text>` : ''}
+    <path d="M${x0 + 34 * k},${legY + 1 * k} h${26 * k}" class="route"/>
+    <text x="${x0 + 66 * k}" y="${legY + 5 * k}" class="leg-t" font-size="${10.5 * k}">${esc(heroPathLabel)}</text>
+    <circle cx="${x0 + (42 + heroOff) * k}" cy="${legY + 1 * k}" r="${4.2 * k}" class="pl-city"/>
+    <text x="${x0 + (52 + heroOff) * k}" y="${legY + 5 * k}" class="leg-t" font-size="${10.5 * k}">город · стан</text>
+    <circle cx="${x0 + (132 + heroOff) * k}" cy="${legY + 1 * k}" r="${4.6 * k}" class="pl-cand"/>
+    <text x="${x0 + (142 + heroOff) * k}" y="${legY + 5 * k}" class="leg-t" font-size="${10.5 * k}">локализация спорна</text>
+    <rect x="${x0 + (268 + heroOff) * k}" y="${legY - 3 * k}" width="${8 * k}" height="${8 * k}" transform="rotate(45 ${x0 + (272 + heroOff) * k} ${legY + 1 * k})" class="wp-dot"/>
+    <text x="${x0 + (282 + heroOff) * k}" y="${legY + 5 * k}" class="leg-t" font-size="${10.5 * k}">археология</text>${hasWar ? `
+    <path d="M${x0 + (352 + heroOff) * k},${legY - 2 * k} l${6 * k},${6 * k} m${-6 * k},0 l${6 * k},${-6 * k}" class="war-x"/>
+    <text x="${x0 + (364 + heroOff) * k}" y="${legY + 5 * k}" class="leg-t" font-size="${10.5 * k}">поход царей · Быт 14</text>` : ''}${legOvl ? `
+    <path d="M${x0 + ((hasWar ? 512 : 372) + heroOff) * k},${legY + 1 * k} h${22 * k}" class="ovl ovl-${legOvl.style || 'ctxpath'}"/>
+    <text x="${x0 + ((hasWar ? 512 : 372) + heroOff + 30) * k}" y="${legY + 5 * k}" class="leg-t" font-size="${(10.5 * k).toFixed(2)}">${esc(legOvl.label)}</text>` : ''}
   </g>`;
 
   const stageStripHtml = stages.length ? `
