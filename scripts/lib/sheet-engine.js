@@ -797,6 +797,18 @@ function sheetCss() {
      поверх компаса */
   .dive-btn{position:absolute;right:10px;top:120px;z-index:21;width:38px;height:38px;border-radius:10px;border:1px solid rgba(138,106,31,.4);background:rgba(246,241,231,.92);color:#7a5c26;font-size:17px;cursor:pointer;box-shadow:0 2px 8px rgba(90,70,30,.2)}
   .home-btn{right:64px}
+  .legend-btn{top:166px}
+  .legend-pop{position:absolute;right:10px;top:210px;z-index:22;background:rgba(246,241,231,.96);border:1px solid rgba(138,106,31,.4);border-radius:10px;padding:10px 13px;box-shadow:0 4px 14px rgba(90,70,30,.28);font:400 12px/1.5 Georgia,serif;color:#3a3020;max-width:220px}
+  .legend-pop b{display:block;font:700 11px/1 Georgia,serif;letter-spacing:.1em;color:#8a6a1f;margin-bottom:8px}
+  .legend-pop i{display:flex;align-items:center;gap:8px;font-style:normal}
+  .legend-pop span{flex:0 0 20px;height:10px;display:inline-block}
+  .legend-pop .lg-route{border-top:2.2px dotted #b0472e}
+  .legend-pop .lg-dot{flex-basis:9px;width:9px;height:9px;border-radius:50%;background:#1e3a63;border:1.5px solid #f6f1e7}
+  .legend-pop .lg-cand{flex-basis:9px;width:9px;height:9px;border-radius:50%;border:1.4px dashed #8a6a1f}
+  .legend-pop .lg-arch{flex-basis:9px;width:8px;height:8px;background:#4e7a52;transform:rotate(45deg)}
+  .legend-pop .lg-war{border-top:0;color:#8a6668;font-weight:700}
+  .legend-pop .lg-war::before{content:"✕";color:#8a6668}
+  .legend-pop .lg-lot{border-top:1.5px dashed #7c93a8}
   .dive-btn:hover{background:#f6f1e7}
   body.dive .spine,body.dive .stage-strip,body.dive .g9{display:none}
   body.dive .wrap{max-width:none;border-radius:0;box-shadow:none}
@@ -847,7 +859,7 @@ function buildSheetHtml(route, opts) {
 <body>
 <div class="wrap">${svg}${stageStripHtml}<span class="g9" hidden>${esc(badge)}</span></div>
 <script>if (/[?&]dev=1/.test(location.search)) document.querySelector('.g9').hidden = false;</script>
-<script>window.ATLAS_SPINE=${spine};window.ATLAS_PLACES=${cardsJson};window.ATLAS_GLYPHS=${JSON.stringify(GLYPH_META)};window.ATLAS_STAGES=${JSON.stringify((route.stages || []).map(st => ({ n: st.n, t: st.t, d: st.d || '', age: st.age || '', km: st.km || '', r: st.r || '' })))};window.ATLAS_WPS=${JSON.stringify((route.verified_waypoints || []).map(w2 => ({ n: w2.name, role: w2.role || '', note: w2.note || '' })))};window.ATLAS_OVLS=${JSON.stringify((route.overlays || []).map(o2 => ({ label: o2.label || '', story: o2.story || '', refs: o2.refs || '' })))};window.ATLAS_DECOR=${JSON.stringify(DECOR_META)};</script>
+<script>window.ATLAS_SPINE=${spine};window.ATLAS_LAYERS=${JSON.stringify((route.layers || []).map(l => ({ id: l.id, label: l.label, pathLabel: l.pathLabel || `путь ${l.label}` })))};window.ATLAS_PLACES=${cardsJson};window.ATLAS_GLYPHS=${JSON.stringify(GLYPH_META)};window.ATLAS_STAGES=${JSON.stringify((route.stages || []).map(st => ({ n: st.n, t: st.t, d: st.d || '', age: st.age || '', km: st.km || '', r: st.r || '' })))};window.ATLAS_WPS=${JSON.stringify((route.verified_waypoints || []).map(w2 => ({ n: w2.name, role: w2.role || '', note: w2.note || '' })))};window.ATLAS_OVLS=${JSON.stringify((route.overlays || []).map(o2 => ({ label: o2.label || '', story: o2.story || '', refs: o2.refs || '' })))};window.ATLAS_DECOR=${JSON.stringify(DECOR_META)};</script>
 <script src="atlas-reader.js"></script>
 </body>
 </html>`;
