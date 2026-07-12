@@ -135,6 +135,7 @@
     <div class="lab">Семейства</div>
     <div id="fams"></div>
     <div class="toggles">
+      <div class="tg"><span>Облака семейств</span><span class="sw-tg" id="tg-hulls" role="button" aria-pressed="true" tabindex="0"></span></div>
       <div class="tg"><span>Показывать связи</span><span class="sw-tg" id="tg-edges" role="button" aria-pressed="true" tabindex="0"></span></div>
       <div class="tg"><span>Подписи листьев</span><span class="sw-tg" id="tg-labels" role="button" aria-pressed="false" tabindex="0"></span></div>
     </div>
@@ -149,6 +150,7 @@
         <stop offset="100%" stop-color="#000000" stop-opacity="0.20"/>
       </radialGradient>
     </defs><g id="viewport">
+      <g id="g-hulls"></g>
       <g id="g-edges"></g>
       <line id="tether"></line>
       <g id="g-nodes"></g>
@@ -180,7 +182,10 @@ const neighbors = new Map(nodes.map(n=>[n.id,new Set()]));
 for(const e of edges){neighbors.get(e.a.id).add(e.b.id);neighbors.get(e.b.id).add(e.a.id);}
 const famColor = new Map(GRAPH.families.map(f=>[f.id,f.color]));
 const famName = new Map(GRAPH.families.map(f=>[f.id,f.ru]));
-let focusFam=null, selected=null, hovered=null, showEdges=true, showLabels=false, searchHits=new Set();
+let focusFam=null, selected=null, hovered=null, showEdges=true, showLabels=false, showHulls=true, searchHits=new Set();
+// узлы по семьям (для цветных облаков-кластеров, как на референсе карты)
+const famNodes=new Map();
+for(const n of nodes){ if(n.family&&n.family!=='spine'){ if(!famNodes.has(n.family))famNodes.set(n.family,[]); famNodes.get(n.family).push(n); } }
 
 // ---- viewport (pan/zoom) ----
 const svg=document.getElementById('svg');
@@ -205,6 +210,24 @@ const gNodes=document.getElementById('g-nodes');
 const tether=document.getElementById('tether');
 document.getElementById('icon-defs').innerHTML = GRAPH.iconDefs || '';
 const mk=(t,a)=>{const el=document.createElementNS(SVGNS,t);for(const k in a)el.setAttribute(k,a[k]);return el;};
+// ---- цветные облака-кластеры семейств (выпуклая оболочка + сглаживание) ----
+const gHulls=document.getElementById('g-hulls');
+const hullEls=new Map();
+for(const [fid] of famNodes){const p=mk('path',{fill:famColor.get(fid),stroke:famColor.get(fid),'stroke-width':1.4,'stroke-opacity':0.16,'stroke-linejoin':'round','pointer-events':'none'});p.style.opacity=0.07;p.style.transition='opacity .25s';gHulls.appendChild(p);hullEls.set(fid,p);}
+function convexHull(ps){ if(ps.length<3)return ps.slice();
+  const P=ps.slice().sort((a,b)=>a.x-b.x||a.y-b.y);const cr=(o,a,b)=>(a.x-o.x)*(b.y-o.y)-(a.y-o.y)*(b.x-o.x);
+  const lo=[];for(const p of P){while(lo.length>=2&&cr(lo[lo.length-2],lo[lo.length-1],p)<=0)lo.pop();lo.push(p);}
+  const up=[];for(let i=P.length-1;i>=0;i--){const p=P[i];while(up.length>=2&&cr(up[up.length-2],up[up.length-1],p)<=0)up.pop();up.push(p);}
+  lo.pop();up.pop();return lo.concat(up); }
+function hullPath(arr){
+  const ps=arr.map(n=>({x:n.x,y:n.y,r:n.r}));const h=convexHull(ps);if(h.length<3)return '';
+  const cx=h.reduce((s,p)=>s+p.x,0)/h.length,cy=h.reduce((s,p)=>s+p.y,0)/h.length;
+  const ex=h.map(p=>{const dx=p.x-cx,dy=p.y-cy,d=Math.hypot(dx,dy)||1,pad=p.r+18;return{x:p.x+dx/d*pad,y:p.y+dy/d*pad};});
+  const m0={x:(ex[0].x+ex[ex.length-1].x)/2,y:(ex[0].y+ex[ex.length-1].y)/2};
+  let d=`M ${m0.x.toFixed(1)} ${m0.y.toFixed(1)}`;
+  for(let i=0;i<ex.length;i++){const cur=ex[i],nx=ex[(i+1)%ex.length];d+=` Q ${cur.x.toFixed(1)} ${cur.y.toFixed(1)} ${((cur.x+nx.x)/2).toFixed(1)} ${((cur.y+nx.y)/2).toFixed(1)}`;}
+  return d+' Z';
+}
 const edgeEls=edges.map(e=>{const p=document.createElementNS(SVGNS,'path');p.setAttribute('class','edge');p.setAttribute('stroke',e.color||'#c9a227');p.setAttribute('stroke-width',e.kind==='spine'?3:e.kind==='family'?1.7:1.1);p.setAttribute('opacity',e.kind==='spine'?.85:.5);e.el=p;gEdges.appendChild(p);return p;});
 for(const n of nodes){
   const g=document.createElementNS(SVGNS,'g');g.setAttribute('class','node');g.dataset.id=n.id;
@@ -245,6 +268,7 @@ function step(){
   for(const n of nodes){ if(n.drag)continue; n.vx*=damping; n.vy*=damping; n.x+=n.vx; n.y+=n.vy; }
 }
 function render(){
+  if(showHulls)for(const [fid,el] of hullEls){el.setAttribute('d',hullPath(famNodes.get(fid)));}
   for(const e of edges){const a=e.a,b=e.b;const mx=(a.x+b.x)/2,my=(a.y+b.y)/2;const dx=b.x-a.x,dy=b.y-a.y;const nx=-dy,ny=dx;const l=Math.hypot(nx,ny)||1;const sag=Math.min(24,Math.hypot(dx,dy)*0.08);e.el.setAttribute('d',`M${a.x} ${a.y} Q ${mx+nx/l*sag} ${my+ny/l*sag} ${b.x} ${b.y}`);}
   for(const n of nodes){n.g.setAttribute('transform',`translate(${n.x} ${n.y})`);}
   if(dragNode){tether.setAttribute('x1',dragNode.homeX);tether.setAttribute('y1',dragNode.homeY);tether.setAttribute('x2',dragNode.x);tether.setAttribute('y2',dragNode.y);}
@@ -272,6 +296,16 @@ function refresh(){
     else if(selected) bright=(e.a.id===selected||e.b.id===selected);
     else if(searchHits.size) bright=false;
     e.el.style.opacity = showEdges ? ((focusFam||hovered||selected||searchHits.size)&&!bright?0.06:(e.kind==='spine'?.85:.5)) : 0;
+  }
+  const hHov=hovered?byId.get(hovered):null, hSel=selected?byId.get(selected):null;
+  for(const [fid,el] of hullEls){
+    let op=0.07;
+    if(!showHulls) op=0;
+    else if(focusFam) op=(fid===focusFam)?0.18:0.018;
+    else if(hHov) op=(hHov.family===fid)?0.14:0.04;
+    else if(hSel) op=(hSel.family===fid)?0.12:0.055;
+    else if(searchHits.size) op=0.03;
+    el.style.opacity=op;
   }
 }
 
@@ -335,6 +369,7 @@ q.addEventListener('input',()=>{const v=q.value.trim().toLowerCase();searchHits=
 
 // ---- toggles / buttons ----
 function bindToggle(id,init,fn){const el=document.getElementById(id);let on=init;el.setAttribute('aria-pressed',on);const set=()=>{on=!on;el.setAttribute('aria-pressed',on);fn(on);};el.addEventListener('click',set);el.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();set();}});}
+bindToggle('tg-hulls',true,v=>{showHulls=v;for(const [,el] of hullEls)if(!v)el.style.opacity=0;refresh();});
 bindToggle('tg-edges',true,v=>{showEdges=v;refresh();});
 bindToggle('tg-labels',false,v=>{showLabels=v;refresh();});
 document.getElementById('reset').addEventListener('click',()=>{for(const n of nodes){n.x=n.homeX;n.y=n.homeY;n.vx=n.vy=0;}focusFam=null;selected=null;searchHits=new Set();q.value='';document.querySelectorAll('.fam').forEach(x=>x.classList.remove('on'));document.getElementById('detail').innerHTML='<div class="empty">Наведите на узел — увидите имя в оригинале.<br><br>Потяните узел мышью — он «резиново» вернётся домой.</div>';fit();refresh();});
