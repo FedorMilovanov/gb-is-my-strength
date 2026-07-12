@@ -33,7 +33,7 @@
     <stop offset="0" stop-color="#8b7d5a" stop-opacity=".4"></stop><stop offset="1" stop-color="#8b7d5a" stop-opacity="0"></stop>
   </linearGradient>
   <pattern id="mountainHatch" x="0" y="0" width="6" height="6" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
-    <line x1="0" y1="0" x2="0" y2="6" stroke="#8b7d5a" stroke-width=".6" opacity=".45"></line>
+    <line x1="0" y1="0" x2="0" y2="6" stroke="#8b7d5a" stroke-width=".6" opacity=".38" vector-effect="non-scaling-stroke"></line>
   </pattern>
   <pattern id="desertStipple" x="0" y="0" width="12" height="12" patternUnits="userSpaceOnUse">
     <circle cx="3" cy="3" r=".7" fill="#9c7c43" opacity=".4"></circle>
@@ -192,9 +192,14 @@
   <!-- Dead Sea -->
   <!-- Мёртвое море -->
 <g opacity=".9">
-<path fill="#10263a" stroke="#2e4d6b" stroke-width="1.1" d="M646,795 C654,800 658,813 658,833 C658,847 654,853 651,858 C651,866 655,871 656,877 C657,883 654,888 648,890 C642,891 637,885 637,877 C638,866 637,854 635,840 C634,820 636,804 640,797 C642,793 644,793 646,795 Z"></path>
-<!-- соляной берег Мёртвого моря -->
-<path fill="none" stroke="rgba(200,210,180,.22)" stroke-width="2.5" stroke-dasharray="1.5 3" stroke-linecap="round" d="M646,795 C654,800 658,813 658,833 C658,847 654,853 651,858 C651,866 655,871 656,877 C657,883 654,888 648,890 C642,891 637,885 637,877"></path>
+<!-- Мёртвое море: широкий северный бассейн → перешеек у п-ова Лисан (восток)
+     → меньший южный бассейн. Иордан входит с севера (~647,794). Асимметрия:
+     западный берег ровнее, восточный даёт клин Лисана внутрь. -->
+<path fill="#10263a" stroke="#2e4d6b" stroke-width="1.1" d="M647,794 C653,796 659,802 661,814 C663,826 662,838 660,848 C658,855 652,859 649,861 C654,863 658,868 659,875 C660,882 657,889 650,891 C644,892 640,887 639,880 C638,872 640,866 643,861 C639,859 636,854 635,846 C633,832 633,816 637,804 C639,797 643,792 647,794 Z"></path>
+<!-- полуостров Лисан — светлый клин с востока в перешейке -->
+<path fill="url(#desertG)" opacity=".55" d="M661,848 C656,852 651,858 649,861 C654,861 659,857 662,852 C663,850 663,848 661,848 Z"></path>
+<!-- соляной берег (южный мелкий бассейн) -->
+<path fill="none" stroke="rgba(200,210,180,.22)" stroke-width="2.5" stroke-dasharray="1.5 3" stroke-linecap="round" d="M649,861 C654,863 658,868 659,875 C660,882 657,889 650,891 C644,892 640,887 639,880"></path>
 </g>
 <!-- соляная текстура Мёртвого моря -->
 <g opacity=".18" pointer-events="none">
@@ -202,13 +207,14 @@
   <circle cx="645" cy="855" r=".8" fill="#c8d4a0"></circle><circle cx="650" cy="865" r=".6" fill="#c8d4a0"></circle>
   <circle cx="656" cy="852" r=".7" fill="#c8d4a0"></circle><circle cx="642" cy="842" r=".6" fill="#c8d4a0"></circle>
 </g>
-  <!-- Sea of Galilee -->
+  <!-- Sea of Galilee (Кинерет) — грушевидный контур: шире на С, уже на Ю,
+       наклон СВ-ЮЗ; Иордан входит сверху (~657,664), выходит снизу (~654,691) -->
   <g opacity=".9">
-<ellipse cx="658" cy="678" rx="8" ry="14" transform="rotate(-20 658 678)" fill="#10263a" stroke="#2e4d6b" stroke-width=".9"></ellipse>
+<path fill="#10263a" stroke="#2e4d6b" stroke-width=".9" d="M657,664 C662,665 667,670 668,677 C669,683 665,689 659,692 C656,693 653,692 651,690 C648,686 647,681 648,676 C649,670 653,665 657,664 Z"></path>
 <!-- отражение на Кинерете -->
-<ellipse cx="658" cy="678" rx="8" ry="14" transform="rotate(-20 658 678)" fill="url(#seaPattern)" opacity=".4"></ellipse>
+<path fill="url(#seaPattern)" opacity=".4" d="M657,664 C662,665 667,670 668,677 C669,683 665,689 659,692 C656,693 653,692 651,690 C648,686 647,681 648,676 C649,670 653,665 657,664 Z"></path>
 <!-- блик -->
-<ellipse cx="655" cy="672" rx="3" ry="5" transform="rotate(-20 655 672)" fill="rgba(180,210,240,.08)"></ellipse>
+<ellipse cx="654" cy="672" rx="2.6" ry="4.2" transform="rotate(-20 654 672)" fill="rgba(180,210,240,.08)"></ellipse>
 </g>
 
   <!-- rivers -->
@@ -280,10 +286,11 @@
   <path fill="none" stroke="#2d4a66" stroke-width="1" opacity=".4" stroke-linecap="round" class="lbl-z2" d="M731,594 C714,590 695,588 675,590 C655,593 638,598 620,610"></path>
   <text class="sea-label lbl-z2" x="685" y="583" font-size="4" fill="#4a80a0" opacity=".4" letter-spacing=".1em">АББАНА · אֲמָנָה</text>
   <!-- Верхний Иордан: Дан/Хермон → Мером → Кинерет (единая нить озёр) -->
-  <path fill="none" stroke="#2d4a66" stroke-width="1.9" opacity=".78" stroke-linecap="round" d="M668,620 C664,626 660,631 657,637"></path>
-  <path fill="none" stroke="#2d4a66" stroke-width="1.9" opacity=".78" stroke-linecap="round" d="M655,646 C656,652 659,659 663,665"></path>
-  <!-- Иордан: русло Кинерет → Мёртвое море (меандры Гхора) -->
-  <path fill="none" stroke="#2d4a66" stroke-width="1.9" opacity=".78" stroke-linecap="round" d="M654,692 C653,701 656,709 654,717 C651,725 654,732 652,740 C649,748 652,756 650,764 C648,772 650,780 648,788 C647,791 646,793 646,795"></path>
+  <!-- Верхний Иордан: Дан/Хермон → воды Мерома (Хула) → Кинерет (сев. вершина) -->
+  <path fill="none" stroke="#2d4a66" stroke-width="1.7" opacity=".78" stroke-linecap="round" d="M668,620 C664,626 661,631 659,636 C658,637 657,638 656,638"></path>
+  <path fill="none" stroke="#2d4a66" stroke-width="1.8" opacity=".78" stroke-linecap="round" d="M655,646 C655,651 656,656 657,660 C657,662 657,663 657,664"></path>
+  <!-- Иордан: Кинерет → Мёртвое море — выраженные меандры Гхора (не вертикаль) -->
+  <path fill="none" stroke="#2d4a66" stroke-width="1.9" opacity=".78" stroke-linecap="round" d="M654,692 C650,700 657,708 654,717 C650,726 657,735 652,744 C648,753 655,762 650,771 C646,779 650,786 648,791 C647,792 647,793 647,794"></path>
   <!-- Иавок (вади Зарка) — Быт 32: переправа Иакова, Пенуэл -->
   <path fill="none" stroke="#2d4a66" stroke-width="1.1" opacity=".5" stroke-linecap="round" class="lbl-z2" d="M712,748 C698,753 678,759 664,762 C660,763 656,763 651,763"></path>
   <text class="sea-label lbl-z2" x="676" y="754" font-size="4.6" letter-spacing=".12em" transform="rotate(-14 676 754)" fill="#4a80a0" opacity=".55">ИАВОК</text>
@@ -293,12 +300,11 @@
   <!-- Воды Мерома (озерцо Хуле) — Нав 11:5 -->
   <ellipse cx="656" cy="641" rx="3.4" ry="4.6" transform="rotate(-12 656 641)" fill="#10263a" opacity=".55" stroke="#2e4d6b" stroke-width=".5" class="lbl-z2"></ellipse>
   <text class="sea-label lbl-z2" x="664" y="639" font-size="3.2" letter-spacing=".08em" fill="#4a80a0" opacity=".75">Хула</text>
-  <!-- Иордан — стрелка течения (С→Ю) -->
-  <path class="lbl-z2" d="M648,710 L644,720 L652,720 Z" fill="#4a80a0" opacity=".35"></path>
-  <!-- Евфрат — стрелка течения -->
-  <path class="lbl-z2" d="M1296,618 L1290,628 L1298,628 Z" fill="#4a80a0" opacity=".3"></path>
-  <!-- Нил — стрелка течения (С→Ю зеркально = С) -->
-  <path class="lbl-z2" d="M222,950 L218,960 L226,960 Z" fill="#4a80a0" opacity=".35"></path>
+  <!-- стрелки течения рек — тонкие шевроны (были сплошные треугольники,
+       читались как маркеры/горы, а не как направление потока) -->
+  <path class="lbl-z2" d="M649,714 L653,720 L651,720 M645,714 L649,720" fill="none" stroke="#4a80a0" stroke-width=".9" stroke-linecap="round" stroke-linejoin="round" opacity=".5"></path>
+  <path class="lbl-z2" d="M1291,622 L1296,628 L1294,628 M1287,622 L1292,628" fill="none" stroke="#4a80a0" stroke-width=".9" stroke-linecap="round" stroke-linejoin="round" opacity=".45"></path>
+  <path class="lbl-z2" d="M219,954 L223,960 L221,960 M215,954 L219,960" fill="none" stroke="#4a80a0" stroke-width=".9" stroke-linecap="round" stroke-linejoin="round" opacity=".5"></path>
   <!-- Иордан -->
   <text class="sea-label lbl-z1" x="644" y="730" font-size="4.5" letter-spacing=".14em" transform="rotate(80 644 730)" fill="#4a80a0" opacity=".55">ИОРДАН · הַיַּרְדֵּן</text>
   <!-- Евфрат -->
@@ -459,8 +465,10 @@
   <text x="0" y="32" font-size="3.8" fill="#8a6838" text-anchor="middle" opacity=".8">הַר סִינַי · 2285 м</text>
 </g>
 <!-- Хермон — гора у Дана -->
-<g class="lbl-z1" transform="translate(668,594)" opacity=".4">
-  <path d="M-14,10 L-4,-8 L0,-16 L4,-8 L14,10 Z" fill="rgba(120,140,160,.12)" stroke="#6080a0" stroke-width="1" stroke-linejoin="round"></path>
+<g class="lbl-z1" transform="translate(668,594)" opacity=".5">
+  <path d="M-14,10 L-4,-8 L0,-16 L4,-8 L14,10 Z" fill="rgba(120,140,160,.16)" stroke="#6080a0" stroke-width="1" stroke-linejoin="round"></path>
+  <!-- снежная шапка: Хермон — высочайшая вершина региона (2814 м) -->
+  <path d="M-4.5,-6.5 L0,-16 L4.5,-6.5 C2,-8 -2,-8 -4.5,-6.5 Z" fill="rgba(248,250,252,.72)" stroke="none"></path>
   <text x="0" y="17" text-anchor="middle" font-size="4.5" fill="#7090b8" letter-spacing=".1em">ХЕРМОН</text>
   <text x="0" y="22" font-size="3.2" fill="#6080a8" text-anchor="middle" opacity=".8">2814 м · הַר חֶרְמוֹן</text>
 </g>
@@ -518,6 +526,7 @@
   </g>
 <path d="M1710,897 C1592.2,779.8 1166.2,244.5 1003,194 C839.8,143.5 793.5,501.7 731,594 C668.5,686.3 645.8,716.7 628,748 C610.2,779.3 642.0,759.7 624,782 C606.0,804.3 554.0,862.7 520,882 C486.0,901.3 451.7,892.7 420,898 C388.3,903.3 360.8,907.0 330,914 C299.2,921.0 231.7,942.0 235,940 C238.3,938.0 305.8,911.0 350,902 C394.2,893.0 456.7,898.2 500,886 C543.3,873.8 587.7,856.7 610,829 C632.3,801.3 628.7,748.2 634,720 C639.3,691.8 636.8,675.8 642,660 C647.2,644.2 646.7,642.3 665,625 C683.3,607.7 745.2,553.5 752,556 C758.8,558.5 718.3,610.0 706,640 C693.7,670.0 691.8,709.3 678,736 C664.2,762.7 642.5,781.5 623,800 C603.5,818.5 567.5,836.3 561,847 C554.5,857.7 580.2,861.2 584,864" class="route-under"></path>
 <path d="M1710,897 C1592.2,779.8 1166.2,244.5 1003,194 C839.8,143.5 793.5,501.7 731,594 C668.5,686.3 645.8,716.7 628,748 C610.2,779.3 642.0,759.7 624,782 C606.0,804.3 554.0,862.7 520,882 C486.0,901.3 451.7,892.7 420,898 C388.3,903.3 360.8,907.0 330,914 C299.2,921.0 231.7,942.0 235,940 C238.3,938.0 305.8,911.0 350,902 C394.2,893.0 456.7,898.2 500,886 C543.3,873.8 587.7,856.7 610,829 C632.3,801.3 628.7,748.2 634,720 C639.3,691.8 636.8,675.8 642,660 C647.2,644.2 646.7,642.3 665,625 C683.3,607.7 745.2,553.5 752,556 C758.8,558.5 718.3,610.0 706,640 C693.7,670.0 691.8,709.3 678,736 C664.2,762.7 642.5,781.5 623,800 C603.5,818.5 567.5,836.3 561,847 C554.5,857.7 580.2,861.2 584,864" class="route"></path>
+<path d="M-3.4,-3 L0,0 L-3.4,3" transform="translate(1342.4,531.4) rotate(-135.2)" class="route-arrow"></path><path d="M-3.4,-3 L0,0 L-3.4,3" transform="translate(861.6,402.0) rotate(124.2)" class="route-arrow"></path><path d="M-3.4,-3 L0,0 L-3.4,3" transform="translate(677.4,674.1) rotate(123.8)" class="route-arrow"></path><path d="M-3.4,-3 L0,0 L-3.4,3" transform="translate(421.7,864.2) rotate(157.9)" class="route-arrow"></path><path d="M-3.4,-3 L0,0 L-3.4,3" transform="translate(430.0,882.3) rotate(-16.5)" class="route-arrow"></path><path d="M-3.4,-3 L0,0 L-3.4,3" transform="translate(638.6,722.9) rotate(-74.9)" class="route-arrow"></path><path d="M-3.4,-3 L0,0 L-3.4,3" transform="translate(710.2,589.1) rotate(-38.4)" class="route-arrow"></path><path d="M-3.4,-3 L0,0 L-3.4,3" transform="translate(684.9,682.9) rotate(117.9)" class="route-arrow"></path><path d="M-3.4,-3 L0,0 L-3.4,3" transform="translate(590.8,824.4) rotate(142.8)" class="route-arrow"></path>
 
 
 <g class="pl" data-pid="ur"><circle cx="1710" cy="897" r="5.25" class="pl-city"></circle></g><g class="pl" data-pid="urfa"><circle cx="979" cy="159" r="5.55" class="pl-cand"></circle></g><g class="pl" data-pid="harran"><circle cx="1003" cy="194" r="5.25" class="pl-city"></circle></g><g class="pl" data-pid="damascus"><circle cx="731" cy="594" r="5.25" class="pl-city"></circle></g><g class="pl" data-pid="shechem"><circle cx="628" cy="748" r="5.25" class="pl-city"></circle></g><g class="pl" data-pid="bethel"><circle cx="624" cy="782" r="5.25" class="pl-city"></circle></g><g class="pl" data-pid="egypt"><circle cx="235" cy="940" r="5.25" class="pl-city"></circle></g><g class="pl" data-pid="hebron"><circle cx="610" cy="829" r="5.25" class="pl-city"></circle></g><g class="pl" data-pid="dan"><circle cx="665" cy="625" r="5.25" class="pl-city"></circle></g><g class="pl" data-pid="hovah"><circle cx="752" cy="556" r="5.25" class="pl-city"></circle></g><g class="pl" data-pid="salem"><circle cx="623" cy="800" r="5.25" class="pl-city"></circle></g><g class="pl" data-pid="sodom"><circle cx="658" cy="866" r="5.25" class="pl-city"></circle></g><g class="pl" data-pid="hammam"><circle cx="667" cy="818" r="5.55" class="pl-cand"></circle></g><g class="pl" data-pid="zoar"><circle cx="652" cy="893" r="5.25" class="pl-city"></circle></g><g class="pl" data-pid="gerar"><circle cx="561" cy="847" r="5.25" class="pl-city"></circle></g><g class="pl" data-pid="beersheba"><circle cx="584" cy="864" r="5.25" class="pl-city"></circle></g><g class="pl" data-pid="kadesh"><circle cx="542" cy="934" r="5.25" class="pl-city"></circle></g><g class="pl" data-pid="shur"><circle cx="400" cy="940" r="5.25" class="pl-city"></circle></g><g class="pl" data-pid="lahairoi"><circle cx="534" cy="931" r="5.55" class="pl-cand"></circle></g><g class="pl" data-pid="babylon"><circle cx="1543" cy="708" r="3.75" class="pl-ctx"></circle></g><g class="pl" data-pid="mari"><circle cx="1190" cy="468" r="3.75" class="pl-ctx"></circle></g>
