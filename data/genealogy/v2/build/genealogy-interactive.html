@@ -220,13 +220,15 @@
         <stop offset="86%" stop-color="#f0d488" stop-opacity="0.014"/>
         <stop offset="100%" stop-color="#f0d488" stop-opacity="0"/>
       </radialGradient>
-      <!-- стеклянный (не глянцевый) шар: светящееся тёплое ядро, полупрозрачные края (без тёмной кромки) -->
-      <radialGradient id="christGlass" cx="40%" cy="34%" r="82%">
-        <stop offset="0%" stop-color="#fffbf1"/>
-        <stop offset="28%" stop-color="#f7dd94"/>
-        <stop offset="56%" stop-color="#e6bd60"/>
-        <stop offset="80%" stop-color="#d3a648"/>
-        <stop offset="100%" stop-color="#c89a3f"/>
+      <!-- стеклянный (не глянцевый) шар: светящееся тёплое ядро, к кромке — настоящая прозрачность (сквозь стекло видно фон/линии) -->
+      <radialGradient id="christGlass" cx="38%" cy="32%" r="88%">
+        <stop offset="0%" stop-color="#fffef9" stop-opacity="1"/>
+        <stop offset="16%" stop-color="#fbe9ae" stop-opacity="0.97"/>
+        <stop offset="36%" stop-color="#f0d073" stop-opacity="0.87"/>
+        <stop offset="58%" stop-color="#dcb352" stop-opacity="0.74"/>
+        <stop offset="78%" stop-color="#c89a3f" stop-opacity="0.58"/>
+        <stop offset="92%" stop-color="#b98a38" stop-opacity="0.44"/>
+        <stop offset="100%" stop-color="#a97c33" stop-opacity="0.32"/>
       </radialGradient>
       <!-- мягкая объёмная кромка вместо жёсткого чёрного контура -->
       <radialGradient id="christEdge" cx="50%" cy="50%" r="50%">
@@ -321,7 +323,7 @@ const noStroke=el=>{el.style.stroke='none';return el;};   // перебить CS
 // (скруглённые концы + едва заметный светлый рефлекс снизу — «гравировка в стекле»)
 function messiahCross(r){
   const g=mk('g',{'pointer-events':'none'});
-  const top=-0.58*r, bot=0.60*r, left=-0.32*r, right=0.32*r, cy=-0.06*r;
+  const top=-0.58*r, bot=0.60*r, left=-0.30*r, right=0.30*r, cy=-0.20*r;
   const w=Math.max(2.2, r*0.072);
   const seg=(dx,dy,col,ww,op)=>{const gg=mk('g',{});
     gg.appendChild(mk('line',{x1:dx.toFixed(2),y1:(top+dy).toFixed(2),x2:dx.toFixed(2),y2:(bot+dy).toFixed(2),stroke:col,'stroke-width':ww,'stroke-linecap':'round','stroke-opacity':op}));
@@ -369,6 +371,7 @@ for(const n of nodes){
       // стекло: мягкая объёмная кромка (вместо контура) + рассеянный блик + деликатный
       // глинт + нижний рефлекс (свет сквозь стекло). Всё мягко — стеклянно, не глянцево.
       g.appendChild(noStroke(mk('circle',{r:n.r,fill:'url(#christEdge)','pointer-events':'none'})));
+      g.appendChild(mk('ellipse',{cx:0,cy:0,rx:n.r*0.986,ry:n.r*0.986,fill:'none',stroke:'#fff6da','stroke-width':Math.max(0.8,n.r*0.03),'stroke-opacity':0.3,'pointer-events':'none'}));
       g.appendChild(mk('ellipse',{cx:-n.r*0.26,cy:-n.r*0.32,rx:n.r*0.58,ry:n.r*0.44,fill:'url(#christSpecular)','pointer-events':'none'}));
       g.appendChild(mk('ellipse',{cx:-n.r*0.2,cy:-n.r*0.44,rx:n.r*0.1,ry:n.r*0.06,fill:'#fffdf6',opacity:0.55,'pointer-events':'none'}));
       g.appendChild(mk('ellipse',{cx:n.r*0.3,cy:n.r*0.42,rx:n.r*0.46,ry:n.r*0.26,fill:'url(#christRim)','pointer-events':'none'}));
