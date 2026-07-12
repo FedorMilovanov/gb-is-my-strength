@@ -14,14 +14,14 @@
 <!-- ============ TERRAIN ============ -->
 <g id="terrain" data-layer="base-geo">
   <rect x="-400" y="-400" width="2700" height="2230" fill="url(#landG)"/>
-  <!-- Terrain texture overlay для глубины рельефа -->
-  <rect x="-400" y="-400" width="2700" height="2230" fill="url(#richLandG)" opacity=".3" filter="url(#terrainTex)"/>
+  <!-- (удалён мёртвый rect с filter=url(#terrainTex): фильтр нигде не
+       определён, элемент по SVG-спеке не рендерился — broken reference) -->
 
   <!-- deserts / fertile tints -->
   <ellipse cx="1240" cy="1010" rx="520" ry="330" fill="url(#desertG)"/>
   <ellipse cx="470" cy="1130" rx="260" ry="220" fill="url(#desertG)"/>
   <ellipse cx="560" cy="930" rx="170" ry="110" fill="url(#desertG)"/>
-  <ellipse cx="1280" cy="520" rx="430" ry="200" fill="url(#fertileG)" transform="rotate(28 1280 520)"/>
+  <ellipse cx="1280" cy="520" rx="430" ry="200" fill="url(#fertileG)" transform="rotate(28 1280 520)" filter="url(#soft)"/>
   <ellipse cx="640" cy="700" rx="110" ry="240" fill="url(#fertileG)"/>
   <ellipse cx="220" cy="930" rx="120" ry="120" fill="url(#fertileG)"/>
   <!-- зелень дельты: веер от вершины (226,1004) К МОРЮ, по контуру рукавов -->
