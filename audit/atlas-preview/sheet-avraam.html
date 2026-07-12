@@ -114,6 +114,11 @@
   svg.zoomed .relief{opacity:.5}
   svg.z3 .relief{opacity:.22}
   svg.z4 .relief{opacity:.08}
+  /* бумажная фактура/виньетка — для обзора; feTurbulence-грейн на сильном
+     зуме даёт тайловые артефакты (вертикальные полосы) — гасим на близких */
+  svg.z3 .paper-grain{opacity:.2}
+  svg.z4 .paper-grain{opacity:0}
+  svg.z4 .paper-fx{opacity:.4}
   svg.z3 text.lbl-z1, svg.z3 g.lbl-z1 text{font-size:2.4px}
   svg.z4 text.lbl-z1, svg.z4 g.lbl-z1 text{font-size:1.6px}
   svg.z3 text.lbl-z2, svg.z3 g.lbl-z2 text{font-size:2.2px}
@@ -372,14 +377,14 @@
 <!-- ============ TERRAIN ============ -->
 <g id="terrain" data-layer="base-geo">
   <rect x="-400" y="-400" width="2700" height="2230" fill="url(#landG)"/>
-  <!-- Terrain texture overlay для глубины рельефа -->
-  <rect x="-400" y="-400" width="2700" height="2230" fill="url(#richLandG)" opacity=".3" filter="url(#terrainTex)"/>
+  <!-- (удалён мёртвый rect с filter=url(#terrainTex): фильтр нигде не
+       определён, элемент по SVG-спеке не рендерился — broken reference) -->
 
   <!-- deserts / fertile tints -->
   <ellipse cx="1240" cy="1010" rx="520" ry="330" fill="url(#desertG)"/>
   <ellipse cx="470" cy="1130" rx="260" ry="220" fill="url(#desertG)"/>
   <ellipse cx="560" cy="930" rx="170" ry="110" fill="url(#desertG)"/>
-  <ellipse cx="1280" cy="520" rx="430" ry="200" fill="url(#fertileG)" transform="rotate(28 1280 520)"/>
+  <ellipse cx="1280" cy="520" rx="430" ry="200" fill="url(#fertileG)" transform="rotate(28 1280 520)" filter="url(#soft)"/>
   <ellipse cx="640" cy="700" rx="110" ry="240" fill="url(#fertileG)"/>
   <ellipse cx="220" cy="930" rx="120" ry="120" fill="url(#fertileG)"/>
   <!-- зелень дельты: веер от вершины (226,1004) К МОРЮ, по контуру рукавов -->
@@ -911,9 +916,9 @@
       <text y="39" text-anchor="middle" class="north-t" font-size="19.5">С</text>
     </g>
   </g>
-<rect x="70" y="20" width="1800" height="1200" fill="url(#sunGlow)" pointer-events="none"/>
-<rect x="70" y="20" width="1800" height="1200" fill="url(#edgeFog)" pointer-events="none"/>
-<rect x="70" y="20" width="1800" height="1200" filter="url(#parchmentGrain)" opacity=".5" pointer-events="none"/>
+<rect x="70" y="20" width="1800" height="1200" fill="url(#sunGlow)" pointer-events="none" class="paper-fx"/>
+<rect x="70" y="20" width="1800" height="1200" fill="url(#edgeFog)" pointer-events="none" class="paper-fx"/>
+<rect x="70" y="20" width="1800" height="1200" filter="url(#parchmentGrain)" opacity=".5" pointer-events="none" class="paper-fx paper-grain"/>
 <g class="graticule" aria-hidden="true"><line x1="201.0" y1="32.0" x2="201.0" y2="38.0" class="grat"/><line x1="301.0" y1="32.0" x2="301.0" y2="42.5" class="grat"/><text x="301.0" y="57.5" text-anchor="middle" class="grat-t" font-size="12.00">32°</text><line x1="401.0" y1="32.0" x2="401.0" y2="38.0" class="grat"/><line x1="501.0" y1="32.0" x2="501.0" y2="42.5" class="grat"/><text x="501.0" y="57.5" text-anchor="middle" class="grat-t" font-size="12.00">34°</text><line x1="601.0" y1="32.0" x2="601.0" y2="38.0" class="grat"/><line x1="701.0" y1="32.0" x2="701.0" y2="42.5" class="grat"/><text x="701.0" y="57.5" text-anchor="middle" class="grat-t" font-size="12.00">36°</text><line x1="801.0" y1="32.0" x2="801.0" y2="38.0" class="grat"/><line x1="901.0" y1="32.0" x2="901.0" y2="42.5" class="grat"/><text x="901.0" y="57.5" text-anchor="middle" class="grat-t" font-size="12.00">38°</text><line x1="1001.0" y1="32.0" x2="1001.0" y2="38.0" class="grat"/><line x1="1101.0" y1="32.0" x2="1101.0" y2="42.5" class="grat"/><text x="1101.0" y="57.5" text-anchor="middle" class="grat-t" font-size="12.00">40°</text><line x1="1201.0" y1="32.0" x2="1201.0" y2="38.0" class="grat"/><line x1="1301.0" y1="32.0" x2="1301.0" y2="42.5" class="grat"/><text x="1301.0" y="57.5" text-anchor="middle" class="grat-t" font-size="12.00">42°</text><line x1="1401.0" y1="32.0" x2="1401.0" y2="38.0" class="grat"/><line x1="1501.0" y1="32.0" x2="1501.0" y2="42.5" class="grat"/><text x="1501.0" y="57.5" text-anchor="middle" class="grat-t" font-size="12.00">44°</text><line x1="1601.0" y1="32.0" x2="1601.0" y2="38.0" class="grat"/><line x1="1701.0" y1="32.0" x2="1701.0" y2="42.5" class="grat"/><text x="1701.0" y="57.5" text-anchor="middle" class="grat-t" font-size="12.00">46°</text><line x1="1801.0" y1="32.0" x2="1801.0" y2="38.0" class="grat"/><line x1="82.0" y1="893.6" x2="88.0" y2="893.6" class="grat"/><line x1="1858.0" y1="893.6" x2="1852.0" y2="893.6" class="grat"/><line x1="82.0" y1="773.6" x2="92.5" y2="773.6" class="grat"/><text x="97.0" y="777.8" text-anchor="start" class="grat-t" font-size="12.00">32°</text><line x1="1858.0" y1="773.6" x2="1847.5" y2="773.6" class="grat"/><text x="1843.0" y="777.8" text-anchor="end" class="grat-t" font-size="12.00">32°</text><line x1="82.0" y1="653.6" x2="88.0" y2="653.6" class="grat"/><line x1="1858.0" y1="653.6" x2="1852.0" y2="653.6" class="grat"/><line x1="82.0" y1="533.6" x2="92.5" y2="533.6" class="grat"/><text x="97.0" y="537.8" text-anchor="start" class="grat-t" font-size="12.00">34°</text><line x1="1858.0" y1="533.6" x2="1847.5" y2="533.6" class="grat"/><text x="1843.0" y="537.8" text-anchor="end" class="grat-t" font-size="12.00">34°</text><line x1="82.0" y1="413.6" x2="88.0" y2="413.6" class="grat"/><line x1="1858.0" y1="413.6" x2="1852.0" y2="413.6" class="grat"/><line x1="82.0" y1="293.6" x2="92.5" y2="293.6" class="grat"/><text x="97.0" y="297.8" text-anchor="start" class="grat-t" font-size="12.00">36°</text><line x1="1858.0" y1="293.6" x2="1847.5" y2="293.6" class="grat"/><text x="1843.0" y="297.8" text-anchor="end" class="grat-t" font-size="12.00">36°</text><line x1="82.0" y1="173.6" x2="88.0" y2="173.6" class="grat"/><line x1="1858.0" y1="173.6" x2="1852.0" y2="173.6" class="grat"/></g>
 <rect x="82" y="32" width="1776" height="1176" class="frame"/>
 </svg>

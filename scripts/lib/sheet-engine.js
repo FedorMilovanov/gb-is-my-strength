@@ -519,9 +519,9 @@ ${labels.join('')}
 ${cart}
 ${legend}
 ${furn}
-<rect x="${x0}" y="${y0}" width="${W}" height="${H}" fill="url(#sunGlow)" pointer-events="none"/>
-<rect x="${x0}" y="${y0}" width="${W}" height="${H}" fill="url(#edgeFog)" pointer-events="none"/>
-<rect x="${x0}" y="${y0}" width="${W}" height="${H}" filter="url(#parchmentGrain)" opacity=".5" pointer-events="none"/>
+<rect x="${x0}" y="${y0}" width="${W}" height="${H}" fill="url(#sunGlow)" pointer-events="none" class="paper-fx"/>
+<rect x="${x0}" y="${y0}" width="${W}" height="${H}" fill="url(#edgeFog)" pointer-events="none" class="paper-fx"/>
+<rect x="${x0}" y="${y0}" width="${W}" height="${H}" filter="url(#parchmentGrain)" opacity=".5" pointer-events="none" class="paper-fx paper-grain"/>
 ${graticule(family, x0, y0, W, H, k)}
 <rect x="${x0 + 8 * k}" y="${y0 + 8 * k}" width="${W - 16 * k}" height="${H - 16 * k}" class="frame"/>
 </svg>`;
@@ -638,6 +638,11 @@ function sheetCss() {
   svg.zoomed .relief{opacity:.5}
   svg.z3 .relief{opacity:.22}
   svg.z4 .relief{opacity:.08}
+  /* бумажная фактура/виньетка — для обзора; feTurbulence-грейн на сильном
+     зуме даёт тайловые артефакты (вертикальные полосы) — гасим на близких */
+  svg.z3 .paper-grain{opacity:.2}
+  svg.z4 .paper-grain{opacity:0}
+  svg.z4 .paper-fx{opacity:.4}
   svg.z3 text.lbl-z1, svg.z3 g.lbl-z1 text{font-size:2.4px}
   svg.z4 text.lbl-z1, svg.z4 g.lbl-z1 text{font-size:1.6px}
   svg.z3 text.lbl-z2, svg.z3 g.lbl-z2 text{font-size:2.2px}
