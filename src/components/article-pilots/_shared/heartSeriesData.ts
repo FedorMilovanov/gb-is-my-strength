@@ -56,8 +56,10 @@ export interface HeartSeriesItem {
 
 /**
  * ORDERED series. Reorder = move entries here; nothing else changes.
- * Current published order: Пролог → I Крайне → II Новое → III Римлянам 7 →
- * IV Закон духа → Справочник.
+ * Current published order: Пролог → I Крайне → II Римлянам 7 → III Новое →
+ * IV Закон духа → Справочник. («Новое сердце» стоит после «Римлянам 7»:
+ * Рим 7 ставит диагноз (верующий/неверующий), новое сердце — Божий ответ,
+ * затем его жизнь по Духу.)
  */
 export const HEART_SERIES_ITEMS: HeartSeriesItem[] = [
   {
@@ -88,19 +90,6 @@ export const HEART_SERIES_ITEMS: HeartSeriesItem[] = [
     cardDesc: 'Иеремия 17: исторический фон, два образа доверия и диагноз сердца, который нельзя выносить за скобки Евангелия.',
   },
   {
-    id: 'novoe',
-    slug: 'novoe-serdce',
-    kind: 'roman',
-    minutes: 24,
-    railTitle: 'Новое сердце',
-    railSub: 'Иез. 36',
-    sheetTitle: 'Новое сердце',
-    sheetSub: 'Иезекииль 36',
-    thumbImg: null,
-    cardTitle: 'Новое сердце: замена, а не ремонт',
-    cardDesc: 'Возрождение — не ремонт старого, а новое рождение: «дам вам сердце новое» (Иез. 36:26). Фундамент всей серии.',
-  },
-  {
     id: 'rimlyanam',
     slug: 'rimlyanam-7-veruyushchiy-ili-neveruyushchiy',
     kind: 'roman',
@@ -112,6 +101,19 @@ export const HEART_SERIES_ITEMS: HeartSeriesItem[] = [
     thumbImg: 'og-rimlyanam-7-600w.webp',
     cardTitle: 'Римлянам 7: верующий, неверующий или человек под законом?',
     cardDesc: 'Три главные позиции, Ллойд-Джонс, TMSJ и пастырский вывод о войне внутри христианина.',
+  },
+  {
+    id: 'novoe',
+    slug: 'novoe-serdce',
+    kind: 'roman',
+    minutes: 24,
+    railTitle: 'Новое сердце',
+    railSub: 'Иез. 36',
+    sheetTitle: 'Новое сердце',
+    sheetSub: 'Иезекииль 36',
+    thumbImg: null,
+    cardTitle: 'Новое сердце: замена, а не ремонт',
+    cardDesc: 'Возрождение — не ремонт старого, а новое рождение: «дам вам сердце новое» (Иез. 36:26). Фундамент всей серии.',
   },
   {
     id: 'serdce-duh',

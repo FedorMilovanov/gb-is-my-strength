@@ -60,8 +60,8 @@ export const SERIES_ORDER: Record<string, string[]> = {
   'hard-texts': [
     'chto-bibliya-nazyvaet-serdcem',
     'krajne-li-isporcheno-serdce',
-    'novoe-serdce',
     'rimlyanam-7-veruyushchiy-ili-neveruyushchiy',
+    'novoe-serdce',
     'serdce-i-duh',
     'serdce-spravochnik',
   ],
