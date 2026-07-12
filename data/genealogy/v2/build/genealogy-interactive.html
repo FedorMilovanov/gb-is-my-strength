@@ -61,6 +61,8 @@
   .search input{width:100%;padding:8px 14px 8px 34px;border-radius:16px;border:1px solid var(--panelEdge);background:var(--card);color:var(--ink);font-family:inherit;font-size:13px;font-style:italic}
   .search input:focus{outline:2px solid var(--gold);outline-offset:1px}
   .search svg{position:absolute;left:11px;top:9px;width:15px;height:15px;stroke:var(--inkFaint);fill:none}
+  .search-hint{position:absolute;left:0;right:0;top:100%;margin-top:6px;text-align:center;font-size:11.5px;color:#b5643f;opacity:0;transition:opacity .15s;pointer-events:none}
+  .search-hint.show{opacity:1}
   .tools{display:flex;align-items:center;gap:8px}
   .btn{padding:6px 12px;border-radius:14px;border:1px solid var(--panelEdge);background:var(--card);color:var(--inkSoft);font-family:inherit;font-size:12px;cursor:pointer}
   .btn:hover{border-color:var(--gold);color:var(--gold)}
@@ -191,6 +193,7 @@
     <div class="search">
       <svg viewBox="0 0 24 24"><circle cx="10" cy="10" r="6.5" stroke-width="1.6"/><line x1="15" y1="15" x2="20" y2="20" stroke-width="1.6"/></svg>
       <input id="q" type="text" placeholder="Найти имя…" autocomplete="off" aria-label="Поиск имени">
+      <div class="search-hint" id="searchHint"></div>
     </div>
     <div class="tools">
       <button class="btn" id="reset">Собрать всё</button>
@@ -300,7 +303,7 @@ for(const e of edges){if(e.kind==='leaf'||e.kind==='spine'){childrenOf.get(e.a.i
 const famColor = new Map(GRAPH.families.map(f=>[f.id,f.color]));
 const famName = new Map(GRAPH.families.map(f=>[f.id,f.ru]));
 const NATIONS = GRAPH.mode==='nations';
-let focusFam=null, focusConf=null, selected=null, hovered=null, showEdges=true, showLabels=NATIONS, showHulls=true, searchHits=new Set();
+let focusFam=null, focusConf=null, selected=null, hovered=null, showEdges=true, showLabels=NATIONS, showHulls=true, searchHits=new Set(), searchActive=false;
 // узлы по семьям (для цветных облаков-кластеров, как на референсе карты)
 const famNodes=new Map();
 for(const n of nodes){ if(n.family&&n.family!=='spine'){ if(!famNodes.has(n.family))famNodes.set(n.family,[]); famNodes.get(n.family).push(n); } }
@@ -473,13 +476,13 @@ function loop(){step();render();requestAnimationFrame(loop);}
 
 // ---- highlighting ----
 function refresh(){
-  const anyFocus=focusFam||focusConf||hovered||selected||searchHits.size;
+  const anyFocus=focusFam||focusConf||hovered||selected||searchActive;
   for(const n of nodes){
     let bright=true;
     if(focusFam) bright=(n.family===focusFam);
     else if(focusConf) bright=(n.confidence===focusConf);
     else if(hovered){const h=byId.get(hovered);bright=(n.id===hovered||neighbors.get(hovered).has(n.id)||n.family===h.family);}
-    else if(searchHits.size){bright=searchHits.has(n.id);}
+    else if(searchActive){bright=searchHits.has(n.id);}
     else if(selected){bright=(n.id===selected||neighbors.get(selected).has(n.id));}
     n.g.classList.toggle('dim',!!anyFocus&&!bright);
     n.g.classList.toggle('show',showLabels|| (n.kind==='leaf'&&(!anyFocus?false:bright)));
@@ -492,8 +495,8 @@ function refresh(){
     else if(focusConf) bright=(e.b.confidence===focusConf);
     else if(hovered) bright=(e.a.id===hovered||e.b.id===hovered);
     else if(selected) bright=(e.a.id===selected||e.b.id===selected);
-    else if(searchHits.size) bright=false;
-    e.el.style.opacity = showEdges ? ((focusFam||focusConf||hovered||selected||searchHits.size)&&!bright?0.06:(e.kind==='spine'?.85:.5)) : 0;
+    else if(searchActive) bright=false;
+    e.el.style.opacity = showEdges ? ((focusFam||focusConf||hovered||selected||searchActive)&&!bright?0.06:(e.kind==='spine'?.85:.5)) : 0;
   }
   const hHov=hovered?byId.get(hovered):null, hSel=selected?byId.get(selected):null;
   for(const [fid,el] of hullEls){
@@ -503,7 +506,7 @@ function refresh(){
     else if(focusConf) op=0.03;
     else if(hHov) op=(hHov.family===fid)?0.14:0.04;
     else if(hSel) op=(hSel.family===fid)?0.12:0.055;
-    else if(searchHits.size) op=0.03;
+    else if(searchActive) op=0.03;
     el.style.opacity=op;
   }
 }
@@ -584,9 +587,12 @@ for(const f of GRAPH.families){const d=document.createElement('div');d.className
   famsEl.appendChild(d);}
 
 // ---- search ----
-const q=document.getElementById('q');
+const q=document.getElementById('q'), searchHint=document.getElementById('searchHint');
 let searchOrder=[], searchIdx=-1;
-q.addEventListener('input',()=>{const v=q.value.trim().toLowerCase();searchHits=new Set();searchOrder=[];searchIdx=-1;if(v){for(const n of nodes)if(n.ru.toLowerCase().includes(v)){searchHits.add(n.id);searchOrder.push(n.id);}}refresh();});
+q.addEventListener('input',()=>{const v=q.value.trim().toLowerCase();searchHits=new Set();searchOrder=[];searchIdx=-1;searchActive=!!v;if(v){for(const n of nodes)if(n.ru.toLowerCase().includes(v)){searchHits.add(n.id);searchOrder.push(n.id);}}
+  searchHint.classList.toggle('show', searchActive&&!searchOrder.length);
+  searchHint.textContent=searchActive&&!searchOrder.length?`Ничего не найдено: «${q.value.trim()}»`:'';
+  refresh();});
 // Enter — перелёт к найденному; повторный Enter — к следующему совпадению по кругу
 q.addEventListener('keydown',e=>{if(e.key!=='Enter'||!searchOrder.length)return;e.preventDefault();searchIdx=(searchIdx+1)%searchOrder.length;const n=byId.get(searchOrder[searchIdx]);selectNode(n.id);flyTo(n,true);});
 
@@ -595,7 +601,7 @@ function bindToggle(id,init,fn){const el=document.getElementById(id);let on=init
 bindToggle('tg-hulls',true,v=>{showHulls=v;for(const [,el] of hullEls)if(!v)el.style.opacity=0;refresh();});
 bindToggle('tg-edges',true,v=>{showEdges=v;refresh();});
 bindToggle('tg-labels',showLabels,v=>{showLabels=v;refresh();});
-document.getElementById('reset').addEventListener('click',()=>{for(const n of nodes){n.x=n.homeX;n.y=n.homeY;n.vx=n.vy=0;}focusFam=null;focusConf=null;selected=null;searchHits=new Set();searchOrder=[];searchIdx=-1;q.value='';document.querySelectorAll('.fam').forEach(x=>x.classList.remove('on'));document.querySelectorAll('.cv').forEach(x=>x.classList.remove('on'));document.getElementById('detail').innerHTML='<div class="empty">Наведите на узел — увидите имя в оригинале.<br><br>Потяните узел мышью — он «резиново» вернётся домой.</div>';fit();refresh();if(isMobile())closeSheets();});
+document.getElementById('reset').addEventListener('click',()=>{for(const n of nodes){n.x=n.homeX;n.y=n.homeY;n.vx=n.vy=0;}focusFam=null;focusConf=null;selected=null;searchHits=new Set();searchActive=false;searchOrder=[];searchIdx=-1;q.value='';searchHint.classList.remove('show');document.querySelectorAll('.fam').forEach(x=>x.classList.remove('on'));document.querySelectorAll('.cv').forEach(x=>x.classList.remove('on'));document.getElementById('detail').innerHTML='<div class="empty">Наведите на узел — увидите имя в оригинале.<br><br>Потяните узел мышью — он «резиново» вернётся домой.</div>';fit();refresh();if(isMobile())closeSheets();});
 document.getElementById('theme').addEventListener('click',()=>{const cur=document.documentElement.getAttribute('data-theme')|| (matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light');const next=cur==='dark'?'light':'dark';document.documentElement.setAttribute('data-theme',next);document.getElementById('theme').textContent=next==='dark'?'☀':'☾';});
 
 // ---- мобильные шторки (боковые панели прячутся под экран, а не исчезают совсем) ----
