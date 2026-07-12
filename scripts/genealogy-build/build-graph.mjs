@@ -22,35 +22,37 @@ import { iconSymbolDefs } from './lib/icons.mjs';
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 const OUT = path.resolve(HERE, '..', '..', 'data', 'genealogy', 'v2');
 
-// ── Якоря хребта (сверху вниз) + иконка-эмблема + датировка AM ─────────────
+// ── Якоря хребта (сверху вниз) + эмблема + датировка ──────────────────────
+// bc — подпись под узлом (понятно любому: до Р.Х. / событие);
+// am — в тултипе, «лет от Адама» (младоземельная шкала), словами, без жаргона «AM».
 const SPINE = [
-  { key: 'Adam@Gen.2.19',     ru: 'Адам',          ref: 'Быт 2:19',  am: '0 AM',      icon: 'person' },
-  { key: 'Noah@Gen.5.29',     ru: 'Ной',           ref: 'Быт 5:29',  am: '1056 AM',   icon: 'ark' },
-  { key: 'Shem@Gen.5.32',     ru: 'Сим',           ref: 'Быт 5:32',  am: '1558 AM',   icon: 'scroll' },
-  { key: 'Abraham@Gen.11.26', ru: 'Авраам',        ref: 'Быт 11:26', am: '2008 AM',   icon: 'tent' },
-  { key: 'Isaac@Gen.17.19',   ru: 'Исаак',         ref: 'Быт 17:19', am: '2108 AM',   icon: 'person' },
-  { key: 'Israel@Gen.25.26',  ru: 'Иаков',         ref: 'Быт 25:26', am: '2168 AM',   icon: 'ladder' },
-  { key: 'Judah@Gen.29.35',   ru: 'Иуда',          ref: 'Быт 29:35', am: '2250 AM',   icon: 'lion' },
-  { key: 'David@Rut.4.17',    ru: 'Давид',         ref: 'Руф 4:17',  am: '2949 AM',   icon: 'crown' },
-  { key: 'Solomon@2Sa.5.14',  ru: 'Соломон',       ref: '2Цар 5:14', am: '2989 AM',   icon: 'temple' },
-  { key: 'Jesus@Isa.7.14',    ru: 'Иисус Христос', ref: 'Мессия',    am: '~4000 AM',  icon: 'cross', messiah: true },
+  { key: 'Adam@Gen.2.19',     ru: 'Адам',          ref: 'Быт 2:19',  bc: 'Сотворение',    am: '0 · начало',        icon: 'person' },
+  { key: 'Noah@Gen.5.29',     ru: 'Ной',           ref: 'Быт 5:29',  bc: '≈2950 до Р.Х.', am: '1056 г. от Адама',  icon: 'ark' },
+  { key: 'Shem@Gen.5.32',     ru: 'Сим',           ref: 'Быт 5:32',  bc: '≈2450 до Р.Х.', am: '1558 г. от Адама',  icon: 'scroll' },
+  { key: 'Abraham@Gen.11.26', ru: 'Авраам',        ref: 'Быт 11:26', bc: '≈2000 до Р.Х.', am: '2008 г. от Адама',  icon: 'tent' },
+  { key: 'Isaac@Gen.17.19',   ru: 'Исаак',         ref: 'Быт 17:19', bc: '≈1900 до Р.Х.', am: '2108 г. от Адама',  icon: 'ram' },
+  { key: 'Israel@Gen.25.26',  ru: 'Иаков',         ref: 'Быт 25:26', bc: '≈1840 до Р.Х.', am: '2168 г. от Адама',  icon: 'ladder' },
+  { key: 'Judah@Gen.29.35',   ru: 'Иуда',          ref: 'Быт 29:35', bc: '≈1750 до Р.Х.', am: '2250 г. от Адама',  icon: 'lion' },
+  { key: 'David@Rut.4.17',    ru: 'Давид',         ref: 'Руф 4:17',  bc: '≈1000 до Р.Х.', am: '2949 г. от Адама',  icon: 'crown' },
+  { key: 'Solomon@2Sa.5.14',  ru: 'Соломон',       ref: '2Цар 5:14', bc: '≈970 до Р.Х.',  am: '2989 г. от Адама',  icon: 'temple' },
+  { key: 'Jesus@Isa.7.14',    ru: 'Иисус Христос', ref: 'Мессия',    bc: 'Рождество',     am: '≈4000 г. от Адама', icon: 'cross', messiah: true },
 ];
 
 // ── Семейства: раскрываются ПО РЕАЛЬНЫМ детям якоря (edges.json) ───────────
 // pick: как выбрать корни из детей якоря — {only:[...]} | {except:[...]} | 'all'
 const FAMILIES = [
-  { id: 'sethites',       ru: 'До потопа (линия Сифа)',   anchor: 'Adam@Gen.2.19',     side: -1, color: '#6f8a4c', icon: 'tree',     cap: 13, pick: 'all' },
-  { id: 'japheth',        ru: 'Народы от Иафета',         anchor: 'Noah@Gen.5.29',     side: +1, color: '#b5643f', icon: 'globe',    cap: 15, pick: { only: ['Иафет'] } },
-  { id: 'ham',            ru: 'Народы от Хама',           anchor: 'Noah@Gen.5.29',     side: -1, color: '#a86b46', icon: 'globe',    cap: 15, pick: { only: ['Хам'] } },
-  { id: 'shem-fathers',   ru: 'Праотцы после потопа',     anchor: 'Shem@Gen.5.32',     side: +1, color: '#9a8b3c', icon: 'scroll',   cap: 13, pick: 'all' },
-  { id: 'keturah',        ru: 'Сыны Авраама и Хеттуры',   anchor: 'Abraham@Gen.11.26', side: -1, color: '#8f7a3a', icon: 'tent',     cap: 11, pick: { except: ['Исаак', 'Измаил'] } },
-  { id: 'ishmaelites',    ru: 'Измаильтяне (12 князей)',  anchor: 'Abraham@Gen.11.26', side: +1, color: '#c08a3e', icon: 'camel',    cap: 14, pick: { only: ['Измаил'] } },
-  { id: 'esau-edom',      ru: 'Исав · Едом',              anchor: 'Isaac@Gen.17.19',   side: +1, color: '#a0453a', icon: 'mountain', cap: 14, pick: { only: ['Исав'] } },
-  { id: 'tribes',         ru: '12 колен Израиля',         anchor: 'Israel@Gen.25.26',  side: -1, color: '#4f7a4a', icon: 'tribes',   cap: 13, pick: { except: ['Иуда', 'Левий'] } },
-  { id: 'levites',        ru: 'Левиты и священство',      anchor: 'Israel@Gen.25.26',  side: +1, color: '#8a6db0', icon: 'menorah',  cap: 18, pick: { only: ['Левий'] } },
-  { id: 'judah-sons',     ru: 'Сыны Иуды (линия Фареса)', anchor: 'Judah@Gen.29.35',   side: -1, color: '#7d6ba0', icon: 'scroll',   cap: 12, pick: 'all' },
-  { id: 'house-of-david', ru: 'Дом Давида',               anchor: 'David@Rut.4.17',    side: +1, color: '#6d4b9a', icon: 'crown',    cap: 12, pick: { except: ['Соломон'] } },
-  { id: 'kings-of-judah', ru: 'Цари Иудеи',               anchor: 'Solomon@2Sa.5.14',  side: -1, color: '#9a5ba6', icon: 'crown',    cap: 16, pick: { only: ['Ровоам'] } },
+  { id: 'sethites',       ru: 'До потопа (линия Сифа)',   shortRu: 'Линия Сифа', anchor: 'Adam@Gen.2.19',     side: -1, color: '#6f8a4c', icon: 'tree',     cap: 13, pick: 'all' },
+  { id: 'japheth',        ru: 'Народы от Иафета',         shortRu: 'От Иафета',  anchor: 'Noah@Gen.5.29',     side: +1, color: '#b5643f', icon: 'globe',    cap: 15, pick: { only: ['Иафет'] } },
+  { id: 'ham',            ru: 'Народы от Хама',           shortRu: 'От Хама',    anchor: 'Noah@Gen.5.29',     side: -1, color: '#a86b46', icon: 'globe',    cap: 15, pick: { only: ['Хам'] } },
+  { id: 'shem-fathers',   ru: 'Праотцы после потопа',     shortRu: 'Праотцы',    anchor: 'Shem@Gen.5.32',     side: +1, color: '#9a8b3c', icon: 'scroll',   cap: 13, pick: 'all' },
+  { id: 'keturah',        ru: 'Сыны Авраама и Хеттуры',   shortRu: 'Сыны Хеттуры', anchor: 'Abraham@Gen.11.26', side: -1, color: '#8f7a3a', icon: 'tent',   cap: 11, pick: { except: ['Исаак', 'Измаил'] } },
+  { id: 'ishmaelites',    ru: 'Измаильтяне (12 князей)',  shortRu: 'Измаильтяне', anchor: 'Abraham@Gen.11.26', side: +1, color: '#c08a3e', icon: 'camel',   cap: 14, pick: { only: ['Измаил'] } },
+  { id: 'esau-edom',      ru: 'Исав · Едом',              shortRu: 'Исав · Едом', anchor: 'Isaac@Gen.17.19',  side: +1, color: '#a0453a', icon: 'mountain', cap: 14, pick: { only: ['Исав'] } },
+  { id: 'tribes',         ru: '12 колен Израиля',         shortRu: '12 колен',   anchor: 'Israel@Gen.25.26',  side: -1, color: '#4f7a4a', icon: 'tribes',   cap: 13, pick: { except: ['Иуда', 'Левий'] } },
+  { id: 'levites',        ru: 'Левиты и священство',      shortRu: 'Левиты',     anchor: 'Israel@Gen.25.26',  side: +1, color: '#8a6db0', icon: 'menorah',  cap: 18, pick: { only: ['Левий'] } },
+  { id: 'judah-sons',     ru: 'Сыны Иуды (линия Фареса)', shortRu: 'Сыны Иуды',  anchor: 'Judah@Gen.29.35',   side: -1, color: '#7d6ba0', icon: 'scroll',   cap: 12, pick: 'all' },
+  { id: 'house-of-david', ru: 'Дом Давида',               shortRu: 'Дом Давида', anchor: 'David@Rut.4.17',    side: +1, color: '#6d4b9a', icon: 'crown',    cap: 12, pick: { except: ['Соломон'] } },
+  { id: 'kings-of-judah', ru: 'Цари Иудеи',               shortRu: 'Цари Иудеи', anchor: 'Solomon@2Sa.5.14',  side: -1, color: '#9a5ba6', icon: 'crown',    cap: 16, pick: { only: ['Ровоам'] } },
 ];
 
 const SPINE_GOLD = '#c9a227';
@@ -127,7 +129,7 @@ async function main() {
     nodes.push({
       id: 'spine:' + s.key, ru: s.ru, ref: s.ref, family: 'spine', color: SPINE_GOLD,
       r: s.messiah ? 34 : 27, x: CX, y, homeX: CX, homeY: y, kind: 'spine',
-      icon: s.icon, am: s.am, key: s.key,
+      icon: s.icon, am: s.am, bc: s.bc, key: s.key,
       heb: en.heb, translit: en.translit, meaning: en.meaning, note: en.note, messiah: !!s.messiah,
     });
     if (i > 0) edges.push({ a: 'spine:' + SPINE[i - 1].key, b: 'spine:' + s.key, kind: 'spine' });
@@ -176,7 +178,7 @@ async function main() {
 
     // хаб-медальон семейства
     nodes.push({
-      id: hubId, ru: fam.ru, ref: `${members.length} имён`, family: fam.id,
+      id: hubId, ru: fam.shortRu || fam.ru, fullRu: fam.ru, ref: `${members.length} имён`, family: fam.id,
       color: fam.color, r: 18, x: hubX, y: hubY, homeX: hubX, homeY: hubY, kind: 'hub',
       icon: fam.icon, count: members.length,
     });

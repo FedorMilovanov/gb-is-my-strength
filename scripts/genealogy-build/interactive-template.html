@@ -243,10 +243,20 @@ for(const n of nodes){
     // SVG-эмблема внутри «шара»
     if(n.icon){const s=n.r*(n.kind==='spine'?1.32:1.42);const u=mk('use',{href:'#ic-'+n.icon,x:-s/2,y:-s/2,width:s,height:s});u.setAttributeNS('http://www.w3.org/1999/xlink','href','#ic-'+n.icon);u.style.color=(n.kind==='spine'?'#3a2a0e':'#fbf4e2');u.style.pointerEvents='none';g.appendChild(u);}
   }
-  if(big){const t=mk('text',{'text-anchor':'middle',dy:n.r+15,'font-size':n.kind==='spine'?14:11.5,'font-weight':n.kind==='spine'?'700':'600'});t.textContent=n.ru;g.appendChild(t);
-    if(n.kind==='spine'&&n.am){const s=mk('text',{'text-anchor':'middle',dy:n.r+29,'font-size':9.5,fill:'var(--gold)'});s.setAttribute('class','lbl-am');s.textContent=n.am;g.appendChild(s);}}
+  if(big){
+    const lw=mk('g',{'class':'lbl-wrap'});
+    const t=mk('text',{'text-anchor':'middle',dy:n.r+15,'font-size':n.kind==='spine'?14:11.5,'font-weight':n.kind==='spine'?'700':'600'});t.textContent=n.ru;lw.appendChild(t);
+    if(n.kind==='spine'&&n.bc){const s=mk('text',{'text-anchor':'middle',dy:n.r+29,'font-size':9.5,fill:'var(--gold)'});s.textContent=n.bc;lw.appendChild(s);}
+    g.appendChild(lw);n.lblWrap=lw;
+  }
   else{const t=mk('text',{'class':'lbl-leaf','text-anchor':'middle',dy:n.r+11});t.textContent=n.ru;g.appendChild(t);}
   n.g=g;gNodes.appendChild(g);
+}
+// капсула-подложка под подписи крупных узлов (читаемость поверх облаков/узлов)
+for(const n of nodes){ if(!n.lblWrap) continue;
+  const bb=n.lblWrap.getBBox();
+  const rect=mk('rect',{x:(bb.x-5).toFixed(1),y:(bb.y-1).toFixed(1),width:(bb.width+10).toFixed(1),height:(bb.height+2).toFixed(1),rx:6,fill:'var(--paper0)',opacity:0.64,stroke:'var(--panelEdge)','stroke-width':0.6});
+  n.lblWrap.insertBefore(rect,n.lblWrap.firstChild);
 }
 
 // ---- physics ----
