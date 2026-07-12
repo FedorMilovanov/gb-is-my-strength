@@ -59,6 +59,7 @@ export const SERIES_ORDER: Record<string, string[]> = {
   ],
   'hard-texts': [
     'krajne-li-isporcheno-serdce',
+    'novoe-serdce',
     'rimlyanam-7-veruyushchiy-ili-neveruyushchiy',
     'serdce-i-duh',
   ],
