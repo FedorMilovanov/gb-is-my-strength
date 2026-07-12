@@ -505,39 +505,95 @@ function sheetCss() {
   .wrap{max-width:1500px;width:100%;box-shadow:0 18px 60px rgba(90,70,30,.35), 0 2px 10px rgba(90,70,30,.22);border-radius:6px;overflow:hidden}
   svg.sheet{display:block;width:100%;height:auto;background:#f5edd8}
   .frame{fill:none;stroke:#8a6a1f;stroke-width:1.2;opacity:.55}
-  /* Семантический зум (LOD): при увеличении подписи/точки компенсируются,
-     второстепенное раскрывается ступенями z2/z3 */
-  svg.z2 text.lab-main{font-size:12.5px}
-  svg.z2 text.lab-minor{font-size:10px}
-  svg.z2 text.lab-cand{font-size:9.5px}
-  svg.z2 .pl-city{r:2.6px}
-  svg.z2 .pl-cand{r:2.8px}
-  svg.z2 .mile-t{font-size:9.5px}
-  svg.z2 .lab-war{font-size:7.5px}
-  svg.z2 .lab-ovl{font-size:7px}
-  svg.z2 .lab-ctx{font-size:8px}
-  svg.z3 text.lab-main{font-size:8px}
-  svg.z3 text.lab-minor{font-size:6.5px}
-  svg.z3 text.lab-cand{font-size:6px}
-  svg.z3 .pl-city{r:1.7px}
-  svg.z3 .pl-cand{r:1.9px}
-  svg.z3 .mile-t{font-size:6px}
-  svg.z3 .lab-war{font-size:5px}
-  svg.z3 .lab-ovl{font-size:4.6px}
-  svg.z3 .lab-ctx{font-size:5.2px}
-  svg.z3 .lab-region{opacity:.25}
-  svg.z3 .route{stroke-width:1.2}
-  svg.z3 .route-under{stroke-width:1.8}
-  svg.z3 .war-route{stroke-width:.7}
-  svg.z3 .ovl{stroke-width:.7}
-  svg.z2 .glyph path,svg.z2 .glyph circle{stroke-width:.6}
-  svg.z3 .glyph path,svg.z3 .glyph circle{stroke-width:.42}
-  svg.z2 .glyph .glyph-line{stroke-width:.62}
-  svg.z3 .glyph .glyph-line{stroke-width:.45}
-  svg.z2 text.lab-wp{font-size:7px}
-  svg.z3 text.lab-wp{font-size:4.6px}
+  /* ════ СИСТЕМА МАСШТАБИРОВАНИЯ ЛИСТА ════
+     Линейные объекты держат ЭКРАННУЮ толщину (non-scaling-stroke);
+     точки/подписи/символы — ступени LOD z2/z3/z4 (целевые размеры в
+     экранных px, пересчитаны на середину каждой ступени).            */
+  #sheet-svg path[fill="none"][stroke="#2d4a66"],
+  #sheet-svg path[fill="none"][stroke="#2e4d6b"],
+  #sheet-svg #tradeRoutes path,
+  #sheet-svg .route, #sheet-svg .route-under,
+  #sheet-svg .war-route, #sheet-svg .ovl,
+  #sheet-svg .leader, #sheet-svg .grat,
+  #sheet-svg .glyph path, #sheet-svg .glyph circle,
+  #sheet-svg .decor-ship path,
+  #sheet-svg path[stroke="#2e4d6b"], #sheet-svg ellipse[stroke="#2e4d6b"],
+  #sheet-svg path[stroke="#8b7d5a"], #sheet-svg path[stroke="#3a4150"]
+  {vector-effect:non-scaling-stroke}
+  #sheet-svg .pl-city, #sheet-svg .pl-cand, #sheet-svg .pl-ctx, #sheet-svg .wp-dot
+  {vector-effect:non-scaling-stroke}
+  #sheet-svg .pl-city{stroke-width:1px}
+  #sheet-svg .pl-cand{stroke-width:1.1px}
+  /* при non-scaling-stroke dash-паттерн тоже в ЭКРАННЫХ px — задаём один раз */
+  #sheet-svg #tradeRoutes path{stroke-width:2.1px;stroke-dasharray:.1 6.5}
+  #sheet-svg .route{stroke-width:2.1px;stroke-dasharray:.1 8}
+  #sheet-svg .route-under{stroke-width:3px}
+  #sheet-svg .war-route{stroke-width:1.15px;stroke-dasharray:9 5.5}
+  #sheet-svg .ovl-covenant{stroke-width:1.5px;stroke-dasharray:10 6}
+  #sheet-svg .ovl-ctxpath{stroke-width:1.2px;stroke-dasharray:2.8 4.6}
+  #sheet-svg .grat{stroke-width:.8px}
+  #sheet-svg .leader{stroke-width:.75px}
+  /* ── ступень z2 (≈1.6–3.1×, целевые экранные: main 13 · minor 11 · точка 4.4) ── */
+  svg.z2 text.lab-main{font-size:7.1px}
+  svg.z2 text.lab-minor{font-size:6px}
+  svg.z2 text.lab-cand{font-size:5.5px}
+  svg.z2 .pl-city{transform:scale(.257);transform-box:fill-box;transform-origin:center}
+  svg.z2 .pl-cand{transform:scale(.27);transform-box:fill-box;transform-origin:center}
+  svg.z2 .pl-ctx{transform:scale(.293);transform-box:fill-box;transform-origin:center}
+  svg.z2 .mile-t{font-size:5.5px}
+  svg.z2 .lab-war{font-size:4.7px}
+  svg.z2 .lab-ovl{font-size:4.4px}
+  svg.z2 .lab-ctx{font-size:4.7px}
+  svg.z2 text.lab-wp{font-size:4.4px}
+  svg.z2 .war-x{transform:scale(.6);transform-box:fill-box;transform-origin:center}
+  /* ── ступень z3 (≈3.1–5.5×) ── */
+  svg.z3 text.lab-main{font-size:3.7px}
+  svg.z3 text.lab-minor{font-size:3.2px}
+  svg.z3 text.lab-cand{font-size:2.9px}
+  svg.z3 .pl-city{transform:scale(.137);transform-box:fill-box;transform-origin:center}
+  svg.z3 .pl-cand{transform:scale(.144);transform-box:fill-box;transform-origin:center}
+  svg.z3 .pl-ctx{transform:scale(.16);transform-box:fill-box;transform-origin:center}
+  svg.z3 .mile-t{font-size:2.9px}
+  svg.z3 .lab-war{font-size:2.4px}
+  svg.z3 .lab-ovl{font-size:2.3px}
+  svg.z3 .lab-ctx{font-size:2.4px}
+  svg.z3 text.lab-wp{font-size:2.3px}
+  svg.z3 .war-x{transform:scale(.34);transform-box:fill-box;transform-origin:center}
+  svg.z3 .lab-region{opacity:.22}
+  /* ── ступень z4 (≥5.5×) ── */
+  svg.z4 text.lab-main{font-size:2.3px}
+  svg.z4 text.lab-minor{font-size:2px}
+  svg.z4 text.lab-cand{font-size:1.8px}
+  svg.z4 .pl-city{transform:scale(.0857);transform-box:fill-box;transform-origin:center}
+  svg.z4 .pl-cand{transform:scale(.09);transform-box:fill-box;transform-origin:center}
+  svg.z4 .pl-ctx{transform:scale(.107);transform-box:fill-box;transform-origin:center}
+  svg.z4 .mile-t{font-size:1.8px}
+  svg.z4 .lab-war{font-size:1.5px}
+  svg.z4 .lab-ovl{font-size:1.4px}
+  svg.z4 .lab-ctx{font-size:1.5px}
+  svg.z4 text.lab-wp{font-size:1.4px}
+  svg.z4 .war-x{transform:scale(.2);transform-box:fill-box;transform-origin:center}
+  svg.z4 .lab-region{opacity:0}
+  /* глифы: контур постоянный (ve), геометрия скейлится — тоньше не нужно */
+  /* ── базовые подписи (донор): родная LOD-семантика lbl-z1/lbl-z2 ── */
+  #sheet-svg text.lbl-z2, #sheet-svg g.lbl-z2{opacity:0;transition:opacity .3s}
+  svg.z2 text.lbl-z2, svg.z2 g.lbl-z2{opacity:.85}
+  svg.z3 text.lbl-z2, svg.z3 g.lbl-z2, svg.z4 text.lbl-z2, svg.z4 g.lbl-z2{opacity:.9}
+  /* крупные надписи базы (моря/регионы без lbl-классов) гаснут при близком зуме */
+  svg.z3 text.sea-label:not(.lbl-z1):not(.lbl-z2),
+  svg.z3 text.region-label:not(.lbl-z1):not(.lbl-z2){opacity:.25}
+  svg.z4 text.sea-label:not(.lbl-z1):not(.lbl-z2),
+  svg.z4 text.region-label:not(.lbl-z1):not(.lbl-z2){opacity:0}
+  svg.z3 text.region-he, svg.z4 text.region-he{opacity:.1}
+  svg.z3 text.lbl-z1, svg.z3 g.lbl-z1 text{font-size:2.4px}
+  svg.z4 text.lbl-z1, svg.z4 g.lbl-z1 text{font-size:1.6px}
+  svg.z3 text.lbl-z2, svg.z3 g.lbl-z2 text{font-size:2.2px}
+  svg.z4 text.lbl-z2, svg.z4 g.lbl-z2 text{font-size:1.5px}
   svg.z2 .wp-dot{opacity:.75}
-  text.lab-place,text.lab-cand,.mile-t,.lab-war,.lab-ovl,.lab-ctx,.pl-city,.pl-cand,text.lab-wp{transition:font-size .25s, r .25s}
+  /* без transition: смена LOD всегда совпадает с синхронной сменой viewBox
+     (см. atlas-reader.js apply()), а CSS-transition для font-size/r в этом
+     случае у части браузеров "застревает" на нескомпенсированном значении —
+     переход в одном тике должен быть мгновенным и детерминированным */
   .grat{stroke:#8a6a1f;stroke-width:.8;opacity:.4}
   .grat-t{font-family:Lora,Georgia,serif;font-weight:500;fill:#8a6a1f;opacity:.5}
   .rose path{fill:rgba(138,106,31,.32);stroke:#8a6a1f;stroke-width:.5;opacity:.8}
