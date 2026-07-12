@@ -339,10 +339,10 @@
    "homeY": 66,
    "kind": "leaf",
    "heb": "הֶ֫בֶל",
-   "translit": null,
-   "meaning": null,
+   "translit": "Хе́вель",
+   "meaning": "дуновение, дым",
    "ident": null,
-   "note": null
+   "note": "то же слово, что «суета» в Екклесиасте — о краткости и хрупкости жизни"
   },
   {
    "id": "leaf:cain--gen-4-1",
@@ -357,10 +357,10 @@
    "homeY": 96,
    "kind": "leaf",
    "heb": "קַ֫יִן",
-   "translit": null,
-   "meaning": null,
+   "translit": "Ка́ин",
+   "meaning": "приобретение",
    "ident": null,
-   "note": null
+   "note": "«приобрела я человека от Господа» (Быт 4:1) — от кана́ «приобретать»"
   },
   {
    "id": "leaf:seth--gen-4-25",
@@ -411,10 +411,10 @@
    "homeY": 111,
    "kind": "leaf",
    "heb": "אֱנוֹשׁ",
-   "translit": null,
-   "meaning": null,
+   "translit": "Эно́ш",
+   "meaning": "человек, смертный",
    "ident": null,
-   "note": null
+   "note": "подчёркивает слабость и смертность человека (ср. Пс 8:5)"
   },
   {
    "id": "leaf:irad--gen-4-18",
@@ -447,10 +447,10 @@
    "homeY": 111,
    "kind": "leaf",
    "heb": "קֵינָן",
-   "translit": null,
-   "meaning": null,
+   "translit": "Кена́н",
+   "meaning": "приобретение (?)",
    "ident": null,
-   "note": null
+   "note": "близко к имени Каин; точное значение спорно"
   },
   {
    "id": "leaf:mehujael--gen-4-18",
@@ -483,10 +483,10 @@
    "homeY": 111,
    "kind": "leaf",
    "heb": "מַהֲלַלְאֵל",
-   "translit": null,
-   "meaning": null,
+   "translit": "Махалал-Эль",
+   "meaning": "хвала Богу",
    "ident": null,
-   "note": null
+   "note": "махала́л «хвала» + Эль «Бог» — «славящий Бога»"
   },
   {
    "id": "leaf:methushael--gen-4-18",
@@ -519,10 +519,10 @@
    "homeY": 111,
    "kind": "leaf",
    "heb": "יֶ֫רֶד",
-   "translit": null,
-   "meaning": null,
+   "translit": "Йе́ред",
+   "meaning": "нисхождение, спуск",
    "ident": null,
-   "note": null
+   "note": "от йара́д «спускаться»"
   },
   {
    "id": "leaf:lamech--gen-4-18",
@@ -537,10 +537,10 @@
    "homeY": 81,
    "kind": "leaf",
    "heb": "לֶ֫מֶךְ",
-   "translit": null,
-   "meaning": null,
+   "translit": "Ле́мех",
+   "meaning": "сильный муж (?)",
    "ident": null,
-   "note": null
+   "note": "значение спорно; тот же корень — у Ламеха из рода Каина"
   },
   {
    "id": "leaf:enoch--gen-5-18",
@@ -1140,10 +1140,10 @@
    "homeY": 430,
    "kind": "leaf",
    "heb": "אַרְפַּכְשַׁד",
-   "translit": null,
-   "meaning": null,
+   "translit": "Арпахша́д",
+   "meaning": "спорно",
    "ident": "Халдея / Аррапха (?)",
-   "note": "Предок Евера, евреев и мессианской линии. Локализация спорна: Ур Халдейский (Иосиф) / Аррапха (Киркук) / Урфа. LXX и Лк 3:36 вставляют между ним и Салой Каинана."
+   "note": "толкований много (напр. «граница халдеев»); достоверного нет"
   },
   {
    "id": "leaf:asshur--gen-10-22",
@@ -1302,10 +1302,10 @@
    "homeY": 460,
    "kind": "leaf",
    "heb": "שֶׁ֫לַח",
-   "translit": null,
-   "meaning": null,
+   "translit": "Ше́лах",
+   "meaning": "росток, посланный",
    "ident": null,
-   "note": null
+   "note": "от корня «выпускать, посылать»"
   },
   {
    "id": "leaf:eber--gen-10-21",
@@ -2118,10 +2118,10 @@
    "homeY": 931,
    "kind": "leaf",
    "heb": "אָשֵׁר",
-   "translit": null,
-   "meaning": null,
+   "translit": "Аше́р",
+   "meaning": "счастливый, блаженный",
    "ident": null,
-   "note": null
+   "note": "«к блаженству моему; блаженной будут звать меня» (Быт 30:13)"
   },
   {
    "id": "leaf:benjamin--gen-35-18",
@@ -2154,10 +2154,10 @@
    "homeY": 961,
    "kind": "leaf",
    "heb": "דָּן",
-   "translit": null,
-   "meaning": null,
+   "translit": "Дан",
+   "meaning": "судья, рассудил",
    "ident": null,
-   "note": null
+   "note": "«судил мне Бог» (Быт 30:6)"
   },
   {
    "id": "leaf:dinah--gen-30-21",
@@ -2172,10 +2172,10 @@
    "homeY": 976,
    "kind": "leaf",
    "heb": "דִּינָה",
-   "translit": null,
-   "meaning": null,
+   "translit": "Дина́",
+   "meaning": "суд, оправдание",
    "ident": null,
-   "note": null
+   "note": "женская форма от Дан — «суд»"
   },
   {
    "id": "leaf:gad--gen-30-11",
@@ -2190,10 +2190,10 @@
    "homeY": 991,
    "kind": "leaf",
    "heb": "גָּד",
-   "translit": null,
-   "meaning": null,
+   "translit": "Гад",
+   "meaning": "удача, счастье",
    "ident": null,
-   "note": null
+   "note": "«прибыло счастье» (Быт 30:11)"
   },
   {
    "id": "leaf:issachar--gen-30-18",
@@ -2208,10 +2208,10 @@
    "homeY": 1006,
    "kind": "leaf",
    "heb": "יִשָּׂשכָר",
-   "translit": null,
-   "meaning": null,
+   "translit": "Иссаха́р",
+   "meaning": "есть награда",
    "ident": null,
-   "note": null
+   "note": "«дал Бог возмездие мне» (Быт 30:18)"
   },
   {
    "id": "leaf:joseph--gen-30-24",
@@ -2244,10 +2244,10 @@
    "homeY": 1036,
    "kind": "leaf",
    "heb": "נַפְתָּלִי",
-   "translit": null,
-   "meaning": null,
+   "translit": "Нафтали́",
+   "meaning": "моя борьба",
    "ident": null,
-   "note": null
+   "note": "«борьбою сразилась я с сестрою» (Быт 30:8)"
   },
   {
    "id": "leaf:reuben--gen-29-32",
@@ -2262,10 +2262,10 @@
    "homeY": 1051,
    "kind": "leaf",
    "heb": "רְאוּבֵן",
-   "translit": null,
-   "meaning": null,
+   "translit": "Реуве́н",
+   "meaning": "смотрите — сын!",
    "ident": null,
-   "note": null
+   "note": "«призрел Господь на моё бедствие» (Быт 29:32)"
   },
   {
    "id": "leaf:simeon--gen-29-33",
@@ -2280,10 +2280,10 @@
    "homeY": 1066,
    "kind": "leaf",
    "heb": "שִׁמְעוֹן",
-   "translit": null,
-   "meaning": null,
+   "translit": "Шимо́н",
+   "meaning": "услышание",
    "ident": null,
-   "note": null
+   "note": "«услышал Господь, что я нелюбима» (Быт 29:33)"
   },
   {
    "id": "leaf:zebulun--gen-30-20",
@@ -2298,10 +2298,10 @@
    "homeY": 1081,
    "kind": "leaf",
    "heb": "זְבוּלֻן",
-   "translit": null,
-   "meaning": null,
+   "translit": "Зевулу́н",
+   "meaning": "обитель, почтит",
    "ident": null,
-   "note": null
+   "note": "«теперь будет жить у меня муж мой» (Быт 30:20)"
   },
   {
    "id": "leaf:beriah--gen-46-17",
@@ -2367,10 +2367,10 @@
    "homeY": 1006,
    "kind": "leaf",
    "heb": "לֵוִי",
-   "translit": null,
-   "meaning": null,
+   "translit": "Леви́",
+   "meaning": "привязанность",
    "ident": null,
-   "note": null
+   "note": "«теперь прилепится ко мне муж мой» (Быт 29:34)"
   },
   {
    "id": "leaf:gershon--gen-46-11",
@@ -2385,10 +2385,10 @@
    "homeY": 961,
    "kind": "leaf",
    "heb": "גֵּרְשׁוֹן",
-   "translit": null,
-   "meaning": null,
+   "translit": "Гершо́н",
+   "meaning": "пришелец",
    "ident": null,
-   "note": null
+   "note": "ср. гер «пришелец» — «я стал пришельцем в чужой земле» (Исх 2:22)"
   },
   {
    "id": "leaf:jochebed--exo-6-20",
@@ -2403,10 +2403,10 @@
    "homeY": 991,
    "kind": "leaf",
    "heb": "יוֹכֶ֫בֶד",
-   "translit": null,
-   "meaning": null,
+   "translit": "Йохе́вед",
+   "meaning": "Яхве — слава",
    "ident": null,
-   "note": null
+   "note": "Йо- (Яхве) + кавод «слава»; первое имя с именем Бога в Библии"
   },
   {
    "id": "leaf:kohath--gen-46-11",
@@ -2421,10 +2421,10 @@
    "homeY": 1021,
    "kind": "leaf",
    "heb": "קְהָת",
-   "translit": null,
-   "meaning": null,
+   "translit": "Кеха́т",
+   "meaning": "собрание (?)",
    "ident": null,
-   "note": null
+   "note": "значение спорно; связывают со «сбором, послушанием»"
   },
   {
    "id": "leaf:merari--gen-46-11",
@@ -2439,10 +2439,10 @@
    "homeY": 1051,
    "kind": "leaf",
    "heb": "מְרָרִי",
-   "translit": null,
-   "meaning": null,
+   "translit": "Мерари́",
+   "meaning": "горький",
    "ident": null,
-   "note": null
+   "note": "от мар «горький»"
   },
   {
    "id": "leaf:libni--exo-6-17",
@@ -2493,10 +2493,10 @@
    "homeY": 958.2727272727273,
    "kind": "leaf",
    "heb": "אַהֲרֹן",
-   "translit": null,
-   "meaning": null,
+   "translit": "Ахаро́н",
+   "meaning": "светоносный (?)",
    "ident": null,
-   "note": null
+   "note": "значение спорно; предлагают «светлый», «гора», «носитель»"
   },
   {
    "id": "leaf:miriam--exo-15-20",
@@ -2511,10 +2511,10 @@
    "homeY": 971.9090909090909,
    "kind": "leaf",
    "heb": "מִרְיָם",
-   "translit": null,
-   "meaning": null,
+   "translit": "Мирья́м",
+   "meaning": "спорно",
    "ident": null,
-   "note": null
+   "note": "предлагают «горечь», «возлюбленная», «упрямство»"
   },
   {
    "id": "leaf:moses--exo-2-10",
@@ -2547,10 +2547,10 @@
    "homeY": 999.1818181818181,
    "kind": "leaf",
    "heb": "עַמְרָם",
-   "translit": null,
-   "meaning": null,
+   "translit": "Амра́м",
+   "meaning": "народ возвышен",
    "ident": null,
-   "note": null
+   "note": "ам «народ» + рам «высокий»"
   },
   {
    "id": "leaf:hebron--exo-6-18",
@@ -2706,10 +2706,10 @@
    "homeY": 1128,
    "kind": "leaf",
    "heb": "עֵר",
-   "translit": null,
-   "meaning": null,
+   "translit": "Эр",
+   "meaning": "бодрствующий",
    "ident": null,
-   "note": null
+   "note": "от корня «бодрствовать, бдеть»"
   },
   {
    "id": "leaf:onan--gen-38-4",
@@ -2724,10 +2724,10 @@
    "homeY": 1158,
    "kind": "leaf",
    "heb": "אוֹנָן",
-   "translit": null,
-   "meaning": null,
+   "translit": "Она́н",
+   "meaning": "сила",
    "ident": null,
-   "note": null
+   "note": "от он «сила, мощь»"
   },
   {
    "id": "leaf:perez--gen-38-29",
@@ -2742,10 +2742,10 @@
    "homeY": 1188,
    "kind": "leaf",
    "heb": "פֶּ֫רֶץ",
-   "translit": null,
-   "meaning": null,
+   "translit": "Пе́рец",
+   "meaning": "прорыв",
    "ident": null,
-   "note": null
+   "note": "«как ты расторг себе преграду» (Быт 38:29)"
   },
   {
    "id": "leaf:shelah--gen-38-5",
@@ -2759,11 +2759,11 @@
    "homeX": 360,
    "homeY": 1218,
    "kind": "leaf",
-   "heb": "שֵׁלָה",
-   "translit": null,
-   "meaning": null,
+   "heb": "שֶׁ֫לַח",
+   "translit": "Ше́лах",
+   "meaning": "росток, посланный",
    "ident": null,
-   "note": null
+   "note": "от корня «выпускать, посылать»"
   },
   {
    "id": "leaf:zerah--gen-38-30",
@@ -2778,10 +2778,10 @@
    "homeY": 1248,
    "kind": "leaf",
    "heb": "זֶ֫רַח",
-   "translit": null,
-   "meaning": null,
+   "translit": "Зе́рах",
+   "meaning": "восход, сияние",
    "ident": null,
-   "note": null
+   "note": "от зара́х «восходить, сиять» (о заре)"
   },
   {
    "id": "leaf:hamul--gen-46-12",
@@ -2832,10 +2832,10 @@
    "homeY": 1163,
    "kind": "leaf",
    "heb": "עֵר",
-   "translit": null,
-   "meaning": null,
+   "translit": "Эр",
+   "meaning": "бодрствующий",
    "ident": null,
-   "note": null
+   "note": "от корня «бодрствовать, бдеть»"
   },
   {
    "id": "leaf:joash--1ch-4-22",
