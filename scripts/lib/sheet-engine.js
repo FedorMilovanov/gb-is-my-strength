@@ -502,7 +502,7 @@ function sheetCss() {
   return `
   html,body{margin:0;min-height:100%;background:#efe6cf}
   body{display:grid;place-items:center;padding:12px;box-sizing:border-box}
-  .wrap{max-width:1500px;width:100%;box-shadow:0 18px 60px rgba(90,70,30,.35), 0 2px 10px rgba(90,70,30,.22);border-radius:6px;overflow:hidden}
+  .wrap{position:relative;max-width:1500px;width:100%;box-shadow:0 18px 60px rgba(90,70,30,.35), 0 2px 10px rgba(90,70,30,.22);border-radius:6px;overflow:hidden}
   svg.sheet{display:block;width:100%;height:auto;background:#f5edd8}
   .frame{fill:none;stroke:#8a6a1f;stroke-width:1.2;opacity:.55}
   /* ════ СИСТЕМА МАСШТАБИРОВАНИЯ ЛИСТА ════
@@ -669,7 +669,11 @@ function sheetCss() {
   .st-body{font-family:Georgia,serif;font-size:13px;color:#3a3020}
   .st-body b{color:#8a6a1f}
   .st-body i{color:#7a6a48;margin-left:6px;font-size:11.5px}
-  .g9{position:fixed;right:10px;bottom:10px;z-index:9;font:600 10px/1 system-ui;letter-spacing:.08em;color:#7a5c26;background:rgba(246,241,231,.9);border:1px solid rgba(138,106,31,.4);border-radius:999px;padding:6px 10px}
+  /* было position:fixed + bottom:10 — на широких вьюпортах съезжал за
+     край листа (как dive-btn), да ещё и садился на масштабную линейку;
+     теперь внутри .wrap (position:absolute) и в верхнем правом углу, где
+     после переноса dive-btn ниже розы ветров освободилось место */
+  .g9{position:absolute;right:10px;top:10px;z-index:9;font:600 10px/1 system-ui;letter-spacing:.08em;color:#7a5c26;background:rgba(246,241,231,.9);border:1px solid rgba(138,106,31,.4);border-radius:999px;padding:6px 10px}
   /* ── Читалка (R1, §14): корешок, погружение, курсоры ── */
   svg.sheet{cursor:grab;touch-action:none}
   .frame,.legend,.cartouche,.furn{transition:opacity .35s}
@@ -733,7 +737,12 @@ function sheetCss() {
   .do-sec .conf-med,.do-sec .conf-lo,.do-sec .conf-hi{display:inline-block;font:600 9px/1 system-ui;letter-spacing:.08em;padding:2px 7px;border-radius:999px;background:rgba(138,106,31,.15);color:#7a5c26}
   .do-sec .act-btn{display:none}
   body.dive .dossier{display:none}
-  .dive-btn{position:fixed;right:10px;top:10px;z-index:21;width:38px;height:38px;border-radius:10px;border:1px solid rgba(138,106,31,.4);background:rgba(246,241,231,.92);color:#7a5c26;font-size:17px;cursor:pointer;box-shadow:0 2px 8px rgba(90,70,30,.2)}
+  /* position:absolute относительно .wrap (не viewport) — иначе на широких
+     экранах кнопки съезжают за реальный правый край листа (обрезаются
+     тенью контейнера); top сдвинут ниже розы ветров (компас в SVG кончается
+     на ~108px при ширине листа 1500px) — иначе кнопка "Домой" ложится
+     поверх компаса */
+  .dive-btn{position:absolute;right:10px;top:120px;z-index:21;width:38px;height:38px;border-radius:10px;border:1px solid rgba(138,106,31,.4);background:rgba(246,241,231,.92);color:#7a5c26;font-size:17px;cursor:pointer;box-shadow:0 2px 8px rgba(90,70,30,.2)}
   .home-btn{right:64px}
   .dive-btn:hover{background:#f6f1e7}
   body.dive .spine,body.dive .stage-strip,body.dive .g9{display:none}
@@ -783,8 +792,7 @@ function buildSheetHtml(route, opts) {
 </style>
 </head>
 <body>
-<div class="wrap">${svg}${stageStripHtml}</div>
-<span class="g9">${esc(badge)}</span>
+<div class="wrap">${svg}${stageStripHtml}<span class="g9">${esc(badge)}</span></div>
 <script>window.ATLAS_SPINE=${spine};window.ATLAS_PLACES=${cardsJson};window.ATLAS_GLYPHS=${JSON.stringify(GLYPH_META)};window.ATLAS_STAGES=${JSON.stringify((route.stages || []).map(st => ({ n: st.n, t: st.t, d: st.d || '', age: st.age || '', km: st.km || '', r: st.r || '' })))};window.ATLAS_WPS=${JSON.stringify((route.verified_waypoints || []).map(w2 => ({ n: w2.name, role: w2.role || '', note: w2.note || '' })))};window.ATLAS_OVLS=${JSON.stringify((route.overlays || []).map(o2 => ({ label: o2.label || '', story: o2.story || '', refs: o2.refs || '' })))};window.ATLAS_DECOR=${JSON.stringify(DECOR_META)};</script>
 <script src="atlas-reader.js"></script>
 </body>
