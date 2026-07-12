@@ -81,6 +81,12 @@
       "risk": 2,
       "status": "production-dist"
     },
+    "/articles/chto-bibliya-nazyvaet-serdcem/": {
+      "owner": "astro",
+      "source": "src/pages/articles/chto-bibliya-nazyvaet-serdcem/index.astro",
+      "risk": 2,
+      "status": "production-dist"
+    },
     "/articles/krajne-li-isporcheno-serdce/": {
       "owner": "astro",
       "source": "src/pages/articles/krajne-li-isporcheno-serdce/index.astro",
@@ -102,6 +108,12 @@
     "/articles/serdce-i-duh/": {
       "owner": "astro",
       "source": "src/pages/articles/serdce-i-duh/index.astro",
+      "risk": 2,
+      "status": "production-dist"
+    },
+    "/articles/serdce-spravochnik/": {
+      "owner": "astro",
+      "source": "src/pages/articles/serdce-spravochnik/index.astro",
       "risk": 2,
       "status": "production-dist"
     },
