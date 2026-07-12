@@ -623,14 +623,18 @@ html:not(.dark) .gtip.gb-floating-tip::before {
    .gbs2-part / .gbs2-sheet-part rows in place of .gbs2-thumb. Unscoped (no
    [data-gill-v16] gate — that system is Gill-only); safe alongside it since
    all classes are renamed hlr-* and never collide with Gill's gblr-*. */
-.gbs2-part:has(.hlr-ribbon){grid-template-columns:58px minmax(0,1fr) auto}
-.hlr-ribbon{position:relative;display:block;width:52px;height:66px;flex-shrink:0;filter:drop-shadow(0 4px 8px rgba(0,0,0,.4)) drop-shadow(0 1px 1.5px rgba(0,0,0,.4));transition:transform .3s cubic-bezier(.22,1,.36,1)}
+/* The ribbon row must share the SAME first-column width as numbered rows
+   (compact desktop rail = 36px, line 383) so every part title lands on one
+   vertical line, as in Gill. The ribbon is a modest leather tab — sized to
+   the column, not towering over neighbouring rows. */
+.gbs2-part:has(.hlr-ribbon){grid-template-columns:36px minmax(0,1fr) 14px}
+.hlr-ribbon{position:relative;display:block;width:34px;height:43px;margin:0 auto;flex-shrink:0;filter:drop-shadow(0 2px 4px rgba(0,0,0,.34)) drop-shadow(0 1px 1px rgba(0,0,0,.32));transition:transform .3s cubic-bezier(.22,1,.36,1)}
 .gbs2-part:hover .hlr-ribbon,.gbs2-sheet-part:hover .hlr-ribbon{transform:translateY(-1px)}
 .hlr-ribbon__shape{position:absolute;inset:0;width:100%;height:100%;display:block}
-.hlr-ribbon__text{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:flex-start;gap:2px;padding-top:7px;pointer-events:none}
+.hlr-ribbon__text{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:flex-start;gap:1px;padding-top:5px;pointer-events:none}
 .hlr-ribbon__orn{color:#f2d191;filter:drop-shadow(0 1.5px 0 rgba(50,24,8,.7)) drop-shadow(0 -1px 0 rgba(255,235,190,.3))}
-.hlr-ribbon__orn svg{width:13px;height:13px;fill:currentColor;display:block}
-.hlr-ribbon__word{font-family:var(--gb-font-serif,Lora,Georgia,serif);font-weight:700;font-size:6.7px;letter-spacing:.04em;text-transform:uppercase;text-align:center;line-height:1.1;max-width:40px;color:transparent;background-image:linear-gradient(172deg,#fff2d2 8%,#eec886 48%,#c28a48 94%);-webkit-background-clip:text;background-clip:text;filter:drop-shadow(0 1px 0 rgba(40,18,6,.85)) drop-shadow(0 -.5px 0 rgba(255,238,200,.32))}
+.hlr-ribbon__orn svg{width:10px;height:10px;fill:currentColor;display:block}
+.hlr-ribbon__word{font-family:var(--gb-font-serif,Lora,Georgia,serif);font-weight:700;font-size:5.3px;letter-spacing:.02em;text-transform:uppercase;text-align:center;line-height:1.08;max-width:29px;color:transparent;background-image:linear-gradient(172deg,#fff2d2 8%,#eec886 48%,#c28a48 94%);-webkit-background-clip:text;background-clip:text;filter:drop-shadow(0 1px 0 rgba(40,18,6,.85)) drop-shadow(0 -.5px 0 rgba(255,238,200,.32))}
 .hlr-ribbon__div{display:none}
 /* default («Пролог») leather layer strengths */
 .hlr-l-pores{opacity:.5}
@@ -643,13 +647,14 @@ html:not(.dark) .gtip.gb-floating-tip::before {
 .hlr-ribbon--reference .hlr-l-warm{fill:#54291b;opacity:.05}
 .hlr-ribbon--reference .hlr-l-glaze{opacity:.16}
 .hlr-ribbon--reference .hlr-l-stitchlight{stroke-opacity:.58}
-.hlr-ribbon--reference .hlr-ribbon__word{font-size:5.6px;letter-spacing:.01em;max-width:44px}
+.hlr-ribbon--reference .hlr-ribbon__word{font-size:4.6px;letter-spacing:.01em;max-width:31px}
 @media (prefers-reduced-motion: reduce){.hlr-ribbon{transition:none}}
 
-/* Mobile sheet context — bigger ribbon (rows are already touch-sized) */
-.gbs2-sheet-part:has(.hlr-ribbon){grid-template-columns:70px minmax(0,1fr)}
-.gbs2-sheet-part .hlr-ribbon{width:62px;height:79px}
-.gbs2-sheet-part .hlr-ribbon__orn svg{width:15px;height:15px}
-.gbs2-sheet-part .hlr-ribbon__word{font-size:8px;max-width:48px}
-.gbs2-sheet-part .hlr-ribbon--reference .hlr-ribbon__word{font-size:6.8px;max-width:52px}
-.gbs2-sheet-part .hlr-ribbon__text{padding-top:9px}
+/* Mobile sheet — rows are touch-sized (thumb 64px col), so the ribbon may be
+   a touch larger, but it still shares the 62px column so titles stay aligned. */
+.gbs2-sheet-part:has(.hlr-ribbon){grid-template-columns:62px minmax(0,1fr)}
+.gbs2-sheet-part .hlr-ribbon{width:48px;height:61px;margin:0 auto}
+.gbs2-sheet-part .hlr-ribbon__orn svg{width:13px;height:13px}
+.gbs2-sheet-part .hlr-ribbon__word{font-size:7px;max-width:42px}
+.gbs2-sheet-part .hlr-ribbon--reference .hlr-ribbon__word{font-size:6px;max-width:46px}
+.gbs2-sheet-part .hlr-ribbon__text{padding-top:7px}
