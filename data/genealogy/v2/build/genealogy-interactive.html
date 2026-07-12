@@ -91,9 +91,6 @@
   .node text{font-family:Georgia,serif;fill:var(--ink);paint-order:stroke;stroke:var(--paper0);stroke-width:2.4px;pointer-events:none}
   .node .lbl-leaf{opacity:0;transition:opacity .18s;font-size:9.5px}
   .node.show .lbl-leaf{opacity:1}
-  .aureole{transform-box:fill-box;transform-origin:center;animation:auSpin 120s linear infinite}
-  @keyframes auSpin{to{transform:rotate(360deg)}}
-  @media (prefers-reduced-motion:reduce){.aureole{animation:none}}
   #tether{stroke:var(--tether);stroke-width:1.2;stroke-dasharray:2 4;opacity:0;stroke-linecap:round}
   .dim{opacity:.12;transition:opacity .25s}
   .undim{transition:opacity .25s}
@@ -184,9 +181,29 @@
         <stop offset="100%" stop-color="#000000" stop-opacity="0.20"/>
       </radialGradient>
       <radialGradient id="christGlow" cx="50%" cy="50%" r="50%">
-        <stop offset="0%" stop-color="#f6de96" stop-opacity="0.55"/>
-        <stop offset="42%" stop-color="#f0d488" stop-opacity="0.17"/>
+        <stop offset="0%" stop-color="#fff2cf" stop-opacity="0.6"/>
+        <stop offset="20%" stop-color="#f9e4a8" stop-opacity="0.4"/>
+        <stop offset="42%" stop-color="#f0d488" stop-opacity="0.2"/>
+        <stop offset="65%" stop-color="#f0d488" stop-opacity="0.08"/>
+        <stop offset="85%" stop-color="#f0d488" stop-opacity="0.02"/>
         <stop offset="100%" stop-color="#f0d488" stop-opacity="0"/>
+      </radialGradient>
+      <!-- стеклянный шар: смещённый фокус света (верх-лево), тёплое золото → янтарь → тень -->
+      <radialGradient id="christGlass" cx="34%" cy="28%" r="78%">
+        <stop offset="0%" stop-color="#fffdf3"/>
+        <stop offset="20%" stop-color="#ffe9a4"/>
+        <stop offset="45%" stop-color="#e7b64e"/>
+        <stop offset="74%" stop-color="#b07f2a"/>
+        <stop offset="100%" stop-color="#5f3d10"/>
+      </radialGradient>
+      <radialGradient id="christSpecular" cx="50%" cy="50%" r="50%">
+        <stop offset="0%" stop-color="#ffffff" stop-opacity="0.95"/>
+        <stop offset="50%" stop-color="#ffffff" stop-opacity="0.3"/>
+        <stop offset="100%" stop-color="#ffffff" stop-opacity="0"/>
+      </radialGradient>
+      <radialGradient id="christRim" cx="50%" cy="50%" r="50%">
+        <stop offset="0%" stop-color="#ffe9a4" stop-opacity="0.5"/>
+        <stop offset="100%" stop-color="#ffe9a4" stop-opacity="0"/>
       </radialGradient>
     </defs><g id="viewport">
       <g id="g-hulls"></g>
@@ -278,25 +295,29 @@ for(const n of nodes){
   const g=document.createElementNS(SVGNS,'g');g.setAttribute('class','node');g.dataset.id=n.id;
   const big=(n.kind!=='leaf');
   if(n.messiah){
-    // ореол Спасителя: мягкое сияние + венец лучей (медленно вращается)
-    g.appendChild(mk('circle',{r:n.r+40,fill:'url(#christGlow)','pointer-events':'none'}));
-    const au=mk('g',{'class':'aureole','pointer-events':'none'}); const N=36;
-    for(let i=0;i<N;i++){const a=i/N*Math.PI*2,lng=i%2===0,r0=n.r+5,r1=n.r+(lng?23:12);
-      au.appendChild(mk('line',{x1:(Math.cos(a)*r0).toFixed(1),y1:(Math.sin(a)*r0).toFixed(1),x2:(Math.cos(a)*r1).toFixed(1),y2:(Math.sin(a)*r1).toFixed(1),stroke:'var(--goldGlow)','stroke-width':lng?1.5:0.9,'stroke-linecap':'round',opacity:lng?0.5:0.28}));}
-    g.appendChild(au);
+    // мягкое рассеянное сияние вокруг — один слой, без кольца и без венца лучей
+    // (венец читался как иконописный нимб конкретной традиции — сайт межконфессиональный)
+    g.appendChild(mk('circle',{r:n.r+50,fill:'url(#christGlow)','pointer-events':'none'}));
   }
-  if(n.kind==='spine'){g.appendChild(mk('circle',{r:n.r+ (n.messiah?11:7),fill:'var(--goldGlow)',opacity:n.messiah?.30:.15}));}
-  // медальон: круг-основа
-  const c=mk('circle',{r:n.r,fill:n.kind==='spine'?'var(--spineGold)':n.color,'stroke-width':n.kind==='leaf'?1.2:2});
+  else if(n.kind==='spine'){g.appendChild(mk('circle',{r:n.r+7,fill:'var(--goldGlow)',opacity:0.15}));}
+  // медальон: круг-основа (у Христа — стеклянный 3D-шар: смещённый градиент+блики вместо плоской заливки)
+  const c=mk('circle',{r:n.r,fill:n.messiah?'url(#christGlass)':(n.kind==='spine'?'var(--spineGold)':n.color),'stroke-width':n.kind==='leaf'?1.2:2});
   // достоверность отождествления (режим народов): спорное — пунктир, малоизвестное — бледнее
   if(n.kind==='leaf'&&n.confidence){if(n.confidence==='disputed'){c.setAttribute('stroke','#b5643f');c.setAttribute('stroke-dasharray','2.2 1.8');c.setAttribute('stroke-width',1.4);}if(n.confidence==='obscure'){c.setAttribute('fill-opacity','0.4');}}
   n.circle=c;g.appendChild(c);
   if(big){
-    // блик-подсветка сверху (объём) + внутреннее кольцо-медальон
-    g.appendChild(mk('circle',{r:n.r,fill:'url(#nodeSheen)','pointer-events':'none'}));
-    g.appendChild(mk('circle',{r:n.r-3.4,fill:'none',stroke:n.kind==='spine'?'rgba(58,42,14,.42)':'rgba(255,250,236,.5)','stroke-width':1,'pointer-events':'none'}));
+    if(n.messiah){
+      // блики стекла: большое мягкое пятно света + маленький яркий блик + тёплый рефлекс снизу-справа
+      g.appendChild(mk('ellipse',{cx:-n.r*0.3,cy:-n.r*0.36,rx:n.r*0.52,ry:n.r*0.38,fill:'url(#christSpecular)','pointer-events':'none'}));
+      g.appendChild(mk('ellipse',{cx:-n.r*0.16,cy:-n.r*0.48,rx:n.r*0.13,ry:n.r*0.08,fill:'#fffdf6',opacity:0.9,'pointer-events':'none'}));
+      g.appendChild(mk('ellipse',{cx:n.r*0.32,cy:n.r*0.4,rx:n.r*0.4,ry:n.r*0.22,fill:'url(#christRim)','pointer-events':'none'}));
+    } else {
+      // блик-подсветка сверху (объём) + внутреннее кольцо-медальон
+      g.appendChild(mk('circle',{r:n.r,fill:'url(#nodeSheen)','pointer-events':'none'}));
+      g.appendChild(mk('circle',{r:n.r-3.4,fill:'none',stroke:n.kind==='spine'?'rgba(58,42,14,.42)':'rgba(255,250,236,.5)','stroke-width':1,'pointer-events':'none'}));
+    }
     // SVG-эмблема внутри «шара»
-    if(n.icon){const s=n.r*(n.kind==='spine'?1.32:1.42);const u=mk('use',{href:'#ic-'+n.icon,x:-s/2,y:-s/2,width:s,height:s});u.setAttributeNS('http://www.w3.org/1999/xlink','href','#ic-'+n.icon);u.style.color=(n.kind==='spine'?'#3a2a0e':'#fbf4e2');u.style.pointerEvents='none';g.appendChild(u);}
+    if(n.icon){const s=n.r*(n.kind==='spine'?1.32:1.42);const u=mk('use',{href:'#ic-'+n.icon,x:-s/2,y:-s/2,width:s,height:s});u.setAttributeNS('http://www.w3.org/1999/xlink','href','#ic-'+n.icon);u.style.color=n.messiah?'#3a2408':(n.kind==='spine'?'#3a2a0e':'#fbf4e2');u.style.pointerEvents='none';if(n.messiah)u.style.opacity=0.82;g.appendChild(u);}
   }
   if(big){
     const lw=mk('g',{'class':'lbl-wrap'});
