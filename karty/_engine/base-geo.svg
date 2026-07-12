@@ -305,13 +305,15 @@
       fill="none" stroke="rgba(232,200,121,.06)" stroke-width="1.5"
       stroke-dasharray="4 6" class="lbl-z1" pointer-events="none"/>
     <text class="region-he" font-size="10"><textPath href="#canaanRidge" startOffset="64%">כְּנַעַן</textPath></text>
-    <text class="region-label" x="120" y="1040" font-size="20">ЕГИПЕТ</text>
+    <!-- макро-подпись СТРАНЫ — в глубине ЮЗ суши, вдали от точки-стана
+         «Египет» у дельты (иначе оба «Египта» стоят рядом = дубль) -->
+    <text class="region-label" x="105" y="1108" font-size="20">ЕГИПЕТ</text>
     <!-- Раамсес (Тель эд-Даба/Авар) — будущая карта Исхода -->
     <g class="lbl-z2" transform="translate(210,880)" opacity=".3">
       <circle r="2" fill="rgba(10,13,20,.7)" stroke="#c8a060" stroke-width=".7"/>
       <text x="5" y="4" font-size="4" fill="#c8a060" letter-spacing=".06em">РААМСЕС</text>
     </g>
-    <text class="region-he" x="135" y="1066" font-size="13">מִצְרַיִם</text>
+    <text class="region-he" x="120" y="1134" font-size="13">מִצְרַיִם</text>
     <text class="region-label" x="520" y="1170" font-size="14" letter-spacing=".3em">СИНАЙ</text>
     <!-- Вифлеем (Бейт-Лехем) — недалеко от Хеврона и Мории -->
     <text class="region-label lbl-z2" x="602" y="815" font-size="4.5" fill="#9aa2ae" opacity=".4" letter-spacing=".12em">ВИФЛЕЕМ · בֵּית לֶחֶם</text>
