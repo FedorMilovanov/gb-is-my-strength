@@ -1,11 +1,15 @@
 #!/usr/bin/env node
 /**
- * build-interactive.mjs — впрыск графа в HTML-шаблон интерактивного прототипа.
+ * build-interactive.mjs — впрыск графа в общий HTML-движок интерактива.
  *
- * Читает interactive-template.html (тело: <style>…<div id="app">…<script>) и
- * genealogy-graph.json, заменяет плейсхолдер /*__GRAPH__*\/ на JSON, и пишет:
- *   1) data/genealogy/v2/build/genealogy-interactive.html — самодостаточный документ;
- *   2) <scratchpad>/genealogy-interactive.artifact.html   — тело для публикации артефактом.
+ * Один движок (interactive-template.html, тело: <style>…<div id="app">…<script>)
+ * питается разными графами (та же схема nodes/edges/families/iconDefs). Плейсхолдер
+ * /*__GRAPH__*\/ заменяется на JSON. Для каждого графа пишем самодостаточный
+ * документ в build/ и «тело» для публикации артефактом в scratchpad.
+ *
+ * Цели:
+ *   1) Живое древо — genealogy-graph.json → genealogy-interactive.html
+ *   2) Карта народов — nations-graph.json → nations-interactive.html
  *
  * Pure Node, без зависимостей. Детерминизм.
  */
@@ -18,31 +22,38 @@ const ROOT = path.resolve(HERE, '..', '..');
 const OUT = path.join(ROOT, 'data', 'genealogy', 'v2', 'build');
 const SCRATCH = process.argv[2] || '/tmp/claude-0/-home-user/929a9a64-a6ab-5e37-bb8c-a4e74ec5a4cf/scratchpad';
 
-async function main() {
-  const tpl = await readFile(path.join(HERE, 'interactive-template.html'), 'utf8');
-  const graph = await readFile(path.join(OUT, 'genealogy-graph.json'), 'utf8');
-  const json = JSON.stringify(JSON.parse(graph));            // компактно
-  if (!tpl.includes('/*__GRAPH__*/')) throw new Error('плейсхолдер /*__GRAPH__*/ не найден в шаблоне');
+const TARGETS = [
+  { graph: 'genealogy-graph.json', out: 'genealogy-interactive.html', artifact: 'genealogy-interactive.artifact.html', title: 'Живое древо — Генеалогия Спасителя (интерактив)' },
+  { graph: 'nations-graph.json',   out: 'nations-interactive.html',   artifact: 'nations-interactive.artifact.html',   title: 'Карта народов — Таблица народов (Бытие 10)' },
+];
+
+async function build(tpl, t) {
+  const json = JSON.stringify(JSON.parse(await readFile(path.join(OUT, t.graph), 'utf8')));
   const body = tpl.replace('/*__GRAPH__*/', json);
-
-  // артефакт: только тело (обёртку <head> добавляет паблишер)
-  await writeFile(path.join(SCRATCH, 'genealogy-interactive.artifact.html'), body);
-
-  // самодостаточный документ для репозитория
+  await writeFile(path.join(SCRATCH, t.artifact), body);
   const doc = `<!doctype html>
 <html lang="ru">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Живое древо — Генеалогия Спасителя (интерактив)</title>
+<title>${t.title}</title>
 </head>
 <body>
 ${body}
 </body>
 </html>
 `;
-  await writeFile(path.join(OUT, 'genealogy-interactive.html'), doc);
-  console.log(`[build-interactive] тело ${body.length} симв. · граф ${json.length} симв. → artifact + standalone`);
+  await writeFile(path.join(OUT, t.out), doc);
+  console.log(`[build-interactive] ${t.out} · тело ${body.length} симв. · граф ${json.length} симв.`);
+}
+
+async function main() {
+  const tpl = await readFile(path.join(HERE, 'interactive-template.html'), 'utf8');
+  if (!tpl.includes('/*__GRAPH__*/')) throw new Error('плейсхолдер /*__GRAPH__*/ не найден в шаблоне');
+  for (const t of TARGETS) {
+    try { await build(tpl, t); }
+    catch (e) { if (e.code === 'ENOENT') console.warn(`[build-interactive] пропуск ${t.graph} (нет файла)`); else throw e; }
+  }
 }
 
 main().catch(e => { console.error(e); process.exit(1); });
