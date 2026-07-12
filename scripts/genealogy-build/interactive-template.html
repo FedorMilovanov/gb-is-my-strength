@@ -83,6 +83,9 @@
   .node text{font-family:Georgia,serif;fill:var(--ink);paint-order:stroke;stroke:var(--paper0);stroke-width:2.4px;pointer-events:none}
   .node .lbl-leaf{opacity:0;transition:opacity .18s;font-size:9.5px}
   .node.show .lbl-leaf{opacity:1}
+  .aureole{transform-box:fill-box;transform-origin:center;animation:auSpin 120s linear infinite}
+  @keyframes auSpin{to{transform:rotate(360deg)}}
+  @media (prefers-reduced-motion:reduce){.aureole{animation:none}}
   #tether{stroke:var(--tether);stroke-width:1.2;stroke-dasharray:2 4;opacity:0;stroke-linecap:round}
   .dim{opacity:.12;transition:opacity .25s}
   .undim{transition:opacity .25s}
@@ -153,6 +156,11 @@
         <stop offset="42%" stop-color="#ffffff" stop-opacity="0.10"/>
         <stop offset="72%" stop-color="#000000" stop-opacity="0"/>
         <stop offset="100%" stop-color="#000000" stop-opacity="0.20"/>
+      </radialGradient>
+      <radialGradient id="christGlow" cx="50%" cy="50%" r="50%">
+        <stop offset="0%" stop-color="#f6de96" stop-opacity="0.55"/>
+        <stop offset="42%" stop-color="#f0d488" stop-opacity="0.17"/>
+        <stop offset="100%" stop-color="#f0d488" stop-opacity="0"/>
       </radialGradient>
     </defs><g id="viewport">
       <g id="g-hulls"></g>
@@ -241,6 +249,14 @@ const edgeEls=edges.map(e=>{const p=document.createElementNS(SVGNS,'path');p.set
 for(const n of nodes){
   const g=document.createElementNS(SVGNS,'g');g.setAttribute('class','node');g.dataset.id=n.id;
   const big=(n.kind!=='leaf');
+  if(n.messiah){
+    // ореол Спасителя: мягкое сияние + венец лучей (медленно вращается)
+    g.appendChild(mk('circle',{r:n.r+40,fill:'url(#christGlow)','pointer-events':'none'}));
+    const au=mk('g',{'class':'aureole','pointer-events':'none'}); const N=36;
+    for(let i=0;i<N;i++){const a=i/N*Math.PI*2,lng=i%2===0,r0=n.r+5,r1=n.r+(lng?23:12);
+      au.appendChild(mk('line',{x1:(Math.cos(a)*r0).toFixed(1),y1:(Math.sin(a)*r0).toFixed(1),x2:(Math.cos(a)*r1).toFixed(1),y2:(Math.sin(a)*r1).toFixed(1),stroke:'var(--goldGlow)','stroke-width':lng?1.5:0.9,'stroke-linecap':'round',opacity:lng?0.5:0.28}));}
+    g.appendChild(au);
+  }
   if(n.kind==='spine'){g.appendChild(mk('circle',{r:n.r+ (n.messiah?11:7),fill:'var(--goldGlow)',opacity:n.messiah?.30:.15}));}
   // медальон: круг-основа
   const c=mk('circle',{r:n.r,fill:n.kind==='spine'?'var(--spineGold)':n.color,'stroke-width':n.kind==='leaf'?1.2:2});
@@ -426,7 +442,7 @@ function bindToggle(id,init,fn){const el=document.getElementById(id);let on=init
 bindToggle('tg-hulls',true,v=>{showHulls=v;for(const [,el] of hullEls)if(!v)el.style.opacity=0;refresh();});
 bindToggle('tg-edges',true,v=>{showEdges=v;refresh();});
 bindToggle('tg-labels',false,v=>{showLabels=v;refresh();});
-document.getElementById('reset').addEventListener('click',()=>{for(const n of nodes){n.x=n.homeX;n.y=n.homeY;n.vx=n.vy=0;}focusFam=null;selected=null;searchHits=new Set();q.value='';document.querySelectorAll('.fam').forEach(x=>x.classList.remove('on'));document.getElementById('detail').innerHTML='<div class="empty">Наведите на узел — увидите имя в оригинале.<br><br>Потяните узел мышью — он «резиново» вернётся домой.</div>';fit();refresh();});
+document.getElementById('reset').addEventListener('click',()=>{for(const n of nodes){n.x=n.homeX;n.y=n.homeY;n.vx=n.vy=0;}focusFam=null;selected=null;searchHits=new Set();searchOrder=[];searchIdx=-1;q.value='';document.querySelectorAll('.fam').forEach(x=>x.classList.remove('on'));document.getElementById('detail').innerHTML='<div class="empty">Наведите на узел — увидите имя в оригинале.<br><br>Потяните узел мышью — он «резиново» вернётся домой.</div>';fit();refresh();});
 document.getElementById('theme').addEventListener('click',()=>{const cur=document.documentElement.getAttribute('data-theme')|| (matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light');const next=cur==='dark'?'light':'dark';document.documentElement.setAttribute('data-theme',next);document.getElementById('theme').textContent=next==='dark'?'☀':'☾';});
 
 // ---- start ----
