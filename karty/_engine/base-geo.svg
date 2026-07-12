@@ -259,12 +259,11 @@
   <!-- Воды Мерома (озерцо Хуле) — Нав 11:5 -->
   <ellipse cx="656" cy="641" rx="3.4" ry="4.6" transform="rotate(-12 656 641)" fill="#10263a" opacity=".55" stroke="#2e4d6b" stroke-width=".5" class="lbl-z2"/>
   <text class="sea-label lbl-z2" x="664" y="639" font-size="3.2" letter-spacing=".08em" fill="#4a80a0" opacity=".75">Хула</text>
-  <!-- Иордан — стрелка течения (С→Ю) -->
-  <path class="lbl-z2" d="M648,710 L644,720 L652,720 Z" fill="#4a80a0" opacity=".35"/>
-  <!-- Евфрат — стрелка течения -->
-  <path class="lbl-z2" d="M1296,618 L1290,628 L1298,628 Z" fill="#4a80a0" opacity=".3"/>
-  <!-- Нил — стрелка течения (С→Ю зеркально = С) -->
-  <path class="lbl-z2" d="M222,950 L218,960 L226,960 Z" fill="#4a80a0" opacity=".35"/>
+  <!-- стрелки течения рек — тонкие шевроны (были сплошные треугольники,
+       читались как маркеры/горы, а не как направление потока) -->
+  <path class="lbl-z2" d="M649,714 L653,720 L651,720 M645,714 L649,720" fill="none" stroke="#4a80a0" stroke-width=".9" stroke-linecap="round" stroke-linejoin="round" opacity=".5"/>
+  <path class="lbl-z2" d="M1291,622 L1296,628 L1294,628 M1287,622 L1292,628" fill="none" stroke="#4a80a0" stroke-width=".9" stroke-linecap="round" stroke-linejoin="round" opacity=".45"/>
+  <path class="lbl-z2" d="M219,954 L223,960 L221,960 M215,954 L219,960" fill="none" stroke="#4a80a0" stroke-width=".9" stroke-linecap="round" stroke-linejoin="round" opacity=".5"/>
   <!-- Иордан -->
   <text class="sea-label lbl-z1" x="644" y="730" font-size="4.5" letter-spacing=".14em" transform="rotate(80 644 730)" fill="#4a80a0" opacity=".55">ИОРДАН · הַיַּרְדֵּן</text>
   <!-- Евфрат -->
@@ -435,8 +434,10 @@
   <text x="0" y="32" font-size="3.8" fill="#8a6838" text-anchor="middle" opacity=".8">הַר סִינַי · 2285 м</text>
 </g>
 <!-- Хермон — гора у Дана -->
-<g class="lbl-z1" transform="translate(668,594)" opacity=".4">
-  <path d="M-14,10 L-4,-8 L0,-16 L4,-8 L14,10 Z" fill="rgba(120,140,160,.12)" stroke="#6080a0" stroke-width="1" stroke-linejoin="round"/>
+<g class="lbl-z1" transform="translate(668,594)" opacity=".5">
+  <path d="M-14,10 L-4,-8 L0,-16 L4,-8 L14,10 Z" fill="rgba(120,140,160,.16)" stroke="#6080a0" stroke-width="1" stroke-linejoin="round"/>
+  <!-- снежная шапка: Хермон — высочайшая вершина региона (2814 м) -->
+  <path d="M-4.5,-6.5 L0,-16 L4.5,-6.5 C2,-8 -2,-8 -4.5,-6.5 Z" fill="rgba(248,250,252,.72)" stroke="none"/>
   <text x="0" y="17" text-anchor="middle" font-size="4.5" fill="#7090b8" letter-spacing=".1em">ХЕРМОН</text>
   <text x="0" y="22" font-size="3.2" fill="#6080a8" text-anchor="middle" opacity=".8">2814 м · הַר חֶרְמוֹן</text>
 </g>

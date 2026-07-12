@@ -21,7 +21,7 @@
   #sheet-svg g[stroke="#2d4a66"] path,
   #sheet-svg path[stroke="#4a80a8"],
   #sheet-svg #tradeRoutes path,
-  #sheet-svg .route, #sheet-svg .route-under,
+  #sheet-svg .route, #sheet-svg .route-under, #sheet-svg .route-arrow,
   #sheet-svg .war-route, #sheet-svg .ovl,
   #sheet-svg .leader, #sheet-svg .grat,
   #sheet-svg .glyph path, #sheet-svg .glyph circle,
@@ -36,6 +36,7 @@
   /* при non-scaling-stroke dash-паттерн тоже в ЭКРАННЫХ px — задаём один раз */
   #sheet-svg #tradeRoutes path{stroke-width:2.1px;stroke-dasharray:.1 6.5}
   #sheet-svg .route{stroke-width:2.1px;stroke-dasharray:.1 8}
+  #sheet-svg .route-arrow{fill:none;stroke:#b0472e;stroke-width:1.5px;stroke-linecap:round;stroke-linejoin:round;opacity:.72}
   #sheet-svg .route-under{stroke-width:3px}
   #sheet-svg .war-route{stroke-width:1.15px;stroke-dasharray:9 5.5}
   #sheet-svg .ovl-covenant{stroke-width:1.5px;stroke-dasharray:10 6}
@@ -106,6 +107,13 @@
   svg.z4 text.sea-label:not(.lbl-z1):not(.lbl-z2),
   svg.z4 text.region-label:not(.lbl-z1):not(.lbl-z2){opacity:0}
   svg.z3 text.region-he, svg.z4 text.region-he{opacity:.1}
+  /* штриховка рельефа хороша как фактура на обзоре, но при зуме тайл растёт
+     (userSpaceOnUse) и превращается в редкие гигантские полосы — гасим её
+     к близким масштабам, оставляя мягкий рельефный тон (mtG-эллипсы) */
+  #sheet-svg .relief{transition:none}
+  svg.zoomed .relief{opacity:.5}
+  svg.z3 .relief{opacity:.22}
+  svg.z4 .relief{opacity:.08}
   svg.z3 text.lbl-z1, svg.z3 g.lbl-z1 text{font-size:2.4px}
   svg.z4 text.lbl-z1, svg.z4 g.lbl-z1 text{font-size:1.6px}
   svg.z3 text.lbl-z2, svg.z3 g.lbl-z2 text{font-size:2.2px}
@@ -306,7 +314,7 @@
     <stop offset="0" stop-color="#8b7d5a" stop-opacity=".4"/><stop offset="1" stop-color="#8b7d5a" stop-opacity="0"/>
   </linearGradient>
   <pattern id="mountainHatch" x="0" y="0" width="6" height="6" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
-    <line x1="0" y1="0" x2="0" y2="6" stroke="#8b7d5a" stroke-width=".6" opacity=".45"/>
+    <line x1="0" y1="0" x2="0" y2="6" stroke="#8b7d5a" stroke-width=".6" opacity=".38" vector-effect="non-scaling-stroke"/>
   </pattern>
   <pattern id="desertStipple" x="0" y="0" width="12" height="12" patternUnits="userSpaceOnUse">
     <circle cx="3" cy="3" r=".7" fill="#9c7c43" opacity=".4"/>
@@ -597,12 +605,11 @@
   <!-- Воды Мерома (озерцо Хуле) — Нав 11:5 -->
   <ellipse cx="656" cy="641" rx="3.4" ry="4.6" transform="rotate(-12 656 641)" fill="#10263a" opacity=".55" stroke="#2e4d6b" stroke-width=".5" class="lbl-z2"/>
   <text class="sea-label lbl-z2" x="664" y="639" font-size="3.2" letter-spacing=".08em" fill="#4a80a0" opacity=".75">Хула</text>
-  <!-- Иордан — стрелка течения (С→Ю) -->
-  <path class="lbl-z2" d="M648,710 L644,720 L652,720 Z" fill="#4a80a0" opacity=".35"/>
-  <!-- Евфрат — стрелка течения -->
-  <path class="lbl-z2" d="M1296,618 L1290,628 L1298,628 Z" fill="#4a80a0" opacity=".3"/>
-  <!-- Нил — стрелка течения (С→Ю зеркально = С) -->
-  <path class="lbl-z2" d="M222,950 L218,960 L226,960 Z" fill="#4a80a0" opacity=".35"/>
+  <!-- стрелки течения рек — тонкие шевроны (были сплошные треугольники,
+       читались как маркеры/горы, а не как направление потока) -->
+  <path class="lbl-z2" d="M649,714 L653,720 L651,720 M645,714 L649,720" fill="none" stroke="#4a80a0" stroke-width=".9" stroke-linecap="round" stroke-linejoin="round" opacity=".5"/>
+  <path class="lbl-z2" d="M1291,622 L1296,628 L1294,628 M1287,622 L1292,628" fill="none" stroke="#4a80a0" stroke-width=".9" stroke-linecap="round" stroke-linejoin="round" opacity=".45"/>
+  <path class="lbl-z2" d="M219,954 L223,960 L221,960 M215,954 L219,960" fill="none" stroke="#4a80a0" stroke-width=".9" stroke-linecap="round" stroke-linejoin="round" opacity=".5"/>
   <!-- Иордан -->
   <text class="sea-label lbl-z1" x="644" y="730" font-size="4.5" letter-spacing=".14em" transform="rotate(80 644 730)" fill="#4a80a0" opacity=".55">ИОРДАН · הַיַּרְדֵּן</text>
   <!-- Евфрат -->
@@ -773,8 +780,10 @@
   <text x="0" y="32" font-size="3.8" fill="#8a6838" text-anchor="middle" opacity=".8">הַר סִינַי · 2285 м</text>
 </g>
 <!-- Хермон — гора у Дана -->
-<g class="lbl-z1" transform="translate(668,594)" opacity=".4">
-  <path d="M-14,10 L-4,-8 L0,-16 L4,-8 L14,10 Z" fill="rgba(120,140,160,.12)" stroke="#6080a0" stroke-width="1" stroke-linejoin="round"/>
+<g class="lbl-z1" transform="translate(668,594)" opacity=".5">
+  <path d="M-14,10 L-4,-8 L0,-16 L4,-8 L14,10 Z" fill="rgba(120,140,160,.16)" stroke="#6080a0" stroke-width="1" stroke-linejoin="round"/>
+  <!-- снежная шапка: Хермон — высочайшая вершина региона (2814 м) -->
+  <path d="M-4.5,-6.5 L0,-16 L4.5,-6.5 C2,-8 -2,-8 -4.5,-6.5 Z" fill="rgba(248,250,252,.72)" stroke="none"/>
   <text x="0" y="17" text-anchor="middle" font-size="4.5" fill="#7090b8" letter-spacing=".1em">ХЕРМОН</text>
   <text x="0" y="22" font-size="3.2" fill="#6080a8" text-anchor="middle" opacity=".8">2814 м · הַר חֶרְמוֹן</text>
 </g>
@@ -832,6 +841,7 @@
   </g>
 <path d="M622,809 C623.5,789.0 630.8,690.5 631,689 C631.2,687.5 618.8,782.7 623,800 C627.2,817.3 650.8,815.5 656,793 C661.2,770.5 653.7,684.2 654,665 C654.3,645.8 658.7,678.5 658,678 C657.3,677.5 653.7,658.7 650,662 C646.3,665.3 632.7,704.3 636,698 C639.3,691.7 668.5,608.5 670,624 C671.5,639.5 652.0,761.3 645,791 C638.0,820.7 631.7,800.5 628,802 C624.3,803.5 623.3,800.7 623,800 C622.7,799.3 626.2,798.2 626,798 C625.8,797.8 622.7,798.8 622,799 C621.3,799.2 622.0,799.0 622,799" class="route-under"/>
 <path d="M622,809 C623.5,789.0 630.8,690.5 631,689 C631.2,687.5 618.8,782.7 623,800 C627.2,817.3 650.8,815.5 656,793 C661.2,770.5 653.7,684.2 654,665 C654.3,645.8 658.7,678.5 658,678 C657.3,677.5 653.7,658.7 650,662 C646.3,665.3 632.7,704.3 636,698 C639.3,691.7 668.5,608.5 670,624 C671.5,639.5 652.0,761.3 645,791 C638.0,820.7 631.7,800.5 628,802 C624.3,803.5 623.3,800.7 623,800 C622.7,799.3 626.2,798.2 626,798 C625.8,797.8 622.7,798.8 622,799 C621.3,799.2 622.0,799.0 622,799" class="route"/>
+<path d="M-3.4,-3 L0,0 L-3.4,3" transform="translate(626.7,746.6) rotate(-85.7)" class="route-arrow"/><path d="M-3.4,-3 L0,0 L-3.4,3" transform="translate(626.8,746.7) rotate(94.1)" class="route-arrow"/><path d="M-3.4,-3 L0,0 L-3.4,3" transform="translate(655.0,726.4) rotate(-90.9)" class="route-arrow"/><path d="M-3.4,-3 L0,0 L-3.4,3" transform="translate(653.7,659.5) rotate(-65.3)" class="route-arrow"/><path d="M-3.4,-3 L0,0 L-3.4,3" transform="translate(657.0,710.8) rotate(98.5)" class="route-arrow"/>
 
 <line x1="620.2" y1="809.7" x2="616.4" y2="811.2" class="leader"/><line x1="657.6" y1="794.1" x2="679.6" y2="808.7" class="leader"/><line x1="652.1" y1="665.3" x2="647.2" y2="666.1" class="leader"/><line x1="649.1" y1="660.3" x2="646.2" y2="654.7" class="leader"/><line x1="646.2" y1="789.5" x2="653.3" y2="781.2" class="leader"/><line x1="629.1" y1="803.6" x2="635.1" y2="812.7" class="leader"/><line x1="621.8" y1="801.5" x2="613.6" y2="811.8" class="leader"/><line x1="621.1" y1="797.3" x2="616.0" y2="787.2" class="leader"/><line x1="622.0" y1="797.1" x2="622.0" y2="777.1" class="leader"/>
 <g class="pl" data-pid="bethlehem"><circle cx="622" cy="809" r="1.22" class="pl-city"/></g><g class="pl" data-pid="nazareth"><circle cx="631" cy="689" r="1.22" class="pl-city"/></g><g class="pl" data-pid="jerusalem_temple"><circle cx="623" cy="800" r="1.22" class="pl-city"/></g><g class="pl" data-pid="jordan_baptism"><circle cx="656" cy="793" r="1.22" class="pl-city"/></g><g class="pl" data-pid="capernaum"><circle cx="654" cy="665" r="1.22" class="pl-city"/></g><g class="pl" data-pid="sea_galilee"><circle cx="658" cy="678" r="1.22" class="pl-city"/></g><g class="pl" data-pid="mount_beatitudes"><circle cx="650" cy="662" r="1.22" class="pl-city"/></g><g class="pl" data-pid="nain"><circle cx="636" cy="698" r="1.22" class="pl-city"/></g><g class="pl" data-pid="caesarea_philippi"><circle cx="670" cy="624" r="1.22" class="pl-city"/></g><g class="pl" data-pid="jericho"><circle cx="645" cy="791" r="1.22" class="pl-city"/></g><g class="pl" data-pid="bethany"><circle cx="628" cy="802" r="1.22" class="pl-city"/></g><g class="pl" data-pid="jerusalem_passion"><circle cx="623" cy="800" r="1.22" class="pl-city"/></g><g class="pl" data-pid="gethsemane"><circle cx="626" cy="798" r="1.22" class="pl-city"/></g><g class="pl" data-pid="golgotha"><circle cx="622" cy="799" r="1.22" class="pl-city"/></g><g class="pl" data-pid="tomb"><circle cx="622" cy="799" r="1.22" class="pl-city"/></g>

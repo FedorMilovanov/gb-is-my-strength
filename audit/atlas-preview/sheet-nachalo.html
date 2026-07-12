@@ -21,7 +21,7 @@
   #sheet-svg g[stroke="#2d4a66"] path,
   #sheet-svg path[stroke="#4a80a8"],
   #sheet-svg #tradeRoutes path,
-  #sheet-svg .route, #sheet-svg .route-under,
+  #sheet-svg .route, #sheet-svg .route-under, #sheet-svg .route-arrow,
   #sheet-svg .war-route, #sheet-svg .ovl,
   #sheet-svg .leader, #sheet-svg .grat,
   #sheet-svg .glyph path, #sheet-svg .glyph circle,
@@ -36,6 +36,7 @@
   /* при non-scaling-stroke dash-паттерн тоже в ЭКРАННЫХ px — задаём один раз */
   #sheet-svg #tradeRoutes path{stroke-width:2.1px;stroke-dasharray:.1 6.5}
   #sheet-svg .route{stroke-width:2.1px;stroke-dasharray:.1 8}
+  #sheet-svg .route-arrow{fill:none;stroke:#b0472e;stroke-width:1.5px;stroke-linecap:round;stroke-linejoin:round;opacity:.72}
   #sheet-svg .route-under{stroke-width:3px}
   #sheet-svg .war-route{stroke-width:1.15px;stroke-dasharray:9 5.5}
   #sheet-svg .ovl-covenant{stroke-width:1.5px;stroke-dasharray:10 6}
@@ -106,6 +107,13 @@
   svg.z4 text.sea-label:not(.lbl-z1):not(.lbl-z2),
   svg.z4 text.region-label:not(.lbl-z1):not(.lbl-z2){opacity:0}
   svg.z3 text.region-he, svg.z4 text.region-he{opacity:.1}
+  /* штриховка рельефа хороша как фактура на обзоре, но при зуме тайл растёт
+     (userSpaceOnUse) и превращается в редкие гигантские полосы — гасим её
+     к близким масштабам, оставляя мягкий рельефный тон (mtG-эллипсы) */
+  #sheet-svg .relief{transition:none}
+  svg.zoomed .relief{opacity:.5}
+  svg.z3 .relief{opacity:.22}
+  svg.z4 .relief{opacity:.08}
   svg.z3 text.lbl-z1, svg.z3 g.lbl-z1 text{font-size:2.4px}
   svg.z4 text.lbl-z1, svg.z4 g.lbl-z1 text{font-size:1.6px}
   svg.z3 text.lbl-z2, svg.z3 g.lbl-z2 text{font-size:2.2px}
@@ -306,7 +314,7 @@
     <stop offset="0" stop-color="#8b7d5a" stop-opacity=".4"/><stop offset="1" stop-color="#8b7d5a" stop-opacity="0"/>
   </linearGradient>
   <pattern id="mountainHatch" x="0" y="0" width="6" height="6" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
-    <line x1="0" y1="0" x2="0" y2="6" stroke="#8b7d5a" stroke-width=".6" opacity=".45"/>
+    <line x1="0" y1="0" x2="0" y2="6" stroke="#8b7d5a" stroke-width=".6" opacity=".38" vector-effect="non-scaling-stroke"/>
   </pattern>
   <pattern id="desertStipple" x="0" y="0" width="12" height="12" patternUnits="userSpaceOnUse">
     <circle cx="3" cy="3" r=".7" fill="#9c7c43" opacity=".4"/>
@@ -423,6 +431,7 @@ M1610,60 C1652,118 1678,186 1688,262 C1696,332 1692,402 1672,462 C1660,498 1668,
 
 <path d="M710,535 C713.8,540.3 705.5,484.5 733,567 C760.5,649.5 825.0,926.5 875,1030 C925.0,1133.5 996.7,1153.8 1033,1188 C1069.3,1222.2 1083.0,1227.2 1093,1235" class="route-under"/>
 <path d="M710,535 C713.8,540.3 705.5,484.5 733,567 C760.5,649.5 825.0,926.5 875,1030 C925.0,1133.5 996.7,1153.8 1033,1188 C1069.3,1222.2 1083.0,1227.2 1093,1235" class="route"/>
+<path d="M-3.4,-3 L0,0 L-3.4,3" transform="translate(806.8,807.8) rotate(72.9)" class="route-arrow"/><path d="M-3.4,-3 L0,0 L-3.4,3" transform="translate(957.2,1112.2) rotate(45.0)" class="route-arrow"/><path d="M-3.4,-3 L0,0 L-3.4,3" transform="translate(1064.2,1212.4) rotate(38.1)" class="route-arrow"/>
 
 <line x1="680.9" y1="269.5" x2="702.6" y2="273.1" class="leader"/><line x1="860.3" y1="175.5" x2="887.6" y2="187.2" class="leader"/><line x1="701.3" y1="535.0" x2="684.5" y2="535.0" class="leader"/><line x1="739.0" y1="573.3" x2="755.1" y2="589.9" class="leader"/><line x1="863.4" y1="954.2" x2="841.4" y2="946.9" class="leader"/><line x1="879.9" y1="1022.8" x2="902.2" y2="990.6" class="leader"/><line x1="1041.6" y1="1189.4" x2="1063.6" y2="1193.1" class="leader"/><line x1="1099.1" y1="1241.2" x2="1120.2" y2="1263.0" class="leader"/>
 <g class="pl" data-pid="eden"><circle cx="672" cy="268" r="5.86" class="pl-cand"/></g><g class="pl" data-pid="ararat"><circle cx="852" cy="172" r="5.86" class="pl-cand"/></g><g class="pl" data-pid="nineveh"><circle cx="710" cy="535" r="5.54" class="pl-city"/></g><g class="pl" data-pid="calah"><circle cx="733" cy="567" r="5.54" class="pl-city"/></g><g class="pl" data-pid="akkad"><circle cx="872" cy="957" r="5.86" class="pl-cand"/></g><g class="pl" data-pid="babylon"><circle cx="875" cy="1030" r="5.54" class="pl-city"/></g><g class="pl" data-pid="uruk-city"><circle cx="1033" cy="1188" r="5.54" class="pl-city"/></g><g class="pl" data-pid="ur"><circle cx="1093" cy="1235" r="5.54" class="pl-city"/></g><g class="pl" data-pid="resen"><circle cx="731" cy="546" r="5.86" class="pl-cand"/></g>
