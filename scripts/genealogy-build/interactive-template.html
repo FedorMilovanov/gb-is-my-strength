@@ -134,7 +134,28 @@
   /* footer */
   footer{grid-column:1/-1;display:flex;justify-content:space-between;gap:16px;padding:9px 20px;border-top:1px solid var(--panelEdge);font-size:11.5px;color:var(--inkFaint)}
   footer b{color:var(--inkSoft);font-weight:600}
-  @media (max-width:900px){#app{grid-template-columns:1fr}aside{display:none}}
+  /* мобильные шторки (bottom sheet) для панелей семейств/узла — вместо полного скрытия */
+  .sheet-close{display:none}
+  .mob-fab{display:none}
+  #scrim{display:none}
+  @media (max-width:900px){
+    #app{grid-template-columns:1fr}
+    aside{
+      position:fixed;left:0;right:0;bottom:0;z-index:22;max-height:72vh;
+      border-radius:16px 16px 0 0;box-shadow:0 -10px 30px var(--shadow);
+      transform:translateY(104%);transition:transform .26s ease;
+      border-left:1px solid var(--panelEdge)!important;border-right:1px solid var(--panelEdge)!important;
+    }
+    aside.sheet-open{transform:translateY(0)}
+    .sheet-close{display:flex;position:sticky;float:right;top:0;margin:-4px -4px 6px auto;width:30px;height:30px;border-radius:50%;border:1px solid var(--panelEdge);background:var(--card);color:var(--inkSoft);align-items:center;justify-content:center;cursor:pointer;font-size:14px}
+    .mob-fab{display:flex;position:absolute;left:14px;bottom:14px;z-index:15;align-items:center;gap:6px;padding:10px 18px;border-radius:20px;border:1px solid var(--panelEdge);background:var(--card);color:var(--inkSoft);font-family:inherit;font-size:12.5px;box-shadow:0 4px 14px var(--shadow);cursor:pointer}
+    #scrim{display:block;position:fixed;inset:0;background:rgba(20,14,4,.38);opacity:0;pointer-events:none;transition:opacity .22s;z-index:21}
+    #scrim.show{opacity:1;pointer-events:auto}
+    #minimap{width:132px;height:100px}
+    #minimap .mm-lab{display:none}
+    footer{padding:8px 14px;font-size:10.5px}
+    footer .hint{display:none}
+  }
 </style>
 
 <div id="app">
@@ -154,6 +175,7 @@
   </header>
 
   <aside class="left">
+    <button class="sheet-close" type="button" aria-label="Закрыть">✕</button>
     <div class="lab">Семейства</div>
     <div id="fams"></div>
     <div class="toggles">
@@ -166,11 +188,15 @@
 
   <main>
     <svg id="svg"><defs id="icon-defs"></defs><defs>
-      <radialGradient id="nodeSheen" cx="38%" cy="30%" r="75%">
-        <stop offset="0%" stop-color="#ffffff" stop-opacity="0.42"/>
-        <stop offset="42%" stop-color="#ffffff" stop-opacity="0.10"/>
-        <stop offset="72%" stop-color="#000000" stop-opacity="0"/>
-        <stop offset="100%" stop-color="#000000" stop-opacity="0.20"/>
+      <radialGradient id="nodeSheen" cx="36%" cy="28%" r="78%">
+        <stop offset="0%" stop-color="#ffffff" stop-opacity="0.5"/>
+        <stop offset="34%" stop-color="#ffffff" stop-opacity="0.14"/>
+        <stop offset="68%" stop-color="#000000" stop-opacity="0.02"/>
+        <stop offset="100%" stop-color="#000000" stop-opacity="0.26"/>
+      </radialGradient>
+      <radialGradient id="nodeGlint" cx="50%" cy="50%" r="50%">
+        <stop offset="0%" stop-color="#ffffff" stop-opacity="0.9"/>
+        <stop offset="100%" stop-color="#ffffff" stop-opacity="0"/>
       </radialGradient>
       <radialGradient id="christGlow" cx="50%" cy="50%" r="50%">
         <stop offset="0%" stop-color="#fff2cf" stop-opacity="0.6"/>
@@ -205,15 +231,18 @@
     </g></svg>
     <div id="tooltip"></div>
     <div id="minimap"><span class="mm-lab">Карта</span><svg id="mm" viewBox="0 0 196 150"><g id="mm-nodes"></g><rect id="mm-view" x="0" y="0" width="10" height="10"></rect></svg></div>
+    <button id="mob-fams" class="mob-fab" type="button">Семейства</button>
   </main>
 
   <aside class="right details">
+    <button class="sheet-close" type="button" aria-label="Закрыть">✕</button>
     <div class="lab">Узел</div>
     <div id="detail"><div class="empty">Наведите на узел — увидите имя в оригинале.<br><br>Потяните узел мышью — он «резиново» вернётся домой.<br><br>Кликните семейство слева — оно подсветится, остальные померкнут.</div></div>
   </aside>
+  <div id="scrim"></div>
 
   <footer>
-    <span>Перетащите узел — <b>вернётся пружиной</b> · колесо — зум · тащить фон — сдвиг · клик по семейству — подсветка</span>
+    <span class="hint">Перетащите узел — <b>вернётся пружиной</b> · колесо — зум · тащить фон — сдвиг · клик по семейству — подсветка</span>
     <span id="stat"></span>
   </footer>
 </div>
@@ -304,8 +333,9 @@ for(const n of nodes){
       g.appendChild(mk('ellipse',{cx:-n.r*0.16,cy:-n.r*0.48,rx:n.r*0.13,ry:n.r*0.08,fill:'#fffdf6',opacity:0.9,'pointer-events':'none'}));
       g.appendChild(mk('ellipse',{cx:n.r*0.32,cy:n.r*0.4,rx:n.r*0.4,ry:n.r*0.22,fill:'url(#christRim)','pointer-events':'none'}));
     } else {
-      // блик-подсветка сверху (объём) + внутреннее кольцо-медальон
+      // блик-подсветка сверху (объём) + чёткий маленький глинт (clearcoat) + тонкий край медальона
       g.appendChild(mk('circle',{r:n.r,fill:'url(#nodeSheen)','pointer-events':'none'}));
+      g.appendChild(mk('ellipse',{cx:-n.r*0.34,cy:-n.r*0.4,rx:n.r*0.16,ry:n.r*0.1,fill:'url(#nodeGlint)','pointer-events':'none'}));
       g.appendChild(mk('circle',{r:n.r-3.4,fill:'none',stroke:n.kind==='spine'?'rgba(58,42,14,.42)':'rgba(255,250,236,.5)','stroke-width':1,'pointer-events':'none'}));
     }
     // SVG-эмблема внутри «шара»
@@ -470,6 +500,7 @@ function selectNode(id){selected=id;refresh();const n=byId.get(id);
   </div>
   <div class="rel">${rel}</div>`;
   document.querySelectorAll('.rel a').forEach(a=>a.addEventListener('click',()=>{const t=byId.get(a.dataset.id);selectNode(a.dataset.id);flash(a.dataset.id);flyTo(t,false);}));
+  if(isMobile())openSheet(asideR);
 }
 function flash(id){const n=byId.get(id);n.vx+=(Math.sign(Math.random()-.5)||1)*2.5;} // tiny nudge for life
 
@@ -477,7 +508,7 @@ function flash(id){const n=byId.get(id);n.vx+=(Math.sign(Math.random()-.5)||1)*2
 const famsEl=document.getElementById('fams');
 for(const f of GRAPH.families){const d=document.createElement('div');d.className='fam';d.dataset.fam=f.id;
   d.innerHTML=`<span class="sw" style="background:${f.color}"></span><span class="nm">${f.ru}</span>${f.count?`<span class="ct">${f.count}</span>`:''}`;
-  d.addEventListener('click',()=>{focusFam=(focusFam===f.id)?null:f.id;document.querySelectorAll('.fam').forEach(x=>x.classList.toggle('on',x.dataset.fam===focusFam));refresh();});
+  d.addEventListener('click',()=>{focusFam=(focusFam===f.id)?null:f.id;document.querySelectorAll('.fam').forEach(x=>x.classList.toggle('on',x.dataset.fam===focusFam));refresh();if(isMobile())setTimeout(closeSheets,260);});
   famsEl.appendChild(d);}
 
 // ---- search ----
@@ -492,8 +523,17 @@ function bindToggle(id,init,fn){const el=document.getElementById(id);let on=init
 bindToggle('tg-hulls',true,v=>{showHulls=v;for(const [,el] of hullEls)if(!v)el.style.opacity=0;refresh();});
 bindToggle('tg-edges',true,v=>{showEdges=v;refresh();});
 bindToggle('tg-labels',showLabels,v=>{showLabels=v;refresh();});
-document.getElementById('reset').addEventListener('click',()=>{for(const n of nodes){n.x=n.homeX;n.y=n.homeY;n.vx=n.vy=0;}focusFam=null;selected=null;searchHits=new Set();searchOrder=[];searchIdx=-1;q.value='';document.querySelectorAll('.fam').forEach(x=>x.classList.remove('on'));document.getElementById('detail').innerHTML='<div class="empty">Наведите на узел — увидите имя в оригинале.<br><br>Потяните узел мышью — он «резиново» вернётся домой.</div>';fit();refresh();});
+document.getElementById('reset').addEventListener('click',()=>{for(const n of nodes){n.x=n.homeX;n.y=n.homeY;n.vx=n.vy=0;}focusFam=null;selected=null;searchHits=new Set();searchOrder=[];searchIdx=-1;q.value='';document.querySelectorAll('.fam').forEach(x=>x.classList.remove('on'));document.getElementById('detail').innerHTML='<div class="empty">Наведите на узел — увидите имя в оригинале.<br><br>Потяните узел мышью — он «резиново» вернётся домой.</div>';fit();refresh();if(isMobile())closeSheets();});
 document.getElementById('theme').addEventListener('click',()=>{const cur=document.documentElement.getAttribute('data-theme')|| (matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light');const next=cur==='dark'?'light':'dark';document.documentElement.setAttribute('data-theme',next);document.getElementById('theme').textContent=next==='dark'?'☀':'☾';});
+
+// ---- мобильные шторки (боковые панели прячутся под экран, а не исчезают совсем) ----
+const isMobile=()=>matchMedia('(max-width:900px)').matches;
+const scrimEl=document.getElementById('scrim'), asideL=document.querySelector('aside.left'), asideR=document.querySelector('aside.right');
+function openSheet(a){a.classList.add('sheet-open');scrimEl.classList.add('show');}
+function closeSheets(){asideL.classList.remove('sheet-open');asideR.classList.remove('sheet-open');scrimEl.classList.remove('show');}
+scrimEl.addEventListener('click',closeSheets);
+document.querySelectorAll('.sheet-close').forEach(b=>b.addEventListener('click',closeSheets));
+document.getElementById('mob-fams').addEventListener('click',()=>openSheet(asideL));
 
 // ---- coverage tracker (что исследовано — режим народов) ----
 if(GRAPH.coverage){const cv=GRAPH.coverage;const rows=[['certain','#4f7a4a','достоверно'],['probable','var(--gold)','вероятно'],['disputed','#b5643f','спорно'],['obscure','var(--inkFaint)','мало данных']];
