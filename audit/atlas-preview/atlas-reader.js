@@ -20,7 +20,8 @@
     // семантический зум: подписи и точки не растут с картой (LOD-ступени)
     const zf = vb0[2] / vb[2];
     svg.classList.toggle('z2', zf >= 1.6 && zf < 3.1);
-    svg.classList.toggle('z3', zf >= 3.1);
+    svg.classList.toggle('z3', zf >= 3.1 && zf < 5.5);
+    svg.classList.toggle('z4', zf >= 5.5);
   };
 
   // ── Зум/пан ────────────────────────────────────────────────────────────────
