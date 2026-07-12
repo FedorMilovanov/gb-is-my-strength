@@ -727,6 +727,16 @@ body.fc-series-active #btocOverlay {
   display: none !important;
 }
 
+/* Nagornaya's OWN sidebar theme button happens to reuse the id #themeToggle
+   (site.js wires it directly by that id — do not rename, would break the
+   working theme logic). It is not the legacy pre-cluster relic this block
+   targets, so exempt it by scoping on the sitewide body.nagornaya-page
+   marker (present on all 7 Nagornaya routes) — higher specificity wins over
+   the unscoped #themeToggle rules above without touching their bodies. */
+body.nagornaya-page #themeToggle {
+  display: flex !important;
+}
+
 /* =========================================================
    Reduced motion
    ========================================================= */
