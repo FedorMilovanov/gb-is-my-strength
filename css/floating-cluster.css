@@ -875,6 +875,19 @@ body.nagornaya-page:has(#bottomBar .gb-ember-expand.is-open) #bottomBar .bottom-
     width: 28px !important;
     height: 28px !important;
   }
+  /* .bottom-bar-seg (nagornaya-mobile-toc.js) is a second, more granular
+     progress readout — "N%" + a row of per-section dots — that duplicates
+     the "N%" already shown by .bar-progress the ring right next to it.
+     At ~110px it was, on its own, over a quarter of the bar's usable
+     370px width; with Play/Save now sharing the row too, that pushed them
+     (and on some chapters the section-btn itself) off past the right edge
+     at the bar's default (unscrolled) position — real users would need to
+     know to swipe the bar sideways to find Play at all. Same info, no
+     loss: hide the redundant segmented readout here so the primary
+     controls fit without scrolling. */
+  body.nagornaya-page .bottom-bar-inner .bottom-bar-seg {
+    display: none !important;
+  }
 }
 
 /* ===================================================================
