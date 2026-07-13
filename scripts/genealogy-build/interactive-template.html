@@ -52,6 +52,7 @@
   .search{flex:1;max-width:360px;margin:0 auto;position:relative}
   .search input{width:100%;padding:8px 14px 8px 34px;border-radius:16px;border:1px solid var(--panelEdge);background:var(--card);color:var(--ink);font-family:inherit;font-size:13px;font-style:italic}
   .search input:focus{outline:2px solid var(--gold);outline-offset:1px}
+  .btn:focus-visible,.fam:focus-visible,.cv:focus-visible,.sw-tg:focus-visible,.sheet-close:focus-visible,.mob-fab:focus-visible{outline:2px solid var(--gold);outline-offset:2px}
   .search svg{position:absolute;left:11px;top:9px;width:15px;height:15px;stroke:var(--inkFaint);fill:none}
   .search-hint{position:absolute;left:0;right:0;top:100%;margin-top:6px;text-align:center;font-size:11.5px;color:#b5643f;opacity:0;transition:opacity .15s;pointer-events:none}
   .search-hint.show{opacity:1}
@@ -601,8 +602,11 @@ function flash(id){const n=byId.get(id);n.vx+=(Math.sign(Math.random()-.5)||1)*2
 // ---- families legend ----
 const famsEl=document.getElementById('fams');
 for(const f of GRAPH.families){const d=document.createElement('div');d.className='fam';d.dataset.fam=f.id;
+  d.setAttribute('role','button');d.setAttribute('tabindex','0');d.setAttribute('aria-pressed','false');
   d.innerHTML=`<span class="sw" style="background:${f.color}"></span><span class="nm">${f.ru}</span>${f.count?`<span class="ct">${f.count}</span>`:''}`;
-  d.addEventListener('click',()=>{focusFam=(focusFam===f.id)?null:f.id;focusConf=null;document.querySelectorAll('.fam').forEach(x=>x.classList.toggle('on',x.dataset.fam===focusFam));document.querySelectorAll('.cv').forEach(x=>x.classList.remove('on'));refresh();if(isMobile())setTimeout(closeSheets,260);});
+  const act=()=>{focusFam=(focusFam===f.id)?null:f.id;focusConf=null;document.querySelectorAll('.fam').forEach(x=>{const on=x.dataset.fam===focusFam;x.classList.toggle('on',on);x.setAttribute('aria-pressed',on);});document.querySelectorAll('.cv').forEach(x=>{x.classList.remove('on');x.setAttribute('aria-pressed','false');});refresh();if(isMobile())setTimeout(closeSheets,260);};
+  d.addEventListener('click',act);
+  d.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();act();}});
   famsEl.appendChild(d);}
 
 // ---- search ----
@@ -635,8 +639,10 @@ document.getElementById('mob-fams').addEventListener('click',()=>openSheet(aside
 // ---- coverage tracker (что исследовано — режим народов): клик подсвечивает узлы этой достоверности ----
 if(GRAPH.coverage){const cv=GRAPH.coverage;const rows=[['certain','#4f7a4a','достоверно'],['probable','var(--gold)','вероятно'],['disputed','#b5643f','спорно'],['obscure','var(--inkFaint)','мало данных']];
   const covEl=document.getElementById('coverage');
-  covEl.innerHTML='<div class="lab" style="margin-bottom:8px">Что исследовано · клик — показать на карте</div>'+rows.map(([k,c,l])=>`<div class="cv" data-conf="${k}"><i style="background:${c}"></i>${l}<b>${cv[k]||0}</b></div>`).join('');
-  covEl.querySelectorAll('.cv').forEach(el=>el.addEventListener('click',()=>{focusConf=(focusConf===el.dataset.conf)?null:el.dataset.conf;focusFam=null;document.querySelectorAll('.fam').forEach(x=>x.classList.remove('on'));covEl.querySelectorAll('.cv').forEach(x=>x.classList.toggle('on',x.dataset.conf===focusConf));refresh();if(isMobile())setTimeout(closeSheets,260);}));}
+  covEl.innerHTML='<div class="lab" style="margin-bottom:8px">Что исследовано · клик — показать на карте</div>'+rows.map(([k,c,l])=>`<div class="cv" data-conf="${k}" role="button" tabindex="0" aria-pressed="false"><i style="background:${c}"></i>${l}<b>${cv[k]||0}</b></div>`).join('');
+  covEl.querySelectorAll('.cv').forEach(el=>{const act=()=>{focusConf=(focusConf===el.dataset.conf)?null:el.dataset.conf;focusFam=null;document.querySelectorAll('.fam').forEach(x=>{x.classList.remove('on');x.setAttribute('aria-pressed','false');});covEl.querySelectorAll('.cv').forEach(x=>{const on=x.dataset.conf===focusConf;x.classList.toggle('on',on);x.setAttribute('aria-pressed',on);});refresh();if(isMobile())setTimeout(closeSheets,260);};
+    el.addEventListener('click',act);
+    el.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();act();}});});}
 
 // ---- start ----
 document.getElementById('stat').textContent = NATIONS
