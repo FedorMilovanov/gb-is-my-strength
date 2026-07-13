@@ -47,11 +47,16 @@ interface Props {
   variant?: 'hermeneutics' | 'article';
   audioState?: 'none' | 'available' | 'loading' | 'playing' | 'paused';
   progress?: number;
+  /** Показать ⚙ «Настройки чтения» (тема/сепия/размер/интервал). Требует, чтобы
+   *  страница рендерила GillReaderSettingsSheet и несла [data-reader-root] на
+   *  своём <main>. По умолчанию выкл — не задевает существующие одиночные. */
+  settings?: boolean;
 }
 
 const {
   variant = 'article',
   audioState = 'none',
+  settings = false,
   progress = 0,
 } = Astro.props;
 ---
@@ -87,6 +92,26 @@ const {
       </svg>
     </span>
   </button>
+
+  {settings && (
+    <!-- ⚙ Настройки чтения — открывает GillReaderSettingsSheet (тот же лист,
+         что у серий); JS в floating-cluster-controller.js слушает
+         [data-gill-settings-open]. Виден только если страница подключила лист. -->
+    <button
+      type="button"
+      class="gb-icon"
+      id="gbFcSettings"
+      data-gill-settings-open
+      aria-label="Настройки чтения"
+      aria-haspopup="dialog"
+      aria-expanded="false"
+      aria-controls="gillSettingsOverlay"
+    >
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M4 7h10M18 7h2M4 17h2M10 17h10" /><circle cx="16" cy="7" r="2" /><circle cx="8" cy="17" r="2" />
+      </svg>
+    </button>
+  )}
 
   <!-- 2. Search -->
   <button

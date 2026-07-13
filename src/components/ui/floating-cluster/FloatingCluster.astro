@@ -10,6 +10,8 @@ interface Props {
  seriesKey?: SeriesKey;
  currentSlug?: string;
  hubHref?: string;
+ /** Показать ⚙ «Настройки чтения» (mode="single") — см. SingleArticleCluster. */
+ settings?: boolean;
 }
 
 const {
@@ -19,10 +21,11 @@ const {
   seriesKey,
   currentSlug,
   hubHref,
+  settings = false,
 } = Astro.props;
 ---
 {mode === 'single' ? (
-  <SingleArticleCluster variant={variant as 'hermeneutics' | 'article'} audioState={audioState} />
+  <SingleArticleCluster variant={variant as 'hermeneutics' | 'article'} audioState={audioState} settings={settings} />
 ) : mode === 'series-lite' && seriesKey && currentSlug ? (
   <SeriesLiteCluster
     variant={variant as 'pastor' | 'heart'}

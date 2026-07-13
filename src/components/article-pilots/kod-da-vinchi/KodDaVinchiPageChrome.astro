@@ -1,5 +1,6 @@
 ---
 import FloatingCluster from '@/components/ui/floating-cluster/FloatingCluster.astro';
+import GillReaderSettingsSheet from '@/components/article-pilots/gill-series/GillReaderSettingsSheet.astro';
 /**
  * KodDaVinchiPageChrome — Phase 5a: body-segment-0 Astro component.
  *
@@ -13,4 +14,8 @@ import FloatingCluster from '@/components/ui/floating-cluster/FloatingCluster.as
 ---
 <a class="skip-link" href="#content">Перейти к содержанию</a>
 <!-- ВНИМАНИЕ: inline style="top:..." на этой кнопке ЗАПРЕЩЁН — позиция задана в site.css (.theme-toggle) и выровнена по хлебным крошкам -->
-<FloatingCluster mode="single" variant="article" audioState="none" />
+<FloatingCluster mode="single" variant="article" audioState="none" settings={true} />
+<!-- Полноценный лист «Настройки чтения» (тема/сепия/размер/интервал) —
+     тот же GillReaderSettingsSheet, что у серий. Открывается ⚙ в угловом
+     кластере (settings=true), применяется к <main data-reader-root>. -->
+<GillReaderSettingsSheet />
