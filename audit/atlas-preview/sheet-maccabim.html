@@ -365,6 +365,42 @@
     <feTurbulence type="fractalNoise" baseFrequency=".55" numOctaves="2" stitchTiles="stitch" result="n"/>
     <feColorMatrix in="n" type="matrix" values="0 0 0 0 .45  0 0 0 0 .36  0 0 0 0 .2  0 0 0 .05 0"/>
   </filter>
+  <!-- ═══ БИБЛИОТЕКА РИСОВАННЫХ ОБЪЕКТОВ (гравюрный атлас) ═══
+       reusable <symbol>: силуэт скейлится с картой, штриховка-отмывка
+       (hachure) держит экранную толщину (non-scaling-stroke) — тонкие
+       гравюрные линии на любом зуме. Свет с СЗ, тень (hachure) на ЮВ. -->
+  <linearGradient id="peakG" x1="0" y1="0" x2=".35" y2="1">
+    <stop offset="0" stop-color="#d7c79c" stop-opacity=".62"/>
+    <stop offset="1" stop-color="#ab9366" stop-opacity=".72"/>
+  </linearGradient>
+  <symbol id="peak" viewBox="0 0 20 16" overflow="visible">
+    <path d="M1,15 L5.5,7 L8,2 L10,6 L11.5,4.6 L13.5,5.4 L16,9 L19,15 Z" fill="url(#peakG)" stroke="#7a6a48" stroke-width=".7" stroke-linejoin="round" vector-effect="non-scaling-stroke"/>
+    <g stroke="#6f5f42" stroke-width=".62" stroke-linecap="round" fill="none" opacity=".5" vector-effect="non-scaling-stroke">
+      <path d="M8.3,2.8 l.8,1.35"/><path d="M9,4 l.8,1.35"/><path d="M9.6,5.2 l.7,1.25"/>
+      <path d="M13.6,6 l.7,1.35"/><path d="M14.5,7.6 l.7,1.45"/><path d="M15.4,9.2 l.6,1.45"/>
+      <path d="M16.4,11 l.55,1.4"/><path d="M17.3,12.7 l.5,1.4"/>
+    </g>
+    <g stroke="#efe7d2" stroke-width=".55" stroke-linecap="round" fill="none" opacity=".42" vector-effect="non-scaling-stroke">
+      <path d="M6.6,5.6 l-.9,1.5"/><path d="M4.9,8.3 l-.9,1.5"/>
+    </g>
+  </symbol>
+  <symbol id="peak-snow" viewBox="0 0 20 16" overflow="visible">
+    <path d="M1,15 L5.5,7 L8,2 L10,6 L11.5,4.6 L13.5,5.4 L16,9 L19,15 Z" fill="url(#peakG)" stroke="#7a6a48" stroke-width=".7" stroke-linejoin="round" vector-effect="non-scaling-stroke"/>
+    <g stroke="#6f5f42" stroke-width=".62" stroke-linecap="round" fill="none" opacity=".5" vector-effect="non-scaling-stroke">
+      <path d="M9.1,4.4 l.8,1.35"/><path d="M9.7,5.6 l.7,1.25"/>
+      <path d="M13.6,6 l.7,1.35"/><path d="M14.5,7.6 l.7,1.45"/><path d="M15.4,9.2 l.6,1.45"/>
+      <path d="M16.4,11 l.55,1.4"/><path d="M17.3,12.7 l.5,1.4"/>
+    </g>
+    <path d="M6.3,4.4 L8,2 L9.7,4.4 C8.8,3.5 7.2,3.5 6.3,4.4 Z" fill="#f6f9fb" fill-opacity=".92" stroke="#8fa3bd" stroke-width=".35" stroke-linejoin="round" vector-effect="non-scaling-stroke"/>
+  </symbol>
+  <!-- холм: низкая округлая гряда с лёгкой отмывкой (не острый пик) -->
+  <symbol id="hill" viewBox="0 0 18 10" overflow="visible">
+    <path d="M1,9.2 Q3.5,4.2 7.5,4 Q9.4,4 10.4,5.2 Q12,3.9 14,4.6 Q16.2,5.6 17,9.2 Z" fill="url(#peakG)" stroke="#7a6a48" stroke-width=".6" stroke-linejoin="round" vector-effect="non-scaling-stroke"/>
+    <g stroke="#6f5f42" stroke-width=".55" stroke-linecap="round" fill="none" opacity=".42" vector-effect="non-scaling-stroke">
+      <path d="M8.5,4.6 l.7,1.3"/><path d="M9.6,5.4 l.6,1.3"/>
+      <path d="M13.6,5.2 l.6,1.3"/><path d="M14.7,6 l.5,1.4"/><path d="M15.6,7.4 l.5,1.4"/>
+    </g>
+  </symbol>
 </defs>
 <clipPath id="mapClip"><rect x="12.7" y="94.3" width="1874.7" height="1241.3"/></clipPath>
 <g class="geo" clip-path="url(#mapClip)">
@@ -757,13 +793,13 @@
   <g id="mountains" opacity=".55">
     <!-- Гевал (Эйвал) — 940 м, к северу от Сихема -->
     <g class="lbl-z1">
-      <path d="M618,730 L624,716 L628,718 L632,716 L638,730 Z" fill="rgba(100,90,60,.12)" stroke="#8b7d5a" stroke-width="1.2" stroke-linejoin="round"/>
+      <use href="#peak" x="617" y="716" width="22" height="15"/>
       <text x="628" y="712" font-size="5" fill="#8b7d5a" text-anchor="middle" letter-spacing=".1em">ГЕВАЛ</text>
       <text x="628" y="708" font-size="3.5" fill="#cdbd95" text-anchor="middle" opacity=".6">עֵיבָל · 940 м</text>
     </g>
     <!-- Геризим (Гризим) — 881 м, к югу от Сихема -->
     <g class="lbl-z1">
-      <path d="M618,770 L624,756 L628,758 L632,756 L638,770 Z" fill="rgba(100,90,60,.12)" stroke="#8b7d5a" stroke-width="1.2" stroke-linejoin="round"/>
+      <use href="#peak" x="617" y="756" width="22" height="15"/>
       <text x="628" y="776" font-size="5" fill="#8b7d5a" text-anchor="middle" letter-spacing=".1em">ГЕРИЗИМ</text>
       <text x="628" y="780" font-size="3.5" fill="#cdbd95" text-anchor="middle" opacity=".6">גְּרִזִּים · 881 м</text>
     </g>
@@ -773,16 +809,14 @@
 
 <!-- ============ ДОПОЛНИТЕЛЬНЫЙ РЕЛЬЕФ ============ -->
 <!-- Горный хребет Ханаана (Иудейские горы) — более выразительный -->
-<g opacity=".22" filter="url(#soft)">
-  <!-- Кармил -->
-  <path d="M580,716 L585,706 L590,716 Z" fill="rgba(100,90,60,.5)" stroke="#8b7d5a" stroke-width="1"/>
+<g opacity=".5">
+  <!-- Кармил — прибрежная гряда -->
+  <use href="#hill" x="576" y="707" width="18" height="10"/>
   <text x="580" y="702" font-size="3.5" fill="#8b7d5a" text-anchor="middle" opacity=".6" class="lbl-z1">הַכַּרְמֶל</text>
   <!-- Хребет Самарии -->
-  <path d="M615,735 L618,726 L621,735 Z" fill="rgba(100,90,60,.4)" stroke="#8b7d5a" stroke-width=".8"/>
-  <path d="M622,730 L625,721 L628,730 Z" fill="rgba(100,90,60,.4)" stroke="#8b7d5a" stroke-width=".8"/>
+  <use href="#hill" x="612" y="726" width="14" height="8"/>
   <!-- Иудейские горы -->
-  <path d="M610,808 L614,799 L618,808 Z" fill="rgba(100,90,60,.45)" stroke="#8b7d5a" stroke-width=".9"/>
-  <path d="M618,800 L622,791 L626,800 Z" fill="rgba(100,90,60,.4)" stroke="#8b7d5a" stroke-width=".8"/>
+  <use href="#hill" x="608" y="799" width="15" height="9"/>
 </g>
 <!-- Оронт (Сирия) — река севернее Дамаска -->
 <path fill="none" stroke="#2d4a66" stroke-width="1.4" opacity=".55" stroke-linecap="round"
@@ -817,12 +851,11 @@
   <text x="0" y="32" font-size="3.8" fill="#8a6838" text-anchor="middle" opacity=".8">הַר סִינַי · 2285 м</text>
 </g>
 <!-- Хермон — гора у Дана -->
-<g class="lbl-z1" transform="translate(668,594)" opacity=".5">
-  <path d="M-14,10 L-4,-8 L0,-16 L4,-8 L14,10 Z" fill="rgba(120,140,160,.16)" stroke="#6080a0" stroke-width="1" stroke-linejoin="round"/>
-  <!-- снежная шапка: Хермон — высочайшая вершина региона (2814 м) -->
-  <path d="M-4.5,-6.5 L0,-16 L4.5,-6.5 C2,-8 -2,-8 -4.5,-6.5 Z" fill="rgba(250,252,254,.95)" stroke="rgba(120,140,170,.35)" stroke-width=".4"/>
-  <text x="0" y="17" text-anchor="middle" font-size="4.5" fill="#7090b8" letter-spacing=".1em">ХЕРМОН</text>
-  <text x="0" y="22" font-size="3.2" fill="#6080a8" text-anchor="middle" opacity=".8">2814 м · הַר חֶרְמוֹן</text>
+<g class="lbl-z1" opacity=".62">
+  <!-- Хермон — высочайшая вершина региона (2814 м), крупный снежный пик -->
+  <use href="#peak-snow" x="652" y="576" width="32" height="30"/>
+  <text x="668" y="611" text-anchor="middle" font-size="4.5" fill="#7090b8" letter-spacing=".1em">ХЕРМОН</text>
+  <text x="668" y="616" font-size="3.2" fill="#6080a8" text-anchor="middle" opacity=".8">2814 м · הַר חֶרְמוֹן</text>
 </g>
 <!-- ============ DEBATE: spor o Sodome ============ -->
 <g id="debate" style="display:none">
