@@ -275,7 +275,7 @@
   <div id="scrim"></div>
 
   <footer>
-    <span class="hint">Перетащите узел — <b>вернётся пружиной</b> · колесо — зум · тащить фон — сдвиг · клик по семейству — подсветка</span>
+    <span class="hint">Перетащите узел — <b>вернётся пружиной</b> · колесо / двойной клик — зум · тащить фон — сдвиг · клик по семейству — подсветка · Esc — сброс</span>
     <span id="stat"></span>
   </footer>
 </div>
@@ -432,7 +432,10 @@ mm.addEventListener('pointerdown',ev=>{ev.stopPropagation();mmDrag=true;mmPanTo(
 window.addEventListener('pointermove',ev=>{if(mmDrag)mmPanTo(ev);});
 window.addEventListener('pointerup',()=>{mmDrag=false;});
 // плавный перелёт вида к точке (для поиска/связей)
-function tweenVp(tx,ty,tk){const x0=vp.x,y0=vp.y,k0=vp.k;let t=0;(function st(){t+=0.11;const e=t>=1?1:1-Math.pow(1-t,3);vp.x=x0+(tx-x0)*e;vp.y=y0+(ty-y0)*e;vp.k=k0+(tk-k0)*e;applyVp();if(t<1)requestAnimationFrame(st);})();}
+const REDUCED_MOTION=matchMedia('(prefers-reduced-motion: reduce)').matches;
+function tweenVp(tx,ty,tk){
+  if(REDUCED_MOTION){vp.x=tx;vp.y=ty;vp.k=tk;applyVp();return;}
+  const x0=vp.x,y0=vp.y,k0=vp.k;let t=0;(function st(){t+=0.11;const e=t>=1?1:1-Math.pow(1-t,3);vp.x=x0+(tx-x0)*e;vp.y=y0+(ty-y0)*e;vp.k=k0+(tk-k0)*e;applyVp();if(t<1)requestAnimationFrame(st);})();}
 function flyTo(n,zoom){const sr=svg.getBoundingClientRect();const k=zoom?Math.max(vp.k,1.35):vp.k;tweenVp(sr.width/2-n.x*k,sr.height/2-n.y*k,k);}
 
 // ---- physics ----
@@ -549,6 +552,20 @@ svg.addEventListener('pointerup',endDrag);
 svg.addEventListener('pointercancel',endDrag);
 svg.addEventListener('pointerleave',()=>{if(hovered){hovered=null;refresh();hideTip();}});
 svg.addEventListener('wheel',ev=>{ev.preventDefault();const r=svg.getBoundingClientRect();const sx=ev.clientX-r.left,sy=ev.clientY-r.top;const gx=(sx-vp.x)/vp.k,gy=(sy-vp.y)/vp.k;const f=ev.deltaY<0?1.12:1/1.12;vp.k=Math.max(.3,Math.min(3,vp.k*f));vp.x=sx-gx*vp.k;vp.y=sy-gy*vp.k;applyVp();},{passive:false});
+// двойной клик: по узлу — подлететь к нему; по фону — плавный зум вокруг курсора
+svg.addEventListener('dblclick',ev=>{ev.preventDefault();
+  const g=ev.target.closest('.node');
+  if(g){flyTo(byId.get(g.dataset.id),true);return;}
+  const r=svg.getBoundingClientRect();const sx=ev.clientX-r.left,sy=ev.clientY-r.top;
+  const gx=(sx-vp.x)/vp.k,gy=(sy-vp.y)/vp.k;const k=Math.min(3,vp.k*1.5);
+  tweenVp(sx-gx*k,sy-gy*k,k);});
+// Escape — мягкий сброс: снять фильтры/поиск/выделение (без пересборки раскладки)
+document.addEventListener('keydown',e=>{
+  if(e.key!=='Escape')return;
+  selected=null;focusFam=null;focusConf=null;searchActive=false;searchHits=new Set();searchOrder=[];searchIdx=-1;
+  q.value='';searchHint.classList.remove('show');if(document.activeElement===q)q.blur();
+  document.querySelectorAll('.fam,.cv').forEach(x=>{x.classList.remove('on');x.setAttribute('aria-pressed','false');});
+  closeSheets();refresh();});
 
 // ---- tooltip ----
 const tip=document.getElementById('tooltip');
@@ -597,7 +614,7 @@ function selectNode(id){selected=id;refresh();const n=byId.get(id);
   document.querySelectorAll('.rel a').forEach(a=>a.addEventListener('click',()=>{const t=byId.get(a.dataset.id);selectNode(a.dataset.id);flash(a.dataset.id);flyTo(t,false);}));
   if(isMobile())openSheet(asideR);
 }
-function flash(id){const n=byId.get(id);n.vx+=(Math.sign(Math.random()-.5)||1)*2.5;} // tiny nudge for life
+function flash(id){if(REDUCED_MOTION)return;const n=byId.get(id);n.vx+=(Math.sign(Math.random()-.5)||1)*2.5;} // tiny nudge for life
 
 // ---- families legend ----
 const famsEl=document.getElementById('fams');
