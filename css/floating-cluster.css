@@ -4505,3 +4505,16 @@ html.dark .gb-ember[data-state="playing"] { animation: gbEmberBreathDark 2.8s ea
   .gb-ember[data-state="playing"] .gb-ember__pause,
   .gb-ember[data-state="complete"] .gb-ember__check { animation: none; }
 }
+
+/* =========================================================
+   GILL DESKTOP CHROME — DEPTH POLISH 2026-07-13 (owner sign-off:
+   «углубить, свечения мягкие»). Только hover-глубина, разметка
+   и геометрия не тронуты.
+   ========================================================= */
+@media (hover:hover) and (pointer:fine){
+  [data-gill-v16] .gbs-rail-foot__btn:hover{filter:drop-shadow(0 0 6px rgba(216,170,109,.45))}
+  .gbs-theme-corner .gb-icon:hover,
+  .gbs-theme-corner .gb-theme-toggle:hover{filter:drop-shadow(0 0 7px rgba(184,137,74,.4))}
+  html.dark .gbs-theme-corner .gb-icon:hover,
+  html.dark .gbs-theme-corner .gb-theme-toggle:hover{filter:drop-shadow(0 0 8px rgba(216,170,109,.55))}
+}

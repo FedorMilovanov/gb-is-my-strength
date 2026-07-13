@@ -658,3 +658,21 @@ html:not(.dark) .gtip.gb-floating-tip::before {
 .gbs2-sheet-part .hlr-ribbon__word{font-size:7px;max-width:42px}
 .gbs2-sheet-part .hlr-ribbon--reference .hlr-ribbon__word{font-size:6px;max-width:46px}
 .gbs2-sheet-part .hlr-ribbon__text{padding-top:7px}
+
+/* =========================================================
+   DESKTOP RAIL — DEPTH POLISH 2026-07-13 (owner: «углубить
+   визуал десктопа, свечения мягкие, без рамок»). Общие gbs2-*
+   классы — глубже становятся и Гилл, и «Сердце» разом.
+   ========================================================= */
+/* Активная строка оглавления: мягкий подъём + гало у точки-маркера
+   (первое кольцо 4px var(--gbs2-rail) — существующая маска трека, сохранено) */
+.gbs2-toc a{transition:background .18s,color .18s}
+.gbs2-toc a.gbs2-active{box-shadow:0 3px 12px -6px rgba(0,0,0,.55)}
+.gbs2-toc a.gbs2-active .gbs2-dot{box-shadow:0 0 0 4px var(--gbs2-rail),0 0 9px 1px rgba(232,184,120,.5)}
+/* Прогресс-линия текущей части: тлеющее золото, как нить в мобильном листе */
+.gbs2-curbar i{box-shadow:0 0 8px color-mix(in srgb,var(--gbs2-accent2) 55%,transparent)}
+/* Кольцо прогресса серии: едва заметное свечение дуги */
+.gbs2-ring .f{filter:drop-shadow(0 0 2.5px rgba(232,184,120,.45))}
+/* Счётчик «1 / 15»: стеклянный блик поверх пилюли */
+.gbs2-count{box-shadow:inset 0 1px 0 rgba(255,255,255,.09)}
+@media (prefers-reduced-motion:reduce){.gbs2-toc a{transition:none}}
