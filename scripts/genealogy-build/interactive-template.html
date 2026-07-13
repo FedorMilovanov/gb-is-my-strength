@@ -507,18 +507,43 @@ function refresh(){
 
 // ---- interaction ----
 let dragNode=null, panning=false, panStart=null;
+// пинч-зум на касаниях: два активных указателя → масштаб вокруг их середины
+const activePtrs=new Map(); let pinch=null;
 svg.addEventListener('pointerdown',ev=>{
+  activePtrs.set(ev.pointerId,{x:ev.clientX,y:ev.clientY});
+  if(activePtrs.size===2){
+    if(dragNode){dragNode.drag=false;dragNode=null;tether.style.opacity=0;}
+    panning=false;svg.classList.remove('grabbing');hideTip();
+    const [a,b]=[...activePtrs.values()];const r=svg.getBoundingClientRect();
+    const mx=(a.x+b.x)/2-r.left,my=(a.y+b.y)/2-r.top;
+    pinch={d0:Math.hypot(a.x-b.x,a.y-b.y)||1,k0:vp.k,gx:(mx-vp.x)/vp.k,gy:(my-vp.y)/vp.k};
+    return;
+  }
   const g=ev.target.closest('.node');
-  if(g){const n=byId.get(g.dataset.id);dragNode=n;n.drag=true;try{svg.setPointerCapture(ev.pointerid);}catch(_){}
+  if(g){const n=byId.get(g.dataset.id);dragNode=n;n.drag=true;try{svg.setPointerCapture(ev.pointerId);}catch(_){}
     const p=toGraph(ev);dragNode._ox=n.x-p.x;dragNode._oy=n.y-p.y;tether.style.opacity=.7;selectNode(n.id);
   } else {panning=true;panStart={x:ev.clientX-vp.x,y:ev.clientY-vp.y};svg.classList.add('grabbing');}
 });
 svg.addEventListener('pointermove',ev=>{
+  if(activePtrs.has(ev.pointerId))activePtrs.set(ev.pointerId,{x:ev.clientX,y:ev.clientY});
+  if(pinch&&activePtrs.size>=2){
+    const [a,b]=[...activePtrs.values()];const r=svg.getBoundingClientRect();
+    const d=Math.hypot(a.x-b.x,a.y-b.y)||1;
+    const mx=(a.x+b.x)/2-r.left,my=(a.y+b.y)/2-r.top;
+    vp.k=Math.max(.3,Math.min(3,pinch.k0*d/pinch.d0));
+    vp.x=mx-pinch.gx*vp.k;vp.y=my-pinch.gy*vp.k;applyVp();
+    return;
+  }
   if(dragNode){const p=toGraph(ev);const tx=p.x+dragNode._ox,ty=p.y+dragNode._oy;dragNode.x+=(tx-dragNode.x)*0.5;dragNode.y+=(ty-dragNode.y)*0.5;dragNode.vx=0;dragNode.vy=0;}
   else if(panning){vp.x=ev.clientX-panStart.x;vp.y=ev.clientY-panStart.y;applyVp();}
   else{const g=ev.target.closest('.node');const id=g?g.dataset.id:null;if(id!==hovered){hovered=id;refresh();}if(id){showTip(byId.get(id),ev);}else hideTip();}
 });
-function endDrag(ev){if(dragNode){dragNode.drag=false;dragNode=null;tether.style.opacity=0;}if(panning){panning=false;svg.classList.remove('grabbing');}}
+function endDrag(ev){
+  if(ev&&ev.pointerId!==undefined)activePtrs.delete(ev.pointerId);
+  if(activePtrs.size<2)pinch=null;
+  if(dragNode){dragNode.drag=false;dragNode=null;tether.style.opacity=0;}
+  if(panning&&!activePtrs.size){panning=false;svg.classList.remove('grabbing');}
+}
 svg.addEventListener('pointerup',endDrag);
 svg.addEventListener('pointercancel',endDrag);
 svg.addEventListener('pointerleave',()=>{if(hovered){hovered=null;refresh();hideTip();}});
