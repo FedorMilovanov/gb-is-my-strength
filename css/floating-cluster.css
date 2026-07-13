@@ -4577,16 +4577,21 @@ html.dark [data-gill-v16] .mobile-top-bar {
 @media (min-width: 64em) {
   /* Оверлей у одиночной статьи открывается display:block (флекс-раскладка из
      [data-gill-v16] сюда не достаёт) — форсируем flex, иначе align/justify
-     игнорируются и панель падает в левый-верх по потоку. Якорим top-right,
-     под угловой ⚙; без затемнения экрана. */
+     игнорируются и панель падает в левый-верх по потоку. Позицию (снизу-слева,
+     под ⚙ читательского рельса) даёт общий блок .gill-settings-overlay выше;
+     здесь только включаем flex и снимаем затемнение. */
   body:has([data-reader-root]) .gill-settings-overlay.is-open {
-    display: flex;
-    align-items: flex-start; justify-content: flex-end;
-    padding: 70px clamp(16px, 3vw, 46px) 0 0;
+    display: flex; position: fixed; inset: 0;
+    align-items: flex-end; justify-content: flex-start;
+    /* всплывает от ⚙ рельса (низ-лево) вверх, приподнят над нижним тулбаром
+       рельса; как поповер Герменевтики — перекрывает нижнюю часть рельса.
+       z-index выше рельса (z-sticky 1000), иначе поповер уходит ЗА рельс. */
+    padding: 0 0 88px clamp(16px, 2.4vw, 40px);
     background: transparent;
+    z-index: var(--z-overlay-high, 3000);
   }
   body:has([data-reader-root]) .gill-settings-overlay .gill-settings-sheet {
-    transform-origin: top right;
+    transform-origin: bottom left;
   }
   /* Шапка листа у одиночной статьи (у серий её стилизует [data-gill-v16];
      здесь его нет, поэтому h3 наследовал гигантский статейный сериф, а
@@ -4637,6 +4642,14 @@ html.dark [data-gill-v16] .mobile-top-bar {
   color: #493823;
 }
 html:has([data-reader-root][data-gill-reader-theme="sepia"]) body { background: #f3ead4; }
+
+/* kod-da-vinchi с читательским рельсом (ReaderRail): на десктопе сдвигаем
+   центрированную .page-wrap вправо, чтобы очистить фикс-рельс (аналог
+   .article-main--hrail у Герменевтики), и прячем угловую ⚙ — там настройки
+   открывает ⚙ рельса (на мобиле рельс скрыт, работает угловая ⚙). */
+@media (min-width: 1200px) {
+  body:has(.hrail) .page-wrap { margin-left: max((100vw - min(820px, 92vw)) / 2, 334px); margin-right: auto; }
+}
 
 /* =========================================================
    PLAY EMBER — DEPTH POLISH 2026-07-13 (owner: «качество
