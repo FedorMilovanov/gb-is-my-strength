@@ -528,8 +528,12 @@ function renderSheet(route, opts) {
     <g transform="translate(${x0 + W - 52 * k},${y0 + 56 * k})">
       <circle r="${30 * k}" class="plate"/>
       <g class="rose">
+        <circle r="${25 * k}" class="rose-ring"/>
+        <g class="rose-ticks">${Array.from({ length: 16 }, (_, i) =>
+    `<path d="M0,${-25 * k} v${(i % 4 === 0 ? 3.2 : 1.8) * k}" transform="rotate(${i * 22.5})"/>`).join('')}</g>
+        <path d="M0,${-15 * k} L${2 * k},${-2 * k} L${15 * k},0 L${2 * k},${2 * k} L0,${15 * k} L${-2 * k},${2 * k} L${-15 * k},0 L${-2 * k},${-2 * k} Z" transform="rotate(45)" class="rose-sec"/>
         <path d="M0,${-22 * k} L${3 * k},${-3 * k} L${22 * k},0 L${3 * k},${3 * k} L0,${22 * k} L${-3 * k},${3 * k} L${-22 * k},0 L${-3 * k},${-3 * k} Z"/>
-        <path d="M${11 * k},${-11 * k} L${2.6 * k},${-1.2 * k} M${11 * k},${11 * k} L${1.2 * k},${2.6 * k} M${-11 * k},${11 * k} L${-2.6 * k},${1.2 * k} M${-11 * k},${-11 * k} L${-1.2 * k},${-2.6 * k}" class="rose-diag"/>
+        <path d="M0,${-22 * k} L${3 * k},${-3 * k} L0,0 Z M${22 * k},0 L${3 * k},${3 * k} L0,0 Z M0,${22 * k} L${-3 * k},${3 * k} L0,0 Z M${-22 * k},0 L${-3 * k},${-3 * k} L0,0 Z" class="rose-shade"/>
         <circle r="${2.1 * k}" class="rose-hub"/>
       </g>
       <path d="M0,${-22 * k} L${3 * k},${-3 * k} L0,${-6 * k} L${-3 * k},${-3 * k} Z" class="north"/>
@@ -771,7 +775,10 @@ function sheetCss() {
   .grat{stroke:#8a6a1f;stroke-width:.8;opacity:.4}
   .grat-t{font-family:Lora,Georgia,serif;font-weight:500;fill:#8a6a1f;opacity:.5}
   .rose path{fill:rgba(138,106,31,.32);stroke:#8a6a1f;stroke-width:.5;opacity:.8}
-  .rose .rose-diag{fill:none;stroke:#8a6a1f;stroke-width:.7;opacity:.5}
+  .rose .rose-ring{fill:none;stroke:#8a6a1f;stroke-width:.6;opacity:.5}
+  .rose .rose-ticks path{fill:none;stroke:#8a6a1f;stroke-width:.6;opacity:.55}
+  .rose .rose-sec{fill:rgba(138,106,31,.16);stroke:#8a6a1f;stroke-width:.4;opacity:.75}
+  .rose .rose-shade{fill:rgba(107,82,22,.45);stroke:none}
   .rose .rose-hub{fill:#8a6a1f;stroke:none;opacity:.7}
   .graticule{transition:opacity .35s}
   svg.zoomed .graticule{opacity:0}

@@ -144,7 +144,10 @@
   .grat{stroke:#8a6a1f;stroke-width:.8;opacity:.4}
   .grat-t{font-family:Lora,Georgia,serif;font-weight:500;fill:#8a6a1f;opacity:.5}
   .rose path{fill:rgba(138,106,31,.32);stroke:#8a6a1f;stroke-width:.5;opacity:.8}
-  .rose .rose-diag{fill:none;stroke:#8a6a1f;stroke-width:.7;opacity:.5}
+  .rose .rose-ring{fill:none;stroke:#8a6a1f;stroke-width:.6;opacity:.5}
+  .rose .rose-ticks path{fill:none;stroke:#8a6a1f;stroke-width:.6;opacity:.55}
+  .rose .rose-sec{fill:rgba(138,106,31,.16);stroke:#8a6a1f;stroke-width:.4;opacity:.75}
+  .rose .rose-shade{fill:rgba(107,82,22,.45);stroke:none}
   .rose .rose-hub{fill:#8a6a1f;stroke:none;opacity:.7}
   .graticule{transition:opacity .35s}
   svg.zoomed .graticule{opacity:0}
@@ -1006,8 +1009,11 @@
     <g transform="translate(1136.6666666666667,453.33333333333337)">
       <circle r="25" class="plate"/>
       <g class="rose">
+        <circle r="20.833333333333336" class="rose-ring"/>
+        <g class="rose-ticks"><path d="M0,-20.833333333333336 v2.666666666666667" transform="rotate(0)"/><path d="M0,-20.833333333333336 v1.5" transform="rotate(22.5)"/><path d="M0,-20.833333333333336 v1.5" transform="rotate(45)"/><path d="M0,-20.833333333333336 v1.5" transform="rotate(67.5)"/><path d="M0,-20.833333333333336 v2.666666666666667" transform="rotate(90)"/><path d="M0,-20.833333333333336 v1.5" transform="rotate(112.5)"/><path d="M0,-20.833333333333336 v1.5" transform="rotate(135)"/><path d="M0,-20.833333333333336 v1.5" transform="rotate(157.5)"/><path d="M0,-20.833333333333336 v2.666666666666667" transform="rotate(180)"/><path d="M0,-20.833333333333336 v1.5" transform="rotate(202.5)"/><path d="M0,-20.833333333333336 v1.5" transform="rotate(225)"/><path d="M0,-20.833333333333336 v1.5" transform="rotate(247.5)"/><path d="M0,-20.833333333333336 v2.666666666666667" transform="rotate(270)"/><path d="M0,-20.833333333333336 v1.5" transform="rotate(292.5)"/><path d="M0,-20.833333333333336 v1.5" transform="rotate(315)"/><path d="M0,-20.833333333333336 v1.5" transform="rotate(337.5)"/></g>
+        <path d="M0,-12.5 L1.6666666666666667,-1.6666666666666667 L12.5,0 L1.6666666666666667,1.6666666666666667 L0,12.5 L-1.6666666666666667,1.6666666666666667 L-12.5,0 L-1.6666666666666667,-1.6666666666666667 Z" transform="rotate(45)" class="rose-sec"/>
         <path d="M0,-18.333333333333336 L2.5,-2.5 L18.333333333333336,0 L2.5,2.5 L0,18.333333333333336 L-2.5,2.5 L-18.333333333333336,0 L-2.5,-2.5 Z"/>
-        <path d="M9.166666666666668,-9.166666666666668 L2.166666666666667,-1 M9.166666666666668,9.166666666666668 L1,2.166666666666667 M-9.166666666666668,9.166666666666668 L-2.166666666666667,1 M-9.166666666666668,-9.166666666666668 L-1,-2.166666666666667" class="rose-diag"/>
+        <path d="M0,-18.333333333333336 L2.5,-2.5 L0,0 Z M18.333333333333336,0 L2.5,2.5 L0,0 Z M0,18.333333333333336 L-2.5,2.5 L0,0 Z M-18.333333333333336,0 L-2.5,-2.5 L0,0 Z" class="rose-shade"/>
         <circle r="1.7500000000000002" class="rose-hub"/>
       </g>
       <path d="M0,-18.333333333333336 L2.5,-2.5 L0,-5 L-2.5,-2.5 Z" class="north"/>
