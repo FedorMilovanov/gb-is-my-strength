@@ -1285,7 +1285,12 @@
     var learningOverlay = qs('#gillLearningOverlay');
     var settingsOverlay = qs('#gillSettingsOverlay');
     var mobLearningBtn = qs('#mobLearningBtn');
-    var mobSettingsBtn = qs('#mobSettingsBtn');
+    // Settings sheet can now have TWO triggers (mobile bottom-bar gear +
+    // desktop rail-foot gear) — both carry [data-gill-settings-open], so we
+    // bind every match instead of a single #mobSettingsBtn id. Opening/closing
+    // syncs aria-expanded on ALL triggers at once (only one is visible at a
+    // given viewport width, but keeping both in sync is free and correct).
+    var settingsBtns = qsa('[data-gill-settings-open]');
     var extraOverlays = [learningOverlay, settingsOverlay].filter(function(el) { return !!el; });
 
     extraOverlays.forEach(function(overlay) {
@@ -1294,36 +1299,40 @@
       if (dialog) dialog.setAttribute('aria-modal', 'true');
     });
 
-    function triggerFor(overlay) {
-      return overlay === learningOverlay ? mobLearningBtn : overlay === settingsOverlay ? mobSettingsBtn : null;
+    function triggersFor(overlay) {
+      if (overlay === learningOverlay) return mobLearningBtn ? [mobLearningBtn] : [];
+      if (overlay === settingsOverlay) return settingsBtns;
+      return [];
     }
-    function openGillSheet(overlay, trigger) {
+    function openGillSheet(overlay, triggers) {
       if (!overlay) return;
       openOverlay(overlay);
-      if (trigger) trigger.setAttribute('aria-expanded', 'true');
+      (triggers || []).forEach(function(t) { t.setAttribute('aria-expanded', 'true'); });
       var focusable = overlay.querySelector('input, button:not([data-overlay-close]):not(.toc-sheet__handle)');
       if (focusable) setTimeout(function() { try { focusable.focus(); } catch(_) {} }, 20);
     }
     function closeGillSheet(overlay, restoreFocus) {
       if (!overlay) return;
-      var trigger = triggerFor(overlay);
+      var triggers = triggersFor(overlay);
       closeOverlay(overlay);
-      if (trigger) trigger.setAttribute('aria-expanded', 'false');
-      if (restoreFocus && trigger && trigger.focus) { try { trigger.focus(); } catch(_) {} }
+      triggers.forEach(function(t) { t.setAttribute('aria-expanded', 'false'); });
+      if (restoreFocus && triggers[0] && triggers[0].focus) { try { triggers[0].focus(); } catch(_) {} }
     }
 
     if (mobLearningBtn && learningOverlay) {
       addCleanListener(mobLearningBtn, 'click', function(e) {
         e.preventDefault();
         closeGillSheet(settingsOverlay, false);
-        openGillSheet(learningOverlay, mobLearningBtn);
+        openGillSheet(learningOverlay, [mobLearningBtn]);
       });
     }
-    if (mobSettingsBtn && settingsOverlay) {
-      addCleanListener(mobSettingsBtn, 'click', function(e) {
-        e.preventDefault();
-        closeGillSheet(learningOverlay, false);
-        openGillSheet(settingsOverlay, mobSettingsBtn);
+    if (settingsBtns.length && settingsOverlay) {
+      settingsBtns.forEach(function(btn) {
+        addCleanListener(btn, 'click', function(e) {
+          e.preventDefault();
+          closeGillSheet(learningOverlay, false);
+          openGillSheet(settingsOverlay, settingsBtns);
+        });
       });
     }
 
