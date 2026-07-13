@@ -90,10 +90,11 @@
   .edge{fill:none;stroke-linecap:round}
   .node{cursor:pointer}
   .node circle{stroke:var(--paper0);transition:stroke-width .12s}
-  .node text{font-family:Georgia,serif;fill:var(--ink);paint-order:stroke;stroke:var(--paper0);stroke-width:2.4px;pointer-events:none;transition:fill .16s,letter-spacing .16s}
-  .node text.lbl-big{stroke-width:3.8px;letter-spacing:.15px}
-  .node text.lbl-sub{fill:var(--gold);stroke-width:3px}
-  .node .lbl-leaf{opacity:0;transition:opacity .18s,fill .16s;font-size:9.5px}
+  /* подписи: тонкий мягкий ореол (круглые стыки — без «шипов» на засечках), никакой рамки-наклейки */
+  .node text{font-family:Georgia,serif;fill:var(--ink);paint-order:stroke;stroke:var(--paper0);stroke-width:1.7px;stroke-linejoin:round;stroke-linecap:round;stroke-opacity:.82;pointer-events:none;transition:fill .16s,letter-spacing .16s}
+  .node text.lbl-big{stroke-width:2.1px;letter-spacing:.15px}
+  .node text.lbl-sub{fill:var(--gold);stroke-width:1.8px;letter-spacing:.55px}
+  .node .lbl-leaf{opacity:0;transition:opacity .18s,fill .16s;font-size:9.5px;stroke-width:1.5px}
   .node.show .lbl-leaf{opacity:1}
   /* микро-интерактив: при наведении подпись «оживает» — чуть темнее и чуть разрежённее */
   .node.hl text.lbl-big{fill:var(--nameHi);letter-spacing:.5px}
@@ -256,9 +257,10 @@
         <stop offset="55%" stop-color="#fffdf6" stop-opacity="0.16"/>
         <stop offset="100%" stop-color="#fffdf6" stop-opacity="0"/>
       </radialGradient>
-      <!-- нижний рефлекс: свет проходит сквозь стекло на противоположный край -->
+      <!-- нижний рефлекс: свет проходит сквозь стекло на противоположный край (деликатно, не «пятном») -->
       <radialGradient id="christRim" cx="50%" cy="50%" r="50%">
-        <stop offset="0%" stop-color="#fff0c2" stop-opacity="0.6"/>
+        <stop offset="0%" stop-color="#fff0c2" stop-opacity="0.38"/>
+        <stop offset="60%" stop-color="#ffedb2" stop-opacity="0.16"/>
         <stop offset="100%" stop-color="#ffe9a4" stop-opacity="0"/>
       </radialGradient>
     </defs><g id="viewport">
