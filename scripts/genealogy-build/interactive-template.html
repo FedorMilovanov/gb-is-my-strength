@@ -630,6 +630,7 @@ for(const f of GRAPH.families){const d=document.createElement('div');d.className
 
 // ---- search ----
 const q=document.getElementById('q'), searchHint=document.getElementById('searchHint');
+if(NATIONS)q.placeholder='Найти народ…';
 let searchOrder=[], searchIdx=-1;
 q.addEventListener('input',()=>{const v=q.value.trim().toLowerCase();searchHits=new Set();searchOrder=[];searchIdx=-1;searchActive=!!v;if(v){for(const n of nodes)if(n.ru.toLowerCase().includes(v)){searchHits.add(n.id);searchOrder.push(n.id);}}
   searchHint.classList.toggle('show', searchActive&&!searchOrder.length);

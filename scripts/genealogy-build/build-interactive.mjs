@@ -23,13 +23,19 @@ const OUT = path.join(ROOT, 'data', 'genealogy', 'v2', 'build');
 const SCRATCH = process.argv[2] || '/tmp/claude-0/-home-user/929a9a64-a6ab-5e37-bb8c-a4e74ec5a4cf/scratchpad';
 
 const TARGETS = [
-  { graph: 'genealogy-graph.json', out: 'genealogy-interactive.html', artifact: 'genealogy-interactive.artifact.html', title: 'Живое древо — Генеалогия Спасителя (интерактив)' },
-  { graph: 'nations-graph.json',   out: 'nations-interactive.html',   artifact: 'nations-interactive.artifact.html',   title: 'Карта народов — Таблица народов (Бытие 10)' },
+  { graph: 'genealogy-graph.json', out: 'genealogy-interactive.html', artifact: 'genealogy-interactive.artifact.html', title: 'Живое древо — Генеалогия Спасителя (интерактив)',
+    h1: 'Живое древо', sub: 'Генеалогия Спасителя · интерактив' },
+  { graph: 'nations-graph.json',   out: 'nations-interactive.html',   artifact: 'nations-interactive.artifact.html',   title: 'Карта народов — Таблица народов (Бытие 10)',
+    h1: 'Карта народов', sub: 'Таблица народов · Бытие 10 · интерактив' },
 ];
+
+const HEADER_TPL = '<h1>Живое древо</h1><p>Генеалогия Спасителя · интерактив</p>';
 
 async function build(tpl, t) {
   const json = JSON.stringify(JSON.parse(await readFile(path.join(OUT, t.graph), 'utf8')));
-  const body = tpl.replace('/*__GRAPH__*/', json);
+  let body = tpl.replace('/*__GRAPH__*/', json);
+  if (!body.includes(HEADER_TPL)) throw new Error('шапка-плейсхолдер не найдена в шаблоне');
+  body = body.replace(HEADER_TPL, `<h1>${t.h1}</h1><p>${t.sub}</p>`);
   await writeFile(path.join(SCRATCH, t.artifact), body);
   const doc = `<!doctype html>
 <html lang="ru">

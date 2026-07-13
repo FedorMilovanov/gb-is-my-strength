@@ -191,7 +191,7 @@
   <header>
     <div class="brand">
       <div class="emblem">☩</div>
-      <div><h1>Живое древо</h1><p>Генеалогия Спасителя · интерактив</p></div>
+      <div><h1>Карта народов</h1><p>Таблица народов · Бытие 10 · интерактив</p></div>
     </div>
     <div class="search">
       <svg viewBox="0 0 24 24"><circle cx="10" cy="10" r="6.5" stroke-width="1.6"/><line x1="15" y1="15" x2="20" y2="20" stroke-width="1.6"/></svg>
@@ -638,6 +638,7 @@ for(const f of GRAPH.families){const d=document.createElement('div');d.className
 
 // ---- search ----
 const q=document.getElementById('q'), searchHint=document.getElementById('searchHint');
+if(NATIONS)q.placeholder='Найти народ…';
 let searchOrder=[], searchIdx=-1;
 q.addEventListener('input',()=>{const v=q.value.trim().toLowerCase();searchHits=new Set();searchOrder=[];searchIdx=-1;searchActive=!!v;if(v){for(const n of nodes)if(n.ru.toLowerCase().includes(v)){searchHits.add(n.id);searchOrder.push(n.id);}}
   searchHint.classList.toggle('show', searchActive&&!searchOrder.length);
