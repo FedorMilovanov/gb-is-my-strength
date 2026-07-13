@@ -206,6 +206,8 @@
   .g9{position:absolute;right:10px;top:10px;z-index:9;font:600 10px/1 system-ui;letter-spacing:.08em;color:#7a5c26;background:rgba(246,241,231,.9);border:1px solid rgba(138,106,31,.4);border-radius:999px;padding:6px 10px}
   /* компактный HUD зума: экранная шкала + север (фурнитура листа на зуме скрыта) */
   .zoom-hud{position:absolute;left:14px;bottom:14px;z-index:20;display:flex;align-items:center;gap:9px;font:600 11px/1 Georgia,serif;color:#6b5216;background:rgba(246,241,231,.92);border:1px solid rgba(138,106,31,.4);border-radius:8px;padding:7px 11px;box-shadow:0 2px 8px rgba(90,70,30,.18);pointer-events:none}
+  /* display:flex выше перебивает UA-стиль [hidden] — возвращаем скрытие явно */
+  .zoom-hud[hidden]{display:none}
   .zoom-hud .zh-bar{display:inline-block;height:5px;background:#4a3f28;border:1px solid #6b5216;border-radius:1px}
   .zoom-hud .zh-north{letter-spacing:.05em}
   /* ── Читалка (R1, §14): корешок, погружение, курсоры ── */
@@ -448,7 +450,7 @@ M1610,60 C1652,118 1678,186 1688,262 C1696,332 1692,402 1672,462 C1660,498 1668,
 
 <path d="M710,535 C713.8,540.3 705.5,484.5 733,567 C760.5,649.5 825.0,926.5 875,1030 C925.0,1133.5 996.7,1153.8 1033,1188 C1069.3,1222.2 1083.0,1227.2 1093,1235" class="route-under"/>
 <path d="M710,535 C713.8,540.3 705.5,484.5 733,567 C760.5,649.5 825.0,926.5 875,1030 C925.0,1133.5 996.7,1153.8 1033,1188 C1069.3,1222.2 1083.0,1227.2 1093,1235" class="route"/>
-<path d="M-3.4,-3 L0,0 L-3.4,3" transform="translate(806.8,807.8) rotate(72.9)" class="route-arrow"/><path d="M-3.4,-3 L0,0 L-3.4,3" transform="translate(957.2,1112.2) rotate(45.0)" class="route-arrow"/><path d="M-3.4,-3 L0,0 L-3.4,3" transform="translate(1064.2,1212.4) rotate(38.1)" class="route-arrow"/>
+<path d="M-3.4,-3 L0,0 L-3.4,3" transform="translate(806.8,807.8) rotate(72.9)" class="route-arrow"/><path d="M-3.4,-3 L0,0 L-3.4,3" transform="translate(957.2,1112.2) rotate(45.0)" class="route-arrow"/>
 
 <line x1="680.9" y1="269.5" x2="702.6" y2="273.1" class="leader"/><line x1="860.3" y1="175.5" x2="887.6" y2="187.2" class="leader"/><line x1="701.3" y1="535.0" x2="684.5" y2="535.0" class="leader"/><line x1="739.0" y1="573.3" x2="755.1" y2="589.9" class="leader"/><line x1="863.4" y1="954.2" x2="841.4" y2="946.9" class="leader"/><line x1="879.9" y1="1022.8" x2="902.2" y2="990.6" class="leader"/><line x1="1041.6" y1="1189.4" x2="1063.6" y2="1193.1" class="leader"/><line x1="1099.1" y1="1241.2" x2="1120.2" y2="1263.0" class="leader"/>
 <g class="pl" data-pid="eden"><circle cx="672" cy="268" r="5.86" class="pl-cand"/></g><g class="pl" data-pid="ararat"><circle cx="852" cy="172" r="5.86" class="pl-cand"/></g><g class="pl" data-pid="nineveh"><circle cx="710" cy="535" r="5.54" class="pl-city"/></g><g class="pl" data-pid="calah"><circle cx="733" cy="567" r="5.54" class="pl-city"/></g><g class="pl" data-pid="akkad"><circle cx="872" cy="957" r="5.86" class="pl-cand"/></g><g class="pl" data-pid="babylon"><circle cx="875" cy="1030" r="5.54" class="pl-city"/></g><g class="pl" data-pid="uruk-city"><circle cx="1033" cy="1188" r="5.54" class="pl-city"/></g><g class="pl" data-pid="ur"><circle cx="1093" cy="1235" r="5.54" class="pl-city"/></g><g class="pl" data-pid="resen"><circle cx="731" cy="546" r="5.86" class="pl-cand"/></g>
