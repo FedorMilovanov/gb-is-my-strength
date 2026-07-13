@@ -1,6 +1,8 @@
 ---
 import FloatingCluster from '@/components/ui/floating-cluster/FloatingCluster.astro';
 import GillReaderSettingsSheet from '@/components/article-pilots/gill-series/GillReaderSettingsSheet.astro';
+import ReaderRail from '@/components/article-pilots/_shared/ReaderRail.astro';
+import { KOD_DA_VINCHI_TOC } from './kodDaVinchiToc';
 /**
  * KodDaVinchiPageChrome — Phase 5a: body-segment-0 Astro component.
  *
@@ -14,8 +16,20 @@ import GillReaderSettingsSheet from '@/components/article-pilots/gill-series/Gil
 ---
 <a class="skip-link" href="#content">Перейти к содержанию</a>
 <!-- ВНИМАНИЕ: inline style="top:..." на этой кнопке ЗАПРЕЩЁН — позиция задана в site.css (.theme-toggle) и выровнена по хлебным крошкам -->
-<FloatingCluster mode="single" variant="article" audioState="none" settings={true} />
+<FloatingCluster mode="single" variant="article" audioState="none" />
+<!-- Десктоп (≥1200px): читательский рельс слева с оглавлением статьи + ⚙ в
+     нижнем тулбаре (как у Герменевтики — общий ReaderRail). На мобиле рельс
+     скрыт; полноценный лист настроек на мобиле пока не подключаем (Gill-лист
+     глубоко заскоплен под серию/[data-gill-v16] — чистый мобильный вид требует
+     отдельного обобщения; мобила остаётся с день/ночь в угловом кластере). -->
+<ReaderRail
+  eyebrow="Разбор заблуждений"
+  title="«Код да Винчи»: триллер или подмена?"
+  backHref="../../"
+  toc={KOD_DA_VINCHI_TOC}
+  settingsTrigger="gill"
+/>
 <!-- Полноценный лист «Настройки чтения» (тема/сепия/размер/интервал) —
-     тот же GillReaderSettingsSheet, что у серий. Открывается ⚙ в угловом
-     кластере (settings=true), применяется к <main data-reader-root>. -->
+     тот же GillReaderSettingsSheet, что у серий; применяется к
+     <main data-reader-root>. -->
 <GillReaderSettingsSheet />
