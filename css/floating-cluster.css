@@ -4588,6 +4588,32 @@ html.dark [data-gill-v16] .mobile-top-bar {
   body:has([data-reader-root]) .gill-settings-overlay .gill-settings-sheet {
     transform-origin: top right;
   }
+  /* Шапка листа у одиночной статьи (у серий её стилизует [data-gill-v16];
+     здесь его нет, поэтому h3 наследовал гигантский статейный сериф, а
+     «Чтение»/× разъезжались). Приводим к тому же компактному виду, что у Гилла. */
+  body:has([data-reader-root]) .gill-settings-overlay .toc-sheet__head {
+    display: flex; align-items: flex-start; justify-content: space-between;
+    gap: 12px; padding: 14px 16px 8px;
+  }
+  body:has([data-reader-root]) .gill-settings-overlay .toc-sheet__handle { display: none; }
+  body:has([data-reader-root]) .gill-settings-overlay .head-copy .lab {
+    font: 900 10px/1 "Source Sans 3", system-ui, sans-serif;
+    text-transform: uppercase; letter-spacing: .14em;
+    color: var(--gb-text-muted, #6a6a6a); margin-bottom: 4px;
+  }
+  body:has([data-reader-root]) .gill-settings-overlay .head-copy h3 {
+    margin: 0; font: 600 18px/1.15 Georgia, "Times New Roman", serif;
+    color: var(--gb-text, #1a1a18);
+  }
+  body:has([data-reader-root]) .gill-settings-overlay .toc-sheet__head .gb-icon {
+    width: 32px; height: 32px; flex-shrink: 0; display: grid; place-items: center;
+    border: 0; border-radius: 50%; background: rgba(0, 0, 0, .05); color: inherit; cursor: pointer;
+  }
+  body:has([data-reader-root]) .gill-settings-overlay .toc-sheet__head .gb-icon svg {
+    width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round;
+  }
+  /* «Свободный»/«Обычная» не должны переноситься в две строки. */
+  body:has([data-reader-root]) .gill-settings-overlay .reader-setting-btn { white-space: nowrap; }
 }
 /* Межстрочный интервал одиночной статьи (лист пишет --gbs2-article-line). */
 [data-reader-root] .article-body { line-height: var(--gbs2-article-line, 1.7); }
