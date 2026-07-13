@@ -37,14 +37,18 @@
     <path d="M652,758 Q646,800 640,845"/>
   </g>
 
-  <!-- Ливанские горы / Антиливан (северный Ханаан) -->
-  <g opacity=".22" filter="url(#soft)">
+  <!-- Ливанские горы / Антиливан — гряда гравюрных вершин вдоль хребта -->
+  <g opacity=".28" filter="url(#soft)">
     <path fill="url(#mtG)" d="M590,500 C610,480 630,460 655,448 C670,440 690,435 710,432 C730,429 750,430 760,435 C748,450 730,460 710,468 C688,478 660,488 635,500 C618,508 602,515 590,520 Z"/>
     <path stroke="#8b7d5a" stroke-width="1.5" fill="none" opacity=".7" d="M600,502 Q618,492 636,484 Q660,474 685,468 Q710,462 730,458"/>
-    <!-- Отдельные пики (снег на вершинах) -->
-    <path d="M640,462 L644,453 L648,462 Z" fill="rgba(230,225,215,.15)" stroke="#a09070" stroke-width=".8"/>
-    <path d="M670,446 L675,435 L680,446 Z" fill="rgba(230,225,215,.18)" stroke="#a09070" stroke-width=".8"/>
-    <path d="M700,437 L705,425 L710,437 Z" fill="rgba(240,235,225,.2)" stroke="#b0a080" stroke-width=".9"/>
+  </g>
+  <g opacity=".5">
+    <use href="#hill" x="604" y="486" width="14" height="8"/>
+    <use href="#peak-snow" x="626" y="464" width="17" height="13"/>
+    <use href="#peak" x="650" y="452" width="15" height="11"/>
+    <use href="#peak-snow" x="672" y="438" width="18" height="14"/>
+    <use href="#peak" x="698" y="430" width="15" height="11"/>
+    <use href="#hill" x="722" y="432" width="14" height="8"/>
   </g>
   <!-- Ливан label -->
   <text class="region-label lbl-z1" x="665" y="428" font-size="5.5" fill="#a09070" opacity=".5" letter-spacing=".2em" transform="rotate(-5 665 428)">ЛИВАН · לְבָנוֹן</text>
@@ -57,17 +61,13 @@
   <!-- Треугольный контур п-ова Синай -->
   <path fill="url(#sinaiG)" opacity=".9"
     d="M424,1012 C450,1015 475,1020 490,1032 C510,1048 520,1075 530,1110 C540,1145 548,1175 555,1200 C562,1175 570,1145 580,1112 C590,1078 600,1050 618,1035 C630,1025 648,1015 665,1012"/>
-  <!-- Гранитные горы Синая (юг) — более детальные -->
-  <g opacity=".22" filter="url(#soft)">
-    <!-- Хребет Ум-Шаумер (высший пик 2587м) -->
-    <path d="M510,1205 L528,1162 L546,1205 Z" fill="rgba(110,82,44,.45)" stroke="#9a7845" stroke-width="1.1"/>
-    <!-- Хорив/Синай (Моисей) -->
-    <path d="M550,1195 L572,1148 L594,1195 Z" fill="rgba(125,92,50,.5)" stroke="#a08040" stroke-width="1.2"/>
-    <!-- Снежная шапка Синая -->
-    <path d="M562,1155 L572,1148 L582,1155 Z" fill="rgba(240,235,225,.2)" stroke="rgba(240,235,225,.3)" stroke-width=".7"/>
-    <!-- Боковой хребет -->
-    <path d="M535,1215 L550,1180 L565,1215 Z" fill="rgba(100,78,40,.35)" stroke="#9a7845" stroke-width=".9"/>
-    <path d="M578,1208 L594,1175 L610,1208 Z" fill="rgba(105,80,42,.35)" stroke="#9a7845" stroke-width=".9"/>
+  <!-- Гранитные горы Синая (юг) — гряда гравюрных вершин; Хорив крупнее -->
+  <g opacity=".5">
+    <use href="#hill" x="500" y="1188" width="20" height="12"/>
+    <use href="#peak" x="522" y="1168" width="24" height="19"/>
+    <use href="#peak" x="550" y="1148" width="32" height="25"/>
+    <use href="#peak" x="586" y="1166" width="24" height="19"/>
+    <use href="#hill" x="608" y="1188" width="20" height="12"/>
   </g>
   <!-- Негев / Иудейская пустыня -->
   <ellipse cx="580" cy="920" rx="90" ry="60" fill="url(#negevG)" opacity=".8"/>
@@ -348,6 +348,17 @@
 <g class="lbl-z1" opacity=".15">
   <ellipse cx="710" cy="790" rx="30" ry="50" fill="url(#mountainHatch)" transform="rotate(10 710 790)"/>
   <ellipse cx="720" cy="900" rx="25" ry="40" fill="url(#mountainHatch)" transform="rotate(5 720 900)"/>
+</g>
+<!-- Гряды Заиорданья: Галаад (С) → Моав (центр) → Едом/Сеир (Ю) -->
+<g class="lbl-z1" opacity=".42">
+  <use href="#hill" x="700" y="742" width="13" height="8"/>
+  <use href="#peak" x="712" y="762" width="12" height="9"/>
+  <use href="#hill" x="704" y="786" width="13" height="8"/>
+  <use href="#peak" x="714" y="810" width="12" height="9"/>
+  <use href="#hill" x="706" y="838" width="13" height="8"/>
+  <use href="#peak" x="716" y="866" width="13" height="10"/>
+  <use href="#hill" x="708" y="894" width="13" height="8"/>
+  <use href="#peak" x="716" y="920" width="12" height="9"/>
 </g>
 <g id="tradeRoutes" opacity=".5">
     <!-- Via Maris / Дорога моря — Египет → побережье → Мегиддо → Дамаск → Месопотамия -->
