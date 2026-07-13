@@ -27,7 +27,7 @@ const currentAnchor = (page.partToc.find((r) => r.current) || page.partToc[0])?.
     <button class="toc-sheet__handle" type="button" aria-label="Закрыть"></button>
     <div class="toc-sheet__head toc-sheet__head--grid">
       <button class="back" id="backToSeries" aria-label="Назад к серии"><svg viewBox="0 0 24 24"><path d="M19 12H5M12 19l-7-7 7-7" /></svg></button>
-      <div class="toc-head-txt"><div class="lab">Джон Гилл · {currentPartLabel}</div><h3>Оглавление части</h3></div>
+      <div class="toc-head-txt"><div class="lab">{config.seriesTitle} · {currentPartLabel}</div><h3>Оглавление части</h3></div>
     </div>
     <div class="toc-sheet__scroll-bar"><i style="--scroll-pct:0%"></i></div>
     <div class="toc-sheet__list gbat" id="gbs2PartToc" data-gill-parts-nav>
