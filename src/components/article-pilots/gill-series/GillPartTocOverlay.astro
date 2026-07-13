@@ -1,16 +1,17 @@
 ---
 import SeriesMark from './SeriesMark.astro';
-import { GILL_SERIES_ITEMS, GILL_PAGE_DATA, type GillSeriesPageId } from './gillSeriesData';
+import { GILL_SERIES, type SeriesConfig } from '../_shared/series/seriesConfig';
 
-interface Props { pageId: GillSeriesPageId; }
-const { pageId } = Astro.props;
-const page = GILL_PAGE_DATA[pageId];
+interface Props { pageId: string; config?: SeriesConfig; }
+const { pageId, config = GILL_SERIES } = Astro.props;
+const page = config.pages[pageId];
+const seriesItems = config.items;
 // v2.9 canon: «Оглавление части» (.btoc-nav) lists the SERIES PARTS — the whole
 // Gill series navigation — NOT the sections of the current article. Each row is
 // a part: its series mark (roman numeral I…IV, or the Введение / Справочник
 // text mark) + part title. The CURRENT part is marked; clicking any other part
 // navigates to that part's page (real href from gillSeriesData).
-const current = GILL_SERIES_ITEMS.find((item) => item.id === pageId)!;
+const current = seriesItems.find((item) => item.id === pageId)!;
 // Subtitle reads "Джон Гилл · Часть N" — derive the short part label from the
 // real series mark (roman parts → "Часть III"); the intro / reference rows carry
 // a text mark, so they fall back to their own title.
@@ -25,7 +26,7 @@ const currentPartLabel = current.mark.kind === 'roman' ? `Часть ${current.m
     </div>
     <div class="toc-sheet__scroll-bar"><i style="--scroll-pct:0%"></i></div>
     <div class="toc-sheet__list" id="gbs2PartToc" data-gill-parts-nav>
-      {GILL_SERIES_ITEMS.map((item) => {
+      {seriesItems.map((item) => {
         const isCurrent = item.id === pageId;
         const className = ['toc-part-item', isCurrent && 'is-current'].filter(Boolean).join(' ');
         const content = (<><SeriesMark kind={item.mark.kind} value={item.mark.value} className="toc-part-item__num" /><div class="toc-part-item__info"><b>{item.title}</b></div></>);

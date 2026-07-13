@@ -1,5 +1,4 @@
 ---
-import { GILL_PAGE_DATA, type GillSeriesPageId } from './gillSeriesData';
 import GillSeriesRail from './GillSeriesRail.astro';
 import GillSeriesMobileBar from './GillSeriesMobileBar.astro';
 import GillSeriesOverlay from './GillSeriesOverlay.astro';
@@ -7,13 +6,15 @@ import GillPartTocOverlay from './GillPartTocOverlay.astro';
 import GillLearningSheet from './GillLearningSheet.astro';
 import GillReaderSettingsSheet from './GillReaderSettingsSheet.astro';
 import GillSeriesImagePremium from './GillSeriesImagePremium.astro';
+import { GILL_SERIES, type SeriesConfig } from '../_shared/series/seriesConfig';
 
 interface Props {
-  pageId: GillSeriesPageId;
+  pageId: string;
+  config?: SeriesConfig;
 }
 
-const { pageId } = Astro.props;
-const page = GILL_PAGE_DATA[pageId];
+const { pageId, config = GILL_SERIES } = Astro.props;
+const page = config.pages[pageId];
 ---
 <GillSeriesImagePremium />
 <style is:global>
@@ -41,18 +42,18 @@ const page = GILL_PAGE_DATA[pageId];
 </div>
 
 <div class="gbs2-world" data-gill-v16={pageId}>
-  <GillSeriesRail pageId={pageId} />
+  <GillSeriesRail pageId={pageId} config={config} />
 
   <div class="page-wrap" id="content">
-    <nav aria-label="Хлебные крошки" class="breadcrumb"><ol class="breadcrumb__list"><li class="breadcrumb__item"><a class="breadcrumb__link" href="../../"><span aria-hidden="true" class="breadcrumb__home">⌂</span> Главная</a></li><li class="breadcrumb__item"><a class="breadcrumb__link" href="../../biografii/">Биографии служителей</a></li><li aria-current="page" class="breadcrumb__item"><span class="breadcrumb__current">{page.label}</span></li></ol></nav>
+    <nav aria-label="Хлебные крошки" class="breadcrumb"><ol class="breadcrumb__list"><li class="breadcrumb__item"><a class="breadcrumb__link" href="../../"><span aria-hidden="true" class="breadcrumb__home">⌂</span> Главная</a></li><li class="breadcrumb__item"><a class="breadcrumb__link" href={config.breadcrumbParent.href}>{config.breadcrumbParent.label}</a></li><li aria-current="page" class="breadcrumb__item"><span class="breadcrumb__current">{page.label}</span></li></ol></nav>
     <slot />
   </div>
 
-  <GillSeriesMobileBar pageId={pageId} />
-  <GillSeriesOverlay pageId={pageId} />
-  <GillPartTocOverlay pageId={pageId} />
-  <GillLearningSheet pageId={pageId} />
-  <GillReaderSettingsSheet />
+  <GillSeriesMobileBar pageId={pageId} config={config} />
+  <GillSeriesOverlay pageId={pageId} config={config} />
+  <GillPartTocOverlay pageId={pageId} config={config} />
+  <GillLearningSheet pageId={pageId} config={config} />
+  <GillReaderSettingsSheet config={config} />
 </div><!-- /gbs2-world: overlays+bottom-bar nested so [data-gill-v16] descendant CSS applies -->
 
 <script is:inline defer src="../../js/bookmark-engine.js?v=fdfb2ed7"></script>

@@ -12,7 +12,18 @@
  * html.sepia (doesn't exist sitewide) or bleeds into desktop/other routes.
  * "Ночь" reuses the existing sitewide html.dark toggle so there is only
  * ONE dark-mode implementation, not a second competing one.
+ *
+ * Carries an optional `config` prop for series-engine symmetry (Chrome threads
+ * the same SeriesConfig to every subcomponent); this sheet is data-free, so the
+ * prop is currently unused at render time.
  */
+import { GILL_SERIES, type SeriesConfig } from '../_shared/series/seriesConfig';
+
+interface Props {
+  config?: SeriesConfig;
+}
+
+const { config: _config = GILL_SERIES } = Astro.props as Props;
 ---
 <div id="gillSettingsOverlay" class="toc-overlay gill-settings-overlay" data-gill-overlay="settings" aria-hidden="true">
   <section class="toc-sheet gill-settings-sheet" role="dialog" aria-modal="true" aria-labelledby="gillSettingsTitle">
