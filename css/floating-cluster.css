@@ -750,6 +750,124 @@ body.nagornaya-page #themeToggle {
 
 } /* @layer components */
 
+/* Escape hatch for pages that load Tailwind Preflight (Nagornaya): Preflight's
+   svg{display:block} reset is UNLAYERED, so it beats the .gb-ember__pause/
+   .gb-ember__check{display:none} rules above (those live inside @layer
+   components — unlayered always wins over layered regardless of specificity,
+   same root cause already fixed twice this session for other pages). Result
+   without this: play/pause/check icons all render stacked at once on idle.
+   Re-declared unlayered here so it wins on Tailwind pages too, harmless
+   no-op duplicate on Gill/Hermenevtika where Preflight isn't loaded. */
+.gb-ember__pause, .gb-ember__check { display: none; }
+.gb-ember[data-state="playing"] .gb-ember__pause { display: block; }
+.gb-ember[data-state="complete"] .gb-ember__check { display: block; }
+
+/* Nagornaya: js/nagornaya-mobile-toc.js already builds a real full-width
+   #bottomBar (progress ring, "Сейчас читаете" → TOC sheet, theme, home,
+   share) — a purpose-built bar, not the generic floater fallback. It was
+   being killed by the "Скрытие старых controls" block above the moment
+   floating-cluster-controller.js marked <body> gb-cluster-single-active
+   (detects the sidebar's [data-fc-root]), silently downgrading every
+   Nagornaya page to the plain floating pill (which overlapped content —
+   owner screenshot: tag chip text cut off underneath it). Exempt it by the
+   same body.nagornaya-page scoping technique as #themeToggle above — the
+   real bar's own padding-bottom reservation already lives in
+   nagornaya-mobile-toc.css (body.nagornaya-page.has-bottom-bar), no need
+   to duplicate it here. Play/Save/font-size controls are injected into the
+   revived bar by a small script (see nagornaya PageFooter) that clones the
+   sidebar's existing [data-fc-root] cluster — same pattern already used by
+   floating-cluster-controller.js's own ensureMobileFallbackControls(). */
+@media (max-width: 899px) {
+  /* Double class + id: deliberately out-specifies the
+     body.gb-cluster-single-active/fc-single-active #bottomBar hide rules
+     above (same single-class+id specificity as this rule at first, which
+     lost the cascade tie in testing despite later source order — some
+     other stylesheet or dynamically-inserted <style> was re-asserting
+     display:none after this file loads). Don't rely on source order here.
+     (js/nagornaya-bar-extras.js also forces this inline as a backstop.) */
+  body.nagornaya-page.has-bottom-bar #bottomBar,
+  body.nagornaya-page.has-bottom-bar #btocOverlay {
+    display: block !important;
+  }
+  /* The real #bottomBar now covers everything the generic floating-pill
+     fallback exists for — hide the pill on Nagornaya so the two don't stack
+     (ensureMobileFallbackControls() in floating-cluster-controller.js still
+     creates it; its hasVisibleEmber() check doesn't reliably see the ember
+     cloned into #bottomBar in time). */
+  body.nagornaya-page .gb-mobile-fallback-controls {
+    display: none !important;
+  }
+}
+
+/* Layout for the cloned Play/Save/font-size cluster (js/nagornaya-bar-extras.js)
+   once it lands inside .bottom-bar-inner, alongside the bar's own progress
+   ring / section button / up / theme / home / share icons. Its own component
+   CSS (nagornaya-mobile-toc.css .nag-sidebar-controls) sets a top border and
+   padding meant for the desktop sidebar — override those for the bar context. */
+body.nagornaya-page .bottom-bar-inner .nag-bar-controls {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex: 0 0 auto;
+  padding: 0 !important;
+  margin: 0 !important;
+  border: 0 !important;
+  background: none !important;
+}
+body.nagornaya-page .bottom-bar-inner .nag-fontsize-btns {
+  margin-left: 0;
+}
+body.nagornaya-page .bottom-bar-inner .nag-bar-controls .gb-ember,
+body.nagornaya-page .bottom-bar-inner .nag-bar-controls .gb-save {
+  flex-shrink: 0;
+}
+
+/* The bar already had 6 fixed-width children (progress ring, divider, up,
+   theme, home, share) filling most of a 390px screen — adding ember+save
+   (2 more) left --section-btn (the only flex:1 child) with zero space,
+   collapsing "Сейчас читаете: <name>" into a vertical letter-stack (owner
+   screenshot). Shrink the icon row and floor the section button's width
+   instead of letting it disappear; if it's still tight the bar scrolls
+   horizontally (nowrap + overflow-x) rather than breaking layout. */
+@media (max-width: 420px) {
+  /* !important throughout: nagornaya-mobile-toc.css's OWN unconditional
+     .bar-section-btn{min-width:0;flex:1 1 auto} rule has identical
+     selector specificity to this one, and that stylesheet's <link> loads
+     AFTER this file's — a plain (non-media-query) rule in a later
+     stylesheet beats an earlier stylesheet's media-scoped rule at equal
+     specificity regardless of which one "sounds" more specific. Confirmed
+     via CDP (matched rules showed both, unconditional one winning). */
+  body.nagornaya-page .bottom-bar-inner {
+    flex-wrap: nowrap !important;
+    overflow-x: auto !important;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+  }
+  body.nagornaya-page .bottom-bar-inner::-webkit-scrollbar { display: none; }
+  body.nagornaya-page .bar-section-btn {
+    min-width: 84px !important;
+    flex: 1 1 84px !important;
+  }
+  body.nagornaya-page .bar-progress {
+    width: 34px !important;
+    height: 34px !important;
+  }
+  body.nagornaya-page .bar-progress svg {
+    width: 34px !important;
+    height: 34px !important;
+  }
+  body.nagornaya-page .bar-icon-btn {
+    width: 32px !important;
+    height: 32px !important;
+  }
+  body.nagornaya-page .bottom-bar-inner .nag-bar-controls .gb-ember,
+  body.nagornaya-page .bottom-bar-inner .nag-bar-controls .gb-save {
+    --ember-size: 28px;
+    width: 28px !important;
+    height: 28px !important;
+  }
+}
+
 /* ===================================================================
    Gill v16 Series Rail, Mobile Bar, TOC Popups
    Scope: [data-gill-v16] wrapper on pilot page
