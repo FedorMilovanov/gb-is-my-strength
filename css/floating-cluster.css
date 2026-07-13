@@ -4471,3 +4471,37 @@ html.dark [data-gill-v16] .mobile-top-bar {
     background: #f3ead4 !important;
   }
 }
+
+/* =========================================================
+   PLAY EMBER — DEPTH POLISH 2026-07-13 (owner: «качество
+   анимации PLAY улучшай, глубину, день и ночь»)
+   1) Иконка pause/check «выпрыгивает» пружинкой при смене
+      состояния (animation стартует в момент display:block —
+      сам свап-механизм data-state не тронут).
+   2) Во время проигрывания кнопка «дышит» тёплым ореолом —
+      мягкая глубина, светлее в ночи, деликатнее днём.
+   ========================================================= */
+@keyframes gbEmberIconPop {
+  0%   { transform: scale(.55); opacity: 0; }
+  60%  { transform: scale(1.12); opacity: 1; }
+  100% { transform: scale(1); opacity: 1; }
+}
+.gb-ember[data-state="playing"] .gb-ember__pause,
+.gb-ember[data-state="complete"] .gb-ember__check {
+  animation: gbEmberIconPop .34s cubic-bezier(.34,1.56,.64,1) both;
+}
+@keyframes gbEmberBreath {
+  0%, 100% { filter: drop-shadow(0 0 0 rgba(184,137,74,0)); }
+  50%      { filter: drop-shadow(0 0 5px rgba(184,137,74,.38)); }
+}
+@keyframes gbEmberBreathDark {
+  0%, 100% { filter: drop-shadow(0 0 0 rgba(216,170,109,0)); }
+  50%      { filter: drop-shadow(0 0 7px rgba(216,170,109,.5)); }
+}
+.gb-ember[data-state="playing"] { animation: gbEmberBreath 2.8s ease-in-out infinite; }
+html.dark .gb-ember[data-state="playing"] { animation: gbEmberBreathDark 2.8s ease-in-out infinite; }
+@media (prefers-reduced-motion: reduce) {
+  .gb-ember[data-state="playing"],
+  .gb-ember[data-state="playing"] .gb-ember__pause,
+  .gb-ember[data-state="complete"] .gb-ember__check { animation: none; }
+}
