@@ -11,6 +11,7 @@
  * и структуру .gbs2-* — вся CSS переиспользуется как есть (Гилл обязан остаться
  * пиксель-в-пиксель; parity проверяется на этапе миграции компонентов).
  */
+import { GILL_LEARNING_QUIZ, type GillLearningQuizItem } from '../../gill-series/gillLearningData';
 import {
   GILL_SERIES_ITEMS,
   GILL_PAGE_DATA,
@@ -63,9 +64,19 @@ export interface SeriesBreadcrumb {
   href: string;
 }
 
+export type SeriesQuizItem = GillLearningQuizItem;
+
 export interface SeriesConfig {
   /** Идентификатор серии (совпадает с data/series.json). */
   seriesId: string;
+  /** Короткое имя серии («Джон Гилл») — рельс, part-TOC. */
+  seriesTitle: string;
+  /** Полное имя («Джон Гилл (1697–1771)») — оверлей частей. */
+  seriesTitleFull: string;
+  /** Куда ведёт «Назад» рельса. */
+  railBackHref: string;
+  /** Пул CBM-теста «Обучение»; пустой массив = вкладка «Тест» скрыта. */
+  quiz: SeriesQuizItem[];
   /** Родительская крошка между «Главная» и текущей частью. */
   breadcrumbParent: SeriesBreadcrumb;
   /** Список частей серии (рельс, part-TOC, prev/next). */
@@ -77,6 +88,10 @@ export interface SeriesConfig {
 /** Первый инстанс: Джон Гилл — собран из существующих gillSeriesData. */
 export const GILL_SERIES: SeriesConfig = {
   seriesId: 'dzhon-gill',
+  seriesTitle: 'Джон Гилл',
+  seriesTitleFull: 'Джон Гилл (1697–1771)',
+  railBackHref: '../../biografii/',
+  quiz: GILL_LEARNING_QUIZ,
   breadcrumbParent: { label: 'Биографии служителей', href: '../../biografii/' },
   items: GILL_SERIES_ITEMS,
   pages: GILL_PAGE_DATA,

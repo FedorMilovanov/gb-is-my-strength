@@ -25,9 +25,11 @@ const page = config.pages[pageId];
 // part-context header instead of a generic static title.
 const partTag = page.partLabel.split('·')[0].trim();
 const outline = page.partToc.filter((item) => item.level === 2 && item.summary);
-const quizPool = GILL_LEARNING_QUIZ.filter((q) => !q.relatedPageId || q.relatedPageId === pageId);
+const seriesPool = config.quiz ?? GILL_LEARNING_QUIZ;
+const quizPool = seriesPool.filter((q) => !q.relatedPageId || q.relatedPageId === pageId);
 // Fall back to the full pool on thinner pages so the quiz tab is never empty.
-const quizItems = quizPool.length >= 4 ? quizPool : GILL_LEARNING_QUIZ;
+const quizItems = quizPool.length >= 4 ? quizPool : seriesPool;
+const hasQuiz = quizItems.length > 0;
 ---
 <div id="gillLearningOverlay" class="toc-overlay gill-learning-overlay" data-gill-overlay="learning" aria-hidden="true">
   <section class="toc-sheet gill-learning-sheet" role="dialog" aria-modal="true" aria-labelledby="gillLearningTitle">
@@ -40,7 +42,7 @@ const quizItems = quizPool.length >= 4 ? quizPool : GILL_LEARNING_QUIZ;
     <div class="gill-tabs" role="tablist" aria-label="Инструменты обучения">
       <button type="button" class="gill-tab" id="tabTerms" role="tab" aria-selected="true" aria-controls="panelTerms" data-tab="terms">Термины</button>
       <button type="button" class="gill-tab" id="tabOutline" role="tab" aria-selected="false" aria-controls="panelOutline" data-tab="outline" tabindex="-1">Конспект</button>
-      <button type="button" class="gill-tab" id="tabQuiz" role="tab" aria-selected="false" aria-controls="panelQuiz" data-tab="quiz" tabindex="-1">Тест</button>
+      {hasQuiz && <button type="button" class="gill-tab" id="tabQuiz" role="tab" aria-selected="false" aria-controls="panelQuiz" data-tab="quiz" tabindex="-1">Тест</button>}
       <button type="button" class="gill-tab" id="tabNotes" role="tab" aria-selected="false" aria-controls="panelNotes" data-tab="notes" tabindex="-1">Заметки</button>
       <span class="gill-tabs__sep" aria-hidden="true"></span>
       <button type="button" class="gill-tab gill-tab--icon" id="tabSearch" role="tab" aria-selected="false" aria-controls="panelSearch" data-tab="search" tabindex="-1" aria-label="Поиск по разделу">

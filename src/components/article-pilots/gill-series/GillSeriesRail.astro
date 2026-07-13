@@ -66,13 +66,13 @@ const seriesMeta = currentItem && currentItem.mark.kind === 'label'
   : `Часть ${partNumber} из ${romanItems.length}`;
 ---
 
-<aside class="gbs-rail" aria-label="Серия «Джон Гилл»">
+<aside class="gbs-rail" aria-label={`Серия «${config.seriesTitle}»`}>
   <GillLeatherDefs />
   <!-- Верх рейла: только назад + домой. Поиск/PLAY/скорости уехали в
        gbs-theme-corner (owner: "внизу останется стрелочка назад только,
        и значок домой еще можно"). -->
   <div class="gbs-rail-topbar">
-    <button class="gbs-rail-back" type="button" aria-label="Назад" data-home-href="../../biografii/">
+    <button class="gbs-rail-back" type="button" aria-label="Назад" data-home-href={config.railBackHref}>
       <svg viewBox="0 0 24 24"><path d="M19 12H5M12 19l-7-7 7-7" /></svg>
     </button>
     <a class="gbs-rail-home" href="/" aria-label="На главную">
