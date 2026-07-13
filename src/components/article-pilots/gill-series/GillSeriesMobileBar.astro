@@ -174,26 +174,48 @@ const page = config.pages[pageId];
   }
   (window as any).applyGillReaderTheme = applyGillReaderTheme;
 
-  function initGillThemeCycle() {
-    const cycleBtn = document.getElementById('mobGillThemeBtn');
-    if (!cycleBtn) return;
-    const order = ['light', 'sepia', 'dark'];
-    cycleBtn.addEventListener('click', () => {
-      const gillRoot = document.querySelector('[data-gill-v16]') as HTMLElement | null;
-      const current = document.documentElement.classList.contains('dark')
-        ? 'dark'
-        : gillRoot && gillRoot.getAttribute('data-gill-reader-theme') === 'sepia'
-          ? 'sepia'
-          : 'light';
-      applyGillReaderTheme(order[(order.indexOf(current) + 1) % order.length]);
+  // Читает истинное состояние темы (dark→ночь, reader-theme=sepia→сепия,
+  // иначе день) и проставляет aria-pressed на сегменте «Тема» листа настроек.
+  function syncGillThemeSegment() {
+    const gillRoot = document.querySelector('[data-gill-v16]') as HTMLElement | null;
+    const theme = document.documentElement.classList.contains('dark')
+      ? 'dark'
+      : gillRoot && gillRoot.getAttribute('data-gill-reader-theme') === 'sepia'
+        ? 'sepia'
+        : 'light';
+    document.querySelectorAll('[data-gill-theme-btn]').forEach((btn) => {
+      btn.setAttribute('aria-pressed', (btn as HTMLElement).dataset.theme === theme ? 'true' : 'false');
     });
-    // Restore on load — best effort only (no FOUC guard for the sepia
-    // scope specifically; a brief flash for returning sepia readers is an
-    // accepted trade-off, see lane report).
+  }
+
+  // Быстрая кнопка бара теперь канонический .gb-theme-toggle (sitewide
+  // toggleTheme → html.dark) и НЕ проходит через applyGillReaderTheme —
+  // поэтому сегмент «Тема» в листе настроек надо досинхронизировать
+  // отдельно, иначе лист покажет «День», когда сайт уже в «Ночи»
+  // (регрессия при переходе на канон). Бар/клавиша/десктоп-угол —
+  // всегда чистые день/ночь: при таком переключении сбрасываем сепию.
+  function initGillThemeSync() {
     try {
       const saved = localStorage.getItem(READER_THEME_KEY);
-      if (saved) applyGillReaderTheme(saved);
+      if (saved === 'sepia' && !document.documentElement.classList.contains('dark')) {
+        applyGillReaderTheme('sepia');
+      }
     } catch (_) {}
+    syncGillThemeSegment();
+
+    const clearSepiaAndSync = () => requestAnimationFrame(() => {
+      const gillRoot = document.querySelector('[data-gill-v16]') as HTMLElement | null;
+      if (gillRoot) gillRoot.removeAttribute('data-gill-reader-theme');
+      syncGillThemeSegment();
+    });
+    document
+      .querySelectorAll('.mobile-bottom-bar .gb-theme-toggle, .gbs-theme-corner .gb-theme-toggle')
+      .forEach((btn) => btn.addEventListener('click', clearSepiaAndSync));
+
+    // Лист настроек могли открыть ПОСЛЕ смены темы где-то ещё — синхроним
+    // сегмент на открытии, чтобы он всегда отражал истинное состояние.
+    const sBtn = document.getElementById('mobSettingsBtn');
+    if (sBtn) sBtn.addEventListener('click', () => requestAnimationFrame(syncGillThemeSegment));
   }
 
   // Smart auto-hide (owner: "верхняя как-то умно убирается и появляется…
@@ -275,7 +297,7 @@ const page = config.pages[pageId];
   }
 
   function boot() {
-    initGillThemeCycle();
+    initGillThemeSync();
     initGillMobileTopBarAutoHide();
 
     const backBtn = document.getElementById('mobBackBtn');
