@@ -37,6 +37,12 @@
   #sheet-svg #tradeRoutes path{stroke-width:2.1px;stroke-dasharray:.1 6.5}
   #sheet-svg .route{stroke-width:2.1px;stroke-dasharray:.1 8}
   #sheet-svg .route-arrow{fill:none;stroke:#b0472e;stroke-width:1.5px;stroke-linecap:round;stroke-linejoin:round;opacity:.72}
+  /* издательский halo подписей: обводка цветом бумаги ПОД заливкой букв
+     (paint-order) — пунктиры маршрутов/рек не перечёркивают текст;
+     non-scaling держит толщину halo на всех зумах */
+  #sheet-svg text.lab-place, #sheet-svg .lab-war, #sheet-svg .lab-ctx,
+  #sheet-svg .mile-t, #sheet-svg text.lab-wp
+  {paint-order:stroke;stroke:rgba(245,237,216,.88);stroke-width:2.6px;stroke-linejoin:round;vector-effect:non-scaling-stroke}
   #sheet-svg .route-under{stroke-width:3px}
   #sheet-svg .war-route{stroke-width:1.15px;stroke-dasharray:9 5.5}
   #sheet-svg .ovl-covenant{stroke-width:1.5px;stroke-dasharray:10 6}
