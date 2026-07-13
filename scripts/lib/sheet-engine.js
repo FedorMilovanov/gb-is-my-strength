@@ -134,7 +134,7 @@ const GEO_DEFS = `<defs>
 const RELIEF = {
   levant: `
   <g class="relief" aria-hidden="true">
-    <ellipse cx="668" cy="520" rx="16" ry="86" fill="url(#mtG)" transform="rotate(14 668 520)"/>
+    <ellipse cx="678" cy="538" rx="10" ry="62" fill="url(#mtG)" transform="rotate(14 678 538)" opacity=".55"/>
     <ellipse cx="704" cy="530" rx="12" ry="72" fill="url(#mountainHatch)" transform="rotate(16 704 530)"/>
     <ellipse cx="676" cy="524" rx="15" ry="82" fill="url(#mountainHatch)" transform="rotate(14 676 524)" opacity=".7"/>
     <ellipse cx="628" cy="770" rx="13" ry="92" fill="url(#mountainHatch)" transform="rotate(8 628 770)" opacity=".8"/>
@@ -394,7 +394,8 @@ function renderSheet(route, opts) {
     for (const [gname, gdx, gdy] of [[p.glyph, p.glyphDx, p.glyphDy], [p.glyph2, p.glyph2Dx, p.glyph2Dy]]) {
       if (!gname) continue;
       const gx = p.x + (gdx || 0), gy = p.y - 3 * k + (gdy || 0);
-      const g = glyphSvg(gname, gx, gy, k * 0.82);
+      // glyphScale — акцент сюжетно-ключевых объектов (дуб Мамре и т.п.)
+      const g = glyphSvg(gname, gx, gy, k * 0.82 * (p.glyphScale || 1));
       if (g) glyphs.push(`<g class="glyph-hit" data-pid="${esc(p.id)}"><circle cx="${gx}" cy="${(gy - 5 * k).toFixed(1)}" r="${(7.5 * k).toFixed(1)}" fill="transparent" stroke="none"/>${g}</g>`);
     }
 
@@ -735,6 +736,10 @@ function sheetCss() {
   svg.z3 .paper-grain{opacity:.2}
   svg.z4 .paper-grain{opacity:0}
   svg.z4 .paper-fx{opacity:.4}
+  /* прибрежная тень-мелководье: глубина на обзоре, но на зуме читается
+     тёмным клином вдоль берега — растворяем */
+  svg.zoomed path[fill="rgba(13,40,70,.3)"]{opacity:.22}
+  svg.z3 path[fill="rgba(13,40,70,.3)"], svg.z4 path[fill="rgba(13,40,70,.3)"]{opacity:0}
   svg.z3 text.lbl-z1, svg.z3 g.lbl-z1 text{font-size:2.4px}
   svg.z4 text.lbl-z1, svg.z4 g.lbl-z1 text{font-size:1.6px}
   svg.z3 text.lbl-z2, svg.z3 g.lbl-z2 text{font-size:2.2px}
