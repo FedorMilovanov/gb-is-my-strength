@@ -4520,17 +4520,17 @@ html.dark [data-gill-v16] .mobile-top-bar {
    this adds the INNER content styling that was still missing. Ширина текста
    stays mobile-only (owner) — hidden below, JS-guarded separately. */
 @media (min-width: 64em) {
-  [data-gill-v16] .gill-settings-overlay .setting-group { padding: 10px 16px 11px; border-bottom: 1px solid var(--gb-border); }
-  [data-gill-v16] .gill-settings-overlay .setting-group:last-child { border-bottom: 0; }
-  [data-gill-v16] .gill-settings-overlay .setting-group--measure { display: none; }
-  [data-gill-v16] .gill-settings-overlay .setting-label {
+  .gill-settings-overlay .setting-group { padding: 10px 16px 11px; border-bottom: 1px solid var(--gb-border); }
+  .gill-settings-overlay .setting-group:last-child { border-bottom: 0; }
+  .gill-settings-overlay .setting-group--measure { display: none; }
+  .gill-settings-overlay .setting-label {
     display: block; margin-bottom: 7px;
     font-family: var(--gb-font-sans, system-ui, sans-serif);
     font-size: 9.5px; font-weight: 900; text-transform: uppercase; letter-spacing: .09em;
     color: var(--gb-text-muted);
   }
-  [data-gill-v16] .gill-settings-overlay .setting-segment { display: flex; gap: 4px; padding: 3px; border: 1px solid var(--gb-border-strong); border-radius: 11px; background: var(--gb-surface-muted); }
-  [data-gill-v16] .gill-settings-overlay .reader-setting-btn {
+  .gill-settings-overlay .setting-segment { display: flex; gap: 4px; padding: 3px; border: 1px solid var(--gb-border-strong); border-radius: 11px; background: var(--gb-surface-muted); }
+  .gill-settings-overlay .reader-setting-btn {
     flex: 1; min-width: 0; min-height: 36px;
     border: 1px solid transparent; border-radius: 9px;
     background: transparent; color: var(--gb-text-muted);
@@ -4538,33 +4538,79 @@ html.dark [data-gill-v16] .mobile-top-bar {
     font-size: 12.5px; font-weight: 700; cursor: pointer;
     transition: background .15s ease, color .15s ease, border-color .15s ease, box-shadow .15s ease;
   }
-  [data-gill-v16] .gill-settings-overlay .reader-setting-btn[aria-pressed="true"] {
+  .gill-settings-overlay .reader-setting-btn[aria-pressed="true"] {
     background: var(--gb-surface); border-color: var(--gb-border-strong); color: var(--gb-text);
     font-weight: 800;
     box-shadow: 0 1px 5px rgba(0, 0, 0, .08);
   }
-  [data-gill-v16] .gill-settings-overlay .font-track {
+  .gill-settings-overlay .font-track {
     display: flex; align-items: center; justify-content: space-between;
     gap: 8px; height: 40px; padding: 0 14px;
     border: 1px solid var(--gb-border-strong); border-radius: 11px;
     background: var(--gb-surface-muted);
   }
-  [data-gill-v16] .gill-settings-overlay .font-step {
+  .gill-settings-overlay .font-step {
     flex: 0 0 auto; border: 0; background: transparent; padding: 0;
     color: var(--gb-text); font-family: var(--gb-font-serif); font-weight: 700; cursor: pointer;
     line-height: 1;
   }
-  [data-gill-v16] .gill-settings-overlay .font-step--sm { font-size: 13px; color: var(--gb-text-muted); }
-  [data-gill-v16] .gill-settings-overlay .font-step--lg { font-size: 21px; }
-  [data-gill-v16] .gill-settings-overlay .font-dots { display: flex; align-items: center; justify-content: center; gap: 6px; flex: 1 1 auto; }
-  [data-gill-v16] .gill-settings-overlay .font-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--gb-border-strong); transition: background .15s ease, transform .15s ease; }
-  [data-gill-v16] .gill-settings-overlay .font-dot.is-on { background: var(--gb-accent-gold); transform: scale(1.15); }
+  .gill-settings-overlay .font-step--sm { font-size: 13px; color: var(--gb-text-muted); }
+  .gill-settings-overlay .font-step--lg { font-size: 21px; }
+  .gill-settings-overlay .font-dots { display: flex; align-items: center; justify-content: center; gap: 6px; flex: 1 1 auto; }
+  .gill-settings-overlay .font-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--gb-border-strong); transition: background .15s ease, transform .15s ease; }
+  .gill-settings-overlay .font-dot.is-on { background: var(--gb-accent-gold); transform: scale(1.15); }
 }
 /* rail-foot gear shows only on desktop (mobile bar has its own gear, hidden on
    desktop via .mobile-*-bar display:none in the same breakpoint). */
 @media (max-width: 63.99em) {
   [data-gill-v16] #railSettingsBtn { display: none; }
 }
+
+/* =========================================================
+   Одиночная статья (kod-da-vinchi): тот же GillReaderSettingsSheet, но корень
+   применения — [data-reader-root] на <main> (не серия-мир [data-gill-v16]).
+   ⚙ живёт в правом верхнем угловом кластере, поэтому поповер якорим ТУДА
+   (top-right), а не в низ-лево, как у серия-рельса. Сепия перекрашивает
+   читальную поверхность через переопределение site-токенов (--color-*),
+   которые и потребляет обычная статья.
+   ========================================================= */
+@media (min-width: 64em) {
+  /* Оверлей у одиночной статьи открывается display:block (флекс-раскладка из
+     [data-gill-v16] сюда не достаёт) — форсируем flex, иначе align/justify
+     игнорируются и панель падает в левый-верх по потоку. Якорим top-right,
+     под угловой ⚙; без затемнения экрана. */
+  body:has([data-reader-root]) .gill-settings-overlay.is-open {
+    display: flex;
+    align-items: flex-start; justify-content: flex-end;
+    padding: 70px clamp(16px, 3vw, 46px) 0 0;
+    background: transparent;
+  }
+  body:has([data-reader-root]) .gill-settings-overlay .gill-settings-sheet {
+    transform-origin: top right;
+  }
+}
+/* Межстрочный интервал одиночной статьи (лист пишет --gbs2-article-line). */
+[data-reader-root] .article-body { line-height: var(--gbs2-article-line, 1.7); }
+/* Сепия на одиночной: переопределяем site-палитру на тёплую бумагу. */
+[data-reader-root][data-gill-reader-theme="sepia"] {
+  --color-canvas: #f3ead4;
+  --color-surface: #f8f0dc;
+  --color-surface-muted: #e9dcc0;
+  --color-surface-alt: #efe3c8;
+  --color-text: #493823;
+  --color-text-primary: #3a2712;
+  --color-text-secondary: #6a5638;
+  --color-text-muted: #776348;
+  --color-border: #d8c49e;
+  --color-border-strong: #bea778;
+  background: #f3ead4;
+}
+[data-reader-root][data-gill-reader-theme="sepia"] .article-body,
+[data-reader-root][data-gill-reader-theme="sepia"] .article-body p,
+[data-reader-root][data-gill-reader-theme="sepia"] .article-body li {
+  color: #493823;
+}
+html:has([data-reader-root][data-gill-reader-theme="sepia"]) body { background: #f3ead4; }
 
 /* =========================================================
    PLAY EMBER — DEPTH POLISH 2026-07-13 (owner: «качество
@@ -4736,7 +4782,7 @@ html.dark .gb-floater .gbs-rail-spdbadge {
 /* Гилл, десктоп: лист настроек — поповер от триггера (низ-лево rail),
    не центр-модалка с гашением экрана (порт 8f5b87a). */
 @media (min-width: 64em) {
-  [data-gill-v16] .gill-settings-overlay {
+  .gill-settings-overlay {
     background: transparent;
     -webkit-backdrop-filter: none;
     backdrop-filter: none;
@@ -4744,15 +4790,15 @@ html.dark .gb-floater .gbs-rail-spdbadge {
     justify-content: flex-start;
     padding: 0 0 16px clamp(16px, 2.4vw, 40px);
   }
-  [data-gill-v16] .gill-settings-overlay .gill-settings-sheet {
+  .gill-settings-overlay .gill-settings-sheet {
     width: 320px;
     border-radius: 18px;
     box-shadow: 0 20px 56px rgba(10, 6, 2, .38), 0 2px 10px rgba(10, 6, 2, .18);
     transform-origin: bottom left;
     transform: translateY(12px) scale(.96);
   }
-  [data-gill-v16] .gill-settings-overlay.is-open .gill-settings-sheet {
+  .gill-settings-overlay.is-open .gill-settings-sheet {
     transform: translateY(0) scale(1);
   }
-  [data-gill-v16] .gill-settings-overlay .toc-sheet__handle { display: none; }
+  .gill-settings-overlay .toc-sheet__handle { display: none; }
 }
