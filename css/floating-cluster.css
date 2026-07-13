@@ -821,6 +821,15 @@ body.nagornaya-page .bottom-bar-inner .nag-bar-controls .gb-ember,
 body.nagornaya-page .bottom-bar-inner .nag-bar-controls .gb-save {
   flex-shrink: 0;
 }
+/* #bottomBar itself carries overflow:hidden (nagornaya-mobile-toc.css) so its
+   rounded top corners clip cleanly — but that also clips the ember's speed
+   popup (.gb-ember-expand), which pops up ABOVE the bar via negative offset.
+   Let it through only while a popup is actually open, so the bar's own
+   corner-clipping stays intact the rest of the time. */
+body.nagornaya-page:has(#bottomBar .gb-ember-expand.is-open) #bottomBar,
+body.nagornaya-page:has(#bottomBar .gb-ember-expand.is-open) #bottomBar .bottom-bar-inner {
+  overflow: visible !important;
+}
 
 /* The bar already had 6 fixed-width children (progress ring, divider, up,
    theme, home, share) filling most of a 390px screen — adding ember+save

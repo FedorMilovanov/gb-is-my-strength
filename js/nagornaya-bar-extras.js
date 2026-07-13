@@ -25,10 +25,21 @@
     // A same-specificity CSS override lost that cascade tie in testing —
     // rather than chase the exact source, force it back the same way inline
     // !important always wins over stylesheet !important.
+    //
+    // Mobile-only: nagornaya-mobile-toc.css hides the bar/overlay on desktop
+    // (@media(min-width:900px)) — an inline !important would beat that too,
+    // so this must re-check viewport width itself rather than force display
+    // unconditionally (regression fixed after it leaked #bottomBar onto desktop).
     var bar = document.getElementById('bottomBar');
     var overlay = document.getElementById('btocOverlay');
-    if (bar) bar.style.setProperty('display', 'block', 'important');
-    if (overlay) overlay.style.setProperty('display', 'block', 'important');
+    if (window.innerWidth < 900) {
+      if (bar) bar.style.setProperty('display', 'block', 'important');
+      if (overlay) overlay.style.setProperty('display', 'block', 'important');
+    } else {
+      if (bar) bar.style.removeProperty('display');
+      if (overlay) overlay.style.removeProperty('display');
+      return;
+    }
 
     var barInner = document.querySelector('#bottomBar .bottom-bar-inner');
     var sidebarControls = document.querySelector('.nag-sidebar-controls[data-fc-root]');
