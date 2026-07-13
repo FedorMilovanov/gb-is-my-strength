@@ -21,6 +21,7 @@
     "guard:shared-files": "node scripts/guard-shared-files.js && npm run guard:agents-rev",
     "route:profiles:check": "node scripts/check-route-profiles.js",
     "tokens:check": "node scripts/check-design-tokens.js",
+    "gill:chrome:guard": "node scripts/gill-canonical-chrome-guard.js",
     "visual-audit": "node scripts/visual-audit.js",
     "interactive-audit": "node scripts/interactive-audit.js",
     "readable-audit": "node scripts/readable-audit.js",
