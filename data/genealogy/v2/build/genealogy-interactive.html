@@ -586,7 +586,13 @@ function showTip(n,ev){
     +(n.ident?`<div class="t-id">это ${n.ident}</div>`:'')
     +(n.ref?`<div class="t-ref">${n.ref}${n.am?' · '+n.am:''}</div>`:'')
     +(n.overlap?`<div class="t-ov">⇄ имя встречается ещё раз в другой линии</div>`:'');
-  const r=svg.getBoundingClientRect();tip.style.left=(ev.clientX-r.left+14)+'px';tip.style.top=(ev.clientY-r.top+14)+'px';tip.style.opacity=1;}
+  // позиция с переворотом у краёв: тултип не должен вылезать за сцену
+  const r=svg.getBoundingClientRect();
+  let lx=ev.clientX-r.left+14, ly=ev.clientY-r.top+14;
+  const tw=tip.offsetWidth, th=tip.offsetHeight;
+  if(lx+tw>r.width-8)lx=ev.clientX-r.left-14-tw;
+  if(ly+th>r.height-8)ly=ev.clientY-r.top-14-th;
+  tip.style.left=Math.max(8,lx)+'px';tip.style.top=Math.max(8,ly)+'px';tip.style.opacity=1;}
 function hideTip(){tip.style.opacity=0;}
 
 // ---- details ----
