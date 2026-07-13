@@ -87,6 +87,14 @@
     </g>
     <path d="M6.3,4.4 L8,2 L9.7,4.4 C8.8,3.5 7.2,3.5 6.3,4.4 Z" fill="#f6f9fb" fill-opacity=".92" stroke="#8fa3bd" stroke-width=".35" stroke-linejoin="round" vector-effect="non-scaling-stroke"></path>
   </symbol>
+  <!-- угловой завиток картуша/рамки (ориентация — верх-левый угол) -->
+  <symbol id="cornerOrn" viewBox="0 0 16 16" overflow="visible">
+    <g fill="none" stroke="#8a6a1f" stroke-linecap="round">
+      <path d="M15,3 H6 Q3,3 3,6 V15" stroke-width="1.1"></path>
+      <path d="M3,6 Q3,9.6 6.6,9 Q4.2,8.7 4.7,6.2" stroke-width=".7"></path>
+      <circle cx="5.3" cy="5.3" r="1" fill="#8a6a1f" stroke="none"></circle>
+    </g>
+  </symbol>
   <!-- холм: низкая округлая гряда с лёгкой отмывкой (не острый пик) -->
   <symbol id="hill" viewBox="0 0 18 10" overflow="visible">
     <path d="M1,9.2 Q3.5,4.2 7.5,4 Q9.4,4 10.4,5.2 Q12,3.9 14,4.6 Q16.2,5.6 17,9.2 Z" fill="url(#peakG)" stroke="#7a6a48" stroke-width=".6" stroke-linejoin="round" vector-effect="non-scaling-stroke"></path>
@@ -585,7 +593,12 @@
 
   <g class="cartouche">
     <rect x="106" y="47" width="600.0" height="129" rx="12" class="plate cart-plate"></rect>
-    <rect x="113.5" y="54.5" width="585.0" height="114" rx="9" class="cart-inner"></rect>
+    <rect x="113.5" y="54.5" width="585.0" height="114.0" rx="9" class="cart-inner"></rect>
+    <rect x="117.3" y="58.3" width="577.5" height="106.5" rx="6.75" class="cart-inner2"></rect>
+    <use href="#cornerOrn" width="16" height="16" transform="translate(118.0,59.0) scale(1.500) rotate(0 8 8)"></use>
+    <use href="#cornerOrn" width="16" height="16" transform="translate(671.5,59.0) scale(1.500) rotate(90 8 8)"></use>
+    <use href="#cornerOrn" width="16" height="16" transform="translate(671.5,141.5) scale(1.500) rotate(180 8 8)"></use>
+    <use href="#cornerOrn" width="16" height="16" transform="translate(118.0,141.5) scale(1.500) rotate(270 8 8)"></use>
     <text x="136" y="81.5" class="cart-over" font-size="14.25">БИБЛЕЙСКИЙ АТЛАС · ЛИСТ I</text>
     <text x="136" y="122" class="cart-title" font-size="37.5">Путь Авраама</text>
     <text x="136" y="155" class="cart-sub" font-size="17.25">Бытие 11–25 · Средняя бронза · ~2166–1991 до н.э.</text>
@@ -630,4 +643,11 @@
 <rect x="70" y="20" width="1800" height="1200" filter="url(#parchmentGrain)" opacity=".5" pointer-events="none" class="paper-fx paper-grain"></rect>
 <g class="graticule" aria-hidden="true"><line x1="201.0" y1="32.0" x2="201.0" y2="38.0" class="grat"></line><line x1="301.0" y1="32.0" x2="301.0" y2="42.5" class="grat"></line><text x="301.0" y="57.5" text-anchor="middle" class="grat-t" font-size="12.00">32°</text><line x1="401.0" y1="32.0" x2="401.0" y2="38.0" class="grat"></line><line x1="501.0" y1="32.0" x2="501.0" y2="42.5" class="grat"></line><text x="501.0" y="57.5" text-anchor="middle" class="grat-t" font-size="12.00">34°</text><line x1="601.0" y1="32.0" x2="601.0" y2="38.0" class="grat"></line><line x1="701.0" y1="32.0" x2="701.0" y2="42.5" class="grat"></line><text x="701.0" y="57.5" text-anchor="middle" class="grat-t" font-size="12.00">36°</text><line x1="801.0" y1="32.0" x2="801.0" y2="38.0" class="grat"></line><line x1="901.0" y1="32.0" x2="901.0" y2="42.5" class="grat"></line><text x="901.0" y="57.5" text-anchor="middle" class="grat-t" font-size="12.00">38°</text><line x1="1001.0" y1="32.0" x2="1001.0" y2="38.0" class="grat"></line><line x1="1101.0" y1="32.0" x2="1101.0" y2="42.5" class="grat"></line><text x="1101.0" y="57.5" text-anchor="middle" class="grat-t" font-size="12.00">40°</text><line x1="1201.0" y1="32.0" x2="1201.0" y2="38.0" class="grat"></line><line x1="1301.0" y1="32.0" x2="1301.0" y2="42.5" class="grat"></line><text x="1301.0" y="57.5" text-anchor="middle" class="grat-t" font-size="12.00">42°</text><line x1="1401.0" y1="32.0" x2="1401.0" y2="38.0" class="grat"></line><line x1="1501.0" y1="32.0" x2="1501.0" y2="42.5" class="grat"></line><text x="1501.0" y="57.5" text-anchor="middle" class="grat-t" font-size="12.00">44°</text><line x1="1601.0" y1="32.0" x2="1601.0" y2="38.0" class="grat"></line><line x1="1701.0" y1="32.0" x2="1701.0" y2="42.5" class="grat"></line><text x="1701.0" y="57.5" text-anchor="middle" class="grat-t" font-size="12.00">46°</text><line x1="1801.0" y1="32.0" x2="1801.0" y2="38.0" class="grat"></line><line x1="82.0" y1="893.6" x2="88.0" y2="893.6" class="grat"></line><line x1="1858.0" y1="893.6" x2="1852.0" y2="893.6" class="grat"></line><line x1="82.0" y1="773.6" x2="92.5" y2="773.6" class="grat"></line><text x="97.0" y="777.8" text-anchor="start" class="grat-t" font-size="12.00">32°</text><line x1="1858.0" y1="773.6" x2="1847.5" y2="773.6" class="grat"></line><text x="1843.0" y="777.8" text-anchor="end" class="grat-t" font-size="12.00">32°</text><line x1="82.0" y1="653.6" x2="88.0" y2="653.6" class="grat"></line><line x1="1858.0" y1="653.6" x2="1852.0" y2="653.6" class="grat"></line><line x1="82.0" y1="533.6" x2="92.5" y2="533.6" class="grat"></line><text x="97.0" y="537.8" text-anchor="start" class="grat-t" font-size="12.00">34°</text><line x1="1858.0" y1="533.6" x2="1847.5" y2="533.6" class="grat"></line><text x="1843.0" y="537.8" text-anchor="end" class="grat-t" font-size="12.00">34°</text><line x1="82.0" y1="413.6" x2="88.0" y2="413.6" class="grat"></line><line x1="1858.0" y1="413.6" x2="1852.0" y2="413.6" class="grat"></line><line x1="82.0" y1="293.6" x2="92.5" y2="293.6" class="grat"></line><text x="97.0" y="297.8" text-anchor="start" class="grat-t" font-size="12.00">36°</text><line x1="1858.0" y1="293.6" x2="1847.5" y2="293.6" class="grat"></line><text x="1843.0" y="297.8" text-anchor="end" class="grat-t" font-size="12.00">36°</text><line x1="82.0" y1="173.6" x2="88.0" y2="173.6" class="grat"></line><line x1="1858.0" y1="173.6" x2="1852.0" y2="173.6" class="grat"></line></g>
 <rect x="82" y="32" width="1776" height="1176" class="frame"></rect>
+<rect x="88" y="38" width="1764" height="1164" class="frame frame-inner"></rect>
+<g class="frame-orn">
+  <use href="#cornerOrn" width="16" height="16" transform="translate(91.0,41.0) scale(2.250) rotate(0 8 8)"></use>
+  <use href="#cornerOrn" width="16" height="16" transform="translate(1813.0,41.0) scale(2.250) rotate(90 8 8)"></use>
+  <use href="#cornerOrn" width="16" height="16" transform="translate(1813.0,1163.0) scale(2.250) rotate(180 8 8)"></use>
+  <use href="#cornerOrn" width="16" height="16" transform="translate(91.0,1163.0) scale(2.250) rotate(270 8 8)"></use>
+</g>
 </svg>

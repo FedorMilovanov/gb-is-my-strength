@@ -12,6 +12,9 @@
   .wrap{position:relative;max-width:1500px;width:100%;box-shadow:0 18px 60px rgba(90,70,30,.35), 0 2px 10px rgba(90,70,30,.22);border-radius:6px;overflow:hidden}
   svg.sheet{display:block;width:100%;height:auto;background:#f5edd8}
   .frame{fill:none;stroke:#8a6a1f;stroke-width:1.2;opacity:.55}
+  .frame-inner{stroke-width:.5;opacity:.35}
+  .frame-orn use{opacity:.5}
+  svg.zoomed .frame-inner,svg.zoomed .frame-orn{opacity:0}
   /* ════ СИСТЕМА МАСШТАБИРОВАНИЯ ЛИСТА ════
      Линейные объекты держат ЭКРАННУЮ толщину (non-scaling-stroke);
      точки/подписи/символы — ступени LOD z2/z3/z4 (целевые размеры в
@@ -190,7 +193,9 @@
   svg.zoomed text.lab-wp{opacity:.85}
   .plate{fill:rgba(246,241,231,.85);stroke:rgba(120,95,40,.35);stroke-width:1}
   .cart-plate{fill:rgba(246,241,231,.92)}
-  .cart-inner{fill:none;stroke:rgba(138,106,31,.3);stroke-width:.8}
+  .cart-inner{fill:none;stroke:rgba(138,106,31,.42);stroke-width:1}
+  .cart-inner2{fill:none;stroke:rgba(138,106,31,.22);stroke-width:.5}
+  .cartouche use{opacity:.72}
   .cart-over{font-family:Lora,Georgia,serif;fill:#8a6a1f;letter-spacing:.26em;font-weight:500}
   .cart-title{font-family:'Playfair Display',Georgia,serif;font-weight:700;fill:#243a56;letter-spacing:.01em}
   .cart-sub{font-family:Lora,Georgia,serif;font-style:italic;font-weight:400;fill:#5c6e86}
@@ -392,6 +397,14 @@
       <path d="M16.4,11 l.55,1.4"/><path d="M17.3,12.7 l.5,1.4"/>
     </g>
     <path d="M6.3,4.4 L8,2 L9.7,4.4 C8.8,3.5 7.2,3.5 6.3,4.4 Z" fill="#f6f9fb" fill-opacity=".92" stroke="#8fa3bd" stroke-width=".35" stroke-linejoin="round" vector-effect="non-scaling-stroke"/>
+  </symbol>
+  <!-- угловой завиток картуша/рамки (ориентация — верх-левый угол) -->
+  <symbol id="cornerOrn" viewBox="0 0 16 16" overflow="visible">
+    <g fill="none" stroke="#8a6a1f" stroke-linecap="round">
+      <path d="M15,3 H6 Q3,3 3,6 V15" stroke-width="1.1"/>
+      <path d="M3,6 Q3,9.6 6.6,9 Q4.2,8.7 4.7,6.2" stroke-width=".7"/>
+      <circle cx="5.3" cy="5.3" r="1" fill="#8a6a1f" stroke="none"/>
+    </g>
   </symbol>
   <!-- холм: низкая округлая гряда с лёгкой отмывкой (не острый пик) -->
   <symbol id="hill" viewBox="0 0 18 10" overflow="visible">
@@ -927,7 +940,12 @@
 
   <g class="cartouche">
     <rect x="438.4" y="596.3" width="140.0" height="30.099999999999998" rx="2.8" class="plate cart-plate"/>
-    <rect x="440.15" y="598.05" width="136.5" height="26.599999999999998" rx="2.0999999999999996" class="cart-inner"/>
+    <rect x="440.1" y="598.0" width="136.5" height="26.6" rx="2.0999999999999996" class="cart-inner"/>
+    <rect x="441.0" y="598.9" width="134.8" height="24.8" rx="1.575" class="cart-inner2"/>
+    <use href="#cornerOrn" width="16" height="16" transform="translate(441.2,599.1) scale(0.350) rotate(0 8 8)"/>
+    <use href="#cornerOrn" width="16" height="16" transform="translate(570.4,599.1) scale(0.350) rotate(90 8 8)"/>
+    <use href="#cornerOrn" width="16" height="16" transform="translate(570.4,618.4) scale(0.350) rotate(180 8 8)"/>
+    <use href="#cornerOrn" width="16" height="16" transform="translate(441.2,618.4) scale(0.350) rotate(270 8 8)"/>
     <text x="445.4" y="604.35" class="cart-over" font-size="3.3249999999999997">БИБЛЕЙСКИЙ АТЛАС</text>
     <text x="445.4" y="613.8" class="cart-title" font-size="8.75">Жизнь Иисуса Христа</text>
     <text x="445.4" y="621.5" class="cart-sub" font-size="4.0249999999999995">Евангелия · ~4 г. до н.э. – 33 г. н.э.</text>
@@ -968,6 +986,13 @@
 <rect x="430" y="590" width="420" height="280" filter="url(#parchmentGrain)" opacity=".5" pointer-events="none" class="paper-fx paper-grain"/>
 <g class="graticule" aria-hidden="true"><line x1="501.0" y1="592.8" x2="501.0" y2="595.3" class="grat"/><text x="501.0" y="598.8" text-anchor="middle" class="grat-t" font-size="2.80">34°</text><line x1="601.0" y1="592.8" x2="601.0" y2="594.2" class="grat"/><line x1="701.0" y1="592.8" x2="701.0" y2="595.3" class="grat"/><text x="701.0" y="598.8" text-anchor="middle" class="grat-t" font-size="2.80">36°</text><line x1="801.0" y1="592.8" x2="801.0" y2="594.2" class="grat"/><line x1="432.8" y1="773.6" x2="435.3" y2="773.6" class="grat"/><text x="436.3" y="774.6" text-anchor="start" class="grat-t" font-size="2.80">32°</text><line x1="847.2" y1="773.6" x2="844.8" y2="773.6" class="grat"/><text x="843.7" y="774.6" text-anchor="end" class="grat-t" font-size="2.80">32°</text><line x1="432.8" y1="653.6" x2="434.2" y2="653.6" class="grat"/><line x1="847.2" y1="653.6" x2="845.8" y2="653.6" class="grat"/></g>
 <rect x="432.8" y="592.8" width="414.4" height="274.4" class="frame"/>
+<rect x="434.2" y="594.2" width="411.6" height="271.6" class="frame frame-inner"/>
+<g class="frame-orn">
+  <use href="#cornerOrn" width="16" height="16" transform="translate(434.9,594.9) scale(0.525) rotate(0 8 8)"/>
+  <use href="#cornerOrn" width="16" height="16" transform="translate(836.7,594.9) scale(0.525) rotate(90 8 8)"/>
+  <use href="#cornerOrn" width="16" height="16" transform="translate(836.7,856.7) scale(0.525) rotate(180 8 8)"/>
+  <use href="#cornerOrn" width="16" height="16" transform="translate(434.9,856.7) scale(0.525) rotate(270 8 8)"/>
+</g>
 </svg>
   <div class="stage-strip">
     <div class="st" data-stage="0" role="button" tabindex="0" title="Показать этап на листе"><span class="st-dot" style="background:#8a6a1f"></span><span class="st-body"><b>I</b> · Рождество и детство<i>ВИФЛЕЕМ · НАЗАРЕТ · ХРАМ</i></span></div><div class="st" data-stage="1" role="button" tabindex="0" title="Показать этап на листе"><span class="st-dot" style="background:#a25d33"></span><span class="st-body"><b>II</b> · Начало служения<i>КРЕЩЕНИЕ · КАНА · КАПЕРНАУМ</i></span></div><div class="st" data-stage="2" role="button" tabindex="0" title="Показать этап на листе"><span class="st-dot" style="background:#4a7a52"></span><span class="st-body"><b>III</b> · Галилейское служение<i>НАГОРНАЯ ПРОПОВЕДЬ · ЧУДЕСА</i></span></div><div class="st" data-stage="3" role="button" tabindex="0" title="Показать этап на листе"><span class="st-dot" style="background:#8f4a56"></span><span class="st-body"><b>IV</b> · Путь в Иерусалим<i>ИЕРИХОН · ВИФАНИЯ · ЛАЗАРЬ</i></span></div><div class="st" data-stage="4" role="button" tabindex="0" title="Показать этап на листе"><span class="st-dot" style="background:#6b5a43"></span><span class="st-body"><b>V</b> · Страсти и Воскресение<i>ГОЛГОФА · ПУСТАЯ ГРОБНИЦА</i></span></div>

@@ -111,6 +111,14 @@ const GEO_DEFS = `<defs>
     </g>
     <path d="M6.3,4.4 L8,2 L9.7,4.4 C8.8,3.5 7.2,3.5 6.3,4.4 Z" fill="#f6f9fb" fill-opacity=".92" stroke="#8fa3bd" stroke-width=".35" stroke-linejoin="round" vector-effect="non-scaling-stroke"/>
   </symbol>
+  <!-- угловой завиток картуша/рамки (ориентация — верх-левый угол) -->
+  <symbol id="cornerOrn" viewBox="0 0 16 16" overflow="visible">
+    <g fill="none" stroke="#8a6a1f" stroke-linecap="round">
+      <path d="M15,3 H6 Q3,3 3,6 V15" stroke-width="1.1"/>
+      <path d="M3,6 Q3,9.6 6.6,9 Q4.2,8.7 4.7,6.2" stroke-width=".7"/>
+      <circle cx="5.3" cy="5.3" r="1" fill="#8a6a1f" stroke="none"/>
+    </g>
+  </symbol>
   <!-- холм: низкая округлая гряда с лёгкой отмывкой (не острый пик) -->
   <symbol id="hill" viewBox="0 0 18 10" overflow="visible">
     <path d="M1,9.2 Q3.5,4.2 7.5,4 Q9.4,4 10.4,5.2 Q12,3.9 14,4.6 Q16.2,5.6 17,9.2 Z" fill="url(#peakG)" stroke="#7a6a48" stroke-width=".6" stroke-linejoin="round" vector-effect="non-scaling-stroke"/>
@@ -511,10 +519,18 @@ function renderSheet(route, opts) {
 
   const sheetNo = opts.sheetNo; // номер листа в атласе (римская цифра), опционально
     const cartW = Math.max(400, 46 + Math.max((meta.title || slug).length * 14.6, ((meta.subtitle || '').length) * 6.6)) * k;
+  // орнаментальные углы картуша (внутр. рамка): 4 завитка + двойная линия
+  const inX = x0 + 29 * k, inY = y0 + 23 * k, inW = cartW - 10 * k, inH = 76 * k, o = 15 * k, oi = 3 * k;
+  const orn = (px, py, deg) => `<use href="#cornerOrn" width="16" height="16" transform="translate(${px.toFixed(1)},${py.toFixed(1)}) scale(${k.toFixed(3)}) rotate(${deg} 8 8)"/>`;
   const cart = `
   <g class="cartouche">
     <rect x="${x0 + 24 * k}" y="${y0 + 18 * k}" width="${cartW.toFixed(1)}" height="${86 * k}" rx="${8 * k}" class="plate cart-plate"/>
-    <rect x="${x0 + 29 * k}" y="${y0 + 23 * k}" width="${(cartW - 10 * k).toFixed(1)}" height="${76 * k}" rx="${6 * k}" class="cart-inner"/>
+    <rect x="${inX.toFixed(1)}" y="${inY.toFixed(1)}" width="${inW.toFixed(1)}" height="${inH.toFixed(1)}" rx="${6 * k}" class="cart-inner"/>
+    <rect x="${(inX + 2.5 * k).toFixed(1)}" y="${(inY + 2.5 * k).toFixed(1)}" width="${(inW - 5 * k).toFixed(1)}" height="${(inH - 5 * k).toFixed(1)}" rx="${4.5 * k}" class="cart-inner2"/>
+    ${orn(inX + oi, inY + oi, 0)}
+    ${orn(inX + inW - oi - o, inY + oi, 90)}
+    ${orn(inX + inW - oi - o, inY + inH - oi - o, 180)}
+    ${orn(inX + oi, inY + inH - oi - o, 270)}
     <text x="${x0 + 44 * k}" y="${y0 + 41 * k}" class="cart-over" font-size="${9.5 * k}">БИБЛЕЙСКИЙ АТЛАС${sheetNo ? ` · ЛИСТ ${sheetNo}` : ''}</text>
     <text x="${x0 + 44 * k}" y="${y0 + 68 * k}" class="cart-title" font-size="${25 * k}">${esc(meta.title || slug)}</text>
     <text x="${x0 + 44 * k}" y="${y0 + 90 * k}" class="cart-sub" font-size="${11.5 * k}">${esc(meta.subtitle || '')}</text>
@@ -584,6 +600,13 @@ ${furn}
 <rect x="${x0}" y="${y0}" width="${W}" height="${H}" filter="url(#parchmentGrain)" opacity=".5" pointer-events="none" class="paper-fx paper-grain"/>
 ${graticule(family, x0, y0, W, H, k)}
 <rect x="${x0 + 8 * k}" y="${y0 + 8 * k}" width="${W - 16 * k}" height="${H - 16 * k}" class="frame"/>
+<rect x="${x0 + 12 * k}" y="${y0 + 12 * k}" width="${W - 24 * k}" height="${H - 24 * k}" class="frame frame-inner"/>
+<g class="frame-orn">
+  <use href="#cornerOrn" width="16" height="16" transform="translate(${(x0 + 14 * k).toFixed(1)},${(y0 + 14 * k).toFixed(1)}) scale(${(k * 1.5).toFixed(3)}) rotate(0 8 8)"/>
+  <use href="#cornerOrn" width="16" height="16" transform="translate(${(x0 + W - 14 * k - 24 * k).toFixed(1)},${(y0 + 14 * k).toFixed(1)}) scale(${(k * 1.5).toFixed(3)}) rotate(90 8 8)"/>
+  <use href="#cornerOrn" width="16" height="16" transform="translate(${(x0 + W - 14 * k - 24 * k).toFixed(1)},${(y0 + H - 14 * k - 24 * k).toFixed(1)}) scale(${(k * 1.5).toFixed(3)}) rotate(180 8 8)"/>
+  <use href="#cornerOrn" width="16" height="16" transform="translate(${(x0 + 14 * k).toFixed(1)},${(y0 + H - 14 * k - 24 * k).toFixed(1)}) scale(${(k * 1.5).toFixed(3)}) rotate(270 8 8)"/>
+</g>
 </svg>`;
 
   return { svg, stageStripHtml, meta: { title: meta.title || slug, subtitle: meta.subtitle || '' } };
@@ -596,6 +619,9 @@ function sheetCss() {
   .wrap{position:relative;max-width:1500px;width:100%;box-shadow:0 18px 60px rgba(90,70,30,.35), 0 2px 10px rgba(90,70,30,.22);border-radius:6px;overflow:hidden}
   svg.sheet{display:block;width:100%;height:auto;background:#f5edd8}
   .frame{fill:none;stroke:#8a6a1f;stroke-width:1.2;opacity:.55}
+  .frame-inner{stroke-width:.5;opacity:.35}
+  .frame-orn use{opacity:.5}
+  svg.zoomed .frame-inner,svg.zoomed .frame-orn{opacity:0}
   /* ════ СИСТЕМА МАСШТАБИРОВАНИЯ ЛИСТА ════
      Линейные объекты держат ЭКРАННУЮ толщину (non-scaling-stroke);
      точки/подписи/символы — ступени LOD z2/z3/z4 (целевые размеры в
@@ -774,7 +800,9 @@ function sheetCss() {
   svg.zoomed text.lab-wp{opacity:.85}
   .plate{fill:rgba(246,241,231,.85);stroke:rgba(120,95,40,.35);stroke-width:1}
   .cart-plate{fill:rgba(246,241,231,.92)}
-  .cart-inner{fill:none;stroke:rgba(138,106,31,.3);stroke-width:.8}
+  .cart-inner{fill:none;stroke:rgba(138,106,31,.42);stroke-width:1}
+  .cart-inner2{fill:none;stroke:rgba(138,106,31,.22);stroke-width:.5}
+  .cartouche use{opacity:.72}
   .cart-over{font-family:Lora,Georgia,serif;fill:#8a6a1f;letter-spacing:.26em;font-weight:500}
   .cart-title{font-family:'Playfair Display',Georgia,serif;font-weight:700;fill:#243a56;letter-spacing:.01em}
   .cart-sub{font-family:Lora,Georgia,serif;font-style:italic;font-weight:400;fill:#5c6e86}
