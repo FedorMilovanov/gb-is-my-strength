@@ -25,8 +25,6 @@
  * to ../../ — this makes it an actual site-navigation entry point, not a
  * decorative icon).
  */
-import PlayEmber from '@/components/ui/floating-cluster/PlayEmber.astro';
-import SaveButton from '@/components/ui/floating-cluster/SaveButton.astro';
 import { HERMENEVTIKA_TOC } from './hermenevtikaToc';
 
 interface Props {
@@ -37,28 +35,15 @@ interface Props {
 const { eyebrow, title, backHref } = Astro.props;
 ---
 <aside class="hrail" aria-label={title} data-fc-root data-fc-variant="single" data-fc-mode="single">
-  <div class="hrail-top" data-gb-speed-custom>
+  <!-- Верх рейла: только назад — Поиск/PLAY/Сохранить уехали в угловой
+       кластер справа сверху, как у Гилла (owner: "должно быть как в Гилле,
+       справа сверху PLAY, а не в левом меню... стандарт Гилла с адаптацией
+       цветовой только" — MOBILE_CHROME_ENGINE_UNIFICATION_2026-07-12,
+       SingleArticleCluster.astro). -->
+  <div class="hrail-top">
     <button class="hrail-back" type="button" aria-label="Назад" data-home-href={backHref}>
       <svg viewBox="0 0 24 24"><path d="M19 12H5M12 19l-7-7 7-7" /></svg>
     </button>
-    <div class="hrail-slot" id="hrailSlot">
-      <button class="hrail-slot-search" type="button" data-fc-action="search" aria-label="Поиск">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7" /><path d="M21 21l-4.3-4.3" /></svg>
-        <span>Поиск</span>
-      </button>
-      <div class="hrail-speedrail" id="hrailSpeedrail" role="radiogroup" aria-label="Скорость озвучки">
-        <button class="hrail-spd" type="button" role="radio" data-speed="1" aria-checked="true">1×</button>
-        <button class="hrail-spd" type="button" role="radio" data-speed="1.25" aria-checked="false">1.25×</button>
-        <button class="hrail-spd" type="button" role="radio" data-speed="1.5" aria-checked="false">1.5×</button>
-        <button class="hrail-spd" type="button" role="radio" data-speed="1.75" aria-checked="false">1.75×</button>
-        <button class="hrail-spd" type="button" role="radio" data-speed="2" aria-checked="false">2×</button>
-      </div>
-    </div>
-    <span class="hrail-playwrap">
-      <PlayEmber audioState="none" class="hrail-ember" tip="Озвучка" />
-      <button class="hrail-spdbadge" id="hrailSpdBadge" type="button" aria-label="Выбрать скорость, сейчас 1×">1×</button>
-    </span>
-    <SaveButton class="hrail-save" tip="Сохранить" />
   </div>
   <div class="hrail-meta">
     <div class="hrail-meta__eyebrow">{eyebrow}</div>
@@ -82,11 +67,11 @@ const { eyebrow, title, backHref } = Astro.props;
     <button class="hrail-bottom-btn" type="button" data-fc-action="search" aria-label="Поиск и разделы сайта">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"><path d="M4 7h16M4 12h16M4 17h16" /></svg>
     </button>
-    <button class="hrail-bottom-btn" id="hrailShare" type="button" aria-label="Поделиться">
+    <button class="hrail-bottom-btn" id="hrailShare" data-action="share" data-tip="Поделиться" type="button" aria-label="Поделиться">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="2.6" /><circle cx="6" cy="12" r="2.6" /><circle cx="18" cy="19" r="2.6" /><path d="M8.3 10.7l7.4-4.2M8.3 13.3l7.4 4.2" /></svg>
     </button>
     <button class="hrail-bottom-btn" data-action="print" type="button" aria-label="Скачать PDF">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 6 2 18 2 18 9" /><path d="M6 18H4a2 2 0 0 1-2-2V11a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2" /><rect x="6" y="14" width="12" height="8" /></svg>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12" /><polyline points="7 10 12 15 17 10" /><path d="M5 21h14" /></svg>
     </button>
     <button class="hrail-bottom-btn hrail-bottom-btn--text" data-fc-action="font-down" aria-label="Уменьшить шрифт">A−</button>
     <button class="hrail-bottom-btn hrail-bottom-btn--text" data-fc-action="font-up" aria-label="Увеличить шрифт">A+</button>
@@ -108,11 +93,8 @@ const { eyebrow, title, backHref } = Astro.props;
     border-color:rgba(212,140,150,.16);
     box-shadow:0 34px 100px rgba(0,0,0,.5),inset 0 1px 0 rgba(255,255,255,.04);
   }
-  /* ---- top bar: back, search⇄speed slot-swap, Play+badge, Save — the same
-     [data-gb-speed-custom] mechanic as GillSeriesRail's desktop topbar and
-     both mobile bars (see _shared/speedSlot.ts), so Play behaves identically
-     everywhere instead of this rail being the odd one out with a bare bloom
-     panel and no persistent speed indicator. ---- */
+  /* ---- top bar: back only — Search/Play/Save moved to the corner cluster
+     (SingleArticleCluster.astro, top-right, Gill's standard). ---- */
   .hrail-top{display:flex;align-items:center;gap:6px;margin:0 0 12px;position:relative}
   .hrail-back{flex:none;width:34px;height:34px;border-radius:50%;display:grid;place-items:center;color:#7a2e2e;opacity:.85;
     transition:transform .3s,color .3s;cursor:pointer;background:none;border:0;padding:0;font:inherit}
@@ -122,55 +104,6 @@ const { eyebrow, title, backHref } = Astro.props;
     .hrail-back:hover{transform:translateX(-3px);color:#5f2323}
     html.dark .hrail-back:hover{color:#f2c4b6}
   }
-
-  .hrail-slot{position:relative;flex:1;min-width:0;height:34px}
-  .hrail-slot-search{position:relative;width:100%;height:100%;display:flex;align-items:center;gap:7px;padding:0 12px;
-    border-radius:999px;background:rgba(122,46,46,.055);border:1px solid rgba(122,46,46,.15);
-    color:rgba(42,24,20,.55);cursor:pointer;font:inherit;transition:opacity .28s ease,background-color .25s,border-color .25s,color .25s}
-  html.dark .hrail-slot-search{background:rgba(224,160,150,.05);border-color:rgba(224,160,150,.16);color:rgba(255,255,255,.42)}
-  .hrail-slot-search svg{width:15px;height:15px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;flex:none}
-  .hrail-slot-search span{font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-  .hrail-top.speed-open .hrail-slot-search{opacity:.3}
-  @media(hover:hover) and (pointer:fine){
-    .hrail-slot-search:hover{background:rgba(122,46,46,.09);color:#2a1814}
-    html.dark .hrail-slot-search:hover{background:rgba(224,160,150,.09);color:#f6efe9}
-  }
-
-  .hrail-speedrail{position:absolute;inset:0;display:flex;align-items:center;gap:4px;
-    opacity:0;transform:translateX(8px);pointer-events:none;transition:opacity .25s ease,transform .25s cubic-bezier(.3,1.2,.4,1);
-    overflow-x:auto;overflow-y:hidden;scrollbar-width:none;-ms-overflow-style:none;cursor:grab}
-  .hrail-speedrail::-webkit-scrollbar{display:none}
-  .hrail-speedrail.is-dragging{cursor:grabbing}
-  .hrail-top.speed-open .hrail-speedrail{opacity:1;transform:translateX(0);pointer-events:auto}
-  .hrail-spd{flex:0 0 auto;font-size:10.5px;font-weight:700;border:1px solid rgba(122,46,46,.28);
-    background:transparent;color:#8a5a4a;padding:6px 8px;border-radius:8px;cursor:pointer;white-space:nowrap;transition:.15s}
-  html.dark .hrail-spd{border-color:rgba(224,160,150,.28);color:#caa1a0}
-  .hrail-spd[aria-checked="true"]{background:#7a2e2e;color:#fff;border-color:transparent}
-  html.dark .hrail-spd[aria-checked="true"]{background:#c4694c;color:#1c0b10}
-
-  .hrail-playwrap{position:relative;flex:none;display:grid;place-items:center}
-  /* «не просто пустым» — лёгкая постоянная подложка на самом Play (не только
-     на hover-halo из канона .gb-ember), плюс более заметный акцент при
-     наведении — тот же принцип, просто заметнее. */
-  .hrail-top .gb-ember{--ember-size:32px;--ring-color:#c4694c;flex:none;background:rgba(122,46,46,.08)}
-  html.dark .hrail-top .gb-ember{--ring-color:#dd7c5d;background:rgba(224,160,150,.09)}
-  .hrail-top .gb-ember::before{border-width:1.5px}
-  @media(hover:hover) and (pointer:fine){
-    .hrail-top .gb-ember:hover{background:rgba(122,46,46,.14)}
-    html.dark .hrail-top .gb-ember:hover{background:rgba(224,160,150,.15)}
-  }
-  /* Бейдж — снизу-справа на Play, как в обоих мобильных барах (единый канон
-     вместо разнобоя между поверхностями: тот же угол везде). */
-  .hrail-spdbadge{position:absolute;right:-3px;bottom:-2px;z-index:2;min-width:17px;height:13px;padding:0 3px;border-radius:999px;
-    border:1px solid #7a2e2e;background:#7a2e2e;color:#fff;font-size:8px;font-weight:800;cursor:pointer;
-    box-shadow:0 2px 6px rgba(0,0,0,.22);transition:transform .18s cubic-bezier(.34,1.56,.64,1)}
-  html.dark .hrail-spdbadge{border-color:#dd7c5d;background:#dd7c5d;color:#1c0b10}
-  .hrail-spdbadge::before{content:'';position:absolute;inset:-4px -3px}
-  .hrail-spdbadge.is-bump{animation:hrail-spdbadge-bump .3s cubic-bezier(.34,1.56,.64,1)}
-  @keyframes hrail-spdbadge-bump{0%{transform:scale(1)}50%{transform:scale(1.16)}100%{transform:scale(1)}}
-
-  .hrail-top .gb-save{width:32px;height:32px;flex:none}
-  .hrail-top .gb-save svg{width:16px;height:16px}
 
   .hrail-meta{padding:2px 4px 14px}
   .hrail-meta__eyebrow{font-size:9.5px;font-weight:900;letter-spacing:.2em;text-transform:uppercase;color:#7a2e2e}
@@ -253,17 +186,7 @@ const { eyebrow, title, backHref } = Astro.props;
 </style>
 
 <script>
-  import { initSpeedSlot } from '../_shared/speedSlot';
-
   function initHermenevtikaRail(){
-    const topbar = document.querySelector('.hrail-top[data-gb-speed-custom]') as HTMLElement | null;
-    if (topbar) initSpeedSlot(topbar, {
-      ember: '.hrail-ember',
-      speedrail: '.hrail-speedrail',
-      badge: '.hrail-spdbadge',
-      chip: '.hrail-spd',
-    });
-
     const toc = document.getElementById('hrailToc');
     const countEl = document.getElementById('hrailCount');
     if(!toc) return;
@@ -319,18 +242,9 @@ const { eyebrow, title, backHref } = Astro.props;
     onScroll();
     window.addEventListener('scroll', onScroll, { passive: true });
 
-    const shareBtn = document.getElementById('hrailShare');
-    if(shareBtn) shareBtn.addEventListener('click', async () => {
-      const url = location.href;
-      const title = document.title;
-      try {
-        if(navigator.share){ await navigator.share({ title, url }); return; }
-      } catch(_) { /* user cancelled or unsupported — fall through to clipboard */ }
-      try {
-        await navigator.clipboard.writeText(url);
-        shareBtn.setAttribute('data-tip', 'Ссылка скопирована');
-      } catch(_) { /* clipboard unavailable — silently no-op */ }
-    });
+    // Share (Web Share API + clipboard fallback + "Ссылка скопирована" tip) —
+    // общий контракт data-action="share" в floating-cluster-controller.js
+    // (PR-4 плана unification, дрейф D8). Раньше это была bespoke-копия здесь.
 
     const backBtn = document.querySelector('.hrail-back') as HTMLElement | null;
     if(backBtn){
